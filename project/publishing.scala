@@ -34,8 +34,8 @@ object GithubPublishDocs extends AutoPlugin {
 
   override def projectSettings: Seq[Setting[_]] = Seq(
     ghpagesBranch := "master",
-    includeFilter in ghpagesCleanSite := (FileFilter) { (pathname: File) =>
-      pathname.getAbsolutePath.contains(s"${ParadoxSite.projectNameAndVersion}")
+    includeFilter in ghpagesCleanSite := new FileFilter {
+      override def accept(pathname: File): Boolean = pathname.getAbsolutePath.contains(s"${ParadoxSite.projectNameAndVersion}")
     },
     GitKeys.gitRemoteRepo := "git@github.com:tmtsoftware/tmtsoftware.github.io.git"
   )
@@ -65,6 +65,6 @@ object CswBuildInfo extends AutoPlugin {
   override def projectSettings: Seq[Setting[_]] = Seq(
     buildInfoKeys := Seq[BuildInfoKey](name, version),
     // fixme : should this be services or something else
-    buildInfoPackage := "esw.services"
+    buildInfoPackage := "esw  "
   )
 }
