@@ -1,17 +1,17 @@
-import com.typesafe.sbt.site.asciidoctor.AsciidoctorPlugin
+import org.scalafmt.sbt.ScalafmtPlugin.autoImport.scalafmtOnCompile
 import sbt.Keys.{licenses, scmInfo, _}
 import sbt.plugins.JvmPlugin
 import sbt.{AutoPlugin, Global, ScmInfo, Setting, Test, Tests, settingKey, toRepositoryName, url}
 import sbtunidoc.GenJavadocPlugin.autoImport.unidocGenjavadocVersion
 
 class Commons extends AutoPlugin {
-  override def trigger = AsciidoctorPlugin.allRequirements
+  override def trigger = allRequirements
 
   override def requires = JvmPlugin
 
   val enableFatalWarnings = settingKey[Boolean]("enable fatal warnings")
 
-  override def globalSettings = Seq(
+  override def globalSettings: Seq[Setting[_]] = Seq(
     organization := "com.github.tmtsoftware.esw",
     organizationName := "TMT Org",
     organizationHomepage := Some(url("https://www.github.com/tmtsoftware/esw")),
@@ -56,7 +56,7 @@ class Commons extends AutoPlugin {
     enableFatalWarnings := false,
     autoCompilerPlugins := true,
     cancelable in Global := true, // allow ongoing test(or any task) to cancel with ctrl + c and still remain inside sbt
-//    scalafmtOnCompile := true,
+    scalafmtOnCompile := true,
     unidocGenjavadocVersion := "0.13"
   )
 }
