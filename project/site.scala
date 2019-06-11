@@ -26,22 +26,23 @@ object ParadoxSite extends AutoPlugin {
 
   override def requires: Plugins = ParadoxSitePlugin && ParadoxMaterialThemePlugin
 
-  override def projectSettings: Seq[Setting[_]] =
+  override def projectSettings: Seq[Setting[_]] = {
     ParadoxMaterialThemePlugin.paradoxMaterialThemeSettings(Paradox) ++
-      Seq(
-        sourceDirectory in Paradox := baseDirectory.value / "src" / "main",
-        sourceDirectory in (Paradox, paradoxTheme) := (sourceDirectory in Paradox).value / "_template",
-        paradoxMaterialTheme in Paradox ~= {
-          _.withFavicon("assets/tmt_favicon.ico")
-            .withRepository(new URI(EswKeys.homepageValue))
-        },
-        paradoxProperties in Paradox ++= Map(
-          "version"             → version.value,
-          "scala.binaryVersion" → scalaBinaryVersion.value,
-          "scaladoc.base_url"   → s"https://tmtsoftware.github.io/$projectNameAndVersion/api/scala",
-          "github.base_url"     → githubBaseUrl(version.value)
-        )
+    Seq(
+      sourceDirectory in Paradox := baseDirectory.value / "src" / "main",
+      sourceDirectory in (Paradox, paradoxTheme) := (sourceDirectory in Paradox).value / "_template",
+      paradoxMaterialTheme in Paradox ~= {
+        _.withFavicon("assets/tmt_favicon.ico")
+          .withRepository(new URI(EswKeys.homepageValue))
+      },
+      paradoxProperties in Paradox ++= Map(
+        "version"             → version.value,
+        "scala.binaryVersion" → scalaBinaryVersion.value,
+        "scaladoc.base_url"   → s"https://tmtsoftware.github.io/$projectNameAndVersion/api/scala",
+        "github.base_url"     → githubBaseUrl(version.value)
       )
+    )
+  }
 
   private def githubBaseUrl(version: String) = {
     val baseRepoUrl = s"${EswKeys.homepageValue}/tree"

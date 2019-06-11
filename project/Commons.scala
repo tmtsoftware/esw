@@ -14,9 +14,6 @@ class Commons extends AutoPlugin {
   override def globalSettings: Seq[Setting[_]] = Seq(
     organization := "com.github.tmtsoftware.esw",
     organizationName := "TMT Org",
-    organizationHomepage := Some(url("https://www.github.com/tmtsoftware/esw")),
-    homepage := Some(url(EswKeys.homepageValue)),
-    description := "Executive Software",
     scalaVersion := EswKeys.scalaVersion,
     scmInfo := Some(
       ScmInfo(url(EswKeys.homepageValue), "git@github.com:tmtsoftware/esw.git")
