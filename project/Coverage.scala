@@ -1,4 +1,4 @@
-import sbt._
+import sbt.{AutoPlugin, Plugins, _}
 
 object Coverage extends AutoPlugin {
   import scoverage.ScoverageSbtPlugin
@@ -12,7 +12,7 @@ object Coverage extends AutoPlugin {
     coverageFailOnMinimum := true,
     coverageHighlighting := true,
     coverageOutputCobertura := true,
-    coverageOutputXML := true,
+    coverageOutputXML := true
   )
 
 }

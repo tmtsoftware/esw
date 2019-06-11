@@ -1,14 +1,14 @@
-ThisBuild / scalaVersion := EswKeys.scalaVersion
-ThisBuild / version := EswKeys.projectVersion
-ThisBuild / organization := "com.github.tmtsoftware.esw"
-ThisBuild / organizationName := "TMT Org"
-ThisBuild / homepage := Some(new URL(EswKeys.homepageValue))
-
-val aggregateProjects = Seq()
+val aggregateProjects = Seq.empty
 
 lazy val esw = (project in file("."))
   .aggregate(aggregateProjects: _*)
-  .settings(
-    name := EswKeys.projectName,
-    libraryDependencies ++= Dependencies.esw.value
-  )
+  .enablePlugins(NoPublish, UnidocSite, GithubPublishDocs, GitBranchPrompt, GithubRelease, CoursierPlugin)
+  .disablePlugins(BintrayPlugin)
+//  .settings(Settings.mergeSiteWith(docs))
+//  .settings(Settings.addAliases)
+//  .settings(Settings.docExclusions(unidocExclusions))
+//  .settings(Settings.multiJvmTestTask(multiJvmProjects))
+//  .settings(GithubRelease.githubReleases(githubReleases))
+//  .settings(
+//    bootstrap in Coursier := CoursierPlugin.bootstrapTask(githubReleases).value
+//  )

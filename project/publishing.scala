@@ -25,6 +25,7 @@ object PublishBintray extends AutoPlugin {
   )
 }
 
+// used for doc publish using ghpagesPushSite
 object GithubPublishDocs extends AutoPlugin {
   import com.typesafe.sbt.SbtGit.GitKeys
   import com.typesafe.sbt.sbtghpages.GhpagesPlugin
@@ -56,6 +57,7 @@ object DeployApp extends AutoPlugin {
     )
 }
 
+// used only in DeployApp plugin
 object EswBuildInfo extends AutoPlugin {
   import sbtbuildinfo.BuildInfoPlugin
   import BuildInfoPlugin.autoImport._

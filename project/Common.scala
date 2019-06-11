@@ -1,10 +1,18 @@
 import org.scalafmt.sbt.ScalafmtPlugin.autoImport.scalafmtOnCompile
-import sbt.Keys.{licenses, scmInfo, _}
+import sbt.Keys._
+import sbt._
+import sbt.librarymanagement.ScmInfo
 import sbt.plugins.JvmPlugin
-import sbt.{AutoPlugin, Global, ScmInfo, Setting, Test, Tests, settingKey, toRepositoryName, url}
+import sbt.{AutoPlugin, Setting, SettingKey, Test, Tests, settingKey, url}
 import sbtunidoc.GenJavadocPlugin.autoImport.unidocGenjavadocVersion
 
-class Commons extends AutoPlugin {
+object Common extends AutoPlugin {
+
+  // enable these values to be accessible to get and set in sbt console
+  object autoImport {
+    val enableFatalWarningss: SettingKey[Boolean] = settingKey[Boolean]("enable fatal warnings")
+  }
+
   override def trigger = allRequirements
 
   override def requires = JvmPlugin
@@ -18,12 +26,9 @@ class Commons extends AutoPlugin {
     scmInfo := Some(
       ScmInfo(url(EswKeys.homepageValue), "git@github.com:tmtsoftware/esw.git")
     ),
-    licenses := Seq(("Apache-2.0", url("http://www.apache.org/licenses/LICENSE-2.0")))
-  )
-
-  override lazy val projectSettings: Seq[Setting[_]] = Seq(
     resolvers += "jitpack" at "https://jitpack.io",
     resolvers += "bintray" at "http://jcenter.bintray.com",
+    enableFatalWarnings := false,
     scalacOptions ++= Seq(
       "-encoding",
       "UTF-8",
@@ -35,8 +40,12 @@ class Commons extends AutoPlugin {
       "-Yno-adapted-args",
       "-Ywarn-dead-code",
       "-Xfuture"
-//      "-Xprint:typer"
+      //      "-Xprint:typer"
     ),
+    licenses := Seq(("Apache-2.0", url("http://www.apache.org/licenses/LICENSE-2.0")))
+  )
+
+  override lazy val projectSettings: Seq[Setting[_]] = Seq(
     testOptions in Test ++= Seq(
       // show full stack traces and test case durations
       Tests.Argument("-oDF")
@@ -50,7 +59,6 @@ class Commons extends AutoPlugin {
     },
     isSnapshot := !sys.props.get("prod.publish").contains("true"),
     fork := true,
-    enableFatalWarnings := false,
     autoCompilerPlugins := true,
     cancelable in Global := true, // allow ongoing test(or any task) to cancel with ctrl + c and still remain inside sbt
     scalafmtOnCompile := true,

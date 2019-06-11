@@ -1,4 +1,4 @@
-import sbt.Keys._
+import sbt.Keys.{version, _}
 import sbt._
 
 object UnidocSite extends AutoPlugin {
