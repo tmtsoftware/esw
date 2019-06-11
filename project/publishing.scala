@@ -47,7 +47,7 @@ object DeployApp extends AutoPlugin {
   import com.typesafe.sbt.packager.universal.UniversalPlugin
   import UniversalPlugin.autoImport.{Universal, UniversalDocs}
 
-  override def requires: Plugins = UniversalPlugin && JavaAppPackaging && PublishBintray && CswBuildInfo
+  override def requires: Plugins = UniversalPlugin && JavaAppPackaging && PublishBintray && EswBuildInfo
 
   override def projectSettings: Seq[Setting[_]] =
     SettingsHelper.makeDeploymentSettings(Universal, packageBin in Universal, "zip") ++
@@ -56,7 +56,7 @@ object DeployApp extends AutoPlugin {
     )
 }
 
-object CswBuildInfo extends AutoPlugin {
+object EswBuildInfo extends AutoPlugin {
   import sbtbuildinfo.BuildInfoPlugin
   import BuildInfoPlugin.autoImport._
 
@@ -64,7 +64,8 @@ object CswBuildInfo extends AutoPlugin {
 
   override def projectSettings: Seq[Setting[_]] = Seq(
     buildInfoKeys := Seq[BuildInfoKey](name, version),
-    // fixme : should this be services or something else
-    buildInfoPackage := "esw  "
+    // module name(e.g. module-name) gets converted into package name(e.g. module.name) for buildInfo, so it does not have
+    // same package across all modules in the repo
+    buildInfoPackage := name.value.replace('-', '.')
   )
 }
