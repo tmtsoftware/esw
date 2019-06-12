@@ -10,15 +10,14 @@ object Common extends AutoPlugin {
 
   // enable these values to be accessible to get and set in sbt console
   object autoImport {
-    val enableFatalWarningss: SettingKey[Boolean] = settingKey[Boolean]("enable fatal warnings")
+    val enableFatalWarnings: SettingKey[Boolean] = settingKey[Boolean]("enable fatal warnings")
   }
 
   override def trigger = allRequirements
 
   override def requires = JvmPlugin
 
-  val enableFatalWarnings = settingKey[Boolean]("enable fatal warnings")
-
+  import autoImport._
   override def globalSettings: Seq[Setting[_]] = Seq(
     organization := "com.github.tmtsoftware.esw",
     organizationName := "TMT Org",

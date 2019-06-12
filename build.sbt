@@ -2,7 +2,7 @@ val aggregateProjects = Seq.empty
 
 lazy val esw = (project in file("."))
   .aggregate(aggregateProjects: _*)
-  .enablePlugins(NoPublish, UnidocSite, GithubPublishDocs, GitBranchPrompt, GithubRelease, CoursierPlugin)
+  .enablePlugins(NoPublish, UnidocSite, GithubPublishDocs, GitBranchPrompt, GithubRelease)
   .disablePlugins(BintrayPlugin)
 //  .settings(Settings.mergeSiteWith(docs))
 //  .settings(Settings.addAliases)
