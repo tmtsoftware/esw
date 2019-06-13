@@ -12,7 +12,7 @@ lazy val esw = (project in file("."))
   .settings(Settings.mergeSiteWith(docs))
   .settings(Settings.addAliases)
   .settings(Settings.docExclusions(unidocExclusions))
-  .settings(GithubRelease.githubReleases(githubReleases))
+//  .settings(GithubRelease.githubReleases(githubReleases))
 
 /* ================= Paradox Docs ============== */
 lazy val docs = project.enablePlugins(NoPublish, ParadoxSite)
