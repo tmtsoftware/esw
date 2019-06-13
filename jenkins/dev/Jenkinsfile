@@ -32,7 +32,7 @@ pipeline {
                 always {
                     sh "sbt -DenableCoverage=true coverageReport"
                     sh "sbt coverageAggregate"
-                    junit '**/target/test-reports/*.xml'
+                    junit testResults: '**/target/test-reports/*.xml', allowEmptyResults: true
                     publishHTML(target: [
                             allowMissing         : true,
                             alwaysLinkToLastBuild: false,
