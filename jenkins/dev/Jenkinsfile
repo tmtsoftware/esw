@@ -3,6 +3,11 @@ pipeline {
         label 'master'
     }
 
+    options {
+        timeout(time: 2, unit: 'HOURS')
+        timestamps()
+    }
+
     stages {
 
         stage('Checkout') {
@@ -54,6 +59,7 @@ pipeline {
 def sendNotification(String buildStatus = 'STARTED') {
     buildStatus = buildStatus ?: 'SUCCESS'
 
+    def colorCode = '#FF0000'
     def subject = "${buildStatus}: Job '${env.JOB_NAME}' [${env.BUILD_NUMBER}]'"
     def summary = "${subject} (${env.BUILD_URL})"
     def details = '${JELLY_SCRIPT, template="html"}'
@@ -69,7 +75,7 @@ def sendNotification(String buildStatus = 'STARTED') {
         color = 'RED'
         colorCode = '#FF0000'
         emailext(
-                subjec: subject,
+                subject: subject,
                 body: details,
                 to: "tmt-csw@thoughtworks.com"
         )
