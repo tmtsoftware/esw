@@ -76,7 +76,7 @@ object GithubRelease extends AutoPlugin {
   private def stageAndZipTask(projects: Seq[ProjectReference]): Def.Initialize[Task[File]] = Def.task {
     val ghrleaseDir = target.value / "ghrelease"
     val log         = sLog.value
-    val zipFileName = s"csw-apps-${version.value}"
+    val zipFileName = s"esw-apps-${version.value}"
 
     lazy val appsZip = new File(ghrleaseDir, s"$zipFileName.zip")
 
