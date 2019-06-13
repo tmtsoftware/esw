@@ -1,7 +1,4 @@
 pipeline {
-    agent {
-        label 'master'
-    }
 
     options {
         timeout(time: 2, unit: 'HOURS')
