@@ -22,7 +22,7 @@ object ParadoxSite extends AutoPlugin {
   import ParadoxMaterialThemePlugin.autoImport._
   import com.lightbend.paradox.sbt.ParadoxPlugin.autoImport._
 
-  val projectNameAndVersion: String = s"${EswKeys.projectName}/${EswKeys.projectVersion}"
+  val projectNameAndVersion: String = s"${EswKeys.projectName}/${version.value}"
 
   override def requires: Plugins = ParadoxSitePlugin && ParadoxMaterialThemePlugin
 
