@@ -22,8 +22,6 @@ object ParadoxSite extends AutoPlugin {
   import ParadoxMaterialThemePlugin.autoImport._
   import com.lightbend.paradox.sbt.ParadoxPlugin.autoImport._
 
-  val projectNameAndVersion: String = s"${EswKeys.projectName}/${version.value}"
-
   override def requires: Plugins = ParadoxSitePlugin && ParadoxMaterialThemePlugin
 
   override def projectSettings: Seq[Setting[_]] = {
@@ -38,7 +36,7 @@ object ParadoxSite extends AutoPlugin {
       paradoxProperties in Paradox ++= Map(
         "version"             → version.value,
         "scala.binaryVersion" → scalaBinaryVersion.value,
-        "scaladoc.base_url"   → s"https://tmtsoftware.github.io/$projectNameAndVersion/api/scala",
+        "scaladoc.base_url"   → s"https://tmtsoftware.github.io/${EswKeys.projectName}/${version.value}/api/scala",
         "github.base_url"     → githubBaseUrl(version.value)
       )
     )
