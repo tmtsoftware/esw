@@ -1,4 +1,4 @@
-lazy val aggregateProjects: Seq[ProjectReference] = Seq(`ocs-framework`)
+lazy val aggregateProjects: Seq[ProjectReference] = Seq(`ocs-framework`, `gateway`)
 lazy val githubReleases: Seq[ProjectReference]    = Seq.empty
 lazy val unidocExclusions: Seq[ProjectReference]  = Seq.empty
 
@@ -31,6 +31,25 @@ lazy val `ocs-framework-tests` = project
     Test / sourceDirectory := baseDirectory.value / "src" / "main"
   )
   .dependsOn(`ocs-framework`)
+
+lazy val `gateway` = project
+  .in(file("gateway"))
+  .aggregate(`gateway-server`, `gateway-server-tests`)
+
+
+lazy val `gateway-server` = project
+  .in(file("gateway/gateway-server"))
+  .settings(
+    libraryDependencies ++= Dependencies.`gateway-server`.value
+  )
+
+lazy val `gateway-server-tests` = project
+  .in(file("gateway/gateway-server-tests"))
+  .settings(
+    libraryDependencies ++= Dependencies.`gateway-server-tests`.value,
+    Test / sourceDirectory := baseDirectory.value / "src" / "main"
+  )
+  .dependsOn(`gateway-server`)
 
 /* ================= Paradox Docs ============== */
 lazy val docs = project.enablePlugins(NoPublish, ParadoxSite)

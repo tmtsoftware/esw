@@ -8,4 +8,18 @@ object Dependencies {
   val `ocs-framework-tests`: Def.Initialize[Seq[ModuleID]] = Def.setting(
     Seq(Libs.scalatest)
   )
+
+  val `gateway-server`: Def.Initialize[Seq[ModuleID]] = Def.setting(
+    Seq(
+      Csw.`csw-command-client`,
+      AkkaHttp.`akka-http`,
+      Akka.`akka-actor`,
+      Akka.`akka-stream`,
+      Libs.`scopt`
+    )
+  )
+
+  val `gateway-server-tests`: Def.Initialize[Seq[ModuleID]] = Def.setting(
+    Seq(Libs.scalatest)
+  )
 }
