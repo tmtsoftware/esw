@@ -15,7 +15,7 @@ object FutureUtils {
    * after minDelay or function Completion; whichever takes longer time
    *
    */
-  private[framework] def delay[T](minDelay: FiniteDuration)(f: => Future[T])(implicit strandEc: StrandEc): Future[T] = {
+  private[framework] def delayedResult[T](minDelay: FiniteDuration)(f: => Future[T])(implicit strandEc: StrandEc): Future[T] = {
     async {
       val delayFuture = delay(minDelay, strandEc.executorService)
       val futureValue = f

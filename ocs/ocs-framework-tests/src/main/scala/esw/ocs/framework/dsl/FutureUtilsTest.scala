@@ -1,5 +1,6 @@
 package esw.ocs.framework.dsl
 
+import esw.ocs.framework.BaseTestSuite
 import esw.ocs.framework.executors.StrandEc
 import org.scalatest.concurrent.{Eventually, ScalaFutures}
 import org.scalatest.{BeforeAndAfterEach, Matchers, WordSpec}
@@ -7,18 +8,18 @@ import org.scalatest.{BeforeAndAfterEach, Matchers, WordSpec}
 import scala.concurrent.Future
 import scala.concurrent.duration.DurationInt
 
-class FutureUtilsTest extends WordSpec with Matchers with Eventually with ScalaFutures with BeforeAndAfterEach {
+class FutureUtilsTest extends BaseTestSuite {
   implicit var strandEc: StrandEc = _
 
   override protected def beforeEach(): Unit = strandEc = StrandEc()
   override protected def afterEach(): Unit  = strandEc.shutdown()
 
-  "delay" when {
+  "delayedResult" when {
     "min delay > function completion duration" should {
       "future should complete after minDelay" in {
         var counter = 0
 
-        val task: Future[Boolean] = FutureUtils.delay(500.millis) {
+        val task: Future[Boolean] = FutureUtils.delayedResult(500.millis) {
           counter += 1
           Future.successful(true)
         }
@@ -36,7 +37,7 @@ class FutureUtilsTest extends WordSpec with Matchers with Eventually with ScalaF
     }
     "min delay < function completion duration" should {
       "future should complete after function completion" in {
-        val task: Future[Boolean] = FutureUtils.delay(1.millis) {
+        val task: Future[Boolean] = FutureUtils.delayedResult(1.millis) {
           Thread.sleep(500)
           Future.successful(true)
         }

@@ -1,11 +1,15 @@
 package esw.ocs.framework.executors
 
-import org.scalatest.{FunSuite, Matchers}
+import esw.ocs.framework.BaseTestSuite
 
-class StrandEcTest extends FunSuite with Matchers {
-  test("shutdown should stop executorService") {
-    val strandEc = StrandEc()
-    strandEc.shutdown()
-    strandEc.executorService.isShutdown shouldBe true
+class StrandEcTest extends BaseTestSuite {
+
+  "shutdown" should {
+    "stop executor service" in {
+      val strandEc = StrandEc()
+      strandEc.shutdown()
+      strandEc.executorService.isShutdown shouldBe true
+    }
   }
+
 }
