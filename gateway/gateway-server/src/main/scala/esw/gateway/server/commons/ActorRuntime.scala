@@ -1,7 +1,5 @@
 package esw.gateway.server.commons
 
-import java.util.concurrent.CompletableFuture
-
 import akka.actor.CoordinatedShutdown
 import akka.actor.CoordinatedShutdown.Reason
 import akka.actor.typed.scaladsl.adapter.TypedActorSystemOps
@@ -10,7 +8,6 @@ import akka.stream.Materializer
 import akka.stream.typed.scaladsl.ActorMaterializer
 import akka.{Done, actor}
 
-import scala.compat.java8.FutureConverters.FutureOps
 import scala.concurrent.{ExecutionContextExecutor, Future}
 
 /**
@@ -25,6 +22,4 @@ private[gateway] class ActorRuntime(_typedSystem: ActorSystem[SpawnProtocol]) {
   val coordinatedShutdown: CoordinatedShutdown = CoordinatedShutdown(untypedSystem)
 
   def shutdown(reason: Reason): Future[Done] = coordinatedShutdown.run(reason)
-
-  def jShutdown(reason: Reason): CompletableFuture[Done] = shutdown(reason).toJava.toCompletableFuture
 }
