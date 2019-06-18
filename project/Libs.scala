@@ -12,10 +12,11 @@ object Csw {
   private val Org     = "com.github.tmtsoftware.csw"
   private val Version = "4785a8c" //change this to 0.1-SNAPSHOT to test with local csw changes (after publishLocal)
 
-  val `csw-params`         = dep(Org %%% "csw-params" % Version)
-  val `csw-command-client` = Org %% "csw-command-client" % Version
-  val `csw-network-utils`  = Org %% "csw-network-utils"  % Version
-  val `csw-location-client`  = Org %% "csw-location-client"  % Version
+  val `csw-params`          = dep(Org %%% "csw-params" % Version)
+  val `csw-command-client`  = Org %% "csw-command-client" % Version
+  val `csw-network-utils`   = Org %% "csw-network-utils" % Version
+  val `csw-location-client` = Org %% "csw-location-client" % Version
+  val `csw-testkit`         = Org %% "csw-testkit" % Version
 }
 
 object Akka {

@@ -26,7 +26,8 @@ object Dependencies {
     Seq(
       Libs.scalatest, 
       AkkaHttp.`akka-http-testkit`,
-      Akka.`akka-stream-testkit`
+      Akka.`akka-stream-testkit`,
+      Csw.`csw-testkit`
     )
   )
 }
