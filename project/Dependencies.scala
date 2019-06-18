@@ -11,7 +11,6 @@ object Dependencies {
 
   val `gateway-server`: Def.Initialize[Seq[ModuleID]] = Def.setting(
     Seq(
-      Csw.`csw-command-client`,
       Csw.`csw-network-utils`,
       Csw.`csw-location-client`,
       AkkaHttp.`akka-http`,
