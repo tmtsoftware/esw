@@ -13,7 +13,7 @@ class RoutesTest extends FunSuite with Matchers with ScalatestRouteTest {
   test("get - success status code") {
 
     Get("/hello") ~> route ~> check {
-          status shouldBe StatusCodes.OK
+      status shouldBe StatusCodes.OK
     }
   }
 }
