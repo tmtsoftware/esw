@@ -16,14 +16,14 @@ object Akka {
   private val Version = "2.5.23" //all akka is Apache License 2.0
 
   val `akka-actor`          = "com.typesafe.akka" %% "akka-actor"          % Version
-  val `akka-testkit`        = "com.typesafe.akka" %% "akka-testkit"        % Version % Test
+  val `akka-testkit`        = "com.typesafe.akka" %% "akka-testkit"        % Version
   val `akka-stream`         = "com.typesafe.akka" %% "akka-stream"         % Version
-  val `akka-stream-testkit` = "com.typesafe.akka" %% "akka-stream-testkit" % Version % Test
+  val `akka-stream-testkit` = "com.typesafe.akka" %% "akka-stream-testkit" % Version 
 }
 
 object AkkaHttp {
   private val Version = "10.1.8" //all akka is Apache License 2.0
 
   val `akka-http`         = "com.typesafe.akka" %% "akka-http"         % Version
-  val `akka-http-testkit` = "com.typesafe.akka" %% "akka-http-testkit" % Version % Test
+  val `akka-http-testkit` = "com.typesafe.akka" %% "akka-http-testkit" % Version
 }

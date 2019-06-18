@@ -20,6 +20,10 @@ object Dependencies {
   )
 
   val `gateway-server-tests`: Def.Initialize[Seq[ModuleID]] = Def.setting(
-    Seq(Libs.scalatest)
+    Seq(
+      Libs.scalatest, 
+      AkkaHttp.`akka-http-testkit`,
+      Akka.`akka-stream-testkit`
+    )
   )
 }
