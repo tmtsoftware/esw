@@ -18,12 +18,12 @@ class ArgsParserTest extends FunSuite with Matchers {
       }
     }
 
-  test("parse without arguments") {
+  test("ESW-86 | parse without arguments") {
     val args = Array("")
     silentParse(args) shouldBe None
   }
 
-  test("parse when only port argument provided") {
+  test("ESW-86 | parse when only port argument provided") {
     val args = Array("--port", "8080")
     silentParse(args) shouldBe Some(Options(Some(8080)))
   }

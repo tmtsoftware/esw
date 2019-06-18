@@ -10,7 +10,7 @@ class RoutesTest extends FunSuite with Matchers with ScalatestRouteTest {
 
   import wiring.routes.route
 
-  test("get - success status code") {
+  test("ESW-86 | get - success status code") {
 
     Get("/hello") ~> route ~> check {
       status shouldBe StatusCodes.OK

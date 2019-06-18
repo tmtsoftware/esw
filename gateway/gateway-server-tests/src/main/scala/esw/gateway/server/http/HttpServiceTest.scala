@@ -34,7 +34,7 @@ class HttpServiceTest extends FunSuite with Matchers with BeforeAndAfterAll {
     testKit.shutdownLocationServer()
   }
 
-  test("should start the http server and register with location service") {
+  test("ESW-86 | should start the http server and register with location service") {
     val _servicePort = 4005
     val wiring       = new Wiring(Some(_servicePort))
     import wiring._
@@ -48,7 +48,7 @@ class HttpServiceTest extends FunSuite with Matchers with BeforeAndAfterAll {
     Await.result(actorRuntime.shutdown(UnknownReason), 5.seconds)
   }
 
-  test("should not register with location service if server binding fails") {
+  test("ESW-86 | should not register with location service if server binding fails") {
     val _servicePort = 4452 // Location Service runs on this port
     val wiring       = new Wiring(Some(_servicePort))
 
@@ -58,7 +58,7 @@ class HttpServiceTest extends FunSuite with Matchers with BeforeAndAfterAll {
     Await.result(testLocationService.find(GatewayConnection.value), 5.seconds) shouldBe None
   }
 
-  test("should not start server if registration with location service fails") {
+  test("ESW-86 | should not start server if registration with location service fails") {
     val _servicePort = 4007
     val wiring       = new Wiring(Some(_servicePort))
     import wiring._
