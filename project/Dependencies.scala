@@ -2,7 +2,7 @@ import sbt.{Def, _}
 
 object Dependencies {
   val `ocs-framework`: Def.Initialize[Seq[ModuleID]] = Def.setting(
-    Seq.empty
+    Seq(Csw.`csw-params`.value, Akka.`akka-typed`, Libs.`scala-async`.value)
   )
 
   val `ocs-framework-tests`: Def.Initialize[Seq[ModuleID]] = Def.setting(
