@@ -1,9 +1,8 @@
 package esw.ocs.framework.dsl
 
 import esw.ocs.framework.BaseTestSuite
+import esw.ocs.framework.dsl.internal.FutureUtils
 import esw.ocs.framework.executors.StrandEc
-import org.scalatest.concurrent.{Eventually, ScalaFutures}
-import org.scalatest.{BeforeAndAfterEach, Matchers, WordSpec}
 
 import scala.concurrent.Future
 import scala.concurrent.duration.DurationInt

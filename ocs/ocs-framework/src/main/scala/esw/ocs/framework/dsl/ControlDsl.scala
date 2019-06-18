@@ -1,6 +1,7 @@
 package esw.ocs.framework.dsl
 
 import akka.Done
+import esw.ocs.framework.dsl.internal.FutureUtils
 import esw.ocs.framework.executors.StrandEc
 
 import scala.async.Async.{async, await}

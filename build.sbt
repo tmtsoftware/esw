@@ -1,4 +1,4 @@
-lazy val aggregateProjects: Seq[ProjectReference] = Seq(`ocs-framework`, `gateway`)
+lazy val aggregateProjects: Seq[ProjectReference] = Seq(`ocs-framework`, `gateway`, `ocs-framework-tests`)
 lazy val githubReleases: Seq[ProjectReference]    = Seq.empty
 lazy val unidocExclusions: Seq[ProjectReference]  = Seq.empty
 
@@ -35,7 +35,6 @@ lazy val `ocs-framework-tests` = project
 lazy val `gateway` = project
   .in(file("gateway"))
   .aggregate(`gateway-server`, `gateway-server-tests`)
-
 
 lazy val `gateway-server` = project
   .in(file("gateway/gateway-server"))

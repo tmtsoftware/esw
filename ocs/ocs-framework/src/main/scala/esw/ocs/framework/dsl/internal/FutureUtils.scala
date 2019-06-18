@@ -1,10 +1,10 @@
-package esw.ocs.framework.dsl
+package esw.ocs.framework.dsl.internal
 
 import java.util.concurrent.ScheduledExecutorService
 
 import esw.ocs.framework.executors.StrandEc
 
-import scala.async.Async._
+import scala.async.Async.{async, await}
 import scala.concurrent.duration.FiniteDuration
 import scala.concurrent.{Future, Promise}
 
