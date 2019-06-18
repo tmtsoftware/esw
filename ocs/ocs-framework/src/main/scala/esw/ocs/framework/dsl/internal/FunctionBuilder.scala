@@ -15,5 +15,3 @@ private[framework] class FunctionBuilder[I, O] {
 
   def build(default: I => O): I => O = input => combinedHandler.lift(input).getOrElse(default(input))
 }
-
-
