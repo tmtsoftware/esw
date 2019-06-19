@@ -3,7 +3,7 @@ package esw.ocs.framework.dsl
 import esw.ocs.framework.BaseTestSuite
 import esw.ocs.framework.dsl.internal.FunctionBuilder
 
-import scala.util.{Failure, Success}
+import scala.util.Success
 
 class FunctionBuilderTest extends BaseTestSuite {
 
@@ -35,7 +35,8 @@ class FunctionBuilderTest extends BaseTestSuite {
         }
         "there is an exception" should {
           "execute matched handler and return Failure" in {
-            builtFunction(Command("reciprocal", 0)) shouldBe a[Failure[ArithmeticException]]
+            val result = builtFunction(Command("reciprocal", 0))
+            an[ArithmeticException] shouldBe thrownBy(result.get)
           }
         }
       }
@@ -48,7 +49,8 @@ class FunctionBuilderTest extends BaseTestSuite {
         }
         "there is an exception" should {
           "execute default handler and return Failure" in {
-            builtFunction(Command("die", 10)) shouldBe a[Failure[RuntimeException]]
+            val result = builtFunction(Command("die", 10))
+            an[RuntimeException] shouldBe thrownBy(result.get)
           }
         }
       }
