@@ -50,5 +50,23 @@ lazy val `gateway-server-tests` = project
   )
   .dependsOn(`gateway-server`)
 
+lazy val `template` = project
+  .in(file("template"))
+  .aggregate(`http-server`, `http-server-tests`)
+
+lazy val `http-server` = project
+  .in(file("template/http-server"))
+  .settings(
+    libraryDependencies ++= Dependencies.`http-server`.value
+  )
+
+lazy val `http-server-tests` = project
+  .in(file("template/http-server-tests"))
+  .settings(
+    libraryDependencies ++= Dependencies.`http-server-tests`.value,
+    Test / sourceDirectory := baseDirectory.value / "src" / "main"
+  )
+  .dependsOn(`http-server`)
+
 /* ================= Paradox Docs ============== */
 lazy val docs = project.enablePlugins(NoPublish, ParadoxSite)
