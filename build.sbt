@@ -1,6 +1,16 @@
-lazy val aggregateProjects: Seq[ProjectReference] = Seq(`ocs-framework`, `gateway`, `ocs-framework-tests`)
-lazy val githubReleases: Seq[ProjectReference]    = Seq.empty
-lazy val unidocExclusions: Seq[ProjectReference]  = Seq.empty
+import sbt.Test
+
+lazy val aggregateProjects: Seq[ProjectReference] =
+  Seq(
+    `ocs-framework`,
+    `async-macros`,
+    `gateway`,
+    `ocs-framework-tests`,
+    `async-macros-tests`
+  )
+
+lazy val githubReleases: Seq[ProjectReference]   = Seq.empty
+lazy val unidocExclusions: Seq[ProjectReference] = Seq.empty
 
 val enableCoverage         = sys.props.get("enableCoverage").contains("true")
 val MaybeCoverage: Plugins = if (enableCoverage) Coverage else Plugins.empty
@@ -16,12 +26,24 @@ lazy val esw = (project in file("."))
 
 lazy val `ocs` = project
   .in(file("ocs"))
-  .aggregate(`ocs-framework`, `ocs-framework`)
+  .aggregate(
+    `ocs-framework`,
+    `async-macros`,
+    `ocs-framework-tests`,
+    `async-macros-tests`
+  )
 
 lazy val `ocs-framework` = project
   .in(file("ocs/ocs-framework"))
   .settings(
     libraryDependencies ++= Dependencies.`ocs-framework`.value
+  )
+  .dependsOn(`async-macros`)
+
+lazy val `async-macros` = project
+  .in(file("ocs/async-macros"))
+  .settings(
+    libraryDependencies ++= Dependencies.`async-macros`.value
   )
 
 lazy val `ocs-framework-tests` = project
@@ -31,6 +53,14 @@ lazy val `ocs-framework-tests` = project
     Test / sourceDirectory := baseDirectory.value / "src" / "main"
   )
   .dependsOn(`ocs-framework`)
+
+lazy val `async-macros-tests` = project
+  .in(file("ocs/async-macros-tests"))
+  .settings(
+    libraryDependencies ++= Dependencies.`async-macros-tests`.value,
+    Test / sourceDirectory := baseDirectory.value / "src" / "main"
+  )
+  .dependsOn(`async-macros`)
 
 lazy val `template` = project
   .in(file("template"))

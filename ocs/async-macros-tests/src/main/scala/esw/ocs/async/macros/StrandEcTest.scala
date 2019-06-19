@@ -1,9 +1,8 @@
-package esw.ocs.framework.executors
+package esw.ocs.async.macros
 
-import esw.ocs.framework.BaseTestSuite
+import org.scalatest.{Matchers, WordSpec}
 
-class StrandEcTest extends BaseTestSuite {
-
+class StrandEcTest extends WordSpec with Matchers {
   "shutdown" should {
     "stop executor service" in {
       val strandEc = StrandEc()
@@ -11,5 +10,4 @@ class StrandEcTest extends BaseTestSuite {
       strandEc.executorService.isShutdown shouldBe true
     }
   }
-
 }

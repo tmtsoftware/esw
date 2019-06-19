@@ -2,7 +2,7 @@ package esw.ocs.framework.dsl.internal
 
 import java.util.concurrent.ScheduledExecutorService
 
-import esw.ocs.framework.executors.StrandEc
+import esw.ocs.async.macros.StrandEc
 
 import scala.async.Async.{async, await}
 import scala.concurrent.duration.FiniteDuration

@@ -5,7 +5,15 @@ object Dependencies {
     Seq(Csw.`csw-params`.value, Akka.`akka-typed`, Libs.`scala-async`)
   )
 
+  val `async-macros`: Def.Initialize[Seq[ModuleID]] = Def.setting(
+    Seq(Libs.`scala-reflect`)
+  )
+
   val `ocs-framework-tests`: Def.Initialize[Seq[ModuleID]] = Def.setting(
+    Seq(Libs.scalatest)
+  )
+
+  val `async-macros-tests`: Def.Initialize[Seq[ModuleID]] = Def.setting(
     Seq(Libs.scalatest)
   )
 
