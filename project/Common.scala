@@ -1,9 +1,8 @@
 import org.scalafmt.sbt.ScalafmtPlugin.autoImport.scalafmtOnCompile
 import sbt.Keys._
-import sbt._
 import sbt.librarymanagement.ScmInfo
 import sbt.plugins.JvmPlugin
-import sbt.{AutoPlugin, Setting, SettingKey, Test, Tests, settingKey, url}
+import sbt.{AutoPlugin, Setting, SettingKey, Test, Tests, settingKey, url, _}
 import sbtunidoc.GenJavadocPlugin.autoImport.unidocGenjavadocVersion
 
 object Common extends AutoPlugin {
@@ -57,7 +56,6 @@ object Common extends AutoPlugin {
       }
     },
     isSnapshot := !sys.props.get("prod.publish").contains("true"),
-    fork := true,
     autoCompilerPlugins := true,
     cancelable in Global := true, // allow ongoing test(or any task) to cancel with ctrl + c and still remain inside sbt
     scalafmtOnCompile := true,
