@@ -1,4 +1,4 @@
-package esw.gateway.server.http
+package esw.template.http.server.http
 
 import java.net.BindException
 
@@ -12,8 +12,8 @@ import csw.location.api.models.Connection.HttpConnection
 import csw.location.api.models.{HttpRegistration, RegistrationResult}
 import csw.location.api.scaladsl.LocationService
 import csw.network.utils.{Networks, SocketUtils}
-import esw.gateway.server.commons.ActorRuntime
-import esw.gateway.server.commons.CoordinatedShutdownReasons.FailureReason
+import esw.template.http.server.commons.ActorRuntime
+import esw.template.http.server.commons.CoordinatedShutdownReasons.FailureReason
 
 import scala.async.Async._
 import scala.concurrent.Future

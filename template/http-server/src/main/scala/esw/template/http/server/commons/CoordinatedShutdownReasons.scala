@@ -1,4 +1,4 @@
-package esw.gateway.server.commons
+package esw.template.http.server.commons
 
 import akka.actor.CoordinatedShutdown
 

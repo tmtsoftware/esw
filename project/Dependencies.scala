@@ -11,22 +11,17 @@ object Dependencies {
 
   val `gateway-server`: Def.Initialize[Seq[ModuleID]] = Def.setting(
     Seq(
-      Csw.`csw-network-utils`,
-      Csw.`csw-location-client`,
       AkkaHttp.`akka-http`,
       Akka.`akka-actor`,
-      Akka.`akka-stream`,
-      Libs.`scopt`,
-      Libs.`scala-async`
+      Akka.`akka-stream`
     )
   )
 
   val `gateway-server-tests`: Def.Initialize[Seq[ModuleID]] = Def.setting(
     Seq(
-      Libs.scalatest, 
       AkkaHttp.`akka-http-testkit`,
       Akka.`akka-stream-testkit`,
-      Csw.`csw-testkit`
+      Libs.scalatest
     )
   )
 
@@ -34,9 +29,7 @@ object Dependencies {
     Seq(
       Csw.`csw-network-utils`,
       Csw.`csw-location-client`,
-      AkkaHttp.`akka-http`,
       Akka.`akka-actor`,
-      Akka.`akka-stream`,
       Libs.`scopt`,
       Libs.`scala-async`
     )
@@ -45,8 +38,6 @@ object Dependencies {
   val `http-server-tests`: Def.Initialize[Seq[ModuleID]] = Def.setting(
     Seq(
       Libs.scalatest,
-      AkkaHttp.`akka-http-testkit`,
-      Akka.`akka-stream-testkit`,
       Csw.`csw-testkit`
     )
   )

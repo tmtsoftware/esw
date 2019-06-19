@@ -32,24 +32,6 @@ lazy val `ocs-framework-tests` = project
   )
   .dependsOn(`ocs-framework`)
 
-lazy val `gateway` = project
-  .in(file("gateway"))
-  .aggregate(`gateway-server`, `gateway-server-tests`)
-
-lazy val `gateway-server` = project
-  .in(file("gateway/gateway-server"))
-  .settings(
-    libraryDependencies ++= Dependencies.`gateway-server`.value
-  )
-
-lazy val `gateway-server-tests` = project
-  .in(file("gateway/gateway-server-tests"))
-  .settings(
-    libraryDependencies ++= Dependencies.`gateway-server-tests`.value,
-    Test / sourceDirectory := baseDirectory.value / "src" / "main"
-  )
-  .dependsOn(`gateway-server`)
-
 lazy val `template` = project
   .in(file("template"))
   .aggregate(`http-server`, `http-server-tests`)
@@ -67,6 +49,25 @@ lazy val `http-server-tests` = project
     Test / sourceDirectory := baseDirectory.value / "src" / "main"
   )
   .dependsOn(`http-server`)
+
+lazy val `gateway` = project
+  .in(file("gateway"))
+  .aggregate(`gateway-server`, `gateway-server-tests`)
+
+lazy val `gateway-server` = project
+  .in(file("gateway/gateway-server"))
+  .settings(
+    libraryDependencies ++= Dependencies.`gateway-server`.value
+  )
+  .dependsOn(`http-server`)
+
+lazy val `gateway-server-tests` = project
+  .in(file("gateway/gateway-server-tests"))
+  .settings(
+    libraryDependencies ++= Dependencies.`gateway-server-tests`.value,
+    Test / sourceDirectory := baseDirectory.value / "src" / "main"
+  )
+  .dependsOn(`gateway-server`)
 
 /* ================= Paradox Docs ============== */
 lazy val docs = project.enablePlugins(NoPublish, ParadoxSite)

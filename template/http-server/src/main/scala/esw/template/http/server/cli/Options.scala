@@ -1,3 +1,3 @@
-package esw.gateway.server.cli
+package esw.template.http.server.cli
 
 case class Options(port: Option[Int] = None)

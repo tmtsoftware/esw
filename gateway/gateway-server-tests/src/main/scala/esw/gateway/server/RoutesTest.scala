@@ -6,9 +6,7 @@ import org.scalatest.{FunSuite, Matchers}
 
 class RoutesTest extends FunSuite with Matchers with ScalatestRouteTest {
 
-  private val wiring = new Wiring(None)
-
-  import wiring.routes.route
+  private val route = new Routes().route
 
   test("ESW-86 | get - success status code") {
 

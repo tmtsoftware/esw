@@ -1,4 +1,4 @@
-package esw.gateway.server.cli
+package esw.template.http.server.cli
 
 import scopt.OptionParser
 
