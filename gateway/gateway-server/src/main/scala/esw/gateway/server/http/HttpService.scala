@@ -8,6 +8,7 @@ import akka.actor.CoordinatedShutdown.Reason
 import akka.http.scaladsl.Http
 import akka.http.scaladsl.Http.ServerBinding
 import akka.http.scaladsl.server.Route
+import csw.location.api.models.Connection.HttpConnection
 import csw.location.api.models.{HttpRegistration, RegistrationResult}
 import csw.location.api.scaladsl.LocationService
 import csw.network.utils.{Networks, SocketUtils}
@@ -23,20 +24,20 @@ import scala.util.control.NonFatal
  *
  * @param locationService locationService instance to be used for registering this server with the location service
  * @param route gateway server instance representing the routes supported by this server
- * @param port port of server
+ * @param settings application specific configurations
  * @param actorRuntime actorRuntime instance wrapper for actor system
  */
 class HttpService(
     locationService: LocationService,
     route: Route,
-    port: Int,
+    settings: Settings,
     actorRuntime: ActorRuntime
 ) {
 
   import actorRuntime._
   lazy val registeredLazyBinding: Future[(ServerBinding, RegistrationResult)] = async {
-    val binding            = await(bind())            // create HttpBinding with appropriate hostname and port
-    val registrationResult = await(register(binding)) // create HttpRegistration and register it with location service
+    val binding            = await(bind())                                    // create HttpBinding with appropriate hostname and port
+    val registrationResult = await(register(binding, settings.httpConection)) // create HttpRegistration and register it with location service
 
     // Add the task to unregister the HttpRegistration from location service.
     // This will execute as the first task out of all tasks at the shutdown of ActorSystem.
@@ -59,7 +60,7 @@ class HttpService(
 
   private def bind() = {
     val _host = Networks().hostname
-    val _port = port
+    val _port = settings.port
 
     /*
       Explicitly check _host:_port is free as we register Networks().hostname with location service
@@ -76,9 +77,9 @@ class HttpService(
     )
   }
 
-  private def register(binding: ServerBinding): Future[RegistrationResult] = {
+  private def register(binding: ServerBinding, connection: HttpConnection): Future[RegistrationResult] = {
     val registration = HttpRegistration(
-      connection = GatewayConnection.value,
+      connection = connection,
       port = binding.localAddress.getPort,
       path = ""
     )

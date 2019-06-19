@@ -7,7 +7,7 @@ import scala.concurrent.duration.DurationInt
 
 object Main {
   def main(args: Array[String]): Unit = {
-    new ArgsParser("esw-gateway-server").parse(args).map {
+    new ArgsParser("http-server").parse(args).map {
       case Options(port) =>
         val wiring = new Wiring(port)
         Await.result(wiring.httpService.registeredLazyBinding, 15.seconds)

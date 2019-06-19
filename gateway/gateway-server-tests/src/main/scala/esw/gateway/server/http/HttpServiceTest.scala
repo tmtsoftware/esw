@@ -37,33 +37,37 @@ class HttpServiceTest extends FunSuite with Matchers with BeforeAndAfterAll {
   test("ESW-86 | should start the http server and register with location service") {
     val _servicePort = 4005
     val wiring       = new Wiring(Some(_servicePort))
+    val settings     = new Settings(Some(_servicePort))
     import wiring._
     val (_, registrationResult) = Await.result(httpService.registeredLazyBinding, 5.seconds)
 
-    Await.result(locationService.find(GatewayConnection.value), 5.seconds).get.connection shouldBe GatewayConnection.value
+    Await.result(locationService.find(settings.httpConection), 5.seconds).get.connection shouldBe settings.httpConection
 
     val location = registrationResult.location
     location.uri.getHost shouldBe Networks().hostname
-    location.connection shouldBe GatewayConnection.value
+    location.connection shouldBe settings.httpConection
     Await.result(actorRuntime.shutdown(UnknownReason), 5.seconds)
   }
 
   test("ESW-86 | should not register with location service if server binding fails") {
     val _servicePort = 4452 // Location Service runs on this port
     val wiring       = new Wiring(Some(_servicePort))
+    val settings     = new Settings(Some(_servicePort))
 
     import wiring._
 
     a[BindException] shouldBe thrownBy(Await.result(httpService.registeredLazyBinding, 5.seconds))
-    Await.result(testLocationService.find(GatewayConnection.value), 5.seconds) shouldBe None
+    Await.result(testLocationService.find(settings.httpConection), 5.seconds) shouldBe None
   }
 
   test("ESW-86 | should not start server if registration with location service fails") {
     val _servicePort = 4007
     val wiring       = new Wiring(Some(_servicePort))
+    val settings     = new Settings(Some(_servicePort))
     import wiring._
-    Await.result(locationService.register(HttpRegistration(GatewayConnection.value, 21212, "")), 5.seconds)
-    Await.result(locationService.find(GatewayConnection.value), 5.seconds).get.connection shouldBe GatewayConnection.value
+
+    Await.result(locationService.register(HttpRegistration(settings.httpConection, 21212, "")), 5.seconds)
+    Await.result(locationService.find(settings.httpConection), 5.seconds).get.connection shouldBe settings.httpConection
 
     a[OtherLocationIsRegistered] shouldBe thrownBy(Await.result(httpService.registeredLazyBinding, 5.seconds))
 
