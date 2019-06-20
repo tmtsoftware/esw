@@ -1,6 +1,7 @@
 package esw.template.http.server
 
 import akka.actor.typed.{ActorSystem, SpawnProtocol}
+import csw.command.client.CommandServiceFactory
 import csw.location.api.scaladsl.LocationService
 import csw.location.client.scaladsl.HttpLocationServiceFactory
 import esw.template.http.server.commons.ActorRuntime
@@ -15,6 +16,5 @@ class CswContext(_port: Option[Int]) {
 
   lazy val locationService: LocationService =
     HttpLocationServiceFactory.makeLocalClient(actorSystem, actorRuntime.mat)
-  lazy val locationServiceWrapper = new LocationServiceWrapper(locationService)
-  lazy val componentFactory       = new ComponentFactory(locationServiceWrapper)
+  lazy val componentFactory = new ComponentFactory(locationService, CommandServiceFactory)
 }

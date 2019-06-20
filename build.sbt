@@ -5,6 +5,7 @@ lazy val aggregateProjects: Seq[ProjectReference] =
     `ocs-framework`,
     `async-macros`,
     `gateway`,
+    `template`
   )
 
 lazy val githubReleases: Seq[ProjectReference]   = Seq.empty
