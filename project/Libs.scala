@@ -25,14 +25,13 @@ object Csw {
 }
 
 object Akka {
-  val Version       = "2.5.23"
-  val `akka-typed`  = "com.typesafe.akka" %% "akka-actor-typed" % Version
-  val `akka-actor`  = "com.typesafe.akka" %% "akka-actor" % Version
-  val `akka-stream` = "com.typesafe.akka" %% "akka-stream" % Version
+  val Version             = "2.5.23"
+  val `akka-actor-typed`  = "com.typesafe.akka" %% "akka-actor-typed" % Version
+  val `akka-stream-typed` = "com.typesafe.akka" %% "akka-stream-typed" % Version
 
-  val `akka-testkit`        = "com.typesafe.akka" %% "akka-testkit"        % Version
-  val `akka-actor-testkit-typed`        =  "com.typesafe.akka" %% "akka-actor-testkit-typed" % Version
-  val `akka-stream-testkit` = "com.typesafe.akka" %% "akka-stream-testkit" % Version
+  val `akka-testkit`             = "com.typesafe.akka" %% "akka-testkit"             % Version
+  val `akka-actor-testkit-typed` = "com.typesafe.akka" %% "akka-actor-testkit-typed" % Version
+  val `akka-stream-testkit`      = "com.typesafe.akka" %% "akka-stream-testkit"      % Version
 }
 
 object AkkaHttp {

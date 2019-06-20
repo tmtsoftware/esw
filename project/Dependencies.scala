@@ -2,26 +2,25 @@ import sbt.{Def, _}
 
 object Dependencies {
   val `ocs-framework`: Def.Initialize[Seq[ModuleID]] = Def.setting(
-    Seq(Csw.`csw-params`.value, Akka.`akka-typed`, Libs.`scala-async`)
+    Seq(
+      Csw.`csw-params`.value,
+      Akka.`akka-actor-typed`,
+      Akka.`akka-stream-typed`,
+      Libs.`scala-async`,
+      Libs.scalatest                  % Test,
+      Akka.`akka-actor-testkit-typed` % Test
+    )
   )
 
   val `async-macros`: Def.Initialize[Seq[ModuleID]] = Def.setting(
-    Seq(Libs.`scala-reflect`)
-  )
-
-  val `ocs-framework-tests`: Def.Initialize[Seq[ModuleID]] = Def.setting(
-    Seq(Libs.scalatest)
-  )
-
-  val `async-macros-tests`: Def.Initialize[Seq[ModuleID]] = Def.setting(
-    Seq(Libs.scalatest)
+    Seq(Libs.`scala-reflect`, Libs.scalatest % Test)
   )
 
   val `gateway-server`: Def.Initialize[Seq[ModuleID]] = Def.setting(
     Seq(
       AkkaHttp.`akka-http`,
-      Akka.`akka-actor`,
-      Akka.`akka-stream`
+      Akka.`akka-actor-typed`,
+      Akka.`akka-stream-typed`
     )
   )
 
@@ -37,8 +36,8 @@ object Dependencies {
     Seq(
       Csw.`csw-network-utils`,
       Csw.`csw-location-client`,
+      Akka.`akka-actor-typed`,
       Csw.`csw-command-client`,
-      Akka.`akka-actor`,
       Libs.`scopt`,
       Libs.`scala-async`
     )
