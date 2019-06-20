@@ -8,8 +8,8 @@ object GuardianActor {
   sealed trait GuardianMsg
   final case class Spawn[T](behavior: Behavior[T], name: String, props: Props)(val replyTo: ActorRef[ActorRef[T]])
       extends GuardianMsg
-  final case class ShutdownChildren(replyTo: ActorRef[Done]) extends GuardianMsg
-  private case class ShutdownReply(replyTo: ActorRef[Done])  extends GuardianMsg
+  final case class ShutdownChildren(replyTo: ActorRef[Done])                 extends GuardianMsg
+  final private[framework] case class ShutdownReply(replyTo: ActorRef[Done]) extends GuardianMsg
 
   val behavior: Behavior[GuardianMsg] = Behaviors.setup[GuardianMsg] { ctx =>
     Behaviors.receiveMessage[GuardianMsg] {

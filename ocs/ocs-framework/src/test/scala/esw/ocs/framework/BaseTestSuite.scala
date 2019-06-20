@@ -1,10 +1,10 @@
 package esw.ocs.framework
 
 import org.scalatest.concurrent.{Eventually, ScalaFutures}
-import org.scalatest.{BeforeAndAfterAll, BeforeAndAfterEach, Matchers, WordSpec}
+import org.scalatest.{BeforeAndAfterAll, BeforeAndAfterEach, Matchers, WordSpecLike}
 
 trait BaseTestSuite
-    extends WordSpec
+    extends WordSpecLike
     with Matchers
     with BeforeAndAfterAll
     with BeforeAndAfterEach
