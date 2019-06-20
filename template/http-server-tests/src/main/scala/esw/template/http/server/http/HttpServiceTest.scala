@@ -15,14 +15,13 @@ import csw.location.api.scaladsl.LocationService
 import csw.location.client.scaladsl.HttpLocationServiceFactory
 import csw.network.utils.Networks
 import csw.testkit.LocationTestKit
-import esw.template.http.server.CswContext
-import org.scalatest.{BeforeAndAfterAll, FunSuite, Matchers}
+import esw.template.http.server.{BaseTestSuit, CswContext}
 
 import scala.concurrent.Await
 import scala.concurrent.duration.DurationInt
 import scala.util.control.NonFatal
 
-class HttpServiceTest extends FunSuite with Matchers with BeforeAndAfterAll {
+class HttpServiceTest extends BaseTestSuit {
 
   private val testKit                              = LocationTestKit()
   implicit val system: ActorSystem[_]              = ActorSystem(Behaviors.empty, "test")
@@ -42,6 +41,9 @@ class HttpServiceTest extends FunSuite with Matchers with BeforeAndAfterAll {
 
   override def afterAll(): Unit = {
     testKit.shutdownLocationServer()
+    system.terminate
+    Await.result(system.whenTerminated, 10.seconds)
+    super.afterAll()
   }
 
   test("ESW-86 | should start the http server and register with location service") {

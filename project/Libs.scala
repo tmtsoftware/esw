@@ -1,5 +1,5 @@
 import org.portablescala.sbtplatformdeps.PlatformDepsPlugin.autoImport._
-import sbt.Def.{setting ⇒ dep}
+import sbt.Def.{setting => dep}
 import sbt._
 
 object Libs {
@@ -9,6 +9,8 @@ object Libs {
   val scalatest       = "org.scalatest"          %% "scalatest"    % "3.0.6" //Apache License 2.0
   val `scopt`         = "com.github.scopt"       %% "scopt"        % "4.0.0-RC2" //MIT License
   val `scala-async`   = "org.scala-lang.modules" %% "scala-async"  % "0.10.0" //BSD 3-clause "New" or "Revised" License
+  val `mockito-scala` = "org.mockito" %% "mockito-scala" % "1.5.11" // MIT License
+
 }
 
 object Csw {
@@ -19,6 +21,7 @@ object Csw {
   val `csw-network-utils`   = Org %% "csw-network-utils" % Version
   val `csw-location-client` = Org %% "csw-location-client" % Version
   val `csw-testkit`         = Org %% "csw-testkit" % Version
+  val `csw-command-client`  = Org %% "csw-command-client" % Version
 }
 
 object Akka {
@@ -28,6 +31,7 @@ object Akka {
   val `akka-stream` = "com.typesafe.akka" %% "akka-stream" % Version
 
   val `akka-testkit`        = "com.typesafe.akka" %% "akka-testkit"        % Version
+  val `akka-actor-testkit-typed`        =  "com.typesafe.akka" %% "akka-actor-testkit-typed" % Version
   val `akka-stream-testkit` = "com.typesafe.akka" %% "akka-stream-testkit" % Version
 }
 

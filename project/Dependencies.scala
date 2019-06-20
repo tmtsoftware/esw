@@ -37,6 +37,7 @@ object Dependencies {
     Seq(
       Csw.`csw-network-utils`,
       Csw.`csw-location-client`,
+      Csw.`csw-command-client`,
       Akka.`akka-actor`,
       Libs.`scopt`,
       Libs.`scala-async`
@@ -46,7 +47,9 @@ object Dependencies {
   val `http-server-tests`: Def.Initialize[Seq[ModuleID]] = Def.setting(
     Seq(
       Libs.scalatest,
-      Csw.`csw-testkit`
+      Csw.`csw-testkit`,
+      Libs.`mockito-scala`,
+      Akka.`akka-actor-testkit-typed`
     )
   )
 }

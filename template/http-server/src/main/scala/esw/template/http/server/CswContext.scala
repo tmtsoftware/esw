@@ -11,6 +11,10 @@ class CswContext(_port: Option[Int]) {
   lazy val actorSystem: ActorSystem[SpawnProtocol] = ActorSystem(SpawnProtocol.behavior, "http-server")
   lazy val actorRuntime: ActorRuntime              = new ActorRuntime(actorSystem)
 
+  import actorRuntime._
+
   lazy val locationService: LocationService =
     HttpLocationServiceFactory.makeLocalClient(actorSystem, actorRuntime.mat)
+  lazy val locationServiceWrapper = new LocationServiceWrapper(locationService)
+  lazy val componentFactory       = new ComponentFactory(locationServiceWrapper)
 }
