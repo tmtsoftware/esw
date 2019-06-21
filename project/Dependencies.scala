@@ -21,9 +21,10 @@ object Dependencies {
       AkkaHttp.`akka-http`,
       Akka.`akka-actor-typed`,
       Akka.`akka-stream-typed`,
-      AkkaHttp.`akka-http-testkit`,
-      Akka.`akka-stream-testkit`,
-      Libs.scalatest
+      AkkaHttp.`akka-http-testkit` % Test,
+      Akka.`akka-stream-testkit`   % Test,
+      Libs.scalatest               % Test,
+      Libs.`mockito-scala`         % Test
     )
   )
 
@@ -35,10 +36,10 @@ object Dependencies {
       Csw.`csw-command-client`,
       Libs.`scopt`,
       Libs.`scala-async`,
-      Libs.scalatest,
-      Csw.`csw-testkit`,
-      Libs.`mockito-scala`,
-      Akka.`akka-actor-testkit-typed`
+      Libs.scalatest                  % Test,
+      Csw.`csw-testkit`               % Test,
+      Libs.`mockito-scala`            % Test,
+      Akka.`akka-actor-testkit-typed` % Test
     )
   )
 }
