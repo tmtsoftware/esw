@@ -1,5 +1,3 @@
-import sbt.Test
-
 lazy val aggregateProjects: Seq[ProjectReference] =
   Seq(
     `ocs-framework`,
@@ -45,7 +43,7 @@ lazy val `async-macros` = project
 
 lazy val `template` = project
   .in(file("template"))
-  .aggregate(`http-server`, `http-server-tests`)
+  .aggregate(`http-server`)
 
 lazy val `http-server` = project
   .in(file("template/http-server"))
@@ -53,17 +51,9 @@ lazy val `http-server` = project
     libraryDependencies ++= Dependencies.`http-server`.value
   )
 
-lazy val `http-server-tests` = project
-  .in(file("template/http-server-tests"))
-  .settings(
-    libraryDependencies ++= Dependencies.`http-server-tests`.value,
-    Test / sourceDirectory := baseDirectory.value / "src" / "main"
-  )
-  .dependsOn(`http-server`)
-
 lazy val `gateway` = project
   .in(file("gateway"))
-  .aggregate(`gateway-server`, `gateway-server-tests`)
+  .aggregate(`gateway-server`)
 
 lazy val `gateway-server` = project
   .in(file("gateway/gateway-server"))
@@ -71,14 +61,6 @@ lazy val `gateway-server` = project
     libraryDependencies ++= Dependencies.`gateway-server`.value
   )
   .dependsOn(`http-server`)
-
-lazy val `gateway-server-tests` = project
-  .in(file("gateway/gateway-server-tests"))
-  .settings(
-    libraryDependencies ++= Dependencies.`gateway-server-tests`.value,
-    Test / sourceDirectory := baseDirectory.value / "src" / "main"
-  )
-  .dependsOn(`gateway-server`)
 
 /* ================= Paradox Docs ============== */
 lazy val docs = project.enablePlugins(NoPublish, ParadoxSite)

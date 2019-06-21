@@ -20,12 +20,7 @@ object Dependencies {
     Seq(
       AkkaHttp.`akka-http`,
       Akka.`akka-actor-typed`,
-      Akka.`akka-stream-typed`
-    )
-  )
-
-  val `gateway-server-tests`: Def.Initialize[Seq[ModuleID]] = Def.setting(
-    Seq(
+      Akka.`akka-stream-typed`,
       AkkaHttp.`akka-http-testkit`,
       Akka.`akka-stream-testkit`,
       Libs.scalatest
@@ -39,12 +34,7 @@ object Dependencies {
       Akka.`akka-actor-typed`,
       Csw.`csw-command-client`,
       Libs.`scopt`,
-      Libs.`scala-async`
-    )
-  )
-
-  val `http-server-tests`: Def.Initialize[Seq[ModuleID]] = Def.setting(
-    Seq(
+      Libs.`scala-async`,
       Libs.scalatest,
       Csw.`csw-testkit`,
       Libs.`mockito-scala`,

@@ -20,7 +20,7 @@ import scala.concurrent.Future
 import scala.util.control.NonFatal
 
 /**
- * Initialises Gateway Server at given port and register with location service
+ * Initialises HTTP Server at given port and register with location service
  *
  * @param locationService locationService instance to be used for registering this server with the location service
  * @param route gateway server instance representing the routes supported by this server
