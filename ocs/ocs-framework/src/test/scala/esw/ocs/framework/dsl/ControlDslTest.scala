@@ -29,34 +29,30 @@ class ControlDslTest extends BaseTestSuite {
 
   override implicit def patienceConfig: PatienceConfig = PatienceConfig(1.second)
 
-  "loop" when {
-    "interval is default" should {
-      "run loop till condition becomes true" in {
-        val testDsl                    = new TestDsl
-        val (getCounter, loopFinished) = testDsl.counterLoop()
+  "ControlDsl's loop" must {
+    "run till condition becomes true when interval is default | ESW-90" in {
+      val testDsl                    = new TestDsl
+      val (getCounter, loopFinished) = testDsl.counterLoop()
 
-        // default interval is 50ms, loop will fin
-        loopFinished.isReadyWithin(50.millis) shouldBe false
-        getCounter() should be < 3
-        loopFinished.futureValue shouldBe Done
-        getCounter() shouldBe 3
-      }
+      // default interval is 50ms, loop will fin
+      loopFinished.isReadyWithin(50.millis) shouldBe false
+      getCounter() should be < 3
+      loopFinished.futureValue shouldBe Done
+      getCounter() shouldBe 3
     }
 
-    "interval is custom" should {
-      "run loop till condition becomes true" in {
-        val testDsl                    = new TestDsl
-        val (getCounter, loopFinished) = testDsl.counterLoop(Some(100.millis))
+    "run till condition becomes true when interval is custom | ESW-90" in {
+      val testDsl                    = new TestDsl
+      val (getCounter, loopFinished) = testDsl.counterLoop(Some(100.millis))
 
-        loopFinished.isReadyWithin(50.millis) shouldBe false
-        getCounter() shouldBe 1
+      loopFinished.isReadyWithin(50.millis) shouldBe false
+      getCounter() shouldBe 1
 
-        loopFinished.isReadyWithin(70.millis) shouldBe false
-        getCounter() shouldBe 2
+      loopFinished.isReadyWithin(70.millis) shouldBe false
+      getCounter() shouldBe 2
 
-        loopFinished.futureValue shouldBe Done
-        getCounter() shouldBe 3
-      }
+      loopFinished.futureValue shouldBe Done
+      getCounter() shouldBe 3
     }
   }
 
