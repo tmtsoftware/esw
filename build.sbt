@@ -47,6 +47,7 @@ lazy val `template` = project
 
 lazy val `http-server` = project
   .in(file("template/http-server"))
+  .enablePlugins(EswBuildInfo)
   .settings(
     libraryDependencies ++= Dependencies.`http-server`.value
   )

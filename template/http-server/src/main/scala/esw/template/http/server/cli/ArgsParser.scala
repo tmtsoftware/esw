@@ -1,5 +1,6 @@
 package esw.template.http.server.cli
 
+import http.server.BuildInfo
 import scopt.OptionParser
 
 /**
@@ -8,7 +9,7 @@ import scopt.OptionParser
 class ArgsParser(name: String) {
 
   private val parser: OptionParser[Options] = new scopt.OptionParser[Options](name) {
-    head(name)
+    head(name, BuildInfo.version)
 
     opt[Int]("port") action { (x, c) =>
       c.copy(port = Some(x))
