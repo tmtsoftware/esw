@@ -6,9 +6,11 @@ import akka.actor.typed.scaladsl.adapter.TypedActorSystemOps
 import akka.actor.typed.{ActorSystem, SpawnProtocol}
 import akka.stream.Materializer
 import akka.stream.typed.scaladsl.ActorMaterializer
+import akka.util.Timeout
 import akka.{Done, actor}
 
-import scala.concurrent.{ExecutionContextExecutor, Future}
+import scala.concurrent.duration.DurationLong
+import scala.concurrent.{ExecutionContext, Future}
 
 /**
  * A convenient class wrapping actor system and providing handles for execution context, materializer and clean up of actor system
@@ -16,8 +18,9 @@ import scala.concurrent.{ExecutionContextExecutor, Future}
 class ActorRuntime(_typedSystem: ActorSystem[SpawnProtocol]) {
   implicit val typedSystem: ActorSystem[SpawnProtocol] = _typedSystem
   implicit val untypedSystem: actor.ActorSystem        = _typedSystem.toUntyped
-  implicit val ec: ExecutionContextExecutor            = typedSystem.executionContext
+  implicit val ec: ExecutionContext                    = typedSystem.executionContext
   implicit val mat: Materializer                       = ActorMaterializer()
+  implicit val timeout: Timeout                        = Timeout(5.seconds)
 
   val coordinatedShutdown: CoordinatedShutdown = CoordinatedShutdown(untypedSystem)
 

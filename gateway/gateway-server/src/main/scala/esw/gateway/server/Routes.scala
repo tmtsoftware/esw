@@ -1,14 +1,24 @@
 package esw.gateway.server
 
-import akka.http.scaladsl.model.{ContentTypes, HttpEntity}
-import akka.http.scaladsl.server.Directives._
+import akka.http.scaladsl.server.Directives.{entity, _}
 import akka.http.scaladsl.server.Route
+import csw.params.commands.ControlCommand
+import esw.template.http.server.CswContext
 
-class Routes() {
+class Routes(cswCtx: CswContext) extends JsonSupportExt {
+  import cswCtx._
+  import actorRuntime._
+
   def route: Route =
-    path("hello") {
-      get {
-        complete(HttpEntity(ContentTypes.`text/html(UTF-8)`, "<h1>Say hello to akka-http</h1>"))
+    pathPrefix("assembly" / Segment) { assemblyName =>
+      val commandServiceF = componentFactory.assemblyCommandService(assemblyName)
+
+      post {
+        path("submit") {
+          entity(as[ControlCommand]) { command =>
+            complete(commandServiceF.flatMap(_.submit(command)))
+          }
+        }
       }
     }
 }

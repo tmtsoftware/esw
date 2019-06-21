@@ -2,16 +2,48 @@ package esw.gateway.server
 
 import akka.http.scaladsl.model.StatusCodes
 import akka.http.scaladsl.testkit.ScalatestRouteTest
-import org.scalatest.{FunSuite, Matchers}
+import csw.params.commands.CommandResponse.Completed
+import csw.params.core.formats.JsonSupport
+import csw.params.core.models.Id
+import de.heikoseeberger.akkahttpplayjson.PlayJsonSupport
+import org.mockito.Mockito._
+import org.scalatest.{Matchers, WordSpec}
+import play.api.libs.json.{JsArray, JsObject, JsString}
 
-class RoutesTest extends FunSuite with Matchers with ScalatestRouteTest {
+import scala.concurrent.Future
 
-  private val route = new Routes().route
+class RoutesTest extends WordSpec with CswContextMocks with Matchers with ScalatestRouteTest with PlayJsonSupport {
 
-  test("ESW-86 | get - success status code") {
+  private val routes = new Routes(cswCtx).route
 
-    Get("/hello") ~> route ~> check {
-      status shouldBe StatusCodes.OK
+  "Routes for assembly" must {
+    "submit command | ESW-91" in {
+
+      val assemblyName = "TestAssembly"
+      val runId        = "123"
+
+      val obj = JsObject(
+        Seq(
+          "type"        -> JsString("Setup"),
+          "source"      -> JsString("test"),
+          "commandName" -> JsString("c1"),
+          "maybeObsId"  -> JsString("o1"),
+          "runId"       -> JsString(runId),
+          "paramSet"    -> JsArray()
+        )
+      )
+
+      val controlCommand = JsonSupport.controlCommandFormat.reads(obj).get
+
+      when(commandService.submit(controlCommand)).thenReturn(Future.successful(Completed(Id(runId))))
+      when(componentFactory.assemblyCommandService(assemblyName)).thenReturn(Future(commandService))
+
+      Post("/assembly/" + assemblyName + "/submit", obj) ~> routes ~> check {
+        status shouldBe StatusCodes.OK
+        val expectedResponse = JsObject(Seq("runId" -> JsString(runId), "type" -> JsString("Completed")))
+        responseAs[JsObject] shouldEqual expectedResponse
+      }
     }
   }
+
 }

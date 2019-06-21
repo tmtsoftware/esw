@@ -13,7 +13,7 @@ object Main {
       case Options(port) =>
         val cswContext = new CswContext(port)
         import cswContext._
-        lazy val routes      = new Routes()
+        lazy val routes      = new Routes(cswContext)
         lazy val httpService = new HttpService(locationService, routes.route, settings, actorRuntime)
 
         Await.result(httpService.registeredLazyBinding, 15.seconds)
