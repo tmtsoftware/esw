@@ -3,8 +3,6 @@ package esw.ocs.framework.dsl
 import esw.ocs.framework.BaseTestSuite
 import esw.ocs.framework.dsl.internal.FunctionBuilder
 
-import scala.util.Success
-
 class FunctionBuilderTest extends BaseTestSuite {
   case class Command(name: String, value: Int)
 
@@ -21,17 +19,16 @@ class FunctionBuilderTest extends BaseTestSuite {
   "FunctionBuilder's build " must {
 
     "execute matched handler and return Success | ESW-90" in {
-      builtFunctionWithHandlers(Command("square", 10)) shouldBe Success(100)
-      builtFunctionWithHandlers(Command("abs", 25)) shouldBe Success(25)
+      builtFunctionWithHandlers(Command("square", 10)) shouldBe 100
+      builtFunctionWithHandlers(Command("abs", 25)) shouldBe 25
     }
 
     "execute default handler when no matching handler found | ESW-90" in {
-      builtFunctionWithHandlers(Command("absent", 25)) shouldBe Success(0)
+      builtFunctionWithHandlers(Command("absent", 25)) shouldBe 0
     }
 
     "execute a handler and return Failure when there is an exception | ESW-90" in {
-      val result = builtFunctionWithHandlers(Command("reciprocal", 0))
-      an[ArithmeticException] shouldBe thrownBy(result.get)
+      an[ArithmeticException] shouldBe thrownBy(builtFunctionWithHandlers(Command("reciprocal", 0)))
     }
 
   }
