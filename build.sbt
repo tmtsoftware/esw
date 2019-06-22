@@ -30,6 +30,7 @@ lazy val `ocs` = project
 
 lazy val `ocs-framework` = project
   .in(file("ocs/ocs-framework"))
+  .enablePlugins(MaybeCoverage)
   .settings(
     libraryDependencies ++= Dependencies.`ocs-framework`.value
   )
@@ -37,6 +38,7 @@ lazy val `ocs-framework` = project
 
 lazy val `async-macros` = project
   .in(file("ocs/async-macros"))
+  .enablePlugins(MaybeCoverage)
   .settings(
     libraryDependencies ++= Dependencies.`async-macros`.value
   )
@@ -47,6 +49,7 @@ lazy val `template` = project
 
 lazy val `http-server` = project
   .in(file("template/http-server"))
+  .enablePlugins(MaybeCoverage)
   .enablePlugins(EswBuildInfo)
   .settings(
     libraryDependencies ++= Dependencies.`http-server`.value
@@ -58,6 +61,7 @@ lazy val `gateway` = project
 
 lazy val `gateway-server` = project
   .in(file("gateway/gateway-server"))
+  .enablePlugins(MaybeCoverage)
   .settings(
     libraryDependencies ++= Dependencies.`gateway-server`.value
   )
