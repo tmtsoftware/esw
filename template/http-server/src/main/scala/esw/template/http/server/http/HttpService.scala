@@ -67,8 +67,9 @@ class HttpService(
       But we bind server to all interfaces so that it can be accessible from any server via localhost
       and it can happen that server gets bind to some of the interfaces and not to Networks().hostname
      */
-    if (SocketUtils.isAddressInUse(_host, _port))
+    if (SocketUtils.isAddressInUse(_host, _port)) {
       throw new BindException(s"Bind failed for TCP channel on endpoint [${_host}:${_port}]. Address already in use.")
+    }
 
     Http().bindAndHandle(
       handler = route,

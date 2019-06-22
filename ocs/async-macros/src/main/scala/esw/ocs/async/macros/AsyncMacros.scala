@@ -4,7 +4,7 @@ import scala.concurrent.ExecutionContext
 import scala.reflect.macros.blackbox
 
 object AsyncMacros {
-  def async[T: c.WeakTypeTag](c: blackbox.Context)(body: c.Expr[T])(ec: c.Expr[ExecutionContext]) = {
+  def async[T: c.WeakTypeTag](c: blackbox.Context)(body: c.Expr[T])(ec: c.Expr[ExecutionContext]): c.universe.Tree = {
     import c.universe._
     q"_root_.esw.ocs.framework.dsl.Async.async($body)($ec)"
   }
@@ -15,7 +15,7 @@ object AsyncMacros {
     q"_root_.esw.ocs.framework.dsl.Async.async($body)($ec)"
   }
 
-  def await(c: blackbox.Context) = {
+  def await(c: blackbox.Context): c.universe.Tree = {
     import c.universe._
     val arg = c.prefix.tree.asInstanceOf[Apply].args.head
     q"_root_.esw.ocs.framework.dsl.Async.await($arg)"
