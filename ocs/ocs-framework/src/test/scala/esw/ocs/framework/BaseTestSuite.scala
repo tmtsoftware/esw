@@ -1,7 +1,10 @@
 package esw.ocs.framework
 
+import org.scalatest._
 import org.scalatest.concurrent.{Eventually, ScalaFutures}
-import org.scalatest.{BeforeAndAfterAll, BeforeAndAfterEach, Matchers, WordSpecLike}
+
+import scala.concurrent.duration.{Duration, DurationDouble}
+import scala.concurrent.{Await, Future}
 
 trait BaseTestSuite
     extends WordSpecLike
@@ -9,4 +12,12 @@ trait BaseTestSuite
     with BeforeAndAfterAll
     with BeforeAndAfterEach
     with ScalaFutures
-    with Eventually
+    with OptionValues
+    with Eventually {
+  val defaultTimeout: Duration = 10.seconds
+
+  implicit class FutureOps[T](f: Future[T]) {
+    def await: T = Await.result(f, defaultTimeout)
+  }
+
+}
