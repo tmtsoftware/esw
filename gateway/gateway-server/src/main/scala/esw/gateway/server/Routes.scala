@@ -19,6 +19,12 @@ class Routes(cswCtx: CswContext) extends JsonSupportExt {
             complete(commandServiceF.flatMap(_.submit(command)))
           }
         }
+
+        path("oneway") {
+          entity(as[ControlCommand]) { command =>
+            complete(commandServiceF.flatMap(_.oneway(command)))
+          }
+        }
       }
     }
 }
