@@ -1,6 +1,17 @@
 import sbt.{Def, _}
 
 object Dependencies {
+
+  val `ocs-framework-api`: Def.Initialize[Seq[ModuleID]] = Def.setting(
+    Seq(
+      Akka.`akka-actor-typed`,
+      Csw.`csw-params`.value,
+      Csw.`csw-location-api`,
+      Libs.`enumeratum`.value,
+      Libs.scalatest % Test
+    )
+  )
+
   val `ocs-framework`: Def.Initialize[Seq[ModuleID]] = Def.setting(
     Seq(
       Csw.`csw-params`.value,

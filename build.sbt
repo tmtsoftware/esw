@@ -27,6 +27,12 @@ lazy val `ocs` = project
     `ocs-framework`,
     `async-macros`
   )
+lazy val `ocs-framework-api` = project
+  .in(file("ocs/ocs-framework-api"))
+  .enablePlugins(MaybeCoverage)
+  .settings(
+    libraryDependencies ++= Dependencies.`ocs-framework-api`.value
+  )
 
 lazy val `ocs-framework` = project
   .in(file("ocs/ocs-framework"))
