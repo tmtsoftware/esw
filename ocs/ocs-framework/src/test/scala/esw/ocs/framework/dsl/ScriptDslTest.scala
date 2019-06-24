@@ -58,20 +58,40 @@ class ScriptDslTest extends BaseTestSuite {
         handleShutdown {
           spawn {
             orderOfShutdownCalled += 1
-            ()
           }
         }
 
         handleShutdown {
           spawn {
             orderOfShutdownCalled += 2
-            ()
           }
         }
       }
 
       script.executeShutdown().await
       orderOfShutdownCalled shouldBe ArrayBuffer(1, 2)
+    }
+    "allow adding and executing multiple abort handlers in order" in {
+      val orderOfAbortCalled = ArrayBuffer.empty[Int]
+
+      val script = new ScriptDsl {
+        override def csw: CswServices = ???
+
+        handleAbort {
+          spawn {
+            orderOfAbortCalled += 1
+          }
+        }
+
+        handleAbort {
+          spawn {
+            orderOfAbortCalled += 2
+          }
+        }
+      }
+
+      script.executeAbort().await
+      orderOfAbortCalled shouldBe ArrayBuffer(1, 2)
     }
   }
 }
