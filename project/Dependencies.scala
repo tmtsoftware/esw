@@ -18,6 +18,7 @@ object Dependencies {
 
   val `gateway-server`: Def.Initialize[Seq[ModuleID]] = Def.setting(
     Seq(
+      Csw.`csw-commons`,
       AkkaHttp.`akka-http`,
       Akka.`akka-actor-typed`,
       Akka.`akka-stream-typed`,

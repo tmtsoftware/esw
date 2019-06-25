@@ -1,18 +1,30 @@
 package esw.gateway.server
 
+import akka.NotUsed
+import akka.http.scaladsl.model.MediaTypes.`text/event-stream`
 import akka.http.scaladsl.model.StatusCodes
+import akka.http.scaladsl.model.sse.ServerSentEvent
 import akka.http.scaladsl.testkit.ScalatestRouteTest
+import akka.http.scaladsl.unmarshalling.sse.EventStreamUnmarshalling._
+import akka.stream.scaladsl.{Sink, Source}
 import csw.params.commands.CommandResponse.{Accepted, Completed}
 import csw.params.core.formats.JsonSupport
 import csw.params.core.models.Id
 import de.heikoseeberger.akkahttpplayjson.PlayJsonSupport
 import org.mockito.Mockito._
 import org.scalatest.{Matchers, WordSpec}
-import play.api.libs.json.{JsArray, JsObject, JsString}
+import play.api.libs.json.{JsArray, JsObject, JsString, Json}
 
-import scala.concurrent.Future
+import scala.concurrent.duration.DurationDouble
+import scala.concurrent.{Await, Future}
 
-class RoutesTest extends WordSpec with CswContextMocks with Matchers with ScalatestRouteTest with PlayJsonSupport {
+class RoutesTest
+    extends WordSpec
+    with CswContextMocks
+    with Matchers
+    with ScalatestRouteTest
+    with PlayJsonSupport
+    with JsonSupportExt {
 
   private val routes = new Routes(cswCtx).route
 
@@ -72,6 +84,73 @@ class RoutesTest extends WordSpec with CswContextMocks with Matchers with Scalat
         responseAs[JsObject] shouldEqual expectedResponse
       }
     }
+
+    "send queryFinal command | ESW-91" in {
+
+      val assemblyName = "TestAssembly"
+      val runId        = "123"
+
+      val obj = JsObject(
+        Seq(
+          "type"        -> JsString("Setup"),
+          "source"      -> JsString("test"),
+          "commandName" -> JsString("c1"),
+          "maybeObsId"  -> JsString("o1"),
+          "runId"       -> JsString(runId),
+          "paramSet"    -> JsArray()
+        )
+      )
+
+      when(commandService.queryFinal(Id(runId))).thenReturn(Future.successful(Completed(Id(runId))))
+      when(componentFactory.assemblyCommandService(assemblyName)).thenReturn(Future(commandService))
+
+      Get("/assembly/" + assemblyName + "/queryFinal?runId=123&timeout=5000", obj) ~> routes ~> check {
+        status shouldBe StatusCodes.OK
+        mediaType shouldBe `text/event-stream`
+
+        val expectedEntity = JsObject(
+          Seq(
+            "runId" -> JsString(runId),
+            "type"  -> JsString("Completed")
+          )
+        )
+
+        val actualDataF = responseAs[Source[ServerSentEvent, NotUsed]]
+          .map(sse => Json.parse(sse.getData()))
+          .runWith(Sink.seq)
+
+        Await.result(actualDataF, 5.seconds) shouldEqual Seq(expectedEntity)
+      }
+    }
+
+//    "send queryFinal2 command | ESW-91" in {
+//
+//      val assemblyName = "TestAssembly"
+//      val runId        = "123"
+//
+//      when(commandService.queryFinal(Id(runId))).thenReturn(Future.failed(new TimeoutException("")))
+//      when(componentFactory.assemblyCommandService(assemblyName)).thenReturn(Future(commandService))
+//
+//      Get("/assembly/" + assemblyName + "/queryFinal?runId=123&timeout=5000") ~> routes ~> check {
+//        status shouldBe StatusCodes.OK
+//        mediaType shouldBe `text/event-stream`
+//
+//        val expectedEntity = JsObject(
+//          Seq(
+//            "runId" -> JsString(runId),
+//            "type"  -> JsString("Completed")
+//          )
+//        )
+//
+//        val actualDataF = responseAs[Source[ServerSentEvent, NotUsed]]
+//          .map(sse => Json.parse(sse.getData()))
+//          .runWith(Sink.seq)
+//
+//        actualDataF.onComplete(println)
+//
+//
+//      }
+//    }
   }
 
 }
