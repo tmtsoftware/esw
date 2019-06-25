@@ -9,20 +9,22 @@ import akka.http.scaladsl.unmarshalling.sse.EventStreamUnmarshalling._
 import akka.stream.scaladsl.{Sink, Source}
 import akka.util.Timeout
 import csw.params.commands.CommandResponse.{Accepted, Completed}
-import csw.params.core.formats.JsonSupport
-import csw.params.core.models.Id
+import csw.params.commands.{CommandName, CommandResponse, Setup}
+import csw.params.core.models.{Id, ObsId, Prefix}
 import de.heikoseeberger.akkahttpplayjson.PlayJsonSupport
+import org.mockito.ArgumentMatchersSugar
 import org.mockito.Mockito._
 import org.scalatest.{Matchers, WordSpec}
-import play.api.libs.json.{JsArray, JsObject, JsString, Json}
+import play.api.libs.json.Json
 
 import scala.concurrent.duration.DurationDouble
-import scala.concurrent.{Await, Future}
+import scala.concurrent.{Await, Future, TimeoutException}
 
 class RoutesTest
     extends WordSpec
     with CswContextMocks
     with Matchers
+    with ArgumentMatchersSugar
     with ScalatestRouteTest
     with PlayJsonSupport
     with JsonSupportExt {
@@ -31,124 +33,69 @@ class RoutesTest
 
   "Routes for command/assembly" must {
     "post submit command | ESW-91" in {
-
       val assemblyName = "TestAssembly"
-      val runId        = "123"
+      val runId        = Id("123")
+      val command      = Setup(Prefix("test"), CommandName("c1"), Some(ObsId("obsId"))).copy(runId = runId)
 
-      val obj = JsObject(
-        Seq(
-          "type"        -> JsString("Setup"),
-          "source"      -> JsString("test"),
-          "commandName" -> JsString("c1"),
-          "maybeObsId"  -> JsString("o1"),
-          "runId"       -> JsString(runId),
-          "paramSet"    -> JsArray()
-        )
-      )
-
-      val controlCommand = JsonSupport.controlCommandFormat.reads(obj).get
-
-      when(commandService.submit(controlCommand)).thenReturn(Future.successful(Completed(Id(runId))))
+      when(commandService.submit(command)).thenReturn(Future.successful(Completed(runId)))
       when(componentFactory.assemblyCommandService(assemblyName)).thenReturn(Future(commandService))
 
-      Post("/command/assembly/" + assemblyName + "/submit", obj) ~> routes ~> check {
+      Post(s"/command/assembly/$assemblyName/submit", command) ~> routes ~> check {
         status shouldBe StatusCodes.OK
-        val expectedResponse = JsObject(Seq("runId" -> JsString(runId), "type" -> JsString("Completed")))
-        responseAs[JsObject] shouldEqual expectedResponse
+        responseAs[CommandResponse] shouldEqual Completed(runId)
       }
     }
 
     "post oneway command | ESW-91" in {
-
       val assemblyName = "TestAssembly"
-      val runId        = "123"
+      val runId        = Id("123")
+      val command      = Setup(Prefix("test"), CommandName("c1"), Some(ObsId("obsId"))).copy(runId = runId)
 
-      val obj = JsObject(
-        Seq(
-          "type"        -> JsString("Setup"),
-          "source"      -> JsString("test"),
-          "commandName" -> JsString("c1"),
-          "maybeObsId"  -> JsString("o1"),
-          "runId"       -> JsString(runId),
-          "paramSet"    -> JsArray()
-        )
-      )
-
-      val controlCommand = JsonSupport.controlCommandFormat.reads(obj).get
-
-      when(commandService.oneway(controlCommand)).thenReturn(Future.successful(Accepted(Id(runId))))
+      when(commandService.oneway(command)).thenReturn(Future.successful(Accepted(runId)))
       when(componentFactory.assemblyCommandService(assemblyName)).thenReturn(Future(commandService))
 
-      Post("/command/assembly/" + assemblyName + "/oneway", obj) ~> routes ~> check {
+      Post(s"/command/assembly/$assemblyName/oneway", command) ~> routes ~> check {
         status shouldBe StatusCodes.OK
-        val expectedResponse = JsObject(Seq("runId" -> JsString(runId), "type" -> JsString("Accepted")))
-        responseAs[JsObject] shouldEqual expectedResponse
+        responseAs[CommandResponse] shouldEqual Accepted(runId)
       }
     }
 
     "get command response for RunId | ESW-91" in {
-
       val assemblyName = "TestAssembly"
-      val runId        = "123"
+      val runId        = Id("123")
+      val command      = Setup(Prefix("test"), CommandName("c1"), Some(ObsId("obsId"))).copy(runId = runId)
 
-      val obj = JsObject(
-        Seq(
-          "type"        -> JsString("Setup"),
-          "source"      -> JsString("test"),
-          "commandName" -> JsString("c1"),
-          "maybeObsId"  -> JsString("o1"),
-          "runId"       -> JsString(runId),
-          "paramSet"    -> JsArray()
-        )
-      )
-
-      when(commandService.queryFinal(Id(runId))(Timeout(100.hours))).thenReturn(Future.successful(Completed(Id(runId))))
+      when(commandService.queryFinal(any[Id])(any[Timeout])).thenReturn(Future.successful(Completed(runId)))
       when(componentFactory.assemblyCommandService(assemblyName)).thenReturn(Future(commandService))
 
-      Get("/command/assembly/" + assemblyName + "/123", obj) ~> routes ~> check {
+      Get(s"/command/assembly/$assemblyName/${runId.id}", command) ~> routes ~> check {
         status shouldBe StatusCodes.OK
         mediaType shouldBe `text/event-stream`
 
-        val expectedEntity = JsObject(
-          Seq(
-            "runId" -> JsString(runId),
-            "type"  -> JsString("Completed")
-          )
-        )
-
-        val actualDataF = responseAs[Source[ServerSentEvent, NotUsed]]
-          .map(sse => Json.parse(sse.getData()))
+        val actualDataF: Future[Seq[CommandResponse]] = responseAs[Source[ServerSentEvent, NotUsed]]
+          .map(sse => Json.fromJson[CommandResponse](Json.parse(sse.getData())).get)
           .runWith(Sink.seq)
 
-        Await.result(actualDataF, 5.seconds) shouldEqual Seq(expectedEntity)
+        Await.result(actualDataF, 5.seconds) shouldEqual Seq(Completed(runId))
       }
     }
 
 //    "get error response for command on timeout | ESW-91" in {
-//
 //      val assemblyName = "TestAssembly"
-//      val runId        = "123"
+//      val runId        = Id("123")
 //
-//      when(commandService.queryFinal(Id(runId))).thenReturn(Future.failed(new TimeoutException("")))
+//      when(commandService.queryFinal(any[Id])(any[Timeout])).thenReturn(Future.failed(new TimeoutException("")))
 //      when(componentFactory.assemblyCommandService(assemblyName)).thenReturn(Future(commandService))
 //
-//      Get("/assembly/" + assemblyName + "/queryFinal?runId=123&timeout=5000") ~> routes ~> check {
+//      Get(s"/command/assembly/$assemblyName/${runId.id}") ~> routes ~> check {
 //        status shouldBe StatusCodes.OK
 //        mediaType shouldBe `text/event-stream`
 //
-//        val expectedEntity = JsObject(
-//          Seq(
-//            "runId" -> JsString(runId),
-//            "type"  -> JsString("Completed")
-//          )
-//        )
-//
-//        val actualDataF = responseAs[Source[ServerSentEvent, NotUsed]]
-//          .map(sse => Json.parse(sse.getData()))
+//        val actualDataF: Future[Seq[CommandResponse]] = responseAs[Source[ServerSentEvent, NotUsed]]
+//          .map(sse => Json.fromJson[CommandResponse](Json.parse(sse.getData())).get)
 //          .runWith(Sink.seq)
 //
-//        actualDataF.onComplete(println)
-//
+//        Await.result(actualDataF, 5.seconds) shouldEqual Seq(Completed(runId))
 //
 //      }
 //    }
