@@ -7,6 +7,7 @@ import akka.http.scaladsl.model.sse.ServerSentEvent
 import akka.http.scaladsl.testkit.ScalatestRouteTest
 import akka.http.scaladsl.unmarshalling.sse.EventStreamUnmarshalling._
 import akka.stream.scaladsl.{Sink, Source}
+import akka.util.Timeout
 import csw.params.commands.CommandResponse.{Accepted, Completed}
 import csw.params.core.formats.JsonSupport
 import csw.params.core.models.Id
@@ -28,8 +29,8 @@ class RoutesTest
 
   private val routes = new Routes(cswCtx).route
 
-  "Routes for assembly" must {
-    "send submit command | ESW-91" in {
+  "Routes for command/assembly" must {
+    "post submit command | ESW-91" in {
 
       val assemblyName = "TestAssembly"
       val runId        = "123"
@@ -50,14 +51,14 @@ class RoutesTest
       when(commandService.submit(controlCommand)).thenReturn(Future.successful(Completed(Id(runId))))
       when(componentFactory.assemblyCommandService(assemblyName)).thenReturn(Future(commandService))
 
-      Post("/assembly/" + assemblyName + "/submit", obj) ~> routes ~> check {
+      Post("/command/assembly/" + assemblyName + "/submit", obj) ~> routes ~> check {
         status shouldBe StatusCodes.OK
         val expectedResponse = JsObject(Seq("runId" -> JsString(runId), "type" -> JsString("Completed")))
         responseAs[JsObject] shouldEqual expectedResponse
       }
     }
 
-    "send oneway command | ESW-91" in {
+    "post oneway command | ESW-91" in {
 
       val assemblyName = "TestAssembly"
       val runId        = "123"
@@ -78,14 +79,14 @@ class RoutesTest
       when(commandService.oneway(controlCommand)).thenReturn(Future.successful(Accepted(Id(runId))))
       when(componentFactory.assemblyCommandService(assemblyName)).thenReturn(Future(commandService))
 
-      Post("/assembly/" + assemblyName + "/oneway", obj) ~> routes ~> check {
+      Post("/command/assembly/" + assemblyName + "/oneway", obj) ~> routes ~> check {
         status shouldBe StatusCodes.OK
         val expectedResponse = JsObject(Seq("runId" -> JsString(runId), "type" -> JsString("Accepted")))
         responseAs[JsObject] shouldEqual expectedResponse
       }
     }
 
-    "send queryFinal command | ESW-91" in {
+    "get command response for RunId | ESW-91" in {
 
       val assemblyName = "TestAssembly"
       val runId        = "123"
@@ -101,10 +102,10 @@ class RoutesTest
         )
       )
 
-      when(commandService.queryFinal(Id(runId))).thenReturn(Future.successful(Completed(Id(runId))))
+      when(commandService.queryFinal(Id(runId))(Timeout(100.hours))).thenReturn(Future.successful(Completed(Id(runId))))
       when(componentFactory.assemblyCommandService(assemblyName)).thenReturn(Future(commandService))
 
-      Get("/assembly/" + assemblyName + "/queryFinal?runId=123&timeout=5000", obj) ~> routes ~> check {
+      Get("/command/assembly/" + assemblyName + "/123", obj) ~> routes ~> check {
         status shouldBe StatusCodes.OK
         mediaType shouldBe `text/event-stream`
 
@@ -123,7 +124,7 @@ class RoutesTest
       }
     }
 
-//    "send queryFinal2 command | ESW-91" in {
+//    "get error response for command on timeout | ESW-91" in {
 //
 //      val assemblyName = "TestAssembly"
 //      val runId        = "123"
