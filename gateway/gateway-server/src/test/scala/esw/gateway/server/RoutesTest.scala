@@ -18,7 +18,7 @@ import org.scalatest.{Matchers, WordSpec}
 import play.api.libs.json.Json
 
 import scala.concurrent.duration.DurationDouble
-import scala.concurrent.{Await, Future, TimeoutException}
+import scala.concurrent.{Await, Future}
 
 class RoutesTest
     extends WordSpec
