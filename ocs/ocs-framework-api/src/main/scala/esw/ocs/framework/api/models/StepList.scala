@@ -2,7 +2,8 @@ package esw.ocs.framework.api.models
 
 import csw.params.commands.SequenceCommand
 import csw.params.core.models.Id
-import esw.ocs.framework.api.models.StepListActionResponse._
+import esw.ocs.framework.api.models.messages.StepListActionResponse._
+import esw.ocs.framework.api.models.messages._
 
 final case class StepListResult[T <: StepListActionResponse](reply: T, stepList: StepList)
 

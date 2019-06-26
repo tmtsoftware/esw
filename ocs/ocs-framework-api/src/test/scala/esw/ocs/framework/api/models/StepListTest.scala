@@ -3,7 +3,7 @@ package esw.ocs.framework.api.models
 import csw.params.commands._
 import csw.params.core.models.Prefix
 import esw.ocs.framework.api.BaseTestSuite
-import esw.ocs.framework.api.models.StepListActionResponse.Added
+import esw.ocs.framework.api.models.messages.StepListActionResponse.Added
 
 class StepListTest extends BaseTestSuite {
 
