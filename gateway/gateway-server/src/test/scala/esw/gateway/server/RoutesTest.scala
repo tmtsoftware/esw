@@ -31,6 +31,8 @@ class RoutesTest
 
   private val routes = new Routes(cswCtx).route
 
+  import actorRuntime.timeout
+
   "Routes for command/assembly" must {
     "post submit command | ESW-91" in {
       val assemblyName = "TestAssembly"
