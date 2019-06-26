@@ -9,7 +9,7 @@ import org.scalatestplus.mockito.MockitoSugar
 
 trait CswContextMocks extends MockitoSugar {
 
-  private val system: ActorSystem[SpawnProtocol] = ActorSystem(SpawnProtocol.behavior, "test system")
+  private val system: ActorSystem[SpawnProtocol] = ActorSystem(SpawnProtocol.behavior, "test-system")
 
   val componentFactory: ComponentFactory = mock[ComponentFactory]
   val commandService: CommandService     = mock[CommandService]
