@@ -7,13 +7,15 @@ import esw.ocs.framework.api.models.messages._
 
 final case class StepListResult[T <: StepListActionResponse](response: T, stepList: StepList)
 
-final case class StepList private (runId: Id, steps: List[Step]) { outer =>
+final case class StepList private[models] (runId: Id, steps: List[Step]) { outer =>
   //query
-  def nextPending: Option[Step] = steps.find(_.isPending)
-  def isPaused: Boolean         = nextPending.exists(_.hasBreakpoint)
-  def next: Option[Step]        = if (!isPaused) nextPending else None
-  def isFinished: Boolean       = steps.forall(_.isFinished)
-  def isInFlight: Boolean       = steps.exists(_.isInFlight)
+  // todo: what should we return when StepList is empty?
+  def isFinished: Boolean = steps.forall(_.isFinished)
+  def isPaused: Boolean   = nextPending.exists(_.hasBreakpoint)
+  def isInFlight: Boolean = steps.exists(_.isInFlight)
+
+  def nextPending: Option[Step]    = steps.find(_.isPending)
+  def nextExecutable: Option[Step] = if (!isPaused) nextPending else None
 
   private def toSteps(commands: List[SequenceCommand]): List[Step] = commands.map(Step.apply)
 
@@ -139,7 +141,7 @@ object StepList {
 
   def empty: StepList = StepList(Id(), List.empty)
 
-  def from(sequence: Sequence): Either[DuplicateIdsFound.type, StepList] = {
+  def apply(sequence: Sequence): Either[DuplicateIdsFound.type, StepList] = {
     val steps = sequence.commands.toList.map(Step.apply)
 
     if (steps.map(_.id).toSet.size == steps.size) Right(StepList(sequence.runId, steps))
