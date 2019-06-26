@@ -5,7 +5,7 @@ import csw.params.core.models.Id
 import esw.ocs.framework.api.models.messages.StepListActionResponse._
 import esw.ocs.framework.api.models.messages._
 
-final case class StepListResult[T <: StepListActionResponse](reply: T, stepList: StepList)
+final case class StepListResult[T <: StepListActionResponse](response: T, stepList: StepList)
 
 final case class StepList private (runId: Id, steps: List[Step]) { outer =>
   //query
@@ -69,11 +69,11 @@ final case class StepList private (runId: Id, steps: List[Step]) { outer =>
           if (isSuccessful) updateStep[PauseResponse](updatedStep, Paused)
           else updateStep[PauseResponse](updatedStep, PauseFailed)
         }
-        .flat(PauseFailed)
+        .getOrReturn(PauseFailed)
     }
 
   def resume: StepListResult[ResumeResponse] = checkIfFinished {
-    nextPending.map(step => updateStep[ResumeResponse](step.removeBreakpoint(), Resumed)).flat(Resumed) // completed?
+    nextPending.map(step => updateStep[ResumeResponse](step.removeBreakpoint(), Resumed)).getOrReturn(Resumed) // completed?
   }
 
   def updateStep(step: Step): StepListResult[UpdateResponse] = checkIfExists(step.id)(updateStep(step, Updated))
@@ -127,8 +127,8 @@ final case class StepList private (runId: Id, steps: List[Step]) { outer =>
       case _    ⇒ f
     }
 
-  private implicit class StepOps[T <: StepListActionResponse](optStep: Option[StepListResult[T]]) {
-    def flat(response: T): StepListResult[T] = optStep.getOrElse(StepListResult(response, outer))
+  private implicit class StepListResultOps[T <: StepListActionResponse](optStep: Option[StepListResult[T]]) {
+    def getOrReturn(response: T): StepListResult[T] = optStep.getOrElse(StepListResult(response, outer))
   }
 }
 
