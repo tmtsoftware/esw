@@ -46,6 +46,7 @@ object Dependencies {
       Csw.`csw-location-client`,
       Akka.`akka-actor-typed`,
       Csw.`csw-command-client`,
+      Csw.`csw-event-client`,
       Libs.`scopt`,
       Libs.`scala-async`,
       Libs.scalatest                  % Test,

@@ -24,6 +24,7 @@ object Csw {
   val `csw-location-client` = Org %% "csw-location-client" % Version
   val `csw-testkit`         = Org %% "csw-testkit" % Version
   val `csw-command-client`  = Org %% "csw-command-client" % Version
+  val `csw-event-client`  = Org %% "csw-event-client" % Version
 }
 
 object Akka {
