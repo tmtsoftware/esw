@@ -5,6 +5,7 @@ import csw.params.core.models.Prefix
 import esw.ocs.framework.BaseTestSuite
 
 import scala.collection.mutable.ArrayBuffer
+import scala.concurrent.duration.{DurationDouble, FiniteDuration}
 
 class ScriptDslTest extends BaseTestSuite {
 
@@ -13,7 +14,8 @@ class ScriptDslTest extends BaseTestSuite {
       var receivedPrefix: Option[Prefix] = None
 
       val script = new ScriptDsl {
-        override def csw: CswServices = ???
+        override def csw: CswServices             = ???
+        override val loopInterval: FiniteDuration = 100.millis
 
         handleSetupCommand("iris") { cmd ⇒
           spawn {
@@ -33,8 +35,8 @@ class ScriptDslTest extends BaseTestSuite {
       var receivedPrefix: Option[Prefix] = None
 
       val script = new ScriptDsl {
-        override def csw: CswServices = ???
-
+        override def csw: CswServices             = ???
+        override val loopInterval: FiniteDuration = 100.millis
         handleObserveCommand("iris") { cmd ⇒
           spawn {
             receivedPrefix = Some(cmd.source)
@@ -53,8 +55,8 @@ class ScriptDslTest extends BaseTestSuite {
       val orderOfShutdownCalled = ArrayBuffer.empty[Int]
 
       val script = new ScriptDsl {
-        override def csw: CswServices = ???
-
+        override def csw: CswServices             = ???
+        override val loopInterval: FiniteDuration = 100.millis
         handleShutdown {
           spawn {
             orderOfShutdownCalled += 1
@@ -75,8 +77,8 @@ class ScriptDslTest extends BaseTestSuite {
       val orderOfAbortCalled = ArrayBuffer.empty[Int]
 
       val script = new ScriptDsl {
-        override def csw: CswServices = ???
-
+        override def csw: CswServices             = ???
+        override val loopInterval: FiniteDuration = 100.millis
         handleAbort {
           spawn {
             orderOfAbortCalled += 1

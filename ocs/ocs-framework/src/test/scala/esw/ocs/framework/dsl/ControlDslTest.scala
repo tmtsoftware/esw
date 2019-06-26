@@ -8,7 +8,9 @@ import scala.concurrent.Future
 import scala.concurrent.duration.FiniteDuration
 
 class ControlDslTest extends BaseTestSuite {
+
   class TestDsl() extends ControlDsl {
+    val loopInterval: FiniteDuration = 500.millis
     def counterLoop(minimumDelay: Option[FiniteDuration] = None): (() ⇒ Int, Future[Done]) = {
       var counter = 0
 
@@ -35,7 +37,7 @@ class ControlDslTest extends BaseTestSuite {
       val (getCounter, loopFinished) = testDsl.counterLoop()
 
       // default interval is 50ms, loop will fin
-      loopFinished.isReadyWithin(50.millis) shouldBe false
+      loopFinished.isReadyWithin(500.millis) shouldBe false
       getCounter() should be < 3
       loopFinished.futureValue shouldBe Done
       getCounter() shouldBe 3
@@ -43,17 +45,16 @@ class ControlDslTest extends BaseTestSuite {
 
     "run till condition becomes true when interval is custom | ESW-90" in {
       val testDsl                    = new TestDsl
-      val (getCounter, loopFinished) = testDsl.counterLoop(Some(100.millis))
+      val (getCounter, loopFinished) = testDsl.counterLoop(Some(400.millis))
 
-      loopFinished.isReadyWithin(50.millis) shouldBe false
+      loopFinished.isReadyWithin(300.millis) shouldBe false
       getCounter() shouldBe 1
 
-      loopFinished.isReadyWithin(70.millis) shouldBe false
+      loopFinished.isReadyWithin(400.millis) shouldBe false
       getCounter() shouldBe 2
 
       loopFinished.futureValue shouldBe Done
       getCounter() shouldBe 3
     }
   }
-
 }

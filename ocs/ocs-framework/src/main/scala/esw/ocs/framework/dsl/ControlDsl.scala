@@ -4,7 +4,7 @@ import akka.Done
 import esw.ocs.async.macros.{AsyncMacros, StrandEc}
 import esw.ocs.framework.dsl.internal.FutureUtils
 
-import scala.concurrent.duration.{DurationLong, FiniteDuration}
+import scala.concurrent.duration.FiniteDuration
 import scala.concurrent.{ExecutionContext, Future}
 import scala.language.experimental.macros
 
@@ -12,7 +12,7 @@ trait ControlDsl {
   implicit lazy val strandEc: StrandEc               = StrandEc()
   protected implicit lazy val toEc: ExecutionContext = strandEc.ec
   // todo: should this come from conf file?
-  private val loopInterval: FiniteDuration = 50.millis
+  private[framework] val loopInterval: FiniteDuration
 
   protected final def par[T](fs: List[Future[T]]): Future[List[T]]          = Future.sequence(fs)
   protected final def par[T](f: Future[T], fs: Future[T]*): Future[List[T]] = par(f :: fs.toList)
