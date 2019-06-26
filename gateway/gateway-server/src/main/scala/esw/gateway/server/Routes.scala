@@ -41,15 +41,15 @@ class Routes(cswCtx: CswContext) extends JsonSupportExt {
           } ~
           get {
             path(Segment) { runId =>
-              val responseF = commandServiceF
-                .flatMap(_.queryFinal(Id(runId))(Timeout(100.hours)))
-                .map(r => ServerSentEvent(Json.stringify(Json.toJson(r))))
-
-              complete(
-                Source
-                  .fromFuture(responseF)
-                  .keepAlive(1.second, () => ServerSentEvent.heartbeat)
-              )
+              complete {
+                commandServiceF
+                  .flatMap(_.queryFinal(Id(runId))(Timeout(100.hours)))
+                  .map { r =>
+                    Source
+                      .single(ServerSentEvent(Json.stringify(Json.toJson(r))))
+                      .keepAlive(1.second, () => ServerSentEvent.heartbeat)
+                  }
+              }
             }
           }
         }

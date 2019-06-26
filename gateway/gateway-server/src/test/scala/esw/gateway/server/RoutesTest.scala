@@ -18,7 +18,7 @@ import org.scalatest.{Matchers, WordSpec}
 import play.api.libs.json.Json
 
 import scala.concurrent.duration.DurationDouble
-import scala.concurrent.{Await, Future}
+import scala.concurrent.{Await, Future, TimeoutException}
 
 class RoutesTest
     extends WordSpec
@@ -82,15 +82,15 @@ class RoutesTest
       }
     }
 
-//    "get error response for command on timeout | ESW-91" in {
-//      val assemblyName = "TestAssembly"
-//      val runId        = Id("123")
-//
-//      when(commandService.queryFinal(any[Id])(any[Timeout])).thenReturn(Future.failed(new TimeoutException("")))
-//      when(componentFactory.assemblyCommandService(assemblyName)).thenReturn(Future(commandService))
-//
-//      Get(s"/command/assembly/$assemblyName/${runId.id}") ~> routes ~> check {
-//        status shouldBe StatusCodes.OK
+    "get error response for command on timeout | ESW-91" in {
+      val assemblyName = "TestAssembly"
+      val runId        = Id("123")
+
+      when(commandService.queryFinal(any[Id])(any[Timeout])).thenReturn(Future.failed(new TimeoutException("")))
+      when(componentFactory.assemblyCommandService(assemblyName)).thenReturn(Future(commandService))
+
+      Get(s"/command/assembly/$assemblyName/${runId.id}") ~> routes ~> check {
+        status shouldBe StatusCodes.GatewayTimeout
 //        mediaType shouldBe `text/event-stream`
 //
 //        val actualDataF: Future[Seq[CommandResponse]] = responseAs[Source[ServerSentEvent, NotUsed]]
@@ -98,9 +98,9 @@ class RoutesTest
 //          .runWith(Sink.seq)
 //
 //        Await.result(actualDataF, 5.seconds) shouldEqual Seq(Completed(runId))
-//
-//      }
-//    }
+
+      }
+    }
   }
 
 }
