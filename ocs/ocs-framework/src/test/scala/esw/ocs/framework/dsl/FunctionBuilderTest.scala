@@ -16,7 +16,7 @@ class FunctionBuilderTest extends BaseTestSuite {
     case _                 ⇒ 0
   }
 
-  "FunctionBuilder's build " must {
+  "build " must {
 
     "execute matched handler and return Success | ESW-90" in {
       builtFunctionWithHandlers(Command("square", 10)) shouldBe 100

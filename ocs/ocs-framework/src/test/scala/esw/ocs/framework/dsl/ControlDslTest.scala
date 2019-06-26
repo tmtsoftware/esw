@@ -29,7 +29,7 @@ class ControlDslTest extends BaseTestSuite {
 
   override implicit def patienceConfig: PatienceConfig = PatienceConfig(1.second)
 
-  "ControlDsl's loop" must {
+  "loop" must {
     "run till condition becomes true when interval is default | ESW-90" in {
       val testDsl                    = new TestDsl
       val (getCounter, loopFinished) = testDsl.counterLoop()

@@ -1,5 +1,6 @@
 lazy val aggregateProjects: Seq[ProjectReference] =
   Seq(
+    `ocs-framework-api`,
     `ocs-framework`,
     `async-macros`,
     `gateway`,
@@ -24,6 +25,7 @@ lazy val esw = (project in file("."))
 lazy val `ocs` = project
   .in(file("ocs"))
   .aggregate(
+    `ocs-framework-api`,
     `ocs-framework`,
     `async-macros`
   )

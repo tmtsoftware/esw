@@ -13,7 +13,7 @@ class FutureUtilsTest extends BaseTestSuite {
   override protected def beforeEach(): Unit = strandEc = StrandEc()
   override protected def afterEach(): Unit  = strandEc.shutdown()
 
-  "FutureUtil's delayedResult" must {
+  "delayedResult" must {
     "complete the future after minDelay when min delay > function completion duration | ESW-90" in {
       var counter = 0
 

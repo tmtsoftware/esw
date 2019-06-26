@@ -7,7 +7,7 @@ import esw.ocs.framework.api.models.StepStatus.{Finished, InFlight, Pending}
 
 class StepTest extends BaseTestSuite {
 
-  "Step's apply" must {
+  "apply" must {
     "create new step from provided command" in {
       val setup = Setup(Prefix("test"), CommandName("test"), None)
 
@@ -18,7 +18,7 @@ class StepTest extends BaseTestSuite {
     }
   }
 
-  "Step's id" must {
+  "id" must {
     "be same as provided sequence commands Id" in {
       val setup = Setup(Prefix("test"), CommandName("test"), None)
       val step  = Step(setup)
@@ -26,7 +26,7 @@ class StepTest extends BaseTestSuite {
     }
   }
 
-  "Step's isPending" must {
+  "isPending" must {
     "return true when step status is Pending" in {
       val setup = Setup(Prefix("test"), CommandName("test"), None)
       val step  = Step(setup, Pending, hasBreakpoint = false)
@@ -36,7 +36,7 @@ class StepTest extends BaseTestSuite {
     }
   }
 
-  "Step's isInFlight" must {
+  "isInFlight" must {
     "return true when step status is InFlight" in {
       val setup = Setup(Prefix("test"), CommandName("test"), None)
       val step  = Step(setup, InFlight, hasBreakpoint = false)
@@ -46,7 +46,7 @@ class StepTest extends BaseTestSuite {
     }
   }
 
-  "Step's isFinished" must {
+  "isFinished" must {
     "return true when step status is Finished" in {
       val setup = Setup(Prefix("test"), CommandName("test"), None)
       val step  = Step(setup, Finished, hasBreakpoint = false)
@@ -56,7 +56,7 @@ class StepTest extends BaseTestSuite {
     }
   }
 
-  "Step's addBreakpoint" must {
+  "addBreakpoint" must {
     "add breakpoint when step status is Pending" in {
       val setup      = Setup(Prefix("test"), CommandName("test"), None)
       val step       = Step(setup, Pending, hasBreakpoint = false)
@@ -82,7 +82,7 @@ class StepTest extends BaseTestSuite {
     }
   }
 
-  "Step's removeBreakpoint" must {
+  "removeBreakpoint" must {
     "remove the breakpoint" in {
       val setup       = Setup(Prefix("test"), CommandName("test"), None)
       val step        = Step(setup, Pending, hasBreakpoint = true)
@@ -91,7 +91,7 @@ class StepTest extends BaseTestSuite {
     }
   }
 
-  "Step's withStatus" must {
+  "withStatus" must {
     "change the status to InFlight from Pending" in {
       val setup      = Setup(Prefix("test"), CommandName("test"), None)
       val step       = Step(setup, Pending, hasBreakpoint = true)

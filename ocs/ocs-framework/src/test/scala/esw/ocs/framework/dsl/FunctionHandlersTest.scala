@@ -6,7 +6,7 @@ import esw.ocs.framework.dsl.internal.FunctionHandlers
 import scala.collection.mutable.ArrayBuffer
 
 class FunctionHandlersTest extends BaseTestSuite {
-  "FunctionHandlers's execute" must {
+  "execute" must {
 
     "return empty buffer when handlers are empty | ESW-90" in {
       val functionHandlers = new FunctionHandlers[Int, String]
