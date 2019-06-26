@@ -15,25 +15,27 @@ final case class StepList private (runId: Id, steps: List[Step]) { outer =>
   def isFinished: Boolean       = steps.forall(_.isFinished)
   def isInFlight: Boolean       = steps.exists(_.isInFlight)
 
+  private def toSteps(commands: List[SequenceCommand]): List[Step] = commands.map(Step.apply)
+
   //update
   def replace(id: Id, commands: List[SequenceCommand]): StepListResult[ReplaceResponse] =
-    checkIfExists(id)(checkIfFinished(replaceSteps(id, Step.from(commands))))
+    checkIfExists(id)(checkIfFinished(replaceSteps(id, toSteps(commands))))
 
   private def replaceSteps(id: Id, steps: List[Step]): StepListResult[ReplaceResponse] =
     insertStepsAfter(id, steps, Replaced).stepList.filterNot(Set(id), Replaced)
 
   def prepend(commands: List[SequenceCommand]): StepListResult[PrependResponse] = checkIfFinished {
     val (pre, post) = steps.span(!_.isPending)
-    StepListResult(Prepended, copy(runId, pre ::: Step.from(commands) ::: post))
+    StepListResult(Prepended, copy(runId, pre ::: toSteps(commands) ::: post))
   }
 
   def append(commands: List[SequenceCommand]): StepListResult[AddResponse] =
-    checkIfFinished(StepListResult(Added, copy(runId, steps ::: Step.from(commands))))
+    checkIfFinished(StepListResult(Added, copy(runId, steps ::: toSteps(commands))))
 
   def delete(ids: Set[Id]): StepListResult[DeleteResponse] = checkIfFinished(filterNot(ids, Deleted))
 
   def insertAfter(id: Id, commands: List[SequenceCommand]): StepListResult[InsertAfterResponse] =
-    checkIfExists(id)(checkIfFinished(insertStepsAfter(id, Step.from(commands), Inserted)))
+    checkIfExists(id)(checkIfFinished(insertStepsAfter(id, toSteps(commands), Inserted)))
 
   def discardPending: StepListResult[DiscardPendingResponse] =
     checkIfFinished(StepListResult(Discarded, copy(runId, steps.filterNot(_.isPending))))
@@ -44,7 +46,7 @@ final case class StepList private (runId: Id, steps: List[Step]) { outer =>
 
     val updatedSteps = steps.map {
       case step if ids.contains(step.id) =>
-        val StepResponse(isSuccessful, updatedStep) = step.addBreakpoint()
+        val StepResult(isSuccessful, updatedStep) = step.addBreakpoint()
         if (isSuccessful) addedIds = updatedStep.id :: addedIds
         else notAddedIds = updatedStep.id :: notAddedIds
         updatedStep
@@ -65,7 +67,7 @@ final case class StepList private (runId: Id, steps: List[Step]) { outer =>
     checkIfFinished {
       nextPending
         .map { step =>
-          val StepResponse(isSuccessful, updatedStep) = step.addBreakpoint()
+          val StepResult(isSuccessful, updatedStep) = step.addBreakpoint()
           if (isSuccessful) updateStep[PauseResponse](updatedStep, Paused)
           else updateStep[PauseResponse](updatedStep, PauseFailed)
         }
@@ -85,7 +87,7 @@ final case class StepList private (runId: Id, steps: List[Step]) { outer =>
 
       val updatedSteps = steps.map {
         case step if id == step.id =>
-          val StepResponse(isSuccessful, updatedStep) = step.withStatus(stepStatus)
+          val StepResult(isSuccessful, updatedStep) = step.withStatus(stepStatus)
           if (isSuccessful) reply = Updated
           else reply = UpdateFailed
           updatedStep
@@ -138,7 +140,7 @@ object StepList {
   def empty: StepList = StepList(Id(), List.empty)
 
   def from(sequence: Sequence): Either[DuplicateIdsFound.type, StepList] = {
-    val steps = Step.from(sequence.commands.toList)
+    val steps = sequence.commands.toList.map(Step.apply)
 
     if (steps.map(_.id).toSet.size == steps.size) Right(StepList(sequence.runId, steps))
     else Left(DuplicateIdsFound)

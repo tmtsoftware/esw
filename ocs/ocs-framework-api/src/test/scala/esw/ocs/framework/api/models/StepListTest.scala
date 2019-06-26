@@ -23,7 +23,7 @@ class StepListTest extends BaseTestSuite {
         .copy(runId = setup1.runId)
 
       val sequence = Sequence(setup1, setup2)
-      StepList.from(sequence).left.value shouldBe DuplicateIdsFound
+      StepList.from(sequence).left.value should ===(DuplicateIdsFound)
     }
   }
 
@@ -35,7 +35,7 @@ class StepListTest extends BaseTestSuite {
       val appendResult = initialStepList.append(List(setup))
 
       appendResult.response shouldBe Added
-      appendResult.stepList should ===(initialStepList.copy(steps = Step.from(setup) :: initialStepList.steps))
+      appendResult.stepList should ===(initialStepList.copy(steps = Step.apply(setup) :: initialStepList.steps))
     }
   }
 
