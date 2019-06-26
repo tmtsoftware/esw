@@ -12,7 +12,6 @@ addSbtPlugin("com.typesafe.sbt"   % "sbt-ghpages"                % "0.6.3")
 addSbtPlugin("com.typesafe.sbt"   % "sbt-git"                    % "1.0.0")
 addSbtPlugin("com.dwijnand"       % "sbt-dynver"                 % "3.3.0")
 addSbtPlugin("org.portable-scala" % "sbt-scalajs-crossproject"   % "0.6.0")
-addSbtPlugin("org.scalastyle"     %% "scalastyle-sbt-plugin"     % "1.0.0")
 
 resolvers += "Jenkins repo" at "http://repo.jenkins-ci.org/public/"
 addSbtPlugin("ohnosequences" % "sbt-github-release" % "0.7.0")
