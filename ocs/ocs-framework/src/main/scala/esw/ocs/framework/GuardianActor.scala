@@ -19,20 +19,16 @@ object GuardianActor {
         Behaviors.same
 
       case msg @ ShutdownChildren(replyTo) =>
-        if (ctx.children.isEmpty) {
-          msg.replyTo ! Done
-        } else {
+        if (ctx.children.isEmpty) msg.replyTo ! Done
+        else
           ctx.children.foreach { child =>
             ctx.watchWith(child, ShutdownReply(replyTo))
             ctx.stop(child)
           }
-        }
         Behaviors.same
 
       case ShutdownReply(replyTo) =>
-        if (ctx.children.isEmpty) {
-          replyTo ! Done
-        }
+        if (ctx.children.isEmpty) replyTo ! Done
         Behaviors.same
     }
   }

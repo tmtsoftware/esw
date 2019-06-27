@@ -5,7 +5,7 @@ import csw.params.core.models.{Id, Prefix}
 import esw.ocs.framework.api.BaseTestSuite
 import esw.ocs.framework.api.models.StepList.DuplicateIdsFound
 import esw.ocs.framework.api.models.StepStatus.{Finished, InFlight, Pending}
-import esw.ocs.framework.api.models.messages.StepListActionResponse.Added
+import esw.ocs.framework.api.models.messages.StepListActionResponse.{Added, IdDoesNotExist, NotAllowedOnFinishedSeq, Replaced}
 
 class StepListTest extends BaseTestSuite {
 
@@ -156,6 +156,62 @@ class StepListTest extends BaseTestSuite {
 
       val stepList = StepList(Id(), List(step1, step2))
       stepList.isFinished shouldBe false
+    }
+  }
+
+  "replace" must {
+    val setup1 = Setup(Prefix("ocs.move1"), CommandName("test1"), None)
+    val setup2 = Setup(Prefix("ocs.move2"), CommandName("test2"), None)
+    val setup3 = Setup(Prefix("ocs.move3"), CommandName("test3"), None)
+    val setup4 = Setup(Prefix("ocs.move4"), CommandName("test4"), None)
+    val setup5 = Setup(Prefix("ocs.move5"), CommandName("test5"), None)
+
+    "replace step with given list of steps when Id matches and is in Pending status" in {
+      val step1 = Step(setup1, InFlight, hasBreakpoint = false)
+      val step2 = Step(setup2, Pending, hasBreakpoint = false)
+      val step3 = Step(setup3, Pending, hasBreakpoint = false)
+
+      val id               = Id()
+      val stepList         = StepList(id, List(step1, step2, step3))
+      val replacedStepList = stepList.replace(setup2.runId, List(setup4, setup5))
+      replacedStepList.response shouldBe Replaced
+      replacedStepList.stepList shouldBe StepList(id, List(step1, Step(setup4), Step(setup5), step3))
+    }
+
+    // fixme
+    "fail with ReplaceFailed error when Id matches and is not in Pending status" ignore {
+      val step1 = Step(setup1, InFlight, hasBreakpoint = false)
+      val step2 = Step(setup2, Pending, hasBreakpoint = false)
+      val step3 = Step(setup3, Pending, hasBreakpoint = false)
+
+      val id               = Id()
+      val stepList         = StepList(id, List(step1, step2, step3))
+      val replacedStepList = stepList.replace(setup2.runId, List(setup4, setup5))
+      replacedStepList.response shouldBe Replaced
+      replacedStepList.stepList shouldBe StepList(id, List(step1, Step(setup4), Step(setup5), step3))
+    }
+
+    "fail with IdDoesNotExist error when provided Id does't exist in StepList" in {
+      val step1 = Step(setup1, InFlight, hasBreakpoint = false)
+      val step2 = Step(setup2, Pending, hasBreakpoint = false)
+
+      val stepList = StepList(Id(), List(step1, step2))
+
+      val invalidId        = Id()
+      val replacedStepList = stepList.replace(invalidId, List(setup4, setup5))
+      replacedStepList.response shouldBe IdDoesNotExist(invalidId)
+      replacedStepList.stepList shouldBe stepList
+    }
+
+    "fail with NotAllowedOnFinishedSeq error when StepList is finished" in {
+      val step1 = Step(setup1, Finished, hasBreakpoint = false)
+      val step2 = Step(setup2, Finished, hasBreakpoint = false)
+
+      val id               = Id()
+      val stepList         = StepList(id, List(step1, step2))
+      val replacedStepList = stepList.replace(setup2.runId, List(setup4, setup5))
+      replacedStepList.response shouldBe NotAllowedOnFinishedSeq
+      replacedStepList.stepList shouldBe stepList
     }
   }
 
