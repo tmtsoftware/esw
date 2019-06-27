@@ -3,15 +3,16 @@ package esw.gateway.server.routes
 import akka.http.scaladsl.model.sse.ServerSentEvent
 import akka.http.scaladsl.model.{MediaTypes, StatusCodes}
 import akka.http.scaladsl.server.Route
-import akka.http.scaladsl.testkit.ScalatestRouteTest
+import akka.http.scaladsl.testkit.{RouteTestTimeout, ScalatestRouteTest}
 import akka.http.scaladsl.unmarshalling.sse.EventStreamUnmarshalling._
 import akka.stream.scaladsl.{Sink, Source}
+import akka.testkit.TestDuration
 import akka.{Done, NotUsed}
 import csw.event.api.scaladsl.EventSubscription
 import csw.event.api.scaladsl.SubscriptionModes.RateLimiterMode
 import csw.params.core.formats.JsonSupport
 import csw.params.core.models.{Prefix, Subsystem}
-import csw.params.events.{Event, EventKey, EventName, ObserveEvent}
+import csw.params.events._
 import de.heikoseeberger.akkahttpplayjson.PlayJsonSupport
 import esw.gateway.server.CswContextMocks
 import org.mockito.Mockito.{verify, when}
@@ -45,14 +46,15 @@ class EventRoutesTest
 
   val eventSubscription: EventSubscription = new EventSubscription {
     override def unsubscribe(): Future[Done] = Future.successful(Done)
-    override def ready(): Future[Done]       = Future.successful(Done)
+
+    override def ready(): Future[Done] = Future.successful(Done)
   }
 
   val eventSource: Source[Event, EventSubscription] =
     Source(Set(event1, event2)).mapMaterializedValue(_ => eventSubscription)
 
   override protected def afterEach(): Unit = {
-    Mockito.clearInvocations(eventPublisher, eventSubscriber)
+    Mockito.clearInvocations(eventPublisher, eventSubscriber, eventService)
   }
 
   override protected def afterAll(): Unit = cswCtx.actorSystem.terminate()
@@ -128,18 +130,16 @@ class EventRoutesTest
         val pattern       = "event"
         val subsystem     = Subsystem.withName(subsystemName)
 
+        implicit val routeTestSuiteTimeout: RouteTestTimeout = RouteTestTimeout(5.seconds.dilated)
+
         when(eventSubscriber.pSubscribe(subsystem, pattern)).thenReturn(eventSource)
 
         Get(s"/event/subscribe/$subsystemName?frequency=10&pattern=$pattern") ~> route ~> check {
           status shouldBe StatusCodes.OK
           mediaType shouldBe MediaTypes.`text/event-stream`
+
+          //check is psubscribe is called with specified pattern
           verify(eventSubscriber).pSubscribe(subsystem, pattern)
-
-          val actualDataF: Future[Seq[Event]] = responseAs[Source[ServerSentEvent, NotUsed]]
-            .map(sse => Json.fromJson[Event](Json.parse(sse.getData())).get)
-            .runWith(Sink.seq)
-
-          Await.result(actualDataF, 5.seconds) shouldEqual Seq(event1, event2)
         }
       }
 
@@ -152,13 +152,47 @@ class EventRoutesTest
         Get(s"/event/subscribe/$subsystemName?frequency=10") ~> route ~> check {
           status shouldBe StatusCodes.OK
           mediaType shouldBe MediaTypes.`text/event-stream`
+
+          //check is psubscribe is called with * pattern
+          verify(eventSubscriber).pSubscribe(subsystem, "*")
+        }
+      }
+
+      "subscribe to events matching for given subsystem should rate limit to given frequency" in {
+
+        val subsystemName = "tcs"
+        val subsystem     = Subsystem.withName(subsystemName)
+
+        //needed for test to wait for 5 seconds
+        implicit val routeTestSuiteTimeout: RouteTestTimeout = RouteTestTimeout(5.seconds.dilated)
+
+        val totalEvents = 40
+        val eventItr    = (1 to totalEvents).map(x => SystemEvent(Prefix("tcs"), EventName(x.toString))).toIterator
+
+        //simulate event publishing with frequency of 10 Hz with 500 millis initial delay
+        val eventSource1: Source[SystemEvent, EventSubscription] = Source
+          .tick(500.millis, 100.millis, ())
+          .take(totalEvents)
+          .map(_ => eventItr.next())
+          .mapMaterializedValue(_ => eventSubscription)
+
+        when(eventSubscriber.pSubscribe(subsystem, "*")).thenReturn(eventSource1)
+
+        Get(s"/event/subscribe/$subsystemName?frequency=5") ~> route ~> check {
+          status shouldBe StatusCodes.OK
+          mediaType shouldBe MediaTypes.`text/event-stream`
           verify(eventSubscriber).pSubscribe(subsystem, "*")
 
           val actualDataF: Future[Seq[Event]] = responseAs[Source[ServerSentEvent, NotUsed]]
             .map(sse => Json.fromJson[Event](Json.parse(sse.getData())).get)
             .runWith(Sink.seq)
 
-          Await.result(actualDataF, 5.seconds) shouldEqual Seq(event1, event2)
+          val events = Await.result(actualDataF, 5.seconds)
+
+          //Stream runs for total 4.5 seconds (as 500 millis is the initial delay)
+          //With 5 events/second we expect 21 events. ( (5 * 4) + first event published on 0.5th second)
+          events.length should be <= 22
+          events.last.eventName.name.toInt shouldBe 40
         }
       }
 
