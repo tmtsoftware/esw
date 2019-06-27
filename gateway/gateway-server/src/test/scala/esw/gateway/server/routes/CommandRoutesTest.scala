@@ -8,11 +8,13 @@ import akka.http.scaladsl.testkit.ScalatestRouteTest
 import akka.http.scaladsl.unmarshalling.sse.EventStreamUnmarshalling._
 import akka.stream.scaladsl.{Sink, Source}
 import akka.util.Timeout
+import csw.command.api.CurrentStateSubscription
 import csw.params.commands.CommandResponse.{Accepted, Completed}
 import csw.params.commands.{CommandName, CommandResponse, Setup}
 import csw.params.core.models.{Id, ObsId, Prefix}
+import csw.params.core.states.{CurrentState, StateName, StateVariable}
 import de.heikoseeberger.akkahttpplayjson.PlayJsonSupport
-import esw.gateway.server.{CswContextMocks, JsonSupportExt, Routes}
+import esw.gateway.server.{CswContextMocks, JsonSupportExt}
 import org.mockito.ArgumentMatchersSugar
 import org.mockito.Mockito._
 import org.scalatest.{BeforeAndAfterAll, Matchers, WordSpec}
@@ -31,7 +33,7 @@ class CommandRoutesTest
     with PlayJsonSupport
     with JsonSupportExt {
 
-  private val routes = new Routes(cswCtx).route
+  private val routes = new CommandRoutes(cswCtx).route
 
   import actorRuntime.timeout
 
@@ -95,6 +97,31 @@ class CommandRoutesTest
       Get(s"/command/assembly/$assemblyName/${runId.id}") ~> routes ~> check {
         status shouldBe StatusCodes.GatewayTimeout
         mediaType shouldBe `application/json`
+      }
+    }
+
+    "get current state subscription to all state-names | ESW-91" in {
+      val assemblyName  = "TestAssembly"
+      val currentState1 = CurrentState(Prefix("a.b"), StateName("stateName1"))
+      val currentState2 = CurrentState(Prefix("a.b"), StateName("stateName2"))
+
+      val currentStateSubscription = mock[CurrentStateSubscription]
+
+      val currentStateStream = Source(List(currentState1, currentState2))
+        .mapMaterializedValue(_ => currentStateSubscription)
+
+      when(commandService.subscribeCurrentState(Set.empty[StateName])).thenReturn(currentStateStream)
+      when(componentFactory.assemblyCommandService(assemblyName)).thenReturn(Future(commandService))
+
+      Get(s"/command/assembly/$assemblyName/current-state/subscribe") ~> routes ~> check {
+        status shouldBe StatusCodes.OK
+        mediaType shouldBe `text/event-stream`
+
+        val actualDataF: Future[Seq[StateVariable]] = responseAs[Source[ServerSentEvent, NotUsed]]
+          .map(sse => Json.fromJson[StateVariable](Json.parse(sse.getData())).get)
+          .runWith(Sink.seq)
+
+        Await.result(actualDataF, 5.seconds) shouldEqual Seq(currentState1, currentState2)
       }
     }
   }
