@@ -21,7 +21,7 @@ class StepListTest extends BaseTestSuite {
       val setup2 = Setup(Prefix("ocs.move2"), CommandName("test2"), None)
 
       val stepList = StepList(Sequence(setup1, setup2)).right.value
-      stepList.steps.length should ===(2)
+      stepList.steps.length shouldBe 2
     }
 
     "fail when duplicate Ids provided" in {
@@ -29,7 +29,7 @@ class StepListTest extends BaseTestSuite {
       val setup2 = Setup(Prefix("ocs.move2"), CommandName("test2"), None).copy(runId = setup1.runId)
 
       val sequence = Sequence(setup1, setup2)
-      StepList(sequence).left.value should ===(DuplicateIdsFound)
+      StepList(sequence).left.value shouldBe DuplicateIdsFound
     }
   }
 
@@ -171,24 +171,23 @@ class StepListTest extends BaseTestSuite {
       val step2 = Step(setup2, Pending, hasBreakpoint = false)
       val step3 = Step(setup3, Pending, hasBreakpoint = false)
 
-      val id               = Id()
-      val stepList         = StepList(id, List(step1, step2, step3))
-      val replacedStepList = stepList.replace(setup2.runId, List(setup4, setup5))
-      replacedStepList.response shouldBe Replaced
-      replacedStepList.stepList shouldBe StepList(id, List(step1, Step(setup4), Step(setup5), step3))
+      val id              = Id()
+      val stepList        = StepList(id, List(step1, step2, step3))
+      val updatedStepList = stepList.replace(setup2.runId, List(setup4, setup5))
+      updatedStepList.response shouldBe Replaced
+      updatedStepList.stepList shouldBe StepList(id, List(step1, Step(setup4), Step(setup5), step3))
     }
 
-    // fixme
-    "fail with ReplaceFailed error when Id matches and is not in Pending status" ignore {
-      val step1 = Step(setup1, InFlight, hasBreakpoint = false)
-      val step2 = Step(setup2, Pending, hasBreakpoint = false)
+    "fail with ReplaceNotSupportedInThisStatus error when Id matches and is not in Pending status" in {
+      val step1 = Step(setup1, Finished, hasBreakpoint = false)
+      val step2 = Step(setup2, Finished, hasBreakpoint = false)
       val step3 = Step(setup3, Pending, hasBreakpoint = false)
 
-      val id               = Id()
-      val stepList         = StepList(id, List(step1, step2, step3))
-      val replacedStepList = stepList.replace(setup2.runId, List(setup4, setup5))
-      replacedStepList.response shouldBe Replaced
-      replacedStepList.stepList shouldBe StepList(id, List(step1, Step(setup4), Step(setup5), step3))
+      val stepList        = StepList(Id(), List(step1, step2, step3))
+      val id              = setup2.runId
+      val updatedStepList = stepList.replace(id, List(setup4, setup5))
+      updatedStepList.response shouldBe ReplaceNotSupportedInThisStatus(id, Finished)
+      updatedStepList.stepList shouldBe stepList
     }
 
     "fail with IdDoesNotExist error when provided Id does't exist in StepList" in {
@@ -197,21 +196,21 @@ class StepListTest extends BaseTestSuite {
 
       val stepList = StepList(Id(), List(step1, step2))
 
-      val invalidId        = Id()
-      val replacedStepList = stepList.replace(invalidId, List(setup4, setup5))
-      replacedStepList.response shouldBe IdDoesNotExist(invalidId)
-      replacedStepList.stepList shouldBe stepList
+      val invalidId       = Id()
+      val updatedStepList = stepList.replace(invalidId, List(setup4, setup5))
+      updatedStepList.response shouldBe IdDoesNotExist(invalidId)
+      updatedStepList.stepList shouldBe stepList
     }
 
     "fail with NotAllowedOnFinishedSeq error when StepList is finished" in {
       val step1 = Step(setup1, Finished, hasBreakpoint = false)
       val step2 = Step(setup2, Finished, hasBreakpoint = false)
 
-      val id               = Id()
-      val stepList         = StepList(id, List(step1, step2))
-      val replacedStepList = stepList.replace(setup2.runId, List(setup4, setup5))
-      replacedStepList.response shouldBe NotAllowedOnFinishedSeq
-      replacedStepList.stepList shouldBe stepList
+      val id              = Id()
+      val stepList        = StepList(id, List(step1, step2))
+      val updatedStepList = stepList.replace(setup2.runId, List(setup4, setup5))
+      updatedStepList.response shouldBe NotAllowedOnFinishedSeq
+      updatedStepList.stepList shouldBe stepList
     }
   }
 
@@ -225,11 +224,11 @@ class StepListTest extends BaseTestSuite {
       val step1 = Step(setup1, InFlight, hasBreakpoint = false)
       val step2 = Step(setup2, Pending, hasBreakpoint = false)
 
-      val id                = Id()
-      val stepList          = StepList(id, List(step1, step2))
-      val prependedStepList = stepList.prepend(List(setup3, setup4))
-      prependedStepList.response shouldBe Prepended
-      prependedStepList.stepList shouldBe StepList(id, List(step1, Step(setup3), Step(setup4), step2))
+      val id              = Id()
+      val stepList        = StepList(id, List(step1, step2))
+      val updatedStepList = stepList.prepend(List(setup3, setup4))
+      updatedStepList.response shouldBe Prepended
+      updatedStepList.stepList shouldBe StepList(id, List(step1, Step(setup3), Step(setup4), step2))
     }
 
     "add provided steps at the end of StepList when StepList doesn't have Pending step" in {
@@ -238,19 +237,19 @@ class StepListTest extends BaseTestSuite {
 
       val stepList = StepList(Id(), List(step1, step2))
 
-      val prependedStepList = stepList.prepend(List(setup3))
-      prependedStepList.response shouldBe Prepended
-      prependedStepList.stepList shouldBe StepList(stepList.runId, List(step1, step2, Step(setup3)))
+      val updatedStepList = stepList.prepend(List(setup3))
+      updatedStepList.response shouldBe Prepended
+      updatedStepList.stepList shouldBe StepList(stepList.runId, List(step1, step2, Step(setup3)))
     }
 
     "fail with NotAllowedOnFinishedSeq error when StepList is finished" in {
       val step1 = Step(setup1, Finished, hasBreakpoint = false)
       val step2 = Step(setup2, Finished, hasBreakpoint = false)
 
-      val stepList         = StepList(Id(), List(step1, step2))
-      val replacedStepList = stepList.prepend(List(setup3))
-      replacedStepList.response shouldBe NotAllowedOnFinishedSeq
-      replacedStepList.stepList shouldBe stepList
+      val stepList        = StepList(Id(), List(step1, step2))
+      val updatedStepList = stepList.prepend(List(setup3))
+      updatedStepList.response shouldBe NotAllowedOnFinishedSeq
+      updatedStepList.stepList shouldBe stepList
     }
 
   }
@@ -265,22 +264,21 @@ class StepListTest extends BaseTestSuite {
       val step1 = Step(setup1, InFlight, hasBreakpoint = false)
       val step2 = Step(setup2, Pending, hasBreakpoint = false)
 
-      val id                = Id()
-      val stepList          = StepList(id, List(step1, step2))
-      val prependedStepList = stepList.append(List(setup3, setup4))
-      prependedStepList.response shouldBe Added // fixme: revisit type?
-      prependedStepList.stepList shouldBe StepList(id, List(step1, step2, Step(setup3), Step(setup4)))
+      val id              = Id()
+      val stepList        = StepList(id, List(step1, step2))
+      val updatedStepList = stepList.append(List(setup3, setup4))
+      updatedStepList.response shouldBe Added // fixme: revisit type?
+      updatedStepList.stepList shouldBe StepList(id, List(step1, step2, Step(setup3), Step(setup4)))
     }
 
     "fail with NotAllowedOnFinishedSeq error when StepList is finished" in {
       val step1 = Step(setup1, Finished, hasBreakpoint = false)
       val step2 = Step(setup2, Finished, hasBreakpoint = false)
 
-      val stepList         = StepList(Id(), List(step1, step2))
-      val replacedStepList = stepList.append(List(setup3))
-      replacedStepList.response shouldBe NotAllowedOnFinishedSeq
-      replacedStepList.stepList shouldBe stepList
+      val stepList        = StepList(Id(), List(step1, step2))
+      val updatedStepList = stepList.append(List(setup3))
+      updatedStepList.response shouldBe NotAllowedOnFinishedSeq
+      updatedStepList.stepList shouldBe stepList
     }
   }
-
 }

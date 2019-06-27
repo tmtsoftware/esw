@@ -21,28 +21,46 @@ final case class StepList private[models] (runId: Id, steps: List[Step]) { outer
 
   //update
   def replace(id: Id, commands: List[SequenceCommand]): StepListResult[ReplaceResponse] =
-    checkIfExists(id)(checkIfFinished(replaceSteps(id, toSteps(commands))))
+    ifExists(id) { step ⇒
+      ifNotFinished {
+        if (step.isPending) replaceSteps(id, toSteps(commands))
+        else StepListResult(ReplaceNotSupportedInThisStatus(id, step.status), this)
+      }
+    }
 
-  private def replaceSteps(id: Id, steps: List[Step]): StepListResult[ReplaceResponse] =
-    insertStepsAfter(id, steps, Replaced).stepList.filterNot(Set(id), Replaced)
-
-  def prepend(commands: List[SequenceCommand]): StepListResult[PrependResponse] = checkIfFinished {
+  def prepend(commands: List[SequenceCommand]): StepListResult[PrependResponse] = ifNotFinished {
     val (pre, post) = steps.span(!_.isPending)
     StepListResult(Prepended, copy(runId, pre ::: toSteps(commands) ::: post))
   }
 
   def append(commands: List[SequenceCommand]): StepListResult[AddResponse] =
-    checkIfFinished(StepListResult(Added, copy(runId, steps ::: toSteps(commands))))
+    ifNotFinished(StepListResult(Added, copy(runId, steps ::: toSteps(commands))))
 
-  def delete(ids: Set[Id]): StepListResult[DeleteResponse] = checkIfFinished(filterNot(ids, Deleted))
+  def delete(ids: Set[Id]): StepListResult[DeleteResponse] = ifNotFinished {
+    var deletedIds    = List.empty[Id]
+    var notDeletedIds = List.empty[Id]
+
+    val updatedSteps = steps.filterNot {
+      case step if ids.contains(step.id) && step.isPending ⇒ deletedIds ::= step.id; true
+      case step if ids.contains(step.id)                   ⇒ notDeletedIds ::= step.id; false
+      case _                                               ⇒ false
+    }
+
+    StepListResult(DeletionResult(deletedIds, notDeletedIds), copy(runId, updatedSteps))
+  }
 
   def insertAfter(id: Id, commands: List[SequenceCommand]): StepListResult[InsertAfterResponse] =
-    checkIfExists(id)(checkIfFinished(insertStepsAfter(id, toSteps(commands), Inserted)))
+    ifExists(id) { _ ⇒
+      ifNotFinished {
+        val updatedSteps = insertStepsAfter(id, toSteps(commands))
+        StepListResult(Inserted, copy(runId, updatedSteps))
+      }
+    }
 
   def discardPending: StepListResult[DiscardPendingResponse] =
-    checkIfFinished(StepListResult(Discarded, copy(runId, steps.filterNot(_.isPending))))
+    ifNotFinished(StepListResult(Discarded, copy(runId, steps.filterNot(_.isPending))))
 
-  def addBreakpoints(ids: List[Id]): StepListResult[AddBreakpointsResponse] = checkIfFinished {
+  def addBreakpoints(ids: List[Id]): StepListResult[AddBreakpointsResponse] = ifNotFinished {
     var addedIds    = List.empty[Id]
     var notAddedIds = List.empty[Id]
 
@@ -61,12 +79,12 @@ final case class StepList private[models] (runId: Id, steps: List[Step]) { outer
     StepListResult(AdditionResult(addedIds, notAddedIds), updatedStepList)
   }
 
-  def removeBreakpoints(ids: List[Id]): StepListResult[RemoveBreakpointsResponse] = checkIfFinished {
+  def removeBreakpoints(ids: List[Id]): StepListResult[RemoveBreakpointsResponse] = ifNotFinished {
     StepListResult(BreakpointsRemoved, updateAll(ids.toSet, _.removeBreakpoint()))
   }
 
   def pause: StepListResult[PauseResponse] =
-    checkIfFinished {
+    ifNotFinished {
       nextPending
         .map { step =>
           val StepResult(isSuccessful, updatedStep) = step.addBreakpoint()
@@ -76,45 +94,43 @@ final case class StepList private[models] (runId: Id, steps: List[Step]) { outer
         .getOrReturn(PauseFailed)
     }
 
-  def resume: StepListResult[ResumeResponse] = checkIfFinished {
+  def resume: StepListResult[ResumeResponse] = ifNotFinished {
     nextPending.map(step => updateStep[ResumeResponse](step.removeBreakpoint(), Resumed)).getOrReturn(Resumed) // completed?
   }
 
-  def updateStep(step: Step): StepListResult[UpdateResponse] = checkIfExists(step.id)(updateStep(step, Updated))
+  def updateStep(step: Step): StepListResult[UpdateResponse] = ifExists(step.id)(_ ⇒ updateStep(step, Updated))
 
   // api changed from prototype (single Id instead of Set[Id]), confirm?
   def updateStatus(id: Id, stepStatus: StepStatus): StepListResult[UpdateResponse] =
-    checkIfExists(id)(checkIfFinished {
-      var reply: UpdateResponse = Updated
+    ifExists(id) { _ ⇒
+      ifNotFinished {
+        var reply: UpdateResponse = Updated
 
-      val updatedSteps = steps.map {
-        case step if id == step.id =>
-          val StepResult(isSuccessful, updatedStep) = step.withStatus(stepStatus)
-          if (isSuccessful) reply = Updated
-          else reply = UpdateFailed
-          updatedStep
-        case step => step
+        val updatedSteps = steps.map {
+          case step if id == step.id =>
+            val StepResult(isSuccessful, updatedStep) = step.withStatus(stepStatus)
+            if (isSuccessful) reply = Updated
+            else reply = UpdateFailed
+            updatedStep
+          case step => step
+        }
+        val updatedStepList = copy(runId, updatedSteps)
+        StepListResult(reply, updatedStepList)
       }
-      val updatedStepList = copy(runId, updatedSteps)
-      StepListResult(reply, updatedStepList)
-    })
+    }
 
-  private def insertStepsAfter[T <: StepListActionResponse](
-      id: Id,
-      newSteps: List[Step],
-      response: T
-  ): StepListResult[T] = {
+  private def replaceSteps(id: Id, steps: List[Step]): StepListResult[ReplaceResponse] =
+    StepListResult(Replaced, copy(runId, insertStepsAfter(id, steps).filterNot(_.id == id)))
+
+  private def insertStepsAfter(id: Id, newSteps: List[Step]): List[Step] = {
     val (pre, post) = steps.span(_.id != id)
-    StepListResult(response, copy(runId, pre ::: post.headOption.toList ::: newSteps ::: post.tail))
+    pre ::: post.headOption.toList ::: newSteps ::: post.tail
   }
 
   private def updateStep[T <: StepListActionResponse](step: Step, response: T): StepListResult[T] =
-    checkIfFinished {
+    ifNotFinished {
       StepListResult(response, updateAll(Set(step.id), _ => step))
     }
-
-  private def filterNot[T <: StepListActionResponse](ids: Set[Id], response: T): StepListResult[T] =
-    StepListResult(response, copy(runId, steps.filterNot(step => ids.contains(step.id) && step.isPending)))
 
   private def updateAll(ids: Set[Id], f: Step => Step): StepList =
     copy(runId, steps.map {
@@ -122,13 +138,13 @@ final case class StepList private[models] (runId: Id, steps: List[Step]) { outer
       case step                          => step
     })
 
-  private def checkIfFinished[T <: StepListActionResponse](f: ⇒ StepListResult[T]): StepListResult[T] =
+  private def ifNotFinished[T <: StepListActionResponse](f: ⇒ StepListResult[T]): StepListResult[T] =
     if (isFinished) StepListResult(NotAllowedOnFinishedSeq.asInstanceOf[T], this) else f
 
-  private def checkIfExists[T <: StepListActionResponse](id: Id)(f: ⇒ StepListResult[T]): StepListResult[T] =
+  private def ifExists[T <: StepListActionResponse](id: Id)(f: Step ⇒ StepListResult[T]): StepListResult[T] =
     steps.find(_.id == id) match {
-      case None ⇒ StepListResult(IdDoesNotExist(id).asInstanceOf[T], this)
-      case _    ⇒ f
+      case Some(step) ⇒ f(step)
+      case None       ⇒ StepListResult(IdDoesNotExist(id).asInstanceOf[T], this)
     }
 
   private implicit class StepListResultOps[T <: StepListActionResponse](optStep: Option[StepListResult[T]]) {

@@ -1,6 +1,7 @@
 package esw.ocs.framework.api.models.messages
 
 import csw.params.core.models.Id
+import esw.ocs.framework.api.models.StepStatus
 
 sealed trait StepListActionResponse
 
@@ -42,14 +43,17 @@ object StepListActionResponse {
   sealed trait DiscardPendingResponse extends StepListActionResponse
   case object Discarded               extends DiscardPendingResponse
 
-  sealed trait ReplaceResponse extends StepListActionResponse
-  case object Replaced         extends ReplaceResponse
+  sealed trait ReplaceResponse                                                 extends StepListActionResponse
+  case object Replaced                                                         extends ReplaceResponse
+  final case class ReplaceNotSupportedInThisStatus(id: Id, status: StepStatus) extends ReplaceResponse
 
   sealed trait PrependResponse extends StepListActionResponse
   case object Prepended        extends PrependResponse
 
-  sealed trait DeleteResponse extends StepListActionResponse
-  case object Deleted         extends DeleteResponse
+  sealed trait DeleteResponse                                        extends StepListActionResponse
+  case object Deleted                                                extends DeleteResponse
+  case object DeleteFailed                                           extends DeleteResponse
+  case class DeletionResult(deleted: List[Id], notDeleted: List[Id]) extends DeleteResponse
 
   sealed trait InsertAfterResponse extends StepListActionResponse
   case object Inserted             extends InsertAfterResponse
