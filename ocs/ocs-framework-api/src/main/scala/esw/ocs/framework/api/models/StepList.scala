@@ -45,7 +45,7 @@ final case class StepList private[models] (runId: Id, steps: List[Step]) { outer
       case step if ids.contains(step.id)                   ⇒ notDeletedIds ::= step.id; false
       case _                                               ⇒ false
     }
-
+    notDeletedIds = notDeletedIds ::: (ids diff (deletedIds ::: notDeletedIds).toSet).toList
     StepListResult(DeletionResult(deletedIds, notDeletedIds), copy(runId, updatedSteps))
   }
 

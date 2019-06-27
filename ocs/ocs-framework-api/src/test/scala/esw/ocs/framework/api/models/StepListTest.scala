@@ -281,4 +281,50 @@ class StepListTest extends BaseTestSuite {
       updatedStepList.stepList shouldBe stepList
     }
   }
+
+  "delete" must {
+    val setup1 = Setup(Prefix("ocs.move1"), CommandName("test1"), None)
+    val setup2 = Setup(Prefix("ocs.move2"), CommandName("test2"), None)
+    val setup3 = Setup(Prefix("ocs.move3"), CommandName("test3"), None)
+    val setup4 = Setup(Prefix("ocs.move4"), CommandName("test4"), None)
+
+    "return deleted and not deleted ids" in {
+      val step1 = Step(setup1, Finished, hasBreakpoint = false)
+      val step2 = Step(setup2, Pending, hasBreakpoint = false)
+      val step3 = Step(setup3, InFlight, hasBreakpoint = false)
+      val step4 = Step(setup4, Pending, hasBreakpoint = false)
+
+      val id              = Id()
+      val stepList        = StepList(id, List(step1, step2, step3, step4))
+      val updatedStepList = stepList.delete(Set(setup2.runId, setup3.runId, setup4.runId))
+      val deletionResult  = updatedStepList.response.asInstanceOf[DeletionResult]
+      deletionResult.deleted.toSet shouldBe Set(setup2.runId, setup4.runId)
+      deletionResult.notDeleted.toSet shouldBe Set(setup3.runId)
+      updatedStepList.stepList shouldBe StepList(id, List(step1, step3))
+    }
+
+    "return not deleted ids when provided ids does not exist" in {
+      val step1 = Step(setup1, Pending, hasBreakpoint = false)
+
+      val stepList        = StepList(Id(), List(step1))
+      val idsToBeDeleted  = Set(Id(), Id())
+      val updatedStepList = stepList.delete(idsToBeDeleted)
+      val deletionResult  = updatedStepList.response.asInstanceOf[DeletionResult]
+      deletionResult.deleted shouldBe Nil
+      deletionResult.notDeleted.toSet shouldBe idsToBeDeleted
+      updatedStepList.stepList shouldBe stepList
+    }
+
+    "fail with NotAllowedOnFinishedSeq error when StepList is finished" in {
+      val step1 = Step(setup1, Finished, hasBreakpoint = false)
+      val step2 = Step(setup2, Finished, hasBreakpoint = false)
+
+      val id              = Id()
+      val stepList        = StepList(id, List(step1, step2))
+      val updatedStepList = stepList.delete(Set(setup1.runId))
+      updatedStepList.response shouldBe NotAllowedOnFinishedSeq
+      updatedStepList.stepList shouldBe stepList
+    }
+  }
+
 }
