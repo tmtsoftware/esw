@@ -1,7 +1,7 @@
-package esw.gateway.server
+package esw.gateway.server.routes
 
 import akka.NotUsed
-import akka.http.scaladsl.model.MediaTypes.`text/event-stream`
+import akka.http.scaladsl.model.MediaTypes.{`application/json`, `text/event-stream`}
 import akka.http.scaladsl.model.StatusCodes
 import akka.http.scaladsl.model.sse.ServerSentEvent
 import akka.http.scaladsl.testkit.ScalatestRouteTest
@@ -12,20 +12,22 @@ import csw.params.commands.CommandResponse.{Accepted, Completed}
 import csw.params.commands.{CommandName, CommandResponse, Setup}
 import csw.params.core.models.{Id, ObsId, Prefix}
 import de.heikoseeberger.akkahttpplayjson.PlayJsonSupport
+import esw.gateway.server.{CswContextMocks, JsonSupportExt, Routes}
 import org.mockito.ArgumentMatchersSugar
 import org.mockito.Mockito._
-import org.scalatest.{Matchers, WordSpec}
+import org.scalatest.{BeforeAndAfterAll, Matchers, WordSpec}
 import play.api.libs.json.Json
 
 import scala.concurrent.duration.DurationDouble
 import scala.concurrent.{Await, Future, TimeoutException}
 
-class RoutesTest
+class CommandRoutesTest
     extends WordSpec
     with CswContextMocks
     with Matchers
     with ArgumentMatchersSugar
     with ScalatestRouteTest
+    with BeforeAndAfterAll
     with PlayJsonSupport
     with JsonSupportExt {
 
@@ -33,7 +35,9 @@ class RoutesTest
 
   import actorRuntime.timeout
 
-  "Routes for command/assembly" must {
+  override protected def afterAll(): Unit = cswCtx.actorSystem.terminate()
+
+  "Routes for assembly" must {
     "post submit command | ESW-91" in {
       val assemblyName = "TestAssembly"
       val runId        = Id("123")
@@ -85,20 +89,12 @@ class RoutesTest
     "get error response for command on timeout | ESW-91" in {
       val assemblyName = "TestAssembly"
       val runId        = Id("123")
-
       when(commandService.queryFinal(any[Id])(any[Timeout])).thenReturn(Future.failed(new TimeoutException("")))
       when(componentFactory.assemblyCommandService(assemblyName)).thenReturn(Future(commandService))
 
       Get(s"/command/assembly/$assemblyName/${runId.id}") ~> routes ~> check {
         status shouldBe StatusCodes.GatewayTimeout
-//        mediaType shouldBe `text/event-stream`
-//
-//        val actualDataF: Future[Seq[CommandResponse]] = responseAs[Source[ServerSentEvent, NotUsed]]
-//          .map(sse => Json.fromJson[CommandResponse](Json.parse(sse.getData())).get)
-//          .runWith(Sink.seq)
-//
-//        Await.result(actualDataF, 5.seconds) shouldEqual Seq(Completed(runId))
-
+        mediaType shouldBe `application/json`
       }
     }
   }

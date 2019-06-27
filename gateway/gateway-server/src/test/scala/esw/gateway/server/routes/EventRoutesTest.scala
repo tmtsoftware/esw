@@ -16,7 +16,7 @@ import de.heikoseeberger.akkahttpplayjson.PlayJsonSupport
 import esw.gateway.server.CswContextMocks
 import org.mockito.Mockito.{verify, when}
 import org.mockito.{ArgumentMatchersSugar, Mockito}
-import org.scalatest.{BeforeAndAfterEach, Matchers, WordSpec}
+import org.scalatest.{BeforeAndAfterAll, BeforeAndAfterEach, Matchers, WordSpec}
 import play.api.libs.json.Json
 
 import scala.concurrent.duration.DurationInt
@@ -29,6 +29,7 @@ class EventRoutesTest
     with ArgumentMatchersSugar
     with ScalatestRouteTest
     with BeforeAndAfterEach
+    with BeforeAndAfterAll
     with JsonSupport
     with PlayJsonSupport {
 
@@ -53,6 +54,8 @@ class EventRoutesTest
   override protected def afterEach(): Unit = {
     Mockito.clearInvocations(eventPublisher, eventSubscriber)
   }
+
+  override protected def afterAll(): Unit = cswCtx.actorSystem.terminate()
 
   "EventRoutes for /event" must {
     "get event for event keys | ESW-94" in {

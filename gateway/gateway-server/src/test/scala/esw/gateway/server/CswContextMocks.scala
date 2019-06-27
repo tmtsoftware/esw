@@ -22,6 +22,7 @@ trait CswContextMocks extends MockitoSugar {
 
   when(eventService.defaultPublisher).thenReturn(eventPublisher)
   when(eventService.defaultSubscriber).thenReturn(eventSubscriber)
+  when(cswCtx.actorSystem).thenReturn(system)
   when(cswCtx.actorRuntime).thenReturn(actorRuntime)
   when(cswCtx.eventService).thenReturn(eventService)
   when(cswCtx.componentFactory).thenReturn(componentFactory)
