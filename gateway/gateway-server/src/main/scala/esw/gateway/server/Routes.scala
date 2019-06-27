@@ -27,28 +27,29 @@ class Routes(cswCtx: CswContext) extends JsonSupportExt {
         pathPrefix("assembly" / Segment) { assemblyName =>
           val commandServiceF = componentFactory.assemblyCommandService(assemblyName)
 
-          post {
-            path("submit") {
-              entity(as[ControlCommand]) { command =>
-                complete(commandServiceF.flatMap(_.submit(command)))
+          onSuccess(commandServiceF) { commandService =>
+            post {
+              path("submit") {
+                entity(as[ControlCommand]) { command =>
+                  complete(commandService.submit(command))
+                }
+              } ~
+              path("oneway") {
+                entity(as[ControlCommand]) { command =>
+                  complete(commandService.oneway(command))
+                }
               }
             } ~
-            path("oneway") {
-              entity(as[ControlCommand]) { command =>
-                complete(commandServiceF.flatMap(_.oneway(command)))
-              }
-            }
-          } ~
-          get {
-            path(Segment) { runId =>
-              complete {
-                commandServiceF
-                  .flatMap(_.queryFinal(Id(runId))(Timeout(100.hours)))
-                  .map { r =>
+            get {
+              path(Segment) { runId =>
+                val responseF = commandService.queryFinal(Id(runId))(Timeout(100.hours))
+                onSuccess(responseF) { response =>
+                  complete {
                     Source
-                      .single(ServerSentEvent(Json.stringify(Json.toJson(r))))
+                      .single(ServerSentEvent(Json.toJson(response).toString()))
                       .keepAlive(1.second, () => ServerSentEvent.heartbeat)
                   }
+                }
               }
             }
           }
