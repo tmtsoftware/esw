@@ -161,7 +161,19 @@ class EventRoutesTest
           Await.result(actualDataF, 5.seconds) shouldEqual Seq(event1, event2)
         }
       }
+
+      "subscribe to events matching for given subsystem throws exception" in {
+        val subsystemName = "tcs"
+        val subsystem     = Subsystem.withName(subsystemName)
+
+        when(eventSubscriber.pSubscribe(subsystem, "*"))
+          .thenThrow(new RuntimeException("exception"))
+
+        Get(s"/event/subscribe/$subsystemName?frequency=10") ~> route ~> check {
+          status shouldBe StatusCodes.InternalServerError
+          verify(eventSubscriber).pSubscribe(subsystem, "*")
+        }
+      }
     }
   }
-
 }
