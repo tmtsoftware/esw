@@ -14,7 +14,6 @@ import esw.template.http.server.CswContext
 import play.api.libs.json.Json
 
 import scala.concurrent.duration.DurationLong
-import scala.language.postfixOps
 
 class CommandRoutes(cswCtx: CswContext) extends JsonSupportExt {
   import cswCtx._
