@@ -243,25 +243,44 @@ class StepListTest extends BaseTestSuite {
       prependedStepList.stepList shouldBe StepList(stepList.runId, List(step1, step2, Step(setup3)))
     }
 
-    // fixme: revisit -> what should happen?
-    "add provided step in empty StepList" ignore {
-      val stepList          = StepList.empty
-      val prependedStepList = stepList.prepend(List(setup1, setup2))
-      prependedStepList.response shouldBe Prepended
-      prependedStepList.stepList shouldBe StepList(stepList.runId, List(Step(setup1), Step(setup2)))
+    "fail with NotAllowedOnFinishedSeq error when StepList is finished" in {
+      val step1 = Step(setup1, Finished, hasBreakpoint = false)
+      val step2 = Step(setup2, Finished, hasBreakpoint = false)
+
+      val stepList         = StepList(Id(), List(step1, step2))
+      val replacedStepList = stepList.prepend(List(setup3))
+      replacedStepList.response shouldBe NotAllowedOnFinishedSeq
+      replacedStepList.stepList shouldBe stepList
     }
 
   }
 
   "append" must {
-    "allow adding commands when StepList is not finished" in {
-      val setup           = Setup(Prefix("ocs.move"), CommandName("test"), None)
-      val initialStepList = StepList.apply(Sequence(setup)).right.value
+    val setup1 = Setup(Prefix("ocs.move1"), CommandName("test1"), None)
+    val setup2 = Setup(Prefix("ocs.move2"), CommandName("test2"), None)
+    val setup3 = Setup(Prefix("ocs.move3"), CommandName("test3"), None)
+    val setup4 = Setup(Prefix("ocs.move4"), CommandName("test4"), None)
 
-      val appendResult = initialStepList.append(List(setup))
+    "add provided steps at the end of StepList" in {
+      val step1 = Step(setup1, InFlight, hasBreakpoint = false)
+      val step2 = Step(setup2, Pending, hasBreakpoint = false)
 
-      appendResult.response shouldBe Added
-      appendResult.stepList should ===(initialStepList.copy(steps = Step.apply(setup) :: initialStepList.steps))
+      val id                = Id()
+      val stepList          = StepList(id, List(step1, step2))
+      val prependedStepList = stepList.append(List(setup3, setup4))
+      prependedStepList.response shouldBe Added // fixme: revisit type?
+      prependedStepList.stepList shouldBe StepList(id, List(step1, step2, Step(setup3), Step(setup4)))
+    }
+
+    "fail with NotAllowedOnFinishedSeq error when StepList is finished" in {
+      val step1 = Step(setup1, Finished, hasBreakpoint = false)
+      val step2 = Step(setup2, Finished, hasBreakpoint = false)
+
+      val stepList         = StepList(Id(), List(step1, step2))
+      val replacedStepList = stepList.append(List(setup3))
+      replacedStepList.response shouldBe NotAllowedOnFinishedSeq
+      replacedStepList.stepList shouldBe stepList
     }
   }
+
 }
