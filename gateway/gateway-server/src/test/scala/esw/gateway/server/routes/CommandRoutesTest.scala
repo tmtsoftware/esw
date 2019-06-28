@@ -124,6 +124,31 @@ class CommandRoutesTest
         Await.result(actualDataF, 5.seconds) shouldEqual Seq(currentState1, currentState2)
       }
     }
+
+    "get current state subscription to given state-names | ESW-91" in {
+      val assemblyName  = "TestAssembly"
+      val stateName1    = StateName("stateName1")
+      val currentState1 = CurrentState(Prefix("a.b"), stateName1)
+
+      val currentStateSubscription = mock[CurrentStateSubscription]
+
+      val currentStateStream = Source(List(currentState1))
+        .mapMaterializedValue(_ => currentStateSubscription)
+
+      when(commandService.subscribeCurrentState(Set(stateName1))).thenReturn(currentStateStream)
+      when(componentFactory.assemblyCommandService(assemblyName)).thenReturn(Future(commandService))
+
+      Get(s"/command/assembly/$assemblyName/current-state/subscribe?stateName=${stateName1.name}") ~> routes ~> check {
+        status shouldBe StatusCodes.OK
+        mediaType shouldBe `text/event-stream`
+
+        val actualDataF: Future[Seq[StateVariable]] = responseAs[Source[ServerSentEvent, NotUsed]]
+          .map(sse => Json.fromJson[StateVariable](Json.parse(sse.getData())).get)
+          .runWith(Sink.seq)
+
+        Await.result(actualDataF, 5.seconds) shouldEqual Seq(currentState1)
+      }
+    }
   }
 
 }
