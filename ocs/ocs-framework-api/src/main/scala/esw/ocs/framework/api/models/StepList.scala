@@ -95,7 +95,7 @@ final case class StepList private[models] (runId: Id, steps: List[Step]) { outer
     }
 
   def resume: StepListResult[ResumeResponse] = ifNotFinished {
-    nextPending.map(step => updateStep[ResumeResponse](step.removeBreakpoint(), Resumed)).getOrReturn(Resumed) // completed?
+    nextPending.map(step => updateStep[ResumeResponse](step.removeBreakpoint(), Resumed)).getOrReturn(Resumed)
   }
 
   def updateStep(step: Step): StepListResult[UpdateResponse] = ifExists(step.id)(_ ⇒ updateStep(step, Updated))
