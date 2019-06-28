@@ -14,7 +14,7 @@ import csw.params.commands.{CommandName, CommandResponse, Setup}
 import csw.params.core.models.{Id, ObsId, Prefix}
 import csw.params.core.states.{CurrentState, StateName, StateVariable}
 import de.heikoseeberger.akkahttpplayjson.PlayJsonSupport
-import esw.gateway.server.{CswContextMocks, JsonSupportExt}
+import esw.gateway.server.{CswContextMocks, JsonSupportExt, Routes}
 import org.mockito.ArgumentMatchersSugar
 import org.mockito.Mockito._
 import org.scalatest.{BeforeAndAfterAll, Matchers, WordSpec}
@@ -33,7 +33,7 @@ class CommandRoutesTest
     with PlayJsonSupport
     with JsonSupportExt {
 
-  private val routes = new CommandRoutes(cswCtx).route
+  private val routes = new Routes(cswCtx).route
 
   import actorRuntime.timeout
 

@@ -14,7 +14,7 @@ import csw.params.core.formats.JsonSupport
 import csw.params.core.models.{Prefix, Subsystem}
 import csw.params.events._
 import de.heikoseeberger.akkahttpplayjson.PlayJsonSupport
-import esw.gateway.server.CswContextMocks
+import esw.gateway.server.{CswContextMocks, Routes}
 import org.mockito.Mockito.{verify, when}
 import org.mockito.{ArgumentMatchersSugar, Mockito}
 import org.scalatest.{BeforeAndAfterAll, BeforeAndAfterEach, Matchers, WordSpec}
@@ -34,7 +34,7 @@ class EventRoutesTest
     with JsonSupport
     with PlayJsonSupport {
 
-  val route: Route = new EventRoutes(cswCtx).route
+  val route: Route = new Routes(cswCtx).route
 
   val tcsEventKeyStr1 = "tcs.event.key1"
   val tcsEventKeyStr2 = "tcs.event.key2"
