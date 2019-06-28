@@ -31,6 +31,12 @@ class ComponentFactory(locationService: LocationService, commandServiceFactory: 
     })
   }
 
+  def hcdCommandService(assemblyName: String): Future[CommandService] = {
+    resolve(assemblyName, ComponentType.HCD)(akkaLocation => {
+      commandServiceFactory.make(akkaLocation)
+    })
+  }
+
   def assemblyLocation(assemblyName: String): Future[AkkaLocation] = {
     resolve(assemblyName, ComponentType.Assembly)(identity)
   }
