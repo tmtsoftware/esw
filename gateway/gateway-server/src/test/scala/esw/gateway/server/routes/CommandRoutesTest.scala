@@ -213,9 +213,9 @@ class CommandRoutesTest
       val command = Setup(Prefix("test"), CommandName("c1"), Some(ObsId("obsId"))).copy(runId = runId)
 
       when(commandService.validate(command)).thenReturn(Future.successful(Accepted(runId)))
-      when(componentFactory.assemblyCommandService(hcdName)).thenReturn(Future(commandService))
+      when(componentFactory.hcdCommandService(hcdName)).thenReturn(Future(commandService))
 
-      Post(s"/command/assembly/$hcdName/validate", command) ~> routes ~> check {
+      Post(s"/command/hcd/$hcdName/validate", command) ~> routes ~> check {
         status shouldBe StatusCodes.OK
         responseAs[CommandResponse] shouldEqual Accepted(runId)
       }
@@ -227,9 +227,9 @@ class CommandRoutesTest
       val command = Setup(Prefix("test"), CommandName("c1"), Some(ObsId("obsId"))).copy(runId = runId)
 
       when(commandService.validate(command)).thenReturn(Future.failed(new TimeoutException("")))
-      when(componentFactory.assemblyCommandService(hcdName)).thenReturn(Future(commandService))
+      when(componentFactory.hcdCommandService(hcdName)).thenReturn(Future(commandService))
 
-      Post(s"/command/assembly/$hcdName/validate", command) ~> routes ~> check {
+      Post(s"/command/hcd/$hcdName/validate", command) ~> routes ~> check {
         status shouldBe StatusCodes.GatewayTimeout
         mediaType shouldBe `application/json`
       }
@@ -241,9 +241,9 @@ class CommandRoutesTest
       val command = Setup(Prefix("test"), CommandName("c1"), Some(ObsId("obsId"))).copy(runId = runId)
 
       when(commandService.submit(command)).thenReturn(Future.successful(Completed(runId)))
-      when(componentFactory.assemblyCommandService(hcdName)).thenReturn(Future(commandService))
+      when(componentFactory.hcdCommandService(hcdName)).thenReturn(Future(commandService))
 
-      Post(s"/command/assembly/$hcdName/submit", command) ~> routes ~> check {
+      Post(s"/command/hcd/$hcdName/submit", command) ~> routes ~> check {
         status shouldBe StatusCodes.OK
         responseAs[CommandResponse] shouldEqual Completed(runId)
       }
@@ -255,9 +255,9 @@ class CommandRoutesTest
       val command = Setup(Prefix("test"), CommandName("c1"), Some(ObsId("obsId"))).copy(runId = runId)
 
       when(commandService.submit(command)).thenReturn(Future.failed(new TimeoutException("")))
-      when(componentFactory.assemblyCommandService(hcdName)).thenReturn(Future(commandService))
+      when(componentFactory.hcdCommandService(hcdName)).thenReturn(Future(commandService))
 
-      Post(s"/command/assembly/$hcdName/submit", command) ~> routes ~> check {
+      Post(s"/command/hcd/$hcdName/submit", command) ~> routes ~> check {
         status shouldBe StatusCodes.GatewayTimeout
         mediaType shouldBe `application/json`
       }
@@ -269,9 +269,9 @@ class CommandRoutesTest
       val command = Setup(Prefix("test"), CommandName("c1"), Some(ObsId("obsId"))).copy(runId = runId)
 
       when(commandService.oneway(command)).thenReturn(Future.successful(Accepted(runId)))
-      when(componentFactory.assemblyCommandService(hcdName)).thenReturn(Future(commandService))
+      when(componentFactory.hcdCommandService(hcdName)).thenReturn(Future(commandService))
 
-      Post(s"/command/assembly/$hcdName/oneway", command) ~> routes ~> check {
+      Post(s"/command/hcd/$hcdName/oneway", command) ~> routes ~> check {
         status shouldBe StatusCodes.OK
         responseAs[CommandResponse] shouldEqual Accepted(runId)
       }
@@ -283,9 +283,9 @@ class CommandRoutesTest
       val command = Setup(Prefix("test"), CommandName("c1"), Some(ObsId("obsId"))).copy(runId = runId)
 
       when(commandService.oneway(command)).thenReturn(Future.failed(new TimeoutException("")))
-      when(componentFactory.assemblyCommandService(hcdName)).thenReturn(Future(commandService))
+      when(componentFactory.hcdCommandService(hcdName)).thenReturn(Future(commandService))
 
-      Post(s"/command/assembly/$hcdName/oneway", command) ~> routes ~> check {
+      Post(s"/command/hcd/$hcdName/oneway", command) ~> routes ~> check {
         status shouldBe StatusCodes.GatewayTimeout
         mediaType shouldBe `application/json`
       }
@@ -296,9 +296,9 @@ class CommandRoutesTest
       val runId   = Id("123")
 
       when(commandService.queryFinal(any[Id])(any[Timeout])).thenReturn(Future.successful(Completed(runId)))
-      when(componentFactory.assemblyCommandService(hcdName)).thenReturn(Future(commandService))
+      when(componentFactory.hcdCommandService(hcdName)).thenReturn(Future(commandService))
 
-      Get(s"/command/assembly/$hcdName/${runId.id}") ~> routes ~> check {
+      Get(s"/command/hcd/$hcdName/${runId.id}") ~> routes ~> check {
         status shouldBe StatusCodes.OK
         mediaType shouldBe `text/event-stream`
 
@@ -314,9 +314,9 @@ class CommandRoutesTest
       val hcdName = "TestHCD"
       val runId   = Id("123")
       when(commandService.queryFinal(any[Id])(any[Timeout])).thenReturn(Future.failed(new TimeoutException("")))
-      when(componentFactory.assemblyCommandService(hcdName)).thenReturn(Future(commandService))
+      when(componentFactory.hcdCommandService(hcdName)).thenReturn(Future(commandService))
 
-      Get(s"/command/assembly/$hcdName/${runId.id}") ~> routes ~> check {
+      Get(s"/command/hcd/$hcdName/${runId.id}") ~> routes ~> check {
         status shouldBe StatusCodes.GatewayTimeout
         mediaType shouldBe `application/json`
       }
@@ -333,9 +333,9 @@ class CommandRoutesTest
         .mapMaterializedValue(_ => currentStateSubscription)
 
       when(commandService.subscribeCurrentState(Set.empty[StateName])).thenReturn(currentStateStream)
-      when(componentFactory.assemblyCommandService(hcdName)).thenReturn(Future(commandService))
+      when(componentFactory.hcdCommandService(hcdName)).thenReturn(Future(commandService))
 
-      Get(s"/command/assembly/$hcdName/current-state/subscribe") ~> routes ~> check {
+      Get(s"/command/hcd/$hcdName/current-state/subscribe") ~> routes ~> check {
         status shouldBe StatusCodes.OK
         mediaType shouldBe `text/event-stream`
 
@@ -358,9 +358,9 @@ class CommandRoutesTest
         .mapMaterializedValue(_ => currentStateSubscription)
 
       when(commandService.subscribeCurrentState(Set(stateName1))).thenReturn(currentStateStream)
-      when(componentFactory.assemblyCommandService(hcdName)).thenReturn(Future(commandService))
+      when(componentFactory.hcdCommandService(hcdName)).thenReturn(Future(commandService))
 
-      Get(s"/command/assembly/$hcdName/current-state/subscribe?stateName=${stateName1.name}") ~> routes ~> check {
+      Get(s"/command/hcd/$hcdName/current-state/subscribe?stateName=${stateName1.name}") ~> routes ~> check {
         status shouldBe StatusCodes.OK
         mediaType shouldBe `text/event-stream`
 
@@ -372,5 +372,4 @@ class CommandRoutesTest
       }
     }
   }
-
 }
