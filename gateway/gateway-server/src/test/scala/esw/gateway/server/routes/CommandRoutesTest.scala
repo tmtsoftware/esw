@@ -9,6 +9,7 @@ import akka.http.scaladsl.unmarshalling.sse.EventStreamUnmarshalling._
 import akka.stream.scaladsl.{Sink, Source}
 import akka.util.Timeout
 import csw.command.api.CurrentStateSubscription
+import csw.location.api.models.ComponentType.{Assembly, HCD}
 import csw.params.commands.CommandResponse.{Accepted, Completed}
 import csw.params.commands.{CommandName, CommandResponse, Setup}
 import csw.params.core.models.{Id, ObsId, Prefix}
@@ -46,7 +47,7 @@ class CommandRoutesTest
       val command      = Setup(Prefix("test"), CommandName("c1"), Some(ObsId("obsId"))).copy(runId = runId)
 
       when(commandService.validate(command)).thenReturn(Future.successful(Accepted(runId)))
-      when(componentFactory.assemblyCommandService(assemblyName)).thenReturn(Future(commandService))
+      when(componentFactory.commandService(assemblyName, Assembly)).thenReturn(Future(commandService))
 
       Post(s"/command/assembly/$assemblyName/validate", command) ~> routes ~> check {
         status shouldBe StatusCodes.OK
@@ -60,7 +61,7 @@ class CommandRoutesTest
       val command      = Setup(Prefix("test"), CommandName("c1"), Some(ObsId("obsId"))).copy(runId = runId)
 
       when(commandService.validate(command)).thenReturn(Future.failed(new TimeoutException("")))
-      when(componentFactory.assemblyCommandService(assemblyName)).thenReturn(Future(commandService))
+      when(componentFactory.commandService(assemblyName, Assembly)).thenReturn(Future(commandService))
 
       Post(s"/command/assembly/$assemblyName/validate", command) ~> routes ~> check {
         status shouldBe StatusCodes.GatewayTimeout
@@ -74,7 +75,7 @@ class CommandRoutesTest
       val command      = Setup(Prefix("test"), CommandName("c1"), Some(ObsId("obsId"))).copy(runId = runId)
 
       when(commandService.submit(command)).thenReturn(Future.successful(Completed(runId)))
-      when(componentFactory.assemblyCommandService(assemblyName)).thenReturn(Future(commandService))
+      when(componentFactory.commandService(assemblyName, Assembly)).thenReturn(Future(commandService))
 
       Post(s"/command/assembly/$assemblyName/submit", command) ~> routes ~> check {
         status shouldBe StatusCodes.OK
@@ -88,7 +89,7 @@ class CommandRoutesTest
       val command      = Setup(Prefix("test"), CommandName("c1"), Some(ObsId("obsId"))).copy(runId = runId)
 
       when(commandService.submit(command)).thenReturn(Future.failed(new TimeoutException("")))
-      when(componentFactory.assemblyCommandService(assemblyName)).thenReturn(Future(commandService))
+      when(componentFactory.commandService(assemblyName, Assembly)).thenReturn(Future(commandService))
 
       Post(s"/command/assembly/$assemblyName/submit", command) ~> routes ~> check {
         status shouldBe StatusCodes.GatewayTimeout
@@ -102,7 +103,7 @@ class CommandRoutesTest
       val command      = Setup(Prefix("test"), CommandName("c1"), Some(ObsId("obsId"))).copy(runId = runId)
 
       when(commandService.oneway(command)).thenReturn(Future.successful(Accepted(runId)))
-      when(componentFactory.assemblyCommandService(assemblyName)).thenReturn(Future(commandService))
+      when(componentFactory.commandService(assemblyName, Assembly)).thenReturn(Future(commandService))
 
       Post(s"/command/assembly/$assemblyName/oneway", command) ~> routes ~> check {
         status shouldBe StatusCodes.OK
@@ -116,7 +117,7 @@ class CommandRoutesTest
       val command      = Setup(Prefix("test"), CommandName("c1"), Some(ObsId("obsId"))).copy(runId = runId)
 
       when(commandService.oneway(command)).thenReturn(Future.failed(new TimeoutException("")))
-      when(componentFactory.assemblyCommandService(assemblyName)).thenReturn(Future(commandService))
+      when(componentFactory.commandService(assemblyName, Assembly)).thenReturn(Future(commandService))
 
       Post(s"/command/assembly/$assemblyName/oneway", command) ~> routes ~> check {
         status shouldBe StatusCodes.GatewayTimeout
@@ -129,7 +130,7 @@ class CommandRoutesTest
       val runId        = Id("123")
 
       when(commandService.queryFinal(any[Id])(any[Timeout])).thenReturn(Future.successful(Completed(runId)))
-      when(componentFactory.assemblyCommandService(assemblyName)).thenReturn(Future(commandService))
+      when(componentFactory.commandService(assemblyName, Assembly)).thenReturn(Future(commandService))
 
       Get(s"/command/assembly/$assemblyName/${runId.id}") ~> routes ~> check {
         status shouldBe StatusCodes.OK
@@ -147,7 +148,7 @@ class CommandRoutesTest
       val assemblyName = "TestAssembly"
       val runId        = Id("123")
       when(commandService.queryFinal(any[Id])(any[Timeout])).thenReturn(Future.failed(new TimeoutException("")))
-      when(componentFactory.assemblyCommandService(assemblyName)).thenReturn(Future(commandService))
+      when(componentFactory.commandService(assemblyName, Assembly)).thenReturn(Future(commandService))
 
       Get(s"/command/assembly/$assemblyName/${runId.id}") ~> routes ~> check {
         status shouldBe StatusCodes.GatewayTimeout
@@ -166,7 +167,7 @@ class CommandRoutesTest
         .mapMaterializedValue(_ => currentStateSubscription)
 
       when(commandService.subscribeCurrentState(Set.empty[StateName])).thenReturn(currentStateStream)
-      when(componentFactory.assemblyCommandService(assemblyName)).thenReturn(Future(commandService))
+      when(componentFactory.commandService(assemblyName, Assembly)).thenReturn(Future(commandService))
 
       Get(s"/command/assembly/$assemblyName/current-state/subscribe") ~> routes ~> check {
         status shouldBe StatusCodes.OK
@@ -191,7 +192,7 @@ class CommandRoutesTest
         .mapMaterializedValue(_ => currentStateSubscription)
 
       when(commandService.subscribeCurrentState(Set(stateName1))).thenReturn(currentStateStream)
-      when(componentFactory.assemblyCommandService(assemblyName)).thenReturn(Future(commandService))
+      when(componentFactory.commandService(assemblyName, Assembly)).thenReturn(Future(commandService))
 
       Get(s"/command/assembly/$assemblyName/current-state/subscribe?stateName=${stateName1.name}") ~> routes ~> check {
         status shouldBe StatusCodes.OK
@@ -213,7 +214,7 @@ class CommandRoutesTest
       val command = Setup(Prefix("test"), CommandName("c1"), Some(ObsId("obsId"))).copy(runId = runId)
 
       when(commandService.validate(command)).thenReturn(Future.successful(Accepted(runId)))
-      when(componentFactory.hcdCommandService(hcdName)).thenReturn(Future(commandService))
+      when(componentFactory.commandService(hcdName, HCD)).thenReturn(Future(commandService))
 
       Post(s"/command/hcd/$hcdName/validate", command) ~> routes ~> check {
         status shouldBe StatusCodes.OK
@@ -227,7 +228,7 @@ class CommandRoutesTest
       val command = Setup(Prefix("test"), CommandName("c1"), Some(ObsId("obsId"))).copy(runId = runId)
 
       when(commandService.validate(command)).thenReturn(Future.failed(new TimeoutException("")))
-      when(componentFactory.hcdCommandService(hcdName)).thenReturn(Future(commandService))
+      when(componentFactory.commandService(hcdName, HCD)).thenReturn(Future(commandService))
 
       Post(s"/command/hcd/$hcdName/validate", command) ~> routes ~> check {
         status shouldBe StatusCodes.GatewayTimeout
@@ -241,7 +242,7 @@ class CommandRoutesTest
       val command = Setup(Prefix("test"), CommandName("c1"), Some(ObsId("obsId"))).copy(runId = runId)
 
       when(commandService.submit(command)).thenReturn(Future.successful(Completed(runId)))
-      when(componentFactory.hcdCommandService(hcdName)).thenReturn(Future(commandService))
+      when(componentFactory.commandService(hcdName, HCD)).thenReturn(Future(commandService))
 
       Post(s"/command/hcd/$hcdName/submit", command) ~> routes ~> check {
         status shouldBe StatusCodes.OK
@@ -255,7 +256,7 @@ class CommandRoutesTest
       val command = Setup(Prefix("test"), CommandName("c1"), Some(ObsId("obsId"))).copy(runId = runId)
 
       when(commandService.submit(command)).thenReturn(Future.failed(new TimeoutException("")))
-      when(componentFactory.hcdCommandService(hcdName)).thenReturn(Future(commandService))
+      when(componentFactory.commandService(hcdName, HCD)).thenReturn(Future(commandService))
 
       Post(s"/command/hcd/$hcdName/submit", command) ~> routes ~> check {
         status shouldBe StatusCodes.GatewayTimeout
@@ -269,7 +270,7 @@ class CommandRoutesTest
       val command = Setup(Prefix("test"), CommandName("c1"), Some(ObsId("obsId"))).copy(runId = runId)
 
       when(commandService.oneway(command)).thenReturn(Future.successful(Accepted(runId)))
-      when(componentFactory.hcdCommandService(hcdName)).thenReturn(Future(commandService))
+      when(componentFactory.commandService(hcdName, HCD)).thenReturn(Future(commandService))
 
       Post(s"/command/hcd/$hcdName/oneway", command) ~> routes ~> check {
         status shouldBe StatusCodes.OK
@@ -283,7 +284,7 @@ class CommandRoutesTest
       val command = Setup(Prefix("test"), CommandName("c1"), Some(ObsId("obsId"))).copy(runId = runId)
 
       when(commandService.oneway(command)).thenReturn(Future.failed(new TimeoutException("")))
-      when(componentFactory.hcdCommandService(hcdName)).thenReturn(Future(commandService))
+      when(componentFactory.commandService(hcdName, HCD)).thenReturn(Future(commandService))
 
       Post(s"/command/hcd/$hcdName/oneway", command) ~> routes ~> check {
         status shouldBe StatusCodes.GatewayTimeout
@@ -296,7 +297,7 @@ class CommandRoutesTest
       val runId   = Id("123")
 
       when(commandService.queryFinal(any[Id])(any[Timeout])).thenReturn(Future.successful(Completed(runId)))
-      when(componentFactory.hcdCommandService(hcdName)).thenReturn(Future(commandService))
+      when(componentFactory.commandService(hcdName, HCD)).thenReturn(Future(commandService))
 
       Get(s"/command/hcd/$hcdName/${runId.id}") ~> routes ~> check {
         status shouldBe StatusCodes.OK
@@ -314,7 +315,7 @@ class CommandRoutesTest
       val hcdName = "TestHCD"
       val runId   = Id("123")
       when(commandService.queryFinal(any[Id])(any[Timeout])).thenReturn(Future.failed(new TimeoutException("")))
-      when(componentFactory.hcdCommandService(hcdName)).thenReturn(Future(commandService))
+      when(componentFactory.commandService(hcdName, HCD)).thenReturn(Future(commandService))
 
       Get(s"/command/hcd/$hcdName/${runId.id}") ~> routes ~> check {
         status shouldBe StatusCodes.GatewayTimeout
@@ -333,7 +334,7 @@ class CommandRoutesTest
         .mapMaterializedValue(_ => currentStateSubscription)
 
       when(commandService.subscribeCurrentState(Set.empty[StateName])).thenReturn(currentStateStream)
-      when(componentFactory.hcdCommandService(hcdName)).thenReturn(Future(commandService))
+      when(componentFactory.commandService(hcdName, HCD)).thenReturn(Future(commandService))
 
       Get(s"/command/hcd/$hcdName/current-state/subscribe") ~> routes ~> check {
         status shouldBe StatusCodes.OK
@@ -358,7 +359,7 @@ class CommandRoutesTest
         .mapMaterializedValue(_ => currentStateSubscription)
 
       when(commandService.subscribeCurrentState(Set(stateName1))).thenReturn(currentStateStream)
-      when(componentFactory.hcdCommandService(hcdName)).thenReturn(Future(commandService))
+      when(componentFactory.commandService(hcdName, HCD)).thenReturn(Future(commandService))
 
       Get(s"/command/hcd/$hcdName/current-state/subscribe?stateName=${stateName1.name}") ~> routes ~> check {
         status shouldBe StatusCodes.OK

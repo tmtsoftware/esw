@@ -3,6 +3,7 @@ package esw.template.http.server
 import akka.actor.typed.ActorSystem
 import csw.command.api.scaladsl.CommandService
 import csw.command.client.ICommandServiceFactory
+import csw.location.api.models.ComponentType.{Assembly, HCD}
 import csw.location.api.models.Connection.AkkaConnection
 import csw.location.api.models.{AkkaLocation, ComponentId, ComponentType}
 import csw.location.api.scaladsl.LocationService
@@ -31,13 +32,14 @@ class ComponentFactory(locationService: LocationService, commandServiceFactory: 
     })
   }
 
-  def hcdCommandService(assemblyName: String): Future[CommandService] = {
-    resolve(assemblyName, ComponentType.HCD)(akkaLocation => {
+  def hcdCommandService(hcdName: String): Future[CommandService] = {
+    resolve(hcdName, ComponentType.HCD)(akkaLocation => {
       commandServiceFactory.make(akkaLocation)
     })
   }
 
-  def assemblyLocation(assemblyName: String): Future[AkkaLocation] = {
-    resolve(assemblyName, ComponentType.Assembly)(identity)
+  def commandService(componentName: String, componentType: ComponentType): Future[CommandService] = componentType match {
+    case Assembly => assemblyCommandService(componentName)
+    case HCD      => hcdCommandService(componentName)
   }
 }
