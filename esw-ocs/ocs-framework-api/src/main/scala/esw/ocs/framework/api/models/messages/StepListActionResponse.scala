@@ -11,7 +11,7 @@ object StepListActionResponse {
       extends AddBreakpointsResponse
       with PauseResponse
       with UpdateResponse
-      with AppendResponse
+      with AddResponse
       with ResumeResponse
       with DiscardPendingResponse
       with ReplaceResponse
@@ -36,9 +36,9 @@ object StepListActionResponse {
   case object Updated         extends UpdateResponse
   case object UpdateFailed    extends UpdateResponse
 
-  sealed trait AppendResponse extends StepListActionResponse
-  case object Appended        extends AppendResponse
-  case object AppendFailed    extends AppendResponse
+  sealed trait AddResponse extends StepListActionResponse
+  case object Added        extends AddResponse
+  case object AddFailed    extends AddResponse
 
   sealed trait PrependResponse extends StepListActionResponse
   case object Prepended        extends PrependResponse

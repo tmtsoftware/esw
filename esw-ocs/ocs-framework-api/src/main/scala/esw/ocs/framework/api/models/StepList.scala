@@ -31,8 +31,8 @@ final case class StepList private[models] (runId: Id, steps: List[Step]) { outer
     StepListResult(Prepended, copy(runId, pre ::: toSteps(commands) ::: post))
   }
 
-  def append(commands: List[SequenceCommand]): StepListResult[AppendResponse] =
-    ifNotFinished(StepListResult(Appended, copy(runId, steps ::: toSteps(commands))))
+  def append(commands: List[SequenceCommand]): StepListResult[AddResponse] =
+    ifNotFinished(StepListResult(Added, copy(runId, steps ::: toSteps(commands))))
 
   def delete(ids: Set[Id]): StepListResult[DeleteResponse] = ifNotFinished {
     val successFailIds = new SuccessFailState(ids)
