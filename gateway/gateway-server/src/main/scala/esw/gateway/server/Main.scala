@@ -1,7 +1,5 @@
 package esw.gateway.server
 
-import csw.logging.client.scaladsl.LoggingSystemFactory
-import csw.network.utils.Networks
 import esw.template.http.server.CswContext
 import esw.template.http.server.cli.{ArgsParser, Options}
 import esw.template.http.server.http.HttpService
