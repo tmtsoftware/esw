@@ -1,8 +1,11 @@
 package esw.gateway.server
 
+import csw.logging.client.scaladsl.LoggingSystemFactory
+import csw.network.utils.Networks
 import esw.template.http.server.CswContext
 import esw.template.http.server.cli.{ArgsParser, Options}
 import esw.template.http.server.http.HttpService
+import gateway.server.BuildInfo
 
 import scala.concurrent.Await
 import scala.concurrent.duration.DurationInt
@@ -13,6 +16,8 @@ object Main {
       case Options(port) =>
         val cswContext = new CswContext(port)
         import cswContext._
+        actorRuntime.startLogging(BuildInfo.name, BuildInfo.version)
+
         lazy val routes      = new Routes(cswContext)
         lazy val httpService = new HttpService(locationService, routes.route, settings, actorRuntime)
 

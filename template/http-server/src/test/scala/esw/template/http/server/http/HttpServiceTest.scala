@@ -53,11 +53,11 @@ class HttpServiceTest extends BaseTestSuit {
     val httpService             = new HttpService(locationService, route, settings, actorRuntime)
     val (_, registrationResult) = Await.result(httpService.registeredLazyBinding, 5.seconds)
 
-    Await.result(locationService.find(settings.httpConection), 5.seconds).get.connection shouldBe settings.httpConection
+    Await.result(locationService.find(settings.httpConnection), 5.seconds).get.connection shouldBe settings.httpConnection
 
     val location = registrationResult.location
     location.uri.getHost shouldBe Networks().hostname
-    location.connection shouldBe settings.httpConection
+    location.connection shouldBe settings.httpConnection
     Await.result(actorRuntime.shutdown(UnknownReason), 5.seconds)
   }
 
@@ -68,7 +68,7 @@ class HttpServiceTest extends BaseTestSuit {
     val httpService = new HttpService(locationService, route, settings, actorRuntime)
 
     a[BindException] shouldBe thrownBy(Await.result(httpService.registeredLazyBinding, 5.seconds))
-    Await.result(testLocationService.find(settings.httpConection), 5.seconds) shouldBe None
+    Await.result(testLocationService.find(settings.httpConnection), 5.seconds) shouldBe None
   }
 
   test("ESW-86 | should not start server if registration with location service fails") {
@@ -77,8 +77,8 @@ class HttpServiceTest extends BaseTestSuit {
     import cswContext._
     val httpService = new HttpService(locationService, route, settings, actorRuntime)
 
-    Await.result(locationService.register(HttpRegistration(settings.httpConection, 21212, "")), 5.seconds)
-    Await.result(locationService.find(settings.httpConection), 5.seconds).get.connection shouldBe settings.httpConection
+    Await.result(locationService.register(HttpRegistration(settings.httpConnection, 21212, "")), 5.seconds)
+    Await.result(locationService.find(settings.httpConnection), 5.seconds).get.connection shouldBe settings.httpConnection
 
     a[OtherLocationIsRegistered] shouldBe thrownBy(Await.result(httpService.registeredLazyBinding, 5.seconds))
 

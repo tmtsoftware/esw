@@ -57,8 +57,7 @@ lazy val `template` = project
 
 lazy val `http-server` = project
   .in(file("template/http-server"))
-  .enablePlugins(MaybeCoverage)
-  .enablePlugins(EswBuildInfo)
+  .enablePlugins(MaybeCoverage, EswBuildInfo)
   .settings(
     libraryDependencies ++= Dependencies.`http-server`.value
   )
@@ -69,7 +68,7 @@ lazy val `gateway` = project
 
 lazy val `gateway-server` = project
   .in(file("gateway/gateway-server"))
-  .enablePlugins(MaybeCoverage)
+  .enablePlugins(MaybeCoverage, EswBuildInfo)
   .settings(
     libraryDependencies ++= Dependencies.`gateway-server`.value
   )

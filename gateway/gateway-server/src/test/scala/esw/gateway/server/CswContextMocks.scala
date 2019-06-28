@@ -3,6 +3,7 @@ package esw.gateway.server
 import akka.actor.typed.{ActorSystem, SpawnProtocol}
 import csw.command.api.scaladsl.CommandService
 import csw.event.api.scaladsl.{EventPublisher, EventService, EventSubscriber}
+import csw.logging.api.scaladsl.Logger
 import esw.template.http.server.commons.ActorRuntime
 import esw.template.http.server.{ComponentFactory, CswContext}
 import org.mockito.Mockito.when
@@ -19,9 +20,11 @@ trait CswContextMocks extends MockitoSugar {
   val actorRuntime: ActorRuntime         = new ActorRuntime(system)
   val eventPublisher: EventPublisher     = mock[EventPublisher]
   val eventSubscriber: EventSubscriber   = mock[EventSubscriber]
+  val logger: Logger                     = mock[Logger]
 
   when(eventService.defaultPublisher).thenReturn(eventPublisher)
   when(eventService.defaultSubscriber).thenReturn(eventSubscriber)
+  when(cswCtx.logger).thenReturn(logger)
   when(cswCtx.actorSystem).thenReturn(system)
   when(cswCtx.actorRuntime).thenReturn(actorRuntime)
   when(cswCtx.eventService).thenReturn(eventService)

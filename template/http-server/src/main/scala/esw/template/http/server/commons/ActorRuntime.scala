@@ -8,6 +8,9 @@ import akka.stream.Materializer
 import akka.stream.typed.scaladsl.ActorMaterializer
 import akka.util.Timeout
 import akka.{Done, actor}
+import csw.logging.client.internal.LoggingSystem
+import csw.logging.client.scaladsl.LoggingSystemFactory
+import csw.network.utils.Networks
 
 import scala.concurrent.duration.DurationLong
 import scala.concurrent.{ExecutionContext, Future}
@@ -23,6 +26,9 @@ class ActorRuntime(_typedSystem: ActorSystem[SpawnProtocol]) {
   implicit val timeout: Timeout                        = Timeout(5.seconds)
 
   val coordinatedShutdown: CoordinatedShutdown = CoordinatedShutdown(untypedSystem)
+
+  def startLogging(name: String, version: String): LoggingSystem =
+    LoggingSystemFactory.start(name, version, Networks().hostname, typedSystem)
 
   def shutdown(reason: Reason): Future[Done] = coordinatedShutdown.run(reason)
 }
