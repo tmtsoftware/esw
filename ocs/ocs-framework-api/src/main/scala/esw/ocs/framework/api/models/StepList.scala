@@ -88,20 +88,20 @@ final case class StepList private[models] (runId: Id, steps: List[Step]) { outer
       nextPending
         .map { step =>
           val StepResult(isSuccessful, updatedStep) = step.addBreakpoint()
-          if (isSuccessful) updateStep[PauseResponse](updatedStep, Paused)
-          else updateStep[PauseResponse](updatedStep, PauseFailed)
+          if (isSuccessful) StepListResult[PauseResponse](Paused, updateStep(updatedStep))
+          else StepListResult[PauseResponse](PauseFailed, updateStep(updatedStep))
         }
         .getOrReturn(PauseFailed)
     }
 
   def resume: StepListResult[ResumeResponse] = ifNotFinished {
-    nextPending.map(step => updateStep[ResumeResponse](step.removeBreakpoint(), Resumed)).getOrReturn(Resumed)
+    nextPending
+      .map(step => StepListResult[ResumeResponse](Resumed, updateStep(step.removeBreakpoint())))
+      .getOrReturn(Resumed)
   }
 
-  def updateStep(step: Step): StepListResult[UpdateResponse] = ifExists(step.id)(_ ⇒ updateStep(step, Updated))
-
   // api changed from prototype (single Id instead of Set[Id]), confirm?
-  def updateStatus(id: Id, stepStatus: StepStatus): StepListResult[UpdateResponse] =
+  private[framework] def updateStatus(id: Id, stepStatus: StepStatus): StepListResult[UpdateResponse] =
     ifExists(id) { _ ⇒
       ifNotFinished {
         var reply: UpdateResponse = Updated
@@ -127,10 +127,7 @@ final case class StepList private[models] (runId: Id, steps: List[Step]) { outer
     pre ::: post.headOption.toList ::: newSteps ::: post.tail
   }
 
-  private def updateStep[T <: StepListActionResponse](step: Step, response: T): StepListResult[T] =
-    ifNotFinished {
-      StepListResult(response, updateAll(Set(step.id), _ => step))
-    }
+  private def updateStep(step: Step) = updateAll(Set(step.id), _ => step)
 
   private def updateAll(ids: Set[Id], f: Step => Step): StepList =
     copy(runId, steps.map {

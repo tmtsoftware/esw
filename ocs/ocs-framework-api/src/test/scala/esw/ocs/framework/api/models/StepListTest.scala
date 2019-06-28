@@ -566,4 +566,60 @@ class StepListTest extends BaseTestSuite {
       updatedStepList.stepList shouldBe stepList
     }
   }
+
+  "updateStatus" must {
+    val setup1 = Setup(Prefix("ocs.move1"), CommandName("test1"), None)
+    val setup2 = Setup(Prefix("ocs.move2"), CommandName("test2"), None)
+    val setup3 = Setup(Prefix("ocs.move3"), CommandName("test3"), None)
+
+    "update status of step matching provided Id with given status" in {
+      val step1 = Step(setup1, Finished, hasBreakpoint = false)
+      val step2 = Step(setup2, InFlight, hasBreakpoint = false)
+      val step3 = Step(setup3, Pending, hasBreakpoint = false)
+
+      val id               = Id()
+      val stepList         = StepList(id, List(step1, step2, step3))
+      val updatedStepList1 = stepList.updateStatus(setup2.runId, Finished)
+      updatedStepList1.response shouldBe Updated
+      val updatedStep2 = step2.copy(status = Finished)
+      updatedStepList1.stepList shouldBe StepList(id, List(step1, updatedStep2, step3))
+
+      val updatedStepList2 = updatedStepList1.stepList.updateStatus(setup3.runId, InFlight)
+      updatedStepList2.response shouldBe Updated
+      updatedStepList2.stepList shouldBe StepList(id, List(step1, updatedStep2, step3.copy(status = InFlight)))
+    }
+
+    "fail with UpdateFailed error when step status transition not allowed" in {
+      val step1 = Step(setup1, Finished, hasBreakpoint = false)
+      val step2 = Step(setup2, Pending, hasBreakpoint = false)
+
+      val stepList        = StepList(Id(), List(step1, step2))
+      val updatedStepList = stepList.updateStatus(setup2.runId, Finished)
+      updatedStepList.response shouldBe UpdateFailed
+      updatedStepList.stepList shouldBe stepList
+    }
+
+    "fail with IdDoesNotExist error when provided Id does't exist in StepList" in {
+      val step1 = Step(setup1, Finished, hasBreakpoint = false)
+      val step2 = Step(setup2, Pending, hasBreakpoint = false)
+
+      val stepList        = StepList(Id(), List(step1, step2))
+      val invalidId       = Id()
+      val updatedStepList = stepList.updateStatus(invalidId, InFlight)
+
+      updatedStepList.response shouldBe IdDoesNotExist(invalidId)
+      updatedStepList.stepList shouldBe stepList
+    }
+
+    "fail with NotAllowedOnFinishedSeq error when StepList is finished" in {
+      val step1 = Step(setup1, Finished, hasBreakpoint = false)
+      val step2 = Step(setup2, Finished, hasBreakpoint = false)
+
+      val stepList        = StepList(Id(), List(step1, step2))
+      val updatedStepList = stepList.updateStatus(setup2.runId, Finished)
+      updatedStepList.response shouldBe NotAllowedOnFinishedSeq
+      updatedStepList.stepList shouldBe stepList
+    }
+  }
+
 }

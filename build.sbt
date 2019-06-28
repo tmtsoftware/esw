@@ -31,7 +31,7 @@ lazy val `ocs` = project
   )
 lazy val `ocs-framework-api` = project
   .in(file("ocs/ocs-framework-api"))
-//  .enablePlugins(MaybeCoverage)
+  .enablePlugins(MaybeCoverage)
   .settings(
     libraryDependencies ++= Dependencies.`ocs-framework-api`.value
   )
