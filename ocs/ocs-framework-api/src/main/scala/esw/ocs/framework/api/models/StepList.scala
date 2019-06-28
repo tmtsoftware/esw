@@ -21,11 +21,9 @@ final case class StepList private[models] (runId: Id, steps: List[Step]) { outer
 
   //update
   def replace(id: Id, commands: List[SequenceCommand]): StepListResult[ReplaceResponse] =
-    ifExists(id) { step ⇒
-      ifNotFinished {
-        if (step.isPending) replaceSteps(id, toSteps(commands))
-        else StepListResult(ReplaceNotSupportedInThisStatus(id, step.status), this)
-      }
+    ifExistAndNotFinished(id) { step ⇒
+      if (step.isPending) replaceSteps(id, toSteps(commands))
+      else StepListResult(ReplaceNotSupportedInThisStatus(id, step.status), this)
     }
 
   def prepend(commands: List[SequenceCommand]): StepListResult[PrependResponse] = ifNotFinished {
@@ -50,11 +48,9 @@ final case class StepList private[models] (runId: Id, steps: List[Step]) { outer
   }
 
   def insertAfter(id: Id, commands: List[SequenceCommand]): StepListResult[InsertAfterResponse] =
-    ifExists(id) { _ ⇒
-      ifNotFinished {
-        val updatedSteps = insertStepsAfter(id, toSteps(commands))
-        StepListResult(Inserted, copy(runId, updatedSteps))
-      }
+    ifExistAndNotFinished(id) { _ ⇒
+      val updatedSteps = insertStepsAfter(id, toSteps(commands))
+      StepListResult(Inserted, copy(runId, updatedSteps))
     }
 
   def discardPending: StepListResult[DiscardPendingResponse] =
@@ -102,21 +98,20 @@ final case class StepList private[models] (runId: Id, steps: List[Step]) { outer
 
   // api changed from prototype (single Id instead of Set[Id]), confirm?
   private[framework] def updateStatus(id: Id, stepStatus: StepStatus): StepListResult[UpdateResponse] =
-    ifExists(id) { _ ⇒
-      ifNotFinished {
-        var reply: UpdateResponse = Updated
+    ifExistAndNotFinished(id) { _ ⇒
+      var reply: UpdateResponse = Updated
 
-        val updatedSteps = steps.map {
-          case step if id == step.id =>
-            val StepResult(isSuccessful, updatedStep) = step.withStatus(stepStatus)
-            if (isSuccessful) reply = Updated
-            else reply = UpdateFailed
-            updatedStep
-          case step => step
-        }
-        val updatedStepList = copy(runId, updatedSteps)
-        StepListResult(reply, updatedStepList)
+      val updatedSteps = steps.map {
+        case step if id == step.id =>
+          val stepResult = step.withStatus(stepStatus)
+          if (stepResult.isSuccessful) reply = Updated
+          else reply = UpdateFailed
+          stepResult.step
+        case step => step
       }
+
+      val updatedStepList = copy(runId, updatedSteps)
+      StepListResult(reply, updatedStepList)
     }
 
   private def replaceSteps(id: Id, steps: List[Step]): StepListResult[ReplaceResponse] =
@@ -143,6 +138,9 @@ final case class StepList private[models] (runId: Id, steps: List[Step]) { outer
       case Some(step) ⇒ f(step)
       case None       ⇒ StepListResult(IdDoesNotExist(id).asInstanceOf[T], this)
     }
+
+  private def ifExistAndNotFinished[T <: StepListActionResponse](id: Id)(f: Step ⇒ StepListResult[T]): StepListResult[T] =
+    ifExists(id)(step ⇒ ifNotFinished(f(step)))
 
   private implicit class StepListResultOps[T <: StepListActionResponse](optStep: Option[StepListResult[T]]) {
     def getOrReturn(response: T): StepListResult[T] = optStep.getOrElse(StepListResult(response, outer))
