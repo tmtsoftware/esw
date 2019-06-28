@@ -18,7 +18,7 @@ object Main {
         actorRuntime.startLogging(BuildInfo.name, BuildInfo.version)
 
         lazy val routes      = new Routes(cswContext)
-        lazy val httpService = new HttpService(locationService, routes.route, settings, actorRuntime)
+        lazy val httpService = new HttpService(logger, locationService, routes.route, settings, actorRuntime)
 
         Await.result(httpService.registeredLazyBinding, 15.seconds)
     }

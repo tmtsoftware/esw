@@ -11,6 +11,7 @@ import akka.http.scaladsl.server.Route
 import csw.location.api.models.Connection.HttpConnection
 import csw.location.api.models.{HttpRegistration, RegistrationResult}
 import csw.location.api.scaladsl.LocationService
+import csw.logging.api.scaladsl.Logger
 import csw.network.utils.{Networks, SocketUtils}
 import esw.template.http.server.commons.ActorRuntime
 import esw.template.http.server.commons.CoordinatedShutdownReasons.FailureReason
@@ -28,6 +29,7 @@ import scala.util.control.NonFatal
  * @param actorRuntime actorRuntime instance wrapper for actor system
  */
 class HttpService(
+    log: Logger,
     locationService: LocationService,
     route: Route,
     settings: Settings,
@@ -51,6 +53,7 @@ class HttpService(
       s"unregistering-${registrationResult.location}"
     )(() => registrationResult.unregister())
 
+    log.info(s"Server online at http://${binding.localAddress.getHostName}:${binding.localAddress.getPort}/")
     (binding, registrationResult)
   } recoverWith {
     case NonFatal(ex) ⇒ shutdown(FailureReason(ex)).map(_ ⇒ throw ex)
@@ -85,6 +88,9 @@ class HttpService(
       path = ""
     )
 
+    log.info(
+      s"Registering ${connection.componentId.name} Service HTTP Server with Location Service using registration: [${registration.toString}]"
+    )
     locationService.register(registration)
   }
 }

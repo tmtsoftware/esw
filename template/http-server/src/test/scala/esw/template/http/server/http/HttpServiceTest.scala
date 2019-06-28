@@ -50,7 +50,7 @@ class HttpServiceTest extends BaseTestSuit {
     val _servicePort = 4005
     val cswContext   = new CswContext(Some(_servicePort))
     import cswContext._
-    val httpService             = new HttpService(locationService, route, settings, actorRuntime)
+    val httpService             = new HttpService(logger, locationService, route, settings, actorRuntime)
     val (_, registrationResult) = Await.result(httpService.registeredLazyBinding, 5.seconds)
 
     Await.result(locationService.find(settings.httpConnection), 5.seconds).get.connection shouldBe settings.httpConnection
@@ -65,7 +65,7 @@ class HttpServiceTest extends BaseTestSuit {
     val _servicePort = 4452 // Location Service runs on this port
     val cswContext   = new CswContext(Some(_servicePort))
     import cswContext._
-    val httpService = new HttpService(locationService, route, settings, actorRuntime)
+    val httpService = new HttpService(logger, locationService, route, settings, actorRuntime)
 
     a[BindException] shouldBe thrownBy(Await.result(httpService.registeredLazyBinding, 5.seconds))
     Await.result(testLocationService.find(settings.httpConnection), 5.seconds) shouldBe None
@@ -75,7 +75,7 @@ class HttpServiceTest extends BaseTestSuit {
     val _servicePort = 4007
     val cswContext   = new CswContext(Some(_servicePort))
     import cswContext._
-    val httpService = new HttpService(locationService, route, settings, actorRuntime)
+    val httpService = new HttpService(logger, locationService, route, settings, actorRuntime)
 
     Await.result(locationService.register(HttpRegistration(settings.httpConnection, 21212, "")), 5.seconds)
     Await.result(locationService.find(settings.httpConnection), 5.seconds).get.connection shouldBe settings.httpConnection
