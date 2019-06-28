@@ -54,6 +54,20 @@ class CommandRoutesTest
       }
     }
 
+    "get error response for validate command on timeout | ESW-91" in {
+      val assemblyName = "TestAssembly"
+      val runId        = Id("123")
+      val command      = Setup(Prefix("test"), CommandName("c1"), Some(ObsId("obsId"))).copy(runId = runId)
+
+      when(commandService.validate(command)).thenReturn(Future.failed(new TimeoutException("")))
+      when(componentFactory.assemblyCommandService(assemblyName)).thenReturn(Future(commandService))
+
+      Post(s"/command/assembly/$assemblyName/validate", command) ~> routes ~> check {
+        status shouldBe StatusCodes.GatewayTimeout
+        mediaType shouldBe `application/json`
+      }
+    }
+
     "post submit command | ESW-91" in {
       val assemblyName = "TestAssembly"
       val runId        = Id("123")
@@ -65,6 +79,20 @@ class CommandRoutesTest
       Post(s"/command/assembly/$assemblyName/submit", command) ~> routes ~> check {
         status shouldBe StatusCodes.OK
         responseAs[CommandResponse] shouldEqual Completed(runId)
+      }
+    }
+
+    "get error response for submit command on timeout | ESW-91" in {
+      val assemblyName = "TestAssembly"
+      val runId        = Id("123")
+      val command      = Setup(Prefix("test"), CommandName("c1"), Some(ObsId("obsId"))).copy(runId = runId)
+
+      when(commandService.submit(command)).thenReturn(Future.failed(new TimeoutException("")))
+      when(componentFactory.assemblyCommandService(assemblyName)).thenReturn(Future(commandService))
+
+      Post(s"/command/assembly/$assemblyName/submit", command) ~> routes ~> check {
+        status shouldBe StatusCodes.GatewayTimeout
+        mediaType shouldBe `application/json`
       }
     }
 
@@ -82,7 +110,21 @@ class CommandRoutesTest
       }
     }
 
-    "get command response for RunId | ESW-91" in {
+    "get error response for oneway command on timeout | ESW-91" in {
+      val assemblyName = "TestAssembly"
+      val runId        = Id("123")
+      val command      = Setup(Prefix("test"), CommandName("c1"), Some(ObsId("obsId"))).copy(runId = runId)
+
+      when(commandService.oneway(command)).thenReturn(Future.failed(new TimeoutException("")))
+      when(componentFactory.assemblyCommandService(assemblyName)).thenReturn(Future(commandService))
+
+      Post(s"/command/assembly/$assemblyName/oneway", command) ~> routes ~> check {
+        status shouldBe StatusCodes.GatewayTimeout
+        mediaType shouldBe `application/json`
+      }
+    }
+
+    "get command response for given RunId | ESW-91" in {
       val assemblyName = "TestAssembly"
       val runId        = Id("123")
       val command      = Setup(Prefix("test"), CommandName("c1"), Some(ObsId("obsId"))).copy(runId = runId)
@@ -114,7 +156,7 @@ class CommandRoutesTest
       }
     }
 
-    "get current state subscription to all state-names | ESW-91" in {
+    "get current state subscription to all stateNames | ESW-91" in {
       val assemblyName  = "TestAssembly"
       val currentState1 = CurrentState(Prefix("a.b"), StateName("stateName1"))
       val currentState2 = CurrentState(Prefix("a.b"), StateName("stateName2"))
@@ -139,7 +181,7 @@ class CommandRoutesTest
       }
     }
 
-    "get current state subscription to given state-names | ESW-91" in {
+    "get current state subscription to given stateNames | ESW-91" in {
       val assemblyName  = "TestAssembly"
       val stateName1    = StateName("stateName1")
       val currentState1 = CurrentState(Prefix("a.b"), stateName1)
