@@ -40,6 +40,20 @@ class CommandRoutesTest
   override protected def afterAll(): Unit = cswCtx.actorSystem.terminate()
 
   "Routes for assembly" must {
+    "post command to validate | ESW-91" in {
+      val assemblyName = "TestAssembly"
+      val runId        = Id("123")
+      val command      = Setup(Prefix("test"), CommandName("c1"), Some(ObsId("obsId"))).copy(runId = runId)
+
+      when(commandService.validate(command)).thenReturn(Future.successful(Accepted(runId)))
+      when(componentFactory.assemblyCommandService(assemblyName)).thenReturn(Future(commandService))
+
+      Post(s"/command/assembly/$assemblyName/validate", command) ~> routes ~> check {
+        status shouldBe StatusCodes.OK
+        responseAs[CommandResponse] shouldEqual Accepted(runId)
+      }
+    }
+
     "post submit command | ESW-91" in {
       val assemblyName = "TestAssembly"
       val runId        = Id("123")

@@ -28,6 +28,11 @@ class CommandRoutes(cswCtx: CswContext) extends JsonSupportExt {
 
           onSuccess(commandServiceF) { commandService =>
             post {
+              path("validate") {
+                entity(as[ControlCommand]) { command =>
+                  complete(commandService.validate(command))
+                }
+              } ~
               path("submit") {
                 entity(as[ControlCommand]) { command =>
                   complete(commandService.submit(command))
