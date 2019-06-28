@@ -35,7 +35,7 @@ class EventRoutes(cswCtx: CswContext) extends JsonSupportExt {
           }
         } ~
         get {
-          parameter('keys.*) { keys =>
+          parameter('key.*) { keys =>
             val eventualEvents = subscriber.get(keys.toEventKeys)
             complete(eventualEvents)
           }
@@ -44,7 +44,7 @@ class EventRoutes(cswCtx: CswContext) extends JsonSupportExt {
       pathPrefix("subscribe") {
         get {
           pathEnd {
-            parameters(('keys.*, 'frequency.as[Int])) { (keys, frequency) =>
+            parameters(('key.*, 'frequency.as[Int])) { (keys, frequency) =>
               complete(
                 subscriber
                   .subscribe(keys.toEventKeys, frequncyToTime(frequency), RateLimiterMode)

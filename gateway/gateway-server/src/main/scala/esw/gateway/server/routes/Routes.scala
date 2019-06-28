@@ -1,10 +1,10 @@
-package esw.gateway.server
+package esw.gateway.server.routes
 
 import akka.http.scaladsl.model.HttpRequest
 import akka.http.scaladsl.server.Directives._
 import akka.http.scaladsl.server.directives.{DebuggingDirectives, LoggingMagnet}
 import akka.http.scaladsl.server.{Directive0, Route}
-import esw.gateway.server.routes.{CommandRoutes, EventRoutes}
+import esw.gateway.server.{JsonSupportExt, RouteExceptionHandlers}
 import esw.template.http.server.CswContext
 
 class Routes(cswCtx: CswContext) extends JsonSupportExt {

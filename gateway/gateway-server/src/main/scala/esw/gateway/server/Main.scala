@@ -1,5 +1,6 @@
 package esw.gateway.server
 
+import esw.gateway.server.routes.Routes
 import esw.template.http.server.CswContext
 import esw.template.http.server.cli.{ArgsParser, Options}
 import esw.template.http.server.http.HttpService

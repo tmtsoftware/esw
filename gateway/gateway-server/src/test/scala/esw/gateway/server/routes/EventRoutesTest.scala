@@ -14,7 +14,7 @@ import csw.params.core.formats.JsonSupport
 import csw.params.core.models.{Prefix, Subsystem}
 import csw.params.events._
 import de.heikoseeberger.akkahttpplayjson.PlayJsonSupport
-import esw.gateway.server.{CswContextMocks, Routes}
+import esw.gateway.server.CswContextMocks
 import org.mockito.Mockito.{verify, when}
 import org.mockito.{ArgumentMatchersSugar, Mockito}
 import org.scalatest.{BeforeAndAfterAll, BeforeAndAfterEach, Matchers, WordSpec}
@@ -65,7 +65,7 @@ class EventRoutesTest
       val expectedEvents: Set[Event] = Set(event1, event2)
       when(eventSubscriber.get(Set(eventKey1, eventKey2))).thenReturn(Future.successful(expectedEvents))
 
-      Get(s"/event?keys=$tcsEventKeyStr1&keys=$tcsEventKeyStr2") ~> route ~> check {
+      Get(s"/event?key=$tcsEventKeyStr1&key=$tcsEventKeyStr2") ~> route ~> check {
         status shouldBe StatusCodes.OK
         responseAs[Set[Event]] shouldBe expectedEvents
       }
@@ -74,7 +74,7 @@ class EventRoutesTest
     "get fail if future fails | ESW-94" in {
       when(eventSubscriber.get(Set(eventKey1, eventKey2))).thenReturn(Future.failed(new RuntimeException("failed")))
 
-      Get(s"/event?keys=$tcsEventKeyStr1&keys=$tcsEventKeyStr2") ~> route ~> check {
+      Get(s"/event?key=$tcsEventKeyStr1&key=$tcsEventKeyStr2") ~> route ~> check {
         status shouldBe StatusCodes.InternalServerError
       }
     }
@@ -102,7 +102,7 @@ class EventRoutesTest
 
         when(eventSubscriber.subscribe(Set(eventKey1, eventKey2), 100.millis, RateLimiterMode)).thenReturn(eventSource)
 
-        Get(s"/event/subscribe?keys=$eventKey1&keys=$eventKey2&frequency=10") ~> route ~> check {
+        Get(s"/event/subscribe?key=$eventKey1&key=$eventKey2&frequency=10") ~> route ~> check {
           status shouldBe StatusCodes.OK
           mediaType shouldBe MediaTypes.`text/event-stream`
           verify(eventSubscriber).subscribe(Set(eventKey1, eventKey2), 100.millis, RateLimiterMode)
@@ -119,7 +119,7 @@ class EventRoutesTest
         when(eventSubscriber.subscribe(Set(eventKey1, eventKey2), 100.millis, RateLimiterMode))
           .thenThrow(new RuntimeException("exception"))
 
-        Get(s"/event/subscribe?keys=$eventKey1&keys=$eventKey2&frequency=10") ~> route ~> check {
+        Get(s"/event/subscribe?key=$eventKey1&key=$eventKey2&frequency=10") ~> route ~> check {
           status shouldBe StatusCodes.InternalServerError
           verify(eventSubscriber).subscribe(Set(eventKey1, eventKey2), 100.millis, RateLimiterMode)
         }
