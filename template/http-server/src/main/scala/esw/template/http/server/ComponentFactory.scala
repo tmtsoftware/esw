@@ -41,5 +41,6 @@ class ComponentFactory(locationService: LocationService, commandServiceFactory: 
   def commandService(componentName: String, componentType: ComponentType): Future[CommandService] = componentType match {
     case Assembly => assemblyCommandService(componentName)
     case HCD      => hcdCommandService(componentName)
+    case _        => throw new RuntimeException(s"Command Service could not be created for given $componentType")
   }
 }
