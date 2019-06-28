@@ -327,4 +327,45 @@ class StepListTest extends BaseTestSuite {
     }
   }
 
+  "insertAfter" must {
+    val setup1 = Setup(Prefix("ocs.move1"), CommandName("test1"), None)
+    val setup2 = Setup(Prefix("ocs.move2"), CommandName("test2"), None)
+    val setup3 = Setup(Prefix("ocs.move3"), CommandName("test3"), None)
+    val setup4 = Setup(Prefix("ocs.move4"), CommandName("test4"), None)
+
+    "insert provided commands after given Id" in {
+      val step1 = Step(setup1, Finished, hasBreakpoint = false)
+      val step2 = Step(setup2, Pending, hasBreakpoint = false)
+
+      val id              = Id()
+      val stepList        = StepList(id, List(step1, step2))
+      val updatedStepList = stepList.insertAfter(step1.id, List(setup3, setup4))
+      updatedStepList.response shouldBe Inserted
+      updatedStepList.stepList shouldBe StepList(id, List(step1, Step(setup3), Step(setup4), step2))
+    }
+
+    "fail with IdDoesNotExist error when provided Id does't exist in StepList" in {
+      val step1 = Step(setup1, InFlight, hasBreakpoint = false)
+      val step2 = Step(setup2, Pending, hasBreakpoint = false)
+
+      val stepList = StepList(Id(), List(step1, step2))
+
+      val invalidId       = Id()
+      val updatedStepList = stepList.insertAfter(invalidId, List(setup3))
+      updatedStepList.response shouldBe IdDoesNotExist(invalidId)
+      updatedStepList.stepList shouldBe stepList
+    }
+
+    "fail with NotAllowedOnFinishedSeq error when StepList is finished" in {
+      val step1 = Step(setup1, Finished, hasBreakpoint = false)
+      val step2 = Step(setup2, Finished, hasBreakpoint = false)
+
+      val id              = Id()
+      val stepList        = StepList(id, List(step1, step2))
+      val updatedStepList = stepList.insertAfter(step1.id, List(setup3, setup4))
+      updatedStepList.response shouldBe NotAllowedOnFinishedSeq
+      updatedStepList.stepList shouldBe stepList
+    }
+  }
+
 }

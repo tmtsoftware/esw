@@ -51,8 +51,6 @@ object StepListActionResponse {
   case object Prepended        extends PrependResponse
 
   sealed trait DeleteResponse                                        extends StepListActionResponse
-  case object Deleted                                                extends DeleteResponse
-  case object DeleteFailed                                           extends DeleteResponse
   case class DeletionResult(deleted: List[Id], notDeleted: List[Id]) extends DeleteResponse
 
   sealed trait InsertAfterResponse extends StepListActionResponse
