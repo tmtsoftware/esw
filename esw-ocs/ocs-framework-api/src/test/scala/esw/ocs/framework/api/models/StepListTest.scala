@@ -267,7 +267,7 @@ class StepListTest extends BaseTestSuite {
       val id              = Id()
       val stepList        = StepList(id, List(step1, step2))
       val updatedStepList = stepList.append(List(setup3, setup4))
-      updatedStepList.response shouldBe Added // fixme: revisit type?
+      updatedStepList.response shouldBe Appended // fixme: revisit type?
       updatedStepList.stepList shouldBe StepList(id, List(step1, step2, Step(setup3), Step(setup4)))
     }
 

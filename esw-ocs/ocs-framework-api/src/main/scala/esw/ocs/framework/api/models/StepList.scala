@@ -31,20 +31,19 @@ final case class StepList private[models] (runId: Id, steps: List[Step]) { outer
     StepListResult(Prepended, copy(runId, pre ::: toSteps(commands) ::: post))
   }
 
-  def append(commands: List[SequenceCommand]): StepListResult[AddResponse] =
-    ifNotFinished(StepListResult(Added, copy(runId, steps ::: toSteps(commands))))
+  def append(commands: List[SequenceCommand]): StepListResult[AppendResponse] =
+    ifNotFinished(StepListResult(Appended, copy(runId, steps ::: toSteps(commands))))
 
   def delete(ids: Set[Id]): StepListResult[DeleteResponse] = ifNotFinished {
-    var deletedIds    = List.empty[Id]
-    var notDeletedIds = List.empty[Id]
+    val successFailIds = new SuccessFailState(ids)
 
     val updatedSteps = steps.filterNot {
-      case step if ids.contains(step.id) && step.isPending ⇒ deletedIds ::= step.id; true
-      case step if ids.contains(step.id)                   ⇒ notDeletedIds ::= step.id; false
+      case step if ids.contains(step.id) && step.isPending ⇒ successFailIds.addSuccess(step.id); true
+      case step if ids.contains(step.id)                   ⇒ successFailIds.addFailure(step.id); false
       case _                                               ⇒ false
     }
-    notDeletedIds = notDeletedIds ::: (ids diff (deletedIds ::: notDeletedIds).toSet).toList
-    StepListResult(DeletionResult(deletedIds, notDeletedIds), copy(runId, updatedSteps))
+
+    StepListResult(DeletionResult(successFailIds.successIds, successFailIds.failureIds()), copy(runId, updatedSteps))
   }
 
   def insertAfter(id: Id, commands: List[SequenceCommand]): StepListResult[InsertAfterResponse] =
@@ -57,22 +56,17 @@ final case class StepList private[models] (runId: Id, steps: List[Step]) { outer
     ifNotFinished(StepListResult(Discarded, copy(runId, steps.filterNot(_.isPending))))
 
   def addBreakpoints(ids: List[Id]): StepListResult[AddBreakpointsResponse] = ifNotFinished {
-    var addedIds    = List.empty[Id]
-    var notAddedIds = List.empty[Id]
+    val successFailIds = new SuccessFailState(ids.toSet)
 
     val updatedSteps = steps.map {
       case step if ids.contains(step.id) =>
         val StepResult(isSuccessful, updatedStep) = step.addBreakpoint()
-        if (isSuccessful) addedIds = updatedStep.id :: addedIds
-        else notAddedIds = updatedStep.id :: notAddedIds
+        if (isSuccessful) successFailIds.addSuccess(updatedStep.id)
+        else successFailIds.addFailure(updatedStep.id)
         updatedStep
       case step => step
     }
-
-    notAddedIds = notAddedIds ::: (ids.toSet diff (addedIds ::: notAddedIds).toSet).toList
-
-    val updatedStepList = copy(runId, updatedSteps)
-    StepListResult(AdditionResult(addedIds, notAddedIds), updatedStepList)
+    StepListResult(AdditionResult(successFailIds.successIds, successFailIds.failureIds()), copy(runId, updatedSteps))
   }
 
   def removeBreakpoints(ids: List[Id]): StepListResult[RemoveBreakpointsResponse] = ifNotFinished {
@@ -144,6 +138,19 @@ final case class StepList private[models] (runId: Id, steps: List[Step]) { outer
 
   private implicit class StepListResultOps[T <: StepListActionResponse](optStep: Option[StepListResult[T]]) {
     def getOrReturn(response: T): StepListResult[T] = optStep.getOrElse(StepListResult(response, outer))
+  }
+
+  private class SuccessFailState(allIds: Set[Id]) {
+    private var _successIds = List.empty[Id]
+    private var _failureIds = List.empty[Id]
+
+    def addFailure(id: Id): Unit = _failureIds ::= id
+    def addSuccess(id: Id): Unit = _successIds ::= id
+
+    def successIds: List[Id] = _successIds
+
+    // add not processed ids into failure ids
+    def failureIds(): List[Id] = _failureIds ::: (allIds diff (_successIds ::: _failureIds).toSet).toList
   }
 }
 

@@ -34,10 +34,11 @@ object SequencerMsg {
   final case class Update(submitResponse: SubmitResponse, replyTo: ActorRef[UpdateResponse]) extends InternalSequencerMsg
   final case class ProcessSequence(sequence: Sequence, replyTo: ActorRef[SubmitResponse])
       extends ExternalSequencerMsg[SubmitResponse]
-  final case class Add(commands: List[SequenceCommand], replyTo: ActorRef[AddResponse]) extends ExternalSequencerMsg[AddResponse]
-  final case class Pause(replyTo: ActorRef[PauseResponse])                              extends ExternalSequencerMsg[PauseResponse]
-  final case class Resume(replyTo: ActorRef[ResumeResponse])                            extends ExternalSequencerMsg[ResumeResponse]
-  final case class DiscardPending(replyTo: ActorRef[DiscardPendingResponse])            extends ExternalSequencerMsg[DiscardPendingResponse]
+  final case class Add(commands: List[SequenceCommand], replyTo: ActorRef[AppendResponse])
+      extends ExternalSequencerMsg[AppendResponse]
+  final case class Pause(replyTo: ActorRef[PauseResponse])                   extends ExternalSequencerMsg[PauseResponse]
+  final case class Resume(replyTo: ActorRef[ResumeResponse])                 extends ExternalSequencerMsg[ResumeResponse]
+  final case class DiscardPending(replyTo: ActorRef[DiscardPendingResponse]) extends ExternalSequencerMsg[DiscardPendingResponse]
   final case class Replace(id: Id, commands: List[SequenceCommand], replyTo: ActorRef[ReplaceResponse])
       extends ExternalSequencerMsg[ReplaceResponse]
   final case class Prepend(commands: List[SequenceCommand], replyTo: ActorRef[PrependResponse])

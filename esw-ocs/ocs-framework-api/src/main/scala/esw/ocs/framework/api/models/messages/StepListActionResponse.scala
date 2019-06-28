@@ -11,7 +11,7 @@ object StepListActionResponse {
       extends AddBreakpointsResponse
       with PauseResponse
       with UpdateResponse
-      with AddResponse
+      with AppendResponse
       with ResumeResponse
       with DiscardPendingResponse
       with ReplaceResponse
@@ -29,16 +29,19 @@ object StepListActionResponse {
   case object Paused         extends PauseResponse
   case object PauseFailed    extends PauseResponse
 
+  sealed trait ResumeResponse extends StepListActionResponse
+  case object Resumed         extends ResumeResponse
+
   sealed trait UpdateResponse extends StepListActionResponse
   case object Updated         extends UpdateResponse
   case object UpdateFailed    extends UpdateResponse
 
-  sealed trait AddResponse extends StepListActionResponse
-  case object Added        extends AddResponse
-  case object AddFailed    extends AddResponse
+  sealed trait AppendResponse extends StepListActionResponse
+  case object Appended        extends AppendResponse
+  case object AppendFailed    extends AppendResponse
 
-  sealed trait ResumeResponse extends StepListActionResponse
-  case object Resumed         extends ResumeResponse
+  sealed trait PrependResponse extends StepListActionResponse
+  case object Prepended        extends PrependResponse
 
   sealed trait DiscardPendingResponse extends StepListActionResponse
   case object Discarded               extends DiscardPendingResponse
@@ -46,9 +49,6 @@ object StepListActionResponse {
   sealed trait ReplaceResponse                                                 extends StepListActionResponse
   case object Replaced                                                         extends ReplaceResponse
   final case class ReplaceNotSupportedInThisStatus(id: Id, status: StepStatus) extends ReplaceResponse
-
-  sealed trait PrependResponse extends StepListActionResponse
-  case object Prepended        extends PrependResponse
 
   sealed trait DeleteResponse                                        extends StepListActionResponse
   case class DeletionResult(deleted: List[Id], notDeleted: List[Id]) extends DeleteResponse
