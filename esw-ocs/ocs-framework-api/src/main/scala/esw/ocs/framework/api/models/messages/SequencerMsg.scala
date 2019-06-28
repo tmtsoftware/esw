@@ -31,9 +31,14 @@ object SequencerMsg {
     def replyTo: ActorRef[T]
   }
 
-  final case class Update(submitResponse: SubmitResponse, replyTo: ActorRef[UpdateResponse]) extends InternalSequencerMsg
-  final case class ProcessSequence(sequence: Sequence, replyTo: ActorRef[SubmitResponse])
-      extends ExternalSequencerMsg[SubmitResponse]
+  sealed trait ProcessSequenceError
+  case object DuplicateIdsFound           extends ProcessSequenceError
+  case object ExistingSequenceIsInProcess extends ProcessSequenceError
+
+  final case class Update(submitResponse: SubmitResponse) extends InternalSequencerMsg
+  final case class ProcessSequence(sequence: Sequence, replyTo: ActorRef[Either[ProcessSequenceError, SubmitResponse]])
+      extends ExternalSequencerMsg[Either[DuplicateIdsFound.type, SubmitResponse]]
+
   final case class Add(commands: List[SequenceCommand], replyTo: ActorRef[AddResponse]) extends ExternalSequencerMsg[AddResponse]
   final case class Pause(replyTo: ActorRef[PauseResponse])                              extends ExternalSequencerMsg[PauseResponse]
   final case class Resume(replyTo: ActorRef[ResumeResponse])                            extends ExternalSequencerMsg[ResumeResponse]

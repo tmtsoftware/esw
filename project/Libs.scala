@@ -1,5 +1,5 @@
 import org.portablescala.sbtplatformdeps.PlatformDepsPlugin.autoImport._
-import sbt.Def.{setting => dep}
+import sbt.Def.{setting ⇒ dep}
 import sbt._
 
 object Libs {
@@ -22,9 +22,9 @@ object Csw {
   val `csw-commons`         = Org %% "csw-commons" % Version
   val `csw-network-utils`   = Org %% "csw-network-utils" % Version
   val `csw-location-client` = Org %% "csw-location-client" % Version
-  val `csw-testkit`         = Org %% "csw-testkit" % Version
   val `csw-command-client`  = Org %% "csw-command-client" % Version
   val `csw-event-client`    = Org %% "csw-event-client" % Version
+  val `csw-testkit`         = Org %% "csw-testkit" % Version
 }
 
 object Akka {

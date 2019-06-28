@@ -40,7 +40,7 @@ lazy val `ocs-framework` = project
   .settings(
     libraryDependencies ++= Dependencies.OcsFramework.value
   )
-  .dependsOn(`async-macros`)
+  .dependsOn(`ocs-framework-api`, `async-macros`)
 
 lazy val `async-macros` = project
   .in(file("esw-ocs/async-macros"))

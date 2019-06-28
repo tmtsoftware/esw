@@ -3,8 +3,8 @@ package esw.ocs.framework.api.models
 import csw.params.commands._
 import csw.params.core.models.{Id, Prefix}
 import esw.ocs.framework.api.BaseTestSuite
-import esw.ocs.framework.api.models.StepList.DuplicateIdsFound
 import esw.ocs.framework.api.models.StepStatus.{Finished, InFlight, Pending}
+import esw.ocs.framework.api.models.messages.SequencerMsg.DuplicateIdsFound
 import esw.ocs.framework.api.models.messages.StepListActionResponse._
 
 class StepListTest extends BaseTestSuite {
@@ -580,13 +580,14 @@ class StepListTest extends BaseTestSuite {
       val id               = Id()
       val stepList         = StepList(id, List(step1, step2, step3))
       val updatedStepList1 = stepList.updateStatus(setup2.runId, Finished)
-      updatedStepList1.response shouldBe Updated
-      val updatedStep2 = step2.copy(status = Finished)
+      val updatedStep2     = step2.copy(status = Finished)
+      updatedStepList1.response shouldBe Updated(updatedStep2)
       updatedStepList1.stepList shouldBe StepList(id, List(step1, updatedStep2, step3))
 
       val updatedStepList2 = updatedStepList1.stepList.updateStatus(setup3.runId, InFlight)
-      updatedStepList2.response shouldBe Updated
-      updatedStepList2.stepList shouldBe StepList(id, List(step1, updatedStep2, step3.copy(status = InFlight)))
+      val updatedStep3     = step3.copy(status = InFlight)
+      updatedStepList2.response shouldBe Updated(updatedStep3)
+      updatedStepList2.stepList shouldBe StepList(id, List(step1, updatedStep2, updatedStep3))
     }
 
     "fail with UpdateFailed error when step status transition not allowed" in {

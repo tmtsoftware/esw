@@ -2,6 +2,7 @@ package esw.ocs.framework.api.models
 
 import csw.params.commands.SequenceCommand
 import csw.params.core.models.Id
+import esw.ocs.framework.api.models.messages.SequencerMsg.DuplicateIdsFound
 import esw.ocs.framework.api.models.messages.StepListActionResponse._
 import esw.ocs.framework.api.models.messages._
 
@@ -43,7 +44,7 @@ final case class StepList private[models] (runId: Id, steps: List[Step]) { outer
       case _                                               ⇒ false
     }
 
-    StepListResult(DeletionResult(successFailIds.successIds, successFailIds.failureIds()), copy(runId, updatedSteps))
+    StepListResult(DeletionResult(successFailIds.successIds, successFailIds.failureIds), copy(runId, updatedSteps))
   }
 
   def insertAfter(id: Id, commands: List[SequenceCommand]): StepListResult[InsertAfterResponse] =
@@ -66,7 +67,7 @@ final case class StepList private[models] (runId: Id, steps: List[Step]) { outer
         updatedStep
       case step => step
     }
-    StepListResult(AdditionResult(successFailIds.successIds, successFailIds.failureIds()), copy(runId, updatedSteps))
+    StepListResult(AdditionResult(successFailIds.successIds, successFailIds.failureIds), copy(runId, updatedSteps))
   }
 
   def removeBreakpoints(ids: List[Id]): StepListResult[RemoveBreakpointsResponse] = ifNotFinished {
@@ -93,12 +94,12 @@ final case class StepList private[models] (runId: Id, steps: List[Step]) { outer
   // api changed from prototype (single Id instead of Set[Id]), confirm?
   private[framework] def updateStatus(id: Id, stepStatus: StepStatus): StepListResult[UpdateResponse] =
     ifExistAndNotFinished(id) { _ ⇒
-      var reply: UpdateResponse = Updated
+      var reply: UpdateResponse = UpdateFailed
 
       val updatedSteps = steps.map {
         case step if id == step.id =>
           val stepResult = step.withStatus(stepStatus)
-          if (stepResult.isSuccessful) reply = Updated
+          if (stepResult.isSuccessful) reply = Updated(stepResult.step)
           else reply = UpdateFailed
           stepResult.step
         case step => step
@@ -150,12 +151,11 @@ final case class StepList private[models] (runId: Id, steps: List[Step]) { outer
     def successIds: List[Id] = _successIds
 
     // add not processed ids into failure ids
-    def failureIds(): List[Id] = _failureIds ::: (allIds diff (_successIds ::: _failureIds).toSet).toList
+    def failureIds: List[Id] = _failureIds ::: (allIds diff (_successIds ::: _failureIds).toSet).toList
   }
 }
 
 object StepList {
-  case object DuplicateIdsFound
 
   def empty: StepList = StepList(Id(), List.empty)
 

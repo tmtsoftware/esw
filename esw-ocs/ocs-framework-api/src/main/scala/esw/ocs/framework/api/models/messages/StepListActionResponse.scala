@@ -1,7 +1,7 @@
 package esw.ocs.framework.api.models.messages
 
 import csw.params.core.models.Id
-import esw.ocs.framework.api.models.StepStatus
+import esw.ocs.framework.api.models.{Step, StepStatus}
 
 sealed trait StepListActionResponse
 
@@ -32,9 +32,9 @@ object StepListActionResponse {
   sealed trait ResumeResponse extends StepListActionResponse
   case object Resumed         extends ResumeResponse
 
-  sealed trait UpdateResponse extends StepListActionResponse
-  case object Updated         extends UpdateResponse
-  case object UpdateFailed    extends UpdateResponse
+  sealed trait UpdateResponse          extends StepListActionResponse
+  final case class Updated(step: Step) extends UpdateResponse
+  case object UpdateFailed             extends UpdateResponse
 
   sealed trait AddResponse extends StepListActionResponse
   case object Added        extends AddResponse
