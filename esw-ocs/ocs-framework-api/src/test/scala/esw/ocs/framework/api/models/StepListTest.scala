@@ -396,8 +396,6 @@ class StepListTest extends BaseTestSuite {
   "addBreakpoints" must {
     val setup1 = Setup(Prefix("ocs.move1"), CommandName("test1"), None)
     val setup2 = Setup(Prefix("ocs.move2"), CommandName("test2"), None)
-    val setup3 = Setup(Prefix("ocs.move3"), CommandName("test3"), None)
-    val setup4 = Setup(Prefix("ocs.move4"), CommandName("test4"), None)
 
     "add breakpoint to provided id when step status is Pending" in {
       val step1 = Step(setup1, Finished, hasBreakpoint = false)
