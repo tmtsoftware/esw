@@ -40,7 +40,8 @@ class CommandRoutesTest
 
   import actorRuntime.timeout
 
-  override protected def afterAll(): Unit = cswCtx.actorSystem.terminate()
+  override protected def afterAll(): Unit  = cswCtx.actorSystem.terminate()
+  override protected def afterEach(): Unit = Mockito.clearInvocations(componentFactory, commandService)
 
   case class TestData(componentType: String)
 
@@ -49,7 +50,7 @@ class CommandRoutesTest
   testData.foreach { testData =>
     val componentType: ComponentType = ComponentType.withName(testData.componentType)
 
-    s"Routes for ${testData.componentType}" must {
+    s"CommandRoutes for ${testData.componentType}" must {
       "post command to validate | ESW-91" in {
         val componentName = "test-component"
         val runId         = Id("123")
