@@ -186,7 +186,7 @@ class StepListTest extends BaseTestSuite {
       val stepList        = StepList(Id(), List(step1, step2, step3))
       val id              = setup2.runId
       val updatedStepList = stepList.replace(id, List(setup4, setup5))
-      updatedStepList.response shouldBe ReplaceNotSupportedInThisStatus(id, Finished)
+      updatedStepList.response shouldBe ReplaceNotSupportedInStatus(Finished)
       updatedStepList.stepList shouldBe stepList
     }
 
@@ -286,32 +286,26 @@ class StepListTest extends BaseTestSuite {
     val setup1 = Setup(Prefix("ocs.move1"), CommandName("test1"), None)
     val setup2 = Setup(Prefix("ocs.move2"), CommandName("test2"), None)
     val setup3 = Setup(Prefix("ocs.move3"), CommandName("test3"), None)
-    val setup4 = Setup(Prefix("ocs.move4"), CommandName("test4"), None)
 
-    "return deleted and not deleted ids" in {
+    "delete provided id when step status is Pending" in {
       val step1 = Step(setup1, Finished, hasBreakpoint = false)
       val step2 = Step(setup2, Pending, hasBreakpoint = false)
       val step3 = Step(setup3, InFlight, hasBreakpoint = false)
-      val step4 = Step(setup4, Pending, hasBreakpoint = false)
 
       val id              = Id()
-      val stepList        = StepList(id, List(step1, step2, step3, step4))
-      val updatedStepList = stepList.delete(Set(setup2.runId, setup3.runId, setup4.runId))
-      val deletionResult  = updatedStepList.response.asInstanceOf[DeletionResult]
-      deletionResult.deleted.toSet shouldBe Set(setup2.runId, setup4.runId)
-      deletionResult.notDeleted.toSet shouldBe Set(setup3.runId)
+      val stepList        = StepList(id, List(step1, step2, step3))
+      val updatedStepList = stepList.delete(setup2.runId)
+      updatedStepList.response shouldBe Deleted
       updatedStepList.stepList shouldBe StepList(id, List(step1, step3))
     }
 
-    "return not deleted ids when provided ids does not exist" in {
-      val step1 = Step(setup1, Pending, hasBreakpoint = false)
+    "fail with DeleteNotSupportedInThisStatus error when step status is other than Pending" in {
+      val step1 = Step(setup1, InFlight, hasBreakpoint = false)
+      val step2 = Step(setup2, Pending, hasBreakpoint = false)
 
-      val stepList        = StepList(Id(), List(step1))
-      val idsToBeDeleted  = Set(Id(), Id())
-      val updatedStepList = stepList.delete(idsToBeDeleted)
-      val deletionResult  = updatedStepList.response.asInstanceOf[DeletionResult]
-      deletionResult.deleted shouldBe Nil
-      deletionResult.notDeleted.toSet shouldBe idsToBeDeleted
+      val stepList        = StepList(Id(), List(step1, step2))
+      val updatedStepList = stepList.delete(setup1.runId)
+      updatedStepList.response shouldBe DeleteNotSupportedInStatus(InFlight)
       updatedStepList.stepList shouldBe stepList
     }
 
@@ -321,7 +315,7 @@ class StepListTest extends BaseTestSuite {
 
       val id              = Id()
       val stepList        = StepList(id, List(step1, step2))
-      val updatedStepList = stepList.delete(Set(setup1.runId))
+      val updatedStepList = stepList.delete(setup1.runId)
       updatedStepList.response shouldBe NotAllowedOnFinishedSeq
       updatedStepList.stepList shouldBe stepList
     }
@@ -405,33 +399,24 @@ class StepListTest extends BaseTestSuite {
     val setup3 = Setup(Prefix("ocs.move3"), CommandName("test3"), None)
     val setup4 = Setup(Prefix("ocs.move4"), CommandName("test4"), None)
 
-    "return added and not added breakpoint ids" in {
+    "add breakpoint to provided id when step status is Pending" in {
       val step1 = Step(setup1, Finished, hasBreakpoint = false)
       val step2 = Step(setup2, Pending, hasBreakpoint = false)
-      val step3 = Step(setup3, InFlight, hasBreakpoint = false)
-      val step4 = Step(setup4, Pending, hasBreakpoint = false)
 
       val id              = Id()
-      val stepList        = StepList(id, List(step1, step2, step3, step4))
-      val updatedStepList = stepList.addBreakpoints(List(setup1.runId, setup2.runId, setup3.runId, setup4.runId))
-      val additionResult  = updatedStepList.response.asInstanceOf[AdditionResult]
-      additionResult.added.toSet shouldBe Set(setup2.runId, setup4.runId)
-      additionResult.notAdded.toSet shouldBe Set(setup1.runId, setup3.runId)
-      updatedStepList.stepList shouldBe StepList(
-        id,
-        List(step1, step2.copy(hasBreakpoint = true), step3, step4.copy(hasBreakpoint = true))
-      )
+      val stepList        = StepList(id, List(step1, step2))
+      val updatedStepList = stepList.addBreakpoint(setup2.runId)
+      updatedStepList.response shouldBe BreakpointAdded
+      updatedStepList.stepList shouldBe StepList(id, List(step1, step2.copy(hasBreakpoint = true)))
     }
 
-    "return not added ids when provided ids does not exist" in {
+    "fail with IdDoesNotExist error when provided id does not exist" in {
       val step1 = Step(setup1, Pending, hasBreakpoint = false)
 
-      val stepList            = StepList(Id(), List(step1))
-      val idsToAddBreakpoints = List(Id(), Id())
-      val updatedStepList     = stepList.addBreakpoints(idsToAddBreakpoints)
-      val additionResult      = updatedStepList.response.asInstanceOf[AdditionResult]
-      additionResult.added shouldBe Nil
-      additionResult.notAdded shouldBe idsToAddBreakpoints
+      val stepList        = StepList(Id(), List(step1))
+      val invalidId       = Id()
+      val updatedStepList = stepList.addBreakpoint(invalidId)
+      updatedStepList.response shouldBe IdDoesNotExist(invalidId)
       updatedStepList.stepList shouldBe stepList
     }
 
@@ -441,7 +426,7 @@ class StepListTest extends BaseTestSuite {
 
       val id              = Id()
       val stepList        = StepList(id, List(step1, step2))
-      val updatedStepList = stepList.addBreakpoints(List(setup1.runId))
+      val updatedStepList = stepList.addBreakpoint(setup1.runId)
       updatedStepList.response shouldBe NotAllowedOnFinishedSeq
       updatedStepList.stepList shouldBe stepList
     }
@@ -450,29 +435,25 @@ class StepListTest extends BaseTestSuite {
   "removeBreakpoints" must {
     val setup1 = Setup(Prefix("ocs.move1"), CommandName("test1"), None)
     val setup2 = Setup(Prefix("ocs.move2"), CommandName("test2"), None)
-    val setup3 = Setup(Prefix("ocs.move3"), CommandName("test3"), None)
-    val setup4 = Setup(Prefix("ocs.move4"), CommandName("test4"), None)
 
-    "remove breakpoints from provided ids" in {
+    "remove breakpoint from provided id" in {
       val step1 = Step(setup1, Finished, hasBreakpoint = false)
       val step2 = Step(setup2, Pending, hasBreakpoint = true)
-      val step3 = Step(setup3, InFlight, hasBreakpoint = false)
-      val step4 = Step(setup4, Pending, hasBreakpoint = true)
 
       val id              = Id()
-      val stepList        = StepList(id, List(step1, step2, step3, step4))
-      val updatedStepList = stepList.removeBreakpoints(List(setup2.runId, setup3.runId))
-      updatedStepList.response shouldBe BreakpointsRemoved
-      updatedStepList.stepList shouldBe StepList(id, List(step1, step2.copy(hasBreakpoint = false), step3, step4))
+      val stepList        = StepList(id, List(step1, step2))
+      val updatedStepList = stepList.removeBreakpoint(setup2.runId)
+      updatedStepList.response shouldBe BreakpointRemoved
+      updatedStepList.stepList shouldBe StepList(id, List(step1, step2.copy(hasBreakpoint = false)))
     }
 
-    // fixme: revisit this scenario
-    "return breakpoint addition failed ids when provided ids does not exist" ignore {
+    "return breakpoint addition failed ids when provided ids does not exist" in {
       val step1 = Step(setup1, Pending, hasBreakpoint = false)
 
-      val stepList            = StepList(Id(), List(step1))
-      val idsToAddBreakpoints = List(Id(), Id())
-      val updatedStepList     = stepList.removeBreakpoints(idsToAddBreakpoints)
+      val stepList        = StepList(Id(), List(step1))
+      val invalidId       = Id()
+      val updatedStepList = stepList.removeBreakpoint(invalidId)
+      updatedStepList.response shouldBe IdDoesNotExist(invalidId)
       updatedStepList.stepList shouldBe stepList
     }
 
@@ -482,7 +463,7 @@ class StepListTest extends BaseTestSuite {
 
       val id              = Id()
       val stepList        = StepList(id, List(step1, step2))
-      val updatedStepList = stepList.removeBreakpoints(List(setup1.runId))
+      val updatedStepList = stepList.removeBreakpoint(setup1.runId)
       updatedStepList.response shouldBe NotAllowedOnFinishedSeq
       updatedStepList.stepList shouldBe stepList
     }

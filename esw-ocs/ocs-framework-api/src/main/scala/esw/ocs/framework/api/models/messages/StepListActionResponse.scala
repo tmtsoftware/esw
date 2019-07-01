@@ -3,12 +3,12 @@ package esw.ocs.framework.api.models.messages
 import csw.params.core.models.Id
 import esw.ocs.framework.api.models.{Step, StepStatus}
 
-sealed trait StepListActionResponse
+sealed trait StepListActionResponse extends Product with Serializable
 
 object StepListActionResponse {
 
   case object NotAllowedOnFinishedSeq
-      extends AddBreakpointsResponse
+      extends AddBreakpointResponse
       with PauseResponse
       with UpdateResponse
       with AddResponse
@@ -22,8 +22,9 @@ object StepListActionResponse {
 
   final case class IdDoesNotExist(id: Id) extends ReplaceResponse with InsertAfterResponse with UpdateResponse
 
-  sealed trait AddBreakpointsResponse                            extends StepListActionResponse
-  case class AdditionResult(added: List[Id], notAdded: List[Id]) extends AddBreakpointsResponse
+  sealed trait AddBreakpointResponse                                  extends StepListActionResponse
+  case object BreakpointAdded                                         extends AddBreakpointResponse
+  case class AddingBreakpointNotSupportedInStatus(status: StepStatus) extends AddBreakpointResponse
 
   sealed trait PauseResponse extends StepListActionResponse
   case object Paused         extends PauseResponse
@@ -46,17 +47,18 @@ object StepListActionResponse {
   sealed trait DiscardPendingResponse extends StepListActionResponse
   case object Discarded               extends DiscardPendingResponse
 
-  sealed trait ReplaceResponse                                                 extends StepListActionResponse
-  case object Replaced                                                         extends ReplaceResponse
-  final case class ReplaceNotSupportedInThisStatus(id: Id, status: StepStatus) extends ReplaceResponse
+  sealed trait ReplaceResponse                                     extends StepListActionResponse
+  case object Replaced                                             extends ReplaceResponse
+  final case class ReplaceNotSupportedInStatus(status: StepStatus) extends ReplaceResponse
 
-  sealed trait DeleteResponse                                        extends StepListActionResponse
-  case class DeletionResult(deleted: List[Id], notDeleted: List[Id]) extends DeleteResponse
+  sealed trait DeleteResponse                               extends StepListActionResponse
+  case object Deleted                                       extends DeleteResponse
+  case class DeleteNotSupportedInStatus(status: StepStatus) extends DeleteResponse
 
   sealed trait InsertAfterResponse extends StepListActionResponse
   case object Inserted             extends InsertAfterResponse
 
   sealed trait RemoveBreakpointsResponse extends StepListActionResponse
-  case object BreakpointsRemoved         extends RemoveBreakpointsResponse
+  case object BreakpointRemoved          extends RemoveBreakpointsResponse
 
 }

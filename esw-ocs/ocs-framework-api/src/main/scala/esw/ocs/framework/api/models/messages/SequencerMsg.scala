@@ -50,8 +50,8 @@ object SequencerMsg {
   final case class Delete(ids: List[Id], replyTo: ActorRef[DeleteResponse]) extends ExternalSequencerMsg[DeleteResponse]
   final case class InsertAfter(id: Id, commands: List[SequenceCommand], replyTo: ActorRef[InsertAfterResponse])
       extends ExternalSequencerMsg[InsertAfterResponse]
-  final case class AddBreakpoints(ids: List[Id], replyTo: ActorRef[AddBreakpointsResponse])
-      extends ExternalSequencerMsg[AddBreakpointsResponse]
+  final case class AddBreakpoints(ids: List[Id], replyTo: ActorRef[AddBreakpointResponse])
+      extends ExternalSequencerMsg[AddBreakpointResponse]
   final case class RemoveBreakpoints(ids: List[Id], replyTo: ActorRef[RemoveBreakpointsResponse])
       extends ExternalSequencerMsg[RemoveBreakpointsResponse]
   final case class GetSequence(replyTo: ActorRef[StepList]) extends ExternalSequencerMsg[StepList]
