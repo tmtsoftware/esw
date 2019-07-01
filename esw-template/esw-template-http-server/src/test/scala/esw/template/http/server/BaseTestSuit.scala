@@ -1,6 +1,6 @@
 package esw.template.http.server
 
 import org.mockito.MockitoSugar
-import org.scalatest.{BeforeAndAfterAll, FunSuite, Matchers}
+import org.scalatest.{BeforeAndAfterAll, Matchers, WordSpec}
 
-trait BaseTestSuit extends FunSuite with Matchers with BeforeAndAfterAll with MockitoSugar
+trait BaseTestSuit extends WordSpec with Matchers with BeforeAndAfterAll with MockitoSugar

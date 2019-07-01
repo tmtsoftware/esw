@@ -18,13 +18,15 @@ class ArgsParserTest extends BaseTestSuit {
       }
     }
 
-  test("ESW-86 | parse without arguments") {
-    val args = Array("")
-    silentParse(args) shouldBe None
-  }
+  "ArgsParser" must {
+    "parse without arguments | ESW-86" in {
+      val args = Array("")
+      silentParse(args) shouldBe None
+    }
 
-  test("ESW-86 | parse when only port argument provided") {
-    val args = Array("--port", "8080")
-    silentParse(args) shouldBe Some(Options(Some(8080)))
+    "parse when only port argument provided | ESW-86" in {
+      val args = Array("--port", "8080")
+      silentParse(args) shouldBe Some(Options(Some(8080)))
+    }
   }
 }
