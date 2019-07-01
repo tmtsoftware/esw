@@ -1,4 +1,4 @@
-package esw.template.http.server
+package esw.template.http.server.csw.utils
 
 import java.net.URI
 
@@ -11,7 +11,8 @@ import csw.location.api.models.{AkkaLocation, ComponentId, ComponentType}
 import csw.location.api.scaladsl.LocationService
 import csw.location.client.ActorSystemFactory
 import csw.params.core.models.Prefix
-import esw.template.http.server.commons.ActorRuntime
+import esw.template.http.server.BaseTestSuit
+import esw.template.http.server.wiring.ActorRuntime
 
 import scala.concurrent.duration.DurationInt
 import scala.concurrent.{Await, Future}

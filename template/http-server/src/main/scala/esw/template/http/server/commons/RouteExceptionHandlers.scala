@@ -1,4 +1,4 @@
-package esw.gateway.server
+package esw.template.http.server.commons
 
 import akka.http.scaladsl.model.StatusCodes
 import akka.http.scaladsl.server.{Directives, ExceptionHandler}

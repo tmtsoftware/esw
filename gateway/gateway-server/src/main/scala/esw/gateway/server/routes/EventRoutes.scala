@@ -10,8 +10,8 @@ import csw.event.api.scaladsl.{EventPublisher, EventSubscriber, EventSubscriptio
 import csw.event.client.internal.commons.EventSubscriberUtil
 import csw.params.core.models.Subsystem
 import csw.params.events.{Event, EventKey}
-import esw.gateway.server.JsonSupportExt
-import esw.template.http.server.CswContext
+import esw.template.http.server.commons.JsonSupportExt
+import esw.template.http.server.csw.utils.CswContext
 import play.api.libs.json.Json
 
 import scala.concurrent.duration.{DurationLong, FiniteDuration}

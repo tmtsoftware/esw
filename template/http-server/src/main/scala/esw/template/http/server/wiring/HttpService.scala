@@ -1,4 +1,4 @@
-package esw.template.http.server.http
+package esw.template.http.server.wiring
 
 import java.net.BindException
 
@@ -13,7 +13,6 @@ import csw.location.api.models.{HttpRegistration, RegistrationResult}
 import csw.location.api.scaladsl.LocationService
 import csw.logging.api.scaladsl.Logger
 import csw.network.utils.{Networks, SocketUtils}
-import esw.template.http.server.commons.ActorRuntime
 import esw.template.http.server.commons.CoordinatedShutdownReasons.FailureReason
 
 import scala.async.Async._

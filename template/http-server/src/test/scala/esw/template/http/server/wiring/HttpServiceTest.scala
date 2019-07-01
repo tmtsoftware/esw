@@ -1,4 +1,4 @@
-package esw.template.http.server.http
+package esw.template.http.server.wiring
 
 import java.net.BindException
 
@@ -15,7 +15,8 @@ import csw.location.api.scaladsl.LocationService
 import csw.location.client.scaladsl.HttpLocationServiceFactory
 import csw.network.utils.Networks
 import csw.testkit.LocationTestKit
-import esw.template.http.server.{BaseTestSuit, CswContext}
+import esw.template.http.server.BaseTestSuit
+import esw.template.http.server.csw.utils.CswContext
 
 import scala.concurrent.Await
 import scala.concurrent.duration.DurationInt

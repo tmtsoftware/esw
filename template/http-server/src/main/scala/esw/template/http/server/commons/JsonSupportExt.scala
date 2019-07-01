@@ -1,4 +1,4 @@
-package esw.gateway.server
+package esw.template.http.server.commons
 
 import csw.params.commands.{CommandIssue, CommandResponse}
 import csw.params.core.formats.JsonSupport

@@ -4,8 +4,8 @@ import akka.actor.typed.{ActorSystem, SpawnProtocol}
 import csw.command.api.scaladsl.CommandService
 import csw.event.api.scaladsl.{EventPublisher, EventService, EventSubscriber}
 import csw.logging.api.scaladsl.Logger
-import esw.template.http.server.commons.ActorRuntime
-import esw.template.http.server.{ComponentFactory, CswContext}
+import esw.template.http.server.wiring.ActorRuntime
+import esw.template.http.server.csw.utils.{ComponentFactory, CswContext}
 import org.mockito.Mockito.when
 import org.scalatestplus.mockito.MockitoSugar
 

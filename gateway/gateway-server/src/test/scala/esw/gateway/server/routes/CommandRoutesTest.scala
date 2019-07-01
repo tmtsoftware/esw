@@ -15,7 +15,8 @@ import csw.params.commands.{CommandName, CommandResponse, Setup}
 import csw.params.core.models.{Id, ObsId, Prefix}
 import csw.params.core.states.{CurrentState, StateName, StateVariable}
 import de.heikoseeberger.akkahttpplayjson.PlayJsonSupport
-import esw.gateway.server.{CswContextMocks, JsonSupportExt}
+import esw.gateway.server.CswContextMocks
+import esw.template.http.server.commons.JsonSupportExt
 import org.mockito.Mockito._
 import org.mockito.{ArgumentMatchersSugar, Mockito}
 import org.scalatest.{BeforeAndAfterAll, BeforeAndAfterEach, Matchers, WordSpec}

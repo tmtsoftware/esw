@@ -1,4 +1,4 @@
-package esw.template.http.server
+package esw.template.http.server.csw.utils
 
 import akka.actor.typed.ActorSystem
 import csw.command.api.scaladsl.CommandService

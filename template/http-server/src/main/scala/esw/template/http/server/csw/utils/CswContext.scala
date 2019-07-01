@@ -1,4 +1,4 @@
-package esw.template.http.server
+package esw.template.http.server.csw.utils
 
 import akka.actor.typed.{ActorSystem, SpawnProtocol}
 import csw.command.client.CommandServiceFactory
@@ -7,8 +7,8 @@ import csw.event.client.EventServiceFactory
 import csw.location.api.scaladsl.LocationService
 import csw.location.client.scaladsl.HttpLocationServiceFactory
 import csw.logging.api.scaladsl.Logger
-import esw.template.http.server.commons.{ActorRuntime, ServiceLogger}
-import esw.template.http.server.http.Settings
+import esw.template.http.server.commons.ServiceLogger
+import esw.template.http.server.wiring.{ActorRuntime, Settings}
 
 class CswContext(_port: Option[Int]) {
   lazy val settings                                = new Settings(_port)

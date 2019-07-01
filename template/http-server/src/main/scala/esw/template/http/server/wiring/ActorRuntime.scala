@@ -1,4 +1,4 @@
-package esw.template.http.server.commons
+package esw.template.http.server.wiring
 
 import akka.actor.CoordinatedShutdown
 import akka.actor.CoordinatedShutdown.Reason

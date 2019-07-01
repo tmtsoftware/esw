@@ -1,4 +1,4 @@
-package esw.template.http.server.http
+package esw.template.http.server.wiring
 
 import com.typesafe.config.{Config, ConfigFactory}
 import csw.location.api.models.Connection.HttpConnection

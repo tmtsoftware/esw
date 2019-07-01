@@ -10,9 +10,8 @@ import csw.location.api.models.ComponentType
 import csw.params.commands.ControlCommand
 import csw.params.core.models.Id
 import csw.params.core.states.StateName
-import esw.gateway.server.JsonSupportExt
-import esw.gateway.server.RouteExceptionHandlers.complete
-import esw.template.http.server.CswContext
+import esw.template.http.server.commons.JsonSupportExt
+import esw.template.http.server.csw.utils.CswContext
 import play.api.libs.json.Json
 
 import scala.concurrent.duration.DurationLong
