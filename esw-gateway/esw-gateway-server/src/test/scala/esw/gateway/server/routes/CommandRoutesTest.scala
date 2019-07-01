@@ -40,9 +40,6 @@ class CommandRoutesTest
 
   import actorRuntime.timeout
 
-  //TODO: clearInvocations doesn't work as expected. Improve mocks.
-  override protected def afterEach(): Unit = Mockito.clearInvocations(commandService, componentFactory)
-
   override protected def afterAll(): Unit = cswCtx.actorSystem.terminate()
 
   case class TestData(componentType: String)
@@ -168,7 +165,7 @@ class CommandRoutesTest
       }
 
       "get current state subscription to all stateNames | ESW-91" in {
-        val componentName = "TestcomponentType"
+        val componentName = "test-component"
         val currentState1 = CurrentState(Prefix("a.b"), StateName("stateName1"))
         val currentState2 = CurrentState(Prefix("a.b"), StateName("stateName2"))
 
@@ -193,7 +190,7 @@ class CommandRoutesTest
       }
 
       "get current state subscription to given stateNames | ESW-91" in {
-        val componentName = "TestcomponentType"
+        val componentName = "test-component"
         val stateName1    = StateName("stateName1")
         val currentState1 = CurrentState(Prefix("a.b"), stateName1)
 

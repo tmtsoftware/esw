@@ -20,7 +20,7 @@ class CommandRoutes(cswCtx: CswContext) extends JsonSupportExt {
   import cswCtx._
   import actorRuntime._
 
-  def routes(componentType: String): Route =
+  def commandRoutes(componentType: String): Route =
     pathPrefix("command") {
       pathPrefix(componentType / Segment) { componentName =>
         val commandServiceF = componentFactory.commandService(componentName, ComponentType.withName(componentType))
@@ -69,5 +69,5 @@ class CommandRoutes(cswCtx: CswContext) extends JsonSupportExt {
       }
     }
 
-  val route: Route = routes("hcd") ~ routes("assembly")
+  val route: Route = commandRoutes("hcd") ~ commandRoutes("assembly")
 }
