@@ -9,7 +9,6 @@ import csw.command.client.messages.ComponentMessage
 import csw.location.api.models.Connection.AkkaConnection
 import csw.location.api.models.{AkkaLocation, ComponentId, ComponentType}
 import csw.location.api.scaladsl.LocationService
-import csw.location.client.ActorSystemFactory
 import csw.params.core.models.Prefix
 import esw.template.http.server.BaseTestSuit
 import esw.template.http.server.wiring.ActorRuntime
@@ -18,7 +17,7 @@ import scala.concurrent.duration.DurationInt
 import scala.concurrent.{Await, Future}
 
 class ComponentFactoryTest extends BaseTestSuit {
-  val actorSystem: ActorSystem[SpawnProtocol] = ActorSystemFactory.remote(SpawnProtocol.behavior, "test")
+  val actorSystem: ActorSystem[SpawnProtocol] = ActorSystem(SpawnProtocol.behavior, "test")
   val actorRuntime                            = new ActorRuntime(actorSystem)
   import actorRuntime._
 
