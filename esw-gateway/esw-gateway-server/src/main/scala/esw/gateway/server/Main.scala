@@ -4,7 +4,6 @@ import esw.gateway.server.routes.Routes
 import esw.template.http.server.cli.{ArgsParser, Options}
 import esw.template.http.server.csw.utils.CswContext
 import esw.template.http.server.wiring.HttpService
-import gateway.server.BuildInfo
 
 import scala.concurrent.Await
 import scala.concurrent.duration.DurationInt

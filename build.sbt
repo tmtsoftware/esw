@@ -1,10 +1,8 @@
 lazy val aggregateProjects: Seq[ProjectReference] =
   Seq(
-    `ocs-framework-api`,
-    `ocs-framework`,
-    `async-macros`,
-    `gateway`,
-    `template`
+    `esw-ocs`,
+    `esw-gateway`,
+    `esw-template`
   )
 
 lazy val githubReleases: Seq[ProjectReference]   = Seq.empty
@@ -22,57 +20,57 @@ lazy val esw = (project in file("."))
   .settings(Settings.docExclusions(unidocExclusions))
 //  .settings(GithubRelease.githubReleases(githubReleases))
 
-lazy val `ocs` = project
-  .in(file("ocs"))
+lazy val `esw-ocs` = project
+  .in(file("esw-ocs"))
   .aggregate(
     `ocs-framework-api`,
     `ocs-framework`,
     `async-macros`
   )
 lazy val `ocs-framework-api` = project
-  .in(file("ocs/ocs-framework-api"))
+  .in(file("esw-ocs/ocs-framework-api"))
   .enablePlugins(MaybeCoverage)
   .settings(
-    libraryDependencies ++= Dependencies.`ocs-framework-api`.value
+    libraryDependencies ++= Dependencies.OcsFrameworkApi.value
   )
 
 lazy val `ocs-framework` = project
-  .in(file("ocs/ocs-framework"))
+  .in(file("esw-ocs/ocs-framework"))
   .enablePlugins(MaybeCoverage)
   .settings(
-    libraryDependencies ++= Dependencies.`ocs-framework`.value
+    libraryDependencies ++= Dependencies.OcsFramework.value
   )
   .dependsOn(`async-macros`)
 
 lazy val `async-macros` = project
-  .in(file("ocs/async-macros"))
+  .in(file("esw-ocs/async-macros"))
   .enablePlugins(MaybeCoverage)
   .settings(
-    libraryDependencies ++= Dependencies.`async-macros`.value
+    libraryDependencies ++= Dependencies.AsyncMacros.value
   )
 
-lazy val `template` = project
-  .in(file("template"))
-  .aggregate(`http-server`)
+lazy val `esw-template` = project
+  .in(file("esw-template"))
+  .aggregate(`esw-template-http-server`)
 
-lazy val `http-server` = project
-  .in(file("template/http-server"))
+lazy val `esw-template-http-server` = project
+  .in(file("esw-template/esw-template-http-server"))
   .enablePlugins(MaybeCoverage, EswBuildInfo)
   .settings(
-    libraryDependencies ++= Dependencies.`http-server`.value
+    libraryDependencies ++= Dependencies.TemplateHttpServer.value
   )
 
-lazy val `gateway` = project
-  .in(file("gateway"))
-  .aggregate(`gateway-server`)
+lazy val `esw-gateway` = project
+  .in(file("esw-gateway"))
+  .aggregate(`esw-gateway-server`)
 
-lazy val `gateway-server` = project
-  .in(file("gateway/gateway-server"))
+lazy val `esw-gateway-server` = project
+  .in(file("esw-gateway/esw-gateway-server"))
   .enablePlugins(MaybeCoverage, EswBuildInfo)
   .settings(
-    libraryDependencies ++= Dependencies.`gateway-server`.value
+    libraryDependencies ++= Dependencies.GatewayServer.value
   )
-  .dependsOn(`http-server`)
+  .dependsOn(`esw-template-http-server`)
 
 /* ================= Paradox Docs ============== */
 lazy val docs = project.enablePlugins(NoPublish, ParadoxSite)

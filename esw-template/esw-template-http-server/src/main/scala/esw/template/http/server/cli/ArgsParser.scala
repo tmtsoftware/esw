@@ -1,6 +1,6 @@
 package esw.template.http.server.cli
 
-import http.server.BuildInfo
+import esw.template.http.server.BuildInfo
 import scopt.OptionParser
 
 /**

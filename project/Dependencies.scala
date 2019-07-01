@@ -2,7 +2,7 @@ import sbt.{Def, _}
 
 object Dependencies {
 
-  val `ocs-framework-api`: Def.Initialize[Seq[ModuleID]] = Def.setting(
+  val OcsFrameworkApi: Def.Initialize[Seq[ModuleID]] = Def.setting(
     Seq(
       Akka.`akka-actor-typed`,
       Csw.`csw-params`.value,
@@ -12,7 +12,7 @@ object Dependencies {
     )
   )
 
-  val `ocs-framework`: Def.Initialize[Seq[ModuleID]] = Def.setting(
+  val OcsFramework: Def.Initialize[Seq[ModuleID]] = Def.setting(
     Seq(
       Csw.`csw-params`.value,
       Akka.`akka-actor-typed`,
@@ -23,11 +23,11 @@ object Dependencies {
     )
   )
 
-  val `async-macros`: Def.Initialize[Seq[ModuleID]] = Def.setting(
+  val AsyncMacros: Def.Initialize[Seq[ModuleID]] = Def.setting(
     Seq(Libs.`scala-reflect`, Libs.scalatest % Test)
   )
 
-  val `gateway-server`: Def.Initialize[Seq[ModuleID]] = Def.setting(
+  val GatewayServer: Def.Initialize[Seq[ModuleID]] = Def.setting(
     Seq(
       AkkaHttp.`akka-http`,
       Akka.`akka-actor-typed`,
@@ -39,7 +39,7 @@ object Dependencies {
     )
   )
 
-  val `http-server`: Def.Initialize[Seq[ModuleID]] = Def.setting(
+  val TemplateHttpServer: Def.Initialize[Seq[ModuleID]] = Def.setting(
     Seq(
       Csw.`csw-commons`,
       Csw.`csw-network-utils`,
