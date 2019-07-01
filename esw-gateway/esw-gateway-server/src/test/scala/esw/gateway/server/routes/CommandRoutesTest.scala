@@ -37,11 +37,10 @@ class CommandRoutesTest
     with JsonSupportExt {
 
   private val routes = new Routes(cswCtx).route
-
   import actorRuntime.timeout
 
   override protected def afterAll(): Unit  = cswCtx.actorSystem.terminate()
-  override protected def afterEach(): Unit = Mockito.clearInvocations(componentFactory, commandService)
+  override protected def afterEach(): Unit = Mockito.reset(componentFactory, commandService)
 
   case class TestData(componentType: String)
 
