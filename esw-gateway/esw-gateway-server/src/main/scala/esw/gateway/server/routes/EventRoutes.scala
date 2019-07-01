@@ -7,7 +7,6 @@ import akka.http.scaladsl.server.Route
 import akka.stream.scaladsl.Source
 import csw.event.api.scaladsl.SubscriptionModes.RateLimiterMode
 import csw.event.api.scaladsl.{EventPublisher, EventSubscriber, EventSubscription}
-import csw.event.client.internal.commons.EventSubscriberUtil
 import csw.params.core.models.Subsystem
 import csw.params.events.{Event, EventKey}
 import esw.template.http.server.commons.JsonSupportExt
@@ -19,11 +18,9 @@ import scala.language.postfixOps
 
 class EventRoutes(cswCtx: CswContext) extends JsonSupportExt {
   import cswCtx._
-  import actorRuntime.mat
 
   lazy val subscriber: EventSubscriber = eventService.defaultSubscriber
   lazy val publisher: EventPublisher   = eventService.defaultPublisher
-  private val eventSubscriberUtil      = new EventSubscriberUtil
 
   val route: Route = {
 

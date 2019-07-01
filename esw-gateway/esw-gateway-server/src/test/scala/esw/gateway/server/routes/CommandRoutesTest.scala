@@ -36,7 +36,6 @@ class CommandRoutesTest
     with PlayJsonSupport
     with JsonSupportExt {
 
-  private val routes = new Routes(cswCtx).route
   import actorRuntime.timeout
 
   override protected def afterAll(): Unit  = cswCtx.actorSystem.terminate()
@@ -57,7 +56,7 @@ class CommandRoutesTest
 
         when(commandService.validate(command)).thenReturn(Future.successful(Accepted(runId)))
         when(componentFactory.commandService(componentName, componentType)).thenReturn(Future(commandService))
-        Post(s"/command/${testData.componentType}/$componentName/validate", command) ~> routes ~> check {
+        Post(s"/command/${testData.componentType}/$componentName/validate", command) ~> route ~> check {
           status shouldBe StatusCodes.OK
           responseAs[CommandResponse] shouldEqual Accepted(runId)
         }
@@ -71,7 +70,7 @@ class CommandRoutesTest
         when(commandService.validate(command)).thenReturn(Future.failed(new TimeoutException("")))
         when(componentFactory.commandService(componentName, componentType)).thenReturn(Future(commandService))
 
-        Post(s"/command/${testData.componentType}/$componentName/validate", command) ~> routes ~> check {
+        Post(s"/command/${testData.componentType}/$componentName/validate", command) ~> route ~> check {
           status shouldBe StatusCodes.GatewayTimeout
           mediaType shouldBe `application/json`
         }
@@ -85,7 +84,7 @@ class CommandRoutesTest
         when(commandService.submit(command)).thenReturn(Future.successful(Completed(runId)))
         when(componentFactory.commandService(componentName, componentType)).thenReturn(Future(commandService))
 
-        Post(s"/command/${testData.componentType}/$componentName/submit", command) ~> routes ~> check {
+        Post(s"/command/${testData.componentType}/$componentName/submit", command) ~> route ~> check {
           status shouldBe StatusCodes.OK
           responseAs[CommandResponse] shouldEqual Completed(runId)
         }
@@ -99,7 +98,7 @@ class CommandRoutesTest
         when(commandService.submit(command)).thenReturn(Future.failed(new TimeoutException("")))
         when(componentFactory.commandService(componentName, componentType)).thenReturn(Future(commandService))
 
-        Post(s"/command/${testData.componentType}/$componentName/submit", command) ~> routes ~> check {
+        Post(s"/command/${testData.componentType}/$componentName/submit", command) ~> route ~> check {
           status shouldBe StatusCodes.GatewayTimeout
           mediaType shouldBe `application/json`
         }
@@ -113,7 +112,7 @@ class CommandRoutesTest
         when(commandService.oneway(command)).thenReturn(Future.successful(Accepted(runId)))
         when(componentFactory.commandService(componentName, componentType)).thenReturn(Future(commandService))
 
-        Post(s"/command/${testData.componentType}/$componentName/oneway", command) ~> routes ~> check {
+        Post(s"/command/${testData.componentType}/$componentName/oneway", command) ~> route ~> check {
           status shouldBe StatusCodes.OK
           responseAs[CommandResponse] shouldEqual Accepted(runId)
         }
@@ -127,7 +126,7 @@ class CommandRoutesTest
         when(commandService.oneway(command)).thenReturn(Future.failed(new TimeoutException("")))
         when(componentFactory.commandService(componentName, componentType)).thenReturn(Future(commandService))
 
-        Post(s"/command/${testData.componentType}/$componentName/oneway", command) ~> routes ~> check {
+        Post(s"/command/${testData.componentType}/$componentName/oneway", command) ~> route ~> check {
           status shouldBe StatusCodes.GatewayTimeout
           mediaType shouldBe `application/json`
         }
@@ -140,7 +139,7 @@ class CommandRoutesTest
         when(commandService.queryFinal(any[Id])(any[Timeout])).thenReturn(Future.successful(Completed(runId)))
         when(componentFactory.commandService(componentName, componentType)).thenReturn(Future(commandService))
 
-        Get(s"/command/${testData.componentType}/$componentName/${runId.id}") ~> routes ~> check {
+        Get(s"/command/${testData.componentType}/$componentName/${runId.id}") ~> route ~> check {
           status shouldBe StatusCodes.OK
           mediaType shouldBe `text/event-stream`
 
@@ -158,7 +157,7 @@ class CommandRoutesTest
         when(commandService.queryFinal(any[Id])(any[Timeout])).thenReturn(Future.failed(new TimeoutException("")))
         when(componentFactory.commandService(componentName, componentType)).thenReturn(Future(commandService))
 
-        Get(s"/command/${testData.componentType}/$componentName/${runId.id}") ~> routes ~> check {
+        Get(s"/command/${testData.componentType}/$componentName/${runId.id}") ~> route ~> check {
           status shouldBe StatusCodes.GatewayTimeout
           mediaType shouldBe `application/json`
         }
@@ -177,7 +176,7 @@ class CommandRoutesTest
         when(commandService.subscribeCurrentState(Set.empty[StateName])).thenReturn(currentStateStream)
         when(componentFactory.commandService(componentName, componentType)).thenReturn(Future(commandService))
 
-        Get(s"/command/${testData.componentType}/$componentName/current-state/subscribe") ~> routes ~> check {
+        Get(s"/command/${testData.componentType}/$componentName/current-state/subscribe") ~> route ~> check {
           status shouldBe StatusCodes.OK
           mediaType shouldBe `text/event-stream`
 
@@ -202,7 +201,7 @@ class CommandRoutesTest
         when(commandService.subscribeCurrentState(Set(stateName1))).thenReturn(currentStateStream)
         when(componentFactory.commandService(componentName, componentType)).thenReturn(Future(commandService))
 
-        Get(s"/command/${testData.componentType}/$componentName/current-state/subscribe?stateName=${stateName1.name}") ~> routes ~> check {
+        Get(s"/command/${testData.componentType}/$componentName/current-state/subscribe?stateName=${stateName1.name}") ~> route ~> check {
           status shouldBe StatusCodes.OK
           mediaType shouldBe `text/event-stream`
 
