@@ -7,16 +7,17 @@ import akka.http.scaladsl.server.Route
 import akka.stream.scaladsl.Source
 import csw.event.api.scaladsl.SubscriptionModes.RateLimiterMode
 import csw.event.api.scaladsl.{EventPublisher, EventSubscriber, EventSubscription}
+import csw.params.core.formats.JsonSupport
 import csw.params.core.models.Subsystem
 import csw.params.events.{Event, EventKey}
-import esw.template.http.server.commons.JsonSupportExt
+import de.heikoseeberger.akkahttpplayjson.PlayJsonSupport
 import esw.template.http.server.csw.utils.CswContext
 import play.api.libs.json.Json
 
 import scala.concurrent.duration.{DurationLong, FiniteDuration}
 import scala.language.postfixOps
 
-class EventRoutes(cswCtx: CswContext) extends JsonSupportExt {
+class EventRoutes(cswCtx: CswContext) extends JsonSupport with PlayJsonSupport {
   import cswCtx._
 
   lazy val subscriber: EventSubscriber = eventService.defaultSubscriber
@@ -47,7 +48,7 @@ class EventRoutes(cswCtx: CswContext) extends JsonSupportExt {
               validate(keys.nonEmpty, "Request is missing query parameter key") {
                 complete(
                   subscriber
-                    .subscribe(keys.toEventKeys, frequncyToTime(frequency), RateLimiterMode)
+                    .subscribe(keys.toEventKeys, frequencyToTime(frequency), RateLimiterMode)
                     .toSSE
                 )
               }
@@ -63,7 +64,7 @@ class EventRoutes(cswCtx: CswContext) extends JsonSupportExt {
 
               complete(
                 events
-                  .via(eventSubscriberUtil.subscriptionModeStage(frequncyToTime(frequency), RateLimiterMode))
+                  .via(eventSubscriberUtil.subscriptionModeStage(frequencyToTime(frequency), RateLimiterMode))
                   .toSSE
               )
             }
@@ -73,7 +74,7 @@ class EventRoutes(cswCtx: CswContext) extends JsonSupportExt {
     }
   }
 
-  private def frequncyToTime(frequency: Int): FiniteDuration = (1000 / frequency).millis
+  private def frequencyToTime(frequency: Int): FiniteDuration = (1000 / frequency).millis
 
   implicit class RichEventKeys(keys: Iterable[String]) {
     def toEventKeys: Set[EventKey] = keys.map(EventKey(_)).toSet

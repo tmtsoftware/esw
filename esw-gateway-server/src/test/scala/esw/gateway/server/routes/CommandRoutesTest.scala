@@ -15,13 +15,13 @@ import csw.params.commands.{CommandName, CommandResponse, Setup}
 import csw.params.core.models.{Id, ObsId, Prefix}
 import csw.params.core.states.{CurrentState, StateName, StateVariable}
 import esw.gateway.server.CswContextMocks
-import esw.template.http.server.HttpTestSuit
+import esw.template.http.server.HttpTestSuite
 import play.api.libs.json.Json
 
 import scala.concurrent.duration.DurationDouble
 import scala.concurrent.{Await, Future, TimeoutException}
 
-class CommandRoutesTest extends HttpTestSuit {
+class CommandRoutesTest extends HttpTestSuite {
   val actorSystem: ActorSystem[SpawnProtocol] = ActorSystem(SpawnProtocol.behavior, "test-system")
 
   trait Setup {

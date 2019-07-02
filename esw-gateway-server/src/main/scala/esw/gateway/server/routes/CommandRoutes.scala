@@ -8,15 +8,16 @@ import akka.stream.scaladsl.Source
 import akka.util.Timeout
 import csw.location.api.models.ComponentType
 import csw.params.commands.ControlCommand
+import csw.params.core.formats.JsonSupport
 import csw.params.core.models.Id
 import csw.params.core.states.StateName
-import esw.template.http.server.commons.JsonSupportExt
+import de.heikoseeberger.akkahttpplayjson.PlayJsonSupport
 import esw.template.http.server.csw.utils.CswContext
 import play.api.libs.json.Json
 
 import scala.concurrent.duration.DurationLong
 
-class CommandRoutes(cswCtx: CswContext) extends JsonSupportExt {
+class CommandRoutes(cswCtx: CswContext) extends JsonSupport with PlayJsonSupport {
   import cswCtx._
   import actorRuntime._
 

@@ -15,14 +15,14 @@ import csw.location.api.scaladsl.LocationService
 import csw.location.client.scaladsl.HttpLocationServiceFactory
 import csw.network.utils.Networks
 import csw.testkit.LocationTestKit
-import esw.template.http.server.BaseTestSuit
+import esw.template.http.server.BaseTestSuite
 import esw.template.http.server.csw.utils.CswContext
 
 import scala.concurrent.Await
 import scala.concurrent.duration.DurationInt
 import scala.util.control.NonFatal
 
-class HttpServiceTest extends BaseTestSuit {
+class HttpServiceTest extends BaseTestSuite {
 
   private val testKit                              = LocationTestKit()
   implicit val system: ActorSystem[_]              = ActorSystem(Behaviors.empty, "test")

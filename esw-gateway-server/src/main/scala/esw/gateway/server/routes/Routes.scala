@@ -4,10 +4,10 @@ import akka.http.scaladsl.model.HttpRequest
 import akka.http.scaladsl.server.Directives._
 import akka.http.scaladsl.server.directives.{DebuggingDirectives, LoggingMagnet}
 import akka.http.scaladsl.server.{Directive0, Route}
-import esw.template.http.server.commons.{JsonSupportExt, RouteExceptionHandlers}
+import esw.template.http.server.commons.RouteExceptionHandlers
 import esw.template.http.server.csw.utils.CswContext
 
-class Routes(cswCtx: CswContext) extends JsonSupportExt {
+class Routes(cswCtx: CswContext) {
 
   private val logRequest: HttpRequest ⇒ Unit = req ⇒
     cswCtx.logger.info(
