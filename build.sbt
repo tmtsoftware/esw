@@ -24,27 +24,27 @@ lazy val esw = (project in file("."))
 lazy val `esw-ocs` = project
   .in(file("esw-ocs"))
   .aggregate(
-    `ocs-framework-api`,
-    `ocs-framework`,
-    `async-macros`
+    `esw-ocs-framework-api`,
+    `esw-ocs-framework`,
+    `esw-async-macros`
   )
-lazy val `ocs-framework-api` = project
-  .in(file("esw-ocs/ocs-framework-api"))
+lazy val `esw-ocs-framework-api` = project
+  .in(file("esw-ocs/esw-ocs-framework-api"))
   .enablePlugins(MaybeCoverage)
   .settings(
     libraryDependencies ++= Dependencies.OcsFrameworkApi.value
   )
 
-lazy val `ocs-framework` = project
-  .in(file("esw-ocs/ocs-framework"))
+lazy val `esw-ocs-framework` = project
+  .in(file("esw-ocs/esw-ocs-framework"))
   .enablePlugins(MaybeCoverage)
   .settings(
     libraryDependencies ++= Dependencies.OcsFramework.value
   )
-  .dependsOn(`ocs-framework-api`, `async-macros`)
+  .dependsOn(`esw-ocs-framework-api`, `esw-async-macros`)
 
-lazy val `async-macros` = project
-  .in(file("esw-ocs/async-macros"))
+lazy val `esw-async-macros` = project
+  .in(file("esw-ocs/esw-async-macros"))
   .enablePlugins(MaybeCoverage)
   .settings(
     libraryDependencies ++= Dependencies.AsyncMacros.value
