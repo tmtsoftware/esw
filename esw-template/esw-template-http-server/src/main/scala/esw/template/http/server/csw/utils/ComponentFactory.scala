@@ -7,13 +7,13 @@ import csw.location.api.models.Connection.AkkaConnection
 import csw.location.api.models.{AkkaLocation, ComponentId, ComponentType}
 import csw.location.api.scaladsl.LocationService
 
+import scala.concurrent.Future
 import scala.concurrent.duration.DurationLong
-import scala.concurrent.{ExecutionContext, Future}
 
 class ComponentFactory(locationService: LocationService, commandServiceFactory: ICommandServiceFactory)(
-    implicit typedSystem: ActorSystem[_],
-    ec: ExecutionContext
+    implicit typedSystem: ActorSystem[_]
 ) {
+  import typedSystem.executionContext
 
   private[server] def resolve[T](componentName: String, componentType: ComponentType)(f: AkkaLocation => T): Future[T] =
     locationService
