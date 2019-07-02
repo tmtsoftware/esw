@@ -1,0 +1,149 @@
+{
+	"info": {
+		"_postman_id": "46879810-fd65-45af-8c85-bc685986a1f1",
+		"name": "Gateway",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+	},
+	"item": [
+		{
+			"name": "validate",
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "Content-Type",
+						"name": "Content-Type",
+						"value": "application/json",
+						"type": "text"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n  \"type\": \"Setup\",\n  \"runId\": \"test-runId\",\n  \"source\": \"wfos.blue.filter\",\n  \"commandName\": \"jump\",\n  \"maybeObsId\": \"Obs001\",\n  \"paramSet\": [{\n    \"keyName\": \"coords\",\n    \"keyType\": \"RaDecKey\",\n    \"values\": [{\n      \"ra\": 7.3,\n      \"dec\": 12.1\n    }, {\n      \"ra\": 9.1,\n      \"dec\": 2.9\n    }],\n    \"units\": \"NoUnits\"\n  }]\n}"
+				},
+				"url": {
+					"raw": "{{hostname}}:{{port}}/command/{{componentType}}/{{componentName}}/validate",
+					"host": [
+						"{{hostname}}"
+					],
+					"port": "{{port}}",
+					"path": [
+						"command",
+						"{{componentType}}",
+						"{{componentName}}",
+						"validate"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "oneway",
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "Content-Type",
+						"name": "Content-Type",
+						"value": "application/json",
+						"type": "text"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n  \"type\": \"Setup\",\n  \"runId\": \"test-runId\",\n  \"source\": \"wfos.blue.filter\",\n  \"commandName\": \"move\",\n  \"maybeObsId\": \"Obs001\",\n  \"paramSet\": [{\n    \"keyName\": \"coords\",\n    \"keyType\": \"RaDecKey\",\n    \"values\": [{\n      \"ra\": 7.3,\n      \"dec\": 12.1\n    }, {\n      \"ra\": 9.1,\n      \"dec\": 2.9\n    }],\n    \"units\": \"NoUnits\"\n  }]\n}"
+				},
+				"url": {
+					"raw": "{{hostname}}:{{port}}/command/{{componentType}}/{{componentName}}/oneway",
+					"host": [
+						"{{hostname}}"
+					],
+					"port": "{{port}}",
+					"path": [
+						"command",
+						"{{componentType}}",
+						"{{componentName}}",
+						"oneway"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "subscribe current-state",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "{{hostname}}:{{port}}/command/{{componentType}}/{{componentName}}/current-state/subscribe",
+					"host": [
+						"{{hostname}}"
+					],
+					"port": "{{port}}",
+					"path": [
+						"command",
+						"{{componentType}}",
+						"{{componentName}}",
+						"current-state",
+						"subscribe"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "submit",
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "Content-Type",
+						"name": "Content-Type",
+						"type": "text",
+						"value": "application/json"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n  \"type\": \"Setup\",\n  \"runId\": \"test-runId\",\n  \"source\": \"wfos.blue.filter\",\n  \"commandName\": \"move\",\n  \"maybeObsId\": \"Obs001\",\n  \"paramSet\": [{\n    \"keyName\": \"coords\",\n    \"keyType\": \"RaDecKey\",\n    \"values\": [{\n      \"ra\": 7.3,\n      \"dec\": 12.1\n    }, {\n      \"ra\": 9.1,\n      \"dec\": 2.9\n    }],\n    \"units\": \"NoUnits\"\n  }]\n}"
+				},
+				"url": {
+					"raw": "{{hostname}}:{{port}}/command/{{componentType}}/{{componentName}}/submit",
+					"host": [
+						"{{hostname}}"
+					],
+					"port": "{{port}}",
+					"path": [
+						"command",
+						"{{componentType}}",
+						"{{componentName}}",
+						"submit"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "subscribe submit-response",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "{{hostname}}:{{port}}/command/{{componentType}}/{{componentName}}/current-state/subscribe",
+					"host": [
+						"{{hostname}}"
+					],
+					"port": "{{port}}",
+					"path": [
+						"command",
+						"{{componentType}}",
+						"{{componentName}}",
+						"current-state",
+						"subscribe"
+					]
+				}
+			},
+			"response": []
+		}
+	]
+}
