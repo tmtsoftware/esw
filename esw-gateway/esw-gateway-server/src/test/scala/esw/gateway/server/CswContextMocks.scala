@@ -15,9 +15,9 @@ import org.mockito.MockitoSugar
 
 import scala.concurrent.duration.FiniteDuration
 
-trait CswContextMocks extends MockitoSugar {
+class CswContextMocks(system: ActorSystem[SpawnProtocol]) {
 
-  private val system: ActorSystem[SpawnProtocol] = ActorSystem(SpawnProtocol.behavior, "test-system")
+  import MockitoSugar._
 
   val cswCtx: CswContext         = mock[CswContext]
   val actorRuntime: ActorRuntime = new ActorRuntime(system)
@@ -45,7 +45,6 @@ trait CswContextMocks extends MockitoSugar {
   when(cswCtx.eventService).thenReturn(eventService)
   when(eventService.defaultPublisher).thenReturn(eventPublisher)
   when(eventService.defaultSubscriber).thenReturn(eventSubscriber)
-
 }
 
 class RateLimiterStub[A](delay: FiniteDuration) extends GraphStage[FlowShape[A, A]] {

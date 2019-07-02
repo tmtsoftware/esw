@@ -1,5 +1,6 @@
 package esw.gateway.server.routes
 
+import akka.actor.typed.{ActorSystem, SpawnProtocol}
 import akka.http.scaladsl.model.sse.ServerSentEvent
 import akka.http.scaladsl.model.{MediaTypes, StatusCodes}
 import akka.http.scaladsl.unmarshalling.sse.EventStreamUnmarshalling._
@@ -18,7 +19,16 @@ import scala.concurrent.{Await, Future}
 
 class EventRoutesTest extends HttpTestSuit {
 
-  trait Setup extends CswContextMocks
+  private val actorSystem: ActorSystem[SpawnProtocol] = ActorSystem(SpawnProtocol.behavior, "test-system")
+
+  trait Setup {
+    val cswMocks = new CswContextMocks(actorSystem)
+  }
+
+  override def afterAll(): Unit = {
+    super.afterAll()
+    actorSystem.terminate()
+  }
 
   val tcsEventKeyStr1 = "tcs.event.key1"
   val tcsEventKeyStr2 = "tcs.event.key2"
@@ -39,6 +49,7 @@ class EventRoutesTest extends HttpTestSuit {
 
   "EventRoutes for /event" must {
     "get event for event keys | ESW-94" in new Setup {
+      import cswMocks._
 
       val expectedEvents: Set[Event] = Set(event1, event2)
       when(eventSubscriber.get(Set(eventKey1, eventKey2))).thenReturn(Future.successful(expectedEvents))
@@ -50,6 +61,7 @@ class EventRoutesTest extends HttpTestSuit {
     }
 
     "get fail if future fails | ESW-94" in new Setup {
+      import cswMocks._
       when(eventSubscriber.get(Set(eventKey1, eventKey2))).thenReturn(Future.failed(new RuntimeException("failed")))
 
       Get(s"/event?key=$tcsEventKeyStr1&key=$tcsEventKeyStr2") ~> route ~> check {
@@ -58,6 +70,7 @@ class EventRoutesTest extends HttpTestSuit {
     }
 
     "post event | ESW-92" in new Setup {
+      import cswMocks._
       when(eventPublisher.publish(event1)).thenReturn(Future.successful(Done))
 
       Post(s"/event", event1) ~> route ~> check {
@@ -67,6 +80,7 @@ class EventRoutesTest extends HttpTestSuit {
     }
 
     "post event fail if future fails | ESW-92" in new Setup {
+      import cswMocks._
       when(eventPublisher.publish(event1)).thenReturn(Future.failed(new RuntimeException("failed")))
 
       Post(s"/event", event1) ~> route ~> check {
@@ -77,6 +91,7 @@ class EventRoutesTest extends HttpTestSuit {
 
     "/subscribe" must {
       "subscribe to events for event keys with given frequency" in new Setup {
+        import cswMocks._
 
         when(eventSubscriber.subscribe(Set(eventKey1, eventKey2), 100.millis, RateLimiterMode)).thenReturn(eventSource)
 
@@ -94,6 +109,8 @@ class EventRoutesTest extends HttpTestSuit {
       }
 
       "subscribe throws exception" in new Setup {
+        import cswMocks._
+
         when(eventSubscriber.subscribe(Set(eventKey1, eventKey2), 100.millis, RateLimiterMode))
           .thenThrow(new RuntimeException("exception"))
 
@@ -104,11 +121,13 @@ class EventRoutesTest extends HttpTestSuit {
       }
 
       "subscribe to events matching for given subsystem with specified pattern" in new Setup {
+        import cswMocks._
         val subsystemName        = "tcs"
         val pattern              = "event"
         val subsystem: Subsystem = Subsystem.withName(subsystemName)
 
         when(eventSubscriber.pSubscribe(subsystem, pattern)).thenReturn(eventSource)
+
         when(eventSubscriberUtil.subscriptionModeStage(100.millis, RateLimiterMode))
           .thenReturn(new RateLimiterStub[Event](100.millis))
 
@@ -123,6 +142,7 @@ class EventRoutesTest extends HttpTestSuit {
       }
 
       "subscribe to events matching for given subsystem if pattern not provided" in new Setup {
+        import cswMocks._
         val subsystemName        = "tcs"
         val subsystem: Subsystem = Subsystem.withName(subsystemName)
 
@@ -141,6 +161,7 @@ class EventRoutesTest extends HttpTestSuit {
       }
 
       "subscribe to events matching for given subsystem throws exception" in new Setup {
+        import cswMocks._
         val subsystemName        = "tcs"
         val subsystem: Subsystem = Subsystem.withName(subsystemName)
 
@@ -154,6 +175,7 @@ class EventRoutesTest extends HttpTestSuit {
       }
 
       "subscribe to events matching for given subsystem should rate limit to given frequency" in new Setup {
+        import cswMocks._
 
         val subsystemName        = "tcs"
         val subsystem: Subsystem = Subsystem.withName(subsystemName)

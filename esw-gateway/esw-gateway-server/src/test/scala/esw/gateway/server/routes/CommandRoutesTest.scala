@@ -1,6 +1,7 @@
 package esw.gateway.server.routes
 
 import akka.NotUsed
+import akka.actor.typed.{ActorSystem, SpawnProtocol}
 import akka.http.scaladsl.model.MediaTypes.{`application/json`, `text/event-stream`}
 import akka.http.scaladsl.model.StatusCodes
 import akka.http.scaladsl.model.sse.ServerSentEvent
@@ -15,17 +16,23 @@ import csw.params.core.models.{Id, ObsId, Prefix}
 import csw.params.core.states.{CurrentState, StateName, StateVariable}
 import esw.gateway.server.CswContextMocks
 import esw.template.http.server.HttpTestSuit
-import org.mockito.Mockito
 import play.api.libs.json.Json
 
 import scala.concurrent.duration.DurationDouble
 import scala.concurrent.{Await, Future, TimeoutException}
 
-class CommandRoutesTest extends HttpTestSuit with CswContextMocks {
-  implicit val timeout: Timeout = actorRuntime.timeout
+class CommandRoutesTest extends HttpTestSuit {
+  val actorSystem: ActorSystem[SpawnProtocol] = ActorSystem(SpawnProtocol.behavior, "test-system")
 
-  override protected def afterAll(): Unit  = cswCtx.actorSystem.terminate()
-  override protected def afterEach(): Unit = Mockito.reset(componentFactory, commandService)
+  trait Setup {
+    val cswMocks                  = new CswContextMocks(actorSystem)
+    implicit val timeout: Timeout = cswMocks.actorRuntime.timeout
+  }
+
+  override protected def afterAll(): Unit = {
+    super.afterAll()
+    actorSystem.terminate()
+  }
 
   case class TestData(componentType: String)
 
@@ -35,7 +42,8 @@ class CommandRoutesTest extends HttpTestSuit with CswContextMocks {
     val componentType: ComponentType = ComponentType.withName(testData.componentType)
 
     s"CommandRoutes for ${testData.componentType}" must {
-      "post command to validate | ESW-91" in {
+      "post command to validate | ESW-91" in new Setup {
+        import cswMocks._
         val componentName = "test-component"
         val runId         = Id("123")
         val command       = Setup(Prefix("test"), CommandName("c1"), Some(ObsId("obsId"))).copy(runId = runId)
@@ -48,7 +56,8 @@ class CommandRoutesTest extends HttpTestSuit with CswContextMocks {
         }
       }
 
-      "get error response for validate command on timeout | ESW-91" in {
+      "get error response for validate command on timeout | ESW-91" in new Setup {
+        import cswMocks._
         val componentName = "test-component"
         val runId         = Id("123")
         val command       = Setup(Prefix("test"), CommandName("c1"), Some(ObsId("obsId"))).copy(runId = runId)
@@ -62,7 +71,8 @@ class CommandRoutesTest extends HttpTestSuit with CswContextMocks {
         }
       }
 
-      "post submit command | ESW-91" in {
+      "post submit command | ESW-91" in new Setup {
+        import cswMocks._
         val componentName = "test-component"
         val runId         = Id("123")
         val command       = Setup(Prefix("test"), CommandName("c1"), Some(ObsId("obsId"))).copy(runId = runId)
@@ -76,7 +86,8 @@ class CommandRoutesTest extends HttpTestSuit with CswContextMocks {
         }
       }
 
-      "get error response for submit command on timeout | ESW-91" in {
+      "get error response for submit command on timeout | ESW-91" in new Setup {
+        import cswMocks._
         val componentName = "test-component"
         val runId         = Id("123")
         val command       = Setup(Prefix("test"), CommandName("c1"), Some(ObsId("obsId"))).copy(runId = runId)
@@ -90,7 +101,8 @@ class CommandRoutesTest extends HttpTestSuit with CswContextMocks {
         }
       }
 
-      "post oneway command | ESW-91" in {
+      "post oneway command | ESW-91" in new Setup {
+        import cswMocks._
         val componentName = "test-component"
         val runId         = Id("123")
         val command       = Setup(Prefix("test"), CommandName("c1"), Some(ObsId("obsId"))).copy(runId = runId)
@@ -104,7 +116,8 @@ class CommandRoutesTest extends HttpTestSuit with CswContextMocks {
         }
       }
 
-      "get error response for oneway command on timeout | ESW-91" in {
+      "get error response for oneway command on timeout | ESW-91" in new Setup {
+        import cswMocks._
         val componentName = "test-component"
         val runId         = Id("123")
         val command       = Setup(Prefix("test"), CommandName("c1"), Some(ObsId("obsId"))).copy(runId = runId)
@@ -118,7 +131,8 @@ class CommandRoutesTest extends HttpTestSuit with CswContextMocks {
         }
       }
 
-      "get command response for given RunId | ESW-91" in {
+      "get command response for given RunId | ESW-91" in new Setup {
+        import cswMocks._
         val componentName = "test-component"
         val runId         = Id("123")
 
@@ -137,7 +151,8 @@ class CommandRoutesTest extends HttpTestSuit with CswContextMocks {
         }
       }
 
-      "get error response for command on timeout | ESW-91" in {
+      "get error response for command on timeout | ESW-91" in new Setup {
+        import cswMocks._
         val componentName = "test-component"
         val runId         = Id("123")
         when(commandService.queryFinal(any[Id])(any[Timeout])).thenReturn(Future.failed(new TimeoutException("")))
@@ -149,7 +164,9 @@ class CommandRoutesTest extends HttpTestSuit with CswContextMocks {
         }
       }
 
-      "get current state subscription to all stateNames | ESW-91" in {
+      "get current state subscription to all stateNames | ESW-91" in new Setup {
+        import cswMocks._
+
         val componentName = "test-component"
         val currentState1 = CurrentState(Prefix("a.b"), StateName("stateName1"))
         val currentState2 = CurrentState(Prefix("a.b"), StateName("stateName2"))
@@ -174,7 +191,8 @@ class CommandRoutesTest extends HttpTestSuit with CswContextMocks {
         }
       }
 
-      "get current state subscription to given stateNames | ESW-91" in {
+      "get current state subscription to given stateNames | ESW-91" in new Setup {
+        import cswMocks._
         val componentName = "test-component"
         val stateName1    = StateName("stateName1")
         val currentState1 = CurrentState(Prefix("a.b"), stateName1)
