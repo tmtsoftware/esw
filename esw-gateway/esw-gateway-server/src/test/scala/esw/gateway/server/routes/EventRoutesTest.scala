@@ -2,34 +2,21 @@ package esw.gateway.server.routes
 
 import akka.http.scaladsl.model.sse.ServerSentEvent
 import akka.http.scaladsl.model.{MediaTypes, StatusCodes}
-import akka.http.scaladsl.testkit.ScalatestRouteTest
 import akka.http.scaladsl.unmarshalling.sse.EventStreamUnmarshalling._
 import akka.stream.scaladsl.{Sink, Source}
 import akka.{Done, NotUsed}
 import csw.event.api.scaladsl.EventSubscription
 import csw.event.api.scaladsl.SubscriptionModes.RateLimiterMode
-import csw.params.core.formats.JsonSupport
 import csw.params.core.models.{Prefix, Subsystem}
 import csw.params.events._
-import de.heikoseeberger.akkahttpplayjson.PlayJsonSupport
 import esw.gateway.server.{CswContextMocks, RateLimiterStub}
-import org.mockito.ArgumentMatchersSugar
-import org.mockito.Mockito.{verify, when}
-import org.scalatest.{BeforeAndAfterAll, BeforeAndAfterEach, Matchers, WordSpec}
+import esw.template.http.server.HttpTestSuit
 import play.api.libs.json.Json
 
 import scala.concurrent.duration.DurationInt
 import scala.concurrent.{Await, Future}
 
-class EventRoutesTest
-    extends WordSpec
-    with Matchers
-    with ArgumentMatchersSugar
-    with ScalatestRouteTest
-    with BeforeAndAfterEach
-    with BeforeAndAfterAll
-    with JsonSupport
-    with PlayJsonSupport {
+class EventRoutesTest extends HttpTestSuit {
 
   trait Setup extends CswContextMocks
 

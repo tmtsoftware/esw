@@ -70,7 +70,7 @@ lazy val `esw-gateway-server` = project
   .settings(
     libraryDependencies ++= Dependencies.GatewayServer.value
   )
-  .dependsOn(`esw-template-http-server`)
+  .dependsOn(`esw-template-http-server` % "compile->compile;test->test")
 
 /* ================= Paradox Docs ============== */
 lazy val docs = project.enablePlugins(NoPublish, ParadoxSite)

@@ -4,7 +4,6 @@ import akka.NotUsed
 import akka.http.scaladsl.model.MediaTypes.{`application/json`, `text/event-stream`}
 import akka.http.scaladsl.model.StatusCodes
 import akka.http.scaladsl.model.sse.ServerSentEvent
-import akka.http.scaladsl.testkit.ScalatestRouteTest
 import akka.http.scaladsl.unmarshalling.sse.EventStreamUnmarshalling._
 import akka.stream.scaladsl.{Sink, Source}
 import akka.util.Timeout
@@ -14,29 +13,16 @@ import csw.params.commands.CommandResponse.{Accepted, Completed}
 import csw.params.commands.{CommandName, CommandResponse, Setup}
 import csw.params.core.models.{Id, ObsId, Prefix}
 import csw.params.core.states.{CurrentState, StateName, StateVariable}
-import de.heikoseeberger.akkahttpplayjson.PlayJsonSupport
 import esw.gateway.server.CswContextMocks
-import esw.template.http.server.commons.JsonSupportExt
-import org.mockito.Mockito._
-import org.mockito.{ArgumentMatchersSugar, Mockito}
-import org.scalatest.{BeforeAndAfterAll, BeforeAndAfterEach, Matchers, WordSpec}
+import esw.template.http.server.HttpTestSuit
+import org.mockito.Mockito
 import play.api.libs.json.Json
 
 import scala.concurrent.duration.DurationDouble
 import scala.concurrent.{Await, Future, TimeoutException}
 
-class CommandRoutesTest
-    extends WordSpec
-    with CswContextMocks
-    with Matchers
-    with ArgumentMatchersSugar
-    with ScalatestRouteTest
-    with BeforeAndAfterAll
-    with BeforeAndAfterEach
-    with PlayJsonSupport
-    with JsonSupportExt {
-
-  import actorRuntime.timeout
+class CommandRoutesTest extends HttpTestSuit with CswContextMocks {
+  implicit val timeout: Timeout = actorRuntime.timeout
 
   override protected def afterAll(): Unit  = cswCtx.actorSystem.terminate()
   override protected def afterEach(): Unit = Mockito.reset(componentFactory, commandService)

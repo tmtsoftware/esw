@@ -33,10 +33,8 @@ object Dependencies {
       AkkaHttp.`akka-http`,
       Akka.`akka-actor-typed`,
       Akka.`akka-stream-typed`,
-      AkkaHttp.`akka-http-testkit` % Test,
-      Akka.`akka-stream-testkit`   % Test,
-      Libs.scalatest               % Test,
-      Libs.`mockito-scala`         % Test
+      Libs.scalatest       % Test,
+      Libs.`mockito-scala` % Test
     )
   )
 
@@ -53,7 +51,9 @@ object Dependencies {
       Libs.scalatest                  % Test,
       Csw.`csw-testkit`               % Test,
       Libs.`mockito-scala`            % Test,
-      Akka.`akka-actor-testkit-typed` % Test
+      Akka.`akka-actor-testkit-typed` % Test,
+      AkkaHttp.`akka-http-testkit`    % Test,
+      Akka.`akka-stream-testkit`      % Test
     )
   )
 }

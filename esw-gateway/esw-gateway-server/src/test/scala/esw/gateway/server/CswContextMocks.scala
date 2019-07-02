@@ -11,8 +11,7 @@ import csw.logging.api.scaladsl.Logger
 import esw.gateway.server.routes.Routes
 import esw.template.http.server.csw.utils.{ComponentFactory, CswContext}
 import esw.template.http.server.wiring.ActorRuntime
-import org.mockito.Mockito.when
-import org.scalatestplus.mockito.MockitoSugar
+import org.mockito.MockitoSugar
 
 import scala.concurrent.duration.FiniteDuration
 
