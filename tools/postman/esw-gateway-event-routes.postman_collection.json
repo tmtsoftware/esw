@@ -1,0 +1,68 @@
+{
+	"info": {
+		"_postman_id": "86efd4b0-d94e-488c-8c52-19415d53803a",
+		"name": "esw-gateway-event",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+	},
+	"item": [
+		{
+			"name": "get-event",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": ""
+				},
+				"url": {
+					"raw": "http://localhost:9090/event?key=tcs.test.gateway",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "9090",
+					"path": [
+						"event"
+					],
+					"query": [
+						{
+							"key": "key",
+							"value": "tcs.test.gateway"
+						}
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "publish-event",
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "Content-Type",
+						"name": "Content-Type",
+						"value": "application/json",
+						"type": "text"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n\t\"eventId\": \"1236\",\n    \"source\": \"tcs.test\",\n    \"eventName\": \"gateway\",\n    \"paramSet\": [],\n    \"type\":\"SystemEvent\",\n    \"eventTime\":\"2019-07-02T09:10:32.964138Z\"\n}"
+				},
+				"url": {
+					"raw": "http://localhost:9090/event",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "9090",
+					"path": [
+						"event"
+					]
+				}
+			},
+			"response": []
+		}
+	]
+}
