@@ -87,6 +87,13 @@ class StepTest extends BaseTestSuite {
       val updatedStep = step.removeBreakpoint()
       updatedStep.hasBreakpoint shouldBe false
     }
+
+    "be no op when step does not have breakpoint" in {
+      val setup       = Setup(Prefix("test"), CommandName("test"), None)
+      val step        = Step(setup, Pending, hasBreakpoint = false)
+      val updatedStep = step.removeBreakpoint()
+      updatedStep shouldBe step
+    }
   }
 
   "withStatus" must {
