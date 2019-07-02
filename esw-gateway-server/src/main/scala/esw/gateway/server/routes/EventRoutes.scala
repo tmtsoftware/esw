@@ -33,7 +33,7 @@ class EventRoutes(cswCtx: CswContext) extends JsonSupport with PlayJsonSupport {
           }
         } ~
         get {
-          parameter('key.*) { keys =>
+          parameter("key".as[String].*) { keys =>
             validate(keys.nonEmpty, "Request is missing query parameter key") {
               val eventualEvents = subscriber.get(keys.toEventKeys)
               complete(eventualEvents)
@@ -44,11 +44,11 @@ class EventRoutes(cswCtx: CswContext) extends JsonSupport with PlayJsonSupport {
       pathPrefix("subscribe") {
         get {
           pathEnd {
-            parameters(('key.*, 'frequency.as[Int])) { (keys, frequency) =>
+            parameters(("key".as[String].*, "max-frequency".as[Int])) { (keys, frequency) =>
               validate(keys.nonEmpty, "Request is missing query parameter key") {
                 complete(
                   subscriber
-                    .subscribe(keys.toEventKeys, frequencyToTime(frequency), RateLimiterMode)
+                    .subscribe(keys.toEventKeys, maxFrequencyToDuration(frequency), RateLimiterMode)
                     .toSSE
                 )
               }
@@ -56,7 +56,7 @@ class EventRoutes(cswCtx: CswContext) extends JsonSupport with PlayJsonSupport {
           } ~
           path(Segment) { subsystem =>
             val sub = Subsystem.withNameInsensitive(subsystem)
-            parameters(('frequency.as[Int], 'pattern ?)) { (frequency, pattern) =>
+            parameters(("max-frequency".as[Int], "pattern" ?)) { (frequency, pattern) =>
               val events = pattern match {
                 case Some(p) => subscriber.pSubscribe(sub, p)
                 case None    => subscriber.pSubscribe(sub, "*")
@@ -64,7 +64,7 @@ class EventRoutes(cswCtx: CswContext) extends JsonSupport with PlayJsonSupport {
 
               complete(
                 events
-                  .via(eventSubscriberUtil.subscriptionModeStage(frequencyToTime(frequency), RateLimiterMode))
+                  .via(eventSubscriberUtil.subscriptionModeStage(maxFrequencyToDuration(frequency), RateLimiterMode))
                   .toSSE
               )
             }
@@ -74,7 +74,7 @@ class EventRoutes(cswCtx: CswContext) extends JsonSupport with PlayJsonSupport {
     }
   }
 
-  private def frequencyToTime(frequency: Int): FiniteDuration = (1000 / frequency).millis
+  private def maxFrequencyToDuration(frequency: Int): FiniteDuration = (1000 / frequency).millis
 
   implicit class RichEventKeys(keys: Iterable[String]) {
     def toEventKeys: Set[EventKey] = keys.map(EventKey(_)).toSet

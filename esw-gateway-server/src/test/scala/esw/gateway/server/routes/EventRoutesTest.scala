@@ -95,7 +95,7 @@ class EventRoutesTest extends HttpTestSuite {
 
         when(eventSubscriber.subscribe(Set(eventKey1, eventKey2), 100.millis, RateLimiterMode)).thenReturn(eventSource)
 
-        Get(s"/event/subscribe?key=$eventKey1&key=$eventKey2&frequency=10") ~> route ~> check {
+        Get(s"/event/subscribe?key=$eventKey1&key=$eventKey2&max-frequency=10") ~> route ~> check {
           status shouldBe StatusCodes.OK
           mediaType shouldBe MediaTypes.`text/event-stream`
           verify(eventSubscriber).subscribe(Set(eventKey1, eventKey2), 100.millis, RateLimiterMode)
@@ -114,7 +114,7 @@ class EventRoutesTest extends HttpTestSuite {
         when(eventSubscriber.subscribe(Set(eventKey1, eventKey2), 100.millis, RateLimiterMode))
           .thenThrow(new RuntimeException("exception"))
 
-        Get(s"/event/subscribe?key=$eventKey1&key=$eventKey2&frequency=10") ~> route ~> check {
+        Get(s"/event/subscribe?key=$eventKey1&key=$eventKey2&max-frequency=10") ~> route ~> check {
           status shouldBe StatusCodes.InternalServerError
           verify(eventSubscriber).subscribe(Set(eventKey1, eventKey2), 100.millis, RateLimiterMode)
         }
@@ -131,7 +131,7 @@ class EventRoutesTest extends HttpTestSuite {
         when(eventSubscriberUtil.subscriptionModeStage(100.millis, RateLimiterMode))
           .thenReturn(new RateLimiterStub[Event](100.millis))
 
-        Get(s"/event/subscribe/$subsystemName?frequency=10&pattern=$pattern") ~> route ~> check {
+        Get(s"/event/subscribe/$subsystemName?max-frequency=10&pattern=$pattern") ~> route ~> check {
           status shouldBe StatusCodes.OK
           mediaType shouldBe MediaTypes.`text/event-stream`
 
@@ -150,7 +150,7 @@ class EventRoutesTest extends HttpTestSuite {
         when(eventSubscriberUtil.subscriptionModeStage(100.millis, RateLimiterMode))
           .thenReturn(new RateLimiterStub[Event](100.millis))
 
-        Get(s"/event/subscribe/$subsystemName?frequency=10") ~> route ~> check {
+        Get(s"/event/subscribe/$subsystemName?max-frequency=10") ~> route ~> check {
           status shouldBe StatusCodes.OK
           mediaType shouldBe MediaTypes.`text/event-stream`
 
@@ -168,7 +168,7 @@ class EventRoutesTest extends HttpTestSuite {
         when(eventSubscriber.pSubscribe(subsystem, "*"))
           .thenThrow(new RuntimeException("exception"))
 
-        Get(s"/event/subscribe/$subsystemName?frequency=10") ~> route ~> check {
+        Get(s"/event/subscribe/$subsystemName?max-frequency=10") ~> route ~> check {
           status shouldBe StatusCodes.InternalServerError
           verify(eventSubscriber).pSubscribe(subsystem, "*")
         }
@@ -189,7 +189,7 @@ class EventRoutesTest extends HttpTestSuite {
         when(eventSubscriberUtil.subscriptionModeStage(200.millis, RateLimiterMode))
           .thenReturn(new RateLimiterStub[Event](200.millis))
 
-        Get(s"/event/subscribe/$subsystemName?frequency=5") ~> route ~> check {
+        Get(s"/event/subscribe/$subsystemName?max-frequency=5") ~> route ~> check {
           status shouldBe StatusCodes.OK
           mediaType shouldBe MediaTypes.`text/event-stream`
           verify(eventSubscriber).pSubscribe(subsystem, "*")

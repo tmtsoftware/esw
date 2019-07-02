@@ -56,7 +56,7 @@ class CommandRoutes(cswCtx: CswContext) extends JsonSupport with PlayJsonSupport
               }
             } ~
             path("current-state" / "subscribe") {
-              parameters('stateName.*) { stateNames =>
+              parameters("stateName".as[String].*) { stateNames =>
                 complete {
                   commandService
                     .subscribeCurrentState(stateNames.map(StateName.apply).toSet)
