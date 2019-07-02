@@ -3,7 +3,7 @@ package esw.ocs.framework.api.models
 import csw.params.commands.SequenceCommand
 import csw.params.core.models.Id
 import esw.ocs.framework.api.models.StepStatus.{Finished, InFlight, Pending}
-import esw.ocs.framework.api.models.messages.StepListActionResponse.{AddingBreakpointNotSupported, UpdateNotSupported}
+import esw.ocs.framework.api.models.messages.StepListError.{AddingBreakpointNotSupported, UpdateNotSupported}
 
 case class StepResult(isSuccessful: Boolean, step: Step)
 

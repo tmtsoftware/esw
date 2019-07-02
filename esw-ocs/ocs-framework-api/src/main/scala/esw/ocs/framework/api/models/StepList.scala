@@ -3,8 +3,8 @@ package esw.ocs.framework.api.models
 import csw.params.commands.SequenceCommand
 import csw.params.core.models.Id
 import esw.ocs.framework.api.models.messages.SequencerMsg.DuplicateIdsFound
-import esw.ocs.framework.api.models.messages.StepListActionResponse._
-import esw.ocs.framework.api.models.messages._
+import esw.ocs.framework.api.models.messages.StepListError
+import esw.ocs.framework.api.models.messages.StepListError._
 
 final case class StepList private[models] (runId: Id, steps: List[Step]) { outer =>
   //query
@@ -44,7 +44,7 @@ final case class StepList private[models] (runId: Id, steps: List[Step]) { outer
   }
 
   def insertAfter(id: Id, commands: List[SequenceCommand]): Either[InsertError, StepList] =
-    ifExistAndNotFinished(id) { _ ⇒
+    ifExistAndNotFinished[InsertError](id) { _ ⇒
       val updatedSteps = insertStepsAfter(id, toSteps(commands))
       Right(copy(runId, updatedSteps))
     }
@@ -61,7 +61,7 @@ final case class StepList private[models] (runId: Id, steps: List[Step]) { outer
       .map(steps ⇒ copy(runId, steps))
   }
 
-  def removeBreakpoint(id: Id): Either[RemoveBreakpointError, StepList] = ifExistAndNotFinished(id) { _ ⇒
+  def removeBreakpoint(id: Id): Either[RemoveBreakpointError, StepList] = ifExistAndNotFinished[RemoveBreakpointError](id) { _ ⇒
     Right(updateAll(id, _.removeBreakpoint()))
   }
 
@@ -105,18 +105,23 @@ final case class StepList private[models] (runId: Id, steps: List[Step]) { outer
       case step                  => step
     })
 
-  private def ifNotFinished[T <: StepListActionResponse](f: ⇒ Either[T, StepList]): Either[T, StepList] =
-    if (isFinished) Left(NotAllowedOnFinishedSeq.asInstanceOf[T]) else f
+  private def ifNotFinished[T <: StepListError](
+      f: ⇒ Either[T, StepList]
+  )(implicit ev: NotAllowedOnFinishedSeq.type <:< T): Either[T, StepList] =
+    if (isFinished) Left(NotAllowedOnFinishedSeq) else f
 
-  private def ifExists[T <: StepListActionResponse](id: Id)(f: Step ⇒ Either[T, StepList]): Either[T, StepList] =
+  private def ifExists[T <: StepListError](id: Id)(
+      f: Step ⇒ Either[T, StepList]
+  )(implicit ev: IdDoesNotExist <:< T): Either[T, StepList] =
     steps.find(_.id == id) match {
       case Some(step) ⇒ f(step)
-      case None       ⇒ Left(IdDoesNotExist(id).asInstanceOf[T])
+      case None       ⇒ Left(IdDoesNotExist(id))
     }
 
-  private def ifExistAndNotFinished[T <: StepListActionResponse](id: Id)(f: Step ⇒ Either[T, StepList]): Either[T, StepList] =
+  private def ifExistAndNotFinished[T <: StepListError](id: Id)(
+      f: Step ⇒ Either[T, StepList]
+  )(implicit ev1: IdDoesNotExist <:< T, ev2: NotAllowedOnFinishedSeq.type <:< T): Either[T, StepList] =
     ifExists(id)(step ⇒ ifNotFinished(f(step)))
-
 }
 
 object StepList {

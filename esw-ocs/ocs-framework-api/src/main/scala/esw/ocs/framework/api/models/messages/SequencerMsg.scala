@@ -6,7 +6,7 @@ import csw.params.commands.CommandResponse.SubmitResponse
 import csw.params.commands.SequenceCommand
 import csw.params.core.models.Id
 import csw.serializable.TMTSerializable
-import esw.ocs.framework.api.models.messages.StepListActionResponse._
+import esw.ocs.framework.api.models.messages.StepListError._
 import esw.ocs.framework.api.models.{Sequence, Step, StepList}
 
 import scala.util.Try

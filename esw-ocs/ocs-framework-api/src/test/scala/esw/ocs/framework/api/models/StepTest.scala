@@ -4,7 +4,7 @@ import csw.params.commands.{CommandName, Setup}
 import csw.params.core.models.Prefix
 import esw.ocs.framework.api.BaseTestSuite
 import esw.ocs.framework.api.models.StepStatus.{Finished, InFlight, Pending}
-import esw.ocs.framework.api.models.messages.StepListActionResponse.{AddingBreakpointNotSupported, UpdateNotSupported}
+import esw.ocs.framework.api.models.messages.StepListError.{AddingBreakpointNotSupported, UpdateNotSupported}
 
 class StepTest extends BaseTestSuite {
 

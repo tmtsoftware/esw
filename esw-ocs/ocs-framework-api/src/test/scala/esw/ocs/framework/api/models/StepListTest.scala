@@ -5,7 +5,7 @@ import csw.params.core.models.{Id, Prefix}
 import esw.ocs.framework.api.BaseTestSuite
 import esw.ocs.framework.api.models.StepStatus.{Finished, InFlight, Pending}
 import esw.ocs.framework.api.models.messages.SequencerMsg.DuplicateIdsFound
-import esw.ocs.framework.api.models.messages.StepListActionResponse._
+import esw.ocs.framework.api.models.messages.StepListError._
 
 class StepListTest extends BaseTestSuite {
 
@@ -296,6 +296,15 @@ class StepListTest extends BaseTestSuite {
       val stepList        = StepList(Id(), List(step1, step2))
       val updatedStepList = stepList.delete(setup1.runId)
       updatedStepList.left.value shouldBe DeleteNotSupported(InFlight)
+    }
+
+    "fail with IdDoesNotExist error when step does not exist" in {
+      val step1 = Step(setup1, InFlight, hasBreakpoint = false)
+
+      val stepList        = StepList(Id(), List(step1))
+      val invalidId       = Id()
+      val updatedStepList = stepList.delete(invalidId)
+      updatedStepList.left.value shouldBe IdDoesNotExist(invalidId)
     }
 
     "fail with NotAllowedOnFinishedSeq error when StepList is finished" in {
