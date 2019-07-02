@@ -174,11 +174,10 @@ class StepListTest extends BaseTestSuite {
       val id              = Id()
       val stepList        = StepList(id, List(step1, step2, step3))
       val updatedStepList = stepList.replace(setup2.runId, List(setup4, setup5))
-      updatedStepList.response shouldBe Replaced
-      updatedStepList.stepList shouldBe StepList(id, List(step1, Step(setup4), Step(setup5), step3))
+      updatedStepList.right.value shouldBe StepList(id, List(step1, Step(setup4), Step(setup5), step3))
     }
 
-    "fail with ReplaceNotSupportedInThisStatus error when Id matches and is not in Pending status" in {
+    "fail with ReplaceNotSupportedInStatus error when Id matches and is not in Pending status" in {
       val step1 = Step(setup1, Finished, hasBreakpoint = false)
       val step2 = Step(setup2, Finished, hasBreakpoint = false)
       val step3 = Step(setup3, Pending, hasBreakpoint = false)
@@ -186,8 +185,7 @@ class StepListTest extends BaseTestSuite {
       val stepList        = StepList(Id(), List(step1, step2, step3))
       val id              = setup2.runId
       val updatedStepList = stepList.replace(id, List(setup4, setup5))
-      updatedStepList.response shouldBe ReplaceNotSupportedInStatus(Finished)
-      updatedStepList.stepList shouldBe stepList
+      updatedStepList.left.value shouldBe ReplaceNotSupported(Finished)
     }
 
     "fail with IdDoesNotExist error when provided Id does't exist in StepList" in {
@@ -198,8 +196,7 @@ class StepListTest extends BaseTestSuite {
 
       val invalidId       = Id()
       val updatedStepList = stepList.replace(invalidId, List(setup4, setup5))
-      updatedStepList.response shouldBe IdDoesNotExist(invalidId)
-      updatedStepList.stepList shouldBe stepList
+      updatedStepList.left.value shouldBe IdDoesNotExist(invalidId)
     }
 
     "fail with NotAllowedOnFinishedSeq error when StepList is finished" in {
@@ -209,8 +206,7 @@ class StepListTest extends BaseTestSuite {
       val id              = Id()
       val stepList        = StepList(id, List(step1, step2))
       val updatedStepList = stepList.replace(setup2.runId, List(setup4, setup5))
-      updatedStepList.response shouldBe NotAllowedOnFinishedSeq
-      updatedStepList.stepList shouldBe stepList
+      updatedStepList.left.value shouldBe NotAllowedOnFinishedSeq
     }
   }
 
@@ -227,8 +223,7 @@ class StepListTest extends BaseTestSuite {
       val id              = Id()
       val stepList        = StepList(id, List(step1, step2))
       val updatedStepList = stepList.prepend(List(setup3, setup4))
-      updatedStepList.response shouldBe Prepended
-      updatedStepList.stepList shouldBe StepList(id, List(step1, Step(setup3), Step(setup4), step2))
+      updatedStepList.right.value shouldBe StepList(id, List(step1, Step(setup3), Step(setup4), step2))
     }
 
     "add provided steps at the end of StepList when StepList doesn't have Pending step" in {
@@ -238,8 +233,7 @@ class StepListTest extends BaseTestSuite {
       val stepList = StepList(Id(), List(step1, step2))
 
       val updatedStepList = stepList.prepend(List(setup3))
-      updatedStepList.response shouldBe Prepended
-      updatedStepList.stepList shouldBe StepList(stepList.runId, List(step1, step2, Step(setup3)))
+      updatedStepList.right.value shouldBe StepList(stepList.runId, List(step1, step2, Step(setup3)))
     }
 
     "fail with NotAllowedOnFinishedSeq error when StepList is finished" in {
@@ -248,8 +242,7 @@ class StepListTest extends BaseTestSuite {
 
       val stepList        = StepList(Id(), List(step1, step2))
       val updatedStepList = stepList.prepend(List(setup3))
-      updatedStepList.response shouldBe NotAllowedOnFinishedSeq
-      updatedStepList.stepList shouldBe stepList
+      updatedStepList.left.value shouldBe NotAllowedOnFinishedSeq
     }
 
   }
@@ -267,8 +260,7 @@ class StepListTest extends BaseTestSuite {
       val id              = Id()
       val stepList        = StepList(id, List(step1, step2))
       val updatedStepList = stepList.append(List(setup3, setup4))
-      updatedStepList.response shouldBe Added // fixme: revisit type?
-      updatedStepList.stepList shouldBe StepList(id, List(step1, step2, Step(setup3), Step(setup4)))
+      updatedStepList.right.value shouldBe StepList(id, List(step1, step2, Step(setup3), Step(setup4)))
     }
 
     "fail with NotAllowedOnFinishedSeq error when StepList is finished" in {
@@ -277,8 +269,7 @@ class StepListTest extends BaseTestSuite {
 
       val stepList        = StepList(Id(), List(step1, step2))
       val updatedStepList = stepList.append(List(setup3))
-      updatedStepList.response shouldBe NotAllowedOnFinishedSeq
-      updatedStepList.stepList shouldBe stepList
+      updatedStepList.left.value shouldBe NotAllowedOnFinishedSeq
     }
   }
 
@@ -295,18 +286,16 @@ class StepListTest extends BaseTestSuite {
       val id              = Id()
       val stepList        = StepList(id, List(step1, step2, step3))
       val updatedStepList = stepList.delete(setup2.runId)
-      updatedStepList.response shouldBe Deleted
-      updatedStepList.stepList shouldBe StepList(id, List(step1, step3))
+      updatedStepList.right.value shouldBe StepList(id, List(step1, step3))
     }
 
-    "fail with DeleteNotSupportedInThisStatus error when step status is other than Pending" in {
+    "fail with DeleteNotSupportedInStatus error when step status is other than Pending" in {
       val step1 = Step(setup1, InFlight, hasBreakpoint = false)
       val step2 = Step(setup2, Pending, hasBreakpoint = false)
 
       val stepList        = StepList(Id(), List(step1, step2))
       val updatedStepList = stepList.delete(setup1.runId)
-      updatedStepList.response shouldBe DeleteNotSupportedInStatus(InFlight)
-      updatedStepList.stepList shouldBe stepList
+      updatedStepList.left.value shouldBe DeleteNotSupported(InFlight)
     }
 
     "fail with NotAllowedOnFinishedSeq error when StepList is finished" in {
@@ -316,8 +305,7 @@ class StepListTest extends BaseTestSuite {
       val id              = Id()
       val stepList        = StepList(id, List(step1, step2))
       val updatedStepList = stepList.delete(setup1.runId)
-      updatedStepList.response shouldBe NotAllowedOnFinishedSeq
-      updatedStepList.stepList shouldBe stepList
+      updatedStepList.left.value shouldBe NotAllowedOnFinishedSeq
     }
   }
 
@@ -334,8 +322,7 @@ class StepListTest extends BaseTestSuite {
       val id              = Id()
       val stepList        = StepList(id, List(step1, step2))
       val updatedStepList = stepList.insertAfter(step1.id, List(setup3, setup4))
-      updatedStepList.response shouldBe Inserted
-      updatedStepList.stepList shouldBe StepList(id, List(step1, Step(setup3), Step(setup4), step2))
+      updatedStepList.right.value shouldBe StepList(id, List(step1, Step(setup3), Step(setup4), step2))
     }
 
     "fail with IdDoesNotExist error when provided Id does't exist in StepList" in {
@@ -346,8 +333,7 @@ class StepListTest extends BaseTestSuite {
 
       val invalidId       = Id()
       val updatedStepList = stepList.insertAfter(invalidId, List(setup3))
-      updatedStepList.response shouldBe IdDoesNotExist(invalidId)
-      updatedStepList.stepList shouldBe stepList
+      updatedStepList.left.value shouldBe IdDoesNotExist(invalidId)
     }
 
     "fail with NotAllowedOnFinishedSeq error when StepList is finished" in {
@@ -357,8 +343,7 @@ class StepListTest extends BaseTestSuite {
       val id              = Id()
       val stepList        = StepList(id, List(step1, step2))
       val updatedStepList = stepList.insertAfter(step1.id, List(setup3, setup4))
-      updatedStepList.response shouldBe NotAllowedOnFinishedSeq
-      updatedStepList.stepList shouldBe stepList
+      updatedStepList.left.value shouldBe NotAllowedOnFinishedSeq
     }
   }
 
@@ -377,8 +362,7 @@ class StepListTest extends BaseTestSuite {
       val id              = Id()
       val stepList        = StepList(id, List(step1, step2, step3, step4))
       val updatedStepList = stepList.discardPending
-      updatedStepList.response shouldBe Discarded
-      updatedStepList.stepList shouldBe StepList(id, List(step1, step3))
+      updatedStepList.right.value shouldBe StepList(id, List(step1, step3))
     }
 
     "fail with NotAllowedOnFinishedSeq error when StepList is finished" in {
@@ -388,8 +372,7 @@ class StepListTest extends BaseTestSuite {
       val id              = Id()
       val stepList        = StepList(id, List(step1, step2))
       val updatedStepList = stepList.discardPending
-      updatedStepList.response shouldBe NotAllowedOnFinishedSeq
-      updatedStepList.stepList shouldBe stepList
+      updatedStepList.left.value shouldBe NotAllowedOnFinishedSeq
     }
   }
 
@@ -404,8 +387,7 @@ class StepListTest extends BaseTestSuite {
       val id              = Id()
       val stepList        = StepList(id, List(step1, step2))
       val updatedStepList = stepList.addBreakpoint(setup2.runId)
-      updatedStepList.response shouldBe BreakpointAdded
-      updatedStepList.stepList shouldBe StepList(id, List(step1, step2.copy(hasBreakpoint = true)))
+      updatedStepList.right.value shouldBe StepList(id, List(step1, step2.copy(hasBreakpoint = true)))
     }
 
     "fail with IdDoesNotExist error when provided id does not exist" in {
@@ -414,8 +396,7 @@ class StepListTest extends BaseTestSuite {
       val stepList        = StepList(Id(), List(step1))
       val invalidId       = Id()
       val updatedStepList = stepList.addBreakpoint(invalidId)
-      updatedStepList.response shouldBe IdDoesNotExist(invalidId)
-      updatedStepList.stepList shouldBe stepList
+      updatedStepList.left.value shouldBe IdDoesNotExist(invalidId)
     }
 
     "fail with NotAllowedOnFinishedSeq error when StepList is finished" in {
@@ -425,8 +406,7 @@ class StepListTest extends BaseTestSuite {
       val id              = Id()
       val stepList        = StepList(id, List(step1, step2))
       val updatedStepList = stepList.addBreakpoint(setup1.runId)
-      updatedStepList.response shouldBe NotAllowedOnFinishedSeq
-      updatedStepList.stepList shouldBe stepList
+      updatedStepList.left.value shouldBe NotAllowedOnFinishedSeq
     }
   }
 
@@ -441,8 +421,7 @@ class StepListTest extends BaseTestSuite {
       val id              = Id()
       val stepList        = StepList(id, List(step1, step2))
       val updatedStepList = stepList.removeBreakpoint(setup2.runId)
-      updatedStepList.response shouldBe BreakpointRemoved
-      updatedStepList.stepList shouldBe StepList(id, List(step1, step2.copy(hasBreakpoint = false)))
+      updatedStepList.right.value shouldBe StepList(id, List(step1, step2.copy(hasBreakpoint = false)))
     }
 
     "return breakpoint addition failed ids when provided ids does not exist" in {
@@ -451,8 +430,7 @@ class StepListTest extends BaseTestSuite {
       val stepList        = StepList(Id(), List(step1))
       val invalidId       = Id()
       val updatedStepList = stepList.removeBreakpoint(invalidId)
-      updatedStepList.response shouldBe IdDoesNotExist(invalidId)
-      updatedStepList.stepList shouldBe stepList
+      updatedStepList.left.value shouldBe IdDoesNotExist(invalidId)
     }
 
     "fail with NotAllowedOnFinishedSeq error when StepList is finished" in {
@@ -462,8 +440,7 @@ class StepListTest extends BaseTestSuite {
       val id              = Id()
       val stepList        = StepList(id, List(step1, step2))
       val updatedStepList = stepList.removeBreakpoint(setup1.runId)
-      updatedStepList.response shouldBe NotAllowedOnFinishedSeq
-      updatedStepList.stepList shouldBe stepList
+      updatedStepList.left.value shouldBe NotAllowedOnFinishedSeq
     }
   }
 
@@ -482,8 +459,7 @@ class StepListTest extends BaseTestSuite {
       val id              = Id()
       val stepList        = StepList(id, List(step1, step2, step3, step4))
       val updatedStepList = stepList.pause
-      updatedStepList.response shouldBe Paused
-      updatedStepList.stepList shouldBe StepList(id, List(step1, step2, step3.copy(hasBreakpoint = true), step4))
+      updatedStepList.right.value shouldBe StepList(id, List(step1, step2, step3.copy(hasBreakpoint = true), step4))
     }
 
     "fail with PauseFailed error when Pending step doesn't exist in StepList" in {
@@ -492,8 +468,7 @@ class StepListTest extends BaseTestSuite {
 
       val stepList        = StepList(Id(), List(step1, step2))
       val updatedStepList = stepList.pause
-      updatedStepList.response shouldBe PauseFailed
-      updatedStepList.stepList shouldBe stepList
+      updatedStepList.left.value shouldBe PauseFailed
     }
 
     "fail with NotAllowedOnFinishedSeq error when StepList is finished" in {
@@ -502,8 +477,7 @@ class StepListTest extends BaseTestSuite {
 
       val stepList        = StepList(Id(), List(step1, step2))
       val updatedStepList = stepList.pause
-      updatedStepList.response shouldBe NotAllowedOnFinishedSeq
-      updatedStepList.stepList shouldBe stepList
+      updatedStepList.left.value shouldBe NotAllowedOnFinishedSeq
     }
   }
 
@@ -520,19 +494,16 @@ class StepListTest extends BaseTestSuite {
       val id              = Id()
       val stepList        = StepList(id, List(step1, step2, step3))
       val updatedStepList = stepList.resume
-      updatedStepList.response shouldBe Resumed
-      updatedStepList.stepList shouldBe StepList(id, List(step1, step2, step3.copy(hasBreakpoint = false)))
+      updatedStepList.right.value shouldBe StepList(id, List(step1, step2, step3.copy(hasBreakpoint = false)))
     }
 
-    // fixme: revisit this scenario
     "be no-op when Pending step doesn't exist in StepList" in {
       val step1 = Step(setup1, Finished, hasBreakpoint = false)
       val step2 = Step(setup2, InFlight, hasBreakpoint = false)
 
       val stepList        = StepList(Id(), List(step1, step2))
       val updatedStepList = stepList.resume
-      updatedStepList.response shouldBe Resumed
-      updatedStepList.stepList shouldBe stepList
+      updatedStepList.right.value shouldBe stepList
     }
 
     "fail with NotAllowedOnFinishedSeq error when StepList is finished" in {
@@ -541,8 +512,7 @@ class StepListTest extends BaseTestSuite {
 
       val stepList        = StepList(Id(), List(step1, step2))
       val updatedStepList = stepList.resume
-      updatedStepList.response shouldBe NotAllowedOnFinishedSeq
-      updatedStepList.stepList shouldBe stepList
+      updatedStepList.left.value shouldBe NotAllowedOnFinishedSeq
     }
   }
 
@@ -560,13 +530,11 @@ class StepListTest extends BaseTestSuite {
       val stepList         = StepList(id, List(step1, step2, step3))
       val updatedStepList1 = stepList.updateStatus(setup2.runId, Finished)
       val updatedStep2     = step2.copy(status = Finished)
-      updatedStepList1.response shouldBe Updated(updatedStep2)
-      updatedStepList1.stepList shouldBe StepList(id, List(step1, updatedStep2, step3))
+      updatedStepList1.right.value shouldBe StepList(id, List(step1, updatedStep2, step3))
 
-      val updatedStepList2 = updatedStepList1.stepList.updateStatus(setup3.runId, InFlight)
+      val updatedStepList2 = updatedStepList1.right.value.updateStatus(setup3.runId, InFlight)
       val updatedStep3     = step3.copy(status = InFlight)
-      updatedStepList2.response shouldBe Updated(updatedStep3)
-      updatedStepList2.stepList shouldBe StepList(id, List(step1, updatedStep2, updatedStep3))
+      updatedStepList2.right.value shouldBe StepList(id, List(step1, updatedStep2, updatedStep3))
     }
 
     "fail with UpdateFailed error when step status transition not allowed" in {
@@ -575,8 +543,7 @@ class StepListTest extends BaseTestSuite {
 
       val stepList        = StepList(Id(), List(step1, step2))
       val updatedStepList = stepList.updateStatus(setup2.runId, Finished)
-      updatedStepList.response shouldBe UpdateFailed
-      updatedStepList.stepList shouldBe stepList
+      updatedStepList.left.value shouldBe UpdateNotSupported(Pending, Finished)
     }
 
     "fail with IdDoesNotExist error when provided Id does't exist in StepList" in {
@@ -587,8 +554,7 @@ class StepListTest extends BaseTestSuite {
       val invalidId       = Id()
       val updatedStepList = stepList.updateStatus(invalidId, InFlight)
 
-      updatedStepList.response shouldBe IdDoesNotExist(invalidId)
-      updatedStepList.stepList shouldBe stepList
+      updatedStepList.left.value shouldBe IdDoesNotExist(invalidId)
     }
 
     "fail with NotAllowedOnFinishedSeq error when StepList is finished" in {
@@ -597,8 +563,7 @@ class StepListTest extends BaseTestSuite {
 
       val stepList        = StepList(Id(), List(step1, step2))
       val updatedStepList = stepList.updateStatus(setup2.runId, Finished)
-      updatedStepList.response shouldBe NotAllowedOnFinishedSeq
-      updatedStepList.stepList shouldBe stepList
+      updatedStepList.left.value shouldBe NotAllowedOnFinishedSeq
     }
   }
 

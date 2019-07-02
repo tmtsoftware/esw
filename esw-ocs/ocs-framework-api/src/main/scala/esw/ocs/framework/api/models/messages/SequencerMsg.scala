@@ -39,20 +39,20 @@ object SequencerMsg {
   final case class ProcessSequence(sequence: Sequence, replyTo: ActorRef[Either[ProcessSequenceError, SubmitResponse]])
       extends ExternalSequencerMsg[Either[DuplicateIdsFound.type, SubmitResponse]]
 
-  final case class Add(commands: List[SequenceCommand], replyTo: ActorRef[AddResponse]) extends ExternalSequencerMsg[AddResponse]
-  final case class Pause(replyTo: ActorRef[PauseResponse])                              extends ExternalSequencerMsg[PauseResponse]
-  final case class Resume(replyTo: ActorRef[ResumeResponse])                            extends ExternalSequencerMsg[ResumeResponse]
-  final case class DiscardPending(replyTo: ActorRef[DiscardPendingResponse])            extends ExternalSequencerMsg[DiscardPendingResponse]
-  final case class Replace(id: Id, commands: List[SequenceCommand], replyTo: ActorRef[ReplaceResponse])
-      extends ExternalSequencerMsg[ReplaceResponse]
-  final case class Prepend(commands: List[SequenceCommand], replyTo: ActorRef[PrependResponse])
-      extends ExternalSequencerMsg[PrependResponse]
-  final case class Delete(ids: List[Id], replyTo: ActorRef[DeleteResponse]) extends ExternalSequencerMsg[DeleteResponse]
-  final case class InsertAfter(id: Id, commands: List[SequenceCommand], replyTo: ActorRef[InsertAfterResponse])
-      extends ExternalSequencerMsg[InsertAfterResponse]
-  final case class AddBreakpoints(ids: List[Id], replyTo: ActorRef[AddBreakpointResponse])
-      extends ExternalSequencerMsg[AddBreakpointResponse]
-  final case class RemoveBreakpoints(ids: List[Id], replyTo: ActorRef[RemoveBreakpointsResponse])
-      extends ExternalSequencerMsg[RemoveBreakpointsResponse]
+  final case class Add(commands: List[SequenceCommand], replyTo: ActorRef[AddError]) extends ExternalSequencerMsg[AddError]
+  final case class Pause(replyTo: ActorRef[PauseError])                              extends ExternalSequencerMsg[PauseError]
+  final case class Resume(replyTo: ActorRef[ResumeError])                            extends ExternalSequencerMsg[ResumeError]
+  final case class DiscardPending(replyTo: ActorRef[DiscardPendingError])            extends ExternalSequencerMsg[DiscardPendingError]
+  final case class Replace(id: Id, commands: List[SequenceCommand], replyTo: ActorRef[ReplaceError])
+      extends ExternalSequencerMsg[ReplaceError]
+  final case class Prepend(commands: List[SequenceCommand], replyTo: ActorRef[PrependError])
+      extends ExternalSequencerMsg[PrependError]
+  final case class Delete(ids: List[Id], replyTo: ActorRef[DeleteError]) extends ExternalSequencerMsg[DeleteError]
+  final case class InsertAfter(id: Id, commands: List[SequenceCommand], replyTo: ActorRef[InsertError])
+      extends ExternalSequencerMsg[InsertError]
+  final case class AddBreakpoints(ids: List[Id], replyTo: ActorRef[AddBreakpointError])
+      extends ExternalSequencerMsg[AddBreakpointError]
+  final case class RemoveBreakpoints(ids: List[Id], replyTo: ActorRef[RemoveBreakpointError])
+      extends ExternalSequencerMsg[RemoveBreakpointError]
   final case class GetSequence(replyTo: ActorRef[StepList]) extends ExternalSequencerMsg[StepList]
 }
