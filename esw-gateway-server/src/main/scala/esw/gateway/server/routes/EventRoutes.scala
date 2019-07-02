@@ -33,8 +33,10 @@ class EventRoutes(cswCtx: CswContext) extends JsonSupportExt {
         } ~
         get {
           parameter('key.*) { keys =>
-            val eventualEvents = subscriber.get(keys.toEventKeys)
-            complete(eventualEvents)
+            validate(keys.nonEmpty, "Request is missing query parameter key") {
+              val eventualEvents = subscriber.get(keys.toEventKeys)
+              complete(eventualEvents)
+            }
           }
         }
       } ~
@@ -42,11 +44,13 @@ class EventRoutes(cswCtx: CswContext) extends JsonSupportExt {
         get {
           pathEnd {
             parameters(('key.*, 'frequency.as[Int])) { (keys, frequency) =>
-              complete(
-                subscriber
-                  .subscribe(keys.toEventKeys, frequncyToTime(frequency), RateLimiterMode)
-                  .toSSE
-              )
+              validate(keys.nonEmpty, "Request is missing query parameter key") {
+                complete(
+                  subscriber
+                    .subscribe(keys.toEventKeys, frequncyToTime(frequency), RateLimiterMode)
+                    .toSSE
+                )
+              }
             }
           } ~
           path(Segment) { subsystem =>
