@@ -1,7 +1,7 @@
 lazy val aggregateProjects: Seq[ProjectReference] =
   Seq(
     `esw-ocs`,
-    `esw-gateway`,
+    `esw-gateway-server`,
     `esw-template`
   )
 
@@ -60,12 +60,8 @@ lazy val `esw-template-http-server` = project
     libraryDependencies ++= Dependencies.TemplateHttpServer.value
   )
 
-lazy val `esw-gateway` = project
-  .in(file("esw-gateway"))
-  .aggregate(`esw-gateway-server`)
-
 lazy val `esw-gateway-server` = project
-  .in(file("esw-gateway/esw-gateway-server"))
+  .in(file("esw-gateway-server"))
   .enablePlugins(MaybeCoverage, EswBuildInfo)
   .settings(
     libraryDependencies ++= Dependencies.GatewayServer.value
