@@ -83,13 +83,13 @@ private[framework] class SequencerImpl(crm: CommandResponseManager)(implicit str
     }
   }
   private def setInFlight(step: Step) =
-    stepList.updateStatus(step.id, InFlight).map { s ⇒
-      stepList = s
+    step.withStatus(InFlight).map { inflightStep ⇒
+      stepList = stepList.updateStep(inflightStep)
       val stepRunId = step.id
       crm.addSubCommand(stepList.runId, stepRunId)
       crm.addOrUpdateCommand(CommandResponse.Started(stepRunId))
       crm.queryFinal(stepRunId).foreach(update)
-      step
+      inflightStep
     }
 
   private[framework] def update(submitResponse: SubmitResponse): Future[Either[UpdateError, StepList]] = async {

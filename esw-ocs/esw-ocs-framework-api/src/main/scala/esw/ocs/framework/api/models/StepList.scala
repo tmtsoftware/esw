@@ -78,7 +78,6 @@ final case class StepList private[models] (runId: Id, steps: List[Step]) { outer
       .getOrElse(Right(this))
   }
 
-  // api changed from prototype (single Id instead of Set[Id]), confirm?
   private[framework] def updateStatus(id: Id, stepStatus: StepStatus): Either[UpdateError, StepList] =
     ifExistAndNotFinished(id) { _ ⇒
       steps
@@ -97,7 +96,7 @@ final case class StepList private[models] (runId: Id, steps: List[Step]) { outer
     pre ::: post.headOption.toList ::: newSteps ::: post.tail
   }
 
-  private def updateStep(step: Step) = updateAll(step.id, _ => step)
+  private[framework] def updateStep(step: Step) = updateAll(step.id, _ => step)
 
   private def updateAll(id: Id, f: Step => Step): StepList =
     copy(runId, steps.map {
