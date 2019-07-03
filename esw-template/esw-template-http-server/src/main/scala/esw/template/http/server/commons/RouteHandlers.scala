@@ -7,9 +7,9 @@ import csw.commons.http.{JsonRejectionHandler, JsonSupport}
 import scala.concurrent.TimeoutException
 import scala.util.control.NonFatal
 
-object RouteExceptionHandlers extends Directives with JsonRejectionHandler {
+object RouteHandlers extends Directives with JsonRejectionHandler {
 
-  implicit def commonHandlers: ExceptionHandler = ExceptionHandler {
+  implicit def commonExceptionHandlers: ExceptionHandler = ExceptionHandler {
     case ex: TimeoutException ⇒
       complete(JsonSupport.asJsonResponse(StatusCodes.GatewayTimeout, ex.getMessage))
     case NonFatal(ex) ⇒

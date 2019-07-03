@@ -4,7 +4,7 @@ import akka.http.scaladsl.model.HttpRequest
 import akka.http.scaladsl.server.Directives._
 import akka.http.scaladsl.server.directives.{DebuggingDirectives, LoggingMagnet}
 import akka.http.scaladsl.server.{Directive0, Route}
-import esw.template.http.server.commons.RouteExceptionHandlers
+import esw.template.http.server.commons.RouteHandlers
 import esw.template.http.server.csw.utils.CswContext
 
 class Routes(cswCtx: CswContext) {
@@ -24,8 +24,10 @@ class Routes(cswCtx: CswContext) {
   private val commandRoutes: Route    = new CommandRoutes(cswCtx).route
 
   def route: Route = routeLogger {
-    handleExceptions(RouteExceptionHandlers.commonHandlers) {
-      commandRoutes ~ eventRoutes
+    handleExceptions(RouteHandlers.commonExceptionHandlers) {
+      handleRejections(RouteHandlers.jsonRejectionHandler) {
+        commandRoutes ~ eventRoutes
+      }
     }
   }
 }

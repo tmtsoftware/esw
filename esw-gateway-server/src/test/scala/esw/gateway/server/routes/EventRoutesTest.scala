@@ -6,6 +6,7 @@ import akka.http.scaladsl.model.{MediaTypes, StatusCodes}
 import akka.http.scaladsl.unmarshalling.sse.EventStreamUnmarshalling._
 import akka.stream.scaladsl.{Sink, Source}
 import akka.{Done, NotUsed}
+import csw.commons.http.ErrorResponse
 import csw.event.api.scaladsl.EventSubscription
 import csw.event.api.scaladsl.SubscriptionModes.RateLimiterMode
 import csw.params.core.models.{Prefix, Subsystem}
@@ -60,6 +61,15 @@ class EventRoutesTest extends HttpTestSuite {
       }
     }
 
+    "get event for event keys gives bad request if keys not provided | ESW-94" in new Setup {
+      import cswMocks._
+
+      Get(s"/event") ~> route ~> check {
+        responseAs[ErrorResponse].error.code shouldBe StatusCodes.BadRequest.intValue
+        responseAs[ErrorResponse].error.message shouldBe "Request is missing query parameter key"
+      }
+    }
+
     "get fail if future fails | ESW-94" in new Setup {
       import cswMocks._
       when(eventSubscriber.get(Set(eventKey1, eventKey2))).thenReturn(Future.failed(new RuntimeException("failed")))
@@ -90,6 +100,15 @@ class EventRoutesTest extends HttpTestSuite {
     }
 
     "/subscribe" must {
+      "subscribe to events for event keys with given frequency should give error response if key not provided" in new Setup {
+        import cswMocks._
+
+        Get(s"/event/subscribe?max-frequency=10") ~> route ~> check {
+          responseAs[ErrorResponse].error.code shouldBe StatusCodes.BadRequest.intValue
+          responseAs[ErrorResponse].error.message shouldBe "Request is missing query parameter key"
+        }
+      }
+
       "subscribe to events for event keys with given frequency" in new Setup {
         import cswMocks._
 
