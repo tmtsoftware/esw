@@ -47,12 +47,13 @@ class CommandRoutes(cswCtx: CswContext) extends JsonSupport with PlayJsonSupport
           get {
             path(Segment) { runId =>
               val responseF = commandService.queryFinal(Id(runId))(Timeout(100.hours))
-              onSuccess(responseF) { response =>
-                complete {
-                  Source
-                    .single(ServerSentEvent(Json.toJson(response).toString()))
-                    .keepAlive(1.second, () => ServerSentEvent.heartbeat)
-                }
+              // onSuccess directive is not used since we want to complete the request with an SSE stream even before the future completes.
+              // This is because in case of long-running commands, future will complete after a long time and the http request will timeout if onSuccess is used.
+              complete {
+                Source
+                  .fromFuture(responseF)
+                  .map(response => ServerSentEvent(Json.toJson(response).toString()))
+                  .keepAlive(1.second, () => ServerSentEvent.heartbeat)
               }
             } ~
             path("current-state" / "subscribe") {

@@ -151,19 +151,6 @@ class CommandRoutesTest extends HttpTestSuite {
         }
       }
 
-      "get error response for command on timeout | ESW-91" in new Setup {
-        import cswMocks._
-        val componentName = "test-component"
-        val runId         = Id("123")
-        when(commandService.queryFinal(any[Id])(any[Timeout])).thenReturn(Future.failed(new TimeoutException("")))
-        when(componentFactory.commandService(componentName, componentType)).thenReturn(Future(commandService))
-
-        Get(s"/command/${testData.componentType}/$componentName/${runId.id}") ~> route ~> check {
-          status shouldBe StatusCodes.GatewayTimeout
-          mediaType shouldBe `application/json`
-        }
-      }
-
       "get current state subscription to all stateNames | ESW-91" in new Setup {
         import cswMocks._
 
