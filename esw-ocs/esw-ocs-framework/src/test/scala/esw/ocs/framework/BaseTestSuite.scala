@@ -13,8 +13,11 @@ trait BaseTestSuite
     with BeforeAndAfterEach
     with ScalaFutures
     with OptionValues
+    with EitherValues
     with Eventually {
   val defaultTimeout: Duration = 10.seconds
+
+  override implicit def patienceConfig: PatienceConfig = PatienceConfig(10.seconds)
 
   implicit class FutureOps[T](f: Future[T]) {
     def await: T = Await.result(f, defaultTimeout)
