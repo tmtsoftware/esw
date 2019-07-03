@@ -2,11 +2,12 @@ lazy val aggregateProjects: Seq[ProjectReference] =
   Seq(
     `esw-ocs`,
     `esw-gateway-server`,
-    `esw-template`
+    `esw-template`,
+    `esw-integration-test`
   )
 
 lazy val githubReleases: Seq[ProjectReference]   = Seq.empty
-lazy val unidocExclusions: Seq[ProjectReference] = Seq.empty
+lazy val unidocExclusions: Seq[ProjectReference] = Seq(`esw-integration-test`)
 
 val enableCoverage         = sys.props.get("enableCoverage").contains("true")
 val MaybeCoverage: Plugins = if (enableCoverage) Coverage else Plugins.empty
@@ -67,6 +68,15 @@ lazy val `esw-gateway-server` = project
     libraryDependencies ++= Dependencies.GatewayServer.value
   )
   .dependsOn(`esw-template-http-server` % "compile->compile;test->test")
+
+lazy val `esw-integration-test` = project
+  .in(file("esw-integration-test"))
+  .settings(libraryDependencies ++= Dependencies.IntegrationTest.value)
+  .settings(fork in Test := true)
+  .dependsOn(
+    `esw-gateway-server`       % "test->compile;test->test",
+    `esw-template-http-server` % "test->compile;test->test"
+  )
 
 /* ================= Paradox Docs ============== */
 lazy val docs = project.enablePlugins(NoPublish, ParadoxSite)

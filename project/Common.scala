@@ -56,7 +56,7 @@ object Common extends AutoPlugin {
       }
     },
     fork := true,
-    fork in Test in test := false,
+    fork in Test := false,
     isSnapshot := !sys.props.get("prod.publish").contains("true"),
     autoCompilerPlugins := true,
     cancelable in Global := true, // allow ongoing test(or any task) to cancel with ctrl + c and still remain inside sbt

@@ -57,4 +57,11 @@ object Dependencies {
       Akka.`akka-stream-testkit`      % Test
     )
   )
+
+  val IntegrationTest = Def.setting(
+    Seq(
+      Csw.`csw-testkit` % Test,
+      Libs.scalatest    % Test
+    )
+  )
 }

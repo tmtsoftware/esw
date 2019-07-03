@@ -1,5 +1,6 @@
 package esw.template.http.server.cli
 
+import com.typesafe.config.ConfigFactory
 import esw.template.http.server.BuildInfo
 import scopt.OptionParser
 
@@ -11,9 +12,10 @@ class ArgsParser(name: String) {
   private val parser: OptionParser[Options] = new scopt.OptionParser[Options](name) {
     head(name, BuildInfo.version)
 
+    private val defaultPort: Int = ConfigFactory.load().getInt("http-server.port")
     opt[Int]("port") action { (x, c) =>
       c.copy(port = Some(x))
-    } text "Optional: Port at which the esw gateway server will start. Default is 6000"
+    } text s"Optional: Port at which the esw gateway server will start. Default is $defaultPort"
 
     help("help")
   }
