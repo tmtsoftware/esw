@@ -26,7 +26,7 @@ class CommandRoutesTest extends HttpTestSuite {
 
   trait Setup {
     val cswMocks                  = new CswContextMocks(actorSystem)
-    implicit val timeout: Timeout = cswMocks.actorRuntime.timeout
+    implicit val timeout: Timeout = 5.seconds
   }
 
   override protected def afterAll(): Unit = {

@@ -10,10 +10,10 @@ import csw.event.client.internal.commons.EventSubscriberUtil
 import csw.logging.api.scaladsl.Logger
 import esw.gateway.server.routes.Routes
 import esw.template.http.server.csw.utils.{ComponentFactory, CswContext}
-import esw.template.http.server.wiring.{ActorRuntime, Settings}
+import esw.template.http.server.wiring.ActorRuntime
 import org.mockito.MockitoSugar
 
-import scala.concurrent.duration.{DurationDouble, FiniteDuration}
+import scala.concurrent.duration.FiniteDuration
 
 class CswContextMocks(system: ActorSystem[SpawnProtocol]) {
 
@@ -22,7 +22,6 @@ class CswContextMocks(system: ActorSystem[SpawnProtocol]) {
   val cswCtx: CswContext         = mock[CswContext]
   val actorRuntime: ActorRuntime = new ActorRuntime(system)
   val logger: Logger             = mock[Logger]
-  val settings: Settings         = mock[Settings]
 
   //command service mocks
   val componentFactory: ComponentFactory = mock[ComponentFactory]
@@ -37,10 +36,6 @@ class CswContextMocks(system: ActorSystem[SpawnProtocol]) {
   val route: Route = new Routes(cswCtx).route
 
   when(cswCtx.logger).thenReturn(logger)
-  when(cswCtx.settings).thenReturn(settings)
-  when(settings.sseHeartbeatDuration).thenReturn(10.seconds)
-  when(cswCtx.actorSystem).thenReturn(system)
-  when(cswCtx.actorRuntime).thenReturn(actorRuntime)
 
   when(cswCtx.componentFactory).thenReturn(componentFactory)
 

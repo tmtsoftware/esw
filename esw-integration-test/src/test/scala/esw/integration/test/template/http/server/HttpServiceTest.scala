@@ -16,8 +16,7 @@ import csw.location.client.scaladsl.HttpLocationServiceFactory
 import csw.network.utils.Networks
 import csw.testkit.LocationTestKit
 import esw.template.http.server.BaseTestSuite
-import esw.template.http.server.csw.utils.CswContext
-import esw.template.http.server.wiring.HttpService
+import esw.template.http.server.wiring.{HttpService, ServerWiring}
 
 import scala.concurrent.Await
 import scala.concurrent.duration.DurationInt
@@ -51,8 +50,11 @@ class HttpServiceTest extends BaseTestSuite {
   "HttpService" must {
     "start the http server and register with location service | ESW-86" in {
       val _servicePort = 4005
-      val cswContext   = new CswContext(Some(_servicePort))
-      import cswContext._
+
+      val wiring = new ServerWiring(Some(_servicePort))
+      import wiring._
+      import wiring.cswCtx._
+
       val httpService             = new HttpService(logger, locationService, route, settings, actorRuntime)
       val (_, registrationResult) = Await.result(httpService.registeredLazyBinding, 5.seconds)
 
@@ -66,8 +68,10 @@ class HttpServiceTest extends BaseTestSuite {
 
     "not register with location service if server binding fails | ESW-86" in {
       val _servicePort = 4452 // Location Service runs on this port
-      val cswContext   = new CswContext(Some(_servicePort))
-      import cswContext._
+      val wiring       = new ServerWiring(Some(_servicePort))
+      import wiring._
+      import wiring.cswCtx._
+
       val httpService = new HttpService(logger, locationService, route, settings, actorRuntime)
 
       a[BindException] shouldBe thrownBy(Await.result(httpService.registeredLazyBinding, 5.seconds))
@@ -76,8 +80,10 @@ class HttpServiceTest extends BaseTestSuite {
 
     "not start server if registration with location service fails | ESW-86" in {
       val _servicePort = 4007
-      val cswContext   = new CswContext(Some(_servicePort))
-      import cswContext._
+      val wiring       = new ServerWiring(Some(_servicePort))
+      import wiring._
+      import wiring.cswCtx._
+
       val httpService = new HttpService(logger, locationService, route, settings, actorRuntime)
 
       Await.result(locationService.register(HttpRegistration(settings.httpConnection, 21212, "")), 5.seconds)

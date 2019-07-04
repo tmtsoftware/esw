@@ -1,17 +1,17 @@
-package esw.gateway.server.routes
+package esw.template.http.server.commons
 
 import akka.http.scaladsl.model.sse.ServerSentEvent
 import akka.stream.scaladsl.Source
 import play.api.libs.json.{Format, Json}
 
-import scala.concurrent.duration.FiniteDuration
+import scala.concurrent.duration.DurationDouble
 
 object RichSourceExt {
   implicit class RichSource[A: Format, B](source: Source[A, B]) {
-    def toSSE(heartbeatDuration: FiniteDuration): Source[ServerSentEvent, B] =
+    def toSSE: Source[ServerSentEvent, B] =
       source
         .map(r => ServerSentEvent(Json.stringify(Json.toJson(r))))
-        .keepAlive(heartbeatDuration, () => ServerSentEvent.heartbeat)
+        .keepAlive(30.seconds, () => ServerSentEvent.heartbeat)
   }
 
 }

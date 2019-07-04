@@ -9,8 +9,10 @@ import esw.template.http.server.csw.utils.CswContext
 
 class Routes(cswCtx: CswContext) {
 
+  import cswCtx._
+
   private val logRequest: HttpRequest ⇒ Unit = req ⇒
-    cswCtx.logger.info(
+    logger.info(
       "HTTP request received",
       Map(
         "url"     → req.uri.toString(),

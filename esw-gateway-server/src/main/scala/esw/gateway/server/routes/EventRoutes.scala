@@ -9,7 +9,7 @@ import csw.params.core.formats.JsonSupport
 import csw.params.core.models.Subsystem
 import csw.params.events.{Event, EventKey}
 import de.heikoseeberger.akkahttpplayjson.PlayJsonSupport
-import esw.gateway.server.routes.RichSourceExt.RichSource
+import esw.template.http.server.commons.RichSourceExt.RichSource
 import esw.template.http.server.csw.utils.CswContext
 
 import scala.concurrent.duration.{DurationLong, FiniteDuration}
@@ -47,7 +47,7 @@ class EventRoutes(cswCtx: CswContext) extends JsonSupport with PlayJsonSupport {
                 complete(
                   subscriber
                     .subscribe(keys.toEventKeys, maxFrequencyToDuration(frequency), RateLimiterMode)
-                    .toSSE(settings.sseHeartbeatDuration)
+                    .toSSE
                 )
               }
             }
@@ -63,7 +63,7 @@ class EventRoutes(cswCtx: CswContext) extends JsonSupport with PlayJsonSupport {
               complete(
                 events
                   .via(eventSubscriberUtil.subscriptionModeStage(maxFrequencyToDuration(frequency), RateLimiterMode))
-                  .toSSE(settings.sseHeartbeatDuration)
+                  .toSSE
               )
             }
           }

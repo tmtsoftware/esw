@@ -12,7 +12,7 @@ import csw.params.core.formats.JsonSupport
 import csw.params.core.models.Id
 import csw.params.core.states.{StateName, StateVariable}
 import de.heikoseeberger.akkahttpplayjson.PlayJsonSupport
-import esw.gateway.server.routes.RichSourceExt.RichSource
+import esw.template.http.server.commons.RichSourceExt.RichSource
 import esw.template.http.server.csw.utils.CswContext
 
 import scala.concurrent.Future
@@ -20,7 +20,8 @@ import scala.concurrent.duration.DurationLong
 
 class CommandRoutes(cswCtx: CswContext) extends JsonSupport with PlayJsonSupport {
   import cswCtx._
-  import actorRuntime._
+
+  implicit val timeout: Timeout = Timeout(5.seconds)
 
   def commandRoutes(componentType: String): Route =
     pathPrefix("command") {
@@ -50,13 +51,13 @@ class CommandRoutes(cswCtx: CswContext) extends JsonSupport with PlayJsonSupport
               val responseF: Future[CommandResponse] = commandService.queryFinal(Id(runId))(Timeout(100.hours))
               // onSuccess directive is not used since we want to complete the request with an SSE stream even before the future completes.
               // This is because in case of long-running commands, future will complete after a long time and the http request will timeout if onSuccess is used.
-              complete(Source.fromFuture(responseF).toSSE(settings.sseHeartbeatDuration))
+              complete(Source.fromFuture(responseF).toSSE)
             } ~
             path("current-state" / "subscribe") {
               parameters("stateName".as[String].*) { stateNames =>
                 val stream: Source[StateVariable, CurrentStateSubscription] =
                   commandService.subscribeCurrentState(stateNames.map(StateName.apply).toSet)
-                complete(stream.toSSE(settings.sseHeartbeatDuration))
+                complete(stream.toSSE)
               }
             }
           }
