@@ -7,7 +7,7 @@ import csw.params.commands.CommandResponse.{Error, Started, SubmitResponse}
 import csw.params.commands.{CommandResponse, SequenceCommand}
 import csw.params.core.models.Id
 import esw.ocs.async.macros.StrandEc
-import esw.ocs.framework.api.models.StepStatus.{Finished, InFlight}
+import esw.ocs.framework.api.models.StepStatus.{Finished, InFlight, Pending}
 import esw.ocs.framework.api.models.messages.SequencerMsg.{ExistingSequenceIsInProcess, ProcessSequenceError}
 import esw.ocs.framework.api.models.messages.StepListError
 import esw.ocs.framework.api.models.messages.StepListError._
@@ -16,17 +16,17 @@ import esw.ocs.framework.dsl.Async.{async, await}
 import esw.ocs.framework.syntax.EitherSyntax._
 
 import scala.concurrent.{ExecutionContext, Future, Promise}
-import scala.util.Success
 import scala.util.control.NonFatal
+import scala.util.{Success, Try}
 
 private[framework] class SequencerImpl(crm: CommandResponseManager)(implicit strandEc: StrandEc, timeout: Timeout)
     extends Sequencer {
   private implicit val singleThreadedEc: ExecutionContext = strandEc.ec
 
-  private var stepList                                                   = StepList.empty
-  private var latestResponse: Option[SubmitResponse]                     = None
-  private var readyToExecuteNextPromise: Option[Promise[Done]]           = None
-  private var stepRefPromise: Option[Promise[Either[UpdateError, Step]]] = None
+  private var stepList                                         = StepList.empty
+  private var latestResponse: Option[SubmitResponse]           = None
+  private var readyToExecuteNextPromise: Option[Promise[Done]] = None
+  private var stepRefPromise: Option[Promise[Step]]            = None
 
   private val emptyChildId = Id("empty-child")
 
@@ -46,12 +46,12 @@ private[framework] class SequencerImpl(crm: CommandResponseManager)(implicit str
       else Left(ExistingSequenceIsInProcess)
     }
 
-  // fixme: see if it can return Future[Steps]?
-  override def pullNext(): Future[Either[UpdateError, Step]] = async {
+  override def pullNext(): Future[Step] = async {
     stepList.nextExecutable match {
-      case Some(step) ⇒ setInFlight(step)
+      // step.isPending check is actually not required, but kept here in case impl of nextExecutable gets changed
+      case Some(step) if step.isPending ⇒ setInFlight(Pending, step)
       case None ⇒
-        val p = Promise[Either[UpdateError, Step]]()
+        val p = Promise[Step]()
         stepRefPromise = Some(p)
         await(p.future)
     }
@@ -83,15 +83,18 @@ private[framework] class SequencerImpl(crm: CommandResponseManager)(implicit str
       await(p.future)
     }
   }
-  private def setInFlight(step: Step) =
-    step.withStatus(InFlight).map { inflightStep ⇒
-      stepList = stepList.updateStep(inflightStep)
-      val stepRunId = step.id
-      crm.addSubCommand(stepList.runId, stepRunId)
-      crm.addOrUpdateCommand(CommandResponse.Started(stepRunId))
-      processSubmitResponse(stepRunId, crm.queryFinal(stepRunId))
-      inflightStep
-    }
+
+  // this method gets called from places where it is already checked that step is in pending status
+  // oldStatus uses singleton type just to give hint to caller that setting InFlight only applicable to Pending step
+  private def setInFlight(oldStatus: Pending.type, step: Step) = {
+    val inflightStep = step.withStatus(oldStatus, InFlight)
+    stepList = stepList.updateStep(inflightStep)
+    val stepRunId = step.id
+    crm.addSubCommand(stepList.runId, stepRunId)
+    crm.addOrUpdateCommand(CommandResponse.Started(stepRunId))
+    processSubmitResponse(stepRunId, crm.queryFinal(stepRunId))
+    inflightStep
+  }
 
   private def processSubmitResponse(stepId: Id, submitResponseF: Future[SubmitResponse]) =
     submitResponseF
@@ -138,8 +141,9 @@ private[framework] class SequencerImpl(crm: CommandResponseManager)(implicit str
     for {
       ref  <- stepRefPromise
       step <- stepList.nextExecutable
+      if step.isPending
     } {
-      ref.complete(Success(setInFlight(step)))
+      ref.complete(Try(setInFlight(Pending, step)))
       stepRefPromise = None
     }
 

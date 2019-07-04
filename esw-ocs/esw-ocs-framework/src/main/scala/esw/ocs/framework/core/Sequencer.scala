@@ -13,8 +13,7 @@ trait Sequencer {
   def processSequence(sequence: Sequence): Future[Either[ProcessSequenceError, CommandResponse.SubmitResponse]]
 
   def mayBeNext: Future[Option[Step]]
-  // fixme: see if it can return Future[Steps]?
-  def pullNext(): Future[Either[UpdateError, Step]]
+  def pullNext(): Future[Step]
   def getSequence: Future[StepList]
   def readyToExecuteNext(): Future[Done]
 

@@ -28,6 +28,9 @@ case class Step private[models] (command: SequenceCommand, status: StepStatus, h
       case (Pending, InFlight) | (InFlight, _: Finished) => Right(copy(status = newStatus))
       case (from, to)                                    => Left(UpdateNotSupported(from, to))
     }
+
+  // special case to simplify types in SequencerImpl
+  private[framework] def withStatus(oldStatus: Pending.type, newStatus: InFlight.type): Step = copy(status = newStatus)
 }
 
 object Step {

@@ -62,8 +62,8 @@ class SequencerImplTest extends BaseTestSuite with MockitoSugar {
       val res1    = pulled1.futureValue
       val res2    = pulled2.futureValue
 
-      res1.right.value.command shouldBe command1
-      res2.right.value.command shouldBe command2
+      res1.command shouldBe command1
+      res2.command shouldBe command2
 
       processResponse.rightValue shouldBe cmd2Response
       val finalResp = sequencer.getSequence.futureValue
@@ -95,7 +95,7 @@ class SequencerImplTest extends BaseTestSuite with MockitoSugar {
       val cmd1Response = Completed(command1.runId)
       when(crmMock.queryFinal(command1.runId)).thenAnswer(_ ⇒ queryResponse(cmd1Response, latch))
       sequencer.processSequence(sequence)
-      sequencer.pullNext().rightValue shouldBe Step(command1, InFlight, hasBreakpoint = false)
+      sequencer.pullNext().futureValue shouldBe Step(command1, InFlight, hasBreakpoint = false)
 
       sequencer.mayBeNext.futureValue shouldBe None
     }
@@ -137,7 +137,7 @@ class SequencerImplTest extends BaseTestSuite with MockitoSugar {
 
       val res1  = sequencer.pullNext().futureValue
       val step1 = Step(command1, InFlight, hasBreakpoint = false)
-      res1.right.value shouldBe step1
+      res1 shouldBe step1
 
       val pausedSequence = sequencer.pause.rightValue
       pausedSequence.isPaused shouldBe true
@@ -168,7 +168,7 @@ class SequencerImplTest extends BaseTestSuite with MockitoSugar {
 
       val res1  = sequencer.pullNext().futureValue
       val step1 = Step(command1, InFlight, hasBreakpoint = false)
-      res1.right.value shouldBe step1
+      res1 shouldBe step1
 
       val pausedSequence = sequencer.pause.rightValue
       pausedSequence.isPaused shouldBe true
