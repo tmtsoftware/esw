@@ -23,4 +23,9 @@ trait BaseTestSuite
     def await: T = Await.result(f, defaultTimeout)
   }
 
+  implicit class FutureEitherOps[E, R](futureEither: Future[Either[E, R]]) {
+    def rightValue: R = futureEither.futureValue.right.value
+    def leftValue: E  = futureEither.futureValue.left.value
+  }
+
 }
