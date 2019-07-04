@@ -2,7 +2,6 @@ package esw.ocs.framework.core
 
 import akka.Done
 import akka.util.Timeout
-import cats.implicits._
 import csw.command.client.CommandResponseManager
 import csw.params.commands.CommandResponse.{Error, Started, SubmitResponse}
 import csw.params.commands.{CommandResponse, SequenceCommand}
@@ -14,6 +13,7 @@ import esw.ocs.framework.api.models.messages.StepListError
 import esw.ocs.framework.api.models.messages.StepListError._
 import esw.ocs.framework.api.models.{Sequence, Step, StepList, StepStatus}
 import esw.ocs.framework.dsl.Async.{async, await}
+import esw.ocs.framework.syntax.EitherSyntax._
 
 import scala.concurrent.{ExecutionContext, Future, Promise}
 import scala.util.Success
