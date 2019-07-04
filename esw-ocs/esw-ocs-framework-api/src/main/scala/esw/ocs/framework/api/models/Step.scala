@@ -8,9 +8,13 @@ import esw.ocs.framework.api.models.messages.StepListError.{AddingBreakpointNotS
 case class StepResult(isSuccessful: Boolean, step: Step)
 
 case class Step private[models] (command: SequenceCommand, status: StepStatus, hasBreakpoint: Boolean) {
-  def id: Id              = command.runId
-  def isPending: Boolean  = status == StepStatus.Pending
-  def isFinished: Boolean = status == StepStatus.Finished
+  def id: Id             = command.runId
+  def isPending: Boolean = status == StepStatus.Pending
+  def isFinished: Boolean = status match {
+    case _: Finished ⇒ true
+    case _           ⇒ false
+  }
+
   def isInFlight: Boolean = status == StepStatus.InFlight
 
   def addBreakpoint(): Either[AddingBreakpointNotSupported, Step] =
@@ -21,8 +25,8 @@ case class Step private[models] (command: SequenceCommand, status: StepStatus, h
 
   def withStatus(newStatus: StepStatus): Either[UpdateNotSupported, Step] =
     (status, newStatus) match {
-      case (Pending, InFlight) | (InFlight, Finished) => Right(copy(status = newStatus))
-      case (from, to)                                 => Left(UpdateNotSupported(from, to))
+      case (Pending, InFlight) | (InFlight, _: Finished) => Right(copy(status = newStatus))
+      case (from, to)                                    => Left(UpdateNotSupported(from, to))
     }
 }
 

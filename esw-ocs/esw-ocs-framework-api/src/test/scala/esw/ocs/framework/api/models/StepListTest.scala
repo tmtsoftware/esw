@@ -1,5 +1,6 @@
 package esw.ocs.framework.api.models
 
+import csw.params.commands.CommandResponse.Completed
 import csw.params.commands._
 import csw.params.core.models.{Id, Prefix}
 import esw.ocs.framework.api.BaseTestSuite
@@ -8,6 +9,7 @@ import esw.ocs.framework.api.models.messages.SequencerMsg.DuplicateIdsFound
 import esw.ocs.framework.api.models.messages.StepListError._
 
 class StepListTest extends BaseTestSuite {
+  def finished(id: Id) = Finished.Success(Completed(id))
 
   "empty" must {
     "create empty StepList" in {
@@ -48,7 +50,7 @@ class StepListTest extends BaseTestSuite {
     "return none when no pending step present" in {
       val setup1 = Setup(Prefix("ocs.move1"), CommandName("test1"), None)
       val setup2 = Setup(Prefix("ocs.move2"), CommandName("test2"), None)
-      val step1  = Step(setup1, Finished, hasBreakpoint = false)
+      val step1  = Step(setup1, finished(setup1.runId), hasBreakpoint = false)
       val step2  = Step(setup2, InFlight, hasBreakpoint = false)
 
       val stepList = StepList(Id(), List(step1, step2))
@@ -98,7 +100,7 @@ class StepListTest extends BaseTestSuite {
     }
 
     "return false when no InFlight step exist" in {
-      val step1 = Step(setup1, Finished, hasBreakpoint = false)
+      val step1 = Step(setup1, finished(setup1.runId), hasBreakpoint = false)
       val step2 = Step(setup2, Pending, hasBreakpoint = false)
 
       val stepList = StepList(Id(), List(step1, step2))
@@ -137,25 +139,51 @@ class StepListTest extends BaseTestSuite {
     val setup2 = Setup(Prefix("ocs.move2"), CommandName("test2"), None)
 
     // todo: revisit this
-    "return true when StepList is empty" in {
+    "return false when StepList is empty" in {
       val stepList = StepList(Id(), Nil)
-      stepList.isFinished shouldBe true
+      stepList.isFinished shouldBe false
     }
 
     "return true when all steps are Finished" in {
-      val step1 = Step(setup1, Finished, hasBreakpoint = false)
-      val step2 = Step(setup2, Finished, hasBreakpoint = false)
+      val step1 = Step(setup1, finished(setup1.runId), hasBreakpoint = false)
+      val step2 = Step(setup2, finished(setup2.runId), hasBreakpoint = false)
 
       val stepList = StepList(Id(), List(step1, step2))
       stepList.isFinished shouldBe true
     }
 
     "return false when any step is not Finished" in {
-      val step1 = Step(setup1, Finished, hasBreakpoint = false)
+      val step1 = Step(setup1, finished(setup1.runId), hasBreakpoint = false)
       val step2 = Step(setup2, InFlight, hasBreakpoint = false)
 
       val stepList = StepList(Id(), List(step1, step2))
       stepList.isFinished shouldBe false
+    }
+  }
+
+  "isAvailable" must {
+    val setup1 = Setup(Prefix("ocs.move1"), CommandName("test1"), None)
+    val setup2 = Setup(Prefix("ocs.move2"), CommandName("test2"), None)
+
+    "return true when StepList is empty" in {
+      val stepList = StepList(Id(), Nil)
+      stepList.isAvailable shouldBe true
+    }
+
+    "return true when all steps are Finished" in {
+      val step1 = Step(setup1, finished(setup1.runId), hasBreakpoint = false)
+      val step2 = Step(setup2, finished(setup2.runId), hasBreakpoint = false)
+
+      val stepList = StepList(Id(), List(step1, step2))
+      stepList.isAvailable shouldBe true
+    }
+
+    "return false when any step is not Finished" in {
+      val step1 = Step(setup1, finished(setup1.runId), hasBreakpoint = false)
+      val step2 = Step(setup2, InFlight, hasBreakpoint = false)
+
+      val stepList = StepList(Id(), List(step1, step2))
+      stepList.isAvailable shouldBe false
     }
   }
 
@@ -178,14 +206,16 @@ class StepListTest extends BaseTestSuite {
     }
 
     "fail with ReplaceNotSupportedInStatus error when Id matches and is not in Pending status" in {
-      val step1 = Step(setup1, Finished, hasBreakpoint = false)
-      val step2 = Step(setup2, Finished, hasBreakpoint = false)
-      val step3 = Step(setup3, Pending, hasBreakpoint = false)
+      val step1Status = finished(setup1.runId)
+      val step2Status = finished(setup2.runId)
+      val step1       = Step(setup1, step1Status, hasBreakpoint = false)
+      val step2       = Step(setup2, step2Status, hasBreakpoint = false)
+      val step3       = Step(setup3, Pending, hasBreakpoint = false)
 
       val stepList        = StepList(Id(), List(step1, step2, step3))
       val id              = setup2.runId
       val updatedStepList = stepList.replace(id, List(setup4, setup5))
-      updatedStepList.left.value shouldBe ReplaceNotSupported(Finished)
+      updatedStepList.left.value shouldBe ReplaceNotSupported(step2Status)
     }
 
     "fail with IdDoesNotExist error when provided Id does't exist in StepList" in {
@@ -200,8 +230,8 @@ class StepListTest extends BaseTestSuite {
     }
 
     "fail with NotAllowedOnFinishedSeq error when StepList is finished" in {
-      val step1 = Step(setup1, Finished, hasBreakpoint = false)
-      val step2 = Step(setup2, Finished, hasBreakpoint = false)
+      val step1 = Step(setup1, finished(setup1.runId), hasBreakpoint = false)
+      val step2 = Step(setup2, finished(setup2.runId), hasBreakpoint = false)
 
       val id              = Id()
       val stepList        = StepList(id, List(step1, step2))
@@ -237,8 +267,8 @@ class StepListTest extends BaseTestSuite {
     }
 
     "fail with NotAllowedOnFinishedSeq error when StepList is finished" in {
-      val step1 = Step(setup1, Finished, hasBreakpoint = false)
-      val step2 = Step(setup2, Finished, hasBreakpoint = false)
+      val step1 = Step(setup1, finished(setup1.runId), hasBreakpoint = false)
+      val step2 = Step(setup2, finished(setup2.runId), hasBreakpoint = false)
 
       val stepList        = StepList(Id(), List(step1, step2))
       val updatedStepList = stepList.prepend(List(setup3))
@@ -264,8 +294,8 @@ class StepListTest extends BaseTestSuite {
     }
 
     "fail with NotAllowedOnFinishedSeq error when StepList is finished" in {
-      val step1 = Step(setup1, Finished, hasBreakpoint = false)
-      val step2 = Step(setup2, Finished, hasBreakpoint = false)
+      val step1 = Step(setup1, finished(setup1.runId), hasBreakpoint = false)
+      val step2 = Step(setup2, finished(setup2.runId), hasBreakpoint = false)
 
       val stepList        = StepList(Id(), List(step1, step2))
       val updatedStepList = stepList.append(List(setup3))
@@ -279,7 +309,7 @@ class StepListTest extends BaseTestSuite {
     val setup3 = Setup(Prefix("ocs.move3"), CommandName("test3"), None)
 
     "delete provided id when step status is Pending" in {
-      val step1 = Step(setup1, Finished, hasBreakpoint = false)
+      val step1 = Step(setup1, finished(setup1.runId), hasBreakpoint = false)
       val step2 = Step(setup2, Pending, hasBreakpoint = false)
       val step3 = Step(setup3, InFlight, hasBreakpoint = false)
 
@@ -308,8 +338,8 @@ class StepListTest extends BaseTestSuite {
     }
 
     "fail with NotAllowedOnFinishedSeq error when StepList is finished" in {
-      val step1 = Step(setup1, Finished, hasBreakpoint = false)
-      val step2 = Step(setup2, Finished, hasBreakpoint = false)
+      val step1 = Step(setup1, finished(setup1.runId), hasBreakpoint = false)
+      val step2 = Step(setup2, finished(setup2.runId), hasBreakpoint = false)
 
       val id              = Id()
       val stepList        = StepList(id, List(step1, step2))
@@ -325,7 +355,7 @@ class StepListTest extends BaseTestSuite {
     val setup4 = Setup(Prefix("ocs.move4"), CommandName("test4"), None)
 
     "insert provided commands after given Id" in {
-      val step1 = Step(setup1, Finished, hasBreakpoint = false)
+      val step1 = Step(setup1, finished(setup1.runId), hasBreakpoint = false)
       val step2 = Step(setup2, Pending, hasBreakpoint = false)
 
       val id              = Id()
@@ -346,8 +376,8 @@ class StepListTest extends BaseTestSuite {
     }
 
     "fail with NotAllowedOnFinishedSeq error when StepList is finished" in {
-      val step1 = Step(setup1, Finished, hasBreakpoint = false)
-      val step2 = Step(setup2, Finished, hasBreakpoint = false)
+      val step1 = Step(setup1, finished(setup1.runId), hasBreakpoint = false)
+      val step2 = Step(setup2, finished(setup2.runId), hasBreakpoint = false)
 
       val id              = Id()
       val stepList        = StepList(id, List(step1, step2))
@@ -363,7 +393,7 @@ class StepListTest extends BaseTestSuite {
     val setup4 = Setup(Prefix("ocs.move4"), CommandName("test4"), None)
 
     "discard all the pending steps from StepList" in {
-      val step1 = Step(setup1, Finished, hasBreakpoint = false)
+      val step1 = Step(setup1, finished(setup1.runId), hasBreakpoint = false)
       val step2 = Step(setup2, Pending, hasBreakpoint = false)
       val step3 = Step(setup3, InFlight, hasBreakpoint = false)
       val step4 = Step(setup4, Pending, hasBreakpoint = false)
@@ -375,8 +405,8 @@ class StepListTest extends BaseTestSuite {
     }
 
     "fail with NotAllowedOnFinishedSeq error when StepList is finished" in {
-      val step1 = Step(setup1, Finished, hasBreakpoint = false)
-      val step2 = Step(setup2, Finished, hasBreakpoint = false)
+      val step1 = Step(setup1, finished(setup1.runId), hasBreakpoint = false)
+      val step2 = Step(setup2, finished(setup2.runId), hasBreakpoint = false)
 
       val id              = Id()
       val stepList        = StepList(id, List(step1, step2))
@@ -390,7 +420,7 @@ class StepListTest extends BaseTestSuite {
     val setup2 = Setup(Prefix("ocs.move2"), CommandName("test2"), None)
 
     "add breakpoint to provided id when step status is Pending" in {
-      val step1 = Step(setup1, Finished, hasBreakpoint = false)
+      val step1 = Step(setup1, finished(setup1.runId), hasBreakpoint = false)
       val step2 = Step(setup2, Pending, hasBreakpoint = false)
 
       val id              = Id()
@@ -409,8 +439,8 @@ class StepListTest extends BaseTestSuite {
     }
 
     "fail with NotAllowedOnFinishedSeq error when StepList is finished" in {
-      val step1 = Step(setup1, Finished, hasBreakpoint = false)
-      val step2 = Step(setup2, Finished, hasBreakpoint = false)
+      val step1 = Step(setup1, finished(setup1.runId), hasBreakpoint = false)
+      val step2 = Step(setup2, finished(setup2.runId), hasBreakpoint = false)
 
       val id              = Id()
       val stepList        = StepList(id, List(step1, step2))
@@ -424,7 +454,7 @@ class StepListTest extends BaseTestSuite {
     val setup2 = Setup(Prefix("ocs.move2"), CommandName("test2"), None)
 
     "remove breakpoint from provided id" in {
-      val step1 = Step(setup1, Finished, hasBreakpoint = false)
+      val step1 = Step(setup1, finished(setup1.runId), hasBreakpoint = false)
       val step2 = Step(setup2, Pending, hasBreakpoint = true)
 
       val id              = Id()
@@ -443,8 +473,8 @@ class StepListTest extends BaseTestSuite {
     }
 
     "fail with NotAllowedOnFinishedSeq error when StepList is finished" in {
-      val step1 = Step(setup1, Finished, hasBreakpoint = true)
-      val step2 = Step(setup2, Finished, hasBreakpoint = false)
+      val step1 = Step(setup1, finished(setup1.runId), hasBreakpoint = true)
+      val step2 = Step(setup2, finished(setup2.runId), hasBreakpoint = false)
 
       val id              = Id()
       val stepList        = StepList(id, List(step1, step2))
@@ -460,7 +490,7 @@ class StepListTest extends BaseTestSuite {
     val setup4 = Setup(Prefix("ocs.move4"), CommandName("test4"), None)
 
     "add breakpoint to next pending step" in {
-      val step1 = Step(setup1, Finished, hasBreakpoint = false)
+      val step1 = Step(setup1, finished(setup1.runId), hasBreakpoint = false)
       val step2 = Step(setup2, InFlight, hasBreakpoint = false)
       val step3 = Step(setup3, Pending, hasBreakpoint = false)
       val step4 = Step(setup4, Pending, hasBreakpoint = false)
@@ -472,7 +502,7 @@ class StepListTest extends BaseTestSuite {
     }
 
     "fail with PauseFailed error when Pending step doesn't exist in StepList" in {
-      val step1 = Step(setup1, Finished, hasBreakpoint = false)
+      val step1 = Step(setup1, finished(setup1.runId), hasBreakpoint = false)
       val step2 = Step(setup2, InFlight, hasBreakpoint = false)
 
       val stepList        = StepList(Id(), List(step1, step2))
@@ -481,8 +511,8 @@ class StepListTest extends BaseTestSuite {
     }
 
     "fail with NotAllowedOnFinishedSeq error when StepList is finished" in {
-      val step1 = Step(setup1, Finished, hasBreakpoint = true)
-      val step2 = Step(setup2, Finished, hasBreakpoint = false)
+      val step1 = Step(setup1, finished(setup1.runId), hasBreakpoint = true)
+      val step2 = Step(setup2, finished(setup2.runId), hasBreakpoint = false)
 
       val stepList        = StepList(Id(), List(step1, step2))
       val updatedStepList = stepList.pause
@@ -496,7 +526,7 @@ class StepListTest extends BaseTestSuite {
     val setup3 = Setup(Prefix("ocs.move3"), CommandName("test3"), None)
 
     "remove breakpoint from next pending step" in {
-      val step1 = Step(setup1, Finished, hasBreakpoint = false)
+      val step1 = Step(setup1, finished(setup1.runId), hasBreakpoint = false)
       val step2 = Step(setup2, InFlight, hasBreakpoint = false)
       val step3 = Step(setup3, Pending, hasBreakpoint = true)
 
@@ -507,7 +537,7 @@ class StepListTest extends BaseTestSuite {
     }
 
     "be no-op when Pending step doesn't exist in StepList" in {
-      val step1 = Step(setup1, Finished, hasBreakpoint = false)
+      val step1 = Step(setup1, finished(setup1.runId), hasBreakpoint = false)
       val step2 = Step(setup2, InFlight, hasBreakpoint = false)
 
       val stepList        = StepList(Id(), List(step1, step2))
@@ -516,8 +546,8 @@ class StepListTest extends BaseTestSuite {
     }
 
     "fail with NotAllowedOnFinishedSeq error when StepList is finished" in {
-      val step1 = Step(setup1, Finished, hasBreakpoint = true)
-      val step2 = Step(setup2, Finished, hasBreakpoint = false)
+      val step1 = Step(setup1, finished(setup1.runId), hasBreakpoint = true)
+      val step2 = Step(setup2, finished(setup2.runId), hasBreakpoint = false)
 
       val stepList        = StepList(Id(), List(step1, step2))
       val updatedStepList = stepList.resume
@@ -531,14 +561,15 @@ class StepListTest extends BaseTestSuite {
     val setup3 = Setup(Prefix("ocs.move3"), CommandName("test3"), None)
 
     "update status of step matching provided Id with given status" in {
-      val step1 = Step(setup1, Finished, hasBreakpoint = false)
+      val step1 = Step(setup1, finished(setup1.runId), hasBreakpoint = false)
       val step2 = Step(setup2, InFlight, hasBreakpoint = false)
       val step3 = Step(setup3, Pending, hasBreakpoint = false)
 
       val id               = Id()
       val stepList         = StepList(id, List(step1, step2, step3))
-      val updatedStepList1 = stepList.updateStatus(setup2.runId, Finished)
-      val updatedStep2     = step2.copy(status = Finished)
+      val step2Status      = finished(setup2.runId)
+      val updatedStepList1 = stepList.updateStatus(setup2.runId, step2Status)
+      val updatedStep2     = step2.copy(status = step2Status)
       updatedStepList1.right.value shouldBe StepList(id, List(step1, updatedStep2, step3))
 
       val updatedStepList2 = updatedStepList1.right.value.updateStatus(setup3.runId, InFlight)
@@ -547,16 +578,17 @@ class StepListTest extends BaseTestSuite {
     }
 
     "fail with UpdateFailed error when step status transition not allowed" in {
-      val step1 = Step(setup1, Finished, hasBreakpoint = false)
+      val step1 = Step(setup1, finished(setup1.runId), hasBreakpoint = false)
       val step2 = Step(setup2, Pending, hasBreakpoint = false)
 
       val stepList        = StepList(Id(), List(step1, step2))
-      val updatedStepList = stepList.updateStatus(setup2.runId, Finished)
-      updatedStepList.left.value shouldBe UpdateNotSupported(Pending, Finished)
+      val step2Status     = finished(setup2.runId)
+      val updatedStepList = stepList.updateStatus(setup2.runId, step2Status)
+      updatedStepList.left.value shouldBe UpdateNotSupported(Pending, step2Status)
     }
 
     "fail with IdDoesNotExist error when provided Id does't exist in StepList" in {
-      val step1 = Step(setup1, Finished, hasBreakpoint = false)
+      val step1 = Step(setup1, finished(setup1.runId), hasBreakpoint = false)
       val step2 = Step(setup2, Pending, hasBreakpoint = false)
 
       val stepList        = StepList(Id(), List(step1, step2))
@@ -567,13 +599,14 @@ class StepListTest extends BaseTestSuite {
     }
 
     "fail with NotAllowedOnFinishedSeq error when StepList is finished" in {
-      val step1 = Step(setup1, Finished, hasBreakpoint = false)
-      val step2 = Step(setup2, Finished, hasBreakpoint = false)
+      val step1Status = finished(setup1.runId)
+      val step2Status = finished(setup2.runId)
+      val step1       = Step(setup1, step1Status, hasBreakpoint = false)
+      val step2       = Step(setup2, step2Status, hasBreakpoint = false)
 
       val stepList        = StepList(Id(), List(step1, step2))
-      val updatedStepList = stepList.updateStatus(setup2.runId, Finished)
+      val updatedStepList = stepList.updateStatus(setup2.runId, step2Status)
       updatedStepList.left.value shouldBe NotAllowedOnFinishedSeq
     }
   }
-
 }

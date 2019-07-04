@@ -1,12 +1,14 @@
 package esw.ocs.framework.api.models
 
+import csw.params.commands.CommandResponse.Completed
 import csw.params.commands.{CommandName, Setup}
-import csw.params.core.models.Prefix
+import csw.params.core.models.{Id, Prefix}
 import esw.ocs.framework.api.BaseTestSuite
 import esw.ocs.framework.api.models.StepStatus.{Finished, InFlight, Pending}
 import esw.ocs.framework.api.models.messages.StepListError.{AddingBreakpointNotSupported, UpdateNotSupported}
 
 class StepTest extends BaseTestSuite {
+  def finished(id: Id) = Finished.Success(Completed(id))
 
   "apply" must {
     "create new step from provided command" in {
@@ -48,9 +50,10 @@ class StepTest extends BaseTestSuite {
   }
 
   "isFinished" must {
+
     "return true when step status is Finished" in {
       val setup = Setup(Prefix("test"), CommandName("test"), None)
-      val step  = Step(setup, Finished, hasBreakpoint = false)
+      val step  = Step(setup, finished(setup.runId), hasBreakpoint = false)
       step.isFinished shouldBe true
       step.isInFlight shouldBe false
       step.isPending shouldBe false
@@ -74,9 +77,9 @@ class StepTest extends BaseTestSuite {
 
     "not not add breakpoint when step status is Finished" in {
       val setup      = Setup(Prefix("test"), CommandName("test"), None)
-      val step       = Step(setup, Finished, hasBreakpoint = false)
+      val step       = Step(setup, finished(setup.runId), hasBreakpoint = false)
       val stepResult = step.addBreakpoint()
-      stepResult.left.value shouldBe AddingBreakpointNotSupported(Finished)
+      stepResult.left.value shouldBe AddingBreakpointNotSupported(finished(setup.runId))
     }
   }
 
@@ -105,10 +108,11 @@ class StepTest extends BaseTestSuite {
     }
 
     "change the status to Finished from InFlight " in {
-      val setup      = Setup(Prefix("test"), CommandName("test"), None)
-      val step       = Step(setup, InFlight, hasBreakpoint = true)
-      val stepResult = step.withStatus(Finished)
-      stepResult.right.value.status shouldBe Finished
+      val setup            = Setup(Prefix("test"), CommandName("test"), None)
+      val step             = Step(setup, InFlight, hasBreakpoint = true)
+      val finishedResponse = finished(setup.runId)
+      val stepResult       = step.withStatus(finishedResponse)
+      stepResult.right.value.status shouldBe finishedResponse
     }
 
     "fail for invalid status transitions" in {

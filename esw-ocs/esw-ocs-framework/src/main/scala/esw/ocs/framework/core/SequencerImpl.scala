@@ -4,7 +4,7 @@ import akka.Done
 import akka.util.Timeout
 import cats.implicits._
 import csw.command.client.CommandResponseManager
-import csw.params.commands.CommandResponse.{Started, SubmitResponse}
+import csw.params.commands.CommandResponse.{Error, Started, SubmitResponse}
 import csw.params.commands.{CommandResponse, SequenceCommand}
 import csw.params.core.models.Id
 import esw.ocs.async.macros.StrandEc
@@ -12,11 +12,12 @@ import esw.ocs.framework.api.models.StepStatus.{Finished, InFlight}
 import esw.ocs.framework.api.models.messages.SequencerMsg.{ExistingSequenceIsInProcess, ProcessSequenceError}
 import esw.ocs.framework.api.models.messages.StepListError
 import esw.ocs.framework.api.models.messages.StepListError._
-import esw.ocs.framework.api.models.{Sequence, Step, StepList}
+import esw.ocs.framework.api.models.{Sequence, Step, StepList, StepStatus}
 import esw.ocs.framework.dsl.Async.{async, await}
 
 import scala.concurrent.{ExecutionContext, Future, Promise}
 import scala.util.Success
+import scala.util.control.NonFatal
 
 private[framework] class SequencerImpl(crm: CommandResponseManager)(implicit strandEc: StrandEc, timeout: Timeout)
     extends Sequencer {
@@ -31,7 +32,7 @@ private[framework] class SequencerImpl(crm: CommandResponseManager)(implicit str
 
   def processSequence(sequence: Sequence): Future[Either[ProcessSequenceError, SubmitResponse]] =
     async {
-      if (stepList.isFinished)
+      if (stepList.isAvailable)
         await(
           StepList(sequence)
             .traverse { sl ⇒
@@ -88,13 +89,26 @@ private[framework] class SequencerImpl(crm: CommandResponseManager)(implicit str
       val stepRunId = step.id
       crm.addSubCommand(stepList.runId, stepRunId)
       crm.addOrUpdateCommand(CommandResponse.Started(stepRunId))
-      crm.queryFinal(stepRunId).foreach(update)
+      processSubmitResponse(stepRunId, crm.queryFinal(stepRunId))
       inflightStep
     }
 
-  private[framework] def update(submitResponse: SubmitResponse): Future[Either[UpdateError, StepList]] = async {
+  private def processSubmitResponse(stepId: Id, submitResponseF: Future[SubmitResponse]) =
+    submitResponseF
+      .flatMap {
+        case submitResponse if CommandResponse.isPositive(submitResponse) ⇒
+          update(submitResponse, Finished.Success(submitResponse))
+        case submitResponse ⇒ update(submitResponse, Finished.Failure(submitResponse))
+      }
+      .recoverWith {
+        case NonFatal(e) ⇒
+          val errorResponse = Error(stepId, e.getMessage)
+          update(errorResponse, Finished.Failure(errorResponse))
+      }
+
+  private def update(submitResponse: SubmitResponse, stepStatus: StepStatus) = async {
     crm.updateSubCommand(CommandResponse.withRunId(submitResponse.runId, submitResponse))
-    val updateStatusResult = stepList.updateStatus(submitResponse.runId, Finished)
+    val updateStatusResult = stepList.updateStatus(submitResponse.runId, stepStatus)
     updateStatusResult.foreach { s ⇒
       stepList = s
       latestResponse = Some(submitResponse)
