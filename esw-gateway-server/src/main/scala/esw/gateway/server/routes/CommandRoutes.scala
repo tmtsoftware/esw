@@ -1,20 +1,21 @@
 package esw.gateway.server.routes
 
 import akka.http.scaladsl.marshalling.sse.EventStreamMarshalling._
-import akka.http.scaladsl.model.sse.ServerSentEvent
 import akka.http.scaladsl.server.Directives.{entity, _}
 import akka.http.scaladsl.server.Route
 import akka.stream.scaladsl.Source
 import akka.util.Timeout
+import csw.command.api.CurrentStateSubscription
 import csw.location.api.models.ComponentType
-import csw.params.commands.ControlCommand
+import csw.params.commands.{CommandResponse, ControlCommand}
 import csw.params.core.formats.JsonSupport
 import csw.params.core.models.Id
-import csw.params.core.states.StateName
+import csw.params.core.states.{StateName, StateVariable}
 import de.heikoseeberger.akkahttpplayjson.PlayJsonSupport
+import esw.gateway.server.routes.RichSourceExt.RichSource
 import esw.template.http.server.csw.utils.CswContext
-import play.api.libs.json.Json
 
+import scala.concurrent.Future
 import scala.concurrent.duration.DurationLong
 
 class CommandRoutes(cswCtx: CswContext) extends JsonSupport with PlayJsonSupport {
@@ -46,24 +47,16 @@ class CommandRoutes(cswCtx: CswContext) extends JsonSupport with PlayJsonSupport
           } ~
           get {
             path(Segment) { runId =>
-              val responseF = commandService.queryFinal(Id(runId))(Timeout(100.hours))
+              val responseF: Future[CommandResponse] = commandService.queryFinal(Id(runId))(Timeout(100.hours))
               // onSuccess directive is not used since we want to complete the request with an SSE stream even before the future completes.
               // This is because in case of long-running commands, future will complete after a long time and the http request will timeout if onSuccess is used.
-              complete {
-                Source
-                  .fromFuture(responseF)
-                  .map(response => ServerSentEvent(Json.toJson(response).toString()))
-                  .keepAlive(1.second, () => ServerSentEvent.heartbeat)
-              }
+              complete(Source.fromFuture(responseF).toSSE(settings.sseHeartbeatDuration))
             } ~
             path("current-state" / "subscribe") {
               parameters("stateName".as[String].*) { stateNames =>
-                complete {
-                  commandService
-                    .subscribeCurrentState(stateNames.map(StateName.apply).toSet)
-                    .map(state => ServerSentEvent(Json.toJson(state).toString()))
-                    .keepAlive(1.second, () => ServerSentEvent.heartbeat)
-                }
+                val stream: Source[StateVariable, CurrentStateSubscription] =
+                  commandService.subscribeCurrentState(stateNames.map(StateName.apply).toSet)
+                complete(stream.toSSE(settings.sseHeartbeatDuration))
               }
             }
           }

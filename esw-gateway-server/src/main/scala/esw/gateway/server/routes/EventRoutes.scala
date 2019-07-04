@@ -1,18 +1,16 @@
 package esw.gateway.server.routes
 
 import akka.http.scaladsl.marshalling.sse.EventStreamMarshalling._
-import akka.http.scaladsl.model.sse.ServerSentEvent
 import akka.http.scaladsl.server.Directives.{entity, _}
 import akka.http.scaladsl.server.Route
-import akka.stream.scaladsl.Source
 import csw.event.api.scaladsl.SubscriptionModes.RateLimiterMode
-import csw.event.api.scaladsl.{EventPublisher, EventSubscriber, EventSubscription}
+import csw.event.api.scaladsl.{EventPublisher, EventSubscriber}
 import csw.params.core.formats.JsonSupport
 import csw.params.core.models.Subsystem
 import csw.params.events.{Event, EventKey}
 import de.heikoseeberger.akkahttpplayjson.PlayJsonSupport
+import esw.gateway.server.routes.RichSourceExt.RichSource
 import esw.template.http.server.csw.utils.CswContext
-import play.api.libs.json.Json
 
 import scala.concurrent.duration.{DurationLong, FiniteDuration}
 import scala.language.postfixOps
@@ -49,7 +47,7 @@ class EventRoutes(cswCtx: CswContext) extends JsonSupport with PlayJsonSupport {
                 complete(
                   subscriber
                     .subscribe(keys.toEventKeys, maxFrequencyToDuration(frequency), RateLimiterMode)
-                    .toSSE
+                    .toSSE(settings.sseHeartbeatDuration)
                 )
               }
             }
@@ -65,7 +63,7 @@ class EventRoutes(cswCtx: CswContext) extends JsonSupport with PlayJsonSupport {
               complete(
                 events
                   .via(eventSubscriberUtil.subscriptionModeStage(maxFrequencyToDuration(frequency), RateLimiterMode))
-                  .toSSE
+                  .toSSE(settings.sseHeartbeatDuration)
               )
             }
           }
@@ -78,13 +76,5 @@ class EventRoutes(cswCtx: CswContext) extends JsonSupport with PlayJsonSupport {
 
   implicit class RichEventKeys(keys: Iterable[String]) {
     def toEventKeys: Set[EventKey] = keys.map(EventKey(_)).toSet
-  }
-
-  implicit class RichSource(source: Source[Event, EventSubscription]) {
-    def toSSE: Source[ServerSentEvent, EventSubscription] =
-      source
-        .map(r => ServerSentEvent(Json.stringify(Json.toJson(r))))
-        .keepAlive(10.seconds, () => ServerSentEvent.heartbeat)
-
   }
 }
