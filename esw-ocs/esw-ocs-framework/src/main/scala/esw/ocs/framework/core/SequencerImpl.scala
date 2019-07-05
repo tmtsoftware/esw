@@ -35,9 +35,9 @@ private[framework] class SequencerImpl(crm: CommandResponseManager)(implicit str
       if (stepList.isAvailable)
         await(
           StepList(sequence)
-            .traverse { sl ⇒
-              val id = sl.runId
-              stepList = sl
+            .traverse { _stepList ⇒
+              val id = _stepList.runId
+              stepList = _stepList
               crm.addOrUpdateCommand(Started(id))
               crm.addSubCommand(id, emptyChildId)
               crm.queryFinal(id)
@@ -49,11 +49,8 @@ private[framework] class SequencerImpl(crm: CommandResponseManager)(implicit str
   override def pullNext(): Future[Step] = async {
     stepList.nextExecutable match {
       // step.isPending check is actually not required, but kept here in case impl of nextExecutable gets changed
-      case Some(step) if step.isPending ⇒ setInFlight(Pending, step)
-      case None ⇒
-        val p = Promise[Step]()
-        stepRefPromise = Some(p)
-        await(p.future)
+      case Some(step) if step.isPending ⇒ setPendingToInFlight(step)
+      case None                         ⇒ await(createStepRefPromise())
     }
   }
 
@@ -75,19 +72,15 @@ private[framework] class SequencerImpl(crm: CommandResponseManager)(implicit str
     update(stepList.insertAfter(id, commands))
 
   override def readyToExecuteNext(): Future[Done] = async {
-    if (stepList.nextExecutable.isDefined) {
-      Done
-    } else {
-      val p = Promise[Done]()
-      readyToExecuteNextPromise = Some(p)
-      await(p.future)
+    stepList.nextExecutable match {
+      case Some(_) ⇒ await(completeReadyToExecuteNextPromise())
+      case None    ⇒ await(createReadyToExecuteNextPromise())
     }
   }
 
   // this method gets called from places where it is already checked that step is in pending status
-  // oldStatus uses singleton type just to give hint to caller that setting InFlight only applicable to Pending step
-  private def setInFlight(oldStatus: Pending.type, step: Step) = {
-    val inflightStep = step.withStatus(oldStatus, InFlight)
+  private def setPendingToInFlight(step: Step) = {
+    val inflightStep = step.withStatus(Pending, InFlight)
     stepList = stepList.updateStep(inflightStep)
     val stepRunId = step.id
     crm.addSubCommand(stepList.runId, stepRunId)
@@ -110,16 +103,14 @@ private[framework] class SequencerImpl(crm: CommandResponseManager)(implicit str
       }
 
   private def update(submitResponse: SubmitResponse, stepStatus: StepStatus) = async {
-    crm.updateSubCommand(CommandResponse.withRunId(submitResponse.runId, submitResponse))
+    crm.updateSubCommand(submitResponse)
     val updateStatusResult = stepList.updateStatus(submitResponse.runId, stepStatus)
-    updateStatusResult.foreach { s ⇒
-      stepList = s
+    updateStatusResult.foreach { _stepList ⇒
+      stepList = _stepList
       latestResponse = Some(submitResponse)
       clearIfSequenceFinished()
-      // why?
       readyToExecuteNext()
     }
-
     updateStatusResult
   }
 
@@ -137,13 +128,30 @@ private[framework] class SequencerImpl(crm: CommandResponseManager)(implicit str
   private def isSequenceFinished: Boolean =
     stepList.isFinished || latestResponse.exists(_.runId == stepList.runId)
 
-  private def trySend(): Unit =
+  private def createReadyToExecuteNextPromise() = async {
+    val p = Promise[Done]()
+    readyToExecuteNextPromise = Some(p)
+    await(p.future)
+  }
+
+  private def completeReadyToExecuteNextPromise() = async {
+    readyToExecuteNextPromise.foreach(_.complete(Success(Done)))
+    Done
+  }
+
+  private def createStepRefPromise() = async {
+    val p = Promise[Step]()
+    stepRefPromise = Some(p)
+    await(p.future)
+  }
+
+  private def completeStepRefPromise(): Unit =
     for {
       ref  <- stepRefPromise
       step <- stepList.nextExecutable
       if step.isPending
     } {
-      ref.complete(Try(setInFlight(Pending, step)))
+      ref.complete(Try(setPendingToInFlight(step)))
       stepRefPromise = None
     }
 
@@ -153,7 +161,7 @@ private[framework] class SequencerImpl(crm: CommandResponseManager)(implicit str
     stepListResult.foreach { s ⇒
       stepList = s
       clearIfSequenceFinished()
-      trySend()
+      completeStepRefPromise()
     }
     stepListResult
   }

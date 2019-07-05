@@ -8,7 +8,6 @@ import esw.ocs.framework.api.models.messages.StepListError._
 
 final case class StepList private[models] (runId: Id, steps: List[Step]) { outer =>
   //query
-  // todo: what should we return when StepList is empty?
   private def isEmpty: Boolean = steps.isEmpty
   def isFinished: Boolean      = !isEmpty && steps.forall(_.isFinished)
   def isAvailable: Boolean     = isEmpty || isFinished
