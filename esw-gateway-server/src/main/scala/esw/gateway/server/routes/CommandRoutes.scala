@@ -65,5 +65,5 @@ class CommandRoutes(cswCtx: CswContext) extends JsonSupport with PlayJsonSupport
       }
     }
 
-  val route: Route = commandRoutes("hcd") ~ commandRoutes("assembly")
+  val route: Route = commandRoutes(ComponentType.HCD.name) ~ commandRoutes(ComponentType.Assembly.name)
 }

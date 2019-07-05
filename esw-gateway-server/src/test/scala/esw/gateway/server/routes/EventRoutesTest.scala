@@ -109,6 +109,15 @@ class EventRoutesTest extends HttpTestSuite {
         }
       }
 
+      "subscribe to events for event keys with given frequency should give error response if max frequency is less than 0" in new Setup {
+        import cswMocks._
+
+        Get(s"/event/subscribe?key=tcs.gateway&max-frequency=0") ~> route ~> check {
+          responseAs[ErrorResponse].error.code shouldBe StatusCodes.BadRequest.intValue
+          responseAs[ErrorResponse].error.message shouldBe "Max frequency should be greater than zero"
+        }
+      }
+
       "subscribe to events for event keys with given frequency" in new Setup {
         import cswMocks._
 
