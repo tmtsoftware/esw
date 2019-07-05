@@ -161,32 +161,6 @@ class StepListTest extends BaseTestSuite {
     }
   }
 
-  "isAvailable" must {
-    val setup1 = Setup(Prefix("ocs.move1"), CommandName("test1"), None)
-    val setup2 = Setup(Prefix("ocs.move2"), CommandName("test2"), None)
-
-    "return true when StepList is empty" in {
-      val stepList = StepList(Id(), Nil)
-      stepList.isAvailable shouldBe true
-    }
-
-    "return true when all steps are Finished" in {
-      val step1 = Step(setup1, finished(setup1.runId), hasBreakpoint = false)
-      val step2 = Step(setup2, finished(setup2.runId), hasBreakpoint = false)
-
-      val stepList = StepList(Id(), List(step1, step2))
-      stepList.isAvailable shouldBe true
-    }
-
-    "return false when any step is not Finished" in {
-      val step1 = Step(setup1, finished(setup1.runId), hasBreakpoint = false)
-      val step2 = Step(setup2, InFlight, hasBreakpoint = false)
-
-      val stepList = StepList(Id(), List(step1, step2))
-      stepList.isAvailable shouldBe false
-    }
-  }
-
   "replace" must {
     val setup1 = Setup(Prefix("ocs.move1"), CommandName("test1"), None)
     val setup2 = Setup(Prefix("ocs.move2"), CommandName("test2"), None)

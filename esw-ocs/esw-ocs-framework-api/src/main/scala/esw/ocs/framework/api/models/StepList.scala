@@ -10,7 +10,6 @@ final case class StepList private[models] (runId: Id, steps: List[Step]) { outer
   //query
   private def isEmpty: Boolean = steps.isEmpty
   def isFinished: Boolean      = !isEmpty && steps.forall(_.isFinished)
-  def isAvailable: Boolean     = isEmpty || isFinished
   def isPaused: Boolean        = nextPending.exists(_.hasBreakpoint)
   def isInFlight: Boolean      = steps.exists(_.isInFlight)
 

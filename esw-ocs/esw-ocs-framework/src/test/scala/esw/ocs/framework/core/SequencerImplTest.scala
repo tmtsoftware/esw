@@ -40,7 +40,7 @@ class SequencerImplTest extends BaseTestSuite with MockitoSugar {
   }
 
   "Sequencer" must {
-    "process sequence of commands" in {
+    "process sequence of commands when all the commands succeeds" in {
       val command1 = Setup(Prefix("test"), CommandName("command-1"), None)
       val command2 = Observe(Prefix("test"), CommandName("command-2"), None)
       val sequence = Sequence(Id(), Seq(command1, command2))
@@ -65,9 +65,43 @@ class SequencerImplTest extends BaseTestSuite with MockitoSugar {
       res1.command shouldBe command1
       res2.command shouldBe command2
 
-      processResponse.rightValue shouldBe cmd2Response
+      processResponse.rightValue shouldBe Completed(sequence.runId)
       val finalResp = sequencer.getSequence.futureValue
-      finalResp.isAvailable shouldBe true // sequence gets cleared on completion
+      finalResp.steps.isEmpty shouldBe true // sequence gets cleared on completion
+    }
+
+    "process sequence of commands when one of the command fails" in {
+      val command1 = Setup(Prefix("test"), CommandName("command-1"), None)
+      val command2 = Observe(Prefix("test"), CommandName("command-2"), None)
+      val command3 = Observe(Prefix("test"), CommandName("command-3"), None)
+      val command4 = Observe(Prefix("test"), CommandName("command-4"), None)
+      val sequence = Sequence(Id(), Seq(command1, command2, command3, command4))
+      val latch    = new CountDownLatch(3)
+
+      val sequencerSetup = new SequencerSetup(sequence)
+      import sequencerSetup._
+
+      val cmd1Response = Completed(command1.runId)
+      val cmd2Response = Cancelled(command2.runId)
+      val cmd3Response = Completed(command3.runId)
+      val cmd4Response = Completed(command4.runId)
+      when(crmMock.queryFinal(command1.runId)).thenAnswer(_ ⇒ queryResponse(cmd1Response, latch))
+      when(crmMock.queryFinal(command2.runId)).thenAnswer(_ ⇒ queryResponse(cmd2Response, latch))
+      when(crmMock.queryFinal(command3.runId)).thenAnswer(_ ⇒ queryResponse(cmd3Response, latch))
+      when(crmMock.queryFinal(command3.runId)).thenAnswer(_ ⇒ queryResponse(cmd4Response, latch))
+
+      val processResponse = sequencer.processSequence(sequence)
+      sequencer.getSequence.futureValue shouldBe StepList(sequence).right.value
+
+      val res1 = sequencer.pullNext().futureValue
+      val res2 = sequencer.pullNext().futureValue
+
+      res1.command shouldBe command1
+      res2.command shouldBe command2
+
+      processResponse.rightValue shouldBe Cancelled(sequence.runId)
+      val finalResp = sequencer.getSequence.futureValue
+      finalResp.steps.isEmpty shouldBe true // sequence gets cleared on completion
     }
   }
 

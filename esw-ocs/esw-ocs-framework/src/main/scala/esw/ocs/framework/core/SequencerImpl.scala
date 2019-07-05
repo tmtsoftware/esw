@@ -3,7 +3,7 @@ package esw.ocs.framework.core
 import akka.Done
 import akka.util.Timeout
 import csw.command.client.CommandResponseManager
-import csw.params.commands.CommandResponse.{Error, Started, SubmitResponse}
+import csw.params.commands.CommandResponse.{Completed, Error, Started, SubmitResponse}
 import csw.params.commands.{CommandResponse, SequenceCommand}
 import csw.params.core.models.Id
 import esw.ocs.async.macros.StrandEc
@@ -22,29 +22,38 @@ import scala.util.{Success, Try}
 private[framework] class SequencerImpl(crm: CommandResponseManager)(implicit strandEc: StrandEc, timeout: Timeout)
     extends Sequencer {
   private implicit val singleThreadedEc: ExecutionContext = strandEc.ec
+  private val emptyChildId                                = Id("empty-child")
 
   private var stepList                                         = StepList.empty
-  private var latestResponse: Option[SubmitResponse]           = None
   private var readyToExecuteNextPromise: Option[Promise[Done]] = None
   private var stepRefPromise: Option[Promise[Step]]            = None
-
-  private val emptyChildId = Id("empty-child")
+  private var sequencerAvailable                               = true
 
   def processSequence(sequence: Sequence): Future[Either[ProcessSequenceError, SubmitResponse]] =
     async {
-      if (stepList.isAvailable)
+      if (sequencerAvailable)
         await(
           StepList(sequence)
             .traverse { _stepList ⇒
+              sequencerAvailable = false
               val id = _stepList.runId
               stepList = _stepList
               crm.addOrUpdateCommand(Started(id))
               crm.addSubCommand(id, emptyChildId)
-              crm.queryFinal(id)
+              handleSequenceResponse(crm.queryFinal(id))
             }
         )
       else Left(ExistingSequenceIsInProcess)
     }
+
+  private def handleSequenceResponse(submitResponse: Future[SubmitResponse]) = {
+    submitResponse.onComplete { _ ⇒
+      // fixme: Confirm
+      readyToExecuteNextPromise.foreach(_.complete(Success(Done)))
+      resetState()
+    }
+    submitResponse.map(CommandResponse.withRunId(stepList.runId, _))
+  }
 
   override def pullNext(): Future[Step] = async {
     stepList.nextExecutable match {
@@ -107,43 +116,31 @@ private[framework] class SequencerImpl(crm: CommandResponseManager)(implicit str
     val updateStatusResult = stepList.updateStatus(submitResponse.runId, stepStatus)
     updateStatusResult.foreach { _stepList ⇒
       stepList = _stepList
-      latestResponse = Some(submitResponse)
-      clearIfSequenceFinished()
+      checkForSequenceCompletion()
       readyToExecuteNext()
     }
     updateStatusResult
   }
 
-  private def clearIfSequenceFinished(): Unit =
-    if (isSequenceFinished) {
-      val sequenceResponse = CommandResponse.withRunId(stepList.runId, latestResponse.orNull) //whether this will be called with None latestresponse ever??
-      crm.updateSubCommand(CommandResponse.withRunId(emptyChildId, sequenceResponse))
-      // fixme: Confirm
-      readyToExecuteNextPromise.foreach(_.complete(Success(Done)))
-      stepList = StepList.empty
-      latestResponse = None
-      readyToExecuteNextPromise = None
-    }
-
-  private def isSequenceFinished: Boolean =
-    stepList.isFinished || latestResponse.exists(_.runId == stepList.runId)
-
-  private def createReadyToExecuteNextPromise() = async {
-    val p = Promise[Done]()
-    readyToExecuteNextPromise = Some(p)
-    await(p.future)
+  private def checkForSequenceCompletion(): Unit = if (stepList.isFinished) {
+    crm.updateSubCommand(Completed(emptyChildId))
   }
+
+  private def resetState(): Unit = {
+    stepList = StepList.empty
+    readyToExecuteNextPromise = None
+    sequencerAvailable = true
+  }
+
+  private def createReadyToExecuteNextPromise() =
+    createPromise[Done](p ⇒ readyToExecuteNextPromise = Some(p))
 
   private def completeReadyToExecuteNextPromise() = async {
     readyToExecuteNextPromise.foreach(_.complete(Success(Done)))
     Done
   }
 
-  private def createStepRefPromise() = async {
-    val p = Promise[Step]()
-    stepRefPromise = Some(p)
-    await(p.future)
-  }
+  private def createStepRefPromise() = createPromise[Step](p ⇒ stepRefPromise = Some(p))
 
   private def completeStepRefPromise(): Unit =
     for {
@@ -155,12 +152,18 @@ private[framework] class SequencerImpl(crm: CommandResponseManager)(implicit str
       stepRefPromise = None
     }
 
+  private def createPromise[T](update: Promise[T] ⇒ Unit): Future[T] = async {
+    val p = Promise[T]()
+    update(p)
+    await(p.future)
+  }
+
   // stepListResultFunc is by name because all StepList operations must execute on strandEc
   private def update[T <: StepListError](stepListResultFunc: ⇒ Either[T, StepList]) = async {
     val stepListResult = stepListResultFunc
     stepListResult.foreach { s ⇒
       stepList = s
-      clearIfSequenceFinished()
+      checkForSequenceCompletion()
       completeStepRefPromise()
     }
     stepListResult
