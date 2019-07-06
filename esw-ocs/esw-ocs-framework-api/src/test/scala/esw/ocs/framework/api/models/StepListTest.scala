@@ -5,7 +5,7 @@ import csw.params.commands._
 import csw.params.core.models.{Id, Prefix}
 import esw.ocs.framework.api.BaseTestSuite
 import esw.ocs.framework.api.models.StepStatus.{Finished, InFlight, Pending}
-import esw.ocs.framework.api.models.messages.SequencerMsg.DuplicateIdsFound
+import esw.ocs.framework.api.models.messages.ProcessSequenceError.DuplicateIdsFound
 import esw.ocs.framework.api.models.messages.StepListError._
 
 class StepListTest extends BaseTestSuite {

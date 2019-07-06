@@ -2,7 +2,7 @@ package esw.ocs.framework.core
 import akka.Done
 import csw.params.commands.{CommandResponse, SequenceCommand}
 import csw.params.core.models.Id
-import esw.ocs.framework.api.models.messages.SequencerMsg._
+import esw.ocs.framework.api.models.messages.ProcessSequenceError
 import esw.ocs.framework.api.models.messages.StepListError._
 import esw.ocs.framework.api.models.{Sequence, Step, StepList}
 

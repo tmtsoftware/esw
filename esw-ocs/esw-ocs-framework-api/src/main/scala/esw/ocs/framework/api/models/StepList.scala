@@ -2,7 +2,7 @@ package esw.ocs.framework.api.models
 
 import csw.params.commands.SequenceCommand
 import csw.params.core.models.Id
-import esw.ocs.framework.api.models.messages.SequencerMsg.DuplicateIdsFound
+import esw.ocs.framework.api.models.messages.ProcessSequenceError.DuplicateIdsFound
 import esw.ocs.framework.api.models.messages.StepListError
 import esw.ocs.framework.api.models.messages.StepListError._
 

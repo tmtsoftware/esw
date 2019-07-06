@@ -8,9 +8,9 @@ import csw.params.commands.{CommandResponse, SequenceCommand}
 import csw.params.core.models.Id
 import esw.ocs.async.macros.StrandEc
 import esw.ocs.framework.api.models.StepStatus.{Finished, InFlight, Pending}
-import esw.ocs.framework.api.models.messages.SequencerMsg.{ExistingSequenceIsInProcess, ProcessSequenceError}
-import esw.ocs.framework.api.models.messages.StepListError
+import esw.ocs.framework.api.models.messages.ProcessSequenceError.ExistingSequenceIsInProcess
 import esw.ocs.framework.api.models.messages.StepListError._
+import esw.ocs.framework.api.models.messages.{ProcessSequenceError, StepListError}
 import esw.ocs.framework.api.models.{Sequence, Step, StepList, StepStatus}
 import esw.ocs.framework.dsl.Async.{async, await}
 import esw.ocs.framework.syntax.EitherSyntax._
@@ -49,7 +49,7 @@ private[framework] class SequencerImpl(crm: CommandResponseManager)(implicit str
   private def handleSequenceResponse(submitResponse: Future[SubmitResponse]) = {
     submitResponse.onComplete { _ ⇒
       // fixme: Confirm
-      readyToExecuteNextPromise.foreach(_.complete(Success(Done)))
+      completeReadyToExecuteNextPromise()
       resetState()
     }
     submitResponse.map(CommandResponse.withRunId(stepList.runId, _))
@@ -63,28 +63,25 @@ private[framework] class SequencerImpl(crm: CommandResponseManager)(implicit str
     }
   }
 
-  override def getSequence: Future[StepList]   = async(stepList)
-  override def mayBeNext: Future[Option[Step]] = async(stepList.nextExecutable)
-
-  override def add(commands: List[SequenceCommand]): Future[Either[AddError, StepList]] = update(stepList.append(commands))
-  override def pause: Future[Either[PauseError, StepList]]                              = update(stepList.pause)
-  override def resume: Future[Either[ResumeError, StepList]]                            = update(stepList.resume)
-  override def discardPending: Future[Either[DiscardPendingError, StepList]]            = update(stepList.discardPending)
+  override def getSequence: Future[StepList]                                             = async(stepList)
+  override def mayBeNext: Future[Option[Step]]                                           = async(stepList.nextExecutable)
+  override def add(commands: List[SequenceCommand]): Future[Either[AddError, StepList]]  = update(stepList.append(commands))
+  override def pause: Future[Either[PauseError, StepList]]                               = update(stepList.pause)
+  override def resume: Future[Either[ResumeError, StepList]]                             = update(stepList.resume)
+  override def discardPending: Future[Either[DiscardPendingError, StepList]]             = update(stepList.discardPending)
+  override def delete(id: Id): Future[Either[DeleteError, StepList]]                     = update(stepList.delete(id))
+  override def addBreakpoint(id: Id): Future[Either[AddBreakpointError, StepList]]       = update(stepList.addBreakpoint(id))
+  override def removeBreakpoint(id: Id): Future[Either[RemoveBreakpointError, StepList]] = update(stepList.removeBreakpoint(id))
   override def replace(id: Id, commands: List[SequenceCommand]): Future[Either[ReplaceError, StepList]] =
     update(stepList.replace(id, commands))
   override def prepend(commands: List[SequenceCommand]): Future[Either[PrependError, StepList]] =
     update(stepList.prepend(commands))
-  override def delete(id: Id): Future[Either[DeleteError, StepList]]                     = update(stepList.delete(id))
-  override def addBreakpoint(id: Id): Future[Either[AddBreakpointError, StepList]]       = update(stepList.addBreakpoint(id))
-  override def removeBreakpoint(id: Id): Future[Either[RemoveBreakpointError, StepList]] = update(stepList.removeBreakpoint(id))
   override def insertAfter(id: Id, commands: List[SequenceCommand]): Future[Either[InsertError, StepList]] =
     update(stepList.insertAfter(id, commands))
 
   override def readyToExecuteNext(): Future[Done] = async {
-    stepList.nextExecutable match {
-      case Some(_) ⇒ await(completeReadyToExecuteNextPromise())
-      case None    ⇒ await(createReadyToExecuteNextPromise())
-    }
+    if (!stepList.isInFlight) Done
+    else await(createReadyToExecuteNextPromise())
   }
 
   // this method gets called from places where it is already checked that step is in pending status
@@ -117,7 +114,7 @@ private[framework] class SequencerImpl(crm: CommandResponseManager)(implicit str
     updateStatusResult.foreach { _stepList ⇒
       stepList = _stepList
       checkForSequenceCompletion()
-      readyToExecuteNext()
+      completeReadyToExecuteNextPromise()
     }
     updateStatusResult
   }
