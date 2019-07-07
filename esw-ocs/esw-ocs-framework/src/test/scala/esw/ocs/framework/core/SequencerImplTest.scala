@@ -2,6 +2,7 @@ package esw.ocs.framework.core
 
 import java.util.concurrent.CountDownLatch
 
+import akka.Done
 import akka.util.Timeout
 import csw.command.client.CommandResponseManager
 import csw.params.commands.CommandResponse._
@@ -55,19 +56,19 @@ class SequencerImplTest extends BaseTestSuite with MockitoSugar {
       when(crmMock.queryFinal(command2.runId)).thenAnswer(_ ⇒ queryResponse(cmd2Response, latch))
 
       val processResponse = sequencer.processSequence(sequence)
-      sequencer.getSequence.futureValue shouldBe StepList(sequence).right.value
+      sequencer.getSequence.futureValue should ===(StepList(sequence).right.value)
 
       val pulled1 = sequencer.pullNext()
       val pulled2 = sequencer.pullNext()
       val res1    = pulled1.futureValue
       val res2    = pulled2.futureValue
 
-      res1.command shouldBe command1
-      res2.command shouldBe command2
+      res1.command should ===(command1)
+      res2.command should ===(command2)
 
-      processResponse.rightValue shouldBe Completed(sequence.runId)
+      processResponse.rightValue should ===(Completed(sequence.runId))
       val finalResp = sequencer.getSequence.futureValue
-      finalResp.steps.isEmpty shouldBe true // sequence gets cleared on completion
+      finalResp.steps.isEmpty should ===(true) // sequence gets cleared on completion)
     }
 
     "process sequence of commands when one of the command fails" in {
@@ -91,17 +92,17 @@ class SequencerImplTest extends BaseTestSuite with MockitoSugar {
       when(crmMock.queryFinal(command3.runId)).thenAnswer(_ ⇒ queryResponse(cmd4Response, latch))
 
       val processResponse = sequencer.processSequence(sequence)
-      sequencer.getSequence.futureValue shouldBe StepList(sequence).right.value
+      sequencer.getSequence.futureValue should ===(StepList(sequence).right.value)
 
       val res1 = sequencer.pullNext().futureValue
       val res2 = sequencer.pullNext().futureValue
 
-      res1.command shouldBe command1
-      res2.command shouldBe command2
+      res1.command should ===(command1)
+      res2.command should ===(command2)
 
-      processResponse.rightValue shouldBe Cancelled(sequence.runId)
+      processResponse.rightValue should ===(Cancelled(sequence.runId))
       val finalResp = sequencer.getSequence.futureValue
-      finalResp.steps.isEmpty shouldBe true // sequence gets cleared on completion
+      finalResp.steps.isEmpty should ===(true) // sequence gets cleared on completion
     }
   }
 
@@ -115,7 +116,7 @@ class SequencerImplTest extends BaseTestSuite with MockitoSugar {
       import sequencerSetup._
 
       sequencer.processSequence(sequence)
-      sequencer.mayBeNext.futureValue.value shouldBe Step(command1)
+      sequencer.mayBeNext.futureValue.value should ===(Step(command1))
     }
 
     "not return any command when no command is in Pending status" in {
@@ -129,9 +130,9 @@ class SequencerImplTest extends BaseTestSuite with MockitoSugar {
       val cmd1Response = Completed(command1.runId)
       when(crmMock.queryFinal(command1.runId)).thenAnswer(_ ⇒ queryResponse(cmd1Response, latch))
       sequencer.processSequence(sequence)
-      sequencer.pullNext().futureValue shouldBe Step(command1, InFlight, hasBreakpoint = false)
+      sequencer.pullNext().futureValue should ===(Step(command1, InFlight, hasBreakpoint = false))
 
-      sequencer.mayBeNext.futureValue shouldBe None
+      sequencer.mayBeNext.futureValue should ===(None)
     }
   }
 
@@ -149,8 +150,14 @@ class SequencerImplTest extends BaseTestSuite with MockitoSugar {
       val command3 = Setup(Prefix("test"), CommandName("command-3"), None)
       val command4 = Observe(Prefix("test"), CommandName("command-4"), None)
 
-      sequencer.add(List(command3, command4)).rightValue shouldBe
-      StepList(sequence.runId, List(Step(command1), Step(command2), Step(command3), Step(command4)))
+      sequencer.add(List(command3, command4)).rightValue should ===(Done)
+      sequencer.getSequence.futureValue should ===(
+        StepList(
+          sequence.runId,
+          List(Step(command1), Step(command2), Step(command3), Step(command4))
+        )
+      )
+
     }
   }
 
@@ -171,15 +178,16 @@ class SequencerImplTest extends BaseTestSuite with MockitoSugar {
 
       val res1  = sequencer.pullNext().futureValue
       val step1 = Step(command1, InFlight, hasBreakpoint = false)
-      res1 shouldBe step1
+      res1 should ===(step1)
 
-      val pausedSequence = sequencer.pause.rightValue
-      pausedSequence.isPaused shouldBe true
-      pausedSequence shouldBe StepList(
-        sequence.runId,
-        List(
-          step1.copy(status = Finished.Success(cmd1Response)),
-          Step(command2, Pending, hasBreakpoint = true)
+      sequencer.pause.rightValue should ===(Done)
+      sequencer.getSequence.futureValue should ===(
+        StepList(
+          sequence.runId,
+          List(
+            step1.copy(status = Finished.Success(cmd1Response)),
+            Step(command2, Pending, hasBreakpoint = true)
+          )
         )
       )
     }
@@ -202,18 +210,19 @@ class SequencerImplTest extends BaseTestSuite with MockitoSugar {
 
       val res1  = sequencer.pullNext().futureValue
       val step1 = Step(command1, InFlight, hasBreakpoint = false)
-      res1 shouldBe step1
+      res1 should ===(step1)
 
       val pausedSequence = sequencer.pause.rightValue
-      pausedSequence.isPaused shouldBe true
+      pausedSequence should ===(Done)
 
-      val resumedSequence = sequencer.resume.rightValue
-      resumedSequence.isPaused shouldBe false
-      resumedSequence shouldBe StepList(
-        sequence.runId,
-        List(
-          step1.copy(status = Finished.Success(cmd1Response)),
-          Step(command2, Pending, hasBreakpoint = false)
+      sequencer.resume.rightValue should ===(Done)
+      sequencer.getSequence.futureValue should ===(
+        StepList(
+          sequence.runId,
+          List(
+            step1.copy(status = Finished.Success(cmd1Response)),
+            Step(command2, Pending, hasBreakpoint = false)
+          )
         )
       )
     }
@@ -229,7 +238,8 @@ class SequencerImplTest extends BaseTestSuite with MockitoSugar {
       import sequencerSetup._
       sequencer.processSequence(sequence)
 
-      sequencer.discardPending.rightValue shouldBe StepList(sequence.runId, Nil)
+      sequencer.reset().rightValue should ===(Done)
+      sequencer.getSequence.futureValue should ===(StepList(sequence.runId, Nil))
     }
   }
 
@@ -248,8 +258,8 @@ class SequencerImplTest extends BaseTestSuite with MockitoSugar {
       val command5 = Observe(Prefix("test"), CommandName("command-5"), None)
       val expectedReplacedStepList =
         StepList(sequence.runId, List(Step(command1), Step(command4), Step(command5), Step(command3)))
-      sequencer.replace(command2.runId, List(command4, command5)).rightValue shouldBe expectedReplacedStepList
-      sequencer.getSequence.futureValue shouldBe expectedReplacedStepList
+      sequencer.replace(command2.runId, List(command4, command5)).rightValue should ===(Done)
+      sequencer.getSequence.futureValue should ===(expectedReplacedStepList)
     }
   }
 
@@ -267,8 +277,8 @@ class SequencerImplTest extends BaseTestSuite with MockitoSugar {
       val command4 = Observe(Prefix("test"), CommandName("command-4"), None)
       val expectedPrependedStepList =
         StepList(sequence.runId, List(Step(command3), Step(command4), Step(command1), Step(command2)))
-      sequencer.prepend(List(command3, command4)).rightValue shouldBe expectedPrependedStepList
-      sequencer.getSequence.futureValue shouldBe expectedPrependedStepList
+      sequencer.prepend(List(command3, command4)).rightValue should ===(Done)
+      sequencer.getSequence.futureValue should ===(expectedPrependedStepList)
     }
   }
 
@@ -283,8 +293,8 @@ class SequencerImplTest extends BaseTestSuite with MockitoSugar {
       sequencer.processSequence(sequence)
 
       val expectedDeletedStepList = StepList(sequence.runId, List(Step(command1)))
-      sequencer.delete(command2.runId).rightValue shouldBe expectedDeletedStepList
-      sequencer.getSequence.futureValue shouldBe expectedDeletedStepList
+      sequencer.delete(command2.runId).rightValue should ===(Done)
+      sequencer.getSequence.futureValue should ===(expectedDeletedStepList)
     }
   }
 
@@ -299,13 +309,13 @@ class SequencerImplTest extends BaseTestSuite with MockitoSugar {
       sequencer.processSequence(sequence)
 
       val breakpointAddedStepList = StepList(sequence.runId, List(Step(command1), Step(command2, Pending, hasBreakpoint = true)))
-      sequencer.addBreakpoint(command2.runId).rightValue shouldBe breakpointAddedStepList
-      sequencer.getSequence.futureValue shouldBe breakpointAddedStepList
+      sequencer.addBreakpoint(command2.runId).rightValue should ===(Done)
+      sequencer.getSequence.futureValue should ===(breakpointAddedStepList)
 
       val breakpointRemovedStepList =
         StepList(sequence.runId, List(Step(command1), Step(command2, Pending, hasBreakpoint = false)))
-      sequencer.removeBreakpoint(command2.runId).rightValue shouldBe breakpointRemovedStepList
-      sequencer.getSequence.futureValue shouldBe breakpointRemovedStepList
+      sequencer.removeBreakpoint(command2.runId).rightValue should ===(Done)
+      sequencer.getSequence.futureValue should ===(breakpointRemovedStepList)
     }
   }
 
@@ -324,8 +334,8 @@ class SequencerImplTest extends BaseTestSuite with MockitoSugar {
       val command5 = Observe(Prefix("test"), CommandName("command-5"), None)
       val expectedStepList =
         StepList(sequence.runId, List(Step(command1), Step(command2), Step(command4), Step(command5), Step(command3)))
-      sequencer.insertAfter(command2.runId, List(command4, command5)).rightValue shouldBe expectedStepList
-      sequencer.getSequence.futureValue shouldBe expectedStepList
+      sequencer.insertAfter(command2.runId, List(command4, command5)).rightValue should ===(Done)
+      sequencer.getSequence.futureValue should ===(expectedStepList)
     }
   }
 }

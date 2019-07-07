@@ -13,7 +13,7 @@ object StepListError {
       with UpdateError
       with AddError
       with ResumeError
-      with DiscardPendingError
+      with ResetError
       with ReplaceError
       with PrependError
       with DeleteError
@@ -44,7 +44,7 @@ object StepListError {
 
   sealed trait PrependError extends StepListError
 
-  sealed trait DiscardPendingError extends StepListError
+  sealed trait ResetError extends StepListError
 
   sealed trait ReplaceError                                extends StepListError
   final case class ReplaceNotSupported(status: StepStatus) extends ReplaceError

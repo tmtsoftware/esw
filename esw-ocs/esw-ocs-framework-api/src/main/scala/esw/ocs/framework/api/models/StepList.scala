@@ -49,7 +49,7 @@ final case class StepList private[models] (runId: Id, steps: List[Step]) { outer
       Right(copy(runId, updatedSteps))
     }
 
-  def discardPending: Either[DiscardPendingError, StepList] =
+  def discardPending: Either[ResetError, StepList] =
     ifNotFinished(Right(copy(runId, steps.filterNot(_.isPending))))
 
   def addBreakpoint(id: Id): Either[AddBreakpointError, StepList] = ifExistAndNotFinished(id) { _ ⇒
