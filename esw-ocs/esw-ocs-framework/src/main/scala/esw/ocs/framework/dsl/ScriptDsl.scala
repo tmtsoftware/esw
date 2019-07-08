@@ -5,7 +5,13 @@ import esw.ocs.framework.dsl.internal.{FunctionBuilder, FunctionHandlers}
 import esw.ocs.framework.exceptions.UnhandledCommandException
 
 import scala.concurrent.Future
+import scala.concurrent.duration.DurationDouble
 import scala.reflect.ClassTag
+
+class Script(val csw: CswServices) extends ScriptDsl {
+  // todo: should this come from conf file?
+  override private[framework] val loopInterval = 50.millis
+}
 
 trait ScriptDsl extends ControlDsl {
   def csw: CswServices
