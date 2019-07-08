@@ -152,6 +152,14 @@ class StepListTest extends BaseTestSuite {
       stepList.isFinished shouldBe true
     }
 
+    "return true when any step is Failed" in {
+      val step1 = Step(setup1, Finished.Failure(Completed(setup1.runId)), hasBreakpoint = false)
+      val step2 = Step(setup2, InFlight, hasBreakpoint = false)
+
+      val stepList = StepList(Id(), List(step1, step2))
+      stepList.isFinished shouldBe true
+    }
+
     "return false when any step is not Finished" in {
       val step1 = Step(setup1, finished(setup1.runId), hasBreakpoint = false)
       val step2 = Step(setup2, InFlight, hasBreakpoint = false)

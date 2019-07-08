@@ -17,13 +17,14 @@ import esw.ocs.framework.syntax.EitherSyntax._
 
 import scala.concurrent.{ExecutionContext, Future, Promise}
 import scala.util.control.NonFatal
-import scala.util.{Success, Try}
+import scala.util.{Failure, Success, Try}
 
 private[framework] class SequencerImpl(crm: CommandResponseManager)(implicit strandEc: StrandEc, timeout: Timeout) {
   private implicit val singleThreadedEc: ExecutionContext = strandEc.ec
   private val emptyChildId                                = Id("empty-child")
 
   private var stepList                                         = StepList.empty
+  private var previousStepList: Option[StepList]               = None
   private var readyToExecuteNextPromise: Option[Promise[Done]] = None
   private var stepRefPromise: Option[Promise[Step]]            = None
   private var sequencerAvailable                               = true
@@ -35,10 +36,11 @@ private[framework] class SequencerImpl(crm: CommandResponseManager)(implicit str
           StepList(sequence)
             .traverse { _stepList ⇒
               sequencerAvailable = false
+              updateStepList(_stepList)
               val id = _stepList.runId
-              stepList = _stepList
               crm.addOrUpdateCommand(Started(id))
               crm.addSubCommand(id, emptyChildId)
+              completeReadyToExecuteNextPromise()
               handleSequenceResponse(crm.queryFinal(id))
             }
         )
@@ -53,33 +55,39 @@ private[framework] class SequencerImpl(crm: CommandResponseManager)(implicit str
     }
   }
 
-  def isAvailable: Future[Boolean]                                          = async(sequencerAvailable)
-  def getSequence: Future[StepList]                                         = async(stepList)
-  def mayBeNext: Future[Option[Step]]                                       = async(stepList.nextExecutable)
-  def add(commands: List[SequenceCommand]): Future[Either[AddError, Done]]  = update(stepList.append(commands))
-  def pause: Future[Either[PauseError, Done]]                               = update(stepList.pause)
-  def resume: Future[Either[ResumeError, Done]]                             = update(stepList.resume)
-  def reset(): Future[Either[ResetError, Done]]                             = update(stepList.discardPending)
-  def delete(id: Id): Future[Either[DeleteError, Done]]                     = update(stepList.delete(id))
-  def addBreakpoint(id: Id): Future[Either[AddBreakpointError, Done]]       = update(stepList.addBreakpoint(id))
-  def removeBreakpoint(id: Id): Future[Either[RemoveBreakpointError, Done]] = update(stepList.removeBreakpoint(id))
-  def replace(id: Id, commands: List[SequenceCommand]): Future[Either[ReplaceError, Done]] =
-    update(stepList.replace(id, commands))
-  def prepend(commands: List[SequenceCommand]): Future[Either[PrependError, Done]] = update(stepList.prepend(commands))
-  def insertAfter(id: Id, commands: List[SequenceCommand]): Future[Either[InsertError, Done]] =
-    update(stepList.insertAfter(id, commands))
-
   def readyToExecuteNext(): Future[Done] = async {
-    if (!stepList.isInFlight) Done
+    val notInFlight = !stepList.isInFlight
+    val notFinished = !stepList.isFinished
+
+    if (notInFlight && notFinished) Done
     else await(createReadyToExecuteNextPromise())
   }
 
+  def isAvailable: Future[Boolean]                                          = async(sequencerAvailable)
+  def getSequence: Future[StepList]                                         = async(stepList)
+  def mayBeNext: Future[Option[Step]]                                       = async(stepList.nextExecutable)
+  def add(commands: List[SequenceCommand]): Future[Either[AddError, Done]]  = updateStepListResult(stepList.append(commands))
+  def pause: Future[Either[PauseError, Done]]                               = updateStepListResult(stepList.pause)
+  def resume: Future[Either[ResumeError, Done]]                             = updateStepListResult(stepList.resume)
+  def reset(): Future[Either[ResetError, Done]]                             = updateStepListResult(stepList.discardPending)
+  def delete(id: Id): Future[Either[DeleteError, Done]]                     = updateStepListResult(stepList.delete(id))
+  def addBreakpoint(id: Id): Future[Either[AddBreakpointError, Done]]       = updateStepListResult(stepList.addBreakpoint(id))
+  def removeBreakpoint(id: Id): Future[Either[RemoveBreakpointError, Done]] = updateStepListResult(stepList.removeBreakpoint(id))
+  def replace(id: Id, commands: List[SequenceCommand]): Future[Either[ReplaceError, Done]] =
+    updateStepListResult(stepList.replace(id, commands))
+  def prepend(commands: List[SequenceCommand]): Future[Either[PrependError, Done]] =
+    updateStepListResult(stepList.prepend(commands))
+  def insertAfter(id: Id, commands: List[SequenceCommand]): Future[Either[InsertError, Done]] =
+    updateStepListResult(stepList.insertAfter(id, commands))
+
+  private def updateStepList(newStepList: StepList): Unit = {
+    if (!stepList.isEmpty)
+      previousStepList = Some(stepList)
+    stepList = newStepList
+  }
+
   private def handleSequenceResponse(submitResponse: Future[SubmitResponse]) = {
-    submitResponse.onComplete { _ ⇒
-      // fixme: Confirm
-      completeReadyToExecuteNextPromise()
-      resetState()
-    }
+    submitResponse.onComplete(_ ⇒ resetState())
     submitResponse.map(CommandResponse.withRunId(stepList.runId, _))
   }
 
@@ -98,16 +106,16 @@ private[framework] class SequencerImpl(crm: CommandResponseManager)(implicit str
     submitResponseF
       .flatMap {
         case submitResponse if CommandResponse.isPositive(submitResponse) ⇒
-          update(submitResponse, Finished.Success(submitResponse))
-        case submitResponse ⇒ update(submitResponse, Finished.Failure(submitResponse))
+          updateStatus(submitResponse, Finished.Success(submitResponse))
+        case submitResponse ⇒ updateStatus(submitResponse, Finished.Failure(submitResponse))
       }
       .recoverWith {
         case NonFatal(e) ⇒
           val errorResponse = Error(stepId, e.getMessage)
-          update(errorResponse, Finished.Failure(errorResponse))
+          updateStatus(errorResponse, Finished.Failure(errorResponse))
       }
 
-  private def update(submitResponse: SubmitResponse, stepStatus: StepStatus) = async {
+  private def updateStatus(submitResponse: SubmitResponse, stepStatus: StepStatus) = async {
     crm.updateSubCommand(submitResponse)
     val updateStatusResult = stepList.updateStatus(submitResponse.runId, stepStatus)
     updateStatusResult.foreach { _stepList ⇒
@@ -123,8 +131,8 @@ private[framework] class SequencerImpl(crm: CommandResponseManager)(implicit str
   }
 
   private def resetState(): Unit = {
-    stepList = StepList.empty
-    readyToExecuteNextPromise = None
+    stepRefPromise.foreach(_.complete(Failure(new RuntimeException("Trying to pull Step from a finished Sequence."))))
+    stepRefPromise = None
     sequencerAvailable = true
   }
 
@@ -132,8 +140,8 @@ private[framework] class SequencerImpl(crm: CommandResponseManager)(implicit str
     createPromise[Done](p ⇒ readyToExecuteNextPromise = Some(p))
 
   private def completeReadyToExecuteNextPromise() = async {
-    readyToExecuteNextPromise.foreach(_.complete(Success(Done)))
-    Done
+    if (!stepList.isFinished)
+      readyToExecuteNextPromise.foreach(_.complete(Success(Done)))
   }
 
   private def createStepRefPromise() = createPromise[Step](p ⇒ stepRefPromise = Some(p))
@@ -155,7 +163,7 @@ private[framework] class SequencerImpl(crm: CommandResponseManager)(implicit str
   }
 
   // stepListResultFunc is by name because all StepList operations must execute on strandEc
-  private def update[T <: StepListError](stepListResultFunc: ⇒ Either[T, StepList]) = async {
+  private def updateStepListResult[T <: StepListError](stepListResultFunc: ⇒ Either[T, StepList]) = async {
     val stepListResult = stepListResultFunc
     stepListResult.map { s ⇒
       stepList = s

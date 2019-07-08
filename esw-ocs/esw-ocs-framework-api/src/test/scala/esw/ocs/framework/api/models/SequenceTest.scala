@@ -6,12 +6,6 @@ import esw.ocs.framework.api.BaseTestSuite
 
 class SequenceTest extends BaseTestSuite {
 
-  "empty" must {
-    "create empty sequence" in {
-      Sequence.empty.commands shouldBe Nil
-    }
-  }
-
   "apply" must {
     "create sequence from provided list of commands" in {
       val setup    = Setup(Prefix("test1"), CommandName("setup-test"), None)

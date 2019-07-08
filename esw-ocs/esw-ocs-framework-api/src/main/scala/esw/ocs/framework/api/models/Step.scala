@@ -10,6 +10,10 @@ case class StepResult(isSuccessful: Boolean, step: Step)
 case class Step private[models] (command: SequenceCommand, status: StepStatus, hasBreakpoint: Boolean) {
   def id: Id             = command.runId
   def isPending: Boolean = status == StepStatus.Pending
+  def isFailed: Boolean = status match {
+    case _: Finished.Failure ⇒ true
+    case _                   ⇒ false
+  }
   def isFinished: Boolean = status match {
     case _: Finished ⇒ true
     case _           ⇒ false

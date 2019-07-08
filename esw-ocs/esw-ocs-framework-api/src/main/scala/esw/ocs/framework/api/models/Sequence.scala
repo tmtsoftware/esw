@@ -9,6 +9,5 @@ final case class Sequence private[models] (runId: Id, commands: Seq[SequenceComm
 }
 
 object Sequence {
-  def apply(commands: SequenceCommand*): Sequence = Sequence(Id(), commands.toList)
-  def empty: Sequence                             = Sequence(Id(), Nil)
+  def apply(command: SequenceCommand, commands: SequenceCommand*): Sequence = Sequence(Id(), command :: commands.toList)
 }

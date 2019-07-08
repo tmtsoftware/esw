@@ -11,13 +11,14 @@ import csw.params.core.models.{Id, Prefix}
 import esw.ocs.async.macros.StrandEc
 import esw.ocs.framework.BaseTestSuite
 import esw.ocs.framework.api.models.StepStatus.{Finished, InFlight, Pending}
+import esw.ocs.framework.api.models.messages.ProcessSequenceError.ExistingSequenceIsInProcess
 import esw.ocs.framework.api.models.{Sequence, Step, StepList}
 import org.mockito.Mockito.when
 import org.scalatestplus.mockito.MockitoSugar
 
 import scala.concurrent.duration.DurationDouble
 import scala.concurrent.{ExecutionContext, Future, Promise}
-import scala.util.Success
+import scala.util.{Success, Try}
 
 class SequencerImplTest extends BaseTestSuite with MockitoSugar {
   implicit val timeout: Timeout = Timeout(10.seconds)
@@ -40,8 +41,8 @@ class SequencerImplTest extends BaseTestSuite with MockitoSugar {
     }
   }
 
-  "Sequencer" must {
-    "process sequence of commands when all the commands succeeds" in {
+  "processSequence" must {
+    "execute provided commands when all commands succeed" in {
       val command1 = Setup(Prefix("test"), CommandName("command-1"), None)
       val command2 = Observe(Prefix("test"), CommandName("command-2"), None)
       val sequence = Sequence(Id(), Seq(command1, command2))
@@ -68,10 +69,10 @@ class SequencerImplTest extends BaseTestSuite with MockitoSugar {
 
       processResponse.rightValue should ===(Completed(sequence.runId))
       val finalResp = sequencer.getSequence.futureValue
-      finalResp.steps.isEmpty should ===(true) // sequence gets cleared on completion)
+      finalResp.isFinished should ===(true)
     }
 
-    "process sequence of commands when one of the command fails" in {
+    "short circuit on first failed command" in {
       val command1 = Setup(Prefix("test"), CommandName("command-1"), None)
       val command2 = Observe(Prefix("test"), CommandName("command-2"), None)
       val command3 = Observe(Prefix("test"), CommandName("command-3"), None)
@@ -101,8 +102,90 @@ class SequencerImplTest extends BaseTestSuite with MockitoSugar {
       res2.command should ===(command2)
 
       processResponse.rightValue should ===(Cancelled(sequence.runId))
-      val finalResp = sequencer.getSequence.futureValue
-      finalResp.steps.isEmpty should ===(true) // sequence gets cleared on completion
+      sequencer.isAvailable.futureValue should ===(true)
+    }
+
+    "fail with ExistingSequenceIsInProcess error when existing sequence is not finished" in {
+      val command1 = Setup(Prefix("test"), CommandName("command-1"), None)
+      val command2 = Observe(Prefix("test"), CommandName("command-2"), None)
+      val sequence = Sequence(Id(), Seq(command1, command2))
+
+      val sequencerSetup = new SequencerSetup(sequence)
+      import sequencerSetup._
+
+      sequencer.processSequence(sequence)
+      sequencer.isAvailable.futureValue should ===(false)
+
+      val command3    = Setup(Prefix("test"), CommandName("command-3"), None)
+      val command4    = Observe(Prefix("test"), CommandName("command-4"), None)
+      val newSequence = Sequence(Id(), Seq(command3, command4))
+
+      val processResponse2 = sequencer.processSequence(newSequence)
+      processResponse2.leftValue should ===(ExistingSequenceIsInProcess)
+    }
+  }
+
+  "readyToExecuteNext" must {
+    "return Done immediately when command is available for execution" in {
+      val command1 = Setup(Prefix("test"), CommandName("command-1"), None)
+      val sequence = Sequence(Id(), Seq(command1))
+
+      val sequencerSetup = new SequencerSetup(sequence)
+      import sequencerSetup._
+
+      sequencer.processSequence(sequence)
+      sequencer.readyToExecuteNext().futureValue shouldBe Done
+    }
+    "wait till completion of current command" in {
+      val command1 = Setup(Prefix("test"), CommandName("command-1"), None)
+      val command2 = Observe(Prefix("test"), CommandName("command-2"), None)
+      val sequence = Sequence(Id(), Seq(command1, command2))
+
+      val sequencerSetup = new SequencerSetup(sequence)
+      import sequencerSetup._
+
+      val cmd1Response = Completed(command1.runId)
+
+      val p = Promise[SubmitResponse]
+      when(crmMock.queryFinal(command1.runId)).thenAnswer(_ ⇒ p.future)
+
+      sequencer.processSequence(sequence)
+      sequencer.pullNext()
+      val readyToExecuteNextF = sequencer.readyToExecuteNext()
+      readyToExecuteNextF.value should ===(None)
+
+      // this will complete command1
+      p.complete(Try(cmd1Response))
+      readyToExecuteNextF.futureValue should ===(Done)
+
+    }
+    "wait till next sequence is received if current sequence is finished" in {
+      val command1       = Setup(Prefix("test"), CommandName("command-1"), None)
+      val sequence       = Sequence(Id(), Seq(command1))
+      val sequencerSetup = new SequencerSetup(sequence)
+      import sequencerSetup._
+
+      val cmd1Response = Completed(command1.runId)
+
+      val p = Promise[SubmitResponse]
+      when(crmMock.queryFinal(command1.runId)).thenAnswer(_ ⇒ p.future)
+
+      val sequence1Response = sequencer.processSequence(sequence)
+      sequencer.pullNext()
+      val readyToExecuteNextF = sequencer.readyToExecuteNext()
+      readyToExecuteNextF.value should ===(None)
+
+      // this will complete command1
+      p.complete(Try(cmd1Response))
+      completionPromise.complete(Success(Completed(sequence.runId)))
+      sequence1Response.rightValue should ===(Completed(sequence.runId))
+
+      readyToExecuteNextF.value should ===(None)
+
+      val command2    = Setup(Prefix("test"), CommandName("command-2"), None)
+      val newSequence = Sequence(Id(), Seq(command2))
+      sequencer.processSequence(newSequence)
+      readyToExecuteNextF.futureValue should ===(Done)
     }
   }
 

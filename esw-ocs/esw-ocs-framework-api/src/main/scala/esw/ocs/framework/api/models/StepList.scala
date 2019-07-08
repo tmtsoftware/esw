@@ -6,12 +6,12 @@ import esw.ocs.framework.api.models.messages.ProcessSequenceError.DuplicateIdsFo
 import esw.ocs.framework.api.models.messages.StepListError
 import esw.ocs.framework.api.models.messages.StepListError._
 
-final case class StepList private[models] (runId: Id, steps: List[Step]) { outer =>
+final case class StepList private[models] (runId: Id, steps: List[Step]) {
   //query
-  private def isEmpty: Boolean = steps.isEmpty
-  def isFinished: Boolean      = !isEmpty && steps.forall(_.isFinished)
-  def isPaused: Boolean        = nextPending.exists(_.hasBreakpoint)
-  def isInFlight: Boolean      = steps.exists(_.isInFlight)
+  private[framework] def isEmpty: Boolean = steps.isEmpty
+  def isFinished: Boolean                 = !isEmpty && (steps.forall(_.isFinished) || steps.exists(_.isFailed))
+  def isPaused: Boolean                   = nextPending.exists(_.hasBreakpoint)
+  def isInFlight: Boolean                 = steps.exists(_.isInFlight)
 
   def nextPending: Option[Step]    = steps.find(_.isPending)
   def nextExecutable: Option[Step] = if (!isPaused) nextPending else None
