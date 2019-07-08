@@ -65,6 +65,7 @@ private[framework] class SequencerImpl(crm: CommandResponseManager)(implicit str
 
   def isAvailable: Future[Boolean]                                          = async(sequencerAvailable)
   def getSequence: Future[StepList]                                         = async(stepList)
+  def getPreviousSequence: Future[Option[StepList]]                         = async(previousStepList)
   def mayBeNext: Future[Option[Step]]                                       = async(stepList.nextExecutable)
   def add(commands: List[SequenceCommand]): Future[Either[AddError, Done]]  = updateStepListResult(stepList.append(commands))
   def pause: Future[Either[PauseError, Done]]                               = updateStepListResult(stepList.pause)

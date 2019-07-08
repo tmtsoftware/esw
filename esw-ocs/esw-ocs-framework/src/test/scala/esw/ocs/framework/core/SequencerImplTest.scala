@@ -421,4 +421,32 @@ class SequencerImplTest extends BaseTestSuite with MockitoSugar {
       sequencer.getSequence.futureValue should ===(expectedStepList)
     }
   }
+
+  "previousSequence" must {
+    "return old sequence" in {
+      val command1  = Setup(Prefix("test"), CommandName("command-1"), None)
+      val command2  = Observe(Prefix("test"), CommandName("command-2"), None)
+      val sequence  = Sequence(Id(), Seq(command1))
+      val sequence2 = Sequence(Id(), Seq(command2))
+      val latch     = new CountDownLatch(1)
+
+      val sequencerSetup = new SequencerSetup(sequence)
+      import sequencerSetup._
+
+      val cmd1Response = Completed(command1.runId)
+      val cmd2Response = Completed(command2.runId)
+      when(crmMock.queryFinal(command1.runId)).thenAnswer(_ ⇒ queryResponse(cmd1Response, latch))
+      when(crmMock.queryFinal(command2.runId)).thenAnswer(_ ⇒ queryResponse(cmd2Response, latch))
+
+      val processResponse = sequencer.processSequence(sequence)
+      sequencer.pullNext().futureValue
+      processResponse.rightValue should ===(Completed(sequence.runId))
+      val currentSequence = sequencer.getSequence.futureValue
+
+      sequencer.processSequence(sequence2)
+      val previousSequence = sequencer.getPreviousSequence.futureValue
+
+      previousSequence should ===(Some(currentSequence))
+    }
+  }
 }
