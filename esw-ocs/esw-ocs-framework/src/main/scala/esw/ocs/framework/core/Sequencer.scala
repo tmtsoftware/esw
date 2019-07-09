@@ -19,7 +19,7 @@ import scala.concurrent.{ExecutionContext, Future, Promise}
 import scala.util.control.NonFatal
 import scala.util.{Failure, Success, Try}
 
-private[framework] class SequencerImpl(crm: CommandResponseManager)(implicit strandEc: StrandEc, timeout: Timeout) {
+private[framework] class Sequencer(crm: CommandResponseManager)(implicit strandEc: StrandEc, timeout: Timeout) {
   private implicit val singleThreadedEc: ExecutionContext = strandEc.ec
   private val emptyChildId                                = Id("empty-child")
 

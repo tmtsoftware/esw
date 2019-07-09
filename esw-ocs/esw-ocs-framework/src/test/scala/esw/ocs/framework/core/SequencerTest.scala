@@ -20,7 +20,7 @@ import scala.concurrent.duration.DurationDouble
 import scala.concurrent.{ExecutionContext, Future, Promise}
 import scala.util.{Success, Try}
 
-class SequencerImplTest extends BaseTestSuite with MockitoSugar {
+class SequencerTest extends BaseTestSuite with MockitoSugar {
   implicit val timeout: Timeout = Timeout(10.seconds)
 
   class SequencerSetup(sequence: Sequence) {
@@ -32,7 +32,7 @@ class SequencerImplTest extends BaseTestSuite with MockitoSugar {
     val completionPromise: Promise[SubmitResponse] = Promise[SubmitResponse]()
     when(crmMock.queryFinal(sequence.runId)).thenReturn(completionPromise.future)
 
-    val sequencer = new SequencerImpl(crmMock)
+    val sequencer = new Sequencer(crmMock)
 
     def queryResponse(submitResponse: SubmitResponse, latch: CountDownLatch) = Future {
       latch.countDown()

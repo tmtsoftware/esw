@@ -8,7 +8,7 @@ import esw.ocs.framework.api.models.messages.{SequencerMsg, StepListError}
 import esw.ocs.framework.dsl.ScriptDsl
 
 object SequencerBehavior {
-  def behavior(sequencer: SequencerImpl, script: ScriptDsl): Behaviors.Receive[SequencerMsg] =
+  def behavior(sequencer: Sequencer, script: ScriptDsl): Behaviors.Receive[SequencerMsg] =
     Behaviors.receive[SequencerMsg] { (ctx, msg) =>
       import ctx.executionContext
 
