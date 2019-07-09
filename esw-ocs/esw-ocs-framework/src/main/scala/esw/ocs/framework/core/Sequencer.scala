@@ -7,6 +7,7 @@ import csw.params.commands.CommandResponse.{Completed, Error, Started, SubmitRes
 import csw.params.commands.{CommandResponse, SequenceCommand}
 import csw.params.core.models.Id
 import esw.ocs.async.macros.StrandEc
+import esw.ocs.framework.api.models.SequenceEditor.EditorResponse
 import esw.ocs.framework.api.models.StepStatus.{Finished, InFlight, Pending}
 import esw.ocs.framework.api.models._
 import esw.ocs.framework.api.models.messages.ProcessSequenceError.ExistingSequenceIsInProcess
@@ -63,23 +64,26 @@ private[framework] class Sequencer(crm: CommandResponseManager)(implicit strandE
     else await(createReadyToExecuteNextPromise())
   }
 
-  def isAvailable: Future[Boolean]                                          = async(sequencerAvailable)
-  def getSequence: Future[StepList]                                         = async(stepList)
-  def getPreviousSequence: Future[Option[StepList]]                         = async(previousStepList)
-  def mayBeNext: Future[Option[Step]]                                       = async(stepList.nextExecutable)
-  def add(commands: List[SequenceCommand]): Future[Either[AddError, Done]]  = updateStepListResult(stepList.append(commands))
-  def pause: Future[Either[PauseError, Done]]                               = updateStepListResult(stepList.pause)
-  def resume: Future[Either[ResumeError, Done]]                             = updateStepListResult(stepList.resume)
-  def reset(): Future[Either[ResetError, Done]]                             = updateStepListResult(stepList.discardPending)
-  def delete(id: Id): Future[Either[DeleteError, Done]]                     = updateStepListResult(stepList.delete(id))
-  def addBreakpoint(id: Id): Future[Either[AddBreakpointError, Done]]       = updateStepListResult(stepList.addBreakpoint(id))
-  def removeBreakpoint(id: Id): Future[Either[RemoveBreakpointError, Done]] = updateStepListResult(stepList.removeBreakpoint(id))
-  def replace(id: Id, commands: List[SequenceCommand]): Future[Either[ReplaceError, Done]] =
-    updateStepListResult(stepList.replace(id, commands))
-  def prepend(commands: List[SequenceCommand]): Future[Either[PrependError, Done]] =
+  def isAvailable: Future[Boolean]                  = async(sequencerAvailable)
+  def getSequence: Future[StepList]                 = async(stepList)
+  def getPreviousSequence: Future[Option[StepList]] = async(previousStepList)
+  def mayBeNext: Future[Option[Step]]               = async(stepList.nextExecutable)
+
+  // editor
+  def add(commands: List[SequenceCommand]): Future[EditorResponse[AddError]] = updateStepListResult(stepList.append(commands))
+  def prepend(commands: List[SequenceCommand]): Future[EditorResponse[PrependError]] =
     updateStepListResult(stepList.prepend(commands))
-  def insertAfter(id: Id, commands: List[SequenceCommand]): Future[Either[InsertError, Done]] =
+  def insertAfter(id: Id, commands: List[SequenceCommand]): Future[EditorResponse[InsertError]] =
     updateStepListResult(stepList.insertAfter(id, commands))
+  def replace(id: Id, commands: List[SequenceCommand]): Future[EditorResponse[ReplaceError]] =
+    updateStepListResult(stepList.replace(id, commands))
+  def delete(id: Id): Future[EditorResponse[DeleteError]]               = updateStepListResult(stepList.delete(id))
+  def pause: Future[EditorResponse[PauseError]]                         = updateStepListResult(stepList.pause)
+  def resume: Future[EditorResponse[ResumeError]]                       = updateStepListResult(stepList.resume)
+  def reset(): Future[EditorResponse[ResetError]]                       = updateStepListResult(stepList.discardPending)
+  def addBreakpoint(id: Id): Future[EditorResponse[AddBreakpointError]] = updateStepListResult(stepList.addBreakpoint(id))
+  def removeBreakpoint(id: Id): Future[EditorResponse[RemoveBreakpointError]] =
+    updateStepListResult(stepList.removeBreakpoint(id))
 
   private def updateStepList(newStepList: StepList): Unit = {
     if (!stepList.isEmpty)
