@@ -39,6 +39,14 @@ trait ScriptDsl extends ControlDsl {
   private[framework] def executeShutdown(): Future[Unit] = Future.sequence(shutdownHandlers.execute(())).map(_ ⇒ ())
   private[framework] def executeAbort(): Future[Unit]    = Future.sequence(abortHandlers.execute(())).map(_ ⇒ ())
 
+  protected final def nextIf(f: SequenceCommand => Boolean): Future[Option[SequenceCommand]] =
+    spawn {
+      csw.sequenceOperator.maybeNext.await.map(_.command) match {
+        case Some(cmd) if f(cmd) => Some(csw.sequenceOperator.pullNext.await.command)
+        case _                   => None
+      }
+    }
+
   protected final def handleSetupCommand(name: String)(handler: Setup => Future[Unit]): Unit     = handle(name)(handler)
   protected final def handleObserveCommand(name: String)(handler: Observe => Future[Unit]): Unit = handle(name)(handler)
   protected final def handleShutdown(handler: => Future[Unit]): Unit                             = shutdownHandlers.add(_ => handler)

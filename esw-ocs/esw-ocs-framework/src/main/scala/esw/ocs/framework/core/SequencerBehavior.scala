@@ -36,9 +36,10 @@ object SequencerBehavior {
         case RemoveBreakpoint(id, replyTo)      ⇒ sequencer.removeBreakpoint(id).foreach(send(_, replyTo))
 
         // ===== Internal =====
-        case PullNext(replyTo)           ⇒ sequencer.pullNext().foreach(replyTo.tell)
-        case MaybeNext(replyTo)          ⇒ sequencer.mayBeNext.foreach(replyTo.tell)
-        case ReadyToExecuteNext(replyTo) ⇒ sequencer.readyToExecuteNext().foreach(replyTo.tell)
+        case PullNext(replyTo)              ⇒ sequencer.pullNext().foreach(replyTo.tell)
+        case MaybeNext(replyTo)             ⇒ sequencer.mayBeNext.foreach(replyTo.tell)
+        case ReadyToExecuteNext(replyTo)    ⇒ sequencer.readyToExecuteNext().foreach(replyTo.tell)
+        case UpdateFailure(failureResponse) => sequencer.updateFailure(failureResponse)
       }
       Behaviors.same
     }

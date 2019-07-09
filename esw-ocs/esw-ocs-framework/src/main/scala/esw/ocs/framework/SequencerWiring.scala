@@ -21,7 +21,7 @@ import csw.params.core.models.Prefix
 import esw.ocs.async.macros.StrandEc
 import esw.ocs.framework.api.models.messages.SequencerMsg
 import esw.ocs.framework.core.internal.ScriptLoader
-import esw.ocs.framework.core.{SequenceEditorClient, Sequencer, SequencerBehavior}
+import esw.ocs.framework.core.{Engine, SequenceEditorClient, SequenceOperator, Sequencer, SequencerBehavior}
 import esw.ocs.framework.dsl.{CswServices, Script}
 
 import scala.concurrent.duration.DurationLong
@@ -36,6 +36,8 @@ class SequencerWiring(val sequencerId: String, val observingMode: String) {
   implicit lazy val scheduler: Scheduler = typedSystem.scheduler
   implicit lazy val timeout: Timeout     = 5.seconds
 
+  private lazy val engine = new Engine()
+
   private lazy val sequencerName  = s"$sequencerId@$observingMode"
   private lazy val componentId    = ComponentId(sequencerName, ComponentType.Sequencer)
   private lazy val config: Config = typedSystem.settings.config
@@ -48,7 +50,9 @@ class SequencerWiring(val sequencerId: String, val observingMode: String) {
     Await.result(typedSystem ? Spawn(CommandResponseManagerActor.behavior(CRMCacheProperties(), loggerFactory), "crm"), 5.seconds)
   private lazy val commandResponseManager: CommandResponseManager = new CommandResponseManager(crmRef)
 
-  private lazy val cswServices    = new CswServices
+  private lazy val sequenceOperator = new SequenceOperator(sequencerRef)
+
+  private lazy val cswServices    = new CswServices(sequenceOperator)
   private lazy val script: Script = new ScriptLoader(sequencerId, observingMode).load(cswServices)
   private lazy val sequencer      = new Sequencer(commandResponseManager)(StrandEc(), timeout)
 
@@ -68,6 +72,7 @@ class SequencerWiring(val sequencerId: String, val observingMode: String) {
     val registration = AkkaRegistration(AkkaConnection(componentId), prefix, sequencerRef)
     log.info(s"Registering ${componentId.name} with Location Service using registration: [${registration.toString}]")
 
+    engine.start(sequenceOperator, script)
     Await
       .result(locationService.register(registration), 5.seconds)
       .location

@@ -110,15 +110,17 @@ private[framework] class Sequencer(crm: CommandResponseManager)(implicit strandE
   private def processSubmitResponse(stepId: Id, submitResponseF: Future[SubmitResponse]) =
     submitResponseF
       .flatMap {
-        case submitResponse if CommandResponse.isPositive(submitResponse) ⇒
-          updateStatus(submitResponse, Finished.Success(submitResponse))
-        case submitResponse ⇒ updateStatus(submitResponse, Finished.Failure(submitResponse))
+        case submitResponse if CommandResponse.isPositive(submitResponse) ⇒ updateSuccess(submitResponse)
+        case failureResponse                                              ⇒ updateFailure(failureResponse)
       }
       .recoverWith {
-        case NonFatal(e) ⇒
-          val errorResponse = Error(stepId, e.getMessage)
-          updateStatus(errorResponse, Finished.Failure(errorResponse))
+        case NonFatal(e) ⇒ updateFailure(Error(stepId, e.getMessage))
       }
+
+  private[framework] def updateFailure(failureResponse: SubmitResponse) =
+    updateStatus(failureResponse, Finished.Failure(failureResponse))
+
+  private def updateSuccess(successResponse: SubmitResponse) = updateStatus(successResponse, Finished.Success(successResponse))
 
   private def updateStatus(submitResponse: SubmitResponse, stepStatus: StepStatus) = async {
     crm.updateSubCommand(submitResponse)

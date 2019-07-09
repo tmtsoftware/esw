@@ -18,9 +18,10 @@ object SequencerMsg {
   sealed trait InternalSequencerMsg extends SequencerMsg
 
   // engine msgs
-  final case class PullNext(replyTo: ActorRef[Step])           extends InternalSequencerMsg
-  final case class MaybeNext(replyTo: ActorRef[Option[Step]])  extends InternalSequencerMsg
-  final case class ReadyToExecuteNext(replyTo: ActorRef[Done]) extends InternalSequencerMsg
+  final case class PullNext(replyTo: ActorRef[Step])              extends InternalSequencerMsg
+  final case class MaybeNext(replyTo: ActorRef[Option[Step]])     extends InternalSequencerMsg
+  final case class ReadyToExecuteNext(replyTo: ActorRef[Done])    extends InternalSequencerMsg
+  final case class UpdateFailure(failureResponse: SubmitResponse) extends InternalSequencerMsg
 
   sealed trait ExternalSequencerMsg extends SequencerMsg
   final case class ProcessSequence(sequence: Sequence, replyTo: ActorRef[Either[ProcessSequenceError, SubmitResponse]])

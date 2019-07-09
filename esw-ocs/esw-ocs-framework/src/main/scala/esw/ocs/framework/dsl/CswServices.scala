@@ -1,5 +1,7 @@
 package esw.ocs.framework.dsl
 
-class CswServices
+import esw.ocs.framework.core.SequenceOperator
+
+class CswServices(private[framework] val sequenceOperator: SequenceOperator)
 //    sequenceId: String,
 //    observingMode: String
