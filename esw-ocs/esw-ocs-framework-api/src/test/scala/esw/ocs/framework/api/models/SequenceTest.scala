@@ -12,7 +12,7 @@ class SequenceTest extends BaseTestSuite {
       val observe  = Observe(Prefix("test1"), CommandName("observe-test"), None)
       val sequence = Sequence(setup, observe)
 
-      sequence.commands shouldBe List(setup, observe)
+      sequence.commands should ===(List(setup, observe))
     }
   }
 
@@ -26,7 +26,7 @@ class SequenceTest extends BaseTestSuite {
       val newObserve = Observe(Prefix("test4"), CommandName("setup-test"), None)
 
       val updateSequence = sequence.add(newSetup, newObserve)
-      updateSequence.commands shouldBe List(setup, observe, newSetup, newObserve)
+      updateSequence.commands should ===(List(setup, observe, newSetup, newObserve))
     }
 
     "allow adding new sequence to existing sequence" in {
@@ -39,7 +39,7 @@ class SequenceTest extends BaseTestSuite {
       val newSequence = Sequence(newSetup, newObserve)
 
       val updateSequence = sequence.add(newSequence)
-      updateSequence.commands shouldBe List(setup, observe, newSetup, newObserve)
+      updateSequence.commands should ===(List(setup, observe, newSetup, newObserve))
     }
 
   }

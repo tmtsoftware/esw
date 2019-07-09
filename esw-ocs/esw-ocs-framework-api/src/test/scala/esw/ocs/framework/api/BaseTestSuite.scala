@@ -1,5 +1,6 @@
 package esw.ocs.framework.api
 
+import org.scalactic.TypeCheckedTripleEquals
 import org.scalatest._
 import org.scalatest.concurrent.{Eventually, ScalaFutures}
 
@@ -14,6 +15,7 @@ trait BaseTestSuite
     with ScalaFutures
     with OptionValues
     with EitherValues
+    with TypeCheckedTripleEquals
     with Eventually {
   val defaultTimeout: Duration = 10.seconds
 

@@ -245,7 +245,7 @@ class SequencerTest extends BaseTestSuite with MockitoSugar {
   }
 
   "pause" must {
-    "pause at next pending command from the sequence" in {
+    "pause at next pending command from the sequence | ESW-104" in {
       val command1 = Setup(Prefix("test"), CommandName("command-1"), None)
       val command2 = Observe(Prefix("test"), CommandName("command-2"), None)
       val sequence = Sequence(Id(), Seq(command1, command2))
@@ -277,7 +277,7 @@ class SequencerTest extends BaseTestSuite with MockitoSugar {
   }
 
   "resume" must {
-    "resume executing sequence" in {
+    "resume executing sequence | ESW-105" in {
       val command1 = Setup(Prefix("test"), CommandName("command-1"), None)
       val command2 = Observe(Prefix("test"), CommandName("command-2"), None)
       val sequence = Sequence(Id(), Seq(command1, command2))
@@ -327,7 +327,7 @@ class SequencerTest extends BaseTestSuite with MockitoSugar {
   }
 
   "replace" must {
-    "replace step matching provided id with given list of commands" in {
+    "replace step matching provided id with given list of commands | ESW-108" in {
       val command1 = Setup(Prefix("test"), CommandName("command-1"), None)
       val command2 = Observe(Prefix("test"), CommandName("command-2"), None)
       val command3 = Setup(Prefix("test"), CommandName("command-3"), None)
@@ -382,7 +382,7 @@ class SequencerTest extends BaseTestSuite with MockitoSugar {
   }
 
   "addBreakpoint & removeBreakpoint" must {
-    "add and remove breakpoint at step matching provided id" in {
+    "add and remove breakpoint at step matching provided id | ESW-106, ESW-removeBreakpoint" in {
       val command1 = Setup(Prefix("test"), CommandName("command-1"), None)
       val command2 = Observe(Prefix("test"), CommandName("command-2"), None)
       val sequence = Sequence(Id(), Seq(command1, command2))

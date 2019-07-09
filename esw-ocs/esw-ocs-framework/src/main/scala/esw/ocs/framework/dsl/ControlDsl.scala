@@ -11,8 +11,7 @@ import scala.language.experimental.macros
 trait ControlDsl {
   implicit lazy val strandEc: StrandEc               = StrandEc()
   protected implicit lazy val toEc: ExecutionContext = strandEc.ec
-  // todo: should this come from conf file?
-  private[framework] val loopInterval: FiniteDuration
+  private[framework] def loopInterval: FiniteDuration
 
   protected final def par[T](fs: List[Future[T]]): Future[List[T]]          = Future.sequence(fs)
   protected final def par[T](f: Future[T], fs: Future[T]*): Future[List[T]] = par(f :: fs.toList)

@@ -5,9 +5,12 @@ import com.typesafe.config.{Config, ConfigException}
 import esw.ocs.framework.dsl.{CswServices, Script}
 import esw.ocs.framework.exceptions.ScriptLoadingException._
 
+import scala.util.control.NonFatal
+
 class ScriptLoader(sequencerId: String, observingMode: String)(implicit actorSystem: ActorSystem[SpawnProtocol]) {
   private lazy val config: Config = actorSystem.settings.config
 
+  // todo: can this be taken as dependency similar to seqId and obsMode and remove implicit actorSystem?
   private lazy val scriptClass: String = config.getString(s"scripts.$sequencerId.$observingMode.scriptClass")
 
   def load(cswServices: CswServices): Script = {
@@ -18,7 +21,7 @@ class ScriptLoader(sequencerId: String, observingMode: String)(implicit actorSys
       case _: ConfigException.Missing => throw new ScriptConfigurationMissingException(sequencerId, observingMode)
       case _: ClassCastException      => throw new InvalidScriptException(scriptClass)
       case _: ClassNotFoundException  => throw new ScriptNotFound(scriptClass)
-      case e: Exception               => throw e
+      case NonFatal(e)                => throw e
     }
   }
 }

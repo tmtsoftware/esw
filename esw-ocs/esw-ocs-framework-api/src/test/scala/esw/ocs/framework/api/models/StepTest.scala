@@ -15,9 +15,9 @@ class StepTest extends BaseTestSuite {
       val setup = Setup(Prefix("test"), CommandName("test"), None)
 
       val step = Step(setup)
-      step.command shouldBe setup
-      step.status shouldBe Pending
-      step.hasBreakpoint shouldBe false
+      step.command should ===(setup)
+      step.status should ===(Pending)
+      step.hasBreakpoint should ===(false)
     }
   }
 
@@ -25,7 +25,7 @@ class StepTest extends BaseTestSuite {
     "be same as provided sequence commands Id" in {
       val setup = Setup(Prefix("test"), CommandName("test"), None)
       val step  = Step(setup)
-      step.id shouldBe setup.runId
+      step.id should ===(setup.runId)
     }
   }
 
@@ -33,9 +33,9 @@ class StepTest extends BaseTestSuite {
     "return true when step status is Pending" in {
       val setup = Setup(Prefix("test"), CommandName("test"), None)
       val step  = Step(setup, Pending, hasBreakpoint = false)
-      step.isPending shouldBe true
-      step.isInFlight shouldBe false
-      step.isFinished shouldBe false
+      step.isPending should ===(true)
+      step.isInFlight should ===(false)
+      step.isFinished should ===(false)
     }
   }
 
@@ -43,9 +43,9 @@ class StepTest extends BaseTestSuite {
     "return true when step status is InFlight" in {
       val setup = Setup(Prefix("test"), CommandName("test"), None)
       val step  = Step(setup, InFlight, hasBreakpoint = false)
-      step.isInFlight shouldBe true
-      step.isPending shouldBe false
-      step.isFinished shouldBe false
+      step.isInFlight should ===(true)
+      step.isPending should ===(false)
+      step.isFinished should ===(false)
     }
   }
 
@@ -54,48 +54,48 @@ class StepTest extends BaseTestSuite {
     "return true when step status is Finished" in {
       val setup = Setup(Prefix("test"), CommandName("test"), None)
       val step  = Step(setup, finished(setup.runId), hasBreakpoint = false)
-      step.isFinished shouldBe true
-      step.isInFlight shouldBe false
-      step.isPending shouldBe false
+      step.isFinished should ===(true)
+      step.isInFlight should ===(false)
+      step.isPending should ===(false)
     }
   }
 
   "addBreakpoint" must {
-    "add breakpoint when step status is Pending" in {
+    "add breakpoint when step status is Pending | ESW-106" in {
       val setup      = Setup(Prefix("test"), CommandName("test"), None)
       val step       = Step(setup, Pending, hasBreakpoint = false)
       val stepResult = step.addBreakpoint()
-      stepResult.right.value.hasBreakpoint shouldBe true
+      stepResult.right.value.hasBreakpoint should ===(true)
     }
 
-    "not not add breakpoint when step status is InFlight" in {
+    "fail with AddingBreakpointNotSupported error when step status is InFlight | ESW-106" in {
       val setup      = Setup(Prefix("test"), CommandName("test"), None)
       val step       = Step(setup, InFlight, hasBreakpoint = false)
       val stepResult = step.addBreakpoint()
-      stepResult.left.value shouldBe AddingBreakpointNotSupported(InFlight)
+      stepResult.left.value should ===(AddingBreakpointNotSupported(InFlight))
     }
 
-    "not not add breakpoint when step status is Finished" in {
+    "fail with AddingBreakpointNotSupported error when step status is Finished | ESW-106" in {
       val setup      = Setup(Prefix("test"), CommandName("test"), None)
       val step       = Step(setup, finished(setup.runId), hasBreakpoint = false)
       val stepResult = step.addBreakpoint()
-      stepResult.left.value shouldBe AddingBreakpointNotSupported(finished(setup.runId))
+      stepResult.left.value should ===(AddingBreakpointNotSupported(finished(setup.runId)))
     }
   }
 
   "removeBreakpoint" must {
-    "remove the breakpoint" in {
+    "remove the breakpoint | ESW-107" in {
       val setup       = Setup(Prefix("test"), CommandName("test"), None)
       val step        = Step(setup, Pending, hasBreakpoint = true)
       val updatedStep = step.removeBreakpoint()
-      updatedStep.hasBreakpoint shouldBe false
+      updatedStep.hasBreakpoint should ===(false)
     }
 
-    "be no op when step does not have breakpoint" in {
+    "be no op when step does not have breakpoint | ESW-107" in {
       val setup       = Setup(Prefix("test"), CommandName("test"), None)
       val step        = Step(setup, Pending, hasBreakpoint = false)
       val updatedStep = step.removeBreakpoint()
-      updatedStep shouldBe step
+      updatedStep should ===(step)
     }
   }
 
@@ -104,7 +104,7 @@ class StepTest extends BaseTestSuite {
       val setup      = Setup(Prefix("test"), CommandName("test"), None)
       val step       = Step(setup, Pending, hasBreakpoint = true)
       val stepResult = step.withStatus(InFlight)
-      stepResult.right.value.status shouldBe InFlight
+      stepResult.right.value.status should ===(InFlight)
     }
 
     "change the status to Finished from InFlight " in {
@@ -112,14 +112,14 @@ class StepTest extends BaseTestSuite {
       val step             = Step(setup, InFlight, hasBreakpoint = true)
       val finishedResponse = finished(setup.runId)
       val stepResult       = step.withStatus(finishedResponse)
-      stepResult.right.value.status shouldBe finishedResponse
+      stepResult.right.value.status should ===(finishedResponse)
     }
 
     "fail for invalid status transitions" in {
       val setup      = Setup(Prefix("test"), CommandName("test"), None)
       val step       = Step(setup, InFlight, hasBreakpoint = true)
       val stepResult = step.withStatus(Pending)
-      stepResult.left.value shouldBe UpdateNotSupported(InFlight, Pending)
+      stepResult.left.value should ===(UpdateNotSupported(InFlight, Pending))
     }
   }
 }
