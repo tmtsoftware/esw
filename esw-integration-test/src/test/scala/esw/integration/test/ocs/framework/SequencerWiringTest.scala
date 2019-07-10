@@ -43,12 +43,34 @@ class SequencerWiringTest extends BaseTestSuite {
       val sequencerName = s"$sequencerId@$observingMode"
       val wiring        = new SequencerWiring(sequencerId, observingMode)
 
-      wiring.start()
+      val triedLocation = wiring.start()
 
       val connection        = AkkaConnection(ComponentId(sequencerName, ComponentType.Sequencer))
       val sequencerLocation = testLocationService.resolve(connection, 5.seconds).await.get
 
+      triedLocation.get.connection shouldBe connection
       sequencerLocation.connection.componentId.name shouldBe sequencerName
+
+      // cleanup
+      wiring.shutDown()
+    }
+
+    "should shutdown running Sequencer" in {
+      val sequencerId   = "testSequencerId1"
+      val observingMode = "testObservingMode1"
+      val sequencerName = s"$sequencerId@$observingMode"
+      val wiring        = new SequencerWiring(sequencerId, observingMode)
+
+      wiring.start()
+
+      val connection        = AkkaConnection(ComponentId(sequencerName, ComponentType.Sequencer))
+      val sequencerLocation = testLocationService.resolve(connection, 5.seconds).await.get
+      // test sequencer is registered with location service
+      sequencerLocation.connection.componentId.name shouldBe sequencerName
+
+      wiring.shutDown()
+
+      testLocationService.resolve(connection, 5.seconds).await shouldBe None
     }
   }
 }
