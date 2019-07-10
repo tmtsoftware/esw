@@ -75,7 +75,8 @@ lazy val `esw-integration-test` = project
   .settings(fork in Test := true)
   .dependsOn(
     `esw-gateway-server`       % "test->compile;test->test",
-    `esw-template-http-server` % "test->compile;test->test"
+    `esw-template-http-server` % "test->compile;test->test",
+    `esw-ocs-framework`        % "test->compile;test->test"
   )
 
 /* ================= Paradox Docs ============== */

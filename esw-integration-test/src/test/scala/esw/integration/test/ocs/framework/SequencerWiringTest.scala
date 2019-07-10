@@ -1,0 +1,54 @@
+package esw.integration.test.ocs.framework
+
+import akka.actor
+import akka.actor.typed.ActorSystem
+import akka.actor.typed.scaladsl.Behaviors
+import akka.actor.typed.scaladsl.adapter.TypedActorSystemOps
+import akka.http.scaladsl.Http
+import akka.stream.typed.scaladsl.ActorMaterializer
+import csw.location.api.models.Connection.AkkaConnection
+import csw.location.api.models.{ComponentId, ComponentType}
+import csw.location.api.scaladsl.LocationService
+import csw.location.client.scaladsl.HttpLocationServiceFactory
+import csw.testkit.LocationTestKit
+import esw.ocs.framework.SequencerWiring
+import esw.template.http.server.BaseTestSuite
+import esw.template.http.server.TestFutureExtensions.RichFuture
+
+import scala.concurrent.duration.DurationDouble
+
+class SequencerWiringTest extends BaseTestSuite {
+  val testkit = LocationTestKit()
+
+  implicit val system: ActorSystem[_]                = ActorSystem(Behaviors.empty, "test")
+  implicit val untypedActorSystem: actor.ActorSystem = system.toUntyped
+  implicit val mat: ActorMaterializer                = ActorMaterializer()
+  private val testLocationService: LocationService   = HttpLocationServiceFactory.makeLocalClient
+
+  override def beforeAll(): Unit = {
+    testkit.startLocationServer()
+  }
+
+  override def afterAll(): Unit = {
+    Http().shutdownAllConnectionPools().await
+    testkit.shutdownLocationServer()
+    system.terminate()
+    system.whenTerminated.await
+  }
+
+  "SequencerWiring" must {
+    "should start sequencer and register with location service | ESW-103" in {
+      val sequencerId   = "testSequencerId1"
+      val observingMode = "testObservingMode1"
+      val sequencerName = s"$sequencerId@$observingMode"
+      val wiring        = new SequencerWiring(sequencerId, observingMode)
+
+      wiring.start()
+
+      val connection        = AkkaConnection(ComponentId(sequencerName, ComponentType.Sequencer))
+      val sequencerLocation = testLocationService.resolve(connection, 5.seconds).await.get
+
+      sequencerLocation.connection.componentId.name shouldBe sequencerName
+    }
+  }
+}
