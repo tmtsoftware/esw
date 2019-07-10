@@ -14,7 +14,7 @@ import csw.logging.client.scaladsl.LoggerFactory
 import esw.ocs.async.macros.StrandEc
 import esw.ocs.framework.api.models.messages.SequencerMsg
 import esw.ocs.framework.core._
-import esw.ocs.framework.core.internal.ScriptLoader
+import esw.ocs.framework.core.internal.{ScriptLoader, SequencerConfig}
 import esw.ocs.framework.dsl.{CswServices, Script}
 
 import scala.concurrent.Await
@@ -23,14 +23,13 @@ import scala.util.Try
 
 class SequencerWiring(val sequencerId: String, val observingMode: String) {
 
-  private lazy val settings: Settings = new Settings(sequencerId, observingMode)
-  private val actorRuntime            = new ActorRuntime(settings.sequencerName)
-
+  private lazy val settings: SequencerConfig = new SequencerConfig(sequencerId, observingMode)
+  private val actorRuntime                   = new ActorRuntime(settings.name)
   import actorRuntime._
 
   private lazy val engine        = new Engine()
-  private lazy val componentId   = ComponentId(settings.sequencerName, ComponentType.Sequencer)
-  private lazy val loggerFactory = new LoggerFactory(settings.sequencerName)
+  private lazy val componentId   = ComponentId(settings.name, ComponentType.Sequencer)
+  private lazy val loggerFactory = new LoggerFactory(settings.name)
   private lazy val log: Logger   = loggerFactory.getLogger
 
   private lazy val crmRef: ActorRef[CommandResponseManagerMessage] =
@@ -38,7 +37,7 @@ class SequencerWiring(val sequencerId: String, val observingMode: String) {
   private lazy val commandResponseManager: CommandResponseManager = new CommandResponseManager(crmRef)
 
   private lazy val sequencerRef: ActorRef[SequencerMsg] =
-    Await.result(typedSystem ? Spawn(SequencerBehavior.behavior(sequencer, script), settings.sequencerName), 5.seconds)
+    Await.result(typedSystem ? Spawn(SequencerBehavior.behavior(sequencer, script), settings.name), 5.seconds)
 
   //Pass lambda to break circular dependency shown below.
   //SequencerRef -> Script -> cswServices -> SequencerOperator -> SequencerRef

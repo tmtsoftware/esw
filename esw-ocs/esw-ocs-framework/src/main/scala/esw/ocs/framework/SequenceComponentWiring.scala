@@ -24,7 +24,7 @@ class SequenceComponentWiring(name: String) {
 
   private lazy val locationService: LocationService = HttpLocationServiceFactory.makeLocalClient
 
-  //fixme: should this come from conf file
+  //fixme: should this come from conf file?
   private lazy val prefix = Prefix("sequence-component")
 
   def start(): Unit = {
