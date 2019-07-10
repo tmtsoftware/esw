@@ -3,7 +3,6 @@ package esw.ocs.framework
 import akka.actor.typed.ActorRef
 import akka.actor.typed.SpawnProtocol.Spawn
 import akka.actor.typed.scaladsl.AskPattern.Askable
-import com.typesafe.config.Config
 import csw.command.client.messages.CommandResponseManagerMessage
 import csw.command.client.{CRMCacheProperties, CommandResponseManager, CommandResponseManagerActor}
 import csw.location.api.models.Connection.AkkaConnection
@@ -24,18 +23,14 @@ import scala.util.Try
 
 class SequencerWiring(val sequencerId: String, val observingMode: String) {
 
-  private lazy val sequencerName = s"$sequencerId@$observingMode"
-  private val actorRuntime       = new ActorRuntime(sequencerName)
+  private lazy val settings: Settings = new Settings(sequencerId, observingMode)
+  private val actorRuntime            = new ActorRuntime(settings.sequencerName)
+
   import actorRuntime._
 
-  private lazy val engine = new Engine()
-
-  private lazy val config: Config                       = typedSystem.settings.config
-  private lazy val settings: Settings                   = new Settings(config)
-  private lazy val sequencerSettings: SequencerSettings = settings.sequencerSettings(sequencerId, observingMode)
-
-  private lazy val componentId   = ComponentId(sequencerSettings.sequencerName, ComponentType.Sequencer)
-  private lazy val loggerFactory = new LoggerFactory(sequencerSettings.sequencerName)
+  private lazy val engine        = new Engine()
+  private lazy val componentId   = ComponentId(settings.sequencerName, ComponentType.Sequencer)
+  private lazy val loggerFactory = new LoggerFactory(settings.sequencerName)
   private lazy val log: Logger   = loggerFactory.getLogger
 
   private lazy val crmRef: ActorRef[CommandResponseManagerMessage] =
@@ -43,7 +38,7 @@ class SequencerWiring(val sequencerId: String, val observingMode: String) {
   private lazy val commandResponseManager: CommandResponseManager = new CommandResponseManager(crmRef)
 
   private lazy val sequencerRef: ActorRef[SequencerMsg] =
-    Await.result(typedSystem ? Spawn(SequencerBehavior.behavior(sequencer, script), sequencerName), 5.seconds)
+    Await.result(typedSystem ? Spawn(SequencerBehavior.behavior(sequencer, script), settings.sequencerName), 5.seconds)
 
   //Pass lambda to break circular dependency shown below.
   //SequencerRef -> Script -> cswServices -> SequencerOperator -> SequencerRef
@@ -64,7 +59,7 @@ class SequencerWiring(val sequencerId: String, val observingMode: String) {
   }
 
   def start(): Try[AkkaLocation] = {
-    val registration = AkkaRegistration(AkkaConnection(componentId), sequencerSettings.prefix, sequencerRef)
+    val registration = AkkaRegistration(AkkaConnection(componentId), settings.prefix, sequencerRef)
     log.info(s"Registering ${componentId.name} with Location Service using registration: [${registration.toString}]")
 
     engine.start(sequenceOperatorFactory(), script)
