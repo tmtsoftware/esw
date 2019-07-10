@@ -15,6 +15,6 @@ object SequenceComponentMsg {
       observingMode: String,
       sender: ActorRef[Try[AkkaLocation]]
   ) extends SequenceComponentMsg
-  case class StopScript(sender: ActorRef[Done])                extends SequenceComponentMsg
+  case class UnloadScript(sender: ActorRef[Done])              extends SequenceComponentMsg
   case class GetStatus(sender: ActorRef[Option[AkkaLocation]]) extends SequenceComponentMsg
 }

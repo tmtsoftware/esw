@@ -6,12 +6,12 @@ import akka.actor.typed.scaladsl.Behaviors
 import csw.location.api.models.AkkaLocation
 import esw.ocs.framework.SequencerWiring
 import esw.ocs.framework.api.models.messages.SequenceComponentMsg
-import esw.ocs.framework.api.models.messages.SequenceComponentMsg.{GetStatus, LoadScript, StopScript}
+import esw.ocs.framework.api.models.messages.SequenceComponentMsg.{GetStatus, LoadScript, UnloadScript}
 import esw.ocs.framework.exceptions.SequencerAlreadyRunningException
 
 import scala.util.Failure
 
-object SequenceComponent {
+object SequenceComponentBehavior {
 
   def behavior: Behavior[SequenceComponentMsg] = {
 
@@ -24,14 +24,14 @@ object SequenceComponent {
       case GetStatus(sender) =>
         sender ! None
         Behaviors.same
-      case StopScript(sender) =>
+      case UnloadScript(sender) =>
         sender ! Done
         Behaviors.same
     }
 
     def running(wiring: SequencerWiring, location: AkkaLocation): Behavior[SequenceComponentMsg] =
       Behaviors.receiveMessage[SequenceComponentMsg] {
-        case StopScript(sender) =>
+        case UnloadScript(sender) =>
           wiring.shutDown()
           sender ! Done
           idle

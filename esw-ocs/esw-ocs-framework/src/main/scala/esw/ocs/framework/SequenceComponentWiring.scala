@@ -10,7 +10,7 @@ import csw.location.api.scaladsl.LocationService
 import csw.location.client.scaladsl.HttpLocationServiceFactory
 import csw.params.core.models.Prefix
 import esw.ocs.framework.api.models.messages.SequenceComponentMsg
-import esw.ocs.framework.core.SequenceComponent
+import esw.ocs.framework.core.SequenceComponentBehavior
 
 import scala.concurrent.Await
 import scala.concurrent.duration.DurationLong
@@ -20,7 +20,7 @@ class SequenceComponentWiring(name: String) {
   import actorRuntime._
 
   lazy val sequenceComponentRef: ActorRef[SequenceComponentMsg] =
-    Await.result(typedSystem ? Spawn(SequenceComponent.behavior, name), 5.seconds)
+    Await.result(typedSystem ? Spawn(SequenceComponentBehavior.behavior, name), 5.seconds)
 
   private lazy val locationService: LocationService = HttpLocationServiceFactory.makeLocalClient
 
