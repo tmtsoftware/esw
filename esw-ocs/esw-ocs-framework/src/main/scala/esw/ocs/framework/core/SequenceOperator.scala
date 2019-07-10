@@ -2,8 +2,8 @@ package esw.ocs.framework.core
 
 import akka.Done
 import akka.actor.Scheduler
-import akka.actor.typed.{ActorRef, ActorSystem}
 import akka.actor.typed.scaladsl.AskPattern._
+import akka.actor.typed.{ActorRef, ActorSystem}
 import akka.util.Timeout
 import csw.params.commands.CommandResponse.SubmitResponse
 import esw.ocs.framework.api.models.Step
@@ -11,7 +11,7 @@ import esw.ocs.framework.api.models.messages.SequencerMsg._
 
 import scala.concurrent.Future
 
-class SequenceOperator(sequencer: ActorRef[InternalSequencerMsg])(
+class SequenceOperator private[framework] (sequencer: ActorRef[InternalSequencerMsg])(
     implicit system: ActorSystem[_],
     timeout: Timeout
 ) {

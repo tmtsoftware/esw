@@ -41,8 +41,9 @@ trait ScriptDsl extends ControlDsl {
 
   protected final def nextIf(f: SequenceCommand => Boolean): Future[Option[SequenceCommand]] =
     spawn {
-      csw.sequenceOperator.maybeNext.await.map(_.command) match {
-        case Some(cmd) if f(cmd) => Some(csw.sequenceOperator.pullNext.await.command)
+      val operator = csw.sequenceOperatorFactory()
+      operator.maybeNext.await.map(_.command) match {
+        case Some(cmd) if f(cmd) => Some(operator.pullNext.await.command)
         case _                   => None
       }
     }
