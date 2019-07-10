@@ -37,7 +37,7 @@ final case class StepList private[models] (runId: Id, steps: List[Step]) {
     steps
       .foldLeft[Either[DeleteError, List[Step]]](Right(List.empty)) {
         case (acc, step) if step.id == id && step.isPending ⇒ acc
-        case (_, step) if step.id == id                     ⇒ Left(DeleteNotSupported(step.status))
+        case (_, step) if step.id == id                     ⇒ Left(NotSupported(step.status))
         case (acc, step)                                    ⇒ acc.map(_ :+ step)
       }
       .map(steps ⇒ copy(runId, steps))
