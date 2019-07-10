@@ -186,7 +186,20 @@ class StepListTest extends BaseTestSuite {
       updatedStepList.right.value should ===(StepList(id, List(step1, Step(setup4), Step(setup5), step3)))
     }
 
-    "fail with ReplaceNotSupported error when Id matches and is not in Pending status | ESW-108" in {
+    "fail with NotSupported error when Id matches but is in InFlight status | ESW-108" in {
+      val step1Status = finished(setup1.runId)
+      val step2Status = InFlight
+      val step1       = Step(setup1, step1Status, hasBreakpoint = false)
+      val step2       = Step(setup2, step2Status, hasBreakpoint = false)
+      val step3       = Step(setup3, Pending, hasBreakpoint = false)
+
+      val stepList        = StepList(Id(), List(step1, step2, step3))
+      val id              = setup2.runId
+      val updatedStepList = stepList.replace(id, List(setup4, setup5))
+      updatedStepList.left.value should ===(NotSupported(step2Status))
+    }
+
+    "fail with NotSupported error when Id matches but is in Finished status | ESW-108" in {
       val step1Status = finished(setup1.runId)
       val step2Status = finished(setup2.runId)
       val step1       = Step(setup1, step1Status, hasBreakpoint = false)
@@ -196,7 +209,7 @@ class StepListTest extends BaseTestSuite {
       val stepList        = StepList(Id(), List(step1, step2, step3))
       val id              = setup2.runId
       val updatedStepList = stepList.replace(id, List(setup4, setup5))
-      updatedStepList.left.value should ===(ReplaceNotSupported(step2Status))
+      updatedStepList.left.value should ===(NotSupported(step2Status))
     }
 
     "fail with IdDoesNotExist error when provided Id does't exist in StepList | ESW-108" in {
@@ -335,7 +348,7 @@ class StepListTest extends BaseTestSuite {
     val setup3 = Setup(Prefix("ocs.move3"), CommandName("test3"), None)
     val setup4 = Setup(Prefix("ocs.move4"), CommandName("test4"), None)
 
-    "insert provided commands after given Id" in {
+    "insert provided commands after given Id | ESW-111" in {
       val step1 = Step(setup1, finished(setup1.runId), hasBreakpoint = false)
       val step2 = Step(setup2, Pending, hasBreakpoint = false)
 
@@ -345,7 +358,16 @@ class StepListTest extends BaseTestSuite {
       updatedStepList.right.value should ===(StepList(id, List(step1, Step(setup3), Step(setup4), step2)))
     }
 
-    "fail with IdDoesNotExist error when provided Id does't exist in StepList" in {
+    "insert provided commands after last InFlight step | ESW-111" in {
+      val step1 = Step(setup1, InFlight, hasBreakpoint = false)
+
+      val id              = Id()
+      val stepList        = StepList(id, List(step1))
+      val updatedStepList = stepList.insertAfter(step1.id, List(setup2))
+      updatedStepList.right.value should ===(StepList(id, List(step1, Step(setup2))))
+    }
+
+    "fail with IdDoesNotExist error when provided Id does't exist in StepList | ESW-111" in {
       val step1 = Step(setup1, InFlight, hasBreakpoint = false)
       val step2 = Step(setup2, Pending, hasBreakpoint = false)
 
@@ -356,7 +378,28 @@ class StepListTest extends BaseTestSuite {
       updatedStepList.left.value should ===(IdDoesNotExist(invalidId))
     }
 
-    "fail with NotAllowedOnFinishedSeq error when StepList is finished" in {
+    "fail with NotSupported error when trying to insert before a Finished step in StepList | ESW-111" in {
+      val step1 = Step(setup1, finished(setup1.runId), hasBreakpoint = false)
+      val step2 = Step(setup2, finished(setup2.runId), hasBreakpoint = false)
+      val step3 = Step(setup3, InFlight, hasBreakpoint = false)
+
+      val stepList = StepList(Id(), List(step1, step2, step3))
+
+      val updatedStepList = stepList.insertAfter(step1.id, List(setup4))
+      updatedStepList.left.value should ===(NotSupported(finished(setup2.runId)))
+    }
+
+    "fail with NotSupported error when trying to insert before an inFlight step in StepList | ESW-111" in {
+      val step1 = Step(setup1, finished(setup1.runId), hasBreakpoint = false)
+      val step2 = Step(setup2, InFlight, hasBreakpoint = false)
+
+      val stepList = StepList(Id(), List(step1, step2))
+
+      val updatedStepList = stepList.insertAfter(step1.id, List(setup3))
+      updatedStepList.left.value should ===(NotSupported(InFlight))
+    }
+
+    "fail with NotAllowedOnFinishedSeq error when StepList is finished | ESW-111" in {
       val step1 = Step(setup1, finished(setup1.runId), hasBreakpoint = false)
       val step2 = Step(setup2, finished(setup2.runId), hasBreakpoint = false)
 
@@ -373,7 +416,7 @@ class StepListTest extends BaseTestSuite {
     val setup3 = Setup(Prefix("ocs.move3"), CommandName("test3"), None)
     val setup4 = Setup(Prefix("ocs.move4"), CommandName("test4"), None)
 
-    "discard all the pending steps from StepList" in {
+    "discard all the pending steps from StepList | ESW-110" in {
       val step1 = Step(setup1, finished(setup1.runId), hasBreakpoint = false)
       val step2 = Step(setup2, Pending, hasBreakpoint = false)
       val step3 = Step(setup3, InFlight, hasBreakpoint = false)
@@ -385,7 +428,7 @@ class StepListTest extends BaseTestSuite {
       updatedStepList.right.value should ===(StepList(id, List(step1, step3)))
     }
 
-    "fail with NotAllowedOnFinishedSeq error when StepList is finished" in {
+    "fail with NotAllowedOnFinishedSeq error when StepList is finished | ESW-110" in {
       val step1 = Step(setup1, finished(setup1.runId), hasBreakpoint = false)
       val step2 = Step(setup2, finished(setup2.runId), hasBreakpoint = false)
 

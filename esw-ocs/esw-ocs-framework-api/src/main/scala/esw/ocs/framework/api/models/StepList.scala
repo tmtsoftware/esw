@@ -22,7 +22,7 @@ final case class StepList private[models] (runId: Id, steps: List[Step]) {
   def replace(id: Id, commands: List[SequenceCommand]): Either[ReplaceError, StepList] =
     ifExistAndNotFinished(id) { step ⇒
       if (step.isPending) replaceSteps(id, toSteps(commands))
-      else Left(ReplaceNotSupported(step.status))
+      else Left(NotSupported(step.status))
     }
 
   def prepend(commands: List[SequenceCommand]): Either[PrependError, StepList] = ifNotFinished {
@@ -45,8 +45,7 @@ final case class StepList private[models] (runId: Id, steps: List[Step]) {
 
   def insertAfter(id: Id, commands: List[SequenceCommand]): Either[InsertError, StepList] =
     ifExistAndNotFinished[InsertError](id) { _ ⇒
-      val updatedSteps = insertStepsAfter(id, toSteps(commands))
-      Right(copy(runId, updatedSteps))
+      insertStepsAfter(id, toSteps(commands)).map(updatedSteps => copy(runId, updatedSteps))
     }
 
   def discardPending: Either[ResetError, StepList] =
@@ -89,11 +88,15 @@ final case class StepList private[models] (runId: Id, steps: List[Step]) {
     }
 
   private def replaceSteps(id: Id, steps: List[Step]): Either[ReplaceError, StepList] =
-    Right(copy(runId, insertStepsAfter(id, steps).filterNot(_.id == id)))
+    insertStepsAfter(id, steps).map(updatedSteps => copy(runId, updatedSteps.filterNot(_.id == id)))
 
-  private def insertStepsAfter(id: Id, newSteps: List[Step]): List[Step] = {
-    val (pre, post) = steps.span(_.id != id)
-    pre ::: post.headOption.toList ::: newSteps ::: post.tail
+  private def insertStepsAfter(id: Id, newSteps: List[Step]): Either[NotSupported, List[Step]] = {
+    val (pre, post)        = steps.span(_.id != id)
+    val stepToInsertBefore = post.tail.headOption
+    stepToInsertBefore match {
+      case Some(step) if !step.isPending => Left(NotSupported(step.status))
+      case _                             => Right(pre ::: post.headOption.toList ::: newSteps ::: post.tail)
+    }
   }
 
   private[framework] def updateStep(step: Step) = updateAll(step.id, _ => step)
