@@ -219,7 +219,7 @@ class SequencerTest extends BaseTestSuite with MockitoSugar {
   }
 
   "add" must {
-    "add provided list of commands to existing sequence" in {
+    "add provided list of commands to existing sequence | ESW-114" in {
       val command1 = Setup(Prefix("test"), CommandName("command-1"), None)
       val command2 = Observe(Prefix("test"), CommandName("command-2"), None)
       val sequence = Sequence(Id(), Seq(command1, command2))
@@ -310,7 +310,7 @@ class SequencerTest extends BaseTestSuite with MockitoSugar {
   }
 
   "discardPending" must {
-    "remove all the pending commands from sequence" in {
+    "remove all the pending commands from sequence | ESW-110" in {
       val command1 = Setup(Prefix("test"), CommandName("command-1"), None)
       val command2 = Observe(Prefix("test"), CommandName("command-2"), None)
       val sequence = Sequence(Id(), Seq(command1, command2))
@@ -345,7 +345,7 @@ class SequencerTest extends BaseTestSuite with MockitoSugar {
   }
 
   "prepend" must {
-    "prepend provided list of commands to sequence" in {
+    "prepend provided list of commands to sequence | ESW-113" in {
       val command1 = Setup(Prefix("test"), CommandName("command-1"), None)
       val command2 = Observe(Prefix("test"), CommandName("command-2"), None)
       val sequence = Sequence(Id(), Seq(command1, command2))
@@ -364,7 +364,7 @@ class SequencerTest extends BaseTestSuite with MockitoSugar {
   }
 
   "delete" must {
-    "delete step matching provided id" in {
+    "delete step matching provided id | ESW-112" in {
       val command1 = Setup(Prefix("test"), CommandName("command-1"), None)
       val command2 = Observe(Prefix("test"), CommandName("command-2"), None)
       val sequence = Sequence(Id(), Seq(command1, command2))
@@ -401,7 +401,7 @@ class SequencerTest extends BaseTestSuite with MockitoSugar {
   }
 
   "insertAfter" must {
-    "insert provided list commands after matching step" in {
+    "insert provided list commands after matching step | ESW-111" in {
       val command1 = Setup(Prefix("test"), CommandName("command-1"), None)
       val command2 = Observe(Prefix("test"), CommandName("command-2"), None)
       val command3 = Setup(Prefix("test"), CommandName("command-3"), None)

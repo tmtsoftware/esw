@@ -24,6 +24,7 @@ object SequencerBehavior {
         case ProcessSequence(sequence, replyTo) ⇒ sequencer.processSequence(sequence).foreach(replyTo.tell)
         case Available(replyTo)                 ⇒ sequencer.isAvailable.foreach(replyTo.tell)
         case GetSequence(replyTo)               ⇒ sequencer.getSequence.foreach(replyTo.tell)
+        case GetPreviousSequence(replyTo)       ⇒ sequencer.getPreviousSequence.foreach(replyTo.tell)
         case Add(commands, replyTo)             ⇒ sequencer.add(commands).foreach(send(_, replyTo))
         case Pause(replyTo)                     ⇒ sequencer.pause.foreach(send(_, replyTo))
         case Resume(replyTo)                    ⇒ sequencer.resume.foreach(send(_, replyTo))

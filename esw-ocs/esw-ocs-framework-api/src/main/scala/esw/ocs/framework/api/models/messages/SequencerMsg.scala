@@ -34,6 +34,7 @@ object SequencerMsg {
   // editor msgs
   final case class Available(replyTo: ActorRef[Boolean])                                             extends ExternalSequencerMsg
   final case class GetSequence(replyTo: ActorRef[StepList])                                          extends ExternalSequencerMsg
+  final case class GetPreviousSequence(replyTo: ActorRef[Option[StepList]])                          extends ExternalSequencerMsg
   final case class Add(commands: List[SequenceCommand], replyTo: ActorRef[EditorResponse[AddError]]) extends ExternalSequencerMsg
   final case class Prepend(commands: List[SequenceCommand], replyTo: ActorRef[EditorResponse[PrependError]])
       extends ExternalSequencerMsg
