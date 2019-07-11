@@ -55,7 +55,7 @@ class SequencerWiringTest extends BaseTestSuite {
       wiring.shutDown()
     }
 
-    "should shutdown running Sequencer" in {
+    "should shutdown running Sequencer | ESW-103" in {
       val sequencerId   = "testSequencerId1"
       val observingMode = "testObservingMode1"
       val sequencerName = s"$sequencerId@$observingMode"
