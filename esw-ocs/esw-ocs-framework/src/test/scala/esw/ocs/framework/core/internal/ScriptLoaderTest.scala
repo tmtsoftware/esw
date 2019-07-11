@@ -6,10 +6,19 @@ import esw.ocs.framework.dsl.CswServices
 import esw.ocs.framework.exceptions.ScriptLoadingException._
 import org.mockito.MockitoSugar.mock
 
+import scala.concurrent.Await
+import scala.concurrent.duration.DurationInt
+
 class ScriptLoaderTest extends BaseTestSuite {
-  private implicit val actorSystem: ActorSystem[SpawnProtocol] = ActorSystem(SpawnProtocol.behavior, "test-ac")
+  private implicit val actorSystem: ActorSystem[SpawnProtocol] = ActorSystem(SpawnProtocol.behavior, "test")
 
   private val cswServices = mock[CswServices]
+
+  override protected def afterAll(): Unit = {
+    actorSystem.terminate
+    Await.result(actorSystem.whenTerminated, 10.seconds)
+    super.afterAll()
+  }
 
   "ScriptLoader" must {
     "load script class if sequencerId and observingMode is provided | ESW-102" in {
