@@ -136,6 +136,24 @@ class EventRoutesTest extends HttpTestSuite {
         }
       }
 
+      "subscribe to events for event keys when max-frequency is not provided | ESW-93" in new Setup {
+        import cswMocks._
+
+        when(eventSubscriber.subscribe(Set(eventKey1, eventKey2))).thenReturn(eventSource)
+
+        Get(s"/event/subscribe?key=$eventKey1&key=$eventKey2") ~> route ~> check {
+          status shouldBe StatusCodes.OK
+          mediaType shouldBe MediaTypes.`text/event-stream`
+          verify(eventSubscriber).subscribe(Set(eventKey1, eventKey2))
+
+          val actualDataF: Future[Seq[Event]] = responseAs[Source[ServerSentEvent, NotUsed]]
+            .map(sse => Json.fromJson[Event](Json.parse(sse.getData())).get)
+            .runWith(Sink.seq)
+
+          Await.result(actualDataF, 5.seconds) shouldEqual Seq(event1, event2)
+        }
+      }
+
       "subscribe throws exception | ESW-93" in new Setup {
         import cswMocks._
 
@@ -222,6 +240,34 @@ class EventRoutesTest extends HttpTestSuite {
           mediaType shouldBe MediaTypes.`text/event-stream`
           verify(eventSubscriber).pSubscribe(subsystem, "*")
           verify(eventSubscriberUtil).subscriptionModeStage(200.millis, RateLimiterMode)
+
+          val actualDataF: Future[Seq[Event]] = responseAs[Source[ServerSentEvent, NotUsed]]
+            .map(sse => Json.fromJson[Event](Json.parse(sse.getData())).get)
+            .runWith(Sink.seq)
+
+          val events = Await.result(actualDataF, 5.seconds)
+          events.length shouldBe totalEvents
+        }
+      }
+
+      "subscribe to events matching for given subsystem without max-frequency | ESW-93" in new Setup {
+        import cswMocks._
+
+        val subsystemName        = "tcs"
+        val subsystem: Subsystem = Subsystem.withName(subsystemName)
+
+        val totalEvents = 40
+        val eventSourceStream: Source[SystemEvent, EventSubscription] = Source(1 to totalEvents)
+          .map(x => SystemEvent(Prefix("tcs"), EventName(x.toString)))
+          .mapMaterializedValue(_ => eventSubscription)
+
+        when(eventSubscriber.pSubscribe(subsystem, "*")).thenReturn(eventSourceStream)
+
+        Get(s"/event/subscribe/$subsystemName") ~> route ~> check {
+          status shouldBe StatusCodes.OK
+          mediaType shouldBe MediaTypes.`text/event-stream`
+          verify(eventSubscriber).pSubscribe(subsystem, "*")
+          verifyZeroInteractions(eventSubscriberUtil)
 
           val actualDataF: Future[Seq[Event]] = responseAs[Source[ServerSentEvent, NotUsed]]
             .map(sse => Json.fromJson[Event](Json.parse(sse.getData())).get)
