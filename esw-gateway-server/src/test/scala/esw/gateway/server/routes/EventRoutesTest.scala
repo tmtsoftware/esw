@@ -100,7 +100,7 @@ class EventRoutesTest extends HttpTestSuite {
     }
 
     "/subscribe" must {
-      "subscribe to events for event keys with given frequency should give error response if key not provided" in new Setup {
+      "subscribe to events for event keys with given frequency should give error response if key not provided | ESW-93 " in new Setup {
         import cswMocks._
 
         Get(s"/event/subscribe?max-frequency=10") ~> route ~> check {
@@ -109,7 +109,7 @@ class EventRoutesTest extends HttpTestSuite {
         }
       }
 
-      "subscribe to events for event keys with given frequency should give error response if max frequency is less than 0" in new Setup {
+      "subscribe to events for event keys with given frequency should give error response if max frequency is less than 0 | ESW-93" in new Setup {
         import cswMocks._
 
         Get(s"/event/subscribe?key=tcs.gateway&max-frequency=0") ~> route ~> check {
@@ -118,7 +118,7 @@ class EventRoutesTest extends HttpTestSuite {
         }
       }
 
-      "subscribe to events for event keys with given frequency" in new Setup {
+      "subscribe to events for event keys with given frequency | ESW-93" in new Setup {
         import cswMocks._
 
         when(eventSubscriber.subscribe(Set(eventKey1, eventKey2), 100.millis, RateLimiterMode)).thenReturn(eventSource)
@@ -136,7 +136,7 @@ class EventRoutesTest extends HttpTestSuite {
         }
       }
 
-      "subscribe throws exception" in new Setup {
+      "subscribe throws exception | ESW-93" in new Setup {
         import cswMocks._
 
         when(eventSubscriber.subscribe(Set(eventKey1, eventKey2), 100.millis, RateLimiterMode))
@@ -148,7 +148,7 @@ class EventRoutesTest extends HttpTestSuite {
         }
       }
 
-      "subscribe to events matching for given subsystem with specified pattern" in new Setup {
+      "subscribe to events matching for given subsystem with specified pattern | ESW-93" in new Setup {
         import cswMocks._
         val subsystemName        = "tcs"
         val pattern              = "event"
@@ -169,7 +169,7 @@ class EventRoutesTest extends HttpTestSuite {
         }
       }
 
-      "subscribe to events matching for given subsystem if pattern not provided" in new Setup {
+      "subscribe to events matching for given subsystem if pattern not provided | ESW-93" in new Setup {
         import cswMocks._
         val subsystemName        = "tcs"
         val subsystem: Subsystem = Subsystem.withName(subsystemName)
@@ -188,7 +188,7 @@ class EventRoutesTest extends HttpTestSuite {
         }
       }
 
-      "subscribe to events matching for given subsystem throws exception" in new Setup {
+      "subscribe to events matching for given subsystem throws exception | ESW-93" in new Setup {
         import cswMocks._
         val subsystemName        = "tcs"
         val subsystem: Subsystem = Subsystem.withName(subsystemName)
@@ -202,7 +202,7 @@ class EventRoutesTest extends HttpTestSuite {
         }
       }
 
-      "subscribe to events matching for given subsystem should rate limit to given frequency" in new Setup {
+      "subscribe to events matching for given subsystem should rate limit to given frequency | ESW-93" in new Setup {
         import cswMocks._
 
         val subsystemName        = "tcs"
