@@ -41,7 +41,7 @@ private[framework] class Sequencer(crm: CommandResponseManager)(implicit strandE
               val id = _stepList.runId
               crm.addOrUpdateCommand(Started(id))
               crm.addSubCommand(id, emptyChildId)
-              completeReadyToExecuteNextPromise()
+              completeReadyToExecuteNextPromise() // To complete the promise created for previous sequence so that engine can pullNext
               handleSequenceResponse(crm.queryFinal(id))
             }
         )
@@ -56,13 +56,9 @@ private[framework] class Sequencer(crm: CommandResponseManager)(implicit strandE
     }
   }
 
-  def readyToExecuteNext(): Future[Done] = async {
-    val notInFlight = !stepList.isInFlight
-    val notFinished = !stepList.isFinished
-
-    if (notInFlight && notFinished) Done
-    else await(createReadyToExecuteNextPromise())
-  }
+  def readyToExecuteNext(): Future[Done] =
+    if (stepList.isInFlight || stepList.isFinished) createReadyToExecuteNextPromise()
+    else Future.successful(Done)
 
   def isAvailable: Future[Boolean]                  = async(sequencerAvailable)
   def getSequence: Future[StepList]                 = async(stepList)

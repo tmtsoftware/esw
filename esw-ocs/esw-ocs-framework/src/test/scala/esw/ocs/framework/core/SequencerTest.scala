@@ -13,7 +13,7 @@ import esw.ocs.framework.BaseTestSuite
 import esw.ocs.framework.api.models.StepStatus.{Finished, InFlight, Pending}
 import esw.ocs.framework.api.models.messages.ProcessSequenceError.ExistingSequenceIsInProcess
 import esw.ocs.framework.api.models.{Sequence, Step, StepList}
-import org.mockito.Mockito.when
+import org.mockito.Mockito.{never, verify, when}
 import org.scalatestplus.mockito.MockitoSugar
 
 import scala.concurrent.duration.DurationDouble
@@ -59,13 +59,13 @@ class SequencerTest extends BaseTestSuite with MockitoSugar {
       val processResponse = sequencer.processSequence(sequence)
       sequencer.getSequence.futureValue should ===(StepList(sequence).right.value)
 
-      val pulled1 = sequencer.pullNext()
-      val pulled2 = sequencer.pullNext()
-      val res1    = pulled1.futureValue
-      val res2    = pulled2.futureValue
+      val pulled1F = sequencer.pullNext()
+      val pulled2F = sequencer.pullNext()
+      val pulled1  = pulled1F.futureValue
+      val pulled2  = pulled2F.futureValue
 
-      res1.command should ===(command1)
-      res2.command should ===(command2)
+      pulled1.command should ===(command1)
+      pulled2.command should ===(command2)
 
       processResponse.rightValue should ===(Completed(sequence.runId))
       val finalResp = sequencer.getSequence.futureValue
@@ -78,31 +78,31 @@ class SequencerTest extends BaseTestSuite with MockitoSugar {
       val command3 = Observe(Prefix("test"), CommandName("command-3"), None)
       val command4 = Observe(Prefix("test"), CommandName("command-4"), None)
       val sequence = Sequence(Id(), Seq(command1, command2, command3, command4))
-      val latch    = new CountDownLatch(3)
+      val latch    = new CountDownLatch(2)
 
       val sequencerSetup = new SequencerSetup(sequence)
       import sequencerSetup._
 
       val cmd1Response = Completed(command1.runId)
       val cmd2Response = Cancelled(command2.runId)
-      val cmd3Response = Completed(command3.runId)
-      val cmd4Response = Completed(command4.runId)
       when(crmMock.queryFinal(command1.runId)).thenAnswer(_ ⇒ queryResponse(cmd1Response, latch))
       when(crmMock.queryFinal(command2.runId)).thenAnswer(_ ⇒ queryResponse(cmd2Response, latch))
-      when(crmMock.queryFinal(command3.runId)).thenAnswer(_ ⇒ queryResponse(cmd3Response, latch))
-      when(crmMock.queryFinal(command3.runId)).thenAnswer(_ ⇒ queryResponse(cmd4Response, latch))
 
       val processResponse = sequencer.processSequence(sequence)
       sequencer.getSequence.futureValue should ===(StepList(sequence).right.value)
 
-      val res1 = sequencer.pullNext().futureValue
-      val res2 = sequencer.pullNext().futureValue
+      val pulled1 = sequencer.pullNext().futureValue
+      val pulled2 = sequencer.pullNext().futureValue
 
-      res1.command should ===(command1)
-      res2.command should ===(command2)
+      pulled1.command should ===(command1)
+      pulled2.command should ===(command2)
 
       processResponse.rightValue should ===(Cancelled(sequence.runId))
+
+      sequencer.getSequence.futureValue.isFinished should ===(true)
       sequencer.isAvailable.futureValue should ===(true)
+      verify(crmMock, never()).queryFinal(command3.runId)
+      verify(crmMock, never()).queryFinal(command4.runId)
     }
 
     "fail with ExistingSequenceIsInProcess error when existing sequence is not finished" in {
@@ -175,9 +175,8 @@ class SequencerTest extends BaseTestSuite with MockitoSugar {
       val readyToExecuteNextF = sequencer.readyToExecuteNext()
       readyToExecuteNextF.value should ===(None)
 
-      // this will complete command1
-      p.complete(Try(cmd1Response))
-      completionPromise.complete(Success(Completed(sequence.runId)))
+      p.complete(Try(cmd1Response))                                  // this will complete command1
+      completionPromise.complete(Success(Completed(sequence.runId))) // this will complete the sequence
       sequence1Response.rightValue should ===(Completed(sequence.runId))
 
       readyToExecuteNextF.value should ===(None)
@@ -259,9 +258,9 @@ class SequencerTest extends BaseTestSuite with MockitoSugar {
 
       sequencer.processSequence(sequence)
 
-      val res1  = sequencer.pullNext().futureValue
-      val step1 = Step(command1, InFlight, hasBreakpoint = false)
-      res1 should ===(step1)
+      val pulled1 = sequencer.pullNext().futureValue
+      val step1   = Step(command1, InFlight, hasBreakpoint = false)
+      pulled1 should ===(step1)
 
       sequencer.pause.rightValue should ===(Done)
       sequencer.getSequence.futureValue should ===(
@@ -291,12 +290,11 @@ class SequencerTest extends BaseTestSuite with MockitoSugar {
 
       sequencer.processSequence(sequence)
 
-      val res1  = sequencer.pullNext().futureValue
-      val step1 = Step(command1, InFlight, hasBreakpoint = false)
-      res1 should ===(step1)
+      val pulled1 = sequencer.pullNext().futureValue
+      val step1   = Step(command1, InFlight, hasBreakpoint = false)
+      pulled1 should ===(step1)
 
-      val pausedSequence = sequencer.pause.rightValue
-      pausedSequence should ===(Done)
+      sequencer.pause.rightValue should ===(Done)
 
       sequencer.resume.rightValue should ===(Done)
       sequencer.getSequence.futureValue should ===(
@@ -382,7 +380,7 @@ class SequencerTest extends BaseTestSuite with MockitoSugar {
   }
 
   "addBreakpoint & removeBreakpoint" must {
-    "add and remove breakpoint at step matching provided id | ESW-106, ESW-removeBreakpoint" in {
+    "add and remove breakpoint at step matching provided id | ESW-106, ESW-107" in {
       val command1 = Setup(Prefix("test"), CommandName("command-1"), None)
       val command2 = Observe(Prefix("test"), CommandName("command-2"), None)
       val sequence = Sequence(Id(), Seq(command1, command2))
