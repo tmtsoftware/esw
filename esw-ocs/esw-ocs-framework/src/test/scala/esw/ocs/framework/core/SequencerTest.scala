@@ -42,7 +42,7 @@ class SequencerTest extends BaseTestSuite with MockitoSugar {
   }
 
   "processSequence" must {
-    "execute provided commands when all commands succeed" in {
+    "get completed sequence response when all commands succeed | ESW-158, ESW-145" in {
       val command1 = Setup(Prefix("test"), CommandName("command-1"), None)
       val command2 = Observe(Prefix("test"), CommandName("command-2"), None)
       val sequence = Sequence(Id(), Seq(command1, command2))
@@ -72,7 +72,7 @@ class SequencerTest extends BaseTestSuite with MockitoSugar {
       finalResp.isFinished should ===(true)
     }
 
-    "short circuit on first failed command" in {
+    "short circuit on first failed command and get failed sequence response | ESW-158, ESW-145" in {
       val command1 = Setup(Prefix("test"), CommandName("command-1"), None)
       val command2 = Observe(Prefix("test"), CommandName("command-2"), None)
       val command3 = Observe(Prefix("test"), CommandName("command-3"), None)
@@ -105,7 +105,7 @@ class SequencerTest extends BaseTestSuite with MockitoSugar {
       verify(crmMock, never()).queryFinal(command4.runId)
     }
 
-    "fail with ExistingSequenceIsInProcess error when existing sequence is not finished" in {
+    "fail with ExistingSequenceIsInProcess error when existing sequence is not finished | ESW-158, ESW-145" in {
       val command1 = Setup(Prefix("test"), CommandName("command-1"), None)
       val command2 = Observe(Prefix("test"), CommandName("command-2"), None)
       val sequence = Sequence(Id(), Seq(command1, command2))
@@ -421,7 +421,7 @@ class SequencerTest extends BaseTestSuite with MockitoSugar {
   }
 
   "previousSequence" must {
-    "return old sequence" in {
+    "return old sequence after receiving new sequence | ESW-157" in {
       val command1  = Setup(Prefix("test"), CommandName("command-1"), None)
       val command2  = Observe(Prefix("test"), CommandName("command-2"), None)
       val sequence  = Sequence(Id(), Seq(command1))
@@ -445,6 +445,8 @@ class SequencerTest extends BaseTestSuite with MockitoSugar {
       val previousSequence = sequencer.getPreviousSequence.futureValue
 
       previousSequence should ===(Some(currentSequence))
+      // get completion responses for steps
+      previousSequence.get.steps should ===(List(Step(command1, Finished.Success(cmd1Response), hasBreakpoint = false)))
     }
   }
 }

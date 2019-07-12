@@ -57,11 +57,8 @@ private[framework] class Sequencer(crm: CommandResponseManager)(implicit strandE
   }
 
   def readyToExecuteNext(): Future[Done] = async {
-    val notInFlight = !stepList.isInFlight
-    val notFinished = !stepList.isFinished
-
-    if (notInFlight && notFinished) Done
-    else await(createReadyToExecuteNextPromise())
+    if (stepList.isInFlight || stepList.isFinished) await(createReadyToExecuteNextPromise())
+    else Done
   }
 
   def isAvailable: Future[Boolean]                  = async(sequencerAvailable)

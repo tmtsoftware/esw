@@ -54,7 +54,7 @@ class ScriptDslTest extends BaseTestSuite {
     "allow adding and executing multiple shutdown handlers in order" in {
       val orderOfShutdownCalled = ArrayBuffer.empty[Int]
 
-      val script = new ScriptDsl {
+      val script: ScriptDsl = new ScriptDsl {
         override def csw: CswServices             = ???
         override val loopInterval: FiniteDuration = 100.millis
         handleShutdown {
@@ -76,7 +76,7 @@ class ScriptDslTest extends BaseTestSuite {
     "allow adding and executing multiple abort handlers in order" in {
       val orderOfAbortCalled = ArrayBuffer.empty[Int]
 
-      val script = new ScriptDsl {
+      val script: ScriptDsl = new ScriptDsl {
         override def csw: CswServices             = ???
         override val loopInterval: FiniteDuration = 100.millis
         handleAbort {

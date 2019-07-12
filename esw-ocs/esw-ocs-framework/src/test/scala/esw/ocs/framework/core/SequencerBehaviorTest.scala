@@ -23,8 +23,8 @@ class SequencerBehaviorTest extends ActorTestKitBase with BaseTestSuite with Moc
 
     val sequencer = mock[Sequencer]
     val scriptDsl = mock[ScriptDsl]
-    val sequencerActor =
-      system.systemActorOf(SequencerBehavior.behavior(sequencer, scriptDsl), "sequencer-actor-system").futureValue
+
+    val sequencerActor = spawn(SequencerBehavior.behavior(sequencer, scriptDsl))
 
     "processSequence" in {
       val testProbe: TestProbe[Either[ProcessSequenceError, SubmitResponse]] = TestProbe()
