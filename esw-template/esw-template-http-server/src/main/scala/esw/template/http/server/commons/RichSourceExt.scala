@@ -13,5 +13,4 @@ object RichSourceExt {
         .map(r => ServerSentEvent(Json.stringify(Json.toJson(r))))
         .keepAlive(30.seconds, () => ServerSentEvent.heartbeat)
   }
-
 }

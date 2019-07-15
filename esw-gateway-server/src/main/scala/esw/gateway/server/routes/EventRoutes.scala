@@ -2,7 +2,7 @@ package esw.gateway.server.routes
 
 import akka.http.scaladsl.marshalling.sse.EventStreamMarshalling._
 import akka.http.scaladsl.server.Directives.{entity, _}
-import akka.http.scaladsl.server.{Directive, Directive0, Route, ValidationRejection}
+import akka.http.scaladsl.server.{Directive0, Route}
 import akka.stream.scaladsl.Source
 import csw.event.api.scaladsl.SubscriptionModes.RateLimiterMode
 import csw.event.api.scaladsl.{EventPublisher, EventSubscriber, EventSubscription}
@@ -11,9 +11,9 @@ import csw.params.core.models.Subsystem
 import csw.params.events.{Event, EventKey}
 import de.heikoseeberger.akkahttpplayjson.PlayJsonSupport
 import esw.template.http.server.commons.RichSourceExt.RichSource
+import esw.template.http.server.commons.Utils._
 import esw.template.http.server.csw.utils.CswContext
 
-import scala.concurrent.duration.{DurationDouble, FiniteDuration}
 import scala.language.postfixOps
 
 class EventRoutes(cswCtx: CswContext) extends JsonSupport with PlayJsonSupport {
@@ -75,13 +75,6 @@ class EventRoutes(cswCtx: CswContext) extends JsonSupport with PlayJsonSupport {
   private def validateKeys(keys: Iterable[String]): Directive0 = {
     validate(keys.nonEmpty, "Request is missing query parameter key")
   }
-
-  private def validateFrequency(maxFrequency: Option[Int]): Directive0 = maxFrequency match {
-    case Some(0) => reject(ValidationRejection("Max frequency should be greater than zero"))
-    case _       => Directive.Empty
-  }
-
-  private def maxFrequencyToDuration(frequency: Int): FiniteDuration = (1000 / frequency).millis
 
   implicit class RichEventKeys(keys: Iterable[String]) {
     def toEventKeys: Set[EventKey] = keys.map(EventKey(_)).toSet
