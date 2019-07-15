@@ -3,6 +3,7 @@ package esw.gateway.server.routes
 import akka.http.scaladsl.marshalling.sse.EventStreamMarshalling._
 import akka.http.scaladsl.server.Directives.{entity, _}
 import akka.http.scaladsl.server.Route
+import akka.stream.OverflowStrategy
 import akka.stream.scaladsl.Source
 import akka.util.Timeout
 import csw.command.api.CurrentStateSubscription
@@ -13,6 +14,7 @@ import csw.params.core.models.Id
 import csw.params.core.states.{StateName, StateVariable}
 import de.heikoseeberger.akkahttpplayjson.PlayJsonSupport
 import esw.template.http.server.commons.RichSourceExt.RichSource
+import esw.template.http.server.commons.Utils._
 import esw.template.http.server.csw.utils.CswContext
 
 import scala.concurrent.Future
@@ -54,10 +56,17 @@ class CommandRoutes(cswCtx: CswContext) extends JsonSupport with PlayJsonSupport
               complete(Source.fromFuture(responseF).toSSE)
             } ~
             path("current-state" / "subscribe") {
-              parameters("stateName".as[String].*) { stateNames =>
-                val stream: Source[StateVariable, CurrentStateSubscription] =
-                  commandService.subscribeCurrentState(stateNames.map(StateName.apply).toSet)
-                complete(stream.toSSE)
+              parameters(("state-name".as[String].*, "max-frequency".as[Int].?)) { (stateNames, maxFrequency) =>
+                validateFrequency(maxFrequency) {
+
+                  val currentStateSource = commandService.subscribeCurrentState(stateNames.map(StateName.apply).toSet)
+                  val stream: Source[StateVariable, CurrentStateSubscription] = maxFrequency match {
+                    case Some(frequency) => currentStateSource.buffer(1, OverflowStrategy.dropHead).throttle(frequency, 1.seconds)
+                    case None            => currentStateSource
+                  }
+
+                  complete(stream.toSSE)
+                }
               }
             }
           }
