@@ -37,18 +37,18 @@ class SequencerWiring(val sequencerId: String, val observingMode: String) {
     Await.result(typedSystem ? Spawn(CommandResponseManagerActor.behavior(CRMCacheProperties(), loggerFactory), "crm"), 5.seconds)
   private lazy val commandResponseManager: CommandResponseManager = new CommandResponseManager(crmRef)
 
-  private lazy val sequencerRef: ActorRef[SequencerMsg] =
+  private[esw] lazy val sequencerRef: ActorRef[SequencerMsg] =
     Await.result(typedSystem ? Spawn(SequencerBehavior.behavior(sequencer, script), settings.name), 5.seconds)
 
   //Pass lambda to break circular dependency shown below.
   //SequencerRef -> Script -> cswServices -> SequencerOperator -> SequencerRef
   private lazy val sequenceOperatorFactory = () => new SequenceOperator(sequencerRef)
 
-  private lazy val cswServices    = new CswServices(sequenceOperatorFactory)
+  private lazy val cswServices    = new CswServices(sequenceOperatorFactory, commandResponseManager)
   private lazy val script: Script = new ScriptLoader(sequencerId, observingMode).load(cswServices)
-  private lazy val sequencer      = new Sequencer(commandResponseManager)(StrandEc(), timeout)
+  private[esw] lazy val sequencer = new Sequencer(commandResponseManager)(StrandEc(), timeout)
 
-  private lazy val sequenceEditorClient = new SequenceEditorClient(sequencerRef)
+  private[esw] lazy val sequenceEditorClient = new SequenceEditorClient(sequencerRef)
 
   private lazy val locationService: LocationService = HttpLocationServiceFactory.makeLocalClient
 

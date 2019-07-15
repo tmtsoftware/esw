@@ -41,6 +41,7 @@ private[framework] class Sequencer(crm: CommandResponseManager)(implicit strandE
               val id = _stepList.runId
               crm.addOrUpdateCommand(Started(id))
               crm.addSubCommand(id, emptyChildId)
+              completeStepRefPromise()
               completeReadyToExecuteNextPromise() // To complete the promise created for previous sequence so that engine can pullNext
               handleSequenceResponse(crm.queryFinal(id))
             }
