@@ -151,7 +151,7 @@ class CommandRoutesTest extends HttpTestSuite {
         }
       }
 
-      "get current state subscription to all stateNames | ESW-91" in new Setup {
+      "get current state subscription to all state names | ESW-91" in new Setup {
         import cswMocks._
 
         val componentName = "test-component"
@@ -178,7 +178,7 @@ class CommandRoutesTest extends HttpTestSuite {
         }
       }
 
-      "get current state subscription to given stateNames | ESW-91" in new Setup {
+      "get current state subscription to given state names | ESW-91" in new Setup {
         import cswMocks._
         val componentName = "test-component"
         val stateName1    = StateName("stateName1")
@@ -192,7 +192,35 @@ class CommandRoutesTest extends HttpTestSuite {
         when(commandService.subscribeCurrentState(Set(stateName1))).thenReturn(currentStateStream)
         when(componentFactory.commandService(componentName, componentType)).thenReturn(Future(commandService))
 
-        Get(s"/command/${testData.componentType}/$componentName/current-state/subscribe?stateName=${stateName1.name}") ~> route ~> check {
+        Get(s"/command/${testData.componentType}/$componentName/current-state/subscribe?state-name=${stateName1.name}") ~> route ~> check {
+          status shouldBe StatusCodes.OK
+          mediaType shouldBe `text/event-stream`
+
+          val actualDataF: Future[Seq[StateVariable]] = responseAs[Source[ServerSentEvent, NotUsed]]
+            .map(sse => Json.fromJson[StateVariable](Json.parse(sse.getData())).get)
+            .runWith(Sink.seq)
+
+          Await.result(actualDataF, 5.seconds) shouldEqual Seq(currentState1)
+        }
+      }
+
+      "get current state subscription to given state names and specified frequency | ESW-91" in new Setup {
+        import cswMocks._
+        val componentName = "test-component"
+        val stateName1    = StateName("stateName1")
+        val currentState1 = CurrentState(Prefix("a.b"), stateName1)
+
+        val currentStateSubscription = mock[CurrentStateSubscription]
+
+        val currentStateStream = Source(List(currentState1))
+          .mapMaterializedValue(_ => currentStateSubscription)
+
+        when(commandService.subscribeCurrentState(Set(stateName1))).thenReturn(currentStateStream)
+        when(componentFactory.commandService(componentName, componentType)).thenReturn(Future(commandService))
+
+        Get(
+          s"/command/${testData.componentType}/$componentName/current-state/subscribe?state-name=${stateName1.name}&max-frequency=10"
+        ) ~> route ~> check {
           status shouldBe StatusCodes.OK
           mediaType shouldBe `text/event-stream`
 
