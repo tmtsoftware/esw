@@ -47,7 +47,7 @@ class SequencerTest extends ActorTestKitBase with BaseTestSuite {
 
       val processSeqResponse = wiring.sequencer.processSequence(sequence)
 
-      processSeqResponse.futureValue.right.value should ===(Completed(sequence.runId))
+      processSeqResponse.rightValue should ===(Completed(sequence.runId))
 
       wiring.sequencer.getSequence.futureValue.steps should ===(
         List(Step(command1, Finished.Success(Completed(command1.runId)), hasBreakpoint = false))
@@ -62,9 +62,9 @@ class SequencerTest extends ActorTestKitBase with BaseTestSuite {
 
       val processSeqResponse = wiring.sequencer.processSequence(sequence)
 
-      wiring.sequenceEditorClient.add(List(command2)).futureValue.right.value should ===(Done)
+      wiring.sequenceEditorClient.add(List(command2)).rightValue should ===(Done)
 
-      processSeqResponse.futureValue.right.value should ===(Completed(sequence.runId))
+      processSeqResponse.rightValue should ===(Completed(sequence.runId))
 
       wiring.sequencer.getSequence.futureValue.steps should ===(
         List(

@@ -22,6 +22,7 @@ import scala.concurrent.Await
 import scala.concurrent.duration.DurationLong
 import scala.util.Try
 
+//todo: make package-private to esw as private
 class SequencerWiring(val sequencerId: String, val observingMode: String) {
 
   private lazy val settings: SequencerConfig = new SequencerConfig(sequencerId, observingMode)
