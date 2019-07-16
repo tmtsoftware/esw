@@ -73,6 +73,7 @@ class ScriptDslTest extends BaseTestSuite {
       script.executeShutdown().await
       orderOfShutdownCalled shouldBe ArrayBuffer(1, 2)
     }
+
     "allow adding and executing multiple abort handlers in order" in {
       val orderOfAbortCalled = ArrayBuffer.empty[Int]
 

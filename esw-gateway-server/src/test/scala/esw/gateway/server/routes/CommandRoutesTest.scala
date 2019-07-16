@@ -36,7 +36,15 @@ class CommandRoutesTest extends HttpTestSuite {
 
   case class TestData(componentType: String)
 
-  val testData = List(TestData("hcd"), TestData("assembly"))
+  private val testData = List(TestData("hcd"), TestData("assembly"))
+
+  // fixme: can we do grouping based on endpoints like below
+  // validate =>
+  //            1. OK
+  //            2. GatewayTimeout
+  // submit =>
+  //          1. OK
+  //          2. GatewayTimeout
 
   testData.foreach { testData =>
     val componentType: ComponentType = ComponentType.withName(testData.componentType)

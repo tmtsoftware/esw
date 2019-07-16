@@ -7,7 +7,6 @@ import scala.collection.mutable.ArrayBuffer
 
 class FunctionHandlersTest extends BaseTestSuite {
   "execute" must {
-
     "return empty buffer when handlers are empty | ESW-90" in {
       val functionHandlers = new FunctionHandlers[Int, String]
       functionHandlers.execute(1) shouldBe empty

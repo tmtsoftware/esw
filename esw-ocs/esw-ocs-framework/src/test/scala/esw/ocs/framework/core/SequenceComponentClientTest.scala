@@ -23,6 +23,7 @@ class SequenceComponentClientTest extends BaseTestSuite {
     super.afterAll()
   }
 
+  // fixme: follow tests naming convention, refer StepListTest.scala
   "SequenceComponentClient" must {
 
     "should delegate to LoadScript | ESW-103" in {

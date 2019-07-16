@@ -20,10 +20,11 @@ class ScriptLoaderTest extends BaseTestSuite {
     super.afterAll()
   }
 
+  // fixme: follow tests naming convention, refer StepListTest.scala
   "ScriptLoader" must {
     "load script class if sequencerId and observingMode is provided | ESW-102" in {
       val loader = new ScriptLoader("testSequencerId1", "testObservingMode1").load(cswServices)
-      assert(loader.isInstanceOf[ValidTestScript])
+      loader shouldBe a[ValidTestScript]
     }
 
     "throw ScriptConfigurationMissingException if script config is not provided for given sequencerId and observingMode | ESW-102" in {

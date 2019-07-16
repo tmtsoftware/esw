@@ -17,7 +17,6 @@ class FunctionBuilderTest extends BaseTestSuite {
   }
 
   "build " must {
-
     "execute matched handler and return Success | ESW-90" in {
       builtFunctionWithHandlers(Command("square", 10)) shouldBe 100
       builtFunctionWithHandlers(Command("abs", 25)) shouldBe 25
@@ -30,6 +29,5 @@ class FunctionBuilderTest extends BaseTestSuite {
     "execute a handler and return Failure when there is an exception | ESW-90" in {
       an[ArithmeticException] shouldBe thrownBy(builtFunctionWithHandlers(Command("reciprocal", 0)))
     }
-
   }
 }

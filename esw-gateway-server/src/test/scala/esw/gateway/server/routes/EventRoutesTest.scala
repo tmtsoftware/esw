@@ -31,22 +31,28 @@ class EventRoutesTest extends HttpTestSuite {
     actorSystem.terminate()
   }
 
-  val tcsEventKeyStr1 = "tcs.event.key1"
-  val tcsEventKeyStr2 = "tcs.event.key2"
-  val eventKey1       = EventKey(tcsEventKeyStr1)
-  val eventKey2       = EventKey(tcsEventKeyStr2)
+  private val tcsEventKeyStr1 = "tcs.event.key1"
+  private val tcsEventKeyStr2 = "tcs.event.key2"
+  private val eventKey1       = EventKey(tcsEventKeyStr1)
+  private val eventKey2       = EventKey(tcsEventKeyStr2)
 
-  val event1 = ObserveEvent(Prefix("tsc"), EventName("event.key1"))
-  val event2 = ObserveEvent(Prefix("tsc"), EventName("event.key2"))
+  private val event1 = ObserveEvent(Prefix("tsc"), EventName("event.key1"))
+  private val event2 = ObserveEvent(Prefix("tsc"), EventName("event.key2"))
 
-  val eventSubscription: EventSubscription = new EventSubscription {
+  private val eventSubscription: EventSubscription = new EventSubscription {
     override def unsubscribe(): Future[Done] = Future.successful(Done)
 
     override def ready(): Future[Done] = Future.successful(Done)
   }
 
-  val eventSource: Source[Event, EventSubscription] =
+  private val eventSource: Source[Event, EventSubscription] =
     Source(Set(event1, event2)).mapMaterializedValue(_ => eventSubscription)
+
+  // fixme: can we do grouping based on endpoints like below
+  // get =>
+  //       1. Ok
+  //       2. BadRequest
+  //       3. InternalServerError
 
   "EventRoutes for /event" must {
     "get event for event keys | ESW-94" in new Setup {

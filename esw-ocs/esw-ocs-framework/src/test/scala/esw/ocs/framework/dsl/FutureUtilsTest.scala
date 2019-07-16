@@ -32,6 +32,7 @@ class FutureUtilsTest extends BaseTestSuite {
       //eventually, ensure that future is complete (after 500ms)
       task.futureValue shouldBe true
     }
+
     "complete the future after function completion when min delay < function completion duration | ESW-90" in {
       val task: Future[Boolean] = FutureUtils.delayedResult(1.millis) {
         Thread.sleep(500)

@@ -27,7 +27,7 @@ class SequencerBehaviorTest extends ActorTestKitBase with BaseTestSuite with Moc
 
     val sequencerActor = spawn(SequencerBehavior.behavior(sequencer, scriptDsl))
 
-    "processSequence" in {
+    "ProcessSequence" in {
       val command1 = Setup(Prefix("test"), CommandName("command-1"), None)
       val sequence = Sequence(Id(), Seq(command1))
 

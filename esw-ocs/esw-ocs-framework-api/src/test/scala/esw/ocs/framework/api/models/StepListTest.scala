@@ -16,6 +16,7 @@ class StepListTest extends BaseTestSuite {
       StepList.empty.steps should ===(Nil)
     }
   }
+
   "apply" must {
     "return a StepList" in {
       val setup1 = Setup(Prefix("ocs.move1"), CommandName("test1"), None)
@@ -35,27 +36,37 @@ class StepListTest extends BaseTestSuite {
     }
   }
 
-  "nextPending" must {
-    "return next pending step" in {
-      val setup1 = Setup(Prefix("ocs.move1"), CommandName("test1"), None)
-      val setup2 = Setup(Prefix("ocs.move2"), CommandName("test2"), None)
-      val step1  = Step(setup1, InFlight, hasBreakpoint = false)
-      val step2  = Step(setup2, Pending, hasBreakpoint = false)
+  "isFinished" must {
+    val setup1 = Setup(Prefix("ocs.move1"), CommandName("test1"), None)
+    val setup2 = Setup(Prefix("ocs.move2"), CommandName("test2"), None)
 
-      val stepList = StepList(Id(), List(step1, step2))
-
-      stepList.nextPending.value should ===(step2)
+    "return false when StepList is empty" in {
+      val stepList = StepList(Id(), Nil)
+      stepList.isFinished should ===(false)
     }
 
-    "return none when no pending step present" in {
-      val setup1 = Setup(Prefix("ocs.move1"), CommandName("test1"), None)
-      val setup2 = Setup(Prefix("ocs.move2"), CommandName("test2"), None)
-      val step1  = Step(setup1, finished(setup1.runId), hasBreakpoint = false)
-      val step2  = Step(setup2, InFlight, hasBreakpoint = false)
+    "return true when all steps are Finished" in {
+      val step1 = Step(setup1, finished(setup1.runId), hasBreakpoint = false)
+      val step2 = Step(setup2, finished(setup2.runId), hasBreakpoint = false)
 
       val stepList = StepList(Id(), List(step1, step2))
+      stepList.isFinished should ===(true)
+    }
 
-      stepList.nextPending should ===(None)
+    "return true when any step is Failed" in {
+      val step1 = Step(setup1, Finished.Failure(Completed(setup1.runId)), hasBreakpoint = false)
+      val step2 = Step(setup2, InFlight, hasBreakpoint = false)
+
+      val stepList = StepList(Id(), List(step1, step2))
+      stepList.isFinished should ===(true)
+    }
+
+    "return false when any step is not Finished" in {
+      val step1 = Step(setup1, finished(setup1.runId), hasBreakpoint = false)
+      val step2 = Step(setup2, InFlight, hasBreakpoint = false)
+
+      val stepList = StepList(Id(), List(step1, step2))
+      stepList.isFinished should ===(false)
     }
   }
 
@@ -108,6 +119,30 @@ class StepListTest extends BaseTestSuite {
     }
   }
 
+  "nextPending" must {
+    "return next pending step" in {
+      val setup1 = Setup(Prefix("ocs.move1"), CommandName("test1"), None)
+      val setup2 = Setup(Prefix("ocs.move2"), CommandName("test2"), None)
+      val step1  = Step(setup1, InFlight, hasBreakpoint = false)
+      val step2  = Step(setup2, Pending, hasBreakpoint = false)
+
+      val stepList = StepList(Id(), List(step1, step2))
+
+      stepList.nextPending.value should ===(step2)
+    }
+
+    "return none when no pending step present" in {
+      val setup1 = Setup(Prefix("ocs.move1"), CommandName("test1"), None)
+      val setup2 = Setup(Prefix("ocs.move2"), CommandName("test2"), None)
+      val step1  = Step(setup1, finished(setup1.runId), hasBreakpoint = false)
+      val step2  = Step(setup2, InFlight, hasBreakpoint = false)
+
+      val stepList = StepList(Id(), List(step1, step2))
+
+      stepList.nextPending should ===(None)
+    }
+  }
+
   "nextExecutable" must {
     val setup1 = Setup(Prefix("ocs.move1"), CommandName("test1"), None)
     val setup2 = Setup(Prefix("ocs.move2"), CommandName("test2"), None)
@@ -131,40 +166,6 @@ class StepListTest extends BaseTestSuite {
 
       val stepList = StepList(Id(), List(step1, step2))
       stepList.nextExecutable should ===(None)
-    }
-  }
-
-  "isFinished" must {
-    val setup1 = Setup(Prefix("ocs.move1"), CommandName("test1"), None)
-    val setup2 = Setup(Prefix("ocs.move2"), CommandName("test2"), None)
-
-    "return false when StepList is empty" in {
-      val stepList = StepList(Id(), Nil)
-      stepList.isFinished should ===(false)
-    }
-
-    "return true when all steps are Finished" in {
-      val step1 = Step(setup1, finished(setup1.runId), hasBreakpoint = false)
-      val step2 = Step(setup2, finished(setup2.runId), hasBreakpoint = false)
-
-      val stepList = StepList(Id(), List(step1, step2))
-      stepList.isFinished should ===(true)
-    }
-
-    "return true when any step is Failed" in {
-      val step1 = Step(setup1, Finished.Failure(Completed(setup1.runId)), hasBreakpoint = false)
-      val step2 = Step(setup2, InFlight, hasBreakpoint = false)
-
-      val stepList = StepList(Id(), List(step1, step2))
-      stepList.isFinished should ===(true)
-    }
-
-    "return false when any step is not Finished" in {
-      val step1 = Step(setup1, finished(setup1.runId), hasBreakpoint = false)
-      val step2 = Step(setup2, InFlight, hasBreakpoint = false)
-
-      val stepList = StepList(Id(), List(step1, step2))
-      stepList.isFinished should ===(false)
     }
   }
 
