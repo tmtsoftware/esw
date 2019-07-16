@@ -2,14 +2,15 @@ package esw.ocs.framework.core
 
 import akka.Done
 import akka.actor.testkit.typed.scaladsl.{ActorTestKitBase, TestProbe}
+import akka.actor.typed.ActorRef
 import csw.params.commands.CommandResponse.{Completed, Error, SubmitResponse}
 import csw.params.commands.{CommandName, Setup}
 import csw.params.core.models.{Id, Prefix}
 import esw.ocs.framework.BaseTestSuite
 import esw.ocs.framework.api.models.SequenceEditor.EditorResponse
-import esw.ocs.framework.api.models.messages.ProcessSequenceError
 import esw.ocs.framework.api.models.messages.SequencerMsg._
 import esw.ocs.framework.api.models.messages.StepListError._
+import esw.ocs.framework.api.models.messages.{ProcessSequenceError, SequencerMsg}
 import esw.ocs.framework.api.models.{Sequence, Step, StepList}
 import esw.ocs.framework.dsl.ScriptDsl
 import org.mockito.Mockito.{verify, when}
@@ -27,191 +28,163 @@ class SequencerBehaviorTest extends ActorTestKitBase with BaseTestSuite with Moc
     val sequencerActor = spawn(SequencerBehavior.behavior(sequencer, scriptDsl))
 
     "processSequence" in {
-      val testProbe: TestProbe[Either[ProcessSequenceError, SubmitResponse]] = TestProbe()
-
       val command1 = Setup(Prefix("test"), CommandName("command-1"), None)
       val sequence = Sequence(Id(), Seq(command1))
 
-      val processResponse: Either[ProcessSequenceError, SubmitResponse] = Right(Completed(command1.runId))
-
-      when(sequencer.processSequence(sequence)).thenReturn(Future.successful(processResponse))
-
-      sequencerActor ! ProcessSequence(sequence, testProbe.ref)
-      testProbe.expectMessage(processResponse)
+      runTest[Either[ProcessSequenceError, SubmitResponse]](
+        mockFunction = sequencer.processSequence(sequence),
+        mockResponse = Right(Completed(command1.runId)),
+        testMsg = ProcessSequence(sequence, _)
+      )
     }
 
     "Available" in {
-      val testProbe: TestProbe[Boolean] = TestProbe()
-      val availableResponse             = true
-
-      when(sequencer.isAvailable).thenReturn(Future.successful(availableResponse))
-
-      sequencerActor ! Available(testProbe.ref)
-      testProbe.expectMessage(availableResponse)
+      runTest[Boolean](
+        mockFunction = sequencer.isAvailable,
+        mockResponse = true,
+        testMsg = Available
+      )
     }
 
     "GetSequence" in {
-      val testProbe: TestProbe[StepList] = TestProbe()
-
-      val stepListResponse = StepList.empty
-      when(sequencer.getSequence).thenReturn(Future.successful(stepListResponse))
-
-      sequencerActor ! GetSequence(testProbe.ref)
-      testProbe.expectMessage(stepListResponse)
+      runTest[StepList](
+        mockFunction = sequencer.getSequence,
+        mockResponse = StepList.empty,
+        testMsg = GetSequence
+      )
     }
 
     "GetPreviousSequence" in {
-      val testProbe: TestProbe[Option[StepList]] = TestProbe()
-
-      val stepListResponse: Option[StepList] = Some(StepList.empty)
-      when(sequencer.getPreviousSequence).thenReturn(Future.successful(stepListResponse))
-
-      sequencerActor ! GetPreviousSequence(testProbe.ref)
-      testProbe.expectMessage(stepListResponse)
+      runTest[Option[StepList]](
+        mockFunction = sequencer.getPreviousSequence,
+        mockResponse = Some(StepList.empty),
+        testMsg = GetPreviousSequence
+      )
     }
 
     "Add" in {
-      val testProbe: TestProbe[EditorResponse[AddError]] = TestProbe()
-      val command1                                       = Setup(Prefix("test"), CommandName("command-1"), None)
+      val command1 = Setup(Prefix("test"), CommandName("command-1"), None)
 
-      val addResponse: EditorResponse[AddError] = Right(Done)
-      when(sequencer.add(List(command1))).thenReturn(Future.successful(addResponse))
-
-      sequencerActor ! Add(List(command1), testProbe.ref)
-      testProbe.expectMessage(addResponse)
+      runTest[EditorResponse[AddError]](
+        mockFunction = sequencer.add(List(command1)),
+        mockResponse = Right(Done),
+        testMsg = Add(List(command1), _)
+      )
     }
 
     "Pause" in {
-      val testProbe: TestProbe[EditorResponse[PauseError]] = TestProbe()
-
-      val pauseResponse: EditorResponse[PauseError] = Right(Done)
-      when(sequencer.pause).thenReturn(Future.successful(pauseResponse))
-
-      sequencerActor ! Pause(testProbe.ref)
-      testProbe.expectMessage(pauseResponse)
+      runTest[EditorResponse[PauseError]](
+        mockFunction = sequencer.pause,
+        mockResponse = Right(Done),
+        testMsg = Pause
+      )
     }
 
     "Resume" in {
-      val testProbe: TestProbe[EditorResponse[ResumeError]] = TestProbe()
-
-      val resumeResponse: EditorResponse[ResumeError] = Right(Done)
-      when(sequencer.resume).thenReturn(Future.successful(resumeResponse))
-
-      sequencerActor ! Resume(testProbe.ref)
-      testProbe.expectMessage(resumeResponse)
+      runTest[EditorResponse[ResumeError]](
+        mockFunction = sequencer.resume,
+        mockResponse = Right(Done),
+        testMsg = Resume
+      )
     }
 
     "Reset" in {
-      val testProbe: TestProbe[EditorResponse[ResetError]] = TestProbe()
-
-      val resetResponse: EditorResponse[ResetError] = Right(Done)
-      when(sequencer.reset()).thenReturn(Future.successful(resetResponse))
-
-      sequencerActor ! Reset(testProbe.ref)
-      testProbe.expectMessage(resetResponse)
+      runTest[EditorResponse[ResetError]](
+        mockFunction = sequencer.reset(),
+        mockResponse = Right(Done),
+        testMsg = Reset
+      )
     }
 
     "Replace" in {
-      val testProbe: TestProbe[EditorResponse[ReplaceError]] = TestProbe()
-      val runId                                              = Id()
-      val command1                                           = Setup(Prefix("test"), CommandName("command-1"), None)
+      val runId    = Id()
+      val command1 = Setup(Prefix("test"), CommandName("command-1"), None)
 
-      val replaceResponse: EditorResponse[ReplaceError] = Right(Done)
-      when(sequencer.replace(runId, List(command1))).thenReturn(Future.successful(replaceResponse))
-
-      sequencerActor ! Replace(runId, List(command1), testProbe.ref)
-      testProbe.expectMessage(replaceResponse)
+      runTest[EditorResponse[ReplaceError]](
+        mockFunction = sequencer.replace(runId, List(command1)),
+        mockResponse = Right(Done),
+        testMsg = Replace(runId, List(command1), _)
+      )
     }
 
     "Prepend" in {
-      val testProbe: TestProbe[EditorResponse[PrependError]] = TestProbe()
-      val command1                                           = Setup(Prefix("test"), CommandName("command-1"), None)
+      val command1 = Setup(Prefix("test"), CommandName("command-1"), None)
 
-      val prependResponse: EditorResponse[PrependError] = Right(Done)
-      when(sequencer.prepend(List(command1))).thenReturn(Future.successful(prependResponse))
+      runTest[EditorResponse[PrependError]](
+        mockFunction = sequencer.prepend(List(command1)),
+        mockResponse = Right(Done),
+        testMsg = Prepend(List(command1), _)
+      )
 
-      sequencerActor ! Prepend(List(command1), testProbe.ref)
-      testProbe.expectMessage(prependResponse)
     }
 
     "Delete" in {
-      val testProbe: TestProbe[EditorResponse[DeleteError]] = TestProbe()
-      val runId                                             = Id()
+      val runId = Id()
 
-      val deleteResponse: EditorResponse[DeleteError] = Right(Done)
-      when(sequencer.delete(runId)).thenReturn(Future.successful(deleteResponse))
-
-      sequencerActor ! Delete(runId, testProbe.ref)
-      testProbe.expectMessage(deleteResponse)
+      runTest[EditorResponse[DeleteError]](
+        mockFunction = sequencer.delete(runId),
+        mockResponse = Right(Done),
+        testMsg = Delete(runId, _)
+      )
     }
 
     "InsertAfter" in {
-      val testProbe: TestProbe[EditorResponse[InsertError]] = TestProbe()
-      val runId                                             = Id()
-      val command1                                          = Setup(Prefix("test"), CommandName("command-1"), None)
+      val runId    = Id()
+      val command1 = Setup(Prefix("test"), CommandName("command-1"), None)
 
-      val insertResponse: EditorResponse[InsertError] = Right(Done)
-      when(sequencer.insertAfter(runId, List(command1))).thenReturn(Future.successful(insertResponse))
-
-      sequencerActor ! InsertAfter(runId, List(command1), testProbe.ref)
-      testProbe.expectMessage(insertResponse)
+      runTest[EditorResponse[InsertError]](
+        mockFunction = sequencer.insertAfter(runId, List(command1)),
+        mockResponse = Right(Done),
+        testMsg = InsertAfter(runId, List(command1), _)
+      )
     }
 
     "AddBreakpoint" in {
-      val testProbe: TestProbe[EditorResponse[AddBreakpointError]] = TestProbe()
-      val runId                                                    = Id()
+      val runId = Id()
 
-      val addBreakpointResponse: EditorResponse[AddBreakpointError] = Right(Done)
-      when(sequencer.addBreakpoint(runId)).thenReturn(Future.successful(addBreakpointResponse))
-
-      sequencerActor ! AddBreakpoint(runId, testProbe.ref)
-      testProbe.expectMessage(addBreakpointResponse)
+      runTest[EditorResponse[AddBreakpointError]](
+        mockFunction = sequencer.addBreakpoint(runId),
+        mockResponse = Right(Done),
+        testMsg = AddBreakpoint(runId, _)
+      )
     }
 
     "RemoveBreakpoint" in {
-      val testProbe: TestProbe[EditorResponse[RemoveBreakpointError]] = TestProbe()
-      val runId                                                       = Id()
+      val runId = Id()
 
-      val removeBreakpointResponse: EditorResponse[RemoveBreakpointError] = Right(Done)
-      when(sequencer.removeBreakpoint(runId)).thenReturn(Future.successful(removeBreakpointResponse))
-
-      sequencerActor ! RemoveBreakpoint(runId, testProbe.ref)
-      testProbe.expectMessage(removeBreakpointResponse)
+      runTest[EditorResponse[RemoveBreakpointError]](
+        mockFunction = sequencer.removeBreakpoint(runId),
+        mockResponse = Right(Done),
+        testMsg = RemoveBreakpoint(runId, _)
+      )
     }
 
     "PullNext" in {
-      val testProbe: TestProbe[Step] = TestProbe()
-      val command1                   = Setup(Prefix("test"), CommandName("command-1"), None)
+      val command1 = Setup(Prefix("test"), CommandName("command-1"), None)
 
-      val pullNextResponse = Step(command1)
-
-      when(sequencer.pullNext()).thenReturn(Future.successful(pullNextResponse))
-
-      sequencerActor ! PullNext(testProbe.ref)
-      testProbe.expectMessage(pullNextResponse)
+      runTest[Step](
+        mockFunction = sequencer.pullNext(),
+        mockResponse = Step(command1),
+        testMsg = PullNext
+      )
     }
 
     "MaybeNext" in {
-      val testProbe: TestProbe[Option[Step]] = TestProbe()
-      val command1                           = Setup(Prefix("test"), CommandName("command-1"), None)
+      val command1 = Setup(Prefix("test"), CommandName("command-1"), None)
 
-      val mayBeNextResponse = Some(Step(command1))
-
-      when(sequencer.mayBeNext).thenReturn(Future.successful(mayBeNextResponse))
-
-      sequencerActor ! MaybeNext(testProbe.ref)
-      testProbe.expectMessage(mayBeNextResponse)
+      runTest[Option[Step]](
+        mockFunction = sequencer.mayBeNext,
+        mockResponse = Some(Step(command1)),
+        testMsg = MaybeNext
+      )
     }
 
     "ReadyToExecuteNext" in {
-      val testProbe: TestProbe[Done] = TestProbe()
-
-      val ReadyToExecuteNextResponse = Done
-
-      when(sequencer.readyToExecuteNext()).thenReturn(Future.successful(ReadyToExecuteNextResponse))
-
-      sequencerActor ! ReadyToExecuteNext(testProbe.ref)
-      testProbe.expectMessage(ReadyToExecuteNextResponse)
+      runTest[Done](
+        mockFunction = sequencer.readyToExecuteNext(),
+        mockResponse = Done,
+        testMsg = ReadyToExecuteNext
+      )
     }
 
     "UpdateFailure" in {
@@ -220,6 +193,15 @@ class SequencerBehaviorTest extends ActorTestKitBase with BaseTestSuite with Moc
       sequencerActor ! UpdateFailure(errorResponse)
 
       verify(sequencer).updateFailure(errorResponse)
+    }
+
+    def runTest[R](mockFunction: => Future[R], mockResponse: R, testMsg: ActorRef[R] => SequencerMsg): Unit = {
+      val testProbe: TestProbe[R] = TestProbe()
+
+      when(mockFunction).thenReturn(Future.successful(mockResponse))
+
+      sequencerActor ! testMsg(testProbe.ref)
+      testProbe.expectMessage(mockResponse)
     }
   }
 }
