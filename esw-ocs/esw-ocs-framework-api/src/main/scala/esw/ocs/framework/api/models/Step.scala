@@ -11,12 +11,12 @@ case class Step private[models] (command: SequenceCommand, status: StepStatus, h
   def id: Id             = command.runId
   def isPending: Boolean = status == StepStatus.Pending
   def isFailed: Boolean = status match {
-    case _: Finished.Failure ⇒ true
-    case _                   ⇒ false
+    case _: Finished.Failure => true
+    case _                   => false
   }
   def isFinished: Boolean = status match {
-    case _: Finished ⇒ true
-    case _           ⇒ false
+    case _: Finished => true
+    case _           => false
   }
 
   def isInFlight: Boolean = status == StepStatus.InFlight

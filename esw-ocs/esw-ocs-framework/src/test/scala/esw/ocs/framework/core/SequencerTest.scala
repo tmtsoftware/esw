@@ -53,11 +53,11 @@ class SequencerTest extends BaseTestSuite with MockitoSugar {
 
       val cmd1Response = Completed(command1.runId)
       val cmd2Response = Completed(command2.runId)
-      when(crmMock.queryFinal(command1.runId)).thenAnswer(_ ⇒ queryResponse(cmd1Response, latch))
-      when(crmMock.queryFinal(command2.runId)).thenAnswer(_ ⇒ queryResponse(cmd2Response, latch))
+      when(crmMock.queryFinal(command1.runId)).thenAnswer(_ => queryResponse(cmd1Response, latch))
+      when(crmMock.queryFinal(command2.runId)).thenAnswer(_ => queryResponse(cmd2Response, latch))
 
       val processResponse = sequencer.processSequence(sequence)
-      sequencer.getSequence.futureValue should ===(StepList(sequence).right.value)
+      sequencer.getSequence.futureValue should ===(StepList(sequence).toOption.get)
 
       val pulled1F = sequencer.pullNext()
       val pulled2F = sequencer.pullNext()
@@ -85,11 +85,11 @@ class SequencerTest extends BaseTestSuite with MockitoSugar {
 
       val cmd1Response = Completed(command1.runId)
       val cmd2Response = Cancelled(command2.runId)
-      when(crmMock.queryFinal(command1.runId)).thenAnswer(_ ⇒ queryResponse(cmd1Response, latch))
-      when(crmMock.queryFinal(command2.runId)).thenAnswer(_ ⇒ queryResponse(cmd2Response, latch))
+      when(crmMock.queryFinal(command1.runId)).thenAnswer(_ => queryResponse(cmd1Response, latch))
+      when(crmMock.queryFinal(command2.runId)).thenAnswer(_ => queryResponse(cmd2Response, latch))
 
       val processResponse = sequencer.processSequence(sequence)
-      sequencer.getSequence.futureValue should ===(StepList(sequence).right.value)
+      sequencer.getSequence.futureValue should ===(StepList(sequence).toOption.get)
 
       val pulled1 = sequencer.pullNext().futureValue
       val pulled2 = sequencer.pullNext().futureValue
@@ -147,7 +147,7 @@ class SequencerTest extends BaseTestSuite with MockitoSugar {
       val cmd1Response = Completed(command1.runId)
 
       val p = Promise[SubmitResponse]
-      when(crmMock.queryFinal(command1.runId)).thenAnswer(_ ⇒ p.future)
+      when(crmMock.queryFinal(command1.runId)).thenAnswer(_ => p.future)
 
       sequencer.processSequence(sequence)
       sequencer.pullNext()
@@ -168,7 +168,7 @@ class SequencerTest extends BaseTestSuite with MockitoSugar {
       val cmd1Response = Completed(command1.runId)
 
       val p = Promise[SubmitResponse]
-      when(crmMock.queryFinal(command1.runId)).thenAnswer(_ ⇒ p.future)
+      when(crmMock.queryFinal(command1.runId)).thenAnswer(_ => p.future)
 
       val sequence1Response = sequencer.processSequence(sequence)
       sequencer.pullNext()
@@ -210,7 +210,7 @@ class SequencerTest extends BaseTestSuite with MockitoSugar {
       val latch = new CountDownLatch(1)
 
       val cmd1Response = Completed(command1.runId)
-      when(crmMock.queryFinal(command1.runId)).thenAnswer(_ ⇒ queryResponse(cmd1Response, latch))
+      when(crmMock.queryFinal(command1.runId)).thenAnswer(_ => queryResponse(cmd1Response, latch))
       sequencer.processSequence(sequence)
       sequencer.pullNext().futureValue should ===(Step(command1, InFlight, hasBreakpoint = false))
 
@@ -254,7 +254,7 @@ class SequencerTest extends BaseTestSuite with MockitoSugar {
       import sequencerSetup._
 
       val cmd1Response = Completed(command1.runId)
-      when(crmMock.queryFinal(command1.runId)).thenAnswer(_ ⇒ queryResponse(cmd1Response, latch))
+      when(crmMock.queryFinal(command1.runId)).thenAnswer(_ => queryResponse(cmd1Response, latch))
 
       sequencer.processSequence(sequence)
 
@@ -286,7 +286,7 @@ class SequencerTest extends BaseTestSuite with MockitoSugar {
       import sequencerSetup._
 
       val cmd1Response = Completed(command1.runId)
-      when(crmMock.queryFinal(command1.runId)).thenAnswer(_ ⇒ queryResponse(cmd1Response, latch))
+      when(crmMock.queryFinal(command1.runId)).thenAnswer(_ => queryResponse(cmd1Response, latch))
 
       sequencer.processSequence(sequence)
 
@@ -433,8 +433,8 @@ class SequencerTest extends BaseTestSuite with MockitoSugar {
 
       val cmd1Response = Completed(command1.runId)
       val cmd2Response = Completed(command2.runId)
-      when(crmMock.queryFinal(command1.runId)).thenAnswer(_ ⇒ queryResponse(cmd1Response, latch))
-      when(crmMock.queryFinal(command2.runId)).thenAnswer(_ ⇒ queryResponse(cmd2Response, latch))
+      when(crmMock.queryFinal(command1.runId)).thenAnswer(_ => queryResponse(cmd1Response, latch))
+      when(crmMock.queryFinal(command2.runId)).thenAnswer(_ => queryResponse(cmd2Response, latch))
 
       val processResponse = sequencer.processSequence(sequence)
       sequencer.pullNext().futureValue

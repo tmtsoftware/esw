@@ -35,7 +35,7 @@ private[framework] class Sequencer(crm: CommandResponseManager)(implicit strandE
       if (sequencerAvailable)
         await(
           StepList(sequence)
-            .traverse { _stepList ⇒
+            .traverse { _stepList =>
               sequencerAvailable = false
               updateStepList(_stepList)
               val id = _stepList.runId
@@ -51,8 +51,8 @@ private[framework] class Sequencer(crm: CommandResponseManager)(implicit strandE
   def pullNext(): Future[Step] = async {
     stepList.nextExecutable match {
       // step.isPending check is actually not required, but kept here in case impl of nextExecutable gets changed
-      case Some(step) if step.isPending ⇒ setPendingToInFlight(step)
-      case None                         ⇒ await(createStepRefPromise())
+      case Some(step) if step.isPending => setPendingToInFlight(step)
+      case None                         => await(createStepRefPromise())
     }
   }
 
@@ -92,7 +92,7 @@ private[framework] class Sequencer(crm: CommandResponseManager)(implicit strandE
   }
 
   private def handleSequenceResponse(submitResponse: Future[SubmitResponse]) = {
-    submitResponse.onComplete(_ ⇒ resetState())
+    submitResponse.onComplete(_ => resetState())
     submitResponse.map(CommandResponse.withRunId(stepList.runId, _))
   }
 
@@ -110,11 +110,11 @@ private[framework] class Sequencer(crm: CommandResponseManager)(implicit strandE
   private def processSubmitResponse(stepId: Id, submitResponseF: Future[SubmitResponse]) =
     submitResponseF
       .flatMap {
-        case submitResponse if CommandResponse.isPositive(submitResponse) ⇒ updateSuccess(submitResponse)
-        case failureResponse                                              ⇒ updateFailure(failureResponse)
+        case submitResponse if CommandResponse.isPositive(submitResponse) => updateSuccess(submitResponse)
+        case failureResponse                                              => updateFailure(failureResponse)
       }
       .recoverWith {
-        case NonFatal(e) ⇒ updateFailure(Error(stepId, e.getMessage))
+        case NonFatal(e) => updateFailure(Error(stepId, e.getMessage))
       }
 
   private[framework] def updateFailure(failureResponse: SubmitResponse) =
@@ -125,7 +125,7 @@ private[framework] class Sequencer(crm: CommandResponseManager)(implicit strandE
   private def updateStatus(submitResponse: SubmitResponse, stepStatus: StepStatus) = async {
     crm.updateSubCommand(submitResponse)
     val updateStatusResult = stepList.updateStatus(submitResponse.runId, stepStatus)
-    updateStatusResult.foreach { _stepList ⇒
+    updateStatusResult.foreach { _stepList =>
       stepList = _stepList
       checkForSequenceCompletion()
       completeReadyToExecuteNextPromise()
@@ -144,14 +144,14 @@ private[framework] class Sequencer(crm: CommandResponseManager)(implicit strandE
   }
 
   private def createReadyToExecuteNextPromise() =
-    createPromise[Done](p ⇒ readyToExecuteNextPromise = Some(p))
+    createPromise[Done](p => readyToExecuteNextPromise = Some(p))
 
   private def completeReadyToExecuteNextPromise() = async {
     if (!stepList.isFinished)
       readyToExecuteNextPromise.foreach(_.complete(Success(Done)))
   }
 
-  private def createStepRefPromise() = createPromise[Step](p ⇒ stepRefPromise = Some(p))
+  private def createStepRefPromise() = createPromise[Step](p => stepRefPromise = Some(p))
 
   private def completeStepRefPromise(): Unit =
     for {
@@ -163,16 +163,16 @@ private[framework] class Sequencer(crm: CommandResponseManager)(implicit strandE
       stepRefPromise = None
     }
 
-  private def createPromise[T](update: Promise[T] ⇒ Unit): Future[T] = async {
+  private def createPromise[T](update: Promise[T] => Unit): Future[T] = async {
     val p = Promise[T]()
     update(p)
     await(p.future)
   }
 
   // stepListResultFunc is by name because all StepList operations must execute on strandEc
-  private def updateStepListResult[T <: StepListError](stepListResultFunc: ⇒ Either[T, StepList]) = async {
+  private def updateStepListResult[T <: StepListError](stepListResultFunc: => Either[T, StepList]) = async {
     val stepListResult = stepListResultFunc
-    stepListResult.map { s ⇒
+    stepListResult.map { s =>
       stepList = s
       checkForSequenceCompletion()
       completeStepRefPromise()

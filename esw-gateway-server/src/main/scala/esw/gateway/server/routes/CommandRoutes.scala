@@ -7,7 +7,7 @@ import akka.stream.OverflowStrategy
 import akka.stream.scaladsl.Source
 import akka.util.Timeout
 import csw.command.api.CurrentStateSubscription
-import csw.location.api.models.ComponentType
+import csw.location.model.scaladsl.ComponentType
 import csw.params.commands.{CommandResponse, ControlCommand}
 import csw.params.core.formats.JsonSupport
 import csw.params.core.models.Id

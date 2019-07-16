@@ -11,7 +11,7 @@ class ControlDslTest extends BaseTestSuite {
 
   class TestDsl() extends ControlDsl {
     val loopInterval: FiniteDuration = 500.millis
-    def counterLoop(minimumDelay: Option[FiniteDuration] = None): (() ⇒ Int, Future[Done]) = {
+    def counterLoop(minimumDelay: Option[FiniteDuration] = None): (() => Int, Future[Done]) = {
       var counter = 0
 
       def increment: Future[StopIf] = Future {
@@ -21,11 +21,11 @@ class ControlDslTest extends BaseTestSuite {
 
       val loopFinished =
         minimumDelay match {
-          case Some(delay) ⇒ loop(delay)(increment)
-          case None        ⇒ loop(increment)
+          case Some(delay) => loop(delay)(increment)
+          case None        => loop(increment)
         }
 
-      (() ⇒ counter, loopFinished)
+      (() => counter, loopFinished)
     }
   }
 

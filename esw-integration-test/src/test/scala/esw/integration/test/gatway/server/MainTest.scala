@@ -11,10 +11,10 @@ import akka.http.scaladsl.model._
 import akka.http.scaladsl.unmarshalling.Unmarshal
 import akka.stream.typed.scaladsl.ActorMaterializer
 import com.typesafe.config.ConfigFactory
-import csw.location.api.models.Connection.HttpConnection
-import csw.location.api.models.{ComponentId, ComponentType}
 import csw.location.api.scaladsl.LocationService
 import csw.location.client.scaladsl.HttpLocationServiceFactory
+import csw.location.model.scaladsl.Connection.HttpConnection
+import csw.location.model.scaladsl.{ComponentId, ComponentType}
 import csw.params.core.formats.JsonSupport
 import csw.params.core.generics.Parameter
 import csw.params.core.models.Prefix

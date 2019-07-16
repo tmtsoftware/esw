@@ -2,12 +2,12 @@ package esw.ocs.framework.api.models.messages
 
 import akka.Done
 import akka.actor.typed.ActorRef
-import csw.location.api.models.AkkaLocation
-import csw.serializable.TMTSerializable
+import csw.location.model.scaladsl.AkkaLocation
+import esw.ocs.framework.api.models.serializer.SequenceComponentSerializable
 
 import scala.util.Try
 
-sealed trait SequenceComponentMsg extends TMTSerializable
+sealed trait SequenceComponentMsg extends SequenceComponentSerializable
 
 object SequenceComponentMsg {
   case class LoadScript(

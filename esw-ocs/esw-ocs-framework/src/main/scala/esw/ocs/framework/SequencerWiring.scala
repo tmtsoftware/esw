@@ -5,10 +5,11 @@ import akka.actor.typed.SpawnProtocol.Spawn
 import akka.actor.typed.scaladsl.AskPattern.Askable
 import csw.command.client.messages.CommandResponseManagerMessage
 import csw.command.client.{CRMCacheProperties, CommandResponseManager, CommandResponseManagerActor}
-import csw.location.api.models.Connection.AkkaConnection
-import csw.location.api.models.{AkkaLocation, AkkaRegistration, ComponentId, ComponentType}
+import csw.location.api.extensions.ActorExtension.RichActor
 import csw.location.api.scaladsl.LocationService
 import csw.location.client.scaladsl.HttpLocationServiceFactory
+import csw.location.model.scaladsl.Connection.AkkaConnection
+import csw.location.model.scaladsl.{AkkaLocation, AkkaRegistration, ComponentId, ComponentType}
 import csw.logging.api.scaladsl.Logger
 import csw.logging.client.scaladsl.LoggerFactory
 import esw.ocs.async.macros.StrandEc
@@ -58,7 +59,7 @@ class SequencerWiring(val sequencerId: String, val observingMode: String) {
   }
 
   def start(): Try[AkkaLocation] = {
-    val registration = AkkaRegistration(AkkaConnection(componentId), settings.prefix, sequencerRef)
+    val registration = AkkaRegistration(AkkaConnection(componentId), settings.prefix, sequencerRef.toURI)
     log.info(s"Registering ${componentId.name} with Location Service using registration: [${registration.toString}]")
 
     engine.start(sequenceOperatorFactory(), script)

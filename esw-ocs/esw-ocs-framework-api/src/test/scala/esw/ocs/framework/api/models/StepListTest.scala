@@ -16,13 +16,13 @@ class StepListTest extends BaseTestSuite {
       StepList.empty.steps should ===(Nil)
     }
   }
-
   "apply" must {
     "return a StepList" in {
       val setup1 = Setup(Prefix("ocs.move1"), CommandName("test1"), None)
       val setup2 = Setup(Prefix("ocs.move2"), CommandName("test2"), None)
 
-      val stepList = StepList(Sequence(setup1, setup2)).right.value
+      val stepList = StepList(Sequence(setup1, setup2)).toOption.get
+
       stepList.steps.length should ===(2)
     }
 
@@ -183,7 +183,7 @@ class StepListTest extends BaseTestSuite {
       val id              = Id()
       val stepList        = StepList(id, List(step1, step2, step3))
       val updatedStepList = stepList.replace(setup2.runId, List(setup4, setup5))
-      updatedStepList.right.value should ===(StepList(id, List(step1, Step(setup4), Step(setup5), step3)))
+      updatedStepList.toOption.get should ===(StepList(id, List(step1, Step(setup4), Step(setup5), step3)))
     }
 
     "fail with NotSupported error when Id matches but is in InFlight status | ESW-108" in {
@@ -247,7 +247,7 @@ class StepListTest extends BaseTestSuite {
       val id              = Id()
       val stepList        = StepList(id, List(step1, step2))
       val updatedStepList = stepList.prepend(List(setup3, setup4))
-      updatedStepList.right.value should ===(StepList(id, List(step1, Step(setup3), Step(setup4), step2)))
+      updatedStepList.toOption.get should ===(StepList(id, List(step1, Step(setup3), Step(setup4), step2)))
     }
 
     "add provided steps at the end of StepList when StepList doesn't have Pending step | ESW-113" in {
@@ -257,7 +257,7 @@ class StepListTest extends BaseTestSuite {
       val stepList = StepList(Id(), List(step1, step2))
 
       val updatedStepList = stepList.prepend(List(setup3))
-      updatedStepList.right.value should ===(StepList(stepList.runId, List(step1, step2, Step(setup3))))
+      updatedStepList.toOption.get should ===(StepList(stepList.runId, List(step1, step2, Step(setup3))))
     }
 
     "fail with NotAllowedOnFinishedSeq error when StepList is finished | ESW-113" in {
@@ -284,7 +284,7 @@ class StepListTest extends BaseTestSuite {
       val id              = Id()
       val stepList        = StepList(id, List(step1, step2))
       val updatedStepList = stepList.append(List(setup3, setup4))
-      updatedStepList.right.value should ===(StepList(id, List(step1, step2, Step(setup3), Step(setup4))))
+      updatedStepList.toOption.get should ===(StepList(id, List(step1, step2, Step(setup3), Step(setup4))))
     }
 
     "fail with NotAllowedOnFinishedSeq error when StepList is finished | ESW-114" in {
@@ -310,7 +310,7 @@ class StepListTest extends BaseTestSuite {
       val id              = Id()
       val stepList        = StepList(id, List(step1, step2, step3))
       val updatedStepList = stepList.delete(setup2.runId)
-      updatedStepList.right.value should ===(StepList(id, List(step1, step3)))
+      updatedStepList.toOption.get should ===(StepList(id, List(step1, step3)))
     }
 
     "fail with DeleteNotSupported error when step status is other than Pending | ESW-112" in {
@@ -355,7 +355,7 @@ class StepListTest extends BaseTestSuite {
       val id              = Id()
       val stepList        = StepList(id, List(step1, step2))
       val updatedStepList = stepList.insertAfter(step1.id, List(setup3, setup4))
-      updatedStepList.right.value should ===(StepList(id, List(step1, Step(setup3), Step(setup4), step2)))
+      updatedStepList.toOption.get should ===(StepList(id, List(step1, Step(setup3), Step(setup4), step2)))
     }
 
     "insert provided commands after last InFlight step | ESW-111" in {
@@ -364,7 +364,7 @@ class StepListTest extends BaseTestSuite {
       val id              = Id()
       val stepList        = StepList(id, List(step1))
       val updatedStepList = stepList.insertAfter(step1.id, List(setup2))
-      updatedStepList.right.value should ===(StepList(id, List(step1, Step(setup2))))
+      updatedStepList.toOption.get should ===(StepList(id, List(step1, Step(setup2))))
     }
 
     "fail with IdDoesNotExist error when provided Id does't exist in StepList | ESW-111" in {
@@ -425,7 +425,7 @@ class StepListTest extends BaseTestSuite {
       val id              = Id()
       val stepList        = StepList(id, List(step1, step2, step3, step4))
       val updatedStepList = stepList.discardPending
-      updatedStepList.right.value should ===(StepList(id, List(step1, step3)))
+      updatedStepList.toOption.get should ===(StepList(id, List(step1, step3)))
     }
 
     "fail with NotAllowedOnFinishedSeq error when StepList is finished | ESW-110" in {
@@ -450,7 +450,7 @@ class StepListTest extends BaseTestSuite {
       val id              = Id()
       val stepList        = StepList(id, List(step1, step2))
       val updatedStepList = stepList.addBreakpoint(setup2.runId)
-      updatedStepList.right.value should ===(StepList(id, List(step1, step2.copy(hasBreakpoint = true))))
+      updatedStepList.toOption.get should ===(StepList(id, List(step1, step2.copy(hasBreakpoint = true))))
     }
 
     "fail with IdDoesNotExist error when provided id does not exist | ESW-106" in {
@@ -484,7 +484,7 @@ class StepListTest extends BaseTestSuite {
       val id              = Id()
       val stepList        = StepList(id, List(step1, step2))
       val updatedStepList = stepList.removeBreakpoint(setup2.runId)
-      updatedStepList.right.value should ===(StepList(id, List(step1, step2.copy(hasBreakpoint = false))))
+      updatedStepList.toOption.get should ===(StepList(id, List(step1, step2.copy(hasBreakpoint = false))))
     }
 
     "fail with IdDoesNotExist error when provided id does not exist | ESW-107" in {
@@ -522,7 +522,7 @@ class StepListTest extends BaseTestSuite {
       val id              = Id()
       val stepList        = StepList(id, List(step1, step2, step3, step4))
       val updatedStepList = stepList.pause
-      updatedStepList.right.value should ===(StepList(id, List(step1, step2, step3.copy(hasBreakpoint = true), step4)))
+      updatedStepList.toOption.get should ===(StepList(id, List(step1, step2, step3.copy(hasBreakpoint = true), step4)))
     }
 
     "fail with PauseFailed error when Pending step doesn't exist in StepList | ESW-104" in {
@@ -557,7 +557,7 @@ class StepListTest extends BaseTestSuite {
       val id              = Id()
       val stepList        = StepList(id, List(step1, step2, step3))
       val updatedStepList = stepList.resume
-      updatedStepList.right.value shouldBe StepList(id, List(step1, step2, step3.copy(hasBreakpoint = false)))
+      updatedStepList.toOption.get shouldBe StepList(id, List(step1, step2, step3.copy(hasBreakpoint = false)))
     }
 
     "be no-op when Pending step doesn't exist in StepList | ESW-105" in {
@@ -566,7 +566,7 @@ class StepListTest extends BaseTestSuite {
 
       val stepList        = StepList(Id(), List(step1, step2))
       val updatedStepList = stepList.resume
-      updatedStepList.right.value should ===(stepList)
+      updatedStepList.toOption.get should ===(stepList)
     }
 
     "fail with NotAllowedOnFinishedSeq error when StepList is finished | ESW-105" in {
@@ -594,11 +594,11 @@ class StepListTest extends BaseTestSuite {
       val step2Status      = finished(setup2.runId)
       val updatedStepList1 = stepList.updateStatus(setup2.runId, step2Status)
       val updatedStep2     = step2.copy(status = step2Status)
-      updatedStepList1.right.value shouldBe StepList(id, List(step1, updatedStep2, step3))
+      updatedStepList1.toOption.get shouldBe StepList(id, List(step1, updatedStep2, step3))
 
-      val updatedStepList2 = updatedStepList1.right.value.updateStatus(setup3.runId, InFlight)
+      val updatedStepList2 = updatedStepList1.toOption.get.updateStatus(setup3.runId, InFlight)
       val updatedStep3     = step3.copy(status = InFlight)
-      updatedStepList2.right.value should ===(StepList(id, List(step1, updatedStep2, updatedStep3)))
+      updatedStepList2.toOption.get should ===(StepList(id, List(step1, updatedStep2, updatedStep3)))
     }
 
     "fail with UpdateFailed error when step status transition not allowed" in {

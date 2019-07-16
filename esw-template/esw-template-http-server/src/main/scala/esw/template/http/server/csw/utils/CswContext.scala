@@ -4,9 +4,9 @@ import csw.command.client.CommandServiceFactory
 import csw.event.api.scaladsl.EventService
 import csw.event.client.EventServiceFactory
 import csw.event.client.internal.commons.EventSubscriberUtil
-import csw.location.api.models.Connection.HttpConnection
 import csw.location.api.scaladsl.LocationService
 import csw.location.client.scaladsl.HttpLocationServiceFactory
+import csw.location.model.scaladsl.Connection.HttpConnection
 import csw.logging.api.scaladsl.Logger
 import esw.template.http.server.commons.ServiceLogger
 import esw.template.http.server.wiring.ActorRuntime

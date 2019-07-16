@@ -17,7 +17,7 @@ class ScriptDslTest extends BaseTestSuite {
         override def csw: CswServices             = ???
         override val loopInterval: FiniteDuration = 100.millis
 
-        handleSetupCommand("iris") { cmd ⇒
+        handleSetupCommand("iris") { cmd =>
           spawn {
             receivedPrefix = Some(cmd.source)
             ()
@@ -37,7 +37,7 @@ class ScriptDslTest extends BaseTestSuite {
       val script = new ScriptDsl {
         override def csw: CswServices             = ???
         override val loopInterval: FiniteDuration = 100.millis
-        handleObserveCommand("iris") { cmd ⇒
+        handleObserveCommand("iris") { cmd =>
           spawn {
             receivedPrefix = Some(cmd.source)
             ()

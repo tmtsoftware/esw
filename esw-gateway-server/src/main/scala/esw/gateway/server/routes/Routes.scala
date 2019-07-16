@@ -11,17 +11,17 @@ class Routes(cswCtx: CswContext) {
 
   import cswCtx._
 
-  private val logRequest: HttpRequest ⇒ Unit = req ⇒
+  private val logRequest: HttpRequest => Unit = req =>
     logger.info(
       "HTTP request received",
       Map(
-        "url"     → req.uri.toString(),
-        "method"  → req.method.value.toString,
-        "headers" → req.headers.mkString(",")
+        "url"     -> req.uri.toString(),
+        "method"  -> req.method.value.toString,
+        "headers" -> req.headers.mkString(",")
       )
     )
 
-  private val routeLogger: Directive0 = DebuggingDirectives.logRequest(LoggingMagnet(_ ⇒ logRequest))
+  private val routeLogger: Directive0 = DebuggingDirectives.logRequest(LoggingMagnet(_ => logRequest))
   private val eventRoutes: Route      = new EventRoutes(cswCtx).route
   private val commandRoutes: Route    = new CommandRoutes(cswCtx).route
 

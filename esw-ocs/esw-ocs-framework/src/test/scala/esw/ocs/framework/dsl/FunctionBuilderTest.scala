@@ -7,13 +7,13 @@ class FunctionBuilderTest extends BaseTestSuite {
   case class Command(name: String, value: Int)
 
   private val functionBuilder = new FunctionBuilder[Command, Int]
-  functionBuilder.addHandler[Command](cmd ⇒ cmd.value * cmd.value)(_.name == "square")
-  functionBuilder.addHandler[Command](cmd ⇒ Math.abs(cmd.value))(_.name == "abs")
-  functionBuilder.addHandler[Command](cmd ⇒ 1 / cmd.value)(_.name == "reciprocal")
+  functionBuilder.addHandler[Command](cmd => cmd.value * cmd.value)(_.name == "square")
+  functionBuilder.addHandler[Command](cmd => Math.abs(cmd.value))(_.name == "abs")
+  functionBuilder.addHandler[Command](cmd => 1 / cmd.value)(_.name == "reciprocal")
 
   private val builtFunctionWithHandlers = functionBuilder.build {
-    case Command("die", _) ⇒ throw new RuntimeException("dead")
-    case _                 ⇒ 0
+    case Command("die", _) => throw new RuntimeException("dead")
+    case _                 => 0
   }
 
   "build " must {

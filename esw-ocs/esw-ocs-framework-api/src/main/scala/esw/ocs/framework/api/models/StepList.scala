@@ -20,7 +20,7 @@ final case class StepList private[models] (runId: Id, steps: List[Step]) {
 
   //update
   def replace(id: Id, commands: List[SequenceCommand]): Either[ReplaceError, StepList] =
-    ifExistAndNotFinished(id) { step ⇒
+    ifExistAndNotFinished(id) { step =>
       if (step.isPending) replaceSteps(id, toSteps(commands))
       else Left(NotSupported(step.status))
     }
@@ -33,34 +33,34 @@ final case class StepList private[models] (runId: Id, steps: List[Step]) {
   def append(commands: List[SequenceCommand]): Either[AddError, StepList] =
     ifNotFinished(Right(copy(runId, steps ::: toSteps(commands))))
 
-  def delete(id: Id): Either[DeleteError, StepList] = ifExistAndNotFinished(id) { _ ⇒
+  def delete(id: Id): Either[DeleteError, StepList] = ifExistAndNotFinished(id) { _ =>
     steps
       .foldLeft[Either[DeleteError, List[Step]]](Right(List.empty)) {
-        case (acc, step) if step.id == id && step.isPending ⇒ acc
-        case (_, step) if step.id == id                     ⇒ Left(NotSupported(step.status))
-        case (acc, step)                                    ⇒ acc.map(_ :+ step)
+        case (acc, step) if step.id == id && step.isPending => acc
+        case (_, step) if step.id == id                     => Left(NotSupported(step.status))
+        case (acc, step)                                    => acc.map(_ :+ step)
       }
-      .map(steps ⇒ copy(runId, steps))
+      .map(steps => copy(runId, steps))
   }
 
   def insertAfter(id: Id, commands: List[SequenceCommand]): Either[InsertError, StepList] =
-    ifExistAndNotFinished[InsertError](id) { _ ⇒
+    ifExistAndNotFinished[InsertError](id) { _ =>
       insertStepsAfter(id, toSteps(commands)).map(updatedSteps => copy(runId, updatedSteps))
     }
 
   def discardPending: Either[ResetError, StepList] =
     ifNotFinished(Right(copy(runId, steps.filterNot(_.isPending))))
 
-  def addBreakpoint(id: Id): Either[AddBreakpointError, StepList] = ifExistAndNotFinished(id) { _ ⇒
+  def addBreakpoint(id: Id): Either[AddBreakpointError, StepList] = ifExistAndNotFinished(id) { _ =>
     steps
       .foldLeft[Either[AddBreakpointError, List[Step]]](Right(List.empty)) {
-        case (acc, step) if step.id == id ⇒ step.addBreakpoint().flatMap(step ⇒ acc.map(_ :+ step))
-        case (acc, step)                  ⇒ acc.map(_ :+ step)
+        case (acc, step) if step.id == id => step.addBreakpoint().flatMap(step => acc.map(_ :+ step))
+        case (acc, step)                  => acc.map(_ :+ step)
       }
-      .map(steps ⇒ copy(runId, steps))
+      .map(steps => copy(runId, steps))
   }
 
-  def removeBreakpoint(id: Id): Either[RemoveBreakpointError, StepList] = ifExistAndNotFinished[RemoveBreakpointError](id) { _ ⇒
+  def removeBreakpoint(id: Id): Either[RemoveBreakpointError, StepList] = ifExistAndNotFinished[RemoveBreakpointError](id) { _ =>
     Right(updateAll(id, _.removeBreakpoint()))
   }
 
@@ -78,13 +78,13 @@ final case class StepList private[models] (runId: Id, steps: List[Step]) {
   }
 
   private[framework] def updateStatus(id: Id, stepStatus: StepStatus): Either[UpdateError, StepList] =
-    ifExistAndNotFinished(id) { _ ⇒
+    ifExistAndNotFinished(id) { _ =>
       steps
         .foldLeft[Either[UpdateError, List[Step]]](Right(List.empty)) {
-          case (acc, step) if step.id == id ⇒ step.withStatus(stepStatus).flatMap(step ⇒ acc.map(_ :+ step))
-          case (acc, step)                  ⇒ acc.map(_ :+ step)
+          case (acc, step) if step.id == id => step.withStatus(stepStatus).flatMap(step => acc.map(_ :+ step))
+          case (acc, step)                  => acc.map(_ :+ step)
         }
-        .map(steps ⇒ copy(runId, steps))
+        .map(steps => copy(runId, steps))
     }
 
   private def replaceSteps(id: Id, steps: List[Step]): Either[ReplaceError, StepList] =
@@ -108,22 +108,22 @@ final case class StepList private[models] (runId: Id, steps: List[Step]) {
     })
 
   private def ifNotFinished[T <: StepListError](
-      f: ⇒ Either[T, StepList]
+      f: => Either[T, StepList]
   )(implicit ev: NotAllowedOnFinishedSeq.type <:< T): Either[T, StepList] =
     if (isFinished) Left(NotAllowedOnFinishedSeq) else f
 
   private def ifExists[T <: StepListError](id: Id)(
-      f: Step ⇒ Either[T, StepList]
+      f: Step => Either[T, StepList]
   )(implicit ev: IdDoesNotExist <:< T): Either[T, StepList] =
     steps.find(_.id == id) match {
-      case Some(step) ⇒ f(step)
-      case None       ⇒ Left(IdDoesNotExist(id))
+      case Some(step) => f(step)
+      case None       => Left(IdDoesNotExist(id))
     }
 
   private def ifExistAndNotFinished[T <: StepListError](id: Id)(
-      f: Step ⇒ Either[T, StepList]
+      f: Step => Either[T, StepList]
   )(implicit ev1: IdDoesNotExist <:< T, ev2: NotAllowedOnFinishedSeq.type <:< T): Either[T, StepList] =
-    ifExists(id)(step ⇒ ifNotFinished(f(step)))
+    ifExists(id)(step => ifNotFinished(f(step)))
 }
 
 object StepList {

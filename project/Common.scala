@@ -35,9 +35,8 @@ object Common extends AutoPlugin {
       "-deprecation",
       if (enableFatalWarnings.value) "-Xfatal-warnings" else "",
       "-Xlint:_,-missing-interpolator",
-      "-Yno-adapted-args",
-      "-Ywarn-dead-code",
-      "-Xfuture"
+      "-Ywarn-dead-code"
+//      "-Xfuture"
       //      "-Xprint:typer"
     ),
     licenses := Seq(("Apache-2.0", url("http://www.apache.org/licenses/LICENSE-2.0")))

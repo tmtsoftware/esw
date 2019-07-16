@@ -10,9 +10,9 @@ import scala.util.control.NonFatal
 object RouteHandlers extends Directives with JsonRejectionHandler {
 
   implicit def commonExceptionHandlers: ExceptionHandler = ExceptionHandler {
-    case ex: TimeoutException ⇒
+    case ex: TimeoutException =>
       complete(JsonSupport.asJsonResponse(StatusCodes.GatewayTimeout, ex.getMessage))
-    case NonFatal(ex) ⇒
+    case NonFatal(ex) =>
       complete(JsonSupport.asJsonResponse(StatusCodes.InternalServerError, ex.getMessage))
   }
 }

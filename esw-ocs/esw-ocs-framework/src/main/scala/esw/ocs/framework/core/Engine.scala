@@ -26,7 +26,7 @@ class Engine(implicit mat: Materializer) {
     val step = await(sequenceOperator.pullNext)
     //todo: what happens when execute handler fails?
     script.execute(step.command).recover {
-      case NonFatal(e) ⇒
+      case NonFatal(e) =>
         e.printStackTrace()
         sequenceOperator.update(Error(step.command.runId, e.getMessage))
     }

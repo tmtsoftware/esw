@@ -9,7 +9,7 @@ import akka.http.scaladsl.unmarshalling.sse.EventStreamUnmarshalling._
 import akka.stream.scaladsl.{Sink, Source}
 import akka.util.Timeout
 import csw.command.api.CurrentStateSubscription
-import csw.location.api.models.ComponentType
+import csw.location.model.scaladsl.ComponentType
 import csw.params.commands.CommandResponse.{Accepted, Completed}
 import csw.params.commands.{CommandName, CommandResponse, Setup}
 import csw.params.core.models.{Id, ObsId, Prefix}

@@ -36,8 +36,8 @@ trait ScriptDsl extends ControlDsl {
 
   // this futures will normally run in parallel, but given that those are running on same thread
   // this will executes sequentially
-  private[framework] def executeShutdown(): Future[Unit] = Future.sequence(shutdownHandlers.execute(())).map(_ ⇒ ())
-  private[framework] def executeAbort(): Future[Unit]    = Future.sequence(abortHandlers.execute(())).map(_ ⇒ ())
+  private[framework] def executeShutdown(): Future[Unit] = Future.sequence(shutdownHandlers.execute(())).map(_ => ())
+  private[framework] def executeAbort(): Future[Unit]    = Future.sequence(abortHandlers.execute(())).map(_ => ())
 
   protected final def nextIf(f: SequenceCommand => Boolean): Future[Option[SequenceCommand]] =
     spawn {

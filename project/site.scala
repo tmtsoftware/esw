@@ -34,10 +34,10 @@ object ParadoxSite extends AutoPlugin {
           .withRepository(new URI(EswKeys.homepageValue))
       },
       paradoxProperties in Paradox ++= Map(
-        "version"             → version.value,
-        "scala.binaryVersion" → scalaBinaryVersion.value,
-        "scaladoc.base_url"   → s"https://tmtsoftware.github.io/${EswKeys.projectName}/${version.value}/api/scala",
-        "github.base_url"     → githubBaseUrl(version.value)
+        "version"             -> version.value,
+        "scala.binaryVersion" -> scalaBinaryVersion.value,
+        "scaladoc.base_url"   -> s"https://tmtsoftware.github.io/${EswKeys.projectName}/${version.value}/api/scala",
+        "github.base_url"     -> githubBaseUrl(version.value)
       )
     )
   }

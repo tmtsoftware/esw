@@ -14,7 +14,7 @@ class ArgsParserTest extends BaseTestSuite {
   def silentParse(args: Array[String]): Option[Options] =
     Console.withOut(outCapture) {
       Console.withErr(errCapture) {
-        parser.parse(args)
+        parser.parse(args.toList)
       }
     }
 

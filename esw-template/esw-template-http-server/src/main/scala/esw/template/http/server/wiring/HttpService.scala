@@ -8,9 +8,9 @@ import akka.actor.CoordinatedShutdown.Reason
 import akka.http.scaladsl.Http
 import akka.http.scaladsl.Http.ServerBinding
 import akka.http.scaladsl.server.Route
-import csw.location.api.models.Connection.HttpConnection
-import csw.location.api.models.{HttpRegistration, RegistrationResult}
-import csw.location.api.scaladsl.LocationService
+import csw.location.api.scaladsl.{LocationService, RegistrationResult}
+import csw.location.model.scaladsl.Connection.HttpConnection
+import csw.location.model.scaladsl.HttpRegistration
 import csw.logging.api.scaladsl.Logger
 import csw.network.utils.{Networks, SocketUtils}
 import esw.template.http.server.commons.CoordinatedShutdownReasons.FailureReason
@@ -55,7 +55,7 @@ class HttpService(
     log.info(s"Server online at http://${binding.localAddress.getHostName}:${binding.localAddress.getPort}/")
     (binding, registrationResult)
   } recoverWith {
-    case NonFatal(ex) ⇒ shutdown(FailureReason(ex)).map(_ ⇒ throw ex)
+    case NonFatal(ex) => shutdown(FailureReason(ex)).map(_ => throw ex)
   }
 
   def shutdown(reason: Reason): Future[Done] = actorRuntime.shutdown(reason)

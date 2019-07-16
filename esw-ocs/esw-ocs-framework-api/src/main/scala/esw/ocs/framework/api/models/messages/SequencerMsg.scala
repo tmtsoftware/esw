@@ -5,14 +5,14 @@ import akka.actor.typed.ActorRef
 import csw.params.commands.CommandResponse.SubmitResponse
 import csw.params.commands.SequenceCommand
 import csw.params.core.models.Id
-import csw.serializable.TMTSerializable
 import esw.ocs.framework.api.models.SequenceEditor.EditorResponse
 import esw.ocs.framework.api.models.messages.StepListError._
+import esw.ocs.framework.api.models.serializer.SequencerSerializable
 import esw.ocs.framework.api.models.{Sequence, Step, StepList}
 
 import scala.util.Try
 
-sealed trait SequencerMsg extends TMTSerializable
+sealed trait SequencerMsg extends SequencerSerializable
 
 object SequencerMsg {
   sealed trait InternalSequencerMsg extends SequencerMsg

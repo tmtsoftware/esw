@@ -10,9 +10,9 @@ import akka.http.scaladsl.server.Directives.{complete, get, path}
 import akka.http.scaladsl.server.Route
 import akka.stream.typed.scaladsl.ActorMaterializer
 import csw.location.api.exceptions.OtherLocationIsRegistered
-import csw.location.api.models.HttpRegistration
 import csw.location.api.scaladsl.LocationService
 import csw.location.client.scaladsl.HttpLocationServiceFactory
+import csw.location.model.scaladsl.HttpRegistration
 import csw.network.utils.Networks
 import csw.testkit.LocationTestKit
 import esw.template.http.server.BaseTestSuite
@@ -94,7 +94,7 @@ class HttpServiceTest extends BaseTestSuite {
       //TODO: Find a way to assert server is not bounded
       try Await.result(actorRuntime.shutdown(UnknownReason), 5.seconds)
       catch {
-        case NonFatal(_) ⇒
+        case NonFatal(_) =>
       }
     }
   }

@@ -6,10 +6,10 @@ import akka.actor.typed.scaladsl.Behaviors
 import akka.actor.typed.scaladsl.adapter.TypedActorSystemOps
 import akka.http.scaladsl.Http
 import akka.stream.typed.scaladsl.ActorMaterializer
-import csw.location.api.models.Connection.AkkaConnection
-import csw.location.api.models.{ComponentId, ComponentType}
 import csw.location.api.scaladsl.LocationService
 import csw.location.client.scaladsl.HttpLocationServiceFactory
+import csw.location.model.scaladsl.Connection.AkkaConnection
+import csw.location.model.scaladsl.{ComponentId, ComponentType}
 import csw.testkit.LocationTestKit
 import esw.ocs.framework.SequencerWiring
 import esw.template.http.server.BaseTestSuite

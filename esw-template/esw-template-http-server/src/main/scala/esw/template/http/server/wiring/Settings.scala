@@ -1,8 +1,8 @@
 package esw.template.http.server.wiring
 
 import com.typesafe.config.{Config, ConfigFactory}
-import csw.location.api.models.Connection.HttpConnection
-import csw.location.api.models.{ComponentId, ComponentType}
+import csw.location.model.scaladsl.Connection.HttpConnection
+import csw.location.model.scaladsl.{ComponentId, ComponentType}
 
 class Settings(_port: Option[Int]) {
   lazy val config: Config     = ConfigFactory.load().getConfig("http-server")

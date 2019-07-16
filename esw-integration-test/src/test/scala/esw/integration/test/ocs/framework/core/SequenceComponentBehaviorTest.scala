@@ -8,8 +8,8 @@ import akka.actor.typed.scaladsl.adapter.TypedActorSystemOps
 import akka.http.scaladsl.Http
 import akka.stream.typed.scaladsl.ActorMaterializer
 import akka.{Done, actor}
-import csw.location.api.models.Connection.AkkaConnection
-import csw.location.api.models.{AkkaLocation, ComponentId, ComponentType, Location}
+import csw.location.model.scaladsl.Connection.AkkaConnection
+import csw.location.model.scaladsl.{AkkaLocation, ComponentId, ComponentType, Location}
 import csw.testkit.LocationTestKit
 import esw.ocs.framework.BaseTestSuite
 import esw.ocs.framework.api.models.messages.SequenceComponentMsg
@@ -39,7 +39,7 @@ class SequenceComponentBehaviorTest extends BaseTestSuite {
   }
 
   private def createBehaviorTestKit(): BehaviorTestKit[SequenceComponentMsg] = BehaviorTestKit(
-    Behaviors.setup[SequenceComponentMsg](_ ⇒ SequenceComponentBehavior.behavior)
+    Behaviors.setup[SequenceComponentMsg](_ => SequenceComponentBehavior.behavior)
   )
 
   "SequenceComponentBehavior" must {

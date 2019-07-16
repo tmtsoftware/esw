@@ -65,7 +65,7 @@ class StepTest extends BaseTestSuite {
       val setup      = Setup(Prefix("test"), CommandName("test"), None)
       val step       = Step(setup, Pending, hasBreakpoint = false)
       val stepResult = step.addBreakpoint()
-      stepResult.right.value.hasBreakpoint should ===(true)
+      stepResult.toOption.get.hasBreakpoint should ===(true)
     }
 
     "fail with AddingBreakpointNotSupported error when step status is InFlight | ESW-106" in {
@@ -104,7 +104,7 @@ class StepTest extends BaseTestSuite {
       val setup      = Setup(Prefix("test"), CommandName("test"), None)
       val step       = Step(setup, Pending, hasBreakpoint = true)
       val stepResult = step.withStatus(InFlight)
-      stepResult.right.value.status should ===(InFlight)
+      stepResult.toOption.get.status should ===(InFlight)
     }
 
     "change the status to Finished from InFlight " in {
@@ -112,7 +112,7 @@ class StepTest extends BaseTestSuite {
       val step             = Step(setup, InFlight, hasBreakpoint = true)
       val finishedResponse = finished(setup.runId)
       val stepResult       = step.withStatus(finishedResponse)
-      stepResult.right.value.status should ===(finishedResponse)
+      stepResult.toOption.get.status should ===(finishedResponse)
     }
 
     "fail for invalid status transitions" in {

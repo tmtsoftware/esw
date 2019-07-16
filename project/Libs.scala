@@ -1,9 +1,9 @@
 import org.portablescala.sbtplatformdeps.PlatformDepsPlugin.autoImport._
-import sbt.Def.{setting ⇒ dep}
+import sbt.Def.{setting => dep}
 import sbt._
 
 object Libs {
-  val ScalaVersion = "2.12.8"
+  val ScalaVersion = EswKeys.scalaVersion
 
   val `scala-reflect` = "org.scala-lang" % "scala-reflect" % ScalaVersion
   val scalatest       = "org.scalatest" %% "scalatest" % "3.0.8" //Apache License 2.0
@@ -15,7 +15,7 @@ object Libs {
 
 object Csw {
   private val Org     = "com.github.tmtsoftware.csw"
-  private val Version = "40b2dcf366" //change this to 0.1-SNAPSHOT to test with local csw changes (after publishLocal)
+  private val Version = "aaec5f79" //change this to 0.1-SNAPSHOT to test with local csw changes (after publishLocal)
 
   val `csw-location-api`    = Org %% "csw-location-api" % Version
   val `csw-params`          = dep(Org %%% "csw-params" % Version)

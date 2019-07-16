@@ -24,7 +24,7 @@ trait BaseTestSuite
   }
 
   implicit class FutureEitherOps[L, R](futureEither: Future[Either[L, R]]) {
-    def rightValue: R = futureEither.futureValue.right.value
+    def rightValue: R = futureEither.futureValue.toOption.get
     def leftValue: L  = futureEither.futureValue.left.value
   }
 

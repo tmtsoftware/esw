@@ -5,7 +5,7 @@ import akka.actor.Scheduler
 import akka.actor.typed.ActorRef
 import akka.actor.typed.scaladsl.AskPattern._
 import akka.util.Timeout
-import csw.location.api.models.AkkaLocation
+import csw.location.model.scaladsl.AkkaLocation
 import esw.ocs.framework.api.models.messages.SequenceComponentMsg
 import esw.ocs.framework.api.models.messages.SequenceComponentMsg.{GetStatus, LoadScript, UnloadScript}
 

@@ -12,7 +12,7 @@ object Main {
   def main(args: Array[String]): Unit = start(args, startLogging = true)
 
   def start(args: Array[String], startLogging: Boolean): Option[HttpService] = {
-    new ArgsParser("http-server").parse(args).map {
+    new ArgsParser("http-server").parse(args.toList).map {
       case Options(port) =>
         val wiring = new ServerWiring(port)
         import wiring._
