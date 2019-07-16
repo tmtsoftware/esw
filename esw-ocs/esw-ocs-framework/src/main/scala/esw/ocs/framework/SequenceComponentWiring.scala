@@ -34,6 +34,7 @@ class SequenceComponentWiring(name: String) {
       AkkaRegistration(AkkaConnection(ComponentId(name, ComponentType.Service)), prefix, sequenceComponentRef.toURI)
     log.info(s"Registering $name with Location Service using registration: [${registration.toString}]")
 
+    // fixme: no need to block here and return Future[RegistrationResult]
     val registrationResult = Await.result(locationService.register(registration), 5.seconds)
 
     coordinatedShutdown.addTask(

@@ -26,7 +26,10 @@ import scala.util.Try
 class SequencerWiring(val sequencerId: String, val observingMode: String) {
 
   private lazy val settings: SequencerConfig = new SequencerConfig(sequencerId, observingMode)
-  private val actorRuntime                   = new ActorRuntime(settings.name)
+
+  // fixme: why not lazy?
+  private val actorRuntime = new ActorRuntime(settings.name)
+
   import actorRuntime._
 
   private lazy val engine        = new Engine()
@@ -53,12 +56,15 @@ class SequencerWiring(val sequencerId: String, val observingMode: String) {
 
   private lazy val locationService: LocationService = HttpLocationServiceFactory.makeLocalClient
 
+  // fixme: no need to block
   def shutDown(): Unit = {
     Await.result(locationService.unregister(AkkaConnection(componentId)), 5.seconds)
     Await.result(sequenceEditorClient.shutdown(), 5.seconds)
     typedSystem.terminate()
   }
 
+  // fixme: do not block and return Future[AkkaLocation]?
+  //  onComplete gives handle to Try
   def start(): Try[AkkaLocation] = {
     val registration = AkkaRegistration(AkkaConnection(componentId), settings.prefix, sequencerRef.toURI)
     log.info(s"Registering ${componentId.name} with Location Service using registration: [${registration.toString}]")

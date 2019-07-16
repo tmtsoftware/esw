@@ -2,6 +2,7 @@ package esw.ocs.framework
 
 object SequencerApp extends SequencerAppTemplate
 
+// fixme: use scopt to parse args
 class SequencerAppTemplate {
   def main(args: Array[String]): Unit = {
     args match {

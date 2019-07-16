@@ -19,7 +19,7 @@ class SequenceComponentClient(sequenceComponentRef: ActorRef[SequenceComponentMs
   def loadScript(
       sequencerId: String,
       observingMode: String
-  ): Future[Try[AkkaLocation]] = sequenceComponentRef ? (x => LoadScript(sequencerId, observingMode, x))
+  ): Future[Try[AkkaLocation]] = sequenceComponentRef ? (LoadScript(sequencerId, observingMode, _))
 
   def getStatus: Future[Option[AkkaLocation]] = sequenceComponentRef ? GetStatus
 

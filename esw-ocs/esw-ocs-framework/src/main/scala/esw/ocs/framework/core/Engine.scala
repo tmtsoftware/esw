@@ -24,10 +24,9 @@ class Engine(implicit mat: Materializer) {
    */
   def processStep(sequenceOperator: SequenceOperator, script: Script): Future[Done] = async {
     val step = await(sequenceOperator.pullNext)
-    //todo: what happens when execute handler fails?
     script.execute(step.command).recover {
       case NonFatal(e) =>
-        e.printStackTrace()
+        e.printStackTrace() // fixme: log it
         sequenceOperator.update(Error(step.command.runId, e.getMessage))
     }
 
