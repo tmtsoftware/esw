@@ -52,9 +52,9 @@ class CommandRoutesTest extends HttpTestSuite {
     s"CommandRoutes for ${testData.componentType}" must {
       "post command to validate | ESW-91" in new Setup {
         import cswMocks._
-        val componentName = "test-component"
-        val runId         = Id("123")
-        val command       = Setup(Prefix("test"), CommandName("c1"), Some(ObsId("obsId"))).copy(runId = runId)
+        private val componentName = "test-component"
+        private val runId         = Id("123")
+        private val command       = Setup(Prefix("test"), CommandName("c1"), Some(ObsId("obsId"))).copy(runId = runId)
 
         when(commandService.validate(command)).thenReturn(Future.successful(Accepted(runId)))
         when(componentFactory.commandService(componentName, componentType)).thenReturn(Future(commandService))
@@ -66,9 +66,9 @@ class CommandRoutesTest extends HttpTestSuite {
 
       "get error response for validate command on timeout | ESW-91" in new Setup {
         import cswMocks._
-        val componentName = "test-component"
-        val runId         = Id("123")
-        val command       = Setup(Prefix("test"), CommandName("c1"), Some(ObsId("obsId"))).copy(runId = runId)
+        private val componentName = "test-component"
+        private val runId         = Id("123")
+        private val command       = Setup(Prefix("test"), CommandName("c1"), Some(ObsId("obsId"))).copy(runId = runId)
 
         when(commandService.validate(command)).thenReturn(Future.failed(new TimeoutException("")))
         when(componentFactory.commandService(componentName, componentType)).thenReturn(Future(commandService))
@@ -81,9 +81,9 @@ class CommandRoutesTest extends HttpTestSuite {
 
       "post submit command | ESW-91" in new Setup {
         import cswMocks._
-        val componentName = "test-component"
-        val runId         = Id("123")
-        val command       = Setup(Prefix("test"), CommandName("c1"), Some(ObsId("obsId"))).copy(runId = runId)
+        private val componentName = "test-component"
+        private val runId         = Id("123")
+        private val command       = Setup(Prefix("test"), CommandName("c1"), Some(ObsId("obsId"))).copy(runId = runId)
 
         when(commandService.submit(command)).thenReturn(Future.successful(Completed(runId)))
         when(componentFactory.commandService(componentName, componentType)).thenReturn(Future(commandService))
@@ -96,9 +96,9 @@ class CommandRoutesTest extends HttpTestSuite {
 
       "get error response for submit command on timeout | ESW-91" in new Setup {
         import cswMocks._
-        val componentName = "test-component"
-        val runId         = Id("123")
-        val command       = Setup(Prefix("test"), CommandName("c1"), Some(ObsId("obsId"))).copy(runId = runId)
+        private val componentName = "test-component"
+        private val runId         = Id("123")
+        private val command       = Setup(Prefix("test"), CommandName("c1"), Some(ObsId("obsId"))).copy(runId = runId)
 
         when(commandService.submit(command)).thenReturn(Future.failed(new TimeoutException("")))
         when(componentFactory.commandService(componentName, componentType)).thenReturn(Future(commandService))
@@ -111,9 +111,9 @@ class CommandRoutesTest extends HttpTestSuite {
 
       "post oneway command | ESW-91" in new Setup {
         import cswMocks._
-        val componentName = "test-component"
-        val runId         = Id("123")
-        val command       = Setup(Prefix("test"), CommandName("c1"), Some(ObsId("obsId"))).copy(runId = runId)
+        private val componentName = "test-component"
+        private val runId         = Id("123")
+        private val command       = Setup(Prefix("test"), CommandName("c1"), Some(ObsId("obsId"))).copy(runId = runId)
 
         when(commandService.oneway(command)).thenReturn(Future.successful(Accepted(runId)))
         when(componentFactory.commandService(componentName, componentType)).thenReturn(Future(commandService))
@@ -126,9 +126,9 @@ class CommandRoutesTest extends HttpTestSuite {
 
       "get error response for oneway command on timeout | ESW-91" in new Setup {
         import cswMocks._
-        val componentName = "test-component"
-        val runId         = Id("123")
-        val command       = Setup(Prefix("test"), CommandName("c1"), Some(ObsId("obsId"))).copy(runId = runId)
+        private val componentName = "test-component"
+        private val runId         = Id("123")
+        private val command       = Setup(Prefix("test"), CommandName("c1"), Some(ObsId("obsId"))).copy(runId = runId)
 
         when(commandService.oneway(command)).thenReturn(Future.failed(new TimeoutException("")))
         when(componentFactory.commandService(componentName, componentType)).thenReturn(Future(commandService))
@@ -141,8 +141,8 @@ class CommandRoutesTest extends HttpTestSuite {
 
       "get command response for given RunId | ESW-91" in new Setup {
         import cswMocks._
-        val componentName = "test-component"
-        val runId         = Id("123")
+        private val componentName = "test-component"
+        private val runId         = Id("123")
 
         when(commandService.queryFinal(any[Id])(any[Timeout])).thenReturn(Future.successful(Completed(runId)))
         when(componentFactory.commandService(componentName, componentType)).thenReturn(Future(commandService))
@@ -162,13 +162,13 @@ class CommandRoutesTest extends HttpTestSuite {
       "get current state subscription to all state names | ESW-91" in new Setup {
         import cswMocks._
 
-        val componentName = "test-component"
-        val currentState1 = CurrentState(Prefix("a.b"), StateName("stateName1"))
-        val currentState2 = CurrentState(Prefix("a.b"), StateName("stateName2"))
+        private val componentName = "test-component"
+        private val currentState1 = CurrentState(Prefix("a.b"), StateName("stateName1"))
+        private val currentState2 = CurrentState(Prefix("a.b"), StateName("stateName2"))
 
-        val currentStateSubscription = mock[CurrentStateSubscription]
+        private val currentStateSubscription = mock[CurrentStateSubscription]
 
-        val currentStateStream = Source(List(currentState1, currentState2))
+        private val currentStateStream = Source(List(currentState1, currentState2))
           .mapMaterializedValue(_ => currentStateSubscription)
 
         when(commandService.subscribeCurrentState(Set.empty[StateName])).thenReturn(currentStateStream)
@@ -188,13 +188,13 @@ class CommandRoutesTest extends HttpTestSuite {
 
       "get current state subscription to given state names | ESW-91" in new Setup {
         import cswMocks._
-        val componentName = "test-component"
-        val stateName1    = StateName("stateName1")
-        val currentState1 = CurrentState(Prefix("a.b"), stateName1)
+        private val componentName = "test-component"
+        private val stateName1    = StateName("stateName1")
+        private val currentState1 = CurrentState(Prefix("a.b"), stateName1)
 
-        val currentStateSubscription = mock[CurrentStateSubscription]
+        private val currentStateSubscription = mock[CurrentStateSubscription]
 
-        val currentStateStream = Source(List(currentState1))
+        private val currentStateStream = Source(List(currentState1))
           .mapMaterializedValue(_ => currentStateSubscription)
 
         when(commandService.subscribeCurrentState(Set(stateName1))).thenReturn(currentStateStream)
@@ -214,13 +214,13 @@ class CommandRoutesTest extends HttpTestSuite {
 
       "get current state subscription to given state names and specified frequency | ESW-91" in new Setup {
         import cswMocks._
-        val componentName = "test-component"
-        val stateName1    = StateName("stateName1")
-        val currentState1 = CurrentState(Prefix("a.b"), stateName1)
+        private val componentName = "test-component"
+        private val stateName1    = StateName("stateName1")
+        private val currentState1 = CurrentState(Prefix("a.b"), stateName1)
 
-        val currentStateSubscription = mock[CurrentStateSubscription]
+        private val currentStateSubscription = mock[CurrentStateSubscription]
 
-        val currentStateStream = Source(List(currentState1))
+        private val currentStateStream = Source(List(currentState1))
           .mapMaterializedValue(_ => currentStateSubscription)
 
         when(commandService.subscribeCurrentState(Set(stateName1))).thenReturn(currentStateStream)
