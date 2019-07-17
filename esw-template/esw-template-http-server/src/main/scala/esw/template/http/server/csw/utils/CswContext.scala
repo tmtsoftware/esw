@@ -8,7 +8,7 @@ import csw.location.api.scaladsl.LocationService
 import csw.location.client.scaladsl.HttpLocationServiceFactory
 import csw.location.model.scaladsl.Connection.HttpConnection
 import csw.logging.api.scaladsl.Logger
-import esw.template.http.server.commons.ServiceLogger
+import esw.template.http.server.commons.{RouteHandlers, ServiceLogger}
 import esw.template.http.server.wiring.ActorRuntime
 
 class CswContext(actorRuntime: ActorRuntime, httpConnection: HttpConnection) {
@@ -21,5 +21,6 @@ class CswContext(actorRuntime: ActorRuntime, httpConnection: HttpConnection) {
 
   lazy val componentFactory = new ComponentFactory(locationService, CommandServiceFactory)
 
-  lazy val logger: Logger = new ServiceLogger(httpConnection).getLogger
+  lazy val logger: Logger               = new ServiceLogger(httpConnection).getLogger
+  lazy val routeHandlers: RouteHandlers = new RouteHandlers(logger)
 }

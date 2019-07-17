@@ -9,6 +9,7 @@ import csw.event.api.scaladsl.{EventPublisher, EventService, EventSubscriber}
 import csw.event.client.internal.commons.EventSubscriberUtil
 import csw.logging.api.scaladsl.Logger
 import esw.gateway.server.routes.Routes
+import esw.template.http.server.commons.RouteHandlers
 import esw.template.http.server.csw.utils.{ComponentFactory, CswContext}
 import esw.template.http.server.wiring.ActorRuntime
 import org.mockito.MockitoSugar
@@ -32,10 +33,12 @@ class CswContextMocks(system: ActorSystem[SpawnProtocol]) {
   val eventSubscriberUtil: EventSubscriberUtil = mock[EventSubscriberUtil]
   val eventPublisher: EventPublisher           = mock[EventPublisher]
   val eventSubscriber: EventSubscriber         = mock[EventSubscriber]
+  val handlers: RouteHandlers                  = new RouteHandlers(logger)
 
   val route: Route = new Routes(cswCtx).route
 
   when(cswCtx.logger).thenReturn(logger)
+  when(cswCtx.routeHandlers).thenReturn(handlers)
 
   when(cswCtx.componentFactory).thenReturn(componentFactory)
 
