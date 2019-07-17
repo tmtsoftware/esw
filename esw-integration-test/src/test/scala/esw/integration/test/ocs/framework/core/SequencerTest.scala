@@ -40,8 +40,7 @@ class SequencerTest extends ActorTestKitBase with BaseTestSuite {
   }
 
   "Sequencer" must {
-    "process a given sequence" in {
-
+    "process a given sequence | ESW-145" in {
       val command1 = Setup(Prefix("test"), CommandName("command-1"), None)
       val sequence = Sequence(command1)
 
@@ -54,7 +53,7 @@ class SequencerTest extends ActorTestKitBase with BaseTestSuite {
       )
     }
 
-    "process sequence and execute commands that are added later" in {
+    "process sequence and execute commands that are added later | ESW-145" in {
       val command1 = Setup(Prefix("test"), CommandName("command-1"), None)
       val command2 = Setup(Prefix("test"), CommandName("command-2"), None)
 

@@ -11,17 +11,13 @@ import esw.ocs.framework.api.models.Step
 import esw.ocs.framework.api.models.messages.SequencerMsg
 import esw.ocs.framework.api.models.messages.SequencerMsg.{MaybeNext, PullNext, ReadyToExecuteNext, UpdateFailure}
 
-import scala.concurrent.Future
-
 class SequenceOperatorTest extends ActorTestKitBase with BaseTestSuite {
-
-  case class TestData(testName: String, method: () => Future[Any], expectedResponse: Any)
 
   private val command = Setup(Prefix("test"), CommandName("command-1"), None)
 
-  private val pullNextResponse                               = Step(command)
-  private val mayBeNextResponse                              = Some(Step(command))
-  private val updateFailureProbe: TestProbe[CommandResponse] = TestProbe()
+  private val pullNextResponse   = Step(command)
+  private val mayBeNextResponse  = Some(Step(command))
+  private val updateFailureProbe = TestProbe[CommandResponse]()
 
   private val mockedBehavior: Behaviors.Receive[SequencerMsg] = Behaviors.receiveMessage[SequencerMsg] { msg =>
     msg match {
@@ -37,16 +33,16 @@ class SequenceOperatorTest extends ActorTestKitBase with BaseTestSuite {
   private val sequencer        = spawn(mockedBehavior)
   private val sequenceOperator = new SequenceOperator(sequencer)
 
-  private val testData: List[TestData] = List(
-    TestData("pullNext", () => sequenceOperator.pullNext, pullNextResponse),
-    TestData("maybeNext", () => sequenceOperator.maybeNext, mayBeNextResponse),
-    TestData("readyToExecuteNext", () => sequenceOperator.readyToExecuteNext, Done)
-  )
+  "pullNext" in {
+    sequenceOperator.pullNext.futureValue should ===(pullNextResponse)
+  }
 
-  testData.foreach { test =>
-    test.testName in {
-      test.method().futureValue should ===(test.expectedResponse)
-    }
+  "maybeNext" in {
+    sequenceOperator.maybeNext.futureValue should ===(mayBeNextResponse)
+  }
+
+  "readyToExecuteNext" in {
+    sequenceOperator.readyToExecuteNext.futureValue should ===(Done)
   }
 
   "updateFailure" in {

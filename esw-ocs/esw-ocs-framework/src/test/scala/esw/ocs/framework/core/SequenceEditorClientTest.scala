@@ -10,11 +10,7 @@ import esw.ocs.framework.api.models.messages.SequencerMsg._
 import esw.ocs.framework.api.models.messages.StepListError.{AddFailed, NotAllowedOnFinishedSeq, NotSupported, PauseFailed}
 import esw.ocs.framework.api.models.{Sequence, StepList}
 
-import scala.concurrent.Future
-
 class SequenceEditorClientTest extends ActorTestKitBase with BaseTestSuite {
-
-  case class TestData(testName: String, method: () => Future[Any], expectedResponse: Any)
 
   private val command      = Setup(Prefix("test"), CommandName("command-1"), None)
   private val status       = Pending
@@ -57,24 +53,51 @@ class SequenceEditorClientTest extends ActorTestKitBase with BaseTestSuite {
 
   private val sequenceEditorClient = new SequenceEditorClient(sequencer)
 
-  private val testData = List(
-    TestData("status", () => sequenceEditorClient.status, getSequenceResponse),
-    TestData("isAvailable", () => sequenceEditorClient.isAvailable, availableResponse),
-    TestData("add", () => sequenceEditorClient.add(List(command)), addResponse),
-    TestData("prepend", () => sequenceEditorClient.prepend(List(command)), prependResponse),
-    TestData("replace", () => sequenceEditorClient.replace(command.runId, List(command)), replaceResponse),
-    TestData("insertAfter", () => sequenceEditorClient.insertAfter(command.runId, List(command)), insertAfterResponse),
-    TestData("delete", () => sequenceEditorClient.delete(command.runId), deleteResponse),
-    TestData("pause", () => sequenceEditorClient.pause, pauseResponse),
-    TestData("resume", () => sequenceEditorClient.resume, resumeResponse),
-    TestData("addBreakpoint", () => sequenceEditorClient.addBreakpoint(command.runId), addBreakpointResponse),
-    TestData("removeBreakpoint", () => sequenceEditorClient.removeBreakpoint(command.runId), removeBreakpointResponse),
-    TestData("reset", () => sequenceEditorClient.reset(), resetResponse)
-  )
+  "status" in {
+    sequenceEditorClient.status.futureValue should ===(getSequenceResponse)
+  }
 
-  testData.foreach { test =>
-    test.testName in {
-      test.method().futureValue should ===(test.expectedResponse)
-    }
+  "isAvailable" in {
+    sequenceEditorClient.isAvailable.futureValue should ===(availableResponse)
+  }
+
+  "add" in {
+    sequenceEditorClient.add(List(command)).futureValue should ===(addResponse)
+  }
+
+  "prepend" in {
+    sequenceEditorClient.prepend(List(command)).futureValue should ===(prependResponse)
+  }
+
+  "replace" in {
+    sequenceEditorClient.replace(command.runId, List(command)).futureValue should ===(replaceResponse)
+  }
+
+  "insertAfter" in {
+    sequenceEditorClient.insertAfter(command.runId, List(command)).futureValue should ===(insertAfterResponse)
+  }
+
+  "delete" in {
+    sequenceEditorClient.delete(command.runId).futureValue should ===(deleteResponse)
+  }
+
+  "pause" in {
+    sequenceEditorClient.pause.futureValue should ===(pauseResponse)
+  }
+
+  "resume" in {
+    sequenceEditorClient.resume.futureValue should ===(resumeResponse)
+  }
+
+  "addBreakpoint" in {
+    sequenceEditorClient.addBreakpoint(command.runId).futureValue should ===(addBreakpointResponse)
+  }
+
+  "removeBreakpoint" in {
+    sequenceEditorClient.removeBreakpoint(command.runId).futureValue should ===(removeBreakpointResponse)
+  }
+
+  "reset" in {
+    sequenceEditorClient.reset().futureValue should ===(resetResponse)
   }
 }
