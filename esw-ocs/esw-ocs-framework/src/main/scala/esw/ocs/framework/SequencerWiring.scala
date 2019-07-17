@@ -13,7 +13,7 @@ import csw.location.model.scaladsl.{AkkaLocation, AkkaRegistration, ComponentId,
 import csw.logging.api.scaladsl.Logger
 import csw.logging.client.scaladsl.LoggerFactory
 import esw.ocs.async.macros.StrandEc
-import esw.ocs.framework.api.models.messages.SequencerMsg
+import esw.ocs.framework.api.models.messages.{LoadScriptError, SequencerMsg}
 import esw.ocs.framework.core._
 import esw.ocs.framework.core.internal.{ScriptLoader, SequencerConfig}
 import esw.ocs.framework.dsl.{CswServices, Script}
@@ -64,22 +64,20 @@ class SequencerWiring(val sequencerId: String, val observingMode: String) {
 
   // fixme: do not block and return Future[AkkaLocation]?
   //  onComplete gives handle to Try
-  def start(): Option[AkkaLocation] = {
+  def start(): Either[LoadScriptError, AkkaLocation] = {
     val registration = AkkaRegistration(AkkaConnection(componentId), settings.prefix, sequencerRef.toURI)
     log.info(s"Registering ${componentId.name} with Location Service using registration: [${registration.toString}]")
 
     engine.start(sequenceOperatorFactory(), script)
 
-    try {
-      val location = Await.result(
-        locationService
-          .register(registration)
-          .map(_.location.asInstanceOf[AkkaLocation]),
-        5.seconds
-      )
-      Some(location)
-    } catch {
-      case _: Exception => None
-    }
+    Await.result(
+      locationService
+        .register(registration)
+        .map(x => Right(x.location.asInstanceOf[AkkaLocation]))
+        .recover {
+          case ex: Throwable => Left(LoadScriptError(ex))
+        },
+      5.seconds
+    )
   }
 }

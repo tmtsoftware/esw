@@ -48,7 +48,7 @@ class SequencerWiringTest extends BaseTestSuite {
       val connection        = AkkaConnection(ComponentId(sequencerName, ComponentType.Sequencer))
       val sequencerLocation = testLocationService.resolve(connection, 5.seconds).await.get
 
-      triedLocation.get.connection shouldBe connection
+      triedLocation.toOption.get.connection shouldBe connection
       sequencerLocation.connection.componentId.name shouldBe sequencerName
 
       // cleanup
