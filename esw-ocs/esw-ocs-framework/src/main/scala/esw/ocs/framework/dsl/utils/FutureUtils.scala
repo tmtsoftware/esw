@@ -1,4 +1,4 @@
-package esw.ocs.framework.dsl.internal
+package esw.ocs.framework.dsl.utils
 
 import java.util.concurrent.ScheduledExecutorService
 
@@ -8,14 +8,14 @@ import scala.async.Async.{async, await}
 import scala.concurrent.duration.FiniteDuration
 import scala.concurrent.{Future, Promise}
 
-object FutureUtils {
+private[framework] object FutureUtils {
 
   /**
    * returns a future which completes either
    * after minDelay or function Completion; whichever takes longer time
    *
    */
-  private[framework] def delayedResult[T](minDelay: FiniteDuration)(f: => Future[T])(implicit strandEc: StrandEc): Future[T] = {
+  def delayedResult[T](minDelay: FiniteDuration)(f: => Future[T])(implicit strandEc: StrandEc): Future[T] = {
     async {
       val delayFuture = delay(minDelay, strandEc.executorService)
       val futureValue = f

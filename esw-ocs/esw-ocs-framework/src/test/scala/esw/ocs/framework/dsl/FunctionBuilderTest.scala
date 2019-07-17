@@ -1,7 +1,7 @@
 package esw.ocs.framework.dsl
 
 import esw.ocs.framework.BaseTestSuite
-import esw.ocs.framework.dsl.internal.FunctionBuilder
+import esw.ocs.framework.dsl.utils.FunctionBuilder
 
 class FunctionBuilderTest extends BaseTestSuite {
   case class Command(name: String, value: Int)

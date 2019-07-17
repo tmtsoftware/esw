@@ -1,5 +1,7 @@
 package esw.ocs.framework
 
+import esw.ocs.framework.internal.{SequenceComponentWiring, SequencerWiring}
+
 object SequencerApp extends SequencerAppTemplate
 
 // fixme: use scopt to parse args

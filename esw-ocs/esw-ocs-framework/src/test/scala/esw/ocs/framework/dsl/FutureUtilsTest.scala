@@ -2,7 +2,7 @@ package esw.ocs.framework.dsl
 
 import esw.ocs.async.macros.StrandEc
 import esw.ocs.framework.BaseTestSuite
-import esw.ocs.framework.dsl.internal.FutureUtils
+import esw.ocs.framework.dsl.utils.FutureUtils
 
 import scala.concurrent.Future
 import scala.concurrent.duration.DurationInt

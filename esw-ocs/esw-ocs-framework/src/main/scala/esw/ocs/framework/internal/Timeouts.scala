@@ -1,4 +1,4 @@
-package esw.ocs.framework.core.internal
+package esw.ocs.framework.internal
 
 import scala.concurrent.duration.{DurationLong, FiniteDuration}
 

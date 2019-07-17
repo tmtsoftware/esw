@@ -1,4 +1,4 @@
-package esw.ocs.framework
+package esw.ocs.framework.internal
 
 import akka.actor
 import akka.actor.typed.scaladsl.adapter.TypedActorSystemOps
@@ -10,7 +10,6 @@ import akka.util.Timeout
 import csw.location.client.ActorSystemFactory
 import csw.logging.api.scaladsl.Logger
 import csw.logging.client.scaladsl.LoggerFactory
-import esw.ocs.framework.core.internal.Timeouts
 
 import scala.concurrent.ExecutionContext
 

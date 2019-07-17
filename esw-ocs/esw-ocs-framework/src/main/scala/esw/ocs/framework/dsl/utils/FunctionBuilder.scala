@@ -1,4 +1,4 @@
-package esw.ocs.framework.dsl.internal
+package esw.ocs.framework.dsl.utils
 
 import scala.collection.mutable
 import scala.reflect.ClassTag

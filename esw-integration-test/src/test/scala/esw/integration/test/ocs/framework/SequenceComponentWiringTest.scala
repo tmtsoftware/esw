@@ -11,7 +11,8 @@ import csw.location.client.scaladsl.HttpLocationServiceFactory
 import csw.location.model.scaladsl.Connection.AkkaConnection
 import csw.location.model.scaladsl.{ComponentId, ComponentType}
 import csw.testkit.LocationTestKit
-import esw.ocs.framework.{BaseTestSuite, SequenceComponentWiring}
+import esw.ocs.framework.BaseTestSuite
+import esw.ocs.framework.internal.SequenceComponentWiring
 
 import scala.concurrent.duration.DurationInt
 

@@ -8,7 +8,7 @@ import akka.util.Timeout
 import csw.params.commands.CommandResponse.SubmitResponse
 import esw.ocs.framework.api.models.Step
 import esw.ocs.framework.api.models.messages.SequencerMsg._
-import esw.ocs.framework.core.internal.Timeouts
+import esw.ocs.framework.internal.Timeouts
 
 import scala.concurrent.Future
 

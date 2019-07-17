@@ -1,7 +1,7 @@
 package esw.ocs.framework.dsl
 
 import csw.params.commands.{Observe, SequenceCommand, Setup}
-import esw.ocs.framework.dsl.internal.{FunctionBuilder, FunctionHandlers}
+import esw.ocs.framework.dsl.utils.{FunctionBuilder, FunctionHandlers}
 import esw.ocs.framework.exceptions.UnhandledCommandException
 
 import scala.concurrent.Future

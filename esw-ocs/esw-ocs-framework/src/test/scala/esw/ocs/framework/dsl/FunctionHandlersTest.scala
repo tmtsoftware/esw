@@ -1,7 +1,7 @@
 package esw.ocs.framework.dsl
 
 import esw.ocs.framework.BaseTestSuite
-import esw.ocs.framework.dsl.internal.FunctionHandlers
+import esw.ocs.framework.dsl.utils.FunctionHandlers
 
 import scala.collection.mutable.ArrayBuffer
 

@@ -1,4 +1,4 @@
-package esw.ocs.framework
+package esw.ocs.framework.internal
 
 import akka.actor.CoordinatedShutdown
 import akka.actor.typed.ActorRef

@@ -10,7 +10,7 @@ import scala.async.Async._
 import scala.concurrent.Future
 import scala.util.control.NonFatal
 
-class Engine(implicit mat: Materializer) {
+private[framework] class Engine(implicit mat: Materializer) {
   import mat.executionContext
 
   def start(sequenceOperator: SequenceOperator, script: Script): Future[Done] = {

@@ -1,62 +1,39 @@
 package esw.ocs.framework.core.internal
 
-import akka.actor.typed.{ActorSystem, SpawnProtocol}
 import esw.ocs.framework.BaseTestSuite
 import esw.ocs.framework.dsl.CswServices
+import esw.ocs.framework.dsl.utils.ScriptLoader
 import esw.ocs.framework.exceptions.ScriptLoadingException._
 import org.mockito.MockitoSugar.mock
 
-import scala.concurrent.Await
-import scala.concurrent.duration.DurationInt
-
 class ScriptLoaderTest extends BaseTestSuite {
-  private implicit val actorSystem: ActorSystem[SpawnProtocol] = ActorSystem(SpawnProtocol.behavior, "test")
 
   private val cswServices = mock[CswServices]
 
-  override protected def afterAll(): Unit = {
-    actorSystem.terminate
-    Await.result(actorSystem.whenTerminated, 10.seconds)
-    super.afterAll()
-  }
-
-  // fixme: follow tests naming convention, refer StepListTest.scala
-  "ScriptLoader" must {
+  "load" must {
     "load script class if sequencerId and observingMode is provided | ESW-102" in {
-      val loader = new ScriptLoader("testSequencerId1", "testObservingMode1").load(cswServices)
+      val scriptClass = classOf[ValidTestScript].getCanonicalName
+
+      val loader = ScriptLoader.load(scriptClass, cswServices)
       loader shouldBe a[ValidTestScript]
     }
 
-    "throw ScriptConfigurationMissingException if script config is not provided for given sequencerId and observingMode | ESW-102" in {
-      val sequencerId   = "invalidSequencerId"
-      val observingMode = "invalidObservingMode"
-
-      val exception = intercept[ScriptConfigurationMissingException] {
-        new ScriptLoader(sequencerId, observingMode).load(cswServices)
-      }
-
-      exception.getMessage shouldBe s"Script configuration missing for $sequencerId with $observingMode"
-    }
-
     "throw InvalidScriptException if provided class is not a script | ESW-102" in {
-      val sequencerId   = "testSequencerId2"
-      val observingMode = "testObservingMode2"
+      val scriptClass = classOf[InvalidTestScript].getCanonicalName
 
       val exception = intercept[InvalidScriptException] {
-        new ScriptLoader(sequencerId, observingMode).load(cswServices)
+        ScriptLoader.load(scriptClass, cswServices)
       }
 
       val invalidTestScript = new InvalidTestScript(cswServices).getClass.getCanonicalName
-
       exception.getMessage shouldBe s"$invalidTestScript should be subclass of Script"
     }
 
-    "throw ScriptNotFound if provided class is not a does not exist at configured path | ESW-102" in {
-      val sequencerId   = "testSequencerId3"
-      val observingMode = "testObservingMode3"
+    "throw ScriptNotFound if provided class does not exist at configured path | ESW-102" in {
+      val invalidScriptClass = "invalid.path.TestScriptDoesNotExist"
 
       val exception = intercept[ScriptNotFound] {
-        new ScriptLoader(sequencerId, observingMode).load(cswServices)
+        ScriptLoader.load(invalidScriptClass, cswServices)
       }
 
       exception.getMessage shouldBe "invalid.path.TestScriptDoesNotExist not found at configured path"

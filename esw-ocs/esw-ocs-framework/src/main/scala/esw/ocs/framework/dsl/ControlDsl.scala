@@ -2,7 +2,7 @@ package esw.ocs.framework.dsl
 
 import akka.Done
 import esw.ocs.async.macros.{AsyncMacros, StrandEc}
-import esw.ocs.framework.dsl.internal.FutureUtils
+import esw.ocs.framework.dsl.utils.FutureUtils
 
 import scala.concurrent.duration.FiniteDuration
 import scala.concurrent.{ExecutionContext, Future}
