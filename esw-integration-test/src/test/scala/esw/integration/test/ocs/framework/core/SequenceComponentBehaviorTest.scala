@@ -15,10 +15,8 @@ import esw.ocs.framework.BaseTestSuite
 import esw.ocs.framework.api.models.messages.SequenceComponentMsg
 import esw.ocs.framework.api.models.messages.SequenceComponentMsg.{GetStatus, LoadScript, UnloadScript}
 import esw.ocs.framework.core.SequenceComponentBehavior
-import esw.ocs.framework.exceptions.SequencerAlreadyRunningException
 
 import scala.concurrent.duration.DurationLong
-import scala.util.Try
 
 class SequenceComponentBehaviorTest extends BaseTestSuite {
   private val testKit                                = LocationTestKit()
@@ -43,9 +41,9 @@ class SequenceComponentBehaviorTest extends BaseTestSuite {
   )
 
   "SequenceComponentBehavior" must {
-    "should be able to load/unload script and get appropriate status | ESW-103" in {
+    "be able to load/unload script and get appropriate status | ESW-103" in {
       val behaviorTestKit         = createBehaviorTestKit()
-      val loadScriptResponseProbe = TestProbe[Try[AkkaLocation]]
+      val loadScriptResponseProbe = TestProbe[Option[AkkaLocation]]
       val getStatusProbe          = TestProbe[Option[AkkaLocation]]
       val sequencerId             = "testSequencerId1"
       val observingMode           = "testObservingMode1"
@@ -76,9 +74,9 @@ class SequenceComponentBehaviorTest extends BaseTestSuite {
       getStatusProbe.expectMessage(None)
     }
 
-    "should throw SequencerAlreadyRunningException | ESW-103" in {
+    "LoadScript should give None if sequencer is already running | ESW-103" in {
       val behaviorTestKit         = createBehaviorTestKit()
-      val loadScriptResponseProbe = TestProbe[Try[AkkaLocation]]
+      val loadScriptResponseProbe = TestProbe[Option[AkkaLocation]]
       val sequencerId             = "testSequencerId2"
       val observingMode           = "testObservingMode2"
 
@@ -91,11 +89,8 @@ class SequenceComponentBehaviorTest extends BaseTestSuite {
         ComponentId(s"$sequencerId@$observingMode", ComponentType.Sequencer)
       )
 
-      //LoadScript should throw SequencerAlreadyRunningException
       behaviorTestKit.run(LoadScript("sequencerId3", "observingMode3", loadScriptResponseProbe.ref))
-      intercept[SequencerAlreadyRunningException.type] {
-        loadScriptResponseProbe.receiveMessage.get
-      }
+      loadScriptResponseProbe.receiveMessage shouldBe None
     }
 
     "UnloadScript should return done if sequence component not running any sequencer | ESW-103" in {

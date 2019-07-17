@@ -41,34 +41,36 @@ class SequencerTest extends ActorTestKitBase with BaseTestSuite {
 
   "Sequencer" must {
     "process a given sequence | ESW-145" in {
-      val command1 = Setup(Prefix("test"), CommandName("command-1"), None)
-      val sequence = Sequence(command1)
+      val command3 = Setup(Prefix("test"), CommandName("command-3"), None)
+      val sequence = Sequence(command3)
 
       val processSeqResponse = wiring.sequencer.processSequence(sequence)
 
       processSeqResponse.rightValue should ===(Completed(sequence.runId))
 
       wiring.sequencer.getSequence.futureValue.steps should ===(
-        List(Step(command1, Finished.Success(Completed(command1.runId)), hasBreakpoint = false))
+        List(Step(command3, Finished.Success(Completed(command3.runId)), hasBreakpoint = false))
       )
     }
 
     "process sequence and execute commands that are added later | ESW-145" in {
       val command1 = Setup(Prefix("test"), CommandName("command-1"), None)
       val command2 = Setup(Prefix("test"), CommandName("command-2"), None)
+      val command3 = Setup(Prefix("test"), CommandName("command-3"), None)
 
-      val sequence = Sequence(command1)
+      val sequence = Sequence(command1, command2)
 
       val processSeqResponse = wiring.sequencer.processSequence(sequence)
 
-      wiring.sequenceEditorClient.add(List(command2)).rightValue should ===(Done)
+      wiring.sequenceEditorClient.add(List(command3)).rightValue should ===(Done)
 
       processSeqResponse.rightValue should ===(Completed(sequence.runId))
 
       wiring.sequencer.getSequence.futureValue.steps should ===(
         List(
           Step(command1, Finished.Success(Completed(command1.runId)), hasBreakpoint = false),
-          Step(command2, Finished.Success(Completed(command2.runId)), hasBreakpoint = false)
+          Step(command2, Finished.Success(Completed(command2.runId)), hasBreakpoint = false),
+          Step(command3, Finished.Success(Completed(command3.runId)), hasBreakpoint = false)
         )
       )
     }

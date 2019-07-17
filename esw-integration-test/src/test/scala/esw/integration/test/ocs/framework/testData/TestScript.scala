@@ -7,6 +7,13 @@ class TestScript(csw: CswServices) extends Script(csw) {
 
   handleSetupCommand("command-1") { command =>
     spawn {
+      Thread.sleep(100)
+      csw.crm.addOrUpdateCommand(Completed(command.runId))
+    }
+  }
+
+  handleSetupCommand("command-3") { command =>
+    spawn {
       csw.crm.addOrUpdateCommand(Completed(command.runId))
     }
   }

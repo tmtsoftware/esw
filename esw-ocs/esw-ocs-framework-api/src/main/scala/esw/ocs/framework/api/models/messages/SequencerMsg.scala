@@ -12,7 +12,7 @@ import esw.ocs.framework.api.models.{Sequence, Step, StepList}
 
 import scala.util.Try
 
-sealed trait SequencerMsg extends SequencerSerializable
+sealed trait SequencerMsg
 
 object SequencerMsg {
   sealed trait InternalSequencerMsg extends SequencerMsg
@@ -23,7 +23,7 @@ object SequencerMsg {
   final case class ReadyToExecuteNext(replyTo: ActorRef[Done])    extends InternalSequencerMsg
   final case class UpdateFailure(failureResponse: SubmitResponse) extends InternalSequencerMsg
 
-  sealed trait ExternalSequencerMsg extends SequencerMsg
+  sealed trait ExternalSequencerMsg extends SequencerMsg with SequencerSerializable
   final case class ProcessSequence(sequence: Sequence, replyTo: ActorRef[Either[ProcessSequenceError, SubmitResponse]])
       extends ExternalSequencerMsg
 

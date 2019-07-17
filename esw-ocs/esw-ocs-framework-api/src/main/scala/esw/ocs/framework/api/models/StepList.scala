@@ -5,8 +5,9 @@ import csw.params.core.models.Id
 import esw.ocs.framework.api.models.messages.ProcessSequenceError.DuplicateIdsFound
 import esw.ocs.framework.api.models.messages.StepListError
 import esw.ocs.framework.api.models.messages.StepListError._
+import esw.ocs.framework.api.models.serializer.SequencerSerializable
 
-final case class StepList private[models] (runId: Id, steps: List[Step]) {
+final case class StepList private[models] (runId: Id, steps: List[Step]) extends SequencerSerializable {
   //query
   private[framework] def isEmpty: Boolean = steps.isEmpty
   def isFinished: Boolean                 = !isEmpty && (steps.forall(_.isFinished) || steps.exists(_.isFailed))

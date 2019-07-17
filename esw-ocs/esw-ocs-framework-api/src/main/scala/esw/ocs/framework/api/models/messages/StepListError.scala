@@ -2,10 +2,12 @@ package esw.ocs.framework.api.models.messages
 
 import csw.params.core.models.Id
 import esw.ocs.framework.api.models.StepStatus
+import esw.ocs.framework.api.models.serializer.SequencerSerializable
 
 sealed trait StepListError extends Product with Serializable
 
 object StepListError {
+  sealed trait StepListErrorSerializable extends SequencerSerializable
 
   case class NotSupported(stepStatus: StepStatus)
       extends InsertError
@@ -13,6 +15,7 @@ object StepListError {
       with DeleteError
       with AddBreakpointError
       with PauseError
+      with StepListErrorSerializable
 
   case object NotAllowedOnFinishedSeq
       extends AddBreakpointError
@@ -26,6 +29,7 @@ object StepListError {
       with DeleteError
       with InsertError
       with RemoveBreakpointError
+      with StepListErrorSerializable
 
   final case class IdDoesNotExist(id: Id)
       extends ReplaceError
@@ -34,18 +38,24 @@ object StepListError {
       with DeleteError
       with AddBreakpointError
       with RemoveBreakpointError
+      with StepListErrorSerializable
 
   sealed trait AddBreakpointError extends StepListError
   sealed trait PauseError         extends StepListError
-  case object PauseFailed         extends PauseError
+  case object PauseFailed         extends PauseError with StepListErrorSerializable
+
+  case class AddingBreakpointNotSupported(status: StepStatus)
+      extends AddBreakpointError
+      with PauseError
+      with StepListErrorSerializable
 
   sealed trait ResumeError extends StepListError
 
   sealed trait UpdateError                                        extends StepListError
-  case class UpdateNotSupported(from: StepStatus, to: StepStatus) extends UpdateError
+  case class UpdateNotSupported(from: StepStatus, to: StepStatus) extends UpdateError with StepListErrorSerializable
 
   sealed trait AddError extends StepListError
-  case object AddFailed extends AddError
+  case object AddFailed extends AddError with StepListErrorSerializable
 
   sealed trait PrependError extends StepListError
 

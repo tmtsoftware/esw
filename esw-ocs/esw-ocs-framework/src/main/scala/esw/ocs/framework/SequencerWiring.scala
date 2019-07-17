@@ -20,7 +20,6 @@ import esw.ocs.framework.dsl.{CswServices, Script}
 
 import scala.concurrent.Await
 import scala.concurrent.duration.DurationLong
-import scala.util.Try
 
 //todo: make package-private to esw as private
 class SequencerWiring(val sequencerId: String, val observingMode: String) {
@@ -65,18 +64,22 @@ class SequencerWiring(val sequencerId: String, val observingMode: String) {
 
   // fixme: do not block and return Future[AkkaLocation]?
   //  onComplete gives handle to Try
-  def start(): Try[AkkaLocation] = {
+  def start(): Option[AkkaLocation] = {
     val registration = AkkaRegistration(AkkaConnection(componentId), settings.prefix, sequencerRef.toURI)
     log.info(s"Registering ${componentId.name} with Location Service using registration: [${registration.toString}]")
 
     engine.start(sequenceOperatorFactory(), script)
-    Try(
-      Await.result(
+
+    try {
+      val location = Await.result(
         locationService
           .register(registration)
           .map(_.location.asInstanceOf[AkkaLocation]),
         5.seconds
       )
-    )
+      Some(location)
+    } catch {
+      case _: Exception => None
+    }
   }
 }

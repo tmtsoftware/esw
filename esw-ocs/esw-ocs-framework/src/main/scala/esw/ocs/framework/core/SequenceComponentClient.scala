@@ -10,7 +10,6 @@ import esw.ocs.framework.api.models.messages.SequenceComponentMsg
 import esw.ocs.framework.api.models.messages.SequenceComponentMsg.{GetStatus, LoadScript, UnloadScript}
 
 import scala.concurrent.Future
-import scala.util.Try
 
 class SequenceComponentClient(sequenceComponentRef: ActorRef[SequenceComponentMsg])(
     implicit scheduler: Scheduler,
@@ -19,7 +18,7 @@ class SequenceComponentClient(sequenceComponentRef: ActorRef[SequenceComponentMs
   def loadScript(
       sequencerId: String,
       observingMode: String
-  ): Future[Try[AkkaLocation]] = sequenceComponentRef ? (LoadScript(sequencerId, observingMode, _))
+  ): Future[Option[AkkaLocation]] = sequenceComponentRef ? (x => LoadScript(sequencerId, observingMode, x))
 
   def getStatus: Future[Option[AkkaLocation]] = sequenceComponentRef ? GetStatus
 

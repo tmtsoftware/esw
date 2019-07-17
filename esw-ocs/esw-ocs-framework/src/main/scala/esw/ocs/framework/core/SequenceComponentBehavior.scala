@@ -7,9 +7,6 @@ import csw.location.model.scaladsl.AkkaLocation
 import esw.ocs.framework.SequencerWiring
 import esw.ocs.framework.api.models.messages.SequenceComponentMsg
 import esw.ocs.framework.api.models.messages.SequenceComponentMsg.{GetStatus, LoadScript, UnloadScript}
-import esw.ocs.framework.exceptions.SequencerAlreadyRunningException
-
-import scala.util.Failure
 
 object SequenceComponentBehavior {
 
@@ -39,7 +36,7 @@ object SequenceComponentBehavior {
           sender ! Some(location)
           Behaviors.same
         case LoadScript(_, _, sender) =>
-          sender ! Failure(SequencerAlreadyRunningException)
+          sender ! None
           Behaviors.same
       }
     idle

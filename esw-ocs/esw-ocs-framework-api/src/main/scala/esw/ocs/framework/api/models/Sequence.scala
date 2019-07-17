@@ -2,8 +2,9 @@ package esw.ocs.framework.api.models
 
 import csw.params.commands.SequenceCommand
 import csw.params.core.models.Id
+import esw.ocs.framework.api.models.serializer.SequencerSerializable
 
-final case class Sequence private[models] (runId: Id, commands: Seq[SequenceCommand]) {
+final case class Sequence private[models] (runId: Id, commands: Seq[SequenceCommand]) extends SequencerSerializable {
   def add(others: SequenceCommand*): Sequence = copy(commands = commands ++ others)
   def add(other: Sequence): Sequence          = copy(commands = commands ++ other.commands)
 }
