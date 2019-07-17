@@ -3,7 +3,7 @@ package esw.ocs.framework.api.models
 import csw.params.commands.SequenceCommand
 import csw.params.core.models.Id
 import esw.ocs.framework.api.models.StepStatus.{Finished, InFlight, Pending}
-import esw.ocs.framework.api.models.messages.StepListError.{AddingBreakpointNotSupported, UpdateNotSupported}
+import esw.ocs.framework.api.models.messages.StepListError._
 
 case class StepResult(isSuccessful: Boolean, step: Step)
 
@@ -21,9 +21,9 @@ case class Step private[models] (command: SequenceCommand, status: StepStatus, h
 
   def isInFlight: Boolean = status == StepStatus.InFlight
 
-  def addBreakpoint(): Either[AddingBreakpointNotSupported, Step] =
+  def addBreakpoint(): Either[NotSupported, Step] =
     if (isPending) Right(copy(hasBreakpoint = true))
-    else Left(AddingBreakpointNotSupported(status))
+    else Left(NotSupported(status))
 
   def removeBreakpoint(): Step = if (hasBreakpoint) copy(hasBreakpoint = false) else this
 

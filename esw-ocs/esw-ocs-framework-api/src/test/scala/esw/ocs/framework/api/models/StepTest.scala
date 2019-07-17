@@ -5,7 +5,7 @@ import csw.params.commands.{CommandName, Setup}
 import csw.params.core.models.{Id, Prefix}
 import esw.ocs.framework.api.BaseTestSuite
 import esw.ocs.framework.api.models.StepStatus.{Finished, InFlight, Pending}
-import esw.ocs.framework.api.models.messages.StepListError.{AddingBreakpointNotSupported, UpdateNotSupported}
+import esw.ocs.framework.api.models.messages.StepListError.{NotSupported, UpdateNotSupported}
 
 class StepTest extends BaseTestSuite {
   def finished(id: Id) = Finished.Success(Completed(id))
@@ -68,18 +68,18 @@ class StepTest extends BaseTestSuite {
       stepResult.toOption.get.hasBreakpoint should ===(true)
     }
 
-    "fail with AddingBreakpointNotSupported error when step status is InFlight | ESW-106" in {
+    "fail with NotSupported error when step status is InFlight | ESW-106" in {
       val setup      = Setup(Prefix("test"), CommandName("test"), None)
       val step       = Step(setup, InFlight, hasBreakpoint = false)
       val stepResult = step.addBreakpoint()
-      stepResult.left.value should ===(AddingBreakpointNotSupported(InFlight))
+      stepResult.left.value should ===(NotSupported(InFlight))
     }
 
-    "fail with AddingBreakpointNotSupported error when step status is Finished | ESW-106" in {
+    "fail with NotSupported error when step status is Finished | ESW-106" in {
       val setup      = Setup(Prefix("test"), CommandName("test"), None)
       val step       = Step(setup, finished(setup.runId), hasBreakpoint = false)
       val stepResult = step.addBreakpoint()
-      stepResult.left.value should ===(AddingBreakpointNotSupported(finished(setup.runId)))
+      stepResult.left.value should ===(NotSupported(finished(setup.runId)))
     }
   }
 

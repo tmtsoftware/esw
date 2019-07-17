@@ -43,18 +43,16 @@ class SequenceOperatorTest extends ActorTestKitBase with BaseTestSuite {
     TestData("readyToExecuteNext", () => sequenceOperator.readyToExecuteNext, Done)
   )
 
-  "SequencerOperator" must {
-    testData.foreach { test =>
-      test.testName in {
-        test.method().futureValue should ===(test.expectedResponse)
-      }
+  testData.foreach { test =>
+    test.testName in {
+      test.method().futureValue should ===(test.expectedResponse)
     }
+  }
 
-    "updateFailure" in {
-      val response = Error(command.runId, "Failed")
-      sequenceOperator.update(response)
-      updateFailureProbe.expectMessage(response)
-    }
+  "updateFailure" in {
+    val response = Error(command.runId, "Failed")
+    sequenceOperator.update(response)
+    updateFailureProbe.expectMessage(response)
   }
 
 }

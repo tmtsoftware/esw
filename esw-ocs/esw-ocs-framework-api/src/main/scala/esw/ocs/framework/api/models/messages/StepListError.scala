@@ -7,7 +7,12 @@ sealed trait StepListError extends Product with Serializable
 
 object StepListError {
 
-  case class NotSupported(stepStatus: StepStatus) extends InsertError with ReplaceError with DeleteError
+  case class NotSupported(stepStatus: StepStatus)
+      extends InsertError
+      with ReplaceError
+      with DeleteError
+      with AddBreakpointError
+      with PauseError
 
   case object NotAllowedOnFinishedSeq
       extends AddBreakpointError
@@ -33,8 +38,6 @@ object StepListError {
   sealed trait AddBreakpointError extends StepListError
   sealed trait PauseError         extends StepListError
   case object PauseFailed         extends PauseError
-
-  case class AddingBreakpointNotSupported(status: StepStatus) extends AddBreakpointError with PauseError
 
   sealed trait ResumeError extends StepListError
 

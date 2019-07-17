@@ -4,6 +4,7 @@ import akka.Done
 import csw.params.commands.SequenceCommand
 import csw.params.core.models.Id
 import esw.ocs.framework.api.models.SequenceEditor.EditorResponse
+import esw.ocs.framework.api.models.messages.StepListError
 import esw.ocs.framework.api.models.messages.StepListError._
 
 import scala.concurrent.Future
@@ -28,5 +29,5 @@ trait SequenceEditor {
 }
 
 object SequenceEditor {
-  type EditorResponse[E] = Either[E, Done]
+  type EditorResponse[E <: StepListError] = Either[E, Done]
 }

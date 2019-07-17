@@ -41,9 +41,7 @@ class SequencerCodecs extends ParamCodecs with DoneCodec {
   implicit lazy val notSupportedCodec: Codec[NotSupported] = deriveCodec[NotSupported]
   implicit lazy val notAllowedOnFinishedSeqCodec: Codec[NotAllowedOnFinishedSeq.type] =
     singletonCodec(NotAllowedOnFinishedSeq)
-  implicit lazy val idDoesNotExistCodec: Codec[IdDoesNotExist] = deriveCodec[IdDoesNotExist]
-  implicit lazy val addingBreakpointNotSupportedCodec: Codec[AddingBreakpointNotSupported] =
-    deriveCodec[AddingBreakpointNotSupported]
+  implicit lazy val idDoesNotExistCodec: Codec[IdDoesNotExist]               = deriveCodec[IdDoesNotExist]
   implicit lazy val pauseFailedCodec: Codec[PauseFailed.type]                = singletonCodec(PauseFailed)
   implicit lazy val pauseErrorCodec: Codec[PauseError]                       = deriveCodec[PauseError]
   implicit lazy val updateNotSupportedCodec: Codec[UpdateNotSupported]       = deriveCodec[UpdateNotSupported]
