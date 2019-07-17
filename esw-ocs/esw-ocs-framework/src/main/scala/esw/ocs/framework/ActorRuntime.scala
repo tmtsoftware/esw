@@ -10,9 +10,9 @@ import akka.util.Timeout
 import csw.location.client.ActorSystemFactory
 import csw.logging.api.scaladsl.Logger
 import csw.logging.client.scaladsl.LoggerFactory
+import esw.ocs.framework.core.internal.Timeouts
 
 import scala.concurrent.ExecutionContext
-import scala.concurrent.duration.DurationLong
 
 class ActorRuntime(componentName: String) {
   implicit lazy val typedSystem: ActorSystem[SpawnProtocol] =
@@ -21,10 +21,9 @@ class ActorRuntime(componentName: String) {
   implicit lazy val mat: Materializer                = ActorMaterializer()
   implicit lazy val ec: ExecutionContext             = typedSystem.executionContext
   implicit lazy val scheduler: Scheduler             = typedSystem.scheduler
+  implicit lazy val timeout: Timeout                 = Timeouts.DefaultTimeout
 
-  //fixme: timeout should be infinite for engine pullNext
-  // read it from config?
-  implicit lazy val timeout: Timeout                = 5.seconds
   lazy val coordinatedShutdown: CoordinatedShutdown = CoordinatedShutdown(untypedSystem)
-  lazy val log: Logger                              = new LoggerFactory(componentName).getLogger
+  lazy val loggerFactory                            = new LoggerFactory(componentName)
+  lazy val log: Logger                              = loggerFactory.getLogger
 }

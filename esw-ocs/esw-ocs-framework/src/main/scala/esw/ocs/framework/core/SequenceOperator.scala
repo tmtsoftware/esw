@@ -8,14 +8,13 @@ import akka.util.Timeout
 import csw.params.commands.CommandResponse.SubmitResponse
 import esw.ocs.framework.api.models.Step
 import esw.ocs.framework.api.models.messages.SequencerMsg._
+import esw.ocs.framework.core.internal.Timeouts
 
 import scala.concurrent.Future
 
-class SequenceOperator private[framework] (sequencer: ActorRef[InternalSequencerMsg])(
-    implicit system: ActorSystem[_],
-    timeout: Timeout
-) {
+private[framework] class SequenceOperator(sequencer: ActorRef[InternalSequencerMsg])(implicit system: ActorSystem[_]) {
   private implicit val scheduler: Scheduler = system.scheduler
+  private implicit val timeout: Timeout     = Timeouts.EngineTimeout
 
   def pullNext: Future[Step]                       = sequencer ? PullNext
   def maybeNext: Future[Option[Step]]              = sequencer ? MaybeNext
