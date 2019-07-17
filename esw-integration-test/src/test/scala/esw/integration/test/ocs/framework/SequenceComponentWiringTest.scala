@@ -16,7 +16,7 @@ import esw.ocs.framework.{BaseTestSuite, SequenceComponentWiring}
 import scala.concurrent.duration.DurationInt
 
 class SequenceComponentWiringTest extends BaseTestSuite {
-  val testkit = LocationTestKit()
+  val testKit = LocationTestKit()
 
   implicit val system: ActorSystem[_]                = ActorSystem(Behaviors.empty, "test")
   implicit val untypedActorSystem: actor.ActorSystem = system.toUntyped
@@ -24,12 +24,12 @@ class SequenceComponentWiringTest extends BaseTestSuite {
   private val testLocationService: LocationService   = HttpLocationServiceFactory.makeLocalClient
 
   override def beforeAll(): Unit = {
-    testkit.startLocationServer()
+    testKit.startLocationServer()
   }
 
   override def afterAll(): Unit = {
     Http().shutdownAllConnectionPools().await
-    testkit.shutdownLocationServer()
+    testKit.shutdownLocationServer()
     system.terminate()
     system.whenTerminated.await
   }

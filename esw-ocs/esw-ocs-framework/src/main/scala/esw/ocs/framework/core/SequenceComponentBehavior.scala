@@ -13,30 +13,30 @@ object SequenceComponentBehavior {
   def behavior: Behavior[SequenceComponentMsg] = {
 
     lazy val idle: Behavior[SequenceComponentMsg] = Behaviors.receiveMessage[SequenceComponentMsg] {
-      case LoadScript(sequencerId, observingMode, sender) =>
+      case LoadScript(sequencerId, observingMode, replyTo) =>
         val wiring             = new SequencerWiring(sequencerId, observingMode)
         val loadScriptResponse = wiring.start()
-        sender ! loadScriptResponse
+        replyTo ! loadScriptResponse
         loadScriptResponse.map(x => running(wiring, x)).getOrElse(Behaviors.same)
-      case GetStatus(sender) =>
-        sender ! None
+      case GetStatus(replyTo) =>
+        replyTo ! None
         Behaviors.same
-      case UnloadScript(sender) =>
-        sender ! Done
+      case UnloadScript(replyTo) =>
+        replyTo ! Done
         Behaviors.same
     }
 
     def running(wiring: SequencerWiring, location: AkkaLocation): Behavior[SequenceComponentMsg] =
       Behaviors.receiveMessage[SequenceComponentMsg] {
-        case UnloadScript(sender) =>
+        case UnloadScript(replyTo) =>
           wiring.shutDown()
-          sender ! Done
+          replyTo ! Done
           idle
-        case GetStatus(sender) =>
-          sender ! Some(location)
+        case GetStatus(replyTo) =>
+          replyTo ! Some(location)
           Behaviors.same
-        case LoadScript(_, _, sender) =>
-          sender ! Left(LoadScriptError(new Throwable("Sequencer already running")))
+        case LoadScript(_, _, replyTo) =>
+          replyTo ! Left(LoadScriptError(new Throwable("Sequencer already running")))
           Behaviors.same
       }
     idle

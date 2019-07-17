@@ -24,6 +24,7 @@ class SequenceComponentClientTest extends BaseTestSuite {
   }
 
   // fixme: follow tests naming convention, refer StepListTest.scala
+  // fixme: use mockedBehavior for asserting on return value of methods
   "SequenceComponentClient" must {
 
     "should delegate to LoadScript | ESW-103" in {
