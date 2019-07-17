@@ -29,6 +29,7 @@ class SequenceOperatorTest extends ActorTestKitBase with BaseTestSuite {
       case MaybeNext(replyTo)            => replyTo ! mayBeNextResponse
       case ReadyToExecuteNext(replyTo)   => replyTo ! Done
       case UpdateFailure(submitResponse) => updateFailureProbe.ref ! submitResponse
+      case _                             =>
     }
     Behaviors.same
   }
