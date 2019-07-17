@@ -38,19 +38,12 @@ class CommandRoutesTest extends HttpTestSuite {
 
   private val testData = List(TestData("hcd"), TestData("assembly"))
 
-  // fixme: can we do grouping based on endpoints like below
-  // validate =>
-  //            1. OK
-  //            2. GatewayTimeout
-  // submit =>
-  //          1. OK
-  //          2. GatewayTimeout
-
   testData.foreach { testData =>
     val componentType: ComponentType = ComponentType.withName(testData.componentType)
 
-    s"CommandRoutes for ${testData.componentType}" must {
+    s"validate [${testData.componentType}]" must {
       "post command to validate | ESW-91" in new Setup {
+
         import cswMocks._
         private val componentName = "test-component"
         private val runId         = Id("123")
@@ -65,6 +58,7 @@ class CommandRoutesTest extends HttpTestSuite {
       }
 
       "get error response for validate command on timeout | ESW-91" in new Setup {
+
         import cswMocks._
         private val componentName = "test-component"
         private val runId         = Id("123")
@@ -78,8 +72,11 @@ class CommandRoutesTest extends HttpTestSuite {
           mediaType shouldBe `application/json`
         }
       }
+    }
 
+    s"submit [${testData.componentType}]" must {
       "post submit command | ESW-91" in new Setup {
+
         import cswMocks._
         private val componentName = "test-component"
         private val runId         = Id("123")
@@ -95,6 +92,7 @@ class CommandRoutesTest extends HttpTestSuite {
       }
 
       "get error response for submit command on timeout | ESW-91" in new Setup {
+
         import cswMocks._
         private val componentName = "test-component"
         private val runId         = Id("123")
@@ -108,8 +106,11 @@ class CommandRoutesTest extends HttpTestSuite {
           mediaType shouldBe `application/json`
         }
       }
+    }
 
+    s"oneway [${testData.componentType}]" must {
       "post oneway command | ESW-91" in new Setup {
+
         import cswMocks._
         private val componentName = "test-component"
         private val runId         = Id("123")
@@ -125,6 +126,7 @@ class CommandRoutesTest extends HttpTestSuite {
       }
 
       "get error response for oneway command on timeout | ESW-91" in new Setup {
+
         import cswMocks._
         private val componentName = "test-component"
         private val runId         = Id("123")
@@ -138,8 +140,11 @@ class CommandRoutesTest extends HttpTestSuite {
           mediaType shouldBe `application/json`
         }
       }
+    }
 
+    s"queryFinal [${testData.componentType}]" must {
       "get command response for given RunId | ESW-91" in new Setup {
+
         import cswMocks._
         private val componentName = "test-component"
         private val runId         = Id("123")
@@ -158,8 +163,11 @@ class CommandRoutesTest extends HttpTestSuite {
           Await.result(actualDataF, 5.seconds) shouldEqual Seq(Completed(runId))
         }
       }
+    }
 
+    s"subscribeCurrentState [${testData.componentType}]" must {
       "get current state subscription to all state names | ESW-91" in new Setup {
+
         import cswMocks._
 
         private val componentName = "test-component"
@@ -187,10 +195,12 @@ class CommandRoutesTest extends HttpTestSuite {
       }
 
       "get current state subscription to given state names | ESW-91" in new Setup {
+
         import cswMocks._
-        private val componentName = "test-component"
-        private val stateName1    = StateName("stateName1")
-        private val currentState1 = CurrentState(Prefix("a.b"), stateName1)
+
+        val componentName = "test-component"
+        val stateName1    = StateName("stateName1")
+        val currentState1 = CurrentState(Prefix("a.b"), stateName1)
 
         private val currentStateSubscription = mock[CurrentStateSubscription]
 
@@ -213,6 +223,7 @@ class CommandRoutesTest extends HttpTestSuite {
       }
 
       "get current state subscription to given state names and specified frequency | ESW-91" in new Setup {
+
         import cswMocks._
         private val componentName = "test-component"
         private val stateName1    = StateName("stateName1")
