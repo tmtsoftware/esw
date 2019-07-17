@@ -7,7 +7,7 @@ import csw.params.commands.SequenceCommand
 import csw.params.core.models.Id
 import esw.ocs.framework.api.models.SequenceEditor.EditorResponse
 import esw.ocs.framework.api.models.messages.StepListError._
-import esw.ocs.framework.api.models.serializer.SequencerSerializable
+import esw.ocs.framework.api.models.serializer.OcsFrameworkSerializable
 import esw.ocs.framework.api.models.{Sequence, Step, StepList}
 
 import scala.util.Try
@@ -23,7 +23,7 @@ object SequencerMsg {
   final case class ReadyToExecuteNext(replyTo: ActorRef[Done])    extends InternalSequencerMsg
   final case class UpdateFailure(failureResponse: SubmitResponse) extends InternalSequencerMsg
 
-  sealed trait ExternalSequencerMsg extends SequencerMsg with SequencerSerializable
+  sealed trait ExternalSequencerMsg extends SequencerMsg with OcsFrameworkSerializable
   final case class ProcessSequence(sequence: Sequence, replyTo: ActorRef[Either[ProcessSequenceError, SubmitResponse]])
       extends ExternalSequencerMsg
 

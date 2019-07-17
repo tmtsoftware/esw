@@ -2,12 +2,12 @@ package esw.ocs.framework.api.models.messages
 
 import csw.params.core.models.Id
 import esw.ocs.framework.api.models.StepStatus
-import esw.ocs.framework.api.models.serializer.SequencerSerializable
+import esw.ocs.framework.api.models.serializer.OcsFrameworkSerializable
 
 sealed trait StepListError extends Product with Serializable
 
 object StepListError {
-  sealed trait StepListErrorSerializable extends SequencerSerializable
+  sealed trait StepListErrorSerializable extends OcsFrameworkSerializable
 
   case class NotSupported(stepStatus: StepStatus)
       extends InsertError

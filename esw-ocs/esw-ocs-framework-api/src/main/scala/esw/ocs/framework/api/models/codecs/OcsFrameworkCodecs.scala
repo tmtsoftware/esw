@@ -2,17 +2,19 @@ package esw.ocs.framework.api.models.codecs
 
 import csw.command.client.cbor.MessageCodecs
 import csw.location.api.codec.DoneCodec
+import csw.location.model.codecs.LocationCodecs
 import esw.ocs.framework.api.models.StepStatus.Finished.{Failure, Success}
 import esw.ocs.framework.api.models.StepStatus._
 import esw.ocs.framework.api.models.messages.ProcessSequenceError.{DuplicateIdsFound, ExistingSequenceIsInProcess}
+import esw.ocs.framework.api.models.messages.SequenceComponentMsg.{GetStatus, LoadScript, UnloadScript}
 import esw.ocs.framework.api.models.messages.SequencerMsg._
 import esw.ocs.framework.api.models.messages.StepListError._
-import esw.ocs.framework.api.models.messages.{ProcessSequenceError, StepListError}
+import esw.ocs.framework.api.models.messages.{ProcessSequenceError, SequenceComponentMsg, StepListError}
 import esw.ocs.framework.api.models.{Sequence, Step, StepList, StepStatus}
 import io.bullet.borer.Codec
 import io.bullet.borer.derivation.MapBasedCodecs.deriveCodec
 
-trait SequencerCodecs extends MessageCodecs with DoneCodec {
+trait OcsFrameworkCodecs extends MessageCodecs with DoneCodec with LocationCodecs {
 
   //SequencerMsgCodecs
   implicit lazy val processSequenceCodec: Codec[ProcessSequence]         = deriveCodec[ProcessSequence]
@@ -71,4 +73,11 @@ trait SequencerCodecs extends MessageCodecs with DoneCodec {
 
   implicit lazy val stepListErrorCodec: Codec[StepListError] = deriveCodec[StepListError]
 
+  //SequenceComponentCodecs
+  implicit lazy val loadScriptCodec: Codec[LoadScript]                     = deriveCodec[LoadScript]
+  implicit lazy val getStatusCodec: Codec[GetStatus]                       = deriveCodec[GetStatus]
+  implicit lazy val unloadScriptCodec: Codec[UnloadScript]                 = deriveCodec[UnloadScript]
+  implicit lazy val sequenceComponentMsgCodec: Codec[SequenceComponentMsg] = deriveCodec[SequenceComponentMsg]
+
+  //fixme:  check if it works without DoneCodecs and LocationCodecs and ActorRefCodec
 }
