@@ -4,7 +4,12 @@ import csw.params.core.models.Id
 import esw.ocs.framework.api.models.StepStatus
 import esw.ocs.framework.api.models.serializer.OcsFrameworkAkkaSerializable
 
-sealed trait StepListError extends Product with Serializable with OcsFrameworkAkkaSerializable
+sealed trait EditorError extends OcsFrameworkAkkaSerializable
+
+case class SequencerShutdownError(msg: String) extends EditorError
+case class SequencerAbortError(msg: String)    extends EditorError
+
+sealed trait StepListError extends Product with Serializable with EditorError
 
 object StepListError {
 

@@ -27,8 +27,8 @@ object SequencerMsg {
       extends ExternalSequencerMsg
 
   // lifecycle msgs
-  final case class Shutdown(replyTo: ActorRef[Either[SequencerShutdownError, Done]]) extends ExternalSequencerMsg
-  final case class Abort(replyTo: ActorRef[Either[SequencerAbortError, Done]])       extends ExternalSequencerMsg
+  final case class Shutdown(replyTo: ActorRef[EditorResponse[SequencerShutdownError]]) extends ExternalSequencerMsg
+  final case class Abort(replyTo: ActorRef[EditorResponse[SequencerAbortError]])       extends ExternalSequencerMsg
 
   // editor msgs
   final case class Available(replyTo: ActorRef[Boolean])                                             extends ExternalSequencerMsg

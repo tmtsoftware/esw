@@ -21,17 +21,14 @@ class OcsFrameworkAkkaSerializer(_actorSystem: ActorSystem[_]) extends OcsFramew
   private val logger: Logger   = new LoggerFactory("Sequencer-codec").getLogger
 
   override def toBinary(o: AnyRef): Array[Byte] = o match {
-    case x: ExternalSequencerMsg         => Cbor.encode(x).toByteArray
-    case x: StepList                     => Cbor.encode(x).toByteArray
-    case x: SequenceComponentMsg         => Cbor.encode(x).toByteArray
-    case Right(x: AkkaLocation)          => Cbor.encode(x).toByteArray
-    case Left(x: LoadScriptError)        => Cbor.encode(x).toByteArray
-    case Left(x: StepListError)          => Cbor.encode(x).toByteArray
-    case Left(x: ProcessSequenceError)   => Cbor.encode(x).toByteArray
-    case Left(x: SequencerAbortError)    => Cbor.encode(x).toByteArray
-    case Left(x: SequencerShutdownError) => Cbor.encode(x).toByteArray
-    case Some(x: StepList)               => Cbor.encode(x).toByteArray
-    //fixme: Do we need for Option??
+    case x: ExternalSequencerMsg       => Cbor.encode(x).toByteArray
+    case x: StepList                   => Cbor.encode(x).toByteArray
+    case x: SequenceComponentMsg       => Cbor.encode(x).toByteArray
+    case Right(x: AkkaLocation)        => Cbor.encode(x).toByteArray
+    case Left(x: LoadScriptError)      => Cbor.encode(x).toByteArray
+    case Left(x: EditorError)          => Cbor.encode(x).toByteArray
+    case Left(x: ProcessSequenceError) => Cbor.encode(x).toByteArray
+    case Some(x: StepList)             => Cbor.encode(x).toByteArray
     case _ =>
       val ex = new RuntimeException(s"does not support encoding of $o")
       logger.error(ex.getMessage, ex = ex)
@@ -51,10 +48,8 @@ class OcsFrameworkAkkaSerializer(_actorSystem: ActorSystem[_]) extends OcsFramew
       Cbor.decode(bytes).to[Either[LoadScriptError, AkkaLocation]].value
     } else if (classOf[Either[ProcessSequenceError, SubmitResponse]].isAssignableFrom(manifest.get)) {
       Cbor.decode(bytes).to[Either[ProcessSequenceError, SubmitResponse]].value
-    } else if (classOf[Either[SequencerAbortError, Done]].isAssignableFrom(manifest.get)) {
-      Cbor.decode(bytes).to[Either[SequencerAbortError, Done]].value
-    } else if (classOf[Either[SequencerShutdownError, Done]].isAssignableFrom(manifest.get)) {
-      Cbor.decode(bytes).to[Either[SequencerShutdownError, Done]].value
+    } else if (classOf[Either[EditorError, Done]].isAssignableFrom(manifest.get)) {
+      Cbor.decode(bytes).to[Either[EditorError, Done]].value
     } else if (classOf[Option[StepList]].isAssignableFrom(manifest.get)) {
       Cbor.decode(bytes).to[Option[StepList]].value
     } else {

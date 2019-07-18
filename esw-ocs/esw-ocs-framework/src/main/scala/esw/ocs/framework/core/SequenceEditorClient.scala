@@ -1,6 +1,5 @@
 package esw.ocs.framework.core
 
-import akka.Done
 import akka.actor.Scheduler
 import akka.actor.typed.scaladsl.AskPattern._
 import akka.actor.typed.{ActorRef, ActorSystem}
@@ -36,6 +35,6 @@ class SequenceEditorClient(sequencer: ActorRef[ExternalSequencerMsg])(implicit s
   override def reset(): Future[EditorResponse[ResetError]]                             = sequencer ? Reset
 
   // It is Ok to call Try.get inside future
-  override def shutdown(): Future[Either[SequencerShutdownError, Done]] = sequencer ? Shutdown
-  override def abort(): Future[Either[SequencerAbortError, Done]]       = sequencer ? Abort
+  override def shutdown(): Future[EditorResponse[SequencerShutdownError]] = sequencer ? Shutdown
+  override def abort(): Future[EditorResponse[SequencerAbortError]]       = sequencer ? Abort
 }

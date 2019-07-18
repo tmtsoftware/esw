@@ -5,7 +5,7 @@ import csw.params.commands.SequenceCommand
 import csw.params.core.models.Id
 import esw.ocs.framework.api.models.SequenceEditor.EditorResponse
 import esw.ocs.framework.api.models.messages.error.StepListError._
-import esw.ocs.framework.api.models.messages.error.{SequencerAbortError, SequencerShutdownError, StepListError}
+import esw.ocs.framework.api.models.messages.error.{EditorError, SequencerAbortError, SequencerShutdownError}
 
 import scala.concurrent.Future
 
@@ -24,10 +24,10 @@ trait SequenceEditor {
   def removeBreakpoint(id: Id): Future[EditorResponse[RemoveBreakpointError]]
   def reset(): Future[EditorResponse[ResetError]]
 
-  def shutdown(): Future[Either[SequencerShutdownError, Done]]
-  def abort(): Future[Either[SequencerAbortError, Done]]
+  def shutdown(): Future[EditorResponse[SequencerShutdownError]]
+  def abort(): Future[EditorResponse[SequencerAbortError]]
 }
 
 object SequenceEditor {
-  type EditorResponse[E <: StepListError] = Either[E, Done]
+  type EditorResponse[E <: EditorError] = Either[E, Done]
 }

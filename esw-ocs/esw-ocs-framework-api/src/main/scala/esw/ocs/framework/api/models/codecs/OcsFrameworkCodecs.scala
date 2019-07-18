@@ -59,26 +59,22 @@ trait OcsFrameworkCodecs extends MessageCodecs with DoneCodec with LocationCodec
     singletonCodec(ExistingSequenceIsInProcess)
   implicit lazy val processSequenceErrorCodec: Codec[ProcessSequenceError] = deriveCodec[ProcessSequenceError]
 
-  //SequencerShutdownErrorCodec
-  implicit lazy val sequencerShutdownErrorCodec: Codec[SequencerShutdownError] = deriveCodec[SequencerShutdownError]
-
-  //SequencerAbortErrorCodec
-  implicit lazy val sequencerAbortErrorCodec: Codec[SequencerAbortError] = deriveCodec[SequencerAbortError]
-
-  //StepListErrorCodecs
-
+  //SequencerErrorCodecs
   implicit lazy val notSupportedCodec: Codec[NotSupported] = deriveCodec[NotSupported]
   implicit lazy val notAllowedOnFinishedSeqCodec: Codec[NotAllowedOnFinishedSeq.type] =
     singletonCodec(NotAllowedOnFinishedSeq)
-
   implicit lazy val idDoesNotExistCodec: Codec[IdDoesNotExist] = deriveCodec[IdDoesNotExist]
   implicit lazy val pauseFailedCodec: Codec[PauseFailed.type]  = singletonCodec(PauseFailed)
   implicit lazy val addingBreakpointNotSupportedCodec: Codec[AddingBreakpointNotSupported] =
     deriveCodec[AddingBreakpointNotSupported]
   implicit lazy val updateNotSupportedCodec: Codec[UpdateNotSupported] = deriveCodec[UpdateNotSupported]
   implicit lazy val addFailedCodec: Codec[AddFailed.type]              = singletonCodec(AddFailed)
+  implicit lazy val stepListErrorCodec: Codec[StepListError]           = deriveCodec[StepListError]
 
-  implicit lazy val stepListErrorCodec: Codec[StepListError] = deriveCodec[StepListError]
+  implicit lazy val sequencerAbortErrorCodec: Codec[SequencerAbortError]       = deriveCodec[SequencerAbortError]
+  implicit lazy val sequencerShutdownErrorCodec: Codec[SequencerShutdownError] = deriveCodec[SequencerShutdownError]
+
+  implicit lazy val editorErrorCodec: Codec[EditorError] = deriveCodec[EditorError]
 
   //SequenceComponentCodecs
   implicit lazy val loadScriptCodec: Codec[LoadScript]                     = deriveCodec[LoadScript]
