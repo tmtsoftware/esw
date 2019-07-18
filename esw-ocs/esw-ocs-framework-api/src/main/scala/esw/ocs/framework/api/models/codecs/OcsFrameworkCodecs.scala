@@ -10,7 +10,7 @@ import esw.ocs.framework.api.models.messages.SequenceComponentMsg.{GetStatus, Lo
 import esw.ocs.framework.api.models.messages.SequencerMsg._
 import esw.ocs.framework.api.models.messages.error.ProcessSequenceError.{DuplicateIdsFound, ExistingSequenceIsInProcess}
 import esw.ocs.framework.api.models.messages.error.StepListError._
-import esw.ocs.framework.api.models.messages.error.{ProcessSequenceError, StepListError}
+import esw.ocs.framework.api.models.messages.error._
 import esw.ocs.framework.api.models.{Sequence, Step, StepList, StepStatus}
 import io.bullet.borer.Codec
 import io.bullet.borer.derivation.MapBasedCodecs.deriveCodec
@@ -59,6 +59,12 @@ trait OcsFrameworkCodecs extends MessageCodecs with DoneCodec with LocationCodec
     singletonCodec(ExistingSequenceIsInProcess)
   implicit lazy val processSequenceErrorCodec: Codec[ProcessSequenceError] = deriveCodec[ProcessSequenceError]
 
+  //SequencerShutdownErrorCodec
+  implicit lazy val sequencerShutdownErrorCodec: Codec[SequencerShutdownError] = deriveCodec[SequencerShutdownError]
+
+  //SequencerAbortErrorCodec
+  implicit lazy val sequencerAbortErrorCodec: Codec[SequencerAbortError] = deriveCodec[SequencerAbortError]
+
   //StepListErrorCodecs
 
   implicit lazy val notSupportedCodec: Codec[NotSupported] = deriveCodec[NotSupported]
@@ -76,9 +82,10 @@ trait OcsFrameworkCodecs extends MessageCodecs with DoneCodec with LocationCodec
 
   //SequenceComponentCodecs
   implicit lazy val loadScriptCodec: Codec[LoadScript]                     = deriveCodec[LoadScript]
+  implicit lazy val loadScriptErrorCodec: Codec[LoadScriptError]           = deriveCodec[LoadScriptError]
   implicit lazy val getStatusCodec: Codec[GetStatus]                       = deriveCodec[GetStatus]
   implicit lazy val unloadScriptCodec: Codec[UnloadScript]                 = deriveCodec[UnloadScript]
   implicit lazy val sequenceComponentMsgCodec: Codec[SequenceComponentMsg] = deriveCodec[SequenceComponentMsg]
 
-  //fixme:  check if it works without DoneCodecs and LocationCodecs and ActorRefCodec
+  //fixme:  check if it works without DoneCodecs and LocationCodecs and ActorRefCodec and types wrapped inside Option and Either
 }
