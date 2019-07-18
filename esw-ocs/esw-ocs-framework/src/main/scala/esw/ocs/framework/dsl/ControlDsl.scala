@@ -13,8 +13,8 @@ trait ControlDsl {
   protected implicit lazy val toEc: ExecutionContext = strandEc.ec
   private[framework] def loopInterval: FiniteDuration
 
-  protected final def par[T](fs: List[Future[T]]): Future[List[T]]          = Future.sequence(fs)
-  protected final def par[T](f: Future[T], fs: Future[T]*): Future[List[T]] = par(f :: fs.toList)
+  protected final def par[T](fs: List[Future[T]]): Future[List[T]] = Future.sequence(fs)
+  protected final def par[T](fs: Future[T]*): Future[List[T]]      = par(fs.toList)
 
   protected final def loop(block: => Future[StopIf]): Future[Done] = loop(loopInterval)(block)
 

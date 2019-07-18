@@ -1,9 +1,12 @@
 package esw.ocs.framework.dsl
 
+import java.util.concurrent.atomic.AtomicInteger
+
 import akka.Done
 import esw.ocs.framework.BaseTestSuite
 import org.scalatest.time.SpanSugar.convertFloatToGrainOfTime
 
+import scala.concurrent.ExecutionContext.Implicits
 import scala.concurrent.Future
 import scala.concurrent.duration.FiniteDuration
 
@@ -55,6 +58,30 @@ class ControlDslTest extends BaseTestSuite {
 
       loopFinished.futureValue shouldBe Done
       getCounter() shouldBe 3
+    }
+  }
+
+  "par" must {
+    "execute provided list of tasks asynchronously | ESW-87" in {
+
+      import Implicits.global
+
+      class TestDsl() extends ControlDsl {
+        val loopInterval: FiniteDuration = 500.millis
+
+        def execute[T](tasks: Future[T]*): Future[List[T]] = par(tasks: _*)
+      }
+
+      val counter = new AtomicInteger(0)
+      val testDsl = new TestDsl
+
+      val result = testDsl.execute(
+        Future(counter.getAndIncrement()),
+        Future(counter.getAndIncrement()),
+        Future(counter.getAndIncrement())
+      )
+
+      result.futureValue.toSet should ===(Set(0, 1, 2))
     }
   }
 }
