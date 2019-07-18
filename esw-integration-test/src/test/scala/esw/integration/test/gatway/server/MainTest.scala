@@ -22,8 +22,8 @@ import csw.params.events.{Event, EventName, SystemEvent}
 import csw.testkit.{EventTestKit, LocationTestKit}
 import de.heikoseeberger.akkahttpplayjson.PlayJsonSupport
 import esw.gateway.server.Main
-import esw.template.http.server.BaseTestSuite
-import esw.template.http.server.TestFutureExtensions.RichFuture
+import esw.http.core.BaseTestSuite
+import esw.http.core.TestFutureExtensions.RichFuture
 
 import scala.concurrent.duration.DurationInt
 

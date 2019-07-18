@@ -12,7 +12,7 @@ import csw.event.api.scaladsl.SubscriptionModes.RateLimiterMode
 import csw.params.core.models.{Prefix, Subsystem}
 import csw.params.events._
 import esw.gateway.server.{CswContextMocks, RateLimiterStub}
-import esw.template.http.server.HttpTestSuite
+import esw.http.core.HttpTestSuite
 import play.api.libs.json.Json
 
 import scala.concurrent.duration.DurationInt

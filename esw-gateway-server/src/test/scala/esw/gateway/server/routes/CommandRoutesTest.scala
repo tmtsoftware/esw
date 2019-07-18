@@ -15,7 +15,7 @@ import csw.params.commands.{CommandName, CommandResponse, Setup}
 import csw.params.core.models.{Id, ObsId, Prefix}
 import csw.params.core.states.{CurrentState, StateName, StateVariable}
 import esw.gateway.server.CswContextMocks
-import esw.template.http.server.HttpTestSuite
+import esw.http.core.HttpTestSuite
 import play.api.libs.json.Json
 
 import scala.concurrent.duration.DurationDouble

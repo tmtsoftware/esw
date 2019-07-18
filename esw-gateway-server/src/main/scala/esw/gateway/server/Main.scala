@@ -1,8 +1,8 @@
 package esw.gateway.server
 
 import esw.gateway.server.routes.Routes
-import esw.template.http.server.cli.{ArgsParser, Options}
-import esw.template.http.server.wiring.{HttpService, ServerWiring}
+import esw.http.core.cli.{ArgsParser, Options}
+import esw.http.core.wiring.{HttpService, ServerWiring}
 
 import scala.concurrent.Await
 import scala.concurrent.duration.DurationInt

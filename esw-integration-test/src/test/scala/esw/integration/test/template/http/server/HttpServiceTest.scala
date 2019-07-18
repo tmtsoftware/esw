@@ -15,8 +15,8 @@ import csw.location.client.scaladsl.HttpLocationServiceFactory
 import csw.location.model.scaladsl.HttpRegistration
 import csw.network.utils.Networks
 import csw.testkit.LocationTestKit
-import esw.template.http.server.BaseTestSuite
-import esw.template.http.server.wiring.{HttpService, ServerWiring}
+import esw.http.core.BaseTestSuite
+import esw.http.core.wiring.{HttpService, ServerWiring}
 
 import scala.concurrent.Await
 import scala.concurrent.duration.DurationInt

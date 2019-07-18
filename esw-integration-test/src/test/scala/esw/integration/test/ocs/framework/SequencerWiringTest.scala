@@ -11,9 +11,9 @@ import csw.location.client.scaladsl.HttpLocationServiceFactory
 import csw.location.model.scaladsl.Connection.AkkaConnection
 import csw.location.model.scaladsl.{ComponentId, ComponentType}
 import csw.testkit.LocationTestKit
+import esw.http.core.BaseTestSuite
+import esw.http.core.TestFutureExtensions.RichFuture
 import esw.ocs.framework.internal.SequencerWiring
-import esw.template.http.server.BaseTestSuite
-import esw.template.http.server.TestFutureExtensions.RichFuture
 
 import scala.concurrent.duration.DurationDouble
 

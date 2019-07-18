@@ -9,9 +9,9 @@ import csw.event.api.scaladsl.{EventPublisher, EventService, EventSubscriber}
 import csw.event.client.internal.commons.EventSubscriberUtil
 import csw.logging.api.scaladsl.Logger
 import esw.gateway.server.routes.Routes
-import esw.template.http.server.commons.RouteHandlers
-import esw.template.http.server.csw.utils.{ComponentFactory, CswContext}
-import esw.template.http.server.wiring.ActorRuntime
+import esw.http.core.commons.RouteHandlers
+import esw.http.core.csw.utils.{ComponentFactory, CswContext}
+import esw.http.core.wiring.ActorRuntime
 import org.mockito.MockitoSugar
 
 import scala.concurrent.duration.FiniteDuration

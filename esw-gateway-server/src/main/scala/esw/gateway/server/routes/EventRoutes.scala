@@ -10,9 +10,9 @@ import csw.params.core.formats.JsonSupport
 import csw.params.core.models.Subsystem
 import csw.params.events.{Event, EventKey}
 import de.heikoseeberger.akkahttpplayjson.PlayJsonSupport
-import esw.template.http.server.commons.RichSourceExt.RichSource
-import esw.template.http.server.commons.Utils._
-import esw.template.http.server.csw.utils.CswContext
+import esw.http.core.commons.RichSourceExt.RichSource
+import esw.http.core.commons.Utils._
+import esw.http.core.csw.utils.CswContext
 
 import scala.language.postfixOps
 

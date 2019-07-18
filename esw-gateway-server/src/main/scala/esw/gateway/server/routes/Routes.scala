@@ -4,7 +4,7 @@ import akka.http.scaladsl.model.HttpRequest
 import akka.http.scaladsl.server.Directives._
 import akka.http.scaladsl.server.directives.{DebuggingDirectives, LoggingMagnet}
 import akka.http.scaladsl.server.{Directive0, Route}
-import esw.template.http.server.csw.utils.CswContext
+import esw.http.core.csw.utils.CswContext
 
 class Routes(cswCtx: CswContext) {
 
