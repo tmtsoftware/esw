@@ -13,7 +13,7 @@ class ScriptDslTest extends BaseTestSuite {
     "allow adding and executing setup handler" in {
       var receivedPrefix: Option[Prefix] = None
 
-      val script = new ScriptDsl {
+      val script: ScriptDsl = new ScriptDsl {
         override def csw: CswServices             = ???
         override val loopInterval: FiniteDuration = 100.millis
 
@@ -26,7 +26,7 @@ class ScriptDslTest extends BaseTestSuite {
       }
       val prefix    = Prefix("iris.move")
       val irisSetup = Setup(prefix, CommandName("iris"), None)
-      script.execute(irisSetup).await
+      script.execute(irisSetup).futureValue
 
       receivedPrefix.value shouldBe prefix
     }
@@ -34,7 +34,7 @@ class ScriptDslTest extends BaseTestSuite {
     "allow adding and executing observe handler" in {
       var receivedPrefix: Option[Prefix] = None
 
-      val script = new ScriptDsl {
+      val script: ScriptDsl = new ScriptDsl {
         override def csw: CswServices             = ???
         override val loopInterval: FiniteDuration = 100.millis
         handleObserveCommand("iris") { cmd =>
@@ -46,7 +46,7 @@ class ScriptDslTest extends BaseTestSuite {
       }
       val prefix      = Prefix("iris.move")
       val irisObserve = Observe(prefix, CommandName("iris"), None)
-      script.execute(irisObserve).await
+      script.execute(irisObserve).futureValue
 
       receivedPrefix.value shouldBe prefix
     }
@@ -70,7 +70,7 @@ class ScriptDslTest extends BaseTestSuite {
         }
       }
 
-      script.executeShutdown().await
+      script.executeShutdown().futureValue
       orderOfShutdownCalled shouldBe ArrayBuffer(1, 2)
     }
 
@@ -93,8 +93,9 @@ class ScriptDslTest extends BaseTestSuite {
         }
       }
 
-      script.executeAbort().await
+      script.executeAbort().futureValue
       orderOfAbortCalled shouldBe ArrayBuffer(1, 2)
     }
+
   }
 }

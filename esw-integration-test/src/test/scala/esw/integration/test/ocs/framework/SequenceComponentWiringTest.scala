@@ -29,10 +29,10 @@ class SequenceComponentWiringTest extends BaseTestSuite {
   }
 
   override def afterAll(): Unit = {
-    Http().shutdownAllConnectionPools().await
+    Http().shutdownAllConnectionPools().futureValue
     testKit.shutdownLocationServer()
     system.terminate()
-    system.whenTerminated.await
+    system.whenTerminated.futureValue
   }
 
   "SequenceComponent" must {
@@ -42,7 +42,7 @@ class SequenceComponentWiringTest extends BaseTestSuite {
       wiring.start()
 
       val connection        = AkkaConnection(ComponentId(seqComName, ComponentType.Service))
-      val sequencerLocation = testLocationService.resolve(connection, 5.seconds).await.get
+      val sequencerLocation = testLocationService.resolve(connection, 5.seconds).futureValue.get
 
       sequencerLocation.connection shouldBe connection
     }

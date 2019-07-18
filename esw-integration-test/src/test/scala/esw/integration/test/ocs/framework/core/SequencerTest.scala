@@ -34,10 +34,10 @@ class SequencerTest extends ActorTestKitBase with BaseTestSuite {
   }
 
   override def afterAll(): Unit = {
-    Http().shutdownAllConnectionPools().await
+    Http().shutdownAllConnectionPools().futureValue
     locationTestKit.shutdownLocationServer()
     system.terminate()
-    system.whenTerminated.await
+    system.whenTerminated.futureValue
   }
 
   "Sequencer" must {

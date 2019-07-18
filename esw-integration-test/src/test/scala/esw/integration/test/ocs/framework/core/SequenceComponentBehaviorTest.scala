@@ -31,10 +31,10 @@ class SequenceComponentBehaviorTest extends BaseTestSuite {
   }
 
   override def afterAll(): Unit = {
-    Http().shutdownAllConnectionPools().await
+    Http().shutdownAllConnectionPools().futureValue
     testKit.shutdownLocationServer()
     system.terminate()
-    system.whenTerminated.await
+    system.whenTerminated.futureValue
   }
 
   private def createBehaviorTestKit(): BehaviorTestKit[SequenceComponentMsg] = BehaviorTestKit(
