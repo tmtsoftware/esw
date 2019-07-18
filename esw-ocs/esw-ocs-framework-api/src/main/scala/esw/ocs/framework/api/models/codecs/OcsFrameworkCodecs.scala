@@ -63,10 +63,8 @@ trait OcsFrameworkCodecs extends MessageCodecs with DoneCodec with LocationCodec
   implicit lazy val notSupportedCodec: Codec[NotSupported] = deriveCodec[NotSupported]
   implicit lazy val notAllowedOnFinishedSeqCodec: Codec[NotAllowedOnFinishedSeq.type] =
     singletonCodec(NotAllowedOnFinishedSeq)
-  implicit lazy val idDoesNotExistCodec: Codec[IdDoesNotExist] = deriveCodec[IdDoesNotExist]
-  implicit lazy val pauseFailedCodec: Codec[PauseFailed.type]  = singletonCodec(PauseFailed)
-  implicit lazy val addingBreakpointNotSupportedCodec: Codec[AddingBreakpointNotSupported] =
-    deriveCodec[AddingBreakpointNotSupported]
+  implicit lazy val idDoesNotExistCodec: Codec[IdDoesNotExist]         = deriveCodec[IdDoesNotExist]
+  implicit lazy val pauseFailedCodec: Codec[PauseFailed.type]          = singletonCodec(PauseFailed)
   implicit lazy val updateNotSupportedCodec: Codec[UpdateNotSupported] = deriveCodec[UpdateNotSupported]
   implicit lazy val addFailedCodec: Codec[AddFailed.type]              = singletonCodec(AddFailed)
   implicit lazy val stepListErrorCodec: Codec[StepListError]           = deriveCodec[StepListError]
