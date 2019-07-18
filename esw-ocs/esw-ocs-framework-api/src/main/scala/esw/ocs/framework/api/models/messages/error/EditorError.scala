@@ -40,7 +40,7 @@ object StepListError {
       with DeleteError
       with AddBreakpointError
       with RemoveBreakpointError
-  
+
   sealed trait PauseError extends StepListError
   case object PauseFailed extends PauseError
 

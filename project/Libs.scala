@@ -11,6 +11,7 @@ object Libs {
   val `scala-async`   = "org.scala-lang.modules" %% "scala-async" % "0.10.0" //BSD 3-clause "New" or "Revised" License
   val `mockito-scala` = "org.mockito" %% "mockito-scala" % "1.5.11" // MIT License
   val `enumeratum`    = dep("com.beachape" %%% "enumeratum" % "1.5.13") //MIT License
+  val `case-app`      = "com.github.alexarchambault" %% "case-app" % "2.0.0-M9"
 }
 
 object Csw {

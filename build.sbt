@@ -38,7 +38,7 @@ lazy val `esw-ocs-framework-api` = project
 
 lazy val `esw-ocs-framework` = project
   .in(file("esw-ocs/esw-ocs-framework"))
-//  .enablePlugins(MaybeCoverage)
+  .enablePlugins(EswBuildInfo /*, MaybeCoverage*/ )
   .settings(
     libraryDependencies ++= Dependencies.OcsFramework.value
   )

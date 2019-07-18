@@ -20,6 +20,7 @@ object Dependencies {
       Akka.`akka-actor-typed`,
       Akka.`akka-stream-typed`,
       Libs.`scala-async`,
+      Libs.`case-app`,
       Libs.scalatest                  % Test,
       Akka.`akka-actor-testkit-typed` % Test,
       Libs.`mockito-scala`            % Test
