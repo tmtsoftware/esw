@@ -29,7 +29,6 @@ class SequenceComponentWiring(name: String) {
   def start(): Unit = {
     val registration =
       AkkaRegistration(AkkaConnection(ComponentId(name, ComponentType.Service)), prefix, sequenceComponentRef.toURI)
-    log.info(s"Registering $name with Location Service using registration: [$registration]")
 
     // fixme: no need to block here and return Future[RegistrationResult]
     val registrationResult = locationService.register(registration).block

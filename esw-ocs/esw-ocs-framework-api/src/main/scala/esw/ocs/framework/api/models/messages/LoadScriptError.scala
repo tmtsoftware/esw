@@ -1,8 +1,7 @@
 package esw.ocs.framework.api.models.messages
 
-case class LoadScriptError(msg: String)
+final case class LoadScriptError private (msg: String)
 
 object LoadScriptError {
-  def apply(exception: Throwable): LoadScriptError =
-    new LoadScriptError(s"Loading script Failed: ${exception.getMessage}")
+  def apply(reason: String): LoadScriptError = new LoadScriptError(s"Loading script Failed: $reason")
 }

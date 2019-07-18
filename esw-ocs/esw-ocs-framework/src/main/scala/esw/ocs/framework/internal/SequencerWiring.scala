@@ -18,6 +18,8 @@ import esw.ocs.framework.dsl.utils.ScriptLoader
 import esw.ocs.framework.dsl.{CswServices, Script}
 import esw.ocs.framework.syntax.FutureSyntax.FutureOps
 
+import scala.util.control.NonFatal
+
 //todo: make package-private to esw as private
 class SequencerWiring(val sequencerId: String, val observingMode: String) {
   private lazy val config          = ConfigFactory.load()
@@ -59,7 +61,6 @@ class SequencerWiring(val sequencerId: String, val observingMode: String) {
   //  onComplete gives handle to Try
   def start(): Either[LoadScriptError, AkkaLocation] = {
     val registration = AkkaRegistration(AkkaConnection(componentId), prefix, sequencerRef.toURI)
-    log.info(s"Registering ${componentId.name} with Location Service using registration: [${registration.toString}]")
 
     engine.start(sequenceOperatorFactory(), script)
 
@@ -67,7 +68,7 @@ class SequencerWiring(val sequencerId: String, val observingMode: String) {
       .register(registration)
       .map(x => Right(x.location.asInstanceOf[AkkaLocation]))
       .recover {
-        case ex: Throwable => Left(LoadScriptError(ex))
+        case NonFatal(e) => Left(LoadScriptError(e.getMessage))
       }
       .block
   }

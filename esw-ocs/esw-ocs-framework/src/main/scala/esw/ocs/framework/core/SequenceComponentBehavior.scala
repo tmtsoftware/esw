@@ -36,7 +36,7 @@ object SequenceComponentBehavior {
           replyTo ! Some(location)
           Behaviors.same
         case LoadScript(_, _, replyTo) =>
-          replyTo ! Left(LoadScriptError(new Throwable("Sequencer already running")))
+          replyTo ! Left(LoadScriptError("Sequencer already running"))
           Behaviors.same
       }
     idle

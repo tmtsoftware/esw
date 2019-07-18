@@ -8,11 +8,11 @@ import esw.ocs.framework.api.models.serializer.OcsFrameworkSerializable
 sealed trait SequenceComponentMsg extends OcsFrameworkSerializable
 
 object SequenceComponentMsg {
-  case class LoadScript(
+  final case class LoadScript(
       sequencerId: String,
       observingMode: String,
       replyTo: ActorRef[Either[LoadScriptError, AkkaLocation]]
   ) extends SequenceComponentMsg
-  case class UnloadScript(replyTo: ActorRef[Done])              extends SequenceComponentMsg
-  case class GetStatus(replyTo: ActorRef[Option[AkkaLocation]]) extends SequenceComponentMsg
+  final case class UnloadScript(replyTo: ActorRef[Done])              extends SequenceComponentMsg
+  final case class GetStatus(replyTo: ActorRef[Option[AkkaLocation]]) extends SequenceComponentMsg
 }

@@ -91,7 +91,7 @@ class SequenceComponentBehaviorTest extends BaseTestSuite {
       )
 
       behaviorTestKit.run(LoadScript("sequencerId3", "observingMode3", loadScriptResponseProbe.ref))
-      loadScriptResponseProbe.receiveMessage.leftValue shouldBe LoadScriptError(new Throwable("Sequencer already running"))
+      loadScriptResponseProbe.receiveMessage.leftValue shouldBe LoadScriptError("Sequencer already running")
     }
 
     "unload script and return Done if sequence component is not running any sequencer | ESW-103" in {

@@ -29,7 +29,6 @@ trait ControlDsl {
 
   protected final def spawn[T](body: => T)(implicit strandEc: StrandEc): Future[T] = macro AsyncMacros.asyncStrand[T]
 
-  // todo: use spawn when it gets ported to this repo
   private def loopWithoutDelay(block: => Future[StopIf]): Future[Done] =
     spawn {
       if (block.await.condition) Done else loopWithoutDelay(block).await
