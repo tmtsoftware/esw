@@ -5,8 +5,8 @@ import csw.params.commands._
 import csw.params.core.models.{Id, Prefix}
 import esw.ocs.framework.api.BaseTestSuite
 import esw.ocs.framework.api.models.StepStatus.{Finished, InFlight, Pending}
-import esw.ocs.framework.api.models.messages.ProcessSequenceError.DuplicateIdsFound
-import esw.ocs.framework.api.models.messages.StepListError._
+import esw.ocs.framework.api.models.messages.error.ProcessSequenceError.DuplicateIdsFound
+import esw.ocs.framework.api.models.messages.error.StepListError._
 
 class StepListTest extends BaseTestSuite {
   def finished(id: Id) = Finished.Success(Completed(id))

@@ -1,5 +1,6 @@
 package esw.ocs.framework.core
 
+import akka.Done
 import akka.actor.Scheduler
 import akka.actor.typed.scaladsl.AskPattern._
 import akka.actor.typed.{ActorRef, ActorSystem}
@@ -8,7 +9,8 @@ import csw.params.commands.SequenceCommand
 import csw.params.core.models.Id
 import esw.ocs.framework.api.models.SequenceEditor.EditorResponse
 import esw.ocs.framework.api.models.messages.SequencerMsg._
-import esw.ocs.framework.api.models.messages.StepListError._
+import esw.ocs.framework.api.models.messages.error.StepListError._
+import esw.ocs.framework.api.models.messages.error.{SequencerAbortError, SequencerShutdownError}
 import esw.ocs.framework.api.models.{SequenceEditor, StepList}
 
 import scala.concurrent.Future
@@ -16,7 +18,6 @@ import scala.concurrent.Future
 class SequenceEditorClient(sequencer: ActorRef[ExternalSequencerMsg])(implicit system: ActorSystem[_], timeout: Timeout)
     extends SequenceEditor {
   private implicit val scheduler: Scheduler = system.scheduler
-  import system.executionContext
 
   override def status: Future[StepList]     = sequencer ? GetSequence
   override def isAvailable: Future[Boolean] = sequencer ? Available
@@ -35,6 +36,6 @@ class SequenceEditorClient(sequencer: ActorRef[ExternalSequencerMsg])(implicit s
   override def reset(): Future[EditorResponse[ResetError]]                             = sequencer ? Reset
 
   // It is Ok to call Try.get inside future
-  override def shutdown(): Future[Unit] = (sequencer ? Shutdown).map(_.get)
-  override def abort(): Future[Unit]    = (sequencer ? Abort).map(_.get)
+  override def shutdown(): Future[Either[SequencerShutdownError, Done]] = sequencer ? Shutdown
+  override def abort(): Future[Either[SequencerAbortError, Done]]       = sequencer ? Abort
 }

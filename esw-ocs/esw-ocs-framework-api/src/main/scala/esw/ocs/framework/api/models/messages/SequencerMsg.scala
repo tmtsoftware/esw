@@ -6,11 +6,10 @@ import csw.params.commands.CommandResponse.SubmitResponse
 import csw.params.commands.SequenceCommand
 import csw.params.core.models.Id
 import esw.ocs.framework.api.models.SequenceEditor.EditorResponse
-import esw.ocs.framework.api.models.messages.StepListError._
-import esw.ocs.framework.api.models.serializer.OcsFrameworkSerializable
+import esw.ocs.framework.api.models.messages.error.StepListError._
+import esw.ocs.framework.api.models.messages.error.{ProcessSequenceError, SequencerAbortError, SequencerShutdownError}
+import esw.ocs.framework.api.models.serializer.OcsFrameworkAkkaSerializable
 import esw.ocs.framework.api.models.{Sequence, Step, StepList}
-
-import scala.util.Try
 
 sealed trait SequencerMsg
 
@@ -23,13 +22,13 @@ object SequencerMsg {
   final case class ReadyToExecuteNext(replyTo: ActorRef[Done])    extends InternalSequencerMsg
   final case class UpdateFailure(failureResponse: SubmitResponse) extends InternalSequencerMsg
 
-  sealed trait ExternalSequencerMsg extends SequencerMsg with OcsFrameworkSerializable
+  sealed trait ExternalSequencerMsg extends SequencerMsg with OcsFrameworkAkkaSerializable
   final case class ProcessSequence(sequence: Sequence, replyTo: ActorRef[Either[ProcessSequenceError, SubmitResponse]])
       extends ExternalSequencerMsg
 
   // lifecycle msgs
-  final case class Shutdown(replyTo: ActorRef[Try[Unit]]) extends ExternalSequencerMsg
-  final case class Abort(replyTo: ActorRef[Try[Unit]])    extends ExternalSequencerMsg
+  final case class Shutdown(replyTo: ActorRef[Either[SequencerShutdownError, Done]]) extends ExternalSequencerMsg
+  final case class Abort(replyTo: ActorRef[Either[SequencerAbortError, Done]])       extends ExternalSequencerMsg
 
   // editor msgs
   final case class Available(replyTo: ActorRef[Boolean])                                             extends ExternalSequencerMsg

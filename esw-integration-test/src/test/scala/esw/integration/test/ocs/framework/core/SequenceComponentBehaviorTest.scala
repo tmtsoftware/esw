@@ -12,8 +12,9 @@ import csw.location.model.scaladsl.Connection.AkkaConnection
 import csw.location.model.scaladsl.{AkkaLocation, ComponentId, ComponentType, Location}
 import csw.testkit.LocationTestKit
 import esw.ocs.framework.BaseTestSuite
+import esw.ocs.framework.api.models.messages.SequenceComponentMsg
 import esw.ocs.framework.api.models.messages.SequenceComponentMsg.{GetStatus, LoadScript, UnloadScript}
-import esw.ocs.framework.api.models.messages.{LoadScriptError, SequenceComponentMsg}
+import esw.ocs.framework.api.models.messages.error.LoadScriptError
 import esw.ocs.framework.core.SequenceComponentBehavior
 
 import scala.concurrent.duration.DurationLong
@@ -75,7 +76,7 @@ class SequenceComponentBehaviorTest extends BaseTestSuite {
       getStatusProbe.expectMessage(None)
     }
 
-    "load script and give None if sequencer is already running | ESW-103" in {
+    "load script and give LoadScriptError if sequencer is already running | ESW-103" in {
       val behaviorTestKit         = createBehaviorTestKit()
       val loadScriptResponseProbe = TestProbe[Either[LoadScriptError, AkkaLocation]]
       val sequencerId             = "testSequencerId2"

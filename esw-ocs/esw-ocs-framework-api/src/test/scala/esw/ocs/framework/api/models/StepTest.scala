@@ -5,7 +5,7 @@ import csw.params.commands.{CommandName, Setup}
 import csw.params.core.models.{Id, Prefix}
 import esw.ocs.framework.api.BaseTestSuite
 import esw.ocs.framework.api.models.StepStatus.{Finished, InFlight, Pending}
-import esw.ocs.framework.api.models.messages.StepListError.{NotSupported, UpdateNotSupported}
+import esw.ocs.framework.api.models.messages.error.StepListError.{NotSupported, UpdateNotSupported}
 
 class StepTest extends BaseTestSuite {
   def finished(id: Id) = Finished.Success(Completed(id))

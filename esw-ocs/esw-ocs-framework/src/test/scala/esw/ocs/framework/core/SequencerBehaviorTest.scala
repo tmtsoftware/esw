@@ -8,9 +8,10 @@ import csw.params.commands.{CommandName, Setup}
 import csw.params.core.models.{Id, Prefix}
 import esw.ocs.framework.BaseTestSuite
 import esw.ocs.framework.api.models.SequenceEditor.EditorResponse
+import esw.ocs.framework.api.models.messages.SequencerMsg
 import esw.ocs.framework.api.models.messages.SequencerMsg._
-import esw.ocs.framework.api.models.messages.StepListError._
-import esw.ocs.framework.api.models.messages.{ProcessSequenceError, SequencerMsg}
+import esw.ocs.framework.api.models.messages.error.ProcessSequenceError
+import esw.ocs.framework.api.models.messages.error.StepListError._
 import esw.ocs.framework.api.models.{Sequence, Step, StepList}
 import esw.ocs.framework.dsl.ScriptDsl
 import org.mockito.Mockito.{verify, when}

@@ -1,5 +1,6 @@
 package esw.ocs.framework.dsl
 
+import akka.Done
 import csw.params.commands.{Observe, SequenceCommand, Setup}
 import esw.ocs.framework.dsl.utils.{FunctionBuilder, FunctionHandlers}
 import esw.ocs.framework.exceptions.UnhandledCommandException
@@ -36,8 +37,8 @@ trait ScriptDsl extends ControlDsl {
 
   // this futures will normally run in parallel, but given that those are running on same thread
   // this will executes sequentially
-  private[framework] def executeShutdown(): Future[Unit] = Future.sequence(shutdownHandlers.execute(())).map(_ => ())
-  private[framework] def executeAbort(): Future[Unit]    = Future.sequence(abortHandlers.execute(())).map(_ => ())
+  private[framework] def executeShutdown(): Future[Done] = Future.sequence(shutdownHandlers.execute(())).map(_ => Done)
+  private[framework] def executeAbort(): Future[Done]    = Future.sequence(abortHandlers.execute(())).map(_ => Done)
 
   protected final def nextIf(f: SequenceCommand => Boolean): Future[Option[SequenceCommand]] =
     spawn {

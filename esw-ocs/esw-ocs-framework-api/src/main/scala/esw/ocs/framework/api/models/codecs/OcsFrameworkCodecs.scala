@@ -5,11 +5,12 @@ import csw.location.api.codec.DoneCodec
 import csw.location.model.codecs.LocationCodecs
 import esw.ocs.framework.api.models.StepStatus.Finished.{Failure, Success}
 import esw.ocs.framework.api.models.StepStatus._
-import esw.ocs.framework.api.models.messages.ProcessSequenceError.{DuplicateIdsFound, ExistingSequenceIsInProcess}
+import esw.ocs.framework.api.models.messages.SequenceComponentMsg
 import esw.ocs.framework.api.models.messages.SequenceComponentMsg.{GetStatus, LoadScript, UnloadScript}
 import esw.ocs.framework.api.models.messages.SequencerMsg._
-import esw.ocs.framework.api.models.messages.StepListError._
-import esw.ocs.framework.api.models.messages.{ProcessSequenceError, SequenceComponentMsg, StepListError}
+import esw.ocs.framework.api.models.messages.error.ProcessSequenceError.{DuplicateIdsFound, ExistingSequenceIsInProcess}
+import esw.ocs.framework.api.models.messages.error.StepListError._
+import esw.ocs.framework.api.models.messages.error.{ProcessSequenceError, StepListError}
 import esw.ocs.framework.api.models.{Sequence, Step, StepList, StepStatus}
 import io.bullet.borer.Codec
 import io.bullet.borer.derivation.MapBasedCodecs.deriveCodec

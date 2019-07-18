@@ -3,7 +3,7 @@ package esw.ocs.framework.api.models
 import csw.params.commands.SequenceCommand
 import csw.params.core.models.Id
 import esw.ocs.framework.api.models.StepStatus.{Finished, InFlight, Pending}
-import esw.ocs.framework.api.models.messages.StepListError._
+import esw.ocs.framework.api.models.messages.error.StepListError.{NotSupported, UpdateNotSupported}
 
 case class StepResult(isSuccessful: Boolean, step: Step)
 

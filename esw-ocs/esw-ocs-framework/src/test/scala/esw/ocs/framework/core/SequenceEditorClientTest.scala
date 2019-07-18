@@ -7,7 +7,7 @@ import csw.params.core.models.Prefix
 import esw.ocs.framework.BaseTestSuite
 import esw.ocs.framework.api.models.StepStatus.Pending
 import esw.ocs.framework.api.models.messages.SequencerMsg._
-import esw.ocs.framework.api.models.messages.StepListError.{AddFailed, NotAllowedOnFinishedSeq, NotSupported, PauseFailed}
+import esw.ocs.framework.api.models.messages.error.StepListError._
 import esw.ocs.framework.api.models.{Sequence, StepList}
 
 class SequenceEditorClientTest extends ActorTestKitBase with BaseTestSuite {

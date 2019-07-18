@@ -3,9 +3,10 @@ package esw.ocs.framework.api.models.messages
 import akka.Done
 import akka.actor.typed.ActorRef
 import csw.location.model.scaladsl.AkkaLocation
-import esw.ocs.framework.api.models.serializer.OcsFrameworkSerializable
+import esw.ocs.framework.api.models.messages.error.LoadScriptError
+import esw.ocs.framework.api.models.serializer.OcsFrameworkAkkaSerializable
 
-sealed trait SequenceComponentMsg extends OcsFrameworkSerializable
+sealed trait SequenceComponentMsg extends OcsFrameworkAkkaSerializable
 
 object SequenceComponentMsg {
   final case class LoadScript(

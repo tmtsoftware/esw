@@ -2,12 +2,12 @@ package esw.ocs.framework.api.models
 
 import csw.params.commands.SequenceCommand
 import csw.params.core.models.Id
-import esw.ocs.framework.api.models.messages.ProcessSequenceError.DuplicateIdsFound
-import esw.ocs.framework.api.models.messages.StepListError
-import esw.ocs.framework.api.models.messages.StepListError._
-import esw.ocs.framework.api.models.serializer.OcsFrameworkSerializable
+import esw.ocs.framework.api.models.messages.error.ProcessSequenceError.DuplicateIdsFound
+import esw.ocs.framework.api.models.messages.error.StepListError
+import esw.ocs.framework.api.models.messages.error.StepListError._
+import esw.ocs.framework.api.models.serializer.OcsFrameworkAkkaSerializable
 
-final case class StepList private[models] (runId: Id, steps: List[Step]) extends OcsFrameworkSerializable {
+final case class StepList private[models] (runId: Id, steps: List[Step]) extends OcsFrameworkAkkaSerializable {
   //query
   private[framework] def isEmpty: Boolean = steps.isEmpty
   def isFinished: Boolean                 = !isEmpty && (steps.forall(_.isFinished) || steps.exists(_.isFailed))

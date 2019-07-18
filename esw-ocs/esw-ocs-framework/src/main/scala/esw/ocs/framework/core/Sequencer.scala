@@ -10,9 +10,9 @@ import esw.ocs.async.macros.StrandEc
 import esw.ocs.framework.api.models.SequenceEditor.EditorResponse
 import esw.ocs.framework.api.models.StepStatus.{Finished, InFlight, Pending}
 import esw.ocs.framework.api.models._
-import esw.ocs.framework.api.models.messages.ProcessSequenceError.ExistingSequenceIsInProcess
-import esw.ocs.framework.api.models.messages.StepListError._
-import esw.ocs.framework.api.models.messages.{ProcessSequenceError, StepListError}
+import esw.ocs.framework.api.models.messages.error.ProcessSequenceError.ExistingSequenceIsInProcess
+import esw.ocs.framework.api.models.messages.error.StepListError._
+import esw.ocs.framework.api.models.messages.error.{ProcessSequenceError, StepListError}
 import esw.ocs.framework.dsl.Async.{async, await}
 import esw.ocs.framework.syntax.EitherSyntax._
 

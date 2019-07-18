@@ -7,7 +7,8 @@ import akka.actor.typed.scaladsl.AskPattern._
 import akka.util.Timeout
 import csw.location.model.scaladsl.AkkaLocation
 import esw.ocs.framework.api.models.messages.SequenceComponentMsg.{GetStatus, LoadScript, UnloadScript}
-import esw.ocs.framework.api.models.messages.{LoadScriptError, SequenceComponentMsg}
+import esw.ocs.framework.api.models.messages.SequenceComponentMsg
+import esw.ocs.framework.api.models.messages.error.LoadScriptError
 
 import scala.concurrent.Future
 

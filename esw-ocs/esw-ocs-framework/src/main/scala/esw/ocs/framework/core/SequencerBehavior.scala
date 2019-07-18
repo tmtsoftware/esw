@@ -3,6 +3,7 @@ package esw.ocs.framework.core
 import akka.actor.typed.scaladsl.Behaviors
 import esw.ocs.framework.api.models.messages.SequencerMsg
 import esw.ocs.framework.api.models.messages.SequencerMsg._
+import esw.ocs.framework.api.models.messages.error.{SequencerAbortError, SequencerShutdownError}
 import esw.ocs.framework.dsl.ScriptDsl
 
 object SequencerBehavior {
@@ -12,8 +13,19 @@ object SequencerBehavior {
 
       msg match {
         // ===== External Lifecycle =====
-        case Shutdown(replyTo) => script.executeShutdown().onComplete(replyTo.tell)
-        case Abort(replyTo)    => script.executeAbort().onComplete(replyTo.tell)
+        case Shutdown(replyTo) =>
+          script
+            .executeShutdown()
+            .map(Right(_))
+            .recover { case ex: Exception => Left(SequencerShutdownError(ex.getMessage)) }
+            .foreach(replyTo ! _)
+
+        case Abort(replyTo) =>
+          script
+            .executeAbort()
+            .map(Right(_))
+            .recover { case ex: Exception => Left(SequencerAbortError(ex.getMessage)) }
+            .foreach(replyTo ! _)
 
         // ===== External Editor =====
         case ProcessSequence(sequence, replyTo) => sequencer.processSequence(sequence).foreach(replyTo.tell)

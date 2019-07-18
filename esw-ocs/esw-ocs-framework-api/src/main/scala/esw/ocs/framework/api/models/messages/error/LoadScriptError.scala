@@ -1,4 +1,4 @@
-package esw.ocs.framework.api.models.messages
+package esw.ocs.framework.api.models.messages.error
 
 final case class LoadScriptError private (msg: String)
 

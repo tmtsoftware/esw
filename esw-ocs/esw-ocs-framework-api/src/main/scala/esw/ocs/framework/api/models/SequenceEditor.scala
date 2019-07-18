@@ -4,8 +4,8 @@ import akka.Done
 import csw.params.commands.SequenceCommand
 import csw.params.core.models.Id
 import esw.ocs.framework.api.models.SequenceEditor.EditorResponse
-import esw.ocs.framework.api.models.messages.StepListError
-import esw.ocs.framework.api.models.messages.StepListError._
+import esw.ocs.framework.api.models.messages.error.StepListError._
+import esw.ocs.framework.api.models.messages.error.{SequencerAbortError, SequencerShutdownError, StepListError}
 
 import scala.concurrent.Future
 
@@ -24,8 +24,8 @@ trait SequenceEditor {
   def removeBreakpoint(id: Id): Future[EditorResponse[RemoveBreakpointError]]
   def reset(): Future[EditorResponse[ResetError]]
 
-  def shutdown(): Future[Unit]
-  def abort(): Future[Unit]
+  def shutdown(): Future[Either[SequencerShutdownError, Done]]
+  def abort(): Future[Either[SequencerAbortError, Done]]
 }
 
 object SequenceEditor {

@@ -11,7 +11,7 @@ import csw.params.core.models.{Id, Prefix}
 import esw.ocs.async.macros.StrandEc
 import esw.ocs.framework.BaseTestSuite
 import esw.ocs.framework.api.models.StepStatus.{Finished, InFlight, Pending}
-import esw.ocs.framework.api.models.messages.ProcessSequenceError.ExistingSequenceIsInProcess
+import esw.ocs.framework.api.models.messages.error.ProcessSequenceError.ExistingSequenceIsInProcess
 import esw.ocs.framework.api.models.{Sequence, Step, StepList}
 import org.mockito.Mockito.{never, verify, when}
 import org.scalatestplus.mockito.MockitoSugar

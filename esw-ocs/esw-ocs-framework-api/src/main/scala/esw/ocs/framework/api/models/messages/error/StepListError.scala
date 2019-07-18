@@ -1,13 +1,12 @@
-package esw.ocs.framework.api.models.messages
+package esw.ocs.framework.api.models.messages.error
 
 import csw.params.core.models.Id
 import esw.ocs.framework.api.models.StepStatus
-import esw.ocs.framework.api.models.serializer.OcsFrameworkSerializable
+import esw.ocs.framework.api.models.serializer.OcsFrameworkAkkaSerializable
 
-sealed trait StepListError extends Product with Serializable
+sealed trait StepListError extends Product with Serializable with OcsFrameworkAkkaSerializable
 
 object StepListError {
-  sealed trait StepListErrorSerializable extends OcsFrameworkSerializable
 
   case class NotSupported(stepStatus: StepStatus)
       extends InsertError
@@ -15,7 +14,6 @@ object StepListError {
       with DeleteError
       with AddBreakpointError
       with PauseError
-      with StepListErrorSerializable
 
   case object NotAllowedOnFinishedSeq
       extends AddBreakpointError
@@ -29,7 +27,6 @@ object StepListError {
       with DeleteError
       with InsertError
       with RemoveBreakpointError
-      with StepListErrorSerializable
 
   final case class IdDoesNotExist(id: Id)
       extends ReplaceError
@@ -38,24 +35,20 @@ object StepListError {
       with DeleteError
       with AddBreakpointError
       with RemoveBreakpointError
-      with StepListErrorSerializable
 
   sealed trait AddBreakpointError extends StepListError
   sealed trait PauseError         extends StepListError
-  case object PauseFailed         extends PauseError with StepListErrorSerializable
+  case object PauseFailed         extends PauseError
 
-  case class AddingBreakpointNotSupported(status: StepStatus)
-      extends AddBreakpointError
-      with PauseError
-      with StepListErrorSerializable
+  case class AddingBreakpointNotSupported(status: StepStatus) extends AddBreakpointError with PauseError
 
   sealed trait ResumeError extends StepListError
 
   sealed trait UpdateError                                        extends StepListError
-  case class UpdateNotSupported(from: StepStatus, to: StepStatus) extends UpdateError with StepListErrorSerializable
+  case class UpdateNotSupported(from: StepStatus, to: StepStatus) extends UpdateError
 
   sealed trait AddError extends StepListError
-  case object AddFailed extends AddError with StepListErrorSerializable
+  case object AddFailed extends AddError
 
   sealed trait PrependError extends StepListError
 

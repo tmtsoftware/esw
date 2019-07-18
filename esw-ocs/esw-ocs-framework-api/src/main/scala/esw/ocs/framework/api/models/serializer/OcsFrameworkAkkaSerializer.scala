@@ -10,7 +10,7 @@ import esw.ocs.framework.api.models.messages.SequenceComponentMsg
 import esw.ocs.framework.api.models.messages.SequencerMsg.ExternalSequencerMsg
 import io.bullet.borer.Cbor
 
-class OcsFrameworkSerializer(_actorSystem: ActorSystem[_]) extends OcsFrameworkCodecs with Serializer {
+class OcsFrameworkAkkaSerializer(_actorSystem: ActorSystem[_]) extends OcsFrameworkCodecs with Serializer {
   override implicit def actorSystem: ActorSystem[_] = _actorSystem
 
   override def identifier: Int = 29926
