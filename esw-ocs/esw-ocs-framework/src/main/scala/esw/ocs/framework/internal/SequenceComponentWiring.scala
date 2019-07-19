@@ -10,7 +10,7 @@ import csw.location.client.scaladsl.HttpLocationServiceFactory
 import csw.location.model.scaladsl.Connection.AkkaConnection
 import csw.location.model.scaladsl.{AkkaRegistration, ComponentId, ComponentType}
 import csw.params.core.models.Prefix
-import esw.ocs.framework.api.models.messages.SequenceComponentMsg
+import esw.ocs.api.models.messages.SequenceComponentMsg
 import esw.ocs.framework.core.SequenceComponentBehavior
 import esw.ocs.framework.syntax.FutureSyntax.FutureOps
 

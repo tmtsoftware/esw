@@ -6,8 +6,8 @@ import akka.actor.typed.scaladsl.AskPattern._
 import akka.actor.typed.{ActorRef, ActorSystem}
 import akka.util.Timeout
 import csw.params.commands.CommandResponse.SubmitResponse
-import esw.ocs.framework.api.models.Step
-import esw.ocs.framework.api.models.messages.SequencerMsg._
+import esw.ocs.api.models.Step
+import esw.ocs.api.models.messages.SequencerMsg._
 import esw.ocs.framework.internal.Timeouts
 
 import scala.concurrent.Future

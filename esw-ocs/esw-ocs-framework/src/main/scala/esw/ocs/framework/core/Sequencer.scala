@@ -6,13 +6,13 @@ import csw.command.client.CommandResponseManager
 import csw.params.commands.CommandResponse.{Completed, Error, Started, SubmitResponse}
 import csw.params.commands.{CommandResponse, SequenceCommand}
 import csw.params.core.models.Id
+import esw.ocs.api.SequenceEditor.EditorResponse
+import esw.ocs.api.models.StepStatus._
+import esw.ocs.api.models.messages.error.ProcessSequenceError.ExistingSequenceIsInProcess
+import esw.ocs.api.models.messages.error.StepListError._
+import esw.ocs.api.models.messages.error.{ProcessSequenceError, StepListError}
+import esw.ocs.api.models.{Sequence, Step, StepList, StepStatus}
 import esw.ocs.async.macros.StrandEc
-import esw.ocs.framework.api.models.SequenceEditor.EditorResponse
-import esw.ocs.framework.api.models.StepStatus.{Finished, InFlight, Pending}
-import esw.ocs.framework.api.models._
-import esw.ocs.framework.api.models.messages.error.ProcessSequenceError.ExistingSequenceIsInProcess
-import esw.ocs.framework.api.models.messages.error.StepListError._
-import esw.ocs.framework.api.models.messages.error.{ProcessSequenceError, StepListError}
 import esw.ocs.framework.dsl.Async.{async, await}
 import esw.ocs.framework.syntax.EitherSyntax._
 

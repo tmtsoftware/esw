@@ -8,11 +8,11 @@ import csw.command.client.CommandResponseManager
 import csw.params.commands.CommandResponse._
 import csw.params.commands.{CommandName, Observe, Setup}
 import csw.params.core.models.{Id, Prefix}
+import esw.ocs.api.models.StepStatus.{Finished, InFlight, Pending}
+import esw.ocs.api.models.messages.error.ProcessSequenceError.ExistingSequenceIsInProcess
+import esw.ocs.api.models.{Sequence, Step, StepList}
 import esw.ocs.async.macros.StrandEc
 import esw.ocs.framework.BaseTestSuite
-import esw.ocs.framework.api.models.StepStatus.{Finished, InFlight, Pending}
-import esw.ocs.framework.api.models.messages.error.ProcessSequenceError.ExistingSequenceIsInProcess
-import esw.ocs.framework.api.models.{Sequence, Step, StepList}
 import org.mockito.Mockito.{never, verify, when}
 import org.scalatestplus.mockito.MockitoSugar
 

@@ -4,9 +4,9 @@ import akka.Done
 import akka.actor.typed.Behavior
 import akka.actor.typed.scaladsl.Behaviors
 import csw.location.model.scaladsl.AkkaLocation
-import esw.ocs.framework.api.models.messages.SequenceComponentMsg
-import esw.ocs.framework.api.models.messages.SequenceComponentMsg.{GetStatus, LoadScript, UnloadScript}
-import esw.ocs.framework.api.models.messages.error.LoadScriptError
+import esw.ocs.api.models.messages.SequenceComponentMsg
+import esw.ocs.api.models.messages.SequenceComponentMsg.{GetStatus, LoadScript, UnloadScript}
+import esw.ocs.api.models.messages.error.LoadScriptError
 import esw.ocs.framework.internal.SequencerWiring
 
 object SequenceComponentBehavior {

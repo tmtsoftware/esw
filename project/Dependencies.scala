@@ -2,7 +2,7 @@ import sbt.{Def, _}
 
 object Dependencies {
 
-  val OcsFrameworkApi: Def.Initialize[Seq[ModuleID]] = Def.setting(
+  val OcsApi: Def.Initialize[Seq[ModuleID]] = Def.setting(
     Seq(
       Akka.`akka-actor-typed`,
       Csw.`csw-params`.value,
@@ -13,7 +13,7 @@ object Dependencies {
     )
   )
 
-  val OcsFramework: Def.Initialize[Seq[ModuleID]] = Def.setting(
+  val OcsImpl: Def.Initialize[Seq[ModuleID]] = Def.setting(
     Seq(
       Csw.`csw-params`.value,
       Csw.`csw-location-client`,
@@ -27,7 +27,7 @@ object Dependencies {
     )
   )
 
-  val AsyncMacros: Def.Initialize[Seq[ModuleID]] = Def.setting(
+  val OcsMacros: Def.Initialize[Seq[ModuleID]] = Def.setting(
     Seq(Libs.`scala-reflect`, Libs.scalatest % Test)
   )
 

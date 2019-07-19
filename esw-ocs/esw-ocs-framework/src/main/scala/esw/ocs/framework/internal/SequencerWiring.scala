@@ -11,9 +11,9 @@ import csw.location.api.scaladsl.LocationService
 import csw.location.client.scaladsl.HttpLocationServiceFactory
 import csw.location.model.scaladsl.Connection.AkkaConnection
 import csw.location.model.scaladsl.{AkkaLocation, AkkaRegistration, ComponentId, ComponentType}
+import esw.ocs.api.models.messages.SequencerMsg
+import esw.ocs.api.models.messages.error.LoadScriptError
 import esw.ocs.async.macros.StrandEc
-import esw.ocs.framework.api.models.messages.SequencerMsg
-import esw.ocs.framework.api.models.messages.error.LoadScriptError
 import esw.ocs.framework.core._
 import esw.ocs.framework.dsl.utils.ScriptLoader
 import esw.ocs.framework.dsl.{CswServices, Script}

@@ -6,10 +6,10 @@ import akka.actor.typed.scaladsl.Behaviors
 import csw.params.commands.CommandResponse.Error
 import csw.params.commands.{CommandName, CommandResponse, Setup}
 import csw.params.core.models.Prefix
+import esw.ocs.api.models.Step
+import esw.ocs.api.models.messages.SequencerMsg
+import esw.ocs.api.models.messages.SequencerMsg.{MaybeNext, PullNext, ReadyToExecuteNext, UpdateFailure}
 import esw.ocs.framework.BaseTestSuite
-import esw.ocs.framework.api.models.Step
-import esw.ocs.framework.api.models.messages.SequencerMsg
-import esw.ocs.framework.api.models.messages.SequencerMsg.{MaybeNext, PullNext, ReadyToExecuteNext, UpdateFailure}
 
 class SequenceOperatorTest extends ActorTestKitBase with BaseTestSuite {
 

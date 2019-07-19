@@ -6,11 +6,12 @@ import akka.actor.typed.{ActorRef, ActorSystem}
 import akka.util.Timeout
 import csw.params.commands.SequenceCommand
 import csw.params.core.models.Id
-import esw.ocs.framework.api.models.SequenceEditor.EditorResponse
-import esw.ocs.framework.api.models.messages.SequencerMsg._
-import esw.ocs.framework.api.models.messages.error.StepListError._
-import esw.ocs.framework.api.models.messages.error.{SequencerAbortError, SequencerShutdownError}
-import esw.ocs.framework.api.models.{SequenceEditor, StepList}
+import esw.ocs.api.SequenceEditor
+import esw.ocs.api.SequenceEditor.EditorResponse
+import esw.ocs.api.models.StepList
+import esw.ocs.api.models.messages.SequencerMsg._
+import esw.ocs.api.models.messages.error.StepListError._
+import esw.ocs.api.models.messages.error.{SequencerAbortError, SequencerShutdownError}
 
 import scala.concurrent.Future
 

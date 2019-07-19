@@ -11,10 +11,10 @@ import akka.{Done, actor}
 import csw.location.model.scaladsl.Connection.AkkaConnection
 import csw.location.model.scaladsl.{AkkaLocation, ComponentId, ComponentType, Location}
 import csw.testkit.LocationTestKit
+import esw.ocs.api.models.messages.SequenceComponentMsg
+import esw.ocs.api.models.messages.SequenceComponentMsg.{GetStatus, LoadScript, UnloadScript}
+import esw.ocs.api.models.messages.error.LoadScriptError
 import esw.ocs.framework.BaseTestSuite
-import esw.ocs.framework.api.models.messages.SequenceComponentMsg
-import esw.ocs.framework.api.models.messages.SequenceComponentMsg.{GetStatus, LoadScript, UnloadScript}
-import esw.ocs.framework.api.models.messages.error.LoadScriptError
 import esw.ocs.framework.core.SequenceComponentBehavior
 
 import scala.concurrent.duration.DurationLong

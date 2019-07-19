@@ -9,9 +9,9 @@ import csw.params.commands.CommandResponse.Completed
 import csw.params.commands.{CommandName, Setup}
 import csw.params.core.models.Prefix
 import csw.testkit.LocationTestKit
+import esw.ocs.api.models.StepStatus.Finished
+import esw.ocs.api.models.{Sequence, Step}
 import esw.ocs.framework.BaseTestSuite
-import esw.ocs.framework.api.models.StepStatus.Finished
-import esw.ocs.framework.api.models.{Sequence, Step}
 import esw.ocs.framework.internal.SequencerWiring
 
 class SequencerTest extends ActorTestKitBase with BaseTestSuite {
