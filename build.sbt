@@ -25,7 +25,7 @@ lazy val `esw-ocs` = project
   .in(file("esw-ocs"))
   .aggregate(
     `esw-ocs-api`,
-    `esw-ocs-framework`,
+    `esw-ocs-impl`,
     `esw-ocs-macros`
   )
 lazy val `esw-ocs-api` = project
@@ -36,8 +36,8 @@ lazy val `esw-ocs-api` = project
     libraryDependencies ++= Dependencies.OcsApi.value
   )
 
-lazy val `esw-ocs-framework` = project
-  .in(file("esw-ocs/esw-ocs-framework"))
+lazy val `esw-ocs-impl` = project
+  .in(file("esw-ocs/esw-ocs-impl"))
   .enablePlugins(EswBuildInfo /*, MaybeCoverage*/ )
   .settings(
     libraryDependencies ++= Dependencies.OcsImpl.value
@@ -73,7 +73,7 @@ lazy val `esw-integration-test` = project
   .dependsOn(
     `esw-gateway-server` % "test->compile;test->test",
     `esw-http-core`      % "test->compile;test->test",
-    `esw-ocs-framework`       % "test->compile;test->test"
+    `esw-ocs-impl`       % "test->compile;test->test"
   )
 
 /* ================= Paradox Docs ============== */
