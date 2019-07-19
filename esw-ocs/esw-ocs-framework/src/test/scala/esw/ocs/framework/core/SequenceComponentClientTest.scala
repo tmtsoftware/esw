@@ -1,9 +1,14 @@
 package esw.ocs.framework.core
 
-import akka.actor.Scheduler
-import akka.actor.testkit.typed.scaladsl.TestProbe
+import java.net.URI
+
+import akka.Done
+import akka.actor.testkit.typed.scaladsl.ActorTestKitBase
+import akka.actor.typed.scaladsl.Behaviors
 import akka.actor.typed.{ActorSystem, SpawnProtocol}
-import akka.util.Timeout
+import csw.location.model.scaladsl.Connection.AkkaConnection
+import csw.location.model.scaladsl.{AkkaLocation, ComponentId, ComponentType}
+import csw.params.core.models.Prefix
 import esw.ocs.framework.BaseTestSuite
 import esw.ocs.framework.api.models.messages.SequenceComponentMsg
 import esw.ocs.framework.api.models.messages.SequenceComponentMsg.{GetStatus, LoadScript, UnloadScript}
@@ -11,11 +16,9 @@ import esw.ocs.framework.api.models.messages.SequenceComponentMsg.{GetStatus, Lo
 import scala.concurrent.Await
 import scala.concurrent.duration.DurationInt
 
-class SequenceComponentClientTest extends BaseTestSuite {
+class SequenceComponentClientTest extends ActorTestKitBase with BaseTestSuite {
 
-  private implicit val actorSystem: ActorSystem[SpawnProtocol] = ActorSystem(SpawnProtocol.behavior, "test")
-  private implicit val scheduler: Scheduler                    = actorSystem.scheduler
-  private implicit val timeout: Timeout                        = Timeout(10.seconds)
+  implicit val actorSystem: ActorSystem[SpawnProtocol] = ActorSystem(SpawnProtocol.behavior, "test")
 
   override protected def afterAll(): Unit = {
     actorSystem.terminate
@@ -23,37 +26,34 @@ class SequenceComponentClientTest extends BaseTestSuite {
     super.afterAll()
   }
 
-  // fixme: follow tests naming convention, refer StepListTest.scala
-  // fixme: use mockedBehavior for asserting on return value of methods
-  "SequenceComponentClient" must {
+  private val location =
+    AkkaLocation(AkkaConnection(ComponentId("test", ComponentType.Sequencer)), Prefix("test"), new URI("uri"))
+  private val loadScriptResponse = Right(location)
+  private val getStatusResponse  = Some(location)
 
-    "should delegate to LoadScript | ESW-103" in {
-      val sequencerId             = "testSequencerId1"
-      val observingMode           = "testObservingMode1"
-      val sequenceComponentProbe  = TestProbe[SequenceComponentMsg]
-      val sequenceComponentClient = new SequenceComponentClient(sequenceComponentProbe.ref)
-
-      sequenceComponentClient.loadScript(sequencerId, observingMode)
-
-      sequenceComponentProbe.expectMessageType[LoadScript]
+  private val mockedBehavior: Behaviors.Receive[SequenceComponentMsg] = Behaviors.receiveMessage[SequenceComponentMsg] { msg =>
+    msg match {
+      case LoadScript(_, _, replyTo) => replyTo ! loadScriptResponse
+      case GetStatus(replyTo)        => replyTo ! getStatusResponse
+      case UnloadScript(replyTo)     => replyTo ! Done
+      case _                         =>
     }
+    Behaviors.same
+  }
 
-    "should delegate to GetStatus | ESW-103" in {
-      val sequenceComponentProbe  = TestProbe[SequenceComponentMsg]
-      val sequenceComponentClient = new SequenceComponentClient(sequenceComponentProbe.ref)
+  private val sequenceComponent = spawn(mockedBehavior)
 
-      sequenceComponentClient.getStatus
+  private val sequenceComponentClient = new SequenceComponentClient(sequenceComponent)
 
-      sequenceComponentProbe.expectMessageType[GetStatus]
-    }
+  "LoadScript | ESW-103" in {
+    sequenceComponentClient.loadScript("sequencerId", "observingMode").futureValue should ===(loadScriptResponse)
+  }
 
-    "should delegate to UnloadScript | ESW-103" in {
-      val sequenceComponentProbe  = TestProbe[SequenceComponentMsg]
-      val sequenceComponentClient = new SequenceComponentClient(sequenceComponentProbe.ref)
+  "GetStatus | ESW-103" in {
+    sequenceComponentClient.getStatus.futureValue should ===(getStatusResponse)
+  }
 
-      sequenceComponentClient.unloadScript()
-
-      sequenceComponentProbe.expectMessageType[UnloadScript]
-    }
+  "UnloadScript | ESW-103" in {
+    sequenceComponentClient.unloadScript().futureValue should ===(Done)
   }
 }
