@@ -38,7 +38,7 @@ lazy val `esw-ocs-api` = project
 
 lazy val `esw-ocs-impl` = project
   .in(file("esw-ocs/esw-ocs-impl"))
-  .enablePlugins(EswBuildInfo /*, MaybeCoverage*/ )
+  .enablePlugins(EswBuildInfo, DeployApp /*, MaybeCoverage*/ )
   .settings(
     libraryDependencies ++= Dependencies.OcsImpl.value
   )
