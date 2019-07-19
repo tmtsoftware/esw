@@ -34,221 +34,220 @@ class CommandRoutesTest extends HttpTestSuite {
     actorSystem.terminate()
   }
 
-  case class TestData(componentType: String)
+  val assembly                    = "assembly"
+  val hcd                         = "hcd"
+  val assemblyType: ComponentType = ComponentType.withName("assembly")
+  val hcdType: ComponentType      = ComponentType.withName("hcd")
 
-  private val testData = List(TestData("hcd"), TestData("assembly"))
+  s"POST /command/{componentType}/{componentName}/validate" must {
+    "validate the command and return ValidateResponse | ESW-91" in new Setup {
 
-  testData.foreach { testData =>
-    val componentType: ComponentType = ComponentType.withName(testData.componentType)
+      import cswMocks._
+      private val componentName = "test-component"
+      private val runId         = Id("123")
+      private val command       = Setup(Prefix("test"), CommandName("c1"), Some(ObsId("obsId"))).copy(runId = runId)
 
-    s"validate [${testData.componentType}]" must {
-      "post command to validate | ESW-91" in new Setup {
-
-        import cswMocks._
-        private val componentName = "test-component"
-        private val runId         = Id("123")
-        private val command       = Setup(Prefix("test"), CommandName("c1"), Some(ObsId("obsId"))).copy(runId = runId)
-
-        when(commandService.validate(command)).thenReturn(Future.successful(Accepted(runId)))
-        when(componentFactory.commandService(componentName, componentType)).thenReturn(Future(commandService))
-        Post(s"/command/${testData.componentType}/$componentName/validate", command) ~> route ~> check {
-          status shouldBe StatusCodes.OK
-          responseAs[CommandResponse] shouldEqual Accepted(runId)
-        }
-      }
-
-      "get error response for validate command on timeout | ESW-91" in new Setup {
-
-        import cswMocks._
-        private val componentName = "test-component"
-        private val runId         = Id("123")
-        private val command       = Setup(Prefix("test"), CommandName("c1"), Some(ObsId("obsId"))).copy(runId = runId)
-
-        when(commandService.validate(command)).thenReturn(Future.failed(new TimeoutException("")))
-        when(componentFactory.commandService(componentName, componentType)).thenReturn(Future(commandService))
-
-        Post(s"/command/${testData.componentType}/$componentName/validate", command) ~> route ~> check {
-          status shouldBe StatusCodes.GatewayTimeout
-          mediaType shouldBe `application/json`
-        }
+      when(commandService.validate(command)).thenReturn(Future.successful(Accepted(runId)))
+      when(componentFactory.commandService(componentName, hcdType)).thenReturn(Future(commandService))
+      Post(s"/command/$hcd/$componentName/validate", command) ~> route ~> check {
+        status shouldBe StatusCodes.OK
+        responseAs[CommandResponse] shouldEqual Accepted(runId)
       }
     }
 
-    s"submit [${testData.componentType}]" must {
-      "post submit command | ESW-91" in new Setup {
+    "return GatewayTimeout when request take long time | ESW-91" in new Setup {
 
-        import cswMocks._
-        private val componentName = "test-component"
-        private val runId         = Id("123")
-        private val command       = Setup(Prefix("test"), CommandName("c1"), Some(ObsId("obsId"))).copy(runId = runId)
+      import cswMocks._
+      private val componentName = "test-component"
+      private val runId         = Id("123")
+      private val command       = Setup(Prefix("test"), CommandName("c1"), Some(ObsId("obsId"))).copy(runId = runId)
 
-        when(commandService.submit(command)).thenReturn(Future.successful(Completed(runId)))
-        when(componentFactory.commandService(componentName, componentType)).thenReturn(Future(commandService))
+      when(commandService.validate(command)).thenReturn(Future.failed(new TimeoutException("")))
+      when(componentFactory.commandService(componentName, assemblyType)).thenReturn(Future(commandService))
 
-        Post(s"/command/${testData.componentType}/$componentName/submit", command) ~> route ~> check {
-          status shouldBe StatusCodes.OK
-          responseAs[CommandResponse] shouldEqual Completed(runId)
-        }
+      Post(s"/command/$assembly/$componentName/validate", command) ~> route ~> check {
+        status shouldBe StatusCodes.GatewayTimeout
+        mediaType shouldBe `application/json`
       }
+    }
+  }
 
-      "get error response for submit command on timeout | ESW-91" in new Setup {
+  s"POST /command/{componentType}/{componentName}/submit" must {
+    "submit the given command to command service and return SubmitResponse | ESW-91" in new Setup {
 
-        import cswMocks._
-        private val componentName = "test-component"
-        private val runId         = Id("123")
-        private val command       = Setup(Prefix("test"), CommandName("c1"), Some(ObsId("obsId"))).copy(runId = runId)
+      import cswMocks._
+      private val componentName = "test-component"
+      private val runId         = Id("123")
+      private val command       = Setup(Prefix("test"), CommandName("c1"), Some(ObsId("obsId"))).copy(runId = runId)
 
-        when(commandService.submit(command)).thenReturn(Future.failed(new TimeoutException("")))
-        when(componentFactory.commandService(componentName, componentType)).thenReturn(Future(commandService))
+      when(commandService.submit(command)).thenReturn(Future.successful(Completed(runId)))
+      when(componentFactory.commandService(componentName, hcdType)).thenReturn(Future(commandService))
 
-        Post(s"/command/${testData.componentType}/$componentName/submit", command) ~> route ~> check {
-          status shouldBe StatusCodes.GatewayTimeout
-          mediaType shouldBe `application/json`
-        }
+      Post(s"/command/$hcd/$componentName/submit", command) ~> route ~> check {
+        status shouldBe StatusCodes.OK
+        responseAs[CommandResponse] shouldEqual Completed(runId)
       }
     }
 
-    s"oneway [${testData.componentType}]" must {
-      "post oneway command | ESW-91" in new Setup {
+    "return GatewayTimeout when request take long time | ESW-91" in new Setup {
 
-        import cswMocks._
-        private val componentName = "test-component"
-        private val runId         = Id("123")
-        private val command       = Setup(Prefix("test"), CommandName("c1"), Some(ObsId("obsId"))).copy(runId = runId)
+      import cswMocks._
+      private val componentName = "test-component"
+      private val runId         = Id("123")
+      private val command       = Setup(Prefix("test"), CommandName("c1"), Some(ObsId("obsId"))).copy(runId = runId)
 
-        when(commandService.oneway(command)).thenReturn(Future.successful(Accepted(runId)))
-        when(componentFactory.commandService(componentName, componentType)).thenReturn(Future(commandService))
+      when(commandService.submit(command)).thenReturn(Future.failed(new TimeoutException("")))
+      when(componentFactory.commandService(componentName, assemblyType)).thenReturn(Future(commandService))
 
-        Post(s"/command/${testData.componentType}/$componentName/oneway", command) ~> route ~> check {
-          status shouldBe StatusCodes.OK
-          responseAs[CommandResponse] shouldEqual Accepted(runId)
-        }
+      Post(s"/command/$assembly/$componentName/submit", command) ~> route ~> check {
+        status shouldBe StatusCodes.GatewayTimeout
+        mediaType shouldBe `application/json`
       }
+    }
+  }
 
-      "get error response for oneway command on timeout | ESW-91" in new Setup {
+  s"POST /command/{componentType}/{componentName}/oneway" must {
+    "submit oneway command to command service and return OnewayResponse | ESW-91" in new Setup {
 
-        import cswMocks._
-        private val componentName = "test-component"
-        private val runId         = Id("123")
-        private val command       = Setup(Prefix("test"), CommandName("c1"), Some(ObsId("obsId"))).copy(runId = runId)
+      import cswMocks._
+      private val componentName = "test-component"
+      private val runId         = Id("123")
+      private val command       = Setup(Prefix("test"), CommandName("c1"), Some(ObsId("obsId"))).copy(runId = runId)
 
-        when(commandService.oneway(command)).thenReturn(Future.failed(new TimeoutException("")))
-        when(componentFactory.commandService(componentName, componentType)).thenReturn(Future(commandService))
+      when(commandService.oneway(command)).thenReturn(Future.successful(Accepted(runId)))
+      when(componentFactory.commandService(componentName, hcdType)).thenReturn(Future(commandService))
 
-        Post(s"/command/${testData.componentType}/$componentName/oneway", command) ~> route ~> check {
-          status shouldBe StatusCodes.GatewayTimeout
-          mediaType shouldBe `application/json`
-        }
+      Post(s"/command/$hcd/$componentName/oneway", command) ~> route ~> check {
+        status shouldBe StatusCodes.OK
+        responseAs[CommandResponse] shouldEqual Accepted(runId)
       }
     }
 
-    s"queryFinal [${testData.componentType}]" must {
-      "get command response for given RunId | ESW-91" in new Setup {
+    "return GatewayTimeout when request take long time | ESW-91" in new Setup {
 
-        import cswMocks._
-        private val componentName = "test-component"
-        private val runId         = Id("123")
+      import cswMocks._
+      private val componentName = "test-component"
+      private val runId         = Id("123")
+      private val command       = Setup(Prefix("test"), CommandName("c1"), Some(ObsId("obsId"))).copy(runId = runId)
 
-        when(commandService.queryFinal(any[Id])(any[Timeout])).thenReturn(Future.successful(Completed(runId)))
-        when(componentFactory.commandService(componentName, componentType)).thenReturn(Future(commandService))
+      when(commandService.oneway(command)).thenReturn(Future.failed(new TimeoutException("")))
+      when(componentFactory.commandService(componentName, assemblyType)).thenReturn(Future(commandService))
 
-        Get(s"/command/${testData.componentType}/$componentName/${runId.id}") ~> route ~> check {
-          status shouldBe StatusCodes.OK
-          mediaType shouldBe `text/event-stream`
+      Post(s"/command/$assembly/$componentName/oneway", command) ~> route ~> check {
+        status shouldBe StatusCodes.GatewayTimeout
+        mediaType shouldBe `application/json`
+      }
+    }
+  }
 
-          val actualDataF: Future[Seq[CommandResponse]] = responseAs[Source[ServerSentEvent, NotUsed]]
-            .map(sse => Json.fromJson[CommandResponse](Json.parse(sse.getData())).get)
-            .runWith(Sink.seq)
+  s"GET /command/{componentType}/{componentName}/{runId}" must {
 
-          Await.result(actualDataF, 5.seconds) shouldEqual Seq(Completed(runId))
-        }
+    "return a stream which finishes with CommandResponse | ESW-91" in new Setup {
+
+      import cswMocks._
+      private val componentName = "test-component"
+      private val runId         = Id("123")
+
+      when(commandService.queryFinal(any[Id])(any[Timeout])).thenReturn(Future.successful(Completed(runId)))
+      when(componentFactory.commandService(componentName, hcdType)).thenReturn(Future(commandService))
+
+      Get(s"/command/$hcd/$componentName/${runId.id}") ~> route ~> check {
+        status shouldBe StatusCodes.OK
+        mediaType shouldBe `text/event-stream`
+
+        val actualDataF: Future[Seq[CommandResponse]] = responseAs[Source[ServerSentEvent, NotUsed]]
+          .map(sse => Json.fromJson[CommandResponse](Json.parse(sse.getData())).get)
+          .runWith(Sink.seq)
+
+        Await.result(actualDataF, 5.seconds) shouldEqual Seq(Completed(runId))
+      }
+    }
+  }
+
+  "GET /command/{componentType}/{componentName}/current-state/subscribe" must {
+
+    "return a stream of current state of the component | ESW-91" in new Setup {
+
+      import cswMocks._
+
+      private val componentName = "test-component"
+      private val currentState1 = CurrentState(Prefix("a.b"), StateName("stateName1"))
+      private val currentState2 = CurrentState(Prefix("a.b"), StateName("stateName2"))
+
+      private val currentStateSubscription = mock[CurrentStateSubscription]
+
+      private val currentStateStream = Source(List(currentState1, currentState2))
+        .mapMaterializedValue(_ => currentStateSubscription)
+
+      when(commandService.subscribeCurrentState(Set.empty[StateName])).thenReturn(currentStateStream)
+      when(componentFactory.commandService(componentName, assemblyType)).thenReturn(Future(commandService))
+
+      Get(s"/command/$assembly/$componentName/current-state/subscribe") ~> route ~> check {
+        status shouldBe StatusCodes.OK
+        mediaType shouldBe `text/event-stream`
+
+        val actualDataF: Future[Seq[StateVariable]] = responseAs[Source[ServerSentEvent, NotUsed]]
+          .map(sse => Json.fromJson[StateVariable](Json.parse(sse.getData())).get)
+          .runWith(Sink.seq)
+
+        Await.result(actualDataF, 5.seconds) shouldEqual Seq(currentState1, currentState2)
       }
     }
 
-    s"subscribeCurrentState [${testData.componentType}]" must {
-      "get current state subscription to all state names | ESW-91" in new Setup {
+    "return a stream of current state of the component with state name filter | ESW-91" in new Setup {
 
-        import cswMocks._
+      import cswMocks._
 
-        private val componentName = "test-component"
-        private val currentState1 = CurrentState(Prefix("a.b"), StateName("stateName1"))
-        private val currentState2 = CurrentState(Prefix("a.b"), StateName("stateName2"))
+      val componentName = "test-component"
+      val stateName1    = StateName("stateName1")
+      val currentState1 = CurrentState(Prefix("a.b"), stateName1)
 
-        private val currentStateSubscription = mock[CurrentStateSubscription]
+      private val currentStateSubscription = mock[CurrentStateSubscription]
 
-        private val currentStateStream = Source(List(currentState1, currentState2))
-          .mapMaterializedValue(_ => currentStateSubscription)
+      private val currentStateStream = Source(List(currentState1))
+        .mapMaterializedValue(_ => currentStateSubscription)
 
-        when(commandService.subscribeCurrentState(Set.empty[StateName])).thenReturn(currentStateStream)
-        when(componentFactory.commandService(componentName, componentType)).thenReturn(Future(commandService))
+      when(commandService.subscribeCurrentState(Set(stateName1))).thenReturn(currentStateStream)
+      when(componentFactory.commandService(componentName, hcdType)).thenReturn(Future(commandService))
 
-        Get(s"/command/${testData.componentType}/$componentName/current-state/subscribe") ~> route ~> check {
-          status shouldBe StatusCodes.OK
-          mediaType shouldBe `text/event-stream`
+      Get(s"/command/$hcd/$componentName/current-state/subscribe?state-name=${stateName1.name}") ~> route ~> check {
+        status shouldBe StatusCodes.OK
+        mediaType shouldBe `text/event-stream`
 
-          val actualDataF: Future[Seq[StateVariable]] = responseAs[Source[ServerSentEvent, NotUsed]]
-            .map(sse => Json.fromJson[StateVariable](Json.parse(sse.getData())).get)
-            .runWith(Sink.seq)
+        val actualDataF: Future[Seq[StateVariable]] = responseAs[Source[ServerSentEvent, NotUsed]]
+          .map(sse => Json.fromJson[StateVariable](Json.parse(sse.getData())).get)
+          .runWith(Sink.seq)
 
-          Await.result(actualDataF, 5.seconds) shouldEqual Seq(currentState1, currentState2)
-        }
+        Await.result(actualDataF, 5.seconds) shouldEqual Seq(currentState1)
       }
+    }
 
-      "get current state subscription to given state names | ESW-91" in new Setup {
+    "return a stream of current state of the component with given max-frequency | ESW-91" in new Setup {
 
-        import cswMocks._
+      import cswMocks._
+      private val componentName = "test-component"
+      private val stateName1    = StateName("stateName1")
+      private val currentState1 = CurrentState(Prefix("a.b"), stateName1)
 
-        val componentName = "test-component"
-        val stateName1    = StateName("stateName1")
-        val currentState1 = CurrentState(Prefix("a.b"), stateName1)
+      private val currentStateSubscription = mock[CurrentStateSubscription]
 
-        private val currentStateSubscription = mock[CurrentStateSubscription]
+      private val currentStateStream = Source(List(currentState1))
+        .mapMaterializedValue(_ => currentStateSubscription)
 
-        private val currentStateStream = Source(List(currentState1))
-          .mapMaterializedValue(_ => currentStateSubscription)
+      when(commandService.subscribeCurrentState(Set(stateName1))).thenReturn(currentStateStream)
+      when(componentFactory.commandService(componentName, assemblyType)).thenReturn(Future(commandService))
 
-        when(commandService.subscribeCurrentState(Set(stateName1))).thenReturn(currentStateStream)
-        when(componentFactory.commandService(componentName, componentType)).thenReturn(Future(commandService))
+      Get(
+        s"/command/$assembly/$componentName/current-state/subscribe?state-name=${stateName1.name}&max-frequency=10"
+      ) ~> route ~> check {
+        status shouldBe StatusCodes.OK
+        mediaType shouldBe `text/event-stream`
 
-        Get(s"/command/${testData.componentType}/$componentName/current-state/subscribe?state-name=${stateName1.name}") ~> route ~> check {
-          status shouldBe StatusCodes.OK
-          mediaType shouldBe `text/event-stream`
+        val actualDataF: Future[Seq[StateVariable]] = responseAs[Source[ServerSentEvent, NotUsed]]
+          .map(sse => Json.fromJson[StateVariable](Json.parse(sse.getData())).get)
+          .runWith(Sink.seq)
 
-          val actualDataF: Future[Seq[StateVariable]] = responseAs[Source[ServerSentEvent, NotUsed]]
-            .map(sse => Json.fromJson[StateVariable](Json.parse(sse.getData())).get)
-            .runWith(Sink.seq)
-
-          Await.result(actualDataF, 5.seconds) shouldEqual Seq(currentState1)
-        }
-      }
-
-      "get current state subscription to given state names and specified frequency | ESW-91" in new Setup {
-
-        import cswMocks._
-        private val componentName = "test-component"
-        private val stateName1    = StateName("stateName1")
-        private val currentState1 = CurrentState(Prefix("a.b"), stateName1)
-
-        private val currentStateSubscription = mock[CurrentStateSubscription]
-
-        private val currentStateStream = Source(List(currentState1))
-          .mapMaterializedValue(_ => currentStateSubscription)
-
-        when(commandService.subscribeCurrentState(Set(stateName1))).thenReturn(currentStateStream)
-        when(componentFactory.commandService(componentName, componentType)).thenReturn(Future(commandService))
-
-        Get(
-          s"/command/${testData.componentType}/$componentName/current-state/subscribe?state-name=${stateName1.name}&max-frequency=10"
-        ) ~> route ~> check {
-          status shouldBe StatusCodes.OK
-          mediaType shouldBe `text/event-stream`
-
-          val actualDataF: Future[Seq[StateVariable]] = responseAs[Source[ServerSentEvent, NotUsed]]
-            .map(sse => Json.fromJson[StateVariable](Json.parse(sse.getData())).get)
-            .runWith(Sink.seq)
-
-          Await.result(actualDataF, 5.seconds) shouldEqual Seq(currentState1)
-        }
+        Await.result(actualDataF, 5.seconds) shouldEqual Seq(currentState1)
       }
     }
   }

@@ -48,8 +48,8 @@ class EventRoutesTest extends HttpTestSuite {
   private val eventSource: Source[Event, EventSubscription] =
     Source(Set(event1, event2)).mapMaterializedValue(_ => eventSubscription)
 
-  "GET (get event)" must {
-    "get event for event keys | ESW-94" in new Setup {
+  "GET /event" must {
+    "return events for given event keys | ESW-94" in new Setup {
       import cswMocks._
 
       val expectedEvents: Set[Event] = Set(event1, event2)
@@ -61,7 +61,7 @@ class EventRoutesTest extends HttpTestSuite {
       }
     }
 
-    "return BadRequest if event keys not provided | ESW-94" in new Setup {
+    "return BadRequest if event keys are not provided | ESW-94" in new Setup {
       import cswMocks._
 
       Get(s"/event") ~> route ~> check {
@@ -70,7 +70,7 @@ class EventRoutesTest extends HttpTestSuite {
       }
     }
 
-    "return InternalServerError if future fails | ESW-94" in new Setup {
+    "return InternalServerError if internal api call fails | ESW-94" in new Setup {
       import cswMocks._
       when(eventSubscriber.get(Set(eventKey1, eventKey2))).thenReturn(Future.failed(new RuntimeException("failed")))
 
@@ -80,8 +80,8 @@ class EventRoutesTest extends HttpTestSuite {
     }
   }
 
-  "POST (publish event)" must {
-    "publish event" in new Setup {
+  "POST /event" must {
+    "publish the event using eventPublisher" in new Setup {
       import cswMocks._
       when(eventPublisher.publish(event1)).thenReturn(Future.successful(Done))
 
@@ -91,7 +91,7 @@ class EventRoutesTest extends HttpTestSuite {
       }
     }
 
-    "return BadRequest if event json is wrong" in new Setup {
+    "return BadRequest if event json is invalid" in new Setup {
       import cswMocks._
 
       Post(s"/event", "bad event") ~> route ~> check {
@@ -99,7 +99,7 @@ class EventRoutesTest extends HttpTestSuite {
       }
     }
 
-    "return InternalServerError if future fails | ESW-92" in new Setup {
+    "return InternalServerError if event publishing fails due to RuntimeException exception | ESW-92" in new Setup {
       import cswMocks._
       when(eventPublisher.publish(event1)).thenReturn(Future.failed(new RuntimeException("failed")))
 
@@ -110,27 +110,9 @@ class EventRoutesTest extends HttpTestSuite {
     }
   }
 
-  "Subscribe route" must {
+  "GET /event/subscribe" must {
 
-    "subscribe to events for event keys with given frequency | ESW-93" in new Setup {
-      import cswMocks._
-
-      when(eventSubscriber.subscribe(Set(eventKey1, eventKey2), 100.millis, RateLimiterMode)).thenReturn(eventSource)
-
-      Get(s"/event/subscribe?key=$eventKey1&key=$eventKey2&max-frequency=10") ~> route ~> check {
-        status shouldBe StatusCodes.OK
-        mediaType shouldBe MediaTypes.`text/event-stream`
-        verify(eventSubscriber).subscribe(Set(eventKey1, eventKey2), 100.millis, RateLimiterMode)
-
-        val actualDataF: Future[Seq[Event]] = responseAs[Source[ServerSentEvent, NotUsed]]
-          .map(sse => Json.fromJson[Event](Json.parse(sse.getData())).get)
-          .runWith(Sink.seq)
-
-        Await.result(actualDataF, 5.seconds) shouldEqual Seq(event1, event2)
-      }
-    }
-
-    "subscribe to events for event keys when optional param max-frequency is not provided | ESW-93" in new Setup {
+    "return a stream of events for given event keys | ESW-93" in new Setup {
       import cswMocks._
 
       when(eventSubscriber.subscribe(Set(eventKey1, eventKey2))).thenReturn(eventSource)
@@ -148,7 +130,26 @@ class EventRoutesTest extends HttpTestSuite {
       }
     }
 
-    "return BadRequest if key not provided | ESW-93 " in new Setup {
+    "return a stream of events for given keys with given frequency | ESW-93" in new Setup {
+      import cswMocks._
+
+      when(eventSubscriber.subscribe(Set(eventKey1, eventKey2), 100.millis, RateLimiterMode)).thenReturn(eventSource)
+
+      Get(s"/event/subscribe?key=$eventKey1&key=$eventKey2&max-frequency=10") ~> route ~> check {
+        println(response)
+        status shouldBe StatusCodes.OK
+        mediaType shouldBe MediaTypes.`text/event-stream`
+        verify(eventSubscriber).subscribe(Set(eventKey1, eventKey2), 100.millis, RateLimiterMode)
+
+        val actualDataF: Future[Seq[Event]] = responseAs[Source[ServerSentEvent, NotUsed]]
+          .map(sse => Json.fromJson[Event](Json.parse(sse.getData())).get)
+          .runWith(Sink.seq)
+
+        Await.result(actualDataF, 5.seconds) shouldEqual Seq(event1, event2)
+      }
+    }
+
+    "return BadRequest if no keys provided | ESW-93 " in new Setup {
       import cswMocks._
 
       Get(s"/event/subscribe?max-frequency=10") ~> route ~> check {
@@ -157,16 +158,16 @@ class EventRoutesTest extends HttpTestSuite {
       }
     }
 
-    "return BadRequest if max frequency is less than 0 | ESW-93" in new Setup {
+    "return BadRequest if provided max frequency <= 0 | ESW-93" in new Setup {
       import cswMocks._
 
-      Get(s"/event/subscribe?key=tcs.gateway&max-frequency=0") ~> route ~> check {
+      Get(s"/event/subscribe?key=tcs.gateway&max-frequency=-20") ~> route ~> check {
         responseAs[ErrorResponse].error.code shouldBe StatusCodes.BadRequest.intValue
         responseAs[ErrorResponse].error.message shouldBe "Max frequency should be greater than zero"
       }
     }
 
-    "return InternalServerError if subscribe API fails | ESW-93" in new Setup {
+    "return InternalServerError if internal subscribe API fails | ESW-93" in new Setup {
       import cswMocks._
 
       when(eventSubscriber.subscribe(Set(eventKey1, eventKey2), 100.millis, RateLimiterMode))
@@ -177,8 +178,39 @@ class EventRoutesTest extends HttpTestSuite {
         verify(eventSubscriber).subscribe(Set(eventKey1, eventKey2), 100.millis, RateLimiterMode)
       }
     }
+  }
 
-    "subscribe to events matching for given subsystem with specified pattern | ESW-93" in new Setup {
+  "GET /event/subscribe/{subsystemName}" must {
+
+    "return a stream of events matching for given subsystem | ESW-93" in new Setup {
+      import cswMocks._
+
+      val subsystemName        = "tcs"
+      val subsystem: Subsystem = Subsystem.withName(subsystemName)
+
+      val totalEvents = 40
+      val eventSourceStream: Source[SystemEvent, EventSubscription] = Source(1 to totalEvents)
+        .map(x => SystemEvent(Prefix("tcs"), EventName(x.toString)))
+        .mapMaterializedValue(_ => eventSubscription)
+
+      when(eventSubscriber.pSubscribe(subsystem, "*")).thenReturn(eventSourceStream)
+
+      Get(s"/event/subscribe/$subsystemName") ~> route ~> check {
+        status shouldBe StatusCodes.OK
+        mediaType shouldBe MediaTypes.`text/event-stream`
+        verify(eventSubscriber).pSubscribe(subsystem, "*")
+        verifyZeroInteractions(eventSubscriberUtil)
+
+        val actualDataF: Future[Seq[Event]] = responseAs[Source[ServerSentEvent, NotUsed]]
+          .map(sse => Json.fromJson[Event](Json.parse(sse.getData())).get)
+          .runWith(Sink.seq)
+
+        val events = Await.result(actualDataF, 5.seconds)
+        events.length shouldBe totalEvents
+      }
+    }
+
+    "return a stream of events matching given subsystem with given pattern | ESW-93" in new Setup {
       import cswMocks._
       val subsystemName        = "tcs"
       val pattern              = "event"
@@ -199,26 +231,7 @@ class EventRoutesTest extends HttpTestSuite {
       }
     }
 
-    "subscribe to events matching for given subsystem if pattern not provided | ESW-93" in new Setup {
-      import cswMocks._
-      val subsystemName        = "tcs"
-      val subsystem: Subsystem = Subsystem.withName(subsystemName)
-
-      when(eventSubscriber.pSubscribe(subsystem, "*")).thenReturn(eventSource)
-      when(eventSubscriberUtil.subscriptionModeStage(100.millis, RateLimiterMode))
-        .thenReturn(new RateLimiterStub[Event](100.millis))
-
-      Get(s"/event/subscribe/$subsystemName?max-frequency=10") ~> route ~> check {
-        status shouldBe StatusCodes.OK
-        mediaType shouldBe MediaTypes.`text/event-stream`
-
-        //check is psubscribe is called with * pattern
-        verify(eventSubscriber).pSubscribe(subsystem, "*")
-        verify(eventSubscriberUtil).subscriptionModeStage(100.millis, RateLimiterMode)
-      }
-    }
-
-    "subscribe to events matching for given subsystem should rate limit to given frequency | ESW-93" in new Setup {
+    "return a stream of events matching given subsystem with given max-frequency | ESW-93" in new Setup {
       import cswMocks._
 
       val subsystemName        = "tcs"
@@ -248,35 +261,7 @@ class EventRoutesTest extends HttpTestSuite {
       }
     }
 
-    "subscribe to events matching for given subsystem without max-frequency | ESW-93" in new Setup {
-      import cswMocks._
-
-      val subsystemName        = "tcs"
-      val subsystem: Subsystem = Subsystem.withName(subsystemName)
-
-      val totalEvents = 40
-      val eventSourceStream: Source[SystemEvent, EventSubscription] = Source(1 to totalEvents)
-        .map(x => SystemEvent(Prefix("tcs"), EventName(x.toString)))
-        .mapMaterializedValue(_ => eventSubscription)
-
-      when(eventSubscriber.pSubscribe(subsystem, "*")).thenReturn(eventSourceStream)
-
-      Get(s"/event/subscribe/$subsystemName") ~> route ~> check {
-        status shouldBe StatusCodes.OK
-        mediaType shouldBe MediaTypes.`text/event-stream`
-        verify(eventSubscriber).pSubscribe(subsystem, "*")
-        verifyZeroInteractions(eventSubscriberUtil)
-
-        val actualDataF: Future[Seq[Event]] = responseAs[Source[ServerSentEvent, NotUsed]]
-          .map(sse => Json.fromJson[Event](Json.parse(sse.getData())).get)
-          .runWith(Sink.seq)
-
-        val events = Await.result(actualDataF, 5.seconds)
-        events.length shouldBe totalEvents
-      }
-    }
-
-    "return InternalServerError if psubscribe API fails | ESW-93" in new Setup {
+    "return InternalServerError if internal subscribe API fails | ESW-93" in new Setup {
       import cswMocks._
       val subsystemName        = "tcs"
       val subsystem: Subsystem = Subsystem.withName(subsystemName)
@@ -290,5 +275,4 @@ class EventRoutesTest extends HttpTestSuite {
       }
     }
   }
-
 }
