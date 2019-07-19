@@ -10,7 +10,9 @@ object SequencerApp extends CommandApp[SequencerAppCommand] {
   override def appVersion: String = BuildInfo.version
   override def progName: String   = BuildInfo.name
 
-  def run(command: SequencerAppCommand, args: RemainingArgs): Unit =
+  def run(command: SequencerAppCommand, args: RemainingArgs): Unit = run(command)
+
+  def run(command: SequencerAppCommand): Unit =
     command match {
       case SequenceComponent(name) => new SequenceComponentWiring(name).start()
       case Sequencer(id, mode)     => new SequencerWiring(id, mode).start()
