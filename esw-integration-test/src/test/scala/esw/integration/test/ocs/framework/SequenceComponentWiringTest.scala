@@ -36,7 +36,7 @@ class SequenceComponentWiringTest extends BaseTestSuite {
   }
 
   "SequenceComponent" must {
-    "should start SequenceComponent | ESW-103" in {
+    "start SequenceComponent | ESW-103" in {
       val seqComName = "testSequencerComponent"
       val wiring     = new SequenceComponentWiring(seqComName)
       wiring.start()

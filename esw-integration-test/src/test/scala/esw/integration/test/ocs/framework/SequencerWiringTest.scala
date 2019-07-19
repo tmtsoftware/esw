@@ -37,7 +37,7 @@ class SequencerWiringTest extends BaseTestSuite {
   }
 
   "SequencerWiring" must {
-    "should start sequencer and register with location service | ESW-103" in {
+    "start sequencer and register with location service | ESW-103" in {
       val sequencerId   = "testSequencerId1"
       val observingMode = "testObservingMode1"
       val sequencerName = s"$sequencerId@$observingMode"
@@ -55,7 +55,7 @@ class SequencerWiringTest extends BaseTestSuite {
       wiring.shutDown()
     }
 
-    "should shutdown running Sequencer | ESW-103" in {
+    "shutdown running Sequencer | ESW-103" in {
       val sequencerId   = "testSequencerId1"
       val observingMode = "testObservingMode1"
       val sequencerName = s"$sequencerId@$observingMode"
