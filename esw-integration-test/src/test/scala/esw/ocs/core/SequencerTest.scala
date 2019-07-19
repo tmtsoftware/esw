@@ -1,26 +1,17 @@
 package esw.ocs.core
 
-import akka.actor.testkit.typed.scaladsl.ActorTestKitBase
-import akka.actor.typed.scaladsl.adapter.TypedActorSystemOps
-import akka.http.scaladsl.Http
-import akka.{Done, actor}
+import akka.Done
 import csw.params.commands.CommandResponse.Completed
 import csw.params.commands.{CommandName, Setup}
 import csw.params.core.models.Prefix
-import csw.testkit.LocationTestKit
+import csw.testkit.scaladsl.ScalaTestFrameworkTestKit
 import esw.ocs.BaseTestSuite
 import esw.ocs.api.models.StepStatus.Finished
 import esw.ocs.api.models.{Sequence, Step}
 import esw.ocs.internal.SequencerWiring
 
-class SequencerTest extends ActorTestKitBase with BaseTestSuite {
-  private val locationTestKit                                = LocationTestKit()
-  private implicit val untypedActorSystem: actor.ActorSystem = system.toUntyped
-  private var wiring: SequencerWiring                        = _
-
-  override def beforeAll(): Unit = {
-    locationTestKit.startLocationServer()
-  }
+class SequencerTest extends ScalaTestFrameworkTestKit with BaseTestSuite {
+  private var wiring: SequencerWiring = _
 
   override protected def beforeEach(): Unit = {
     wiring = new SequencerWiring("testSequencerId1", "testObservingMode1")
@@ -29,13 +20,6 @@ class SequencerTest extends ActorTestKitBase with BaseTestSuite {
 
   override protected def afterEach(): Unit = {
     wiring.shutDown()
-  }
-
-  override def afterAll(): Unit = {
-    Http().shutdownAllConnectionPools().futureValue
-    locationTestKit.shutdownLocationServer()
-    system.terminate()
-    system.whenTerminated.futureValue
   }
 
   "Sequencer" must {

@@ -1,16 +1,12 @@
 package esw.ocs.core
 
-import akka.actor.testkit.typed.TestKitSettings
+import akka.Done
 import akka.actor.testkit.typed.scaladsl.{BehaviorTestKit, TestProbe}
 import akka.actor.typed.ActorSystem
 import akka.actor.typed.scaladsl.Behaviors
-import akka.actor.typed.scaladsl.adapter.TypedActorSystemOps
-import akka.http.scaladsl.Http
-import akka.stream.typed.scaladsl.ActorMaterializer
-import akka.{Done, actor}
 import csw.location.model.scaladsl.Connection.AkkaConnection
 import csw.location.model.scaladsl.{AkkaLocation, ComponentId, ComponentType, Location}
-import csw.testkit.LocationTestKit
+import csw.testkit.scaladsl.ScalaTestFrameworkTestKit
 import esw.ocs.BaseTestSuite
 import esw.ocs.api.models.messages.SequenceComponentMsg
 import esw.ocs.api.models.messages.SequenceComponentMsg.{GetStatus, LoadScript, UnloadScript}
@@ -18,23 +14,9 @@ import esw.ocs.api.models.messages.error.LoadScriptError
 
 import scala.concurrent.duration.DurationLong
 
-class SequenceComponentBehaviorTest extends BaseTestSuite {
-  private val testKit                                = LocationTestKit()
-  implicit val system: ActorSystem[_]                = ActorSystem(Behaviors.empty, "test")
-  implicit val testKitSettings: TestKitSettings      = TestKitSettings(system)
-  implicit val untypedActorSystem: actor.ActorSystem = system.toUntyped
-  implicit val mat: ActorMaterializer                = ActorMaterializer()
-
-  override def beforeAll(): Unit = {
-    testKit.startLocationServer()
-  }
-
-  override def afterAll(): Unit = {
-    Http().shutdownAllConnectionPools().futureValue
-    testKit.shutdownLocationServer()
-    system.terminate()
-    system.whenTerminated.futureValue
-  }
+class SequenceComponentBehaviorTest extends ScalaTestFrameworkTestKit with BaseTestSuite {
+  import frameworkTestKit._
+  private implicit val typedSystem: ActorSystem[_] = actorSystem
 
   private def createBehaviorTestKit(): BehaviorTestKit[SequenceComponentMsg] = BehaviorTestKit(
     Behaviors.setup[SequenceComponentMsg](_ => SequenceComponentBehavior.behavior)

@@ -14,7 +14,6 @@ import esw.ocs.api.models.messages.error.ProcessSequenceError.ExistingSequenceIs
 import esw.ocs.api.models.{Sequence, Step, StepList}
 import esw.ocs.macros.StrandEc
 import org.mockito.Mockito.{never, verify, when}
-import org.scalatestplus.mockito.MockitoSugar
 
 import scala.concurrent.duration.DurationDouble
 import scala.concurrent.{ExecutionContext, Future, Promise}

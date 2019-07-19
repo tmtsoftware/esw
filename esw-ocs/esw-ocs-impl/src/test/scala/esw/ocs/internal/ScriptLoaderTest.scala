@@ -4,7 +4,6 @@ import esw.ocs.BaseTestSuite
 import esw.ocs.dsl.CswServices
 import esw.ocs.dsl.utils.ScriptLoader
 import esw.ocs.exceptions.ScriptLoadingException._
-import org.mockito.MockitoSugar.mock
 
 class ScriptLoaderTest extends BaseTestSuite {
 
