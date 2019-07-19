@@ -51,7 +51,7 @@ class MainTest extends BaseTestSuite with JsonSupport with PlayJsonSupport {
   }
 
   "should start Gateway server and register with location service and publish event | ESW-92" in {
-    val httpService = Main.start(Array("--port", "9806"), startLogging = false).get
+    val httpService = Main.start(Some(9806), startLogging = false)
     val connection  = HttpConnection(ComponentId("EswGateway", ComponentType.Service))
     val expectedConnection = HttpConnection(
       ComponentId(ConfigFactory.load().getConfig("http-server").getString("service-name"), ComponentType.Service)

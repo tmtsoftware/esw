@@ -36,6 +36,7 @@ object Dependencies {
       AkkaHttp.`akka-http`,
       Akka.`akka-actor-typed`,
       Akka.`akka-stream-typed`,
+      Libs.`case-app`,
       Libs.scalatest       % Test,
       Libs.`mockito-scala` % Test
     )
