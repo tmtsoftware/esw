@@ -47,6 +47,7 @@ object Dependencies {
       Csw.`csw-commons`,
       Csw.`csw-network-utils`,
       Csw.`csw-location-client`,
+      Csw.`csw-aas-http`,
       Akka.`akka-actor-typed`,
       Csw.`csw-command-client`,
       Csw.`csw-event-client`,
