@@ -1,6 +1,6 @@
 package esw.ocs.core
 
-import akka.actor.testkit.typed.scaladsl.ActorTestKitBase
+import akka.actor.testkit.typed.scaladsl.ScalaTestWithActorTestKit
 import akka.actor.typed.scaladsl.Behaviors
 import csw.params.commands.{CommandName, Setup}
 import csw.params.core.models.Prefix
@@ -10,7 +10,7 @@ import esw.ocs.api.models.messages.SequencerMsg._
 import esw.ocs.api.models.messages.error.StepListError._
 import esw.ocs.api.models.{Sequence, StepList}
 
-class SequenceEditorClientTest extends ActorTestKitBase with BaseTestSuite {
+class SequenceEditorClientTest extends ScalaTestWithActorTestKit with BaseTestSuite {
 
   private val command      = Setup(Prefix("test"), CommandName("command-1"), None)
   private val status       = Pending

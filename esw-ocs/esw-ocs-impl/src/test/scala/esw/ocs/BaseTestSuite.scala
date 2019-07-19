@@ -3,6 +3,7 @@ package esw.ocs
 import org.scalactic.TypeCheckedTripleEquals
 import org.scalatest._
 import org.scalatest.concurrent.{Eventually, ScalaFutures}
+import org.scalatestplus.mockito.MockitoSugar
 
 import scala.concurrent.Future
 import scala.concurrent.duration.{Duration, DurationDouble}
@@ -15,6 +16,7 @@ trait BaseTestSuite
     with ScalaFutures
     with OptionValues
     with EitherValues
+    with MockitoSugar
     with TypeCheckedTripleEquals
     with Eventually {
   val defaultTimeout: Duration = 10.seconds

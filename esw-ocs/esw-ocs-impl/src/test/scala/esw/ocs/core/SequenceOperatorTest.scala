@@ -1,7 +1,7 @@
 package esw.ocs.core
 
 import akka.Done
-import akka.actor.testkit.typed.scaladsl.{ActorTestKitBase, TestProbe}
+import akka.actor.testkit.typed.scaladsl.{ScalaTestWithActorTestKit, TestProbe}
 import akka.actor.typed.scaladsl.Behaviors
 import csw.params.commands.CommandResponse.Error
 import csw.params.commands.{CommandName, CommandResponse, Setup}
@@ -11,7 +11,7 @@ import esw.ocs.api.models.Step
 import esw.ocs.api.models.messages.SequencerMsg
 import esw.ocs.api.models.messages.SequencerMsg.{MaybeNext, PullNext, ReadyToExecuteNext, UpdateFailure}
 
-class SequenceOperatorTest extends ActorTestKitBase with BaseTestSuite {
+class SequenceOperatorTest extends ScalaTestWithActorTestKit with BaseTestSuite {
 
   private val command = Setup(Prefix("test"), CommandName("command-1"), None)
 

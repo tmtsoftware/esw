@@ -1,7 +1,7 @@
 package esw.ocs.core
 
 import akka.Done
-import akka.actor.testkit.typed.scaladsl.{ActorTestKitBase, TestProbe}
+import akka.actor.testkit.typed.scaladsl.{ScalaTestWithActorTestKit, TestProbe}
 import akka.actor.typed.ActorRef
 import csw.params.commands.CommandResponse.{Completed, Error, SubmitResponse}
 import csw.params.commands.{CommandName, Setup}
@@ -19,7 +19,7 @@ import org.scalatestplus.mockito.MockitoSugar
 
 import scala.concurrent.Future
 
-class SequencerBehaviorTest extends ActorTestKitBase with BaseTestSuite with MockitoSugar {
+class SequencerBehaviorTest extends ScalaTestWithActorTestKit with BaseTestSuite with MockitoSugar {
   private val sequencer = mock[Sequencer]
   private val scriptDsl = mock[ScriptDsl]
 

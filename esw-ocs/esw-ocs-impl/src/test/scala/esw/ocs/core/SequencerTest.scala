@@ -20,7 +20,7 @@ import scala.concurrent.duration.DurationDouble
 import scala.concurrent.{ExecutionContext, Future, Promise}
 import scala.util.{Success, Try}
 
-class SequencerTest extends BaseTestSuite with MockitoSugar {
+class SequencerTest extends BaseTestSuite {
   implicit val timeout: Timeout = Timeout(10.seconds)
 
   class SequencerSetup(sequence: Sequence) {
