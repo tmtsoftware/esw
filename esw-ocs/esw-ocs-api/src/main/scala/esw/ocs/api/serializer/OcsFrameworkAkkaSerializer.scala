@@ -29,6 +29,7 @@ class OcsFrameworkAkkaSerializer(_actorSystem: ActorSystem[_]) extends OcsFramew
     case Left(x: EditorError)          => Cbor.encode(x).toByteArray
     case Left(x: ProcessSequenceError) => Cbor.encode(x).toByteArray
     case Some(x: StepList)             => Cbor.encode(x).toByteArray
+    case None                          => Cbor.encode(Option.empty[StepList]).toByteArray
     case _ =>
       val ex = new RuntimeException(s"does not support encoding of $o")
       logger.error(ex.getMessage, ex = ex)
