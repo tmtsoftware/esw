@@ -21,8 +21,7 @@ import esw.ocs.syntax.FutureSyntax.FutureOps
 
 import scala.util.control.NonFatal
 
-//todo: make package-private to esw as private
-class SequencerWiring(val sequencerId: String, val observingMode: String) {
+private[ocs] class SequencerWiring(val sequencerId: String, val observingMode: String) {
   private lazy val config          = ConfigFactory.load()
   private lazy val sequencerConfig = SequencerConfig.from(config, sequencerId, observingMode)
   import sequencerConfig._

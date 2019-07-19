@@ -14,7 +14,7 @@ import esw.ocs.api.models.messages.SequenceComponentMsg
 import esw.ocs.core.SequenceComponentBehavior
 import esw.ocs.syntax.FutureSyntax.FutureOps
 
-class SequenceComponentWiring(name: String) {
+private[ocs] class SequenceComponentWiring(name: String) {
   lazy val actorRuntime = new ActorRuntime(name)
   import actorRuntime._
 

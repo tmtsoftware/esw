@@ -13,7 +13,7 @@ import csw.logging.client.scaladsl.LoggerFactory
 
 import scala.concurrent.ExecutionContext
 
-class ActorRuntime(componentName: String) {
+private[internal] class ActorRuntime(componentName: String) {
   implicit lazy val typedSystem: ActorSystem[SpawnProtocol] =
     ActorSystemFactory.remote(SpawnProtocol.behavior, "sequencer-system")
   implicit lazy val untypedSystem: actor.ActorSystem = typedSystem.toUntyped

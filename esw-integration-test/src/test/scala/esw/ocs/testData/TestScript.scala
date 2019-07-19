@@ -1,4 +1,4 @@
-package esw.integration.test.ocs.testData
+package esw.ocs.testData
 
 import csw.params.commands.CommandResponse.Completed
 import esw.ocs.dsl.{CswServices, Script}

@@ -1,4 +1,4 @@
-package esw.ocs.core.internal
+package esw.ocs.internal
 
 import esw.ocs.BaseTestSuite
 import esw.ocs.dsl.CswServices

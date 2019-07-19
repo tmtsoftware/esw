@@ -1,4 +1,4 @@
-package esw.integration.test.ocs
+package esw.ocs.internal
 
 import akka.actor
 import akka.actor.typed.ActorSystem
@@ -11,9 +11,8 @@ import csw.location.client.scaladsl.HttpLocationServiceFactory
 import csw.location.model.scaladsl.Connection.AkkaConnection
 import csw.location.model.scaladsl.{ComponentId, ComponentType}
 import csw.testkit.LocationTestKit
-import esw.http.core.BaseTestSuite
 import esw.http.core.TestFutureExtensions.RichFuture
-import esw.ocs.internal.SequencerWiring
+import esw.ocs.BaseTestSuite
 
 import scala.concurrent.duration.DurationDouble
 

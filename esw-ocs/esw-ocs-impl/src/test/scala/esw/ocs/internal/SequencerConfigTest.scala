@@ -1,10 +1,9 @@
-package esw.ocs.core.internal
+package esw.ocs.internal
 
 import com.typesafe.config.{Config, ConfigFactory}
 import csw.params.core.models.Prefix
 import esw.ocs.BaseTestSuite
 import esw.ocs.exceptions.ScriptLoadingException.ScriptConfigurationMissingException
-import esw.ocs.internal.SequencerConfig
 
 class SequencerConfigTest extends BaseTestSuite {
   private val config: Config = ConfigFactory.load()

@@ -1,4 +1,4 @@
-package esw.integration.test.gatway.server
+package esw.gatway.server
 
 import akka.actor
 import akka.actor.CoordinatedShutdown.UnknownReason

@@ -1,4 +1,4 @@
-package esw.integration.test.ocs.core
+package esw.ocs.core
 
 import akka.actor.testkit.typed.TestKitSettings
 import akka.actor.testkit.typed.scaladsl.{BehaviorTestKit, TestProbe}
@@ -15,7 +15,6 @@ import esw.ocs.BaseTestSuite
 import esw.ocs.api.models.messages.SequenceComponentMsg
 import esw.ocs.api.models.messages.SequenceComponentMsg.{GetStatus, LoadScript, UnloadScript}
 import esw.ocs.api.models.messages.error.LoadScriptError
-import esw.ocs.core.SequenceComponentBehavior
 
 import scala.concurrent.duration.DurationLong
 

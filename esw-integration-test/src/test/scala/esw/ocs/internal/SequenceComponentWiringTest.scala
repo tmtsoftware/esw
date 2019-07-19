@@ -1,4 +1,4 @@
-package esw.integration.test.ocs
+package esw.ocs.internal
 
 import akka.actor
 import akka.actor.typed.ActorSystem
@@ -12,7 +12,6 @@ import csw.location.model.scaladsl.Connection.AkkaConnection
 import csw.location.model.scaladsl.{ComponentId, ComponentType}
 import csw.testkit.LocationTestKit
 import esw.ocs.BaseTestSuite
-import esw.ocs.internal.SequenceComponentWiring
 
 import scala.concurrent.duration.DurationInt
 

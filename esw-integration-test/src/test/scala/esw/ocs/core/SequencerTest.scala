@@ -1,9 +1,8 @@
-package esw.integration.test.ocs.core
+package esw.ocs.core
 
 import akka.actor.testkit.typed.scaladsl.ActorTestKitBase
 import akka.actor.typed.scaladsl.adapter.TypedActorSystemOps
 import akka.http.scaladsl.Http
-import akka.stream.typed.scaladsl.ActorMaterializer
 import akka.{Done, actor}
 import csw.params.commands.CommandResponse.Completed
 import csw.params.commands.{CommandName, Setup}
@@ -15,10 +14,9 @@ import esw.ocs.api.models.{Sequence, Step}
 import esw.ocs.internal.SequencerWiring
 
 class SequencerTest extends ActorTestKitBase with BaseTestSuite {
-  private val locationTestKit                        = LocationTestKit()
-  implicit val untypedActorSystem: actor.ActorSystem = system.toUntyped
-  implicit val mat: ActorMaterializer                = ActorMaterializer()
-  var wiring: SequencerWiring                        = _
+  private val locationTestKit                                = LocationTestKit()
+  private implicit val untypedActorSystem: actor.ActorSystem = system.toUntyped
+  private var wiring: SequencerWiring                        = _
 
   override def beforeAll(): Unit = {
     locationTestKit.startLocationServer()
