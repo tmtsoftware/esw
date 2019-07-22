@@ -4,13 +4,13 @@ import akka.actor.typed.ActorRef
 import akka.actor.typed.SpawnProtocol.Spawn
 import akka.actor.typed.scaladsl.AskPattern.Askable
 import com.typesafe.config.ConfigFactory
-import csw.command.client.messages.{CommandResponseManagerMessage, SequencerMsg}
+import csw.command.client.messages.CommandResponseManagerMessage
 import csw.command.client.{CRMCacheProperties, CommandResponseManager, CommandResponseManagerActor}
 import csw.location.api.extensions.ActorExtension.RichActor
 import csw.location.api.scaladsl.LocationService
 import csw.location.client.scaladsl.HttpLocationServiceFactory
-import csw.location.models.Connection.AkkaConnection
-import csw.location.models.{AkkaLocation, AkkaRegistration, ComponentId, ComponentType}
+import csw.location.model.scaladsl.Connection.AkkaConnection
+import csw.location.model.scaladsl.{AkkaLocation, AkkaRegistration, ComponentId, ComponentType}
 import esw.ocs.api.models.messages.SequenceComponentResponse.LoadScriptResponse
 import esw.ocs.api.models.messages.error.LoadScriptError
 import esw.ocs.core._
@@ -58,8 +58,6 @@ private[ocs] class SequencerWiring(val sequencerId: String, val observingMode: S
     typedSystem.terminate()
   }
 
-  // fixme: do not block and return Future[AkkaLocation]?
-  //  onComplete gives handle to Try
   def start(): LoadScriptResponse = {
     val registration = AkkaRegistration(AkkaConnection(componentId), prefix, sequencerRef.toURI)
 

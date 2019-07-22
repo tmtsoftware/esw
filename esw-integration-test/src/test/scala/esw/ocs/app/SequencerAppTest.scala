@@ -19,7 +19,7 @@ class SequencerAppTest extends ScalaTestFrameworkTestKit with BaseTestSuite {
   "SequenceComponent command" must {
     "start sequence component with provided name and register it with location service | ESW-103, ESW-147" in {
       val seqComName = "testSequencerComponent"
-      SequencerApp.run(SequenceComponent(seqComName), startLogging = false)
+      SequencerApp.run(SequenceComponent(seqComName), enableLogging = false)
 
       val connection        = AkkaConnection(ComponentId(seqComName, ComponentType.Service))
       val sequencerLocation = testLocationService.resolve(connection, 5.seconds).futureValue.get
@@ -33,7 +33,7 @@ class SequencerAppTest extends ScalaTestFrameworkTestKit with BaseTestSuite {
       val sequencerId   = "testSequencerId1"
       val observingMode = "testObservingMode1"
       val sequencerName = s"$sequencerId@$observingMode"
-      SequencerApp.run(Sequencer(sequencerId, observingMode), startLogging = false)
+      SequencerApp.run(Sequencer(sequencerId, observingMode), enableLogging = false)
 
       val connection        = AkkaConnection(ComponentId(sequencerName, ComponentType.Sequencer))
       val sequencerLocation = testLocationService.resolve(connection, 5.seconds).futureValue.value
