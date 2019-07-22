@@ -1,19 +1,17 @@
 package esw.ocs.core
 
-import akka.Done
 import akka.actor.Scheduler
 import akka.actor.typed.scaladsl.AskPattern._
 import akka.actor.typed.{ActorRef, ActorSystem}
 import akka.util.Timeout
 import csw.params.commands.SequenceCommand
 import csw.params.core.models.Id
-import esw.ocs.api.models.StepList
-import esw.ocs.api.models.messages.SequencerMessages._
-import esw.ocs.api.models.messages.error.EditorError
 import esw.ocs.api.SequenceEditor
+import esw.ocs.api.models.StepList
 import esw.ocs.api.models.messages.EditorResponse
+import esw.ocs.api.models.messages.SequencerMessages._
 
-import scala.concurrent.{ExecutionContext, Future}
+import scala.concurrent.Future
 
 class SequenceEditorClient(sequencer: ActorRef[ExternalEditorSequencerMsg])(implicit system: ActorSystem[_], timeout: Timeout)
     extends SequenceEditor {
@@ -40,10 +38,4 @@ class SequenceEditorClient(sequencer: ActorRef[ExternalEditorSequencerMsg])(impl
   // It is Ok to call Try.get inside future
   override def shutdown(): Future[EditorResponse] = sequencer ? Shutdown
   override def abort(): Future[EditorResponse]    = sequencer ? Abort
-}
-
-object Util {
-  implicit class RichEditorResponse(response: Future[Either[EditorError, Done]])(implicit ec: ExecutionContext) {
-    def toEditorResponse: Future[EditorResponse] = response.map(EditorResponse)
-  }
 }
