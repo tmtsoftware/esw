@@ -1,6 +1,6 @@
 package esw.http.core.wiring
 
-import com.typesafe.config.{Config, ConfigFactory}
+import com.typesafe.config.{Config}
 import csw.location.model.scaladsl.Connection.HttpConnection
 import csw.location.model.scaladsl.{ComponentId, ComponentType}
 
