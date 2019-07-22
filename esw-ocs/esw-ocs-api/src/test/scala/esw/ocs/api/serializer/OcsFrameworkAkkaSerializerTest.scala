@@ -123,7 +123,7 @@ class OcsFrameworkAkkaSerializerTest extends BaseTestSuite {
       )
       val testData = Table(
         "SequenceComponentResponse models",
-        LoadScriptResponse(Left(LoadScriptError("error"))),
+        LoadScriptResponse(Left(RegistrationError("error"))),
         LoadScriptResponse(
           Right(
             akkaLocation

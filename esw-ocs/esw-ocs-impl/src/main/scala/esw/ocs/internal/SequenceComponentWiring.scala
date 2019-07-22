@@ -1,18 +1,19 @@
 package esw.ocs.internal
 
-import akka.actor.CoordinatedShutdown
 import akka.actor.typed.ActorRef
 import akka.actor.typed.SpawnProtocol.Spawn
 import akka.actor.typed.scaladsl.AskPattern.Askable
 import csw.location.api.extensions.ActorExtension.RichActor
-import csw.location.api.scaladsl.{LocationService, RegistrationResult}
+import csw.location.api.scaladsl.LocationService
 import csw.location.client.scaladsl.HttpLocationServiceFactory
 import csw.location.models.Connection.AkkaConnection
-import csw.location.models.{AkkaRegistration, ComponentId, ComponentType}
+import csw.location.models.{AkkaLocation, AkkaRegistration, ComponentId, ComponentType}
 import csw.params.core.models.Prefix
 import esw.ocs.api.models.messages.SequenceComponentMsg
+import esw.ocs.api.models.messages.error.RegistrationError
 import esw.ocs.core.SequenceComponentBehavior
 import esw.ocs.syntax.FutureSyntax.FutureOps
+import esw.ocs.utils.RegistrationUtils
 
 private[ocs] class SequenceComponentWiring(name: String) {
   lazy val actorRuntime = new ActorRuntime(name)
@@ -26,24 +27,11 @@ private[ocs] class SequenceComponentWiring(name: String) {
   //fixme: should this come from conf file?
   private lazy val prefix = Prefix("sequence-component")
 
-  def start(): RegistrationResult = {
-    def addCoordinatedShutdownTask(registration: RegistrationResult): Unit = {
-      coordinatedShutdown.addTask(
-        CoordinatedShutdown.PhaseBeforeServiceUnbind,
-        s"unregistering-${registration.location}"
-      )(() => registration.unregister())
-    }
-
+  def start(): Either[RegistrationError, AkkaLocation] = {
     val registration =
       AkkaRegistration(AkkaConnection(ComponentId(name, ComponentType.Service)), prefix, sequenceComponentRef.toURI)
 
-    locationService
-      .register(registration)
-      .map { registrationResult =>
-        addCoordinatedShutdownTask(registrationResult)
-        registrationResult
-      }
-      .block
+    RegistrationUtils.register(locationService, registration)(coordinatedShutdown).block
   }
 
 }

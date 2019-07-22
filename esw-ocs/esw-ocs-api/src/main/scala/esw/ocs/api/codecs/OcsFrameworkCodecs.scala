@@ -66,7 +66,7 @@ trait OcsFrameworkCodecs extends MessageCodecs with DoneCodec {
 
   //SequenceComponentCodecs
   implicit lazy val loadScriptCodec: Codec[LoadScript]                     = deriveCodec[LoadScript]
-  implicit lazy val loadScriptErrorCodec: Codec[LoadScriptError]           = deriveCodec[LoadScriptError]
+  implicit lazy val loadScriptErrorCodec: Codec[RegistrationError]         = deriveCodec[RegistrationError]
   implicit lazy val getStatusCodec: Codec[GetStatus]                       = deriveCodec[GetStatus]
   implicit lazy val unloadScriptCodec: Codec[UnloadScript]                 = deriveCodec[UnloadScript]
   implicit lazy val sequenceComponentMsgCodec: Codec[SequenceComponentMsg] = deriveCodec[SequenceComponentMsg]

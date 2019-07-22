@@ -11,7 +11,7 @@ import esw.ocs.BaseTestSuite
 import esw.ocs.api.models.messages.SequenceComponentMsg
 import esw.ocs.api.models.messages.SequenceComponentMsg.{GetStatus, LoadScript, UnloadScript}
 import esw.ocs.api.models.messages.SequenceComponentResponse.{GetStatusResponse, LoadScriptResponse}
-import esw.ocs.api.models.messages.error.LoadScriptError
+import esw.ocs.api.models.messages.error.RegistrationError
 
 import scala.concurrent.duration.DurationLong
 
@@ -74,7 +74,7 @@ class SequenceComponentBehaviorTest extends ScalaTestFrameworkTestKit with BaseT
       )
 
       behaviorTestKit.run(LoadScript("sequencerId3", "observingMode3", loadScriptResponseProbe.ref))
-      loadScriptResponseProbe.receiveMessage.response.leftValue shouldBe LoadScriptError(
+      loadScriptResponseProbe.receiveMessage.response.leftValue shouldBe RegistrationError(
         "Loading script failed: Sequencer already running"
       )
     }

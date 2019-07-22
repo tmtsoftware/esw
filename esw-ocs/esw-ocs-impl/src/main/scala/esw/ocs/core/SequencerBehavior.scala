@@ -18,7 +18,7 @@ object SequencerBehavior {
           script
             .executeShutdown()
             .map(Right(_))
-            .recover { case ex: Exception => Left(SequencerShutdownError(ex.getMessage)) }
+            .recover { case ex: Exception => Left(SequencerShutdownError(ex.getMessage)) } // fixme: use NonFatal
             .foreach(replyTo ! EditorResponse(_))
 
         case Abort(replyTo) =>

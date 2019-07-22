@@ -4,22 +4,20 @@ import akka.actor.typed.ActorRef
 import akka.actor.typed.SpawnProtocol.Spawn
 import akka.actor.typed.scaladsl.AskPattern.Askable
 import com.typesafe.config.ConfigFactory
-import csw.command.client.messages.CommandResponseManagerMessage
+import csw.command.client.messages.{CommandResponseManagerMessage, SequencerMsg}
 import csw.command.client.{CRMCacheProperties, CommandResponseManager, CommandResponseManagerActor}
 import csw.location.api.extensions.ActorExtension.RichActor
 import csw.location.api.scaladsl.LocationService
 import csw.location.client.scaladsl.HttpLocationServiceFactory
-import csw.location.model.scaladsl.Connection.AkkaConnection
-import csw.location.model.scaladsl.{AkkaLocation, AkkaRegistration, ComponentId, ComponentType}
-import esw.ocs.api.models.messages.SequenceComponentResponse.LoadScriptResponse
-import esw.ocs.api.models.messages.error.LoadScriptError
+import csw.location.models.Connection.AkkaConnection
+import csw.location.models.{AkkaLocation, AkkaRegistration, ComponentId, ComponentType}
+import esw.ocs.api.models.messages.error.RegistrationError
 import esw.ocs.core._
 import esw.ocs.dsl.utils.ScriptLoader
 import esw.ocs.dsl.{CswServices, Script}
 import esw.ocs.macros.StrandEc
 import esw.ocs.syntax.FutureSyntax.FutureOps
-
-import scala.util.control.NonFatal
+import esw.ocs.utils.RegistrationUtils
 
 private[ocs] class SequencerWiring(val sequencerId: String, val observingMode: String) {
   private lazy val config          = ConfigFactory.load()
@@ -45,7 +43,8 @@ private[ocs] class SequencerWiring(val sequencerId: String, val observingMode: S
 
   private lazy val cswServices    = new CswServices(sequenceOperatorFactory, commandResponseManager)
   private lazy val script: Script = ScriptLoader.load(scriptClass, cswServices)
-  lazy val sequencer              = new Sequencer(commandResponseManager)(StrandEc(), timeout)
+  lazy val strandEc               = StrandEc()
+  lazy val sequencer              = new Sequencer(commandResponseManager)(strandEc, timeout)
 
   lazy val sequenceEditorClient = new SequenceEditorClient(sequencerRef)
 
@@ -55,22 +54,14 @@ private[ocs] class SequencerWiring(val sequencerId: String, val observingMode: S
   def shutDown(): Unit = {
     locationService.unregister(AkkaConnection(componentId)).block
     sequenceEditorClient.shutdown().block
+    strandEc.shutdown()
     typedSystem.terminate()
   }
 
-  def start(): LoadScriptResponse = {
-    val registration = AkkaRegistration(AkkaConnection(componentId), prefix, sequencerRef.toURI)
-
+  def start(): Either[RegistrationError, AkkaLocation] = {
     engine.start(sequenceOperatorFactory(), script)
 
-    val response: Either[LoadScriptError, AkkaLocation] = locationService
-      .register(registration)
-      .map(x => Right(x.location.asInstanceOf[AkkaLocation]))
-      .recover {
-        case NonFatal(e) => Left(LoadScriptError(s"Loading script failed: ${e.getMessage}"))
-      }
-      .block
-
-    LoadScriptResponse(response)
+    val registration = AkkaRegistration(AkkaConnection(componentId), prefix, sequencerRef.toURI)
+    RegistrationUtils.register(locationService, registration)(coordinatedShutdown).block
   }
 }
