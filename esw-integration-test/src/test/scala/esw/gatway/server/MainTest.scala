@@ -61,10 +61,10 @@ class MainTest extends BaseTestSuite with ParamCodecs with HttpCodecs {
       val gatewayServiceLocation = testLocationService.resolve(connection, 5.seconds).await.get
 
       gatewayServiceLocation.connection shouldBe expectedConnection
-      val uri       = Uri(gatewayServiceLocation.uri.toString).withPath(Path / "event")
-      val event     = SystemEvent(Prefix("tcs.test.gateway"), EventName("event"), Set.empty[Parameter[_]])
-      val jsObject  = JsonSupport.writes(event).toString()
-      val eventJson = HttpEntity(ContentTypes.`application/json`, jsObject)
+      val uri          = Uri(gatewayServiceLocation.uri.toString).withPath(Path / "event")
+      val event: Event = SystemEvent(Prefix("tcs.test.gateway"), EventName("event"), Set.empty[Parameter[_]])
+      val jsObject     = JsonSupport.writes(event).toString()
+      val eventJson    = HttpEntity(ContentTypes.`application/json`, jsObject)
 
       //Publish event
       val request  = HttpRequest(uri = uri, method = HttpMethods.POST, entity = eventJson)

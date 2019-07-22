@@ -3,8 +3,8 @@ package esw.ocs.cli
 import akka.actor.typed.ActorSystem
 import csw.location.api.scaladsl.LocationService
 import csw.location.client.scaladsl.HttpLocationServiceFactory
-import csw.location.model.scaladsl.Connection.AkkaConnection
-import csw.location.model.scaladsl.{ComponentId, ComponentType}
+import csw.location.models.{ComponentId, ComponentType}
+import csw.location.models.Connection.AkkaConnection
 import csw.testkit.scaladsl.ScalaTestFrameworkTestKit
 import esw.ocs.BaseTestSuite
 import esw.ocs.cli.SequencerAppCommand.{SequenceComponent, Sequencer}

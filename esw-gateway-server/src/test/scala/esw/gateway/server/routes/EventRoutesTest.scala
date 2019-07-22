@@ -14,6 +14,7 @@ import csw.params.events._
 import esw.gateway.server.{CswContextMocks, RateLimiterStub}
 import esw.http.core.HttpTestSuite
 import io.bullet.borer.Json
+import esw.http.core.codec.ErrorCodecs._
 
 import scala.concurrent.duration.DurationInt
 import scala.concurrent.{Await, Future}

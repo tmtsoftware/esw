@@ -2,7 +2,6 @@ package esw.http.core.commons
 
 import akka.http.scaladsl.model.StatusCodes
 import akka.http.scaladsl.server.{Directives, ExceptionHandler}
-import csw.commons.http.{JsonRejectionHandler, JsonSupport}
 import csw.logging.api.scaladsl.Logger
 
 import scala.concurrent.TimeoutException
