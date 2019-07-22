@@ -1,6 +1,5 @@
 package esw.ocs.api.serializer
 
-import akka.Done
 import akka.actor.ExtendedActorSystem
 import akka.actor.typed.ActorSystem
 import akka.actor.typed.scaladsl.adapter.UntypedActorSystemOps
@@ -10,8 +9,7 @@ import csw.logging.client.scaladsl.LoggerFactory
 import esw.ocs.api.codecs.OcsFrameworkCodecs
 import esw.ocs.api.models.StepList
 import esw.ocs.api.models.messages.SequencerMessages.ExternalEditorSequencerMsg
-import esw.ocs.api.models.messages.error._
-import esw.ocs.api.models.messages.{SequenceComponentMsg, SequenceComponentResponse}
+import esw.ocs.api.models.messages.{EditorResponse, SequenceComponentMsg, SequenceComponentResponse}
 import io.bullet.borer.Cbor
 
 class OcsFrameworkAkkaSerializer(_actorSystem: ExtendedActorSystem) extends OcsFrameworkCodecs with Serializer {
@@ -25,7 +23,7 @@ class OcsFrameworkAkkaSerializer(_actorSystem: ExtendedActorSystem) extends OcsF
     case x: StepList                   => Cbor.encode(x).toByteArray
     case x: SequenceComponentMsg       => Cbor.encode(x).toByteArray
     case x: SequenceComponentResponse  => Cbor.encode(x).toByteArray
-    case Left(x: EditorError)          => Cbor.encode(x).toByteArray
+    case x: EditorResponse             => Cbor.encode(x).toByteArray
     case Some(x: StepList)             => Cbor.encode(x).toByteArray
     case _ =>
       val ex = new RuntimeException(s"does not support encoding of $o")
@@ -44,8 +42,8 @@ class OcsFrameworkAkkaSerializer(_actorSystem: ExtendedActorSystem) extends OcsF
       Cbor.decode(bytes).to[SequenceComponentMsg].value
     } else if (classOf[SequenceComponentResponse].isAssignableFrom(manifest.get)) {
       Cbor.decode(bytes).to[SequenceComponentResponse].value
-    } else if (classOf[Either[EditorError, Done]].isAssignableFrom(manifest.get)) {
-      Cbor.decode(bytes).to[Either[EditorError, Done]].value
+    } else if (classOf[EditorResponse].isAssignableFrom(manifest.get)) {
+      Cbor.decode(bytes).to[EditorResponse].value
     } else if (classOf[Option[StepList]].isAssignableFrom(manifest.get)) {
       Cbor.decode(bytes).to[Option[StepList]].value
     } else {

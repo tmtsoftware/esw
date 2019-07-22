@@ -2,7 +2,7 @@ package esw.ocs.core
 
 import akka.actor.typed.scaladsl.Behaviors
 import csw.command.client.messages.{ProcessSequence, SequencerMsg}
-import esw.ocs.api.EditorResponse
+import esw.ocs.api.models.messages.{EditorResponse, StepListResponse}
 import esw.ocs.api.models.messages.SequencerMessages._
 import esw.ocs.api.models.messages.error.{SequencerAbortError, SequencerShutdownError}
 import esw.ocs.dsl.ScriptDsl
@@ -32,7 +32,7 @@ object SequencerBehavior {
         case ProcessSequence(sequence, replyTo) => sequencer.processSequence(sequence).foreach(replyTo.tell)
         case Available(replyTo)                 => sequencer.isAvailable.foreach(replyTo.tell)
         case GetSequence(replyTo)               => sequencer.getSequence.foreach(replyTo.tell)
-        case GetPreviousSequence(replyTo)       => sequencer.getPreviousSequence.foreach(replyTo.tell)
+        case GetPreviousSequence(replyTo)       => sequencer.getPreviousSequence.foreach(replyTo ! StepListResponse(_))
         case Add(commands, replyTo)             => sequencer.add(commands).foreach(replyTo ! EditorResponse(_))
         case Pause(replyTo)                     => sequencer.pause.foreach(replyTo ! EditorResponse(_))
         case Resume(replyTo)                    => sequencer.resume.foreach(replyTo ! EditorResponse(_))

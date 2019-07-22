@@ -1,14 +1,11 @@
 package esw.ocs.api
 
-import akka.Done
 import csw.params.commands.SequenceCommand
 import csw.params.core.models.Id
 import esw.ocs.api.models.StepList
-import esw.ocs.api.models.messages.error.EditorError
+import esw.ocs.api.models.messages.EditorResponse
 
 import scala.concurrent.Future
-
-case class EditorResponse(response: Either[EditorError, Done])
 
 trait SequenceEditor {
 

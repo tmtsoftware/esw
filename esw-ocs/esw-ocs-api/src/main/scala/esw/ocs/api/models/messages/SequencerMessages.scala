@@ -6,7 +6,6 @@ import csw.command.client.messages.SequencerMsg
 import csw.params.commands.CommandResponse.SubmitResponse
 import csw.params.commands.SequenceCommand
 import csw.params.core.models.Id
-import esw.ocs.api.EditorResponse
 import esw.ocs.api.models.{Step, StepList}
 import esw.ocs.api.serializer.OcsFrameworkAkkaSerializable
 
@@ -26,9 +25,10 @@ object SequencerMessages {
   final case class Abort(replyTo: ActorRef[EditorResponse])    extends ExternalEditorSequencerMsg
 
   // editor msgs
-  final case class Available(replyTo: ActorRef[Boolean])                                       extends ExternalEditorSequencerMsg
+  final case class Available(replyTo: ActorRef[Boolean]) extends ExternalEditorSequencerMsg
+  // fixme : GetSequence and GetPreviousSequence should have replyTo StepListResponse
   final case class GetSequence(replyTo: ActorRef[StepList])                                    extends ExternalEditorSequencerMsg
-  final case class GetPreviousSequence(replyTo: ActorRef[Option[StepList]])                    extends ExternalEditorSequencerMsg
+  final case class GetPreviousSequence(replyTo: ActorRef[StepListResponse])                    extends ExternalEditorSequencerMsg
   final case class Add(commands: List[SequenceCommand], replyTo: ActorRef[EditorResponse])     extends ExternalEditorSequencerMsg
   final case class Prepend(commands: List[SequenceCommand], replyTo: ActorRef[EditorResponse]) extends ExternalEditorSequencerMsg
   final case class Replace(id: Id, commands: List[SequenceCommand], replyTo: ActorRef[EditorResponse])

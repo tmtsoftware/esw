@@ -10,7 +10,7 @@ import esw.ocs.api.models.messages.SequenceComponentResponse.{GetStatusResponse,
 import esw.ocs.api.models.messages.SequencerMessages._
 import esw.ocs.api.models.messages.error.StepListError._
 import esw.ocs.api.models.messages.error._
-import esw.ocs.api.models.messages.{SequenceComponentMsg, SequenceComponentResponse}
+import esw.ocs.api.models.messages.{EditorResponse, SequenceComponentMsg, SequenceComponentResponse}
 import io.bullet.borer.Codec
 import io.bullet.borer.derivation.ArrayBasedCodecs.deriveCodecForUnaryCaseClass
 import io.bullet.borer.derivation.MapBasedCodecs.deriveCodec
@@ -64,6 +64,9 @@ trait OcsFrameworkCodecs extends MessageCodecs with DoneCodec {
 
   implicit lazy val editorErrorCodec: Codec[EditorError] = deriveCodec[EditorError]
 
+  //SequenceEditorResponse Codecs
+  implicit lazy val editorResponseCodec: Codec[EditorResponse] = deriveCodecForUnaryCaseClass[EditorResponse]
+
   //SequenceComponentCodecs
   implicit lazy val loadScriptCodec: Codec[LoadScript]                     = deriveCodec[LoadScript]
   implicit lazy val loadScriptErrorCodec: Codec[RegistrationError]         = deriveCodec[RegistrationError]
@@ -75,5 +78,6 @@ trait OcsFrameworkCodecs extends MessageCodecs with DoneCodec {
   implicit lazy val loadScriptResponseCodec: Codec[LoadScriptResponse]               = deriveCodecForUnaryCaseClass[LoadScriptResponse]
   implicit lazy val getStatusResponseCodec: Codec[GetStatusResponse]                 = deriveCodecForUnaryCaseClass[GetStatusResponse]
   implicit lazy val sequenceComponentResponseCodec: Codec[SequenceComponentResponse] = deriveCodec[SequenceComponentResponse]
+
   //fixme:  check if it works without DoneCodecs and LocationCodecs and ActorRefCodec and types wrapped inside Option and Either
 }

@@ -10,7 +10,8 @@ import csw.params.core.models.Id
 import esw.ocs.api.models.StepList
 import esw.ocs.api.models.messages.SequencerMessages._
 import esw.ocs.api.models.messages.error.EditorError
-import esw.ocs.api.{EditorResponse, SequenceEditor}
+import esw.ocs.api.SequenceEditor
+import esw.ocs.api.models.messages.EditorResponse
 
 import scala.concurrent.{ExecutionContext, Future}
 
