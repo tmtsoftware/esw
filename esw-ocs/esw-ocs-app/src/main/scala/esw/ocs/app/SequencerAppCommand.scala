@@ -1,4 +1,4 @@
-package esw.ocs.cli
+package esw.ocs.app
 
 import caseapp.{CommandName, HelpMessage}
 

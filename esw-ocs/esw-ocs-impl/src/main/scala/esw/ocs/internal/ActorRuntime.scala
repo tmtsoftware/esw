@@ -9,11 +9,14 @@ import akka.stream.typed.scaladsl.ActorMaterializer
 import akka.util.Timeout
 import csw.location.client.ActorSystemFactory
 import csw.logging.api.scaladsl.Logger
-import csw.logging.client.scaladsl.LoggerFactory
+import csw.logging.client.internal.LoggingSystem
+import csw.logging.client.scaladsl.{LoggerFactory, LoggingSystemFactory}
+import csw.network.utils.Networks
+import shapeless.BuildInfo
 
 import scala.concurrent.ExecutionContext
 
-private[internal] class ActorRuntime(componentName: String) {
+private[ocs] class ActorRuntime(componentName: String) {
   implicit lazy val typedSystem: ActorSystem[SpawnProtocol] =
     ActorSystemFactory.remote(SpawnProtocol.behavior, "sequencer-system")
   implicit lazy val untypedSystem: actor.ActorSystem = typedSystem.toUntyped
@@ -25,4 +28,7 @@ private[internal] class ActorRuntime(componentName: String) {
   lazy val coordinatedShutdown: CoordinatedShutdown = CoordinatedShutdown(untypedSystem)
   lazy val loggerFactory                            = new LoggerFactory(componentName)
   lazy val log: Logger                              = loggerFactory.getLogger
+
+  def startLogging(name: String): LoggingSystem =
+    LoggingSystemFactory.start(name, BuildInfo.version, Networks().hostname, typedSystem)
 }

@@ -25,7 +25,8 @@ private[ocs] class SequencerWiring(val sequencerId: String, val observingMode: S
   private lazy val config          = ConfigFactory.load()
   private lazy val sequencerConfig = SequencerConfig.from(config, sequencerId, observingMode)
   import sequencerConfig._
-  private lazy val actorRuntime = new ActorRuntime(sequencerName)
+  lazy val name: String = sequencerName
+  lazy val actorRuntime = new ActorRuntime(sequencerName)
   import actorRuntime._
 
   private lazy val engine      = new Engine()
@@ -35,7 +36,7 @@ private[ocs] class SequencerWiring(val sequencerId: String, val observingMode: S
     (typedSystem ? Spawn(CommandResponseManagerActor.behavior(CRMCacheProperties(), loggerFactory), "crm")).block
   private lazy val commandResponseManager: CommandResponseManager = new CommandResponseManager(crmRef)
 
-  private[esw] lazy val sequencerRef: ActorRef[SequencerMsg] =
+  lazy val sequencerRef: ActorRef[SequencerMsg] =
     (typedSystem ? Spawn(SequencerBehavior.behavior(sequencer, script), sequencerName)).block
 
   //Pass lambda to break circular dependency shown below.
@@ -44,9 +45,9 @@ private[ocs] class SequencerWiring(val sequencerId: String, val observingMode: S
 
   private lazy val cswServices    = new CswServices(sequenceOperatorFactory, commandResponseManager)
   private lazy val script: Script = ScriptLoader.load(scriptClass, cswServices)
-  private[esw] lazy val sequencer = new Sequencer(commandResponseManager)(StrandEc(), timeout)
+  lazy val sequencer              = new Sequencer(commandResponseManager)(StrandEc(), timeout)
 
-  private[esw] lazy val sequenceEditorClient = new SequenceEditorClient(sequencerRef)
+  lazy val sequenceEditorClient = new SequenceEditorClient(sequencerRef)
 
   private lazy val locationService: LocationService = HttpLocationServiceFactory.makeLocalClient
 
