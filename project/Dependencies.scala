@@ -21,7 +21,6 @@ object Dependencies {
       Akka.`akka-actor-typed`,
       Akka.`akka-stream-typed`,
       Libs.`scala-async`,
-      Libs.`case-app`,
       Libs.scalatest                  % Test,
       Akka.`akka-actor-testkit-typed` % Test,
       Libs.`mockito-scala`            % Test
@@ -30,6 +29,16 @@ object Dependencies {
 
   val OcsMacros: Def.Initialize[Seq[ModuleID]] = Def.setting(
     Seq(Libs.`scala-reflect`, Libs.scalatest % Test)
+  )
+
+
+  val OcsApp: Def.Initialize[Seq[ModuleID]] = Def.setting(
+    Seq(
+      Libs.`case-app`,
+      Libs.scalatest                  % Test,
+      Libs.`mockito-scala`            % Test,
+      Akka.`akka-actor-testkit-typed` % Test
+    )
   )
 
   val GatewayServer: Def.Initialize[Seq[ModuleID]] = Def.setting(

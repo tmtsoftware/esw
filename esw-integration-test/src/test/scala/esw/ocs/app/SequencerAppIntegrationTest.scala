@@ -3,15 +3,15 @@ package esw.ocs.app
 import akka.actor.typed.ActorSystem
 import csw.location.api.scaladsl.LocationService
 import csw.location.client.scaladsl.HttpLocationServiceFactory
-import csw.location.models.{ComponentId, ComponentType}
 import csw.location.models.Connection.AkkaConnection
+import csw.location.models.{ComponentId, ComponentType}
 import csw.testkit.scaladsl.ScalaTestFrameworkTestKit
 import esw.ocs.BaseTestSuite
 import esw.ocs.app.SequencerAppCommand.{SequenceComponent, Sequencer}
 
 import scala.concurrent.duration.DurationInt
 
-class SequencerAppTest extends ScalaTestFrameworkTestKit with BaseTestSuite {
+class SequencerAppIntegrationTest extends ScalaTestFrameworkTestKit with BaseTestSuite {
   import frameworkTestKit._
   implicit val typedSystem: ActorSystem[_]         = actorSystem
   private val testLocationService: LocationService = HttpLocationServiceFactory.makeLocalClient

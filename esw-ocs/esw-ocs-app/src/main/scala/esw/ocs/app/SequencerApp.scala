@@ -18,37 +18,44 @@ object SequencerApp extends CommandApp[SequencerAppCommand] {
     run(command)
   }
 
-  def run(command: SequencerAppCommand, enableLogging: Boolean = true): Unit = {
-    def report(e: Either[RegistrationError, AkkaLocation], log: Logger)(cleanup: => Unit): Unit = e match {
-      case Left(err) =>
-        log.error(s"Failed to start with error: $err")
-        printLogs("ERROR", s"Failed to start application with error: $err")
-        cleanup
-      case Right(location) =>
-        log.info(s"Successfully started and registered Component with Location: [$location]")
-        printLogs("INFO", s"Successfully started with Location: $location")
-    }
-
-    def printLogs(level: String, msg: String): Unit = if (enableLogging) {
-      println(s"[$level] $msg")
-      println(s"[$level] Please find complete logs under $$TMT_LOG_HOME directory")
-    }
-
+  def run(command: SequencerAppCommand, enableLogging: Boolean = true): Unit =
     command match {
       case SequenceComponent(name) =>
         val wiring = new SequenceComponentWiring(name)
-        import wiring.actorRuntime._
-        if (enableLogging) startLogging(name)
-        report(wiring.start(), log)(cleanup = typedSystem.terminate())
+        startSequenceComponent(name, wiring, enableLogging)
 
       case Sequencer(id, mode) =>
         val wiring = new SequencerWiring(id, mode)
-        import wiring.actorRuntime._
-        if (enableLogging) startLogging(wiring.name)
-        report(wiring.start(), log) {
-          typedSystem.terminate()
-          wiring.strandEc.shutdown()
-        }
+        startSequencer(wiring, enableLogging)
     }
+
+  def startSequenceComponent(name: String, sequenceComponentWiring: SequenceComponentWiring, enableLogging: Boolean): Unit = {
+    import sequenceComponentWiring.actorRuntime._
+    if (enableLogging) startLogging(name)
+    report(sequenceComponentWiring.start(), log, enableLogging)(cleanup = typedSystem.terminate())
+  }
+
+  def startSequencer(sequencerWiring: SequencerWiring, enableLogging: Boolean): Unit = {
+    import sequencerWiring.actorRuntime._
+    if (enableLogging) startLogging(sequencerWiring.name)
+    report(sequencerWiring.start(), log, enableLogging)(cleanup = typedSystem.terminate())
+  }
+
+  private def report(either: Either[RegistrationError, AkkaLocation], log: Logger, enableLogging: Boolean)(
+      cleanup: => Unit
+  ): Unit =
+    either match {
+      case Left(err) =>
+        log.error(s"Failed to start with error: $err")
+        printLogs("ERROR", s"Failed to start application with error: $err", enableLogging)
+        cleanup
+      case Right(location) =>
+        log.info(s"Successfully started and registered Component with Location: [$location]")
+        printLogs("INFO", s"Successfully started with Location: $location", enableLogging)
+    }
+
+  private def printLogs(level: String, msg: String, enableLogging: Boolean): Unit = if (enableLogging) {
+    println(s"[$level] $msg")
+    println(s"[$level] Please find complete logs under $$TMT_LOG_HOME directory")
   }
 }

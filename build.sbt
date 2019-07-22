@@ -54,6 +54,9 @@ lazy val `esw-ocs-macros` = project
 lazy val `esw-ocs-app` = project
   .in(file("esw-ocs/esw-ocs-app"))
   .enablePlugins(EswBuildInfo, DeployApp)
+  .settings(
+    libraryDependencies ++= Dependencies.OcsApp.value
+  )
   .dependsOn(`esw-ocs-impl`)
 
 lazy val `esw-http-core` = project
