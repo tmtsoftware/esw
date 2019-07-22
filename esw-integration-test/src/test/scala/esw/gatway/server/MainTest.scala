@@ -12,22 +12,22 @@ import akka.http.scaladsl.unmarshalling.Unmarshal
 import akka.stream.typed.scaladsl.ActorMaterializer
 import com.typesafe.config.ConfigFactory
 import csw.location.api.scaladsl.LocationService
+import csw.location.client.HttpCodecs
 import csw.location.client.scaladsl.HttpLocationServiceFactory
-import csw.location.model.scaladsl.Connection.HttpConnection
-import csw.location.model.scaladsl.{ComponentId, ComponentType}
-import csw.params.core.formats.JsonSupport
+import csw.location.models.Connection.HttpConnection
+import csw.location.models.{ComponentId, ComponentType}
+import csw.params.core.formats.{JsonSupport, ParamCodecs}
 import csw.params.core.generics.Parameter
 import csw.params.core.models.Prefix
 import csw.params.events.{Event, EventName, SystemEvent}
 import csw.testkit.{EventTestKit, LocationTestKit}
-import de.heikoseeberger.akkahttpplayjson.PlayJsonSupport
 import esw.gateway.server.Main
 import esw.http.core.BaseTestSuite
 import esw.http.core.TestFutureExtensions.RichFuture
 
 import scala.concurrent.duration.DurationInt
 
-class MainTest extends BaseTestSuite with JsonSupport with PlayJsonSupport {
+class MainTest extends BaseTestSuite with ParamCodecs with HttpCodecs {
 
   private val locationTestKit = LocationTestKit()
   private val eventTestKit    = EventTestKit()
@@ -63,7 +63,7 @@ class MainTest extends BaseTestSuite with JsonSupport with PlayJsonSupport {
       gatewayServiceLocation.connection shouldBe expectedConnection
       val uri       = Uri(gatewayServiceLocation.uri.toString).withPath(Path / "event")
       val event     = SystemEvent(Prefix("tcs.test.gateway"), EventName("event"), Set.empty[Parameter[_]])
-      val jsObject  = eventFormat.writes(event).toString()
+      val jsObject  = JsonSupport.writes(event).toString()
       val eventJson = HttpEntity(ContentTypes.`application/json`, jsObject)
 
       //Publish event

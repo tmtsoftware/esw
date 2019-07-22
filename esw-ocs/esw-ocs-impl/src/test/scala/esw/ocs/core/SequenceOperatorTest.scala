@@ -3,13 +3,13 @@ package esw.ocs.core
 import akka.Done
 import akka.actor.testkit.typed.scaladsl.{ScalaTestWithActorTestKit, TestProbe}
 import akka.actor.typed.scaladsl.Behaviors
+import csw.command.client.messages.SequencerMsg
 import csw.params.commands.CommandResponse.Error
 import csw.params.commands.{CommandName, CommandResponse, Setup}
 import csw.params.core.models.Prefix
 import esw.ocs.BaseTestSuite
 import esw.ocs.api.models.Step
-import esw.ocs.api.models.messages.SequencerMsg
-import esw.ocs.api.models.messages.SequencerMsg.{MaybeNext, PullNext, ReadyToExecuteNext, UpdateFailure}
+import esw.ocs.api.models.messages.SequencerMessages.{MaybeNext, PullNext, ReadyToExecuteNext, UpdateFailure}
 
 class SequenceOperatorTest extends ScalaTestWithActorTestKit with BaseTestSuite {
 

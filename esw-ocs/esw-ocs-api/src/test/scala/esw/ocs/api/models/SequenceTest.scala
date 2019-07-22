@@ -1,6 +1,6 @@
 package esw.ocs.api.models
 
-import csw.params.commands.{CommandName, Observe, Setup}
+import csw.params.commands.{CommandName, Observe, Sequence, Setup}
 import csw.params.core.models.Prefix
 import esw.ocs.api.BaseTestSuite
 

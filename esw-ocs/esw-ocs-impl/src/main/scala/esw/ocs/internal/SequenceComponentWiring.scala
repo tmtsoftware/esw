@@ -7,8 +7,8 @@ import akka.actor.typed.scaladsl.AskPattern.Askable
 import csw.location.api.extensions.ActorExtension.RichActor
 import csw.location.api.scaladsl.LocationService
 import csw.location.client.scaladsl.HttpLocationServiceFactory
-import csw.location.model.scaladsl.Connection.AkkaConnection
-import csw.location.model.scaladsl.{AkkaRegistration, ComponentId, ComponentType}
+import csw.location.models.Connection.AkkaConnection
+import csw.location.models.{AkkaRegistration, ComponentId, ComponentType}
 import csw.params.core.models.Prefix
 import esw.ocs.api.models.messages.SequenceComponentMsg
 import esw.ocs.core.SequenceComponentBehavior

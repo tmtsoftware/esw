@@ -2,13 +2,13 @@ package esw.ocs.core
 
 import akka.actor.testkit.typed.scaladsl.ScalaTestWithActorTestKit
 import akka.actor.typed.scaladsl.Behaviors
-import csw.params.commands.{CommandName, Setup}
+import csw.params.commands.{CommandName, Sequence, Setup}
 import csw.params.core.models.Prefix
 import esw.ocs.BaseTestSuite
+import esw.ocs.api.models.StepList
 import esw.ocs.api.models.StepStatus.Pending
-import esw.ocs.api.models.messages.SequencerMsg._
+import esw.ocs.api.models.messages.SequencerMessages._
 import esw.ocs.api.models.messages.error.StepListError._
-import esw.ocs.api.models.{Sequence, StepList}
 
 class SequenceEditorClientTest extends ScalaTestWithActorTestKit with BaseTestSuite {
 
@@ -30,24 +30,25 @@ class SequenceEditorClientTest extends ScalaTestWithActorTestKit with BaseTestSu
   private val deleteResponse           = notSupported
   private val addBreakpointResponse    = notSupported
 
-  private val mockedBehavior: Behaviors.Receive[ExternalSequencerMsg] = Behaviors.receiveMessage[ExternalSequencerMsg] { msg =>
-    msg match {
-      case GetSequence(replyTo)                                   => replyTo ! getSequenceResponse
-      case Available(replyTo)                                     => replyTo ! availableResponse
-      case Add(List(`command`), replyTo)                          => replyTo ! addResponse
-      case Prepend(List(`command`), replyTo)                      => replyTo ! prependResponse
-      case Replace(`command`.runId, List(`command`), replyTo)     => replyTo ! replaceResponse
-      case InsertAfter(`command`.runId, List(`command`), replyTo) => replyTo ! insertAfterResponse
-      case Delete(`command`.runId, replyTo)                       => replyTo ! deleteResponse
-      case Pause(replyTo)                                         => replyTo ! pauseResponse
-      case Resume(replyTo)                                        => replyTo ! resumeResponse
-      case AddBreakpoint(`command`.runId, replyTo)                => replyTo ! addBreakpointResponse
-      case RemoveBreakpoint(`command`.runId, replyTo)             => replyTo ! removeBreakpointResponse
-      case Reset(replyTo)                                         => replyTo ! resetResponse
-      case _                                                      =>
+  private val mockedBehavior: Behaviors.Receive[ExternalEditorSequencerMsg] =
+    Behaviors.receiveMessage[ExternalEditorSequencerMsg] { msg =>
+      msg match {
+        case GetSequence(replyTo)                                   => replyTo ! getSequenceResponse
+        case Available(replyTo)                                     => replyTo ! availableResponse
+        case Add(List(`command`), replyTo)                          => replyTo ! addResponse
+        case Prepend(List(`command`), replyTo)                      => replyTo ! prependResponse
+        case Replace(`command`.runId, List(`command`), replyTo)     => replyTo ! replaceResponse
+        case InsertAfter(`command`.runId, List(`command`), replyTo) => replyTo ! insertAfterResponse
+        case Delete(`command`.runId, replyTo)                       => replyTo ! deleteResponse
+        case Pause(replyTo)                                         => replyTo ! pauseResponse
+        case Resume(replyTo)                                        => replyTo ! resumeResponse
+        case AddBreakpoint(`command`.runId, replyTo)                => replyTo ! addBreakpointResponse
+        case RemoveBreakpoint(`command`.runId, replyTo)             => replyTo ! removeBreakpointResponse
+        case Reset(replyTo)                                         => replyTo ! resetResponse
+        case _                                                      =>
+      }
+      Behaviors.same
     }
-    Behaviors.same
-  }
 
   private val sequencer = spawn(mockedBehavior)
 

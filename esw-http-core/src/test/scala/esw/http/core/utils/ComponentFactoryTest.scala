@@ -1,12 +1,12 @@
-package esw.http.core.csw.utils
+package esw.http.core.utils
 
 import java.net.URI
 
 import akka.actor.typed.{ActorSystem, SpawnProtocol}
 import csw.command.client.ICommandServiceFactory
 import csw.location.api.scaladsl.LocationService
-import csw.location.model.scaladsl.Connection.AkkaConnection
-import csw.location.model.scaladsl.{AkkaLocation, ComponentId, ComponentType}
+import csw.location.models.Connection.AkkaConnection
+import csw.location.models.{AkkaLocation, ComponentId, ComponentType}
 import csw.params.core.models.Prefix
 import esw.http.core.BaseTestSuite
 import esw.http.core.wiring.ActorRuntime

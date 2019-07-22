@@ -1,10 +1,10 @@
 package esw.ocs.api.models
 
 import csw.params.commands.CommandResponse.Completed
+import csw.params.commands.ProcessSequenceError.DuplicateIdsFound
 import csw.params.commands._
 import csw.params.core.models.{Id, Prefix}
 import esw.ocs.api.models.StepStatus.{Finished, InFlight, Pending}
-import esw.ocs.api.models.messages.error.ProcessSequenceError.DuplicateIdsFound
 import esw.ocs.api.models.messages.error.StepListError._
 import esw.ocs.api.{BaseTestSuite, models}
 

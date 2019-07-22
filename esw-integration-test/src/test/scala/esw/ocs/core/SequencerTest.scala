@@ -2,12 +2,12 @@ package esw.ocs.core
 
 import akka.Done
 import csw.params.commands.CommandResponse.Completed
-import csw.params.commands.{CommandName, Setup}
+import csw.params.commands.{CommandName, Sequence, Setup}
 import csw.params.core.models.Prefix
 import csw.testkit.scaladsl.ScalaTestFrameworkTestKit
 import esw.ocs.BaseTestSuite
 import esw.ocs.api.models.StepStatus.Finished
-import esw.ocs.api.models.{Sequence, Step}
+import esw.ocs.api.models.Step
 import esw.ocs.internal.SequencerWiring
 
 class SequencerTest extends ScalaTestFrameworkTestKit with BaseTestSuite {

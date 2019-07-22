@@ -6,12 +6,12 @@ import akka.Done
 import akka.util.Timeout
 import csw.command.client.CommandResponseManager
 import csw.params.commands.CommandResponse._
-import csw.params.commands.{CommandName, Observe, Setup}
+import csw.params.commands.ProcessSequenceError.ExistingSequenceIsInProcess
+import csw.params.commands.{CommandName, Observe, Sequence, Setup}
 import csw.params.core.models.{Id, Prefix}
 import esw.ocs.BaseTestSuite
 import esw.ocs.api.models.StepStatus.{Finished, InFlight, Pending}
-import esw.ocs.api.models.messages.error.ProcessSequenceError.ExistingSequenceIsInProcess
-import esw.ocs.api.models.{Sequence, Step, StepList}
+import esw.ocs.api.models.{Step, StepList}
 import esw.ocs.macros.StrandEc
 import org.mockito.Mockito.{never, verify, when}
 

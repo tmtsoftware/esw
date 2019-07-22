@@ -7,20 +7,20 @@ import akka.stream.OverflowStrategy
 import akka.stream.scaladsl.Source
 import akka.util.Timeout
 import csw.command.api.CurrentStateSubscription
-import csw.location.model.scaladsl.ComponentType
+import csw.location.client.HttpCodecs
+import csw.location.models.ComponentType
 import csw.params.commands.{CommandResponse, ControlCommand}
-import csw.params.core.formats.JsonSupport
+import csw.params.core.formats.ParamCodecs
 import csw.params.core.models.Id
 import csw.params.core.states.{StateName, StateVariable}
-import de.heikoseeberger.akkahttpplayjson.PlayJsonSupport
 import esw.http.core.commons.RichSourceExt.RichSource
 import esw.http.core.commons.Utils._
-import esw.http.core.csw.utils.CswContext
+import esw.http.core.utils.CswContext
 
 import scala.concurrent.Future
 import scala.concurrent.duration.DurationLong
 
-class CommandRoutes(cswCtx: CswContext) extends JsonSupport with PlayJsonSupport {
+class CommandRoutes(cswCtx: CswContext) extends ParamCodecs with HttpCodecs {
   import cswCtx._
 
   implicit val timeout: Timeout = Timeout(5.seconds)

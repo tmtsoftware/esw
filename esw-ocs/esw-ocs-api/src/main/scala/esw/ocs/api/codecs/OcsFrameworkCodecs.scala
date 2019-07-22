@@ -5,13 +5,12 @@ import csw.location.api.codec.DoneCodec
 import esw.ocs.api.models.StepStatus.Finished.{Failure, Success}
 import esw.ocs.api.models.StepStatus._
 import esw.ocs.api.models._
-import esw.ocs.api.models.messages.{SequenceComponentMsg, SequenceComponentResponse}
 import esw.ocs.api.models.messages.SequenceComponentMsg.{GetStatus, LoadScript, UnloadScript}
 import esw.ocs.api.models.messages.SequenceComponentResponse.{GetStatusResponse, LoadScriptResponse}
-import esw.ocs.api.models.messages.SequencerMsg._
-import esw.ocs.api.models.messages.error.ProcessSequenceError.{DuplicateIdsFound, ExistingSequenceIsInProcess}
+import esw.ocs.api.models.messages.SequencerMessages._
 import esw.ocs.api.models.messages.error.StepListError._
 import esw.ocs.api.models.messages.error._
+import esw.ocs.api.models.messages.{SequenceComponentMsg, SequenceComponentResponse}
 import io.bullet.borer.Codec
 import io.bullet.borer.derivation.ArrayBasedCodecs.deriveCodecForUnaryCaseClass
 import io.bullet.borer.derivation.MapBasedCodecs.deriveCodec
@@ -19,7 +18,6 @@ import io.bullet.borer.derivation.MapBasedCodecs.deriveCodec
 trait OcsFrameworkCodecs extends MessageCodecs with DoneCodec {
 
   //SequencerMsgCodecs
-  implicit lazy val processSequenceCodec: Codec[ProcessSequence]         = deriveCodec[ProcessSequence]
   implicit lazy val shutdownSequencerCodec: Codec[Shutdown]              = deriveCodec[Shutdown]
   implicit lazy val abortCodec: Codec[Abort]                             = deriveCodec[Abort]
   implicit lazy val availableCodec: Codec[Available]                     = deriveCodec[Available]
@@ -36,7 +34,7 @@ trait OcsFrameworkCodecs extends MessageCodecs with DoneCodec {
   implicit lazy val resumeCodec: Codec[Resume]                           = deriveCodec[Resume]
   implicit lazy val resetCodec: Codec[Reset]                             = deriveCodec[Reset]
 
-  implicit lazy val externalSequencerMsgCodec: Codec[ExternalSequencerMsg] = deriveCodec[ExternalSequencerMsg]
+  implicit lazy val externalEditorSequencerMsgCodec: Codec[ExternalEditorSequencerMsg] = deriveCodec[ExternalEditorSequencerMsg]
 
   implicit lazy val stepCodec: Codec[Step]         = deriveCodec[Step]
   implicit lazy val stepListCodec: Codec[StepList] = deriveCodec[StepList]
@@ -50,15 +48,6 @@ trait OcsFrameworkCodecs extends MessageCodecs with DoneCodec {
   implicit lazy val finishedStatusCodec: Codec[Finished]      = deriveCodec[Finished]
 
   implicit lazy val stepStatusCodec: Codec[StepStatus] = deriveCodec[StepStatus]
-
-  //SequenceCodec
-  implicit lazy val sequenceCodec: Codec[Sequence] = deriveCodec[Sequence]
-
-  //ProcessSequenceErrorCodecs
-  implicit lazy val duplicateIdsFoundCodec: Codec[DuplicateIdsFound.type] = singletonCodec(DuplicateIdsFound)
-  implicit lazy val existingSequenceIsInProcessCodec: Codec[ExistingSequenceIsInProcess.type] =
-    singletonCodec(ExistingSequenceIsInProcess)
-  implicit lazy val processSequenceErrorCodec: Codec[ProcessSequenceError] = deriveCodec[ProcessSequenceError]
 
   //SequencerErrorCodecs
   implicit lazy val notSupportedCodec: Codec[NotSupported] = deriveCodec[NotSupported]

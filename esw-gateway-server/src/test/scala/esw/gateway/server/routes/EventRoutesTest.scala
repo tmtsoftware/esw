@@ -13,7 +13,7 @@ import csw.params.core.models.{Prefix, Subsystem}
 import csw.params.events._
 import esw.gateway.server.{CswContextMocks, RateLimiterStub}
 import esw.http.core.HttpTestSuite
-import play.api.libs.json.Json
+import io.bullet.borer.Json
 
 import scala.concurrent.duration.DurationInt
 import scala.concurrent.{Await, Future}
@@ -36,8 +36,8 @@ class EventRoutesTest extends HttpTestSuite {
   private val eventKey1       = EventKey(tcsEventKeyStr1)
   private val eventKey2       = EventKey(tcsEventKeyStr2)
 
-  private val event1 = ObserveEvent(Prefix("tsc"), EventName("event.key1"))
-  private val event2 = ObserveEvent(Prefix("tsc"), EventName("event.key2"))
+  private val event1: Event = ObserveEvent(Prefix("tsc"), EventName("event.key1"))
+  private val event2: Event = ObserveEvent(Prefix("tsc"), EventName("event.key2"))
 
   private val eventSubscription: EventSubscription = new EventSubscription {
     override def unsubscribe(): Future[Done] = Future.successful(Done)
@@ -123,7 +123,7 @@ class EventRoutesTest extends HttpTestSuite {
         verify(eventSubscriber).subscribe(Set(eventKey1, eventKey2))
 
         val actualDataF: Future[Seq[Event]] = responseAs[Source[ServerSentEvent, NotUsed]]
-          .map(sse => Json.fromJson[Event](Json.parse(sse.getData())).get)
+          .map(sse => Json.decode(sse.getData().getBytes("utf8")).to[Event].value)
           .runWith(Sink.seq)
 
         Await.result(actualDataF, 5.seconds) shouldEqual Seq(event1, event2)
@@ -142,7 +142,7 @@ class EventRoutesTest extends HttpTestSuite {
         verify(eventSubscriber).subscribe(Set(eventKey1, eventKey2), 100.millis, RateLimiterMode)
 
         val actualDataF: Future[Seq[Event]] = responseAs[Source[ServerSentEvent, NotUsed]]
-          .map(sse => Json.fromJson[Event](Json.parse(sse.getData())).get)
+          .map(sse => Json.decode(sse.getData().getBytes("utf8")).to[Event].value)
           .runWith(Sink.seq)
 
         Await.result(actualDataF, 5.seconds) shouldEqual Seq(event1, event2)
@@ -202,7 +202,7 @@ class EventRoutesTest extends HttpTestSuite {
         verifyZeroInteractions(eventSubscriberUtil)
 
         val actualDataF: Future[Seq[Event]] = responseAs[Source[ServerSentEvent, NotUsed]]
-          .map(sse => Json.fromJson[Event](Json.parse(sse.getData())).get)
+          .map(sse => Json.decode(sse.getData().getBytes("utf8")).to[Event].value)
           .runWith(Sink.seq)
 
         val events = Await.result(actualDataF, 5.seconds)
@@ -253,7 +253,7 @@ class EventRoutesTest extends HttpTestSuite {
         verify(eventSubscriberUtil).subscriptionModeStage(200.millis, RateLimiterMode)
 
         val actualDataF: Future[Seq[Event]] = responseAs[Source[ServerSentEvent, NotUsed]]
-          .map(sse => Json.fromJson[Event](Json.parse(sse.getData())).get)
+          .map(sse => Json.decode(sse.getData().getBytes("utf8")).to[Event].value)
           .runWith(Sink.seq)
 
         val events = Await.result(actualDataF, 5.seconds)
@@ -261,7 +261,35 @@ class EventRoutesTest extends HttpTestSuite {
       }
     }
 
-    "return InternalServerError if internal subscribe API fails | ESW-93" in new Setup {
+    "subscribe to events matching for given subsystem without max-frequency | ESW-93" in new Setup {
+      import cswMocks._
+
+      val subsystemName        = "tcs"
+      val subsystem: Subsystem = Subsystem.withName(subsystemName)
+
+      val totalEvents = 40
+      val eventSourceStream: Source[SystemEvent, EventSubscription] = Source(1 to totalEvents)
+        .map(x => SystemEvent(Prefix("tcs"), EventName(x.toString)))
+        .mapMaterializedValue(_ => eventSubscription)
+
+      when(eventSubscriber.pSubscribe(subsystem, "*")).thenReturn(eventSourceStream)
+
+      Get(s"/event/subscribe/$subsystemName") ~> route ~> check {
+        status shouldBe StatusCodes.OK
+        mediaType shouldBe MediaTypes.`text/event-stream`
+        verify(eventSubscriber).pSubscribe(subsystem, "*")
+        verifyZeroInteractions(eventSubscriberUtil)
+
+        val actualDataF: Future[Seq[Event]] = responseAs[Source[ServerSentEvent, NotUsed]]
+          .map(sse => Json.decode(sse.getData().getBytes("utf8")).to[Event].value)
+          .runWith(Sink.seq)
+
+        val events = Await.result(actualDataF, 5.seconds)
+        events.length shouldBe totalEvents
+      }
+    }
+
+    "return InternalServerError if psubscribe API fails | ESW-93" in new Setup {
       import cswMocks._
       val subsystemName        = "tcs"
       val subsystem: Subsystem = Subsystem.withName(subsystemName)

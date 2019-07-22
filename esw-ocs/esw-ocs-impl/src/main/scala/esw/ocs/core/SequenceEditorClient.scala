@@ -9,13 +9,13 @@ import csw.params.core.models.Id
 import esw.ocs.api.SequenceEditor
 import esw.ocs.api.SequenceEditor.EditorResponse
 import esw.ocs.api.models.StepList
-import esw.ocs.api.models.messages.SequencerMsg._
+import esw.ocs.api.models.messages.SequencerMessages._
 import esw.ocs.api.models.messages.error.StepListError._
 import esw.ocs.api.models.messages.error.{SequencerAbortError, SequencerShutdownError}
 
 import scala.concurrent.Future
 
-class SequenceEditorClient(sequencer: ActorRef[ExternalSequencerMsg])(implicit system: ActorSystem[_], timeout: Timeout)
+class SequenceEditorClient(sequencer: ActorRef[ExternalEditorSequencerMsg])(implicit system: ActorSystem[_], timeout: Timeout)
     extends SequenceEditor {
   private implicit val scheduler: Scheduler = system.scheduler
 

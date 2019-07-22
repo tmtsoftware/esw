@@ -10,7 +10,7 @@ import csw.event.client.internal.commons.EventSubscriberUtil
 import csw.logging.api.scaladsl.Logger
 import esw.gateway.server.routes.Routes
 import esw.http.core.commons.RouteHandlers
-import esw.http.core.csw.utils.{ComponentFactory, CswContext}
+import esw.http.core.utils.{ComponentFactory, CswContext}
 import esw.http.core.wiring.ActorRuntime
 import org.mockito.MockitoSugar
 

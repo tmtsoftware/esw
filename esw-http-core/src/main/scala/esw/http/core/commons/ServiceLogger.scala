@@ -1,6 +1,6 @@
 package esw.http.core.commons
 
-import csw.location.model.scaladsl.Connection.HttpConnection
+import csw.location.models.Connection.HttpConnection
 import csw.logging.client.scaladsl.LoggerFactory
 
 /**

@@ -3,16 +3,15 @@ package esw.ocs.core
 import akka.Done
 import akka.actor.testkit.typed.scaladsl.{ScalaTestWithActorTestKit, TestProbe}
 import akka.actor.typed.ActorRef
+import csw.command.client.messages.{ProcessSequence, SequencerMsg}
 import csw.params.commands.CommandResponse.{Completed, Error, SubmitResponse}
-import csw.params.commands.{CommandName, Setup}
+import csw.params.commands.{CommandName, ProcessSequenceError, Sequence, Setup}
 import csw.params.core.models.{Id, Prefix}
 import esw.ocs.BaseTestSuite
 import esw.ocs.api.SequenceEditor.EditorResponse
-import esw.ocs.api.models.messages.SequencerMsg
-import esw.ocs.api.models.messages.SequencerMsg._
-import esw.ocs.api.models.messages.error.ProcessSequenceError
+import esw.ocs.api.models.messages.SequencerMessages._
 import esw.ocs.api.models.messages.error.StepListError._
-import esw.ocs.api.models.{Sequence, Step, StepList}
+import esw.ocs.api.models.{Step, StepList}
 import esw.ocs.dsl.ScriptDsl
 import org.mockito.Mockito.{verify, when}
 import org.scalatestplus.mockito.MockitoSugar

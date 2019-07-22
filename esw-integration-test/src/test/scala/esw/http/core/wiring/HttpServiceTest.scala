@@ -12,7 +12,7 @@ import akka.stream.typed.scaladsl.ActorMaterializer
 import csw.location.api.exceptions.OtherLocationIsRegistered
 import csw.location.api.scaladsl.LocationService
 import csw.location.client.scaladsl.HttpLocationServiceFactory
-import csw.location.model.scaladsl.HttpRegistration
+import csw.location.models.HttpRegistration
 import csw.network.utils.Networks
 import csw.testkit.LocationTestKit
 import esw.http.core.BaseTestSuite

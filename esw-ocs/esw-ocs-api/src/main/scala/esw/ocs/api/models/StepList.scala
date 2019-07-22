@@ -1,8 +1,8 @@
 package esw.ocs.api.models
 
-import csw.params.commands.SequenceCommand
+import csw.params.commands.ProcessSequenceError.DuplicateIdsFound
+import csw.params.commands.{Sequence, SequenceCommand}
 import csw.params.core.models.Id
-import esw.ocs.api.models.messages.error.ProcessSequenceError.DuplicateIdsFound
 import esw.ocs.api.models.messages.error.StepListError
 import esw.ocs.api.models.messages.error.StepListError._
 import esw.ocs.api.serializer.OcsFrameworkAkkaSerializable

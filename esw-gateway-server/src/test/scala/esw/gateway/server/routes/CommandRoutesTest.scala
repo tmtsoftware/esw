@@ -9,14 +9,14 @@ import akka.http.scaladsl.unmarshalling.sse.EventStreamUnmarshalling._
 import akka.stream.scaladsl.{Sink, Source}
 import akka.util.Timeout
 import csw.command.api.CurrentStateSubscription
-import csw.location.model.scaladsl.ComponentType
+import csw.location.models.ComponentType
 import csw.params.commands.CommandResponse.{Accepted, Completed}
-import csw.params.commands.{CommandName, CommandResponse, Setup}
+import csw.params.commands.{CommandName, CommandResponse, ControlCommand, Setup}
 import csw.params.core.models.{Id, ObsId, Prefix}
 import csw.params.core.states.{CurrentState, StateName, StateVariable}
 import esw.gateway.server.CswContextMocks
 import esw.http.core.HttpTestSuite
-import play.api.libs.json.Json
+import io.bullet.borer.Json
 
 import scala.concurrent.duration.DurationDouble
 import scala.concurrent.{Await, Future, TimeoutException}
@@ -57,10 +57,10 @@ class CommandRoutesTest extends HttpTestSuite {
 
     "return GatewayTimeout when request take long time | ESW-91" in new Setup {
 
-      import cswMocks._
-      private val componentName = "test-component"
-      private val runId         = Id("123")
-      private val command       = Setup(Prefix("test"), CommandName("c1"), Some(ObsId("obsId"))).copy(runId = runId)
+        import cswMocks._
+        private val componentName           = "test-component"
+        private val runId                   = Id("123")
+        private val command: ControlCommand = Setup(Prefix("test"), CommandName("c1"), Some(ObsId("obsId"))).copy(runId = runId)
 
       when(commandService.validate(command)).thenReturn(Future.failed(new TimeoutException("")))
       when(componentFactory.commandService(componentName, assemblyType)).thenReturn(Future(commandService))
@@ -75,10 +75,10 @@ class CommandRoutesTest extends HttpTestSuite {
   s"POST /command/{componentType}/{componentName}/submit" must {
     "submit the given command to command service and return SubmitResponse | ESW-91" in new Setup {
 
-      import cswMocks._
-      private val componentName = "test-component"
-      private val runId         = Id("123")
-      private val command       = Setup(Prefix("test"), CommandName("c1"), Some(ObsId("obsId"))).copy(runId = runId)
+        import cswMocks._
+        private val componentName           = "test-component"
+        private val runId                   = Id("123")
+        private val command: ControlCommand = Setup(Prefix("test"), CommandName("c1"), Some(ObsId("obsId"))).copy(runId = runId)
 
       when(commandService.submit(command)).thenReturn(Future.successful(Completed(runId)))
       when(componentFactory.commandService(componentName, hcdType)).thenReturn(Future(commandService))
@@ -91,10 +91,10 @@ class CommandRoutesTest extends HttpTestSuite {
 
     "return GatewayTimeout when request take long time | ESW-91" in new Setup {
 
-      import cswMocks._
-      private val componentName = "test-component"
-      private val runId         = Id("123")
-      private val command       = Setup(Prefix("test"), CommandName("c1"), Some(ObsId("obsId"))).copy(runId = runId)
+        import cswMocks._
+        private val componentName           = "test-component"
+        private val runId                   = Id("123")
+        private val command: ControlCommand = Setup(Prefix("test"), CommandName("c1"), Some(ObsId("obsId"))).copy(runId = runId)
 
       when(commandService.submit(command)).thenReturn(Future.failed(new TimeoutException("")))
       when(componentFactory.commandService(componentName, assemblyType)).thenReturn(Future(commandService))
@@ -109,10 +109,10 @@ class CommandRoutesTest extends HttpTestSuite {
   s"POST /command/{componentType}/{componentName}/oneway" must {
     "submit oneway command to command service and return OnewayResponse | ESW-91" in new Setup {
 
-      import cswMocks._
-      private val componentName = "test-component"
-      private val runId         = Id("123")
-      private val command       = Setup(Prefix("test"), CommandName("c1"), Some(ObsId("obsId"))).copy(runId = runId)
+        import cswMocks._
+        private val componentName           = "test-component"
+        private val runId                   = Id("123")
+        private val command = Setup(Prefix("test"), CommandName("c1"), Some(ObsId("obsId"))).copy(runId = runId)
 
       when(commandService.oneway(command)).thenReturn(Future.successful(Accepted(runId)))
       when(componentFactory.commandService(componentName, hcdType)).thenReturn(Future(commandService))
@@ -155,9 +155,9 @@ class CommandRoutesTest extends HttpTestSuite {
         status shouldBe StatusCodes.OK
         mediaType shouldBe `text/event-stream`
 
-        val actualDataF: Future[Seq[CommandResponse]] = responseAs[Source[ServerSentEvent, NotUsed]]
-          .map(sse => Json.fromJson[CommandResponse](Json.parse(sse.getData())).get)
-          .runWith(Sink.seq)
+          val actualDataF: Future[Seq[CommandResponse]] = responseAs[Source[ServerSentEvent, NotUsed]]
+            .map(sse => Json.decode(sse.getData().getBytes("utf8")).to[CommandResponse].value)
+            .runWith(Sink.seq)
 
         Await.result(actualDataF, 5.seconds) shouldEqual Seq(Completed(runId))
       }
@@ -186,9 +186,9 @@ class CommandRoutesTest extends HttpTestSuite {
         status shouldBe StatusCodes.OK
         mediaType shouldBe `text/event-stream`
 
-        val actualDataF: Future[Seq[StateVariable]] = responseAs[Source[ServerSentEvent, NotUsed]]
-          .map(sse => Json.fromJson[StateVariable](Json.parse(sse.getData())).get)
-          .runWith(Sink.seq)
+          val actualDataF: Future[Seq[StateVariable]] = responseAs[Source[ServerSentEvent, NotUsed]]
+            .map(sse => Json.decode(sse.getData().getBytes("utf8")).to[StateVariable].value)
+            .runWith(Sink.seq)
 
         Await.result(actualDataF, 5.seconds) shouldEqual Seq(currentState1, currentState2)
       }
@@ -214,9 +214,9 @@ class CommandRoutesTest extends HttpTestSuite {
         status shouldBe StatusCodes.OK
         mediaType shouldBe `text/event-stream`
 
-        val actualDataF: Future[Seq[StateVariable]] = responseAs[Source[ServerSentEvent, NotUsed]]
-          .map(sse => Json.fromJson[StateVariable](Json.parse(sse.getData())).get)
-          .runWith(Sink.seq)
+          val actualDataF: Future[Seq[StateVariable]] = responseAs[Source[ServerSentEvent, NotUsed]]
+            .map(sse => Json.decode(sse.getData().getBytes("utf8")).to[StateVariable].value)
+            .runWith(Sink.seq)
 
         Await.result(actualDataF, 5.seconds) shouldEqual Seq(currentState1)
       }
@@ -243,9 +243,9 @@ class CommandRoutesTest extends HttpTestSuite {
         status shouldBe StatusCodes.OK
         mediaType shouldBe `text/event-stream`
 
-        val actualDataF: Future[Seq[StateVariable]] = responseAs[Source[ServerSentEvent, NotUsed]]
-          .map(sse => Json.fromJson[StateVariable](Json.parse(sse.getData())).get)
-          .runWith(Sink.seq)
+          val actualDataF: Future[Seq[StateVariable]] = responseAs[Source[ServerSentEvent, NotUsed]]
+            .map(sse => Json.decode(sse.getData().getBytes("utf8")).to[StateVariable].value)
+            .runWith(Sink.seq)
 
         Await.result(actualDataF, 5.seconds) shouldEqual Seq(currentState1)
       }

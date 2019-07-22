@@ -4,14 +4,14 @@ import akka.Done
 import akka.util.Timeout
 import csw.command.client.CommandResponseManager
 import csw.params.commands.CommandResponse.{Completed, Error, Started, SubmitResponse}
-import csw.params.commands.{CommandResponse, SequenceCommand}
+import csw.params.commands.ProcessSequenceError.ExistingSequenceIsInProcess
+import csw.params.commands.{CommandResponse, ProcessSequenceError, Sequence, SequenceCommand}
 import csw.params.core.models.Id
 import esw.ocs.api.SequenceEditor.EditorResponse
 import esw.ocs.api.models.StepStatus._
-import esw.ocs.api.models.messages.error.ProcessSequenceError.ExistingSequenceIsInProcess
+import esw.ocs.api.models.messages.error.StepListError
 import esw.ocs.api.models.messages.error.StepListError._
-import esw.ocs.api.models.messages.error.{ProcessSequenceError, StepListError}
-import esw.ocs.api.models.{Sequence, Step, StepList, StepStatus}
+import esw.ocs.api.models.{Step, StepList, StepStatus}
 import esw.ocs.dsl.Async.{async, await}
 import esw.ocs.macros.StrandEc
 import esw.ocs.syntax.EitherSyntax._
@@ -89,7 +89,7 @@ private[ocs] class Sequencer(crm: CommandResponseManager)(implicit strandEc: Str
     stepList = newStepList
   }
 
-  private def handleSequenceResponse(submitResponse: Future[SubmitResponse]) = {
+  private def handleSequenceResponse(submitResponse: Future[SubmitResponse]): Future[SubmitResponse] = {
     submitResponse.onComplete(_ => resetState())
     submitResponse.map(CommandResponse.withRunId(stepList.runId, _))
   }

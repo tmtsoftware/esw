@@ -1,4 +1,4 @@
-package esw.http.core.csw.utils
+package esw.http.core.utils
 
 import com.typesafe.config.Config
 import csw.aas.http.SecurityDirectives
@@ -8,7 +8,7 @@ import csw.event.client.EventServiceFactory
 import csw.event.client.internal.commons.EventSubscriberUtil
 import csw.location.api.scaladsl.LocationService
 import csw.location.client.scaladsl.HttpLocationServiceFactory
-import csw.location.model.scaladsl.Connection.HttpConnection
+import csw.location.models.Connection.HttpConnection
 import csw.logging.api.scaladsl.Logger
 import esw.http.core.commons.{RouteHandlers, ServiceLogger}
 import esw.http.core.wiring.ActorRuntime

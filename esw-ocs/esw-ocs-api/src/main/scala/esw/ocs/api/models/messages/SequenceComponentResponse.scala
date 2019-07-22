@@ -1,6 +1,6 @@
 package esw.ocs.api.models.messages
 
-import csw.location.model.scaladsl.AkkaLocation
+import csw.location.models.AkkaLocation
 import esw.ocs.api.models.messages.error.LoadScriptError
 import esw.ocs.api.serializer.OcsFrameworkAkkaSerializable
 

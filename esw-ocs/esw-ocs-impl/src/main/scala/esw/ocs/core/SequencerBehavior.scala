@@ -1,8 +1,8 @@
 package esw.ocs.core
 
 import akka.actor.typed.scaladsl.Behaviors
-import esw.ocs.api.models.messages.SequencerMsg
-import esw.ocs.api.models.messages.SequencerMsg._
+import csw.command.client.messages.{ProcessSequence, SequencerMsg}
+import esw.ocs.api.models.messages.SequencerMessages._
 import esw.ocs.api.models.messages.error.{SequencerAbortError, SequencerShutdownError}
 import esw.ocs.dsl.ScriptDsl
 
