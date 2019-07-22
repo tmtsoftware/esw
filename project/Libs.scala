@@ -3,7 +3,7 @@ import sbt.Def.{setting => dep}
 import sbt._
 
 object Libs {
-  val ScalaVersion = EswKeys.scalaVersion
+  val ScalaVersion: String = EswKeys.scalaVersion
 
   val `scala-reflect` = "org.scala-lang" % "scala-reflect" % ScalaVersion
   val scalatest       = "org.scalatest" %% "scalatest" % "3.0.8" //Apache License 2.0
@@ -16,7 +16,7 @@ object Libs {
 
 object Csw {
   private val Org     = "com.github.tmtsoftware.csw"
-  private val Version = "aaeaf92d21b3c28e5bcfb02594c13a8164290311" //change this to 0.1-SNAPSHOT to test with local csw changes (after publishLocal)
+  private val Version = "248673bdbc7972b2b7f5f65662dd14827caa059a" //change this to 0.1-SNAPSHOT to test with local csw changes (after publishLocal)
 
   val `csw-location-api`    = Org %% "csw-location-api" % Version
   val `csw-aas-http`        = Org %% "csw-aas-http" % Version

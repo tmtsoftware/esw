@@ -5,8 +5,8 @@ import java.util.concurrent.CountDownLatch
 import akka.Done
 import akka.util.Timeout
 import csw.command.client.CommandResponseManager
+import csw.command.client.messages.ProcessSequenceError.ExistingSequenceIsInProcess
 import csw.params.commands.CommandResponse._
-import csw.params.commands.ProcessSequenceError.ExistingSequenceIsInProcess
 import csw.params.commands.{CommandName, Observe, Sequence, Setup}
 import csw.params.core.models.{Id, Prefix}
 import esw.ocs.BaseTestSuite
@@ -66,7 +66,7 @@ class SequencerTest extends BaseTestSuite {
       pulled1.command should ===(command1)
       pulled2.command should ===(command2)
 
-      processResponse.rightValue should ===(Completed(sequence.runId))
+      processResponse.futureValue.response.rightValue should ===(Completed(sequence.runId))
       val finalResp = sequencer.getSequence.futureValue
       finalResp.isFinished should ===(true)
     }
@@ -96,7 +96,7 @@ class SequencerTest extends BaseTestSuite {
       pulled1.command should ===(command1)
       pulled2.command should ===(command2)
 
-      processResponse.rightValue should ===(Cancelled(sequence.runId))
+      processResponse.futureValue.response.rightValue should ===(Cancelled(sequence.runId))
 
       sequencer.getSequence.futureValue.isFinished should ===(true)
       sequencer.isAvailable.futureValue should ===(true)
@@ -120,7 +120,7 @@ class SequencerTest extends BaseTestSuite {
       val newSequence = Sequence(Id(), Seq(command3, command4))
 
       val processResponse2 = sequencer.processSequence(newSequence)
-      processResponse2.leftValue should ===(ExistingSequenceIsInProcess)
+      processResponse2.futureValue.response.leftValue should ===(ExistingSequenceIsInProcess)
     }
   }
 
@@ -176,7 +176,7 @@ class SequencerTest extends BaseTestSuite {
 
       p.complete(Try(cmd1Response))                                  // this will complete command1
       completionPromise.complete(Success(Completed(sequence.runId))) // this will complete the sequence
-      sequence1Response.rightValue should ===(Completed(sequence.runId))
+      sequence1Response.futureValue.response.rightValue should ===(Completed(sequence.runId))
 
       readyToExecuteNextF.value should ===(None)
 
@@ -437,7 +437,7 @@ class SequencerTest extends BaseTestSuite {
 
       val processResponse = sequencer.processSequence(sequence)
       sequencer.pullNext().futureValue
-      processResponse.rightValue should ===(Completed(sequence.runId))
+      processResponse.futureValue.response.rightValue should ===(Completed(sequence.runId))
       val currentSequence = sequencer.getSequence.futureValue
 
       sequencer.processSequence(sequence2)

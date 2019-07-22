@@ -3,9 +3,10 @@ package esw.ocs.core
 import akka.Done
 import akka.util.Timeout
 import csw.command.client.CommandResponseManager
+import csw.command.client.messages.ProcessSequenceError.ExistingSequenceIsInProcess
+import csw.command.client.messages.ProcessSequenceResponse
 import csw.params.commands.CommandResponse.{Completed, Error, Started, SubmitResponse}
-import csw.params.commands.ProcessSequenceError.ExistingSequenceIsInProcess
-import csw.params.commands.{CommandResponse, ProcessSequenceError, Sequence, SequenceCommand}
+import csw.params.commands.{CommandResponse, Sequence, SequenceCommand}
 import csw.params.core.models.Id
 import esw.ocs.api.models.StepStatus._
 import esw.ocs.api.models.messages.error.StepListError
@@ -29,23 +30,25 @@ private[ocs] class Sequencer(crm: CommandResponseManager)(implicit strandEc: Str
   private var stepRefPromise: Option[Promise[Step]]            = None
   private var sequencerAvailable                               = true
 
-  def processSequence(sequence: Sequence): Future[Either[ProcessSequenceError, SubmitResponse]] =
+  def processSequence(sequence: Sequence): Future[ProcessSequenceResponse] =
     async {
       if (sequencerAvailable)
-        await(
-          StepList(sequence)
-            .traverse { _stepList =>
-              sequencerAvailable = false
-              updateStepList(_stepList)
-              val id = _stepList.runId
-              crm.addOrUpdateCommand(Started(id))
-              crm.addSubCommand(id, emptyChildId)
-              completeStepRefPromise()
-              completeReadyToExecuteNextPromise() // To complete the promise created for previous sequence so that engine can pullNext
-              handleSequenceResponse(crm.queryFinal(id))
-            }
+        ProcessSequenceResponse(
+          await(
+            StepList(sequence)
+              .traverse { _stepList =>
+                sequencerAvailable = false
+                updateStepList(_stepList)
+                val id = _stepList.runId
+                crm.addOrUpdateCommand(Started(id))
+                crm.addSubCommand(id, emptyChildId)
+                completeStepRefPromise()
+                completeReadyToExecuteNextPromise() // To complete the promise created for previous sequence so that engine can pullNext
+                handleSequenceResponse(crm.queryFinal(id))
+              }
+          )
         )
-      else Left(ExistingSequenceIsInProcess)
+      else ProcessSequenceResponse(Left(ExistingSequenceIsInProcess))
     }
 
   def pullNext(): Future[Step] = async {

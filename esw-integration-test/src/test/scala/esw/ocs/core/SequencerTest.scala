@@ -29,7 +29,7 @@ class SequencerTest extends ScalaTestFrameworkTestKit with BaseTestSuite {
 
       val processSeqResponse = wiring.sequencer.processSequence(sequence)
 
-      processSeqResponse.rightValue should ===(Completed(sequence.runId))
+      processSeqResponse.futureValue.response.rightValue should ===(Completed(sequence.runId))
 
       wiring.sequencer.getSequence.futureValue.steps should ===(
         List(Step(command3, Finished.Success(Completed(command3.runId)), hasBreakpoint = false))
@@ -47,7 +47,7 @@ class SequencerTest extends ScalaTestFrameworkTestKit with BaseTestSuite {
 
       wiring.sequenceEditorClient.add(List(command3)).futureValue.response.rightValue should ===(Done)
 
-      processSeqResponse.rightValue should ===(Completed(sequence.runId))
+      processSeqResponse.futureValue.response.rightValue should ===(Completed(sequence.runId))
 
       wiring.sequencer.getSequence.futureValue.steps should ===(
         List(
