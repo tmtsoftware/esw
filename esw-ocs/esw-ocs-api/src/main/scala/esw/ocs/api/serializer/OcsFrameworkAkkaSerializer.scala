@@ -1,21 +1,22 @@
 package esw.ocs.api.serializer
 
 import akka.Done
+import akka.actor.ExtendedActorSystem
 import akka.actor.typed.ActorSystem
+import akka.actor.typed.scaladsl.adapter.UntypedActorSystemOps
 import akka.serialization.Serializer
-import csw.location.model.scaladsl.AkkaLocation
 import csw.logging.api.scaladsl.Logger
 import csw.logging.client.scaladsl.LoggerFactory
 import csw.params.commands.CommandResponse.SubmitResponse
 import esw.ocs.api.codecs.OcsFrameworkCodecs
 import esw.ocs.api.models.StepList
-import esw.ocs.api.models.messages.SequenceComponentMsg
 import esw.ocs.api.models.messages.SequencerMsg.ExternalSequencerMsg
 import esw.ocs.api.models.messages.error._
+import esw.ocs.api.models.messages.{SequenceComponentMsg, SequenceComponentResponse}
 import io.bullet.borer.Cbor
 
-class OcsFrameworkAkkaSerializer(_actorSystem: ActorSystem[_]) extends OcsFrameworkCodecs with Serializer {
-  override implicit def actorSystem: ActorSystem[_] = _actorSystem
+class OcsFrameworkAkkaSerializer(_actorSystem: ExtendedActorSystem) extends OcsFrameworkCodecs with Serializer {
+  override implicit def actorSystem: ActorSystem[_] = _actorSystem.toTyped
 
   override def identifier: Int = 29926
   private val logger: Logger   = new LoggerFactory("Sequencer-codec").getLogger
@@ -24,12 +25,10 @@ class OcsFrameworkAkkaSerializer(_actorSystem: ActorSystem[_]) extends OcsFramew
     case x: ExternalSequencerMsg       => Cbor.encode(x).toByteArray
     case x: StepList                   => Cbor.encode(x).toByteArray
     case x: SequenceComponentMsg       => Cbor.encode(x).toByteArray
-    case Right(x: AkkaLocation)        => Cbor.encode(x).toByteArray
-    case Left(x: LoadScriptError)      => Cbor.encode(x).toByteArray
+    case x: SequenceComponentResponse  => Cbor.encode(x).toByteArray
     case Left(x: EditorError)          => Cbor.encode(x).toByteArray
     case Left(x: ProcessSequenceError) => Cbor.encode(x).toByteArray
     case Some(x: StepList)             => Cbor.encode(x).toByteArray
-    case None                          => Cbor.encode(Option.empty[StepList]).toByteArray
     case _ =>
       val ex = new RuntimeException(s"does not support encoding of $o")
       logger.error(ex.getMessage, ex = ex)
@@ -45,8 +44,8 @@ class OcsFrameworkAkkaSerializer(_actorSystem: ActorSystem[_]) extends OcsFramew
       Cbor.decode(bytes).to[StepList].value
     } else if (classOf[SequenceComponentMsg].isAssignableFrom(manifest.get)) {
       Cbor.decode(bytes).to[SequenceComponentMsg].value
-    } else if (classOf[Either[LoadScriptError, AkkaLocation]].isAssignableFrom(manifest.get)) {
-      Cbor.decode(bytes).to[Either[LoadScriptError, AkkaLocation]].value
+    } else if (classOf[SequenceComponentResponse].isAssignableFrom(manifest.get)) {
+      Cbor.decode(bytes).to[SequenceComponentResponse].value
     } else if (classOf[Either[ProcessSequenceError, SubmitResponse]].isAssignableFrom(manifest.get)) {
       Cbor.decode(bytes).to[Either[ProcessSequenceError, SubmitResponse]].value
     } else if (classOf[Either[EditorError, Done]].isAssignableFrom(manifest.get)) {

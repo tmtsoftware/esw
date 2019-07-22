@@ -11,12 +11,13 @@ import csw.params.core.models.Prefix
 import esw.ocs.BaseTestSuite
 import esw.ocs.api.models.messages.SequenceComponentMsg
 import esw.ocs.api.models.messages.SequenceComponentMsg.{GetStatus, LoadScript, UnloadScript}
+import esw.ocs.api.models.messages.SequenceComponentResponse.{GetStatusResponse, LoadScriptResponse}
 
 class SequenceComponentClientTest extends ScalaTestWithActorTestKit with BaseTestSuite {
   private val location =
     AkkaLocation(AkkaConnection(ComponentId("test", ComponentType.Sequencer)), Prefix("test"), new URI("uri"))
-  private val loadScriptResponse = Right(location)
-  private val getStatusResponse  = Some(location)
+  private val loadScriptResponse = LoadScriptResponse(Right(location))
+  private val getStatusResponse  = GetStatusResponse(Some(location))
 
   private val mockedBehavior: Behaviors.Receive[SequenceComponentMsg] = Behaviors.receiveMessage[SequenceComponentMsg] { msg =>
     msg match {

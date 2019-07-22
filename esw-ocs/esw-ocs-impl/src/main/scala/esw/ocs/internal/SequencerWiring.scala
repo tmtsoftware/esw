@@ -11,6 +11,7 @@ import csw.location.api.scaladsl.LocationService
 import csw.location.client.scaladsl.HttpLocationServiceFactory
 import csw.location.model.scaladsl.Connection.AkkaConnection
 import csw.location.model.scaladsl.{AkkaLocation, AkkaRegistration, ComponentId, ComponentType}
+import esw.ocs.api.models.messages.SequenceComponentResponse.LoadScriptResponse
 import esw.ocs.api.models.messages.SequencerMsg
 import esw.ocs.api.models.messages.error.LoadScriptError
 import esw.ocs.core._
@@ -59,17 +60,19 @@ private[ocs] class SequencerWiring(val sequencerId: String, val observingMode: S
 
   // fixme: do not block and return Future[AkkaLocation]?
   //  onComplete gives handle to Try
-  def start(): Either[LoadScriptError, AkkaLocation] = {
+  def start(): LoadScriptResponse = {
     val registration = AkkaRegistration(AkkaConnection(componentId), prefix, sequencerRef.toURI)
 
     engine.start(sequenceOperatorFactory(), script)
 
-    locationService
+    val response: Either[LoadScriptError, AkkaLocation] = locationService
       .register(registration)
       .map(x => Right(x.location.asInstanceOf[AkkaLocation]))
       .recover {
-        case NonFatal(e) => Left(LoadScriptError(e.getMessage))
+        case NonFatal(e) => Left(LoadScriptError(s"Loading script failed: ${e.getMessage}"))
       }
       .block
+
+    LoadScriptResponse(response)
   }
 }

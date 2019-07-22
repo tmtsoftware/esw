@@ -2,20 +2,21 @@ package esw.ocs.api.codecs
 
 import csw.command.client.cbor.MessageCodecs
 import csw.location.api.codec.DoneCodec
-import csw.location.model.codecs.LocationCodecs
 import esw.ocs.api.models.StepStatus.Finished.{Failure, Success}
 import esw.ocs.api.models.StepStatus._
 import esw.ocs.api.models._
-import esw.ocs.api.models.messages.SequenceComponentMsg
+import esw.ocs.api.models.messages.{SequenceComponentMsg, SequenceComponentResponse}
 import esw.ocs.api.models.messages.SequenceComponentMsg.{GetStatus, LoadScript, UnloadScript}
+import esw.ocs.api.models.messages.SequenceComponentResponse.{GetStatusResponse, LoadScriptResponse}
 import esw.ocs.api.models.messages.SequencerMsg._
 import esw.ocs.api.models.messages.error.ProcessSequenceError.{DuplicateIdsFound, ExistingSequenceIsInProcess}
 import esw.ocs.api.models.messages.error.StepListError._
 import esw.ocs.api.models.messages.error._
 import io.bullet.borer.Codec
+import io.bullet.borer.derivation.ArrayBasedCodecs.deriveCodecForUnaryCaseClass
 import io.bullet.borer.derivation.MapBasedCodecs.deriveCodec
 
-trait OcsFrameworkCodecs extends MessageCodecs with DoneCodec with LocationCodecs {
+trait OcsFrameworkCodecs extends MessageCodecs with DoneCodec {
 
   //SequencerMsgCodecs
   implicit lazy val processSequenceCodec: Codec[ProcessSequence]         = deriveCodec[ProcessSequence]
@@ -81,5 +82,9 @@ trait OcsFrameworkCodecs extends MessageCodecs with DoneCodec with LocationCodec
   implicit lazy val unloadScriptCodec: Codec[UnloadScript]                 = deriveCodec[UnloadScript]
   implicit lazy val sequenceComponentMsgCodec: Codec[SequenceComponentMsg] = deriveCodec[SequenceComponentMsg]
 
+  //SequenceComponentResponse Codecs
+  implicit lazy val loadScriptResponseCodec: Codec[LoadScriptResponse]               = deriveCodecForUnaryCaseClass[LoadScriptResponse]
+  implicit lazy val getStatusResponseCodec: Codec[GetStatusResponse]                 = deriveCodecForUnaryCaseClass[GetStatusResponse]
+  implicit lazy val sequenceComponentResponseCodec: Codec[SequenceComponentResponse] = deriveCodec[SequenceComponentResponse]
   //fixme:  check if it works without DoneCodecs and LocationCodecs and ActorRefCodec and types wrapped inside Option and Either
 }

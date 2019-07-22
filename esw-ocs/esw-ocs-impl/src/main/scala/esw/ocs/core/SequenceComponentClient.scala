@@ -5,10 +5,9 @@ import akka.actor.Scheduler
 import akka.actor.typed.ActorRef
 import akka.actor.typed.scaladsl.AskPattern._
 import akka.util.Timeout
-import csw.location.model.scaladsl.AkkaLocation
 import esw.ocs.api.models.messages.SequenceComponentMsg
 import esw.ocs.api.models.messages.SequenceComponentMsg.{GetStatus, LoadScript, UnloadScript}
-import esw.ocs.api.models.messages.error.LoadScriptError
+import esw.ocs.api.models.messages.SequenceComponentResponse.{GetStatusResponse, LoadScriptResponse}
 
 import scala.concurrent.Future
 
@@ -19,9 +18,9 @@ class SequenceComponentClient(sequenceComponentRef: ActorRef[SequenceComponentMs
   def loadScript(
       sequencerId: String,
       observingMode: String
-  ): Future[Either[LoadScriptError, AkkaLocation]] = sequenceComponentRef ? (x => LoadScript(sequencerId, observingMode, x))
+  ): Future[LoadScriptResponse] = sequenceComponentRef ? (x => LoadScript(sequencerId, observingMode, x))
 
-  def getStatus: Future[Option[AkkaLocation]] = sequenceComponentRef ? GetStatus
+  def getStatus: Future[GetStatusResponse] = sequenceComponentRef ? GetStatus
 
   def unloadScript(): Future[Done] = sequenceComponentRef ? UnloadScript
 }

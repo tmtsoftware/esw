@@ -9,7 +9,8 @@ object Dependencies {
       Csw.`csw-location-api`,
       Csw.`csw-command-client`,
       Libs.`enumeratum`.value,
-      Libs.scalatest % Test
+      Libs.scalatest % Test,
+      Akka.`akka-actor-testkit-typed` % Test
     )
   )
 

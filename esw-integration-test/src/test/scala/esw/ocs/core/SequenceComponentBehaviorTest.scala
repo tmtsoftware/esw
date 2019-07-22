@@ -10,6 +10,7 @@ import csw.testkit.scaladsl.ScalaTestFrameworkTestKit
 import esw.ocs.BaseTestSuite
 import esw.ocs.api.models.messages.SequenceComponentMsg
 import esw.ocs.api.models.messages.SequenceComponentMsg.{GetStatus, LoadScript, UnloadScript}
+import esw.ocs.api.models.messages.SequenceComponentResponse.{GetStatusResponse, LoadScriptResponse}
 import esw.ocs.api.models.messages.error.LoadScriptError
 
 import scala.concurrent.duration.DurationLong
@@ -25,8 +26,8 @@ class SequenceComponentBehaviorTest extends ScalaTestFrameworkTestKit with BaseT
   "SequenceComponentBehavior" must {
     "load/unload script and get appropriate status | ESW-103" in {
       val behaviorTestKit         = createBehaviorTestKit()
-      val loadScriptResponseProbe = TestProbe[Either[LoadScriptError, AkkaLocation]]
-      val getStatusProbe          = TestProbe[Option[AkkaLocation]]
+      val loadScriptResponseProbe = TestProbe[LoadScriptResponse]
+      val getStatusProbe          = TestProbe[GetStatusResponse]
       val sequencerId             = "testSequencerId1"
       val observingMode           = "testObservingMode1"
 
@@ -35,7 +36,7 @@ class SequenceComponentBehaviorTest extends ScalaTestFrameworkTestKit with BaseT
 
       //todo: try resolving from location service
       //Assert if script loaded and returns AkkaLocation of sequencer
-      val loadScriptLocationResponse: AkkaLocation = loadScriptResponseProbe.receiveMessage.rightValue
+      val loadScriptLocationResponse: AkkaLocation = loadScriptResponseProbe.receiveMessage.response.rightValue
       loadScriptLocationResponse.connection shouldEqual AkkaConnection(
         ComponentId(s"$sequencerId@$observingMode", ComponentType.Sequencer)
       )
@@ -44,7 +45,7 @@ class SequenceComponentBehaviorTest extends ScalaTestFrameworkTestKit with BaseT
       behaviorTestKit.run(GetStatus(getStatusProbe.ref))
 
       //Assert if get status returns AkkaLocation of sequencer currently running
-      val getStatusLocationResponse: Location = getStatusProbe.receiveMessage(5.seconds).get
+      val getStatusLocationResponse: Location = getStatusProbe.receiveMessage(5.seconds).response.get
       getStatusLocationResponse.connection shouldEqual AkkaConnection(
         ComponentId(s"$sequencerId@$observingMode", ComponentType.Sequencer)
       )
@@ -54,12 +55,12 @@ class SequenceComponentBehaviorTest extends ScalaTestFrameworkTestKit with BaseT
 
       //assert if GetStatus returns None after unloading sequencer script
       behaviorTestKit.run(GetStatus(getStatusProbe.ref))
-      getStatusProbe.expectMessage(None)
+      getStatusProbe.expectMessage(GetStatusResponse(None))
     }
 
     "load script and give LoadScriptError if sequencer is already running | ESW-103" in {
       val behaviorTestKit         = createBehaviorTestKit()
-      val loadScriptResponseProbe = TestProbe[Either[LoadScriptError, AkkaLocation]]
+      val loadScriptResponseProbe = TestProbe[LoadScriptResponse]
       val sequencerId             = "testSequencerId2"
       val observingMode           = "testObservingMode2"
 
@@ -67,23 +68,25 @@ class SequenceComponentBehaviorTest extends ScalaTestFrameworkTestKit with BaseT
       behaviorTestKit.run(LoadScript(sequencerId, observingMode, loadScriptResponseProbe.ref))
 
       //Assert if script loaded and returns AkkaLocation of sequencer
-      val loadScriptLocationResponse: AkkaLocation = loadScriptResponseProbe.receiveMessage.rightValue
+      val loadScriptLocationResponse: AkkaLocation = loadScriptResponseProbe.receiveMessage.response.rightValue
       loadScriptLocationResponse.connection shouldEqual AkkaConnection(
         ComponentId(s"$sequencerId@$observingMode", ComponentType.Sequencer)
       )
 
       behaviorTestKit.run(LoadScript("sequencerId3", "observingMode3", loadScriptResponseProbe.ref))
-      loadScriptResponseProbe.receiveMessage.leftValue shouldBe LoadScriptError("Sequencer already running")
+      loadScriptResponseProbe.receiveMessage.response.leftValue shouldBe LoadScriptError(
+        "Loading script failed: Sequencer already running"
+      )
     }
 
     "unload script and return Done if sequence component is not running any sequencer | ESW-103" in {
       val behaviorTestKit           = createBehaviorTestKit()
       val unloadScriptResponseProbe = TestProbe[Done]
-      val getStatusProbe            = TestProbe[Option[AkkaLocation]]
+      val getStatusProbe            = TestProbe[GetStatusResponse]
 
       //assert if GetStatus returns None after unloading sequencer script
       behaviorTestKit.run(GetStatus(getStatusProbe.ref))
-      getStatusProbe.expectMessage(None)
+      getStatusProbe.expectMessage(GetStatusResponse(None))
 
       //UnloadScript
       behaviorTestKit.run(UnloadScript(unloadScriptResponseProbe.ref))

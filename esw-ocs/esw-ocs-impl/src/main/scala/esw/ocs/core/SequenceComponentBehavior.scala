@@ -6,6 +6,7 @@ import akka.actor.typed.scaladsl.Behaviors
 import csw.location.model.scaladsl.AkkaLocation
 import esw.ocs.api.models.messages.SequenceComponentMsg
 import esw.ocs.api.models.messages.SequenceComponentMsg.{GetStatus, LoadScript, UnloadScript}
+import esw.ocs.api.models.messages.SequenceComponentResponse.{GetStatusResponse, LoadScriptResponse}
 import esw.ocs.api.models.messages.error.LoadScriptError
 import esw.ocs.internal.SequencerWiring
 
@@ -18,9 +19,9 @@ object SequenceComponentBehavior {
         val wiring             = new SequencerWiring(sequencerId, observingMode)
         val loadScriptResponse = wiring.start()
         replyTo ! loadScriptResponse
-        loadScriptResponse.map(x => running(wiring, x)).getOrElse(Behaviors.same)
+        loadScriptResponse.response.map(x => running(wiring, x)).getOrElse(Behaviors.same)
       case GetStatus(replyTo) =>
-        replyTo ! None
+        replyTo ! GetStatusResponse(None)
         Behaviors.same
       case UnloadScript(replyTo) =>
         replyTo ! Done
@@ -34,10 +35,10 @@ object SequenceComponentBehavior {
           replyTo ! Done
           idle
         case GetStatus(replyTo) =>
-          replyTo ! Some(location)
+          replyTo ! GetStatusResponse(Some(location))
           Behaviors.same
         case LoadScript(_, _, replyTo) =>
-          replyTo ! Left(LoadScriptError("Sequencer already running"))
+          replyTo ! LoadScriptResponse(Left(LoadScriptError("Loading script failed: Sequencer already running")))
           Behaviors.same
       }
     idle

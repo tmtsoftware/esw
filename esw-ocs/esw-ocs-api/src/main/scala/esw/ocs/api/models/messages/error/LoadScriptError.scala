@@ -1,7 +1,5 @@
 package esw.ocs.api.models.messages.error
 
-final case class LoadScriptError(msg: String)
+import esw.ocs.api.serializer.OcsFrameworkAkkaSerializable
 
-object LoadScriptError {
-  def apply(reason: String): LoadScriptError = new LoadScriptError(s"Loading script Failed: $reason")
-}
+final case class LoadScriptError(msg: String) extends OcsFrameworkAkkaSerializable
