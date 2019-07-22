@@ -5,13 +5,13 @@ import akka.actor.typed.scaladsl.Behaviors
 import csw.params.commands.{CommandName, Sequence, Setup}
 import csw.params.core.models.Prefix
 import esw.ocs.BaseTestSuite
+import esw.ocs.api.EditorResponse
 import esw.ocs.api.models.StepList
 import esw.ocs.api.models.StepStatus.Pending
 import esw.ocs.api.models.messages.SequencerMessages._
 import esw.ocs.api.models.messages.error.StepListError._
 
 class SequenceEditorClientTest extends ScalaTestWithActorTestKit with BaseTestSuite {
-
   private val command      = Setup(Prefix("test"), CommandName("command-1"), None)
   private val status       = Pending
   private val notAllowed   = Left(NotAllowedOnFinishedSeq)
@@ -19,16 +19,16 @@ class SequenceEditorClientTest extends ScalaTestWithActorTestKit with BaseTestSu
 
   private val getSequenceResponse      = StepList(Sequence(command)).toOption.get
   private val availableResponse        = true
-  private val addResponse              = Left(AddFailed)
-  private val pauseResponse            = Left(PauseFailed)
-  private val prependResponse          = notAllowed
-  private val resumeResponse           = notAllowed
-  private val removeBreakpointResponse = notAllowed
-  private val resetResponse            = notAllowed
-  private val replaceResponse          = notSupported
-  private val insertAfterResponse      = notSupported
-  private val deleteResponse           = notSupported
-  private val addBreakpointResponse    = notSupported
+  private val addResponse              = EditorResponse(Left(AddFailed))
+  private val pauseResponse            = EditorResponse(Left(PauseFailed))
+  private val prependResponse          = EditorResponse(notAllowed)
+  private val resumeResponse           = EditorResponse(notAllowed)
+  private val removeBreakpointResponse = EditorResponse(notAllowed)
+  private val resetResponse            = EditorResponse(notAllowed)
+  private val replaceResponse          = EditorResponse(notSupported)
+  private val insertAfterResponse      = EditorResponse(notSupported)
+  private val deleteResponse           = EditorResponse(notSupported)
+  private val addBreakpointResponse    = EditorResponse(notSupported)
 
   private val mockedBehavior: Behaviors.Receive[ExternalEditorSequencerMsg] =
     Behaviors.receiveMessage[ExternalEditorSequencerMsg] { msg =>

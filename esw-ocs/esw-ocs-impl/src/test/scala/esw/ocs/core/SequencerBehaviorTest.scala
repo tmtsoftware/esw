@@ -8,9 +8,9 @@ import csw.params.commands.CommandResponse.{Completed, Error, SubmitResponse}
 import csw.params.commands.{CommandName, ProcessSequenceError, Sequence, Setup}
 import csw.params.core.models.{Id, Prefix}
 import esw.ocs.BaseTestSuite
-import esw.ocs.api.SequenceEditor.EditorResponse
+import esw.ocs.api.EditorResponse
 import esw.ocs.api.models.messages.SequencerMessages._
-import esw.ocs.api.models.messages.error.StepListError._
+import esw.ocs.api.models.messages.error.EditorError
 import esw.ocs.api.models.{Step, StepList}
 import esw.ocs.dsl.ScriptDsl
 import org.mockito.Mockito.{verify, when}
@@ -62,7 +62,7 @@ class SequencerBehaviorTest extends ScalaTestWithActorTestKit with BaseTestSuite
   "Add" in {
     val command1 = Setup(Prefix("test"), CommandName("command-1"), None)
 
-    runTest[EditorResponse[AddError]](
+    runTestForEditorResponse(
       mockFunction = sequencer.add(List(command1)),
       mockResponse = Right(Done),
       testMsg = Add(List(command1), _)
@@ -70,7 +70,7 @@ class SequencerBehaviorTest extends ScalaTestWithActorTestKit with BaseTestSuite
   }
 
   "Pause" in {
-    runTest[EditorResponse[PauseError]](
+    runTestForEditorResponse(
       mockFunction = sequencer.pause,
       mockResponse = Right(Done),
       testMsg = Pause
@@ -78,7 +78,7 @@ class SequencerBehaviorTest extends ScalaTestWithActorTestKit with BaseTestSuite
   }
 
   "Resume" in {
-    runTest[EditorResponse[ResumeError]](
+    runTestForEditorResponse(
       mockFunction = sequencer.resume,
       mockResponse = Right(Done),
       testMsg = Resume
@@ -86,7 +86,7 @@ class SequencerBehaviorTest extends ScalaTestWithActorTestKit with BaseTestSuite
   }
 
   "Reset" in {
-    runTest[EditorResponse[ResetError]](
+    runTestForEditorResponse(
       mockFunction = sequencer.reset(),
       mockResponse = Right(Done),
       testMsg = Reset
@@ -97,7 +97,7 @@ class SequencerBehaviorTest extends ScalaTestWithActorTestKit with BaseTestSuite
     val runId    = Id()
     val command1 = Setup(Prefix("test"), CommandName("command-1"), None)
 
-    runTest[EditorResponse[ReplaceError]](
+    runTestForEditorResponse(
       mockFunction = sequencer.replace(runId, List(command1)),
       mockResponse = Right(Done),
       testMsg = Replace(runId, List(command1), _)
@@ -107,7 +107,7 @@ class SequencerBehaviorTest extends ScalaTestWithActorTestKit with BaseTestSuite
   "Prepend" in {
     val command1 = Setup(Prefix("test"), CommandName("command-1"), None)
 
-    runTest[EditorResponse[PrependError]](
+    runTestForEditorResponse(
       mockFunction = sequencer.prepend(List(command1)),
       mockResponse = Right(Done),
       testMsg = Prepend(List(command1), _)
@@ -118,7 +118,7 @@ class SequencerBehaviorTest extends ScalaTestWithActorTestKit with BaseTestSuite
   "Delete" in {
     val runId = Id()
 
-    runTest[EditorResponse[DeleteError]](
+    runTestForEditorResponse(
       mockFunction = sequencer.delete(runId),
       mockResponse = Right(Done),
       testMsg = Delete(runId, _)
@@ -129,7 +129,7 @@ class SequencerBehaviorTest extends ScalaTestWithActorTestKit with BaseTestSuite
     val runId    = Id()
     val command1 = Setup(Prefix("test"), CommandName("command-1"), None)
 
-    runTest[EditorResponse[InsertError]](
+    runTestForEditorResponse(
       mockFunction = sequencer.insertAfter(runId, List(command1)),
       mockResponse = Right(Done),
       testMsg = InsertAfter(runId, List(command1), _)
@@ -139,7 +139,7 @@ class SequencerBehaviorTest extends ScalaTestWithActorTestKit with BaseTestSuite
   "AddBreakpoint" in {
     val runId = Id()
 
-    runTest[EditorResponse[AddBreakpointError]](
+    runTestForEditorResponse(
       mockFunction = sequencer.addBreakpoint(runId),
       mockResponse = Right(Done),
       testMsg = AddBreakpoint(runId, _)
@@ -149,7 +149,7 @@ class SequencerBehaviorTest extends ScalaTestWithActorTestKit with BaseTestSuite
   "RemoveBreakpoint" in {
     val runId = Id()
 
-    runTest[EditorResponse[RemoveBreakpointError]](
+    runTestForEditorResponse(
       mockFunction = sequencer.removeBreakpoint(runId),
       mockResponse = Right(Done),
       testMsg = RemoveBreakpoint(runId, _)
@@ -199,6 +199,18 @@ class SequencerBehaviorTest extends ScalaTestWithActorTestKit with BaseTestSuite
 
     sequencerActor ! testMsg(testProbe.ref)
     testProbe.expectMessage(mockResponse)
+  }
 
+  private def runTestForEditorResponse(
+      mockFunction: => Future[Either[EditorError, Done]],
+      mockResponse: Either[EditorError, Done],
+      testMsg: ActorRef[EditorResponse] => SequencerMsg
+  ): EditorResponse = {
+    val testProbe: TestProbe[EditorResponse] = TestProbe()
+
+    when(mockFunction).thenReturn(Future.successful(mockResponse))
+
+    sequencerActor ! testMsg(testProbe.ref)
+    testProbe.expectMessage(EditorResponse(mockResponse))
   }
 }

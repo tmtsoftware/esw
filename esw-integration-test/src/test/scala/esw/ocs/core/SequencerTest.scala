@@ -45,7 +45,7 @@ class SequencerTest extends ScalaTestFrameworkTestKit with BaseTestSuite {
 
       val processSeqResponse = wiring.sequencer.processSequence(sequence)
 
-      wiring.sequenceEditorClient.add(List(command3)).rightValue should ===(Done)
+      wiring.sequenceEditorClient.add(List(command3)).futureValue.response.rightValue should ===(Done)
 
       processSeqResponse.rightValue should ===(Completed(sequence.runId))
 

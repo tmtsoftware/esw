@@ -11,13 +11,12 @@ import csw.location.models.Connection.AkkaConnection
 import csw.location.models.{AkkaLocation, ComponentId, ComponentType}
 import csw.params.commands.{CommandName, SequenceCommand, Setup}
 import csw.params.core.models.{Id, Prefix}
-import esw.ocs.api.BaseTestSuite
-import esw.ocs.api.SequenceEditor.EditorResponse
 import esw.ocs.api.models.messages.SequenceComponentMsg.{GetStatus, LoadScript, UnloadScript}
 import esw.ocs.api.models.messages.SequenceComponentResponse.{GetStatusResponse, LoadScriptResponse}
 import esw.ocs.api.models.messages.SequencerMessages._
 import esw.ocs.api.models.messages.error._
 import esw.ocs.api.models.{Step, StepList}
+import esw.ocs.api.{BaseTestSuite, EditorResponse}
 import org.scalatest.prop.TableDrivenPropertyChecks.forAll
 import org.scalatest.prop.Tables.Table
 
@@ -33,13 +32,13 @@ class OcsFrameworkAkkaSerializerTest extends BaseTestSuite {
     Await.result(system.whenTerminated, 2.seconds)
   }
 
-  val editorResponseProbeRef: ActorRef[EditorResponse[EditorError]] = TestProbe[EditorResponse[EditorError]].ref
-  val stepListResponseProbeRef: ActorRef[StepList]                  = TestProbe[StepList].ref
-  val stepListOptionResponseProbeRef: ActorRef[Option[StepList]]    = TestProbe[Option[StepList]].ref
-  val booleanResponseProbeRef: ActorRef[Boolean]                    = TestProbe[Boolean].ref
-  val setupCommand                                                  = Setup(Prefix("test"), CommandName("test"), None)
-  val stepList: List[Step]                                          = List(Step(setupCommand))
-  val sequenceCommandList: List[SequenceCommand]                    = List(setupCommand)
+  val editorResponseProbeRef: ActorRef[EditorResponse]           = TestProbe[EditorResponse].ref
+  val stepListResponseProbeRef: ActorRef[StepList]               = TestProbe[StepList].ref
+  val stepListOptionResponseProbeRef: ActorRef[Option[StepList]] = TestProbe[Option[StepList]].ref
+  val booleanResponseProbeRef: ActorRef[Boolean]                 = TestProbe[Boolean].ref
+  val setupCommand                                               = Setup(Prefix("test"), CommandName("test"), None)
+  val stepList: List[Step]                                       = List(Step(setupCommand))
+  val sequenceCommandList: List[SequenceCommand]                 = List(setupCommand)
   val loadScriptResponseProbeRef: ActorRef[LoadScriptResponse] =
     TestProbe[LoadScriptResponse].ref
   val getStatusResponseProbeRef: ActorRef[GetStatusResponse] =

@@ -5,7 +5,6 @@ import akka.actor.ExtendedActorSystem
 import akka.actor.typed.ActorSystem
 import akka.actor.typed.scaladsl.adapter.UntypedActorSystemOps
 import akka.serialization.Serializer
-import csw.location.models.AkkaLocation
 import csw.logging.api.scaladsl.Logger
 import csw.logging.client.scaladsl.LoggerFactory
 import esw.ocs.api.codecs.OcsFrameworkCodecs
@@ -45,8 +44,6 @@ class OcsFrameworkAkkaSerializer(_actorSystem: ExtendedActorSystem) extends OcsF
       Cbor.decode(bytes).to[SequenceComponentMsg].value
     } else if (classOf[SequenceComponentResponse].isAssignableFrom(manifest.get)) {
       Cbor.decode(bytes).to[SequenceComponentResponse].value
-    } else if (classOf[Either[LoadScriptError, AkkaLocation]].isAssignableFrom(manifest.get)) {
-      Cbor.decode(bytes).to[Either[LoadScriptError, AkkaLocation]].value
     } else if (classOf[Either[EditorError, Done]].isAssignableFrom(manifest.get)) {
       Cbor.decode(bytes).to[Either[EditorError, Done]].value
     } else if (classOf[Option[StepList]].isAssignableFrom(manifest.get)) {
