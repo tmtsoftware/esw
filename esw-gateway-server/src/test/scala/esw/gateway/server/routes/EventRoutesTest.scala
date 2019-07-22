@@ -137,7 +137,6 @@ class EventRoutesTest extends HttpTestSuite {
       when(eventSubscriber.subscribe(Set(eventKey1, eventKey2), 100.millis, RateLimiterMode)).thenReturn(eventSource)
 
       Get(s"/event/subscribe?key=$eventKey1&key=$eventKey2&max-frequency=10") ~> route ~> check {
-        println(response)
         status shouldBe StatusCodes.OK
         mediaType shouldBe MediaTypes.`text/event-stream`
         verify(eventSubscriber).subscribe(Set(eventKey1, eventKey2), 100.millis, RateLimiterMode)

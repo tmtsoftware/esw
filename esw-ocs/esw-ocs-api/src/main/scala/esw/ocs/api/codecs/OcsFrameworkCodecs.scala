@@ -10,7 +10,7 @@ import esw.ocs.api.models.messages.SequenceComponentResponse.{GetStatusResponse,
 import esw.ocs.api.models.messages.SequencerMessages._
 import esw.ocs.api.models.messages.error.StepListError._
 import esw.ocs.api.models.messages.error._
-import esw.ocs.api.models.messages.{EditorResponse, SequenceComponentMsg, SequenceComponentResponse}
+import esw.ocs.api.models.messages.{EditorResponse, SequenceComponentMsg, SequenceComponentResponse, StepListResponse}
 import io.bullet.borer.Codec
 import io.bullet.borer.derivation.ArrayBasedCodecs.deriveCodecForUnaryCaseClass
 import io.bullet.borer.derivation.MapBasedCodecs.deriveCodec
@@ -38,6 +38,9 @@ trait OcsFrameworkCodecs extends MessageCodecs with DoneCodec {
 
   implicit lazy val stepCodec: Codec[Step]         = deriveCodec[Step]
   implicit lazy val stepListCodec: Codec[StepList] = deriveCodec[StepList]
+
+  // StepListResponse Codecs
+  implicit lazy val stepListResponseCodec: Codec[StepListResponse] = deriveCodec[StepListResponse]
 
   // StepCodecs
   implicit lazy val successStatusCodec: Codec[Success] = deriveCodec[Success]

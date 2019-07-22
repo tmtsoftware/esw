@@ -9,7 +9,7 @@ import csw.logging.client.scaladsl.LoggerFactory
 import esw.ocs.api.codecs.OcsFrameworkCodecs
 import esw.ocs.api.models.StepList
 import esw.ocs.api.models.messages.SequencerMessages.ExternalEditorSequencerMsg
-import esw.ocs.api.models.messages.{EditorResponse, SequenceComponentMsg, SequenceComponentResponse}
+import esw.ocs.api.models.messages.{EditorResponse, SequenceComponentMsg, SequenceComponentResponse, StepListResponse}
 import io.bullet.borer.Cbor
 
 class OcsFrameworkAkkaSerializer(_actorSystem: ExtendedActorSystem) extends OcsFrameworkCodecs with Serializer {
@@ -24,7 +24,7 @@ class OcsFrameworkAkkaSerializer(_actorSystem: ExtendedActorSystem) extends OcsF
     case x: SequenceComponentMsg       => Cbor.encode(x).toByteArray
     case x: SequenceComponentResponse  => Cbor.encode(x).toByteArray
     case x: EditorResponse             => Cbor.encode(x).toByteArray
-    case Some(x: StepList)             => Cbor.encode(x).toByteArray
+    case x: StepListResponse           => Cbor.encode(x).toByteArray
     case _ =>
       val ex = new RuntimeException(s"does not support encoding of $o")
       logger.error(ex.getMessage, ex = ex)
@@ -44,8 +44,8 @@ class OcsFrameworkAkkaSerializer(_actorSystem: ExtendedActorSystem) extends OcsF
       Cbor.decode(bytes).to[SequenceComponentResponse].value
     } else if (classOf[EditorResponse].isAssignableFrom(manifest.get)) {
       Cbor.decode(bytes).to[EditorResponse].value
-    } else if (classOf[Option[StepList]].isAssignableFrom(manifest.get)) {
-      Cbor.decode(bytes).to[Option[StepList]].value
+    } else if (classOf[StepListResponse].isAssignableFrom(manifest.get)) {
+      Cbor.decode(bytes).to[StepListResponse].value
     } else {
       val ex = new RuntimeException(s"does not support decoding of ${manifest.get}")
       logger.error(ex.getMessage, ex = ex)
