@@ -14,18 +14,18 @@ object RegistrationUtils {
       coordinatedShutdown: CoordinatedShutdown
   )(implicit ec: ExecutionContext): Future[Either[RegistrationError, AkkaLocation]] = {
 
-    def addCoordinatedShutdownTask(registration: RegistrationResult): Unit = {
+    def addCoordinatedShutdownTask(registrationResult: RegistrationResult): Unit = {
       coordinatedShutdown.addTask(
         CoordinatedShutdown.PhaseBeforeServiceUnbind,
-        s"unregistering-${registration.location}"
-      )(() => registration.unregister())
+        s"unregistering-${registrationResult.location}"
+      )(() => registrationResult.unregister())
     }
 
     locationService
       .register(akkaRegistration)
-      .map { reg =>
-        addCoordinatedShutdownTask(reg)
-        Right(reg.location.asInstanceOf[AkkaLocation])
+      .map { result =>
+        addCoordinatedShutdownTask(result)
+        Right(result.location.asInstanceOf[AkkaLocation])
       }
       .recover {
         case NonFatal(e) => Left(RegistrationError(e.getMessage))
