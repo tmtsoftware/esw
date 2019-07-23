@@ -1,29 +1,27 @@
 package esw.ocs.core
 
-import akka.actor.typed.{ActorSystem, Behavior}
+import akka.actor.typed.{ActorSystem, SpawnProtocol}
 import csw.command.api.scaladsl.SequencerCommandService
 import csw.command.client.internal.SequencerCommandServiceImpl
-import csw.command.client.messages.SequencerMsg
-import csw.location.client.ActorSystemFactory
 import csw.location.models.AkkaLocation
 import csw.params.commands.CommandResponse.Completed
 import csw.params.commands.{CommandName, Sequence, Setup}
 import csw.params.core.models.Prefix
-import csw.testkit.LocationTestKit
+import csw.testkit.scaladsl.ScalaTestFrameworkTestKit
 import esw.ocs.BaseTestSuite
 import esw.ocs.api.models.messages.error.RegistrationError
 import esw.ocs.internal.SequencerWiring
 import org.scalatest.time.{Millis, Span}
 
-class SequencerCommandServiceTest extends BaseTestSuite {
-  private implicit val sys: ActorSystem[SequencerMsg] = ActorSystemFactory.remote(Behavior.empty)
+class SequencerCommandServiceTest extends ScalaTestFrameworkTestKit with BaseTestSuite {
+  import frameworkTestKit._
+  private implicit val sys: ActorSystem[SpawnProtocol] = actorSystem
 
-  private val locationTestKit                                            = LocationTestKit()
   private var wiring: SequencerWiring                                    = _
   private var sequencerLocation: Either[RegistrationError, AkkaLocation] = _
 
   override def beforeAll(): Unit = {
-    locationTestKit.startLocationServer()
+    super.beforeAll()
     wiring = new SequencerWiring("testSequencerId1", "testObservingMode1")
     sequencerLocation = wiring.start()
   }

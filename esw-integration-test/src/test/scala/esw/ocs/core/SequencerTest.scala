@@ -3,20 +3,18 @@ package esw.ocs.core
 import akka.Done
 import akka.actor.Scheduler
 import akka.actor.typed.scaladsl.AskPattern._
-import akka.actor.typed.{ActorRef, ActorSystem, Behavior}
-import akka.stream.typed.scaladsl.ActorMaterializer
+import akka.actor.typed.{ActorRef, ActorSystem, SpawnProtocol}
 import akka.util.Timeout
 import csw.command.client.messages.{ProcessSequence, ProcessSequenceResponse, SequencerMsg}
 import csw.location.api.extensions.URIExtension.RichURI
 import csw.location.api.scaladsl.LocationService
-import csw.location.client.ActorSystemFactory
 import csw.location.client.scaladsl.HttpLocationServiceFactory
 import csw.location.models.Connection.AkkaConnection
 import csw.location.models.{ComponentId, ComponentType}
 import csw.params.commands.CommandResponse.Completed
 import csw.params.commands.{CommandName, Sequence, Setup}
 import csw.params.core.models.Prefix
-import csw.testkit.LocationTestKit
+import csw.testkit.scaladsl.ScalaTestFrameworkTestKit
 import esw.ocs.BaseTestSuite
 import esw.ocs.api.models.Step
 import esw.ocs.api.models.StepStatus.Finished
@@ -27,23 +25,23 @@ import esw.ocs.internal.SequencerWiring
 import scala.concurrent.Future
 import scala.concurrent.duration.DurationLong
 
-class SequencerTest extends BaseTestSuite {
+class SequencerTest extends ScalaTestFrameworkTestKit with BaseTestSuite {
 
-  private implicit val sys: ActorSystem[SequencerMsg] = ActorSystemFactory.remote(Behavior.empty)
-  private implicit val mat: ActorMaterializer         = ActorMaterializer()
-  private implicit val timeout: Timeout               = Timeout(5.seconds)
-  private implicit val scheduler: Scheduler           = sys.scheduler
+  import frameworkTestKit._
+  private implicit val sys: ActorSystem[SpawnProtocol] = actorSystem
+
+  private implicit val askTimeout: Timeout  = Timeout(5.seconds)
+  private implicit val scheduler: Scheduler = actorSystem.scheduler
 
   private val sequencerId   = "testSequencerId1"
   private val observingMode = "testObservingMode1"
 
-  private val locationTestKit                   = LocationTestKit()
   private var locationService: LocationService  = _
   private var wiring: SequencerWiring           = _
   private var sequencer: ActorRef[SequencerMsg] = _
 
   override def beforeAll(): Unit = {
-    locationTestKit.startLocationServer()
+    super.beforeAll()
     locationService = HttpLocationServiceFactory.makeLocalClient
   }
 
