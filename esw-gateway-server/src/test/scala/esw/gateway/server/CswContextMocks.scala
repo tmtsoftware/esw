@@ -4,6 +4,7 @@ import akka.actor.typed.{ActorSystem, SpawnProtocol}
 import akka.http.scaladsl.server.Route
 import akka.stream.stage.{GraphStage, GraphStageLogic, InHandler, OutHandler}
 import akka.stream.{Attributes, FlowShape, Inlet, Outlet}
+import csw.alarm.api.scaladsl.AlarmAdminService
 import csw.command.api.scaladsl.CommandService
 import csw.event.api.scaladsl.{EventPublisher, EventService, EventSubscriber}
 import csw.event.client.internal.commons.EventSubscriberUtil
@@ -27,6 +28,7 @@ class CswContextMocks(system: ActorSystem[SpawnProtocol]) {
   //command service mocks
   val componentFactory: ComponentFactory = mock[ComponentFactory]
   val commandService: CommandService     = mock[CommandService]
+  val alarmService: AlarmAdminService    = mock[AlarmAdminService]
 
   //event service mocks
   val eventService: EventService               = mock[EventService]
@@ -38,12 +40,14 @@ class CswContextMocks(system: ActorSystem[SpawnProtocol]) {
   val route: Route = new Routes(cswCtx).route
 
   when(cswCtx.logger).thenReturn(logger)
+
   when(cswCtx.routeHandlers).thenReturn(handlers)
 
   when(cswCtx.componentFactory).thenReturn(componentFactory)
 
   when(cswCtx.eventSubscriberUtil).thenReturn(eventSubscriberUtil)
   when(cswCtx.eventService).thenReturn(eventService)
+  when(cswCtx.alarmService).thenReturn(alarmService)
   when(eventService.defaultPublisher).thenReturn(eventPublisher)
   when(eventService.defaultSubscriber).thenReturn(eventSubscriber)
 }

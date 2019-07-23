@@ -23,11 +23,12 @@ class Routes(cswCtx: CswContext) {
   private val routeLogger: Directive0 = DebuggingDirectives.logRequest(LoggingMagnet(_ => logRequest))
   private val eventRoutes: Route      = new EventRoutes(cswCtx).route
   private val commandRoutes: Route    = new CommandRoutes(cswCtx).route
+  private val alarmRoutes: Route      = new AlarmRoutes(cswCtx).route
 
   def route: Route = routeLogger {
     handleExceptions(routeHandlers.commonExceptionHandlers) {
       handleRejections(routeHandlers.jsonRejectionHandler) {
-        commandRoutes ~ eventRoutes
+        commandRoutes ~ eventRoutes ~ alarmRoutes
       }
     }
   }

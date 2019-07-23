@@ -2,6 +2,8 @@ package esw.http.core.utils
 
 import com.typesafe.config.Config
 import csw.aas.http.SecurityDirectives
+import csw.alarm.api.scaladsl.AlarmService
+import csw.alarm.client.AlarmServiceFactory
 import csw.command.client.CommandServiceFactory
 import csw.event.api.scaladsl.EventService
 import csw.event.client.EventServiceFactory
@@ -29,4 +31,6 @@ class CswContext(actorRuntime: ActorRuntime, httpConnection: HttpConnection, con
   lazy val routeHandlers: RouteHandlers = new RouteHandlers(logger)
 
   lazy val securityDirectives = SecurityDirectives(config, locationService)
+
+  lazy val alarmService: AlarmService = new AlarmServiceFactory().makeClientApi(locationService)
 }

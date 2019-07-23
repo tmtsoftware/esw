@@ -63,7 +63,7 @@ lazy val `esw-http-core` = project
   .in(file("esw-http-core"))
   .enablePlugins(MaybeCoverage, EswBuildInfo)
   .settings(
-    libraryDependencies ++= Dependencies.TemplateHttpServer.value
+    libraryDependencies ++= Dependencies.EswHttpCore.value
   )
 
 lazy val `esw-gateway-server` = project
