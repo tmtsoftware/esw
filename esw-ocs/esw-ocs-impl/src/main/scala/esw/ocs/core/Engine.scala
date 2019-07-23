@@ -22,12 +22,12 @@ private[ocs] class Engine(implicit mat: Materializer) {
     job of engine is to pull only one command and wait for its completion then pull next
     this is achieved with the combination of pullNext and readyToExecuteNext
    */
-  def processStep(sequenceOperator: SequenceOperator, script: Script): Future[Done] = async {
+  private def processStep(sequenceOperator: SequenceOperator, script: Script): Future[Done] = async {
     val step = await(sequenceOperator.pullNext)
     script.execute(step.command).recover {
       case NonFatal(e) =>
         e.printStackTrace() // fixme: log it
-        sequenceOperator.update(Error(step.command.runId, e.getMessage))
+        sequenceOperator.update(Error(step.id, e.getMessage))
     }
 
     await(sequenceOperator.readyToExecuteNext)

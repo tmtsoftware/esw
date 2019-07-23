@@ -15,6 +15,7 @@ import esw.ocs.core.SequenceComponentBehavior
 import esw.ocs.syntax.FutureSyntax.FutureOps
 import esw.ocs.utils.RegistrationUtils
 
+// $COVERAGE-OFF$
 private[ocs] class SequenceComponentWiring(name: String) {
   lazy val actorRuntime = new ActorRuntime(name)
   import actorRuntime._
@@ -33,5 +34,5 @@ private[ocs] class SequenceComponentWiring(name: String) {
 
     RegistrationUtils.register(locationService, registration)(coordinatedShutdown).block
   }
-
 }
+// $COVERAGE-ON$

@@ -18,7 +18,7 @@ import esw.ocs.dsl.{CswServices, Script}
 import esw.ocs.macros.StrandEc
 import esw.ocs.syntax.FutureSyntax.FutureOps
 import esw.ocs.utils.RegistrationUtils
-
+// $COVERAGE-OFF$
 private[ocs] class SequencerWiring(val sequencerId: String, val observingMode: String) {
   private lazy val config          = ConfigFactory.load()
   private lazy val sequencerConfig = SequencerConfig.from(config, sequencerId, observingMode)
@@ -65,3 +65,4 @@ private[ocs] class SequencerWiring(val sequencerId: String, val observingMode: S
     RegistrationUtils.register(locationService, registration)(coordinatedShutdown).block
   }
 }
+// $COVERAGE-ON$
