@@ -19,8 +19,10 @@ trait ScriptDsl extends ControlDsl {
 
   private val commandHandlerBuilder: FunctionBuilder[SequenceCommand, Future[Unit]] = new FunctionBuilder
 
-  private val shutdownHandlers: FunctionHandlers[Unit, Future[Unit]] = new FunctionHandlers
-  private val abortHandlers: FunctionHandlers[Unit, Future[Unit]]    = new FunctionHandlers
+  private val goOnlineHandlers: FunctionHandlers[Unit, Future[Unit]]  = new FunctionHandlers
+  private val goOfflineHandlers: FunctionHandlers[Unit, Future[Unit]] = new FunctionHandlers
+  private val shutdownHandlers: FunctionHandlers[Unit, Future[Unit]]  = new FunctionHandlers
+  private val abortHandlers: FunctionHandlers[Unit, Future[Unit]]     = new FunctionHandlers
 
   private def handle[T <: SequenceCommand: ClassTag](name: String)(handler: T => Future[Unit]): Unit =
     commandHandlerBuilder.addHandler[T](handler)(_.commandName.name == name)
@@ -37,8 +39,10 @@ trait ScriptDsl extends ControlDsl {
 
   // this futures will normally run in parallel, but given that those are running on same thread
   // this will executes sequentially
-  private[ocs] def executeShutdown(): Future[Done] = Future.sequence(shutdownHandlers.execute(())).map(_ => Done)
-  private[ocs] def executeAbort(): Future[Done]    = Future.sequence(abortHandlers.execute(())).map(_ => Done)
+  private[ocs] def executeGoOnline(): Future[Done]  = Future.sequence(goOnlineHandlers.execute(())).map(_ => Done)
+  private[ocs] def executeGoOffline(): Future[Done] = Future.sequence(goOfflineHandlers.execute(())).map(_ => Done)
+  private[ocs] def executeShutdown(): Future[Done]  = Future.sequence(shutdownHandlers.execute(())).map(_ => Done)
+  private[ocs] def executeAbort(): Future[Done]     = Future.sequence(abortHandlers.execute(())).map(_ => Done)
 
   protected final def nextIf(f: SequenceCommand => Boolean): Future[Option[SequenceCommand]] =
     spawn {

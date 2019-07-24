@@ -3,7 +3,7 @@ package esw.ocs.core
 import akka.actor.typed.scaladsl.Behaviors
 import csw.command.client.messages.{ProcessSequence, SequencerMsg}
 import esw.ocs.api.models.messages.SequencerMessages._
-import esw.ocs.api.models.messages.error.{AbortError, ShutdownError}
+import esw.ocs.api.models.messages.error.{AbortError, GoOfflineError, GoOnlineError, ShutdownError}
 import esw.ocs.api.models.messages.{EditorResponse, LifecycleResponse, StepListResponse}
 import esw.ocs.dsl.ScriptDsl
 
@@ -16,6 +16,20 @@ object SequencerBehavior {
 
       msg match {
         // ===== External Lifecycle =====
+        case GoOnline(replyTo) =>
+          script
+            .executeGoOnline()
+            .map(Right(_))
+            .recover { case NonFatal(ex) => Left(GoOnlineError(ex.getMessage)) }
+            .foreach(replyTo ! LifecycleResponse(_))
+
+        case GoOffline(replyTo) =>
+          script
+            .executeGoOffline()
+            .map(Right(_))
+            .recover { case NonFatal(ex) => Left(GoOfflineError(ex.getMessage)) }
+            .foreach(replyTo ! LifecycleResponse(_))
+
         case Shutdown(replyTo) =>
           script
             .executeShutdown()

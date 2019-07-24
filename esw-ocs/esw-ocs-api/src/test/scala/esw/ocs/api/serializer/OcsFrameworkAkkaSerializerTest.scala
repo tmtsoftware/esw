@@ -35,6 +35,7 @@ class OcsFrameworkAkkaSerializerTest extends BaseTestSuite {
     Await.result(system.whenTerminated, 2.seconds)
   }
 
+  val lifecycleResponseProbeRef: ActorRef[LifecycleResponse]     = TestProbe[LifecycleResponse].ref
   val editorResponseProbeRef: ActorRef[EditorResponse]           = TestProbe[EditorResponse].ref
   val stepListResponseProbeRef: ActorRef[StepList]               = TestProbe[StepList].ref
   val stepListOptionResponseProbeRef: ActorRef[StepListResponse] = TestProbe[StepListResponse].ref
@@ -67,6 +68,26 @@ class OcsFrameworkAkkaSerializerTest extends BaseTestSuite {
         Pause(editorResponseProbeRef),
         Resume(editorResponseProbeRef),
         Reset(editorResponseProbeRef)
+      )
+
+      forAll(testData) { externalSequencerMsg =>
+        val serializer = serialization.findSerializerFor(externalSequencerMsg)
+        serializer.getClass shouldBe classOf[OcsFrameworkAkkaSerializer]
+
+        val bytes = serializer.toBinary(externalSequencerMsg)
+        serializer.fromBinary(bytes, Some(externalSequencerMsg.getClass)) shouldEqual externalSequencerMsg
+      }
+    }
+  }
+
+  "LifecycleMsg" must {
+    "use command OcsFrameworkAkkaSerializer for (de)serialization" in {
+      val testData = Table(
+        "LifecycleMsg models",
+        GoOnline(lifecycleResponseProbeRef.ref),
+        GoOffline(lifecycleResponseProbeRef.ref),
+        Shutdown(lifecycleResponseProbeRef.ref),
+        Abort(lifecycleResponseProbeRef.ref)
       )
 
       forAll(testData) { externalSequencerMsg =>
@@ -169,6 +190,8 @@ class OcsFrameworkAkkaSerializerTest extends BaseTestSuite {
     "use command OcsFrameworkAkkaSerializer for (de)serialization" in {
       val testData = Table(
         "LifecycleResponse",
+        LifecycleResponse(Left(GoOnlineError("GoOnlineError"))),
+        LifecycleResponse(Left(GoOfflineError("GoOfflineError"))),
         LifecycleResponse(Left(ShutdownError("ShutdownError"))),
         LifecycleResponse(Left(AbortError("AbortError")))
       )

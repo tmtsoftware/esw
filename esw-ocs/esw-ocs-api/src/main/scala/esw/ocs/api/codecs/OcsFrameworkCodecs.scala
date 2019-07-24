@@ -79,8 +79,10 @@ trait OcsFrameworkCodecs extends MessageCodecs with DoneCodec {
   implicit lazy val addFailedCodec: Codec[AddFailed.type]              = singletonCodec(AddFailed)
   implicit lazy val stepListErrorCodec: Codec[StepListError]           = deriveCodec[StepListError]
 
-  implicit lazy val sequencerAbortErrorCodec: Codec[AbortError]       = deriveCodec[AbortError]
+  implicit lazy val goOnlineErrorCodec: Codec[GoOnlineError]          = deriveCodec[GoOnlineError]
+  implicit lazy val goOfflineErrorCodec: Codec[GoOfflineError]        = deriveCodec[GoOfflineError]
   implicit lazy val sequencerShutdownErrorCodec: Codec[ShutdownError] = deriveCodec[ShutdownError]
+  implicit lazy val sequencerAbortErrorCodec: Codec[AbortError]       = deriveCodec[AbortError]
 
   implicit lazy val lifecycleErrorCodec: Codec[LifecycleError] = deriveCodec[LifecycleError]
   implicit lazy val editorErrorCodec: Codec[EditorError]       = deriveCodec[EditorError]
