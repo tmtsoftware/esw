@@ -29,6 +29,6 @@ private[ocs] class ActorRuntime(componentName: String) {
   lazy val loggerFactory                            = new LoggerFactory(componentName)
   lazy val log: Logger                              = loggerFactory.getLogger
 
-  def startLogging(name: String): LoggingSystem =
-    LoggingSystemFactory.start(name, BuildInfo.version, Networks().hostname, typedSystem)
+  def startLogging(): LoggingSystem =
+    LoggingSystemFactory.start(componentName, BuildInfo.version, Networks().hostname, typedSystem)
 }

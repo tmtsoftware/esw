@@ -6,7 +6,9 @@ import csw.location.models.AkkaLocation
 import csw.logging.api.scaladsl.Logger
 import esw.ocs.api.models.messages.error.RegistrationError
 import esw.ocs.app.SequencerAppCommand.{SequenceComponent, Sequencer}
-import esw.ocs.internal.{SequenceComponentWiring, SequencerWiring}
+import esw.ocs.internal.{ActorRuntime, SequenceComponentWiring, SequencerWiring}
+
+import scala.util.control.NonFatal
 
 object SequencerApp extends CommandApp[SequencerAppCommand] {
   override def appName: String    = getClass.getSimpleName.dropRight(1) // remove $ from class name
@@ -30,23 +32,38 @@ object SequencerApp extends CommandApp[SequencerAppCommand] {
     }
 
   def startSequenceComponent(name: String, sequenceComponentWiring: SequenceComponentWiring, enableLogging: Boolean): Unit = {
-    import sequenceComponentWiring.actorRuntime._
-    if (enableLogging) startLogging(name)
-    report(sequenceComponentWiring.start(), log, enableLogging)(cleanup = typedSystem.terminate())
+    import sequenceComponentWiring._
+    withLogging(actorRuntime, enableLogging) {
+      sequenceComponentWiring.start()
+    }
   }
 
   def startSequencer(sequencerWiring: SequencerWiring, enableLogging: Boolean): Unit = {
-    import sequencerWiring.actorRuntime._
-    if (enableLogging) startLogging(sequencerWiring.name)
-    report(sequencerWiring.start(), log, enableLogging)(cleanup = typedSystem.terminate())
+    import sequencerWiring._
+    withLogging(actorRuntime, enableLogging) {
+      sequencerWiring.start()
+    }
+  }
+
+  private def withLogging[T](actorRuntime: ActorRuntime, enableLogging: Boolean)(
+      f: => Either[RegistrationError, AkkaLocation]
+  ): Unit = {
+    import actorRuntime._
+    def cleanup(): Unit = typedSystem.terminate()
+    try {
+      if (enableLogging) startLogging()
+      report(f, log, enableLogging)(() => cleanup())
+    } catch {
+      case NonFatal(e) => cleanup(); throw e
+    }
   }
 
   private def report(either: Either[RegistrationError, AkkaLocation], log: Logger, enableLogging: Boolean)(
-      cleanup: => Unit
+      cleanup: () => Unit
   ): Unit =
     either match {
       case Left(err) =>
-        cleanup
+        cleanup()
         val errMsg = s"Failed to start with error: $err"
         log.error(errMsg)
         printLogs("ERROR", errMsg, enableLogging)
@@ -58,8 +75,7 @@ object SequencerApp extends CommandApp[SequencerAppCommand] {
     }
 
   private def printLogs(level: String, msg: String, enableLogging: Boolean): Unit = if (enableLogging) {
-    def printLine(msg: Any): Unit = if (level.equalsIgnoreCase("ERROR")) Console.err.println(msg) else println(msg)
-    printLine(msg)
-    printLine("Please find complete logs under $TMT_LOG_HOME directory")
+    println(s"[$level] $msg")
+    println(s"[$level] Please find complete logs under ${sys.env("TMT_LOG_HOME")} directory")
   }
 }

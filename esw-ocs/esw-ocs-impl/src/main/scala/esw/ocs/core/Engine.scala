@@ -25,9 +25,7 @@ private[ocs] class Engine(implicit mat: Materializer) {
   private def processStep(sequenceOperator: SequenceOperator, script: Script): Future[Done] = async {
     val step = await(sequenceOperator.pullNext)
     script.execute(step.command).recover {
-      case NonFatal(e) =>
-        e.printStackTrace() // fixme: log it
-        sequenceOperator.update(Error(step.id, e.getMessage))
+      case NonFatal(e) => sequenceOperator.update(Error(step.id, e.getMessage))
     }
 
     await(sequenceOperator.readyToExecuteNext)
