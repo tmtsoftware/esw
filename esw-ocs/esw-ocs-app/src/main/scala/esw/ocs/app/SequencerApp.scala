@@ -46,16 +46,20 @@ object SequencerApp extends CommandApp[SequencerAppCommand] {
   ): Unit =
     either match {
       case Left(err) =>
-        log.error(s"Failed to start with error: $err")
-        printLogs("ERROR", s"Failed to start application with error: $err", enableLogging)
         cleanup
+        val errMsg = s"Failed to start with error: $err"
+        log.error(errMsg)
+        printLogs("ERROR", errMsg, enableLogging)
+        exit(255)
       case Right(location) =>
-        log.info(s"Successfully started and registered Component with Location: [$location]")
-        printLogs("INFO", s"Successfully started with Location: $location", enableLogging)
+        val msg = s"Successfully started and registered Component with Location: [$location]"
+        log.info(msg)
+        printLogs("INFO", msg, enableLogging)
     }
 
   private def printLogs(level: String, msg: String, enableLogging: Boolean): Unit = if (enableLogging) {
-    println(s"[$level] $msg")
-    println(s"[$level] Please find complete logs under $$TMT_LOG_HOME directory")
+    def printLine(msg: Any): Unit = if (level.equalsIgnoreCase("ERROR")) Console.err.println(msg) else println(msg)
+    printLine(msg)
+    printLine("Please find complete logs under $TMT_LOG_HOME directory")
   }
 }
