@@ -23,6 +23,4 @@ trait SequenceEditor {
   def removeBreakpoint(id: Id): Future[EditorResponse]
   def reset(): Future[EditorResponse]
 
-  def shutdown(): Future[EditorResponse]
-  def abort(): Future[EditorResponse]
 }

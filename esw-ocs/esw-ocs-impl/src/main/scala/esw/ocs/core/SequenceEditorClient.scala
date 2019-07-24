@@ -34,8 +34,4 @@ class SequenceEditorClient(sequencer: ActorRef[ExternalEditorSequencerMsg])(impl
   override def addBreakpoint(id: Id): Future[EditorResponse]    = sequencer ? (AddBreakpoint(id, _))
   override def removeBreakpoint(id: Id): Future[EditorResponse] = sequencer ? (RemoveBreakpoint(id, _))
   override def reset(): Future[EditorResponse]                  = sequencer ? Reset
-
-  // It is Ok to call Try.get inside future
-  override def shutdown(): Future[EditorResponse] = sequencer ? Shutdown
-  override def abort(): Future[EditorResponse]    = sequencer ? Abort
 }

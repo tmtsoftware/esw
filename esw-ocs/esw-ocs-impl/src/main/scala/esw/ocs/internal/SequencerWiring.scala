@@ -46,14 +46,15 @@ private[ocs] class SequencerWiring(val sequencerId: String, val observingMode: S
   lazy val strandEc               = StrandEc()
   lazy val sequencer              = new Sequencer(commandResponseManager)(strandEc, timeout)
 
-  lazy val sequenceEditorClient = new SequenceEditorClient(sequencerRef)
+  lazy val sequenceEditorClient      = new SequenceEditorClient(sequencerRef)
+  lazy val sequencerSupervisorClient = new SequencerSupervisorClient(sequencerRef)
 
   private lazy val locationService: LocationService = HttpLocationServiceFactory.makeLocalClient
 
   // fixme: no need to block
   def shutDown(): Unit = {
     locationService.unregister(AkkaConnection(componentId)).block
-    sequenceEditorClient.shutdown().block
+    sequencerSupervisorClient.shutdown().block
     strandEc.shutdown()
     typedSystem.terminate()
   }

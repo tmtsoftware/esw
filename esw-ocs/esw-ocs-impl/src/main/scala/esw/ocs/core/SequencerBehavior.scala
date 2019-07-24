@@ -3,9 +3,11 @@ package esw.ocs.core
 import akka.actor.typed.scaladsl.Behaviors
 import csw.command.client.messages.{ProcessSequence, SequencerMsg}
 import esw.ocs.api.models.messages.SequencerMessages._
-import esw.ocs.api.models.messages.error.{SequencerAbortError, SequencerShutdownError}
-import esw.ocs.api.models.messages.{EditorResponse, StepListResponse}
+import esw.ocs.api.models.messages.error.{AbortError, ShutdownError}
+import esw.ocs.api.models.messages.{EditorResponse, LifecycleResponse, StepListResponse}
 import esw.ocs.dsl.ScriptDsl
+
+import scala.util.control.NonFatal
 
 object SequencerBehavior {
   def behavior(sequencer: Sequencer, script: ScriptDsl): Behaviors.Receive[SequencerMsg] =
@@ -18,15 +20,15 @@ object SequencerBehavior {
           script
             .executeShutdown()
             .map(Right(_))
-            .recover { case ex: Exception => Left(SequencerShutdownError(ex.getMessage)) } // fixme: use NonFatal
-            .foreach(replyTo ! EditorResponse(_))
+            .recover { case NonFatal(ex) => Left(ShutdownError(ex.getMessage)) }
+            .foreach(replyTo ! LifecycleResponse(_))
 
         case Abort(replyTo) =>
           script
             .executeAbort()
             .map(Right(_))
-            .recover { case ex: Exception => Left(SequencerAbortError(ex.getMessage)) }
-            .foreach(replyTo ! EditorResponse(_))
+            .recover { case NonFatal(ex) => Left(AbortError(ex.getMessage)) }
+            .foreach(replyTo ! LifecycleResponse(_))
 
         // ===== External Editor =====
         case ProcessSequence(sequence, replyTo) => sequencer.processSequence(sequence).foreach(replyTo.tell)

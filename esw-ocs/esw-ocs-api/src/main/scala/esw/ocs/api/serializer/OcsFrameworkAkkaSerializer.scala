@@ -8,8 +8,14 @@ import csw.logging.api.scaladsl.Logger
 import csw.logging.client.scaladsl.LoggerFactory
 import esw.ocs.api.codecs.OcsFrameworkCodecs
 import esw.ocs.api.models.StepList
-import esw.ocs.api.models.messages.SequencerMessages.ExternalEditorSequencerMsg
-import esw.ocs.api.models.messages.{EditorResponse, SequenceComponentMsg, SequenceComponentResponse, StepListResponse}
+import esw.ocs.api.models.messages.SequencerMessages.{ExternalEditorSequencerMsg, LifecycleMsg}
+import esw.ocs.api.models.messages.{
+  EditorResponse,
+  LifecycleResponse,
+  SequenceComponentMsg,
+  SequenceComponentResponse,
+  StepListResponse
+}
 import io.bullet.borer.Cbor
 
 class OcsFrameworkAkkaSerializer(_actorSystem: ExtendedActorSystem) extends OcsFrameworkCodecs with Serializer {
@@ -19,10 +25,12 @@ class OcsFrameworkAkkaSerializer(_actorSystem: ExtendedActorSystem) extends OcsF
   private val logger: Logger   = new LoggerFactory("Sequencer-codec").getLogger
 
   override def toBinary(o: AnyRef): Array[Byte] = o match {
+    case x: LifecycleMsg               => Cbor.encode(x).toByteArray
     case x: ExternalEditorSequencerMsg => Cbor.encode(x).toByteArray
     case x: StepList                   => Cbor.encode(x).toByteArray
     case x: SequenceComponentMsg       => Cbor.encode(x).toByteArray
     case x: SequenceComponentResponse  => Cbor.encode(x).toByteArray
+    case x: LifecycleResponse          => Cbor.encode(x).toByteArray
     case x: EditorResponse             => Cbor.encode(x).toByteArray
     case x: StepListResponse           => Cbor.encode(x).toByteArray
     case _ =>
@@ -38,6 +46,10 @@ class OcsFrameworkAkkaSerializer(_actorSystem: ExtendedActorSystem) extends OcsF
       Cbor.decode(bytes).to[ExternalEditorSequencerMsg].value
     } else if (classOf[StepList].isAssignableFrom(manifest.get)) {
       Cbor.decode(bytes).to[StepList].value
+    } else if (classOf[LifecycleMsg].isAssignableFrom(manifest.get)) {
+      Cbor.decode(bytes).to[LifecycleMsg].value
+    } else if (classOf[LifecycleResponse].isAssignableFrom(manifest.get)) {
+      Cbor.decode(bytes).to[LifecycleResponse].value
     } else if (classOf[SequenceComponentMsg].isAssignableFrom(manifest.get)) {
       Cbor.decode(bytes).to[SequenceComponentMsg].value
     } else if (classOf[SequenceComponentResponse].isAssignableFrom(manifest.get)) {

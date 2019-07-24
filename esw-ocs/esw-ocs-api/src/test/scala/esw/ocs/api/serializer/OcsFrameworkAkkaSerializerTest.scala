@@ -18,7 +18,7 @@ import esw.ocs.api.models.messages.SequenceComponentResponse.{GetStatusResponse,
 import esw.ocs.api.models.messages.SequencerMessages._
 import esw.ocs.api.models.messages.error.StepListError._
 import esw.ocs.api.models.messages.error._
-import esw.ocs.api.models.messages.{EditorResponse, StepListResponse}
+import esw.ocs.api.models.messages.{EditorResponse, LifecycleResponse, StepListResponse}
 import esw.ocs.api.models.{Step, StepList, StepStatus}
 import org.scalatest.prop.TableDrivenPropertyChecks.forAll
 import org.scalatest.prop.Tables.Table
@@ -50,12 +50,10 @@ class OcsFrameworkAkkaSerializerTest extends BaseTestSuite {
     TestProbe[Done].ref
   val akkaLocation = AkkaLocation(AkkaConnection(ComponentId("test", ComponentType.Sequencer)), Prefix("test"), new URI("uri"))
 
-  "ExternalSequencerMsg" must {
+  "ExternalEditorSequencerMsg" must {
     "use command OcsFrameworkAkkaSerializer for (de)serialization" in {
       val testData = Table(
-        "ExternalSequencerMsg models",
-        Shutdown(editorResponseProbeRef),
-        Abort(editorResponseProbeRef),
+        "ExternalEditorSequencerMsg models",
         Available(booleanResponseProbeRef.ref),
         GetSequence(stepListResponseProbeRef),
         GetPreviousSequence(stepListOptionResponseProbeRef),
@@ -151,12 +149,28 @@ class OcsFrameworkAkkaSerializerTest extends BaseTestSuite {
       val testData = Table(
         "EditorResponse",
         EditorResponse(Left(NotSupported(StepStatus.InFlight))),
-        EditorResponse(Left(SequencerShutdownError("SequencerShutdownError"))),
-        EditorResponse(Left(SequencerAbortError("SequencerAbortError"))),
         EditorResponse(Left(AddFailed)),
         EditorResponse(Left(UpdateNotSupported(Finished.Success(CommandResponse.Completed(Id())), InFlight))),
         EditorResponse(Left(PauseFailed)),
         EditorResponse(Left(IdDoesNotExist(Id())))
+      )
+
+      forAll(testData) { model =>
+        val serializer: Serializer = serialization.findSerializerFor(model)
+        serializer.getClass shouldBe classOf[OcsFrameworkAkkaSerializer]
+
+        val bytes = serializer.toBinary(model)
+        serializer.fromBinary(bytes, Some(model.getClass)) shouldEqual model
+      }
+    }
+  }
+
+  "LifecycleResponse" must {
+    "use command OcsFrameworkAkkaSerializer for (de)serialization" in {
+      val testData = Table(
+        "LifecycleResponse",
+        LifecycleResponse(Left(ShutdownError("ShutdownError"))),
+        LifecycleResponse(Left(AbortError("AbortError")))
       )
 
       forAll(testData) { model =>

@@ -18,13 +18,17 @@ object SequencerMessages {
   final case class ReadyToExecuteNext(replyTo: ActorRef[Done])    extends InternalSequencerMsg
   final case class UpdateFailure(failureResponse: SubmitResponse) extends InternalSequencerMsg
 
-  sealed trait ExternalEditorSequencerMsg extends SequencerMsg with OcsFrameworkAkkaSerializable
-
   // lifecycle msgs
-  final case class Shutdown(replyTo: ActorRef[EditorResponse]) extends ExternalEditorSequencerMsg
-  final case class Abort(replyTo: ActorRef[EditorResponse])    extends ExternalEditorSequencerMsg
+  sealed trait LifecycleMsg extends SequencerMsg with OcsFrameworkAkkaSerializable
+
+  final case class GoOnline(replyTo: ActorRef[LifecycleResponse])  extends LifecycleMsg
+  final case class GoOffline(replyTo: ActorRef[LifecycleResponse]) extends LifecycleMsg
+  final case class Shutdown(replyTo: ActorRef[LifecycleResponse])  extends LifecycleMsg
+  final case class Abort(replyTo: ActorRef[LifecycleResponse])     extends LifecycleMsg
 
   // editor msgs
+  sealed trait ExternalEditorSequencerMsg extends SequencerMsg with OcsFrameworkAkkaSerializable
+
   final case class Available(replyTo: ActorRef[Boolean]) extends ExternalEditorSequencerMsg
   // fixme : GetSequence and GetPreviousSequence should have replyTo StepListResponse
   final case class GetSequence(replyTo: ActorRef[StepList])                                    extends ExternalEditorSequencerMsg

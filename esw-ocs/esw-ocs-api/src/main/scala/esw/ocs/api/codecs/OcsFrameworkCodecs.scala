@@ -10,16 +10,32 @@ import esw.ocs.api.models.messages.SequenceComponentResponse.{GetStatusResponse,
 import esw.ocs.api.models.messages.SequencerMessages._
 import esw.ocs.api.models.messages.error.StepListError._
 import esw.ocs.api.models.messages.error._
-import esw.ocs.api.models.messages.{EditorResponse, SequenceComponentMsg, SequenceComponentResponse, StepListResponse}
+import esw.ocs.api.models.messages.{
+  EditorResponse,
+  LifecycleResponse,
+  SequenceComponentMsg,
+  SequenceComponentResponse,
+  StepListResponse
+}
 import io.bullet.borer.Codec
 import io.bullet.borer.derivation.ArrayBasedCodecs.deriveCodecForUnaryCaseClass
 import io.bullet.borer.derivation.MapBasedCodecs.deriveCodec
 
 trait OcsFrameworkCodecs extends MessageCodecs with DoneCodec {
 
-  //SequencerMsgCodecs
-  implicit lazy val shutdownSequencerCodec: Codec[Shutdown]              = deriveCodec[Shutdown]
-  implicit lazy val abortCodec: Codec[Abort]                             = deriveCodec[Abort]
+  //LifecycleMsg Codecs
+  implicit lazy val goOnlineCodec: Codec[GoOnline]          = deriveCodec[GoOnline]
+  implicit lazy val goOfflineCodec: Codec[GoOffline]        = deriveCodec[GoOffline]
+  implicit lazy val shutdownSequencerCodec: Codec[Shutdown] = deriveCodec[Shutdown]
+  implicit lazy val abortCodec: Codec[Abort]                = deriveCodec[Abort]
+  implicit lazy val lifecycleMsgCodec: Codec[LifecycleMsg]  = deriveCodec[LifecycleMsg]
+
+  //LifecycleResponse Codecs
+
+  implicit lazy val lifecycleResponseCodec: Codec[LifecycleResponse] = deriveCodecForUnaryCaseClass[LifecycleResponse]
+
+  //ExternalEditorSequencerMsg Codecs
+
   implicit lazy val availableCodec: Codec[Available]                     = deriveCodec[Available]
   implicit lazy val getSequenceCodec: Codec[GetSequence]                 = deriveCodec[GetSequence]
   implicit lazy val getPreviousSequenceCodec: Codec[GetPreviousSequence] = deriveCodec[GetPreviousSequence]
@@ -36,13 +52,11 @@ trait OcsFrameworkCodecs extends MessageCodecs with DoneCodec {
 
   implicit lazy val externalEditorSequencerMsgCodec: Codec[ExternalEditorSequencerMsg] = deriveCodec[ExternalEditorSequencerMsg]
 
+  //StepList Codecs
+
   implicit lazy val stepCodec: Codec[Step]         = deriveCodec[Step]
   implicit lazy val stepListCodec: Codec[StepList] = deriveCodec[StepList]
 
-  // StepListResponse Codecs
-  implicit lazy val stepListResponseCodec: Codec[StepListResponse] = deriveCodec[StepListResponse]
-
-  // StepCodecs
   implicit lazy val successStatusCodec: Codec[Success] = deriveCodec[Success]
   implicit lazy val failureStatusCodec: Codec[Failure] = deriveCodec[Failure]
 
@@ -51,6 +65,9 @@ trait OcsFrameworkCodecs extends MessageCodecs with DoneCodec {
   implicit lazy val finishedStatusCodec: Codec[Finished]      = deriveCodec[Finished]
 
   implicit lazy val stepStatusCodec: Codec[StepStatus] = deriveCodec[StepStatus]
+
+  //StepListResponse Codecs
+  implicit lazy val stepListResponseCodec: Codec[StepListResponse] = deriveCodec[StepListResponse]
 
   //SequencerErrorCodecs
   implicit lazy val notSupportedCodec: Codec[NotSupported] = deriveCodec[NotSupported]
@@ -62,10 +79,11 @@ trait OcsFrameworkCodecs extends MessageCodecs with DoneCodec {
   implicit lazy val addFailedCodec: Codec[AddFailed.type]              = singletonCodec(AddFailed)
   implicit lazy val stepListErrorCodec: Codec[StepListError]           = deriveCodec[StepListError]
 
-  implicit lazy val sequencerAbortErrorCodec: Codec[SequencerAbortError]       = deriveCodec[SequencerAbortError]
-  implicit lazy val sequencerShutdownErrorCodec: Codec[SequencerShutdownError] = deriveCodec[SequencerShutdownError]
+  implicit lazy val sequencerAbortErrorCodec: Codec[AbortError]       = deriveCodec[AbortError]
+  implicit lazy val sequencerShutdownErrorCodec: Codec[ShutdownError] = deriveCodec[ShutdownError]
 
-  implicit lazy val editorErrorCodec: Codec[EditorError] = deriveCodec[EditorError]
+  implicit lazy val lifecycleErrorCodec: Codec[LifecycleError] = deriveCodec[LifecycleError]
+  implicit lazy val editorErrorCodec: Codec[EditorError]       = deriveCodec[EditorError]
 
   //SequenceEditorResponse Codecs
   implicit lazy val editorResponseCodec: Codec[EditorResponse] = deriveCodecForUnaryCaseClass[EditorResponse]

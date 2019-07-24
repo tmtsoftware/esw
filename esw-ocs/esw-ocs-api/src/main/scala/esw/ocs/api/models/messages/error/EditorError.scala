@@ -6,9 +6,6 @@ import esw.ocs.api.serializer.OcsFrameworkAkkaSerializable
 
 sealed trait EditorError extends OcsFrameworkAkkaSerializable
 
-final case class SequencerShutdownError(msg: String) extends EditorError
-final case class SequencerAbortError(msg: String)    extends EditorError
-
 sealed trait StepListError extends EditorError with Product with Serializable
 
 object StepListError {
