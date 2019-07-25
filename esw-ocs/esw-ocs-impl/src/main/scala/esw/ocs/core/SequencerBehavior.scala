@@ -3,6 +3,9 @@ package esw.ocs.core
 import akka.actor.typed.ActorRef
 import akka.actor.typed.scaladsl.Behaviors
 import csw.command.client.messages.{ProcessSequence, SequencerMsg}
+import csw.location.api.scaladsl.LocationService
+import csw.location.models.ComponentId
+import csw.location.models.Connection.AkkaConnection
 import esw.ocs.api.models.messages.SequencerMessages._
 import esw.ocs.api.models.messages.error.StepListError.NotAllowedOnFinishedSeq
 import esw.ocs.api.models.messages.error.{AbortError, GoOfflineError, GoOnlineError, ShutdownError}
@@ -11,9 +14,15 @@ import esw.ocs.dsl.ScriptDsl
 import esw.ocs.utils.FutureEitherExt._
 
 import scala.concurrent.Future
+import scala.util.control.NonFatal
 
 object SequencerBehavior {
-  def behavior(sequencer: Sequencer, script: ScriptDsl): Behaviors.Receive[SequencerMsg] =
+  def behavior(
+      componentId: ComponentId,
+      sequencer: Sequencer,
+      script: ScriptDsl,
+      locationService: LocationService
+  ): Behaviors.Receive[SequencerMsg] =
     Behaviors.receive[SequencerMsg] { (ctx, msg) =>
       import ctx.executionContext
 
@@ -26,6 +35,16 @@ object SequencerBehavior {
           }
           .foreach(replyTo ! LifecycleResponse(_))
 
+      def shutdown(replyTo: ActorRef[LifecycleResponse]): Unit = {
+        sequencer.shutdown()
+        locationService
+          .unregister(AkkaConnection(componentId))
+          .flatMap(_ => script.executeShutdown().toEither(ex => ShutdownError(ex.getMessage)))
+          .recover { case NonFatal(ex) => Left(ShutdownError(ex.getMessage)) }
+          .foreach(replyTo ! LifecycleResponse(_))
+        ctx.system.terminate
+      }
+
       msg match {
         // ===== External Lifecycle =====
         case GoOnline(replyTo) =>
@@ -34,10 +53,8 @@ object SequencerBehavior {
         case GoOffline(replyTo) =>
           script.executeGoOffline().toEither(ex => GoOfflineError(ex.getMessage)).foreach(replyTo ! LifecycleResponse(_))
 
-        case Shutdown(replyTo) =>
-          script.executeShutdown().toEither(ex => ShutdownError(ex.getMessage)).foreach(replyTo ! LifecycleResponse(_))
-
-        case Abort(replyTo) => abort(replyTo)
+        case Shutdown(replyTo) => shutdown(replyTo)
+        case Abort(replyTo)    => abort(replyTo)
 
         // ===== External Editor =====
         case ProcessSequence(sequence, replyTo) => sequencer.processSequence(sequence).foreach(replyTo.tell)

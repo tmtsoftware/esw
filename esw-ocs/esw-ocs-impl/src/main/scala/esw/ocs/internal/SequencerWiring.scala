@@ -14,7 +14,6 @@ import csw.location.models.Connection.AkkaConnection
 import csw.location.models.{AkkaLocation, AkkaRegistration, ComponentId, ComponentType}
 import esw.ocs.api.models.messages.error.RegistrationError
 import esw.ocs.core._
-import esw.ocs.dsl.Async.{async, await}
 import esw.ocs.dsl.utils.ScriptLoader
 import esw.ocs.dsl.{CswServices, Script}
 import esw.ocs.macros.StrandEc
@@ -39,7 +38,7 @@ private[ocs] class SequencerWiring(val sequencerId: String, val observingMode: S
   private lazy val commandResponseManager: CommandResponseManager = new CommandResponseManager(crmRef)
 
   lazy val sequencerRef: ActorRef[SequencerMsg] =
-    (typedSystem ? Spawn(SequencerBehavior.behavior(sequencer, script), sequencerName)).block
+    (typedSystem ? Spawn(SequencerBehavior.behavior(componentId, sequencer, script, locationService), sequencerName)).block
 
   //Pass lambda to break circular dependency shown below.
   //SequencerRef -> Script -> cswServices -> SequencerOperator -> SequencerRef
@@ -55,16 +54,7 @@ private[ocs] class SequencerWiring(val sequencerId: String, val observingMode: S
 
   private lazy val locationService: LocationService = HttpLocationServiceFactory.makeLocalClient
 
-  def shutDown(): Future[Done] = async {
-    val unregisterResult = locationService.unregister(AkkaConnection(componentId))
-    val shutdownResult   = sequencerSupervisorClient.shutdown()
-
-    await(unregisterResult)
-    await(shutdownResult)
-    strandEc.shutdown()
-    typedSystem.terminate()
-    Done
-  }
+  def shutDown(): Future[Done] = sequencerSupervisorClient.shutdown().map(_ => Done)
 
   def start(): Either[RegistrationError, AkkaLocation] = {
     engine.start(sequenceOperatorFactory(), script)

@@ -4,13 +4,15 @@ import akka.Done
 import akka.actor.testkit.typed.scaladsl.{ScalaTestWithActorTestKit, TestProbe}
 import akka.actor.typed.ActorRef
 import csw.command.client.messages.{ProcessSequence, ProcessSequenceResponse, SequencerMsg}
+import csw.location.api.scaladsl.LocationService
+import csw.location.models.{ComponentId, ComponentType}
 import csw.params.commands.CommandResponse.{Completed, Error, SubmitResponse}
 import csw.params.commands.{CommandName, Sequence, Setup}
 import csw.params.core.models.{Id, Prefix}
 import esw.ocs.BaseTestSuite
-import esw.ocs.api.models.messages.{EditorResponse, StepListResponse}
 import esw.ocs.api.models.messages.SequencerMessages._
 import esw.ocs.api.models.messages.error.EditorError
+import esw.ocs.api.models.messages.{EditorResponse, StepListResponse}
 import esw.ocs.api.models.{Step, StepList}
 import esw.ocs.dsl.ScriptDsl
 import org.mockito.Mockito.{verify, when}
@@ -19,10 +21,12 @@ import org.scalatestplus.mockito.MockitoSugar
 import scala.concurrent.Future
 
 class SequencerBehaviorTest extends ScalaTestWithActorTestKit with BaseTestSuite with MockitoSugar {
-  private val sequencer = mock[Sequencer]
-  private val scriptDsl = mock[ScriptDsl]
+  private val sequencer       = mock[Sequencer]
+  private val scriptDsl       = mock[ScriptDsl]
+  private val locationService = mock[LocationService]
+  private val componentId     = ComponentId("sequencer1", ComponentType.Sequencer)
 
-  private val sequencerActor = spawn(SequencerBehavior.behavior(sequencer, scriptDsl))
+  private val sequencerActor = spawn(SequencerBehavior.behavior(componentId, sequencer, scriptDsl, locationService))
 
   "ProcessSequence" in {
     val command1 = Setup(Prefix("test"), CommandName("command-1"), None)

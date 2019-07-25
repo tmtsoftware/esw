@@ -85,6 +85,8 @@ private[ocs] class Sequencer(crm: CommandResponseManager)(implicit strandEc: Str
   def removeBreakpoint(id: Id): Future[Either[RemoveBreakpointError, Done]] =
     updateStepListResult(stepList.removeBreakpoint(id))
 
+  def shutdown(): Unit = strandEc.shutdown()
+
   private def updateStepList(newStepList: StepList): Unit = {
     if (!stepList.isEmpty)
       previousStepList = Some(stepList)
