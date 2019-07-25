@@ -27,7 +27,7 @@ class SequencerCommandServiceTest extends ScalaTestFrameworkTestKit with BaseTes
   }
 
   override protected def afterAll(): Unit = {
-    wiring.shutDown()
+    wiring.shutDown().futureValue
     super.afterAll()
   }
 

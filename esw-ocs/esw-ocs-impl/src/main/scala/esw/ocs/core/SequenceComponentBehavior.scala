@@ -29,17 +29,20 @@ object SequenceComponentBehavior {
     }
 
     def running(wiring: SequencerWiring, location: AkkaLocation): Behavior[SequenceComponentMsg] =
-      Behaviors.receiveMessage[SequenceComponentMsg] {
-        case UnloadScript(replyTo) =>
-          wiring.shutDown()
-          replyTo ! Done
-          idle
-        case GetStatus(replyTo) =>
-          replyTo ! GetStatusResponse(Some(location))
-          Behaviors.same
-        case LoadScript(_, _, replyTo) =>
-          replyTo ! LoadScriptResponse(Left(RegistrationError("Loading script failed: Sequencer already running")))
-          Behaviors.same
+      Behaviors.receive[SequenceComponentMsg] { (ctx, msg) =>
+        import ctx.executionContext
+
+        msg match {
+          case UnloadScript(replyTo) =>
+            wiring.shutDown().foreach(_ => replyTo ! Done)
+            idle
+          case GetStatus(replyTo) =>
+            replyTo ! GetStatusResponse(Some(location))
+            Behaviors.same
+          case LoadScript(_, _, replyTo) =>
+            replyTo ! LoadScriptResponse(Left(RegistrationError("Loading script failed: Sequencer already running")))
+            Behaviors.same
+        }
       }
     idle
   }

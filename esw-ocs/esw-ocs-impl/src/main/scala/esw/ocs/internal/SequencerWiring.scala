@@ -1,5 +1,6 @@
 package esw.ocs.internal
 
+import akka.Done
 import akka.actor.typed.ActorRef
 import akka.actor.typed.SpawnProtocol.Spawn
 import akka.actor.typed.scaladsl.AskPattern.Askable
@@ -13,11 +14,14 @@ import csw.location.models.Connection.AkkaConnection
 import csw.location.models.{AkkaLocation, AkkaRegistration, ComponentId, ComponentType}
 import esw.ocs.api.models.messages.error.RegistrationError
 import esw.ocs.core._
+import esw.ocs.dsl.Async.{async, await}
 import esw.ocs.dsl.utils.ScriptLoader
 import esw.ocs.dsl.{CswServices, Script}
 import esw.ocs.macros.StrandEc
 import esw.ocs.syntax.FutureSyntax.FutureOps
 import esw.ocs.utils.RegistrationUtils
+
+import scala.concurrent.Future
 // $COVERAGE-OFF$
 private[ocs] class SequencerWiring(val sequencerId: String, val observingMode: String) {
   private lazy val config          = ConfigFactory.load()
@@ -51,12 +55,15 @@ private[ocs] class SequencerWiring(val sequencerId: String, val observingMode: S
 
   private lazy val locationService: LocationService = HttpLocationServiceFactory.makeLocalClient
 
-  // fixme: no need to block
-  def shutDown(): Unit = {
-    locationService.unregister(AkkaConnection(componentId)).block
-    sequencerSupervisorClient.shutdown().block
+  def shutDown(): Future[Done] = async {
+    val unregisterResult = locationService.unregister(AkkaConnection(componentId))
+    val shutdownResult   = sequencerSupervisorClient.shutdown()
+
+    await(unregisterResult)
+    await(shutdownResult)
     strandEc.shutdown()
     typedSystem.terminate()
+    Done
   }
 
   def start(): Either[RegistrationError, AkkaLocation] = {

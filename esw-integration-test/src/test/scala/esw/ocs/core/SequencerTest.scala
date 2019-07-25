@@ -52,7 +52,7 @@ class SequencerTest extends ScalaTestFrameworkTestKit with BaseTestSuite {
   }
 
   override protected def afterEach(): Unit = {
-    wiring.shutDown()
+    wiring.shutDown().futureValue
   }
 
   "Sequencer" must {
