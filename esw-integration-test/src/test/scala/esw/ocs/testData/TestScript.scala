@@ -13,6 +13,7 @@ class TestScript(csw: CswServices) extends Script(csw) {
   }
 
   handleSetupCommand("command-3") { command =>
+    if (isOnline) println("Online..")
     spawn {
       csw.crm.addOrUpdateCommand(Completed(command.runId))
     }

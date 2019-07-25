@@ -16,6 +16,7 @@ class Script(val csw: CswServices) extends ScriptDsl {
 
 trait ScriptDsl extends ControlDsl {
   def csw: CswServices
+  var isOnline = true
 
   private val commandHandlerBuilder: FunctionBuilder[SequenceCommand, Future[Unit]] = new FunctionBuilder
 
@@ -39,10 +40,18 @@ trait ScriptDsl extends ControlDsl {
 
   // this futures will normally run in parallel, but given that those are running on same thread
   // this will executes sequentially
-  private[ocs] def executeGoOnline(): Future[Done]  = Future.sequence(goOnlineHandlers.execute(())).map(_ => Done)
-  private[ocs] def executeGoOffline(): Future[Done] = Future.sequence(goOfflineHandlers.execute(())).map(_ => Done)
-  private[ocs] def executeShutdown(): Future[Done]  = Future.sequence(shutdownHandlers.execute(())).map(_ => Done)
-  private[ocs] def executeAbort(): Future[Done]     = Future.sequence(abortHandlers.execute(())).map(_ => Done)
+  private[ocs] def executeGoOnline(): Future[Done] = {
+    isOnline = true
+    Future.sequence(goOnlineHandlers.execute(())).map(_ => Done)
+  }
+
+  private[ocs] def executeGoOffline(): Future[Done] = {
+    isOnline = false
+    Future.sequence(goOfflineHandlers.execute(())).map(_ => Done)
+  }
+
+  private[ocs] def executeShutdown(): Future[Done] = Future.sequence(shutdownHandlers.execute(())).map(_ => Done)
+  private[ocs] def executeAbort(): Future[Done]    = Future.sequence(abortHandlers.execute(())).map(_ => Done)
 
   protected final def nextIf(f: SequenceCommand => Boolean): Future[Option[SequenceCommand]] =
     spawn {
