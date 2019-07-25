@@ -1,17 +1,31 @@
 package esw.ocs.core
 
+import akka.actor.typed.ActorRef
 import akka.actor.typed.scaladsl.Behaviors
 import csw.command.client.messages.{ProcessSequence, SequencerMsg}
 import esw.ocs.api.models.messages.SequencerMessages._
+import esw.ocs.api.models.messages.error.StepListError.NotAllowedOnFinishedSeq
 import esw.ocs.api.models.messages.error.{AbortError, GoOfflineError, GoOnlineError, ShutdownError}
 import esw.ocs.api.models.messages.{EditorResponse, LifecycleResponse, StepListResponse}
 import esw.ocs.dsl.ScriptDsl
 import esw.ocs.utils.FutureEitherExt._
 
+import scala.concurrent.Future
+
 object SequencerBehavior {
   def behavior(sequencer: Sequencer, script: ScriptDsl): Behaviors.Receive[SequencerMsg] =
     Behaviors.receive[SequencerMsg] { (ctx, msg) =>
       import ctx.executionContext
+
+      def abort(replyTo: ActorRef[LifecycleResponse]): Unit =
+        sequencer
+          .reset()
+          .flatMap {
+            case Left(NotAllowedOnFinishedSeq) => Future.successful(Left(AbortError("Not Allowed on Finished Sequence")))
+            case Right(_)                      => script.executeAbort().toEither(ex => AbortError(ex.getMessage))
+          }
+          .foreach(replyTo ! LifecycleResponse(_))
+
       msg match {
         // ===== External Lifecycle =====
         case GoOnline(replyTo) =>
@@ -23,8 +37,7 @@ object SequencerBehavior {
         case Shutdown(replyTo) =>
           script.executeShutdown().toEither(ex => ShutdownError(ex.getMessage)).foreach(replyTo ! LifecycleResponse(_))
 
-        case Abort(replyTo) =>
-          script.executeAbort().toEither(ex => AbortError(ex.getMessage)).foreach(replyTo ! LifecycleResponse(_))
+        case Abort(replyTo) => abort(replyTo)
 
         // ===== External Editor =====
         case ProcessSequence(sequence, replyTo) => sequencer.processSequence(sequence).foreach(replyTo.tell)
