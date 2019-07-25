@@ -3,7 +3,7 @@ package esw.ocs.core
 import akka.Done
 import akka.actor.testkit.typed.scaladsl.{ScalaTestWithActorTestKit, TestProbe}
 import akka.actor.typed.ActorRef
-import csw.command.client.messages.{ProcessSequence, ProcessSequenceResponse, SequencerMsg}
+import csw.command.client.messages.sequencer.SequencerMsg
 import csw.location.api.scaladsl.LocationService
 import csw.location.models.{ComponentId, ComponentType}
 import csw.params.commands.CommandResponse.{Completed, Error, SubmitResponse}
@@ -14,28 +14,35 @@ import esw.ocs.api.models.messages.SequencerMessages._
 import esw.ocs.api.models.messages.error.EditorError
 import esw.ocs.api.models.messages.{EditorResponse, StepListResponse}
 import esw.ocs.api.models.{Step, StepList}
-import esw.ocs.dsl.ScriptDsl
+import esw.ocs.dsl.{Script, ScriptDsl}
 import org.mockito.Mockito.{verify, when}
 import org.scalatestplus.mockito.MockitoSugar
 
 import scala.concurrent.Future
 
 class SequencerBehaviorTest extends ScalaTestWithActorTestKit with BaseTestSuite with MockitoSugar {
-  private val sequencer       = mock[Sequencer]
-  private val scriptDsl       = mock[ScriptDsl]
-  private val locationService = mock[LocationService]
-  private val componentId     = ComponentId("sequencer1", ComponentType.Sequencer)
+  private var sequencer: Sequencer                   = _
+  private var scriptDsl: ScriptDsl                   = _
+  private var sequencerActor: ActorRef[SequencerMsg] = _
+  private var locationService: LocationService       = _
 
-  private val sequencerActor = spawn(SequencerBehavior.behavior(componentId, sequencer, scriptDsl, locationService))
+  private val componentId = ComponentId("sequencer1", ComponentType.Sequencer)
 
-  "ProcessSequence" in {
+  override protected def beforeEach(): Unit = {
+    sequencer = mock[Sequencer]
+    scriptDsl = mock[Script]
+    locationService = mock[LocationService]
+    sequencerActor = spawn(SequencerBehavior.behavior(sequencer, scriptDsl))
+  }
+
+  "LoadAndStartSequence" in {
     val command1 = Setup(Prefix("test"), CommandName("command-1"), None)
     val sequence = Sequence(Id(), Seq(command1))
 
     runTest[ProcessSequenceResponse](
-      mockFunction = sequencer.processSequence(sequence),
+      mockFunction = sequencer.loadAndStartSequence(sequence),
       mockResponse = ProcessSequenceResponse(Right(Completed(command1.runId))),
-      testMsg = ProcessSequence(sequence, _)
+      testMsg = LoadAndStartSequence(sequence, _)
     )
   }
 

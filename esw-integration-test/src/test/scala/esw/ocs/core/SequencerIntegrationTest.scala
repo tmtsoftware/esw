@@ -5,7 +5,7 @@ import akka.actor.Scheduler
 import akka.actor.typed.scaladsl.AskPattern._
 import akka.actor.typed.{ActorRef, ActorSystem, SpawnProtocol}
 import akka.util.Timeout
-import csw.command.client.messages.{ProcessSequence, ProcessSequenceResponse, SequencerMsg}
+import csw.command.client.messages.{LoadAndStartSequence, ProcessSequenceResponse, SequencerMsg}
 import csw.location.api.extensions.URIExtension.RichURI
 import csw.location.api.scaladsl.LocationService
 import csw.location.client.scaladsl.HttpLocationServiceFactory
@@ -25,7 +25,7 @@ import esw.ocs.internal.SequencerWiring
 import scala.concurrent.Future
 import scala.concurrent.duration.DurationLong
 
-class SequencerTest extends ScalaTestFrameworkTestKit with BaseTestSuite {
+class SequencerIntegrationTest extends ScalaTestFrameworkTestKit with BaseTestSuite {
 
   import frameworkTestKit._
   private implicit val sys: ActorSystem[SpawnProtocol] = actorSystem
@@ -60,7 +60,7 @@ class SequencerTest extends ScalaTestFrameworkTestKit with BaseTestSuite {
       val command3 = Setup(Prefix("test"), CommandName("command-3"), None)
       val sequence = Sequence(command3)
 
-      val processSeqResponse: Future[ProcessSequenceResponse] = sequencer ? (ProcessSequence(sequence, _))
+      val processSeqResponse: Future[ProcessSequenceResponse] = sequencer ? (LoadAndStartSequence(sequence, _))
 
       processSeqResponse.futureValue.response.rightValue should ===(Completed(sequence.runId))
 
@@ -75,7 +75,7 @@ class SequencerTest extends ScalaTestFrameworkTestKit with BaseTestSuite {
       val command3 = Setup(Prefix("test"), CommandName("command-3"), None)
       val sequence = Sequence(command1, command2)
 
-      val processSeqResponse: Future[ProcessSequenceResponse] = sequencer ? (ProcessSequence(sequence, _))
+      val processSeqResponse: Future[ProcessSequenceResponse] = sequencer ? (LoadAndStartSequence(sequence, _))
 
       val addResponse: Future[EditorResponse] = sequencer ? (Add(List(command3), _))
       addResponse.futureValue.response.rightValue should ===(Done)

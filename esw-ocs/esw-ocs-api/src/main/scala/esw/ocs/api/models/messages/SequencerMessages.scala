@@ -2,15 +2,22 @@ package esw.ocs.api.models.messages
 
 import akka.Done
 import akka.actor.typed.ActorRef
-import csw.command.client.messages.SequencerMsg
+import csw.command.client.messages.{ProcessSequenceError, ProcessSequenceResponse, SequencerMsg}
 import csw.params.commands.CommandResponse.SubmitResponse
-import csw.params.commands.SequenceCommand
+import csw.params.commands.{Sequence, SequenceCommand}
 import csw.params.core.models.Id
 import esw.ocs.api.models.{Step, StepList}
 import esw.ocs.api.serializer.OcsFrameworkAkkaSerializable
 
 object SequencerMessages {
   sealed trait InternalSequencerMsg extends SequencerMsg
+
+  final case class LoadSequence(sequence: Sequence, replyTo: ActorRef[Either[ProcessSequenceError, Done]])
+      extends SequencerMsg
+      with OcsFrameworkAkkaSerializable
+  final case class StartSequence(replyTo: ActorRef[ProcessSequenceResponse])
+      extends SequencerMsg
+      with OcsFrameworkAkkaSerializable
 
   // engine msgs
   final case class PullNext(replyTo: ActorRef[Step])              extends InternalSequencerMsg

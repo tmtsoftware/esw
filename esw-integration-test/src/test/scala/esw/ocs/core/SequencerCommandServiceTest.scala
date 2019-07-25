@@ -11,7 +11,7 @@ import csw.testkit.scaladsl.ScalaTestFrameworkTestKit
 import esw.ocs.BaseTestSuite
 import esw.ocs.api.models.messages.error.RegistrationError
 import esw.ocs.internal.SequencerWiring
-import org.scalatest.time.{Millis, Span}
+import org.scalatest.time.SpanSugar.convertDoubleToGrainOfTime
 
 class SequencerCommandServiceTest extends ScalaTestFrameworkTestKit with BaseTestSuite {
   import frameworkTestKit._
@@ -35,7 +35,7 @@ class SequencerCommandServiceTest extends ScalaTestFrameworkTestKit with BaseTes
     val command1 = Setup(Prefix("test"), CommandName("command-1"), None)
     val sequence = Sequence(command1)
 
-    implicit val patienceConfig: PatienceConfig          = PatienceConfig(Span(500, Millis))
+    implicit val patienceConfig: PatienceConfig          = PatienceConfig(500.millis)
     val sequencerCommandService: SequencerCommandService = new SequencerCommandServiceImpl(sequencerLocation.rightValue)
     sequencerCommandService.submit(sequence).futureValue should ===(Completed(sequence.runId))
   }

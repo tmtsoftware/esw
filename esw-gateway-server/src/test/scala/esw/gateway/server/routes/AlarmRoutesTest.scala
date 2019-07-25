@@ -75,7 +75,6 @@ class AlarmRoutesTest extends HttpTestSuite {
       when(alarmService.setSeverity(alarmKey, majorSeverity)).thenReturn(Future.failed(KeyNotFoundException(alarmKey)))
 
       Post(s"/alarm/current-severity/$subsystemName/$componentName/$alarmName", SetSeverity(majorSeverity)) ~> route ~> check {
-        println(response)
         status shouldBe StatusCodes.BadRequest
       }
     }
@@ -93,7 +92,6 @@ class AlarmRoutesTest extends HttpTestSuite {
       when(alarmService.setSeverity(alarmKey, majorSeverity)).thenReturn(Future.failed(new RuntimeException("some error")))
 
       Post(s"/alarm/current-severity/$subsystemName/$componentName/$alarmName", SetSeverity(majorSeverity)) ~> route ~> check {
-        println(response)
         status shouldBe StatusCodes.InternalServerError
       }
     }
