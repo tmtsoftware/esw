@@ -7,13 +7,13 @@ class TestScript(csw: CswServices) extends Script(csw) {
 
   handleSetupCommand("command-1") { command =>
     spawn {
+      // To avoid sequencer to finish immediately so that other Add, Append command gets time
       Thread.sleep(100)
       csw.crm.addOrUpdateCommand(Completed(command.runId))
     }
   }
 
   handleSetupCommand("command-3") { command =>
-    if (isOnline) println("Online..")
     spawn {
       csw.crm.addOrUpdateCommand(Completed(command.runId))
     }
