@@ -6,43 +6,25 @@ import esw.ocs.api.models.messages.SequencerMessages._
 import esw.ocs.api.models.messages.error.{AbortError, GoOfflineError, GoOnlineError, ShutdownError}
 import esw.ocs.api.models.messages.{EditorResponse, LifecycleResponse, StepListResponse}
 import esw.ocs.dsl.ScriptDsl
-
-import scala.util.control.NonFatal
+import esw.ocs.utils.FutureEitherExt._
 
 object SequencerBehavior {
   def behavior(sequencer: Sequencer, script: ScriptDsl): Behaviors.Receive[SequencerMsg] =
     Behaviors.receive[SequencerMsg] { (ctx, msg) =>
       import ctx.executionContext
-
       msg match {
         // ===== External Lifecycle =====
         case GoOnline(replyTo) =>
-          script
-            .executeGoOnline()
-            .map(Right(_))
-            .recover { case NonFatal(ex) => Left(GoOnlineError(ex.getMessage)) }
-            .foreach(replyTo ! LifecycleResponse(_))
+          script.executeGoOnline().toEither(ex => GoOnlineError(ex.getMessage)).foreach(replyTo ! LifecycleResponse(_))
 
         case GoOffline(replyTo) =>
-          script
-            .executeGoOffline()
-            .map(Right(_))
-            .recover { case NonFatal(ex) => Left(GoOfflineError(ex.getMessage)) }
-            .foreach(replyTo ! LifecycleResponse(_))
+          script.executeGoOffline().toEither(ex => GoOfflineError(ex.getMessage)).foreach(replyTo ! LifecycleResponse(_))
 
         case Shutdown(replyTo) =>
-          script
-            .executeShutdown()
-            .map(Right(_))
-            .recover { case NonFatal(ex) => Left(ShutdownError(ex.getMessage)) }
-            .foreach(replyTo ! LifecycleResponse(_))
+          script.executeShutdown().toEither(ex => ShutdownError(ex.getMessage)).foreach(replyTo ! LifecycleResponse(_))
 
         case Abort(replyTo) =>
-          script
-            .executeAbort()
-            .map(Right(_))
-            .recover { case NonFatal(ex) => Left(AbortError(ex.getMessage)) }
-            .foreach(replyTo ! LifecycleResponse(_))
+          script.executeAbort().toEither(ex => AbortError(ex.getMessage)).foreach(replyTo ! LifecycleResponse(_))
 
         // ===== External Editor =====
         case ProcessSequence(sequence, replyTo) => sequencer.processSequence(sequence).foreach(replyTo.tell)

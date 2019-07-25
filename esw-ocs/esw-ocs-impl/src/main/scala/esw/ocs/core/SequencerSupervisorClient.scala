@@ -17,7 +17,6 @@ class SequencerSupervisorClient(sequencer: ActorRef[LifecycleMsg])(
 
   private implicit val scheduler: Scheduler = system.scheduler
 
-// It is Ok to call Try.get inside future
   override def shutdown(): Future[LifecycleResponse] = sequencer ? Shutdown
   override def abort(): Future[LifecycleResponse]    = sequencer ? Abort
 
