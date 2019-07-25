@@ -26,6 +26,8 @@ class SequencerAppIntegrationTest extends ScalaTestFrameworkTestKit with BaseTes
   implicit val typedSystem: ActorSystem[_]         = actorSystem
   private val testLocationService: LocationService = HttpLocationServiceFactory.makeLocalClient
 
+  override implicit def patienceConfig: PatienceConfig = PatienceConfig(5.seconds, 10.milli)
+
   "SequenceComponent command" must {
     "start sequence component with provided name and register it with location service | ESW-103, ESW-147" in {
       val seqComName = "testSequencerComponent"
