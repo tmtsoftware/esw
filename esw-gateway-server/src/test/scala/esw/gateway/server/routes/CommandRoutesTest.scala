@@ -5,12 +5,13 @@ import akka.actor.typed.{ActorSystem, SpawnProtocol}
 import akka.http.scaladsl.model.MediaTypes.{`application/json`, `text/event-stream`}
 import akka.http.scaladsl.model.StatusCodes
 import akka.http.scaladsl.model.sse.ServerSentEvent
+import akka.http.scaladsl.testkit.WSProbe
 import akka.http.scaladsl.unmarshalling.sse.EventStreamUnmarshalling._
 import akka.stream.scaladsl.{Sink, Source}
 import akka.util.Timeout
 import csw.command.api.CurrentStateSubscription
 import csw.location.models.ComponentType
-import csw.params.commands.CommandResponse.{Accepted, Completed}
+import csw.params.commands.CommandResponse.{Accepted, Completed, SubmitResponse}
 import csw.params.commands.{CommandName, CommandResponse, ControlCommand, Setup}
 import csw.params.core.models.{Id, ObsId, Prefix}
 import csw.params.core.states.{CurrentState, StateName, StateVariable}
@@ -248,6 +249,30 @@ class CommandRoutesTest extends HttpTestSuite {
           .runWith(Sink.seq)
 
         Await.result(actualDataF, 5.seconds) shouldEqual Seq(currentState1)
+      }
+    }
+  }
+
+  "WS /command/{componentType}/{componentName}/websocket/{runId}/" must {
+    "return a stream which finishes with CommandResponse" in new Setup {
+      import cswMocks._
+      import io.bullet.borer.compat.akka._
+
+      val wsClient         = WSProbe()
+      val runId            = Id("123")
+      val componentName    = "sample"
+      val expectedResponse = Completed(runId)
+
+      when(commandService.queryFinal(any[Id])(any[Timeout])).thenReturn(Future.successful(expectedResponse))
+      when(componentFactory.commandService(componentName, assemblyType)).thenReturn(Future(commandService))
+
+      WS(s"/command/${assembly}/${componentName}/websocket/${runId.id}", wsClient.flow) ~> route ~> check {
+        // check response for WS Upgrade headers
+        isWebSocketUpgrade shouldEqual true
+        val response: CommandResponse =
+          Json.decode(wsClient.expectMessage().asBinaryMessage.getStrictData).to[SubmitResponse].value
+
+        response shouldEqual expectedResponse
       }
     }
   }
