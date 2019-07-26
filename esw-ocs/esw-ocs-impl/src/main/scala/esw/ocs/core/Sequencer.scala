@@ -10,8 +10,8 @@ import csw.params.commands.{CommandResponse, Sequence, SequenceCommand}
 import csw.params.core.models.Id
 import esw.ocs.api.models.StepStatus._
 import esw.ocs.api.models.messages.LoadSequenceResponse
-import esw.ocs.api.models.messages.error.StepListError
 import esw.ocs.api.models.messages.error.StepListError._
+import esw.ocs.api.models.messages.error.{GoOfflineError, StepListError}
 import esw.ocs.api.models.{Step, StepList, StepStatus}
 import esw.ocs.dsl.Async.{async, await}
 import esw.ocs.macros.StrandEc
@@ -30,6 +30,21 @@ private[ocs] class Sequencer(crm: CommandResponseManager)(implicit strandEc: Str
   private var readyToExecuteNextPromise: Option[Promise[Done]] = None
   private var stepRefPromise: Option[Promise[Step]]            = None
   private var sequencerAvailable                               = true
+  private var online                                           = true
+
+  def isOnline: Future[Boolean] = async(online)
+  def goOnline(): Future[Done] = async {
+    online = true
+    Done
+  }
+
+  def goOffline(): Future[Either[GoOfflineError, Done.type]] = async {
+    if (!sequencerAvailable) Left(GoOfflineError("Cannot go offline when sequence is under execution"))
+    else {
+      online = false
+      Right(Done)
+    }
+  }
 
   def load(sequence: Sequence): Future[LoadSequenceResponse] = async {
     LoadSequenceResponse(

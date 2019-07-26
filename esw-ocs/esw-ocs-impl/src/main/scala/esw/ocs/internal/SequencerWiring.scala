@@ -38,8 +38,10 @@ private[ocs] class SequencerWiring(val sequencerId: String, val observingMode: S
     (typedSystem ? Spawn(CommandResponseManagerActor.behavior(CRMCacheProperties(), loggerFactory), "crm")).block
   private lazy val commandResponseManager: CommandResponseManager = new CommandResponseManager(crmRef)
 
+  lazy val sequencerBehavior = new SequencerBehavior(componentId, sequencer, script, locationService)
+
   lazy val sequencerRef: ActorRef[SequencerMsg] =
-    (typedSystem ? Spawn(SequencerBehavior.behavior(componentId, sequencer, script, locationService), sequencerName)).block
+    (typedSystem ? Spawn(sequencerBehavior.defaultBehavior, sequencerName)).block
 
   //Pass lambda to break circular dependency shown below.
   //SequencerRef -> Script -> cswServices -> SequencerOperator -> SequencerRef

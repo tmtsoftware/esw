@@ -22,7 +22,8 @@ import scala.concurrent.Future
 
 class SequencerBehaviorTest extends ScalaTestWithActorTestKit with BaseTestSuite with MockitoSugar {
   private var sequencer: Sequencer                   = _
-  private var scriptDsl: ScriptDsl                   = _
+  private var script: ScriptDsl                      = _
+  private var sequencerBehavior: SequencerBehavior   = _
   private var sequencerActor: ActorRef[SequencerMsg] = _
   private var locationService: LocationService       = _
 
@@ -30,9 +31,10 @@ class SequencerBehaviorTest extends ScalaTestWithActorTestKit with BaseTestSuite
 
   override protected def beforeEach(): Unit = {
     sequencer = mock[Sequencer]
-    scriptDsl = mock[Script]
+    script = mock[Script]
     locationService = mock[LocationService]
-    sequencerActor = spawn(SequencerBehavior.behavior(componentId, sequencer, scriptDsl, locationService))
+    sequencerBehavior = new SequencerBehavior(componentId, sequencer, script, locationService)
+    sequencerActor = spawn(sequencerBehavior.defaultBehavior)
   }
 
   "LoadAndStartSequence" in {
