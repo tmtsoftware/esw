@@ -8,9 +8,11 @@ import csw.logging.api.scaladsl.Logger
 import csw.logging.client.scaladsl.LoggerFactory
 import esw.ocs.api.codecs.OcsFrameworkCodecs
 import esw.ocs.api.models.StepList
-import esw.ocs.api.models.messages.SequencerMessages._
+import esw.ocs.api.models.messages.SequencerMessages.{LifecycleMsg, _}
 import esw.ocs.api.models.messages._
-import io.bullet.borer.Cbor
+import io.bullet.borer.{Cbor, Decoder}
+
+import scala.reflect.ClassTag
 
 class OcsFrameworkAkkaSerializer(_actorSystem: ExtendedActorSystem) extends OcsFrameworkCodecs with Serializer {
   override implicit def actorSystem: ActorSystem[_] = _actorSystem.toTyped
@@ -39,29 +41,24 @@ class OcsFrameworkAkkaSerializer(_actorSystem: ExtendedActorSystem) extends OcsF
   override def includeManifest: Boolean = true
 
   override def fromBinary(bytes: Array[Byte], manifest: Option[Class[_]]): AnyRef = {
-    if (classOf[ExternalEditorSequencerMsg].isAssignableFrom(manifest.get)) {
-      Cbor.decode(bytes).to[ExternalEditorSequencerMsg].value
-    } else if (classOf[StepList].isAssignableFrom(manifest.get)) {
-      Cbor.decode(bytes).to[StepList].value
-    } else if (classOf[LifecycleMsg].isAssignableFrom(manifest.get)) {
-      Cbor.decode(bytes).to[LifecycleMsg].value
-    } else if (classOf[LifecycleResponse].isAssignableFrom(manifest.get)) {
-      Cbor.decode(bytes).to[LifecycleResponse].value
-    } else if (classOf[SequenceComponentMsg].isAssignableFrom(manifest.get)) {
-      Cbor.decode(bytes).to[SequenceComponentMsg].value
-    } else if (classOf[SequenceComponentResponse].isAssignableFrom(manifest.get)) {
-      Cbor.decode(bytes).to[SequenceComponentResponse].value
-    } else if (classOf[EditorResponse].isAssignableFrom(manifest.get)) {
-      Cbor.decode(bytes).to[EditorResponse].value
-    } else if (classOf[StepListResponse].isAssignableFrom(manifest.get)) {
-      Cbor.decode(bytes).to[StepListResponse].value
-    } else if (classOf[LoadSequence].isAssignableFrom(manifest.get)) {
-      Cbor.decode(bytes).to[LoadSequence].value
-    } else if (classOf[LoadSequenceResponse].isAssignableFrom(manifest.get)) {
-      Cbor.decode(bytes).to[LoadSequenceResponse].value
-    } else if (classOf[StartSequence].isAssignableFrom(manifest.get)) {
-      Cbor.decode(bytes).to[StartSequence].value
-    } else {
+    def fromBinary[T: ClassTag: Decoder]: Option[T] = {
+      val clazz = scala.reflect.classTag[T].runtimeClass
+      if (clazz.isAssignableFrom(manifest.get)) Some(Cbor.decode(bytes).to[T].value)
+      else None
+    }
+    {
+      fromBinary[ExternalEditorSequencerMsg] orElse
+      fromBinary[StepList] orElse
+      fromBinary[LifecycleMsg] orElse
+      fromBinary[LifecycleResponse] orElse
+      fromBinary[SequenceComponentMsg] orElse
+      fromBinary[SequenceComponentResponse] orElse
+      fromBinary[EditorResponse] orElse
+      fromBinary[StepListResponse] orElse
+      fromBinary[LoadSequence] orElse
+      fromBinary[LoadSequenceResponse] orElse
+      fromBinary[StartSequence]
+    }.getOrElse {
       val ex = new RuntimeException(s"does not support decoding of ${manifest.get}")
       logger.error(ex.getMessage, ex = ex)
       throw ex
