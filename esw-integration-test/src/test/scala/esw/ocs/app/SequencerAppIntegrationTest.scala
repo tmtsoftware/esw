@@ -29,7 +29,7 @@ class SequencerAppIntegrationTest extends ScalaTestFrameworkTestKit with BaseTes
   override implicit def patienceConfig: PatienceConfig = PatienceConfig(5.seconds, 10.milli)
 
   "SequenceComponent command" must {
-    "start sequence component with provided name and register it with location service | ESW-103, ESW-147" in {
+    "start sequence component with provided name and register it with location service | ESW-103, ESW-147, ESW-151" in {
       val seqComName = "testSequencerComponent"
 
       // start Sequence Component
@@ -62,7 +62,7 @@ class SequencerAppIntegrationTest extends ScalaTestFrameworkTestKit with BaseTes
   }
 
   "Sequencer command" must {
-    "start sequencer with provided id, mode and register it with location service | ESW-103, ESW-147" in {
+    "start sequencer with provided id, mode and register it with location service | ESW-103, ESW-147, ESW-151" in {
       val sequencerId   = "testSequencerId1"
       val observingMode = "testObservingMode1"
       val sequencerName = s"$sequencerId@$observingMode"
