@@ -15,6 +15,7 @@ import esw.ocs.dsl.ScriptDsl
 import esw.ocs.utils.FutureEitherExt._
 
 import scala.concurrent.{ExecutionContext, Future}
+import scala.util.{Failure, Success}
 import scala.util.control.NonFatal
 
 class SequencerBehavior(
@@ -38,35 +39,38 @@ class SequencerBehavior(
   private def goOnline(replyTo: ActorRef[LifecycleResponse])(implicit ec: ExecutionContext): Unit =
     sequencer.isOnline.foreach { isOnline =>
       if (!isOnline) {
-        sequencer.goOnline()
-        script.executeGoOnline().toEither(ex => GoOnlineError(ex.getMessage)).foreach(replyTo ! LifecycleResponse(_))
+        sequencer.goOnline().foreach { _ =>
+          script.executeGoOnline().toEither(ex => GoOnlineError(ex.getMessage)).foreach(replyTo ! LifecycleResponse(_))
+        }
       }
     }
+
+  private def runOfflineHandlers()(implicit ec: ExecutionContext): Future[Either[GoOfflineError, Done]] = {
+    sequencer.goOffline().flatMap {
+      case Right(_) =>
+        script
+          .executeGoOffline()
+          .transform {
+            case Success(res) => Success(Right(res))
+            case Failure(ex)  => Success(Left(GoOfflineError(ex.getMessage)))
+          }
+      case error => Future.successful(error)
+    }
+  }
 
   private def goOffline(replyTo: ActorRef[LifecycleResponse])(implicit ctx: ActorContext[SequencerMsg]): Unit = {
     import ctx.executionContext
 
-    sequencer.isOnline.foreach { isOnline =>
-      if (isOnline) {
-        sequencer.goOffline().map {
-          case error @ Left(_) =>
-            replyTo ! LifecycleResponse(error)
-            ctx.self ! ChangeBehaviorToDefault
-          case _ =>
-            script
-              .executeGoOffline()
-              .toEither(ex => GoOfflineError(ex.getMessage))
-              .foreach { res =>
-                replyTo ! LifecycleResponse(res)
-                res match {
-                  case Left(_) => ctx.self ! ChangeBehaviorToDefault
-                  case _       => ctx.self ! ChangeBehaviorToOffline
-                }
-              }
-        }
-      } else {
-        replyTo ! LifecycleResponse(Right(Done))
-        ctx.self ! ChangeBehaviorToOffline
+    sequencer.isOnline.flatMap { isOnline =>
+      val offlineResponse = if (isOnline) runOfflineHandlers() else Future.successful(Right(Done))
+
+      offlineResponse.map {
+        case res @ Left(_) =>
+          replyTo ! LifecycleResponse(res)
+          ctx.self ! ChangeBehaviorToDefault
+        case res =>
+          replyTo ! LifecycleResponse(res)
+          ctx.self ! ChangeBehaviorToOffline
       }
     }
   }
