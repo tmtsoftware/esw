@@ -26,12 +26,13 @@ lazy val `esw-ocs` = project
   .aggregate(
     `esw-ocs-api`,
     `esw-ocs-impl`,
-    `esw-ocs-macros`
+    `esw-ocs-macros`,
+    `esw-ocs-app`
   )
+
 lazy val `esw-ocs-api` = project
   .in(file("esw-ocs/esw-ocs-api"))
-  //fixme: enable this after serialization tests are done
-//  .enablePlugins(MaybeCoverage)
+  .enablePlugins(MaybeCoverage)
   .settings(
     libraryDependencies ++= Dependencies.OcsApi.value
   )
@@ -82,7 +83,7 @@ lazy val `esw-integration-test` = project
     `esw-gateway-server` % "test->compile;test->test",
     `esw-http-core`      % "test->compile;test->test",
     `esw-ocs-impl`       % "test->compile;test->test",
-    `esw-ocs-app`      
+    `esw-ocs-app`
   )
 
 /* ================= Paradox Docs ============== */

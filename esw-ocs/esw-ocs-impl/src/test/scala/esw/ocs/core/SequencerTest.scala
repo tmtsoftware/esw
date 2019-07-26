@@ -88,7 +88,7 @@ class SequencerTest extends BaseTestSuite {
       when(crmMock.queryFinal(command2.runId)).thenAnswer(_ => queryResponse(cmd2Response, latch))
 
       val processResponse = sequencer.loadAndStart(sequence)
-      eventually(sequencer.getSequence.futureValue should ===(StepList(sequence).toOption.get))
+      eventually(sequencer.getSequence.futureValue should ===(StepList(sequence).rightValue))
 
       val pulled1 = sequencer.pullNext().futureValue
       val pulled2 = sequencer.pullNext().futureValue
@@ -133,6 +133,8 @@ class SequencerTest extends BaseTestSuite {
       import sequencerSetup._
 
       sequencer.loadAndStart(sequence)
+      eventually(sequencer.getSequence.futureValue should ===(StepList(sequence).rightValue))
+
       sequencer.readyToExecuteNext().futureValue shouldBe Done
     }
     "wait till completion of current command" in {
@@ -149,6 +151,8 @@ class SequencerTest extends BaseTestSuite {
       when(crmMock.queryFinal(command1.runId)).thenAnswer(_ => p.future)
 
       sequencer.loadAndStart(sequence)
+      eventually(sequencer.getSequence.futureValue should ===(StepList(sequence).rightValue))
+
       sequencer.pullNext()
       val readyToExecuteNextF = sequencer.readyToExecuteNext()
       readyToExecuteNextF.value should ===(None)
@@ -170,6 +174,8 @@ class SequencerTest extends BaseTestSuite {
       when(crmMock.queryFinal(command1.runId)).thenAnswer(_ => p.future)
 
       val sequence1Response = sequencer.loadAndStart(sequence)
+      eventually(sequencer.getSequence.futureValue should ===(StepList(sequence).rightValue))
+
       sequencer.pullNext().futureValue
       val readyToExecuteNextF = sequencer.readyToExecuteNext()
       readyToExecuteNextF.value should ===(None)
@@ -197,6 +203,8 @@ class SequencerTest extends BaseTestSuite {
       import sequencerSetup._
 
       sequencer.loadAndStart(sequence)
+      eventually(sequencer.getSequence.futureValue should ===(StepList(sequence).rightValue))
+
       sequencer.mayBeNext.futureValue.value should ===(Step(command1))
     }
 
@@ -211,6 +219,8 @@ class SequencerTest extends BaseTestSuite {
       val cmd1Response = Completed(command1.runId)
       when(crmMock.queryFinal(command1.runId)).thenAnswer(_ => queryResponse(cmd1Response, latch))
       sequencer.loadAndStart(sequence)
+      eventually(sequencer.getSequence.futureValue should ===(StepList(sequence).rightValue))
+
       sequencer.pullNext().futureValue should ===(Step(command1, InFlight, hasBreakpoint = false))
 
       sequencer.mayBeNext.futureValue should ===(None)
@@ -227,6 +237,7 @@ class SequencerTest extends BaseTestSuite {
       import sequencerSetup._
 
       sequencer.loadAndStart(sequence)
+      eventually(sequencer.getSequence.futureValue should ===(StepList(sequence).rightValue))
 
       val command3 = Setup(Prefix("test"), CommandName("command-3"), None)
       val command4 = Observe(Prefix("test"), CommandName("command-4"), None)
@@ -256,6 +267,7 @@ class SequencerTest extends BaseTestSuite {
       when(crmMock.queryFinal(command1.runId)).thenAnswer(_ => queryResponse(cmd1Response, latch))
 
       sequencer.loadAndStart(sequence)
+      eventually(sequencer.getSequence.futureValue should ===(StepList(sequence).rightValue))
 
       val pulled1 = sequencer.pullNext().futureValue
       val step1   = Step(command1, InFlight, hasBreakpoint = false)
@@ -288,6 +300,7 @@ class SequencerTest extends BaseTestSuite {
       when(crmMock.queryFinal(command1.runId)).thenAnswer(_ => queryResponse(cmd1Response, latch))
 
       sequencer.loadAndStart(sequence)
+      eventually(sequencer.getSequence.futureValue should ===(StepList(sequence).rightValue))
 
       val pulled1 = sequencer.pullNext().futureValue
       val step1   = Step(command1, InFlight, hasBreakpoint = false)
@@ -317,6 +330,7 @@ class SequencerTest extends BaseTestSuite {
       val sequencerSetup = new SequencerSetup(sequence)
       import sequencerSetup._
       sequencer.loadAndStart(sequence)
+      eventually(sequencer.getSequence.futureValue should ===(StepList(sequence).rightValue))
 
       sequencer.reset().rightValue should ===(Done)
       sequencer.getSequence.futureValue should ===(StepList(sequence.runId, Nil))
@@ -333,6 +347,7 @@ class SequencerTest extends BaseTestSuite {
       val sequencerSetup = new SequencerSetup(sequence)
       import sequencerSetup._
       sequencer.loadAndStart(sequence)
+      eventually(sequencer.getSequence.futureValue should ===(StepList(sequence).rightValue))
 
       val command4 = Setup(Prefix("test"), CommandName("command-4"), None)
       val command5 = Observe(Prefix("test"), CommandName("command-5"), None)
@@ -352,6 +367,7 @@ class SequencerTest extends BaseTestSuite {
       val sequencerSetup = new SequencerSetup(sequence)
       import sequencerSetup._
       sequencer.loadAndStart(sequence)
+      eventually(sequencer.getSequence.futureValue should ===(StepList(sequence).rightValue))
 
       val command3 = Setup(Prefix("test"), CommandName("command-3"), None)
       val command4 = Observe(Prefix("test"), CommandName("command-4"), None)
@@ -388,6 +404,7 @@ class SequencerTest extends BaseTestSuite {
       val sequencerSetup = new SequencerSetup(sequence)
       import sequencerSetup._
       sequencer.loadAndStart(sequence)
+      eventually(sequencer.getSequence.futureValue should ===(StepList(sequence).rightValue))
 
       val breakpointAddedStepList = StepList(sequence.runId, List(Step(command1), Step(command2, Pending, hasBreakpoint = true)))
       sequencer.addBreakpoint(command2.runId).rightValue should ===(Done)
@@ -410,6 +427,7 @@ class SequencerTest extends BaseTestSuite {
       val sequencerSetup = new SequencerSetup(sequence)
       import sequencerSetup._
       sequencer.loadAndStart(sequence)
+      eventually(sequencer.getSequence.futureValue should ===(StepList(sequence).rightValue))
 
       val command4 = Setup(Prefix("test"), CommandName("command-4"), None)
       val command5 = Observe(Prefix("test"), CommandName("command-5"), None)
@@ -437,6 +455,8 @@ class SequencerTest extends BaseTestSuite {
       when(crmMock.queryFinal(command2.runId)).thenAnswer(_ => queryResponse(cmd2Response, latch))
 
       val processResponse = sequencer.loadAndStart(sequence)
+      eventually(sequencer.getSequence.futureValue should ===(StepList(sequence).rightValue))
+
       sequencer.pullNext().futureValue
       processResponse.futureValue.response.rightValue should ===(Completed(sequence.runId))
       val currentSequence = sequencer.getSequence.futureValue
