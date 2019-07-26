@@ -40,6 +40,44 @@ class SequencerTest extends BaseTestSuite {
     }
   }
 
+  "load" must {
+    "store steplist in intermediate result | ESW-154" in {
+      val command1 = Setup(Prefix("test"), CommandName("command-1"), None)
+      val sequence = Sequence(Id(), Seq(command1))
+
+      val sequencerSetup = new SequencerSetup(sequence)
+      import sequencerSetup._
+
+      val loadResponse = sequencer.load(sequence)
+      loadResponse.futureValue.response.rightValue should ===(Done)
+      sequencer.getSequence.futureValue.isEmpty should ===(true)
+    }
+  }
+
+  "start" must {
+    "execute existing loaded sequence | ESW-154" in {
+      val command1 = Setup(Prefix("test"), CommandName("command-1"), None)
+      val sequence = Sequence(Id(), Seq(command1))
+      val latch    = new CountDownLatch(1)
+
+      val sequencerSetup = new SequencerSetup(sequence)
+      import sequencerSetup._
+
+      val cmd1Response = Completed(command1.runId)
+      when(crmMock.queryFinal(command1.runId)).thenAnswer(_ => queryResponse(cmd1Response, latch))
+
+      val loadResponse = sequencer.load(sequence)
+      loadResponse.futureValue.response.rightValue should ===(Done)
+
+      val sequenceResponse = sequencer.start()
+
+      val pulled1 = sequencer.pullNext().futureValue
+      pulled1.command should ===(command1)
+
+      sequenceResponse.futureValue.response.rightValue should ===(Completed(sequence.runId))
+    }
+  }
+
   "loadAndStartSequence" must {
     "get completed sequence response when all commands succeed | ESW-158, ESW-145" in {
       val command1 = Setup(Prefix("test"), CommandName("command-1"), None)

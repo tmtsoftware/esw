@@ -33,12 +33,10 @@ private[ocs] class Sequencer(crm: CommandResponseManager)(implicit strandEc: Str
 
   def load(sequence: Sequence): Future[LoadSequenceResponse] = async {
     LoadSequenceResponse(
-      if (sequencerAvailable) {
-        StepList(sequence).map { _stepList =>
-          loadedStepList = _stepList
-          Done
-        }
-      } else Left(ExistingSequenceIsInProcess)
+      StepList(sequence).map { _stepList =>
+        loadedStepList = _stepList
+        Done
+      }
     )
   }
 

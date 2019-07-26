@@ -21,6 +21,7 @@ import esw.ocs.api.models.StepStatus.Finished
 import esw.ocs.api.models.messages.SequencerMessages._
 import esw.ocs.api.models.messages.{EditorResponse, LoadSequenceResponse}
 import esw.ocs.internal.SequencerWiring
+import org.scalatest.concurrent.PatienceConfiguration.Interval
 
 import scala.concurrent.Future
 import scala.concurrent.duration.DurationLong
@@ -56,19 +57,6 @@ class SequencerIntegrationTest extends ScalaTestFrameworkTestKit with BaseTestSu
   }
 
   "Sequencer" must {
-    "load and start a given sequence | ESW-145, ESW-154" in {
-      val command3 = Setup(Prefix("test"), CommandName("command-3"), None)
-      val sequence = Sequence(command3)
-
-      val loadAndStartSeqResponse: Future[SequenceResponse] = sequencer ? (LoadAndStartSequence(sequence, _))
-
-      loadAndStartSeqResponse.futureValue.response.rightValue should ===(Completed(sequence.runId))
-
-      (sequencer ? GetSequence).futureValue.steps should ===(
-        List(Step(command3, Finished.Success(Completed(command3.runId)), hasBreakpoint = false))
-      )
-    }
-
     "load a sequence and start the sequence later | ESW-154" in {
       val command3 = Setup(Prefix("test"), CommandName("command-3"), None)
       val sequence = Sequence(command3)
@@ -77,10 +65,10 @@ class SequencerIntegrationTest extends ScalaTestFrameworkTestKit with BaseTestSu
       loadResponse.futureValue.response.rightValue should ===(Done)
 
       val startSeqResponse: Future[SequenceResponse] = sequencer ? StartSequence
-      startSeqResponse.futureValue.response.rightValue should ===(Completed(sequence.runId))
+      startSeqResponse.futureValue(Interval(5.seconds)).response.rightValue should ===(Completed(sequence.runId))
     }
 
-    "process sequence and execute commands that are added later | ESW-145" in {
+    "process sequence and execute commands that are added later | ESW-145, ESW-154" in {
       val command1 = Setup(Prefix("test"), CommandName("command-1"), None)
       val command2 = Setup(Prefix("test"), CommandName("command-2"), None)
       val command3 = Setup(Prefix("test"), CommandName("command-3"), None)
