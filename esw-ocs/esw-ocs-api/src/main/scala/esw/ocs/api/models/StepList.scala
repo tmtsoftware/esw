@@ -1,6 +1,6 @@
 package esw.ocs.api.models
 
-import csw.command.client.messages.ProcessSequenceError.DuplicateIdsFound
+import csw.command.client.messages.sequencer.SequenceError.DuplicateIdsFound
 import csw.params.commands.{Sequence, SequenceCommand}
 import csw.params.core.models.Id
 import esw.ocs.api.models.messages.error.StepListError

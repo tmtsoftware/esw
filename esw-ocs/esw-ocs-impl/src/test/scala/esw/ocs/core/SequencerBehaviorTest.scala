@@ -3,7 +3,7 @@ package esw.ocs.core
 import akka.Done
 import akka.actor.testkit.typed.scaladsl.{ScalaTestWithActorTestKit, TestProbe}
 import akka.actor.typed.ActorRef
-import csw.command.client.messages.sequencer.SequencerMsg
+import csw.command.client.messages.sequencer.{LoadAndStartSequence, SequenceResponse, SequencerMsg}
 import csw.location.api.scaladsl.LocationService
 import csw.location.models.{ComponentId, ComponentType}
 import csw.params.commands.CommandResponse.{Completed, Error, SubmitResponse}
@@ -32,16 +32,16 @@ class SequencerBehaviorTest extends ScalaTestWithActorTestKit with BaseTestSuite
     sequencer = mock[Sequencer]
     scriptDsl = mock[Script]
     locationService = mock[LocationService]
-    sequencerActor = spawn(SequencerBehavior.behavior(sequencer, scriptDsl))
+    sequencerActor = spawn(SequencerBehavior.behavior(componentId, sequencer, scriptDsl, locationService))
   }
 
   "LoadAndStartSequence" in {
     val command1 = Setup(Prefix("test"), CommandName("command-1"), None)
     val sequence = Sequence(Id(), Seq(command1))
 
-    runTest[ProcessSequenceResponse](
-      mockFunction = sequencer.loadAndStartSequence(sequence),
-      mockResponse = ProcessSequenceResponse(Right(Completed(command1.runId))),
+    runTest[SequenceResponse](
+      mockFunction = sequencer.loadAndStart(sequence),
+      mockResponse = SequenceResponse(Right(Completed(command1.runId))),
       testMsg = LoadAndStartSequence(sequence, _)
     )
   }

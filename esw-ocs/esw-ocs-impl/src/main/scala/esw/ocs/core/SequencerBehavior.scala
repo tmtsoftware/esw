@@ -2,6 +2,7 @@ package esw.ocs.core
 
 import akka.actor.typed.ActorRef
 import akka.actor.typed.scaladsl.Behaviors
+import csw.command.client.messages.sequencer.{LoadAndStartSequence, SequencerMsg}
 import csw.location.api.scaladsl.LocationService
 import csw.location.models.ComponentId
 import csw.location.models.Connection.AkkaConnection
@@ -56,9 +57,9 @@ object SequencerBehavior {
         case Abort(replyTo)    => abort(replyTo)
 
         // ===== External Editor =====
-        case LoadSequence(sequence, replyTo)         => sequencer.loadSequence(sequence).foreach(replyTo.tell)
+        case LoadSequence(sequence, replyTo)         => sequencer.load(sequence).foreach(replyTo.tell)
         case StartSequence(replyTo)                  => sequencer.start().foreach(replyTo.tell)
-        case LoadAndStartSequence(sequence, replyTo) => sequencer.loadAndStartSequence(sequence).foreach(replyTo.tell)
+        case LoadAndStartSequence(sequence, replyTo) => sequencer.loadAndStart(sequence).foreach(replyTo.tell)
 
         case Available(replyTo)                 => sequencer.isAvailable.foreach(replyTo.tell)
         case GetSequence(replyTo)               => sequencer.getSequence.foreach(replyTo.tell)

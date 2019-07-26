@@ -5,7 +5,8 @@ import akka.actor.typed.ActorRef
 import akka.actor.typed.SpawnProtocol.Spawn
 import akka.actor.typed.scaladsl.AskPattern.Askable
 import com.typesafe.config.ConfigFactory
-import csw.command.client.messages.{CommandResponseManagerMessage, SequencerMsg}
+import csw.command.client.messages.CommandResponseManagerMessage
+import csw.command.client.messages.sequencer.SequencerMsg
 import csw.command.client.{CRMCacheProperties, CommandResponseManager, CommandResponseManagerActor}
 import csw.location.api.extensions.ActorExtension.RichActor
 import csw.location.api.scaladsl.LocationService

@@ -7,9 +7,10 @@ import akka.actor.testkit.typed.scaladsl.TestProbe
 import akka.actor.typed.scaladsl.adapter.TypedActorSystemOps
 import akka.actor.typed.{ActorRef, ActorSystem, SpawnProtocol}
 import akka.serialization.{SerializationExtension, Serializer}
+import csw.command.client.messages.sequencer.SequenceResponse
 import csw.location.models.Connection.AkkaConnection
 import csw.location.models.{AkkaLocation, ComponentId, ComponentType}
-import csw.params.commands.{CommandName, CommandResponse, SequenceCommand, Setup}
+import csw.params.commands._
 import csw.params.core.models.{Id, Prefix}
 import esw.ocs.api.BaseTestSuite
 import esw.ocs.api.models.StepStatus.{Finished, InFlight}
@@ -18,7 +19,7 @@ import esw.ocs.api.models.messages.SequenceComponentResponse.{GetStatusResponse,
 import esw.ocs.api.models.messages.SequencerMessages._
 import esw.ocs.api.models.messages.error.StepListError._
 import esw.ocs.api.models.messages.error._
-import esw.ocs.api.models.messages.{EditorResponse, LifecycleResponse, StepListResponse}
+import esw.ocs.api.models.messages.{EditorResponse, LifecycleResponse, LoadSequenceResponse, StepListResponse}
 import esw.ocs.api.models.{Step, StepList, StepStatus}
 import org.scalatest.prop.TableDrivenPropertyChecks.forAll
 import org.scalatest.prop.Tables.Table
@@ -35,14 +36,16 @@ class OcsFrameworkAkkaSerializerTest extends BaseTestSuite {
     Await.result(system.whenTerminated, 2.seconds)
   }
 
-  val lifecycleResponseProbeRef: ActorRef[LifecycleResponse]     = TestProbe[LifecycleResponse].ref
-  val editorResponseProbeRef: ActorRef[EditorResponse]           = TestProbe[EditorResponse].ref
-  val stepListResponseProbeRef: ActorRef[StepList]               = TestProbe[StepList].ref
-  val stepListOptionResponseProbeRef: ActorRef[StepListResponse] = TestProbe[StepListResponse].ref
-  val booleanResponseProbeRef: ActorRef[Boolean]                 = TestProbe[Boolean].ref
-  val setupCommand                                               = Setup(Prefix("test"), CommandName("test"), None)
-  val stepList: List[Step]                                       = List(Step(setupCommand))
-  val sequenceCommandList: List[SequenceCommand]                 = List(setupCommand)
+  val loadSequenceResponseProbeRef: ActorRef[LoadSequenceResponse] = TestProbe[LoadSequenceResponse].ref
+  val startSequenceResponseProbeRef: ActorRef[SequenceResponse]    = TestProbe[SequenceResponse].ref
+  val lifecycleResponseProbeRef: ActorRef[LifecycleResponse]       = TestProbe[LifecycleResponse].ref
+  val editorResponseProbeRef: ActorRef[EditorResponse]             = TestProbe[EditorResponse].ref
+  val stepListResponseProbeRef: ActorRef[StepList]                 = TestProbe[StepList].ref
+  val stepListOptionResponseProbeRef: ActorRef[StepListResponse]   = TestProbe[StepListResponse].ref
+  val booleanResponseProbeRef: ActorRef[Boolean]                   = TestProbe[Boolean].ref
+  val setupCommand                                                 = Setup(Prefix("test"), CommandName("test"), None)
+  val steps: List[Step]                                            = List(Step(setupCommand))
+  val sequenceCommandList: List[SequenceCommand]                   = List(setupCommand)
   val loadScriptResponseProbeRef: ActorRef[LoadScriptResponse] =
     TestProbe[LoadScriptResponse].ref
   val getStatusResponseProbeRef: ActorRef[GetStatusResponse] =
@@ -51,8 +54,25 @@ class OcsFrameworkAkkaSerializerTest extends BaseTestSuite {
     TestProbe[Done].ref
   val akkaLocation = AkkaLocation(AkkaConnection(ComponentId("test", ComponentType.Sequencer)), Prefix("test"), new URI("uri"))
 
+  "Load and Start Msg" must {
+    "use OcsFrameworkAkkaSerializer for (de)serialization" in {
+      val testData = Table(
+        "Load and Start sequence Msg",
+        LoadSequence(Sequence(setupCommand), loadSequenceResponseProbeRef),
+        StartSequence(startSequenceResponseProbeRef)
+      )
+      forAll(testData) { seqMsg =>
+        val serializer = serialization.findSerializerFor(seqMsg)
+        serializer.getClass shouldBe classOf[OcsFrameworkAkkaSerializer]
+
+        val bytes = serializer.toBinary(seqMsg)
+        serializer.fromBinary(bytes, Some(seqMsg.getClass)) shouldEqual seqMsg
+      }
+    }
+  }
+
   "ExternalEditorSequencerMsg" must {
-    "use command OcsFrameworkAkkaSerializer for (de)serialization" in {
+    "use OcsFrameworkAkkaSerializer for (de)serialization" in {
       val testData = Table(
         "ExternalEditorSequencerMsg models",
         Available(booleanResponseProbeRef.ref),
@@ -81,7 +101,7 @@ class OcsFrameworkAkkaSerializerTest extends BaseTestSuite {
   }
 
   "LifecycleMsg" must {
-    "use command OcsFrameworkAkkaSerializer for (de)serialization" in {
+    "use OcsFrameworkAkkaSerializer for (de)serialization" in {
       val testData = Table(
         "LifecycleMsg models",
         GoOnline(lifecycleResponseProbeRef.ref),
@@ -101,10 +121,10 @@ class OcsFrameworkAkkaSerializerTest extends BaseTestSuite {
   }
 
   "StepList" must {
-    "use command OcsFrameworkAkkaSerializer for (de)serialization" in {
+    "use OcsFrameworkAkkaSerializer for (de)serialization" in {
       val testData = Table(
         "StepList model",
-        StepList(Id(), stepList)
+        StepList(Id(), steps)
       )
 
       forAll(testData) { stepList =>
@@ -118,7 +138,7 @@ class OcsFrameworkAkkaSerializerTest extends BaseTestSuite {
   }
 
   "SequenceComponentMsg" must {
-    "use command OcsFrameworkAkkaSerializer for (de)serialization" in {
+    "use OcsFrameworkAkkaSerializer for (de)serialization" in {
       val testData = Table(
         "SequenceComponentMsg models",
         LoadScript("sequencerId", "observingMode", loadScriptResponseProbeRef),
@@ -137,7 +157,7 @@ class OcsFrameworkAkkaSerializerTest extends BaseTestSuite {
   }
 
   "SequenceComponentResponse" must {
-    "use command OcsFrameworkAkkaSerializer for (de)serialization" in {
+    "use OcsFrameworkAkkaSerializer for (de)serialization" in {
       val akkaLocation = AkkaLocation(
         AkkaConnection(ComponentId("testComponent", ComponentType.Sequencer)),
         Prefix("test.component"),
@@ -166,7 +186,7 @@ class OcsFrameworkAkkaSerializerTest extends BaseTestSuite {
   }
 
   "EditorResponse" must {
-    "use command OcsFrameworkAkkaSerializer for (de)serialization" in {
+    "use OcsFrameworkAkkaSerializer for (de)serialization" in {
       val testData = Table(
         "EditorResponse",
         EditorResponse(Left(NotSupported(StepStatus.InFlight))),
@@ -187,7 +207,7 @@ class OcsFrameworkAkkaSerializerTest extends BaseTestSuite {
   }
 
   "LifecycleResponse" must {
-    "use command OcsFrameworkAkkaSerializer for (de)serialization" in {
+    "use OcsFrameworkAkkaSerializer for (de)serialization" in {
       val testData = Table(
         "LifecycleResponse",
         LifecycleResponse(Left(GoOnlineError("GoOnlineError"))),
@@ -207,7 +227,7 @@ class OcsFrameworkAkkaSerializerTest extends BaseTestSuite {
   }
 
   "StepListResponse" must {
-    "use command OcsFrameworkAkkaSerializer for (de)serialization" in {
+    "use OcsFrameworkAkkaSerializer for (de)serialization" in {
       val testData = Table(
         "StepListResponse",
         StepListResponse(Some(StepList(Id(), List(Step(Setup(Prefix("test"), CommandName("test"), None))))))

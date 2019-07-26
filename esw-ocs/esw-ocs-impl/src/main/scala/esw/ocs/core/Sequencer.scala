@@ -3,12 +3,13 @@ package esw.ocs.core
 import akka.Done
 import akka.util.Timeout
 import csw.command.client.CommandResponseManager
-import csw.command.client.messages.ProcessSequenceError.ExistingSequenceIsInProcess
-import csw.command.client.messages.{ProcessSequenceError, ProcessSequenceResponse}
+import csw.command.client.messages.sequencer.SequenceError.ExistingSequenceIsInProcess
+import csw.command.client.messages.sequencer.SequenceResponse
 import csw.params.commands.CommandResponse.{Completed, Error, Started, SubmitResponse}
 import csw.params.commands.{CommandResponse, Sequence, SequenceCommand}
 import csw.params.core.models.Id
 import esw.ocs.api.models.StepStatus._
+import esw.ocs.api.models.messages.LoadSequenceResponse
 import esw.ocs.api.models.messages.error.StepListError
 import esw.ocs.api.models.messages.error.StepListError._
 import esw.ocs.api.models.{Step, StepList, StepStatus}
@@ -21,7 +22,7 @@ import scala.util.{Failure, Success, Try}
 
 private[ocs] class Sequencer(crm: CommandResponseManager)(implicit strandEc: StrandEc, timeout: Timeout) {
   private implicit val singleThreadedEc: ExecutionContext = strandEc.ec
-  private val emptyChildId                                = Id("empty-child")
+  private val emptyChildId                                = Id("empty-child") // fixme
 
   private var stepList                                         = StepList.empty
   private var loadedStepList                                   = StepList.empty
@@ -30,30 +31,34 @@ private[ocs] class Sequencer(crm: CommandResponseManager)(implicit strandEc: Str
   private var stepRefPromise: Option[Promise[Step]]            = None
   private var sequencerAvailable                               = true
 
-  def loadSequence(sequence: Sequence): Future[Either[ProcessSequenceError, Done]] = async {
-    if (sequencerAvailable) {
-      StepList(sequence).map { _stepList =>
-        loadedStepList = _stepList
-        Done
-      }
-    } else Left(ExistingSequenceIsInProcess)
+  def load(sequence: Sequence): Future[LoadSequenceResponse] = async {
+    LoadSequenceResponse(
+      if (sequencerAvailable) {
+        StepList(sequence).map { _stepList =>
+          loadedStepList = _stepList
+          Done
+        }
+      } else Left(ExistingSequenceIsInProcess)
+    )
   }
 
-  def start(): Future[ProcessSequenceResponse] = async {
-    ProcessSequenceResponse(if (sequencerAvailable) {
-      sequencerAvailable = false
-      updateStepList(loadedStepList)
-      val id = stepList.runId
-      crm.addOrUpdateCommand(Started(id))
-      crm.addSubCommand(id, emptyChildId)
-      completeStepRefPromise()
-      completeReadyToExecuteNextPromise() // To complete the promise created for previous sequence so that engine can pullNext
-      await(handleSequenceResponse(crm.queryFinal(id)).map(Right(_)))
-    } else Left(ExistingSequenceIsInProcess))
+  def start(): Future[SequenceResponse] = async {
+    SequenceResponse(
+      if (sequencerAvailable) {
+        sequencerAvailable = false
+        updateStepList(loadedStepList)
+        val id = stepList.runId
+        crm.addOrUpdateCommand(Started(id))
+        crm.addSubCommand(id, emptyChildId)
+        completeStepRefPromise()
+        completeReadyToExecuteNextPromise() // To complete the promise created for previous sequence so that engine can pullNext
+        await(handleSequenceResponse(crm.queryFinal(id)).map(Right(_)))
+      } else Left(ExistingSequenceIsInProcess)
+    )
   }
 
-  def loadAndStartSequence(sequence: Sequence): Future[ProcessSequenceResponse] =
-    loadSequence(sequence).flatMap(_ => start())
+  def loadAndStart(sequence: Sequence): Future[SequenceResponse] =
+    load(sequence).flatMap(_ => start())
 
   def pullNext(): Future[Step] = async {
     stepList.nextExecutable match {

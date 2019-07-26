@@ -8,20 +8,17 @@ import esw.ocs.api.models._
 import esw.ocs.api.models.messages.SequenceComponentMsg.{GetStatus, LoadScript, UnloadScript}
 import esw.ocs.api.models.messages.SequenceComponentResponse.{GetStatusResponse, LoadScriptResponse}
 import esw.ocs.api.models.messages.SequencerMessages._
+import esw.ocs.api.models.messages._
 import esw.ocs.api.models.messages.error.StepListError._
 import esw.ocs.api.models.messages.error._
-import esw.ocs.api.models.messages.{
-  EditorResponse,
-  LifecycleResponse,
-  SequenceComponentMsg,
-  SequenceComponentResponse,
-  StepListResponse
-}
 import io.bullet.borer.Codec
 import io.bullet.borer.derivation.ArrayBasedCodecs.deriveCodecForUnaryCaseClass
 import io.bullet.borer.derivation.MapBasedCodecs.deriveCodec
 
 trait OcsFrameworkCodecs extends MessageCodecs with DoneCodec {
+  implicit lazy val startSequenceCodec: Codec[StartSequence]               = deriveCodecForUnaryCaseClass[StartSequence]
+  implicit lazy val loadSequenceCodec: Codec[LoadSequence]                 = deriveCodec[LoadSequence]
+  implicit lazy val loadSequenceResponseCodec: Codec[LoadSequenceResponse] = deriveCodec[LoadSequenceResponse]
 
   //LifecycleMsg Codecs
   implicit lazy val goOnlineCodec: Codec[GoOnline]          = deriveCodec[GoOnline]
