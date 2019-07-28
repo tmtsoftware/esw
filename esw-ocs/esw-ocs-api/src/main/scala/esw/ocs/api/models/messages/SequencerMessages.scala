@@ -29,10 +29,12 @@ object SequencerMessages {
 
   final case class GoOnline(replyTo: ActorRef[LifecycleResponse])  extends LifecycleMsg
   final case class GoOffline(replyTo: ActorRef[LifecycleResponse]) extends LifecycleMsg
-  private[ocs] final case object ChangeBehaviorToOffline           extends SequencerMsg
-  private[ocs] final case object ChangeBehaviorToDefault           extends SequencerMsg
   final case class Shutdown(replyTo: ActorRef[LifecycleResponse])  extends LifecycleMsg
   final case class Abort(replyTo: ActorRef[LifecycleResponse])     extends LifecycleMsg
+
+  // private messages used for lifecycle management
+  private[ocs] final case object ChangeBehaviorToOffline extends SequencerMsg
+  private[ocs] final case object ChangeBehaviorToDefault extends SequencerMsg
 
   // editor msgs
   sealed trait ExternalEditorSequencerMsg extends SequencerMsg with OcsFrameworkAkkaSerializable

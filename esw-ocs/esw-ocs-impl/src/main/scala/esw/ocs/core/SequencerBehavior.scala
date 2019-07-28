@@ -33,11 +33,13 @@ class SequencerBehavior(
       .flatMap(_ => script.executeShutdown().toEither(ex => ShutdownError(ex.getMessage)))
       .recover { case NonFatal(ex) => Left(ShutdownError(ex.getMessage)) }
       .foreach(replyTo ! LifecycleResponse(_))
+    //fixme: can we avoid abruptly terminating the system?
     ctx.system.terminate
   }
 
   private def goOnline(replyTo: ActorRef[LifecycleResponse])(implicit ec: ExecutionContext): Unit =
     sequencer.isOnline.foreach { isOnline =>
+      //fixme: replyTo sender if alreadyOnline
       if (!isOnline) {
         sequencer.goOnline().foreach { _ =>
           script.executeGoOnline().toEither(ex => GoOnlineError(ex.getMessage)).foreach(replyTo ! LifecycleResponse(_))
@@ -48,12 +50,10 @@ class SequencerBehavior(
   private def runOfflineHandlers()(implicit ec: ExecutionContext): Future[Either[GoOfflineError, Done]] = {
     sequencer.goOffline().flatMap {
       case Right(_) =>
-        script
-          .executeGoOffline()
-          .transform {
-            case Success(res) => Success(Right(res))
-            case Failure(ex)  => Success(Left(GoOfflineError(ex.getMessage)))
-          }
+        script.executeGoOffline().transform {
+          case Success(res) => Success(Right(res))
+          case Failure(ex)  => Success(Left(GoOfflineError(ex.getMessage)))
+        }
       case error => Future.successful(error)
     }
   }
@@ -62,15 +62,10 @@ class SequencerBehavior(
     import ctx.executionContext
 
     sequencer.isOnline.flatMap { isOnline =>
-      val offlineResponse = if (isOnline) runOfflineHandlers() else Future.successful(Right(Done))
-
-      offlineResponse.map {
-        case res @ Left(_) =>
-          replyTo ! LifecycleResponse(res)
-          ctx.self ! ChangeBehaviorToDefault
-        case res =>
-          replyTo ! LifecycleResponse(res)
-          ctx.self ! ChangeBehaviorToOffline
+      val goOfflineResponseF = if (isOnline) runOfflineHandlers() else Future.successful(Right(Done))
+      goOfflineResponseF.map {
+        case res @ Right(_) => replyTo ! LifecycleResponse(res); ctx.self ! ChangeBehaviorToOffline
+        case res            => replyTo ! LifecycleResponse(res); ctx.self ! ChangeBehaviorToDefault
       }
     }
   }
