@@ -24,63 +24,8 @@ class SequencerBehavior(
     script: ScriptDsl,
     locationService: LocationService
 ) {
-  private def shutdown(replyTo: ActorRef[LifecycleResponse])(implicit ctx: ActorContext[SequencerMsg]): Unit = {
-    import ctx.executionContext
-
-    sequencer.shutdown()
-    locationService
-      .unregister(AkkaConnection(componentId))
-      .flatMap(_ => script.executeShutdown().toEither(ex => ShutdownError(ex.getMessage)))
-      .recover { case NonFatal(ex) => Left(ShutdownError(ex.getMessage)) }
-      .foreach(replyTo ! LifecycleResponse(_))
-    //fixme: can we avoid abruptly terminating the system?
-    ctx.system.terminate
-  }
-
-  private def goOnline(replyTo: ActorRef[LifecycleResponse])(implicit ec: ExecutionContext): Unit =
-    sequencer.isOnline.foreach { isOnline =>
-      //fixme: replyTo sender if alreadyOnline
-      if (!isOnline) {
-        sequencer.goOnline().foreach { _ =>
-          script.executeGoOnline().toEither(ex => GoOnlineError(ex.getMessage)).foreach(replyTo ! LifecycleResponse(_))
-        }
-      }
-    }
-
-  private def runOfflineHandlers()(implicit ec: ExecutionContext): Future[Either[GoOfflineError, Done]] = {
-    sequencer.goOffline().flatMap {
-      case Right(_) =>
-        script.executeGoOffline().transform {
-          case Success(res) => Success(Right(res))
-          case Failure(ex)  => Success(Left(GoOfflineError(ex.getMessage)))
-        }
-      case error => Future.successful(error)
-    }
-  }
-
-  private def goOffline(replyTo: ActorRef[LifecycleResponse])(implicit ctx: ActorContext[SequencerMsg]): Unit = {
-    import ctx.executionContext
-
-    sequencer.isOnline.flatMap { isOnline =>
-      val goOfflineResponseF = if (isOnline) runOfflineHandlers() else Future.successful(Right(Done))
-      goOfflineResponseF.map {
-        case res @ Right(_) => replyTo ! LifecycleResponse(res); ctx.self ! ChangeBehaviorToOffline
-        case res            => replyTo ! LifecycleResponse(res); ctx.self ! ChangeBehaviorToDefault
-      }
-    }
-  }
-
   def defaultBehavior: Behavior[SequencerMsg] = Behaviors.receive[SequencerMsg] { (ctx, msg) =>
     import ctx.executionContext
-
-    def abort(replyTo: ActorRef[LifecycleResponse]): Unit =
-      sequencer
-        .reset()
-        .flatMap {
-          case Left(NotAllowedOnFinishedSeq) => Future.successful(Left(AbortError("Not Allowed on Finished Sequence")))
-          case Right(_)                      => script.executeAbort().toEither(ex => AbortError(ex.getMessage))
-        }
-        .foreach(replyTo ! LifecycleResponse(_))
 
     msg match {
       // ===== External Lifecycle =====
@@ -122,7 +67,6 @@ class SequencerBehavior(
 
   private def offlineBehavior: Behavior[SequencerMsg] = Behaviors.receive[SequencerMsg] { (ctx, msg) =>
     import ctx.executionContext
-
     msg match {
       case Shutdown(replyTo) => shutdown(replyTo)(ctx); Behaviors.same
       case GoOnline(replyTo) => goOnline(replyTo); defaultBehavior
@@ -134,6 +78,58 @@ class SequencerBehavior(
     case ChangeBehaviorToOffline => offlineBehavior
     case ChangeBehaviorToDefault => defaultBehavior
     case _                       => Behaviors.same
+  }
+
+  private def shutdown(replyTo: ActorRef[LifecycleResponse])(implicit ctx: ActorContext[SequencerMsg]): Unit = {
+    import ctx.executionContext
+
+    sequencer.shutdown()
+    locationService
+      .unregister(AkkaConnection(componentId))
+      .flatMap(_ => script.executeShutdown().toEither(ex => ShutdownError(ex.getMessage)))
+      .recover { case NonFatal(ex) => Left(ShutdownError(ex.getMessage)) }
+      .foreach(replyTo ! LifecycleResponse(_))
+    //fixme: can we avoid abruptly terminating the system?
+    ctx.system.terminate
+  }
+
+  private def abort(replyTo: ActorRef[LifecycleResponse])(implicit ec: ExecutionContext): Unit =
+    sequencer
+      .reset()
+      .flatMap {
+        case Left(NotAllowedOnFinishedSeq) => Future.successful(Left(AbortError("Not Allowed on Finished Sequence")))
+        case Right(_)                      => script.executeAbort().toEither(ex => AbortError(ex.getMessage))
+      }
+      .foreach(replyTo ! LifecycleResponse(_))
+
+  private def goOnline(replyTo: ActorRef[LifecycleResponse])(implicit ec: ExecutionContext): Unit =
+    sequencer.isOnline.foreach { isOnline =>
+      if (!isOnline) sequencer.goOnline().foreach { _ =>
+        script.executeGoOnline().toEither(ex => GoOnlineError(ex.getMessage)).foreach(replyTo ! LifecycleResponse(_))
+      } else replyTo ! LifecycleResponse(Right(Done))
+    }
+
+  private def runOfflineHandlers()(implicit ec: ExecutionContext): Future[Either[GoOfflineError, Done]] = {
+    sequencer.goOffline().flatMap {
+      case Right(_) =>
+        script.executeGoOffline().transform {
+          case Success(res) => Success(Right(res))
+          case Failure(ex)  => Success(Left(GoOfflineError(ex.getMessage)))
+        }
+      case error => Future.successful(error)
+    }
+  }
+
+  private def goOffline(replyTo: ActorRef[LifecycleResponse])(implicit ctx: ActorContext[SequencerMsg]): Unit = {
+    import ctx.executionContext
+
+    sequencer.isOnline.flatMap { isOnline =>
+      val goOfflineResponseF = if (isOnline) runOfflineHandlers() else Future.successful(Right(Done))
+      goOfflineResponseF.map {
+        case res @ Right(_) => replyTo ! LifecycleResponse(res); ctx.self ! ChangeBehaviorToOffline
+        case res            => replyTo ! LifecycleResponse(res); ctx.self ! ChangeBehaviorToDefault
+      }
+    }
   }
 
 }
