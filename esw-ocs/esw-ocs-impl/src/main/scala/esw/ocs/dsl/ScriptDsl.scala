@@ -20,10 +20,10 @@ trait ScriptDsl extends ControlDsl {
 
   private val commandHandlerBuilder: FunctionBuilder[SequenceCommand, Future[Unit]] = new FunctionBuilder
 
-  private val goOnlineHandlers: FunctionHandlers[Unit, Future[Unit]]  = new FunctionHandlers
-  private val goOfflineHandlers: FunctionHandlers[Unit, Future[Unit]] = new FunctionHandlers
-  private val shutdownHandlers: FunctionHandlers[Unit, Future[Unit]]  = new FunctionHandlers
-  private val abortHandlers: FunctionHandlers[Unit, Future[Unit]]     = new FunctionHandlers
+  private val onlineHandlers: FunctionHandlers[Unit, Future[Unit]]   = new FunctionHandlers
+  private val offlineHandlers: FunctionHandlers[Unit, Future[Unit]]  = new FunctionHandlers
+  private val shutdownHandlers: FunctionHandlers[Unit, Future[Unit]] = new FunctionHandlers
+  private val abortHandlers: FunctionHandlers[Unit, Future[Unit]]    = new FunctionHandlers
 
   private def handle[T <: SequenceCommand: ClassTag](name: String)(handler: T => Future[Unit]): Unit =
     commandHandlerBuilder.addHandler[T](handler)(_.commandName.name == name)
@@ -42,12 +42,12 @@ trait ScriptDsl extends ControlDsl {
   // this will executes sequentially
   private[ocs] def executeGoOnline(): Future[Done] = {
     isOnline = true
-    Future.sequence(goOnlineHandlers.execute(())).map(_ => Done)
+    Future.sequence(onlineHandlers.execute(())).map(_ => Done)
   }
 
   private[ocs] def executeGoOffline(): Future[Done] = {
     isOnline = false
-    Future.sequence(goOfflineHandlers.execute(())).map(_ => Done)
+    Future.sequence(offlineHandlers.execute(())).map(_ => Done)
   }
 
   private[ocs] def executeShutdown(): Future[Done] = Future.sequence(shutdownHandlers.execute(())).map(_ => Done)
@@ -64,6 +64,8 @@ trait ScriptDsl extends ControlDsl {
 
   protected final def handleSetupCommand(name: String)(handler: Setup => Future[Unit]): Unit     = handle(name)(handler)
   protected final def handleObserveCommand(name: String)(handler: Observe => Future[Unit]): Unit = handle(name)(handler)
+  protected final def handleGoOnline(handler: => Future[Unit]): Unit                             = onlineHandlers.add(_ => handler)
+  protected final def handleGoOffline(handler: => Future[Unit]): Unit                            = offlineHandlers.add(_ => handler)
   protected final def handleShutdown(handler: => Future[Unit]): Unit                             = shutdownHandlers.add(_ => handler)
   protected final def handleAbort(handler: => Future[Unit]): Unit                                = abortHandlers.add(_ => handler)
 }

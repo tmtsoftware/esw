@@ -34,7 +34,7 @@ class SequencerBehaviorTest extends ScalaTestWithActorTestKit with BaseTestSuite
     script = mock[Script]
     locationService = mock[LocationService]
     sequencerBehavior = new SequencerBehavior(componentId, sequencer, script, locationService)
-    sequencerActor = spawn(sequencerBehavior.defaultBehavior)
+    sequencerActor = spawn(sequencerBehavior.mainBehavior)
   }
 
   "LoadAndStartSequence" in {
