@@ -7,20 +7,21 @@ import akka.stream.OverflowStrategy
 import akka.stream.scaladsl.Source
 import akka.util.Timeout
 import csw.command.api.CurrentStateSubscription
-import csw.location.model.scaladsl.ComponentType
+import csw.location.client.HttpCodecs
+import csw.location.models.ComponentType
 import csw.params.commands.{CommandResponse, ControlCommand}
-import csw.params.core.formats.JsonSupport
+import csw.params.core.formats.ParamCodecs
 import csw.params.core.models.Id
 import csw.params.core.states.{StateName, StateVariable}
-import de.heikoseeberger.akkahttpplayjson.PlayJsonSupport
-import esw.template.http.server.commons.RichSourceExt.RichSource
-import esw.template.http.server.commons.Utils._
-import esw.template.http.server.csw.utils.CswContext
+import esw.http.core.commons.RichMessageExt._
+import esw.http.core.commons.RichSourceExt.RichSource
+import esw.http.core.commons.Utils._
+import esw.http.core.utils.CswContext
 
 import scala.concurrent.Future
 import scala.concurrent.duration.DurationLong
 
-class CommandRoutes(cswCtx: CswContext) extends JsonSupport with PlayJsonSupport {
+class CommandRoutes(cswCtx: CswContext) extends ParamCodecs with HttpCodecs {
   import cswCtx._
 
   implicit val timeout: Timeout = Timeout(5.seconds)
@@ -55,16 +56,20 @@ class CommandRoutes(cswCtx: CswContext) extends JsonSupport with PlayJsonSupport
               // This is because in case of long-running commands, future will complete after a long time and the http request will timeout if onSuccess is used.
               complete(Source.fromFuture(responseF).toSSE)
             } ~
+            path("websocket" / Segment) { runId =>
+              val eventualResponse: Future[CommandResponse.SubmitResponse] = {
+                commandService.queryFinal(Id(runId))(Timeout(100.hours))
+              }
+              handleWebSocketMessages(eventualResponse.toMessageFlow)
+            } ~
             path("current-state" / "subscribe") {
               parameters(("state-name".as[String].*, "max-frequency".as[Int].?)) { (stateNames, maxFrequency) =>
                 validateFrequency(maxFrequency) {
-
                   val currentStateSource = commandService.subscribeCurrentState(stateNames.map(StateName.apply).toSet)
                   val stream: Source[StateVariable, CurrentStateSubscription] = maxFrequency match {
                     case Some(frequency) => currentStateSource.buffer(1, OverflowStrategy.dropHead).throttle(frequency, 1.seconds)
                     case None            => currentStateSource
                   }
-
                   complete(stream.toSSE)
                 }
               }

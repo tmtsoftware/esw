@@ -3,21 +3,24 @@ import sbt.Def.{setting => dep}
 import sbt._
 
 object Libs {
-  val ScalaVersion = EswKeys.scalaVersion
+  val ScalaVersion: String = EswKeys.scalaVersion
 
   val `scala-reflect` = "org.scala-lang" % "scala-reflect" % ScalaVersion
   val scalatest       = "org.scalatest" %% "scalatest" % "3.0.8" //Apache License 2.0
   val `scopt`         = "com.github.scopt" %% "scopt" % "4.0.0-RC2" //MIT License
   val `scala-async`   = "org.scala-lang.modules" %% "scala-async" % "0.10.0" //BSD 3-clause "New" or "Revised" License
-  val `mockito-scala` = "org.mockito" %% "mockito-scala" % "1.5.11" // MIT License
+  val `mockito-scala` = "org.mockito" %% "mockito-scala" % "1.5.12" // MIT License
   val `enumeratum`    = dep("com.beachape" %%% "enumeratum" % "1.5.13") //MIT License
+  val `case-app`      = "com.github.alexarchambault" %% "case-app" % "2.0.0-M9"
 }
 
 object Csw {
   private val Org     = "com.github.tmtsoftware.csw"
-  private val Version = "aaec5f79eedb2d8171089e2951784fe2a22ccc6c" //change this to 0.1-SNAPSHOT to test with local csw changes (after publishLocal)
+  private val Version = "60f275f266bf8abd35af223028ec8ef21dfe2f97" //change this to 0.1-SNAPSHOT to test with local csw changes (after publishLocal)
 
   val `csw-location-api`    = Org %% "csw-location-api" % Version
+  val `csw-aas-http`        = Org %% "csw-aas-http" % Version
+  val `csw-alarm-client`    = Org %% "csw-alarm-client" % Version
   val `csw-params`          = dep(Org %%% "csw-params" % Version)
   val `csw-commons`         = Org %% "csw-commons" % Version
   val `csw-network-utils`   = Org %% "csw-network-utils" % Version

@@ -6,17 +6,17 @@ import akka.http.scaladsl.server.{Directive0, Route}
 import akka.stream.scaladsl.Source
 import csw.event.api.scaladsl.SubscriptionModes.RateLimiterMode
 import csw.event.api.scaladsl.{EventPublisher, EventSubscriber, EventSubscription}
-import csw.params.core.formats.JsonSupport
+import csw.location.client.HttpCodecs
+import csw.params.core.formats.ParamCodecs
 import csw.params.core.models.Subsystem
 import csw.params.events.{Event, EventKey}
-import de.heikoseeberger.akkahttpplayjson.PlayJsonSupport
-import esw.template.http.server.commons.RichSourceExt.RichSource
-import esw.template.http.server.commons.Utils._
-import esw.template.http.server.csw.utils.CswContext
+import esw.http.core.commons.RichSourceExt.RichSource
+import esw.http.core.commons.Utils._
+import esw.http.core.utils.CswContext
 
 import scala.language.postfixOps
 
-class EventRoutes(cswCtx: CswContext) extends JsonSupport with PlayJsonSupport {
+class EventRoutes(cswCtx: CswContext) extends ParamCodecs with HttpCodecs {
   import cswCtx._
 
   lazy val subscriber: EventSubscriber = eventService.defaultSubscriber

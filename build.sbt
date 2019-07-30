@@ -2,7 +2,7 @@ lazy val aggregateProjects: Seq[ProjectReference] =
   Seq(
     `esw-ocs`,
     `esw-gateway-server`,
-    `esw-template`,
+    `esw-http-core`,
     `esw-integration-test`
   )
 
@@ -24,42 +24,47 @@ lazy val esw = (project in file("."))
 lazy val `esw-ocs` = project
   .in(file("esw-ocs"))
   .aggregate(
-    `esw-ocs-framework-api`,
-    `esw-ocs-framework`,
-    `esw-async-macros`
-  )
-lazy val `esw-ocs-framework-api` = project
-  .in(file("esw-ocs/esw-ocs-framework-api"))
-  //fixme: enable this after serialization tests are done
-//  .enablePlugins(MaybeCoverage) 
-  .settings(
-    libraryDependencies ++= Dependencies.OcsFrameworkApi.value
+    `esw-ocs-api`,
+    `esw-ocs-impl`,
+    `esw-ocs-macros`,
+    `esw-ocs-app`
   )
 
-lazy val `esw-ocs-framework` = project
-  .in(file("esw-ocs/esw-ocs-framework"))
-//  .enablePlugins(MaybeCoverage)
-  .settings(
-    libraryDependencies ++= Dependencies.OcsFramework.value
-  )
-  .dependsOn(`esw-ocs-framework-api`, `esw-async-macros`)
-
-lazy val `esw-async-macros` = project
-  .in(file("esw-ocs/esw-async-macros"))
+lazy val `esw-ocs-api` = project
+  .in(file("esw-ocs/esw-ocs-api"))
   .enablePlugins(MaybeCoverage)
   .settings(
-    libraryDependencies ++= Dependencies.AsyncMacros.value
+    libraryDependencies ++= Dependencies.OcsApi.value
   )
 
-lazy val `esw-template` = project
-  .in(file("esw-template"))
-  .aggregate(`esw-template-http-server`)
+lazy val `esw-ocs-impl` = project
+  .in(file("esw-ocs/esw-ocs-impl"))
+  .enablePlugins(MaybeCoverage)
+  .settings(
+    libraryDependencies ++= Dependencies.OcsImpl.value
+  )
+  .dependsOn(`esw-ocs-api`, `esw-ocs-macros`)
 
-lazy val `esw-template-http-server` = project
-  .in(file("esw-template/esw-template-http-server"))
+lazy val `esw-ocs-macros` = project
+  .in(file("esw-ocs/esw-ocs-macros"))
+  .enablePlugins(MaybeCoverage)
+  .settings(
+    libraryDependencies ++= Dependencies.OcsMacros.value
+  )
+
+lazy val `esw-ocs-app` = project
+  .in(file("esw-ocs/esw-ocs-app"))
+  .enablePlugins(EswBuildInfo, DeployApp)
+  .settings(
+    libraryDependencies ++= Dependencies.OcsApp.value
+  )
+  .dependsOn(`esw-ocs-impl`)
+
+lazy val `esw-http-core` = project
+  .in(file("esw-http-core"))
   .enablePlugins(MaybeCoverage, EswBuildInfo)
   .settings(
-    libraryDependencies ++= Dependencies.TemplateHttpServer.value
+    libraryDependencies ++= Dependencies.EswHttpCore.value
   )
 
 lazy val `esw-gateway-server` = project
@@ -68,16 +73,17 @@ lazy val `esw-gateway-server` = project
   .settings(
     libraryDependencies ++= Dependencies.GatewayServer.value
   )
-  .dependsOn(`esw-template-http-server` % "compile->compile;test->test")
+  .dependsOn(`esw-http-core` % "compile->compile;test->test")
 
 lazy val `esw-integration-test` = project
   .in(file("esw-integration-test"))
   .settings(libraryDependencies ++= Dependencies.IntegrationTest.value)
   .settings(fork in Test := true)
   .dependsOn(
-    `esw-gateway-server`       % "test->compile;test->test",
-    `esw-template-http-server` % "test->compile;test->test",
-    `esw-ocs-framework`        % "test->compile;test->test"
+    `esw-gateway-server` % "test->compile;test->test",
+    `esw-http-core`      % "test->compile;test->test",
+    `esw-ocs-impl`       % "test->compile;test->test",
+    `esw-ocs-app`
   )
 
 /* ================= Paradox Docs ============== */
