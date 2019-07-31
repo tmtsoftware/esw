@@ -213,7 +213,7 @@ class SequencerBehaviorTest extends ScalaTestWithActorTestKit with BaseTestSuite
 
     sequencerActor ! UpdateFailure(errorResponse)
 
-    verify(sequencer).updateFailure(errorResponse)
+    eventually(verify(sequencer).updateFailure(errorResponse))
   }
 
   private def runTest[R](mockFunction: => Future[R], mockResponse: R, testMsg: ActorRef[R] => SequencerMsg): Unit =
