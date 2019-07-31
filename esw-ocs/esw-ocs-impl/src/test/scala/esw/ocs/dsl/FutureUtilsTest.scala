@@ -3,6 +3,7 @@ package esw.ocs.dsl
 import esw.ocs.BaseTestSuite
 import esw.ocs.dsl.utils.FutureUtils
 import esw.ocs.macros.StrandEc
+import org.scalatest.concurrent.PatienceConfiguration.Interval
 
 import scala.concurrent.Future
 import scala.concurrent.duration.DurationInt
@@ -30,7 +31,7 @@ class FutureUtilsTest extends BaseTestSuite {
       task.isReadyWithin(100.millis) shouldBe false
 
       //eventually, ensure that future is complete (after 500ms)
-      task.futureValue shouldBe true
+      task.futureValue(Interval(1.second)) shouldBe true
     }
 
     "complete the future after function completion when min delay < function completion duration | ESW-90" in {
