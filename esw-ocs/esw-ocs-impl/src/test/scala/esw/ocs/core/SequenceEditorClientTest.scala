@@ -7,9 +7,9 @@ import csw.params.core.models.Prefix
 import esw.ocs.BaseTestSuite
 import esw.ocs.api.models.StepList
 import esw.ocs.api.models.StepStatus.Pending
-import esw.ocs.api.models.messages.EditorResponse
 import esw.ocs.api.models.messages.SequencerMessages._
-import esw.ocs.api.models.messages.error.StepListError._
+import esw.ocs.api.models.messages.EditorError._
+import esw.ocs.api.models.messages.SequencerResponses.EditorResponse
 
 class SequenceEditorClientTest extends ScalaTestWithActorTestKit with BaseTestSuite {
   private val command      = Setup(Prefix("test"), CommandName("command-1"), None)

@@ -8,8 +8,8 @@ import csw.params.commands.SequenceCommand
 import csw.params.core.models.Id
 import esw.ocs.api.SequenceEditor
 import esw.ocs.api.models.StepList
-import esw.ocs.api.models.messages.EditorResponse
 import esw.ocs.api.models.messages.SequencerMessages._
+import esw.ocs.api.models.messages.SequencerResponses.EditorResponse
 
 import scala.concurrent.Future
 

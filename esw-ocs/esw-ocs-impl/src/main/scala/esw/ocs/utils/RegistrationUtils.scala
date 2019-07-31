@@ -3,7 +3,7 @@ package esw.ocs.utils
 import akka.actor.CoordinatedShutdown
 import csw.location.api.scaladsl.{LocationService, RegistrationResult}
 import csw.location.models.{AkkaLocation, AkkaRegistration}
-import esw.ocs.api.models.messages.error.RegistrationError
+import esw.ocs.api.models.messages.RegistrationError
 
 import scala.concurrent.{ExecutionContext, Future}
 import scala.util.control.NonFatal

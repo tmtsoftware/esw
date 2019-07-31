@@ -9,10 +9,10 @@ import csw.location.models.ComponentId
 import csw.location.models.Connection.AkkaConnection
 import esw.ocs.api.codecs.OcsFrameworkCodecs
 import esw.ocs.api.models.StepList
+import esw.ocs.api.models.messages.EditorError.NotAllowedOnFinishedSeq
 import esw.ocs.api.models.messages.SequencerMessages._
-import esw.ocs.api.models.messages.error.StepListError.NotAllowedOnFinishedSeq
-import esw.ocs.api.models.messages.error.{AbortError, NotAllowedInOfflineState, ShutdownError}
-import esw.ocs.api.models.messages.{EditorResponse, LifecycleResponse, LoadSequenceResponse, StepListResponse}
+import esw.ocs.api.models.messages.SequencerResponses.{EditorResponse, LifecycleResponse, LoadSequenceResponse, StepListResponse}
+import esw.ocs.api.models.messages.{AbortError, NotAllowedInOfflineState, ShutdownError}
 import esw.ocs.dsl.ScriptDsl
 import esw.ocs.utils.FutureEitherExt._
 

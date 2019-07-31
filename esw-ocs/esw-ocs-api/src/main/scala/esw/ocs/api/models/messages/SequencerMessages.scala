@@ -6,6 +6,7 @@ import csw.command.client.messages.sequencer.{SequenceResponse, SequencerMsg}
 import csw.params.commands.CommandResponse.SubmitResponse
 import csw.params.commands.{Sequence, SequenceCommand}
 import csw.params.core.models.Id
+import esw.ocs.api.models.messages.SequencerResponses._
 import esw.ocs.api.models.{Step, StepList}
 import esw.ocs.api.serializer.OcsFrameworkAkkaSerializable
 

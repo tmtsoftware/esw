@@ -15,11 +15,11 @@ import csw.params.core.models.{Id, Prefix}
 import esw.ocs.api.BaseTestSuite
 import esw.ocs.api.models.StepStatus.{Finished, InFlight}
 import esw.ocs.api.models.messages.SequenceComponentMsg.{GetStatus, LoadScript, UnloadScript}
-import esw.ocs.api.models.messages.SequenceComponentResponse.{GetStatusResponse, LoadScriptResponse}
 import esw.ocs.api.models.messages.SequencerMessages._
-import esw.ocs.api.models.messages.error.StepListError._
-import esw.ocs.api.models.messages.error._
-import esw.ocs.api.models.messages.{EditorResponse, LifecycleResponse, LoadSequenceResponse, StepListResponse}
+import esw.ocs.api.models.messages.EditorError._
+import esw.ocs.api.models.messages.SequenceComponentResponses.{GetStatusResponse, LoadScriptResponse}
+import esw.ocs.api.models.messages.SequencerResponses.{EditorResponse, LifecycleResponse, LoadSequenceResponse, StepListResponse}
+import esw.ocs.api.models.messages.{AbortError, GoOfflineError, GoOnlineError, RegistrationError, ShutdownError}
 import esw.ocs.api.models.{Step, StepList, StepStatus}
 import org.scalatest.prop.TableDrivenPropertyChecks.forAll
 import org.scalatest.prop.Tables.Table

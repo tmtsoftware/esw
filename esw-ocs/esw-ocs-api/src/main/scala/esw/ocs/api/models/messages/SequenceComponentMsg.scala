@@ -2,7 +2,7 @@ package esw.ocs.api.models.messages
 
 import akka.Done
 import akka.actor.typed.ActorRef
-import esw.ocs.api.models.messages.SequenceComponentResponse.{GetStatusResponse, LoadScriptResponse}
+import esw.ocs.api.models.messages.SequenceComponentResponses.{GetStatusResponse, LoadScriptResponse}
 import esw.ocs.api.serializer.OcsFrameworkAkkaSerializable
 
 sealed trait SequenceComponentMsg extends OcsFrameworkAkkaSerializable

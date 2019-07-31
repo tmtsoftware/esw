@@ -12,7 +12,7 @@ import csw.location.models.Connection.AkkaConnection
 import csw.location.models.{AkkaLocation, AkkaRegistration, ComponentId}
 import csw.params.core.models.Prefix
 import esw.ocs.BaseTestSuite
-import esw.ocs.api.models.messages.error.RegistrationError
+import esw.ocs.api.models.messages.RegistrationError
 import org.mockito.Mockito.{verify, when}
 
 import scala.concurrent.ExecutionContext.Implicits.global

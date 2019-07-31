@@ -9,8 +9,7 @@ import csw.location.client.scaladsl.HttpLocationServiceFactory
 import csw.location.models.Connection.AkkaConnection
 import csw.location.models.{AkkaLocation, AkkaRegistration, ComponentId, ComponentType}
 import csw.params.core.models.Prefix
-import esw.ocs.api.models.messages.SequenceComponentMsg
-import esw.ocs.api.models.messages.error.RegistrationError
+import esw.ocs.api.models.messages.{RegistrationError, SequenceComponentMsg}
 import esw.ocs.core.SequenceComponentBehavior
 import esw.ocs.syntax.FutureSyntax.FutureOps
 import esw.ocs.utils.RegistrationUtils

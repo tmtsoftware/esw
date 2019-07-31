@@ -4,7 +4,7 @@ import csw.params.commands.CommandResponse.Completed
 import csw.params.commands.{CommandName, Setup}
 import csw.params.core.models.{Id, Prefix}
 import esw.ocs.api.models.StepStatus.{Finished, _}
-import esw.ocs.api.models.messages.error.StepListError.{NotSupported, UpdateNotSupported}
+import esw.ocs.api.models.messages.EditorError.{NotSupported, UpdateNotSupported}
 import esw.ocs.api.{BaseTestSuite, models}
 
 class StepTest extends BaseTestSuite {

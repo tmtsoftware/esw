@@ -3,8 +3,8 @@ package esw.ocs.api.models
 import csw.command.client.messages.sequencer.SequenceError.DuplicateIdsFound
 import csw.params.commands.{Sequence, SequenceCommand}
 import csw.params.core.models.Id
-import esw.ocs.api.models.messages.error.StepListError
-import esw.ocs.api.models.messages.error.StepListError._
+import esw.ocs.api.models.messages.EditorError
+import esw.ocs.api.models.messages.EditorError._
 import esw.ocs.api.serializer.OcsFrameworkAkkaSerializable
 
 final case class StepList private[models] (runId: Id, steps: List[Step]) extends OcsFrameworkAkkaSerializable {
@@ -108,12 +108,12 @@ final case class StepList private[models] (runId: Id, steps: List[Step]) extends
       case step                  => step
     })
 
-  private def ifNotFinished[T <: StepListError](
+  private def ifNotFinished[T <: EditorError](
       f: => Either[T, StepList]
   )(implicit ev: NotAllowedOnFinishedSeq.type <:< T): Either[T, StepList] =
     if (isFinished) Left(NotAllowedOnFinishedSeq) else f
 
-  private def ifExists[T <: StepListError](id: Id)(
+  private def ifExists[T <: EditorError](id: Id)(
       f: Step => Either[T, StepList]
   )(implicit ev: IdDoesNotExist <:< T): Either[T, StepList] =
     steps.find(_.id == id) match {
@@ -121,7 +121,7 @@ final case class StepList private[models] (runId: Id, steps: List[Step]) extends
       case None       => Left(IdDoesNotExist(id))
     }
 
-  private def ifExistAndNotFinished[T <: StepListError](id: Id)(
+  private def ifExistAndNotFinished[T <: EditorError](id: Id)(
       f: Step => Either[T, StepList]
   )(implicit ev1: IdDoesNotExist <:< T, ev2: NotAllowedOnFinishedSeq.type <:< T): Either[T, StepList] =
     ifExists(id)(step => ifNotFinished(f(step)))

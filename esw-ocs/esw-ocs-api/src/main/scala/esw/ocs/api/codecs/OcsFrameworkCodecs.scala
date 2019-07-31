@@ -5,12 +5,12 @@ import csw.location.api.codec.DoneCodec
 import esw.ocs.api.models.StepStatus.Finished.{Failure, Success}
 import esw.ocs.api.models.StepStatus._
 import esw.ocs.api.models._
+import esw.ocs.api.models.messages.EditorError._
 import esw.ocs.api.models.messages.SequenceComponentMsg.{GetStatus, LoadScript, UnloadScript}
-import esw.ocs.api.models.messages.SequenceComponentResponse.{GetStatusResponse, LoadScriptResponse}
+import esw.ocs.api.models.messages.SequenceComponentResponses.{GetStatusResponse, LoadScriptResponse}
 import esw.ocs.api.models.messages.SequencerMessages.{ExternalEditorMsg, _}
+import esw.ocs.api.models.messages.SequencerResponses.{EditorResponse, LifecycleResponse, LoadSequenceResponse, StepListResponse}
 import esw.ocs.api.models.messages._
-import esw.ocs.api.models.messages.error.StepListError._
-import esw.ocs.api.models.messages.error._
 import io.bullet.borer.Codec
 import io.bullet.borer.derivation.ArrayBasedCodecs.deriveCodecForUnaryCaseClass
 import io.bullet.borer.derivation.MapBasedCodecs.deriveCodec
@@ -75,7 +75,6 @@ trait OcsFrameworkCodecs extends MessageCodecs with DoneCodec {
   implicit lazy val pauseFailedCodec: Codec[PauseFailed.type]          = singletonCodec(PauseFailed)
   implicit lazy val updateNotSupportedCodec: Codec[UpdateNotSupported] = deriveCodec[UpdateNotSupported]
   implicit lazy val addFailedCodec: Codec[AddFailed.type]              = singletonCodec(AddFailed)
-  implicit lazy val stepListErrorCodec: Codec[StepListError]           = deriveCodec[StepListError]
 
   implicit lazy val goOnlineErrorCodec: Codec[GoOnlineError]          = deriveCodec[GoOnlineError]
   implicit lazy val goOfflineErrorCodec: Codec[GoOfflineError]        = deriveCodec[GoOfflineError]
@@ -96,9 +95,8 @@ trait OcsFrameworkCodecs extends MessageCodecs with DoneCodec {
   implicit lazy val sequenceComponentMsgCodec: Codec[SequenceComponentMsg] = deriveCodec[SequenceComponentMsg]
 
   //SequenceComponentResponse Codecs
-  implicit lazy val loadScriptResponseCodec: Codec[LoadScriptResponse]               = deriveCodecForUnaryCaseClass[LoadScriptResponse]
-  implicit lazy val getStatusResponseCodec: Codec[GetStatusResponse]                 = deriveCodecForUnaryCaseClass[GetStatusResponse]
-  implicit lazy val sequenceComponentResponseCodec: Codec[SequenceComponentResponse] = deriveCodec[SequenceComponentResponse]
+  implicit lazy val loadScriptResponseCodec: Codec[LoadScriptResponse] = deriveCodecForUnaryCaseClass[LoadScriptResponse]
+  implicit lazy val getStatusResponseCodec: Codec[GetStatusResponse]   = deriveCodecForUnaryCaseClass[GetStatusResponse]
 
   //fixme:  check if it works without DoneCodecs and LocationCodecs and ActorRefCodec and types wrapped inside Option and Either
 }

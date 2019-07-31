@@ -10,9 +10,9 @@ import csw.params.commands.CommandResponse.{Completed, Error, SubmitResponse}
 import csw.params.commands.{CommandName, Sequence, Setup}
 import csw.params.core.models.{Id, Prefix}
 import esw.ocs.BaseTestSuite
+import esw.ocs.api.models.messages.EditorError
 import esw.ocs.api.models.messages.SequencerMessages._
-import esw.ocs.api.models.messages.error.EditorError
-import esw.ocs.api.models.messages.{EditorResponse, StepListResponse}
+import esw.ocs.api.models.messages.SequencerResponses.{EditorResponse, StepListResponse}
 import esw.ocs.api.models.{Step, StepList}
 import esw.ocs.dsl.{Script, ScriptDsl}
 import org.mockito.Mockito.{verify, when}

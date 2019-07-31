@@ -5,7 +5,7 @@ import csw.params.commands.CommandResponse.Completed
 import csw.params.commands._
 import csw.params.core.models.{Id, Prefix}
 import esw.ocs.api.models.StepStatus.{Finished, InFlight, Pending}
-import esw.ocs.api.models.messages.error.StepListError._
+import esw.ocs.api.models.messages.EditorError._
 import esw.ocs.api.{BaseTestSuite, models}
 
 class StepListTest extends BaseTestSuite {

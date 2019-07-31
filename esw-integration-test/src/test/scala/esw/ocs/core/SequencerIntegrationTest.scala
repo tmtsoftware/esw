@@ -19,7 +19,7 @@ import esw.ocs.BaseTestSuite
 import esw.ocs.api.models.Step
 import esw.ocs.api.models.StepStatus.Finished
 import esw.ocs.api.models.messages.SequencerMessages._
-import esw.ocs.api.models.messages.{EditorResponse, LoadSequenceResponse}
+import esw.ocs.api.models.messages.SequencerResponses.{EditorResponse, LoadSequenceResponse}
 import esw.ocs.internal.SequencerWiring
 import org.scalatest.concurrent.PatienceConfiguration.Interval
 

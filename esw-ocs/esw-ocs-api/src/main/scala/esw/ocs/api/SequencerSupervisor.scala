@@ -1,6 +1,6 @@
 package esw.ocs.api
 
-import esw.ocs.api.models.messages.LifecycleResponse
+import esw.ocs.api.models.messages.SequencerResponses.LifecycleResponse
 
 import scala.concurrent.Future
 

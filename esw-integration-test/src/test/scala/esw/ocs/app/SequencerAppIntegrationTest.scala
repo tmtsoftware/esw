@@ -16,7 +16,7 @@ import csw.testkit.scaladsl.ScalaTestFrameworkTestKit
 import esw.ocs.BaseTestSuite
 import esw.ocs.api.models.messages.SequenceComponentMsg
 import esw.ocs.api.models.messages.SequenceComponentMsg.{LoadScript, UnloadScript}
-import esw.ocs.api.models.messages.SequenceComponentResponse.LoadScriptResponse
+import esw.ocs.api.models.messages.SequenceComponentResponses.LoadScriptResponse
 import esw.ocs.app.SequencerAppCommand.{SequenceComponent, Sequencer}
 
 import scala.concurrent.duration.DurationInt

@@ -9,9 +9,9 @@ import csw.params.commands.CommandResponse.{Completed, Error, Started, SubmitRes
 import csw.params.commands.{CommandResponse, Sequence, SequenceCommand}
 import csw.params.core.models.Id
 import esw.ocs.api.models.StepStatus._
-import esw.ocs.api.models.messages.LoadSequenceResponse
-import esw.ocs.api.models.messages.error.StepListError._
-import esw.ocs.api.models.messages.error.{GoOfflineError, GoOnlineError, StepListError}
+import esw.ocs.api.models.messages.EditorError._
+import esw.ocs.api.models.messages.SequencerResponses.LoadSequenceResponse
+import esw.ocs.api.models.messages.{EditorError, GoOfflineError, GoOnlineError}
 import esw.ocs.api.models.{Step, StepList, StepStatus}
 import esw.ocs.dsl.Async.{async, await}
 import esw.ocs.macros.StrandEc
@@ -206,7 +206,7 @@ private[ocs] class Sequencer(crm: CommandResponseManager)(implicit strandEc: Str
   }
 
   // stepListResultFunc is by name because all StepList operations must execute on strandEc
-  private def updateStepListResult[T <: StepListError](stepListResultFunc: => Either[T, StepList]) = async {
+  private def updateStepListResult[T <: EditorError](stepListResultFunc: => Either[T, StepList]) = async {
     val stepListResult = stepListResultFunc
     stepListResult.map { s =>
       stepList = s

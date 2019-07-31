@@ -4,7 +4,7 @@ import caseapp.{CommandApp, RemainingArgs}
 import csw.location.client.utils.LocationServerStatus
 import csw.location.models.AkkaLocation
 import csw.logging.api.scaladsl.Logger
-import esw.ocs.api.models.messages.error.RegistrationError
+import esw.ocs.api.models.messages.RegistrationError
 import esw.ocs.app.SequencerAppCommand.{SequenceComponent, Sequencer}
 import esw.ocs.internal.{ActorRuntime, SequenceComponentWiring, SequencerWiring}
 

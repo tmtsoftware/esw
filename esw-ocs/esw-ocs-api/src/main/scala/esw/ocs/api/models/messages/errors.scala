@@ -1,6 +1,11 @@
-package esw.ocs.api.models.messages.error
+package esw.ocs.api.models.messages
 
 import esw.ocs.api.serializer.OcsFrameworkAkkaSerializable
+
+import csw.params.core.models.Id
+import esw.ocs.api.models.StepStatus
+
+final case class RegistrationError(msg: String) extends OcsFrameworkAkkaSerializable
 
 // Lifecycle Errors
 
@@ -14,16 +19,8 @@ final case class AbortError(msg: String)     extends LifecycleError
 case object NotAllowedInOfflineState extends LifecycleError with EditorError
 
 // Editor Errors
-
-import csw.params.core.models.Id
-import esw.ocs.api.models.StepStatus
-import esw.ocs.api.serializer.OcsFrameworkAkkaSerializable
-
 sealed trait EditorError extends OcsFrameworkAkkaSerializable
-
-sealed trait StepListError extends EditorError with Product with Serializable
-
-object StepListError {
+object EditorError {
 
   final case class NotSupported(stepStatus: StepStatus)
       extends InsertError
@@ -53,22 +50,22 @@ object StepListError {
       with AddBreakpointError
       with RemoveBreakpointError
 
-  sealed trait PauseError extends StepListError
+  sealed trait PauseError extends EditorError
   case object PauseFailed extends PauseError
 
-  sealed trait UpdateError                                              extends StepListError
+  sealed trait UpdateError                                              extends EditorError
   final case class UpdateNotSupported(from: StepStatus, to: StepStatus) extends UpdateError
 
-  sealed trait AddError extends StepListError
+  sealed trait AddError extends EditorError
   case object AddFailed extends AddError
 
-  sealed trait AddBreakpointError    extends StepListError
-  sealed trait ResumeError           extends StepListError
-  sealed trait PrependError          extends StepListError
-  sealed trait ResetError            extends StepListError
-  sealed trait InsertError           extends StepListError
-  sealed trait ReplaceError          extends StepListError
-  sealed trait DeleteError           extends StepListError
-  sealed trait RemoveBreakpointError extends StepListError
+  sealed trait AddBreakpointError    extends EditorError
+  sealed trait ResumeError           extends EditorError
+  sealed trait PrependError          extends EditorError
+  sealed trait ResetError            extends EditorError
+  sealed trait InsertError           extends EditorError
+  sealed trait ReplaceError          extends EditorError
+  sealed trait DeleteError           extends EditorError
+  sealed trait RemoveBreakpointError extends EditorError
 
 }
