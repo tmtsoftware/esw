@@ -14,12 +14,12 @@ import csw.params.commands._
 import csw.params.core.models.{Id, Prefix}
 import esw.ocs.api.BaseTestSuite
 import esw.ocs.api.models.StepStatus.{Finished, InFlight}
-import esw.ocs.api.models.messages.SequenceComponentMsg.{GetStatus, LoadScript, UnloadScript}
-import esw.ocs.api.models.messages.SequencerMessages._
 import esw.ocs.api.models.messages.EditorError._
+import esw.ocs.api.models.messages.SequenceComponentMsg.{GetStatus, LoadScript, UnloadScript}
 import esw.ocs.api.models.messages.SequenceComponentResponses.{GetStatusResponse, LoadScriptResponse}
+import esw.ocs.api.models.messages.SequencerMessages._
 import esw.ocs.api.models.messages.SequencerResponses.{EditorResponse, LifecycleResponse, LoadSequenceResponse, StepListResponse}
-import esw.ocs.api.models.messages.{AbortError, GoOfflineError, GoOnlineError, RegistrationError, ShutdownError}
+import esw.ocs.api.models.messages._
 import esw.ocs.api.models.{Step, StepList, StepStatus}
 import org.scalatest.prop.TableDrivenPropertyChecks.forAll
 import org.scalatest.prop.Tables.Table
@@ -190,9 +190,8 @@ class OcsFrameworkAkkaSerializerTest extends BaseTestSuite {
       val testData = Table(
         "EditorResponse",
         EditorResponse(Left(NotSupported(StepStatus.InFlight))),
-        EditorResponse(Left(AddFailed)),
         EditorResponse(Left(UpdateNotSupported(Finished.Success(CommandResponse.Completed(Id())), InFlight))),
-        EditorResponse(Left(PauseFailed)),
+        EditorResponse(Left(PauseFailed("failed to pause"))),
         EditorResponse(Left(IdDoesNotExist(Id())))
       )
 

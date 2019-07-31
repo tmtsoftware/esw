@@ -16,11 +16,12 @@ class SequenceEditorClientTest extends ScalaTestWithActorTestKit with BaseTestSu
   private val status       = Pending
   private val notAllowed   = Left(NotAllowedOnFinishedSeq)
   private val notSupported = Left(NotSupported(status))
+  private val pauseFailed  = Left(PauseFailed("failed to pause"))
 
   private val getSequenceResponse      = StepList(Sequence(command)).toOption.get
   private val availableResponse        = true
-  private val addResponse              = EditorResponse(Left(AddFailed))
-  private val pauseResponse            = EditorResponse(Left(PauseFailed))
+  private val addResponse              = EditorResponse(notAllowed)
+  private val pauseResponse            = EditorResponse(pauseFailed)
   private val prependResponse          = EditorResponse(notAllowed)
   private val resumeResponse           = EditorResponse(notAllowed)
   private val removeBreakpointResponse = EditorResponse(notAllowed)

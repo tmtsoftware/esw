@@ -72,9 +72,8 @@ trait OcsFrameworkCodecs extends MessageCodecs with DoneCodec {
   implicit lazy val notAllowedInOfflineStateCodec: Codec[NotAllowedInOfflineState.type] =
     singletonCodec(NotAllowedInOfflineState)
   implicit lazy val idDoesNotExistCodec: Codec[IdDoesNotExist]         = deriveCodec[IdDoesNotExist]
-  implicit lazy val pauseFailedCodec: Codec[PauseFailed.type]          = singletonCodec(PauseFailed)
+  implicit lazy val pauseFailedCodec: Codec[PauseFailed]               = deriveCodecForUnaryCaseClass[PauseFailed]
   implicit lazy val updateNotSupportedCodec: Codec[UpdateNotSupported] = deriveCodec[UpdateNotSupported]
-  implicit lazy val addFailedCodec: Codec[AddFailed.type]              = singletonCodec(AddFailed)
 
   implicit lazy val goOnlineErrorCodec: Codec[GoOnlineError]          = deriveCodec[GoOnlineError]
   implicit lazy val goOfflineErrorCodec: Codec[GoOfflineError]        = deriveCodec[GoOfflineError]

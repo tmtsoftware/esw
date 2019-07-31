@@ -50,15 +50,13 @@ object EditorError {
       with AddBreakpointError
       with RemoveBreakpointError
 
-  sealed trait PauseError extends EditorError
-  case object PauseFailed extends PauseError
+  sealed trait PauseError                   extends EditorError
+  final case class PauseFailed(msg: String) extends PauseError
 
   sealed trait UpdateError                                              extends EditorError
   final case class UpdateNotSupported(from: StepStatus, to: StepStatus) extends UpdateError
 
-  sealed trait AddError extends EditorError
-  case object AddFailed extends AddError
-
+  sealed trait AddError              extends EditorError
   sealed trait AddBreakpointError    extends EditorError
   sealed trait ResumeError           extends EditorError
   sealed trait PrependError          extends EditorError

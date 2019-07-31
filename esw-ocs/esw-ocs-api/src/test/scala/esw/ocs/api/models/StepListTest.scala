@@ -532,7 +532,7 @@ class StepListTest extends BaseTestSuite {
 
       val stepList        = StepList(Id(), List(step1, step2))
       val updatedStepList = stepList.pause
-      updatedStepList.left.value shouldBe PauseFailed
+      updatedStepList.left.value shouldBe a[PauseFailed]
     }
 
     "fail with NotAllowedOnFinishedSeq error when StepList is finished | ESW-104" in {

@@ -69,7 +69,7 @@ final case class StepList private[models] (runId: Id, steps: List[Step]) extends
     ifNotFinished {
       nextPending
         .map(_.addBreakpoint().map(updateStep))
-        .getOrElse(Left(PauseFailed))
+        .getOrElse(Left(PauseFailed("No pending step found, pausing is only supported for pending steps")))
     }
 
   def resume: Either[ResumeError, StepList] = ifNotFinished {
