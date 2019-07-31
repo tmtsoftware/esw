@@ -7,7 +7,7 @@ import esw.ocs.api.models.StepStatus._
 import esw.ocs.api.models._
 import esw.ocs.api.models.messages.SequenceComponentMsg.{GetStatus, LoadScript, UnloadScript}
 import esw.ocs.api.models.messages.SequenceComponentResponse.{GetStatusResponse, LoadScriptResponse}
-import esw.ocs.api.models.messages.SequencerMessages._
+import esw.ocs.api.models.messages.SequencerMessages.{ExternalEditorMsg, _}
 import esw.ocs.api.models.messages._
 import esw.ocs.api.models.messages.error.StepListError._
 import esw.ocs.api.models.messages.error._
@@ -46,8 +46,7 @@ trait OcsFrameworkCodecs extends MessageCodecs with DoneCodec {
   implicit lazy val pauseCodec: Codec[Pause]                             = deriveCodec[Pause]
   implicit lazy val resumeCodec: Codec[Resume]                           = deriveCodec[Resume]
   implicit lazy val resetCodec: Codec[Reset]                             = deriveCodec[Reset]
-
-  implicit lazy val externalEditorSequencerMsgCodec: Codec[ExternalEditorSequencerMsg] = deriveCodec[ExternalEditorSequencerMsg]
+  implicit lazy val externalEditorMsgCodec: Codec[ExternalEditorMsg]     = deriveCodec[ExternalEditorMsg]
 
   //StepList Codecs
 
@@ -70,6 +69,8 @@ trait OcsFrameworkCodecs extends MessageCodecs with DoneCodec {
   implicit lazy val notSupportedCodec: Codec[NotSupported] = deriveCodec[NotSupported]
   implicit lazy val notAllowedOnFinishedSeqCodec: Codec[NotAllowedOnFinishedSeq.type] =
     singletonCodec(NotAllowedOnFinishedSeq)
+  implicit lazy val notAllowedInOfflineStateCodec: Codec[NotAllowedInOfflineState.type] =
+    singletonCodec(NotAllowedInOfflineState)
   implicit lazy val idDoesNotExistCodec: Codec[IdDoesNotExist]         = deriveCodec[IdDoesNotExist]
   implicit lazy val pauseFailedCodec: Codec[PauseFailed.type]          = singletonCodec(PauseFailed)
   implicit lazy val updateNotSupportedCodec: Codec[UpdateNotSupported] = deriveCodec[UpdateNotSupported]

@@ -25,34 +25,40 @@ object SequencerMessages {
   final case class UpdateFailure(failureResponse: SubmitResponse) extends InternalSequencerMsg
 
   // lifecycle msgs
-  sealed trait LifecycleMsg extends SequencerMsg with OcsFrameworkAkkaSerializable
+  sealed abstract class LifecycleMsg(val replyTo: ActorRef[LifecycleResponse])
+      extends SequencerMsg
+      with OcsFrameworkAkkaSerializable
 
-  final case class GoOnline(replyTo: ActorRef[LifecycleResponse])  extends LifecycleMsg
-  final case class GoOffline(replyTo: ActorRef[LifecycleResponse]) extends LifecycleMsg
-  final case class Shutdown(replyTo: ActorRef[LifecycleResponse])  extends LifecycleMsg
-  final case class Abort(replyTo: ActorRef[LifecycleResponse])     extends LifecycleMsg
+  final case class GoOnline(override val replyTo: ActorRef[LifecycleResponse])  extends LifecycleMsg(replyTo)
+  final case class GoOffline(override val replyTo: ActorRef[LifecycleResponse]) extends LifecycleMsg(replyTo)
+  final case class Shutdown(override val replyTo: ActorRef[LifecycleResponse])  extends LifecycleMsg(replyTo)
+  final case class Abort(override val replyTo: ActorRef[LifecycleResponse])     extends LifecycleMsg(replyTo)
 
   // private messages used for lifecycle management
   private[ocs] final case object ChangeBehaviorToOffline extends SequencerMsg
   private[ocs] final case object ChangeBehaviorToDefault extends SequencerMsg
 
   // editor msgs
-  sealed trait ExternalEditorSequencerMsg extends SequencerMsg with OcsFrameworkAkkaSerializable
 
-  final case class Available(replyTo: ActorRef[Boolean]) extends ExternalEditorSequencerMsg
+  // todo: remove this wrapper
+  sealed trait ExternalEditorMsg                               extends SequencerMsg
+  sealed abstract class EditorMsg[T](val replyTo: ActorRef[T]) extends ExternalEditorMsg with OcsFrameworkAkkaSerializable
+
+  final case class Available(override val replyTo: ActorRef[Boolean]) extends EditorMsg(replyTo)
   // fixme : GetSequence and GetPreviousSequence should have replyTo StepListResponse
-  final case class GetSequence(replyTo: ActorRef[StepList])                                    extends ExternalEditorSequencerMsg
-  final case class GetPreviousSequence(replyTo: ActorRef[StepListResponse])                    extends ExternalEditorSequencerMsg
-  final case class Add(commands: List[SequenceCommand], replyTo: ActorRef[EditorResponse])     extends ExternalEditorSequencerMsg
-  final case class Prepend(commands: List[SequenceCommand], replyTo: ActorRef[EditorResponse]) extends ExternalEditorSequencerMsg
-  final case class Replace(id: Id, commands: List[SequenceCommand], replyTo: ActorRef[EditorResponse])
-      extends ExternalEditorSequencerMsg
-  final case class InsertAfter(id: Id, commands: List[SequenceCommand], replyTo: ActorRef[EditorResponse])
-      extends ExternalEditorSequencerMsg
-  final case class Delete(ids: Id, replyTo: ActorRef[EditorResponse])          extends ExternalEditorSequencerMsg
-  final case class AddBreakpoint(id: Id, replyTo: ActorRef[EditorResponse])    extends ExternalEditorSequencerMsg
-  final case class RemoveBreakpoint(id: Id, replyTo: ActorRef[EditorResponse]) extends ExternalEditorSequencerMsg
-  final case class Pause(replyTo: ActorRef[EditorResponse])                    extends ExternalEditorSequencerMsg
-  final case class Resume(replyTo: ActorRef[EditorResponse])                   extends ExternalEditorSequencerMsg
-  final case class Reset(replyTo: ActorRef[EditorResponse])                    extends ExternalEditorSequencerMsg
+  final case class GetSequence(override val replyTo: ActorRef[StepList])                                extends EditorMsg(replyTo)
+  final case class GetPreviousSequence(override val replyTo: ActorRef[StepListResponse])                extends EditorMsg(replyTo)
+  final case class Add(commands: List[SequenceCommand], override val replyTo: ActorRef[EditorResponse]) extends EditorMsg(replyTo)
+  final case class Prepend(commands: List[SequenceCommand], override val replyTo: ActorRef[EditorResponse])
+      extends EditorMsg(replyTo)
+  final case class Replace(id: Id, commands: List[SequenceCommand], override val replyTo: ActorRef[EditorResponse])
+      extends EditorMsg(replyTo)
+  final case class InsertAfter(id: Id, commands: List[SequenceCommand], override val replyTo: ActorRef[EditorResponse])
+      extends EditorMsg(replyTo)
+  final case class Delete(ids: Id, override val replyTo: ActorRef[EditorResponse])          extends EditorMsg(replyTo)
+  final case class AddBreakpoint(id: Id, override val replyTo: ActorRef[EditorResponse])    extends EditorMsg(replyTo)
+  final case class RemoveBreakpoint(id: Id, override val replyTo: ActorRef[EditorResponse]) extends EditorMsg(replyTo)
+  final case class Pause(override val replyTo: ActorRef[EditorResponse])                    extends EditorMsg(replyTo)
+  final case class Resume(override val replyTo: ActorRef[EditorResponse])                   extends EditorMsg(replyTo)
+  final case class Reset(override val replyTo: ActorRef[EditorResponse])                    extends EditorMsg(replyTo)
 }

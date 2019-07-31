@@ -30,8 +30,8 @@ class SequenceEditorClientTest extends ScalaTestWithActorTestKit with BaseTestSu
   private val deleteResponse           = EditorResponse(notSupported)
   private val addBreakpointResponse    = EditorResponse(notSupported)
 
-  private val mockedBehavior: Behaviors.Receive[ExternalEditorSequencerMsg] =
-    Behaviors.receiveMessage[ExternalEditorSequencerMsg] { msg =>
+  private val mockedBehavior: Behaviors.Receive[ExternalEditorMsg] =
+    Behaviors.receiveMessage[ExternalEditorMsg] { msg =>
       msg match {
         case GetSequence(replyTo)                                   => replyTo ! getSequenceResponse
         case Available(replyTo)                                     => replyTo ! availableResponse

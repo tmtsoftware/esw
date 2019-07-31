@@ -13,7 +13,7 @@ import esw.ocs.api.models.messages.SequencerMessages._
 
 import scala.concurrent.Future
 
-class SequenceEditorClient(sequencer: ActorRef[ExternalEditorSequencerMsg])(implicit system: ActorSystem[_], timeout: Timeout)
+class SequenceEditorClient(sequencer: ActorRef[ExternalEditorMsg])(implicit system: ActorSystem[_], timeout: Timeout)
     extends SequenceEditor {
   private implicit val scheduler: Scheduler = system.scheduler
 

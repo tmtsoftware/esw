@@ -1,15 +1,18 @@
 package esw.ocs.core
 
 import akka.actor.typed.scaladsl.{ActorContext, Behaviors}
-import akka.actor.typed.{ActorRef, Behavior}
-import csw.command.client.messages.sequencer.{LoadAndStartSequence, SequencerMsg}
+import akka.actor.typed.{ActorRef, ActorSystem, Behavior}
+import csw.command.client.messages.sequencer.SequenceError.GenericError
+import csw.command.client.messages.sequencer.{LoadAndStartSequence, SequenceResponse, SequencerMsg}
 import csw.location.api.scaladsl.LocationService
 import csw.location.models.ComponentId
 import csw.location.models.Connection.AkkaConnection
+import esw.ocs.api.codecs.OcsFrameworkCodecs
+import esw.ocs.api.models.StepList
 import esw.ocs.api.models.messages.SequencerMessages._
 import esw.ocs.api.models.messages.error.StepListError.NotAllowedOnFinishedSeq
-import esw.ocs.api.models.messages.error.{AbortError, ShutdownError}
-import esw.ocs.api.models.messages.{EditorResponse, LifecycleResponse, StepListResponse}
+import esw.ocs.api.models.messages.error.{AbortError, NotAllowedInOfflineState, ShutdownError}
+import esw.ocs.api.models.messages.{EditorResponse, LifecycleResponse, LoadSequenceResponse, StepListResponse}
 import esw.ocs.dsl.ScriptDsl
 import esw.ocs.utils.FutureEitherExt._
 
@@ -21,7 +24,9 @@ class SequencerBehavior(
     sequencer: Sequencer,
     script: ScriptDsl,
     locationService: LocationService
-) {
+)(implicit val actorSystem: ActorSystem[_])
+    extends OcsFrameworkCodecs {
+
   def mainBehavior: Behavior[SequencerMsg] = Behaviors.receive[SequencerMsg] { (ctx, msg) =>
     import ctx.executionContext
 
@@ -59,12 +64,25 @@ class SequencerBehavior(
     }
   }
 
-  private def offlineBehavior: Behavior[SequencerMsg] = Behaviors.receive[SequencerMsg] { (ctx, msg) =>
-    import ctx.executionContext
-    msg match {
-      case Shutdown(replyTo) => shutdown(replyTo)(ctx); Behaviors.same // fixme: should not receive any messages
+  private def offlineBehavior: Behavior[SequencerMsg] = Behaviors.receive[SequencerMsg] { (context, message) =>
+    import context.executionContext
+    message match {
+      case Shutdown(replyTo) => shutdown(replyTo)(context); Behaviors.same // fixme: should not receive any messages
       case GoOnline(replyTo) => goOnline().foreach(replyTo.tell); mainBehavior
-      case _                 => Behaviors.same // reject all other commands in offline state
+      case msg: LifecycleMsg => msg.replyTo ! LifecycleResponse(Left(NotAllowedInOfflineState)); Behaviors.same
+      case msg: LoadSequence =>
+        msg.replyTo ! LoadSequenceResponse(Left(GenericError(NotAllowedInOfflineState.toString))); Behaviors.same
+      case msg: StartSequence =>
+        msg.replyTo ! SequenceResponse(Left(GenericError(NotAllowedInOfflineState.toString))); Behaviors.same
+      case msg: LoadAndStartSequence =>
+        msg.replyTo ! SequenceResponse(Left(GenericError(NotAllowedInOfflineState.toString))); Behaviors.same
+      case msg: Available           => msg.replyTo ! false; Behaviors.same
+      case msg: GetSequence         => msg.replyTo ! StepList.empty; Behaviors.same
+      case msg: GetPreviousSequence => msg.replyTo ! StepListResponse(None); Behaviors.same
+      case msg: EditorMsg[_] =>
+        msg.asInstanceOf[EditorMsg[EditorResponse]].replyTo ! EditorResponse(Left(NotAllowedInOfflineState))
+        Behaviors.same
+      case _ => Behaviors.same
     }
   }
 
