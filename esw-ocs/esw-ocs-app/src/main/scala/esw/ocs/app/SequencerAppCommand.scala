@@ -8,8 +8,8 @@ object SequencerAppCommand {
 
   @CommandName("seqcomp")
   final case class SequenceComponent(
-      @HelpMessage("name of the sequence component")
-      name: String
+      @HelpMessage("unique id of the sequence component(in Integer), ex: 1")
+      id: Int
   ) extends SequencerAppCommand
 
   final case class Sequencer(

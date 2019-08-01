@@ -16,17 +16,17 @@ import esw.ocs.syntax.FutureSyntax.FutureOps
 import esw.ocs.utils.RegistrationUtils
 
 // $COVERAGE-OFF$
-private[ocs] class SequenceComponentWiring(name: String) {
-  lazy val actorRuntime = new ActorRuntime(name)
+private[ocs] class SequenceComponentWiring(id: Int) {
+  private val prefix: Prefix        = Prefix(ConfigFactory.load().getString("prefix"))
+  private val sequenceComponentName = s"${prefix.subsystem}_$id"
+
+  lazy val actorRuntime = new ActorRuntime(sequenceComponentName)
   import actorRuntime._
 
   lazy val sequenceComponentRef: ActorRef[SequenceComponentMsg] =
-    (typedSystem ? Spawn(SequenceComponentBehavior.behavior, name)).block
+    (typedSystem ? Spawn(SequenceComponentBehavior.behavior, sequenceComponentName)).block
 
   private lazy val locationService: LocationService = HttpLocationServiceFactory.makeLocalClient
-
-  private val prefix: Prefix        = Prefix(ConfigFactory.load().getString("prefix"))
-  private val sequenceComponentName = s"${prefix.subsystem}_$name"
 
   def start(): Either[RegistrationError, AkkaLocation] = {
     val registration =
