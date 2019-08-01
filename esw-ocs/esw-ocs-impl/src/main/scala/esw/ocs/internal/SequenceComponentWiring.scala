@@ -31,7 +31,7 @@ private[ocs] class SequenceComponentWiring(id: Int) {
   def start(): Either[RegistrationError, AkkaLocation] = {
     val registration =
       AkkaRegistration(
-        AkkaConnection(ComponentId(sequenceComponentName, ComponentType.Service)),
+        AkkaConnection(ComponentId(sequenceComponentName, ComponentType.SequenceComponent)),
         prefix,
         sequenceComponentRef.toURI
       )
