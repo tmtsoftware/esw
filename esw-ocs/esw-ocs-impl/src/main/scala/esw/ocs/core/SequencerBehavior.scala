@@ -2,14 +2,16 @@ package esw.ocs.core
 
 import akka.actor.typed.scaladsl.{ActorContext, Behaviors}
 import akka.actor.typed.{ActorRef, ActorSystem, Behavior}
-import csw.command.client.messages.sequencer.SequenceError.GenericError
-import csw.command.client.messages.sequencer.{LoadAndStartSequence, SequenceResponse, SequencerMsg}
+import csw.command.client.messages.sequencer.{LoadAndStartSequence, SequencerMsg}
 import csw.location.api.scaladsl.LocationService
 import csw.location.models.ComponentId
 import csw.location.models.Connection.AkkaConnection
+import csw.params.commands.CommandResponse.Error
+import csw.params.core.models.Id
 import esw.ocs.api.codecs.OcsFrameworkCodecs
 import esw.ocs.api.models.StepList
 import esw.ocs.api.models.messages.EditorError.NotAllowedOnFinishedSeq
+import esw.ocs.api.models.messages.SequenceError.GenericError
 import esw.ocs.api.models.messages.SequencerMessages._
 import esw.ocs.api.models.messages.SequencerResponses.{EditorResponse, LifecycleResponse, LoadSequenceResponse, StepListResponse}
 import esw.ocs.api.models.messages.{AbortError, NotAllowedInOfflineState, ShutdownError}
@@ -72,13 +74,11 @@ class SequencerBehavior(
       case msg: LifecycleMsg => msg.replyTo ! LifecycleResponse(Left(NotAllowedInOfflineState)); Behaviors.same
       case msg: LoadSequence =>
         msg.replyTo ! LoadSequenceResponse(Left(GenericError(NotAllowedInOfflineState.toString))); Behaviors.same
-      case msg: StartSequence =>
-        msg.replyTo ! SequenceResponse(Left(GenericError(NotAllowedInOfflineState.toString))); Behaviors.same
-      case msg: LoadAndStartSequence =>
-        msg.replyTo ! SequenceResponse(Left(GenericError(NotAllowedInOfflineState.toString))); Behaviors.same
-      case msg: Available           => msg.replyTo ! false; Behaviors.same
-      case msg: GetSequence         => msg.replyTo ! StepList.empty; Behaviors.same
-      case msg: GetPreviousSequence => msg.replyTo ! StepListResponse(None); Behaviors.same
+      case msg: StartSequence        => msg.replyTo ! Error(Id("Invalid"), NotAllowedInOfflineState.toString); Behaviors.same
+      case msg: LoadAndStartSequence => msg.replyTo ! Error(Id("Invalid"), NotAllowedInOfflineState.toString); Behaviors.same
+      case msg: Available            => msg.replyTo ! false; Behaviors.same
+      case msg: GetSequence          => msg.replyTo ! StepList.empty; Behaviors.same
+      case msg: GetPreviousSequence  => msg.replyTo ! StepListResponse(None); Behaviors.same
       case msg: EditorMsg[_] =>
         msg.asInstanceOf[EditorMsg[EditorResponse]].replyTo ! EditorResponse(Left(NotAllowedInOfflineState))
         Behaviors.same

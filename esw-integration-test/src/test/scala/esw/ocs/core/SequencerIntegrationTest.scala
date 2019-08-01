@@ -5,13 +5,13 @@ import akka.actor.Scheduler
 import akka.actor.typed.scaladsl.AskPattern._
 import akka.actor.typed.{ActorRef, ActorSystem, SpawnProtocol}
 import akka.util.Timeout
-import csw.command.client.messages.sequencer.{LoadAndStartSequence, SequenceResponse, SequencerMsg}
+import csw.command.client.messages.sequencer.{LoadAndStartSequence, SequencerMsg}
 import csw.location.api.extensions.URIExtension.RichURI
 import csw.location.api.scaladsl.LocationService
 import csw.location.client.scaladsl.HttpLocationServiceFactory
 import csw.location.models.Connection.AkkaConnection
 import csw.location.models.{ComponentId, ComponentType}
-import csw.params.commands.CommandResponse.Completed
+import csw.params.commands.CommandResponse.{Completed, SubmitResponse}
 import csw.params.commands.{CommandName, Sequence, Setup}
 import csw.params.core.models.Prefix
 import csw.testkit.scaladsl.ScalaTestFrameworkTestKit
@@ -64,8 +64,8 @@ class SequencerIntegrationTest extends ScalaTestFrameworkTestKit with BaseTestSu
       val loadResponse: Future[LoadSequenceResponse] = sequencer ? (LoadSequence(sequence, _))
       loadResponse.futureValue.response.rightValue should ===(Done)
 
-      val startSeqResponse: Future[SequenceResponse] = sequencer ? StartSequence
-      startSeqResponse.futureValue(Interval(5.seconds)).response.rightValue should ===(Completed(sequence.runId))
+      val startSeqResponse: Future[SubmitResponse] = sequencer ? StartSequence
+      startSeqResponse.futureValue(Interval(5.seconds)) should ===(Completed(sequence.runId))
     }
 
     "process sequence and execute commands that are added later | ESW-145, ESW-154" in {
@@ -74,12 +74,12 @@ class SequencerIntegrationTest extends ScalaTestFrameworkTestKit with BaseTestSu
       val command3 = Setup(Prefix("test"), CommandName("command-3"), None)
       val sequence = Sequence(command1, command2)
 
-      val processSeqResponse: Future[SequenceResponse] = sequencer ? (LoadAndStartSequence(sequence, _))
+      val processSeqResponse: Future[SubmitResponse] = sequencer ? (LoadAndStartSequence(sequence, _))
 
       val addResponse: Future[EditorResponse] = sequencer ? (Add(List(command3), _))
       addResponse.futureValue.response.rightValue should ===(Done)
 
-      processSeqResponse.futureValue.response.rightValue should ===(Completed(sequence.runId))
+      processSeqResponse.futureValue should ===(Completed(sequence.runId))
 
       (sequencer ? GetSequence).futureValue.steps should ===(
         List(

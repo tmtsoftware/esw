@@ -1,7 +1,6 @@
 package esw.ocs.api.models.messages
 
 import akka.Done
-import csw.command.client.messages.sequencer.SequenceError
 import csw.location.models.AkkaLocation
 import esw.ocs.api.models.StepList
 import esw.ocs.api.serializer.OcsFrameworkAkkaSerializable

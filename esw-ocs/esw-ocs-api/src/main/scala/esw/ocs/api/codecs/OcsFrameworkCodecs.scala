@@ -1,5 +1,6 @@
 package esw.ocs.api.codecs
 
+import com.github.ghik.silencer.silent
 import csw.command.client.cbor.MessageCodecs
 import csw.location.api.codec.DoneCodec
 import esw.ocs.api.models.StepStatus.Finished.{Failure, Success}
@@ -8,6 +9,7 @@ import esw.ocs.api.models._
 import esw.ocs.api.models.messages.EditorError._
 import esw.ocs.api.models.messages.SequenceComponentMsg.{GetStatus, LoadScript, UnloadScript}
 import esw.ocs.api.models.messages.SequenceComponentResponses.{GetStatusResponse, LoadScriptResponse}
+import esw.ocs.api.models.messages.SequenceError.{DuplicateIdsFound, ExistingSequenceIsInProcess, GenericError}
 import esw.ocs.api.models.messages.SequencerMessages.{ExternalEditorMsg, _}
 import esw.ocs.api.models.messages.SequencerResponses.{EditorResponse, LifecycleResponse, LoadSequenceResponse, StepListResponse}
 import esw.ocs.api.models.messages._
@@ -96,6 +98,14 @@ trait OcsFrameworkCodecs extends MessageCodecs with DoneCodec {
   //SequenceComponentResponse Codecs
   implicit lazy val loadScriptResponseCodec: Codec[LoadScriptResponse] = deriveCodecForUnaryCaseClass[LoadScriptResponse]
   implicit lazy val getStatusResponseCodec: Codec[GetStatusResponse]   = deriveCodecForUnaryCaseClass[GetStatusResponse]
+
+  implicit lazy val sequenceErrorCodec: Codec[SequenceError] = {
+    @silent implicit val sequenceIsInProcess: Codec[ExistingSequenceIsInProcess.type] =
+      singletonCodec(ExistingSequenceIsInProcess)
+    @silent implicit val duplicateIdsFoundError: Codec[DuplicateIdsFound.type] = singletonCodec(DuplicateIdsFound)
+    @silent implicit val genericError: Codec[GenericError]                     = deriveCodecForUnaryCaseClass[GenericError]
+    deriveCodec[SequenceError]
+  }
 
   //fixme:  check if it works without DoneCodecs and LocationCodecs and ActorRefCodec and types wrapped inside Option and Either
 }

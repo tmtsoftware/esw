@@ -7,9 +7,9 @@ import akka.actor.testkit.typed.scaladsl.TestProbe
 import akka.actor.typed.scaladsl.adapter.TypedActorSystemOps
 import akka.actor.typed.{ActorRef, ActorSystem, SpawnProtocol}
 import akka.serialization.{SerializationExtension, Serializer}
-import csw.command.client.messages.sequencer.SequenceResponse
 import csw.location.models.Connection.AkkaConnection
 import csw.location.models.{AkkaLocation, ComponentId, ComponentType}
+import csw.params.commands.CommandResponse.SubmitResponse
 import csw.params.commands._
 import csw.params.core.models.{Id, Prefix}
 import esw.ocs.api.BaseTestSuite
@@ -37,7 +37,7 @@ class OcsFrameworkAkkaSerializerTest extends BaseTestSuite {
   }
 
   val loadSequenceResponseProbeRef: ActorRef[LoadSequenceResponse] = TestProbe[LoadSequenceResponse].ref
-  val startSequenceResponseProbeRef: ActorRef[SequenceResponse]    = TestProbe[SequenceResponse].ref
+  val startSubmitResponseProbeRef: ActorRef[SubmitResponse]        = TestProbe[SubmitResponse].ref
   val lifecycleResponseProbeRef: ActorRef[LifecycleResponse]       = TestProbe[LifecycleResponse].ref
   val editorResponseProbeRef: ActorRef[EditorResponse]             = TestProbe[EditorResponse].ref
   val stepListResponseProbeRef: ActorRef[StepList]                 = TestProbe[StepList].ref
@@ -59,7 +59,7 @@ class OcsFrameworkAkkaSerializerTest extends BaseTestSuite {
       val testData = Table(
         "Load and Start sequence Msg",
         LoadSequence(Sequence(setupCommand), loadSequenceResponseProbeRef),
-        StartSequence(startSequenceResponseProbeRef)
+        StartSequence(startSubmitResponseProbeRef)
       )
       forAll(testData) { seqMsg =>
         val serializer = serialization.findSerializerFor(seqMsg)

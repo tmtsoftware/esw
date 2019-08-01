@@ -1,10 +1,10 @@
 package esw.ocs.api.models
 
-import csw.command.client.messages.sequencer.SequenceError.DuplicateIdsFound
 import csw.params.commands.{Sequence, SequenceCommand}
 import csw.params.core.models.Id
 import esw.ocs.api.models.messages.EditorError
 import esw.ocs.api.models.messages.EditorError._
+import esw.ocs.api.models.messages.SequenceError.DuplicateIdsFound
 import esw.ocs.api.serializer.OcsFrameworkAkkaSerializable
 
 final case class StepList private[models] (runId: Id, steps: List[Step]) extends OcsFrameworkAkkaSerializable {
@@ -133,7 +133,6 @@ object StepList {
 
   def apply(sequence: Sequence): Either[DuplicateIdsFound.type, StepList] = {
     val steps = sequence.commands.toList.map(Step.apply)
-
     if (steps.map(_.id).toSet.size == steps.size) Right(StepList(sequence.runId, steps))
     else Left(DuplicateIdsFound)
   }

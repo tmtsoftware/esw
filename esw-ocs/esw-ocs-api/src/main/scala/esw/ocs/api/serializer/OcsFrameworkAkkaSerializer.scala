@@ -35,6 +35,7 @@ class OcsFrameworkAkkaSerializer(_actorSystem: ExtendedActorSystem) extends OcsF
     case x: LifecycleResponse    => Cbor.encode(x).toByteArray
     case x: EditorResponse       => Cbor.encode(x).toByteArray
     case x: StepListResponse     => Cbor.encode(x).toByteArray
+    case x: SequenceError        => Cbor.encode(x).toByteArray
     case _ =>
       val ex = new RuntimeException(s"does not support encoding of $o")
       logger.error(ex.getMessage, ex = ex)
@@ -61,7 +62,9 @@ class OcsFrameworkAkkaSerializer(_actorSystem: ExtendedActorSystem) extends OcsF
       fromBinary[StepListResponse] orElse
       fromBinary[LoadSequence] orElse
       fromBinary[LoadSequenceResponse] orElse
-      fromBinary[StartSequence]
+      fromBinary[StartSequence] orElse
+      fromBinary[SequenceError]
+
     }.getOrElse {
       val ex = new RuntimeException(s"does not support decoding of ${manifest.get}")
       logger.error(ex.getMessage, ex = ex)

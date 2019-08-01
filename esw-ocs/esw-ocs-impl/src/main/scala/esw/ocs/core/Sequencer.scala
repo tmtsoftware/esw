@@ -3,13 +3,12 @@ package esw.ocs.core
 import akka.Done
 import akka.util.Timeout
 import csw.command.client.CommandResponseManager
-import csw.command.client.messages.sequencer.SequenceError.ExistingSequenceIsInProcess
-import csw.command.client.messages.sequencer.SequenceResponse
 import csw.params.commands.CommandResponse.{Completed, Error, Started, SubmitResponse}
 import csw.params.commands.{CommandResponse, Sequence, SequenceCommand}
 import csw.params.core.models.Id
 import esw.ocs.api.models.StepStatus._
 import esw.ocs.api.models.messages.EditorError._
+import esw.ocs.api.models.messages.SequenceError.ExistingSequenceIsInProcess
 import esw.ocs.api.models.messages.SequencerResponses.LoadSequenceResponse
 import esw.ocs.api.models.messages.{EditorError, GoOfflineError, GoOnlineError}
 import esw.ocs.api.models.{Step, StepList, StepStatus}
@@ -55,23 +54,26 @@ private[ocs] class Sequencer(crm: CommandResponseManager)(implicit strandEc: Str
     )
   }
 
-  def start(): Future[SequenceResponse] = async {
-    SequenceResponse(
-      if (sequencerAvailable) {
-        sequencerAvailable = false
-        updateStepList(loadedStepList)
-        val id = stepList.runId
-        crm.addOrUpdateCommand(Started(id))
-        crm.addSubCommand(id, emptyChildId)
-        completeStepRefPromise()
-        completeReadyToExecuteNextPromise() // To complete the promise created for previous sequence so that engine can pullNext
-        await(handleSequenceResponse(crm.queryFinal(id)).map(Right(_)))
-      } else Left(ExistingSequenceIsInProcess)
-    )
+  def start(): Future[SubmitResponse] = async {
+    if (sequencerAvailable) {
+      sequencerAvailable = false
+      updateStepList(loadedStepList)
+      val id = stepList.runId
+      crm.addOrUpdateCommand(Started(id))
+      crm.addSubCommand(id, emptyChildId)
+      completeStepRefPromise()
+      completeReadyToExecuteNextPromise() // To complete the promise created for previous sequence so that engine can pullNext
+      await(handleSequenceResponse(crm.queryFinal(id)))
+    } else Error(Id("Invalid"), ExistingSequenceIsInProcess.description)
   }
 
-  def loadAndStart(sequence: Sequence): Future[SequenceResponse] =
-    load(sequence).flatMap(_ => start())
+  def loadAndStart(sequence: Sequence): Future[SubmitResponse] =
+    load(sequence)
+      .map(_.response)
+      .flatMap {
+        case Right(_)  => start()
+        case Left(err) => Future.successful(Error(sequence.runId, err.description))
+      }
 
   def pullNext(): Future[Step] = async {
     stepList.nextExecutable match {
