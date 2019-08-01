@@ -66,6 +66,8 @@ class SequencerBehavior(
     }
   }
 
+  // $COVERAGE-OFF$
+
   private def offlineBehavior: Behavior[SequencerMsg] = Behaviors.receive[SequencerMsg] { (context, message) =>
     import context.executionContext
     message match {
@@ -92,6 +94,25 @@ class SequencerBehavior(
     case _                       => Behaviors.same // do not receive any other commands in transition from online to offline
   }
 
+  private def goOnline()(implicit ec: ExecutionContext): Future[LifecycleResponse] =
+    sequencer.goOnline().map { res =>
+      script.executeGoOnline() // recover and log
+      LifecycleResponse(res)
+    }
+
+  private def goOffline()(implicit ctx: ActorContext[SequencerMsg]): Future[LifecycleResponse] = {
+    import ctx.executionContext
+
+    sequencer.goOffline().map {
+      case res @ Right(_) =>
+        script.executeGoOffline() // recover and log
+        ctx.self ! ChangeBehaviorToOffline
+        LifecycleResponse(res)
+
+      case res @ Left(_) => ctx.self ! ChangeBehaviorToDefault; LifecycleResponse(res)
+    }
+  }
+
   private def shutdown(replyTo: ActorRef[LifecycleResponse])(implicit ctx: ActorContext[SequencerMsg]): Unit = {
     import ctx.executionContext
 
@@ -114,23 +135,6 @@ class SequencerBehavior(
       }
       .foreach(replyTo ! LifecycleResponse(_))
 
-  private def goOnline()(implicit ec: ExecutionContext): Future[LifecycleResponse] =
-    sequencer.goOnline().map { res =>
-      script.executeGoOnline() // recover and log
-      LifecycleResponse(res)
-    }
-
-  private def goOffline()(implicit ctx: ActorContext[SequencerMsg]): Future[LifecycleResponse] = {
-    import ctx.executionContext
-
-    sequencer.goOffline().map {
-      case res @ Right(_) =>
-        script.executeGoOffline() // recover and log
-        ctx.self ! ChangeBehaviorToOffline
-        LifecycleResponse(res)
-
-      case res @ Left(_) => ctx.self ! ChangeBehaviorToDefault; LifecycleResponse(res)
-    }
-  }
+  // $COVERAGE-ON$
 
 }
