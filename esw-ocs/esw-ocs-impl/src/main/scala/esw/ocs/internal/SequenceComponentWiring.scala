@@ -3,6 +3,7 @@ package esw.ocs.internal
 import akka.actor.typed.ActorRef
 import akka.actor.typed.SpawnProtocol.Spawn
 import akka.actor.typed.scaladsl.AskPattern.Askable
+import com.typesafe.config.ConfigFactory
 import csw.location.api.extensions.ActorExtension.RichActor
 import csw.location.api.scaladsl.LocationService
 import csw.location.client.scaladsl.HttpLocationServiceFactory
@@ -24,12 +25,16 @@ private[ocs] class SequenceComponentWiring(name: String) {
 
   private lazy val locationService: LocationService = HttpLocationServiceFactory.makeLocalClient
 
-  //fixme: should this come from conf file?
-  private lazy val prefix = Prefix("sequence-component")
+  private val prefix: Prefix        = Prefix(ConfigFactory.load().getString("prefix"))
+  private val sequenceComponentName = s"${prefix.subsystem}_$name"
 
   def start(): Either[RegistrationError, AkkaLocation] = {
     val registration =
-      AkkaRegistration(AkkaConnection(ComponentId(name, ComponentType.Service)), prefix, sequenceComponentRef.toURI)
+      AkkaRegistration(
+        AkkaConnection(ComponentId(sequenceComponentName, ComponentType.Service)),
+        prefix,
+        sequenceComponentRef.toURI
+      )
 
     RegistrationUtils.register(locationService, registration)(coordinatedShutdown).block
   }
