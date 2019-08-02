@@ -363,15 +363,21 @@ class SequencerTest extends BaseTestSuite {
     "remove all the pending commands from sequence | ESW-110" in {
       val command1 = Setup(Prefix("test"), CommandName("command-1"), None)
       val command2 = Observe(Prefix("test"), CommandName("command-2"), None)
-      val sequence = Sequence(Id(), Seq(command1, command2))
+      val command3 = Setup(Prefix("test"), CommandName("command-3"), None)
+      val sequence = Sequence(Id(), Seq(command1, command2, command3))
 
       val sequencerSetup = new SequencerSetup(sequence)
       import sequencerSetup._
       sequencer.loadAndStart(sequence)
       eventually(sequencer.getSequence.futureValue should ===(StepList(sequence).rightValue))
 
+      // make first step inFlight
+      sequencer.pullNext()
+
       sequencer.reset().rightValue should ===(Done)
-      sequencer.getSequence.futureValue should ===(StepList(sequence.runId, Nil))
+
+      // only pending steps are removed
+      sequencer.getSequence.futureValue should ===(StepList(sequence.runId, List(Step(command1, InFlight, hasBreakpoint = false))))
     }
   }
 
