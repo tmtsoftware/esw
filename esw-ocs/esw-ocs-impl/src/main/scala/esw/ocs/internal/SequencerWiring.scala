@@ -19,7 +19,7 @@ import esw.ocs.dsl.utils.ScriptLoader
 import esw.ocs.dsl.{CswServices, Script}
 import esw.ocs.macros.StrandEc
 import esw.ocs.syntax.FutureSyntax.FutureOps
-import esw.ocs.utils.RegistrationUtils
+import esw.ocs.utils.LocationServiceUtils
 
 import scala.concurrent.Future
 // $COVERAGE-OFF$
@@ -55,7 +55,8 @@ private[ocs] class SequencerWiring(val sequencerId: String, val observingMode: S
   lazy val sequenceEditorClient      = new SequenceEditorClient(sequencerRef)
   lazy val sequencerSupervisorClient = new SequencerSupervisorClient(sequencerRef)
 
-  private lazy val locationService: LocationService = HttpLocationServiceFactory.makeLocalClient
+  private lazy val locationService: LocationService           = HttpLocationServiceFactory.makeLocalClient
+  private lazy val locationServiceUtils: LocationServiceUtils = new LocationServiceUtils(locationService)
 
   def shutDown(): Future[Done] = sequencerSupervisorClient.shutdown().map(_ => Done)
 
@@ -63,7 +64,7 @@ private[ocs] class SequencerWiring(val sequencerId: String, val observingMode: S
     engine.start(sequenceOperatorFactory(), script)
 
     val registration = AkkaRegistration(AkkaConnection(componentId), prefix, sequencerRef.toURI)
-    RegistrationUtils.register(locationService, registration)(coordinatedShutdown).block
+    locationServiceUtils.register(registration)(coordinatedShutdown).block
   }
 }
 // $COVERAGE-ON$

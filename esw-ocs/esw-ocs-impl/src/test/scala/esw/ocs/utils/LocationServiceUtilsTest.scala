@@ -9,8 +9,8 @@ import csw.location.api.exceptions.{OtherLocationIsRegistered, RegistrationFaile
 import csw.location.api.scaladsl.{LocationService, RegistrationResult}
 import csw.location.models.ComponentType.Sequencer
 import csw.location.models.Connection.AkkaConnection
-import csw.location.models.{AkkaLocation, AkkaRegistration, ComponentId}
-import csw.params.core.models.Prefix
+import csw.location.models.{AkkaLocation, AkkaRegistration, ComponentId, ComponentType}
+import csw.params.core.models.{Prefix, Subsystem}
 import esw.ocs.BaseTestSuite
 import esw.ocs.api.models.messages.RegistrationError
 import org.mockito.Mockito.{verify, when}
@@ -18,7 +18,7 @@ import org.mockito.Mockito.{verify, when}
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future
 
-class RegistrationUtilsTest extends BaseTestSuite {
+class LocationServiceUtilsTest extends BaseTestSuite {
 
   private val locationService = mock[LocationService]
 
@@ -36,7 +36,10 @@ class RegistrationUtilsTest extends BaseTestSuite {
       when(registrationResult.location).thenReturn(akkaLocation)
       when(registrationResult.unregister()).thenReturn(Future.successful(Done))
       when(locationService.register(registration)).thenReturn(Future(registrationResult))
-      RegistrationUtils.register(locationService, registration)(coordinatedShutdown).rightValue should ===(akkaLocation)
+
+      val locationServiceUtils = new LocationServiceUtils(locationService)
+
+      locationServiceUtils.register(registration)(coordinatedShutdown).rightValue should ===(akkaLocation)
       coordinatedShutdown.run(UnknownReason).futureValue
       verify(registrationResult).unregister()
     }
@@ -47,7 +50,9 @@ class RegistrationUtilsTest extends BaseTestSuite {
       val errorMsg            = "error message"
       when(locationService.register(registration)).thenReturn(Future.failed(OtherLocationIsRegistered(errorMsg)))
 
-      RegistrationUtils.register(locationService, registration)(coordinatedShutdown).leftValue should ===(
+      val locationServiceUtils = new LocationServiceUtils(locationService)
+
+      locationServiceUtils.register(registration)(coordinatedShutdown).leftValue should ===(
         RegistrationError(errorMsg)
       )
       system.terminate().futureValue
@@ -65,7 +70,11 @@ class RegistrationUtilsTest extends BaseTestSuite {
       when(registrationResult.unregister()).thenReturn(Future.successful(Done))
       when(locationService.register(registration)).thenReturn(Future(registrationResult))
 
-      RegistrationUtils.registerWithRetry(locationService, registration, retryCount)(coordinatedShutdown).rightValue should ===(
+      val locationServiceUtils = new LocationServiceUtils(locationService)
+
+      locationServiceUtils
+        .registerWithRetry(registration, retryCount)(coordinatedShutdown)
+        .rightValue should ===(
         akkaLocation
       )
       coordinatedShutdown.run(UnknownReason).futureValue
@@ -84,7 +93,11 @@ class RegistrationUtilsTest extends BaseTestSuite {
       when(locationService.register(registration))
         .thenReturn(Future.failed(OtherLocationIsRegistered(errorMsg)), Future(registrationResult))
 
-      RegistrationUtils.registerWithRetry(locationService, registration, retryCount)(coordinatedShutdown).rightValue should ===(
+      val locationServiceUtils = new LocationServiceUtils(locationService)
+
+      locationServiceUtils
+        .registerWithRetry(registration, retryCount)(coordinatedShutdown)
+        .rightValue should ===(
         akkaLocation
       )
       coordinatedShutdown.run(UnknownReason).futureValue
@@ -103,7 +116,11 @@ class RegistrationUtilsTest extends BaseTestSuite {
       when(locationService.register(registration))
         .thenReturn(Future.failed(RegistrationFailed(errorMsg)), Future(registrationResult))
 
-      RegistrationUtils.registerWithRetry(locationService, registration, retryCount)(coordinatedShutdown).leftValue should ===(
+      val locationServiceUtils = new LocationServiceUtils(locationService)
+
+      locationServiceUtils
+        .registerWithRetry(registration, retryCount)(coordinatedShutdown)
+        .leftValue should ===(
         RegistrationError(errorMsg)
       )
       system.terminate().futureValue
@@ -121,11 +138,53 @@ class RegistrationUtilsTest extends BaseTestSuite {
           Future.failed(OtherLocationIsRegistered(errorMsg))
         )
 
-      RegistrationUtils.registerWithRetry(locationService, registration, retryCount)(coordinatedShutdown).leftValue should ===(
+      val locationServiceUtils = new LocationServiceUtils(locationService)
+
+      locationServiceUtils
+        .registerWithRetry(registration, retryCount)(coordinatedShutdown)
+        .leftValue should ===(
         RegistrationError(errorMsg)
       )
       system.terminate().futureValue
     }
 
+  }
+
+  "listBySubsystem" must {
+    "list all locations which match given componentType and subsystem" in {
+      val testUri = new URI("test-uri")
+      val tcsLocations = List(
+        AkkaLocation(AkkaConnection(ComponentId("TCS_1", ComponentType.SequenceComponent)), Prefix("tcs.test.filter1"), testUri),
+        AkkaLocation(AkkaConnection(ComponentId("TCS_2", ComponentType.SequenceComponent)), Prefix("tcs.test.filter2"), testUri),
+        AkkaLocation(AkkaConnection(ComponentId("TCS_3", ComponentType.SequenceComponent)), Prefix("tcs.test.filter3"), testUri)
+      )
+      val sequenceComponentLocations = tcsLocations ++ List(
+        AkkaLocation(AkkaConnection(ComponentId("OSS_1", ComponentType.SequenceComponent)), Prefix("oss.test.filter1"), testUri),
+        AkkaLocation(AkkaConnection(ComponentId("IRIS_1", ComponentType.SequenceComponent)), Prefix("iris.test.filter1"), testUri)
+      )
+
+      when(locationService.list(ComponentType.SequenceComponent)).thenReturn(Future.successful(sequenceComponentLocations))
+      val locationServiceUtils = new LocationServiceUtils(locationService)
+
+      val actualLocations = locationServiceUtils.listBy(Subsystem.TCS, ComponentType.SequenceComponent).futureValue
+
+      actualLocations shouldEqual tcsLocations
+    }
+
+    "return empty list if no matching component type and subsystem is found" in {
+      val testUri = new URI("test-uri")
+      val sequenceComponentLocations = List(
+        AkkaLocation(AkkaConnection(ComponentId("TCS_1", ComponentType.SequenceComponent)), Prefix("tcs.test.filter1"), testUri),
+        AkkaLocation(AkkaConnection(ComponentId("TCS_2", ComponentType.SequenceComponent)), Prefix("tcs.test.filter2"), testUri),
+        AkkaLocation(AkkaConnection(ComponentId("IRIS_1", ComponentType.SequenceComponent)), Prefix("iris.test.filter1"), testUri)
+      )
+
+      when(locationService.list(ComponentType.SequenceComponent)).thenReturn(Future.successful(sequenceComponentLocations))
+      val locationServiceUtils = new LocationServiceUtils(locationService)
+
+      val actualLocations = locationServiceUtils.listBy(Subsystem.NFIRAOS, ComponentType.SequenceComponent).futureValue
+
+      actualLocations shouldEqual List.empty
+    }
   }
 }

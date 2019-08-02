@@ -32,7 +32,8 @@ class SequencerAppIntegrationTest extends ScalaTestFrameworkTestKit with BaseTes
     "start sequence component with provided name and register it with location service | ESW-103, ESW-147, ESW-151" in {
       val prefixStr             = "test.prefix"
       val prefix: Prefix        = Prefix(prefixStr)
-      val sequenceComponentName = s"${prefix.subsystem}_$prefixStr"
+      val uniqueId              = "1"
+      val sequenceComponentName = s"${prefix.subsystem}_$uniqueId"
 
       // start Sequence Component
       SequencerApp.run(SequenceComponent(prefixStr), enableLogging = false)
