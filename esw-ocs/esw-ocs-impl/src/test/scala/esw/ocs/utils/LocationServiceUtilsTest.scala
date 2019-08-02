@@ -151,7 +151,7 @@ class LocationServiceUtilsTest extends BaseTestSuite {
   }
 
   "listBySubsystem" must {
-    "list all locations which match given componentType and subsystem" in {
+    "list all locations which match given componentType and subsystem | ESW-144" in {
       val testUri = new URI("test-uri")
       val tcsLocations = List(
         AkkaLocation(AkkaConnection(ComponentId("TCS_1", ComponentType.SequenceComponent)), Prefix("tcs.test.filter1"), testUri),
@@ -171,7 +171,7 @@ class LocationServiceUtilsTest extends BaseTestSuite {
       actualLocations shouldEqual tcsLocations
     }
 
-    "return empty list if no matching component type and subsystem is found" in {
+    "return empty list if no matching component type and subsystem is found | ESW-144" in {
       val testUri = new URI("test-uri")
       val sequenceComponentLocations = List(
         AkkaLocation(AkkaConnection(ComponentId("TCS_1", ComponentType.SequenceComponent)), Prefix("tcs.test.filter1"), testUri),
