@@ -3,7 +3,6 @@ package esw.ocs.app
 import akka.Done
 import akka.actor.testkit.typed.scaladsl.TestProbe
 import akka.actor.typed.ActorSystem
-import com.typesafe.config.ConfigFactory
 import csw.command.client.internal.SequencerCommandServiceImpl
 import csw.location.api.extensions.URIExtension.RichURI
 import csw.location.api.scaladsl.LocationService
@@ -31,12 +30,12 @@ class SequencerAppIntegrationTest extends ScalaTestFrameworkTestKit with BaseTes
 
   "SequenceComponent command" must {
     "start sequence component with provided name and register it with location service | ESW-103, ESW-147, ESW-151" in {
-      val seqCompId             = 1
-      val prefix: Prefix        = Prefix(ConfigFactory.load().getString("prefix"))
-      val sequenceComponentName = s"${prefix.subsystem}_$seqCompId"
+      val prefixStr             = "test.prefix"
+      val prefix: Prefix        = Prefix(prefixStr)
+      val sequenceComponentName = s"${prefix.subsystem}_$prefixStr"
 
       // start Sequence Component
-      SequencerApp.run(SequenceComponent(seqCompId), enableLogging = false)
+      SequencerApp.run(SequenceComponent(prefixStr), enableLogging = false)
 
       // verify Sequence component is started and registered with location service
       val connection           = AkkaConnection(ComponentId(sequenceComponentName, ComponentType.SequenceComponent))

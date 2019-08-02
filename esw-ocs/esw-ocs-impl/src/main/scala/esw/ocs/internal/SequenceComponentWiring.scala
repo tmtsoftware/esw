@@ -3,7 +3,6 @@ package esw.ocs.internal
 import akka.actor.typed.ActorRef
 import akka.actor.typed.SpawnProtocol.Spawn
 import akka.actor.typed.scaladsl.AskPattern.Askable
-import com.typesafe.config.ConfigFactory
 import csw.location.api.extensions.ActorExtension.RichActor
 import csw.location.api.scaladsl.LocationService
 import csw.location.client.scaladsl.HttpLocationServiceFactory
@@ -16,9 +15,9 @@ import esw.ocs.syntax.FutureSyntax.FutureOps
 import esw.ocs.utils.RegistrationUtils
 
 // $COVERAGE-OFF$
-private[ocs] class SequenceComponentWiring(id: Int) {
-  private val prefix: Prefix        = Prefix(ConfigFactory.load().getString("prefix"))
-  private val sequenceComponentName = s"${prefix.subsystem}_$id"
+private[ocs] class SequenceComponentWiring(prefixStr: String) {
+  private val prefix: Prefix        = Prefix(prefixStr)
+  private val sequenceComponentName = s"${prefix.subsystem}_$prefixStr"
 
   lazy val actorRuntime = new ActorRuntime(sequenceComponentName)
   import actorRuntime._

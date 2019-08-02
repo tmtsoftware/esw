@@ -22,16 +22,16 @@ object SequencerApp extends CommandApp[SequencerAppCommand] {
 
   def run(command: SequencerAppCommand, enableLogging: Boolean = true): Unit =
     command match {
-      case SequenceComponent(id) =>
-        val wiring = new SequenceComponentWiring(id)
-        startSequenceComponent(id, wiring, enableLogging)
+      case SequenceComponent(prefix) =>
+        val wiring = new SequenceComponentWiring(prefix)
+        startSequenceComponent(prefix, wiring, enableLogging)
 
       case Sequencer(id, mode) =>
         val wiring = new SequencerWiring(id, mode)
         startSequencer(wiring, enableLogging)
     }
 
-  def startSequenceComponent(id: Int, sequenceComponentWiring: SequenceComponentWiring, enableLogging: Boolean): Unit = {
+  def startSequenceComponent(prefix: String, sequenceComponentWiring: SequenceComponentWiring, enableLogging: Boolean): Unit = {
     import sequenceComponentWiring._
     withLogging(actorRuntime, enableLogging) {
       sequenceComponentWiring.start()

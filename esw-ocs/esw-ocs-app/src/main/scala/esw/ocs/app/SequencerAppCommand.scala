@@ -8,8 +8,8 @@ object SequencerAppCommand {
 
   @CommandName("seqcomp")
   final case class SequenceComponent(
-      @HelpMessage("unique id of the sequence component(in Integer), ex: 1")
-      id: Int
+      @HelpMessage("prefix of the sequence component, ex: tcs.mobie.blue.filter")
+      prefix: String
   ) extends SequencerAppCommand
 
   final case class Sequencer(
