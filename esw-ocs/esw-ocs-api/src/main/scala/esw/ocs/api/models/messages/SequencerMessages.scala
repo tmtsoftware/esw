@@ -40,8 +40,6 @@ object SequencerMessages {
   private[ocs] final case object ChangeBehaviorToDefault extends SequencerMsg
 
   // editor msgs
-
-  // todo: remove this wrapper
   sealed trait ExternalEditorMsg extends SequencerMsg with OcsFrameworkAkkaSerializable
 
   final case class Available(replyTo: ActorRef[Boolean]) extends ExternalEditorMsg
