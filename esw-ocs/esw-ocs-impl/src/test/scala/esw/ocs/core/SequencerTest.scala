@@ -377,7 +377,9 @@ class SequencerTest extends BaseTestSuite {
       sequencer.reset().rightValue should ===(Done)
 
       // only pending steps are removed
-      sequencer.getSequence.futureValue should ===(StepList(sequence.runId, List(Step(command1, InFlight, hasBreakpoint = false))))
+      sequencer.getSequence.futureValue should ===(
+        StepList(sequence.runId, List(Step(command1, InFlight, hasBreakpoint = false)))
+      )
     }
   }
 

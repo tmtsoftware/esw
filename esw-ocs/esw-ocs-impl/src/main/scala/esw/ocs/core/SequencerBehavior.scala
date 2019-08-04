@@ -81,8 +81,8 @@ class SequencerBehavior(
       case msg: Available            => msg.replyTo ! false; Behaviors.same
       case msg: GetSequence          => msg.replyTo ! StepList.empty; Behaviors.same
       case msg: GetPreviousSequence  => msg.replyTo ! StepListResponse(None); Behaviors.same
-      case msg: EditorMsg[_] =>
-        msg.asInstanceOf[EditorMsg[EditorResponse]].replyTo ! EditorResponse(Left(NotAllowedInOfflineState))
+      case msg: EditorMsg =>
+        msg.replyTo.asInstanceOf[ActorRef[EditorResponse]] ! EditorResponse(Left(NotAllowedInOfflineState))
         Behaviors.same
       case _ => Behaviors.same
     }
