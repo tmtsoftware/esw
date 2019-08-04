@@ -43,22 +43,25 @@ object SequencerMessages {
 
   // todo: remove this wrapper
   sealed trait ExternalEditorMsg extends SequencerMsg
-  sealed trait EditorMsg extends ExternalEditorMsg with OcsFrameworkAkkaSerializable {
-    def replyTo: ActorRef[Nothing]
-  }
+  sealed trait EditorMsg         extends ExternalEditorMsg with OcsFrameworkAkkaSerializable
 
   final case class Available(replyTo: ActorRef[Boolean]) extends EditorMsg
   // fixme : GetSequence and GetPreviousSequence should have replyTo StepListResponse
-  final case class GetSequence(replyTo: ActorRef[StepList])                                                extends EditorMsg
-  final case class GetPreviousSequence(replyTo: ActorRef[StepListResponse])                                extends EditorMsg
-  final case class Add(commands: List[SequenceCommand], replyTo: ActorRef[EditorResponse])                 extends EditorMsg
-  final case class Prepend(commands: List[SequenceCommand], replyTo: ActorRef[EditorResponse])             extends EditorMsg
-  final case class Replace(id: Id, commands: List[SequenceCommand], replyTo: ActorRef[EditorResponse])     extends EditorMsg
-  final case class InsertAfter(id: Id, commands: List[SequenceCommand], replyTo: ActorRef[EditorResponse]) extends EditorMsg
-  final case class Delete(ids: Id, replyTo: ActorRef[EditorResponse])                                      extends EditorMsg
-  final case class AddBreakpoint(id: Id, replyTo: ActorRef[EditorResponse])                                extends EditorMsg
-  final case class RemoveBreakpoint(id: Id, replyTo: ActorRef[EditorResponse])                             extends EditorMsg
-  final case class Pause(replyTo: ActorRef[EditorResponse])                                                extends EditorMsg
-  final case class Resume(replyTo: ActorRef[EditorResponse])                                               extends EditorMsg
-  final case class Reset(replyTo: ActorRef[EditorResponse])                                                extends EditorMsg
+  final case class GetSequence(replyTo: ActorRef[StepList])                 extends EditorMsg
+  final case class GetPreviousSequence(replyTo: ActorRef[StepListResponse]) extends EditorMsg
+
+  sealed trait EditActions extends EditorMsg {
+    def replyTo: ActorRef[EditorResponse]
+  }
+
+  final case class Add(commands: List[SequenceCommand], replyTo: ActorRef[EditorResponse])                 extends EditActions
+  final case class Prepend(commands: List[SequenceCommand], replyTo: ActorRef[EditorResponse])             extends EditActions
+  final case class Replace(id: Id, commands: List[SequenceCommand], replyTo: ActorRef[EditorResponse])     extends EditActions
+  final case class InsertAfter(id: Id, commands: List[SequenceCommand], replyTo: ActorRef[EditorResponse]) extends EditActions
+  final case class Delete(ids: Id, replyTo: ActorRef[EditorResponse])                                      extends EditActions
+  final case class AddBreakpoint(id: Id, replyTo: ActorRef[EditorResponse])                                extends EditActions
+  final case class RemoveBreakpoint(id: Id, replyTo: ActorRef[EditorResponse])                             extends EditActions
+  final case class Pause(replyTo: ActorRef[EditorResponse])                                                extends EditActions
+  final case class Resume(replyTo: ActorRef[EditorResponse])                                               extends EditActions
+  final case class Reset(replyTo: ActorRef[EditorResponse])                                                extends EditActions
 }
