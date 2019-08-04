@@ -42,15 +42,14 @@ object SequencerMessages {
   // editor msgs
 
   // todo: remove this wrapper
-  sealed trait ExternalEditorMsg extends SequencerMsg
-  sealed trait EditorMsg         extends ExternalEditorMsg with OcsFrameworkAkkaSerializable
+  sealed trait ExternalEditorMsg extends SequencerMsg with OcsFrameworkAkkaSerializable
 
-  final case class Available(replyTo: ActorRef[Boolean]) extends EditorMsg
+  final case class Available(replyTo: ActorRef[Boolean]) extends ExternalEditorMsg
   // fixme : GetSequence and GetPreviousSequence should have replyTo StepListResponse
-  final case class GetSequence(replyTo: ActorRef[StepList])                 extends EditorMsg
-  final case class GetPreviousSequence(replyTo: ActorRef[StepListResponse]) extends EditorMsg
+  final case class GetSequence(replyTo: ActorRef[StepList])                 extends ExternalEditorMsg
+  final case class GetPreviousSequence(replyTo: ActorRef[StepListResponse]) extends ExternalEditorMsg
 
-  sealed trait EditActions extends EditorMsg {
+  sealed trait EditActions extends ExternalEditorMsg {
     def replyTo: ActorRef[EditorResponse]
   }
 
