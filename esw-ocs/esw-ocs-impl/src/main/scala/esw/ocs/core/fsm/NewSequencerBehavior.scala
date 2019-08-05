@@ -7,7 +7,6 @@ import csw.location.models.ComponentId
 import csw.location.models.Connection.AkkaConnection
 import csw.params.commands.CommandResponse._
 import csw.params.commands.{CommandResponse, Sequence}
-import csw.params.core.models.Id
 import esw.ocs.api.codecs.OcsFrameworkCodecs
 import esw.ocs.api.models.messages.FSM._
 import esw.ocs.api.models.messages.SequenceError._
@@ -18,7 +17,6 @@ import esw.ocs.dsl.ScriptDsl
 import scala.concurrent.duration._
 import scala.concurrent.{Await, ExecutionContext, Future}
 import scala.language.implicitConversions
-import scala.util.control.NonFatal
 import scala.util.{Failure, Success}
 
 class NewSequencerBehavior(
@@ -57,6 +55,9 @@ class NewSequencerBehavior(
         //fixme: this blocking is temporary as once we
         // dissolve the active object, this should not return a future
         Await.result(loadSequence(sequence, replyTo), atMost)
+      case LoadAndStartSequence(sequence, replyTo) =>
+        //fixme: this blocking is temporary
+        Await.result(loadAndStart(sequence, replyTo), atMost)
     }
   }
 
@@ -89,19 +90,23 @@ class NewSequencerBehavior(
 
   private def startSequence(replyTo: ActorRef[SequencerResponse])(
       implicit executionContext: ExecutionContext
-  ): Future[Behavior[SequencerMessage]] = {
+  ): Future[Behavior[SequencerMessage]] =
     sequencer
       .start()
       .map { x =>
         replyTo ! x
         inProgressBehavior
       }
-      .recover {
-        case NonFatal(err) =>
-          replyTo ! CommandResponse.Error(Id("Invalid"), err.getMessage)
-          Behaviors.same
-      }
-  }
+
+  private def loadAndStart(sequence: Sequence, replyTo: ActorRef[SequencerResponse])(
+      implicit ec: ExecutionContext
+  ): Future[Behavior[SequencerMessage]] =
+    sequencer
+      .loadAndStart(sequence)
+      .map(x => {
+        replyTo ! x
+        inProgressBehavior
+      })
 
   implicit private def convertToSequencerResponse(submitResponse: SubmitResponse): SequencerResponse =
     if (CommandResponse.isNegative(submitResponse)) SequencerError(submitResponse)
