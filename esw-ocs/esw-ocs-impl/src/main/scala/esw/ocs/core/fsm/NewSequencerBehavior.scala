@@ -5,7 +5,9 @@ import akka.actor.typed.{ActorRef, ActorSystem, Behavior}
 import csw.location.api.scaladsl.LocationService
 import csw.location.models.ComponentId
 import csw.location.models.Connection.AkkaConnection
-import csw.params.commands.Sequence
+import csw.params.commands.CommandResponse._
+import csw.params.commands.{CommandResponse, Sequence}
+import csw.params.core.models.Id
 import esw.ocs.api.codecs.OcsFrameworkCodecs
 import esw.ocs.api.models.messages.FSM._
 import esw.ocs.api.models.messages.SequenceError._
@@ -15,6 +17,8 @@ import esw.ocs.dsl.ScriptDsl
 
 import scala.concurrent.duration._
 import scala.concurrent.{Await, ExecutionContext, Future}
+import scala.language.implicitConversions
+import scala.util.control.NonFatal
 import scala.util.{Failure, Success}
 
 class NewSequencerBehavior(
@@ -26,29 +30,22 @@ class NewSequencerBehavior(
     extends FSM
     with OcsFrameworkCodecs {
 
-  def loadedBehavior: Behavior[SequencerMessage] = receive[SequenceLoadedMessage]("sequence loaded") {
-    ???
-  }
+  val atMost: FiniteDuration = 5.seconds
+
+  def loadedBehavior: Behavior[SequencerMessage] =
+    Behaviors.setup { implicit ctx =>
+      import ctx._
+      receive[SequenceLoadedMessage]("sequence loaded") {
+        //fixme: this blocking is temporary as once we
+        // dissolve the active object, this should not return a future
+        case StartSequence(replyTo) => Await.result(startSequence(replyTo), atMost)
+        case Shutdown(replyTo)      => shutdown(replyTo)
+        case GoOffline(replyTo)     => goOffline(replyTo)
+      }
+    }
+
   def inProgressBehavior: Behavior[SequencerMessage] = receive[InProgressMessage]("in-progress") {
     ???
-  }
-
-  protected def shutdown(
-      replyTo: ActorRef[SequencerResponse]
-  )(implicit ctx: ActorContext[SequencerMessage]): Behavior[SequencerMessage] = {
-    import ctx.executionContext
-
-    sequencer.shutdown()
-    locationService
-      .unregister(AkkaConnection(componentId))
-      .flatMap(_ => script.executeShutdown())
-      .onComplete {
-        case Failure(exception) => replyTo ! EswError(exception)
-        case Success(_)         => replyTo ! EswSuccess
-      }
-    //fixme: can we avoid abruptly terminating the system?
-    ctx.system.terminate
-    Behaviors.stopped
   }
 
   def idleBehavior: Behavior[SequencerMessage] = Behaviors.setup { implicit ctx =>
@@ -59,7 +56,7 @@ class NewSequencerBehavior(
       case LoadSequence(sequence, replyTo) =>
         //fixme: this blocking is temporary as once we
         // dissolve the active object, this should not return a future
-        Await.result(loadSequence(sequence, replyTo), 5.seconds)
+        Await.result(loadSequence(sequence, replyTo), atMost)
     }
   }
 
@@ -72,6 +69,44 @@ class NewSequencerBehavior(
     }
   }
 
+  protected def shutdown(
+      replyTo: ActorRef[SequencerResponse]
+  )(implicit ctx: ActorContext[SequencerMessage]): Behavior[SequencerMessage] = {
+    import ctx.executionContext
+
+    sequencer.shutdown()
+    locationService
+      .unregister(AkkaConnection(componentId))
+      .flatMap(_ => script.executeShutdown())
+      .onComplete {
+        case Failure(exception) => replyTo ! SequencerError(exception)
+        case Success(_)         => replyTo ! SequencerSuccess
+      }
+    //fixme: can we avoid abruptly terminating the system?
+    ctx.system.terminate
+    Behaviors.stopped
+  }
+
+  private def startSequence(replyTo: ActorRef[SequencerResponse])(
+      implicit executionContext: ExecutionContext
+  ): Future[Behavior[SequencerMessage]] = {
+    sequencer
+      .start()
+      .map { x =>
+        replyTo ! x
+        inProgressBehavior
+      }
+      .recover {
+        case NonFatal(err) =>
+          replyTo ! CommandResponse.Error(Id("Invalid"), err.getMessage)
+          Behaviors.same
+      }
+  }
+
+  implicit private def convertToSequencerResponse(submitResponse: SubmitResponse): SequencerResponse =
+    if (CommandResponse.isNegative(submitResponse)) SequencerError(submitResponse)
+    else SequencerResult(submitResponse)
+
   private def loadSequence(sequence: Sequence, replyTo: ActorRef[SequencerResponse])(
       implicit ec: ExecutionContext
   ): Future[Behavior[SequencerMessage]] = {
@@ -82,13 +117,13 @@ class NewSequencerBehavior(
         case Left(error) =>
           error match {
             case x @ DuplicateIdsFound =>
-              replyTo ! EswError(x.description)
+              replyTo ! SequencerError(x.description)
               Behaviors.same
             case ExistingSequenceIsInProcess => ??? //redundant now
             case error: GenericError         => ??? // not required any more
           }
         case Right(_) =>
-          replyTo ! EswSuccess
+          replyTo ! SequencerSuccess
           loadedBehavior
       }
     }
@@ -103,7 +138,7 @@ class NewSequencerBehavior(
       .foreach {
         case Right(_) =>
           script.executeGoOffline() // recover and log
-          replyTo ! EswSuccess
+          replyTo ! SequencerSuccess
         case Left(GoOfflineError(msg)) => ???
         //this case will not occur as we plan to use dedicated states
       }
@@ -112,10 +147,10 @@ class NewSequencerBehavior(
 
   private def goOnline(replyTo: ActorRef[SequencerResponse])(implicit ec: ExecutionContext): Behavior[SequencerMessage] = {
     sequencer.goOnline().foreach {
-      case Left(GoOnlineError(msg)) => replyTo ! EswError(msg)
+      case Left(GoOnlineError(msg)) => replyTo ! SequencerError(msg)
       case Right(_) =>
         script.executeGoOnline() // fixme:recover and log
-        replyTo ! EswSuccess
+        replyTo ! SequencerSuccess
     }
     idleBehavior
   }
