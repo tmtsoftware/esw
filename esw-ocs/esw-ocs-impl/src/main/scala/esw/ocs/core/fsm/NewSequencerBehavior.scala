@@ -34,7 +34,7 @@ class NewSequencerBehavior(
   }
 
   protected def shutdown(
-      replyTo: ActorRef[ShutdownResponse]
+      replyTo: ActorRef[SequencerResponse]
   )(implicit ctx: ActorContext[SequencerMessage]): Behavior[SequencerMessage] = {
     import ctx.executionContext
 
@@ -72,7 +72,7 @@ class NewSequencerBehavior(
     }
   }
 
-  private def loadSequence(sequence: Sequence, replyTo: ActorRef[LoadSequenceResponse])(
+  private def loadSequence(sequence: Sequence, replyTo: ActorRef[SequencerResponse])(
       implicit ec: ExecutionContext
   ): Future[Behavior[SequencerMessage]] = {
     // these is an assumption here and even in previous approach that these futures will not fail
@@ -95,7 +95,7 @@ class NewSequencerBehavior(
   }
 
   private def goOffline(
-      replyTo: ActorRef[GoOfflineResponse]
+      replyTo: ActorRef[SequencerResponse]
   )(implicit ctx: ActorContext[SequencerMessage]): Behavior[SequencerMessage] = {
     import ctx.executionContext
     sequencer
@@ -110,7 +110,7 @@ class NewSequencerBehavior(
     offlineBehavior
   }
 
-  private def goOnline(replyTo: ActorRef[GoOnlineResponse])(implicit ec: ExecutionContext): Behavior[SequencerMessage] = {
+  private def goOnline(replyTo: ActorRef[SequencerResponse])(implicit ec: ExecutionContext): Behavior[SequencerMessage] = {
     sequencer.goOnline().foreach {
       case Left(GoOnlineError(msg)) => replyTo ! EswError(msg)
       case Right(_) =>
