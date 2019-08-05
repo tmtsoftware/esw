@@ -47,7 +47,7 @@ private[ocs] class SequenceComponentWiring(prefixStr: String) {
             prefix,
             sequenceComponentRef.toURI
           )
-        locationServiceUtils.registerWithRetry(registration, registrationRetryCount)(coordinatedShutdown)
+        locationServiceUtils.registerWithRetry(registration, registrationRetryCount)
       }
   }
 }

@@ -64,7 +64,7 @@ private[ocs] class SequencerWiring(val sequencerId: String, val observingMode: S
     engine.start(sequenceOperatorFactory(), script)
 
     val registration = AkkaRegistration(AkkaConnection(componentId), prefix, sequencerRef.toURI)
-    locationServiceUtils.register(registration)(coordinatedShutdown).block
+    locationServiceUtils.register(registration)(typedSystem).block
   }
 }
 // $COVERAGE-ON$

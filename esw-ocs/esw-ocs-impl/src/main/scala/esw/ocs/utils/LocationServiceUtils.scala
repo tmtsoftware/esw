@@ -1,6 +1,8 @@
 package esw.ocs.utils
 
 import akka.actor.CoordinatedShutdown
+import akka.actor.typed.ActorSystem
+import akka.actor.typed.scaladsl.adapter.TypedActorSystemOps
 import csw.location.api.exceptions.OtherLocationIsRegistered
 import csw.location.api.scaladsl.{LocationService, RegistrationResult}
 import csw.location.models.{AkkaLocation, AkkaRegistration, ComponentType}
@@ -22,23 +24,24 @@ class LocationServiceUtils(locationService: LocationService) {
     )(() => registrationResult.unregister())
   }
 
-  def register(akkaRegistration: AkkaRegistration)(
-      coordinatedShutdown: CoordinatedShutdown
-  )(implicit ec: ExecutionContext): Future[Either[RegistrationError, AkkaLocation]] =
-    registerWithRetry(akkaRegistration, 0)(coordinatedShutdown)
+  def register(
+      akkaRegistration: AkkaRegistration
+  )(implicit actorSystem: ActorSystem[_]): Future[Either[RegistrationError, AkkaLocation]] =
+    registerWithRetry(akkaRegistration, 0)
 
   def registerWithRetry(akkaRegistration: AkkaRegistration, retryCount: Int)(
-      coordinatedShutdown: CoordinatedShutdown
-  )(implicit ec: ExecutionContext): Future[Either[RegistrationError, AkkaLocation]] = {
+      implicit actorSystem: ActorSystem[_]
+  ): Future[Either[RegistrationError, AkkaLocation]] = {
+    implicit val ec: ExecutionContext = actorSystem.executionContext
     locationService
       .register(akkaRegistration)
       .map { result =>
-        addCoordinatedShutdownTask(coordinatedShutdown, result)
+        addCoordinatedShutdownTask(CoordinatedShutdown(actorSystem.toUntyped), result)
         Right(result.location.asInstanceOf[AkkaLocation])
       }
       .recoverWith {
         case OtherLocationIsRegistered(_) if retryCount > 0 =>
-          registerWithRetry(akkaRegistration, retryCount - 1)(coordinatedShutdown)
+          registerWithRetry(akkaRegistration, retryCount - 1)
         case NonFatal(e) => Future.successful(Left(RegistrationError(e.getMessage)))
       }
   }
