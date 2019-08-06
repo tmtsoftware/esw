@@ -173,6 +173,7 @@ private[ocs] class Sequencer(crm: CommandResponseManager)(implicit strandEc: Str
 
   private def checkForSequenceCompletion(): Unit = if (stepList.isFinished) {
     crm.updateSubCommand(Completed(emptyChildId))
+
   }
 
   private def resetState(): Unit = {

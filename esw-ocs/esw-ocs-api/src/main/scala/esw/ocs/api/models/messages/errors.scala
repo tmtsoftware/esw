@@ -1,9 +1,8 @@
 package esw.ocs.api.models.messages
 
-import esw.ocs.api.serializer.OcsFrameworkAkkaSerializable
-
 import csw.params.core.models.Id
 import esw.ocs.api.models.StepStatus
+import esw.ocs.api.serializer.OcsFrameworkAkkaSerializable
 
 final case class RegistrationError(msg: String) extends OcsFrameworkAkkaSerializable
 
@@ -41,6 +40,23 @@ object EditorError {
       with DeleteError
       with InsertError
       with RemoveBreakpointError
+
+  case class Unhandled(state: String, messageType: String)
+      extends AddBreakpointError
+      with PauseError
+      with UpdateError
+      with AddError
+      with ResumeError
+      with ResetError
+      with ReplaceError
+      with PrependError
+      with DeleteError
+      with InsertError
+      with RemoveBreakpointError
+      with LifecycleError
+      with SequenceError {
+    val description = s"Sequencer can not accept '$messageType' message in '$state' state"
+  }
 
   final case class IdDoesNotExist(id: Id)
       extends ReplaceError

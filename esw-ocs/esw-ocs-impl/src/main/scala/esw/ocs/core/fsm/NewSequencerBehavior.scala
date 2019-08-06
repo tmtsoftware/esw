@@ -33,7 +33,7 @@ class NewSequencerBehavior(
   def loadedBehavior: Behavior[SequencerMessage] =
     Behaviors.setup { implicit ctx =>
       import ctx._
-      receive[SequenceLoadedMessage]("sequence loaded") {
+      receive[SequenceLoadedMessage]("sequence-loaded") {
         //fixme: this blocking is temporary as once we
         // dissolve the active object, this should not return a future
         case StartSequence(replyTo) => Await.result(startSequence(replyTo), atMost)
@@ -56,7 +56,7 @@ class NewSequencerBehavior(
         // dissolve the active object, this should not return a future
         Await.result(loadSequence(sequence, replyTo), atMost)
       case LoadAndStartSequence(sequence, replyTo) =>
-        //fixme: this blocking is temporary
+        //fixme: this blocking is temporary until we merge active object
         Await.result(loadAndStart(sequence, replyTo), atMost)
     }
   }

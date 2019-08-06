@@ -12,7 +12,7 @@ import esw.ocs.internal.Timeouts
 
 import scala.concurrent.Future
 
-private[ocs] class SequenceOperator(sequencer: ActorRef[InternalSequencerMsg])(implicit system: ActorSystem[_]) {
+private[ocs] class SequenceOperator(sequencer: ActorRef[EswSequencerMessage])(implicit system: ActorSystem[_]) {
   private implicit val scheduler: Scheduler = system.scheduler
   private implicit val timeout: Timeout     = Timeouts.EngineTimeout
 

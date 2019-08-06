@@ -10,7 +10,7 @@ import esw.ocs.api.models.messages.EditorError._
 import esw.ocs.api.models.messages.SequenceComponentMsg.{GetStatus, LoadScript, UnloadScript}
 import esw.ocs.api.models.messages.SequenceComponentResponses.{GetStatusResponse, LoadScriptResponse}
 import esw.ocs.api.models.messages.SequenceError.{DuplicateIdsFound, ExistingSequenceIsInProcess, GenericError}
-import esw.ocs.api.models.messages.SequencerMessages.{ExternalEditorMsg, _}
+import esw.ocs.api.models.messages.SequencerMessages._
 import esw.ocs.api.models.messages.SequencerResponses.{EditorResponse, LifecycleResponse, LoadSequenceResponse, StepListResponse}
 import esw.ocs.api.models.messages._
 import io.bullet.borer.Codec
@@ -27,7 +27,6 @@ trait OcsFrameworkCodecs extends MessageCodecs with DoneCodec {
   implicit lazy val goOfflineCodec: Codec[GoOffline]        = deriveCodec[GoOffline]
   implicit lazy val shutdownSequencerCodec: Codec[Shutdown] = deriveCodec[Shutdown]
   implicit lazy val abortCodec: Codec[Abort]                = deriveCodec[Abort]
-  implicit lazy val lifecycleMsgCodec: Codec[LifecycleMsg]  = deriveCodec[LifecycleMsg]
 
   //LifecycleResponse Codecs
 
@@ -48,7 +47,6 @@ trait OcsFrameworkCodecs extends MessageCodecs with DoneCodec {
   implicit lazy val pauseCodec: Codec[Pause]                             = deriveCodec[Pause]
   implicit lazy val resumeCodec: Codec[Resume]                           = deriveCodec[Resume]
   implicit lazy val resetCodec: Codec[Reset]                             = deriveCodec[Reset]
-  implicit lazy val externalEditorMsgCodec: Codec[ExternalEditorMsg]     = deriveCodec[ExternalEditorMsg]
 
   //StepList Codecs
 

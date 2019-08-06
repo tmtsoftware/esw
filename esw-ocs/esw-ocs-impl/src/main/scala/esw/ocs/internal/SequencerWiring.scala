@@ -41,7 +41,7 @@ private[ocs] class SequencerWiring(val sequencerId: String, val observingMode: S
   lazy val sequencerBehavior = new SequencerBehavior(componentId, sequencer, script, locationService)
 
   lazy val sequencerRef: ActorRef[SequencerMsg] =
-    (typedSystem ? Spawn(sequencerBehavior.mainBehavior, sequencerName)).block
+    (typedSystem ? Spawn(sequencerBehavior.idle, sequencerName)).block
 
   //Pass lambda to break circular dependency shown below.
   //SequencerRef -> Script -> cswServices -> SequencerOperator -> SequencerRef

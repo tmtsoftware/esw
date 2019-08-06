@@ -2,23 +2,20 @@ package esw.ocs.core
 
 import akka.actor.typed.scaladsl.{ActorContext, Behaviors}
 import akka.actor.typed.{ActorRef, ActorSystem, Behavior}
-import csw.command.client.messages.sequencer.{LoadAndStartSequence, SequencerMsg}
 import csw.location.api.scaladsl.LocationService
 import csw.location.models.ComponentId
 import csw.location.models.Connection.AkkaConnection
-import csw.params.commands.CommandResponse.Error
-import csw.params.core.models.Id
 import esw.ocs.api.codecs.OcsFrameworkCodecs
-import esw.ocs.api.models.StepList
 import esw.ocs.api.models.messages.EditorError.NotAllowedOnFinishedSeq
-import esw.ocs.api.models.messages.SequenceError.GenericError
 import esw.ocs.api.models.messages.SequencerMessages._
-import esw.ocs.api.models.messages.SequencerResponses.{EditorResponse, LifecycleResponse, LoadSequenceResponse, StepListResponse}
-import esw.ocs.api.models.messages.{AbortError, NotAllowedInOfflineState, ShutdownError}
+import esw.ocs.api.models.messages.SequencerResponses.{EditorResponse, LifecycleResponse, StepListResponse}
+import esw.ocs.api.models.messages.{AbortError, ShutdownError}
 import esw.ocs.dsl.ScriptDsl
 import esw.ocs.utils.FutureEitherExt._
 
-import scala.concurrent.{ExecutionContext, Future}
+import scala.concurrent.duration.DurationInt
+import scala.concurrent.{Await, ExecutionContext, Future}
+import scala.reflect.ClassTag
 import scala.util.control.NonFatal
 
 class SequencerBehavior(
@@ -29,21 +26,64 @@ class SequencerBehavior(
 )(implicit val actorSystem: ActorSystem[_])
     extends OcsFrameworkCodecs {
 
-  def mainBehavior: Behavior[SequencerMsg] = Behaviors.receive[SequencerMsg] { (ctx, msg) =>
-    import ctx.executionContext
+  private val atMost = 5.seconds
 
+  //BEHAVIOURS
+  def idle: Behavior[EswSequencerMessage] = receive[IdleMessage]("idle") { (ctx, msg) =>
+    import ctx._
     msg match {
       // ===== External Lifecycle =====
       case Shutdown(replyTo)  => shutdown(replyTo)(ctx); Behaviors.same
-      case GoOffline(replyTo) => goOffline()(ctx).foreach(replyTo.tell); intermediateBehavior
-      case Abort(replyTo) => abort(replyTo); Behaviors.same
-      // GoOnline message is not handled since sequencer is by default in online mode
+      case GoOffline(replyTo) => goOffline(replyTo)
 
       // ===== External Editor =====
-      case LoadSequence(sequence, replyTo)         => sequencer.load(sequence).foreach(replyTo.tell); Behaviors.same;
-      case StartSequence(replyTo)                  => sequencer.start().foreach(replyTo.tell); Behaviors.same
-      case LoadAndStartSequence(sequence, replyTo) => sequencer.loadAndStart(sequence).foreach(replyTo.tell); Behaviors.same
+      case LoadSequence(sequence, replyTo) => sequencer.load(sequence).foreach(replyTo.tell); Behaviors.same;
+      case LoadAndStart(sequence, replyTo) => sequencer.loadAndStart(sequence).foreach(replyTo.tell); Behaviors.same
+      case Available(replyTo)              => sequencer.isAvailable.foreach(replyTo.tell); Behaviors.same
+      case GetPreviousSequence(replyTo) => sequencer.getPreviousSequence.foreach(replyTo ! StepListResponse(_)); Behaviors.same
 
+      // ===== Internal =====
+      case PullNext(replyTo) => sequencer.pullNext().foreach(replyTo.tell); Behaviors.same
+    }
+  }
+
+  def loaded: Behavior[EswSequencerMessage] = receive[SequenceLoadedMessage]("loaded") { (ctx, msg) =>
+    import ctx._
+    msg match {
+      // ===== External Lifecycle =====
+      case Shutdown(replyTo)  => shutdown(replyTo)(ctx); Behaviors.stopped
+      case GoOffline(replyTo) => goOffline(replyTo)
+      case StartSequence(replyTo) => sequencer.start().foreach(replyTo.tell); Behaviors.same
+
+      // ===== External Editor =====
+      case Abort(replyTo)                 => abort(replyTo); idle
+      case Available(replyTo)             => sequencer.isAvailable.foreach(replyTo.tell); Behaviors.same
+      case GetSequence(replyTo)           => sequencer.getSequence.foreach(replyTo.tell); Behaviors.same
+      case GetPreviousSequence(replyTo)   => sequencer.getPreviousSequence.foreach(replyTo ! StepListResponse(_)); Behaviors.same
+      case Add(commands, replyTo)         => sequencer.add(commands).foreach(replyTo ! EditorResponse(_)); Behaviors.same
+      case Pause(replyTo)                 => sequencer.pause.foreach(replyTo ! EditorResponse(_)); Behaviors.same
+      case Resume(replyTo)                => sequencer.resume.foreach(replyTo ! EditorResponse(_)); Behaviors.same
+      case Reset(replyTo)                 => sequencer.reset().foreach(replyTo ! EditorResponse(_)); idle
+      case Replace(id, commands, replyTo) => sequencer.replace(id, commands).foreach(replyTo ! EditorResponse(_)); Behaviors.same
+      case Prepend(commands, replyTo)     => sequencer.prepend(commands).foreach(replyTo ! EditorResponse(_)); Behaviors.same
+      case Delete(id, replyTo)            => sequencer.delete(id).foreach(replyTo ! EditorResponse(_)); Behaviors.same
+      case InsertAfter(id, cmds, replyTo) => sequencer.insertAfter(id, cmds).foreach(replyTo ! EditorResponse(_)); Behaviors.same
+      case AddBreakpoint(id, replyTo)     => sequencer.addBreakpoint(id).foreach(replyTo ! EditorResponse(_)); Behaviors.same
+      case RemoveBreakpoint(id, replyTo) => sequencer.removeBreakpoint(id).foreach(replyTo ! EditorResponse(_)); Behaviors.same
+
+      // ===== Internal =====
+      case PullNext(replyTo) => sequencer.pullNext().foreach(replyTo.tell); Behaviors.same
+    }
+  }
+
+  def inProgress: Behavior[EswSequencerMessage] = receive[InProgressMessage]("in-progress") { (ctx, msg) =>
+    import ctx._
+    msg match {
+      // ===== External Lifecycle =====
+      case Shutdown(replyTo) => shutdown(replyTo)(ctx); Behaviors.same
+      case Abort(replyTo) => abort(replyTo); Behaviors.same
+
+      // ===== External Editor =====
       case Available(replyTo)             => sequencer.isAvailable.foreach(replyTo.tell); Behaviors.same
       case GetSequence(replyTo)           => sequencer.getSequence.foreach(replyTo.tell); Behaviors.same
       case GetPreviousSequence(replyTo)   => sequencer.getPreviousSequence.foreach(replyTo ! StepListResponse(_)); Behaviors.same
@@ -68,50 +108,35 @@ class SequencerBehavior(
 
   // $COVERAGE-OFF$
 
-  private def offlineBehavior: Behavior[SequencerMsg] = Behaviors.receive[SequencerMsg] { (context, message) =>
-    import context.executionContext
+  private def offlineBehavior: Behavior[EswSequencerMessage] = receive[OfflineMessage]("offline") { (context, message) =>
+    import context._
     message match {
-      case Shutdown(replyTo) => shutdown(replyTo)(context); Behaviors.same // fixme: should not receive any messages
-      case GoOnline(replyTo) => goOnline().foreach(replyTo.tell); mainBehavior
-      case msg: LifecycleMsg => msg.replyTo ! LifecycleResponse(Left(NotAllowedInOfflineState)); Behaviors.same
-      case msg: LoadSequence =>
-        msg.replyTo ! LoadSequenceResponse(Left(GenericError(NotAllowedInOfflineState.toString))); Behaviors.same
-      case msg: StartSequence        => msg.replyTo ! Error(Id("Invalid"), NotAllowedInOfflineState.toString); Behaviors.same
-      case msg: LoadAndStartSequence => msg.replyTo ! Error(Id("Invalid"), NotAllowedInOfflineState.toString); Behaviors.same
-      case msg: Available            => msg.replyTo ! false; Behaviors.same
-      case msg: GetSequence          => msg.replyTo ! StepList.empty; Behaviors.same
-      case msg: GetPreviousSequence  => msg.replyTo ! StepListResponse(None); Behaviors.same
-      case msg: EditActions          => msg.replyTo ! EditorResponse(Left(NotAllowedInOfflineState)); Behaviors.same
-      case _                         => Behaviors.same
+      case GoOnline(replyTo)            => goOnline().foreach(replyTo.tell); idle
+      case Shutdown(replyTo)            => shutdown(replyTo)(context); Behaviors.stopped
+      case GetPreviousSequence(replyTo) => replyTo ! StepListResponse(None); Behaviors.same
     }
   }
 
-  private def intermediateBehavior: Behavior[SequencerMsg] = Behaviors.receiveMessage[SequencerMsg] {
-    case ChangeBehaviorToOffline => offlineBehavior
-    case ChangeBehaviorToDefault => mainBehavior
-    case _                       => Behaviors.same // do not receive any other commands in transition from online to offline
-  }
-
+  //HANDLERS
   private def goOnline()(implicit ec: ExecutionContext): Future[LifecycleResponse] =
     sequencer.goOnline().map { res =>
       script.executeGoOnline() // recover and log
       LifecycleResponse(res)
     }
 
-  private def goOffline()(implicit ctx: ActorContext[SequencerMsg]): Future[LifecycleResponse] = {
-    import ctx.executionContext
-
-    sequencer.goOffline().map {
-      case res @ Right(_) =>
+  private def goOffline(replyTo: ActorRef[LifecycleResponse]): Behavior[EswSequencerMessage] = {
+    //fixme: this is a temporary blocking. this will be removed after we merge active object
+    val result = Await.result(sequencer.goOffline(), atMost)
+    replyTo ! LifecycleResponse(result)
+    result
+      .map { _ =>
         script.executeGoOffline() // recover and log
-        ctx.self ! ChangeBehaviorToOffline
-        LifecycleResponse(res)
-
-      case res @ Left(_) => ctx.self ! ChangeBehaviorToDefault; LifecycleResponse(res)
-    }
+        offlineBehavior
+      }
+      .getOrElse(Behaviors.same)
   }
 
-  private def shutdown(replyTo: ActorRef[LifecycleResponse])(implicit ctx: ActorContext[SequencerMsg]): Unit = {
+  private def shutdown(replyTo: ActorRef[LifecycleResponse])(implicit ctx: ActorContext[_]): Unit = {
     import ctx.executionContext
 
     sequencer.shutdown()
@@ -132,6 +157,19 @@ class SequencerBehavior(
         case Right(_)                      => script.executeAbort().toEither(ex => AbortError(ex.getMessage))
       }
       .foreach(replyTo ! LifecycleResponse(_))
+
+  protected def receive[B <: EswSequencerMessage: ClassTag](
+      stateName: String
+  )(f: (ActorContext[B], B) => Behavior[EswSequencerMessage]): Behavior[EswSequencerMessage] =
+    Behaviors.receive { (ctx, msg) =>
+      msg match {
+        case m: B => f(ctx, m)
+        case _    =>
+          //fixme: handle the Unhandled
+          //m.replyTo ! Unhandled(stateName, m.getClass.getSimpleName)
+          Behaviors.same
+      }
+    }
 
   // $COVERAGE-ON$
 
