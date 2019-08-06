@@ -5,9 +5,10 @@ import java.net.URI
 import akka.Done
 import akka.actor.CoordinatedShutdown
 import akka.actor.CoordinatedShutdown.UnknownReason
+import akka.actor.typed.ActorSystem
+import akka.actor.typed.scaladsl.Behaviors
 import akka.actor.typed.scaladsl.adapter.TypedActorSystemOps
-import akka.actor.typed.{ActorSystem, SpawnProtocol}
-import csw.location.api.exceptions.OtherLocationIsRegistered
+import csw.location.api.exceptions.{OtherLocationIsRegistered, RegistrationFailed}
 import csw.location.api.scaladsl.{LocationService, RegistrationResult}
 import csw.location.models.ComponentType.Sequencer
 import csw.location.models.Connection.AkkaConnection
@@ -32,9 +33,9 @@ class LocationServiceUtilsTest extends BaseTestSuite {
 
   "register" must {
     "return successful RegistrationResult" in {
-      val system: ActorSystem[SpawnProtocol] = ActorSystem(SpawnProtocol.behavior, "test")
-      val coordinatedShutdown                = CoordinatedShutdown(system.toUntyped)
-      val registrationResult                 = mock[RegistrationResult]
+      val system: ActorSystem[_] = ActorSystem(Behaviors.empty, "test")
+      val coordinatedShutdown    = CoordinatedShutdown(system.toUntyped)
+      val registrationResult     = mock[RegistrationResult]
       when(registrationResult.location).thenReturn(akkaLocation)
       when(registrationResult.unregister()).thenReturn(Future.successful(Done))
       when(locationService.register(registration)).thenReturn(Future(registrationResult))
@@ -47,8 +48,8 @@ class LocationServiceUtilsTest extends BaseTestSuite {
     }
 
     "map location service registration failure to RegistrationError" in {
-      val system: ActorSystem[SpawnProtocol] = ActorSystem(SpawnProtocol.behavior, "test")
-      val errorMsg                           = "error message"
+      val system: ActorSystem[_] = ActorSystem(Behaviors.empty, "test")
+      val errorMsg               = "error message"
       when(locationService.register(registration)).thenReturn(Future.failed(OtherLocationIsRegistered(errorMsg)))
 
       val locationServiceUtils = new LocationServiceUtils(locationService)
@@ -58,6 +59,95 @@ class LocationServiceUtilsTest extends BaseTestSuite {
       )
       system.terminate()
     }
+  }
+
+  "registerWithRetry" must {
+    "return successful RegistrationResult | ESW-144" in {
+      val system              = ActorSystem(Behaviors.empty, "test")
+      val coordinatedShutdown = CoordinatedShutdown(system.toUntyped)
+      val retryCount          = 2
+      val registrationResult  = mock[RegistrationResult]
+
+      when(registrationResult.location).thenReturn(akkaLocation)
+      when(registrationResult.unregister()).thenReturn(Future.successful(Done))
+      when(locationService.register(registration)).thenReturn(Future(registrationResult))
+
+      val locationServiceUtils = new LocationServiceUtils(locationService)
+
+      locationServiceUtils
+        .registerWithRetry(registration, retryCount)(system)
+        .rightValue should ===(
+        akkaLocation
+      )
+      coordinatedShutdown.run(UnknownReason).futureValue
+      verify(registrationResult).unregister()
+    }
+
+    "retry if OtherLocationIsRegistered | ESW-144" in {
+      val system              = ActorSystem(Behaviors.empty, "test")
+      val coordinatedShutdown = CoordinatedShutdown(system.toUntyped)
+      val errorMsg            = "error message"
+      val retryCount          = 1
+      val registrationResult  = mock[RegistrationResult]
+
+      when(registrationResult.location).thenReturn(akkaLocation)
+      when(registrationResult.unregister()).thenReturn(Future.successful(Done))
+      when(locationService.register(registration))
+        .thenReturn(Future.failed(OtherLocationIsRegistered(errorMsg)), Future(registrationResult))
+
+      val locationServiceUtils = new LocationServiceUtils(locationService)
+
+      locationServiceUtils
+        .registerWithRetry(registration, retryCount)(system)
+        .rightValue should ===(
+        akkaLocation
+      )
+      coordinatedShutdown.run(UnknownReason).futureValue
+      verify(registrationResult).unregister()
+    }
+
+    "not retry if RegistrationFailed | ESW-144" in {
+      val system             = ActorSystem(Behaviors.empty, "test")
+      val errorMsg           = "error message"
+      val retryCount         = 3
+      val registrationResult = mock[RegistrationResult]
+
+      when(registrationResult.location).thenReturn(akkaLocation)
+      when(registrationResult.unregister()).thenReturn(Future.successful(Done))
+      when(locationService.register(registration))
+        .thenReturn(Future.failed(RegistrationFailed(errorMsg)), Future(registrationResult))
+
+      val locationServiceUtils = new LocationServiceUtils(locationService)
+
+      locationServiceUtils
+        .registerWithRetry(registration, retryCount)(system)
+        .leftValue should ===(
+        RegistrationError(errorMsg)
+      )
+      system.terminate()
+    }
+
+    "map location service registration failure to RegistrationError if could not register after retry attempts | ESW-144" in {
+      val system     = ActorSystem(Behaviors.empty, "test")
+      val errorMsg   = "error message"
+      val retryCount = 2
+      when(locationService.register(registration))
+        .thenReturn(
+          Future.failed(OtherLocationIsRegistered(errorMsg)),
+          Future.failed(OtherLocationIsRegistered(errorMsg)),
+          Future.failed(OtherLocationIsRegistered(errorMsg))
+        )
+
+      val locationServiceUtils = new LocationServiceUtils(locationService)
+
+      locationServiceUtils
+        .registerWithRetry(registration, retryCount)(system)
+        .leftValue should ===(
+        RegistrationError(errorMsg)
+      )
+      system.terminate()
+    }
+
   }
 
   "listBySubsystem" must {
