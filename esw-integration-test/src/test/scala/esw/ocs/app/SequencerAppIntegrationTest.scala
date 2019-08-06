@@ -22,6 +22,7 @@ import esw.ocs.api.models.messages.SequenceComponentResponses.LoadScriptResponse
 import esw.ocs.app.SequencerAppCommand.{SequenceComponent, Sequencer}
 import esw.ocs.exceptions.ScriptLoadingException.ScriptNotFound
 
+import scala.concurrent.Future
 import scala.concurrent.duration.DurationInt
 
 class SequencerAppIntegrationTest extends ScalaTestFrameworkTestKit with BaseTestSuite {
@@ -72,25 +73,26 @@ class SequencerAppIntegrationTest extends ScalaTestFrameworkTestKit with BaseTes
       val prefixStr      = "test.prefix"
       val prefix: Prefix = Prefix(prefixStr)
 
+      Future { SequencerApp.run(SequenceComponent(prefixStr), false) }
+      Future { SequencerApp.run(SequenceComponent(prefixStr), false) }
+      Future { SequencerApp.run(SequenceComponent(prefixStr), false) }
+
       val uniqueId1              = "1"
       val sequenceComponentName1 = s"${prefix.subsystem}_$uniqueId1"
-      SequencerApp.run(SequenceComponent(prefixStr), enableLogging = false)
-      val connection1           = AkkaConnection(ComponentId(sequenceComponentName1, ComponentType.SequenceComponent))
-      val sequenceCompLocation1 = testLocationService.resolve(connection1, 5.seconds).futureValue.get
+      val connection1            = AkkaConnection(ComponentId(sequenceComponentName1, ComponentType.SequenceComponent))
+      val sequenceCompLocation1  = testLocationService.resolve(connection1, 5.seconds).futureValue.get
       sequenceCompLocation1.connection shouldBe connection1
 
       val uniqueId2              = "2"
       val sequenceComponentName2 = s"${prefix.subsystem}_$uniqueId2"
-      SequencerApp.run(SequenceComponent(prefixStr), enableLogging = false)
-      val connection2           = AkkaConnection(ComponentId(sequenceComponentName2, ComponentType.SequenceComponent))
-      val sequenceCompLocation2 = testLocationService.resolve(connection2, 5.seconds).futureValue.get
+      val connection2            = AkkaConnection(ComponentId(sequenceComponentName2, ComponentType.SequenceComponent))
+      val sequenceCompLocation2  = testLocationService.resolve(connection2, 5.seconds).futureValue.get
       sequenceCompLocation2.connection shouldBe connection2
 
       val uniqueId3              = "3"
       val sequenceComponentName3 = s"${prefix.subsystem}_$uniqueId3"
-      SequencerApp.run(SequenceComponent(prefixStr), enableLogging = false)
-      val connection3           = AkkaConnection(ComponentId(sequenceComponentName3, ComponentType.SequenceComponent))
-      val sequenceCompLocation3 = testLocationService.resolve(connection3, 5.seconds).futureValue.get
+      val connection3            = AkkaConnection(ComponentId(sequenceComponentName3, ComponentType.SequenceComponent))
+      val sequenceCompLocation3  = testLocationService.resolve(connection3, 5.seconds).futureValue.get
       sequenceCompLocation3.connection shouldBe connection3
     }
   }

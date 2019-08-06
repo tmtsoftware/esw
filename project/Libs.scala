@@ -44,7 +44,7 @@ object Akka {
 }
 
 object AkkaHttp {
-  private val Version = "10.1.8" //all akka is Apache License 2.0
+  private val Version = "10.1.9" //all akka is Apache License 2.0
 
   val `akka-http`         = "com.typesafe.akka" %% "akka-http"         % Version
   val `akka-http-testkit` = "com.typesafe.akka" %% "akka-http-testkit" % Version
