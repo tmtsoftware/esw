@@ -1,22 +1,37 @@
 package esw.ocs.core
 
+import akka.Done
 import akka.actor.typed.scaladsl.{ActorContext, Behaviors}
 import akka.actor.typed.{ActorRef, ActorSystem, Behavior}
 import csw.location.api.scaladsl.LocationService
 import csw.location.models.ComponentId
 import csw.location.models.Connection.AkkaConnection
+import csw.params.commands.Sequence
+import csw.params.core.models.Id
 import esw.ocs.api.codecs.OcsFrameworkCodecs
-import esw.ocs.api.models.messages.EditorError.NotAllowedOnFinishedSeq
+import esw.ocs.api.models.messages.EditorError.{NotAllowedOnFinishedSeq, ResetError}
 import esw.ocs.api.models.messages.SequencerMessages._
-import esw.ocs.api.models.messages.SequencerResponses.{EditorResponse, LifecycleResponse, StepListResponse}
-import esw.ocs.api.models.messages.{AbortError, ShutdownError}
+import esw.ocs.api.models.messages.SequencerResponses.{EditorResponse, LifecycleResponse, LoadSequenceResponse, StepListResponse}
+import esw.ocs.api.models.messages.{EditorError, ShutdownError}
+import esw.ocs.api.models.{Step, StepList}
 import esw.ocs.dsl.ScriptDsl
-import esw.ocs.utils.FutureEitherExt._
 
 import scala.concurrent.duration.DurationInt
-import scala.concurrent.{Await, ExecutionContext, Future}
+import scala.concurrent.{Await, ExecutionContext, Future, Promise}
 import scala.reflect.ClassTag
+import scala.util.Try
 import scala.util.control.NonFatal
+
+//todo: make steplist option
+case class SequencerState(
+    stepList: StepList,
+    previousStepList: Option[StepList],
+    readyToExecuteNextPromise: Option[Promise[Done]],
+    stepRefPromise: Option[Promise[Step]]
+)
+object SequencerState {
+  def initial = SequencerState(StepList.empty, None, None, None)
+}
 
 class SequencerBehavior(
     componentId: ComponentId,
@@ -26,18 +41,20 @@ class SequencerBehavior(
 )(implicit val actorSystem: ActorSystem[_])
     extends OcsFrameworkCodecs {
 
+  private val emptyChildId = Id("empty-child") // fixme
+
   private val atMost = 5.seconds
 
   //BEHAVIOURS
-  def idle: Behavior[EswSequencerMessage] = receive[IdleMessage]("idle") { (ctx, msg) =>
+  def idle(state: SequencerState): Behavior[EswSequencerMessage] = receive[IdleMessage]("idle") { (ctx, msg) =>
     import ctx._
     msg match {
       // ===== External Lifecycle =====
-      case Shutdown(replyTo)  => shutdown(replyTo)(ctx); Behaviors.same
+      case Shutdown(replyTo)  => shutdown(replyTo)(ctx)
       case GoOffline(replyTo) => goOffline(replyTo)
 
       // ===== External Editor =====
-      case LoadSequence(sequence, replyTo) => sequencer.load(sequence).foreach(replyTo.tell); Behaviors.same;
+      case LoadSequence(sequence, replyTo) => load(sequence, replyTo, state)
       case LoadAndStart(sequence, replyTo) => sequencer.loadAndStart(sequence).foreach(replyTo.tell); Behaviors.same
       case Available(replyTo)              => sequencer.isAvailable.foreach(replyTo.tell); Behaviors.same
       case GetPreviousSequence(replyTo) => sequencer.getPreviousSequence.foreach(replyTo ! StepListResponse(_)); Behaviors.same
@@ -47,8 +64,7 @@ class SequencerBehavior(
     }
   }
 
-  def loaded: Behavior[EswSequencerMessage] = receive[SequenceLoadedMessage]("loaded") { (ctx, msg) =>
-    import ctx._
+  def loaded(state: SequencerState): Behavior[EswSequencerMessage] = receive[SequenceLoadedMessage]("loaded") { (ctx, msg) =>
     msg match {
       // ===== External Lifecycle =====
       case Shutdown(replyTo)  => shutdown(replyTo)(ctx); Behaviors.stopped
@@ -56,19 +72,21 @@ class SequencerBehavior(
       case StartSequence(replyTo) => sequencer.start().foreach(replyTo.tell); Behaviors.same
 
       // ===== External Editor =====
-      case Abort(replyTo)                 => abort(replyTo); idle
-      case Available(replyTo)             => sequencer.isAvailable.foreach(replyTo.tell); Behaviors.same
-      case GetSequence(replyTo)           => sequencer.getSequence.foreach(replyTo.tell); Behaviors.same
-      case GetPreviousSequence(replyTo)   => sequencer.getPreviousSequence.foreach(replyTo ! StepListResponse(_)); Behaviors.same
-      case Add(commands, replyTo)         => sequencer.add(commands).foreach(replyTo ! EditorResponse(_)); Behaviors.same
-      case Pause(replyTo)                 => sequencer.pause.foreach(replyTo ! EditorResponse(_)); Behaviors.same
-      case Resume(replyTo)                => sequencer.resume.foreach(replyTo ! EditorResponse(_)); Behaviors.same
-      case Reset(replyTo)                 => sequencer.reset().foreach(replyTo ! EditorResponse(_)); idle
-      case Replace(id, commands, replyTo) => sequencer.replace(id, commands).foreach(replyTo ! EditorResponse(_)); Behaviors.same
-      case Prepend(commands, replyTo)     => sequencer.prepend(commands).foreach(replyTo ! EditorResponse(_)); Behaviors.same
-      case Delete(id, replyTo)            => sequencer.delete(id).foreach(replyTo ! EditorResponse(_)); Behaviors.same
-      case InsertAfter(id, cmds, replyTo) => sequencer.insertAfter(id, cmds).foreach(replyTo ! EditorResponse(_)); Behaviors.same
-      case AddBreakpoint(id, replyTo)     => sequencer.addBreakpoint(id).foreach(replyTo ! EditorResponse(_)); Behaviors.same
+      case Abort(replyTo)               => abort(replyTo); idle
+      case Available(replyTo)           => sequencer.isAvailable.foreach(replyTo.tell); Behaviors.same
+      case GetSequence(replyTo)         => sequencer.getSequence.foreach(replyTo.tell); Behaviors.same
+      case GetPreviousSequence(replyTo) => sequencer.getPreviousSequence.foreach(replyTo ! StepListResponse(_)); Behaviors.same
+      case Add(commands, replyTo)       => sequencer.add(commands).foreach(replyTo ! EditorResponse(_)); Behaviors.same
+      case Pause(replyTo)               => sequencer.pause.foreach(replyTo ! EditorResponse(_)); Behaviors.same
+      case Resume(replyTo)              => sequencer.resume.foreach(replyTo ! EditorResponse(_)); Behaviors.same
+      case Reset(replyTo)               => sequencer.reset().foreach(replyTo ! EditorResponse(_)); idle
+      case Replace(id, commands, replyTo) =>
+        sequencer.replace(id, commands).foreach(replyTo ! EditorResponse(_)); Behaviors.same
+      case Prepend(commands, replyTo) => sequencer.prepend(commands).foreach(replyTo ! EditorResponse(_)); Behaviors.same
+      case Delete(id, replyTo)        => sequencer.delete(id).foreach(replyTo ! EditorResponse(_)); Behaviors.same
+      case InsertAfter(id, cmds, replyTo) =>
+        sequencer.insertAfter(id, cmds).foreach(replyTo ! EditorResponse(_)); Behaviors.same
+      case AddBreakpoint(id, replyTo) => sequencer.addBreakpoint(id).foreach(replyTo ! EditorResponse(_)); Behaviors.same
       case RemoveBreakpoint(id, replyTo) => sequencer.removeBreakpoint(id).foreach(replyTo ! EditorResponse(_)); Behaviors.same
 
       // ===== Internal =====
@@ -76,8 +94,7 @@ class SequencerBehavior(
     }
   }
 
-  def inProgress: Behavior[EswSequencerMessage] = receive[InProgressMessage]("in-progress") { (ctx, msg) =>
-    import ctx._
+  def inProgress(state: SequencerState): Behavior[EswSequencerMessage] = receive[InProgressMessage]("in-progress") { (ctx, msg) =>
     msg match {
       // ===== External Lifecycle =====
       case Shutdown(replyTo) => shutdown(replyTo)(ctx); Behaviors.same
@@ -106,10 +123,7 @@ class SequencerBehavior(
     }
   }
 
-  // $COVERAGE-OFF$
-
-  private def offlineBehavior: Behavior[EswSequencerMessage] = receive[OfflineMessage]("offline") { (context, message) =>
-    import context._
+  def offline(state: SequencerState): Behavior[EswSequencerMessage] = receive[OfflineMessage]("offline") { (context, message) =>
     message match {
       case GoOnline(replyTo)            => goOnline().foreach(replyTo.tell); idle
       case Shutdown(replyTo)            => shutdown(replyTo)(context); Behaviors.stopped
@@ -117,46 +131,71 @@ class SequencerBehavior(
     }
   }
 
-  //HANDLERS
-  private def goOnline()(implicit ec: ExecutionContext): Future[LifecycleResponse] =
-    sequencer.goOnline().map { res =>
-      script.executeGoOnline() // recover and log
-      LifecycleResponse(res)
-    }
+  // $COVERAGE-OFF$
 
-  private def goOffline(replyTo: ActorRef[LifecycleResponse]): Behavior[EswSequencerMessage] = {
-    //fixme: this is a temporary blocking. this will be removed after we merge active object
-    val result = Await.result(sequencer.goOffline(), atMost)
-    replyTo ! LifecycleResponse(result)
-    result
-      .map { _ =>
-        script.executeGoOffline() // recover and log
-        offlineBehavior
-      }
-      .getOrElse(Behaviors.same)
+  def load(sequence: Sequence, replyTo: ActorRef[LoadSequenceResponse], state: SequencerState): Behavior[EswSequencerMessage] = {
+    StepList(sequence) match {
+      case Left(err) =>
+        replyTo ! LoadSequenceResponse(Left(err))
+        Behaviors.same
+      case Right(x) =>
+        replyTo ! LoadSequenceResponse(Right(Done))
+        loaded(state.copy(stepList = x))
+    }
   }
 
-  private def shutdown(replyTo: ActorRef[LifecycleResponse])(implicit ctx: ActorContext[_]): Unit = {
-    import ctx.executionContext
-
-    sequencer.shutdown()
-    locationService
-      .unregister(AkkaConnection(componentId))
-      .flatMap(_ => script.executeShutdown().toEither(ex => ShutdownError(ex.getMessage)))
-      .recover { case NonFatal(ex) => Left(ShutdownError(ex.getMessage)) }
-      .foreach(replyTo ! LifecycleResponse(_))
-    //fixme: can we avoid abruptly terminating the system?
-    ctx.system.terminate
+  private def shutdown(replyTo: ActorRef[LifecycleResponse])(
+      implicit ctx: ActorContext[_]
+  ): Behavior[EswSequencerMessage] = {
+    //todo: this blocking is temporary and will go away when shutdown story is played
+    Try {
+      Await.result(
+        locationService
+          .unregister(AkkaConnection(componentId)),
+        atMost
+      )
+      Try {
+        Await.result(script.executeShutdown(), atMost) //todo: log this
+      }
+      replyTo ! LifecycleResponse(Right(Done))
+      //fixme : this is not safe. not sure of previous message is sent yet.
+      // to be looked at in shutdown story
+      ctx.system.terminate
+      Behaviors.stopped[EswSequencerMessage]
+    }.recover {
+      case NonFatal(err) =>
+        replyTo ! LifecycleResponse(
+          Left(
+            ShutdownError(
+              "could not unregister sequencer\n" +
+                err.getMessage
+            )
+          )
+        )
+        Behaviors.same[EswSequencerMessage]
+    }.get
   }
 
   private def abort(replyTo: ActorRef[LifecycleResponse])(implicit ec: ExecutionContext): Unit =
-    sequencer
       .reset()
       .flatMap {
         case Left(NotAllowedOnFinishedSeq) => Future.successful(Left(AbortError("Not Allowed on Finished Sequence")))
         case Right(_)                      => script.executeAbort().toEither(ex => AbortError(ex.getMessage))
       }
       .foreach(replyTo ! LifecycleResponse(_))
+
+  def reset(): Future[Either[ResetError, Done]] = updateStepListResult(stepList.discardPending)
+
+  // stepListResultFunc is by name because all StepList operations must execute on strandEc
+  private def updateStepListResult[T <: EditorError](stepListResultFunc: => Either[T, StepList]) = {
+    val stepListResult = stepListResultFunc
+    stepListResult.map { s =>
+      stepList = s
+      checkForSequenceCompletion()
+      completeStepRefPromise()
+      Done
+    }
+  }
 
   protected def receive[B <: EswSequencerMessage: ClassTag](
       stateName: String
@@ -170,6 +209,19 @@ class SequencerBehavior(
           Behaviors.same
       }
     }
+
+  //HANDLERS
+  private def goOnline()(implicit ec: ExecutionContext): Future[LifecycleResponse] =
+    sequencer.goOnline().map { res =>
+      script.executeGoOnline() // recover and log
+      LifecycleResponse(res)
+    }
+
+  private def goOffline(replyTo: ActorRef[LifecycleResponse]): Behavior[EswSequencerMessage] = {
+    replyTo ! LifecycleResponse(Right(Done))
+    script.executeGoOffline() // recover and log
+    offline
+  }
 
   // $COVERAGE-ON$
 

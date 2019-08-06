@@ -10,10 +10,10 @@ final case class RegistrationError(msg: String) extends OcsFrameworkAkkaSerializ
 
 sealed trait LifecycleError extends OcsFrameworkAkkaSerializable
 
-final case class GoOnlineError(msg: String)  extends LifecycleError
-final case class GoOfflineError(msg: String) extends LifecycleError
-final case class ShutdownError(msg: String)  extends LifecycleError
-final case class AbortError(msg: String)     extends LifecycleError
+//final case class GoOnlineError(msg: String)  extends LifecycleError
+//final case class GoOfflineError(msg: String) extends LifecycleError
+final case class ShutdownError(msg: String) extends LifecycleError
+//final case class AbortError(msg: String)     extends LifecycleError
 
 case object NotAllowedInOfflineState extends LifecycleError with EditorError
 
@@ -40,23 +40,6 @@ object EditorError {
       with DeleteError
       with InsertError
       with RemoveBreakpointError
-
-  case class Unhandled(state: String, messageType: String)
-      extends AddBreakpointError
-      with PauseError
-      with UpdateError
-      with AddError
-      with ResumeError
-      with ResetError
-      with ReplaceError
-      with PrependError
-      with DeleteError
-      with InsertError
-      with RemoveBreakpointError
-      with LifecycleError
-      with SequenceError {
-    val description = s"Sequencer can not accept '$messageType' message in '$state' state"
-  }
 
   final case class IdDoesNotExist(id: Id)
       extends ReplaceError

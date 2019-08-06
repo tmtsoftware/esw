@@ -7,10 +7,10 @@ import csw.params.commands.CommandResponse.{Completed, Error, Started, SubmitRes
 import csw.params.commands.{CommandResponse, Sequence, SequenceCommand}
 import csw.params.core.models.Id
 import esw.ocs.api.models.StepStatus._
+import esw.ocs.api.models.messages.EditorError
 import esw.ocs.api.models.messages.EditorError._
 import esw.ocs.api.models.messages.SequenceError.ExistingSequenceIsInProcess
 import esw.ocs.api.models.messages.SequencerResponses.LoadSequenceResponse
-import esw.ocs.api.models.messages.{EditorError, GoOfflineError, GoOnlineError}
 import esw.ocs.api.models.{Step, StepList, StepStatus}
 import esw.ocs.dsl.Async.{async, await}
 import esw.ocs.macros.StrandEc
@@ -35,14 +35,6 @@ private[ocs] class Sequencer(crm: CommandResponseManager)(implicit strandEc: Str
   def goOnline(): Future[Either[GoOnlineError, Done]] = async {
     online = true
     Right(Done)
-  }
-
-  def goOffline(): Future[Either[GoOfflineError, Done]] = async {
-    if (!sequencerAvailable) Left(GoOfflineError("Cannot go offline when sequence is under execution"))
-    else {
-      online = false
-      Right(Done)
-    }
   }
 
   def load(sequence: Sequence): Future[LoadSequenceResponse] = async {
@@ -114,14 +106,10 @@ private[ocs] class Sequencer(crm: CommandResponseManager)(implicit strandEc: Str
 
   def resume: Future[Either[ResumeError, Done]] = updateStepListResult(stepList.resume)
 
-  def reset(): Future[Either[ResetError, Done]] = updateStepListResult(stepList.discardPending)
-
   def addBreakpoint(id: Id): Future[Either[AddBreakpointError, Done]] = updateStepListResult(stepList.addBreakpoint(id))
 
   def removeBreakpoint(id: Id): Future[Either[RemoveBreakpointError, Done]] =
     updateStepListResult(stepList.removeBreakpoint(id))
-
-  def shutdown(): Unit = strandEc.shutdown()
 
   private def updateStepList(newStepList: StepList): Unit = {
     if (!stepList.isEmpty)
