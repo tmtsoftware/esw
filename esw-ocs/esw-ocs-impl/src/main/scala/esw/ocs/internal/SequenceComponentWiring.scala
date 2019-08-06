@@ -1,8 +1,8 @@
 package esw.ocs.internal
 
+import akka.actor.typed.ActorRef
 import akka.actor.typed.SpawnProtocol.Spawn
 import akka.actor.typed.scaladsl.AskPattern.Askable
-import akka.actor.typed.{ActorRef, ActorSystem}
 import csw.location.api.extensions.ActorExtension.RichActor
 import csw.location.api.scaladsl.LocationService
 import csw.location.client.scaladsl.HttpLocationServiceFactory
@@ -13,8 +13,6 @@ import esw.ocs.api.models.messages.{RegistrationError, SequenceComponentMsg}
 import esw.ocs.core.SequenceComponentBehavior
 import esw.ocs.syntax.FutureSyntax.FutureOps
 import esw.ocs.utils.LocationServiceUtils
-
-import scala.concurrent.ExecutionContext
 
 // $COVERAGE-OFF$
 private[ocs] class SequenceComponentWiring(prefixStr: String) {
@@ -31,9 +29,8 @@ private[ocs] class SequenceComponentWiring(prefixStr: String) {
 
   private lazy val locationServiceUtils: LocationServiceUtils = new LocationServiceUtils(locationService)
 
-  def registration()(implicit actorSystem: ActorSystem[_]): AkkaRegistration = {
-    val subsystem                     = prefix.subsystem
-    implicit val ec: ExecutionContext = actorSystem.executionContext
+  def registration(): AkkaRegistration = {
+    val subsystem = prefix.subsystem
     locationServiceUtils
       .listBy(subsystem, ComponentType.SequenceComponent)
       .map { sequenceComponents =>

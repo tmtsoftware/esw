@@ -16,7 +16,7 @@ import esw.ocs.api.models.messages.SequencerMessages._
 import esw.ocs.api.models.messages.SequencerResponses.{EditorResponse, LifecycleResponse, LoadSequenceResponse, StepListResponse}
 import esw.ocs.api.models.messages.{AbortError, NotAllowedInOfflineState, ShutdownError}
 import esw.ocs.dsl.ScriptDsl
-import esw.ocs.utils.FutureEitherExt._
+import esw.ocs.syntax.FutureSyntax.FutureOps
 
 import scala.concurrent.{ExecutionContext, Future}
 import scala.util.control.NonFatal
