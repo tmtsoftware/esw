@@ -8,7 +8,7 @@ import csw.location.models.Connection.AkkaConnection
 import csw.location.models.{AkkaLocation, ComponentId, ComponentType, Location}
 import csw.testkit.scaladsl.ScalaTestFrameworkTestKit
 import esw.ocs.BaseTestSuite
-import esw.ocs.api.models.messages.SequenceComponentMsg.{GetStatus, LoadScript, UnloadScript}
+import esw.ocs.api.models.messages.SequenceComponentMsg._
 import esw.ocs.api.models.messages.SequenceComponentResponses.{GetStatusResponse, LoadScriptResponse}
 import esw.ocs.api.models.messages.{RegistrationError, SequenceComponentMsg}
 
@@ -95,6 +95,14 @@ class SequenceComponentBehaviorTest extends ScalaTestFrameworkTestKit with BaseT
 
       //Assert if UnloadScript returns Done
       unloadScriptResponseProbe.expectMessage(Done)
+    }
+
+    "get killed if stop msg is received | ESW-103, ESW-214" in {
+      val behaviorTestKit = createBehaviorTestKit()
+
+      behaviorTestKit.run(Stop)
+
+      behaviorTestKit.isAlive shouldEqual false
     }
   }
 }

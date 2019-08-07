@@ -5,23 +5,26 @@ import java.net.URI
 import akka.Done
 import akka.actor.CoordinatedShutdown
 import akka.actor.CoordinatedShutdown.UnknownReason
-import akka.actor.typed.ActorSystem
+import akka.actor.testkit.typed.scaladsl.{ScalaTestWithActorTestKit, TestProbe}
 import akka.actor.typed.scaladsl.Behaviors
 import akka.actor.typed.scaladsl.adapter.TypedActorSystemOps
+import akka.actor.typed.{ActorSystem, SpawnProtocol}
 import csw.location.api.exceptions.{OtherLocationIsRegistered, RegistrationFailed}
+import csw.location.api.extensions.ActorExtension.RichActor
 import csw.location.api.scaladsl.{LocationService, RegistrationResult}
-import csw.location.models.ComponentType.Sequencer
+import csw.location.models.ComponentType.{SequenceComponent, Sequencer}
 import csw.location.models.Connection.AkkaConnection
 import csw.location.models.{AkkaLocation, AkkaRegistration, ComponentId, ComponentType}
 import csw.params.core.models.{Prefix, Subsystem}
 import esw.ocs.BaseTestSuite
-import esw.ocs.api.models.messages.RegistrationError
+import esw.ocs.api.models.messages.SequenceComponentMsg.Stop
+import esw.ocs.api.models.messages.{RegistrationError, SequenceComponentMsg}
 import org.mockito.Mockito.{verify, when}
 
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future
 
-class LocationServiceUtilsTest extends BaseTestSuite {
+class LocationServiceUtilsTest extends ScalaTestWithActorTestKit with BaseTestSuite {
 
   private val locationService = mock[LocationService]
 
@@ -83,12 +86,19 @@ class LocationServiceUtilsTest extends BaseTestSuite {
       verify(registrationResult).unregister()
     }
 
-    "retry if OtherLocationIsRegistered | ESW-144" in {
-      val system              = ActorSystem(Behaviors.empty, "test")
-      val coordinatedShutdown = CoordinatedShutdown(system.toUntyped)
-      val errorMsg            = "error message"
-      val retryCount          = 1
-      val registrationResult  = mock[RegistrationResult]
+    "retry if OtherLocationIsRegistered | ESW-144, ESW-214" in {
+      implicit val system: ActorSystem[SpawnProtocol] = ActorSystem(SpawnProtocol.behavior, "test")
+      val coordinatedShutdown                         = CoordinatedShutdown(system.toUntyped)
+      val errorMsg                                    = "error message"
+      val retryCount                                  = 1
+      val registrationResult                          = mock[RegistrationResult]
+
+      val prefix                                                  = Prefix("tcs.home.datum")
+      val sequenceComponentProbe: TestProbe[SequenceComponentMsg] = TestProbe[SequenceComponentMsg]()
+      val akkaConnection                                          = AkkaConnection(ComponentId("ocs", SequenceComponent))
+      val uri                                                     = sequenceComponentProbe.ref.toURI
+      val registration                                            = AkkaRegistration(akkaConnection, prefix, uri)
+      val akkaLocation                                            = AkkaLocation(akkaConnection, prefix, uri)
 
       when(registrationResult.location).thenReturn(akkaLocation)
       when(registrationResult.unregister()).thenReturn(Future.successful(Done))
@@ -102,6 +112,9 @@ class LocationServiceUtilsTest extends BaseTestSuite {
         .rightValue should ===(
         akkaLocation
       )
+
+      //expect probe actor gets stop message if OtherLocationIsRegistered
+      sequenceComponentProbe.expectMessage(Stop)
       coordinatedShutdown.run(UnknownReason).futureValue
       verify(registrationResult).unregister()
     }

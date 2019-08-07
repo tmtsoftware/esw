@@ -35,7 +35,7 @@ class SequencerAppIntegrationTest extends ScalaTestFrameworkTestKit with BaseTes
   override implicit def patienceConfig: PatienceConfig = PatienceConfig(15.seconds, 10.milli)
 
   "SequenceComponent command" must {
-    "start sequence component with provided prefix and register it with location service | ESW-102, ESW-103, ESW-147, ESW-151" in {
+    "start sequence component with provided prefix and register it with location service | ESW-102, ESW-103, ESW-147, ESW-151, ESW-214" in {
       val prefixStr             = "esw.test.prefix"
       val prefix: Prefix        = Prefix(prefixStr)
       val uniqueId              = "1"
@@ -57,6 +57,10 @@ class SequencerAppIntegrationTest extends ScalaTestFrameworkTestKit with BaseTes
       // verify that loaded sequencer is started and able to process sequence command
       val response          = probe.expectMessageType[LoadScriptResponse]
       val sequencerLocation = response.response.rightValue
+
+      //verify sequencerName has SequenceComponentName
+      val actualSequencerName: String = sequencerLocation.connection.componentId.name
+      actualSequencerName shouldEqual s"$sequenceComponentName@testSequencerId1@testObservingMode1"
 
       val commandService = new SequencerCommandServiceImpl(sequencerLocation)
       val setup          = Setup(Prefix("wfos.home.datum"), CommandName("command-1"), None)
