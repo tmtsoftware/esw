@@ -15,15 +15,14 @@ import esw.ocs.syntax.FutureSyntax.FutureOps
 import esw.ocs.utils.LocationServiceUtils
 
 // $COVERAGE-OFF$
-private[ocs] class SequenceComponentWiring(prefixStr: String) {
+private[ocs] class SequenceComponentWiring(prefix: Prefix) {
   private val registrationRetryCount = 10
-  private val prefix: Prefix         = Prefix(prefixStr)
 
-  lazy val actorRuntime = new ActorRuntime(prefixStr)
+  lazy val actorRuntime = new ActorRuntime(prefix.prefix)
   import actorRuntime._
 
   lazy val sequenceComponentRef: ActorRef[SequenceComponentMsg] =
-    (typedSystem ? Spawn(SequenceComponentBehavior.behavior, prefixStr)).block
+    (typedSystem ? Spawn(SequenceComponentBehavior.behavior, prefix.prefix)).block
 
   private lazy val locationService: LocationService = HttpLocationServiceFactory.makeLocalClient
 

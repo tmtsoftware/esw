@@ -5,7 +5,7 @@ import csw.location.client.utils.LocationServerStatus
 import csw.location.models.AkkaLocation
 import csw.logging.api.scaladsl.Logger
 import esw.ocs.api.models.messages.RegistrationError
-import esw.ocs.app.SequencerAppCommand.{SequenceComponent, Sequencer}
+import esw.ocs.app.SequencerAppCommand._
 import esw.ocs.internal.{ActorRuntime, SequenceComponentWiring, SequencerWiring}
 
 import scala.util.control.NonFatal
@@ -24,14 +24,14 @@ object SequencerApp extends CommandApp[SequencerAppCommand] {
     command match {
       case SequenceComponent(prefix) =>
         val wiring = new SequenceComponentWiring(prefix)
-        startSequenceComponent(prefix, wiring, enableLogging)
+        startSequenceComponent(wiring, enableLogging)
 
       case Sequencer(id, mode) =>
         val wiring = new SequencerWiring(id, mode)
         startSequencer(wiring, enableLogging)
     }
 
-  def startSequenceComponent(prefix: String, sequenceComponentWiring: SequenceComponentWiring, enableLogging: Boolean): Unit = {
+  def startSequenceComponent(sequenceComponentWiring: SequenceComponentWiring, enableLogging: Boolean): Unit = {
     import sequenceComponentWiring._
     withLogging(actorRuntime, enableLogging) {
       sequenceComponentWiring.start()

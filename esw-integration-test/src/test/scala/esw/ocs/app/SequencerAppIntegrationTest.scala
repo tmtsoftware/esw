@@ -42,7 +42,7 @@ class SequencerAppIntegrationTest extends ScalaTestFrameworkTestKit with BaseTes
       val sequenceComponentName = s"${prefix.subsystem}_$uniqueId"
 
       // start Sequence Component
-      SequencerApp.run(SequenceComponent(prefixStr), enableLogging = false)
+      SequencerApp.run(SequenceComponent(prefix), enableLogging = false)
 
       // verify Sequence component is started and registered with location service
       val connection           = AkkaConnection(ComponentId(sequenceComponentName, ComponentType.SequenceComponent))
@@ -73,9 +73,9 @@ class SequencerAppIntegrationTest extends ScalaTestFrameworkTestKit with BaseTes
       val prefixStr      = "test.prefix"
       val prefix: Prefix = Prefix(prefixStr)
 
-      Future { SequencerApp.run(SequenceComponent(prefixStr), false) }
-      Future { SequencerApp.run(SequenceComponent(prefixStr), false) }
-      Future { SequencerApp.run(SequenceComponent(prefixStr), false) }
+      Future { SequencerApp.run(SequenceComponent(prefix), false) }
+      Future { SequencerApp.run(SequenceComponent(prefix), false) }
+      Future { SequencerApp.run(SequenceComponent(prefix), false) }
 
       val uniqueId1              = "1"
       val sequenceComponentName1 = s"${prefix.subsystem}_$uniqueId1"
