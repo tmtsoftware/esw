@@ -7,7 +7,7 @@ import esw.ocs.exceptions.ScriptLoadingException.ScriptConfigurationMissingExcep
 private[internal] final case class SequencerConfig(sequencerName: String, prefix: Prefix, scriptClass: String)
 
 private[internal] object SequencerConfig {
-  def from(config: Config, sequencerId: String, observingMode: String): SequencerConfig = {
+  def from(config: Config, sequencerId: String, observingMode: String, sequenceComponentName: Option[String]): SequencerConfig = {
     val scriptConfig =
       try {
         config.getConfig(s"scripts.$sequencerId.$observingMode")
@@ -15,10 +15,14 @@ private[internal] object SequencerConfig {
         case _: ConfigException.Missing => throw new ScriptConfigurationMissingException(sequencerId, observingMode)
       }
 
-    val name        = s"$sequencerId@$observingMode"
+    val sequencerName = sequenceComponentName match {
+      case Some(name) => s"$name@$sequencerId@$observingMode"
+      case None       => s"$sequencerId@$observingMode"
+    }
+
     val prefix      = scriptConfig.getString("prefix")
     val scriptClass = scriptConfig.getString("scriptClass")
 
-    SequencerConfig(name, Prefix(prefix), scriptClass)
+    SequencerConfig(sequencerName, Prefix(prefix), scriptClass)
   }
 }

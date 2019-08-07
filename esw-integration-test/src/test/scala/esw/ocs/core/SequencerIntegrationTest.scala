@@ -47,7 +47,7 @@ class SequencerIntegrationTest extends ScalaTestFrameworkTestKit with BaseTestSu
   }
 
   override protected def beforeEach(): Unit = {
-    wiring = new SequencerWiring("testSequencerId1", "testObservingMode1")
+    wiring = new SequencerWiring("testSequencerId1", "testObservingMode1", None)
     wiring.start()
     sequencer = resolveSequencer()
   }

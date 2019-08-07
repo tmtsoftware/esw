@@ -4,18 +4,18 @@ import akka.Done
 import akka.actor.typed.Behavior
 import akka.actor.typed.scaladsl.Behaviors
 import csw.location.models.AkkaLocation
-import esw.ocs.api.models.messages.SequenceComponentMsg.{GetStatus, LoadScript, UnloadScript}
+import esw.ocs.api.models.messages.SequenceComponentMsg.{GetStatus, LoadScript, Stop, UnloadScript}
 import esw.ocs.api.models.messages.SequenceComponentResponses.{GetStatusResponse, LoadScriptResponse}
 import esw.ocs.api.models.messages.{RegistrationError, SequenceComponentMsg}
 import esw.ocs.internal.SequencerWiring
 
 object SequenceComponentBehavior {
 
-  def behavior: Behavior[SequenceComponentMsg] = {
+  def behavior(sequenceComponentName: String): Behavior[SequenceComponentMsg] = {
 
     lazy val idle: Behavior[SequenceComponentMsg] = Behaviors.receiveMessage[SequenceComponentMsg] {
       case LoadScript(sequencerId, observingMode, replyTo) =>
-        val wiring             = new SequencerWiring(sequencerId, observingMode)
+        val wiring             = new SequencerWiring(sequencerId, observingMode, Some(sequenceComponentName))
         val registrationResult = wiring.start()
         replyTo ! LoadScriptResponse(registrationResult)
         registrationResult.map(x => running(wiring, x)).getOrElse(Behaviors.same)
@@ -25,6 +25,7 @@ object SequenceComponentBehavior {
       case UnloadScript(replyTo) =>
         replyTo ! Done
         Behaviors.same
+      case Stop => Behaviors.stopped
     }
 
     def running(wiring: SequencerWiring, location: AkkaLocation): Behavior[SequenceComponentMsg] =
@@ -41,6 +42,7 @@ object SequenceComponentBehavior {
           case LoadScript(_, _, replyTo) =>
             replyTo ! LoadScriptResponse(Left(RegistrationError("Loading script failed: Sequencer already running")))
             Behaviors.same
+          case _ => Behaviors.same //fixme: need to finalize strategy for unhandled msgs
         }
       }
     idle

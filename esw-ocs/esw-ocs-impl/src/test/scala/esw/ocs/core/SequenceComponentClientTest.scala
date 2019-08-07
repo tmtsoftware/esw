@@ -10,7 +10,7 @@ import csw.location.models.{AkkaLocation, ComponentId, ComponentType}
 import csw.params.core.models.Prefix
 import esw.ocs.BaseTestSuite
 import esw.ocs.api.models.messages.SequenceComponentMsg
-import esw.ocs.api.models.messages.SequenceComponentMsg.{GetStatus, LoadScript, UnloadScript}
+import esw.ocs.api.models.messages.SequenceComponentMsg.{GetStatus, LoadScript, Stop, UnloadScript}
 import esw.ocs.api.models.messages.SequenceComponentResponses.{GetStatusResponse, LoadScriptResponse}
 
 class SequenceComponentClientTest extends ScalaTestWithActorTestKit with BaseTestSuite {
@@ -24,6 +24,7 @@ class SequenceComponentClientTest extends ScalaTestWithActorTestKit with BaseTes
       case LoadScript(_, _, replyTo) => replyTo ! loadScriptResponse
       case GetStatus(replyTo)        => replyTo ! getStatusResponse
       case UnloadScript(replyTo)     => replyTo ! Done
+      case Stop                      => Behaviors.stopped
     }
     Behaviors.same
   }

@@ -22,7 +22,7 @@ class SequencerCommandServiceTest extends ScalaTestFrameworkTestKit with BaseTes
 
   override def beforeAll(): Unit = {
     super.beforeAll()
-    wiring = new SequencerWiring("testSequencerId1", "testObservingMode1")
+    wiring = new SequencerWiring("testSequencerId1", "testObservingMode1", None)
     sequencerLocation = wiring.start()
   }
 

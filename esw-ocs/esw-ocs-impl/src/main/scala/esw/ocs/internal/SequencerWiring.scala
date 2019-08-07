@@ -23,11 +23,10 @@ import esw.ocs.utils.LocationServiceUtils
 
 import scala.concurrent.Future
 // $COVERAGE-OFF$
-private[ocs] class SequencerWiring(val sequencerId: String, val observingMode: String) {
+private[ocs] class SequencerWiring(val sequencerId: String, val observingMode: String, sequenceComponentName: Option[String]) {
   private lazy val config          = ConfigFactory.load()
-  private lazy val sequencerConfig = SequencerConfig.from(config, sequencerId, observingMode)
+  private lazy val sequencerConfig = SequencerConfig.from(config, sequencerId, observingMode, sequenceComponentName)
   import sequencerConfig._
-  lazy val name: String = sequencerName
   lazy val actorRuntime = new ActorRuntime(sequencerName)
   import actorRuntime._
 

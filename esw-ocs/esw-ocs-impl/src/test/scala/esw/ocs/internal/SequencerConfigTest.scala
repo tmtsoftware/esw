@@ -12,7 +12,7 @@ class SequencerConfigTest extends BaseTestSuite {
     "create SequencerConfig based on sequencerId and observingMode | ESW-103" in {
       val sequencerId      = "testSequencerId1"
       val observingMode    = "testObservingMode1"
-      val sequencerConfigs = SequencerConfig.from(config, sequencerId, observingMode)
+      val sequencerConfigs = SequencerConfig.from(config, sequencerId, observingMode, None)
 
       sequencerConfigs.sequencerName should ===("testSequencerId1@testObservingMode1")
       sequencerConfigs.prefix should ===(Prefix("esw.ocs.prefix1"))
@@ -24,7 +24,7 @@ class SequencerConfigTest extends BaseTestSuite {
       val observingMode = "invalidObservingMode"
 
       val exception = intercept[ScriptConfigurationMissingException] {
-        SequencerConfig.from(config, sequencerId, observingMode)
+        SequencerConfig.from(config, sequencerId, observingMode, None)
       }
       exception.getMessage should ===(s"Script configuration missing for $sequencerId with $observingMode")
     }

@@ -7,7 +7,7 @@ import esw.ocs.api.models.StepStatus.Finished.{Failure, Success}
 import esw.ocs.api.models.StepStatus._
 import esw.ocs.api.models._
 import esw.ocs.api.models.messages.EditorError._
-import esw.ocs.api.models.messages.SequenceComponentMsg.{GetStatus, LoadScript, UnloadScript}
+import esw.ocs.api.models.messages.SequenceComponentMsg._
 import esw.ocs.api.models.messages.SequenceComponentResponses.{GetStatusResponse, LoadScriptResponse}
 import esw.ocs.api.models.messages.SequenceError.{DuplicateIdsFound, ExistingSequenceIsInProcess, GenericError}
 import esw.ocs.api.models.messages.SequencerMessages.{ExternalEditorMsg, _}
@@ -93,6 +93,7 @@ trait OcsFrameworkCodecs extends MessageCodecs with DoneCodec {
   implicit lazy val loadScriptErrorCodec: Codec[RegistrationError]         = deriveCodec[RegistrationError]
   implicit lazy val getStatusCodec: Codec[GetStatus]                       = deriveCodec[GetStatus]
   implicit lazy val unloadScriptCodec: Codec[UnloadScript]                 = deriveCodec[UnloadScript]
+  implicit lazy val stopCodec: Codec[Stop.type]                            = singletonCodec(Stop)
   implicit lazy val sequenceComponentMsgCodec: Codec[SequenceComponentMsg] = deriveCodec[SequenceComponentMsg]
 
   //SequenceComponentResponse Codecs

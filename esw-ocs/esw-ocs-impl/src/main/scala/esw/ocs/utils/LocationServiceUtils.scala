@@ -4,10 +4,12 @@ import akka.actor.CoordinatedShutdown
 import akka.actor.typed.ActorSystem
 import akka.actor.typed.scaladsl.adapter.TypedActorSystemOps
 import csw.location.api.exceptions.OtherLocationIsRegistered
+import csw.location.api.extensions.URIExtension._
 import csw.location.api.scaladsl.{LocationService, RegistrationResult}
 import csw.location.models.{AkkaLocation, AkkaRegistration, ComponentType}
 import csw.params.core.models.Subsystem
-import esw.ocs.api.models.messages.RegistrationError
+import esw.ocs.api.models.messages.SequenceComponentMsg.Stop
+import esw.ocs.api.models.messages.{RegistrationError, SequenceComponentMsg}
 
 import scala.concurrent.{ExecutionContext, Future}
 import scala.util.control.NonFatal
@@ -41,6 +43,7 @@ class LocationServiceUtils(locationService: LocationService) {
       }
       .recoverWith {
         case OtherLocationIsRegistered(_) if retryCount > 0 =>
+          akkaRegistration.actorRefURI.toActorRef.unsafeUpcast[SequenceComponentMsg] ! Stop
           registerWithRetry(akkaRegistration, retryCount - 1)
         case NonFatal(e) => Future.successful(Left(RegistrationError(e.getMessage)))
       }
