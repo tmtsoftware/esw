@@ -15,7 +15,7 @@ object SequencerAppCommand {
     SimpleArgParser.from[Prefix]("prefix") { prefixStr =>
       try Right(Prefix(prefixStr))
       catch {
-        case NonFatal(_) => Left(Error.Other(s"Prefix: $prefixStr is invalid"))
+        case NonFatal(_) => Left(Error.Other(s"Prefix [$prefixStr] is invalid"))
       }
     }
 

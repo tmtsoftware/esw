@@ -38,7 +38,7 @@ class SequencerBehaviorTest extends ScalaTestWithActorTestKit with BaseTestSuite
   }
 
   "LoadAndStartSequence" in {
-    val command1 = Setup(Prefix("test"), CommandName("command-1"), None)
+    val command1 = Setup(Prefix("esw.test"), CommandName("command-1"), None)
     val sequence = Sequence(Id(), Seq(command1))
 
     runTest[SubmitResponse](
@@ -74,7 +74,7 @@ class SequencerBehaviorTest extends ScalaTestWithActorTestKit with BaseTestSuite
   }
 
   "Add" in {
-    val command1 = Setup(Prefix("test"), CommandName("command-1"), None)
+    val command1 = Setup(Prefix("esw.test"), CommandName("command-1"), None)
 
     runTestFor[Either[EditorError, Done], EditorResponse](
       EditorResponse,
@@ -113,7 +113,7 @@ class SequencerBehaviorTest extends ScalaTestWithActorTestKit with BaseTestSuite
 
   "Replace" in {
     val runId    = Id()
-    val command1 = Setup(Prefix("test"), CommandName("command-1"), None)
+    val command1 = Setup(Prefix("esw.test"), CommandName("command-1"), None)
 
     runTestFor[Either[EditorError, Done], EditorResponse](
       EditorResponse,
@@ -124,7 +124,7 @@ class SequencerBehaviorTest extends ScalaTestWithActorTestKit with BaseTestSuite
   }
 
   "Prepend" in {
-    val command1 = Setup(Prefix("test"), CommandName("command-1"), None)
+    val command1 = Setup(Prefix("esw.test"), CommandName("command-1"), None)
 
     runTestFor[Either[EditorError, Done], EditorResponse](
       EditorResponse,
@@ -148,7 +148,7 @@ class SequencerBehaviorTest extends ScalaTestWithActorTestKit with BaseTestSuite
 
   "InsertAfter" in {
     val runId    = Id()
-    val command1 = Setup(Prefix("test"), CommandName("command-1"), None)
+    val command1 = Setup(Prefix("esw.test"), CommandName("command-1"), None)
 
     runTestFor[Either[EditorError, Done], EditorResponse](
       EditorResponse,
@@ -181,7 +181,7 @@ class SequencerBehaviorTest extends ScalaTestWithActorTestKit with BaseTestSuite
   }
 
   "PullNext" in {
-    val command1 = Setup(Prefix("test"), CommandName("command-1"), None)
+    val command1 = Setup(Prefix("esw.test"), CommandName("command-1"), None)
 
     runTest[Step](
       mockFunction = sequencer.pullNext(),
@@ -191,7 +191,7 @@ class SequencerBehaviorTest extends ScalaTestWithActorTestKit with BaseTestSuite
   }
 
   "MaybeNext" in {
-    val command1 = Setup(Prefix("test"), CommandName("command-1"), None)
+    val command1 = Setup(Prefix("esw.test"), CommandName("command-1"), None)
 
     runTest[Option[Step]](
       mockFunction = sequencer.mayBeNext,

@@ -32,7 +32,7 @@ class SequencerCommandServiceTest extends ScalaTestFrameworkTestKit with BaseTes
   }
 
   "should submit and process sequence" in {
-    val command1 = Setup(Prefix("test"), CommandName("command-1"), None)
+    val command1 = Setup(Prefix("esw.test"), CommandName("command-1"), None)
     val sequence = Sequence(command1)
 
     implicit val patienceConfig: PatienceConfig          = PatienceConfig(500.millis)

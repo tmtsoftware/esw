@@ -15,7 +15,7 @@ import esw.ocs.api.models.messages.SequenceComponentResponses.{GetStatusResponse
 
 class SequenceComponentClientTest extends ScalaTestWithActorTestKit with BaseTestSuite {
   private val location =
-    AkkaLocation(AkkaConnection(ComponentId("test", ComponentType.Sequencer)), Prefix("test"), new URI("uri"))
+    AkkaLocation(AkkaConnection(ComponentId("test", ComponentType.Sequencer)), Prefix("esw.test"), new URI("uri"))
   private val loadScriptResponse = LoadScriptResponse(Right(location))
   private val getStatusResponse  = GetStatusResponse(Some(location))
 

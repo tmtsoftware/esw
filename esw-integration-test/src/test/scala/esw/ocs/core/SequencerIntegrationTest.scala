@@ -58,7 +58,7 @@ class SequencerIntegrationTest extends ScalaTestFrameworkTestKit with BaseTestSu
 
   "Sequencer" must {
     "load a sequence and start the sequence later | ESW-154" in {
-      val command3 = Setup(Prefix("test"), CommandName("command-3"), None)
+      val command3 = Setup(Prefix("esw.test"), CommandName("command-3"), None)
       val sequence = Sequence(command3)
 
       val loadResponse: Future[LoadSequenceResponse] = sequencer ? (LoadSequence(sequence, _))
@@ -69,9 +69,9 @@ class SequencerIntegrationTest extends ScalaTestFrameworkTestKit with BaseTestSu
     }
 
     "process sequence and execute commands that are added later | ESW-145, ESW-154" in {
-      val command1 = Setup(Prefix("test"), CommandName("command-1"), None)
-      val command2 = Setup(Prefix("test"), CommandName("command-2"), None)
-      val command3 = Setup(Prefix("test"), CommandName("command-3"), None)
+      val command1 = Setup(Prefix("esw.test"), CommandName("command-1"), None)
+      val command2 = Setup(Prefix("esw.test"), CommandName("command-2"), None)
+      val command3 = Setup(Prefix("esw.test"), CommandName("command-3"), None)
       val sequence = Sequence(command1, command2)
 
       val processSeqResponse: Future[SubmitResponse] = sequencer ? (LoadAndStartSequence(sequence, _))

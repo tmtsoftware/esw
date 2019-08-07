@@ -19,8 +19,8 @@ class StepListTest extends BaseTestSuite {
 
   "apply" must {
     "return a StepList" in {
-      val setup1 = Setup(Prefix("ocs.move1"), CommandName("test1"), None)
-      val setup2 = Setup(Prefix("ocs.move2"), CommandName("test2"), None)
+      val setup1 = Setup(Prefix("esw.ocs.move1"), CommandName("test1"), None)
+      val setup2 = Setup(Prefix("esw.ocs.move2"), CommandName("test2"), None)
 
       val stepList = StepList(Sequence(setup1, setup2)).toOption.get
 
@@ -28,8 +28,8 @@ class StepListTest extends BaseTestSuite {
     }
 
     "fail when duplicate Ids provided" in {
-      val setup1 = Setup(Prefix("ocs.move1"), CommandName("test1"), None)
-      val setup2 = Setup(Prefix("ocs.move2"), CommandName("test2"), None).copy(runId = setup1.runId)
+      val setup1 = Setup(Prefix("esw.ocs.move1"), CommandName("test1"), None)
+      val setup2 = Setup(Prefix("esw.ocs.move2"), CommandName("test2"), None).copy(runId = setup1.runId)
 
       val sequence = Sequence(setup1, setup2)
       StepList(sequence).left.value should ===(DuplicateIdsFound)
@@ -37,8 +37,8 @@ class StepListTest extends BaseTestSuite {
   }
 
   "isFinished" must {
-    val setup1 = Setup(Prefix("ocs.move1"), CommandName("test1"), None)
-    val setup2 = Setup(Prefix("ocs.move2"), CommandName("test2"), None)
+    val setup1 = Setup(Prefix("esw.ocs.move1"), CommandName("test1"), None)
+    val setup2 = Setup(Prefix("esw.ocs.move2"), CommandName("test2"), None)
 
     "return false when StepList is empty" in {
       val stepList = StepList(Id(), Nil)
@@ -71,8 +71,8 @@ class StepListTest extends BaseTestSuite {
   }
 
   "isPaused" must {
-    val setup1 = Setup(Prefix("ocs.move1"), CommandName("test1"), None)
-    val setup2 = Setup(Prefix("ocs.move2"), CommandName("test2"), None)
+    val setup1 = Setup(Prefix("esw.ocs.move1"), CommandName("test1"), None)
+    val setup2 = Setup(Prefix("esw.ocs.move2"), CommandName("test2"), None)
 
     "return true when next step exists and it has a breakpoint" in {
       val step1 = Step(setup1, InFlight, hasBreakpoint = false)
@@ -99,8 +99,8 @@ class StepListTest extends BaseTestSuite {
   }
 
   "isInFlight" must {
-    val setup1 = Setup(Prefix("ocs.move1"), CommandName("test1"), None)
-    val setup2 = Setup(Prefix("ocs.move2"), CommandName("test2"), None)
+    val setup1 = Setup(Prefix("esw.ocs.move1"), CommandName("test1"), None)
+    val setup2 = Setup(Prefix("esw.ocs.move2"), CommandName("test2"), None)
 
     "return true when at least one InFlight step exist" in {
       val step1 = Step(setup1, InFlight, hasBreakpoint = false)
@@ -121,8 +121,8 @@ class StepListTest extends BaseTestSuite {
 
   "nextPending" must {
     "return next pending step" in {
-      val setup1 = Setup(Prefix("ocs.move1"), CommandName("test1"), None)
-      val setup2 = Setup(Prefix("ocs.move2"), CommandName("test2"), None)
+      val setup1 = Setup(Prefix("esw.ocs.move1"), CommandName("test1"), None)
+      val setup2 = Setup(Prefix("esw.ocs.move2"), CommandName("test2"), None)
       val step1  = Step(setup1, InFlight, hasBreakpoint = false)
       val step2  = Step(setup2, Pending, hasBreakpoint = false)
 
@@ -132,8 +132,8 @@ class StepListTest extends BaseTestSuite {
     }
 
     "return none when no pending step present" in {
-      val setup1 = Setup(Prefix("ocs.move1"), CommandName("test1"), None)
-      val setup2 = Setup(Prefix("ocs.move2"), CommandName("test2"), None)
+      val setup1 = Setup(Prefix("esw.ocs.move1"), CommandName("test1"), None)
+      val setup2 = Setup(Prefix("esw.ocs.move2"), CommandName("test2"), None)
       val step1  = models.Step(setup1, finished(setup1.runId), hasBreakpoint = false)
       val step2  = Step(setup2, InFlight, hasBreakpoint = false)
 
@@ -144,8 +144,8 @@ class StepListTest extends BaseTestSuite {
   }
 
   "nextExecutable" must {
-    val setup1 = Setup(Prefix("ocs.move1"), CommandName("test1"), None)
-    val setup2 = Setup(Prefix("ocs.move2"), CommandName("test2"), None)
+    val setup1 = Setup(Prefix("esw.ocs.move1"), CommandName("test1"), None)
+    val setup2 = Setup(Prefix("esw.ocs.move2"), CommandName("test2"), None)
 
     "return step when next step exists and is not paused" in {
       val step1 = Step(setup1, InFlight, hasBreakpoint = false)
@@ -170,11 +170,11 @@ class StepListTest extends BaseTestSuite {
   }
 
   "replace" must {
-    val setup1 = Setup(Prefix("ocs.move1"), CommandName("test1"), None)
-    val setup2 = Setup(Prefix("ocs.move2"), CommandName("test2"), None)
-    val setup3 = Setup(Prefix("ocs.move3"), CommandName("test3"), None)
-    val setup4 = Setup(Prefix("ocs.move4"), CommandName("test4"), None)
-    val setup5 = Setup(Prefix("ocs.move5"), CommandName("test5"), None)
+    val setup1 = Setup(Prefix("esw.ocs.move1"), CommandName("test1"), None)
+    val setup2 = Setup(Prefix("esw.ocs.move2"), CommandName("test2"), None)
+    val setup3 = Setup(Prefix("esw.ocs.move3"), CommandName("test3"), None)
+    val setup4 = Setup(Prefix("esw.ocs.move4"), CommandName("test4"), None)
+    val setup5 = Setup(Prefix("esw.ocs.move5"), CommandName("test5"), None)
 
     "replace step with given list of steps when Id matches and is in Pending status | ESW-108" in {
       val step1 = Step(setup1, InFlight, hasBreakpoint = false)
@@ -236,10 +236,10 @@ class StepListTest extends BaseTestSuite {
   }
 
   "prepend" must {
-    val setup1 = Setup(Prefix("ocs.move1"), CommandName("test1"), None)
-    val setup2 = Setup(Prefix("ocs.move2"), CommandName("test2"), None)
-    val setup3 = Setup(Prefix("ocs.move3"), CommandName("test3"), None)
-    val setup4 = Setup(Prefix("ocs.move4"), CommandName("test4"), None)
+    val setup1 = Setup(Prefix("esw.ocs.move1"), CommandName("test1"), None)
+    val setup2 = Setup(Prefix("esw.ocs.move2"), CommandName("test2"), None)
+    val setup3 = Setup(Prefix("esw.ocs.move3"), CommandName("test3"), None)
+    val setup4 = Setup(Prefix("esw.ocs.move4"), CommandName("test4"), None)
 
     "add provided steps before next pending step | ESW-113" in {
       val step1 = Step(setup1, InFlight, hasBreakpoint = false)
@@ -273,10 +273,10 @@ class StepListTest extends BaseTestSuite {
   }
 
   "append" must {
-    val setup1 = Setup(Prefix("ocs.move1"), CommandName("test1"), None)
-    val setup2 = Setup(Prefix("ocs.move2"), CommandName("test2"), None)
-    val setup3 = Setup(Prefix("ocs.move3"), CommandName("test3"), None)
-    val setup4 = Setup(Prefix("ocs.move4"), CommandName("test4"), None)
+    val setup1 = Setup(Prefix("esw.ocs.move1"), CommandName("test1"), None)
+    val setup2 = Setup(Prefix("esw.ocs.move2"), CommandName("test2"), None)
+    val setup3 = Setup(Prefix("esw.ocs.move3"), CommandName("test3"), None)
+    val setup4 = Setup(Prefix("esw.ocs.move4"), CommandName("test4"), None)
 
     "add provided steps at the end of StepList | ESW-114" in {
       val step1 = Step(setup1, InFlight, hasBreakpoint = false)
@@ -299,9 +299,9 @@ class StepListTest extends BaseTestSuite {
   }
 
   "delete" must {
-    val setup1 = Setup(Prefix("ocs.move1"), CommandName("test1"), None)
-    val setup2 = Setup(Prefix("ocs.move2"), CommandName("test2"), None)
-    val setup3 = Setup(Prefix("ocs.move3"), CommandName("test3"), None)
+    val setup1 = Setup(Prefix("esw.ocs.move1"), CommandName("test1"), None)
+    val setup2 = Setup(Prefix("esw.ocs.move2"), CommandName("test2"), None)
+    val setup3 = Setup(Prefix("esw.ocs.move3"), CommandName("test3"), None)
 
     "delete provided id when step status is Pending | ESW-112" in {
       val step1 = models.Step(setup1, finished(setup1.runId), hasBreakpoint = false)
@@ -344,10 +344,10 @@ class StepListTest extends BaseTestSuite {
   }
 
   "insertAfter" must {
-    val setup1 = Setup(Prefix("ocs.move1"), CommandName("test1"), None)
-    val setup2 = Setup(Prefix("ocs.move2"), CommandName("test2"), None)
-    val setup3 = Setup(Prefix("ocs.move3"), CommandName("test3"), None)
-    val setup4 = Setup(Prefix("ocs.move4"), CommandName("test4"), None)
+    val setup1 = Setup(Prefix("esw.ocs.move1"), CommandName("test1"), None)
+    val setup2 = Setup(Prefix("esw.ocs.move2"), CommandName("test2"), None)
+    val setup3 = Setup(Prefix("esw.ocs.move3"), CommandName("test3"), None)
+    val setup4 = Setup(Prefix("esw.ocs.move4"), CommandName("test4"), None)
 
     "insert provided commands after given Id | ESW-111" in {
       val step1 = models.Step(setup1, finished(setup1.runId), hasBreakpoint = false)
@@ -412,10 +412,10 @@ class StepListTest extends BaseTestSuite {
   }
 
   "discardPending" must {
-    val setup1 = Setup(Prefix("ocs.move1"), CommandName("test1"), None)
-    val setup2 = Setup(Prefix("ocs.move2"), CommandName("test2"), None)
-    val setup3 = Setup(Prefix("ocs.move3"), CommandName("test3"), None)
-    val setup4 = Setup(Prefix("ocs.move4"), CommandName("test4"), None)
+    val setup1 = Setup(Prefix("esw.ocs.move1"), CommandName("test1"), None)
+    val setup2 = Setup(Prefix("esw.ocs.move2"), CommandName("test2"), None)
+    val setup3 = Setup(Prefix("esw.ocs.move3"), CommandName("test3"), None)
+    val setup4 = Setup(Prefix("esw.ocs.move4"), CommandName("test4"), None)
 
     "discard all the pending steps from StepList | ESW-110" in {
       val step1 = models.Step(setup1, finished(setup1.runId), hasBreakpoint = false)
@@ -441,8 +441,8 @@ class StepListTest extends BaseTestSuite {
   }
 
   "addBreakpoints" must {
-    val setup1 = Setup(Prefix("ocs.move1"), CommandName("test1"), None)
-    val setup2 = Setup(Prefix("ocs.move2"), CommandName("test2"), None)
+    val setup1 = Setup(Prefix("esw.ocs.move1"), CommandName("test1"), None)
+    val setup2 = Setup(Prefix("esw.ocs.move2"), CommandName("test2"), None)
 
     "add breakpoint to provided id when step status is Pending | ESW-106" in {
       val step1 = models.Step(setup1, finished(setup1.runId), hasBreakpoint = false)
@@ -475,8 +475,8 @@ class StepListTest extends BaseTestSuite {
   }
 
   "removeBreakpoints" must {
-    val setup1 = Setup(Prefix("ocs.move1"), CommandName("test1"), None)
-    val setup2 = Setup(Prefix("ocs.move2"), CommandName("test2"), None)
+    val setup1 = Setup(Prefix("esw.ocs.move1"), CommandName("test1"), None)
+    val setup2 = Setup(Prefix("esw.ocs.move2"), CommandName("test2"), None)
 
     "remove breakpoint from provided id | ESW-107" in {
       val step1 = models.Step(setup1, finished(setup1.runId), hasBreakpoint = false)
@@ -509,10 +509,10 @@ class StepListTest extends BaseTestSuite {
   }
 
   "pause" must {
-    val setup1 = Setup(Prefix("ocs.move1"), CommandName("test1"), None)
-    val setup2 = Setup(Prefix("ocs.move2"), CommandName("test2"), None)
-    val setup3 = Setup(Prefix("ocs.move3"), CommandName("test3"), None)
-    val setup4 = Setup(Prefix("ocs.move4"), CommandName("test4"), None)
+    val setup1 = Setup(Prefix("esw.ocs.move1"), CommandName("test1"), None)
+    val setup2 = Setup(Prefix("esw.ocs.move2"), CommandName("test2"), None)
+    val setup3 = Setup(Prefix("esw.ocs.move3"), CommandName("test3"), None)
+    val setup4 = Setup(Prefix("esw.ocs.move4"), CommandName("test4"), None)
 
     "add breakpoint to next pending step | ESW-104" in {
       val step1 = models.Step(setup1, finished(setup1.runId), hasBreakpoint = false)
@@ -546,9 +546,9 @@ class StepListTest extends BaseTestSuite {
   }
 
   "resume" must {
-    val setup1 = Setup(Prefix("ocs.move1"), CommandName("test1"), None)
-    val setup2 = Setup(Prefix("ocs.move2"), CommandName("test2"), None)
-    val setup3 = Setup(Prefix("ocs.move3"), CommandName("test3"), None)
+    val setup1 = Setup(Prefix("esw.ocs.move1"), CommandName("test1"), None)
+    val setup2 = Setup(Prefix("esw.ocs.move2"), CommandName("test2"), None)
+    val setup3 = Setup(Prefix("esw.ocs.move3"), CommandName("test3"), None)
 
     "remove breakpoint from next pending step | ESW-105" in {
       val step1 = models.Step(setup1, finished(setup1.runId), hasBreakpoint = false)
@@ -581,9 +581,9 @@ class StepListTest extends BaseTestSuite {
   }
 
   "updateStatus" must {
-    val setup1 = Setup(Prefix("ocs.move1"), CommandName("test1"), None)
-    val setup2 = Setup(Prefix("ocs.move2"), CommandName("test2"), None)
-    val setup3 = Setup(Prefix("ocs.move3"), CommandName("test3"), None)
+    val setup1 = Setup(Prefix("esw.ocs.move1"), CommandName("test1"), None)
+    val setup2 = Setup(Prefix("esw.ocs.move2"), CommandName("test2"), None)
+    val setup3 = Setup(Prefix("esw.ocs.move3"), CommandName("test3"), None)
 
     "update status of step matching provided Id with given status" in {
       val step1 = models.Step(setup1, finished(setup1.runId), hasBreakpoint = false)
