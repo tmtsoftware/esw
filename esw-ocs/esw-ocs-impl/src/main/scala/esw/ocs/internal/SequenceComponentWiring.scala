@@ -25,17 +25,6 @@ private[ocs] class SequenceComponentWiring(prefix: Prefix) {
 
   private lazy val locationServiceUtils: LocationServiceUtils = new LocationServiceUtils(locationService)
 
-  def registration(): AkkaRegistration = {
-    val sequenceComponentName = generateSequenceComponentName()
-    val sequenceComponentRef: ActorRef[SequenceComponentMsg] =
-      (typedSystem ? Spawn(SequenceComponentBehavior.behavior(sequenceComponentName), sequenceComponentName)).block
-    AkkaRegistration(
-      AkkaConnection(ComponentId(sequenceComponentName, ComponentType.SequenceComponent)),
-      prefix,
-      sequenceComponentRef.toURI
-    )
-  }
-
   private def generateSequenceComponentName(): String = {
     val subsystem = prefix.subsystem
     locationServiceUtils
@@ -45,6 +34,17 @@ private[ocs] class SequenceComponentWiring(prefix: Prefix) {
         s"${subsystem}_$uniqueId"
       }
       .block
+  }
+
+  private def registration(): AkkaRegistration = {
+    val sequenceComponentName = generateSequenceComponentName()
+    val sequenceComponentRef: ActorRef[SequenceComponentMsg] =
+      (typedSystem ? Spawn(SequenceComponentBehavior.behavior(sequenceComponentName), sequenceComponentName)).block
+    AkkaRegistration(
+      AkkaConnection(ComponentId(sequenceComponentName, ComponentType.SequenceComponent)),
+      prefix,
+      sequenceComponentRef.toURI
+    )
   }
 
   def start(): Either[RegistrationError, AkkaLocation] =
