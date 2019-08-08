@@ -13,16 +13,15 @@ import csw.params.commands.{CommandResponse, Sequence}
 import csw.params.core.models.Id
 import esw.ocs.api.codecs.OcsFrameworkCodecs
 import esw.ocs.api.models.StepStatus.{Finished, InFlight, Pending}
+import esw.ocs.api.models.messages.EditorError
 import esw.ocs.api.models.messages.SequencerMessages._
 import esw.ocs.api.models.messages.SequencerResponses.{EditorResponse, LifecycleResponse, LoadSequenceResponse, StepListResponse}
-import esw.ocs.api.models.messages.{EditorError, ShutdownError}
 import esw.ocs.api.models.{SequencerState, Step, StepList, StepStatus}
 import esw.ocs.dsl.ScriptDsl
 
 import scala.concurrent.duration.DurationInt
-import scala.concurrent.{Await, ExecutionContext, Future}
+import scala.concurrent.{ExecutionContext, Future}
 import scala.reflect.ClassTag
-import scala.util.Try
 import scala.util.control.NonFatal
 
 class SequencerBehavior(
@@ -301,34 +300,17 @@ class SequencerBehavior(
     crm.updateSubCommand(Completed(emptyChildId))
   }
 
-  private def shutdown(replyTo: ActorRef[LifecycleResponse])(implicit ctx: ActorContext[_]): Behavior[EswSequencerMessage] = {
-    //todo: this blocking is temporary and will go away when shutdown story is played
-    Try {
-      Await.result(
-        locationService
-          .unregister(AkkaConnection(componentId)),
-        atMost
-      )
-      Try {
-        Await.result(script.executeShutdown(), atMost) //todo: log this
-      }
+  private def shutdown(replyTo: ActorRef[LifecycleResponse])(
+      implicit ctx: ActorContext[_]
+  ): Behavior[EswSequencerMessage] = {
+    import ctx.executionContext
+
+    locationService.unregister(AkkaConnection(componentId))
+    script.executeShutdown().onComplete { _ =>
       replyTo ! LifecycleResponse(Right(Done))
-      //fixme : this is not safe. not sure of previous message is sent yet.
-      // to be looked at in shutdown story
       ctx.system.terminate
-      Behaviors.stopped[EswSequencerMessage]
-    }.recover {
-      case NonFatal(err) =>
-        replyTo ! LifecycleResponse(
-          Left(
-            ShutdownError(
-              "could not unregister sequencer\n" +
-                err.getMessage
-            )
-          )
-        )
-        Behaviors.same[EswSequencerMessage]
-    }.get
+    }
+    Behaviors.stopped[EswSequencerMessage]
   }
 
   // stepListResultFunc is by name because all StepList operations must execute on strandEc

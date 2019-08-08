@@ -10,13 +10,6 @@ final case class RegistrationError(msg: String) extends OcsFrameworkAkkaSerializ
 
 sealed trait LifecycleError extends OcsFrameworkAkkaSerializable
 
-//final case class GoOnlineError(msg: String)  extends LifecycleError
-//final case class GoOfflineError(msg: String) extends LifecycleError
-final case class ShutdownError(msg: String) extends LifecycleError
-//final case class AbortError(msg: String)     extends LifecycleError
-
-case object NotAllowedInOfflineState extends LifecycleError with EditorError
-
 // Editor Errors
 sealed trait EditorError extends OcsFrameworkAkkaSerializable
 object EditorError {
@@ -27,19 +20,6 @@ object EditorError {
       with DeleteError
       with AddBreakpointError
       with PauseError
-
-  case object NotAllowedOnFinishedSeq
-      extends AddBreakpointError
-      with PauseError
-      with UpdateError
-      with AddError
-      with ResumeError
-      with ResetError
-      with ReplaceError
-      with PrependError
-      with DeleteError
-      with InsertError
-      with RemoveBreakpointError
 
   final case class IdDoesNotExist(id: Id)
       extends ReplaceError
@@ -55,11 +35,7 @@ object EditorError {
   sealed trait UpdateError                                              extends EditorError
   final case class UpdateNotSupported(from: StepStatus, to: StepStatus) extends UpdateError
 
-  sealed trait AddError              extends EditorError
   sealed trait AddBreakpointError    extends EditorError
-  sealed trait ResumeError           extends EditorError
-  sealed trait PrependError          extends EditorError
-  sealed trait ResetError            extends EditorError
   sealed trait InsertError           extends EditorError
   sealed trait ReplaceError          extends EditorError
   sealed trait DeleteError           extends EditorError
@@ -76,8 +52,4 @@ object SequenceError {
   case object DuplicateIdsFound extends SequenceError {
     val description = "Duplicate command Ids found in given sequence"
   }
-//  case object ExistingSequenceIsInProcess extends SequenceError {
-//    val description = "Submit failed, existing sequence is already in progress"
-//  }
-//  case class GenericError(description: String) extends SequenceError
 }
