@@ -42,7 +42,7 @@ object SequenceComponentBehavior {
           case LoadScript(_, _, replyTo) =>
             replyTo ! LoadScriptResponse(Left(RegistrationError("Loading script failed: Sequencer already running")))
             Behaviors.same
-          case _ => Behaviors.same //fixme: need to finalize strategy for unhandled msgs
+          case Stop => Behaviors.same
         }
       }
     idle

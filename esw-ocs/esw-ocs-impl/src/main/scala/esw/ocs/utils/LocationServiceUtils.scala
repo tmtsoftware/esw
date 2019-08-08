@@ -43,6 +43,7 @@ class LocationServiceUtils(locationService: LocationService) {
       }
       .recoverWith {
         case OtherLocationIsRegistered(_) if retryCount > 0 =>
+          //kill actor ref if registration fails. Retry attempt will create new actor ref
           akkaRegistration.actorRefURI.toActorRef.unsafeUpcast[SequenceComponentMsg] ! Stop
           registerWithRetry(akkaRegistration, retryCount - 1)
         case NonFatal(e) => Future.successful(Left(RegistrationError(e.getMessage)))
