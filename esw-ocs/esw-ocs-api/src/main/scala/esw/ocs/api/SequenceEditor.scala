@@ -10,7 +10,6 @@ import scala.concurrent.Future
 trait SequenceEditor {
 
   def status: Future[StepList]
-  def isAvailable: Future[Boolean]
 
   def add(commands: List[SequenceCommand]): Future[EditorResponse]
   def prepend(commands: List[SequenceCommand]): Future[EditorResponse]

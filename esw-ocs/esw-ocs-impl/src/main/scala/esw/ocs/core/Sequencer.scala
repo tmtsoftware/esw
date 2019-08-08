@@ -3,21 +3,15 @@ package esw.ocs.core
 import akka.Done
 import akka.util.Timeout
 import csw.command.client.CommandResponseManager
-import csw.params.commands.CommandResponse.{Completed, Error, Started, SubmitResponse}
-import csw.params.commands.{CommandResponse, Sequence, SequenceCommand}
+import csw.params.commands.SequenceCommand
 import csw.params.core.models.Id
-import esw.ocs.api.models.StepStatus._
 import esw.ocs.api.models.messages.EditorError
 import esw.ocs.api.models.messages.EditorError._
-import esw.ocs.api.models.messages.SequenceError.ExistingSequenceIsInProcess
-import esw.ocs.api.models.messages.SequencerResponses.LoadSequenceResponse
-import esw.ocs.api.models.{Step, StepList, StepStatus}
+import esw.ocs.api.models.{Step, StepList}
 import esw.ocs.dsl.Async.{async, await}
 import esw.ocs.macros.StrandEc
 
 import scala.concurrent.{ExecutionContext, Future, Promise}
-import scala.util.control.NonFatal
-import scala.util.{Failure, Success, Try}
 
 private[ocs] class Sequencer(crm: CommandResponseManager)(implicit strandEc: StrandEc, timeout: Timeout) {
   private implicit val singleThreadedEc: ExecutionContext = strandEc.ec
@@ -32,47 +26,10 @@ private[ocs] class Sequencer(crm: CommandResponseManager)(implicit strandEc: Str
   private var online                                           = true
 
   def isOnline: Future[Boolean] = async(online)
+
   def goOnline(): Future[Either[GoOnlineError, Done]] = async {
     online = true
     Right(Done)
-  }
-
-  def load(sequence: Sequence): Future[LoadSequenceResponse] = async {
-    LoadSequenceResponse(
-      StepList(sequence).map { _stepList =>
-        loadedStepList = _stepList
-        Done
-      }
-    )
-  }
-
-  def start(): Future[SubmitResponse] = async {
-    if (sequencerAvailable) {
-      sequencerAvailable = false
-      updateStepList(loadedStepList)
-      val id = stepList.runId
-      crm.addOrUpdateCommand(Started(id))
-      crm.addSubCommand(id, emptyChildId)
-      completeStepRefPromise()
-      completeReadyToExecuteNextPromise() // To complete the promise created for previous sequence so that engine can pullNext
-      await(handleSequenceResponse(crm.queryFinal(id)))
-    } else Error(Id("Invalid"), ExistingSequenceIsInProcess.description)
-  }
-
-  def loadAndStart(sequence: Sequence): Future[SubmitResponse] =
-    load(sequence)
-      .map(_.response)
-      .flatMap {
-        case Right(_)  => start()
-        case Left(err) => Future.successful(Error(sequence.runId, err.description))
-      }
-
-  def pullNext(): Future[Step] = async {
-    stepList.nextExecutable match {
-      // step.isPending check is actually not required, but kept here in case impl of nextExecutable gets changed
-      case Some(step) if step.isPending => setPendingToInFlight(step)
-      case None                         => await(createStepRefPromise())
-    }
   }
 
   def readyToExecuteNext(): Future[Done] = async {
@@ -111,90 +68,8 @@ private[ocs] class Sequencer(crm: CommandResponseManager)(implicit strandEc: Str
   def removeBreakpoint(id: Id): Future[Either[RemoveBreakpointError, Done]] =
     updateStepListResult(stepList.removeBreakpoint(id))
 
-  private def updateStepList(newStepList: StepList): Unit = {
-    if (!stepList.isEmpty)
-      previousStepList = Some(stepList)
-    stepList = newStepList
-  }
-
-  private def handleSequenceResponse(submitResponse: Future[SubmitResponse]): Future[SubmitResponse] = {
-    submitResponse.onComplete(_ => resetState())
-    submitResponse.map(CommandResponse.withRunId(stepList.runId, _))
-  }
-
-  // this method gets called from places where it is already checked that step is in pending status
-  private def setPendingToInFlight(step: Step) = {
-    val inflightStep = step.withStatus(Pending, InFlight)
-    stepList = stepList.updateStep(inflightStep)
-    val stepRunId = step.id
-    crm.addSubCommand(stepList.runId, stepRunId)
-    crm.addOrUpdateCommand(CommandResponse.Started(stepRunId))
-    processSubmitResponse(stepRunId, crm.queryFinal(stepRunId))
-    inflightStep
-  }
-
-  private def processSubmitResponse(stepId: Id, submitResponseF: Future[SubmitResponse]) =
-    submitResponseF
-      .flatMap {
-        case submitResponse if CommandResponse.isPositive(submitResponse) => updateSuccess(submitResponse)
-        case failureResponse                                              => updateFailure(failureResponse)
-      }
-      .recoverWith {
-        case NonFatal(e) => updateFailure(Error(stepId, e.getMessage))
-      }
-
-  private[ocs] def updateFailure(failureResponse: SubmitResponse) =
-    updateStatus(failureResponse, Finished.Failure(failureResponse))
-
-  private def updateSuccess(successResponse: SubmitResponse) = updateStatus(successResponse, Finished.Success(successResponse))
-
-  private def updateStatus(submitResponse: SubmitResponse, stepStatus: StepStatus) = async {
-    crm.updateSubCommand(submitResponse)
-    val updateStatusResult = stepList.updateStatus(submitResponse.runId, stepStatus)
-    updateStatusResult.foreach { _stepList =>
-      stepList = _stepList
-      checkForSequenceCompletion()
-      completeReadyToExecuteNextPromise()
-    }
-    updateStatusResult
-  }
-
-  private def checkForSequenceCompletion(): Unit = if (stepList.isFinished) {
-    crm.updateSubCommand(Completed(emptyChildId))
-
-  }
-
-  private def resetState(): Unit = {
-    stepRefPromise.foreach(_.complete(Failure(new RuntimeException("Trying to pull Step from a finished Sequence."))))
-    stepRefPromise = None
-    sequencerAvailable = true
-  }
-
   private def createReadyToExecuteNextPromise() =
     createPromise[Done](p => readyToExecuteNextPromise = Some(p))
-
-  private def completeReadyToExecuteNextPromise() = async {
-    if (!stepList.isFinished)
-      readyToExecuteNextPromise.foreach(_.complete(Success(Done)))
-  }
-
-  private def createStepRefPromise() = createPromise[Step](p => stepRefPromise = Some(p))
-
-  private def completeStepRefPromise(): Unit =
-    for {
-      ref  <- stepRefPromise
-      step <- stepList.nextExecutable
-      if step.isPending
-    } {
-      ref.complete(Try(setPendingToInFlight(step)))
-      stepRefPromise = None
-    }
-
-  private def createPromise[T](update: Promise[T] => Unit): Future[T] = async {
-    val p = Promise[T]()
-    update(p)
-    await(p.future)
-  }
 
   // stepListResultFunc is by name because all StepList operations must execute on strandEc
   private def updateStepListResult[T <: EditorError](stepListResultFunc: => Either[T, StepList]) = async {

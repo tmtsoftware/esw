@@ -76,8 +76,8 @@ object SequenceError {
   case object DuplicateIdsFound extends SequenceError {
     val description = "Duplicate command Ids found in given sequence"
   }
-  case object ExistingSequenceIsInProcess extends SequenceError {
-    val description = "Submit failed, existing sequence is already in progress"
-  }
-  case class GenericError(description: String) extends SequenceError
+//  case object ExistingSequenceIsInProcess extends SequenceError {
+//    val description = "Submit failed, existing sequence is already in progress"
+//  }
+//  case class GenericError(description: String) extends SequenceError
 }
