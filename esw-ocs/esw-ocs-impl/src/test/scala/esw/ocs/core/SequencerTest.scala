@@ -8,7 +8,7 @@ import csw.command.client.CommandResponseManager
 import csw.params.commands.CommandResponse._
 import csw.params.commands.{CommandName, Observe, Sequence, Setup}
 import csw.params.core.models.{Id, Prefix}
-import esw.ocs.BaseTestSuite
+import esw.ocs.api.BaseTestSuite
 import esw.ocs.api.models.StepStatus.{Finished, InFlight, Pending}
 import esw.ocs.api.models.messages.SequenceError.ExistingSequenceIsInProcess
 import esw.ocs.api.models.{Step, StepList}

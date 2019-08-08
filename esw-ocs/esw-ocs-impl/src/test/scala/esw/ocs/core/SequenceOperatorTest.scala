@@ -7,7 +7,7 @@ import csw.command.client.messages.sequencer.SequencerMsg
 import csw.params.commands.CommandResponse.Error
 import csw.params.commands.{CommandName, CommandResponse, Setup}
 import csw.params.core.models.Prefix
-import esw.ocs.BaseTestSuite
+import esw.ocs.api.BaseTestSuite
 import esw.ocs.api.models.Step
 import esw.ocs.api.models.messages.SequencerMessages.{MaybeNext, PullNext, ReadyToExecuteNext, UpdateFailure}
 

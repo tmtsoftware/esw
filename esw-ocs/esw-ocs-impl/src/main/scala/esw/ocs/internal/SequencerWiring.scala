@@ -19,7 +19,7 @@ import esw.ocs.dsl.utils.ScriptLoader
 import esw.ocs.dsl.{CswServices, Script}
 import esw.ocs.macros.StrandEc
 import esw.ocs.syntax.FutureSyntax.FutureOps
-import esw.ocs.utils.LocationServiceUtils
+import esw.utils.csw.LocationServiceUtils
 
 import scala.concurrent.Future
 // $COVERAGE-OFF$

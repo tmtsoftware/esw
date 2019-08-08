@@ -2,7 +2,7 @@ package esw.ocs.internal
 
 import com.typesafe.config.{Config, ConfigFactory}
 import csw.params.core.models.Prefix
-import esw.ocs.BaseTestSuite
+import esw.ocs.api.BaseTestSuite
 import esw.ocs.exceptions.ScriptLoadingException.ScriptConfigurationMissingException
 
 class SequencerConfigTest extends BaseTestSuite {

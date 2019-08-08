@@ -6,7 +6,7 @@ import akka.stream.{ActorMaterializer, Materializer}
 import csw.params.commands.CommandResponse.Error
 import csw.params.commands.SequenceCommand
 import csw.params.core.models.Id
-import esw.ocs.BaseTestSuite
+import esw.ocs.api.BaseTestSuite
 import esw.ocs.api.models.Step
 import esw.ocs.dsl.Script
 import org.mockito.Mockito.{verify, when}

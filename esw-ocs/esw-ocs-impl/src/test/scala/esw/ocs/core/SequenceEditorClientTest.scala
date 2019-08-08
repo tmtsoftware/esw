@@ -4,11 +4,11 @@ import akka.actor.testkit.typed.scaladsl.ScalaTestWithActorTestKit
 import akka.actor.typed.scaladsl.Behaviors
 import csw.params.commands.{CommandName, Sequence, Setup}
 import csw.params.core.models.Prefix
-import esw.ocs.BaseTestSuite
+import esw.ocs.api.BaseTestSuite
 import esw.ocs.api.models.StepList
 import esw.ocs.api.models.StepStatus.Pending
-import esw.ocs.api.models.messages.SequencerMessages._
 import esw.ocs.api.models.messages.EditorError._
+import esw.ocs.api.models.messages.SequencerMessages._
 import esw.ocs.api.models.messages.SequencerResponses.EditorResponse
 
 class SequenceEditorClientTest extends ScalaTestWithActorTestKit with BaseTestSuite {
