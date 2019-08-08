@@ -24,7 +24,7 @@ object SequencerMessages {
   final case class StartSequence(replyTo: ActorRef[SubmitResponse])                          extends SequenceLoadedMessage
 
   // engine msgs
-  final case class PullNext(replyTo: ActorRef[Step])              extends IdleMessage with InProgressMessage with SequenceLoadedMessage
+  final case class PullNext(replyTo: ActorRef[Step])              extends IdleMessage with InProgressMessage
   final case class MaybeNext(replyTo: ActorRef[Option[Step]])     extends InProgressMessage
   final case class ReadyToExecuteNext(replyTo: ActorRef[Done])    extends InProgressMessage
   final case class UpdateFailure(failureResponse: SubmitResponse) extends InProgressMessage
