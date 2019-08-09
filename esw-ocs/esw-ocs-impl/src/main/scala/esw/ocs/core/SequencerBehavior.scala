@@ -12,7 +12,7 @@ import csw.params.commands.CommandResponse.{Completed, Error, Started, SubmitRes
 import csw.params.commands.{CommandResponse, Sequence}
 import csw.params.core.models.Id
 import esw.ocs.api.codecs.OcsFrameworkCodecs
-import esw.ocs.api.models.StepStatus.{Finished, InFlight, Pending}
+import esw.ocs.api.models.StepStatus.Finished
 import esw.ocs.api.models.messages.EditorError
 import esw.ocs.api.models.messages.SequencerMessages._
 import esw.ocs.api.models.messages.SequencerResponses.{EditorResponse, LifecycleResponse, LoadSequenceResponse, StepListResponse}
@@ -240,7 +240,7 @@ class SequencerBehavior(
       step: Step,
       state: SequencerState
   )(implicit ec: ExecutionContext, ctx: ActorContext[EswSequencerMessage]): (Step, SequencerState) = {
-    val inflightStep = step.withStatus(Pending, InFlight)
+    val inflightStep = step.setPendingToInFlight()
     val newState     = state.copy(stepList = state.stepList.updateStep(inflightStep))
     val stepRunId    = step.id
     crm.addSubCommand(newState.stepList.runId, stepRunId)
@@ -287,7 +287,7 @@ class SequencerBehavior(
       ctx: ActorContext[EswSequencerMessage]
   ): SequencerState = {
     crm.updateSubCommand(submitResponse)
-    val newStepList = state.stepList.updateStatus(submitResponse.runId, stepStatus).getOrElse(state.stepList)
+    val newStepList = state.stepList.updateStatus(submitResponse.runId, stepStatus)
     ctx.self ! UpdateSequencerState(state.copy(stepList = newStepList))
     checkForSequenceCompletion(state)
 
@@ -333,11 +333,11 @@ class SequencerBehavior(
   //HANDLERS
   private def goOnline(replyTo: ActorRef[LifecycleResponse], state: SequencerState): Behavior[EswSequencerMessage] = {
     script.executeGoOnline() // recover and log
-    replyTo ! LifecycleResponse(Right(Done))
+    replyTo ! LifecycleResponse(Done)
     idle(state)
   }
   private def goOffline(replyTo: ActorRef[LifecycleResponse], state: SequencerState): Behavior[EswSequencerMessage] = {
-    replyTo ! LifecycleResponse(Right(Done))
+    replyTo ! LifecycleResponse(Done)
     script.executeGoOffline() // recover and log
     offline(SequencerState.initial.copy(state.stepList))
   }

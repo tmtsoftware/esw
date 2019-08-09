@@ -2,9 +2,8 @@ package esw.ocs.api.models
 
 import csw.params.commands.{Sequence, SequenceCommand}
 import csw.params.core.models.Id
-import esw.ocs.api.models.messages.EditorError
-import esw.ocs.api.models.messages.EditorError._
-import esw.ocs.api.models.messages.SequenceError.DuplicateIdsFound
+import esw.ocs.api.models.messages.EditorError.{CannotInsertOrReplaceAfterAFinishedStep, _}
+import esw.ocs.api.models.messages.{DuplicateIdsFound, EditorError}
 import esw.ocs.api.serializer.OcsFrameworkAkkaSerializable
 
 final case class StepList private[models] (runId: Id, steps: List[Step]) extends OcsFrameworkAkkaSerializable {
@@ -23,22 +22,22 @@ final case class StepList private[models] (runId: Id, steps: List[Step]) extends
   def replace(id: Id, commands: List[SequenceCommand]): Either[ReplaceError, StepList] =
     ifExists(id) { step =>
       if (step.isPending) replaceSteps(id, toSteps(commands))
-      else Left(NotSupported(step.status))
+      else Left(CannotInsertOrReplaceAfterAFinishedStep)
     }
 
-  def prepend(commands: List[SequenceCommand]): Either[EditorError, StepList] = {
+  def prepend(commands: List[SequenceCommand]): StepList = {
     val (pre, post) = steps.span(!_.isPending)
-    Right(copy(runId, pre ::: toSteps(commands) ::: post))
+    copy(runId, pre ::: toSteps(commands) ::: post)
   }
 
-  def append(commands: List[SequenceCommand]): Either[EditorError, StepList] =
-    Right(copy(runId, steps ::: toSteps(commands)))
+  def append(commands: List[SequenceCommand]): StepList =
+    copy(runId, steps ::: toSteps(commands))
 
   def delete(id: Id): Either[DeleteError, StepList] = ifExists(id) { _ =>
     steps
       .foldLeft[Either[DeleteError, List[Step]]](Right(List.empty)) {
         case (acc, step) if step.id == id && step.isPending => acc
-        case (_, step) if step.id == id                     => Left(NotSupported(step.status))
+        case (_, step) if step.id == id                     => Left(CannotOperateOnAnInFlightOrFinishedStep)
         case (acc, step)                                    => acc.map(_ :+ step)
       }
       .map(steps => copy(runId, steps))
@@ -49,7 +48,7 @@ final case class StepList private[models] (runId: Id, steps: List[Step]) extends
       insertStepsAfter(id, toSteps(commands)).map(updatedSteps => copy(runId, updatedSteps))
     }
 
-  def discardPending: Either[EditorError, StepList] = Right(copy(runId, steps.filterNot(_.isPending)))
+  def discardPending: StepList = copy(runId, steps.filterNot(_.isPending))
 
   def addBreakpoint(id: Id): Either[AddBreakpointError, StepList] = ifExists(id) { _ =>
     steps
@@ -60,42 +59,43 @@ final case class StepList private[models] (runId: Id, steps: List[Step]) extends
       .map(steps => copy(runId, steps))
   }
 
-  def removeBreakpoint(id: Id): Either[RemoveBreakpointError, StepList] =
+  def removeBreakpoint(id: Id): Either[IdDoesNotExist, StepList] =
     ifExists(id)(_ => Right(updateAll(id, _.removeBreakpoint())))
 
-  def pause: Either[PauseError, StepList] =
+  def pause: Either[CannotOperateOnAnInFlightOrFinishedStep.type, StepList] =
     nextPending
       .map(_.addBreakpoint().map(updateStep))
-      .getOrElse(Left(PauseFailed("No pending step found, pausing is only supported for pending steps")))
+      .getOrElse(Left(CannotOperateOnAnInFlightOrFinishedStep))
 
-  def resume: Either[EditorError, StepList] =
+  def resume: StepList =
     nextPending
-      .map(step => Right(updateStep(step.removeBreakpoint())))
-      .getOrElse(Right(this))
+      .map(step => updateStep(step.removeBreakpoint()))
+      .getOrElse(this)
 
-  private[ocs] def updateStatus(id: Id, stepStatus: StepStatus): Either[UpdateError, StepList] =
-    ifExists(id) { _ =>
-      steps
-        .foldLeft[Either[UpdateError, List[Step]]](Right(List.empty)) {
-          case (acc, step) if step.id == id => step.withStatus(stepStatus).flatMap(step => acc.map(_ :+ step))
-          case (acc, step)                  => acc.map(_ :+ step)
+  private[ocs] def updateStatus(id: Id, stepStatus: StepStatus): StepList =
+    copy(
+      steps = steps
+        .foldLeft[List[Step]](List.empty) {
+          case (acc, step) if step.id == id =>
+            acc :+ step.withStatus(stepStatus)
+          case (acc, step) => acc :+ step
         }
-        .map(steps => copy(runId, steps))
-    }
+    )
 
   private def replaceSteps(id: Id, steps: List[Step]): Either[ReplaceError, StepList] =
     insertStepsAfter(id, steps).map(updatedSteps => copy(runId, updatedSteps.filterNot(_.id == id)))
 
-  private def insertStepsAfter(id: Id, newSteps: List[Step]): Either[NotSupported, List[Step]] = {
+  private def insertStepsAfter(id: Id, newSteps: List[Step]): Either[CannotInsertOrReplaceAfterAFinishedStep.type, List[Step]] = {
     val (pre, post)        = steps.span(_.id != id)
     val stepToInsertBefore = post.tail.headOption
     stepToInsertBefore match {
-      case Some(step) if !step.isPending => Left(NotSupported(step.status))
-      case _                             => Right(pre ::: post.headOption.toList ::: newSteps ::: post.tail)
+      case Some(step) if !step.isPending =>
+        Left(CannotInsertOrReplaceAfterAFinishedStep) // fixme: if finished then throw error - should be supported on in-flight?
+      case _ => Right(pre ::: post.headOption.toList ::: newSteps ::: post.tail)
     }
   }
 
-  private[ocs] def updateStep(step: Step) = updateAll(step.id, _ => step)
+  private[ocs] def updateStep(step: Step): StepList = updateAll(step.id, _ => step)
 
   private def updateAll(id: Id, f: Step => Step): StepList =
     copy(runId, steps.map {

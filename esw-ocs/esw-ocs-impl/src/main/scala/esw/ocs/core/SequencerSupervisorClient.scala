@@ -5,12 +5,12 @@ import akka.actor.typed.scaladsl.AskPattern._
 import akka.actor.typed.{ActorRef, ActorSystem}
 import akka.util.Timeout
 import esw.ocs.api.SequencerSupervisor
-import esw.ocs.api.models.messages.SequencerMessages.{Abort, LifecycleMsg, Shutdown}
+import esw.ocs.api.models.messages.SequencerMessages.{Abort, EswSequencerMessage, Shutdown}
 import esw.ocs.api.models.messages.SequencerResponses.LifecycleResponse
 
 import scala.concurrent.Future
 
-class SequencerSupervisorClient(sequencer: ActorRef[LifecycleMsg])(
+class SequencerSupervisorClient(sequencer: ActorRef[EswSequencerMessage])(
     implicit system: ActorSystem[_],
     timeout: Timeout
 ) extends SequencerSupervisor {
