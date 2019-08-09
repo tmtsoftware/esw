@@ -18,8 +18,3 @@ object EditorError {
   case object CannotInsertOrReplaceAfterAFinishedStep extends InsertError with ReplaceError
   case class IdDoesNotExist(id: Id)                   extends ReplaceError with InsertError with DeleteError with AddBreakpointError
 }
-
-// load-and-start sequence error
-case object DuplicateIdsFound {
-  val description = "Duplicate command Ids found in given sequence"
-}

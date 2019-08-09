@@ -18,7 +18,6 @@ import esw.ocs.api.models.messages.EditorError._
 import esw.ocs.api.models.messages.SequenceComponentMsg.{GetStatus, LoadScript, UnloadScript}
 import esw.ocs.api.models.messages.SequenceComponentResponses.{GetStatusResponse, LoadScriptResponse}
 import esw.ocs.api.models.messages.SequencerMessages._
-import esw.ocs.api.models.messages.SequencerResponses.{EditorResponse, LifecycleResponse, LoadSequenceResponse, StepListResponse}
 import esw.ocs.api.models.messages._
 import esw.ocs.api.models.{Step, StepList, StepStatus}
 import org.scalatest.prop.TableDrivenPropertyChecks.forAll
@@ -41,7 +40,7 @@ class OcsFrameworkAkkaSerializerTest extends BaseTestSuite {
   val lifecycleResponseProbeRef: ActorRef[LifecycleResponse]       = TestProbe[LifecycleResponse].ref
   val editorResponseProbeRef: ActorRef[EditorResponse]             = TestProbe[EditorResponse].ref
   val stepListResponseProbeRef: ActorRef[StepList]                 = TestProbe[StepList].ref
-  val stepListOptionResponseProbeRef: ActorRef[StepListResponse]   = TestProbe[StepListResponse].ref
+  val stepListOptionResponseProbeRef: ActorRef[GetSequenceResult]  = TestProbe[GetSequenceResult].ref
   val booleanResponseProbeRef: ActorRef[Boolean]                   = TestProbe[Boolean].ref
   val setupCommand                                                 = Setup(Prefix("esw.test"), CommandName("test"), None)
   val steps: List[Step]                                            = List(Step(setupCommand))

@@ -9,8 +9,7 @@ import csw.logging.client.scaladsl.LoggerFactory
 import esw.ocs.api.codecs.OcsFrameworkCodecs
 import esw.ocs.api.models.StepList
 import esw.ocs.api.models.messages.SequenceComponentResponses.{GetStatusResponse, LoadScriptResponse}
-import esw.ocs.api.models.messages.SequencerMessages.{LifecycleMsg, _}
-import esw.ocs.api.models.messages.SequencerResponses.{EditorResponse, LifecycleResponse, LoadSequenceResponse, StepListResponse}
+import esw.ocs.api.models.messages.SequencerMessages._
 import esw.ocs.api.models.messages._
 import io.bullet.borer.{Cbor, Decoder}
 
@@ -34,7 +33,7 @@ class OcsFrameworkAkkaSerializer(_actorSystem: ExtendedActorSystem) extends OcsF
     case x: GetStatusResponse    => Cbor.encode(x).toByteArray
     case x: LifecycleResponse    => Cbor.encode(x).toByteArray
     case x: EditorResponse       => Cbor.encode(x).toByteArray
-    case x: StepListResponse     => Cbor.encode(x).toByteArray
+    case x: GetSequenceResult    => Cbor.encode(x).toByteArray
     case x: SequenceError        => Cbor.encode(x).toByteArray
     case _ =>
       val ex = new RuntimeException(s"does not support encoding of $o")
@@ -59,7 +58,7 @@ class OcsFrameworkAkkaSerializer(_actorSystem: ExtendedActorSystem) extends OcsF
       fromBinary[LoadScriptResponse] orElse
       fromBinary[GetStatusResponse] orElse
       fromBinary[EditorResponse] orElse
-      fromBinary[StepListResponse] orElse
+      fromBinary[GetSequenceResult] orElse
       fromBinary[LoadSequence] orElse
       fromBinary[LoadSequenceResponse] orElse
       fromBinary[StartSequence] orElse
