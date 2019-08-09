@@ -55,7 +55,7 @@ class SequencerCommandServiceUtilTest extends BaseTestSuite {
       eventualResponse.futureValue shouldBe Started(sequence.runId)
     }
 
-    "throw exception when invalid sequencer name is provided" in {
+    "throw exception when invalid sequencer name is provided | ESW-195" in {
       //simulates that no sequencer is registered for given Connection
       when(locationService.resolve(connection, timeout.duration)).thenReturn(Future.successful(None))
 
