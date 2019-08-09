@@ -2,7 +2,7 @@ package esw.ocs.internal
 
 import com.typesafe.config.{Config, ConfigFactory}
 import csw.params.core.models.Prefix
-import esw.ocs.BaseTestSuite
+import esw.ocs.api.BaseTestSuite
 import esw.ocs.exceptions.ScriptLoadingException.ScriptConfigurationMissingException
 
 class SequencerConfigTest extends BaseTestSuite {
@@ -12,9 +12,20 @@ class SequencerConfigTest extends BaseTestSuite {
     "create SequencerConfig based on sequencerId and observingMode | ESW-103" in {
       val sequencerId      = "testSequencerId1"
       val observingMode    = "testObservingMode1"
-      val sequencerConfigs = SequencerConfig.from(config, sequencerId, observingMode)
+      val sequencerConfigs = SequencerConfig.from(config, sequencerId, observingMode, None)
 
       sequencerConfigs.sequencerName should ===("testSequencerId1@testObservingMode1")
+      sequencerConfigs.prefix should ===(Prefix("esw.ocs.prefix1"))
+      sequencerConfigs.scriptClass should ===(classOf[ValidTestScript].getCanonicalName)
+    }
+
+    "create SequencerConfig based on sequencerId and observingMode | ESW-103, ESW-214" in {
+      val sequencerId           = "testSequencerId1"
+      val observingMode         = "testObservingMode1"
+      val sequenceComponentName = "OCS_1"
+      val sequencerConfigs      = SequencerConfig.from(config, sequencerId, observingMode, Some(sequenceComponentName))
+
+      sequencerConfigs.sequencerName should ===("OCS_1@testSequencerId1@testObservingMode1")
       sequencerConfigs.prefix should ===(Prefix("esw.ocs.prefix1"))
       sequencerConfigs.scriptClass should ===(classOf[ValidTestScript].getCanonicalName)
     }
@@ -24,7 +35,7 @@ class SequencerConfigTest extends BaseTestSuite {
       val observingMode = "invalidObservingMode"
 
       val exception = intercept[ScriptConfigurationMissingException] {
-        SequencerConfig.from(config, sequencerId, observingMode)
+        SequencerConfig.from(config, sequencerId, observingMode, None)
       }
       exception.getMessage should ===(s"Script configuration missing for $sequencerId with $observingMode")
     }

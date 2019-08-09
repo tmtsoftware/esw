@@ -7,8 +7,8 @@ import akka.actor.typed.scaladsl.Behaviors
 import csw.location.models.Connection.AkkaConnection
 import csw.location.models.{AkkaLocation, ComponentId, ComponentType, Location}
 import csw.testkit.scaladsl.ScalaTestFrameworkTestKit
-import esw.ocs.BaseTestSuite
-import esw.ocs.api.models.messages.SequenceComponentMsg.{GetStatus, LoadScript, UnloadScript}
+import esw.ocs.api.BaseTestSuite
+import esw.ocs.api.models.messages.SequenceComponentMsg._
 import esw.ocs.api.models.messages.SequenceComponentResponses.{GetStatusResponse, LoadScriptResponse}
 import esw.ocs.api.models.messages.{RegistrationError, SequenceComponentMsg}
 
@@ -17,9 +17,12 @@ import scala.concurrent.duration.DurationLong
 class SequenceComponentBehaviorTest extends ScalaTestFrameworkTestKit with BaseTestSuite {
   import frameworkTestKit._
   private implicit val typedSystem: ActorSystem[_] = actorSystem
+  val ocsSequenceComponentName                     = "OCS_1"
 
   private def createBehaviorTestKit(): BehaviorTestKit[SequenceComponentMsg] = BehaviorTestKit(
-    Behaviors.setup[SequenceComponentMsg](_ => SequenceComponentBehavior.behavior)
+    Behaviors.setup[SequenceComponentMsg](_ => {
+      SequenceComponentBehavior.behavior(ocsSequenceComponentName)
+    })
   )
 
   "SequenceComponentBehavior" must {
@@ -37,7 +40,7 @@ class SequenceComponentBehaviorTest extends ScalaTestFrameworkTestKit with BaseT
       //Assert if script loaded and returns AkkaLocation of sequencer
       val loadScriptLocationResponse: AkkaLocation = loadScriptResponseProbe.receiveMessage.response.rightValue
       loadScriptLocationResponse.connection shouldEqual AkkaConnection(
-        ComponentId(s"$sequencerId@$observingMode", ComponentType.Sequencer)
+        ComponentId(s"$ocsSequenceComponentName@$sequencerId@$observingMode", ComponentType.Sequencer)
       )
 
       //GetStatus
@@ -46,7 +49,7 @@ class SequenceComponentBehaviorTest extends ScalaTestFrameworkTestKit with BaseT
       //Assert if get status returns AkkaLocation of sequencer currently running
       val getStatusLocationResponse: Location = getStatusProbe.receiveMessage(5.seconds).response.get
       getStatusLocationResponse.connection shouldEqual AkkaConnection(
-        ComponentId(s"$sequencerId@$observingMode", ComponentType.Sequencer)
+        ComponentId(s"$ocsSequenceComponentName@$sequencerId@$observingMode", ComponentType.Sequencer)
       )
 
       //UnloadScript
@@ -69,7 +72,7 @@ class SequenceComponentBehaviorTest extends ScalaTestFrameworkTestKit with BaseT
       //Assert if script loaded and returns AkkaLocation of sequencer
       val loadScriptLocationResponse: AkkaLocation = loadScriptResponseProbe.receiveMessage.response.rightValue
       loadScriptLocationResponse.connection shouldEqual AkkaConnection(
-        ComponentId(s"$sequencerId@$observingMode", ComponentType.Sequencer)
+        ComponentId(s"$ocsSequenceComponentName@$sequencerId@$observingMode", ComponentType.Sequencer)
       )
 
       behaviorTestKit.run(LoadScript("sequencerId3", "observingMode3", loadScriptResponseProbe.ref))
@@ -92,6 +95,14 @@ class SequenceComponentBehaviorTest extends ScalaTestFrameworkTestKit with BaseT
 
       //Assert if UnloadScript returns Done
       unloadScriptResponseProbe.expectMessage(Done)
+    }
+
+    "get killed if stop msg is received | ESW-103, ESW-214" in {
+      val behaviorTestKit = createBehaviorTestKit()
+
+      behaviorTestKit.run(Stop)
+
+      behaviorTestKit.isAlive shouldEqual false
     }
   }
 }

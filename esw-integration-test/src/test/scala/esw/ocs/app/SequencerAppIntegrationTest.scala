@@ -15,7 +15,7 @@ import csw.params.commands.CommandResponse.Completed
 import csw.params.commands.{CommandName, Sequence, Setup}
 import csw.params.core.models.Prefix
 import csw.testkit.scaladsl.ScalaTestFrameworkTestKit
-import esw.ocs.BaseTestSuite
+import esw.ocs.api.BaseTestSuite
 import esw.ocs.api.models.messages.SequenceComponentMsg
 import esw.ocs.api.models.messages.SequenceComponentMsg.{LoadScript, UnloadScript}
 import esw.ocs.api.models.messages.SequenceComponentResponses.LoadScriptResponse
@@ -35,14 +35,14 @@ class SequencerAppIntegrationTest extends ScalaTestFrameworkTestKit with BaseTes
   override implicit def patienceConfig: PatienceConfig = PatienceConfig(15.seconds, 10.milli)
 
   "SequenceComponent command" must {
-    "start sequence component with provided prefix and register it with location service | ESW-102, ESW-103, ESW-147, ESW-151" in {
-      val prefixStr             = "test.prefix"
+    "start sequence component with provided prefix and register it with location service | ESW-102, ESW-103, ESW-147, ESW-151, ESW-214" in {
+      val prefixStr             = "esw.test.prefix"
       val prefix: Prefix        = Prefix(prefixStr)
       val uniqueId              = "1"
       val sequenceComponentName = s"${prefix.subsystem}_$uniqueId"
 
       // start Sequence Component
-      SequencerApp.run(SequenceComponent(prefixStr), enableLogging = false)
+      SequencerApp.run(SequenceComponent(prefix), enableLogging = false)
 
       // verify Sequence component is started and registered with location service
       val connection           = AkkaConnection(ComponentId(sequenceComponentName, ComponentType.SequenceComponent))
@@ -58,6 +58,10 @@ class SequencerAppIntegrationTest extends ScalaTestFrameworkTestKit with BaseTes
       val response          = probe.expectMessageType[LoadScriptResponse]
       val sequencerLocation = response.response.rightValue
 
+      //verify sequencerName has SequenceComponentName
+      val actualSequencerName: String = sequencerLocation.connection.componentId.name
+      actualSequencerName shouldEqual s"$sequenceComponentName@testSequencerId1@testObservingMode1"
+
       val commandService = new SequencerCommandServiceImpl(sequencerLocation)
       val setup          = Setup(Prefix("wfos.home.datum"), CommandName("command-1"), None)
       val sequence       = Sequence(setup)
@@ -70,12 +74,12 @@ class SequencerAppIntegrationTest extends ScalaTestFrameworkTestKit with BaseTes
     }
 
     "start sequence component and register with automatically generated, incremental uniqueIDs, ESW-144" in {
-      val prefixStr      = "test.prefix"
+      val prefixStr      = "esw.test.prefix"
       val prefix: Prefix = Prefix(prefixStr)
 
-      Future { SequencerApp.run(SequenceComponent(prefixStr), false) }
-      Future { SequencerApp.run(SequenceComponent(prefixStr), false) }
-      Future { SequencerApp.run(SequenceComponent(prefixStr), false) }
+      Future { SequencerApp.run(SequenceComponent(prefix), false) }
+      Future { SequencerApp.run(SequenceComponent(prefix), false) }
+      Future { SequencerApp.run(SequenceComponent(prefix), false) }
 
       val uniqueId1              = "1"
       val sequenceComponentName1 = s"${prefix.subsystem}_$uniqueId1"

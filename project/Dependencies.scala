@@ -9,8 +9,9 @@ object Dependencies {
       Csw.`csw-location-api`,
       Csw.`csw-command-client`,
       Libs.`enumeratum`.value,
-      Libs.scalatest % Test,
-      Akka.`akka-actor-testkit-typed` % Test
+      Libs.scalatest                  % Test,
+      Akka.`akka-actor-testkit-typed` % Test,
+      Libs.`mockito-scala`            % Test
     )
   )
 
@@ -30,7 +31,6 @@ object Dependencies {
   val OcsMacros: Def.Initialize[Seq[ModuleID]] = Def.setting(
     Seq(Libs.`scala-reflect`, Libs.scalatest % Test)
   )
-
 
   val OcsApp: Def.Initialize[Seq[ModuleID]] = Def.setting(
     Seq(
@@ -78,6 +78,15 @@ object Dependencies {
     Seq(
       Csw.`csw-testkit` % Test,
       Libs.scalatest    % Test
+    )
+  )
+
+  val Utils: Def.Initialize[Seq[ModuleID]] = Def.setting(
+    Seq(
+      Csw.`csw-location-client`,
+      Libs.scalatest                  % Test,
+      Libs.`mockito-scala`            % Test,
+      Akka.`akka-actor-testkit-typed` % Test
     )
   )
 }

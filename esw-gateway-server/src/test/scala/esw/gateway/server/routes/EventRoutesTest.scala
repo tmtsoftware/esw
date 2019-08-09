@@ -37,8 +37,8 @@ class EventRoutesTest extends HttpTestSuite {
   private val eventKey1       = EventKey(tcsEventKeyStr1)
   private val eventKey2       = EventKey(tcsEventKeyStr2)
 
-  private val event1: Event = ObserveEvent(Prefix("tsc"), EventName("event.key1"))
-  private val event2: Event = ObserveEvent(Prefix("tsc"), EventName("event.key2"))
+  private val event1: Event = ObserveEvent(Prefix("tcs"), EventName("event.key1"))
+  private val event2: Event = ObserveEvent(Prefix("tcs"), EventName("event.key2"))
 
   private val eventSubscription: EventSubscription = new EventSubscription {
     override def unsubscribe(): Future[Done] = Future.successful(Done)

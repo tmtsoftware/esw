@@ -1,6 +1,6 @@
 package esw.ocs.dsl
 
-import esw.ocs.BaseTestSuite
+import esw.ocs.api.BaseTestSuite
 import esw.ocs.dsl.utils.FutureUtils
 import esw.ocs.macros.StrandEc
 import org.scalatest.concurrent.PatienceConfiguration.Interval

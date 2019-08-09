@@ -15,4 +15,5 @@ object SequenceComponentMsg {
   ) extends SequenceComponentMsg
   final case class UnloadScript(replyTo: ActorRef[Done])           extends SequenceComponentMsg
   final case class GetStatus(replyTo: ActorRef[GetStatusResponse]) extends SequenceComponentMsg
+  private[ocs] final case object Stop                              extends SequenceComponentMsg
 }

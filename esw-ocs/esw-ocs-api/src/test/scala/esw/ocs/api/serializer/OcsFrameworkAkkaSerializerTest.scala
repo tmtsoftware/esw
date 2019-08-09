@@ -43,7 +43,7 @@ class OcsFrameworkAkkaSerializerTest extends BaseTestSuite {
   val stepListResponseProbeRef: ActorRef[StepList]                 = TestProbe[StepList].ref
   val stepListOptionResponseProbeRef: ActorRef[StepListResponse]   = TestProbe[StepListResponse].ref
   val booleanResponseProbeRef: ActorRef[Boolean]                   = TestProbe[Boolean].ref
-  val setupCommand                                                 = Setup(Prefix("test"), CommandName("test"), None)
+  val setupCommand                                                 = Setup(Prefix("esw.test"), CommandName("test"), None)
   val steps: List[Step]                                            = List(Step(setupCommand))
   val sequenceCommandList: List[SequenceCommand]                   = List(setupCommand)
   val loadScriptResponseProbeRef: ActorRef[LoadScriptResponse] =
@@ -52,7 +52,8 @@ class OcsFrameworkAkkaSerializerTest extends BaseTestSuite {
     TestProbe[GetStatusResponse].ref
   val unloadScriptResponseProbeRef: ActorRef[Done] =
     TestProbe[Done].ref
-  val akkaLocation = AkkaLocation(AkkaConnection(ComponentId("test", ComponentType.Sequencer)), Prefix("test"), new URI("uri"))
+  val akkaLocation =
+    AkkaLocation(AkkaConnection(ComponentId("test", ComponentType.Sequencer)), Prefix("esw.test"), new URI("uri"))
 
   "Load and Start Msg" must {
     "use OcsFrameworkAkkaSerializer for (de)serialization" in {
@@ -160,7 +161,7 @@ class OcsFrameworkAkkaSerializerTest extends BaseTestSuite {
     "use OcsFrameworkAkkaSerializer for (de)serialization" in {
       val akkaLocation = AkkaLocation(
         AkkaConnection(ComponentId("testComponent", ComponentType.Sequencer)),
-        Prefix("test.component"),
+        Prefix("esw.test.component"),
         new URI("testURI")
       )
       val testData = Table(
@@ -229,7 +230,7 @@ class OcsFrameworkAkkaSerializerTest extends BaseTestSuite {
     "use OcsFrameworkAkkaSerializer for (de)serialization" in {
       val testData = Table(
         "StepListResponse",
-        StepListResponse(Some(StepList(Id(), List(Step(Setup(Prefix("test"), CommandName("test"), None))))))
+        StepListResponse(Some(StepList(Id(), List(Step(Setup(Prefix("esw.test"), CommandName("test"), None))))))
       )
 
       forAll(testData) { model =>

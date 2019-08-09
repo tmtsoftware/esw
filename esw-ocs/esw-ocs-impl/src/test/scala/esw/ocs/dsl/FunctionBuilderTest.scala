@@ -1,6 +1,6 @@
 package esw.ocs.dsl
 
-import esw.ocs.BaseTestSuite
+import esw.ocs.api.BaseTestSuite
 import esw.ocs.dsl.utils.FunctionBuilder
 
 class FunctionBuilderTest extends BaseTestSuite {

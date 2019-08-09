@@ -1,55 +1,28 @@
 package esw.ocs.internal
 
-import akka.actor.typed.SpawnProtocol.Spawn
-import akka.actor.typed.scaladsl.AskPattern.Askable
-import akka.actor.typed.{ActorRef, ActorSystem}
-import csw.location.api.extensions.ActorExtension.RichActor
 import csw.location.api.scaladsl.LocationService
 import csw.location.client.scaladsl.HttpLocationServiceFactory
-import csw.location.models.Connection.AkkaConnection
-import csw.location.models.{AkkaLocation, AkkaRegistration, ComponentId, ComponentType}
+import csw.location.models.AkkaLocation
 import csw.params.core.models.Prefix
-import esw.ocs.api.models.messages.{RegistrationError, SequenceComponentMsg}
-import esw.ocs.core.SequenceComponentBehavior
+import esw.ocs.api.models.messages.RegistrationError
 import esw.ocs.syntax.FutureSyntax.FutureOps
-import esw.ocs.utils.LocationServiceUtils
-
-import scala.concurrent.ExecutionContext
+import esw.utils.csw.LocationServiceUtils
 
 // $COVERAGE-OFF$
-private[ocs] class SequenceComponentWiring(prefixStr: String) {
+private[ocs] class SequenceComponentWiring(prefix: Prefix) {
   private val registrationRetryCount = 10
-  private val prefix: Prefix         = Prefix(prefixStr)
 
-  lazy val actorRuntime = new ActorRuntime(prefixStr)
+  lazy val actorRuntime = new ActorRuntime(prefix.prefix)
   import actorRuntime._
-
-  lazy val sequenceComponentRef: ActorRef[SequenceComponentMsg] =
-    (typedSystem ? Spawn(SequenceComponentBehavior.behavior, prefixStr)).block
 
   private lazy val locationService: LocationService = HttpLocationServiceFactory.makeLocalClient
 
   private lazy val locationServiceUtils: LocationServiceUtils = new LocationServiceUtils(locationService)
-
-  def registration()(implicit actorSystem: ActorSystem[_]): AkkaRegistration = {
-    val subsystem                     = prefix.subsystem
-    implicit val ec: ExecutionContext = actorSystem.executionContext
-    locationServiceUtils
-      .listBy(subsystem, ComponentType.SequenceComponent)
-      .map { sequenceComponents =>
-        val uniqueId              = s"${sequenceComponents.length + 1}"
-        val sequenceComponentName = s"${subsystem}_$uniqueId"
-        AkkaRegistration(
-          AkkaConnection(ComponentId(sequenceComponentName, ComponentType.SequenceComponent)),
-          prefix,
-          sequenceComponentRef.toURI
-        )
-      }
-      .block
-  }
+  private lazy val sequenceComponentRegistration =
+    new SequenceComponentRegistration(prefix, locationService, locationServiceUtils)
 
   def start(): Either[RegistrationError, AkkaLocation] =
-    locationServiceUtils.registerWithRetry(registration(), registrationRetryCount).block
+    sequenceComponentRegistration.registerWithRetry(registrationRetryCount).block
 
 }
 // $COVERAGE-ON$

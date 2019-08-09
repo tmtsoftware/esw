@@ -8,7 +8,7 @@ import csw.command.client.CommandResponseManager
 import csw.params.commands.CommandResponse._
 import csw.params.commands.{CommandName, Observe, Sequence, Setup}
 import csw.params.core.models.{Id, Prefix}
-import esw.ocs.BaseTestSuite
+import esw.ocs.api.BaseTestSuite
 import esw.ocs.api.models.StepStatus.{Finished, InFlight, Pending}
 import esw.ocs.api.models.messages.SequenceError.ExistingSequenceIsInProcess
 import esw.ocs.api.models.{Step, StepList}
@@ -42,7 +42,7 @@ class SequencerTest extends BaseTestSuite {
 
   "load" must {
     "store steplist in intermediate result | ESW-154" in {
-      val command1 = Setup(Prefix("test"), CommandName("command-1"), None)
+      val command1 = Setup(Prefix("esw.test"), CommandName("command-1"), None)
       val sequence = Sequence(Id(), Seq(command1))
 
       val sequencerSetup = new SequencerSetup(sequence)
@@ -56,7 +56,7 @@ class SequencerTest extends BaseTestSuite {
 
   "start" must {
     "execute existing loaded sequence | ESW-154" in {
-      val command1 = Setup(Prefix("test"), CommandName("command-1"), None)
+      val command1 = Setup(Prefix("esw.test"), CommandName("command-1"), None)
       val sequence = Sequence(Id(), Seq(command1))
       val latch    = new CountDownLatch(1)
 
@@ -80,8 +80,8 @@ class SequencerTest extends BaseTestSuite {
 
   "loadAndStartSequence" must {
     "get completed sequence response when all commands succeed | ESW-158, ESW-145" in {
-      val command1 = Setup(Prefix("test"), CommandName("command-1"), None)
-      val command2 = Observe(Prefix("test"), CommandName("command-2"), None)
+      val command1 = Setup(Prefix("esw.test"), CommandName("command-1"), None)
+      val command2 = Observe(Prefix("esw.test"), CommandName("command-2"), None)
       val sequence = Sequence(Id(), Seq(command1, command2))
       val latch    = new CountDownLatch(2)
 
@@ -110,10 +110,10 @@ class SequencerTest extends BaseTestSuite {
     }
 
     "short circuit on first failed command and get failed sequence response | ESW-158, ESW-145" in {
-      val command1 = Setup(Prefix("test"), CommandName("command-1"), None)
-      val command2 = Observe(Prefix("test"), CommandName("command-2"), None)
-      val command3 = Observe(Prefix("test"), CommandName("command-3"), None)
-      val command4 = Observe(Prefix("test"), CommandName("command-4"), None)
+      val command1 = Setup(Prefix("esw.test"), CommandName("command-1"), None)
+      val command2 = Observe(Prefix("esw.test"), CommandName("command-2"), None)
+      val command3 = Observe(Prefix("esw.test"), CommandName("command-3"), None)
+      val command4 = Observe(Prefix("esw.test"), CommandName("command-4"), None)
       val sequence = Sequence(Id(), Seq(command1, command2, command3, command4))
       val latch    = new CountDownLatch(2)
 
@@ -143,8 +143,8 @@ class SequencerTest extends BaseTestSuite {
     }
 
     "fail with ExistingSequenceIsInProcess error when existing sequence is not finished | ESW-158, ESW-145" in {
-      val command1 = Setup(Prefix("test"), CommandName("command-1"), None)
-      val command2 = Observe(Prefix("test"), CommandName("command-2"), None)
+      val command1 = Setup(Prefix("esw.test"), CommandName("command-1"), None)
+      val command2 = Observe(Prefix("esw.test"), CommandName("command-2"), None)
       val sequence = Sequence(Id(), Seq(command1, command2))
 
       val sequencerSetup = new SequencerSetup(sequence)
@@ -153,8 +153,8 @@ class SequencerTest extends BaseTestSuite {
       sequencer.loadAndStart(sequence)
       eventually(sequencer.isAvailable.futureValue should ===(false))
 
-      val command3    = Setup(Prefix("test"), CommandName("command-3"), None)
-      val command4    = Observe(Prefix("test"), CommandName("command-4"), None)
+      val command3    = Setup(Prefix("esw.test"), CommandName("command-3"), None)
+      val command4    = Observe(Prefix("esw.test"), CommandName("command-4"), None)
       val newSequence = Sequence(Id(), Seq(command3, command4))
 
       val processResponse2 = sequencer.loadAndStart(newSequence)
@@ -164,7 +164,7 @@ class SequencerTest extends BaseTestSuite {
 
   "readyToExecuteNext" must {
     "return Done immediately when command is available for execution" in {
-      val command1 = Setup(Prefix("test"), CommandName("command-1"), None)
+      val command1 = Setup(Prefix("esw.test"), CommandName("command-1"), None)
       val sequence = Sequence(Id(), Seq(command1))
 
       val sequencerSetup = new SequencerSetup(sequence)
@@ -176,8 +176,8 @@ class SequencerTest extends BaseTestSuite {
       sequencer.readyToExecuteNext().futureValue shouldBe Done
     }
     "wait till completion of current command" in {
-      val command1 = Setup(Prefix("test"), CommandName("command-1"), None)
-      val command2 = Observe(Prefix("test"), CommandName("command-2"), None)
+      val command1 = Setup(Prefix("esw.test"), CommandName("command-1"), None)
+      val command2 = Observe(Prefix("esw.test"), CommandName("command-2"), None)
       val sequence = Sequence(Id(), Seq(command1, command2))
 
       val sequencerSetup = new SequencerSetup(sequence)
@@ -201,7 +201,7 @@ class SequencerTest extends BaseTestSuite {
 
     }
     "wait till next sequence is received if current sequence is finished" in {
-      val command1       = Setup(Prefix("test"), CommandName("command-1"), None)
+      val command1       = Setup(Prefix("esw.test"), CommandName("command-1"), None)
       val sequence       = Sequence(Id(), Seq(command1))
       val sequencerSetup = new SequencerSetup(sequence)
       import sequencerSetup._
@@ -224,7 +224,7 @@ class SequencerTest extends BaseTestSuite {
 
       readyToExecuteNextF.value should ===(None)
 
-      val command2    = Setup(Prefix("test"), CommandName("command-2"), None)
+      val command2    = Setup(Prefix("esw.test"), CommandName("command-2"), None)
       val newSequence = Sequence(Id(), Seq(command2))
       sequencer.loadAndStart(newSequence)
       readyToExecuteNextF.futureValue should ===(Done)
@@ -233,8 +233,8 @@ class SequencerTest extends BaseTestSuite {
 
   "mayBeNext" must {
     "return next pending command" in {
-      val command1 = Setup(Prefix("test"), CommandName("command-1"), None)
-      val command2 = Observe(Prefix("test"), CommandName("command-2"), None)
+      val command1 = Setup(Prefix("esw.test"), CommandName("command-1"), None)
+      val command2 = Observe(Prefix("esw.test"), CommandName("command-2"), None)
       val sequence = Sequence(Id(), Seq(command1, command2))
 
       val sequencerSetup = new SequencerSetup(sequence)
@@ -247,7 +247,7 @@ class SequencerTest extends BaseTestSuite {
     }
 
     "not return any command when no command is in Pending status" in {
-      val command1 = Setup(Prefix("test"), CommandName("command-1"), None)
+      val command1 = Setup(Prefix("esw.test"), CommandName("command-1"), None)
       val sequence = Sequence(Id(), Seq(command1))
 
       val sequencerSetup = new SequencerSetup(sequence)
@@ -267,8 +267,8 @@ class SequencerTest extends BaseTestSuite {
 
   "add" must {
     "add provided list of commands to existing sequence | ESW-114" in {
-      val command1 = Setup(Prefix("test"), CommandName("command-1"), None)
-      val command2 = Observe(Prefix("test"), CommandName("command-2"), None)
+      val command1 = Setup(Prefix("esw.test"), CommandName("command-1"), None)
+      val command2 = Observe(Prefix("esw.test"), CommandName("command-2"), None)
       val sequence = Sequence(Id(), Seq(command1, command2))
 
       val sequencerSetup = new SequencerSetup(sequence)
@@ -277,8 +277,8 @@ class SequencerTest extends BaseTestSuite {
       sequencer.loadAndStart(sequence)
       eventually(sequencer.getSequence.futureValue should ===(StepList(sequence).rightValue))
 
-      val command3 = Setup(Prefix("test"), CommandName("command-3"), None)
-      val command4 = Observe(Prefix("test"), CommandName("command-4"), None)
+      val command3 = Setup(Prefix("esw.test"), CommandName("command-3"), None)
+      val command4 = Observe(Prefix("esw.test"), CommandName("command-4"), None)
 
       sequencer.add(List(command3, command4)).rightValue should ===(Done)
       sequencer.getSequence.futureValue should ===(
@@ -293,8 +293,8 @@ class SequencerTest extends BaseTestSuite {
 
   "pause" must {
     "pause at next pending command from the sequence | ESW-104" in {
-      val command1 = Setup(Prefix("test"), CommandName("command-1"), None)
-      val command2 = Observe(Prefix("test"), CommandName("command-2"), None)
+      val command1 = Setup(Prefix("esw.test"), CommandName("command-1"), None)
+      val command2 = Observe(Prefix("esw.test"), CommandName("command-2"), None)
       val sequence = Sequence(Id(), Seq(command1, command2))
       val latch    = new CountDownLatch(2)
 
@@ -326,8 +326,8 @@ class SequencerTest extends BaseTestSuite {
 
   "resume" must {
     "resume executing sequence | ESW-105" in {
-      val command1 = Setup(Prefix("test"), CommandName("command-1"), None)
-      val command2 = Observe(Prefix("test"), CommandName("command-2"), None)
+      val command1 = Setup(Prefix("esw.test"), CommandName("command-1"), None)
+      val command2 = Observe(Prefix("esw.test"), CommandName("command-2"), None)
       val sequence = Sequence(Id(), Seq(command1, command2))
       val latch    = new CountDownLatch(2)
 
@@ -361,9 +361,9 @@ class SequencerTest extends BaseTestSuite {
 
   "discardPending" must {
     "remove all the pending commands from sequence | ESW-110" in {
-      val command1 = Setup(Prefix("test"), CommandName("command-1"), None)
-      val command2 = Observe(Prefix("test"), CommandName("command-2"), None)
-      val command3 = Setup(Prefix("test"), CommandName("command-3"), None)
+      val command1 = Setup(Prefix("esw.test"), CommandName("command-1"), None)
+      val command2 = Observe(Prefix("esw.test"), CommandName("command-2"), None)
+      val command3 = Setup(Prefix("esw.test"), CommandName("command-3"), None)
       val sequence = Sequence(Id(), Seq(command1, command2, command3))
 
       val sequencerSetup = new SequencerSetup(sequence)
@@ -385,9 +385,9 @@ class SequencerTest extends BaseTestSuite {
 
   "replace" must {
     "replace step matching provided id with given list of commands | ESW-108" in {
-      val command1 = Setup(Prefix("test"), CommandName("command-1"), None)
-      val command2 = Observe(Prefix("test"), CommandName("command-2"), None)
-      val command3 = Setup(Prefix("test"), CommandName("command-3"), None)
+      val command1 = Setup(Prefix("esw.test"), CommandName("command-1"), None)
+      val command2 = Observe(Prefix("esw.test"), CommandName("command-2"), None)
+      val command3 = Setup(Prefix("esw.test"), CommandName("command-3"), None)
       val sequence = Sequence(Id(), Seq(command1, command2, command3))
 
       val sequencerSetup = new SequencerSetup(sequence)
@@ -395,8 +395,8 @@ class SequencerTest extends BaseTestSuite {
       sequencer.loadAndStart(sequence)
       eventually(sequencer.getSequence.futureValue should ===(StepList(sequence).rightValue))
 
-      val command4 = Setup(Prefix("test"), CommandName("command-4"), None)
-      val command5 = Observe(Prefix("test"), CommandName("command-5"), None)
+      val command4 = Setup(Prefix("esw.test"), CommandName("command-4"), None)
+      val command5 = Observe(Prefix("esw.test"), CommandName("command-5"), None)
       val expectedReplacedStepList =
         StepList(sequence.runId, List(Step(command1), Step(command4), Step(command5), Step(command3)))
       sequencer.replace(command2.runId, List(command4, command5)).rightValue should ===(Done)
@@ -406,8 +406,8 @@ class SequencerTest extends BaseTestSuite {
 
   "prepend" must {
     "prepend provided list of commands to sequence | ESW-113" in {
-      val command1 = Setup(Prefix("test"), CommandName("command-1"), None)
-      val command2 = Observe(Prefix("test"), CommandName("command-2"), None)
+      val command1 = Setup(Prefix("esw.test"), CommandName("command-1"), None)
+      val command2 = Observe(Prefix("esw.test"), CommandName("command-2"), None)
       val sequence = Sequence(Id(), Seq(command1, command2))
 
       val sequencerSetup = new SequencerSetup(sequence)
@@ -415,8 +415,8 @@ class SequencerTest extends BaseTestSuite {
       sequencer.loadAndStart(sequence)
       eventually(sequencer.getSequence.futureValue should ===(StepList(sequence).rightValue))
 
-      val command3 = Setup(Prefix("test"), CommandName("command-3"), None)
-      val command4 = Observe(Prefix("test"), CommandName("command-4"), None)
+      val command3 = Setup(Prefix("esw.test"), CommandName("command-3"), None)
+      val command4 = Observe(Prefix("esw.test"), CommandName("command-4"), None)
       val expectedPrependedStepList =
         StepList(sequence.runId, List(Step(command3), Step(command4), Step(command1), Step(command2)))
       sequencer.prepend(List(command3, command4)).rightValue should ===(Done)
@@ -426,8 +426,8 @@ class SequencerTest extends BaseTestSuite {
 
   "delete" must {
     "delete step matching provided id | ESW-112" in {
-      val command1 = Setup(Prefix("test"), CommandName("command-1"), None)
-      val command2 = Observe(Prefix("test"), CommandName("command-2"), None)
+      val command1 = Setup(Prefix("esw.test"), CommandName("command-1"), None)
+      val command2 = Observe(Prefix("esw.test"), CommandName("command-2"), None)
       val sequence = Sequence(Id(), Seq(command1, command2))
 
       val sequencerSetup = new SequencerSetup(sequence)
@@ -443,8 +443,8 @@ class SequencerTest extends BaseTestSuite {
 
   "addBreakpoint & removeBreakpoint" must {
     "add and remove breakpoint at step matching provided id | ESW-106, ESW-107" in {
-      val command1 = Setup(Prefix("test"), CommandName("command-1"), None)
-      val command2 = Observe(Prefix("test"), CommandName("command-2"), None)
+      val command1 = Setup(Prefix("esw.test"), CommandName("command-1"), None)
+      val command2 = Observe(Prefix("esw.test"), CommandName("command-2"), None)
       val sequence = Sequence(Id(), Seq(command1, command2))
 
       val sequencerSetup = new SequencerSetup(sequence)
@@ -465,9 +465,9 @@ class SequencerTest extends BaseTestSuite {
 
   "insertAfter" must {
     "insert provided list commands after matching step | ESW-111" in {
-      val command1 = Setup(Prefix("test"), CommandName("command-1"), None)
-      val command2 = Observe(Prefix("test"), CommandName("command-2"), None)
-      val command3 = Setup(Prefix("test"), CommandName("command-3"), None)
+      val command1 = Setup(Prefix("esw.test"), CommandName("command-1"), None)
+      val command2 = Observe(Prefix("esw.test"), CommandName("command-2"), None)
+      val command3 = Setup(Prefix("esw.test"), CommandName("command-3"), None)
       val sequence = Sequence(Id(), Seq(command1, command2, command3))
 
       val sequencerSetup = new SequencerSetup(sequence)
@@ -475,8 +475,8 @@ class SequencerTest extends BaseTestSuite {
       sequencer.loadAndStart(sequence)
       eventually(sequencer.getSequence.futureValue should ===(StepList(sequence).rightValue))
 
-      val command4 = Setup(Prefix("test"), CommandName("command-4"), None)
-      val command5 = Observe(Prefix("test"), CommandName("command-5"), None)
+      val command4 = Setup(Prefix("esw.test"), CommandName("command-4"), None)
+      val command5 = Observe(Prefix("esw.test"), CommandName("command-5"), None)
       val expectedStepList =
         StepList(sequence.runId, List(Step(command1), Step(command2), Step(command4), Step(command5), Step(command3)))
       sequencer.insertAfter(command2.runId, List(command4, command5)).rightValue should ===(Done)
@@ -486,8 +486,8 @@ class SequencerTest extends BaseTestSuite {
 
   "previousSequence" must {
     "return old sequence after receiving new sequence | ESW-157" in {
-      val command1  = Setup(Prefix("test"), CommandName("command-1"), None)
-      val command2  = Observe(Prefix("test"), CommandName("command-2"), None)
+      val command1  = Setup(Prefix("esw.test"), CommandName("command-1"), None)
+      val command2  = Observe(Prefix("esw.test"), CommandName("command-2"), None)
       val sequence  = Sequence(Id(), Seq(command1))
       val sequence2 = Sequence(Id(), Seq(command2))
       val latch     = new CountDownLatch(1)

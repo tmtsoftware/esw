@@ -46,7 +46,7 @@ class CommandRoutesTest extends HttpTestSuite {
       import cswMocks._
       private val componentName           = "test-component"
       private val runId                   = Id("123")
-      private val command: ControlCommand = Setup(Prefix("test"), CommandName("c1"), Some(ObsId("obsId"))).copy(runId = runId)
+      private val command: ControlCommand = Setup(Prefix("esw.test"), CommandName("c1"), Some(ObsId("obsId"))).copy(runId = runId)
 
       when(commandService.validate(command)).thenReturn(Future.successful(Accepted(runId)))
       when(componentFactory.commandService(componentName, hcdType)).thenReturn(Future(commandService))
@@ -61,7 +61,7 @@ class CommandRoutesTest extends HttpTestSuite {
       import cswMocks._
       private val componentName           = "test-component"
       private val runId                   = Id("123")
-      private val command: ControlCommand = Setup(Prefix("test"), CommandName("c1"), Some(ObsId("obsId"))).copy(runId = runId)
+      private val command: ControlCommand = Setup(Prefix("esw.test"), CommandName("c1"), Some(ObsId("obsId"))).copy(runId = runId)
 
       when(commandService.validate(command)).thenReturn(Future.failed(new TimeoutException("")))
       when(componentFactory.commandService(componentName, assemblyType)).thenReturn(Future(commandService))
@@ -79,7 +79,7 @@ class CommandRoutesTest extends HttpTestSuite {
       import cswMocks._
       private val componentName           = "test-component"
       private val runId                   = Id("123")
-      private val command: ControlCommand = Setup(Prefix("test"), CommandName("c1"), Some(ObsId("obsId"))).copy(runId = runId)
+      private val command: ControlCommand = Setup(Prefix("esw.test"), CommandName("c1"), Some(ObsId("obsId"))).copy(runId = runId)
 
       when(commandService.submit(command)).thenReturn(Future.successful(Completed(runId)))
       when(componentFactory.commandService(componentName, hcdType)).thenReturn(Future(commandService))
@@ -95,7 +95,7 @@ class CommandRoutesTest extends HttpTestSuite {
       import cswMocks._
       private val componentName           = "test-component"
       private val runId                   = Id("123")
-      private val command: ControlCommand = Setup(Prefix("test"), CommandName("c1"), Some(ObsId("obsId"))).copy(runId = runId)
+      private val command: ControlCommand = Setup(Prefix("esw.test"), CommandName("c1"), Some(ObsId("obsId"))).copy(runId = runId)
 
       when(commandService.submit(command)).thenReturn(Future.failed(new TimeoutException("")))
       when(componentFactory.commandService(componentName, assemblyType)).thenReturn(Future(commandService))
@@ -113,7 +113,7 @@ class CommandRoutesTest extends HttpTestSuite {
       import cswMocks._
       private val componentName           = "test-component"
       private val runId                   = Id("123")
-      private val command: ControlCommand = Setup(Prefix("test"), CommandName("c1"), Some(ObsId("obsId"))).copy(runId = runId)
+      private val command: ControlCommand = Setup(Prefix("esw.test"), CommandName("c1"), Some(ObsId("obsId"))).copy(runId = runId)
 
       when(commandService.oneway(command)).thenReturn(Future.successful(Accepted(runId)))
       when(componentFactory.commandService(componentName, hcdType)).thenReturn(Future(commandService))
@@ -129,7 +129,7 @@ class CommandRoutesTest extends HttpTestSuite {
       import cswMocks._
       private val componentName           = "test-component"
       private val runId                   = Id("123")
-      private val command: ControlCommand = Setup(Prefix("test"), CommandName("c1"), Some(ObsId("obsId"))).copy(runId = runId)
+      private val command: ControlCommand = Setup(Prefix("esw.test"), CommandName("c1"), Some(ObsId("obsId"))).copy(runId = runId)
 
       when(commandService.oneway(command)).thenReturn(Future.failed(new TimeoutException("")))
       when(componentFactory.commandService(componentName, assemblyType)).thenReturn(Future(commandService))
@@ -172,8 +172,8 @@ class CommandRoutesTest extends HttpTestSuite {
       import cswMocks._
 
       private val componentName = "test-component"
-      private val currentState1 = CurrentState(Prefix("a.b"), StateName("stateName1"))
-      private val currentState2 = CurrentState(Prefix("a.b"), StateName("stateName2"))
+      private val currentState1 = CurrentState(Prefix("esw.a.b"), StateName("stateName1"))
+      private val currentState2 = CurrentState(Prefix("esw.a.b"), StateName("stateName2"))
 
       private val currentStateSubscription = mock[CurrentStateSubscription]
 
@@ -201,7 +201,7 @@ class CommandRoutesTest extends HttpTestSuite {
 
       val componentName = "test-component"
       val stateName1    = StateName("stateName1")
-      val currentState1 = CurrentState(Prefix("a.b"), stateName1)
+      val currentState1 = CurrentState(Prefix("esw.a.b"), stateName1)
 
       private val currentStateSubscription = mock[CurrentStateSubscription]
 
@@ -228,7 +228,7 @@ class CommandRoutesTest extends HttpTestSuite {
       import cswMocks._
       private val componentName = "test-component"
       private val stateName1    = StateName("stateName1")
-      private val currentState1 = CurrentState(Prefix("a.b"), stateName1)
+      private val currentState1 = CurrentState(Prefix("esw.a.b"), stateName1)
 
       private val currentStateSubscription = mock[CurrentStateSubscription]
 

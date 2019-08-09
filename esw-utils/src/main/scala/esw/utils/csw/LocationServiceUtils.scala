@@ -1,14 +1,14 @@
-package esw.ocs.utils
+package esw.utils.csw
 
 import akka.actor.CoordinatedShutdown
 import akka.actor.typed.ActorSystem
 import akka.actor.typed.scaladsl.adapter.TypedActorSystemOps
-import csw.location.api.exceptions.OtherLocationIsRegistered
 import csw.location.api.scaladsl.{LocationService, RegistrationResult}
-import csw.location.models.{AkkaLocation, AkkaRegistration, ComponentType}
+import csw.location.models.{AkkaLocation, AkkaRegistration, ComponentType, Location}
 import csw.params.core.models.Subsystem
 import esw.ocs.api.models.messages.RegistrationError
 
+import scala.async.Async._
 import scala.concurrent.{ExecutionContext, Future}
 import scala.util.control.NonFatal
 
@@ -26,12 +26,7 @@ class LocationServiceUtils(locationService: LocationService) {
 
   def register(
       akkaRegistration: AkkaRegistration
-  )(implicit actorSystem: ActorSystem[_]): Future[Either[RegistrationError, AkkaLocation]] =
-    registerWithRetry(akkaRegistration, 0)
-
-  def registerWithRetry(akkaRegistration: => AkkaRegistration, retryCount: Int)(
-      implicit actorSystem: ActorSystem[_]
-  ): Future[Either[RegistrationError, AkkaLocation]] = {
+  )(implicit actorSystem: ActorSystem[_]): Future[Either[RegistrationError, AkkaLocation]] = {
     implicit val ec: ExecutionContext = actorSystem.executionContext
     locationService
       .register(akkaRegistration)
@@ -40,8 +35,6 @@ class LocationServiceUtils(locationService: LocationService) {
         Right(result.location.asInstanceOf[AkkaLocation])
       }
       .recoverWith {
-        case OtherLocationIsRegistered(_) if retryCount > 0 =>
-          registerWithRetry(akkaRegistration, retryCount - 1)
         case NonFatal(e) => Future.successful(Left(RegistrationError(e.getMessage)))
       }
   }
@@ -54,5 +47,19 @@ class LocationServiceUtils(locationService: LocationService) {
       .map(_.collect {
         case akkaLocation @ AkkaLocation(_, prefix, _) if prefix.subsystem == subsystem => akkaLocation
       })
+  }
+
+  def listByComponentName(nameSubString: String)(implicit ec: ExecutionContext): Future[List[Location]] = {
+    locationService.list.map { locations =>
+      locations.filter(x => x.connection.componentId.name.contains(nameSubString))
+    }
+  }
+
+  def resolveSequencer(sequencerId: String, observingMode: String)(
+      implicit ec: ExecutionContext
+  ): Future[Option[AkkaLocation]] = async {
+    await(locationService.list)
+      .find(location => location.connection.componentId.name.contains(s"$sequencerId@$observingMode"))
+      .asInstanceOf[Option[AkkaLocation]]
   }
 }

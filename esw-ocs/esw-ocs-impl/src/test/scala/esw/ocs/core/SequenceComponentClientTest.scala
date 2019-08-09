@@ -8,14 +8,14 @@ import akka.actor.typed.scaladsl.Behaviors
 import csw.location.models.Connection.AkkaConnection
 import csw.location.models.{AkkaLocation, ComponentId, ComponentType}
 import csw.params.core.models.Prefix
-import esw.ocs.BaseTestSuite
+import esw.ocs.api.BaseTestSuite
 import esw.ocs.api.models.messages.SequenceComponentMsg
-import esw.ocs.api.models.messages.SequenceComponentMsg.{GetStatus, LoadScript, UnloadScript}
+import esw.ocs.api.models.messages.SequenceComponentMsg.{GetStatus, LoadScript, Stop, UnloadScript}
 import esw.ocs.api.models.messages.SequenceComponentResponses.{GetStatusResponse, LoadScriptResponse}
 
 class SequenceComponentClientTest extends ScalaTestWithActorTestKit with BaseTestSuite {
   private val location =
-    AkkaLocation(AkkaConnection(ComponentId("test", ComponentType.Sequencer)), Prefix("test"), new URI("uri"))
+    AkkaLocation(AkkaConnection(ComponentId("test", ComponentType.Sequencer)), Prefix("esw.test"), new URI("uri"))
   private val loadScriptResponse = LoadScriptResponse(Right(location))
   private val getStatusResponse  = GetStatusResponse(Some(location))
 
@@ -24,6 +24,7 @@ class SequenceComponentClientTest extends ScalaTestWithActorTestKit with BaseTes
       case LoadScript(_, _, replyTo) => replyTo ! loadScriptResponse
       case GetStatus(replyTo)        => replyTo ! getStatusResponse
       case UnloadScript(replyTo)     => replyTo ! Done
+      case Stop                      => Behaviors.stopped
     }
     Behaviors.same
   }

@@ -3,7 +3,7 @@ package esw.ocs.dsl
 import java.util.concurrent.atomic.AtomicInteger
 
 import akka.Done
-import esw.ocs.BaseTestSuite
+import esw.ocs.api.BaseTestSuite
 import org.scalatest.time.SpanSugar.convertFloatToGrainOfTime
 
 import scala.concurrent.ExecutionContext.Implicits

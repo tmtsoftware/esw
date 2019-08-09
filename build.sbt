@@ -43,7 +43,7 @@ lazy val `esw-ocs-impl` = project
   .settings(
     libraryDependencies ++= Dependencies.OcsImpl.value
   )
-  .dependsOn(`esw-ocs-api`, `esw-ocs-macros`)
+  .dependsOn(`esw-ocs-api` % "compile->compile;test->test", `esw-ocs-macros`, `esw-utils`)
 
 lazy val `esw-ocs-macros` = project
   .in(file("esw-ocs/esw-ocs-macros"))
@@ -85,6 +85,11 @@ lazy val `esw-integration-test` = project
     `esw-ocs-impl`       % "test->compile;test->test",
     `esw-ocs-app`
   )
+
+lazy val `esw-utils` = project
+  .in(file("esw-utils"))
+  .settings(libraryDependencies ++= Dependencies.Utils.value)
+  .dependsOn(`esw-ocs-api`)
 
 /* ================= Paradox Docs ============== */
 lazy val docs = project.enablePlugins(NoPublish, ParadoxSite)

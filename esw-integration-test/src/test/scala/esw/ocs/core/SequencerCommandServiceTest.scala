@@ -8,7 +8,7 @@ import csw.params.commands.CommandResponse.Completed
 import csw.params.commands.{CommandName, Sequence, Setup}
 import csw.params.core.models.Prefix
 import csw.testkit.scaladsl.ScalaTestFrameworkTestKit
-import esw.ocs.BaseTestSuite
+import esw.ocs.api.BaseTestSuite
 import esw.ocs.api.models.messages.RegistrationError
 import esw.ocs.internal.SequencerWiring
 import org.scalatest.time.SpanSugar.convertDoubleToGrainOfTime
@@ -22,7 +22,7 @@ class SequencerCommandServiceTest extends ScalaTestFrameworkTestKit with BaseTes
 
   override def beforeAll(): Unit = {
     super.beforeAll()
-    wiring = new SequencerWiring("testSequencerId1", "testObservingMode1")
+    wiring = new SequencerWiring("testSequencerId1", "testObservingMode1", None)
     sequencerLocation = wiring.start()
   }
 
@@ -32,7 +32,7 @@ class SequencerCommandServiceTest extends ScalaTestFrameworkTestKit with BaseTes
   }
 
   "should submit and process sequence" in {
-    val command1 = Setup(Prefix("test"), CommandName("command-1"), None)
+    val command1 = Setup(Prefix("esw.test"), CommandName("command-1"), None)
     val sequence = Sequence(command1)
 
     implicit val patienceConfig: PatienceConfig          = PatienceConfig(500.millis)
