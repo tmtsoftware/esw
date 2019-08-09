@@ -1,6 +1,8 @@
 package esw.ocs.api.models.messages
 
+import csw.params.core.models.Id
 import esw.ocs.api.models.{Step, StepList}
+import esw.ocs.api.serializer.OcsFrameworkAkkaSerializable
 
 sealed trait AddResponse
 sealed trait PrependResponse
@@ -40,6 +42,7 @@ case object Ok
     with ResumeResponse
     with ResetResponse
     with LoadSequenceResponse
+    with LoadAndProcessResponse
     with StartSequenceResponse
     with ReadyToExecuteNextResponse
     with GoOnlineResponse
@@ -86,16 +89,18 @@ case object DuplicateIdsFound extends LoadSequenceResponse with LoadAndProcessRe
   val description = "Duplicate command Ids found in given sequence"
 }
 
-//object SequencerResponses {
-//  final case class LoadSequenceResponse(response: Either[DuplicateIdsFound.type, Done]) extends OcsFrameworkAkkaSerializable
-//  final case class EditorResponse(response: Either[EditorError, Done])                  extends OcsFrameworkAkkaSerializable
-//  final case class LifecycleResponse(response: Done)                                    extends OcsFrameworkAkkaSerializable
-//  final case class StepListResponse(response: Option[StepList])                         extends OcsFrameworkAkkaSerializable
-//}
-//trait AddResponse
-//trait AddSuccess extends AddResponse
-//case class Result(value: StepList) extends AddSuccess
-//case class Error1(value: String)         extends AddResponse
-//case class Error2(value: String)               extends AddResponse
-//
-//case object Unhandled extends AddResponse
+final case class RegistrationError(msg: String) extends OcsFrameworkAkkaSerializable
+
+// Editor Errors
+sealed trait EditorError extends OcsFrameworkAkkaSerializable
+
+object EditorError {
+  sealed trait AddBreakpointError extends EditorError
+  sealed trait InsertError        extends EditorError
+  sealed trait ReplaceError       extends EditorError
+  sealed trait DeleteError        extends EditorError
+
+  case object CannotOperateOnAnInFlightOrFinishedStep extends AddBreakpointError with DeleteError
+  case object CannotInsertOrReplaceAfterAFinishedStep extends InsertError with ReplaceError
+  case class IdDoesNotExist(id: Id)                   extends ReplaceError with InsertError with DeleteError with AddBreakpointError
+}
