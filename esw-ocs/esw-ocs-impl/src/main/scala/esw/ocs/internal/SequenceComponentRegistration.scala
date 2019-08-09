@@ -1,7 +1,5 @@
 package esw.ocs.internal
 
-import akka.actor.typed.SpawnProtocol.Spawn
-import akka.actor.typed.scaladsl.AskPattern.Askable
 import akka.actor.typed.scaladsl.adapter.TypedActorSystemOps
 import akka.actor.typed.{ActorRef, ActorSystem, SpawnProtocol}
 import akka.actor.{CoordinatedShutdown, Scheduler}
@@ -15,14 +13,18 @@ import csw.location.models.{AkkaLocation, AkkaRegistration, ComponentId, Compone
 import csw.params.core.models.Prefix
 import esw.ocs.api.models.messages.SequenceComponentMsg.Stop
 import esw.ocs.api.models.messages.{RegistrationError, SequenceComponentMsg}
-import esw.ocs.core.SequenceComponentBehavior
 import esw.ocs.syntax.FutureSyntax.FutureOps
 import esw.utils.csw.LocationServiceUtils
 
 import scala.concurrent.{ExecutionContext, Future}
 import scala.util.control.NonFatal
 
-class SequenceComponentRegistration(prefix: Prefix, locationService: LocationService, locationServiceUtils: LocationServiceUtils)(
+class SequenceComponentRegistration(
+    prefix: Prefix,
+    locationService: LocationService,
+    locationServiceUtils: LocationServiceUtils,
+    sequenceComponentFactory: String => ActorRef[SequenceComponentMsg]
+)(
     implicit actorSystem: ActorSystem[SpawnProtocol]
 ) {
   implicit val ec: ExecutionContext = actorSystem.executionContext
@@ -68,9 +70,8 @@ class SequenceComponentRegistration(prefix: Prefix, locationService: LocationSer
   }
 
   private def registration(): AkkaRegistration = {
-    val sequenceComponentName = generateSequenceComponentName()
-    val sequenceComponentRef: ActorRef[SequenceComponentMsg] =
-      (actorSystem ? Spawn(SequenceComponentBehavior.behavior(sequenceComponentName), sequenceComponentName)).block
+    val sequenceComponentName                                = generateSequenceComponentName()
+    val sequenceComponentRef: ActorRef[SequenceComponentMsg] = sequenceComponentFactory(sequenceComponentName)
     AkkaRegistration(
       AkkaConnection(ComponentId(sequenceComponentName, ComponentType.SequenceComponent)),
       prefix,
