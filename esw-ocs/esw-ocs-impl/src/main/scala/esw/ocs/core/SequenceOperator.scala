@@ -15,8 +15,8 @@ private[ocs] class SequenceOperator(sequencer: ActorRef[EswSequencerMessage])(im
   private implicit val scheduler: Scheduler = system.scheduler
   private implicit val timeout: Timeout     = Timeouts.EngineTimeout
 
-  def pullNext: Future[PullNextResponse]           = sequencer.ask(r => PullNext(Some(r)))
-  def maybeNext: Future[MaybeNextResponse]         = sequencer.ask(r => MaybeNext(Some(r)))
-  def readyToExecuteNext: Future[SimpleResponse]   = sequencer.ask(r => ReadyToExecuteNext(Some(r)))
-  def update(submitResponse: SubmitResponse): Unit = sequencer ! UpdateFailure(submitResponse, None)
+  def pullNext: Future[PullNextResponse]           = sequencer ? PullNext
+  def maybeNext: Future[MaybeNextResponse]         = sequencer ? MaybeNext
+  def readyToExecuteNext: Future[SimpleResponse]   = sequencer ? ReadyToExecuteNext
+  def update(submitResponse: SubmitResponse): Unit = sequencer ! UpdateFailure(submitResponse, system.deadLetters)
 }

@@ -7,7 +7,6 @@ import esw.ocs.api.serializer.OcsFrameworkAkkaSerializable
 sealed trait SimpleResponse
 
 sealed trait UpdateSequencerStateResponse
-sealed trait GoIdleResponse
 sealed trait LoadSequenceResponse
 sealed trait PullNextResponse
 sealed trait MaybeNextResponse
@@ -25,7 +24,6 @@ case class MaybeNextResult(step: Option[Step])                   extends MaybeNe
 sealed case class Unhandled(state: String, messageType: String)
     extends SimpleResponse
     with UpdateSequencerStateResponse
-    with GoIdleResponse
     with LoadSequenceResponse
     with PullNextResponse
     with MaybeNextResponse

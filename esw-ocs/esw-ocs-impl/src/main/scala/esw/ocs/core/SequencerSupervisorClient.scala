@@ -17,7 +17,7 @@ class SequencerSupervisorClient(sequencer: ActorRef[EswSequencerMessage])(
 
   private implicit val scheduler: Scheduler = system.scheduler
 
-  override def shutdown(): Future[SimpleResponse] = sequencer.ask(r => Shutdown(Some(r)))
-  override def abort(): Future[SimpleResponse]    = sequencer.ask(r => Abort(Some(r)))
+  override def shutdown(): Future[SimpleResponse] = sequencer ? Shutdown
+  override def abort(): Future[SimpleResponse]    = sequencer ? Abort
 
 }

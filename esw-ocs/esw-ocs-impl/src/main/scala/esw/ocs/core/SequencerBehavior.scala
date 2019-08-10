@@ -38,13 +38,13 @@ class SequencerBehavior(
     msg match {
       case x: AnyStateMessage => handleAnyStateMessage(x, state, _ => ctx.system.terminate)
       // ===== External Lifecycle =====
-      case GoOffline(Some(replyTo)) => goOffline(replyTo, state)
+      case GoOffline(replyTo) => goOffline(replyTo, state)
       // ===== External Editor =====
-      case LoadSequence(sequence, Some(replyTo))   => load(sequence, replyTo, state)
-      case LoadAndProcess(sequence, Some(replyTo)) => loadAndProcess(sequence, state, replyTo)
+      case LoadSequence(sequence, replyTo)   => load(sequence, replyTo, state)
+      case LoadAndProcess(sequence, replyTo) => loadAndProcess(sequence, state, replyTo)
 
       // ===== Internal =====
-      case PullNext(Some(replyTo)) => pullNext(state, replyTo, idle)
+      case PullNext(replyTo) => pullNext(state, replyTo, idle)
     }
   }
 
@@ -52,10 +52,10 @@ class SequencerBehavior(
     import ctx._
     val state = ss.copy(self = Some(ctx.self))
     msg match {
-      case x: AnyStateMessage           => handleAnyStateMessage(x, state, _ => ctx.system.terminate)
-      case x: EditorAction              => loaded(handleEditorAction(x, state))
-      case GoOffline(Some(replyTo))     => goOffline(replyTo, state)
-      case StartSequence(Some(replyTo)) => process(state, replyTo)
+      case x: AnyStateMessage     => handleAnyStateMessage(x, state, _ => ctx.system.terminate)
+      case x: EditorAction        => loaded(handleEditorAction(x, state))
+      case GoOffline(replyTo)     => goOffline(replyTo, state)
+      case StartSequence(replyTo) => process(state, replyTo)
     }
   }
 
@@ -65,9 +65,9 @@ class SequencerBehavior(
     msg match {
       case x: AnyStateMessage                => handleAnyStateMessage(x, state, _ => ctx.system.terminate)
       case editorAction: EditorAction        => inProgress(handleEditorAction(editorAction, state))
-      case PullNext(Some(replyTo))           => pullNext(state, replyTo, inProgress)
-      case MaybeNext(Some(replyTo))          => replyTo ! MaybeNextResult(state.stepList.nextExecutable); Behaviors.same
-      case ReadyToExecuteNext(Some(replyTo)) => readyToExecuteNext(state, replyTo, inProgress)
+      case PullNext(replyTo)                 => pullNext(state, replyTo, inProgress)
+      case MaybeNext(replyTo)                => replyTo ! MaybeNextResult(state.stepList.nextExecutable); Behaviors.same
+      case ReadyToExecuteNext(replyTo)       => readyToExecuteNext(state, replyTo, inProgress)
       case UpdateFailure(failureResponse, _) => inProgress(updateFailure(failureResponse, state))
       case UpdateSequencerState(newState, _) => inProgress(newState)
     }
@@ -76,24 +76,24 @@ class SequencerBehavior(
   def handleAnyStateMessage(message: AnyStateMessage, state: SequencerState, killFunction: Unit => Unit)(
       implicit ec: ExecutionContext
   ): Behavior[EswSequencerMessage] = message match {
-    case Shutdown(Some(replyTo))            => shutdown(replyTo, killFunction)
-    case GetPreviousSequence(Some(replyTo)) => getPreviousSequence(replyTo, state)
+    case Shutdown(replyTo)            => shutdown(replyTo, killFunction)
+    case GetPreviousSequence(replyTo) => getPreviousSequence(replyTo, state)
   }
 
   def handleEditorAction(editorAction: EditorAction, state: SequencerState)(implicit ec: ExecutionContext): SequencerState = {
     editorAction match {
-      case Abort(Some(replyTo))                     => ??? //story not played yet
-      case GetSequence(Some(replyTo))               => getSequence(replyTo, state)
-      case Add(commands, Some(replyTo))             => updateStepList1(replyTo, state, state.stepList.append(commands))
-      case Pause(Some(replyTo))                     => updateStepList(replyTo, state, state.stepList.pause)
-      case Resume(Some(replyTo))                    => updateStepList1(replyTo, state, state.stepList.resume)
-      case Reset(Some(replyTo))                     => updateStepList1(replyTo, state, state.stepList.discardPending)
-      case Replace(id, commands, Some(replyTo))     => updateStepList(replyTo, state, state.stepList.replace(id, commands))
-      case Prepend(commands, Some(replyTo))         => updateStepList1(replyTo, state, state.stepList.prepend(commands))
-      case Delete(id, Some(replyTo))                => updateStepList(replyTo, state, state.stepList.delete(id))
-      case InsertAfter(id, commands, Some(replyTo)) => updateStepList(replyTo, state, state.stepList.insertAfter(id, commands))
-      case AddBreakpoint(id, Some(replyTo))         => updateStepList(replyTo, state, state.stepList.addBreakpoint(id))
-      case RemoveBreakpoint(id, Some(replyTo))      => updateStepList(replyTo, state, state.stepList.removeBreakpoint(id))
+      case Abort(replyTo)                     => ??? //story not played yet
+      case GetSequence(replyTo)               => getSequence(replyTo, state)
+      case Add(commands, replyTo)             => updateStepList1(replyTo, state, state.stepList.append(commands))
+      case Pause(replyTo)                     => updateStepList(replyTo, state, state.stepList.pause)
+      case Resume(replyTo)                    => updateStepList1(replyTo, state, state.stepList.resume)
+      case Reset(replyTo)                     => updateStepList1(replyTo, state, state.stepList.discardPending)
+      case Replace(id, commands, replyTo)     => updateStepList(replyTo, state, state.stepList.replace(id, commands))
+      case Prepend(commands, replyTo)         => updateStepList1(replyTo, state, state.stepList.prepend(commands))
+      case Delete(id, replyTo)                => updateStepList(replyTo, state, state.stepList.delete(id))
+      case InsertAfter(id, commands, replyTo) => updateStepList(replyTo, state, state.stepList.insertAfter(id, commands))
+      case AddBreakpoint(id, replyTo)         => updateStepList(replyTo, state, state.stepList.addBreakpoint(id))
+      case RemoveBreakpoint(id, replyTo)      => updateStepList(replyTo, state, state.stepList.removeBreakpoint(id))
     }
   }
 
@@ -101,9 +101,9 @@ class SequencerBehavior(
     import ctx._
     val state = ss.copy(self = Some(ctx.self))
     message match {
-      case GoOnline(Some(replyTo))            => goOnline(replyTo, state)
-      case Shutdown(Some(replyTo))            => shutdown(replyTo, _ => ctx.system.terminate)
-      case GetPreviousSequence(Some(replyTo)) => getPreviousSequence(replyTo, state)
+      case GoOnline(replyTo)            => goOnline(replyTo, state)
+      case Shutdown(replyTo)            => shutdown(replyTo, _ => ctx.system.terminate)
+      case GetPreviousSequence(replyTo) => getPreviousSequence(replyTo, state)
     }
   }
 
@@ -241,9 +241,8 @@ class SequencerBehavior(
     }
   }
 
-  private def goToIdle(state: SequencerState): Unit = {
-    state.self.foreach(_ ! GoIdle(state, None))
-  }
+  private def goToIdle(state: SequencerState): Unit =
+    state.self.foreach(_ ! GoIdle(state, actorSystem.deadLetters))
 
   private def handleSequenceResponse(
       submitResponse: Future[SubmitResponse],
