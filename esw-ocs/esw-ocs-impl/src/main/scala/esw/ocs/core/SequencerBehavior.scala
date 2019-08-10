@@ -186,7 +186,7 @@ class SequencerBehavior(
 
   private def readyToExecuteNext(
       state: SequencerState,
-      replyTo: ActorRef[ReadyToExecuteNextResponse],
+      replyTo: ActorRef[SimpleResponse],
       behaviour: SequencerState => Behavior[EswSequencerMessage]
   ): Behavior[EswSequencerMessage] = {
     val newState = if (state.stepList.isInFlight || state.stepList.isFinished) {
@@ -225,7 +225,7 @@ class SequencerBehavior(
   private def loadAndProcess(
       sequence: Sequence,
       state: SequencerState,
-      replyTo: ActorRef[LoadAndProcessResponse]
+      replyTo: ActorRef[LoadSequenceResponse]
   )(
       implicit executionContext: ExecutionContext
   ): Behavior[EswSequencerMessage] = {

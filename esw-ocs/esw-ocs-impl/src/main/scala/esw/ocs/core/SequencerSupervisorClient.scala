@@ -6,7 +6,7 @@ import akka.actor.typed.{ActorRef, ActorSystem}
 import akka.util.Timeout
 import esw.ocs.api.SequencerSupervisor
 import esw.ocs.api.models.messages.SequencerMessages.{Abort, EswSequencerMessage, Shutdown}
-import esw.ocs.api.models.messages.{AbortResponse, ShutdownResponse}
+import esw.ocs.api.models.messages.SimpleResponse
 
 import scala.concurrent.Future
 
@@ -17,7 +17,7 @@ class SequencerSupervisorClient(sequencer: ActorRef[EswSequencerMessage])(
 
   private implicit val scheduler: Scheduler = system.scheduler
 
-  override def shutdown(): Future[ShutdownResponse] = sequencer.ask(r => Shutdown(Some(r)))
-  override def abort(): Future[AbortResponse]       = sequencer.ask(r => Abort(Some(r)))
+  override def shutdown(): Future[SimpleResponse] = sequencer.ask(r => Shutdown(Some(r)))
+  override def abort(): Future[SimpleResponse]    = sequencer.ask(r => Abort(Some(r)))
 
 }

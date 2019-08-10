@@ -9,15 +9,14 @@ import scala.concurrent.Future
 trait SequenceEditor {
 
   def status: Future[GetSequenceResponse]
-  def add(commands: List[SequenceCommand]): Future[AddResponse]
-  def prepend(commands: List[SequenceCommand]): Future[PrependResponse]
-  def replace(id: Id, commands: List[SequenceCommand]): Future[ReplaceResponse]
-  def insertAfter(id: Id, commands: List[SequenceCommand]): Future[InsertAfterResponse]
-  def delete(id: Id): Future[DeleteResponse]
-  def pause: Future[PauseResponse]
-  def resume: Future[ResumeResponse]
-  def addBreakpoint(id: Id): Future[AddBreakpointResponse]
-  def removeBreakpoint(id: Id): Future[RemoveBreakpointResponse]
-  def reset(): Future[ResetResponse]
-
+  def add(commands: List[SequenceCommand]): Future[SimpleResponse]
+  def prepend(commands: List[SequenceCommand]): Future[SimpleResponse]
+  def replace(id: Id, commands: List[SequenceCommand]): Future[SimpleResponse]
+  def insertAfter(id: Id, commands: List[SequenceCommand]): Future[SimpleResponse]
+  def delete(id: Id): Future[SimpleResponse]
+  def pause: Future[SimpleResponse]
+  def resume: Future[SimpleResponse]
+  def addBreakpoint(id: Id): Future[SimpleResponse]
+  def removeBreakpoint(id: Id): Future[SimpleResponse]
+  def reset(): Future[SimpleResponse]
 }
