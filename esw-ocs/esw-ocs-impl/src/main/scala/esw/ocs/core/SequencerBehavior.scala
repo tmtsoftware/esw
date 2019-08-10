@@ -70,6 +70,7 @@ class SequencerBehavior(
       case ReadyToExecuteNext(replyTo)       => readyToExecuteNext(state, replyTo, inProgress)
       case UpdateFailure(failureResponse, _) => inProgress(updateFailure(failureResponse, state))
       case UpdateSequencerState(newState, _) => inProgress(newState)
+      case GoIdle(newState, _)               => idle(newState)
     }
   }
 
@@ -177,9 +178,8 @@ class SequencerBehavior(
     Behaviors.receive { (ctx, msg) =>
       msg match {
         case m: B => f(ctx, m)
-        case _    =>
-          //fixme: handle the Unhandled
-          //m.replyTo ! Unhandled(stateName, m.getClass.getSimpleName)
+        case x =>
+          x.replyTo ! Unhandled(stateName, x.getClass.getSimpleName)
           Behaviors.same
       }
     }
@@ -285,21 +285,19 @@ class SequencerBehavior(
   private def updateSuccess(
       successResponse: SubmitResponse,
       state: SequencerState
-  )(implicit ec: ExecutionContext): SequencerState =
+  ): SequencerState =
     updateStepStatus(successResponse, Finished.Success(successResponse), state)
 
   private[ocs] def updateFailure(
       failureResponse: SubmitResponse,
       state: SequencerState
-  )(implicit ec: ExecutionContext): SequencerState =
+  ): SequencerState =
     updateStepStatus(failureResponse, Finished.Failure(failureResponse), state)
 
   private def updateStepStatus(
       submitResponse: SubmitResponse,
       stepStatus: StepStatus,
       state: SequencerState
-  )(
-      implicit ec: ExecutionContext
   ): SequencerState = {
     crm.updateSubCommand(submitResponse)
     val newStepList = state.stepList.updateStatus(submitResponse.runId, stepStatus)
