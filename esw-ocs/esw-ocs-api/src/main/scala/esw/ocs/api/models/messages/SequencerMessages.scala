@@ -18,6 +18,8 @@ object SequencerMessages {
   sealed trait SequenceLoadedMessage extends EswSequencerMessage
   sealed trait InProgressMessage     extends EswSequencerMessage
   sealed trait OfflineMessage        extends EswSequencerMessage
+  sealed trait EditorAction          extends SequenceLoadedMessage with InProgressMessage
+  sealed trait AnyStateMessage       extends IdleMessage with SequenceLoadedMessage with InProgressMessage with OfflineMessage
 
   final case class LoadSequence(sequence: Sequence, replyTo: Option[ActorRef[LoadSequenceResponse]])     extends IdleMessage
   final case class LoadAndProcess(sequence: Sequence, replyTo: Option[ActorRef[LoadAndProcessResponse]]) extends IdleMessage
@@ -26,48 +28,28 @@ object SequencerMessages {
   // lifecycle msgs
   final case class GoOnline(replyTo: Option[ActorRef[GoOnlineResponse]])   extends OfflineMessage
   final case class GoOffline(replyTo: Option[ActorRef[GoOfflineResponse]]) extends IdleMessage with SequenceLoadedMessage
-  final case class Shutdown(replyTo: Option[ActorRef[ShutdownResponse]])
-      extends IdleMessage
-      with SequenceLoadedMessage
-      with InProgressMessage
-      with OfflineMessage
+  final case class Shutdown(replyTo: Option[ActorRef[ShutdownResponse]])   extends AnyStateMessage
 
-  final case class Abort(replyTo: Option[ActorRef[AbortResponse]]) extends SequenceLoadedMessage with InProgressMessage
+  final case class Abort(replyTo: Option[ActorRef[AbortResponse]]) extends EditorAction
 
   // editor msgs
   // fixme : GetSequence and GetPreviousSequence should have replyTo StepListResponse
-  final case class GetSequence(replyTo: Option[ActorRef[GetSequenceResponse]])
-      extends SequenceLoadedMessage
-      with InProgressMessage
+  final case class GetSequence(replyTo: Option[ActorRef[GetSequenceResponse]])                 extends EditorAction
+  final case class GetPreviousSequence(replyTo: Option[ActorRef[GetPreviousSequenceResponse]]) extends AnyStateMessage
 
-  final case class GetPreviousSequence(replyTo: Option[ActorRef[GetPreviousSequenceResponse]])
-      extends IdleMessage
-      with SequenceLoadedMessage
-      with InProgressMessage
-      with OfflineMessage
+  final case class Add(commands: List[SequenceCommand], replyTo: Option[ActorRef[AddResponse]])         extends EditorAction
+  final case class Prepend(commands: List[SequenceCommand], replyTo: Option[ActorRef[PrependResponse]]) extends EditorAction
 
-  final case class Add(commands: List[SequenceCommand], replyTo: Option[ActorRef[AddResponse]])
-      extends SequenceLoadedMessage
-      with InProgressMessage
-  final case class Prepend(commands: List[SequenceCommand], replyTo: Option[ActorRef[PrependResponse]])
-      extends SequenceLoadedMessage
-      with InProgressMessage
   final case class Replace(id: Id, commands: List[SequenceCommand], replyTo: Option[ActorRef[ReplaceResponse]])
-      extends SequenceLoadedMessage
-      with InProgressMessage
+      extends EditorAction
   final case class InsertAfter(id: Id, commands: List[SequenceCommand], replyTo: Option[ActorRef[InsertAfterResponse]])
-      extends SequenceLoadedMessage
-      with InProgressMessage
-  final case class Delete(ids: Id, replyTo: Option[ActorRef[DeleteResponse]]) extends SequenceLoadedMessage with InProgressMessage
-  final case class AddBreakpoint(id: Id, replyTo: Option[ActorRef[AddBreakpointResponse]])
-      extends SequenceLoadedMessage
-      with InProgressMessage
-  final case class RemoveBreakpoint(id: Id, replyTo: Option[ActorRef[RemoveBreakpointResponse]])
-      extends SequenceLoadedMessage
-      with InProgressMessage
-  final case class Pause(replyTo: Option[ActorRef[PauseResponse]])   extends SequenceLoadedMessage with InProgressMessage
-  final case class Resume(replyTo: Option[ActorRef[ResumeResponse]]) extends SequenceLoadedMessage with InProgressMessage
-  final case class Reset(replyTo: Option[ActorRef[ResetResponse]])   extends SequenceLoadedMessage with InProgressMessage
+      extends EditorAction
+  final case class Delete(ids: Id, replyTo: Option[ActorRef[DeleteResponse]])                    extends EditorAction
+  final case class AddBreakpoint(id: Id, replyTo: Option[ActorRef[AddBreakpointResponse]])       extends EditorAction
+  final case class RemoveBreakpoint(id: Id, replyTo: Option[ActorRef[RemoveBreakpointResponse]]) extends EditorAction
+  final case class Pause(replyTo: Option[ActorRef[PauseResponse]])                               extends EditorAction
+  final case class Resume(replyTo: Option[ActorRef[ResumeResponse]])                             extends EditorAction
+  final case class Reset(replyTo: Option[ActorRef[ResetResponse]])                               extends EditorAction
 
   // engine & internal
   final private[esw] case class PullNext(replyTo: Option[ActorRef[PullNextResponse]])   extends IdleMessage with InProgressMessage
