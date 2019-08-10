@@ -4,6 +4,8 @@ import akka.Done
 import akka.stream.Materializer
 import akka.stream.scaladsl.Source
 import csw.params.commands.CommandResponse.Error
+import csw.params.core.models.Id
+import esw.ocs.api.models.messages.{PullNextResult, Unhandled}
 import esw.ocs.dsl.Script
 
 import scala.async.Async._
@@ -23,11 +25,17 @@ private[ocs] class Engine(implicit mat: Materializer) {
     this is achieved with the combination of pullNext and readyToExecuteNext
    */
   private def processStep(sequenceOperator: SequenceOperator, script: Script): Future[Done] = async {
-    val step = await(sequenceOperator.pullNext)
-    script.execute(step.command).recover {
-      case NonFatal(e) => sequenceOperator.update(Error(step.id, e.getMessage))
+    val pullNextResponse = await(sequenceOperator.pullNext)
+
+    pullNextResponse match {
+      case PullNextResult(step) =>
+        script.execute(step.command).recover {
+          case NonFatal(e) => sequenceOperator.update(Error(step.id, e.getMessage))
+        }
+      case e @ Unhandled(_, _) => sequenceOperator.update(Error(Id("Invalid"), e.description))
     }
 
     await(sequenceOperator.readyToExecuteNext)
+    Done
   }
 }

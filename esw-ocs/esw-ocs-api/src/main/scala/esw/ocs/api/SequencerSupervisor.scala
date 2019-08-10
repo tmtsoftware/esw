@@ -1,12 +1,10 @@
 package esw.ocs.api
 
-import esw.ocs.api.models.messages.SequencerResponses.LifecycleResponse
+import esw.ocs.api.models.messages.{AbortResponse, ShutdownResponse}
 
 import scala.concurrent.Future
 
 trait SequencerSupervisor {
-
-  def shutdown(): Future[LifecycleResponse]
-  def abort(): Future[LifecycleResponse]
-
+  def shutdown(): Future[ShutdownResponse]
+  def abort(): Future[AbortResponse]
 }

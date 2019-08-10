@@ -61,12 +61,12 @@ class SequencerBehavior(
       case Abort(Some(replyTo))                 => ??? //story not played yet
       case GetSequence(Some(replyTo))           => getSequence(replyTo, state)
       case GetPreviousSequence(Some(replyTo))   => getPreviousSequence(replyTo, state)
-      case Add(commands, Some(replyTo))         => loaded(updateStepList(replyTo, state, state.stepList.append(commands)))
+      case Add(commands, Some(replyTo))         => loaded(updateStepList1(replyTo, state, state.stepList.append(commands)))
       case Pause(Some(replyTo))                 => loaded(updateStepList(replyTo, state, state.stepList.pause))
-      case Resume(Some(replyTo))                => loaded(updateStepList(replyTo, state, state.stepList.resume))
-      case Reset(Some(replyTo))                 => loaded(updateStepList(replyTo, state, state.stepList.discardPending))
+      case Resume(Some(replyTo))                => loaded(updateStepList1(replyTo, state, state.stepList.resume))
+      case Reset(Some(replyTo))                 => loaded(updateStepList1(replyTo, state, state.stepList.discardPending))
       case Replace(id, commands, Some(replyTo)) => loaded(updateStepList(replyTo, state, state.stepList.replace(id, commands)))
-      case Prepend(commands, Some(replyTo))     => loaded(updateStepList(replyTo, state, state.stepList.prepend(commands)))
+      case Prepend(commands, Some(replyTo))     => loaded(updateStepList1(replyTo, state, state.stepList.prepend(commands)))
       case Delete(id, Some(replyTo))            => loaded(updateStepList(replyTo, state, state.stepList.delete(id)))
       case InsertAfter(id, commands, Some(replyTo)) =>
         loaded(updateStepList(replyTo, state, state.stepList.insertAfter(id, commands)))
@@ -83,13 +83,13 @@ class SequencerBehavior(
       case Abort(Some(replyTo))               => ??? // story not played
       case GetSequence(Some(replyTo))         => getSequence(replyTo, state)
       case GetPreviousSequence(Some(replyTo)) => getPreviousSequence(replyTo, state)
-      case Add(commands, Some(replyTo))       => inProgress(updateStepList(replyTo, state, state.stepList.append(commands)))
+      case Add(commands, Some(replyTo))       => inProgress(updateStepList1(replyTo, state, state.stepList.append(commands)))
       case Pause(Some(replyTo))               => inProgress(updateStepList(replyTo, state, state.stepList.pause))
-      case Resume(Some(replyTo))              => inProgress(updateStepList(replyTo, state, state.stepList.resume))
-      case Reset(Some(replyTo))               => inProgress(updateStepList(replyTo, state, state.stepList.discardPending))
+      case Resume(Some(replyTo))              => inProgress(updateStepList1(replyTo, state, state.stepList.resume))
+      case Reset(Some(replyTo))               => inProgress(updateStepList1(replyTo, state, state.stepList.discardPending))
       case Replace(id, commands, Some(replyTo)) =>
         inProgress(updateStepList(replyTo, state, state.stepList.replace(id, commands)))
-      case Prepend(commands, Some(replyTo)) => inProgress(updateStepList(replyTo, state, state.stepList.prepend(commands)))
+      case Prepend(commands, Some(replyTo)) => inProgress(updateStepList1(replyTo, state, state.stepList.prepend(commands)))
       case Delete(id, Some(replyTo))        => inProgress(updateStepList(replyTo, state, state.stepList.delete(id)))
       case InsertAfter(id, cmds, Some(replyTo)) =>
         inProgress(updateStepList(replyTo, state, state.stepList.insertAfter(id, cmds)))
@@ -174,7 +174,7 @@ class SequencerBehavior(
       replyTo ! err
       Behaviors.same
     case Right(newState) =>
-      replyTo _ ! Ok
+      replyTo ! Ok
       loaded(newState)
   }
 
@@ -350,7 +350,7 @@ class SequencerBehavior(
     tryExecutingNextPendingStep(newState)
   }
 
-  private def updateStepList[T <: EditorError](
+  private def updateStepList1[T <: EditorError](
       replyTo: ActorRef[Ok.type],
       state: SequencerState,
       stepList: => StepList

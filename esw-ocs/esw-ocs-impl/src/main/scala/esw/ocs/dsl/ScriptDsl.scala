@@ -2,6 +2,7 @@ package esw.ocs.dsl
 
 import akka.Done
 import csw.params.commands.{Observe, SequenceCommand, Setup}
+import esw.ocs.api.models.messages.{MaybeNextResult, PullNextResult}
 import esw.ocs.dsl.utils.{FunctionBuilder, FunctionHandlers}
 import esw.ocs.exceptions.UnhandledCommandException
 
@@ -51,14 +52,20 @@ trait ScriptDsl extends ControlDsl {
   }
 
   private[ocs] def executeShutdown(): Future[Done] = Future.sequence(shutdownHandlers.execute(())).map(_ => Done)
-  private[ocs] def executeAbort(): Future[Done]    = Future.sequence(abortHandlers.execute(())).map(_ => Done)
+
+  private[ocs] def executeAbort(): Future[Done] = Future.sequence(abortHandlers.execute(())).map(_ => Done)
 
   protected final def nextIf(f: SequenceCommand => Boolean): Future[Option[SequenceCommand]] =
     spawn {
-      val operator = csw.sequenceOperatorFactory()
-      operator.maybeNext.await.map(_.command) match {
-        case Some(cmd) if f(cmd) => Some(operator.pullNext.await.command)
-        case _                   => None
+      val operator  = csw.sequenceOperatorFactory()
+      val mayBeNext = operator.maybeNext.await
+      mayBeNext match {
+        case MaybeNextResult(Some(step)) if f(step.command) =>
+          operator.pullNext.await match {
+            case PullNextResult(step) => Some(step.command)
+            case _                    => None
+          }
+        case _ => None
       }
     }
 

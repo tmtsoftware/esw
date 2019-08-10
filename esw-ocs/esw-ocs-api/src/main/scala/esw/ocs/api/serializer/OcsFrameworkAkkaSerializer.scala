@@ -22,19 +22,14 @@ class OcsFrameworkAkkaSerializer(_actorSystem: ExtendedActorSystem) extends OcsF
   private val logger: Logger   = new LoggerFactory("Sequencer-codec").getLogger
 
   override def toBinary(o: AnyRef): Array[Byte] = o match {
-    case x: LifecycleMsg         => Cbor.encode(x).toByteArray
     case x: StartSequence        => Cbor.encode(x).toByteArray
     case x: LoadSequence         => Cbor.encode(x).toByteArray
     case x: LoadSequenceResponse => Cbor.encode(x).toByteArray
-    case x: ExternalEditorMsg    => Cbor.encode(x).toByteArray
     case x: StepList             => Cbor.encode(x).toByteArray
     case x: SequenceComponentMsg => Cbor.encode(x).toByteArray
     case x: LoadScriptResponse   => Cbor.encode(x).toByteArray
     case x: GetStatusResponse    => Cbor.encode(x).toByteArray
-    case x: LifecycleResponse    => Cbor.encode(x).toByteArray
-    case x: EditorResponse       => Cbor.encode(x).toByteArray
     case x: GetSequenceResult    => Cbor.encode(x).toByteArray
-    case x: SequenceError        => Cbor.encode(x).toByteArray
     case _ =>
       val ex = new RuntimeException(s"does not support encoding of $o")
       logger.error(ex.getMessage, ex = ex)
@@ -50,20 +45,14 @@ class OcsFrameworkAkkaSerializer(_actorSystem: ExtendedActorSystem) extends OcsF
       else None
     }
     {
-      fromBinary[ExternalEditorMsg] orElse
       fromBinary[StepList] orElse
-      fromBinary[LifecycleMsg] orElse
-      fromBinary[LifecycleResponse] orElse
       fromBinary[SequenceComponentMsg] orElse
       fromBinary[LoadScriptResponse] orElse
       fromBinary[GetStatusResponse] orElse
-      fromBinary[EditorResponse] orElse
       fromBinary[GetSequenceResult] orElse
       fromBinary[LoadSequence] orElse
       fromBinary[LoadSequenceResponse] orElse
-      fromBinary[StartSequence] orElse
-      fromBinary[SequenceError]
-
+      fromBinary[StartSequence]
     }.getOrElse {
       val ex = new RuntimeException(s"does not support decoding of ${manifest.get}")
       logger.error(ex.getMessage, ex = ex)
