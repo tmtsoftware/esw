@@ -32,26 +32,27 @@ class SequencerBehavior(
   private val emptyChildId = Id("empty-child") // fixme
 
   //BEHAVIOURS
-  def idle(state: SequencerState): Behavior[EswSequencerMessage] = receive[IdleMessage]("idle") { (ctx, msg) =>
-    val stateWithSelf = state.copy(self = Some(ctx.self))
+  def idle(ss: SequencerState): Behavior[EswSequencerMessage] = receive[IdleMessage]("idle") { (ctx, msg) =>
+    val state = ss.copy(self = Some(ctx.self))
     import ctx._
     msg match {
       // ===== External Lifecycle =====
       case Shutdown(Some(replyTo))  => shutdown(replyTo, _ => ctx.system.terminate)
-      case GoOffline(Some(replyTo)) => goOffline(replyTo, stateWithSelf)
+      case GoOffline(Some(replyTo)) => goOffline(replyTo, state)
 
       // ===== External Editor =====
-      case LoadSequence(sequence, Some(replyTo))   => load(sequence, replyTo, stateWithSelf)
-      case LoadAndProcess(sequence, Some(replyTo)) => loadAndProcess(sequence, stateWithSelf, replyTo)
-      case GetPreviousSequence(Some(replyTo))      => getPreviousSequence(replyTo, stateWithSelf)
+      case LoadSequence(sequence, Some(replyTo))   => load(sequence, replyTo, state)
+      case LoadAndProcess(sequence, Some(replyTo)) => loadAndProcess(sequence, state, replyTo)
+      case GetPreviousSequence(Some(replyTo))      => getPreviousSequence(replyTo, state)
 
       // ===== Internal =====
-      case PullNext(Some(replyTo)) => pullNext(stateWithSelf, replyTo, idle)
+      case PullNext(Some(replyTo)) => pullNext(state, replyTo, idle)
     }
   }
 
-  def loaded(state: SequencerState): Behavior[EswSequencerMessage] = receive[SequenceLoadedMessage]("loaded") { (ctx, msg) =>
+  def loaded(ss: SequencerState): Behavior[EswSequencerMessage] = receive[SequenceLoadedMessage]("loaded") { (ctx, msg) =>
     import ctx._
+    val state = ss.copy(self = Some(ctx.self))
     msg match {
       case Shutdown(Some(replyTo))      => shutdown(replyTo, _ => ctx.system.terminate)
       case GoOffline(Some(replyTo))     => goOffline(replyTo, state)
@@ -74,8 +75,9 @@ class SequencerBehavior(
     }
   }
 
-  def inProgress(state: SequencerState): Behavior[EswSequencerMessage] = receive[InProgressMessage]("in-progress") { (ctx, msg) =>
+  def inProgress(ss: SequencerState): Behavior[EswSequencerMessage] = receive[InProgressMessage]("in-progress") { (ctx, msg) =>
     import ctx._
+    val state = ss.copy(self = Some(ctx.self))
     msg match {
       case Shutdown(Some(replyTo))            => shutdown(replyTo, _ => ctx.system.terminate)
       case Abort(Some(replyTo))               => ??? // story not played
@@ -102,8 +104,9 @@ class SequencerBehavior(
     }
   }
 
-  def offline(state: SequencerState): Behavior[EswSequencerMessage] = receive[OfflineMessage]("offline") { (ctx, message) =>
+  def offline(ss: SequencerState): Behavior[EswSequencerMessage] = receive[OfflineMessage]("offline") { (ctx, message) =>
     import ctx._
+    val state = ss.copy(self = Some(ctx.self))
     message match {
       case GoOnline(Some(replyTo))            => goOnline(replyTo, state)
       case Shutdown(Some(replyTo))            => shutdown(replyTo, _ => ctx.system.terminate)
