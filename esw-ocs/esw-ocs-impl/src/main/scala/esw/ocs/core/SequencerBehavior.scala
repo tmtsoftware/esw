@@ -14,12 +14,12 @@ import esw.ocs.api.codecs.OcsFrameworkCodecs
 import esw.ocs.api.models.StepStatus.Finished
 import esw.ocs.api.models.messages.SequencerMessages._
 import esw.ocs.api.models.messages._
-import esw.ocs.api.models.{SequencerState, Step, StepList, StepStatus}
+import esw.ocs.api.models.{SequencerState, Step, StepList}
 import esw.ocs.dsl.ScriptDsl
 
 import scala.concurrent.{ExecutionContext, Future}
 import scala.reflect.ClassTag
-import scala.util.control.NonFatal
+import scala.util.{Failure, Success}
 
 class SequencerBehavior(
     componentId: ComponentId,
@@ -57,14 +57,14 @@ class SequencerBehavior(
   def inProgress(state: SequencerState): Behavior[EswSequencerMessage] = receive[InProgressMessage]("in-progress") { (ctx, msg) =>
     import ctx.executionContext
     msg match {
-      case x: AnyStateMessage                => handleAnyStateMessage(x, state, _ => ctx.system.terminate)
-      case editorAction: EditorAction        => inProgress(handleEditorAction(editorAction, state))
-      case PullNext(replyTo)                 => pullNext(state, replyTo, nextBehavior = inProgress)
-      case MaybeNext(replyTo)                => replyTo ! MaybeNextResult(state.stepList.nextExecutable); Behaviors.same
-      case ReadyToExecuteNext(replyTo)       => readyToExecuteNext(state, replyTo, inProgress)
-      case UpdateFailure(failureResponse, _) => inProgress(updateFailure(failureResponse, state))
-      case UpdateSequencerState(newState, _) => inProgress(newState)
-      case GoIdle(newState, _)               => idle(newState)
+      case x: AnyStateMessage          => handleAnyStateMessage(x, state, _ => ctx.system.terminate)
+      case editorAction: EditorAction  => inProgress(handleEditorAction(editorAction, state))
+      case PullNext(replyTo)           => pullNext(state, replyTo, nextBehavior = inProgress)
+      case MaybeNext(replyTo)          => replyTo ! MaybeNextResult(state.stepList.nextExecutable); Behaviors.same
+      case ReadyToExecuteNext(replyTo) => readyToExecuteNext(state, replyTo, inProgress)
+      case Update(submitResponse, _)   => inProgress(updateStepStatus(submitResponse, state))
+      case GoIdle(_) =>
+        idle(state) //todo: should clear the state? so that immediate start message does not start the old sequence again?
     }
   }
 
@@ -207,9 +207,7 @@ class SequencerBehavior(
       }
       .getOrElse(state)
 
-  private def goToIdle(state: SequencerState): Unit =
-    //todo: should clear the state? so that immediate start message does not start the old sequence again?
-    state.self.foreach(_ ! GoIdle(state, actorSystem.deadLetters))
+  private def goToIdle(state: SequencerState): Unit = state.self.foreach(_ ! GoIdle(actorSystem.deadLetters))
 
   private def handleSequenceResponse(
       submitResponse: Future[SubmitResponse],
@@ -229,31 +227,28 @@ class SequencerBehavior(
     val stepRunId    = step.id
     crm.addSubCommand(newState.stepList.runId, stepRunId)
     crm.addOrUpdateCommand(CommandResponse.Started(stepRunId))
-    val eventualState = processStepResponse(stepRunId, crm.queryFinal(stepRunId), newState)
-    eventualState.foreach(s => s.self.foreach(_ ! UpdateSequencerState(s, null)))
-
+    processStepResponse(stepRunId, crm.queryFinal(stepRunId), newState)
     (inflightStep, newState)
   }
 
   private def processStepResponse(stepId: Id, submitResponseF: Future[SubmitResponse], state: SequencerState)(
       implicit ec: ExecutionContext
-  ): Future[SequencerState] =
+  ): Unit = {
+    def update(submitResponse: SubmitResponse): Unit = state.self.foreach(_ ! Update(submitResponse, actorSystem.deadLetters))
+
     submitResponseF
-      .map {
-        case submitResponse if CommandResponse.isPositive(submitResponse) => updateSuccess(submitResponse, state) //fixme: send self msg
-        case failureResponse                                              => updateFailure(failureResponse, state)  //fixme: send self msg
+      .onComplete {
+        case Failure(e)              => update(Error(stepId, e.getMessage))
+        case Success(submitResponse) => update(submitResponse)
       }
-      .recoverWith {
-        case NonFatal(e) => Future.successful(updateFailure(Error(stepId, e.getMessage), state))  //fixme: send self msg
-      }
+  }
 
-  private def updateSuccess(successResponse: SubmitResponse, state: SequencerState): SequencerState =
-    updateStepStatus(successResponse, Finished.Success(successResponse), state)
+  private def updateStepStatus(submitResponse: SubmitResponse, state: SequencerState): SequencerState = {
+    val stepStatus = submitResponse match {
+      case submitResponse if CommandResponse.isPositive(submitResponse) => Finished.Success(submitResponse)
+      case failureResponse                                              => Finished.Failure(failureResponse)
+    }
 
-  private[ocs] def updateFailure(failureResponse: SubmitResponse, state: SequencerState): SequencerState =
-    updateStepStatus(failureResponse, Finished.Failure(failureResponse), state)
-
-  private def updateStepStatus(submitResponse: SubmitResponse, stepStatus: StepStatus, state: SequencerState): SequencerState = {
     crm.updateSubCommand(submitResponse)
     val newStepList = state.stepList.updateStatus(submitResponse.runId, stepStatus)
     checkForSequenceCompletion(state)

@@ -5,7 +5,6 @@ import csw.command.client.messages.sequencer.SequencerMsg
 import csw.params.commands.CommandResponse.SubmitResponse
 import csw.params.commands.{Sequence, SequenceCommand}
 import csw.params.core.models.Id
-import esw.ocs.api.models.SequencerState
 import esw.ocs.api.serializer.OcsFrameworkAkkaSerializable
 
 object SequencerMessages {
@@ -53,11 +52,7 @@ object SequencerMessages {
   final private[esw] case class PullNext(replyTo: ActorRef[PullNextResponse])         extends IdleMessage with InProgressMessage
   final private[esw] case class MaybeNext(replyTo: ActorRef[MaybeNextResponse])       extends InProgressMessage
   final private[esw] case class ReadyToExecuteNext(replyTo: ActorRef[SimpleResponse]) extends InProgressMessage
-  final private[esw] case class UpdateFailure(failureResponse: SubmitResponse, replyTo: ActorRef[UpdateFailureResponse])
+  final private[esw] case class Update(submitResponse: SubmitResponse, replyTo: ActorRef[Any]) // this is internal message and replyTo is not used anywhere
       extends InProgressMessage
-  final private[esw] case class UpdateSequencerState(
-      state: SequencerState,
-      replyTo: ActorRef[UpdateSequencerStateResponse]
-  ) extends InProgressMessage
-  final private[esw] case class GoIdle(state: SequencerState, replyTo: ActorRef[SimpleResponse]) extends InProgressMessage
+  final private[esw] case class GoIdle(replyTo: ActorRef[SimpleResponse]) extends InProgressMessage
 }

@@ -6,13 +6,11 @@ import esw.ocs.api.serializer.OcsFrameworkAkkaSerializable
 
 sealed trait SimpleResponse
 
-sealed trait UpdateSequencerStateResponse
 sealed trait LoadSequenceResponse
 sealed trait PullNextResponse
 sealed trait MaybeNextResponse
 sealed trait GetSequenceResponse
 sealed trait GetPreviousSequenceResponse
-sealed trait UpdateFailureResponse
 
 case object Ok extends SimpleResponse with LoadSequenceResponse
 
@@ -23,11 +21,9 @@ case class MaybeNextResult(step: Option[Step])                   extends MaybeNe
 
 sealed case class Unhandled(state: String, messageType: String)
     extends SimpleResponse
-    with UpdateSequencerStateResponse
     with LoadSequenceResponse
     with PullNextResponse
     with MaybeNextResponse
-    with UpdateFailureResponse
     with GetSequenceResponse
     with GetPreviousSequenceResponse {
   val description = s"Sequencer can not accept '$messageType' message in '$state' state"
