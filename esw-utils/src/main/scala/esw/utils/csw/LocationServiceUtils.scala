@@ -49,19 +49,23 @@ class LocationServiceUtils(locationService: LocationService) {
       })
   }
 
-  //Can be used to listBySequencerId() and listByObsMode(). Separate APIs can be created once we have concrete
+  //Can be used to listBySequencerId() and listByObsMode(), in future. Separate APIs can be created once we have concrete
   //classes for `SequencerId` and `ObsMode`
-  def listByComponentName(nameSubString: String)(implicit ec: ExecutionContext): Future[List[Location]] = {
+  def listByComponentName(name: String, wholeMatch: Boolean = false)(implicit ec: ExecutionContext): Future[List[Location]] = {
     locationService.list.map { locations =>
-      locations.filter(x => x.connection.componentId.name.contains(nameSubString))
+      if (!wholeMatch) locations.filter(x => x.connection.componentId.name.contains(name))
+      else locations.filter(x => x.connection.componentId.name.equals(name))
     }
   }
 
-  def resolveSequencer(sequencerId: String, observingMode: String)(
+  def resolveByComponentNameAndType(name: String, componentType: ComponentType)(
       implicit ec: ExecutionContext
-  ): Future[Option[AkkaLocation]] = async {
-    await(locationService.list)
-      .find(location => location.connection.componentId.name.contains(s"$sequencerId@$observingMode"))
-      .asInstanceOf[Option[AkkaLocation]]
+  ): Future[Location] = {
+    async {
+      await(listByComponentName(name, true))
+        .intersect(await(locationService.list(componentType)))
+        .headOption
+        .getOrElse(throw new IllegalArgumentException(s"Could not find any component with name: $name and type: $componentType"))
+    }
   }
 }
