@@ -183,4 +183,64 @@ class LocationServiceUtilsTest extends ScalaTestWithActorTestKit with BaseTestSu
       }
     }
   }
+
+  "resolveSequencer" must {
+
+    "return a location which matches a given sequencerId and observing mode | ESW-119" in {
+      val testUri = new URI("test-uri")
+      val tcsLocation =
+        AkkaLocation(
+          AkkaConnection(ComponentId("TCS@obsMode1", Sequencer)),
+          Prefix("tcs.test.filter1"),
+          testUri
+        )
+      val ocsLocations = List(
+        AkkaLocation(
+          AkkaConnection(ComponentId("OCS_1", SequenceComponent)),
+          Prefix("esw.test.filter"),
+          testUri
+        ),
+        AkkaLocation(
+          AkkaConnection(ComponentId("TCS_1", SequenceComponent)),
+          Prefix("tcs.test.filter2"),
+          testUri
+        )
+      )
+      when(locationService.list).thenReturn(Future.successful(tcsLocation :: ocsLocations))
+
+      val locationServiceUtils = new LocationServiceUtils(locationService)
+      val actualLocations =
+        locationServiceUtils.resolveSequencer("TCS", "obsMode1").futureValue
+      actualLocations should ===(tcsLocation)
+    }
+
+    "return an IllegalArgumentException when no matching sequencerId and observing mode is found | ESW-119" in {
+      val testUri = new URI("test-uri")
+      val tcsLocation =
+        AkkaLocation(
+          AkkaConnection(ComponentId("TCS@obsMode1", Sequencer)),
+          Prefix("tcs.test.filter1"),
+          testUri
+        )
+      val ocsLocations = List(
+        AkkaLocation(
+          AkkaConnection(ComponentId("OCS_1", SequenceComponent)),
+          Prefix("esw.test.filter"),
+          testUri
+        ),
+        AkkaLocation(
+          AkkaConnection(ComponentId("TCS_1", SequenceComponent)),
+          Prefix("tcs.test.filter2"),
+          testUri
+        )
+      )
+      when(locationService.list).thenReturn(Future.successful(tcsLocation :: ocsLocations))
+
+      val locationServiceUtils = new LocationServiceUtils(locationService)
+      intercept[IllegalArgumentException] {
+        locationServiceUtils.resolveSequencer("TCS", "obsMode2").awaitResult
+      }
+    }
+  }
+
 }

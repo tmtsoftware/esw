@@ -121,6 +121,7 @@ class SequencerBehavior(
       .recover { case NonFatal(ex) => Left(ShutdownError(ex.getMessage)) }
       .foreach(replyTo ! LifecycleResponse(_))
     //fixme: can we avoid abruptly terminating the system?
+    Thread.sleep(1000)
     ctx.system.terminate
   }
 

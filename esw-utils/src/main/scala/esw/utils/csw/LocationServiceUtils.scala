@@ -68,4 +68,17 @@ class LocationServiceUtils(locationService: LocationService) {
         .getOrElse(throw new IllegalArgumentException(s"Could not find any component with name: $name and type: $componentType"))
     }
   }
+
+  // To be used by Script Writer
+  def resolveSequencer(sequencerId: String, observingMode: String)(
+      implicit ec: ExecutionContext
+  ): Future[AkkaLocation] =
+    async {
+      await(locationService.list)
+        .find(location => location.connection.componentId.name.contains(s"$sequencerId@$observingMode"))
+        .asInstanceOf[Option[AkkaLocation]]
+    }.collect {
+      case Some(location) => location
+      case None           => throw new IllegalArgumentException(s"Could not find any sequencer with name: $sequencerId@$observingMode")
+    }
 }
