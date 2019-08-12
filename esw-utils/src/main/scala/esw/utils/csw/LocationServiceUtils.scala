@@ -49,6 +49,8 @@ class LocationServiceUtils(locationService: LocationService) {
       })
   }
 
+  //Can be used to listBySequencerId() and listByObsMode(). Separate APIs can be created once we have concrete
+  //classes for `SequencerId` and `ObsMode`
   def listByComponentName(nameSubString: String)(implicit ec: ExecutionContext): Future[List[Location]] = {
     locationService.list.map { locations =>
       locations.filter(x => x.connection.componentId.name.contains(nameSubString))

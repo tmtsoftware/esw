@@ -5,9 +5,9 @@ import java.net.URI
 import akka.Done
 import akka.actor.CoordinatedShutdown
 import akka.actor.CoordinatedShutdown.UnknownReason
-import akka.actor.testkit.typed.scaladsl.ScalaTestWithActorTestKit
+import akka.actor.testkit.typed.scaladsl.{ScalaTestWithActorTestKit, TestProbe}
 import akka.actor.typed.scaladsl.adapter.TypedActorSystemOps
-import akka.actor.typed.{ActorSystem, SpawnProtocol}
+import akka.actor.typed.{ActorRef, ActorSystem, SpawnProtocol}
 import csw.location.api.exceptions.{OtherLocationIsRegistered, RegistrationFailed}
 import csw.location.api.scaladsl.{LocationService, RegistrationResult}
 import csw.location.models.ComponentType.SequenceComponent
@@ -15,7 +15,8 @@ import csw.location.models.Connection.AkkaConnection
 import csw.location.models.{AkkaLocation, AkkaRegistration, ComponentId, ComponentType}
 import csw.params.core.models.{Prefix, Subsystem}
 import esw.ocs.api.BaseTestSuite
-import esw.ocs.api.models.messages.RegistrationError
+import esw.ocs.api.models.messages.SequenceComponentMsg.Stop
+import esw.ocs.api.models.messages.{RegistrationError, SequenceComponentMsg}
 import esw.utils.csw.LocationServiceUtils
 import org.mockito.ArgumentMatchers.any
 import org.mockito.Mockito.{verify, when}
@@ -43,9 +44,19 @@ class SequenceComponentRegistrationTest extends ScalaTestWithActorTestKit with B
       when(registrationResult.location).thenReturn(akkaLocation)
       when(registrationResult.unregister()).thenReturn(Future.successful(Done))
       when(locationService.register(any[AkkaRegistration])).thenReturn(Future(registrationResult))
-      when(locationServiceUtils.listBy(Subsystem.TCS, ComponentType.SequenceComponent)).thenReturn(Future.successful(List.empty))
+      when(locationServiceUtils.listBy(Subsystem.TCS, ComponentType.SequenceComponent))
+        .thenReturn(Future.successful(List.empty))
 
-      val sequenceComponentRegistration = new SequenceComponentRegistration(prefix, locationService, locationServiceUtils)
+      val sequenceComponentProbe: TestProbe[SequenceComponentMsg]                                 = TestProbe[SequenceComponentMsg]()
+      def sequenceComponentFactory(sequenceComponentName: String): ActorRef[SequenceComponentMsg] = sequenceComponentProbe.ref
+
+      val sequenceComponentRegistration =
+        new SequenceComponentRegistration(
+          prefix,
+          locationService,
+          locationServiceUtils,
+          sequenceComponentFactory
+        )
 
       sequenceComponentRegistration
         .registerWithRetry(retryCount)
@@ -68,18 +79,19 @@ class SequenceComponentRegistrationTest extends ScalaTestWithActorTestKit with B
       when(registrationResult.location).thenReturn(akkaLocation)
       when(registrationResult.unregister()).thenReturn(Future.successful(Done))
       when(locationService.register(any[AkkaRegistration]))
-        .thenReturn(Future.failed(OtherLocationIsRegistered(errorMsg)), Future(registrationResult))
+        .thenReturn(Future.failed(OtherLocationIsRegistered(errorMsg)), Future.successful(registrationResult))
       when(locationServiceUtils.listBy(Subsystem.TCS, ComponentType.SequenceComponent))
         .thenReturn(Future.successful(List(akkaLocation)))
 
-      val sequenceComponentRegistration = new SequenceComponentRegistration(prefix, locationService, locationServiceUtils)
+      val sequenceComponentProbe: TestProbe[SequenceComponentMsg]                                 = TestProbe[SequenceComponentMsg]()
+      def sequenceComponentFactory(sequenceComponentName: String): ActorRef[SequenceComponentMsg] = sequenceComponentProbe.ref
 
-      sequenceComponentRegistration
-        .registerWithRetry(retryCount)
-        .rightValue should ===(
-        akkaLocation
-      )
+      val sequenceComponentRegistration =
+        new SequenceComponentRegistration(prefix, locationService, locationServiceUtils, sequenceComponentFactory)
 
+      val regResult = sequenceComponentRegistration.registerWithRetry(retryCount)
+      sequenceComponentProbe.expectMessage(Stop)
+      regResult.rightValue should ===(akkaLocation)
       coordinatedShutdown.run(UnknownReason).futureValue
       verify(registrationResult).unregister()
     }
@@ -98,7 +110,11 @@ class SequenceComponentRegistrationTest extends ScalaTestWithActorTestKit with B
       when(locationServiceUtils.listBy(Subsystem.TCS, ComponentType.SequenceComponent))
         .thenReturn(Future.successful(List(akkaLocation)))
 
-      val sequenceComponentRegistration = new SequenceComponentRegistration(prefix, locationService, locationServiceUtils)
+      val sequenceComponentProbe: TestProbe[SequenceComponentMsg]                                 = TestProbe[SequenceComponentMsg]()
+      def sequenceComponentFactory(sequenceComponentName: String): ActorRef[SequenceComponentMsg] = sequenceComponentProbe.ref
+
+      val sequenceComponentRegistration =
+        new SequenceComponentRegistration(prefix, locationService, locationServiceUtils, sequenceComponentFactory)
       sequenceComponentRegistration
         .registerWithRetry(retryCount)
         .leftValue should ===(
@@ -121,7 +137,11 @@ class SequenceComponentRegistrationTest extends ScalaTestWithActorTestKit with B
       when(locationServiceUtils.listBy(Subsystem.TCS, ComponentType.SequenceComponent))
         .thenReturn(Future.successful(List(akkaLocation)))
 
-      val sequenceComponentRegistration = new SequenceComponentRegistration(prefix, locationService, locationServiceUtils)
+      val sequenceComponentProbe: TestProbe[SequenceComponentMsg]                                 = TestProbe[SequenceComponentMsg]()
+      def sequenceComponentFactory(sequenceComponentName: String): ActorRef[SequenceComponentMsg] = sequenceComponentProbe.ref
+
+      val sequenceComponentRegistration =
+        new SequenceComponentRegistration(prefix, locationService, locationServiceUtils, sequenceComponentFactory)
 
       sequenceComponentRegistration
         .registerWithRetry(retryCount)

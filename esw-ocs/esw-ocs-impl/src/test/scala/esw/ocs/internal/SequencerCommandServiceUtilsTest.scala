@@ -19,14 +19,14 @@ import org.mockito.Mockito.{clearInvocations, verify, when}
 
 import scala.concurrent.Future
 
-class SequencerCommandServiceUtilTest extends BaseTestSuite {
+class SequencerCommandServiceUtilsTest extends BaseTestSuite {
 
   private val locationService: LocationService         = mock[LocationService]
   implicit val typedSystem: ActorSystem[SpawnProtocol] = ActorSystem(SpawnProtocol.behavior, "test")
   implicit val scheduler: Scheduler                    = typedSystem.scheduler
   implicit val timeout: Timeout                        = Timeouts.DefaultTimeout
 
-  val sequencerCommandServiceUtil                  = new SequencerCommandServiceUtil(locationService)
+  val sequencerCommandServiceUtil                  = new SequencerCommandServiceUtils(locationService)
   val sequencerRef: ActorRef[LoadAndStartSequence] = (typedSystem ? Spawn(TestSequencer.beh, "testSequencerActor")).awaitResult
 
   val prefixStr  = "TCS.filter.wheel"
@@ -55,7 +55,7 @@ class SequencerCommandServiceUtilTest extends BaseTestSuite {
       eventualResponse.futureValue shouldBe Started(sequence.runId)
     }
 
-    "throw exception when invalid sequencer name is provided" in {
+    "throw exception when invalid sequencer name is provided | ESW-195" in {
       //simulates that no sequencer is registered for given Connection
       when(locationService.resolve(connection, timeout.duration)).thenReturn(Future.successful(None))
 
