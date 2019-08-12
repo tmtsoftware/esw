@@ -68,8 +68,10 @@ class SequencerBehavior(
     }
   }
 
-  private def handleAnyStateMessage(message: AnyStateMessage, state: SequencerState, killFunction: Unit => Unit)(
-      implicit ec: ExecutionContext
+  private def handleAnyStateMessage(
+      message: AnyStateMessage,
+      state: SequencerState,
+      killFunction: Unit => Unit
   ): Behavior[EswSequencerMessage] = message match {
     case Shutdown(replyTo)            => shutdown(replyTo, killFunction)
     case GetPreviousSequence(replyTo) => getPreviousSequence(replyTo, state)
@@ -95,7 +97,6 @@ class SequencerBehavior(
   }
 
   def offline(state: SequencerState): Behavior[EswSequencerMessage] = receive[OfflineMessage]("offline") { (ctx, message) =>
-    import ctx.executionContext
     message match {
       case x: AnyStateMessage => handleAnyStateMessage(x, state, _ => ctx.system.terminate)
       case GoOnline(replyTo)  => goOnline(replyTo, state)
@@ -262,25 +263,24 @@ class SequencerBehavior(
     crm.updateSubCommand(Completed(emptyChildId))
   }
 
-  private def shutdown(replyTo: ActorRef[Ok.type], killFunction: Unit => Unit)(
-      implicit ec: ExecutionContext
-  ): Behavior[EswSequencerMessage] = {
+  private def shutdown(replyTo: ActorRef[Ok.type], killFunction: Unit => Unit): Behavior[EswSequencerMessage] = {
     locationService.unregister(AkkaConnection(componentId))
     script.executeShutdown()
     replyTo ! Ok
-    Behaviors.stopped(() => killFunction)
+    Behaviors.stopped(() => killFunction(()))
   }
 
-  private def updateStepList[T <: EditorError](
-      replyTo: ActorRef[Ok.type],
+  private def updateStepList[T >: Ok.type](
+      replyTo: ActorRef[T],
       state: SequencerState,
       stepListResult: Either[T, StepList]
-  )(implicit ec: ExecutionContext): SequencerState = {
-    stepListResult.map(stepList => updateStepList1(replyTo, state, stepList)).getOrElse(state) // fixme handle failure
+  )(implicit ec: ExecutionContext): SequencerState = stepListResult match {
+    case Left(error)     => replyTo ! error; state
+    case Right(stepList) => updateStepList1(replyTo, state, stepList)
   }
 
-  private def updateStepList1[T <: EditorError](
-      replyTo: ActorRef[Ok.type],
+  private def updateStepList1[T >: Ok.type](
+      replyTo: ActorRef[T],
       state: SequencerState,
       stepList: StepList
   )(implicit ec: ExecutionContext): SequencerState = {

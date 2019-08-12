@@ -39,12 +39,12 @@ object SequencerMessages {
   final case class Add(commands: List[SequenceCommand], replyTo: ActorRef[SimpleResponse])     extends EditorAction
   final case class Prepend(commands: List[SequenceCommand], replyTo: ActorRef[SimpleResponse]) extends EditorAction
 
-  final case class Replace(id: Id, commands: List[SequenceCommand], replyTo: ActorRef[SimpleResponse])     extends EditorAction
-  final case class InsertAfter(id: Id, commands: List[SequenceCommand], replyTo: ActorRef[SimpleResponse]) extends EditorAction
-  final case class Delete(ids: Id, replyTo: ActorRef[SimpleResponse])                                      extends EditorAction
-  final case class AddBreakpoint(id: Id, replyTo: ActorRef[SimpleResponse])                                extends EditorAction
-  final case class RemoveBreakpoint(id: Id, replyTo: ActorRef[SimpleResponse])                             extends EditorAction
-  final case class Pause(replyTo: ActorRef[SimpleResponse])                                                extends EditorAction
+  final case class Replace(id: Id, commands: List[SequenceCommand], replyTo: ActorRef[ComplexResponse])     extends EditorAction
+  final case class InsertAfter(id: Id, commands: List[SequenceCommand], replyTo: ActorRef[ComplexResponse]) extends EditorAction
+  final case class Delete(ids: Id, replyTo: ActorRef[ComplexResponse])                                      extends EditorAction
+  final case class AddBreakpoint(id: Id, replyTo: ActorRef[ComplexResponse])                                extends EditorAction
+  final case class RemoveBreakpoint(id: Id, replyTo: ActorRef[RemoveBreakpointResponse])                             extends EditorAction
+  final case class Pause(replyTo: ActorRef[PauseResponse])                                                extends EditorAction
   final case class Resume(replyTo: ActorRef[SimpleResponse])                                               extends EditorAction
   final case class Reset(replyTo: ActorRef[SimpleResponse])                                                extends EditorAction
 

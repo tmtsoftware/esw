@@ -22,20 +22,20 @@ class SequenceEditorClient(sequencer: ActorRef[EswSequencerMessage])(implicit sy
 
   override def prepend(commands: List[SequenceCommand]): Future[SimpleResponse] = sequencer ? (Prepend(commands, _))
 
-  override def replace(id: Id, commands: List[SequenceCommand]): Future[SimpleResponse] = sequencer ? (Replace(id, commands, _))
+  override def replace(id: Id, commands: List[SequenceCommand]): Future[ComplexResponse] = sequencer ? (Replace(id, commands, _))
 
-  override def insertAfter(id: Id, commands: List[SequenceCommand]): Future[SimpleResponse] =
+  override def insertAfter(id: Id, commands: List[SequenceCommand]): Future[ComplexResponse] =
     sequencer ? (InsertAfter(id, commands, _))
 
-  override def delete(id: Id): Future[SimpleResponse] = sequencer ? (Delete(id, _))
+  override def delete(id: Id): Future[ComplexResponse] = sequencer ? (Delete(id, _))
 
-  override def pause: Future[SimpleResponse] = sequencer ? Pause
+  override def pause: Future[PauseResponse] = sequencer ? Pause
 
   override def resume: Future[SimpleResponse] = sequencer ? Resume
 
-  override def addBreakpoint(id: Id): Future[SimpleResponse] = sequencer ? (AddBreakpoint(id, _))
+  override def addBreakpoint(id: Id): Future[ComplexResponse] = sequencer ? (AddBreakpoint(id, _))
 
-  override def removeBreakpoint(id: Id): Future[SimpleResponse] = sequencer ? (RemoveBreakpoint(id, _))
+  override def removeBreakpoint(id: Id): Future[RemoveBreakpointResponse] = sequencer ? (RemoveBreakpoint(id, _))
 
   override def reset(): Future[SimpleResponse] = sequencer ? Reset
 }
