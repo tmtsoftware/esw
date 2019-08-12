@@ -4,7 +4,7 @@ import csw.params.commands.CommandResponse.Completed
 import csw.params.commands.{CommandName, Setup}
 import csw.params.core.models.{Id, Prefix}
 import esw.ocs.api.models.StepStatus.{Finished, _}
-import esw.ocs.api.models.messages.EditorError.{NotSupported, UpdateNotSupported}
+import esw.ocs.api.models.messages.EditorError.CannotOperateOnAnInFlightOrFinishedStep
 import esw.ocs.api.{BaseTestSuite, models}
 
 class StepTest extends BaseTestSuite {
@@ -68,18 +68,18 @@ class StepTest extends BaseTestSuite {
       stepResult.toOption.get.hasBreakpoint should ===(true)
     }
 
-    "fail with NotSupported error when step status is InFlight | ESW-106" in {
+    "fail with CannotOperateOnAnInFlightOrFinishedStep error when step status is InFlight | ESW-106" in {
       val setup      = Setup(Prefix("esw.test"), CommandName("test"), None)
       val step       = Step(setup, InFlight, hasBreakpoint = false)
       val stepResult = step.addBreakpoint()
-      stepResult.left.value should ===(NotSupported(InFlight))
+      stepResult.left.value should ===(CannotOperateOnAnInFlightOrFinishedStep)
     }
 
-    "fail with NotSupported error when step status is Finished | ESW-106" in {
+    "fail with CannotOperateOnAnInFlightOrFinishedStep error when step status is Finished | ESW-106" in {
       val setup      = Setup(Prefix("esw.test"), CommandName("test"), None)
       val step       = models.Step(setup, finished(setup.runId), hasBreakpoint = false)
       val stepResult = step.addBreakpoint()
-      stepResult.left.value should ===(NotSupported(finished(setup.runId)))
+      stepResult.left.value should ===(CannotOperateOnAnInFlightOrFinishedStep)
     }
   }
 
@@ -104,7 +104,7 @@ class StepTest extends BaseTestSuite {
       val setup      = Setup(Prefix("esw.test"), CommandName("test"), None)
       val step       = Step(setup, Pending, hasBreakpoint = true)
       val stepResult = step.withStatus(InFlight)
-      stepResult.toOption.get.status should ===(InFlight)
+      stepResult.status should ===(InFlight)
     }
 
     "change the status to Finished from InFlight " in {
@@ -112,14 +112,14 @@ class StepTest extends BaseTestSuite {
       val step             = Step(setup, InFlight, hasBreakpoint = true)
       val finishedResponse = finished(setup.runId)
       val stepResult       = step.withStatus(finishedResponse)
-      stepResult.toOption.get.status should ===(finishedResponse)
+      stepResult.status should ===(finishedResponse)
     }
 
-    "fail for invalid status transitions" in {
+    /*"fail for invalid status transitions" in {
       val setup      = Setup(Prefix("esw.test"), CommandName("test"), None)
       val step       = Step(setup, InFlight, hasBreakpoint = true)
       val stepResult = step.withStatus(Pending)
       stepResult.left.value should ===(UpdateNotSupported(InFlight, Pending))
-    }
+    }*/
   }
 }
