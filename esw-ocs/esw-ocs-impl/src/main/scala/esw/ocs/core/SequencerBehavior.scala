@@ -31,36 +31,32 @@ class SequencerBehavior(
 
   private val emptyChildId = Id("empty-child") // fixme
 
-  //BEHAVIOURS
+  //BEHAVIORS
   def idle(ss: SequencerState): Behavior[EswSequencerMessage] = receive[IdleMessage]("idle") { (ctx, msg) =>
     val state = ss.copy(self = Some(ctx.self))
-    import ctx._
+    import ctx.executionContext
     msg match {
-      case x: AnyStateMessage => handleAnyStateMessage(x, state, _ => ctx.system.terminate)
-      // ===== External Lifecycle =====
-      case GoOffline(replyTo) => goOffline(replyTo, state)
-      // ===== External Editor =====
+      case x: AnyStateMessage                => handleAnyStateMessage(x, state, _ => ctx.system.terminate)
       case LoadSequence(sequence, replyTo)   => load(sequence, replyTo, state)
       case LoadAndProcess(sequence, replyTo) => loadAndProcess(sequence, state, replyTo)
-
-      // ===== Internal =====
-      case PullNext(replyTo) => pullNext(state, replyTo, idle)
+      case GoOffline(replyTo)                => goOffline(replyTo, state)
+      case PullNext(replyTo)                 => pullNext(state, replyTo, idle)
     }
   }
 
   def loaded(ss: SequencerState): Behavior[EswSequencerMessage] = receive[SequenceLoadedMessage]("loaded") { (ctx, msg) =>
-    import ctx._
+    import ctx.executionContext
     val state = ss.copy(self = Some(ctx.self))
     msg match {
-      case x: AnyStateMessage     => handleAnyStateMessage(x, state, _ => ctx.system.terminate)
-      case x: EditorAction        => loaded(handleEditorAction(x, state))
-      case GoOffline(replyTo)     => goOffline(replyTo, state)
-      case StartSequence(replyTo) => process(state, replyTo)
+      case x: AnyStateMessage         => handleAnyStateMessage(x, state, _ => ctx.system.terminate)
+      case editorAction: EditorAction => loaded(handleEditorAction(editorAction, state))
+      case GoOffline(replyTo)         => goOffline(replyTo, state)
+      case StartSequence(replyTo)     => process(state, replyTo)
     }
   }
 
   def inProgress(ss: SequencerState): Behavior[EswSequencerMessage] = receive[InProgressMessage]("in-progress") { (ctx, msg) =>
-    import ctx._
+    import ctx.executionContext
     val state = ss.copy(self = Some(ctx.self))
     msg match {
       case x: AnyStateMessage                => handleAnyStateMessage(x, state, _ => ctx.system.terminate)
@@ -99,31 +95,26 @@ class SequencerBehavior(
   }
 
   def offline(ss: SequencerState): Behavior[EswSequencerMessage] = receive[OfflineMessage]("offline") { (ctx, message) =>
-    import ctx._
+    import ctx.executionContext
     val state = ss.copy(self = Some(ctx.self))
     message match {
-      case GoOnline(replyTo)            => goOnline(replyTo, state)
-      case Shutdown(replyTo)            => shutdown(replyTo, _ => ctx.system.terminate)
-      case GetPreviousSequence(replyTo) => getPreviousSequence(replyTo, state)
+      case x: AnyStateMessage => handleAnyStateMessage(x, state, _ => ctx.system.terminate)
+      case GoOnline(replyTo)  => goOnline(replyTo, state)
     }
   }
 
   // $COVERAGE-OFF$
 
-  def pullNext(
+  private def pullNext(
       state: SequencerState,
       replyTo: ActorRef[PullNextResult],
       behaviour: SequencerState => Behavior[EswSequencerMessage]
-  )(
-      implicit executionContext: ExecutionContext
-  ): Behavior[EswSequencerMessage] = {
+  )(implicit ec: ExecutionContext): Behavior[EswSequencerMessage] = {
     val newState = state.copy(stepRefSubscriber = Some(replyTo))
     behaviour(tryExecutingNextPendingStep(newState))
   }
 
-  def process0(state: SequencerState)(
-      implicit executionContext: ExecutionContext
-  ): (SequencerState, Future[SubmitResponse]) = {
+  private def process0(state: SequencerState)(implicit ec: ExecutionContext): (SequencerState, Future[SubmitResponse]) = {
     val id = state.stepList.runId
     crm.addOrUpdateCommand(Started(id))
     crm.addSubCommand(id, emptyChildId)
@@ -140,36 +131,31 @@ class SequencerBehavior(
     (newState, handleSequenceResponse(crm.queryFinal(id), newState))
   }
 
-  def process(state: SequencerState, replyTo: ActorRef[Ok.type])(
-      implicit executionContext: ExecutionContext
-  ): Behavior[EswSequencerMessage] = {
+  private def process(state: SequencerState, replyTo: ActorRef[Ok.type])(implicit ec: ExecutionContext): Behavior[EswSequencerMessage] = {
     val (newState, submitResponseF) = process0(state)
+    //fixme: submit response should be sent to the sender?
     submitResponseF.foreach(_ => replyTo ! Ok)
     inProgress(newState)
   }
 
-  def sendStepToSubscriber(state: SequencerState, step: Step): SequencerState = {
+  private def sendStepToSubscriber(state: SequencerState, step: Step): SequencerState = {
     state.stepRefSubscriber.foreach(_ ! PullNextResult(step))
     state.copy(stepRefSubscriber = None)
   }
 
-  def load1(
+  private def createStepList(
       sequence: Sequence,
       state: SequencerState
   ): Either[DuplicateIdsFound.type, SequencerState] =
     StepList(sequence).map(x => state.copy(stepList = x, previousStepList = Some(state.stepList)))
 
-  def load(
+  private def load(
       sequence: Sequence,
       replyTo: ActorRef[LoadSequenceResponse],
       state: SequencerState
-  ): Behavior[EswSequencerMessage] = load1(sequence, state) match {
-    case Left(err) =>
-      replyTo ! err
-      Behaviors.same
-    case Right(newState) =>
-      replyTo ! Ok
-      loaded(newState)
+  ): Behavior[EswSequencerMessage] = createStepList(sequence, state) match {
+    case Left(err)       => replyTo ! err; Behaviors.same
+    case Right(newState) => replyTo ! Ok; loaded(newState)
   }
 
   protected def receive[B <: EswSequencerMessage: ClassTag](stateName: String)(
@@ -177,10 +163,8 @@ class SequencerBehavior(
   ): Behavior[EswSequencerMessage] =
     Behaviors.receive { (ctx, msg) =>
       msg match {
-        case m: B => f(ctx, m)
-        case x =>
-          x.replyTo ! Unhandled(stateName, x.getClass.getSimpleName)
-          Behaviors.same
+        case msg: B => f(ctx, msg)
+        case _      => msg.replyTo ! Unhandled(stateName, msg.getClass.getSimpleName); Behaviors.same
       }
     }
 
@@ -211,9 +195,7 @@ class SequencerBehavior(
     Behaviors.same
   }
 
-  private def tryExecutingNextPendingStep(state: SequencerState)(
-      implicit executionContext: ExecutionContext
-  ): SequencerState =
+  private def tryExecutingNextPendingStep(state: SequencerState)(implicit ec: ExecutionContext): SequencerState =
     state.stepList.nextExecutable
       .map { pendingStep =>
         val (step, newState) = setPendingToInFlight(pendingStep, state)
@@ -226,22 +208,19 @@ class SequencerBehavior(
       sequence: Sequence,
       state: SequencerState,
       replyTo: ActorRef[LoadSequenceResponse]
-  )(
-      implicit executionContext: ExecutionContext
-  ): Behavior[EswSequencerMessage] = {
-    val newStateMayBe = load1(sequence, state)
+  )(implicit ec: ExecutionContext): Behavior[EswSequencerMessage] = {
+    val newStateMayBe = createStepList(sequence, state)
     newStateMayBe match {
-      case Left(err) =>
-        replyTo ! err
-        Behaviors.same
+      case Left(err) => replyTo ! err; Behaviors.same
       case Right(newState) =>
-        val (s, f) = process0(newState)
-        f.foreach(_ => replyTo ! Ok) // todo: log errors
-        inProgress(s)
+        val (ss, submitResponseF) = process0(newState)
+        submitResponseF.foreach(_ => replyTo ! Ok) // todo: log errors
+        inProgress(ss)
     }
   }
 
   private def goToIdle(state: SequencerState): Unit =
+  //todo: should clear the state? so that immediate start message does not start the old sequence again?
     state.self.foreach(_ ! GoIdle(state, actorSystem.deadLetters))
 
   private def handleSequenceResponse(
@@ -266,12 +245,8 @@ class SequencerBehavior(
     (inflightStep, newState)
   }
 
-  private def processStepResponse(
-      stepId: Id,
-      submitResponseF: Future[SubmitResponse],
-      state: SequencerState
-  )(
-      implicit executionContext: ExecutionContext
+  private def processStepResponse(stepId: Id, submitResponseF: Future[SubmitResponse], state: SequencerState)(
+      implicit ec: ExecutionContext
   ): Future[SequencerState] =
     submitResponseF
       .map {
@@ -282,23 +257,13 @@ class SequencerBehavior(
         case NonFatal(e) => Future.successful(updateFailure(Error(stepId, e.getMessage), state))
       }
 
-  private def updateSuccess(
-      successResponse: SubmitResponse,
-      state: SequencerState
-  ): SequencerState =
+  private def updateSuccess(successResponse: SubmitResponse, state: SequencerState): SequencerState =
     updateStepStatus(successResponse, Finished.Success(successResponse), state)
 
-  private[ocs] def updateFailure(
-      failureResponse: SubmitResponse,
-      state: SequencerState
-  ): SequencerState =
+  private[ocs] def updateFailure(failureResponse: SubmitResponse, state: SequencerState): SequencerState =
     updateStepStatus(failureResponse, Finished.Failure(failureResponse), state)
 
-  private def updateStepStatus(
-      submitResponse: SubmitResponse,
-      stepStatus: StepStatus,
-      state: SequencerState
-  ): SequencerState = {
+  private def updateStepStatus(submitResponse: SubmitResponse, stepStatus: StepStatus, state: SequencerState): SequencerState = {
     crm.updateSubCommand(submitResponse)
     val newStepList = state.stepList.updateStatus(submitResponse.runId, stepStatus)
     state.self.foreach(_ ! UpdateSequencerState(state.copy(stepList = newStepList), null))
@@ -329,36 +294,28 @@ class SequencerBehavior(
       replyTo: ActorRef[Ok.type],
       state: SequencerState,
       stepListResultFunc: => Either[T, StepList]
-  )(
-      implicit executionContext: ExecutionContext
-  ): SequencerState = {
-    val stepListResult: Either[EditorError, StepList] = stepListResultFunc
-    val newStepList                                   = stepListResult.getOrElse(state.stepList) // handle failure
-    val newState                                      = state.copy(stepList = newStepList)
-    replyTo ! Ok
-    checkForSequenceCompletion(newState)
-    tryExecutingNextPendingStep(newState)
+  )(implicit ec: ExecutionContext): SequencerState = {
+    val stepListResult = stepListResultFunc
+    stepListResult.map(stepList => updateStepList1(replyTo, state, stepList)).getOrElse(state) // handle failure
   }
 
   private def updateStepList1[T <: EditorError](
       replyTo: ActorRef[Ok.type],
       state: SequencerState,
       stepList: => StepList
-  )(
-      implicit executionContext: ExecutionContext
-  ): SequencerState = {
+  )(implicit ec: ExecutionContext): SequencerState = {
     val newState = state.copy(stepList)
     replyTo ! Ok
     checkForSequenceCompletion(newState)
     tryExecutingNextPendingStep(newState)
   }
 
-  //HANDLERS
   private def goOnline(replyTo: ActorRef[Ok.type], state: SequencerState): Behavior[EswSequencerMessage] = {
     script.executeGoOnline() // recover and log
     replyTo ! Ok
     idle(state)
   }
+
   private def goOffline(replyTo: ActorRef[Ok.type], state: SequencerState): Behavior[EswSequencerMessage] = {
     replyTo ! Ok
     script.executeGoOffline() // recover and log
