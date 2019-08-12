@@ -265,13 +265,10 @@ class SequencerBehavior(
   private def shutdown(replyTo: ActorRef[Ok.type], killFunction: Unit => Unit)(
       implicit ec: ExecutionContext
   ): Behavior[EswSequencerMessage] = {
-
     locationService.unregister(AkkaConnection(componentId))
-    script.executeShutdown().onComplete { _ =>
-      replyTo ! Ok
-      killFunction
-    }
-    Behaviors.stopped[EswSequencerMessage]
+    script.executeShutdown()
+    replyTo ! Ok
+    Behaviors.stopped(() => killFunction)
   }
 
   private def updateStepList[T <: EditorError](
@@ -294,8 +291,8 @@ class SequencerBehavior(
   }
 
   private def goOnline(replyTo: ActorRef[Ok.type], state: SequencerState): Behavior[EswSequencerMessage] = {
-    script.executeGoOnline() // recover and log
     replyTo ! Ok
+    script.executeGoOnline() // recover and log
     idle(state)
   }
 
