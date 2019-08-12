@@ -33,22 +33,14 @@ sealed case class Unhandled(state: String, messageType: String)
   val description = s"Sequencer can not accept '$messageType' message in '$state' state"
 }
 
-sealed trait SequencerError
-
 // load-and-start sequence error
-case object DuplicateIdsFound extends LoadSequenceResponse with SequencerError {
+case object DuplicateIdsFound extends LoadSequenceResponse {
   val description = "Duplicate command Ids found in given sequence"
 }
 
-sealed trait EditorError extends OcsFrameworkAkkaSerializable with SequencerError
+sealed trait EditorError extends OcsFrameworkAkkaSerializable
 
 object EditorError {
-  sealed trait AddBreakpointError extends EditorError
-  sealed trait InsertError        extends EditorError
-  sealed trait ReplaceError       extends EditorError
-  sealed trait DeleteError        extends EditorError
-
-  case object CannotOperateOnAnInFlightOrFinishedStep extends AddBreakpointError with DeleteError
-  case object CannotInsertOrReplaceAfterAFinishedStep extends InsertError with ReplaceError
-  case class IdDoesNotExist(id: Id)                   extends ReplaceError with InsertError with DeleteError with AddBreakpointError
+  case object CannotOperateOnAnInFlightOrFinishedStep extends EditorError
+  case class IdDoesNotExist(id: Id)                   extends EditorError
 }

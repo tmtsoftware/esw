@@ -68,9 +68,6 @@ trait OcsFrameworkCodecs extends MessageCodecs with DoneCodec {
   implicit lazy val inFlightOrFinishedStepErrorCodec: Codec[CannotOperateOnAnInFlightOrFinishedStep.type] =
     singletonCodec(CannotOperateOnAnInFlightOrFinishedStep)
 
-  implicit lazy val finishedStepInsertErrorCodec: Codec[CannotInsertOrReplaceAfterAFinishedStep.type] =
-    singletonCodec(CannotInsertOrReplaceAfterAFinishedStep)
-
   implicit lazy val editorErrorCodec: Codec[EditorError] = deriveCodec[EditorError]
 
   //SequenceComponentCodecs
