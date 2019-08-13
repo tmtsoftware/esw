@@ -69,6 +69,7 @@ trait OcsFrameworkCodecs extends MessageCodecs with DoneCodec {
   implicit lazy val getPreviousSequenceResponseCodec: Codec[GetPreviousSequenceResponse] =
     deriveCodec[GetPreviousSequenceResponse]
   implicit lazy val sequenceResponseCodec: Codec[SequenceResponse] = deriveCodec[SequenceResponse]
+  implicit lazy val responseCodec: Codec[Response]                 = deriveCodec[Response]
 
   implicit lazy val stepListResponseCodec: Codec[GetSequenceResult] = deriveCodec[GetSequenceResult]
   implicit lazy val previousSequenceResultCodec: Codec[GetPreviousSequenceResult] =

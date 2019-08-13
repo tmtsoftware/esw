@@ -5,17 +5,18 @@ import csw.params.core.models.Id
 import esw.ocs.api.models.{Step, StepList}
 import esw.ocs.api.serializer.OcsFrameworkAkkaSerializable
 
-sealed trait SimpleResponse              extends OcsFrameworkAkkaSerializable // fixme: think about better name
-sealed trait ComplexResponse             extends OcsFrameworkAkkaSerializable // fixme: think about better name
-sealed trait PauseResponse               extends OcsFrameworkAkkaSerializable
-sealed trait RemoveBreakpointResponse    extends OcsFrameworkAkkaSerializable
-sealed trait LoadSequenceResponse        extends OcsFrameworkAkkaSerializable
-sealed trait PullNextResponse            extends OcsFrameworkAkkaSerializable
-sealed trait MaybeNextResponse           extends OcsFrameworkAkkaSerializable
-sealed trait GetSequenceResponse         extends OcsFrameworkAkkaSerializable
-sealed trait GetPreviousSequenceResponse extends OcsFrameworkAkkaSerializable
+sealed trait Response                    extends OcsFrameworkAkkaSerializable
+sealed trait SimpleResponse              extends Response // fixme: think about better name
+sealed trait ComplexResponse             extends Response // fixme: think about better name
+sealed trait PauseResponse               extends Response
+sealed trait RemoveBreakpointResponse    extends Response
+sealed trait LoadSequenceResponse        extends Response
+sealed trait PullNextResponse            extends Response
+sealed trait MaybeNextResponse           extends Response
+sealed trait GetSequenceResponse         extends Response
+sealed trait GetPreviousSequenceResponse extends Response
 
-sealed trait SequenceResponse extends OcsFrameworkAkkaSerializable {
+sealed trait SequenceResponse extends Response {
   def toSubmitResponse(sequenceId: Id): SubmitResponse = this match {
     case SequenceResult(submitResponse) => submitResponse
     case DuplicateIdsFound              => Error(sequenceId, DuplicateIdsFound.description)
@@ -54,7 +55,7 @@ case object DuplicateIdsFound extends LoadSequenceResponse with SequenceResponse
   val description = "Duplicate command Ids found in given sequence"
 }
 
-sealed trait EditorError extends ComplexResponse with OcsFrameworkAkkaSerializable
+sealed trait EditorError extends ComplexResponse
 
 object EditorError {
   case object CannotOperateOnAnInFlightOrFinishedStep extends EditorError with PauseResponse
