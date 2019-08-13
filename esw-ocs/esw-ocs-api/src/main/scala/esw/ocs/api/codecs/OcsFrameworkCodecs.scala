@@ -21,11 +21,11 @@ trait OcsFrameworkCodecs extends MessageCodecs with DoneCodec {
   implicit lazy val loadAndStartSequenceInternalCodec: Codec[LoadAndStartSequenceInternal] =
     deriveCodec[LoadAndStartSequenceInternal]
 
-  implicit lazy val pullNextCodec: Codec[PullNext]                       = deriveCodecForUnaryCaseClass[PullNext]
-  implicit lazy val maybeNextCodec: Codec[MaybeNext]                     = deriveCodecForUnaryCaseClass[MaybeNext]
-  implicit lazy val readyToExecuteNextCodec: Codec[ReadyToExecuteNext]   = deriveCodecForUnaryCaseClass[ReadyToExecuteNext]
-  implicit lazy val updateCodec: Codec[Update]                           = deriveCodec[Update]
-  implicit lazy val goIdleCodec: Codec[GoIdle]                           = deriveCodecForUnaryCaseClass[GoIdle]
+  implicit lazy val pullNextCodec: Codec[PullNext]                     = deriveCodecForUnaryCaseClass[PullNext]
+  implicit lazy val maybeNextCodec: Codec[MaybeNext]                   = deriveCodecForUnaryCaseClass[MaybeNext]
+  implicit lazy val readyToExecuteNextCodec: Codec[ReadyToExecuteNext] = deriveCodecForUnaryCaseClass[ReadyToExecuteNext]
+  implicit lazy val updateCodec: Codec[Update]                         = deriveCodec[Update]
+  implicit lazy val goIdleCodec: Codec[GoIdle]                         = deriveCodecForUnaryCaseClass[GoIdle]
 
   implicit lazy val getSequenceCodec: Codec[GetSequence]                 = deriveCodec[GetSequence]
   implicit lazy val getPreviousSequenceCodec: Codec[GetPreviousSequence] = deriveCodec[GetPreviousSequence]

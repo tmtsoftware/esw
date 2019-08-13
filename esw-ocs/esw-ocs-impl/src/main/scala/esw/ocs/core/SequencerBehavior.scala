@@ -221,7 +221,7 @@ class SequencerBehavior(
       ref ! PullNextResult(step)
       newState.copy(stepRefSubscriber = None)
     }
-    
+
     maybeState.getOrElse(state)
   }
 

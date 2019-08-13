@@ -261,7 +261,7 @@ class StepListTest extends BaseTestSuite {
       updatedStepList should ===(StepList(stepList.runId, List(step1, step2, Step(setup3))))
     }
 
-   /* "fail with NotAllowedOnFinishedSeq error when StepList is finished | ESW-113" in {
+    /* "fail with NotAllowedOnFinishedSeq error when StepList is finished | ESW-113" in {
       val step1 = models.Step(setup1, finished(setup1.runId), hasBreakpoint = false)
       val step2 = models.Step(setup2, finished(setup2.runId), hasBreakpoint = false)
 
@@ -400,7 +400,7 @@ class StepListTest extends BaseTestSuite {
       updatedStepList.left.value should ===(CannotOperateOnAnInFlightOrFinishedStep)
     }
 
-   /* "fail with NotAllowedOnFinishedSeq error when StepList is finished | ESW-111" in {
+    /* "fail with NotAllowedOnFinishedSeq error when StepList is finished | ESW-111" in {
       val step1 = models.Step(setup1, finished(setup1.runId), hasBreakpoint = false)
       val step2 = models.Step(setup2, finished(setup2.runId), hasBreakpoint = false)
 
@@ -497,7 +497,7 @@ class StepListTest extends BaseTestSuite {
       updatedStepList.left.value shouldBe IdDoesNotExist(invalidId)
     }
 
-   /* "fail with NotAllowedOnFinishedSeq error when StepList is finished | ESW-107" in {
+    /* "fail with NotAllowedOnFinishedSeq error when StepList is finished | ESW-107" in {
       val step1 = models.Step(setup1, finished(setup1.runId), hasBreakpoint = true)
       val step2 = models.Step(setup2, finished(setup2.runId), hasBreakpoint = false)
 
@@ -535,7 +535,7 @@ class StepListTest extends BaseTestSuite {
       updatedStepList.left.value should ===(CannotOperateOnAnInFlightOrFinishedStep)
     }
 
-   /* "fail with NotAllowedOnFinishedSeq error when StepList is finished | ESW-104" in {
+    /* "fail with NotAllowedOnFinishedSeq error when StepList is finished | ESW-104" in {
       val step1 = models.Step(setup1, finished(setup1.runId), hasBreakpoint = true)
       val step2 = models.Step(setup2, finished(setup2.runId), hasBreakpoint = false)
 
@@ -570,7 +570,7 @@ class StepListTest extends BaseTestSuite {
       updatedStepList should ===(stepList)
     }
 
-  /*  "fail with NotAllowedOnFinishedSeq error when StepList is finished | ESW-105" in {
+    /*  "fail with NotAllowedOnFinishedSeq error when StepList is finished | ESW-105" in {
       val step1 = models.Step(setup1, finished(setup1.runId), hasBreakpoint = true)
       val step2 = models.Step(setup2, finished(setup2.runId), hasBreakpoint = false)
 
@@ -602,7 +602,7 @@ class StepListTest extends BaseTestSuite {
       updatedStepList2 should ===(StepList(id, List(step1, updatedStep2, updatedStep3)))
     }
 
-   /* "fail with UpdateFailed error when step status transition not allowed" in {
+    /* "fail with UpdateFailed error when step status transition not allowed" in {
       val step1 = models.Step(setup1, finished(setup1.runId), hasBreakpoint = false)
       val step2 = Step(setup2, Pending, hasBreakpoint = false)
 
