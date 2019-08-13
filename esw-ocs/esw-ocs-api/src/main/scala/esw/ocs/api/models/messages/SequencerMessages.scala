@@ -17,8 +17,14 @@ object SequencerMessages {
   sealed trait SequenceLoadedMessage extends EswSequencerMessage
   sealed trait InProgressMessage     extends EswSequencerMessage
   sealed trait OfflineMessage        extends EswSequencerMessage
+  sealed trait TransientMessage      extends EswSequencerMessage
   sealed trait EditorAction          extends SequenceLoadedMessage with InProgressMessage
-  sealed trait AnyStateMessage       extends IdleMessage with SequenceLoadedMessage with InProgressMessage with OfflineMessage
+  sealed trait AnyStateMessage
+      extends IdleMessage
+      with SequenceLoadedMessage
+      with InProgressMessage
+      with OfflineMessage
+      with TransientMessage
 
   final case class LoadSequence(sequence: Sequence, replyTo: ActorRef[LoadSequenceResponse]) extends IdleMessage
   final case class StartSequence(replyTo: ActorRef[SequenceResponse])                        extends SequenceLoadedMessage
@@ -26,11 +32,10 @@ object SequencerMessages {
       extends IdleMessage
 
   // lifecycle msgs
-  final case class GoOnline(replyTo: ActorRef[SimpleResponse])  extends OfflineMessage
+  final case class GoOnline(replyTo: ActorRef[OnlineResponse])  extends OfflineMessage
   final case class GoOffline(replyTo: ActorRef[SimpleResponse]) extends IdleMessage with SequenceLoadedMessage
   final case class Shutdown(replyTo: ActorRef[SimpleResponse])  extends AnyStateMessage
-
-  final case class Abort(replyTo: ActorRef[SimpleResponse]) extends EditorAction
+  final case class Abort(replyTo: ActorRef[SimpleResponse])     extends EditorAction
 
   // editor msgs
   // fixme : GetSequence and GetPreviousSequence should have replyTo StepListResponse
@@ -55,5 +60,5 @@ object SequencerMessages {
   final private[esw] case class ReadyToExecuteNext(replyTo: ActorRef[SimpleResponse]) extends InProgressMessage
   final private[esw] case class Update(submitResponse: SubmitResponse, replyTo: ActorRef[SimpleResponse]) // this is internal message and replyTo is not used anywhere
       extends InProgressMessage
-  final private[esw] case class GoIdle(replyTo: ActorRef[SimpleResponse]) extends InProgressMessage
+  final private[esw] case class GoIdle(replyTo: ActorRef[SimpleResponse]) extends InProgressMessage with TransientMessage
 }

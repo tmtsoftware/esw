@@ -15,6 +15,7 @@ sealed trait PullNextResponse            extends EswSequencerResponse
 sealed trait MaybeNextResponse           extends EswSequencerResponse
 sealed trait GetSequenceResponse         extends EswSequencerResponse
 sealed trait GetPreviousSequenceResponse extends EswSequencerResponse
+sealed trait OnlineResponse              extends EswSequencerResponse
 
 sealed trait SequenceResponse extends EswSequencerResponse {
   def toSubmitResponse(sequenceId: Id): SubmitResponse = this match {
@@ -30,6 +31,7 @@ case object Ok
     with PauseResponse
     with RemoveBreakpointResponse
     with LoadSequenceResponse
+    with OnlineResponse
 
 case class GetSequenceResult(stepList: StepList)                 extends GetSequenceResponse
 case class GetPreviousSequenceResult(stepList: Option[StepList]) extends GetPreviousSequenceResponse
@@ -43,6 +45,7 @@ case class Unhandled(state: String, messageType: String)
     with PauseResponse
     with RemoveBreakpointResponse
     with LoadSequenceResponse
+    with OnlineResponse
     with SequenceResponse
     with PullNextResponse
     with MaybeNextResponse
@@ -53,6 +56,10 @@ case class Unhandled(state: String, messageType: String)
 
 case object DuplicateIdsFound extends LoadSequenceResponse with SequenceResponse {
   val description = "Duplicate command Ids found in given sequence"
+}
+
+case class HandlersFailed(messageType: String) extends OnlineResponse {
+  val description = s"Could not $messageType since handlers failed."
 }
 
 sealed trait EditorError extends ComplexResponse

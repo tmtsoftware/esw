@@ -101,9 +101,17 @@ class SequencerBehavior(
   }
 
   def offline(state: SequencerState): Behavior[SequencerMsg] = receive[OfflineMessage]("offline") { (ctx, message) =>
+    import ctx.executionContext
     message match {
       case x: AnyStateMessage => handleAnyStateMessage(x, state, _ => ctx.system.terminate)
-      case GoOnline(replyTo)  => goOnline(replyTo, state)
+      case GoOnline(replyTo)  => goOnline(replyTo, state)(fallbackBehavior = offline)
+    }
+  }
+
+  def transient(state: SequencerState): Behavior[SequencerMsg] = receive[TransientMessage]("offline") { (ctx, message) =>
+    message match {
+      case x: AnyStateMessage => handleAnyStateMessage(x, state, _ => ctx.system.terminate)
+      case x: GoIdle          => idle(state)
     }
   }
 
@@ -306,10 +314,17 @@ class SequencerBehavior(
     tryExecutingNextPendingStep(newState)
   }
 
-  private def goOnline(replyTo: ActorRef[Ok.type], state: SequencerState): Behavior[SequencerMsg] = {
-    replyTo ! Ok
-    script.executeGoOnline() // recover and log
-    idle(state)
+  private def goOnline(replyTo: ActorRef[OnlineResponse], state: SequencerState)(
+      fallbackBehavior: SequencerState => Behavior[SequencerMsg]
+  )(implicit ec: ExecutionContext): Behavior[SequencerMsg] = {
+    script.executeGoOnline().onComplete {
+      case Success(_) => replyTo ! Ok; goToIdle(state)
+      case Failure(_) =>
+        replyTo ! HandlersFailed("GoOnline")
+        fallbackBehavior(state)
+      // log failure
+    }
+    transient(state)
   }
 
   private def goOffline(replyTo: ActorRef[Ok.type], state: SequencerState): Behavior[SequencerMsg] = {
