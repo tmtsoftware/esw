@@ -37,7 +37,7 @@ private[ocs] class SequencerWiring(val sequencerId: String, val observingMode: S
   private lazy val crmRef: ActorRef[CommandResponseManagerMessage] =
     (typedSystem ? Spawn(CommandResponseManagerActor.behavior(CRMCacheProperties(), loggerFactory), "crm")).block
   private lazy val commandResponseManager: CommandResponseManager   = new CommandResponseManager(crmRef)
-  private val sequencerCommandService: SequencerCommandServiceUtils = new SequencerCommandServiceUtils(locationService)
+  private val sequencerCommandService: SequencerCommandServiceUtils = new SequencerCommandServiceUtils
 
   lazy val sequencerBehavior = new SequencerBehavior(componentId, script, locationService, commandResponseManager)
 
@@ -48,7 +48,8 @@ private[ocs] class SequencerWiring(val sequencerId: String, val observingMode: S
   //SequencerRef -> Script -> cswServices -> SequencerOperator -> SequencerRef
   private lazy val sequenceOperatorFactory = () => new SequenceOperator(sequencerRef)
 
-  private lazy val cswServices    = new CswServices(sequenceOperatorFactory, commandResponseManager, sequencerCommandService)
+  private lazy val cswServices =
+    new CswServices(sequenceOperatorFactory, commandResponseManager, sequencerCommandService, locationServiceUtils)
   private lazy val script: Script = ScriptLoader.load(scriptClass, cswServices)
   lazy val strandEc               = StrandEc()
 

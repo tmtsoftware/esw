@@ -11,9 +11,9 @@ import akka.actor.typed.scaladsl.Behaviors
 import akka.actor.typed.scaladsl.adapter.TypedActorSystemOps
 import csw.location.api.exceptions.OtherLocationIsRegistered
 import csw.location.api.scaladsl.{LocationService, RegistrationResult}
-import csw.location.models.ComponentType.Sequencer
+import csw.location.models.ComponentType._
 import csw.location.models.Connection.AkkaConnection
-import csw.location.models.{AkkaLocation, AkkaRegistration, ComponentId, ComponentType}
+import csw.location.models.{AkkaLocation, AkkaRegistration, ComponentId}
 import csw.params.core.models.{Prefix, Subsystem}
 import esw.ocs.api.BaseTestSuite
 import esw.ocs.api.models.messages.RegistrationError
@@ -33,7 +33,7 @@ class LocationServiceUtilsTest extends ScalaTestWithActorTestKit with BaseTestSu
   private val akkaLocation   = AkkaLocation(akkaConnection, prefix, uri)
 
   "register" must {
-    "return successful RegistrationResult" in {
+    "return successful RegistrationResult | ESW-214" in {
       val system: ActorSystem[_] = ActorSystem(Behaviors.empty, "test")
       val coordinatedShutdown    = CoordinatedShutdown(system.toUntyped)
       val registrationResult     = mock[RegistrationResult]
@@ -48,7 +48,7 @@ class LocationServiceUtilsTest extends ScalaTestWithActorTestKit with BaseTestSu
       verify(registrationResult).unregister()
     }
 
-    "map location service registration failure to RegistrationError" in {
+    "map location service registration failure to RegistrationError | ESW-214" in {
       val system: ActorSystem[_] = ActorSystem(Behaviors.empty, "test")
       val errorMsg               = "error message"
       when(locationService.register(registration)).thenReturn(Future.failed(OtherLocationIsRegistered(errorMsg)))
@@ -63,40 +63,184 @@ class LocationServiceUtilsTest extends ScalaTestWithActorTestKit with BaseTestSu
   }
 
   "listBySubsystem" must {
-    "list all locations which match given componentType and subsystem | ESW-144" in {
+    "list all locations which match given componentType and subsystem | ESW-144, ESW-215" in {
       val testUri = new URI("test-uri")
       val tcsLocations = List(
-        AkkaLocation(AkkaConnection(ComponentId("TCS_1", ComponentType.SequenceComponent)), Prefix("tcs.test.filter1"), testUri),
-        AkkaLocation(AkkaConnection(ComponentId("TCS_2", ComponentType.SequenceComponent)), Prefix("tcs.test.filter2"), testUri),
-        AkkaLocation(AkkaConnection(ComponentId("TCS_3", ComponentType.SequenceComponent)), Prefix("tcs.test.filter3"), testUri)
+        AkkaLocation(AkkaConnection(ComponentId("TCS_1", SequenceComponent)), Prefix("tcs.test.filter1"), testUri),
+        AkkaLocation(AkkaConnection(ComponentId("TCS_2", SequenceComponent)), Prefix("tcs.test.filter2"), testUri),
+        AkkaLocation(AkkaConnection(ComponentId("TCS_3", SequenceComponent)), Prefix("tcs.test.filter3"), testUri)
       )
       val sequenceComponentLocations = tcsLocations ++ List(
-        AkkaLocation(AkkaConnection(ComponentId("OSS_1", ComponentType.SequenceComponent)), Prefix("oss.test.filter1"), testUri),
-        AkkaLocation(AkkaConnection(ComponentId("IRIS_1", ComponentType.SequenceComponent)), Prefix("iris.test.filter1"), testUri)
+        AkkaLocation(AkkaConnection(ComponentId("OSS_1", SequenceComponent)), Prefix("oss.test.filter1"), testUri),
+        AkkaLocation(AkkaConnection(ComponentId("IRIS_1", SequenceComponent)), Prefix("iris.test.filter1"), testUri)
       )
 
-      when(locationService.list(ComponentType.SequenceComponent)).thenReturn(Future.successful(sequenceComponentLocations))
+      when(locationService.list(SequenceComponent)).thenReturn(Future.successful(sequenceComponentLocations))
       val locationServiceUtils = new LocationServiceUtils(locationService)
 
-      val actualLocations = locationServiceUtils.listBy(Subsystem.TCS, ComponentType.SequenceComponent).futureValue
+      val actualLocations = locationServiceUtils.listBy(Subsystem.TCS, SequenceComponent).futureValue
 
-      actualLocations shouldEqual tcsLocations
+      actualLocations should ===(tcsLocations)
     }
 
-    "return empty list if no matching component type and subsystem is found | ESW-144" in {
+    "return empty list if no matching component type and subsystem is found | ESW-144, ESW-215" in {
       val testUri = new URI("test-uri")
       val sequenceComponentLocations = List(
-        AkkaLocation(AkkaConnection(ComponentId("TCS_1", ComponentType.SequenceComponent)), Prefix("tcs.test.filter1"), testUri),
-        AkkaLocation(AkkaConnection(ComponentId("TCS_2", ComponentType.SequenceComponent)), Prefix("tcs.test.filter2"), testUri),
-        AkkaLocation(AkkaConnection(ComponentId("IRIS_1", ComponentType.SequenceComponent)), Prefix("iris.test.filter1"), testUri)
+        AkkaLocation(AkkaConnection(ComponentId("TCS_1", SequenceComponent)), Prefix("tcs.test.filter1"), testUri),
+        AkkaLocation(AkkaConnection(ComponentId("TCS_2", SequenceComponent)), Prefix("tcs.test.filter2"), testUri),
+        AkkaLocation(AkkaConnection(ComponentId("IRIS_1", SequenceComponent)), Prefix("iris.test.filter1"), testUri)
       )
 
-      when(locationService.list(ComponentType.SequenceComponent)).thenReturn(Future.successful(sequenceComponentLocations))
+      when(locationService.list(SequenceComponent)).thenReturn(Future.successful(sequenceComponentLocations))
       val locationServiceUtils = new LocationServiceUtils(locationService)
 
-      val actualLocations = locationServiceUtils.listBy(Subsystem.NFIRAOS, ComponentType.SequenceComponent).futureValue
+      val actualLocations = locationServiceUtils.listBy(Subsystem.NFIRAOS, SequenceComponent).futureValue
 
-      actualLocations shouldEqual List.empty
+      actualLocations should ===(List.empty)
     }
   }
+
+  "listByComponentName" must {
+    "return all locations which match a given name substring | ESW-215" in {
+      val testUri = new URI("test-uri")
+      val tcsLocations = List(
+        AkkaLocation(AkkaConnection(ComponentId("TCS@obsMode1", Sequencer)), Prefix("tcs.test.filter1"), testUri),
+        AkkaLocation(AkkaConnection(ComponentId("TCS_1", SequenceComponent)), Prefix("tcs.test.filter2"), testUri)
+      )
+      val ocsLocations = List(
+        AkkaLocation(AkkaConnection(ComponentId("OCS@obsMode1", Sequencer)), Prefix("esw.test.filter"), testUri)
+      )
+      when(locationService.list).thenReturn(Future.successful(tcsLocations ++ ocsLocations))
+
+      val locationServiceUtils = new LocationServiceUtils(locationService)
+      val actualLocations      = locationServiceUtils.listByComponentName("TCS").futureValue
+
+      actualLocations should ===(tcsLocations)
+    }
+
+    "return all locations which match a given observing mode | ESW-215" in {
+      val testUri = new URI("test-uri")
+      val obsMode1locations = List(
+        AkkaLocation(AkkaConnection(ComponentId("TCS@obsMode1", Sequencer)), Prefix("tcs.test.filter1"), testUri),
+        AkkaLocation(AkkaConnection(ComponentId("OCS@obsMode1", Sequencer)), Prefix("esw.test.filter"), testUri)
+      )
+      val obsMode2Locations = List(
+        AkkaLocation(AkkaConnection(ComponentId("TCS_1", SequenceComponent)), Prefix("tcs.test.filter2"), testUri)
+      )
+      when(locationService.list).thenReturn(Future.successful(obsMode1locations ++ obsMode2Locations))
+
+      val locationServiceUtils = new LocationServiceUtils(locationService)
+      val actualLocations      = locationServiceUtils.listByComponentName("obsMode1").futureValue
+
+      actualLocations should ===(obsMode1locations)
+    }
+  }
+
+  "resolveByComponentNameAndType" must {
+    "return a location which matches a given component name and type | ESW-215" in {
+      val testUri = new URI("test-uri")
+      val tcsLocation =
+        AkkaLocation(AkkaConnection(ComponentId("TCS@obsMode1", Sequencer)), Prefix("tcs.test.filter1"), testUri)
+      val ocsLocations = List(
+        AkkaLocation(AkkaConnection(ComponentId("OCS_1", SequenceComponent)), Prefix("esw.test.filter"), testUri),
+        AkkaLocation(AkkaConnection(ComponentId("TCS_1", SequenceComponent)), Prefix("tcs.test.filter2"), testUri)
+      )
+      when(locationService.list).thenReturn(Future.successful(tcsLocation :: ocsLocations))
+      when(locationService.list(Sequencer)).thenReturn(Future.successful(List(tcsLocation)))
+
+      val locationServiceUtils = new LocationServiceUtils(locationService)
+      val actualLocations =
+        locationServiceUtils.resolveByComponentNameAndType("TCS@obsMode1", Sequencer).futureValue
+      actualLocations.get should ===(tcsLocation)
+    }
+
+    "return an IllegalArgumentException when no matching component name and type is found | ESW-215" in {
+      val testUri = new URI("test-uri")
+      val tcsLocation =
+        AkkaLocation(
+          AkkaConnection(ComponentId("TCS@obsMode1", Sequencer)),
+          Prefix("tcs.test.filter1"),
+          testUri
+        )
+      val ocsLocations = List(
+        AkkaLocation(
+          AkkaConnection(ComponentId("OCS_1", SequenceComponent)),
+          Prefix("esw.test.filter"),
+          testUri
+        ),
+        AkkaLocation(
+          AkkaConnection(ComponentId("TCS_1", SequenceComponent)),
+          Prefix("tcs.test.filter2"),
+          testUri
+        )
+      )
+      when(locationService.list).thenReturn(Future.successful(tcsLocation :: ocsLocations))
+      when(locationService.list(Sequencer)).thenReturn(Future.successful(List(tcsLocation)))
+
+      val locationServiceUtils = new LocationServiceUtils(locationService)
+      val actualLocations =
+        locationServiceUtils.resolveByComponentNameAndType("TCS@obsMode", Sequencer).awaitResult
+      actualLocations should ===(None)
+    }
+  }
+
+  "resolveSequencer" must {
+
+    "return a location which matches a given sequencerId and observing mode | ESW-119" in {
+      val testUri = new URI("test-uri")
+      val tcsLocation =
+        AkkaLocation(
+          AkkaConnection(ComponentId("TCS@obsMode1", Sequencer)),
+          Prefix("tcs.test.filter1"),
+          testUri
+        )
+      val ocsLocations = List(
+        AkkaLocation(
+          AkkaConnection(ComponentId("OCS_1", SequenceComponent)),
+          Prefix("esw.test.filter"),
+          testUri
+        ),
+        AkkaLocation(
+          AkkaConnection(ComponentId("TCS_1", SequenceComponent)),
+          Prefix("tcs.test.filter2"),
+          testUri
+        )
+      )
+      when(locationService.list).thenReturn(Future.successful(tcsLocation :: ocsLocations))
+
+      val locationServiceUtils = new LocationServiceUtils(locationService)
+      val actualLocations =
+        locationServiceUtils.resolveSequencer("TCS", "obsMode1").futureValue
+      actualLocations should ===(tcsLocation)
+    }
+
+    "return an IllegalArgumentException when no matching sequencerId and observing mode is found | ESW-119" in {
+      val testUri = new URI("test-uri")
+      val tcsLocation =
+        AkkaLocation(
+          AkkaConnection(ComponentId("TCS@obsMode1", Sequencer)),
+          Prefix("tcs.test.filter1"),
+          testUri
+        )
+      val ocsLocations = List(
+        AkkaLocation(
+          AkkaConnection(ComponentId("OCS_1", SequenceComponent)),
+          Prefix("esw.test.filter"),
+          testUri
+        ),
+        AkkaLocation(
+          AkkaConnection(ComponentId("TCS_1", SequenceComponent)),
+          Prefix("tcs.test.filter2"),
+          testUri
+        )
+      )
+      when(locationService.list).thenReturn(Future.successful(tcsLocation :: ocsLocations))
+
+      val locationServiceUtils = new LocationServiceUtils(locationService)
+      intercept[IllegalArgumentException] {
+        locationServiceUtils.resolveSequencer("TCS", "obsMode2").awaitResult
+      }
+    }
+  }
+
 }

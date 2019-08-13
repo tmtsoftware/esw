@@ -4,7 +4,7 @@ import akka.actor.CoordinatedShutdown
 import akka.actor.typed.ActorSystem
 import akka.actor.typed.scaladsl.adapter.TypedActorSystemOps
 import csw.location.api.scaladsl.{LocationService, RegistrationResult}
-import csw.location.models.{AkkaLocation, AkkaRegistration, ComponentType, Location}
+import csw.location.models._
 import csw.params.core.models.Subsystem
 import esw.ocs.api.models.messages.RegistrationError
 
@@ -49,19 +49,34 @@ class LocationServiceUtils(locationService: LocationService) {
       })
   }
 
-  //Can be used to listBySequencerId() and listByObsMode(). Separate APIs can be created once we have concrete
+  //Can be used to listBySequencerId() and listByObsMode(), in future. Separate APIs can be created once we have concrete
   //classes for `SequencerId` and `ObsMode`
-  def listByComponentName(nameSubString: String)(implicit ec: ExecutionContext): Future[List[Location]] = {
+  def listByComponentName(name: String)(implicit ec: ExecutionContext): Future[List[Location]] = {
     locationService.list.map { locations =>
-      locations.filter(x => x.connection.componentId.name.contains(nameSubString))
+      locations.filter(x => x.connection.componentId.name.contains(name))
     }
   }
 
+  def resolveByComponentNameAndType(name: String, componentType: ComponentType)(
+      implicit ec: ExecutionContext
+  ): Future[Option[Location]] = {
+    async {
+      await(locationService.list(componentType))
+        .find(location => location.connection.componentId.name.equals(name))
+    }
+  }
+
+  // To be used by Script Writer
   def resolveSequencer(sequencerId: String, observingMode: String)(
       implicit ec: ExecutionContext
-  ): Future[Option[AkkaLocation]] = async {
-    await(locationService.list)
-      .find(location => location.connection.componentId.name.contains(s"$sequencerId@$observingMode"))
-      .asInstanceOf[Option[AkkaLocation]]
+  ): Future[AkkaLocation] = {
+    async {
+      await(locationService.list)
+        .find(location => location.connection.componentId.name.contains(s"$sequencerId@$observingMode"))
+        .asInstanceOf[Option[AkkaLocation]]
+    }.collect {
+      case Some(location) => location
+      case None           => throw new IllegalArgumentException(s"Could not find any sequencer with name: $sequencerId@$observingMode")
+    }
   }
 }

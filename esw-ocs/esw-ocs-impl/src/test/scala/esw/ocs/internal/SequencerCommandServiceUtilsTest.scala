@@ -8,60 +8,57 @@ import akka.actor.typed.{ActorRef, ActorSystem, SpawnProtocol}
 import akka.util.Timeout
 import csw.command.client.messages.sequencer.LoadAndStartSequence
 import csw.location.api.extensions.ActorExtension.RichActor
-import csw.location.api.scaladsl.LocationService
+import csw.location.api.scaladsl.{LocationService, RegistrationResult}
 import csw.location.models.Connection.AkkaConnection
-import csw.location.models.{AkkaLocation, ComponentId, ComponentType}
+import csw.location.models.{AkkaLocation, AkkaRegistration, ComponentId, ComponentType}
 import csw.params.commands.CommandResponse.Started
 import csw.params.commands.Sequence
 import csw.params.core.models.{Id, Prefix}
 import esw.ocs.api.BaseTestSuite
-import org.mockito.Mockito.{clearInvocations, verify, when}
+import esw.utils.csw.LocationServiceUtils
+import org.mockito.ArgumentMatchers.any
+import org.mockito.Mockito.{clearInvocations, when}
 
-import scala.concurrent.Future
+import scala.concurrent.{ExecutionContext, Future}
 
 class SequencerCommandServiceUtilsTest extends BaseTestSuite {
 
-  private val locationService: LocationService         = mock[LocationService]
-  implicit val typedSystem: ActorSystem[SpawnProtocol] = ActorSystem(SpawnProtocol.behavior, "test")
-  implicit val scheduler: Scheduler                    = typedSystem.scheduler
-  implicit val timeout: Timeout                        = Timeouts.DefaultTimeout
+  private val locationService: LocationService    = mock[LocationService]
+  implicit val system: ActorSystem[SpawnProtocol] = ActorSystem(SpawnProtocol.behavior, "test")
+  implicit val ec: ExecutionContext               = system.executionContext
+  implicit val scheduler: Scheduler               = system.scheduler
+  implicit val timeout: Timeout                   = Timeouts.DefaultTimeout
 
-  val sequencerCommandServiceUtil                  = new SequencerCommandServiceUtils(locationService)
-  val sequencerRef: ActorRef[LoadAndStartSequence] = (typedSystem ? Spawn(TestSequencer.beh, "testSequencerActor")).awaitResult
+  val sequencerCommandServiceUtil                  = new SequencerCommandServiceUtils
+  val sequencerRef: ActorRef[LoadAndStartSequence] = (system ? Spawn(TestSequencer.beh, "testSequencerActor")).awaitResult
 
-  val prefixStr  = "TCS.filter.wheel"
-  val seqName    = s"$prefixStr.sequencer"
-  val connection = AkkaConnection(ComponentId(seqName, ComponentType.Sequencer))
-  val location   = AkkaLocation(connection, Prefix(prefixStr), sequencerRef.toURI)
-  val sequence   = Sequence(Id(), Seq.empty)
+  val prefixStr    = "TCS.filter.wheel"
+  val seqName      = "TCS@darknight"
+  val connection   = AkkaConnection(ComponentId(seqName, ComponentType.Sequencer))
+  val location     = AkkaLocation(connection, Prefix(prefixStr), sequencerRef.toURI)
+  val registration = AkkaRegistration(connection, Prefix(prefixStr), sequencerRef.toURI)
+  val sequence     = Sequence(Id(), Seq.empty)
 
   override def afterEach(): Unit = {
     clearInvocations(locationService)
   }
 
   override def afterAll(): Unit = {
-    typedSystem.terminate()
-    super.afterAll()
+    system.terminate()
   }
 
   "submitSequence" must {
     "submit sequence to given sequencer | ESW-195" in {
-      //simulates that sequencer is registered for given Connection
-      when(locationService.resolve(connection, timeout.duration)).thenReturn(Future.successful(Some(location)))
+      val registrationResult = mock[RegistrationResult]
+      when(locationService.register(any[AkkaRegistration])).thenReturn(Future(registrationResult))
 
-      val eventualResponse = sequencerCommandServiceUtil.submitSequence(seqName, sequence)
+      val locationServiceUtils: LocationServiceUtils = new LocationServiceUtils(locationService)
+      locationServiceUtils.register(registration).awaitResult
 
-      verify(locationService).resolve(connection, timeout.duration)
+      val eventualResponse = sequencerCommandServiceUtil.submitSequence(location, sequence)
       eventualResponse.futureValue shouldBe Started(sequence.runId)
     }
 
-    "throw exception when invalid sequencer name is provided | ESW-195" in {
-      //simulates that no sequencer is registered for given Connection
-      when(locationService.resolve(connection, timeout.duration)).thenReturn(Future.successful(None))
-
-      intercept[IllegalArgumentException] { sequencerCommandServiceUtil.submitSequence(seqName, sequence).awaitResult }
-      verify(locationService).resolve(connection, timeout.duration)
-    }
   }
 }
 
