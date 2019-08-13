@@ -12,7 +12,6 @@ import csw.location.api.scaladsl.LocationService
 import csw.location.client.scaladsl.HttpLocationServiceFactory
 import csw.location.models.Connection.AkkaConnection
 import csw.location.models.{AkkaLocation, AkkaRegistration, ComponentId, ComponentType}
-import esw.ocs.api.models.SequencerState
 import esw.ocs.api.models.messages.RegistrationError
 import esw.ocs.api.models.messages.SequencerMessages.EswSequencerMessage
 import esw.ocs.core._
@@ -41,8 +40,7 @@ private[ocs] class SequencerWiring(val sequencerId: String, val observingMode: S
 
   lazy val sequencerBehavior = new SequencerBehavior(componentId, script, locationService, commandResponseManager)
 
-  lazy val sequencerRef: ActorRef[EswSequencerMessage] =
-    (typedSystem ? Spawn(sequencerBehavior.idle(SequencerState.initial), sequencerName)).block
+  lazy val sequencerRef: ActorRef[EswSequencerMessage] = (typedSystem ? Spawn(sequencerBehavior.setup, sequencerName)).block
 
   //Pass lambda to break circular dependency shown below.
   //SequencerRef -> Script -> cswServices -> SequencerOperator -> SequencerRef

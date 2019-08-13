@@ -30,8 +30,6 @@ case class Step private[ocs] (command: SequenceCommand, status: StepStatus, hasB
       case (Pending, InFlight) | (InFlight, _: Finished) => copy(status = newStatus)
       case _                                             => this
     }
-
-  private[ocs] def setPendingToInFlight(): Step = if (status == Pending) copy(status = InFlight) else this
 }
 
 object Step {
