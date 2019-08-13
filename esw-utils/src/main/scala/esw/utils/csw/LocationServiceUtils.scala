@@ -4,7 +4,7 @@ import akka.actor.CoordinatedShutdown
 import akka.actor.typed.ActorSystem
 import akka.actor.typed.scaladsl.adapter.TypedActorSystemOps
 import csw.location.api.scaladsl.{LocationService, RegistrationResult}
-import csw.location.models.{AkkaLocation, AkkaRegistration, ComponentType, Location}
+import csw.location.models._
 import csw.params.core.models.Subsystem
 import esw.ocs.api.models.messages.RegistrationError
 
@@ -49,25 +49,20 @@ class LocationServiceUtils(locationService: LocationService) {
       })
   }
 
-  //fixme: wholeMatch boolean no need
   //Can be used to listBySequencerId() and listByObsMode(), in future. Separate APIs can be created once we have concrete
   //classes for `SequencerId` and `ObsMode`
-  def listByComponentName(name: String, wholeMatch: Boolean = false)(implicit ec: ExecutionContext): Future[List[Location]] = {
+  def listByComponentName(name: String)(implicit ec: ExecutionContext): Future[List[Location]] = {
     locationService.list.map { locations =>
-      if (!wholeMatch) locations.filter(x => x.connection.componentId.name.contains(name))
-      else locations.filter(x => x.connection.componentId.name.equals(name))
+      locations.filter(x => x.connection.componentId.name.contains(name))
     }
   }
 
   def resolveByComponentNameAndType(name: String, componentType: ComponentType)(
       implicit ec: ExecutionContext
-  ): Future[Location] = {
+  ): Future[Option[Location]] = {
     async {
-      //fixme: location service.list has been called twice. Instead we can use resolve by component type and then find on that list
-      await(listByComponentName(name, true))
-        .intersect(await(locationService.list(componentType)))
-        .headOption
-        .getOrElse(throw new IllegalArgumentException(s"Could not find any component with name: $name and type: $componentType"))
+      await(locationService.list(componentType))
+        .find(location => location.connection.componentId.name.equals(name))
     }
   }
 
@@ -75,7 +70,6 @@ class LocationServiceUtils(locationService: LocationService) {
   def resolveSequencer(sequencerId: String, observingMode: String)(
       implicit ec: ExecutionContext
   ): Future[AkkaLocation] = {
-    //fixme: can we use await(locationService.resolve[AkkaLocation](AkkaConnection(ComponentId(s"$sequencerId@$observingMode", Sequencer)), 5.seconds)) this instead
     async {
       await(locationService.list)
         .find(location => location.connection.componentId.name.contains(s"$sequencerId@$observingMode"))

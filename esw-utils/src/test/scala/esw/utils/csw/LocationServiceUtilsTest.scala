@@ -151,7 +151,7 @@ class LocationServiceUtilsTest extends ScalaTestWithActorTestKit with BaseTestSu
       val locationServiceUtils = new LocationServiceUtils(locationService)
       val actualLocations =
         locationServiceUtils.resolveByComponentNameAndType("TCS@obsMode1", Sequencer).futureValue
-      actualLocations should ===(tcsLocation)
+      actualLocations.get should ===(tcsLocation)
     }
 
     "return an IllegalArgumentException when no matching component name and type is found | ESW-215" in {
@@ -178,9 +178,9 @@ class LocationServiceUtilsTest extends ScalaTestWithActorTestKit with BaseTestSu
       when(locationService.list(Sequencer)).thenReturn(Future.successful(List(tcsLocation)))
 
       val locationServiceUtils = new LocationServiceUtils(locationService)
-      intercept[IllegalArgumentException] {
+      val actualLocations =
         locationServiceUtils.resolveByComponentNameAndType("TCS@obsMode", Sequencer).awaitResult
-      }
+      actualLocations should ===(None)
     }
   }
 
