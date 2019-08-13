@@ -13,7 +13,7 @@ import scala.concurrent.Future
 
 private[ocs] class SequenceOperator(sequencer: ActorRef[EswSequencerMessage])(implicit system: ActorSystem[_]) {
   private implicit val scheduler: Scheduler = system.scheduler
-  private implicit val timeout: Timeout     = Timeouts.EngineTimeout
+  private implicit val timeout: Timeout     = Timeouts.LongTimeout
 
   def pullNext: Future[PullNextResponse]           = sequencer ? PullNext
   def maybeNext: Future[MaybeNextResponse]         = sequencer ? MaybeNext

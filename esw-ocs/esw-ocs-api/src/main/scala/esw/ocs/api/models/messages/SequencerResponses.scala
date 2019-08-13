@@ -1,6 +1,6 @@
 package esw.ocs.api.models.messages
 
-import csw.params.commands.CommandResponse.SubmitResponse
+import csw.params.commands.CommandResponse.{Error, SubmitResponse}
 import csw.params.core.models.Id
 import esw.ocs.api.models.{Step, StepList}
 import esw.ocs.api.serializer.OcsFrameworkAkkaSerializable
@@ -11,11 +11,17 @@ sealed trait PauseResponse
 sealed trait RemoveBreakpointResponse
 
 sealed trait LoadSequenceResponse
-sealed trait SequenceResponse
 sealed trait PullNextResponse
 sealed trait MaybeNextResponse
 sealed trait GetSequenceResponse
 sealed trait GetPreviousSequenceResponse
+sealed trait SequenceResponse {
+  def toSubmitResponse(sequenceId: Id): SubmitResponse = this match {
+    case SequenceResult(submitResponse) => submitResponse
+    case DuplicateIdsFound              => Error(sequenceId, DuplicateIdsFound.description)
+    case unhandled: Unhandled           => Error(sequenceId, unhandled.description)
+  }
+}
 
 case object Ok
     extends SimpleResponse

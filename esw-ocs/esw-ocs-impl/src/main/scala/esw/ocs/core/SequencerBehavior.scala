@@ -1,5 +1,7 @@
 package esw.ocs.core
 
+import akka.actor.Scheduler
+import akka.actor.typed.scaladsl.AskPattern._
 import akka.actor.typed.scaladsl.{ActorContext, Behaviors}
 import akka.actor.typed.{ActorRef, ActorSystem, Behavior}
 import akka.util.Timeout
@@ -17,6 +19,7 @@ import esw.ocs.api.models.messages.SequencerMessages._
 import esw.ocs.api.models.messages.{Unhandled, _}
 import esw.ocs.api.models.{SequencerState, Step, StepList}
 import esw.ocs.dsl.ScriptDsl
+import esw.ocs.internal.Timeouts
 
 import scala.concurrent.{ExecutionContext, Future}
 import scala.reflect.ClassTag
@@ -166,29 +169,22 @@ class SequencerBehavior(
 
   private def receive[B <: SequencerMsg: ClassTag](stateName: String)(
       f: (ActorContext[SequencerMsg], B) => Behavior[SequencerMsg]
-  ): Behavior[SequencerMsg] = {
-    def handleSequenceResponse(id: Id, replyTo: ActorRef[SubmitResponse]) =
-      Behaviors.receiveMessage[SequenceResponse] { msg =>
-        msg match {
-          case SequenceResult(submitResponse) => replyTo ! submitResponse
-          case DuplicateIdsFound              => replyTo ! Error(id, DuplicateIdsFound.description)
-          case unhandled: Unhandled           => replyTo ! Error(id, unhandled.description)
-        }
-        Behaviors.stopped
-      }
-
-    Behaviors.receive { (ctx, msg) =>
+  ): Behavior[SequencerMsg] = Behaviors.receive { (ctx, msg) =>
       msg match {
         case msg: B                   => f(ctx, msg)
         case msg: EswSequencerMessage => msg.replyTo ! Unhandled(stateName, msg.getClass.getSimpleName); Behaviors.same
         case LoadAndStartSequence(sequence, replyTo) =>
-          val adapter = ctx.spawnAnonymous(handleSequenceResponse(sequence.runId, replyTo))
-          ctx.self ! LoadAndStartSequenceInternal(sequence, adapter)
+          import ctx.executionContext
+          implicit val timeout: Timeout = Timeouts.LongTimeout
+          implicit val scheduler: Scheduler = ctx.system.scheduler
+
+          val sequenceResponseF: Future[SequenceResponse] = ctx.self ? (LoadAndStartSequenceInternal(sequence, _))
+          sequenceResponseF.foreach(res => replyTo ! res.toSubmitResponse(sequence.runId))
           Behaviors.same
+
         case _ => Behaviors.unhandled
       }
     }
-  }
 
   private def readyToExecuteNext(
       state: SequencerState,
