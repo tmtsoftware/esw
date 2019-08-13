@@ -49,6 +49,7 @@ class LocationServiceUtils(locationService: LocationService) {
       })
   }
 
+  //fixme: wholeMatch boolean no need
   //Can be used to listBySequencerId() and listByObsMode(), in future. Separate APIs can be created once we have concrete
   //classes for `SequencerId` and `ObsMode`
   def listByComponentName(name: String, wholeMatch: Boolean = false)(implicit ec: ExecutionContext): Future[List[Location]] = {
@@ -62,6 +63,7 @@ class LocationServiceUtils(locationService: LocationService) {
       implicit ec: ExecutionContext
   ): Future[Location] = {
     async {
+      //fixme: location service.list has been called twice. Instead we can use resolve by component type and then find on that list
       await(listByComponentName(name, true))
         .intersect(await(locationService.list(componentType)))
         .headOption
@@ -72,7 +74,8 @@ class LocationServiceUtils(locationService: LocationService) {
   // To be used by Script Writer
   def resolveSequencer(sequencerId: String, observingMode: String)(
       implicit ec: ExecutionContext
-  ): Future[AkkaLocation] =
+  ): Future[AkkaLocation] = {
+    //fixme: can we use await(locationService.resolve[AkkaLocation](AkkaConnection(ComponentId(s"$sequencerId@$observingMode", Sequencer)), 5.seconds)) this instead
     async {
       await(locationService.list)
         .find(location => location.connection.componentId.name.contains(s"$sequencerId@$observingMode"))
@@ -81,4 +84,5 @@ class LocationServiceUtils(locationService: LocationService) {
       case Some(location) => location
       case None           => throw new IllegalArgumentException(s"Could not find any sequencer with name: $sequencerId@$observingMode")
     }
+  }
 }
