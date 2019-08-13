@@ -7,7 +7,6 @@ import csw.params.commands.{CommandName, Sequence, Setup}
 import csw.params.core.models.{Id, Prefix}
 import esw.ocs.api.BaseTestSuite
 import esw.ocs.api.models.StepList
-import esw.ocs.api.models.StepStatus.Pending
 import esw.ocs.api.models.messages.EditorError.{CannotOperateOnAnInFlightOrFinishedStep, IdDoesNotExist}
 import esw.ocs.api.models.messages.SequencerMessages._
 import esw.ocs.api.models.messages.{GetPreviousSequenceResult, GetSequenceResult, Ok, Unhandled}
