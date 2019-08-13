@@ -4,6 +4,7 @@ import akka.actor.typed.scaladsl.{ActorContext, Behaviors}
 import akka.actor.typed.{ActorRef, ActorSystem, Behavior}
 import akka.util.Timeout
 import csw.command.client.CommandResponseManager
+import csw.command.client.messages.sequencer.{LoadAndStartSequence, SequencerMsg}
 import csw.location.api.scaladsl.LocationService
 import csw.location.models.ComponentId
 import csw.location.models.Connection.AkkaConnection
@@ -13,7 +14,7 @@ import csw.params.core.models.Id
 import esw.ocs.api.codecs.OcsFrameworkCodecs
 import esw.ocs.api.models.StepStatus.Finished
 import esw.ocs.api.models.messages.SequencerMessages._
-import esw.ocs.api.models.messages._
+import esw.ocs.api.models.messages.{Unhandled, _}
 import esw.ocs.api.models.{SequencerState, Step, StepList}
 import esw.ocs.dsl.ScriptDsl
 
@@ -32,19 +33,19 @@ class SequencerBehavior(
   private val emptyChildId = Id("empty-child") // fixme
 
   //BEHAVIORS
-  def idle(sequencerState: SequencerState): Behavior[EswSequencerMessage] = receive[IdleMessage]("idle") { (ctx, msg) =>
+  def idle(sequencerState: SequencerState): Behavior[SequencerMsg] = receive[IdleMessage]("idle") { (ctx, msg) =>
     val state = sequencerState.copy(self = Some(ctx.self))
     import ctx.executionContext
     msg match {
-      case x: AnyStateMessage                => handleAnyStateMessage(x, state, _ => ctx.system.terminate)
-      case LoadSequence(sequence, replyTo)   => load(sequence, replyTo, state)(nextBehavior = loaded)
-      case LoadAndProcess(sequence, replyTo) => loadAndProcess(sequence, state, replyTo)
-      case GoOffline(replyTo)                => goOffline(replyTo, state)
-      case PullNext(replyTo)                 => pullNext(state, replyTo, nextBehavior = idle)
+      case x: AnyStateMessage                              => handleAnyStateMessage(x, state, _ => ctx.system.terminate)
+      case LoadSequence(sequence, replyTo)                 => load(sequence, replyTo, state)(nextBehavior = loaded)
+      case LoadAndStartSequenceInternal(sequence, replyTo) => loadAndStart(sequence, state, replyTo)
+      case GoOffline(replyTo)                              => goOffline(replyTo, state)
+      case PullNext(replyTo)                               => pullNext(state, replyTo, nextBehavior = idle)
     }
   }
 
-  def loaded(state: SequencerState): Behavior[EswSequencerMessage] = receive[SequenceLoadedMessage]("loaded") { (ctx, msg) =>
+  def loaded(state: SequencerState): Behavior[SequencerMsg] = receive[SequenceLoadedMessage]("loaded") { (ctx, msg) =>
     import ctx.executionContext
     msg match {
       case x: AnyStateMessage         => handleAnyStateMessage(x, state, _ => ctx.system.terminate)
@@ -54,7 +55,7 @@ class SequencerBehavior(
     }
   }
 
-  def inProgress(state: SequencerState): Behavior[EswSequencerMessage] = receive[InProgressMessage]("in-progress") { (ctx, msg) =>
+  def inProgress(state: SequencerState): Behavior[SequencerMsg] = receive[InProgressMessage]("in-progress") { (ctx, msg) =>
     import ctx.executionContext
     msg match {
       case x: AnyStateMessage          => handleAnyStateMessage(x, state, _ => ctx.system.terminate)
@@ -72,7 +73,7 @@ class SequencerBehavior(
       message: AnyStateMessage,
       state: SequencerState,
       killFunction: Unit => Unit
-  ): Behavior[EswSequencerMessage] = message match {
+  ): Behavior[SequencerMsg] = message match {
     case Shutdown(replyTo)            => shutdown(replyTo, killFunction)
     case GetPreviousSequence(replyTo) => getPreviousSequence(replyTo, state)
   }
@@ -96,7 +97,7 @@ class SequencerBehavior(
     }
   }
 
-  def offline(state: SequencerState): Behavior[EswSequencerMessage] = receive[OfflineMessage]("offline") { (ctx, message) =>
+  def offline(state: SequencerState): Behavior[SequencerMsg] = receive[OfflineMessage]("offline") { (ctx, message) =>
     message match {
       case x: AnyStateMessage => handleAnyStateMessage(x, state, _ => ctx.system.terminate)
       case GoOnline(replyTo)  => goOnline(replyTo, state)
@@ -108,15 +109,15 @@ class SequencerBehavior(
   private def pullNext(
       state: SequencerState,
       replyTo: ActorRef[PullNextResult],
-      nextBehavior: SequencerState => Behavior[EswSequencerMessage]
-  )(implicit ec: ExecutionContext): Behavior[EswSequencerMessage] = {
+      nextBehavior: SequencerState => Behavior[SequencerMsg]
+  )(implicit ec: ExecutionContext): Behavior[SequencerMsg] = {
     val newState = state.copy(stepRefSubscriber = Some(replyTo))
     nextBehavior(tryExecutingNextPendingStep(newState))
   }
 
-  private def process(state: SequencerState, replyTo: ActorRef[Ok.type])(
+  private def process(state: SequencerState, replyTo: ActorRef[SequenceResponse])(
       implicit ec: ExecutionContext
-  ): Behavior[EswSequencerMessage] = {
+  ): Behavior[SequencerMsg] = {
     val id = state.stepList.runId
     crm.addOrUpdateCommand(Started(id))
     crm.addSubCommand(id, emptyChildId)
@@ -130,7 +131,7 @@ class SequencerBehavior(
     newState.readyToExecuteSubscriber.foreach(_ ! Ok)
     //fixme: this does not handle future failure
     //fixme: this should send message immediately and not after sequence is finished
-    handleSequenceResponse(crm.queryFinal(id), newState).foreach(_ => replyTo ! Ok)
+    handleSequenceResponse(crm.queryFinal(id), newState).foreach(replyTo ! SequenceResult(_))
     inProgress(newState)
   }
 
@@ -146,37 +147,54 @@ class SequencerBehavior(
     StepList(sequence).map(x => state.copy(stepList = x, previousStepList = Some(state.stepList))) //fixme: make sure previous steplist is none on first time load
 
   private def load(sequence: Sequence, replyTo: ActorRef[LoadSequenceResponse], state: SequencerState)(
-      nextBehavior: SequencerState => Behavior[EswSequencerMessage]
-  ): Behavior[EswSequencerMessage] =
+      nextBehavior: SequencerState => Behavior[SequencerMsg]
+  ): Behavior[SequencerMsg] =
     createStepList(sequence, state) match {
       case Left(err)       => replyTo ! err; Behaviors.same
       case Right(newState) => replyTo ! Ok; nextBehavior(newState)
     }
 
-  private def loadAndProcess(
+  private def loadAndStart(
       sequence: Sequence,
       state: SequencerState,
-      replyTo: ActorRef[LoadSequenceResponse]
-  )(implicit ec: ExecutionContext): Behavior[EswSequencerMessage] =
-    load(sequence, replyTo, state) { newState =>
-      process(newState, replyTo)
+      replyTo: ActorRef[SequenceResponse]
+  )(implicit ec: ExecutionContext): Behavior[SequencerMsg] =
+    createStepList(sequence, state) match {
+      case Left(err)       => replyTo ! err; Behaviors.same
+      case Right(newState) => process(newState, replyTo)
     }
 
-  protected def receive[B <: EswSequencerMessage: ClassTag](stateName: String)(
-      f: (ActorContext[EswSequencerMessage], B) => Behavior[EswSequencerMessage]
-  ): Behavior[EswSequencerMessage] =
+  private def receive[B <: SequencerMsg: ClassTag](stateName: String)(
+      f: (ActorContext[SequencerMsg], B) => Behavior[SequencerMsg]
+  ): Behavior[SequencerMsg] = {
+    def handleSequenceResponse(id: Id, replyTo: ActorRef[SubmitResponse]) =
+      Behaviors.receiveMessage[SequenceResponse] { msg =>
+        msg match {
+          case SequenceResult(submitResponse) => replyTo ! submitResponse
+          case DuplicateIdsFound              => replyTo ! Error(id, DuplicateIdsFound.description)
+          case unhandled: Unhandled           => replyTo ! Error(id, unhandled.description)
+        }
+        Behaviors.stopped
+      }
+
     Behaviors.receive { (ctx, msg) =>
       msg match {
-        case msg: B => f(ctx, msg)
-        case _      => msg.replyTo ! Unhandled(stateName, msg.getClass.getSimpleName); Behaviors.same
+        case msg: B                   => f(ctx, msg)
+        case msg: EswSequencerMessage => msg.replyTo ! Unhandled(stateName, msg.getClass.getSimpleName); Behaviors.same
+        case LoadAndStartSequence(sequence, replyTo) =>
+          val adapter = ctx.spawnAnonymous(handleSequenceResponse(sequence.runId, replyTo))
+          ctx.self ! LoadAndStartSequenceInternal(sequence, adapter)
+          Behaviors.same
+        case _ => Behaviors.unhandled
       }
     }
+  }
 
   private def readyToExecuteNext(
       state: SequencerState,
       replyTo: ActorRef[SimpleResponse],
-      behaviour: SequencerState => Behavior[EswSequencerMessage]
-  ): Behavior[EswSequencerMessage] = {
+      behaviour: SequencerState => Behavior[SequencerMsg]
+  ): Behavior[SequencerMsg] = {
     val newState = if (state.stepList.isInFlight || state.stepList.isFinished) {
       state.copy(readyToExecuteSubscriber = Some(replyTo))
     } else {
@@ -194,7 +212,7 @@ class SequencerBehavior(
   private def getPreviousSequence(
       replyTo: ActorRef[GetPreviousSequenceResult],
       state: SequencerState
-  ): Behavior[EswSequencerMessage] = {
+  ): Behavior[SequencerMsg] = {
     replyTo ! GetPreviousSequenceResult(state.previousStepList)
     Behaviors.same
   }
@@ -263,7 +281,7 @@ class SequencerBehavior(
     crm.updateSubCommand(Completed(emptyChildId))
   }
 
-  private def shutdown(replyTo: ActorRef[Ok.type], killFunction: Unit => Unit): Behavior[EswSequencerMessage] = {
+  private def shutdown(replyTo: ActorRef[Ok.type], killFunction: Unit => Unit): Behavior[SequencerMsg] = {
     locationService.unregister(AkkaConnection(componentId))
     script.executeShutdown()
     replyTo ! Ok
@@ -290,13 +308,13 @@ class SequencerBehavior(
     tryExecutingNextPendingStep(newState)
   }
 
-  private def goOnline(replyTo: ActorRef[Ok.type], state: SequencerState): Behavior[EswSequencerMessage] = {
+  private def goOnline(replyTo: ActorRef[Ok.type], state: SequencerState): Behavior[SequencerMsg] = {
     replyTo ! Ok
     script.executeGoOnline() // recover and log
     idle(state)
   }
 
-  private def goOffline(replyTo: ActorRef[Ok.type], state: SequencerState): Behavior[EswSequencerMessage] = {
+  private def goOffline(replyTo: ActorRef[Ok.type], state: SequencerState): Behavior[SequencerMsg] = {
     replyTo ! Ok
     script.executeGoOffline()                      // recover and log
     offline(state.copy(stepList = StepList.empty)) //fixme: replace with None

@@ -20,9 +20,10 @@ object SequencerMessages {
   sealed trait EditorAction          extends SequenceLoadedMessage with InProgressMessage
   sealed trait AnyStateMessage       extends IdleMessage with SequenceLoadedMessage with InProgressMessage with OfflineMessage
 
-  final case class LoadSequence(sequence: Sequence, replyTo: ActorRef[LoadSequenceResponse])   extends IdleMessage
-  final case class LoadAndProcess(sequence: Sequence, replyTo: ActorRef[LoadSequenceResponse]) extends IdleMessage
-  final case class StartSequence(replyTo: ActorRef[SimpleResponse])                            extends SequenceLoadedMessage
+  final case class LoadSequence(sequence: Sequence, replyTo: ActorRef[LoadSequenceResponse]) extends IdleMessage
+  final case class StartSequence(replyTo: ActorRef[SequenceResponse])                        extends SequenceLoadedMessage
+  final private[ocs] case class LoadAndStartSequenceInternal(sequence: Sequence, replyTo: ActorRef[SequenceResponse])
+      extends IdleMessage
 
   // lifecycle msgs
   final case class GoOnline(replyTo: ActorRef[SimpleResponse])  extends OfflineMessage
@@ -43,10 +44,10 @@ object SequencerMessages {
   final case class InsertAfter(id: Id, commands: List[SequenceCommand], replyTo: ActorRef[ComplexResponse]) extends EditorAction
   final case class Delete(ids: Id, replyTo: ActorRef[ComplexResponse])                                      extends EditorAction
   final case class AddBreakpoint(id: Id, replyTo: ActorRef[ComplexResponse])                                extends EditorAction
-  final case class RemoveBreakpoint(id: Id, replyTo: ActorRef[RemoveBreakpointResponse])                             extends EditorAction
-  final case class Pause(replyTo: ActorRef[PauseResponse])                                                extends EditorAction
-  final case class Resume(replyTo: ActorRef[SimpleResponse])                                               extends EditorAction
-  final case class Reset(replyTo: ActorRef[SimpleResponse])                                                extends EditorAction
+  final case class RemoveBreakpoint(id: Id, replyTo: ActorRef[RemoveBreakpointResponse])                    extends EditorAction
+  final case class Pause(replyTo: ActorRef[PauseResponse])                                                  extends EditorAction
+  final case class Resume(replyTo: ActorRef[SimpleResponse])                                                extends EditorAction
+  final case class Reset(replyTo: ActorRef[SimpleResponse])                                                 extends EditorAction
 
   // engine & internal
   final private[esw] case class PullNext(replyTo: ActorRef[PullNextResponse])         extends IdleMessage with InProgressMessage

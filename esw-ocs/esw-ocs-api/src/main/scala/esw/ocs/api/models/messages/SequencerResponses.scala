@@ -1,26 +1,34 @@
 package esw.ocs.api.models.messages
 
+import csw.params.commands.CommandResponse.SubmitResponse
 import csw.params.core.models.Id
 import esw.ocs.api.models.{Step, StepList}
 import esw.ocs.api.serializer.OcsFrameworkAkkaSerializable
 
-sealed trait SimpleResponse // fixme: think about better name
+sealed trait SimpleResponse  // fixme: think about better name
 sealed trait ComplexResponse // fixme: think about better name
 sealed trait PauseResponse
 sealed trait RemoveBreakpointResponse
 
 sealed trait LoadSequenceResponse
+sealed trait SequenceResponse
 sealed trait PullNextResponse
 sealed trait MaybeNextResponse
 sealed trait GetSequenceResponse
 sealed trait GetPreviousSequenceResponse
 
-case object Ok extends SimpleResponse with ComplexResponse with PauseResponse with RemoveBreakpointResponse with LoadSequenceResponse
+case object Ok
+    extends SimpleResponse
+    with ComplexResponse
+    with PauseResponse
+    with RemoveBreakpointResponse
+    with LoadSequenceResponse
 
 case class GetSequenceResult(stepList: StepList)                 extends GetSequenceResponse
 case class GetPreviousSequenceResult(stepList: Option[StepList]) extends GetPreviousSequenceResponse
 case class PullNextResult(step: Step)                            extends PullNextResponse
 case class MaybeNextResult(step: Option[Step])                   extends MaybeNextResponse
+case class SequenceResult(submitResponse: SubmitResponse)        extends SequenceResponse
 
 sealed case class Unhandled(state: String, messageType: String)
     extends SimpleResponse
@@ -28,6 +36,7 @@ sealed case class Unhandled(state: String, messageType: String)
     with PauseResponse
     with RemoveBreakpointResponse
     with LoadSequenceResponse
+    with SequenceResponse
     with PullNextResponse
     with MaybeNextResponse
     with GetSequenceResponse
@@ -36,7 +45,7 @@ sealed case class Unhandled(state: String, messageType: String)
 }
 
 // load-and-start sequence error
-case object DuplicateIdsFound extends LoadSequenceResponse {
+case object DuplicateIdsFound extends LoadSequenceResponse with SequenceResponse {
   val description = "Duplicate command Ids found in given sequence"
 }
 
