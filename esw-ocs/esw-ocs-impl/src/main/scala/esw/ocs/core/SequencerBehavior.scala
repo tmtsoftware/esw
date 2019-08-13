@@ -78,6 +78,7 @@ class SequencerBehavior(
       killFunction: Unit => Unit
   ): Behavior[SequencerMsg] = message match {
     case Shutdown(replyTo)            => shutdown(replyTo, killFunction)
+    case GetSequence(replyTo)         => getSequence(replyTo, state)
     case GetPreviousSequence(replyTo) => getPreviousSequence(replyTo, state)
   }
 
@@ -86,7 +87,6 @@ class SequencerBehavior(
   ): SequencerState = {
     editorAction match {
       case Abort(replyTo)                     => ??? //story not played yet
-      case GetSequence(replyTo)               => getSequence(replyTo, state)
       case Add(commands, replyTo)             => updateStepList1(replyTo, state, state.stepList.append(commands))
       case Pause(replyTo)                     => updateStepList(replyTo, state, state.stepList.pause)
       case Resume(replyTo)                    => updateStepList1(replyTo, state, state.stepList.resume)
@@ -170,21 +170,20 @@ class SequencerBehavior(
   private def receive[B <: SequencerMsg: ClassTag](stateName: String)(
       f: (ActorContext[SequencerMsg], B) => Behavior[SequencerMsg]
   ): Behavior[SequencerMsg] = Behaviors.receive { (ctx, msg) =>
-      msg match {
-        case msg: B                   => f(ctx, msg)
-        case msg: EswSequencerMessage => msg.replyTo ! Unhandled(stateName, msg.getClass.getSimpleName); Behaviors.same
-        case LoadAndStartSequence(sequence, replyTo) =>
-          import ctx.executionContext
-          implicit val timeout: Timeout = Timeouts.LongTimeout
-          implicit val scheduler: Scheduler = ctx.system.scheduler
+    import ctx.executionContext
+    implicit val timeout: Timeout     = Timeouts.LongTimeout
+    implicit val scheduler: Scheduler = ctx.system.scheduler
 
-          val sequenceResponseF: Future[SequenceResponse] = ctx.self ? (LoadAndStartSequenceInternal(sequence, _))
-          sequenceResponseF.foreach(res => replyTo ! res.toSubmitResponse(sequence.runId))
-          Behaviors.same
-
-        case _ => Behaviors.unhandled
-      }
+    msg match {
+      case msg: B                   => f(ctx, msg)
+      case msg: EswSequencerMessage => msg.replyTo ! Unhandled(stateName, msg.getClass.getSimpleName); Behaviors.same
+      case LoadAndStartSequence(sequence, replyTo) =>
+        val sequenceResponseF: Future[SequenceResponse] = ctx.self ? (LoadAndStartSequenceInternal(sequence, _))
+        sequenceResponseF.foreach(res => replyTo ! res.toSubmitResponse(sequence.runId))
+        Behaviors.same
+      case _ => Behaviors.unhandled
     }
+  }
 
   private def readyToExecuteNext(
       state: SequencerState,
@@ -200,9 +199,9 @@ class SequencerBehavior(
     behaviour(newState)
   }
 
-  private def getSequence(replyTo: ActorRef[GetSequenceResult], state: SequencerState): SequencerState = {
+  private def getSequence(replyTo: ActorRef[GetSequenceResult], state: SequencerState): Behavior[SequencerMsg] = {
     replyTo ! GetSequenceResult(state.stepList)
-    state
+    Behaviors.same
   }
 
   private def getPreviousSequence(
@@ -213,14 +212,18 @@ class SequencerBehavior(
     Behaviors.same
   }
 
-  private def tryExecutingNextPendingStep(state: SequencerState)(implicit ec: ExecutionContext): SequencerState =
-    state.stepList.nextExecutable
-      .map { pendingStep =>
-        val (step, newState) = setPendingToInFlight(pendingStep, state)
-        state.stepRefSubscriber.foreach(_ ! PullNextResult(step))
-        newState
-      }
-      .getOrElse(state)
+  private def tryExecutingNextPendingStep(state: SequencerState)(implicit ec: ExecutionContext): SequencerState = {
+    val maybeState = for {
+      ref         <- state.stepRefSubscriber
+      pendingStep <- state.stepList.nextExecutable
+    } yield {
+      val (step, newState) = setPendingToInFlight(pendingStep, state)
+      ref ! PullNextResult(step)
+      newState.copy(stepRefSubscriber = None)
+    }
+    
+    maybeState.getOrElse(state)
+  }
 
   private def goToIdle(state: SequencerState): Unit = state.self.foreach(_ ! GoIdle(actorSystem.deadLetters))
 
@@ -266,11 +269,10 @@ class SequencerBehavior(
 
     crm.updateSubCommand(submitResponse)
     val newStepList = state.stepList.updateStatus(submitResponse.runId, stepStatus)
-    checkForSequenceCompletion(state)
-
-    if (!state.stepList.isFinished) state.readyToExecuteSubscriber.foreach(_ ! Ok)
-
-    state.copy(stepList = newStepList)
+    val newState    = state.copy(stepList = newStepList)
+    checkForSequenceCompletion(newState)
+    if (!newState.stepList.isFinished) state.readyToExecuteSubscriber.foreach(_ ! Ok)
+    newState
   }
 
   private def checkForSequenceCompletion(state: SequencerState): Unit = if (state.stepList.isFinished) {

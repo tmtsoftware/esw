@@ -5,17 +5,17 @@ import csw.params.core.models.Id
 import esw.ocs.api.models.{Step, StepList}
 import esw.ocs.api.serializer.OcsFrameworkAkkaSerializable
 
-sealed trait SimpleResponse  // fixme: think about better name
-sealed trait ComplexResponse // fixme: think about better name
-sealed trait PauseResponse
-sealed trait RemoveBreakpointResponse
+sealed trait SimpleResponse              extends OcsFrameworkAkkaSerializable // fixme: think about better name
+sealed trait ComplexResponse             extends OcsFrameworkAkkaSerializable // fixme: think about better name
+sealed trait PauseResponse               extends OcsFrameworkAkkaSerializable
+sealed trait RemoveBreakpointResponse    extends OcsFrameworkAkkaSerializable
+sealed trait LoadSequenceResponse        extends OcsFrameworkAkkaSerializable
+sealed trait PullNextResponse            extends OcsFrameworkAkkaSerializable
+sealed trait MaybeNextResponse           extends OcsFrameworkAkkaSerializable
+sealed trait GetSequenceResponse         extends OcsFrameworkAkkaSerializable
+sealed trait GetPreviousSequenceResponse extends OcsFrameworkAkkaSerializable
 
-sealed trait LoadSequenceResponse
-sealed trait PullNextResponse
-sealed trait MaybeNextResponse
-sealed trait GetSequenceResponse
-sealed trait GetPreviousSequenceResponse
-sealed trait SequenceResponse {
+sealed trait SequenceResponse extends OcsFrameworkAkkaSerializable {
   def toSubmitResponse(sequenceId: Id): SubmitResponse = this match {
     case SequenceResult(submitResponse) => submitResponse
     case DuplicateIdsFound              => Error(sequenceId, DuplicateIdsFound.description)
@@ -36,7 +36,7 @@ case class PullNextResult(step: Step)                            extends PullNex
 case class MaybeNextResult(step: Option[Step])                   extends MaybeNextResponse
 case class SequenceResult(submitResponse: SubmitResponse)        extends SequenceResponse
 
-sealed case class Unhandled(state: String, messageType: String)
+case class Unhandled(state: String, messageType: String)
     extends SimpleResponse
     with ComplexResponse
     with PauseResponse
@@ -50,7 +50,6 @@ sealed case class Unhandled(state: String, messageType: String)
   val description = s"Sequencer can not accept '$messageType' message in '$state' state"
 }
 
-// load-and-start sequence error
 case object DuplicateIdsFound extends LoadSequenceResponse with SequenceResponse {
   val description = "Duplicate command Ids found in given sequence"
 }

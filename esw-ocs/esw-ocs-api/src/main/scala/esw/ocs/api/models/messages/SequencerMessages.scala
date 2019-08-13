@@ -34,7 +34,7 @@ object SequencerMessages {
 
   // editor msgs
   // fixme : GetSequence and GetPreviousSequence should have replyTo StepListResponse
-  final case class GetSequence(replyTo: ActorRef[GetSequenceResponse])                 extends EditorAction
+  final case class GetSequence(replyTo: ActorRef[GetSequenceResponse])                 extends AnyStateMessage
   final case class GetPreviousSequence(replyTo: ActorRef[GetPreviousSequenceResponse]) extends AnyStateMessage
 
   final case class Add(commands: List[SequenceCommand], replyTo: ActorRef[SimpleResponse])     extends EditorAction
@@ -53,7 +53,7 @@ object SequencerMessages {
   final private[esw] case class PullNext(replyTo: ActorRef[PullNextResponse])         extends IdleMessage with InProgressMessage
   final private[esw] case class MaybeNext(replyTo: ActorRef[MaybeNextResponse])       extends InProgressMessage
   final private[esw] case class ReadyToExecuteNext(replyTo: ActorRef[SimpleResponse]) extends InProgressMessage
-  final private[esw] case class Update(submitResponse: SubmitResponse, replyTo: ActorRef[Any]) // this is internal message and replyTo is not used anywhere
+  final private[esw] case class Update(submitResponse: SubmitResponse, replyTo: ActorRef[SimpleResponse]) // this is internal message and replyTo is not used anywhere
       extends InProgressMessage
   final private[esw] case class GoIdle(replyTo: ActorRef[SimpleResponse]) extends InProgressMessage
 }
