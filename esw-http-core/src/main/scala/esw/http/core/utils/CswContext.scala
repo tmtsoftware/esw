@@ -15,7 +15,7 @@ import csw.logging.api.scaladsl.Logger
 import esw.http.core.commons.{RouteHandlers, ServiceLogger}
 import esw.http.core.wiring.ActorRuntime
 
-class CswContext(actorRuntime: ActorRuntime, httpConnection: HttpConnection, config: Config) {
+class CswContext(val actorRuntime: ActorRuntime, httpConnection: HttpConnection, config: Config) {
   import actorRuntime._
 
   lazy val locationService: LocationService = HttpLocationServiceFactory.makeLocalClient(typedSystem, mat)
