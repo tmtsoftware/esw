@@ -38,7 +38,7 @@ class SequencerBehavior(
   def idle(state: SequencerState): Behavior[SequencerMsg] = receive[IdleMessage]("idle") { (ctx, msg) =>
     import ctx.executionContext
     msg match {
-      case x: CommonMessage                                => handleAnyStateMessage(x, state, _ => ctx.system.terminate)
+      case msg: CommonMessage                              => handleCommonMessage(msg, state, _ => ctx.system.terminate)
       case LoadSequence(sequence, replyTo)                 => load(sequence, replyTo, state)(nextBehavior = loaded)
       case LoadAndStartSequenceInternal(sequence, replyTo) => loadAndStart(sequence, state, replyTo)
       case GoOffline(replyTo)                              => goOffline(replyTo, state)
@@ -49,7 +49,7 @@ class SequencerBehavior(
   def loaded(state: SequencerState): Behavior[SequencerMsg] = receive[SequenceLoadedMessage]("loaded") { (ctx, msg) =>
     import ctx.executionContext
     msg match {
-      case x: CommonMessage           => handleAnyStateMessage(x, state, _ => ctx.system.terminate)
+      case msg: CommonMessage         => handleCommonMessage(msg, state, _ => ctx.system.terminate)
       case editorAction: EditorAction => loaded(handleEditorAction(editorAction, state))
       case GoOffline(replyTo)         => goOffline(replyTo, state)
       case StartSequence(replyTo)     => start(state, replyTo)
@@ -58,13 +58,13 @@ class SequencerBehavior(
 
   def inProgress(state: SequencerState): Behavior[SequencerMsg] = receive[InProgressMessage]("in-progress") { (ctx, msg) =>
     msg match {
-      case x: CommonMessage            => handleAnyStateMessage(x, state, _ => ctx.system.terminate)
-      case editorAction: EditorAction  => inProgress(handleEditorAction(editorAction, state))
+      case msg: CommonMessage          => handleCommonMessage(msg, state, _ => ctx.system.terminate)
+      case msg: EditorAction           => inProgress(handleEditorAction(msg, state))
       case PullNext(replyTo)           => inProgress(state.pullNextStep(replyTo))
       case MaybeNext(replyTo)          => replyTo ! MaybeNextResult(state.stepList.nextExecutable); Behaviors.same
       case ReadyToExecuteNext(replyTo) => inProgress(state.readyToExecuteNext(replyTo))
       case Update(submitResponse, _)   => inProgress(state.updateStepStatus(submitResponse))
-      case GoIdle(_) =>
+      case _: GoIdle =>
         idle(state) //todo: should clear the state? so that immediate start message does not start the old sequence again?
     }
   }
@@ -72,19 +72,19 @@ class SequencerBehavior(
   def offline(state: SequencerState): Behavior[SequencerMsg] = receive[OfflineMessage]("offline") { (ctx, message) =>
     import ctx.executionContext
     message match {
-      case x: CommonMessage  => handleAnyStateMessage(x, state, _ => ctx.system.terminate)
-      case GoOnline(replyTo) => goOnline(replyTo, state)(fallbackBehavior = offline)
+      case msg: CommonMessage => handleCommonMessage(msg, state, _ => ctx.system.terminate)
+      case GoOnline(replyTo)  => goOnline(replyTo, state)(fallbackBehavior = offline)
     }
   }
 
   def goingOnline(state: SequencerState): Behavior[SequencerMsg] = receive[GoingOnlineMessage]("going-online") { (ctx, message) =>
     message match {
-      case x: CommonMessage => handleAnyStateMessage(x, state, _ => ctx.system.terminate)
-      case x: GoIdle        => idle(state)
+      case msg: CommonMessage => handleCommonMessage(msg, state, _ => ctx.system.terminate)
+      case _: GoIdle          => idle(state)
     }
   }
 
-  private def handleAnyStateMessage(
+  private def handleCommonMessage(
       message: CommonMessage,
       state: SequencerState,
       killFunction: Unit => Unit
@@ -193,7 +193,7 @@ class SequencerBehavior(
   private def goingOffline(state: SequencerState): Behavior[SequencerMsg] = receive[GoingOfflineMessage]("going-offline") {
     (ctx, message) =>
       message match {
-        case x: CommonMessage => handleAnyStateMessage(x, state, _ => ctx.system.terminate)
+        case x: CommonMessage => handleCommonMessage(x, state, _ => ctx.system.terminate)
         case _: GoneOffline   => offline(state.copy(stepList = StepList.empty)) // fixme: replace with None
       }
   }

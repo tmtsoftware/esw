@@ -107,38 +107,36 @@ case class SequencerState(
   private def updateSequenceInCrmAndHandleFinalResponse(replyTo: ActorRef[SequenceResponse]): Unit = {
     crm.addOrUpdateCommand(Started(sequenceId))
     crm.addSubCommand(sequenceId, emptyChildId)
-    handleFinalResponse(crm.queryFinal(sequenceId), replyTo)
+    handleSubmitResponse(
+      sequenceId,
+      crm.queryFinal(sequenceId),
+      onComplete = response => {
+        replyTo ! SequenceResult(response)
+        goToIdle()
+      }
+    )
   }
 
   private def updateStepInCrmAndHandleResponse(stepId: Id): Unit = {
     crm.addOrUpdateCommand(CommandResponse.Started(stepId))
     crm.addSubCommand(sequenceId, stepId)
-    handleStepResponse(stepId, crm.queryFinal(stepId))
+    val submitResponseF = crm.queryFinal(stepId)
+    handleSubmitResponse(stepId, submitResponseF, onComplete = self ! Update(_, actorSystem.deadLetters))
   }
 
-  private def handleStepResponse(stepId: Id, submitResponseF: Future[SubmitResponse]): Unit = {
-    def sendUpdateMsg(submitResponse: SubmitResponse): Unit = selfMessage(Update(submitResponse, actorSystem.deadLetters))
-
+  private def handleSubmitResponse(
+      stepId: Id,
+      submitResponseF: Future[SubmitResponse],
+      onComplete: SubmitResponse => Unit
+  ): Unit = {
     submitResponseF
       .onComplete {
-        case Failure(e)              => sendUpdateMsg(Error(stepId, e.getMessage))
-        case Success(submitResponse) => sendUpdateMsg(submitResponse)
+        case Failure(e)              => onComplete(Error(stepId, e.getMessage))
+        case Success(submitResponse) => onComplete(submitResponse)
       }
   }
 
-  private def handleFinalResponse(submitResponseF: Future[SubmitResponse], replyTo: ActorRef[SequenceResponse]): Unit = {
-    def sendSequenceResult(submitResponse: SubmitResponse): Unit = replyTo ! SequenceResult(submitResponse)
-
-    submitResponseF.onComplete { res =>
-      res match {
-        case Failure(e)              => sendSequenceResult(Error(sequenceId, e.getMessage))
-        case Success(submitResponse) => sendSequenceResult(CommandResponse.withRunId(sequenceId, submitResponse))
-      }
-      goToIdle()
-    }
-  }
-
-  private def goToIdle(): Unit = selfMessage(GoIdle(actorSystem.deadLetters))
+  private def goToIdle(): Unit = self ! GoIdle(actorSystem.deadLetters)
 
   private def sendStepToSubscriber(state: SequencerState, step: Step): SequencerState = {
     state.stepRefSubscriber.foreach(_ ! PullNextResult(step))
@@ -149,9 +147,7 @@ case class SequencerState(
     if (state.stepList.isFinished) {
       crm.updateSubCommand(Completed(emptyChildId))
     }
-
-  private def selfMessage(msg: EswSequencerMessage): Unit = self ! msg
-}
+  }
 
 object SequencerState {
   def initial(
