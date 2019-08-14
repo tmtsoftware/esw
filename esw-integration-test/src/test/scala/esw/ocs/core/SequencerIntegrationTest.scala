@@ -16,11 +16,10 @@ import csw.params.core.models.Prefix
 import csw.testkit.scaladsl.ScalaTestFrameworkTestKit
 import esw.ocs.api.BaseTestSuite
 import esw.ocs.api.models.StepStatus.Finished
-import esw.ocs.api.models.{Step, StepList}
 import esw.ocs.api.models.messages.SequencerMessages._
-import esw.ocs.api.models.messages.{GetSequenceResult, LoadSequenceResponse, Ok, SequenceResponse, SequenceResult, SimpleResponse}
+import esw.ocs.api.models.messages._
+import esw.ocs.api.models.{Step, StepList}
 import esw.ocs.internal.SequencerWiring
-import org.scalatest.concurrent.PatienceConfiguration.Interval
 
 import scala.concurrent.Future
 import scala.concurrent.duration.DurationLong
@@ -66,7 +65,7 @@ class SequencerIntegrationTest extends ScalaTestFrameworkTestKit with BaseTestSu
       loadResponse.futureValue should ===(Ok)
 
       val seqResponse: Future[SequenceResponse] = sequencer ? StartSequence
-      seqResponse.futureValue(Interval(5.seconds)) should ===(SequenceResult(Completed(sequence.runId)))
+      seqResponse.futureValue should ===(SequenceResult(Completed(sequence.runId)))
     }
 
     "process sequence and execute commands that are added later | ESW-145, ESW-154" in {

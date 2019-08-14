@@ -25,8 +25,7 @@ case class SequencerState(
     timeout: Timeout
 ) {
 
-  implicit private val _actorSystem: ActorSystem[_] = actorSystem
-  implicit private val _timeout: Timeout            = timeout
+  implicit private val _timeout: Timeout = timeout
 
   import actorSystem.executionContext
 
