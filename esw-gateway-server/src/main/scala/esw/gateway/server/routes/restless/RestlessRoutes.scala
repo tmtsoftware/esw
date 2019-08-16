@@ -1,24 +1,18 @@
 package esw.gateway.server.routes.restless
 
+import akka.Done
 import akka.http.scaladsl.server.Directives._
 import akka.http.scaladsl.server.Route
-import akka.stream.scaladsl.Source
 import akka.util.Timeout
-import akka.{Done, NotUsed}
 import csw.alarm.api.exceptions.KeyNotFoundException
 import csw.alarm.models.Key.AlarmKey
 import csw.event.api.scaladsl.{EventPublisher, EventSubscriber}
-import csw.location.models.ComponentType
 import csw.params.commands.CommandResponse.Error
-import csw.params.core.models.Id
 import csw.params.events.EventKey
 import esw.gateway.server.routes.restless.CommandAction.{Oneway, Submit, Validate}
 import esw.gateway.server.routes.restless.RequestMsg.{CommandMsg, GetEventMsg, PublishEventMsg, SetAlarmSeverityMsg}
 import esw.gateway.server.routes.restless.ResponseMsg.{NoEventKeys, SetAlarmSeverityFailure}
 import esw.http.core.utils.CswContext
-import msocket.core.api.Payload
-import msocket.core.api.ToResponse.FutureToPayload
-import msocket.core.server.ServerSocket
 
 import scala.concurrent.duration.DurationLong
 import scala.util.control.NonFatal
@@ -63,26 +57,6 @@ class RestlessRoutes(cswCtx: CswContext) extends RestlessCodecs {
             case Failure(ex)                      => throw ex
           }
       }
-    }
-  }
-
-  trait WebSocketMsg
-  object WebSocketMsg {
-    case class QueryCommandMsg(componentType: ComponentType, componentName: String, runId: Id) extends WebSocketMsg
-  }
-
-  import WebSocketMsg._
-  val socket: ServerSocket[WebSocketMsg] = new ServerSocket[WebSocketMsg] {
-    override def requestStream(request: WebSocketMsg): Source[Payload[_], NotUsed] = request match {
-      case QueryCommandMsg(componentType, componentName, runId) =>
-        componentFactory
-          .commandService(componentName, componentType)
-          .flatMap(_.queryFinal(runId)(Timeout(100.hours)))
-          .recover {
-            case ex: Exception =>
-              Error(runId, ex.getMessage) //Could be a separate error like "InvalidComponent"
-          }
-          .payload
     }
   }
 
