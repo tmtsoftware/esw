@@ -14,7 +14,7 @@ import csw.params.core.models.{Id, Prefix}
 import esw.ocs.api.BaseTestSuite
 import esw.ocs.api.models.StepStatus.{Finished, InFlight, Pending}
 import esw.ocs.api.models.messages.SequencerMessages._
-import esw.ocs.api.models.messages.{StepListResponse, _}
+import esw.ocs.api.models.messages.{EswSequencerResponse, StepListResponse, _}
 import esw.ocs.api.models.{Step, StepList}
 import esw.ocs.dsl.Script
 import org.mockito.Mockito.when
@@ -84,6 +84,23 @@ class SequencerBehaviorTest extends ScalaTestWithActorTestKit with BaseTestSuite
       }
       probe
     }
+
+    def assertUnhandled[T >: Unhandled <: EswSequencerResponse](
+        state: String,
+        msg: ActorRef[T] => EswSequencerMessage
+    ): Unit = {
+      val probe            = createTestProbe[T]
+      val sequencerMessage = msg(probe.ref)
+      sequencerActor ! sequencerMessage
+      probe.expectMessage(Unhandled(state, sequencerMessage.getClass.getSimpleName))
+    }
+
+    def assertUnhandled[T >: Unhandled <: EswSequencerResponse](
+        state: String,
+        msgs: (ActorRef[T] => EswSequencerMessage)*
+    ): Unit =
+      msgs.foreach(assertUnhandled(state, _))
+
   }
 
   "LoadSequence" must {
@@ -249,4 +266,53 @@ class SequencerBehaviorTest extends ScalaTestWithActorTestKit with BaseTestSuite
       assertCurrentSequence(expected)
     }
   }
+
+  "Idle -> Unhandled" in {
+    val sequencerSetup = new SequencerSetup(sequence1)
+    import sequencerSetup._
+    val cmds = List(command1, command2)
+
+    assertUnhandled(
+      "idle",
+      StartSequence,
+      Abort,
+      GoOnline,
+      MaybeNext,
+      ReadyToExecuteNext,
+      Update(Completed(Id()), _),
+      GoIdle,
+      GoneOffline,
+      Add(cmds, _),
+      Prepend(cmds, _),
+      Replace(Id(), cmds, _),
+      InsertAfter(Id(), cmds, _),
+      Delete(Id(), _),
+      AddBreakpoint(Id(), _),
+      RemoveBreakpoint(Id(), _),
+      Pause,
+      Resume,
+      Reset
+    )
+  }
+
+  "Loaded -> Unhandled" in {
+    val sequencerSetup = new SequencerSetup(sequence1)
+    import sequencerSetup._
+    assertSequencerIsLoaded(sequence1, Ok)
+
+    assertUnhandled(
+      "loaded",
+      LoadSequence(sequence1, _),
+      LoadAndStartSequenceInternal(sequence1, _),
+      Update(Completed(Id()), _),
+      GoOnline,
+      MaybeNext,
+      ReadyToExecuteNext,
+      PullNext,
+      MaybeNext,
+      ReadyToExecuteNext,
+      GoIdle
+    )
+  }
+
 }
