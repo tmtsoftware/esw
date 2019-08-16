@@ -1,44 +1,52 @@
 package esw.gateway.server.routes.restless
 
 import akka.http.scaladsl.server.Directives._
+import akka.http.scaladsl.server.Route
 import akka.stream.scaladsl.Source
 import akka.util.Timeout
 import akka.{Done, NotUsed}
+import csw.alarm.api.exceptions.KeyNotFoundException
 import csw.alarm.models.AlarmSeverity
 import csw.alarm.models.Key.AlarmKey
 import csw.event.api.scaladsl.{EventPublisher, EventSubscriber}
-import csw.location.client.HttpCodecs
 import csw.location.models.ComponentType
 import csw.params.commands.CommandResponse.Error
 import csw.params.commands.ControlCommand
-import csw.params.core.formats.ParamCodecs
-import csw.params.core.models.Id
+import csw.params.core.models.{Id, Subsystem}
 import csw.params.events.{Event, EventKey}
-import esw.gateway.server.routes.restless.ResponseMsg.{CommandActionFailure, NoEventKeys, SetAlarmSeverityFailure}
+import enumeratum.{Enum, EnumEntry}
+import esw.gateway.server.routes.restless.CommandAction.{Oneway, Submit, Validate}
+import esw.gateway.server.routes.restless.ResponseMsg.{NoEventKeys, SetAlarmSeverityFailure}
 import esw.gateway.server.routes.restless.RoutesMsg.{CommandMsg, GetEventMsg, PublishEventMsg, SetAlarmSeverityMsg}
-import esw.http.core.msocket.api.Payload
-import esw.http.core.msocket.api.ToResponse.FutureToPayload
-import esw.http.core.msocket.server.ServerSocket
 import esw.http.core.utils.CswContext
+import msocket.core.api.Payload
+import msocket.core.api.ToResponse.FutureToPayload
+import msocket.core.server.ServerSocket
 
+import scala.collection.immutable
 import scala.concurrent.duration.DurationLong
+import scala.util.control.NonFatal
+import scala.util.{Failure, Success}
 
-trait Action
-object ActionMsg {
-  case object Validate extends Action
-  case object Submit   extends Action
-  case object Oneway   extends Action
+sealed trait CommandAction extends EnumEntry
+object CommandAction extends Enum[CommandAction] {
+  case object Validate extends CommandAction
+  case object Submit   extends CommandAction
+  case object Oneway   extends CommandAction
+
+  override def values: immutable.IndexedSeq[CommandAction] = findValues
 }
 
-trait RouteMsg
+sealed trait RouteMsg
 object RoutesMsg {
 
-  case class CommandMsg(componentType: ComponentType, componentName: String, command: ControlCommand, action: Action)
+  case class CommandMsg(componentType: ComponentType, componentName: String, command: ControlCommand, action: CommandAction)
       extends RouteMsg
 
-  case class PublishEventMsg(event: Event)                                    extends RouteMsg
-  case class GetEventMsg(keys: Set[String])                                   extends RouteMsg
-  case class SetAlarmSeverityMsg(alarmKey: AlarmKey, severity: AlarmSeverity) extends RouteMsg
+  case class PublishEventMsg(event: Event)  extends RouteMsg
+  case class GetEventMsg(keys: Set[String]) extends RouteMsg
+  case class SetAlarmSeverityMsg(subsystem: Subsystem, componentName: String, alarmName: String, severity: AlarmSeverity)
+      extends RouteMsg
 }
 
 sealed trait ResponseMsg {
@@ -54,7 +62,7 @@ object ResponseMsg {
   case class CommandActionFailure(msg: String)    extends ResponseMsg
 }
 
-class Routes1(cswCtx: CswContext) extends RestlessCodecs with ParamCodecs with HttpCodecs {
+class RestlessRoutes(cswCtx: CswContext) extends RestlessCodecs {
 
   import cswCtx._
   implicit val timeout: Timeout = Timeout(5.seconds)
@@ -63,38 +71,35 @@ class Routes1(cswCtx: CswContext) extends RestlessCodecs with ParamCodecs with H
   lazy val subscriber: EventSubscriber = eventService.defaultSubscriber
   lazy val publisher: EventPublisher   = eventService.defaultPublisher
 
-  val route1 = post {
+  val route1: Route = post {
     path("gateway") {
       entity(as[RouteMsg]) {
-        case CommandMsg(componentType, name, command, action) => {
+        case CommandMsg(componentType, name, command, action) =>
           val commandServiceF = componentFactory.commandService(name, componentType)
-          val eventualObject = commandServiceF
+          val eventualCommandResponse = commandServiceF
             .flatMap { commandService =>
               action match {
-                case ActionMsg.Oneway   => commandService.oneway(command)
-                case ActionMsg.Submit   => commandService.submit(command)
-                case ActionMsg.Validate => commandService.validate(command)
+                case Oneway   => commandService.oneway(command)
+                case Submit   => commandService.submit(command)
+                case Validate => commandService.validate(command)
               }
             }
             .recover {
-              case ex: Exception => Error(command.runId, ex.getMessage)
+              case NonFatal(ex) => Error(command.runId, ex.getMessage)
             }
-          complete(eventualObject)
-        }
+          complete(eventualCommandResponse)
 
         case PublishEventMsg(event) => complete(publisher.publish(event))
-        case GetEventMsg(keys) => {
+        case GetEventMsg(keys) =>
           if (keys.nonEmpty) complete(subscriber.get(keys.toEventKeys))
           else complete(NoEventKeys)
-        }
 
-        case SetAlarmSeverityMsg(alarmKey, severity) =>
-          alarmService
-            .setSeverity(alarmKey, severity)
-            .map(_ => complete(Done))
-            .recover {
-              case ex: Exception => complete(SetAlarmSeverityFailure(ex.getMessage))
-            }
+        case SetAlarmSeverityMsg(subsystem, componentName, alarmName, severity) =>
+          onComplete(alarmService.setSeverity(AlarmKey(subsystem, componentName, alarmName), severity)) {
+            case Success(_)                       => complete(Done)
+            case Failure(e: KeyNotFoundException) => complete(SetAlarmSeverityFailure(e.getMessage))
+            case Failure(ex)                      => throw ex
+          }
       }
     }
   }
@@ -108,22 +113,22 @@ class Routes1(cswCtx: CswContext) extends RestlessCodecs with ParamCodecs with H
   val socket: ServerSocket[WebSocketMsg] = new ServerSocket[WebSocketMsg] {
     override def requestStream(request: WebSocketMsg): Source[Payload[_], NotUsed] = request match {
       case QueryCommandMsg(componentType, componentName, runId) =>
-        val commandServiceF = componentFactory
+        componentFactory
           .commandService(componentName, componentType)
           .flatMap(_.queryFinal(runId)(Timeout(100.hours)))
           .recover {
             case ex: Exception =>
-              CommandActionFailure(ex.getMessage) //Could be a separate error like "InvalidComponent"
+              Error(runId, ex.getMessage) //Could be a separate error like "InvalidComponent"
           }
           .payload
     }
   }
 
-  val route2 = post {
-    path("websocket" / Segment) { encoding =>
-      handleWebSocketMessages()
-    }
-  }
+//  val route2 = post {
+//    path("websocket" / Segment) { encoding =>
+//      handleWebSocketMessages()
+//    }
+//  }
 
   implicit class RichEventKeys(keys: Iterable[String]) {
     def toEventKeys: Set[EventKey] = keys.map(EventKey(_)).toSet
