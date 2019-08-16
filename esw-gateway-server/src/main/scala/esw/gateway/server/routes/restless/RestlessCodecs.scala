@@ -10,7 +10,7 @@ import esw.gateway.server.routes.restless.RequestMsg._
 import io.bullet.borer.Codec
 import io.bullet.borer.derivation.MapBasedCodecs._
 
-trait RestlessCodecs extends ParamCodecs with LocationCodecs with HttpCodecs with AlarmCodecs {
+trait RestlessCodecs extends ParamCodecs with LocationCodecs with HttpCodecs with AlarmCodecs with EitherCodecs {
 
   implicit def responseMsgCodec[T <: ErrorResponseMsg]: Codec[T] = responseMsgCodecValue.asInstanceOf[Codec[T]]
 

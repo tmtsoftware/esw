@@ -23,7 +23,7 @@ class RestlessServerSocket(cswCtx: CswContext) extends ServerSocket[WebSocketMsg
         .flatMap(_.queryFinal(runId)(Timeout(100.hours)))
         .recover {
           case ex: Exception =>
-            Error(runId, ex.getMessage) //Could be a separate error like "InvalidComponent"
+            Error(runId, ex.getMessage)
         }
         .payload
   }
