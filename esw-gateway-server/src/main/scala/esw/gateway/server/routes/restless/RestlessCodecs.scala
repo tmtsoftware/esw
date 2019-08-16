@@ -1,4 +1,5 @@
 package esw.gateway.server.routes.restless
+import com.github.ghik.silencer.silent
 import csw.alarm.codecs.AlarmCodecs
 import csw.location.client.HttpCodecs
 import csw.location.models.codecs.LocationCodecs
@@ -11,16 +12,16 @@ import io.bullet.borer.derivation.MapBasedCodecs._
 trait RestlessCodecs extends ParamCodecs with LocationCodecs with HttpCodecs with AlarmCodecs {
 
   implicit def responseMsgCodec[T <: ResponseMsg]: Codec[T] = {
-    implicit lazy val noEventKeysCodec: Codec[NoEventKeys.type]                    = singletonCodec(NoEventKeys)
-    implicit lazy val setAlarmSeverityFailureCodec: Codec[SetAlarmSeverityFailure] = deriveCodec[SetAlarmSeverityFailure]
+    @silent implicit lazy val noEventKeysCodec: Codec[NoEventKeys.type]                    = singletonCodec(NoEventKeys)
+    @silent implicit lazy val setAlarmSeverityFailureCodec: Codec[SetAlarmSeverityFailure] = deriveCodec[SetAlarmSeverityFailure]
     deriveCodec[ResponseMsg].asInstanceOf[Codec[T]]
   }
 
   implicit def routeMsgCodec[T <: RouteMsg]: Codec[T] = {
-    implicit lazy val commandMsgCodec: Codec[CommandMsg]                   = deriveCodec[CommandMsg]
-    implicit lazy val publishEventMsgCodec: Codec[PublishEventMsg]         = deriveCodec[PublishEventMsg]
-    implicit lazy val getEventMsgCodec: Codec[GetEventMsg]                 = deriveCodec[GetEventMsg]
-    implicit lazy val setAlarmSeverityMsgCodec: Codec[SetAlarmSeverityMsg] = deriveCodec[SetAlarmSeverityMsg]
+    @silent implicit lazy val commandMsgCodec: Codec[CommandMsg]                   = deriveCodec[CommandMsg]
+    @silent implicit lazy val publishEventMsgCodec: Codec[PublishEventMsg]         = deriveCodec[PublishEventMsg]
+    @silent implicit lazy val getEventMsgCodec: Codec[GetEventMsg]                 = deriveCodec[GetEventMsg]
+    @silent implicit lazy val setAlarmSeverityMsgCodec: Codec[SetAlarmSeverityMsg] = deriveCodec[SetAlarmSeverityMsg]
     deriveCodec[RouteMsg].asInstanceOf[Codec[T]]
   }
 
