@@ -4,7 +4,6 @@ import java.util.concurrent.CountDownLatch
 
 import akka.actor.testkit.typed.scaladsl.{ScalaTestWithActorTestKit, TestProbe}
 import akka.actor.typed.ActorRef
-import akka.stream.TLSClientAuth
 import csw.command.client.CommandResponseManager
 import csw.command.client.messages.sequencer.{LoadAndStartSequence, SequencerMsg}
 import csw.location.api.scaladsl.LocationService
@@ -13,8 +12,8 @@ import csw.params.commands.CommandResponse.{Completed, Error, SubmitResponse}
 import csw.params.commands.{CommandName, CommandResponse, Sequence, Setup}
 import csw.params.core.models.{Id, Prefix}
 import esw.ocs.api.BaseTestSuite
-import esw.ocs.api.models.StepStatus.{Finished, InFlight}
-import esw.ocs.api.models.messages.SequencerMessages.{Add, GetPreviousSequence, GetSequence, LoadSequence, StartSequence}
+import esw.ocs.api.models.StepStatus.{Finished, InFlight, Pending}
+import esw.ocs.api.models.messages.SequencerMessages._
 import esw.ocs.api.models.messages.{StepListResponse, _}
 import esw.ocs.api.models.{Step, StepList}
 import esw.ocs.dsl.Script
@@ -71,6 +70,9 @@ class SequencerBehaviorTest extends ScalaTestWithActorTestKit with BaseTestSuite
     }
 
     def assertSequencerIsInProgress(sequence: Sequence): TestProbe[SubmitResponse] = {
+      val submitResponsePromise = Promise[SubmitResponse]()
+      when(crm.queryFinal(command1.runId)).thenReturn(submitResponsePromise.future)
+
       val probe = createTestProbe[SubmitResponse]()
       sequencerActor ! LoadAndStartSequence(sequence, probe.ref)
       val p: TestProbe[StepListResponse] = createTestProbe[StepListResponse]()
@@ -213,9 +215,6 @@ class SequencerBehaviorTest extends ScalaTestWithActorTestKit with BaseTestSuite
       val sequencerSetup = new SequencerSetup(sequence1)
       import sequencerSetup._
 
-      val submitResponsePromise = Promise[SubmitResponse]()
-      when(crm.queryFinal(command1.runId)).thenReturn(submitResponsePromise.future)
-
       assertSequencerIsInProgress(sequence1)
 
       val probe = createTestProbe[OkOrUnhandledResponse]()
@@ -225,6 +224,29 @@ class SequencerBehaviorTest extends ScalaTestWithActorTestKit with BaseTestSuite
       assertCurrentSequence(
         StepListResult(Some(StepList(sequence1.runId, List(Step(command1, InFlight, hasBreakpoint = false), Step(command2)))))
       )
+    }
+  }
+
+  "Pause" must {
+    "pause sequencer when it is in-progress" in {
+      val sequence       = Sequence(command1, command2)
+      val sequencerSetup = new SequencerSetup(sequence)
+      import sequencerSetup._
+
+      assertSequencerIsInProgress(sequence)
+      val probe = createTestProbe[PauseResponse]()
+      sequencerActor ! Pause(probe.ref)
+      probe.expectMessage(Ok)
+
+      val expected = StepListResult(
+        Some(
+          StepList(
+            sequence.runId,
+            List(Step(command1, InFlight, hasBreakpoint = false), Step(command2, Pending, hasBreakpoint = true))
+          )
+        )
+      )
+      assertCurrentSequence(expected)
     }
   }
 }

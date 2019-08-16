@@ -30,6 +30,7 @@ final case class StepList private[models] (runId: Id, steps: List[Step]) extends
     copy(runId, pre ::: toSteps(commands) ::: post)
   }
 
+  // fixme: should check if given commands have duplicateIds
   def append(commands: List[SequenceCommand]): StepList = copy(runId, steps ::: toSteps(commands))
 
   def delete(id: Id): Either[EditorError, StepList] = ifExists(id) { _ =>
