@@ -1,11 +1,11 @@
-package esw.http.core.msocket.client
+package msocket.core.client
 
 import akka.NotUsed
 import akka.actor.ActorSystem
 import akka.http.scaladsl.model.ws.{BinaryMessage, TextMessage, WebSocketRequest}
 import akka.stream.scaladsl.Source
-import esw.http.core.msocket.api.{Encoding, Payload}
 import io.bullet.borer.{Decoder, Encoder}
+import msocket.core.api.{Encoding, Payload}
 
 class ClientSocketImpl[Req: Encoder](baseUri: String, encoding: Encoding)(implicit actorSystem: ActorSystem)
     extends ClientSocket[Req] {

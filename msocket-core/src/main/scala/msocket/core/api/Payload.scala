@@ -1,7 +1,8 @@
-package esw.http.core.msocket.api
+package msocket.core.api
 
-import io.bullet.borer.derivation.ArrayBasedCodecs.{deriveCodecForUnaryCaseClass, deriveEncoderForUnaryCaseClass}
 import io.bullet.borer.{Decoder, Encoder, Writer}
+import io.bullet.borer.derivation.ArrayBasedCodecs.deriveEncoderForUnaryCaseClass
+import io.bullet.borer.derivation.ArrayBasedCodecs.deriveCodecForUnaryCaseClass
 
 case class Payload[T: Encoder](value: T) {
   lazy val responseEncoder: Encoder[Payload[T]] = deriveEncoderForUnaryCaseClass[Payload[T]]

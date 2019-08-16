@@ -66,6 +66,7 @@ lazy val `esw-http-core` = project
   .settings(
     libraryDependencies ++= Dependencies.EswHttpCore.value
   )
+  .dependsOn(`msocket-core`)
 
 lazy val `esw-gateway-server` = project
   .in(file("esw-gateway-server"))
@@ -90,6 +91,13 @@ lazy val `esw-utils` = project
   .in(file("esw-utils"))
   .settings(libraryDependencies ++= Dependencies.Utils.value)
   .dependsOn(`esw-ocs-api`)
+
+lazy val `msocket-core` = project
+  .in(file("msocket-core"))
+  .enablePlugins(PublishBintray)
+  .settings(
+    libraryDependencies ++= Dependencies.MsocketCore.value
+  )
 
 /* ================= Paradox Docs ============== */
 lazy val docs = project.enablePlugins(NoPublish, ParadoxSite)

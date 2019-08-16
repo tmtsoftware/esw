@@ -1,4 +1,4 @@
-package esw.http.core.msocket.client
+package msocket.core.client
 
 import akka.NotUsed
 import akka.actor.ActorSystem

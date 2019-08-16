@@ -1,4 +1,4 @@
-package esw.http.core.msocket.api
+package msocket.core.api
 
 import akka.NotUsed
 import akka.stream.scaladsl.Source

@@ -1,8 +1,8 @@
-package esw.http.core.msocket.server
+package msocket.core.server
 
 import akka.NotUsed
 import akka.stream.scaladsl.Source
-import esw.http.core.msocket.api.Payload
+import msocket.core.api.Payload
 
 trait ServerSocket[Req] {
   def requestStream(request: Req): Source[Payload[_], NotUsed]
