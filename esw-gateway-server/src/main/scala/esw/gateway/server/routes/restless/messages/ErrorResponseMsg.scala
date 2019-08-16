@@ -10,4 +10,5 @@ object ErrorResponseMsg {
 
   case class SetAlarmSeverityFailure(msg: String) extends ErrorResponseMsg
   case class InvalidComponent(msg: String)        extends ErrorResponseMsg
+  case class InvalidMaxFrequency(msg: String)     extends ErrorResponseMsg
 }
