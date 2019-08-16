@@ -6,8 +6,8 @@ import esw.ocs.api.models.{Step, StepList}
 import esw.ocs.api.serializer.OcsFrameworkAkkaSerializable
 
 sealed trait EswSequencerResponse     extends OcsFrameworkAkkaSerializable
-sealed trait SimpleResponse           extends EswSequencerResponse // fixme: think about better name
-sealed trait ComplexResponse          extends EswSequencerResponse // fixme: think about better name
+sealed trait OkOrUnhandledResponse    extends EswSequencerResponse // fixme: think about better name
+sealed trait GenericResponse          extends EswSequencerResponse // fixme: think about better name
 sealed trait PauseResponse            extends EswSequencerResponse
 sealed trait RemoveBreakpointResponse extends EswSequencerResponse
 sealed trait LoadSequenceResponse     extends EswSequencerResponse
@@ -25,8 +25,8 @@ sealed trait SequenceResponse extends EswSequencerResponse {
 }
 
 case object Ok
-    extends SimpleResponse
-    with ComplexResponse
+    extends OkOrUnhandledResponse
+    with GenericResponse
     with PauseResponse
     with RemoveBreakpointResponse
     with LoadSequenceResponse
@@ -38,8 +38,8 @@ case class MaybeNextResult(step: Option[Step])            extends MaybeNextRespo
 case class SequenceResult(submitResponse: SubmitResponse) extends SequenceResponse
 
 case class Unhandled(state: String, messageType: String)
-    extends SimpleResponse
-    with ComplexResponse
+    extends OkOrUnhandledResponse
+    with GenericResponse
     with PauseResponse
     with RemoveBreakpointResponse
     with LoadSequenceResponse
@@ -59,7 +59,7 @@ case object GoOnlineFailed extends GoOnlineResponse {
   val description = s"Sequencer could not go online because online handlers failed to execute successfully"
 }
 
-sealed trait EditorError extends ComplexResponse
+sealed trait EditorError extends GenericResponse
 
 object EditorError {
   case object CannotOperateOnAnInFlightOrFinishedStep extends EditorError with PauseResponse

@@ -76,7 +76,7 @@ class SequencerIntegrationTest extends ScalaTestFrameworkTestKit with BaseTestSu
 
       val processSeqResponse: Future[SubmitResponse] = sequencer ? (LoadAndStartSequence(sequence, _))
 
-      val addResponse: Future[SimpleResponse] = sequencer ? (Add(List(command3), _))
+      val addResponse: Future[OkOrUnhandledResponse] = sequencer ? (Add(List(command3), _))
       addResponse.futureValue should ===(Ok)
 
       processSeqResponse.futureValue should ===(Completed(sequence.runId))

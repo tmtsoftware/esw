@@ -1,10 +1,10 @@
 package esw.ocs.api
 
-import esw.ocs.api.models.messages.SimpleResponse
+import esw.ocs.api.models.messages.OkOrUnhandledResponse
 
 import scala.concurrent.Future
 
 trait SequencerSupervisor {
-  def shutdown(): Future[SimpleResponse]
-  def abort(): Future[SimpleResponse]
+  def shutdown(): Future[OkOrUnhandledResponse]
+  def abort(): Future[OkOrUnhandledResponse]
 }

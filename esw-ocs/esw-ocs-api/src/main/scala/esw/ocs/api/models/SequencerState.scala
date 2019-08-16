@@ -17,7 +17,7 @@ import scala.util.{Failure, Success}
 case class SequencerState(
     stepList: Option[StepList],
     previousStepList: Option[StepList],
-    readyToExecuteSubscriber: Option[ActorRef[SimpleResponse]],
+    readyToExecuteSubscriber: Option[ActorRef[OkOrUnhandledResponse]],
     stepRefSubscriber: Option[ActorRef[PullNextResult]],
     self: ActorRef[EswSequencerMessage],
     crm: CommandResponseManager,
@@ -49,7 +49,7 @@ case class SequencerState(
     sendNextPendingStepIfAvailable(newState)
   }
 
-  def readyToExecuteNext(replyTo: ActorRef[SimpleResponse]): SequencerState =
+  def readyToExecuteNext(replyTo: ActorRef[OkOrUnhandledResponse]): SequencerState =
     if (stepList.exists(_.isInFlight) || stepList.exists(_.isFinished)) {
       copy(readyToExecuteSubscriber = Some(replyTo))
     } else {
