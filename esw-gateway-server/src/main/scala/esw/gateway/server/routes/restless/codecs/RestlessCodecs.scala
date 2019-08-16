@@ -1,21 +1,22 @@
-package esw.gateway.server.routes.restless
+package esw.gateway.server.routes.restless.codecs
 
 import com.github.ghik.silencer.silent
 import csw.alarm.codecs.AlarmCodecs
 import csw.location.client.HttpCodecs
 import csw.location.models.codecs.LocationCodecs
 import csw.params.core.formats.{CodecHelpers, ParamCodecs}
-import esw.gateway.server.routes.restless.ErrorResponseMsg.{InvalidComponent, NoEventKeys, SetAlarmSeverityFailure}
-import esw.gateway.server.routes.restless.RequestMsg._
+import esw.gateway.server.routes.restless.messages.ErrorResponseMsg._
+import esw.gateway.server.routes.restless.messages.RequestMsg._
+import esw.gateway.server.routes.restless.messages._
 import io.bullet.borer.Codec
-import io.bullet.borer.derivation.MapBasedCodecs._
+import io.bullet.borer.derivation.MapBasedCodecs.deriveCodec
 
 trait RestlessCodecs extends ParamCodecs with LocationCodecs with HttpCodecs with AlarmCodecs with EitherCodecs {
 
   implicit def responseMsgCodec[T <: ErrorResponseMsg]: Codec[T] = responseMsgCodecValue.asInstanceOf[Codec[T]]
 
   lazy val responseMsgCodecValue: Codec[ErrorResponseMsg] = {
-    @silent implicit lazy val noEventKeysCodec: Codec[NoEventKeys.type]                    = singletonCodec(NoEventKeys)
+    @silent implicit lazy val noEventKeysCodec: Codec[NoEventKeys]                         = deriveCodec[NoEventKeys]
     @silent implicit lazy val invalidComponentCodec: Codec[InvalidComponent]               = deriveCodec[InvalidComponent]
     @silent implicit lazy val setAlarmSeverityFailureCodec: Codec[SetAlarmSeverityFailure] = deriveCodec[SetAlarmSeverityFailure]
     deriveCodec[ErrorResponseMsg]

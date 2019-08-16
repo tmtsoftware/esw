@@ -2,11 +2,11 @@ package esw.gateway.server.routes.restless.impl
 
 import akka.util.Timeout
 import csw.params.commands.CommandResponse
-import esw.gateway.server.routes.restless.CommandAction.{Oneway, Submit, Validate}
-import esw.gateway.server.routes.restless.ErrorResponseMsg
-import esw.gateway.server.routes.restless.ErrorResponseMsg.InvalidComponent
-import esw.gateway.server.routes.restless.RequestMsg.CommandMsg
 import esw.gateway.server.routes.restless.api.CommandServiceApi
+import esw.gateway.server.routes.restless.messages.CommandAction.{Oneway, Submit, Validate}
+import esw.gateway.server.routes.restless.messages.ErrorResponseMsg
+import esw.gateway.server.routes.restless.messages.ErrorResponseMsg.InvalidComponent
+import esw.gateway.server.routes.restless.messages.RequestMsg.CommandMsg
 import esw.http.core.utils.CswContext
 
 import scala.concurrent.Future

@@ -1,8 +1,8 @@
 package esw.gateway.server.routes.restless.api
 
 import csw.params.commands.CommandResponse
-import esw.gateway.server.routes.restless.ErrorResponseMsg
-import esw.gateway.server.routes.restless.RequestMsg.CommandMsg
+import esw.gateway.server.routes.restless.messages.ErrorResponseMsg
+import esw.gateway.server.routes.restless.messages.RequestMsg.CommandMsg
 
 import scala.concurrent.Future
 

@@ -2,8 +2,8 @@ package esw.gateway.server.routes.restless.api
 
 import akka.Done
 import csw.params.events.Event
-import esw.gateway.server.routes.restless.ErrorResponseMsg
-import esw.gateway.server.routes.restless.RequestMsg.{GetEventMsg, PublishEventMsg}
+import esw.gateway.server.routes.restless.messages.ErrorResponseMsg
+import esw.gateway.server.routes.restless.messages.RequestMsg.{GetEventMsg, PublishEventMsg}
 
 import scala.concurrent.Future
 

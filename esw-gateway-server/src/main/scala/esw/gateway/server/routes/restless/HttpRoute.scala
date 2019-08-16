@@ -6,9 +6,11 @@ import akka.http.scaladsl.server.Route
 import akka.util.Timeout
 import csw.alarm.api.exceptions.KeyNotFoundException
 import csw.alarm.models.Key.AlarmKey
-import esw.gateway.server.routes.restless.ErrorResponseMsg.SetAlarmSeverityFailure
-import esw.gateway.server.routes.restless.RequestMsg.{CommandMsg, GetEventMsg, PublishEventMsg, SetAlarmSeverityMsg}
+import esw.gateway.server.routes.restless.codecs.RestlessCodecs
 import esw.gateway.server.routes.restless.impl.{CommandServiceImpl, EventServiceImpl}
+import esw.gateway.server.routes.restless.messages.ErrorResponseMsg.SetAlarmSeverityFailure
+import esw.gateway.server.routes.restless.messages.RequestMsg
+import esw.gateway.server.routes.restless.messages.RequestMsg.{CommandMsg, GetEventMsg, PublishEventMsg, SetAlarmSeverityMsg}
 import esw.http.core.utils.CswContext
 
 import scala.concurrent.duration.DurationLong

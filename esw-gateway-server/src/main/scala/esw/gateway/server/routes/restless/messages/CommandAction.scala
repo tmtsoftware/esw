@@ -1,4 +1,4 @@
-package esw.gateway.server.routes.restless
+package esw.gateway.server.routes.restless.messages
 
 import enumeratum.{Enum, EnumEntry}
 

@@ -1,4 +1,4 @@
-package esw.gateway.server.routes.restless
+package esw.gateway.server.routes.restless.messages
 
 import csw.location.models.ComponentType
 import csw.params.core.models.Id

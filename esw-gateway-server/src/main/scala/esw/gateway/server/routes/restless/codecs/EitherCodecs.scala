@@ -1,4 +1,4 @@
-package esw.gateway.server.routes.restless
+package esw.gateway.server.routes.restless.codecs
 
 import csw.params.core.formats.CodecHelpers
 import io.bullet.borer.{Codec, Decoder, Encoder}

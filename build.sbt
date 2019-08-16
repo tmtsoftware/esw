@@ -68,9 +68,10 @@ lazy val `esw-http-core` = project
   )
   .dependsOn(`msocket-core`)
 
+//fixme: Enable MaybeCoverage
 lazy val `esw-gateway-server` = project
   .in(file("esw-gateway-server"))
-  .enablePlugins(MaybeCoverage, EswBuildInfo)
+  .enablePlugins(EswBuildInfo)
   .settings(
     libraryDependencies ++= Dependencies.GatewayServer.value
   )

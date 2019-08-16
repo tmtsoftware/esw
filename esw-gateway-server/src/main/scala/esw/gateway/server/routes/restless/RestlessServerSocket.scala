@@ -4,7 +4,9 @@ import akka.NotUsed
 import akka.stream.scaladsl.Source
 import akka.util.Timeout
 import csw.params.commands.CommandResponse.Error
-import esw.gateway.server.routes.restless.WebSocketMsg.QueryCommandMsg
+import esw.gateway.server.routes.restless.codecs.RestlessCodecs
+import esw.gateway.server.routes.restless.messages.WebSocketMsg
+import esw.gateway.server.routes.restless.messages.WebSocketMsg.QueryCommandMsg
 import esw.http.core.utils.CswContext
 import msocket.core.api.Payload
 import msocket.core.api.ToResponse.FutureToPayload
