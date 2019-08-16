@@ -6,7 +6,7 @@ import io.bullet.borer.derivation.ArrayBasedCodecs.deriveCodecForUnaryCaseClass
 import io.bullet.borer.derivation.MapBasedCodecs.deriveCodec
 import io.bullet.borer.{Codec, Decoder, Encoder}
 
-sealed trait Result[E, S] {
+sealed trait Result[S, E] {
   def toEither: Either[E, S] = this match {
     case Success(value) => Right(value)
     case Error(value)   => Left(value)
@@ -14,17 +14,17 @@ sealed trait Result[E, S] {
 }
 
 object Result {
-  case class Success[E, S](value: S) extends Result[E, S]
-  case class Error[E, S](value: E)   extends Result[E, S]
+  case class Success[S, E](value: S) extends Result[S, E]
+  case class Error[S, E](value: E)   extends Result[S, E]
 
-  def fromEither[E, S](either: Either[E, S]): Result[E, S] = either match {
+  def fromEither[E, S](either: Either[E, S]): Result[S, E] = either match {
     case Left(value)  => Error(value)
     case Right(value) => Success(value)
   }
 
-  implicit def resultCodec[E: Encoder: Decoder, S: Encoder: Decoder]: Codec[Result[E, S]] = {
-    @silent implicit lazy val errorCodec: Codec[Error[E, S]]     = deriveCodecForUnaryCaseClass[Error[E, S]]
-    @silent implicit lazy val successCodec: Codec[Success[E, S]] = deriveCodecForUnaryCaseClass[Success[E, S]]
-    deriveCodec[Result[E, S]]
+  implicit def resultCodec[E: Encoder: Decoder, S: Encoder: Decoder]: Codec[Result[S, E]] = {
+    @silent implicit lazy val errorCodec: Codec[Error[S, E]]     = deriveCodecForUnaryCaseClass[Error[S, E]]
+    @silent implicit lazy val successCodec: Codec[Success[S, E]] = deriveCodecForUnaryCaseClass[Success[S, E]]
+    deriveCodec[Result[S, E]]
   }
 }

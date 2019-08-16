@@ -5,7 +5,7 @@ import io.bullet.borer.{Codec, Decoder, Encoder}
 
 trait EitherCodecs {
   implicit def eitherCodec[E: Encoder: Decoder, S: Encoder: Decoder]: Codec[Either[E, S]] = {
-    CodecHelpers.bimap[Result[E, S], Either[E, S]](_.toEither, Result.fromEither)
+    CodecHelpers.bimap[Result[S, E], Either[E, S]](_.toEither, Result.fromEither)
   }
 
   implicit def eitherEnc[E: Encoder: Decoder, S: Encoder: Decoder]: Encoder[Either[E, S]] = eitherCodec[E, S].encoder
