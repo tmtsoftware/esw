@@ -11,7 +11,7 @@ import csw.params.core.models.Prefix
 import esw.ocs.api.BaseTestSuite
 import esw.ocs.api.models.messages.SequenceComponentMsg
 import esw.ocs.api.models.messages.SequenceComponentMsg.{GetStatus, LoadScript, Stop, UnloadScript}
-import esw.ocs.api.models.messages.SequenceComponentResponses.{GetStatusResponse, LoadScriptResponse}
+import esw.ocs.api.models.messages.SequenceComponentResponse.{GetStatusResponse, LoadScriptResponse}
 
 class SequenceComponentClientTest extends ScalaTestWithActorTestKit with BaseTestSuite {
   private val location =

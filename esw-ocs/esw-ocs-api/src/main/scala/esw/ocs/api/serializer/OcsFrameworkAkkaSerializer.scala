@@ -21,10 +21,11 @@ class OcsFrameworkAkkaSerializer(_actorSystem: ExtendedActorSystem) extends OcsF
   private val logger: Logger   = new LoggerFactory("Sequencer-codec").getLogger
 
   override def toBinary(o: AnyRef): Array[Byte] = o match {
-    case x: EswSequencerMessage  => Cbor.encode(x).toByteArray
-    case x: StepList             => Cbor.encode(x).toByteArray
-    case x: SequenceComponentMsg => Cbor.encode(x).toByteArray
-    case x: EswSequencerResponse => Cbor.encode(x).toByteArray
+    case x: EswSequencerMessage       => Cbor.encode(x).toByteArray
+    case x: EswSequencerResponse      => Cbor.encode(x).toByteArray
+    case x: StepList                  => Cbor.encode(x).toByteArray
+    case x: SequenceComponentMsg      => Cbor.encode(x).toByteArray
+    case x: SequenceComponentResponse => Cbor.encode(x).toByteArray
     case _ =>
       val ex = new RuntimeException(s"does not support encoding of $o")
       logger.error(ex.getMessage, ex = ex)
@@ -41,9 +42,10 @@ class OcsFrameworkAkkaSerializer(_actorSystem: ExtendedActorSystem) extends OcsF
     }
     {
       fromBinary[EswSequencerMessage] orElse
+      fromBinary[EswSequencerResponse] orElse
       fromBinary[StepList] orElse
       fromBinary[SequenceComponentMsg] orElse
-      fromBinary[EswSequencerResponse]
+      fromBinary[SequenceComponentResponse]
     }.getOrElse {
       val ex = new RuntimeException(s"does not support decoding of ${manifest.get}")
       logger.error(ex.getMessage, ex = ex)

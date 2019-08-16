@@ -7,7 +7,7 @@ import esw.ocs.api.models.StepStatus._
 import esw.ocs.api.models._
 import esw.ocs.api.models.messages.EditorError._
 import esw.ocs.api.models.messages.SequenceComponentMsg._
-import esw.ocs.api.models.messages.SequenceComponentResponses.{GetStatusResponse, LoadScriptResponse}
+import esw.ocs.api.models.messages.SequenceComponentResponse.{GetStatusResponse, LoadScriptResponse}
 import esw.ocs.api.models.messages.SequencerMessages._
 import esw.ocs.api.models.messages._
 import io.bullet.borer.Codec
@@ -80,7 +80,7 @@ trait OcsFrameworkCodecs extends MessageCodecs with DoneCodec {
   implicit lazy val sequenceComponentMsgCodec: Codec[SequenceComponentMsg] = deriveCodec[SequenceComponentMsg]
 
   //SequenceComponentResponse Codecs
-  implicit lazy val loadScriptResponseCodec: Codec[LoadScriptResponse] = deriveCodecForUnaryCaseClass[LoadScriptResponse]
-  implicit lazy val getStatusResponseCodec: Codec[GetStatusResponse]   = deriveCodecForUnaryCaseClass[GetStatusResponse]
-
+  implicit lazy val loadScriptResponseCodec: Codec[LoadScriptResponse]               = deriveCodecForUnaryCaseClass[LoadScriptResponse]
+  implicit lazy val getStatusResponseCodec: Codec[GetStatusResponse]                 = deriveCodecForUnaryCaseClass[GetStatusResponse]
+  implicit lazy val sequenceComponentResponseCodec: Codec[SequenceComponentResponse] = deriveCodec[SequenceComponentResponse]
 }

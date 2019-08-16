@@ -18,7 +18,7 @@ import csw.testkit.scaladsl.ScalaTestFrameworkTestKit
 import esw.ocs.api.BaseTestSuite
 import esw.ocs.api.models.messages.SequenceComponentMsg
 import esw.ocs.api.models.messages.SequenceComponentMsg.{LoadScript, UnloadScript}
-import esw.ocs.api.models.messages.SequenceComponentResponses.LoadScriptResponse
+import esw.ocs.api.models.messages.SequenceComponentResponse.LoadScriptResponse
 import esw.ocs.app.SequencerAppCommand.{SequenceComponent, Sequencer}
 import esw.ocs.exceptions.ScriptLoadingException.ScriptNotFound
 
@@ -32,7 +32,7 @@ class SequencerAppIntegrationTest extends ScalaTestFrameworkTestKit with BaseTes
   implicit val timeout: Timeout                    = Timeout(25.seconds)
   private val testLocationService: LocationService = HttpLocationServiceFactory.makeLocalClient
 
-  override implicit def patienceConfig: PatienceConfig = PatienceConfig(15.seconds, 10.milli)
+  override implicit def patienceConfig: PatienceConfig = PatienceConfig(15.seconds)
 
   "SequenceComponent command" must {
     "start sequence component with provided prefix and register it with location service | ESW-102, ESW-103, ESW-147, ESW-151, ESW-214" in {
