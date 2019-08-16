@@ -16,10 +16,8 @@ class SequenceComponentClient(sequenceComponentRef: ActorRef[SequenceComponentMs
     implicit scheduler: Scheduler,
     timeout: Timeout
 ) {
-  def loadScript(
-      sequencerId: String,
-      observingMode: String
-  ): Future[LoadScriptResponse] = sequenceComponentRef ? (x => LoadScript(sequencerId, observingMode, x))
+  def loadScript(sequencerId: String, observingMode: String): Future[LoadScriptResponse] =
+    sequenceComponentRef ? (LoadScript(sequencerId, observingMode, _))
 
   def getStatus: Future[GetStatusResponse] = sequenceComponentRef ? GetStatus
 

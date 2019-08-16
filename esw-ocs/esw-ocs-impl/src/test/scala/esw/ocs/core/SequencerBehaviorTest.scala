@@ -315,4 +315,20 @@ class SequencerBehaviorTest extends ScalaTestWithActorTestKit with BaseTestSuite
     )
   }
 
+  "InProgress -> Unhandled" in {
+    val sequencerSetup = new SequencerSetup(sequence1)
+    import sequencerSetup._
+    assertSequencerIsInProgress(sequence1)
+
+    assertUnhandled(
+      "in-progress",
+      LoadSequence(sequence1, _),
+      StartSequence,
+      LoadAndStartSequenceInternal(sequence1, _),
+      GoOnline,
+      GoOffline,
+      GoneOffline
+    )
+  }
+
 }

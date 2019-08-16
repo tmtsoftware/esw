@@ -16,6 +16,7 @@ import shapeless.BuildInfo
 
 import scala.concurrent.ExecutionContext
 
+// $COVERAGE-OFF$
 private[ocs] class ActorRuntime(componentName: String) {
   implicit lazy val typedSystem: ActorSystem[SpawnProtocol] =
     ActorSystemFactory.remote(SpawnProtocol.behavior, "sequencer-system")
@@ -32,3 +33,4 @@ private[ocs] class ActorRuntime(componentName: String) {
   def startLogging(): LoggingSystem =
     LoggingSystemFactory.start(componentName, BuildInfo.version, Networks().hostname, typedSystem)
 }
+// $COVERAGE-ON$
