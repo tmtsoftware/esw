@@ -1,6 +1,7 @@
 package esw.http.core
 
 import org.mockito.{ArgumentMatchersSugar, MockitoSugar}
+import org.scalatest.concurrent.ScalaFutures
 import org.scalatest.{BeforeAndAfterAll, BeforeAndAfterEach, Matchers, WordSpec}
 
 trait BaseTestSuite
@@ -9,4 +10,5 @@ trait BaseTestSuite
     with BeforeAndAfterEach
     with BeforeAndAfterAll
     with MockitoSugar
+    with ScalaFutures
     with ArgumentMatchersSugar

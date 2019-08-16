@@ -21,7 +21,6 @@ import csw.params.commands.CommandResponse.{Completed, Started, SubmitResponse}
 import csw.params.commands.{CommandName, Sequence, Setup}
 import csw.params.core.models.{Id, Prefix}
 import csw.testkit.scaladsl.ScalaTestFrameworkTestKit
-import esw.http.core.TestFutureExtensions.RichFuture
 import esw.ocs.api.BaseTestSuite
 import esw.ocs.internal.{SequencerWiring, Timeouts}
 import esw.utils.csw.LocationServiceUtils
@@ -79,8 +78,8 @@ class ScriptIntegrationTest extends ScalaTestFrameworkTestKit with BaseTestSuite
       // sequence sent to tcsSequencer by irisSequencer script
       eventually(sequenceReceivedByTCSProbe) shouldBe assertableSequence
 
-      ocsWiring.shutDown().await
-      locationService.unregister(tcsConnection).await
+      ocsWiring.shutDown().futureValue
+      locationService.unregister(tcsConnection).futureValue
     }
   }
 

@@ -23,7 +23,6 @@ import csw.params.events.{Event, EventName, SystemEvent}
 import csw.testkit.{EventTestKit, LocationTestKit}
 import esw.gateway.server.Main
 import esw.http.core.BaseTestSuite
-import esw.http.core.TestFutureExtensions.RichFuture
 
 import scala.concurrent.duration.DurationInt
 
@@ -37,17 +36,19 @@ class MainTest extends BaseTestSuite with ParamCodecs with HttpCodecs {
   implicit val mat: ActorMaterializer                = ActorMaterializer()
   private val testLocationService: LocationService   = HttpLocationServiceFactory.makeLocalClient
 
+  override implicit def patienceConfig: PatienceConfig = PatienceConfig(5.seconds)
+
   override def beforeAll(): Unit = {
     locationTestKit.startLocationServer()
     eventTestKit.startEventService()
   }
 
   override def afterAll(): Unit = {
-    Http().shutdownAllConnectionPools().await
+    Http().shutdownAllConnectionPools().futureValue
     locationTestKit.shutdownLocationServer()
     eventTestKit.shutdown()
     system.terminate()
-    system.whenTerminated.await
+    system.whenTerminated.futureValue
   }
 
   "should start Gateway server and register with location service and publish event | ESW-92" in {
@@ -58,7 +59,7 @@ class MainTest extends BaseTestSuite with ParamCodecs with HttpCodecs {
     )
 
     try {
-      val gatewayServiceLocation = testLocationService.resolve(connection, 5.seconds).await.get
+      val gatewayServiceLocation = testLocationService.resolve(connection, 5.seconds).futureValue.get
 
       gatewayServiceLocation.connection shouldBe expectedConnection
       val uri          = Uri(gatewayServiceLocation.uri.toString).withPath(Path / "event")
@@ -68,22 +69,22 @@ class MainTest extends BaseTestSuite with ParamCodecs with HttpCodecs {
 
       //Publish event
       val request  = HttpRequest(uri = uri, method = HttpMethods.POST, entity = eventJson)
-      val response = Http().singleRequest(request).await
+      val response = Http().singleRequest(request).futureValue
 
       //assert if event is successfully published
       response.status shouldBe StatusCodes.OK
 
       //Get event by specifying event key
       val getRequest  = HttpRequest(uri = uri.withQuery(Query(("key", "tcs.test.gateway.event"))))
-      val getResponse = Http().singleRequest(getRequest).await
+      val getResponse = Http().singleRequest(getRequest).futureValue
 
       //assert on response of getEvent call
       getResponse.status shouldBe StatusCodes.OK
-      val actualEvent = Unmarshal(getResponse.entity).to[Set[Event]].await
+      val actualEvent = Unmarshal(getResponse.entity).to[Set[Event]].futureValue
       actualEvent shouldEqual Set(event)
 
     } finally {
-      httpService.shutdown(UnknownReason).await
+      httpService.shutdown(UnknownReason).futureValue
     }
   }
 }
