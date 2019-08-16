@@ -6,61 +6,23 @@ import akka.stream.scaladsl.Source
 import akka.util.Timeout
 import akka.{Done, NotUsed}
 import csw.alarm.api.exceptions.KeyNotFoundException
-import csw.alarm.models.AlarmSeverity
 import csw.alarm.models.Key.AlarmKey
 import csw.event.api.scaladsl.{EventPublisher, EventSubscriber}
 import csw.location.models.ComponentType
 import csw.params.commands.CommandResponse.Error
-import csw.params.commands.ControlCommand
-import csw.params.core.models.{Id, Subsystem}
-import csw.params.events.{Event, EventKey}
-import enumeratum.{Enum, EnumEntry}
+import csw.params.core.models.Id
+import csw.params.events.EventKey
 import esw.gateway.server.routes.restless.CommandAction.{Oneway, Submit, Validate}
+import esw.gateway.server.routes.restless.RequestMsg.{CommandMsg, GetEventMsg, PublishEventMsg, SetAlarmSeverityMsg}
 import esw.gateway.server.routes.restless.ResponseMsg.{NoEventKeys, SetAlarmSeverityFailure}
-import esw.gateway.server.routes.restless.RoutesMsg.{CommandMsg, GetEventMsg, PublishEventMsg, SetAlarmSeverityMsg}
 import esw.http.core.utils.CswContext
 import msocket.core.api.Payload
 import msocket.core.api.ToResponse.FutureToPayload
 import msocket.core.server.ServerSocket
 
-import scala.collection.immutable
 import scala.concurrent.duration.DurationLong
 import scala.util.control.NonFatal
 import scala.util.{Failure, Success}
-
-sealed trait CommandAction extends EnumEntry
-object CommandAction extends Enum[CommandAction] {
-  case object Validate extends CommandAction
-  case object Submit   extends CommandAction
-  case object Oneway   extends CommandAction
-
-  override def values: immutable.IndexedSeq[CommandAction] = findValues
-}
-
-sealed trait RouteMsg
-object RoutesMsg {
-
-  case class CommandMsg(componentType: ComponentType, componentName: String, command: ControlCommand, action: CommandAction)
-      extends RouteMsg
-
-  case class PublishEventMsg(event: Event)  extends RouteMsg
-  case class GetEventMsg(keys: Set[String]) extends RouteMsg
-  case class SetAlarmSeverityMsg(subsystem: Subsystem, componentName: String, alarmName: String, severity: AlarmSeverity)
-      extends RouteMsg
-}
-
-sealed trait ResponseMsg {
-  def msg: String
-}
-object ResponseMsg {
-
-  case object NoEventKeys extends ResponseMsg {
-    val msg: String = "Request is missing query parameter key"
-  }
-
-  case class SetAlarmSeverityFailure(msg: String) extends ResponseMsg
-  case class CommandActionFailure(msg: String)    extends ResponseMsg
-}
 
 class RestlessRoutes(cswCtx: CswContext) extends RestlessCodecs {
 
@@ -73,7 +35,7 @@ class RestlessRoutes(cswCtx: CswContext) extends RestlessCodecs {
 
   val route1: Route = post {
     path("gateway") {
-      entity(as[RouteMsg]) {
+      entity(as[RequestMsg]) {
         case CommandMsg(componentType, name, command, action) =>
           val commandServiceF = componentFactory.commandService(name, componentType)
           val eventualCommandResponse = commandServiceF
