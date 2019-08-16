@@ -23,7 +23,7 @@ import org.scalatest.Assertion
 import org.scalatest.prop.TableDrivenPropertyChecks.forAll
 import org.scalatest.prop.Tables.Table
 
-class OcsFrameworkAkkaSerializerTest extends ScalaTestWithActorTestKit with BaseTestSuite {
+class OcsAkkaSerializerTest extends ScalaTestWithActorTestKit with BaseTestSuite {
   private final val serialization = SerializationExtension(system.toUntyped)
 
   private val goOnlineResponseRed: ActorRef[GoOnlineResponse]           = TestProbe[GoOnlineResponse].ref
@@ -41,8 +41,8 @@ class OcsFrameworkAkkaSerializerTest extends ScalaTestWithActorTestKit with Base
   private val sequenceCommandList: List[SequenceCommand]                = List(setupCommand)
 
   "EswSequencerMessage" must {
-    "use OcsFrameworkAkkaSerializer for (de)serialization" in {
-      case class Sample(i: Int) extends OcsFrameworkAkkaSerializable
+    "use OcsAkkaSerializer for (de)serialization" in {
+      case class Sample(i: Int) extends OcsAkkaSerializable
       val testData = Table(
         "EswSequencerMessage",
         LoadSequence(Sequence(setupCommand), loadSequenceResponseRef),
@@ -70,13 +70,13 @@ class OcsFrameworkAkkaSerializerTest extends ScalaTestWithActorTestKit with Base
   }
 
   "StepList" must {
-    "use OcsFrameworkAkkaSerializer for (de)serialization" in {
+    "use OcsAkkaSerializer for (de)serialization" in {
       assertSerde(StepList(Id(), steps))
     }
   }
 
   "SequenceComponentMsg" must {
-    "use OcsFrameworkAkkaSerializer for (de)serialization" in {
+    "use OcsAkkaSerializer for (de)serialization" in {
       val testData = Table(
         "SequenceComponentMsg models",
         LoadScript("sequencerId", "observingMode", loadScriptResponseRef),
@@ -89,7 +89,7 @@ class OcsFrameworkAkkaSerializerTest extends ScalaTestWithActorTestKit with Base
   }
 
   "SequenceComponentResponse" must {
-    "use OcsFrameworkAkkaSerializer for (de)serialization" in {
+    "use OcsAkkaSerializer for (de)serialization" in {
       val akkaLocation = AkkaLocation(
         AkkaConnection(ComponentId("testComponent", ComponentType.Sequencer)),
         Prefix("esw.test.component"),
@@ -108,7 +108,7 @@ class OcsFrameworkAkkaSerializerTest extends ScalaTestWithActorTestKit with Base
   }
 
   "EswSequencerResponse" must {
-    "use OcsFrameworkAkkaSerializer for (de)serialization" in {
+    "use OcsAkkaSerializer for (de)serialization" in {
       val stepList = StepList(Id(), steps)
       val step     = Step(setupCommand)
       val testData = Table(
@@ -131,7 +131,7 @@ class OcsFrameworkAkkaSerializerTest extends ScalaTestWithActorTestKit with Base
 
   def assertSerde[T <: AnyRef](model: T): Assertion = {
     val serializer: Serializer = serialization.findSerializerFor(model)
-    serializer.getClass shouldBe classOf[OcsFrameworkAkkaSerializer]
+    serializer.getClass shouldBe classOf[OcsAkkaSerializer]
 
     val bytes = serializer.toBinary(model)
     serializer.fromBinary(bytes, Some(model.getClass)) shouldEqual model

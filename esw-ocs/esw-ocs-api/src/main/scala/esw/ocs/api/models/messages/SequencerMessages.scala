@@ -5,11 +5,11 @@ import csw.command.client.messages.sequencer.SequencerMsg
 import csw.params.commands.CommandResponse.SubmitResponse
 import csw.params.commands.{Sequence, SequenceCommand}
 import csw.params.core.models.Id
-import esw.ocs.api.serializer.OcsFrameworkAkkaSerializable
+import esw.ocs.api.serializer.OcsAkkaSerializable
 
 object SequencerMessages {
 
-  sealed trait EswSequencerMessage extends SequencerMsg with OcsFrameworkAkkaSerializable with Product with Serializable {
+  sealed trait EswSequencerMessage extends SequencerMsg with OcsAkkaSerializable with Product with Serializable {
     def replyTo: ActorRef[Unhandled]
   }
 

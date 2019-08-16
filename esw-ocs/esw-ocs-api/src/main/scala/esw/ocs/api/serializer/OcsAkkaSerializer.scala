@@ -6,7 +6,7 @@ import akka.actor.typed.scaladsl.adapter.UntypedActorSystemOps
 import akka.serialization.Serializer
 import csw.logging.api.scaladsl.Logger
 import csw.logging.client.scaladsl.LoggerFactory
-import esw.ocs.api.codecs.OcsFrameworkCodecs
+import esw.ocs.api.codecs.OcsCodecs
 import esw.ocs.api.models.StepList
 import esw.ocs.api.models.messages.SequencerMessages._
 import esw.ocs.api.models.messages._
@@ -14,7 +14,7 @@ import io.bullet.borer.{Cbor, Decoder}
 
 import scala.reflect.ClassTag
 
-class OcsFrameworkAkkaSerializer(_actorSystem: ExtendedActorSystem) extends OcsFrameworkCodecs with Serializer {
+class OcsAkkaSerializer(_actorSystem: ExtendedActorSystem) extends OcsCodecs with Serializer {
   override implicit def actorSystem: ActorSystem[_] = _actorSystem.toTyped
 
   override def identifier: Int = 29926

@@ -11,7 +11,7 @@ import csw.location.api.scaladsl.LocationService
 import csw.location.models.ComponentId
 import csw.location.models.Connection.AkkaConnection
 import csw.params.commands.Sequence
-import esw.ocs.api.codecs.OcsFrameworkCodecs
+import esw.ocs.api.codecs.OcsCodecs
 import esw.ocs.api.models.messages.SequencerMessages._
 import esw.ocs.api.models.messages.{Unhandled, _}
 import esw.ocs.api.models.{SequencerState, StepList}
@@ -28,7 +28,7 @@ class SequencerBehavior(
     locationService: LocationService,
     crm: CommandResponseManager
 )(implicit val actorSystem: ActorSystem[_], timeout: Timeout)
-    extends OcsFrameworkCodecs {
+    extends OcsCodecs {
 
   def setup: Behavior[SequencerMsg] = Behaviors.setup { ctx =>
     idle(SequencerState.initial(ctx.self, crm))

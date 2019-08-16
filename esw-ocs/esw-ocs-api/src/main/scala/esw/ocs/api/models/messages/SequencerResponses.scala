@@ -3,9 +3,9 @@ package esw.ocs.api.models.messages
 import csw.params.commands.CommandResponse.{Error, SubmitResponse}
 import csw.params.core.models.Id
 import esw.ocs.api.models.{Step, StepList}
-import esw.ocs.api.serializer.OcsFrameworkAkkaSerializable
+import esw.ocs.api.serializer.OcsAkkaSerializable
 
-sealed trait EswSequencerResponse     extends OcsFrameworkAkkaSerializable with Product with Serializable
+sealed trait EswSequencerResponse     extends OcsAkkaSerializable with Product with Serializable
 sealed trait OkOrUnhandledResponse    extends EswSequencerResponse // fixme: think about better name
 sealed trait GenericResponse          extends EswSequencerResponse // fixme: think about better name
 sealed trait PauseResponse            extends EswSequencerResponse

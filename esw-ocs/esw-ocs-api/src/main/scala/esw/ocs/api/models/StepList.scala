@@ -4,9 +4,9 @@ import csw.params.commands.{Sequence, SequenceCommand}
 import csw.params.core.models.Id
 import esw.ocs.api.models.messages.EditorError._
 import esw.ocs.api.models.messages.{DuplicateIdsFound, EditorError}
-import esw.ocs.api.serializer.OcsFrameworkAkkaSerializable
+import esw.ocs.api.serializer.OcsAkkaSerializable
 
-final case class StepList private[models] (runId: Id, steps: List[Step]) extends OcsFrameworkAkkaSerializable {
+final case class StepList private[models] (runId: Id, steps: List[Step]) extends OcsAkkaSerializable {
   //query
   private[ocs] def isEmpty: Boolean = steps.isEmpty
   def isFinished: Boolean           = !isEmpty && (steps.forall(_.isFinished) || steps.exists(_.isFailed))

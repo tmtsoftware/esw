@@ -14,7 +14,7 @@ import io.bullet.borer.Codec
 import io.bullet.borer.derivation.ArrayBasedCodecs.deriveCodecForUnaryCaseClass
 import io.bullet.borer.derivation.MapBasedCodecs.deriveCodec
 
-trait OcsFrameworkCodecs extends MessageCodecs with DoneCodec {
+trait OcsCodecs extends MessageCodecs with DoneCodec {
   //EswSequencerMsg Codecs
   implicit lazy val loadSequenceCodec: Codec[LoadSequence]   = deriveCodec[LoadSequence]
   implicit lazy val startSequenceCodec: Codec[StartSequence] = deriveCodec[StartSequence]
