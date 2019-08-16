@@ -26,7 +26,6 @@ class ComponentFactoryTest extends BaseTestSuite {
     super.afterAll()
   }
 
-  // fixme: follow tests naming convention, refer StepListTest.scala
   "ComponentFactory" must {
     "resolve components using location service | ESW-91" in {
       val locationService       = mock[LocationService]

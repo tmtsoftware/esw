@@ -31,7 +31,7 @@ class SequencerCommandServiceTest extends ScalaTestFrameworkTestKit with BaseTes
     super.afterAll()
   }
 
-  "should submit and process sequence" in {
+  "should submit and process sequence | ESW-190, ESW-148" in {
     val command1 = Setup(Prefix("esw.test"), CommandName("command-1"), None)
     val sequence = Sequence(command1)
 
