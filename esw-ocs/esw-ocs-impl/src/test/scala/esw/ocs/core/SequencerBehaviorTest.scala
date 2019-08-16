@@ -1,234 +1,152 @@
-//package esw.ocs.core
-//
-//import akka.Done
-//import akka.actor.testkit.typed.scaladsl.{ScalaTestWithActorTestKit, TestProbe}
-//import akka.actor.typed.ActorRef
-//import csw.command.client.messages.sequencer.{LoadAndStartSequence, SequencerMsg}
-//import csw.location.api.scaladsl.LocationService
-//import csw.location.models.{ComponentId, ComponentType}
-//import csw.params.commands.CommandResponse.{Completed, Error, SubmitResponse}
-//import csw.params.commands.{CommandName, Sequence, Setup}
-//import csw.params.core.models.{Id, Prefix}
-//import esw.ocs.api.BaseTestSuite
-//import esw.ocs.api.models.messages.EditorError
-//import esw.ocs.api.models.messages.SequencerMessages._
-//import esw.ocs.api.models.messages.SequencerResponses.{EditorResponse, StepListResponse}
-//import esw.ocs.api.models.{Step, StepList}
-//import esw.ocs.dsl.{Script, ScriptDsl}
-//import org.mockito.Mockito.{verify, when}
-//
-//import scala.concurrent.Future
-//
-//class SequencerBehaviorTest extends ScalaTestWithActorTestKit with BaseTestSuite {
-//  private var sequencer: Sequencer                   = _
-//  private var script: ScriptDsl                      = _
-//  private var sequencerBehavior: SequencerBehavior   = _
-//  private var sequencerActor: ActorRef[SequencerMsg] = _
-//  private var locationService: LocationService       = _
-//
-//  private val componentId = ComponentId("sequencer1", ComponentType.Sequencer)
-//
-//  override protected def beforeEach(): Unit = {
-//    sequencer = mock[Sequencer]
-//    script = mock[Script]
-//    locationService = mock[LocationService]
-//    sequencerBehavior = new SequencerBehavior(componentId, sequencer, script, locationService)
-//    sequencerActor = spawn(sequencerBehavior.idle)
-//  }
-//
-//  "LoadAndStartSequence" in {
-//    val command1 = Setup(Prefix("esw.test"), CommandName("command-1"), None)
-//    val sequence = Sequence(Id(), Seq(command1))
-//
-//    runTest[SubmitResponse](
-//      mockFunction = sequencer.loadAndStart(sequence),
-//      mockResponse = Completed(command1.runId),
-//      testMsg = LoadAndStartSequence(sequence, _)
-//    )
-//  }
-//
-//  "Available" in {
-//    runTest[Boolean](
-//      mockFunction = sequencer.isAvailable,
-//      mockResponse = true,
-//      testMsg = Available
-//    )
-//  }
-//
-//  "GetSequence" in {
-//    runTest[StepList](
-//      mockFunction = sequencer.getSequence,
-//      mockResponse = StepList.empty,
-//      testMsg = GetSequence
-//    )
-//  }
-//
-//  "GetPreviousSequence" in {
-//    runTestFor[Option[StepList], StepListResponse](
-//      StepListResponse,
-//      mockFunction = sequencer.getPreviousSequence,
-//      mockResponse = Some(StepList.empty),
-//      testMsg = GetPreviousSequence
-//    )
-//  }
-//
-//  "Add" in {
-//    val command1 = Setup(Prefix("esw.test"), CommandName("command-1"), None)
-//
-//    runTestFor[Either[EditorError, Done], EditorResponse](
-//      EditorResponse,
-//      mockFunction = sequencer.add(List(command1)),
-//      mockResponse = Right(Done),
-//      testMsg = Add(List(command1), _)
-//    )
-//  }
-//
-//  "Pause" in {
-//    runTestFor[Either[EditorError, Done], EditorResponse](
-//      EditorResponse,
-//      mockFunction = sequencer.pause,
-//      mockResponse = Right(Done),
-//      testMsg = Pause
-//    )
-//  }
-//
-//  "Resume" in {
-//    runTestFor[Either[EditorError, Done], EditorResponse](
-//      EditorResponse,
-//      mockFunction = sequencer.resume,
-//      mockResponse = Right(Done),
-//      testMsg = Resume
-//    )
-//  }
-//
-//  "Reset" in {
-//    runTestFor[Either[EditorError, Done], EditorResponse](
-//      EditorResponse,
-//      mockFunction = sequencer.reset(),
-//      mockResponse = Right(Done),
-//      testMsg = Reset
-//    )
-//  }
-//
-//  "Replace" in {
-//    val runId    = Id()
-//    val command1 = Setup(Prefix("esw.test"), CommandName("command-1"), None)
-//
-//    runTestFor[Either[EditorError, Done], EditorResponse](
-//      EditorResponse,
-//      mockFunction = sequencer.replace(runId, List(command1)),
-//      mockResponse = Right(Done),
-//      testMsg = Replace(runId, List(command1), _)
-//    )
-//  }
-//
-//  "Prepend" in {
-//    val command1 = Setup(Prefix("esw.test"), CommandName("command-1"), None)
-//
-//    runTestFor[Either[EditorError, Done], EditorResponse](
-//      EditorResponse,
-//      mockFunction = sequencer.prepend(List(command1)),
-//      mockResponse = Right(Done),
-//      testMsg = Prepend(List(command1), _)
-//    )
-//
-//  }
-//
-//  "Delete" in {
-//    val runId = Id()
-//
-//    runTestFor[Either[EditorError, Done], EditorResponse](
-//      EditorResponse,
-//      mockFunction = sequencer.delete(runId),
-//      mockResponse = Right(Done),
-//      testMsg = Delete(runId, _)
-//    )
-//  }
-//
-//  "InsertAfter" in {
-//    val runId    = Id()
-//    val command1 = Setup(Prefix("esw.test"), CommandName("command-1"), None)
-//
-//    runTestFor[Either[EditorError, Done], EditorResponse](
-//      EditorResponse,
-//      mockFunction = sequencer.insertAfter(runId, List(command1)),
-//      mockResponse = Right(Done),
-//      testMsg = InsertAfter(runId, List(command1), _)
-//    )
-//  }
-//
-//  "AddBreakpoint" in {
-//    val runId = Id()
-//
-//    runTestFor[Either[EditorError, Done], EditorResponse](
-//      EditorResponse,
-//      mockFunction = sequencer.addBreakpoint(runId),
-//      mockResponse = Right(Done),
-//      testMsg = AddBreakpoint(runId, _)
-//    )
-//  }
-//
-//  "RemoveBreakpoint" in {
-//    val runId = Id()
-//
-//    runTestFor[Either[EditorError, Done], EditorResponse](
-//      EditorResponse,
-//      mockFunction = sequencer.removeBreakpoint(runId),
-//      mockResponse = Right(Done),
-//      testMsg = RemoveBreakpoint(runId, _)
-//    )
-//  }
-//
-//  "PullNext" in {
-//    val command1 = Setup(Prefix("esw.test"), CommandName("command-1"), None)
-//
-//    runTest[Step](
-//      mockFunction = sequencer.pullNext(),
-//      mockResponse = Step(command1),
-//      testMsg = PullNext
-//    )
-//  }
-//
-//  "MaybeNext" in {
-//    val command1 = Setup(Prefix("esw.test"), CommandName("command-1"), None)
-//
-//    runTest[Option[Step]](
-//      mockFunction = sequencer.mayBeNext,
-//      mockResponse = Some(Step(command1)),
-//      testMsg = MaybeNext
-//    )
-//  }
-//
-//  "ReadyToExecuteNext" in {
-//    runTest[Done](
-//      mockFunction = sequencer.readyToExecuteNext(),
-//      mockResponse = Done,
-//      testMsg = ReadyToExecuteNext
-//    )
-//  }
-//
-//  "UpdateFailure" in {
-//    val errorResponse: SubmitResponse = Error(Id(), "")
-//
-//    sequencerActor ! UpdateFailure(errorResponse)
-//
-//    eventually(verify(sequencer).updateFailure(errorResponse))
-//  }
-//
-//  private def runTest[R](mockFunction: => Future[R], mockResponse: R, testMsg: ActorRef[R] => SequencerMsg): Unit =
-//    runTestFor[R, R](identity, mockFunction, mockResponse, testMsg)
-//
-//  private def runTestFor[R, T](
-//      factory: R => T,
-//      mockFunction: => Future[R],
-//      mockResponse: R,
-//      testMsg: ActorRef[T] => SequencerMsg
-//  ): T = {
-//    val testProbe: TestProbe[T] = TestProbe()
-//
-//    when(mockFunction).thenReturn(Future.successful(mockResponse))
-//
-//    sequencerActor ! testMsg(testProbe.ref)
-//    testProbe.expectMessage(factory(mockResponse))
-//  }
-//}
+package esw.ocs.core
+
+import java.util.concurrent.CountDownLatch
+
+import akka.actor.testkit.typed.scaladsl.ScalaTestWithActorTestKit
+import akka.actor.typed.ActorRef
+import csw.command.client.CommandResponseManager
+import csw.command.client.messages.sequencer.{LoadAndStartSequence, SequencerMsg}
+import csw.location.api.scaladsl.LocationService
+import csw.location.models.{ComponentId, ComponentType}
+import csw.params.commands.CommandResponse.{Completed, SubmitResponse}
+import csw.params.commands.{CommandName, CommandResponse, Sequence, Setup}
+import csw.params.core.models.{Id, Prefix}
+import esw.ocs.api.BaseTestSuite
+import esw.ocs.api.models.StepStatus.Finished
+import esw.ocs.api.models.messages.SequencerMessages.{GetPreviousSequence, GetSequence, LoadSequence}
+import esw.ocs.api.models.messages.{LoadSequenceResponse, Ok, StepListResponse, StepListResult}
+import esw.ocs.api.models.{Step, StepList}
+import esw.ocs.dsl.Script
+import org.mockito.Mockito.when
+
+import scala.concurrent.{ExecutionContext, Future, Promise}
+import scala.util.Success
+
+class SequencerBehaviorTest extends ScalaTestWithActorTestKit with BaseTestSuite {
+
+  val command1  = Setup(Prefix("esw.test"), CommandName("command-1"), None)
+  val sequence1 = Sequence(Id(), Seq(command1))
+  val command2  = Setup(Prefix("esw.test"), CommandName("command-2"), None)
+  val sequence2 = Sequence(Id(), Seq(command2))
+
+  class SequencerSetup(sequence: Sequence) {
+    val crm: CommandResponseManager   = mock[CommandResponseManager]
+    implicit val ec: ExecutionContext = system.executionContext
+
+    private val completionPromise = Promise[SubmitResponse]()
+    when(crm.queryFinal(sequence.runId)).thenReturn(completionPromise.future)
+
+    private val script                         = mock[Script]
+    private val locationService                = mock[LocationService]
+    private val componentId                    = ComponentId("sequencer1", ComponentType.Sequencer)
+    private val sequencerBehavior              = new SequencerBehavior(componentId, script, locationService, crm)
+    val sequencerActor: ActorRef[SequencerMsg] = spawn(sequencerBehavior.setup)
+
+    def queryResponse(submitResponse: SubmitResponse, latch: CountDownLatch) = Future {
+      latch.countDown()
+      if (latch.getCount == 0) completionPromise.complete(Success(CommandResponse.withRunId(sequence.runId, submitResponse)))
+      submitResponse
+    }
+  }
+
+  "LoadSequence" must {
+    "load sequence in idle state" in {
+      val command1 = Setup(Prefix("esw.test"), CommandName("command-1"), None)
+      val sequence = Sequence(Id(), Seq(command1))
+
+      val sequencerSetup = new SequencerSetup(sequence)
+      import sequencerSetup._
+
+      val probe = createTestProbe[LoadSequenceResponse]()
+      sequencerActor ! LoadSequence(sequence, probe.ref)
+      probe.expectMessage(Ok)
+    }
+  }
+
+  "LoadAndStartSequence" must {
+    "load and process sequence in idle state" in {
+      val command1 = Setup(Prefix("esw.test"), CommandName("command-1"), None)
+      val sequence = Sequence(Id(), Seq(command1))
+      val latch    = new CountDownLatch(1)
+
+      val sequencerSetup = new SequencerSetup(sequence)
+      import sequencerSetup._
+
+      val cmd1Response = Completed(command1.runId)
+      when(crm.queryFinal(command1.runId)).thenAnswer(_ => queryResponse(cmd1Response, latch))
+
+      val probe = createTestProbe[SubmitResponse]()
+      sequencerActor ! LoadAndStartSequence(sequence, probe.ref)
+      probe.expectMessage(Completed(sequence.runId))
+    }
+  }
+
+  "GetSequence" must {
+    val command1       = Setup(Prefix("esw.test"), CommandName("command-1"), None)
+    val sequence       = Sequence(Id(), Seq(command1))
+    val sequencerSetup = new SequencerSetup(sequence)
+    import sequencerSetup._
+
+    "return None when in Idle state" in {
+      val probe = createTestProbe[StepListResponse]()
+      sequencerActor ! GetSequence(probe.ref)
+      probe.expectMessage(StepListResult(None))
+    }
+
+    "return sequence when in loaded state" in {
+      val probe             = createTestProbe[StepListResponse]()
+      val loadedSeqResProbe = createTestProbe[LoadSequenceResponse]
+      sequencerActor ! LoadSequence(sequence, loadedSeqResProbe.ref)
+      loadedSeqResProbe.expectMessage(Ok)
+      sequencerActor ! GetSequence(probe.ref)
+      probe.expectMessage(StepListResult(StepList(sequence).toOption))
+    }
+  }
+
+  "GetPreviousSequence" must {
+    "return None when sequencer has not started executing any sequence" in {
+      val sequencerSetup = new SequencerSetup(sequence1)
+      import sequencerSetup._
+
+      val stepListResProbe = createTestProbe[StepListResponse]()
+      sequencerActor ! GetPreviousSequence(stepListResProbe.ref)
+      stepListResProbe.expectMessage(StepListResult(None))
+
+      val loadedSeqResProbe = createTestProbe[LoadSequenceResponse]
+      sequencerActor ! LoadSequence(sequence1, loadedSeqResProbe.ref)
+      loadedSeqResProbe.expectMessage(Ok)
+
+      sequencerActor ! GetPreviousSequence(stepListResProbe.ref)
+      stepListResProbe.expectMessage(StepListResult(None))
+    }
+
+    "return previous sequence after new sequence is loaded" in {
+      val sequencerSetup = new SequencerSetup(sequence1)
+      import sequencerSetup._
+
+      val latch = new CountDownLatch(1)
+
+      val cmd1Response = Completed(command1.runId)
+      when(crm.queryFinal(command1.runId)).thenAnswer(_ => queryResponse(cmd1Response, latch))
+
+      val loadAndStartResProbe = createTestProbe[SubmitResponse]()
+      sequencerActor ! LoadAndStartSequence(sequence1, loadAndStartResProbe.ref)
+      loadAndStartResProbe.expectMessage(Completed(sequence1.runId))
+
+      val loadedSeqResProbe = createTestProbe[LoadSequenceResponse]
+      sequencerActor ! LoadSequence(sequence2, loadedSeqResProbe.ref)
+      loadedSeqResProbe.expectMessage(Ok)
+
+      val stepListResProbe = createTestProbe[StepListResponse]()
+      sequencerActor ! GetPreviousSequence(stepListResProbe.ref)
+
+      stepListResProbe.expectMessage(
+        StepListResult(
+          Some(
+            StepList(sequence1.runId, List(Step(command1, Finished.Success(Completed(command1.runId)), hasBreakpoint = false)))
+          )
+        )
+      )
+    }
+  }
+}
