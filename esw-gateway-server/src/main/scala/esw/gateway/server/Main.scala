@@ -21,7 +21,7 @@ object Main extends CommandApp[ServerCommand] {
   private[esw] def start(port: Option[Int], startLogging: Boolean): HttpService = {
     val wiring = new ServerWiring(port)
     import wiring._
-    import wiring.cswCtx._
+    import wiring.cswCtx.{locationService, logger}
     if (startLogging) actorRuntime.startLogging(BuildInfo.name, BuildInfo.version)
 
     lazy val routes      = new Routes(cswCtx)

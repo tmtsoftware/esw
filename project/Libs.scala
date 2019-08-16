@@ -37,6 +37,7 @@ object Akka {
   val Version             = "2.5.23"
   val `akka-actor-typed`  = "com.typesafe.akka" %% "akka-actor-typed" % Version
   val `akka-stream-typed` = "com.typesafe.akka" %% "akka-stream-typed" % Version
+  val `akka-stream`       = "com.typesafe.akka" %% "akka-stream" % Version
 
   val `akka-testkit`             = "com.typesafe.akka" %% "akka-testkit"             % Version
   val `akka-actor-testkit-typed` = "com.typesafe.akka" %% "akka-actor-testkit-typed" % Version
@@ -48,4 +49,13 @@ object AkkaHttp {
 
   val `akka-http`         = "com.typesafe.akka" %% "akka-http"         % Version
   val `akka-http-testkit` = "com.typesafe.akka" %% "akka-http-testkit" % Version
+}
+
+object Borer {
+  val Version = "0.10.0"
+  val Org     = "io.bullet"
+
+  val `borer-core`        = Org %% "borer-core"        % Version
+  val `borer-derivation`  = Org %% "borer-derivation"  % Version
+  val `borer-compat-akka` = Org %% "borer-compat-akka" % Version
 }

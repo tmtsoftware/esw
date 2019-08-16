@@ -89,4 +89,14 @@ object Dependencies {
       Akka.`akka-actor-testkit-typed` % Test
     )
   )
+
+  val MsocketCore: Def.Initialize[Seq[ModuleID]] = Def.setting(
+    Seq(
+      Akka.`akka-stream`,
+      AkkaHttp.`akka-http`,
+      Borer.`borer-core`,
+      Borer.`borer-derivation`,
+      Borer.`borer-compat-akka`
+    )
+  )
 }
