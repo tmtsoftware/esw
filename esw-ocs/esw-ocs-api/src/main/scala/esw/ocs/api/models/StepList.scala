@@ -110,9 +110,6 @@ final case class StepList private[models] (runId: Id, steps: List[Step]) extends
 }
 
 object StepList {
-
-  def empty: StepList = StepList(Id(), List.empty)
-
   def apply(sequence: Sequence): Either[DuplicateIdsFound.type, StepList] = {
     val steps = sequence.commands.toList.map(Step.apply)
     if (steps.map(_.id).toSet.size == steps.size) Right(StepList(sequence.runId, steps))

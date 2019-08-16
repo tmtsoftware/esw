@@ -61,7 +61,7 @@ class SequencerBehavior(
       case msg: CommonMessage          => handleCommonMessage(msg, state, _ => ctx.system.terminate)
       case msg: EditorAction           => inProgress(handleEditorAction(msg, state))
       case PullNext(replyTo)           => inProgress(state.pullNextStep(replyTo))
-      case MaybeNext(replyTo)          => replyTo ! MaybeNextResult(state.stepList.nextExecutable); Behaviors.same
+      case MaybeNext(replyTo)          => replyTo ! MaybeNextResult(state.stepList.flatMap(_.nextExecutable)); Behaviors.same
       case ReadyToExecuteNext(replyTo) => inProgress(state.readyToExecuteNext(replyTo))
       case Update(submitResponse, _)   => inProgress(state.updateStepStatus(submitResponse))
       case _: GoIdle =>
@@ -95,18 +95,19 @@ class SequencerBehavior(
   }
 
   private def handleEditorAction(editorAction: EditorAction, state: SequencerState): SequencerState = {
+    import state._
     editorAction match {
       case Abort(replyTo)                     => ??? //story not played yet
-      case Add(commands, replyTo)             => state.updateStepList(replyTo, state.stepList.append(commands))
-      case Pause(replyTo)                     => state.updateStepListResult(replyTo, state.stepList.pause)
-      case Resume(replyTo)                    => state.updateStepList(replyTo, state.stepList.resume)
-      case Reset(replyTo)                     => state.updateStepList(replyTo, state.stepList.discardPending)
-      case Replace(id, commands, replyTo)     => state.updateStepListResult(replyTo, state.stepList.replace(id, commands))
-      case Prepend(commands, replyTo)         => state.updateStepList(replyTo, state.stepList.prepend(commands))
-      case Delete(id, replyTo)                => state.updateStepListResult(replyTo, state.stepList.delete(id))
-      case InsertAfter(id, commands, replyTo) => state.updateStepListResult(replyTo, state.stepList.insertAfter(id, commands))
-      case AddBreakpoint(id, replyTo)         => state.updateStepListResult(replyTo, state.stepList.addBreakpoint(id))
-      case RemoveBreakpoint(id, replyTo)      => state.updateStepListResult(replyTo, state.stepList.removeBreakpoint(id))
+      case Add(commands, replyTo)             => updateStepList(replyTo, stepList.map(_.append(commands)))
+      case Pause(replyTo)                     => updateStepListResult(replyTo, stepList.map(_.pause))
+      case Resume(replyTo)                    => updateStepList(replyTo, stepList.map(_.resume))
+      case Reset(replyTo)                     => updateStepList(replyTo, stepList.map(_.discardPending))
+      case Replace(id, commands, replyTo)     => updateStepListResult(replyTo, stepList.map(_.replace(id, commands)))
+      case Prepend(commands, replyTo)         => updateStepList(replyTo, stepList.map(_.prepend(commands)))
+      case Delete(id, replyTo)                => updateStepListResult(replyTo, stepList.map(_.delete(id)))
+      case InsertAfter(id, commands, replyTo) => updateStepListResult(replyTo, stepList.map(_.insertAfter(id, commands)))
+      case AddBreakpoint(id, replyTo)         => updateStepListResult(replyTo, stepList.map(_.addBreakpoint(id)))
+      case RemoveBreakpoint(id, replyTo)      => updateStepListResult(replyTo, stepList.map(_.removeBreakpoint(id)))
     }
   }
 
@@ -149,11 +150,8 @@ class SequencerBehavior(
       case Right(newState) => start(newState, replyTo)
     }
 
-  private def createStepList(
-      sequence: Sequence,
-      state: SequencerState
-  ): Either[DuplicateIdsFound.type, SequencerState] =
-    StepList(sequence).map(x => state.copy(stepList = x, previousStepList = Some(state.stepList))) //fixme: make sure previous steplist is none on first time load
+  private def createStepList(sequence: Sequence, state: SequencerState): Either[DuplicateIdsFound.type, SequencerState] =
+    StepList(sequence).map(currentStepList => state.copy(stepList = Some(currentStepList), previousStepList = state.stepList))
 
   private def getSequence(replyTo: ActorRef[GetSequenceResult], state: SequencerState): Behavior[SequencerMsg] = {
     replyTo ! GetSequenceResult(state.stepList)
@@ -194,7 +192,7 @@ class SequencerBehavior(
     (ctx, message) =>
       message match {
         case x: CommonMessage => handleCommonMessage(x, state, _ => ctx.system.terminate)
-        case _: GoneOffline   => offline(state.copy(stepList = StepList.empty)) // fixme: replace with None
+        case _: GoneOffline   => offline(state.copy(stepList = None))
       }
   }
 

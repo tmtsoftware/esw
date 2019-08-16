@@ -14,7 +14,7 @@ import esw.ocs.api.models.messages.{GetPreviousSequenceResult, GetSequenceResult
 class SequenceEditorClientTest extends ScalaTestWithActorTestKit with BaseTestSuite {
   private val command = Setup(Prefix("esw.test"), CommandName("command-1"), None)
 
-  private val getSequenceResponse         = GetSequenceResult(StepList(Sequence(command)).toOption.get)
+  private val getSequenceResponse         = GetSequenceResult(StepList(Sequence(command)).toOption)
   private val getPreviousSequenceResponse = GetPreviousSequenceResult(StepList(Sequence(command)).toOption)
   private val addResponse                 = Ok
   private val pauseResponse               = CannotOperateOnAnInFlightOrFinishedStep

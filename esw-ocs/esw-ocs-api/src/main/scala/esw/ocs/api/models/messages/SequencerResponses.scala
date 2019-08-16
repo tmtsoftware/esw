@@ -33,7 +33,7 @@ case object Ok
     with LoadSequenceResponse
     with GoOnlineResponse
 
-case class GetSequenceResult(stepList: StepList)                 extends GetSequenceResponse
+case class GetSequenceResult(stepList: Option[StepList])         extends GetSequenceResponse
 case class GetPreviousSequenceResult(stepList: Option[StepList]) extends GetPreviousSequenceResponse
 case class PullNextResult(step: Step)                            extends PullNextResponse
 case class MaybeNextResult(step: Option[Step])                   extends MaybeNextResponse

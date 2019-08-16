@@ -83,12 +83,14 @@ class SequencerIntegrationTest extends ScalaTestFrameworkTestKit with BaseTestSu
 
       (sequencer ? GetSequence).futureValue should ===(
         GetSequenceResult(
-          StepList(
-            sequence.runId,
-            List(
-              Step(command1, Finished.Success(Completed(command1.runId)), hasBreakpoint = false),
-              Step(command2, Finished.Success(Completed(command2.runId)), hasBreakpoint = false),
-              Step(command3, Finished.Success(Completed(command3.runId)), hasBreakpoint = false)
+          Some(
+            StepList(
+              sequence.runId,
+              List(
+                Step(command1, Finished.Success(Completed(command1.runId)), hasBreakpoint = false),
+                Step(command2, Finished.Success(Completed(command2.runId)), hasBreakpoint = false),
+                Step(command3, Finished.Success(Completed(command3.runId)), hasBreakpoint = false)
+              )
             )
           )
         )
