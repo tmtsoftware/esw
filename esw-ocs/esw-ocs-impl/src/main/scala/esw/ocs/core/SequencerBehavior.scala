@@ -90,8 +90,8 @@ class SequencerBehavior(
       killFunction: Unit => Unit
   ): Behavior[SequencerMsg] = message match {
     case Shutdown(replyTo)            => shutdown(replyTo, killFunction)
-    case GetSequence(replyTo)         => getSequence(replyTo, state)
-    case GetPreviousSequence(replyTo) => getPreviousSequence(replyTo, state)
+    case GetSequence(replyTo)         => sendStepListResponse(replyTo, state.stepList)
+    case GetPreviousSequence(replyTo) => sendStepListResponse(replyTo, state.previousStepList)
   }
 
   private def handleEditorAction(editorAction: EditorAction, state: SequencerState): SequencerState = {
@@ -153,16 +153,8 @@ class SequencerBehavior(
   private def createStepList(sequence: Sequence, state: SequencerState): Either[DuplicateIdsFound.type, SequencerState] =
     StepList(sequence).map(currentStepList => state.copy(stepList = Some(currentStepList), previousStepList = state.stepList))
 
-  private def getSequence(replyTo: ActorRef[GetSequenceResult], state: SequencerState): Behavior[SequencerMsg] = {
-    replyTo ! GetSequenceResult(state.stepList)
-    Behaviors.same
-  }
-
-  private def getPreviousSequence(
-      replyTo: ActorRef[GetPreviousSequenceResult],
-      state: SequencerState
-  ): Behavior[SequencerMsg] = {
-    replyTo ! GetPreviousSequenceResult(state.previousStepList)
+  private def sendStepListResponse(replyTo: ActorRef[StepListResponse], stepList: Option[StepList]): Behavior[SequencerMsg] = {
+    replyTo ! StepListResult(stepList)
     Behaviors.same
   }
 

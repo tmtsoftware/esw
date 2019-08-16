@@ -42,9 +42,9 @@ object SequencerMessages {
 
   // editor msgs
   // fixme : GetSequence and GetPreviousSequence should have replyTo StepListResponse
-  final case class GetSequence(replyTo: ActorRef[GetSequenceResponse]) extends CommonMessage
+  final case class GetSequence(replyTo: ActorRef[StepListResponse]) extends CommonMessage
 
-  final case class GetPreviousSequence(replyTo: ActorRef[GetPreviousSequenceResponse]) extends CommonMessage
+  final case class GetPreviousSequence(replyTo: ActorRef[StepListResponse]) extends CommonMessage
 
   final case class Add(commands: List[SequenceCommand], replyTo: ActorRef[SimpleResponse]) extends EditorAction
 

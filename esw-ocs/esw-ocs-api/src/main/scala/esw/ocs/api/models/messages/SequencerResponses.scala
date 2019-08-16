@@ -5,17 +5,16 @@ import csw.params.core.models.Id
 import esw.ocs.api.models.{Step, StepList}
 import esw.ocs.api.serializer.OcsFrameworkAkkaSerializable
 
-sealed trait EswSequencerResponse        extends OcsFrameworkAkkaSerializable
-sealed trait SimpleResponse              extends EswSequencerResponse // fixme: think about better name
-sealed trait ComplexResponse             extends EswSequencerResponse // fixme: think about better name
-sealed trait PauseResponse               extends EswSequencerResponse
-sealed trait RemoveBreakpointResponse    extends EswSequencerResponse
-sealed trait LoadSequenceResponse        extends EswSequencerResponse
-sealed trait PullNextResponse            extends EswSequencerResponse
-sealed trait MaybeNextResponse           extends EswSequencerResponse
-sealed trait GetSequenceResponse         extends EswSequencerResponse
-sealed trait GetPreviousSequenceResponse extends EswSequencerResponse
-sealed trait GoOnlineResponse            extends EswSequencerResponse
+sealed trait EswSequencerResponse     extends OcsFrameworkAkkaSerializable
+sealed trait SimpleResponse           extends EswSequencerResponse // fixme: think about better name
+sealed trait ComplexResponse          extends EswSequencerResponse // fixme: think about better name
+sealed trait PauseResponse            extends EswSequencerResponse
+sealed trait RemoveBreakpointResponse extends EswSequencerResponse
+sealed trait LoadSequenceResponse     extends EswSequencerResponse
+sealed trait PullNextResponse         extends EswSequencerResponse
+sealed trait MaybeNextResponse        extends EswSequencerResponse
+sealed trait StepListResponse         extends EswSequencerResponse
+sealed trait GoOnlineResponse         extends EswSequencerResponse
 
 sealed trait SequenceResponse extends EswSequencerResponse {
   def toSubmitResponse(sequenceId: Id): SubmitResponse = this match {
@@ -33,11 +32,10 @@ case object Ok
     with LoadSequenceResponse
     with GoOnlineResponse
 
-case class GetSequenceResult(stepList: Option[StepList])         extends GetSequenceResponse
-case class GetPreviousSequenceResult(stepList: Option[StepList]) extends GetPreviousSequenceResponse
-case class PullNextResult(step: Step)                            extends PullNextResponse
-case class MaybeNextResult(step: Option[Step])                   extends MaybeNextResponse
-case class SequenceResult(submitResponse: SubmitResponse)        extends SequenceResponse
+case class StepListResult(stepList: Option[StepList])     extends StepListResponse
+case class PullNextResult(step: Step)                     extends PullNextResponse
+case class MaybeNextResult(step: Option[Step])            extends MaybeNextResponse
+case class SequenceResult(submitResponse: SubmitResponse) extends SequenceResponse
 
 case class Unhandled(state: String, messageType: String)
     extends SimpleResponse
@@ -49,8 +47,7 @@ case class Unhandled(state: String, messageType: String)
     with SequenceResponse
     with PullNextResponse
     with MaybeNextResponse
-    with GetSequenceResponse
-    with GetPreviousSequenceResponse {
+    with StepListResponse {
   val description = s"Sequencer can not accept '$messageType' message in '$state' state"
 }
 

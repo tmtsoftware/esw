@@ -82,7 +82,7 @@ class SequencerIntegrationTest extends ScalaTestFrameworkTestKit with BaseTestSu
       processSeqResponse.futureValue should ===(Completed(sequence.runId))
 
       (sequencer ? GetSequence).futureValue should ===(
-        GetSequenceResult(
+        StepListResult(
           Some(
             StepList(
               sequence.runId,

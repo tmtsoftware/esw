@@ -8,8 +8,8 @@ import scala.concurrent.Future
 
 trait SequenceEditor {
 
-  def getSequence: Future[GetSequenceResponse]
-  def getPreviousSequence: Future[GetPreviousSequenceResponse]
+  def getSequence: Future[StepListResponse]
+  def getPreviousSequence: Future[StepListResponse]
   def add(commands: List[SequenceCommand]): Future[SimpleResponse]
   def prepend(commands: List[SequenceCommand]): Future[SimpleResponse]
   def replace(id: Id, commands: List[SequenceCommand]): Future[ComplexResponse]

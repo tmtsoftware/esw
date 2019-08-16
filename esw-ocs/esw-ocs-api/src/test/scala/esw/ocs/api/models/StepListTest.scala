@@ -10,7 +10,7 @@ import esw.ocs.api.{BaseTestSuite, models}
 
 class StepListTest extends BaseTestSuite {
   def finished(id: Id): Finished.Success = Finished.Success(Completed(id))
-  
+
   "apply" must {
     "return a StepList" in {
       val setup1 = Setup(Prefix("esw.ocs.move1"), CommandName("test1"), None)

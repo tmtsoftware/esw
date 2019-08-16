@@ -9,13 +9,13 @@ import esw.ocs.api.BaseTestSuite
 import esw.ocs.api.models.StepList
 import esw.ocs.api.models.messages.EditorError.{CannotOperateOnAnInFlightOrFinishedStep, IdDoesNotExist}
 import esw.ocs.api.models.messages.SequencerMessages._
-import esw.ocs.api.models.messages.{GetPreviousSequenceResult, GetSequenceResult, Ok, Unhandled}
+import esw.ocs.api.models.messages.{Ok, StepListResult, Unhandled}
 
 class SequenceEditorClientTest extends ScalaTestWithActorTestKit with BaseTestSuite {
   private val command = Setup(Prefix("esw.test"), CommandName("command-1"), None)
 
-  private val getSequenceResponse         = GetSequenceResult(StepList(Sequence(command)).toOption)
-  private val getPreviousSequenceResponse = GetPreviousSequenceResult(StepList(Sequence(command)).toOption)
+  private val getSequenceResponse         = StepListResult(StepList(Sequence(command)).toOption)
+  private val getPreviousSequenceResponse = StepListResult(StepList(Sequence(command)).toOption)
   private val addResponse                 = Ok
   private val pauseResponse               = CannotOperateOnAnInFlightOrFinishedStep
   private val prependResponse             = Unhandled("offline", "Prepend")
