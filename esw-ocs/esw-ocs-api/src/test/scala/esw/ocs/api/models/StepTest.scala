@@ -114,12 +114,5 @@ class StepTest extends BaseTestSuite {
       val stepResult       = step.withStatus(finishedResponse)
       stepResult.status should ===(finishedResponse)
     }
-
-    /*"fail for invalid status transitions" in {
-      val setup      = Setup(Prefix("esw.test"), CommandName("test"), None)
-      val step       = Step(setup, InFlight, hasBreakpoint = true)
-      val stepResult = step.withStatus(Pending)
-      stepResult.left.value should ===(UpdateNotSupported(InFlight, Pending))
-    }*/
   }
 }

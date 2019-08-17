@@ -41,6 +41,5 @@ class SequenceTest extends BaseTestSuite {
       val updateSequence = sequence.add(newSequence)
       updateSequence.commands should ===(List(setup, observe, newSetup, newObserve))
     }
-
   }
 }

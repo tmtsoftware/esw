@@ -217,16 +217,6 @@ class StepListTest extends BaseTestSuite {
       val updatedStepList = stepList.replace(invalidId, List(setup4, setup5))
       updatedStepList.left.value should ===(IdDoesNotExist(invalidId))
     }
-
-    /*"fail with NotAllowedOnFinishedSeq error when StepList is finished | ESW-108" in {
-      val step1 = models.Step(setup1, finished(setup1.runId), hasBreakpoint = false)
-      val step2 = models.Step(setup2, finished(setup2.runId), hasBreakpoint = false)
-
-      val id              = Id()
-      val stepList        = StepList(id, List(step1, step2))
-      val updatedStepList = stepList.replace(setup2.runId, List(setup4, setup5))
-      updatedStepList.left.value should ===(NotAllowedOnFinishedSeq)
-    }*/
   }
 
   "prepend" must {
@@ -254,16 +244,6 @@ class StepListTest extends BaseTestSuite {
       val updatedStepList = stepList.prepend(List(setup3))
       updatedStepList should ===(StepList(stepList.runId, List(step1, step2, Step(setup3))))
     }
-
-    /* "fail with NotAllowedOnFinishedSeq error when StepList is finished | ESW-113" in {
-      val step1 = models.Step(setup1, finished(setup1.runId), hasBreakpoint = false)
-      val step2 = models.Step(setup2, finished(setup2.runId), hasBreakpoint = false)
-
-      val stepList        = StepList(Id(), List(step1, step2))
-      val updatedStepList = stepList.prepend(List(setup3))
-      updatedStepList.left.value should ===(NotAllowedOnFinishedSeq)
-    }*/
-
   }
 
   "append" must {
@@ -281,15 +261,6 @@ class StepListTest extends BaseTestSuite {
       val updatedStepList = stepList.append(List(setup3, setup4))
       updatedStepList should ===(StepList(id, List(step1, step2, Step(setup3), Step(setup4))))
     }
-
-    /*"fail with NotAllowedOnFinishedSeq error when StepList is finished | ESW-114" in {
-      val step1 = models.Step(setup1, finished(setup1.runId), hasBreakpoint = false)
-      val step2 = models.Step(setup2, finished(setup2.runId), hasBreakpoint = false)
-
-      val stepList        = StepList(Id(), List(step1, step2))
-      val updatedStepList = stepList.append(List(setup3))
-      updatedStepList.left.value should ===(NotAllowedOnFinishedSeq)
-    }*/
   }
 
   "delete" must {
@@ -325,16 +296,6 @@ class StepListTest extends BaseTestSuite {
       val updatedStepList = stepList.delete(invalidId)
       updatedStepList.left.value should ===(IdDoesNotExist(invalidId))
     }
-
-    /*"fail with NotAllowedOnFinishedSeq error when StepList is finished | ESW-112" in {
-      val step1 = models.Step(setup1, finished(setup1.runId), hasBreakpoint = false)
-      val step2 = models.Step(setup2, finished(setup2.runId), hasBreakpoint = false)
-
-      val id              = Id()
-      val stepList        = StepList(id, List(step1, step2))
-      val updatedStepList = stepList.delete(setup1.runId)
-      updatedStepList.left.value should ===(NotAllowedOnFinishedSeq)
-    }*/
   }
 
   "insertAfter" must {
@@ -393,16 +354,6 @@ class StepListTest extends BaseTestSuite {
       val updatedStepList = stepList.insertAfter(step1.id, List(setup3))
       updatedStepList.left.value should ===(CannotOperateOnAnInFlightOrFinishedStep)
     }
-
-    /* "fail with NotAllowedOnFinishedSeq error when StepList is finished | ESW-111" in {
-      val step1 = models.Step(setup1, finished(setup1.runId), hasBreakpoint = false)
-      val step2 = models.Step(setup2, finished(setup2.runId), hasBreakpoint = false)
-
-      val id              = Id()
-      val stepList        = StepList(id, List(step1, step2))
-      val updatedStepList = stepList.insertAfter(step1.id, List(setup3, setup4))
-      updatedStepList.left.value should ===(NotAllowedOnFinishedSeq)
-    }*/
   }
 
   "discardPending" must {
@@ -422,16 +373,6 @@ class StepListTest extends BaseTestSuite {
       val updatedStepList = stepList.discardPending
       updatedStepList should ===(StepList(id, List(step1, step3)))
     }
-
-    /*"fail with NotAllowedOnFinishedSeq error when StepList is finished | ESW-110" in {
-      val step1 = models.Step(setup1, finished(setup1.runId), hasBreakpoint = false)
-      val step2 = models.Step(setup2, finished(setup2.runId), hasBreakpoint = false)
-
-      val id              = Id()
-      val stepList        = StepList(id, List(step1, step2))
-      val updatedStepList = stepList.discardPending
-      updatedStepList.left.value should ===(NotAllowedOnFinishedSeq)
-    }*/
   }
 
   "addBreakpoints" must {
@@ -456,16 +397,6 @@ class StepListTest extends BaseTestSuite {
       val updatedStepList = stepList.addBreakpoint(invalidId)
       updatedStepList.left.value shouldBe IdDoesNotExist(invalidId)
     }
-
-    /*"fail with NotAllowedOnFinishedSeq error when StepList is finished | ESW-106" in {
-      val step1 = models.Step(setup1, finished(setup1.runId), hasBreakpoint = false)
-      val step2 = models.Step(setup2, finished(setup2.runId), hasBreakpoint = false)
-
-      val id              = Id()
-      val stepList        = StepList(id, List(step1, step2))
-      val updatedStepList = stepList.addBreakpoint(setup1.runId)
-      updatedStepList.left.value should ===(NotAllowedOnFinishedSeq)
-    }*/
   }
 
   "removeBreakpoints" must {
@@ -490,16 +421,6 @@ class StepListTest extends BaseTestSuite {
       val updatedStepList = stepList.removeBreakpoint(invalidId)
       updatedStepList.left.value shouldBe IdDoesNotExist(invalidId)
     }
-
-    /* "fail with NotAllowedOnFinishedSeq error when StepList is finished | ESW-107" in {
-      val step1 = models.Step(setup1, finished(setup1.runId), hasBreakpoint = true)
-      val step2 = models.Step(setup2, finished(setup2.runId), hasBreakpoint = false)
-
-      val id              = Id()
-      val stepList        = StepList(id, List(step1, step2))
-      val updatedStepList = stepList.removeBreakpoint(setup1.runId)
-      updatedStepList.left.value should ===(NotAllowedOnFinishedSeq)
-    }*/
   }
 
   "pause" must {
@@ -528,15 +449,6 @@ class StepListTest extends BaseTestSuite {
       val updatedStepList = stepList.pause
       updatedStepList.left.value should ===(CannotOperateOnAnInFlightOrFinishedStep)
     }
-
-    /* "fail with NotAllowedOnFinishedSeq error when StepList is finished | ESW-104" in {
-      val step1 = models.Step(setup1, finished(setup1.runId), hasBreakpoint = true)
-      val step2 = models.Step(setup2, finished(setup2.runId), hasBreakpoint = false)
-
-      val stepList        = StepList(Id(), List(step1, step2))
-      val updatedStepList = stepList.pause
-      updatedStepList.left.value should ===(NotAllowedOnFinishedSeq)
-    }*/
   }
 
   "resume" must {
@@ -563,15 +475,6 @@ class StepListTest extends BaseTestSuite {
       val updatedStepList = stepList.resume
       updatedStepList should ===(stepList)
     }
-
-    /*  "fail with NotAllowedOnFinishedSeq error when StepList is finished | ESW-105" in {
-      val step1 = models.Step(setup1, finished(setup1.runId), hasBreakpoint = true)
-      val step2 = models.Step(setup2, finished(setup2.runId), hasBreakpoint = false)
-
-      val stepList        = StepList(Id(), List(step1, step2))
-      val updatedStepList = stepList.resume
-      updatedStepList.left.value should ===(NotAllowedOnFinishedSeq)
-    }*/
   }
 
   "updateStatus" must {
@@ -595,37 +498,5 @@ class StepListTest extends BaseTestSuite {
       val updatedStep3     = step3.copy(status = InFlight)
       updatedStepList2 should ===(StepList(id, List(step1, updatedStep2, updatedStep3)))
     }
-
-    /* "fail with UpdateFailed error when step status transition not allowed" in {
-      val step1 = models.Step(setup1, finished(setup1.runId), hasBreakpoint = false)
-      val step2 = Step(setup2, Pending, hasBreakpoint = false)
-
-      val stepList        = StepList(Id(), List(step1, step2))
-      val step2Status     = finished(setup2.runId)
-      val updatedStepList = stepList.updateStatus(setup2.runId, step2Status)
-      updatedStepList.left.value shouldBe UpdateNotSupported(Pending, step2Status)
-    }
-
-    "fail with IdDoesNotExist error when provided Id does't exist in StepList" in {
-      val step1 = models.Step(setup1, finished(setup1.runId), hasBreakpoint = false)
-      val step2 = Step(setup2, Pending, hasBreakpoint = false)
-
-      val stepList        = StepList(Id(), List(step1, step2))
-      val invalidId       = Id()
-      val updatedStepList = stepList.updateStatus(invalidId, InFlight)
-
-      updatedStepList.left.value shouldBe IdDoesNotExist(invalidId)
-    }
-
-    "fail with NotAllowedOnFinishedSeq error when StepList is finished" in {
-      val step1Status = finished(setup1.runId)
-      val step2Status = finished(setup2.runId)
-      val step1       = models.Step(setup1, step1Status, hasBreakpoint = false)
-      val step2       = models.Step(setup2, step2Status, hasBreakpoint = false)
-
-      val stepList        = StepList(Id(), List(step1, step2))
-      val updatedStepList = stepList.updateStatus(setup2.runId, step2Status)
-      updatedStepList.left.value should ===(NotAllowedOnFinishedSeq)
-    }*/
   }
 }
