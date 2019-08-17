@@ -13,7 +13,7 @@ import scala.concurrent.duration.FiniteDuration
 class ControlDslTest extends BaseTestSuite {
 
   class TestDsl() extends ControlDsl {
-    val loopInterval: FiniteDuration = 500.millis
+    override private[ocs] val loopInterval = 500.millis
     def counterLoop(minimumDelay: Option[FiniteDuration] = None): (() => Int, Future[Done]) = {
       var counter = 0
 
@@ -32,14 +32,14 @@ class ControlDslTest extends BaseTestSuite {
     }
   }
 
-  override implicit def patienceConfig: PatienceConfig = PatienceConfig(1.second)
+  override implicit def patienceConfig: PatienceConfig = PatienceConfig(5.seconds)
 
   "loop" must {
     "run till condition becomes true when interval is default | ESW-89" in {
       val testDsl                    = new TestDsl
       val (getCounter, loopFinished) = testDsl.counterLoop()
 
-      // default interval is 50ms, loop will fin
+      // default interval is overridden to 500ms, loop will finish in 1.5 seconds
       loopFinished.isReadyWithin(500.millis) shouldBe false
       getCounter() should be < 3
       loopFinished.futureValue shouldBe Done

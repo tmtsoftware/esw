@@ -162,10 +162,12 @@ class SequencerBehavior(
   private def shutdown(state: SequencerState, replyTo: ActorRef[OkOrUnhandledResponse], killFunction: Unit => Unit)(
       implicit ec: ExecutionContext
   ): Behavior[SequencerMsg] = {
-    (for {
-      _ <- locationService.unregister(AkkaConnection(componentId))
-      _ <- script.executeShutdown()
-    } yield ()).onComplete(_ => state.self ! ShutdownComplete(replyTo))
+
+    // run both the futures in parallel and wait for both to complete
+    // once all finished, send ShutdownComplete self message irrespective of any failures
+    val f1 = locationService.unregister(AkkaConnection(componentId))
+    val f2 = script.executeShutdown()
+    f1.onComplete(_ => f2.onComplete(_ => state.self ! ShutdownComplete(replyTo)))
 
     shuttingDown(killFunction)
   }
