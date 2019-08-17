@@ -13,7 +13,6 @@ import esw.ocs.api.models.messages._
 import scala.concurrent.Future
 import scala.util.{Failure, Success}
 
-//todo: make steplist option
 case class SequencerState(
     stepList: Option[StepList],
     previousStepList: Option[StepList],
@@ -89,7 +88,7 @@ case class SequencerState(
   private def sendNextPendingStepIfAvailable(state: SequencerState): SequencerState = {
     val maybeState = for {
       ref         <- state.stepRefSubscriber
-      pendingStep <- state.stepList.flatMap(_.nextExecutable) // fixme
+      pendingStep <- state.stepList.flatMap(_.nextExecutable)
     } yield {
       val (step, newState) = setInFlight(pendingStep)
       ref ! PullNextResult(step)

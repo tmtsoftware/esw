@@ -24,10 +24,9 @@ import scala.util.Success
 
 class SequencerBehaviorTest extends ScalaTestWithActorTestKit with BaseTestSuite {
 
-  val command1  = Setup(Prefix("esw.test"), CommandName("command-1"), None)
-  val sequence1 = Sequence(Id(), Seq(command1))
-  val command2  = Setup(Prefix("esw.test"), CommandName("command-2"), None)
-  val sequence2 = Sequence(Id(), Seq(command2))
+  private val command1  = Setup(Prefix("esw.test"), CommandName("command-1"), None)
+  private val sequence1 = Sequence(Id(), Seq(command1))
+  private val command2  = Setup(Prefix("esw.test"), CommandName("command-2"), None)
 
   class SequencerSetup(sequence: Sequence) {
     val crm: CommandResponseManager   = mock[CommandResponseManager]
@@ -48,11 +47,8 @@ class SequencerBehaviorTest extends ScalaTestWithActorTestKit with BaseTestSuite
       submitResponse
     }
 
-    private def assertStepListResponse(
-        expected: StepListResponse,
-        msg: ActorRef[StepListResponse] => SequencerMsg
-    ): Unit = {
-      val probe: TestProbe[StepListResponse] = createTestProbe[StepListResponse]()
+    private def assertStepListResponse(expected: StepListResponse, msg: ActorRef[StepListResponse] => SequencerMsg): Unit = {
+      val probe = createTestProbe[StepListResponse]
       sequencerActor ! msg(probe.ref)
       probe.expectMessage(expected)
     }
@@ -63,19 +59,19 @@ class SequencerBehaviorTest extends ScalaTestWithActorTestKit with BaseTestSuite
     def assertPreviousSequence(expected: StepListResponse): Unit =
       assertStepListResponse(expected, GetPreviousSequence)
 
-    def assertSequencerIsLoaded(sequence: Sequence, expected: LoadSequenceResponse): Unit = {
-      val probe = createTestProbe[LoadSequenceResponse]()
+    def assertSequencerIsLoaded(expected: LoadSequenceResponse): Unit = {
+      val probe = createTestProbe[LoadSequenceResponse]
       sequencerActor ! LoadSequence(sequence, probe.ref)
       probe.expectMessage(expected)
     }
 
-    def assertSequencerIsInProgress(sequence: Sequence): TestProbe[SubmitResponse] = {
-      val submitResponsePromise = Promise[SubmitResponse]()
+    def assertSequencerIsInProgress(): TestProbe[SubmitResponse] = {
+      val submitResponsePromise = Promise[SubmitResponse]
       when(crm.queryFinal(command1.runId)).thenReturn(submitResponsePromise.future)
 
-      val probe = createTestProbe[SubmitResponse]()
+      val probe = createTestProbe[SubmitResponse]
       sequencerActor ! LoadAndStartSequence(sequence, probe.ref)
-      val p: TestProbe[StepListResponse] = createTestProbe[StepListResponse]()
+      val p: TestProbe[StepListResponse] = createTestProbe[StepListResponse]
 
       eventually {
         sequencerActor ! GetSequence(p.ref)
@@ -107,7 +103,7 @@ class SequencerBehaviorTest extends ScalaTestWithActorTestKit with BaseTestSuite
     "load the given sequence in idle state" in {
       val sequencerSetup = new SequencerSetup(sequence1)
       import sequencerSetup._
-      assertSequencerIsLoaded(sequence1, Ok)
+      assertSequencerIsLoaded(Ok)
     }
 
     "fail when given sequence contains duplicate Ids" in {
@@ -116,7 +112,7 @@ class SequencerBehaviorTest extends ScalaTestWithActorTestKit with BaseTestSuite
       val sequencerSetup = new SequencerSetup(invalidSequence)
       import sequencerSetup._
 
-      assertSequencerIsLoaded(invalidSequence, DuplicateIdsFound)
+      assertSequencerIsLoaded(DuplicateIdsFound)
     }
   }
 
@@ -129,9 +125,9 @@ class SequencerBehaviorTest extends ScalaTestWithActorTestKit with BaseTestSuite
       val cmd1Response = Completed(command1.runId)
       when(crm.queryFinal(command1.runId)).thenAnswer(_ => queryResponse(cmd1Response, latch))
 
-      assertSequencerIsLoaded(sequence1, Ok)
+      assertSequencerIsLoaded(Ok)
 
-      val seqResProbe = createTestProbe[SequenceResponse]()
+      val seqResProbe = createTestProbe[SequenceResponse]
       sequencerActor ! StartSequence(seqResProbe.ref)
       seqResProbe.expectMessage(SequenceResult(Completed(sequence1.runId)))
     }
@@ -149,7 +145,7 @@ class SequencerBehaviorTest extends ScalaTestWithActorTestKit with BaseTestSuite
       val cmd1Response = Completed(command1.runId)
       when(crm.queryFinal(command1.runId)).thenAnswer(_ => queryResponse(cmd1Response, latch))
 
-      val probe = createTestProbe[SubmitResponse]()
+      val probe = createTestProbe[SubmitResponse]
       sequencerActor ! LoadAndStartSequence(sequence, probe.ref)
       probe.expectMessage(Completed(sequence.runId))
     }
@@ -160,7 +156,7 @@ class SequencerBehaviorTest extends ScalaTestWithActorTestKit with BaseTestSuite
       val sequencerSetup = new SequencerSetup(invalidSequence)
       import sequencerSetup._
 
-      val loadSeqResProbe = createTestProbe[SubmitResponse]()
+      val loadSeqResProbe = createTestProbe[SubmitResponse]
       sequencerActor ! LoadAndStartSequence(invalidSequence, loadSeqResProbe.ref)
       loadSeqResProbe.expectMessage(Error(invalidSequence.runId, DuplicateIdsFound.description))
     }
@@ -175,7 +171,7 @@ class SequencerBehaviorTest extends ScalaTestWithActorTestKit with BaseTestSuite
     }
 
     "return sequence when in loaded state" in {
-      assertSequencerIsLoaded(sequence1, Ok)
+      assertSequencerIsLoaded(Ok)
       assertCurrentSequence(StepListResult(StepList(sequence1).toOption))
     }
   }
@@ -186,7 +182,7 @@ class SequencerBehaviorTest extends ScalaTestWithActorTestKit with BaseTestSuite
       import sequencerSetup._
       // in idle state
       assertPreviousSequence(StepListResult(None))
-      assertSequencerIsLoaded(sequence1, Ok)
+      assertSequencerIsLoaded(Ok)
       // in loaded state
       assertPreviousSequence(StepListResult(None))
     }
@@ -200,11 +196,11 @@ class SequencerBehaviorTest extends ScalaTestWithActorTestKit with BaseTestSuite
       val cmd1Response = Completed(command1.runId)
       when(crm.queryFinal(command1.runId)).thenAnswer(_ => queryResponse(cmd1Response, latch))
 
-      val loadAndStartResProbe = createTestProbe[SubmitResponse]()
+      val loadAndStartResProbe = createTestProbe[SubmitResponse]
       sequencerActor ! LoadAndStartSequence(sequence1, loadAndStartResProbe.ref)
       loadAndStartResProbe.expectMessage(Completed(sequence1.runId))
 
-      assertSequencerIsLoaded(sequence2, Ok)
+      assertSequencerIsLoaded(Ok)
 
       val expectedPreviousSequence = StepListResult(
         Some(StepList(sequence1.runId, List(Step(command1, Finished.Success(Completed(command1.runId)), hasBreakpoint = false))))
@@ -219,8 +215,8 @@ class SequencerBehaviorTest extends ScalaTestWithActorTestKit with BaseTestSuite
       val sequencerSetup = new SequencerSetup(sequence1)
       import sequencerSetup._
 
-      assertSequencerIsLoaded(sequence1, Ok)
-      val probe = createTestProbe[OkOrUnhandledResponse]()
+      assertSequencerIsLoaded(Ok)
+      val probe = createTestProbe[OkOrUnhandledResponse]
       sequencerActor ! Add(List(command2), probe.ref)
       probe.expectMessage(Ok)
 
@@ -232,9 +228,9 @@ class SequencerBehaviorTest extends ScalaTestWithActorTestKit with BaseTestSuite
       val sequencerSetup = new SequencerSetup(sequence1)
       import sequencerSetup._
 
-      assertSequencerIsInProgress(sequence1)
+      assertSequencerIsInProgress()
 
-      val probe = createTestProbe[OkOrUnhandledResponse]()
+      val probe = createTestProbe[OkOrUnhandledResponse]
       sequencerActor ! Add(List(command2), probe.ref)
       probe.expectMessage(Ok)
 
@@ -250,8 +246,8 @@ class SequencerBehaviorTest extends ScalaTestWithActorTestKit with BaseTestSuite
       val sequencerSetup = new SequencerSetup(sequence)
       import sequencerSetup._
 
-      assertSequencerIsInProgress(sequence)
-      val probe = createTestProbe[PauseResponse]()
+      assertSequencerIsInProgress()
+      val probe = createTestProbe[PauseResponse]
       sequencerActor ! Pause(probe.ref)
       probe.expectMessage(Ok)
 
@@ -298,7 +294,7 @@ class SequencerBehaviorTest extends ScalaTestWithActorTestKit with BaseTestSuite
   "Loaded -> Unhandled" in {
     val sequencerSetup = new SequencerSetup(sequence1)
     import sequencerSetup._
-    assertSequencerIsLoaded(sequence1, Ok)
+    assertSequencerIsLoaded(Ok)
 
     assertUnhandled(
       "loaded",
@@ -318,7 +314,7 @@ class SequencerBehaviorTest extends ScalaTestWithActorTestKit with BaseTestSuite
   "InProgress -> Unhandled" in {
     val sequencerSetup = new SequencerSetup(sequence1)
     import sequencerSetup._
-    assertSequencerIsInProgress(sequence1)
+    assertSequencerIsInProgress()
 
     assertUnhandled(
       "in-progress",

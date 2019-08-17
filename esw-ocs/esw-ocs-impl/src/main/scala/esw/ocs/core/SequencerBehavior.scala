@@ -64,8 +64,7 @@ class SequencerBehavior(
       case MaybeNext(replyTo)          => replyTo ! MaybeNextResult(state.stepList.flatMap(_.nextExecutable)); Behaviors.same
       case ReadyToExecuteNext(replyTo) => inProgress(state.readyToExecuteNext(replyTo))
       case Update(submitResponse, _)   => inProgress(state.updateStepStatus(submitResponse))
-      case _: GoIdle =>
-        idle(state) //todo: should clear the state? so that immediate start message does not start the old sequence again?
+      case _: GoIdle                   => idle(state)
     }
   }
 

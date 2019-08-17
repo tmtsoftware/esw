@@ -129,6 +129,14 @@ class OcsAkkaSerializerTest extends ScalaTestWithActorTestKit with BaseTestSuite
     }
   }
 
+  "RuntimeException" must {
+    "be thrown for not supported models while (de)serialization" in {
+      case class InternalMsg(msg: String) extends OcsAkkaSerializable
+
+      intercept[RuntimeException] { assertSerde(InternalMsg("test")) }
+    }
+  }
+
   def assertSerde[T <: AnyRef](model: T): Assertion = {
     val serializer: Serializer = serialization.findSerializerFor(model)
     serializer.getClass shouldBe classOf[OcsAkkaSerializer]
