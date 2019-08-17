@@ -6,14 +6,11 @@ import akka.actor.typed.SpawnProtocol.Spawn
 import akka.actor.typed.scaladsl.AskPattern._
 import akka.actor.typed.scaladsl.Behaviors
 import akka.actor.typed.{ActorRef, ActorSystem, SpawnProtocol}
-import akka.stream.Materializer
-import akka.stream.typed.scaladsl.ActorMaterializer
 import akka.util.Timeout
 import csw.command.client.messages.sequencer.{LoadAndStartSequence, SequencerMsg}
 import csw.location.api.extensions.ActorExtension.RichActor
 import csw.location.api.extensions.URIExtension.RichURI
 import csw.location.api.scaladsl.LocationService
-import csw.location.client.ActorSystemFactory
 import csw.location.client.scaladsl.HttpLocationServiceFactory
 import csw.location.models.Connection.AkkaConnection
 import csw.location.models.{AkkaRegistration, ComponentId, ComponentType}
@@ -26,11 +23,12 @@ import esw.ocs.internal.{SequencerWiring, Timeouts}
 import esw.utils.csw.LocationServiceUtils
 
 class ScriptIntegrationTest extends ScalaTestFrameworkTestKit with BaseTestSuite {
-  private implicit val system: ActorSystem[SpawnProtocol] = ActorSystemFactory.remote(SpawnProtocol.behavior)
-  implicit val scheduler: Scheduler                       = system.scheduler
+  import frameworkTestKit._
 
-  private implicit val timeout: Timeout  = Timeouts.DefaultTimeout
-  private implicit val mat: Materializer = ActorMaterializer()
+  private implicit val typedSystem: ActorSystem[SpawnProtocol] = actorSystem
+  implicit val scheduler: Scheduler                            = typedSystem.scheduler
+
+  private implicit val askTimeout: Timeout = Timeouts.DefaultTimeout
 
   private val ocsSequencerId   = "testSequencerId4"
   private val ocsObservingMode = "testObservingMode4"
@@ -40,11 +38,7 @@ class ScriptIntegrationTest extends ScalaTestFrameworkTestKit with BaseTestSuite
   private var ocsWiring: SequencerWiring                 = _
   private var ocsSequencer: ActorRef[SequencerMsg]       = _
 
-  override def afterAll(): Unit = {
-    system.terminate()
-  }
-
-  private val tcsSequencer: ActorRef[SequencerMsg] = (system ? Spawn(TestSequencer.beh, "testSequencer")).awaitResult
+  private val tcsSequencer: ActorRef[SequencerMsg] = (typedSystem ? Spawn(TestSequencer.beh, "testSequencer")).awaitResult
   private val tcsSequencerId                       = "TCS"
   private val tcsObservingMode                     = "testObservingMode4"
   private val tcsConnection                        = AkkaConnection(ComponentId(s"$tcsSequencerId@$tcsObservingMode", ComponentType.Sequencer))

@@ -57,6 +57,7 @@ class SequencerBehavior(
   }
 
   def inProgress(state: SequencerState): Behavior[SequencerMsg] = receive[InProgressMessage]("in-progress") { (ctx, msg) =>
+    import ctx.executionContext
     msg match {
       case msg: CommonMessage          => handleCommonMessage(msg, state, _ => ctx.system.terminate)
       case msg: EditorAction           => inProgress(handleEditorAction(msg, state))
@@ -77,6 +78,7 @@ class SequencerBehavior(
   }
 
   def goingOnline(state: SequencerState): Behavior[SequencerMsg] = receive[GoingOnlineMessage]("going-online") { (ctx, message) =>
+    import ctx.executionContext
     message match {
       case msg: CommonMessage => handleCommonMessage(msg, state, _ => ctx.system.terminate)
       case _: GoIdle          => idle(state)
@@ -87,8 +89,8 @@ class SequencerBehavior(
       message: CommonMessage,
       state: SequencerState,
       killFunction: Unit => Unit
-  ): Behavior[SequencerMsg] = message match {
-    case Shutdown(replyTo)            => shutdown(replyTo, killFunction)
+  )(implicit ec: ExecutionContext): Behavior[SequencerMsg] = message match {
+    case Shutdown(replyTo)            => shutdown(state, replyTo, killFunction)
     case GetSequence(replyTo)         => sendStepListResponse(replyTo, state.stepList)
     case GetPreviousSequence(replyTo) => sendStepListResponse(replyTo, state.previousStepList)
   }
@@ -157,11 +159,22 @@ class SequencerBehavior(
     Behaviors.same
   }
 
-  private def shutdown(replyTo: ActorRef[Ok.type], killFunction: Unit => Unit): Behavior[SequencerMsg] = {
-    locationService.unregister(AkkaConnection(componentId))
-    script.executeShutdown()
-    replyTo ! Ok
-    Behaviors.stopped(() => killFunction(()))
+  private def shutdown(state: SequencerState, replyTo: ActorRef[OkOrUnhandledResponse], killFunction: Unit => Unit)(
+      implicit ec: ExecutionContext
+  ): Behavior[SequencerMsg] = {
+    (for {
+      _ <- locationService.unregister(AkkaConnection(componentId))
+      _ <- script.executeShutdown()
+    } yield ()).onComplete(_ => state.self ! ShutdownComplete(replyTo))
+
+    shuttingDown(killFunction)
+  }
+
+  private def shuttingDown(killFunction: Unit => Unit) = receive[ShuttingDownMessage]("shutting-down") {
+    case (_, ShutdownComplete(replyTo)) =>
+      replyTo ! Ok
+      killFunction(())
+      Behaviors.stopped
   }
 
   private def goToIdle(state: SequencerState): Unit = state.self ! GoIdle(actorSystem.deadLetters)
@@ -181,6 +194,7 @@ class SequencerBehavior(
 
   private def goingOffline(state: SequencerState): Behavior[SequencerMsg] = receive[GoingOfflineMessage]("going-offline") {
     (ctx, message) =>
+      import ctx.executionContext
       message match {
         case x: CommonMessage => handleCommonMessage(x, state, _ => ctx.system.terminate)
         case _: GoneOffline   => offline(state.copy(stepList = None))

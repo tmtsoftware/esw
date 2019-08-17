@@ -20,9 +20,9 @@ class SequenceComponentBehaviorTest extends ScalaTestFrameworkTestKit with BaseT
   val ocsSequenceComponentName                     = "OCS_1"
 
   private def createBehaviorTestKit(): BehaviorTestKit[SequenceComponentMsg] = BehaviorTestKit(
-    Behaviors.setup[SequenceComponentMsg](_ => {
+    Behaviors.setup[SequenceComponentMsg] { _ =>
       SequenceComponentBehavior.behavior(ocsSequenceComponentName)
-    })
+    }
   )
 
   "SequenceComponentBehavior" must {

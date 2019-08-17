@@ -287,7 +287,8 @@ class SequencerBehaviorTest extends ScalaTestWithActorTestKit with BaseTestSuite
       RemoveBreakpoint(Id(), _),
       Pause,
       Resume,
-      Reset
+      Reset,
+      ShutdownComplete
     )
   }
 
@@ -307,7 +308,8 @@ class SequencerBehaviorTest extends ScalaTestWithActorTestKit with BaseTestSuite
       PullNext,
       MaybeNext,
       ReadyToExecuteNext,
-      GoIdle
+      GoIdle,
+      ShutdownComplete
     )
   }
 
@@ -323,7 +325,8 @@ class SequencerBehaviorTest extends ScalaTestWithActorTestKit with BaseTestSuite
       LoadAndStartSequenceInternal(sequence1, _),
       GoOnline,
       GoOffline,
-      GoneOffline
+      GoneOffline,
+      ShutdownComplete
     )
   }
 
