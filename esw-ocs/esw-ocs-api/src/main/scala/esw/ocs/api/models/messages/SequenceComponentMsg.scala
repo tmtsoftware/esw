@@ -5,7 +5,7 @@ import akka.actor.typed.ActorRef
 import esw.ocs.api.models.messages.SequenceComponentResponse.{GetStatusResponse, LoadScriptResponse}
 import esw.ocs.api.serializer.OcsAkkaSerializable
 
-sealed trait SequenceComponentMsg extends OcsAkkaSerializable with Product with Serializable
+sealed trait SequenceComponentMsg extends OcsAkkaSerializable
 
 object SequenceComponentMsg {
   final case class LoadScript(

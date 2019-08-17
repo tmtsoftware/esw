@@ -9,7 +9,7 @@ import esw.ocs.api.serializer.OcsAkkaSerializable
 
 object SequencerMessages {
 
-  sealed trait EswSequencerMessage extends SequencerMsg with OcsAkkaSerializable with Product with Serializable {
+  sealed trait EswSequencerMessage extends SequencerMsg with OcsAkkaSerializable {
     def replyTo: ActorRef[Unhandled]
   }
 
