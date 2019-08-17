@@ -55,7 +55,7 @@ case object DuplicateIdsFound extends LoadSequenceResponse with SequenceResponse
   val description = "Duplicate command Ids found in given sequence"
 }
 
-case object GoOnlineFailed extends GoOnlineResponse {
+case object GoOnlineHookFailed extends GoOnlineResponse {
   val description = s"Sequencer could not go online because online handlers failed to execute successfully"
 }
 

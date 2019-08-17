@@ -40,6 +40,8 @@ trait OcsCodecs extends MessageCodecs with DoneCodec {
   implicit lazy val resumeCodec: Codec[Resume]                           = deriveCodecForUnaryCaseClass[Resume]
   implicit lazy val resetCodec: Codec[Reset]                             = deriveCodecForUnaryCaseClass[Reset]
   implicit lazy val goOnlineCodec: Codec[GoOnline]                       = deriveCodecForUnaryCaseClass[GoOnline]
+  implicit lazy val goOnlineSuccessCodec: Codec[GoOnlineSuccess]         = deriveCodecForUnaryCaseClass[GoOnlineSuccess]
+  implicit lazy val goOnlineFailedCodec: Codec[GoOnlineFailed]           = deriveCodecForUnaryCaseClass[GoOnlineFailed]
   implicit lazy val goOfflineCodec: Codec[GoOffline]                     = deriveCodecForUnaryCaseClass[GoOffline]
   implicit lazy val goneOfflineCodec: Codec[GoneOffline]                 = deriveCodecForUnaryCaseClass[GoneOffline]
   implicit lazy val shutdownSequencerCodec: Codec[Shutdown]              = deriveCodecForUnaryCaseClass[Shutdown]
@@ -70,7 +72,7 @@ trait OcsCodecs extends MessageCodecs with DoneCodec {
   implicit lazy val idDoesNotExistCodec: Codec[IdDoesNotExist]            = deriveCodec[IdDoesNotExist]
   implicit lazy val inFlightOrFinishedStepErrorCodec: Codec[CannotOperateOnAnInFlightOrFinishedStep.type] =
     singletonCodec(CannotOperateOnAnInFlightOrFinishedStep)
-  implicit lazy val handlersFailedCodec: Codec[GoOnlineFailed.type] = singletonCodec(GoOnlineFailed)
+  implicit lazy val handlersFailedCodec: Codec[GoOnlineHookFailed.type] = singletonCodec(GoOnlineHookFailed)
 
   //SequenceComponentCodecs
   implicit lazy val loadScriptCodec: Codec[LoadScript]                     = deriveCodec[LoadScript]

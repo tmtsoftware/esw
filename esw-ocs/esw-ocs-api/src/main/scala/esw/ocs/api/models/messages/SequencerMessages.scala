@@ -64,7 +64,9 @@ object SequencerMessages {
   final private[esw] case class ReadyToExecuteNext(replyTo: ActorRef[OkOrUnhandledResponse]) extends InProgressMessage
   final private[esw] case class Update(submitResponse: SubmitResponse, replyTo: ActorRef[OkOrUnhandledResponse]) // this is internal message and replyTo is not used anywhere
       extends InProgressMessage
-  final private[esw] case class GoIdle(replyTo: ActorRef[OkOrUnhandledResponse])           extends InProgressMessage with GoingOnlineMessage
+  final private[esw] case class GoIdle(replyTo: ActorRef[OkOrUnhandledResponse])           extends InProgressMessage
   final private[esw] case class GoneOffline(replyTo: ActorRef[OkOrUnhandledResponse])      extends GoingOfflineMessage
+  final private[esw] case class GoOnlineSuccess(replyTo: ActorRef[GoOnlineResponse])       extends GoingOnlineMessage
+  final private[esw] case class GoOnlineFailed(replyTo: ActorRef[GoOnlineResponse])        extends GoingOnlineMessage
   final private[esw] case class ShutdownComplete(replyTo: ActorRef[OkOrUnhandledResponse]) extends ShuttingDownMessage
 }
