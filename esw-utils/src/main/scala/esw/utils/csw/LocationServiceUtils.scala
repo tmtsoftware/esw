@@ -63,24 +63,22 @@ class LocationServiceUtils(locationService: LocationService) {
 
   def resolveByComponentNameAndType(name: String, componentType: ComponentType)(
       implicit ec: ExecutionContext
-  ): Future[Option[Location]] = {
-    async {
-      await(locationService.list(componentType))
-        .find(location => location.connection.componentId.name.equals(name))
-    }
+  ): Future[Option[Location]] = async {
+    await(locationService.list(componentType))
+      .find(location => location.connection.componentId.name == name)
   }
 
   // To be used by Script Writer
   def resolveSequencer(sequencerId: String, observingMode: String)(
       implicit ec: ExecutionContext
-  ): Future[AkkaLocation] = {
+  ): Future[AkkaLocation] =
     async {
       await(locationService.list)
         .find(location => location.connection.componentId.name.contains(s"$sequencerId@$observingMode"))
-        .asInstanceOf[Option[AkkaLocation]]
     }.collect {
-      case Some(location) => location
-      case None           => throw new IllegalArgumentException(s"Could not find any sequencer with name: $sequencerId@$observingMode")
+      case Some(location: AkkaLocation) => location
+      case Some(location) =>
+        throw new RuntimeException(s"Sequencer is registered with wrong connection type: ${location.connection.connectionType}")
+      case None => throw new IllegalArgumentException(s"Could not find any sequencer with name: $sequencerId@$observingMode")
     }
-  }
 }
