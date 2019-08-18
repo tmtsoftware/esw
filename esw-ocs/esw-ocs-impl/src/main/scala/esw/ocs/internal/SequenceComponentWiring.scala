@@ -10,7 +10,6 @@ import csw.params.core.models.Prefix
 import esw.ocs.api.models.messages.{RegistrationError, SequenceComponentMsg}
 import esw.ocs.core.SequenceComponentBehavior
 import esw.ocs.syntax.FutureSyntax.FutureOps
-import esw.utils.csw.LocationServiceUtils
 
 // $COVERAGE-OFF$
 private[ocs] class SequenceComponentWiring(prefix: Prefix) {
@@ -21,13 +20,11 @@ private[ocs] class SequenceComponentWiring(prefix: Prefix) {
 
   private lazy val locationService: LocationService = HttpLocationServiceFactory.makeLocalClient
 
-  private lazy val locationServiceUtils: LocationServiceUtils = new LocationServiceUtils(locationService)
-
   def sequenceComponentFactory(sequenceComponentName: String): ActorRef[SequenceComponentMsg] =
     (typedSystem ? Spawn(SequenceComponentBehavior.behavior(sequenceComponentName), sequenceComponentName)).block
 
   private lazy val sequenceComponentRegistration =
-    new SequenceComponentRegistration(prefix, locationService, locationServiceUtils, sequenceComponentFactory)
+    new SequenceComponentRegistration(prefix, locationService, sequenceComponentFactory)
 
   def start(): Either[RegistrationError, AkkaLocation] =
     sequenceComponentRegistration.registerWithRetry(registrationRetryCount).block

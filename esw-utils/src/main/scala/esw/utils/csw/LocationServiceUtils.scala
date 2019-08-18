@@ -24,9 +24,10 @@ class LocationServiceUtils(locationService: LocationService) {
     )(() => registrationResult.unregister())
   }
 
-  def register(
-      akkaRegistration: AkkaRegistration
-  )(implicit actorSystem: ActorSystem[_]): Future[Either[RegistrationError, AkkaLocation]] = {
+  private[esw] def register[E](
+      akkaRegistration: AkkaRegistration,
+      onFailure: PartialFunction[Throwable, Future[Either[E, AkkaLocation]]]
+  )(implicit actorSystem: ActorSystem[_]): Future[Either[E, AkkaLocation]] = {
     implicit val ec: ExecutionContext = actorSystem.executionContext
     locationService
       .register(akkaRegistration)
@@ -34,14 +35,17 @@ class LocationServiceUtils(locationService: LocationService) {
         addCoordinatedShutdownTask(CoordinatedShutdown(actorSystem.toUntyped), result)
         Right(result.location.asInstanceOf[AkkaLocation])
       }
-      .recoverWith {
-        case NonFatal(e) => Future.successful(Left(RegistrationError(e.getMessage)))
-      }
+      .recoverWith(onFailure)
   }
 
-  def listBy(subsystem: Subsystem, componentType: ComponentType)(
-      implicit ec: ExecutionContext
-  ): Future[List[AkkaLocation]] = {
+  def register(
+      akkaRegistration: AkkaRegistration
+  )(implicit actorSystem: ActorSystem[_]): Future[Either[RegistrationError, AkkaLocation]] =
+    register(akkaRegistration, onFailure = {
+      case NonFatal(e) => Future.successful(Left(RegistrationError(e.getMessage)))
+    })
+
+  def listBy(subsystem: Subsystem, componentType: ComponentType)(implicit ec: ExecutionContext): Future[List[AkkaLocation]] = {
     locationService
       .list(componentType)
       .map(_.collect {
