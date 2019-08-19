@@ -38,7 +38,6 @@ trait OcsCodecs extends MessageCodecs with DoneCodec {
   implicit lazy val removeBreakpointCodec: Codec[RemoveBreakpoint]       = deriveCodec[RemoveBreakpoint]
   implicit lazy val pauseCodec: Codec[Pause]                             = deriveCodecForUnaryCaseClass[Pause]
   implicit lazy val resumeCodec: Codec[Resume]                           = deriveCodecForUnaryCaseClass[Resume]
-  implicit lazy val resetCodec: Codec[Reset]                             = deriveCodecForUnaryCaseClass[Reset]
   implicit lazy val goOnlineCodec: Codec[GoOnline]                       = deriveCodecForUnaryCaseClass[GoOnline]
   implicit lazy val goOnlineSuccessCodec: Codec[GoOnlineSuccess]         = deriveCodecForUnaryCaseClass[GoOnlineSuccess]
   implicit lazy val goOnlineFailedCodec: Codec[GoOnlineFailed]           = deriveCodecForUnaryCaseClass[GoOnlineFailed]
@@ -46,7 +45,9 @@ trait OcsCodecs extends MessageCodecs with DoneCodec {
   implicit lazy val goneOfflineCodec: Codec[GoneOffline]                 = deriveCodecForUnaryCaseClass[GoneOffline]
   implicit lazy val shutdownSequencerCodec: Codec[Shutdown]              = deriveCodecForUnaryCaseClass[Shutdown]
   implicit lazy val shutdownCompleteCodec: Codec[ShutdownComplete]       = deriveCodecForUnaryCaseClass[ShutdownComplete]
-  implicit lazy val abortCodec: Codec[Abort]                             = deriveCodecForUnaryCaseClass[Abort]
+
+  implicit lazy val abortSequenceCodec: Codec[AbortSequence]                 = deriveCodecForUnaryCaseClass[AbortSequence]
+  implicit lazy val abortSequenceCompleteCodec: Codec[AbortSequenceComplete] = deriveCodecForUnaryCaseClass[AbortSequenceComplete]
 
   implicit lazy val eswSequencerMessageCodec: Codec[EswSequencerMessage] = deriveCodec[EswSequencerMessage]
   implicit lazy val editorActionCodec: Codec[EditorAction]               = deriveCodec[EditorAction]

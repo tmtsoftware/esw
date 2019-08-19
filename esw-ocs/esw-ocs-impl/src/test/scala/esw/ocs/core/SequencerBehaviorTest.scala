@@ -250,7 +250,7 @@ class SequencerBehaviorTest extends ScalaTestWithActorTestKit with BaseTestSuite
     assertUnhandled(
       Idle,
       StartSequence,
-      Abort,
+      AbortSequence,
       GoOnline,
       GoOnlineSuccess,
       GoOnlineFailed,
@@ -268,7 +268,6 @@ class SequencerBehaviorTest extends ScalaTestWithActorTestKit with BaseTestSuite
       RemoveBreakpoint(Id(), _),
       Pause,
       Resume,
-      Reset,
       ShutdownComplete
     )
   }

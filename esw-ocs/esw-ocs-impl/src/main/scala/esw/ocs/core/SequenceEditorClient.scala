@@ -31,5 +31,4 @@ class SequenceEditorClient(sequencer: ActorRef[EswSequencerMessage])(implicit sy
   override def resume: Future[OkOrUnhandledResponse]                      = sequencer ? Resume
   override def addBreakpoint(id: Id): Future[GenericResponse]             = sequencer ? (AddBreakpoint(id, _))
   override def removeBreakpoint(id: Id): Future[RemoveBreakpointResponse] = sequencer ? (RemoveBreakpoint(id, _))
-  override def reset(): Future[OkOrUnhandledResponse]                     = sequencer ? Reset
 }

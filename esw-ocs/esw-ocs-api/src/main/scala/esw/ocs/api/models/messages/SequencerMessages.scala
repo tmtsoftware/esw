@@ -20,6 +20,7 @@ object SequencerMessages {
   sealed trait GoingOnlineMessage    extends EswSequencerMessage
   sealed trait GoingOfflineMessage   extends EswSequencerMessage
   sealed trait ShuttingDownMessage   extends EswSequencerMessage
+  sealed trait AbortSequenceMessage  extends EswSequencerMessage
   sealed trait EditorAction          extends SequenceLoadedMessage with InProgressMessage
   sealed trait CommonMessage
       extends IdleMessage
@@ -41,7 +42,6 @@ object SequencerMessages {
   // lifecycle msgs
   final case class GoOnline(replyTo: ActorRef[GoOnlineResponse])       extends OfflineMessage
   final case class GoOffline(replyTo: ActorRef[OkOrUnhandledResponse]) extends IdleMessage with SequenceLoadedMessage
-  final case class Abort(replyTo: ActorRef[OkOrUnhandledResponse])     extends EditorAction
 
   // editor msgs
   final case class Add(commands: List[SequenceCommand], replyTo: ActorRef[OkOrUnhandledResponse])           extends EditorAction
@@ -53,7 +53,9 @@ object SequencerMessages {
   final case class RemoveBreakpoint(id: Id, replyTo: ActorRef[RemoveBreakpointResponse])                    extends EditorAction
   final case class Pause(replyTo: ActorRef[PauseResponse])                                                  extends EditorAction
   final case class Resume(replyTo: ActorRef[OkOrUnhandledResponse])                                         extends EditorAction
-  final case class Reset(replyTo: ActorRef[OkOrUnhandledResponse])                                          extends EditorAction
+
+  //abort
+  final case class AbortSequence(replyTo: ActorRef[OkOrUnhandledResponse]) extends SequenceLoadedMessage with InProgressMessage
 
   // engine & internal
   final private[ocs] case class LoadAndStartSequenceInternal(sequence: Sequence, replyTo: ActorRef[SequenceResponse])
@@ -64,9 +66,10 @@ object SequencerMessages {
   final private[esw] case class ReadyToExecuteNext(replyTo: ActorRef[OkOrUnhandledResponse]) extends InProgressMessage
   final private[esw] case class Update(submitResponse: SubmitResponse, replyTo: ActorRef[OkOrUnhandledResponse]) // this is internal message and replyTo is not used anywhere
       extends InProgressMessage
-  final private[esw] case class GoIdle(replyTo: ActorRef[OkOrUnhandledResponse])           extends InProgressMessage
-  final private[esw] case class GoneOffline(replyTo: ActorRef[OkOrUnhandledResponse])      extends GoingOfflineMessage
-  final private[esw] case class GoOnlineSuccess(replyTo: ActorRef[GoOnlineResponse])       extends GoingOnlineMessage
-  final private[esw] case class GoOnlineFailed(replyTo: ActorRef[GoOnlineResponse])        extends GoingOnlineMessage
-  final private[esw] case class ShutdownComplete(replyTo: ActorRef[OkOrUnhandledResponse]) extends ShuttingDownMessage
+  final private[esw] case class GoIdle(replyTo: ActorRef[OkOrUnhandledResponse])                extends InProgressMessage
+  final private[esw] case class GoneOffline(replyTo: ActorRef[OkOrUnhandledResponse])           extends GoingOfflineMessage
+  final private[esw] case class GoOnlineSuccess(replyTo: ActorRef[GoOnlineResponse])            extends GoingOnlineMessage
+  final private[esw] case class GoOnlineFailed(replyTo: ActorRef[GoOnlineResponse])             extends GoingOnlineMessage
+  final private[esw] case class ShutdownComplete(replyTo: ActorRef[OkOrUnhandledResponse])      extends ShuttingDownMessage
+  final private[esw] case class AbortSequenceComplete(replyTo: ActorRef[OkOrUnhandledResponse]) extends AbortSequenceMessage
 }

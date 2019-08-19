@@ -22,7 +22,6 @@ class SequenceEditorClientTest extends ScalaTestWithActorTestKit with BaseTestSu
   private val prependResponse             = Unhandled(Offline, "Prepend")
   private val resumeResponse              = Unhandled(Idle, "Resume")
   private val removeBreakpointResponse    = IdDoesNotExist(Id())
-  private val resetResponse               = Ok
   private val replaceResponse             = CannotOperateOnAnInFlightOrFinishedStep
   private val insertAfterResponse         = Ok
   private val deleteResponse              = IdDoesNotExist(Id())
@@ -42,7 +41,6 @@ class SequenceEditorClientTest extends ScalaTestWithActorTestKit with BaseTestSu
         case Resume(replyTo)                                        => replyTo ! resumeResponse
         case AddBreakpoint(`command`.runId, replyTo)                => replyTo ! addBreakpointResponse
         case RemoveBreakpoint(`command`.runId, replyTo)             => replyTo ! removeBreakpointResponse
-        case Reset(replyTo)                                         => replyTo ! resetResponse
         case _                                                      =>
       }
       Behaviors.same
@@ -94,9 +92,5 @@ class SequenceEditorClientTest extends ScalaTestWithActorTestKit with BaseTestSu
 
   "removeBreakpoint" in {
     sequenceEditorClient.removeBreakpoint(command.runId).futureValue should ===(removeBreakpointResponse)
-  }
-
-  "reset" in {
-    sequenceEditorClient.reset().futureValue should ===(resetResponse)
   }
 }
