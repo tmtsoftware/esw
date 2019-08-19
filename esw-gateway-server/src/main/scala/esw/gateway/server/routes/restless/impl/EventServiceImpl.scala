@@ -6,8 +6,8 @@ import csw.event.api.scaladsl.SubscriptionModes.RateLimiterMode
 import csw.event.api.scaladsl.{EventPublisher, EventSubscriber, EventSubscription}
 import csw.params.events.{Event, EventKey}
 import esw.gateway.server.routes.restless.api.EventServiceApi
-import esw.gateway.server.routes.restless.messages.ErrorResponseMsg.{InvalidMaxFrequency, NoEventKeys}
-import esw.gateway.server.routes.restless.messages.RequestMsg.{GetEventMsg, PublishEventMsg}
+import esw.gateway.server.routes.restless.messages.ErrorResponseMsg.{EmptyEventKeys, InvalidMaxFrequency}
+import esw.gateway.server.routes.restless.messages.HttpRequestMsg.{GetEventMsg, PublishEventMsg}
 import esw.gateway.server.routes.restless.messages.WebSocketMsg.SubscribeEventMsg
 import esw.gateway.server.routes.restless.messages.{ErrorResponseMsg, WebSocketMsg}
 import esw.gateway.server.routes.restless.utils.Utils.emptySourceWithError
@@ -30,7 +30,7 @@ class EventServiceImpl(cswCtx: CswContext) extends EventServiceApi {
   override def get(getEventMsg: GetEventMsg): Future[Either[ErrorResponseMsg, Set[Event]]] = {
     import getEventMsg._
     if (eventKeys.nonEmpty) subscriber.get(eventKeys.toEventKeys).map(Right(_))
-    else Future.successful(Left(NoEventKeys()))
+    else Future.successful(Left(EmptyEventKeys()))
   }
 
   def subscribe(subscribeEventMsg: SubscribeEventMsg): Source[Event, Future[Option[ErrorResponseMsg]]] = {
@@ -45,7 +45,7 @@ class EventServiceImpl(cswCtx: CswContext) extends EventServiceApi {
             .mapMaterializedValue(_ => Future.successful(None))
         case None => subscriber.subscribe(eventKeys.toEventKeys).mapMaterializedValue(_ => Future.successful(None))
       }
-    } else emptySourceWithError(NoEventKeys())
+    } else emptySourceWithError(EmptyEventKeys())
   }
 
   def pSubscribe(

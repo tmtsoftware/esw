@@ -9,7 +9,7 @@ import esw.gateway.server.routes.restless.api.CommandServiceApi
 import esw.gateway.server.routes.restless.messages.CommandAction.{Oneway, Submit, Validate}
 import esw.gateway.server.routes.restless.messages.ErrorResponseMsg
 import esw.gateway.server.routes.restless.messages.ErrorResponseMsg.{InvalidComponent, InvalidMaxFrequency}
-import esw.gateway.server.routes.restless.messages.RequestMsg.CommandMsg
+import esw.gateway.server.routes.restless.messages.HttpRequestMsg.CommandMsg
 import esw.gateway.server.routes.restless.messages.WebSocketMsg.{CurrentStateSubscriptionCommandMsg, QueryCommandMsg}
 import esw.gateway.server.routes.restless.utils.Utils.emptySourceWithError
 import esw.http.core.utils.CswContext

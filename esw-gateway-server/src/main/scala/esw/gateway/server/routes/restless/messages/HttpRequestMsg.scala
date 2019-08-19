@@ -6,15 +6,15 @@ import csw.params.commands.ControlCommand
 import csw.params.core.models.Subsystem
 import csw.params.events.Event
 
-sealed trait RequestMsg
+sealed trait HttpRequestMsg
 
-object RequestMsg {
+object HttpRequestMsg {
 
   case class CommandMsg(componentType: ComponentType, componentName: String, command: ControlCommand, action: CommandAction)
-      extends RequestMsg
-  case class PublishEventMsg(event: Event) extends RequestMsg
+      extends HttpRequestMsg
+  case class PublishEventMsg(event: Event) extends HttpRequestMsg
   //fixme: Add codec for EventKey in CSW and use Set[EventKey]
-  case class GetEventMsg(eventKeys: Set[String]) extends RequestMsg
+  case class GetEventMsg(eventKeys: Set[String]) extends HttpRequestMsg
   case class SetAlarmSeverityMsg(subsystem: Subsystem, componentName: String, alarmName: String, severity: AlarmSeverity)
-      extends RequestMsg
+      extends HttpRequestMsg
 }

@@ -6,7 +6,7 @@ import csw.location.client.HttpCodecs
 import csw.location.models.codecs.LocationCodecs
 import csw.params.core.formats.{CodecHelpers, ParamCodecs}
 import esw.gateway.server.routes.restless.messages.ErrorResponseMsg._
-import esw.gateway.server.routes.restless.messages.RequestMsg._
+import esw.gateway.server.routes.restless.messages.HttpRequestMsg._
 import esw.gateway.server.routes.restless.messages.WebSocketMsg.{
   CurrentStateSubscriptionCommandMsg,
   PatternSubscribeEventMsg,
@@ -21,21 +21,21 @@ trait RestlessCodecs extends ParamCodecs with LocationCodecs with HttpCodecs wit
   implicit def responseMsgCodec[T <: ErrorResponseMsg]: Codec[T] = responseMsgCodecValue.asInstanceOf[Codec[T]]
 
   lazy val responseMsgCodecValue: Codec[ErrorResponseMsg] = {
-    @silent implicit lazy val noEventKeysCodec: Codec[NoEventKeys]                         = deriveCodec[NoEventKeys]
+    @silent implicit lazy val noEventKeysCodec: Codec[EmptyEventKeys]                      = deriveCodec[EmptyEventKeys]
     @silent implicit lazy val invalidComponentCodec: Codec[InvalidComponent]               = deriveCodec[InvalidComponent]
     @silent implicit lazy val invalidMaxFrequencyCodec: Codec[InvalidMaxFrequency]         = deriveCodec[InvalidMaxFrequency]
     @silent implicit lazy val setAlarmSeverityFailureCodec: Codec[SetAlarmSeverityFailure] = deriveCodec[SetAlarmSeverityFailure]
     deriveCodec[ErrorResponseMsg]
   }
 
-  implicit def requestMsgCodec[T <: RequestMsg]: Codec[T] = requestMsgCodecValue.asInstanceOf[Codec[T]]
+  implicit def requestMsgCodec[T <: HttpRequestMsg]: Codec[T] = requestMsgCodecValue.asInstanceOf[Codec[T]]
 
-  lazy val requestMsgCodecValue: Codec[RequestMsg] = {
+  lazy val requestMsgCodecValue: Codec[HttpRequestMsg] = {
     @silent implicit lazy val commandMsgCodec: Codec[CommandMsg]                   = deriveCodec[CommandMsg]
     @silent implicit lazy val publishEventMsgCodec: Codec[PublishEventMsg]         = deriveCodec[PublishEventMsg]
     @silent implicit lazy val getEventMsgCodec: Codec[GetEventMsg]                 = deriveCodec[GetEventMsg]
     @silent implicit lazy val setAlarmSeverityMsgCodec: Codec[SetAlarmSeverityMsg] = deriveCodec[SetAlarmSeverityMsg]
-    deriveCodec[RequestMsg]
+    deriveCodec[HttpRequestMsg]
   }
 
   implicit def websocketMsgCodec[T <: WebSocketMsg]: Codec[T] = requestMsgCodecValue.asInstanceOf[Codec[T]]
