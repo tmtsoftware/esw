@@ -1,4 +1,4 @@
-package esw.ocs.api.models
+package esw.ocs.core
 
 import akka.actor.typed.{ActorRef, ActorSystem}
 import akka.util.Timeout
@@ -9,11 +9,12 @@ import csw.params.core.models.Id
 import esw.ocs.api.models.StepStatus.{Finished, InFlight}
 import esw.ocs.api.models.messages.SequencerMessages.{EswSequencerMessage, GoIdle, Update}
 import esw.ocs.api.models.messages._
+import esw.ocs.api.models.{Step, StepList}
 
 import scala.concurrent.Future
 import scala.util.{Failure, Success}
 
-case class SequencerState(
+private[core] case class SequencerState(
     stepList: Option[StepList],
     previousStepList: Option[StepList],
     readyToExecuteSubscriber: Option[ActorRef[OkOrUnhandledResponse]],

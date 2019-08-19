@@ -12,7 +12,7 @@ import csw.params.commands.Sequence
 import esw.ocs.api.codecs.OcsCodecs
 import esw.ocs.api.models.messages.SequencerMessages._
 import esw.ocs.api.models.messages.{GoOnlineHookFailed, _}
-import esw.ocs.api.models.{SequencerState, StepList}
+import esw.ocs.api.models.StepList
 import esw.ocs.dsl.ScriptDsl
 
 import scala.util.{Failure, Success}
