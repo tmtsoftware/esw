@@ -52,7 +52,7 @@ object AkkaHttp {
 }
 
 object Borer {
-  val Version = "0.11.1"
+  val Version = "0.10.0"
   val Org     = "io.bullet"
 
   val `borer-core`        = Org %% "borer-core"        % Version
