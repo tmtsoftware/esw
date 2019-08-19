@@ -8,7 +8,7 @@ import esw.gateway.server.routes.restless.messages.WebSocketMsg
 import esw.gateway.server.routes.restless.messages.WebSocketMsg.{CurrentStateSubscriptionCommandMsg, QueryCommandMsg}
 import esw.http.core.utils.CswContext
 import msocket.core.api.Payload
-import msocket.core.api.ToResponse.FutureToPayload
+import msocket.core.api.ToPayload.FutureToPayload
 import msocket.core.server.ServerSocket
 
 class RestlessServerSocket(cswCtx: CswContext) extends ServerSocket[WebSocketMsg] with RestlessCodecs {
