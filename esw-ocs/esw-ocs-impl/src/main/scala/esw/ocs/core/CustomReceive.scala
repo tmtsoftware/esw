@@ -6,6 +6,7 @@ import akka.actor.typed.scaladsl.AskPattern._
 import akka.actor.typed.scaladsl.{ActorContext, Behaviors}
 import akka.util.Timeout
 import csw.command.client.messages.sequencer.{LoadAndStartSequence, SequencerMsg}
+import esw.ocs.api.models.SequencerBehaviorState
 import esw.ocs.api.models.messages.SequencerMessages.{EswSequencerMessage, LoadAndStartSequenceInternal}
 import esw.ocs.api.models.messages.{SequenceResponse, Unhandled}
 import esw.ocs.internal.Timeouts
@@ -15,7 +16,7 @@ import scala.reflect.ClassTag
 
 private[ocs] trait CustomReceive {
 
-  protected def receive[T <: SequencerMsg: ClassTag](stateName: String)(
+  protected def receive[T <: SequencerMsg: ClassTag](stateName: SequencerBehaviorState)(
       f: (ActorContext[SequencerMsg], T) => Behavior[SequencerMsg]
   ): Behavior[SequencerMsg] = Behaviors.receive { (ctx, msg) =>
     import ctx.executionContext

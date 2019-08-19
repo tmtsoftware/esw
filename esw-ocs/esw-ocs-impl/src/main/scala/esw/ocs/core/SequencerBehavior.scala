@@ -10,6 +10,7 @@ import csw.location.models.ComponentId
 import csw.location.models.Connection.AkkaConnection
 import csw.params.commands.Sequence
 import esw.ocs.api.codecs.OcsCodecs
+import esw.ocs.api.models.SequencerBehaviorState._
 import esw.ocs.api.models.messages.SequencerMessages._
 import esw.ocs.api.models.messages.{GoOnlineHookFailed, _}
 import esw.ocs.api.models.StepList
@@ -33,7 +34,7 @@ class SequencerBehavior(
   }
 
   //BEHAVIORS
-  private def idle(state: SequencerState): Behavior[SequencerMsg] = receive[IdleMessage]("idle") { (_, msg) =>
+  private def idle(state: SequencerState): Behavior[SequencerMsg] = receive[IdleMessage](Idle) { (_, msg) =>
     msg match {
       case msg: CommonMessage                              => handleCommonMessage(msg, state)
       case LoadSequence(sequence, replyTo)                 => load(sequence, replyTo, state)(nextBehavior = loaded)
@@ -43,7 +44,7 @@ class SequencerBehavior(
     }
   }
 
-  private def loaded(state: SequencerState): Behavior[SequencerMsg] = receive[SequenceLoadedMessage]("loaded") { (_, msg) =>
+  private def loaded(state: SequencerState): Behavior[SequencerMsg] = receive[SequenceLoadedMessage](Loaded) { (ctx, msg) =>
     msg match {
       case msg: CommonMessage         => handleCommonMessage(msg, state)
       case editorAction: EditorAction => loaded(handleEditorAction(editorAction, state))
@@ -52,7 +53,7 @@ class SequencerBehavior(
     }
   }
 
-  private def inProgress(state: SequencerState): Behavior[SequencerMsg] = receive[InProgressMessage]("in-progress") { (_, msg) =>
+  private def inProgress(state: SequencerState): Behavior[SequencerMsg] = receive[InProgressMessage](InProgress) { (_, msg) =>
     msg match {
       case msg: CommonMessage          => handleCommonMessage(msg, state)
       case msg: EditorAction           => inProgress(handleEditorAction(msg, state))
@@ -64,7 +65,7 @@ class SequencerBehavior(
     }
   }
 
-  private def offline(state: SequencerState): Behavior[SequencerMsg] = receive[OfflineMessage]("offline") { (_, message) =>
+  private def offline(state: SequencerState): Behavior[SequencerMsg] = receive[OfflineMessage](Offline) { (_, message) =>
     message match {
       case msg: CommonMessage => handleCommonMessage(msg, state)
       case GoOnline(replyTo)  => goOnline(replyTo, state)(fallbackBehavior = offline, nextBehavior = idle)
@@ -134,7 +135,7 @@ class SequencerBehavior(
     shuttingDown()
   }
 
-  private def shuttingDown() = receive[ShuttingDownMessage]("shutting-down") {
+  private def shuttingDown() = receive[ShuttingDownMessage](ShuttingDown) {
     case (_, ShutdownComplete(replyTo)) =>
       replyTo ! Ok
       actorSystem.terminate()
@@ -145,7 +146,7 @@ class SequencerBehavior(
       fallbackBehavior: SequencerState => Behavior[SequencerMsg],
       nextBehavior: SequencerState => Behavior[SequencerMsg]
   ): Behavior[SequencerMsg] =
-    receive[GoingOnlineMessage]("going-online") { (_, message) =>
+    receive[GoingOnlineMessage](GoingOnline) { (_, message) =>
       message match {
         case msg: CommonMessage       => handleCommonMessage(msg, state)
         case GoOnlineSuccess(replyTo) => replyTo ! Ok; nextBehavior(state)
@@ -164,7 +165,7 @@ class SequencerBehavior(
     goingOnline(state)(fallbackBehavior, nextBehavior)
   }
 
-  private def goingOffline(state: SequencerState): Behavior[SequencerMsg] = receive[GoingOfflineMessage]("going-offline") {
+  private def goingOffline(state: SequencerState): Behavior[SequencerMsg] = receive[GoingOfflineMessage](GoingOffline) {
     (_, message) =>
       message match {
         case msg: CommonMessage   => handleCommonMessage(msg, state)

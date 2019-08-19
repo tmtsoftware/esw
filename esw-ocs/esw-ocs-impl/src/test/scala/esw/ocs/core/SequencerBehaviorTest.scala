@@ -9,6 +9,7 @@ import csw.params.commands.CommandResponse.{Completed, Error, SubmitResponse}
 import csw.params.commands.{CommandName, Sequence, Setup}
 import csw.params.core.models.{Id, Prefix}
 import esw.ocs.api.BaseTestSuite
+import esw.ocs.api.models.SequencerBehaviorState.{Idle, InProgress, Loaded}
 import esw.ocs.api.models.StepStatus.{Finished, InFlight, Pending}
 import esw.ocs.api.models.messages.SequencerMessages._
 import esw.ocs.api.models.messages._
@@ -199,7 +200,7 @@ class SequencerBehaviorTest extends ScalaTestWithActorTestKit with BaseTestSuite
     val cmds = List(command1, command2)
 
     assertUnhandled(
-      "idle",
+      Idle,
       StartSequence,
       Abort,
       GoOnline,
@@ -230,7 +231,7 @@ class SequencerBehaviorTest extends ScalaTestWithActorTestKit with BaseTestSuite
     assertSequencerIsLoaded(Ok)
 
     assertUnhandled(
-      "loaded",
+      Loaded,
       LoadSequence(sequence1, _),
       LoadAndStartSequenceInternal(sequence1, _),
       Update(Completed(Id()), _),
@@ -253,7 +254,7 @@ class SequencerBehaviorTest extends ScalaTestWithActorTestKit with BaseTestSuite
     assertSequencerIsInProgress()
 
     assertUnhandled(
-      "in-progress",
+      InProgress,
       LoadSequence(sequence1, _),
       StartSequence,
       LoadAndStartSequenceInternal(sequence1, _),

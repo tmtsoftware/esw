@@ -13,6 +13,7 @@ import csw.params.commands.CommandResponse.Completed
 import csw.params.commands._
 import csw.params.core.models.{Id, Prefix}
 import esw.ocs.api.BaseTestSuite
+import esw.ocs.api.models.SequencerBehaviorState.{GoingOnline, Idle}
 import esw.ocs.api.models.messages.EditorError._
 import esw.ocs.api.models.messages.SequenceComponentMsg.{GetStatus, LoadScript, UnloadScript}
 import esw.ocs.api.models.messages.SequenceComponentResponse.{GetStatusResponse, LoadScriptResponse}
@@ -118,7 +119,7 @@ class OcsAkkaSerializerTest extends ScalaTestWithActorTestKit with BaseTestSuite
         PullNextResult(step),
         MaybeNextResult(Some(step)),
         SequenceResult(Completed(Id())),
-        Unhandled("idle", "GoOnline"),
+        Unhandled(Idle, "GoOnline"),
         DuplicateIdsFound,
         GoOnlineHookFailed,
         CannotOperateOnAnInFlightOrFinishedStep,

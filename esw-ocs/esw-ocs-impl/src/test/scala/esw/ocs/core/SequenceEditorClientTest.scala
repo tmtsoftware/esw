@@ -6,6 +6,7 @@ import csw.command.client.messages.sequencer.SequencerMsg
 import csw.params.commands.{CommandName, Sequence, Setup}
 import csw.params.core.models.{Id, Prefix}
 import esw.ocs.api.BaseTestSuite
+import esw.ocs.api.models.SequencerBehaviorState.{Idle, Offline}
 import esw.ocs.api.models.StepList
 import esw.ocs.api.models.messages.EditorError.{CannotOperateOnAnInFlightOrFinishedStep, IdDoesNotExist}
 import esw.ocs.api.models.messages.SequencerMessages._
@@ -15,17 +16,17 @@ class SequenceEditorClientTest extends ScalaTestWithActorTestKit with BaseTestSu
   private val command = Setup(Prefix("esw.test"), CommandName("command-1"), None)
 
   private val getSequenceResponse         = StepListResult(StepList(Sequence(command)).toOption)
-  private val getPreviousSequenceResponse = StepListResult(StepList(Sequence(command)).toOption)
+  private val getPreviousSequenceResponse = StepListResult(None)
   private val addResponse                 = Ok
   private val pauseResponse               = CannotOperateOnAnInFlightOrFinishedStep
-  private val prependResponse             = Unhandled("offline", "Prepend")
-  private val resumeResponse              = Unhandled("idle", "Resume")
+  private val prependResponse             = Unhandled(Offline, "Prepend")
+  private val resumeResponse              = Unhandled(Idle, "Resume")
   private val removeBreakpointResponse    = IdDoesNotExist(Id())
   private val resetResponse               = Ok
   private val replaceResponse             = CannotOperateOnAnInFlightOrFinishedStep
   private val insertAfterResponse         = Ok
   private val deleteResponse              = IdDoesNotExist(Id())
-  private val addBreakpointResponse       = Unhandled("idle", "AddBreakpoint")
+  private val addBreakpointResponse       = Unhandled(Idle, "AddBreakpoint")
 
   private val mockedBehavior: Behaviors.Receive[SequencerMsg] =
     Behaviors.receiveMessage[SequencerMsg] { msg =>
