@@ -1,7 +1,5 @@
 package esw.ocs.core
 
-import java.util.concurrent.CountDownLatch
-
 import akka.actor.testkit.typed.scaladsl.ScalaTestWithActorTestKit
 import akka.util.Timeout
 import csw.command.client.messages.sequencer.LoadAndStartSequence
@@ -14,13 +12,13 @@ import esw.ocs.api.models.StepStatus.{Finished, InFlight, Pending}
 import esw.ocs.api.models.messages.SequencerMessages._
 import esw.ocs.api.models.messages._
 import esw.ocs.api.models.{Step, StepList}
-import org.mockito.Mockito.when
 
 class SequencerBehaviorTest extends ScalaTestWithActorTestKit with BaseTestSuite {
 
-  private val command1  = Setup(Prefix("esw.test"), CommandName("command-1"), None)
-  private val sequence1 = Sequence(Id(), Seq(command1))
-  private val command2  = Setup(Prefix("esw.test"), CommandName("command-2"), None)
+  private val command1 = Setup(Prefix("esw.test"), CommandName("command-1"), None)
+  private val command2 = Setup(Prefix("esw.test"), CommandName("command-2"), None)
+  private val command3 = Setup(Prefix("esw.test"), CommandName("command-3"), None)
+  private val sequence = Sequence(Id(), Seq(command1, command2))
 
   implicit val timeoutDuration: Timeout = timeout
 
@@ -30,7 +28,7 @@ class SequencerBehaviorTest extends ScalaTestWithActorTestKit with BaseTestSuite
 
   "LoadSequence" must {
     "load the given sequence in idle state" in {
-      val sequencerSetup = new SequencerTestSetup(sequence1)
+      val sequencerSetup = new SequencerTestSetup(sequence)
       import sequencerSetup._
       assertSequencerIsLoaded(Ok)
     }
@@ -47,35 +45,28 @@ class SequencerBehaviorTest extends ScalaTestWithActorTestKit with BaseTestSuite
 
   "StartSequence" must {
     "start executing a sequence when sequencer is loaded" in {
-      val latch          = new CountDownLatch(1)
-      val sequencerSetup = new SequencerTestSetup(sequence1)
+      val sequencerSetup = new SequencerTestSetup(sequence)
       import sequencerSetup._
-
-      val cmd1Response = Completed(command1.runId)
-      when(crm.queryFinal(command1.runId)).thenAnswer(_ => queryResponse(cmd1Response, latch))
-
+      mockAllCommandResponses()
       assertSequencerIsLoaded(Ok)
 
       val seqResProbe = createTestProbe[SequenceResponse]
       sequencerActor ! StartSequence(seqResProbe.ref)
-      seqResProbe.expectMessage(SequenceResult(Completed(sequence1.runId)))
+      pullAndAssertSequenceCompletion()
+      seqResProbe.expectMessage(SequenceResult(Completed(sequence.runId)))
     }
   }
 
   "LoadAndStartSequence" must {
     "load and process sequence in idle state" in {
-      val command1 = Setup(Prefix("esw.test"), CommandName("command-1"), None)
-      val sequence = Sequence(Id(), Seq(command1))
-      val latch    = new CountDownLatch(1)
-
       val sequencerSetup = new SequencerTestSetup(sequence)
       import sequencerSetup._
 
-      val cmd1Response = Completed(command1.runId)
-      when(crm.queryFinal(command1.runId)).thenAnswer(_ => queryResponse(cmd1Response, latch))
+      mockAllCommandResponses()
 
       val probe = createTestProbe[SubmitResponse]
       sequencerActor ! LoadAndStartSequence(sequence, probe.ref)
+      pullAndAssertSequenceCompletion()
       probe.expectMessage(Completed(sequence.runId))
     }
 
@@ -92,7 +83,7 @@ class SequencerBehaviorTest extends ScalaTestWithActorTestKit with BaseTestSuite
   }
 
   "GetSequence" must {
-    val sequencerSetup = new SequencerTestSetup(sequence1)
+    val sequencerSetup = new SequencerTestSetup(sequence)
     import sequencerSetup._
 
     "return None when in Idle state" in {
@@ -101,13 +92,13 @@ class SequencerBehaviorTest extends ScalaTestWithActorTestKit with BaseTestSuite
 
     "return sequence when in loaded state" in {
       assertSequencerIsLoaded(Ok)
-      assertCurrentSequence(StepListResult(StepList(sequence1).toOption))
+      assertCurrentSequence(StepListResult(StepList(sequence).toOption))
     }
   }
 
   "GetPreviousSequence" must {
     "return None when sequencer has not started executing any sequence" in {
-      val sequencerSetup = new SequencerTestSetup(sequence1)
+      val sequencerSetup = new SequencerTestSetup(sequence)
       import sequencerSetup._
       // in idle state
       assertPreviousSequence(StepListResult(None))
@@ -117,22 +108,28 @@ class SequencerBehaviorTest extends ScalaTestWithActorTestKit with BaseTestSuite
     }
 
     "return previous sequence after new sequence is loaded" in {
-      val sequencerSetup = new SequencerTestSetup(sequence1)
+      val sequencerSetup = new SequencerTestSetup(sequence)
       import sequencerSetup._
 
-      val latch = new CountDownLatch(1)
-
-      val cmd1Response = Completed(command1.runId)
-      when(crm.queryFinal(command1.runId)).thenAnswer(_ => queryResponse(cmd1Response, latch))
+      mockAllCommandResponses()
 
       val loadAndStartResProbe = createTestProbe[SubmitResponse]
-      sequencerActor ! LoadAndStartSequence(sequence1, loadAndStartResProbe.ref)
-      loadAndStartResProbe.expectMessage(Completed(sequence1.runId))
+      sequencerActor ! LoadAndStartSequence(sequence, loadAndStartResProbe.ref)
+      pullAndAssertSequenceCompletion()
 
+      loadAndStartResProbe.expectMessage(Completed(sequence.runId))
       assertSequencerIsLoaded(Ok)
 
       val expectedPreviousSequence = StepListResult(
-        Some(StepList(sequence1.runId, List(Step(command1, Finished.Success(Completed(command1.runId)), hasBreakpoint = false))))
+        Some(
+          StepList(
+            sequence.runId,
+            List(
+              Step(command1, Finished.Success(Completed(command1.runId)), hasBreakpoint = false),
+              Step(command2, Finished.Success(Completed(command2.runId)), hasBreakpoint = false)
+            )
+          )
+        )
       )
 
       assertPreviousSequence(expectedPreviousSequence)
@@ -141,38 +138,39 @@ class SequencerBehaviorTest extends ScalaTestWithActorTestKit with BaseTestSuite
 
   "Add" must {
     "add commands when sequence is loaded" in {
-      val sequencerSetup = new SequencerTestSetup(sequence1)
+      val sequencerSetup = new SequencerTestSetup(sequence)
       import sequencerSetup._
 
       assertSequencerIsLoaded(Ok)
 
       val probe = createTestProbe[OkOrUnhandledResponse]
-      sequencerActor ! Add(List(command2), probe.ref)
+      sequencerActor ! Add(List(command3), probe.ref)
       probe.expectMessage(Ok)
 
-      val updatedSequence = sequence1.copy(commands = Seq(command1, command2))
+      val updatedSequence = sequence.copy(commands = Seq(command1, command2, command3))
       assertCurrentSequence(StepListResult(StepList(updatedSequence).toOption))
     }
 
     "add commands when sequence is in progress" in {
-      val sequencerSetup = new SequencerTestSetup(sequence1)
+      val sequencerSetup = new SequencerTestSetup(sequence)
       import sequencerSetup._
 
       assertSequencerIsInProgress()
 
       val probe = createTestProbe[OkOrUnhandledResponse]
-      sequencerActor ! Add(List(command2), probe.ref)
+      sequencerActor ! Add(List(command3), probe.ref)
       probe.expectMessage(Ok)
 
       assertCurrentSequence(
-        StepListResult(Some(StepList(sequence1.runId, List(Step(command1, InFlight, hasBreakpoint = false), Step(command2)))))
+        StepListResult(
+          Some(StepList(sequence.runId, List(Step(command1, InFlight, hasBreakpoint = false), Step(command2), Step(command3))))
+        )
       )
     }
   }
 
   "Pause" must {
     "pause sequencer when it is in-progress" in {
-      val sequence       = Sequence(command1, command2)
       val sequencerSetup = new SequencerTestSetup(sequence)
       import sequencerSetup._
 
@@ -191,7 +189,6 @@ class SequencerBehaviorTest extends ScalaTestWithActorTestKit with BaseTestSuite
     }
 
     "pause sequencer when it is in loaded state" in {
-      val sequence       = Sequence(command1, command2)
       val sequencerSetup = new SequencerTestSetup(sequence)
       import sequencerSetup._
 
@@ -212,7 +209,6 @@ class SequencerBehaviorTest extends ScalaTestWithActorTestKit with BaseTestSuite
 
   "Resume" must {
     "resume a paused sequence when sequencer is in-progress" in {
-      val sequence       = Sequence(command1, command2)
       val sequencerSetup = new SequencerTestSetup(sequence)
       import sequencerSetup._
 
@@ -243,7 +239,7 @@ class SequencerBehaviorTest extends ScalaTestWithActorTestKit with BaseTestSuite
   }
 
   "Idle -> Unhandled" in {
-    val sequencerSetup = new SequencerTestSetup(sequence1)
+    val sequencerSetup = new SequencerTestSetup(sequence)
     import sequencerSetup._
     val cmds = List(command1, command2)
 
@@ -273,14 +269,14 @@ class SequencerBehaviorTest extends ScalaTestWithActorTestKit with BaseTestSuite
   }
 
   "Loaded -> Unhandled" in {
-    val sequencerSetup = new SequencerTestSetup(sequence1)
+    val sequencerSetup = new SequencerTestSetup(sequence)
     import sequencerSetup._
     assertSequencerIsLoaded(Ok)
 
     assertUnhandled(
       Loaded,
-      LoadSequence(sequence1, _),
-      LoadAndStartSequenceInternal(sequence1, _),
+      LoadSequence(sequence, _),
+      LoadAndStartSequenceInternal(sequence, _),
       Update(Completed(Id()), _),
       GoOnline,
       GoOnlineSuccess,
@@ -296,15 +292,15 @@ class SequencerBehaviorTest extends ScalaTestWithActorTestKit with BaseTestSuite
   }
 
   "InProgress -> Unhandled" in {
-    val sequencerSetup = new SequencerTestSetup(sequence1)
+    val sequencerSetup = new SequencerTestSetup(sequence)
     import sequencerSetup._
     assertSequencerIsInProgress()
 
     assertUnhandled(
       InProgress,
-      LoadSequence(sequence1, _),
+      LoadSequence(sequence, _),
       StartSequence,
-      LoadAndStartSequenceInternal(sequence1, _),
+      LoadAndStartSequenceInternal(sequence, _),
       GoOnline,
       GoOnlineSuccess,
       GoOnlineFailed,
