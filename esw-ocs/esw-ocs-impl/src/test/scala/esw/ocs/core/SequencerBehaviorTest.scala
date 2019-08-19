@@ -177,10 +177,7 @@ class SequencerBehaviorTest extends ScalaTestWithActorTestKit with BaseTestSuite
       import sequencerSetup._
 
       assertSequencerIsInProgress()
-
-      val probe = createTestProbe[PauseResponse]
-      sequencerActor ! Pause(probe.ref)
-      probe.expectMessage(Ok)
+      assertSequenceIsPaused()
 
       val expected = StepListResult(
         Some(
@@ -191,6 +188,57 @@ class SequencerBehaviorTest extends ScalaTestWithActorTestKit with BaseTestSuite
         )
       )
       assertCurrentSequence(expected)
+    }
+
+    "pause sequencer when it is in loaded state" in {
+      val sequence       = Sequence(command1, command2)
+      val sequencerSetup = new SequencerTestSetup(sequence)
+      import sequencerSetup._
+
+      assertSequencerIsLoaded(Ok)
+      assertSequenceIsPaused()
+
+      val expected = StepListResult(
+        Some(
+          StepList(
+            sequence.runId,
+            List(Step(command1, Pending, hasBreakpoint = true), Step(command2, Pending, hasBreakpoint = false))
+          )
+        )
+      )
+      assertCurrentSequence(expected)
+    }
+  }
+
+  "Resume" must {
+    "resume a paused sequence when sequencer is in-progress" in {
+      val sequence       = Sequence(command1, command2)
+      val sequencerSetup = new SequencerTestSetup(sequence)
+      import sequencerSetup._
+
+      assertSequencerIsInProgress()
+      assertSequenceIsPaused()
+
+      val expectedPausedSequence = StepListResult(
+        Some(
+          StepList(
+            sequence.runId,
+            List(Step(command1, InFlight, hasBreakpoint = false), Step(command2, Pending, hasBreakpoint = true))
+          )
+        )
+      )
+      assertCurrentSequence(expectedPausedSequence)
+      assertSequenceIsResumed()
+
+      val expectedResumedSequence = StepListResult(
+        Some(
+          StepList(
+            sequence.runId,
+            List(Step(command1, InFlight, hasBreakpoint = false), Step(command2, Pending, hasBreakpoint = false))
+          )
+        )
+      )
+      assertCurrentSequence(expectedResumedSequence)
     }
   }
 

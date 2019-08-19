@@ -12,7 +12,14 @@ import csw.location.models.{ComponentId, ComponentType}
 import csw.params.commands.CommandResponse.SubmitResponse
 import csw.params.commands.{CommandResponse, Sequence}
 import esw.ocs.api.models.SequencerState
-import esw.ocs.api.models.messages.SequencerMessages.{EswSequencerMessage, GetPreviousSequence, GetSequence, LoadSequence}
+import esw.ocs.api.models.messages.SequencerMessages.{
+  EswSequencerMessage,
+  GetPreviousSequence,
+  GetSequence,
+  LoadSequence,
+  Pause,
+  Resume
+}
 import esw.ocs.api.models.messages._
 import esw.ocs.dsl.Script
 import org.mockito.Mockito.when
@@ -80,6 +87,18 @@ class SequencerTestSetup(sequence: Sequence)(implicit system: ActorSystem[_], ti
       result.stepList.isDefined shouldBe true
     }
     probe
+  }
+
+  def assertSequenceIsPaused(): Ok.type = {
+    val probe = TestProbe[PauseResponse]
+    sequencerActor ! Pause(probe.ref)
+    probe.expectMessage(Ok)
+  }
+
+  def assertSequenceIsResumed(): Ok.type = {
+    val probe = TestProbe[OkOrUnhandledResponse]
+    sequencerActor ! Resume(probe.ref)
+    probe.expectMessage(Ok)
   }
 
   def assertUnhandled[T >: Unhandled <: EswSequencerResponse](

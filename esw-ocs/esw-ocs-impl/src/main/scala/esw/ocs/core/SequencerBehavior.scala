@@ -11,9 +11,9 @@ import csw.location.models.Connection.AkkaConnection
 import csw.params.commands.Sequence
 import esw.ocs.api.codecs.OcsCodecs
 import esw.ocs.api.models.SequencerState._
+import esw.ocs.api.models.StepList
 import esw.ocs.api.models.messages.SequencerMessages._
 import esw.ocs.api.models.messages.{GoOnlineHookFailed, _}
-import esw.ocs.api.models.StepList
 import esw.ocs.dsl.ScriptDsl
 
 import scala.util.{Failure, Success}
@@ -81,8 +81,8 @@ class SequencerBehavior(
   }
 
   private def goingOnline(state: SequencerActorState)(
-    fallbackBehavior: SequencerActorState => Behavior[SequencerMsg],
-    nextBehavior: SequencerActorState => Behavior[SequencerMsg]
+      fallbackBehavior: SequencerActorState => Behavior[SequencerMsg],
+      nextBehavior: SequencerActorState => Behavior[SequencerMsg]
   ): Behavior[SequencerMsg] =
     receive[GoingOnlineMessage](GoingOnline) { (_, message) =>
       message match {

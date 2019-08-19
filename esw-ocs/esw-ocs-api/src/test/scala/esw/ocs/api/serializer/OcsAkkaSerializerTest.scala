@@ -13,7 +13,7 @@ import csw.params.commands.CommandResponse.Completed
 import csw.params.commands._
 import csw.params.core.models.{Id, Prefix}
 import esw.ocs.api.BaseTestSuite
-import esw.ocs.api.models.SequencerState.{GoingOnline, Idle}
+import esw.ocs.api.models.SequencerState.Idle
 import esw.ocs.api.models.messages.EditorError._
 import esw.ocs.api.models.messages.SequenceComponentMsg.{GetStatus, LoadScript, UnloadScript}
 import esw.ocs.api.models.messages.SequenceComponentResponse.{GetStatusResponse, LoadScriptResponse}
