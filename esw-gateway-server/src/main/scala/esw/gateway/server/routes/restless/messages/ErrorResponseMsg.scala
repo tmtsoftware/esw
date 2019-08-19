@@ -8,7 +8,7 @@ object ErrorResponseMsg {
 
   case class NoEventKeys(msg: String = "Request is missing query parameter key") extends ErrorResponseMsg
 
-  case class SetAlarmSeverityFailure(msg: String) extends ErrorResponseMsg
-  case class InvalidComponent(msg: String)        extends ErrorResponseMsg
-  case class InvalidMaxFrequency(msg: String)     extends ErrorResponseMsg
+  case class SetAlarmSeverityFailure(msg: String)                                           extends ErrorResponseMsg
+  case class InvalidComponent(msg: String)                                                  extends ErrorResponseMsg
+  case class InvalidMaxFrequency(msg: String = "Max frequency should be greater than zero") extends ErrorResponseMsg
 }

@@ -7,7 +7,12 @@ import csw.location.models.codecs.LocationCodecs
 import csw.params.core.formats.{CodecHelpers, ParamCodecs}
 import esw.gateway.server.routes.restless.messages.ErrorResponseMsg._
 import esw.gateway.server.routes.restless.messages.RequestMsg._
-import esw.gateway.server.routes.restless.messages.WebSocketMsg.{CurrentStateSubscriptionCommandMsg, QueryCommandMsg}
+import esw.gateway.server.routes.restless.messages.WebSocketMsg.{
+  CurrentStateSubscriptionCommandMsg,
+  PatternSubscribeEventMsg,
+  QueryCommandMsg,
+  SubscribeEventMsg
+}
 import esw.gateway.server.routes.restless.messages._
 import io.bullet.borer.Codec
 import io.bullet.borer.derivation.MapBasedCodecs.deriveCodec
@@ -36,7 +41,10 @@ trait RestlessCodecs extends ParamCodecs with LocationCodecs with HttpCodecs wit
   implicit def websocketMsgCodec[T <: WebSocketMsg]: Codec[T] = requestMsgCodecValue.asInstanceOf[Codec[T]]
 
   lazy val webSocketMsgCodecValue: Codec[WebSocketMsg] = {
-    @silent implicit lazy val queryCommandMsgCodec: Codec[QueryCommandMsg] = deriveCodec[QueryCommandMsg]
+    @silent implicit lazy val queryCommandMsgCodec: Codec[QueryCommandMsg]     = deriveCodec[QueryCommandMsg]
+    @silent implicit lazy val subscribeEventMsgCodec: Codec[SubscribeEventMsg] = deriveCodec[SubscribeEventMsg]
+    @silent implicit lazy val patternSubscribeEventMsgCodec: Codec[PatternSubscribeEventMsg] =
+      deriveCodec[PatternSubscribeEventMsg]
     @silent implicit lazy val currentStateSubscriptionCommandMsgCodec: Codec[CurrentStateSubscriptionCommandMsg] =
       deriveCodec[CurrentStateSubscriptionCommandMsg]
 

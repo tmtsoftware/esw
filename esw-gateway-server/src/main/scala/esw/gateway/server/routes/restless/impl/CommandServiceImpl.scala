@@ -1,12 +1,17 @@
 package esw.gateway.server.routes.restless.impl
 
+import akka.stream.OverflowStrategy
+import akka.stream.scaladsl.Source
 import akka.util.Timeout
 import csw.params.commands.CommandResponse
+import csw.params.core.states.CurrentState
 import esw.gateway.server.routes.restless.api.CommandServiceApi
 import esw.gateway.server.routes.restless.messages.CommandAction.{Oneway, Submit, Validate}
-import esw.gateway.server.routes.restless.messages.ErrorResponseMsg.InvalidComponent
+import esw.gateway.server.routes.restless.messages.ErrorResponseMsg
+import esw.gateway.server.routes.restless.messages.ErrorResponseMsg.{InvalidComponent, InvalidMaxFrequency}
 import esw.gateway.server.routes.restless.messages.RequestMsg.CommandMsg
-import esw.gateway.server.routes.restless.messages.{ErrorResponseMsg, WebSocketMsg}
+import esw.gateway.server.routes.restless.messages.WebSocketMsg.{CurrentStateSubscriptionCommandMsg, QueryCommandMsg}
+import esw.gateway.server.routes.restless.utils.Utils.emptySourceWithError
 import esw.http.core.utils.CswContext
 
 import scala.concurrent.Future
@@ -36,7 +41,7 @@ class CommandServiceImpl(cswCtx: CswContext) extends CommandServiceApi {
       }
   }
 
-  def queryFinal(queryCommandMsg: WebSocketMsg.QueryCommandMsg): Future[Either[ErrorResponseMsg, CommandResponse]] = {
+  def queryFinal(queryCommandMsg: QueryCommandMsg): Future[Either[ErrorResponseMsg, CommandResponse]] = {
     import queryCommandMsg._
     componentFactory
       .commandService(componentName, componentType)
@@ -47,6 +52,26 @@ class CommandServiceImpl(cswCtx: CswContext) extends CommandServiceApi {
       }
   }
 
-  override def subscribeCurrentState(currentStateSubscriptionCommandMsg: WebSocketMsg.CurrentStateSubscriptionCommandMsg): Unit =
-    ???
+  override def subscribeCurrentState(
+      currentStateSubscriptionCommandMsg: CurrentStateSubscriptionCommandMsg
+  ): Future[Source[CurrentState, Future[Option[ErrorResponseMsg]]]] = {
+    import currentStateSubscriptionCommandMsg._
+
+    def currentStateSourceF: Future[Source[CurrentState, Future[Option[ErrorResponseMsg]]]] = {
+      componentFactory
+        .commandService(componentName, componentType)
+        .map(_.subscribeCurrentState(stateNames).mapMaterializedValue(_ => Future.successful(None)))
+        .recover {
+          case NonFatal(ex) => emptySourceWithError(InvalidComponent(ex.getMessage))
+        }
+    }
+
+    maxFrequency match {
+      case Some(x) if x <= 0 =>
+        Future.successful { emptySourceWithError(InvalidMaxFrequency()) }
+      case Some(frequency) =>
+        currentStateSourceF.map(_.buffer(1, OverflowStrategy.dropHead).throttle(frequency, 1.seconds))
+      case None => currentStateSourceF
+    }
+  }
 }

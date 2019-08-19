@@ -1,7 +1,7 @@
 package esw.gateway.server.routes.restless.messages
 
 import csw.location.models.ComponentType
-import csw.params.core.models.Id
+import csw.params.core.models.{Id, Subsystem}
 import csw.params.core.states.StateName
 
 sealed trait WebSocketMsg
@@ -15,4 +15,6 @@ object WebSocketMsg {
       maxFrequency: Option[Int]
   ) extends WebSocketMsg
 
+  case class SubscribeEventMsg(eventKeys: Set[String], maxFrequency: Option[Int])                             extends WebSocketMsg
+  case class PatternSubscribeEventMsg(subsystem: Subsystem, maxFrequency: Option[Int], pattern: String = "*") extends WebSocketMsg
 }
