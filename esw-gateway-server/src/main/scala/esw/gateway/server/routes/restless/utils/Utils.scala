@@ -1,11 +1,10 @@
 package esw.gateway.server.routes.restless.utils
 
 import akka.stream.scaladsl.Source
-import esw.gateway.server.routes.restless.messages.ErrorResponseMsg
 
 import scala.concurrent.Future
 
 object Utils {
-  def emptySourceWithError(error: ErrorResponseMsg): Source[Nothing, Future[Some[ErrorResponseMsg]]] =
+  def emptySourceWithError[T](error: T): Source[Nothing, Future[Some[T]]] =
     Source.empty.mapMaterializedValue(_ => Future.successful(Some(error)))
 }
