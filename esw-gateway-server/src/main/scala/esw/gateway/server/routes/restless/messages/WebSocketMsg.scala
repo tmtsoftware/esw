@@ -15,6 +15,7 @@ object WebSocketMsg {
       maxFrequency: Option[Int]
   ) extends WebSocketMsg
 
+  //fixme: Add codec for EventKey in CSW and use Set[EventKey]
   case class SubscribeEventMsg(eventKeys: Set[String], maxFrequency: Option[Int])                             extends WebSocketMsg
   case class PatternSubscribeEventMsg(subsystem: Subsystem, maxFrequency: Option[Int], pattern: String = "*") extends WebSocketMsg
 }

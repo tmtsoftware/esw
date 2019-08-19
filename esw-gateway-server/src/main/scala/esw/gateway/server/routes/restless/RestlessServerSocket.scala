@@ -16,9 +16,6 @@ import msocket.core.api.Payload
 import msocket.core.api.ToPayload.{FutureToPayload, SourceWithErrorToPayload}
 import msocket.core.server.ServerSocket
 
-import scala.concurrent.Await
-import scala.concurrent.duration.DurationDouble
-
 class RestlessServerSocket(cswCtx: CswContext) extends ServerSocket[WebSocketMsg] with RestlessCodecs {
 
   lazy val commandServiceApi: CommandServiceImpl = new CommandServiceImpl(cswCtx)
@@ -30,7 +27,7 @@ class RestlessServerSocket(cswCtx: CswContext) extends ServerSocket[WebSocketMsg
   override def requestStream(request: WebSocketMsg): Source[Payload[_], NotUsed] = request match {
     case queryCommandMsg: QueryCommandMsg => commandServiceApi.queryFinal(queryCommandMsg).payload
     case subscriptionCommandMsg: CurrentStateSubscriptionCommandMsg =>
-      Await.result(commandServiceApi.subscribeCurrentState(subscriptionCommandMsg), 5.seconds).resultPayloads
+      commandServiceApi.subscribeCurrentState(subscriptionCommandMsg).resultPayloads
     case subscribeEventMsg: SubscribeEventMsg         => eventServiceApi.subscribe(subscribeEventMsg).resultPayloads
     case pSubscribeEventMsg: PatternSubscribeEventMsg => eventServiceApi.pSubscribe(pSubscribeEventMsg).resultPayloads
   }

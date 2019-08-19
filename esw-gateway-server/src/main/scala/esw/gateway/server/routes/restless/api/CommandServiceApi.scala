@@ -14,5 +14,5 @@ trait CommandServiceApi {
   def queryFinal(queryCommandMsg: QueryCommandMsg): Future[Either[ErrorResponseMsg, CommandResponse]]
   def subscribeCurrentState(
       currentStateSubscriptionCommandMsg: CurrentStateSubscriptionCommandMsg
-  ): Future[Source[CurrentState, Future[Option[ErrorResponseMsg]]]]
+  ): Source[CurrentState, Future[Option[ErrorResponseMsg]]]
 }

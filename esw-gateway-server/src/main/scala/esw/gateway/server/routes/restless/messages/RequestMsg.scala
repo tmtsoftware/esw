@@ -12,8 +12,8 @@ object RequestMsg {
 
   case class CommandMsg(componentType: ComponentType, componentName: String, command: ControlCommand, action: CommandAction)
       extends RequestMsg
-
-  case class PublishEventMsg(event: Event)       extends RequestMsg
+  case class PublishEventMsg(event: Event) extends RequestMsg
+  //fixme: Add codec for EventKey in CSW and use Set[EventKey]
   case class GetEventMsg(eventKeys: Set[String]) extends RequestMsg
   case class SetAlarmSeverityMsg(subsystem: Subsystem, componentName: String, alarmName: String, severity: AlarmSeverity)
       extends RequestMsg

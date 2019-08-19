@@ -54,24 +54,27 @@ class CommandServiceImpl(cswCtx: CswContext) extends CommandServiceApi {
 
   override def subscribeCurrentState(
       currentStateSubscriptionCommandMsg: CurrentStateSubscriptionCommandMsg
-  ): Future[Source[CurrentState, Future[Option[ErrorResponseMsg]]]] = {
+  ): Source[CurrentState, Future[Option[ErrorResponseMsg]]] = {
     import currentStateSubscriptionCommandMsg._
 
-    def currentStateSourceF: Future[Source[CurrentState, Future[Option[ErrorResponseMsg]]]] = {
-      componentFactory
-        .commandService(componentName, componentType)
-        .map(_.subscribeCurrentState(stateNames).mapMaterializedValue(_ => Future.successful(None)))
-        .recover {
-          case NonFatal(ex) => emptySourceWithError(InvalidComponent(ex.getMessage))
-        }
+    def currentStateSource: Source[CurrentState, Future[Option[ErrorResponseMsg]]] = {
+      Source
+        .fromFutureSource(
+          componentFactory
+            .commandService(componentName, componentType)
+            .map(_.subscribeCurrentState(stateNames).mapMaterializedValue(_ => Future.successful(None)))
+            .recover {
+              case NonFatal(ex) => emptySourceWithError(InvalidComponent(ex.getMessage))
+            }
+        )
+        .mapMaterializedValue(_.flatten)
     }
 
     maxFrequency match {
       case Some(x) if x <= 0 =>
-        Future.successful { emptySourceWithError(InvalidMaxFrequency()) }
-      case Some(frequency) =>
-        currentStateSourceF.map(_.buffer(1, OverflowStrategy.dropHead).throttle(frequency, 1.seconds))
-      case None => currentStateSourceF
+        emptySourceWithError(InvalidMaxFrequency())
+      case Some(frequency) => currentStateSource.buffer(1, OverflowStrategy.dropHead).throttle(frequency, 1.seconds)
+      case None            => currentStateSource
     }
   }
 }
