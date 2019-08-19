@@ -6,7 +6,7 @@ import csw.command.client.messages.sequencer.SequencerMsg
 import csw.params.commands.{CommandName, Sequence, Setup}
 import csw.params.core.models.{Id, Prefix}
 import esw.ocs.api.BaseTestSuite
-import esw.ocs.api.models.SequencerBehaviorState.{Idle, Offline}
+import esw.ocs.api.models.SequencerState.{Idle, Offline}
 import esw.ocs.api.models.StepList
 import esw.ocs.api.models.messages.EditorError.{CannotOperateOnAnInFlightOrFinishedStep, IdDoesNotExist}
 import esw.ocs.api.models.messages.SequencerMessages._

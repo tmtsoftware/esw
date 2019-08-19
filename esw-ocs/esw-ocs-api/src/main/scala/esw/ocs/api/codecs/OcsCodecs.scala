@@ -61,16 +61,16 @@ trait OcsCodecs extends MessageCodecs with DoneCodec {
   implicit lazy val stepStatusCodec: Codec[StepStatus]        = deriveCodec[StepStatus]
 
   //StepListResponse Codecs
-  implicit lazy val responseCodec: Codec[EswSequencerResponse]                 = deriveCodec[EswSequencerResponse]
-  implicit lazy val stepListResponseCodec: Codec[StepListResult]               = deriveCodec[StepListResult]
-  implicit lazy val pullNextResultCodec: Codec[PullNextResult]                 = deriveCodec[PullNextResult]
-  implicit lazy val maybeNextResultCodec: Codec[MaybeNextResult]               = deriveCodec[MaybeNextResult]
-  implicit lazy val sequenceResultCodec: Codec[SequenceResult]                 = deriveCodec[SequenceResult]
-  implicit lazy val okCodec: Codec[Ok.type]                                    = singletonCodec(Ok)
-  implicit lazy val duplicateIdsFoundCodec: Codec[DuplicateIdsFound.type]      = singletonCodec(DuplicateIdsFound)
-  implicit lazy val sequencerBehaviorStateCodec: Codec[SequencerBehaviorState] = enumCodec[SequencerBehaviorState]
-  implicit lazy val unhandledCodec: Codec[Unhandled]                           = deriveCodec[Unhandled]
-  implicit lazy val idDoesNotExistCodec: Codec[IdDoesNotExist]                 = deriveCodec[IdDoesNotExist]
+  implicit lazy val responseCodec: Codec[EswSequencerResponse]            = deriveCodec[EswSequencerResponse]
+  implicit lazy val stepListResponseCodec: Codec[StepListResult]          = deriveCodec[StepListResult]
+  implicit lazy val pullNextResultCodec: Codec[PullNextResult]            = deriveCodec[PullNextResult]
+  implicit lazy val maybeNextResultCodec: Codec[MaybeNextResult]          = deriveCodec[MaybeNextResult]
+  implicit lazy val sequenceResultCodec: Codec[SequenceResult]            = deriveCodec[SequenceResult]
+  implicit lazy val okCodec: Codec[Ok.type]                               = singletonCodec(Ok)
+  implicit lazy val duplicateIdsFoundCodec: Codec[DuplicateIdsFound.type] = singletonCodec(DuplicateIdsFound)
+  implicit lazy val sequencerBehaviorStateCodec: Codec[SequencerState]    = enumCodec[SequencerState]
+  implicit lazy val unhandledCodec: Codec[Unhandled]                      = deriveCodec[Unhandled]
+  implicit lazy val idDoesNotExistCodec: Codec[IdDoesNotExist]            = deriveCodec[IdDoesNotExist]
   implicit lazy val inFlightOrFinishedStepErrorCodec: Codec[CannotOperateOnAnInFlightOrFinishedStep.type] =
     singletonCodec(CannotOperateOnAnInFlightOrFinishedStep)
   implicit lazy val handlersFailedCodec: Codec[GoOnlineHookFailed.type] = singletonCodec(GoOnlineHookFailed)

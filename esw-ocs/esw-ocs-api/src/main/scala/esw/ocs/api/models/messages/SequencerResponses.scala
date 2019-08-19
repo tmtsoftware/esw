@@ -2,7 +2,7 @@ package esw.ocs.api.models.messages
 
 import csw.params.commands.CommandResponse.{Error, SubmitResponse}
 import csw.params.core.models.Id
-import esw.ocs.api.models.{SequencerBehaviorState, Step, StepList}
+import esw.ocs.api.models.{SequencerState, Step, StepList}
 import esw.ocs.api.serializer.OcsAkkaSerializable
 
 sealed trait EswSequencerResponse     extends OcsAkkaSerializable
@@ -37,7 +37,7 @@ case class PullNextResult(step: Step)                     extends PullNextRespon
 case class MaybeNextResult(step: Option[Step])            extends MaybeNextResponse
 case class SequenceResult(submitResponse: SubmitResponse) extends SequenceResponse
 
-case class Unhandled(state: SequencerBehaviorState, messageType: String)
+case class Unhandled(state: SequencerState, messageType: String)
     extends OkOrUnhandledResponse
     with GenericResponse
     with PauseResponse

@@ -14,7 +14,7 @@ import esw.ocs.api.models.{Step, StepList}
 import scala.concurrent.Future
 import scala.util.{Failure, Success}
 
-private[core] case class SequencerState(
+private[core] case class SequencerActorState(
     stepList: Option[StepList],
     previousStepList: Option[StepList],
     readyToExecuteSubscriber: Option[ActorRef[OkOrUnhandledResponse]],
@@ -32,7 +32,7 @@ private[core] case class SequencerState(
   private val sequenceId   = stepList.map(_.runId)
   private val emptyChildId = Id("empty-child") // fixme
 
-  def startSequence(replyTo: ActorRef[SequenceResponse]): SequencerState = {
+  def startSequence(replyTo: ActorRef[SequenceResponse]): SequencerActorState = {
     val newState = stepList.flatMap(_.nextExecutable) match {
       case Some(step) =>
         val (newStep, newState) = setInFlight(step)
@@ -44,12 +44,12 @@ private[core] case class SequencerState(
     newState
   }
 
-  def pullNextStep(replyTo: ActorRef[PullNextResult]): SequencerState = {
+  def pullNextStep(replyTo: ActorRef[PullNextResult]): SequencerActorState = {
     val newState = copy(stepRefSubscriber = Some(replyTo))
     sendNextPendingStepIfAvailable(newState)
   }
 
-  def readyToExecuteNext(replyTo: ActorRef[OkOrUnhandledResponse]): SequencerState =
+  def readyToExecuteNext(replyTo: ActorRef[OkOrUnhandledResponse]): SequencerActorState =
     if (stepList.exists(_.isInFlight) || stepList.exists(_.isFinished)) {
       copy(readyToExecuteSubscriber = Some(replyTo))
     } else {
@@ -57,7 +57,7 @@ private[core] case class SequencerState(
       copy(readyToExecuteSubscriber = None)
     }
 
-  def updateStepListResult[T >: Ok.type](replyTo: ActorRef[T], stepListResult: Option[Either[T, StepList]]): SequencerState =
+  def updateStepListResult[T >: Ok.type](replyTo: ActorRef[T], stepListResult: Option[Either[T, StepList]]): SequencerActorState =
     stepListResult
       .map {
         case Left(error)     => replyTo ! error; this
@@ -65,14 +65,14 @@ private[core] case class SequencerState(
       }
       .getOrElse(this) // This will never happen as this method gets called from inProgress state
 
-  def updateStepList[T >: Ok.type](replyTo: ActorRef[T], stepList: Option[StepList]): SequencerState = {
+  def updateStepList[T >: Ok.type](replyTo: ActorRef[T], stepList: Option[StepList]): SequencerActorState = {
     val newState = copy(stepList)
     replyTo ! Ok
     checkForSequenceCompletion(newState)
     sendNextPendingStepIfAvailable(newState)
   }
 
-  def updateStepStatus(submitResponse: SubmitResponse): SequencerState = {
+  def updateStepStatus(submitResponse: SubmitResponse): SequencerActorState = {
     val stepStatus = submitResponse match {
       case submitResponse if CommandResponse.isPositive(submitResponse) => Finished.Success(submitResponse)
       case failureResponse                                              => Finished.Failure(failureResponse)
@@ -86,7 +86,7 @@ private[core] case class SequencerState(
     newState
   }
 
-  private def sendNextPendingStepIfAvailable(state: SequencerState): SequencerState = {
+  private def sendNextPendingStepIfAvailable(state: SequencerActorState): SequencerActorState = {
     val maybeState = for {
       ref         <- state.stepRefSubscriber
       pendingStep <- state.stepList.flatMap(_.nextExecutable)
@@ -99,7 +99,7 @@ private[core] case class SequencerState(
     maybeState.getOrElse(state)
   }
 
-  private def setInFlight(step: Step): (Step, SequencerState) = {
+  private def setInFlight(step: Step): (Step, SequencerActorState) = {
     val inflightStep = step.withStatus(InFlight)
     val newState     = copy(stepList = stepList.map(_.updateStep(inflightStep)))
     updateStepInCrmAndHandleResponse(step.id)
@@ -143,21 +143,21 @@ private[core] case class SequencerState(
 
   private def goToIdle(): Unit = self ! GoIdle(actorSystem.deadLetters)
 
-  private def sendStepToSubscriber(state: SequencerState, step: Step): SequencerState = {
+  private def sendStepToSubscriber(state: SequencerActorState, step: Step): SequencerActorState = {
     state.stepRefSubscriber.foreach(_ ! PullNextResult(step))
     state.copy(stepRefSubscriber = None)
   }
 
-  private def checkForSequenceCompletion(state: SequencerState): Unit =
+  private def checkForSequenceCompletion(state: SequencerActorState): Unit =
     if (state.stepList.exists(_.isFinished)) {
       crm.updateSubCommand(Completed(emptyChildId))
     }
 }
 
-object SequencerState {
+object SequencerActorState {
   def initial(
       self: ActorRef[EswSequencerMessage],
       crm: CommandResponseManager
   )(implicit actorSystem: ActorSystem[_], timeout: Timeout) =
-    SequencerState(None, None, None, None, self, crm, actorSystem, timeout)
+    SequencerActorState(None, None, None, None, self, crm, actorSystem, timeout)
 }

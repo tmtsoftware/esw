@@ -9,7 +9,7 @@ import csw.params.commands.CommandResponse.{Completed, Error, SubmitResponse}
 import csw.params.commands.{CommandName, Sequence, Setup}
 import csw.params.core.models.{Id, Prefix}
 import esw.ocs.api.BaseTestSuite
-import esw.ocs.api.models.SequencerBehaviorState.{Idle, InProgress, Loaded}
+import esw.ocs.api.models.SequencerState.{Idle, InProgress, Loaded}
 import esw.ocs.api.models.StepStatus.{Finished, InFlight, Pending}
 import esw.ocs.api.models.messages.SequencerMessages._
 import esw.ocs.api.models.messages._

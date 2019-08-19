@@ -11,7 +11,7 @@ import csw.location.api.scaladsl.LocationService
 import csw.location.models.{ComponentId, ComponentType}
 import csw.params.commands.CommandResponse.SubmitResponse
 import csw.params.commands.{CommandResponse, Sequence}
-import esw.ocs.api.models.SequencerBehaviorState
+import esw.ocs.api.models.SequencerState
 import esw.ocs.api.models.messages.SequencerMessages.{EswSequencerMessage, GetPreviousSequence, GetSequence, LoadSequence}
 import esw.ocs.api.models.messages._
 import esw.ocs.dsl.Script
@@ -83,7 +83,7 @@ class SequencerTestSetup(sequence: Sequence)(implicit system: ActorSystem[_], ti
   }
 
   def assertUnhandled[T >: Unhandled <: EswSequencerResponse](
-      state: SequencerBehaviorState,
+      state: SequencerState,
       msg: ActorRef[T] => EswSequencerMessage
   ): Unit = {
     val probe            = TestProbe[T]
@@ -93,7 +93,7 @@ class SequencerTestSetup(sequence: Sequence)(implicit system: ActorSystem[_], ti
   }
 
   def assertUnhandled[T >: Unhandled <: EswSequencerResponse](
-      state: SequencerBehaviorState,
+      state: SequencerState,
       msgs: (ActorRef[T] => EswSequencerMessage)*
   ): Unit =
     msgs.foreach(assertUnhandled(state, _))

@@ -6,7 +6,7 @@ import akka.actor.typed.scaladsl.AskPattern._
 import akka.actor.typed.scaladsl.{ActorContext, Behaviors}
 import akka.util.Timeout
 import csw.command.client.messages.sequencer.{LoadAndStartSequence, SequencerMsg}
-import esw.ocs.api.models.SequencerBehaviorState
+import esw.ocs.api.models.SequencerState
 import esw.ocs.api.models.messages.SequencerMessages.{EswSequencerMessage, LoadAndStartSequenceInternal}
 import esw.ocs.api.models.messages.{SequenceResponse, Unhandled}
 import esw.ocs.internal.Timeouts
@@ -16,7 +16,7 @@ import scala.reflect.ClassTag
 
 private[ocs] trait CustomReceive {
 
-  protected def receive[T <: SequencerMsg: ClassTag](stateName: SequencerBehaviorState)(
+  protected def receive[T <: SequencerMsg: ClassTag](state: SequencerState)(
       f: (ActorContext[SequencerMsg], T) => Behavior[SequencerMsg]
   ): Behavior[SequencerMsg] = Behaviors.receive { (ctx, msg) =>
     import ctx.executionContext
@@ -25,7 +25,7 @@ private[ocs] trait CustomReceive {
 
     msg match {
       case msg: T                   => f(ctx, msg)
-      case msg: EswSequencerMessage => msg.replyTo ! Unhandled(stateName, msg.getClass.getSimpleName); Behaviors.same
+      case msg: EswSequencerMessage => msg.replyTo ! Unhandled(state, msg.getClass.getSimpleName); Behaviors.same
       case LoadAndStartSequence(sequence, replyTo) =>
         val sequenceResponseF: Future[SequenceResponse] = ctx.self ? (LoadAndStartSequenceInternal(sequence, _))
         sequenceResponseF.foreach(res => replyTo ! res.toSubmitResponse(sequence.runId))
