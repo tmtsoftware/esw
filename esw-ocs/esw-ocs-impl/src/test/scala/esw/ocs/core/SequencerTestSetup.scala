@@ -1,5 +1,6 @@
 package esw.ocs.core
 
+import akka.Done
 import akka.actor.testkit.typed.scaladsl.TestProbe
 import akka.actor.typed.{ActorRef, ActorSystem}
 import akka.util.Timeout
@@ -102,6 +103,21 @@ class SequencerTestSetup(sequence: Sequence)(implicit system: ActorSystem[_], ti
       sequencerActor ! GetSequence(p.ref)
       val result = p.expectMessageType[StepListResult]
       result.stepList.isDefined shouldBe true
+    }
+    probe
+  }
+
+  def assertSequenceIsAborted(): TestProbe[OkOrUnhandledResponse] = {
+    val probe = TestProbe[OkOrUnhandledResponse]
+    when(script.executeAbort()).thenReturn(Future.successful(Done))
+    sequencerActor ! AbortSequence(probe.ref)
+    val p: TestProbe[StepListResponse] = TestProbe[StepListResponse]
+
+    eventually {
+      sequencerActor ! GetSequence(p.ref)
+      val result = p.expectMessageType[StepListResult]
+      result.stepList.get.nextPending shouldBe None
+      probe.expectMessage(Ok)
     }
     probe
   }

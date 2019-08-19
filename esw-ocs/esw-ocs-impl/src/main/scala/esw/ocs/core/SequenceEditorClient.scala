@@ -19,7 +19,7 @@ class SequenceEditorClient(sequencer: ActorRef[EswSequencerMessage])(implicit sy
   override def getSequence: Future[StepListResponse]         = sequencer ? GetSequence
   override def getPreviousSequence: Future[StepListResponse] = sequencer ? GetPreviousSequence
 
-  override def add(commands: List[SequenceCommand]): Future[OkOrUnhandledResponse]       = sequencer.ask(r => Add(commands, r))
+  override def add(commands: List[SequenceCommand]): Future[OkOrUnhandledResponse]       = sequencer ? (Add(commands, _))
   override def prepend(commands: List[SequenceCommand]): Future[OkOrUnhandledResponse]   = sequencer ? (Prepend(commands, _))
   override def replace(id: Id, commands: List[SequenceCommand]): Future[GenericResponse] = sequencer ? (Replace(id, commands, _))
 

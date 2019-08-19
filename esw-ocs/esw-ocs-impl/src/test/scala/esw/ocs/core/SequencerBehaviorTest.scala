@@ -310,4 +310,21 @@ class SequencerBehaviorTest extends ScalaTestWithActorTestKit with BaseTestSuite
     )
   }
 
+  "AbortSequence" must {
+    "abort the given sequence in Loaded state | ESW-155, ESW-137" in {
+      val sequencerSetup = new SequencerTestSetup(sequence)
+      import sequencerSetup._
+      assertSequencerIsLoaded(Ok)
+      assertSequenceIsAborted()
+      val expectedResult = StepListResult(Some(StepList(sequence.runId, List.empty)))
+      assertCurrentSequence(expectedResult)
+    }
+
+    "abort the given sequence in InProgress state | ESW-155, ESW-137" in {
+      val sequencerSetup = new SequencerTestSetup(sequence)
+      import sequencerSetup._
+      assertSequencerIsInProgress()
+      assertSequenceIsAborted()
+    }
+  }
 }
