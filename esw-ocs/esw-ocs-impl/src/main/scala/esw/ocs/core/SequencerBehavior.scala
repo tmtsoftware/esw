@@ -15,7 +15,6 @@ import esw.ocs.api.models.messages.{GoOnlineHookFailed, _}
 import esw.ocs.api.models.{SequencerState, StepList}
 import esw.ocs.dsl.ScriptDsl
 
-import scala.concurrent.ExecutionContext
 import scala.util.{Failure, Success}
 
 class SequencerBehavior(
@@ -27,15 +26,16 @@ class SequencerBehavior(
     extends CustomReceive
     with OcsCodecs {
 
+  import actorSystem.executionContext
+
   def setup: Behavior[SequencerMsg] = Behaviors.setup { ctx =>
     idle(SequencerState.initial(ctx.self, crm))
   }
 
   //BEHAVIORS
-  private def idle(state: SequencerState): Behavior[SequencerMsg] = receive[IdleMessage]("idle") { (ctx, msg) =>
-    import ctx.executionContext
+  private def idle(state: SequencerState): Behavior[SequencerMsg] = receive[IdleMessage]("idle") { (_, msg) =>
     msg match {
-      case msg: CommonMessage                              => handleCommonMessage(msg, state, _ => ctx.system.terminate)
+      case msg: CommonMessage                              => handleCommonMessage(msg, state)
       case LoadSequence(sequence, replyTo)                 => load(sequence, replyTo, state)(nextBehavior = loaded)
       case LoadAndStartSequenceInternal(sequence, replyTo) => loadAndStart(sequence, state, replyTo)
       case GoOffline(replyTo)                              => goOffline(replyTo, state)
@@ -43,44 +43,36 @@ class SequencerBehavior(
     }
   }
 
-  private def loaded(state: SequencerState): Behavior[SequencerMsg] = receive[SequenceLoadedMessage]("loaded") { (ctx, msg) =>
-    import ctx.executionContext
+  private def loaded(state: SequencerState): Behavior[SequencerMsg] = receive[SequenceLoadedMessage]("loaded") { (_, msg) =>
     msg match {
-      case msg: CommonMessage         => handleCommonMessage(msg, state, _ => ctx.system.terminate)
+      case msg: CommonMessage         => handleCommonMessage(msg, state)
       case editorAction: EditorAction => loaded(handleEditorAction(editorAction, state))
       case GoOffline(replyTo)         => goOffline(replyTo, state)
       case StartSequence(replyTo)     => start(state, replyTo)
     }
   }
 
-  private def inProgress(state: SequencerState): Behavior[SequencerMsg] = receive[InProgressMessage]("in-progress") {
-    (ctx, msg) =>
-      import ctx.executionContext
-      msg match {
-        case msg: CommonMessage          => handleCommonMessage(msg, state, _ => ctx.system.terminate)
-        case msg: EditorAction           => inProgress(handleEditorAction(msg, state))
-        case PullNext(replyTo)           => inProgress(state.pullNextStep(replyTo))
-        case MaybeNext(replyTo)          => replyTo ! MaybeNextResult(state.stepList.flatMap(_.nextExecutable)); Behaviors.same
-        case ReadyToExecuteNext(replyTo) => inProgress(state.readyToExecuteNext(replyTo))
-        case Update(submitResponse, _)   => inProgress(state.updateStepStatus(submitResponse))
-        case _: GoIdle                   => idle(state)
-      }
+  private def inProgress(state: SequencerState): Behavior[SequencerMsg] = receive[InProgressMessage]("in-progress") { (_, msg) =>
+    msg match {
+      case msg: CommonMessage          => handleCommonMessage(msg, state)
+      case msg: EditorAction           => inProgress(handleEditorAction(msg, state))
+      case PullNext(replyTo)           => inProgress(state.pullNextStep(replyTo))
+      case MaybeNext(replyTo)          => replyTo ! MaybeNextResult(state.stepList.flatMap(_.nextExecutable)); Behaviors.same
+      case ReadyToExecuteNext(replyTo) => inProgress(state.readyToExecuteNext(replyTo))
+      case Update(submitResponse, _)   => inProgress(state.updateStepStatus(submitResponse))
+      case _: GoIdle                   => idle(state)
+    }
   }
 
-  private def offline(state: SequencerState): Behavior[SequencerMsg] = receive[OfflineMessage]("offline") { (ctx, message) =>
-    import ctx.executionContext
+  private def offline(state: SequencerState): Behavior[SequencerMsg] = receive[OfflineMessage]("offline") { (_, message) =>
     message match {
-      case msg: CommonMessage => handleCommonMessage(msg, state, _ => ctx.system.terminate)
+      case msg: CommonMessage => handleCommonMessage(msg, state)
       case GoOnline(replyTo)  => goOnline(replyTo, state)(fallbackBehavior = offline, nextBehavior = idle)
     }
   }
 
-  private def handleCommonMessage(
-      message: CommonMessage,
-      state: SequencerState,
-      killFunction: Unit => Unit
-  )(implicit ec: ExecutionContext): Behavior[SequencerMsg] = message match {
-    case Shutdown(replyTo)            => shutdown(state, replyTo, killFunction)
+  private def handleCommonMessage(message: CommonMessage, state: SequencerState): Behavior[SequencerMsg] = message match {
+    case Shutdown(replyTo)            => shutdown(state, replyTo)
     case GetSequence(replyTo)         => sendStepListResponse(replyTo, state.stepList)
     case GetPreviousSequence(replyTo) => sendStepListResponse(replyTo, state.previousStepList)
   }
@@ -131,9 +123,7 @@ class SequencerBehavior(
     Behaviors.same
   }
 
-  private def shutdown(state: SequencerState, replyTo: ActorRef[OkOrUnhandledResponse], killFunction: Unit => Unit)(
-      implicit ec: ExecutionContext
-  ): Behavior[SequencerMsg] = {
+  private def shutdown(state: SequencerState, replyTo: ActorRef[OkOrUnhandledResponse]): Behavior[SequencerMsg] = {
 
     // run both the futures in parallel and wait for both to complete
     // once all finished, send ShutdownComplete self message irrespective of any failures
@@ -141,13 +131,13 @@ class SequencerBehavior(
     val f2 = script.executeShutdown()
     f1.onComplete(_ => f2.onComplete(_ => state.self ! ShutdownComplete(replyTo)))
 
-    shuttingDown(killFunction)
+    shuttingDown()
   }
 
-  private def shuttingDown(killFunction: Unit => Unit) = receive[ShuttingDownMessage]("shutting-down") {
+  private def shuttingDown() = receive[ShuttingDownMessage]("shutting-down") {
     case (_, ShutdownComplete(replyTo)) =>
       replyTo ! Ok
-      killFunction(())
+      actorSystem.terminate()
       Behaviors.stopped
   }
 
@@ -155,10 +145,9 @@ class SequencerBehavior(
       fallbackBehavior: SequencerState => Behavior[SequencerMsg],
       nextBehavior: SequencerState => Behavior[SequencerMsg]
   ): Behavior[SequencerMsg] =
-    receive[GoingOnlineMessage]("going-online") { (ctx, message) =>
-      import ctx.executionContext
+    receive[GoingOnlineMessage]("going-online") { (_, message) =>
       message match {
-        case msg: CommonMessage       => handleCommonMessage(msg, state, _ => ctx.system.terminate)
+        case msg: CommonMessage       => handleCommonMessage(msg, state)
         case GoOnlineSuccess(replyTo) => replyTo ! Ok; nextBehavior(state)
         case GoOnlineFailed(replyTo)  => replyTo ! GoOnlineHookFailed; fallbackBehavior(state)
       }
@@ -167,7 +156,7 @@ class SequencerBehavior(
   private def goOnline(replyTo: ActorRef[GoOnlineResponse], state: SequencerState)(
       fallbackBehavior: SequencerState => Behavior[SequencerMsg],
       nextBehavior: SequencerState => Behavior[SequencerMsg]
-  )(implicit ec: ExecutionContext): Behavior[SequencerMsg] = {
+  ): Behavior[SequencerMsg] = {
     script.executeGoOnline().onComplete {
       case Success(_) => state.self ! GoOnlineSuccess(replyTo)
       case Failure(_) => state.self ! GoOnlineFailed(replyTo)
@@ -176,17 +165,14 @@ class SequencerBehavior(
   }
 
   private def goingOffline(state: SequencerState): Behavior[SequencerMsg] = receive[GoingOfflineMessage]("going-offline") {
-    (ctx, message) =>
-      import ctx.executionContext
+    (_, message) =>
       message match {
-        case msg: CommonMessage   => handleCommonMessage(msg, state, _ => ctx.system.terminate)
+        case msg: CommonMessage   => handleCommonMessage(msg, state)
         case GoneOffline(replyTo) => replyTo ! Ok; offline(state.copy(stepList = None))
       }
   }
 
-  private def goOffline(replyTo: ActorRef[OkOrUnhandledResponse], state: SequencerState)(
-      implicit ec: ExecutionContext
-  ): Behavior[SequencerMsg] = {
+  private def goOffline(replyTo: ActorRef[OkOrUnhandledResponse], state: SequencerState): Behavior[SequencerMsg] = {
     // go to offline state even if handler fails, note that this is different than GoOnline
     script.executeGoOffline().onComplete(_ => state.self ! GoneOffline(replyTo))
     goingOffline(state)
