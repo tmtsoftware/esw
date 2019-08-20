@@ -42,7 +42,7 @@ class FutureUtilsTest extends BaseTestSuite {
       }
 
       //after 300ms ensure that future not completed as function takes more than 500ms
-      task.isReadyWithin(300.millis) shouldBe false
+      task.isReadyWithin(200.millis) shouldBe false
 
       //eventually, ensure that future is complete (after 500ms)
       task.futureValue shouldBe true

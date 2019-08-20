@@ -14,13 +14,16 @@ class ControlDslTest extends BaseTestSuite {
 
   class TestDsl() extends ControlDsl {
     override private[ocs] val loopInterval = 500.millis
-    def counterLoop(minimumDelay: Option[FiniteDuration] = None): (() => Int, Future[Done]) = {
+    def counterLoop(minimumDelay: Option[FiniteDuration] = None): (() => Future[Int], Future[Done]) = {
       var counter = 0
 
       def increment: Future[StopIf] = Future {
         counter += 1
+        println(counter)
         stopIf(counter == 3)
       }
+
+      def getCounter: Future[Int] = Future(counter)
 
       val loopFinished =
         minimumDelay match {
@@ -28,7 +31,7 @@ class ControlDslTest extends BaseTestSuite {
           case None        => loop(increment)
         }
 
-      (() => counter, loopFinished)
+      (() => getCounter, loopFinished)
     }
   }
 
@@ -41,9 +44,9 @@ class ControlDslTest extends BaseTestSuite {
 
       // default interval is overridden to 500ms, loop will finish in 1.5 seconds
       loopFinished.isReadyWithin(500.millis) shouldBe false
-      getCounter() should be < 3
+      getCounter().futureValue should be < 3
       loopFinished.futureValue shouldBe Done
-      getCounter() shouldBe 3
+      getCounter().futureValue shouldBe 3
     }
 
     "run till condition becomes true when interval is custom | ESW-89" in {
@@ -51,13 +54,13 @@ class ControlDslTest extends BaseTestSuite {
       val (getCounter, loopFinished) = testDsl.counterLoop(Some(400.millis))
 
       loopFinished.isReadyWithin(300.millis) shouldBe false
-      getCounter() shouldBe 1
+      getCounter().futureValue shouldBe 1
 
       loopFinished.isReadyWithin(400.millis) shouldBe false
-      getCounter() shouldBe 2
+      getCounter().futureValue shouldBe 2
 
       loopFinished.futureValue shouldBe Done
-      getCounter() shouldBe 3
+      getCounter().futureValue shouldBe 3
     }
   }
 
