@@ -34,49 +34,40 @@ class SequencerBehavior(
   }
 
   //BEHAVIORS
-  private def idle(state: SequencerActorState): Behavior[SequencerMsg] = receive[IdleMessage](Idle) { (_, msg) =>
-    msg match {
-      case msg: CommonMessage                              => handleCommonMessage(msg, state)
-      case LoadSequence(sequence, replyTo)                 => load(sequence, replyTo, state)(nextBehavior = loaded)
-      case LoadAndStartSequenceInternal(sequence, replyTo) => loadAndStart(sequence, state, replyTo)
-      case GoOffline(replyTo)                              => goOffline(replyTo, state)
-      case PullNext(replyTo)                               => idle(state.pullNextStep(replyTo))
-    }
+  private def idle(state: SequencerActorState): Behavior[SequencerMsg] = receive[IdleMessage](Idle) {
+    case msg: CommonMessage                              => handleCommonMessage(msg, state)
+    case LoadSequence(sequence, replyTo)                 => load(sequence, replyTo, state)(nextBehavior = loaded)
+    case LoadAndStartSequenceInternal(sequence, replyTo) => loadAndStart(sequence, state, replyTo)
+    case GoOffline(replyTo)                              => goOffline(replyTo, state)
+    case PullNext(replyTo)                               => idle(state.pullNextStep(replyTo))
   }
 
-  private def loaded(state: SequencerActorState): Behavior[SequencerMsg] = receive[SequenceLoadedMessage](Loaded) { (_, msg) =>
-    msg match {
-      case msg: CommonMessage         => handleCommonMessage(msg, state)
-      case AbortSequence(replyTo)     => abortSequence(state, replyTo)(nextBehavior = idle)
-      case editorAction: EditorAction => loaded(handleEditorAction(editorAction, state))
-      case GoOffline(replyTo)         => goOffline(replyTo, state)
-      case StartSequence(replyTo)     => start(state, replyTo)
-    }
+  private def loaded(state: SequencerActorState): Behavior[SequencerMsg] = receive[SequenceLoadedMessage](Loaded) {
+    case msg: CommonMessage         => handleCommonMessage(msg, state)
+    case AbortSequence(replyTo)     => abortSequence(state, replyTo)(nextBehavior = idle)
+    case editorAction: EditorAction => loaded(handleEditorAction(editorAction, state))
+    case GoOffline(replyTo)         => goOffline(replyTo, state)
+    case StartSequence(replyTo)     => start(state, replyTo)
   }
 
   private def inProgress(state: SequencerActorState): Behavior[SequencerMsg] = receive[InProgressMessage](InProgress) {
-    (_, msg) =>
-      msg match {
-        case msg: CommonMessage          => handleCommonMessage(msg, state)
-        case AbortSequence(replyTo)      => abortSequence(state, replyTo)(nextBehavior = inProgress)
-        case msg: EditorAction           => inProgress(handleEditorAction(msg, state))
-        case PullNext(replyTo)           => inProgress(state.pullNextStep(replyTo))
-        case MaybeNext(replyTo)          => replyTo ! MaybeNextResult(state.stepList.flatMap(_.nextExecutable)); Behaviors.same
-        case ReadyToExecuteNext(replyTo) => inProgress(state.readyToExecuteNext(replyTo))
-        case Update(submitResponse, _)   => inProgress(state.updateStepStatus(submitResponse))
-        case _: GoIdle                   => idle(state)
-      }
+    case msg: CommonMessage          => handleCommonMessage(msg, state)
+    case AbortSequence(replyTo)      => abortSequence(state, replyTo)(nextBehavior = inProgress)
+    case msg: EditorAction           => inProgress(handleEditorAction(msg, state))
+    case PullNext(replyTo)           => inProgress(state.pullNextStep(replyTo))
+    case MaybeNext(replyTo)          => replyTo ! MaybeNextResult(state.stepList.flatMap(_.nextExecutable)); Behaviors.same
+    case ReadyToExecuteNext(replyTo) => inProgress(state.readyToExecuteNext(replyTo))
+    case Update(submitResponse, _)   => inProgress(state.updateStepStatus(submitResponse))
+    case _: GoIdle                   => idle(state)
   }
 
-  private def offline(state: SequencerActorState): Behavior[SequencerMsg] = receive[OfflineMessage](Offline) { (_, message) =>
-    message match {
-      case msg: CommonMessage => handleCommonMessage(msg, state)
-      case GoOnline(replyTo)  => goOnline(replyTo, state)(fallbackBehavior = offline, nextBehavior = idle)
-    }
+  private def offline(state: SequencerActorState): Behavior[SequencerMsg] = receive[OfflineMessage](Offline) {
+    case msg: CommonMessage => handleCommonMessage(msg, state)
+    case GoOnline(replyTo)  => goOnline(replyTo, state)(fallbackBehavior = offline, nextBehavior = idle)
   }
 
   private def shuttingDown() = receive[ShuttingDownMessage](ShuttingDown) {
-    case (_, ShutdownComplete(replyTo)) =>
+    case ShutdownComplete(replyTo) =>
       replyTo ! Ok
       actorSystem.terminate()
       Behaviors.stopped
@@ -86,20 +77,15 @@ class SequencerBehavior(
       fallbackBehavior: SequencerActorState => Behavior[SequencerMsg],
       nextBehavior: SequencerActorState => Behavior[SequencerMsg]
   ): Behavior[SequencerMsg] =
-    receive[GoingOnlineMessage](GoingOnline) { (_, message) =>
-      message match {
-        case msg: CommonMessage       => handleCommonMessage(msg, state)
-        case GoOnlineSuccess(replyTo) => replyTo ! Ok; nextBehavior(state)
-        case GoOnlineFailed(replyTo)  => replyTo ! GoOnlineHookFailed; fallbackBehavior(state)
-      }
+    receive[GoingOnlineMessage](GoingOnline) {
+      case msg: CommonMessage       => handleCommonMessage(msg, state)
+      case GoOnlineSuccess(replyTo) => replyTo ! Ok; nextBehavior(state)
+      case GoOnlineFailed(replyTo)  => replyTo ! GoOnlineHookFailed; fallbackBehavior(state)
     }
 
   private def goingOffline(state: SequencerActorState): Behavior[SequencerMsg] = receive[GoingOfflineMessage](GoingOffline) {
-    (_, message) =>
-      message match {
-        case msg: CommonMessage   => handleCommonMessage(msg, state)
-        case GoneOffline(replyTo) => replyTo ! Ok; offline(state.copy(stepList = None))
-      }
+    case msg: CommonMessage   => handleCommonMessage(msg, state)
+    case GoneOffline(replyTo) => replyTo ! Ok; offline(state.copy(stepList = None))
   }
 
   private def handleCommonMessage(message: CommonMessage, state: SequencerActorState): Behavior[SequencerMsg] = message match {
@@ -177,7 +163,7 @@ class SequencerBehavior(
       state: SequencerActorState
   )(nextBehavior: SequencerActorState => Behavior[SequencerMsg]): Behavior[SequencerMsg] =
     receive[AbortSequenceMessage](AbortingSequence) {
-      case (_, AbortSequenceComplete(replyTo)) =>
+      case AbortSequenceComplete(replyTo) =>
         import state._
         nextBehavior(updateStepList(replyTo, stepList.map(_.discardPending)))
     }
