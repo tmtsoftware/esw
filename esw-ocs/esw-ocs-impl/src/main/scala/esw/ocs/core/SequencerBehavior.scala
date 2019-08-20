@@ -162,10 +162,16 @@ class SequencerBehavior(
   private def abortingSequence(
       state: SequencerActorState
   )(nextBehavior: SequencerActorState => Behavior[SequencerMsg]): Behavior[SequencerMsg] =
-    receive(AbortingSequence) {
+    receive[AbortSequenceMessage](AbortingSequence) {
+      case message: CommonMessage => handleCommonMessage(message, state)
       case AbortSequenceComplete(replyTo) =>
         import state._
-        nextBehavior(updateStepList(replyTo, stepList.map(_.discardPending)))
+        val maybeStepList = stepList.flatMap { x =>
+          val inProgressStepList = x.discardPending
+          if (inProgressStepList.steps.isEmpty) None
+          else Some(inProgressStepList)
+        }
+        nextBehavior(updateStepList(replyTo, maybeStepList))
     }
 
   private def goOnline(replyTo: ActorRef[GoOnlineResponse], state: SequencerActorState)(

@@ -11,6 +11,7 @@ import csw.location.models.ComponentId
 import csw.params.commands.CommandResponse.{Completed, SubmitResponse}
 import csw.params.commands.Sequence
 import esw.ocs.api.models.SequencerState
+import esw.ocs.api.models.SequencerState.{Idle, InProgress}
 import esw.ocs.api.models.messages.SequencerMessages.{Pause, _}
 import esw.ocs.api.models.messages.{LoadSequenceResponse, _}
 import esw.ocs.dsl.Script
@@ -84,17 +85,32 @@ class SequencerTestSetup(sequence: Sequence)(implicit system: ActorSystem[_], ti
 
   def assertPreviousSequence(expected: StepListResponse): Unit = assertStepListResponse(expected, GetPreviousSequence)
 
-  def abortSequenceAndAssertResponse(response: OkOrUnhandledResponse): TestProbe[OkOrUnhandledResponse] = {
-    val probe = TestProbe[OkOrUnhandledResponse]
+  def abortSequenceAndAssertResponse(
+      response: OkOrUnhandledResponse,
+      expectedState: SequencerState[SequencerMsg]
+  ): TestProbe[OkOrUnhandledResponse] = {
+    val probe                          = TestProbe[OkOrUnhandledResponse]
+    val p: TestProbe[StepListResponse] = TestProbe[StepListResponse]
+
     when(script.executeAbort()).thenReturn(Future.successful(Done))
     sequencerActor ! AbortSequence(probe.ref)
-    val p: TestProbe[StepListResponse] = TestProbe[StepListResponse]
+
+    //GetSequence msg while aborting sequence
+    sequencerActor ! GetSequence(p.ref)
+
     probe.expectMessage(response)
 
+    //GetSequence should be handled and return response while aborting sequence
+    p.expectMessageType[StepListResult]
+
+    //After abort sequence
     sequencerActor ! GetSequence(p.ref)
     val result = p.expectMessageType[StepListResult]
-    result.stepList.get.nextPending shouldBe None
-
+    expectedState match {
+      case Idle                            => result.stepList shouldBe None
+      case InProgress                      => result.stepList.get.nextPending shouldBe None
+      case x: SequencerState[SequencerMsg] => assert(false, s"$x is not valid state after AbortSequence")
+    }
     probe
   }
 

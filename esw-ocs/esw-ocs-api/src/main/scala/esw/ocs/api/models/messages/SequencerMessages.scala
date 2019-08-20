@@ -29,6 +29,7 @@ object SequencerMessages {
       with OfflineMessage
       with GoingOnlineMessage
       with GoingOfflineMessage
+      with AbortSequenceMessage
 
   // startup msgs
   final case class LoadSequence(sequence: Sequence, replyTo: ActorRef[LoadSequenceResponse]) extends IdleMessage
