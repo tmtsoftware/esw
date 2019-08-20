@@ -33,13 +33,8 @@ private[core] case class SequencerActorState(
   private val emptyChildId = Id("empty-child") // fixme
 
   def startSequence(replyTo: ActorRef[SequenceResponse]): SequencerActorState = {
-    val newState = stepList.flatMap(_.nextExecutable) match {
-      case Some(step) =>
-        val (newStep, newState) = setInFlight(step)
-        sendStepToSubscriber(newState, newStep)
-      case None => this
-    }
-    newState.readyToExecuteSubscriber.foreach(_ ! Ok)
+    val newState = sendNextPendingStepIfAvailable(this)
+    newState.readyToExecuteSubscriber.foreach(_ ! Ok) //fixme: make it none after replying
     updateSequenceInCrmAndHandleFinalResponse(replyTo)
     newState
   }
