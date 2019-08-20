@@ -1,12 +1,13 @@
 package esw.ocs.app
 
 import caseapp.{CommandApp, RemainingArgs}
+import csw.framework.internal.wiring
 import csw.location.client.utils.LocationServerStatus
 import csw.location.models.AkkaLocation
 import csw.logging.api.scaladsl.Logger
 import esw.ocs.api.models.messages.RegistrationError
 import esw.ocs.app.SequencerAppCommand._
-import esw.ocs.internal.{ActorRuntime, SequenceComponentWiring, SequencerWiring}
+import esw.ocs.internal.{SequenceComponentWiring, SequencerWiring}
 
 import scala.util.control.NonFatal
 
@@ -33,25 +34,25 @@ object SequencerApp extends CommandApp[SequencerAppCommand] {
 
   def startSequenceComponent(sequenceComponentWiring: SequenceComponentWiring, enableLogging: Boolean): Unit = {
     import sequenceComponentWiring._
-    withLogging(actorRuntime, enableLogging) {
+    withLogging(actorRuntime, cswServicesWiring.log, enableLogging) {
       sequenceComponentWiring.start()
     }
   }
 
   def startSequencer(sequencerWiring: SequencerWiring, enableLogging: Boolean): Unit = {
     import sequencerWiring._
-    withLogging(actorRuntime, enableLogging) {
+    withLogging(actorRuntime, cswServicesWiring.log, enableLogging) {
       sequencerWiring.start()
     }
   }
 
-  private def withLogging[T](actorRuntime: ActorRuntime, enableLogging: Boolean)(
+  private def withLogging[T](actorRuntime: wiring.ActorRuntime, log: Logger, enableLogging: Boolean)(
       f: => Either[RegistrationError, AkkaLocation]
   ): Unit = {
     import actorRuntime._
     def cleanup(): Unit = typedSystem.terminate()
     try {
-      if (enableLogging) startLogging()
+      if (enableLogging) startLogging(typedSystem.name)
       report(f, log, enableLogging)(() => cleanup())
     } catch {
       case NonFatal(e) => cleanup(); throw e

@@ -17,8 +17,7 @@ object Dependencies {
 
   val OcsImpl: Def.Initialize[Seq[ModuleID]] = Def.setting(
     Seq(
-      Csw.`csw-params`.value,
-      Csw.`csw-location-client`,
+      Csw.`csw-framework`,
       Akka.`akka-actor-typed`,
       Akka.`akka-stream-typed`,
       Libs.`scala-async`,
