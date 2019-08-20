@@ -3,11 +3,11 @@ package esw.gateway.server.routes.restless
 import akka.http.scaladsl.server.Directives._
 import akka.http.scaladsl.server.Route
 import esw.gateway.server.routes.restless.codecs.RestlessCodecs
-import esw.gateway.server.routes.restless.messages.WebSocketMsg
+import esw.gateway.server.routes.restless.messages.WebSocketMessage
 import msocket.core.api.Encoding
 import msocket.core.server.WsServerFlow
 
-class WebsocketRoute(wsServerFlow: WsServerFlow[WebSocketMsg]) extends RestlessCodecs {
+class WebsocketRoute(wsServerFlow: WsServerFlow[WebSocketMessage]) extends RestlessCodecs {
 
   val route: Route =
     path("websocket" / Segment) { encoding =>

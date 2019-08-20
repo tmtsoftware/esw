@@ -2,55 +2,71 @@ package esw.gateway.server.routes.restless.codecs
 
 import com.github.ghik.silencer.silent
 import csw.alarm.codecs.AlarmCodecs
-import csw.location.client.HttpCodecs
 import csw.location.models.codecs.LocationCodecs
 import csw.params.core.formats.{CodecHelpers, ParamCodecs}
-import esw.gateway.server.routes.restless.messages.ErrorResponseMsg._
-import esw.gateway.server.routes.restless.messages.HttpRequestMsg._
-import esw.gateway.server.routes.restless.messages.WebSocketMsg.{
-  CurrentStateSubscriptionCommandMsg,
-  PatternSubscribeEventMsg,
-  QueryCommandMsg,
-  SubscribeEventMsg
+import csw.params.events.EventKey
+import esw.gateway.server.routes.restless.messages.GatewayMessage._
+import esw.gateway.server.routes.restless.messages.WebSocketMessage.{
+  CurrentStateSubscriptionCommandMessage,
+  PatternSubscribeEventMessage,
+  QueryCommandMessage,
+  SubscribeEventMessage
 }
 import esw.gateway.server.routes.restless.messages._
 import io.bullet.borer.Codec
 import io.bullet.borer.derivation.MapBasedCodecs.deriveCodec
 
-trait RestlessCodecs extends ParamCodecs with LocationCodecs with HttpCodecs with AlarmCodecs with EitherCodecs {
-  implicit def responseMsgCodec[T <: ErrorResponseMsg]: Codec[T] = responseMsgCodecValue.asInstanceOf[Codec[T]]
+trait RestlessCodecs extends ParamCodecs with LocationCodecs with AlarmCodecs with EitherCodecs {
+  implicit def eventErrorMsgCodec[T <: EventErrorMessage]: Codec[T] = eventErrorMsgCodecValue.asInstanceOf[Codec[T]]
 
-  lazy val responseMsgCodecValue: Codec[ErrorResponseMsg] = {
-    @silent implicit lazy val noEventKeysCodec: Codec[EmptyEventKeys]                      = deriveCodec[EmptyEventKeys]
-    @silent implicit lazy val invalidComponentCodec: Codec[InvalidComponent]               = deriveCodec[InvalidComponent]
-    @silent implicit lazy val invalidMaxFrequencyCodec: Codec[InvalidMaxFrequency]         = deriveCodec[InvalidMaxFrequency]
+  lazy val eventErrorMsgCodecValue: Codec[EventErrorMessage] = {
+    @silent implicit lazy val noEventKeysCodec: Codec[EmptyEventKeys] = deriveCodec[EmptyEventKeys]
+    invalidMaxFrequencyCodec
+    deriveCodec[EventErrorMessage]
+  }
+
+  implicit def commandErrorMsgCodec[T <: CommandErrorMessage]: Codec[T] = eventErrorMsgCodecValue.asInstanceOf[Codec[T]]
+
+  lazy val commandErrorMsgCodecValue: Codec[CommandErrorMessage] = {
+    @silent implicit lazy val invalidComponentCodec: Codec[InvalidComponent] = deriveCodec[InvalidComponent]
+    invalidMaxFrequencyCodec
+    deriveCodec[CommandErrorMessage]
+  }
+
+  implicit lazy val invalidMaxFrequencyCodec: Codec[InvalidMaxFrequency] = deriveCodec[InvalidMaxFrequency]
+
+  implicit def alarmErrorMsgCodec[T <: AlarmErrorMessage]: Codec[T] = eventErrorMsgCodecValue.asInstanceOf[Codec[T]]
+
+  lazy val alarmErrorMsgCodecValue: Codec[AlarmErrorMessage] = {
     @silent implicit lazy val setAlarmSeverityFailureCodec: Codec[SetAlarmSeverityFailure] = deriveCodec[SetAlarmSeverityFailure]
-    deriveCodec[ErrorResponseMsg]
+    deriveCodec[AlarmErrorMessage]
   }
 
-  implicit def requestMsgCodec[T <: HttpRequestMsg]: Codec[T] = requestMsgCodecValue.asInstanceOf[Codec[T]]
+  implicit def gatewayMsgCodec[T <: GatewayMessage]: Codec[T] = gatewayMsgCodecValue.asInstanceOf[Codec[T]]
 
-  lazy val requestMsgCodecValue: Codec[HttpRequestMsg] = {
-    @silent implicit lazy val commandMsgCodec: Codec[CommandMsg]                   = deriveCodec[CommandMsg]
-    @silent implicit lazy val publishEventMsgCodec: Codec[PublishEventMsg]         = deriveCodec[PublishEventMsg]
-    @silent implicit lazy val getEventMsgCodec: Codec[GetEventMsg]                 = deriveCodec[GetEventMsg]
-    @silent implicit lazy val setAlarmSeverityMsgCodec: Codec[SetAlarmSeverityMsg] = deriveCodec[SetAlarmSeverityMsg]
-    deriveCodec[HttpRequestMsg]
+  lazy val gatewayMsgCodecValue: Codec[GatewayMessage] = {
+    @silent implicit lazy val commandMsgCodec: Codec[CommandMessage]                   = deriveCodec[CommandMessage]
+    @silent implicit lazy val publishEventMsgCodec: Codec[PublishEventMessage]         = deriveCodec[PublishEventMessage]
+    @silent implicit lazy val getEventMsgCodec: Codec[GetEventMessage]                 = deriveCodec[GetEventMessage]
+    @silent implicit lazy val setAlarmSeverityMsgCodec: Codec[SetAlarmSeverityMessage] = deriveCodec[SetAlarmSeverityMessage]
+    deriveCodec[GatewayMessage]
   }
 
-  implicit def websocketMsgCodec[T <: WebSocketMsg]: Codec[T] = requestMsgCodecValue.asInstanceOf[Codec[T]]
+  implicit def websocketMsgCodec[T <: WebSocketMessage]: Codec[T] = gatewayMsgCodecValue.asInstanceOf[Codec[T]]
 
-  lazy val webSocketMsgCodecValue: Codec[WebSocketMsg] = {
-    @silent implicit lazy val queryCommandMsgCodec: Codec[QueryCommandMsg]     = deriveCodec[QueryCommandMsg]
-    @silent implicit lazy val subscribeEventMsgCodec: Codec[SubscribeEventMsg] = deriveCodec[SubscribeEventMsg]
-    @silent implicit lazy val patternSubscribeEventMsgCodec: Codec[PatternSubscribeEventMsg] =
-      deriveCodec[PatternSubscribeEventMsg]
-    @silent implicit lazy val currentStateSubscriptionCommandMsgCodec: Codec[CurrentStateSubscriptionCommandMsg] =
-      deriveCodec[CurrentStateSubscriptionCommandMsg]
+  lazy val webSocketMsgCodecValue: Codec[WebSocketMessage] = {
+    @silent implicit lazy val queryCommandMsgCodec: Codec[QueryCommandMessage]     = deriveCodec[QueryCommandMessage]
+    @silent implicit lazy val subscribeEventMsgCodec: Codec[SubscribeEventMessage] = deriveCodec[SubscribeEventMessage]
+    @silent implicit lazy val patternSubscribeEventMsgCodec: Codec[PatternSubscribeEventMessage] =
+      deriveCodec[PatternSubscribeEventMessage]
+    @silent implicit lazy val currentStateSubscriptionCommandMsgCodec: Codec[CurrentStateSubscriptionCommandMessage] =
+      deriveCodec[CurrentStateSubscriptionCommandMessage]
 
-    deriveCodec[WebSocketMsg]
+    deriveCodec[WebSocketMessage]
   }
 
-  implicit lazy val commandActionCode: Codec[CommandAction] = CodecHelpers.enumCodec[CommandAction]
+  implicit lazy val commandActionCodec: Codec[CommandAction] = CodecHelpers.enumCodec[CommandAction]
+
+  implicit lazy val eventKeyCodec: Codec[EventKey] = deriveCodec[EventKey]
 
 }

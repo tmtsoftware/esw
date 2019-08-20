@@ -4,7 +4,7 @@ import akka.stream.scaladsl.Source
 
 import scala.concurrent.Future
 
-object Utils {
-  def emptySourceWithError[T](error: T): Source[Nothing, Future[Some[T]]] =
+object SourceExtension {
+  def emptyWithError[S, E](error: E): Source[S, Future[Some[E]]] =
     Source.empty.mapMaterializedValue(_ => Future.successful(Some(error)))
 }
