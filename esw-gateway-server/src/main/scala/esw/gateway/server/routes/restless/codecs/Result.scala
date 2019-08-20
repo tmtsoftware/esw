@@ -2,7 +2,7 @@ package esw.gateway.server.routes.restless.codecs
 
 import com.github.ghik.silencer.silent
 import esw.gateway.server.routes.restless.codecs.Result.{Error, Success}
-import io.bullet.borer.derivation.ArrayBasedCodecs.deriveCodecForUnaryCaseClass
+import io.bullet.borer.derivation.ArrayBasedCodecs.deriveUnaryCodec
 import io.bullet.borer.derivation.MapBasedCodecs.deriveCodec
 import io.bullet.borer.{Codec, Decoder, Encoder}
 
@@ -23,8 +23,8 @@ object Result {
   }
 
   implicit def resultCodec[E: Encoder: Decoder, S: Encoder: Decoder]: Codec[Result[S, E]] = {
-    @silent implicit lazy val errorCodec: Codec[Error[S, E]]     = deriveCodecForUnaryCaseClass[Error[S, E]]
-    @silent implicit lazy val successCodec: Codec[Success[S, E]] = deriveCodecForUnaryCaseClass[Success[S, E]]
+    @silent implicit lazy val errorCodec: Codec[Error[S, E]]     = deriveUnaryCodec[Error[S, E]]
+    @silent implicit lazy val successCodec: Codec[Success[S, E]] = deriveUnaryCodec[Success[S, E]]
     deriveCodec[Result[S, E]]
   }
 }

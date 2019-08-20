@@ -19,7 +19,7 @@ object Libs {
 
 object Csw {
   private val Org     = "com.github.tmtsoftware.csw"
-  private val Version = "586722e7da0c031dfd0b151c0831cda7e4119b1a" //change this to 0.1-SNAPSHOT to test with local csw changes (after publishLocal)
+  private val Version = "af4c0d173be6acb49552f4fd230dd9db6e1ee556" //change this to 0.1-SNAPSHOT to test with local csw changes (after publishLocal)
 
   val `csw-location-api`    = Org %% "csw-location-api" % Version
   val `csw-aas-http`        = Org %% "csw-aas-http" % Version
@@ -31,6 +31,7 @@ object Csw {
   val `csw-command-client`  = Org %% "csw-command-client" % Version
   val `csw-event-client`    = Org %% "csw-event-client" % Version
   val `csw-testkit`         = Org %% "csw-testkit" % Version
+  val `csw-framework`       = Org %% "csw-framework" % Version
 }
 
 object Akka {
@@ -52,7 +53,7 @@ object AkkaHttp {
 }
 
 object Borer {
-  val Version = "0.10.0"
+  val Version = "0.11.0"
   val Org     = "io.bullet"
 
   val `borer-core`        = Org %% "borer-core"        % Version
