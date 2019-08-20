@@ -138,11 +138,6 @@ private[core] case class SequencerActorState(
 
   private def goToIdle(): Unit = self ! GoIdle(actorSystem.deadLetters)
 
-  private def sendStepToSubscriber(state: SequencerActorState, step: Step): SequencerActorState = {
-    state.stepRefSubscriber.foreach(_ ! PullNextResult(step))
-    state.copy(stepRefSubscriber = None)
-  }
-
   private def checkForSequenceCompletion(state: SequencerActorState): Unit =
     if (state.stepList.exists(_.isFinished)) {
       crm.updateSubCommand(Completed(emptyChildId))
