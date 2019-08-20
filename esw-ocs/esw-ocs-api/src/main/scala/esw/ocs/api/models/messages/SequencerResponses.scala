@@ -1,5 +1,6 @@
 package esw.ocs.api.models.messages
 
+import csw.command.client.messages.sequencer.SequencerMsg
 import csw.params.commands.CommandResponse.{Error, SubmitResponse}
 import csw.params.core.models.Id
 import esw.ocs.api.models.{SequencerState, Step, StepList}
@@ -37,7 +38,7 @@ case class PullNextResult(step: Step)                     extends PullNextRespon
 case class MaybeNextResult(step: Option[Step])            extends MaybeNextResponse
 case class SequenceResult(submitResponse: SubmitResponse) extends SequenceResponse
 
-case class Unhandled(state: SequencerState, messageType: String)
+case class Unhandled(state: SequencerState[SequencerMsg], messageType: String)
     extends OkOrUnhandledResponse
     with GenericResponse
     with PauseResponse

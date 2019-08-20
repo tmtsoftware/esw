@@ -1,22 +1,32 @@
 package esw.ocs.api.models
 
+import csw.command.client.messages.sequencer.SequencerMsg
 import enumeratum.EnumEntry.Lowercase
 import enumeratum.{Enum, EnumEntry}
+import esw.ocs.api.models.messages.SequencerMessages.{
+  AbortSequenceMessage,
+  GoingOfflineMessage,
+  GoingOnlineMessage,
+  IdleMessage,
+  InProgressMessage,
+  OfflineMessage,
+  SequenceLoadedMessage,
+  ShuttingDownMessage
+}
 
 import scala.collection.immutable.IndexedSeq
 
-sealed abstract class SequencerState extends EnumEntry with Lowercase
-object SequencerState extends Enum[SequencerState] {
+sealed abstract class SequencerState[+T <: SequencerMsg] extends EnumEntry with Lowercase
+object SequencerState extends Enum[SequencerState[SequencerMsg]] {
 
-  def values: IndexedSeq[SequencerState] = findValues
+  def values: IndexedSeq[SequencerState[SequencerMsg]] = findValues
 
-  case object Idle             extends SequencerState
-  case object Loaded           extends SequencerState
-  case object InProgress       extends SequencerState
-  case object Online           extends SequencerState
-  case object Offline          extends SequencerState
-  case object GoingOnline      extends SequencerState
-  case object GoingOffline     extends SequencerState
-  case object ShuttingDown     extends SequencerState
-  case object AbortingSequence extends SequencerState
+  case object Idle             extends SequencerState[IdleMessage]
+  case object Loaded           extends SequencerState[SequenceLoadedMessage]
+  case object InProgress       extends SequencerState[InProgressMessage]
+  case object Offline          extends SequencerState[OfflineMessage]
+  case object GoingOnline      extends SequencerState[GoingOnlineMessage]
+  case object GoingOffline     extends SequencerState[GoingOfflineMessage]
+  case object ShuttingDown     extends SequencerState[ShuttingDownMessage]
+  case object AbortingSequence extends SequencerState[AbortSequenceMessage]
 }

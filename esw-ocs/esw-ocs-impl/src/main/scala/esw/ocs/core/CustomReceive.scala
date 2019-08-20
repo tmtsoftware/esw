@@ -16,7 +16,7 @@ import scala.reflect.ClassTag
 
 private[ocs] trait CustomReceive {
 
-  protected def receive[T <: SequencerMsg: ClassTag](state: SequencerState)(
+  protected def receive[T <: SequencerMsg: ClassTag](state: SequencerState[T])(
       f: T => Behavior[SequencerMsg]
   ): Behavior[SequencerMsg] = Behaviors.receive { (ctx, msg) =>
     import ctx.executionContext

@@ -111,7 +111,7 @@ class SequencerTestSetup(sequence: Sequence)(implicit system: ActorSystem[_], ti
   }
 
   def assertUnhandled[T >: Unhandled <: EswSequencerResponse](
-      state: SequencerState,
+      state: SequencerState[SequencerMsg],
       msg: ActorRef[T] => EswSequencerMessage
   ): Unit = {
     val probe            = TestProbe[T]
@@ -121,7 +121,7 @@ class SequencerTestSetup(sequence: Sequence)(implicit system: ActorSystem[_], ti
   }
 
   def assertUnhandled[T >: Unhandled <: EswSequencerResponse](
-      state: SequencerState,
+      state: SequencerState[SequencerMsg],
       msgs: (ActorRef[T] => EswSequencerMessage)*
   ): Unit =
     msgs.foreach(assertUnhandled(state, _))

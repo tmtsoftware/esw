@@ -34,7 +34,7 @@ class SequencerBehavior(
   }
 
   //BEHAVIORS
-  private def idle(state: SequencerActorState): Behavior[SequencerMsg] = receive[IdleMessage](Idle) {
+  private def idle(state: SequencerActorState): Behavior[SequencerMsg] = receive(Idle) {
     case msg: CommonMessage                              => handleCommonMessage(msg, state)
     case LoadSequence(sequence, replyTo)                 => load(sequence, replyTo, state)(nextBehavior = loaded)
     case LoadAndStartSequenceInternal(sequence, replyTo) => loadAndStart(sequence, state, replyTo)
@@ -42,7 +42,7 @@ class SequencerBehavior(
     case PullNext(replyTo)                               => idle(state.pullNextStep(replyTo))
   }
 
-  private def loaded(state: SequencerActorState): Behavior[SequencerMsg] = receive[SequenceLoadedMessage](Loaded) {
+  private def loaded(state: SequencerActorState): Behavior[SequencerMsg] = receive(Loaded) {
     case msg: CommonMessage         => handleCommonMessage(msg, state)
     case AbortSequence(replyTo)     => abortSequence(state, replyTo)(nextBehavior = idle)
     case editorAction: EditorAction => loaded(handleEditorAction(editorAction, state))
@@ -50,7 +50,7 @@ class SequencerBehavior(
     case StartSequence(replyTo)     => start(state, replyTo)
   }
 
-  private def inProgress(state: SequencerActorState): Behavior[SequencerMsg] = receive[InProgressMessage](InProgress) {
+  private def inProgress(state: SequencerActorState): Behavior[SequencerMsg] = receive(InProgress) {
     case msg: CommonMessage          => handleCommonMessage(msg, state)
     case AbortSequence(replyTo)      => abortSequence(state, replyTo)(nextBehavior = inProgress)
     case msg: EditorAction           => inProgress(handleEditorAction(msg, state))
@@ -61,12 +61,12 @@ class SequencerBehavior(
     case _: GoIdle                   => idle(state)
   }
 
-  private def offline(state: SequencerActorState): Behavior[SequencerMsg] = receive[OfflineMessage](Offline) {
+  private def offline(state: SequencerActorState): Behavior[SequencerMsg] = receive(Offline) {
     case msg: CommonMessage => handleCommonMessage(msg, state)
     case GoOnline(replyTo)  => goOnline(replyTo, state)(fallbackBehavior = offline, nextBehavior = idle)
   }
 
-  private def shuttingDown() = receive[ShuttingDownMessage](ShuttingDown) {
+  private def shuttingDown() = receive(ShuttingDown) {
     case ShutdownComplete(replyTo) =>
       replyTo ! Ok
       actorSystem.terminate()
@@ -77,13 +77,13 @@ class SequencerBehavior(
       fallbackBehavior: SequencerActorState => Behavior[SequencerMsg],
       nextBehavior: SequencerActorState => Behavior[SequencerMsg]
   ): Behavior[SequencerMsg] =
-    receive[GoingOnlineMessage](GoingOnline) {
+    receive(GoingOnline) {
       case msg: CommonMessage       => handleCommonMessage(msg, state)
       case GoOnlineSuccess(replyTo) => replyTo ! Ok; nextBehavior(state)
       case GoOnlineFailed(replyTo)  => replyTo ! GoOnlineHookFailed; fallbackBehavior(state)
     }
 
-  private def goingOffline(state: SequencerActorState): Behavior[SequencerMsg] = receive[GoingOfflineMessage](GoingOffline) {
+  private def goingOffline(state: SequencerActorState): Behavior[SequencerMsg] = receive(GoingOffline) {
     case msg: CommonMessage   => handleCommonMessage(msg, state)
     case GoneOffline(replyTo) => replyTo ! Ok; offline(state.copy(stepList = None))
   }
@@ -97,8 +97,8 @@ class SequencerBehavior(
   private def handleEditorAction(editorAction: EditorAction, state: SequencerActorState): SequencerActorState = {
     import state._
     editorAction match {
-      case Add(commands, replyTo)             => updateStepList(replyTo, stepList.map(_.append(commands)))
-      case Pause(replyTo)                     => updateStepListResult(replyTo, stepList.map(_.pause))
+      case Add(commands, replyTo) => updateStepList(replyTo, stepList.map(_.append(commands)))
+      case Pause(replyTo)         => updateStepListResult(replyTo, stepList.map(_.pause))
       case Resume(replyTo)                    => updateStepList(replyTo, stepList.map(_.resume))
       case Replace(id, commands, replyTo)     => updateStepListResult(replyTo, stepList.map(_.replace(id, commands)))
       case Prepend(commands, replyTo)         => updateStepList(replyTo, stepList.map(_.prepend(commands)))
@@ -162,7 +162,7 @@ class SequencerBehavior(
   private def abortingSequence(
       state: SequencerActorState
   )(nextBehavior: SequencerActorState => Behavior[SequencerMsg]): Behavior[SequencerMsg] =
-    receive[AbortSequenceMessage](AbortingSequence) {
+    receive(AbortingSequence) {
       case AbortSequenceComplete(replyTo) =>
         import state._
         nextBehavior(updateStepList(replyTo, stepList.map(_.discardPending)))
