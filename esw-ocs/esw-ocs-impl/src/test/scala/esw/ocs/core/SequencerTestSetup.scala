@@ -209,7 +209,9 @@ object SequencerTestSetup {
       mockCommands: Boolean = true
   )(implicit system: ActorSystem[_], timeout: Timeout): SequencerTestSetup = {
     val sequencerSetup = idle(sequence, mockCommands)
+    sequencerSetup.mockCommand(sequence.commands.head.runId, Promise[SubmitResponse].future)
     sequencerSetup.loadAndStartSequenceThenAssertInProgress()
+    sequencerSetup.pullNextCommand()
     sequencerSetup
   }
 

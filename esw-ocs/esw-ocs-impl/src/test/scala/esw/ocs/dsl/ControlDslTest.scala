@@ -19,7 +19,6 @@ class ControlDslTest extends BaseTestSuite {
 
       def increment: Future[StopIf] = Future {
         counter += 1
-        println(counter)
         stopIf(counter == 3)
       }
 
