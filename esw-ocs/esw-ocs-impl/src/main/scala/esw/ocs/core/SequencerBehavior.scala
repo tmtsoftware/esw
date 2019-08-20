@@ -97,8 +97,8 @@ class SequencerBehavior(
   private def handleEditorAction(editorAction: EditorAction, state: SequencerActorState): SequencerActorState = {
     import state._
     editorAction match {
-      case Add(commands, replyTo) => updateStepList(replyTo, stepList.map(_.append(commands)))
-      case Pause(replyTo)         => updateStepListResult(replyTo, stepList.map(_.pause))
+      case Add(commands, replyTo)             => updateStepList(replyTo, stepList.map(_.append(commands)))
+      case Pause(replyTo)                     => updateStepListResult(replyTo, stepList.map(_.pause))
       case Resume(replyTo)                    => updateStepList(replyTo, stepList.map(_.resume))
       case Replace(id, commands, replyTo)     => updateStepListResult(replyTo, stepList.map(_.replace(id, commands)))
       case Prepend(commands, replyTo)         => updateStepList(replyTo, stepList.map(_.prepend(commands)))

@@ -7,8 +7,8 @@ import csw.event.api.scaladsl.{EventPublisher, EventSubscriber, EventSubscriptio
 import csw.params.core.models.Subsystem
 import csw.params.events.{Event, EventKey}
 import esw.gateway.server.routes.restless.api.GatewayApi
-import esw.gateway.server.routes.restless.messages.{EmptyEventKeys, EventErrorMessage, InvalidMaxFrequency}
-import esw.gateway.server.routes.restless.utils.SourceExtension
+import esw.gateway.server.routes.restless.messages.{EmptyEventKeys, EventError, InvalidMaxFrequency}
+import esw.gateway.server.routes.restless.syntax.SourceExtension
 import esw.http.core.commons.Utils
 import esw.http.core.commons.Utils.maxFrequencyToDuration
 
@@ -29,7 +29,7 @@ trait EventGatewayImpl extends GatewayApi {
     else Future.successful(Left(EmptyEventKeys()))
   }
 
-  def subscribe(eventKeys: Set[EventKey], maxFrequency: Option[Int]): Source[Event, Future[Option[EventErrorMessage]]] = {
+  def subscribe(eventKeys: Set[EventKey], maxFrequency: Option[Int]): Source[Event, Future[Option[EventError]]] = {
 
     if (eventKeys.nonEmpty) {
       maxFrequency match {
@@ -59,10 +59,6 @@ trait EventGatewayImpl extends GatewayApi {
       case None => events.mapMaterializedValue(_ => Future.successful(None))
     }
 
-  }
-
-  implicit class RichEventKeys(keys: Iterable[String]) {
-    def toEventKeys: Set[EventKey] = keys.map(EventKey(_)).toSet
   }
 
 }

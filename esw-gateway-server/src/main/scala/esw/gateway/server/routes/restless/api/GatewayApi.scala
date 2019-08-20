@@ -17,6 +17,7 @@ import scala.concurrent.Future
 trait GatewayApi {
   val cswCtx: CswContext
 
+  //*****************AlarmService***********************
   def setSeverity(
       subsystem: Subsystem,
       componentName: String,
@@ -24,6 +25,7 @@ trait GatewayApi {
       severity: AlarmSeverity
   ): Future[Either[SetAlarmSeverityFailure, Done]]
 
+  //*****************CommandService***********************
   def process(
       componentType: ComponentType,
       componentName: String,
@@ -37,11 +39,12 @@ trait GatewayApi {
       componentName: String,
       stateNames: Set[StateName],
       maxFrequency: Option[Int]
-  ): Source[CurrentState, Future[Option[CommandErrorMessage]]]
+  ): Source[CurrentState, Future[Option[CommandError]]]
 
+  ////*****************EventService***********************
   def publish(event: Event): Future[Done]
   def get(eventKeys: Set[EventKey]): Future[Either[EmptyEventKeys, Set[Event]]]
-  def subscribe(eventKeys: Set[EventKey], maxFrequency: Option[Int]): Source[Event, Future[Option[EventErrorMessage]]]
+  def subscribe(eventKeys: Set[EventKey], maxFrequency: Option[Int]): Source[Event, Future[Option[EventError]]]
   def pSubscribe(
       subsystem: Subsystem,
       maxFrequency: Option[Int],

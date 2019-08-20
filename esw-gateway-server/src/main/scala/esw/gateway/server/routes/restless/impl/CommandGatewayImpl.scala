@@ -10,8 +10,8 @@ import csw.params.core.models.Id
 import csw.params.core.states.{CurrentState, StateName}
 import esw.gateway.server.routes.restless.api.GatewayApi
 import esw.gateway.server.routes.restless.messages.CommandAction.{Oneway, Submit, Validate}
-import esw.gateway.server.routes.restless.messages.{CommandAction, CommandErrorMessage, InvalidComponent, InvalidMaxFrequency}
-import esw.gateway.server.routes.restless.utils.SourceExtension
+import esw.gateway.server.routes.restless.messages.{CommandAction, CommandError, InvalidComponent, InvalidMaxFrequency}
+import esw.gateway.server.routes.restless.syntax.SourceExtension
 
 import scala.concurrent.Future
 import scala.concurrent.duration.DurationLong
@@ -63,7 +63,7 @@ trait CommandGatewayImpl extends GatewayApi {
       componentName: String,
       stateNames: Set[StateName],
       maxFrequency: Option[Int]
-  ): Source[CurrentState, Future[Option[CommandErrorMessage]]] = {
+  ): Source[CurrentState, Future[Option[CommandError]]] = {
 
     val currentStateSource: Source[CurrentState, Future[Option[InvalidComponent]]] = {
       Source
