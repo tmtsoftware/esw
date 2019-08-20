@@ -193,29 +193,74 @@ class SequencerBehaviorTest extends ScalaTestWithActorTestKit with BaseTestSuite
       val sequencerSetup = SequencerTestSetup.inProgress(sequence)
       import sequencerSetup._
 
-      pauseAndAssertResponse(Ok)
-
       val expectedPausedSequence = StepListResult(
-        Some(
-          StepList(
-            sequence.runId,
-            List(Step(command1, InFlight, hasBreakpoint = false), Step(command2, Pending, hasBreakpoint = true))
-          )
-        )
-      )
-      assertCurrentSequence(expectedPausedSequence)
-      resumeAndAssertResponse(Ok)
+        Some(StepList(sequence.runId, List(
+          Step(command1, InFlight, hasBreakpoint = false),
+          Step(command2, Pending, hasBreakpoint = true)
+        ))))
 
       val expectedResumedSequence = StepListResult(
-        Some(
-          StepList(
-            sequence.runId,
-            List(Step(command1, InFlight, hasBreakpoint = false), Step(command2, Pending, hasBreakpoint = false))
-          )
-        )
-      )
+        Some(StepList(sequence.runId, List(
+          Step(command1, InFlight, hasBreakpoint = false),
+          Step(command2, Pending, hasBreakpoint = false)
+        ))))
+
+      pauseAndAssertResponse(Ok)
+      assertCurrentSequence(expectedPausedSequence)
+      resumeAndAssertResponse(Ok)
       assertCurrentSequence(expectedResumedSequence)
     }
+
+    "resume an un-paused sequence when sequencer is in-progress" in {
+      val sequencerSetup = SequencerTestSetup.inProgress(sequence)
+      import sequencerSetup._
+
+      val expectedResumedSequence = StepListResult(
+        Some(StepList(sequence.runId, List(
+          Step(command1, InFlight, hasBreakpoint = false),
+          Step(command2, Pending, hasBreakpoint = false)
+        ))))
+
+
+      resumeAndAssertResponse(Ok)
+      assertCurrentSequence(expectedResumedSequence)
+    }
+
+    "resume a paused sequence when sequencer is loaded" in {
+      val sequencerSetup = SequencerTestSetup.loaded(sequence)
+      import sequencerSetup._
+      val expectedPausedSequence = StepListResult(
+        Some(StepList(sequence.runId, List(
+          Step(command1, Pending, hasBreakpoint = true),
+          Step(command2, Pending, hasBreakpoint = false)
+        ))))
+
+      val expectedResumedSequence = StepListResult(
+        Some(StepList(sequence.runId, List(
+          Step(command1, Pending, hasBreakpoint = false),
+          Step(command2, Pending, hasBreakpoint = false)
+        ))))
+
+      pauseAndAssertResponse(Ok)
+      assertCurrentSequence(expectedPausedSequence)
+      resumeAndAssertResponse(Ok)
+      assertCurrentSequence(expectedResumedSequence)
+    }
+
+    "resume an un-paused sequence when sequencer is loaded" in {
+      val sequencerSetup = SequencerTestSetup.loaded(sequence)
+      import sequencerSetup._
+
+      val expectedResumedSequence = StepListResult(
+        Some(StepList(sequence.runId, List(
+          Step(command1, Pending, hasBreakpoint = false),
+          Step(command2, Pending, hasBreakpoint = false)
+        ))))
+
+      resumeAndAssertResponse(Ok)
+      assertCurrentSequence(expectedResumedSequence)
+    }
+
   }
 
   "Idle -> Unhandled" in {
