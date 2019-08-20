@@ -131,7 +131,7 @@ class SequencerBehaviorTest extends ScalaTestWithActorTestKit with BaseTestSuite
   }
 
   "Add" must {
-    "add commands when sequence is loaded" in {
+    "add commands when sequence is loaded | ESW-114" in {
       val sequencerSetup = SequencerTestSetup.loaded(sequence)
       import sequencerSetup._
 
@@ -143,7 +143,7 @@ class SequencerBehaviorTest extends ScalaTestWithActorTestKit with BaseTestSuite
       assertCurrentSequence(StepListResult(StepList(updatedSequence).toOption))
     }
 
-    "add commands when sequence is in progress" in {
+    "add commands when sequence is in progress | ESW-114" in {
       val sequencerSetup = SequencerTestSetup.inProgress(sequence)
       import sequencerSetup._
 
@@ -156,44 +156,55 @@ class SequencerBehaviorTest extends ScalaTestWithActorTestKit with BaseTestSuite
   }
 
   "Pause" must {
-    "pause sequencer when it is in-progress" in {
+    "pause sequencer when it is in-progress | ESW-104" in {
       val sequencerSetup = SequencerTestSetup.inProgress(sequence)
       import sequencerSetup._
       pullNextCommand()
 
-      pauseAndAssertResponse(Ok)
-
-      val expected = StepListResult(
-        Some(
-          StepList(
-            sequence.runId,
-            List(Step(command1, Finished(command1.runId), hasBreakpoint = false), Step(command2, Pending, hasBreakpoint = true))
-          )
+      val beforePauseStepList = Some(
+        StepList(
+          sequence.runId,
+          List(Step(command1, Finished(command1.runId), hasBreakpoint = false), Step(command2, Pending, hasBreakpoint = false))
         )
       )
-      assertCurrentSequence(expected)
+
+      assertCurrentSequence(StepListResult(beforePauseStepList))
+
+      pauseAndAssertResponse(Ok)
+
+      val afterPauseStepList = Some(
+        StepList(
+          sequence.runId,
+          List(Step(command1, Finished(command1.runId), hasBreakpoint = false), Step(command2, Pending, hasBreakpoint = true))
+        )
+      )
+
+      assertCurrentSequence(StepListResult(afterPauseStepList))
     }
 
-    "pause sequencer when it is in loaded state" in {
+    "pause sequencer when it is in loaded state | ESW-104" in {
       val sequencerSetup = SequencerTestSetup.loaded(sequence)
       import sequencerSetup._
 
+      val beforePauseStepList = StepList(
+        sequence.runId,
+        List(Step(command1, Pending, hasBreakpoint = false), Step(command2, Pending, hasBreakpoint = false))
+      )
+      assertCurrentSequence(StepListResult(Some(beforePauseStepList)))
+
       pauseAndAssertResponse(Ok)
 
-      val expected = StepListResult(
-        Some(
-          StepList(
-            sequence.runId,
-            List(Step(command1, Pending, hasBreakpoint = true), Step(command2, Pending, hasBreakpoint = false))
-          )
-        )
+      val afterPauseStepList = StepList(
+        sequence.runId,
+        List(Step(command1, Pending, hasBreakpoint = true), Step(command2, Pending, hasBreakpoint = false))
       )
-      assertCurrentSequence(expected)
+
+      assertCurrentSequence(StepListResult(Some(afterPauseStepList)))
     }
   }
 
   "Resume" must {
-    "resume a paused sequence when sequencer is loaded" in {
+    "resume a paused sequence when sequencer is loaded | ESW-105" in {
       val sequencerSetup = SequencerTestSetup.loaded(sequence)
       import sequencerSetup._
       val expectedPausedSteps = List(
@@ -216,7 +227,7 @@ class SequencerBehaviorTest extends ScalaTestWithActorTestKit with BaseTestSuite
       assertCurrentSequence(expectedResumedSequence)
     }
 
-    "resume a paused sequence when sequencer is in-progress" in {
+    "resume a paused sequence when sequencer is in-progress | ESW-105" in {
       val sequencerSetup = SequencerTestSetup.inProgress(sequence)
       import sequencerSetup._
       pullNextCommand()
@@ -238,26 +249,10 @@ class SequencerBehaviorTest extends ScalaTestWithActorTestKit with BaseTestSuite
       resumeAndAssertResponse(Ok)
       assertCurrentSequence(expectedResumedSequence)
     }
-
-    "resume an un-paused sequence when sequencer" in {
-      val sequencerSetup = SequencerTestSetup.inProgress(sequence)
-      import sequencerSetup._
-      pullNextCommand()
-
-      val expectedSteps = List(
-        Step(command1, Finished(command1.runId), hasBreakpoint = false),
-        Step(command2, Pending, hasBreakpoint = false)
-      )
-
-      val expectedResumedSequence = StepListResult(Some(StepList(sequence.runId, expectedSteps)))
-
-      resumeAndAssertResponse(Ok)
-      assertCurrentSequence(expectedResumedSequence)
-    }
   }
 
   "Replace" must {
-    "replace steps when sequencer is loaded" in {
+    "replace steps when sequencer is loaded | ESW-108" in {
       val sequencerSetup = SequencerTestSetup.loaded(sequence)
       import sequencerSetup._
 
@@ -273,14 +268,14 @@ class SequencerBehaviorTest extends ScalaTestWithActorTestKit with BaseTestSuite
       assertCurrentSequence(expectedSequence)
     }
 
-    "fail if invalid command id is provided for replacement" in {
+    "fail if invalid command id is provided in loaded state | ESW-108" in {
       val sequencerSetup = SequencerTestSetup.loaded(sequence)
       import sequencerSetup._
       val invalidId = Id()
       replaceAndAssertResponse(invalidId, List(command3, command4), IdDoesNotExist(invalidId))
     }
 
-    "fail if finished step is tried to be replaced" in {
+    "fail if finished step is tried to be replaced in in-progress state| ESW-108" in {
       val sequencerSetup = SequencerTestSetup.inProgress(sequence, mockCommands = false)
       import sequencerSetup._
 
@@ -291,7 +286,7 @@ class SequencerBehaviorTest extends ScalaTestWithActorTestKit with BaseTestSuite
       replaceAndAssertResponse(command1.runId, List(command3, command4), CannotOperateOnAnInFlightOrFinishedStep)
     }
 
-    "fail if inflight step is tried to be replaced" in {
+    "fail if inflight step is tried to be replaced in in-progress state | ESW-108" in {
       val sequencerSetup = SequencerTestSetup.inProgress(sequence, mockCommands = false)
       import sequencerSetup._
 
