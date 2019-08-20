@@ -168,10 +168,12 @@ class SequencerTestSetup(sequence: Sequence)(implicit system: ActorSystem[_], ti
   }
 
   // this is to simulate engine pull and executing steps
-  private def pullAllSteps(): Seq[PullNextResult] =
+  private def pullAllSteps(): Seq[PullNextResult] = {
+    mockAllCommands()
     (1 to sequence.commands.size).map(_ => pullNextCommand())
+  }
 
-  def getCurrentSequence(): StepListResult = {
+  def getSequence(): StepListResult = {
     val probe = TestProbe[StepListResponse]
     sequencerActor ! GetSequence(probe.ref)
     probe.expectMessageType[StepListResult]
@@ -187,17 +189,14 @@ class SequencerTestSetup(sequence: Sequence)(implicit system: ActorSystem[_], ti
 object SequencerTestSetup {
 
   def idle(
-      sequence: Sequence,
-      mockCommands: Boolean = true
+      sequence: Sequence
   )(implicit system: ActorSystem[_], timeout: Timeout): SequencerTestSetup = {
     val testSetup = new SequencerTestSetup(sequence)
-    if (mockCommands) testSetup.mockAllCommands()
     testSetup
   }
 
   def loaded(
-      sequence: Sequence,
-      mockCommands: Boolean = true
+      sequence: Sequence
   )(implicit system: ActorSystem[_], timeout: Timeout): SequencerTestSetup = {
     val sequencerSetup = idle(sequence)
     sequencerSetup.loadSequenceAndAssertResponse(Ok)
@@ -205,10 +204,9 @@ object SequencerTestSetup {
   }
 
   def inProgress(
-      sequence: Sequence,
-      mockCommands: Boolean = true
+      sequence: Sequence
   )(implicit system: ActorSystem[_], timeout: Timeout): SequencerTestSetup = {
-    val sequencerSetup = idle(sequence, mockCommands)
+    val sequencerSetup = idle(sequence)
     sequencerSetup.mockCommand(sequence.commands.head.runId, Promise[SubmitResponse].future)
     sequencerSetup.loadAndStartSequenceThenAssertInProgress()
     sequencerSetup.pullNextCommand()
@@ -216,12 +214,10 @@ object SequencerTestSetup {
   }
 
   def finished(
-      sequence: Sequence,
-      mockCommands: Boolean = true
+      sequence: Sequence
   )(implicit system: ActorSystem[_], timeout: Timeout): SequencerTestSetup = {
     val sequencerSetup = new SequencerTestSetup(sequence)
     import sequencerSetup._
-    if (mockCommands) mockAllCommands()
     val probe = TestProbe[SubmitResponse]
     sequencerActor ! LoadAndStartSequence(sequence, probe.ref)
     pullAllStepsAndAssertSequenceIsFinished()
