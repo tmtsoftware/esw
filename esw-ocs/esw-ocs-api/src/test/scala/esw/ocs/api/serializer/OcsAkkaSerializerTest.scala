@@ -119,8 +119,8 @@ class OcsAkkaSerializerTest extends ScalaTestWithActorTestKit with BaseTestSuite
         MaybeNextResult(Some(step)),
         SequenceResult(Completed(Id())),
         Unhandled(Idle, "GoOnline"),
-        DuplicateIdsFound,
-        GoOnlineHookFailed,
+        DuplicateIdsFound(),
+        GoOnlineHookFailed(),
         CannotOperateOnAnInFlightOrFinishedStep,
         IdDoesNotExist(Id())
       )

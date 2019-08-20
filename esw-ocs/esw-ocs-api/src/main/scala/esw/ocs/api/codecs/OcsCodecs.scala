@@ -69,13 +69,13 @@ trait OcsCodecs extends MessageCodecs with DoneCodec {
   implicit lazy val maybeNextResultCodec: Codec[MaybeNextResult]                     = deriveCodec[MaybeNextResult]
   implicit lazy val sequenceResultCodec: Codec[SequenceResult]                       = deriveCodec[SequenceResult]
   implicit lazy val okCodec: Codec[Ok.type]                                          = singletonCodec(Ok)
-  implicit lazy val duplicateIdsFoundCodec: Codec[DuplicateIdsFound.type]            = singletonCodec(DuplicateIdsFound)
+  implicit lazy val duplicateIdsFoundCodec: Codec[DuplicateIdsFound]                 = deriveCodecForUnaryCaseClass[DuplicateIdsFound]
   implicit lazy val sequencerBehaviorStateCodec: Codec[SequencerState[SequencerMsg]] = enumCodec[SequencerState[SequencerMsg]]
   implicit lazy val unhandledCodec: Codec[Unhandled]                                 = deriveCodec[Unhandled]
   implicit lazy val idDoesNotExistCodec: Codec[IdDoesNotExist]                       = deriveCodec[IdDoesNotExist]
   implicit lazy val inFlightOrFinishedStepErrorCodec: Codec[CannotOperateOnAnInFlightOrFinishedStep.type] =
     singletonCodec(CannotOperateOnAnInFlightOrFinishedStep)
-  implicit lazy val handlersFailedCodec: Codec[GoOnlineHookFailed.type] = singletonCodec(GoOnlineHookFailed)
+  implicit lazy val goOnlineHookFailedCodec: Codec[GoOnlineHookFailed] = deriveCodecForUnaryCaseClass[GoOnlineHookFailed]
 
   //SequenceComponentCodecs
   implicit lazy val loadScriptCodec: Codec[LoadScript]                     = deriveCodec[LoadScript]

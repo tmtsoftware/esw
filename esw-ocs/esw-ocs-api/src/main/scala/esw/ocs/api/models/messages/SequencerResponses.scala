@@ -20,7 +20,7 @@ sealed trait GoOnlineResponse         extends EswSequencerResponse
 sealed trait SequenceResponse extends EswSequencerResponse {
   def toSubmitResponse(sequenceId: Id): SubmitResponse = this match {
     case SequenceResult(submitResponse) => submitResponse
-    case DuplicateIdsFound              => Error(sequenceId, DuplicateIdsFound.description)
+    case x: DuplicateIdsFound           => Error(sequenceId, x.description)
     case unhandled: Unhandled           => Error(sequenceId, unhandled.description)
   }
 }
@@ -38,7 +38,7 @@ case class PullNextResult(step: Step)                     extends PullNextRespon
 case class MaybeNextResult(step: Option[Step])            extends MaybeNextResponse
 case class SequenceResult(submitResponse: SubmitResponse) extends SequenceResponse
 
-case class Unhandled(state: SequencerState[SequencerMsg], messageType: String)
+case class Unhandled private[ocs] (state: SequencerState[SequencerMsg], messageType: String, description: String)
     extends OkOrUnhandledResponse
     with GenericResponse
     with PauseResponse
@@ -48,17 +48,20 @@ case class Unhandled(state: SequencerState[SequencerMsg], messageType: String)
     with SequenceResponse
     with PullNextResponse
     with MaybeNextResponse
-    with StepListResponse {
-  val description = s"Sequencer can not accept '$messageType' message in '$state' state"
+    with StepListResponse
+
+object Unhandled {
+  def apply(state: SequencerState[SequencerMsg], messageType: String): Unhandled =
+    new Unhandled(state, messageType, s"Sequencer can not accept '$messageType' message in '$state' state")
 }
 
-case object DuplicateIdsFound extends LoadSequenceResponse with SequenceResponse {
-  val description = "Duplicate command Ids found in given sequence"
-}
+case class DuplicateIdsFound(description: String = "Duplicate command Ids found in given sequence")
+    extends LoadSequenceResponse
+    with SequenceResponse
 
-case object GoOnlineHookFailed extends GoOnlineResponse {
-  val description = s"Sequencer could not go online because online handlers failed to execute successfully"
-}
+case class GoOnlineHookFailed(
+    description: String = "Sequencer could not go online because online handlers failed to execute successfully"
+) extends GoOnlineResponse
 
 sealed trait EditorError extends GenericResponse
 

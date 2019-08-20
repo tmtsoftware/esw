@@ -40,7 +40,7 @@ class SequencerBehaviorTest extends ScalaTestWithActorTestKit with BaseTestSuite
       val sequencerSetup  = SequencerTestSetup.idle(invalidSequence)
       import sequencerSetup._
 
-      loadSequenceAndAssertResponse(DuplicateIdsFound)
+      loadSequenceAndAssertResponse(DuplicateIdsFound())
     }
   }
 
@@ -75,7 +75,7 @@ class SequencerBehaviorTest extends ScalaTestWithActorTestKit with BaseTestSuite
 
       val probe = createTestProbe[SubmitResponse]
       sequencerActor ! LoadAndStartSequence(invalidSequence, probe.ref)
-      probe.expectMessage(Error(invalidSequence.runId, DuplicateIdsFound.description))
+      probe.expectMessage(Error(invalidSequence.runId, DuplicateIdsFound().description))
     }
 
     //todo: Add test for sequence failure

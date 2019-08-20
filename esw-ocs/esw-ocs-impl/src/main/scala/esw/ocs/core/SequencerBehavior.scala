@@ -80,7 +80,7 @@ class SequencerBehavior(
     receive(GoingOnline) {
       case msg: CommonMessage       => handleCommonMessage(msg, state)
       case GoOnlineSuccess(replyTo) => replyTo ! Ok; nextBehavior(state)
-      case GoOnlineFailed(replyTo)  => replyTo ! GoOnlineHookFailed; fallbackBehavior(state)
+      case GoOnlineFailed(replyTo)  => replyTo ! GoOnlineHookFailed(); fallbackBehavior(state)
     }
 
   private def goingOffline(state: SequencerActorState): Behavior[SequencerMsg] = receive(GoingOffline) {
@@ -140,7 +140,7 @@ class SequencerBehavior(
   private def createStepList(
       sequence: Sequence,
       state: SequencerActorState
-  ): Either[DuplicateIdsFound.type, SequencerActorState] =
+  ): Either[DuplicateIdsFound, SequencerActorState] =
     StepList(sequence).map(currentStepList => state.copy(stepList = Some(currentStepList), previousStepList = state.stepList))
 
   private def sendStepListResponse(replyTo: ActorRef[StepListResponse], stepList: Option[StepList]): Behavior[SequencerMsg] = {
