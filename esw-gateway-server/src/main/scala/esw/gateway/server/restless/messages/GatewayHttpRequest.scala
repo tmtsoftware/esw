@@ -1,4 +1,4 @@
-package esw.gateway.server.routes.restless.messages
+package esw.gateway.server.restless.messages
 
 import csw.alarm.models.AlarmSeverity
 import csw.location.models.ComponentType

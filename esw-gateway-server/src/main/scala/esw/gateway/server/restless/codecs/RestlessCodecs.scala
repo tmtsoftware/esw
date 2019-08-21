@@ -1,18 +1,18 @@
-package esw.gateway.server.routes.restless.codecs
+package esw.gateway.server.restless.codecs
 
 import com.github.ghik.silencer.silent
 import csw.alarm.codecs.AlarmCodecs
 import csw.location.models.codecs.LocationCodecs
 import csw.params.core.formats.{CodecHelpers, ParamCodecs}
 import csw.params.events.EventKey
-import esw.gateway.server.routes.restless.messages.GatewayHttpRequest._
-import esw.gateway.server.routes.restless.messages.GatewayWebsocketRequest.{
+import esw.gateway.server.restless.messages.GatewayHttpRequest._
+import esw.gateway.server.restless.messages.GatewayWebsocketRequest.{
   QueryFinal,
   Subscribe,
   SubscribeCurrentState,
   SubscribeWithPattern
 }
-import esw.gateway.server.routes.restless.messages._
+import esw.gateway.server.restless.messages._
 import io.bullet.borer.Codec
 import io.bullet.borer.derivation.MapBasedCodecs.deriveCodec
 

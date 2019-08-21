@@ -1,4 +1,4 @@
-package esw.gateway.server.routes.restless.impl
+package esw.gateway.server.restless.impl
 
 import akka.Done
 import akka.stream.scaladsl.Source
@@ -6,9 +6,9 @@ import csw.event.api.scaladsl.SubscriptionModes.RateLimiterMode
 import csw.event.api.scaladsl.{EventPublisher, EventSubscriber, EventSubscription}
 import csw.params.core.models.Subsystem
 import csw.params.events.{Event, EventKey}
-import esw.gateway.server.routes.restless.api.GatewayApi
-import esw.gateway.server.routes.restless.messages.{EmptyEventKeys, EventError, InvalidMaxFrequency}
-import esw.gateway.server.routes.restless.syntax.SourceExtension
+import esw.gateway.server.restless.api.GatewayApi
+import esw.gateway.server.restless.messages.{EmptyEventKeys, EventError, InvalidMaxFrequency}
+import esw.gateway.server.restless.syntax.SourceExtension
 import esw.http.core.commons.Utils
 import esw.http.core.commons.Utils.maxFrequencyToDuration
 

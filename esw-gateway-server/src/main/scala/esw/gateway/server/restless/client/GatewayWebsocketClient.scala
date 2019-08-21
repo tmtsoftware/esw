@@ -1,4 +1,4 @@
-package esw.gateway.server.routes.restless.client
+package esw.gateway.server.restless.client
 
 import akka.stream.scaladsl.Source
 import csw.location.models.ComponentType
@@ -6,23 +6,29 @@ import csw.params.commands.CommandResponse.SubmitResponse
 import csw.params.core.models.{Id, Subsystem}
 import csw.params.core.states.{CurrentState, StateName}
 import csw.params.events.{Event, EventKey}
-import esw.gateway.server.routes.restless.api.GatewayApi
-import esw.gateway.server.routes.restless.codecs.RestlessCodecs
-import esw.gateway.server.routes.restless.messages.GatewayWebsocketRequest.{
+import esw.gateway.server.restless.api.GatewayApi
+import esw.gateway.server.restless.codecs.RestlessCodecs
+import esw.gateway.server.restless.messages.GatewayWebsocketRequest.{
   QueryFinal,
   Subscribe,
   SubscribeCurrentState,
   SubscribeWithPattern
 }
-import esw.gateway.server.routes.restless.messages._
-import msocket.core.client.ClientSocket
+import esw.gateway.server.restless.messages._
+import msocket.core.api.Encoding
+import msocket.core.client.{ClientSocket, ClientSocketImpl}
 
 import scala.concurrent.Future
 
 trait GatewayWebsocketClient extends GatewayApi with RestlessCodecs {
-  def socket: ClientSocket[GatewayWebsocketRequest]
+  import cswContext.actorRuntime.{mat, untypedSystem}
 
-  import cswContext.actorRuntime.mat
+  def serverIp: String
+  def serverPort: String
+  def encoding: Encoding
+
+  val baseUri                                       = s"ws://$serverIp:$serverPort/websocket"
+  val socket: ClientSocket[GatewayWebsocketRequest] = new ClientSocketImpl(baseUri, encoding)
 
   override def queryFinal(
       componentType: ComponentType,

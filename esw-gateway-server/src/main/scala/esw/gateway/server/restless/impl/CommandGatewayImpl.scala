@@ -1,4 +1,4 @@
-package esw.gateway.server.routes.restless.impl
+package esw.gateway.server.restless.impl
 
 import akka.stream.OverflowStrategy
 import akka.stream.scaladsl.Source
@@ -8,10 +8,10 @@ import csw.params.commands.CommandResponse.SubmitResponse
 import csw.params.commands.{CommandResponse, ControlCommand}
 import csw.params.core.models.Id
 import csw.params.core.states.{CurrentState, StateName}
-import esw.gateway.server.routes.restless.api.GatewayApi
-import esw.gateway.server.routes.restless.messages.CommandAction.{Oneway, Submit, Validate}
-import esw.gateway.server.routes.restless.messages.{CommandAction, CommandError, InvalidComponent, InvalidMaxFrequency}
-import esw.gateway.server.routes.restless.syntax.SourceExtension
+import esw.gateway.server.restless.api.GatewayApi
+import esw.gateway.server.restless.messages.CommandAction.{Oneway, Submit, Validate}
+import esw.gateway.server.restless.messages.{CommandAction, CommandError, InvalidComponent, InvalidMaxFrequency}
+import esw.gateway.server.restless.syntax.SourceExtension
 
 import scala.concurrent.Future
 import scala.concurrent.duration.DurationLong

@@ -1,4 +1,4 @@
-package esw.gateway.server.routes.restless.api
+package esw.gateway.server.restless.api
 
 import akka.Done
 import akka.stream.scaladsl.Source
@@ -9,7 +9,7 @@ import csw.params.commands.{CommandResponse, ControlCommand}
 import csw.params.core.models.{Id, Subsystem}
 import csw.params.core.states.{CurrentState, StateName}
 import csw.params.events.{Event, EventKey}
-import esw.gateway.server.routes.restless.messages._
+import esw.gateway.server.restless.messages._
 import esw.http.core.utils.CswContext
 
 import scala.concurrent.Future

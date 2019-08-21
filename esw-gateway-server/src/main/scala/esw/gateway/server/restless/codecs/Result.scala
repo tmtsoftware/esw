@@ -1,7 +1,7 @@
-package esw.gateway.server.routes.restless.codecs
+package esw.gateway.server.restless.codecs
 
 import com.github.ghik.silencer.silent
-import esw.gateway.server.routes.restless.codecs.Result.{Error, Success}
+import esw.gateway.server.restless.codecs.Result.{Error, Success}
 import io.bullet.borer.derivation.ArrayBasedCodecs.deriveUnaryCodec
 import io.bullet.borer.derivation.MapBasedCodecs.deriveCodec
 import io.bullet.borer.{Codec, Decoder, Encoder}

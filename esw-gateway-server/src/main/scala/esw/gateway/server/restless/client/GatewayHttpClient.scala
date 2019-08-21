@@ -1,4 +1,4 @@
-package esw.gateway.server.routes.restless.client
+package esw.gateway.server.restless.client
 
 import akka.Done
 import akka.http.scaladsl.Http
@@ -12,10 +12,10 @@ import csw.location.models.ComponentType
 import csw.params.commands.{CommandResponse, ControlCommand}
 import csw.params.core.models.Subsystem
 import csw.params.events.{Event, EventKey}
-import esw.gateway.server.routes.restless.api.GatewayApi
-import esw.gateway.server.routes.restless.codecs.RestlessCodecs
-import esw.gateway.server.routes.restless.messages.GatewayHttpRequest.{CommandRequest, GetEvent, PublishEvent, SetAlarmSeverity}
-import esw.gateway.server.routes.restless.messages._
+import esw.gateway.server.restless.api.GatewayApi
+import esw.gateway.server.restless.codecs.RestlessCodecs
+import esw.gateway.server.restless.messages.GatewayHttpRequest.{CommandRequest, GetEvent, PublishEvent, SetAlarmSeverity}
+import esw.gateway.server.restless.messages._
 import io.bullet.borer.{Decoder, Encoder}
 
 import scala.async.Async.{async, await}
@@ -25,8 +25,12 @@ trait GatewayHttpClient extends GatewayApi with RestlessCodecs with HttpCodecs w
 
   import cswContext.actorRuntime.{ec, mat, untypedSystem}
 
+  def serverIp: String
+  def serverPort: String
+
   def post[Req: Encoder, Res: Decoder](req: Req): Future[Res] = async {
-    val uri           = Uri("/gateway")
+    val baseUri       = s"http://$serverIp:$serverPort/gateway"
+    val uri           = Uri(baseUri)
     val requestEntity = await(Marshal(req).to[RequestEntity])
     val request       = HttpRequest(HttpMethods.POST, uri = uri, entity = requestEntity)
     val response      = await(Http().singleRequest(request))

@@ -1,11 +1,11 @@
-package esw.gateway.server.routes.restless.impl
+package esw.gateway.server.restless.impl
 
 import akka.Done
 import csw.alarm.models.AlarmSeverity
 import csw.alarm.models.Key.AlarmKey
 import csw.params.core.models.Subsystem
-import esw.gateway.server.routes.restless.api.GatewayApi
-import esw.gateway.server.routes.restless.messages.SetAlarmSeverityFailure
+import esw.gateway.server.restless.api.GatewayApi
+import esw.gateway.server.restless.messages.SetAlarmSeverityFailure
 
 import scala.concurrent.Future
 import scala.util.control.NonFatal

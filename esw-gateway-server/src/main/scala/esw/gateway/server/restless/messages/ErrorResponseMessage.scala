@@ -1,4 +1,4 @@
-package esw.gateway.server.routes.restless.messages
+package esw.gateway.server.restless.messages
 
 sealed trait CommandError
 case class InvalidComponent(msg: String) extends CommandError

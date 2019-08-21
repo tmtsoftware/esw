@@ -1,12 +1,12 @@
-package esw.gateway.server.routes.restless
+package esw.gateway.server.restless
 
 import akka.http.scaladsl.server.Directives._
 import akka.http.scaladsl.server.Route
 import csw.location.client.HttpCodecs
-import esw.gateway.server.routes.restless.api.GatewayApi
-import esw.gateway.server.routes.restless.codecs.RestlessCodecs
-import esw.gateway.server.routes.restless.messages.GatewayHttpRequest
-import esw.gateway.server.routes.restless.messages.GatewayHttpRequest.{CommandRequest, GetEvent, PublishEvent, SetAlarmSeverity}
+import esw.gateway.server.restless.api.GatewayApi
+import esw.gateway.server.restless.codecs.RestlessCodecs
+import esw.gateway.server.restless.messages.GatewayHttpRequest
+import esw.gateway.server.restless.messages.GatewayHttpRequest.{CommandRequest, GetEvent, PublishEvent, SetAlarmSeverity}
 import msocket.core.api.Encoding
 import msocket.core.server.WsServerFlow
 
@@ -14,8 +14,10 @@ class GatewayRoutes(val gatewayApi: GatewayApi) extends RestlessCodecs with Http
   private val serverSocket = new GatewayServerSocket(gatewayApi)
   private val wsServerFlow = new WsServerFlow(serverSocket)
 
-  val route: Route = path("websocket" / Segment) { encoding =>
-    handleWebSocketMessages(wsServerFlow.flow(Encoding.fromString(encoding)))
+  val route: Route = get {
+    path("websocket" / Segment) { encoding =>
+      handleWebSocketMessages(wsServerFlow.flow(Encoding.fromString(encoding)))
+    }
   } ~
     post {
       path("gateway") {

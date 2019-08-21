@@ -1,7 +1,7 @@
-package esw.gateway.server.routes.restless
+package esw.gateway.server.restless
 
-import esw.gateway.server.routes.restless.api.GatewayApi
-import esw.gateway.server.routes.restless.impl.{AlarmGatewayImpl, CommandGatewayImpl, EventGatewayImpl}
+import esw.gateway.server.restless.api.GatewayApi
+import esw.gateway.server.restless.impl.{AlarmGatewayImpl, CommandGatewayImpl, EventGatewayImpl}
 import esw.http.core.utils.CswContext
 import esw.http.core.wiring.{HttpService, ServerWiring}
 

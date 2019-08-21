@@ -1,11 +1,11 @@
-package esw.gateway.server.routes.restless
+package esw.gateway.server.restless
 
 import akka.NotUsed
 import akka.stream.scaladsl.Source
-import esw.gateway.server.routes.restless.api.GatewayApi
-import esw.gateway.server.routes.restless.codecs.RestlessCodecs
-import esw.gateway.server.routes.restless.messages.GatewayWebsocketRequest
-import esw.gateway.server.routes.restless.messages.GatewayWebsocketRequest.{
+import esw.gateway.server.restless.api.GatewayApi
+import esw.gateway.server.restless.codecs.RestlessCodecs
+import esw.gateway.server.restless.messages.GatewayWebsocketRequest
+import esw.gateway.server.restless.messages.GatewayWebsocketRequest.{
   QueryFinal,
   Subscribe,
   SubscribeCurrentState,

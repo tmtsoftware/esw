@@ -1,4 +1,4 @@
-package esw.gateway.server.routes.restless.syntax
+package esw.gateway.server.restless.syntax
 
 import akka.stream.scaladsl.Source
 
