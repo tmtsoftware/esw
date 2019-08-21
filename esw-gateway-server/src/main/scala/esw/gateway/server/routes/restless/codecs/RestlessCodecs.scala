@@ -18,14 +18,14 @@ import io.bullet.borer.derivation.MapBasedCodecs.deriveCodec
 
 trait RestlessCodecs extends ParamCodecs with LocationCodecs with AlarmCodecs with EitherCodecs {
 
-  implicit def eventErrorMsgCodec[T <: EventError]: Codec[T] = eventErrorMsgCodecValue.asInstanceOf[Codec[T]]
-  lazy val eventErrorMsgCodecValue: Codec[EventError] = {
-    @silent implicit lazy val noEventKeysCodec: Codec[EmptyEventKeys] = deriveCodec[EmptyEventKeys]
+  implicit def eventErrorCodec[T <: EventError]: Codec[T] = eventErrorCodecValue.asInstanceOf[Codec[T]]
+  lazy val eventErrorCodecValue: Codec[EventError] = {
+    @silent implicit lazy val emptyEventKeysCodec: Codec[EmptyEventKeys] = deriveCodec[EmptyEventKeys]
     invalidMaxFrequencyCodec
     deriveCodec[EventError]
   }
 
-  implicit def commandErrorMsgCodec[T <: CommandError]: Codec[T] = eventErrorMsgCodecValue.asInstanceOf[Codec[T]]
+  implicit def commandErrorMsgCodec[T <: CommandError]: Codec[T] = eventErrorCodecValue.asInstanceOf[Codec[T]]
   lazy val commandErrorMsgCodecValue: Codec[CommandError] = {
     @silent implicit lazy val invalidComponentCodec: Codec[InvalidComponent] = deriveCodec[InvalidComponent]
     invalidMaxFrequencyCodec
@@ -35,23 +35,23 @@ trait RestlessCodecs extends ParamCodecs with LocationCodecs with AlarmCodecs wi
   implicit lazy val invalidMaxFrequencyCodec: Codec[InvalidMaxFrequency]         = deriveCodec[InvalidMaxFrequency]
   implicit lazy val setAlarmSeverityFailureCodec: Codec[SetAlarmSeverityFailure] = deriveCodec[SetAlarmSeverityFailure]
 
-  implicit def gatewayMsgCodec[T <: GatewayRequest]: Codec[T] = gatewayMsgCodecValue.asInstanceOf[Codec[T]]
-  lazy val gatewayMsgCodecValue: Codec[GatewayRequest] = {
-    @silent implicit lazy val commandMsgCodec: Codec[CommandRequest]            = deriveCodec[CommandRequest]
-    @silent implicit lazy val publishEventMsgCodec: Codec[PublishEvent]         = deriveCodec[PublishEvent]
-    @silent implicit lazy val getEventMsgCodec: Codec[GetEvent]                 = deriveCodec[GetEvent]
-    @silent implicit lazy val setAlarmSeverityMsgCodec: Codec[SetAlarmSeverity] = deriveCodec[SetAlarmSeverity]
+  implicit def gatewayRequestCodec[T <: GatewayRequest]: Codec[T] = gatewayRequestValue.asInstanceOf[Codec[T]]
+  lazy val gatewayRequestValue: Codec[GatewayRequest] = {
+    @silent implicit lazy val commandRequestCodec: Codec[CommandRequest]     = deriveCodec[CommandRequest]
+    @silent implicit lazy val publishEventCodec: Codec[PublishEvent]         = deriveCodec[PublishEvent]
+    @silent implicit lazy val getEventCodec: Codec[GetEvent]                 = deriveCodec[GetEvent]
+    @silent implicit lazy val setAlarmSeverityCodec: Codec[SetAlarmSeverity] = deriveCodec[SetAlarmSeverity]
     deriveCodec[GatewayRequest]
   }
   implicit lazy val commandActionCodec: Codec[CommandAction] = CodecHelpers.enumCodec[CommandAction]
 
-  implicit def websocketMsgCodec[T <: WebSocketRequest]: Codec[T] = gatewayMsgCodecValue.asInstanceOf[Codec[T]]
-  lazy val webSocketMsgCodecValue: Codec[WebSocketRequest] = {
-    @silent implicit lazy val queryCommandMsgCodec: Codec[QueryFinal]  = deriveCodec[QueryFinal]
-    @silent implicit lazy val subscribeEventMsgCodec: Codec[Subscribe] = deriveCodec[Subscribe]
-    @silent implicit lazy val patternSubscribeEventMsgCodec: Codec[SubscribeWithPattern] =
+  implicit def websocketMsgCodec[T <: WebSocketRequest]: Codec[T] = webSocketRequestCodecValue.asInstanceOf[Codec[T]]
+  lazy val webSocketRequestCodecValue: Codec[WebSocketRequest] = {
+    @silent implicit lazy val queryFinalCodec: Codec[QueryFinal] = deriveCodec[QueryFinal]
+    @silent implicit lazy val subscribeCodec: Codec[Subscribe]   = deriveCodec[Subscribe]
+    @silent implicit lazy val subscribeWithPatternCodec: Codec[SubscribeWithPattern] =
       deriveCodec[SubscribeWithPattern]
-    @silent implicit lazy val currentStateSubscriptionCommandMsgCodec: Codec[SubscribeCurrentState] =
+    @silent implicit lazy val subscribeCurrentStateCodec: Codec[SubscribeCurrentState] =
       deriveCodec[SubscribeCurrentState]
 
     deriveCodec[WebSocketRequest]
