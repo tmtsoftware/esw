@@ -16,7 +16,10 @@ import io.bullet.borer.derivation.ArrayBasedCodecs.deriveUnaryCodec
 import io.bullet.borer.derivation.MapBasedCodecs.deriveCodec
 
 trait OcsCodecs extends MessageCodecs with DoneCodec {
-  //EswSequencerMsg Codecs
+
+  def singletonErrorResponseCodec[T <: SingletonErrorResponse with Singleton](a: T): Codec[T] =
+    Codec.bimap[String, T](_.msg, _ => a)
+
   implicit lazy val loadSequenceCodec: Codec[LoadSequence]   = deriveCodec[LoadSequence]
   implicit lazy val startSequenceCodec: Codec[StartSequence] = deriveCodec[StartSequence]
   implicit lazy val loadAndStartSequenceInternalCodec: Codec[LoadAndStartSequenceInternal] =
@@ -70,13 +73,13 @@ trait OcsCodecs extends MessageCodecs with DoneCodec {
   implicit lazy val maybeNextResultCodec: Codec[MaybeNextResult]                     = deriveCodec[MaybeNextResult]
   implicit lazy val sequenceResultCodec: Codec[SequenceResult]                       = deriveCodec[SequenceResult]
   implicit lazy val okCodec: Codec[Ok.type]                                          = singletonCodec(Ok)
-  implicit lazy val duplicateIdsFoundCodec: Codec[DuplicateIdsFound]                 = deriveUnaryCodec[DuplicateIdsFound]
+  implicit lazy val duplicateIdsFoundCodec: Codec[DuplicateIdsFound.type]            = singletonErrorResponseCodec(DuplicateIdsFound)
   implicit lazy val sequencerBehaviorStateCodec: Codec[SequencerState[SequencerMsg]] = enumCodec[SequencerState[SequencerMsg]]
   implicit lazy val unhandledCodec: Codec[Unhandled]                                 = deriveCodec[Unhandled]
   implicit lazy val idDoesNotExistCodec: Codec[IdDoesNotExist]                       = deriveCodec[IdDoesNotExist]
   implicit lazy val inFlightOrFinishedStepErrorCodec: Codec[CannotOperateOnAnInFlightOrFinishedStep.type] =
     singletonCodec(CannotOperateOnAnInFlightOrFinishedStep)
-  implicit lazy val goOnlineHookFailedCodec: Codec[GoOnlineHookFailed] = deriveUnaryCodec[GoOnlineHookFailed]
+  implicit lazy val handlersFailedCodec: Codec[GoOnlineHookFailed.type] = singletonErrorResponseCodec(GoOnlineHookFailed)
 
   //SequenceComponentCodecs
   implicit lazy val loadScriptCodec: Codec[LoadScript]                     = deriveCodec[LoadScript]

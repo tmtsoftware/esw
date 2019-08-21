@@ -26,7 +26,7 @@ class StepListTest extends BaseTestSuite {
       val setup2 = Setup(Prefix("esw.ocs.move2"), CommandName("test2"), None).copy(runId = setup1.runId)
 
       val sequence = Sequence(setup1, setup2)
-      StepList(sequence).left.value should ===(DuplicateIdsFound())
+      StepList(sequence).left.value should ===(DuplicateIdsFound)
     }
   }
 

@@ -32,7 +32,7 @@ private[ocs] class Engine(implicit mat: Materializer) {
         script.execute(step.command).recover {
           case NonFatal(e) => sequenceOperator.update(Error(step.id, e.getMessage))
         }
-      case e: Unhandled => sequenceOperator.update(Error(Id("Invalid"), e.description))
+      case e: Unhandled => sequenceOperator.update(Error(Id("Invalid"), e.msg))
     }
 
     await(sequenceOperator.readyToExecuteNext)
