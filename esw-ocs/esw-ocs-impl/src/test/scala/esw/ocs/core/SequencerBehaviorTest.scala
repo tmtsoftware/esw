@@ -404,6 +404,46 @@ class SequencerBehaviorTest extends ScalaTestWithActorTestKit with BaseTestSuite
     }
   }
 
+  "AddBreakpoint and RemoveBreakpoint" must {
+    "add and delete breakpoint to/from provided id when step status is Pending and sequencer is in Loaded state | ESW-106, ESW-107" in {
+      val sequencerSetup = SequencerTestSetup.loaded(sequence)
+      import sequencerSetup._
+
+      val expectedSequenceAfterAddingBreakpoint =
+        StepListResult(Some(StepList(sequence.runId, List(Step(command1), Step(command2).copy(hasBreakpoint = true)))))
+
+      addBreakpointAndAssertResponse(command2.runId, Ok)
+      assertCurrentSequence(expectedSequenceAfterAddingBreakpoint)
+
+      val expectedSequenceAfterRemovingBreakPoint =
+        StepListResult(Some(StepList(sequence.runId, List(Step(command1), Step(command2).copy(hasBreakpoint = false)))))
+
+      removeBreakpointAndAssertResponse(command2.runId, Ok)
+      assertCurrentSequence(expectedSequenceAfterRemovingBreakPoint)
+    }
+
+    "add and delete breakpoint to/from provided id when step status is Pending and sequencer is in InProgress state | ESW-106, ESW-107" in {
+      val sequencerSetup = SequencerTestSetup.inProgress(sequence)
+      import sequencerSetup._
+
+      val expectedSequenceAfterAddingBreakpoint =
+        StepListResult(
+          Some(StepList(sequence.runId, List(Step(command1).copy(status = InFlight), Step(command2).copy(hasBreakpoint = true))))
+        )
+
+      addBreakpointAndAssertResponse(command2.runId, Ok)
+      assertCurrentSequence(expectedSequenceAfterAddingBreakpoint)
+
+      val expectedSequenceAfterRemovingBreakpoint =
+        StepListResult(
+          Some(StepList(sequence.runId, List(Step(command1).copy(status = InFlight), Step(command2).copy(hasBreakpoint = false))))
+        )
+
+      removeBreakpointAndAssertResponse(command2.runId, Ok)
+      assertCurrentSequence(expectedSequenceAfterRemovingBreakpoint)
+    }
+  }
+
   "AbortSequence" must {
     "abort the given sequence in Loaded state | ESW-155, ESW-137" in {
       val sequencerSetup = SequencerTestSetup.loaded(sequence)

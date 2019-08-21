@@ -134,6 +134,18 @@ class SequencerTestSetup(sequence: Sequence)(implicit system: ActorSystem[_], ti
     replaceResProbe.expectMessage(response)
   }
 
+  def addBreakpointAndAssertResponse(id: Id, response: GenericResponse): Unit = {
+    val probe = TestProbe[GenericResponse]()
+    sequencerActor ! AddBreakpoint(id, probe.ref)
+    probe.expectMessage(response)
+  }
+
+  def removeBreakpointAndAssertResponse(id: Id, response: RemoveBreakpointResponse): Unit = {
+    val probe = TestProbe[RemoveBreakpointResponse]()
+    sequencerActor ! RemoveBreakpoint(id, probe.ref)
+    probe.expectMessage(response)
+  }
+
   def assertUnhandled[T >: Unhandled <: EswSequencerResponse](
       state: SequencerState[SequencerMsg],
       msg: ActorRef[T] => EswSequencerMessage
