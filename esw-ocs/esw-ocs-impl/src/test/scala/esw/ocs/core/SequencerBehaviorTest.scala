@@ -1,6 +1,6 @@
 package esw.ocs.core
 
-import akka.actor.testkit.typed.scaladsl.ScalaTestWithActorTestKit
+import akka.actor.testkit.typed.scaladsl.{ScalaTestWithActorTestKit, TestProbe}
 import akka.util.Timeout
 import csw.command.client.messages.sequencer.LoadAndStartSequence
 import csw.params.commands.CommandResponse.{Completed, Error, SubmitResponse}
@@ -14,7 +14,7 @@ import esw.ocs.api.models.messages.SequencerMessages._
 import esw.ocs.api.models.messages._
 import esw.ocs.api.models.{Step, StepList, StepStatus}
 
-import scala.concurrent.Future
+import scala.concurrent.{Future, Promise}
 
 class SequencerBehaviorTest extends ScalaTestWithActorTestKit with BaseTestSuite {
 
@@ -361,7 +361,47 @@ class SequencerBehaviorTest extends ScalaTestWithActorTestKit with BaseTestSuite
 
       assertCurrentSequence(expectedSequence)
     }
+  }
 
+  "InsertAfter" must {
+    "insert steps after provided id when sequencer is in Loaded state | ESW-111" in {
+      val sequencerSetup = SequencerTestSetup.loaded(sequence)
+      import sequencerSetup._
+
+      val cmdsToInsert = List(command3, command4)
+
+      val expectedSequenceAfterInsertion =
+        StepListResult(
+          Some(
+            StepList(
+              sequence.runId,
+              List(Step(command1), Step(command3), Step(command4), Step(command2))
+            )
+          )
+        )
+
+      val insertResProbe = TestProbe[GenericResponse]()
+      sequencerActor ! InsertAfter(command1.runId, cmdsToInsert, insertResProbe.ref)
+      insertResProbe.expectMessage(Ok)
+
+      assertCurrentSequence(expectedSequenceAfterInsertion)
+    }
+
+    "fail with CannotOperateOnAnInFlightOrFinishedStep when trying to insert before a InFlight step in InProgress state | ESW-111" in {
+      val sequencerSetup = SequencerTestSetup.inProgress(sequence)
+      import sequencerSetup._
+
+      // make sure command2 is in InFlight status
+      mockCommand(command2.runId, Promise[SubmitResponse].future)
+      pullNextCommand()
+      val stepListResult = getSequence()
+      stepListResult.stepList.get.steps.forall(_.isInFlight) should ===(true)
+
+      val cmdsToInsert   = List(command3, command4)
+      val insertResProbe = TestProbe[GenericResponse]()
+      sequencerActor ! InsertAfter(command1.runId, cmdsToInsert, insertResProbe.ref)
+      insertResProbe.expectMessage(CannotOperateOnAnInFlightOrFinishedStep)
+    }
   }
 
   "AbortSequence" must {
