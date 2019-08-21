@@ -7,7 +7,7 @@ import esw.gateway.server.routes.restless.codecs.RestlessCodecs
 import msocket.core.server.WsServerFlow
 
 class Routes(val gatewayApi: GatewayApi) extends RestlessCodecs {
-  private val gatewayRoute   = new GatewayRoute(gatewayApi)
+  private val gatewayRoute   = new GatewayHttpRoute(gatewayApi)
   private val serverSocket   = new RestlessServerSocket(gatewayApi)
   private val flow           = new WsServerFlow(serverSocket)
   private val websocketRoute = new WebsocketRoute(flow)

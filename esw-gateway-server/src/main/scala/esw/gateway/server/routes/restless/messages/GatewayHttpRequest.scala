@@ -6,14 +6,14 @@ import csw.params.commands.ControlCommand
 import csw.params.core.models.Subsystem
 import csw.params.events.{Event, EventKey}
 
-sealed trait GatewayRequest
+sealed trait GatewayHttpRequest
 
-object GatewayRequest {
+object GatewayHttpRequest {
 
   case class CommandRequest(componentType: ComponentType, componentName: String, command: ControlCommand, action: CommandAction)
-      extends GatewayRequest
-  case class PublishEvent(event: Event)         extends GatewayRequest
-  case class GetEvent(eventKeys: Set[EventKey]) extends GatewayRequest
+      extends GatewayHttpRequest
+  case class PublishEvent(event: Event)         extends GatewayHttpRequest
+  case class GetEvent(eventKeys: Set[EventKey]) extends GatewayHttpRequest
   case class SetAlarmSeverity(subsystem: Subsystem, componentName: String, alarmName: String, severity: AlarmSeverity)
-      extends GatewayRequest
+      extends GatewayHttpRequest
 }

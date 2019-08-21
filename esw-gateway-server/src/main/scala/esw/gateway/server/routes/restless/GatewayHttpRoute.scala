@@ -5,14 +5,14 @@ import akka.http.scaladsl.server.Route
 import csw.location.client.HttpCodecs
 import esw.gateway.server.routes.restless.api.GatewayApi
 import esw.gateway.server.routes.restless.codecs.RestlessCodecs
-import esw.gateway.server.routes.restless.messages.GatewayRequest
-import esw.gateway.server.routes.restless.messages.GatewayRequest.{CommandRequest, GetEvent, PublishEvent, SetAlarmSeverity}
+import esw.gateway.server.routes.restless.messages.GatewayHttpRequest
+import esw.gateway.server.routes.restless.messages.GatewayHttpRequest.{CommandRequest, GetEvent, PublishEvent, SetAlarmSeverity}
 
-class GatewayRoute(gatewayApi: GatewayApi) extends RestlessCodecs with HttpCodecs {
+class GatewayHttpRoute(gatewayApi: GatewayApi) extends RestlessCodecs with HttpCodecs {
 
   val route: Route = post {
     path("gateway") {
-      entity(as[GatewayRequest]) {
+      entity(as[GatewayHttpRequest]) {
 
         case CommandRequest(componentType, componentName, command, action) =>
           complete(gatewayApi.process(componentType, componentName, command, action))
