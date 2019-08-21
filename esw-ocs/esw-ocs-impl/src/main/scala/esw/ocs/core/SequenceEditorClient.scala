@@ -16,8 +16,7 @@ class SequenceEditorClient(sequencer: ActorRef[EswSequencerMessage])(implicit sy
     extends SequenceEditor {
   private implicit val scheduler: Scheduler = system.scheduler
 
-  override def getSequence: Future[StepListResponse]         = sequencer ? GetSequence
-  override def getPreviousSequence: Future[StepListResponse] = sequencer ? GetPreviousSequence
+  override def getSequence: Future[StepListResponse] = sequencer ? GetSequence
 
   override def add(commands: List[SequenceCommand]): Future[OkOrUnhandledResponse]       = sequencer ? (Add(commands, _))
   override def prepend(commands: List[SequenceCommand]): Future[OkOrUnhandledResponse]   = sequencer ? (Prepend(commands, _))

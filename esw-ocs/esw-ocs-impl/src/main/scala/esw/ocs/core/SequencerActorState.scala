@@ -16,7 +16,6 @@ import scala.util.{Failure, Success}
 
 private[core] case class SequencerActorState(
     stepList: Option[StepList],
-    previousStepList: Option[StepList],
     readyToExecuteSubscriber: Option[ActorRef[OkOrUnhandledResponse]],
     stepRefSubscriber: Option[ActorRef[PullNextResult]],
     self: ActorRef[EswSequencerMessage],
@@ -149,5 +148,5 @@ object SequencerActorState {
       self: ActorRef[EswSequencerMessage],
       crm: CommandResponseManager
   )(implicit actorSystem: ActorSystem[_], timeout: Timeout) =
-    SequencerActorState(None, None, None, None, self, crm, actorSystem, timeout)
+    SequencerActorState(None, None, None, self, crm, actorSystem, timeout)
 }

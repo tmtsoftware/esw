@@ -85,51 +85,15 @@ class SequencerBehaviorTest extends ScalaTestWithActorTestKit with BaseTestSuite
     val sequencerSetup = SequencerTestSetup.idle(sequence)
     import sequencerSetup._
 
-    "return None when in Idle state" in {
+    "return None when in Idle state | ESW-157" in {
       assertCurrentSequence(StepListResult(None))
     }
 
-    "return sequence when in Loaded state" in {
+    "return sequence when in Loaded state | ESW-157" in {
       loadSequenceAndAssertResponse(Ok)
       assertCurrentSequence(StepListResult(StepList(sequence).toOption))
     }
   }
-
-//  "GetPreviousSequence" must {
-//    "return None when sequencer has not started executing any sequence" in {
-//      val sequencerSetup = SequencerTestSetup.idle(sequence)
-//      import sequencerSetup._
-//      assertPreviousSequence(StepListResult(None))
-//      loadSequenceAndAssertResponse(Ok)
-//      assertPreviousSequence(StepListResult(None))
-//    }
-//
-//    "return previous sequence after new sequence is loaded" in {
-//      val sequencerSetup = SequencerTestSetup.finished(sequence)
-//      import sequencerSetup._
-//
-//      // current sequence is finished but still previous sequence is None
-//      // current sequence gets stored into previous sequence when next/new sequence is loaded
-//      assertPreviousSequence(StepListResult(None))
-//
-//      mockCommand(command1.runId, Future.successful(Completed(command1.runId)))
-//      loadSequenceAndAssertResponse(Ok)
-//
-//      val expectedPreviousSequence = StepListResult(
-//        Some(
-//          StepList(
-//            sequence.runId,
-//            List(
-//              Step(command1).copy(status = Finished(command1.runId)),
-//              Step(command2).copy(status = Finished(command2.runId))
-//            )
-//          )
-//        )
-//      )
-//
-//      assertPreviousSequence(expectedPreviousSequence)
-//    }
-//  }
 
   "Add" must {
     "add commands when sequence is loaded | ESW-114" in {

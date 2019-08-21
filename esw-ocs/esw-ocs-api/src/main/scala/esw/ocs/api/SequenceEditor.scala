@@ -9,7 +9,6 @@ import scala.concurrent.Future
 trait SequenceEditor {
 
   def getSequence: Future[StepListResponse]
-  def getPreviousSequence: Future[StepListResponse]
   def add(commands: List[SequenceCommand]): Future[OkOrUnhandledResponse]
   def prepend(commands: List[SequenceCommand]): Future[OkOrUnhandledResponse]
   def replace(id: Id, commands: List[SequenceCommand]): Future[GenericResponse]

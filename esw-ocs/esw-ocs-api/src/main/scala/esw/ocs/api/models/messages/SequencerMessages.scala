@@ -36,9 +36,8 @@ object SequencerMessages {
   final case class StartSequence(replyTo: ActorRef[SequenceResponse])                        extends SequenceLoadedMessage
 
   // common msgs
-  final case class Shutdown(replyTo: ActorRef[OkOrUnhandledResponse])       extends CommonMessage
-  final case class GetSequence(replyTo: ActorRef[StepListResponse])         extends CommonMessage
-  final case class GetPreviousSequence(replyTo: ActorRef[StepListResponse]) extends CommonMessage
+  final case class Shutdown(replyTo: ActorRef[OkOrUnhandledResponse]) extends CommonMessage
+  final case class GetSequence(replyTo: ActorRef[StepListResponse])   extends CommonMessage
 
   // lifecycle msgs
   final case class GoOnline(replyTo: ActorRef[GoOnlineResponse])       extends OfflineMessage

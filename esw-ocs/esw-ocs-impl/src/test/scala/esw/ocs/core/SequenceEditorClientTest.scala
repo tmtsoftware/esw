@@ -15,24 +15,22 @@ import esw.ocs.api.models.messages.{Ok, StepListResult, Unhandled}
 class SequenceEditorClientTest extends ScalaTestWithActorTestKit with BaseTestSuite {
   private val command = Setup(Prefix("esw.test"), CommandName("command-1"), None)
 
-  private val getSequenceResponse         = StepListResult(StepList(Sequence(command)).toOption)
-  private val getPreviousSequenceResponse = StepListResult(None)
-  private val addResponse                 = Ok
-  private val pauseResponse               = CannotOperateOnAnInFlightOrFinishedStep
-  private val prependResponse             = Unhandled(Offline, "Prepend")
-  private val resumeResponse              = Unhandled(Idle, "Resume")
-  private val removeBreakpointResponse    = IdDoesNotExist(Id())
-  private val replaceResponse             = CannotOperateOnAnInFlightOrFinishedStep
-  private val insertAfterResponse         = Ok
-  private val resetResponse               = Ok
-  private val deleteResponse              = IdDoesNotExist(Id())
-  private val addBreakpointResponse       = Unhandled(Idle, "AddBreakpoint")
+  private val getSequenceResponse      = StepListResult(StepList(Sequence(command)).toOption)
+  private val addResponse              = Ok
+  private val pauseResponse            = CannotOperateOnAnInFlightOrFinishedStep
+  private val prependResponse          = Unhandled(Offline, "Prepend")
+  private val resumeResponse           = Unhandled(Idle, "Resume")
+  private val removeBreakpointResponse = IdDoesNotExist(Id())
+  private val replaceResponse          = CannotOperateOnAnInFlightOrFinishedStep
+  private val insertAfterResponse      = Ok
+  private val resetResponse            = Ok
+  private val deleteResponse           = IdDoesNotExist(Id())
+  private val addBreakpointResponse    = Unhandled(Idle, "AddBreakpoint")
 
   private val mockedBehavior: Behaviors.Receive[SequencerMsg] =
     Behaviors.receiveMessage[SequencerMsg] { msg =>
       msg match {
         case GetSequence(replyTo)                                   => replyTo ! getSequenceResponse
-        case GetPreviousSequence(replyTo)                           => replyTo ! getPreviousSequenceResponse
         case Add(List(`command`), replyTo)                          => replyTo ! addResponse
         case Prepend(List(`command`), replyTo)                      => replyTo ! prependResponse
         case Replace(`command`.runId, List(`command`), replyTo)     => replyTo ! replaceResponse
@@ -54,10 +52,6 @@ class SequenceEditorClientTest extends ScalaTestWithActorTestKit with BaseTestSu
 
   "getSequence" in {
     sequenceEditorClient.getSequence.futureValue should ===(getSequenceResponse)
-  }
-
-  "getPreviousSequence" in {
-    sequenceEditorClient.getPreviousSequence.futureValue should ===(getPreviousSequenceResponse)
   }
 
   "add" in {

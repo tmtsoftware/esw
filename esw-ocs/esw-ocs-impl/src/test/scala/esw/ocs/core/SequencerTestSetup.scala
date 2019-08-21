@@ -83,9 +83,11 @@ class SequencerTestSetup(sequence: Sequence)(implicit system: ActorSystem[_], ti
     eventually(assertSequenceIsFinished())
   }
 
-  def assertCurrentSequence(expected: StepListResponse): Unit = assertStepListResponse(expected, GetSequence)
-
-  def assertPreviousSequence(expected: StepListResponse): Unit = assertStepListResponse(expected, GetPreviousSequence)
+  def assertCurrentSequence(expected: StepListResponse): Unit = {
+    val probe = TestProbe[StepListResponse]
+    sequencerActor ! GetSequence(probe.ref)
+    probe.expectMessage(expected)
+  }
 
   def abortSequenceAndAssertResponse(
       response: OkOrUnhandledResponse,
@@ -189,12 +191,6 @@ class SequencerTestSetup(sequence: Sequence)(implicit system: ActorSystem[_], ti
     val probe = TestProbe[StepListResponse]
     sequencerActor ! GetSequence(probe.ref)
     probe.expectMessageType[StepListResult]
-  }
-
-  private def assertStepListResponse(expected: StepListResponse, msg: ActorRef[StepListResponse] => SequencerMsg): Unit = {
-    val probe = TestProbe[StepListResponse]
-    sequencerActor ! msg(probe.ref)
-    probe.expectMessage(expected)
   }
 }
 

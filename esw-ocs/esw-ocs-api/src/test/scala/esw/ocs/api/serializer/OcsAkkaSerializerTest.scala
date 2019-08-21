@@ -33,7 +33,6 @@ class OcsAkkaSerializerTest extends ScalaTestWithActorTestKit with BaseTestSuite
   private val sequenceResponseRef: ActorRef[SequenceResponse]           = TestProbe[SequenceResponse].ref
   private val editorResponseRef: ActorRef[EswSequencerResponse]         = TestProbe[EswSequencerResponse].ref
   private val stepListResponseRef: ActorRef[StepListResponse]           = TestProbe[StepListResponse].ref
-  private val stepListOptionResponseRef: ActorRef[StepListResponse]     = TestProbe[StepListResponse].ref
   private val loadScriptResponseRef: ActorRef[LoadScriptResponse]       = TestProbe[LoadScriptResponse].ref
   private val getStatusResponseRef: ActorRef[GetStatusResponse]         = TestProbe[GetStatusResponse].ref
   private val unloadScriptResponseRef: ActorRef[Done]                   = TestProbe[Done].ref
@@ -53,7 +52,6 @@ class OcsAkkaSerializerTest extends ScalaTestWithActorTestKit with BaseTestSuite
         Shutdown(okOrUnhandledResponseRef),
         AbortSequence(okOrUnhandledResponseRef),
         GetSequence(stepListResponseRef),
-        GetPreviousSequence(stepListOptionResponseRef),
         Add(sequenceCommandList, editorResponseRef),
         Prepend(sequenceCommandList, editorResponseRef),
         Replace(Id(), sequenceCommandList, editorResponseRef),
