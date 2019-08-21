@@ -19,4 +19,5 @@ trait SequenceEditor {
   def resume: Future[OkOrUnhandledResponse]
   def addBreakpoint(id: Id): Future[GenericResponse]
   def removeBreakpoint(id: Id): Future[RemoveBreakpointResponse]
+  def reset(): Future[OkOrUnhandledResponse]
 }

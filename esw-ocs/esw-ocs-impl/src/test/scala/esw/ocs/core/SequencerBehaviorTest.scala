@@ -373,6 +373,7 @@ class SequencerBehaviorTest extends ScalaTestWithActorTestKit with BaseTestSuite
       RemoveBreakpoint(Id(), _),
       Pause,
       Resume,
+      Reset,
       ShutdownComplete
     )
   }

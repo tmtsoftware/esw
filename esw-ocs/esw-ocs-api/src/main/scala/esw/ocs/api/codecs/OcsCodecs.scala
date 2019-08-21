@@ -35,6 +35,7 @@ trait OcsCodecs extends MessageCodecs with DoneCodec {
   implicit lazy val replaceCodec: Codec[Replace]                         = deriveCodec[Replace]
   implicit lazy val insertAfterCodec: Codec[InsertAfter]                 = deriveCodec[InsertAfter]
   implicit lazy val deleteCodec: Codec[Delete]                           = deriveCodec[Delete]
+  implicit lazy val resetCodec: Codec[Reset]                             = deriveUnaryCodec[Reset]
   implicit lazy val addBreakpointCodec: Codec[AddBreakpoint]             = deriveCodec[AddBreakpoint]
   implicit lazy val removeBreakpointCodec: Codec[RemoveBreakpoint]       = deriveCodec[RemoveBreakpoint]
   implicit lazy val pauseCodec: Codec[Pause]                             = deriveUnaryCodec[Pause]

@@ -62,7 +62,8 @@ class OcsAkkaSerializerTest extends ScalaTestWithActorTestKit with BaseTestSuite
         AddBreakpoint(Id(), editorResponseRef),
         RemoveBreakpoint(Id(), editorResponseRef),
         Pause(editorResponseRef),
-        Resume(editorResponseRef)
+        Resume(editorResponseRef),
+        Reset(editorResponseRef)
       )
 
       forAll(testData) { assertSerde }

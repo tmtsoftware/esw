@@ -54,6 +54,7 @@ object SequencerMessages {
   final case class RemoveBreakpoint(id: Id, replyTo: ActorRef[RemoveBreakpointResponse])                    extends EditorAction
   final case class Pause(replyTo: ActorRef[PauseResponse])                                                  extends EditorAction
   final case class Resume(replyTo: ActorRef[OkOrUnhandledResponse])                                         extends EditorAction
+  final case class Reset(replyTo: ActorRef[OkOrUnhandledResponse])                                          extends EditorAction
 
   //abort
   final case class AbortSequence(replyTo: ActorRef[OkOrUnhandledResponse]) extends SequenceLoadedMessage with InProgressMessage

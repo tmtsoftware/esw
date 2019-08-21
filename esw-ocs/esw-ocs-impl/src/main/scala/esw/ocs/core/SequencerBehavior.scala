@@ -103,6 +103,7 @@ class SequencerBehavior(
       case Replace(id, commands, replyTo)     => updateStepListResult(replyTo, stepList.map(_.replace(id, commands)))
       case Prepend(commands, replyTo)         => updateStepList(replyTo, stepList.map(_.prepend(commands)))
       case Delete(id, replyTo)                => updateStepListResult(replyTo, stepList.map(_.delete(id)))
+      case Reset(replyTo)                     => updateStepList(replyTo, stepList.map(_.discardPending))
       case InsertAfter(id, commands, replyTo) => updateStepListResult(replyTo, stepList.map(_.insertAfter(id, commands)))
       case AddBreakpoint(id, replyTo)         => updateStepListResult(replyTo, stepList.map(_.addBreakpoint(id)))
       case RemoveBreakpoint(id, replyTo)      => updateStepListResult(replyTo, stepList.map(_.removeBreakpoint(id)))
