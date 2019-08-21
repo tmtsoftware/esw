@@ -17,7 +17,7 @@ import io.bullet.borer.derivation.MapBasedCodecs.deriveCodec
 
 trait OcsCodecs extends MessageCodecs with DoneCodec {
 
-  def singletonErrorResponseCodec[T <: SingletonErrorResponse with Singleton](a: T): Codec[T] =
+  def singletonErrorCodec[T <: SingletonError with Singleton](a: T): Codec[T] =
     Codec.bimap[String, T](_.msg, _ => a)
 
   implicit lazy val loadSequenceCodec: Codec[LoadSequence]   = deriveCodec[LoadSequence]
@@ -72,13 +72,13 @@ trait OcsCodecs extends MessageCodecs with DoneCodec {
   implicit lazy val maybeNextResultCodec: Codec[MaybeNextResult]                     = deriveCodec[MaybeNextResult]
   implicit lazy val sequenceResultCodec: Codec[SequenceResult]                       = deriveCodec[SequenceResult]
   implicit lazy val okCodec: Codec[Ok.type]                                          = singletonCodec(Ok)
-  implicit lazy val duplicateIdsFoundCodec: Codec[DuplicateIdsFound.type]            = singletonErrorResponseCodec(DuplicateIdsFound)
   implicit lazy val sequencerBehaviorStateCodec: Codec[SequencerState[SequencerMsg]] = enumCodec[SequencerState[SequencerMsg]]
   implicit lazy val unhandledCodec: Codec[Unhandled]                                 = deriveCodec[Unhandled]
   implicit lazy val idDoesNotExistCodec: Codec[IdDoesNotExist]                       = deriveCodec[IdDoesNotExist]
   implicit lazy val inFlightOrFinishedStepErrorCodec: Codec[CannotOperateOnAnInFlightOrFinishedStep.type] =
     singletonCodec(CannotOperateOnAnInFlightOrFinishedStep)
-  implicit lazy val handlersFailedCodec: Codec[GoOnlineHookFailed.type] = singletonErrorResponseCodec(GoOnlineHookFailed)
+  implicit lazy val duplicateIdsFoundCodec: Codec[DuplicateIdsFound.type]   = singletonErrorCodec(DuplicateIdsFound)
+  implicit lazy val goOnlineHookFailedCodec: Codec[GoOnlineHookFailed.type] = singletonErrorCodec(GoOnlineHookFailed)
 
   //SequenceComponentCodecs
   implicit lazy val loadScriptCodec: Codec[LoadScript]                     = deriveCodec[LoadScript]

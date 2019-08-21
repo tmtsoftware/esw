@@ -59,15 +59,15 @@ object Unhandled {
   }
 }
 
-trait SingletonErrorResponse {
+trait SingletonError {
   def msg: String
 }
 
-case object DuplicateIdsFound extends LoadSequenceResponse with SequenceResponse with SingletonErrorResponse {
+case object DuplicateIdsFound extends LoadSequenceResponse with SequenceResponse with SingletonError {
   val msg = "Duplicate command Ids found in given sequence"
 }
 
-case object GoOnlineHookFailed extends GoOnlineResponse with SingletonErrorResponse {
+case object GoOnlineHookFailed extends GoOnlineResponse with SingletonError {
   val msg = s"Sequencer could not go online because online handlers failed to execute successfully"
 }
 
