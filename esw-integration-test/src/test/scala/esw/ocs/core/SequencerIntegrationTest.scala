@@ -10,12 +10,13 @@ import csw.location.api.scaladsl.LocationService
 import csw.location.client.scaladsl.HttpLocationServiceFactory
 import csw.location.models.Connection.AkkaConnection
 import csw.location.models.{ComponentId, ComponentType}
-import csw.params.commands.CommandResponse.{Completed, SubmitResponse}
+import csw.params.commands.CommandResponse.{Completed, Error, SubmitResponse}
 import csw.params.commands.{CommandName, Sequence, Setup}
 import csw.params.core.models.Prefix
 import csw.testkit.scaladsl.ScalaTestFrameworkTestKit
 import esw.ocs.api.BaseTestSuite
-import esw.ocs.api.models.StepStatus.Finished
+import esw.ocs.api.models.StepStatus.Finished.{Failure, Success}
+import esw.ocs.api.models.StepStatus.Pending
 import esw.ocs.api.models.messages.SequencerMessages._
 import esw.ocs.api.models.messages._
 import esw.ocs.api.models.{Step, StepList}
@@ -88,9 +89,39 @@ class SequencerIntegrationTest extends ScalaTestFrameworkTestKit with BaseTestSu
             StepList(
               sequence.runId,
               List(
-                Step(command1, Finished.Success(Completed(command1.runId)), hasBreakpoint = false),
-                Step(command2, Finished.Success(Completed(command2.runId)), hasBreakpoint = false),
-                Step(command3, Finished.Success(Completed(command3.runId)), hasBreakpoint = false)
+                Step(command1, Success(Completed(command1.runId)), hasBreakpoint = false),
+                Step(command2, Success(Completed(command2.runId)), hasBreakpoint = false),
+                Step(command3, Success(Completed(command3.runId)), hasBreakpoint = false)
+              )
+            )
+          )
+        )
+      )
+    }
+
+    "short circuit on first failed command and get failed sequence response | ESW-158, ESW-145" in {
+      val failCommandName = "fail-command"
+
+      val command1 = Setup(Prefix("esw.test"), CommandName("command-1"), None)
+      // TestScript.scala returns Error on receiving command with name "fail-command"
+      val command2 = Setup(Prefix("esw.test"), CommandName(failCommandName), None)
+      val command3 = Setup(Prefix("esw.test"), CommandName("command-3"), None)
+      val sequence = Sequence(command1, command2, command3)
+
+      val processSeqResponse: Future[SubmitResponse] = sequencer ? (LoadAndStartSequence(sequence, _))
+      eventually((sequencer ? GetSequence).futureValue shouldBe an[StepListResult])
+
+      processSeqResponse.futureValue should ===(Error(sequence.runId, failCommandName))
+
+      (sequencer ? GetSequence).futureValue should ===(
+        StepListResult(
+          Some(
+            StepList(
+              sequence.runId,
+              List(
+                Step(command1, Success(Completed(command1.runId)), hasBreakpoint = false),
+                Step(command2, Failure(Error(command2.runId, failCommandName)), hasBreakpoint = false),
+                Step(command3, Pending, hasBreakpoint = false)
               )
             )
           )

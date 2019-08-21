@@ -1,6 +1,6 @@
 package esw.ocs.testData
 
-import csw.params.commands.CommandResponse.Completed
+import csw.params.commands.CommandResponse.{Completed, Error}
 import csw.params.commands.{CommandName, Sequence, Setup}
 import csw.params.core.models.{Id, Prefix}
 import esw.ocs.dsl.{CswServices, Script}
@@ -36,6 +36,12 @@ class TestScript(csw: CswServices) extends Script(csw) {
 
       csw.sequencerCommandService.submitSequence(tcsSequencer, sequence).await
       csw.crm.addOrUpdateCommand(Completed(command.runId))
+    }
+  }
+
+  handleSetupCommand("fail-command") { command =>
+    spawn {
+      csw.crm.addOrUpdateCommand(Error(command.runId, command.commandName.name))
     }
   }
 

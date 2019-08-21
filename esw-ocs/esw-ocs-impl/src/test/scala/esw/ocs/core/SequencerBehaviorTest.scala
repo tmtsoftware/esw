@@ -77,8 +77,6 @@ class SequencerBehaviorTest extends ScalaTestWithActorTestKit with BaseTestSuite
       sequencerActor ! LoadAndStartSequence(invalidSequence, probe.ref)
       probe.expectMessage(Error(invalidSequence.runId, DuplicateIdsFound.msg))
     }
-
-    //todo: Add test for sequence failure
   }
 
   "GetSequence" must {
