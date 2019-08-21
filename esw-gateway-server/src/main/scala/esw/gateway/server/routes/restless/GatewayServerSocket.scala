@@ -15,9 +15,9 @@ import msocket.core.api.Payload
 import msocket.core.api.ToPayload.{FutureToPayload, SourceWithErrorToPayload}
 import msocket.core.server.ServerSocket
 
-class RestlessServerSocket(gatewayApi: GatewayApi) extends ServerSocket[GatewayWebsocketRequest] with RestlessCodecs {
+class GatewayServerSocket(gatewayApi: GatewayApi) extends ServerSocket[GatewayWebsocketRequest] with RestlessCodecs {
 
-  import gatewayApi.cswCtx.actorRuntime.{ec, mat}
+  import gatewayApi.cswContext.actorRuntime.{ec, mat}
 
   override def requestStream(request: GatewayWebsocketRequest): Source[Payload[_], NotUsed] = request match {
     case QueryFinal(componentType, componentName, runId) =>

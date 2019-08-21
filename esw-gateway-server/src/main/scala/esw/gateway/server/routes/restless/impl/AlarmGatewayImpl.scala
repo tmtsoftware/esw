@@ -12,7 +12,7 @@ import scala.util.control.NonFatal
 
 trait AlarmGatewayImpl extends GatewayApi {
 
-  import cswCtx._
+  import cswContext._
   import actorRuntime.ec
 
   override def setSeverity(

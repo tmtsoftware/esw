@@ -23,7 +23,7 @@ import scala.concurrent.Future
 
 trait GatewayHttpClient extends GatewayApi with RestlessCodecs with HttpCodecs with DoneCodec {
 
-  import cswCtx.actorRuntime.{ec, mat, untypedSystem}
+  import cswContext.actorRuntime.{ec, mat, untypedSystem}
 
   def post[Req: Encoder, Res: Decoder](req: Req): Future[Res] = async {
     val uri           = Uri("/gateway")

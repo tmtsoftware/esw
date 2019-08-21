@@ -15,7 +15,7 @@ import esw.http.core.utils.CswContext
 import scala.concurrent.Future
 
 trait GatewayApi {
-  val cswCtx: CswContext
+  val cswContext: CswContext
 
   //*****************AlarmService***********************
   def setSeverity(

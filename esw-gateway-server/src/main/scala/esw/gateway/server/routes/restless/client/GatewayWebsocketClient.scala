@@ -22,7 +22,7 @@ import scala.concurrent.Future
 trait GatewayWebsocketClient extends GatewayApi with RestlessCodecs {
   def socket: ClientSocket[GatewayWebsocketRequest]
 
-  import cswCtx.actorRuntime.mat
+  import cswContext.actorRuntime.mat
 
   override def queryFinal(
       componentType: ComponentType,

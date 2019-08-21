@@ -19,7 +19,7 @@ import scala.util.control.NonFatal
 
 trait CommandGatewayImpl extends GatewayApi {
 
-  import cswCtx._
+  import cswContext._
   import actorRuntime.ec
   implicit val timeout: Timeout = Timeout(5.seconds)
 

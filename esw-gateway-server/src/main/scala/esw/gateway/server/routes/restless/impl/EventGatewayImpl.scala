@@ -16,7 +16,7 @@ import scala.concurrent.Future
 
 trait EventGatewayImpl extends GatewayApi {
 
-  import cswCtx._
+  import cswContext._
   import actorRuntime.ec
 
   lazy val subscriber: EventSubscriber = eventService.defaultSubscriber
