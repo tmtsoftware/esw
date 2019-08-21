@@ -1,5 +1,6 @@
 package esw.ocs.core
 
+import akka.Done
 import akka.actor.testkit.typed.scaladsl.{ScalaTestWithActorTestKit, TestProbe}
 import akka.util.Timeout
 import csw.command.client.messages.sequencer.LoadAndStartSequence
@@ -7,10 +8,10 @@ import csw.params.commands.CommandResponse.{Completed, Error, SubmitResponse}
 import csw.params.commands.{CommandName, Sequence, Setup}
 import csw.params.core.models.{Id, Prefix}
 import esw.ocs.api.BaseTestSuite
-import esw.ocs.api.models.SequencerState.{Idle, InProgress, Loaded}
+import esw.ocs.api.models.SequencerState.{Idle, InProgress, Loaded, Offline}
 import esw.ocs.api.models.StepStatus.{InFlight, Pending}
 import esw.ocs.api.models.messages.EditorError.{CannotOperateOnAnInFlightOrFinishedStep, IdDoesNotExist}
-import esw.ocs.api.models.messages.SequencerMessages._
+import esw.ocs.api.models.messages.SequencerMessages.{AbortSequence, AddBreakpoint, _}
 import esw.ocs.api.models.messages._
 import esw.ocs.api.models.{Step, StepList, StepStatus}
 
@@ -424,6 +425,63 @@ class SequencerBehaviorTest extends ScalaTestWithActorTestKit with BaseTestSuite
     }
   }
 
+  "GoOnline" must {
+    "go to Idle state when sequencer is Offline | ESW-194" in {
+      val sequencerSetup = SequencerTestSetup.offline(sequence)
+      import sequencerSetup._
+
+      goOnlineAndAssertResponse(Ok, Future.successful(Done))
+
+      // try loading a sequence to ensure sequencer is online
+      loadSequenceAndAssertResponse(Ok)
+    }
+
+    "remain in offline state if online handlers fail | ESW-194" in {
+      val sequencerSetup = SequencerTestSetup.offline(sequence)
+      import sequencerSetup._
+
+      goOnlineAndAssertResponse(GoOnlineHookFailed, Future.failed(new RuntimeException("GoOnline Hook Failed")))
+
+      // assert sequencer is in offline state
+      // fixme: assert on current state of the sequencer instead
+      goOfflineAndAssertResponse(Unhandled(Offline, "GoOffline"), Future.successful(Done))
+    }
+  }
+
+  "GoOffline" must {
+    "go to Offline state from Idle state | ESW-194" in {
+      val sequencerSetup = SequencerTestSetup.idle(sequence)
+      import sequencerSetup._
+
+      goOfflineAndAssertResponse(Ok, Future.successful(Done))
+
+      // assert sequencer is in offline state
+      // fixme: assert on current state of the sequencer instead
+      goOfflineAndAssertResponse(Unhandled(Offline, "GoOffline"), Future.successful(Done))
+    }
+
+    "clear history of the last executed sequence | ESW-194" in {
+      val sequencerSetup = SequencerTestSetup.finished(sequence)
+      import sequencerSetup._
+
+      goOfflineAndAssertResponse(Ok, Future.successful(Done))
+
+      val expectedResult = StepListResult(None)
+      assertCurrentSequence(expectedResult)
+    }
+
+    "go to Offline state even if the offline handlers fail | ESW-194" in {
+      val sequencerSetup = SequencerTestSetup.idle(sequence)
+      import sequencerSetup._
+
+      goOfflineAndAssertResponse(Ok, Future.failed(new RuntimeException("GoOffline Hook Failed")))
+
+      // assert sequencer is in offline state
+      // fixme: assert on current state of the sequencer instead
+      goOfflineAndAssertResponse(Unhandled(Offline, "GoOffline"), Future.successful(Done))
+    }
+  }
+
   "Idle -> Unhandled" in {
     val sequencerSetup = new SequencerTestSetup(sequence)
     import sequencerSetup._
@@ -491,6 +549,40 @@ class SequencerBehaviorTest extends ScalaTestWithActorTestKit with BaseTestSuite
       GoOnlineFailed,
       GoOffline,
       GoneOffline,
+      ShutdownComplete
+    )
+  }
+
+  "Offline -> Unhandled | ESW-194" in {
+    val sequencerSetup = SequencerTestSetup.offline(sequence)
+    import sequencerSetup._
+    val cmds = List(command1, command2)
+
+    assertUnhandled(
+      Offline,
+      LoadAndStartSequenceInternal(sequence, _),
+      LoadSequence(sequence, _),
+      StartSequence,
+      AbortSequence,
+      AbortSequenceComplete,
+      Add(cmds, _),
+      Prepend(cmds, _),
+      Replace(Id(), cmds, _),
+      InsertAfter(Id(), cmds, _),
+      Delete(Id(), _),
+      AddBreakpoint(Id(), _),
+      RemoveBreakpoint(Id(), _),
+      Pause,
+      Resume,
+      Reset,
+      GoOnlineSuccess,
+      GoOnlineFailed,
+      GoneOffline,
+      GoIdle,
+      MaybeNext,
+      PullNext,
+      ReadyToExecuteNext,
+      Update(Completed(Id()), _),
       ShutdownComplete
     )
   }

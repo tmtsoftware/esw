@@ -148,6 +148,22 @@ class SequencerTestSetup(sequence: Sequence)(implicit system: ActorSystem[_], ti
     probe.expectMessage(response)
   }
 
+  def goOfflineAndAssertResponse(response: OkOrUnhandledResponse, handlerMockResponse: Future[Done]): OkOrUnhandledResponse = {
+    when(script.executeGoOffline()).thenReturn(handlerMockResponse)
+
+    val probe = TestProbe[OkOrUnhandledResponse]
+    sequencerActor ! GoOffline(probe.ref)
+    probe.expectMessage(response)
+  }
+
+  def goOnlineAndAssertResponse(response: GoOnlineResponse, handlerMockResponse: Future[Done]): GoOnlineResponse = {
+    when(script.executeGoOnline()).thenReturn(handlerMockResponse)
+
+    val probe = TestProbe[GoOnlineResponse]
+    sequencerActor ! GoOnline(probe.ref)
+    probe.expectMessage(response)
+  }
+
   def assertUnhandled[T >: Unhandled <: EswSequencerResponse](
       state: SequencerState[SequencerMsg],
       msg: ActorRef[T] => EswSequencerMessage
@@ -196,24 +212,18 @@ class SequencerTestSetup(sequence: Sequence)(implicit system: ActorSystem[_], ti
 
 object SequencerTestSetup {
 
-  def idle(
-      sequence: Sequence
-  )(implicit system: ActorSystem[_], timeout: Timeout): SequencerTestSetup = {
+  def idle(sequence: Sequence)(implicit system: ActorSystem[_], timeout: Timeout): SequencerTestSetup = {
     val testSetup = new SequencerTestSetup(sequence)
     testSetup
   }
 
-  def loaded(
-      sequence: Sequence
-  )(implicit system: ActorSystem[_], timeout: Timeout): SequencerTestSetup = {
+  def loaded(sequence: Sequence)(implicit system: ActorSystem[_], timeout: Timeout): SequencerTestSetup = {
     val sequencerSetup = idle(sequence)
     sequencerSetup.loadSequenceAndAssertResponse(Ok)
     sequencerSetup
   }
 
-  def inProgress(
-      sequence: Sequence
-  )(implicit system: ActorSystem[_], timeout: Timeout): SequencerTestSetup = {
+  def inProgress(sequence: Sequence)(implicit system: ActorSystem[_], timeout: Timeout): SequencerTestSetup = {
     val sequencerSetup = idle(sequence)
     sequencerSetup.mockCommand(sequence.commands.head.runId, Promise[SubmitResponse].future)
     sequencerSetup.loadAndStartSequenceThenAssertInProgress()
@@ -221,9 +231,13 @@ object SequencerTestSetup {
     sequencerSetup
   }
 
-  def finished(
-      sequence: Sequence
-  )(implicit system: ActorSystem[_], timeout: Timeout): SequencerTestSetup = {
+  def offline(sequence: Sequence)(implicit system: ActorSystem[_], timeout: Timeout): SequencerTestSetup = {
+    val testSetup = new SequencerTestSetup(sequence)
+    testSetup.goOfflineAndAssertResponse(Ok, Future.successful(Done))
+    testSetup
+  }
+
+  def finished(sequence: Sequence)(implicit system: ActorSystem[_], timeout: Timeout): SequencerTestSetup = {
     val sequencerSetup = new SequencerTestSetup(sequence)
     import sequencerSetup._
     val probe = TestProbe[SubmitResponse]

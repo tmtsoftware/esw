@@ -68,7 +68,7 @@ case object DuplicateIdsFound extends LoadSequenceResponse with SequenceResponse
 }
 
 case object GoOnlineHookFailed extends GoOnlineResponse with SingletonError {
-  val msg = s"Sequencer could not go online because online handlers failed to execute successfully"
+  val msg = "Sequencer could not go online because online handlers failed to execute successfully"
 }
 
 sealed trait EditorError extends GenericResponse
