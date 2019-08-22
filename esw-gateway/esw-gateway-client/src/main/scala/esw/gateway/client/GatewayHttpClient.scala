@@ -17,7 +17,7 @@ import esw.gateway.api.codecs.RestlessCodecs
 import esw.gateway.api.messages.GatewayHttpRequest.{CommandRequest, GetEvent, PublishEvent, SetAlarmSeverity}
 import esw.gateway.api.messages._
 import io.bullet.borer.{Decoder, Encoder}
-import msocket.core.api.EitherCodecs
+import msocket.api.EitherCodecs
 
 import scala.async.Async.{async, await}
 import scala.concurrent.Future

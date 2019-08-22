@@ -1,4 +1,4 @@
-package msocket.core.client
+package mscoket.impl
 
 import akka.NotUsed
 import akka.actor.ActorSystem

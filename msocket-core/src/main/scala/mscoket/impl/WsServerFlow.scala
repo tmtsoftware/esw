@@ -1,10 +1,10 @@
-package msocket.core.server
+package mscoket.impl
 
 import akka.NotUsed
 import akka.http.scaladsl.model.ws.{BinaryMessage, Message, TextMessage}
 import akka.stream.scaladsl.Flow
 import io.bullet.borer.{Decoder, Encoder}
-import msocket.core.api.Encoding
+import msocket.api.ServerSocket
 
 class WsServerFlow[T: Decoder: Encoder](socket: ServerSocket[T]) {
 

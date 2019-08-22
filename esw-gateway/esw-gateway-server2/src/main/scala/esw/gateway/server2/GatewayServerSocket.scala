@@ -6,9 +6,8 @@ import esw.gateway.api.GatewayApi
 import esw.gateway.api.codecs.RestlessCodecs
 import esw.gateway.api.messages.GatewayWebsocketRequest
 import esw.gateway.api.messages.GatewayWebsocketRequest.{QueryFinal, Subscribe, SubscribeCurrentState, SubscribeWithPattern}
-import msocket.core.api.Payload
-import msocket.core.api.ToPayload.{FutureToPayload, SourceWithErrorToPayload}
-import msocket.core.server.ServerSocket
+import msocket.api.{Payload, ServerSocket}
+import mscoket.impl.ToPayload._
 
 class GatewayServerSocket(gatewayApi: GatewayApi) extends ServerSocket[GatewayWebsocketRequest] with RestlessCodecs {
 

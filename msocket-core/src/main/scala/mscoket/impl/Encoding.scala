@@ -1,11 +1,12 @@
-package msocket.core.api
+package mscoket.impl
 
 import akka.NotUsed
 import akka.http.scaladsl.model.ws.{BinaryMessage, Message, TextMessage}
 import akka.stream.scaladsl.Source
 import akka.util.ByteString
 import io.bullet.borer.compat.akka._
-import io.bullet.borer.{Cbor, Decoder, Encoder, Json, Target}
+import io.bullet.borer._
+import msocket.api.Payload
 
 sealed abstract class Encoding(val target: Target, val Name: String, val isBinary: Boolean) {
   def strictMessage(input: Payload[_]): Message

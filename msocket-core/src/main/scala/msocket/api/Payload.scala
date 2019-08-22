@@ -1,4 +1,4 @@
-package msocket.core.api
+package msocket.api
 
 import io.bullet.borer.derivation.ArrayBasedCodecs.{deriveUnaryCodec, deriveUnaryEncoder}
 import io.bullet.borer.{Decoder, Encoder, Writer}

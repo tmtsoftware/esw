@@ -1,10 +1,11 @@
-package msocket.core.api
+package mscoket.impl
 
 import akka.NotUsed
 import akka.stream.Materializer
 import akka.stream.scaladsl.Source
 import io.bullet.borer.{Decoder, Encoder}
-import msocket.core.api.Result.{Error, Success}
+import msocket.api.{Payload, Result}
+import msocket.api.Result.{Error, Success}
 
 import scala.concurrent.{ExecutionContext, Future}
 
