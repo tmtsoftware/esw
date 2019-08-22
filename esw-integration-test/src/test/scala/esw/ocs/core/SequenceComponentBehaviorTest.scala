@@ -6,6 +6,7 @@ import akka.actor.typed.ActorSystem
 import akka.actor.typed.scaladsl.Behaviors
 import csw.location.models.Connection.AkkaConnection
 import csw.location.models.{AkkaLocation, ComponentId, ComponentType, Location}
+import csw.logging.client.scaladsl.LoggerFactory
 import csw.testkit.scaladsl.ScalaTestFrameworkTestKit
 import esw.ocs.api.BaseTestSuite
 import esw.ocs.api.models.messages.SequenceComponentMsg._
@@ -19,9 +20,11 @@ class SequenceComponentBehaviorTest extends ScalaTestFrameworkTestKit with BaseT
   private implicit val typedSystem: ActorSystem[_] = actorSystem
   val ocsSequenceComponentName                     = "OCS_1"
 
+  private val factory = new LoggerFactory("SequenceComponentTest")
+
   private def createBehaviorTestKit(): BehaviorTestKit[SequenceComponentMsg] = BehaviorTestKit(
     Behaviors.setup[SequenceComponentMsg] { _ =>
-      SequenceComponentBehavior.behavior(ocsSequenceComponentName)
+      SequenceComponentBehavior.behavior(ocsSequenceComponentName, factory.getLogger)
     }
   )
 

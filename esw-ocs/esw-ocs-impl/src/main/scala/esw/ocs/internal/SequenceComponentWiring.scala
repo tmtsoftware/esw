@@ -21,8 +21,10 @@ private[ocs] class SequenceComponentWiring(prefix: Prefix) {
 
   lazy val actorRuntime: ActorRuntime = frameworkWiring.actorRuntime
 
-  def sequenceComponentFactory(sequenceComponentName: String): ActorRef[SequenceComponentMsg] =
-    (typedSystem ? Spawn(SequenceComponentBehavior.behavior(sequenceComponentName), sequenceComponentName)).block
+  def sequenceComponentFactory(sequenceComponentName: String): ActorRef[SequenceComponentMsg] = {
+    log.info(s"Starting sequence component with name: $sequenceComponentName")
+    (typedSystem ? Spawn(SequenceComponentBehavior.behavior(sequenceComponentName, log), sequenceComponentName)).block
+  }
 
   private lazy val sequenceComponentRegistration =
     new SequenceComponentRegistration(prefix, locationService, sequenceComponentFactory)
