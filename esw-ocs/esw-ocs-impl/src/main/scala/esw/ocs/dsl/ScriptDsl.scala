@@ -41,10 +41,11 @@ trait ScriptDsl extends ControlDsl {
 
   // this futures will normally run in parallel, but given that those are running on same thread
   // this will executes sequentially
-  private[ocs] def executeGoOnline(): Future[Done] = {
-    isOnline = true
-    Future.sequence(onlineHandlers.execute(())).map(_ => Done)
-  }
+  private[ocs] def executeGoOnline(): Future[Done] =
+    Future.sequence(onlineHandlers.execute(())).map { _ =>
+      isOnline = true
+      Done
+    }
 
   private[ocs] def executeGoOffline(): Future[Done] = {
     isOnline = false
