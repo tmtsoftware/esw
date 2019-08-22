@@ -90,13 +90,32 @@ object Dependencies {
     )
   )
 
-  val MsocketCore: Def.Initialize[Seq[ModuleID]] = Def.setting(
+  val MsocketApi: Def.Initialize[Seq[ModuleID]] = Def.setting(
     Seq(
       Akka.`akka-stream`,
-      AkkaHttp.`akka-http`,
       Borer.`borer-core`,
       Borer.`borer-derivation`,
       Borer.`borer-compat-akka`
+    )
+  )
+
+  val MsocketImpl: Def.Initialize[Seq[ModuleID]] = Def.setting(
+    Seq(
+      AkkaHttp.`akka-http`
+    )
+  )
+
+  val EswGatewayApi: Def.Initialize[Seq[ModuleID]] = Def.setting(
+    Seq(
+      Csw.`csw-alarm-api`,
+      Csw.`csw-command-api`,
+      Csw.`csw-event-api`
+    )
+  )
+
+  val EswGatewayImpl: Def.Initialize[Seq[ModuleID]] = Def.setting(
+    Seq(
+      Csw.`csw-event-client`
     )
   )
 }

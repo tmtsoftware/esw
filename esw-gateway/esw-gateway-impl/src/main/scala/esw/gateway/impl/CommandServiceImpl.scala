@@ -3,7 +3,8 @@ package esw.gateway.impl
 import akka.stream.OverflowStrategy
 import akka.stream.scaladsl.Source
 import akka.util.Timeout
-import csw.location.models.ComponentType
+import csw.command.api.scaladsl.CommandService
+import csw.location.models.{ComponentId, ComponentType}
 import csw.params.commands.CommandResponse.SubmitResponse
 import csw.params.commands.{CommandResponse, ControlCommand}
 import csw.params.core.models.Id
@@ -12,23 +13,23 @@ import esw.gateway.api.CommandServiceApi
 import esw.gateway.api.messages.CommandAction.{Oneway, Submit, Validate}
 import esw.gateway.api.messages.{CommandAction, CommandError, InvalidComponent, InvalidMaxFrequency}
 import esw.gateway.impl.syntax.SourceExtension
-import esw.http.core.utils.ComponentFactory
 
 import scala.concurrent.duration.DurationInt
 import scala.concurrent.{ExecutionContext, Future}
 import scala.util.control.NonFatal
 
-class CommandServiceImpl(componentFactory: ComponentFactory)(implicit ec: ExecutionContext, timeout: Timeout)
-    extends CommandServiceApi {
+//fixme: Inject commandService from eswUtils later
+class CommandServiceImpl(commandService: (String, ComponentType) => Future[CommandService])(
+    implicit ec: ExecutionContext,
+    timeout: Timeout
+) extends CommandServiceApi {
 
   def process(
-      componentType: ComponentType,
-      componentName: String,
+      componentId: ComponentId,
       command: ControlCommand,
       action: CommandAction
   ): Future[Either[InvalidComponent, CommandResponse]] = {
-    componentFactory
-      .commandService(componentName, componentType)
+    commandService(componentId.name, componentId.componentType)
       .flatMap { commandService =>
         action match {
           case Oneway   => commandService.oneway(command)
@@ -42,13 +43,8 @@ class CommandServiceImpl(componentFactory: ComponentFactory)(implicit ec: Execut
       }
   }
 
-  def queryFinal(
-      componentType: ComponentType,
-      componentName: String,
-      runId: Id
-  ): Future[Either[InvalidComponent, SubmitResponse]] = {
-    componentFactory
-      .commandService(componentName, componentType)
+  def queryFinal(componentId: ComponentId, runId: Id): Future[Either[InvalidComponent, SubmitResponse]] = {
+    commandService(componentId.name, componentId.componentType)
       .flatMap(_.queryFinal(runId)(Timeout(100.hours)))
       .map(Right(_))
       .recover {
@@ -57,8 +53,7 @@ class CommandServiceImpl(componentFactory: ComponentFactory)(implicit ec: Execut
   }
 
   override def subscribeCurrentState(
-      componentType: ComponentType,
-      componentName: String,
+      componentId: ComponentId,
       stateNames: Set[StateName],
       maxFrequency: Option[Int]
   ): Source[CurrentState, Future[Option[CommandError]]] = {
@@ -66,8 +61,7 @@ class CommandServiceImpl(componentFactory: ComponentFactory)(implicit ec: Execut
     val currentStateSource: Source[CurrentState, Future[Option[InvalidComponent]]] = {
       Source
         .fromFutureSource(
-          componentFactory
-            .commandService(componentName, componentType)
+          commandService(componentId.name, componentId.componentType)
             .map(_.subscribeCurrentState(stateNames).mapMaterializedValue(_ => Future.successful(None)))
             .recover {
               case NonFatal(ex) => SourceExtension.emptyWithError(InvalidComponent(ex.getMessage))

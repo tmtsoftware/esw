@@ -10,8 +10,7 @@ import csw.params.events.{Event, EventKey}
 import esw.gateway.api.EventServiceApi
 import esw.gateway.api.messages.{EmptyEventKeys, EventError, InvalidMaxFrequency}
 import esw.gateway.impl.syntax.SourceExtension
-import esw.http.core.commons.Utils
-import esw.http.core.commons.Utils.maxFrequencyToDuration
+import esw.gateway.impl.utils.Utils
 
 import scala.concurrent.{ExecutionContext, Future}
 
@@ -53,7 +52,7 @@ class EventServiceImpl(eventService: EventService, eventSubscriberUtil: EventSub
       case Some(x) if x <= 0 => SourceExtension.emptyWithError(InvalidMaxFrequency())
       case Some(f) =>
         events
-          .via(eventSubscriberUtil.subscriptionModeStage(maxFrequencyToDuration(f), RateLimiterMode))
+          .via(eventSubscriberUtil.subscriptionModeStage(Utils.maxFrequencyToDuration(f), RateLimiterMode))
           .mapMaterializedValue(_ => Future.successful(None))
       case None => events.mapMaterializedValue(_ => Future.successful(None))
     }

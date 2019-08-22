@@ -28,13 +28,13 @@ class GatewayRoutes(gatewayContext: GatewayContext) extends RestlessCodecs with 
     }
 
   private def httpSocket(request: GatewayHttpRequest): StandardRoute = request match {
-    case CommandRequest(componentType, componentName, command, action) =>
-      complete(commandServiceApi.process(componentType, componentName, command, action))
+    case CommandRequest(componentId, command, action) =>
+      complete(commandServiceApi.process(componentId, command, action))
 
     case PublishEvent(event) => complete(eventServiceApi.publish(event))
     case GetEvent(eventKeys) => complete(eventServiceApi.get(eventKeys))
 
-    case SetAlarmSeverity(subsystem, componentName, alarmName, severity) =>
-      complete(alarmServiceApi.setSeverity(subsystem, componentName, alarmName, severity))
+    case SetAlarmSeverity(alarmKey, severity) =>
+      complete(alarmServiceApi.setSeverity(alarmKey, severity))
   }
 }

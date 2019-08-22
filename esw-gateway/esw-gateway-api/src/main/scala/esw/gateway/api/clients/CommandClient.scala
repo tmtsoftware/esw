@@ -1,7 +1,7 @@
 package esw.gateway.api.clients
 
 import akka.stream.scaladsl.Source
-import csw.location.models.ComponentType
+import csw.location.models.ComponentId
 import csw.params.commands.CommandResponse.SubmitResponse
 import csw.params.commands.{CommandResponse, ControlCommand}
 import csw.params.core.models.Id
@@ -21,32 +21,26 @@ class CommandClient(httpClient: HttpClient, socket: ClientSocket[GatewayWebsocke
     with EitherCodecs {
 
   override def process(
-      componentType: ComponentType,
-      componentName: String,
+      componentId: ComponentId,
       command: ControlCommand,
       action: CommandAction
   ): Future[Either[InvalidComponent, CommandResponse]] = {
     httpClient.post[CommandRequest, Either[InvalidComponent, CommandResponse]](
-      CommandRequest(componentType, componentName, command, action)
+      CommandRequest(componentId, command, action)
     )
   }
 
-  override def queryFinal(
-      componentType: ComponentType,
-      componentName: String,
-      runId: Id
-  ): Future[Either[InvalidComponent, SubmitResponse]] = {
-    socket.requestResponse[Either[InvalidComponent, SubmitResponse]](QueryFinal(componentType, componentName, runId))
+  override def queryFinal(componentId: ComponentId, runId: Id): Future[Either[InvalidComponent, SubmitResponse]] = {
+    socket.requestResponse[Either[InvalidComponent, SubmitResponse]](QueryFinal(componentId, runId))
   }
 
   override def subscribeCurrentState(
-      componentType: ComponentType,
-      componentName: String,
+      componentId: ComponentId,
       stateNames: Set[StateName],
       maxFrequency: Option[Int]
   ): Source[CurrentState, Future[Option[CommandError]]] = {
     socket.requestStreamWithError[CurrentState, CommandError](
-      SubscribeCurrentState(componentType, componentName, stateNames, maxFrequency)
+      SubscribeCurrentState(componentId, stateNames, maxFrequency)
     )
   }
 }

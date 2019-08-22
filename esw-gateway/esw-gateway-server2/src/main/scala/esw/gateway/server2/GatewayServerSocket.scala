@@ -17,10 +17,10 @@ class GatewayServerSocket(gatewayContext: GatewayContext)
   import gatewayContext.cswContext.actorRuntime.{ec, mat}
 
   override def requestStream(request: GatewayWebsocketRequest): Source[Payload[_], NotUsed] = request match {
-    case QueryFinal(componentType, componentName, runId) =>
-      commandServiceApi.queryFinal(componentType, componentName, runId).payload
-    case SubscribeCurrentState(componentType, componentName, stateNames, maxFrequency) =>
-      commandServiceApi.subscribeCurrentState(componentType, componentName, stateNames, maxFrequency).resultPayloads
+    case QueryFinal(componentId, runId) =>
+      commandServiceApi.queryFinal(componentId, runId).payload
+    case SubscribeCurrentState(componentId, stateNames, maxFrequency) =>
+      commandServiceApi.subscribeCurrentState(componentId, stateNames, maxFrequency).resultPayloads
 
     case Subscribe(eventKeys, maxFrequency) => eventServiceApi.subscribe(eventKeys, maxFrequency).resultPayloads
     case SubscribeWithPattern(subsystem, maxFrequency, pattern) =>

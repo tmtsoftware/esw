@@ -2,6 +2,7 @@ package esw.gateway.api.codecs
 
 import com.github.ghik.silencer.silent
 import csw.alarm.codecs.AlarmCodecs
+import csw.alarm.models.Key.AlarmKey
 import csw.location.models.codecs.LocationCodecs
 import csw.params.core.formats.{CodecHelpers, ParamCodecs}
 import csw.params.events.EventKey
@@ -53,6 +54,7 @@ trait RestlessCodecs extends ParamCodecs with LocationCodecs with AlarmCodecs {
     deriveCodec[GatewayWebsocketRequest]
   }
 
+  //Todo: move to csw
   implicit lazy val eventKeyCodec: Codec[EventKey] = deriveCodec[EventKey]
-
+  implicit lazy val alarmKeyCodec: Codec[AlarmKey] = deriveCodec[AlarmKey]
 }

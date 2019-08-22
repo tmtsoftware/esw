@@ -15,6 +15,6 @@ class GatewayContext(val cswContext: CswContext) {
   implicit private val timeout: Timeout = 10.seconds
 
   val alarmServiceApi: AlarmServiceApi     = new AlarmServiceImpl(alarmService)
-  val commandServiceApi: CommandServiceApi = new CommandServiceImpl(componentFactory)
+  val commandServiceApi: CommandServiceApi = new CommandServiceImpl(componentFactory.commandService)
   val eventServiceApi: EventServiceApi     = new EventServiceImpl(eventService, eventSubscriberUtil)
 }
