@@ -14,8 +14,8 @@ import csw.location.models.{AkkaLocation, AkkaRegistration, ComponentId, Compone
 import csw.params.commands.CommandResponse.Started
 import csw.params.commands.Sequence
 import csw.params.core.models.{Id, Prefix}
+import esw.highlevel.dsl.LocationServiceDsl
 import esw.ocs.api.BaseTestSuite
-import esw.utils.csw.LocationServiceUtils
 import org.mockito.ArgumentMatchers.any
 import org.mockito.Mockito.{clearInvocations, when}
 
@@ -52,7 +52,7 @@ class SequencerCommandServiceUtilsTest extends BaseTestSuite {
       val registrationResult = mock[RegistrationResult]
       when(locationService.register(any[AkkaRegistration])).thenReturn(Future(registrationResult))
 
-      val locationServiceUtils: LocationServiceUtils = new LocationServiceUtils(locationService)
+      val locationServiceUtils: LocationServiceDsl = new LocationServiceDsl(locationService)
       locationServiceUtils.register(registration).awaitResult
 
       val eventualResponse = sequencerCommandServiceUtil.submitSequence(location, sequence)

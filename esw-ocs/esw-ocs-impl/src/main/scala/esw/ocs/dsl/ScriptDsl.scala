@@ -2,9 +2,11 @@ package esw.ocs.dsl
 
 import akka.Done
 import csw.params.commands.{Observe, SequenceCommand, Setup}
+import esw.highlevel.dsl.{EventServiceDsl, LocationServiceDsl}
 import esw.ocs.api.models.messages.{MaybeNextResult, PullNextResult}
 import esw.ocs.dsl.utils.{FunctionBuilder, FunctionHandlers}
 import esw.ocs.exceptions.UnhandledCommandException
+import esw.highlevel.dsl.EventServiceDsl
 
 import scala.concurrent.Future
 import scala.concurrent.duration.DurationDouble
@@ -17,6 +19,9 @@ class Script(val csw: CswServices) extends ScriptDsl {
 
 trait ScriptDsl extends ControlDsl {
   def csw: CswServices
+  lazy val eventService: EventServiceDsl       = csw.eventServiceDsl
+  lazy val locationService: LocationServiceDsl = csw.locationServiceDsl
+
   var isOnline = true
 
   private val commandHandlerBuilder: FunctionBuilder[SequenceCommand, Future[Unit]] = new FunctionBuilder

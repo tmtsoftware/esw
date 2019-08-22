@@ -5,16 +5,15 @@ import akka.actor.typed.ActorRef
 import akka.actor.typed.SpawnProtocol.Spawn
 import akka.actor.typed.scaladsl.AskPattern.Askable
 import com.typesafe.config.{Config, ConfigFactory}
-import csw.command.client.messages.sequencer.SequencerMsg
 import csw.framework.internal.wiring.ActorRuntime
 import csw.location.api.extensions.ActorExtension.RichActor
 import csw.location.models.Connection.AkkaConnection
 import csw.location.models.{AkkaLocation, AkkaRegistration, ComponentId, ComponentType}
 import esw.ocs.api.models.messages.RegistrationError
+import esw.ocs.api.models.messages.SequencerMessages.EswSequencerMessage
 import esw.ocs.core._
 import esw.ocs.dsl.utils.ScriptLoader
 import esw.ocs.dsl.{CswServices, Script}
-import esw.ocs.macros.StrandEc
 import esw.ocs.syntax.FutureSyntax.FutureOps
 
 import scala.concurrent.Future
@@ -24,13 +23,13 @@ private[ocs] class SequencerWiring(val sequencerId: String, val observingMode: S
   private lazy val sequencerConfig = SequencerConfig.from(config, sequencerId, observingMode, sequenceComponentName)
   import sequencerConfig._
 
-  val cswServicesWiring = new CswServicesWiring(sequencerName)
+  lazy val cswServicesWiring = new CswServicesWiring(sequencerName)
   import cswServicesWiring._
   import frameworkWiring._
   import frameworkWiring.actorRuntime._
   implicit lazy val actorRuntime: ActorRuntime = frameworkWiring.actorRuntime
 
-  lazy val sequencerRef: ActorRef[SequencerMsg] = (typedSystem ? Spawn(sequencerBehavior.setup, sequencerName)).block
+  lazy val sequencerRef: ActorRef[EswSequencerMessage] = (typedSystem ? Spawn(sequencerBehavior.setup, sequencerName)).block
 
   //Pass lambda to break circular dependency shown below.
   //SequencerRef -> Script -> cswServices -> SequencerOperator -> SequencerRef
@@ -38,11 +37,16 @@ private[ocs] class SequencerWiring(val sequencerId: String, val observingMode: S
   private lazy val componentId             = ComponentId(sequencerName, ComponentType.Sequencer)
   private lazy val script: Script          = ScriptLoader.load(scriptClass, cswServices)
 
-  lazy val cswServices =
-    new CswServices(sequenceOperatorFactory, commandResponseManager, sequencerCommandService, locationServiceUtils)
+  lazy val cswServices = new CswServices(
+    sequenceOperatorFactory,
+    commandResponseManager,
+    sequencerCommandService,
+    locationServiceDsl,
+    eventServiceDsl
+  )
+
   lazy val sequencerBehavior =
     new SequencerBehavior(componentId, script, locationService, commandResponseManager)(typedSystem, timeout)
-  lazy val strandEc                  = StrandEc()
   lazy val sequencerSupervisorClient = new SequencerSupervisorClient(sequencerRef)(typedSystem, timeout)
 
   def shutDown(): Future[Done] = sequencerSupervisorClient.shutdown().map(_ => Done)
@@ -51,7 +55,7 @@ private[ocs] class SequencerWiring(val sequencerId: String, val observingMode: S
     new Engine().start(sequenceOperatorFactory(), script)
 
     val registration = AkkaRegistration(AkkaConnection(componentId), prefix, sequencerRef.toURI)
-    locationServiceUtils.register(registration)(typedSystem).block
+    locationServiceDsl.register(registration)(typedSystem).block
   }
 }
 // $COVERAGE-ON$

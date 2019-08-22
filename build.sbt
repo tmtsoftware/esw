@@ -89,7 +89,7 @@ lazy val `esw-integration-test` = project
 lazy val `esw-utils` = project
   .in(file("esw-utils"))
   .settings(libraryDependencies ++= Dependencies.Utils.value)
-  .dependsOn(`esw-ocs-api`)
+  .dependsOn(`esw-ocs-api`, `esw-ocs-macros`)
 
 lazy val `msocket-core` = project
   .in(file("msocket-core"))

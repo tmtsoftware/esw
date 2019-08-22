@@ -1,7 +1,7 @@
 package esw.ocs.app
 
 import caseapp.{CommandApp, RemainingArgs}
-import csw.framework.internal.wiring
+import csw.framework.internal.wiring.ActorRuntime
 import csw.location.client.utils.LocationServerStatus
 import csw.location.models.AkkaLocation
 import csw.logging.api.scaladsl.Logger
@@ -46,7 +46,7 @@ object SequencerApp extends CommandApp[SequencerAppCommand] {
     }
   }
 
-  private def withLogging[T](actorRuntime: wiring.ActorRuntime, log: Logger, enableLogging: Boolean)(
+  private def withLogging[T](actorRuntime: ActorRuntime, log: Logger, enableLogging: Boolean)(
       f: => Either[RegistrationError, AkkaLocation]
   ): Unit = {
     import actorRuntime._
