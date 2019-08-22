@@ -542,6 +542,32 @@ class SequencerBehaviorTest extends ScalaTestWithActorTestKit with BaseTestSuite
       loadAndStartSequenceThenAssertInProgress()
       probe.expectMessage(Ok)
     }
+
+    "wait till sequence is resumed in case of a paused sequence" in {
+      val sequencerSetup = SequencerTestSetup.idle(sequence)
+      import sequencerSetup._
+      sequencerSetup.loadAndStartSequenceThenAssertInProgress()
+      sequencerSetup.mockCommand(command1.runId, Future.successful(Completed(command1.runId)))
+      sequencerSetup.pullNextCommand()
+
+      pauseAndAssertResponse(Ok)
+
+      val probe = TestProbe[Ok.type]
+      sequencerActor ! ReadyToExecuteNext(probe.ref)
+      probe.expectNoMessage(1.second)
+
+      resumeAndAssertResponse(Ok)
+      probe.expectMessage(Ok)
+    }
+  }
+
+  "MayBeNext" must {
+    "return next pending command" in {
+      val sequencerSetup = SequencerTestSetup.inProgress(sequence)
+      import sequencerSetup._
+
+      mayBeNextAndAssertResponse(MaybeNextResult(Some(Step(command2))))
+    }
   }
 
   "Idle -> Unhandled" in {

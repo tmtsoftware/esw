@@ -6,7 +6,6 @@ import esw.highlevel.dsl.{EventServiceDsl, LocationServiceDsl}
 import esw.ocs.api.models.messages.{MaybeNextResult, PullNextResult}
 import esw.ocs.dsl.utils.{FunctionBuilder, FunctionHandlers}
 import esw.ocs.exceptions.UnhandledCommandException
-import esw.highlevel.dsl.EventServiceDsl
 
 import scala.concurrent.Future
 import scala.concurrent.duration.DurationDouble

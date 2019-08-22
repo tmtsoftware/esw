@@ -164,6 +164,12 @@ class SequencerTestSetup(sequence: Sequence)(implicit system: ActorSystem[_], ti
     probe.expectMessage(response)
   }
 
+  def mayBeNextAndAssertResponse(response: MaybeNextResult): MaybeNextResult = {
+    val probe = TestProbe[MaybeNextResponse]
+    sequencerActor ! MaybeNext(probe.ref)
+    probe.expectMessageType[MaybeNextResult]
+  }
+
   def assertUnhandled[T >: Unhandled <: EswSequencerResponse](
       state: SequencerState[SequencerMsg],
       msg: ActorRef[T] => UnhandleableSequencerMessage

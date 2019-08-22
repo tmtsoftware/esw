@@ -46,24 +46,33 @@ private[core] case class SequencerData(
   }
 
   def readyToExecuteNext(replyTo: ActorRef[Ok.type], state: SequencerState[SequencerMsg]): SequencerData =
-    if (stepList.exists(_.isNotInFlight) && (state == InProgress)) {
+    if (stepList.exists(_.isNotInFlight) && !stepList.exists(_.isPaused) && (state == InProgress)) {
       replyTo ! Ok
       copy(readyToExecuteSubscriber = None)
     } else copy(readyToExecuteSubscriber = Some(replyTo))
 
-  def updateStepListResult[T >: Ok.type](replyTo: ActorRef[T], stepListResult: Option[Either[T, StepList]]): SequencerData =
+  def updateStepListResult[T >: Ok.type](
+      replyTo: ActorRef[T],
+      state: SequencerState[SequencerMsg],
+      stepListResult: Option[Either[T, StepList]]
+  ): SequencerData =
     stepListResult
       .map {
         case Left(error)     => replyTo ! error; this
-        case Right(stepList) => updateStepList(replyTo, Some(stepList))
+        case Right(stepList) => updateStepList(replyTo, state, Some(stepList))
       }
       .getOrElse(this) // This will never happen as this method gets called from inProgress data
 
-  def updateStepList[T >: Ok.type](replyTo: ActorRef[T], stepList: Option[StepList]): SequencerData = {
-    val newState = copy(stepList)
+  def updateStepList[T >: Ok.type](
+      replyTo: ActorRef[T],
+      state: SequencerState[SequencerMsg],
+      stepList: Option[StepList]
+  ): SequencerData = {
+    val data = copy(stepList)
     replyTo ! Ok
-    checkForSequenceCompletion(newState)
-    sendNextPendingStepIfAvailable(newState)
+    checkForSequenceCompletion(data)
+    val updatedData = readyToExecuteSubscriber.map(replyTo => data.readyToExecuteNext(replyTo, state)).getOrElse(data)
+    sendNextPendingStepIfAvailable(updatedData)
   }
 
   def updateStepStatus(submitResponse: SubmitResponse): SequencerData = {
@@ -100,7 +109,7 @@ private[core] case class SequencerData(
     (inflightStep, newState)
   }
 
-  private def updateSequenceInCrmAndHandleFinalResponse(replyTo: ActorRef[SequenceResponse]): Unit = {
+  private def updateSequenceInCrmAndHandleFinalResponse(replyTo: ActorRef[SequenceResponse]): Unit =
     sequenceId.foreach { id =>
       crm.addOrUpdateCommand(Started(id))
       crm.addSubCommand(id, emptyChildId)
@@ -113,16 +122,14 @@ private[core] case class SequencerData(
         }
       )
     }
-  }
 
-  private def updateStepInCrmAndHandleResponse(stepId: Id): Unit = {
+  private def updateStepInCrmAndHandleResponse(stepId: Id): Unit =
     sequenceId.foreach { id =>
       crm.addOrUpdateCommand(CommandResponse.Started(stepId))
       crm.addSubCommand(id, stepId)
       val submitResponseF = crm.queryFinal(stepId)
       handleSubmitResponse(stepId, submitResponseF, onComplete = self ! Update(_, actorSystem.deadLetters))
     }
-  }
 
   private def handleSubmitResponse(
       stepId: Id,

@@ -46,15 +46,15 @@ class SequencerBehavior(
   }
 
   private def loaded(data: SequencerData): Behavior[SequencerMsg] = receive(Loaded, data, loaded) {
-    case AbortSequence(replyTo)     => abortSequence(data, replyTo)(nextBehavior = idle)
-    case editorAction: EditorAction => loaded(handleEditorAction(editorAction, data))
+    case AbortSequence(replyTo)     => abortSequence(data, Loaded, replyTo)(nextBehavior = idle)
+    case editorAction: EditorAction => loaded(handleEditorAction(editorAction, data, Loaded))
     case GoOffline(replyTo)         => goOffline(replyTo, data)
     case StartSequence(replyTo)     => start(data, replyTo)
   }
 
   private def inProgress(data: SequencerData): Behavior[SequencerMsg] = receive(InProgress, data, inProgress) {
-    case AbortSequence(replyTo)    => abortSequence(data, replyTo)(nextBehavior = inProgress)
-    case msg: EditorAction         => inProgress(handleEditorAction(msg, data))
+    case AbortSequence(replyTo)    => abortSequence(data, InProgress, replyTo)(nextBehavior = inProgress)
+    case msg: EditorAction         => inProgress(handleEditorAction(msg, data, InProgress))
     case PullNext(replyTo)         => inProgress(data.pullNextStep(replyTo))
     case MaybeNext(replyTo)        => replyTo ! MaybeNextResult(data.stepList.flatMap(_.nextExecutable)); Behaviors.same
     case Update(submitResponse, _) => inProgress(data.updateStepStatus(submitResponse))
@@ -83,9 +83,10 @@ class SequencerBehavior(
   }
 
   private def abortingSequence(
-      data: SequencerData
+      data: SequencerData,
+      state: SequencerState[SequencerMsg]
   )(nextBehavior: SequencerData => Behavior[SequencerMsg]): Behavior[SequencerMsg] =
-    receive[AbortSequenceMessage](AbortingSequence, data, abortingSequence(_)(nextBehavior)) {
+    receive[AbortSequenceMessage](AbortingSequence, data, abortingSequence(_, state)(nextBehavior)) {
       case AbortSequenceComplete(replyTo) =>
         import data._
         val maybeStepList = stepList.flatMap { x =>
@@ -93,7 +94,7 @@ class SequencerBehavior(
           if (inProgressStepList.steps.isEmpty) None
           else Some(inProgressStepList)
         }
-        nextBehavior(updateStepList(replyTo, maybeStepList))
+        nextBehavior(updateStepList(replyTo, state, maybeStepList))
     }
 
   private def handleCommonMessage[T <: SequencerMsg](
@@ -108,27 +109,31 @@ class SequencerBehavior(
     case ReadyToExecuteNext(replyTo) => currentBehavior(data.readyToExecuteNext(replyTo, state))
   }
 
-  private def handleEditorAction(editorAction: EditorAction, data: SequencerData): SequencerData = {
+  private def handleEditorAction(
+      editorAction: EditorAction,
+      data: SequencerData,
+      state: SequencerState[SequencerMsg]
+  ): SequencerData = {
     import data._
     editorAction match {
-      case Add(commands, replyTo)             => updateStepList(replyTo, stepList.map(_.append(commands)))
-      case Pause(replyTo)                     => updateStepListResult(replyTo, stepList.map(_.pause))
-      case Resume(replyTo)                    => updateStepList(replyTo, stepList.map(_.resume))
-      case Replace(id, commands, replyTo)     => updateStepListResult(replyTo, stepList.map(_.replace(id, commands)))
-      case Prepend(commands, replyTo)         => updateStepList(replyTo, stepList.map(_.prepend(commands)))
-      case Delete(id, replyTo)                => updateStepListResult(replyTo, stepList.map(_.delete(id)))
-      case Reset(replyTo)                     => updateStepList(replyTo, stepList.map(_.discardPending))
-      case InsertAfter(id, commands, replyTo) => updateStepListResult(replyTo, stepList.map(_.insertAfter(id, commands)))
-      case AddBreakpoint(id, replyTo)         => updateStepListResult(replyTo, stepList.map(_.addBreakpoint(id)))
-      case RemoveBreakpoint(id, replyTo)      => updateStepListResult(replyTo, stepList.map(_.removeBreakpoint(id)))
+      case Add(commands, replyTo)             => updateStepList(replyTo, state, stepList.map(_.append(commands)))
+      case Pause(replyTo)                     => updateStepListResult(replyTo, state, stepList.map(_.pause))
+      case Resume(replyTo)                    => updateStepList(replyTo, state, stepList.map(_.resume))
+      case Replace(id, commands, replyTo)     => updateStepListResult(replyTo, state, stepList.map(_.replace(id, commands)))
+      case Prepend(commands, replyTo)         => updateStepList(replyTo, state, stepList.map(_.prepend(commands)))
+      case Delete(id, replyTo)                => updateStepListResult(replyTo, state, stepList.map(_.delete(id)))
+      case Reset(replyTo)                     => updateStepList(replyTo, state, stepList.map(_.discardPending))
+      case InsertAfter(id, commands, replyTo) => updateStepListResult(replyTo, state, stepList.map(_.insertAfter(id, commands)))
+      case AddBreakpoint(id, replyTo)         => updateStepListResult(replyTo, state, stepList.map(_.addBreakpoint(id)))
+      case RemoveBreakpoint(id, replyTo)      => updateStepListResult(replyTo, state, stepList.map(_.removeBreakpoint(id)))
     }
   }
 
-  private def abortSequence(data: SequencerData, replyTo: ActorRef[OkOrUnhandledResponse])(
+  private def abortSequence(data: SequencerData, state: SequencerState[SequencerMsg], replyTo: ActorRef[OkOrUnhandledResponse])(
       nextBehavior: SequencerData => Behavior[SequencerMsg]
   ): Behavior[SequencerMsg] = {
     script.executeAbort().onComplete(_ => data.self ! AbortSequenceComplete(replyTo))
-    abortingSequence(data)(nextBehavior)
+    abortingSequence(data, state)(nextBehavior)
   }
 
   private def load(sequence: Sequence, replyTo: ActorRef[LoadSequenceResponse], data: SequencerData)(
