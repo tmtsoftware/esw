@@ -46,7 +46,7 @@ private[core] case class SequencerData(
   }
 
   def readyToExecuteNext(replyTo: ActorRef[Ok.type], state: SequencerState[SequencerMsg]): SequencerData =
-    if (stepList.exists(_.isNotInFlight) && !stepList.exists(_.isPaused) && (state == InProgress)) {
+    if (stepList.exists(_.isNotInFlight) && stepList.exists(_.isNotPaused) && (state == InProgress)) {
       replyTo ! Ok
       copy(readyToExecuteSubscriber = None)
     } else copy(readyToExecuteSubscriber = Some(replyTo))
@@ -71,7 +71,7 @@ private[core] case class SequencerData(
     val data = copy(stepList)
     replyTo ! Ok
     checkForSequenceCompletion(data)
-    val updatedData = readyToExecuteSubscriber.map(replyTo => data.readyToExecuteNext(replyTo, state)).getOrElse(data)
+    val updatedData = data.notifyReadyToExecuteNextSubscriber(state)
     sendNextPendingStepIfAvailable(updatedData)
   }
 
@@ -148,6 +148,9 @@ private[core] case class SequencerData(
     if (data.stepList.exists(_.isFinished)) {
       crm.updateSubCommand(Completed(emptyChildId))
     }
+
+  private def notifyReadyToExecuteNextSubscriber(state: SequencerState[SequencerMsg]): SequencerData =
+    readyToExecuteSubscriber.map(replyTo => readyToExecuteNext(replyTo, state)).getOrElse(this)
 }
 
 object SequencerData {

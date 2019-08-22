@@ -13,8 +13,9 @@ sealed trait PauseResponse            extends EswSequencerResponse
 sealed trait RemoveBreakpointResponse extends EswSequencerResponse
 sealed trait LoadSequenceResponse     extends EswSequencerResponse
 sealed trait PullNextResponse         extends EswSequencerResponse
-sealed trait MaybeNextResponse        extends EswSequencerResponse
-sealed trait GoOnlineResponse         extends EswSequencerResponse
+// fixme: No need of MaybeNextResponse type - since Unhandled is not needed?
+sealed trait MaybeNextResponse extends EswSequencerResponse
+sealed trait GoOnlineResponse  extends EswSequencerResponse
 
 sealed trait SequenceResponse extends EswSequencerResponse {
   def toSubmitResponse(sequenceId: Id): SubmitResponse = this match {

@@ -11,6 +11,7 @@ final case class StepList private[models] (runId: Id, steps: List[Step]) extends
   private[ocs] def isEmpty: Boolean = steps.isEmpty
   def isFinished: Boolean           = !isEmpty && (steps.forall(_.isFinished) || steps.exists(_.isFailed))
   def isPaused: Boolean             = nextPending.exists(_.hasBreakpoint)
+  def isNotPaused: Boolean          = !isPaused
   def isInFlight: Boolean           = steps.exists(_.isInFlight)
   def isNotInFlight: Boolean        = !isInFlight
 

@@ -568,6 +568,21 @@ class SequencerBehaviorTest extends ScalaTestWithActorTestKit with BaseTestSuite
 
       mayBeNextAndAssertResponse(MaybeNextResult(Some(Step(command2))))
     }
+
+    "return None if sequencer is paused" in {
+      val sequencerSetup = SequencerTestSetup.inProgress(sequence)
+      import sequencerSetup._
+      pauseAndAssertResponse(Ok)
+
+      mayBeNextAndAssertResponse(MaybeNextResult(None))
+    }
+
+    "return None if there's no pending step to be executed" in {
+      val sequencerSetup = SequencerTestSetup.inProgress(Sequence(command1))
+      import sequencerSetup._
+
+      mayBeNextAndAssertResponse(MaybeNextResult(None))
+    }
   }
 
   "Idle -> Unhandled" in {
