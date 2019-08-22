@@ -474,7 +474,7 @@ class SequencerBehaviorTest extends ScalaTestWithActorTestKit with BaseTestSuite
   }
 
   "ReadyToExecuteNext" must {
-    "return Ok immediately when a new step is ready to be picked up for execution" in {
+    "return Ok immediately when a new step is available for execution" in {
       val sequencerSetup = SequencerTestSetup.idle(sequence)
       import sequencerSetup._
       loadAndStartSequenceThenAssertInProgress()
@@ -505,6 +505,19 @@ class SequencerBehaviorTest extends ScalaTestWithActorTestKit with BaseTestSuite
       probe.expectMessage(Ok)
     }
 
+    "wait till a sequence is started" in {
+      val sequencerSetup = SequencerTestSetup.loaded(sequence)
+      import sequencerSetup._
+
+      val probe = TestProbe[Ok.type]
+      sequencerActor ! ReadyToExecuteNext(probe.ref)
+      probe.expectNoMessage(1.second)
+
+      // start the sequence and assert Ok is sent to the readyToExecuteNext subscriber as soon as a step is ready
+      sequencerActor ! StartSequence(createTestProbe[SequenceResponse].ref)
+      probe.expectMessage(Ok)
+    }
+
     "wait till next sequence is received if current sequence is finished" in {
       val sequencerSetup = SequencerTestSetup.finished(sequence)
       import sequencerSetup._
@@ -513,6 +526,19 @@ class SequencerBehaviorTest extends ScalaTestWithActorTestKit with BaseTestSuite
       sequencerActor ! ReadyToExecuteNext(probe.ref)
       probe.expectNoMessage(1.second)
 
+      loadAndStartSequenceThenAssertInProgress()
+      probe.expectMessage(Ok)
+    }
+
+    "wait till next sequence is received if sequencer went offline" in {
+      val sequencerSetup = SequencerTestSetup.offline(sequence)
+      import sequencerSetup._
+
+      val probe = TestProbe[Ok.type]
+      sequencerActor ! ReadyToExecuteNext(probe.ref)
+      probe.expectNoMessage(1.second)
+
+      goOnlineAndAssertResponse(Ok, Future.successful(Done))
       loadAndStartSequenceThenAssertInProgress()
       probe.expectMessage(Ok)
     }
