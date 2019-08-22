@@ -7,17 +7,18 @@ import csw.command.client.messages.sequencer.SequencerMsg
 import csw.params.commands.CommandResponse
 import csw.params.commands.CommandResponse.{Completed, Error, Started, SubmitResponse}
 import csw.params.core.models.Id
+import esw.ocs.api.models.SequencerState.InProgress
 import esw.ocs.api.models.StepStatus.{Finished, InFlight}
 import esw.ocs.api.models.messages.SequencerMessages.{GoIdle, Update}
 import esw.ocs.api.models.messages._
-import esw.ocs.api.models.{Step, StepList}
+import esw.ocs.api.models.{SequencerState, Step, StepList}
 
 import scala.concurrent.Future
 import scala.util.{Failure, Success}
 
 private[core] case class SequencerData(
     stepList: Option[StepList],
-    readyToExecuteSubscriber: Option[ActorRef[OkOrUnhandledResponse]],
+    readyToExecuteSubscriber: Option[ActorRef[Ok.type]],
     stepRefSubscriber: Option[ActorRef[PullNextResult]],
     self: ActorRef[SequencerMsg],
     crm: CommandResponseManager,
@@ -44,13 +45,11 @@ private[core] case class SequencerData(
     sendNextPendingStepIfAvailable(newState)
   }
 
-  def readyToExecuteNext(replyTo: ActorRef[OkOrUnhandledResponse]): SequencerData =
-    if (stepList.exists(_.isInFlight) || stepList.exists(_.isFinished)) {
-      copy(readyToExecuteSubscriber = Some(replyTo))
-    } else {
+  def readyToExecuteNext(replyTo: ActorRef[Ok.type], state: SequencerState[SequencerMsg]): SequencerData =
+    if (stepList.exists(_.isNotInFlight) && (state == InProgress)) {
       replyTo ! Ok
       copy(readyToExecuteSubscriber = None)
-    }
+    } else copy(readyToExecuteSubscriber = Some(replyTo))
 
   def updateStepListResult[T >: Ok.type](replyTo: ActorRef[T], stepListResult: Option[Either[T, StepList]]): SequencerData =
     stepListResult

@@ -2,6 +2,8 @@ package esw.ocs.core
 
 import akka.Done
 import akka.actor.testkit.typed.scaladsl.{ScalaTestWithActorTestKit, TestProbe}
+
+import scala.concurrent.duration.DurationLong
 import akka.util.Timeout
 import csw.command.client.messages.sequencer.LoadAndStartSequence
 import csw.params.commands.CommandResponse.{Completed, Error, SubmitResponse}
@@ -16,6 +18,7 @@ import esw.ocs.api.models.messages._
 import esw.ocs.api.models.{Step, StepList, StepStatus}
 
 import scala.concurrent.{Future, Promise}
+import scala.util.Success
 
 class SequencerBehaviorTest extends ScalaTestWithActorTestKit with BaseTestSuite {
 
@@ -470,6 +473,51 @@ class SequencerBehaviorTest extends ScalaTestWithActorTestKit with BaseTestSuite
     }
   }
 
+  "ReadyToExecuteNext" must {
+    "return Ok immediately when a new step is ready to be picked up for execution" in {
+      val sequencerSetup = SequencerTestSetup.idle(sequence)
+      import sequencerSetup._
+      loadAndStartSequenceThenAssertInProgress()
+
+      val probe = TestProbe[Ok.type]
+      sequencerActor ! ReadyToExecuteNext(probe.ref)
+      probe.expectMessage(Ok)
+    }
+
+    "wait till completion of current command" in {
+      val sequencerSetup = SequencerTestSetup.idle(sequence)
+      import sequencerSetup._
+      loadAndStartSequenceThenAssertInProgress()
+
+      // long running command
+      val promise = Promise[SubmitResponse]
+      mockCommand(command1.runId, promise.future)
+      pullNextCommand()
+
+      val probe = TestProbe[Ok.type]
+      sequencerActor ! ReadyToExecuteNext(probe.ref)
+      probe.expectNoMessage(1.second)
+
+      // finish first command
+      promise.complete(Success(Completed(command1.runId)))
+
+      sequencerActor ! ReadyToExecuteNext(probe.ref)
+      probe.expectMessage(Ok)
+    }
+
+    "wait till next sequence is received if current sequence is finished" in {
+      val sequencerSetup = SequencerTestSetup.finished(sequence)
+      import sequencerSetup._
+
+      val probe = TestProbe[Ok.type]
+      sequencerActor ! ReadyToExecuteNext(probe.ref)
+      probe.expectNoMessage(1.second)
+
+      loadAndStartSequenceThenAssertInProgress()
+      probe.expectMessage(Ok)
+    }
+  }
+
   "Idle -> Unhandled" in {
     val sequencerSetup = new SequencerTestSetup(sequence)
     import sequencerSetup._
@@ -483,7 +531,6 @@ class SequencerBehaviorTest extends ScalaTestWithActorTestKit with BaseTestSuite
       GoOnlineSuccess,
       GoOnlineFailed,
       MaybeNext,
-      ReadyToExecuteNext,
       Update(Completed(Id()), _),
       GoIdle,
       GoneOffline,
@@ -514,10 +561,8 @@ class SequencerBehaviorTest extends ScalaTestWithActorTestKit with BaseTestSuite
       GoOnlineSuccess,
       GoOnlineFailed,
       MaybeNext,
-      ReadyToExecuteNext,
       PullNext,
       MaybeNext,
-      ReadyToExecuteNext,
       GoIdle
 //      ShutdownComplete
     )
@@ -569,7 +614,6 @@ class SequencerBehaviorTest extends ScalaTestWithActorTestKit with BaseTestSuite
       GoIdle,
       MaybeNext,
       PullNext,
-      ReadyToExecuteNext,
       Update(Completed(Id()), _)
 //      ShutdownComplete
     )

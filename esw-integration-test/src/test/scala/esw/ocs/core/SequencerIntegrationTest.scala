@@ -69,6 +69,19 @@ class SequencerIntegrationTest extends ScalaTestFrameworkTestKit with BaseTestSu
       seqResponse.futureValue should ===(SequenceResult(Completed(sequence.runId)))
     }
 
+    "LoadAndStart two sequences back to back" in {
+      val command3  = Setup(Prefix("esw.test"), CommandName("command-3"), None)
+      val command2  = Setup(Prefix("esw.test"), CommandName("command-2"), None)
+      val sequence1 = Sequence(command3, command2)
+      val sequence2 = Sequence(command3, command2)
+
+      val seqResponse1: Future[SubmitResponse] = sequencer ? (LoadAndStartSequence(sequence1, _))
+      seqResponse1.futureValue should ===(Completed(sequence1.runId))
+
+      val seqResponse2: Future[SubmitResponse] = sequencer ? (LoadAndStartSequence(sequence2, _))
+      seqResponse2.futureValue should ===(Completed(sequence2.runId))
+    }
+
     "process sequence and execute commands that are added later | ESW-145, ESW-154" in {
       val command1 = Setup(Prefix("esw.test"), CommandName("command-1"), None)
       val command2 = Setup(Prefix("esw.test"), CommandName("command-2"), None)
