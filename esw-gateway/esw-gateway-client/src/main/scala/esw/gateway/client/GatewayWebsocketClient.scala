@@ -10,21 +10,11 @@ import esw.gateway.api.GatewayApi
 import esw.gateway.api.codecs.RestlessCodecs
 import esw.gateway.api.messages.GatewayWebsocketRequest.{QueryFinal, Subscribe, SubscribeCurrentState, SubscribeWithPattern}
 import esw.gateway.api.messages._
-import mscoket.impl.{ClientSocketImpl, Encoding}
-import msocket.api.{ClientSocket, EitherCodecs}
+import msocket.api.ClientSocket
 
 import scala.concurrent.Future
 
-trait GatewayWebsocketClient extends GatewayApi with RestlessCodecs with EitherCodecs {
-  import cswContext.actorRuntime.untypedSystem
-
-  def serverIp: String
-  def serverPort: String
-  def encoding: Encoding
-
-  val baseUri                                       = s"ws://$serverIp:$serverPort/websocket"
-  val socket: ClientSocket[GatewayWebsocketRequest] = new ClientSocketImpl(baseUri, encoding)
-
+abstract class GatewayWebsocketClient(socket: ClientSocket[GatewayWebsocketRequest]) extends GatewayApi with RestlessCodecs {
   override def queryFinal(
       componentType: ComponentType,
       componentName: String,
