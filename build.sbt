@@ -66,12 +66,10 @@ lazy val `esw-http-core` = project
   .settings(
     libraryDependencies ++= Dependencies.EswHttpCore.value
   )
-  .dependsOn(`msocket-core`)
 
-//fixme: Enable MaybeCoverage
 lazy val `esw-gateway-server` = project
   .in(file("esw-gateway-server"))
-  .enablePlugins(EswBuildInfo)
+  .enablePlugins(MaybeCoverage, EswBuildInfo)
   .settings(
     libraryDependencies ++= Dependencies.GatewayServer.value
   )
@@ -99,6 +97,32 @@ lazy val `msocket-core` = project
   .settings(
     libraryDependencies ++= Dependencies.MsocketCore.value
   )
+
+//fixme: add coverage plugin
+lazy val `esw-gateway` = project
+  .in(file("esw-gateway"))
+  .aggregate(
+    `esw-gateway-api`,
+    `esw-gateway-impl`,
+    `esw-gateway-client`,
+    `esw-gateway-server2`
+  )
+
+lazy val `esw-gateway-api` = project
+  .in(file("esw-gateway/esw-gateway-api"))
+  .dependsOn(`esw-http-core` % "compile->compile")
+
+lazy val `esw-gateway-impl` = project
+  .in(file("esw-gateway/esw-gateway-impl"))
+  .dependsOn(`esw-gateway-api` % "compile->compile")
+
+lazy val `esw-gateway-client` = project
+  .in(file("esw-gateway/esw-gateway-client"))
+  .dependsOn(`msocket-core`, `esw-gateway-api`)
+
+lazy val `esw-gateway-server2` = project
+  .in(file("esw-gateway/esw-gateway-server2"))
+  .dependsOn(`msocket-core`, `esw-gateway-api`, `esw-gateway-impl`)
 
 /* ================= Paradox Docs ============== */
 lazy val docs = project.enablePlugins(NoPublish, ParadoxSite)
