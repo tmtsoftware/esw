@@ -1,8 +1,5 @@
 package esw.gateway.server2
 
-import esw.gateway.api.GatewayApi
-import esw.gateway.impl.{AlarmGatewayImpl, CommandGatewayImpl, EventGatewayImpl}
-import esw.http.core.utils.CswContext
 import esw.http.core.wiring.{HttpService, ServerWiring}
 
 import scala.concurrent.Await
@@ -15,11 +12,9 @@ class GatewayWiring(_port: Option[Int]) {
     import wiring._
     import wiring.cswCtx.{locationService, logger}
 
-    lazy val gatewayImpl: GatewayApi = new CommandGatewayImpl with AlarmGatewayImpl with EventGatewayImpl {
-      override val cswContext: CswContext = cswCtx
-    }
+    val gatewayContext = new GatewayContext(cswCtx)
 
-    lazy val routes: GatewayRoutes = new GatewayRoutes(gatewayImpl)
+    lazy val routes: GatewayRoutes = new GatewayRoutes(gatewayContext)
 
     val httpService = new HttpService(logger, locationService, routes.route, settings, actorRuntime)
     Await.result(httpService.registeredLazyBinding, 15.seconds)

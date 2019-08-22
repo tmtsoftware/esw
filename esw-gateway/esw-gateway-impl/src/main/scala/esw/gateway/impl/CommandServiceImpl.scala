@@ -8,20 +8,19 @@ import csw.params.commands.CommandResponse.SubmitResponse
 import csw.params.commands.{CommandResponse, ControlCommand}
 import csw.params.core.models.Id
 import csw.params.core.states.{CurrentState, StateName}
-import esw.gateway.api.GatewayApi
+import esw.gateway.api.CommandServiceApi
 import esw.gateway.api.messages.CommandAction.{Oneway, Submit, Validate}
 import esw.gateway.api.messages.{CommandAction, CommandError, InvalidComponent, InvalidMaxFrequency}
 import esw.gateway.impl.syntax.SourceExtension
+import esw.http.core.utils.ComponentFactory
 
-import scala.concurrent.Future
 import scala.concurrent.duration.DurationInt
+import scala.concurrent.{ExecutionContext, Future}
 import scala.util.control.NonFatal
 
-trait CommandGatewayImpl extends GatewayApi {
-  implicit val timeout: Timeout = Timeout(5.seconds)
+class CommandServiceImpl(componentFactory: ComponentFactory)(implicit ec: ExecutionContext, timeout: Timeout)
+    extends CommandServiceApi {
 
-  import cswContext._
-  import actorRuntime.ec
   def process(
       componentType: ComponentType,
       componentName: String,

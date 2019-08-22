@@ -104,21 +104,16 @@ lazy val `esw-gateway` = project
   .aggregate(
     `esw-gateway-api`,
     `esw-gateway-impl`,
-    `esw-gateway-client`,
     `esw-gateway-server2`
   )
 
 lazy val `esw-gateway-api` = project
   .in(file("esw-gateway/esw-gateway-api"))
-  .dependsOn(`esw-http-core` % "compile->compile")
+  .dependsOn(`esw-http-core`, `msocket-core`)
 
 lazy val `esw-gateway-impl` = project
   .in(file("esw-gateway/esw-gateway-impl"))
-  .dependsOn(`esw-gateway-api` % "compile->compile")
-
-lazy val `esw-gateway-client` = project
-  .in(file("esw-gateway/esw-gateway-client"))
-  .dependsOn(`msocket-core`, `esw-gateway-api`)
+  .dependsOn(`esw-gateway-api`)
 
 lazy val `esw-gateway-server2` = project
   .in(file("esw-gateway/esw-gateway-server2"))

@@ -3,21 +3,21 @@ package esw.gateway.impl
 import akka.Done
 import akka.stream.scaladsl.Source
 import csw.event.api.scaladsl.SubscriptionModes.RateLimiterMode
-import csw.event.api.scaladsl.{EventPublisher, EventSubscriber, EventSubscription}
+import csw.event.api.scaladsl.{EventPublisher, EventService, EventSubscriber, EventSubscription}
+import csw.event.client.internal.commons.EventSubscriberUtil
 import csw.params.core.models.Subsystem
 import csw.params.events.{Event, EventKey}
-import esw.gateway.api.GatewayApi
+import esw.gateway.api.EventServiceApi
 import esw.gateway.api.messages.{EmptyEventKeys, EventError, InvalidMaxFrequency}
 import esw.gateway.impl.syntax.SourceExtension
 import esw.http.core.commons.Utils
 import esw.http.core.commons.Utils.maxFrequencyToDuration
 
-import scala.concurrent.Future
+import scala.concurrent.{ExecutionContext, Future}
 
-trait EventGatewayImpl extends GatewayApi {
+class EventServiceImpl(eventService: EventService, eventSubscriberUtil: EventSubscriberUtil)(implicit ec: ExecutionContext)
+    extends EventServiceApi {
 
-  import cswContext._
-  import actorRuntime.ec
   lazy val subscriber: EventSubscriber = eventService.defaultSubscriber
   lazy val publisher: EventPublisher   = eventService.defaultPublisher
 
