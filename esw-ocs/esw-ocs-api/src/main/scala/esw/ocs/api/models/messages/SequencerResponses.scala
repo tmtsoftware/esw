@@ -3,7 +3,7 @@ package esw.ocs.api.models.messages
 import csw.command.client.messages.sequencer.SequencerMsg
 import csw.params.commands.CommandResponse.{Error, SubmitResponse}
 import csw.params.core.models.Id
-import esw.ocs.api.models.{SequencerState, Step, StepList}
+import esw.ocs.api.models.{SequencerState, Step}
 import esw.ocs.api.serializer.OcsAkkaSerializable
 
 sealed trait EswSequencerResponse     extends OcsAkkaSerializable
@@ -14,7 +14,6 @@ sealed trait RemoveBreakpointResponse extends EswSequencerResponse
 sealed trait LoadSequenceResponse     extends EswSequencerResponse
 sealed trait PullNextResponse         extends EswSequencerResponse
 sealed trait MaybeNextResponse        extends EswSequencerResponse
-sealed trait StepListResponse         extends EswSequencerResponse
 sealed trait GoOnlineResponse         extends EswSequencerResponse
 
 sealed trait SequenceResponse extends EswSequencerResponse {
@@ -33,7 +32,6 @@ case object Ok
     with LoadSequenceResponse
     with GoOnlineResponse
 
-case class StepListResult(stepList: Option[StepList])     extends StepListResponse
 case class PullNextResult(step: Step)                     extends PullNextResponse
 case class MaybeNextResult(step: Option[Step])            extends MaybeNextResponse
 case class SequenceResult(submitResponse: SubmitResponse) extends SequenceResponse
@@ -48,7 +46,6 @@ case class Unhandled private[ocs] (state: SequencerState[SequencerMsg], messageT
     with SequenceResponse
     with PullNextResponse
     with MaybeNextResponse
-    with StepListResponse
 
 object Unhandled {
   def apply(state: SequencerState[SequencerMsg], messageType: String): Unhandled =

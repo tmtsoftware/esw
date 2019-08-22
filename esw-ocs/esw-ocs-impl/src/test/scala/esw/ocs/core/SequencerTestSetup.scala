@@ -11,7 +11,7 @@ import csw.location.models.ComponentId
 import csw.params.commands.CommandResponse.{Completed, SubmitResponse}
 import csw.params.commands.{Sequence, SequenceCommand}
 import csw.params.core.models.Id
-import esw.ocs.api.models.SequencerState
+import esw.ocs.api.models.{SequencerState, StepList}
 import esw.ocs.api.models.SequencerState.{Idle, InProgress}
 import esw.ocs.api.models.messages.SequencerMessages.{Pause, _}
 import esw.ocs.api.models.messages.{LoadSequenceResponse, _}
@@ -63,28 +63,28 @@ class SequencerTestSetup(sequence: Sequence)(implicit system: ActorSystem[_], ti
     val probe = TestProbe[SubmitResponse]
     sequencerActor ! LoadAndStartSequence(sequence, probe.ref)
 
-    val p: TestProbe[StepListResponse] = TestProbe[StepListResponse]
+    val p: TestProbe[Option[StepList]] = TestProbe[Option[StepList]]
     eventually {
       sequencerActor ! GetSequence(p.ref)
-      val result = p.expectMessageType[StepListResult]
-      result.stepList.isDefined shouldBe true
+      val stepList = p.expectMessageType[Option[StepList]]
+      stepList.isDefined shouldBe true
     }
   }
 
   def pullAllStepsAndAssertSequenceIsFinished(): Assertion = {
     eventually {
-      val probe = TestProbe[StepListResponse]
+      val probe = TestProbe[Option[StepList]]
       sequencerActor ! GetSequence(probe.ref)
-      val result = probe.expectMessageType[StepListResult]
-      result.stepList.get.runId should ===(sequence.runId)
+      val stepList = probe.expectMessageType[Option[StepList]]
+      stepList.get.runId should ===(sequence.runId)
     }
 
     pullAllSteps()
     eventually(assertSequenceIsFinished())
   }
 
-  def assertCurrentSequence(expected: StepListResponse): Unit = {
-    val probe = TestProbe[StepListResponse]
+  def assertCurrentSequence(expected: Option[StepList]): Unit = {
+    val probe = TestProbe[Option[StepList]]
     sequencerActor ! GetSequence(probe.ref)
     probe.expectMessage(expected)
   }
@@ -94,7 +94,7 @@ class SequencerTestSetup(sequence: Sequence)(implicit system: ActorSystem[_], ti
       expectedState: SequencerState[SequencerMsg]
   ): TestProbe[OkOrUnhandledResponse] = {
     val probe                          = TestProbe[OkOrUnhandledResponse]
-    val p: TestProbe[StepListResponse] = TestProbe[StepListResponse]
+    val p: TestProbe[Option[StepList]] = TestProbe[Option[StepList]]
 
     when(script.executeAbort()).thenReturn(Future.successful(Done))
     sequencerActor ! AbortSequence(probe.ref)
@@ -105,14 +105,14 @@ class SequencerTestSetup(sequence: Sequence)(implicit system: ActorSystem[_], ti
     probe.expectMessage(response)
 
     //GetSequence should be handled and return response while aborting sequence
-    p.expectMessageType[StepListResult]
+    p.expectMessageType[Option[StepList]]
 
     //After abort sequence
     sequencerActor ! GetSequence(p.ref)
-    val result = p.expectMessageType[StepListResult]
+    val stepList = p.expectMessageType[Option[StepList]]
     expectedState match {
-      case Idle                            => result.stepList shouldBe None
-      case InProgress                      => result.stepList.get.nextPending shouldBe None
+      case Idle                            => stepList shouldBe None
+      case InProgress                      => stepList.get.nextPending shouldBe None
       case x: SequencerState[SequencerMsg] => assert(false, s"$x is not valid state after AbortSequence")
     }
     probe
@@ -166,7 +166,7 @@ class SequencerTestSetup(sequence: Sequence)(implicit system: ActorSystem[_], ti
 
   def assertUnhandled[T >: Unhandled <: EswSequencerResponse](
       state: SequencerState[SequencerMsg],
-      msg: ActorRef[T] => EswSequencerMessage
+      msg: ActorRef[T] => UnhandleableSequencerMessage
   ): Unit = {
     val probe            = TestProbe[T]
     val sequencerMessage = msg(probe.ref)
@@ -176,15 +176,15 @@ class SequencerTestSetup(sequence: Sequence)(implicit system: ActorSystem[_], ti
 
   def assertUnhandled[T >: Unhandled <: EswSequencerResponse](
       state: SequencerState[SequencerMsg],
-      msgs: (ActorRef[T] => EswSequencerMessage)*
+      msgs: (ActorRef[T] => UnhandleableSequencerMessage)*
   ): Unit =
     msgs.foreach(assertUnhandled(state, _))
 
   private def assertSequenceIsFinished(): Assertion = {
-    val probe = TestProbe[StepListResponse]
+    val probe = TestProbe[Option[StepList]]
     sequencerActor ! GetSequence(probe.ref)
-    val result   = probe.expectMessageType[StepListResult]
-    val finished = result.stepList.get.isFinished
+    val stepList = probe.expectMessageType[Option[StepList]]
+    val finished = stepList.get.isFinished
 
     if (finished) completionPromise.complete(Success(Completed(sequence.runId)))
 
@@ -203,10 +203,10 @@ class SequencerTestSetup(sequence: Sequence)(implicit system: ActorSystem[_], ti
     (1 to sequence.commands.size).map(_ => pullNextCommand())
   }
 
-  def getSequence(): StepListResult = {
-    val probe = TestProbe[StepListResponse]
+  def getSequence(): Option[StepList] = {
+    val probe = TestProbe[Option[StepList]]
     sequencerActor ! GetSequence(probe.ref)
-    probe.expectMessageType[StepListResult]
+    probe.expectMessageType[Option[StepList]]
   }
 }
 

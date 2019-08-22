@@ -27,12 +27,13 @@ import org.scalatest.prop.Tables.Table
 class OcsAkkaSerializerTest extends ScalaTestWithActorTestKit with BaseTestSuite {
   private final val serialization = SerializationExtension(system.toUntyped)
 
-  private val goOnlineResponseRed: ActorRef[GoOnlineResponse]           = TestProbe[GoOnlineResponse].ref
+  private val goOnlineResponseRef: ActorRef[GoOnlineResponse]           = TestProbe[GoOnlineResponse].ref
+  private val shutdownResponseRef: ActorRef[Ok.type]                    = TestProbe[Ok.type].ref
   private val okOrUnhandledResponseRef: ActorRef[OkOrUnhandledResponse] = TestProbe[OkOrUnhandledResponse].ref
   private val loadSequenceResponseRef: ActorRef[LoadSequenceResponse]   = TestProbe[LoadSequenceResponse].ref
   private val sequenceResponseRef: ActorRef[SequenceResponse]           = TestProbe[SequenceResponse].ref
   private val editorResponseRef: ActorRef[EswSequencerResponse]         = TestProbe[EswSequencerResponse].ref
-  private val stepListResponseRef: ActorRef[StepListResponse]           = TestProbe[StepListResponse].ref
+  private val stepListResponseRef: ActorRef[Option[StepList]]           = TestProbe[Option[StepList]].ref
   private val loadScriptResponseRef: ActorRef[LoadScriptResponse]       = TestProbe[LoadScriptResponse].ref
   private val getStatusResponseRef: ActorRef[GetStatusResponse]         = TestProbe[GetStatusResponse].ref
   private val unloadScriptResponseRef: ActorRef[Done]                   = TestProbe[Done].ref
@@ -47,9 +48,9 @@ class OcsAkkaSerializerTest extends ScalaTestWithActorTestKit with BaseTestSuite
         "EswSequencerMessage",
         LoadSequence(Sequence(setupCommand), loadSequenceResponseRef),
         StartSequence(sequenceResponseRef),
-        GoOnline(goOnlineResponseRed),
+        GoOnline(goOnlineResponseRef),
         GoOffline(okOrUnhandledResponseRef),
-        Shutdown(okOrUnhandledResponseRef),
+        Shutdown(shutdownResponseRef),
         AbortSequence(okOrUnhandledResponseRef),
         GetSequence(stepListResponseRef),
         Add(sequenceCommandList, editorResponseRef),
@@ -108,12 +109,10 @@ class OcsAkkaSerializerTest extends ScalaTestWithActorTestKit with BaseTestSuite
 
   "EswSequencerResponse" must {
     "use OcsAkkaSerializer for (de)serialization" in {
-      val stepList = StepList(Id(), steps)
-      val step     = Step(setupCommand)
+      val step = Step(setupCommand)
       val testData = Table(
         "EswSequencerResponse",
         Ok,
-        StepListResult(Some(stepList)),
         PullNextResult(step),
         MaybeNextResult(Some(step)),
         SequenceResult(Completed(Id())),

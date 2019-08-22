@@ -76,7 +76,7 @@ class SequencerIntegrationTest extends ScalaTestFrameworkTestKit with BaseTestSu
       val sequence = Sequence(command1, command2)
 
       val processSeqResponse: Future[SubmitResponse] = sequencer ? (LoadAndStartSequence(sequence, _))
-      eventually((sequencer ? GetSequence).futureValue shouldBe an[StepListResult])
+      eventually((sequencer ? GetSequence).futureValue shouldBe a[Some[_]])
 
       val addResponse: Future[OkOrUnhandledResponse] = sequencer ? (Add(List(command3), _))
       addResponse.futureValue should ===(Ok)
@@ -84,15 +84,13 @@ class SequencerIntegrationTest extends ScalaTestFrameworkTestKit with BaseTestSu
       processSeqResponse.futureValue should ===(Completed(sequence.runId))
 
       (sequencer ? GetSequence).futureValue should ===(
-        StepListResult(
-          Some(
-            StepList(
-              sequence.runId,
-              List(
-                Step(command1, Success(Completed(command1.runId)), hasBreakpoint = false),
-                Step(command2, Success(Completed(command2.runId)), hasBreakpoint = false),
-                Step(command3, Success(Completed(command3.runId)), hasBreakpoint = false)
-              )
+        Some(
+          StepList(
+            sequence.runId,
+            List(
+              Step(command1, Success(Completed(command1.runId)), hasBreakpoint = false),
+              Step(command2, Success(Completed(command2.runId)), hasBreakpoint = false),
+              Step(command3, Success(Completed(command3.runId)), hasBreakpoint = false)
             )
           )
         )
@@ -109,20 +107,18 @@ class SequencerIntegrationTest extends ScalaTestFrameworkTestKit with BaseTestSu
       val sequence = Sequence(command1, command2, command3)
 
       val processSeqResponse: Future[SubmitResponse] = sequencer ? (LoadAndStartSequence(sequence, _))
-      eventually((sequencer ? GetSequence).futureValue shouldBe an[StepListResult])
+      eventually((sequencer ? GetSequence).futureValue shouldBe a[Some[_]])
 
       processSeqResponse.futureValue should ===(Error(sequence.runId, failCommandName))
 
       (sequencer ? GetSequence).futureValue should ===(
-        StepListResult(
-          Some(
-            StepList(
-              sequence.runId,
-              List(
-                Step(command1, Success(Completed(command1.runId)), hasBreakpoint = false),
-                Step(command2, Failure(Error(command2.runId, failCommandName)), hasBreakpoint = false),
-                Step(command3, Pending, hasBreakpoint = false)
-              )
+        Some(
+          StepList(
+            sequence.runId,
+            List(
+              Step(command1, Success(Completed(command1.runId)), hasBreakpoint = false),
+              Step(command2, Failure(Error(command2.runId, failCommandName)), hasBreakpoint = false),
+              Step(command3, Pending, hasBreakpoint = false)
             )
           )
         )

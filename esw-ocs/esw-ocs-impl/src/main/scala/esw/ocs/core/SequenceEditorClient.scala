@@ -4,19 +4,22 @@ import akka.actor.Scheduler
 import akka.actor.typed.scaladsl.AskPattern._
 import akka.actor.typed.{ActorRef, ActorSystem}
 import akka.util.Timeout
+import csw.command.client.messages.sequencer.SequencerMsg
 import csw.params.commands.SequenceCommand
 import csw.params.core.models.Id
 import esw.ocs.api.SequenceEditor
+import esw.ocs.api.models.{SequencerState, StepList}
 import esw.ocs.api.models.messages.SequencerMessages._
 import esw.ocs.api.models.messages._
 
 import scala.concurrent.Future
 
-class SequenceEditorClient(sequencer: ActorRef[EswSequencerMessage])(implicit system: ActorSystem[_], timeout: Timeout)
+class SequenceEditorClient(sequencer: ActorRef[SequencerMsg])(implicit system: ActorSystem[_], timeout: Timeout)
     extends SequenceEditor {
   private implicit val scheduler: Scheduler = system.scheduler
 
-  override def getSequence: Future[StepListResponse] = sequencer ? GetSequence
+  override def getSequence: Future[Option[StepList]]          = sequencer ? GetSequence
+  override def getState: Future[SequencerState[SequencerMsg]] = sequencer ? GetSequencerState
 
   override def add(commands: List[SequenceCommand]): Future[OkOrUnhandledResponse]       = sequencer ? (Add(commands, _))
   override def prepend(commands: List[SequenceCommand]): Future[OkOrUnhandledResponse]   = sequencer ? (Prepend(commands, _))

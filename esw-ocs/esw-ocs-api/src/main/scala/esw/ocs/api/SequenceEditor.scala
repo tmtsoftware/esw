@@ -1,14 +1,17 @@
 package esw.ocs.api
 
+import csw.command.client.messages.sequencer.SequencerMsg
 import csw.params.commands.SequenceCommand
 import csw.params.core.models.Id
+import esw.ocs.api.models.{SequencerState, StepList}
 import esw.ocs.api.models.messages._
 
 import scala.concurrent.Future
 
 trait SequenceEditor {
 
-  def getSequence: Future[StepListResponse]
+  def getSequence: Future[Option[StepList]]
+  def getState: Future[SequencerState[SequencerMsg]]
   def add(commands: List[SequenceCommand]): Future[OkOrUnhandledResponse]
   def prepend(commands: List[SequenceCommand]): Future[OkOrUnhandledResponse]
   def replace(id: Id, commands: List[SequenceCommand]): Future[GenericResponse]

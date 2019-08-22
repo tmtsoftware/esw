@@ -5,39 +5,36 @@ import csw.command.client.messages.sequencer.SequencerMsg
 import csw.params.commands.CommandResponse.SubmitResponse
 import csw.params.commands.{Sequence, SequenceCommand}
 import csw.params.core.models.Id
+import esw.ocs.api.models.{SequencerState, StepList}
 import esw.ocs.api.serializer.OcsAkkaSerializable
 
 object SequencerMessages {
 
-  sealed trait EswSequencerMessage extends SequencerMsg with OcsAkkaSerializable {
+  sealed trait EswSequencerMessage extends SequencerMsg with OcsAkkaSerializable
+
+  sealed trait CommonMessage       extends EswSequencerMessage
+  sealed trait ShuttingDownMessage extends EswSequencerMessage
+  sealed trait UnhandleableSequencerMessage extends EswSequencerMessage {
     def replyTo: ActorRef[Unhandled]
   }
 
-  sealed trait IdleMessage           extends EswSequencerMessage
-  sealed trait SequenceLoadedMessage extends EswSequencerMessage
-  sealed trait InProgressMessage     extends EswSequencerMessage
-  sealed trait OfflineMessage        extends EswSequencerMessage
-  sealed trait GoingOnlineMessage    extends EswSequencerMessage
-  sealed trait GoingOfflineMessage   extends EswSequencerMessage
-  sealed trait ShuttingDownMessage   extends EswSequencerMessage
-  sealed trait AbortSequenceMessage  extends EswSequencerMessage
+  sealed trait IdleMessage           extends UnhandleableSequencerMessage
+  sealed trait SequenceLoadedMessage extends UnhandleableSequencerMessage
+  sealed trait InProgressMessage     extends UnhandleableSequencerMessage
+  sealed trait OfflineMessage        extends UnhandleableSequencerMessage
+  sealed trait GoingOnlineMessage    extends UnhandleableSequencerMessage
+  sealed trait GoingOfflineMessage   extends UnhandleableSequencerMessage
+  sealed trait AbortSequenceMessage  extends UnhandleableSequencerMessage
   sealed trait EditorAction          extends SequenceLoadedMessage with InProgressMessage
-  sealed trait CommonMessage
-      extends IdleMessage
-      with SequenceLoadedMessage
-      with InProgressMessage
-      with OfflineMessage
-      with GoingOnlineMessage
-      with GoingOfflineMessage
-      with AbortSequenceMessage
 
   // startup msgs
   final case class LoadSequence(sequence: Sequence, replyTo: ActorRef[LoadSequenceResponse]) extends IdleMessage
   final case class StartSequence(replyTo: ActorRef[SequenceResponse])                        extends SequenceLoadedMessage
 
   // common msgs
-  final case class Shutdown(replyTo: ActorRef[OkOrUnhandledResponse]) extends CommonMessage
-  final case class GetSequence(replyTo: ActorRef[StepListResponse])   extends CommonMessage
+  final case class Shutdown(replyTo: ActorRef[Ok.type])                               extends CommonMessage
+  final case class GetSequence(replyTo: ActorRef[Option[StepList]])                   extends CommonMessage
+  final case class GetSequencerState(replyTo: ActorRef[SequencerState[SequencerMsg]]) extends CommonMessage
 
   // lifecycle msgs
   final case class GoOnline(replyTo: ActorRef[GoOnlineResponse])       extends OfflineMessage
@@ -71,6 +68,6 @@ object SequencerMessages {
   final private[esw] case class GoneOffline(replyTo: ActorRef[OkOrUnhandledResponse])           extends GoingOfflineMessage
   final private[esw] case class GoOnlineSuccess(replyTo: ActorRef[GoOnlineResponse])            extends GoingOnlineMessage
   final private[esw] case class GoOnlineFailed(replyTo: ActorRef[GoOnlineResponse])             extends GoingOnlineMessage
-  final private[esw] case class ShutdownComplete(replyTo: ActorRef[OkOrUnhandledResponse])      extends ShuttingDownMessage
+  final private[esw] case class ShutdownComplete(replyTo: ActorRef[Ok.type])                    extends ShuttingDownMessage
   final private[esw] case class AbortSequenceComplete(replyTo: ActorRef[OkOrUnhandledResponse]) extends AbortSequenceMessage
 }

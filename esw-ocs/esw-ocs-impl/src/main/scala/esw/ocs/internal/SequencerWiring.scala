@@ -5,12 +5,12 @@ import akka.actor.typed.ActorRef
 import akka.actor.typed.SpawnProtocol.Spawn
 import akka.actor.typed.scaladsl.AskPattern.Askable
 import com.typesafe.config.{Config, ConfigFactory}
+import csw.command.client.messages.sequencer.SequencerMsg
 import csw.framework.internal.wiring.ActorRuntime
 import csw.location.api.extensions.ActorExtension.RichActor
 import csw.location.models.Connection.AkkaConnection
 import csw.location.models.{AkkaLocation, AkkaRegistration, ComponentId, ComponentType}
 import esw.ocs.api.models.messages.RegistrationError
-import esw.ocs.api.models.messages.SequencerMessages.EswSequencerMessage
 import esw.ocs.core._
 import esw.ocs.dsl.utils.ScriptLoader
 import esw.ocs.dsl.{CswServices, Script}
@@ -30,13 +30,13 @@ private[ocs] class SequencerWiring(val sequencerId: String, val observingMode: S
   import frameworkWiring.actorRuntime._
   implicit lazy val actorRuntime: ActorRuntime = frameworkWiring.actorRuntime
 
+  lazy val sequencerRef: ActorRef[SequencerMsg] = (typedSystem ? Spawn(sequencerBehavior.setup, sequencerName)).block
+
   //Pass lambda to break circular dependency shown below.
   //SequencerRef -> Script -> cswServices -> SequencerOperator -> SequencerRef
   private lazy val sequenceOperatorFactory = () => new SequenceOperator(sequencerRef)
   private lazy val componentId             = ComponentId(sequencerName, ComponentType.Sequencer)
   private lazy val script: Script          = ScriptLoader.load(scriptClass, cswServices)
-
-  lazy val sequencerRef: ActorRef[EswSequencerMessage] = (typedSystem ? Spawn(sequencerBehavior.setup, sequencerName)).block
 
   lazy val cswServices =
     new CswServices(sequenceOperatorFactory, commandResponseManager, sequencerCommandService, locationServiceUtils)
