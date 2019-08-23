@@ -3,7 +3,7 @@ package esw.ocs.dsl
 import akka.Done
 import csw.params.commands.{Observe, SequenceCommand, Setup}
 import esw.highlevel.dsl.{EventServiceDsl, LocationServiceDsl}
-import esw.ocs.api.models.messages.{MaybeNextResult, PullNextResult}
+import esw.ocs.api.models.messages.PullNextResult
 import esw.ocs.dsl.utils.{FunctionBuilder, FunctionHandlers}
 import esw.ocs.exceptions.UnhandledCommandException
 
@@ -65,7 +65,7 @@ trait ScriptDsl extends ControlDsl {
       val operator  = csw.sequenceOperatorFactory()
       val mayBeNext = operator.maybeNext.await
       mayBeNext match {
-        case MaybeNextResult(Some(step)) if f(step.command) =>
+        case Some(step) if f(step.command) =>
           operator.pullNext.await match {
             case PullNextResult(step) => Some(step.command)
             case _                    => None

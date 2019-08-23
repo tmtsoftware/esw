@@ -29,6 +29,7 @@ class SequencerBehaviorTest extends ScalaTestWithActorTestKit with BaseTestSuite
   private val sequence = Sequence(Id(), Seq(command1, command2))
 
   private implicit val timeoutDuration: Timeout = timeout
+  private val maxWaitForExpectNoMessage         = 200.millis
 
   def Finished(id: Id): StepStatus = StepStatus.Finished.Success(Completed(id))
 
@@ -496,7 +497,7 @@ class SequencerBehaviorTest extends ScalaTestWithActorTestKit with BaseTestSuite
 
       val probe = TestProbe[Ok.type]
       sequencerActor ! ReadyToExecuteNext(probe.ref)
-      probe.expectNoMessage(1.second)
+      probe.expectNoMessage(maxWaitForExpectNoMessage)
 
       // finish first command
       promise.complete(Success(Completed(command1.runId)))
@@ -511,7 +512,7 @@ class SequencerBehaviorTest extends ScalaTestWithActorTestKit with BaseTestSuite
 
       val probe = TestProbe[Ok.type]
       sequencerActor ! ReadyToExecuteNext(probe.ref)
-      probe.expectNoMessage(1.second)
+      probe.expectNoMessage(maxWaitForExpectNoMessage)
 
       // start the sequence and assert Ok is sent to the readyToExecuteNext subscriber as soon as a step is ready
       sequencerActor ! StartSequence(createTestProbe[SequenceResponse].ref)
@@ -524,7 +525,7 @@ class SequencerBehaviorTest extends ScalaTestWithActorTestKit with BaseTestSuite
 
       val probe = TestProbe[Ok.type]
       sequencerActor ! ReadyToExecuteNext(probe.ref)
-      probe.expectNoMessage(1.second)
+      probe.expectNoMessage(maxWaitForExpectNoMessage)
 
       loadAndStartSequenceThenAssertInProgress()
       probe.expectMessage(Ok)
@@ -536,7 +537,7 @@ class SequencerBehaviorTest extends ScalaTestWithActorTestKit with BaseTestSuite
 
       val probe = TestProbe[Ok.type]
       sequencerActor ! ReadyToExecuteNext(probe.ref)
-      probe.expectNoMessage(1.second)
+      probe.expectNoMessage(maxWaitForExpectNoMessage)
 
       goOnlineAndAssertResponse(Ok, Future.successful(Done))
       loadAndStartSequenceThenAssertInProgress()
@@ -546,15 +547,15 @@ class SequencerBehaviorTest extends ScalaTestWithActorTestKit with BaseTestSuite
     "wait till sequence is resumed in case of a paused sequence" in {
       val sequencerSetup = SequencerTestSetup.idle(sequence)
       import sequencerSetup._
-      sequencerSetup.loadAndStartSequenceThenAssertInProgress()
-      sequencerSetup.mockCommand(command1.runId, Future.successful(Completed(command1.runId)))
-      sequencerSetup.pullNextCommand()
+      loadAndStartSequenceThenAssertInProgress()
+      mockCommand(command1.runId, Future.successful(Completed(command1.runId)))
+      pullNextCommand()
 
       pauseAndAssertResponse(Ok)
 
       val probe = TestProbe[Ok.type]
       sequencerActor ! ReadyToExecuteNext(probe.ref)
-      probe.expectNoMessage(1.second)
+      probe.expectNoMessage(maxWaitForExpectNoMessage)
 
       resumeAndAssertResponse(Ok)
       probe.expectMessage(Ok)
@@ -566,7 +567,7 @@ class SequencerBehaviorTest extends ScalaTestWithActorTestKit with BaseTestSuite
       val sequencerSetup = SequencerTestSetup.inProgress(sequence)
       import sequencerSetup._
 
-      mayBeNextAndAssertResponse(MaybeNextResult(Some(Step(command2))))
+      mayBeNextAndAssertResponse(Some(Step(command2)))
     }
 
     "return None if sequencer is paused" in {
@@ -574,14 +575,14 @@ class SequencerBehaviorTest extends ScalaTestWithActorTestKit with BaseTestSuite
       import sequencerSetup._
       pauseAndAssertResponse(Ok)
 
-      mayBeNextAndAssertResponse(MaybeNextResult(None))
+      mayBeNextAndAssertResponse(None)
     }
 
     "return None if there's no pending step to be executed" in {
       val sequencerSetup = SequencerTestSetup.inProgress(Sequence(command1))
       import sequencerSetup._
 
-      mayBeNextAndAssertResponse(MaybeNextResult(None))
+      mayBeNextAndAssertResponse(None)
     }
   }
 
@@ -597,7 +598,6 @@ class SequencerBehaviorTest extends ScalaTestWithActorTestKit with BaseTestSuite
       GoOnline,
       GoOnlineSuccess,
       GoOnlineFailed,
-      MaybeNext,
       Update(Completed(Id()), _),
       GoIdle,
       GoneOffline,
@@ -627,9 +627,7 @@ class SequencerBehaviorTest extends ScalaTestWithActorTestKit with BaseTestSuite
       GoOnline,
       GoOnlineSuccess,
       GoOnlineFailed,
-      MaybeNext,
       PullNext,
-      MaybeNext,
       GoIdle
 //      ShutdownComplete
     )
@@ -679,7 +677,6 @@ class SequencerBehaviorTest extends ScalaTestWithActorTestKit with BaseTestSuite
       GoOnlineFailed,
       GoneOffline,
       GoIdle,
-      MaybeNext,
       PullNext,
       Update(Completed(Id()), _)
 //      ShutdownComplete

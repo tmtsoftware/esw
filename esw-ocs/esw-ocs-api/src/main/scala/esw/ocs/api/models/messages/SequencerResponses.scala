@@ -13,9 +13,7 @@ sealed trait PauseResponse            extends EswSequencerResponse
 sealed trait RemoveBreakpointResponse extends EswSequencerResponse
 sealed trait LoadSequenceResponse     extends EswSequencerResponse
 sealed trait PullNextResponse         extends EswSequencerResponse
-// fixme: No need of MaybeNextResponse type - since Unhandled is not needed?
-sealed trait MaybeNextResponse extends EswSequencerResponse
-sealed trait GoOnlineResponse  extends EswSequencerResponse
+sealed trait GoOnlineResponse         extends EswSequencerResponse
 
 sealed trait SequenceResponse extends EswSequencerResponse {
   def toSubmitResponse(sequenceId: Id): SubmitResponse = this match {
@@ -34,7 +32,6 @@ case object Ok
     with GoOnlineResponse
 
 case class PullNextResult(step: Step)                     extends PullNextResponse
-case class MaybeNextResult(step: Option[Step])            extends MaybeNextResponse
 case class SequenceResult(submitResponse: SubmitResponse) extends SequenceResponse
 
 case class Unhandled private[ocs] (state: SequencerState[SequencerMsg], messageType: String, msg: String)
@@ -46,7 +43,6 @@ case class Unhandled private[ocs] (state: SequencerState[SequencerMsg], messageT
     with GoOnlineResponse
     with SequenceResponse
     with PullNextResponse
-    with MaybeNextResponse
 
 object Unhandled {
   def apply(state: SequencerState[SequencerMsg], messageType: String): Unhandled =

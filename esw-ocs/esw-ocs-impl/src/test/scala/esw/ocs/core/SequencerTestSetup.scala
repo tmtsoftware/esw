@@ -11,7 +11,7 @@ import csw.location.models.ComponentId
 import csw.params.commands.CommandResponse.{Completed, SubmitResponse}
 import csw.params.commands.{Sequence, SequenceCommand}
 import csw.params.core.models.Id
-import esw.ocs.api.models.{SequencerState, StepList}
+import esw.ocs.api.models.{SequencerState, Step, StepList}
 import esw.ocs.api.models.SequencerState.{Idle, InProgress}
 import esw.ocs.api.models.messages.SequencerMessages.{Pause, _}
 import esw.ocs.api.models.messages.{LoadSequenceResponse, _}
@@ -164,10 +164,10 @@ class SequencerTestSetup(sequence: Sequence)(implicit system: ActorSystem[_], ti
     probe.expectMessage(response)
   }
 
-  def mayBeNextAndAssertResponse(response: MaybeNextResult): MaybeNextResult = {
-    val probe = TestProbe[MaybeNextResponse]
+  def mayBeNextAndAssertResponse(response: Option[Step]): Option[Step] = {
+    val probe = TestProbe[Option[Step]]
     sequencerActor ! MaybeNext(probe.ref)
-    probe.expectMessageType[MaybeNextResult]
+    probe.expectMessageType[Option[Step]]
   }
 
   def assertUnhandled[T >: Unhandled <: EswSequencerResponse](

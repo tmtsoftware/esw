@@ -9,14 +9,14 @@ import csw.params.core.models.Prefix
 import esw.ocs.api.BaseTestSuite
 import esw.ocs.api.models.Step
 import esw.ocs.api.models.messages.SequencerMessages.{MaybeNext, PullNext, ReadyToExecuteNext, Update}
-import esw.ocs.api.models.messages.{MaybeNextResult, Ok, PullNextResult}
+import esw.ocs.api.models.messages.{Ok, PullNextResult}
 
 class SequenceOperatorTest extends ScalaTestWithActorTestKit with BaseTestSuite {
 
   private val command = Setup(Prefix("esw.test"), CommandName("command-1"), None)
 
   private val pullNextResponse   = PullNextResult(Step(command))
-  private val mayBeNextResponse  = MaybeNextResult(Some(Step(command)))
+  private val mayBeNextResponse  = Some(Step(command))
   private val updateFailureProbe = TestProbe[CommandResponse]()
 
   private val mockedBehavior: Behaviors.Receive[SequencerMsg] = Behaviors.receiveMessage[SequencerMsg] { msg =>

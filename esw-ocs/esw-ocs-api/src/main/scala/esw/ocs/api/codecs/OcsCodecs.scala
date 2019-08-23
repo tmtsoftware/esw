@@ -68,7 +68,6 @@ trait OcsCodecs extends MessageCodecs with DoneCodec {
   //StepListResponse Codecs
   implicit lazy val responseCodec: Codec[EswSequencerResponse]                       = deriveCodec[EswSequencerResponse]
   implicit lazy val pullNextResultCodec: Codec[PullNextResult]                       = deriveCodec[PullNextResult]
-  implicit lazy val maybeNextResultCodec: Codec[MaybeNextResult]                     = deriveCodec[MaybeNextResult]
   implicit lazy val sequenceResultCodec: Codec[SequenceResult]                       = deriveCodec[SequenceResult]
   implicit lazy val okCodec: Codec[Ok.type]                                          = singletonCodec(Ok)
   implicit lazy val sequencerBehaviorStateCodec: Codec[SequencerState[SequencerMsg]] = enumCodec[SequencerState[SequencerMsg]]

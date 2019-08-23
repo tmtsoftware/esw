@@ -56,7 +56,6 @@ class SequencerBehavior(
     case AbortSequence(replyTo)    => abortSequence(data, InProgress, replyTo)(nextBehavior = inProgress)
     case msg: EditorAction         => inProgress(handleEditorAction(msg, data, InProgress))
     case PullNext(replyTo)         => inProgress(data.pullNextStep(replyTo))
-    case MaybeNext(replyTo)        => replyTo ! MaybeNextResult(data.stepList.flatMap(_.nextExecutable)); Behaviors.same
     case Update(submitResponse, _) => inProgress(data.updateStepStatus(submitResponse))
     case _: GoIdle                 => idle(data)
   }
@@ -107,6 +106,10 @@ class SequencerBehavior(
     case GetSequence(replyTo)        => replyTo ! data.stepList; Behaviors.same
     case GetSequencerState(replyTo)  => replyTo ! state; Behaviors.same
     case ReadyToExecuteNext(replyTo) => currentBehavior(data.readyToExecuteNext(replyTo, state))
+    case MaybeNext(replyTo) =>
+      if (state == InProgress) replyTo ! data.stepList.flatMap(_.nextExecutable)
+      else replyTo ! None
+      Behaviors.same
   }
 
   private def handleEditorAction(

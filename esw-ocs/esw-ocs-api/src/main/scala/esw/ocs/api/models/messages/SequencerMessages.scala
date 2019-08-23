@@ -5,7 +5,7 @@ import csw.command.client.messages.sequencer.SequencerMsg
 import csw.params.commands.CommandResponse.SubmitResponse
 import csw.params.commands.{Sequence, SequenceCommand}
 import csw.params.core.models.Id
-import esw.ocs.api.models.{SequencerState, StepList}
+import esw.ocs.api.models.{SequencerState, Step, StepList}
 import esw.ocs.api.serializer.OcsAkkaSerializable
 
 object SequencerMessages {
@@ -36,6 +36,7 @@ object SequencerMessages {
   final case class GetSequence(replyTo: ActorRef[Option[StepList]])                   extends CommonMessage
   final case class GetSequencerState(replyTo: ActorRef[SequencerState[SequencerMsg]]) extends CommonMessage
   final private[esw] case class ReadyToExecuteNext(replyTo: ActorRef[Ok.type])        extends CommonMessage
+  final private[esw] case class MaybeNext(replyTo: ActorRef[Option[Step]])            extends CommonMessage
 
   // lifecycle msgs
   final case class GoOnline(replyTo: ActorRef[GoOnlineResponse])       extends OfflineMessage
@@ -60,8 +61,7 @@ object SequencerMessages {
   final private[ocs] case class LoadAndStartSequenceInternal(sequence: Sequence, replyTo: ActorRef[SequenceResponse])
       extends IdleMessage
 
-  final private[esw] case class PullNext(replyTo: ActorRef[PullNextResponse])   extends IdleMessage with InProgressMessage
-  final private[esw] case class MaybeNext(replyTo: ActorRef[MaybeNextResponse]) extends InProgressMessage
+  final private[esw] case class PullNext(replyTo: ActorRef[PullNextResponse]) extends IdleMessage with InProgressMessage
   final private[esw] case class Update(submitResponse: SubmitResponse, replyTo: ActorRef[OkOrUnhandledResponse]) // this is internal message and replyTo is not used anywhere
       extends InProgressMessage
   final private[esw] case class GoIdle(replyTo: ActorRef[OkOrUnhandledResponse])                extends InProgressMessage
