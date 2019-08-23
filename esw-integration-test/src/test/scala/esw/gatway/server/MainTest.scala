@@ -24,7 +24,6 @@ import csw.testkit.{EventTestKit, LocationTestKit}
 import esw.gateway.server.Main
 import esw.http.core.BaseTestSuite
 
-import scala.concurrent.Await
 import scala.concurrent.duration.DurationInt
 
 class MainTest extends BaseTestSuite with ParamCodecs with HttpCodecs {
@@ -37,7 +36,7 @@ class MainTest extends BaseTestSuite with ParamCodecs with HttpCodecs {
   implicit val mat: ActorMaterializer                = ActorMaterializer()
   private val testLocationService: LocationService   = HttpLocationServiceFactory.makeLocalClient
 
-  override implicit def patienceConfig: PatienceConfig = PatienceConfig(5.seconds)
+  override implicit def patienceConfig: PatienceConfig = PatienceConfig(10.seconds)
 
   override def beforeAll(): Unit = {
     locationTestKit.startLocationServer()
@@ -70,7 +69,7 @@ class MainTest extends BaseTestSuite with ParamCodecs with HttpCodecs {
 
       //Publish event
       val request  = HttpRequest(uri = uri, method = HttpMethods.POST, entity = eventJson)
-      val response = Await.result(Http().singleRequest(request), 10.seconds)
+      val response = Http().singleRequest(request).futureValue
 
       //assert if event is successfully published
       response.status shouldBe StatusCodes.OK
