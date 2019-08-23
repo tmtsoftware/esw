@@ -6,12 +6,9 @@ import esw.gateway.api.codecs.RestlessCodecs
 import esw.gateway.api.messages.GatewayWebsocketRequest
 import esw.gateway.api.messages.GatewayWebsocketRequest.{QueryFinal, Subscribe, SubscribeCurrentState, SubscribeWithPattern}
 import mscoket.impl.ToPayload._
-import msocket.api.{EitherCodecs, Payload, ServerSocket}
+import msocket.api.{Payload, ServerSocket}
 
-class GatewayServerSocket(gatewayContext: GatewayContext)
-    extends ServerSocket[GatewayWebsocketRequest]
-    with RestlessCodecs
-    with EitherCodecs {
+class GatewayServerSocket(gatewayContext: GatewayContext) extends ServerSocket[GatewayWebsocketRequest] with RestlessCodecs {
 
   import gatewayContext._
   import gatewayContext.cswContext.actorRuntime.{ec, mat}

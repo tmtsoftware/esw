@@ -7,9 +7,8 @@ import esw.gateway.api.codecs.RestlessCodecs
 import esw.gateway.api.messages.GatewayHttpRequest
 import esw.gateway.api.messages.GatewayHttpRequest.{CommandRequest, GetEvent, PublishEvent, SetAlarmSeverity}
 import mscoket.impl.{Encoding, WsServerFlow}
-import msocket.api.EitherCodecs
 
-class GatewayRoutes(gatewayContext: GatewayContext) extends RestlessCodecs with EitherCodecs with HttpCodecs {
+class GatewayRoutes(gatewayContext: GatewayContext) extends RestlessCodecs with HttpCodecs {
 
   import gatewayContext._
 

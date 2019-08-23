@@ -3,6 +3,7 @@ package esw.gateway.api.codecs
 import com.github.ghik.silencer.silent
 import csw.alarm.codecs.AlarmCodecs
 import csw.alarm.models.Key.AlarmKey
+import csw.location.api.codec.DoneCodec
 import csw.location.models.codecs.LocationCodecs
 import csw.params.core.formats.{CodecHelpers, ParamCodecs}
 import csw.params.events.EventKey
@@ -11,8 +12,9 @@ import esw.gateway.api.messages.GatewayWebsocketRequest.{QueryFinal, Subscribe, 
 import esw.gateway.api.messages._
 import io.bullet.borer.Codec
 import io.bullet.borer.derivation.MapBasedCodecs.deriveCodec
+import msocket.api.EitherCodecs
 
-trait RestlessCodecs extends ParamCodecs with LocationCodecs with AlarmCodecs {
+trait RestlessCodecs extends ParamCodecs with LocationCodecs with AlarmCodecs with EitherCodecs with DoneCodec {
 
   implicit def eventErrorCodec[T <: EventError]: Codec[T] = eventErrorCodecValue.asInstanceOf[Codec[T]]
   lazy val eventErrorCodecValue: Codec[EventError] = {

@@ -11,14 +11,13 @@ import esw.gateway.api.codecs.RestlessCodecs
 import esw.gateway.api.messages.GatewayHttpRequest.CommandRequest
 import esw.gateway.api.messages.GatewayWebsocketRequest.{QueryFinal, SubscribeCurrentState}
 import esw.gateway.api.messages.{CommandAction, CommandError, GatewayWebsocketRequest, InvalidComponent}
-import msocket.api.{ClientSocket, EitherCodecs, HttpClient}
+import msocket.api.{ClientSocket, HttpClient}
 
 import scala.concurrent.Future
 
 class CommandClient(httpClient: HttpClient, socket: ClientSocket[GatewayWebsocketRequest])
     extends CommandServiceApi
-    with RestlessCodecs
-    with EitherCodecs {
+    with RestlessCodecs {
 
   override def process(
       componentId: ComponentId,

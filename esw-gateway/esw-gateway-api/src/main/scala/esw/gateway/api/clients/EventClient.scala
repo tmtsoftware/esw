@@ -2,23 +2,20 @@ package esw.gateway.api.clients
 
 import akka.Done
 import akka.stream.scaladsl.Source
-import csw.location.api.codec.DoneCodec
 import csw.params.core.models.Subsystem
 import csw.params.events.{Event, EventKey}
 import esw.gateway.api.EventServiceApi
 import esw.gateway.api.codecs.RestlessCodecs
-import esw.gateway.api.messages.{EmptyEventKeys, EventError, GatewayWebsocketRequest, InvalidMaxFrequency}
 import esw.gateway.api.messages.GatewayHttpRequest.{GetEvent, PublishEvent}
 import esw.gateway.api.messages.GatewayWebsocketRequest.{Subscribe, SubscribeWithPattern}
-import msocket.api.{ClientSocket, EitherCodecs, HttpClient}
+import esw.gateway.api.messages.{EmptyEventKeys, EventError, GatewayWebsocketRequest, InvalidMaxFrequency}
+import msocket.api.{ClientSocket, HttpClient}
 
 import scala.concurrent.Future
 
 class EventClient(httpClient: HttpClient, socket: ClientSocket[GatewayWebsocketRequest])
     extends EventServiceApi
-    with RestlessCodecs
-    with EitherCodecs
-    with DoneCodec {
+    with RestlessCodecs {
 
   override def publish(event: Event): Future[Done] = {
     httpClient.post[PublishEvent, Done](PublishEvent(event))
