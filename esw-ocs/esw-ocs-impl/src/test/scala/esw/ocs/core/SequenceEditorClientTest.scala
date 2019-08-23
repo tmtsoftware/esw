@@ -6,7 +6,7 @@ import csw.command.client.messages.sequencer.SequencerMsg
 import csw.params.commands.{CommandName, Sequence, Setup}
 import csw.params.core.models.{Id, Prefix}
 import esw.ocs.api.BaseTestSuite
-import esw.ocs.api.models.SequencerState.{Idle, Loaded, Offline}
+import esw.ocs.api.models.SequencerState.{Idle, InProgress, Loaded, Offline}
 import esw.ocs.api.models.StepList
 import esw.ocs.api.models.messages.EditorError.{CannotOperateOnAnInFlightOrFinishedStep, IdDoesNotExist}
 import esw.ocs.api.models.messages.SequencerMessages._
@@ -25,6 +25,7 @@ class SequenceEditorClientTest extends ScalaTestWithActorTestKit with BaseTestSu
   private val replaceResponse          = CannotOperateOnAnInFlightOrFinishedStep
   private val insertAfterResponse      = Ok
   private val resetResponse            = Ok
+  private val abortResponse            = Unhandled(InProgress, "AbortSequence")
   private val deleteResponse           = IdDoesNotExist(Id())
   private val addBreakpointResponse    = Unhandled(Idle, "AddBreakpoint")
 
@@ -41,6 +42,7 @@ class SequenceEditorClientTest extends ScalaTestWithActorTestKit with BaseTestSu
         case Pause(replyTo)                                         => replyTo ! pauseResponse
         case Resume(replyTo)                                        => replyTo ! resumeResponse
         case Reset(replyTo)                                         => replyTo ! resetResponse
+        case AbortSequence(replyTo)                                 => replyTo ! abortResponse
         case AddBreakpoint(`command`.runId, replyTo)                => replyTo ! addBreakpointResponse
         case RemoveBreakpoint(`command`.runId, replyTo)             => replyTo ! removeBreakpointResponse
         case _                                                      =>
@@ -98,5 +100,9 @@ class SequenceEditorClientTest extends ScalaTestWithActorTestKit with BaseTestSu
 
   "reset" in {
     sequenceEditorClient.reset().futureValue should ===(resetResponse)
+  }
+
+  "abortSequence" in {
+    sequenceEditorClient.abortSequence().futureValue should ===(abortResponse)
   }
 }

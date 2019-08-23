@@ -10,7 +10,7 @@ import csw.location.api.extensions.ActorExtension.RichActor
 import csw.location.models.Connection.AkkaConnection
 import csw.location.models.{AkkaLocation, AkkaRegistration, ComponentId, ComponentType}
 import esw.ocs.api.models.messages.RegistrationError
-import esw.ocs.api.models.messages.SequencerMessages.EswSequencerMessage
+import esw.ocs.api.models.messages.SequencerMessages.{EswSequencerMessage, Shutdown}
 import esw.ocs.core._
 import esw.ocs.dsl.utils.ScriptLoader
 import esw.ocs.dsl.{CswServices, Script}
@@ -47,9 +47,9 @@ private[ocs] class SequencerWiring(val sequencerId: String, val observingMode: S
 
   lazy val sequencerBehavior =
     new SequencerBehavior(componentId, script, locationService, commandResponseManager)(typedSystem, timeout)
-  lazy val sequencerSupervisorClient = new SequencerSupervisorClient(sequencerRef)(typedSystem, timeout)
+  lazy val sequencerEditorClient = new SequenceEditorClient(sequencerRef)(typedSystem, timeout)
 
-  def shutDown(): Future[Done] = sequencerSupervisorClient.shutdown().map(_ => Done)
+  def shutDown(): Future[Done] = (sequencerRef ? Shutdown).map(_ => Done)
 
   def start(): Either[RegistrationError, AkkaLocation] = {
     new Engine().start(sequenceOperatorFactory(), script)

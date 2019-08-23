@@ -14,7 +14,7 @@ import esw.ocs.api.models.messages._
 
 import scala.concurrent.Future
 
-class SequenceEditorClient(sequencer: ActorRef[SequencerMsg])(implicit system: ActorSystem[_], timeout: Timeout)
+class SequenceEditorClient(sequencer: ActorRef[EswSequencerMessage])(implicit system: ActorSystem[_], timeout: Timeout)
     extends SequenceEditor {
   private implicit val scheduler: Scheduler = system.scheduler
 
@@ -34,4 +34,6 @@ class SequenceEditorClient(sequencer: ActorRef[SequencerMsg])(implicit system: A
   override def addBreakpoint(id: Id): Future[GenericResponse]             = sequencer ? (AddBreakpoint(id, _))
   override def removeBreakpoint(id: Id): Future[RemoveBreakpointResponse] = sequencer ? (RemoveBreakpoint(id, _))
   override def reset(): Future[OkOrUnhandledResponse]                     = sequencer ? Reset
+  override def abortSequence(): Future[OkOrUnhandledResponse]             = sequencer ? AbortSequence
+
 }
