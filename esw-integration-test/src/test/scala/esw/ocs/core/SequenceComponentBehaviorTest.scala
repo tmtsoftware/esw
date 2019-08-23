@@ -100,7 +100,7 @@ class SequenceComponentBehaviorTest extends ScalaTestFrameworkTestKit with BaseT
       unloadScriptResponseProbe.expectMessage(Done)
     }
 
-    "get killed if stop msg is received | ESW-103, ESW-214" in {
+    "get killed if stop msg is received | ESW-103" in {
       val behaviorTestKit = createBehaviorTestKit()
 
       behaviorTestKit.run(Stop)

@@ -63,7 +63,7 @@ class SequenceComponentRegistrationTest extends ScalaTestWithActorTestKit with B
       verify(registrationResult).unregister()
     }
 
-    "retry if OtherLocationIsRegistered | ESW-144, ESW-214" in {
+    "retry if OtherLocationIsRegistered | ESW-144" in {
       implicit val system: ActorSystem[SpawnProtocol] = ActorSystem(SpawnProtocol.behavior, "test")
 
       val coordinatedShutdown = CoordinatedShutdown(system.toUntyped)

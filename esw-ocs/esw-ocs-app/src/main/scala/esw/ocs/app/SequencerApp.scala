@@ -46,7 +46,7 @@ object SequencerApp extends CommandApp[SequencerAppCommand] {
     }
   }
 
-  private def withLogging[T](actorRuntime: ActorRuntime, log: Logger, enableLogging: Boolean)(
+  private def withLogging(actorRuntime: ActorRuntime, log: Logger, enableLogging: Boolean)(
       f: => Either[RegistrationError, AkkaLocation]
   ): Unit = {
     import actorRuntime._
