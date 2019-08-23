@@ -10,9 +10,9 @@ import esw.ocs.api.models.SequencerState.{Idle, InProgress, Loaded, Offline}
 import esw.ocs.api.models.StepList
 import esw.ocs.api.models.messages.EditorError.{CannotOperateOnAnInFlightOrFinishedStep, IdDoesNotExist}
 import esw.ocs.api.models.messages.SequencerMessages._
-import esw.ocs.api.models.messages.{Ok, Unhandled}
+import esw.ocs.api.models.messages.{GoOnlineHookFailed, Ok, Unhandled}
 
-class SequenceEditorClientTest extends ScalaTestWithActorTestKit with BaseTestSuite {
+class SequenceAdminImplTest extends ScalaTestWithActorTestKit with BaseTestSuite {
   private val command = Setup(Prefix("esw.test"), CommandName("command-1"), None)
 
   private val getSequenceResponse      = StepList(Sequence(command)).toOption
@@ -28,6 +28,8 @@ class SequenceEditorClientTest extends ScalaTestWithActorTestKit with BaseTestSu
   private val abortResponse            = Unhandled(InProgress, "AbortSequence")
   private val deleteResponse           = IdDoesNotExist(Id())
   private val addBreakpointResponse    = Unhandled(Idle, "AddBreakpoint")
+  private val goOnlineResponse         = GoOnlineHookFailed
+  private val goOfflineResponse        = Unhandled(Offline, "Offline")
 
   private val mockedBehavior: Behaviors.Receive[SequencerMsg] =
     Behaviors.receiveMessage[SequencerMsg] { msg =>
@@ -45,6 +47,8 @@ class SequenceEditorClientTest extends ScalaTestWithActorTestKit with BaseTestSu
         case AbortSequence(replyTo)                                 => replyTo ! abortResponse
         case AddBreakpoint(`command`.runId, replyTo)                => replyTo ! addBreakpointResponse
         case RemoveBreakpoint(`command`.runId, replyTo)             => replyTo ! removeBreakpointResponse
+        case GoOnline(replyTo)                                      => replyTo ! goOnlineResponse
+        case GoOffline(replyTo)                                     => replyTo ! goOfflineResponse
         case _                                                      =>
       }
       Behaviors.same
@@ -52,57 +56,57 @@ class SequenceEditorClientTest extends ScalaTestWithActorTestKit with BaseTestSu
 
   private val sequencer = spawn(mockedBehavior)
 
-  private val sequenceEditorClient = new SequenceEditorClient(sequencer)
+  private val sequencerAdmin = new SequencerAdminImpl(sequencer)
 
   "getSequence" in {
-    sequenceEditorClient.getSequence.futureValue should ===(getSequenceResponse)
+    sequencerAdmin.getSequence.futureValue should ===(getSequenceResponse)
   }
 
   "getState" in {
-    sequenceEditorClient.getState.futureValue should ===(getStateResponse)
+    sequencerAdmin.getState.futureValue should ===(getStateResponse)
   }
 
   "add" in {
-    sequenceEditorClient.add(List(command)).futureValue should ===(addResponse)
+    sequencerAdmin.add(List(command)).futureValue should ===(addResponse)
   }
 
   "prepend" in {
-    sequenceEditorClient.prepend(List(command)).futureValue should ===(prependResponse)
+    sequencerAdmin.prepend(List(command)).futureValue should ===(prependResponse)
   }
 
   "replace" in {
-    sequenceEditorClient.replace(command.runId, List(command)).futureValue should ===(replaceResponse)
+    sequencerAdmin.replace(command.runId, List(command)).futureValue should ===(replaceResponse)
   }
 
   "insertAfter" in {
-    sequenceEditorClient.insertAfter(command.runId, List(command)).futureValue should ===(insertAfterResponse)
+    sequencerAdmin.insertAfter(command.runId, List(command)).futureValue should ===(insertAfterResponse)
   }
 
   "delete" in {
-    sequenceEditorClient.delete(command.runId).futureValue should ===(deleteResponse)
+    sequencerAdmin.delete(command.runId).futureValue should ===(deleteResponse)
   }
 
   "pause" in {
-    sequenceEditorClient.pause.futureValue should ===(pauseResponse)
+    sequencerAdmin.pause.futureValue should ===(pauseResponse)
   }
 
   "resume" in {
-    sequenceEditorClient.resume.futureValue should ===(resumeResponse)
+    sequencerAdmin.resume.futureValue should ===(resumeResponse)
   }
 
   "addBreakpoint" in {
-    sequenceEditorClient.addBreakpoint(command.runId).futureValue should ===(addBreakpointResponse)
+    sequencerAdmin.addBreakpoint(command.runId).futureValue should ===(addBreakpointResponse)
   }
 
   "removeBreakpoint" in {
-    sequenceEditorClient.removeBreakpoint(command.runId).futureValue should ===(removeBreakpointResponse)
+    sequencerAdmin.removeBreakpoint(command.runId).futureValue should ===(removeBreakpointResponse)
   }
 
   "reset" in {
-    sequenceEditorClient.reset().futureValue should ===(resetResponse)
+    sequencerAdmin.reset().futureValue should ===(resetResponse)
   }
 
   "abortSequence" in {
-    sequenceEditorClient.abortSequence().futureValue should ===(abortResponse)
+    sequencerAdmin.abortSequence().futureValue should ===(abortResponse)
   }
 }

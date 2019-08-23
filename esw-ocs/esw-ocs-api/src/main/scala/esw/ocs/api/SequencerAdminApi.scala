@@ -8,7 +8,7 @@ import esw.ocs.api.models.messages._
 
 import scala.concurrent.Future
 
-trait SequenceEditor {
+trait SequencerAdminApi {
 
   def getSequence: Future[Option[StepList]]
   def getState: Future[SequencerState[SequencerMsg]]
@@ -23,5 +23,7 @@ trait SequenceEditor {
   def removeBreakpoint(id: Id): Future[RemoveBreakpointResponse]
   def reset(): Future[OkOrUnhandledResponse]
   def abortSequence(): Future[OkOrUnhandledResponse]
+  def goOnline(): Future[GoOnlineResponse]
+  def goOffline(): Future[OkOrUnhandledResponse]
 
 }

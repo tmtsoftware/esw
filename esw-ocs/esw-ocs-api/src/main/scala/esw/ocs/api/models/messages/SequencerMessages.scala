@@ -54,7 +54,6 @@ object SequencerMessages {
   final case class Resume(replyTo: ActorRef[OkOrUnhandledResponse])                                         extends EditorAction
   final case class Reset(replyTo: ActorRef[OkOrUnhandledResponse])                                          extends EditorAction
 
-  //abort
   final case class AbortSequence(replyTo: ActorRef[OkOrUnhandledResponse]) extends SequenceLoadedMessage with InProgressMessage
 
   // engine & internal

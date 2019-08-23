@@ -7,15 +7,15 @@ import akka.util.Timeout
 import csw.command.client.messages.sequencer.SequencerMsg
 import csw.params.commands.SequenceCommand
 import csw.params.core.models.Id
-import esw.ocs.api.SequenceEditor
+import esw.ocs.api.SequencerAdminApi
 import esw.ocs.api.models.{SequencerState, StepList}
 import esw.ocs.api.models.messages.SequencerMessages._
 import esw.ocs.api.models.messages._
 
 import scala.concurrent.Future
 
-class SequenceEditorClient(sequencer: ActorRef[EswSequencerMessage])(implicit system: ActorSystem[_], timeout: Timeout)
-    extends SequenceEditor {
+class SequencerAdminImpl(sequencer: ActorRef[EswSequencerMessage])(implicit system: ActorSystem[_], timeout: Timeout)
+    extends SequencerAdminApi {
   private implicit val scheduler: Scheduler = system.scheduler
 
   override def getSequence: Future[Option[StepList]]          = sequencer ? GetSequence
@@ -35,5 +35,7 @@ class SequenceEditorClient(sequencer: ActorRef[EswSequencerMessage])(implicit sy
   override def removeBreakpoint(id: Id): Future[RemoveBreakpointResponse] = sequencer ? (RemoveBreakpoint(id, _))
   override def reset(): Future[OkOrUnhandledResponse]                     = sequencer ? Reset
   override def abortSequence(): Future[OkOrUnhandledResponse]             = sequencer ? AbortSequence
+  override def goOnline(): Future[GoOnlineResponse]                       = sequencer ? GoOnline
+  override def goOffline(): Future[OkOrUnhandledResponse]                 = sequencer ? GoOffline
 
 }

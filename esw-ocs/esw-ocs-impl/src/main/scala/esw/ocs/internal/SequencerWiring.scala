@@ -47,7 +47,7 @@ private[ocs] class SequencerWiring(val sequencerId: String, val observingMode: S
 
   lazy val sequencerBehavior =
     new SequencerBehavior(componentId, script, locationService, commandResponseManager)(typedSystem, timeout)
-  lazy val sequencerEditorClient = new SequenceEditorClient(sequencerRef)(typedSystem, timeout)
+  lazy val sequencerEditorClient = new SequencerAdminImpl(sequencerRef)(typedSystem, timeout)
 
   def shutDown(): Future[Done] = (sequencerRef ? Shutdown).map(_ => Done)
 
