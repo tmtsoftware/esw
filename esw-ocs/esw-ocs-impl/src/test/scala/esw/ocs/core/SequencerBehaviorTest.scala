@@ -97,6 +97,27 @@ class SequencerBehaviorTest extends ScalaTestWithActorTestKit with BaseTestSuite
     }
   }
 
+  "GetSequencerState" must {
+    "return current state of the sequencer" in {
+      val sequencerSetup = SequencerTestSetup.idle(sequence)
+      import sequencerSetup._
+
+      assertSequencerState(Idle)
+
+      loadAndStartSequenceThenAssertInProgress()
+      assertSequencerState(InProgress)
+
+      pullAllStepsAndAssertSequenceIsFinished()
+      assertSequencerState(Idle)
+
+      goOfflineAndAssertResponse(Ok, Future.successful(Done))
+      assertSequencerState(Offline)
+
+      goOnlineAndAssertResponse(Ok, Future.successful(Done))
+      assertSequencerState(Idle)
+    }
+  }
+
   "Add" must {
     "add commands when sequence is loaded | ESW-114" in {
       val sequencerSetup = SequencerTestSetup.loaded(sequence)

@@ -6,7 +6,7 @@ import csw.command.client.messages.sequencer.SequencerMsg
 import csw.params.commands.{CommandName, Sequence, Setup}
 import csw.params.core.models.{Id, Prefix}
 import esw.ocs.api.BaseTestSuite
-import esw.ocs.api.models.SequencerState.{Idle, Offline}
+import esw.ocs.api.models.SequencerState.{Idle, Loaded, Offline}
 import esw.ocs.api.models.StepList
 import esw.ocs.api.models.messages.EditorError.{CannotOperateOnAnInFlightOrFinishedStep, IdDoesNotExist}
 import esw.ocs.api.models.messages.SequencerMessages._
@@ -16,6 +16,7 @@ class SequenceEditorClientTest extends ScalaTestWithActorTestKit with BaseTestSu
   private val command = Setup(Prefix("esw.test"), CommandName("command-1"), None)
 
   private val getSequenceResponse      = StepList(Sequence(command)).toOption
+  private val getStateResponse         = Loaded
   private val addResponse              = Ok
   private val pauseResponse            = CannotOperateOnAnInFlightOrFinishedStep
   private val prependResponse          = Unhandled(Offline, "Prepend")
@@ -31,6 +32,7 @@ class SequenceEditorClientTest extends ScalaTestWithActorTestKit with BaseTestSu
     Behaviors.receiveMessage[SequencerMsg] { msg =>
       msg match {
         case GetSequence(replyTo)                                   => replyTo ! getSequenceResponse
+        case GetSequencerState(replyTo)                             => replyTo ! getStateResponse
         case Add(List(`command`), replyTo)                          => replyTo ! addResponse
         case Prepend(List(`command`), replyTo)                      => replyTo ! prependResponse
         case Replace(`command`.runId, List(`command`), replyTo)     => replyTo ! replaceResponse
@@ -52,6 +54,10 @@ class SequenceEditorClientTest extends ScalaTestWithActorTestKit with BaseTestSu
 
   "getSequence" in {
     sequenceEditorClient.getSequence.futureValue should ===(getSequenceResponse)
+  }
+
+  "getState" in {
+    sequenceEditorClient.getState.futureValue should ===(getStateResponse)
   }
 
   "add" in {
