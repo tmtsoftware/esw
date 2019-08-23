@@ -2,10 +2,8 @@ package esw.ocs.core
 
 import akka.Done
 import akka.actor.testkit.typed.scaladsl.{ScalaTestWithActorTestKit, TestProbe}
-
-import scala.concurrent.duration.DurationLong
 import akka.util.Timeout
-import csw.command.client.messages.sequencer.{LoadAndStartSequence, SequencerMsg}
+import csw.command.client.messages.sequencer.LoadAndStartSequence
 import csw.params.commands.CommandResponse.{Completed, Error, SubmitResponse}
 import csw.params.commands.{CommandName, Sequence, Setup}
 import csw.params.core.models.{Id, Prefix}
@@ -15,8 +13,9 @@ import esw.ocs.api.models.StepStatus.{InFlight, Pending}
 import esw.ocs.api.models.messages.EditorError.{CannotOperateOnAnInFlightOrFinishedStep, IdDoesNotExist}
 import esw.ocs.api.models.messages.SequencerMessages.{AbortSequence, AddBreakpoint, _}
 import esw.ocs.api.models.messages._
-import esw.ocs.api.models.{SequencerState, Step, StepList, StepStatus}
+import esw.ocs.api.models.{Step, StepList, StepStatus}
 
+import scala.concurrent.duration.DurationLong
 import scala.concurrent.{Future, Promise}
 import scala.util.Success
 
@@ -424,7 +423,7 @@ class SequencerBehaviorTest extends ScalaTestWithActorTestKit with BaseTestSuite
       import sequencerSetup._
 
       goOnlineAndAssertResponse(Ok, Future.successful(Done))
-
+      assertSequencerState(Idle)
       // try loading a sequence to ensure sequencer is online
       loadSequenceAndAssertResponse(Ok)
     }
@@ -434,10 +433,7 @@ class SequencerBehaviorTest extends ScalaTestWithActorTestKit with BaseTestSuite
       import sequencerSetup._
 
       goOnlineAndAssertResponse(GoOnlineHookFailed, Future.failed(new RuntimeException("GoOnline Hook Failed")))
-
-      // assert sequencer is in offline state
-      // fixme: assert on current state of the sequencer instead
-      goOfflineAndAssertResponse(Unhandled(Offline, "GoOffline"), Future.successful(Done))
+      assertSequencerState(Offline)
     }
   }
 
@@ -447,10 +443,7 @@ class SequencerBehaviorTest extends ScalaTestWithActorTestKit with BaseTestSuite
       import sequencerSetup._
 
       goOfflineAndAssertResponse(Ok, Future.successful(Done))
-
-      // assert sequencer is in offline state
-      // fixme: assert on current state of the sequencer instead
-      goOfflineAndAssertResponse(Unhandled(Offline, "GoOffline"), Future.successful(Done))
+      assertSequencerState(Offline)
     }
 
     "clear history of the last executed sequence | ESW-194" in {
@@ -467,10 +460,7 @@ class SequencerBehaviorTest extends ScalaTestWithActorTestKit with BaseTestSuite
       import sequencerSetup._
 
       goOfflineAndAssertResponse(Ok, Future.failed(new RuntimeException("GoOffline Hook Failed")))
-
-      // assert sequencer is in offline state
-      // fixme: assert on current state of the sequencer instead
-      goOfflineAndAssertResponse(Unhandled(Offline, "GoOffline"), Future.successful(Done))
+      assertSequencerState(Offline)
     }
   }
 

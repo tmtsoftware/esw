@@ -170,6 +170,12 @@ class SequencerTestSetup(sequence: Sequence)(implicit system: ActorSystem[_], ti
     probe.expectMessageType[Option[Step]]
   }
 
+  def assertSequencerState(response: SequencerState[SequencerMsg]): SequencerState[SequencerMsg] = {
+    val probe = TestProbe[SequencerState[SequencerMsg]]
+    sequencerActor ! GetSequencerState(probe.ref)
+    probe.expectMessage(response)
+  }
+
   def assertUnhandled[T >: Unhandled <: EswSequencerResponse](
       state: SequencerState[SequencerMsg],
       msg: ActorRef[T] => UnhandleableSequencerMessage
