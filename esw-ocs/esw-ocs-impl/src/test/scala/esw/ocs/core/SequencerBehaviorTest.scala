@@ -4,6 +4,9 @@ import akka.Done
 import akka.actor.testkit.typed.scaladsl.{ScalaTestWithActorTestKit, TestProbe}
 import akka.util.Timeout
 import csw.command.client.messages.sequencer.LoadAndStartSequence
+import csw.command.client.messages.{GetComponentLogMetadata, SetComponentLogLevel}
+import csw.logging.models.Level.DEBUG
+import csw.logging.models.LogMetadata
 import csw.params.commands.CommandResponse.{Completed, Error, SubmitResponse}
 import csw.params.commands.{CommandName, Sequence, Setup}
 import csw.params.core.models.{Id, Prefix}
@@ -628,6 +631,21 @@ class SequencerBehaviorTest extends ScalaTestWithActorTestKit with BaseTestSuite
       assertCurrentSequence(
         Some(StepList(sequence.runId, List(Step(command1, StepStatus.Finished.Failure(error), hasBreakpoint = false))))
       )
+    }
+  }
+
+  "LogControlMessages" must {
+    "set and get log level for component name | ESW-183" in {
+      val sequencerSetup = SequencerTestSetup.inProgress(sequence)
+      import sequencerSetup._
+      val logMetadataProbe = TestProbe[LogMetadata]
+
+      sequencerActor ! SetComponentLogLevel(sequencerName, DEBUG)
+      sequencerActor ! GetComponentLogMetadata(sequencerName, logMetadataProbe.ref)
+
+      val logMetadata = logMetadataProbe.expectMessageType[LogMetadata]
+
+      logMetadata.componentLevel shouldBe DEBUG
     }
   }
 

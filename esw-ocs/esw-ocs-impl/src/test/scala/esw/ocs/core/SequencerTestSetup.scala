@@ -11,10 +11,10 @@ import csw.location.models.ComponentId
 import csw.params.commands.CommandResponse.{Completed, SubmitResponse}
 import csw.params.commands.{Sequence, SequenceCommand}
 import csw.params.core.models.Id
-import esw.ocs.api.models.{SequencerState, Step, StepList}
 import esw.ocs.api.models.SequencerState.{Idle, InProgress}
 import esw.ocs.api.models.messages.SequencerMessages.{Pause, _}
 import esw.ocs.api.models.messages.{LoadSequenceResponse, _}
+import esw.ocs.api.models.{SequencerState, Step, StepList}
 import esw.ocs.dsl.Script
 import org.mockito.Mockito.when
 import org.scalatest.concurrent.Eventually.eventually
@@ -37,8 +37,9 @@ class SequencerTestSetup(sequence: Sequence)(implicit system: ActorSystem[_], ti
   private val crm: CommandResponseManager = mock[CommandResponseManager]
   private val sequencerBehavior           = new SequencerBehavior(componentId, script, locationService, crm)
 
+  val sequencerName = s"SequencerActor${math.random()}"
   val sequencerActor: ActorRef[SequencerMsg] =
-    Await.result(system.systemActorOf(sequencerBehavior.setup, s"SequencerActor${math.random()}"), 5.seconds)
+    Await.result(system.systemActorOf(sequencerBehavior.setup, sequencerName), 5.seconds)
 
   private val completionPromise = Promise[SubmitResponse]()
   mockCommand(sequence.runId, completionPromise.future)

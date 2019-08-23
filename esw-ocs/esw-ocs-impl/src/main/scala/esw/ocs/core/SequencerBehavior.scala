@@ -7,9 +7,11 @@ import akka.actor.typed.{ActorRef, ActorSystem, Behavior}
 import akka.util.Timeout
 import csw.command.client.CommandResponseManager
 import csw.command.client.messages.sequencer.{LoadAndStartSequence, SequencerMsg}
+import csw.command.client.messages.{GetComponentLogMetadata, LogControlMessages, SetComponentLogLevel}
 import csw.location.api.scaladsl.LocationService
 import csw.location.models.ComponentId
 import csw.location.models.Connection.AkkaConnection
+import csw.logging.client.commons.LogAdminUtil
 import csw.params.commands.Sequence
 import esw.ocs.api.codecs.OcsCodecs
 import esw.ocs.api.models.SequencerState._
@@ -194,6 +196,14 @@ class SequencerBehavior(
     goingOffline(data)
   }
 
+  private def handleLogMessages(
+      msg: LogControlMessages
+  ): Behavior[SequencerMsg] = msg match {
+    case GetComponentLogMetadata(componentName, replyTo) => replyTo ! LogAdminUtil.getLogMetadata(componentName); Behaviors.same
+    case SetComponentLogLevel(componentName, logLevel) =>
+      LogAdminUtil.setComponentLogLevel(componentName, logLevel); Behaviors.same
+  }
+
   protected def receive[T <: SequencerMsg: ClassTag](
       state: SequencerState[T],
       data: SequencerData,
@@ -205,6 +215,7 @@ class SequencerBehavior(
 
       msg match {
         case msg: CommonMessage                => handleCommonMessage(msg, state, data, currentBehavior)
+        case msg: LogControlMessages           => handleLogMessages(msg)
         case msg: T                            => f(msg)
         case msg: UnhandleableSequencerMessage => msg.replyTo ! Unhandled(state, msg.getClass.getSimpleName); Behaviors.same
         case LoadAndStartSequence(sequence, replyTo) =>
