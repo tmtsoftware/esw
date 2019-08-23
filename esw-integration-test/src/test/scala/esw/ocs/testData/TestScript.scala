@@ -3,7 +3,7 @@ package esw.ocs.testData
 import csw.params.commands.CommandResponse.{Completed, Error}
 import csw.params.commands.{CommandName, Sequence, Setup}
 import csw.params.core.models.{Id, Prefix}
-import csw.params.events.{EventName, SystemEvent}
+import csw.params.events.{EventKey, EventName, SystemEvent}
 import csw.time.core.models.{TAITime, UTCTime}
 import esw.ocs.dsl.{CswServices, Script}
 
@@ -70,16 +70,29 @@ class TestScript(csw: CswServices) extends Script(csw) {
       eventService.publish(5.seconds)({
         if (true) Some(event)
         else None
-      }, {
+      }, onError = {
         println
       })
 
       eventService.publish(5.seconds, TAITime.now())({
         if (true) Some(event)
         else None
-      }, {
+      }, onError = {
         println
       })
+
+      // ***************************************************
+
+      val subscription = eventService.subscribe(EventKey("TCS.test.event-1")) { event =>
+        println(event)
+      }
+      subscription.ready().await
+
+      // ***************************************************
+
+      val eventsF = eventService.get(EventKey("TCS.test.event-1"))
+      val events  = eventsF.await
+      events.foreach(println)
     }
   }
 }
