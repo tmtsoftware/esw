@@ -589,6 +589,13 @@ class SequencerBehaviorTest extends ScalaTestWithActorTestKit with BaseTestSuite
       mayBeNextAndAssertResponse(None)
     }
 
+    "return None if sequencer is finished" in {
+      val sequencerSetup = SequencerTestSetup.finished(sequence)
+      import sequencerSetup._
+
+      mayBeNextAndAssertResponse(None)
+    }
+
     "return None if there's no pending step to be executed" in {
       val sequencerSetup = SequencerTestSetup.inProgress(Sequence(command1))
       import sequencerSetup._
