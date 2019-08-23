@@ -1,17 +1,22 @@
 package esw.gateway.server2
 
 import akka.NotUsed
+import akka.stream.Materializer
 import akka.stream.scaladsl.Source
 import esw.gateway.api.codecs.RestlessCodecs
 import esw.gateway.api.messages.GatewayWebsocketRequest
 import esw.gateway.api.messages.GatewayWebsocketRequest.{QueryFinal, Subscribe, SubscribeCurrentState, SubscribeWithPattern}
+import esw.gateway.api.{CommandServiceApi, EventServiceApi}
 import mscoket.impl.ToPayload._
 import msocket.api.{Payload, ServerSocket}
 
-class GatewayServerSocket(gatewayContext: GatewayContext) extends ServerSocket[GatewayWebsocketRequest] with RestlessCodecs {
+import scala.concurrent.ExecutionContext
 
-  import gatewayContext._
-  import gatewayContext.cswContext.actorRuntime.{ec, mat}
+class GatewayServerSocket(commandServiceApi: CommandServiceApi, eventServiceApi: EventServiceApi)(
+    implicit ec: ExecutionContext,
+    mat: Materializer
+) extends ServerSocket[GatewayWebsocketRequest]
+    with RestlessCodecs {
 
   override def requestStream(request: GatewayWebsocketRequest): Source[Payload[_], NotUsed] = request match {
     case QueryFinal(componentId, runId) =>
