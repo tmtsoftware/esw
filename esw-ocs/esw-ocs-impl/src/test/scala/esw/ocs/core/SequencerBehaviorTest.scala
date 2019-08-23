@@ -5,7 +5,7 @@ import akka.actor.testkit.typed.scaladsl.{ScalaTestWithActorTestKit, TestProbe}
 
 import scala.concurrent.duration.DurationLong
 import akka.util.Timeout
-import csw.command.client.messages.sequencer.LoadAndStartSequence
+import csw.command.client.messages.sequencer.{LoadAndStartSequence, SequencerMsg}
 import csw.params.commands.CommandResponse.{Completed, Error, SubmitResponse}
 import csw.params.commands.{CommandName, Sequence, Setup}
 import csw.params.core.models.{Id, Prefix}
@@ -15,7 +15,7 @@ import esw.ocs.api.models.StepStatus.{InFlight, Pending}
 import esw.ocs.api.models.messages.EditorError.{CannotOperateOnAnInFlightOrFinishedStep, IdDoesNotExist}
 import esw.ocs.api.models.messages.SequencerMessages.{AbortSequence, AddBreakpoint, _}
 import esw.ocs.api.models.messages._
-import esw.ocs.api.models.{Step, StepList, StepStatus}
+import esw.ocs.api.models.{SequencerState, Step, StepList, StepStatus}
 
 import scala.concurrent.{Future, Promise}
 import scala.util.Success
@@ -583,6 +583,33 @@ class SequencerBehaviorTest extends ScalaTestWithActorTestKit with BaseTestSuite
       import sequencerSetup._
 
       mayBeNextAndAssertResponse(None)
+    }
+  }
+
+  "Update" must {
+    "update the given step with successful response" in {
+      val sequence       = Sequence(command1)
+      val sequencerSetup = SequencerTestSetup.inProgress(sequence)
+      import sequencerSetup._
+
+      val probe = TestProbe[OkOrUnhandledResponse]
+      sequencerActor ! Update(Completed(command1.runId), probe.ref)
+
+      assertCurrentSequence(Some(StepList(sequence.runId, List(Step(command1, Finished(command1.runId), hasBreakpoint = false)))))
+    }
+
+    "update the given step with error response" in {
+      val sequence       = Sequence(command1)
+      val sequencerSetup = SequencerTestSetup.inProgress(sequence)
+      import sequencerSetup._
+
+      val error = Error(command1.runId, "some")
+      val probe = TestProbe[OkOrUnhandledResponse]
+      sequencerActor ! Update(error, probe.ref)
+
+      assertCurrentSequence(
+        Some(StepList(sequence.runId, List(Step(command1, StepStatus.Finished.Failure(error), hasBreakpoint = false))))
+      )
     }
   }
 
