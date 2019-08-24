@@ -7,7 +7,7 @@ import esw.gateway.api.messages.SetAlarmSeverityFailure
 
 import scala.concurrent.Future
 
-trait AlarmServiceApi {
+trait AlarmApi {
 
   def setSeverity(alarmKey: AlarmKey, severity: AlarmSeverity): Future[Either[SetAlarmSeverityFailure, Done]]
 }

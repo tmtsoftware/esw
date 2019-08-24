@@ -7,13 +7,13 @@ import csw.event.api.scaladsl.{EventPublisher, EventService, EventSubscriber, Ev
 import csw.event.client.internal.commons.EventSubscriberUtil
 import csw.params.core.models.Subsystem
 import csw.params.events.{Event, EventKey}
-import esw.gateway.api.EventServiceApi
+import esw.gateway.api.EventApi
 import esw.gateway.api.messages.{EmptyEventKeys, EventError, InvalidMaxFrequency}
 
 import scala.concurrent.{ExecutionContext, Future}
 
-class EventServiceImpl(eventService: EventService, eventSubscriberUtil: EventSubscriberUtil)(implicit ec: ExecutionContext)
-    extends EventServiceApi {
+class EventImpl(eventService: EventService, eventSubscriberUtil: EventSubscriberUtil)(implicit ec: ExecutionContext)
+    extends EventApi {
 
   lazy val subscriber: EventSubscriber = eventService.defaultSubscriber
   lazy val publisher: EventPublisher   = eventService.defaultPublisher

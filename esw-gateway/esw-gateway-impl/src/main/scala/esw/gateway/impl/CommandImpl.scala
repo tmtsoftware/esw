@@ -9,7 +9,7 @@ import csw.params.commands.CommandResponse.SubmitResponse
 import csw.params.commands.{CommandResponse, ControlCommand}
 import csw.params.core.models.Id
 import csw.params.core.states.{CurrentState, StateName}
-import esw.gateway.api.CommandServiceApi
+import esw.gateway.api.CommandApi
 import esw.gateway.api.messages.CommandAction.{Oneway, Submit, Validate}
 import esw.gateway.api.messages.{CommandAction, CommandError, InvalidComponent, InvalidMaxFrequency}
 
@@ -18,10 +18,10 @@ import scala.concurrent.{ExecutionContext, Future}
 import scala.util.control.NonFatal
 
 //fixme: Inject commandService from eswUtils later
-class CommandServiceImpl(commandService: (String, ComponentType) => Future[CommandService])(
+class CommandImpl(commandService: (String, ComponentType) => Future[CommandService])(
     implicit ec: ExecutionContext,
     timeout: Timeout
-) extends CommandServiceApi {
+) extends CommandApi {
 
   def process(
       componentId: ComponentId,

@@ -6,7 +6,7 @@ import csw.params.commands.CommandResponse.SubmitResponse
 import csw.params.commands.{CommandResponse, ControlCommand}
 import csw.params.core.models.Id
 import csw.params.core.states.{CurrentState, StateName}
-import esw.gateway.api.CommandServiceApi
+import esw.gateway.api.CommandApi
 import esw.gateway.api.codecs.RestlessCodecs
 import esw.gateway.api.messages.PostRequest.CommandRequest
 import esw.gateway.api.messages.WebsocketRequest.{QueryFinal, SubscribeCurrentState}
@@ -16,7 +16,7 @@ import msocket.api.{WebsocketClient, PostClient}
 import scala.concurrent.Future
 
 class CommandClient(postClient: PostClient, websocketClient: WebsocketClient[WebsocketRequest])
-    extends CommandServiceApi
+    extends CommandApi
     with RestlessCodecs {
 
   override def process(

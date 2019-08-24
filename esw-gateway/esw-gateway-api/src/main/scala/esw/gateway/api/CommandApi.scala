@@ -10,7 +10,7 @@ import esw.gateway.api.messages.{CommandAction, CommandError, InvalidComponent}
 
 import scala.concurrent.Future
 
-trait CommandServiceApi {
+trait CommandApi {
 
   def process(
       componentId: ComponentId,

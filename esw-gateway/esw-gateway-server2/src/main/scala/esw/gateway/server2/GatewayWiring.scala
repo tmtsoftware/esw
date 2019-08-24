@@ -4,8 +4,8 @@ import akka.http.scaladsl.server.StandardRoute
 import akka.util.Timeout
 import esw.gateway.api.codecs.RestlessCodecs
 import esw.gateway.api.messages.{PostRequest, WebsocketRequest}
-import esw.gateway.api.{AlarmServiceApi, CommandServiceApi, EventServiceApi}
-import esw.gateway.impl.{AlarmServiceImpl, CommandServiceImpl, EventServiceImpl}
+import esw.gateway.api.{AlarmApi, CommandApi, EventApi}
+import esw.gateway.impl.{AlarmImpl, CommandImpl, EventImpl}
 import esw.http.core.wiring.{HttpService, ServerWiring}
 import mscoket.impl.RoutesFactory
 import msocket.api.{PostHandler, WebsocketHandler}
@@ -19,14 +19,14 @@ class GatewayWiring(_port: Option[Int] = None) extends RestlessCodecs {
   import cswCtx.{actorRuntime, _}
   implicit val timeout: Timeout = 10.seconds
 
-  lazy val alarmServiceApi: AlarmServiceApi     = new AlarmServiceImpl(alarmService)
-  lazy val eventServiceApi: EventServiceApi     = new EventServiceImpl(eventService, eventSubscriberUtil)
-  lazy val commandServiceApi: CommandServiceApi = new CommandServiceImpl(componentFactory.commandService)
+  lazy val alarmApi: AlarmApi     = new AlarmImpl(alarmService)
+  lazy val eventApi: EventApi     = new EventImpl(eventService, eventSubscriberUtil)
+  lazy val commandApi: CommandApi = new CommandImpl(componentFactory.commandService)
 
   lazy val httpHandler: PostHandler[PostRequest, StandardRoute] =
-    new PostHandlerImpl(alarmServiceApi, commandServiceApi, eventServiceApi)
+    new PostHandlerImpl(alarmApi, commandApi, eventApi)
   lazy val websocketHandler: WebsocketHandler[WebsocketRequest] =
-    new WebsocketHandlerImpl(commandServiceApi, eventServiceApi)
+    new WebsocketHandlerImpl(commandApi, eventApi)
 
   lazy val routesFactory: RoutesFactory[PostRequest, WebsocketRequest] = new RoutesFactory(httpHandler, websocketHandler)
   lazy val httpService                                                 = new HttpService(logger, locationService, routesFactory.route, settings, actorRuntime)

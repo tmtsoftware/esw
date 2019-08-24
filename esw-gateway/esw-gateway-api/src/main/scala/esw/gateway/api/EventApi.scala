@@ -8,7 +8,7 @@ import esw.gateway.api.messages.{EmptyEventKeys, EventError, InvalidMaxFrequency
 
 import scala.concurrent.Future
 
-trait EventServiceApi {
+trait EventApi {
   def publish(event: Event): Future[Done]
   def get(eventKeys: Set[EventKey]): Future[Either[EmptyEventKeys, Set[Event]]]
   def subscribe(eventKeys: Set[EventKey], maxFrequency: Option[Int]): Source[Event, Future[Option[EventError]]]
