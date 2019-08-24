@@ -4,21 +4,21 @@ import akka.NotUsed
 import akka.stream.Materializer
 import akka.stream.scaladsl.Source
 import esw.gateway.api.codecs.RestlessCodecs
-import esw.gateway.api.messages.GatewayWebsocketRequest
-import esw.gateway.api.messages.GatewayWebsocketRequest.{QueryFinal, Subscribe, SubscribeCurrentState, SubscribeWithPattern}
+import esw.gateway.api.messages.WebsocketRequest
+import esw.gateway.api.messages.WebsocketRequest.{QueryFinal, Subscribe, SubscribeCurrentState, SubscribeWithPattern}
 import esw.gateway.api.{CommandServiceApi, EventServiceApi}
 import mscoket.impl.ToPayload._
-import msocket.api.{Payload, ServerSocket}
+import msocket.api.{Payload, WebsocketHandler}
 
 import scala.concurrent.ExecutionContext
 
-class GatewayServerSocket(commandServiceApi: CommandServiceApi, eventServiceApi: EventServiceApi)(
+class WebsocketHandlerImpl(commandServiceApi: CommandServiceApi, eventServiceApi: EventServiceApi)(
     implicit ec: ExecutionContext,
     mat: Materializer
-) extends ServerSocket[GatewayWebsocketRequest]
+) extends WebsocketHandler[WebsocketRequest]
     with RestlessCodecs {
 
-  override def requestStream(request: GatewayWebsocketRequest): Source[Payload[_], NotUsed] = request match {
+  override def handle(request: WebsocketRequest): Source[Payload[_], NotUsed] = request match {
     case QueryFinal(componentId, runId) =>
       commandServiceApi.queryFinal(componentId, runId).payload
     case SubscribeCurrentState(componentId, stateNames, maxFrequency) =>

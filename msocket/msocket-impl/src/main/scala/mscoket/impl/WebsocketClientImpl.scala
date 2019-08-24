@@ -6,17 +6,17 @@ import akka.http.scaladsl.model.ws.{BinaryMessage, TextMessage, WebSocketRequest
 import akka.stream.scaladsl.{Sink, Source}
 import akka.stream.{ActorMaterializer, Materializer}
 import io.bullet.borer.{Decoder, Encoder}
-import msocket.api.{ClientSocket, Payload, Result}
+import msocket.api.{WebsocketClient, Payload, Result}
 import msocket.api.Result.{Error, Success}
 
 import scala.concurrent.Future
 
-class ClientSocketImpl[Req: Encoder](baseUri: String, encoding: Encoding)(implicit actorSystem: ActorSystem)
-    extends ClientSocket[Req] {
+class WebsocketClientImpl[Req: Encoder](baseUri: String, encoding: Encoding)(implicit actorSystem: ActorSystem)
+    extends WebsocketClient[Req] {
 
   implicit lazy val matL: Materializer = ActorMaterializer()
 
-  private val setup = new ClientSocketSetup(WebSocketRequest(s"$baseUri/${encoding.Name}"))
+  private val setup = new WebsocketClientSetup(WebSocketRequest(s"$baseUri/${encoding.Name}"))
 
   override def requestStream[Res: Decoder: Encoder](request: Req): Source[Res, NotUsed] = {
     setup

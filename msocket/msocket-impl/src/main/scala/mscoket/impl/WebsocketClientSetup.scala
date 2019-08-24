@@ -7,7 +7,7 @@ import akka.http.scaladsl.model.ws.{Message, WebSocketRequest}
 import akka.stream.scaladsl.{Flow, Sink, Source}
 import akka.stream.{ActorMaterializer, Materializer}
 
-class ClientSocketSetup(webSocketRequest: WebSocketRequest)(implicit actorSystem: ActorSystem) {
+class WebsocketClientSetup(webSocketRequest: WebSocketRequest)(implicit actorSystem: ActorSystem) {
   implicit val mat: Materializer = ActorMaterializer()
   import mat.executionContext
 

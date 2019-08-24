@@ -9,8 +9,6 @@ import csw.params.core.models.Subsystem
 import csw.params.events.{Event, EventKey}
 import esw.gateway.api.EventServiceApi
 import esw.gateway.api.messages.{EmptyEventKeys, EventError, InvalidMaxFrequency}
-import esw.gateway.impl.syntax.SourceExtension
-import esw.gateway.impl.utils.Utils
 
 import scala.concurrent.{ExecutionContext, Future}
 
@@ -31,14 +29,14 @@ class EventServiceImpl(eventService: EventService, eventSubscriberUtil: EventSub
 
     if (eventKeys.nonEmpty) {
       maxFrequency match {
-        case Some(x) if x <= 0 => SourceExtension.emptyWithError(InvalidMaxFrequency())
+        case Some(x) if x <= 0 => Utils.emptySourceWithError(InvalidMaxFrequency())
         case Some(frequency) =>
           subscriber
             .subscribe(eventKeys, Utils.maxFrequencyToDuration(frequency), RateLimiterMode)
             .mapMaterializedValue(_ => Future.successful(None))
         case None => subscriber.subscribe(eventKeys).mapMaterializedValue(_ => Future.successful(None))
       }
-    } else SourceExtension.emptyWithError(EmptyEventKeys())
+    } else Utils.emptySourceWithError(EmptyEventKeys())
   }
 
   def pSubscribe(
@@ -49,7 +47,7 @@ class EventServiceImpl(eventService: EventService, eventSubscriberUtil: EventSub
 
     def events: Source[Event, EventSubscription] = subscriber.pSubscribe(subsystem, pattern)
     maxFrequency match {
-      case Some(x) if x <= 0 => SourceExtension.emptyWithError(InvalidMaxFrequency())
+      case Some(x) if x <= 0 => Utils.emptySourceWithError(InvalidMaxFrequency())
       case Some(f) =>
         events
           .via(eventSubscriberUtil.subscriptionModeStage(Utils.maxFrequencyToDuration(f), RateLimiterMode))

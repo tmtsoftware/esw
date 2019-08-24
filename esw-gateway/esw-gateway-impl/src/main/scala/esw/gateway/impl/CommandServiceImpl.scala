@@ -12,7 +12,6 @@ import csw.params.core.states.{CurrentState, StateName}
 import esw.gateway.api.CommandServiceApi
 import esw.gateway.api.messages.CommandAction.{Oneway, Submit, Validate}
 import esw.gateway.api.messages.{CommandAction, CommandError, InvalidComponent, InvalidMaxFrequency}
-import esw.gateway.impl.syntax.SourceExtension
 
 import scala.concurrent.duration.DurationInt
 import scala.concurrent.{ExecutionContext, Future}
@@ -64,14 +63,14 @@ class CommandServiceImpl(commandService: (String, ComponentType) => Future[Comma
           commandService(componentId.name, componentId.componentType)
             .map(_.subscribeCurrentState(stateNames).mapMaterializedValue(_ => Future.successful(None)))
             .recover {
-              case NonFatal(ex) => SourceExtension.emptyWithError(InvalidComponent(ex.getMessage))
+              case NonFatal(ex) => Utils.emptySourceWithError(InvalidComponent(ex.getMessage))
             }
         )
         .mapMaterializedValue(_.flatten)
     }
 
     maxFrequency match {
-      case Some(x) if x <= 0 => SourceExtension.emptyWithError(InvalidMaxFrequency())
+      case Some(x) if x <= 0 => Utils.emptySourceWithError(InvalidMaxFrequency())
       case Some(frequency)   => currentStateSource.buffer(1, OverflowStrategy.dropHead).throttle(frequency, 1.seconds)
       case None              => currentStateSource
     }

@@ -1,13 +1,12 @@
 package mscoket.impl
 
-import akka.Done
 import akka.http.scaladsl.marshalling.{Marshaller, ToEntityMarshaller}
 import akka.http.scaladsl.model.MediaTypes.`application/json`
 import akka.http.scaladsl.model.{ContentTypeRange, MediaType}
 import akka.http.scaladsl.unmarshalling.{FromEntityUnmarshaller, Unmarshaller}
 import akka.util.ByteString
 import io.bullet.borer.compat.akka._
-import io.bullet.borer.{Codec, Decoder, Encoder, Json}
+import io.bullet.borer.{Decoder, Encoder, Json}
 
 import scala.collection.immutable.Seq
 
@@ -27,6 +26,4 @@ trait HttpCodecs {
       .oneOf(mediaTypes: _*)(Marshaller.byteStringMarshaller(_))
       .compose(Json.encode(_).to[ByteString].result)
   }
-
-  implicit lazy val doneCodec: Codec[Done] = Codec.bimap[String, Done](_ => "done", _ => Done)
 }
