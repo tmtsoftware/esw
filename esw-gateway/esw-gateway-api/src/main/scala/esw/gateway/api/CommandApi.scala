@@ -19,6 +19,7 @@ trait CommandApi {
   ): Future[Either[InvalidComponent, CommandResponse]]
 
   def queryFinal(componentId: ComponentId, runId: Id): Future[Either[InvalidComponent, SubmitResponse]]
+
   def subscribeCurrentState(
       componentId: ComponentId,
       stateNames: Set[StateName],

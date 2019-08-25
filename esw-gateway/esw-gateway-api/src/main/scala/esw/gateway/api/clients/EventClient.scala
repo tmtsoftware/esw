@@ -32,7 +32,7 @@ class EventClient(postClient: PostClient, websocketClient: WebsocketClient[Webso
   override def pSubscribe(
       subsystem: Subsystem,
       maxFrequency: Option[Int],
-      pattern: String
+      pattern: String = "*"
   ): Source[Event, Future[Option[InvalidMaxFrequency]]] = {
     websocketClient.requestStreamWithError[Event, InvalidMaxFrequency](SubscribeWithPattern(subsystem, maxFrequency, pattern))
   }
