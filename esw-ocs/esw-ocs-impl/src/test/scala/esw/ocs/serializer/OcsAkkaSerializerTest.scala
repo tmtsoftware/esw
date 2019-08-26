@@ -21,7 +21,6 @@ import esw.ocs.api.models.{Step, StepList}
 import esw.ocs.core.messages.SequenceComponentMsg.{GetStatus, LoadScript, UnloadScript}
 import esw.ocs.core.messages.SequencerMessages._
 import esw.ocs.core.messages.SequencerState.Idle
-import esw.ocs.core.messages.UnhandledResponse
 import org.scalatest.Assertion
 import org.scalatest.prop.TableDrivenPropertyChecks.forAll
 import org.scalatest.prop.Tables.Table
@@ -117,7 +116,7 @@ class OcsAkkaSerializerTest extends ScalaTestWithActorTestKit with BaseTestSuite
         Ok,
         PullNextResult(step),
         SequenceResult(Completed(Id())),
-        UnhandledResponse(Idle, "GoOnline"),
+        Unhandled(Idle.entryName, "GoOnline"),
         DuplicateIdsFound,
         GoOnlineHookFailed,
         CannotOperateOnAnInFlightOrFinishedStep,

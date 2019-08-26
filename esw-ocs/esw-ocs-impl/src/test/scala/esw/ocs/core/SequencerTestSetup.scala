@@ -21,7 +21,6 @@ import org.mockito.Mockito.when
 import org.scalatest.concurrent.Eventually.eventually
 import org.scalatest.{Assertion, Matchers}
 import org.scalatestplus.mockito.MockitoSugar
-import esw.ocs.core.messages.UnhandledResponse
 
 import scala.concurrent.duration.DurationLong
 import scala.concurrent.{Await, ExecutionContext, Future, Promise}
@@ -188,7 +187,7 @@ class SequencerTestSetup(sequence: Sequence)(implicit system: ActorSystem[_], ti
     val probe            = TestProbe[T]
     val sequencerMessage = msg(probe.ref)
     sequencerActor ! sequencerMessage
-    probe.expectMessage(UnhandledResponse(state, sequencerMessage.getClass.getSimpleName))
+    probe.expectMessage(Unhandled(state.entryName, sequencerMessage.getClass.getSimpleName))
   }
 
   def assertUnhandled[T >: Unhandled <: EswSequencerResponse](

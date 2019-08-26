@@ -8,10 +8,9 @@ import csw.params.core.models.{Id, Prefix}
 import esw.ocs.api.BaseTestSuite
 import esw.ocs.api.models.StepList
 import esw.ocs.api.models.responses.EditorError.{CannotOperateOnAnInFlightOrFinishedStep, IdDoesNotExist}
-import esw.ocs.api.models.responses.{GoOnlineHookFailed, Ok}
+import esw.ocs.api.models.responses.{GoOnlineHookFailed, Ok, Unhandled}
 import esw.ocs.core.messages.SequencerMessages._
 import esw.ocs.core.messages.SequencerState.{Idle, InProgress, Loaded, Offline}
-import esw.ocs.core.messages.UnhandledResponse
 
 class SequenceAdminImplTest extends ScalaTestWithActorTestKit with BaseTestSuite {
   private val command = Setup(Prefix("esw.test"), CommandName("command-1"), None)
@@ -20,17 +19,17 @@ class SequenceAdminImplTest extends ScalaTestWithActorTestKit with BaseTestSuite
   private val getStateResponse         = Loaded
   private val addResponse              = Ok
   private val pauseResponse            = CannotOperateOnAnInFlightOrFinishedStep
-  private val prependResponse          = UnhandledResponse(Offline, "Prepend")
-  private val resumeResponse           = UnhandledResponse(Idle, "Resume")
+  private val prependResponse          = Unhandled(Offline.entryName, "Prepend")
+  private val resumeResponse           = Unhandled(Idle.entryName, "Resume")
   private val removeBreakpointResponse = IdDoesNotExist(Id())
   private val replaceResponse          = CannotOperateOnAnInFlightOrFinishedStep
   private val insertAfterResponse      = Ok
   private val resetResponse            = Ok
-  private val abortResponse            = UnhandledResponse(InProgress, "AbortSequence")
+  private val abortResponse            = Unhandled(InProgress.entryName, "AbortSequence")
   private val deleteResponse           = IdDoesNotExist(Id())
-  private val addBreakpointResponse    = UnhandledResponse(Idle, "AddBreakpoint")
+  private val addBreakpointResponse    = Unhandled(Idle.entryName, "AddBreakpoint")
   private val goOnlineResponse         = GoOnlineHookFailed
-  private val goOfflineResponse        = UnhandledResponse(Offline, "Offline")
+  private val goOfflineResponse        = Unhandled(Offline.entryName, "Offline")
 
   private val mockedBehavior: Behaviors.Receive[SequencerMsg] =
     Behaviors.receiveMessage[SequencerMsg] { msg =>

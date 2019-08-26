@@ -30,7 +30,6 @@ import esw.ocs.core.messages.SequencerState.{
 }
 import esw.ocs.dsl.ScriptDsl
 import esw.ocs.internal.Timeouts
-import esw.ocs.core.messages.UnhandledResponse
 
 import scala.concurrent.Future
 import scala.reflect.ClassTag
@@ -229,7 +228,7 @@ class SequencerBehavior(
         case msg: LogControlMessages => handleLogMessages(msg)
         case msg: T                  => f(msg)
         case msg: UnhandleableSequencerMessage =>
-          msg.replyTo ! UnhandledResponse(state, msg.getClass.getSimpleName); Behaviors.same
+          msg.replyTo ! Unhandled(state.entryName, msg.getClass.getSimpleName); Behaviors.same
         case LoadAndStartSequence(sequence, replyTo) =>
           val sequenceResponseF: Future[SequenceResponse] = ctx.self ? (LoadAndStartSequenceInternal(sequence, _))
           sequenceResponseF.foreach(res => replyTo ! res.toSubmitResponse(sequence.runId))

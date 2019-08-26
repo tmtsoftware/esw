@@ -43,6 +43,15 @@ case class Unhandled private[ocs] (state: String, messageType: String, msg: Stri
     with SequenceResponse
     with PullNextResponse
 
+object Unhandled {
+  def apply(state: String, messageType: String): Unhandled =
+    new Unhandled(state, messageType, s"Sequencer can not accept '$messageType' message in '$state' state")
+
+  private[ocs] def apply(state: String, messageType: String, description: String): Unhandled = {
+    new Unhandled(state, messageType, s"Sequencer can not accept '$messageType' message in '$state' state")
+  }
+}
+
 trait SingletonError {
   def msg: String
 }
