@@ -4,13 +4,10 @@ object Dependencies {
 
   val OcsApi: Def.Initialize[Seq[ModuleID]] = Def.setting(
     Seq(
-      Akka.`akka-actor-typed`,
       Csw.`csw-params`.value,
       Csw.`csw-location-api`,
       Csw.`csw-command-client`,
-      Libs.`enumeratum`.value,
       Libs.scalatest                  % Test,
-      Akka.`akka-actor-testkit-typed` % Test,
       Libs.`mockito-scala`            % Test
     )
   )
@@ -21,6 +18,7 @@ object Dependencies {
       Akka.`akka-actor-typed`,
       Akka.`akka-stream-typed`,
       Libs.`scala-async`,
+      Libs.`enumeratum`.value,
       Libs.scalatest                  % Test,
       Akka.`akka-actor-testkit-typed` % Test,
       Libs.`mockito-scala`            % Test
