@@ -36,14 +36,14 @@ lazy val `esw-ocs` = project
 lazy val `esw-ocs-api` = crossProject(JSPlatform, JVMPlatform)
   .crossType(CrossType.Pure)
   .in(file("esw-ocs/esw-ocs-api"))
-  .enablePlugins(MaybeCoverage)
   .settings(fork := false)
   .settings(
     libraryDependencies ++= Dependencies.OcsApi.value
   )
 
-lazy val `esw-ocs-api-js`  = `esw-ocs-api`.js
+lazy val `esw-ocs-api-js` = `esw-ocs-api`.js
 lazy val `esw-ocs-api-jvm` = `esw-ocs-api`.jvm
+  .enablePlugins(MaybeCoverage)
 
 lazy val `esw-ocs-impl` = project
   .in(file("esw-ocs/esw-ocs-impl"))
