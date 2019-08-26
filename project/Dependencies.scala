@@ -5,8 +5,7 @@ object Dependencies {
   val OcsApi: Def.Initialize[Seq[ModuleID]] = Def.setting(
     Seq(
       Csw.`csw-params`.value,
-      Csw.`csw-location-api`,
-      Csw.`csw-command-client`,
+      Csw.`csw-location-models`,
       Libs.scalatest                  % Test,
       Libs.`mockito-scala`            % Test
     )

@@ -14,8 +14,8 @@ import csw.params.core.models.Id
 import esw.ocs.api.models.responses.{LoadSequenceResponse, _}
 import esw.ocs.api.models.{Step, StepList}
 import esw.ocs.core.messages.SequencerMessages.{Pause, _}
-import esw.ocs.core.messages.SequencerState.{Idle, InProgress}
 import esw.ocs.core.messages.SequencerState
+import esw.ocs.core.messages.SequencerState.{Idle, InProgress}
 import esw.ocs.dsl.Script
 import org.mockito.Mockito.when
 import org.scalatest.concurrent.Eventually._
