@@ -115,7 +115,6 @@ lazy val `msocket-impl` = project
 
 //fixme: add coverage plugin
 lazy val `esw-gateway` = project
-  .in(file("esw-gateway"))
   .aggregate(
     `esw-gateway-api`,
     `esw-gateway-impl`,

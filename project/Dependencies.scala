@@ -94,14 +94,14 @@ object Dependencies {
     Seq(
       Akka.`akka-stream`,
       Borer.`borer-core`,
-      Borer.`borer-derivation`,
-      Borer.`borer-compat-akka`
+      Borer.`borer-derivation`
     )
   )
 
   val MsocketImpl: Def.Initialize[Seq[ModuleID]] = Def.setting(
     Seq(
-      AkkaHttp.`akka-http`
+      AkkaHttp.`akka-http`,
+      Borer.`borer-compat-akka`
     )
   )
 
