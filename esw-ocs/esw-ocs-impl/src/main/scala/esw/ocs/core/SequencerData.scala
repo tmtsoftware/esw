@@ -36,7 +36,7 @@ private[core] case class SequencerData(
 
   def startSequence(replyTo: ActorRef[SequenceResponse]): SequencerData = {
     val newState = sendNextPendingStepIfAvailable(this)
-    newState.readyToExecuteSubscriber.foreach(_ ! Ok) //fixme: make it none after replying
+    newState.notifyReadyToExecuteNextSubscriber(InProgress)
     updateSequenceInCrmAndHandleFinalResponse(replyTo)
     newState
   }

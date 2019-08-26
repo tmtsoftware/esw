@@ -14,11 +14,11 @@ import csw.params.core.models.Id
 import esw.ocs.api.models.responses.{LoadSequenceResponse, _}
 import esw.ocs.api.models.{Step, StepList}
 import esw.ocs.core.messages.SequencerMessages.{Pause, _}
-import esw.ocs.core.messages.SequencerState
 import esw.ocs.core.messages.SequencerState.{Idle, InProgress}
+import esw.ocs.core.messages.{SequencerState, UnhandledResponse}
 import esw.ocs.dsl.Script
 import org.mockito.Mockito.when
-import org.scalatest.concurrent.Eventually.eventually
+import org.scalatest.concurrent.Eventually._
 import org.scalatest.{Assertion, Matchers}
 import org.scalatestplus.mockito.MockitoSugar
 
@@ -30,7 +30,8 @@ class SequencerTestSetup(sequence: Sequence)(implicit system: ActorSystem[_], ti
   import Matchers._
   import MockitoSugar._
 
-  implicit val ec: ExecutionContext = system.executionContext
+  implicit private val patienceConfig: PatienceConfig = PatienceConfig(5.seconds)
+  implicit val ec: ExecutionContext                   = system.executionContext
 
   private val componentId                 = mock[ComponentId]
   private val script                      = mock[Script]
