@@ -16,10 +16,10 @@ import csw.params.commands.{CommandName, Sequence, Setup}
 import csw.params.core.models.Prefix
 import csw.testkit.scaladsl.ScalaTestFrameworkTestKit
 import esw.ocs.api.BaseTestSuite
-import esw.ocs.api.models.messages.SequenceComponentMsg
-import esw.ocs.api.models.messages.SequenceComponentMsg.{LoadScript, UnloadScript}
-import esw.ocs.api.models.messages.SequenceComponentResponse.LoadScriptResponse
+import esw.ocs.api.models.responses.SequenceComponentResponse.LoadScriptResponse
 import esw.ocs.app.SequencerAppCommand.{SequenceComponent, Sequencer}
+import esw.ocs.core.messages.SequenceComponentMsg
+import esw.ocs.core.messages.SequenceComponentMsg.{LoadScript, UnloadScript}
 import esw.ocs.exceptions.ScriptLoadingException.ScriptNotFound
 
 import scala.concurrent.Future

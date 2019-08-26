@@ -1,4 +1,4 @@
-package esw.ocs.api.serializer
+package esw.ocs.serializer
 
 import java.net.URI
 
@@ -13,13 +13,15 @@ import csw.params.commands.CommandResponse.Completed
 import csw.params.commands._
 import csw.params.core.models.{Id, Prefix}
 import esw.ocs.api.BaseTestSuite
-import esw.ocs.api.models.SequencerState.Idle
-import esw.ocs.api.models.messages.EditorError._
-import esw.ocs.api.models.messages.SequenceComponentMsg.{GetStatus, LoadScript, UnloadScript}
-import esw.ocs.api.models.messages.SequenceComponentResponse.{GetStatusResponse, LoadScriptResponse}
-import esw.ocs.api.models.messages.SequencerMessages._
-import esw.ocs.api.models.messages._
+import esw.ocs.api.codecs.OcsAkkaSerializable
+import esw.ocs.api.models.responses.EditorError._
+import esw.ocs.api.models.responses.SequenceComponentResponse.{GetStatusResponse, LoadScriptResponse}
+import esw.ocs.api.models.responses._
 import esw.ocs.api.models.{Step, StepList}
+import esw.ocs.core.messages.SequenceComponentMsg.{GetStatus, LoadScript, UnloadScript}
+import esw.ocs.core.messages.SequencerMessages._
+import esw.ocs.core.messages.SequencerState.Idle
+import esw.ocs.core.messages.UnhandledResponse
 import org.scalatest.Assertion
 import org.scalatest.prop.TableDrivenPropertyChecks.forAll
 import org.scalatest.prop.Tables.Table
@@ -115,7 +117,7 @@ class OcsAkkaSerializerTest extends ScalaTestWithActorTestKit with BaseTestSuite
         Ok,
         PullNextResult(step),
         SequenceResult(Completed(Id())),
-        Unhandled(Idle, "GoOnline"),
+        UnhandledResponse(Idle, "GoOnline"),
         DuplicateIdsFound,
         GoOnlineHookFailed,
         CannotOperateOnAnInFlightOrFinishedStep,

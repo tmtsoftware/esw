@@ -11,15 +11,17 @@ import csw.location.models.ComponentId
 import csw.params.commands.CommandResponse.{Completed, SubmitResponse}
 import csw.params.commands.{Sequence, SequenceCommand}
 import csw.params.core.models.Id
-import esw.ocs.api.models.SequencerState.{Idle, InProgress}
-import esw.ocs.api.models.messages.SequencerMessages.{Pause, _}
-import esw.ocs.api.models.messages.{LoadSequenceResponse, _}
-import esw.ocs.api.models.{SequencerState, Step, StepList}
+import esw.ocs.api.models.responses.{LoadSequenceResponse, _}
+import esw.ocs.api.models.{Step, StepList}
+import esw.ocs.core.messages.SequencerMessages.{Pause, _}
+import esw.ocs.core.messages.SequencerState
+import esw.ocs.core.messages.SequencerState.{Idle, InProgress}
 import esw.ocs.dsl.Script
 import org.mockito.Mockito.when
 import org.scalatest.concurrent.Eventually.eventually
 import org.scalatest.{Assertion, Matchers}
 import org.scalatestplus.mockito.MockitoSugar
+import esw.ocs.core.messages.UnhandledResponse
 
 import scala.concurrent.duration.DurationLong
 import scala.concurrent.{Await, ExecutionContext, Future, Promise}
@@ -186,7 +188,7 @@ class SequencerTestSetup(sequence: Sequence)(implicit system: ActorSystem[_], ti
     val probe            = TestProbe[T]
     val sequencerMessage = msg(probe.ref)
     sequencerActor ! sequencerMessage
-    probe.expectMessage(Unhandled(state, sequencerMessage.getClass.getSimpleName))
+    probe.expectMessage(UnhandledResponse(state, sequencerMessage.getClass.getSimpleName))
   }
 
   def assertUnhandled[T >: Unhandled <: EswSequencerResponse](

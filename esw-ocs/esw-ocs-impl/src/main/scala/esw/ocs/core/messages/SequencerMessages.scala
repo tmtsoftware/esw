@@ -1,12 +1,13 @@
-package esw.ocs.api.models.messages
+package esw.ocs.core.messages
 
 import akka.actor.typed.ActorRef
 import csw.command.client.messages.sequencer.SequencerMsg
 import csw.params.commands.CommandResponse.SubmitResponse
 import csw.params.commands.{Sequence, SequenceCommand}
 import csw.params.core.models.Id
-import esw.ocs.api.models.{SequencerState, Step, StepList}
-import esw.ocs.api.serializer.OcsAkkaSerializable
+import esw.ocs.api.codecs.OcsAkkaSerializable
+import esw.ocs.api.models.responses._
+import esw.ocs.api.models.{Step, StepList}
 
 object SequencerMessages {
 

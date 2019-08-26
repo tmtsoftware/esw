@@ -9,9 +9,10 @@ import csw.location.models.{AkkaLocation, ComponentId, ComponentType, Location}
 import csw.logging.client.scaladsl.LoggerFactory
 import csw.testkit.scaladsl.ScalaTestFrameworkTestKit
 import esw.ocs.api.BaseTestSuite
-import esw.ocs.api.models.messages.SequenceComponentMsg._
-import esw.ocs.api.models.messages.SequenceComponentResponse.{GetStatusResponse, LoadScriptResponse}
-import esw.ocs.api.models.messages.{RegistrationError, SequenceComponentMsg}
+import esw.ocs.api.models.responses.RegistrationError
+import esw.ocs.api.models.responses.SequenceComponentResponse.{GetStatusResponse, LoadScriptResponse}
+import esw.ocs.core.messages.SequenceComponentMsg
+import esw.ocs.core.messages.SequenceComponentMsg.{GetStatus, LoadScript, Stop, UnloadScript}
 
 import scala.concurrent.duration.DurationLong
 

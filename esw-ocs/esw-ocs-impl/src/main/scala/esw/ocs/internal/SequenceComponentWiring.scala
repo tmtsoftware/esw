@@ -6,8 +6,9 @@ import akka.actor.typed.scaladsl.AskPattern.Askable
 import csw.framework.internal.wiring.ActorRuntime
 import csw.location.models.AkkaLocation
 import csw.params.core.models.Prefix
-import esw.ocs.api.models.messages.{RegistrationError, SequenceComponentMsg}
+import esw.ocs.api.models.responses.RegistrationError
 import esw.ocs.core.SequenceComponentBehavior
+import esw.ocs.core.messages.SequenceComponentMsg
 import esw.ocs.syntax.FutureSyntax.FutureOps
 
 // $COVERAGE-OFF$

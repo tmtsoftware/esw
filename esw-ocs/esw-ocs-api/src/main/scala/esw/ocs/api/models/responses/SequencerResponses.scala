@@ -1,10 +1,9 @@
-package esw.ocs.api.models.messages
+package esw.ocs.api.models.responses
 
-import csw.command.client.messages.sequencer.SequencerMsg
 import csw.params.commands.CommandResponse.{Error, SubmitResponse}
 import csw.params.core.models.Id
-import esw.ocs.api.models.{SequencerState, Step}
-import esw.ocs.api.serializer.OcsAkkaSerializable
+import esw.ocs.api.codecs.OcsAkkaSerializable
+import esw.ocs.api.models.Step
 
 sealed trait EswSequencerResponse     extends OcsAkkaSerializable
 sealed trait OkOrUnhandledResponse    extends EswSequencerResponse // fixme: think about better name
@@ -34,7 +33,7 @@ case object Ok
 case class PullNextResult(step: Step)                     extends PullNextResponse
 case class SequenceResult(submitResponse: SubmitResponse) extends SequenceResponse
 
-case class Unhandled private[ocs] (state: SequencerState[SequencerMsg], messageType: String, msg: String)
+case class Unhandled private[ocs] (state: String, messageType: String, msg: String)
     extends OkOrUnhandledResponse
     with GenericResponse
     with PauseResponse
@@ -43,15 +42,6 @@ case class Unhandled private[ocs] (state: SequencerState[SequencerMsg], messageT
     with GoOnlineResponse
     with SequenceResponse
     with PullNextResponse
-
-object Unhandled {
-  def apply(state: SequencerState[SequencerMsg], messageType: String): Unhandled =
-    new Unhandled(state, messageType, s"Sequencer can not accept '$messageType' message in '$state' state")
-
-  private[ocs] def apply(state: SequencerState[SequencerMsg], messageType: String, description: String): Unhandled = {
-    new Unhandled(state, messageType, s"Sequencer can not accept '$messageType' message in '$state' state")
-  }
-}
 
 trait SingletonError {
   def msg: String

@@ -11,12 +11,12 @@ import csw.params.commands.CommandResponse.{Completed, Error, SubmitResponse}
 import csw.params.commands.{CommandName, Sequence, Setup}
 import csw.params.core.models.{Id, Prefix}
 import esw.ocs.api.BaseTestSuite
-import esw.ocs.api.models.SequencerState.{Idle, InProgress, Loaded, Offline}
 import esw.ocs.api.models.StepStatus.{InFlight, Pending}
-import esw.ocs.api.models.messages.EditorError.{CannotOperateOnAnInFlightOrFinishedStep, IdDoesNotExist}
-import esw.ocs.api.models.messages.SequencerMessages.{AbortSequence, AddBreakpoint, _}
-import esw.ocs.api.models.messages._
+import esw.ocs.api.models.responses.EditorError.{CannotOperateOnAnInFlightOrFinishedStep, IdDoesNotExist}
+import esw.ocs.api.models.responses._
 import esw.ocs.api.models.{Step, StepList, StepStatus}
+import esw.ocs.core.messages.SequencerMessages.{AbortSequence, AddBreakpoint, _}
+import esw.ocs.core.messages.SequencerState.{Idle, InProgress, Loaded, Offline}
 
 import scala.concurrent.duration.DurationLong
 import scala.concurrent.{Future, Promise}

@@ -3,7 +3,7 @@ package esw.ocs.dsl
 import akka.Done
 import csw.params.commands.{Observe, SequenceCommand, Setup}
 import esw.highlevel.dsl.{EventServiceDsl, LocationServiceDsl}
-import esw.ocs.api.models.messages.PullNextResult
+import esw.ocs.api.models.responses.PullNextResult
 import esw.ocs.dsl.utils.{FunctionBuilder, FunctionHandlers}
 import esw.ocs.exceptions.UnhandledCommandException
 

@@ -9,8 +9,9 @@ import csw.location.models.Connection.AkkaConnection
 import csw.location.models.{AkkaLocation, AkkaRegistration, ComponentId, ComponentType}
 import csw.params.core.models.Prefix
 import esw.highlevel.dsl.LocationServiceDsl
-import esw.ocs.api.models.messages.SequenceComponentMsg.Stop
-import esw.ocs.api.models.messages.{RegistrationError, SequenceComponentMsg}
+import esw.ocs.api.models.responses.RegistrationError
+import esw.ocs.core.messages.SequenceComponentMsg
+import esw.ocs.core.messages.SequenceComponentMsg.Stop
 import esw.ocs.syntax.FutureSyntax.FutureOps
 
 import scala.concurrent.{ExecutionContext, Future}

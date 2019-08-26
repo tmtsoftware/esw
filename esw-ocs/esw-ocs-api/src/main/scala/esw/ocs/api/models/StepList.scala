@@ -2,9 +2,9 @@ package esw.ocs.api.models
 
 import csw.params.commands.{Sequence, SequenceCommand}
 import csw.params.core.models.Id
-import esw.ocs.api.models.messages.EditorError._
-import esw.ocs.api.models.messages.{DuplicateIdsFound, EditorError}
-import esw.ocs.api.serializer.OcsAkkaSerializable
+import esw.ocs.api.codecs.OcsAkkaSerializable
+import esw.ocs.api.models.responses.EditorError._
+import esw.ocs.api.models.responses.{DuplicateIdsFound, EditorError}
 
 final case class StepList private[models] (runId: Id, steps: List[Step]) extends OcsAkkaSerializable {
   //query

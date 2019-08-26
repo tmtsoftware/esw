@@ -7,7 +7,7 @@ import csw.params.commands.SequenceCommand
 import csw.params.core.models.Id
 import esw.ocs.api.BaseTestSuite
 import esw.ocs.api.models.Step
-import esw.ocs.api.models.messages.{Ok, PullNextResult}
+import esw.ocs.api.models.responses.{Ok, PullNextResult}
 import esw.ocs.dsl.Script
 import org.mockito.Mockito.{verify, when}
 

@@ -17,8 +17,8 @@ import csw.testkit.scaladsl.ScalaTestFrameworkTestKit
 import esw.ocs.api.BaseTestSuite
 import esw.ocs.api.models.StepStatus.Finished.{Failure, Success}
 import esw.ocs.api.models.StepStatus.Pending
-import esw.ocs.api.models.messages.SequencerMessages._
-import esw.ocs.api.models.messages._
+import esw.ocs.core.messages.SequencerMessages._
+import esw.ocs.api.models.responses._
 import esw.ocs.api.models.{Step, StepList}
 import esw.ocs.internal.SequencerWiring
 

@@ -8,9 +8,10 @@ import csw.command.client.messages.sequencer.SequencerMsg
 import csw.params.commands.SequenceCommand
 import csw.params.core.models.Id
 import esw.ocs.api.SequencerAdminApi
-import esw.ocs.api.models.{SequencerState, StepList}
-import esw.ocs.api.models.messages.SequencerMessages._
-import esw.ocs.api.models.messages._
+import esw.ocs.api.models.StepList
+import esw.ocs.core.messages.SequencerMessages._
+import esw.ocs.api.models.responses._
+import esw.ocs.core.messages.SequencerState
 
 import scala.concurrent.Future
 
@@ -18,8 +19,8 @@ class SequencerAdminImpl(sequencer: ActorRef[EswSequencerMessage])(implicit syst
     extends SequencerAdminApi {
   private implicit val scheduler: Scheduler = system.scheduler
 
-  override def getSequence: Future[Option[StepList]]          = sequencer ? GetSequence
-  override def getState: Future[SequencerState[SequencerMsg]] = sequencer ? GetSequencerState
+  override def getSequence: Future[Option[StepList]] = sequencer ? GetSequence
+  def getState: Future[SequencerState[SequencerMsg]] = sequencer ? GetSequencerState
 
   override def add(commands: List[SequenceCommand]): Future[OkOrUnhandledResponse]       = sequencer ? (Add(commands, _))
   override def prepend(commands: List[SequenceCommand]): Future[OkOrUnhandledResponse]   = sequencer ? (Prepend(commands, _))

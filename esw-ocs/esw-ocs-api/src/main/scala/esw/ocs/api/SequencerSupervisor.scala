@@ -1,6 +1,6 @@
 package esw.ocs.api
 
-import esw.ocs.api.models.messages.OkOrUnhandledResponse
+import esw.ocs.api.models.responses.OkOrUnhandledResponse
 
 import scala.concurrent.Future
 

@@ -1,9 +1,18 @@
-package esw.ocs.api.models
+package esw.ocs.core.messages
 
 import csw.command.client.messages.sequencer.SequencerMsg
 import enumeratum.EnumEntry.Lowercase
 import enumeratum.{Enum, EnumEntry}
-import esw.ocs.api.models.messages.SequencerMessages._
+import esw.ocs.core.messages.SequencerMessages.{
+  AbortSequenceMessage,
+  GoingOfflineMessage,
+  GoingOnlineMessage,
+  IdleMessage,
+  InProgressMessage,
+  OfflineMessage,
+  SequenceLoadedMessage,
+  ShuttingDownMessage
+}
 
 import scala.collection.immutable.IndexedSeq
 

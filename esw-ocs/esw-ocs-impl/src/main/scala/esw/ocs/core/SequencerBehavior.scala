@@ -14,12 +14,23 @@ import csw.location.models.Connection.AkkaConnection
 import csw.logging.client.commons.LogAdminUtil
 import csw.params.commands.Sequence
 import esw.ocs.api.codecs.OcsCodecs
-import esw.ocs.api.models.SequencerState._
-import esw.ocs.api.models.messages.SequencerMessages._
-import esw.ocs.api.models.messages.{GoOnlineHookFailed, _}
-import esw.ocs.api.models.{SequencerState, StepList}
+import esw.ocs.core.messages.SequencerMessages._
+import esw.ocs.api.models.responses.{GoOnlineHookFailed, _}
+import esw.ocs.api.models.StepList
+import esw.ocs.core.messages.SequencerState
+import esw.ocs.core.messages.SequencerState.{
+  AbortingSequence,
+  GoingOffline,
+  GoingOnline,
+  Idle,
+  InProgress,
+  Loaded,
+  Offline,
+  ShuttingDown
+}
 import esw.ocs.dsl.ScriptDsl
 import esw.ocs.internal.Timeouts
+import esw.ocs.core.messages.UnhandledResponse
 
 import scala.concurrent.Future
 import scala.reflect.ClassTag
@@ -214,10 +225,11 @@ class SequencerBehavior(
       implicit val scheduler: Scheduler = ctx.system.scheduler
 
       msg match {
-        case msg: CommonMessage                => handleCommonMessage(msg, state, data, currentBehavior)
-        case msg: LogControlMessages           => handleLogMessages(msg)
-        case msg: T                            => f(msg)
-        case msg: UnhandleableSequencerMessage => msg.replyTo ! Unhandled(state, msg.getClass.getSimpleName); Behaviors.same
+        case msg: CommonMessage      => handleCommonMessage(msg, state, data, currentBehavior)
+        case msg: LogControlMessages => handleLogMessages(msg)
+        case msg: T                  => f(msg)
+        case msg: UnhandleableSequencerMessage =>
+          msg.replyTo ! UnhandledResponse(state, msg.getClass.getSimpleName); Behaviors.same
         case LoadAndStartSequence(sequence, replyTo) =>
           val sequenceResponseF: Future[SequenceResponse] = ctx.self ? (LoadAndStartSequenceInternal(sequence, _))
           sequenceResponseF.foreach(res => replyTo ! res.toSubmitResponse(sequence.runId))

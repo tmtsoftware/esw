@@ -9,7 +9,7 @@ import csw.params.commands.{CommandName, Sequence, Setup}
 import csw.params.core.models.Prefix
 import csw.testkit.scaladsl.ScalaTestFrameworkTestKit
 import esw.ocs.api.BaseTestSuite
-import esw.ocs.api.models.messages.RegistrationError
+import esw.ocs.api.models.responses.RegistrationError
 import esw.ocs.internal.SequencerWiring
 import org.scalatest.time.SpanSugar.convertDoubleToGrainOfTime
 

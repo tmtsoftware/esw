@@ -7,11 +7,12 @@ import csw.command.client.messages.sequencer.SequencerMsg
 import csw.params.commands.CommandResponse
 import csw.params.commands.CommandResponse.{Completed, Error, Started, SubmitResponse}
 import csw.params.core.models.Id
-import esw.ocs.api.models.SequencerState.InProgress
 import esw.ocs.api.models.StepStatus.{Finished, InFlight}
-import esw.ocs.api.models.messages.SequencerMessages.{GoIdle, Update}
-import esw.ocs.api.models.messages._
-import esw.ocs.api.models.{SequencerState, Step, StepList}
+import esw.ocs.core.messages.SequencerMessages.{GoIdle, Update}
+import esw.ocs.api.models.responses._
+import esw.ocs.api.models.{Step, StepList}
+import esw.ocs.core.messages.SequencerState
+import esw.ocs.core.messages.SequencerState.InProgress
 
 import scala.concurrent.Future
 import scala.util.{Failure, Success}
