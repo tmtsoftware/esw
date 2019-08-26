@@ -9,7 +9,7 @@ import esw.gateway.api.messages.PostRequest.{CommandRequest, GetEvent, PublishEv
 import esw.gateway.api.{AlarmApi, CommandApi, EventApi}
 import msocket.api.PostHandler
 
-class PostHandlerImpl(alarmApi: AlarmApi, commandApi: CommandApi, eventApi: EventApi)()
+class PostHandlerImpl(alarmApi: AlarmApi, commandApi: CommandApi, eventApi: EventApi)
     extends PostHandler[PostRequest, StandardRoute]
     with RestlessCodecs
     with HttpCodecs {

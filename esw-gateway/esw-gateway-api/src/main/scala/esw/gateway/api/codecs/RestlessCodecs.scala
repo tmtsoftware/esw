@@ -23,7 +23,7 @@ trait RestlessCodecs extends ParamCodecs with LocationCodecs with AlarmCodecs wi
     deriveCodec[EventError]
   }
 
-  implicit def commandErrorMsgCodec[T <: CommandError]: Codec[T] = eventErrorCodecValue.asInstanceOf[Codec[T]]
+  implicit def commandErrorMsgCodec[T <: CommandError]: Codec[T] = commandErrorMsgCodecValue.asInstanceOf[Codec[T]]
   lazy val commandErrorMsgCodecValue: Codec[CommandError] = {
     @silent implicit lazy val invalidComponentCodec: Codec[InvalidComponent] = deriveCodec[InvalidComponent]
     invalidMaxFrequencyCodec
@@ -33,8 +33,8 @@ trait RestlessCodecs extends ParamCodecs with LocationCodecs with AlarmCodecs wi
   implicit lazy val invalidMaxFrequencyCodec: Codec[InvalidMaxFrequency]         = deriveCodec[InvalidMaxFrequency]
   implicit lazy val setAlarmSeverityFailureCodec: Codec[SetAlarmSeverityFailure] = deriveCodec[SetAlarmSeverityFailure]
 
-  implicit def gatewayHttpRequestCodec[T <: PostRequest]: Codec[T] = gatewayHttpRequestValue.asInstanceOf[Codec[T]]
-  lazy val gatewayHttpRequestValue: Codec[PostRequest] = {
+  implicit def postRequestCodec[T <: PostRequest]: Codec[T] = postRequestValue.asInstanceOf[Codec[T]]
+  lazy val postRequestValue: Codec[PostRequest] = {
     @silent implicit lazy val commandRequestCodec: Codec[CommandRequest]     = deriveCodec[CommandRequest]
     @silent implicit lazy val publishEventCodec: Codec[PublishEvent]         = deriveCodec[PublishEvent]
     @silent implicit lazy val getEventCodec: Codec[GetEvent]                 = deriveCodec[GetEvent]
@@ -43,9 +43,9 @@ trait RestlessCodecs extends ParamCodecs with LocationCodecs with AlarmCodecs wi
   }
   implicit lazy val commandActionCodec: Codec[CommandAction] = CodecHelpers.enumCodec[CommandAction]
 
-  implicit def gatewayWebsocketRequestCodec[T <: WebsocketRequest]: Codec[T] =
-    webSocketRequestCodecValue.asInstanceOf[Codec[T]]
-  lazy val webSocketRequestCodecValue: Codec[WebsocketRequest] = {
+  implicit def websocketRequestCodec[T <: WebsocketRequest]: Codec[T] =
+    websocketRequestCodecValue.asInstanceOf[Codec[T]]
+  lazy val websocketRequestCodecValue: Codec[WebsocketRequest] = {
     @silent implicit lazy val queryFinalCodec: Codec[QueryFinal] = deriveCodec[QueryFinal]
     @silent implicit lazy val subscribeCodec: Codec[Subscribe]   = deriveCodec[Subscribe]
     @silent implicit lazy val subscribeWithPatternCodec: Codec[SubscribeWithPattern] =

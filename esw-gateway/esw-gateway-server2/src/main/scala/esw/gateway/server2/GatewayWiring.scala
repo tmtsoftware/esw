@@ -23,11 +23,11 @@ class GatewayWiring(_port: Option[Int] = None) extends RestlessCodecs {
   lazy val eventApi: EventApi     = new EventImpl(eventService, eventSubscriberUtil)
   lazy val commandApi: CommandApi = new CommandImpl(componentFactory.commandService)
 
-  lazy val httpHandler: PostHandler[PostRequest, StandardRoute] =
+  lazy val postHandler: PostHandler[PostRequest, StandardRoute] =
     new PostHandlerImpl(alarmApi, commandApi, eventApi)
   lazy val websocketHandler: WebsocketHandler[WebsocketRequest] =
     new WebsocketHandlerImpl(commandApi, eventApi)
 
-  lazy val routesFactory: RoutesFactory[PostRequest, WebsocketRequest] = new RoutesFactory(httpHandler, websocketHandler)
+  lazy val routesFactory: RoutesFactory[PostRequest, WebsocketRequest] = new RoutesFactory(postHandler, websocketHandler)
   lazy val httpService                                                 = new HttpService(logger, locationService, routesFactory.route, settings, actorRuntime)
 }
