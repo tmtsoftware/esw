@@ -9,7 +9,7 @@ lazy val aggregateProjects: Seq[ProjectReference] =
   )
 
 lazy val githubReleases: Seq[ProjectReference]   = Seq.empty
-lazy val unidocExclusions: Seq[ProjectReference] = Seq(`esw-integration-test`, `esw-ocs-api-js`)
+lazy val unidocExclusions: Seq[ProjectReference] = Seq(`esw-integration-test`, `esw-ocs-api`.js)
 
 val enableCoverage         = sys.props.get("enableCoverage").contains("true")
 val MaybeCoverage: Plugins = if (enableCoverage) Coverage else Plugins.empty
@@ -26,8 +26,8 @@ lazy val esw = (project in file("."))
 lazy val `esw-ocs` = project
   .in(file("esw-ocs"))
   .aggregate(
-    `esw-ocs-api-js`,
-    `esw-ocs-api-jvm`,
+    `esw-ocs-api`.js,
+    `esw-ocs-api`.jvm,
     `esw-ocs-impl`,
     `esw-ocs-macros`,
     `esw-ocs-app`
@@ -36,14 +36,11 @@ lazy val `esw-ocs` = project
 lazy val `esw-ocs-api` = crossProject(JSPlatform, JVMPlatform)
   .crossType(CrossType.Pure)
   .in(file("esw-ocs/esw-ocs-api"))
+  .jvmConfigure(_.enablePlugins(MaybeCoverage))
   .settings(fork := false)
   .settings(
     libraryDependencies ++= Dependencies.OcsApi.value
   )
-
-lazy val `esw-ocs-api-js` = `esw-ocs-api`.js
-lazy val `esw-ocs-api-jvm` = `esw-ocs-api`.jvm
-  .enablePlugins(MaybeCoverage)
 
 lazy val `esw-ocs-impl` = project
   .in(file("esw-ocs/esw-ocs-impl"))
@@ -51,7 +48,7 @@ lazy val `esw-ocs-impl` = project
   .settings(
     libraryDependencies ++= Dependencies.OcsImpl.value
   )
-  .dependsOn(`esw-ocs-api-jvm` % "compile->compile;test->test", `esw-ocs-macros`, `esw-utils`)
+  .dependsOn(`esw-ocs-api`.jvm % "compile->compile;test->test", `esw-ocs-macros`, `esw-utils`)
 
 lazy val `esw-ocs-macros` = project
   .in(file("esw-ocs/esw-ocs-macros"))
@@ -97,7 +94,7 @@ lazy val `esw-integration-test` = project
 lazy val `esw-utils` = project
   .in(file("esw-utils"))
   .settings(libraryDependencies ++= Dependencies.Utils.value)
-  .dependsOn(`esw-ocs-api-jvm`, `esw-ocs-macros`)
+  .dependsOn(`esw-ocs-api`.jvm, `esw-ocs-macros`)
 
 lazy val `msocket` = project
   .in(file("msocket"))
