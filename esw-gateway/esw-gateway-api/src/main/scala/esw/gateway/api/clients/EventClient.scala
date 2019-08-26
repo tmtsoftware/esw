@@ -8,21 +8,21 @@ import esw.gateway.api.EventApi
 import esw.gateway.api.codecs.RestlessCodecs
 import esw.gateway.api.messages.PostRequest.{GetEvent, PublishEvent}
 import esw.gateway.api.messages.WebsocketRequest.{Subscribe, SubscribeWithPattern}
-import esw.gateway.api.messages.{EmptyEventKeys, EventError, WebsocketRequest, InvalidMaxFrequency}
-import msocket.api.{WebsocketClient, PostClient}
+import esw.gateway.api.messages.{EmptyEventKeys, EventError, InvalidMaxFrequency, PostRequest, WebsocketRequest}
+import msocket.api.{PostClient, WebsocketClient}
 
 import scala.concurrent.Future
 
-class EventClient(postClient: PostClient, websocketClient: WebsocketClient[WebsocketRequest])
+class EventClient(postClient: PostClient[PostRequest], websocketClient: WebsocketClient[WebsocketRequest])
     extends EventApi
     with RestlessCodecs {
 
   override def publish(event: Event): Future[Done] = {
-    postClient.requestResponse[PublishEvent, Done](PublishEvent(event))
+    postClient.requestResponse[Done](PublishEvent(event))
   }
 
   override def get(eventKeys: Set[EventKey]): Future[Either[EmptyEventKeys, Set[Event]]] = {
-    postClient.requestResponse[GetEvent, Either[EmptyEventKeys, Set[Event]]](GetEvent(eventKeys))
+    postClient.requestResponse[Either[EmptyEventKeys, Set[Event]]](GetEvent(eventKeys))
   }
 
   override def subscribe(eventKeys: Set[EventKey], maxFrequency: Option[Int]): Source[Event, Future[Option[EventError]]] = {
