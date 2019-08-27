@@ -2,7 +2,7 @@ package msocket.api
 
 import com.github.ghik.silencer.silent
 import io.bullet.borer.derivation.ArrayBasedCodecs.deriveUnaryEncoder
-import io.bullet.borer.derivation.MapBasedCodecs.{deriveDecoder, deriveEncoder}
+import io.bullet.borer.derivation.MapBasedCodecs._
 import io.bullet.borer.{Decoder, Encoder}
 import msocket.api.Result.{Error, Success}
 

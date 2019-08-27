@@ -10,15 +10,17 @@ import akka.stream.scaladsl.{Sink, Source}
 import akka.stream.{ActorMaterializer, Materializer}
 import io.bullet.borer.{Decoder, Encoder}
 import msocket.api.Result.{Error, Success}
-import msocket.api.{EitherCodecs, PostClient, Result}
+import msocket.api.{EitherCodecs, RequestClient, Result}
 
 import scala.concurrent.Future
-class PostClientImpl[Req: Encoder](uri: Uri)(implicit actorSystem: ActorSystem)
-    extends PostClient[Req]
+
+class PostClientJvm[Req: Encoder](uri: Uri)(implicit actorSystem: ActorSystem)
+    extends RequestClient[Req]
     with HttpCodecs
     with EitherCodecs {
   import actorSystem.dispatcher
   implicit lazy val mat: Materializer = ActorMaterializer()
+
   override def requestResponse[Res: Decoder](req: Req): Future[Res] = {
     Marshal(req).to[RequestEntity].flatMap { requestEntity =>
       val request = HttpRequest(HttpMethods.POST, uri = uri, entity = requestEntity)
@@ -33,6 +35,7 @@ class PostClientImpl[Req: Encoder](uri: Uri)(implicit actorSystem: ActorSystem)
     val futureSource = Marshal(req).to[RequestEntity].flatMap { requestEntity =>
       val request = HttpRequest(HttpMethods.POST, uri = uri, entity = requestEntity)
       Http().singleRequest(request).flatMap { response =>
+        //todo: make generic status checks and then test if required
         Unmarshal(response.entity).to[Source[Res, NotUsed]]
       }
     }

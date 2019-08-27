@@ -2,7 +2,7 @@ package mscoket.impl
 
 import akka.NotUsed
 import akka.http.scaladsl.common.{EntityStreamingSupport, JsonEntityStreamingSupport}
-import akka.http.scaladsl.marshalling._
+import akka.http.scaladsl.marshalling.{Marshaller, PredefinedToResponseMarshallers, ToEntityMarshaller, ToResponseMarshaller}
 import akka.http.scaladsl.model.MediaTypes.`application/json`
 import akka.http.scaladsl.model.{ContentTypeRange, MediaType}
 import akka.http.scaladsl.unmarshalling.{FromEntityUnmarshaller, Unmarshaller}
@@ -37,9 +37,7 @@ trait HttpCodecs {
 
   implicit val jsonStreamingSupport: JsonEntityStreamingSupport = EntityStreamingSupport.json()
 
-  implicit def borerJsonSourceReader[T: Decoder](
-      implicit support: EntityStreamingSupport
-  ): FromEntityUnmarshaller[Source[T, NotUsed]] =
+  implicit def borerJsonSourceReader[T: Decoder](implicit support: EntityStreamingSupport): FromEntityUnmarshaller[Source[T, NotUsed]] =
     Unmarshaller.withMaterializer { implicit ec => mat => e =>
       if (support.supported.matches(e.contentType)) {
         val frames = e.dataBytes.via(support.framingDecoder)

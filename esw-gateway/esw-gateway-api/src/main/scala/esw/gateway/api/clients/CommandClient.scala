@@ -11,11 +11,11 @@ import esw.gateway.api.codecs.RestlessCodecs
 import esw.gateway.api.messages.PostRequest.CommandRequest
 import esw.gateway.api.messages.WebsocketRequest.{QueryFinal, SubscribeCurrentState}
 import esw.gateway.api.messages.{CommandAction, CommandError, InvalidComponent, PostRequest, WebsocketRequest}
-import msocket.api.{PostClient, WebsocketClient}
+import msocket.api.RequestClient
 
 import scala.concurrent.Future
 
-class CommandClient(postClient: PostClient[PostRequest], websocketClient: WebsocketClient[WebsocketRequest])
+class CommandClient(postClient: RequestClient[PostRequest], websocketClient: RequestClient[WebsocketRequest])
     extends CommandApi
     with RestlessCodecs {
 

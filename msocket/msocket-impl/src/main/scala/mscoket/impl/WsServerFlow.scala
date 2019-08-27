@@ -1,19 +1,19 @@
 package mscoket.impl
 
 import akka.NotUsed
-import akka.http.scaladsl.model.ws.{BinaryMessage, Message, TextMessage}
-import akka.stream.scaladsl.Flow
+import akka.http.scaladsl.model.ws.{Message, TextMessage}
+import akka.stream.scaladsl.{Flow, Source}
 import io.bullet.borer.{Decoder, Encoder}
-import msocket.api.WebsocketHandler
+import mscoket.impl.Encoding.JsonText
+import msocket.api.RequestHandler
 
-class WsServerFlow[T: Decoder: Encoder](websocketClient: WebsocketHandler[T]) {
+class WsServerFlow[T: Decoder: Encoder](websocketClient: RequestHandler[T, Source[Message, NotUsed]]) {
 
-  def flow(encoding: Encoding): Flow[Message, Message, NotUsed] = {
+  val flow: Flow[Message, Message, NotUsed] = {
     Flow[Message]
       .collect {
-        case BinaryMessage.Strict(data) if encoding.isBinary => encoding.decodeBinary(data)
-        case TextMessage.Strict(text) if !encoding.isBinary  => encoding.decodeText(text)
+        case TextMessage.Strict(text) => JsonText.decodeText(text)
       }
-      .flatMapConcat(payload => encoding.strictMessageStream(websocketClient.handle(payload.value)))
+      .flatMapConcat(websocketClient.handle)
   }
 }

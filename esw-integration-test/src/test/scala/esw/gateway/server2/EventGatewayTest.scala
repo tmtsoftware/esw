@@ -15,8 +15,8 @@ import esw.gateway.api.codecs.RestlessCodecs
 import esw.gateway.api.messages.{EmptyEventKeys, PostRequest, WebsocketRequest}
 import esw.http.core.BaseTestSuite
 import esw.http.core.commons.CoordinatedShutdownReasons
-import mscoket.impl.Encoding.JsonText
-import mscoket.impl.{PostClientImpl, WebsocketClientImpl}
+import mscoket.impl.{PostClientJvm, WebsocketClientJvm}
+import msocket.api.RequestClient
 
 import scala.concurrent.Await
 import scala.concurrent.duration.{DurationInt, FiniteDuration}
@@ -70,24 +70,24 @@ class EventGatewayTest extends BaseTestSuite with RestlessCodecs {
 
   "EventApi" must {
     "publish event | ESW-216" in {
-      val postClient: PostClientImpl[PostRequest] = new PostClientImpl(s"http://localhost:$port/post")
-      val eventClient: EventClient                = new EventClient(postClient, null)
+      val postClient: RequestClient[PostRequest] = new PostClientJvm[PostRequest](s"http://localhost:$port/post")
+      val eventClient: EventClient               = new EventClient(postClient, null)
 
       eventClient.publish(event1).futureValue should ===(Done)
     }
 
     "get set of events | ESW-216" in {
-      val postClient: PostClientImpl[PostRequest] = new PostClientImpl(s"http://localhost:$port/post")
-      val eventClient: EventClient                = new EventClient(postClient, null)
+      val postClient: RequestClient[PostRequest] = new PostClientJvm[PostRequest](s"http://localhost:$port/post")
+      val eventClient: EventClient               = new EventClient(postClient, null)
 
       eventClient.publish(event1).futureValue
       eventClient.get(Set(EventKey(prefix, name1))).rightValue should ===(Set(event1))
     }
 
     "subscribe events returns a set of events successfully | ESW-216" in {
-      val postClient: PostClientImpl[PostRequest] = new PostClientImpl(s"http://localhost:$port/post")
-      val websocketClient: WebsocketClientImpl[WebsocketRequest] =
-        new WebsocketClientImpl(s"ws://localhost:$port/websocket", JsonText)
+      val postClient: RequestClient[PostRequest] = new PostClientJvm[PostRequest](s"http://localhost:$port/post")
+      val websocketClient: RequestClient[WebsocketRequest] =
+        new WebsocketClientJvm[WebsocketRequest](s"ws://localhost:$port/websocket")
       val eventClient: EventClient = new EventClient(postClient, websocketClient)
       val eventKeys                = Set(EventKey(prefix, name1), EventKey(prefix, name2))
 
@@ -103,11 +103,23 @@ class EventGatewayTest extends BaseTestSuite with RestlessCodecs {
     }
 
     "subscribe events returns an EmptyEventKeys error on sending no event keys in subscription| ESW-216" in {
-      val postClient: PostClientImpl[PostRequest] = new PostClientImpl(s"http://localhost:$port/post")
-      val websocketClient: WebsocketClientImpl[WebsocketRequest] =
-        new WebsocketClientImpl(s"ws://localhost:$port/websocket", JsonText)
+      val postClient: RequestClient[PostRequest] = new PostClientJvm[PostRequest](s"http://localhost:$port/post")
+      val websocketClient: RequestClient[WebsocketRequest] =
+        new WebsocketClientJvm[WebsocketRequest](s"ws://localhost:$port/websocket")
       val eventClient: EventClient = new EventClient(postClient, websocketClient)
       eventClient.subscribe(Set.empty, None).toMat(Sink.head)(Keep.left).run().futureValue.get should ===(EmptyEventKeys())
+    }
+
+    "pSubscribe events returns a set of events successfully | ESW-216" in {
+      val postClient: RequestClient[PostRequest] = new PostClientJvm[PostRequest](s"http://localhost:$port/post")
+      val websocketClient: RequestClient[WebsocketRequest] =
+        new WebsocketClientJvm[WebsocketRequest](s"ws://localhost:$port/websocket")
+      val eventClient: EventClient = new EventClient(postClient, websocketClient)
+
+      eventClient.publish(event1).futureValue
+      eventClient.publish(event2).futureValue
+
+//    eventClient.pSubscribe(Subsystem.TCS, None, "event").take(2).runWith(Sink.seq).futureValue.toSet should ===(Set(event1, event2))
     }
   }
 

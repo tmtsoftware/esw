@@ -9,11 +9,11 @@ import esw.gateway.api.codecs.RestlessCodecs
 import esw.gateway.api.messages.PostRequest.{GetEvent, PublishEvent}
 import esw.gateway.api.messages.WebsocketRequest.{Subscribe, SubscribeWithPattern}
 import esw.gateway.api.messages._
-import msocket.api.{PostClient, WebsocketClient}
+import msocket.api.RequestClient
 
 import scala.concurrent.Future
 
-class EventClient(postClient: PostClient[PostRequest], websocketClient: WebsocketClient[WebsocketRequest])
+class EventClient(postClient: RequestClient[PostRequest], websocketClient: RequestClient[WebsocketRequest])
     extends EventApi
     with RestlessCodecs {
 
