@@ -6,8 +6,15 @@ object Dependencies {
     Seq(
       Csw.`csw-params`.value,
       Csw.`csw-location-models`,
-      Libs.scalatest                  % Test,
-      Libs.`mockito-scala`            % Test
+      Libs.scalatest       % Test,
+      Libs.`mockito-scala` % Test
+    )
+  )
+  val OcsClient: Def.Initialize[Seq[ModuleID]] = Def.setting(
+    Seq(
+      Csw.`csw-command-client`,
+      Akka.`akka-actor-testkit-typed` % Test,
+      Libs.scalatest % Test
     )
   )
 

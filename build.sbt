@@ -28,6 +28,7 @@ lazy val `esw-ocs` = project
   .aggregate(
     `esw-ocs-api`.js,
     `esw-ocs-api`.jvm,
+    `esw-ocs-client`,
     `esw-ocs-impl`,
     `esw-ocs-macros`,
     `esw-ocs-app`
@@ -42,13 +43,21 @@ lazy val `esw-ocs-api` = crossProject(JSPlatform, JVMPlatform)
     libraryDependencies ++= Dependencies.OcsApi.value
   )
 
+lazy val `esw-ocs-client` = project
+  .in(file("esw-ocs/esw-ocs-client"))
+  .enablePlugins(MaybeCoverage)
+  .settings(
+    libraryDependencies ++= Dependencies.OcsClient.value
+  )
+  .dependsOn(`esw-ocs-api`.jvm % "compile->compile;test->test")
+
 lazy val `esw-ocs-impl` = project
   .in(file("esw-ocs/esw-ocs-impl"))
-//  .enablePlugins(MaybeCoverage) fixme: enable
+  .enablePlugins(MaybeCoverage)
   .settings(
     libraryDependencies ++= Dependencies.OcsImpl.value
   )
-  .dependsOn(`esw-ocs-api`.jvm % "compile->compile;test->test", `esw-ocs-macros`, `esw-utils`)
+  .dependsOn(`esw-ocs-api`.jvm % "compile->compile;test->test", `esw-ocs-client`, `esw-ocs-macros`, `esw-utils`)
 
 lazy val `esw-ocs-macros` = project
   .in(file("esw-ocs/esw-ocs-macros"))

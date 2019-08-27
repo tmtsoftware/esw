@@ -8,7 +8,7 @@ import csw.location.models.AkkaLocation
 import csw.params.core.models.Prefix
 import esw.ocs.api.models.responses.RegistrationError
 import esw.ocs.core.SequenceComponentBehavior
-import esw.ocs.core.messages.SequenceComponentMsg
+import esw.ocs.client.messages.SequenceComponentMsg
 import esw.ocs.syntax.FutureSyntax.FutureOps
 
 // $COVERAGE-OFF$

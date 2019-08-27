@@ -15,8 +15,8 @@ import esw.ocs.api.models.StepStatus.{InFlight, Pending}
 import esw.ocs.api.models.responses.EditorError.{CannotOperateOnAnInFlightOrFinishedStep, IdDoesNotExist}
 import esw.ocs.api.models.responses._
 import esw.ocs.api.models.{Step, StepList, StepStatus}
-import esw.ocs.core.messages.SequencerMessages.{AbortSequence, AddBreakpoint, _}
-import esw.ocs.core.messages.SequencerState.{Idle, InProgress, Loaded, Offline}
+import esw.ocs.client.messages.SequencerMessages.{AbortSequence, AddBreakpoint, _}
+import esw.ocs.client.messages.SequencerState.{Idle, InProgress, Loaded, Offline}
 
 import scala.concurrent.duration.DurationLong
 import scala.concurrent.{Future, Promise}

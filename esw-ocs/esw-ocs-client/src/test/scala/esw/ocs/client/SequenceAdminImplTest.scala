@@ -1,4 +1,4 @@
-package esw.ocs.core
+package esw.ocs.client
 
 import akka.actor.testkit.typed.scaladsl.ScalaTestWithActorTestKit
 import akka.actor.typed.scaladsl.Behaviors
@@ -9,8 +9,8 @@ import esw.ocs.api.BaseTestSuite
 import esw.ocs.api.models.StepList
 import esw.ocs.api.models.responses.EditorError.{CannotOperateOnAnInFlightOrFinishedStep, IdDoesNotExist}
 import esw.ocs.api.models.responses.{GoOnlineHookFailed, Ok, Unhandled}
-import esw.ocs.core.messages.SequencerMessages._
-import esw.ocs.core.messages.SequencerState.{Idle, InProgress, Loaded, Offline}
+import esw.ocs.client.messages.SequencerMessages._
+import esw.ocs.client.messages.SequencerState.{Idle, InProgress, Loaded, Offline}
 
 class SequenceAdminImplTest extends ScalaTestWithActorTestKit with BaseTestSuite {
   private val command = Setup(Prefix("esw.test"), CommandName("command-1"), None)

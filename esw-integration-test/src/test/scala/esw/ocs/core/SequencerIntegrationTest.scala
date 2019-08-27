@@ -21,8 +21,9 @@ import esw.ocs.api.models.StepStatus.Finished.{Failure, Success}
 import esw.ocs.api.models.StepStatus.Pending
 import esw.ocs.api.models.responses._
 import esw.ocs.api.models.{Step, StepList}
-import esw.ocs.core.messages.SequencerMessages._
-import esw.ocs.core.messages.SequencerState.{Idle, Offline}
+import esw.ocs.client.SequencerAdminImpl
+import esw.ocs.client.messages.SequencerMessages._
+import esw.ocs.client.messages.SequencerState.{Idle, Offline}
 import esw.ocs.internal.SequencerWiring
 
 import scala.concurrent.Future

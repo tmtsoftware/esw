@@ -1,4 +1,4 @@
-package esw.ocs.serializer
+package esw.ocs.client.serializer
 
 import java.net.URI
 
@@ -17,9 +17,9 @@ import esw.ocs.api.models.responses.EditorError._
 import esw.ocs.api.models.responses.SequenceComponentResponse.{Done, GetStatusResponse, LoadScriptResponse}
 import esw.ocs.api.models.responses._
 import esw.ocs.api.models.{Step, StepList}
-import esw.ocs.core.messages.SequenceComponentMsg.{GetStatus, LoadScript, UnloadScript}
-import esw.ocs.core.messages.SequencerMessages._
-import esw.ocs.core.messages.SequencerState.Idle
+import esw.ocs.client.messages.SequenceComponentMsg.{GetStatus, LoadScript, UnloadScript}
+import esw.ocs.client.messages.SequencerMessages._
+import esw.ocs.client.messages.SequencerState.Idle
 import org.scalatest.Assertion
 import org.scalatest.prop.TableDrivenPropertyChecks.forAll
 import org.scalatest.prop.Tables.Table

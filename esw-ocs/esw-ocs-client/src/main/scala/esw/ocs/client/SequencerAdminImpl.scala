@@ -1,4 +1,4 @@
-package esw.ocs.core
+package esw.ocs.client
 
 import akka.actor.Scheduler
 import akka.actor.typed.scaladsl.AskPattern._
@@ -9,9 +9,9 @@ import csw.params.commands.SequenceCommand
 import csw.params.core.models.Id
 import esw.ocs.api.SequencerAdminApi
 import esw.ocs.api.models.StepList
-import esw.ocs.core.messages.SequencerMessages._
 import esw.ocs.api.models.responses._
-import esw.ocs.core.messages.SequencerState
+import esw.ocs.client.messages.SequencerMessages._
+import esw.ocs.client.messages.SequencerState
 
 import scala.concurrent.Future
 

@@ -1,4 +1,4 @@
-package esw.ocs.serializer
+package esw.ocs.client.serializer
 
 import akka.actor.ExtendedActorSystem
 import akka.actor.typed.ActorSystem
@@ -9,10 +9,10 @@ import csw.logging.api.scaladsl.Logger
 import csw.logging.client.scaladsl.LoggerFactory
 import esw.ocs.api.codecs.OcsCodecs
 import esw.ocs.api.models.StepList
-import esw.ocs.core.messages.SequencerMessages._
+import esw.ocs.client.messages.SequencerMessages._
 import esw.ocs.api.models.responses._
-import esw.ocs.core.messages.{SequenceComponentMsg, SequencerState}
-import esw.ocs.core.messages.codecs.OcsMsgCodecs
+import esw.ocs.client.messages.{SequenceComponentMsg, SequencerState}
+import esw.ocs.client.messages.codecs.OcsMsgCodecs
 import io.bullet.borer.{Cbor, Decoder}
 
 import scala.reflect.ClassTag

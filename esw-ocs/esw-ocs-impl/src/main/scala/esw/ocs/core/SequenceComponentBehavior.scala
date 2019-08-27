@@ -6,8 +6,8 @@ import csw.location.models.AkkaLocation
 import csw.logging.api.scaladsl.Logger
 import esw.ocs.api.models.responses.SequenceComponentResponse.{Done, GetStatusResponse, LoadScriptResponse}
 import esw.ocs.api.models.responses.RegistrationError
-import esw.ocs.core.messages.SequenceComponentMsg
-import esw.ocs.core.messages.SequenceComponentMsg.{GetStatus, LoadScript, Stop, UnloadScript}
+import esw.ocs.client.messages.SequenceComponentMsg
+import esw.ocs.client.messages.SequenceComponentMsg.{GetStatus, LoadScript, Stop, UnloadScript}
 import esw.ocs.internal.SequencerWiring
 
 object SequenceComponentBehavior {

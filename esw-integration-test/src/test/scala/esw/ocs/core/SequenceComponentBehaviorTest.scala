@@ -14,8 +14,8 @@ import csw.testkit.scaladsl.ScalaTestFrameworkTestKit
 import esw.ocs.api.BaseTestSuite
 import esw.ocs.api.models.responses.SequenceComponentResponse.{Done, GetStatusResponse, LoadScriptResponse}
 import esw.ocs.api.models.responses.{RegistrationError, SequenceComponentResponse}
-import esw.ocs.core.messages.SequenceComponentMsg
-import esw.ocs.core.messages.SequenceComponentMsg.{GetStatus, LoadScript, Stop, UnloadScript}
+import esw.ocs.client.messages.SequenceComponentMsg
+import esw.ocs.client.messages.SequenceComponentMsg.{GetStatus, LoadScript, Stop, UnloadScript}
 
 import scala.concurrent.duration.DurationLong
 

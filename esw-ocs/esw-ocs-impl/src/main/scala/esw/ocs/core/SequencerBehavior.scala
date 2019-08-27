@@ -14,11 +14,11 @@ import csw.location.models.Connection.AkkaConnection
 import csw.logging.client.commons.LogAdminUtil
 import csw.params.commands.Sequence
 import esw.ocs.api.codecs.OcsCodecs
-import esw.ocs.core.messages.SequencerMessages._
+import esw.ocs.client.messages.SequencerMessages._
 import esw.ocs.api.models.responses.{GoOnlineHookFailed, _}
 import esw.ocs.api.models.StepList
-import esw.ocs.core.messages.SequencerState
-import esw.ocs.core.messages.SequencerState.{
+import esw.ocs.client.messages.SequencerState
+import esw.ocs.client.messages.SequencerState.{
   AbortingSequence,
   GoingOffline,
   GoingOnline,

@@ -10,7 +10,8 @@ import csw.location.api.extensions.ActorExtension.RichActor
 import csw.location.models.Connection.AkkaConnection
 import csw.location.models.{AkkaLocation, AkkaRegistration, ComponentId, ComponentType}
 import esw.ocs.api.models.responses.RegistrationError
-import esw.ocs.core.messages.SequencerMessages.{EswSequencerMessage, Shutdown}
+import esw.ocs.client.SequencerAdminImpl
+import esw.ocs.client.messages.SequencerMessages.{EswSequencerMessage, Shutdown}
 import esw.ocs.core._
 import esw.ocs.dsl.utils.ScriptLoader
 import esw.ocs.dsl.{CswServices, Script}

@@ -16,8 +16,8 @@ import csw.location.models.{AkkaLocation, AkkaRegistration, ComponentId, Compone
 import csw.params.core.models.Prefix
 import esw.ocs.api.BaseTestSuite
 import esw.ocs.api.models.responses.RegistrationError
-import esw.ocs.core.messages.SequenceComponentMsg
-import esw.ocs.core.messages.SequenceComponentMsg.Stop
+import esw.ocs.client.messages.SequenceComponentMsg
+import esw.ocs.client.messages.SequenceComponentMsg.Stop
 import org.mockito.ArgumentMatchers.any
 import org.mockito.Mockito.{verify, when}
 
