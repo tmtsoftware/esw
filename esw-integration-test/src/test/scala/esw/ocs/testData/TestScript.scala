@@ -2,7 +2,7 @@ package esw.ocs.testData
 
 import csw.params.commands.CommandResponse.{Completed, Error}
 import csw.params.commands.{CommandName, Sequence, Setup}
-import csw.params.core.generics.KeyType.StringKey
+import csw.params.core.generics.KeyType.{BooleanKey, StringKey}
 import csw.params.core.models.Units.NoUnits
 import csw.params.core.models.{Id, Prefix}
 import csw.params.events.{EventName, SystemEvent}
@@ -102,7 +102,18 @@ class TestScript(csw: CswServices) extends Script(csw) {
   handleGoOnline {
     spawn {
       // do some actions to go online
-      eventService.publish(SystemEvent(Prefix("TCS.test"), EventName("online"))).await
+      val param = BooleanKey.make("online").set(true)
+      val event = SystemEvent(Prefix("TCS.test"), EventName("online")).add(param)
+      eventService.publish(event).await
+    }
+  }
+
+  handleGoOffline {
+    spawn {
+      // do some actions to go offline
+      val param = BooleanKey.make("offline").set(true)
+      val event = SystemEvent(Prefix("TCS.test"), EventName("offline")).add(param)
+      eventService.publish(event).await
     }
   }
 }

@@ -12,8 +12,8 @@ import csw.location.models.Connection.AkkaConnection
 import csw.location.models.{ComponentId, ComponentType}
 import csw.params.commands.CommandResponse.{Completed, Error, SubmitResponse}
 import csw.params.commands.{CommandName, Sequence, Setup}
+import csw.params.core.generics.KeyType.BooleanKey
 import csw.params.core.models.Prefix
-import csw.params.events.SystemEvent
 import csw.testkit.scaladsl.CSWService.EventServer
 import csw.testkit.scaladsl.ScalaTestFrameworkTestKit
 import esw.ocs.api.BaseTestSuite
@@ -41,6 +41,10 @@ class SequencerIntegrationTest extends ScalaTestFrameworkTestKit(EventServer) wi
   private val sequencerId   = "testSequencerId1"
   private val observingMode = "testObservingMode1"
 
+  val command1 = Setup(Prefix("esw.test"), CommandName("command-1"), None)
+  val command2 = Setup(Prefix("esw.test"), CommandName("command-2"), None)
+  val command3 = Setup(Prefix("esw.test"), CommandName("command-3"), None)
+
   private var locationService: LocationService   = _
   private var wiring: SequencerWiring            = _
   private var sequencer: ActorRef[SequencerMsg]  = _
@@ -62,90 +66,92 @@ class SequencerIntegrationTest extends ScalaTestFrameworkTestKit(EventServer) wi
     wiring.shutDown().futureValue
   }
 
-  "Sequencer" must {
-    val command1 = Setup(Prefix("esw.test"), CommandName("command-1"), None)
-    val command2 = Setup(Prefix("esw.test"), CommandName("command-2"), None)
+  "Load a sequence and Start it | ESW-154" in {
     val command3 = Setup(Prefix("esw.test"), CommandName("command-3"), None)
+    val sequence = Sequence(command3)
 
-    "load a sequence and start the sequence later | ESW-154" in {
-      val command3 = Setup(Prefix("esw.test"), CommandName("command-3"), None)
-      val sequence = Sequence(command3)
+    val loadResponse: Future[LoadSequenceResponse] = sequencer ? (LoadSequence(sequence, _))
+    loadResponse.futureValue should ===(Ok)
 
-      val loadResponse: Future[LoadSequenceResponse] = sequencer ? (LoadSequence(sequence, _))
-      loadResponse.futureValue should ===(Ok)
+    val seqResponse: Future[SequenceResponse] = sequencer ? StartSequence
+    seqResponse.futureValue should ===(SequenceResult(Completed(sequence.runId)))
+  }
 
-      val seqResponse: Future[SequenceResponse] = sequencer ? StartSequence
-      seqResponse.futureValue should ===(SequenceResult(Completed(sequence.runId)))
-    }
+  "LoadAndStart a sequence and execute commands that are added later | ESW-145, ESW-154" in {
+    val sequence = Sequence(command1, command2)
 
-    "process sequence and execute commands that are added later | ESW-145, ESW-154" in {
-      val sequence = Sequence(command1, command2)
+    val processSeqResponse: Future[SubmitResponse] = sequencer ? (LoadAndStartSequence(sequence, _))
+    eventually((sequencer ? GetSequence).futureValue shouldBe a[Some[_]])
 
-      val processSeqResponse: Future[SubmitResponse] = sequencer ? (LoadAndStartSequence(sequence, _))
-      eventually((sequencer ? GetSequence).futureValue shouldBe a[Some[_]])
+    sequencerAdmin.add(List(command3)).futureValue should ===(Ok)
+    processSeqResponse.futureValue should ===(Completed(sequence.runId))
 
-      sequencerAdmin.add(List(command3)).futureValue should ===(Ok)
-      processSeqResponse.futureValue should ===(Completed(sequence.runId))
-
-      sequencerAdmin.getSequence.futureValue should ===(
-        Some(
-          StepList(
-            sequence.runId,
-            List(
-              Step(command1, Success(Completed(command1.runId)), hasBreakpoint = false),
-              Step(command2, Success(Completed(command2.runId)), hasBreakpoint = false),
-              Step(command3, Success(Completed(command3.runId)), hasBreakpoint = false)
-            )
+    sequencerAdmin.getSequence.futureValue should ===(
+      Some(
+        StepList(
+          sequence.runId,
+          List(
+            Step(command1, Success(Completed(command1.runId)), hasBreakpoint = false),
+            Step(command2, Success(Completed(command2.runId)), hasBreakpoint = false),
+            Step(command3, Success(Completed(command3.runId)), hasBreakpoint = false)
           )
         )
       )
-    }
+    )
+  }
 
-    "short circuit on first failed command and get failed sequence response | ESW-158, ESW-145" in {
-      val failCommandName = "fail-command"
+  "Short circuit on first failed command and get failed sequence response | ESW-158, ESW-145" in {
+    val failCommandName = "fail-command"
 
-      val command1 = Setup(Prefix("esw.test"), CommandName("command-1"), None)
-      // TestScript.scala returns Error on receiving command with name "fail-command"
-      val command2 = Setup(Prefix("esw.test"), CommandName(failCommandName), None)
-      val command3 = Setup(Prefix("esw.test"), CommandName("command-3"), None)
-      val sequence = Sequence(command1, command2, command3)
+    val command1 = Setup(Prefix("esw.test"), CommandName("command-1"), None)
+    // TestScript.scala returns Error on receiving command with name "fail-command"
+    val command2 = Setup(Prefix("esw.test"), CommandName(failCommandName), None)
+    val command3 = Setup(Prefix("esw.test"), CommandName("command-3"), None)
+    val sequence = Sequence(command1, command2, command3)
 
-      val processSeqResponse: Future[SubmitResponse] = sequencer ? (LoadAndStartSequence(sequence, _))
-      eventually(sequencerAdmin.getSequence.futureValue shouldBe a[Some[_]])
+    val processSeqResponse: Future[SubmitResponse] = sequencer ? (LoadAndStartSequence(sequence, _))
+    eventually(sequencerAdmin.getSequence.futureValue shouldBe a[Some[_]])
 
-      processSeqResponse.futureValue should ===(Error(sequence.runId, failCommandName))
+    processSeqResponse.futureValue should ===(Error(sequence.runId, failCommandName))
 
-      sequencerAdmin.getSequence.futureValue should ===(
-        Some(
-          StepList(
-            sequence.runId,
-            List(
-              Step(command1, Success(Completed(command1.runId)), hasBreakpoint = false),
-              Step(command2, Failure(Error(command2.runId, failCommandName)), hasBreakpoint = false),
-              Step(command3, Pending, hasBreakpoint = false)
-            )
+    sequencerAdmin.getSequence.futureValue should ===(
+      Some(
+        StepList(
+          sequence.runId,
+          List(
+            Step(command1, Success(Completed(command1.runId)), hasBreakpoint = false),
+            Step(command2, Failure(Error(command2.runId, failCommandName)), hasBreakpoint = false),
+            Step(command3, Pending, hasBreakpoint = false)
           )
         )
       )
-    }
+    )
+  }
 
-    "go online and offline | ESW-194" in {
-      val sequence = Sequence(command1, command2)
+  "Go online and offline | ESW-194" in {
+    val sequence = Sequence(command1, command2)
 
-      val seqResponse: Future[SubmitResponse] = sequencer ? (LoadAndStartSequence(sequence, _))
-      seqResponse.futureValue should ===(Completed(sequence.runId))
+    val seqResponse: Future[SubmitResponse] = sequencer ? (LoadAndStartSequence(sequence, _))
+    seqResponse.futureValue should ===(Completed(sequence.runId))
 
-      sequencerAdmin.goOffline().futureValue should ===(Ok)
-      sequencerAdmin.add(List(command3)).futureValue should ===(Unhandled(Offline.entryName, "Add"))
+    // assert sequencer goes offline and offline handlers are called
+    sequencerAdmin.goOffline().futureValue should ===(Ok)
+    val offlineEvent = wiring.cswServicesWiring.eventServiceDsl.get("TCS.test.offline").futureValue.head
+    offlineEvent.paramType.exists(BooleanKey.make("offline")) should ===(true)
 
-      sequencerAdmin.goOnline().futureValue should ===(Ok)
-      sequencerAdmin.getState.futureValue should ===(Idle)
+    // assert sequencer does not accept editor commands in offline state
+    sequencerAdmin.add(List(command3)).futureValue should ===(Unhandled(Offline.entryName, "Add"))
 
-      wiring.cswServicesWiring.eventServiceDsl.get("TCS.test.online").futureValue.head shouldBe a[SystemEvent]
+    // assert sequencer goes online and online handlers are called
+    sequencerAdmin.goOnline().futureValue should ===(Ok)
+    sequencerAdmin.getState.futureValue should ===(Idle)
 
-      val loadSeqResponse: Future[LoadSequenceResponse] = sequencer ? (LoadSequence(sequence, _))
-      loadSeqResponse.futureValue should ===(Ok)
-    }
+    val onlineEvent = wiring.cswServicesWiring.eventServiceDsl.get("TCS.test.online").futureValue.head
+    onlineEvent.paramType.exists(BooleanKey.make("online")) should ===(true)
+
+    // assert sequencer can load a new sequence after going online
+    val loadSeqResponse: Future[LoadSequenceResponse] = sequencer ? (LoadSequence(sequence, _))
+    loadSeqResponse.futureValue should ===(Ok)
   }
 
   private def resolveSequencer(): ActorRef[SequencerMsg] =

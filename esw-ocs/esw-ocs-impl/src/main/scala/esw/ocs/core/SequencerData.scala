@@ -8,9 +8,9 @@ import csw.params.commands.CommandResponse
 import csw.params.commands.CommandResponse.{Completed, Error, Started, SubmitResponse}
 import csw.params.core.models.Id
 import esw.ocs.api.models.StepStatus.{Finished, InFlight}
-import esw.ocs.core.messages.SequencerMessages.{GoIdle, Update}
 import esw.ocs.api.models.responses._
 import esw.ocs.api.models.{Step, StepList}
+import esw.ocs.core.messages.SequencerMessages.{GoIdle, Update}
 import esw.ocs.core.messages.SequencerState
 import esw.ocs.core.messages.SequencerState.InProgress
 
@@ -40,10 +40,11 @@ private[core] case class SequencerData(
       .updateSequenceInCrmAndHandleFinalResponse(replyTo)
 
   def pullNextStep(replyTo: ActorRef[PullNextResult]): SequencerData =
-    copy(stepRefSubscriber = Some(replyTo)).sendNextPendingStepIfAvailable()
+    copy(stepRefSubscriber = Some(replyTo))
+      .sendNextPendingStepIfAvailable()
 
   def readyToExecuteNext(replyTo: ActorRef[Ok.type], state: SequencerState[SequencerMsg]): SequencerData =
-    if (stepList.exists(_.isNotInFlight) && stepList.exists(_.isNotPaused) && (state == InProgress)) {
+    if (stepList.exists(_.isRunningButNotInFlight) && (state == InProgress)) {
       replyTo ! Ok
       copy(readyToExecuteSubscriber = None)
     } else copy(readyToExecuteSubscriber = Some(replyTo))
@@ -72,7 +73,7 @@ private[core] case class SequencerData(
       .sendNextPendingStepIfAvailable()
   }
 
-  def updateStepStatus(submitResponse: SubmitResponse): SequencerData = {
+  def updateStepStatus(submitResponse: SubmitResponse, state: SequencerState[SequencerMsg]): SequencerData = {
     val stepStatus = submitResponse match {
       case submitResponse if CommandResponse.isPositive(submitResponse) => Finished.Success(submitResponse)
       case failureResponse                                              => Finished.Failure(failureResponse)
@@ -80,30 +81,30 @@ private[core] case class SequencerData(
 
     crm.updateSubCommand(submitResponse)
     val newStepList = stepList.map(_.updateStatus(submitResponse.runId, stepStatus))
-    val newState    = copy(stepList = newStepList).checkForSequenceCompletion()
 
-    if (!newState.stepList.exists(_.isFinished)) readyToExecuteSubscriber.foreach(_ ! Ok)
-    newState
+    copy(stepList = newStepList)
+      .checkForSequenceCompletion()
+      .notifyReadyToExecuteNextSubscriber(state)
   }
 
   private def sendNextPendingStepIfAvailable(): SequencerData = {
-    val maybeState = for {
+    val maybeData = for {
       ref         <- stepRefSubscriber
       pendingStep <- stepList.flatMap(_.nextExecutable)
     } yield {
-      val (step, newState) = setInFlight(pendingStep)
+      val (step, updatedData) = setInFlight(pendingStep)
       ref ! PullNextResult(step)
-      newState.copy(stepRefSubscriber = None)
+      updatedData.copy(stepRefSubscriber = None)
     }
 
-    maybeState.getOrElse(this)
+    maybeData.getOrElse(this)
   }
 
   private def setInFlight(step: Step): (Step, SequencerData) = {
     val inflightStep = step.withStatus(InFlight)
-    val newState     = copy(stepList = stepList.map(_.updateStep(inflightStep)))
+    val updatedData  = copy(stepList = stepList.map(_.updateStep(inflightStep)))
     updateStepInCrmAndHandleResponse(step.id)
-    (inflightStep, newState)
+    (inflightStep, updatedData)
   }
 
   private def updateSequenceInCrmAndHandleFinalResponse(replyTo: ActorRef[SequenceResponse]): SequencerData = {

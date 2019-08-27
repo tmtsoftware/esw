@@ -8,12 +8,11 @@ import esw.ocs.api.models.responses.{DuplicateIdsFound, EditorError}
 
 final case class StepList private[models] (runId: Id, steps: List[Step]) extends OcsAkkaSerializable {
   //query
-  private[ocs] def isEmpty: Boolean = steps.isEmpty
-  def isFinished: Boolean           = !isEmpty && (steps.forall(_.isFinished) || steps.exists(_.isFailed))
-  def isPaused: Boolean             = nextPending.exists(_.hasBreakpoint)
-  def isNotPaused: Boolean          = !isPaused
-  def isInFlight: Boolean           = steps.exists(_.isInFlight)
-  def isNotInFlight: Boolean        = !isInFlight
+  private[ocs] def isEmpty: Boolean    = steps.isEmpty
+  def isFinished: Boolean              = !isEmpty && (steps.forall(_.isFinished) || steps.exists(_.isFailed))
+  def isPaused: Boolean                = nextPending.exists(_.hasBreakpoint)
+  def isInFlight: Boolean              = steps.exists(_.isInFlight)
+  def isRunningButNotInFlight: Boolean = !isFinished && !isPaused && !isInFlight
 
   def nextPending: Option[Step]    = steps.find(_.isPending)
   def nextExecutable: Option[Step] = if (!isPaused) nextPending else None

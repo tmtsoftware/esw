@@ -68,7 +68,7 @@ class SequencerBehavior(
     case AbortSequence(replyTo)    => abortSequence(data, InProgress, replyTo)(nextBehavior = inProgress)
     case msg: EditorAction         => inProgress(handleEditorAction(msg, data, InProgress))
     case PullNext(replyTo)         => inProgress(data.pullNextStep(replyTo))
-    case Update(submitResponse, _) => inProgress(data.updateStepStatus(submitResponse))
+    case Update(submitResponse, _) => inProgress(data.updateStepStatus(submitResponse, InProgress))
     case _: GoIdle                 => idle(data)
   }
 
