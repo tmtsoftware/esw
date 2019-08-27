@@ -40,6 +40,7 @@ class TestScript(csw: CswServices) extends Script(csw) {
       val command4     = Setup(Id("testCommandIdString123"), Prefix("TCS.test"), CommandName("command-to-assert-on"), None, Set.empty)
       val sequence     = Sequence(Id("testSequenceIdString123"), Seq(command4))
 
+      // ESW-145, ESW-195
       csw.sequencerCommandService.submitSequence(tcsSequencer, sequence).await
       csw.crm.addOrUpdateCommand(Completed(command.runId))
     }

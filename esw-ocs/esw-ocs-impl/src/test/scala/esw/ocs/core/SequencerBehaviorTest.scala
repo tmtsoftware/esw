@@ -36,13 +36,13 @@ class SequencerBehaviorTest extends ScalaTestWithActorTestKit with BaseTestSuite
   def Finished(id: Id): StepStatus = StepStatus.Finished.Success(Completed(id))
 
   "LoadSequence" must {
-    "load the given sequence in idle state" in {
+    "load the given sequence in idle state | ESW-145" in {
       val sequencerSetup = SequencerTestSetup.idle(sequence)
       import sequencerSetup._
       loadSequenceAndAssertResponse(Ok)
     }
 
-    "fail when given sequence contains duplicate Ids" in {
+    "fail when given sequence contains duplicate Ids | ESW-145" in {
       val invalidSequence = Sequence(Id(), Seq(command1, command1))
       val sequencerSetup  = SequencerTestSetup.idle(invalidSequence)
       import sequencerSetup._
@@ -52,7 +52,7 @@ class SequencerBehaviorTest extends ScalaTestWithActorTestKit with BaseTestSuite
   }
 
   "StartSequence" must {
-    "start executing a sequence when sequencer is loaded" in {
+    "start executing a sequence when sequencer is loaded | ESW-145" in {
       val sequencerSetup = SequencerTestSetup.loaded(sequence)
       import sequencerSetup._
 
@@ -64,7 +64,7 @@ class SequencerBehaviorTest extends ScalaTestWithActorTestKit with BaseTestSuite
   }
 
   "LoadAndStartSequence" must {
-    "load and process sequence in idle state" in {
+    "load and process sequence in idle state | ESW-145" in {
       val sequencerSetup = SequencerTestSetup.idle(sequence)
       import sequencerSetup._
 
@@ -74,7 +74,7 @@ class SequencerBehaviorTest extends ScalaTestWithActorTestKit with BaseTestSuite
       probe.expectMessage(Completed(sequence.runId))
     }
 
-    "fail when given sequence contains duplicate Ids" in {
+    "fail when given sequence contains duplicate Ids | ESW-145" in {
       val invalidSequence = Sequence(Id(), Seq(command1, command1))
 
       val sequencerSetup = SequencerTestSetup.idle(invalidSequence)
@@ -678,7 +678,7 @@ class SequencerBehaviorTest extends ScalaTestWithActorTestKit with BaseTestSuite
     )
   }
 
-  "Loaded -> Unhandled" in {
+  "Loaded -> Unhandled | ESW-145" in {
     val sequencerSetup = SequencerTestSetup.loaded(sequence)
     import sequencerSetup._
 
@@ -696,7 +696,7 @@ class SequencerBehaviorTest extends ScalaTestWithActorTestKit with BaseTestSuite
     )
   }
 
-  "InProgress -> Unhandled" in {
+  "InProgress -> Unhandled | ESW-145" in {
     val sequencerSetup = SequencerTestSetup.inProgress(sequence)
     import sequencerSetup._
 

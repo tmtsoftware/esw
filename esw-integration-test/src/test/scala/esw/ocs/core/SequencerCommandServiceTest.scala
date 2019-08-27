@@ -2,7 +2,7 @@ package esw.ocs.core
 
 import akka.actor.typed.{ActorSystem, SpawnProtocol}
 import csw.command.api.scaladsl.SequencerCommandService
-import csw.command.client.internal.SequencerCommandServiceImpl
+import csw.command.client.SequencerCommandServiceFactory
 import csw.location.models.AkkaLocation
 import csw.params.commands.CommandResponse.Completed
 import csw.params.commands.{CommandName, Sequence, Setup}
@@ -36,7 +36,7 @@ class SequencerCommandServiceTest extends ScalaTestFrameworkTestKit with BaseTes
     val sequence = Sequence(command1)
 
     implicit val patienceConfig: PatienceConfig          = PatienceConfig(500.millis)
-    val sequencerCommandService: SequencerCommandService = new SequencerCommandServiceImpl(sequencerLocation.rightValue)
+    val sequencerCommandService: SequencerCommandService = SequencerCommandServiceFactory.make(sequencerLocation.rightValue)
     sequencerCommandService.submit(sequence).futureValue should ===(Completed(sequence.runId))
   }
 }

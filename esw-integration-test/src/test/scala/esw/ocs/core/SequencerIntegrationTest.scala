@@ -67,7 +67,7 @@ class SequencerIntegrationTest extends ScalaTestFrameworkTestKit(EventServer) wi
     wiring.shutDown().futureValue
   }
 
-  "Load a sequence and Start it | ESW-154" in {
+  "Load a sequence and Start it | ESW-145, ESW-154" in {
     val command3 = Setup(Prefix("esw.test"), CommandName("command-3"), None)
     val sequence = Sequence(command3)
 

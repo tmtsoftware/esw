@@ -43,8 +43,6 @@ trait ScriptDsl extends ControlDsl {
 
   private[ocs] def execute(command: SequenceCommand): Future[Unit] = spawn(commandHandler(command).await)
 
-  // this futures will normally run in parallel, but given that those are running on same thread
-  // this will executes sequentially
   private[ocs] def executeGoOnline(): Future[Done] =
     Future.sequence(onlineHandlers.execute(())).map { _ =>
       isOnline = true

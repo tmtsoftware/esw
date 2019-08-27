@@ -48,7 +48,7 @@ class SequencerCommandServiceUtilsTest extends BaseTestSuite {
   }
 
   "submitSequence" must {
-    "submit sequence to given sequencer | ESW-195" in {
+    "submit sequence to given sequencer | ESW-195, ESW-145" in {
       val registrationResult = mock[RegistrationResult]
       when(locationService.register(any[AkkaRegistration])).thenReturn(Future(registrationResult))
 
