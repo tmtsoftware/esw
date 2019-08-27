@@ -1,25 +1,16 @@
 package esw.ocs.core.messages
 
 import csw.command.client.messages.sequencer.SequencerMsg
-import enumeratum.EnumEntry.Lowercase
 import enumeratum.{Enum, EnumEntry}
-import esw.ocs.core.messages.SequencerMessages.{
-  AbortSequenceMessage,
-  GoingOfflineMessage,
-  GoingOnlineMessage,
-  IdleMessage,
-  InProgressMessage,
-  OfflineMessage,
-  SequenceLoadedMessage,
-  ShuttingDownMessage
-}
+import esw.ocs.api.codecs.OcsAkkaSerializable
+import esw.ocs.core.messages.SequencerMessages._
 
 import scala.collection.immutable.IndexedSeq
 
-sealed abstract class SequencerState[+T <: SequencerMsg] extends EnumEntry with Lowercase
+sealed trait SequencerState[+T <: SequencerMsg] extends EnumEntry with OcsAkkaSerializable
 object SequencerState extends Enum[SequencerState[SequencerMsg]] {
 
-  def values: IndexedSeq[SequencerState[SequencerMsg]] = findValues
+  override def values: IndexedSeq[SequencerState[SequencerMsg]] = findValues
 
   case object Idle             extends SequencerState[IdleMessage]
   case object Loaded           extends SequencerState[SequenceLoadedMessage]

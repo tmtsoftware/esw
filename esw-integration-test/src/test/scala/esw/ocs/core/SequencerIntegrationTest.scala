@@ -22,6 +22,7 @@ import esw.ocs.api.models.StepStatus.Pending
 import esw.ocs.api.models.responses._
 import esw.ocs.api.models.{Step, StepList}
 import esw.ocs.core.messages.SequencerMessages._
+import esw.ocs.core.messages.SequencerState.{Idle, Offline}
 import esw.ocs.internal.SequencerWiring
 
 import scala.concurrent.Future
@@ -135,9 +136,10 @@ class SequencerIntegrationTest extends ScalaTestFrameworkTestKit(EventServer) wi
       seqResponse.futureValue should ===(Completed(sequence.runId))
 
       sequencerAdmin.goOffline().futureValue should ===(Ok)
-      sequencerAdmin.add(List(command3)).futureValue should ===(Unhandled("offline", "Add"))
+      sequencerAdmin.add(List(command3)).futureValue should ===(Unhandled(Offline.entryName, "Add"))
 
       sequencerAdmin.goOnline().futureValue should ===(Ok)
+      sequencerAdmin.getState.futureValue should ===(Idle)
 
       val onlineEventKey = EventKey(Prefix("TCS.test"), EventName("online"))
       wiring.cswServicesWiring.eventServiceDsl.get(onlineEventKey).futureValue.head shouldBe a[SystemEvent]

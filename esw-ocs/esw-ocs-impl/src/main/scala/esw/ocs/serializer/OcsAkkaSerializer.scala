@@ -4,13 +4,14 @@ import akka.actor.ExtendedActorSystem
 import akka.actor.typed.ActorSystem
 import akka.actor.typed.scaladsl.adapter.UntypedActorSystemOps
 import akka.serialization.Serializer
+import csw.command.client.messages.sequencer.SequencerMsg
 import csw.logging.api.scaladsl.Logger
 import csw.logging.client.scaladsl.LoggerFactory
 import esw.ocs.api.codecs.OcsCodecs
 import esw.ocs.api.models.StepList
 import esw.ocs.core.messages.SequencerMessages._
 import esw.ocs.api.models.responses._
-import esw.ocs.core.messages.SequenceComponentMsg
+import esw.ocs.core.messages.{SequenceComponentMsg, SequencerState}
 import esw.ocs.core.messages.codecs.OcsMsgCodecs
 import io.bullet.borer.{Cbor, Decoder}
 
@@ -23,11 +24,12 @@ class OcsAkkaSerializer(_actorSystem: ExtendedActorSystem) extends OcsCodecs wit
   private val logger: Logger   = new LoggerFactory("Sequencer-codec").getLogger
 
   override def toBinary(o: AnyRef): Array[Byte] = o match {
-    case x: EswSequencerMessage       => Cbor.encode(x).toByteArray
-    case x: EswSequencerResponse      => Cbor.encode(x).toByteArray
-    case x: StepList                  => Cbor.encode(x).toByteArray
-    case x: SequenceComponentMsg      => Cbor.encode(x).toByteArray
-    case x: SequenceComponentResponse => Cbor.encode(x).toByteArray
+    case x: EswSequencerMessage          => Cbor.encode(x).toByteArray
+    case x: EswSequencerResponse         => Cbor.encode(x).toByteArray
+    case x: StepList                     => Cbor.encode(x).toByteArray
+    case x: SequencerState[SequencerMsg] => Cbor.encode(x).toByteArray
+    case x: SequenceComponentMsg         => Cbor.encode(x).toByteArray
+    case x: SequenceComponentResponse    => Cbor.encode(x).toByteArray
     case _ =>
       val ex = new RuntimeException(s"does not support encoding of $o")
       logger.error(ex.getMessage, ex = ex)
@@ -45,6 +47,7 @@ class OcsAkkaSerializer(_actorSystem: ExtendedActorSystem) extends OcsCodecs wit
     {
       fromBinary[EswSequencerMessage] orElse
       fromBinary[EswSequencerResponse] orElse
+      fromBinary[SequencerState[SequencerMsg]] orElse
       fromBinary[StepList] orElse
       fromBinary[SequenceComponentMsg] orElse
       fromBinary[SequenceComponentResponse]

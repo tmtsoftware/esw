@@ -14,7 +14,7 @@ class TestScript(csw: CswServices) extends Script(csw) {
   handleSetupCommand("command-1") { command =>
     spawn {
       // To avoid sequencer to finish immediately so that other Add, Append command gets time
-      Thread.sleep(100)
+      Thread.sleep(200)
       csw.crm.addOrUpdateCommand(Completed(command.runId))
     }
   }
