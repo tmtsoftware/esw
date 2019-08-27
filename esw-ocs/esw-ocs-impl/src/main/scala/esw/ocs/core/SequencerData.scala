@@ -34,17 +34,13 @@ private[core] case class SequencerData(
   private val sequenceId   = stepList.map(_.runId)
   private val emptyChildId = Id("empty-child") // fixme
 
-  def startSequence(replyTo: ActorRef[SequenceResponse]): SequencerData = {
-    val newState = sendNextPendingStepIfAvailable(this)
-    newState.notifyReadyToExecuteNextSubscriber(InProgress)
-    updateSequenceInCrmAndHandleFinalResponse(replyTo)
-    newState
-  }
+  def startSequence(replyTo: ActorRef[SequenceResponse]): SequencerData =
+    sendNextPendingStepIfAvailable()
+      .notifyReadyToExecuteNextSubscriber(InProgress)
+      .updateSequenceInCrmAndHandleFinalResponse(replyTo)
 
-  def pullNextStep(replyTo: ActorRef[PullNextResult]): SequencerData = {
-    val newState = copy(stepRefSubscriber = Some(replyTo))
-    sendNextPendingStepIfAvailable(newState)
-  }
+  def pullNextStep(replyTo: ActorRef[PullNextResult]): SequencerData =
+    copy(stepRefSubscriber = Some(replyTo)).sendNextPendingStepIfAvailable()
 
   def readyToExecuteNext(replyTo: ActorRef[Ok.type], state: SequencerState[SequencerMsg]): SequencerData =
     if (stepList.exists(_.isNotInFlight) && stepList.exists(_.isNotPaused) && (state == InProgress)) {
@@ -69,11 +65,11 @@ private[core] case class SequencerData(
       state: SequencerState[SequencerMsg],
       stepList: Option[StepList]
   ): SequencerData = {
-    val data = copy(stepList)
     replyTo ! Ok
-    checkForSequenceCompletion(data)
-    val updatedData = data.notifyReadyToExecuteNextSubscriber(state)
-    sendNextPendingStepIfAvailable(updatedData)
+    copy(stepList)
+      .checkForSequenceCompletion()
+      .notifyReadyToExecuteNextSubscriber(state)
+      .sendNextPendingStepIfAvailable()
   }
 
   def updateStepStatus(submitResponse: SubmitResponse): SequencerData = {
@@ -84,23 +80,23 @@ private[core] case class SequencerData(
 
     crm.updateSubCommand(submitResponse)
     val newStepList = stepList.map(_.updateStatus(submitResponse.runId, stepStatus))
-    val newState    = copy(stepList = newStepList)
-    checkForSequenceCompletion(newState)
+    val newState    = copy(stepList = newStepList).checkForSequenceCompletion()
+
     if (!newState.stepList.exists(_.isFinished)) readyToExecuteSubscriber.foreach(_ ! Ok)
     newState
   }
 
-  private def sendNextPendingStepIfAvailable(data: SequencerData): SequencerData = {
+  private def sendNextPendingStepIfAvailable(): SequencerData = {
     val maybeState = for {
-      ref         <- data.stepRefSubscriber
-      pendingStep <- data.stepList.flatMap(_.nextExecutable)
+      ref         <- stepRefSubscriber
+      pendingStep <- stepList.flatMap(_.nextExecutable)
     } yield {
       val (step, newState) = setInFlight(pendingStep)
       ref ! PullNextResult(step)
       newState.copy(stepRefSubscriber = None)
     }
 
-    maybeState.getOrElse(data)
+    maybeState.getOrElse(this)
   }
 
   private def setInFlight(step: Step): (Step, SequencerData) = {
@@ -110,7 +106,7 @@ private[core] case class SequencerData(
     (inflightStep, newState)
   }
 
-  private def updateSequenceInCrmAndHandleFinalResponse(replyTo: ActorRef[SequenceResponse]): Unit =
+  private def updateSequenceInCrmAndHandleFinalResponse(replyTo: ActorRef[SequenceResponse]): SequencerData = {
     sequenceId.foreach { id =>
       crm.addOrUpdateCommand(Started(id))
       crm.addSubCommand(id, emptyChildId)
@@ -123,6 +119,8 @@ private[core] case class SequencerData(
         }
       )
     }
+    this
+  }
 
   private def updateStepInCrmAndHandleResponse(stepId: Id): Unit =
     sequenceId.foreach { id =>
@@ -145,19 +143,20 @@ private[core] case class SequencerData(
 
   private def goToIdle(): Unit = self ! GoIdle(actorSystem.deadLetters)
 
-  private def checkForSequenceCompletion(data: SequencerData): Unit =
-    if (data.stepList.exists(_.isFinished)) {
+  private def checkForSequenceCompletion(): SequencerData = {
+    if (stepList.exists(_.isFinished)) {
       crm.updateSubCommand(Completed(emptyChildId))
     }
+    this
+  }
 
   private def notifyReadyToExecuteNextSubscriber(state: SequencerState[SequencerMsg]): SequencerData =
     readyToExecuteSubscriber.map(replyTo => readyToExecuteNext(replyTo, state)).getOrElse(this)
 }
 
 object SequencerData {
-  def initial(
-      self: ActorRef[SequencerMsg],
-      crm: CommandResponseManager
-  )(implicit actorSystem: ActorSystem[_], timeout: Timeout) =
-    SequencerData(None, None, None, self, crm, actorSystem, timeout)
+  def initial(self: ActorRef[SequencerMsg], crm: CommandResponseManager)(
+      implicit actorSystem: ActorSystem[_],
+      timeout: Timeout
+  ) = SequencerData(None, None, None, self, crm, actorSystem, timeout)
 }
