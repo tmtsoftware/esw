@@ -19,7 +19,6 @@ import esw.ocs.api.models.responses.RegistrationError
 import esw.ocs.client.messages.SequenceComponentMsg
 import esw.ocs.client.messages.SequenceComponentMsg.Stop
 import org.mockito.ArgumentMatchers.any
-import org.mockito.Mockito.{verify, when}
 
 import scala.concurrent.{ExecutionContext, Future}
 

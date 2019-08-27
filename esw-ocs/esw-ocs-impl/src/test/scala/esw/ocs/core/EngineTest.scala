@@ -9,7 +9,6 @@ import esw.ocs.api.BaseTestSuite
 import esw.ocs.api.models.Step
 import esw.ocs.api.models.responses.{Ok, PullNextResult}
 import esw.ocs.dsl.Script
-import org.mockito.Mockito.{verify, when}
 
 import scala.concurrent.Future
 

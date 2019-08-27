@@ -17,7 +17,7 @@ import csw.params.core.models.{Id, Prefix}
 import esw.highlevel.dsl.LocationServiceDsl
 import esw.ocs.api.BaseTestSuite
 import org.mockito.ArgumentMatchers.any
-import org.mockito.Mockito.{clearInvocations, when}
+import org.mockito.Mockito.clearInvocations
 
 import scala.concurrent.{ExecutionContext, Future}
 
