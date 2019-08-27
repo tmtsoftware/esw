@@ -11,6 +11,7 @@ import csw.params.core.models.Subsystem
 import esw.gateway.server.CswContextMocks
 import esw.gateway.server.requests.SetSeverity
 import esw.http.core.HttpTestSuite
+import org.mockito.Mockito.{verify, when}
 
 import scala.concurrent.Future
 import scala.concurrent.duration.DurationDouble

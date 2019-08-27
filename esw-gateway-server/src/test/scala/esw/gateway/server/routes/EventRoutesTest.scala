@@ -13,8 +13,9 @@ import csw.params.core.models.{Prefix, Subsystem}
 import csw.params.events._
 import esw.gateway.server.{CswContextMocks, RateLimiterStub}
 import esw.http.core.HttpTestSuite
-import io.bullet.borer.Json
 import esw.http.core.codec.ErrorCodecs._
+import io.bullet.borer.Json
+import org.mockito.Mockito.{verify, verifyZeroInteractions, when}
 
 import scala.concurrent.duration.DurationInt
 import scala.concurrent.{Await, Future}

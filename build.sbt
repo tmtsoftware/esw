@@ -85,9 +85,10 @@ lazy val `esw-integration-test` = project
   .settings(libraryDependencies ++= Dependencies.IntegrationTest.value)
   .settings(fork in Test := true)
   .dependsOn(
-    `esw-gateway-server` % "test->compile;test->test",
-    `esw-http-core`      % "test->compile;test->test",
-    `esw-ocs-impl`       % "test->compile;test->test",
+    `esw-gateway-server`  % "test->compile;test->test",
+    `esw-gateway-server2` % "test->compile;test->test",
+    `esw-http-core`       % "test->compile;test->test",
+    `esw-ocs-impl`        % "test->compile;test->test",
     `esw-ocs-app`
   )
 

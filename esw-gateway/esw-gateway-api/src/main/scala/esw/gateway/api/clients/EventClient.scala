@@ -8,7 +8,7 @@ import esw.gateway.api.EventApi
 import esw.gateway.api.codecs.RestlessCodecs
 import esw.gateway.api.messages.PostRequest.{GetEvent, PublishEvent}
 import esw.gateway.api.messages.WebsocketRequest.{Subscribe, SubscribeWithPattern}
-import esw.gateway.api.messages.{EmptyEventKeys, EventError, InvalidMaxFrequency, PostRequest, WebsocketRequest}
+import esw.gateway.api.messages._
 import msocket.api.{PostClient, WebsocketClient}
 
 import scala.concurrent.Future

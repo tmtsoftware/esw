@@ -10,7 +10,7 @@ import csw.location.models.{AkkaLocation, ComponentId, ComponentType}
 import csw.params.core.models.Prefix
 import esw.http.core.BaseTestSuite
 import esw.http.core.wiring.ActorRuntime
-import org.scalatest.concurrent.Eventually.eventually
+import org.mockito.Mockito.{verify, when}
 
 import scala.concurrent.duration.DurationInt
 import scala.concurrent.{Await, Future}

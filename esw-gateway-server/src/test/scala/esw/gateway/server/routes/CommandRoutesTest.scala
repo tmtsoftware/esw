@@ -18,6 +18,8 @@ import csw.params.core.states.{CurrentState, StateName, StateVariable}
 import esw.gateway.server.CswContextMocks
 import esw.http.core.HttpTestSuite
 import io.bullet.borer.Json
+import org.mockito.ArgumentMatchers.any
+import org.mockito.Mockito.when
 
 import scala.concurrent.duration.DurationDouble
 import scala.concurrent.{Await, Future, TimeoutException}
@@ -40,7 +42,7 @@ class CommandRoutesTest extends HttpTestSuite {
   val assemblyType: ComponentType = ComponentType.withName("assembly")
   val hcdType: ComponentType      = ComponentType.withName("hcd")
 
-  s"POST /command/{componentType}/{componentName}/validate" must {
+  "POST /command/{componentType}/{componentName}/validate" must {
     "validate the command and return ValidateResponse | ESW-91" in new Setup {
 
       import cswMocks._
@@ -73,7 +75,7 @@ class CommandRoutesTest extends HttpTestSuite {
     }
   }
 
-  s"POST /command/{componentType}/{componentName}/submit" must {
+  "POST /command/{componentType}/{componentName}/submit" must {
     "submit the given command to command service and return SubmitResponse | ESW-91" in new Setup {
 
       import cswMocks._
@@ -107,7 +109,7 @@ class CommandRoutesTest extends HttpTestSuite {
     }
   }
 
-  s"POST /command/{componentType}/{componentName}/oneway" must {
+  "POST /command/{componentType}/{componentName}/oneway" must {
     "submit oneway command to command service and return OnewayResponse | ESW-91" in new Setup {
 
       import cswMocks._
@@ -141,7 +143,7 @@ class CommandRoutesTest extends HttpTestSuite {
     }
   }
 
-  s"GET /command/{componentType}/{componentName}/{runId}" must {
+  "GET /command/{componentType}/{componentName}/{runId}" must {
 
     "return a stream which finishes with CommandResponse | ESW-91" in new Setup {
 
