@@ -25,7 +25,7 @@ class SequenceComponentImplTest extends ScalaTestWithActorTestKit with BaseTestS
     msg match {
       case LoadScript(_, _, replyTo) => replyTo ! loadScriptResponse
       case GetStatus(replyTo)        => replyTo ! getStatusResponse
-      case UnloadScript(replyTo)     => replyTo ! akka.Done
+      case UnloadScript(replyTo)     => replyTo ! Done
       case Stop                      => Behaviors.stopped
     }
     Behaviors.same

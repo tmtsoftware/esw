@@ -2,7 +2,6 @@ package esw.ocs.serializer
 
 import java.net.URI
 
-import akka.Done
 import akka.actor.testkit.typed.scaladsl.{ScalaTestWithActorTestKit, TestProbe}
 import akka.actor.typed.ActorRef
 import akka.actor.typed.scaladsl.adapter.TypedActorSystemOps
@@ -15,7 +14,7 @@ import csw.params.core.models.{Id, Prefix}
 import esw.ocs.api.BaseTestSuite
 import esw.ocs.api.codecs.OcsAkkaSerializable
 import esw.ocs.api.models.responses.EditorError._
-import esw.ocs.api.models.responses.SequenceComponentResponse.{GetStatusResponse, LoadScriptResponse}
+import esw.ocs.api.models.responses.SequenceComponentResponse.{Done, GetStatusResponse, LoadScriptResponse}
 import esw.ocs.api.models.responses._
 import esw.ocs.api.models.{Step, StepList}
 import esw.ocs.core.messages.SequenceComponentMsg.{GetStatus, LoadScript, UnloadScript}
@@ -37,7 +36,7 @@ class OcsAkkaSerializerTest extends ScalaTestWithActorTestKit with BaseTestSuite
   private val stepListResponseRef: ActorRef[Option[StepList]]           = TestProbe[Option[StepList]].ref
   private val loadScriptResponseRef: ActorRef[LoadScriptResponse]       = TestProbe[LoadScriptResponse].ref
   private val getStatusResponseRef: ActorRef[GetStatusResponse]         = TestProbe[GetStatusResponse].ref
-  private val unloadScriptResponseRef: ActorRef[Done]                   = TestProbe[Done].ref
+  private val unloadScriptResponseRef: ActorRef[Done.type]              = TestProbe[Done.type].ref
   private val setupCommand                                              = Setup(Prefix("esw.test"), CommandName("test"), None)
   private val steps: List[Step]                                         = List(Step(setupCommand))
   private val sequenceCommandList: List[SequenceCommand]                = List(setupCommand)

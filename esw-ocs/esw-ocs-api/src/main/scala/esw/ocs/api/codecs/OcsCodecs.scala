@@ -6,7 +6,7 @@ import esw.ocs.api.models.StepStatus.Finished.{Failure, Success}
 import esw.ocs.api.models.StepStatus._
 import esw.ocs.api.models._
 import esw.ocs.api.models.responses.EditorError._
-import esw.ocs.api.models.responses.SequenceComponentResponse.{GetStatusResponse, LoadScriptResponse}
+import esw.ocs.api.models.responses.SequenceComponentResponse.{Done, GetStatusResponse, LoadScriptResponse}
 import esw.ocs.api.models.responses._
 import io.bullet.borer.Codec
 import io.bullet.borer.derivation.ArrayBasedCodecs.deriveUnaryCodec
@@ -27,7 +27,6 @@ trait OcsCodecs extends ParamCodecs with LocationCodecs {
   implicit lazy val stepStatusCodec: Codec[StepStatus]        = deriveCodec[StepStatus]
 
   //StepListResponse Codecs
-  implicit lazy val responseCodec: Codec[EswSequencerResponse] = deriveCodec[EswSequencerResponse]
   implicit lazy val pullNextResultCodec: Codec[PullNextResult] = deriveCodec[PullNextResult]
   implicit lazy val sequenceResultCodec: Codec[SequenceResult] = deriveCodec[SequenceResult]
   implicit lazy val okCodec: Codec[Ok.type]                    = singletonCodec(Ok)
@@ -38,11 +37,13 @@ trait OcsCodecs extends ParamCodecs with LocationCodecs {
     singletonCodec(CannotOperateOnAnInFlightOrFinishedStep)
   implicit lazy val duplicateIdsFoundCodec: Codec[DuplicateIdsFound.type]   = singletonErrorCodec(DuplicateIdsFound)
   implicit lazy val goOnlineHookFailedCodec: Codec[GoOnlineHookFailed.type] = singletonErrorCodec(GoOnlineHookFailed)
+  implicit lazy val responseCodec: Codec[EswSequencerResponse]              = deriveCodec[EswSequencerResponse]
 
   implicit lazy val loadScriptErrorCodec: Codec[RegistrationError] = deriveCodec[RegistrationError]
 
   //SequenceComponentResponse Codecs
   implicit lazy val loadScriptResponseCodec: Codec[LoadScriptResponse]               = deriveUnaryCodec[LoadScriptResponse]
   implicit lazy val getStatusResponseCodec: Codec[GetStatusResponse]                 = deriveUnaryCodec[GetStatusResponse]
+  implicit lazy val doneResponseCodec: Codec[Done.type]                              = singletonCodec(Done)
   implicit lazy val sequenceComponentResponseCodec: Codec[SequenceComponentResponse] = deriveCodec[SequenceComponentResponse]
 }

@@ -1,11 +1,10 @@
 package esw.ocs.core
 
-import akka.Done
 import akka.actor.typed.Behavior
 import akka.actor.typed.scaladsl.Behaviors
 import csw.location.models.AkkaLocation
 import csw.logging.api.scaladsl.Logger
-import esw.ocs.api.models.responses.SequenceComponentResponse.{GetStatusResponse, LoadScriptResponse}
+import esw.ocs.api.models.responses.SequenceComponentResponse.{Done, GetStatusResponse, LoadScriptResponse}
 import esw.ocs.api.models.responses.RegistrationError
 import esw.ocs.core.messages.SequenceComponentMsg
 import esw.ocs.core.messages.SequenceComponentMsg.{GetStatus, LoadScript, Stop, UnloadScript}

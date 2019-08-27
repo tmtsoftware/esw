@@ -1,6 +1,5 @@
 package esw.ocs.app
 
-import akka.Done
 import akka.actor.Scheduler
 import akka.actor.testkit.typed.scaladsl.TestProbe
 import akka.actor.typed.ActorSystem
@@ -16,7 +15,7 @@ import csw.params.commands.{CommandName, Sequence, Setup}
 import csw.params.core.models.Prefix
 import csw.testkit.scaladsl.ScalaTestFrameworkTestKit
 import esw.ocs.api.BaseTestSuite
-import esw.ocs.api.models.responses.SequenceComponentResponse.LoadScriptResponse
+import esw.ocs.api.models.responses.SequenceComponentResponse.{Done, LoadScriptResponse}
 import esw.ocs.app.SequencerAppCommand.{SequenceComponent, Sequencer}
 import esw.ocs.core.messages.SequenceComponentMsg
 import esw.ocs.core.messages.SequenceComponentMsg.{LoadScript, UnloadScript}
@@ -68,7 +67,7 @@ class SequencerAppIntegrationTest extends ScalaTestFrameworkTestKit with BaseTes
       commandService.submit(sequence).futureValue shouldBe Completed(sequence.runId)
 
       // UnloadScript
-      val probe2 = TestProbe[Done]
+      val probe2 = TestProbe[Done.type]
       seqCompRef ! UnloadScript(probe2.ref)
       probe2.expectMessage(Done)
     }

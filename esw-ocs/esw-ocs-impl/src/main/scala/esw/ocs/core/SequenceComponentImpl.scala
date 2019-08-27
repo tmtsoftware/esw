@@ -9,18 +9,17 @@ import esw.ocs.api.models.responses.SequenceComponentResponse.{Done, GetStatusRe
 import esw.ocs.core.messages.SequenceComponentMsg
 import esw.ocs.core.messages.SequenceComponentMsg.{GetStatus, LoadScript, UnloadScript}
 
-import scala.concurrent.{ExecutionContext, Future}
+import scala.concurrent.Future
 
 // fixme: can this take AkkaLocation similar to other wrappers like CommandService?
 class SequenceComponentImpl(sequenceComponentRef: ActorRef[SequenceComponentMsg])(
     implicit scheduler: Scheduler,
-    timeout: Timeout,
-    ec: ExecutionContext
+    timeout: Timeout
 ) extends SequenceComponentApi {
   def loadScript(sequencerId: String, observingMode: String): Future[LoadScriptResponse] =
     sequenceComponentRef ? (LoadScript(sequencerId, observingMode, _))
 
   def getStatus: Future[GetStatusResponse] = sequenceComponentRef ? GetStatus
 
-  def unloadScript(): Future[Done.type] = (sequenceComponentRef ? UnloadScript).map(_ => Done)
+  def unloadScript(): Future[Done.type] = sequenceComponentRef ? UnloadScript
 }

@@ -8,5 +8,5 @@ sealed trait SequenceComponentResponse extends OcsAkkaSerializable
 object SequenceComponentResponse {
   final case class LoadScriptResponse(response: Either[RegistrationError, AkkaLocation]) extends SequenceComponentResponse
   final case class GetStatusResponse(response: Option[AkkaLocation])                     extends SequenceComponentResponse
-  final case object Done
+  case object Done                                                                       extends SequenceComponentResponse
 }
