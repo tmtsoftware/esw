@@ -2,8 +2,10 @@ package esw.ocs.testData
 
 import csw.params.commands.CommandResponse.{Completed, Error}
 import csw.params.commands.{CommandName, Sequence, Setup}
+import csw.params.core.generics.KeyType.StringKey
+import csw.params.core.models.Units.NoUnits
 import csw.params.core.models.{Id, Prefix}
-import csw.params.events.{EventKey, EventName, SystemEvent}
+import csw.params.events.{EventName, SystemEvent}
 import csw.time.core.models.{TAITime, UTCTime}
 import esw.ocs.dsl.{CswServices, Script}
 
@@ -51,7 +53,8 @@ class TestScript(csw: CswServices) extends Script(csw) {
 
   handleSetupCommand("event-command") { command =>
     spawn {
-      val event = SystemEvent(Prefix("TCS.test"), EventName("event-1"))
+      val param = StringKey.make("filter-wheel").set("a", "b", "c").withUnits(NoUnits)
+      val event = eventService.systemEvent("TCS.test", "event-1", param)
 
       // ***** commonly used dsl ****
       eventService.publish(event).await
@@ -83,14 +86,14 @@ class TestScript(csw: CswServices) extends Script(csw) {
 
       // ***************************************************
 
-      val subscription = eventService.subscribe(EventKey("TCS.test.event-1")) { event =>
+      val subscription = eventService.subscribe("TCS.test.event-1") { event =>
         println(event)
       }
       subscription.ready().await
 
       // ***************************************************
 
-      val eventsF = eventService.get(EventKey("TCS.test.event-1"))
+      val eventsF = eventService.get("TCS.test.event-1")
       val events  = eventsF.await
       events.foreach(println)
     }

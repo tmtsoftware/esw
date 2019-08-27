@@ -13,7 +13,7 @@ import csw.location.models.{ComponentId, ComponentType}
 import csw.params.commands.CommandResponse.{Completed, Error, SubmitResponse}
 import csw.params.commands.{CommandName, Sequence, Setup}
 import csw.params.core.models.Prefix
-import csw.params.events.{EventKey, EventName, SystemEvent}
+import csw.params.events.SystemEvent
 import csw.testkit.scaladsl.CSWService.EventServer
 import csw.testkit.scaladsl.ScalaTestFrameworkTestKit
 import esw.ocs.api.BaseTestSuite
@@ -141,8 +141,7 @@ class SequencerIntegrationTest extends ScalaTestFrameworkTestKit(EventServer) wi
       sequencerAdmin.goOnline().futureValue should ===(Ok)
       sequencerAdmin.getState.futureValue should ===(Idle)
 
-      val onlineEventKey = EventKey(Prefix("TCS.test"), EventName("online"))
-      wiring.cswServicesWiring.eventServiceDsl.get(onlineEventKey).futureValue.head shouldBe a[SystemEvent]
+      wiring.cswServicesWiring.eventServiceDsl.get("TCS.test.online").futureValue.head shouldBe a[SystemEvent]
 
       val loadSeqResponse: Future[LoadSequenceResponse] = sequencer ? (LoadSequence(sequence, _))
       loadSeqResponse.futureValue should ===(Ok)

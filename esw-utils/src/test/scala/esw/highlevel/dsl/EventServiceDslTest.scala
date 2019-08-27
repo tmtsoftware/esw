@@ -29,16 +29,14 @@ class EventServiceDslTest extends BaseTestSuite {
 
   "subscribe" must {
     "delegate to subscribing events | ESW-120" in {
-      val eventKey = EventKey("TCS.test.event-1")
-      eventServiceDsl.subscribe(eventKey)(println)
+      eventServiceDsl.subscribe("TCS.test.event-1")(println)
       verify(eventService.defaultSubscriber).subscribeAsync(any[Set[EventKey]], any[Event => Future[_]]())
     }
   }
 
   "get" must {
     "delegate to getting events | ESW-120" in {
-      val eventKey = EventKey("TCS.test.event-1")
-      eventServiceDsl.get(eventKey)
+      eventServiceDsl.get("TCS.test.event-1")
       verify(eventService.defaultSubscriber).get(any[Set[EventKey]])
     }
   }
