@@ -95,4 +95,11 @@ class TestScript(csw: CswServices) extends Script(csw) {
       events.foreach(println)
     }
   }
+
+  handleGoOnline {
+    spawn {
+      // do some actions to go online
+      eventService.publish(SystemEvent(Prefix("TCS.test"), EventName("online"))).await
+    }
+  }
 }

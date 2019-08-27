@@ -13,19 +13,21 @@ import csw.location.models.{ComponentId, ComponentType}
 import csw.params.commands.CommandResponse.{Completed, Error, SubmitResponse}
 import csw.params.commands.{CommandName, Sequence, Setup}
 import csw.params.core.models.Prefix
+import csw.params.events.{EventKey, EventName, SystemEvent}
+import csw.testkit.scaladsl.CSWService.EventServer
 import csw.testkit.scaladsl.ScalaTestFrameworkTestKit
 import esw.ocs.api.BaseTestSuite
 import esw.ocs.api.models.StepStatus.Finished.{Failure, Success}
 import esw.ocs.api.models.StepStatus.Pending
-import esw.ocs.core.messages.SequencerMessages._
 import esw.ocs.api.models.responses._
 import esw.ocs.api.models.{Step, StepList}
+import esw.ocs.core.messages.SequencerMessages._
 import esw.ocs.internal.SequencerWiring
 
 import scala.concurrent.Future
 import scala.concurrent.duration.DurationLong
 
-class SequencerIntegrationTest extends ScalaTestFrameworkTestKit with BaseTestSuite {
+class SequencerIntegrationTest extends ScalaTestFrameworkTestKit(EventServer) with BaseTestSuite {
 
   import frameworkTestKit._
   private implicit val sys: ActorSystem[SpawnProtocol] = actorSystem
@@ -38,9 +40,10 @@ class SequencerIntegrationTest extends ScalaTestFrameworkTestKit with BaseTestSu
   private val sequencerId   = "testSequencerId1"
   private val observingMode = "testObservingMode1"
 
-  private var locationService: LocationService  = _
-  private var wiring: SequencerWiring           = _
-  private var sequencer: ActorRef[SequencerMsg] = _
+  private var locationService: LocationService   = _
+  private var wiring: SequencerWiring            = _
+  private var sequencer: ActorRef[SequencerMsg]  = _
+  private var sequencerAdmin: SequencerAdminImpl = _
 
   override def beforeAll(): Unit = {
     super.beforeAll()
@@ -51,6 +54,7 @@ class SequencerIntegrationTest extends ScalaTestFrameworkTestKit with BaseTestSu
     wiring = new SequencerWiring("testSequencerId1", "testObservingMode1", None)
     wiring.start()
     sequencer = resolveSequencer()
+    sequencerAdmin = new SequencerAdminImpl(sequencer)(sys, askTimeout)
   }
 
   override protected def afterEach(): Unit = {
@@ -58,6 +62,10 @@ class SequencerIntegrationTest extends ScalaTestFrameworkTestKit with BaseTestSu
   }
 
   "Sequencer" must {
+    val command1 = Setup(Prefix("esw.test"), CommandName("command-1"), None)
+    val command2 = Setup(Prefix("esw.test"), CommandName("command-2"), None)
+    val command3 = Setup(Prefix("esw.test"), CommandName("command-3"), None)
+
     "load a sequence and start the sequence later | ESW-154" in {
       val command3 = Setup(Prefix("esw.test"), CommandName("command-3"), None)
       val sequence = Sequence(command3)
@@ -69,34 +77,16 @@ class SequencerIntegrationTest extends ScalaTestFrameworkTestKit with BaseTestSu
       seqResponse.futureValue should ===(SequenceResult(Completed(sequence.runId)))
     }
 
-    "LoadAndStart two sequences back to back" in {
-      val command3  = Setup(Prefix("esw.test"), CommandName("command-3"), None)
-      val command2  = Setup(Prefix("esw.test"), CommandName("command-2"), None)
-      val sequence1 = Sequence(command3, command2)
-      val sequence2 = Sequence(command3, command2)
-
-      val seqResponse1: Future[SubmitResponse] = sequencer ? (LoadAndStartSequence(sequence1, _))
-      seqResponse1.futureValue should ===(Completed(sequence1.runId))
-
-      val seqResponse2: Future[SubmitResponse] = sequencer ? (LoadAndStartSequence(sequence2, _))
-      seqResponse2.futureValue should ===(Completed(sequence2.runId))
-    }
-
     "process sequence and execute commands that are added later | ESW-145, ESW-154" in {
-      val command1 = Setup(Prefix("esw.test"), CommandName("command-1"), None)
-      val command2 = Setup(Prefix("esw.test"), CommandName("command-2"), None)
-      val command3 = Setup(Prefix("esw.test"), CommandName("command-3"), None)
       val sequence = Sequence(command1, command2)
 
       val processSeqResponse: Future[SubmitResponse] = sequencer ? (LoadAndStartSequence(sequence, _))
       eventually((sequencer ? GetSequence).futureValue shouldBe a[Some[_]])
 
-      val addResponse: Future[OkOrUnhandledResponse] = sequencer ? (Add(List(command3), _))
-      addResponse.futureValue should ===(Ok)
-
+      sequencerAdmin.add(List(command3)).futureValue should ===(Ok)
       processSeqResponse.futureValue should ===(Completed(sequence.runId))
 
-      (sequencer ? GetSequence).futureValue should ===(
+      sequencerAdmin.getSequence.futureValue should ===(
         Some(
           StepList(
             sequence.runId,
@@ -120,11 +110,11 @@ class SequencerIntegrationTest extends ScalaTestFrameworkTestKit with BaseTestSu
       val sequence = Sequence(command1, command2, command3)
 
       val processSeqResponse: Future[SubmitResponse] = sequencer ? (LoadAndStartSequence(sequence, _))
-      eventually((sequencer ? GetSequence).futureValue shouldBe a[Some[_]])
+      eventually(sequencerAdmin.getSequence.futureValue shouldBe a[Some[_]])
 
       processSeqResponse.futureValue should ===(Error(sequence.runId, failCommandName))
 
-      (sequencer ? GetSequence).futureValue should ===(
+      sequencerAdmin.getSequence.futureValue should ===(
         Some(
           StepList(
             sequence.runId,
@@ -136,6 +126,24 @@ class SequencerIntegrationTest extends ScalaTestFrameworkTestKit with BaseTestSu
           )
         )
       )
+    }
+
+    "go online and offline | ESW-194" in {
+      val sequence = Sequence(command1, command2)
+
+      val seqResponse: Future[SubmitResponse] = sequencer ? (LoadAndStartSequence(sequence, _))
+      seqResponse.futureValue should ===(Completed(sequence.runId))
+
+      sequencerAdmin.goOffline().futureValue should ===(Ok)
+      sequencerAdmin.add(List(command3)).futureValue should ===(Unhandled("offline", "Add"))
+
+      sequencerAdmin.goOnline().futureValue should ===(Ok)
+
+      val onlineEventKey = EventKey(Prefix("TCS.test"), EventName("online"))
+      wiring.cswServicesWiring.eventServiceDsl.get(onlineEventKey).futureValue.head shouldBe a[SystemEvent]
+
+      val loadSeqResponse: Future[LoadSequenceResponse] = sequencer ? (LoadSequence(sequence, _))
+      loadSeqResponse.futureValue should ===(Ok)
     }
   }
 
