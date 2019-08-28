@@ -1,3 +1,3 @@
-package esw.ocs.api.codecs
+package esw.ocs.api.models.codecs
 
 trait OcsAkkaSerializable extends Product with Serializable

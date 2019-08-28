@@ -12,7 +12,7 @@ import csw.params.commands.CommandResponse.Completed
 import csw.params.commands._
 import csw.params.core.models.{Id, Prefix}
 import esw.ocs.api.BaseTestSuite
-import esw.ocs.api.codecs.OcsAkkaSerializable
+import esw.ocs.api.models.codecs.OcsAkkaSerializable
 import esw.ocs.api.models.responses.EditorError._
 import esw.ocs.api.models.responses.SequenceComponentResponse.{Done, GetStatusResponse, LoadScriptResponse}
 import esw.ocs.api.models.responses._

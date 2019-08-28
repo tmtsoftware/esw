@@ -2,7 +2,7 @@ package esw.ocs.client.messages
 
 import csw.command.client.messages.sequencer.SequencerMsg
 import enumeratum.{Enum, EnumEntry}
-import esw.ocs.api.codecs.OcsAkkaSerializable
+import esw.ocs.api.models.codecs.OcsAkkaSerializable
 import esw.ocs.client.messages.SequencerMessages._
 
 import scala.collection.immutable.IndexedSeq

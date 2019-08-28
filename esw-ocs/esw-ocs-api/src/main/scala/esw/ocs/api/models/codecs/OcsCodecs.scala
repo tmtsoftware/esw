@@ -1,4 +1,4 @@
-package esw.ocs.api.codecs
+package esw.ocs.api.models.codecs
 
 import csw.location.models.codecs.LocationCodecs
 import csw.params.core.formats.ParamCodecs

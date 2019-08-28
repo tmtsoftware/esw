@@ -12,7 +12,7 @@ import esw.ocs.client.messages.SequenceComponentMsg.{GetStatus, LoadScript, Unlo
 import scala.concurrent.Future
 
 // fixme: can this take AkkaLocation similar to other wrappers like CommandService?
-class SequenceComponentImpl(sequenceComponentRef: ActorRef[SequenceComponentMsg])(
+class SequenceComponentClient(sequenceComponentRef: ActorRef[SequenceComponentMsg])(
     implicit scheduler: Scheduler,
     timeout: Timeout
 ) extends SequenceComponentApi {

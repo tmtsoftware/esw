@@ -2,7 +2,7 @@ package esw.ocs.api.models
 
 import csw.params.commands.{Sequence, SequenceCommand}
 import csw.params.core.models.Id
-import esw.ocs.api.codecs.OcsAkkaSerializable
+import esw.ocs.api.models.codecs.OcsAkkaSerializable
 import esw.ocs.api.models.responses.EditorError._
 import esw.ocs.api.models.responses.{DuplicateIdsFound, EditorError}
 

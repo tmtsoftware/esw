@@ -13,7 +13,7 @@ import csw.location.models.ComponentId
 import csw.location.models.Connection.AkkaConnection
 import csw.logging.client.commons.LogAdminUtil
 import csw.params.commands.Sequence
-import esw.ocs.api.codecs.OcsCodecs
+import esw.ocs.api.models.codecs.OcsCodecs
 import esw.ocs.client.messages.SequencerMessages._
 import esw.ocs.api.models.responses.{GoOnlineHookFailed, _}
 import esw.ocs.api.models.StepList

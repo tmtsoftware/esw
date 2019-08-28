@@ -7,7 +7,7 @@ import akka.serialization.Serializer
 import csw.command.client.messages.sequencer.SequencerMsg
 import csw.logging.api.scaladsl.Logger
 import csw.logging.client.scaladsl.LoggerFactory
-import esw.ocs.api.codecs.OcsCodecs
+import esw.ocs.api.models.codecs.OcsCodecs
 import esw.ocs.api.models.StepList
 import esw.ocs.client.messages.SequencerMessages._
 import esw.ocs.api.models.responses._

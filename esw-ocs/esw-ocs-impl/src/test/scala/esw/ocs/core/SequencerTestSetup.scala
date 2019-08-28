@@ -139,7 +139,6 @@ class SequencerTestSetup(sequence: Sequence)(implicit system: ActorSystem[_], ti
     probe.expectMessage(response)
   }
 
-
   def replaceAndAssertResponse(idToReplace: Id, commands: List[SequenceCommand], response: GenericResponse): GenericResponse = {
     val replaceResProbe = TestProbe[GenericResponse]()
     sequencerActor ! Replace(idToReplace, commands, replaceResProbe.ref)
