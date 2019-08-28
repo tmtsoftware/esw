@@ -54,7 +54,6 @@ class EventImpl(eventService: EventService, eventSubscriberUtil: EventSubscriber
           .mapMaterializedValue(_ => Future.successful(None))
       case None => events.mapMaterializedValue(_ => Future.successful(None))
     }
-
   }
 
 }

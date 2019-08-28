@@ -36,7 +36,7 @@ class SequencerIntegrationTest extends ScalaTestFrameworkTestKit(EventServer) wi
 
   override implicit def patienceConfig: PatienceConfig = PatienceConfig(10.seconds)
 
-  private implicit val askTimeout: Timeout  = Timeout(5.seconds)
+  private implicit val askTimeout: Timeout  = Timeout(10.seconds)
   private implicit val scheduler: Scheduler = actorSystem.scheduler
 
   private val sequencerId   = "testSequencerId1"

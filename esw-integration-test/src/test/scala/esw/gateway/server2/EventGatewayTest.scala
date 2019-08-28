@@ -109,18 +109,6 @@ class EventGatewayTest extends BaseTestSuite with RestlessCodecs {
       val eventClient: EventClient = new EventClient(postClient, websocketClient)
       eventClient.subscribe(Set.empty, None).toMat(Sink.head)(Keep.left).run().futureValue.get should ===(EmptyEventKeys())
     }
-
-    "pSubscribe events returns a set of events successfully | ESW-216" in {
-      val postClient: RequestClient[PostRequest] = new PostClientJvm[PostRequest](s"http://localhost:$port/post")
-      val websocketClient: RequestClient[WebsocketRequest] =
-        new WebsocketClientJvm[WebsocketRequest](s"ws://localhost:$port/websocket")
-      val eventClient: EventClient = new EventClient(postClient, websocketClient)
-
-      eventClient.publish(event1).futureValue
-      eventClient.publish(event2).futureValue
-
-//    eventClient.pSubscribe(Subsystem.TCS, None, "event").take(2).runWith(Sink.seq).futureValue.toSet should ===(Set(event1, event2))
-    }
   }
 
 }

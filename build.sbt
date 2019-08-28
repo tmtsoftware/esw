@@ -153,7 +153,7 @@ lazy val `esw-gateway-impl` = project
 
 lazy val `esw-gateway-server2` = project
   .in(file("esw-gateway/esw-gateway-server2"))
-  .dependsOn(`msocket-impl`, `esw-gateway-impl`, `esw-http-core`)
+  .dependsOn(`msocket-impl`, `esw-gateway-impl`, `esw-http-core` % "compile->compile;test->test")
 
 /* ================= Paradox Docs ============== */
 lazy val docs = project.enablePlugins(NoPublish, ParadoxSite)

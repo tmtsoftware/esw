@@ -57,16 +57,15 @@ class CommandImpl(commandService: (String, ComponentType) => Future[CommandServi
       maxFrequency: Option[Int]
   ): Source[CurrentState, Future[Option[CommandError]]] = {
 
-    val currentStateSource: Source[CurrentState, Future[Option[InvalidComponent]]] = {
-      Source
-        .fromFutureSource(
-          commandService(componentId.name, componentId.componentType)
-            .map(_.subscribeCurrentState(stateNames).mapMaterializedValue(_ => Future.successful(None)))
-            .recover {
-              case NonFatal(ex) => Utils.emptySourceWithError(InvalidComponent(ex.getMessage))
-            }
-        )
-        .mapMaterializedValue(_.flatten)
+    def futureSource: Future[Source[CurrentState, Future[Option[InvalidComponent]]]] =
+      commandService(componentId.name, componentId.componentType)
+        .map(_.subscribeCurrentState(stateNames).mapMaterializedValue(_ => Future.successful(None)))
+        .recover {
+          case NonFatal(ex) => Utils.emptySourceWithError(InvalidComponent(ex.getMessage))
+        }
+
+    def currentStateSource: Source[CurrentState, Future[Option[InvalidComponent]]] = {
+      Source.fromFutureSource(futureSource).mapMaterializedValue(_.flatten)
     }
 
     maxFrequency match {
