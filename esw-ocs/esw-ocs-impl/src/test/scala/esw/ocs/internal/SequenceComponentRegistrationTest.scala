@@ -44,8 +44,9 @@ class SequenceComponentRegistrationTest extends ScalaTestWithActorTestKit with B
       when(locationService.register(any[AkkaRegistration])).thenReturn(Future(registrationResult))
       when(locationService.list(ComponentType.SequenceComponent)).thenReturn(Future.successful(List.empty))
 
-      val sequenceComponentProbe: TestProbe[SequenceComponentMsg]                                 = TestProbe[SequenceComponentMsg]()
-      def sequenceComponentFactory(sequenceComponentName: String): ActorRef[SequenceComponentMsg] = sequenceComponentProbe.ref
+      val sequenceComponentProbe: TestProbe[SequenceComponentMsg] = TestProbe[SequenceComponentMsg]()
+      def sequenceComponentFactory(sequenceComponentName: String): Future[ActorRef[SequenceComponentMsg]] =
+        Future.successful(sequenceComponentProbe.ref)
 
       val sequenceComponentRegistration =
         new SequenceComponentRegistration(
@@ -77,8 +78,9 @@ class SequenceComponentRegistrationTest extends ScalaTestWithActorTestKit with B
         .thenReturn(Future.failed(OtherLocationIsRegistered(errorMsg)), Future.successful(registrationResult))
       when(locationService.list(ComponentType.SequenceComponent)).thenReturn(Future.successful(List(akkaLocation)))
 
-      val sequenceComponentProbe: TestProbe[SequenceComponentMsg]                                 = TestProbe[SequenceComponentMsg]()
-      def sequenceComponentFactory(sequenceComponentName: String): ActorRef[SequenceComponentMsg] = sequenceComponentProbe.ref
+      val sequenceComponentProbe: TestProbe[SequenceComponentMsg] = TestProbe[SequenceComponentMsg]()
+      def sequenceComponentFactory(sequenceComponentName: String): Future[ActorRef[SequenceComponentMsg]] =
+        Future.successful(sequenceComponentProbe.ref)
 
       val sequenceComponentRegistration =
         new SequenceComponentRegistration(prefix, locationService, sequenceComponentFactory)
@@ -103,8 +105,9 @@ class SequenceComponentRegistrationTest extends ScalaTestWithActorTestKit with B
         .thenReturn(Future.failed(RegistrationFailed(errorMsg)), Future(registrationResult))
       when(locationService.list(ComponentType.SequenceComponent)).thenReturn(Future.successful(List(akkaLocation)))
 
-      val sequenceComponentProbe: TestProbe[SequenceComponentMsg]                                 = TestProbe[SequenceComponentMsg]()
-      def sequenceComponentFactory(sequenceComponentName: String): ActorRef[SequenceComponentMsg] = sequenceComponentProbe.ref
+      val sequenceComponentProbe: TestProbe[SequenceComponentMsg] = TestProbe[SequenceComponentMsg]()
+      def sequenceComponentFactory(sequenceComponentName: String): Future[ActorRef[SequenceComponentMsg]] =
+        Future.successful(sequenceComponentProbe.ref)
 
       val sequenceComponentRegistration =
         new SequenceComponentRegistration(prefix, locationService, sequenceComponentFactory)
@@ -128,8 +131,9 @@ class SequenceComponentRegistrationTest extends ScalaTestWithActorTestKit with B
         )
       when(locationService.list(ComponentType.SequenceComponent)).thenReturn(Future.successful(List(akkaLocation)))
 
-      val sequenceComponentProbe: TestProbe[SequenceComponentMsg]                                 = TestProbe[SequenceComponentMsg]()
-      def sequenceComponentFactory(sequenceComponentName: String): ActorRef[SequenceComponentMsg] = sequenceComponentProbe.ref
+      val sequenceComponentProbe: TestProbe[SequenceComponentMsg] = TestProbe[SequenceComponentMsg]()
+      def sequenceComponentFactory(sequenceComponentName: String): Future[ActorRef[SequenceComponentMsg]] =
+        Future.successful(sequenceComponentProbe.ref)
 
       val sequenceComponentRegistration =
         new SequenceComponentRegistration(prefix, locationService, sequenceComponentFactory)

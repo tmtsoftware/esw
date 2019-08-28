@@ -12,7 +12,6 @@ import esw.highlevel.dsl.LocationServiceDsl
 import esw.ocs.api.models.responses.RegistrationError
 import esw.ocs.client.messages.SequenceComponentMsg
 import esw.ocs.client.messages.SequenceComponentMsg.Stop
-import esw.ocs.syntax.FutureSyntax.FutureOps
 
 import scala.concurrent.{ExecutionContext, Future}
 import scala.util.control.NonFatal
@@ -20,7 +19,7 @@ import scala.util.control.NonFatal
 class SequenceComponentRegistration(
     prefix: Prefix,
     locationService: LocationService,
-    sequenceComponentFactory: String => ActorRef[SequenceComponentMsg]
+    sequenceComponentFactory: String => Future[ActorRef[SequenceComponentMsg]]
 )(
     implicit actorSystem: ActorSystem[SpawnProtocol]
 ) {
@@ -28,22 +27,22 @@ class SequenceComponentRegistration(
 
   private val locationServiceUtils: LocationServiceDsl = new LocationServiceDsl(locationService)
 
-  def registerWithRetry(retryCount: Int): Future[Either[RegistrationError, AkkaLocation]] = {
-    val akkaRegistration = registration()
-    locationServiceUtils
-      .register(
-        akkaRegistration,
-        onFailure = {
-          case OtherLocationIsRegistered(_) if retryCount > 0 =>
-            //kill actor ref if registration fails. Retry attempt will create new actor ref
-            akkaRegistration.actorRefURI.toActorRef.unsafeUpcast[SequenceComponentMsg] ! Stop
-            registerWithRetry(retryCount - 1)
-          case NonFatal(e) => Future.successful(Left(RegistrationError(e.getMessage)))
-        }
-      )
-  }
+  def registerWithRetry(retryCount: Int): Future[Either[RegistrationError, AkkaLocation]] =
+    registration().flatMap { akkaRegistration =>
+      locationServiceUtils
+        .register(
+          akkaRegistration,
+          onFailure = {
+            case OtherLocationIsRegistered(_) if retryCount > 0 =>
+              //kill actor ref if registration fails. Retry attempt will create new actor ref
+              akkaRegistration.actorRefURI.toActorRef.unsafeUpcast[SequenceComponentMsg] ! Stop
+              registerWithRetry(retryCount - 1)
+            case NonFatal(e) => Future.successful(Left(RegistrationError(e.getMessage)))
+          }
+        )
+    }
 
-  private def generateSequenceComponentName(): String = {
+  private def generateSequenceComponentName(): Future[String] = {
     val subsystem = prefix.subsystem
     locationServiceUtils
       .listBy(subsystem, ComponentType.SequenceComponent)
@@ -51,17 +50,12 @@ class SequenceComponentRegistration(
         val uniqueId = s"${sequenceComponents.length + 1}"
         s"${subsystem}_$uniqueId"
       }
-      .block
   }
 
-  private def registration(): AkkaRegistration = {
-    val sequenceComponentName                                = generateSequenceComponentName()
-    val sequenceComponentRef: ActorRef[SequenceComponentMsg] = sequenceComponentFactory(sequenceComponentName)
-    AkkaRegistration(
-      AkkaConnection(ComponentId(sequenceComponentName, ComponentType.SequenceComponent)),
-      prefix,
-      sequenceComponentRef.toURI
-    )
-  }
+  private def registration(): Future[AkkaRegistration] =
+    for {
+      name <- generateSequenceComponentName()
+      ref  <- sequenceComponentFactory(name)
+    } yield AkkaRegistration(AkkaConnection(ComponentId(name, ComponentType.SequenceComponent)), prefix, ref.toURI)
 
 }

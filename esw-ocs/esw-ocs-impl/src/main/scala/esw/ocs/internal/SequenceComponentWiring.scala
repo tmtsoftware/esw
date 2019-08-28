@@ -7,9 +7,11 @@ import csw.framework.internal.wiring.ActorRuntime
 import csw.location.models.AkkaLocation
 import csw.params.core.models.Prefix
 import esw.ocs.api.models.responses.RegistrationError
-import esw.ocs.core.SequenceComponentBehavior
 import esw.ocs.client.messages.SequenceComponentMsg
+import esw.ocs.core.SequenceComponentBehavior
 import esw.ocs.syntax.FutureSyntax.FutureOps
+
+import scala.concurrent.Future
 
 // $COVERAGE-OFF$
 private[ocs] class SequenceComponentWiring(prefix: Prefix) {
@@ -22,9 +24,9 @@ private[ocs] class SequenceComponentWiring(prefix: Prefix) {
 
   lazy val actorRuntime: ActorRuntime = frameworkWiring.actorRuntime
 
-  def sequenceComponentFactory(sequenceComponentName: String): ActorRef[SequenceComponentMsg] = {
+  def sequenceComponentFactory(sequenceComponentName: String): Future[ActorRef[SequenceComponentMsg]] = {
     log.info(s"Starting sequence component with name: $sequenceComponentName")
-    (typedSystem ? Spawn(SequenceComponentBehavior.behavior(sequenceComponentName, log), sequenceComponentName)).block
+    typedSystem ? Spawn(SequenceComponentBehavior.behavior(sequenceComponentName, log), sequenceComponentName)
   }
 
   private lazy val sequenceComponentRegistration =
