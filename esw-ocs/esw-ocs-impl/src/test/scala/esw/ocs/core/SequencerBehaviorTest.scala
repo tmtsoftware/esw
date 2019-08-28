@@ -424,6 +424,27 @@ class SequencerBehaviorTest extends ScalaTestWithActorTestKit with BaseTestSuite
     }
   }
 
+  "Reset" must {
+    "discard complete sequence in Loaded state" in {
+      val sequencerSetup = SequencerTestSetup.loaded(sequence)
+      import sequencerSetup._
+
+      assertCurrentSequence(Some(StepList(sequence).rightValue))
+      resetAndAssertResponse(Ok)
+      assertSequencerState(Idle)
+      assertCurrentSequence(None)
+    }
+
+    "discard pending steps in InProgress state" in {
+      val sequencerSetup = SequencerTestSetup.inProgress(sequence)
+      import sequencerSetup._
+
+      resetAndAssertResponse(Ok)
+      assertSequencerState(InProgress)
+      assertCurrentSequence(Some(StepList(sequence.runId, List(Step(command1, status = InFlight, hasBreakpoint = false)))))
+    }
+  }
+
   "AbortSequence" must {
     "abort the given sequence in Loaded state | ESW-155, ESW-137" in {
       val sequencerSetup = SequencerTestSetup.loaded(sequence)

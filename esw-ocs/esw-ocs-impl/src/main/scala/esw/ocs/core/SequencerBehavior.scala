@@ -59,21 +59,21 @@ class SequencerBehavior(
 
   private def loaded(data: SequencerData): Behavior[SequencerMsg] = receive(Loaded, data, loaded) {
     case AbortSequence(replyTo)     => abortSequence(data, Loaded, replyTo)(nextBehavior = idle)
-    case editorAction: EditorAction => loaded(handleEditorAction(editorAction, data, Loaded))
+    case editorAction: EditorAction => handleEditorAction(editorAction, data, Loaded, nextBehavior = loaded)
     case GoOffline(replyTo)         => goOffline(replyTo, data)
     case StartSequence(replyTo)     => start(data, replyTo)
   }
 
   private def inProgress(data: SequencerData): Behavior[SequencerMsg] = receive(InProgress, data, inProgress) {
     case AbortSequence(replyTo)    => abortSequence(data, InProgress, replyTo)(nextBehavior = inProgress)
-    case msg: EditorAction         => inProgress(handleEditorAction(msg, data, InProgress))
+    case msg: EditorAction         => handleEditorAction(msg, data, InProgress, nextBehavior = inProgress)
     case PullNext(replyTo)         => inProgress(data.pullNextStep(replyTo))
     case Update(submitResponse, _) => inProgress(data.updateStepStatus(submitResponse, InProgress))
     case _: GoIdle                 => idle(data)
   }
 
   private def offline(data: SequencerData): Behavior[SequencerMsg] = receive(Offline, data, offline) {
-    case GoOnline(replyTo) => goOnline(replyTo, data)(fallbackBehavior = offline, nextBehavior = idle)
+    case GoOnline(replyTo) => goOnline(replyTo, data)
   }
 
   private def shuttingDown(data: SequencerData): Behavior[SequencerMsg] = receive(ShuttingDown, data, shuttingDown) {
@@ -127,20 +127,25 @@ class SequencerBehavior(
   private def handleEditorAction(
       editorAction: EditorAction,
       data: SequencerData,
-      state: SequencerState[SequencerMsg]
-  ): SequencerData = {
+      state: SequencerState[SequencerMsg],
+      nextBehavior: SequencerData => Behavior[SequencerMsg]
+  ): Behavior[SequencerMsg] = {
     import data._
     editorAction match {
-      case Add(commands, replyTo)             => updateStepList(replyTo, state, stepList.map(_.append(commands)))
-      case Pause(replyTo)                     => updateStepListResult(replyTo, state, stepList.map(_.pause))
-      case Resume(replyTo)                    => updateStepList(replyTo, state, stepList.map(_.resume))
-      case Replace(id, commands, replyTo)     => updateStepListResult(replyTo, state, stepList.map(_.replace(id, commands)))
-      case Prepend(commands, replyTo)         => updateStepList(replyTo, state, stepList.map(_.prepend(commands)))
-      case Delete(id, replyTo)                => updateStepListResult(replyTo, state, stepList.map(_.delete(id)))
-      case Reset(replyTo)                     => updateStepList(replyTo, state, stepList.map(_.discardPending))
-      case InsertAfter(id, commands, replyTo) => updateStepListResult(replyTo, state, stepList.map(_.insertAfter(id, commands)))
-      case AddBreakpoint(id, replyTo)         => updateStepListResult(replyTo, state, stepList.map(_.addBreakpoint(id)))
-      case RemoveBreakpoint(id, replyTo)      => updateStepListResult(replyTo, state, stepList.map(_.removeBreakpoint(id)))
+      case Add(commands, replyTo)            => nextBehavior(updateStepList(replyTo, state, stepList.map(_.append(commands))))
+      case Pause(replyTo)                    => nextBehavior(updateStepListResult(replyTo, state, stepList.map(_.pause)))
+      case Resume(replyTo)                   => nextBehavior(updateStepList(replyTo, state, stepList.map(_.resume)))
+      case Prepend(commands, replyTo)        => nextBehavior(updateStepList(replyTo, state, stepList.map(_.prepend(commands))))
+      case Delete(id, replyTo)               => nextBehavior(updateStepListResult(replyTo, state, stepList.map(_.delete(id))))
+      case Reset(replyTo) if state == Loaded => idle(updateStepList(replyTo, state, stepList = None))
+      case Reset(replyTo)                    => nextBehavior(updateStepList(replyTo, state, stepList.map(_.discardPending)))
+      case Replace(id, commands, replyTo) =>
+        nextBehavior(updateStepListResult(replyTo, state, stepList.map(_.replace(id, commands))))
+      case InsertAfter(id, commands, replyTo) =>
+        nextBehavior(updateStepListResult(replyTo, state, stepList.map(_.insertAfter(id, commands))))
+      case AddBreakpoint(id, replyTo) => nextBehavior(updateStepListResult(replyTo, state, stepList.map(_.addBreakpoint(id))))
+      case RemoveBreakpoint(id, replyTo) =>
+        nextBehavior(updateStepListResult(replyTo, state, stepList.map(_.removeBreakpoint(id))))
     }
   }
 
@@ -189,10 +194,7 @@ class SequencerBehavior(
     shuttingDown(data)
   }
 
-  private def goOnline(replyTo: ActorRef[GoOnlineResponse], data: SequencerData)(
-      fallbackBehavior: SequencerData => Behavior[SequencerMsg],
-      nextBehavior: SequencerData => Behavior[SequencerMsg]
-  ): Behavior[SequencerMsg] = {
+  private def goOnline(replyTo: ActorRef[GoOnlineResponse], data: SequencerData): Behavior[SequencerMsg] = {
     script.executeGoOnline().onComplete {
       case Success(_) => data.self ! GoOnlineSuccess(replyTo)
       case Failure(_) => data.self ! GoOnlineFailed(replyTo)
@@ -201,7 +203,7 @@ class SequencerBehavior(
   }
 
   private def goOffline(replyTo: ActorRef[OkOrUnhandledResponse], data: SequencerData): Behavior[SequencerMsg] = {
-    // go to offline data.even if handler fails, note that this is different than GoOnline
+    // go to offline state even if handler fails, note that this is different than GoOnline
     script.executeGoOffline().onComplete(_ => data.self ! GoneOffline(replyTo))
     goingOffline(data)
   }
