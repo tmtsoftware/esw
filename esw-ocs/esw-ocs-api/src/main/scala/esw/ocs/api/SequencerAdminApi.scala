@@ -10,7 +10,8 @@ import scala.concurrent.Future
 trait SequencerAdminApi {
 
   def getSequence: Future[Option[StepList]]
-//  def getState: Future[SequencerState[SequencerMsg]] fixme: Extract cross compilable APIs which give idea of if sequence available or offline online etc
+  def isAvailable: Future[Boolean]
+  def isOnline: Future[Boolean]
   def add(commands: List[SequenceCommand]): Future[OkOrUnhandledResponse]
   def prepend(commands: List[SequenceCommand]): Future[OkOrUnhandledResponse]
   def replace(id: Id, commands: List[SequenceCommand]): Future[GenericResponse]

@@ -17,7 +17,6 @@ import csw.location.models.{AkkaLocation, AkkaRegistration, ComponentId}
 import csw.params.core.models.{Prefix, Subsystem}
 import esw.ocs.api.BaseTestSuite
 import esw.ocs.api.models.responses.RegistrationError
-import org.mockito.Mockito.{verify, when}
 
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future

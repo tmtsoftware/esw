@@ -12,15 +12,16 @@ import esw.ocs.api.models.StepList
 import esw.ocs.api.models.responses._
 import esw.ocs.client.messages.SequencerMessages._
 import esw.ocs.client.messages.SequencerState
+import esw.ocs.client.messages.SequencerState.{Idle, Offline}
 
-import scala.concurrent.Future
+import scala.concurrent.{ExecutionContext, Future}
 
 class SequencerAdminImpl(sequencer: ActorRef[EswSequencerMessage])(implicit system: ActorSystem[_], timeout: Timeout)
     extends SequencerAdminApi {
   private implicit val scheduler: Scheduler = system.scheduler
+  private implicit val ec: ExecutionContext = system.executionContext
 
   override def getSequence: Future[Option[StepList]] = sequencer ? GetSequence
-  def getState: Future[SequencerState[SequencerMsg]] = sequencer ? GetSequencerState
 
   override def add(commands: List[SequenceCommand]): Future[OkOrUnhandledResponse]       = sequencer ? (Add(commands, _))
   override def prepend(commands: List[SequenceCommand]): Future[OkOrUnhandledResponse]   = sequencer ? (Prepend(commands, _))
@@ -39,4 +40,8 @@ class SequencerAdminImpl(sequencer: ActorRef[EswSequencerMessage])(implicit syst
   override def goOnline(): Future[GoOnlineResponse]                       = sequencer ? GoOnline
   override def goOffline(): Future[OkOrUnhandledResponse]                 = sequencer ? GoOffline
 
+  override def isAvailable: Future[Boolean] = getState.map(_ == Idle)
+  override def isOnline: Future[Boolean]    = getState.map(_ != Offline)
+
+  private def getState: Future[SequencerState[SequencerMsg]] = sequencer ? GetSequencerState
 }

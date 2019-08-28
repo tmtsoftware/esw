@@ -23,7 +23,7 @@ import esw.ocs.api.models.responses._
 import esw.ocs.api.models.{Step, StepList}
 import esw.ocs.client.SequencerAdminImpl
 import esw.ocs.client.messages.SequencerMessages._
-import esw.ocs.client.messages.SequencerState.{Idle, Offline}
+import esw.ocs.client.messages.SequencerState.Offline
 import esw.ocs.internal.SequencerWiring
 
 import scala.concurrent.Future
@@ -145,7 +145,7 @@ class SequencerIntegrationTest extends ScalaTestFrameworkTestKit(EventServer) wi
 
     // assert sequencer goes online and online handlers are called
     sequencerAdmin.goOnline().futureValue should ===(Ok)
-    sequencerAdmin.getState.futureValue should ===(Idle)
+    sequencerAdmin.isOnline.futureValue should ===(true)
 
     val onlineEvent = wiring.cswServicesWiring.eventServiceDsl.get("TCS.test.online").futureValue.head
     onlineEvent.paramType.exists(BooleanKey.make("online")) should ===(true)

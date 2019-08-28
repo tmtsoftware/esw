@@ -12,7 +12,7 @@ import esw.ocs.api.models.responses.{GoOnlineHookFailed, Ok, Unhandled}
 import esw.ocs.client.messages.SequencerMessages._
 import esw.ocs.client.messages.SequencerState.{Idle, InProgress, Loaded, Offline}
 
-class SequenceAdminImplTest extends ScalaTestWithActorTestKit with BaseTestSuite {
+class SequencerAdminImplTest extends ScalaTestWithActorTestKit with BaseTestSuite {
   private val command = Setup(Prefix("esw.test"), CommandName("command-1"), None)
 
   private val getSequenceResponse      = StepList(Sequence(command)).toOption
@@ -62,8 +62,12 @@ class SequenceAdminImplTest extends ScalaTestWithActorTestKit with BaseTestSuite
     sequencerAdmin.getSequence.futureValue should ===(getSequenceResponse)
   }
 
-  "getState" in {
-    sequencerAdmin.getState.futureValue should ===(getStateResponse)
+  "isAvailable" in {
+    sequencerAdmin.isAvailable.futureValue should ===(false)
+  }
+
+  "isOnline" in {
+    sequencerAdmin.isOnline.futureValue should ===(true)
   }
 
   "add" in {
