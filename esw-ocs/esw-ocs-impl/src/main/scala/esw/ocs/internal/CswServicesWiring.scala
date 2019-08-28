@@ -10,7 +10,8 @@ import csw.framework.internal.wiring.FrameworkWiring
 import csw.location.client.ActorSystemFactory
 import csw.logging.api.scaladsl.Logger
 import csw.logging.client.scaladsl.LoggerFactory
-import esw.highlevel.dsl.{EventServiceDsl, LocationServiceDsl}
+import csw.time.scheduler.TimeServiceSchedulerFactory
+import esw.highlevel.dsl.{EventServiceDsl, LocationServiceDsl, TimeServiceDsl}
 import esw.ocs.syntax.FutureSyntax.FutureOps
 
 // $COVERAGE-OFF$
@@ -26,6 +27,7 @@ private[internal] class CswServicesWiring(componentName: String) {
   lazy val log: Logger        = loggerFactory.getLogger
   lazy val locationServiceDsl = new LocationServiceDsl(locationService)
   lazy val eventServiceDsl    = new EventServiceDsl(eventServiceFactory.make(locationService))
+  lazy val timeServiceDsl     = new TimeServiceDsl(new TimeServiceSchedulerFactory)(actorSystem.scheduler)
 
   lazy val crmRef: ActorRef[CommandResponseManagerMessage] =
     (actorSystem ? Spawn(CommandResponseManagerActor.behavior(CRMCacheProperties(), loggerFactory), "crm")).block

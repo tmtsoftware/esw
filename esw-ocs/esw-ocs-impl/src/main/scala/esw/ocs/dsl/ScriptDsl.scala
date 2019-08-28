@@ -2,7 +2,7 @@ package esw.ocs.dsl
 
 import akka.Done
 import csw.params.commands.{Observe, SequenceCommand, Setup}
-import esw.highlevel.dsl.{EventServiceDsl, LocationServiceDsl}
+import esw.highlevel.dsl.{EventServiceDsl, LocationServiceDsl, TimeServiceDsl}
 import esw.ocs.api.models.responses.PullNextResult
 import esw.ocs.dsl.utils.{FunctionBuilder, FunctionHandlers}
 import esw.ocs.exceptions.UnhandledCommandException
@@ -20,6 +20,7 @@ trait ScriptDsl extends ControlDsl {
   def csw: CswServices
   lazy val eventService: EventServiceDsl       = csw.eventServiceDsl
   lazy val locationService: LocationServiceDsl = csw.locationServiceDsl
+  lazy val timeService: TimeServiceDsl         = csw.timeServiceDsl
 
   var isOnline = true
 

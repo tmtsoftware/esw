@@ -2,11 +2,11 @@ package esw.ocs.testData
 
 import csw.params.commands.CommandResponse.{Completed, Error}
 import csw.params.commands.{CommandName, Sequence, Setup}
-import csw.params.core.generics.KeyType.{BooleanKey, StringKey}
+import csw.params.core.generics.KeyType.{BooleanKey, StringKey, UTCTimeKey}
 import csw.params.core.models.Units.NoUnits
 import csw.params.core.models.{Id, Prefix}
 import csw.params.events.{EventName, SystemEvent}
-import csw.time.core.models.{TAITime, UTCTime}
+import csw.time.core.models.{TAITime, TMTTime, UTCTime}
 import esw.ocs.dsl.{CswServices, Script}
 
 import scala.concurrent.duration.DurationDouble
@@ -98,6 +98,33 @@ class TestScript(csw: CswServices) extends Script(csw) {
       val events  = eventsF.await
       events.foreach(println)
     }
+  }
+
+  handleSetupCommand("time-command") { command =>
+    spawn {
+
+      /************************** Schedule task once at particular time ************************************/
+      val startTime = UTCTime(UTCTime.now().value.plusSeconds(10))
+
+      timeService.scheduleOnce(startTime) {
+        println("task")
+      }
+
+      /****************** Schedule task periodically at provided interval **********************************/
+      timeService.schedulePeriodically(5.millis) {
+        println("task")
+      }
+
+      /*************** Schedule task periodically at provided interval with start time *********************/
+      val timeKey             = UTCTimeKey.make("time")
+      val startTime1: TMTTime = command(timeKey).values.head
+
+      timeService.schedulePeriodically(5.millis, startTime1) {
+        println("task")
+      }
+
+    }
+
   }
 
   handleGoOnline {

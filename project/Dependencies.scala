@@ -14,7 +14,7 @@ object Dependencies {
     Seq(
       Csw.`csw-command-client`,
       Akka.`akka-actor-testkit-typed` % Test,
-      Libs.scalatest % Test
+      Libs.scalatest                  % Test
     )
   )
 
@@ -88,6 +88,7 @@ object Dependencies {
     Seq(
       Csw.`csw-location-client`,
       Csw.`csw-event-client`,
+      Csw.`csw-time-scheduler`,
       Libs.`mockito-scala`            % Test,
       Akka.`akka-actor-testkit-typed` % Test
     )
