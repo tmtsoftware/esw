@@ -101,7 +101,7 @@ class SequencerIntegrationTest extends ScalaTestFrameworkTestKit(EventServer) wi
     )
   }
 
-  "Short circuit on first failed command and get failed sequence response | ESW-158, ESW-145" in {
+  "Short circuit on first failed command and getEvent failed sequence response | ESW-158, ESW-145" in {
     val failCommandName = "fail-command"
 
     val command1 = Setup(Prefix("esw.test"), CommandName("command-1"), None)
@@ -137,7 +137,7 @@ class SequencerIntegrationTest extends ScalaTestFrameworkTestKit(EventServer) wi
 
     // assert sequencer goes offline and offline handlers are called
     sequencerAdmin.goOffline().futureValue should ===(Ok)
-    val offlineEvent = wiring.cswServicesWiring.eventServiceDsl.get("TCS.test.offline").futureValue.head
+    val offlineEvent = wiring.cswServices.getEvent("TCS.test.offline").futureValue.head
     offlineEvent.paramType.exists(BooleanKey.make("offline")) should ===(true)
 
     // assert sequencer does not accept editor commands in offline state
@@ -147,7 +147,7 @@ class SequencerIntegrationTest extends ScalaTestFrameworkTestKit(EventServer) wi
     sequencerAdmin.goOnline().futureValue should ===(Ok)
     sequencerAdmin.isOnline.futureValue should ===(true)
 
-    val onlineEvent = wiring.cswServicesWiring.eventServiceDsl.get("TCS.test.online").futureValue.head
+    val onlineEvent = wiring.cswServices.getEvent("TCS.test.online").futureValue.head
     onlineEvent.paramType.exists(BooleanKey.make("online")) should ===(true)
 
     // assert sequencer can load a new sequence after going online

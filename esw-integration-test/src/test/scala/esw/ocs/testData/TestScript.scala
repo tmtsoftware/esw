@@ -6,7 +6,7 @@ import csw.params.core.generics.KeyType.{BooleanKey, StringKey, UTCTimeKey}
 import csw.params.core.models.Units.NoUnits
 import csw.params.core.models.{Id, Prefix}
 import csw.params.events.{EventName, SystemEvent}
-import csw.time.core.models.{TAITime, TMTTime, UTCTime}
+import csw.time.core.models.{TMTTime, UTCTime}
 import esw.ocs.dsl.{CswServices, Script}
 
 import scala.concurrent.duration.DurationDouble
@@ -36,7 +36,7 @@ class TestScript(csw: CswServices) extends Script(csw) {
   handleSetupCommand("command-4") { command =>
     spawn {
       //try sending concrete sequence
-      val tcsSequencer = locationService.resolveSequencer("TCS", "testObservingMode4").await
+      val tcsSequencer = csw.locationServiceDsl.resolveSequencer("TCS", "testObservingMode4").await
       val command4     = Setup(Id("testCommandIdString123"), Prefix("TCS.test"), CommandName("command-to-assert-on"), None, Set.empty)
       val sequence     = Sequence(Id("testSequenceIdString123"), Seq(command4))
 
@@ -55,47 +55,22 @@ class TestScript(csw: CswServices) extends Script(csw) {
   handleSetupCommand("event-command") { command =>
     spawn {
       val param = StringKey.make("filter-wheel").set("a", "b", "c").withUnits(NoUnits)
-      val event = eventService.systemEvent("TCS.test", "event-1", param)
-
-      // ***** commonly used dsl ****
-      eventService.publish(event).await
-
-      eventService.publish(5.seconds) {
-        if (true) Some(event)
-        else None
-      }
-      // *****************************
-
-      eventService.publish(5.seconds, UTCTime.now()) {
-        if (true) Some(event)
-        else None
-      }
-
-      eventService.publish(5.seconds)({
-        if (true) Some(event)
-        else None
-      }, onError = {
-        println
-      })
-
-      eventService.publish(5.seconds, TAITime.now())({
-        if (true) Some(event)
-        else None
-      }, onError = {
-        println
-      })
+      val event = csw.systemEvent("TCS.test", "event-1", param)
 
       // ***************************************************
+      csw.publishEvent(event).await
 
-      val subscription = eventService.subscribe("TCS.test.event-1") { event =>
+      csw.publishEvent(5.seconds) {
+        if (true) Some(event)
+        else None
+      }
+
+      // ***************************************************
+      val subscription = csw.onEvent("TCS.test.event-1") { event =>
         println(event)
       }
-      subscription.ready().await
 
-      // ***************************************************
-
-      val eventsF = eventService.get("TCS.test.event-1")
-      val events  = eventsF.await
+      val events = csw.getEvent("TCS.test.event-1").await
       events.foreach(println)
     }
   }
@@ -132,7 +107,7 @@ class TestScript(csw: CswServices) extends Script(csw) {
       // do some actions to go online
       val param = BooleanKey.make("online").set(true)
       val event = SystemEvent(Prefix("TCS.test"), EventName("online")).add(param)
-      eventService.publish(event).await
+      csw.publishEvent(event).await
     }
   }
 
@@ -141,7 +116,7 @@ class TestScript(csw: CswServices) extends Script(csw) {
       // do some actions to go offline
       val param = BooleanKey.make("offline").set(true)
       val event = SystemEvent(Prefix("TCS.test"), EventName("offline")).add(param)
-      eventService.publish(event).await
+      csw.publishEvent(event).await
     }
   }
 }

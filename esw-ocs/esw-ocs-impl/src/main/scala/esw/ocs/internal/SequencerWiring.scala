@@ -43,7 +43,7 @@ private[ocs] class SequencerWiring(val sequencerId: String, val observingMode: S
     commandResponseManager,
     sequencerCommandService,
     locationServiceDsl,
-    eventServiceDsl,
+    eventService,
     timeServiceDsl
   )
 
