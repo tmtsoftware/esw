@@ -22,7 +22,7 @@ import esw.highlevel.dsl.LocationServiceDsl
 import esw.ocs.api.BaseTestSuite
 import esw.ocs.internal.{SequencerWiring, Timeouts}
 
-class ScriptIntegrationTest extends ScalaTestFrameworkTestKit with BaseTestSuite {
+class ScriptIntegrationTest extends ScalaTestFrameworkTestKit with BaseTestSuite with LocationServiceDsl {
   import frameworkTestKit._
 
   private implicit val typedSystem: ActorSystem[SpawnProtocol] = actorSystem
@@ -33,10 +33,9 @@ class ScriptIntegrationTest extends ScalaTestFrameworkTestKit with BaseTestSuite
   private val ocsSequencerId   = "testSequencerId4"
   private val ocsObservingMode = "testObservingMode4"
 
-  private var locationService: LocationService         = _
-  private var locationServiceUtils: LocationServiceDsl = _
-  private var ocsWiring: SequencerWiring               = _
-  private var ocsSequencer: ActorRef[SequencerMsg]     = _
+  var locationService: LocationService             = _
+  private var ocsWiring: SequencerWiring           = _
+  private var ocsSequencer: ActorRef[SequencerMsg] = _
 
   private val tcsSequencer: ActorRef[SequencerMsg] = (typedSystem ? Spawn(TestSequencer.beh, "testSequencer")).awaitResult
   private val tcsSequencerId                       = "TCS"
@@ -48,8 +47,7 @@ class ScriptIntegrationTest extends ScalaTestFrameworkTestKit with BaseTestSuite
   "CswServices" must {
     "be able to send sequence to other Sequencer by resolving location through TestScript | ESW-195, ESW-119" in {
       locationService = HttpLocationServiceFactory.makeLocalClient
-      locationServiceUtils = new LocationServiceDsl(locationService)
-      locationServiceUtils.register(tcsRegistration).awaitResult
+      register(tcsRegistration).awaitResult
 
       ocsWiring = new SequencerWiring(ocsSequencerId, ocsObservingMode, None)
       ocsSequencer = ocsWiring.start().rightValue.uri.toActorRef.unsafeUpcast[SequencerMsg]

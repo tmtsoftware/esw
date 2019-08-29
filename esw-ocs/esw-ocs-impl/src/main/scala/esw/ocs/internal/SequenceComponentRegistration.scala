@@ -18,34 +18,31 @@ import scala.util.control.NonFatal
 
 class SequenceComponentRegistration(
     prefix: Prefix,
-    locationService: LocationService,
+    _locationService: LocationService,
     sequenceComponentFactory: String => Future[ActorRef[SequenceComponentMsg]]
 )(
     implicit actorSystem: ActorSystem[SpawnProtocol]
-) {
+) extends LocationServiceDsl {
   implicit val ec: ExecutionContext = actorSystem.executionContext
 
-  private val locationServiceUtils: LocationServiceDsl = new LocationServiceDsl(locationService)
-
+  override val locationService: LocationService = _locationService
   def registerWithRetry(retryCount: Int): Future[Either[RegistrationError, AkkaLocation]] =
     registration().flatMap { akkaRegistration =>
-      locationServiceUtils
-        .register(
-          akkaRegistration,
-          onFailure = {
-            case OtherLocationIsRegistered(_) if retryCount > 0 =>
-              //kill actor ref if registration fails. Retry attempt will create new actor ref
-              akkaRegistration.actorRefURI.toActorRef.unsafeUpcast[SequenceComponentMsg] ! Stop
-              registerWithRetry(retryCount - 1)
-            case NonFatal(e) => Future.successful(Left(RegistrationError(e.getMessage)))
-          }
-        )
+      register(
+        akkaRegistration,
+        onFailure = {
+          case OtherLocationIsRegistered(_) if retryCount > 0 =>
+            //kill actor ref if registration fails. Retry attempt will create new actor ref
+            akkaRegistration.actorRefURI.toActorRef.unsafeUpcast[SequenceComponentMsg] ! Stop
+            registerWithRetry(retryCount - 1)
+          case NonFatal(e) => Future.successful(Left(RegistrationError(e.getMessage)))
+        }
+      )
     }
 
   private def generateSequenceComponentName(): Future[String] = {
     val subsystem = prefix.subsystem
-    locationServiceUtils
-      .listBy(subsystem, ComponentType.SequenceComponent)
+    listBy(subsystem, ComponentType.SequenceComponent)
       .map { sequenceComponents =>
         val uniqueId = s"${sequenceComponents.length + 1}"
         s"${subsystem}_$uniqueId"
@@ -57,5 +54,4 @@ class SequenceComponentRegistration(
       name <- generateSequenceComponentName()
       ref  <- sequenceComponentFactory(name)
     } yield AkkaRegistration(AkkaConnection(ComponentId(name, ComponentType.SequenceComponent)), prefix, ref.toURI)
-
 }

@@ -21,6 +21,8 @@ import esw.ocs.api.models.responses.RegistrationError
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future
 
+class LocationServiceDslImpl(val locationService: LocationService) extends LocationServiceDsl
+
 class LocationServiceDslTest extends ScalaTestWithActorTestKit with BaseTestSuite {
 
   private val locationService = mock[LocationService]
@@ -40,7 +42,7 @@ class LocationServiceDslTest extends ScalaTestWithActorTestKit with BaseTestSuit
       when(registrationResult.unregister()).thenReturn(Future.successful(Done))
       when(locationService.register(registration)).thenReturn(Future(registrationResult))
 
-      val locationServiceDsl = new LocationServiceDsl(locationService)
+      val locationServiceDsl = new LocationServiceDslImpl(locationService)
 
       locationServiceDsl.register(registration)(system).rightValue should ===(akkaLocation)
       coordinatedShutdown.run(UnknownReason).futureValue
@@ -52,7 +54,7 @@ class LocationServiceDslTest extends ScalaTestWithActorTestKit with BaseTestSuit
       val errorMsg               = "error message"
       when(locationService.register(registration)).thenReturn(Future.failed(OtherLocationIsRegistered(errorMsg)))
 
-      val locationServiceDsl = new LocationServiceDsl(locationService)
+      val locationServiceDsl = new LocationServiceDslImpl(locationService)
 
       locationServiceDsl.register(registration)(system).leftValue should ===(
         RegistrationError(errorMsg)
@@ -75,7 +77,7 @@ class LocationServiceDslTest extends ScalaTestWithActorTestKit with BaseTestSuit
       )
 
       when(locationService.list(SequenceComponent)).thenReturn(Future.successful(sequenceComponentLocations))
-      val locationServiceDsl = new LocationServiceDsl(locationService)
+      val locationServiceDsl = new LocationServiceDslImpl(locationService)
 
       val actualLocations = locationServiceDsl.listBy(Subsystem.TCS, SequenceComponent).futureValue
 
@@ -91,7 +93,7 @@ class LocationServiceDslTest extends ScalaTestWithActorTestKit with BaseTestSuit
       )
 
       when(locationService.list(SequenceComponent)).thenReturn(Future.successful(sequenceComponentLocations))
-      val locationServiceDsl = new LocationServiceDsl(locationService)
+      val locationServiceDsl = new LocationServiceDslImpl(locationService)
 
       val actualLocations = locationServiceDsl.listBy(Subsystem.NFIRAOS, SequenceComponent).futureValue
 
@@ -111,7 +113,7 @@ class LocationServiceDslTest extends ScalaTestWithActorTestKit with BaseTestSuit
       )
       when(locationService.list).thenReturn(Future.successful(tcsLocations ++ ocsLocations))
 
-      val locationServiceDsl = new LocationServiceDsl(locationService)
+      val locationServiceDsl = new LocationServiceDslImpl(locationService)
       val actualLocations    = locationServiceDsl.listByComponentName("TCS").futureValue
 
       actualLocations should ===(tcsLocations)
@@ -128,7 +130,7 @@ class LocationServiceDslTest extends ScalaTestWithActorTestKit with BaseTestSuit
       )
       when(locationService.list).thenReturn(Future.successful(obsMode1locations ++ obsMode2Locations))
 
-      val locationServiceDsl = new LocationServiceDsl(locationService)
+      val locationServiceDsl = new LocationServiceDslImpl(locationService)
       val actualLocations    = locationServiceDsl.listByComponentName("obsMode1").futureValue
 
       actualLocations should ===(obsMode1locations)
@@ -147,7 +149,7 @@ class LocationServiceDslTest extends ScalaTestWithActorTestKit with BaseTestSuit
       when(locationService.list).thenReturn(Future.successful(tcsLocation :: ocsLocations))
       when(locationService.list(Sequencer)).thenReturn(Future.successful(List(tcsLocation)))
 
-      val locationServiceDsl = new LocationServiceDsl(locationService)
+      val locationServiceDsl = new LocationServiceDslImpl(locationService)
       val actualLocations =
         locationServiceDsl.resolveByComponentNameAndType("TCS@obsMode1", Sequencer).futureValue
       actualLocations.get should ===(tcsLocation)
@@ -176,7 +178,7 @@ class LocationServiceDslTest extends ScalaTestWithActorTestKit with BaseTestSuit
       when(locationService.list).thenReturn(Future.successful(tcsLocation :: ocsLocations))
       when(locationService.list(Sequencer)).thenReturn(Future.successful(List(tcsLocation)))
 
-      val locationServiceDsl = new LocationServiceDsl(locationService)
+      val locationServiceDsl = new LocationServiceDslImpl(locationService)
       val actualLocations =
         locationServiceDsl.resolveByComponentNameAndType("TCS@obsMode", Sequencer).awaitResult
       actualLocations should ===(None)
@@ -207,7 +209,7 @@ class LocationServiceDslTest extends ScalaTestWithActorTestKit with BaseTestSuit
       )
       when(locationService.list).thenReturn(Future.successful(tcsLocation :: ocsLocations))
 
-      val locationServiceDsl = new LocationServiceDsl(locationService)
+      val locationServiceDsl = new LocationServiceDslImpl(locationService)
       val actualLocations =
         locationServiceDsl.resolveSequencer("TCS", "obsMode1").futureValue
       actualLocations should ===(tcsLocation)
@@ -235,7 +237,7 @@ class LocationServiceDslTest extends ScalaTestWithActorTestKit with BaseTestSuit
       )
       when(locationService.list).thenReturn(Future.successful(tcsLocation :: ocsLocations))
 
-      val locationServiceDsl = new LocationServiceDsl(locationService)
+      val locationServiceDsl = new LocationServiceDslImpl(locationService)
       intercept[IllegalArgumentException] {
         locationServiceDsl.resolveSequencer("TCS", "obsMode2").awaitResult
       }

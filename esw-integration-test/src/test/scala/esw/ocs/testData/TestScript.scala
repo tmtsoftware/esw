@@ -36,7 +36,7 @@ class TestScript(csw: CswServices) extends Script(csw) {
   handleSetupCommand("command-4") { command =>
     spawn {
       //try sending concrete sequence
-      val tcsSequencer = csw.locationServiceDsl.resolveSequencer("TCS", "testObservingMode4").await
+      val tcsSequencer = csw.resolveSequencer("TCS", "testObservingMode4").await
       val command4     = Setup(Id("testCommandIdString123"), Prefix("TCS.test"), CommandName("command-to-assert-on"), None, Set.empty)
       val sequence     = Sequence(Id("testSequenceIdString123"), Seq(command4))
 
@@ -66,7 +66,7 @@ class TestScript(csw: CswServices) extends Script(csw) {
       }
 
       // ***************************************************
-      val subscription = csw.onEvent("TCS.test.event-1") { event =>
+      csw.onEvent("TCS.test.event-1") { event =>
         println(event)
       }
 

@@ -21,9 +21,9 @@ import org.mockito.Mockito.clearInvocations
 
 import scala.concurrent.{ExecutionContext, Future}
 
-class SequencerCommandServiceUtilsTest extends BaseTestSuite {
+class SequencerCommandServiceUtilsTest extends BaseTestSuite with LocationServiceDsl {
 
-  private val locationService: LocationService    = mock[LocationService]
+  override val locationService: LocationService   = mock[LocationService]
   implicit val system: ActorSystem[SpawnProtocol] = ActorSystem(SpawnProtocol.behavior, "test")
   implicit val ec: ExecutionContext               = system.executionContext
   implicit val scheduler: Scheduler               = system.scheduler
@@ -52,8 +52,7 @@ class SequencerCommandServiceUtilsTest extends BaseTestSuite {
       val registrationResult = mock[RegistrationResult]
       when(locationService.register(any[AkkaRegistration])).thenReturn(Future(registrationResult))
 
-      val locationServiceUtils: LocationServiceDsl = new LocationServiceDsl(locationService)
-      locationServiceUtils.register(registration).awaitResult
+      register(registration).awaitResult
 
       val eventualResponse = sequencerCommandServiceUtil.submitSequence(location, sequence)
       eventualResponse.futureValue shouldBe Started(sequence.runId)

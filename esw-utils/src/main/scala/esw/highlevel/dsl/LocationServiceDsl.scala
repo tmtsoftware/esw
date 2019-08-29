@@ -12,8 +12,9 @@ import scala.async.Async._
 import scala.concurrent.{ExecutionContext, Future}
 import scala.util.control.NonFatal
 
-class LocationServiceDsl(locationService: LocationService) {
+trait LocationServiceDsl {
 
+  private[esw] def locationService: LocationService
   private def addCoordinatedShutdownTask(
       coordinatedShutdown: CoordinatedShutdown,
       registrationResult: RegistrationResult
