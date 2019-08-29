@@ -48,7 +48,7 @@ class SequencerCommandServiceDslTest extends BaseTestSuite with LocationServiceD
   }
 
   "submitSequence" must {
-    "submit sequence to given sequencer | ESW-195, ESW-145" in {
+    "submit sequence to given sequencer | ESW-195, ESW-145, ESW-220" in {
       val registrationResult = mock[RegistrationResult]
       when(locationService.register(any[AkkaRegistration])).thenReturn(Future(registrationResult))
 
