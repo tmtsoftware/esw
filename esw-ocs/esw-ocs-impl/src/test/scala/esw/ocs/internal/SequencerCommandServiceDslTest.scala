@@ -22,16 +22,15 @@ import org.mockito.Mockito.clearInvocations
 
 import scala.concurrent.{ExecutionContext, Future}
 
-class SequencerCommandServiceUtilsTest extends BaseTestSuite with LocationServiceDsl {
+class SequencerCommandServiceDslTest extends BaseTestSuite with LocationServiceDsl with SequencerCommandServiceDsl {
 
-  override val locationService: LocationService   = mock[LocationService]
-  implicit val system: ActorSystem[SpawnProtocol] = ActorSystem(SpawnProtocol.behavior, "test")
-  implicit val ec: ExecutionContext               = system.executionContext
-  implicit val scheduler: Scheduler               = system.scheduler
-  implicit val timeout: Timeout                   = Timeouts.DefaultTimeout
+  override val locationService: LocationService        = mock[LocationService]
+  implicit val actorSystem: ActorSystem[SpawnProtocol] = ActorSystem(SpawnProtocol.behavior, "test")
+  implicit val ec: ExecutionContext                    = actorSystem.executionContext
+  implicit val scheduler: Scheduler                    = actorSystem.scheduler
+  implicit val timeout: Timeout                        = Timeouts.DefaultTimeout
 
-  val sequencerCommandServiceUtil                    = new SequencerCommandServiceUtils
-  val sequencerRef: ActorRef[LoadAndProcessSequence] = (system ? Spawn(TestSequencer.beh, "testSequencerActor")).awaitResult
+  val sequencerRef: ActorRef[LoadAndProcessSequence] = (actorSystem ? Spawn(TestSequencer.beh, "testSequencerActor")).awaitResult
 
   val prefixStr    = "TCS.filter.wheel"
   val seqName      = "TCS@darknight"
@@ -45,7 +44,7 @@ class SequencerCommandServiceUtilsTest extends BaseTestSuite with LocationServic
   }
 
   override def afterAll(): Unit = {
-    system.terminate()
+    actorSystem.terminate()
   }
 
   "submitSequence" must {
@@ -55,7 +54,7 @@ class SequencerCommandServiceUtilsTest extends BaseTestSuite with LocationServic
 
       register(registration).awaitResult
 
-      val eventualResponse = sequencerCommandServiceUtil.submitSequence(location, sequence)
+      val eventualResponse = submitSequence(location, sequence)
       eventualResponse.futureValue shouldBe Started(sequence.runId)
     }
 

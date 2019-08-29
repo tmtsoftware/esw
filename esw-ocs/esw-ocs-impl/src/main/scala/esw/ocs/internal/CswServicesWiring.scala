@@ -32,8 +32,6 @@ private[internal] class CswServicesWiring(componentName: String) {
     (actorSystem ? Spawn(CommandResponseManagerActor.behavior(CRMCacheProperties(), loggerFactory), "crm")).block
   lazy val commandResponseManager: CommandResponseManager =
     new CommandResponseManager(crmRef)(actorSystem)
-
-  lazy val sequencerCommandService: SequencerCommandServiceUtils = new SequencerCommandServiceUtils()(actorSystem)
 }
 
 // $COVERAGE-ON$

@@ -41,7 +41,7 @@ private[ocs] class SequencerWiring(val sequencerId: String, val observingMode: S
   lazy val cswServices = new CswServices(
     sequenceOperatorFactory,
     commandResponseManager,
-    sequencerCommandService,
+    typedSystem,
     locationService,
     eventService,
     timeServiceSchedulerFactory

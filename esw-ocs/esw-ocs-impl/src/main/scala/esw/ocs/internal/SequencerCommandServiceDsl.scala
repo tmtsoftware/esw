@@ -8,8 +8,9 @@ import csw.params.commands.Sequence
 
 import scala.concurrent.Future
 
-class SequencerCommandServiceUtils(implicit system: ActorSystem[_]) {
+trait SequencerCommandServiceDsl {
+  private[esw] def actorSystem: ActorSystem[_]
   def submitSequence(location: AkkaLocation, sequence: Sequence): Future[SubmitResponse] = {
-    SequencerCommandServiceFactory.make(location).submit(sequence)
+    SequencerCommandServiceFactory.make(location)(actorSystem).submit(sequence)
   }
 }
