@@ -81,20 +81,20 @@ class TestScript(csw: CswServices) extends Script(csw) {
       /************************** Schedule task once at particular time ************************************/
       val startTime = UTCTime(UTCTime.now().value.plusSeconds(10))
 
-      timeService.scheduleOnce(startTime) {
+      csw.scheduleOnce(startTime) {
         println("task")
       }
 
       /****************** Schedule task periodically at provided interval **********************************/
-      timeService.schedulePeriodically(5.millis) {
+      csw.schedulePeriodically(5.millis) {
         println("task")
       }
 
       /*************** Schedule task periodically at provided interval with start time *********************/
-      val timeKey             = UTCTimeKey.make("time")
-      val startTime1: TMTTime = command(timeKey).values.head
+      val timeParam           = command.get("time-key", UTCTimeKey).get
+      val startTime1: TMTTime = timeParam.head
 
-      timeService.schedulePeriodically(5.millis, startTime1) {
+      csw.schedulePeriodically(5.millis, startTime1) {
         println("task")
       }
 

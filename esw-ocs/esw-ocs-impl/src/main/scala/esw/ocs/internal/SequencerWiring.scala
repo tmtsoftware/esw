@@ -44,7 +44,7 @@ private[ocs] class SequencerWiring(val sequencerId: String, val observingMode: S
     sequencerCommandService,
     locationService,
     eventService,
-    timeServiceDsl
+    timeServiceSchedulerFactory
   )
 
   lazy val sequencerBehavior =

@@ -13,16 +13,15 @@ import org.mockito.ArgumentMatchers.{any, eq => argsEq}
 import scala.concurrent.ExecutionContext
 import scala.concurrent.duration.{DurationInt, FiniteDuration}
 
-class TimeServiceDslTest extends BaseTestSuite {
+class TimeServiceDslTest extends BaseTestSuite with TimeServiceDsl {
 
-  private implicit val scheduler: Scheduler = mock[Scheduler]
+  implicit val scheduler: Scheduler         = mock[Scheduler]
   private implicit val ec: ExecutionContext = StrandEc().ec
 
   val cancellable: Cancellable                                 = mock[Cancellable]
   val timeServiceScheduler: TimeServiceScheduler               = mock[TimeServiceScheduler]
   val timeServiceSchedulerFactory: TimeServiceSchedulerFactory = mock[TimeServiceSchedulerFactory]
   val task: Unit                                               = {}
-  val timeServiceDsl: TimeServiceDsl                           = new TimeServiceDsl(timeServiceSchedulerFactory)
 
   "ScheduleOnce" must {
     "delegate to schedule tasks for given start time" in {
@@ -31,7 +30,7 @@ class TimeServiceDslTest extends BaseTestSuite {
       when(timeServiceSchedulerFactory.make()).thenReturn(timeServiceScheduler)
       when(timeServiceScheduler.scheduleOnce(startTime)(task)).thenReturn(cancellable)
 
-      val actualCancellable = timeServiceDsl.scheduleOnce(startTime)(task)
+      val actualCancellable = scheduleOnce(startTime)(task)
 
       verify(timeServiceScheduler).scheduleOnce(startTime)(task)
       actualCancellable shouldBe cancellable
@@ -45,7 +44,7 @@ class TimeServiceDslTest extends BaseTestSuite {
 
       when(timeServiceSchedulerFactory.make()).thenReturn(timeServiceScheduler)
 
-      timeServiceDsl.schedulePeriodically(interval)(task)
+      schedulePeriodically(interval)(task)
 
       verify(timeServiceScheduler).schedulePeriodically(any[TMTTime], argsEq(Duration.ofNanos(interval.toNanos)))(argsEq(task))
     }
@@ -57,7 +56,7 @@ class TimeServiceDslTest extends BaseTestSuite {
 
       when(timeServiceSchedulerFactory.make()).thenReturn(timeServiceScheduler)
 
-      timeServiceDsl.schedulePeriodically(interval, startTime)(task)
+      schedulePeriodically(interval, startTime)(task)
 
       verify(timeServiceScheduler).schedulePeriodically(argsEq(startTime), argsEq(Duration.ofNanos(interval.toNanos)))(
         argsEq(task)
