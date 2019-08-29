@@ -43,6 +43,7 @@ class EventGatewayTest extends BaseTestSuite with RestlessCodecs {
   private val name2          = EventName("event2")
   private val event1: Event  = SystemEvent(prefix, name1, Set(arrayDataParam))
   private val event2: Event  = SystemEvent(prefix, name2, Set(arrayDataParam))
+  private val eventKeys      = Set(EventKey(prefix, name1), EventKey(prefix, name2))
 
   override def beforeAll(): Unit = {
     locationTestKit.startLocationServer()
@@ -68,34 +69,31 @@ class EventGatewayTest extends BaseTestSuite with RestlessCodecs {
   }
 
   "EventApi" must {
-    "publish event | ESW-216" in {
-      val postClient: RequestClient[PostRequest] = new PostClientJvm[PostRequest](s"http://localhost:$port/post")
-      val eventClient: EventClient               = new EventClient(postClient, null)
-
-      eventClient.publish(event1).futureValue should ===(Done)
-    }
-
-    "get set of events | ESW-216" in {
-      val postClient: RequestClient[PostRequest] = new PostClientJvm[PostRequest](s"http://localhost:$port/post")
-      val eventClient: EventClient               = new EventClient(postClient, null)
-
-      eventClient.publish(event1).futureValue
-      eventClient.get(Set(EventKey(prefix, name1))).rightValue should ===(Set(event1))
-    }
-
-    "subscribe events returns a set of events successfully | ESW-216" in {
+    "publish, get, subscribe and pattern subscribe events | ESW-216" in {
       val postClient: RequestClient[PostRequest] = new PostClientJvm[PostRequest](s"http://localhost:$port/post")
       val websocketClient: RequestClient[WebsocketRequest] =
         new WebsocketClientJvm[WebsocketRequest](s"ws://localhost:$port/websocket")
       val eventClient: EventClient = new EventClient(postClient, websocketClient)
-      val eventKeys                = Set(EventKey(prefix, name1), EventKey(prefix, name2))
 
-      val eventsF = eventClient.subscribe(eventKeys, None).take(2).runWith(Sink.seq)
+      val eventsF  = eventClient.subscribe(eventKeys, None).take(4).runWith(Sink.seq)
+      val pEventsF = eventClient.pSubscribe(Subsystem.TCS, None, "*").take(2).runWith(Sink.seq)
+      Thread.sleep(500)
 
-      eventClient.publish(event1).futureValue
-      eventClient.publish(event2).futureValue
+      //publish event successfully
+      eventClient.publish(event1).futureValue should ===(Done)
+      eventClient.publish(event2).futureValue should ===(Done)
 
-      eventsF.futureValue.toSet should ===(Set(event1, event2))
+      //get set of events
+      eventClient.get(Set(EventKey(prefix, name1))).rightValue should ===(Set(event1))
+
+      //subscribe events returns a set of events successfully
+      val invalidEvent1 = Event.invalidEvent(EventKey(prefix, name1))
+      val invalidEvent2 = Event.invalidEvent(EventKey(prefix, name2))
+      eventsF.futureValue.toSet should ===(Set(invalidEvent1, invalidEvent2, event1, event2))
+
+      //pSubscribe events returns a set of events successfully
+      pEventsF.futureValue.toSet should ===(Set(event1, event2))
+
     }
 
     "subscribe events returns an EmptyEventKeys error on sending no event keys in subscription| ESW-216" in {
@@ -107,20 +105,6 @@ class EventGatewayTest extends BaseTestSuite with RestlessCodecs {
       eventClient.subscribe(Set.empty, None).toMat(Sink.head)(Keep.left).run().futureValue.get should ===(EmptyEventKeys())
     }
 
-    "pSubscribe events returns a set of events successfully | ESW-216" in {
-      val postClient: RequestClient[PostRequest] = new PostClientJvm[PostRequest](s"http://localhost:$port/post")
-      val websocketClient: RequestClient[WebsocketRequest] =
-        new WebsocketClientJvm[WebsocketRequest](s"ws://localhost:$port/websocket")
-      val eventClient: EventClient = new EventClient(postClient, websocketClient)
-
-      val eventsF = eventClient.pSubscribe(Subsystem.TCS, None, "*").take(2).runWith(Sink.seq)
-      Thread.sleep(500)
-
-      eventClient.publish(event1).futureValue
-      eventClient.publish(event2).futureValue
-
-      eventsF.futureValue.toSet should ===(Set(event1, event2))
-    }
   }
 
 }

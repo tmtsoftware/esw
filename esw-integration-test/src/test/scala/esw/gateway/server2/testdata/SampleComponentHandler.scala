@@ -6,8 +6,10 @@ import csw.framework.models.CswContext
 import csw.framework.scaladsl.ComponentHandlers
 import csw.location.models.TrackingEvent
 import csw.logging.api.scaladsl.Logger
-import csw.params.commands.CommandResponse.{Accepted, Started}
+import csw.params.commands.CommandResponse.{Accepted, Completed}
 import csw.params.commands.{CommandResponse, ControlCommand}
+import csw.params.core.models.Prefix
+import csw.params.core.states.{CurrentState, StateName}
 
 import scala.concurrent.Future
 
@@ -28,10 +30,16 @@ class SampleComponentHandler(ctx: ActorContext[TopLevelActorMessage], cswCtx: Cs
   }
 
   override def onSubmit(controlCommand: ControlCommand): CommandResponse.SubmitResponse = {
-    Started(controlCommand.runId)
+    Completed(controlCommand.runId)
   }
 
-  override def onOneway(controlCommand: ControlCommand): Unit = ???
+  override def onOneway(controlCommand: ControlCommand): Unit = {
+    val currentState1 = CurrentState(Prefix("esw.a.b"), StateName("stateName1"))
+    val currentState2 = CurrentState(Prefix("esw.a.b"), StateName("stateName2"))
+    currentStatePublisher.publish(currentState1)
+    currentStatePublisher.publish(currentState2)
+    log.info("Invoking Oneway Handler TLA")
+  }
 
   override def onShutdown(): Future[Unit] = {
     log.info("Shutting down Component TLA")

@@ -12,6 +12,6 @@ object WebsocketRequest {
   case class SubscribeCurrentState(componentId: ComponentId, stateNames: Set[StateName], maxFrequency: Option[Int])
       extends WebsocketRequest
 
-  case class Subscribe(eventKeys: Set[EventKey], maxFrequency: Option[Int] = None)                  extends WebsocketRequest
+  case class Subscribe(eventKeys: Set[EventKey], maxFrequency: Option[Int])                         extends WebsocketRequest
   case class SubscribeWithPattern(subsystem: Subsystem, maxFrequency: Option[Int], pattern: String) extends WebsocketRequest
 }

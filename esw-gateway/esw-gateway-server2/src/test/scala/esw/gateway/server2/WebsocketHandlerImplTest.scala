@@ -8,6 +8,7 @@ import akka.stream.scaladsl.{Sink, Source}
 import akka.util.Timeout
 import csw.command.api.CurrentStateSubscription
 import csw.event.api.scaladsl.EventSubscription
+import csw.event.api.scaladsl.SubscriptionModes.RateLimiterMode
 import csw.location.models.ComponentId
 import csw.location.models.ComponentType.Assembly
 import csw.params.commands.CommandResponse.{Completed, SubmitResponse}
@@ -152,7 +153,7 @@ class WebsocketHandlerImplTest extends BaseTestSuite with ScalatestRouteTest wit
       val eventKey2       = EventKey(tcsEventKeyStr2)
       val eventKeys       = Set(eventKey1, eventKey2)
 
-      val eventSubscriptionRequest = Subscribe(eventKeys)
+      val eventSubscriptionRequest = Subscribe(eventKeys, None)
 
       val event1: Event = ObserveEvent(Prefix("tcs"), EventName("event.key1"))
       val event2: Event = ObserveEvent(Prefix("tcs"), EventName("event.key2"))
@@ -166,6 +167,43 @@ class WebsocketHandlerImplTest extends BaseTestSuite with ScalatestRouteTest wit
       val eventStream = Source(List(event1, event2)).mapMaterializedValue(_ => eventSubscription)
 
       when(eventSubscriber.subscribe(eventKeys)).thenReturn(eventStream)
+
+      WS("/websocket", wsClient.flow) ~> route ~> check {
+        wsClient.sendMessage(JsonText.strictMessage(eventSubscriptionRequest))
+        isWebSocketUpgrade shouldBe true
+
+        val responseSet = Source(1 to 2)
+          .map(_ => decodeMessage[Either[EventError, Event]](wsClient))
+          .runWith(Sink.seq)
+          .futureValue
+          .map(_.rightValue)
+          .toSet
+
+        responseSet shouldEqual Set(event1, event2)
+      }
+    }
+
+    "return set of events on subscribe events when subscribe event is sent with maxFrequency = 10 | ESW-216" in {
+      val tcsEventKeyStr1 = "tcs.event.key1"
+      val tcsEventKeyStr2 = "tcs.event.key2"
+      val eventKey1       = EventKey(tcsEventKeyStr1)
+      val eventKey2       = EventKey(tcsEventKeyStr2)
+      val eventKeys       = Set(eventKey1, eventKey2)
+
+      val eventSubscriptionRequest = Subscribe(eventKeys, Some(10))
+
+      val event1: Event = ObserveEvent(Prefix("tcs"), EventName("event.key1"))
+      val event2: Event = ObserveEvent(Prefix("tcs"), EventName("event.key2"))
+
+      val eventSubscription: EventSubscription = new EventSubscription {
+        override def unsubscribe(): Future[Done] = Future.successful(Done)
+
+        override def ready(): Future[Done] = Future.successful(Done)
+      }
+
+      val eventStream = Source(List(event1, event2)).mapMaterializedValue(_ => eventSubscription)
+
+      when(eventSubscriber.subscribe(eventKeys, 100.millis, RateLimiterMode)).thenReturn(eventStream)
 
       WS("/websocket", wsClient.flow) ~> route ~> check {
         wsClient.sendMessage(JsonText.strictMessage(eventSubscriptionRequest))
@@ -216,6 +254,39 @@ class WebsocketHandlerImplTest extends BaseTestSuite with ScalatestRouteTest wit
       val eventStream = Source(List(event1)).mapMaterializedValue(_ => eventSubscription)
 
       when(eventSubscriber.pSubscribe(TCS, "*")).thenReturn(eventStream)
+
+      WS("/websocket", wsClient.flow) ~> route ~> check {
+        wsClient.sendMessage(JsonText.strictMessage(eventSubscriptionRequest))
+        isWebSocketUpgrade shouldBe true
+
+        val responseSet = Source(1 to 2)
+          .take(1)
+          .map(_ => decodeMessage[Either[EventError, Event]](wsClient))
+          .runWith(Sink.seq)
+          .futureValue
+          .map(_.rightValue)
+          .toSet
+
+        responseSet shouldEqual Set(event1)
+
+      }
+    }
+
+    "return set of events on subscribe events with a given pattern and maxFrequency = 5 | ESW-216" in {
+      val eventSubscriptionRequest = SubscribeWithPattern(TCS, Some(5), "*")
+      val event1: Event            = ObserveEvent(Prefix("tcs"), EventName("event.key1"))
+
+      val eventSubscription: EventSubscription = new EventSubscription {
+        override def unsubscribe(): Future[Done] = Future.successful(Done)
+
+        override def ready(): Future[Done] = Future.successful(Done)
+      }
+
+      val eventStream = Source(List(event1)).mapMaterializedValue(_ => eventSubscription)
+
+      when(eventSubscriber.pSubscribe(TCS, "*")).thenReturn(eventStream)
+      when(eventSubscriberUtil.subscriptionModeStage(200.millis, RateLimiterMode))
+        .thenReturn(new RateLimiterStub[Event](200.millis))
 
       WS("/websocket", wsClient.flow) ~> route ~> check {
         wsClient.sendMessage(JsonText.strictMessage(eventSubscriptionRequest))
