@@ -62,9 +62,9 @@ class SequencerTestSetup(sequence: Sequence)(implicit system: ActorSystem[_], ti
     probe.expectMessage(expected)
   }
 
-  def loadAndProcessSequenceThenAssertInProgress(): Assertion = {
-    val probe = TestProbe[SubmitResponse]
-    sequencerActor ! LoadAndProcessSequence(sequence, probe.ref)
+  def loadAndStartSequenceThenAssertInProgress(): Assertion = {
+    val probe = TestProbe[LoadSequenceResponse]
+    sequencerActor ! LoadAndStartSequence(sequence, probe.ref)
 
     val p: TestProbe[Option[StepList]] = TestProbe[Option[StepList]]
     eventually {
@@ -249,7 +249,7 @@ object SequencerTestSetup {
   def inProgress(sequence: Sequence)(implicit system: ActorSystem[_], timeout: Timeout): SequencerTestSetup = {
     val sequencerSetup = idle(sequence)
     sequencerSetup.mockCommand(sequence.commands.head.runId, Promise[SubmitResponse].future)
-    sequencerSetup.loadAndProcessSequenceThenAssertInProgress()
+    sequencerSetup.loadAndStartSequenceThenAssertInProgress()
     sequencerSetup.pullNextCommand()
     sequencerSetup
   }

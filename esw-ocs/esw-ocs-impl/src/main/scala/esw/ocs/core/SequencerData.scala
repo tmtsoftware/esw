@@ -125,11 +125,7 @@ private[core] case class SequencerData(
       crm.addOrUpdateCommand(Started(id))
       crm.addSubCommand(id, emptyChildId)
       val sequenceResponseF = crm.queryFinal(id)
-      handleSubmitResponse(
-        id,
-        sequenceResponseF,
-        onComplete
-      )
+      handleSubmitResponse(id, sequenceResponseF, onComplete)
     }
     this
   }
