@@ -47,7 +47,8 @@ class OcsAkkaSerializerTest extends ScalaTestWithActorTestKit with BaseTestSuite
       val testData = Table(
         "EswSequencerMessage",
         LoadSequence(Sequence(setupCommand), loadSequenceResponseRef),
-        StartSequence(sequenceResponseRef),
+        StartSequence(okOrUnhandledResponseRef),
+        QuerySequenceResponse(sequenceResponseRef),
         GoOnline(goOnlineResponseRef),
         GoOffline(okOrUnhandledResponseRef),
         Shutdown(shutdownResponseRef),

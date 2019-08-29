@@ -4,7 +4,7 @@ import akka.actor.Scheduler
 import akka.actor.typed.scaladsl.AskPattern._
 import akka.actor.typed.{ActorRef, ActorSystem, SpawnProtocol}
 import akka.util.Timeout
-import csw.command.client.messages.sequencer.{LoadAndStartSequence, SequencerMsg}
+import csw.command.client.messages.sequencer.{LoadAndProcessSequence, SequencerMsg}
 import csw.location.api.extensions.URIExtension.RichURI
 import csw.location.api.scaladsl.LocationService
 import csw.location.client.scaladsl.HttpLocationServiceFactory
@@ -67,21 +67,27 @@ class SequencerIntegrationTest extends ScalaTestFrameworkTestKit(EventServer) wi
     wiring.shutDown().futureValue
   }
 
-  "Load a sequence and Start it | ESW-145, ESW-154" in {
-    val command3 = Setup(Prefix("esw.test"), CommandName("command-3"), None)
-    val sequence = Sequence(command3)
+  "LoadSequence, Start it and Query its response | ESW-145, ESW-154" in {
+    val sequence = Sequence(command1, command2)
 
     val loadResponse: Future[LoadSequenceResponse] = sequencer ? (LoadSequence(sequence, _))
     loadResponse.futureValue should ===(Ok)
 
-    val seqResponse: Future[SequenceResponse] = sequencer ? StartSequence
-    seqResponse.futureValue should ===(SequenceResult(Completed(sequence.runId)))
+    (sequencer ? StartSequence).futureValue should ===(Ok)
+    (sequencer ? QuerySequenceResponse).futureValue should ===(SequenceResult(Completed(sequence.runId)))
+
+    val expectedSteps = List(
+      Step(command1, Success(Completed(command1.runId)), hasBreakpoint = false),
+      Step(command2, Success(Completed(command2.runId)), hasBreakpoint = false)
+    )
+    val expectedSequence = Some(StepList(sequence.runId, expectedSteps))
+    sequencerAdmin.getSequence.futureValue should ===(expectedSequence)
   }
 
-  "LoadAndStart a sequence and execute commands that are added later | ESW-145, ESW-154" in {
+  "LoadAndProcess a sequence and execute commands that are added later | ESW-145, ESW-154" in {
     val sequence = Sequence(command1, command2)
 
-    val processSeqResponse: Future[SubmitResponse] = sequencer ? (LoadAndStartSequence(sequence, _))
+    val processSeqResponse: Future[SubmitResponse] = sequencer ? (LoadAndProcessSequence(sequence, _))
     eventually((sequencer ? GetSequence).futureValue shouldBe a[Some[_]])
 
     sequencerAdmin.add(List(command3)).futureValue should ===(Ok)
@@ -110,7 +116,7 @@ class SequencerIntegrationTest extends ScalaTestFrameworkTestKit(EventServer) wi
     val command3 = Setup(Prefix("esw.test"), CommandName("command-3"), None)
     val sequence = Sequence(command1, command2, command3)
 
-    val processSeqResponse: Future[SubmitResponse] = sequencer ? (LoadAndStartSequence(sequence, _))
+    val processSeqResponse: Future[SubmitResponse] = sequencer ? (LoadAndProcessSequence(sequence, _))
     eventually(sequencerAdmin.getSequence.futureValue shouldBe a[Some[_]])
 
     processSeqResponse.futureValue should ===(Error(sequence.runId, failCommandName))
@@ -132,7 +138,7 @@ class SequencerIntegrationTest extends ScalaTestFrameworkTestKit(EventServer) wi
   "Go online and offline | ESW-194" in {
     val sequence = Sequence(command1, command2)
 
-    val seqResponse: Future[SubmitResponse] = sequencer ? (LoadAndStartSequence(sequence, _))
+    val seqResponse: Future[SubmitResponse] = sequencer ? (LoadAndProcessSequence(sequence, _))
     seqResponse.futureValue should ===(Completed(sequence.runId))
 
     // assert sequencer goes offline and offline handlers are called

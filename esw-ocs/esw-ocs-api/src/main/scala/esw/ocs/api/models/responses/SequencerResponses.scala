@@ -2,8 +2,8 @@ package esw.ocs.api.models.responses
 
 import csw.params.commands.CommandResponse.{Error, SubmitResponse}
 import csw.params.core.models.Id
-import esw.ocs.api.models.codecs.OcsAkkaSerializable
 import esw.ocs.api.models.Step
+import esw.ocs.api.models.codecs.OcsAkkaSerializable
 
 sealed trait EswSequencerResponse     extends OcsAkkaSerializable
 sealed trait OkOrUnhandledResponse    extends EswSequencerResponse // fixme: think about better name

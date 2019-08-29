@@ -6,7 +6,8 @@ import akka.actor.typed.scaladsl.AskPattern._
 import akka.actor.typed.scaladsl.Behaviors
 import akka.actor.typed.{ActorRef, ActorSystem, SpawnProtocol}
 import akka.util.Timeout
-import csw.command.client.messages.sequencer.LoadAndStartSequence
+import csw.command.client.messages.sequencer
+import csw.command.client.messages.sequencer.LoadAndProcessSequence
 import csw.location.api.extensions.ActorExtension.RichActor
 import csw.location.api.scaladsl.{LocationService, RegistrationResult}
 import csw.location.models.Connection.AkkaConnection
@@ -29,8 +30,8 @@ class SequencerCommandServiceUtilsTest extends BaseTestSuite with LocationServic
   implicit val scheduler: Scheduler               = system.scheduler
   implicit val timeout: Timeout                   = Timeouts.DefaultTimeout
 
-  val sequencerCommandServiceUtil                  = new SequencerCommandServiceUtils
-  val sequencerRef: ActorRef[LoadAndStartSequence] = (system ? Spawn(TestSequencer.beh, "testSequencerActor")).awaitResult
+  val sequencerCommandServiceUtil                    = new SequencerCommandServiceUtils
+  val sequencerRef: ActorRef[LoadAndProcessSequence] = (system ? Spawn(TestSequencer.beh, "testSequencerActor")).awaitResult
 
   val prefixStr    = "TCS.filter.wheel"
   val seqName      = "TCS@darknight"
@@ -62,8 +63,8 @@ class SequencerCommandServiceUtilsTest extends BaseTestSuite with LocationServic
 }
 
 object TestSequencer {
-  val beh: Behaviors.Receive[LoadAndStartSequence] = Behaviors.receiveMessage[LoadAndStartSequence] {
-    case LoadAndStartSequence(sequence, replyTo) =>
+  val beh: Behaviors.Receive[sequencer.LoadAndProcessSequence] = Behaviors.receiveMessage[sequencer.LoadAndProcessSequence] {
+    case LoadAndProcessSequence(sequence, replyTo) =>
       replyTo ! Started(sequence.runId)
       Behaviors.same
     case _ => Behaviors.same

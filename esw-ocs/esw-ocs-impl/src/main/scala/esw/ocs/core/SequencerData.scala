@@ -34,10 +34,21 @@ private[core] case class SequencerData(
   private val sequenceId   = stepList.map(_.runId)
   private val emptyChildId = Id("empty-child") // fixme
 
-  def startSequence(replyTo: ActorRef[SequenceResponse]): SequencerData =
+  def startSequence(replyTo: ActorRef[Ok.type]): SequencerData = {
+    replyTo ! Ok
+    processSequence(onComplete = _ => goToIdle())
+  }
+
+  def processSequence(onComplete: SubmitResponse => Unit): SequencerData =
     sendNextPendingStepIfAvailable()
       .notifyReadyToExecuteNextSubscriber(InProgress)
-      .updateSequenceInCrmAndHandleFinalResponse(replyTo)
+      .updateSequenceInCrmAndHandleFinalResponse(onComplete)
+
+  def querySequence(replyTo: ActorRef[SequenceResponse]): SequencerData = {
+    val id = sequenceId.get //This method gets called in Loaded and InProgress state only. Hence sequenceId will not be None
+    crm.queryFinal(id).foreach(replyTo ! SequenceResult(_))
+    this
+  }
 
   def pullNextStep(replyTo: ActorRef[PullNextResult]): SequencerData =
     copy(stepRefSubscriber = Some(replyTo))
@@ -107,17 +118,17 @@ private[core] case class SequencerData(
     (inflightStep, updatedData)
   }
 
-  private def updateSequenceInCrmAndHandleFinalResponse(replyTo: ActorRef[SequenceResponse]): SequencerData = {
+  private def updateSequenceInCrmAndHandleFinalResponse(
+      onComplete: SubmitResponse => Unit
+  ): SequencerData = {
     sequenceId.foreach { id =>
       crm.addOrUpdateCommand(Started(id))
       crm.addSubCommand(id, emptyChildId)
+      val sequenceResponseF = crm.queryFinal(id)
       handleSubmitResponse(
         id,
-        crm.queryFinal(id),
-        onComplete = response => {
-          replyTo ! SequenceResult(response)
-          goToIdle()
-        }
+        sequenceResponseF,
+        onComplete
       )
     }
     this
@@ -127,22 +138,20 @@ private[core] case class SequencerData(
     sequenceId.foreach { id =>
       crm.addOrUpdateCommand(CommandResponse.Started(stepId))
       crm.addSubCommand(id, stepId)
-      val submitResponseF = crm.queryFinal(stepId)
-      handleSubmitResponse(stepId, submitResponseF, onComplete = self ! Update(_, actorSystem.deadLetters))
+      val stepResponseF = crm.queryFinal(stepId)
+      handleSubmitResponse(stepId, stepResponseF, onComplete = self ! Update(_, actorSystem.deadLetters))
     }
 
   private def handleSubmitResponse(
-      stepId: Id,
+      id: Id,
       submitResponseF: Future[SubmitResponse],
       onComplete: SubmitResponse => Unit
-  ): Unit =
-    submitResponseF
-      .onComplete {
-        case Failure(e)              => onComplete(Error(stepId, e.getMessage))
-        case Success(submitResponse) => onComplete(submitResponse)
-      }
+  ): Unit = submitResponseF.onComplete {
+    case Failure(e)              => onComplete(Error(id, e.getMessage))
+    case Success(submitResponse) => onComplete(submitResponse)
+  }
 
-  private def goToIdle(): Unit = self ! GoIdle(actorSystem.deadLetters)
+  def goToIdle(): Unit = self ! GoIdle(actorSystem.deadLetters)
 
   private def checkForSequenceCompletion(): SequencerData = {
     if (stepList.exists(_.isFinished)) {

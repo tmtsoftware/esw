@@ -3,7 +3,7 @@ package esw.ocs.core
 import akka.Done
 import akka.actor.testkit.typed.scaladsl.{ScalaTestWithActorTestKit, TestProbe}
 import akka.util.Timeout
-import csw.command.client.messages.sequencer.LoadAndStartSequence
+import csw.command.client.messages.sequencer.LoadAndProcessSequence
 import csw.command.client.messages.{GetComponentLogMetadata, SetComponentLogLevel}
 import csw.logging.models.Level.DEBUG
 import csw.logging.models.LogMetadata
@@ -56,20 +56,20 @@ class SequencerBehaviorTest extends ScalaTestWithActorTestKit with BaseTestSuite
       val sequencerSetup = SequencerTestSetup.loaded(sequence)
       import sequencerSetup._
 
-      val probe = createTestProbe[SequenceResponse]
+      val probe = createTestProbe[OkOrUnhandledResponse]
       sequencerActor ! StartSequence(probe.ref)
       pullAllStepsAndAssertSequenceIsFinished()
-      probe.expectMessage(SequenceResult(Completed(sequence.runId)))
+      probe.expectMessage(Ok)
     }
   }
 
-  "LoadAndStartSequence" must {
+  "LoadAndProcessSequence" must {
     "load and process sequence in idle state | ESW-145" in {
       val sequencerSetup = SequencerTestSetup.idle(sequence)
       import sequencerSetup._
 
       val probe = createTestProbe[SubmitResponse]
-      sequencerActor ! LoadAndStartSequence(sequence, probe.ref)
+      sequencerActor ! LoadAndProcessSequence(sequence, probe.ref)
       pullAllStepsAndAssertSequenceIsFinished()
       probe.expectMessage(Completed(sequence.runId))
     }
@@ -81,7 +81,7 @@ class SequencerBehaviorTest extends ScalaTestWithActorTestKit with BaseTestSuite
       import sequencerSetup._
 
       val probe = createTestProbe[SubmitResponse]
-      sequencerActor ! LoadAndStartSequence(invalidSequence, probe.ref)
+      sequencerActor ! LoadAndProcessSequence(invalidSequence, probe.ref)
       probe.expectMessage(Error(invalidSequence.runId, DuplicateIdsFound.msg))
     }
   }
@@ -107,7 +107,7 @@ class SequencerBehaviorTest extends ScalaTestWithActorTestKit with BaseTestSuite
 
       assertSequencerState(Idle)
 
-      loadAndStartSequenceThenAssertInProgress()
+      loadAndProcessSequenceThenAssertInProgress()
       assertSequencerState(InProgress)
 
       pullAllStepsAndAssertSequenceIsFinished()
@@ -513,7 +513,7 @@ class SequencerBehaviorTest extends ScalaTestWithActorTestKit with BaseTestSuite
     "return Ok immediately when a new step is available for execution" in {
       val sequencerSetup = SequencerTestSetup.idle(sequence)
       import sequencerSetup._
-      loadAndStartSequenceThenAssertInProgress()
+      loadAndProcessSequenceThenAssertInProgress()
 
       val probe = TestProbe[Ok.type]
       sequencerActor ! ReadyToExecuteNext(probe.ref)
@@ -523,7 +523,7 @@ class SequencerBehaviorTest extends ScalaTestWithActorTestKit with BaseTestSuite
     "wait till completion of current command" in {
       val sequencerSetup = SequencerTestSetup.idle(sequence)
       import sequencerSetup._
-      loadAndStartSequenceThenAssertInProgress()
+      loadAndProcessSequenceThenAssertInProgress()
 
       // long running command
       val promise = Promise[SubmitResponse]
@@ -550,7 +550,7 @@ class SequencerBehaviorTest extends ScalaTestWithActorTestKit with BaseTestSuite
       probe.expectNoMessage(maxWaitForExpectNoMessage)
 
       // start the sequence and assert Ok is sent to the readyToExecuteNext subscriber as soon as a step is ready
-      sequencerActor ! StartSequence(createTestProbe[SequenceResponse].ref)
+      sequencerActor ! StartSequence(createTestProbe[OkOrUnhandledResponse].ref)
       probe.expectMessage(Ok)
     }
 
@@ -562,7 +562,7 @@ class SequencerBehaviorTest extends ScalaTestWithActorTestKit with BaseTestSuite
       sequencerActor ! ReadyToExecuteNext(probe.ref)
       probe.expectNoMessage(maxWaitForExpectNoMessage)
 
-      loadAndStartSequenceThenAssertInProgress()
+      loadAndProcessSequenceThenAssertInProgress()
       probe.expectMessage(Ok)
     }
 
@@ -575,14 +575,14 @@ class SequencerBehaviorTest extends ScalaTestWithActorTestKit with BaseTestSuite
       probe.expectNoMessage(maxWaitForExpectNoMessage)
 
       goOnlineAndAssertResponse(Ok, Future.successful(Done))
-      loadAndStartSequenceThenAssertInProgress()
+      loadAndProcessSequenceThenAssertInProgress()
       probe.expectMessage(Ok)
     }
 
     "wait till sequence is resumed in case of a paused sequence" in {
       val sequencerSetup = SequencerTestSetup.idle(sequence)
       import sequencerSetup._
-      loadAndStartSequenceThenAssertInProgress()
+      loadAndProcessSequenceThenAssertInProgress()
       mockCommand(command1.runId, Future.successful(Completed(command1.runId)))
       pullNextCommand()
 
@@ -706,7 +706,7 @@ class SequencerBehaviorTest extends ScalaTestWithActorTestKit with BaseTestSuite
     assertUnhandled(
       Loaded,
       LoadSequence(sequence, _),
-      LoadAndStartSequenceInternal(sequence, _),
+      LoadAndProcessSequenceInternal(sequence, _),
       Update(Completed(Id()), _),
       GoOnline,
       GoOnlineSuccess,
@@ -725,7 +725,7 @@ class SequencerBehaviorTest extends ScalaTestWithActorTestKit with BaseTestSuite
       InProgress,
       LoadSequence(sequence, _),
       StartSequence,
-      LoadAndStartSequenceInternal(sequence, _),
+      LoadAndProcessSequenceInternal(sequence, _),
       GoOnline,
       GoOnlineSuccess,
       GoOnlineFailed,
@@ -742,7 +742,7 @@ class SequencerBehaviorTest extends ScalaTestWithActorTestKit with BaseTestSuite
 
     assertUnhandled(
       Offline,
-      LoadAndStartSequenceInternal(sequence, _),
+      LoadAndProcessSequenceInternal(sequence, _),
       LoadSequence(sequence, _),
       StartSequence,
       AbortSequence,

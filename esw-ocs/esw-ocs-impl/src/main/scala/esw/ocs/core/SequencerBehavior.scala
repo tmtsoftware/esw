@@ -6,28 +6,19 @@ import akka.actor.typed.scaladsl.Behaviors
 import akka.actor.typed.{ActorRef, ActorSystem, Behavior}
 import akka.util.Timeout
 import csw.command.client.CommandResponseManager
-import csw.command.client.messages.sequencer.{LoadAndStartSequence, SequencerMsg}
+import csw.command.client.messages.sequencer.{LoadAndProcessSequence, SequencerMsg}
 import csw.command.client.messages.{GetComponentLogMetadata, LogControlMessages, SetComponentLogLevel}
 import csw.location.api.scaladsl.LocationService
 import csw.location.models.ComponentId
 import csw.location.models.Connection.AkkaConnection
 import csw.logging.client.commons.LogAdminUtil
 import csw.params.commands.Sequence
-import esw.ocs.api.models.codecs.OcsCodecs
-import esw.ocs.client.messages.SequencerMessages._
-import esw.ocs.api.models.responses.{GoOnlineHookFailed, _}
 import esw.ocs.api.models.StepList
+import esw.ocs.api.models.codecs.OcsCodecs
+import esw.ocs.api.models.responses.{GoOnlineHookFailed, _}
+import esw.ocs.client.messages.SequencerMessages._
 import esw.ocs.client.messages.SequencerState
-import esw.ocs.client.messages.SequencerState.{
-  AbortingSequence,
-  GoingOffline,
-  GoingOnline,
-  Idle,
-  InProgress,
-  Loaded,
-  Offline,
-  ShuttingDown
-}
+import esw.ocs.client.messages.SequencerState._
 import esw.ocs.dsl.ScriptDsl
 import esw.ocs.internal.Timeouts
 
@@ -42,7 +33,6 @@ class SequencerBehavior(
     crm: CommandResponseManager
 )(implicit val actorSystem: ActorSystem[_], timeout: Timeout)
     extends OcsCodecs {
-
   import actorSystem.executionContext
 
   def setup: Behavior[SequencerMsg] = Behaviors.setup { ctx =>
@@ -51,25 +41,28 @@ class SequencerBehavior(
 
   //BEHAVIORS
   private def idle(data: SequencerData): Behavior[SequencerMsg] = receive(Idle, data, idle) {
-    case LoadSequence(sequence, replyTo)                 => load(sequence, replyTo, data)(nextBehavior = loaded)
-    case LoadAndStartSequenceInternal(sequence, replyTo) => loadAndStart(sequence, data, replyTo)
-    case GoOffline(replyTo)                              => goOffline(replyTo, data)
-    case PullNext(replyTo)                               => idle(data.pullNextStep(replyTo))
+    case LoadSequence(sequence, replyTo)                   => load(sequence, replyTo, data)(nextBehavior = loaded)
+    case QuerySequenceResponse(replyTo)                    => idle(data.querySequence(replyTo))
+    case LoadAndProcessSequenceInternal(sequence, replyTo) => loadAndProcess(sequence, data, replyTo)
+    case LoadAndStartSequence(sequence, replyTo)           => loadAndStart(sequence, data, replyTo)
+    case GoOffline(replyTo)                                => goOffline(replyTo, data)
+    case PullNext(replyTo)                                 => idle(data.pullNextStep(replyTo))
   }
 
   private def loaded(data: SequencerData): Behavior[SequencerMsg] = receive(Loaded, data, loaded) {
     case AbortSequence(replyTo)     => abortSequence(data, Loaded, replyTo)(nextBehavior = idle)
-    case editorAction: EditorAction => handleEditorAction(editorAction, data, Loaded, nextBehavior = loaded)
+    case editorAction: EditorAction => handleEditorAction(editorAction, data, Loaded)(nextBehavior = loaded)
     case GoOffline(replyTo)         => goOffline(replyTo, data)
-    case StartSequence(replyTo)     => start(data, replyTo)
+    case StartSequence(replyTo)     => inProgress(data.startSequence(replyTo))
   }
 
   private def inProgress(data: SequencerData): Behavior[SequencerMsg] = receive(InProgress, data, inProgress) {
-    case AbortSequence(replyTo)    => abortSequence(data, InProgress, replyTo)(nextBehavior = inProgress)
-    case msg: EditorAction         => handleEditorAction(msg, data, InProgress, nextBehavior = inProgress)
-    case PullNext(replyTo)         => inProgress(data.pullNextStep(replyTo))
-    case Update(submitResponse, _) => inProgress(data.updateStepStatus(submitResponse, InProgress))
-    case _: GoIdle                 => idle(data)
+    case QuerySequenceResponse(replyTo) => inProgress(data.querySequence(replyTo))
+    case AbortSequence(replyTo)         => abortSequence(data, InProgress, replyTo)(nextBehavior = inProgress)
+    case msg: EditorAction              => handleEditorAction(msg, data, InProgress)(nextBehavior = inProgress)
+    case PullNext(replyTo)              => inProgress(data.pullNextStep(replyTo))
+    case Update(submitResponse, _)      => inProgress(data.updateStepStatus(submitResponse, InProgress))
+    case _: GoIdle                      => idle(data)
   }
 
   private def offline(data: SequencerData): Behavior[SequencerMsg] = receive(Offline, data, offline) {
@@ -124,10 +117,7 @@ class SequencerBehavior(
       Behaviors.same
   }
 
-  private def handleEditorAction(
-      editorAction: EditorAction,
-      data: SequencerData,
-      state: SequencerState[SequencerMsg],
+  private def handleEditorAction(editorAction: EditorAction, data: SequencerData, state: SequencerState[SequencerMsg])(
       nextBehavior: SequencerData => Behavior[SequencerMsg]
   ): Behavior[SequencerMsg] = {
     import data._
@@ -158,24 +148,32 @@ class SequencerBehavior(
 
   private def load(sequence: Sequence, replyTo: ActorRef[LoadSequenceResponse], data: SequencerData)(
       nextBehavior: SequencerData => Behavior[SequencerMsg]
-  ): Behavior[SequencerMsg] =
-    createStepList(sequence, data) match {
-      case Left(err)       => replyTo ! err; Behaviors.same
-      case Right(newState) => replyTo ! Ok; nextBehavior(newState)
-    }
-
-  private def start(data: SequencerData, replyTo: ActorRef[SequenceResponse]): Behavior[SequencerMsg] =
-    inProgress(data.startSequence(replyTo))
+  ): Behavior[SequencerMsg] = createStepList(sequence, data) match {
+    case Left(err)          => replyTo ! err; Behaviors.same
+    case Right(updatedData) => replyTo ! Ok; nextBehavior(updatedData)
+  }
 
   private def loadAndStart(
       sequence: Sequence,
       data: SequencerData,
+      replyTo: ActorRef[LoadSequenceResponse]
+  ): Behavior[SequencerMsg] = createStepList(sequence, data) match {
+    case Left(err)          => replyTo ! err; Behaviors.same
+    case Right(updatedData) => inProgress(updatedData.startSequence(replyTo))
+  }
+
+  private def loadAndProcess(
+      sequence: Sequence,
+      data: SequencerData,
       replyTo: ActorRef[SequenceResponse]
-  ): Behavior[SequencerMsg] =
-    createStepList(sequence, data) match {
-      case Left(err)       => replyTo ! err; Behaviors.same
-      case Right(newState) => start(newState, replyTo)
-    }
+  ): Behavior[SequencerMsg] = createStepList(sequence, data) match {
+    case Left(err) => replyTo ! err; Behaviors.same
+    case Right(updatedData) =>
+      inProgress(updatedData.processSequence { res =>
+        replyTo ! SequenceResult(res)
+        updatedData.goToIdle()
+      })
+  }
 
   private def createStepList(
       sequence: Sequence,
@@ -231,8 +229,8 @@ class SequencerBehavior(
         case msg: T                  => f(msg)
         case msg: UnhandleableSequencerMessage =>
           msg.replyTo ! Unhandled(state.entryName, msg.getClass.getSimpleName); Behaviors.same
-        case LoadAndStartSequence(sequence, replyTo) =>
-          val sequenceResponseF: Future[SequenceResponse] = ctx.self ? (LoadAndStartSequenceInternal(sequence, _))
+        case LoadAndProcessSequence(sequence, replyTo) =>
+          val sequenceResponseF: Future[SequenceResponse] = ctx.self ? (LoadAndProcessSequenceInternal(sequence, _))
           sequenceResponseF.foreach(res => replyTo ! res.toSubmitResponse(sequence.runId))
           Behaviors.same
         case _ => Behaviors.unhandled

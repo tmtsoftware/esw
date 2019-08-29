@@ -7,7 +7,7 @@ import akka.actor.typed.scaladsl.AskPattern._
 import akka.actor.typed.scaladsl.Behaviors
 import akka.actor.typed.{ActorRef, ActorSystem, SpawnProtocol}
 import akka.util.Timeout
-import csw.command.client.messages.sequencer.{LoadAndStartSequence, SequencerMsg}
+import csw.command.client.messages.sequencer.{LoadAndProcessSequence, SequencerMsg}
 import csw.location.api.extensions.ActorExtension.RichActor
 import csw.location.api.extensions.URIExtension.RichURI
 import csw.location.api.scaladsl.LocationService
@@ -57,7 +57,7 @@ class ScriptIntegrationTest extends ScalaTestFrameworkTestKit with BaseTestSuite
       val sequenceId          = Id()
       val sequence            = Sequence(sequenceId, Seq(command))
 
-      ocsSequencer ! LoadAndStartSequence(sequence, submitResponseProbe.ref)
+      ocsSequencer ! LoadAndProcessSequence(sequence, submitResponseProbe.ref)
 
       // This has to match with sequence created in TestScript -> handleSetupCommand("command-4")
       val assertableCommand =
@@ -77,7 +77,7 @@ class ScriptIntegrationTest extends ScalaTestFrameworkTestKit with BaseTestSuite
 
   object TestSequencer {
     def beh: Behaviors.Receive[SequencerMsg] = Behaviors.receiveMessage[SequencerMsg] {
-      case LoadAndStartSequence(sequence, replyTo) =>
+      case LoadAndProcessSequence(sequence, replyTo) =>
         sequenceReceivedByTCSProbe = sequence
         replyTo ! Started(sequence.runId)
         Behaviors.same
