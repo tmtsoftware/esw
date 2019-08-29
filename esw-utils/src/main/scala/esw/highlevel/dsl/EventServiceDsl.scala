@@ -6,6 +6,7 @@ import csw.event.api.scaladsl.{EventPublisher, EventService, EventSubscriber, Ev
 import csw.params.core.generics.Parameter
 import csw.params.core.models.Prefix
 import csw.params.events._
+import esw.ocs.macros.StrandEc
 
 import scala.concurrent.duration.FiniteDuration
 import scala.concurrent.{ExecutionContext, Future}
@@ -23,11 +24,12 @@ trait EventServiceDsl {
 
   def publishEvent(event: Event): Future[Done] = publisher.publish(event)
 
-  def publishEvent(every: FiniteDuration)(eventGenerator: => Option[Event])(implicit ec: ExecutionContext): Cancellable =
+  private implicit def toEc(implicit strandEc: StrandEc): ExecutionContext = strandEc.ec
+  def publishEvent(every: FiniteDuration)(eventGenerator: => Option[Event])(implicit strandEc: StrandEc): Cancellable =
     publisher.publishAsync(Future(eventGenerator), every)
 
   private val stringToEventKey = (x: String) => EventKey(x)
-  def onEvent(eventKeys: String*)(callback: Event => Unit)(implicit ec: ExecutionContext): EventSubscription =
+  def onEvent(eventKeys: String*)(callback: Event => Unit)(implicit strandEc: StrandEc): EventSubscription =
     subscriber.subscribeAsync(eventKeys.toSet.map(stringToEventKey(_)), event => Future(callback(event)))
 
   def getEvent(eventKeys: String*): Future[Set[Event]] = {

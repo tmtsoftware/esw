@@ -17,8 +17,8 @@ class CswServices(
     private[esw] val eventService: EventService,
     private[esw] val timeServiceSchedulerFactory: TimeServiceSchedulerFactory
 ) extends SequencerCommandServiceDsl
-    with EventServiceDsl
     with LocationServiceDsl
+    with EventServiceDsl
     with TimeServiceDsl
 //    sequenceId: String,
 //    observingMode: String

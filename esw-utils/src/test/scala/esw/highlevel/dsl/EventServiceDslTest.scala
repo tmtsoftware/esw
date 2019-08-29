@@ -4,17 +4,18 @@ import csw.event.api.scaladsl.{EventPublisher, EventService, EventSubscriber}
 import csw.params.core.models.Prefix
 import csw.params.events.{Event, EventKey, EventName, SystemEvent}
 import esw.ocs.api.BaseTestSuite
+import esw.ocs.macros.StrandEc
 import org.mockito.ArgumentMatchers.{any, eq => argsEq}
 
-import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future
 import scala.concurrent.duration.DurationDouble
 
 class EventServiceDslTest extends BaseTestSuite with EventServiceDsl {
-  val eventService: EventService = mock[EventService]
-  private val eventPublisher     = mock[EventPublisher]
-  private val eventSubscriber    = mock[EventSubscriber]
-  private val event              = SystemEvent(Prefix("TCS.test"), EventName("event-1"))
+  val eventService: EventService  = mock[EventService]
+  private val eventPublisher      = mock[EventPublisher]
+  private val eventSubscriber     = mock[EventSubscriber]
+  private val event               = SystemEvent(Prefix("TCS.test"), EventName("event-1"))
+  implicit val strandEc: StrandEc = StrandEc()
 
   when(eventService.defaultPublisher).thenReturn(eventPublisher)
   when(eventService.defaultSubscriber).thenReturn(eventSubscriber)
