@@ -24,7 +24,7 @@ class TimeServiceDslTest extends BaseTestSuite with TimeServiceDsl {
   val task: Unit                                               = {}
 
   "ScheduleOnce" must {
-    "delegate to schedule tasks for given start time" in {
+    "delegate to schedule tasks for given start time | ESW-122" in {
       val startTime = UTCTime.now()
 
       when(timeServiceSchedulerFactory.make()).thenReturn(timeServiceScheduler)
@@ -38,7 +38,7 @@ class TimeServiceDslTest extends BaseTestSuite with TimeServiceDsl {
   }
 
   "schedulePeriodically" must {
-    "delegate to schedule task for given interval with default time" in {
+    "delegate to schedule task for given interval with default time | ESW-122" in {
       val task: Unit               = {}
       val interval: FiniteDuration = 5.seconds
 
@@ -49,7 +49,7 @@ class TimeServiceDslTest extends BaseTestSuite with TimeServiceDsl {
       verify(timeServiceScheduler).schedulePeriodically(any[TMTTime], argsEq(Duration.ofNanos(interval.toNanos)))(argsEq(task))
     }
 
-    "delegate to schedule task for given interval for given time" in {
+    "delegate to schedule task for given interval for given time | ESW-122" in {
       val task: Unit               = {}
       val interval: FiniteDuration = 5.seconds
       val startTime                = UTCTime.now()
