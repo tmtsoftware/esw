@@ -45,8 +45,7 @@ private[core] case class SequencerData(
       .updateSequenceInCrmAndHandleFinalResponse(onComplete)
 
   def querySequence(replyTo: ActorRef[SequenceResponse]): SequencerData = {
-    val id = sequenceId.get //This method gets called in Loaded and InProgress state only. Hence sequenceId will not be None
-    crm.queryFinal(id).foreach(replyTo ! SequenceResult(_))
+    sequenceId.foreach(id => crm.queryFinal(id).foreach(replyTo ! SequenceResult(_)))
     this
   }
 

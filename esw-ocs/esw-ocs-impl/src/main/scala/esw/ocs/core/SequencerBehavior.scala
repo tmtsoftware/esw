@@ -44,6 +44,7 @@ class SequencerBehavior(
     case LoadSequence(sequence, replyTo)                   => load(sequence, replyTo, data)(nextBehavior = loaded)
     case LoadAndProcessSequenceInternal(sequence, replyTo) => loadAndProcess(sequence, data, replyTo)
     case LoadAndStartSequence(sequence, replyTo)           => loadAndStart(sequence, data, replyTo)
+    case QuerySequenceResponse(replyTo)                    => idle(data.querySequence(replyTo))
     case GoOffline(replyTo)                                => goOffline(replyTo, data)
     case PullNext(replyTo)                                 => idle(data.pullNextStep(replyTo))
   }
