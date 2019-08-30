@@ -24,7 +24,9 @@ class CswContextMocks(system: ActorSystem[SpawnProtocol]) {
   //command service mocks
   val componentFactory: ComponentFactory = mock[ComponentFactory]
   val commandService: CommandService     = mock[CommandService]
-  val alarmService: AlarmAdminService    = mock[AlarmAdminService]
+
+  //alarm service mocks
+  val alarmService: AlarmAdminService = mock[AlarmAdminService]
 
   //event service mocks
   val eventService: EventService               = mock[EventService]

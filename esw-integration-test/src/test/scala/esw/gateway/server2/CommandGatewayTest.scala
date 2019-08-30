@@ -20,7 +20,8 @@ import esw.gateway.api.messages.CommandAction.{Oneway, Submit, Validate}
 import esw.gateway.api.messages.{PostRequest, WebsocketRequest}
 import esw.http.core.BaseTestSuite
 import esw.http.core.commons.CoordinatedShutdownReasons
-import mscoket.impl.{PostClientJvm, WebsocketClientJvm}
+import mscoket.impl.post.PostClientJvm
+import mscoket.impl.ws.WebsocketClientJvm
 import msocket.api.RequestClient
 
 import scala.concurrent.duration.{DurationInt, FiniteDuration}

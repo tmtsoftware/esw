@@ -15,7 +15,8 @@ import esw.gateway.api.codecs.RestlessCodecs
 import esw.gateway.api.messages.{EmptyEventKeys, PostRequest, WebsocketRequest}
 import esw.http.core.BaseTestSuite
 import esw.http.core.commons.CoordinatedShutdownReasons
-import mscoket.impl.{PostClientJvm, WebsocketClientJvm}
+import mscoket.impl.post.PostClientJvm
+import mscoket.impl.ws.WebsocketClientJvm
 import msocket.api.RequestClient
 
 import scala.concurrent.duration.{DurationInt, FiniteDuration}

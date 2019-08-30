@@ -8,23 +8,20 @@ import esw.gateway.api.codecs.RestlessCodecs
 import esw.gateway.api.messages.WebsocketRequest
 import esw.gateway.api.messages.WebsocketRequest.{QueryFinal, Subscribe, SubscribeCurrentState, SubscribeWithPattern}
 import esw.gateway.api.{CommandApi, EventApi}
-import mscoket.impl.ToPayload._
+import mscoket.impl.ws.WebsocketStreamExtensions
 import msocket.api.RequestHandler
 
-import scala.concurrent.ExecutionContext
-
-class WebsocketHandlerImpl(commandApi: CommandApi, eventApi: EventApi)(
-    implicit ec: ExecutionContext,
-    mat: Materializer
-) extends RequestHandler[WebsocketRequest, Source[Message, NotUsed]]
-    with RestlessCodecs {
+class WebsocketHandlerImpl(commandApi: CommandApi, eventApi: EventApi)(implicit mat: Materializer)
+    extends RequestHandler[WebsocketRequest, Source[Message, NotUsed]]
+    with RestlessCodecs
+    with WebsocketStreamExtensions {
 
   override def handle(request: WebsocketRequest): Source[Message, NotUsed] = request match {
-    case QueryFinal(componentId, runId) => commandApi.queryFinal(componentId, runId).payload
+    case QueryFinal(componentId, runId) => stream(commandApi.queryFinal(componentId, runId))
     case SubscribeCurrentState(componentId, stateNames, maxFrequency) =>
-      commandApi.subscribeCurrentState(componentId, stateNames, maxFrequency).resultPayloads
-    case Subscribe(eventKeys, maxFrequency) => eventApi.subscribe(eventKeys, maxFrequency).resultPayloads
+      streamWithError(commandApi.subscribeCurrentState(componentId, stateNames, maxFrequency))
+    case Subscribe(eventKeys, maxFrequency) => streamWithError(eventApi.subscribe(eventKeys, maxFrequency))
     case SubscribeWithPattern(subsystem, maxFrequency, pattern) =>
-      eventApi.pSubscribe(subsystem, maxFrequency, pattern).resultPayloads
+      streamWithError(eventApi.pSubscribe(subsystem, maxFrequency, pattern))
   }
 }

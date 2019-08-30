@@ -23,8 +23,8 @@ import esw.gateway.api.{CommandApi, EventApi}
 import esw.gateway.impl.{CommandImpl, EventImpl}
 import esw.http.core.BaseTestSuite
 import io.bullet.borer.Decoder
-import mscoket.impl.Encoding.JsonText
-import mscoket.impl.HttpCodecs
+import mscoket.impl.ws.Encoding.JsonText
+import mscoket.impl.{HttpCodecs, RoutesFactory}
 import org.mockito.Mockito.when
 
 import scala.concurrent.Future
@@ -43,7 +43,8 @@ class WebsocketHandlerImplTest extends BaseTestSuite with ScalatestRouteTest wit
   private val eventApi: EventApi     = new EventImpl(eventService, eventSubscriberUtil)
   private val commandApi: CommandApi = new CommandImpl(componentFactory.commandService)
   private val websocketHandlerImpl   = new WebsocketHandlerImpl(commandApi, eventApi)
-  private val route                  = new Routes(null, websocketHandlerImpl, handlers).route
+  lazy val routesFactory             = new RoutesFactory[PostRequest, WebsocketRequest](null, websocketHandlerImpl, null)
+  private val route                  = new Routes(routesFactory.route, handlers).route
 
   override def beforeEach(): Unit = {
     wsClient = WSProbe()

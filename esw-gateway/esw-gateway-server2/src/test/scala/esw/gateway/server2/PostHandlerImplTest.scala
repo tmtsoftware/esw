@@ -17,11 +17,11 @@ import csw.params.events.{Event, EventKey, EventName, SystemEvent}
 import esw.gateway.api.codecs.RestlessCodecs
 import esw.gateway.api.messages.CommandAction.{Oneway, Submit, Validate}
 import esw.gateway.api.messages.PostRequest.{CommandRequest, GetEvent, PublishEvent, SetAlarmSeverity}
-import esw.gateway.api.messages.{EmptyEventKeys, InvalidComponent, SetAlarmSeverityFailure}
+import esw.gateway.api.messages.{EmptyEventKeys, InvalidComponent, PostRequest, SetAlarmSeverityFailure, WebsocketRequest}
 import esw.gateway.api.{AlarmApi, CommandApi, EventApi}
 import esw.gateway.impl.{AlarmImpl, CommandImpl, EventImpl}
 import esw.http.core.BaseTestSuite
-import mscoket.impl.HttpCodecs
+import mscoket.impl.{HttpCodecs, RoutesFactory}
 import org.mockito.ArgumentMatchers.any
 import org.mockito.Mockito.when
 import org.mockito.MockitoSugar._
@@ -41,7 +41,8 @@ class PostHandlerImplTest extends BaseTestSuite with ScalatestRouteTest with Res
   private val eventApi: EventApi     = new EventImpl(eventService, eventSubscriberUtil)
   private val commandApi: CommandApi = new CommandImpl(componentFactory.commandService)
   private val postHandlerImpl        = new PostHandlerImpl(alarmApi, commandApi, eventApi)
-  private val route                  = new Routes(postHandlerImpl, null, handlers).route
+  lazy val routesFactory             = new RoutesFactory[PostRequest, WebsocketRequest](postHandlerImpl, null, null)
+  private val route                  = new Routes(routesFactory.route, handlers).route
 
   "PostHandlerImpl" must {
     "handle submit command and return started command response | ESW-216" in {

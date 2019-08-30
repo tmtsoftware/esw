@@ -18,7 +18,7 @@ import esw.gateway.api.codecs.RestlessCodecs
 import esw.gateway.api.messages.PostRequest
 import esw.http.core.BaseTestSuite
 import esw.http.core.commons.CoordinatedShutdownReasons
-import mscoket.impl.PostClientJvm
+import mscoket.impl.post.PostClientJvm
 import msocket.api.RequestClient
 
 import scala.concurrent.Await
