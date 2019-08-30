@@ -203,7 +203,7 @@ class SequencerTestSetup(sequence: Sequence)(implicit system: ActorSystem[_], ti
   ): Unit =
     msgs.foreach(assertUnhandled(state, _))
 
-  private def assertSequenceIsFinished(): Assertion = {
+  def assertSequenceIsFinished(): Assertion = {
     val probe = TestProbe[Option[StepList]]
     sequencerActor ! GetSequence(probe.ref)
     val stepList = probe.expectMessageType[Option[StepList]]

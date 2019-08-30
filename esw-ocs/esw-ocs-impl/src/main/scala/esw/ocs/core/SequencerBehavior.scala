@@ -42,7 +42,6 @@ class SequencerBehavior(
   //BEHAVIORS
   private def idle(data: SequencerData): Behavior[SequencerMsg] = receive(Idle, data, idle) {
     case LoadSequence(sequence, replyTo)                   => load(sequence, replyTo, data)(nextBehavior = loaded)
-    case QuerySequenceResponse(replyTo)                    => idle(data.querySequence(replyTo))
     case LoadAndProcessSequenceInternal(sequence, replyTo) => loadAndProcess(sequence, data, replyTo)
     case LoadAndStartSequence(sequence, replyTo)           => loadAndStart(sequence, data, replyTo)
     case GoOffline(replyTo)                                => goOffline(replyTo, data)
@@ -50,10 +49,11 @@ class SequencerBehavior(
   }
 
   private def loaded(data: SequencerData): Behavior[SequencerMsg] = receive(Loaded, data, loaded) {
-    case AbortSequence(replyTo)     => abortSequence(data, Loaded, replyTo)(nextBehavior = idle)
-    case editorAction: EditorAction => handleEditorAction(editorAction, data, Loaded)(nextBehavior = loaded)
-    case GoOffline(replyTo)         => goOffline(replyTo, data)
-    case StartSequence(replyTo)     => inProgress(data.startSequence(replyTo))
+    case QuerySequenceResponse(replyTo) => loaded(data.querySequence(replyTo))
+    case AbortSequence(replyTo)         => abortSequence(data, Loaded, replyTo)(nextBehavior = idle)
+    case editorAction: EditorAction     => handleEditorAction(editorAction, data, Loaded)(nextBehavior = loaded)
+    case GoOffline(replyTo)             => goOffline(replyTo, data)
+    case StartSequence(replyTo)         => inProgress(data.startSequence(replyTo))
   }
 
   private def inProgress(data: SequencerData): Behavior[SequencerMsg] = receive(InProgress, data, inProgress) {

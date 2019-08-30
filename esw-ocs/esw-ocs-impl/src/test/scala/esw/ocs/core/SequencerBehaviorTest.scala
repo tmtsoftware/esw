@@ -126,6 +126,48 @@ class SequencerBehaviorTest extends ScalaTestWithActorTestKit with BaseTestSuite
     }
   }
 
+  "QuerySequenceResponse" must {
+    "query sequence response when sequencer is Loaded | ESW-145, ESW-154" in {
+      val sequencerSetup = SequencerTestSetup.loaded(sequence)
+      import sequencerSetup._
+
+      val seqResProbe = createTestProbe[SequenceResponse]
+      sequencerActor ! QuerySequenceResponse(seqResProbe.ref)
+      seqResProbe.expectNoMessage(maxWaitForExpectNoMessage)
+
+      val startSeqProbe = createTestProbe[OkOrUnhandledResponse]
+      sequencerActor ! StartSequence(startSeqProbe.ref)
+      startSeqProbe.expectMessage(Ok)
+      pullAllStepsAndAssertSequenceIsFinished()
+
+      seqResProbe.expectMessage(SequenceResult(Completed(sequence.runId)))
+    }
+
+    "query sequence response when sequencer is inProgress | ESW-145, ESW-154" in {
+      val sequence1      = Sequence(command1)
+      val sequencerSetup = SequencerTestSetup.loaded(sequence1)
+      import sequencerSetup._
+      val startSeqProbe = createTestProbe[OkOrUnhandledResponse]
+      sequencerActor ! StartSequence(startSeqProbe.ref)
+      startSeqProbe.expectMessage(Ok)
+
+      val promise = Promise[SubmitResponse]
+      mockCommand(command1.runId, promise.future)
+      pullNextCommand()
+      assertSequencerState(InProgress)
+
+      val seqResProbe = createTestProbe[SequenceResponse]
+      sequencerActor ! QuerySequenceResponse(seqResProbe.ref)
+      seqResProbe.expectNoMessage(maxWaitForExpectNoMessage)
+
+      promise.complete(Success(Completed(command1.runId)))
+      seqResProbe.expectNoMessage(maxWaitForExpectNoMessage)
+
+      assertSequenceIsFinished()
+      seqResProbe.expectMessage(SequenceResult(Completed(sequence1.runId)))
+    }
+  }
+
   "GetSequence" must {
     val sequencerSetup = SequencerTestSetup.idle(sequence)
     import sequencerSetup._
