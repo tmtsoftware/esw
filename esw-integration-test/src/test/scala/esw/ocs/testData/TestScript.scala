@@ -6,7 +6,8 @@ import csw.params.core.generics.KeyType.{BooleanKey, StringKey, UTCTimeKey}
 import csw.params.core.models.Units.NoUnits
 import csw.params.core.models.{Id, Prefix}
 import csw.params.events.{EventName, SystemEvent}
-import csw.time.core.models.{TMTTime, UTCTime}
+import csw.time.core.models.UTCTime
+import esw.highlevel.dsl.Util.RichCommand
 import esw.ocs.dsl.{CswServices, Script}
 
 import scala.concurrent.duration.DurationDouble
@@ -79,7 +80,7 @@ class TestScript(csw: CswServices) extends Script(csw) {
     spawn {
 
       /************************** Schedule task once at particular time ************************************/
-      val startTime = UTCTime(UTCTime.now().value.plusSeconds(10))
+      val startTime = UTCTime.after(10.millis)
 
       csw.scheduleOnce(startTime) {
         println("task")
@@ -91,10 +92,9 @@ class TestScript(csw: CswServices) extends Script(csw) {
       }
 
       /*************** Schedule task periodically at provided interval with start time *********************/
-      val timeParam           = command.get("time-key", UTCTimeKey).get
-      val startTime1: TMTTime = timeParam.head
+      val utcTime = command.getParam("time-key", UTCTimeKey)
 
-      csw.schedulePeriodically(5.millis, startTime1) {
+      csw.schedulePeriodically(5.millis, utcTime) {
         println("task")
       }
 
