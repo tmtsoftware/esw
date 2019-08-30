@@ -10,7 +10,6 @@ import esw.gateway.api.messages.{PostRequest, WebsocketRequest}
 import esw.gateway.api.{AlarmApi, CommandApi, EventApi}
 import esw.gateway.impl.{AlarmImpl, CommandImpl, EventImpl}
 import esw.http.core.wiring.{HttpService, ServerWiring}
-import mscoket.impl.RoutesFactory
 import msocket.api.RequestHandler
 
 import scala.concurrent.duration.DurationLong
@@ -31,6 +30,6 @@ class GatewayWiring(_port: Option[Int] = None) extends RestlessCodecs {
   lazy val websocketHandler: RequestHandler[WebsocketRequest, Source[Message, NotUsed]] =
     new WebsocketHandlerImpl(commandApi, eventApi)
 
-  lazy val routesFactory: RoutesFactory[PostRequest, WebsocketRequest] = new RoutesFactory(postHandler, websocketHandler)
-  lazy val httpService                                                 = new HttpService(logger, locationService, routesFactory.route, settings, actorRuntime)
+  lazy val routes      = new Routes(postHandler, websocketHandler, routeHandlers)
+  lazy val httpService = new HttpService(logger, locationService, routes.route, settings, actorRuntime)
 }

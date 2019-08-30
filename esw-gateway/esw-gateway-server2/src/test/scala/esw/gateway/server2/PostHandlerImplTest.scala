@@ -2,6 +2,7 @@ package esw.gateway.server2
 
 import akka.Done
 import akka.actor.typed.{ActorSystem, SpawnProtocol}
+import akka.http.scaladsl.model.StatusCodes
 import akka.http.scaladsl.testkit.ScalatestRouteTest
 import akka.util.Timeout
 import csw.alarm.api.exceptions.KeyNotFoundException
@@ -15,12 +16,13 @@ import csw.params.core.models.{Id, ObsId, Prefix, Subsystem}
 import csw.params.events.{Event, EventKey, EventName, SystemEvent}
 import esw.gateway.api.codecs.RestlessCodecs
 import esw.gateway.api.messages.CommandAction.{Oneway, Submit, Validate}
-import esw.gateway.api.messages.{EmptyEventKeys, InvalidComponent, PostRequest, SetAlarmSeverityFailure, WebsocketRequest}
 import esw.gateway.api.messages.PostRequest.{CommandRequest, GetEvent, PublishEvent, SetAlarmSeverity}
+import esw.gateway.api.messages.{EmptyEventKeys, InvalidComponent, SetAlarmSeverityFailure}
 import esw.gateway.api.{AlarmApi, CommandApi, EventApi}
 import esw.gateway.impl.{AlarmImpl, CommandImpl, EventImpl}
 import esw.http.core.BaseTestSuite
-import mscoket.impl.{HttpCodecs, RoutesFactory}
+import mscoket.impl.HttpCodecs
+import org.mockito.ArgumentMatchers.any
 import org.mockito.Mockito.when
 import org.mockito.MockitoSugar._
 
@@ -35,12 +37,11 @@ class PostHandlerImplTest extends BaseTestSuite with ScalatestRouteTest with Res
 
   implicit val timeout: Timeout = Timeout(5.seconds)
 
-  private val alarmApi: AlarmApi                                         = new AlarmImpl(alarmService)
-  private val eventApi: EventApi                                         = new EventImpl(eventService, eventSubscriberUtil)
-  private val commandApi: CommandApi                                     = new CommandImpl(componentFactory.commandService)
-  private val postHandlerImpl                                            = new PostHandlerImpl(alarmApi, commandApi, eventApi)
-  private val routeFactory: RoutesFactory[PostRequest, WebsocketRequest] = new RoutesFactory(postHandlerImpl, null)
-  private val route                                                      = routeFactory.route
+  private val alarmApi: AlarmApi     = new AlarmImpl(alarmService)
+  private val eventApi: EventApi     = new EventImpl(eventService, eventSubscriberUtil)
+  private val commandApi: CommandApi = new CommandImpl(componentFactory.commandService)
+  private val postHandlerImpl        = new PostHandlerImpl(alarmApi, commandApi, eventApi)
+  private val route                  = new Routes(postHandlerImpl, null, handlers).route
 
   "PostHandlerImpl" must {
     "handle submit command and return started command response | ESW-216" in {
@@ -139,6 +140,16 @@ class PostHandlerImplTest extends BaseTestSuite with ScalatestRouteTest with Res
     "get event return EmptyEventKeys error on sending no event keys in request | ESW-216" in {
       Post("/post", GetEvent(Set())) ~> route ~> check {
         responseAs[Either[EmptyEventKeys, Set[Event]]].leftValue shouldEqual EmptyEventKeys()
+      }
+    }
+
+    "return InternalServerError if get event fails | ESW-216" in {
+      when(eventSubscriber.get(any[Set[EventKey]])).thenReturn(Future.failed(new RuntimeException("failed")))
+
+      val eventKey = EventKey(Prefix("tcs.test.gateway"), EventName("event1"))
+
+      Post("/post", GetEvent(Set(eventKey))) ~> route ~> check {
+        status shouldBe StatusCodes.InternalServerError
       }
     }
 
