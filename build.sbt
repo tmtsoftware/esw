@@ -6,7 +6,8 @@ lazy val aggregateProjects: Seq[ProjectReference] =
     `esw-ocs`,
     `esw-gateway-server`,
     `esw-http-core`,
-    `esw-integration-test`
+    `esw-integration-test`,
+    `esw-gateway`
   )
 
 lazy val githubReleases: Seq[ProjectReference]   = Seq.empty
@@ -105,7 +106,7 @@ lazy val `esw-integration-test` = project
 lazy val `esw-utils` = project
   .in(file("esw-utils"))
   .settings(libraryDependencies ++= Dependencies.Utils.value)
-  .dependsOn(`esw-ocs-api`.jvm  % "compile->compile;test->test", `esw-ocs-macros`)
+  .dependsOn(`esw-ocs-api`.jvm % "compile->compile;test->test", `esw-ocs-macros`)
 
 lazy val `msocket` = project
   .in(file("msocket"))
@@ -129,7 +130,6 @@ lazy val `msocket-impl` = project
   )
   .dependsOn(`msocket-api`)
 
-//fixme: add coverage plugin
 lazy val `esw-gateway` = project
   .aggregate(
     `esw-gateway-api`,
@@ -153,6 +153,7 @@ lazy val `esw-gateway-impl` = project
 
 lazy val `esw-gateway-server2` = project
   .in(file("esw-gateway/esw-gateway-server2"))
+  .enablePlugins(MaybeCoverage)
   .dependsOn(`msocket-impl`, `esw-gateway-impl`, `esw-http-core` % "compile->compile;test->test")
 
 /* ================= Paradox Docs ============== */

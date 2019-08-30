@@ -31,10 +31,11 @@ class EventImpl(eventService: EventService, eventSubscriberUtil: EventSubscriber
       maxFrequency match {
         case Some(x) if x <= 0 => Utils.emptySourceWithError(InvalidMaxFrequency())
         case Some(frequency) =>
-          subscriber
-            .subscribe(eventKeys, Utils.maxFrequencyToDuration(frequency), RateLimiterMode)
-            .mapMaterializedValue(_ => Future.successful(None))
-        case None => subscriber.subscribe(eventKeys).mapMaterializedValue(_ => Future.successful(None))
+          Utils.sourceWithNoError(
+            subscriber
+              .subscribe(eventKeys, Utils.maxFrequencyToDuration(frequency), RateLimiterMode)
+          )
+        case None => Utils.sourceWithNoError(subscriber.subscribe(eventKeys))
       }
     } else Utils.emptySourceWithError(EmptyEventKeys())
   }
@@ -49,10 +50,11 @@ class EventImpl(eventService: EventService, eventSubscriberUtil: EventSubscriber
     maxFrequency match {
       case Some(x) if x <= 0 => Utils.emptySourceWithError(InvalidMaxFrequency())
       case Some(f) =>
-        events
-          .via(eventSubscriberUtil.subscriptionModeStage(Utils.maxFrequencyToDuration(f), RateLimiterMode))
-          .mapMaterializedValue(_ => Future.successful(None))
-      case None => events.mapMaterializedValue(_ => Future.successful(None))
+        Utils.sourceWithNoError(
+          events
+            .via(eventSubscriberUtil.subscriptionModeStage(Utils.maxFrequencyToDuration(f), RateLimiterMode))
+        )
+      case None => Utils.sourceWithNoError(events)
     }
   }
 

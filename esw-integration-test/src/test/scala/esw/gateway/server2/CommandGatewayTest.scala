@@ -39,7 +39,7 @@ class CommandGatewayTest extends BaseTestSuite with RestlessCodecs {
   override implicit def patienceConfig: PatienceConfig = PatienceConfig(timeout)
 
   override def beforeAll(): Unit = {
-    frameworkTestKit.startAll()
+    frameworkTestKit.start()
   }
 
   override protected def afterAll(): Unit = {

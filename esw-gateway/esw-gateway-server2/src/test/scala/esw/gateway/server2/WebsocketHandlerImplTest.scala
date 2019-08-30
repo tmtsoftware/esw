@@ -312,7 +312,7 @@ class WebsocketHandlerImplTest extends BaseTestSuite with ScalatestRouteTest wit
         isWebSocketUpgrade shouldBe true
 
         val response = Source(1 to 10)
-          .map(_ => decodeMessage[Either[EventError, Event]](wsClient))
+          .map(_ => decodeMessage[Either[InvalidMaxFrequency, Event]](wsClient))
           .runWith(Sink.head)
           .leftValue
 

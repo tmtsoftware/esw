@@ -59,7 +59,7 @@ class CommandImpl(commandService: (String, ComponentType) => Future[CommandServi
 
     def futureSource: Future[Source[CurrentState, Future[Option[InvalidComponent]]]] =
       commandService(componentId.name, componentId.componentType)
-        .map(_.subscribeCurrentState(stateNames).mapMaterializedValue(_ => Future.successful(None)))
+        .map(commandService => Utils.sourceWithNoError(commandService.subscribeCurrentState(stateNames)))
         .recover {
           case NonFatal(ex) => Utils.emptySourceWithError(InvalidComponent(ex.getMessage))
         }
