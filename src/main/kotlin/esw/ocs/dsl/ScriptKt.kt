@@ -1,14 +1,13 @@
 package esw.ocs.dsl
 
 import akka.Done
+import csw.event.api.scaladsl.EventSubscription
 import csw.params.commands.Setup
 import csw.params.events.Event
 import esw.ocs.dsl.javadsl.JScript
 import esw.ocs.macros.StrandEc
 import esw.ocs.macros.`StrandEc$`
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Job
-import kotlinx.coroutines.asCoroutineDispatcher
+import kotlinx.coroutines.*
 import kotlinx.coroutines.future.await
 import kotlinx.coroutines.future.future
 import java.util.concurrent.Executors
@@ -41,7 +40,15 @@ open class ScriptKt(private val cswServices: CswServices) : CoroutineScope, JScr
         }
     }
 
-    suspend fun getEvent(key: String): Set<Event> = cswServices.jGetEvent(key).await()
+    fun <T> CoroutineScope.par0(block: CoroutineScope.() -> T): Deferred<T> = async { block() }
+
+    suspend fun <T> par(block: suspend () -> T): Deferred<T> = coroutineScope {
+        async { block() }
+    }
+
+    suspend fun getEvent(vararg eventKeys: String): Set<Event> = cswServices.jGetEvent(eventKeys.toSet()).await()
     suspend fun publishEvent(event: Event): Done = cswServices.jPublishEvent(event).await()
+    fun onEvent(vararg eventKeys: String, callback: (Event) -> Unit): EventSubscription =
+        cswServices.jOnEvent(eventKeys.toSet(), callback)
 
 }
