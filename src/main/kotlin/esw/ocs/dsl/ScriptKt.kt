@@ -40,11 +40,7 @@ open class ScriptKt(private val cswServices: CswServices) : CoroutineScope, JScr
         }
     }
 
-    fun <T> CoroutineScope.par0(block: CoroutineScope.() -> T): Deferred<T> = async { block() }
-
-    suspend fun <T> par(block: suspend () -> T): Deferred<T> = coroutineScope {
-        async { block() }
-    }
+    fun <T> CoroutineScope.par(block: suspend CoroutineScope.() -> T): Deferred<T> = async { block() }
 
     suspend fun getEvent(vararg eventKeys: String): Set<Event> = cswServices.jGetEvent(eventKeys.toSet()).await()
     suspend fun publishEvent(event: Event): Done = cswServices.jPublishEvent(event).await()
