@@ -18,7 +18,7 @@ import esw.gateway.api.codecs.RestlessCodecs
 import esw.gateway.api.messages.PostRequest
 import esw.http.core.BaseTestSuite
 import esw.http.core.commons.CoordinatedShutdownReasons
-import mscoket.impl.post.PostClientJvm
+import mscoket.impl.post.PostClient
 import msocket.api.RequestClient
 
 import scala.concurrent.Await
@@ -62,7 +62,7 @@ class AlarmGatewayTest extends BaseTestSuite with RestlessCodecs {
 
   "AlarmApi" must {
     "set alarm severity of a given alarm | ESW-216" in {
-      val postClient: RequestClient[PostRequest] = new PostClientJvm[PostRequest](s"http://localhost:$port/post")
+      val postClient: RequestClient[PostRequest] = new PostClient[PostRequest](s"http://localhost:$port/post")
       val alarmClient                            = new AlarmClient(postClient)
 
       val config              = ConfigFactory.parseResources("alarm_key.conf")

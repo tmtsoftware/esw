@@ -7,6 +7,7 @@ import esw.gateway.api.AlarmApi
 import esw.gateway.api.codecs.RestlessCodecs
 import esw.gateway.api.messages.PostRequest.SetAlarmSeverity
 import esw.gateway.api.messages.{PostRequest, SetAlarmSeverityFailure}
+import msocket.api.RequestClient
 
 import scala.concurrent.Future
 
