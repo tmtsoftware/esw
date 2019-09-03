@@ -19,7 +19,7 @@ open class ScriptKt(private val cswServices: CswServices) : CoroutineScope, JScr
     private val ec = Executors.newSingleThreadScheduledExecutor()
     private val dispatcher = ec.asCoroutineDispatcher()
 
-    override fun strandEc(): StrandEc = `StrandEc$`.`MODULE$`.apply(ec)
+    override fun strandEc(): StrandEc = StrandEc(ec)
 
     fun log(msg: String) = println("[${Thread.currentThread().name}] $msg")
 
@@ -36,6 +36,14 @@ open class ScriptKt(private val cswServices: CswServices) : CoroutineScope, JScr
         jHandleSetupCommand(name) { setup: Setup ->
             future {
                 block(setup)
+            }.thenAccept { }
+        }
+    }
+
+    fun handleShutdown(block: suspend () -> Unit) {
+        jHandleShutdown {
+            future {
+                block()
             }.thenAccept { }
         }
     }

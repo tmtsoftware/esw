@@ -33,20 +33,27 @@ open class SampleScript(cswServices: CswServices) : ScriptKt(cswServices) {
             val events = getEvent(eventKey + 1)
             log(events.toString())
             events.forEach(::println)
+
+            log("============ command-2 End ================")
             cswServices.crm().addOrUpdateCommand(CommandResponse.Completed(command.runId()))
         }
 
         handleSetup("command-3") { command ->
             log("============ command-3 ================")
 
-            val keys = (49.downTo(0)).map { eventKey + it }.toTypedArray()
+            val keys = (0.until(50)).map { eventKey + it }.toTypedArray()
 
             onEvent(*keys) { event ->
                 println("=======================")
                 log("Received: ${event.eventName()}")
             }
 
+            log("============ command-3 End ================")
             cswServices.crm().addOrUpdateCommand(CommandResponse.Completed(command.runId()))
+        }
+
+        handleShutdown {
+            close()
         }
     }
 
