@@ -64,7 +64,7 @@ class SequencerBehaviorTest extends ScalaTestWithActorTestKit with BaseTestSuite
   }
 
   "LoadAndStartSequence" must {
-    "load and start executing a sequence | ESW-145, ESW-154" in {
+    "load and start executing a sequence | ESW-145, ESW-154, ESW-221" in {
       val sequencerSetup = SequencerTestSetup.idle(sequence)
       import sequencerSetup._
 
@@ -74,7 +74,7 @@ class SequencerBehaviorTest extends ScalaTestWithActorTestKit with BaseTestSuite
       probe.expectMessage(Ok)
     }
 
-    "fail when given sequence contains duplicate Ids | ESW-145, ESW-154" in {
+    "fail when given sequence contains duplicate Ids | ESW-145, ESW-154, ESW-221" in {
       val invalidSequence = Sequence(Id(), Seq(command1, command1))
       val sequencerSetup  = SequencerTestSetup.idle(invalidSequence)
       import sequencerSetup._
@@ -84,7 +84,7 @@ class SequencerBehaviorTest extends ScalaTestWithActorTestKit with BaseTestSuite
       probe.expectMessage(DuplicateIdsFound)
     }
 
-    "return Ok even if the processing of sequence fails | ESW-145, ESW-154" in {
+    "return Ok even if the processing of sequence fails | ESW-145, ESW-154, ESW-221" in {
       val sequence1      = Sequence(command1)
       val sequencerSetup = SequencerTestSetup.idle(sequence1)
       import sequencerSetup._
@@ -127,7 +127,7 @@ class SequencerBehaviorTest extends ScalaTestWithActorTestKit with BaseTestSuite
   }
 
   "QuerySequenceResponse" must {
-    "return nothing when sequencer is Idle and hasn't executed any sequence" in {
+    "return nothing when sequencer is Idle and hasn't executed any sequence | ESW-221" in {
       val sequencerSetup = SequencerTestSetup.idle(sequence)
       import sequencerSetup._
 
@@ -136,7 +136,7 @@ class SequencerBehaviorTest extends ScalaTestWithActorTestKit with BaseTestSuite
       seqResProbe.expectNoMessage(maxWaitForExpectNoMessage)
     }
 
-    "query sequence response when sequencer is Loaded | ESW-145, ESW-154" in {
+    "query sequence response when sequencer is Loaded | ESW-145, ESW-154, ESW-221" in {
       val sequencerSetup = SequencerTestSetup.loaded(sequence)
       import sequencerSetup._
 
@@ -152,7 +152,7 @@ class SequencerBehaviorTest extends ScalaTestWithActorTestKit with BaseTestSuite
       seqResProbe.expectMessage(SequenceResult(Completed(sequence.runId)))
     }
 
-    "query sequence response when sequencer is inProgress | ESW-145, ESW-154" in {
+    "query sequence response when sequencer is inProgress | ESW-145, ESW-154, ESW-221" in {
       val sequence1      = Sequence(command1)
       val sequencerSetup = SequencerTestSetup.loaded(sequence1)
       import sequencerSetup._
@@ -177,7 +177,7 @@ class SequencerBehaviorTest extends ScalaTestWithActorTestKit with BaseTestSuite
       seqResProbe.expectMessage(SequenceResult(Completed(sequence1.runId)))
     }
 
-    "query sequence response when sequencer has finished executing a sequence | ESW-145, ESW-154" in {
+    "query sequence response when sequencer has finished executing a sequence | ESW-145, ESW-154, ESW-221" in {
       val sequencerSetup = SequencerTestSetup.finished(sequence)
       import sequencerSetup._
 

@@ -20,5 +20,3 @@ class CswServices(
     with LocationServiceDsl
     with EventServiceDsl
     with TimeServiceDsl
-//    sequenceId: String,
-//    observingMode: String

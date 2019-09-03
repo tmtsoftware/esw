@@ -17,7 +17,7 @@ class WebsocketHandlerImpl(commandApi: CommandApi, eventApi: EventApi)(implicit 
     with WebsocketStreamExtensions {
 
   override def handle(request: WebsocketRequest): Source[Message, NotUsed] = request match {
-    case QueryFinal(componentId, runId) => stream(commandApi.queryFinal(componentId, runId))
+    case QueryFinal(componentId, runId) => futureAsStream(commandApi.queryFinal(componentId, runId))
     case SubscribeCurrentState(componentId, stateNames, maxFrequency) =>
       streamWithError(commandApi.subscribeCurrentState(componentId, stateNames, maxFrequency))
     case Subscribe(eventKeys, maxFrequency) => streamWithError(eventApi.subscribe(eventKeys, maxFrequency))

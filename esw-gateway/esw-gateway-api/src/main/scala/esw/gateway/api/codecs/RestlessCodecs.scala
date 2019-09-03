@@ -12,7 +12,7 @@ import esw.gateway.api.messages.WebsocketRequest.{QueryFinal, Subscribe, Subscri
 import esw.gateway.api.messages._
 import io.bullet.borer.Codec
 import io.bullet.borer.derivation.MapBasedCodecs.deriveCodec
-import msocket.api.EitherCodecs
+import msocket.api.utils.EitherCodecs
 
 trait RestlessCodecs extends ParamCodecs with LocationCodecs with AlarmCodecs with EitherCodecs with DoneCodec {
 

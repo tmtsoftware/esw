@@ -5,16 +5,19 @@ import sbt._
 object Libs {
   val ScalaVersion: String = EswKeys.scalaVersion
   val silencerVersion      = "1.4.2"
+  val MsocketVersion       = "f7cdce7"
 
-  val `scala-reflect`   = "org.scala-lang" % "scala-reflect" % ScalaVersion
-  val scalatest         = "org.scalatest" %% "scalatest" % "3.0.8" //Apache License 2.0
-  val `scopt`           = "com.github.scopt" %% "scopt" % "4.0.0-RC2" //MIT License
-  val `scala-async`     = "org.scala-lang.modules" %% "scala-async" % "0.10.0" //BSD 3-clause "New" or "Revised" License
-  val `mockito-scala`   = "org.mockito" %% "mockito-scala" % "1.5.15" // MIT License
-  val `enumeratum`      = dep("com.beachape" %%% "enumeratum" % "1.5.13") //MIT License
-  val `case-app`        = "com.github.alexarchambault" %% "case-app" % "2.0.0-M9"
-  val `silencer-plugin` = compilerPlugin("com.github.ghik" %% "silencer-plugin" % silencerVersion)
-  val `silencer-lib`    = "com.github.ghik" %% "silencer-lib" % silencerVersion % Compile
+  val `scala-reflect`    = "org.scala-lang" % "scala-reflect" % ScalaVersion
+  val scalatest          = "org.scalatest" %% "scalatest" % "3.0.8" //Apache License 2.0
+  val `scopt`            = "com.github.scopt" %% "scopt" % "4.0.0-RC2" //MIT License
+  val `scala-async`      = "org.scala-lang.modules" %% "scala-async" % "0.10.0" //BSD 3-clause "New" or "Revised" License
+  val `mockito-scala`    = "org.mockito" %% "mockito-scala" % "1.5.13" // MIT License
+  val `enumeratum`       = dep("com.beachape" %%% "enumeratum" % "1.5.13") //MIT License
+  val `case-app`         = "com.github.alexarchambault" %% "case-app" % "2.0.0-M9"
+  val `silencer-plugin`  = compilerPlugin("com.github.ghik" %% "silencer-plugin" % silencerVersion)
+  val `silencer-lib`     = "com.github.ghik" %% "silencer-lib" % silencerVersion % Compile
+  val `msocket-api`      = dep("com.github.tmtsoftware.msocket" %%% "msocket-api" % MsocketVersion)
+  val `msocket-impl-jvm` = "com.github.tmtsoftware.msocket" %% "msocket-impl-jvm" % MsocketVersion
 }
 
 object Csw {
@@ -40,7 +43,7 @@ object Csw {
 }
 
 object Akka {
-  val Version             = "2.5.23"
+  val Version             = "2.5.25"
   val `akka-actor-typed`  = "com.typesafe.akka" %% "akka-actor-typed" % Version
   val `akka-stream-typed` = "com.typesafe.akka" %% "akka-stream-typed" % Version
   val `akka-stream`       = "com.typesafe.akka" %% "akka-stream" % Version

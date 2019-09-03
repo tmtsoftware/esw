@@ -67,7 +67,7 @@ class SequencerIntegrationTest extends ScalaTestFrameworkTestKit(EventServer) wi
     wiring.shutDown().futureValue
   }
 
-  "LoadSequence, Start it and Query its response | ESW-145, ESW-154" in {
+  "LoadSequence, Start it and Query its response | ESW-145, ESW-154, ESW-221" in {
     val sequence = Sequence(command1, command2)
 
     val loadResponse: Future[LoadSequenceResponse] = sequencer ? (LoadSequence(sequence, _))
