@@ -1,19 +1,19 @@
-package esw.ocs.dsl
+package esw.ocs.dsl.core
 
 import akka.Done
 import csw.event.api.scaladsl.EventSubscription
 import csw.params.commands.Setup
 import csw.params.events.Event
+import esw.ocs.dsl.CswServices
 import esw.ocs.dsl.javadsl.JScript
 import esw.ocs.macros.StrandEc
-import esw.ocs.macros.`StrandEc$`
 import kotlinx.coroutines.*
 import kotlinx.coroutines.future.await
 import kotlinx.coroutines.future.future
 import java.util.concurrent.Executors
 import kotlin.coroutines.CoroutineContext
 
-open class ScriptKt(private val cswServices: CswServices) : CoroutineScope, JScript(cswServices) {
+open class ScriptKt(val cswServices: CswServices) : CoroutineScope, JScript(cswServices) {
 
     private val job = Job()
     private val ec = Executors.newSingleThreadScheduledExecutor()
@@ -52,7 +52,11 @@ open class ScriptKt(private val cswServices: CswServices) : CoroutineScope, JScr
 
     suspend fun getEvent(vararg eventKeys: String): Set<Event> = cswServices.jGetEvent(eventKeys.toSet()).await()
     suspend fun publishEvent(event: Event): Done = cswServices.jPublishEvent(event).await()
-    fun onEvent(vararg eventKeys: String, callback: (Event) -> Unit): EventSubscription =
-        cswServices.jOnEvent(eventKeys.toSet(), callback)
+    fun onEvent(vararg eventKeys: String, callback: suspend (Event) -> Unit): EventSubscription =
+        cswServices.jOnEvent(eventKeys.toSet()) {
+            future {
+                callback(it)
+            }.thenAccept { }
+        }
 
 }

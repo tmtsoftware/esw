@@ -1,13 +1,15 @@
-package esw.ocs.dsl
+package esw.ocs.dsl.scripts
 
 import csw.params.commands.CommandResponse
 import csw.params.core.models.Prefix
 import csw.params.events.EventName
 import csw.params.events.SystemEvent
+import esw.ocs.dsl.CswServices
+import esw.ocs.dsl.core.ScriptKt
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 
-open class SampleScript(cswServices: CswServices) : ScriptKt(cswServices) {
+open class Sample1(cswServices: CswServices) : ScriptKt(cswServices) {
     init {
         val eventKey = "csw.a.b."
         fun event(id: Int) = SystemEvent(Prefix("csw.a.b"), EventName(id.toString()))
