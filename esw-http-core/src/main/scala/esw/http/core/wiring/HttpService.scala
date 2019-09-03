@@ -17,6 +17,7 @@ import esw.http.core.commons.CoordinatedShutdownReasons.FailureReason
 
 import scala.async.Async._
 import scala.concurrent.Future
+import scala.concurrent.duration.DurationLong
 import scala.util.control.NonFatal
 
 /**
@@ -55,10 +56,13 @@ class HttpService(
     log.info(s"Server online at http://${binding.localAddress.getHostName}:${binding.localAddress.getPort}/")
     (binding, registrationResult)
   } recoverWith {
-    case NonFatal(ex) => shutdown(FailureReason(ex)).map(_ => throw ex)
+    case NonFatal(ex) => actorRuntime.shutdown(FailureReason(ex)).map(_ => throw ex)
   }
 
-  def shutdown(reason: Reason): Future[Done] = actorRuntime.shutdown(reason)
+  def shutdown(reason: Reason): Future[Done] = {
+    val httpTerminatedF = registeredLazyBinding.flatMap(_._1.terminate(10.seconds))
+    httpTerminatedF.flatMap(_ => actorRuntime.shutdown(reason))
+  }
 
   private def bind() = {
     val _host = Networks().hostname

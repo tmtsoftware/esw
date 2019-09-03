@@ -1,5 +1,6 @@
 package esw.gateway.server2
 
+import akka.actor.CoordinatedShutdown.UnknownReason
 import akka.actor.typed.ActorSystem
 import akka.actor.typed.scaladsl.Behaviors
 import akka.actor.typed.scaladsl.adapter.TypedActorSystemOps
@@ -14,7 +15,6 @@ import esw.gateway.api.clients.EventClient
 import esw.gateway.api.codecs.RestlessCodecs
 import esw.gateway.api.messages.{EmptyEventKeys, PostRequest, WebsocketRequest}
 import esw.http.core.BaseTestSuite
-import esw.http.core.commons.CoordinatedShutdownReasons
 import mscoket.impl.post.PostClient
 import mscoket.impl.ws.WebsocketClient
 import msocket.api.RequestClient
@@ -59,14 +59,14 @@ class EventGatewayTest extends BaseTestSuite with RestlessCodecs {
 
   override def afterEach(): Unit = {
     eventTestKit.stopRedis()
-    gatewayWiring.httpService.shutdown(CoordinatedShutdownReasons.ApplicationFinishedReason).futureValue
+    gatewayWiring.httpService.shutdown(UnknownReason).futureValue
   }
 
   override def afterAll(): Unit = {
-    eventTestKit.shutdown()
-    locationTestKit.shutdownLocationServer()
     system.terminate()
     system.whenTerminated.futureValue
+    eventTestKit.shutdown()
+    locationTestKit.shutdownLocationServer()
   }
 
   "EventApi" must {
