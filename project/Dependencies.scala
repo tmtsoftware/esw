@@ -6,6 +6,8 @@ object Dependencies {
     Seq(
       Csw.`csw-params`.value,
       Csw.`csw-location-models`,
+      Borer.`borer-core`,
+      Borer.`borer-derivation`,
       Libs.scalatest       % Test,
       Libs.`mockito-scala` % Test
     )
@@ -24,7 +26,7 @@ object Dependencies {
       Akka.`akka-actor-typed`,
       Akka.`akka-stream-typed`,
       Libs.`scala-async`,
-      Libs.`enumeratum`.value,
+      Libs.enumeratum.value,
       Libs.scalatest                  % Test,
       Akka.`akka-actor-testkit-typed` % Test,
       Libs.`mockito-scala`            % Test
@@ -66,7 +68,7 @@ object Dependencies {
       Csw.`csw-command-client`,
       Csw.`csw-event-client`,
       Csw.`csw-params`.value,
-      Libs.`scopt`,
+      Libs.scopt,
       Libs.`scala-async`,
       Libs.scalatest                  % Test,
       Csw.`csw-testkit`               % Test,
