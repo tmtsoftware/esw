@@ -13,7 +13,6 @@ import csw.location.models.ComponentId
 import csw.location.models.Connection.AkkaConnection
 import csw.logging.client.commons.LogAdminUtil
 import csw.params.commands.Sequence
-import esw.ocs.api.models.StepList
 import esw.ocs.api.models.codecs.OcsCodecs
 import esw.ocs.api.models.responses.{GoOnlineHookFailed, _}
 import esw.ocs.client.messages.SequencerMessages._
@@ -149,38 +148,31 @@ class SequencerBehavior(
 
   private def load(sequence: Sequence, replyTo: ActorRef[LoadSequenceResponse], data: SequencerData)(
       nextBehavior: SequencerData => Behavior[SequencerMsg]
-  ): Behavior[SequencerMsg] = createStepList(sequence, data) match {
-    case Left(err)          => replyTo ! err; Behaviors.same
-    case Right(updatedData) => replyTo ! Ok; nextBehavior(updatedData)
+  ): Behavior[SequencerMsg] = data.createStepList(sequence, replyTo) { updatedData =>
+    replyTo ! Ok
+    nextBehavior(updatedData)
   }
 
   private def loadAndStart(
       sequence: Sequence,
       data: SequencerData,
       replyTo: ActorRef[LoadSequenceResponse]
-  ): Behavior[SequencerMsg] = createStepList(sequence, data) match {
-    case Left(err)          => replyTo ! err; Behaviors.same
-    case Right(updatedData) => inProgress(updatedData.startSequence(replyTo))
+  ): Behavior[SequencerMsg] = data.createStepList(sequence, replyTo) { updatedData =>
+    replyTo ! Ok
+    inProgress(updatedData.startSequence(replyTo))
   }
 
   private def loadAndProcess(
       sequence: Sequence,
       data: SequencerData,
       replyTo: ActorRef[SequenceResponse]
-  ): Behavior[SequencerMsg] = createStepList(sequence, data) match {
-    case Left(err) => replyTo ! err; Behaviors.same
-    case Right(updatedData) =>
+  ): Behavior[SequencerMsg] =
+    data.createStepList(sequence, replyTo) { updatedData =>
       inProgress(updatedData.processSequence { res =>
         replyTo ! SequenceResult(res)
         updatedData.goToIdle()
       })
-  }
-
-  private def createStepList(
-      sequence: Sequence,
-      data: SequencerData
-  ): Either[DuplicateIdsFound.type, SequencerData] =
-    StepList(sequence).map(currentStepList => data.copy(stepList = Some(currentStepList)))
+    }
 
   private def shutdown(data: SequencerData, replyTo: ActorRef[Ok.type]): Behavior[SequencerMsg] = {
 
