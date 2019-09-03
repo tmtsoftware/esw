@@ -108,28 +108,6 @@ lazy val `esw-utils` = project
   .settings(libraryDependencies ++= Dependencies.Utils.value)
   .dependsOn(`esw-ocs-api`.jvm % "compile->compile;test->test", `esw-ocs-macros`)
 
-lazy val `msocket` = project
-  .in(file("msocket"))
-  .aggregate(
-    `msocket-api`,
-    `msocket-impl`
-  )
-
-lazy val `msocket-api` = project
-  .in(file("msocket/msocket-api"))
-  .enablePlugins(PublishBintray)
-  .settings(
-    libraryDependencies ++= Dependencies.MsocketApi.value
-  )
-
-lazy val `msocket-impl` = project
-  .in(file("msocket/msocket-impl"))
-  .enablePlugins(PublishBintray)
-  .settings(
-    libraryDependencies ++= Dependencies.MsocketImpl.value
-  )
-  .dependsOn(`msocket-api`)
-
 lazy val `esw-gateway` = project
   .aggregate(
     `esw-gateway-api`,
@@ -142,7 +120,6 @@ lazy val `esw-gateway-api` = project
   .settings(
     libraryDependencies ++= Dependencies.EswGatewayApi.value
   )
-  .dependsOn(`msocket-api`)
 
 lazy val `esw-gateway-impl` = project
   .in(file("esw-gateway/esw-gateway-impl"))
@@ -154,7 +131,7 @@ lazy val `esw-gateway-impl` = project
 lazy val `esw-gateway-server2` = project
   .in(file("esw-gateway/esw-gateway-server2"))
   .enablePlugins(MaybeCoverage)
-  .dependsOn(`msocket-impl`, `esw-gateway-impl`, `esw-http-core` % "compile->compile;test->test")
+  .dependsOn(`esw-gateway-impl`, `esw-http-core` % "compile->compile;test->test")
 
 /* ================= Paradox Docs ============== */
 lazy val docs = project.enablePlugins(NoPublish, ParadoxSite)
