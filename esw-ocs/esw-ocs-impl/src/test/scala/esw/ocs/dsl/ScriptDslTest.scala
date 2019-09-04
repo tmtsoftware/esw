@@ -7,11 +7,11 @@ import csw.params.core.models.Prefix
 import esw.ocs.api.BaseTestSuite
 
 import scala.collection.mutable.ArrayBuffer
-import scala.concurrent.Future
 import scala.concurrent.duration.{DurationDouble, FiniteDuration}
+import scala.concurrent.{ExecutionContext, Future}
 
 class ScriptDslTest extends BaseTestSuite {
-
+  override implicit def patienceConfig: PatienceConfig = PatienceConfig(20.seconds)
   "ScriptDsl" must {
     "allow adding and executing setup handler" in {
       var receivedPrefix: Option[Prefix] = None
@@ -106,7 +106,8 @@ class ScriptDslTest extends BaseTestSuite {
       val script: ScriptDsl = new ScriptDsl {
         override def csw: CswServices             = ???
         override val loopInterval: FiniteDuration = 100.millis
-        def decrement: Future[Unit]               = Future { latch.countDown() }
+
+        def decrement: Future[Unit] = Future { Thread.sleep(100); latch.countDown() }(ExecutionContext.global)
 
         handleSetupCommand("iris") { _ =>
           spawn {
