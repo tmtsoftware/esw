@@ -13,24 +13,9 @@ import kotlinx.coroutines.future.future
 import java.util.concurrent.Executors
 import kotlin.coroutines.CoroutineContext
 
-open class ScriptKt(val cswServices: CswServices) : CoroutineScope, JScript(cswServices) {
-
-    private val job = Job()
-    private val ec = Executors.newSingleThreadScheduledExecutor()
-    private val dispatcher = ec.asCoroutineDispatcher()
-
-    override fun strandEc(): StrandEc = StrandEc(ec)
+sealed class BaseScript(val cswServices: CswServices) : CoroutineScope, JScript(cswServices) {
 
     fun log(msg: String) = println("[${Thread.currentThread().name}] $msg")
-
-    fun close() {
-        job.cancel()
-        dispatcher.close()
-    }
-
-    override val coroutineContext: CoroutineContext
-        get() = job + dispatcher
-
 
     fun handleSetup(name: String, block: suspend (Setup) -> Unit) {
         jHandleSetupCommand(name) { setup: Setup ->
@@ -59,4 +44,38 @@ open class ScriptKt(val cswServices: CswServices) : CoroutineScope, JScript(cswS
             }.thenAccept { }
         }
 
+    fun loadScripts(vararg reusableScriptResult: ReusableScriptResult) {
+        println("********** Loading all scripts *************")
+        reusableScriptResult.forEach {
+            this.merge(it(cswServices, strandEc(), coroutineContext))
+        }
+    }
+}
+
+class ReusableScript(
+    cswServices: CswServices,
+    private val _strandEc: StrandEc,
+    override val coroutineContext: CoroutineContext
+) : BaseScript(cswServices) {
+
+    override fun strandEc(): StrandEc = _strandEc
+
+}
+
+open class ScriptKt(cswServices: CswServices) : BaseScript(cswServices) {
+
+    private val job = Job()
+    private val ec = Executors.newSingleThreadScheduledExecutor()
+    private val dispatcher = ec.asCoroutineDispatcher()
+    private val _strandEc = StrandEc(ec)
+
+    override fun strandEc(): StrandEc = _strandEc
+
+    override val coroutineContext: CoroutineContext
+        get() = job + dispatcher
+
+    fun close() {
+        job.cancel()
+        dispatcher.close()
+    }
 }

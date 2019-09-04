@@ -8,7 +8,7 @@ import esw.ocs.dsl.core.script
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 
-script {
+script { csw ->
 
     val eventKey = "csw.a.b."
     fun event(id: Int) = SystemEvent(Prefix("csw.a.b"), EventName(id.toString()))
@@ -26,7 +26,7 @@ script {
         }
 
         log("============ command-1 -End ================")
-        cswServices.crm().addOrUpdateCommand(CommandResponse.Completed(command.runId()))
+        csw.crm().addOrUpdateCommand(CommandResponse.Completed(command.runId()))
     }
 
     handleSetup("command-2") { command ->
@@ -36,7 +36,7 @@ script {
         events.forEach(::println)
 
         log("============ command-2 End ================")
-        cswServices.crm().addOrUpdateCommand(CommandResponse.Completed(command.runId()))
+        csw.crm().addOrUpdateCommand(CommandResponse.Completed(command.runId()))
     }
 
     handleSetup("command-3") { command ->
@@ -50,7 +50,7 @@ script {
         }
 
         log("============ command-3 End ================")
-        cswServices.crm().addOrUpdateCommand(CommandResponse.Completed(command.runId()))
+        csw.crm().addOrUpdateCommand(CommandResponse.Completed(command.runId()))
     }
 
     handleShutdown {
