@@ -9,7 +9,7 @@ import esw.ocs.dsl.core.ScriptKt
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 
-open class Sample1(cswServices: CswServices) : ScriptKt(cswServices) {
+open class Script1(cswServices: CswServices) : ScriptKt(cswServices) {
     init {
         val eventKey = "csw.a.b."
         fun event(id: Int) = SystemEvent(Prefix("csw.a.b"), EventName(id.toString()))
