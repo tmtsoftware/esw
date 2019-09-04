@@ -40,7 +40,7 @@ class SequencerBehavior(
 
   //BEHAVIORS
   private def idle(data: SequencerData): Behavior[SequencerMsg] = receive(Idle, data, idle) {
-    case LoadSequence(sequence, replyTo)                   => load(sequence, replyTo, data)(nextBehavior = loaded)
+    case LoadSequence(sequence, replyTo)                   => load(sequence, replyTo, data)
     case LoadAndProcessSequenceInternal(sequence, replyTo) => loadAndProcess(sequence, data, replyTo)
     case LoadAndStartSequence(sequence, replyTo)           => loadAndStart(sequence, data, replyTo)
     case QuerySequenceResponse(replyTo)                    => idle(data.querySequence(replyTo))
@@ -146,18 +146,24 @@ class SequencerBehavior(
     abortingSequence(data, state)(nextBehavior)
   }
 
-  private def load(sequence: Sequence, replyTo: ActorRef[LoadSequenceResponse], data: SequencerData)(
-      nextBehavior: SequencerData => Behavior[SequencerMsg]
-  ): Behavior[SequencerMsg] = data.createStepList(sequence, replyTo) { updatedData =>
-    replyTo ! Ok
-    nextBehavior(updatedData)
+  def createStepList(sequence: Sequence, data: SequencerData, replyTo: ActorRef[DuplicateIdsFound.type])(
+      onSuccess: SequencerData => Behavior[SequencerMsg]
+  ): Behavior[SequencerMsg] = data.createStepList(sequence) match {
+    case Left(err)          => replyTo ! err; Behaviors.same
+    case Right(updatedData) => onSuccess(updatedData)
   }
+
+  private def load(sequence: Sequence, replyTo: ActorRef[LoadSequenceResponse], data: SequencerData): Behavior[SequencerMsg] =
+    createStepList(sequence, data, replyTo) { updatedData =>
+      replyTo ! Ok
+      loaded(updatedData)
+    }
 
   private def loadAndStart(
       sequence: Sequence,
       data: SequencerData,
       replyTo: ActorRef[LoadSequenceResponse]
-  ): Behavior[SequencerMsg] = data.createStepList(sequence, replyTo) { updatedData =>
+  ): Behavior[SequencerMsg] = createStepList(sequence, data, replyTo) { updatedData =>
     replyTo ! Ok
     inProgress(updatedData.startSequence(replyTo))
   }
@@ -167,7 +173,7 @@ class SequencerBehavior(
       data: SequencerData,
       replyTo: ActorRef[SequenceResponse]
   ): Behavior[SequencerMsg] =
-    data.createStepList(sequence, replyTo) { updatedData =>
+    createStepList(sequence, data, replyTo) { updatedData =>
       inProgress(updatedData.processSequence { res =>
         replyTo ! SequenceResult(res)
         updatedData.goToIdle()
