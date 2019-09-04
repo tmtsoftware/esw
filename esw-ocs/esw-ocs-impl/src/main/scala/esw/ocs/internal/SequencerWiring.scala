@@ -10,7 +10,6 @@ import csw.location.api.extensions.ActorExtension.RichActor
 import csw.location.models.Connection.AkkaConnection
 import csw.location.models.{AkkaLocation, AkkaRegistration, ComponentId, ComponentType}
 import esw.ocs.api.models.responses.RegistrationError
-import esw.ocs.client.SequencerAdminClient
 import esw.ocs.client.messages.SequencerMessages.{EswSequencerMessage, Shutdown}
 import esw.ocs.core._
 import esw.ocs.dsl.utils.ScriptLoader
@@ -18,7 +17,7 @@ import esw.ocs.dsl.{CswServices, Script}
 import esw.ocs.syntax.FutureSyntax.FutureOps
 
 import scala.concurrent.Future
-// $COVERAGE-OFF$
+
 private[ocs] class SequencerWiring(val sequencerId: String, val observingMode: String, sequenceComponentName: Option[String]) {
   private lazy val config: Config  = ConfigFactory.load()
   private lazy val sequencerConfig = SequencerConfig.from(config, sequencerId, observingMode, sequenceComponentName)
@@ -49,7 +48,6 @@ private[ocs] class SequencerWiring(val sequencerId: String, val observingMode: S
 
   lazy val sequencerBehavior =
     new SequencerBehavior(componentId, script, locationService, commandResponseManager)(typedSystem, timeout)
-  lazy val sequencerAdmin = new SequencerAdminClient(sequencerRef)(typedSystem, timeout)
 
   def shutDown(): Future[Done] = (sequencerRef ? Shutdown).map(_ => Done)
 
@@ -60,4 +58,3 @@ private[ocs] class SequencerWiring(val sequencerId: String, val observingMode: S
     cswServices.register(registration)(typedSystem).block
   }
 }
-// $COVERAGE-ON$
