@@ -14,17 +14,13 @@ fun script(block: ScriptKt.(csw: CswServices) -> Unit): Result = Result {
     scriptKt
 }
 
-class ReusableScriptResult(val scriptFactory: (CswServices) -> (StrandEc) -> (CoroutineContext) -> ReusableScript) {
+class ReusableScriptResult(val scriptFactory: (CswServices, StrandEc, CoroutineContext) -> ReusableScript) {
     operator fun invoke(cswService: CswServices, strandEc: StrandEc, coroutineContext: CoroutineContext) =
-        scriptFactory(cswService)(strandEc)(coroutineContext)
+        scriptFactory(cswService, strandEc, coroutineContext)
 }
 
-fun reusableScript(block: ReusableScript.(csw: CswServices) -> Unit) = ReusableScriptResult { cswServices ->
-    { ec ->
-        { ctx ->
-            val reusableScript = ReusableScript(cswServices, ec, ctx)
-            reusableScript.block(cswServices)
-            reusableScript
-        }
-    }
+fun reusableScript(block: ReusableScript.(csw: CswServices) -> Unit) = ReusableScriptResult { csw, ec, ctx ->
+    val reusableScript = ReusableScript(csw, ec, ctx)
+    reusableScript.block(csw)
+    reusableScript
 }
