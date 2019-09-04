@@ -136,7 +136,7 @@ class SequencerBehaviorTest extends ScalaTestWithActorTestKit with BaseTestSuite
       seqResProbe.expectNoMessage(maxWaitForExpectNoMessage)
     }
 
-    "query sequence response when sequencer is Loaded | ESW-145, ESW-154, ESW-221" in {
+    "return Sequence result with Completed when sequencer is in loaded state | ESW-145, ESW-154, ESW-221" in {
       val sequencerSetup = SequencerTestSetup.loaded(sequence)
       import sequencerSetup._
 
@@ -152,7 +152,7 @@ class SequencerBehaviorTest extends ScalaTestWithActorTestKit with BaseTestSuite
       seqResProbe.expectMessage(SequenceResult(Completed(sequence.runId)))
     }
 
-    "query sequence response when sequencer is inProgress | ESW-145, ESW-154, ESW-221" in {
+    "return Sequence result with Completed when sequencer is inProgress state | ESW-145, ESW-154, ESW-221" in {
       val sequence1      = Sequence(command1)
       val sequencerSetup = SequencerTestSetup.loaded(sequence1)
       import sequencerSetup._
@@ -177,7 +177,7 @@ class SequencerBehaviorTest extends ScalaTestWithActorTestKit with BaseTestSuite
       seqResProbe.expectMessage(SequenceResult(Completed(sequence1.runId)))
     }
 
-    "query sequence response when sequencer has finished executing a sequence | ESW-145, ESW-154, ESW-221" in {
+    "return Sequence result with Completed when sequencer has finished executing a sequence | ESW-145, ESW-154, ESW-221" in {
       val sequencerSetup = SequencerTestSetup.finished(sequence)
       import sequencerSetup._
 
