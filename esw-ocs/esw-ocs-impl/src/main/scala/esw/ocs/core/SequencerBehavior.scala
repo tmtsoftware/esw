@@ -146,7 +146,7 @@ class SequencerBehavior(
     abortingSequence(data, state)(nextBehavior)
   }
 
-  def createStepList(sequence: Sequence, data: SequencerData, replyTo: ActorRef[DuplicateIdsFound.type])(
+  private def createStepList(sequence: Sequence, data: SequencerData, replyTo: ActorRef[DuplicateIdsFound.type])(
       onSuccess: SequencerData => Behavior[SequencerMsg]
   ): Behavior[SequencerMsg] = data.createStepList(sequence) match {
     case Left(err)          => replyTo ! err; Behaviors.same
