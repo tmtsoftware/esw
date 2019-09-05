@@ -155,7 +155,6 @@ lazy val `esw-ocs-admin-impl` = project
 
 lazy val `esw-ocs-admin-server` = project
   .in(file("esw-ocs-admin/esw-ocs-admin-server"))
-  .enablePlugins(MaybeCoverage)
   .settings(
     libraryDependencies ++= Dependencies.EswOcsAdminServer.value
   )
