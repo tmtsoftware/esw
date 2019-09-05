@@ -6,7 +6,7 @@ import com.typesafe.config.ConfigFactory
 import csw.location.models.ComponentId
 import csw.location.models.ComponentType.Assembly
 import csw.params.commands.CommandResponse.{Accepted, Completed}
-import csw.params.commands.{CommandName, ControlCommand, Setup}
+import csw.params.commands.{CommandName, Setup}
 import csw.params.core.models.{Id, ObsId, Prefix}
 import csw.params.core.states.{CurrentState, StateName}
 import csw.testkit.scaladsl.ScalaTestFrameworkTestKit
@@ -53,14 +53,14 @@ class CommandGatewayTest extends ScalaTestFrameworkTestKit with WordSpecLike wit
 
       frameworkTestKit.spawnStandalone(ConfigFactory.load("standalone.conf"))
 
-      val componentName           = "test"
-      val runId                   = Id("123")
-      val componentType           = Assembly
-      val command: ControlCommand = Setup(Prefix("esw.test"), CommandName("c1"), Some(ObsId("obsId"))).copy(runId = runId)
-      val componentId             = ComponentId(componentName, componentType)
-      val stateNames              = Set(StateName("stateName1"), StateName("stateName2"))
-      val currentState1           = CurrentState(Prefix("esw.a.b"), StateName("stateName1"))
-      val currentState2           = CurrentState(Prefix("esw.a.b"), StateName("stateName2"))
+      val componentName = "test"
+      val runId         = Id("123")
+      val componentType = Assembly
+      val command       = Setup(Prefix("esw.test"), CommandName("c1"), Some(ObsId("obsId"))).copy(runId = runId)
+      val componentId   = ComponentId(componentName, componentType)
+      val stateNames    = Set(StateName("stateName1"), StateName("stateName2"))
+      val currentState1 = CurrentState(Prefix("esw.a.b"), StateName("stateName1"))
+      val currentState2 = CurrentState(Prefix("esw.a.b"), StateName("stateName2"))
 
       val currentStatesF: Future[Seq[CurrentState]] =
         commandClient.subscribeCurrentState(componentId, stateNames, None).take(2).runWith(Sink.seq)
@@ -68,7 +68,7 @@ class CommandGatewayTest extends ScalaTestFrameworkTestKit with WordSpecLike wit
 
       //validate
       commandClient.process(componentId, command, Validate).rightValue should ===(Accepted(runId))
-      //oneway
+      //send oneway command which will publish current states
       commandClient.process(componentId, command, Oneway).rightValue should ===(Accepted(runId))
       //submit
       commandClient.process(componentId, command, Submit).rightValue should ===(Completed(runId))

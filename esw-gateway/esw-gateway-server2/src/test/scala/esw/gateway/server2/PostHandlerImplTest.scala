@@ -11,7 +11,7 @@ import csw.alarm.models.Key.AlarmKey
 import csw.location.models.ComponentId
 import csw.location.models.ComponentType.Assembly
 import csw.params.commands.CommandResponse.{Accepted, Started}
-import csw.params.commands.{CommandName, CommandResponse, ControlCommand, Setup}
+import csw.params.commands.{CommandName, CommandResponse, Setup}
 import csw.params.core.models.{Id, ObsId, Prefix, Subsystem}
 import csw.params.events.{Event, EventKey, EventName, SystemEvent}
 import esw.gateway.api.codecs.RestlessCodecs
@@ -44,14 +44,15 @@ class PostHandlerImplTest extends BaseTestSuite with ScalatestRouteTest with Res
   private val route                  = new Routes(postHandlerImpl, null, handlers).route
 
   // fixme: group tests
+  // fixme: add failure scenario when event server/ alarm server is down
   "PostHandlerImpl" must {
     "handle submit command and return started command response | ESW-216" in {
-      val componentName           = "test"
-      val runId                   = Id("123")
-      val componentType           = Assembly
-      val command: ControlCommand = Setup(Prefix("esw.test"), CommandName("c1"), Some(ObsId("obsId"))).copy(runId = runId)
-      val componentId             = ComponentId(componentName, componentType)
-      val submitRequest           = CommandRequest(componentId, command, Submit)
+      val componentName = "test"
+      val runId         = Id("123")
+      val componentType = Assembly
+      val command       = Setup(Prefix("esw.test"), CommandName("c1"), Some(ObsId("obsId"))).copy(runId = runId)
+      val componentId   = ComponentId(componentName, componentType)
+      val submitRequest = CommandRequest(componentId, command, Submit)
 
       when(componentFactory.commandService(componentName, componentType)).thenReturn(Future.successful(commandService))
       when(commandService.submit(command)).thenReturn(Future.successful(Started(runId)))
@@ -62,12 +63,12 @@ class PostHandlerImplTest extends BaseTestSuite with ScalatestRouteTest with Res
     }
 
     "handle validate command and return accepted command response | ESW-216" in {
-      val componentName           = "test"
-      val runId                   = Id("123")
-      val componentType           = Assembly
-      val command: ControlCommand = Setup(Prefix("esw.test"), CommandName("c1"), Some(ObsId("obsId"))).copy(runId = runId)
-      val componentId             = ComponentId(componentName, componentType)
-      val validateRequest         = CommandRequest(componentId, command, Validate)
+      val componentName   = "test"
+      val runId           = Id("123")
+      val componentType   = Assembly
+      val command         = Setup(Prefix("esw.test"), CommandName("c1"), Some(ObsId("obsId"))).copy(runId = runId)
+      val componentId     = ComponentId(componentName, componentType)
+      val validateRequest = CommandRequest(componentId, command, Validate)
 
       when(componentFactory.commandService(componentName, componentType)).thenReturn(Future.successful(commandService))
       when(commandService.validate(command)).thenReturn(Future.successful(Accepted(runId)))
@@ -78,12 +79,12 @@ class PostHandlerImplTest extends BaseTestSuite with ScalatestRouteTest with Res
     }
 
     "handle oneway command and return accepted command response | ESW-216" in {
-      val componentName           = "test"
-      val runId                   = Id("123")
-      val componentType           = Assembly
-      val command: ControlCommand = Setup(Prefix("esw.test"), CommandName("c1"), Some(ObsId("obsId"))).copy(runId = runId)
-      val componentId             = ComponentId(componentName, componentType)
-      val onewayRequest           = CommandRequest(componentId, command, Oneway)
+      val componentName = "test"
+      val runId         = Id("123")
+      val componentType = Assembly
+      val command       = Setup(Prefix("esw.test"), CommandName("c1"), Some(ObsId("obsId"))).copy(runId = runId)
+      val componentId   = ComponentId(componentName, componentType)
+      val onewayRequest = CommandRequest(componentId, command, Oneway)
 
       when(componentFactory.commandService(componentName, componentType)).thenReturn(Future.successful(commandService))
       when(commandService.oneway(command)).thenReturn(Future.successful(Accepted(runId)))
@@ -94,12 +95,12 @@ class PostHandlerImplTest extends BaseTestSuite with ScalatestRouteTest with Res
     }
 
     "return InvalidComponent response for invalid component id | ESW-216" in {
-      val componentName           = "test"
-      val runId                   = Id("123")
-      val componentType           = Assembly
-      val command: ControlCommand = Setup(Prefix("esw.test"), CommandName("c1"), Some(ObsId("obsId"))).copy(runId = runId)
-      val componentId             = ComponentId(componentName, componentType)
-      val submitRequest           = CommandRequest(componentId, command, Submit)
+      val componentName = "test"
+      val runId         = Id("123")
+      val componentType = Assembly
+      val command       = Setup(Prefix("esw.test"), CommandName("c1"), Some(ObsId("obsId"))).copy(runId = runId)
+      val componentId   = ComponentId(componentName, componentType)
+      val submitRequest = CommandRequest(componentId, command, Submit)
 
       val errmsg = s"Could not find component $componentName of type - $componentType"
 

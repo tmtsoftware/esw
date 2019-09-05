@@ -41,8 +41,8 @@ class EventGatewayTest extends ScalaTestFrameworkTestKit(EventServer) with WordS
   private val prefix         = Prefix("tcs.test.gateway")
   private val name1          = EventName("event1")
   private val name2          = EventName("event2")
-  private val event1: Event  = SystemEvent(prefix, name1, Set(arrayDataParam))
-  private val event2: Event  = SystemEvent(prefix, name2, Set(arrayDataParam))
+  private val event1         = SystemEvent(prefix, name1, Set(arrayDataParam))
+  private val event2         = SystemEvent(prefix, name2, Set(arrayDataParam))
   private val eventKeys      = Set(EventKey(prefix, name1), EventKey(prefix, name2))
 
   override def beforeAll(): Unit = {

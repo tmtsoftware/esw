@@ -14,7 +14,6 @@ import esw.gateway.api.codecs.RestlessCodecs
 import esw.gateway.api.messages.PostRequest
 import esw.http.core.FutureEitherExt
 import mscoket.impl.post.PostClient
-import msocket.api.RequestClient
 import org.scalatest.WordSpecLike
 
 import scala.concurrent.duration.{DurationInt, FiniteDuration}
@@ -42,8 +41,8 @@ class AlarmGatewayTest extends ScalaTestFrameworkTestKit(AlarmServer) with WordS
 
   "AlarmApi" must {
     "set alarm severity of a given alarm | ESW-216" in {
-      val postClient: RequestClient[PostRequest] = new PostClient[PostRequest](s"http://localhost:$port/post")
-      val alarmClient                            = new AlarmClient(postClient)
+      val postClient  = new PostClient[PostRequest](s"http://localhost:$port/post")
+      val alarmClient = new AlarmClient(postClient)
 
       val config            = ConfigFactory.parseResources("alarm_key.conf")
       val alarmAdminService = alarmServiceFactory.makeAdminApi(locationService)

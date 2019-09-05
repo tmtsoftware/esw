@@ -13,7 +13,8 @@ import csw.params.core.states.{CurrentState, StateName}
 
 import scala.concurrent.Future
 
-class SampleComponentHandler(ctx: ActorContext[TopLevelActorMessage], cswCtx: CswContext) extends ComponentHandlers(ctx, cswCtx) {
+class SampleComponentHandlers(ctx: ActorContext[TopLevelActorMessage], cswCtx: CswContext)
+    extends ComponentHandlers(ctx, cswCtx) {
   import cswCtx._
 
   val log: Logger = loggerFactory.getLogger(ctx)
@@ -25,13 +26,11 @@ class SampleComponentHandler(ctx: ActorContext[TopLevelActorMessage], cswCtx: Cs
 
   override def onLocationTrackingEvent(trackingEvent: TrackingEvent): Unit = ???
 
-  override def validateCommand(controlCommand: ControlCommand): CommandResponse.ValidateCommandResponse = {
+  override def validateCommand(controlCommand: ControlCommand): CommandResponse.ValidateCommandResponse =
     Accepted(controlCommand.runId)
-  }
 
-  override def onSubmit(controlCommand: ControlCommand): CommandResponse.SubmitResponse = {
+  override def onSubmit(controlCommand: ControlCommand): CommandResponse.SubmitResponse =
     Completed(controlCommand.runId)
-  }
 
   override def onOneway(controlCommand: ControlCommand): Unit = {
     val currentState1 = CurrentState(Prefix("esw.a.b"), StateName("stateName1"))
