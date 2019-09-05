@@ -1,4 +1,4 @@
-import sbtcrossproject.CrossPlugin.autoImport.{crossProject, CrossType}
+import sbtcrossproject.CrossPlugin.autoImport.{CrossType, crossProject}
 
 lazy val aggregateProjects: Seq[ProjectReference] =
   Seq(
@@ -131,7 +131,7 @@ lazy val `esw-gateway-impl` = project
 
 lazy val `esw-gateway-server2` = project
   .in(file("esw-gateway/esw-gateway-server2"))
-  .enablePlugins(MaybeCoverage)
+  .enablePlugins(MaybeCoverage, EswBuildInfo)
   .settings(
     libraryDependencies ++= Dependencies.EswGatewayServer.value
   )
