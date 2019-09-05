@@ -2,37 +2,36 @@ package esw.gateway.server2
 
 import akka.actor.CoordinatedShutdown.UnknownReason
 import akka.actor.typed.ActorSystem
-import akka.actor.typed.scaladsl.Behaviors
 import akka.actor.typed.scaladsl.adapter.TypedActorSystemOps
+import akka.stream.Materializer
 import akka.stream.scaladsl.{Keep, Sink}
-import akka.stream.typed.scaladsl.ActorMaterializer
 import akka.{Done, actor}
 import csw.params.core.generics.KeyType
 import csw.params.core.models.{ArrayData, Prefix, Subsystem}
 import csw.params.events.{Event, EventKey, EventName, SystemEvent}
-import csw.testkit.{EventTestKit, LocationTestKit}
+import csw.testkit.scaladsl.CSWService.EventServer
+import csw.testkit.scaladsl.ScalaTestFrameworkTestKit
 import esw.gateway.api.clients.EventClient
 import esw.gateway.api.codecs.RestlessCodecs
 import esw.gateway.api.messages.{EmptyEventKeys, PostRequest, WebsocketRequest}
-import esw.http.core.BaseTestSuite
+import esw.http.core.FutureEitherExt
 import mscoket.impl.post.PostClient
 import mscoket.impl.ws.WebsocketClient
 import msocket.api.RequestClient
+import org.scalatest.WordSpecLike
 
 import scala.concurrent.duration.{DurationInt, FiniteDuration}
 
-class EventGatewayTest extends BaseTestSuite with RestlessCodecs {
-  private val locationTestKit            = LocationTestKit()
-  private val eventTestKit: EventTestKit = EventTestKit()
+class EventGatewayTest extends ScalaTestFrameworkTestKit(EventServer) with WordSpecLike with FutureEitherExt with RestlessCodecs {
 
-  implicit val system: ActorSystem[_]                  = ActorSystem(Behaviors.empty, "test")
-  implicit val untypedActorSystem: actor.ActorSystem   = system.toUntyped
-  implicit val mat: ActorMaterializer                  = ActorMaterializer()
-  implicit val timeout: FiniteDuration                 = 10.seconds
+  private implicit val system: ActorSystem[_]                = frameworkTestKit.actorSystem
+  private implicit val untypedActorSystem: actor.ActorSystem = system.toUntyped
+  private implicit val mat: Materializer                     = frameworkTestKit.mat
+  private implicit val timeout: FiniteDuration               = 10.seconds
+  private val port: Int                                      = 6490
+  private val gatewayWiring: GatewayWiring                   = new GatewayWiring(Some(port))
+
   override implicit def patienceConfig: PatienceConfig = PatienceConfig(timeout)
-  var port: Int                                        = _
-  var gatewayWiring: GatewayWiring                     = _
-
   //Event
   private val a1: Array[Int] = Array(1, 2, 3, 4, 5)
   private val a2: Array[Int] = Array(10, 20, 30, 40, 50)
@@ -47,26 +46,13 @@ class EventGatewayTest extends BaseTestSuite with RestlessCodecs {
   private val eventKeys      = Set(EventKey(prefix, name1), EventKey(prefix, name2))
 
   override def beforeAll(): Unit = {
-    locationTestKit.startLocationServer()
-  }
-
-  override def beforeEach(): Unit = {
-    eventTestKit.startEventService()
-    port = 6490
-    gatewayWiring = new GatewayWiring(Some(port))
+    super.beforeAll()
     gatewayWiring.httpService.registeredLazyBinding.futureValue
   }
 
-  override def afterEach(): Unit = {
-    eventTestKit.stopRedis()
+  override protected def afterAll(): Unit = {
     gatewayWiring.httpService.shutdown(UnknownReason).futureValue
-  }
-
-  override def afterAll(): Unit = {
-    system.terminate()
-    system.whenTerminated.futureValue
-    eventTestKit.shutdown()
-    locationTestKit.shutdownLocationServer()
+    super.afterAll()
   }
 
   "EventApi" must {

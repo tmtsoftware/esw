@@ -1,12 +1,7 @@
 package esw.gateway.server2
 
-import akka.actor
 import akka.actor.CoordinatedShutdown.UnknownReason
-import akka.actor.typed.scaladsl.adapter.TypedActorSystemOps
-import akka.actor.typed.{ActorSystem, SpawnProtocol}
-import akka.stream.Materializer
 import akka.stream.scaladsl.Sink
-import akka.stream.typed.scaladsl.ActorMaterializer
 import com.typesafe.config.ConfigFactory
 import csw.location.models.ComponentId
 import csw.location.models.ComponentType.Assembly
@@ -14,43 +9,38 @@ import csw.params.commands.CommandResponse.{Accepted, Completed}
 import csw.params.commands.{CommandName, ControlCommand, Setup}
 import csw.params.core.models.{Id, ObsId, Prefix}
 import csw.params.core.states.{CurrentState, StateName}
-import csw.testkit.FrameworkTestKit
+import csw.testkit.scaladsl.ScalaTestFrameworkTestKit
 import esw.gateway.api.clients.CommandClient
 import esw.gateway.api.codecs.RestlessCodecs
 import esw.gateway.api.messages.CommandAction.{Oneway, Submit, Validate}
 import esw.gateway.api.messages.{PostRequest, WebsocketRequest}
-import esw.http.core.BaseTestSuite
+import esw.http.core.FutureEitherExt
 import mscoket.impl.post.PostClient
 import mscoket.impl.ws.WebsocketClient
 import msocket.api.RequestClient
+import org.scalatest.WordSpecLike
 
 import scala.concurrent.Future
 import scala.concurrent.duration.{DurationInt, FiniteDuration}
 
-class CommandGatewayTest extends BaseTestSuite with RestlessCodecs {
+class CommandGatewayTest extends ScalaTestFrameworkTestKit with WordSpecLike with FutureEitherExt with RestlessCodecs {
 
-  implicit private val actorSystem: ActorSystem[SpawnProtocol] = ActorSystem(SpawnProtocol.behavior, "test-system")
-  implicit val untypedActorSystem: actor.ActorSystem           = actorSystem.toUntyped
-  implicit val mat: Materializer                               = ActorMaterializer()
-  private val frameworkTestKit                                 = FrameworkTestKit()
-  private var port: Int                                        = _
-  private var gatewayWiring: GatewayWiring                     = _
+  import frameworkTestKit._
+
+  private val port: Int                    = 6490
+  private val gatewayWiring: GatewayWiring = new GatewayWiring(Some(port))
 
   implicit val timeout: FiniteDuration                 = 10.seconds
   override implicit def patienceConfig: PatienceConfig = PatienceConfig(timeout)
 
   override def beforeAll(): Unit = {
-    frameworkTestKit.start()
-    port = 6490
-    gatewayWiring = new GatewayWiring(Some(port))
+    super.beforeAll()
     gatewayWiring.httpService.registeredLazyBinding.futureValue
   }
 
   override protected def afterAll(): Unit = {
     gatewayWiring.httpService.shutdown(UnknownReason).futureValue
-    actorSystem.terminate()
-    actorSystem.whenTerminated.futureValue
-    frameworkTestKit.shutdown()
+    super.afterAll()
   }
 
   "CommandApi" must {
