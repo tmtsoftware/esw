@@ -67,7 +67,7 @@ class SequencerIntegrationTest extends ScalaTestFrameworkTestKit(EventServer) wi
     wiring.shutDown().futureValue
   }
 
-  "LoadSequence, Start it and Query its response | ESW-145, ESW-154, ESW-221" in {
+  "LoadSequence, Start it and Query its response | ESW-145, ESW-154, ESW-221, ESW-194" in {
     val sequence = Sequence(command1, command2)
 
     val loadResponse: Future[LoadSequenceResponse] = sequencer ? (LoadSequence(sequence, _))
@@ -82,6 +82,14 @@ class SequencerIntegrationTest extends ScalaTestFrameworkTestKit(EventServer) wi
     )
     val expectedSequence = Some(StepList(sequence.runId, expectedSteps))
     sequencerAdmin.getSequence.futureValue should ===(expectedSequence)
+
+    // assert sequencer does not accept LoadSequence/Start/QuerySequenceResponse messages in offline state
+    sequencerAdmin.goOffline().futureValue should ===(Ok)
+    val loadSequenceResponse: Future[LoadSequenceResponse] = sequencer ? (LoadSequence(sequence, _))
+    loadSequenceResponse.futureValue should ===(Unhandled(Offline.entryName, "LoadSequence"))
+
+    (sequencer ? StartSequence).futureValue should ===(Unhandled(Offline.entryName, "StartSequence"))
+    (sequencer ? QuerySequenceResponse).futureValue should ===(Unhandled(Offline.entryName, "QuerySequenceResponse"))
   }
 
   "LoadAndProcess a sequence and execute commands that are added later | ESW-145, ESW-154" in {

@@ -43,6 +43,7 @@ class PostHandlerImplTest extends BaseTestSuite with ScalatestRouteTest with Res
   private val postHandlerImpl        = new PostHandlerImpl(alarmApi, commandApi, eventApi)
   private val route                  = new Routes(postHandlerImpl, null, handlers).route
 
+  // fixme: group tests
   "PostHandlerImpl" must {
     "handle submit command and return started command response | ESW-216" in {
       val componentName           = "test"

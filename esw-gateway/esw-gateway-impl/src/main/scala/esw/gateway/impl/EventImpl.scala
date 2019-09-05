@@ -18,8 +18,10 @@ class EventImpl(eventService: EventService, eventSubscriberUtil: EventSubscriber
   lazy val subscriber: EventSubscriber = eventService.defaultSubscriber
   lazy val publisher: EventPublisher   = eventService.defaultPublisher
 
+  // fixme: handle failures like EventServerNotAvailable
   override def publish(event: Event): Future[Done] = publisher.publish(event)
 
+  // fixme: handle failures like EventServerNotAvailable
   override def get(eventKeys: Set[EventKey]): Future[Either[EmptyEventKeys, Set[Event]]] = {
     if (eventKeys.nonEmpty) subscriber.get(eventKeys).map(Right(_))
     else Future.successful(Left(EmptyEventKeys()))

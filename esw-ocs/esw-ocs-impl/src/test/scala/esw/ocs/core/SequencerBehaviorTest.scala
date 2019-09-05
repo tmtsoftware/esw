@@ -15,7 +15,7 @@ import esw.ocs.api.models.StepStatus.{InFlight, Pending}
 import esw.ocs.api.models.responses.EditorError.{CannotOperateOnAnInFlightOrFinishedStep, IdDoesNotExist}
 import esw.ocs.api.models.responses._
 import esw.ocs.api.models.{Step, StepList, StepStatus}
-import esw.ocs.client.messages.SequencerMessages.{AbortSequence, AddBreakpoint, _}
+import esw.ocs.client.messages.SequencerMessages.{AbortSequence, AddBreakpoint, QuerySequenceResponse, _}
 import esw.ocs.client.messages.SequencerState.{Idle, InProgress, Loaded, Offline}
 
 import scala.concurrent.duration.DurationLong
@@ -798,7 +798,6 @@ class SequencerBehaviorTest extends ScalaTestWithActorTestKit with BaseTestSuite
       Pause,
       Resume,
       Reset
-//      ShutdownComplete
     )
   }
 
@@ -816,7 +815,6 @@ class SequencerBehaviorTest extends ScalaTestWithActorTestKit with BaseTestSuite
       GoOnlineFailed,
       PullNext,
       GoIdle
-//      ShutdownComplete
     )
   }
 
@@ -834,7 +832,6 @@ class SequencerBehaviorTest extends ScalaTestWithActorTestKit with BaseTestSuite
       GoOnlineFailed,
       GoOffline,
       GoneOffline
-//      ShutdownComplete
     )
   }
 
@@ -865,8 +862,8 @@ class SequencerBehaviorTest extends ScalaTestWithActorTestKit with BaseTestSuite
       GoneOffline,
       GoIdle,
       PullNext,
-      Update(Completed(Id()), _)
-//      ShutdownComplete
+      Update(Completed(Id()), _),
+      QuerySequenceResponse
     )
   }
 }
