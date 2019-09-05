@@ -16,6 +16,8 @@ class Script5(cswServices: CswServices) : ScriptKt(cswServices) {
     init {
         println("============= Loading script 5 ============")
 
+        var totalEventsRec = 0
+
         loadScripts(
             script6,
             script7
@@ -29,6 +31,7 @@ class Script5(cswServices: CswServices) : ScriptKt(cswServices) {
             onEvent(*keys) { event ->
                 println("=======================")
                 log("Received: ${event.eventName()}")
+                totalEventsRec += 1
             }
 
             log("============ command-3 End ================")
@@ -36,6 +39,9 @@ class Script5(cswServices: CswServices) : ScriptKt(cswServices) {
         }
 
         handleShutdown {
+            while (totalEventsRec <= 49) {
+                delay(100)
+            }
             close()
         }
 

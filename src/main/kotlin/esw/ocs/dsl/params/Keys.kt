@@ -13,8 +13,9 @@ import csw.params.javadsl.JKeyType.*
 import csw.params.javadsl.JUnits.NoUnits
 
 data class KeyHolder<T>(val key: Key<T>) {
-    val keyType: KeyType<T> = key.keyType()
     val keyName: String = key.keyName()
+    val keyType: KeyType<T> = key.keyType()
+    val units: Units = key.units()
     fun add(vararg elm: T, units: Units = NoUnits): Parameter<T> = key.set(elm, units)
 }
 
@@ -30,8 +31,6 @@ fun main() {
     // ======== SimpleKey ==========
     val longKey = longKey("long")
     val longParam = longKey.add(10, 20, 30)
-    longKey.keyName
-    longKey.keyType
 
     // ======== ArrayKey ==========
     val data1 = arrayData(arrayOf(100L, 200L, 300L))
@@ -46,12 +45,14 @@ fun main() {
     val matrixParam = longMatrixKey("longMatrix").add(longMatrixData1, longMatrixData2)
 //    val matrixParam1 = longMatrixKey("longMatrix").set(arrayOf(longMatrixData1, longMatrixData2), NoUnits)
 
+    val systemEvent = SystemEvent(Prefix("esw.event"), EventName("move")).add(longParam)
+//    systemEvent.madd()
+
     println(longParam)
+    println(longKey.keyName)
+    println(longKey.keyType)
+    println(longKey.units)
     println(arrayParam)
     println(matrixParam)
-
-
-    val systemEvent = SystemEvent(Prefix("event"), EventName("move")).add(longParam)
-
-//    systemEvent.madd()
+    println(systemEvent)
 }
