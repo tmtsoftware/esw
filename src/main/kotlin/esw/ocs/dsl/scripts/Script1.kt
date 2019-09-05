@@ -1,6 +1,6 @@
 package esw.ocs.dsl.scripts
 
-import csw.params.commands.CommandResponse
+import csw.params.commands.CommandResponse.Completed
 import csw.params.core.models.Prefix
 import csw.params.events.EventName
 import csw.params.events.SystemEvent
@@ -9,10 +9,11 @@ import esw.ocs.dsl.core.ScriptKt
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 
-open class Script1(cswServices: CswServices) : ScriptKt(cswServices) {
+class Script1(cswServices: CswServices) : ScriptKt(cswServices) {
     init {
         val eventKey = "csw.a.b."
         fun event(id: Int) = SystemEvent(Prefix("csw.a.b"), EventName(id.toString()))
+
 
         handleSetup("command-1") { command ->
             log("============ command-1 ================")
@@ -27,7 +28,7 @@ open class Script1(cswServices: CswServices) : ScriptKt(cswServices) {
             }
 
             log("============ command-1 -End ================")
-            cswServices.crm().addOrUpdateCommand(CommandResponse.Completed(command.runId()))
+            cswServices.crm().addOrUpdateCommand(Completed(command.runId()))
         }
 
         handleSetup("command-2") { command ->
@@ -37,7 +38,7 @@ open class Script1(cswServices: CswServices) : ScriptKt(cswServices) {
             events.forEach(::println)
 
             log("============ command-2 End ================")
-            cswServices.crm().addOrUpdateCommand(CommandResponse.Completed(command.runId()))
+            cswServices.crm().addOrUpdateCommand(Completed(command.runId()))
         }
 
         handleSetup("command-3") { command ->
@@ -51,7 +52,7 @@ open class Script1(cswServices: CswServices) : ScriptKt(cswServices) {
             }
 
             log("============ command-3 End ================")
-            cswServices.crm().addOrUpdateCommand(CommandResponse.Completed(command.runId()))
+            cswServices.crm().addOrUpdateCommand(Completed(command.runId()))
         }
 
         handleShutdown {
