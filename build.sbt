@@ -132,6 +132,9 @@ lazy val `esw-gateway-impl` = project
 lazy val `esw-gateway-server2` = project
   .in(file("esw-gateway/esw-gateway-server2"))
   .enablePlugins(MaybeCoverage)
+  .settings(
+    libraryDependencies ++= Dependencies.EswGatewayServer.value
+  )
   .dependsOn(`esw-gateway-impl`, `esw-http-core` % "compile->compile;test->test")
 
 lazy val `esw-ocs-admin` = project

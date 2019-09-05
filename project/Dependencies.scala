@@ -107,8 +107,13 @@ object Dependencies {
 
   val EswGatewayImpl: Def.Initialize[Seq[ModuleID]] = Def.setting(
     Seq(
-      Libs.`msocket-impl-jvm`,
       Csw.`csw-event-client`
+    )
+  )
+
+  val EswGatewayServer: Def.Initialize[Seq[ModuleID]] = Def.setting(
+    Seq(
+      Libs.`msocket-impl-jvm`
     )
   )
 
