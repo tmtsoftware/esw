@@ -5,7 +5,6 @@ lazy val aggregateProjects: Seq[ProjectReference] =
     `esw-ocs-admin`,
     `esw-utils`,
     `esw-ocs`,
-    `esw-gateway-server`,
     `esw-http-core`,
     `esw-integration-test`,
     `esw-gateway`
@@ -84,23 +83,14 @@ lazy val `esw-http-core` = project
     libraryDependencies ++= Dependencies.EswHttpCore.value
   )
 
-lazy val `esw-gateway-server` = project
-  .in(file("esw-gateway-server"))
-  .enablePlugins(MaybeCoverage, EswBuildInfo)
-  .settings(
-    libraryDependencies ++= Dependencies.GatewayServer.value
-  )
-  .dependsOn(`esw-http-core` % "compile->compile;test->test")
-
 lazy val `esw-integration-test` = project
   .in(file("esw-integration-test"))
   .settings(libraryDependencies ++= Dependencies.IntegrationTest.value)
   .settings(fork in Test := true)
   .dependsOn(
-    `esw-gateway-server`  % "test->compile;test->test",
-    `esw-gateway-server2` % "test->compile;test->test",
-    `esw-http-core`       % "test->compile;test->test",
-    `esw-ocs-impl`        % "test->compile;test->test",
+    `esw-gateway-server` % "test->compile;test->test",
+    `esw-http-core`      % "test->compile;test->test",
+    `esw-ocs-impl`       % "test->compile;test->test",
     `esw-ocs-app`
   )
 
@@ -113,7 +103,7 @@ lazy val `esw-gateway` = project
   .aggregate(
     `esw-gateway-api`,
     `esw-gateway-impl`,
-    `esw-gateway-server2`
+    `esw-gateway-server`
   )
 
 lazy val `esw-gateway-api` = project
@@ -129,8 +119,8 @@ lazy val `esw-gateway-impl` = project
   )
   .dependsOn(`esw-gateway-api`)
 
-lazy val `esw-gateway-server2` = project
-  .in(file("esw-gateway/esw-gateway-server2"))
+lazy val `esw-gateway-server` = project
+  .in(file("esw-gateway/esw-gateway-server"))
   .enablePlugins(MaybeCoverage, EswBuildInfo)
   .settings(
     libraryDependencies ++= Dependencies.EswGatewayServer.value

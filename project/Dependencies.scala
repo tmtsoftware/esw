@@ -46,17 +46,6 @@ object Dependencies {
     )
   )
 
-  val GatewayServer: Def.Initialize[Seq[ModuleID]] = Def.setting(
-    Seq(
-      AkkaHttp.`akka-http`,
-      Akka.`akka-actor-typed`,
-      Akka.`akka-stream-typed`,
-      Libs.`case-app`,
-      Libs.scalatest       % Test,
-      Libs.`mockito-scala` % Test
-    )
-  )
-
   val EswHttpCore: Def.Initialize[Seq[ModuleID]] = Def.setting(
     Seq(
       Csw.`csw-commons`,
