@@ -2,7 +2,6 @@ import sbtcrossproject.CrossPlugin.autoImport.{CrossType, crossProject}
 
 lazy val aggregateProjects: Seq[ProjectReference] =
   Seq(
-    `esw-ocs-admin`,
     `esw-utils`,
     `esw-ocs`,
     `esw-http-core`,
@@ -126,32 +125,6 @@ lazy val `esw-gateway-server` = project
     libraryDependencies ++= Dependencies.EswGatewayServer.value
   )
   .dependsOn(`esw-gateway-impl`, `esw-http-core` % "compile->compile;test->test")
-
-lazy val `esw-ocs-admin` = project
-  .in(file("esw-ocs-admin"))
-  .aggregate(
-    `esw-ocs-admin-api`,
-    `esw-ocs-admin-impl`,
-    `esw-ocs-admin-server`
-  )
-
-lazy val `esw-ocs-admin-api` = project
-  .in(file("esw-ocs-admin/esw-ocs-admin-api"))
-  .settings(
-    libraryDependencies ++= Dependencies.EswOcsAdminApi.value
-  )
-  .dependsOn(`esw-ocs-api`.jvm)
-
-lazy val `esw-ocs-admin-impl` = project
-  .in(file("esw-ocs-admin/esw-ocs-admin-impl"))
-  .dependsOn(`esw-ocs-admin-api`, `esw-ocs-impl`)
-
-lazy val `esw-ocs-admin-server` = project
-  .in(file("esw-ocs-admin/esw-ocs-admin-server"))
-  .settings(
-    libraryDependencies ++= Dependencies.EswOcsAdminServer.value
-  )
-  .dependsOn(`esw-ocs-admin-impl`, `esw-http-core` % "compile->compile;test->test")
 
 /* ================= Paradox Docs ============== */
 lazy val docs = project.enablePlugins(NoPublish, ParadoxSite)

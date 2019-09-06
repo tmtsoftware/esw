@@ -106,15 +106,4 @@ object Dependencies {
     )
   )
 
-  val EswOcsAdminApi: Def.Initialize[Seq[ModuleID]] = Def.setting(
-    Seq(
-      Libs.`msocket-api`.value
-    )
-  )
-
-  val EswOcsAdminServer: Def.Initialize[Seq[ModuleID]] = Def.setting(
-    Seq(
-      Libs.`msocket-impl-jvm`
-    )
-  )
 }
