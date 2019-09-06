@@ -1,3 +1,3 @@
 package esw.highlevel.dsl
 
-interface CswHighLevelDsl : EventServiceDsl, LocationServiceDsl
+interface CswHighLevelDsl : EventServiceKtDsl, LocationServiceKtDsl, TimeServiceKtDsl
