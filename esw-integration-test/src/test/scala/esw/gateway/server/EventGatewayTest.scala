@@ -67,8 +67,8 @@ class EventGatewayTest extends ScalaTestFrameworkTestKit(EventServer) with WordS
       Thread.sleep(500)
 
       //publish event successfully
-      eventClient.publish(event1).futureValue should ===(Done)
-      eventClient.publish(event2).futureValue should ===(Done)
+      eventClient.publish(event1).futureValue should ===(Right(Done))
+      eventClient.publish(event2).futureValue should ===(Right(Done))
 
       //get set of events
       eventClient.get(Set(EventKey(prefix, name1))).rightValue should ===(Set(event1))

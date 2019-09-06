@@ -2,7 +2,7 @@ package esw.gateway.impl
 
 import akka.Done
 import akka.stream.scaladsl.Source
-import csw.event.api.exceptions.EventServerNotAvailable
+import csw.event.api.exceptions.{EventServerNotAvailable, PublishFailure}
 import csw.event.api.scaladsl.SubscriptionModes.RateLimiterMode
 import csw.event.api.scaladsl.{EventPublisher, EventService, EventSubscriber, EventSubscription}
 import csw.event.client.internal.commons.EventSubscriberUtil
@@ -20,8 +20,12 @@ class EventImpl(eventService: EventService, eventSubscriberUtil: EventSubscriber
   lazy val subscriber: EventSubscriber = eventService.defaultSubscriber
   lazy val publisher: EventPublisher   = eventService.defaultPublisher
 
-  // fixme: handle failures like EventServerNotAvailable
-  override def publish(event: Event): Future[Done] = publisher.publish(event)
+  override def publish(event: Event): Future[Either[EventServerUnavailable.type, Done]] =
+    publisher.publish(event).transform {
+      case Success(_)                    => Success(Right(Done))
+      case Failure(PublishFailure(_, _)) => Success(Left(EventServerUnavailable))
+      case Failure(ex)                   => throw ex
+    }
 
   override def get(eventKeys: Set[EventKey]): Future[Either[GetEventError, Set[Event]]] = {
     if (eventKeys.nonEmpty)

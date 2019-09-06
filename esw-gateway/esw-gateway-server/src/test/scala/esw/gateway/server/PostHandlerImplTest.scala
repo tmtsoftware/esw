@@ -8,7 +8,7 @@ import akka.util.Timeout
 import csw.alarm.api.exceptions.KeyNotFoundException
 import csw.alarm.models.AlarmSeverity
 import csw.alarm.models.Key.AlarmKey
-import csw.event.api.exceptions.EventServerNotAvailable
+import csw.event.api.exceptions.{EventServerNotAvailable, PublishFailure}
 import csw.location.models.ComponentId
 import csw.location.models.ComponentType.Assembly
 import csw.params.commands.CommandResponse.{Accepted, Started}
@@ -114,7 +114,7 @@ class PostHandlerImplTest extends BaseTestSuite with ScalatestRouteTest with Res
   }
 
   "Publish Event" must {
-    "return Done on successful pubslish | ESW-216" in {
+    "return Done on successful publish | ESW-216" in {
       val prefix       = Prefix("tcs.test.gateway")
       val name         = EventName("event1")
       val event        = SystemEvent(prefix, name, Set.empty)
@@ -123,7 +123,21 @@ class PostHandlerImplTest extends BaseTestSuite with ScalatestRouteTest with Res
       when(eventPublisher.publish(event)).thenReturn(Future.successful(Done))
 
       Post("/post", publishEvent) ~> route ~> check {
-        responseAs[Done] shouldEqual Done
+        responseAs[Either[EventServerUnavailable.type, Done]].rightValue shouldEqual Done
+      }
+    }
+
+    "return EventServerUnavailable error when EventServer is down | ESW-216" in {
+      val prefix       = Prefix("tcs.test.gateway")
+      val name         = EventName("event1")
+      val event        = SystemEvent(prefix, name, Set.empty)
+      val publishEvent = PublishEvent(event)
+
+      when(eventPublisher.publish(event))
+        .thenReturn(Future.failed(PublishFailure(event, new RuntimeException("Event server is down"))))
+
+      Post("/post", publishEvent) ~> route ~> check {
+        responseAs[Either[EventServerUnavailable.type, Done]].leftValue shouldEqual EventServerUnavailable
       }
     }
   }

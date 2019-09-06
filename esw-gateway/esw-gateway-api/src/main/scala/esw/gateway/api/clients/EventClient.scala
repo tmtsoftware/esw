@@ -17,13 +17,11 @@ class EventClient(postClient: RequestClient[PostRequest], websocketClient: Reque
     extends EventApi
     with RestlessCodecs {
 
-  override def publish(event: Event): Future[Done] = {
-    postClient.requestResponse[Done](PublishEvent(event))
-  }
+  override def publish(event: Event): Future[Either[EventServerUnavailable.type, Done]] =
+    postClient.requestResponse[Either[EventServerUnavailable.type, Done]](PublishEvent(event))
 
-  override def get(eventKeys: Set[EventKey]): Future[Either[GetEventError, Set[Event]]] = {
-    postClient.requestResponse[Either[EmptyEventKeys.type, Set[Event]]](GetEvent(eventKeys))
-  }
+  override def get(eventKeys: Set[EventKey]): Future[Either[GetEventError, Set[Event]]] =
+    postClient.requestResponse[Either[GetEventError, Set[Event]]](GetEvent(eventKeys))
 
   override def subscribe(eventKeys: Set[EventKey], maxFrequency: Option[Int]): Source[Event, Future[Option[EventError]]] = {
     websocketClient.requestStreamWithError[Event, EventError](Subscribe(eventKeys, maxFrequency))
