@@ -5,6 +5,7 @@ import java.util.concurrent.CountDownLatch
 import csw.params.commands.{CommandName, Observe, Setup}
 import csw.params.core.models.Prefix
 import esw.ocs.api.BaseTestSuite
+import esw.ocs.macros.StrandEc
 
 import scala.collection.mutable.ArrayBuffer
 import scala.concurrent.duration.{DurationDouble, FiniteDuration}
@@ -17,8 +18,9 @@ class ScriptDslTest extends BaseTestSuite {
       var receivedPrefix: Option[Prefix] = None
 
       val script: ScriptDsl = new ScriptDsl {
-        override def csw: CswServices             = ???
-        override val loopInterval: FiniteDuration = 100.millis
+        override protected implicit def strandEc: StrandEc = StrandEc()
+        override def csw: CswServices                      = ???
+        override val loopInterval: FiniteDuration          = 100.millis
 
         handleSetupCommand("iris") { cmd =>
           spawn {
@@ -26,6 +28,7 @@ class ScriptDslTest extends BaseTestSuite {
             ()
           }
         }
+
       }
       val prefix    = Prefix("iris.move")
       val irisSetup = Setup(prefix, CommandName("iris"), None)
@@ -38,8 +41,9 @@ class ScriptDslTest extends BaseTestSuite {
       var receivedPrefix: Option[Prefix] = None
 
       val script: ScriptDsl = new ScriptDsl {
-        override def csw: CswServices             = ???
-        override val loopInterval: FiniteDuration = 100.millis
+        override protected implicit def strandEc: StrandEc = StrandEc()
+        override def csw: CswServices                      = ???
+        override val loopInterval: FiniteDuration          = 100.millis
         handleObserveCommand("iris") { cmd =>
           spawn {
             receivedPrefix = Some(cmd.source)
@@ -58,8 +62,9 @@ class ScriptDslTest extends BaseTestSuite {
       val orderOfShutdownCalled = ArrayBuffer.empty[Int]
 
       val script: ScriptDsl = new ScriptDsl {
-        override def csw: CswServices             = ???
-        override val loopInterval: FiniteDuration = 100.millis
+        override protected implicit def strandEc: StrandEc = StrandEc()
+        override def csw: CswServices                      = ???
+        override val loopInterval: FiniteDuration          = 100.millis
         handleShutdown {
           spawn {
             orderOfShutdownCalled += 1
@@ -81,8 +86,9 @@ class ScriptDslTest extends BaseTestSuite {
       val orderOfAbortCalled = ArrayBuffer.empty[Int]
 
       val script: ScriptDsl = new ScriptDsl {
-        override def csw: CswServices             = ???
-        override val loopInterval: FiniteDuration = 100.millis
+        override protected implicit def strandEc: StrandEc = StrandEc()
+        override def csw: CswServices                      = ???
+        override val loopInterval: FiniteDuration          = 100.millis
         handleAbort {
           spawn {
             orderOfAbortCalled += 1
@@ -104,8 +110,9 @@ class ScriptDslTest extends BaseTestSuite {
 
       val latch = new CountDownLatch(3)
       val script: ScriptDsl = new ScriptDsl {
-        override def csw: CswServices             = ???
-        override val loopInterval: FiniteDuration = 100.millis
+        override protected implicit def strandEc: StrandEc = StrandEc()
+        override def csw: CswServices                      = ???
+        override val loopInterval: FiniteDuration          = 100.millis
 
         def decrement: Future[Unit] = Future { Thread.sleep(100); latch.countDown() }(ExecutionContext.global)
 

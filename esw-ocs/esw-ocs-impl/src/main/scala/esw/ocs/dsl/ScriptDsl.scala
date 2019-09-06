@@ -5,14 +5,13 @@ import csw.params.commands.{Observe, SequenceCommand, Setup}
 import esw.ocs.api.models.responses.PullNextResult
 import esw.ocs.dsl.utils.{FunctionBuilder, FunctionHandlers}
 import esw.ocs.exceptions.UnhandledCommandException
+import esw.ocs.macros.StrandEc
 
 import scala.concurrent.Future
-import scala.concurrent.duration.DurationDouble
 import scala.reflect.ClassTag
 
 class Script(val csw: CswServices) extends ScriptDsl {
-  // todo: should this come from conf file?
-  override private[ocs] val loopInterval = 50.millis
+  override protected implicit val strandEc: StrandEc = StrandEc()
 }
 
 trait ScriptDsl extends ControlDsl {

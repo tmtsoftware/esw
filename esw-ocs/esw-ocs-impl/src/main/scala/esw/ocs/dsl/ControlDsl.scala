@@ -7,11 +7,12 @@ import esw.ocs.macros.{AsyncMacros, StrandEc}
 import scala.concurrent.duration.FiniteDuration
 import scala.concurrent.{ExecutionContext, Future}
 import scala.language.experimental.macros
+import scala.concurrent.duration.DurationDouble
 
 trait ControlDsl {
-  implicit lazy val strandEc: StrandEc               = StrandEc()
+  protected implicit def strandEc: StrandEc
   protected implicit lazy val toEc: ExecutionContext = strandEc.ec
-  private[ocs] def loopInterval: FiniteDuration
+  private[ocs] val loopInterval: FiniteDuration      = 50.millis
 
   protected final def par[T](fs: List[Future[T]]): Future[List[T]] = Future.sequence(fs)
   protected final def par[T](fs: Future[T]*): Future[List[T]]      = par(fs.toList)

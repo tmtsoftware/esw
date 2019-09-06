@@ -4,6 +4,7 @@ import java.util.concurrent.atomic.AtomicInteger
 
 import akka.Done
 import esw.ocs.api.BaseTestSuite
+import esw.ocs.macros.StrandEc
 import org.scalatest.time.SpanSugar.convertFloatToGrainOfTime
 
 import scala.concurrent.ExecutionContext.Implicits
@@ -13,7 +14,8 @@ import scala.concurrent.duration.FiniteDuration
 class ControlDslTest extends BaseTestSuite {
 
   class TestDsl() extends ControlDsl {
-    override private[ocs] val loopInterval = 500.millis
+    override protected implicit def strandEc: StrandEc = StrandEc()
+    override private[ocs] val loopInterval             = 500.millis
     def counterLoop(minimumDelay: Option[FiniteDuration] = None): (() => Future[Int], Future[Done]) = {
       var counter = 0
 
@@ -32,6 +34,7 @@ class ControlDslTest extends BaseTestSuite {
 
       (() => getCounter, loopFinished)
     }
+
   }
 
   override implicit def patienceConfig: PatienceConfig = PatienceConfig(5.seconds)
@@ -69,7 +72,8 @@ class ControlDslTest extends BaseTestSuite {
       import Implicits.global
 
       class TestDsl() extends ControlDsl {
-        val loopInterval: FiniteDuration = 500.millis
+        override protected implicit def strandEc: StrandEc = StrandEc()
+        override val loopInterval: FiniteDuration          = 500.millis
 
         def execute[T](tasks: Future[T]*): Future[List[T]] = par(tasks: _*)
       }
