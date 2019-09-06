@@ -74,7 +74,7 @@ lazy val `esw-ocs-app` = project
   .settings(
     libraryDependencies ++= Dependencies.OcsApp.value
   )
-  .dependsOn(`esw-ocs-impl`)
+  .dependsOn(`esw-ocs-impl`, `esw-http-core`)
 
 lazy val `esw-http-core` = project
   .in(file("esw-http-core"))

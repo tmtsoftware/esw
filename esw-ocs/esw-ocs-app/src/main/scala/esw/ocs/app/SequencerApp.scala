@@ -1,14 +1,19 @@
 package esw.ocs.app
 
+import akka.Done
+import akka.actor.CoordinatedShutdown.UnknownReason
 import caseapp.{CommandApp, RemainingArgs}
 import csw.framework.internal.wiring.ActorRuntime
 import csw.location.client.utils.LocationServerStatus
 import csw.location.models.AkkaLocation
 import csw.logging.api.scaladsl.Logger
+import csw.network.utils.SocketUtils
+import esw.http.core.wiring.{HttpService, ServerWiring}
 import esw.ocs.api.models.responses.RegistrationError
 import esw.ocs.app.SequencerAppCommand._
 import esw.ocs.internal.{SequenceComponentWiring, SequencerWiring}
 
+import scala.concurrent.Future
 import scala.util.control.NonFatal
 
 object SequencerApp extends CommandApp[SequencerAppCommand] {
@@ -21,14 +26,41 @@ object SequencerApp extends CommandApp[SequencerAppCommand] {
     run(command)
   }
 
+  def sequencerWiringWithHttp(
+      sequencerId: String,
+      observingMode: String,
+      sequenceComponentName: Option[String]
+  ): SequencerWiring =
+    new SequencerWiring(sequencerId, observingMode, sequenceComponentName) {
+      import sequencerConfig.sequencerName
+
+      private lazy val serverWiring = new ServerWiring(Some(SocketUtils.getFreePort), Some(s"$sequencerName@http"))
+      import serverWiring._
+      import cswCtx._
+
+      //TODO: fix the route
+      private lazy val httpService =
+        new HttpService(logger, locationService, null, settings, serverWiring.actorRuntime)
+
+      override def shutDown(): Future[Done] = {
+        httpService.shutdown(UnknownReason)
+        super.shutDown()
+      }
+
+      override def start(): Either[RegistrationError, AkkaLocation] = {
+        httpService.registeredLazyBinding
+        super.start()
+      }
+    }
+
   def run(command: SequencerAppCommand, enableLogging: Boolean = true): Unit =
     command match {
       case SequenceComponent(prefix) =>
-        val wiring = new SequenceComponentWiring(prefix)
+        val wiring = new SequenceComponentWiring(prefix, sequencerWiringWithHttp)
         startSequenceComponent(wiring, enableLogging)
 
       case Sequencer(id, mode) =>
-        val wiring = new SequencerWiring(id, mode, None)
+        val wiring: SequencerWiring = sequencerWiringWithHttp(id, mode, None)
         startSequencer(wiring, enableLogging)
     }
 

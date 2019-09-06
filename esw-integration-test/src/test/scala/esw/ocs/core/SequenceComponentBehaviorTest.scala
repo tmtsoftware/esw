@@ -16,6 +16,7 @@ import esw.ocs.api.models.responses.SequenceComponentResponse.{Done, GetStatusRe
 import esw.ocs.api.models.responses.{RegistrationError, SequenceComponentResponse}
 import esw.ocs.client.messages.SequenceComponentMsg
 import esw.ocs.client.messages.SequenceComponentMsg.{GetStatus, LoadScript, Stop, UnloadScript}
+import esw.ocs.internal.SequencerWiring
 
 import scala.concurrent.duration.DurationLong
 
@@ -28,16 +29,23 @@ class SequenceComponentBehaviorTest extends ScalaTestFrameworkTestKit with BaseT
   implicit val scheduler: Scheduler = typedSystem.scheduler
   implicit val timeOut: Timeout     = frameworkTestKit.timeout
 
+  def sequencerWiring(
+      sequencerId: String,
+      observingMode: String,
+      sequenceComponentName: Option[String]
+  ): SequencerWiring =
+    new SequencerWiring(sequencerId, observingMode, sequenceComponentName)
+
   private def createBehaviorTestKit(): BehaviorTestKit[SequenceComponentMsg] = BehaviorTestKit(
     Behaviors.setup[SequenceComponentMsg] { _ =>
-      SequenceComponentBehavior.behavior(ocsSequenceComponentName, factory.getLogger)
+      SequenceComponentBehavior.behavior(ocsSequenceComponentName, factory.getLogger, sequencerWiring)
     }
   )
 
   "SequenceComponentBehavior" must {
     "load/unload script and get appropriate status | ESW-103" in {
       val sequenceComponentRef: ActorRef[SequenceComponentMsg] = (typedSystem ? Spawn(
-        SequenceComponentBehavior.behavior(ocsSequenceComponentName, factory.getLogger),
+        SequenceComponentBehavior.behavior(ocsSequenceComponentName, factory.getLogger, sequencerWiring),
         ocsSequenceComponentName
       )).futureValue
 
@@ -78,7 +86,7 @@ class SequenceComponentBehaviorTest extends ScalaTestFrameworkTestKit with BaseT
 
     "load script and give LoadScriptError if sequencer is already running | ESW-103" in {
       val sequenceComponentRef: ActorRef[SequenceComponentMsg] = (typedSystem ? Spawn(
-        SequenceComponentBehavior.behavior(ocsSequenceComponentName, factory.getLogger),
+        SequenceComponentBehavior.behavior(ocsSequenceComponentName, factory.getLogger, sequencerWiring),
         ocsSequenceComponentName
       )).futureValue
 
@@ -103,7 +111,7 @@ class SequenceComponentBehaviorTest extends ScalaTestFrameworkTestKit with BaseT
 
     "unload script and return Done if sequence component is not running any sequencer | ESW-103" in {
       val sequenceComponentRef: ActorRef[SequenceComponentMsg] = (typedSystem ? Spawn(
-        SequenceComponentBehavior.behavior(ocsSequenceComponentName, factory.getLogger),
+        SequenceComponentBehavior.behavior(ocsSequenceComponentName, factory.getLogger, sequencerWiring),
         ocsSequenceComponentName
       )).futureValue
 

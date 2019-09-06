@@ -12,13 +12,17 @@ import esw.ocs.internal.SequencerWiring
 
 object SequenceComponentBehavior {
 
-  def behavior(sequenceComponentName: String, log: Logger): Behavior[SequenceComponentMsg] = {
+  def behavior(
+      sequenceComponentName: String,
+      log: Logger,
+      sequencerWiring: (String, String, Option[String]) => SequencerWiring
+  ): Behavior[SequenceComponentMsg] = {
 
     lazy val idle: Behavior[SequenceComponentMsg] = Behaviors.receiveMessage[SequenceComponentMsg] { msg =>
       log.debug(s"Sequence Component in lifecycle state :Idle, received message :[$msg]")
       msg match {
         case LoadScript(sequencerId, observingMode, replyTo) =>
-          val wiring             = new SequencerWiring(sequencerId, observingMode, Some(sequenceComponentName))
+          val wiring             = sequencerWiring(sequencerId, observingMode, Some(sequenceComponentName))
           val registrationResult = wiring.start()
           replyTo ! LoadScriptResponse(registrationResult)
           registrationResult match {

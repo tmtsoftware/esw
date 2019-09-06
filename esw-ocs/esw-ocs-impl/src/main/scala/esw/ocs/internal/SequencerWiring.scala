@@ -19,8 +19,8 @@ import esw.ocs.syntax.FutureSyntax.FutureOps
 import scala.concurrent.Future
 
 private[ocs] class SequencerWiring(val sequencerId: String, val observingMode: String, sequenceComponentName: Option[String]) {
-  private lazy val config: Config  = ConfigFactory.load()
-  private lazy val sequencerConfig = SequencerConfig.from(config, sequencerId, observingMode, sequenceComponentName)
+  private lazy val config: Config       = ConfigFactory.load()
+  private[esw] lazy val sequencerConfig = SequencerConfig.from(config, sequencerId, observingMode, sequenceComponentName)
   import sequencerConfig._
 
   lazy val cswServicesWiring = new CswServicesWiring(sequencerName)

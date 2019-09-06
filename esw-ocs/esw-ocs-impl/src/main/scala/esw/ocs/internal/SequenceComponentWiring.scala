@@ -14,7 +14,7 @@ import esw.ocs.syntax.FutureSyntax.FutureOps
 import scala.concurrent.Future
 
 // $COVERAGE-OFF$
-private[ocs] class SequenceComponentWiring(prefix: Prefix) {
+private[ocs] class SequenceComponentWiring(prefix: Prefix, sequencerWiring: (String, String, Option[String]) => SequencerWiring) {
   private val registrationRetryCount = 10
 
   lazy val cswServicesWiring = new CswServicesWiring(prefix.prefix)
@@ -26,7 +26,7 @@ private[ocs] class SequenceComponentWiring(prefix: Prefix) {
 
   def sequenceComponentFactory(sequenceComponentName: String): Future[ActorRef[SequenceComponentMsg]] = {
     log.info(s"Starting sequence component with name: $sequenceComponentName")
-    typedSystem ? Spawn(SequenceComponentBehavior.behavior(sequenceComponentName, log), sequenceComponentName)
+    typedSystem ? Spawn(SequenceComponentBehavior.behavior(sequenceComponentName, log, sequencerWiring), sequenceComponentName)
   }
 
   private lazy val sequenceComponentRegistration =
