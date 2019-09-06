@@ -10,13 +10,13 @@ import scala.concurrent.Future
 
 trait EventApi {
   def publish(event: Event): Future[Done]
-  def get(eventKeys: Set[EventKey]): Future[Either[EmptyEventKeys, Set[Event]]]
+  def get(eventKeys: Set[EventKey]): Future[Either[EmptyEventKeys.type, Set[Event]]]
   def subscribe(eventKeys: Set[EventKey], maxFrequency: Option[Int]): Source[Event, Future[Option[EventError]]]
 
   def pSubscribe(
       subsystem: Subsystem,
       maxFrequency: Option[Int],
       pattern: String
-  ): Source[Event, Future[Option[InvalidMaxFrequency]]]
+  ): Source[Event, Future[Option[InvalidMaxFrequency.type]]]
 
 }

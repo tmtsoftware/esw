@@ -139,13 +139,13 @@ class PostHandlerImplTest extends BaseTestSuite with ScalatestRouteTest with Res
       when(eventSubscriber.get(Set(eventKey))).thenReturn(Future.successful(Set(event)))
 
       Post("/post", getEvent) ~> route ~> check {
-        responseAs[Either[EmptyEventKeys, Set[Event]]].rightValue shouldEqual Set(event)
+        responseAs[Either[EmptyEventKeys.type, Set[Event]]].rightValue shouldEqual Set(event)
       }
     }
 
     "return EmptyEventKeys error on sending no event keys in request | ESW-216" in {
       Post("/post", GetEvent(Set())) ~> route ~> check {
-        responseAs[Either[EmptyEventKeys, Set[Event]]].leftValue shouldEqual EmptyEventKeys()
+        responseAs[Either[EmptyEventKeys.type, Set[Event]]].leftValue shouldEqual EmptyEventKeys
       }
     }
 

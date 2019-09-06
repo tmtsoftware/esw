@@ -21,8 +21,8 @@ class EventClient(postClient: RequestClient[PostRequest], websocketClient: Reque
     postClient.requestResponse[Done](PublishEvent(event))
   }
 
-  override def get(eventKeys: Set[EventKey]): Future[Either[EmptyEventKeys, Set[Event]]] = {
-    postClient.requestResponse[Either[EmptyEventKeys, Set[Event]]](GetEvent(eventKeys))
+  override def get(eventKeys: Set[EventKey]): Future[Either[EmptyEventKeys.type, Set[Event]]] = {
+    postClient.requestResponse[Either[EmptyEventKeys.type, Set[Event]]](GetEvent(eventKeys))
   }
 
   override def subscribe(eventKeys: Set[EventKey], maxFrequency: Option[Int]): Source[Event, Future[Option[EventError]]] = {
@@ -33,7 +33,9 @@ class EventClient(postClient: RequestClient[PostRequest], websocketClient: Reque
       subsystem: Subsystem,
       maxFrequency: Option[Int],
       pattern: String = "*"
-  ): Source[Event, Future[Option[InvalidMaxFrequency]]] = {
-    websocketClient.requestStreamWithError[Event, InvalidMaxFrequency](SubscribeWithPattern(subsystem, maxFrequency, pattern))
+  ): Source[Event, Future[Option[InvalidMaxFrequency.type]]] = {
+    websocketClient.requestStreamWithError[Event, InvalidMaxFrequency.type](
+      SubscribeWithPattern(subsystem, maxFrequency, pattern)
+    )
   }
 }

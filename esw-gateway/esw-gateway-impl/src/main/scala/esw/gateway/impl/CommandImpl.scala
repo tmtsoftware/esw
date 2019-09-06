@@ -69,7 +69,7 @@ class CommandImpl(commandService: (String, ComponentType) => Future[CommandServi
     }
 
     maxFrequency match {
-      case Some(x) if x <= 0 => Utils.emptySourceWithError(InvalidMaxFrequency())
+      case Some(x) if x <= 0 => Utils.emptySourceWithError(InvalidMaxFrequency)
       case Some(frequency)   => currentStateSource.buffer(1, OverflowStrategy.dropHead).throttle(frequency, 1.second)
       case None              => currentStateSource
     }

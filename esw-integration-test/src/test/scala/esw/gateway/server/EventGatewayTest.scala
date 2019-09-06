@@ -89,7 +89,7 @@ class EventGatewayTest extends ScalaTestFrameworkTestKit(EventServer) with WordS
         new WebsocketClient[WebsocketRequest](s"ws://localhost:$port/websocket")
       val eventClient: EventClient = new EventClient(postClient, websocketClient)
 
-      eventClient.subscribe(Set.empty, None).toMat(Sink.head)(Keep.left).run().futureValue.get should ===(EmptyEventKeys())
+      eventClient.subscribe(Set.empty, None).toMat(Sink.head)(Keep.left).run().futureValue.get should ===(EmptyEventKeys)
     }
 
   }

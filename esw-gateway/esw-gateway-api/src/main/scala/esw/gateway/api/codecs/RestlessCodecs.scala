@@ -16,9 +16,12 @@ import msocket.api.utils.EitherCodecs
 
 trait RestlessCodecs extends ParamCodecs with LocationCodecs with AlarmCodecs with EitherCodecs with DoneCodec {
 
+  def singletonErrorCodec[T <: SingletonError with Singleton](a: T): Codec[T] =
+    Codec.bimap[String, T](_.msg, _ => a)
+
   implicit def eventErrorCodec[T <: EventError]: Codec[T] = eventErrorCodecValue.asInstanceOf[Codec[T]]
   lazy val eventErrorCodecValue: Codec[EventError] = {
-    @silent implicit lazy val emptyEventKeysCodec: Codec[EmptyEventKeys] = deriveCodec[EmptyEventKeys]
+    @silent implicit lazy val emptyEventKeysCodec: Codec[EmptyEventKeys.type] = singletonCodec(EmptyEventKeys)
     invalidMaxFrequencyCodec
     deriveCodec[EventError]
   }
@@ -30,7 +33,7 @@ trait RestlessCodecs extends ParamCodecs with LocationCodecs with AlarmCodecs wi
     deriveCodec[CommandError]
   }
 
-  implicit lazy val invalidMaxFrequencyCodec: Codec[InvalidMaxFrequency]         = deriveCodec[InvalidMaxFrequency]
+  implicit lazy val invalidMaxFrequencyCodec: Codec[InvalidMaxFrequency.type]    = singletonCodec(InvalidMaxFrequency)
   implicit lazy val setAlarmSeverityFailureCodec: Codec[SetAlarmSeverityFailure] = deriveCodec[SetAlarmSeverityFailure]
 
   implicit def postRequestCodec[T <: PostRequest]: Codec[T] = postRequestValue.asInstanceOf[Codec[T]]

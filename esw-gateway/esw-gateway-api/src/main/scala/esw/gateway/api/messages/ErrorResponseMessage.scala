@@ -3,9 +3,20 @@ package esw.gateway.api.messages
 sealed trait CommandError
 case class InvalidComponent(msg: String) extends CommandError
 
-// fixme: why is msg in constructor? can it be encoded like DuplicateIdsFound using SingletonError
+trait SingletonError {
+  def msg: String
+}
+
 sealed trait EventError
-case class EmptyEventKeys(msg: String = "Request is missing event key")                   extends EventError
-case class InvalidMaxFrequency(msg: String = "Max frequency should be greater than zero") extends EventError with CommandError
+case object EmptyEventKeys extends EventError with SingletonError {
+  def msg = "Request is missing event key"
+}
+case object EventServerNotAvailable extends EventError with SingletonError {
+  def msg = "Request is missing event key"
+}
+
+case object InvalidMaxFrequency extends EventError with CommandError with SingletonError {
+  def msg = "Max frequency should be greater than zero"
+}
 
 case class SetAlarmSeverityFailure(msg: String)

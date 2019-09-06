@@ -22,16 +22,16 @@ class EventImpl(eventService: EventService, eventSubscriberUtil: EventSubscriber
   override def publish(event: Event): Future[Done] = publisher.publish(event)
 
   // fixme: handle failures like EventServerNotAvailable
-  override def get(eventKeys: Set[EventKey]): Future[Either[EmptyEventKeys, Set[Event]]] = {
+  override def get(eventKeys: Set[EventKey]): Future[Either[EmptyEventKeys.type, Set[Event]]] = {
     if (eventKeys.nonEmpty) subscriber.get(eventKeys).map(Right(_))
-    else Future.successful(Left(EmptyEventKeys()))
+    else Future.successful(Left(EmptyEventKeys))
   }
 
   def subscribe(eventKeys: Set[EventKey], maxFrequency: Option[Int]): Source[Event, Future[Option[EventError]]] = {
 
     if (eventKeys.nonEmpty) {
       maxFrequency match {
-        case Some(x) if x <= 0 => Utils.emptySourceWithError(InvalidMaxFrequency())
+        case Some(x) if x <= 0 => Utils.emptySourceWithError(InvalidMaxFrequency)
         case Some(frequency) =>
           Utils.sourceWithNoError(
             subscriber
@@ -39,18 +39,18 @@ class EventImpl(eventService: EventService, eventSubscriberUtil: EventSubscriber
           )
         case None => Utils.sourceWithNoError(subscriber.subscribe(eventKeys))
       }
-    } else Utils.emptySourceWithError(EmptyEventKeys())
+    } else Utils.emptySourceWithError(EmptyEventKeys)
   }
 
   def pSubscribe(
       subsystem: Subsystem,
       maxFrequency: Option[Int],
       pattern: String = "*"
-  ): Source[Event, Future[Option[InvalidMaxFrequency]]] = {
+  ): Source[Event, Future[Option[InvalidMaxFrequency.type]]] = {
 
     def events: Source[Event, EventSubscription] = subscriber.pSubscribe(subsystem, pattern)
     maxFrequency match {
-      case Some(x) if x <= 0 => Utils.emptySourceWithError(InvalidMaxFrequency())
+      case Some(x) if x <= 0 => Utils.emptySourceWithError(InvalidMaxFrequency)
       case Some(f) =>
         Utils.sourceWithNoError(
           events
