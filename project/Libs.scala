@@ -5,7 +5,7 @@ import sbt._
 object Libs {
   private val ScalaVersion: String = EswKeys.scalaVersion
   private val SilencerVersion      = "1.4.2"
-  private val MsocketVersion       = "f7cdce7"
+  private val MsocketVersion       = "10658aa"
 
   val `scala-reflect`    = "org.scala-lang" % "scala-reflect" % ScalaVersion
   val scalatest          = "org.scalatest" %% "scalatest" % "3.0.8" //Apache License 2.0
