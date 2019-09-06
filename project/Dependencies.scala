@@ -57,7 +57,6 @@ object Dependencies {
       Csw.`csw-command-client`,
       Csw.`csw-event-client`,
       Csw.`csw-params`.value,
-      Libs.scopt,
       Libs.`scala-async`,
       Libs.scalatest                  % Test,
       Csw.`csw-testkit`               % Test,

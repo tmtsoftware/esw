@@ -3,6 +3,7 @@ package esw.gateway.server
 import caseapp.{CommandApp, RemainingArgs}
 import esw.gateway.server.ServerCommand.StartCommand
 
+// $COVERAGE-OFF$
 object GatewayMain extends CommandApp[ServerCommand] {
   override def appName: String    = getClass.getSimpleName.dropRight(1) // remove $ from class name
   override def appVersion: String = BuildInfo.version
@@ -24,3 +25,4 @@ object GatewayMain extends CommandApp[ServerCommand] {
   }
 
 }
+// $COVERAGE-ON$
