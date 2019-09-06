@@ -2,6 +2,8 @@ package esw.ocs.app
 
 import akka.Done
 import akka.actor.CoordinatedShutdown.UnknownReason
+import akka.actor.typed.{ActorSystem, SpawnProtocol}
+import akka.util.Timeout
 import caseapp.{CommandApp, RemainingArgs}
 import csw.framework.internal.wiring.ActorRuntime
 import csw.location.client.utils.LocationServerStatus
@@ -11,7 +13,8 @@ import csw.network.utils.SocketUtils
 import esw.http.core.wiring.{HttpService, ServerWiring}
 import esw.ocs.api.models.responses.RegistrationError
 import esw.ocs.app.SequencerAppCommand._
-import esw.ocs.internal.{SequenceComponentWiring, SequencerWiring}
+import esw.ocs.client.SequencerAdminClient
+import esw.ocs.internal.{SequenceComponentWiring, SequencerWiring, Timeouts}
 
 import scala.concurrent.Future
 import scala.util.control.NonFatal
@@ -38,9 +41,14 @@ object SequencerApp extends CommandApp[SequencerAppCommand] {
       import serverWiring._
       import cswCtx._
 
+      private implicit val timeout: Timeout                   = Timeouts.DefaultTimeout
+      private implicit val system: ActorSystem[SpawnProtocol] = actorSystem
+      private val sequencerAdminClient                        = new SequencerAdminClient(sequencerRef)
+      private val routes                                      = new Routes(sequencerAdminClient, routeHandlers)
+
       //TODO: fix the route
       private lazy val httpService =
-        new HttpService(logger, locationService, null, settings, serverWiring.actorRuntime)
+        new HttpService(logger, locationService, routes.route, settings, serverWiring.actorRuntime)
 
       override def shutDown(): Future[Done] = {
         httpService.shutdown(UnknownReason)

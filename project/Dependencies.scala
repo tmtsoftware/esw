@@ -40,6 +40,7 @@ object Dependencies {
   val OcsApp: Def.Initialize[Seq[ModuleID]] = Def.setting(
     Seq(
       Libs.`case-app`,
+      Libs.`msocket-impl-jvm`,
       Libs.scalatest                  % Test,
       Libs.`mockito-scala`            % Test,
       Akka.`akka-actor-testkit-typed` % Test
