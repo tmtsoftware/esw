@@ -46,4 +46,9 @@ trait OcsCodecs extends ParamCodecs with LocationCodecs {
   implicit lazy val getStatusResponseCodec: Codec[GetStatusResponse]                 = deriveUnaryCodec[GetStatusResponse]
   implicit lazy val doneResponseCodec: Codec[Done.type]                              = singletonCodec(Done)
   implicit lazy val sequenceComponentResponseCodec: Codec[SequenceComponentResponse] = deriveCodec[SequenceComponentResponse]
+  implicit lazy val pauseResponseCodec: Codec[PauseResponse]                         = deriveCodec[PauseResponse]
+  implicit lazy val okOrUnhandledResponseCodec: Codec[OkOrUnhandledResponse]         = deriveCodec[OkOrUnhandledResponse]
+  implicit lazy val genericResponseCodec: Codec[GenericResponse]                     = deriveCodec[GenericResponse]
+  implicit lazy val removeBreakpointResponseCodec: Codec[RemoveBreakpointResponse]   = deriveCodec[RemoveBreakpointResponse]
+  implicit lazy val goOnlineResponseCodec: Codec[GoOnlineResponse]                   = deriveCodec[GoOnlineResponse]
 }
