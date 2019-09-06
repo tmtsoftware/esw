@@ -53,9 +53,9 @@ class WebsocketHandlerImplTest extends BaseTestSuite with ScalatestRouteTest wit
     actorSystem.terminate()
   }
 
-  "WebsocketHandlerImpl" must {
+  "QueryFinal" must {
 
-    "return SubmitResponse on queryFinal for a command | ESW-216" in {
+    "return SubmitResponse for a command | ESW-216" in {
       val componentName = "test"
       val runId         = Id("123")
       val componentType = Assembly
@@ -73,7 +73,7 @@ class WebsocketHandlerImplTest extends BaseTestSuite with ScalatestRouteTest wit
       }
     }
 
-    "return InvalidComponent for invalid component id on queryFinal for a command  | ESW-216" in {
+    "return InvalidComponent for invalid component id | ESW-216" in {
       val componentName = "test"
       val runId         = Id("123")
       val componentType = Assembly
@@ -92,8 +92,10 @@ class WebsocketHandlerImplTest extends BaseTestSuite with ScalatestRouteTest wit
         response.leftValue shouldEqual InvalidComponent(errmsg)
       }
     }
+  }
 
-    "subscribe current state for given componentId | ESW-216" in {
+  "Subscribe current state" must {
+    "returns successfully for given componentId | ESW-216" in {
       val componentName         = "test"
       val componentType         = Assembly
       val componentId           = ComponentId(componentName, componentType)
@@ -125,7 +127,39 @@ class WebsocketHandlerImplTest extends BaseTestSuite with ScalatestRouteTest wit
 
     }
 
-    "return InvalidMaxFrequency when subscribe current state is sent with maxFrequency <= 0 | ESW-216" in {
+    "returns throttled states, for a given componentId and maxFrequency > 0 | ESW-216" in {
+      val componentName         = "test"
+      val componentType         = Assembly
+      val componentId           = ComponentId(componentName, componentType)
+      val stateNames            = Set(StateName("stateName1"), StateName("stateName2"))
+      val subscribeCurrentState = SubscribeCurrentState(componentId, stateNames, Some(1))
+      val currentState1         = CurrentState(Prefix("esw.a.b"), StateName("stateName1"))
+      val currentState2         = CurrentState(Prefix("esw.a.b"), StateName("stateName2"))
+
+      val currentStateSubscription = mock[CurrentStateSubscription]
+      val currentStateStream = Source(List(currentState1, currentState2))
+        .mapMaterializedValue(_ => currentStateSubscription)
+
+      when(componentFactory.commandService(componentName, componentType)).thenReturn(Future.successful(commandService))
+      when(commandService.subscribeCurrentState(stateNames)).thenReturn(currentStateStream)
+
+      WS("/websocket", wsClient.flow) ~> route ~> check {
+        wsClient.sendMessage(JsonText.strictMessage(subscribeCurrentState))
+        isWebSocketUpgrade shouldBe true
+
+        val responseSet = Source
+          .single(decodeMessage[Either[CommandError, CurrentState]](wsClient))
+          .runWith(Sink.seq)
+          .futureValue
+          .map(_.rightValue)
+          .toSet
+
+        responseSet shouldEqual Set(currentState2)
+      }
+
+    }
+
+    "return InvalidMaxFrequency with maxFrequency <= 0 | ESW-216" in {
       val componentName         = "test"
       val componentType         = Assembly
       val componentId           = ComponentId(componentName, componentType)
@@ -144,8 +178,10 @@ class WebsocketHandlerImplTest extends BaseTestSuite with ScalatestRouteTest wit
         response shouldEqual InvalidMaxFrequency()
       }
     }
+  }
 
-    "return set of events on subscribe events | ESW-216" in {
+  "Subscribe Events" must {
+    "return set of events successfully | ESW-216" in {
       val tcsEventKeyStr1 = "tcs.event.key1"
       val tcsEventKeyStr2 = "tcs.event.key2"
       val eventKey1       = EventKey(tcsEventKeyStr1)
@@ -182,7 +218,7 @@ class WebsocketHandlerImplTest extends BaseTestSuite with ScalatestRouteTest wit
       }
     }
 
-    "return set of events on subscribe events when subscribe event is sent with maxFrequency = 10 | ESW-216" in {
+    "return set of events when subscribe event is sent with maxFrequency = 10 | ESW-216" in {
       val tcsEventKeyStr1 = "tcs.event.key1"
       val tcsEventKeyStr2 = "tcs.event.key2"
       val eventKey1       = EventKey(tcsEventKeyStr1)
@@ -219,7 +255,7 @@ class WebsocketHandlerImplTest extends BaseTestSuite with ScalatestRouteTest wit
       }
     }
 
-    "return InvalidMaxFrequency when subscribe event is sent with maxFrequency <= 0 | ESW-216" in {
+    "return InvalidMaxFrequency is sent with maxFrequency <= 0 | ESW-216" in {
       val tcsEventKeyStr1 = "tcs.event.key1"
       val tcsEventKeyStr2 = "tcs.event.key2"
       val eventKey1       = EventKey(tcsEventKeyStr1)
@@ -239,7 +275,9 @@ class WebsocketHandlerImplTest extends BaseTestSuite with ScalatestRouteTest wit
         response shouldEqual InvalidMaxFrequency()
       }
     }
+  }
 
+  "Subscribe events with pattern" must {
     "return set of events on subscribe events with a given pattern | ESW-216" in {
       val eventSubscriptionRequest = SubscribeWithPattern(TCS, None, "*")
 
@@ -271,7 +309,7 @@ class WebsocketHandlerImplTest extends BaseTestSuite with ScalatestRouteTest wit
       }
     }
 
-    "return set of events on subscribe events with a given pattern and maxFrequency = 5 | ESW-216" in {
+    "return set of events when maxFrequency = 5 | ESW-216" in {
       val eventSubscriptionRequest = SubscribeWithPattern(TCS, Some(5), "*")
       val event1: Event            = ObserveEvent(Prefix("tcs"), EventName("event.key1"))
 
@@ -304,7 +342,7 @@ class WebsocketHandlerImplTest extends BaseTestSuite with ScalatestRouteTest wit
       }
     }
 
-    "return InvalidMaxFrequency when subscribe event with pattern is sent with maxFrequency <= 0 | ESW-216" in {
+    "return InvalidMaxFrequency when maxFrequency <= 0 | ESW-216" in {
       val eventSubscriptionRequest = SubscribeWithPattern(TCS, Some(-1), "*")
       WS("/websocket", wsClient.flow) ~> route ~> check {
         wsClient.sendMessage(JsonText.strictMessage(eventSubscriptionRequest))
@@ -318,7 +356,6 @@ class WebsocketHandlerImplTest extends BaseTestSuite with ScalatestRouteTest wit
         response shouldEqual InvalidMaxFrequency()
       }
     }
-
   }
 
   private def decodeMessage[T](wsClient: WSProbe)(implicit decoder: Decoder[T]): T = {

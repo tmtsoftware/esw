@@ -45,7 +45,7 @@ class PostHandlerImplTest extends BaseTestSuite with ScalatestRouteTest with Res
 
   // fixme: group tests
   // fixme: add failure scenario when event server/ alarm server is down
-  "PostHandlerImpl" must {
+  "Submit Command" must {
     "handle submit command and return started command response | ESW-216" in {
       val componentName = "test"
       val runId         = Id("123")
@@ -111,8 +111,10 @@ class PostHandlerImplTest extends BaseTestSuite with ScalatestRouteTest with Res
         responseAs[Either[InvalidComponent, CommandResponse]].leftValue shouldEqual InvalidComponent(errmsg)
       }
     }
+  }
 
-    "publish an event and return Done | ESW-216" in {
+  "Publish Event" must {
+    "return Done on successful pubslish | ESW-216" in {
       val prefix       = Prefix("tcs.test.gateway")
       val name         = EventName("event1")
       val event        = SystemEvent(prefix, name, Set.empty)
@@ -124,8 +126,10 @@ class PostHandlerImplTest extends BaseTestSuite with ScalatestRouteTest with Res
         responseAs[Done] shouldEqual Done
       }
     }
+  }
 
-    "get an event successfully | ESW-216" in {
+  "Get Event" must {
+    "return an event successfully | ESW-216" in {
       val prefix   = Prefix("tcs.test.gateway")
       val name     = EventName("event1")
       val event    = SystemEvent(prefix, name, Set.empty)
@@ -139,7 +143,7 @@ class PostHandlerImplTest extends BaseTestSuite with ScalatestRouteTest with Res
       }
     }
 
-    "get event return EmptyEventKeys error on sending no event keys in request | ESW-216" in {
+    "return EmptyEventKeys error on sending no event keys in request | ESW-216" in {
       Post("/post", GetEvent(Set())) ~> route ~> check {
         responseAs[Either[EmptyEventKeys, Set[Event]]].leftValue shouldEqual EmptyEventKeys()
       }
@@ -154,8 +158,10 @@ class PostHandlerImplTest extends BaseTestSuite with ScalatestRouteTest with Res
         status shouldBe StatusCodes.InternalServerError
       }
     }
+  }
 
-    "set alarm severity returns Done | ESW-216" in {
+  "Set Alarm Severity" must {
+    "returns Done on success | ESW-216" in {
       val componentName    = "testComponent"
       val alarmName        = "testAlarmName"
       val subsystemName    = Subsystem.IRIS
@@ -170,7 +176,7 @@ class PostHandlerImplTest extends BaseTestSuite with ScalatestRouteTest with Res
       }
     }
 
-    "set alarm severity returns SetAlarmSeverityFailure on key not found or invalid key | ESW-216" in {
+    "returns SetAlarmSeverityFailure on key not found or invalid key | ESW-216" in {
       val componentName    = "testComponent"
       val alarmName        = "testAlarmName"
       val subsystemName    = Subsystem.IRIS
@@ -184,7 +190,6 @@ class PostHandlerImplTest extends BaseTestSuite with ScalatestRouteTest with Res
         responseAs[Either[SetAlarmSeverityFailure, Done]].leftValue shouldEqual SetAlarmSeverityFailure("")
       }
     }
-
   }
 
 }
