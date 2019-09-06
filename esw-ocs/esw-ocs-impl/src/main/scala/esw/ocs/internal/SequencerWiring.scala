@@ -13,7 +13,7 @@ import esw.ocs.api.models.responses.RegistrationError
 import esw.ocs.client.messages.SequencerMessages.{EswSequencerMessage, Shutdown}
 import esw.ocs.core._
 import esw.ocs.dsl.utils.ScriptLoader
-import esw.ocs.dsl.{CswServices, Script}
+import esw.ocs.dsl.{CswServices, ScriptDsl}
 import esw.ocs.syntax.FutureSyntax.FutureOps
 
 import scala.concurrent.{Await, Future}
@@ -35,7 +35,7 @@ private[ocs] class SequencerWiring(val sequencerId: String, val observingMode: S
   //SequencerRef -> Script -> cswServices -> SequencerOperator -> SequencerRef
   private lazy val sequenceOperatorFactory = () => new SequenceOperator(sequencerRef)
   private lazy val componentId             = ComponentId(sequencerName, ComponentType.Sequencer)
-  private lazy val script: Script          = ScriptLoader.load(scriptClass, cswServices)
+  private lazy val script: ScriptDsl       = ScriptLoader.jLoad(scriptClass, cswServices)
 
   lazy val cswServices = new CswServices(
     sequenceOperatorFactory,
