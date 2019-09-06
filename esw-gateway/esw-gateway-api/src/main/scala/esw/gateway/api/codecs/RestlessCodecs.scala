@@ -21,7 +21,10 @@ trait RestlessCodecs extends ParamCodecs with LocationCodecs with AlarmCodecs wi
 
   implicit def eventErrorCodec[T <: EventError]: Codec[T] = eventErrorCodecValue.asInstanceOf[Codec[T]]
   lazy val eventErrorCodecValue: Codec[EventError] = {
+    @silent implicit def getEventErrorCodec: Codec[GetEventError]             = deriveCodec[GetEventError]
     @silent implicit lazy val emptyEventKeysCodec: Codec[EmptyEventKeys.type] = singletonCodec(EmptyEventKeys)
+    @silent implicit lazy val eventServerNotAvailableCodec: Codec[EventServerUnavailable.type] =
+      singletonCodec(EventServerUnavailable)
     invalidMaxFrequencyCodec
     deriveCodec[EventError]
   }

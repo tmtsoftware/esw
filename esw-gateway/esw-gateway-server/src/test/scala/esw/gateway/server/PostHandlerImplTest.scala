@@ -8,6 +8,7 @@ import akka.util.Timeout
 import csw.alarm.api.exceptions.KeyNotFoundException
 import csw.alarm.models.AlarmSeverity
 import csw.alarm.models.Key.AlarmKey
+import csw.event.api.exceptions.EventServerNotAvailable
 import csw.location.models.ComponentId
 import csw.location.models.ComponentType.Assembly
 import csw.params.commands.CommandResponse.{Accepted, Started}
@@ -17,7 +18,7 @@ import csw.params.events.{Event, EventKey, EventName, SystemEvent}
 import esw.gateway.api.codecs.RestlessCodecs
 import esw.gateway.api.messages.CommandAction.{Oneway, Submit, Validate}
 import esw.gateway.api.messages.PostRequest.{CommandRequest, GetEvent, PublishEvent, SetAlarmSeverity}
-import esw.gateway.api.messages.{EmptyEventKeys, InvalidComponent, SetAlarmSeverityFailure}
+import esw.gateway.api.messages.{EmptyEventKeys, EventServerUnavailable, InvalidComponent, SetAlarmSeverityFailure}
 import esw.gateway.api.{AlarmApi, CommandApi, EventApi}
 import esw.gateway.impl.{AlarmImpl, CommandImpl, EventImpl}
 import esw.http.core.BaseTestSuite
@@ -146,6 +147,20 @@ class PostHandlerImplTest extends BaseTestSuite with ScalatestRouteTest with Res
     "return EmptyEventKeys error on sending no event keys in request | ESW-216" in {
       Post("/post", GetEvent(Set())) ~> route ~> check {
         responseAs[Either[EmptyEventKeys.type, Set[Event]]].leftValue shouldEqual EmptyEventKeys
+      }
+    }
+
+    "return EventServerUnavailable error when EventServer is down | ESW-216" in {
+      val prefix   = Prefix("tcs.test.gateway")
+      val name     = EventName("event1")
+      val eventKey = EventKey(prefix, name)
+      val getEvent = GetEvent(Set(eventKey))
+
+      when(eventSubscriber.get(Set(eventKey)))
+        .thenReturn(Future.failed(EventServerNotAvailable(new RuntimeException("Redis server is not available"))))
+
+      Post("/post", getEvent) ~> route ~> check {
+        responseAs[Either[EmptyEventKeys.type, Set[Event]]].leftValue shouldEqual EventServerUnavailable
       }
     }
 

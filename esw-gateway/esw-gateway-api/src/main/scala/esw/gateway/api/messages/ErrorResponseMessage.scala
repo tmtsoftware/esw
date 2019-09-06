@@ -8,11 +8,13 @@ trait SingletonError {
 }
 
 sealed trait EventError
-case object EmptyEventKeys extends EventError with SingletonError {
+sealed trait GetEventError extends EventError
+
+case object EmptyEventKeys extends GetEventError with SingletonError {
   def msg = "Request is missing event key"
 }
-case object EventServerNotAvailable extends EventError with SingletonError {
-  def msg = "Request is missing event key"
+case object EventServerUnavailable extends GetEventError with SingletonError {
+  def msg = "Event server is unavailable"
 }
 
 case object InvalidMaxFrequency extends EventError with CommandError with SingletonError {

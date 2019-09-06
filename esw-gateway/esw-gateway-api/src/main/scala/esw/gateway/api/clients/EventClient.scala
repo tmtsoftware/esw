@@ -21,7 +21,7 @@ class EventClient(postClient: RequestClient[PostRequest], websocketClient: Reque
     postClient.requestResponse[Done](PublishEvent(event))
   }
 
-  override def get(eventKeys: Set[EventKey]): Future[Either[EmptyEventKeys.type, Set[Event]]] = {
+  override def get(eventKeys: Set[EventKey]): Future[Either[GetEventError, Set[Event]]] = {
     postClient.requestResponse[Either[EmptyEventKeys.type, Set[Event]]](GetEvent(eventKeys))
   }
 
