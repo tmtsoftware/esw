@@ -14,4 +14,9 @@ private[ocs] class FunctionBuilder[I, O] {
   }
 
   def build(default: I => O): I => O = input => combinedHandler.lift(input).getOrElse(default(input))
+
+  def ++(that: FunctionBuilder[I, O]): FunctionBuilder[I, O] = {
+    this.handlers ++= that.handlers
+    this
+  }
 }

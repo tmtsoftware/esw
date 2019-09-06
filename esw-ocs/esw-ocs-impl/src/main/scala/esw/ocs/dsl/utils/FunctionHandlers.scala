@@ -8,4 +8,9 @@ private[ocs] class FunctionHandlers[I, O] {
   def add(handler: I => O): Unit = handlers += handler
 
   def execute(input: I): List[O] = handlers.map(f => f(input)).toList
+
+  def ++(that: FunctionHandlers[I, O]): FunctionHandlers[I, O] = {
+    this.handlers ++= that.handlers
+    this
+  }
 }

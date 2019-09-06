@@ -26,6 +26,15 @@ trait ScriptDsl extends ControlDsl {
   private val shutdownHandlers: FunctionHandlers[Unit, Future[Unit]] = new FunctionHandlers
   private val abortHandlers: FunctionHandlers[Unit, Future[Unit]]    = new FunctionHandlers
 
+  private[esw] def merge(that: ScriptDsl): ScriptDsl = {
+    commandHandlerBuilder ++ that.commandHandlerBuilder
+    onlineHandlers ++ that.onlineHandlers
+    offlineHandlers ++ that.offlineHandlers
+    shutdownHandlers ++ that.shutdownHandlers
+    abortHandlers ++ that.abortHandlers
+    this
+  }
+
   private def handle[T <: SequenceCommand: ClassTag](name: String)(handler: T => Future[Unit]): Unit =
     commandHandlerBuilder.addHandler[T](handler)(_.commandName.name == name)
 

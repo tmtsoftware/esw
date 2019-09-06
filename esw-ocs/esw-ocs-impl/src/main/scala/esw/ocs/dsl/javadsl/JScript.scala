@@ -15,6 +15,7 @@ import scala.jdk.OptionConverters.RichOption
 import scala.language.implicitConversions
 
 abstract class JScript(override val csw: CswServices) extends ScriptDsl {
+  override private[esw] val loopInterval: FiniteDuration = 50.millis
 
   protected def jNextIf(f: SequenceCommand => Boolean): CompletionStage[Optional[SequenceCommand]] = {
     nextIf(f).map(_.toJava).toJava
