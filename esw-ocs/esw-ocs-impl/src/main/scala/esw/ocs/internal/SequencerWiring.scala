@@ -16,7 +16,7 @@ import esw.ocs.dsl.utils.ScriptLoader
 import esw.ocs.dsl.{CswServices, Script}
 import esw.ocs.syntax.FutureSyntax.FutureOps
 
-import scala.concurrent.Future
+import scala.concurrent.{Await, Future}
 
 private[ocs] class SequencerWiring(val sequencerId: String, val observingMode: String, sequenceComponentName: Option[String]) {
   private lazy val config: Config       = ConfigFactory.load()
@@ -55,6 +55,6 @@ private[ocs] class SequencerWiring(val sequencerId: String, val observingMode: S
     new Engine().start(sequenceOperatorFactory(), script)
 
     val registration = AkkaRegistration(AkkaConnection(componentId), prefix, sequencerRef.toURI)
-    cswServices.register(registration)(typedSystem).block
+    Await.result(cswServices.register(registration)(typedSystem), Timeouts.DefaultTimeout)
   }
 }

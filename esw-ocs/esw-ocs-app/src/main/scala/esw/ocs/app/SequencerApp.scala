@@ -13,10 +13,10 @@ import csw.network.utils.SocketUtils
 import esw.http.core.wiring.{HttpService, ServerWiring}
 import esw.ocs.api.models.responses.RegistrationError
 import esw.ocs.app.SequencerAppCommand._
-import esw.ocs.client.SequencerAdminClient
+import esw.ocs.impl.SequencerAdminImpl
 import esw.ocs.internal.{SequenceComponentWiring, SequencerWiring, Timeouts}
 
-import scala.concurrent.Future
+import scala.concurrent.{Await, Future}
 import scala.util.control.NonFatal
 
 object SequencerApp extends CommandApp[SequencerAppCommand] {
@@ -43,10 +43,10 @@ object SequencerApp extends CommandApp[SequencerAppCommand] {
 
       private implicit val timeout: Timeout                   = Timeouts.DefaultTimeout
       private implicit val system: ActorSystem[SpawnProtocol] = actorSystem
-      private val sequencerAdminClient                        = new SequencerAdminClient(sequencerRef)
-      private val routes                                      = new Routes(sequencerAdminClient, routeHandlers)
+      private lazy val sequencerAdmin                         = new SequencerAdminImpl(sequencerRef)
+      private lazy val postHandler                            = new PostHandlerImpl(sequencerAdmin)
+      private lazy val routes                                 = new SequencerAdminRoutes(postHandler)
 
-      //TODO: fix the route
       private lazy val httpService =
         new HttpService(logger, locationService, routes.route, settings, serverWiring.actorRuntime)
 
@@ -56,7 +56,7 @@ object SequencerApp extends CommandApp[SequencerAppCommand] {
       }
 
       override def start(): Either[RegistrationError, AkkaLocation] = {
-        httpService.registeredLazyBinding
+        Await.result(httpService.registeredLazyBinding, timeout.duration)
         super.start()
       }
     }

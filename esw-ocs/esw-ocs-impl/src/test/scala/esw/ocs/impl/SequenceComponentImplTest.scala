@@ -1,4 +1,4 @@
-package esw.ocs.client
+package esw.ocs.impl
 
 import java.net.URI
 
@@ -14,7 +14,7 @@ import esw.ocs.client.messages.SequenceComponentMsg.{GetStatus, LoadScript, Stop
 
 import scala.concurrent.ExecutionContext
 
-class SequenceComponentClientTest extends ScalaTestWithActorTestKit with BaseTestSuite {
+class SequenceComponentImplTest extends ScalaTestWithActorTestKit with BaseTestSuite {
   private val location =
     AkkaLocation(AkkaConnection(ComponentId("test", ComponentType.Sequencer)), Prefix("esw.test"), new URI("uri"))
   private val loadScriptResponse    = LoadScriptResponse(Right(location))
@@ -32,7 +32,7 @@ class SequenceComponentClientTest extends ScalaTestWithActorTestKit with BaseTes
   }
 
   private val sequenceComponent       = spawn(mockedBehavior)
-  private val sequenceComponentClient = new SequenceComponentClient(sequenceComponent)
+  private val sequenceComponentClient = new SequenceComponentImpl(sequenceComponent)
 
   "LoadScript | ESW-103" in {
     sequenceComponentClient.loadScript("sequencerId", "observingMode").futureValue should ===(loadScriptResponse)

@@ -21,9 +21,9 @@ import esw.ocs.api.models.StepStatus.Finished.{Failure, Success}
 import esw.ocs.api.models.StepStatus.Pending
 import esw.ocs.api.models.responses._
 import esw.ocs.api.models.{Step, StepList}
-import esw.ocs.client.SequencerAdminClient
 import esw.ocs.client.messages.SequencerMessages._
 import esw.ocs.client.messages.SequencerState.Offline
+import esw.ocs.impl.SequencerAdminImpl
 import esw.ocs.internal.SequencerWiring
 
 import scala.concurrent.Future
@@ -46,10 +46,10 @@ class SequencerIntegrationTest extends ScalaTestFrameworkTestKit(EventServer) wi
   val command2 = Setup(Prefix("esw.test"), CommandName("command-2"), None)
   val command3 = Setup(Prefix("esw.test"), CommandName("command-3"), None)
 
-  private var locationService: LocationService     = _
-  private var wiring: SequencerWiring              = _
-  private var sequencer: ActorRef[SequencerMsg]    = _
-  private var sequencerAdmin: SequencerAdminClient = _
+  private var locationService: LocationService   = _
+  private var wiring: SequencerWiring            = _
+  private var sequencer: ActorRef[SequencerMsg]  = _
+  private var sequencerAdmin: SequencerAdminImpl = _
 
   override def beforeAll(): Unit = {
     super.beforeAll()
@@ -60,7 +60,7 @@ class SequencerIntegrationTest extends ScalaTestFrameworkTestKit(EventServer) wi
     wiring = new SequencerWiring("testSequencerId1", "testObservingMode1", None)
     wiring.start()
     sequencer = resolveSequencer()
-    sequencerAdmin = new SequencerAdminClient(sequencer)(sys, askTimeout)
+    sequencerAdmin = new SequencerAdminImpl(sequencer)(sys, askTimeout)
   }
 
   override protected def afterEach(): Unit = {
