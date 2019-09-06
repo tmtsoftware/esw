@@ -42,9 +42,8 @@ class PostHandlerImplTest extends BaseTestSuite with ScalatestRouteTest with Res
   private val eventApi: EventApi     = new EventImpl(eventService, eventSubscriberUtil)
   private val commandApi: CommandApi = new CommandImpl(componentFactory.commandService)
   private val postHandlerImpl        = new PostHandlerImpl(alarmApi, commandApi, eventApi)
-  private val route                  = new Routes(postHandlerImpl, null, handlers).route
+  private val route                  = new Routes(postHandlerImpl, null, logger).route
 
-  // fixme: group tests
   // fixme: add failure scenario when event server/ alarm server is down
   "Submit Command" must {
     "handle submit command and return started command response | ESW-216" in {
@@ -164,7 +163,7 @@ class PostHandlerImplTest extends BaseTestSuite with ScalatestRouteTest with Res
       }
     }
 
-    "return InternalServerError if get event fails | ESW-216" in {
+    "return InternalServerError if get event fails for some unwanted reason | ESW-216" in {
       when(eventSubscriber.get(any[Set[EventKey]])).thenReturn(Future.failed(new RuntimeException("failed")))
 
       val eventKey = EventKey(Prefix("tcs.test.gateway"), EventName("event1"))

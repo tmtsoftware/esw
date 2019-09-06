@@ -21,6 +21,6 @@ class Wiring(_port: Option[Int]) {
   lazy val postHandler: RequestHandler[SequencerAdminPostRequest, StandardRoute] =
     new SequencerPostHandlerImpl(sequencerAdmin)
 
-  lazy val routes      = new Routes(postHandler, routeHandlers)
+  lazy val routes      = new Routes(postHandler, logger)
   lazy val httpService = new HttpService(logger, locationService, routes.route, settings, actorRuntime)
 }

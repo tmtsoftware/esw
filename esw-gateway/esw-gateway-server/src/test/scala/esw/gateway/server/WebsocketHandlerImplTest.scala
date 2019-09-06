@@ -43,7 +43,7 @@ class WebsocketHandlerImplTest extends BaseTestSuite with ScalatestRouteTest wit
   private val eventApi: EventApi     = new EventImpl(eventService, eventSubscriberUtil)
   private val commandApi: CommandApi = new CommandImpl(componentFactory.commandService)
   private val websocketHandlerImpl   = new WebsocketHandlerImpl(commandApi, eventApi)
-  private val route                  = new Routes(null, websocketHandlerImpl, handlers).route
+  private val route                  = new Routes(null, websocketHandlerImpl, logger).route
 
   override def beforeEach(): Unit = {
     wsClient = WSProbe()

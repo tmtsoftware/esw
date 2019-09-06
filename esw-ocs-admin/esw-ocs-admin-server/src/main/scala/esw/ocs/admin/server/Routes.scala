@@ -1,20 +1,28 @@
 package esw.ocs.admin.server
 
+import akka.http.scaladsl.model.{HttpResponse, StatusCodes}
 import akka.http.scaladsl.server.Directives._
-import akka.http.scaladsl.server.{Route, StandardRoute}
-import esw.http.core.commons.RouteHandlers
+import akka.http.scaladsl.server.{ExceptionHandler, RejectionHandler, Route, StandardRoute}
+import csw.logging.api.scaladsl.Logger
 import esw.ocs.admin.api.{SequencerAdminHttpCodecs, SequencerAdminPostRequest}
 import mscoket.impl.HttpCodecs
 import msocket.api.RequestHandler
 
+import scala.util.control.NonFatal
+
 class Routes(
     postHandler: RequestHandler[SequencerAdminPostRequest, StandardRoute],
-    routeHandlers: RouteHandlers
+    log: Logger
 ) extends SequencerAdminHttpCodecs
     with HttpCodecs {
 
-  val route: Route = handleExceptions(routeHandlers.commonExceptionHandlers) {
-    handleRejections(routeHandlers.jsonRejectionHandler) {
+  val commonExceptionHandlers: ExceptionHandler = ExceptionHandler {
+    case NonFatal(ex) =>
+      log.error(ex.getMessage, ex = ex)
+      complete(HttpResponse(StatusCodes.InternalServerError))
+  }
+  val route: Route = handleExceptions(commonExceptionHandlers) {
+    handleRejections(RejectionHandler.default) {
       post {
         path("post") {
           entity(as[SequencerAdminPostRequest])(postHandler.handle)

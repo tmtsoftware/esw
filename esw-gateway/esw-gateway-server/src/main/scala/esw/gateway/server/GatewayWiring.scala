@@ -30,6 +30,6 @@ class GatewayWiring(_port: Option[Int] = None) extends RestlessCodecs {
   lazy val websocketHandler: RequestHandler[WebsocketRequest, Source[Message, NotUsed]] =
     new WebsocketHandlerImpl(commandApi, eventApi)
 
-  lazy val routes      = new Routes(postHandler, websocketHandler, routeHandlers)
+  lazy val routes      = new Routes(postHandler, websocketHandler, logger)
   lazy val httpService = new HttpService(logger, locationService, routes.route, settings, actorRuntime)
 }
