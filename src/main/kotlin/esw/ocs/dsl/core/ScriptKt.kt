@@ -1,19 +1,18 @@
 package esw.ocs.dsl.core
 
-import akka.Done
-import csw.event.api.scaladsl.EventSubscription
 import csw.params.commands.Setup
-import csw.params.events.Event
+import esw.highlevel.dsl.CswHighLevelDsl
+import esw.highlevel.dsl.EventServiceDsl
+import esw.highlevel.dsl.LocationServiceDsl
 import esw.ocs.dsl.CswServices
 import esw.ocs.dsl.javadsl.JScript
 import esw.ocs.macros.StrandEc
 import kotlinx.coroutines.*
-import kotlinx.coroutines.future.await
 import kotlinx.coroutines.future.future
 import java.util.concurrent.Executors
 import kotlin.coroutines.CoroutineContext
 
-sealed class BaseScript(val cswServices: CswServices) : CoroutineScope, JScript(cswServices) {
+sealed class BaseScript(val cswServices: CswServices) : CoroutineScope, JScript(cswServices), CswHighLevelDsl {
 
     fun log(msg: String) = println("[${Thread.currentThread().name}] $msg")
 
@@ -34,15 +33,6 @@ sealed class BaseScript(val cswServices: CswServices) : CoroutineScope, JScript(
     }
 
     fun <T> CoroutineScope.par(block: suspend CoroutineScope.() -> T): Deferred<T> = async { block() }
-
-    suspend fun getEvent(vararg eventKeys: String): Set<Event> = cswServices.jGetEvent(eventKeys.toSet()).await()
-    suspend fun publishEvent(event: Event): Done = cswServices.jPublishEvent(event).await()
-    fun onEvent(vararg eventKeys: String, callback: suspend (Event) -> Unit): EventSubscription =
-        cswServices.jOnEvent(eventKeys.toSet()) {
-            future {
-                callback(it)
-            }.thenAccept { }
-        }
 
     fun loadScripts(vararg reusableScriptResult: ReusableScriptResult) {
         println("********** Loading all scripts *************")
