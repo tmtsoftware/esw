@@ -28,6 +28,11 @@ trait EventServiceDsl {
   def publishEvent(every: FiniteDuration)(eventGenerator: => Option[Event])(implicit strandEc: StrandEc): Cancellable =
     publisher.publishAsync(Future(eventGenerator), every)
 
+  private[dsl] def publishEventAsync(
+      every: FiniteDuration
+  )(eventGenerator: => Future[Option[Event]])(implicit strandEc: StrandEc): Cancellable =
+    publisher.publishAsync(eventGenerator, every)
+
   private val stringToEventKey = (x: String) => EventKey(x)
   def onEvent(eventKeys: String*)(callback: Event => Unit)(implicit strandEc: StrandEc): EventSubscription =
     subscriber.subscribeAsync(eventKeys.toSet.map(stringToEventKey(_)), event => Future(callback(event)))
