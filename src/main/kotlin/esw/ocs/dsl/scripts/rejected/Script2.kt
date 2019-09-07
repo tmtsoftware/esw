@@ -1,4 +1,4 @@
-package esw.ocs.dsl.scripts
+package esw.ocs.dsl.scripts.rejected
 
 import csw.params.commands.CommandResponse
 import csw.params.core.models.Prefix

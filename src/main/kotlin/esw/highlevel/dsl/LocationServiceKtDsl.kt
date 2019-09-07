@@ -18,7 +18,6 @@ interface LocationServiceKtDsl : CoroutineScope {
     suspend fun listByComponentName(name: String): List<Location> =
         cswServices.jListByComponentName(name).await().toList()
 
-    // todo: see if we can use Location? instead of Optional<Location>
     suspend fun resolveByComponentNameAndType(name: String, componentType: ComponentType): Location? =
         cswServices.jResolveByComponentNameAndType(name, componentType).await().nullable()
 

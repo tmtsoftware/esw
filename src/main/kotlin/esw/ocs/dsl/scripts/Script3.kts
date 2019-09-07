@@ -7,7 +7,6 @@ import csw.params.events.SystemEvent
 import esw.ocs.dsl.core.script
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
-import kotlin.time.milliseconds
 
 script { csw ->
 
