@@ -14,7 +14,7 @@ fun event(id: Int) = SystemEvent(Prefix("csw.a.b"), EventName(id.toString()))
 
 class Script5(cswServices: CswServices) : ScriptKt(cswServices) {
     init {
-        println("============= Loading script 5 ============")
+        log("============= Loading script 5 ============")
 
         var totalEventsRec = 0
 

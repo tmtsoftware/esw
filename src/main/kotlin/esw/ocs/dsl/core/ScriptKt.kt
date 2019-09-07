@@ -55,26 +55,27 @@ sealed class BaseScript(override val cswServices: CswServices) : JScript(cswServ
         }
     }
 
-    private fun <T> (suspend () -> T).toJavaFuture(): CompletionStage<T> {
-        val block = this
-        return future { block() }
-    }
+    private fun <T> (suspend () -> T).toJavaFuture(): CompletionStage<T> =
+        this.let {
+            return future { it() }
+        }
 
-    private fun (suspend () -> Unit).toJavaFutureVoid(): CompletionStage<Void> {
+
+    private fun (suspend () -> Unit).toJavaFutureVoid(): CompletionStage<Void> =
         this.let {
             return future {
                 it()
             }.thenAccept { }
         }
-    }
 
-    private fun <T> (suspend (T) -> Unit).toJavaFuture(value: T): CompletionStage<Void> {
+
+    private fun <T> (suspend (T) -> Unit).toJavaFuture(value: T): CompletionStage<Void> =
         this.let {
             return future {
                 it(value)
             }.thenAccept { }
         }
-    }
+
 }
 
 

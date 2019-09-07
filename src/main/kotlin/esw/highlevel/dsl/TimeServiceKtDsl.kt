@@ -11,10 +11,10 @@ interface TimeServiceKtDsl : CoroutineScope {
     val cswServices: CswServices
     fun strandEc(): StrandEc
 
-    fun scheduleOnce0(startTime: TMTTime, task: Runnable): Cancellable =
+    fun scheduleOnce(startTime: TMTTime, task: Runnable): Cancellable =
         cswServices.scheduleOnce(startTime, task, strandEc().ec())
 
-    fun schedulePeriodically0(
+    fun schedulePeriodically(
         startTime: TMTTime,
         interval: Duration,
         task: () -> Unit

@@ -7,7 +7,7 @@ import kotlinx.coroutines.launch
 
 val script6 = reusableScript { cswServices ->
 
-    println("============= Loading script 6 ============")
+    log("============= Loading script 6 ============")
 
     handleSetup("command-1") { command ->
         log("============ command-1 ================")

@@ -4,7 +4,7 @@ import csw.params.commands.CommandResponse.Completed
 import esw.ocs.dsl.core.reusableScript
 
 val script7 = reusableScript { cswServices ->
-    println("============= Loading script 7 ============")
+    log("============= Loading script 7 ============")
 
     handleSetup("command-2") { command ->
         log("============ command-2 ================")
