@@ -11,7 +11,6 @@ import kotlinx.coroutines.*
 import kotlinx.coroutines.future.await
 import kotlinx.coroutines.future.future
 import java.time.Duration
-import java.util.concurrent.CompletableFuture
 import java.util.concurrent.CompletionStage
 import java.util.concurrent.Executors
 import kotlin.coroutines.CoroutineContext
@@ -61,18 +60,20 @@ sealed class BaseScript(override val cswServices: CswServices) : JScript(cswServ
         return future { block() }
     }
 
-    private fun (suspend () -> Unit).toJavaFutureVoid(): CompletionStage<Void>? {
-        val block = this
-        return future {
-            block()
-        }.thenAccept { }
+    private fun (suspend () -> Unit).toJavaFutureVoid(): CompletionStage<Void> {
+        this.let {
+            return future {
+                it()
+            }.thenAccept { }
+        }
     }
 
-    private fun <T> (suspend (T) -> Unit).toJavaFuture(value: T): CompletionStage<Void>? {
-        val block = this
-        return future {
-            block(value)
-        }.thenAccept { }.minimalCompletionStage()
+    private fun <T> (suspend (T) -> Unit).toJavaFuture(value: T): CompletionStage<Void> {
+        this.let {
+            return future {
+                it(value)
+            }.thenAccept { }
+        }
     }
 }
 
