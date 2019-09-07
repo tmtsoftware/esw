@@ -10,10 +10,12 @@ import esw.ocs.macros.StrandEc
 import kotlinx.coroutines.*
 import kotlinx.coroutines.future.await
 import kotlinx.coroutines.future.future
-import java.time.Duration
 import java.util.concurrent.CompletionStage
 import java.util.concurrent.Executors
 import kotlin.coroutines.CoroutineContext
+import kotlin.time.Duration
+import kotlin.time.ExperimentalTime
+import kotlin.time.toJavaDuration
 
 sealed class BaseScript(override val cswServices: CswServices) : JScript(cswServices), CswHighLevelDsl, CoroutineScope {
 
@@ -45,8 +47,9 @@ sealed class BaseScript(override val cswServices: CswServices) : JScript(cswServ
 
     fun <T> CoroutineScope.par(block: suspend CoroutineScope.() -> T): Deferred<T> = async { block() }
 
+    @ExperimentalTime
     suspend fun loop(duration: Duration, block: suspend () -> StopIf) {
-        jLoop(duration) { block.toJavaFuture() }.await()
+        jLoop(duration.toJavaDuration()) { block.toJavaFuture() }.await()
     }
 
     fun loadScripts(vararg reusableScriptResult: ReusableScriptResult) {
