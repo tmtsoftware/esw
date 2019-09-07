@@ -45,8 +45,6 @@ sealed class BaseScript(override val cswServices: CswServices) : JScript(cswServ
         jHandleShutdown { block.toJavaFutureVoid() }
     }
 
-    fun <T> CoroutineScope.par(block: suspend CoroutineScope.() -> T): Deferred<T> = async { block() }
-
     @ExperimentalTime
     suspend fun loop(duration: Duration, block: suspend () -> StopIf) {
         jLoop(duration.toJavaDuration()) { block.toJavaFuture() }.await()
