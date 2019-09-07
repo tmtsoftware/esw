@@ -30,7 +30,7 @@ trait EventServiceDsl {
 
   private[dsl] def publishEventAsync(
       every: FiniteDuration
-  )(eventGenerator: => Future[Option[Event]])(implicit strandEc: StrandEc): Cancellable =
+  )(eventGenerator: => Future[Option[Event]]): Cancellable =
     publisher.publishAsync(eventGenerator, every)
 
   private val stringToEventKey = (x: String) => EventKey(x)
