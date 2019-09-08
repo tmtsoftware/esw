@@ -35,7 +35,7 @@ private[ocs] class SequencerWiring(val sequencerId: String, val observingMode: S
   //SequencerRef -> Script -> cswServices -> SequencerOperator -> SequencerRef
   private lazy val sequenceOperatorFactory = () => new SequenceOperator(sequencerRef)
   private lazy val componentId             = ComponentId(sequencerName, ComponentType.Sequencer)
-  private lazy val script: ScriptDsl       = ScriptLoader.jLoad(scriptClass, cswServices)
+  private lazy val script: ScriptDsl       = ScriptLoader.loadKotlinScript(scriptClass, cswServices)
 
   lazy val cswServices = new CswServices(
     sequenceOperatorFactory,
