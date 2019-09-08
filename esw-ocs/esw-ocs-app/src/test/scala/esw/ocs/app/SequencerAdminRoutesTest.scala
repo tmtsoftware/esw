@@ -1,8 +1,6 @@
 package esw.ocs.app
 
 import akka.http.scaladsl.testkit.ScalatestRouteTest
-import akka.http.scaladsl.unmarshalling.{FromEntityUnmarshaller, FromMessageUnmarshaller, Unmarshaller}
-import com.github.ghik.silencer.silent
 import csw.params.core.models.Id
 import esw.http.core.BaseTestSuite
 import esw.ocs.api.models.StepList
@@ -16,12 +14,6 @@ import scala.concurrent.Future
 
 class SequencerAdminRoutesTest extends BaseTestSuite with ScalatestRouteTest with SequencerAdminHttpCodecs with HttpCodecs {
 
-  @silent implicit def messageUnmarshallerFromEntityUnmarshaller[T](
-      implicit um: FromEntityUnmarshaller[T]
-  ): FromMessageUnmarshaller[T] =
-    Unmarshaller.withMaterializer { implicit ec => implicit mat => request =>
-      um(request.entity)
-    }
   private val sequencerAdminClient: SequencerAdminImpl = mock[SequencerAdminImpl]
   private val postHandler                              = new PostHandlerImpl(sequencerAdminClient)
   private val route                                    = new SequencerAdminRoutes(postHandler).route
