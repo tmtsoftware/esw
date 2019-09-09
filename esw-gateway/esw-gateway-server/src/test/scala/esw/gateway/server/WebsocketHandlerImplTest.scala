@@ -95,7 +95,7 @@ class WebsocketHandlerImplTest extends BaseTestSuite with ScalatestRouteTest wit
   }
 
   "Subscribe current state" must {
-    "returns successfully for given componentId | ESW-216" in {
+    "returns successfully for given componentId | ESW-223, ESW-216" in {
       val componentName         = "test"
       val componentType         = Assembly
       val componentId           = ComponentId(componentName, componentType)
@@ -127,7 +127,7 @@ class WebsocketHandlerImplTest extends BaseTestSuite with ScalatestRouteTest wit
 
     }
 
-    "returns throttled states, for a given componentId and maxFrequency > 0 | ESW-216" in {
+    "returns throttled states, for a given componentId and maxFrequency > 0 | ESW-223, ESW-216" in {
       val componentName         = "test"
       val componentType         = Assembly
       val componentId           = ComponentId(componentName, componentType)
@@ -159,7 +159,7 @@ class WebsocketHandlerImplTest extends BaseTestSuite with ScalatestRouteTest wit
 
     }
 
-    "return InvalidMaxFrequency with maxFrequency <= 0 | ESW-216" in {
+    "return InvalidMaxFrequency with maxFrequency <= 0 | ESW-223, ESW-216" in {
       val componentName         = "test"
       val componentType         = Assembly
       val componentId           = ComponentId(componentName, componentType)
