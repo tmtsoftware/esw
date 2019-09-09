@@ -1,7 +1,8 @@
-package esw.ocs.dsl.scripts.class_based
+package esw.ocs.dsl.scripts.reusable_scripts
 
 import csw.params.commands.CommandResponse.Completed
 import esw.ocs.dsl.core.reusableScript
+import esw.ocs.dsl.scripts.class_based.eventKey
 
 val script7 = reusableScript { cswServices ->
     log("============= Loading script 7 ============")

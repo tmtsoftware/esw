@@ -13,7 +13,6 @@ import kotlinx.coroutines.Job
 import kotlinx.coroutines.asCoroutineDispatcher
 import kotlinx.coroutines.future.await
 import kotlinx.coroutines.future.future
-import scala.concurrent.ExecutionContext
 import java.util.concurrent.CompletionStage
 import java.util.concurrent.Executors
 import kotlin.coroutines.CoroutineContext
@@ -21,47 +20,41 @@ import kotlin.time.Duration
 import kotlin.time.ExperimentalTime
 import kotlin.time.toJavaDuration
 
-abstract class BaseScript(override val cswServices: CswServices) : JScript(cswServices), CswHighLevelDsl,
-    CoroutineScope {
+sealed class BaseScript : CoroutineScope, CswHighLevelDsl {
 
-    fun log(msg: String) = println("[${Thread.currentThread().name}] $msg")
+    // this needs to be lazy otherwise handlers does not get loaded properly
+    val jScript: JScript by lazy { JScriptFactory.make(cswServices, strandEc()) }
 
     suspend fun nextIf(predicate: (SequenceCommand) -> Boolean): SequenceCommand? =
-        jNextIf { predicate(it) }.await().nullable()
+        jScript.jNextIf { predicate(it) }.await().nullable()
 
     fun handleSetup(name: String, block: suspend (Setup) -> Unit) {
-        jHandleSetupCommand(name) { block.toJavaFuture(it) }
+        jScript.jHandleSetupCommand(name) { block.toJavaFuture(it) }
     }
 
     fun handleObserve(name: String, block: suspend (Observe) -> Unit) {
-        jHandleObserveCommand(name) { block.toJavaFuture(it) }
+        jScript.jHandleObserveCommand(name) { block.toJavaFuture(it) }
     }
 
     fun handleGoOnline(block: suspend () -> Unit) {
-        jHandleGoOnline { block.toJavaFutureVoid() }
+        jScript.jHandleGoOnline { block.toJavaFutureVoid() }
     }
 
     fun handleGoOffline(block: suspend () -> Unit) {
-        jHandleGoOffline { block.toJavaFutureVoid() }
+        jScript.jHandleGoOffline { block.toJavaFutureVoid() }
     }
 
     fun handleAbort(block: suspend () -> Unit) {
-        jHandleAbort { block.toJavaFutureVoid() }
+        jScript.jHandleAbort { block.toJavaFutureVoid() }
     }
 
     fun handleShutdown(block: suspend () -> Unit) {
-        jHandleShutdown { block.toJavaFutureVoid() }
+        jScript.jHandleShutdown { block.toJavaFutureVoid() }
     }
 
     @ExperimentalTime
     suspend fun loop(duration: Duration, block: suspend () -> StopIf) {
-        jLoop(duration.toJavaDuration()) { block.toJavaFuture() }.await()
-    }
-
-    fun loadScripts(vararg reusableScriptResult: ReusableScriptResult) {
-        reusableScriptResult.forEach {
-            this.merge(it(cswServices, strandEc(), coroutineContext))
-        }
+        jScript.jLoop(duration.toJavaDuration()) { block.toJavaFuture() }.await()
     }
 
     private fun <T> (suspend () -> T).toJavaFuture(): CompletionStage<T> =
@@ -85,30 +78,33 @@ abstract class BaseScript(override val cswServices: CswServices) : JScript(cswSe
             }.thenAccept { }
         }
 
-}
+    fun log(msg: String) = println("[${Thread.currentThread().name}] $msg")
 
+    fun loadScripts(vararg reusableScriptResult: ReusableScriptResult) {
+        reusableScriptResult.forEach {
+            this.jScript.merge(it(cswServices, strandEc(), coroutineContext).jScript)
+        }
+    }
+}
 
 class ReusableScript(
-    cswServices: CswServices,
+    override val cswServices: CswServices,
     private val _strandEc: StrandEc,
     override val coroutineContext: CoroutineContext
-) : BaseScript(cswServices) {
-
+) : BaseScript() {
     override fun strandEc(): StrandEc = _strandEc
-
 }
 
-open class ScriptKt(cswServices: CswServices) : BaseScript(cswServices) {
-
-    private val job = Job()
+open class ScriptKt(override val cswServices: CswServices) : BaseScript() {
     private val ec = Executors.newSingleThreadScheduledExecutor()
-    private val dispatcher = ec.asCoroutineDispatcher()
     private val _strandEc = StrandEc(ec)
-
-    override fun strandEc(): StrandEc = _strandEc
+    private val job = Job()
+    private val dispatcher = ec.asCoroutineDispatcher()
 
     override val coroutineContext: CoroutineContext
         get() = job + dispatcher
+
+    override fun strandEc(): StrandEc = _strandEc
 
     fun close() {
         job.cancel()

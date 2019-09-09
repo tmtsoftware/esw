@@ -5,10 +5,9 @@ import csw.params.commands.Observe
 import csw.params.commands.Setup
 import csw.params.core.models.ObsId
 import csw.params.core.models.Prefix
-import kotlinx.coroutines.CoroutineScope
 import java.util.*
 
-interface CommandServiceKtDsl : CoroutineScope {
+interface CommandServiceKtDsl {
 
     fun setup(prefix: String, commandName: String, obsId: String?) =
         Setup(Prefix(prefix), CommandName(commandName), obsId.toOptionalObsId())

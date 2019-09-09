@@ -6,6 +6,8 @@ import csw.params.events.EventName
 import csw.params.events.SystemEvent
 import esw.ocs.dsl.CswServices
 import esw.ocs.dsl.core.ScriptKt
+import esw.ocs.dsl.scripts.reusable_scripts.script6
+import esw.ocs.dsl.scripts.reusable_scripts.script7
 import kotlinx.coroutines.delay
 
 const val eventKey = "csw.a.b."
