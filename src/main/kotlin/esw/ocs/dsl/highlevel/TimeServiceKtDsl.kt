@@ -1,4 +1,4 @@
-package esw.highlevel.dsl
+package esw.ocs.dsl.highlevel
 
 import csw.time.core.models.TMTTime
 import csw.time.scheduler.api.Cancellable

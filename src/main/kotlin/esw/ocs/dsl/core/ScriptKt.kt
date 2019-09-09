@@ -3,7 +3,7 @@ package esw.ocs.dsl.core
 import csw.params.commands.Observe
 import csw.params.commands.SequenceCommand
 import csw.params.commands.Setup
-import esw.highlevel.dsl.CswHighLevelDsl
+import esw.ocs.dsl.highlevel.CswHighLevelDsl
 import esw.ocs.dsl.CswServices
 import esw.ocs.dsl.StopIf
 import esw.ocs.dsl.javadsl.JScript

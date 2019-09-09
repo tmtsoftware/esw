@@ -1,6 +1,6 @@
 package esw.ocs.dsl.scripts.class_based
 
-import csw.params.commands.CommandResponse
+import csw.params.commands.CommandResponse.Completed
 import csw.params.core.models.Prefix
 import csw.params.events.EventName
 import csw.params.events.SystemEvent
@@ -36,7 +36,7 @@ class Script5(cswServices: CswServices) : ScriptKt(cswServices) {
             }
 
             log("============ command-3 End ================")
-            cswServices.crm().addOrUpdateCommand(CommandResponse.Completed(command.runId()))
+            addOrUpdateCommand(Completed(command.runId()))
         }
 
         handleShutdown {

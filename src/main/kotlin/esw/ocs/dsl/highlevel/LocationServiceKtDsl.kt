@@ -1,4 +1,4 @@
-package esw.highlevel.dsl
+package esw.ocs.dsl.highlevel
 
 import csw.location.models.AkkaLocation
 import csw.location.models.ComponentType

@@ -23,7 +23,7 @@ val script6 = reusableScript { cswServices ->
         }
 
         log("============ command-1 -End ================")
-        cswServices.crm().addOrUpdateCommand(Completed(command.runId()))
+        addOrUpdateCommand(Completed(command.runId()))
     }
 
 }

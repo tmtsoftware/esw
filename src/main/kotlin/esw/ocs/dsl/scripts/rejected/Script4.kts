@@ -27,7 +27,7 @@ script {
             }
 
             log("============ command-1 -End ================")
-            crm().addOrUpdateCommand(CommandResponse.Completed(command.runId()))
+            addOrUpdateCommand(CommandResponse.Completed(command.runId()))
         }
 
         handleSetup("command-2") { command ->
@@ -37,7 +37,7 @@ script {
             events.forEach(::println)
 
             log("============ command-2 End ================")
-            crm().addOrUpdateCommand(CommandResponse.Completed(command.runId()))
+            addOrUpdateCommand(CommandResponse.Completed(command.runId()))
         }
 
         handleSetup("command-3") { command ->
@@ -51,7 +51,7 @@ script {
             }
 
             log("============ command-3 End ================")
-            crm().addOrUpdateCommand(CommandResponse.Completed(command.runId()))
+            addOrUpdateCommand(CommandResponse.Completed(command.runId()))
         }
 
         handleShutdown {

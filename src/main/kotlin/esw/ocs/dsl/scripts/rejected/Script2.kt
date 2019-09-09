@@ -26,7 +26,7 @@ val invokeScript = script {
         }
 
         log("============ command-1 -End ================")
-        cswServices.crm().addOrUpdateCommand(CommandResponse.Completed(command.runId()))
+        addOrUpdateCommand(CommandResponse.Completed(command.runId()))
     }
 
     handleSetup("command-2") { command ->
@@ -36,7 +36,7 @@ val invokeScript = script {
         events.forEach(::println)
 
         log("============ command-2 End ================")
-        cswServices.crm().addOrUpdateCommand(CommandResponse.Completed(command.runId()))
+        addOrUpdateCommand(CommandResponse.Completed(command.runId()))
     }
 
     handleSetup("command-3") { command ->
@@ -50,7 +50,7 @@ val invokeScript = script {
         }
 
         log("============ command-3 End ================")
-        cswServices.crm().addOrUpdateCommand(CommandResponse.Completed(command.runId()))
+        addOrUpdateCommand(CommandResponse.Completed(command.runId()))
     }
 
     handleShutdown {

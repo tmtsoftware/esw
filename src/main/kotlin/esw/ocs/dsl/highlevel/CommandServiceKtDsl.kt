@@ -1,4 +1,4 @@
-package esw.highlevel.dsl
+package esw.ocs.dsl.highlevel
 
 import csw.params.commands.CommandName
 import csw.params.commands.Observe

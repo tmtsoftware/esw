@@ -1,6 +1,6 @@
 package esw.ocs.dsl.scripts.script_based
 
-import csw.params.commands.CommandResponse
+import csw.params.commands.CommandResponse.Completed
 import esw.ocs.dsl.core.script
 import esw.ocs.dsl.scripts.reusable_scripts.script6
 import esw.ocs.dsl.scripts.reusable_scripts.script7
@@ -25,7 +25,7 @@ script { csw ->
         }
 
         log("============ command-3 End ================")
-        csw.crm().addOrUpdateCommand(CommandResponse.Completed(command.runId()))
+        addOrUpdateCommand(Completed(command.runId()))
     }
 
     handleShutdown {

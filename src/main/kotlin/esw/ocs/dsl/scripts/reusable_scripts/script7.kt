@@ -14,6 +14,6 @@ val script7 = reusableScript { cswServices ->
         events.forEach(::println)
 
         log("============ command-2 End ================")
-        cswServices.crm().addOrUpdateCommand(Completed(command.runId()))
+        addOrUpdateCommand(Completed(command.runId()))
     }
 }

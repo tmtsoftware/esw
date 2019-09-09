@@ -1,4 +1,4 @@
-package esw.highlevel.dsl
+package esw.ocs.dsl.highlevel
 
 import akka.util.Timeout
 import csw.command.client.CommandResponseManager
