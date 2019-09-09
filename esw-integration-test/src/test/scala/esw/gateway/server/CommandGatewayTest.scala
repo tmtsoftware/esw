@@ -68,7 +68,7 @@ class CommandGatewayTest extends ScalaTestFrameworkTestKit with WordSpecLike wit
 
       //validate
       commandClient.process(componentId, command, Validate).rightValue should ===(Accepted(runId))
-      //send oneway command which will publish current states
+      //oneway
       commandClient.process(componentId, command, Oneway).rightValue should ===(Accepted(runId))
       //submit
       commandClient.process(componentId, command, Submit).rightValue should ===(Completed(runId))

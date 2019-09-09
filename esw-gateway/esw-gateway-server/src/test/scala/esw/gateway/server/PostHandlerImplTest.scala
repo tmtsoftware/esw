@@ -143,7 +143,7 @@ class PostHandlerImplTest extends BaseTestSuite with ScalatestRouteTest with Res
   }
 
   "Get Event" must {
-    "return an event successfully | ESW-216" in {
+    "return an event successfully | ESW-94, ESW-216" in {
       val prefix   = Prefix("tcs.test.gateway")
       val name     = EventName("event1")
       val event    = SystemEvent(prefix, name, Set.empty)
@@ -157,13 +157,13 @@ class PostHandlerImplTest extends BaseTestSuite with ScalatestRouteTest with Res
       }
     }
 
-    "return EmptyEventKeys error on sending no event keys in request | ESW-216" in {
+    "return EmptyEventKeys error on sending no event keys in request | ESW-94, ESW-216" in {
       Post("/post", GetEvent(Set())) ~> route ~> check {
         responseAs[Either[EmptyEventKeys.type, Set[Event]]].leftValue shouldEqual EmptyEventKeys
       }
     }
 
-    "return EventServerUnavailable error when EventServer is down | ESW-216" in {
+    "return EventServerUnavailable error when EventServer is down | ESW-94, ESW-216" in {
       val prefix   = Prefix("tcs.test.gateway")
       val name     = EventName("event1")
       val eventKey = EventKey(prefix, name)
@@ -177,7 +177,7 @@ class PostHandlerImplTest extends BaseTestSuite with ScalatestRouteTest with Res
       }
     }
 
-    "return InternalServerError if get event fails for some unwanted reason | ESW-216" in {
+    "return InternalServerError if get event fails for some unwanted reason | ESW-94, ESW-216" in {
       when(eventSubscriber.get(any[Set[EventKey]])).thenReturn(Future.failed(new RuntimeException("failed")))
 
       val eventKey = EventKey(Prefix("tcs.test.gateway"), EventName("event1"))
