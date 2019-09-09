@@ -1,10 +1,10 @@
-package esw.ocs.dsl.scripts.reusable_scripts
+package esw.ocs.scripts.examples.reusable_scripts
 
 import csw.params.commands.CommandResponse.Completed
 import esw.ocs.dsl.core.reusableScript
-import esw.ocs.dsl.scripts.class_based.eventKey
+import esw.ocs.scripts.examples.class_based.eventKey
 
-val script7 = reusableScript { cswServices ->
+val script7 = reusableScript {
     log("============= Loading script 7 ============")
 
     handleSetup("command-2") { command ->

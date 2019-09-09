@@ -1,4 +1,4 @@
-package esw.ocs.dsl.scripts.script_based
+package esw.ocs.scripts.examples.script_based
 
 import esw.ocs.dsl.core.script
 import kotlinx.coroutines.future.await
@@ -6,8 +6,7 @@ import kotlin.time.ExperimentalTime
 import kotlin.time.seconds
 
 @UseExperimental(ExperimentalTime::class)
-script {
-    var aborting = false
+script { csw ->
 
     val publishStream = publishEvent(10.seconds) {
         systemEvent("iris.test", "system")
@@ -58,10 +57,6 @@ script {
         publishStream.cancel()
         subscriptionStream.unsubscribe().await()
         log("shutdown iris")
-    }
-
-    handleAbort {
-        aborting = true
     }
 
 }

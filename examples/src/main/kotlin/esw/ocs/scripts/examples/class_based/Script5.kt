@@ -1,4 +1,4 @@
-package esw.ocs.dsl.scripts.class_based
+package esw.ocs.scripts.examples.class_based
 
 import csw.params.commands.CommandResponse.Completed
 import csw.params.core.models.Prefix
@@ -6,8 +6,8 @@ import csw.params.events.EventName
 import csw.params.events.SystemEvent
 import esw.ocs.dsl.CswServices
 import esw.ocs.dsl.core.ScriptKt
-import esw.ocs.dsl.scripts.reusable_scripts.script6
-import esw.ocs.dsl.scripts.reusable_scripts.script7
+import esw.ocs.scripts.examples.reusable_scripts.script6
+import esw.ocs.scripts.examples.reusable_scripts.script7
 import kotlinx.coroutines.delay
 
 const val eventKey = "csw.a.b."

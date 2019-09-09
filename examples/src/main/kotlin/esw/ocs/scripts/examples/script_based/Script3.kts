@@ -1,11 +1,11 @@
-package esw.ocs.dsl.scripts.script_based
+package esw.ocs.scripts.examples.script_based
 
 import csw.params.commands.CommandResponse.Completed
 import esw.ocs.dsl.core.script
-import esw.ocs.dsl.scripts.reusable_scripts.script6
-import esw.ocs.dsl.scripts.reusable_scripts.script7
+import esw.ocs.scripts.examples.reusable_scripts.script6
+import esw.ocs.scripts.examples.reusable_scripts.script7
 
-script { csw ->
+script {
 
     val eventKey = "csw.a.b."
 

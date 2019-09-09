@@ -1,2 +1,6 @@
-rootProject.name = 'script-dsl'
+rootProject.name = 'scripts'
 
+include(
+        "script-dsl",
+        "examples"
+)
