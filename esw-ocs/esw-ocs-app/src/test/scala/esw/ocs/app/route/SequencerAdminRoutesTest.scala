@@ -1,4 +1,4 @@
-package esw.ocs.app
+package esw.ocs.app.route
 
 import akka.http.scaladsl.testkit.ScalatestRouteTest
 import csw.params.core.models.Id

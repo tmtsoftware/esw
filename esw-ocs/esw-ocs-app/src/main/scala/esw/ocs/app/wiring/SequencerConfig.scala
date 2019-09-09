@@ -1,4 +1,4 @@
-package esw.ocs.app
+package esw.ocs.app.wiring
 
 import com.typesafe.config.{Config, ConfigException}
 import csw.params.core.models.Prefix

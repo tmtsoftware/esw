@@ -21,7 +21,7 @@ import esw.ocs.api.models.StepStatus.Finished.{Failure, Success}
 import esw.ocs.api.models.StepStatus.Pending
 import esw.ocs.api.models.responses._
 import esw.ocs.api.models.{Step, StepList}
-import esw.ocs.app.SequencerWiring
+import esw.ocs.app.wiring.SequencerWiring
 import esw.ocs.client.messages.SequencerMessages._
 import esw.ocs.client.messages.SequencerState.Offline
 import esw.ocs.impl.SequencerAdminImpl

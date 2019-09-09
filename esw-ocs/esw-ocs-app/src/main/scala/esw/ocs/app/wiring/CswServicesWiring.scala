@@ -1,4 +1,4 @@
-package esw.ocs.app
+package esw.ocs.app.wiring
 
 import akka.actor.typed.SpawnProtocol.Spawn
 import akka.actor.typed.scaladsl.AskPattern.Askable

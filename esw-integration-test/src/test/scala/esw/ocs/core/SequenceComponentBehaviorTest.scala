@@ -14,7 +14,7 @@ import csw.testkit.scaladsl.ScalaTestFrameworkTestKit
 import esw.ocs.api.BaseTestSuite
 import esw.ocs.api.models.responses.SequenceComponentResponse.{Done, GetStatusResponse, LoadScriptResponse}
 import esw.ocs.api.models.responses.{RegistrationError, SequenceComponentResponse}
-import esw.ocs.app.SequencerWiring
+import esw.ocs.app.wiring.SequencerWiring
 import esw.ocs.client.messages.SequenceComponentMsg
 import esw.ocs.client.messages.SequenceComponentMsg.{GetStatus, LoadScript, Stop, UnloadScript}
 

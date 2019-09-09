@@ -1,4 +1,4 @@
-package esw.ocs.app
+package esw.ocs.app.route
 
 import akka.http.scaladsl.server.Directives.complete
 import akka.http.scaladsl.server.StandardRoute
