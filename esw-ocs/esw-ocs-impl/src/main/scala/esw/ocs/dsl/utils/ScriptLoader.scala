@@ -3,6 +3,7 @@ package esw.ocs.dsl.utils
 import esw.ocs.dsl.javadsl.JScript
 import esw.ocs.dsl.{CswServices, Script, ScriptDsl}
 import esw.ocs.exceptions.ScriptLoadingException.{InvalidScriptException, ScriptNotFound}
+
 import scala.language.reflectiveCalls
 
 private[ocs] object ScriptLoader {
@@ -18,9 +19,11 @@ private[ocs] object ScriptLoader {
       val $$resultField = clazz.getDeclaredField("$$result")
       $$resultField.setAccessible(true)
 
+      type ScriptKt = { val getJScript: esw.ocs.dsl.javadsl.JScript }
+      type Result   = { def invoke(services: CswServices): ScriptKt }
       // todo: see if there is other way than using structural types without adding `script-dsl` dependency on this project
-      val result = $$resultField.get(script).asInstanceOf[{ def invoke(services: CswServices): JScript }]
-      result.invoke(cswServices)
+      val result = $$resultField.get(script).asInstanceOf[Result]
+      result.invoke(cswServices).getJScript
     }
 
   private def load0[T <: ScriptDsl](scriptClass: String, cswServices: CswServices): T =
