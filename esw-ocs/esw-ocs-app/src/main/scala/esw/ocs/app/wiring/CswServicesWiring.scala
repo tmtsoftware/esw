@@ -1,4 +1,4 @@
-package esw.ocs.internal
+package esw.ocs.app.wiring
 
 import akka.actor.typed.SpawnProtocol.Spawn
 import akka.actor.typed.scaladsl.AskPattern.Askable
@@ -12,10 +12,11 @@ import csw.location.client.ActorSystemFactory
 import csw.logging.api.scaladsl.Logger
 import csw.logging.client.scaladsl.LoggerFactory
 import csw.time.scheduler.TimeServiceSchedulerFactory
+import esw.ocs.internal.Timeouts
 import esw.ocs.syntax.FutureSyntax.FutureOps
 
 // $COVERAGE-OFF$
-private[internal] class CswServicesWiring(componentName: String) {
+private[app] class CswServicesWiring(componentName: String) {
   lazy val actorSystem: ActorSystem[SpawnProtocol] = ActorSystemFactory.remote(SpawnProtocol.behavior, "sequencer-system")
   lazy val frameworkWiring: FrameworkWiring        = FrameworkWiring.make(actorSystem)
   implicit lazy val timeout: Timeout               = Timeouts.DefaultTimeout

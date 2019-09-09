@@ -1,12 +1,12 @@
-package esw.ocs.internal
+package esw.ocs.app.wiring
 
 import com.typesafe.config.{Config, ConfigException}
 import csw.params.core.models.Prefix
 import esw.ocs.exceptions.ScriptLoadingException.ScriptConfigurationMissingException
 
-private[internal] final case class SequencerConfig(sequencerName: String, prefix: Prefix, scriptClass: String)
+private[app] final case class SequencerConfig(sequencerName: String, prefix: Prefix, scriptClass: String)
 
-private[internal] object SequencerConfig {
+private[app] object SequencerConfig {
   def from(config: Config, sequencerId: String, observingMode: String, sequenceComponentName: Option[String]): SequencerConfig = {
     val scriptConfig =
       try {

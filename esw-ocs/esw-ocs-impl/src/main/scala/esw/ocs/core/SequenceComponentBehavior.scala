@@ -4,18 +4,18 @@ import akka.actor.typed.Behavior
 import akka.actor.typed.scaladsl.Behaviors
 import csw.location.models.AkkaLocation
 import csw.logging.api.scaladsl.Logger
-import esw.ocs.api.models.responses.SequenceComponentResponse.{Done, GetStatusResponse, LoadScriptResponse}
 import esw.ocs.api.models.responses.RegistrationError
+import esw.ocs.api.models.responses.SequenceComponentResponse.{Done, GetStatusResponse, LoadScriptResponse}
 import esw.ocs.client.messages.SequenceComponentMsg
 import esw.ocs.client.messages.SequenceComponentMsg.{GetStatus, LoadScript, Stop, UnloadScript}
-import esw.ocs.internal.SequencerWiring
+import esw.ocs.internal.Wiring
 
 object SequenceComponentBehavior {
 
   def behavior(
       sequenceComponentName: String,
       log: Logger,
-      sequencerWiring: (String, String, Option[String]) => SequencerWiring
+      sequencerWiring: (String, String, Option[String]) => Wiring
   ): Behavior[SequenceComponentMsg] = {
 
     lazy val idle: Behavior[SequenceComponentMsg] = Behaviors.receiveMessage[SequenceComponentMsg] { msg =>
@@ -43,7 +43,7 @@ object SequenceComponentBehavior {
       }
     }
 
-    def running(wiring: SequencerWiring, location: AkkaLocation): Behavior[SequenceComponentMsg] =
+    def running(wiring: Wiring, location: AkkaLocation): Behavior[SequenceComponentMsg] =
       Behaviors.receive[SequenceComponentMsg] { (ctx, msg) =>
         import ctx.executionContext
         log.debug(s"Sequence Component in lifecycle state :Running, received message :[$msg]")

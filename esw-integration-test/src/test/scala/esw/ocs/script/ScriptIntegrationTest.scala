@@ -20,7 +20,8 @@ import csw.params.core.models.{Id, Prefix}
 import csw.testkit.scaladsl.ScalaTestFrameworkTestKit
 import esw.highlevel.dsl.LocationServiceDsl
 import esw.ocs.api.BaseTestSuite
-import esw.ocs.internal.{SequencerWiring, Timeouts}
+import esw.ocs.app.wiring.SequencerWiring
+import esw.ocs.internal.Timeouts
 
 class ScriptIntegrationTest extends ScalaTestFrameworkTestKit with BaseTestSuite with LocationServiceDsl {
   import frameworkTestKit._

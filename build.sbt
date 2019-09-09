@@ -69,11 +69,11 @@ lazy val `esw-ocs-macros` = project
 
 lazy val `esw-ocs-app` = project
   .in(file("esw-ocs/esw-ocs-app"))
-  .enablePlugins(EswBuildInfo, DeployApp)
+  .enablePlugins(EswBuildInfo, DeployApp, MaybeCoverage)
   .settings(
     libraryDependencies ++= Dependencies.OcsApp.value
   )
-  .dependsOn(`esw-ocs-impl`, `esw-http-core` % "compile->compile;test->test")
+  .dependsOn(`esw-ocs-impl` % "compile->compile;test->test", `esw-http-core` % "compile->compile;test->test")
 
 lazy val `esw-http-core` = project
   .in(file("esw-http-core"))

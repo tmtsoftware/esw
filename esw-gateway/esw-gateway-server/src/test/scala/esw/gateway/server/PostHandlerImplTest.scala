@@ -46,7 +46,7 @@ class PostHandlerImplTest extends BaseTestSuite with ScalatestRouteTest with Res
 
   // fixme: add failure scenario when event server/ alarm server is down
   "Submit Command" must {
-    "handle submit command and return started command response | ESW-216" in {
+    "handle submit command and return started command response | ESW-91, ESW-216" in {
       val componentName = "test"
       val runId         = Id("123")
       val componentType = Assembly
@@ -62,7 +62,7 @@ class PostHandlerImplTest extends BaseTestSuite with ScalatestRouteTest with Res
       }
     }
 
-    "handle validate command and return accepted command response | ESW-216" in {
+    "handle validate command and return accepted command response | ESW-91, ESW-216" in {
       val componentName   = "test"
       val runId           = Id("123")
       val componentType   = Assembly
@@ -78,7 +78,7 @@ class PostHandlerImplTest extends BaseTestSuite with ScalatestRouteTest with Res
       }
     }
 
-    "handle oneway command and return accepted command response | ESW-216" in {
+    "handle oneway command and return accepted command response | ESW-91, ESW-216" in {
       val componentName = "test"
       val runId         = Id("123")
       val componentType = Assembly
@@ -94,7 +94,7 @@ class PostHandlerImplTest extends BaseTestSuite with ScalatestRouteTest with Res
       }
     }
 
-    "return InvalidComponent response for invalid component id | ESW-216" in {
+    "return InvalidComponent response for invalid component id | ESW-91, ESW-216" in {
       val componentName = "test"
       val runId         = Id("123")
       val componentType = Assembly
@@ -114,7 +114,7 @@ class PostHandlerImplTest extends BaseTestSuite with ScalatestRouteTest with Res
   }
 
   "Publish Event" must {
-    "return Done on successful publish | ESW-216" in {
+    "return Done on successful publish | ESW-92, ESW-216" in {
       val prefix       = Prefix("tcs.test.gateway")
       val name         = EventName("event1")
       val event        = SystemEvent(prefix, name, Set.empty)
@@ -127,7 +127,7 @@ class PostHandlerImplTest extends BaseTestSuite with ScalatestRouteTest with Res
       }
     }
 
-    "return EventServerUnavailable error when EventServer is down | ESW-216" in {
+    "return EventServerUnavailable error when EventServer is down | ESW-92, ESW-216" in {
       val prefix       = Prefix("tcs.test.gateway")
       val name         = EventName("event1")
       val event        = SystemEvent(prefix, name, Set.empty)
@@ -143,7 +143,7 @@ class PostHandlerImplTest extends BaseTestSuite with ScalatestRouteTest with Res
   }
 
   "Get Event" must {
-    "return an event successfully | ESW-216" in {
+    "return an event successfully | ESW-94, ESW-216" in {
       val prefix   = Prefix("tcs.test.gateway")
       val name     = EventName("event1")
       val event    = SystemEvent(prefix, name, Set.empty)
@@ -157,13 +157,13 @@ class PostHandlerImplTest extends BaseTestSuite with ScalatestRouteTest with Res
       }
     }
 
-    "return EmptyEventKeys error on sending no event keys in request | ESW-216" in {
+    "return EmptyEventKeys error on sending no event keys in request | ESW-94, ESW-216" in {
       Post("/post", GetEvent(Set())) ~> route ~> check {
         responseAs[Either[EmptyEventKeys.type, Set[Event]]].leftValue shouldEqual EmptyEventKeys
       }
     }
 
-    "return EventServerUnavailable error when EventServer is down | ESW-216" in {
+    "return EventServerUnavailable error when EventServer is down | ESW-94, ESW-216" in {
       val prefix   = Prefix("tcs.test.gateway")
       val name     = EventName("event1")
       val eventKey = EventKey(prefix, name)
@@ -177,7 +177,7 @@ class PostHandlerImplTest extends BaseTestSuite with ScalatestRouteTest with Res
       }
     }
 
-    "return InternalServerError if get event fails for some unwanted reason | ESW-216" in {
+    "return InternalServerError if get event fails for some unwanted reason | ESW-94, ESW-216" in {
       when(eventSubscriber.get(any[Set[EventKey]])).thenReturn(Future.failed(new RuntimeException("failed")))
 
       val eventKey = EventKey(Prefix("tcs.test.gateway"), EventName("event1"))
@@ -189,7 +189,7 @@ class PostHandlerImplTest extends BaseTestSuite with ScalatestRouteTest with Res
   }
 
   "Set Alarm Severity" must {
-    "returns Done on success | ESW-216" in {
+    "returns Done on success | ESW-193, ESW-216" in {
       val componentName    = "testComponent"
       val alarmName        = "testAlarmName"
       val subsystemName    = Subsystem.IRIS
@@ -204,7 +204,7 @@ class PostHandlerImplTest extends BaseTestSuite with ScalatestRouteTest with Res
       }
     }
 
-    "returns SetAlarmSeverityFailure on key not found or invalid key | ESW-216" in {
+    "returns SetAlarmSeverityFailure on key not found or invalid key | ESW-193, ESW-216" in {
       val componentName    = "testComponent"
       val alarmName        = "testAlarmName"
       val subsystemName    = Subsystem.IRIS

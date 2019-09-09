@@ -1,22 +1,14 @@
 package esw.ocs.app
 
-import akka.Done
-import akka.actor.CoordinatedShutdown.UnknownReason
-import akka.actor.typed.{ActorSystem, SpawnProtocol}
-import akka.util.Timeout
 import caseapp.{CommandApp, RemainingArgs}
 import csw.framework.internal.wiring.ActorRuntime
 import csw.location.client.utils.LocationServerStatus
 import csw.location.models.AkkaLocation
 import csw.logging.api.scaladsl.Logger
-import csw.network.utils.SocketUtils
-import esw.http.core.wiring.{HttpService, ServerWiring}
 import esw.ocs.api.models.responses.RegistrationError
 import esw.ocs.app.SequencerAppCommand._
-import esw.ocs.impl.SequencerAdminImpl
-import esw.ocs.internal.{SequenceComponentWiring, SequencerWiring, Timeouts}
+import esw.ocs.app.wiring.{SequenceComponentWiring, SequencerWiring}
 
-import scala.concurrent.{Await, Future}
 import scala.util.control.NonFatal
 
 object SequencerApp extends CommandApp[SequencerAppCommand] {
@@ -33,33 +25,7 @@ object SequencerApp extends CommandApp[SequencerAppCommand] {
       sequencerId: String,
       observingMode: String,
       sequenceComponentName: Option[String]
-  ): SequencerWiring =
-    new SequencerWiring(sequencerId, observingMode, sequenceComponentName) {
-      import sequencerConfig.sequencerName
-
-      private lazy val serverWiring = new ServerWiring(Some(SocketUtils.getFreePort), Some(s"$sequencerName@http"))
-      import serverWiring._
-      import cswCtx._
-
-      private implicit val timeout: Timeout                   = Timeouts.DefaultTimeout
-      private implicit val system: ActorSystem[SpawnProtocol] = actorSystem
-      private lazy val sequencerAdmin                         = new SequencerAdminImpl(sequencerRef)
-      private lazy val postHandler                            = new PostHandlerImpl(sequencerAdmin)
-      private lazy val routes                                 = new SequencerAdminRoutes(postHandler)
-
-      private lazy val httpService =
-        new HttpService(logger, locationService, routes.route, settings, serverWiring.actorRuntime)
-
-      override def shutDown(): Future[Done] = {
-        httpService.shutdown(UnknownReason)
-        super.shutDown()
-      }
-
-      override def start(): Either[RegistrationError, AkkaLocation] = {
-        Await.result(httpService.registeredLazyBinding, timeout.duration)
-        super.start()
-      }
-    }
+  ): SequencerWiring = new SequencerWiring(sequencerId, observingMode, sequenceComponentName)
 
   def run(command: SequencerAppCommand, enableLogging: Boolean = true): Unit =
     command match {
