@@ -55,7 +55,7 @@ class WebsocketHandlerImplTest extends BaseTestSuite with ScalatestRouteTest wit
 
   "QueryFinal" must {
 
-    "return SubmitResponse for a command | ESW-216" in {
+    "return SubmitResponse for a command | ESW-100, ESW-216" in {
       val componentName = "test"
       val runId         = Id("123")
       val componentType = Assembly
@@ -73,7 +73,7 @@ class WebsocketHandlerImplTest extends BaseTestSuite with ScalatestRouteTest wit
       }
     }
 
-    "return InvalidComponent for invalid component id | ESW-216" in {
+    "return InvalidComponent for invalid component id | ESW-100, ESW-216" in {
       val componentName = "test"
       val runId         = Id("123")
       val componentType = Assembly
