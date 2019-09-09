@@ -49,10 +49,15 @@ object Common extends AutoPlugin {
     licenses := Seq(("Apache-2.0", url("http://www.apache.org/licenses/LICENSE-2.0")))
   )
 
+  private val storyReport: Boolean         = sys.props.get("generateStoryReport").contains("true")
+  private val reporterOptions: Seq[String] =
+    // "-oDF" - show full stack traces and test case durations
+    // -C - to generate CSV story and test mapping
+    if (storyReport) Seq("-oDF", "-C", "esw.test.reporter.TestReporter") else Seq("-oDF")
+
   override lazy val projectSettings: Seq[Setting[_]] = Seq(
     testOptions in Test ++= Seq(
-      // show full stack traces and test case durations
-      Tests.Argument("-oDF")
+      Tests.Argument(reporterOptions: _*)
     ),
     publishArtifact in (Test, packageBin) := true,
     version := {
