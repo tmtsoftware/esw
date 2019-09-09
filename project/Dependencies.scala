@@ -8,6 +8,7 @@ object Dependencies {
       Csw.`csw-location-models`,
       Borer.`borer-core`,
       Borer.`borer-derivation`,
+      Libs.`msocket-api`.value,
       Libs.scalatest       % Test,
       Libs.`mockito-scala` % Test
     )
