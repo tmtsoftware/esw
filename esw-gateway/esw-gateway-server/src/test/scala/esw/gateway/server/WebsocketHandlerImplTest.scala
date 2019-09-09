@@ -181,7 +181,7 @@ class WebsocketHandlerImplTest extends BaseTestSuite with ScalatestRouteTest wit
   }
 
   "Subscribe Events" must {
-    "return set of events successfully | ESW-216" in {
+    "return set of events successfully | ESW-93, ESW-216" in {
       val tcsEventKeyStr1 = "tcs.event.key1"
       val tcsEventKeyStr2 = "tcs.event.key2"
       val eventKey1       = EventKey(tcsEventKeyStr1)
@@ -218,7 +218,7 @@ class WebsocketHandlerImplTest extends BaseTestSuite with ScalatestRouteTest wit
       }
     }
 
-    "return set of events when subscribe event is sent with maxFrequency = 10 | ESW-216" in {
+    "return set of events when subscribe event is sent with maxFrequency = 10 | ESW-93, ESW-216" in {
       val tcsEventKeyStr1 = "tcs.event.key1"
       val tcsEventKeyStr2 = "tcs.event.key2"
       val eventKey1       = EventKey(tcsEventKeyStr1)
@@ -255,7 +255,7 @@ class WebsocketHandlerImplTest extends BaseTestSuite with ScalatestRouteTest wit
       }
     }
 
-    "return InvalidMaxFrequency is sent with maxFrequency <= 0 | ESW-216" in {
+    "return InvalidMaxFrequency is sent with maxFrequency <= 0 | ESW-93, ESW-216" in {
       val tcsEventKeyStr1 = "tcs.event.key1"
       val tcsEventKeyStr2 = "tcs.event.key2"
       val eventKey1       = EventKey(tcsEventKeyStr1)
@@ -278,7 +278,7 @@ class WebsocketHandlerImplTest extends BaseTestSuite with ScalatestRouteTest wit
   }
 
   "Subscribe events with pattern" must {
-    "return set of events on subscribe events with a given pattern | ESW-216" in {
+    "return set of events on subscribe events with a given pattern | ESW-93, ESW-216" in {
       val eventSubscriptionRequest = SubscribeWithPattern(TCS, None, "*")
 
       val event1: Event = ObserveEvent(Prefix("tcs"), EventName("event.key1"))
@@ -309,7 +309,7 @@ class WebsocketHandlerImplTest extends BaseTestSuite with ScalatestRouteTest wit
       }
     }
 
-    "return set of events when maxFrequency = 5 | ESW-216" in {
+    "return set of events when maxFrequency = 5 | ESW-93, ESW-216" in {
       val eventSubscriptionRequest = SubscribeWithPattern(TCS, Some(5), "*")
       val event1: Event            = ObserveEvent(Prefix("tcs"), EventName("event.key1"))
 
@@ -342,7 +342,7 @@ class WebsocketHandlerImplTest extends BaseTestSuite with ScalatestRouteTest wit
       }
     }
 
-    "return InvalidMaxFrequency when maxFrequency <= 0 | ESW-216" in {
+    "return InvalidMaxFrequency when maxFrequency <= 0 | ESW-93, ESW-216" in {
       val eventSubscriptionRequest = SubscribeWithPattern(TCS, Some(-1), "*")
       WS("/websocket", wsClient.flow) ~> route ~> check {
         wsClient.sendMessage(JsonText.strictMessage(eventSubscriptionRequest))

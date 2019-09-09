@@ -56,7 +56,7 @@ class EventGatewayTest extends ScalaTestFrameworkTestKit(EventServer) with WordS
   }
 
   "EventApi" must {
-    "publish, get, subscribe and pattern subscribe events | ESW-94, ESW-216" in {
+    "publish, get, subscribe and pattern subscribe events | ESW-94, ESW-93, ESW-216" in {
       val postClient: RequestClient[PostRequest] = new PostClient[PostRequest](s"http://localhost:$port/post")
       val websocketClient: RequestClient[WebsocketRequest] =
         new WebsocketClient[WebsocketRequest](s"ws://localhost:$port/websocket")
@@ -83,7 +83,7 @@ class EventGatewayTest extends ScalaTestFrameworkTestKit(EventServer) with WordS
 
     }
 
-    "subscribe events returns an EmptyEventKeys error on sending no event keys in subscription| ESW-216" in {
+    "subscribe events returns an EmptyEventKeys error on sending no event keys in subscription| ESW-93, ESW-216" in {
       val postClient: RequestClient[PostRequest] = new PostClient[PostRequest](s"http://localhost:$port/post")
       val websocketClient: RequestClient[WebsocketRequest] =
         new WebsocketClient[WebsocketRequest](s"ws://localhost:$port/websocket")
