@@ -46,7 +46,7 @@ class PostHandlerImplTest extends BaseTestSuite with ScalatestRouteTest with Res
 
   // fixme: add failure scenario when event server/ alarm server is down
   "Submit Command" must {
-    "handle submit command and return started command response | ESW-216" in {
+    "handle submit command and return started command response | ESW-91, ESW-216" in {
       val componentName = "test"
       val runId         = Id("123")
       val componentType = Assembly
@@ -62,7 +62,7 @@ class PostHandlerImplTest extends BaseTestSuite with ScalatestRouteTest with Res
       }
     }
 
-    "handle validate command and return accepted command response | ESW-216" in {
+    "handle validate command and return accepted command response | ESW-91, ESW-216" in {
       val componentName   = "test"
       val runId           = Id("123")
       val componentType   = Assembly
@@ -78,7 +78,7 @@ class PostHandlerImplTest extends BaseTestSuite with ScalatestRouteTest with Res
       }
     }
 
-    "handle oneway command and return accepted command response | ESW-216" in {
+    "handle oneway command and return accepted command response | ESW-91, ESW-216" in {
       val componentName = "test"
       val runId         = Id("123")
       val componentType = Assembly
@@ -94,7 +94,7 @@ class PostHandlerImplTest extends BaseTestSuite with ScalatestRouteTest with Res
       }
     }
 
-    "return InvalidComponent response for invalid component id | ESW-216" in {
+    "return InvalidComponent response for invalid component id | ESW-91, ESW-216" in {
       val componentName = "test"
       val runId         = Id("123")
       val componentType = Assembly
