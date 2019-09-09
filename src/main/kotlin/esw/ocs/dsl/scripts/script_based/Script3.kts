@@ -1,4 +1,4 @@
-package esw.ocs.dsl.scripts
+package esw.ocs.dsl.scripts.script_based
 
 import csw.params.commands.CommandResponse
 import csw.params.core.models.Prefix

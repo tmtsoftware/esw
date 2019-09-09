@@ -1,15 +1,19 @@
 package esw.ocs.dsl.core
 
 import csw.params.commands.Observe
+import csw.params.commands.SequenceCommand
 import csw.params.commands.Setup
 import esw.highlevel.dsl.CswHighLevelDsl
 import esw.ocs.dsl.CswServices
 import esw.ocs.dsl.StopIf
 import esw.ocs.dsl.javadsl.JScript
 import esw.ocs.macros.StrandEc
-import kotlinx.coroutines.*
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.asCoroutineDispatcher
 import kotlinx.coroutines.future.await
 import kotlinx.coroutines.future.future
+import scala.concurrent.ExecutionContext
 import java.util.concurrent.CompletionStage
 import java.util.concurrent.Executors
 import kotlin.coroutines.CoroutineContext
@@ -17,9 +21,13 @@ import kotlin.time.Duration
 import kotlin.time.ExperimentalTime
 import kotlin.time.toJavaDuration
 
-sealed class BaseScript(override val cswServices: CswServices) : JScript(cswServices), CswHighLevelDsl, CoroutineScope {
+abstract class BaseScript(override val cswServices: CswServices) : JScript(cswServices), CswHighLevelDsl,
+    CoroutineScope {
 
     fun log(msg: String) = println("[${Thread.currentThread().name}] $msg")
+
+    suspend fun nextIf(predicate: (SequenceCommand) -> Boolean): SequenceCommand? =
+        jNextIf { predicate(it) }.await().nullable()
 
     fun handleSetup(name: String, block: suspend (Setup) -> Unit) {
         jHandleSetupCommand(name) { block.toJavaFuture(it) }

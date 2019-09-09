@@ -29,8 +29,8 @@ interface EventServiceKtDsl : CoroutineScope {
         cswServices.jPublishEvent(event).await()
 
     @ExperimentalTime
-    fun publishEvent(every: Duration, eventGenerator: suspend () -> Optional<Event>): Cancellable =
-        cswServices.jPublishEventAsync(every.toJavaDuration()) { future { eventGenerator() } }
+    fun publishEvent(every: Duration, eventGenerator: suspend () -> Event?): Cancellable =
+        cswServices.jPublishEventAsync(every.toJavaDuration()) { future { Optional.ofNullable(eventGenerator()) } }
 
     fun onEvent(vararg eventKeys: String, callback: suspend (Event) -> Unit): IEventSubscription =
         cswServices.jOnEvent(eventKeys.toSet()) { future { callback(it) } }
