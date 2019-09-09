@@ -38,7 +38,7 @@ lazy val `esw-ocs` = project
 lazy val `esw-ocs-api` = crossProject(JSPlatform, JVMPlatform)
   .crossType(CrossType.Pure)
   .in(file("esw-ocs/esw-ocs-api"))
-  .jvmConfigure(_.enablePlugins(MaybeCoverage))
+  .jvmConfigure(_.enablePlugins(MaybeCoverage).dependsOn(`esw-test-reporter` % Test))
   .settings(fork := false)
   .settings(
     libraryDependencies ++= Dependencies.OcsApi.value
@@ -50,7 +50,7 @@ lazy val `esw-ocs-client` = project
   .settings(
     libraryDependencies ++= Dependencies.OcsClient.value
   )
-  .dependsOn(`esw-ocs-api`.jvm % "compile->compile;test->test")
+  .dependsOn(`esw-ocs-api`.jvm % "compile->compile;test->test", `esw-test-reporter` % Test)
 
 lazy val `esw-ocs-impl` = project
   .in(file("esw-ocs/esw-ocs-impl"))
@@ -58,7 +58,13 @@ lazy val `esw-ocs-impl` = project
   .settings(
     libraryDependencies ++= Dependencies.OcsImpl.value
   )
-  .dependsOn(`esw-ocs-api`.jvm % "compile->compile;test->test", `esw-ocs-client`, `esw-ocs-macros`, `esw-utils`)
+  .dependsOn(
+    `esw-ocs-api`.jvm % "compile->compile;test->test",
+    `esw-ocs-client`,
+    `esw-ocs-macros`,
+    `esw-utils`,
+    `esw-test-reporter` % Test
+  )
 
 lazy val `esw-ocs-macros` = project
   .in(file("esw-ocs/esw-ocs-macros"))
@@ -66,6 +72,7 @@ lazy val `esw-ocs-macros` = project
   .settings(
     libraryDependencies ++= Dependencies.OcsMacros.value
   )
+  .dependsOn(`esw-test-reporter` % Test)
 
 lazy val `esw-ocs-app` = project
   .in(file("esw-ocs/esw-ocs-app"))
@@ -73,7 +80,11 @@ lazy val `esw-ocs-app` = project
   .settings(
     libraryDependencies ++= Dependencies.OcsApp.value
   )
-  .dependsOn(`esw-ocs-impl` % "compile->compile;test->test", `esw-http-core` % "compile->compile;test->test")
+  .dependsOn(
+    `esw-ocs-impl`      % "compile->compile;test->test",
+    `esw-http-core`     % "compile->compile;test->test",
+    `esw-test-reporter` % Test
+  )
 
 lazy val `esw-http-core` = project
   .in(file("esw-http-core"))
@@ -81,6 +92,7 @@ lazy val `esw-http-core` = project
   .settings(
     libraryDependencies ++= Dependencies.EswHttpCore.value
   )
+  .dependsOn(`esw-test-reporter` % Test)
 
 lazy val `esw-integration-test` = project
   .in(file("esw-integration-test"))
@@ -90,13 +102,14 @@ lazy val `esw-integration-test` = project
     `esw-gateway-server` % "test->compile;test->test",
     `esw-http-core`      % "test->compile;test->test",
     `esw-ocs-impl`       % "test->compile;test->test",
-    `esw-ocs-app`
+    `esw-ocs-app`,
+    `esw-test-reporter` % Test
   )
 
 lazy val `esw-utils` = project
   .in(file("esw-utils"))
   .settings(libraryDependencies ++= Dependencies.Utils.value)
-  .dependsOn(`esw-ocs-api`.jvm % "compile->compile;test->test", `esw-ocs-macros`)
+  .dependsOn(`esw-ocs-api`.jvm % "compile->compile;test->test", `esw-ocs-macros`, `esw-test-reporter` % Test)
 
 lazy val `esw-gateway` = project
   .aggregate(
@@ -110,13 +123,14 @@ lazy val `esw-gateway-api` = project
   .settings(
     libraryDependencies ++= Dependencies.EswGatewayApi.value
   )
+  .dependsOn(`esw-test-reporter` % Test)
 
 lazy val `esw-gateway-impl` = project
   .in(file("esw-gateway/esw-gateway-impl"))
   .settings(
     libraryDependencies ++= Dependencies.EswGatewayImpl.value
   )
-  .dependsOn(`esw-gateway-api`)
+  .dependsOn(`esw-gateway-api`, `esw-test-reporter` % Test)
 
 lazy val `esw-gateway-server` = project
   .in(file("esw-gateway/esw-gateway-server"))
@@ -124,7 +138,11 @@ lazy val `esw-gateway-server` = project
   .settings(
     libraryDependencies ++= Dependencies.EswGatewayServer.value
   )
-  .dependsOn(`esw-gateway-impl`, `esw-http-core` % "compile->compile;test->test")
+  .dependsOn(`esw-gateway-impl`, `esw-http-core` % "compile->compile;test->test", `esw-test-reporter` % Test)
+
+lazy val `esw-test-reporter` = project
+  .in(file("esw-test-reporter"))
+  .settings(libraryDependencies += Libs.scalatest)
 
 /* ================= Paradox Docs ============== */
 lazy val docs = project.enablePlugins(NoPublish, ParadoxSite)
