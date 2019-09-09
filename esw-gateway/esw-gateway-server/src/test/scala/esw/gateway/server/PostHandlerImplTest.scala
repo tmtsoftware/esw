@@ -114,7 +114,7 @@ class PostHandlerImplTest extends BaseTestSuite with ScalatestRouteTest with Res
   }
 
   "Publish Event" must {
-    "return Done on successful publish | ESW-216" in {
+    "return Done on successful publish | ESW-92, ESW-216" in {
       val prefix       = Prefix("tcs.test.gateway")
       val name         = EventName("event1")
       val event        = SystemEvent(prefix, name, Set.empty)
@@ -127,7 +127,7 @@ class PostHandlerImplTest extends BaseTestSuite with ScalatestRouteTest with Res
       }
     }
 
-    "return EventServerUnavailable error when EventServer is down | ESW-216" in {
+    "return EventServerUnavailable error when EventServer is down | ESW-92, ESW-216" in {
       val prefix       = Prefix("tcs.test.gateway")
       val name         = EventName("event1")
       val event        = SystemEvent(prefix, name, Set.empty)
