@@ -48,7 +48,7 @@ object Unhandled {
     new Unhandled(state, messageType, s"Sequencer can not accept '$messageType' message in '$state' state")
 
   private[ocs] def apply(state: String, messageType: String, description: String): Unhandled = {
-    new Unhandled(state, messageType, s"Sequencer can not accept '$messageType' message in '$state' state")
+    new Unhandled(state, messageType, description)
   }
 }
 
