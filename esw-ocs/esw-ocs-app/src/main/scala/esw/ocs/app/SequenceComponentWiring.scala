@@ -1,4 +1,4 @@
-package esw.ocs.internal
+package esw.ocs.app
 
 import akka.actor.typed.ActorRef
 import akka.actor.typed.SpawnProtocol.Spawn
@@ -9,6 +9,7 @@ import csw.params.core.models.Prefix
 import esw.ocs.api.models.responses.RegistrationError
 import esw.ocs.client.messages.SequenceComponentMsg
 import esw.ocs.core.SequenceComponentBehavior
+import esw.ocs.internal.SequenceComponentRegistration
 import esw.ocs.syntax.FutureSyntax.FutureOps
 
 import scala.concurrent.Future

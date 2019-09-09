@@ -1,4 +1,4 @@
-package esw.ocs.internal
+package esw.ocs.app
 
 import akka.Done
 import akka.actor.typed.ActorRef
@@ -14,11 +14,13 @@ import esw.ocs.client.messages.SequencerMessages.{EswSequencerMessage, Shutdown}
 import esw.ocs.core._
 import esw.ocs.dsl.utils.ScriptLoader
 import esw.ocs.dsl.{CswServices, Script}
+import esw.ocs.internal.{Timeouts, Wiring}
 import esw.ocs.syntax.FutureSyntax.FutureOps
 
 import scala.concurrent.{Await, Future}
 
-private[ocs] class SequencerWiring(val sequencerId: String, val observingMode: String, sequenceComponentName: Option[String]) {
+private[ocs] class SequencerWiring(val sequencerId: String, val observingMode: String, sequenceComponentName: Option[String])
+    extends Wiring {
   private lazy val config: Config       = ConfigFactory.load()
   private[esw] lazy val sequencerConfig = SequencerConfig.from(config, sequencerId, observingMode, sequenceComponentName)
   import sequencerConfig._

@@ -14,7 +14,7 @@ import esw.http.core.wiring.{HttpService, ServerWiring}
 import esw.ocs.api.models.responses.RegistrationError
 import esw.ocs.app.SequencerAppCommand._
 import esw.ocs.impl.SequencerAdminImpl
-import esw.ocs.internal.{SequenceComponentWiring, SequencerWiring, Timeouts}
+import esw.ocs.internal.Timeouts
 
 import scala.concurrent.{Await, Future}
 import scala.util.control.NonFatal
