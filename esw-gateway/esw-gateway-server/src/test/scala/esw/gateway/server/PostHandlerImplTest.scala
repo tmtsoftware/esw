@@ -189,7 +189,7 @@ class PostHandlerImplTest extends BaseTestSuite with ScalatestRouteTest with Res
   }
 
   "Set Alarm Severity" must {
-    "returns Done on success | ESW-216" in {
+    "returns Done on success | ESW-193, ESW-216" in {
       val componentName    = "testComponent"
       val alarmName        = "testAlarmName"
       val subsystemName    = Subsystem.IRIS
@@ -204,7 +204,7 @@ class PostHandlerImplTest extends BaseTestSuite with ScalatestRouteTest with Res
       }
     }
 
-    "returns SetAlarmSeverityFailure on key not found or invalid key | ESW-216" in {
+    "returns SetAlarmSeverityFailure on key not found or invalid key | ESW-193, ESW-216" in {
       val componentName    = "testComponent"
       val alarmName        = "testAlarmName"
       val subsystemName    = Subsystem.IRIS
