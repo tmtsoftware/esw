@@ -4,10 +4,10 @@ import csw.params.commands.Observe
 import csw.params.commands.SequenceCommand
 import csw.params.commands.Setup
 import esw.ocs.dsl.highlevel.CswHighLevelDsl
-import esw.ocs.dsl.CswServices
-import esw.ocs.dsl.StopIf
-import esw.ocs.dsl.javadsl.JScript
 import esw.ocs.dsl.nullable
+import esw.ocs.impl.dsl.CswServices
+import esw.ocs.impl.dsl.StopIf
+import esw.ocs.impl.dsl.javadsl.JScript
 import esw.ocs.macros.StrandEc
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Job

@@ -1,6 +1,6 @@
 package esw.ocs.dsl.core
 
-import esw.ocs.dsl.CswServices
+import esw.ocs.impl.dsl.CswServices
 import esw.ocs.macros.StrandEc
 import kotlin.coroutines.CoroutineContext
 

@@ -1,8 +1,8 @@
 package esw.ocs.scripts.examples.class_based
 
 import csw.params.commands.CommandResponse.Completed
-import esw.ocs.dsl.CswServices
 import esw.ocs.dsl.core.ScriptKt
+import esw.ocs.impl.dsl.CswServices
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 

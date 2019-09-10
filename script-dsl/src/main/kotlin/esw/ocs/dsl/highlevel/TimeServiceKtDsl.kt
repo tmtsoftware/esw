@@ -2,7 +2,7 @@ package esw.ocs.dsl.highlevel
 
 import csw.time.core.models.TMTTime
 import csw.time.scheduler.api.Cancellable
-import esw.ocs.dsl.CswServices
+import esw.ocs.impl.dsl.CswServices
 import esw.ocs.macros.StrandEc
 import kotlinx.coroutines.CoroutineScope
 import kotlin.time.Duration

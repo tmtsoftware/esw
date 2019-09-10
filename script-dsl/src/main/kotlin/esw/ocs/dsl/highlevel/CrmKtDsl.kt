@@ -2,12 +2,11 @@ package esw.ocs.dsl.highlevel
 
 import akka.util.Timeout
 import csw.command.client.CommandResponseManager
-import csw.params.commands.CommandResponse
 import csw.params.commands.CommandResponse.QueryResponse
 import csw.params.commands.CommandResponse.SubmitResponse
 import csw.params.commands.SequenceCommand
 import csw.params.core.models.Id
-import esw.ocs.dsl.CswServices
+import esw.ocs.impl.dsl.CswServices
 import kotlinx.coroutines.future.await
 import kotlin.time.Duration
 import kotlin.time.ExperimentalTime

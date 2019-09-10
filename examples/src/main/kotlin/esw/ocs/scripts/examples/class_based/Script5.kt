@@ -4,7 +4,7 @@ import csw.params.commands.CommandResponse.Completed
 import csw.params.core.models.Prefix
 import csw.params.events.EventName
 import csw.params.events.SystemEvent
-import esw.ocs.dsl.CswServices
+import esw.ocs.impl.dsl.CswServices
 import esw.ocs.dsl.core.ScriptKt
 import esw.ocs.scripts.examples.reusable_scripts.script6
 import esw.ocs.scripts.examples.reusable_scripts.script7

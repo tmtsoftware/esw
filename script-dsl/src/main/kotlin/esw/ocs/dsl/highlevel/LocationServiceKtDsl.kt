@@ -4,8 +4,8 @@ import csw.location.models.AkkaLocation
 import csw.location.models.ComponentType
 import csw.location.models.Location
 import csw.params.core.models.Subsystem
-import esw.ocs.dsl.CswServices
 import esw.ocs.dsl.nullable
+import esw.ocs.impl.dsl.CswServices
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.future.await
 

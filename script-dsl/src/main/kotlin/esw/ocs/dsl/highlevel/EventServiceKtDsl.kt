@@ -7,7 +7,7 @@ import csw.params.core.generics.Parameter
 import csw.params.events.Event
 import csw.params.events.ObserveEvent
 import csw.params.events.SystemEvent
-import esw.ocs.dsl.CswServices
+import esw.ocs.impl.dsl.CswServices
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.future.await
 import kotlinx.coroutines.future.future
