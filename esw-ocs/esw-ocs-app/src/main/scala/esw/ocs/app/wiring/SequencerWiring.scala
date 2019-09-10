@@ -10,8 +10,11 @@ import csw.framework.internal.wiring.ActorRuntime
 import csw.location.api.extensions.ActorExtension.RichActor
 import csw.location.models.Connection.AkkaConnection
 import csw.location.models.{AkkaLocation, AkkaRegistration, ComponentId, ComponentType}
+import csw.logging.api.scaladsl.Logger
 import csw.network.utils.SocketUtils
-import esw.http.core.wiring.{HttpService, ServerWiring}
+import esw.http.core.commons.ServiceLogger
+import esw.http.core.wiring
+import esw.http.core.wiring.{HttpService, Settings}
 import esw.ocs.api.models.responses.RegistrationError
 import esw.ocs.app.route.{PostHandlerImpl, SequencerAdminRoutes}
 import esw.ocs.client.messages.SequencerMessages.{EswSequencerMessage, Shutdown}
@@ -57,11 +60,10 @@ private[ocs] class SequencerWiring(val sequencerId: String, val observingMode: S
   private lazy val postHandler    = new PostHandlerImpl(sequencerAdmin)
   private lazy val routes         = new SequencerAdminRoutes(postHandler)
 
-  private lazy val serverWiring = new ServerWiring(Some(SocketUtils.getFreePort), Some(s"$sequencerName@http"))
-  import serverWiring._
-
+  private lazy val settings       = new Settings(Some(SocketUtils.getFreePort), Some(s"$sequencerName@http"), config)
+  private lazy val logger: Logger = new ServiceLogger(settings.httpConnection).getLogger
   private lazy val httpService =
-    new HttpService(cswCtx.logger, locationService, routes.route, settings, serverWiring.actorRuntime)
+    new HttpService(logger, locationService, routes.route, settings, new wiring.ActorRuntime(typedSystem))
 
   lazy val sequencerBehavior =
     new SequencerBehavior(componentId, script, locationService, commandResponseManager)(typedSystem, timeout)
