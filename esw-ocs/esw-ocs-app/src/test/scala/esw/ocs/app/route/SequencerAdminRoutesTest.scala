@@ -3,12 +3,12 @@ package esw.ocs.app.route
 import akka.http.scaladsl.testkit.ScalatestRouteTest
 import csw.params.core.models.Id
 import esw.http.core.BaseTestSuite
+import esw.ocs.api.codecs.SequencerAdminHttpCodecs
 import esw.ocs.api.models.StepList
-import esw.ocs.api.models.codecs.SequencerAdminHttpCodecs
-import esw.ocs.api.models.request.SequencerAdminPostRequest
-import esw.ocs.api.models.request.SequencerAdminPostRequest._
-import esw.ocs.api.models.responses.EditorError.{CannotOperateOnAnInFlightOrFinishedStep, IdDoesNotExist}
-import esw.ocs.api.models.responses._
+import esw.ocs.api.request.SequencerAdminPostRequest
+import esw.ocs.api.request.SequencerAdminPostRequest._
+import esw.ocs.api.responses.EditorError.{CannotOperateOnAnInFlightOrFinishedStep, IdDoesNotExist}
+import esw.ocs.api.responses._
 import esw.ocs.impl.SequencerAdminImpl
 import mscoket.impl.HttpCodecs
 import org.mockito.Mockito.when

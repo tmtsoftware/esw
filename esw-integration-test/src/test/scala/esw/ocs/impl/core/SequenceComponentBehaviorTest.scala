@@ -12,8 +12,9 @@ import csw.location.models.{AkkaLocation, ComponentId, ComponentType, Location}
 import csw.logging.client.scaladsl.LoggerFactory
 import csw.testkit.scaladsl.ScalaTestFrameworkTestKit
 import esw.ocs.api.BaseTestSuite
-import esw.ocs.api.models.responses.SequenceComponentResponse.{Done, GetStatusResponse, LoadScriptResponse}
-import esw.ocs.api.models.responses.{RegistrationError, SequenceComponentResponse}
+import esw.ocs.api.responses.SequenceComponentResponse.{Done, GetStatusResponse, LoadScriptResponse}
+import esw.ocs.api.responses.SequenceComponentResponse
+import esw.ocs.api.responses.RegistrationError
 import esw.ocs.app.wiring.SequencerWiring
 import esw.ocs.impl.messages.SequenceComponentMsg
 import esw.ocs.impl.messages.SequenceComponentMsg.{GetStatus, LoadScript, Stop, UnloadScript}

@@ -12,9 +12,10 @@ import csw.params.commands.{CommandName, Sequence, Setup}
 import csw.params.core.models.{Id, Prefix}
 import esw.ocs.api.BaseTestSuite
 import esw.ocs.api.models.StepStatus.{InFlight, Pending}
-import esw.ocs.api.models.responses.EditorError.{CannotOperateOnAnInFlightOrFinishedStep, IdDoesNotExist}
-import esw.ocs.api.models.responses._
+import esw.ocs.api.responses.EditorError.{CannotOperateOnAnInFlightOrFinishedStep, IdDoesNotExist}
+import esw.ocs.api.responses._
 import esw.ocs.api.models.{Step, StepList, StepStatus}
+import esw.ocs.api.responses.{DuplicateIdsFound, GenericResponse, GoOnlineHookFailed, LoadSequenceResponse, Ok, OkOrUnhandledResponse, SequenceResponse, SequenceResult}
 import esw.ocs.impl.messages.SequencerMessages.{AbortSequence, AddBreakpoint, QuerySequenceResponse, _}
 import esw.ocs.impl.messages.SequencerState.{Idle, InProgress, Loaded, Offline}
 

@@ -1,13 +1,13 @@
-package esw.ocs.api.models.codecs
+package esw.ocs.api.codecs
 
 import csw.location.models.codecs.LocationCodecs
 import csw.params.core.formats.ParamCodecs
 import esw.ocs.api.models.StepStatus.Finished.{Failure, Success}
-import esw.ocs.api.models.StepStatus._
-import esw.ocs.api.models._
-import esw.ocs.api.models.responses.EditorError._
-import esw.ocs.api.models.responses.SequenceComponentResponse.{Done, GetStatusResponse, LoadScriptResponse}
-import esw.ocs.api.models.responses._
+import esw.ocs.api.models.StepStatus.{InFlight, Pending}
+import esw.ocs.api.models.{Step, StepList, StepStatus}
+import esw.ocs.api.responses.EditorError.{CannotOperateOnAnInFlightOrFinishedStep, IdDoesNotExist}
+import esw.ocs.api.responses.SequenceComponentResponse.{Done, GetStatusResponse, LoadScriptResponse}
+import esw.ocs.api.responses._
 import io.bullet.borer.Codec
 import io.bullet.borer.derivation.ArrayBasedCodecs.deriveUnaryCodec
 import io.bullet.borer.derivation.MapBasedCodecs.deriveCodec

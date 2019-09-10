@@ -7,12 +7,12 @@ import akka.serialization.Serializer
 import csw.command.client.messages.sequencer.SequencerMsg
 import csw.logging.api.scaladsl.Logger
 import csw.logging.client.scaladsl.LoggerFactory
-import esw.ocs.api.models.codecs.OcsCodecs
+import esw.ocs.api.codecs.OcsCodecs
 import esw.ocs.api.models.StepList
 import esw.ocs.impl.messages.SequencerMessages._
-import esw.ocs.api.models.responses._
+import esw.ocs.api.responses.{EswSequencerResponse, SequenceComponentResponse}
+import esw.ocs.impl.codecs.OcsMsgCodecs
 import esw.ocs.impl.messages.{SequenceComponentMsg, SequencerState}
-import esw.ocs.impl.messages.codecs.OcsMsgCodecs
 import io.bullet.borer.{Cbor, Decoder}
 
 import scala.reflect.ClassTag

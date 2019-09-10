@@ -1,7 +1,7 @@
-package esw.ocs.api.models.responses
+package esw.ocs.api.responses
 
 import csw.location.models.AkkaLocation
-import esw.ocs.api.models.codecs.OcsAkkaSerializable
+import esw.ocs.api.codecs.OcsAkkaSerializable
 
 sealed trait SequenceComponentResponse extends OcsAkkaSerializable
 

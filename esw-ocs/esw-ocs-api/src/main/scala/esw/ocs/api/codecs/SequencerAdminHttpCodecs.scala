@@ -1,8 +1,8 @@
-package esw.ocs.api.models.codecs
+package esw.ocs.api.codecs
 
 import com.github.ghik.silencer.silent
-import esw.ocs.api.models.request.SequencerAdminPostRequest
-import esw.ocs.api.models.request.SequencerAdminPostRequest._
+import esw.ocs.api.request.SequencerAdminPostRequest
+import esw.ocs.api.request.SequencerAdminPostRequest._
 import io.bullet.borer.Codec
 import io.bullet.borer.derivation.MapBasedCodecs.deriveCodec
 

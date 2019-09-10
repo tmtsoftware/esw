@@ -1,6 +1,7 @@
 package esw.ocs.api
 
-import esw.ocs.api.models.responses.SequenceComponentResponse.{Done, GetStatusResponse, LoadScriptResponse}
+
+import esw.ocs.api.responses.SequenceComponentResponse._
 
 import scala.concurrent.Future
 

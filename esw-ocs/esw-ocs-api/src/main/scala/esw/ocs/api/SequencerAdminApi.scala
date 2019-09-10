@@ -3,7 +3,7 @@ package esw.ocs.api
 import csw.params.commands.SequenceCommand
 import csw.params.core.models.Id
 import esw.ocs.api.models.StepList
-import esw.ocs.api.models.responses._
+import esw.ocs.api.responses.{GenericResponse, GoOnlineResponse, OkOrUnhandledResponse, PauseResponse, RemoveBreakpointResponse}
 
 import scala.concurrent.Future
 

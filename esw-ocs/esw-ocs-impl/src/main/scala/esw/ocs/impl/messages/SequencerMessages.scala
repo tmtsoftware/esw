@@ -5,9 +5,9 @@ import csw.command.client.messages.sequencer.SequencerMsg
 import csw.params.commands.CommandResponse.SubmitResponse
 import csw.params.commands.{Sequence, SequenceCommand}
 import csw.params.core.models.Id
-import esw.ocs.api.models.codecs.OcsAkkaSerializable
-import esw.ocs.api.models.responses._
+import esw.ocs.api.codecs.OcsAkkaSerializable
 import esw.ocs.api.models.{Step, StepList}
+import esw.ocs.api.responses.{GenericResponse, GoOnlineResponse, LoadSequenceResponse, Ok, OkOrUnhandledResponse, PauseResponse, PullNextResponse, RemoveBreakpointResponse, SequenceResponse, Unhandled}
 
 object SequencerMessages {
 

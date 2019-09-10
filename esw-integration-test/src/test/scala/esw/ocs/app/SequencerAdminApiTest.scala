@@ -13,10 +13,11 @@ import csw.params.core.models.Prefix
 import csw.testkit.scaladsl.ScalaTestFrameworkTestKit
 import esw.ocs.api.BaseTestSuite
 import esw.ocs.api.client.SequencerAdminClient
+import esw.ocs.api.codecs.SequencerAdminHttpCodecs
 import esw.ocs.api.models.Step
-import esw.ocs.api.models.codecs.SequencerAdminHttpCodecs
-import esw.ocs.api.models.request.SequencerAdminPostRequest
-import esw.ocs.api.models.responses.{LoadSequenceResponse, Ok}
+import esw.ocs.api.responses.Ok
+import esw.ocs.api.request.SequencerAdminPostRequest
+import esw.ocs.api.responses.{LoadSequenceResponse, Ok}
 import esw.ocs.app.wiring.SequencerWiring
 import esw.ocs.impl.messages.SequencerMessages.{EswSequencerMessage, LoadSequence}
 import mscoket.impl.post.PostClient

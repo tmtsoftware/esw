@@ -1,4 +1,4 @@
-package esw.ocs.impl.messages.codecs
+package esw.ocs.impl.codecs
 
 import csw.command.client.cbor.MessageCodecs
 import csw.command.client.messages.sequencer.SequencerMsg
