@@ -6,6 +6,7 @@ object Dependencies {
     Seq(
       Csw.`csw-params`.value,
       Csw.`csw-location-models`,
+      Csw.`csw-logging-models`,
       Borer.`borer-core`,
       Borer.`borer-derivation`,
       Libs.`msocket-api`.value,
@@ -64,8 +65,9 @@ object Dependencies {
 
   val IntegrationTest = Def.setting(
     Seq(
-      Csw.`csw-testkit` % Test,
-      Libs.scalatest    % Test
+      Csw.`csw-testkit`      % Test,
+      Csw.`csw-admin-server` % Test,
+      Libs.scalatest         % Test
     )
   )
 

@@ -7,7 +7,7 @@ import akka.actor.typed.{ActorRef, ActorSystem, Behavior}
 import akka.util.Timeout
 import csw.command.client.CommandResponseManager
 import csw.command.client.messages.sequencer.{LoadAndProcessSequence, SequencerMsg}
-import csw.command.client.messages.{GetComponentLogMetadata, LogControlMessages, SetComponentLogLevel}
+import csw.command.client.messages.{GetComponentLogMetadata, LogControlMessage, SetComponentLogLevel}
 import csw.location.api.scaladsl.LocationService
 import csw.location.models.ComponentId
 import csw.location.models.Connection.AkkaConnection
@@ -206,7 +206,7 @@ class SequencerBehavior(
   }
 
   private def handleLogMessages(
-      msg: LogControlMessages
+      msg: LogControlMessage
   ): Behavior[SequencerMsg] = msg match {
     case GetComponentLogMetadata(componentName, replyTo) => replyTo ! LogAdminUtil.getLogMetadata(componentName); Behaviors.same
     case SetComponentLogLevel(componentName, logLevel) =>
@@ -223,9 +223,9 @@ class SequencerBehavior(
       implicit val scheduler: Scheduler = ctx.system.scheduler
 
       msg match {
-        case msg: CommonMessage      => handleCommonMessage(msg, state, data, currentBehavior)
-        case msg: LogControlMessages => handleLogMessages(msg)
-        case msg: T                  => f(msg)
+        case msg: CommonMessage     => handleCommonMessage(msg, state, data, currentBehavior)
+        case msg: LogControlMessage => handleLogMessages(msg)
+        case msg: T                 => f(msg)
         case msg: UnhandleableSequencerMessage =>
           msg.replyTo ! Unhandled(state.entryName, msg.getClass.getSimpleName); Behaviors.same
         case LoadAndProcessSequence(sequence, replyTo) =>
