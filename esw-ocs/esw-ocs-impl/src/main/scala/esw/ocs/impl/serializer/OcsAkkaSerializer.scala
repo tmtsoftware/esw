@@ -9,8 +9,8 @@ import csw.logging.api.scaladsl.Logger
 import csw.logging.client.scaladsl.LoggerFactory
 import esw.ocs.api.codecs.OcsCodecs
 import esw.ocs.api.models.StepList
+import esw.ocs.api.responses.{EswSequencerResponse, GetStatusResponse, LoadScriptResponse}
 import esw.ocs.impl.messages.SequencerMessages._
-import esw.ocs.api.responses.{EswSequencerResponse, SequenceComponentResponse}
 import esw.ocs.impl.codecs.OcsMsgCodecs
 import esw.ocs.impl.messages.{SequenceComponentMsg, SequencerState}
 import io.bullet.borer.{Cbor, Decoder}
@@ -29,7 +29,8 @@ class OcsAkkaSerializer(_actorSystem: ExtendedActorSystem) extends OcsCodecs wit
     case x: StepList                     => Cbor.encode(x).toByteArray
     case x: SequencerState[SequencerMsg] => Cbor.encode(x).toByteArray
     case x: SequenceComponentMsg         => Cbor.encode(x).toByteArray
-    case x: SequenceComponentResponse    => Cbor.encode(x).toByteArray
+    case x: LoadScriptResponse           => Cbor.encode(x).toByteArray
+    case x: GetStatusResponse            => Cbor.encode(x).toByteArray
     case _ =>
       val ex = new RuntimeException(s"does not support encoding of $o")
       logger.error(ex.getMessage, ex = ex)
@@ -50,7 +51,8 @@ class OcsAkkaSerializer(_actorSystem: ExtendedActorSystem) extends OcsCodecs wit
       fromBinary[SequencerState[SequencerMsg]] orElse
       fromBinary[StepList] orElse
       fromBinary[SequenceComponentMsg] orElse
-      fromBinary[SequenceComponentResponse]
+      fromBinary[LoadScriptResponse] orElse
+      fromBinary[GetStatusResponse]
     }.getOrElse {
       val ex = new RuntimeException(s"does not support decoding of ${manifest.get}")
       logger.error(ex.getMessage, ex = ex)

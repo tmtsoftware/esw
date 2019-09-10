@@ -6,7 +6,6 @@ import esw.ocs.api.models.StepStatus.Finished.{Failure, Success}
 import esw.ocs.api.models.StepStatus.{InFlight, Pending}
 import esw.ocs.api.models.{Step, StepList, StepStatus}
 import esw.ocs.api.responses.EditorError.{CannotOperateOnAnInFlightOrFinishedStep, IdDoesNotExist}
-import esw.ocs.api.responses.SequenceComponentResponse.{Done, GetStatusResponse, LoadScriptResponse}
 import esw.ocs.api.responses._
 import io.bullet.borer.Codec
 import io.bullet.borer.derivation.ArrayBasedCodecs.deriveUnaryCodec
@@ -42,13 +41,11 @@ trait OcsCodecs extends ParamCodecs with LocationCodecs {
   implicit lazy val loadScriptErrorCodec: Codec[RegistrationError] = deriveCodec[RegistrationError]
 
   //SequenceComponentResponse Codecs
-  implicit lazy val loadScriptResponseCodec: Codec[LoadScriptResponse]               = deriveUnaryCodec[LoadScriptResponse]
-  implicit lazy val getStatusResponseCodec: Codec[GetStatusResponse]                 = deriveUnaryCodec[GetStatusResponse]
-  implicit lazy val doneResponseCodec: Codec[Done.type]                              = singletonCodec(Done)
-  implicit lazy val sequenceComponentResponseCodec: Codec[SequenceComponentResponse] = deriveCodec[SequenceComponentResponse]
-  implicit lazy val pauseResponseCodec: Codec[PauseResponse]                         = deriveCodec[PauseResponse]
-  implicit lazy val okOrUnhandledResponseCodec: Codec[OkOrUnhandledResponse]         = deriveCodec[OkOrUnhandledResponse]
-  implicit lazy val genericResponseCodec: Codec[GenericResponse]                     = deriveCodec[GenericResponse]
-  implicit lazy val removeBreakpointResponseCodec: Codec[RemoveBreakpointResponse]   = deriveCodec[RemoveBreakpointResponse]
-  implicit lazy val goOnlineResponseCodec: Codec[GoOnlineResponse]                   = deriveCodec[GoOnlineResponse]
+  implicit lazy val loadScriptResponseCodec: Codec[LoadScriptResponse]             = deriveUnaryCodec[LoadScriptResponse]
+  implicit lazy val getStatusResponseCodec: Codec[GetStatusResponse]               = deriveUnaryCodec[GetStatusResponse]
+  implicit lazy val pauseResponseCodec: Codec[PauseResponse]                       = deriveCodec[PauseResponse]
+  implicit lazy val okOrUnhandledResponseCodec: Codec[OkOrUnhandledResponse]       = deriveCodec[OkOrUnhandledResponse]
+  implicit lazy val genericResponseCodec: Codec[GenericResponse]                   = deriveCodec[GenericResponse]
+  implicit lazy val removeBreakpointResponseCodec: Codec[RemoveBreakpointResponse] = deriveCodec[RemoveBreakpointResponse]
+  implicit lazy val goOnlineResponseCodec: Codec[GoOnlineResponse]                 = deriveCodec[GoOnlineResponse]
 }

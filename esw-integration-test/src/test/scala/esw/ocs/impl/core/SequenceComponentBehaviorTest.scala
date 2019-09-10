@@ -1,5 +1,6 @@
 package esw.ocs.impl.core
 
+import akka.Done
 import akka.actor.Scheduler
 import akka.actor.testkit.typed.scaladsl.{BehaviorTestKit, TestProbe}
 import akka.actor.typed.SpawnProtocol.Spawn
@@ -12,9 +13,7 @@ import csw.location.models.{AkkaLocation, ComponentId, ComponentType, Location}
 import csw.logging.client.scaladsl.LoggerFactory
 import csw.testkit.scaladsl.ScalaTestFrameworkTestKit
 import esw.ocs.api.BaseTestSuite
-import esw.ocs.api.responses.SequenceComponentResponse.{Done, GetStatusResponse, LoadScriptResponse}
-import esw.ocs.api.responses.SequenceComponentResponse
-import esw.ocs.api.responses.RegistrationError
+import esw.ocs.api.responses.{GetStatusResponse, LoadScriptResponse, RegistrationError}
 import esw.ocs.app.wiring.SequencerWiring
 import esw.ocs.impl.messages.SequenceComponentMsg
 import esw.ocs.impl.messages.SequenceComponentMsg.{GetStatus, LoadScript, Stop, UnloadScript}
@@ -75,7 +74,7 @@ class SequenceComponentBehaviorTest extends ScalaTestFrameworkTestKit with BaseT
       )
 
       //UnloadScript
-      val unloadScriptProbe = TestProbe[SequenceComponentResponse.Done.type]
+      val unloadScriptProbe = TestProbe[Done]
       sequenceComponentRef ! UnloadScript(unloadScriptProbe.ref)
 
       unloadScriptProbe.expectMessageType[Done.type]
@@ -116,7 +115,7 @@ class SequenceComponentBehaviorTest extends ScalaTestFrameworkTestKit with BaseT
         ocsSequenceComponentName
       )).futureValue
 
-      val unloadScriptResponseProbe = TestProbe[Done.type]
+      val unloadScriptResponseProbe = TestProbe[Done]
       val getStatusProbe            = TestProbe[GetStatusResponse]
 
       //assert if GetStatus returns None after unloading sequencer script
