@@ -5,7 +5,7 @@ import csw.command.client.CommandResponseManager
 import csw.event.api.scaladsl.EventService
 import csw.location.api.scaladsl.LocationService
 import csw.time.scheduler.TimeServiceSchedulerFactory
-import esw.highlevel.dsl.javadsl.{JEventServiceDsl, JLocationServiceDsl, JTimeServiceDsl}
+import esw.highlevel.dsl.javadsl.{JCommandServiceDsl, JEventServiceDsl, JLocationServiceDsl, JTimeServiceDsl}
 import esw.highlevel.dsl.{EventServiceDsl, LocationServiceDsl, TimeServiceDsl}
 import esw.ocs.core.SequenceOperator
 import esw.ocs.internal.SequencerCommandServiceDsl
@@ -24,3 +24,4 @@ class CswServices(
     with JEventServiceDsl
     with TimeServiceDsl
     with JTimeServiceDsl
+    with JCommandServiceDsl
