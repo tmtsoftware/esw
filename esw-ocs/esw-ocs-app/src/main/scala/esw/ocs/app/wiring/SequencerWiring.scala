@@ -18,12 +18,12 @@ import esw.http.core.wiring.{HttpService, Settings}
 import esw.ocs.api.models.responses.RegistrationError
 import esw.ocs.app.route.{PostHandlerImpl, SequencerAdminRoutes}
 import esw.ocs.client.messages.SequencerMessages.{EswSequencerMessage, Shutdown}
-import esw.ocs.core._
-import esw.ocs.dsl.utils.ScriptLoader
-import esw.ocs.dsl.{CswServices, Script}
+import esw.ocs.impl.core._
+import esw.ocs.impl.dsl.utils.ScriptLoader
+import esw.ocs.impl.dsl.{CswServices, Script}
 import esw.ocs.impl.SequencerAdminImpl
-import esw.ocs.internal.{Timeouts, Wiring}
-import esw.ocs.syntax.FutureSyntax.FutureOps
+import esw.ocs.impl.internal.{Timeouts, Wiring}
+import esw.ocs.impl.syntax.FutureSyntax.FutureOps
 
 import scala.concurrent.{Await, Future}
 
