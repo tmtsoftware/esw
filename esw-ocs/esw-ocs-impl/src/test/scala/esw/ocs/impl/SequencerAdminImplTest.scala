@@ -16,21 +16,24 @@ import esw.ocs.impl.messages.SequencerState.{Idle, InProgress, Loaded, Offline}
 class SequencerAdminImplTest extends ScalaTestWithActorTestKit with BaseTestSuite {
   private val command = Setup(Prefix("esw.test"), CommandName("command-1"), None)
 
-  private val getSequenceResponse      = StepList(Sequence(command)).toOption
-  private val getStateResponse         = Loaded
-  private val addResponse              = Ok
-  private val pauseResponse            = CannotOperateOnAnInFlightOrFinishedStep
-  private val prependResponse          = Unhandled(Offline.entryName, "Prepend")
-  private val resumeResponse           = Unhandled(Idle.entryName, "Resume")
-  private val removeBreakpointResponse = IdDoesNotExist(Id())
-  private val replaceResponse          = CannotOperateOnAnInFlightOrFinishedStep
-  private val insertAfterResponse      = Ok
-  private val resetResponse            = Ok
-  private val abortResponse            = Unhandled(InProgress.entryName, "AbortSequence")
-  private val deleteResponse           = IdDoesNotExist(Id())
-  private val addBreakpointResponse    = Unhandled(Idle.entryName, "AddBreakpoint")
-  private val goOnlineResponse         = GoOnlineHookFailed
-  private val goOfflineResponse        = Unhandled(Offline.entryName, "Offline")
+  private val getSequenceResponse          = StepList(Sequence(command)).toOption
+  private val getStateResponse             = Loaded
+  private val addResponse                  = Ok
+  private val pauseResponse                = CannotOperateOnAnInFlightOrFinishedStep
+  private val prependResponse              = Unhandled(Offline.entryName, "Prepend")
+  private val resumeResponse               = Unhandled(Idle.entryName, "Resume")
+  private val removeBreakpointResponse     = IdDoesNotExist(Id())
+  private val replaceResponse              = CannotOperateOnAnInFlightOrFinishedStep
+  private val insertAfterResponse          = Ok
+  private val resetResponse                = Ok
+  private val abortResponse                = Unhandled(InProgress.entryName, "AbortSequence")
+  private val deleteResponse               = IdDoesNotExist(Id())
+  private val addBreakpointResponse        = Unhandled(Idle.entryName, "AddBreakpoint")
+  private val goOnlineResponse             = GoOnlineHookFailed
+  private val goOfflineResponse            = Unhandled(Offline.entryName, "Offline")
+  private val loadSequenceResponse         = Ok
+  private val startSequenceResponse        = Ok
+  private val loadAndStartSequenceResponse = Ok
 
   private val mockedBehavior: Behaviors.Receive[SequencerMsg] =
     Behaviors.receiveMessage[SequencerMsg] { msg =>
@@ -50,6 +53,9 @@ class SequencerAdminImplTest extends ScalaTestWithActorTestKit with BaseTestSuit
         case RemoveBreakpoint(`command`.runId, replyTo)             => replyTo ! removeBreakpointResponse
         case GoOnline(replyTo)                                      => replyTo ! goOnlineResponse
         case GoOffline(replyTo)                                     => replyTo ! goOfflineResponse
+        case LoadSequence(_, replyTo)                               => replyTo ! loadSequenceResponse
+        case StartSequence(replyTo)                                 => replyTo ! startSequenceResponse
+        case LoadAndStartSequence(_, replyTo)                       => replyTo ! loadAndStartSequenceResponse
         case _                                                      =>
       }
       Behaviors.same
@@ -113,5 +119,21 @@ class SequencerAdminImplTest extends ScalaTestWithActorTestKit with BaseTestSuit
 
   "abortSequence" in {
     sequencerAdmin.abortSequence().futureValue should ===(abortResponse)
+  }
+
+  "loadSequence" in {
+    val command1 = Setup(Prefix("esw.test"), CommandName("command-1"), None)
+    val sequence = Sequence(command1)
+    sequencerAdmin.loadSequence(sequence).futureValue should ===(Ok)
+  }
+
+  "startSequence" in {
+    sequencerAdmin.startSequence.futureValue should ===(Ok)
+  }
+
+  "loadAndStartSequence" in {
+    val command1 = Setup(Prefix("esw.test"), CommandName("command-1"), None)
+    val sequence = Sequence(command1)
+    sequencerAdmin.loadAndStartSequence(sequence).futureValue should ===(Ok)
   }
 }

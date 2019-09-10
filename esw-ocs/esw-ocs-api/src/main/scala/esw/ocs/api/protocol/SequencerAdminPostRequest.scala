@@ -1,6 +1,6 @@
 package esw.ocs.api.protocol
 
-import csw.params.commands.SequenceCommand
+import csw.params.commands.{Sequence, SequenceCommand}
 import csw.params.core.models.Id
 
 sealed trait SequencerAdminPostRequest
@@ -15,6 +15,9 @@ object SequencerAdminPostRequest {
   case object AbortSequence                                       extends SequencerAdminPostRequest
   case object GoOnline                                            extends SequencerAdminPostRequest
   case object GoOffline                                           extends SequencerAdminPostRequest
+  case object StartSequence                                       extends SequencerAdminPostRequest
+  case class LoadSequence(sequence: Sequence)                     extends SequencerAdminPostRequest
+  case class LoadAndStartSequence(sequence: Sequence)             extends SequencerAdminPostRequest
   case class Add(commands: List[SequenceCommand])                 extends SequencerAdminPostRequest
   case class Prepend(commands: List[SequenceCommand])             extends SequencerAdminPostRequest
   case class Replace(id: Id, commands: List[SequenceCommand])     extends SequencerAdminPostRequest

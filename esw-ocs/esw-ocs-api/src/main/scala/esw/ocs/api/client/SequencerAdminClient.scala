@@ -1,6 +1,6 @@
 package esw.ocs.api.client
 
-import csw.params.commands.SequenceCommand
+import csw.params.commands.{Sequence, SequenceCommand}
 import csw.params.core.models.Id
 import esw.ocs.api.SequencerAdminApi
 import esw.ocs.api.codecs.SequencerAdminHttpCodecs
@@ -77,5 +77,17 @@ class SequencerAdminClient(postClient: RequestClient[SequencerAdminPostRequest])
 
   override def goOffline(): Future[OkOrUnhandledResponse] = {
     postClient.requestResponse[OkOrUnhandledResponse](GoOffline)
+  }
+
+  override def loadSequence(sequence: Sequence): Future[LoadSequenceResponse] = {
+    postClient.requestResponse[LoadSequenceResponse](LoadSequence(sequence))
+  }
+
+  override def startSequence: Future[OkOrUnhandledResponse] = {
+    postClient.requestResponse[OkOrUnhandledResponse](StartSequence)
+  }
+
+  override def loadAndStartSequence(sequence: Sequence): Future[LoadSequenceResponse] = {
+    postClient.requestResponse[LoadSequenceResponse](LoadAndStartSequence(sequence))
   }
 }

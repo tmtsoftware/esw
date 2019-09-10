@@ -123,5 +123,29 @@ class SequencerAdminClientTest extends BaseTestSuite with SequencerAdminHttpCode
         .thenReturn(Future.successful(Ok))
       sequencerAdminClient.goOnline().futureValue should ===(Ok)
     }
+
+    "call postClient with LoadSequence request | ESW-222" in {
+      val command1 = Setup(Prefix("esw.test"), CommandName("command-1"), None)
+      val sequence = Sequence(command1)
+      when(postClient.requestResponse[LoadSequenceResponse](argsEq(LoadSequence(sequence)))(any[Decoder[LoadSequenceResponse]]()))
+        .thenReturn(Future.successful(Ok))
+      sequencerAdminClient.loadSequence(sequence).futureValue should ===(Ok)
+    }
+
+    "call postClient with StartSequence request | ESW-222" in {
+      when(postClient.requestResponse[OkOrUnhandledResponse](argsEq(StartSequence))(any[Decoder[OkOrUnhandledResponse]]()))
+        .thenReturn(Future.successful(Ok))
+      sequencerAdminClient.startSequence.futureValue should ===(Ok)
+    }
+
+    "call postClient with LoadAndStartSequence request | ESW-222" in {
+      val command1 = Setup(Prefix("esw.test"), CommandName("command-1"), None)
+      val sequence = Sequence(command1)
+      when(
+        postClient
+          .requestResponse[LoadSequenceResponse](argsEq(LoadAndStartSequence(sequence)))(any[Decoder[LoadSequenceResponse]]())
+      ).thenReturn(Future.successful(Ok))
+      sequencerAdminClient.loadAndStartSequence(sequence).futureValue should ===(Ok)
+    }
   }
 }
