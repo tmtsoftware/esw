@@ -13,6 +13,7 @@ import kotlinx.coroutines.delay
 const val eventKey = "csw.a.b."
 fun event(id: Int) = SystemEvent(Prefix("csw.a.b"), EventName(id.toString()))
 
+@Deprecated("Use script based approach to write scripts")
 class Script5(cswServices: CswServices) : ScriptKt(cswServices) {
     init {
         log("============= Loading script 5 ============")
