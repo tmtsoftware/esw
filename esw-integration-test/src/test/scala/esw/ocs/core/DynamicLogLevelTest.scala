@@ -43,8 +43,8 @@ class DynamicLogLevelTest extends ScalaTestFrameworkTestKit with BaseTestSuite w
   }
 
   "get/set log level for sequencer dynamically | ESW-183" in {
-    val defaultLogLevel = ERROR
-    val newLogLevel     = FATAL
+    val defaultLogLevel = FATAL
+    val newLogLevel     = ERROR
 
     val setLogMetadataUri = Uri.from(
       scheme = "http",
