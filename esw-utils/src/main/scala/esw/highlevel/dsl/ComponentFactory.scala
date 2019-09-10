@@ -2,7 +2,7 @@ package esw.highlevel.dsl
 
 import akka.actor.typed.ActorSystem
 import csw.command.api.scaladsl.CommandService
-import csw.command.client.{CommandServiceFactory, ICommandServiceFactory}
+import csw.command.client.CommandServiceFactory
 import csw.location.api.scaladsl.LocationService
 import csw.location.models.Connection.AkkaConnection
 import csw.location.models.{AkkaLocation, ComponentId, ComponentType}
@@ -13,8 +13,8 @@ import scala.concurrent.duration.DurationLong
 // fixme: delete this, duplicate of one present in http-core
 trait ComponentFactory {
 
-  def locationService: LocationService
-  implicit def actorSystem: ActorSystem[_]
+  private[esw] def locationService: LocationService
+  private[esw] def actorSystem: ActorSystem[_]
 
   private[dsl] def resolve[T](componentName: String, componentType: ComponentType)(f: AkkaLocation => T): Future[T] =
     locationService
@@ -25,5 +25,5 @@ trait ComponentFactory {
       }(actorSystem.executionContext)
 
   def commandService(componentName: String, componentType: ComponentType): Future[CommandService] =
-    resolve(componentName, componentType)(CommandServiceFactory.make)
+    resolve(componentName, componentType)(CommandServiceFactory.make(_)(actorSystem))
 }

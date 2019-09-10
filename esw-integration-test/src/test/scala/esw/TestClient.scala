@@ -13,7 +13,7 @@ import csw.location.client.scaladsl.HttpLocationServiceFactory
 import csw.params.commands.{CommandName, Sequence, Setup}
 import csw.params.core.models.Prefix
 import esw.highlevel.dsl.LocationServiceDsl
-import esw.ocs.client.messages.SequencerMessages.{EswSequencerMessage, Shutdown}
+import esw.ocs.impl.messages.SequencerMessages.{EswSequencerMessage, Shutdown}
 
 import scala.concurrent.Await
 import scala.concurrent.duration._
