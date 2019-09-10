@@ -16,22 +16,22 @@ class TestReporter extends Reporter {
       case x: TestIgnored   => addResult(x.testName, "IGNORED")
       case x: TestPending   => addResult(x.testName, "PENDING")
       case x: TestCanceled  => addResult(x.testName, "CANCELED")
-      case x: RunCompleted  => writeCSV()
+      case x: RunCompleted  => generateReport()
       case _                =>
       //    case RunStarting(ordinal, testCount, configMap, formatter, location, payload, threadName, timeStamp) =>
     }
   }
 
   private def addResult(name: String, testStatus: String): Unit = {
-    val i = name.lastIndexOf('|')
+    val i = name.lastIndexOf(Separators.PIPE)
 
     val (testName, stories) =
       if (i >= 0) name.splitAt(i)
-      else (name, "| ESW-000")
+      else (name, s"${Separators.PIPE} None")
 
     stories
-      .drop(1)    // Drop the "|"
-      .split(",") // multiple stories
+      .drop(1)                 // Drop the "|"
+      .split(Separators.COMMA) // multiple stories
       .foreach { x =>
         val s = x.strip()
 
@@ -44,11 +44,10 @@ class TestReporter extends Reporter {
   }
 
   private val parentPath = "./target/testStoryMapping"
-  private val reportFile = "/testStoryMapping.csv"
+  private val reportFile = "/testStoryMapping.txt"
   private val indexPath  = "/index.html"
 
   private def createIndexFile(): Unit = {
-    Files.createDirectories(new File(parentPath).toPath)
     val writer = new FileWriter(parentPath + indexPath)
 
     val content = s"""
@@ -63,11 +62,17 @@ class TestReporter extends Reporter {
     writer.close()
   }
 
-  private def writeCSV(): Unit = {
-    //create parent file - otherwise it will throw exception
+  private def generateReport(): Unit = {
+    Files.createDirectories(new File(parentPath).toPath)
     createIndexFile()
     val file = new FileWriter(parentPath + reportFile, true)
-    results.foreach(x => file.append(x.toCSV))
+    results.foreach(x => file.append(x.format(Separators.PIPE, Separators.NEWLINE)))
     file.close()
+  }
+
+  object Separators {
+    val PIPE    = '|' // separator for test name and story number
+    val NEWLINE = '\n'
+    val COMMA   = ',' // separator for multiple story number
   }
 }

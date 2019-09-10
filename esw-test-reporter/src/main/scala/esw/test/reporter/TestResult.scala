@@ -2,13 +2,16 @@ package esw.test.reporter
 
 case class TestResult(name: String, status: String) {
   //csv representation
-  def toCSV: String = s"$name, $status"
+  def format(fieldSeparator: Char): String = s"$name $fieldSeparator $status"
 }
 
 case class StoryResult(name: String, tests: List[TestResult]) {
   //csv representation
-  def toCSV: String = {
-    val NEWLINE = "\n"
-    tests.map(x => s"$name, ${x.toCSV}").reduce(_ + NEWLINE + _) + NEWLINE
+  def format(fieldSeparator: Char, dataSeparator: Char): String = {
+    tests
+      .map { x =>
+        s"$name $fieldSeparator ${x.format(fieldSeparator)}"
+      }
+      .reduce(_ + dataSeparator + _) + dataSeparator
   }
 }
