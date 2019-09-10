@@ -1,4 +1,4 @@
-package esw.gateway.server
+package esw.gateway.server.handlers
 
 import akka.NotUsed
 import akka.http.scaladsl.model.ws.Message

@@ -9,6 +9,7 @@ import esw.gateway.api.codecs.RestlessCodecs
 import esw.gateway.api.messages.{PostRequest, WebsocketRequest}
 import esw.gateway.api.{AlarmApi, CommandApi, EventApi}
 import esw.gateway.impl.{AlarmImpl, CommandImpl, EventImpl}
+import esw.gateway.server.handlers.{PostHandlerImpl, WebsocketHandlerImpl}
 import esw.http.core.wiring.{HttpService, ServerWiring}
 import msocket.api.RequestHandler
 

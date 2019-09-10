@@ -6,9 +6,11 @@ import esw.ocs.api.responses.RegistrationError
 
 import scala.concurrent.Future
 
-trait Wiring {
-
+trait SequencerServer {
   def start(): Either[RegistrationError, AkkaLocation]
-
   def shutDown(): Future[Done]
+}
+
+trait SequencerServerFactory {
+  def make(sequencerId: String, observingMode: String, sequenceComponentName: Option[String]): SequencerServer
 }

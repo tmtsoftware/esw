@@ -1,4 +1,4 @@
-package esw.gateway.server
+package esw.gateway.server.handlers
 
 import akka.http.scaladsl.server.Directives._
 import akka.http.scaladsl.server.StandardRoute

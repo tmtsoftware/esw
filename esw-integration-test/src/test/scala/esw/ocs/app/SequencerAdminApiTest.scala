@@ -15,10 +15,10 @@ import esw.ocs.api.BaseTestSuite
 import esw.ocs.api.client.SequencerAdminClient
 import esw.ocs.api.codecs.SequencerAdminHttpCodecs
 import esw.ocs.api.models.Step
-import esw.ocs.api.responses.Ok
 import esw.ocs.api.request.SequencerAdminPostRequest
 import esw.ocs.api.responses.{LoadSequenceResponse, Ok}
 import esw.ocs.app.wiring.SequencerWiring
+import esw.ocs.impl.internal.SequencerServer
 import esw.ocs.impl.messages.SequencerMessages.{EswSequencerMessage, LoadSequence}
 import mscoket.impl.post.PostClient
 
@@ -30,7 +30,7 @@ class SequencerAdminApiTest extends ScalaTestFrameworkTestKit with BaseTestSuite
   private implicit val sys: ActorSystem[SpawnProtocol] = actorSystem
   private implicit val scheduler: Scheduler            = actorSystem.scheduler
 
-  private var wiring: SequencerWiring                     = _
+  private var sequencerServer: SequencerServer            = _
   private var sequencerRef: ActorRef[EswSequencerMessage] = _
   private val locationService: LocationService            = HttpLocationServiceFactory.makeLocalClient
   private val sequencerId                                 = "testSequencerId1"
@@ -39,13 +39,14 @@ class SequencerAdminApiTest extends ScalaTestFrameworkTestKit with BaseTestSuite
 
   override def beforeAll(): Unit = {
     super.beforeAll()
-    wiring = new SequencerWiring(sequencerId, observingMode, None)
-    wiring.start()
+    val wiring = new SequencerWiring(sequencerId, observingMode, None)
+    sequencerServer = wiring.sequencerServer
+    sequencerServer.start()
     sequencerRef = wiring.sequencerRef
   }
 
   override protected def afterAll(): Unit = {
-    wiring.shutDown().futureValue
+    sequencerServer.shutDown().futureValue
     super.afterAll()
   }
 

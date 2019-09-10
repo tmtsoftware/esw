@@ -21,6 +21,7 @@ import esw.gateway.api.messages.WebsocketRequest.{QueryFinal, Subscribe, Subscri
 import esw.gateway.api.messages._
 import esw.gateway.api.{CommandApi, EventApi}
 import esw.gateway.impl.{CommandImpl, EventImpl}
+import esw.gateway.server.handlers.WebsocketHandlerImpl
 import esw.http.core.BaseTestSuite
 import io.bullet.borer.Decoder
 import mscoket.impl.HttpCodecs

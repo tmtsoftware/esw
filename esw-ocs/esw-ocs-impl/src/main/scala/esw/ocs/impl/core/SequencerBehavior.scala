@@ -14,12 +14,12 @@ import csw.location.models.Connection.AkkaConnection
 import csw.logging.client.commons.LogAdminUtil
 import csw.params.commands.Sequence
 import esw.ocs.api.codecs.OcsCodecs
-import esw.ocs.api.responses.{DuplicateIdsFound, GoOnlineHookFailed, GoOnlineResponse, LoadSequenceResponse, Ok, OkOrUnhandledResponse, SequenceResponse, SequenceResult, Unhandled}
+import esw.ocs.api.responses._
+import esw.ocs.impl.dsl.ScriptDsl
+import esw.ocs.impl.internal.Timeouts
 import esw.ocs.impl.messages.SequencerMessages._
 import esw.ocs.impl.messages.SequencerState
 import esw.ocs.impl.messages.SequencerState._
-import esw.ocs.impl.dsl.ScriptDsl
-import esw.ocs.impl.internal.Timeouts
 
 import scala.concurrent.Future
 import scala.reflect.ClassTag

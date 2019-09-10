@@ -21,6 +21,7 @@ import esw.gateway.api.messages.PostRequest.{CommandRequest, GetEvent, PublishEv
 import esw.gateway.api.messages.{EmptyEventKeys, EventServerUnavailable, InvalidComponent, SetAlarmSeverityFailure}
 import esw.gateway.api.{AlarmApi, CommandApi, EventApi}
 import esw.gateway.impl.{AlarmImpl, CommandImpl, EventImpl}
+import esw.gateway.server.handlers.PostHandlerImpl
 import esw.http.core.BaseTestSuite
 import mscoket.impl.HttpCodecs
 import org.mockito.ArgumentMatchers.any

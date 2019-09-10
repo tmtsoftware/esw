@@ -1,6 +1,5 @@
 package esw.ocs.api
 
-
 import esw.ocs.api.responses.SequenceComponentResponse._
 
 import scala.concurrent.Future

@@ -39,14 +39,14 @@ class SequenceComponentBehaviorTest extends ScalaTestFrameworkTestKit with BaseT
 
   private def createBehaviorTestKit(): BehaviorTestKit[SequenceComponentMsg] = BehaviorTestKit(
     Behaviors.setup[SequenceComponentMsg] { _ =>
-      SequenceComponentBehavior.behavior(ocsSequenceComponentName, factory.getLogger, sequencerWiring)
+      SequenceComponentBehavior.behavior(ocsSequenceComponentName, factory.getLogger, sequencerWiring(_, _, _).sequencerServer)
     }
   )
 
   "SequenceComponentBehavior" must {
     "load/unload script and get appropriate status | ESW-103" in {
       val sequenceComponentRef: ActorRef[SequenceComponentMsg] = (typedSystem ? Spawn(
-        SequenceComponentBehavior.behavior(ocsSequenceComponentName, factory.getLogger, sequencerWiring),
+        SequenceComponentBehavior.behavior(ocsSequenceComponentName, factory.getLogger, sequencerWiring(_, _, _).sequencerServer),
         ocsSequenceComponentName
       )).futureValue
 
@@ -87,7 +87,7 @@ class SequenceComponentBehaviorTest extends ScalaTestFrameworkTestKit with BaseT
 
     "load script and give LoadScriptError if sequencer is already running | ESW-103" in {
       val sequenceComponentRef: ActorRef[SequenceComponentMsg] = (typedSystem ? Spawn(
-        SequenceComponentBehavior.behavior(ocsSequenceComponentName, factory.getLogger, sequencerWiring),
+        SequenceComponentBehavior.behavior(ocsSequenceComponentName, factory.getLogger, sequencerWiring(_, _, _).sequencerServer),
         ocsSequenceComponentName
       )).futureValue
 
@@ -112,7 +112,7 @@ class SequenceComponentBehaviorTest extends ScalaTestFrameworkTestKit with BaseT
 
     "unload script and return Done if sequence component is not running any sequencer | ESW-103" in {
       val sequenceComponentRef: ActorRef[SequenceComponentMsg] = (typedSystem ? Spawn(
-        SequenceComponentBehavior.behavior(ocsSequenceComponentName, factory.getLogger, sequencerWiring),
+        SequenceComponentBehavior.behavior(ocsSequenceComponentName, factory.getLogger, sequencerWiring(_, _, _).sequencerServer),
         ocsSequenceComponentName
       )).futureValue
 
