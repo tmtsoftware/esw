@@ -26,7 +26,7 @@ pipeline {
 
         stage('Test') {
             steps {
-                sh "sbt -DenableCoverage=true ';set every enableFatalWarnings := true; test:test'"
+                sh "sbt -DenableCoverage=true -DgenerateStoryReport=true ';set every enableFatalWarnings := true; clean; test:test'"
             }
             post {
                 always {
@@ -42,6 +42,13 @@ pipeline {
                             reportName           : "Scoverage Report"
                     ])
 
+                    publishHTML(target: [
+                            alwaysLinkToLastBuild: false,
+                            keepAll              : true,
+                            reportDir            : './target/testStoryMapping/',
+                            reportFiles          : 'index.html',
+                            reportName           : "Test story mapping"
+                    ])
                 }
             }
         }
