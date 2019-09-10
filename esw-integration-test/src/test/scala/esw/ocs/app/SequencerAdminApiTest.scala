@@ -51,7 +51,7 @@ class SequencerAdminApiTest extends ScalaTestFrameworkTestKit with BaseTestSuite
   }
 
   "Sequencer" must {
-    "return true for IsAvailable request | ESW-222" in {
+    "start the sequencer and handle the http requests | ESW-222" in {
       val componentId                = ComponentId(s"$sequencerId@$observingMode@http", ComponentType.Service)
       val httpLocation: HttpLocation = locationService.resolve(HttpConnection(componentId), 5.seconds).futureValue.get
 
@@ -63,7 +63,6 @@ class SequencerAdminApiTest extends ScalaTestFrameworkTestKit with BaseTestSuite
       sequencerAdminClient.isAvailable.futureValue should ===(true)
 
       val command1 = Setup(Prefix("esw.test"), CommandName("command-1"), None)
-//      val command2                                   = Setup(Prefix("esw.test"), CommandName("command-2"), None)
       val sequence = Sequence(command1)
 
       val loadResponse: Future[LoadSequenceResponse] = sequencerRef ? (LoadSequence(sequence, _))
@@ -72,8 +71,8 @@ class SequencerAdminApiTest extends ScalaTestFrameworkTestKit with BaseTestSuite
 
       loadResponse.futureValue should ===(Ok)
 
+//      val command2                                   = Setup(Prefix("esw.test"), CommandName("command-2"), None)
 //      sequencerAdminClient.add(List(command2)).futureValue should ===(Ok)
-
 //      sequencerAdminClient.getSequence.futureValue.get.steps should ===(List(Step(command1), Step(command2)))
     }
   }
