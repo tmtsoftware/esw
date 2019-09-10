@@ -6,6 +6,7 @@ import esw.ocs.impl.dsl.CswServices
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 
+@Deprecated("Use script based approach to write scripts")
 class Script1(cswServices: CswServices) : ScriptKt(cswServices) {
     init {
         val eventKey = "csw.a.b."

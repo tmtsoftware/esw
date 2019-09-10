@@ -34,23 +34,18 @@ script { csw ->
             addSubCommand(commandB, commandB1)
             addSubCommand(commandB, commandB2)
 
-            /* ============= not yet supported in esw dsl ====================
-            val assemblyResponse3 = csw.submit("Sample1Assembly", commandB1).await
-            csw.updateSubCommand(subCmdResponse = assemblyResponse3)
+            val assemblyResponse3 = submitCommandToAssembly("Sample1Assembly", commandB1)
+            updateSubCommand(assemblyResponse3)
 
-            val assemblyResponse4 = csw.submit("Sample1Assembly", commandB2).await
-            csw.updateSubCommand(subCmdResponse = assemblyResponse4)
-            */
-
+            val assemblyResponse4 = submitCommandToAssembly("Sample1Assembly", commandB2)
+            updateSubCommand(assemblyResponse4)
         }
 
-        /* ============= not yet supported in esw dsl ====================
-        val assemblyResponse1 = csw.submit("Sample1Assembly", command1).await
-        csw.updateSubCommand(subCmdResponse = assemblyResponse1)
+        val assemblyResponse1 = submitCommandToAssembly("Sample1Assembly", command1)
+        updateSubCommand(assemblyResponse1)
 
-        val assemblyResponse2 = csw.submit("Sample1Assembly", command2).await
-        csw.updateSubCommand(subCmdResponse = assemblyResponse2)
-        */
+        val assemblyResponse2 = submitCommandToAssembly("Sample1Assembly", command2)
+        updateSubCommand(assemblyResponse2)
     }
 
     handleShutdown {
