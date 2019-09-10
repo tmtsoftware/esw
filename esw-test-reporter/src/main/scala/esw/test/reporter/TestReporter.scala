@@ -7,7 +7,7 @@ import org.scalatest.Reporter
 import org.scalatest.events._
 
 class TestReporter extends Reporter {
-  var results: Set[StoryResult] = Set.empty
+  var results: List[StoryResult] = List.empty
 
   override def apply(event: Event): Unit = {
     event match {
@@ -29,18 +29,10 @@ class TestReporter extends Reporter {
       if (i >= 0) name.splitAt(i)
       else (name, s"${Separators.PIPE} None")
 
-    stories
+    results ++= stories
       .drop(1)                 // Drop the "|"
       .split(Separators.COMMA) // multiple stories
-      .foreach { x =>
-        val s = x.strip()
-
-        val testNameResult = TestResult(testName.strip(), testStatus)
-        val storyResult    = results.find(_.name == s).getOrElse(StoryResult(s, List.empty))
-
-        results -= storyResult
-        results += storyResult.copy(tests = storyResult.tests :+ testNameResult)
-      }
+      .map(x => StoryResult(x.strip(), testName.strip(), testStatus))
   }
 
   private val parentPath = "./target/testStoryMapping"
@@ -66,13 +58,10 @@ class TestReporter extends Reporter {
     Files.createDirectories(new File(parentPath).toPath)
     createIndexFile()
     val file = new FileWriter(parentPath + reportFile, true)
-    results.foreach(x => file.append(x.format(Separators.PIPE, Separators.NEWLINE)))
+
+    // write to file
+    results.foreach(x => file.append(x.format(Separators.PIPE) + Separators.NEWLINE))
     file.close()
   }
 
-  object Separators {
-    val PIPE    = '|' // separator for test name and story number
-    val NEWLINE = '\n'
-    val COMMA   = ',' // separator for multiple story number
-  }
 }
