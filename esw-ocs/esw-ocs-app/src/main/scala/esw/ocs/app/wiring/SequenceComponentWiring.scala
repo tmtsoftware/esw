@@ -7,10 +7,10 @@ import csw.framework.internal.wiring.ActorRuntime
 import csw.location.models.AkkaLocation
 import csw.params.core.models.Prefix
 import esw.ocs.api.models.responses.RegistrationError
-import esw.ocs.client.messages.SequenceComponentMsg
-import esw.ocs.core.SequenceComponentBehavior
-import esw.ocs.internal.SequenceComponentRegistration
-import esw.ocs.syntax.FutureSyntax.FutureOps
+import esw.ocs.impl.messages.SequenceComponentMsg
+import esw.ocs.impl.core.SequenceComponentBehavior
+import esw.ocs.impl.internal.SequenceComponentRegistration
+import esw.ocs.impl.syntax.FutureSyntax.FutureOps
 
 import scala.concurrent.Future
 

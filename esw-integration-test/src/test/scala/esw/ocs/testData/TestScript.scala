@@ -8,7 +8,7 @@ import csw.params.core.models.{Id, Prefix}
 import csw.params.events.{EventName, SystemEvent}
 import csw.time.core.models.UTCTime
 import esw.highlevel.dsl.Util.RichCommand
-import esw.ocs.dsl.{CswServices, Script}
+import esw.ocs.impl.dsl.{CswServices, Script}
 
 import scala.concurrent.duration.DurationDouble
 

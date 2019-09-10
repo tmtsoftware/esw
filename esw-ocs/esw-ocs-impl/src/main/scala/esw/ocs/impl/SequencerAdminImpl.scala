@@ -10,9 +10,9 @@ import csw.params.core.models.Id
 import esw.ocs.api.SequencerAdminApi
 import esw.ocs.api.models.StepList
 import esw.ocs.api.models.responses._
-import esw.ocs.client.messages.SequencerMessages._
-import esw.ocs.client.messages.SequencerState
-import esw.ocs.client.messages.SequencerState.{Idle, Offline}
+import esw.ocs.impl.messages.SequencerMessages._
+import esw.ocs.impl.messages.SequencerState
+import esw.ocs.impl.messages.SequencerState.{Idle, Offline}
 
 import scala.concurrent.{ExecutionContext, Future}
 

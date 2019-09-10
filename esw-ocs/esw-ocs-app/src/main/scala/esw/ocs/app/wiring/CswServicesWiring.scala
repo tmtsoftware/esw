@@ -12,8 +12,8 @@ import csw.location.client.ActorSystemFactory
 import csw.logging.api.scaladsl.Logger
 import csw.logging.client.scaladsl.LoggerFactory
 import csw.time.scheduler.TimeServiceSchedulerFactory
-import esw.ocs.internal.Timeouts
-import esw.ocs.syntax.FutureSyntax.FutureOps
+import esw.ocs.impl.internal.Timeouts
+import esw.ocs.impl.syntax.FutureSyntax.FutureOps
 
 // $COVERAGE-OFF$
 private[app] class CswServicesWiring(componentName: String) {
