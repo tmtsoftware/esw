@@ -72,7 +72,7 @@ class SequencerAppIntegrationTest extends ScalaTestFrameworkTestKit with BaseTes
       probe2.expectMessage(Done)
     }
 
-    "start sequence component and register with automatically generated, incremental uniqueIDs, ESW-144" in {
+    "start sequence component and register with automatically generated, incremental uniqueIDs| ESW-144" in {
       val prefixStr      = "esw.test.prefix"
       val prefix: Prefix = Prefix(prefixStr)
 

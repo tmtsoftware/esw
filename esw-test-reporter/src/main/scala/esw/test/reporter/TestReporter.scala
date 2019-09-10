@@ -1,6 +1,7 @@
 package esw.test.reporter
 
-import java.io.FileWriter
+import java.io.{File, FileWriter}
+import java.nio.file.Files
 
 import org.scalatest.Reporter
 import org.scalatest.events._
@@ -21,7 +22,7 @@ class TestReporter extends Reporter {
     }
   }
 
-  private def addResult(name: String, testStatus: String) = {
+  private def addResult(name: String, testStatus: String): Unit = {
     val i = name.lastIndexOf('|')
 
     val (testName, stories) =
@@ -42,8 +43,30 @@ class TestReporter extends Reporter {
       }
   }
 
-  private def writeCSV() = {
-    val file = new FileWriter("./target/TestStoryMapping.csv", true)
+  private val parentPath = "./target/testStoryMapping"
+  private val reportFile = "/testStoryMapping.csv"
+  private val indexPath  = "/index.html"
+
+  private def createIndexFile(): Unit = {
+    Files.createDirectories(new File(parentPath).toPath)
+    val writer = new FileWriter(parentPath + indexPath)
+
+    val content = s"""
+      |<html>
+      | <body>
+      |   <a href=".$reportFile">$reportFile</a>
+      | </body>
+      |</html>
+      |""".stripMargin
+
+    writer.write(content)
+    writer.close()
+  }
+
+  private def writeCSV(): Unit = {
+    //create parent file - otherwise it will throw exception
+    createIndexFile()
+    val file = new FileWriter(parentPath + reportFile, true)
     results.foreach(x => file.append(x.toCSV))
     file.close()
   }
