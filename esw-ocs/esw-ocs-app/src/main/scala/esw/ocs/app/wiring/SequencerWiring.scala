@@ -17,7 +17,7 @@ import esw.http.core.wiring
 import esw.http.core.wiring.{HttpService, Settings}
 import esw.ocs.api.models.responses.RegistrationError
 import esw.ocs.app.route.{PostHandlerImpl, SequencerAdminRoutes}
-import esw.ocs.client.messages.SequencerMessages.{EswSequencerMessage, Shutdown}
+import esw.ocs.impl.messages.SequencerMessages.{EswSequencerMessage, Shutdown}
 import esw.ocs.impl.core._
 import esw.ocs.impl.dsl.utils.ScriptLoader
 import esw.ocs.impl.dsl.{CswServices, Script}

@@ -18,7 +18,7 @@ import esw.ocs.api.models.codecs.SequencerAdminHttpCodecs
 import esw.ocs.api.models.request.SequencerAdminPostRequest
 import esw.ocs.api.models.responses.{LoadSequenceResponse, Ok}
 import esw.ocs.app.wiring.SequencerWiring
-import esw.ocs.client.messages.SequencerMessages.{EswSequencerMessage, LoadSequence}
+import esw.ocs.impl.messages.SequencerMessages.{EswSequencerMessage, LoadSequence}
 import mscoket.impl.post.PostClient
 
 import scala.concurrent.Future

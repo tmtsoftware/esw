@@ -8,7 +8,7 @@ import csw.params.commands.{CommandName, CommandResponse, Setup}
 import csw.params.core.models.Prefix
 import esw.ocs.api.BaseTestSuite
 import esw.ocs.api.models.Step
-import esw.ocs.client.messages.SequencerMessages.{MaybeNext, PullNext, ReadyToExecuteNext, Update}
+import esw.ocs.impl.messages.SequencerMessages.{MaybeNext, PullNext, ReadyToExecuteNext, Update}
 import esw.ocs.api.models.responses.{Ok, PullNextResult}
 
 class SequenceOperatorTest extends ScalaTestWithActorTestKit with BaseTestSuite {

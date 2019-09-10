@@ -10,9 +10,9 @@ import csw.params.core.models.Id
 import esw.ocs.api.models.StepStatus.{Finished, InFlight}
 import esw.ocs.api.models.responses._
 import esw.ocs.api.models.{Step, StepList}
-import esw.ocs.client.messages.SequencerMessages.{GoIdle, Update}
-import esw.ocs.client.messages.SequencerState
-import esw.ocs.client.messages.SequencerState.InProgress
+import esw.ocs.impl.messages.SequencerMessages.{GoIdle, Update}
+import esw.ocs.impl.messages.SequencerState
+import esw.ocs.impl.messages.SequencerState.InProgress
 
 import scala.concurrent.Future
 import scala.util.{Failure, Success}

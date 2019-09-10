@@ -6,7 +6,7 @@ import akka.actor.typed.{ActorRef, ActorSystem}
 import akka.util.Timeout
 import csw.params.commands.CommandResponse.SubmitResponse
 import esw.ocs.api.models.Step
-import esw.ocs.client.messages.SequencerMessages._
+import esw.ocs.impl.messages.SequencerMessages._
 import esw.ocs.api.models.responses.{OkOrUnhandledResponse, PullNextResponse}
 import esw.ocs.impl.internal.Timeouts
 

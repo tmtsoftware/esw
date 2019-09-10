@@ -6,8 +6,8 @@ import akka.actor.typed.scaladsl.AskPattern._
 import akka.util.Timeout
 import esw.ocs.api.SequenceComponentApi
 import esw.ocs.api.models.responses.SequenceComponentResponse.{Done, GetStatusResponse, LoadScriptResponse}
-import esw.ocs.client.messages.SequenceComponentMsg
-import esw.ocs.client.messages.SequenceComponentMsg.{GetStatus, LoadScript, UnloadScript}
+import esw.ocs.impl.messages.SequenceComponentMsg
+import esw.ocs.impl.messages.SequenceComponentMsg.{GetStatus, LoadScript, UnloadScript}
 
 import scala.concurrent.Future
 

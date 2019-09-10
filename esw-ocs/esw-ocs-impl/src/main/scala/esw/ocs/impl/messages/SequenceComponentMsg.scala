@@ -1,4 +1,4 @@
-package esw.ocs.client.messages
+package esw.ocs.impl.messages
 
 import akka.actor.typed.ActorRef
 import esw.ocs.api.models.codecs.OcsAkkaSerializable

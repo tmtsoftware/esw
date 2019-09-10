@@ -1,11 +1,11 @@
-package esw.ocs.client.messages.codecs
+package esw.ocs.impl.messages.codecs
 
 import csw.command.client.cbor.MessageCodecs
 import csw.command.client.messages.sequencer.SequencerMsg
 import csw.location.api.codec.DoneCodec
-import esw.ocs.client.messages.SequenceComponentMsg.{GetStatus, LoadScript, Stop, UnloadScript}
-import esw.ocs.client.messages.SequencerMessages._
-import esw.ocs.client.messages.{SequenceComponentMsg, SequencerState}
+import esw.ocs.impl.messages.SequenceComponentMsg.{GetStatus, LoadScript, Stop, UnloadScript}
+import esw.ocs.impl.messages.SequencerMessages._
+import esw.ocs.impl.messages.{SequenceComponentMsg, SequencerState}
 import io.bullet.borer.Codec
 import io.bullet.borer.derivation.ArrayBasedCodecs.deriveUnaryCodec
 import io.bullet.borer.derivation.MapBasedCodecs.deriveCodec

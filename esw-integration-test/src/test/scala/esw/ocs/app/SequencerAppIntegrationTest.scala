@@ -17,8 +17,8 @@ import csw.testkit.scaladsl.ScalaTestFrameworkTestKit
 import esw.ocs.api.BaseTestSuite
 import esw.ocs.api.models.responses.SequenceComponentResponse.{Done, LoadScriptResponse}
 import esw.ocs.app.SequencerAppCommand.{SequenceComponent, Sequencer}
-import esw.ocs.client.messages.SequenceComponentMsg
-import esw.ocs.client.messages.SequenceComponentMsg.{LoadScript, UnloadScript}
+import esw.ocs.impl.messages.SequenceComponentMsg
+import esw.ocs.impl.messages.SequenceComponentMsg.{LoadScript, UnloadScript}
 import esw.ocs.impl.exceptions.ScriptLoadingException.ScriptNotFound
 
 import scala.concurrent.Future

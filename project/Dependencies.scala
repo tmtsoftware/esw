@@ -13,13 +13,6 @@ object Dependencies {
       Libs.`mockito-scala` % Test
     )
   )
-  val OcsClient: Def.Initialize[Seq[ModuleID]] = Def.setting(
-    Seq(
-      Csw.`csw-command-client`,
-      Akka.`akka-actor-testkit-typed` % Test,
-      Libs.scalatest                  % Test
-    )
-  )
 
   val OcsImpl: Def.Initialize[Seq[ModuleID]] = Def.setting(
     Seq(

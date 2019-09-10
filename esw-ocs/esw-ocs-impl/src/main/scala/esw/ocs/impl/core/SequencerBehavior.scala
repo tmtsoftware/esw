@@ -15,9 +15,9 @@ import csw.logging.client.commons.LogAdminUtil
 import csw.params.commands.Sequence
 import esw.ocs.api.models.codecs.OcsCodecs
 import esw.ocs.api.models.responses.{GoOnlineHookFailed, _}
-import esw.ocs.client.messages.SequencerMessages._
-import esw.ocs.client.messages.SequencerState
-import esw.ocs.client.messages.SequencerState._
+import esw.ocs.impl.messages.SequencerMessages._
+import esw.ocs.impl.messages.SequencerState
+import esw.ocs.impl.messages.SequencerState._
 import esw.ocs.impl.dsl.ScriptDsl
 import esw.ocs.impl.internal.Timeouts
 
