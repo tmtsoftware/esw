@@ -4,8 +4,8 @@ import csw.params.commands.CommandResponse.Completed
 import csw.params.commands._
 import csw.params.core.models.{Id, Prefix}
 import esw.ocs.api.models.StepStatus.{Finished, InFlight, Pending}
-import esw.ocs.api.responses.DuplicateIdsFound
-import esw.ocs.api.responses.EditorError.{CannotOperateOnAnInFlightOrFinishedStep, IdDoesNotExist}
+import esw.ocs.api.protocol.DuplicateIdsFound
+import esw.ocs.api.protocol.EditorError.{CannotOperateOnAnInFlightOrFinishedStep, IdDoesNotExist}
 import esw.ocs.api.{BaseTestSuite, models}
 
 class StepListTest extends BaseTestSuite {

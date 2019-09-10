@@ -3,7 +3,7 @@ package esw.ocs.api.models
 import csw.params.commands.SequenceCommand
 import csw.params.core.models.Id
 import esw.ocs.api.models.StepStatus.{Finished, InFlight, Pending}
-import esw.ocs.api.responses.EditorError._
+import esw.ocs.api.protocol.EditorError._
 
 case class Step private[ocs] (command: SequenceCommand, status: StepStatus, hasBreakpoint: Boolean) {
   def id: Id             = command.runId

@@ -2,7 +2,7 @@ package esw.ocs.impl.internal
 
 import akka.Done
 import csw.location.models.AkkaLocation
-import esw.ocs.api.responses.RegistrationError
+import esw.ocs.api.protocol.RegistrationError
 
 import scala.concurrent.Future
 

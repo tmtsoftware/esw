@@ -1,4 +1,4 @@
-package esw.gateway.api.messages
+package esw.gateway.api.protocol
 
 sealed trait CommandError
 case class InvalidComponent(msg: String) extends CommandError

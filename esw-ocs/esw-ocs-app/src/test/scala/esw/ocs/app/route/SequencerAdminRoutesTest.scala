@@ -5,10 +5,9 @@ import csw.params.core.models.Id
 import esw.http.core.BaseTestSuite
 import esw.ocs.api.codecs.SequencerAdminHttpCodecs
 import esw.ocs.api.models.StepList
-import esw.ocs.api.request.SequencerAdminPostRequest
-import esw.ocs.api.request.SequencerAdminPostRequest._
-import esw.ocs.api.responses.EditorError.{CannotOperateOnAnInFlightOrFinishedStep, IdDoesNotExist}
-import esw.ocs.api.responses._
+import esw.ocs.api.protocol.SequencerAdminPostRequest._
+import esw.ocs.api.protocol.EditorError.{CannotOperateOnAnInFlightOrFinishedStep, IdDoesNotExist}
+import esw.ocs.api.protocol.{SequencerAdminPostRequest, _}
 import esw.ocs.impl.SequencerAdminImpl
 import mscoket.impl.HttpCodecs
 import org.mockito.Mockito.when

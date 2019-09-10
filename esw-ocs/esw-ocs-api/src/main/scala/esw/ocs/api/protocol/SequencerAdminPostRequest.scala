@@ -1,4 +1,4 @@
-package esw.ocs.api.request
+package esw.ocs.api.protocol
 
 import csw.params.commands.SequenceCommand
 import csw.params.core.models.Id

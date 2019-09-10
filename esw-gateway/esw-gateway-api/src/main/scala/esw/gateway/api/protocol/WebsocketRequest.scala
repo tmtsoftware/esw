@@ -1,4 +1,4 @@
-package esw.gateway.api.messages
+package esw.gateway.api.protocol
 
 import csw.location.models.ComponentId
 import csw.params.core.models.{Id, Subsystem}

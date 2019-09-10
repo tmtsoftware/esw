@@ -7,14 +7,14 @@ import csw.location.api.codec.DoneCodec
 import csw.location.models.codecs.LocationCodecs
 import csw.params.core.formats.{CodecHelpers, ParamCodecs}
 import csw.params.events.EventKey
-import esw.gateway.api.messages.PostRequest._
-import esw.gateway.api.messages.WebsocketRequest.{QueryFinal, Subscribe, SubscribeCurrentState, SubscribeWithPattern}
-import esw.gateway.api.messages._
+import esw.gateway.api.protocol.PostRequest._
+import esw.gateway.api.protocol.WebsocketRequest.{QueryFinal, Subscribe, SubscribeCurrentState, SubscribeWithPattern}
+import esw.gateway.api.protocol._
 import io.bullet.borer.Codec
 import io.bullet.borer.derivation.MapBasedCodecs.deriveCodec
 import msocket.api.utils.EitherCodecs
 
-trait RestlessCodecs extends ParamCodecs with LocationCodecs with AlarmCodecs with EitherCodecs with DoneCodec {
+trait GatewayCodecs extends ParamCodecs with LocationCodecs with AlarmCodecs with EitherCodecs with DoneCodec {
 
   def singletonErrorCodec[T <: SingletonError with Singleton](a: T): Codec[T] =
     Codec.bimap[String, T](_.msg, _ => a)

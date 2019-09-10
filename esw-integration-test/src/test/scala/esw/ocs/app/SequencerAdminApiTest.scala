@@ -15,8 +15,7 @@ import esw.ocs.api.BaseTestSuite
 import esw.ocs.api.client.SequencerAdminClient
 import esw.ocs.api.codecs.SequencerAdminHttpCodecs
 import esw.ocs.api.models.Step
-import esw.ocs.api.request.SequencerAdminPostRequest
-import esw.ocs.api.responses.{LoadSequenceResponse, Ok}
+import esw.ocs.api.protocol.{LoadSequenceResponse, Ok, SequencerAdminPostRequest}
 import esw.ocs.app.wiring.SequencerWiring
 import esw.ocs.impl.internal.SequencerServer
 import esw.ocs.impl.messages.SequencerMessages.{EswSequencerMessage, LoadSequence}

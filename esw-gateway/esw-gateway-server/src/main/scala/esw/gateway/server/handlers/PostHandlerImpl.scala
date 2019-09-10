@@ -2,16 +2,16 @@ package esw.gateway.server.handlers
 
 import akka.http.scaladsl.server.Directives._
 import akka.http.scaladsl.server.StandardRoute
-import esw.gateway.api.codecs.RestlessCodecs
-import esw.gateway.api.messages.PostRequest
-import esw.gateway.api.messages.PostRequest.{CommandRequest, GetEvent, PublishEvent, SetAlarmSeverity}
+import esw.gateway.api.codecs.GatewayCodecs
+import esw.gateway.api.protocol.PostRequest
+import esw.gateway.api.protocol.PostRequest.{CommandRequest, GetEvent, PublishEvent, SetAlarmSeverity}
 import esw.gateway.api.{AlarmApi, CommandApi, EventApi}
 import mscoket.impl.HttpCodecs
 import msocket.api.RequestHandler
 
 class PostHandlerImpl(alarmApi: AlarmApi, commandApi: CommandApi, eventApi: EventApi)
     extends RequestHandler[PostRequest, StandardRoute]
-    with RestlessCodecs
+    with GatewayCodecs
     with HttpCodecs {
 
   override def handle(request: PostRequest): StandardRoute = request match {

@@ -12,7 +12,7 @@ import csw.params.commands.CommandResponse.{Completed, SubmitResponse}
 import csw.params.commands.{Sequence, SequenceCommand}
 import csw.params.core.models.Id
 import esw.ocs.api.models.{Step, StepList}
-import esw.ocs.api.responses._
+import esw.ocs.api.protocol._
 import esw.ocs.impl.dsl.Script
 import esw.ocs.impl.messages.SequencerMessages.{Pause, _}
 import esw.ocs.impl.messages.SequencerState

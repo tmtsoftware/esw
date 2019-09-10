@@ -1,7 +1,7 @@
 package esw.ocs.api
 
 import akka.Done
-import esw.ocs.api.responses.{GetStatusResponse, LoadScriptResponse}
+import esw.ocs.api.protocol.{GetStatusResponse, LoadScriptResponse}
 
 import scala.concurrent.Future
 

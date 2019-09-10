@@ -1,4 +1,4 @@
-package esw.ocs.api.responses
+package esw.ocs.api.protocol
 
 import csw.params.commands.CommandResponse.{Error, SubmitResponse}
 import csw.params.core.models.Id

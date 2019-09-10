@@ -7,7 +7,7 @@ import csw.params.commands.{Sequence, SequenceCommand}
 import csw.params.core.models.Id
 import esw.ocs.api.codecs.OcsAkkaSerializable
 import esw.ocs.api.models.{Step, StepList}
-import esw.ocs.api.responses._
+import esw.ocs.api.protocol._
 
 object SequencerMessages {
 

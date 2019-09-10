@@ -9,7 +9,7 @@ import csw.location.models.Connection.AkkaConnection
 import csw.location.models.{AkkaLocation, AkkaRegistration, ComponentId, ComponentType}
 import csw.params.core.models.Prefix
 import esw.highlevel.dsl.LocationServiceDsl
-import esw.ocs.api.responses.RegistrationError
+import esw.ocs.api.protocol.RegistrationError
 import esw.ocs.impl.messages.SequenceComponentMsg
 import esw.ocs.impl.messages.SequenceComponentMsg.Stop
 

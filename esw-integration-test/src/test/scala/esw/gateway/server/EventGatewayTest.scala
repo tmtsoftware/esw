@@ -12,8 +12,8 @@ import csw.params.events.{Event, EventKey, EventName, SystemEvent}
 import csw.testkit.scaladsl.CSWService.EventServer
 import csw.testkit.scaladsl.ScalaTestFrameworkTestKit
 import esw.gateway.api.clients.EventClient
-import esw.gateway.api.codecs.RestlessCodecs
-import esw.gateway.api.messages.{EmptyEventKeys, PostRequest, WebsocketRequest}
+import esw.gateway.api.codecs.GatewayCodecs
+import esw.gateway.api.protocol.{EmptyEventKeys, PostRequest, WebsocketRequest}
 import esw.http.core.FutureEitherExt
 import mscoket.impl.post.PostClient
 import mscoket.impl.ws.WebsocketClient
@@ -22,7 +22,7 @@ import org.scalatest.WordSpecLike
 
 import scala.concurrent.duration.{DurationInt, FiniteDuration}
 
-class EventGatewayTest extends ScalaTestFrameworkTestKit(EventServer) with WordSpecLike with FutureEitherExt with RestlessCodecs {
+class EventGatewayTest extends ScalaTestFrameworkTestKit(EventServer) with WordSpecLike with FutureEitherExt with GatewayCodecs {
 
   private implicit val system: ActorSystem[_]                = frameworkTestKit.actorSystem
   private implicit val untypedActorSystem: actor.ActorSystem = system.toUntyped

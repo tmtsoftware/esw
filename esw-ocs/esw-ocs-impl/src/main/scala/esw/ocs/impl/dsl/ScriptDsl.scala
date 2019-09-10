@@ -2,7 +2,7 @@ package esw.ocs.impl.dsl
 
 import akka.Done
 import csw.params.commands.{Observe, SequenceCommand, Setup}
-import esw.ocs.api.responses.PullNextResult
+import esw.ocs.api.protocol.PullNextResult
 import esw.ocs.impl.dsl.utils.{FunctionBuilder, FunctionHandlers}
 import esw.ocs.impl.exceptions.UnhandledCommandException
 

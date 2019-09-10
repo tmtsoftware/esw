@@ -4,8 +4,8 @@ import akka.http.scaladsl.server.Directives.complete
 import akka.http.scaladsl.server.StandardRoute
 import esw.ocs.api.SequencerAdminApi
 import esw.ocs.api.codecs.SequencerAdminHttpCodecs
-import esw.ocs.api.request.SequencerAdminPostRequest
-import esw.ocs.api.request.SequencerAdminPostRequest._
+import esw.ocs.api.protocol.SequencerAdminPostRequest
+import esw.ocs.api.protocol.SequencerAdminPostRequest._
 import mscoket.impl.HttpCodecs
 import msocket.api.RequestHandler
 

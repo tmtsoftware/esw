@@ -16,9 +16,9 @@ import csw.params.core.models.Subsystem.TCS
 import csw.params.core.models.{Id, Prefix}
 import csw.params.core.states.{CurrentState, StateName}
 import csw.params.events.{Event, EventKey, EventName, ObserveEvent}
-import esw.gateway.api.codecs.RestlessCodecs
-import esw.gateway.api.messages.WebsocketRequest.{QueryFinal, Subscribe, SubscribeCurrentState, SubscribeWithPattern}
-import esw.gateway.api.messages._
+import esw.gateway.api.codecs.GatewayCodecs
+import esw.gateway.api.protocol.WebsocketRequest.{QueryFinal, Subscribe, SubscribeCurrentState, SubscribeWithPattern}
+import esw.gateway.api.protocol._
 import esw.gateway.api.{CommandApi, EventApi}
 import esw.gateway.impl.{CommandImpl, EventImpl}
 import esw.gateway.server.handlers.WebsocketHandlerImpl
@@ -31,7 +31,7 @@ import org.mockito.Mockito.when
 import scala.concurrent.Future
 import scala.concurrent.duration.DurationLong
 
-class WebsocketHandlerImplTest extends BaseTestSuite with ScalatestRouteTest with RestlessCodecs with HttpCodecs {
+class WebsocketHandlerImplTest extends BaseTestSuite with ScalatestRouteTest with GatewayCodecs with HttpCodecs {
   private val actorSystem: ActorSystem[SpawnProtocol] = ActorSystem(SpawnProtocol.behavior, "test-system")
 
   private val cswCtxMocks = new CswContextMocks(actorSystem)

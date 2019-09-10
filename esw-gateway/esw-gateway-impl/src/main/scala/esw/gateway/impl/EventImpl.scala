@@ -9,7 +9,7 @@ import csw.event.client.internal.commons.EventSubscriberUtil
 import csw.params.core.models.Subsystem
 import csw.params.events.{Event, EventKey}
 import esw.gateway.api.EventApi
-import esw.gateway.api.messages._
+import esw.gateway.api.protocol._
 
 import scala.concurrent.{ExecutionContext, Future}
 import scala.util.{Failure, Success}

@@ -6,7 +6,7 @@ import akka.actor.typed.scaladsl.AskPattern.Askable
 import csw.framework.internal.wiring.ActorRuntime
 import csw.location.models.AkkaLocation
 import csw.params.core.models.Prefix
-import esw.ocs.api.responses.RegistrationError
+import esw.ocs.api.protocol.RegistrationError
 import esw.ocs.impl.core.SequenceComponentBehavior
 import esw.ocs.impl.internal.{SequenceComponentRegistration, SequencerServerFactory}
 import esw.ocs.impl.messages.SequenceComponentMsg

@@ -5,7 +5,7 @@ import csw.framework.internal.wiring.ActorRuntime
 import csw.location.client.utils.LocationServerStatus
 import csw.location.models.AkkaLocation
 import csw.logging.api.scaladsl.Logger
-import esw.ocs.api.responses.RegistrationError
+import esw.ocs.api.protocol.RegistrationError
 import esw.ocs.app.SequencerAppCommand._
 import esw.ocs.app.wiring.{SequenceComponentWiring, SequencerWiring}
 

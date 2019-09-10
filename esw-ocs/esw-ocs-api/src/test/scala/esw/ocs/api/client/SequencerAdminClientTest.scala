@@ -5,9 +5,8 @@ import csw.params.core.models.{Id, Prefix}
 import esw.ocs.api.BaseTestSuite
 import esw.ocs.api.codecs.SequencerAdminHttpCodecs
 import esw.ocs.api.models.StepList
-import esw.ocs.api.request.SequencerAdminPostRequest
-import esw.ocs.api.request.SequencerAdminPostRequest._
-import esw.ocs.api.responses._
+import esw.ocs.api.protocol.SequencerAdminPostRequest._
+import esw.ocs.api.protocol.{SequencerAdminPostRequest, _}
 import io.bullet.borer.Decoder
 import msocket.api.RequestClient
 import org.mockito.ArgumentMatchers.{any, eq => argsEq}

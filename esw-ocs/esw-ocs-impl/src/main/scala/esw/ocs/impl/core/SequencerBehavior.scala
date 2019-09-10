@@ -14,7 +14,7 @@ import csw.location.models.Connection.AkkaConnection
 import csw.logging.client.commons.LogAdminUtil
 import csw.params.commands.Sequence
 import esw.ocs.api.codecs.OcsCodecs
-import esw.ocs.api.responses._
+import esw.ocs.api.protocol._
 import esw.ocs.impl.dsl.ScriptDsl
 import esw.ocs.impl.internal.Timeouts
 import esw.ocs.impl.messages.SequencerMessages._

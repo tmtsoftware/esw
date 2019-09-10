@@ -1,4 +1,4 @@
-package esw.ocs.api.responses
+package esw.ocs.api.protocol
 
 import csw.location.models.AkkaLocation
 import esw.ocs.api.codecs.OcsAkkaSerializable

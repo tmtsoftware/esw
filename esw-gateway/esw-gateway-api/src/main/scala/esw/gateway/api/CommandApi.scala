@@ -6,7 +6,7 @@ import csw.params.commands.CommandResponse.SubmitResponse
 import csw.params.commands.{CommandResponse, ControlCommand}
 import csw.params.core.models.Id
 import csw.params.core.states.{CurrentState, StateName}
-import esw.gateway.api.messages.{CommandAction, CommandError, InvalidComponent}
+import esw.gateway.api.protocol.{CommandAction, CommandError, InvalidComponent}
 
 import scala.concurrent.Future
 

@@ -9,7 +9,7 @@ import csw.params.commands.{CommandResponse, Sequence}
 import csw.params.core.models.Id
 import esw.ocs.api.models.StepStatus.{Finished, InFlight}
 import esw.ocs.api.models.{Step, StepList}
-import esw.ocs.api.responses.{DuplicateIdsFound, Ok, PullNextResult, SequenceResponse, SequenceResult}
+import esw.ocs.api.protocol.{DuplicateIdsFound, Ok, PullNextResult, SequenceResponse, SequenceResult}
 import esw.ocs.impl.messages.SequencerMessages.{GoIdle, Update}
 import esw.ocs.impl.messages.SequencerState
 import esw.ocs.impl.messages.SequencerState.InProgress

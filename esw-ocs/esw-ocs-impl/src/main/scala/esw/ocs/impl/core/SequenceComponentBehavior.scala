@@ -5,7 +5,7 @@ import akka.actor.typed.Behavior
 import akka.actor.typed.scaladsl.Behaviors
 import csw.location.models.AkkaLocation
 import csw.logging.api.scaladsl.Logger
-import esw.ocs.api.responses.{GetStatusResponse, LoadScriptResponse, RegistrationError}
+import esw.ocs.api.protocol.{GetStatusResponse, LoadScriptResponse, RegistrationError}
 import esw.ocs.impl.internal.{SequencerServer, SequencerServerFactory}
 import esw.ocs.impl.messages.SequenceComponentMsg
 import esw.ocs.impl.messages.SequenceComponentMsg.{GetStatus, LoadScript, Stop, UnloadScript}

@@ -1,4 +1,4 @@
-package esw.gateway.api.messages
+package esw.gateway.api.protocol
 
 import csw.alarm.models.AlarmSeverity
 import csw.alarm.models.Key.AlarmKey

@@ -5,17 +5,17 @@ import akka.stream.scaladsl.Source
 import csw.params.core.models.Subsystem
 import csw.params.events.{Event, EventKey}
 import esw.gateway.api.EventApi
-import esw.gateway.api.codecs.RestlessCodecs
-import esw.gateway.api.messages.PostRequest.{GetEvent, PublishEvent}
-import esw.gateway.api.messages.WebsocketRequest.{Subscribe, SubscribeWithPattern}
-import esw.gateway.api.messages._
+import esw.gateway.api.codecs.GatewayCodecs
+import esw.gateway.api.protocol.PostRequest.{GetEvent, PublishEvent}
+import esw.gateway.api.protocol.WebsocketRequest.{Subscribe, SubscribeWithPattern}
+import esw.gateway.api.protocol._
 import msocket.api.RequestClient
 
 import scala.concurrent.Future
 
 class EventClient(postClient: RequestClient[PostRequest], websocketClient: RequestClient[WebsocketRequest])
     extends EventApi
-    with RestlessCodecs {
+    with GatewayCodecs {
 
   override def publish(event: Event): Future[Either[EventServerUnavailable.type, Done]] =
     postClient.requestResponse[Either[EventServerUnavailable.type, Done]](PublishEvent(event))
