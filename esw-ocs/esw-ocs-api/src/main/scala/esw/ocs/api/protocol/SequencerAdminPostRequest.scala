@@ -4,8 +4,7 @@ import csw.params.commands.{Sequence, SequenceCommand}
 import csw.params.core.models.Id
 
 sealed trait SequencerAdminPostRequest
-
-object SequencerAdminPostRequest {
+private[ocs] object SequencerAdminPostRequest {
   case object GetSequence                                         extends SequencerAdminPostRequest
   case object IsAvailable                                         extends SequencerAdminPostRequest
   case object IsOnline                                            extends SequencerAdminPostRequest

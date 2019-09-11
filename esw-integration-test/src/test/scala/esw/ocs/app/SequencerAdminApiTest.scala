@@ -4,7 +4,7 @@ import akka.actor.typed.{ActorSystem, SpawnProtocol}
 import csw.location.api.scaladsl.LocationService
 import csw.location.client.scaladsl.HttpLocationServiceFactory
 import csw.location.models.Connection.HttpConnection
-import csw.location.models.{ComponentId, ComponentType, HttpLocation}
+import csw.location.models.{ComponentId, ComponentType}
 import csw.params.commands.{CommandName, Sequence, Setup}
 import csw.params.core.models.Prefix
 import csw.testkit.scaladsl.ScalaTestFrameworkTestKit
@@ -12,10 +12,11 @@ import esw.ocs.api.BaseTestSuite
 import esw.ocs.api.client.SequencerAdminClient
 import esw.ocs.api.codecs.SequencerAdminHttpCodecs
 import esw.ocs.api.models.Step
-import esw.ocs.api.protocol.{LoadSequenceResponse, Ok, SequencerAdminPostRequest}
+import esw.ocs.api.protocol.{LoadSequenceResponse, Ok, SequencerAdminPostRequest, SequencerAdminWebsocketRequest}
 import esw.ocs.app.wiring.SequencerWiring
 import esw.ocs.impl.internal.SequencerServer
 import mscoket.impl.post.PostClient
+import mscoket.impl.ws.WebsocketClient
 
 import scala.concurrent.Future
 import scala.concurrent.duration.DurationLong
@@ -43,13 +44,11 @@ class SequencerAdminApiTest extends ScalaTestFrameworkTestKit with BaseTestSuite
 
   "Sequencer" must {
     "start the sequencer and handle the http requests | ESW-222" in {
-      val componentId                = ComponentId(s"$sequencerId@$observingMode@http", ComponentType.Service)
-      val httpLocation: HttpLocation = locationService.resolve(HttpConnection(componentId), 5.seconds).futureValue.get
-
-      val postClient: PostClient[SequencerAdminPostRequest] =
-        new PostClient[SequencerAdminPostRequest](httpLocation.uri.toURL.toString + "post")
-
-      val sequencerAdminClient = new SequencerAdminClient(postClient)
+      val componentId          = ComponentId(s"$sequencerId@$observingMode@http", ComponentType.Service)
+      val url                  = locationService.resolve(HttpConnection(componentId), 5.seconds).futureValue.get.uri.toString
+      val postClient           = new PostClient[SequencerAdminPostRequest](url + "post")
+      val websocketClient      = new WebsocketClient[SequencerAdminWebsocketRequest](url + "websocket")
+      val sequencerAdminClient = new SequencerAdminClient(postClient, websocketClient)
 
       sequencerAdminClient.isAvailable.futureValue should ===(true)
 

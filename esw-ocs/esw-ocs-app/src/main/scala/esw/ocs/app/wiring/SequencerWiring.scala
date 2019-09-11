@@ -16,7 +16,7 @@ import esw.http.core.commons.ServiceLogger
 import esw.http.core.wiring
 import esw.http.core.wiring.{HttpService, Settings}
 import esw.ocs.api.protocol.RegistrationError
-import esw.ocs.app.route.{PostHandlerImpl, SequencerAdminRoutes}
+import esw.ocs.app.route.{PostHandlerImpl, SequencerAdminRoutes, WebsocketHandlerImpl}
 import esw.ocs.impl.SequencerAdminImpl
 import esw.ocs.impl.core._
 import esw.ocs.impl.dsl.utils.ScriptLoader
@@ -55,9 +55,10 @@ private[ocs] class SequencerWiring(val sequencerId: String, val observingMode: S
     timeServiceSchedulerFactory
   )
 
-  private lazy val sequencerAdmin = new SequencerAdminImpl(sequencerRef)
-  private lazy val postHandler    = new PostHandlerImpl(sequencerAdmin)
-  private lazy val routes         = new SequencerAdminRoutes(postHandler)
+  private lazy val sequencerAdmin   = new SequencerAdminImpl(sequencerRef)
+  private lazy val postHandler      = new PostHandlerImpl(sequencerAdmin)
+  private lazy val websocketHandler = new WebsocketHandlerImpl(sequencerAdmin)
+  private lazy val routes           = new SequencerAdminRoutes(postHandler, websocketHandler)
 
   private lazy val settings       = new Settings(Some(SocketUtils.getFreePort), Some(s"$sequencerName@http"), config)
   private lazy val logger: Logger = new ServiceLogger(settings.httpConnection).getLogger

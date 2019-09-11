@@ -6,13 +6,16 @@ import esw.ocs.api.SequencerAdminApi
 import esw.ocs.api.codecs.SequencerAdminHttpCodecs
 import esw.ocs.api.models.StepList
 import esw.ocs.api.protocol.SequencerAdminPostRequest._
-import esw.ocs.api.protocol._
+import esw.ocs.api.protocol.SequencerAdminWebsocketRequest.QueryFinal
+import esw.ocs.api.protocol.{SequencerAdminWebsocketRequest, _}
 import msocket.api.RequestClient
 
 import scala.concurrent.Future
 
-class SequencerAdminClient(postClient: RequestClient[SequencerAdminPostRequest])
-    extends SequencerAdminApi
+class SequencerAdminClient(
+    postClient: RequestClient[SequencerAdminPostRequest],
+    websocketClient: RequestClient[SequencerAdminWebsocketRequest]
+) extends SequencerAdminApi
     with SequencerAdminHttpCodecs {
 
   override def getSequence: Future[Option[StepList]] = {
@@ -89,5 +92,9 @@ class SequencerAdminClient(postClient: RequestClient[SequencerAdminPostRequest])
 
   override def submitSequence(sequence: Sequence): Future[LoadSequenceResponse] = {
     postClient.requestResponse[LoadSequenceResponse](LoadAndStartSequence(sequence))
+  }
+
+  override def queryFinal: Future[SequenceResponse] = {
+    websocketClient.requestResponse[SequenceResponse](QueryFinal)
   }
 }

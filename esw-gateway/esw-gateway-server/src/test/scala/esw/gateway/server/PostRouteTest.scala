@@ -31,7 +31,7 @@ import org.mockito.MockitoSugar._
 import scala.concurrent.Future
 import scala.concurrent.duration.DurationLong
 
-class PostHandlerImplTest extends BaseTestSuite with ScalatestRouteTest with GatewayCodecs with HttpCodecs {
+class PostRouteTest extends BaseTestSuite with ScalatestRouteTest with GatewayCodecs with HttpCodecs {
   val actorSystem: ActorSystem[SpawnProtocol] = ActorSystem(SpawnProtocol.behavior, "test-system")
 
   private val cswCtxMocks = new CswContextMocks(actorSystem)

@@ -1,7 +1,7 @@
-package esw.ocs.api.request
+package esw.ocs.api.protocol
 
 sealed trait SequencerAdminWebsocketRequest
 
-object SequencerAdminWebsocketRequest {
+private[ocs] object SequencerAdminWebsocketRequest {
   case object QueryFinal extends SequencerAdminWebsocketRequest
 }

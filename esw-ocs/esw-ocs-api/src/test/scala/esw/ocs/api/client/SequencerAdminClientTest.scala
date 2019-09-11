@@ -1,12 +1,14 @@
 package esw.ocs.api.client
 
+import csw.params.commands.CommandResponse.Completed
 import csw.params.commands.{CommandName, Sequence, Setup}
 import csw.params.core.models.{Id, Prefix}
 import esw.ocs.api.BaseTestSuite
 import esw.ocs.api.codecs.SequencerAdminHttpCodecs
 import esw.ocs.api.models.StepList
 import esw.ocs.api.protocol.SequencerAdminPostRequest._
-import esw.ocs.api.protocol.{SequencerAdminPostRequest, _}
+import esw.ocs.api.protocol.SequencerAdminWebsocketRequest.QueryFinal
+import esw.ocs.api.protocol.{SequencerAdminPostRequest, SequencerAdminWebsocketRequest, _}
 import io.bullet.borer.Decoder
 import msocket.api.RequestClient
 import org.mockito.ArgumentMatchers.{any, eq => argsEq}
@@ -15,8 +17,9 @@ import scala.concurrent.Future
 
 class SequencerAdminClientTest extends BaseTestSuite with SequencerAdminHttpCodecs {
 
-  private val postClient           = mock[RequestClient[SequencerAdminPostRequest]]
-  private val sequencerAdminClient = new SequencerAdminClient(postClient)
+  private val postClient                                                     = mock[RequestClient[SequencerAdminPostRequest]]
+  private val websocketClient: RequestClient[SequencerAdminWebsocketRequest] = mock[RequestClient[SequencerAdminWebsocketRequest]]
+  private val sequencerAdminClient                                           = new SequencerAdminClient(postClient, websocketClient)
   "SequencerAdminClient" must {
 
     "call postClient with GetSequence request | ESW-222" in {
@@ -146,6 +149,13 @@ class SequencerAdminClientTest extends BaseTestSuite with SequencerAdminHttpCode
           .requestResponse[LoadSequenceResponse](argsEq(LoadAndStartSequence(sequence)))(any[Decoder[LoadSequenceResponse]]())
       ).thenReturn(Future.successful(Ok))
       sequencerAdminClient.submitSequence(sequence).futureValue should ===(Ok)
+    }
+
+    "call postClient with QueryFinal request | ESW-222" in {
+      val id = mock[Id]
+      when(websocketClient.requestResponse[SequenceResponse](argsEq(QueryFinal))(any[Decoder[SequenceResponse]]()))
+        .thenReturn(Future.successful(SequenceResult(Completed(id))))
+      sequencerAdminClient.queryFinal.futureValue should ===(SequenceResult(Completed(id)))
     }
   }
 }

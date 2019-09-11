@@ -15,11 +15,12 @@ import org.mockito.Mockito.when
 
 import scala.concurrent.Future
 
-class SequencerAdminRoutesTest extends BaseTestSuite with ScalatestRouteTest with SequencerAdminHttpCodecs with HttpCodecs {
+class SequencerAdminPostRouteTest extends BaseTestSuite with ScalatestRouteTest with SequencerAdminHttpCodecs with HttpCodecs {
 
   private val sequencerAdmin: SequencerAdminImpl = mock[SequencerAdminImpl]
   private val postHandler                        = new PostHandlerImpl(sequencerAdmin)
-  private val route                              = new SequencerAdminRoutes(postHandler).route
+  private val websocketHandler                   = new WebsocketHandlerImpl(sequencerAdmin)
+  private val route                              = new SequencerAdminRoutes(postHandler, websocketHandler).route
 
   "SequencerRoutes" must {
     "return sequence for getSequence request | ESW-222" in {
@@ -190,7 +191,7 @@ class SequencerAdminRoutesTest extends BaseTestSuite with ScalatestRouteTest wit
       }
     }
 
-    "return Ok for LoadSequence request | ESW-222" in {
+    "return Ok for LoadSequence request | ESW-101" in {
       val command1 = Setup(Prefix("esw.test"), CommandName("command-1"), None)
       val sequence = Sequence(command1)
       when(sequencerAdmin.loadSequence(sequence)).thenReturn(Future.successful(Ok))
@@ -200,7 +201,7 @@ class SequencerAdminRoutesTest extends BaseTestSuite with ScalatestRouteTest wit
       }
     }
 
-    "return Ok for StartSequence request | ESW-222" in {
+    "return Ok for StartSequence request | ESW-101" in {
       when(sequencerAdmin.startSequence).thenReturn(Future.successful(Ok))
 
       Post("/post", StartSequence) ~> route ~> check {
@@ -208,7 +209,7 @@ class SequencerAdminRoutesTest extends BaseTestSuite with ScalatestRouteTest wit
       }
     }
 
-    "return Ok for LoadAndStartSequence request | ESW-222" in {
+    "return Ok for LoadAndStartSequence request | ESW-101" in {
       val command1 = Setup(Prefix("esw.test"), CommandName("command-1"), None)
       val sequence = Sequence(command1)
       when(sequencerAdmin.submitSequence(sequence)).thenReturn(Future.successful(Ok))

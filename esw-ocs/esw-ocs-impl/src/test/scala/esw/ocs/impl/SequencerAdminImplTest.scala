@@ -3,13 +3,13 @@ package esw.ocs.impl
 import akka.actor.testkit.typed.scaladsl.ScalaTestWithActorTestKit
 import akka.actor.typed.scaladsl.Behaviors
 import csw.command.client.messages.sequencer.SequencerMsg
+import csw.params.commands.CommandResponse.Completed
 import csw.params.commands.{CommandName, Sequence, Setup}
 import csw.params.core.models.{Id, Prefix}
 import esw.ocs.api.BaseTestSuite
 import esw.ocs.api.models.StepList
 import esw.ocs.api.protocol.EditorError.{CannotOperateOnAnInFlightOrFinishedStep, IdDoesNotExist}
-import esw.ocs.api.protocol.{GoOnlineHookFailed, Unhandled}
-import esw.ocs.api.protocol.{GoOnlineHookFailed, Ok, Unhandled}
+import esw.ocs.api.protocol.{GoOnlineHookFailed, Ok, SequenceResult, Unhandled}
 import esw.ocs.impl.messages.SequencerMessages._
 import esw.ocs.impl.messages.SequencerState.{Idle, InProgress, Loaded, Offline}
 
@@ -34,6 +34,7 @@ class SequencerAdminImplTest extends ScalaTestWithActorTestKit with BaseTestSuit
   private val loadSequenceResponse         = Ok
   private val startSequenceResponse        = Ok
   private val loadAndStartSequenceResponse = Ok
+  private val queryFinalResponse           = SequenceResult(Completed(Id()))
 
   private val mockedBehavior: Behaviors.Receive[SequencerMsg] =
     Behaviors.receiveMessage[SequencerMsg] { msg =>
@@ -56,6 +57,7 @@ class SequencerAdminImplTest extends ScalaTestWithActorTestKit with BaseTestSuit
         case LoadSequence(_, replyTo)                               => replyTo ! loadSequenceResponse
         case StartSequence(replyTo)                                 => replyTo ! startSequenceResponse
         case LoadAndStartSequence(_, replyTo)                       => replyTo ! loadAndStartSequenceResponse
+        case QueryFinal(replyTo)                                    => replyTo ! queryFinalResponse
         case _                                                      =>
       }
       Behaviors.same
@@ -65,75 +67,79 @@ class SequencerAdminImplTest extends ScalaTestWithActorTestKit with BaseTestSuit
 
   private val sequencerAdmin = new SequencerAdminImpl(sequencer)
 
-  "getSequence" in {
+  "getSequence | ESW-222" in {
     sequencerAdmin.getSequence.futureValue should ===(getSequenceResponse)
   }
 
-  "isAvailable" in {
+  "isAvailable | ESW-222" in {
     sequencerAdmin.isAvailable.futureValue should ===(false)
   }
 
-  "isOnline" in {
+  "isOnline | ESW-222" in {
     sequencerAdmin.isOnline.futureValue should ===(true)
   }
 
-  "add" in {
+  "add | ESW-222" in {
     sequencerAdmin.add(List(command)).futureValue should ===(addResponse)
   }
 
-  "prepend" in {
+  "prepend | ESW-222" in {
     sequencerAdmin.prepend(List(command)).futureValue should ===(prependResponse)
   }
 
-  "replace" in {
+  "replace | ESW-222" in {
     sequencerAdmin.replace(command.runId, List(command)).futureValue should ===(replaceResponse)
   }
 
-  "insertAfter" in {
+  "insertAfter | ESW-222" in {
     sequencerAdmin.insertAfter(command.runId, List(command)).futureValue should ===(insertAfterResponse)
   }
 
-  "delete" in {
+  "delete | ESW-222" in {
     sequencerAdmin.delete(command.runId).futureValue should ===(deleteResponse)
   }
 
-  "pause" in {
+  "pause | ESW-222" in {
     sequencerAdmin.pause.futureValue should ===(pauseResponse)
   }
 
-  "resume" in {
+  "resume | ESW-222" in {
     sequencerAdmin.resume.futureValue should ===(resumeResponse)
   }
 
-  "addBreakpoint" in {
+  "addBreakpoint | ESW-222" in {
     sequencerAdmin.addBreakpoint(command.runId).futureValue should ===(addBreakpointResponse)
   }
 
-  "removeBreakpoint" in {
+  "removeBreakpoint | ESW-222" in {
     sequencerAdmin.removeBreakpoint(command.runId).futureValue should ===(removeBreakpointResponse)
   }
 
-  "reset" in {
+  "reset | ESW-222" in {
     sequencerAdmin.reset().futureValue should ===(resetResponse)
   }
 
-  "abortSequence" in {
+  "abortSequence | ESW-222" in {
     sequencerAdmin.abortSequence().futureValue should ===(abortResponse)
   }
 
-  "loadSequence" in {
+  "loadSequence | ESW-101" in {
     val command1 = Setup(Prefix("esw.test"), CommandName("command-1"), None)
     val sequence = Sequence(command1)
     sequencerAdmin.loadSequence(sequence).futureValue should ===(Ok)
   }
 
-  "startSequence" in {
+  "startSequence | ESW-101" in {
     sequencerAdmin.startSequence.futureValue should ===(Ok)
   }
 
-  "loadAndStartSequence" in {
+  "loadAndStartSequence | ESW-101" in {
     val command1 = Setup(Prefix("esw.test"), CommandName("command-1"), None)
     val sequence = Sequence(command1)
     sequencerAdmin.submitSequence(sequence).futureValue should ===(Ok)
+  }
+
+  "queryFinal | ESW-101" in {
+    sequencerAdmin.queryFinal.futureValue should ===(queryFinalResponse)
   }
 }

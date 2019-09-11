@@ -8,7 +8,6 @@ import esw.ocs.api.protocol._
 import scala.concurrent.Future
 
 trait SequencerAdminApi {
-
   def getSequence: Future[Option[StepList]]
   def isAvailable: Future[Boolean]
   def isOnline: Future[Boolean]
@@ -30,5 +29,5 @@ trait SequencerAdminApi {
   def startSequence: Future[OkOrUnhandledResponse]
   def submitSequence(sequence: Sequence): Future[LoadSequenceResponse]
 
-//  def queryFinal: Future[SequenceResponse]
+  def queryFinal: Future[SequenceResponse]
 }
