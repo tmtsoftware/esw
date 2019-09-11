@@ -64,11 +64,12 @@ class SequencerAdminApiTest extends ScalaTestFrameworkTestKit with BaseTestSuite
       val command1 = Setup(Prefix("esw.test"), CommandName("command-1"), None)
       val sequence = Sequence(command1)
 
-      val loadResponse: Future[LoadSequenceResponse] = sequencerRef ? (LoadSequence(sequence, _))
-
-      sequencerAdminClient.getSequence.futureValue.get.steps should ===(List(Step(command1)))
+      val loadResponse: Future[LoadSequenceResponse] = sequencerAdminClient.loadSequence(sequence)
 
       loadResponse.futureValue should ===(Ok)
+      
+      sequencerAdminClient.getSequence.futureValue.get.steps should ===(List(Step(command1)))
+
 
 //      val command2                                   = Setup(Prefix("esw.test"), CommandName("command-2"), None)
 //      sequencerAdminClient.add(List(command2)).futureValue should ===(Ok)

@@ -1,7 +1,8 @@
 package esw.ocs.app.route
 
 import akka.http.scaladsl.testkit.ScalatestRouteTest
-import csw.params.core.models.Id
+import csw.params.commands.{CommandName, Sequence, Setup}
+import csw.params.core.models.{Id, Prefix}
 import esw.http.core.BaseTestSuite
 import esw.ocs.api.codecs.SequencerAdminHttpCodecs
 import esw.ocs.api.models.StepList
@@ -186,6 +187,34 @@ class SequencerAdminRoutesTest extends BaseTestSuite with ScalatestRouteTest wit
 
       Post("/post", RemoveBreakpoint(id)) ~> route ~> check {
         responseAs[GenericResponse] should ===(Ok)
+      }
+    }
+
+    "return Ok for LoadSequence request | ESW-222" in {
+      val command1 = Setup(Prefix("esw.test"), CommandName("command-1"), None)
+      val sequence = Sequence(command1)
+      when(sequencerAdmin.loadSequence(sequence)).thenReturn(Future.successful(Ok))
+
+      Post("/post", LoadSequence(sequence)) ~> route ~> check {
+        responseAs[LoadSequenceResponse] should ===(Ok)
+      }
+    }
+
+    "return Ok for StartSequence request | ESW-222" in {
+      when(sequencerAdmin.startSequence).thenReturn(Future.successful(Ok))
+
+      Post("/post", StartSequence) ~> route ~> check {
+        responseAs[OkOrUnhandledResponse] should ===(Ok)
+      }
+    }
+
+    "return Ok for LoadAndStartSequence request | ESW-222" in {
+      val command1 = Setup(Prefix("esw.test"), CommandName("command-1"), None)
+      val sequence = Sequence(command1)
+      when(sequencerAdmin.loadAndStartSequence(sequence)).thenReturn(Future.successful(Ok))
+
+      Post("/post", LoadAndStartSequence(sequence)) ~> route ~> check {
+        responseAs[LoadSequenceResponse] should ===(Ok)
       }
     }
   }
