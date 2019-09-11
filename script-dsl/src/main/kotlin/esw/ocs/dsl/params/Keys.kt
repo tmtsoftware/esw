@@ -8,6 +8,7 @@ import csw.params.events.EventName
 import csw.params.events.SystemEvent
 import csw.params.javadsl.JKeyType.*
 import csw.params.javadsl.JUnits.NoUnits
+import csw.params.javadsl.JUnits.lightyear
 
 // this is present just to hide java methods on Keys which are not user friendly
 data class KeyHolder<T>(val key: Key<T>) {
@@ -18,6 +19,10 @@ data class KeyHolder<T>(val key: Key<T>) {
 }
 
 // ============= Misc Keys ===========
+fun choiceKey(name: String, choices: Choices) = ChoiceKey().make(name, choices)
+
+fun choiceKey(name: String, vararg choices: Choice) = ChoiceKey().make(name, Choices.fromChoices(choices.toSet()))
+
 fun raDecKey(name: String) = KeyHolder(RaDecKey().make(name))
 
 fun eqCoordKey(name: String) = KeyHolder(EqCoordKey().make(name))
@@ -84,10 +89,11 @@ fun main() {
     val longMatrixData1 = matrixData(longData1)
     val longMatrixData2 = matrixData(longData2)
     val matrixParam = longMatrixKey("longMatrix").set(longMatrixData1, longMatrixData2)
-//    val matrixParam1 = longMatrixKey("longMatrix").set(arrayOf(longMatrixData1, longMatrixData2), NoUnits)
+    val matrixParam1 = longMatrixKey("longMatrix").set(longMatrixData1, longMatrixData2, units = lightyear)
 
-    val systemEvent = SystemEvent(Prefix("esw.event"), EventName("move")).add(longParam)
-//    systemEvent.madd()
+    val systemEvent =
+        SystemEvent(Prefix("esw.event"), EventName("move")).add(longParam)
+            .madd(longParam, arrayParam, matrixParam)
 
     println(longParam)
     println(longKey.keyName)
@@ -95,5 +101,6 @@ fun main() {
     println(longKey.units)
     println(arrayParam)
     println(matrixParam)
+    println(matrixParam1)
     println(systemEvent)
 }
