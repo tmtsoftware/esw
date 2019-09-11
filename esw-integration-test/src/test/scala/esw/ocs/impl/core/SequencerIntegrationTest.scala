@@ -20,10 +20,9 @@ import esw.ocs.api.BaseTestSuite
 import esw.ocs.api.models.StepStatus.Finished.{Failure, Success}
 import esw.ocs.api.models.StepStatus.Pending
 import esw.ocs.api.models.{Step, StepList}
-import esw.ocs.api.protocol.{LoadSequenceResponse, Ok, SequenceResult, Unhandled}
+import esw.ocs.api.protocol.{Ok, SequenceResult, Unhandled}
 import esw.ocs.app.wiring.SequencerWiring
 import esw.ocs.impl.SequencerAdminImpl
-import esw.ocs.impl.messages.SequencerMessages._
 import esw.ocs.impl.messages.SequencerState.Offline
 
 import scala.concurrent.Future
@@ -70,13 +69,9 @@ class SequencerIntegrationTest extends ScalaTestFrameworkTestKit(EventServer) wi
   "LoadSequence, Start it and Query its response | ESW-145, ESW-154, ESW-221, ESW-194, ESW-158" in {
     val sequence = Sequence(command1, command2)
 
-    val loadResponse: Future[LoadSequenceResponse] = sequencer ? (LoadSequence(sequence, _))
-    loadResponse.futureValue should ===(Ok)
-
-    (sequencer ? StartSequence).futureValue should ===(Ok)
-
-    // assert sequence is completed successfully
-    (sequencer ? QueryFinal).futureValue should ===(SequenceResult(Completed(sequence.runId)))
+    sequencerAdmin.loadSequence(sequence).futureValue should ===(Ok)
+    sequencerAdmin.startSequence.futureValue should ===(Ok)
+    sequencerAdmin.queryFinal.futureValue should ===(SequenceResult(Completed(sequence.runId)))
 
     val expectedSteps = List(
       Step(command1, Success(Completed(command1.runId)), hasBreakpoint = false),
@@ -87,24 +82,22 @@ class SequencerIntegrationTest extends ScalaTestFrameworkTestKit(EventServer) wi
 
     // assert sequencer does not accept LoadSequence/Start/QuerySequenceResponse messages in offline state
     sequencerAdmin.goOffline().futureValue should ===(Ok)
-    val loadSequenceResponse: Future[LoadSequenceResponse] = sequencer ? (LoadSequence(sequence, _))
-    loadSequenceResponse.futureValue should ===(Unhandled(Offline.entryName, "LoadSequence"))
+    sequencerAdmin.loadSequence(sequence).futureValue should ===(Unhandled(Offline.entryName, "LoadSequence"))
 
-    (sequencer ? StartSequence).futureValue should ===(Unhandled(Offline.entryName, "StartSequence"))
-    (sequencer ? QueryFinal).futureValue should ===(Unhandled(Offline.entryName, "QueryFinal"))
+    sequencerAdmin.startSequence.futureValue should ===(Unhandled(Offline.entryName, "StartSequence"))
+    sequencerAdmin.queryFinal.futureValue should ===(Unhandled(Offline.entryName, "QueryFinal"))
   }
 
   "Load, Add commands and Start sequence - ensures sequence doesn't start on loading" in {
     val sequence = Sequence(command1)
 
-    val loadResponse: Future[LoadSequenceResponse] = sequencer ? (LoadSequence(sequence, _))
-    loadResponse.futureValue should ===(Ok)
+    sequencerAdmin.loadSequence(sequence).futureValue should ===(Ok)
 
     sequencerAdmin.add(List(command2)).futureValue should ===(Ok)
 
     sequencerAdmin.getSequence.futureValue should ===(Some(StepList(sequence.runId, List(Step(command1), Step(command2)))))
 
-    (sequencer ? StartSequence).futureValue should ===(Ok)
+    sequencerAdmin.startSequence.futureValue should ===(Ok)
 
     val expectedFinishedSteps = List(
       Step(command1, Success(Completed(command1.runId)), hasBreakpoint = false),
@@ -118,7 +111,7 @@ class SequencerIntegrationTest extends ScalaTestFrameworkTestKit(EventServer) wi
     val sequence = Sequence(command1, command2)
 
     val processSeqResponse: Future[SubmitResponse] = sequencer ? (LoadAndProcessSequence(sequence, _))
-    eventually((sequencer ? GetSequence).futureValue shouldBe a[Some[_]])
+    eventually(sequencerAdmin.getSequence.futureValue shouldBe a[Some[_]])
 
     sequencerAdmin.add(List(command3)).futureValue should ===(Ok)
     processSeqResponse.futureValue should ===(Completed(sequence.runId))
@@ -186,9 +179,7 @@ class SequencerIntegrationTest extends ScalaTestFrameworkTestKit(EventServer) wi
     val onlineEvent = wiring.cswServices.getEvent("TCS.test.online").futureValue.head
     onlineEvent.paramType.exists(BooleanKey.make("online")) should ===(true)
 
-    // assert sequencer can load a new sequence after going online
-    val loadSeqResponse: Future[LoadSequenceResponse] = sequencer ? (LoadSequence(sequence, _))
-    loadSeqResponse.futureValue should ===(Ok)
+    sequencerAdmin.loadSequence(sequence).futureValue should ===(Ok)
   }
 
   private def resolveSequencer(): ActorRef[SequencerMsg] =
