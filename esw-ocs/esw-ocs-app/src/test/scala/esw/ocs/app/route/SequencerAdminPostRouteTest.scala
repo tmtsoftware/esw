@@ -214,7 +214,7 @@ class SequencerAdminPostRouteTest extends BaseTestSuite with ScalatestRouteTest 
       val sequence = Sequence(command1)
       when(sequencerAdmin.submitSequence(sequence)).thenReturn(Future.successful(Ok))
 
-      Post("/post", LoadAndStartSequence(sequence)) ~> route ~> check {
+      Post("/post", SubmitSequence(sequence)) ~> route ~> check {
         responseAs[LoadSequenceResponse] should ===(Ok)
       }
     }

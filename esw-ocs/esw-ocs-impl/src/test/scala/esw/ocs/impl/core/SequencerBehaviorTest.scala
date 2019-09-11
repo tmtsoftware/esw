@@ -69,7 +69,7 @@ class SequencerBehaviorTest extends ScalaTestWithActorTestKit with BaseTestSuite
       import sequencerSetup._
 
       val probe = createTestProbe[LoadSequenceResponse]
-      sequencerActor ! LoadAndStartSequence(sequence, probe.ref)
+      sequencerActor ! SubmitSequence(sequence, probe.ref)
       pullAllStepsAndAssertSequenceIsFinished()
       probe.expectMessage(Ok)
     }
@@ -80,7 +80,7 @@ class SequencerBehaviorTest extends ScalaTestWithActorTestKit with BaseTestSuite
       import sequencerSetup._
 
       val probe = createTestProbe[LoadSequenceResponse]
-      sequencerActor ! LoadAndStartSequence(invalidSequence, probe.ref)
+      sequencerActor ! SubmitSequence(invalidSequence, probe.ref)
       probe.expectMessage(DuplicateIdsFound)
     }
 
@@ -90,7 +90,7 @@ class SequencerBehaviorTest extends ScalaTestWithActorTestKit with BaseTestSuite
       import sequencerSetup._
 
       val probe = createTestProbe[LoadSequenceResponse]
-      sequencerActor ! LoadAndStartSequence(sequence1, probe.ref)
+      sequencerActor ! SubmitSequence(sequence1, probe.ref)
       probe.expectMessage(Ok)
 
       val sequenceError = Error(command1.runId, "Some error")
@@ -808,7 +808,7 @@ class SequencerBehaviorTest extends ScalaTestWithActorTestKit with BaseTestSuite
     assertUnhandled(
       Loaded,
       LoadSequence(sequence, _),
-      LoadAndProcessSequenceInternal(sequence, _),
+      SubmitSequenceAndWaitInternal(sequence, _),
       Update(Completed(Id()), _),
       GoOnline,
       GoOnlineSuccess,
@@ -826,7 +826,7 @@ class SequencerBehaviorTest extends ScalaTestWithActorTestKit with BaseTestSuite
       InProgress,
       LoadSequence(sequence, _),
       StartSequence,
-      LoadAndProcessSequenceInternal(sequence, _),
+      SubmitSequenceAndWaitInternal(sequence, _),
       GoOnline,
       GoOnlineSuccess,
       GoOnlineFailed,
@@ -842,7 +842,7 @@ class SequencerBehaviorTest extends ScalaTestWithActorTestKit with BaseTestSuite
 
     assertUnhandled(
       Offline,
-      LoadAndProcessSequenceInternal(sequence, _),
+      SubmitSequenceAndWaitInternal(sequence, _),
       LoadSequence(sequence, _),
       StartSequence,
       AbortSequence,

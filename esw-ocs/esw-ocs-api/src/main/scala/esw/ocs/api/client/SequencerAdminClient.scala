@@ -91,7 +91,7 @@ class SequencerAdminClient(
   }
 
   override def submitSequence(sequence: Sequence): Future[LoadSequenceResponse] = {
-    postClient.requestResponse[LoadSequenceResponse](LoadAndStartSequence(sequence))
+    postClient.requestResponse[LoadSequenceResponse](SubmitSequence(sequence))
   }
 
   override def queryFinal: Future[SequenceResponse] = {

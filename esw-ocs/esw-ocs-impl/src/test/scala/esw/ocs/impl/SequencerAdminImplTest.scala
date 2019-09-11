@@ -56,7 +56,7 @@ class SequencerAdminImplTest extends ScalaTestWithActorTestKit with BaseTestSuit
         case GoOffline(replyTo)                                     => replyTo ! goOfflineResponse
         case LoadSequence(_, replyTo)                               => replyTo ! loadSequenceResponse
         case StartSequence(replyTo)                                 => replyTo ! startSequenceResponse
-        case LoadAndStartSequence(_, replyTo)                       => replyTo ! loadAndStartSequenceResponse
+        case SubmitSequence(_, replyTo)                             => replyTo ! loadAndStartSequenceResponse
         case QueryFinal(replyTo)                                    => replyTo ! queryFinalResponse
         case _                                                      =>
       }

@@ -40,12 +40,12 @@ class SequencerBehavior(
 
   //BEHAVIORS
   private def idle(data: SequencerData): Behavior[SequencerMsg] = receive(Idle, data, idle) {
-    case LoadSequence(sequence, replyTo)                   => load(sequence, replyTo, data)
-    case LoadAndProcessSequenceInternal(sequence, replyTo) => loadAndProcess(sequence, data, replyTo)
-    case LoadAndStartSequence(sequence, replyTo)           => loadAndStart(sequence, data, replyTo)
-    case QueryFinal(replyTo)                               => idle(data.querySequence(replyTo))
-    case GoOffline(replyTo)                                => goOffline(replyTo, data)
-    case PullNext(replyTo)                                 => idle(data.pullNextStep(replyTo))
+    case LoadSequence(sequence, replyTo)                  => load(sequence, replyTo, data)
+    case SubmitSequenceAndWaitInternal(sequence, replyTo) => submitSequenceAndWait(sequence, data, replyTo)
+    case SubmitSequence(sequence, replyTo)                => submitSequence(sequence, data, replyTo)
+    case QueryFinal(replyTo)                              => idle(data.querySequence(replyTo))
+    case GoOffline(replyTo)                               => goOffline(replyTo, data)
+    case PullNext(replyTo)                                => idle(data.pullNextStep(replyTo))
   }
 
   private def loaded(data: SequencerData): Behavior[SequencerMsg] = receive(Loaded, data, loaded) {
@@ -159,7 +159,7 @@ class SequencerBehavior(
       loaded(updatedData)
     }
 
-  private def loadAndStart(
+  private def submitSequence(
       sequence: Sequence,
       data: SequencerData,
       replyTo: ActorRef[LoadSequenceResponse]
@@ -168,7 +168,7 @@ class SequencerBehavior(
     inProgress(updatedData.startSequence(replyTo))
   }
 
-  private def loadAndProcess(
+  private def submitSequenceAndWait(
       sequence: Sequence,
       data: SequencerData,
       replyTo: ActorRef[SequenceResponse]
@@ -229,7 +229,7 @@ class SequencerBehavior(
         case msg: UnhandleableSequencerMessage =>
           msg.replyTo ! Unhandled(state.entryName, msg.getClass.getSimpleName); Behaviors.same
         case LoadAndProcessSequence(sequence, replyTo) =>
-          val sequenceResponseF: Future[SequenceResponse] = ctx.self ? (LoadAndProcessSequenceInternal(sequence, _))
+          val sequenceResponseF: Future[SequenceResponse] = ctx.self ? (SubmitSequenceAndWaitInternal(sequence, _))
           sequenceResponseF.foreach(res => replyTo ! res.toSubmitResponse(sequence.runId))
           Behaviors.same
         case _ => Behaviors.unhandled

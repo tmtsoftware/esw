@@ -29,9 +29,9 @@ object SequencerMessages {
   sealed trait EditorAction          extends SequenceLoadedMessage with InProgressMessage
 
   // startup msgs
-  final case class LoadSequence(sequence: Sequence, replyTo: ActorRef[LoadSequenceResponse])         extends IdleMessage
-  final case class StartSequence(replyTo: ActorRef[OkOrUnhandledResponse])                           extends SequenceLoadedMessage
-  final case class LoadAndStartSequence(sequence: Sequence, replyTo: ActorRef[LoadSequenceResponse]) extends IdleMessage
+  final case class LoadSequence(sequence: Sequence, replyTo: ActorRef[LoadSequenceResponse])   extends IdleMessage
+  final case class StartSequence(replyTo: ActorRef[OkOrUnhandledResponse])                     extends SequenceLoadedMessage
+  final case class SubmitSequence(sequence: Sequence, replyTo: ActorRef[LoadSequenceResponse]) extends IdleMessage
   final case class QueryFinal(replyTo: ActorRef[SequenceResponse])
       extends IdleMessage
       with SequenceLoadedMessage
@@ -63,7 +63,7 @@ object SequencerMessages {
   final case class AbortSequence(replyTo: ActorRef[OkOrUnhandledResponse]) extends SequenceLoadedMessage with InProgressMessage
 
   // engine & internal
-  final private[ocs] case class LoadAndProcessSequenceInternal(sequence: Sequence, replyTo: ActorRef[SequenceResponse])
+  final private[ocs] case class SubmitSequenceAndWaitInternal(sequence: Sequence, replyTo: ActorRef[SequenceResponse])
       extends IdleMessage
 
   final private[esw] case class PullNext(replyTo: ActorRef[PullNextResponse]) extends IdleMessage with InProgressMessage

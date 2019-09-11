@@ -146,7 +146,7 @@ class SequencerAdminClientTest extends BaseTestSuite with SequencerAdminHttpCode
       val sequence = Sequence(command1)
       when(
         postClient
-          .requestResponse[LoadSequenceResponse](argsEq(LoadAndStartSequence(sequence)))(any[Decoder[LoadSequenceResponse]]())
+          .requestResponse[LoadSequenceResponse](argsEq(SubmitSequence(sequence)))(any[Decoder[LoadSequenceResponse]]())
       ).thenReturn(Future.successful(Ok))
       sequencerAdminClient.submitSequence(sequence).futureValue should ===(Ok)
     }

@@ -24,7 +24,7 @@ trait SequencerAdminHttpCodecs extends OcsCodecs {
     @silent implicit lazy val goOfflineCodec: Codec[GoOffline.type]          = singletonCodec(GoOffline)
     @silent implicit lazy val startSequenceCodec: Codec[StartSequence.type]  = singletonCodec(StartSequence)
     @silent implicit lazy val loadCodec: Codec[LoadSequence]                 = deriveCodec[LoadSequence]
-    @silent implicit lazy val loadAndStartCodec: Codec[LoadAndStartSequence] = deriveCodec[LoadAndStartSequence]
+    @silent implicit lazy val submitSequenceCodec: Codec[SubmitSequence]     = deriveCodec[SubmitSequence]
     @silent implicit lazy val addCodec: Codec[Add]                           = deriveCodec[Add]
     @silent implicit lazy val prependCodec: Codec[Prepend]                   = deriveCodec[Prepend]
     @silent implicit lazy val replaceCodec: Codec[Replace]                   = deriveCodec[Replace]

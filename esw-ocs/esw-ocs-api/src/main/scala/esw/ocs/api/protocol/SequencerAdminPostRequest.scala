@@ -16,7 +16,7 @@ private[ocs] object SequencerAdminPostRequest {
   case object GoOffline                                           extends SequencerAdminPostRequest
   case object StartSequence                                       extends SequencerAdminPostRequest
   case class LoadSequence(sequence: Sequence)                     extends SequencerAdminPostRequest
-  case class LoadAndStartSequence(sequence: Sequence)             extends SequencerAdminPostRequest
+  case class SubmitSequence(sequence: Sequence)                   extends SequencerAdminPostRequest
   case class Add(commands: List[SequenceCommand])                 extends SequencerAdminPostRequest
   case class Prepend(commands: List[SequenceCommand])             extends SequencerAdminPostRequest
   case class Replace(id: Id, commands: List[SequenceCommand])     extends SequencerAdminPostRequest
