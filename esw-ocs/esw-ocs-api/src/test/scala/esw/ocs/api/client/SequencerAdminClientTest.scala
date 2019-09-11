@@ -1,12 +1,14 @@
 package esw.ocs.api.client
 
+import csw.params.commands.CommandResponse.Completed
 import csw.params.commands.{CommandName, Sequence, Setup}
 import csw.params.core.models.{Id, Prefix}
 import esw.ocs.api.BaseTestSuite
 import esw.ocs.api.codecs.SequencerAdminHttpCodecs
 import esw.ocs.api.models.StepList
 import esw.ocs.api.protocol.SequencerAdminPostRequest._
-import esw.ocs.api.protocol.{SequencerAdminPostRequest, _}
+import esw.ocs.api.protocol.SequencerAdminWebsocketRequest.QueryFinal
+import esw.ocs.api.protocol.{SequencerAdminPostRequest, SequencerAdminWebsocketRequest, _}
 import io.bullet.borer.Decoder
 import msocket.api.RequestClient
 import org.mockito.ArgumentMatchers.{any, eq => argsEq}
@@ -15,8 +17,9 @@ import scala.concurrent.Future
 
 class SequencerAdminClientTest extends BaseTestSuite with SequencerAdminHttpCodecs {
 
-  private val postClient           = mock[RequestClient[SequencerAdminPostRequest]]
-  private val sequencerAdminClient = new SequencerAdminClient(postClient)
+  private val postClient                                                     = mock[RequestClient[SequencerAdminPostRequest]]
+  private val websocketClient: RequestClient[SequencerAdminWebsocketRequest] = mock[RequestClient[SequencerAdminWebsocketRequest]]
+  private val sequencerAdminClient                                           = new SequencerAdminClient(postClient, websocketClient)
   "SequencerAdminClient" must {
 
     "call postClient with GetSequence request | ESW-222" in {
@@ -122,6 +125,37 @@ class SequencerAdminClientTest extends BaseTestSuite with SequencerAdminHttpCode
       when(postClient.requestResponse[GoOnlineResponse](argsEq(GoOnline))(any[Decoder[GoOnlineResponse]]()))
         .thenReturn(Future.successful(Ok))
       sequencerAdminClient.goOnline().futureValue should ===(Ok)
+    }
+
+    "call postClient with LoadSequence request | ESW-222" in {
+      val command1 = Setup(Prefix("esw.test"), CommandName("command-1"), None)
+      val sequence = Sequence(command1)
+      when(postClient.requestResponse[LoadSequenceResponse](argsEq(LoadSequence(sequence)))(any[Decoder[LoadSequenceResponse]]()))
+        .thenReturn(Future.successful(Ok))
+      sequencerAdminClient.loadSequence(sequence).futureValue should ===(Ok)
+    }
+
+    "call postClient with StartSequence request | ESW-222" in {
+      when(postClient.requestResponse[OkOrUnhandledResponse](argsEq(StartSequence))(any[Decoder[OkOrUnhandledResponse]]()))
+        .thenReturn(Future.successful(Ok))
+      sequencerAdminClient.startSequence.futureValue should ===(Ok)
+    }
+
+    "call postClient with LoadAndStartSequence request | ESW-222" in {
+      val command1 = Setup(Prefix("esw.test"), CommandName("command-1"), None)
+      val sequence = Sequence(command1)
+      when(
+        postClient
+          .requestResponse[LoadSequenceResponse](argsEq(SubmitSequence(sequence)))(any[Decoder[LoadSequenceResponse]]())
+      ).thenReturn(Future.successful(Ok))
+      sequencerAdminClient.submitSequence(sequence).futureValue should ===(Ok)
+    }
+
+    "call postClient with QueryFinal request | ESW-222" in {
+      val id = mock[Id]
+      when(websocketClient.requestResponse[SequenceResponse](argsEq(QueryFinal))(any[Decoder[SequenceResponse]]()))
+        .thenReturn(Future.successful(SequenceResult(Completed(id))))
+      sequencerAdminClient.queryFinal.futureValue should ===(SequenceResult(Completed(id)))
     }
   }
 }

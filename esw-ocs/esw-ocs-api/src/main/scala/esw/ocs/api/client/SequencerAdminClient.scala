@@ -1,18 +1,21 @@
 package esw.ocs.api.client
 
-import csw.params.commands.SequenceCommand
+import csw.params.commands.{Sequence, SequenceCommand}
 import csw.params.core.models.Id
 import esw.ocs.api.SequencerAdminApi
 import esw.ocs.api.codecs.SequencerAdminHttpCodecs
 import esw.ocs.api.models.StepList
 import esw.ocs.api.protocol.SequencerAdminPostRequest._
-import esw.ocs.api.protocol._
+import esw.ocs.api.protocol.SequencerAdminWebsocketRequest.QueryFinal
+import esw.ocs.api.protocol.{SequencerAdminWebsocketRequest, _}
 import msocket.api.RequestClient
 
 import scala.concurrent.Future
 
-class SequencerAdminClient(postClient: RequestClient[SequencerAdminPostRequest])
-    extends SequencerAdminApi
+class SequencerAdminClient(
+    postClient: RequestClient[SequencerAdminPostRequest],
+    websocketClient: RequestClient[SequencerAdminWebsocketRequest]
+) extends SequencerAdminApi
     with SequencerAdminHttpCodecs {
 
   override def getSequence: Future[Option[StepList]] = {
@@ -77,5 +80,21 @@ class SequencerAdminClient(postClient: RequestClient[SequencerAdminPostRequest])
 
   override def goOffline(): Future[OkOrUnhandledResponse] = {
     postClient.requestResponse[OkOrUnhandledResponse](GoOffline)
+  }
+
+  override def loadSequence(sequence: Sequence): Future[LoadSequenceResponse] = {
+    postClient.requestResponse[LoadSequenceResponse](LoadSequence(sequence))
+  }
+
+  override def startSequence: Future[OkOrUnhandledResponse] = {
+    postClient.requestResponse[OkOrUnhandledResponse](StartSequence)
+  }
+
+  override def submitSequence(sequence: Sequence): Future[LoadSequenceResponse] = {
+    postClient.requestResponse[LoadSequenceResponse](SubmitSequence(sequence))
+  }
+
+  override def queryFinal: Future[SequenceResponse] = {
+    websocketClient.requestResponse[SequenceResponse](QueryFinal)
   }
 }

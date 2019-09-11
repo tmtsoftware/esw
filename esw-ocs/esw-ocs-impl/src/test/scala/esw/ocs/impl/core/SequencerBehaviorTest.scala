@@ -3,7 +3,7 @@ package esw.ocs.impl.core
 import akka.Done
 import akka.actor.testkit.typed.scaladsl.{ScalaTestWithActorTestKit, TestProbe}
 import akka.util.Timeout
-import csw.command.client.messages.sequencer.LoadAndProcessSequence
+import csw.command.client.messages.sequencer.SubmitSequenceAndWait
 import csw.command.client.messages.{GetComponentLogMetadata, SetComponentLogLevel}
 import csw.logging.models.Level.DEBUG
 import csw.logging.models.LogMetadata
@@ -15,7 +15,7 @@ import esw.ocs.api.models.StepStatus.{InFlight, Pending}
 import esw.ocs.api.models.{Step, StepList, StepStatus}
 import esw.ocs.api.protocol.EditorError.{CannotOperateOnAnInFlightOrFinishedStep, IdDoesNotExist}
 import esw.ocs.api.protocol._
-import esw.ocs.impl.messages.SequencerMessages.{AbortSequence, AddBreakpoint, QuerySequenceResponse, _}
+import esw.ocs.impl.messages.SequencerMessages.{AbortSequence, AddBreakpoint, QueryFinal, _}
 import esw.ocs.impl.messages.SequencerState.{Idle, InProgress, Loaded, Offline}
 
 import scala.concurrent.duration.DurationLong
@@ -69,7 +69,7 @@ class SequencerBehaviorTest extends ScalaTestWithActorTestKit with BaseTestSuite
       import sequencerSetup._
 
       val probe = createTestProbe[LoadSequenceResponse]
-      sequencerActor ! LoadAndStartSequence(sequence, probe.ref)
+      sequencerActor ! SubmitSequence(sequence, probe.ref)
       pullAllStepsAndAssertSequenceIsFinished()
       probe.expectMessage(Ok)
     }
@@ -80,7 +80,7 @@ class SequencerBehaviorTest extends ScalaTestWithActorTestKit with BaseTestSuite
       import sequencerSetup._
 
       val probe = createTestProbe[LoadSequenceResponse]
-      sequencerActor ! LoadAndStartSequence(invalidSequence, probe.ref)
+      sequencerActor ! SubmitSequence(invalidSequence, probe.ref)
       probe.expectMessage(DuplicateIdsFound)
     }
 
@@ -90,7 +90,7 @@ class SequencerBehaviorTest extends ScalaTestWithActorTestKit with BaseTestSuite
       import sequencerSetup._
 
       val probe = createTestProbe[LoadSequenceResponse]
-      sequencerActor ! LoadAndStartSequence(sequence1, probe.ref)
+      sequencerActor ! SubmitSequence(sequence1, probe.ref)
       probe.expectMessage(Ok)
 
       val sequenceError = Error(command1.runId, "Some error")
@@ -109,7 +109,7 @@ class SequencerBehaviorTest extends ScalaTestWithActorTestKit with BaseTestSuite
       import sequencerSetup._
 
       val probe = createTestProbe[SubmitResponse]
-      sequencerActor ! LoadAndProcessSequence(sequence, probe.ref)
+      sequencerActor ! SubmitSequenceAndWait(sequence, probe.ref)
       pullAllStepsAndAssertSequenceIsFinished()
       probe.expectMessage(Completed(sequence.runId))
     }
@@ -121,7 +121,7 @@ class SequencerBehaviorTest extends ScalaTestWithActorTestKit with BaseTestSuite
       import sequencerSetup._
 
       val probe = createTestProbe[SubmitResponse]
-      sequencerActor ! LoadAndProcessSequence(invalidSequence, probe.ref)
+      sequencerActor ! SubmitSequenceAndWait(invalidSequence, probe.ref)
       probe.expectMessage(Error(invalidSequence.runId, DuplicateIdsFound.msg))
     }
   }
@@ -132,7 +132,7 @@ class SequencerBehaviorTest extends ScalaTestWithActorTestKit with BaseTestSuite
       import sequencerSetup._
 
       val seqResProbe = createTestProbe[SequenceResponse]
-      sequencerActor ! QuerySequenceResponse(seqResProbe.ref)
+      sequencerActor ! QueryFinal(seqResProbe.ref)
       seqResProbe.expectNoMessage(maxWaitForExpectNoMessage)
     }
 
@@ -141,7 +141,7 @@ class SequencerBehaviorTest extends ScalaTestWithActorTestKit with BaseTestSuite
       import sequencerSetup._
 
       val seqResProbe = createTestProbe[SequenceResponse]
-      sequencerActor ! QuerySequenceResponse(seqResProbe.ref)
+      sequencerActor ! QueryFinal(seqResProbe.ref)
       seqResProbe.expectNoMessage(maxWaitForExpectNoMessage)
 
       val startSeqProbe = createTestProbe[OkOrUnhandledResponse]
@@ -167,7 +167,7 @@ class SequencerBehaviorTest extends ScalaTestWithActorTestKit with BaseTestSuite
       assertSequencerState(InProgress)
 
       val seqResProbe = createTestProbe[SequenceResponse]
-      sequencerActor ! QuerySequenceResponse(seqResProbe.ref)
+      sequencerActor ! QueryFinal(seqResProbe.ref)
       seqResProbe.expectNoMessage(maxWaitForExpectNoMessage)
 
       promise.complete(Success(Completed(command1.runId)))
@@ -182,7 +182,7 @@ class SequencerBehaviorTest extends ScalaTestWithActorTestKit with BaseTestSuite
       import sequencerSetup._
 
       val seqResProbe = createTestProbe[SequenceResponse]
-      sequencerActor ! QuerySequenceResponse(seqResProbe.ref)
+      sequencerActor ! QueryFinal(seqResProbe.ref)
 
       seqResProbe.expectMessage(SequenceResult(Completed(sequence.runId)))
     }
@@ -808,7 +808,7 @@ class SequencerBehaviorTest extends ScalaTestWithActorTestKit with BaseTestSuite
     assertUnhandled(
       Loaded,
       LoadSequence(sequence, _),
-      LoadAndProcessSequenceInternal(sequence, _),
+      SubmitSequenceAndWaitInternal(sequence, _),
       Update(Completed(Id()), _),
       GoOnline,
       GoOnlineSuccess,
@@ -826,7 +826,7 @@ class SequencerBehaviorTest extends ScalaTestWithActorTestKit with BaseTestSuite
       InProgress,
       LoadSequence(sequence, _),
       StartSequence,
-      LoadAndProcessSequenceInternal(sequence, _),
+      SubmitSequenceAndWaitInternal(sequence, _),
       GoOnline,
       GoOnlineSuccess,
       GoOnlineFailed,
@@ -842,7 +842,7 @@ class SequencerBehaviorTest extends ScalaTestWithActorTestKit with BaseTestSuite
 
     assertUnhandled(
       Offline,
-      LoadAndProcessSequenceInternal(sequence, _),
+      SubmitSequenceAndWaitInternal(sequence, _),
       LoadSequence(sequence, _),
       StartSequence,
       AbortSequence,
@@ -863,7 +863,7 @@ class SequencerBehaviorTest extends ScalaTestWithActorTestKit with BaseTestSuite
       GoIdle,
       PullNext,
       Update(Completed(Id()), _),
-      QuerySequenceResponse
+      QueryFinal
     )
   }
 }

@@ -1,7 +1,8 @@
 package esw.ocs.app.route
 
 import akka.http.scaladsl.testkit.ScalatestRouteTest
-import csw.params.core.models.Id
+import csw.params.commands.{CommandName, Sequence, Setup}
+import csw.params.core.models.{Id, Prefix}
 import esw.http.core.BaseTestSuite
 import esw.ocs.api.codecs.SequencerAdminHttpCodecs
 import esw.ocs.api.models.StepList
@@ -14,11 +15,12 @@ import org.mockito.Mockito.when
 
 import scala.concurrent.Future
 
-class SequencerAdminRoutesTest extends BaseTestSuite with ScalatestRouteTest with SequencerAdminHttpCodecs with HttpCodecs {
+class SequencerAdminPostRouteTest extends BaseTestSuite with ScalatestRouteTest with SequencerAdminHttpCodecs with HttpCodecs {
 
   private val sequencerAdmin: SequencerAdminImpl = mock[SequencerAdminImpl]
   private val postHandler                        = new PostHandlerImpl(sequencerAdmin)
-  private val route                              = new SequencerAdminRoutes(postHandler).route
+  private val websocketHandler                   = new WebsocketHandlerImpl(sequencerAdmin)
+  private val route                              = new SequencerAdminRoutes(postHandler, websocketHandler).route
 
   "SequencerRoutes" must {
     "return sequence for getSequence request | ESW-222" in {
@@ -186,6 +188,34 @@ class SequencerAdminRoutesTest extends BaseTestSuite with ScalatestRouteTest wit
 
       Post("/post", RemoveBreakpoint(id)) ~> route ~> check {
         responseAs[GenericResponse] should ===(Ok)
+      }
+    }
+
+    "return Ok for LoadSequence request | ESW-101" in {
+      val command1 = Setup(Prefix("esw.test"), CommandName("command-1"), None)
+      val sequence = Sequence(command1)
+      when(sequencerAdmin.loadSequence(sequence)).thenReturn(Future.successful(Ok))
+
+      Post("/post", LoadSequence(sequence)) ~> route ~> check {
+        responseAs[LoadSequenceResponse] should ===(Ok)
+      }
+    }
+
+    "return Ok for StartSequence request | ESW-101" in {
+      when(sequencerAdmin.startSequence).thenReturn(Future.successful(Ok))
+
+      Post("/post", StartSequence) ~> route ~> check {
+        responseAs[OkOrUnhandledResponse] should ===(Ok)
+      }
+    }
+
+    "return Ok for LoadAndStartSequence request | ESW-101" in {
+      val command1 = Setup(Prefix("esw.test"), CommandName("command-1"), None)
+      val sequence = Sequence(command1)
+      when(sequencerAdmin.submitSequence(sequence)).thenReturn(Future.successful(Ok))
+
+      Post("/post", SubmitSequence(sequence)) ~> route ~> check {
+        responseAs[LoadSequenceResponse] should ===(Ok)
       }
     }
   }

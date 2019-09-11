@@ -6,7 +6,7 @@ import akka.actor.typed.scaladsl.Behaviors
 import akka.actor.typed.{ActorRef, ActorSystem, Behavior}
 import akka.util.Timeout
 import csw.command.client.CommandResponseManager
-import csw.command.client.messages.sequencer.{LoadAndProcessSequence, SequencerMsg}
+import csw.command.client.messages.sequencer.{SequencerMsg, SubmitSequenceAndWait}
 import csw.command.client.messages.{GetComponentLogMetadata, LogControlMessage, SetComponentLogLevel}
 import csw.location.api.scaladsl.LocationService
 import csw.location.models.ComponentId
@@ -40,29 +40,29 @@ class SequencerBehavior(
 
   //BEHAVIORS
   private def idle(data: SequencerData): Behavior[SequencerMsg] = receive(Idle, data, idle) {
-    case LoadSequence(sequence, replyTo)                   => load(sequence, replyTo, data)
-    case LoadAndProcessSequenceInternal(sequence, replyTo) => loadAndProcess(sequence, data, replyTo)
-    case LoadAndStartSequence(sequence, replyTo)           => loadAndStart(sequence, data, replyTo)
-    case QuerySequenceResponse(replyTo)                    => idle(data.querySequence(replyTo))
-    case GoOffline(replyTo)                                => goOffline(replyTo, data)
-    case PullNext(replyTo)                                 => idle(data.pullNextStep(replyTo))
+    case LoadSequence(sequence, replyTo)                  => load(sequence, replyTo, data)
+    case SubmitSequenceAndWaitInternal(sequence, replyTo) => submitSequenceAndWait(sequence, data, replyTo)
+    case SubmitSequence(sequence, replyTo)                => submitSequence(sequence, data, replyTo)
+    case QueryFinal(replyTo)                              => idle(data.querySequence(replyTo))
+    case GoOffline(replyTo)                               => goOffline(replyTo, data)
+    case PullNext(replyTo)                                => idle(data.pullNextStep(replyTo))
   }
 
   private def loaded(data: SequencerData): Behavior[SequencerMsg] = receive(Loaded, data, loaded) {
-    case QuerySequenceResponse(replyTo) => loaded(data.querySequence(replyTo))
-    case AbortSequence(replyTo)         => abortSequence(data, Loaded, replyTo)(nextBehavior = idle)
-    case editorAction: EditorAction     => handleEditorAction(editorAction, data, Loaded)(nextBehavior = loaded)
-    case GoOffline(replyTo)             => goOffline(replyTo, data)
-    case StartSequence(replyTo)         => inProgress(data.startSequence(replyTo))
+    case QueryFinal(replyTo)        => loaded(data.querySequence(replyTo))
+    case AbortSequence(replyTo)     => abortSequence(data, Loaded, replyTo)(nextBehavior = idle)
+    case editorAction: EditorAction => handleEditorAction(editorAction, data, Loaded)(nextBehavior = loaded)
+    case GoOffline(replyTo)         => goOffline(replyTo, data)
+    case StartSequence(replyTo)     => inProgress(data.startSequence(replyTo))
   }
 
   private def inProgress(data: SequencerData): Behavior[SequencerMsg] = receive(InProgress, data, inProgress) {
-    case QuerySequenceResponse(replyTo) => inProgress(data.querySequence(replyTo))
-    case AbortSequence(replyTo)         => abortSequence(data, InProgress, replyTo)(nextBehavior = inProgress)
-    case msg: EditorAction              => handleEditorAction(msg, data, InProgress)(nextBehavior = inProgress)
-    case PullNext(replyTo)              => inProgress(data.pullNextStep(replyTo))
-    case Update(submitResponse, _)      => inProgress(data.updateStepStatus(submitResponse, InProgress))
-    case _: GoIdle                      => idle(data)
+    case QueryFinal(replyTo)       => inProgress(data.querySequence(replyTo))
+    case AbortSequence(replyTo)    => abortSequence(data, InProgress, replyTo)(nextBehavior = inProgress)
+    case msg: EditorAction         => handleEditorAction(msg, data, InProgress)(nextBehavior = inProgress)
+    case PullNext(replyTo)         => inProgress(data.pullNextStep(replyTo))
+    case Update(submitResponse, _) => inProgress(data.updateStepStatus(submitResponse, InProgress))
+    case _: GoIdle                 => idle(data)
   }
 
   private def offline(data: SequencerData): Behavior[SequencerMsg] = receive(Offline, data, offline) {
@@ -159,7 +159,7 @@ class SequencerBehavior(
       loaded(updatedData)
     }
 
-  private def loadAndStart(
+  private def submitSequence(
       sequence: Sequence,
       data: SequencerData,
       replyTo: ActorRef[LoadSequenceResponse]
@@ -168,7 +168,7 @@ class SequencerBehavior(
     inProgress(updatedData.startSequence(replyTo))
   }
 
-  private def loadAndProcess(
+  private def submitSequenceAndWait(
       sequence: Sequence,
       data: SequencerData,
       replyTo: ActorRef[SequenceResponse]
@@ -228,8 +228,8 @@ class SequencerBehavior(
         case msg: T                 => f(msg)
         case msg: UnhandleableSequencerMessage =>
           msg.replyTo ! Unhandled(state.entryName, msg.getClass.getSimpleName); Behaviors.same
-        case LoadAndProcessSequence(sequence, replyTo) =>
-          val sequenceResponseF: Future[SequenceResponse] = ctx.self ? (LoadAndProcessSequenceInternal(sequence, _))
+        case SubmitSequenceAndWait(sequence, replyTo) =>
+          val sequenceResponseF: Future[SequenceResponse] = ctx.self ? (SubmitSequenceAndWaitInternal(sequence, _))
           sequenceResponseF.foreach(res => replyTo ! res.toSubmitResponse(sequence.runId))
           Behaviors.same
         case _ => Behaviors.unhandled

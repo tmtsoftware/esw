@@ -1,14 +1,13 @@
 package esw.ocs.api
 
-import csw.params.commands.SequenceCommand
+import csw.params.commands.{Sequence, SequenceCommand}
 import csw.params.core.models.Id
 import esw.ocs.api.models.StepList
-import esw.ocs.api.protocol.{GenericResponse, GoOnlineResponse, OkOrUnhandledResponse, PauseResponse, RemoveBreakpointResponse}
+import esw.ocs.api.protocol._
 
 import scala.concurrent.Future
 
 trait SequencerAdminApi {
-
   def getSequence: Future[Option[StepList]]
   def isAvailable: Future[Boolean]
   def isOnline: Future[Boolean]
@@ -26,4 +25,9 @@ trait SequencerAdminApi {
   def goOnline(): Future[GoOnlineResponse]
   def goOffline(): Future[OkOrUnhandledResponse]
 
+  def loadSequence(sequence: Sequence): Future[LoadSequenceResponse]
+  def startSequence: Future[OkOrUnhandledResponse]
+  def submitSequence(sequence: Sequence): Future[LoadSequenceResponse]
+
+  def queryFinal: Future[SequenceResponse]
 }

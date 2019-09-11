@@ -5,11 +5,11 @@ import akka.actor.typed.scaladsl.AskPattern._
 import akka.actor.typed.{ActorRef, ActorSystem}
 import akka.util.Timeout
 import csw.command.client.messages.sequencer.SequencerMsg
-import csw.params.commands.SequenceCommand
+import csw.params.commands.{Sequence, SequenceCommand}
 import csw.params.core.models.Id
 import esw.ocs.api.SequencerAdminApi
 import esw.ocs.api.models.StepList
-import esw.ocs.api.protocol.{GenericResponse, GoOnlineResponse, OkOrUnhandledResponse, PauseResponse, RemoveBreakpointResponse}
+import esw.ocs.api.protocol._
 import esw.ocs.impl.messages.SequencerMessages._
 import esw.ocs.impl.messages.SequencerState
 import esw.ocs.impl.messages.SequencerState.{Idle, Offline}
@@ -44,4 +44,13 @@ class SequencerAdminImpl(sequencer: ActorRef[EswSequencerMessage])(implicit syst
   override def isOnline: Future[Boolean]    = getState.map(_ != Offline)
 
   private def getState: Future[SequencerState[SequencerMsg]] = sequencer ? GetSequencerState
+
+  override def loadSequence(sequence: Sequence): Future[LoadSequenceResponse] = sequencer ? (LoadSequence(sequence, _))
+
+  override def startSequence: Future[OkOrUnhandledResponse] = sequencer ? StartSequence
+
+  override def submitSequence(sequence: Sequence): Future[LoadSequenceResponse] =
+    sequencer ? (SubmitSequence(sequence, _))
+
+  override def queryFinal: Future[SequenceResponse] = sequencer ? QueryFinal
 }

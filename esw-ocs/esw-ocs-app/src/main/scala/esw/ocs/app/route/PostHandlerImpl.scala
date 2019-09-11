@@ -31,5 +31,8 @@ class PostHandlerImpl(sequencerAdmin: SequencerAdminApi)
     case Delete(id)                => complete(sequencerAdmin.delete(id))
     case AddBreakpoint(id)         => complete(sequencerAdmin.addBreakpoint(id))
     case RemoveBreakpoint(id)      => complete(sequencerAdmin.removeBreakpoint(id))
+    case LoadSequence(sequence)    => complete(sequencerAdmin.loadSequence(sequence))
+    case StartSequence             => complete(sequencerAdmin.startSequence)
+    case SubmitSequence(sequence)  => complete(sequencerAdmin.submitSequence(sequence))
   }
 }

@@ -22,12 +22,15 @@ class Routes(
 ) extends GatewayCodecs
     with HttpCodecs {
 
+  //fixme: Is this necessary? whats the default behavior of akka http on future failure?
+  // Is there a better way to log?
   val commonExceptionHandlers: ExceptionHandler = ExceptionHandler {
     case NonFatal(ex) =>
       log.error(ex.getMessage, ex = ex)
       complete(HttpResponse(StatusCodes.InternalServerError))
   }
 
+  //fixme: route logger
   val route: Route = handleExceptions(commonExceptionHandlers) {
     handleRejections(RejectionHandler.default) {
       get {

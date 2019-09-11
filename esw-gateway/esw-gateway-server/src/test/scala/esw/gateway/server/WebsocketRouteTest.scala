@@ -31,7 +31,7 @@ import org.mockito.Mockito.when
 import scala.concurrent.Future
 import scala.concurrent.duration.DurationLong
 
-class WebsocketHandlerImplTest extends BaseTestSuite with ScalatestRouteTest with GatewayCodecs with HttpCodecs {
+class WebsocketRouteTest extends BaseTestSuite with ScalatestRouteTest with GatewayCodecs with HttpCodecs {
   private val actorSystem: ActorSystem[SpawnProtocol] = ActorSystem(SpawnProtocol.behavior, "test-system")
 
   private val cswCtxMocks = new CswContextMocks(actorSystem)
@@ -106,8 +106,7 @@ class WebsocketHandlerImplTest extends BaseTestSuite with ScalatestRouteTest wit
       val currentState2         = CurrentState(Prefix("esw.a.b"), StateName("stateName2"))
 
       val currentStateSubscription = mock[CurrentStateSubscription]
-      val currentStateStream = Source(List(currentState1, currentState2))
-        .mapMaterializedValue(_ => currentStateSubscription)
+      val currentStateStream       = Source(List(currentState1, currentState2)).mapMaterializedValue(_ => currentStateSubscription)
 
       when(componentFactory.commandService(componentName, componentType)).thenReturn(Future.successful(commandService))
       when(commandService.subscribeCurrentState(stateNames)).thenReturn(currentStateStream)

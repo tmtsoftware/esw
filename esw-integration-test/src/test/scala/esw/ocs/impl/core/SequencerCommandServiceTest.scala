@@ -37,6 +37,6 @@ class SequencerCommandServiceTest extends ScalaTestFrameworkTestKit with BaseTes
 
     implicit val patienceConfig: PatienceConfig          = PatienceConfig(500.millis)
     val sequencerCommandService: SequencerCommandService = SequencerCommandServiceFactory.make(sequencerLocation.rightValue)
-    sequencerCommandService.submit(sequence).futureValue should ===(Completed(sequence.runId))
+    sequencerCommandService.submitAndWait(sequence).futureValue should ===(Completed(sequence.runId))
   }
 }
