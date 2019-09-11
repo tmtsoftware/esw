@@ -12,7 +12,7 @@ import esw.ocs.api.models.{Step, StepList}
 import esw.ocs.api.protocol.{DuplicateIdsFound, Ok, PullNextResult, SequenceResponse, SequenceResult}
 import esw.ocs.impl.messages.SequencerMessages.{GoIdle, Update}
 import esw.ocs.impl.messages.SequencerState
-import esw.ocs.impl.messages.SequencerState.InProgress
+import esw.ocs.impl.messages.SequencerState.{InProgress, Loaded}
 
 import scala.concurrent.Future
 import scala.util.{Failure, Success}
@@ -80,10 +80,13 @@ private[core] case class SequencerData(
       stepList: Option[StepList]
   ): SequencerData = {
     replyTo ! Ok
-    copy(stepList)
-      .checkForSequenceCompletion()
-      .notifyReadyToExecuteNextSubscriber(state)
-      .sendNextPendingStepIfAvailable()
+    val updatedData = copy(stepList)
+    if (state == Loaded) updatedData
+    else
+      updatedData
+        .checkForSequenceCompletion()
+        .notifyReadyToExecuteNextSubscriber(state)
+        .sendNextPendingStepIfAvailable()
   }
 
   def updateStepStatus(submitResponse: SubmitResponse, state: SequencerState[SequencerMsg]): SequencerData = {

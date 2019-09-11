@@ -19,13 +19,12 @@ import csw.testkit.scaladsl.ScalaTestFrameworkTestKit
 import esw.ocs.api.BaseTestSuite
 import esw.ocs.api.models.StepStatus.Finished.{Failure, Success}
 import esw.ocs.api.models.StepStatus.Pending
-import esw.ocs.api.protocol._
 import esw.ocs.api.models.{Step, StepList}
 import esw.ocs.api.protocol.{LoadSequenceResponse, Ok, SequenceResult, Unhandled}
 import esw.ocs.app.wiring.SequencerWiring
+import esw.ocs.impl.SequencerAdminImpl
 import esw.ocs.impl.messages.SequencerMessages._
 import esw.ocs.impl.messages.SequencerState.Offline
-import esw.ocs.impl.SequencerAdminImpl
 
 import scala.concurrent.Future
 import scala.concurrent.duration.DurationLong
@@ -93,6 +92,26 @@ class SequencerIntegrationTest extends ScalaTestFrameworkTestKit(EventServer) wi
 
     (sequencer ? StartSequence).futureValue should ===(Unhandled(Offline.entryName, "StartSequence"))
     (sequencer ? QuerySequenceResponse).futureValue should ===(Unhandled(Offline.entryName, "QuerySequenceResponse"))
+  }
+
+  "Load, Add commands and Start sequence - ensures sequence doesn't start on loading" in {
+    val sequence = Sequence(command1)
+
+    val loadResponse: Future[LoadSequenceResponse] = sequencer ? (LoadSequence(sequence, _))
+    loadResponse.futureValue should ===(Ok)
+
+    sequencerAdmin.add(List(command2)).futureValue should ===(Ok)
+
+    sequencerAdmin.getSequence.futureValue should ===(Some(StepList(sequence.runId, List(Step(command1), Step(command2)))))
+
+    (sequencer ? StartSequence).futureValue should ===(Ok)
+
+    val expectedFinishedSteps = List(
+      Step(command1, Success(Completed(command1.runId)), hasBreakpoint = false),
+      Step(command2, Success(Completed(command2.runId)), hasBreakpoint = false)
+    )
+    eventually(sequencerAdmin.getSequence.futureValue should ===(Some(StepList(sequence.runId, expectedFinishedSteps))))
+
   }
 
   "LoadAndProcess a sequence and execute commands that are added later | ESW-145, ESW-154" in {
