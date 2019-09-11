@@ -11,7 +11,6 @@ import esw.gateway.api.protocol.{CommandAction, CommandError, InvalidComponent}
 import scala.concurrent.Future
 
 trait CommandApi {
-
   def process(
       componentId: ComponentId,
       command: ControlCommand,

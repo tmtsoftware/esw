@@ -9,8 +9,12 @@ lazy val aggregateProjects: Seq[ProjectReference] =
     `esw-gateway`
   )
 
-lazy val githubReleases: Seq[ProjectReference]   = Seq.empty
-lazy val unidocExclusions: Seq[ProjectReference] = Seq(`esw-integration-test`, `esw-ocs-api`.js)
+lazy val githubReleases: Seq[ProjectReference] = Seq.empty
+lazy val unidocExclusions: Seq[ProjectReference] = Seq(
+  `esw-integration-test`,
+  `esw-ocs-api`.js,
+  `esw-gateway-api`.js
+)
 
 val enableCoverage         = sys.props.get("enableCoverage").contains("true")
 val MaybeCoverage: Plugins = if (enableCoverage) Coverage else Plugins.empty
@@ -103,24 +107,27 @@ lazy val `esw-utils` = project
 
 lazy val `esw-gateway` = project
   .aggregate(
-    `esw-gateway-api`,
+    `esw-gateway-api`.jvm,
+    `esw-gateway-api`.js,
     `esw-gateway-impl`,
     `esw-gateway-server`
   )
 
-lazy val `esw-gateway-api` = project
+lazy val `esw-gateway-api` = crossProject(JSPlatform, JVMPlatform)
+  .crossType(CrossType.Pure)
   .in(file("esw-gateway/esw-gateway-api"))
+  .jvmConfigure(_.dependsOn(`esw-test-reporter` % Test))
+  .settings(fork := false)
   .settings(
     libraryDependencies ++= Dependencies.EswGatewayApi.value
   )
-  .dependsOn(`esw-test-reporter` % Test)
 
 lazy val `esw-gateway-impl` = project
   .in(file("esw-gateway/esw-gateway-impl"))
   .settings(
     libraryDependencies ++= Dependencies.EswGatewayImpl.value
   )
-  .dependsOn(`esw-gateway-api`, `esw-test-reporter` % Test)
+  .dependsOn(`esw-gateway-api`.jvm, `esw-test-reporter` % Test)
 
 lazy val `esw-gateway-server` = project
   .in(file("esw-gateway/esw-gateway-server"))

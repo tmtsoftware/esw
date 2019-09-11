@@ -6,14 +6,7 @@ import esw.ocs.api.SequencerAdminApi
 import esw.ocs.api.codecs.SequencerAdminHttpCodecs
 import esw.ocs.api.models.StepList
 import esw.ocs.api.protocol.SequencerAdminPostRequest._
-import esw.ocs.api.protocol.{
-  GenericResponse,
-  GoOnlineResponse,
-  OkOrUnhandledResponse,
-  PauseResponse,
-  RemoveBreakpointResponse,
-  SequencerAdminPostRequest
-}
+import esw.ocs.api.protocol._
 import msocket.api.RequestClient
 
 import scala.concurrent.Future
