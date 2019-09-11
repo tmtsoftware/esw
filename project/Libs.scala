@@ -22,7 +22,7 @@ object Libs {
 
 object Csw {
   private val Org     = "com.github.tmtsoftware.csw"
-  private val Version = "b158a5838498ba84341a0972ae605116c8e3c57b" //change this to 0.1-SNAPSHOT to test with local csw changes (after publishLocal)
+  private val Version = "3ae5b6f24035a42770acbe536c7635a77f00679f" //change this to 0.1-SNAPSHOT to test with local csw changes (after publishLocal)
 
   val `csw-alarm-api`       = Org %% "csw-alarm-api" % Version
   val `csw-command-api`     = Org %% "csw-command-api" % Version
