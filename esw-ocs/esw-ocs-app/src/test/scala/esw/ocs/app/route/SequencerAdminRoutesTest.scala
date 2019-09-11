@@ -211,7 +211,7 @@ class SequencerAdminRoutesTest extends BaseTestSuite with ScalatestRouteTest wit
     "return Ok for LoadAndStartSequence request | ESW-222" in {
       val command1 = Setup(Prefix("esw.test"), CommandName("command-1"), None)
       val sequence = Sequence(command1)
-      when(sequencerAdmin.loadAndStartSequence(sequence)).thenReturn(Future.successful(Ok))
+      when(sequencerAdmin.submitSequence(sequence)).thenReturn(Future.successful(Ok))
 
       Post("/post", LoadAndStartSequence(sequence)) ~> route ~> check {
         responseAs[LoadSequenceResponse] should ===(Ok)

@@ -134,6 +134,6 @@ class SequencerAdminImplTest extends ScalaTestWithActorTestKit with BaseTestSuit
   "loadAndStartSequence" in {
     val command1 = Setup(Prefix("esw.test"), CommandName("command-1"), None)
     val sequence = Sequence(command1)
-    sequencerAdmin.loadAndStartSequence(sequence).futureValue should ===(Ok)
+    sequencerAdmin.submitSequence(sequence).futureValue should ===(Ok)
   }
 }

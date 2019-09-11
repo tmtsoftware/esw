@@ -3,15 +3,17 @@ package esw.ocs.api.codecs
 import com.github.ghik.silencer.silent
 import esw.ocs.api.protocol.SequencerAdminPostRequest
 import esw.ocs.api.protocol.SequencerAdminPostRequest._
+import esw.ocs.api.request.SequencerAdminWebsocketRequest
+import esw.ocs.api.request.SequencerAdminWebsocketRequest.QueryFinal
 import io.bullet.borer.Codec
 import io.bullet.borer.derivation.MapBasedCodecs.deriveCodec
 
 trait SequencerAdminHttpCodecs extends OcsCodecs {
 
-  implicit def SequencerAdminPostRequestCodec[T <: SequencerAdminPostRequest]: Codec[T] =
-    SequencerAdminPostRequestValue.asInstanceOf[Codec[T]]
+  implicit def sequencerAdminPostRequestCodec[T <: SequencerAdminPostRequest]: Codec[T] =
+    sequencerAdminPostRequestValue.asInstanceOf[Codec[T]]
 
-  lazy val SequencerAdminPostRequestValue: Codec[SequencerAdminPostRequest] = {
+  lazy val sequencerAdminPostRequestValue: Codec[SequencerAdminPostRequest] = {
     @silent implicit lazy val getSequenceCodec: Codec[GetSequence.type]      = singletonCodec(GetSequence)
     @silent implicit lazy val isAvailableCodec: Codec[IsAvailable.type]      = singletonCodec(IsAvailable)
     @silent implicit lazy val isOnlineCodec: Codec[IsOnline.type]            = singletonCodec(IsOnline)
@@ -33,5 +35,13 @@ trait SequencerAdminHttpCodecs extends OcsCodecs {
     @silent implicit lazy val removeBreakpointCodec: Codec[RemoveBreakpoint] = deriveCodec[RemoveBreakpoint]
 
     deriveCodec[SequencerAdminPostRequest]
+  }
+
+  implicit def sequencerAdminWebsocketRequestCodec[T <: SequencerAdminWebsocketRequest]: Codec[T] =
+    sequencerAdminWebsocketRequestValue.asInstanceOf[Codec[T]]
+
+  lazy val sequencerAdminWebsocketRequestValue: Codec[SequencerAdminWebsocketRequest] = {
+    @silent implicit lazy val queryFinalCodec: Codec[QueryFinal.type] = singletonCodec(QueryFinal)
+    deriveCodec[SequencerAdminWebsocketRequest]
   }
 }

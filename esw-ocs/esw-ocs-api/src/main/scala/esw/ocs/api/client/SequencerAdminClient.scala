@@ -87,7 +87,7 @@ class SequencerAdminClient(postClient: RequestClient[SequencerAdminPostRequest])
     postClient.requestResponse[OkOrUnhandledResponse](StartSequence)
   }
 
-  override def loadAndStartSequence(sequence: Sequence): Future[LoadSequenceResponse] = {
+  override def submitSequence(sequence: Sequence): Future[LoadSequenceResponse] = {
     postClient.requestResponse[LoadSequenceResponse](LoadAndStartSequence(sequence))
   }
 }

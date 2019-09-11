@@ -11,10 +11,10 @@ import io.bullet.borer.derivation.ArrayBasedCodecs.deriveUnaryCodec
 import io.bullet.borer.derivation.MapBasedCodecs.deriveCodec
 
 trait OcsMsgCodecs extends MessageCodecs with DoneCodec {
-  implicit lazy val loadSequenceCodec: Codec[LoadSequence]                   = deriveCodec[LoadSequence]
-  implicit lazy val startSequenceCodec: Codec[StartSequence]                 = deriveCodec[StartSequence]
-  implicit lazy val querySequenceResponseCodec: Codec[QuerySequenceResponse] = deriveCodec[QuerySequenceResponse]
-  implicit lazy val loadAndStartSequenceCodec: Codec[LoadAndStartSequence]   = deriveCodec[LoadAndStartSequence]
+  implicit lazy val loadSequenceCodec: Codec[LoadSequence]                 = deriveCodec[LoadSequence]
+  implicit lazy val startSequenceCodec: Codec[StartSequence]               = deriveCodec[StartSequence]
+  implicit lazy val querySequenceResponseCodec: Codec[QueryFinal]          = deriveCodec[QueryFinal]
+  implicit lazy val loadAndStartSequenceCodec: Codec[LoadAndStartSequence] = deriveCodec[LoadAndStartSequence]
   implicit lazy val loadAndProcessSequenceInternalCodec: Codec[LoadAndProcessSequenceInternal] =
     deriveCodec[LoadAndProcessSequenceInternal]
 

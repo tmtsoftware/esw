@@ -145,7 +145,7 @@ class SequencerAdminClientTest extends BaseTestSuite with SequencerAdminHttpCode
         postClient
           .requestResponse[LoadSequenceResponse](argsEq(LoadAndStartSequence(sequence)))(any[Decoder[LoadSequenceResponse]]())
       ).thenReturn(Future.successful(Ok))
-      sequencerAdminClient.loadAndStartSequence(sequence).futureValue should ===(Ok)
+      sequencerAdminClient.submitSequence(sequence).futureValue should ===(Ok)
     }
   }
 }

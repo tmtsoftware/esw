@@ -25,8 +25,10 @@ trait SequencerAdminApi {
   def abortSequence(): Future[OkOrUnhandledResponse]
   def goOnline(): Future[GoOnlineResponse]
   def goOffline(): Future[OkOrUnhandledResponse]
+
   def loadSequence(sequence: Sequence): Future[LoadSequenceResponse]
   def startSequence: Future[OkOrUnhandledResponse]
-  def loadAndStartSequence(sequence: Sequence): Future[LoadSequenceResponse]
+  def submitSequence(sequence: Sequence): Future[LoadSequenceResponse]
 
+//  def queryFinal: Future[SequenceResponse]
 }

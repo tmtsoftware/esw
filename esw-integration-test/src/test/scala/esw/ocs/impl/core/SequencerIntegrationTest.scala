@@ -76,7 +76,7 @@ class SequencerIntegrationTest extends ScalaTestFrameworkTestKit(EventServer) wi
     (sequencer ? StartSequence).futureValue should ===(Ok)
 
     // assert sequence is completed successfully
-    (sequencer ? QuerySequenceResponse).futureValue should ===(SequenceResult(Completed(sequence.runId)))
+    (sequencer ? QueryFinal).futureValue should ===(SequenceResult(Completed(sequence.runId)))
 
     val expectedSteps = List(
       Step(command1, Success(Completed(command1.runId)), hasBreakpoint = false),
@@ -91,7 +91,7 @@ class SequencerIntegrationTest extends ScalaTestFrameworkTestKit(EventServer) wi
     loadSequenceResponse.futureValue should ===(Unhandled(Offline.entryName, "LoadSequence"))
 
     (sequencer ? StartSequence).futureValue should ===(Unhandled(Offline.entryName, "StartSequence"))
-    (sequencer ? QuerySequenceResponse).futureValue should ===(Unhandled(Offline.entryName, "QuerySequenceResponse"))
+    (sequencer ? QueryFinal).futureValue should ===(Unhandled(Offline.entryName, "QueryFinal"))
   }
 
   "Load, Add commands and Start sequence - ensures sequence doesn't start on loading" in {

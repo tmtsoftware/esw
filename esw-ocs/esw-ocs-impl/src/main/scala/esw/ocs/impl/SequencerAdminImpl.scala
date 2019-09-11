@@ -49,6 +49,10 @@ class SequencerAdminImpl(sequencer: ActorRef[EswSequencerMessage])(implicit syst
 
   override def startSequence: Future[OkOrUnhandledResponse] = sequencer ? StartSequence
 
-  override def loadAndStartSequence(sequence: Sequence): Future[LoadSequenceResponse] =
+  override def submitSequence(sequence: Sequence): Future[LoadSequenceResponse] =
     sequencer ? (LoadAndStartSequence(sequence, _))
+
+//  override def queryFinal: Future[SequenceResponse] = {
+//    sequencer ? QueryFinal
+//  }
 }
