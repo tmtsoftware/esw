@@ -39,22 +39,41 @@ subprojects {
         }
     }
 
-
     configure<JavaPluginConvention> {
         sourceCompatibility = JavaVersion.VERSION_1_8
     }
 
-    task<Jar>("sourcesJar") {
-        from(project.the<SourceSetContainer>()["main"].java)
+    tasks.register<Jar>("sourcesJar") {
+        from(sourceSets.main.get().allJava)
         archiveClassifier.set("sources")
+    }
+
+    tasks.register<Jar>("javadocJar") {
+        from(tasks.javadoc)
+        archiveClassifier.set("javadoc")
     }
 
     publishing {
         publications {
-            create<MavenPublication>("maven") {
-                artifactId = project.name
+            create<MavenPublication>("mavenJava") {
                 from(components["java"])
+                artifact(tasks["sourcesJar"])
+                artifact(tasks["javadocJar"])
+                versionMapping {
+                    usage("java-api") {
+                        fromResolutionOf("runtimeClasspath")
+                    }
+                    usage("java-runtime") {
+                        fromResolutionResult()
+                    }
+                }
             }
+        }
+    }
+
+    tasks.javadoc {
+        if (JavaVersion.current().isJava9Compatible) {
+            (options as StandardJavadocDocletOptions).addBooleanOption("html5", true)
         }
     }
 }

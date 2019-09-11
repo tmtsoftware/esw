@@ -17,7 +17,7 @@ script {
     handleSetup("command-3") { command ->
         log("============ command-3 ================")
 
-        val keys = (0.until(50)).map { eventKey + it }.toTypedArray()
+        val keys = (1..50).map { eventKey + it }.toTypedArray()
 
         onEvent(*keys) { event ->
             println("=======================")
