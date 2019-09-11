@@ -3,7 +3,7 @@ package esw.ocs.impl.core
 import akka.Done
 import akka.actor.testkit.typed.scaladsl.{ScalaTestWithActorTestKit, TestProbe}
 import akka.util.Timeout
-import csw.command.client.messages.sequencer.LoadAndProcessSequence
+import csw.command.client.messages.sequencer.SubmitSequenceAndWait
 import csw.command.client.messages.{GetComponentLogMetadata, SetComponentLogLevel}
 import csw.logging.models.Level.DEBUG
 import csw.logging.models.LogMetadata
@@ -109,7 +109,7 @@ class SequencerBehaviorTest extends ScalaTestWithActorTestKit with BaseTestSuite
       import sequencerSetup._
 
       val probe = createTestProbe[SubmitResponse]
-      sequencerActor ! LoadAndProcessSequence(sequence, probe.ref)
+      sequencerActor ! SubmitSequenceAndWait(sequence, probe.ref)
       pullAllStepsAndAssertSequenceIsFinished()
       probe.expectMessage(Completed(sequence.runId))
     }
@@ -121,7 +121,7 @@ class SequencerBehaviorTest extends ScalaTestWithActorTestKit with BaseTestSuite
       import sequencerSetup._
 
       val probe = createTestProbe[SubmitResponse]
-      sequencerActor ! LoadAndProcessSequence(invalidSequence, probe.ref)
+      sequencerActor ! SubmitSequenceAndWait(invalidSequence, probe.ref)
       probe.expectMessage(Error(invalidSequence.runId, DuplicateIdsFound.msg))
     }
   }

@@ -4,7 +4,7 @@ import akka.actor.Scheduler
 import akka.actor.typed.scaladsl.AskPattern._
 import akka.actor.typed.{ActorRef, ActorSystem, SpawnProtocol}
 import akka.util.Timeout
-import csw.command.client.messages.sequencer.{LoadAndProcessSequence, SequencerMsg}
+import csw.command.client.messages.sequencer.{SequencerMsg, SubmitSequenceAndWait}
 import csw.location.api.extensions.URIExtension.RichURI
 import csw.location.api.scaladsl.LocationService
 import csw.location.client.scaladsl.HttpLocationServiceFactory
@@ -110,7 +110,7 @@ class SequencerIntegrationTest extends ScalaTestFrameworkTestKit(EventServer) wi
   "LoadAndProcess a sequence and execute commands that are added later | ESW-145, ESW-154" in {
     val sequence = Sequence(command1, command2)
 
-    val processSeqResponse: Future[SubmitResponse] = sequencer ? (LoadAndProcessSequence(sequence, _))
+    val processSeqResponse: Future[SubmitResponse] = sequencer ? (SubmitSequenceAndWait(sequence, _))
     eventually(sequencerAdmin.getSequence.futureValue shouldBe a[Some[_]])
 
     sequencerAdmin.add(List(command3)).futureValue should ===(Ok)
@@ -139,7 +139,7 @@ class SequencerIntegrationTest extends ScalaTestFrameworkTestKit(EventServer) wi
     val command3 = Setup(Prefix("esw.test"), CommandName("command-3"), None)
     val sequence = Sequence(command1, command2, command3)
 
-    val processSeqResponse: Future[SubmitResponse] = sequencer ? (LoadAndProcessSequence(sequence, _))
+    val processSeqResponse: Future[SubmitResponse] = sequencer ? (SubmitSequenceAndWait(sequence, _))
     eventually(sequencerAdmin.getSequence.futureValue shouldBe a[Some[_]])
 
     processSeqResponse.futureValue should ===(Error(sequence.runId, failCommandName))
@@ -161,7 +161,7 @@ class SequencerIntegrationTest extends ScalaTestFrameworkTestKit(EventServer) wi
   "Go online and offline | ESW-194" in {
     val sequence = Sequence(command1, command2)
 
-    val seqResponse: Future[SubmitResponse] = sequencer ? (LoadAndProcessSequence(sequence, _))
+    val seqResponse: Future[SubmitResponse] = sequencer ? (SubmitSequenceAndWait(sequence, _))
     seqResponse.futureValue should ===(Completed(sequence.runId))
 
     // assert sequencer goes offline and offline handlers are called

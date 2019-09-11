@@ -5,7 +5,7 @@ import akka.actor.testkit.typed.scaladsl.TestProbe
 import akka.actor.typed.{ActorRef, ActorSystem}
 import akka.util.Timeout
 import csw.command.client.CommandResponseManager
-import csw.command.client.messages.sequencer.{LoadAndProcessSequence, SequencerMsg}
+import csw.command.client.messages.sequencer.{SequencerMsg, SubmitSequenceAndWait}
 import csw.location.api.scaladsl.LocationService
 import csw.location.models.ComponentId
 import csw.params.commands.CommandResponse.{Completed, SubmitResponse}
@@ -264,7 +264,7 @@ object SequencerTestSetup {
     val sequencerSetup = new SequencerTestSetup(sequence)
     import sequencerSetup._
     val probe = TestProbe[SubmitResponse]
-    sequencerActor ! LoadAndProcessSequence(sequence, probe.ref)
+    sequencerActor ! SubmitSequenceAndWait(sequence, probe.ref)
     pullAllStepsAndAssertSequenceIsFinished()
     probe.expectMessage(Completed(sequence.runId))
     sequencerSetup
