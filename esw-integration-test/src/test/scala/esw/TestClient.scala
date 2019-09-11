@@ -38,7 +38,7 @@ object TestClient extends App {
 
   private val factory: SequencerCommandServiceImpl = SequencerCommandServiceFactory.make(location)
 
-  factory.submit(Sequence(cmd1, cmd2, cmd3)).onComplete { _ =>
+  factory.submitAndWait(Sequence(cmd1, cmd2, cmd3)).onComplete { _ =>
     Thread.sleep(2000)
     Await.result(location.uri.toActorRef.unsafeUpcast[EswSequencerMessage] ? Shutdown, 10.seconds)
     system.terminate()
