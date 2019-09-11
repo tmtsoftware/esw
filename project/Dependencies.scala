@@ -64,8 +64,10 @@ object Dependencies {
 
   val IntegrationTest = Def.setting(
     Seq(
-      Csw.`csw-testkit` % Test,
-      Libs.scalatest    % Test
+      Csw.`csw-testkit`        % Test,
+      Csw.`csw-admin-server`   % Test,
+      Csw.`csw-logging-models` % Test,
+      Libs.scalatest           % Test
     )
   )
 

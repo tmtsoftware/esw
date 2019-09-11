@@ -9,7 +9,7 @@ import csw.params.commands.{CommandName, Sequence, Setup}
 import csw.params.core.models.Prefix
 import csw.testkit.scaladsl.ScalaTestFrameworkTestKit
 import esw.ocs.api.BaseTestSuite
-import esw.ocs.api.models.responses.RegistrationError
+import esw.ocs.api.protocol.RegistrationError
 import esw.ocs.app.wiring.SequencerWiring
 import org.scalatest.time.SpanSugar.convertDoubleToGrainOfTime
 
@@ -23,11 +23,11 @@ class SequencerCommandServiceTest extends ScalaTestFrameworkTestKit with BaseTes
   override def beforeAll(): Unit = {
     super.beforeAll()
     wiring = new SequencerWiring("testSequencerId1", "testObservingMode1", None)
-    sequencerLocation = wiring.start()
+    sequencerLocation = wiring.sequencerServer.start()
   }
 
   override protected def afterAll(): Unit = {
-    wiring.shutDown().futureValue
+    wiring.sequencerServer.shutDown().futureValue
     super.afterAll()
   }
 

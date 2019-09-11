@@ -6,7 +6,7 @@ import akka.actor.typed.scaladsl.adapter.TypedActorSystemOps
 import csw.location.api.scaladsl.{LocationService, RegistrationResult}
 import csw.location.models._
 import csw.params.core.models.Subsystem
-import esw.ocs.api.models.responses.RegistrationError
+import esw.ocs.api.protocol.RegistrationError
 
 import scala.async.Async._
 import scala.concurrent.{ExecutionContext, Future}

@@ -2,13 +2,14 @@ package esw.ocs.impl
 
 import java.net.URI
 
+import akka.Done
 import akka.actor.testkit.typed.scaladsl.ScalaTestWithActorTestKit
 import akka.actor.typed.scaladsl.Behaviors
 import csw.location.models.Connection.AkkaConnection
 import csw.location.models.{AkkaLocation, ComponentId, ComponentType}
 import csw.params.core.models.Prefix
 import esw.ocs.api.BaseTestSuite
-import esw.ocs.api.models.responses.SequenceComponentResponse.{Done, GetStatusResponse, LoadScriptResponse}
+import esw.ocs.api.protocol.{GetStatusResponse, LoadScriptResponse}
 import esw.ocs.impl.messages.SequenceComponentMsg
 import esw.ocs.impl.messages.SequenceComponentMsg.{GetStatus, LoadScript, Stop, UnloadScript}
 
@@ -39,7 +40,7 @@ class SequenceComponentImplTest extends ScalaTestWithActorTestKit with BaseTestS
   }
 
   "GetStatus | ESW-103" in {
-    sequenceComponentClient.getStatus.futureValue should ===(getStatusResponse)
+    sequenceComponentClient.status.futureValue should ===(getStatusResponse)
   }
 
   "UnloadScript | ESW-103" in {

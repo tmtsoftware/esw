@@ -51,7 +51,7 @@ class ScriptIntegrationTest extends ScalaTestFrameworkTestKit with BaseTestSuite
       register(tcsRegistration).awaitResult
 
       ocsWiring = new SequencerWiring(ocsSequencerId, ocsObservingMode, None)
-      ocsSequencer = ocsWiring.start().rightValue.uri.toActorRef.unsafeUpcast[SequencerMsg]
+      ocsSequencer = ocsWiring.sequencerServer.start().rightValue.uri.toActorRef.unsafeUpcast[SequencerMsg]
 
       val command             = Setup(Prefix("TCS.test"), CommandName("command-4"), None)
       val submitResponseProbe = TestProbe[SubmitResponse]
@@ -71,7 +71,7 @@ class ScriptIntegrationTest extends ScalaTestFrameworkTestKit with BaseTestSuite
       // sequence sent to tcsSequencer by irisSequencer script
       eventually(sequenceReceivedByTCSProbe) shouldBe assertableSequence
 
-      ocsWiring.shutDown().futureValue
+      ocsWiring.sequencerServer.shutDown().futureValue
       locationService.unregister(tcsConnection).futureValue
     }
   }

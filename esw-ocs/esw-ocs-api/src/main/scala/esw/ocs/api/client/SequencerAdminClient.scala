@@ -3,11 +3,10 @@ package esw.ocs.api.client
 import csw.params.commands.SequenceCommand
 import csw.params.core.models.Id
 import esw.ocs.api.SequencerAdminApi
+import esw.ocs.api.codecs.SequencerAdminHttpCodecs
 import esw.ocs.api.models.StepList
-import esw.ocs.api.models.codecs.SequencerAdminHttpCodecs
-import esw.ocs.api.models.request.SequencerAdminPostRequest
-import esw.ocs.api.models.request.SequencerAdminPostRequest._
-import esw.ocs.api.models.responses._
+import esw.ocs.api.protocol.SequencerAdminPostRequest._
+import esw.ocs.api.protocol._
 import msocket.api.RequestClient
 
 import scala.concurrent.Future

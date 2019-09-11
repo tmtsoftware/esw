@@ -7,19 +7,19 @@ import akka.actor.typed.{ActorRef, ActorSystem, Behavior}
 import akka.util.Timeout
 import csw.command.client.CommandResponseManager
 import csw.command.client.messages.sequencer.{LoadAndProcessSequence, SequencerMsg}
-import csw.command.client.messages.{GetComponentLogMetadata, LogControlMessages, SetComponentLogLevel}
+import csw.command.client.messages.{GetComponentLogMetadata, LogControlMessage, SetComponentLogLevel}
 import csw.location.api.scaladsl.LocationService
 import csw.location.models.ComponentId
 import csw.location.models.Connection.AkkaConnection
 import csw.logging.client.commons.LogAdminUtil
 import csw.params.commands.Sequence
-import esw.ocs.api.models.codecs.OcsCodecs
-import esw.ocs.api.models.responses.{GoOnlineHookFailed, _}
+import esw.ocs.api.codecs.OcsCodecs
+import esw.ocs.api.protocol._
+import esw.ocs.impl.dsl.ScriptDsl
+import esw.ocs.impl.internal.Timeouts
 import esw.ocs.impl.messages.SequencerMessages._
 import esw.ocs.impl.messages.SequencerState
 import esw.ocs.impl.messages.SequencerState._
-import esw.ocs.impl.dsl.ScriptDsl
-import esw.ocs.impl.internal.Timeouts
 
 import scala.concurrent.Future
 import scala.reflect.ClassTag
@@ -206,7 +206,7 @@ class SequencerBehavior(
   }
 
   private def handleLogMessages(
-      msg: LogControlMessages
+      msg: LogControlMessage
   ): Behavior[SequencerMsg] = msg match {
     case GetComponentLogMetadata(componentName, replyTo) => replyTo ! LogAdminUtil.getLogMetadata(componentName); Behaviors.same
     case SetComponentLogLevel(componentName, logLevel) =>
@@ -223,9 +223,9 @@ class SequencerBehavior(
       implicit val scheduler: Scheduler = ctx.system.scheduler
 
       msg match {
-        case msg: CommonMessage      => handleCommonMessage(msg, state, data, currentBehavior)
-        case msg: LogControlMessages => handleLogMessages(msg)
-        case msg: T                  => f(msg)
+        case msg: CommonMessage     => handleCommonMessage(msg, state, data, currentBehavior)
+        case msg: LogControlMessage => handleLogMessages(msg)
+        case msg: T                 => f(msg)
         case msg: UnhandleableSequencerMessage =>
           msg.replyTo ! Unhandled(state.entryName, msg.getClass.getSimpleName); Behaviors.same
         case LoadAndProcessSequence(sequence, replyTo) =>

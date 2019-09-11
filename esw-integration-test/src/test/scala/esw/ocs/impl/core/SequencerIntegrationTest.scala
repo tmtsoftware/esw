@@ -19,8 +19,9 @@ import csw.testkit.scaladsl.ScalaTestFrameworkTestKit
 import esw.ocs.api.BaseTestSuite
 import esw.ocs.api.models.StepStatus.Finished.{Failure, Success}
 import esw.ocs.api.models.StepStatus.Pending
-import esw.ocs.api.models.responses._
+import esw.ocs.api.protocol._
 import esw.ocs.api.models.{Step, StepList}
+import esw.ocs.api.protocol.{LoadSequenceResponse, Ok, SequenceResult, Unhandled}
 import esw.ocs.app.wiring.SequencerWiring
 import esw.ocs.impl.messages.SequencerMessages._
 import esw.ocs.impl.messages.SequencerState.Offline
@@ -58,13 +59,13 @@ class SequencerIntegrationTest extends ScalaTestFrameworkTestKit(EventServer) wi
 
   override protected def beforeEach(): Unit = {
     wiring = new SequencerWiring("testSequencerId1", "testObservingMode1", None)
-    wiring.start()
+    wiring.sequencerServer.start()
     sequencer = resolveSequencer()
     sequencerAdmin = new SequencerAdminImpl(sequencer)(sys, askTimeout)
   }
 
   override protected def afterEach(): Unit = {
-    wiring.shutDown().futureValue
+    wiring.sequencerServer.shutDown().futureValue
   }
 
   "LoadSequence, Start it and Query its response | ESW-145, ESW-154, ESW-221, ESW-194, ESW-158" in {

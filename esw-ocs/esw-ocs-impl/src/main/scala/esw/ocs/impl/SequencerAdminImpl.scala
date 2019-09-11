@@ -9,7 +9,7 @@ import csw.params.commands.SequenceCommand
 import csw.params.core.models.Id
 import esw.ocs.api.SequencerAdminApi
 import esw.ocs.api.models.StepList
-import esw.ocs.api.models.responses._
+import esw.ocs.api.protocol.{GenericResponse, GoOnlineResponse, OkOrUnhandledResponse, PauseResponse, RemoveBreakpointResponse}
 import esw.ocs.impl.messages.SequencerMessages._
 import esw.ocs.impl.messages.SequencerState
 import esw.ocs.impl.messages.SequencerState.{Idle, Offline}

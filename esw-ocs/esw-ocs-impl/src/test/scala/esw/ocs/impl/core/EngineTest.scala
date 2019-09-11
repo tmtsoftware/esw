@@ -7,7 +7,8 @@ import csw.params.commands.SequenceCommand
 import csw.params.core.models.Id
 import esw.ocs.api.BaseTestSuite
 import esw.ocs.api.models.Step
-import esw.ocs.api.models.responses.{Ok, PullNextResult}
+import esw.ocs.api.protocol.PullNextResult
+import esw.ocs.api.protocol.{Ok, PullNextResult}
 import esw.ocs.impl.dsl.Script
 
 import scala.concurrent.Future

@@ -16,7 +16,7 @@ import csw.location.models.Connection.AkkaConnection
 import csw.location.models.{AkkaLocation, AkkaRegistration, ComponentId}
 import csw.params.core.models.{Prefix, Subsystem}
 import esw.ocs.api.BaseTestSuite
-import esw.ocs.api.models.responses.RegistrationError
+import esw.ocs.api.protocol.RegistrationError
 
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future

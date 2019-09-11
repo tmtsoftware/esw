@@ -15,12 +15,13 @@ import csw.params.commands.CommandResponse.{Accepted, Started}
 import csw.params.commands.{CommandName, CommandResponse, Setup}
 import csw.params.core.models.{Id, ObsId, Prefix, Subsystem}
 import csw.params.events.{Event, EventKey, EventName, SystemEvent}
-import esw.gateway.api.codecs.RestlessCodecs
-import esw.gateway.api.messages.CommandAction.{Oneway, Submit, Validate}
-import esw.gateway.api.messages.PostRequest.{CommandRequest, GetEvent, PublishEvent, SetAlarmSeverity}
-import esw.gateway.api.messages.{EmptyEventKeys, EventServerUnavailable, InvalidComponent, SetAlarmSeverityFailure}
+import esw.gateway.api.codecs.GatewayCodecs
+import esw.gateway.api.protocol.CommandAction.{Oneway, Submit, Validate}
+import esw.gateway.api.protocol.PostRequest.{CommandRequest, GetEvent, PublishEvent, SetAlarmSeverity}
+import esw.gateway.api.protocol.{EmptyEventKeys, EventServerUnavailable, InvalidComponent, SetAlarmSeverityFailure}
 import esw.gateway.api.{AlarmApi, CommandApi, EventApi}
 import esw.gateway.impl.{AlarmImpl, CommandImpl, EventImpl}
+import esw.gateway.server.handlers.PostHandlerImpl
 import esw.http.core.BaseTestSuite
 import mscoket.impl.HttpCodecs
 import org.mockito.ArgumentMatchers.any
@@ -30,7 +31,7 @@ import org.mockito.MockitoSugar._
 import scala.concurrent.Future
 import scala.concurrent.duration.DurationLong
 
-class PostHandlerImplTest extends BaseTestSuite with ScalatestRouteTest with RestlessCodecs with HttpCodecs {
+class PostHandlerImplTest extends BaseTestSuite with ScalatestRouteTest with GatewayCodecs with HttpCodecs {
   val actorSystem: ActorSystem[SpawnProtocol] = ActorSystem(SpawnProtocol.behavior, "test-system")
 
   private val cswCtxMocks = new CswContextMocks(actorSystem)

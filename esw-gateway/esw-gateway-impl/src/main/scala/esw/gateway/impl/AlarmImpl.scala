@@ -5,7 +5,7 @@ import csw.alarm.api.scaladsl.AlarmService
 import csw.alarm.models.AlarmSeverity
 import csw.alarm.models.Key.AlarmKey
 import esw.gateway.api.AlarmApi
-import esw.gateway.api.messages.SetAlarmSeverityFailure
+import esw.gateway.api.protocol.SetAlarmSeverityFailure
 
 import scala.concurrent.{ExecutionContext, Future}
 import scala.util.control.NonFatal

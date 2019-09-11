@@ -10,8 +10,8 @@ import csw.params.commands.{CommandResponse, ControlCommand}
 import csw.params.core.models.Id
 import csw.params.core.states.{CurrentState, StateName}
 import esw.gateway.api.CommandApi
-import esw.gateway.api.messages.CommandAction.{Oneway, Submit, Validate}
-import esw.gateway.api.messages.{CommandAction, CommandError, InvalidComponent, InvalidMaxFrequency}
+import esw.gateway.api.protocol.CommandAction.{Oneway, Submit, Validate}
+import esw.gateway.api.protocol.{CommandAction, CommandError, InvalidComponent, InvalidMaxFrequency}
 
 import scala.concurrent.duration.DurationInt
 import scala.concurrent.{ExecutionContext, Future}

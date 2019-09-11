@@ -7,8 +7,8 @@ import akka.http.scaladsl.server.Directives._
 import akka.http.scaladsl.server.{ExceptionHandler, RejectionHandler, Route, StandardRoute}
 import akka.stream.scaladsl.Source
 import csw.logging.api.scaladsl.Logger
-import esw.gateway.api.codecs.RestlessCodecs
-import esw.gateway.api.messages.{PostRequest, WebsocketRequest}
+import esw.gateway.api.codecs.GatewayCodecs
+import esw.gateway.api.protocol.{PostRequest, WebsocketRequest}
 import mscoket.impl.HttpCodecs
 import mscoket.impl.ws.WsServerFlow
 import msocket.api.RequestHandler
@@ -19,7 +19,7 @@ class Routes(
     postHandler: RequestHandler[PostRequest, StandardRoute],
     websocketHandler: RequestHandler[WebsocketRequest, Source[Message, NotUsed]],
     log: Logger
-) extends RestlessCodecs
+) extends GatewayCodecs
     with HttpCodecs {
 
   val commonExceptionHandlers: ExceptionHandler = ExceptionHandler {

@@ -15,20 +15,19 @@ import csw.network.utils.SocketUtils
 import esw.http.core.commons.ServiceLogger
 import esw.http.core.wiring
 import esw.http.core.wiring.{HttpService, Settings}
-import esw.ocs.api.models.responses.RegistrationError
+import esw.ocs.api.protocol.RegistrationError
 import esw.ocs.app.route.{PostHandlerImpl, SequencerAdminRoutes}
 import esw.ocs.impl.SequencerAdminImpl
 import esw.ocs.impl.core._
 import esw.ocs.impl.dsl.{CswServices, ScriptDsl}
 import esw.ocs.impl.dsl.utils.ScriptLoader
-import esw.ocs.impl.internal.{Timeouts, Wiring}
+import esw.ocs.impl.internal.{SequencerServer, Timeouts}
 import esw.ocs.impl.messages.SequencerMessages.{EswSequencerMessage, Shutdown}
 import esw.ocs.impl.syntax.FutureSyntax.FutureOps
 
 import scala.concurrent.{Await, Future}
 
-private[ocs] class SequencerWiring(val sequencerId: String, val observingMode: String, sequenceComponentName: Option[String])
-    extends Wiring {
+private[ocs] class SequencerWiring(val sequencerId: String, val observingMode: String, sequenceComponentName: Option[String]) {
   private lazy val config: Config       = ConfigFactory.load()
   private[esw] lazy val sequencerConfig = SequencerConfig.from(config, sequencerId, observingMode, sequenceComponentName)
   import sequencerConfig._
@@ -68,17 +67,20 @@ private[ocs] class SequencerWiring(val sequencerId: String, val observingMode: S
   lazy val sequencerBehavior =
     new SequencerBehavior(componentId, script, locationService, commandResponseManager)(typedSystem, timeout)
 
-  def shutDown(): Future[Done] = {
-    httpService.shutdown(UnknownReason)
-    (sequencerRef ? Shutdown).map(_ => Done)
+  lazy val sequencerServer: SequencerServer = new SequencerServer {
+    override def start(): Either[RegistrationError, AkkaLocation] = {
+      new Engine().start(sequenceOperatorFactory(), script)
+
+      Await.result(httpService.registeredLazyBinding, Timeouts.DefaultTimeout)
+
+      val registration = AkkaRegistration(AkkaConnection(componentId), prefix, sequencerRef.toURI)
+      Await.result(cswServices.register(registration)(typedSystem), Timeouts.DefaultTimeout)
+    }
+
+    override def shutDown(): Future[Done] = {
+      httpService.shutdown(UnknownReason)
+      (sequencerRef ? Shutdown).map(_ => Done)
+    }
   }
 
-  def start(): Either[RegistrationError, AkkaLocation] = {
-    new Engine().start(sequenceOperatorFactory(), script)
-
-    Await.result(httpService.registeredLazyBinding, Timeouts.DefaultTimeout)
-
-    val registration = AkkaRegistration(AkkaConnection(componentId), prefix, sequencerRef.toURI)
-    Await.result(cswServices.register(registration)(typedSystem), Timeouts.DefaultTimeout)
-  }
 }

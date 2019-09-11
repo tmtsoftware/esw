@@ -5,16 +5,17 @@ import akka.http.scaladsl.model.ws.Message
 import akka.http.scaladsl.server.StandardRoute
 import akka.stream.scaladsl.Source
 import akka.util.Timeout
-import esw.gateway.api.codecs.RestlessCodecs
-import esw.gateway.api.messages.{PostRequest, WebsocketRequest}
+import esw.gateway.api.codecs.GatewayCodecs
+import esw.gateway.api.protocol.{PostRequest, WebsocketRequest}
 import esw.gateway.api.{AlarmApi, CommandApi, EventApi}
 import esw.gateway.impl.{AlarmImpl, CommandImpl, EventImpl}
+import esw.gateway.server.handlers.{PostHandlerImpl, WebsocketHandlerImpl}
 import esw.http.core.wiring.{HttpService, ServerWiring}
 import msocket.api.RequestHandler
 
 import scala.concurrent.duration.DurationLong
 
-class GatewayWiring(_port: Option[Int] = None) extends RestlessCodecs {
+class GatewayWiring(_port: Option[Int] = None) extends GatewayCodecs {
   lazy val wiring = new ServerWiring(_port)
   import wiring._
   import cswCtx.actorRuntime.{ec, mat}

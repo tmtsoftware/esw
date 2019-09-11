@@ -11,9 +11,9 @@ import csw.params.core.models.{Id, ObsId, Prefix}
 import csw.params.core.states.{CurrentState, StateName}
 import csw.testkit.scaladsl.ScalaTestFrameworkTestKit
 import esw.gateway.api.clients.CommandClient
-import esw.gateway.api.codecs.RestlessCodecs
-import esw.gateway.api.messages.CommandAction.{Oneway, Submit, Validate}
-import esw.gateway.api.messages.{PostRequest, WebsocketRequest}
+import esw.gateway.api.codecs.GatewayCodecs
+import esw.gateway.api.protocol.CommandAction.{Oneway, Submit, Validate}
+import esw.gateway.api.protocol.{PostRequest, WebsocketRequest}
 import esw.http.core.FutureEitherExt
 import mscoket.impl.post.PostClient
 import mscoket.impl.ws.WebsocketClient
@@ -23,7 +23,7 @@ import org.scalatest.WordSpecLike
 import scala.concurrent.Future
 import scala.concurrent.duration.{DurationInt, FiniteDuration}
 
-class CommandGatewayTest extends ScalaTestFrameworkTestKit with WordSpecLike with FutureEitherExt with RestlessCodecs {
+class CommandGatewayTest extends ScalaTestFrameworkTestKit with WordSpecLike with FutureEitherExt with GatewayCodecs {
 
   import frameworkTestKit._
 

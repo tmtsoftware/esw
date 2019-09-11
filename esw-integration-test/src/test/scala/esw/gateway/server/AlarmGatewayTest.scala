@@ -10,15 +10,15 @@ import csw.params.core.models.Subsystem
 import csw.testkit.scaladsl.CSWService.AlarmServer
 import csw.testkit.scaladsl.ScalaTestFrameworkTestKit
 import esw.gateway.api.clients.AlarmClient
-import esw.gateway.api.codecs.RestlessCodecs
-import esw.gateway.api.messages.PostRequest
+import esw.gateway.api.codecs.GatewayCodecs
+import esw.gateway.api.protocol.PostRequest
 import esw.http.core.FutureEitherExt
 import mscoket.impl.post.PostClient
 import org.scalatest.WordSpecLike
 
 import scala.concurrent.duration.{DurationInt, FiniteDuration}
 
-class AlarmGatewayTest extends ScalaTestFrameworkTestKit(AlarmServer) with WordSpecLike with FutureEitherExt with RestlessCodecs {
+class AlarmGatewayTest extends ScalaTestFrameworkTestKit(AlarmServer) with WordSpecLike with FutureEitherExt with GatewayCodecs {
   import frameworkTestKit._
   import frameworkWiring.{alarmServiceFactory, locationService}
 

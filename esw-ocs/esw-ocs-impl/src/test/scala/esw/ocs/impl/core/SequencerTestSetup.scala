@@ -11,12 +11,12 @@ import csw.location.models.ComponentId
 import csw.params.commands.CommandResponse.{Completed, SubmitResponse}
 import csw.params.commands.{Sequence, SequenceCommand}
 import csw.params.core.models.Id
-import esw.ocs.api.models.responses.{LoadSequenceResponse, _}
 import esw.ocs.api.models.{Step, StepList}
+import esw.ocs.api.protocol._
+import esw.ocs.impl.dsl.Script
 import esw.ocs.impl.messages.SequencerMessages.{Pause, _}
 import esw.ocs.impl.messages.SequencerState
 import esw.ocs.impl.messages.SequencerState.{Idle, InProgress}
-import esw.ocs.impl.dsl.Script
 import org.mockito.Mockito.when
 import org.scalatest.concurrent.Eventually._
 import org.scalatest.{Assertion, Matchers}
