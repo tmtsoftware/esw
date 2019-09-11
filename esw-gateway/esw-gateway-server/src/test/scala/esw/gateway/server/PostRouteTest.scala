@@ -34,6 +34,11 @@ import scala.concurrent.duration.DurationLong
 class PostRouteTest extends BaseTestSuite with ScalatestRouteTest with GatewayCodecs with HttpCodecs {
   val actorSystem: ActorSystem[SpawnProtocol] = ActorSystem(SpawnProtocol.behavior, "test-system")
 
+  protected override def afterAll(): Unit = {
+    super.afterAll()
+    actorSystem.terminate()
+  }
+
   private val cswCtxMocks = new CswContextMocks(actorSystem)
   import cswCtxMocks._
 
