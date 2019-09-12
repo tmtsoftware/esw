@@ -46,7 +46,7 @@ fun booleanKey(name: String): KeyHolder<Boolean> = KeyHolder(BooleanKey().make(n
 fun charKey(name: String): KeyHolder<Char> = KeyHolder(CharKey().make(name))
 fun byteKey(name: String): KeyHolder<Byte> = KeyHolder(ByteKey().make(name))
 fun shortKey(name: String): KeyHolder<Short> = KeyHolder(ShortKey().make(name))
-fun longKey(name: String) = KeyHolder(LongKey().make(name))
+fun longKey(name: String): KeyHolder<Long> = KeyHolder(LongKey().make(name))
 fun intKey(name: String): KeyHolder<Int> = KeyHolder(IntKey().make(name))
 fun floatKey(name: String): KeyHolder<Float> = KeyHolder(FloatKey().make(name))
 fun doubleKey(name: String): KeyHolder<Double> = KeyHolder(DoubleKey().make(name))
@@ -55,7 +55,7 @@ fun doubleKey(name: String): KeyHolder<Double> = KeyHolder(DoubleKey().make(name
 fun byteArrayKey(name: String): KeyHolder<ArrayData<Byte>> = KeyHolder(ByteArrayKey().make(name))
 
 fun shortArrayKey(name: String): KeyHolder<ArrayData<Short>> = KeyHolder(ShortArrayKey().make(name))
-fun longArrayKey(name: String) = KeyHolder(LongArrayKey().make(name))
+fun longArrayKey(name: String): KeyHolder<ArrayData<Long>> = KeyHolder(LongArrayKey().make(name))
 fun intArrayKey(name: String): KeyHolder<ArrayData<Int>> = KeyHolder(IntArrayKey().make(name))
 fun floatArrayKey(name: String): KeyHolder<ArrayData<Float>> = KeyHolder(FloatArrayKey().make(name))
 fun doubleArrayKey(name: String): KeyHolder<ArrayData<Double>> = KeyHolder(DoubleArrayKey().make(name))
@@ -71,7 +71,6 @@ fun doubleMatrixKey(name: String): KeyHolder<MatrixData<Double>> = KeyHolder(Dou
 
 fun <T> arrayData(elms: Array<T>): ArrayData<T> = ArrayData.fromJavaArray(elms)
 inline fun <reified T> matrixData(elms: Array<Array<T>>): MatrixData<T> = MatrixData.fromJavaArrays(T::class.java, elms)
-
 
 // =================================================
 // ================= Sample Usage ==================

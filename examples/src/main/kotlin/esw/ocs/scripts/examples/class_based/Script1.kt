@@ -12,7 +12,6 @@ class Script1(cswServices: CswServices) : ScriptKt(cswServices) {
         val eventKey = "csw.a.b."
         fun event(id: Int) = systemEvent("csw.a.b", id.toString())
 
-
         handleSetup("command-1") { command ->
             log("============ command-1 ================")
 
@@ -57,5 +56,4 @@ class Script1(cswServices: CswServices) : ScriptKt(cswServices) {
             close()
         }
     }
-
 }

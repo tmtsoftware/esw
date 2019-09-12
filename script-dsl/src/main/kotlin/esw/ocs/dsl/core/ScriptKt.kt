@@ -9,17 +9,17 @@ import esw.ocs.impl.dsl.CswServices
 import esw.ocs.impl.dsl.StopIf
 import esw.ocs.impl.dsl.javadsl.JScript
 import esw.ocs.macros.StrandEc
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Job
-import kotlinx.coroutines.asCoroutineDispatcher
-import kotlinx.coroutines.future.await
-import kotlinx.coroutines.future.future
 import java.util.concurrent.CompletionStage
 import java.util.concurrent.Executors
 import kotlin.coroutines.CoroutineContext
 import kotlin.time.Duration
 import kotlin.time.ExperimentalTime
 import kotlin.time.toJavaDuration
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.asCoroutineDispatcher
+import kotlinx.coroutines.future.await
+import kotlinx.coroutines.future.future
 
 sealed class BaseScript : CoroutineScope, CswHighLevelDsl {
 
@@ -63,14 +63,12 @@ sealed class BaseScript : CoroutineScope, CswHighLevelDsl {
             return future { it() }
         }
 
-
     private fun (suspend () -> Unit).toJavaFutureVoid(): CompletionStage<Void> =
         this.let {
             return future {
                 it()
             }.thenAccept { }
         }
-
 
     private fun <T> (suspend (T) -> Unit).toJavaFuture(value: T): CompletionStage<Void> =
         this.let {

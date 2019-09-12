@@ -8,13 +8,13 @@ import csw.params.events.Event
 import csw.params.events.ObserveEvent
 import csw.params.events.SystemEvent
 import esw.ocs.impl.dsl.CswServices
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.future.await
-import kotlinx.coroutines.future.future
 import java.util.*
 import kotlin.time.Duration
 import kotlin.time.ExperimentalTime
 import kotlin.time.toJavaDuration
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.future.await
+import kotlinx.coroutines.future.future
 
 interface EventServiceKtDsl : CoroutineScope {
     val cswServices: CswServices
@@ -37,5 +37,4 @@ interface EventServiceKtDsl : CoroutineScope {
 
     suspend fun getEvent(vararg eventKeys: String): Set<Event> =
         cswServices.jGetEvent(eventKeys.toSet()).await().toSet()
-
 }

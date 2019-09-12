@@ -4,6 +4,7 @@ plugins {
     java
     kotlin("jvm") version "1.3.50" apply false
     `maven-publish`
+    id("org.jmailen.kotlinter") version "2.1.1"
 }
 
 allprojects {
@@ -15,12 +16,14 @@ allprojects {
         mavenCentral()
         jcenter()
         maven("https://jitpack.io")
+        maven("https://plugins.gradle.org/m2/")
     }
 }
 
 subprojects {
     apply(plugin = "org.jetbrains.kotlin.jvm")
     apply(plugin = "org.gradle.maven-publish")
+    apply(plugin = "org.jmailen.kotlinter")
 
     dependencies {
         implementation(kotlin("stdlib-jdk8"))
@@ -75,6 +78,10 @@ subprojects {
         if (JavaVersion.current().isJava9Compatible) {
             (options as StandardJavadocDocletOptions).addBooleanOption("html5", true)
         }
+    }
+
+    kotlinter {
+        disabledRules = arrayOf("no-wildcard-imports")
     }
 }
 

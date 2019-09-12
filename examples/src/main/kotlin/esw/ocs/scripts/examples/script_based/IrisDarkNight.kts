@@ -1,9 +1,9 @@
 package esw.ocs.scripts.examples.script_based
 
 import esw.ocs.dsl.core.script
-import kotlinx.coroutines.future.await
 import kotlin.time.ExperimentalTime
 import kotlin.time.seconds
+import kotlinx.coroutines.future.await
 
 @UseExperimental(ExperimentalTime::class)
 script { csw ->
@@ -53,5 +53,4 @@ script { csw ->
         subscriptionStream.unsubscribe().await()
         log("shutdown iris")
     }
-
 }

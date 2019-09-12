@@ -25,5 +25,4 @@ val script6 = reusableScript {
         log("============ command-1 -End ================")
         addOrUpdateCommand(Completed(command.runId()))
     }
-
 }

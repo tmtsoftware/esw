@@ -24,5 +24,4 @@ interface LocationServiceKtDsl : CoroutineScope {
     // To be used by Script Writer
     suspend fun resolveSequencer(sequencerId: String, observingMode: String): AkkaLocation =
         cswServices.jResolveSequencer(sequencerId, observingMode).await()
-
 }
