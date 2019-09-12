@@ -5,11 +5,8 @@ import csw.params.core.generics.Key
 import csw.params.core.generics.KeyType
 import csw.params.core.generics.Parameter
 import csw.params.core.models.*
-import csw.params.events.EventName
-import csw.params.events.SystemEvent
 import csw.params.javadsl.JKeyType.*
 import csw.params.javadsl.JUnits.NoUnits
-import csw.params.javadsl.JUnits.lightyear
 import csw.time.core.models.TAITime
 import csw.time.core.models.UTCTime
 
@@ -73,4 +70,3 @@ fun doubleMatrixKey(name: String): KeyHolder<MatrixData<Double>> = KeyHolder(Dou
 
 fun <T> arrayData(elms: Array<T>): ArrayData<T> = ArrayData.fromJavaArray(elms)
 inline fun <reified T> matrixData(elms: Array<Array<T>>): MatrixData<T> = MatrixData.fromJavaArrays(T::class.java, elms)
-
