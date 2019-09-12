@@ -1,7 +1,6 @@
 package esw.ocs.app.wiring
 
 import akka.Done
-import akka.actor.CoordinatedShutdown.UnknownReason
 import akka.actor.typed.ActorRef
 import akka.actor.typed.SpawnProtocol.Spawn
 import akka.actor.typed.scaladsl.AskPattern.Askable
@@ -25,7 +24,7 @@ import esw.ocs.impl.internal.{SequencerServer, Timeouts}
 import esw.ocs.impl.messages.SequencerMessages.{EswSequencerMessage, Shutdown}
 import esw.ocs.impl.syntax.FutureSyntax.FutureOps
 
-import scala.concurrent.{Await, Future}
+import scala.concurrent.Future
 
 private[ocs] class SequencerWiring(val sequencerId: String, val observingMode: String, sequenceComponentName: Option[String]) {
   private lazy val config: Config       = ConfigFactory.load()
@@ -72,14 +71,17 @@ private[ocs] class SequencerWiring(val sequencerId: String, val observingMode: S
     override def start(): Either[RegistrationError, AkkaLocation] = {
       new Engine().start(sequenceOperatorFactory(), script)
 
-      Await.result(httpService.registeredLazyBinding, Timeouts.DefaultTimeout)
+      httpService.registeredLazyBinding.block
 
       val registration = AkkaRegistration(AkkaConnection(componentId), prefix, sequencerRef.toURI)
-      Await.result(cswServices.register(registration)(typedSystem), Timeouts.DefaultTimeout)
+      cswServices.register(registration)(typedSystem).block
     }
 
     override def shutDown(): Future[Done] = {
-      httpService.shutdown(UnknownReason)
+      val (serverBinding, registrationResult) = httpService.registeredLazyBinding.block
+      serverBinding.terminate(Timeouts.DefaultTimeout).block
+      registrationResult.unregister().block
+
       (sequencerRef ? Shutdown).map(_ => Done)
     }
   }
