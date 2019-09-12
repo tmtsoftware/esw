@@ -1,6 +1,7 @@
 package esw.ocs.dsl.core
 
 import csw.params.commands.Observe
+import csw.params.commands.Sequence
 import csw.params.commands.SequenceCommand
 import csw.params.commands.Setup
 import esw.ocs.dsl.highlevel.CswHighLevelDsl
@@ -58,6 +59,20 @@ sealed class BaseScript : CoroutineScope, CswHighLevelDsl {
         jScript.jLoop(duration.toJavaDuration()) { block.toJavaFuture() }.await()
     }
 
+    fun log(msg: String) = println("[${Thread.currentThread().name}] $msg")
+
+    fun loadScripts(vararg reusableScriptResult: ReusableScriptResult) {
+        reusableScriptResult.forEach {
+            this.jScript.merge(it(cswServices, strandEc(), coroutineContext).jScript)
+        }
+    }
+
+    // fixme: return SubmitResponse
+    suspend fun submitSequence(sequencerName: String, observingMode: String, sequence: Sequence) {
+        val location = resolveSequencer(sequencerName, observingMode)
+        cswServices.submitSequence(location, sequence)
+    }
+
     private fun <T> (suspend () -> T).toJavaFuture(): CompletionStage<T> =
         this.let {
             return future { it() }
@@ -76,14 +91,6 @@ sealed class BaseScript : CoroutineScope, CswHighLevelDsl {
                 it(value)
             }.thenAccept { }
         }
-
-    fun log(msg: String) = println("[${Thread.currentThread().name}] $msg")
-
-    fun loadScripts(vararg reusableScriptResult: ReusableScriptResult) {
-        reusableScriptResult.forEach {
-            this.jScript.merge(it(cswServices, strandEc(), coroutineContext).jScript)
-        }
-    }
 }
 
 class ReusableScript(

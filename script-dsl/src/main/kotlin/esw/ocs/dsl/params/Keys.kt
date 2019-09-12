@@ -21,6 +21,8 @@ data class KeyHolder<T>(val key: Key<T>) {
     fun set(vararg elm: T, units: Units = NoUnits): Parameter<T> = key.set(elm, units)
 }
 
+fun choicesOf(vararg choices: String): Choices = Choices.from(choices.toSet())
+
 // ============= Misc Keys ===========
 fun choiceKey(name: String, choices: Choices): GChoiceKey = ChoiceKey().make(name, choices)
 
