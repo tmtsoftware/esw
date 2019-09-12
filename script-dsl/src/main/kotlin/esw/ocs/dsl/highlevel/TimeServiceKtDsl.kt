@@ -31,7 +31,9 @@ interface TimeServiceKtDsl : CoroutineScope {
     fun schedulePeriodically(
         startTime: TMTTime,
         interval: Duration,
-        task: () -> Unit
-    ): Cancellable = cswServices.schedulePeriodically(startTime, interval.toJavaDuration(), task, strandEc().ec())
-
+        task: suspend () -> Unit
+    ): Cancellable =
+        cswServices.schedulePeriodically(
+            startTime, interval.toJavaDuration(), Callback { task.toJavaFuture() }, strandEc().ec()
+        )
 }
