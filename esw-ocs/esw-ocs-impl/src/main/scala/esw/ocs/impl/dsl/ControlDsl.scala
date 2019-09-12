@@ -4,10 +4,9 @@ import akka.Done
 import esw.ocs.impl.dsl.utils.FutureUtils
 import esw.ocs.macros.{AsyncMacros, StrandEc}
 
-import scala.concurrent.duration.FiniteDuration
+import scala.concurrent.duration.{DurationDouble, FiniteDuration}
 import scala.concurrent.{ExecutionContext, Future}
 import scala.language.experimental.macros
-import scala.concurrent.duration.DurationDouble
 
 trait ControlDsl {
   protected implicit def strandEc: StrandEc
