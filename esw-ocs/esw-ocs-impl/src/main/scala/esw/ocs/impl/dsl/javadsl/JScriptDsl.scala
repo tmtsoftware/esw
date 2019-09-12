@@ -1,21 +1,20 @@
 package esw.ocs.impl.dsl.javadsl
 
+import java.time.Duration
 import java.util.Optional
 import java.util.concurrent.{CompletableFuture, CompletionStage, TimeUnit}
 import java.util.function.Supplier
 
 import akka.Done
 import csw.params.commands.{Observe, SequenceCommand, Setup}
-import esw.ocs.api.protocol.PullNextResult
+import esw.ocs.api.protocol._
 import esw.ocs.impl.dsl.utils.{FunctionBuilder, FunctionHandlers}
 import esw.ocs.impl.dsl.{ControlDsl, CswServices, StopIf}
 import esw.ocs.impl.exceptions.UnhandledCommandException
 
 import scala.compat.java8.FutureConverters.{CompletionStageOps, FutureOps}
 import scala.concurrent.Future
-import scala.concurrent.duration.{Duration, FiniteDuration, _}
-import scala.jdk.FutureConverters.FutureOps
-import scala.language.implicitConversions
+import scala.concurrent.duration.{DurationInt, FiniteDuration}
 import scala.reflect.ClassTag
 
 abstract class JScript(override val csw: CswServices) extends JScriptDsl {
@@ -51,7 +50,7 @@ trait JScriptDsl extends ControlDsl {
   private lazy val commandHandler: SequenceCommand => CompletionStage[Void] =
     commandHandlerBuilder.build { input =>
       // should script writer have ability to add this default handler, like handleUnknownCommand
-      CompletableFuture.failedFuture(throw new UnhandledCommandException(input))
+      CompletableFuture.failedFuture(new UnhandledCommandException(input))
     }
 
   // fixme : Try removing scala-java conversions (toScala)
@@ -73,7 +72,7 @@ trait JScriptDsl extends ControlDsl {
 
   private[ocs] def executeAbort(): Future[Done] = Future.sequence(abortHandlers.execute(()).map(_.toScala)).map(_ => Done)
 
-  protected final def jNextIf(f: SequenceCommand => Boolean): CompletionStage[Optional[SequenceCommand]] =
+  protected final def jNextIf(f: SequenceCommand => Boolean): CompletionStage[Optional[SequenceCommand]] = {
     spawn {
       val operator  = csw.sequenceOperatorFactory()
       val mayBeNext = operator.maybeNext.await
@@ -85,7 +84,8 @@ trait JScriptDsl extends ControlDsl {
           }
         case _ => Optional.empty[SequenceCommand]
       }
-    }.asJava
+    }.toJava
+  }
 
   protected final def jHandleSetupCommand(name: String)(handler: Setup => CompletionStage[Void]): Void = {
     handle(name)(handler(_))
@@ -102,17 +102,17 @@ trait JScriptDsl extends ControlDsl {
     null
   }
 
-  protected final def jHandleAbort(handler: => Supplier[CompletionStage[Void]]): Void = {
+  protected final def jHandleAbort(handler: Supplier[CompletionStage[Void]]): Void = {
     abortHandlers.add(_ => handler.get())
     null
   }
 
-  protected final def jHandleShutdown(handler: => Supplier[CompletionStage[Void]]): Void = {
+  protected final def jHandleShutdown(handler: Supplier[CompletionStage[Void]]): Void = {
     shutdownHandlers.add(_ => handler.get())
     null
   }
 
-  protected final def jHandleGoOffline(handler: => Supplier[CompletionStage[Void]]): Void = {
+  protected final def jHandleGoOffline(handler: Supplier[CompletionStage[Void]]): Void = {
     offlineHandlers.add(_ => handler.get())
     null
   }

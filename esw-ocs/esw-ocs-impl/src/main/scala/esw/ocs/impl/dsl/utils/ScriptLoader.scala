@@ -1,7 +1,7 @@
 package esw.ocs.impl.dsl.utils
 
 import esw.ocs.impl.dsl.javadsl.JScript
-import esw.ocs.impl.dsl.{CswServices, Script, ScriptDsl}
+import esw.ocs.impl.dsl.{ControlDsl, CswServices, Script}
 import esw.ocs.impl.exceptions.ScriptLoadingException.{InvalidScriptException, ScriptNotFound}
 
 import scala.language.reflectiveCalls
@@ -26,7 +26,8 @@ private[ocs] object ScriptLoader {
       result.invoke(cswServices).getJScript
     }
 
-  private def load0[T <: ScriptDsl](scriptClass: String, cswServices: CswServices): T =
+  // fixme: Change to JScriptDsl or ScriptDsl
+  private def load0[T <: ControlDsl](scriptClass: String, cswServices: CswServices): T =
     withScript(scriptClass) { clazz =>
       clazz.getConstructor(classOf[CswServices]).newInstance(cswServices).asInstanceOf[T]
     }
