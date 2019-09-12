@@ -19,6 +19,7 @@ import kotlin.time.toJavaDuration
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.asCoroutineDispatcher
+import kotlinx.coroutines.future.asDeferred
 import kotlinx.coroutines.future.await
 import kotlinx.coroutines.future.future
 
@@ -54,10 +55,16 @@ sealed class BaseScript : CoroutineScope, CswHighLevelDsl {
         jScript.jHandleShutdown { block.toJavaFutureVoid() }
     }
 
+    // foreground loop, suspends current coroutine until loop gets finished
     @ExperimentalTime
     suspend fun loop(duration: Duration, block: suspend () -> StopIf) {
         jScript.jLoop(duration.toJavaDuration()) { block.toJavaFuture() }.await()
     }
+
+    // background loop, current coroutine continues doing work while running this loop in background
+    @ExperimentalTime
+    fun bgLoop(duration: Duration, block: suspend () -> StopIf) =
+        jScript.jLoop(duration.toJavaDuration()) { block.toJavaFuture() }.thenApply { }.asDeferred()
 
     fun log(msg: String) = println("[${Thread.currentThread().name}] $msg")
 
