@@ -1,13 +1,14 @@
 package esw.ocs.app.route
 
+import akka.http.scaladsl.model.StatusCodes
 import akka.http.scaladsl.testkit.ScalatestRouteTest
 import csw.params.commands.{CommandName, Sequence, Setup}
 import csw.params.core.models.{Id, Prefix}
 import esw.http.core.BaseTestSuite
 import esw.ocs.api.codecs.SequencerAdminHttpCodecs
 import esw.ocs.api.models.StepList
-import esw.ocs.api.protocol.SequencerAdminPostRequest._
 import esw.ocs.api.protocol.EditorError.{CannotOperateOnAnInFlightOrFinishedStep, IdDoesNotExist}
+import esw.ocs.api.protocol.SequencerAdminPostRequest._
 import esw.ocs.api.protocol.{SequencerAdminPostRequest, _}
 import esw.ocs.impl.SequencerAdminImpl
 import mscoket.impl.HttpCodecs
@@ -216,6 +217,14 @@ class SequencerAdminPostRouteTest extends BaseTestSuite with ScalatestRouteTest 
 
       Post("/post", SubmitSequence(sequence)) ~> route ~> check {
         responseAs[LoadSequenceResponse] should ===(Ok)
+      }
+    }
+
+    "show internal server error when there is an exception at server side" in {
+      when(sequencerAdmin.getSequence).thenReturn(Future.failed(new RuntimeException("test")))
+
+      Post("/post", GetSequence) ~> route ~> check {
+        status should ===(StatusCodes.InternalServerError)
       }
     }
   }

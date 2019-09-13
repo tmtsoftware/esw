@@ -5,6 +5,7 @@ import akka.http.scaladsl.model.ws.Message
 import akka.http.scaladsl.server.Directives._
 import akka.http.scaladsl.server.{Route, StandardRoute}
 import akka.stream.scaladsl.Source
+import ch.megard.akka.http.cors.scaladsl.CorsDirectives.cors
 import esw.ocs.api.codecs.SequencerAdminHttpCodecs
 import esw.ocs.api.protocol.{SequencerAdminPostRequest, SequencerAdminWebsocketRequest}
 import mscoket.impl.HttpCodecs
@@ -17,17 +18,18 @@ class SequencerAdminRoutes(
 ) extends SequencerAdminHttpCodecs
     with HttpCodecs {
 
-  val route: Route =
+  val route: Route = cors() {
     post {
       path("post") {
         entity(as[SequencerAdminPostRequest])(postHandler.handle)
       }
     } ~
-      get {
-        path("websocket") {
-          handleWebSocketMessages {
-            new WsServerFlow(websocketHandler).flow
-          }
+    get {
+      path("websocket") {
+        handleWebSocketMessages {
+          new WsServerFlow(websocketHandler).flow
         }
       }
+    }
+  }
 }

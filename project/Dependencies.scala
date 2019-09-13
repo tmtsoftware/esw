@@ -35,6 +35,7 @@ object Dependencies {
     Seq(
       Libs.`case-app`,
       Libs.`msocket-impl-jvm`,
+      AkkaHttp.`akka-http-cors`,
       Libs.scalatest                  % Test,
       Libs.`mockito-scala`            % Test,
       Akka.`akka-actor-testkit-typed` % Test
