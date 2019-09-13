@@ -1,9 +1,7 @@
 package esw.ocs.dsl.core
 
-import csw.params.commands.Observe
-import csw.params.commands.Sequence
-import csw.params.commands.SequenceCommand
-import csw.params.commands.Setup
+import csw.params.commands.*
+import csw.params.commands.CommandResponse.SubmitResponse
 import esw.ocs.dsl.highlevel.CswHighLevelDsl
 import esw.ocs.dsl.nullable
 import esw.ocs.impl.dsl.CswServices
@@ -74,11 +72,8 @@ sealed class BaseScript : CoroutineScope, CswHighLevelDsl {
         }
     }
 
-    // fixme: return SubmitResponse
-    suspend fun submitSequence(sequencerName: String, observingMode: String, sequence: Sequence) {
-        val location = resolveSequencer(sequencerName, observingMode)
-        cswServices.submitSequence(location, sequence)
-    }
+    suspend fun submitSequence(sequencerName: String, observingMode: String, sequence: Sequence): SubmitResponse =
+        cswServices.jSubmitSequence(sequencerName, observingMode, sequence).await()
 
     private fun <T> (suspend () -> T).toJavaFuture(): CompletionStage<T> =
         this.let {
