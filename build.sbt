@@ -41,7 +41,7 @@ lazy val `esw-ocs` = project
 lazy val `esw-ocs-api` = crossProject(JSPlatform, JVMPlatform)
   .crossType(CrossType.Pure)
   .in(file("esw-ocs/esw-ocs-api"))
-  .jvmConfigure(_.enablePlugins(MaybeCoverage).dependsOn(`esw-test-reporter` % Test))
+  .jvmConfigure(_.enablePlugins(MaybeCoverage, PublishBintray).dependsOn(`esw-test-reporter` % Test))
   .settings(fork := false)
   .settings(
     libraryDependencies ++= Dependencies.OcsApi.value
@@ -49,7 +49,7 @@ lazy val `esw-ocs-api` = crossProject(JSPlatform, JVMPlatform)
 
 lazy val `esw-ocs-impl` = project
   .in(file("esw-ocs/esw-ocs-impl"))
-  .enablePlugins(MaybeCoverage)
+  .enablePlugins(MaybeCoverage, PublishBintray)
   .settings(
     libraryDependencies ++= Dependencies.OcsImpl.value
   )
@@ -62,7 +62,7 @@ lazy val `esw-ocs-impl` = project
 
 lazy val `esw-ocs-macros` = project
   .in(file("esw-ocs/esw-ocs-macros"))
-  .enablePlugins(MaybeCoverage)
+  .enablePlugins(MaybeCoverage, PublishBintray)
   .settings(
     libraryDependencies ++= Dependencies.OcsMacros.value
   )
@@ -82,7 +82,7 @@ lazy val `esw-ocs-app` = project
 
 lazy val `esw-http-core` = project
   .in(file("esw-http-core"))
-  .enablePlugins(MaybeCoverage, EswBuildInfo)
+  .enablePlugins(PublishBintray, MaybeCoverage, EswBuildInfo)
   .settings(
     libraryDependencies ++= Dependencies.EswHttpCore.value
   )
@@ -102,6 +102,7 @@ lazy val `esw-integration-test` = project
 
 lazy val `esw-utils` = project
   .in(file("esw-utils"))
+  .enablePlugins(PublishBintray)
   .settings(libraryDependencies ++= Dependencies.Utils.value)
   .dependsOn(`esw-ocs-api`.jvm % "compile->compile;test->test", `esw-ocs-macros`, `esw-test-reporter` % Test)
 
