@@ -10,6 +10,7 @@ import csw.params.commands.CommandResponse.{Accepted, Completed}
 import csw.params.commands.{CommandResponse, ControlCommand}
 import csw.params.core.models.Prefix
 import csw.params.core.states.{CurrentState, StateName}
+import csw.time.core.models.UTCTime
 
 import scala.concurrent.Future
 
@@ -48,4 +49,8 @@ class SampleComponentHandlers(ctx: ActorContext[TopLevelActorMessage], cswCtx: C
   override def onGoOffline(): Unit = ???
 
   override def onGoOnline(): Unit = ???
+
+  override def onDiagnosticMode(startTime: UTCTime, hint: String): Unit = ???
+
+  override def onOperationsMode(startTime: UTCTime): Unit = ???
 }
