@@ -9,4 +9,3 @@ val Command.obsId: String?
     get() = jMaybeObsId().map { it.obsId() }.nullable()
 
 fun sequenceOf(vararg sequenceCommand: SequenceCommand) = Sequence.create(sequenceCommand.toList())
-
