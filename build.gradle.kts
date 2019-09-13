@@ -28,7 +28,6 @@ subprojects {
     dependencies {
         implementation(kotlin("stdlib-jdk8"))
         implementation("com.github.tmtsoftware.esw:esw-ocs-app_2.13:0.1-SNAPSHOT")
-        implementation("com.github.tmtsoftware.csw:csw-params_2.13:0.1-SNAPSHOT")
         compile("org.jetbrains.kotlinx", "kotlinx-coroutines-jdk8", "1.3.0")
         compile("org.jetbrains.kotlin", "kotlin-script-runtime", "1.3.50")
 
