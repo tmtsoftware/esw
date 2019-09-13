@@ -5,7 +5,7 @@ import sbt._
 object Libs {
   private val ScalaVersion: String = EswKeys.scalaVersion
   private val SilencerVersion      = "1.4.2"
-  private val MsocketVersion       = "91c2e8a"
+  private val MsocketVersion       = "c8af275"
 
   val `scala-reflect`    = "org.scala-lang" % "scala-reflect" % ScalaVersion
   val scalatest          = "org.scalatest" %% "scalatest" % "3.0.8" //Apache License 2.0
@@ -60,6 +60,7 @@ object AkkaHttp {
 
   val `akka-http`         = "com.typesafe.akka" %% "akka-http"         % Version
   val `akka-http-testkit` = "com.typesafe.akka" %% "akka-http-testkit" % Version
+  val `akka-http-cors`    = "ch.megard"         %% "akka-http-cors"    % "0.4.1"
 }
 
 object Borer {

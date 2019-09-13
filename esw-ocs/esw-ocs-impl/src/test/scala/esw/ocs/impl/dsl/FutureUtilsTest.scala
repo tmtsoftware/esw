@@ -19,7 +19,7 @@ class FutureUtilsTest extends BaseTestSuite {
     "complete the future after minDelay when min delay > function completion duration | ESW-90" in {
       var counter = 0
 
-      val task: Future[Boolean] = FutureUtils.delayedResult(500.millis) {
+      val task: Future[Boolean] = FutureUtils.delayedResult(500.millis) { () =>
         counter += 1
         Future.successful(true)
       }
@@ -36,7 +36,7 @@ class FutureUtilsTest extends BaseTestSuite {
     }
 
     "complete the future after function completion when min delay < function completion duration | ESW-90" in {
-      val task: Future[Boolean] = FutureUtils.delayedResult(1.millis) {
+      val task: Future[Boolean] = FutureUtils.delayedResult(1.millis) { () =>
         Thread.sleep(500)
         Future.successful(true)
       }
