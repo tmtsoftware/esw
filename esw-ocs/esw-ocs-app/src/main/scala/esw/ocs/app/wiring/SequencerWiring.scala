@@ -1,19 +1,19 @@
 package esw.ocs.app.wiring
 
 import akka.Done
-import akka.actor.typed.ActorRef
 import akka.actor.typed.SpawnProtocol.Spawn
 import akka.actor.typed.scaladsl.AskPattern.Askable
+import akka.actor.typed.{ActorRef, ActorSystem, SpawnProtocol}
+import akka.util.Timeout
 import com.typesafe.config.{Config, ConfigFactory}
-import csw.framework.internal.wiring.ActorRuntime
+import csw.command.client.messages.CommandResponseManagerMessage
+import csw.command.client.{CRMCacheProperties, CommandResponseManager, CommandResponseManagerActor}
 import csw.location.api.extensions.ActorExtension.RichActor
+import csw.location.client.ActorSystemFactory
 import csw.location.models.Connection.AkkaConnection
 import csw.location.models.{AkkaLocation, AkkaRegistration, ComponentId, ComponentType}
-import csw.logging.api.scaladsl.Logger
 import csw.network.utils.SocketUtils
-import esw.http.core.commons.ServiceLogger
-import esw.http.core.wiring
-import esw.http.core.wiring.{HttpService, Settings}
+import esw.http.core.wiring.{ActorRuntime, CswWiring, HttpService, Settings}
 import esw.ocs.api.protocol.RegistrationError
 import esw.ocs.app.route.{PostHandlerImpl, SequencerAdminRoutes, WebsocketHandlerImpl}
 import esw.ocs.impl.SequencerAdminImpl
@@ -31,11 +31,19 @@ private[ocs] class SequencerWiring(val sequencerId: String, val observingMode: S
   private[esw] lazy val sequencerConfig = SequencerConfig.from(config, sequencerId, observingMode, sequenceComponentName)
   import sequencerConfig._
 
-  lazy val cswServicesWiring = new CswServicesWiring(sequencerName)
-  import cswServicesWiring._
-  import frameworkWiring._
-  import frameworkWiring.actorRuntime._
-  implicit lazy val actorRuntime: ActorRuntime = frameworkWiring.actorRuntime
+  lazy val actorSystem: ActorSystem[SpawnProtocol] = ActorSystemFactory.remote(SpawnProtocol.behavior, "sequencer-system")
+
+  implicit lazy val timeout: Timeout = Timeouts.DefaultTimeout
+  lazy val cswWiring: CswWiring      = CswWiring.make(actorSystem, sequencerName)
+  import cswWiring._
+  import cswWiring.actorRuntime._
+
+  lazy val crmRef: ActorRef[CommandResponseManagerMessage] =
+    (actorSystem ? Spawn(CommandResponseManagerActor.behavior(CRMCacheProperties(), cswWiring.loggerFactory), "crm")).block
+  lazy val commandResponseManager: CommandResponseManager =
+    new CommandResponseManager(crmRef)(actorSystem)
+
+  implicit lazy val actorRuntime: ActorRuntime = cswWiring.actorRuntime
 
   lazy val sequencerRef: ActorRef[EswSequencerMessage] = (typedSystem ? Spawn(sequencerBehavior.setup, sequencerName)).block
 
@@ -59,10 +67,9 @@ private[ocs] class SequencerWiring(val sequencerId: String, val observingMode: S
   private lazy val websocketHandler = new WebsocketHandlerImpl(sequencerAdmin)
   private lazy val routes           = new SequencerAdminRoutes(postHandler, websocketHandler)
 
-  private lazy val settings       = new Settings(Some(SocketUtils.getFreePort), Some(s"$sequencerName@http"), config)
-  private lazy val logger: Logger = new ServiceLogger(settings.httpConnection).getLogger
+  private lazy val settings = new Settings(Some(SocketUtils.getFreePort), Some(s"$sequencerName@http"), config)
   private lazy val httpService =
-    new HttpService(logger, locationService, routes.route, settings, new wiring.ActorRuntime(typedSystem))
+    new HttpService(logger, locationService, routes.route, settings, actorRuntime)
 
   lazy val sequencerBehavior =
     new SequencerBehavior(componentId, script, locationService, commandResponseManager)(typedSystem, timeout)

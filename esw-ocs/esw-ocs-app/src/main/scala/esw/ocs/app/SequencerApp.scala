@@ -1,10 +1,10 @@
 package esw.ocs.app
 
 import caseapp.{CommandApp, RemainingArgs}
-import csw.framework.internal.wiring.ActorRuntime
 import csw.location.client.utils.LocationServerStatus
 import csw.location.models.AkkaLocation
 import csw.logging.api.scaladsl.Logger
+import esw.http.core.wiring.ActorRuntime
 import esw.ocs.api.protocol.RegistrationError
 import esw.ocs.app.SequencerAppCommand._
 import esw.ocs.app.wiring.{SequenceComponentWiring, SequencerWiring}
@@ -40,14 +40,14 @@ object SequencerApp extends CommandApp[SequencerAppCommand] {
 
   def startSequenceComponent(sequenceComponentWiring: SequenceComponentWiring, enableLogging: Boolean): Unit = {
     import sequenceComponentWiring._
-    withLogging(actorRuntime, cswServicesWiring.log, enableLogging) {
+    withLogging(actorRuntime, cswWiring.logger, enableLogging) {
       sequenceComponentWiring.start()
     }
   }
 
   def startSequencer(sequencerWiring: SequencerWiring, enableLogging: Boolean): Unit = {
     import sequencerWiring._
-    withLogging(actorRuntime, cswServicesWiring.log, enableLogging) {
+    withLogging(actorRuntime, cswWiring.logger, enableLogging) {
       sequencerServer.start()
     }
   }

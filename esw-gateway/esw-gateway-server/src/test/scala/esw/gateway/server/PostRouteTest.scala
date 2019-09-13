@@ -39,7 +39,7 @@ class PostRouteTest extends BaseTestSuite with ScalatestRouteTest with GatewayCo
     actorSystem.terminate()
   }
 
-  private val cswCtxMocks = new CswContextMocks(actorSystem)
+  private val cswCtxMocks = new CswWiringMocks(actorSystem)
   import cswCtxMocks._
 
   implicit val timeout: Timeout = Timeout(5.seconds)

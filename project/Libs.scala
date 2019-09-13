@@ -42,6 +42,7 @@ object Csw {
   val `csw-testkit`         = Org %% "csw-testkit" % Version
   val `csw-framework`       = Org %% "csw-framework" % Version
   val `csw-admin-server`    = Org %% "csw-admin-server" % Version
+  val `csw-config-client`   = Org %% "csw-config-client" % Version
 }
 
 object Akka {

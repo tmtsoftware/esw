@@ -8,15 +8,15 @@ import csw.command.api.scaladsl.CommandService
 import csw.event.api.scaladsl.{EventPublisher, EventService, EventSubscriber}
 import csw.event.client.internal.commons.EventSubscriberUtil
 import csw.logging.api.scaladsl.Logger
-import esw.http.core.utils.{ComponentFactory, CswContext}
-import esw.http.core.wiring.ActorRuntime
+import esw.http.core.utils.ComponentFactory
+import esw.http.core.wiring.{ActorRuntime, CswWiring}
 import org.mockito.MockitoSugar._
 
 import scala.concurrent.duration.FiniteDuration
 
-class CswContextMocks(system: ActorSystem[SpawnProtocol]) {
+class CswWiringMocks(system: ActorSystem[SpawnProtocol]) {
 
-  val cswCtx: CswContext         = mock[CswContext]
+  val cswWiring: CswWiring       = mock[CswWiring]
   val actorRuntime: ActorRuntime = new ActorRuntime(system)
   val logger: Logger             = mock[Logger]
 
@@ -33,13 +33,13 @@ class CswContextMocks(system: ActorSystem[SpawnProtocol]) {
   val eventPublisher: EventPublisher           = mock[EventPublisher]
   val eventSubscriber: EventSubscriber         = mock[EventSubscriber]
 
-  when(cswCtx.logger).thenReturn(logger)
+  when(cswWiring.logger).thenReturn(logger)
 
-  when(cswCtx.componentFactory).thenReturn(componentFactory)
+  when(cswWiring.componentFactory).thenReturn(componentFactory)
 
-  when(cswCtx.eventSubscriberUtil).thenReturn(eventSubscriberUtil)
-  when(cswCtx.eventService).thenReturn(eventService)
-  when(cswCtx.alarmService).thenReturn(alarmService)
+  when(cswWiring.eventSubscriberUtil).thenReturn(eventSubscriberUtil)
+  when(cswWiring.eventService).thenReturn(eventService)
+  when(cswWiring.alarmService).thenReturn(alarmService)
   when(eventService.defaultPublisher).thenReturn(eventPublisher)
   when(eventService.defaultSubscriber).thenReturn(eventSubscriber)
 }
