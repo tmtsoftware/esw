@@ -4,13 +4,14 @@ import kotlinx.coroutines.async
 import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.time.delay
-import java.util.concurrent.atomic.AtomicBoolean
 import kotlin.time.*
 
 @UseExperimental(ExperimentalTime::class)
 class Loop {
-    private val stop = AtomicBoolean(false)
     private val loopInterval = 50.milliseconds
+
+    // lightweight throwable without the stack trace
+    private object LoopStopException : Throwable("Stop loop", null, false, false)
 
     suspend fun loop(block: suspend () -> Unit): Unit = loop(loopInterval, block)
 
@@ -18,16 +19,17 @@ class Loop {
         loopWithoutDelay { delayedResult(maxOf(minimumInterval, loopInterval), block) }
 
     inner class StopIf {
-        //todo: loop should terminate if this condition matches without executing rest of the code
         fun stopIf(condition: Boolean) {
-            // once stop condition matches, then do not override it with following false conditions
-            if (condition) stop.set(condition)
+            if (condition) throw LoopStopException
         }
     }
 
     private suspend fun loopWithoutDelay(block: suspend () -> Unit) {
-        block()
-        if (stop.get()) return else loopWithoutDelay(block)
+        try {
+            block()
+            loopWithoutDelay(block)
+        } catch (e: LoopStopException) {
+        }
     }
 
     private suspend fun <T> delayedResult(minDelay: Duration, f: suspend () -> T): T = coroutineScope {
@@ -55,12 +57,9 @@ fun main() = runBlocking {
 
     loop(1.seconds) {
         counter += 1
-        println(counter)
-        stopIf(counter == 31)
-
-        counter *= 2
-        println(counter)
-        stopIf(counter == 20)
+        println("Before stopIf, counter=$counter")
+        stopIf(counter == 5)
+        println("After stopIf, counter=$counter")
     }
 
 }
