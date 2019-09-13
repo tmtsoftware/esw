@@ -64,6 +64,8 @@ sealed class BaseScript : CoroutineScope, CswHighLevelDsl {
     fun bgLoop(duration: Duration, block: suspend () -> StopIf) =
         jScript.jLoop(duration.toJavaDuration()) { block.toJavaFuture() }.thenApply { }.asDeferred()
 
+    fun stopIf(condition: Boolean): StopIf = jScript.stopIf(condition)
+
     fun log(msg: String) = println("[${Thread.currentThread().name}] $msg")
 
     fun loadScripts(vararg reusableScriptResult: ReusableScriptResult) {

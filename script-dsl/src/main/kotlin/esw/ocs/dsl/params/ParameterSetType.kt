@@ -9,7 +9,7 @@ fun <A : ParameterSetType<A>, B : Parameter<*>> ParameterSetType<A>.madd(vararg 
 
 // throws exception
 operator fun <A : ParameterSetType<A>, B> ParameterSetType<A>.invoke(keyHolder: KeyHolder<B>): Parameter<B> {
-    return jGet(keyHolder.key).get()
+    return apply(keyHolder.key)
 }
 
 // fixme: merge with above
