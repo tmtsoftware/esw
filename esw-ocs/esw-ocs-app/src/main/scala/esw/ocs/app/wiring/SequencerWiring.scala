@@ -18,9 +18,8 @@ import esw.ocs.api.protocol.RegistrationError
 import esw.ocs.app.route.{PostHandlerImpl, SequencerAdminRoutes, WebsocketHandlerImpl}
 import esw.ocs.impl.SequencerAdminImpl
 import esw.ocs.impl.core._
-import esw.ocs.impl.dsl.CswServices
-import esw.ocs.impl.dsl.javadsl.JScriptDsl
 import esw.ocs.impl.dsl.utils.ScriptLoader
+import esw.ocs.impl.dsl.{BaseScriptDsl, CswServices}
 import esw.ocs.impl.internal.{SequencerServer, Timeouts}
 import esw.ocs.impl.messages.SequencerMessages.{EswSequencerMessage, Shutdown}
 import esw.ocs.impl.syntax.FutureSyntax.FutureOps
@@ -44,7 +43,7 @@ private[ocs] class SequencerWiring(val sequencerId: String, val observingMode: S
   //SequencerRef -> Script -> cswServices -> SequencerOperator -> SequencerRef
   private lazy val sequenceOperatorFactory = () => new SequenceOperator(sequencerRef)
   private lazy val componentId             = ComponentId(sequencerName, ComponentType.Sequencer)
-  private lazy val script: JScriptDsl      = ScriptLoader.loadKotlinScript(scriptClass, cswServices)
+  private lazy val script: BaseScriptDsl   = ScriptLoader.loadKotlinScript(scriptClass, cswServices)
 
   lazy val cswServices = new CswServices(
     sequenceOperatorFactory,

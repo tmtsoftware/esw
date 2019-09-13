@@ -8,7 +8,7 @@ import csw.params.core.models.Id
 import esw.ocs.api.BaseTestSuite
 import esw.ocs.api.models.Step
 import esw.ocs.api.protocol.{Ok, PullNextResult}
-import esw.ocs.impl.dsl.javadsl.JScript
+import esw.ocs.impl.dsl.Script
 
 import scala.concurrent.Future
 
@@ -18,7 +18,7 @@ class EngineTest extends BaseTestSuite {
 
   private class Mocks {
     val sequenceOperator: SequenceOperator = mock[SequenceOperator]
-    val script: JScript                    = mock[JScript]
+    val script: Script                     = mock[Script]
     val cmd: SequenceCommand               = mock[SequenceCommand]
     val id: Id                             = mock[Id]
   }

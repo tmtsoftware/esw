@@ -13,7 +13,7 @@ import csw.params.commands.{Sequence, SequenceCommand}
 import csw.params.core.models.Id
 import esw.ocs.api.models.{Step, StepList}
 import esw.ocs.api.protocol._
-import esw.ocs.impl.dsl.javadsl.JScript
+import esw.ocs.impl.dsl.Script
 import esw.ocs.impl.messages.SequencerMessages.{Pause, _}
 import esw.ocs.impl.messages.SequencerState
 import esw.ocs.impl.messages.SequencerState.{Idle, InProgress}
@@ -34,7 +34,7 @@ class SequencerTestSetup(sequence: Sequence)(implicit system: ActorSystem[_], ti
   implicit val ec: ExecutionContext                   = system.executionContext
 
   private val componentId                 = mock[ComponentId]
-  private val script                      = mock[JScript]
+  private val script                      = mock[Script]
   private val locationService             = mock[LocationService]
   private val crm: CommandResponseManager = mock[CommandResponseManager]
   private val sequencerBehavior           = new SequencerBehavior(componentId, script, locationService, crm)

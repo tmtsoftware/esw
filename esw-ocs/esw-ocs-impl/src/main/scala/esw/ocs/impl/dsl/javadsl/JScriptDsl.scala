@@ -9,7 +9,7 @@ import akka.Done
 import csw.params.commands.{Observe, SequenceCommand, Setup}
 import esw.ocs.api.protocol._
 import esw.ocs.impl.dsl.utils.{FunctionBuilder, FunctionHandlers}
-import esw.ocs.impl.dsl.{ControlDsl, CswServices, StopIf}
+import esw.ocs.impl.dsl.{BaseScriptDsl, CswServices}
 import esw.ocs.impl.exceptions.UnhandledCommandException
 
 import scala.compat.java8.FutureConverters.{CompletionStageOps, FutureOps}
@@ -22,7 +22,7 @@ abstract class JScript(override val csw: CswServices) extends JScriptDsl {
 }
 
 // fixme : should Control dsl written for java
-trait JScriptDsl extends ControlDsl {
+trait JScriptDsl extends BaseScriptDsl {
   def csw: CswServices
 
   var isOnline = true

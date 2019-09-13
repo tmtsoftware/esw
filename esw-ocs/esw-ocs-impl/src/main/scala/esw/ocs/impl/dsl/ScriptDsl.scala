@@ -10,11 +10,19 @@ import esw.ocs.macros.StrandEc
 import scala.concurrent.Future
 import scala.reflect.ClassTag
 
+trait BaseScriptDsl {
+  private[ocs] def execute(command: SequenceCommand): Future[Unit]
+  private[ocs] def executeGoOnline(): Future[Done]
+  private[ocs] def executeGoOffline(): Future[Done]
+  private[ocs] def executeShutdown(): Future[Done]
+  private[ocs] def executeAbort(): Future[Done]
+}
+
 class Script(val csw: CswServices) extends ScriptDsl {
   override protected implicit val strandEc: StrandEc = StrandEc()
 }
 
-trait ScriptDsl extends ControlDsl {
+trait ScriptDsl extends ControlDsl with BaseScriptDsl {
   def csw: CswServices
 
   var isOnline = true

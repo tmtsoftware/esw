@@ -15,7 +15,7 @@ import csw.logging.client.commons.LogAdminUtil
 import csw.params.commands.Sequence
 import esw.ocs.api.codecs.OcsCodecs
 import esw.ocs.api.protocol._
-import esw.ocs.impl.dsl.javadsl.JScriptDsl
+import esw.ocs.impl.dsl.BaseScriptDsl
 import esw.ocs.impl.internal.Timeouts
 import esw.ocs.impl.messages.SequencerMessages._
 import esw.ocs.impl.messages.SequencerState
@@ -27,7 +27,7 @@ import scala.util.{Failure, Success}
 
 class SequencerBehavior(
     componentId: ComponentId,
-    script: JScriptDsl,
+    script: BaseScriptDsl,
     locationService: LocationService,
     crm: CommandResponseManager
 )(implicit val actorSystem: ActorSystem[_], timeout: Timeout)
