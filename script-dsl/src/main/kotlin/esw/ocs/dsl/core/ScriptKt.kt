@@ -12,7 +12,6 @@ import java.util.concurrent.CompletionStage
 import java.util.concurrent.Executors
 import kotlin.coroutines.CoroutineContext
 import kotlin.time.Duration
-import kotlin.time.ExperimentalTime
 import kotlin.time.toJavaDuration
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Job
@@ -54,13 +53,11 @@ sealed class BaseScript : CoroutineScope, CswHighLevelDsl {
     }
 
     // foreground loop, suspends current coroutine until loop gets finished
-    @ExperimentalTime
     suspend fun loop(duration: Duration, block: suspend () -> StopIf) {
         jScript.jLoop(duration.toJavaDuration()) { block.toJavaFuture() }.await()
     }
 
     // background loop, current coroutine continues doing work while running this loop in background
-    @ExperimentalTime
     fun bgLoop(duration: Duration, block: suspend () -> StopIf) =
         jScript.jLoop(duration.toJavaDuration()) { block.toJavaFuture() }.thenApply { }.asDeferred()
 

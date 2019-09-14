@@ -8,7 +8,6 @@ import csw.params.commands.SequenceCommand
 import csw.params.core.models.Id
 import esw.ocs.impl.dsl.CswServices
 import kotlin.time.Duration
-import kotlin.time.ExperimentalTime
 import kotlin.time.toJavaDuration
 import kotlinx.coroutines.future.await
 
@@ -25,11 +24,9 @@ interface CrmKtDsl {
 
     fun updateSubCommand(cmdStatus: SubmitResponse) = crm.updateSubCommand(cmdStatus)
 
-    @ExperimentalTime
     suspend fun query(runId: Id, timeout: Duration): QueryResponse =
         crm.jQuery(runId, Timeout.create(timeout.toJavaDuration())).await()
 
-    @ExperimentalTime
     suspend fun queryFinal(runId: Id, timeout: Duration): SubmitResponse =
         crm.jQueryFinal(runId, Timeout.create(timeout.toJavaDuration())).await()
 }

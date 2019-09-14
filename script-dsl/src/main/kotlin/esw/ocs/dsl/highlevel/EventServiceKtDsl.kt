@@ -10,7 +10,6 @@ import csw.params.events.SystemEvent
 import esw.ocs.impl.dsl.CswServices
 import java.util.*
 import kotlin.time.Duration
-import kotlin.time.ExperimentalTime
 import kotlin.time.toJavaDuration
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.future.await
@@ -28,7 +27,6 @@ interface EventServiceKtDsl : CoroutineScope {
     suspend fun publishEvent(event: Event): Done =
         cswServices.jPublishEvent(event).await()
 
-    @ExperimentalTime
     fun publishEvent(every: Duration, eventGenerator: suspend () -> Event?): Cancellable =
         cswServices.jPublishEventAsync(every.toJavaDuration()) { future { Optional.ofNullable(eventGenerator()) } }
 

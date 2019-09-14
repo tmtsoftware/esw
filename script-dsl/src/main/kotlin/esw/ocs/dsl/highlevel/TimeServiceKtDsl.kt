@@ -7,7 +7,6 @@ import esw.ocs.impl.dsl.CswServices
 import esw.ocs.macros.StrandEc
 import java.util.concurrent.CompletionStage
 import kotlin.time.Duration
-import kotlin.time.ExperimentalTime
 import kotlin.time.toJavaDuration
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.future.future
@@ -18,16 +17,13 @@ interface TimeServiceKtDsl : CoroutineScope {
 
     private fun (suspend () -> Unit).toJavaFuture(): CompletionStage<Void> =
         this.let {
-            return future {
-                it()
-            }.thenAccept { }
+            return future { it() }.thenAccept { }
         }
 
     // todo : Verify task works fine this way
     suspend fun scheduleOnce(startTime: TMTTime, task: suspend () -> Unit): Cancellable =
         cswServices.scheduleOnce(startTime, Callback { task.toJavaFuture() }, strandEc().ec())
 
-    @ExperimentalTime
     fun schedulePeriodically(
         startTime: TMTTime,
         interval: Duration,
