@@ -1,8 +1,7 @@
 package esw.ocs.impl.dsl.javadsl
 
-import java.time.Duration
 import java.util.Optional
-import java.util.concurrent.{CompletableFuture, CompletionStage, TimeUnit}
+import java.util.concurrent.{CompletableFuture, CompletionStage}
 import java.util.function.Supplier
 
 import akka.Done
@@ -11,21 +10,25 @@ import esw.ocs.api.protocol._
 import esw.ocs.impl.dsl.utils.{FunctionBuilder, FunctionHandlers}
 import esw.ocs.impl.dsl.{BaseScriptDsl, CswServices}
 import esw.ocs.impl.exceptions.UnhandledCommandException
+import esw.ocs.macros.{AsyncMacros, StrandEc}
 
 import scala.compat.java8.FutureConverters.{CompletionStageOps, FutureOps}
-import scala.concurrent.Future
 import scala.concurrent.duration.{DurationInt, FiniteDuration}
+import scala.concurrent.{ExecutionContext, Future}
+import scala.language.experimental.macros
 import scala.reflect.ClassTag
 
-abstract class JScript(override val csw: CswServices) extends JScriptDsl {
-  override private[esw] val loopInterval: FiniteDuration = 50.millis
-}
+abstract class JScript(override val csw: CswServices) extends JScriptDsl
 
 // fixme : should Control dsl written for java
 trait JScriptDsl extends BaseScriptDsl {
+
+  protected implicit def strandEc: StrandEc
+  protected implicit lazy val toEc: ExecutionContext = strandEc.ec
   def csw: CswServices
 
-  var isOnline = true
+  val loopInterval: FiniteDuration = 50.millis
+  var isOnline                     = true
 
   private val commandHandlerBuilder: FunctionBuilder[SequenceCommand, CompletionStage[Void]] = new FunctionBuilder
 
@@ -52,6 +55,9 @@ trait JScriptDsl extends BaseScriptDsl {
       // should script writer have ability to add this default handler, like handleUnknownCommand
       CompletableFuture.failedFuture(new UnhandledCommandException(input))
     }
+
+  // fixme: is this needed?
+  protected final def spawn[T](body: => T)(implicit strandEc: StrandEc): Future[T] = macro AsyncMacros.asyncStrand[T]
 
   // fixme : Try removing scala-java conversions (toScala)
   private[ocs] def execute(command: SequenceCommand): Future[Unit] = spawn(commandHandler(command).toScala.await)
@@ -117,7 +123,7 @@ trait JScriptDsl extends BaseScriptDsl {
     null
   }
 
-  protected def jLoop(duration: Duration, block: Supplier[CompletionStage[StopIf]]): CompletionStage[Void] = {
-    loop(FiniteDuration(duration.toNanos, TimeUnit.NANOSECONDS))(block.get().toScala).toJava.thenApply(_ => null)
+  protected implicit class RichF[T](t: Future[T]) {
+    final def await: T = macro AsyncMacros.await
   }
 }
