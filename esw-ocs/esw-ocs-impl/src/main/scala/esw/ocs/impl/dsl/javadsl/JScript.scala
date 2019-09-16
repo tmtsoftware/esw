@@ -11,20 +11,16 @@ import esw.ocs.impl.dsl.Async._
 import esw.ocs.impl.dsl.utils.{FunctionBuilder, FunctionHandlers}
 import esw.ocs.impl.dsl.{BaseScriptDsl, CswServices}
 import esw.ocs.impl.exceptions.UnhandledCommandException
-import esw.ocs.macros.{AsyncMacros, StrandEc}
+import esw.ocs.macros.StrandEc
 
 import scala.compat.java8.FutureConverters.{CompletionStageOps, FutureOps}
 import scala.concurrent.{ExecutionContext, Future}
-import scala.language.experimental.macros
 import scala.reflect.ClassTag
 
-abstract class JScript(override val csw: CswServices) extends JScriptDsl
-
-trait JScriptDsl extends BaseScriptDsl {
+abstract class JScript(val csw: CswServices) extends BaseScriptDsl {
 
   protected implicit def strandEc: StrandEc
   protected implicit lazy val toEc: ExecutionContext = strandEc.ec
-  def csw: CswServices
 
   var isOnline = true
 
@@ -35,7 +31,7 @@ trait JScriptDsl extends BaseScriptDsl {
   private val shutdownHandlers: FunctionHandlers[Unit, CompletionStage[Void]] = new FunctionHandlers
   private val abortHandlers: FunctionHandlers[Unit, CompletionStage[Void]]    = new FunctionHandlers
 
-  private[esw] def merge(that: JScriptDsl): JScriptDsl = {
+  private[esw] def merge(that: JScript): JScript = {
     commandHandlerBuilder ++ that.commandHandlerBuilder
     onlineHandlers ++ that.onlineHandlers
     offlineHandlers ++ that.offlineHandlers
@@ -76,10 +72,10 @@ trait JScriptDsl extends BaseScriptDsl {
   protected final def jNextIf(f: SequenceCommand => Boolean): CompletionStage[Optional[SequenceCommand]] =
     async {
       val operator  = csw.sequenceOperatorFactory()
-      val mayBeNext = operator.maybeNext.await
+      val mayBeNext = await(operator.maybeNext)
       mayBeNext match {
         case Some(step) if f(step.command) =>
-          operator.pullNext.await match {
+          await(operator.pullNext) match {
             case PullNextResult(step) => Optional.ofNullable(step.command)
             case _                    => Optional.empty[SequenceCommand]
           }
@@ -87,37 +83,14 @@ trait JScriptDsl extends BaseScriptDsl {
       }
     }.toJava
 
-  protected final def jHandleSetupCommand(name: String)(handler: Setup => CompletionStage[Void]): Void = {
+  protected final def jHandleSetupCommand(name: String)(handler: Setup => CompletionStage[Void]): Unit =
     handle(name)(handler(_))
-    null
-  }
 
-  protected final def jHandleObserveCommand(name: String)(handler: Observe => CompletionStage[Void]): Void = {
+  protected final def jHandleObserveCommand(name: String)(handler: Observe => CompletionStage[Void]): Unit =
     handle(name)(handler(_))
-    null
-  }
 
-  protected final def jHandleGoOnline(handler: Supplier[CompletionStage[Void]]): Void = {
-    onlineHandlers.add(_ => handler.get())
-    null
-  }
-
-  protected final def jHandleAbort(handler: Supplier[CompletionStage[Void]]): Void = {
-    abortHandlers.add(_ => handler.get())
-    null
-  }
-
-  protected final def jHandleShutdown(handler: Supplier[CompletionStage[Void]]): Void = {
-    shutdownHandlers.add(_ => handler.get())
-    null
-  }
-
-  protected final def jHandleGoOffline(handler: Supplier[CompletionStage[Void]]): Void = {
-    offlineHandlers.add(_ => handler.get())
-    null
-  }
-
-  protected implicit class RichF[T](t: Future[T]) {
-    final def await: T = macro AsyncMacros.await
-  }
+  protected final def jHandleGoOnline(handler: Supplier[CompletionStage[Void]]): Unit  = onlineHandlers.add(_ => handler.get())
+  protected final def jHandleAbort(handler: Supplier[CompletionStage[Void]]): Unit     = abortHandlers.add(_ => handler.get())
+  protected final def jHandleShutdown(handler: Supplier[CompletionStage[Void]]): Unit  = shutdownHandlers.add(_ => handler.get())
+  protected final def jHandleGoOffline(handler: Supplier[CompletionStage[Void]]): Unit = offlineHandlers.add(_ => handler.get())
 }
