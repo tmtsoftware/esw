@@ -1,22 +1,21 @@
 package esw.ocs.dsl.core
 
-import csw.params.commands.*
 import csw.params.commands.CommandResponse.SubmitResponse
+import csw.params.commands.Observe
+import csw.params.commands.Sequence
+import csw.params.commands.SequenceCommand
+import csw.params.commands.Setup
 import esw.ocs.dsl.highlevel.CswHighLevelDsl
 import esw.ocs.dsl.nullable
 import esw.ocs.impl.dsl.CswServices
-import esw.ocs.impl.dsl.StopIf
 import esw.ocs.impl.dsl.javadsl.JScript
 import esw.ocs.macros.StrandEc
 import java.util.concurrent.CompletionStage
 import java.util.concurrent.Executors
 import kotlin.coroutines.CoroutineContext
-import kotlin.time.Duration
-import kotlin.time.toJavaDuration
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.asCoroutineDispatcher
-import kotlinx.coroutines.future.asDeferred
 import kotlinx.coroutines.future.await
 import kotlinx.coroutines.future.future
 
@@ -51,17 +50,6 @@ sealed class BaseScript : CoroutineScope, CswHighLevelDsl {
     fun handleShutdown(block: suspend () -> Unit) {
         jScript.jHandleShutdown { block.toJavaFutureVoid() }
     }
-
-    // foreground loop, suspends current coroutine until loop gets finished
-    suspend fun loop(duration: Duration, block: suspend () -> StopIf) {
-        jScript.jLoop(duration.toJavaDuration()) { block.toJavaFuture() }.await()
-    }
-
-    // background loop, current coroutine continues doing work while running this loop in background
-    fun bgLoop(duration: Duration, block: suspend () -> StopIf) =
-        jScript.jLoop(duration.toJavaDuration()) { block.toJavaFuture() }.thenApply { }.asDeferred()
-
-    fun stopIf(condition: Boolean): StopIf = jScript.stopIf(condition)
 
     fun log(msg: String) = println("[${Thread.currentThread().name}] $msg")
 
