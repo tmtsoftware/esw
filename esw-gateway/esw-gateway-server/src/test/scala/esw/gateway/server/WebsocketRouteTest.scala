@@ -34,7 +34,7 @@ import scala.concurrent.duration.DurationLong
 class WebsocketRouteTest extends BaseTestSuite with ScalatestRouteTest with GatewayCodecs with HttpCodecs {
   private val actorSystem: ActorSystem[SpawnProtocol] = ActorSystem(SpawnProtocol.behavior, "test-system")
 
-  private val cswCtxMocks = new CswContextMocks(actorSystem)
+  private val cswCtxMocks = new CswWiringMocks(actorSystem)
   import cswCtxMocks._
 
   implicit val timeout: Timeout                        = Timeout(5.seconds)

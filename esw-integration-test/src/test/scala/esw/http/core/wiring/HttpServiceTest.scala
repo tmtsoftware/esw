@@ -52,7 +52,7 @@ class HttpServiceTest extends BaseTestSuite {
 
       val wiring = new ServerWiring(Some(_servicePort))
       import wiring._
-      import wiring.cswCtx.{locationService, logger}
+      import wiring.cswWiring.{actorRuntime, locationService, logger}
 
       val httpService             = new HttpService(logger, locationService, route, settings, actorRuntime)
       val (_, registrationResult) = Await.result(httpService.registeredLazyBinding, 5.seconds)
@@ -69,7 +69,7 @@ class HttpServiceTest extends BaseTestSuite {
       val _servicePort = 4452 // Location Service runs on this port
       val wiring       = new ServerWiring(Some(_servicePort))
       import wiring._
-      import wiring.cswCtx.{locationService, logger}
+      import wiring.cswWiring.{actorRuntime, locationService, logger}
 
       val httpService = new HttpService(logger, locationService, route, settings, actorRuntime)
 
@@ -81,7 +81,7 @@ class HttpServiceTest extends BaseTestSuite {
       val _servicePort = 4007
       val wiring       = new ServerWiring(Some(_servicePort))
       import wiring._
-      import wiring.cswCtx.{locationService, logger}
+      import wiring.cswWiring.{actorRuntime, locationService, logger}
 
       val httpService = new HttpService(logger, locationService, route, settings, actorRuntime)
 

@@ -18,7 +18,7 @@ object GatewayMain extends CommandApp[ServerCommand] {
     val gatewayWiring = new GatewayWiring()
 
     import gatewayWiring._
-    import gatewayWiring.wiring.actorRuntime
+    import gatewayWiring.wiring.cswWiring.actorRuntime
     if (startLogging) actorRuntime.startLogging(BuildInfo.name, BuildInfo.version)
 
     httpService.registeredLazyBinding

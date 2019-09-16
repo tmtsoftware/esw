@@ -18,8 +18,8 @@ import scala.concurrent.duration.DurationLong
 class GatewayWiring(_port: Option[Int] = None) extends GatewayCodecs {
   lazy val wiring = new ServerWiring(_port)
   import wiring._
-  import cswCtx.actorRuntime.{ec, mat}
-  import cswCtx.{actorRuntime, _}
+  import cswWiring.actorRuntime.{ec, mat}
+  import cswWiring.{actorRuntime, _}
   implicit val timeout: Timeout = 10.seconds
 
   lazy val alarmApi: AlarmApi     = new AlarmImpl(alarmService)
