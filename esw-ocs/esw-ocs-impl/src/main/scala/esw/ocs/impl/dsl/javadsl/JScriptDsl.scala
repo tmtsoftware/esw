@@ -6,29 +6,27 @@ import java.util.function.Supplier
 
 import akka.Done
 import csw.params.commands.{Observe, SequenceCommand, Setup}
-import esw.ocs.api.protocol._
+import esw.ocs.api.protocol.PullNextResult
+import esw.ocs.impl.dsl.Async._
 import esw.ocs.impl.dsl.utils.{FunctionBuilder, FunctionHandlers}
 import esw.ocs.impl.dsl.{BaseScriptDsl, CswServices}
 import esw.ocs.impl.exceptions.UnhandledCommandException
 import esw.ocs.macros.{AsyncMacros, StrandEc}
 
 import scala.compat.java8.FutureConverters.{CompletionStageOps, FutureOps}
-import scala.concurrent.duration.{DurationInt, FiniteDuration}
 import scala.concurrent.{ExecutionContext, Future}
 import scala.language.experimental.macros
 import scala.reflect.ClassTag
 
 abstract class JScript(override val csw: CswServices) extends JScriptDsl
 
-// fixme : should Control dsl written for java
 trait JScriptDsl extends BaseScriptDsl {
 
   protected implicit def strandEc: StrandEc
   protected implicit lazy val toEc: ExecutionContext = strandEc.ec
   def csw: CswServices
 
-  val loopInterval: FiniteDuration = 50.millis
-  var isOnline                     = true
+  var isOnline = true
 
   private val commandHandlerBuilder: FunctionBuilder[SequenceCommand, CompletionStage[Void]] = new FunctionBuilder
 
@@ -38,7 +36,6 @@ trait JScriptDsl extends BaseScriptDsl {
   private val abortHandlers: FunctionHandlers[Unit, CompletionStage[Void]]    = new FunctionHandlers
 
   private[esw] def merge(that: JScriptDsl): JScriptDsl = {
-
     commandHandlerBuilder ++ that.commandHandlerBuilder
     onlineHandlers ++ that.onlineHandlers
     offlineHandlers ++ that.offlineHandlers
@@ -52,34 +49,32 @@ trait JScriptDsl extends BaseScriptDsl {
 
   private lazy val commandHandler: SequenceCommand => CompletionStage[Void] =
     commandHandlerBuilder.build { input =>
-      // should script writer have ability to add this default handler, like handleUnknownCommand
+      // fixme: should script writer have ability to add this default handler, like handleUnknownCommand
       CompletableFuture.failedFuture(new UnhandledCommandException(input))
     }
 
-  // fixme: is this needed?
-  protected final def spawn[T](body: => T)(implicit strandEc: StrandEc): Future[T] = macro AsyncMacros.asyncStrand[T]
+  private[ocs] def execute(command: SequenceCommand): Future[Unit] = commandHandler(command).toScala.map(_ => ())
 
-  // fixme : Try removing scala-java conversions (toScala)
-  private[ocs] def execute(command: SequenceCommand): Future[Unit] = spawn(commandHandler(command).toScala.await)
+  private def executeHandler[T, S](f: FunctionHandlers[Unit, CompletionStage[Void]]): Future[Unit] =
+    Future.sequence(f.execute(()).map(_.toScala)).map(_ => ())
 
   private[ocs] def executeGoOnline(): Future[Done] =
-    // fixme: remove map(_.toScala)  from private APIs
-    Future.sequence(onlineHandlers.execute(()).map(_.toScala)).map { _ =>
+    executeHandler(onlineHandlers).map { _ =>
       isOnline = true
       Done
     }
 
   private[ocs] def executeGoOffline(): Future[Done] = {
     isOnline = false
-    Future.sequence(offlineHandlers.execute(()).map(_.toScala)).map(_ => Done)
+    executeHandler(offlineHandlers).map(_ => Done)
   }
 
-  private[ocs] def executeShutdown(): Future[Done] = Future.sequence(shutdownHandlers.execute(()).map(_.toScala)).map(_ => Done)
+  private[ocs] def executeShutdown(): Future[Done] = executeHandler(shutdownHandlers).map(_ => Done)
 
-  private[ocs] def executeAbort(): Future[Done] = Future.sequence(abortHandlers.execute(()).map(_.toScala)).map(_ => Done)
+  private[ocs] def executeAbort(): Future[Done] = executeHandler(abortHandlers).map(_ => Done)
 
-  protected final def jNextIf(f: SequenceCommand => Boolean): CompletionStage[Optional[SequenceCommand]] = {
-    spawn {
+  protected final def jNextIf(f: SequenceCommand => Boolean): CompletionStage[Optional[SequenceCommand]] =
+    async {
       val operator  = csw.sequenceOperatorFactory()
       val mayBeNext = operator.maybeNext.await
       mayBeNext match {
@@ -91,7 +86,6 @@ trait JScriptDsl extends BaseScriptDsl {
         case _ => Optional.empty[SequenceCommand]
       }
     }.toJava
-  }
 
   protected final def jHandleSetupCommand(name: String)(handler: Setup => CompletionStage[Void]): Void = {
     handle(name)(handler(_))
