@@ -119,4 +119,18 @@ class TestScript(csw: CswServices) extends Script(csw) {
       csw.publishEvent(event).await
     }
   }
+
+  handleDiagnosticMode {
+    case (startTime, hint) =>
+      spawn {
+        println(s"Received diagnostic mode $hint on startTime $startTime")
+        // do some actions to go to diagnostic mode based on hint
+      }
+  }
+
+  handleOperationsMode {
+    spawn {
+      // do some actions to go to operations mode
+    }
+  }
 }

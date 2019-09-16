@@ -13,6 +13,8 @@ sealed trait RemoveBreakpointResponse extends EswSequencerResponse
 sealed trait LoadSequenceResponse     extends EswSequencerResponse
 sealed trait PullNextResponse         extends EswSequencerResponse
 sealed trait GoOnlineResponse         extends EswSequencerResponse
+sealed trait DiagnosticModeResponse   extends EswSequencerResponse
+sealed trait OperationsModeResponse   extends EswSequencerResponse
 
 sealed trait SequenceResponse extends EswSequencerResponse {
   def toSubmitResponse(sequenceId: Id): SubmitResponse = this match {
@@ -29,6 +31,8 @@ case object Ok
     with RemoveBreakpointResponse
     with LoadSequenceResponse
     with GoOnlineResponse
+    with DiagnosticModeResponse
+    with OperationsModeResponse
 
 case class PullNextResult(step: Step)                     extends PullNextResponse
 case class SequenceResult(submitResponse: SubmitResponse) extends SequenceResponse
@@ -62,6 +66,14 @@ case object DuplicateIdsFound extends LoadSequenceResponse with SequenceResponse
 
 case object GoOnlineHookFailed extends GoOnlineResponse with SingletonError {
   val msg = "Sequencer could not go online because online handlers failed to execute successfully"
+}
+
+case object DiagnosticHookFailed extends DiagnosticModeResponse with SingletonError {
+  val msg = "Sequencer failed to execute diagnostic mode handlers."
+}
+
+case object OperationsHookFailed extends OperationsModeResponse with SingletonError {
+  val msg = "Sequencer failed to execute operations mode handlers."
 }
 
 sealed trait EditorError extends GenericResponse

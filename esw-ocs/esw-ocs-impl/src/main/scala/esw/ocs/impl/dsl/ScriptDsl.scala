@@ -2,6 +2,7 @@ package esw.ocs.impl.dsl
 
 import akka.Done
 import csw.params.commands.{Observe, SequenceCommand, Setup}
+import csw.time.core.models.UTCTime
 import esw.ocs.api.protocol.PullNextResult
 import esw.ocs.impl.dsl.utils.{FunctionBuilder, FunctionHandlers}
 import esw.ocs.impl.exceptions.UnhandledCommandException
@@ -22,10 +23,12 @@ trait ScriptDsl extends ControlDsl {
 
   private val commandHandlerBuilder: FunctionBuilder[SequenceCommand, Future[Unit]] = new FunctionBuilder
 
-  private val onlineHandlers: FunctionHandlers[Unit, Future[Unit]]   = new FunctionHandlers
-  private val offlineHandlers: FunctionHandlers[Unit, Future[Unit]]  = new FunctionHandlers
-  private val shutdownHandlers: FunctionHandlers[Unit, Future[Unit]] = new FunctionHandlers
-  private val abortHandlers: FunctionHandlers[Unit, Future[Unit]]    = new FunctionHandlers
+  private val onlineHandlers: FunctionHandlers[Unit, Future[Unit]]                      = new FunctionHandlers
+  private val offlineHandlers: FunctionHandlers[Unit, Future[Unit]]                     = new FunctionHandlers
+  private val shutdownHandlers: FunctionHandlers[Unit, Future[Unit]]                    = new FunctionHandlers
+  private val abortHandlers: FunctionHandlers[Unit, Future[Unit]]                       = new FunctionHandlers
+  private val diagnosticModeHandlers: FunctionHandlers[(UTCTime, String), Future[Unit]] = new FunctionHandlers
+  private val operationsModeHandlers: FunctionHandlers[Unit, Future[Unit]]              = new FunctionHandlers
 
   private def handle[T <: SequenceCommand: ClassTag](name: String)(handler: T => Future[Unit]): Unit =
     commandHandlerBuilder.addHandler[T](handler)(_.commandName.name == name)
@@ -55,6 +58,11 @@ trait ScriptDsl extends ControlDsl {
 
   private[ocs] def executeAbort(): Future[Done] = Future.sequence(abortHandlers.execute(())).map(_ => Done)
 
+  private[ocs] def executeDiagnosticMode(startTime: UTCTime, hint: String): Future[Done] =
+    Future.sequence(diagnosticModeHandlers.execute(startTime, hint)).map(_ => Done)
+
+  private[ocs] def executeOperationsMode(): Future[Done] = Future.sequence(operationsModeHandlers.execute(())).map(_ => Done)
+
   protected final def nextIf(f: SequenceCommand => Boolean): Future[Option[SequenceCommand]] =
     spawn {
       val operator  = csw.sequenceOperatorFactory()
@@ -75,4 +83,7 @@ trait ScriptDsl extends ControlDsl {
   protected final def handleGoOffline(handler: => Future[Unit]): Unit                            = offlineHandlers.add(_ => handler)
   protected final def handleShutdown(handler: => Future[Unit]): Unit                             = shutdownHandlers.add(_ => handler)
   protected final def handleAbort(handler: => Future[Unit]): Unit                                = abortHandlers.add(_ => handler)
+  protected final def handleDiagnosticMode(handler: ((UTCTime, String)) => Future[Unit]): Unit =
+    diagnosticModeHandlers.add(handler)
+  protected final def handleOperationsMode(handler: => Future[Unit]): Unit = operationsModeHandlers.add(_ => handler)
 }

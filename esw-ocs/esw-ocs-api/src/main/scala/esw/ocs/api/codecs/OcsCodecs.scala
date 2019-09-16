@@ -34,9 +34,11 @@ trait OcsCodecs extends ParamCodecs with LocationCodecs {
   implicit lazy val idDoesNotExistCodec: Codec[IdDoesNotExist] = deriveCodec[IdDoesNotExist]
   implicit lazy val inFlightOrFinishedStepErrorCodec: Codec[CannotOperateOnAnInFlightOrFinishedStep.type] =
     singletonCodec(CannotOperateOnAnInFlightOrFinishedStep)
-  implicit lazy val duplicateIdsFoundCodec: Codec[DuplicateIdsFound.type]   = singletonErrorCodec(DuplicateIdsFound)
-  implicit lazy val goOnlineHookFailedCodec: Codec[GoOnlineHookFailed.type] = singletonErrorCodec(GoOnlineHookFailed)
-  implicit lazy val responseCodec: Codec[EswSequencerResponse]              = deriveCodec[EswSequencerResponse]
+  implicit lazy val duplicateIdsFoundCodec: Codec[DuplicateIdsFound.type]       = singletonErrorCodec(DuplicateIdsFound)
+  implicit lazy val goOnlineHookFailedCodec: Codec[GoOnlineHookFailed.type]     = singletonErrorCodec(GoOnlineHookFailed)
+  implicit lazy val diagnosticHookFailedCodec: Codec[DiagnosticHookFailed.type] = singletonErrorCodec(DiagnosticHookFailed)
+  implicit lazy val operationsHookFailedCodec: Codec[OperationsHookFailed.type] = singletonErrorCodec(OperationsHookFailed)
+  implicit lazy val responseCodec: Codec[EswSequencerResponse]                  = deriveCodec[EswSequencerResponse]
 
   implicit lazy val loadScriptErrorCodec: Codec[RegistrationError] = deriveCodec[RegistrationError]
 
@@ -48,6 +50,8 @@ trait OcsCodecs extends ParamCodecs with LocationCodecs {
   implicit lazy val genericResponseCodec: Codec[GenericResponse]                   = deriveCodec[GenericResponse]
   implicit lazy val removeBreakpointResponseCodec: Codec[RemoveBreakpointResponse] = deriveCodec[RemoveBreakpointResponse]
   implicit lazy val goOnlineResponseCodec: Codec[GoOnlineResponse]                 = deriveCodec[GoOnlineResponse]
+  implicit lazy val diagnosticModeResponseCodec: Codec[DiagnosticModeResponse]     = deriveCodec[DiagnosticModeResponse]
+  implicit lazy val operationsModeResponseCodec: Codec[OperationsModeResponse]     = deriveCodec[OperationsModeResponse]
   implicit lazy val loadSequenceResponseCodec: Codec[LoadSequenceResponse]         = deriveCodec[LoadSequenceResponse]
   implicit lazy val sequenceResponseCodec: Codec[SequenceResponse]                 = deriveCodec[SequenceResponse]
 }

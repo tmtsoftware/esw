@@ -13,6 +13,7 @@ import csw.location.models.ComponentId
 import csw.location.models.Connection.AkkaConnection
 import csw.logging.client.commons.LogAdminUtil
 import csw.params.commands.Sequence
+import csw.time.core.models.UTCTime
 import esw.ocs.api.codecs.OcsCodecs
 import esw.ocs.api.protocol._
 import esw.ocs.impl.dsl.ScriptDsl
@@ -107,10 +108,12 @@ class SequencerBehavior(
       data: SequencerData,
       currentBehavior: SequencerData => Behavior[SequencerMsg]
   ): Behavior[SequencerMsg] = message match {
-    case Shutdown(replyTo)           => shutdown(data, replyTo)
-    case GetSequence(replyTo)        => replyTo ! data.stepList; Behaviors.same
-    case GetSequencerState(replyTo)  => replyTo ! state; Behaviors.same
-    case ReadyToExecuteNext(replyTo) => currentBehavior(data.readyToExecuteNext(replyTo, state))
+    case Shutdown(replyTo)                        => shutdown(data, replyTo)
+    case GetSequence(replyTo)                     => replyTo ! data.stepList; Behaviors.same
+    case GetSequencerState(replyTo)               => replyTo ! state; Behaviors.same
+    case DiagnosticMode(startTime, hint, replyTo) => goToDiagnosticMode(startTime, hint, replyTo)
+    case OperationsMode(replyTo)                  => goToOperationsMode(replyTo)
+    case ReadyToExecuteNext(replyTo)              => currentBehavior(data.readyToExecuteNext(replyTo, state))
     case MaybeNext(replyTo) =>
       if (state == InProgress) replyTo ! data.stepList.flatMap(_.nextExecutable)
       else replyTo ! None
@@ -203,6 +206,26 @@ class SequencerBehavior(
     // go to offline state even if handler fails, note that this is different than GoOnline
     script.executeGoOffline().onComplete(_ => data.self ! GoneOffline(replyTo))
     goingOffline(data)
+  }
+
+  private def goToDiagnosticMode(
+      startTime: UTCTime,
+      hint: String,
+      replyTo: ActorRef[DiagnosticModeResponse]
+  ): Behavior[SequencerMsg] = {
+    script.executeDiagnosticMode(startTime, hint).onComplete {
+      case Success(_) => replyTo ! Ok
+      case _          => replyTo ! DiagnosticHookFailed
+    }
+    Behaviors.same
+  }
+
+  private def goToOperationsMode(replyTo: ActorRef[OperationsModeResponse]): Behavior[SequencerMsg] = {
+    script.executeOperationsMode().onComplete {
+      case Success(_) => replyTo ! Ok
+      case _          => replyTo ! OperationsHookFailed
+    }
+    Behaviors.same
   }
 
   private def handleLogMessages(
