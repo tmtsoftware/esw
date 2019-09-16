@@ -59,7 +59,7 @@ trait ScriptDsl extends ControlDsl {
   private[ocs] def executeAbort(): Future[Done] = Future.sequence(abortHandlers.execute(())).map(_ => Done)
 
   private[ocs] def executeDiagnosticMode(startTime: UTCTime, hint: String): Future[Done] =
-    Future.sequence(diagnosticModeHandlers.execute(startTime, hint)).map(_ => Done)
+    Future.sequence(diagnosticModeHandlers.execute((startTime, hint))).map(_ => Done)
 
   private[ocs] def executeOperationsMode(): Future[Done] = Future.sequence(operationsModeHandlers.execute(())).map(_ => Done)
 
