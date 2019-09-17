@@ -21,7 +21,7 @@ class SequenceComponentRegistration(
     _locationService: LocationService,
     sequenceComponentFactory: String => Future[ActorRef[SequenceComponentMsg]]
 )(
-    implicit actorSystem: ActorSystem[SpawnProtocol]
+    implicit val actorSystem: ActorSystem[SpawnProtocol]
 ) extends LocationServiceDsl {
   implicit val ec: ExecutionContext = actorSystem.executionContext
 

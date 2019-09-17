@@ -9,7 +9,7 @@ import csw.params.commands.Sequence
 import scala.concurrent.Future
 
 trait SequencerCommandServiceDsl {
-  private[esw] def actorSystem: ActorSystem[_]
+  protected def actorSystem: ActorSystem[_]
   def submitSequence(location: AkkaLocation, sequence: Sequence): Future[SubmitResponse] = {
     SequencerCommandServiceFactory.make(location)(actorSystem).submitAndWait(sequence)
   }

@@ -8,8 +8,11 @@ import csw.location.models.TrackingEvent
 import csw.logging.api.scaladsl.Logger
 import csw.params.commands.CommandResponse.{Accepted, Completed}
 import csw.params.commands.{CommandResponse, ControlCommand}
+import csw.params.core.generics.KeyType.StringKey
 import csw.params.core.models.Prefix
 import csw.params.core.states.{CurrentState, StateName}
+import csw.params.events.{EventName, SystemEvent}
+import csw.time.core.models.UTCTime
 
 import scala.concurrent.Future
 
@@ -48,4 +51,16 @@ class SampleComponentHandlers(ctx: ActorContext[TopLevelActorMessage], cswCtx: C
   override def onGoOffline(): Unit = ???
 
   override def onGoOnline(): Unit = ???
+
+  override def onDiagnosticMode(startTime: UTCTime, hint: String): Unit = {
+    val diagnosticModeParam = StringKey.make("mode").set("diagnostic")
+    val event               = SystemEvent(Prefix("tcs.filter.wheel"), EventName("diagnostic-data")).add(diagnosticModeParam)
+    eventService.defaultPublisher.publish(event)
+  }
+
+  override def onOperationsMode(): Unit = {
+    val operationsModeParam = StringKey.make("mode").set("operations")
+    val event               = SystemEvent(Prefix("tcs.filter.wheel"), EventName("diagnostic-data")).add(operationsModeParam)
+    eventService.defaultPublisher.publish(event)
+  }
 }

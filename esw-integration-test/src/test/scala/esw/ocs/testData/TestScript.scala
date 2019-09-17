@@ -1,5 +1,6 @@
 package esw.ocs.testData
 
+import csw.location.models.ComponentType.Assembly
 import csw.params.commands.CommandResponse.{Completed, Error}
 import csw.params.commands.{CommandName, Sequence, Setup}
 import csw.params.core.generics.KeyType.{BooleanKey, StringKey, UTCTimeKey}
@@ -123,8 +124,8 @@ class TestScript(csw: CswServices) extends Script(csw) {
   handleDiagnosticMode {
     case (startTime, hint) =>
       spawn {
-        println(s"Received diagnostic mode $hint on startTime $startTime")
         // do some actions to go to diagnostic mode based on hint
+        csw.diagnosticMode("test", Assembly, startTime, hint)
       }
   }
 
