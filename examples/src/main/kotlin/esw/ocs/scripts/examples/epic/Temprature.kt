@@ -1,12 +1,12 @@
 package esw.ocs.scripts.examples.epic
 
 import esw.ocs.macros.StrandEc
-import kotlinx.coroutines.*
 import java.util.concurrent.Executors
 import kotlin.coroutines.CoroutineContext
 import kotlin.properties.Delegates
 import kotlin.time.Duration
 import kotlin.time.ExperimentalTime
+import kotlinx.coroutines.*
 
 interface State
 
@@ -33,7 +33,7 @@ abstract class Machine(val name: String, init: String) : CoroutineScope, Refresh
 
     abstract suspend fun logic(state: String)
 
-    protected fun become(state: String): Unit {
+    protected fun become(state: String) {
         currentState = state
     }
 
@@ -67,7 +67,6 @@ abstract class Machine(val name: String, init: String) : CoroutineScope, Refresh
     open fun debugString(): String = ""
 }
 
-
 fun CoroutineScope.publishTemp(tmp: Int) {
     TODO()
 }
@@ -83,19 +82,18 @@ val machine1 = object : Machine("temp-monitor", "Init") {
         publishTemp(n)
     }
 
-
     var temp2: Int by Delegates.observable(0) { p, o, n ->
         subscribeTemp("temp") {
             temp = it
         }
     }
 
-    override suspend fun logic(state: String): Unit {
+    override suspend fun logic(state: String) {
         when (state) {
             "Init" -> {
                 `when`() {
                     temp = 45
-                    //temp.pvPut()
+                    // temp.pvPut()
                     become("Ok")
                 }
             }
@@ -113,9 +111,7 @@ val machine1 = object : Machine("temp-monitor", "Init") {
                     become("Ok")
                 }
             }
-
         }
-
     }
 
     override fun debugString(): String = "temp2 = $temp"
