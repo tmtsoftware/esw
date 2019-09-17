@@ -19,9 +19,10 @@ import esw.ocs.api.BaseTestSuite
 import esw.ocs.api.protocol.RegistrationError
 
 import scala.concurrent.ExecutionContext.Implicits.global
-import scala.concurrent.Future
+class LocationServiceDslImpl(val locationService: LocationService)(implicit val actorSystem: ActorSystem[_])
+    extends LocationServiceDsl
 
-class LocationServiceDslImpl(val locationService: LocationService) extends LocationServiceDsl
+import scala.concurrent.Future
 
 class LocationServiceDslTest extends ScalaTestWithActorTestKit with BaseTestSuite {
 
@@ -35,9 +36,9 @@ class LocationServiceDslTest extends ScalaTestWithActorTestKit with BaseTestSuit
 
   "register" must {
     "return successful RegistrationResult | ESW-214" in {
-      val system: ActorSystem[_] = ActorSystem(Behaviors.empty, "test")
-      val coordinatedShutdown    = CoordinatedShutdown(system.toUntyped)
-      val registrationResult     = mock[RegistrationResult]
+      implicit val system: ActorSystem[_] = ActorSystem(Behaviors.empty, "test")
+      val coordinatedShutdown             = CoordinatedShutdown(system.toUntyped)
+      val registrationResult              = mock[RegistrationResult]
       when(registrationResult.location).thenReturn(akkaLocation)
       when(registrationResult.unregister()).thenReturn(Future.successful(Done))
       when(locationService.register(registration)).thenReturn(Future(registrationResult))
@@ -50,8 +51,8 @@ class LocationServiceDslTest extends ScalaTestWithActorTestKit with BaseTestSuit
     }
 
     "map location service registration failure to RegistrationError | ESW-214" in {
-      val system: ActorSystem[_] = ActorSystem(Behaviors.empty, "test")
-      val errorMsg               = "error message"
+      implicit val system: ActorSystem[_] = ActorSystem(Behaviors.empty, "test")
+      val errorMsg                        = "error message"
       when(locationService.register(registration)).thenReturn(Future.failed(OtherLocationIsRegistered(errorMsg)))
 
       val locationServiceDsl = new LocationServiceDslImpl(locationService)

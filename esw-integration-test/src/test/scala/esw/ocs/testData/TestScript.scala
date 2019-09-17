@@ -1,5 +1,6 @@
 package esw.ocs.testData
 
+import csw.location.models.ComponentType.Assembly
 import csw.params.commands.CommandResponse.{Completed, Error}
 import csw.params.commands.{CommandName, Sequence, Setup}
 import csw.params.core.generics.KeyType.{BooleanKey, StringKey, UTCTimeKey}
@@ -117,6 +118,20 @@ class TestScript(csw: CswServices) extends Script(csw) {
       val param = BooleanKey.make("offline").set(true)
       val event = SystemEvent(Prefix("TCS.test"), EventName("offline")).add(param)
       csw.publishEvent(event).await
+    }
+  }
+
+  handleDiagnosticMode {
+    case (startTime, hint) =>
+      spawn {
+        // do some actions to go to diagnostic mode based on hint
+        csw.diagnosticMode("test", Assembly, startTime, hint)
+      }
+  }
+
+  handleOperationsMode {
+    spawn {
+      // do some actions to go to operations mode
     }
   }
 }

@@ -41,6 +41,8 @@ trait OcsMsgCodecs extends MessageCodecs with DoneCodec {
   implicit lazy val goOnlineFailedCodec: Codec[GoOnlineFailed]       = deriveUnaryCodec[GoOnlineFailed]
   implicit lazy val goOfflineCodec: Codec[GoOffline]                 = deriveUnaryCodec[GoOffline]
   implicit lazy val goneOfflineCodec: Codec[GoneOffline]             = deriveUnaryCodec[GoneOffline]
+  implicit lazy val eswDiagnosticModeCodec: Codec[DiagnosticMode]    = deriveCodec[DiagnosticMode]
+  implicit lazy val eswOperationsModeCodec: Codec[OperationsMode]    = deriveUnaryCodec[OperationsMode]
   implicit lazy val shutdownSequencerCodec: Codec[Shutdown]          = deriveUnaryCodec[Shutdown]
   implicit lazy val shutdownCompleteCodec: Codec[ShutdownComplete]   = deriveUnaryCodec[ShutdownComplete]
 

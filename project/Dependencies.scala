@@ -78,6 +78,7 @@ object Dependencies {
       Csw.`csw-event-client`,
       Csw.`csw-command-client`,
       Csw.`csw-time-scheduler`,
+      Csw.`csw-command-client`,
       Libs.`mockito-scala`            % Test,
       Akka.`akka-actor-testkit-typed` % Test
     )

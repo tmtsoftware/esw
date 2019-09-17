@@ -5,6 +5,7 @@ import csw.command.client.messages.sequencer.SequencerMsg
 import csw.params.commands.CommandResponse.SubmitResponse
 import csw.params.commands.{Sequence, SequenceCommand}
 import csw.params.core.models.Id
+import csw.time.core.models.UTCTime
 import esw.ocs.api.codecs.OcsAkkaSerializable
 import esw.ocs.api.models.{Step, StepList}
 import esw.ocs.api.protocol._
@@ -43,6 +44,12 @@ object SequencerMessages {
   final case class GetSequencerState(replyTo: ActorRef[SequencerState[SequencerMsg]]) extends CommonMessage
   final private[esw] case class ReadyToExecuteNext(replyTo: ActorRef[Ok.type])        extends CommonMessage
   final private[esw] case class MaybeNext(replyTo: ActorRef[Option[Step]])            extends CommonMessage
+
+  // diagnostic data msgs
+  sealed trait DiagnosticDataMessage extends CommonMessage
+  case class DiagnosticMode(startTime: UTCTime, hint: String, replyTo: ActorRef[DiagnosticModeResponse])
+      extends DiagnosticDataMessage
+  case class OperationsMode(replyTo: ActorRef[OperationsModeResponse]) extends DiagnosticDataMessage
 
   // lifecycle msgs
   final case class GoOnline(replyTo: ActorRef[GoOnlineResponse])       extends OfflineMessage
