@@ -1,38 +1,40 @@
 package esw.highlevel.dsl.javadsl
 
-import java.util
-import java.util.Optional
-import java.util.concurrent.CompletionStage
+import java.util.concurrent.CompletableFuture
 
 import akka.actor.typed.ActorSystem
+import csw.location.api.javadsl.ILocationService
+import csw.location.api.scaladsl.LocationService
+import csw.location.client.extensions.LocationServiceExt.RichLocationService
 import csw.location.models._
-import csw.params.core.models.Subsystem
-import esw.highlevel.dsl.LocationServiceDsl
 
-import scala.compat.java8.OptionConverters.RichOptionForJava8
+import scala.async.Async.{async, await}
+import scala.compat.java8.FutureConverters.FutureOps
 import scala.concurrent.ExecutionContext
-import scala.jdk.CollectionConverters._
-import scala.jdk.FutureConverters.FutureOps
 
-trait JLocationServiceDsl { self: LocationServiceDsl =>
-
-  private[esw] def actorSystem: ActorSystem[_]
+trait JLocationServiceDsl {
+  private[esw] val actorSystem: ActorSystem[_]
+  private[esw] val _locationService: LocationService
+  lazy val locationService: ILocationService = _locationService.asJava
 
   // it is ok to pass actor system's ec, because only map operations on returned future requires it and does not mutate
   private[esw] implicit lazy val ec: ExecutionContext = actorSystem.executionContext
 
-  def jListBy(subsystem: Subsystem, componentType: ComponentType): CompletionStage[util.List[AkkaLocation]] =
-    listBy(subsystem, componentType).map(_.asJava).asJava
-
-  def jListByComponentName(name: String): CompletionStage[util.List[Location]] = {
-    listByComponentName(name).map(_.asJava).asJava
-  }
-
-  def jResolveByComponentNameAndType(name: String, componentType: ComponentType): CompletionStage[Optional[Location]] =
-    resolveByComponentNameAndType(name, componentType).map(_.asJava).asJava
-
   // To be used by Script Writer
-  def jResolveSequencer(sequencerId: String, observingMode: String): CompletionStage[AkkaLocation] =
-    resolveSequencer(sequencerId, observingMode).asJava
+  //TODO: method should filter on all locations instead of AkkaLocations only (b'case Sequencer can have HttpLocation)
+  def resolveSequencer(sequencerId: String, observingMode: String)(
+      implicit ec: ExecutionContext
+  ): CompletableFuture[AkkaLocation] =
+    async {
+      await(_locationService.list)
+        .find(location => location.connection.componentId.name.contains(s"$sequencerId@$observingMode"))
+    }.collect {
+        case Some(location: AkkaLocation) => location
+        case Some(location) =>
+          throw new RuntimeException(s"Sequencer is registered with wrong connection type: ${location.connection.connectionType}")
+        case None => throw new IllegalArgumentException(s"Could not find any sequencer with name: $sequencerId@$observingMode")
+      }
+      .toJava
+      .toCompletableFuture
 
 }

@@ -4,14 +4,16 @@ import java.time.Duration
 import java.util.concurrent.CompletionStage
 
 import csw.time.core.models.TMTTime
+import csw.time.scheduler.TimeServiceSchedulerFactory
 import csw.time.scheduler.api.Cancellable
-import esw.highlevel.dsl.TimeServiceDsl
 
 import scala.concurrent.ExecutionContext
 
 case class Callback(cb: () => CompletionStage[Void])
 
-trait JTimeServiceDsl { self: TimeServiceDsl =>
+trait JTimeServiceDsl {
+
+  private[esw] def timeServiceSchedulerFactory: TimeServiceSchedulerFactory
 
   // fixme : test does task maps to Kotlin's suspendable?
   def scheduleOnce(startTime: TMTTime, task: Callback, ec: ExecutionContext): Cancellable = {

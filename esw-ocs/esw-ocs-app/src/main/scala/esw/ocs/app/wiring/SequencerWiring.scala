@@ -13,6 +13,7 @@ import csw.location.client.ActorSystemFactory
 import csw.location.models.Connection.AkkaConnection
 import csw.location.models.{AkkaLocation, AkkaRegistration, ComponentId, ComponentType}
 import csw.network.utils.SocketUtils
+import esw.highlevel.dsl.LocationServiceUtil
 import esw.http.core.wiring.{ActorRuntime, CswWiring, HttpService, Settings}
 import esw.ocs.api.protocol.RegistrationError
 import esw.ocs.app.route.{PostHandlerImpl, SequencerAdminRoutes, WebsocketHandlerImpl}
@@ -51,7 +52,7 @@ private[ocs] class SequencerWiring(val sequencerId: String, val observingMode: S
   //SequencerRef -> Script -> cswServices -> SequencerOperator -> SequencerRef
   private lazy val sequenceOperatorFactory = () => new SequenceOperator(sequencerRef)
   private lazy val componentId             = ComponentId(sequencerName, ComponentType.Sequencer)
-  private lazy val script: BaseScriptDsl   = ScriptLoader.loadKotlinScript(scriptClass, cswServices)
+  private lazy val script: BaseScriptDsl   = ScriptLoader.load(scriptClass, cswServices)
 
   lazy val cswServices = new CswServices(
     sequenceOperatorFactory,
@@ -81,7 +82,8 @@ private[ocs] class SequencerWiring(val sequencerId: String, val observingMode: S
       httpService.registeredLazyBinding.block
 
       val registration = AkkaRegistration(AkkaConnection(componentId), prefix, sequencerRef.toURI)
-      cswServices.register(registration)(typedSystem).block
+      new LocationServiceUtil(cswServices._locationService).register(registration)(typedSystem).block
+
     }
 
     override def shutDown(): Future[Done] = {

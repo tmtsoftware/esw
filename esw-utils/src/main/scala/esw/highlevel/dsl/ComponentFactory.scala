@@ -13,11 +13,11 @@ import scala.concurrent.duration.DurationLong
 // fixme: delete this, duplicate of one present in http-core
 trait ComponentFactory {
 
-  private[esw] def locationService: LocationService
+  private[esw] def _locationService: LocationService
   private[esw] def actorSystem: ActorSystem[_]
 
   private[dsl] def resolve[T](componentName: String, componentType: ComponentType)(f: AkkaLocation => T): Future[T] =
-    locationService
+    _locationService
       .resolve(AkkaConnection(ComponentId(componentName, componentType)), 5.seconds)
       .map {
         case Some(akkaLocation) => f(akkaLocation)

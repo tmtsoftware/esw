@@ -1,19 +1,22 @@
 package esw.highlevel.dsl
 
 import akka.actor.CoordinatedShutdown
-import akka.actor.typed.{ActorRef, ActorSystem}
 import akka.actor.typed.scaladsl.adapter.TypedActorSystemOps
+import akka.actor.typed.{ActorRef, ActorSystem}
+import csw.command.client.extensions.AkkaLocationExt.RichAkkaLocation
+import csw.command.client.messages.ComponentMessage
 import csw.location.api.scaladsl.{LocationService, RegistrationResult}
 import csw.location.models.ConnectionType.AkkaType
 import csw.location.models._
 import csw.params.core.models.Subsystem
 import esw.ocs.api.protocol.RegistrationError
-import csw.command.client.extensions.AkkaLocationExt.RichAkkaLocation
-import csw.command.client.messages.ComponentMessage
 
 import scala.async.Async._
 import scala.concurrent.{ExecutionContext, Future}
 import scala.util.control.NonFatal
+
+class LocationServiceUtil(val locationService: LocationService)(implicit val actorSystem: ActorSystem[_])
+    extends LocationServiceDsl
 
 trait LocationServiceDsl {
 

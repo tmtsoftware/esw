@@ -12,6 +12,7 @@ import esw.highlevel.dsl.Util.RichCommand
 import esw.ocs.impl.dsl.{CswServices, Script}
 
 import scala.concurrent.duration.DurationDouble
+import scala.jdk.FutureConverters.CompletionStageOps
 
 class TestScript(csw: CswServices) extends Script(csw) {
 
@@ -38,7 +39,7 @@ class TestScript(csw: CswServices) extends Script(csw) {
   handleSetupCommand("command-4") { command =>
     spawn {
       //try sending concrete sequence
-      val tcsSequencer = csw.resolveSequencer("TCS", "testObservingMode4").await
+      val tcsSequencer = csw.resolveSequencer("TCS", "testObservingMode4").asScala.await
       val command4     = Setup(Id("testCommandIdString123"), Prefix("TCS.test"), CommandName("command-to-assert-on"), None, Set.empty)
       val sequence     = Sequence(Id("testSequenceIdString123"), Seq(command4))
 
@@ -83,21 +84,19 @@ class TestScript(csw: CswServices) extends Script(csw) {
       /************************** Schedule task once at particular time ************************************/
       val startTime = UTCTime.after(10.millis)
 
-      csw.scheduleOnce(startTime) {
-        println("task")
-      }
+//      csw.scheduleOnce(startTime, Callback(() => println("task")))
 
       /****************** Schedule task periodically at provided interval **********************************/
-      csw.schedulePeriodically(5.millis) {
-        println("task")
-      }
+//      csw.schedulePeriodically(5.millis) {
+      //        println("task")
+      //      }
 
       /*************** Schedule task periodically at provided interval with start time *********************/
       val utcTime = command.getParam("time-key", UTCTimeKey)
 
-      csw.schedulePeriodically(5.millis, utcTime) {
-        println("task")
-      }
+//      csw.schedulePeriodically(5.millis, utcTime) {
+      //        println("task")
+      //      }
 
     }
 
