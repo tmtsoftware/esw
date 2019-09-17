@@ -81,7 +81,7 @@ private[ocs] class SequencerWiring(val sequencerId: String, val observingMode: S
       httpService.registeredLazyBinding.block
 
       val registration = AkkaRegistration(AkkaConnection(componentId), prefix, sequencerRef.toURI)
-      cswServices.register(registration)(typedSystem).block
+      cswServices.register(registration).block
     }
 
     override def shutDown(): Future[Done] = {

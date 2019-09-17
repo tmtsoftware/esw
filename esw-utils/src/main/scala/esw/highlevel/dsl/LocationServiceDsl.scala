@@ -1,15 +1,15 @@
 package esw.highlevel.dsl
 
 import akka.actor.CoordinatedShutdown
-import akka.actor.typed.{ActorRef, ActorSystem}
 import akka.actor.typed.scaladsl.adapter.TypedActorSystemOps
+import akka.actor.typed.{ActorRef, ActorSystem}
+import csw.command.client.extensions.AkkaLocationExt.RichAkkaLocation
+import csw.command.client.messages.ComponentMessage
 import csw.location.api.scaladsl.{LocationService, RegistrationResult}
 import csw.location.models.ConnectionType.AkkaType
 import csw.location.models._
 import csw.params.core.models.Subsystem
 import esw.ocs.api.protocol.RegistrationError
-import csw.command.client.extensions.AkkaLocationExt.RichAkkaLocation
-import csw.command.client.messages.ComponentMessage
 
 import scala.async.Async._
 import scala.concurrent.{ExecutionContext, Future}
@@ -17,7 +17,7 @@ import scala.util.control.NonFatal
 
 trait LocationServiceDsl {
 
-  implicit protected val actorSystem: ActorSystem[_]
+  protected implicit val actorSystem: ActorSystem[_]
 
   private[esw] def locationService: LocationService
   private def addCoordinatedShutdownTask(
@@ -33,7 +33,7 @@ trait LocationServiceDsl {
   private[esw] def register[E](
       akkaRegistration: AkkaRegistration,
       onFailure: PartialFunction[Throwable, Future[Either[E, AkkaLocation]]]
-  )(implicit actorSystem: ActorSystem[_]): Future[Either[E, AkkaLocation]] = {
+  ): Future[Either[E, AkkaLocation]] = {
     implicit val ec: ExecutionContext = actorSystem.executionContext
     locationService
       .register(akkaRegistration)
@@ -44,9 +44,7 @@ trait LocationServiceDsl {
       .recoverWith(onFailure)
   }
 
-  def register(
-      akkaRegistration: AkkaRegistration
-  )(implicit actorSystem: ActorSystem[_]): Future[Either[RegistrationError, AkkaLocation]] =
+  def register(akkaRegistration: AkkaRegistration): Future[Either[RegistrationError, AkkaLocation]] =
     register(akkaRegistration, onFailure = {
       case NonFatal(e) => Future.successful(Left(RegistrationError(e.getMessage)))
     })
@@ -87,10 +85,8 @@ trait LocationServiceDsl {
     }
   }
 
-  // To be used by Script Writer
-  def resolveSequencer(sequencerId: String, observingMode: String)(
-      implicit ec: ExecutionContext
-  ): Future[AkkaLocation] =
+  /* To be used by Script Writer*/
+  def resolveSequencer(sequencerId: String, observingMode: String)(implicit ec: ExecutionContext): Future[AkkaLocation] =
     async {
       await(locationService.list)
         .find(location => location.connection.componentId.name.contains(s"$sequencerId@$observingMode"))

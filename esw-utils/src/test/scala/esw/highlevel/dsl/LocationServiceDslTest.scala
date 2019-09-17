@@ -45,7 +45,7 @@ class LocationServiceDslTest extends ScalaTestWithActorTestKit with BaseTestSuit
 
       val locationServiceDsl = new LocationServiceDslImpl(locationService)
 
-      locationServiceDsl.register(registration)(system).rightValue should ===(akkaLocation)
+      locationServiceDsl.register(registration).rightValue should ===(akkaLocation)
       coordinatedShutdown.run(UnknownReason).futureValue
       verify(registrationResult).unregister()
     }
@@ -57,7 +57,7 @@ class LocationServiceDslTest extends ScalaTestWithActorTestKit with BaseTestSuit
 
       val locationServiceDsl = new LocationServiceDslImpl(locationService)
 
-      locationServiceDsl.register(registration)(system).leftValue should ===(
+      locationServiceDsl.register(registration).leftValue should ===(
         RegistrationError(errorMsg)
       )
       system.terminate()
