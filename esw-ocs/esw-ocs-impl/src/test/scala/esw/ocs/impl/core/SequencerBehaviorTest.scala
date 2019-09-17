@@ -475,8 +475,7 @@ class SequencerBehaviorTest extends ScalaTestWithActorTestKit with BaseTestSuite
       val sequencerSetup = SequencerTestSetup.inProgress(sequence)
       import sequencerSetup._
 
-      val expectedSteps    = List(Step(command1, InFlight, hasBreakpoint = false),
-                                  Step(command2, Pending, hasBreakpoint = false))
+      val expectedSteps    = List(Step(command1, InFlight, hasBreakpoint = false), Step(command2, Pending, hasBreakpoint = false))
       val expectedSequence = Some(StepList(sequence.runId, expectedSteps))
 
       val deleteResProbe = createTestProbe[GenericResponse]()

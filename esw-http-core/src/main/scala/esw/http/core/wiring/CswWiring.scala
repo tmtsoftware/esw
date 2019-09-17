@@ -39,14 +39,14 @@ class CswWiring(componentName: String) {
 
   lazy val eventSubscriberUtil: EventSubscriberUtil = new EventSubscriberUtil()
   lazy val eventServiceFactory: EventServiceFactory = new EventServiceFactory(RedisStore(redisClient))
-  lazy val eventService: EventService               = new EventServiceFactory().make(locationService)
+  lazy val eventService: EventService               = eventServiceFactory.make(locationService)
 
   lazy val alarmServiceFactory: AlarmServiceFactory = new AlarmServiceFactory(redisClient)
-  lazy val alarmService: AlarmService               = new AlarmServiceFactory().makeClientApi(locationService)
+  lazy val alarmService: AlarmService               = alarmServiceFactory.makeClientApi(locationService)
 
   lazy val loggerFactory               = new LoggerFactory(componentName)
   lazy val logger: Logger              = loggerFactory.getLogger
-  lazy val componentFactory            = new ComponentFactory(locationService, CommandServiceFactory)(typedSystem)
+  lazy val componentFactory            = new ComponentFactory(locationService, CommandServiceFactory)
   lazy val timeServiceSchedulerFactory = new TimeServiceSchedulerFactory
 
   lazy val redisClient: RedisClient = {

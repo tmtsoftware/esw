@@ -132,6 +132,7 @@ class TestScript(csw: CswServices) extends Script(csw) {
   handleOperationsMode {
     spawn {
       // do some actions to go to operations mode
+      csw.operationsMode("test", Assembly)
     }
   }
 }

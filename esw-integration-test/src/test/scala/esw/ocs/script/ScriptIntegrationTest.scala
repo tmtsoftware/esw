@@ -21,16 +21,16 @@ import csw.params.commands.{CommandName, Sequence, Setup}
 import csw.params.core.generics.KeyType.StringKey
 import csw.params.core.generics.Parameter
 import csw.params.core.models.{Id, Prefix}
-import csw.params.events.{EventKey, EventName}
+import csw.params.events.{Event, EventKey, EventName, SystemEvent}
 import csw.testkit.scaladsl.CSWService.EventServer
 import csw.testkit.scaladsl.ScalaTestFrameworkTestKit
 import csw.time.core.models.UTCTime
 import esw.highlevel.dsl.LocationServiceDsl
 import esw.ocs.api.BaseTestSuite
-import esw.ocs.api.protocol.{DiagnosticModeResponse, Ok}
+import esw.ocs.api.protocol.{DiagnosticModeResponse, Ok, OperationsModeResponse}
 import esw.ocs.app.wiring.SequencerWiring
 import esw.ocs.impl.internal.Timeouts
-import esw.ocs.impl.messages.SequencerMessages.DiagnosticMode
+import esw.ocs.impl.messages.SequencerMessages.{DiagnosticMode, OperationsMode}
 
 import scala.concurrent.Future
 
@@ -90,24 +90,43 @@ class ScriptIntegrationTest extends ScalaTestFrameworkTestKit(EventServer) with 
 
     "be able to forward diagnostic mode to downstream components" in {
       import frameworkTestKit.mat
-      val eventService = new EventServiceFactory().make(HttpLocationServiceFactory.makeLocalClient)
 
-      val diagnosticModeParam: Parameter[_] = StringKey.make("mode").set("diagnostic")
-      val eventKey                          = EventKey(Prefix("tcs.filter.wheel"), EventName("diagnostic-data"))
-
+      locationService = HttpLocationServiceFactory.makeLocalClient
       ocsWiring = new SequencerWiring(ocsSequencerId, ocsObservingMode, None)
       ocsSequencer = ocsWiring.sequencerServer.start().rightValue.uri.toActorRef.unsafeUpcast[SequencerMsg]
 
+      val eventService = new EventServiceFactory().make(HttpLocationServiceFactory.makeLocalClient)
+      val eventKey     = EventKey(Prefix("tcs.filter.wheel"), EventName("diagnostic-data"))
+
       frameworkTestKit.spawnStandalone(ConfigFactory.load("standalone.conf"))
+
+      val testProbe    = TestProbe[Event]
+      val subscription = eventService.defaultSubscriber.subscribeActorRef(Set(eventKey), testProbe.ref)
+      subscription.ready().futureValue
+      testProbe.expectMessageType[SystemEvent] // discard invalid event
+
+      //diagnosticMode
+      val diagnosticModeParam: Parameter[_] = StringKey.make("mode").set("diagnostic")
 
       val diagnosticModeResF: Future[DiagnosticModeResponse] = ocsSequencer ? (DiagnosticMode(UTCTime.now(), "engineering", _))
       diagnosticModeResF.futureValue should ===(Ok)
 
-      Thread.sleep(1000)
+      val expectedDiagEvent = testProbe.expectMessageType[SystemEvent]
+      expectedDiagEvent.paramSet.head shouldBe diagnosticModeParam
 
-      val resEventF = eventService.defaultSubscriber.get(Set(eventKey))
-      resEventF.futureValue.head.paramSet.head shouldBe diagnosticModeParam
+      //operationsMode
+      val operationsModeParam = StringKey.make("mode").set("operations")
+
+      val operationsModeResF: Future[OperationsModeResponse] = ocsSequencer ? OperationsMode
+      operationsModeResF.futureValue should ===(Ok)
+
+      val expectedOpEvent = testProbe.expectMessageType[SystemEvent]
+      expectedOpEvent.paramSet.head shouldBe operationsModeParam
+
+      ocsWiring.sequencerServer.shutDown().futureValue
+
     }
+
   }
 
   object TestSequencer {

@@ -78,6 +78,7 @@ trait LocationServiceDsl {
       implicit ec: ExecutionContext
   ): Future[ActorRef[ComponentMessage]] = {
     val connection = AkkaConnection(ComponentId(componentName, componentType))
+
     locationService.resolve(connection, 10.seconds).map {
       case Some(location: AkkaLocation) => location.componentRef
       case Some(location) =>
