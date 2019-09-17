@@ -6,12 +6,14 @@ import akka.actor.typed.{ActorRef, ActorSystem}
 import csw.command.client.extensions.AkkaLocationExt.RichAkkaLocation
 import csw.command.client.messages.ComponentMessage
 import csw.location.api.scaladsl.{LocationService, RegistrationResult}
+import csw.location.models.Connection.AkkaConnection
 import csw.location.models.ConnectionType.AkkaType
 import csw.location.models._
 import csw.params.core.models.Subsystem
 import esw.ocs.api.protocol.RegistrationError
 
 import scala.async.Async._
+import scala.concurrent.duration.DurationInt
 import scala.concurrent.{ExecutionContext, Future}
 import scala.util.control.NonFatal
 
@@ -75,7 +77,8 @@ trait LocationServiceDsl {
   def resolveComponentRef(componentName: String, componentType: ComponentType)(
       implicit ec: ExecutionContext
   ): Future[ActorRef[ComponentMessage]] = {
-    resolveByComponentNameAndType(componentName, componentType).map {
+    val connection = AkkaConnection(ComponentId(componentName, componentType))
+    locationService.resolve(connection, 10.seconds).map {
       case Some(location: AkkaLocation) => location.componentRef
       case Some(location) =>
         throw new RuntimeException(
