@@ -26,7 +26,7 @@ object Csw {
 
   val `csw-alarm-api`       = Org %% "csw-alarm-api" % Version
   val `csw-command-api`     = Org %% "csw-command-api" % Version
-  val `csw-location-models` = Org %% "csw-location-models" % Version
+  val `csw-location-models` = dep(Org %%% "csw-location-models" % Version)
   val `csw-logging-models`  = Org %% "csw-logging-models" % Version
   val `csw-location-api`    = Org %% "csw-location-api" % Version
   val `csw-event-api`       = Org %% "csw-event-api" % Version
