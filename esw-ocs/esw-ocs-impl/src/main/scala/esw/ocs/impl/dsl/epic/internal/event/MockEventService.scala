@@ -1,19 +1,26 @@
 package esw.ocs.impl.dsl.epic.internal.event
 
-import java.util.concurrent.ScheduledExecutorService
+import java.util
+import java.util.concurrent.{CompletionStage, ScheduledExecutorService}
+import java.util.function.Consumer
 
 import akka.actor.typed
-import akka.stream.scaladsl.{Keep, Source, SourceQueueWithComplete}
+import akka.stream.scaladsl.{Keep, Sink, Source, SourceQueueWithComplete}
 import akka.stream.typed.scaladsl.ActorMaterializer
 import akka.stream.{KillSwitch, KillSwitches, Materializer, OverflowStrategy}
 import akka.{Done, NotUsed}
 import esw.ocs.macros.StrandEc
 
+import scala.compat.java8.FutureConverters.FutureOps
 import scala.concurrent.duration.{DurationLong, FiniteDuration}
 import scala.concurrent.{ExecutionContext, Future, Promise}
+import scala.jdk.CollectionConverters._
 
 case class MockEvent(key: String, params: Map[String, Any]) {
-  def add(field: String, value: Any): MockEvent = copy(params = params + (field -> value))
+  def add(field: String, value: Any): MockEvent     = copy(params = params + (field -> value))
+  def jAdd(field: String, value: Object): MockEvent = copy(params = params + (field -> value))
+
+  def jParam: util.Map[String, Any] = params.asJava
 }
 
 object MockEvent {
@@ -33,6 +40,10 @@ class MockEventService(implicit val actorSystem: typed.ActorSystem[_]) {
     database.getOrElse(key, MockEvent.empty(key))
   }
 
+  def jGet(key: String): CompletionStage[MockEvent] = get(key).toJava
+
+  def jPublish(key: String, field: String, value: Object): CompletionStage[Done] = publish(key, field, value).toJava
+
   def publish(key: String, field: String, value: Any): Future[Done] =
     Utils.timeout(1.seconds, strandEc.executorService).flatMap { _ =>
       val event    = database.getOrElse(key, MockEvent.empty(key))
@@ -40,6 +51,9 @@ class MockEventService(implicit val actorSystem: typed.ActorSystem[_]) {
       database = database + (key -> newEvent)
       Future.traverse(subscriptions.getOrElse(key, List.empty))(_.offer(newEvent)).map(_ => Done)
     }
+
+  def jSubscribe(key: String)(cb: Consumer[MockEvent]): CompletionStage[Done] =
+    subscribe(key).map(cb.accept).runWith(Sink.ignore).toJava
 
   def subscribe(key: String): Source[MockEvent, KillSwitch] = {
     val s: Source[MockEvent, SourceQueueWithComplete[MockEvent]]                        = Source.queue[MockEvent](1024, OverflowStrategy.dropHead)

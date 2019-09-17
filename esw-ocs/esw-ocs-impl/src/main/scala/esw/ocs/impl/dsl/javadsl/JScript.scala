@@ -6,6 +6,7 @@ import java.util.function.Supplier
 
 import akka.Done
 import csw.params.commands.{Observe, SequenceCommand, Setup}
+import csw.time.core.models.UTCTime
 import esw.ocs.api.protocol.PullNextResult
 import esw.ocs.impl.dsl.Async._
 import esw.ocs.impl.dsl.utils.{FunctionBuilder, FunctionHandlers}
@@ -68,6 +69,10 @@ abstract class JScript(val csw: CswServices) extends BaseScriptDsl {
   private[ocs] def executeShutdown(): Future[Done] = executeHandler(shutdownHandlers).map(_ => Done)
 
   private[ocs] def executeAbort(): Future[Done] = executeHandler(abortHandlers).map(_ => Done)
+
+  // todo:
+  private[ocs] def executeDiagnosticMode(startTime: UTCTime, hint: String): Future[Done] = ???
+  private[ocs] def executeOperationsMode(): Future[Done]                                 = ???
 
   protected final def jNextIf(f: SequenceCommand => Boolean): CompletionStage[Optional[SequenceCommand]] =
     async {

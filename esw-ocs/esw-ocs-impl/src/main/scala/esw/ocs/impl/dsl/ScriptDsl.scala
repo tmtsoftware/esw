@@ -17,6 +17,8 @@ trait BaseScriptDsl {
   private[ocs] def executeGoOffline(): Future[Done]
   private[ocs] def executeShutdown(): Future[Done]
   private[ocs] def executeAbort(): Future[Done]
+  private[ocs] def executeDiagnosticMode(startTime: UTCTime, hint: String): Future[Done]
+  private[ocs] def executeOperationsMode(): Future[Done]
 }
 
 class Script(val csw: CswServices) extends ScriptDsl {

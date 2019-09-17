@@ -19,7 +19,7 @@ import scala.compat.java8.FutureConverters.FutureOps
 class CswServices(
     private[ocs] val sequenceOperatorFactory: () => SequenceOperator,
     val crm: CommandResponseManager,
-    private[esw] val actorSystem: ActorSystem[_],
+    val actorSystem: ActorSystem[_],
     private[esw] val locationService: LocationService,
     private[esw] val eventService: EventService,
     private[esw] val timeServiceSchedulerFactory: TimeServiceSchedulerFactory

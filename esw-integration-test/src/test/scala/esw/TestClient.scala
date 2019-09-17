@@ -28,9 +28,14 @@ object TestClient extends App {
 
   implicit val sched: Scheduler = system.scheduler
 
-  val location = Await.result(new LocationServiceDsl {
-    override private[esw] def locationService = _locationService
-  }.resolveSequencer("iris", "darknight"), 5.seconds)
+  val location = Await.result(
+    new LocationServiceDsl {
+      override private[esw] def locationService = _locationService
+
+      override implicit protected val actorSystem: ActorSystem[_] = system
+    }.resolveSequencer("iris", "darknight"),
+    5.seconds
+  )
 
   private val cmd1 = Setup(Prefix("esw.a.a"), CommandName("command-1"), None)
   private val cmd2 = Setup(Prefix("esw.a.a"), CommandName("command-2"), None)
