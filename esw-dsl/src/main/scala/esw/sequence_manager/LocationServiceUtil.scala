@@ -1,4 +1,4 @@
-package esw.highlevel.dsl
+package esw.sequence_manager
 
 import akka.actor.CoordinatedShutdown
 import akka.actor.typed.scaladsl.adapter.TypedActorSystemOps
@@ -16,11 +16,8 @@ import scala.async.Async._
 import scala.concurrent.{ExecutionContext, Future}
 import scala.util.control.NonFatal
 
-trait LocationServiceDsl {
+class LocationServiceUtil(private[esw] val locationService: LocationService)(implicit protected val actorSystem: ActorSystem[_]) {
 
-  protected implicit val actorSystem: ActorSystem[_]
-
-  private[esw] def locationService: LocationService
   private def addCoordinatedShutdownTask(
       coordinatedShutdown: CoordinatedShutdown,
       registrationResult: RegistrationResult

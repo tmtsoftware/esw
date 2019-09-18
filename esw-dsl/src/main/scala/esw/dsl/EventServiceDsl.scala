@@ -1,4 +1,4 @@
-package esw.highlevel.dsl
+package esw.dsl
 
 import akka.Done
 import akka.actor.Cancellable

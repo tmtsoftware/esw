@@ -15,16 +15,16 @@ import csw.location.models.{AkkaLocation, AkkaRegistration, ComponentId, Compone
 import csw.params.commands.CommandResponse.Started
 import csw.params.commands.Sequence
 import csw.params.core.models.{Id, Prefix}
-import esw.highlevel.dsl.LocationServiceDsl
 import esw.ocs.api.BaseTestSuite
+import esw.sequence_manager.LocationServiceUtil
 import org.mockito.ArgumentMatchers.any
 import org.mockito.Mockito.clearInvocations
 
 import scala.concurrent.{ExecutionContext, Future}
 
-class SequencerCommandServiceDslTest extends BaseTestSuite with LocationServiceDsl with SequencerCommandServiceDsl {
+class SequencerCommandServiceDslTest extends BaseTestSuite with SequencerCommandServiceDsl {
 
-  override val locationService: LocationService        = mock[LocationService]
+  val locationService: LocationService                 = mock[LocationService]
   implicit val actorSystem: ActorSystem[SpawnProtocol] = ActorSystem(SpawnProtocol.behavior, "test")
   implicit val ec: ExecutionContext                    = actorSystem.executionContext
   implicit val scheduler: Scheduler                    = actorSystem.scheduler
@@ -52,7 +52,7 @@ class SequencerCommandServiceDslTest extends BaseTestSuite with LocationServiceD
       val registrationResult = mock[RegistrationResult]
       when(locationService.register(any[AkkaRegistration])).thenReturn(Future(registrationResult))
 
-      register(registration).awaitResult
+      new LocationServiceUtil(locationService).register(registration).awaitResult
 
       val eventualResponse = submitSequence(location, sequence)
       eventualResponse.futureValue shouldBe Started(sequence.runId)

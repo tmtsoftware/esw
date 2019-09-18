@@ -8,10 +8,10 @@ import csw.location.api.scaladsl.LocationService
 import csw.location.models.Connection.AkkaConnection
 import csw.location.models.{AkkaLocation, AkkaRegistration, ComponentId, ComponentType}
 import csw.params.core.models.Prefix
-import esw.highlevel.dsl.LocationServiceDsl
 import esw.ocs.api.protocol.RegistrationError
 import esw.ocs.impl.messages.SequenceComponentMsg
 import esw.ocs.impl.messages.SequenceComponentMsg.Stop
+import esw.sequence_manager.LocationServiceUtil
 
 import scala.concurrent.{ExecutionContext, Future}
 import scala.util.control.NonFatal
@@ -21,8 +21,8 @@ class SequenceComponentRegistration(
     _locationService: LocationService,
     sequenceComponentFactory: String => Future[ActorRef[SequenceComponentMsg]]
 )(
-    implicit val actorSystem: ActorSystem[SpawnProtocol]
-) extends LocationServiceDsl {
+    implicit override val actorSystem: ActorSystem[SpawnProtocol]
+) extends LocationServiceUtil(_locationService) {
   implicit val ec: ExecutionContext = actorSystem.executionContext
 
   override val locationService: LocationService = _locationService
