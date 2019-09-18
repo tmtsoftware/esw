@@ -10,11 +10,11 @@ import csw.location.models.Connection.AkkaConnection
 import csw.location.models.ConnectionType.AkkaType
 import csw.location.models._
 import csw.params.core.models.Subsystem
+import esw.dsl.Timeouts
 import esw.dsl.script.LocationServiceDsl
 import esw.ocs.api.protocol.RegistrationError
 
 import scala.async.Async._
-import scala.concurrent.duration.DurationLong
 import scala.concurrent.{ExecutionContext, Future}
 import scala.util.control.NonFatal
 
@@ -77,7 +77,7 @@ class LocationServiceUtil(private[esw] val locationService: LocationService)(imp
       implicit ec: ExecutionContext
   ): Future[ActorRef[ComponentMessage]] = {
     val connection = AkkaConnection(ComponentId(componentName, componentType))
-    locationService.resolve(connection, 10.seconds).map {
+    locationService.resolve(connection, Timeouts.DefaultTimeout).map {
       case Some(location: AkkaLocation) => location.componentRef
       case Some(location) =>
         throw new RuntimeException(
