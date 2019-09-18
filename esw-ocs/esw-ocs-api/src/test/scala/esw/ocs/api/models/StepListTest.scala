@@ -279,7 +279,7 @@ class StepListTest extends BaseTestSuite {
       updatedStepList.toOption.get should ===(StepList(id, List(step1, step3)))
     }
 
-    "fail with CannotOperateOnAnInFlightOrFinishedStep error when step status is other than Pending | ESW-112" in {
+    "fail with CannotOperateOnAnInFlightOrFinishedStep error when step status is inFlight | ESW-112" in {
       val step1 = Step(setup1, InFlight, hasBreakpoint = false)
       val step2 = Step(setup2, Pending, hasBreakpoint = false)
 
@@ -288,6 +288,16 @@ class StepListTest extends BaseTestSuite {
       updatedStepList.left.value should ===(CannotOperateOnAnInFlightOrFinishedStep)
     }
 
+    "fail with CannotOperateOnAnInFlightOrFinishedStep error when step status is Finished | ESW-112" in {
+      val step1Status = finished(setup1.runId)
+      val step1       = models.Step(setup1, step1Status, hasBreakpoint = false)
+      val step2       = Step(setup2, InFlight, hasBreakpoint = false)
+      val step3       = Step(setup3, Pending, hasBreakpoint = false)
+
+      val stepList        = StepList(Id(), List(step1, step2, step3))
+      val updatedStepList = stepList.delete(setup1.runId)
+      updatedStepList.left.value should ===(CannotOperateOnAnInFlightOrFinishedStep)
+    }
     "fail with IdDoesNotExist error when step does not exist | ESW-112" in {
       val step1 = Step(setup1, InFlight, hasBreakpoint = false)
 

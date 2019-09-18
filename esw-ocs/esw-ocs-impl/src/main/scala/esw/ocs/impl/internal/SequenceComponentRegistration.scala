@@ -8,7 +8,7 @@ import csw.location.api.scaladsl.LocationService
 import csw.location.models.Connection.AkkaConnection
 import csw.location.models.{AkkaLocation, AkkaRegistration, ComponentId, ComponentType}
 import csw.params.core.models.Prefix
-import esw.highlevel.dsl.LocationServiceDsl
+import esw.dsl.sequence_manager.LocationServiceUtil
 import esw.ocs.api.protocol.RegistrationError
 import esw.ocs.impl.messages.SequenceComponentMsg
 import esw.ocs.impl.messages.SequenceComponentMsg.Stop
@@ -21,11 +21,10 @@ class SequenceComponentRegistration(
     _locationService: LocationService,
     sequenceComponentFactory: String => Future[ActorRef[SequenceComponentMsg]]
 )(
-    implicit val actorSystem: ActorSystem[SpawnProtocol]
-) extends LocationServiceDsl {
+    implicit override val actorSystem: ActorSystem[SpawnProtocol]
+) extends LocationServiceUtil(_locationService) {
   implicit val ec: ExecutionContext = actorSystem.executionContext
 
-  override val locationService: LocationService = _locationService
   def registerWithRetry(retryCount: Int): Future[Either[RegistrationError, AkkaLocation]] =
     registration().flatMap { akkaRegistration =>
       register(

@@ -1,4 +1,4 @@
-package esw.highlevel.dsl.javadsl
+package esw.dsl.script.javadsl
 
 import java.util.concurrent.CompletionStage
 

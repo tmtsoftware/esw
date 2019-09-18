@@ -1,5 +1,4 @@
 package esw.ocs.app.wiring
-
 import akka.Done
 import akka.actor.typed.SpawnProtocol.Spawn
 import akka.actor.typed.scaladsl.AskPattern.Askable
@@ -13,7 +12,7 @@ import csw.location.client.ActorSystemFactory
 import csw.location.models.Connection.AkkaConnection
 import csw.location.models.{AkkaLocation, AkkaRegistration, ComponentId, ComponentType}
 import csw.network.utils.SocketUtils
-import esw.highlevel.dsl.LocationServiceUtil
+import esw.dsl.sequence_manager.LocationServiceUtil
 import esw.http.core.wiring.{ActorRuntime, CswWiring, HttpService, Settings}
 import esw.ocs.api.protocol.RegistrationError
 import esw.ocs.app.route.{PostHandlerImpl, SequencerAdminRoutes, WebsocketHandlerImpl}
@@ -82,8 +81,7 @@ private[ocs] class SequencerWiring(val sequencerId: String, val observingMode: S
       httpService.registeredLazyBinding.block
 
       val registration = AkkaRegistration(AkkaConnection(componentId), prefix, sequencerRef.toURI)
-      new LocationServiceUtil(cswServices._locationService).register(registration)(typedSystem).block
-
+      new LocationServiceUtil(locationService).register(registration).block
     }
 
     override def shutDown(): Future[Done] = {

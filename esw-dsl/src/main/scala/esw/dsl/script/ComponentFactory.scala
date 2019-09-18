@@ -1,4 +1,4 @@
-package esw.highlevel.dsl
+package esw.dsl.script
 
 import akka.actor.typed.ActorSystem
 import csw.command.api.scaladsl.CommandService

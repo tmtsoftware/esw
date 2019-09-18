@@ -1,7 +1,7 @@
 package esw
 
 import akka.actor.Scheduler
-import akka.actor.typed.scaladsl.AskPattern._
+import akka.actor.typed.scaladsl.AskPattern.Askable
 import akka.actor.typed.{ActorSystem, SpawnProtocol}
 import akka.stream.typed.scaladsl.ActorMaterializer
 import akka.util.Timeout
@@ -12,7 +12,7 @@ import csw.location.client.ActorSystemFactory
 import csw.location.client.scaladsl.HttpLocationServiceFactory
 import csw.params.commands.{CommandName, Sequence, Setup}
 import csw.params.core.models.Prefix
-import esw.highlevel.dsl.LocationServiceDsl
+import esw.dsl.sequence_manager.LocationServiceUtil
 import esw.ocs.impl.messages.SequencerMessages.{EswSequencerMessage, Shutdown}
 
 import scala.concurrent.Await
@@ -29,11 +29,8 @@ object TestClient extends App {
   implicit val sched: Scheduler = system.scheduler
 
   val location = Await.result(
-    new LocationServiceDsl {
-      override private[esw] def locationService = _locationService
-
-      override implicit protected val actorSystem: ActorSystem[_] = system
-    }.resolveSequencer("iris", "darknight"),
+    new LocationServiceUtil(_locationService)
+      .resolveSequencer("iris", "darknight"),
     5.seconds
   )
 

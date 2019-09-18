@@ -1,4 +1,4 @@
-package esw.highlevel.dsl
+package esw.dsl.sequence_manager
 
 import akka.actor.CoordinatedShutdown
 import akka.actor.typed.scaladsl.adapter.TypedActorSystemOps
@@ -6,23 +6,21 @@ import akka.actor.typed.{ActorRef, ActorSystem}
 import csw.command.client.extensions.AkkaLocationExt.RichAkkaLocation
 import csw.command.client.messages.ComponentMessage
 import csw.location.api.scaladsl.{LocationService, RegistrationResult}
+import csw.location.models.Connection.AkkaConnection
 import csw.location.models.ConnectionType.AkkaType
 import csw.location.models._
 import csw.params.core.models.Subsystem
+import esw.dsl.Timeouts
+import esw.dsl.script.LocationServiceDsl
 import esw.ocs.api.protocol.RegistrationError
 
 import scala.async.Async._
 import scala.concurrent.{ExecutionContext, Future}
 import scala.util.control.NonFatal
 
-class LocationServiceUtil(val locationService: LocationService)(implicit val actorSystem: ActorSystem[_])
-    extends LocationServiceDsl
+class LocationServiceUtil(private[esw] val locationService: LocationService)(implicit protected val actorSystem: ActorSystem[_])
+    extends LocationServiceDsl {
 
-trait LocationServiceDsl {
-
-  implicit protected val actorSystem: ActorSystem[_]
-
-  private[esw] def locationService: LocationService
   private def addCoordinatedShutdownTask(
       coordinatedShutdown: CoordinatedShutdown,
       registrationResult: RegistrationResult
@@ -36,7 +34,7 @@ trait LocationServiceDsl {
   private[esw] def register[E](
       akkaRegistration: AkkaRegistration,
       onFailure: PartialFunction[Throwable, Future[Either[E, AkkaLocation]]]
-  )(implicit actorSystem: ActorSystem[_]): Future[Either[E, AkkaLocation]] = {
+  ): Future[Either[E, AkkaLocation]] = {
     implicit val ec: ExecutionContext = actorSystem.executionContext
     locationService
       .register(akkaRegistration)
@@ -47,9 +45,7 @@ trait LocationServiceDsl {
       .recoverWith(onFailure)
   }
 
-  def register(
-      akkaRegistration: AkkaRegistration
-  )(implicit actorSystem: ActorSystem[_]): Future[Either[RegistrationError, AkkaLocation]] =
+  def register(akkaRegistration: AkkaRegistration): Future[Either[RegistrationError, AkkaLocation]] =
     register(akkaRegistration, onFailure = {
       case NonFatal(e) => Future.successful(Left(RegistrationError(e.getMessage)))
     })
@@ -80,7 +76,8 @@ trait LocationServiceDsl {
   def resolveComponentRef(componentName: String, componentType: ComponentType)(
       implicit ec: ExecutionContext
   ): Future[ActorRef[ComponentMessage]] = {
-    resolveByComponentNameAndType(componentName, componentType).map {
+    val connection = AkkaConnection(ComponentId(componentName, componentType))
+    locationService.resolve(connection, Timeouts.DefaultTimeout).map {
       case Some(location: AkkaLocation) => location.componentRef
       case Some(location) =>
         throw new RuntimeException(
@@ -89,18 +86,4 @@ trait LocationServiceDsl {
       case None => throw new IllegalArgumentException(s"Could not find any component with name: $componentName")
     }
   }
-
-  // To be used by Script Writer
-  def resolveSequencer(sequencerId: String, observingMode: String)(
-      implicit ec: ExecutionContext
-  ): Future[AkkaLocation] =
-    async {
-      await(locationService.list)
-        .find(location => location.connection.componentId.name.contains(s"$sequencerId@$observingMode"))
-    }.collect {
-      case Some(location: AkkaLocation) => location
-      case Some(location) =>
-        throw new RuntimeException(s"Sequencer is registered with wrong connection type: ${location.connection.connectionType}")
-      case None => throw new IllegalArgumentException(s"Could not find any sequencer with name: $sequencerId@$observingMode")
-    }
 }

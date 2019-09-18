@@ -420,6 +420,26 @@ class SequencerBehaviorTest extends ScalaTestWithActorTestKit with BaseTestSuite
 
       replaceAndAssertResponse(command1.runId, List(command3, command4), CannotOperateOnAnInFlightOrFinishedStep)
     }
+
+    "replace pending step in InProgress state | ESW-108" in {
+      val sequencerSetup = SequencerTestSetup.inProgress(sequence)
+      import sequencerSetup._
+
+      val expectedSteps = List(
+        Step(command1, InFlight, hasBreakpoint = false),
+        Step(command3, Pending, hasBreakpoint = false),
+        Step(command4, Pending, hasBreakpoint = false)
+      )
+
+      val expectedSequence = Some(StepList(sequence.runId, expectedSteps))
+
+      eventually(getSequence().get.steps.head.isInFlight should ===(true))
+
+      replaceAndAssertResponse(command2.runId, List(command3, command4), Ok)
+      assertCurrentSequence(expectedSequence)
+
+    }
+
   }
 
   "Delete" must {
@@ -448,6 +468,19 @@ class SequencerBehaviorTest extends ScalaTestWithActorTestKit with BaseTestSuite
       sequencerActor ! Delete(command2.runId, deleteResProbe.ref)
       deleteResProbe.expectMessage(Ok)
 
+      assertCurrentSequence(expectedSequence)
+    }
+
+    "cannot delete inFlight steps when sequencer is InProgress | ESW-112" in {
+      val sequencerSetup = SequencerTestSetup.inProgress(sequence)
+      import sequencerSetup._
+
+      val expectedSteps    = List(Step(command1, InFlight, hasBreakpoint = false), Step(command2, Pending, hasBreakpoint = false))
+      val expectedSequence = Some(StepList(sequence.runId, expectedSteps))
+
+      val deleteResProbe = createTestProbe[GenericResponse]()
+      sequencerActor ! Delete(command1.runId, deleteResProbe.ref)
+      deleteResProbe.expectMessage(CannotOperateOnAnInFlightOrFinishedStep)
       assertCurrentSequence(expectedSequence)
     }
   }

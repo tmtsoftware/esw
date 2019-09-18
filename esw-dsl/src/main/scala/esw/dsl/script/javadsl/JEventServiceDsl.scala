@@ -1,4 +1,4 @@
-package esw.highlevel.dsl.javadsl
+package esw.dsl.script.javadsl
 
 import java.time.Duration
 import java.util
@@ -12,7 +12,7 @@ import csw.event.api.javadsl.{IEventPublisher, IEventSubscriber, IEventSubscript
 import csw.event.client.internal.commons.javawrappers.JEventService
 import csw.params.core.generics.Parameter
 import csw.params.events._
-import esw.highlevel.dsl.EventServiceDsl
+import esw.dsl.script.EventServiceDsl
 
 import scala.jdk.CollectionConverters._
 

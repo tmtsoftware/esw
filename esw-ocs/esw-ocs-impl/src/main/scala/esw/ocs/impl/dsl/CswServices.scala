@@ -5,8 +5,8 @@ import csw.command.client.CommandResponseManager
 import csw.event.api.scaladsl.EventService
 import csw.location.api.scaladsl.LocationService
 import csw.time.scheduler.TimeServiceSchedulerFactory
-import esw.highlevel.dsl.javadsl.{JCommandServiceDsl, JEventServiceDsl, JLocationServiceDsl, JTimeServiceDsl}
-import esw.highlevel.dsl.{DiagnosticDsl, EventServiceDsl}
+import esw.dsl.script.EventServiceDsl
+import esw.dsl.script.javadsl.{JCommandServiceDsl, JEventServiceDsl, JLocationServiceDsl, JTimeServiceDsl}
 import esw.ocs.impl.core.SequenceOperator
 import esw.ocs.impl.internal.SequencerCommandServiceDsl
 
@@ -22,8 +22,8 @@ class CswServices(
     with JTimeServiceDsl
     with EventServiceDsl
     with JEventServiceDsl
-    with JCommandServiceDsl
-    with DiagnosticDsl {
+    with JCommandServiceDsl {
+  // fixme : add JDiagnosticDsl
 
   // fixme: move it to appropriate place
 //  def jSubmitSequence(sequencerId: String, observingMode: String, sequence: Sequence): CompletionStage[SubmitResponse] =
