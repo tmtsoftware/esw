@@ -33,11 +33,12 @@ class SequencerTestSetup(sequence: Sequence)(implicit system: ActorSystem[_], ti
   implicit private val patienceConfig: PatienceConfig = PatienceConfig(5.seconds)
   implicit val ec: ExecutionContext                   = system.executionContext
 
-  private val componentId                 = mock[ComponentId]
-  private val script                      = mock[Script]
-  private val locationService             = mock[LocationService]
-  private val crm: CommandResponseManager = mock[CommandResponseManager]
-  private val sequencerBehavior           = new SequencerBehavior(componentId, script, locationService, crm)
+  private val componentId                                      = mock[ComponentId]
+  private val script                                           = mock[Script]
+  private val locationService                                  = mock[LocationService]
+  private val crm: CommandResponseManager                      = mock[CommandResponseManager]
+  private def mockShutdownHttpService: () => Future[Done.type] = () => Future { Done }
+  private val sequencerBehavior                                = new SequencerBehavior(componentId, script, locationService, crm, mockShutdownHttpService)
 
   val sequencerName = s"SequencerActor${math.random()}"
   val sequencerActor: ActorRef[SequencerMsg] =
