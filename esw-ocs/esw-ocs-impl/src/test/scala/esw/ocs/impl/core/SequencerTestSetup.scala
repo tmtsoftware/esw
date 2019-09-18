@@ -11,13 +11,15 @@ import csw.location.models.ComponentId
 import csw.params.commands.CommandResponse.{Completed, SubmitResponse}
 import csw.params.commands.{Sequence, SequenceCommand}
 import csw.params.core.models.Id
+import csw.time.core.models.UTCTime
 import esw.ocs.api.models.{Step, StepList}
 import esw.ocs.api.protocol._
 import esw.ocs.impl.dsl.Script
 import esw.ocs.impl.messages.SequencerMessages.{Pause, _}
 import esw.ocs.impl.messages.SequencerState
 import esw.ocs.impl.messages.SequencerState.{Idle, InProgress}
-import org.mockito.Mockito.when
+import org.mockito.Mockito
+import org.mockito.Mockito.{verify, when}
 import org.scalatest.concurrent.Eventually._
 import org.scalatest.{Assertion, Matchers}
 import org.scalatestplus.mockito.MockitoSugar
@@ -171,6 +173,34 @@ class SequencerTestSetup(sequence: Sequence)(implicit system: ActorSystem[_], ti
 
     val probe = TestProbe[GoOnlineResponse]
     sequencerActor ! GoOnline(probe.ref)
+    probe.expectMessage(response)
+  }
+
+  def diagnosticModeAndAssertResponse(
+      startTime: UTCTime,
+      hint: String,
+      response: DiagnosticModeResponse,
+      handlerMockResponse: Future[Done]
+  ): DiagnosticModeResponse = {
+    when(script.executeDiagnosticMode(startTime, hint)).thenReturn(handlerMockResponse)
+
+    val probe = TestProbe[DiagnosticModeResponse]
+    sequencerActor ! DiagnosticMode(startTime, hint, probe.ref)
+
+    verify(script).executeDiagnosticMode(startTime, hint)
+    probe.expectMessage(response)
+  }
+
+  def operationsModeAndAssertResponse(
+      response: OperationsModeResponse,
+      handlerMockResponse: Future[Done]
+  ): OperationsModeResponse = {
+    when(script.executeOperationsMode()).thenReturn(handlerMockResponse)
+
+    val probe = TestProbe[OperationsModeResponse]
+    sequencerActor ! OperationsMode(probe.ref)
+
+    verify(script).executeOperationsMode()
     probe.expectMessage(response)
   }
 

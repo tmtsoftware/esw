@@ -10,6 +10,7 @@ import csw.logging.models.LogMetadata
 import csw.params.commands.CommandResponse.{Completed, Error, SubmitResponse}
 import csw.params.commands.{CommandName, Sequence, Setup}
 import csw.params.core.models.{Id, Prefix}
+import csw.time.core.models.UTCTime
 import esw.ocs.api.BaseTestSuite
 import esw.ocs.api.models.StepStatus.{InFlight, Pending}
 import esw.ocs.api.models.{Step, StepList, StepStatus}
@@ -808,6 +809,27 @@ class SequencerBehaviorTest extends ScalaTestWithActorTestKit with BaseTestSuite
       assertCurrentSequence(
         Some(StepList(sequence.runId, List(Step(command1, StepStatus.Finished.Failure(error), hasBreakpoint = false))))
       )
+    }
+  }
+
+  "DiagnosticMode" must {
+    "execute the diagnostic handler and return the diagnostic response | ESW-118" in {
+      val sequencerSetup = SequencerTestSetup.idle(sequence)
+      import sequencerSetup._
+
+      val startTime = UTCTime.now()
+      val hint = "engineering"
+
+      diagnosticModeAndAssertResponse(startTime, hint, Ok, Future.successful(Done))
+    }
+  }
+
+  "OperationsMode" must {
+    "execute the operations handler and return the operations response | ESW-118" in {
+      val sequencerSetup = SequencerTestSetup.idle(sequence)
+      import sequencerSetup._
+
+      operationsModeAndAssertResponse(Ok, Future.successful(Done))
     }
   }
 
