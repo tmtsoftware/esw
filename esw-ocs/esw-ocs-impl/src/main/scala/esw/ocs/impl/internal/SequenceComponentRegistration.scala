@@ -25,7 +25,6 @@ class SequenceComponentRegistration(
 ) extends LocationServiceUtil(_locationService) {
   implicit val ec: ExecutionContext = actorSystem.executionContext
 
-  override val locationService: LocationService = _locationService
   def registerWithRetry(retryCount: Int): Future[Either[RegistrationError, AkkaLocation]] =
     registration().flatMap { akkaRegistration =>
       register(

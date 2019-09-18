@@ -11,9 +11,9 @@ import scala.concurrent.{ExecutionContext, Future}
 
 trait DiagnosticDsl {
 
-  private[esw] val locationService: LocationService
+  private[esw] val _locationService: LocationService
   protected implicit val actorSystem: ActorSystem[_]
-  private val locationServiceUtil: LocationServiceUtil = new LocationServiceUtil(locationService)
+  private val locationServiceUtil: LocationServiceUtil = new LocationServiceUtil(_locationService)
 
   def diagnosticMode(
       componentName: String,

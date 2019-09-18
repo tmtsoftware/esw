@@ -23,6 +23,7 @@ import esw.ocs.impl.dsl.{CswServices, Script}
 import esw.ocs.impl.internal.{SequencerServer, Timeouts}
 import esw.ocs.impl.messages.SequencerMessages.{EswSequencerMessage, Shutdown}
 import esw.ocs.impl.syntax.FutureSyntax.FutureOps
+import esw.sequence_manager.LocationServiceUtil
 
 import scala.concurrent.Future
 
@@ -81,7 +82,7 @@ private[ocs] class SequencerWiring(val sequencerId: String, val observingMode: S
       httpService.registeredLazyBinding.block
 
       val registration = AkkaRegistration(AkkaConnection(componentId), prefix, sequencerRef.toURI)
-      cswServices.register(registration).block
+      new LocationServiceUtil(locationService).register(registration).block
     }
 
     override def shutDown(): Future[Done] = {
