@@ -1,4 +1,4 @@
-package esw.sequence_manager
+package esw.dsl.sequence_manager
 
 import java.net.URI
 

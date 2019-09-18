@@ -8,10 +8,10 @@ import csw.location.api.scaladsl.LocationService
 import csw.location.models.Connection.AkkaConnection
 import csw.location.models.{AkkaLocation, AkkaRegistration, ComponentId, ComponentType}
 import csw.params.core.models.Prefix
+import esw.dsl.sequence_manager.LocationServiceUtil
 import esw.ocs.api.protocol.RegistrationError
 import esw.ocs.impl.messages.SequenceComponentMsg
 import esw.ocs.impl.messages.SequenceComponentMsg.Stop
-import esw.sequence_manager.LocationServiceUtil
 
 import scala.concurrent.{ExecutionContext, Future}
 import scala.util.control.NonFatal

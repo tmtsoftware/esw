@@ -25,12 +25,12 @@ import csw.params.events.{Event, EventKey, EventName, SystemEvent}
 import csw.testkit.scaladsl.CSWService.EventServer
 import csw.testkit.scaladsl.ScalaTestFrameworkTestKit
 import csw.time.core.models.UTCTime
+import esw.dsl.sequence_manager.LocationServiceUtil
 import esw.ocs.api.BaseTestSuite
 import esw.ocs.api.protocol.{DiagnosticModeResponse, Ok, OperationsModeResponse}
 import esw.ocs.app.wiring.SequencerWiring
 import esw.ocs.impl.internal.Timeouts
 import esw.ocs.impl.messages.SequencerMessages.{DiagnosticMode, OperationsMode}
-import esw.sequence_manager.LocationServiceUtil
 
 import scala.concurrent.Future
 import scala.concurrent.duration.DurationDouble
@@ -58,11 +58,10 @@ class ScriptIntegrationTest extends ScalaTestFrameworkTestKit(EventServer) with 
   private val tcsConnection                        = AkkaConnection(ComponentId(s"$tcsSequencerId@$tcsObservingMode", ComponentType.Sequencer))
   private val tcsRegistration                      = AkkaRegistration(tcsConnection, Prefix("TCS.test"), tcsSequencer.toURI)
   private var sequenceReceivedByTCSProbe: Sequence = _
-  private val locationServiceUtil                  = new LocationServiceUtil(locationService)
 
   override def beforeEach(): Unit = {
     locationService = HttpLocationServiceFactory.makeLocalClient
-    locationServiceUtil.register(tcsRegistration).awaitResult
+    new LocationServiceUtil(locationService).register(tcsRegistration).awaitResult
 
     ocsWiring = new SequencerWiring(ocsSequencerId, ocsObservingMode, None)
     ocsSequencer = ocsWiring.sequencerServer.start().rightValue.uri.toActorRef.unsafeUpcast[SequencerMsg]
@@ -75,13 +74,6 @@ class ScriptIntegrationTest extends ScalaTestFrameworkTestKit(EventServer) with 
 
   "CswServices" must {
     "be able to send sequence to other Sequencer by resolving location through TestScript | ESW-195, ESW-119" in {
-      import frameworkTestKit.mat
-      locationService = HttpLocationServiceFactory.makeLocalClient
-      locationServiceUtil.register(tcsRegistration).awaitResult
-
-      ocsWiring = new SequencerWiring(ocsSequencerId, ocsObservingMode, None)
-      ocsSequencer = ocsWiring.sequencerServer.start().rightValue.uri.toActorRef.unsafeUpcast[SequencerMsg]
-
       val command             = Setup(Prefix("TCS.test"), CommandName("command-4"), None)
       val submitResponseProbe = TestProbe[SubmitResponse]
       val sequenceId          = Id()
@@ -129,9 +121,7 @@ class ScriptIntegrationTest extends ScalaTestFrameworkTestKit(EventServer) with 
 
       val expectedOpEvent = testProbe.expectMessageType[SystemEvent]
       expectedOpEvent.paramSet.head shouldBe operationsModeParam
-
     }
-
   }
 
   object TestSequencer {

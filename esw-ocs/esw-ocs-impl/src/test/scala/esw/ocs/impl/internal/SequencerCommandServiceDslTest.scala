@@ -16,7 +16,7 @@ import csw.params.commands.CommandResponse.Started
 import csw.params.commands.Sequence
 import csw.params.core.models.{Id, Prefix}
 import esw.ocs.api.BaseTestSuite
-import esw.sequence_manager.LocationServiceUtil
+import esw.dsl.sequence_manager.LocationServiceUtil
 import org.mockito.ArgumentMatchers.any
 import org.mockito.Mockito.clearInvocations
 

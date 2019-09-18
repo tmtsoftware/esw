@@ -1,4 +1,4 @@
-package esw.dsl
+package esw.dsl.script
 
 import csw.event.api.scaladsl.{EventPublisher, EventService, EventSubscriber}
 import csw.params.core.models.Prefix

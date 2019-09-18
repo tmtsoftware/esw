@@ -1,4 +1,4 @@
-package esw.dsl
+package esw.dsl.script
 
 import csw.location.api.scaladsl.LocationService
 import csw.location.models.AkkaLocation
@@ -8,11 +8,11 @@ import scala.concurrent.{ExecutionContext, Future}
 
 trait LocationServiceDsl {
 
-  private[esw] val _locationService: LocationService
+  private[esw] val locationService: LocationService
 
   def resolveSequencer(sequencerId: String, observingMode: String)(implicit ec: ExecutionContext): Future[AkkaLocation] =
     async {
-      await(_locationService.list)
+      await(locationService.list)
         .find(location => location.connection.componentId.name.contains(s"$sequencerId@$observingMode"))
     }.collect {
       case Some(location: AkkaLocation) => location
