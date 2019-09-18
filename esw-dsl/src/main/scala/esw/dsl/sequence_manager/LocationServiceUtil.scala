@@ -14,11 +14,11 @@ import esw.dsl.Timeouts
 import esw.dsl.script.LocationServiceDsl
 import esw.ocs.api.protocol.RegistrationError
 
-import scala.async.Async._
+import scala.async.Async.{async, await}
 import scala.concurrent.{ExecutionContext, Future}
 import scala.util.control.NonFatal
 
-class LocationServiceUtil(private[esw] val locationService: LocationService)(implicit protected val actorSystem: ActorSystem[_])
+class LocationServiceUtil(private[esw] val locationService: LocationService)(implicit val actorSystem: ActorSystem[_])
     extends LocationServiceDsl {
 
   private def addCoordinatedShutdownTask(

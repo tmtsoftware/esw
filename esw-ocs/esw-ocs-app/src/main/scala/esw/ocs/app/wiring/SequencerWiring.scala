@@ -17,7 +17,6 @@ import esw.dsl.sequence_manager.LocationServiceUtil
 import esw.http.core.wiring.{ActorRuntime, CswWiring, HttpService, Settings}
 import esw.ocs.api.protocol.RegistrationError
 import esw.ocs.app.route.{PostHandlerImpl, SequencerAdminRoutes, WebsocketHandlerImpl}
-import esw.ocs.impl.SequencerAdminImpl
 import esw.ocs.impl.core._
 import esw.ocs.impl.dsl.Async.{async, await}
 import esw.ocs.impl.dsl.utils.ScriptLoader
@@ -25,6 +24,7 @@ import esw.ocs.impl.dsl.{CswServices, Script}
 import esw.ocs.impl.internal.{SequencerServer, Timeouts}
 import esw.ocs.impl.messages.SequencerMessages.{EswSequencerMessage, Shutdown}
 import esw.ocs.impl.syntax.FutureSyntax.FutureOps
+import esw.ocs.impl.{SequencerAdminFactoryImpl, SequencerAdminImpl}
 
 import scala.concurrent.Future
 
@@ -55,13 +55,18 @@ private[ocs] class SequencerWiring(val sequencerId: String, val observingMode: S
   private lazy val componentId             = ComponentId(sequencerName, ComponentType.Sequencer)
   private lazy val script: Script          = ScriptLoader.load(scriptClass, cswServices)
 
+  lazy private val locationServiceUtil = new LocationServiceUtil(locationService)
+  lazy private val adminFactory        = new SequencerAdminFactoryImpl(locationServiceUtil)
+
   lazy val cswServices = new CswServices(
     sequenceOperatorFactory,
     commandResponseManager,
     typedSystem,
     locationService,
     eventService,
-    timeServiceSchedulerFactory
+    timeServiceSchedulerFactory,
+    adminFactory,
+    locationServiceUtil
   )
 
   private lazy val sequencerAdmin   = new SequencerAdminImpl(sequencerRef)

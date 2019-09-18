@@ -2,6 +2,7 @@ package esw.ocs.api
 
 import csw.params.commands.{Sequence, SequenceCommand}
 import csw.params.core.models.Id
+import csw.time.core.models.UTCTime
 import esw.ocs.api.models.StepList
 import esw.ocs.api.protocol._
 
@@ -24,6 +25,8 @@ trait SequencerAdminApi {
   def abortSequence(): Future[OkOrUnhandledResponse]
   def goOnline(): Future[GoOnlineResponse]
   def goOffline(): Future[OkOrUnhandledResponse]
+  def diagnosticMode(startTime: UTCTime, hint: String): Future[DiagnosticModeResponse]
+  def operationsMode(): Future[OperationsModeResponse]
 
   def loadSequence(sequence: Sequence): Future[LoadSequenceResponse]
   def startSequence: Future[OkOrUnhandledResponse]

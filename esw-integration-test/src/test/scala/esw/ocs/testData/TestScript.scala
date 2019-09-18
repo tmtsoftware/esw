@@ -125,14 +125,14 @@ class TestScript(csw: CswServices) extends Script(csw) {
     case (startTime, hint) =>
       spawn {
         // do some actions to go to diagnostic mode based on hint
-        csw.diagnosticMode("test", Assembly, startTime, hint)
+        csw.diagnosticModeForComponent("test", Assembly, startTime, hint)
       }
   }
 
   handleOperationsMode {
     spawn {
       // do some actions to go to operations mode
-      csw.operationsMode("test", Assembly)
+      csw.operationsModeForComponent("test", Assembly)
     }
   }
 }

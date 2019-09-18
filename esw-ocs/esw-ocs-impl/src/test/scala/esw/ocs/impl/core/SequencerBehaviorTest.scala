@@ -818,7 +818,7 @@ class SequencerBehaviorTest extends ScalaTestWithActorTestKit with BaseTestSuite
       import sequencerSetup._
 
       val startTime = UTCTime.now()
-      val hint = "engineering"
+      val hint      = "engineering"
 
       diagnosticModeAndAssertResponse(startTime, hint, Ok, Future.successful(Done))
     }

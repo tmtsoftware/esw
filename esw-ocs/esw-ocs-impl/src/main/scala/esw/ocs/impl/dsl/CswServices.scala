@@ -6,6 +6,8 @@ import csw.event.api.scaladsl.EventService
 import csw.location.api.scaladsl.LocationService
 import csw.time.scheduler.TimeServiceSchedulerFactory
 import esw.dsl.script.{DiagnosticDsl, EventServiceDsl, LocationServiceDsl, TimeServiceDsl}
+import esw.dsl.sequence_manager.LocationServiceUtil
+import esw.ocs.api.SequencerAdminFactoryApi
 import esw.ocs.impl.core.SequenceOperator
 import esw.ocs.impl.internal.SequencerCommandServiceDsl
 
@@ -15,7 +17,9 @@ class CswServices(
     protected val actorSystem: ActorSystem[_],
     private[esw] val locationService: LocationService,
     private[esw] val eventService: EventService,
-    private[esw] val timeServiceSchedulerFactory: TimeServiceSchedulerFactory
+    private[esw] val timeServiceSchedulerFactory: TimeServiceSchedulerFactory,
+    protected val sequencerAdminFactory: SequencerAdminFactoryApi,
+    protected val locationServiceUtil: LocationServiceUtil
 ) extends LocationServiceDsl
     with SequencerCommandServiceDsl
     with EventServiceDsl

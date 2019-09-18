@@ -7,6 +7,7 @@ import akka.util.Timeout
 import csw.command.client.messages.sequencer.SequencerMsg
 import csw.params.commands.{Sequence, SequenceCommand}
 import csw.params.core.models.Id
+import csw.time.core.models.UTCTime
 import esw.ocs.api.SequencerAdminApi
 import esw.ocs.api.models.StepList
 import esw.ocs.api.protocol._
@@ -30,15 +31,17 @@ class SequencerAdminImpl(sequencer: ActorRef[EswSequencerMessage])(implicit syst
   override def insertAfter(id: Id, commands: List[SequenceCommand]): Future[GenericResponse] =
     sequencer ? (InsertAfter(id, commands, _))
 
-  override def delete(id: Id): Future[GenericResponse]                    = sequencer ? (Delete(id, _))
-  override def pause: Future[PauseResponse]                               = sequencer ? Pause
-  override def resume: Future[OkOrUnhandledResponse]                      = sequencer ? Resume
-  override def addBreakpoint(id: Id): Future[GenericResponse]             = sequencer ? (AddBreakpoint(id, _))
-  override def removeBreakpoint(id: Id): Future[RemoveBreakpointResponse] = sequencer ? (RemoveBreakpoint(id, _))
-  override def reset(): Future[OkOrUnhandledResponse]                     = sequencer ? Reset
-  override def abortSequence(): Future[OkOrUnhandledResponse]             = sequencer ? AbortSequence
-  override def goOnline(): Future[GoOnlineResponse]                       = sequencer ? GoOnline
-  override def goOffline(): Future[OkOrUnhandledResponse]                 = sequencer ? GoOffline
+  override def delete(id: Id): Future[GenericResponse]                                          = sequencer ? (Delete(id, _))
+  override def pause: Future[PauseResponse]                                                     = sequencer ? Pause
+  override def resume: Future[OkOrUnhandledResponse]                                            = sequencer ? Resume
+  override def addBreakpoint(id: Id): Future[GenericResponse]                                   = sequencer ? (AddBreakpoint(id, _))
+  override def removeBreakpoint(id: Id): Future[RemoveBreakpointResponse]                       = sequencer ? (RemoveBreakpoint(id, _))
+  override def reset(): Future[OkOrUnhandledResponse]                                           = sequencer ? Reset
+  override def abortSequence(): Future[OkOrUnhandledResponse]                                   = sequencer ? AbortSequence
+  override def goOnline(): Future[GoOnlineResponse]                                             = sequencer ? GoOnline
+  override def goOffline(): Future[OkOrUnhandledResponse]                                       = sequencer ? GoOffline
+  override def diagnosticMode(startTime: UTCTime, hint: String): Future[DiagnosticModeResponse] = ???
+  override def operationsMode: Future[OperationsModeResponse]                                   = ???
 
   override def isAvailable: Future[Boolean] = getState.map(_ == Idle)
   override def isOnline: Future[Boolean]    = getState.map(_ != Offline)
