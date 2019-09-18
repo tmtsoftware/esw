@@ -2,12 +2,10 @@ package esw.ocs.testData
 
 import csw.params.commands.CommandResponse.{Completed, Error}
 import csw.params.commands.{CommandName, Sequence, Setup}
-import csw.params.core.generics.KeyType.{BooleanKey, StringKey, UTCTimeKey}
+import csw.params.core.generics.KeyType.{BooleanKey, StringKey}
 import csw.params.core.models.Units.NoUnits
 import csw.params.core.models.{Id, Prefix}
 import csw.params.events.{EventName, SystemEvent}
-import csw.time.core.models.UTCTime
-import esw.dsl.script.Util.RichCommand
 import esw.ocs.impl.dsl.{CswServices, Script}
 
 import scala.concurrent.duration.DurationDouble
@@ -81,7 +79,7 @@ class TestScript(csw: CswServices) extends Script(csw) {
     spawn {
 
       /************************** Schedule task once at particular time ************************************/
-      val startTime = UTCTime.after(10.millis)
+//      val startTime = UTCTime.after(10.millis)
 
 //      csw.scheduleOnce(startTime, Callback(() => println("task")))
 
@@ -91,7 +89,7 @@ class TestScript(csw: CswServices) extends Script(csw) {
       //      }
 
       /*************** Schedule task periodically at provided interval with start time *********************/
-      val utcTime = command.getParam("time-key", UTCTimeKey)
+//      val utcTime = command.getParam("time-key", UTCTimeKey)
 
 //      csw.schedulePeriodically(5.millis, utcTime) {
       //        println("task")

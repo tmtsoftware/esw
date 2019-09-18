@@ -9,7 +9,7 @@ import csw.location.models.ComponentType
 import csw.location.models.ComponentType.{Assembly, HCD}
 import csw.params.commands.CommandResponse.{OnewayResponse, SubmitResponse, ValidateResponse}
 import csw.params.commands.ControlCommand
-import esw.highlevel.dsl.ComponentFactory
+import esw.dsl.script.ComponentFactory
 
 import scala.concurrent.Future
 import scala.concurrent.duration.DurationDouble
