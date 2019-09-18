@@ -437,7 +437,6 @@ class SequencerBehaviorTest extends ScalaTestWithActorTestKit with BaseTestSuite
 
       replaceAndAssertResponse(command2.runId, List(command3, command4), Ok)
       assertCurrentSequence(expectedSequence)
-
     }
 
   }
@@ -497,6 +496,27 @@ class SequencerBehaviorTest extends ScalaTestWithActorTestKit with BaseTestSuite
           StepList(
             sequence.runId,
             List(Step(command1), Step(command3), Step(command4), Step(command2))
+          )
+        )
+
+      val insertResProbe = TestProbe[GenericResponse]()
+      sequencerActor ! InsertAfter(command1.runId, cmdsToInsert, insertResProbe.ref)
+      insertResProbe.expectMessage(Ok)
+
+      assertCurrentSequence(expectedSequenceAfterInsertion)
+    }
+
+    "insert steps after provided id when sequencer is in InProgress state | ESW-111" in {
+      val sequencerSetup = SequencerTestSetup.inProgress(sequence)
+      import sequencerSetup._
+
+      val cmdsToInsert = List(command3, command4)
+
+      val expectedSequenceAfterInsertion =
+        Some(
+          StepList(
+            sequence.runId,
+            List(Step(command1, InFlight, hasBreakpoint = false), Step(command3), Step(command4), Step(command2))
           )
         )
 
@@ -806,7 +826,7 @@ class SequencerBehaviorTest extends ScalaTestWithActorTestKit with BaseTestSuite
     }
   }
 
-  "Idle -> Unhandled" in {
+  "Idle -> Unhandled | ESW-111" in {
     val sequencerSetup = new SequencerTestSetup(sequence)
     import sequencerSetup._
     val cmds = List(command1, command2)
@@ -824,7 +844,7 @@ class SequencerBehaviorTest extends ScalaTestWithActorTestKit with BaseTestSuite
       Add(cmds, _),
       Prepend(cmds, _),
       Replace(Id(), cmds, _),
-      InsertAfter(Id(), cmds, _),
+      InsertAfter(Id(), cmds, _), // ESW-111 : Error should be thrown when inserting in a finished sequence
       Delete(Id(), _),
       AddBreakpoint(Id(), _),
       RemoveBreakpoint(Id(), _),
