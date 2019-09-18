@@ -33,10 +33,12 @@ import esw.ocs.impl.internal.Timeouts
 import esw.ocs.impl.messages.SequencerMessages.{DiagnosticMode, OperationsMode}
 
 import scala.concurrent.Future
+import scala.concurrent.duration.DurationDouble
 
 class ScriptIntegrationTest extends ScalaTestFrameworkTestKit(EventServer) with BaseTestSuite with LocationServiceDsl {
 
-  import scala.concurrent.duration.DurationDouble
+  import frameworkTestKit.mat
+
   implicit val actorSystem: ActorSystem[SpawnProtocol] = frameworkTestKit.actorSystem
   implicit val scheduler: Scheduler                    = actorSystem.scheduler
 
@@ -57,14 +59,21 @@ class ScriptIntegrationTest extends ScalaTestFrameworkTestKit(EventServer) with 
   private val tcsRegistration                      = AkkaRegistration(tcsConnection, Prefix("TCS.test"), tcsSequencer.toURI)
   private var sequenceReceivedByTCSProbe: Sequence = _
 
+  override def beforeEach(): Unit = {
+    locationService = HttpLocationServiceFactory.makeLocalClient
+    register(tcsRegistration).awaitResult
+
+    ocsWiring = new SequencerWiring(ocsSequencerId, ocsObservingMode, None)
+    ocsSequencer = ocsWiring.sequencerServer.start().rightValue.uri.toActorRef.unsafeUpcast[SequencerMsg]
+  }
+
+  override def afterEach(): Unit = {
+    ocsWiring.sequencerServer.shutDown().futureValue
+    locationService.unregister(tcsConnection).futureValue
+  }
+
   "CswServices" must {
     "be able to send sequence to other Sequencer by resolving location through TestScript | ESW-195, ESW-119" in {
-      import frameworkTestKit.mat
-      locationService = HttpLocationServiceFactory.makeLocalClient
-      register(tcsRegistration).awaitResult
-
-      ocsWiring = new SequencerWiring(ocsSequencerId, ocsObservingMode, None)
-      ocsSequencer = ocsWiring.sequencerServer.start().rightValue.uri.toActorRef.unsafeUpcast[SequencerMsg]
 
       val command             = Setup(Prefix("TCS.test"), CommandName("command-4"), None)
       val submitResponseProbe = TestProbe[SubmitResponse]
@@ -83,18 +92,9 @@ class ScriptIntegrationTest extends ScalaTestFrameworkTestKit(EventServer) with 
 
       // sequence sent to tcsSequencer by irisSequencer script
       eventually(sequenceReceivedByTCSProbe) shouldBe assertableSequence
-
-      ocsWiring.sequencerServer.shutDown().futureValue
-      locationService.unregister(tcsConnection).futureValue
     }
 
     "be able to forward diagnostic mode to downstream components" in {
-      import frameworkTestKit.mat
-
-      locationService = HttpLocationServiceFactory.makeLocalClient
-      ocsWiring = new SequencerWiring(ocsSequencerId, ocsObservingMode, None)
-      ocsSequencer = ocsWiring.sequencerServer.start().rightValue.uri.toActorRef.unsafeUpcast[SequencerMsg]
-
       val eventService = new EventServiceFactory().make(HttpLocationServiceFactory.makeLocalClient)
       val eventKey     = EventKey(Prefix("tcs.filter.wheel"), EventName("diagnostic-data"))
 
@@ -122,8 +122,6 @@ class ScriptIntegrationTest extends ScalaTestFrameworkTestKit(EventServer) with 
 
       val expectedOpEvent = testProbe.expectMessageType[SystemEvent]
       expectedOpEvent.paramSet.head shouldBe operationsModeParam
-
-      ocsWiring.sequencerServer.shutDown().futureValue
 
     }
 

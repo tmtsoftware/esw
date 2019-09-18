@@ -13,7 +13,6 @@ import csw.params.core.models.Subsystem
 import esw.ocs.api.protocol.RegistrationError
 
 import scala.async.Async._
-import scala.concurrent.duration.DurationInt
 import scala.concurrent.{ExecutionContext, Future}
 import scala.util.control.NonFatal
 
@@ -79,7 +78,7 @@ trait LocationServiceDsl {
   ): Future[ActorRef[ComponentMessage]] = {
     val connection = AkkaConnection(ComponentId(componentName, componentType))
 
-    locationService.resolve(connection, 10.seconds).map {
+    locationService.resolve(connection, Timeouts.DefaultTimeout).map {
       case Some(location: AkkaLocation) => location.componentRef
       case Some(location) =>
         throw new RuntimeException(
