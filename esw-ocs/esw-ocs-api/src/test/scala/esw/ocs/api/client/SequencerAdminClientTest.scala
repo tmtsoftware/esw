@@ -3,6 +3,7 @@ package esw.ocs.api.client
 import csw.params.commands.CommandResponse.Completed
 import csw.params.commands.{CommandName, Sequence, Setup}
 import csw.params.core.models.{Id, Prefix}
+import csw.time.core.models.UTCTime
 import esw.ocs.api.BaseTestSuite
 import esw.ocs.api.codecs.SequencerAdminHttpCodecs
 import esw.ocs.api.models.StepList
@@ -151,7 +152,24 @@ class SequencerAdminClientTest extends BaseTestSuite with SequencerAdminHttpCode
       sequencerAdminClient.submitSequence(sequence).futureValue should ===(Ok)
     }
 
-    "call postClient with QueryFinal request | ESW-222" in {
+    "call postClient with DiagnosticMode request | ESW-143" in {
+      val startTime = UTCTime.now()
+      val hint      = "engineering"
+      when(
+        postClient.requestResponse[DiagnosticModeResponse](argsEq(DiagnosticMode(startTime, hint)))(
+          any[Decoder[DiagnosticModeResponse]]()
+        )
+      ).thenReturn(Future.successful(Ok))
+      sequencerAdminClient.diagnosticMode(startTime, hint).futureValue should ===(Ok)
+    }
+
+    "call postClient with OperationsMode request | ESW-143" in {
+      when(postClient.requestResponse[OperationsModeResponse](argsEq(OperationsMode))(any[Decoder[OperationsModeResponse]]()))
+        .thenReturn(Future.successful(Ok))
+      sequencerAdminClient.operationsMode().futureValue should ===(Ok)
+    }
+
+    "call websocket with QueryFinal request | ESW-222" in {
       val id = mock[Id]
       when(websocketClient.requestResponse[SequenceResponse](argsEq(QueryFinal))(any[Decoder[SequenceResponse]]()))
         .thenReturn(Future.successful(SequenceResult(Completed(id))))

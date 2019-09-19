@@ -186,7 +186,7 @@ class SequencerTestSetup(sequence: Sequence)(implicit system: ActorSystem[_], ti
     val probe = TestProbe[DiagnosticModeResponse]
     sequencerActor ! DiagnosticMode(startTime, hint, probe.ref)
 
-    verify(script).executeDiagnosticMode(startTime, hint)
+    eventually(verify(script).executeDiagnosticMode(startTime, hint))
     probe.expectMessage(response)
   }
 
@@ -199,7 +199,7 @@ class SequencerTestSetup(sequence: Sequence)(implicit system: ActorSystem[_], ti
     val probe = TestProbe[OperationsModeResponse]
     sequencerActor ! OperationsMode(probe.ref)
 
-    verify(script).executeOperationsMode()
+    eventually(verify(script).executeOperationsMode())
     probe.expectMessage(response)
   }
 

@@ -83,9 +83,13 @@ class SequencerAdminClient(
     postClient.requestResponse[OkOrUnhandledResponse](GoOffline)
   }
 
-  override def diagnosticMode(startTime: UTCTime, hint: String): Future[DiagnosticModeResponse] = ???
+  override def diagnosticMode(startTime: UTCTime, hint: String): Future[DiagnosticModeResponse] = {
+    postClient.requestResponse[DiagnosticModeResponse](DiagnosticMode(startTime, hint))
+  }
 
-  override def operationsMode: Future[OperationsModeResponse] = ???
+  override def operationsMode(): Future[OperationsModeResponse] = {
+    postClient.requestResponse[OperationsModeResponse](OperationsMode)
+  }
 
   override def loadSequence(sequence: Sequence): Future[LoadSequenceResponse] = {
     postClient.requestResponse[LoadSequenceResponse](LoadSequence(sequence))

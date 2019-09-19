@@ -6,6 +6,7 @@ import csw.command.client.messages.sequencer.SequencerMsg
 import csw.params.commands.CommandResponse.Completed
 import csw.params.commands.{CommandName, Sequence, Setup}
 import csw.params.core.models.{Id, Prefix}
+import csw.time.core.models.UTCTime
 import esw.ocs.api.BaseTestSuite
 import esw.ocs.api.models.StepList
 import esw.ocs.api.protocol.EditorError.{CannotOperateOnAnInFlightOrFinishedStep, IdDoesNotExist}
@@ -15,6 +16,12 @@ import esw.ocs.impl.messages.SequencerState.{Idle, InProgress, Loaded, Offline}
 
 class SequencerAdminImplTest extends ScalaTestWithActorTestKit with BaseTestSuite {
   private val command = Setup(Prefix("esw.test"), CommandName("command-1"), None)
+
+  private val command1 = Setup(Prefix("esw.test"), CommandName("command-1"), None)
+  private val sequence = Sequence(command1)
+
+  private val startTime = UTCTime.now()
+  private val hint      = "engineering"
 
   private val getSequenceResponse          = StepList(Sequence(command)).toOption
   private val getStateResponse             = Loaded
@@ -34,6 +41,8 @@ class SequencerAdminImplTest extends ScalaTestWithActorTestKit with BaseTestSuit
   private val loadSequenceResponse         = Ok
   private val startSequenceResponse        = Ok
   private val loadAndStartSequenceResponse = Ok
+  private val diagnosticModeResponse       = Ok
+  private val operationsModeResponse       = Ok
   private val queryFinalResponse           = SequenceResult(Completed(Id()))
 
   private val mockedBehavior: Behaviors.Receive[SequencerMsg] =
@@ -54,11 +63,13 @@ class SequencerAdminImplTest extends ScalaTestWithActorTestKit with BaseTestSuit
         case RemoveBreakpoint(`command`.runId, replyTo)             => replyTo ! removeBreakpointResponse
         case GoOnline(replyTo)                                      => replyTo ! goOnlineResponse
         case GoOffline(replyTo)                                     => replyTo ! goOfflineResponse
-        case LoadSequence(_, replyTo)                               => replyTo ! loadSequenceResponse
+        case LoadSequence(`sequence`, replyTo)                      => replyTo ! loadSequenceResponse
         case StartSequence(replyTo)                                 => replyTo ! startSequenceResponse
-        case SubmitSequence(_, replyTo)                             => replyTo ! loadAndStartSequenceResponse
+        case SubmitSequence(`sequence`, replyTo)                    => replyTo ! loadAndStartSequenceResponse
         case QueryFinal(replyTo)                                    => replyTo ! queryFinalResponse
-        case _                                                      =>
+        case DiagnosticMode(`startTime`, `hint`, replyTo)           => replyTo ! diagnosticModeResponse
+        case OperationsMode(replyTo)                                => replyTo ! operationsModeResponse
+        case _                                                      => //
       }
       Behaviors.same
     }
@@ -124,8 +135,6 @@ class SequencerAdminImplTest extends ScalaTestWithActorTestKit with BaseTestSuit
   }
 
   "loadSequence | ESW-101" in {
-    val command1 = Setup(Prefix("esw.test"), CommandName("command-1"), None)
-    val sequence = Sequence(command1)
     sequencerAdmin.loadSequence(sequence).futureValue should ===(Ok)
   }
 
@@ -134,12 +143,18 @@ class SequencerAdminImplTest extends ScalaTestWithActorTestKit with BaseTestSuit
   }
 
   "loadAndStartSequence | ESW-101" in {
-    val command1 = Setup(Prefix("esw.test"), CommandName("command-1"), None)
-    val sequence = Sequence(command1)
     sequencerAdmin.submitSequence(sequence).futureValue should ===(Ok)
   }
 
   "queryFinal | ESW-101" in {
     sequencerAdmin.queryFinal.futureValue should ===(queryFinalResponse)
+  }
+
+  "diagnosticMode | ESW-143" in {
+    sequencerAdmin.diagnosticMode(startTime, hint).futureValue should ===(diagnosticModeResponse)
+  }
+
+  "operationsMode | ESW-143" in {
+    sequencerAdmin.operationsMode().futureValue should ===(operationsModeResponse)
   }
 }
