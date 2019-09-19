@@ -10,10 +10,10 @@ import csw.location.api.extensions.URIExtension.RichURI
 import csw.location.api.scaladsl.LocationService
 import csw.location.client.scaladsl.HttpLocationServiceFactory
 import csw.location.models.Connection.AkkaConnection
-import csw.location.models.{ComponentId, ComponentType}
+import csw.location.models.{AkkaLocation, ComponentId, ComponentType}
 import csw.params.commands.CommandResponse.Completed
 import csw.params.commands.{CommandName, Sequence, Setup}
-import csw.params.core.models.Prefix
+import csw.params.core.models.{Prefix, Subsystem}
 import csw.testkit.scaladsl.ScalaTestFrameworkTestKit
 import esw.ocs.api.BaseTestSuite
 import esw.ocs.api.protocol.LoadScriptResponse
@@ -36,18 +36,16 @@ class SequencerAppIntegrationTest extends ScalaTestFrameworkTestKit with BaseTes
 
   "SequenceComponent command" must {
     "start sequence component with provided prefix and register it with location service | ESW-102, ESW-103, ESW-147, ESW-151, ESW-214" in {
-      val prefixStr             = "esw.test.prefix"
-      val prefix: Prefix        = Prefix(prefixStr)
-      val uniqueId              = "1"
-      val sequenceComponentName = s"${prefix.subsystem}_$uniqueId"
+      val sequenceComponentPrefixStr      = "esw.test.sequenceComponentPrefix"
+      val sequenceComponentPrefix: Prefix = Prefix(sequenceComponentPrefixStr)
+      val subsystem: Subsystem            = sequenceComponentPrefix.subsystem
 
       // start Sequence Component
-      SequencerApp.run(SequenceComponent(prefix), enableLogging = false)
+      SequencerApp.run(SequenceComponent(sequenceComponentPrefix), enableLogging = false)
 
       // verify Sequence component is started and registered with location service
-      val connection           = AkkaConnection(ComponentId(sequenceComponentName, ComponentType.SequenceComponent))
-      val sequenceCompLocation = testLocationService.resolve(connection, 5.seconds).futureValue.get
-      sequenceCompLocation.connection shouldBe connection
+      val sequenceCompLocation: AkkaLocation = testLocationService.listByPrefix(sequenceComponentPrefixStr).futureValue.head
+      sequenceCompLocation.connection.componentId.name.contains(subsystem.name.toUpperCase) shouldEqual true
 
       // LoadScript
       val seqCompRef = sequenceCompLocation.uri.toActorRef.unsafeUpcast[SequenceComponentMsg]
@@ -60,7 +58,8 @@ class SequencerAppIntegrationTest extends ScalaTestFrameworkTestKit with BaseTes
 
       //verify sequencerName has SequenceComponentName
       val actualSequencerName: String = sequencerLocation.connection.componentId.name
-      actualSequencerName shouldEqual s"$sequenceComponentName@testSequencerId1@testObservingMode1"
+      actualSequencerName.contains(subsystem.name.toUpperCase) shouldEqual true
+      actualSequencerName.contains("testSequencerId1@testObservingMode1") shouldEqual true
 
       val commandService = new SequencerCommandServiceImpl(sequencerLocation)
       val setup          = Setup(Prefix("wfos.home.datum"), CommandName("command-1"), None)
@@ -73,31 +72,20 @@ class SequencerAppIntegrationTest extends ScalaTestFrameworkTestKit with BaseTes
       probe2.expectMessage(Done)
     }
 
-    "start sequence component and register with automatically generated, incremental uniqueIDs| ESW-144" in {
+    "start sequence component and register with automatically generated random uniqueIDs| ESW-144" in {
       val prefixStr      = "esw.test.prefix"
       val prefix: Prefix = Prefix(prefixStr)
 
+      //register sequence component with same subsystem concurrently
       Future { SequencerApp.run(SequenceComponent(prefix), false) }
       Future { SequencerApp.run(SequenceComponent(prefix), false) }
       Future { SequencerApp.run(SequenceComponent(prefix), false) }
 
-      val uniqueId1              = "1"
-      val sequenceComponentName1 = s"${prefix.subsystem}_$uniqueId1"
-      val connection1            = AkkaConnection(ComponentId(sequenceComponentName1, ComponentType.SequenceComponent))
-      val sequenceCompLocation1  = testLocationService.resolve(connection1, 5.seconds).futureValue.get
-      sequenceCompLocation1.connection shouldBe connection1
+      //Wait till futures registering sequence component complete
+      Thread.sleep(2000)
 
-      val uniqueId2              = "2"
-      val sequenceComponentName2 = s"${prefix.subsystem}_$uniqueId2"
-      val connection2            = AkkaConnection(ComponentId(sequenceComponentName2, ComponentType.SequenceComponent))
-      val sequenceCompLocation2  = testLocationService.resolve(connection2, 5.seconds).futureValue.get
-      sequenceCompLocation2.connection shouldBe connection2
-
-      val uniqueId3              = "3"
-      val sequenceComponentName3 = s"${prefix.subsystem}_$uniqueId3"
-      val connection3            = AkkaConnection(ComponentId(sequenceComponentName3, ComponentType.SequenceComponent))
-      val sequenceCompLocation3  = testLocationService.resolve(connection3, 5.seconds).futureValue.get
-      sequenceCompLocation3.connection shouldBe connection3
+      //assert if all 3 sequence components are registered
+      testLocationService.listByPrefix(prefixStr).futureValue.length shouldEqual 3
     }
   }
 
