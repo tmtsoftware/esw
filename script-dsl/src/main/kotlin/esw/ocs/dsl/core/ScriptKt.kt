@@ -18,11 +18,14 @@ import kotlinx.coroutines.Job
 import kotlinx.coroutines.asCoroutineDispatcher
 import kotlinx.coroutines.future.await
 import kotlinx.coroutines.future.future
+import kotlinx.coroutines.launch
 
 sealed class BaseScript : CoroutineScope, CswHighLevelDsl {
 
     // this needs to be lazy otherwise handlers does not get loaded properly
     val jScript: JScript by lazy { JScriptFactory.make(cswServices, strandEc()) }
+
+    fun initialize(block: suspend () -> Unit) = launch { block() }
 
     suspend fun nextIf(predicate: (SequenceCommand) -> Boolean): SequenceCommand? =
         jScript.jNextIf { predicate(it) }.await().nullable()
