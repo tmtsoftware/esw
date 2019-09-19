@@ -1,10 +1,12 @@
 package esw.ocs.app
 
 import akka.actor.Scheduler
+import akka.actor.testkit.typed.scaladsl.TestProbe
 import akka.actor.typed.scaladsl.AskPattern._
 import akka.actor.typed.{ActorRef, ActorSystem, SpawnProtocol}
 import akka.util.Timeout
 import csw.command.client.messages.sequencer.{SequencerMsg, SubmitSequenceAndWait}
+import csw.event.client.EventServiceFactory
 import csw.location.api.extensions.URIExtension.RichURI
 import csw.location.api.scaladsl.LocationService
 import csw.location.client.scaladsl.HttpLocationServiceFactory
@@ -12,10 +14,12 @@ import csw.location.models.Connection.{AkkaConnection, HttpConnection}
 import csw.location.models.{ComponentId, ComponentType}
 import csw.params.commands.CommandResponse.{Completed, Error, SubmitResponse}
 import csw.params.commands.{CommandName, Sequence, Setup}
-import csw.params.core.generics.KeyType.BooleanKey
+import csw.params.core.generics.KeyType.{BooleanKey, StringKey}
 import csw.params.core.models.Prefix
+import csw.params.events.{Event, EventKey, EventName, SystemEvent}
 import csw.testkit.scaladsl.CSWService.EventServer
 import csw.testkit.scaladsl.ScalaTestFrameworkTestKit
+import csw.time.core.models.UTCTime
 import esw.ocs.api.BaseTestSuite
 import esw.ocs.api.client.SequencerAdminClient
 import esw.ocs.api.codecs.SequencerAdminHttpCodecs
@@ -44,8 +48,8 @@ class SequencerAdminIntegrationTest
   private implicit val askTimeout: Timeout  = Timeout(10.seconds)
   private implicit val scheduler: Scheduler = actorSystem.scheduler
 
-  private val sequencerId   = "testSequencerId1"
-  private val observingMode = "testObservingMode1"
+  private val sequencerId   = "testSequencerId5"
+  private val observingMode = "testObservingMode5"
 
   val command1 = Setup(Prefix("esw.test"), CommandName("command-1"), None)
   val command2 = Setup(Prefix("esw.test"), CommandName("command-2"), None)
@@ -62,7 +66,7 @@ class SequencerAdminIntegrationTest
   }
 
   override protected def beforeEach(): Unit = {
-    wiring = new SequencerWiring("testSequencerId1", "testObservingMode1", None)
+    wiring = new SequencerWiring(sequencerId, observingMode, None)
     wiring.sequencerServer.start()
     val componentId     = ComponentId(s"$sequencerId@$observingMode@http", ComponentType.Service)
     val uri             = locationService.resolve(HttpConnection(componentId), 5.seconds).futureValue.get.uri
@@ -193,6 +197,42 @@ class SequencerAdminIntegrationTest
     onlineEvent.paramType.exists(BooleanKey.make("online")) should ===(true)
 
     sequencerAdmin.loadSequence(sequence).futureValue should ===(Ok)
+  }
+
+  "DiagnosticMode and OperationsMode| ESW-143" in {
+    val tcsSequencerWiring = new SequencerWiring("testSequencerId6", "testObservingMode6", None)
+    tcsSequencerWiring.sequencerServer.start()
+
+    val startTime = UTCTime.now()
+    val hint      = "engineering"
+
+    val diagnosticModeParam = StringKey.make("mode").set("diagnostic")
+
+    val eventService       = new EventServiceFactory().make(HttpLocationServiceFactory.makeLocalClient)
+    val diagnosticEventKey = EventKey(Prefix("tcs.test"), EventName("diagnostic-data"))
+
+    val testProbe                   = TestProbe[Event]
+    val diagnosticEventSubscription = eventService.defaultSubscriber.subscribeActorRef(Set(diagnosticEventKey), testProbe.ref)
+    diagnosticEventSubscription.ready().futureValue
+    testProbe.expectMessageType[SystemEvent] // discard invalid event
+
+    //Diagnostic Mode
+    sequencerAdmin.diagnosticMode(startTime, hint).futureValue should ===(Ok)
+
+    val expectedDiagnosticEvent = testProbe.expectMessageType[SystemEvent]
+
+    expectedDiagnosticEvent.paramSet.head shouldBe diagnosticModeParam
+
+    //Operations Mode
+    val operationsModeParam = StringKey.make("mode").set("operations")
+
+    sequencerAdmin.operationsMode().futureValue should ===(Ok)
+
+    val expectedOperationsEvent = testProbe.expectMessageType[SystemEvent]
+
+    expectedOperationsEvent.paramSet.head shouldBe operationsModeParam
+
+    tcsSequencerWiring.sequencerServer.shutDown().futureValue
   }
 
   private def resolveSequencer(): ActorRef[SequencerMsg] =

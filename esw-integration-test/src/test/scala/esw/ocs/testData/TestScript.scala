@@ -3,10 +3,9 @@ package esw.ocs.testData
 import csw.location.models.ComponentType.Assembly
 import csw.params.commands.CommandResponse.{Completed, Error}
 import csw.params.commands.{CommandName, Sequence, Setup}
-import csw.params.core.generics.KeyType.{BooleanKey, StringKey, UTCTimeKey}
+import csw.params.core.generics.KeyType.{StringKey, UTCTimeKey}
 import csw.params.core.models.Units.NoUnits
 import csw.params.core.models.{Id, Prefix}
-import csw.params.events.{EventName, SystemEvent}
 import csw.time.core.models.UTCTime
 import esw.dsl.script.Util.RichCommand
 import esw.ocs.impl.dsl.{CswServices, Script}
@@ -38,7 +37,7 @@ class TestScript(csw: CswServices) extends Script(csw) {
   handleSetupCommand("command-4") { command =>
     spawn {
       //try sending concrete sequence
-      val tcsSequencer = csw.resolveSequencer("TCS", "testObservingMode4").await
+      val tcsSequencer = csw.findSequencer("TCS", "testObservingMode4").await
       val command4     = Setup(Id("testCommandIdString123"), Prefix("TCS.test"), CommandName("command-to-assert-on"), None, Set.empty)
       val sequence     = Sequence(Id("testSequenceIdString123"), Seq(command4))
 
@@ -101,24 +100,6 @@ class TestScript(csw: CswServices) extends Script(csw) {
 
     }
 
-  }
-
-  handleGoOnline {
-    spawn {
-      // do some actions to go online
-      val param = BooleanKey.make("online").set(true)
-      val event = SystemEvent(Prefix("TCS.test"), EventName("online")).add(param)
-      csw.publishEvent(event).await
-    }
-  }
-
-  handleGoOffline {
-    spawn {
-      // do some actions to go offline
-      val param = BooleanKey.make("offline").set(true)
-      val event = SystemEvent(Prefix("TCS.test"), EventName("offline")).add(param)
-      csw.publishEvent(event).await
-    }
   }
 
   handleDiagnosticMode {
