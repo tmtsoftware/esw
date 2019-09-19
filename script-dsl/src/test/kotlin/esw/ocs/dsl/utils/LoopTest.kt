@@ -38,4 +38,22 @@ class LoopTest : StringSpec({
         // custom loop interval is 300ms, loop should run 3 times which means it should take around 300*3=900ms
         loopTime shouldBeInRange 900L..1000L
     }
+
+    "loop must allow stopWhen conditions to be specified any number of times and anywhere in the loop body | ESW-89" {
+        val counter1 = AtomicInteger(0)
+        val counter2 = AtomicInteger(0)
+
+        loop {
+            counter1.getAndUpdate { it + 1 }
+            stopWhen(counter1.get() == 5)
+
+            counter2.getAndUpdate { it + 2 }
+            stopWhen(counter2.get() == 10)
+        }
+
+        // on 5th iteration, counter1 becomes 5 and first stopWhen matches
+        // loop gets terminated there and does not execute rest of the body
+        counter1.get() shouldBe 5
+        counter2.get() shouldBe 8
+    }
 })
