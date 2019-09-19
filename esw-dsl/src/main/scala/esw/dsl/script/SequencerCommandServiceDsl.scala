@@ -1,4 +1,4 @@
-package esw.ocs.impl.internal
+package esw.dsl.script
 
 import akka.actor.typed.ActorSystem
 import csw.command.client.SequencerCommandServiceFactory

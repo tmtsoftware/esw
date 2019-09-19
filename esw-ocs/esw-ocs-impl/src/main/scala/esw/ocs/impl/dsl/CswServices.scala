@@ -6,9 +6,8 @@ import csw.event.api.scaladsl.EventService
 import csw.location.api.scaladsl.LocationService
 import csw.time.scheduler.TimeServiceSchedulerFactory
 import esw.dsl.script.EventServiceDsl
-import esw.dsl.script.javadsl.{JCommandServiceDsl, JEventServiceDsl, JLocationServiceDsl, JTimeServiceDsl}
+import esw.dsl.script.javadsl._
 import esw.ocs.impl.core.SequenceOperator
-import esw.ocs.impl.internal.SequencerCommandServiceDsl
 
 class CswServices(
     private[ocs] val sequenceOperatorFactory: () => SequenceOperator,
@@ -17,18 +16,10 @@ class CswServices(
     private[esw] val _locationService: LocationService,
     private[esw] val eventService: EventService,
     private[esw] val timeServiceSchedulerFactory: TimeServiceSchedulerFactory
-) extends SequencerCommandServiceDsl
+) extends JSequencerCommandServiceDsl
     with JLocationServiceDsl
     with JTimeServiceDsl
     with EventServiceDsl
     with JEventServiceDsl
-    with JCommandServiceDsl {
-  // fixme : add JDiagnosticDsl
-
-  // fixme: move it to appropriate place
-//  def jSubmitSequence(sequencerId: String, observingMode: String, sequence: Sequence): CompletionStage[SubmitResponse] =
-//    resolveSequencer(sequencerId, observingMode).flatMap { loc =>
-//      super.submitSequence(loc, sequence)
-//    }.toJava
-
-}
+    with JCommandServiceDsl
+    with JDiagnosticDsl

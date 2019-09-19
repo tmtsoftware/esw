@@ -1,4 +1,4 @@
-package esw.ocs.impl.internal
+package esw.dsl.script
 
 import akka.actor.Scheduler
 import akka.actor.typed.SpawnProtocol.Spawn
@@ -15,8 +15,9 @@ import csw.location.models.{AkkaLocation, AkkaRegistration, ComponentId, Compone
 import csw.params.commands.CommandResponse.Started
 import csw.params.commands.Sequence
 import csw.params.core.models.{Id, Prefix}
-import esw.ocs.api.BaseTestSuite
+import esw.dsl.Timeouts
 import esw.dsl.sequence_manager.LocationServiceUtil
+import esw.ocs.api.BaseTestSuite
 import org.mockito.ArgumentMatchers.any
 import org.mockito.Mockito.clearInvocations
 

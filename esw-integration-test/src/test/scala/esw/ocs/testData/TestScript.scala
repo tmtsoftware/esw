@@ -41,7 +41,7 @@ class TestScript(csw: CswServices) extends Script(csw) {
       val sequence     = Sequence(Id("testSequenceIdString123"), Seq(command4))
 
       // ESW-145, ESW-195
-      csw.submitSequence(tcsSequencer, sequence).await
+      csw.submitSequence(tcsSequencer, sequence).asScala.await
       csw.crm.addOrUpdateCommand(Completed(command.runId))
     }
   }
