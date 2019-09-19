@@ -96,7 +96,7 @@ class LoopTest : WordSpec({
             }
 
             counter.get() shouldBe 3
-            // default interval is 50ms, loop should run 5 times which means it should take around 50*5=250ms
+            // custom loop interval is 300ms, loop should run 3 times which means it should take around 300*3=900ms
             loopTime shouldBeInRange 900L..1000L
         }
     }
