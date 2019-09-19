@@ -1,7 +1,9 @@
 package esw.ocs.dsl.utils
 
+import esw.ocs.dsl.core.utils.bgLoop
 import esw.ocs.dsl.core.utils.loop
 import io.kotlintest.matchers.numerics.shouldBeInRange
+import io.kotlintest.matchers.numerics.shouldBeLessThan
 import io.kotlintest.shouldBe
 import io.kotlintest.specs.WordSpec
 import java.util.concurrent.atomic.AtomicInteger
@@ -56,6 +58,46 @@ class LoopTest : WordSpec({
             // loop gets terminated there and does not execute rest of the body
             counter1.get() shouldBe 5
             counter2.get() shouldBe 8
+        }
+    }
+
+    "bgLoop" should {
+        "run in the background till condition becomes true when interval is default | ESW-89" {
+            val counter = AtomicInteger(0)
+
+            val loopTime = measureTimeMillis {
+                val loopResult = bgLoop {
+                    counter.getAndUpdate { it + 1 }
+                    stopWhen(counter.get() == 5)
+                }
+
+                // here counter is less than 5 proves that loop is still running in the background
+                counter.get() shouldBeLessThan 5
+                loopResult.await()
+            }
+
+            counter.get() shouldBe 5
+            // default interval is 50ms, loop should run 5 times which means it should take around 50*5=250ms
+            loopTime shouldBeInRange 250L..300L
+        }
+
+        "run in the background till condition becomes true when interval is custom | ESW-89" {
+            val counter = AtomicInteger(0)
+
+            val loopTime = measureTimeMillis {
+                val loopResult = bgLoop(300.milliseconds) {
+                    counter.getAndUpdate { it + 1 }
+                    stopWhen(counter.get() == 3)
+                }
+
+                // here counter is less than 3 proves that loop is still running in the background
+                counter.get() shouldBeLessThan 3
+                loopResult.await()
+            }
+
+            counter.get() shouldBe 3
+            // default interval is 50ms, loop should run 5 times which means it should take around 50*5=250ms
+            loopTime shouldBeInRange 900L..1000L
         }
     }
 })
