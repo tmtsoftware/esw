@@ -1,5 +1,6 @@
 package esw.ocs.testData
 
+import csw.location.models.ComponentType.Assembly
 import csw.params.commands.CommandResponse.{Completed, Error}
 import csw.params.commands.{CommandName, Sequence, Setup}
 import csw.params.core.generics.KeyType.{BooleanKey, StringKey}
@@ -117,19 +118,18 @@ class TestScript(csw: CswServices) extends Script(csw) {
     }
   }
 
-  // fixme : add extra methods in diagnostic mode and uncomment
-//  handleDiagnosticMode {
-//    case (startTime, hint) =>
-//      spawn {
-//        // do some actions to go to diagnostic mode based on hint
-//        csw.diagnosticModeForComponent("test", Assembly, startTime, hint)
-//      }
-//  }
-//
-//  handleOperationsMode {
-//    spawn {
-//      // do some actions to go to operations mode
-//      csw.operationsModeForComponent("test", Assembly)
-//    }
-//  }
+  handleDiagnosticMode {
+    case (startTime, hint) =>
+      spawn {
+        // do some actions to go to diagnostic mode based on hint
+        csw.diagnosticModeForComponent("test", Assembly, startTime, hint)
+      }
+  }
+
+  handleOperationsMode {
+    spawn {
+      // do some actions to go to operations mode
+      csw.operationsModeForComponent("test", Assembly)
+    }
+  }
 }
