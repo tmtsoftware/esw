@@ -5,7 +5,6 @@ import csw.command.client.CommandResponseManager
 import csw.event.api.scaladsl.EventService
 import csw.location.api.scaladsl.LocationService
 import csw.time.scheduler.TimeServiceSchedulerFactory
-import esw.dsl.script.EventServiceDsl
 import esw.dsl.script.javadsl._
 import esw.ocs.api.SequencerAdminFactoryApi
 import esw.ocs.impl.core.SequenceOperator
@@ -15,13 +14,12 @@ class CswServices(
     val crm: CommandResponseManager,
     val actorSystem: ActorSystem[_],
     private[esw] val _locationService: LocationService,
-    private[esw] val eventService: EventService,
+    private[esw] val _eventService: EventService,
     private[esw] val timeServiceSchedulerFactory: TimeServiceSchedulerFactory,
     protected val sequencerAdminFactory: SequencerAdminFactoryApi
 ) extends JSequencerCommandServiceDsl
     with JLocationServiceDsl
     with JTimeServiceDsl
-    with EventServiceDsl
     with JEventServiceDsl
     with JCommandServiceDsl
     with JDiagnosticDsl

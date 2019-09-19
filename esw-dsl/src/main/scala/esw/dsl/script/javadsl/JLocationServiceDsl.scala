@@ -1,6 +1,6 @@
 package esw.dsl.script.javadsl
 
-import java.util.concurrent.CompletableFuture
+import java.util.concurrent.CompletionStage
 
 import akka.actor.typed.ActorSystem
 import csw.location.api.javadsl.ILocationService
@@ -24,17 +24,15 @@ trait JLocationServiceDsl {
   //TODO: method should filter on all locations instead of AkkaLocations only (b'case Sequencer can have HttpLocation)
   def resolveSequencer(sequencerId: String, observingMode: String)(
       implicit ec: ExecutionContext
-  ): CompletableFuture[AkkaLocation] =
+  ): CompletionStage[AkkaLocation] =
     async {
       await(_locationService.list)
         .find(location => location.connection.componentId.name.contains(s"$sequencerId@$observingMode"))
     }.collect {
-        case Some(location: AkkaLocation) => location
-        case Some(location) =>
-          throw new RuntimeException(s"Sequencer is registered with wrong connection type: ${location.connection.connectionType}")
-        case None => throw new IllegalArgumentException(s"Could not find any sequencer with name: $sequencerId@$observingMode")
-      }
-      .toJava
-      .toCompletableFuture
+      case Some(location: AkkaLocation) => location
+      case Some(location) =>
+        throw new RuntimeException(s"Sequencer is registered with wrong connection type: ${location.connection.connectionType}")
+      case None => throw new IllegalArgumentException(s"Could not find any sequencer with name: $sequencerId@$observingMode")
+    }.toJava
 
 }

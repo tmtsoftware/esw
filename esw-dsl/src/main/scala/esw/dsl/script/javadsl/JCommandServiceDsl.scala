@@ -5,24 +5,27 @@ import java.util.concurrent.CompletionStage
 import akka.actor.typed.ActorSystem
 import akka.util.Timeout
 import csw.command.api.scaladsl.CommandService
-import csw.location.models.ComponentType
+import csw.command.client.CommandServiceFactory
+import csw.location.api.scaladsl.LocationService
 import csw.location.models.ComponentType.{Assembly, HCD}
+import csw.location.models.Connection.AkkaConnection
+import csw.location.models.{AkkaLocation, ComponentId, ComponentType}
 import csw.params.commands.CommandResponse.{OnewayResponse, SubmitResponse, ValidateResponse}
 import csw.params.commands.ControlCommand
-import esw.dsl.script.ComponentFactory
+import esw.dsl.Timeouts
 
 import scala.concurrent.Future
-import scala.concurrent.duration.DurationDouble
 import scala.jdk.FutureConverters.FutureOps
 
-trait JCommandServiceDsl extends ComponentFactory {
+trait JCommandServiceDsl {
+  private[esw] val _locationService: LocationService
   private[esw] def actorSystem: ActorSystem[_]
 
-  implicit val timeout: Timeout = 10.seconds
+  implicit val timeout: Timeout = Timeouts.DefaultTimeout
 
   // ====== Assembly =========
-  def validateAssemblyCommand(name: String, command: ControlCommand): CompletionStage[ValidateResponse] =
-    commandService(name, Assembly).flatMap(_.validate(command))(actorSystem.executionContext).asJava
+  def validateAssemblyCommand(assemblyName: String, command: ControlCommand): CompletionStage[ValidateResponse] =
+    validate(assemblyName, Assembly, command)
 
   def submitCommandToAssembly(assemblyName: String, command: ControlCommand): CompletionStage[SubmitResponse] =
     submit(assemblyName, Assembly, command)
@@ -34,8 +37,8 @@ trait JCommandServiceDsl extends ComponentFactory {
     oneWay(assemblyName, Assembly, command)
 
   // ====== HCD =========
-  def validateHcdCommand(name: String, command: ControlCommand): CompletionStage[ValidateResponse] =
-    commandService(name, HCD).flatMap(_.validate(command))(actorSystem.executionContext).asJava
+  def validateHcdCommand(hcdName: String, command: ControlCommand): CompletionStage[ValidateResponse] =
+    validate(hcdName, HCD, command)
 
   def submitCommandToHcd(hcdName: String, command: ControlCommand): CompletionStage[SubmitResponse] =
     submit(hcdName, HCD, command)
@@ -56,7 +59,17 @@ trait JCommandServiceDsl extends ComponentFactory {
   private def oneWay(name: String, compType: ComponentType, command: ControlCommand) =
     send(name, compType, _.oneway(command))
 
-  private def send[T](name: String, compType: ComponentType, action: CommandService => Future[T]): CompletionStage[T] =
-    commandService(name, compType).flatMap(action)(actorSystem.executionContext).asJava
+  private def validate(name: String, compType: ComponentType, command: ControlCommand) =
+    send(name, compType, _.validate(command))
 
+  private def send[T](name: String, compType: ComponentType, action: CommandService => Future[T]): CompletionStage[T] =
+    resolve(name, compType)(CommandServiceFactory.make(_)(actorSystem)).flatMap(action)(actorSystem.executionContext).asJava
+
+  private[dsl] def resolve[T](componentName: String, componentType: ComponentType)(f: AkkaLocation => T): Future[T] =
+    _locationService
+      .resolve(AkkaConnection(ComponentId(componentName, componentType)), Timeouts.DefaultTimeout)
+      .map {
+        case Some(akkaLocation) => f(akkaLocation)
+        case None               => throw new IllegalArgumentException(s"Could not find component - $componentName of type - $componentType")
+      }(actorSystem.executionContext)
 }

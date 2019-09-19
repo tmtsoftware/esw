@@ -1,5 +1,8 @@
 package esw.ocs.testData
 
+import java.util.Collections
+import java.util.concurrent.CompletableFuture
+
 import csw.location.models.ComponentType.Assembly
 import csw.params.commands.CommandResponse.{Completed, Error}
 import csw.params.commands.{CommandName, Sequence, Setup}
@@ -9,7 +12,6 @@ import csw.params.core.models.{Id, Prefix}
 import csw.params.events.{EventName, SystemEvent}
 import esw.ocs.impl.dsl.{CswServices, Script}
 
-import scala.concurrent.duration.DurationDouble
 import scala.jdk.FutureConverters.CompletionStageOps
 
 class TestScript(csw: CswServices) extends Script(csw) {
@@ -59,20 +61,17 @@ class TestScript(csw: CswServices) extends Script(csw) {
       val event = csw.systemEvent("TCS.test", "event-1", param)
 
       // ***************************************************
-      csw.publishEvent(event).await
+      csw.publishEvent(event).asScala.await
 
-      csw.publishEvent(5.seconds) {
-        if (true) Some(event)
-        else None
-      }
+//      csw.publishEvent(5.seconds, () => {
+      //        if (true) Some(event)
+      //        else None
+      //      })
 
       // ***************************************************
-      csw.onEvent("TCS.test.event-1") { event =>
-        println(event)
-      }
+      csw.onEvent(Collections.singleton("TCS.test.event-1"), CompletableFuture.completedFuture)
 
-      val events = csw.getEvent("TCS.test.event-1").await
-      events.foreach(println)
+      csw.getEvent("TCS.test.event-1").asScala.await
     }
   }
 
@@ -105,7 +104,7 @@ class TestScript(csw: CswServices) extends Script(csw) {
       // do some actions to go online
       val param = BooleanKey.make("online").set(true)
       val event = SystemEvent(Prefix("TCS.test"), EventName("online")).add(param)
-      csw.publishEvent(event).await
+      csw.publishEvent(event).asScala.await
     }
   }
 
@@ -114,7 +113,7 @@ class TestScript(csw: CswServices) extends Script(csw) {
       // do some actions to go offline
       val param = BooleanKey.make("offline").set(true)
       val event = SystemEvent(Prefix("TCS.test"), EventName("offline")).add(param)
-      csw.publishEvent(event).await
+      csw.publishEvent(event).asScala.await
     }
   }
 

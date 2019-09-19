@@ -9,35 +9,37 @@ import java.util.function.Supplier
 import akka.Done
 import akka.actor.Cancellable
 import csw.event.api.javadsl.{IEventPublisher, IEventSubscriber, IEventSubscription}
+import csw.event.api.scaladsl.EventService
 import csw.event.client.internal.commons.javawrappers.JEventService
 import csw.params.core.generics.Parameter
+import csw.params.core.models.Prefix
 import csw.params.events._
-import esw.dsl.script.EventServiceDsl
 
 import scala.jdk.CollectionConverters._
 
-trait JEventServiceDsl { self: EventServiceDsl =>
-  lazy val jEventService                 = new JEventService(eventService)
-  lazy val jPublisher: IEventPublisher   = jEventService.defaultPublisher
-  lazy val jSubscriber: IEventSubscriber = jEventService.defaultSubscriber
+trait JEventServiceDsl {
 
-  def jSystemEvent(sourcePrefix: String, eventName: String, parameters: java.util.Set[Parameter[_]]): SystemEvent =
-    systemEvent(sourcePrefix, eventName, parameters.asScala.toSeq: _*)
+  private[esw] val _eventService: EventService
 
-  def jObserveEvent(sourcePrefix: String, eventName: String, parameters: java.util.Set[Parameter[_]]): ObserveEvent =
-    observeEvent(sourcePrefix, eventName, parameters.asScala.toSeq: _*)
+  lazy val eventService                 = new JEventService(_eventService)
+  lazy val publisher: IEventPublisher   = eventService.defaultPublisher
+  lazy val subscriber: IEventSubscriber = eventService.defaultSubscriber
 
-  def jPublishEvent(event: Event): CompletionStage[Done] =
-    jPublisher.publish(event)
+  def systemEvent(sourcePrefix: String, eventName: String, parameters: Parameter[_]*): SystemEvent =
+    SystemEvent(Prefix(sourcePrefix), EventName(eventName), parameters.toSet)
 
-  def jPublishEventAsync(every: Duration, eventGenerator: Supplier[CompletableFuture[Optional[Event]]]): Cancellable =
-    jPublisher.publishAsync(eventGenerator, every)
+  def observeEvent(sourcePrefix: String, eventName: String, parameters: Parameter[_]*): ObserveEvent =
+    ObserveEvent(Prefix(sourcePrefix), EventName(eventName), parameters.toSet)
 
-  def jOnEvent(eventKeys: util.Set[String], callback: Event => CompletableFuture[_]): IEventSubscription =
-    jSubscriber.subscribeAsync(mapToEventKeys(eventKeys), callback)
+  def publishEvent(event: Event): CompletionStage[Done] =
+    publisher.publish(event)
 
-  def jGetEvent(eventKeys: util.Set[String]): CompletableFuture[util.Set[Event]] =
-    jSubscriber.get(mapToEventKeys(eventKeys))
+  def publishEvent(every: Duration, eventGenerator: Supplier[CompletableFuture[Optional[Event]]]): Cancellable =
+    publisher.publishAsync(eventGenerator, every)
 
-  private def mapToEventKeys(eventKeys: util.Set[String]) = eventKeys.asScala.map(EventKey(_)).asJava
+  def onEvent(eventKeys: util.Set[String], callback: Event => CompletableFuture[_]): IEventSubscription =
+    subscriber.subscribeAsync(eventKeys.asScala.map(EventKey(_)).asJava, callback)
+
+  def getEvent(eventKeys: String*): CompletableFuture[util.Set[Event]] =
+    subscriber.get(eventKeys.map(EventKey(_)).toSet.asJava)
 }
