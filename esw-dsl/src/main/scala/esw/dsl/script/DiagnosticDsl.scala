@@ -10,6 +10,8 @@ import esw.ocs.api.SequencerAdminFactoryApi
 
 import scala.concurrent.{ExecutionContext, Future}
 
+// fixme: implicit ec in script is strand ec, do we need that here?
+//  can we use actor systems ec here and remove implicit ec from each api?
 trait DiagnosticDsl {
   protected val sequencerAdminFactory: SequencerAdminFactoryApi
   implicit protected val actorSystem: ActorSystem[_]
