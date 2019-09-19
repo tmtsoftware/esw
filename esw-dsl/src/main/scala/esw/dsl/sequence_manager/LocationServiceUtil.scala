@@ -14,7 +14,6 @@ import esw.dsl.Timeouts
 import esw.dsl.script.LocationServiceDsl
 import esw.ocs.api.protocol.RegistrationError
 
-import scala.async.Async.{async, await}
 import scala.concurrent.{ExecutionContext, Future}
 import scala.util.control.NonFatal
 
