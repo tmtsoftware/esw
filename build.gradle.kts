@@ -25,12 +25,17 @@ subprojects {
     apply(plugin = "org.gradle.maven-publish")
     apply(plugin = "org.jmailen.kotlinter")
 
+    tasks.withType<Test> {
+        useJUnitPlatform()
+    }
+
     dependencies {
         implementation(kotlin("stdlib-jdk8"))
         implementation("com.github.tmtsoftware.esw:esw-ocs-app_2.13:5544f737d84c6c8928764cb02e12130b1df51362")
         compile("org.jetbrains.kotlinx", "kotlinx-coroutines-jdk8", "1.3.0")
         compile("org.jetbrains.kotlin", "kotlin-script-runtime", "1.3.50")
 
+        testImplementation("io.kotlintest:kotlintest-runner-junit5:3.3.2")
         testCompile("junit", "junit", "4.12")
     }
 
