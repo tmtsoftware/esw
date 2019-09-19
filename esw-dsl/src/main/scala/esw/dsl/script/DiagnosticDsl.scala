@@ -1,6 +1,8 @@
 package esw.dsl.script
 
+import akka.actor.typed.ActorSystem
 import csw.command.client.messages.DiagnosticDataMessage.{DiagnosticMode, OperationsMode}
+import csw.location.api.scaladsl.LocationService
 import csw.location.models.ComponentType
 import csw.time.core.models.UTCTime
 import esw.dsl.sequence_manager.LocationServiceUtil
@@ -10,7 +12,9 @@ import scala.concurrent.{ExecutionContext, Future}
 
 trait DiagnosticDsl {
   protected val sequencerAdminFactory: SequencerAdminFactoryApi
-  protected val locationServiceUtil: LocationServiceUtil
+  implicit protected val actorSystem: ActorSystem[_]
+  private[esw] val locationService: LocationService
+  private val locationServiceUtil = new LocationServiceUtil(locationService)
 
   def diagnosticModeForComponent(
       componentName: String,

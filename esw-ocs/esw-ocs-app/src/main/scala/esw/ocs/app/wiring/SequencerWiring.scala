@@ -65,8 +65,7 @@ private[ocs] class SequencerWiring(val sequencerId: String, val observingMode: S
     locationService,
     eventService,
     timeServiceSchedulerFactory,
-    adminFactory,
-    locationServiceUtil
+    adminFactory
   )
 
   private lazy val sequencerAdmin   = new SequencerAdminImpl(sequencerRef)
