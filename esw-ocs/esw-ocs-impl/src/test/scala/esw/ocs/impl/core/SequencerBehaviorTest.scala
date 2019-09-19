@@ -10,6 +10,7 @@ import csw.logging.models.LogMetadata
 import csw.params.commands.CommandResponse.{Completed, Error, SubmitResponse}
 import csw.params.commands.{CommandName, Sequence, Setup}
 import csw.params.core.models.{Id, Prefix}
+import csw.time.core.models.UTCTime
 import esw.ocs.api.BaseTestSuite
 import esw.ocs.api.models.StepStatus.{InFlight, Pending}
 import esw.ocs.api.models.{Step, StepList, StepStatus}
@@ -437,7 +438,6 @@ class SequencerBehaviorTest extends ScalaTestWithActorTestKit with BaseTestSuite
 
       replaceAndAssertResponse(command2.runId, List(command3, command4), Ok)
       assertCurrentSequence(expectedSequence)
-
     }
 
   }
@@ -497,6 +497,27 @@ class SequencerBehaviorTest extends ScalaTestWithActorTestKit with BaseTestSuite
           StepList(
             sequence.runId,
             List(Step(command1), Step(command3), Step(command4), Step(command2))
+          )
+        )
+
+      val insertResProbe = TestProbe[GenericResponse]()
+      sequencerActor ! InsertAfter(command1.runId, cmdsToInsert, insertResProbe.ref)
+      insertResProbe.expectMessage(Ok)
+
+      assertCurrentSequence(expectedSequenceAfterInsertion)
+    }
+
+    "insert steps after provided id when sequencer is in InProgress state | ESW-111" in {
+      val sequencerSetup = SequencerTestSetup.inProgress(sequence)
+      import sequencerSetup._
+
+      val cmdsToInsert = List(command3, command4)
+
+      val expectedSequenceAfterInsertion =
+        Some(
+          StepList(
+            sequence.runId,
+            List(Step(command1, InFlight, hasBreakpoint = false), Step(command3), Step(command4), Step(command2))
           )
         )
 
@@ -791,6 +812,27 @@ class SequencerBehaviorTest extends ScalaTestWithActorTestKit with BaseTestSuite
     }
   }
 
+  "DiagnosticMode" must {
+    "execute the diagnostic handler and return the diagnostic response | ESW-118" in {
+      val sequencerSetup = SequencerTestSetup.idle(sequence)
+      import sequencerSetup._
+
+      val startTime = UTCTime.now()
+      val hint      = "engineering"
+
+      diagnosticModeAndAssertResponse(startTime, hint, Ok, Future.successful(Done))
+    }
+  }
+
+  "OperationsMode" must {
+    "execute the operations handler and return the operations response | ESW-118" in {
+      val sequencerSetup = SequencerTestSetup.idle(sequence)
+      import sequencerSetup._
+
+      operationsModeAndAssertResponse(Ok, Future.successful(Done))
+    }
+  }
+
   "LogControlMessages" must {
     "set and get log level for component name | ESW-183" in {
       val sequencerSetup = SequencerTestSetup.inProgress(sequence)
@@ -806,7 +848,7 @@ class SequencerBehaviorTest extends ScalaTestWithActorTestKit with BaseTestSuite
     }
   }
 
-  "Idle -> Unhandled" in {
+  "Idle -> Unhandled | ESW-111" in {
     val sequencerSetup = new SequencerTestSetup(sequence)
     import sequencerSetup._
     val cmds = List(command1, command2)
@@ -824,7 +866,7 @@ class SequencerBehaviorTest extends ScalaTestWithActorTestKit with BaseTestSuite
       Add(cmds, _),
       Prepend(cmds, _),
       Replace(Id(), cmds, _),
-      InsertAfter(Id(), cmds, _),
+      InsertAfter(Id(), cmds, _), // ESW-111 : Error should be thrown when inserting in a finished sequence
       Delete(Id(), _),
       AddBreakpoint(Id(), _),
       RemoveBreakpoint(Id(), _),

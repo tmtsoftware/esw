@@ -2,6 +2,7 @@ package esw.ocs.api.protocol
 
 import csw.params.commands.{Sequence, SequenceCommand}
 import csw.params.core.models.Id
+import csw.time.core.models.UTCTime
 
 sealed trait SequencerAdminPostRequest
 private[ocs] object SequencerAdminPostRequest {
@@ -15,6 +16,7 @@ private[ocs] object SequencerAdminPostRequest {
   case object GoOnline                                            extends SequencerAdminPostRequest
   case object GoOffline                                           extends SequencerAdminPostRequest
   case object StartSequence                                       extends SequencerAdminPostRequest
+  case object OperationsMode                                      extends SequencerAdminPostRequest
   case class LoadSequence(sequence: Sequence)                     extends SequencerAdminPostRequest
   case class SubmitSequence(sequence: Sequence)                   extends SequencerAdminPostRequest
   case class Add(commands: List[SequenceCommand])                 extends SequencerAdminPostRequest
@@ -24,4 +26,5 @@ private[ocs] object SequencerAdminPostRequest {
   case class Delete(id: Id)                                       extends SequencerAdminPostRequest
   case class AddBreakpoint(id: Id)                                extends SequencerAdminPostRequest
   case class RemoveBreakpoint(id: Id)                             extends SequencerAdminPostRequest
+  case class DiagnosticMode(startTime: UTCTime, hint: String)     extends SequencerAdminPostRequest
 }

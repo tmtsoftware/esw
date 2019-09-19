@@ -93,7 +93,7 @@ class ScriptIntegrationTest extends ScalaTestFrameworkTestKit(EventServer) with 
       eventually(sequenceReceivedByTCSProbe) shouldBe assertableSequence
     }
 
-    "be able to forward diagnostic mode to downstream components" in {
+    "be able to forward diagnostic mode to downstream components | ESW-118" in {
       val eventService = new EventServiceFactory().make(HttpLocationServiceFactory.makeLocalClient)
       val eventKey     = EventKey(Prefix("tcs.filter.wheel"), EventName("diagnostic-data"))
 

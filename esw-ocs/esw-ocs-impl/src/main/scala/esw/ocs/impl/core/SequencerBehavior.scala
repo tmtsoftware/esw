@@ -1,5 +1,6 @@
 package esw.ocs.impl.core
 
+import akka.Done
 import akka.actor.Scheduler
 import akka.actor.typed.scaladsl.AskPattern._
 import akka.actor.typed.scaladsl.Behaviors
@@ -30,7 +31,8 @@ class SequencerBehavior(
     componentId: ComponentId,
     script: BaseScriptDsl,
     locationService: LocationService,
-    crm: CommandResponseManager
+    crm: CommandResponseManager,
+    shutdownHttpService: () => Future[Done]
 )(implicit val actorSystem: ActorSystem[_], timeout: Timeout)
     extends OcsCodecs {
   import actorSystem.executionContext
@@ -189,7 +191,8 @@ class SequencerBehavior(
     // once all finished, send ShutdownComplete self message irrespective of any failures
     val f1 = locationService.unregister(AkkaConnection(componentId))
     val f2 = script.executeShutdown()
-    f1.onComplete(_ => f2.onComplete(_ => data.self ! ShutdownComplete(replyTo)))
+    val f3 = shutdownHttpService()
+    f1.onComplete(_ => f2.onComplete(_ => (f3.onComplete(_ => data.self ! ShutdownComplete(replyTo)))))
 
     shuttingDown(data)
   }

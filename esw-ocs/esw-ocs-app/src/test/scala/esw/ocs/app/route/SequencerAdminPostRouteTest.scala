@@ -4,6 +4,7 @@ import akka.http.scaladsl.model.StatusCodes
 import akka.http.scaladsl.testkit.ScalatestRouteTest
 import csw.params.commands.{CommandName, Sequence, Setup}
 import csw.params.core.models.{Id, Prefix}
+import csw.time.core.models.UTCTime
 import esw.http.core.BaseTestSuite
 import esw.ocs.api.codecs.SequencerAdminHttpCodecs
 import esw.ocs.api.models.StepList
@@ -217,6 +218,24 @@ class SequencerAdminPostRouteTest extends BaseTestSuite with ScalatestRouteTest 
 
       Post("/post", SubmitSequence(sequence)) ~> route ~> check {
         responseAs[LoadSequenceResponse] should ===(Ok)
+      }
+    }
+
+    "return Ok for DiagnosticMode request | ESW-143" in {
+      val startTime = UTCTime.now()
+      val hint      = "engineering"
+      when(sequencerAdmin.diagnosticMode(startTime, hint)).thenReturn(Future.successful(Ok))
+
+      Post("/post", DiagnosticMode(startTime, hint)) ~> route ~> check {
+        responseAs[DiagnosticModeResponse] should ===(Ok)
+      }
+    }
+
+    "return Ok for OperationsMode request | ESW-143" in {
+      when(sequencerAdmin.operationsMode()).thenReturn(Future.successful(Ok))
+
+      Post("/post", OperationsMode) ~> route ~> check {
+        responseAs[OperationsModeResponse] should ===(Ok)
       }
     }
 

@@ -333,7 +333,7 @@ class StepListTest extends BaseTestSuite {
       updatedStepList.toOption.get should ===(StepList(id, List(step1, Step(setup2))))
     }
 
-    "fail with IdDoesNotExist error when provided Id does't exist in StepList | ESW-111" in {
+    "fail with IdDoesNotExist error when provided Id doesn't exist in StepList | ESW-111" in {
       val step1 = Step(setup1, InFlight, hasBreakpoint = false)
       val step2 = Step(setup2, Pending, hasBreakpoint = false)
 

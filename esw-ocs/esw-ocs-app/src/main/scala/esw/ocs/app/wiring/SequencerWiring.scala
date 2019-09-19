@@ -16,13 +16,14 @@ import esw.dsl.sequence_manager.LocationServiceUtil
 import esw.http.core.wiring.{ActorRuntime, CswWiring, HttpService, Settings}
 import esw.ocs.api.protocol.RegistrationError
 import esw.ocs.app.route.{PostHandlerImpl, SequencerAdminRoutes, WebsocketHandlerImpl}
-import esw.ocs.impl.SequencerAdminImpl
 import esw.ocs.impl.core._
+import esw.ocs.impl.dsl.Async.{async, await}
 import esw.ocs.impl.dsl.utils.ScriptLoader
 import esw.ocs.impl.dsl.{BaseScriptDsl, CswServices}
 import esw.ocs.impl.internal.{SequencerServer, Timeouts}
 import esw.ocs.impl.messages.SequencerMessages.{EswSequencerMessage, Shutdown}
 import esw.ocs.impl.syntax.FutureSyntax.FutureOps
+import esw.ocs.impl.{SequencerAdminFactoryImpl, SequencerAdminImpl}
 
 import scala.concurrent.Future
 
@@ -53,13 +54,17 @@ private[ocs] class SequencerWiring(val sequencerId: String, val observingMode: S
   private lazy val componentId             = ComponentId(sequencerName, ComponentType.Sequencer)
   private lazy val script: BaseScriptDsl   = ScriptLoader.loadKotlinScript(scriptClass, cswServices)
 
+  lazy private val locationServiceUtil = new LocationServiceUtil(locationService)
+  lazy private val adminFactory        = new SequencerAdminFactoryImpl(locationServiceUtil)
+
   lazy val cswServices = new CswServices(
     sequenceOperatorFactory,
     commandResponseManager,
     typedSystem,
     locationService,
     eventService,
-    timeServiceSchedulerFactory
+    timeServiceSchedulerFactory,
+    adminFactory
   )
 
   private lazy val sequencerAdmin   = new SequencerAdminImpl(sequencerRef)
@@ -68,11 +73,22 @@ private[ocs] class SequencerWiring(val sequencerId: String, val observingMode: S
   private lazy val routes           = new SequencerAdminRoutes(postHandler, websocketHandler)
 
   private lazy val settings = new Settings(Some(SocketUtils.getFreePort), Some(s"$sequencerName@http"), config)
-  private lazy val httpService =
+  private lazy val httpService: HttpService =
     new HttpService(logger, locationService, routes.route, settings, actorRuntime)
 
+  private val shutdownHttpService = () =>
+    async {
+      val (serverBinding, registrationResult) = await(httpService.registeredLazyBinding)
+      val eventualTerminated                  = serverBinding.terminate(Timeouts.DefaultTimeout)
+      val eventualDone                        = registrationResult.unregister()
+      await(eventualTerminated.flatMap(_ => eventualDone))
+    }
+
   lazy val sequencerBehavior =
-    new SequencerBehavior(componentId, script, locationService, commandResponseManager)(typedSystem, timeout)
+    new SequencerBehavior(componentId, script, locationService, commandResponseManager, shutdownHttpService)(
+      typedSystem,
+      timeout
+    )
 
   lazy val sequencerServer: SequencerServer = new SequencerServer {
     override def start(): Either[RegistrationError, AkkaLocation] = {
@@ -85,10 +101,6 @@ private[ocs] class SequencerWiring(val sequencerId: String, val observingMode: S
     }
 
     override def shutDown(): Future[Done] = {
-      val (serverBinding, registrationResult) = httpService.registeredLazyBinding.block
-      serverBinding.terminate(Timeouts.DefaultTimeout).block
-      registrationResult.unregister().block
-
       (sequencerRef ? Shutdown).map(_ => Done)
     }
   }

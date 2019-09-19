@@ -2,6 +2,7 @@ package esw.ocs.api.client
 
 import csw.params.commands.{Sequence, SequenceCommand}
 import csw.params.core.models.Id
+import csw.time.core.models.UTCTime
 import esw.ocs.api.SequencerAdminApi
 import esw.ocs.api.codecs.SequencerAdminHttpCodecs
 import esw.ocs.api.models.StepList
@@ -80,6 +81,14 @@ class SequencerAdminClient(
 
   override def goOffline(): Future[OkOrUnhandledResponse] = {
     postClient.requestResponse[OkOrUnhandledResponse](GoOffline)
+  }
+
+  override def diagnosticMode(startTime: UTCTime, hint: String): Future[DiagnosticModeResponse] = {
+    postClient.requestResponse[DiagnosticModeResponse](DiagnosticMode(startTime, hint))
+  }
+
+  override def operationsMode(): Future[OperationsModeResponse] = {
+    postClient.requestResponse[OperationsModeResponse](OperationsMode)
   }
 
   override def loadSequence(sequence: Sequence): Future[LoadSequenceResponse] = {
