@@ -13,7 +13,8 @@ import esw.ocs.api.protocol.RegistrationError
 import esw.ocs.impl.messages.SequenceComponentMsg
 import esw.ocs.impl.messages.SequenceComponentMsg.Stop
 
-import scala.concurrent.{ExecutionContext, Future}
+import scala.concurrent.Future
+import scala.util.Random
 import scala.util.control.NonFatal
 
 class SequenceComponentRegistration(
@@ -23,7 +24,6 @@ class SequenceComponentRegistration(
 )(
     implicit override val actorSystem: ActorSystem[SpawnProtocol]
 ) extends LocationServiceUtil(_locationService) {
-  implicit val ec: ExecutionContext = actorSystem.executionContext
 
   def registerWithRetry(retryCount: Int): Future[Either[RegistrationError, AkkaLocation]] =
     registration().flatMap { akkaRegistration =>
@@ -39,18 +39,10 @@ class SequenceComponentRegistration(
       )
     }
 
-  private def generateSequenceComponentName(): Future[String] = {
-    val subsystem = prefix.subsystem
-    listBy(subsystem, ComponentType.SequenceComponent)
-      .map { sequenceComponents =>
-        val uniqueId = s"${sequenceComponents.length + 1}"
-        s"${subsystem}_$uniqueId"
-      }
+  private def registration(): Future[AkkaRegistration] = {
+    val name = s"${prefix.subsystem}_${Random.between(1, 100)}"
+    sequenceComponentFactory(name).map { actorRef =>
+      AkkaRegistration(AkkaConnection(ComponentId(name, ComponentType.SequenceComponent)), prefix, actorRef.toURI)
+    }
   }
-
-  private def registration(): Future[AkkaRegistration] =
-    for {
-      name <- generateSequenceComponentName()
-      ref  <- sequenceComponentFactory(name)
-    } yield AkkaRegistration(AkkaConnection(ComponentId(name, ComponentType.SequenceComponent)), prefix, ref.toURI)
 }

@@ -165,9 +165,9 @@ private[core] case class SequencerData(
     readyToExecuteSubscriber.map(replyTo => readyToExecuteNext(replyTo, state)).getOrElse(this)
 }
 
-object SequencerData {
+private[core] object SequencerData {
   def initial(self: ActorRef[SequencerMsg], crm: CommandResponseManager)(
       implicit actorSystem: ActorSystem[_],
       timeout: Timeout
-  ) = SequencerData(None, None, None, self, crm, actorSystem, timeout)
+  ): SequencerData = SequencerData(None, None, None, self, crm, actorSystem, timeout)
 }

@@ -6,6 +6,8 @@ import csw.location.models.AkkaLocation
 import scala.async.Async.{async, await}
 import scala.concurrent.{ExecutionContext, Future}
 
+// fixme: implicit ec in script is strand ec, do we need that here?
+//  can we use actor systems ec here and remove implicit ec from each api?
 trait LocationServiceDsl {
 
   private[esw] val locationService: LocationService
@@ -13,6 +15,7 @@ trait LocationServiceDsl {
   def resolveSequencer(sequencerId: String, observingMode: String)(implicit ec: ExecutionContext): Future[AkkaLocation] =
     async {
       await(locationService.list)
+      //fixme: sequencer has two registrations - http and akka, contains check will return any but we need akka here
         .find(location => location.connection.componentId.name.contains(s"$sequencerId@$observingMode"))
     }.collect {
       case Some(location: AkkaLocation) => location

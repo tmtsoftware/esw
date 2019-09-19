@@ -34,10 +34,10 @@ case object Ok
     with DiagnosticModeResponse
     with OperationsModeResponse
 
-case class PullNextResult(step: Step)                     extends PullNextResponse
-case class SequenceResult(submitResponse: SubmitResponse) extends SequenceResponse
+final case class PullNextResult(step: Step)                     extends PullNextResponse
+final case class SequenceResult(submitResponse: SubmitResponse) extends SequenceResponse
 
-case class Unhandled private[ocs] (state: String, messageType: String, msg: String)
+final case class Unhandled private[ocs] (state: String, messageType: String, msg: String)
     extends OkOrUnhandledResponse
     with GenericResponse
     with PauseResponse
@@ -80,5 +80,5 @@ sealed trait EditorError extends GenericResponse
 
 object EditorError {
   case object CannotOperateOnAnInFlightOrFinishedStep extends EditorError with PauseResponse
-  case class IdDoesNotExist(id: Id)                   extends EditorError with RemoveBreakpointResponse
+  final case class IdDoesNotExist(id: Id)             extends EditorError with RemoveBreakpointResponse
 }

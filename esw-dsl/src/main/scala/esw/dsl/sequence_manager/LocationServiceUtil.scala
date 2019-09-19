@@ -14,28 +14,26 @@ import esw.dsl.Timeouts
 import esw.dsl.script.LocationServiceDsl
 import esw.ocs.api.protocol.RegistrationError
 
-import scala.async.Async.{async, await}
 import scala.concurrent.{ExecutionContext, Future}
 import scala.util.control.NonFatal
 
 class LocationServiceUtil(private[esw] val locationService: LocationService)(implicit val actorSystem: ActorSystem[_])
     extends LocationServiceDsl {
+  implicit val ec: ExecutionContext = actorSystem.executionContext
 
   private def addCoordinatedShutdownTask(
       coordinatedShutdown: CoordinatedShutdown,
       registrationResult: RegistrationResult
-  ): Unit = {
+  ): Unit =
     coordinatedShutdown.addTask(
       CoordinatedShutdown.PhaseBeforeServiceUnbind,
       s"unregistering-${registrationResult.location}"
     )(() => registrationResult.unregister())
-  }
 
   private[esw] def register[E](
       akkaRegistration: AkkaRegistration,
       onFailure: PartialFunction[Throwable, Future[Either[E, AkkaLocation]]]
-  ): Future[Either[E, AkkaLocation]] = {
-    implicit val ec: ExecutionContext = actorSystem.executionContext
+  ): Future[Either[E, AkkaLocation]] =
     locationService
       .register(akkaRegistration)
       .map { result =>
@@ -43,39 +41,28 @@ class LocationServiceUtil(private[esw] val locationService: LocationService)(imp
         Right(result.location.asInstanceOf[AkkaLocation])
       }
       .recoverWith(onFailure)
-  }
 
   def register(akkaRegistration: AkkaRegistration): Future[Either[RegistrationError, AkkaLocation]] =
     register(akkaRegistration, onFailure = {
       case NonFatal(e) => Future.successful(Left(RegistrationError(e.getMessage)))
     })
 
-  def listBy(subsystem: Subsystem, componentType: ComponentType)(implicit ec: ExecutionContext): Future[List[AkkaLocation]] = {
+  def listBy(subsystem: Subsystem, componentType: ComponentType): Future[List[AkkaLocation]] =
     locationService
       .list(componentType)
       .map(_.collect {
         case akkaLocation @ AkkaLocation(_, prefix, _) if prefix.subsystem == subsystem => akkaLocation
       })
-  }
 
   //Can be used to listBySequencerId() and listByObsMode(), in future. Separate APIs can be created once we have concrete
   //classes for `SequencerId` and `ObsMode`
-  def listByComponentName(name: String)(implicit ec: ExecutionContext): Future[List[Location]] = {
-    locationService.list.map { locations =>
-      locations.filter(x => x.connection.componentId.name.contains(name))
-    }
-  }
+  def listByComponentName(name: String): Future[List[Location]] =
+    locationService.list.map(_.filter(_.connection.componentId.name.contains(name)))
 
-  def resolveByComponentNameAndType(name: String, componentType: ComponentType)(
-      implicit ec: ExecutionContext
-  ): Future[Option[Location]] = async {
-    await(locationService.list(componentType))
-      .find(location => location.connection.componentId.name == name)
-  }
+  def resolveByComponentNameAndType(name: String, componentType: ComponentType): Future[Option[Location]] =
+    locationService.list(componentType).map(_.find(_.connection.componentId.name == name))
 
-  def resolveComponentRef(componentName: String, componentType: ComponentType)(
-      implicit ec: ExecutionContext
-  ): Future[ActorRef[ComponentMessage]] = {
+  def resolveComponentRef(componentName: String, componentType: ComponentType): Future[ActorRef[ComponentMessage]] = {
     val connection = AkkaConnection(ComponentId(componentName, componentType))
     locationService.resolve(connection, Timeouts.DefaultTimeout).map {
       case Some(location: AkkaLocation) => location.componentRef

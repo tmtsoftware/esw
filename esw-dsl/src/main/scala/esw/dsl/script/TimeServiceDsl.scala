@@ -9,6 +9,9 @@ import csw.time.scheduler.api.Cancellable
 import scala.concurrent.ExecutionContext
 import scala.concurrent.duration.FiniteDuration
 
+// fixme: these are callback based api's which need to be run on strand ec
+//  can we make it more clear by taking strandEc as implicit instead of just ec?
+//  refer EventServiceDsl callback based apis
 trait TimeServiceDsl {
   private[esw] def timeServiceSchedulerFactory: TimeServiceSchedulerFactory
 
