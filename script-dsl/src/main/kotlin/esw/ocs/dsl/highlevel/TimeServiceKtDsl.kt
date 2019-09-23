@@ -2,14 +2,14 @@ package esw.ocs.dsl.highlevel
 
 import csw.time.core.models.TMTTime
 import csw.time.scheduler.api.Cancellable
-import esw.highlevel.dsl.javadsl.Callback
-import esw.ocs.impl.dsl.CswServices
+import esw.dsl.script.CswServices
+import esw.dsl.script.services.javadsl.Callback
 import esw.ocs.macros.StrandEc
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.future.future
 import java.util.concurrent.CompletionStage
 import kotlin.time.Duration
 import kotlin.time.toJavaDuration
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.future.future
 
 interface TimeServiceKtDsl : CoroutineScope {
     val cswServices: CswServices

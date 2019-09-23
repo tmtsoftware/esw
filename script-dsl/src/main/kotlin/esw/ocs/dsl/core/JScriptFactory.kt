@@ -1,6 +1,6 @@
 package esw.ocs.dsl.core
 
-import esw.ocs.impl.dsl.CswServices
+import esw.dsl.script.CswServices
 import esw.ocs.impl.dsl.javadsl.JScript
 import esw.ocs.macros.StrandEc
 

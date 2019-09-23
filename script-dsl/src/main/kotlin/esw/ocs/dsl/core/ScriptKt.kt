@@ -5,20 +5,20 @@ import csw.params.commands.Observe
 import csw.params.commands.Sequence
 import csw.params.commands.SequenceCommand
 import csw.params.commands.Setup
+import esw.dsl.script.CswServices
 import esw.ocs.dsl.highlevel.CswHighLevelDsl
 import esw.ocs.dsl.nullable
-import esw.ocs.impl.dsl.CswServices
 import esw.ocs.impl.dsl.javadsl.JScript
 import esw.ocs.macros.StrandEc
-import java.util.concurrent.CompletionStage
-import java.util.concurrent.Executors
-import kotlin.coroutines.CoroutineContext
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.asCoroutineDispatcher
 import kotlinx.coroutines.future.await
 import kotlinx.coroutines.future.future
 import kotlinx.coroutines.launch
+import java.util.concurrent.CompletionStage
+import kotlin.coroutines.CoroutineContext
+
 
 sealed class BaseScript : CoroutineScope, CswHighLevelDsl {
 
@@ -63,7 +63,7 @@ sealed class BaseScript : CoroutineScope, CswHighLevelDsl {
     }
 
     suspend fun submitSequence(sequencerName: String, observingMode: String, sequence: Sequence): SubmitResponse =
-        cswServices.jSubmitSequence(sequencerName, observingMode, sequence).await()
+        cswServices.submitSequence(sequencerName, observingMode, sequence).await()
 
     private fun <T> (suspend () -> T).toJavaFuture(): CompletionStage<T> =
         this.let {
@@ -94,10 +94,9 @@ class ReusableScript(
 }
 
 open class ScriptKt(override val cswServices: CswServices) : BaseScript() {
-    private val ec = Executors.newSingleThreadScheduledExecutor()
-    private val _strandEc = StrandEc(ec)
+    private val _strandEc = StrandEc.apply()
     private val job = Job()
-    private val dispatcher = ec.asCoroutineDispatcher()
+    private val dispatcher = _strandEc.executorService().asCoroutineDispatcher()
 
     override val coroutineContext: CoroutineContext
         get() = job + dispatcher

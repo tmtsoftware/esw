@@ -7,6 +7,7 @@ import kotlin.properties.Delegates
 import kotlin.time.Duration
 import kotlin.time.ExperimentalTime
 import kotlinx.coroutines.*
+import java.util.concurrent.ExecutorService
 
 interface State
 
@@ -20,10 +21,9 @@ interface Refreshable {
 
 abstract class Machine(val name: String, init: String) : CoroutineScope, Refreshable {
 
-    private val ec = Executors.newSingleThreadScheduledExecutor()
-    private val _strandEc = StrandEc(ec)
+    private val _strandEc = StrandEc.apply()
     private val job = Job()
-    private val dispatcher = ec.asCoroutineDispatcher()
+    private val dispatcher = _strandEc.executorService().asCoroutineDispatcher()
 
     override val coroutineContext: CoroutineContext
         get() = job + dispatcher
