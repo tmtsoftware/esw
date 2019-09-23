@@ -1,6 +1,6 @@
 package esw.ocs.testData
 
-import java.util.Collections
+import java.util.Collections.singleton
 import java.util.concurrent.CompletableFuture
 
 import csw.location.models.ComponentType.Assembly
@@ -38,12 +38,11 @@ class TestScript(csw: CswServices) extends Script(csw) {
   handleSetupCommand("command-4") { command =>
     spawn {
       //try sending concrete sequence
-      val tcsSequencer = csw.findSequencer("TCS", "testObservingMode4").asScala.await
-      val command4     = Setup(Id("testCommandIdString123"), Prefix("TCS.test"), CommandName("command-to-assert-on"), None, Set.empty)
-      val sequence     = Sequence(Id("testSequenceIdString123"), Seq(command4))
+      val command4 = Setup(Id("testCommandIdString123"), Prefix("TCS.test"), CommandName("command-to-assert-on"), None, Set.empty)
+      val sequence = Sequence(Id("testSequenceIdString123"), Seq(command4))
 
       // ESW-145, ESW-195
-      csw.submitSequence(tcsSequencer, sequence).asScala.await
+      csw.submitSequence("TCS", "testObservingMode4", sequence).asScala.await
       csw.crm.addOrUpdateCommand(Completed(command.runId))
     }
   }
@@ -57,7 +56,7 @@ class TestScript(csw: CswServices) extends Script(csw) {
   handleSetupCommand("event-command") { command =>
     spawn {
       val param = StringKey.make("filter-wheel").set("a", "b", "c").withUnits(NoUnits)
-      val event = csw.systemEvent("TCS.test", "event-1", param)
+      val event = csw.systemEvent("TCS.test", "event-1", singleton(param))
 
       // ***************************************************
       csw.publishEvent(event).asScala.await
@@ -68,9 +67,9 @@ class TestScript(csw: CswServices) extends Script(csw) {
       //      })
 
       // ***************************************************
-      csw.onEvent(Collections.singleton("TCS.test.event-1"), CompletableFuture.completedFuture)
+      csw.onEvent(singleton("TCS.test.event-1"), CompletableFuture.completedFuture)
 
-      csw.getEvent("TCS.test.event-1").asScala.await
+      csw.getEvent(singleton("TCS.test.event-1")).asScala.await
     }
   }
 

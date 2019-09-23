@@ -25,11 +25,11 @@ trait JEventServiceDsl {
   lazy val publisher: IEventPublisher   = eventService.defaultPublisher
   lazy val subscriber: IEventSubscriber = eventService.defaultSubscriber
 
-  def systemEvent(sourcePrefix: String, eventName: String, parameters: Parameter[_]*): SystemEvent =
-    SystemEvent(Prefix(sourcePrefix), EventName(eventName), parameters.toSet)
+  def systemEvent(sourcePrefix: String, eventName: String, parameters: util.Set[Parameter[_]]): SystemEvent =
+    SystemEvent(Prefix(sourcePrefix), EventName(eventName), parameters.asScala.toSet)
 
-  def observeEvent(sourcePrefix: String, eventName: String, parameters: Parameter[_]*): ObserveEvent =
-    ObserveEvent(Prefix(sourcePrefix), EventName(eventName), parameters.toSet)
+  def observeEvent(sourcePrefix: String, eventName: String, parameters: util.Set[Parameter[_]]): ObserveEvent =
+    ObserveEvent(Prefix(sourcePrefix), EventName(eventName), parameters.asScala.toSet)
 
   def publishEvent(event: Event): CompletionStage[Done] =
     publisher.publish(event)
@@ -40,6 +40,6 @@ trait JEventServiceDsl {
   def onEvent(eventKeys: util.Set[String], callback: Event => CompletableFuture[_]): IEventSubscription =
     subscriber.subscribeAsync(eventKeys.asScala.map(EventKey(_)).asJava, callback)
 
-  def getEvent(eventKeys: String*): CompletableFuture[util.Set[Event]] =
-    subscriber.get(eventKeys.map(EventKey(_)).toSet.asJava)
+  def getEvent(eventKeys: util.Set[String]): CompletableFuture[util.Set[Event]] =
+    subscriber.get(eventKeys.asScala.map(EventKey(_)).toSet.asJava)
 }

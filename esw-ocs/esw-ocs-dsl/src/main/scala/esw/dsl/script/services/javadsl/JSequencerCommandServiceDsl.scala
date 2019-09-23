@@ -1,19 +1,26 @@
 package esw.dsl.script.services.javadsl
 
-import java.util.concurrent.CompletableFuture
+import java.util.concurrent.CompletionStage
 
 import akka.actor.typed.ActorSystem
 import csw.command.client.SequencerCommandServiceFactory
-import csw.location.models.AkkaLocation
+import csw.location.api.scaladsl.LocationService
 import csw.params.commands.CommandResponse.SubmitResponse
 import csw.params.commands.Sequence
+import esw.dsl.sequence_manager.LocationServiceUtil
 
 import scala.compat.java8.FutureConverters.FutureOps
+import scala.concurrent.ExecutionContext
 
 trait JSequencerCommandServiceDsl {
 
-  protected def actorSystem: ActorSystem[_]
+  private[esw] def _locationService: LocationService
+  implicit protected def actorSystem: ActorSystem[_]
+  private implicit val ec: ExecutionContext = actorSystem.executionContext
 
-  def submitSequence(location: AkkaLocation, sequence: Sequence): CompletableFuture[SubmitResponse] =
-    SequencerCommandServiceFactory.make(location)(actorSystem).submitAndWait(sequence).toJava.toCompletableFuture
+  def submitSequence(sequencerName: String, observingMode: String, sequence: Sequence): CompletionStage[SubmitResponse] =
+    new LocationServiceUtil(_locationService)
+      .findSequencer(sequencerName, observingMode)
+      .flatMap(location => SequencerCommandServiceFactory.make(location)(actorSystem).submitAndWait(sequence))
+      .toJava
 }
