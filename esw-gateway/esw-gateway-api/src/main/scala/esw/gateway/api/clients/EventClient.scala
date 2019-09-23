@@ -9,11 +9,11 @@ import esw.gateway.api.codecs.GatewayCodecs
 import esw.gateway.api.protocol.PostRequest.{GetEvent, PublishEvent}
 import esw.gateway.api.protocol.WebsocketRequest.{Subscribe, SubscribeWithPattern}
 import esw.gateway.api.protocol._
-import msocket.api.RequestClient
+import msocket.api.Transport
 
 import scala.concurrent.Future
 
-class EventClient(postClient: RequestClient[PostRequest], websocketClient: RequestClient[WebsocketRequest])
+class EventClient(postClient: Transport[PostRequest], websocketClient: Transport[WebsocketRequest])
     extends EventApi
     with GatewayCodecs {
 

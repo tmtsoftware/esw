@@ -29,8 +29,8 @@ import esw.ocs.api.models.{Step, StepList}
 import esw.ocs.api.protocol._
 import esw.ocs.app.wiring.SequencerWiring
 import esw.ocs.impl.messages.SequencerState.Offline
-import mscoket.impl.post.PostClient
-import mscoket.impl.ws.WebsocketClient
+import mscoket.impl.post.HttpPostTransport
+import mscoket.impl.ws.WebsocketTransport
 
 import scala.concurrent.Future
 import scala.concurrent.duration.DurationLong
@@ -72,8 +72,8 @@ class SequencerAdminIntegrationTest
     val uri             = locationService.resolve(HttpConnection(componentId), 5.seconds).futureValue.get.uri
     val httpUrl         = s"${uri.toString}post"
     val wsUrl           = s"ws://${uri.getHost}:${uri.getPort}/websocket"
-    val postClient      = new PostClient[SequencerAdminPostRequest](httpUrl)
-    val websocketClient = new WebsocketClient[SequencerAdminWebsocketRequest](wsUrl)
+    val postClient      = new HttpPostTransport[SequencerAdminPostRequest](httpUrl, None)
+    val websocketClient = new WebsocketTransport[SequencerAdminWebsocketRequest](wsUrl)
 
     sequencerAdmin = new SequencerAdminClient(postClient, websocketClient)
     sequencer = resolveSequencer()

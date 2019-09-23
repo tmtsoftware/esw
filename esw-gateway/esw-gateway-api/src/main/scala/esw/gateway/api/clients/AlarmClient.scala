@@ -7,11 +7,11 @@ import esw.gateway.api.AlarmApi
 import esw.gateway.api.codecs.GatewayCodecs
 import esw.gateway.api.protocol.PostRequest.SetAlarmSeverity
 import esw.gateway.api.protocol.{PostRequest, SetAlarmSeverityFailure}
-import msocket.api.RequestClient
+import msocket.api.Transport
 
 import scala.concurrent.Future
 
-class AlarmClient(postClient: RequestClient[PostRequest]) extends AlarmApi with GatewayCodecs {
+class AlarmClient(postClient: Transport[PostRequest]) extends AlarmApi with GatewayCodecs {
 
   override def setSeverity(alarmKey: AlarmKey, severity: AlarmSeverity): Future[Either[SetAlarmSeverityFailure, Done]] = {
     postClient.requestResponse[Either[SetAlarmSeverityFailure, Done]](

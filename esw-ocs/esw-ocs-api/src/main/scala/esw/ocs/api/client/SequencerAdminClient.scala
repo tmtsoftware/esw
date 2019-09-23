@@ -9,13 +9,13 @@ import esw.ocs.api.models.StepList
 import esw.ocs.api.protocol.SequencerAdminPostRequest._
 import esw.ocs.api.protocol.SequencerAdminWebsocketRequest.QueryFinal
 import esw.ocs.api.protocol.{SequencerAdminWebsocketRequest, _}
-import msocket.api.RequestClient
+import msocket.api.Transport
 
 import scala.concurrent.Future
 
 class SequencerAdminClient(
-    postClient: RequestClient[SequencerAdminPostRequest],
-    websocketClient: RequestClient[SequencerAdminWebsocketRequest]
+    postClient: Transport[SequencerAdminPostRequest],
+    websocketClient: Transport[SequencerAdminWebsocketRequest]
 ) extends SequencerAdminApi
     with SequencerAdminHttpCodecs {
 

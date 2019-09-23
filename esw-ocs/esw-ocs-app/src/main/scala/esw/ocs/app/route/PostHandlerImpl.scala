@@ -7,10 +7,10 @@ import esw.ocs.api.codecs.SequencerAdminHttpCodecs
 import esw.ocs.api.protocol.SequencerAdminPostRequest
 import esw.ocs.api.protocol.SequencerAdminPostRequest._
 import mscoket.impl.HttpCodecs
-import msocket.api.RequestHandler
+import msocket.api.MessageHandler
 
 class PostHandlerImpl(sequencerAdmin: SequencerAdminApi)
-    extends RequestHandler[SequencerAdminPostRequest, StandardRoute]
+    extends MessageHandler[SequencerAdminPostRequest, StandardRoute]
     with SequencerAdminHttpCodecs
     with HttpCodecs {
 

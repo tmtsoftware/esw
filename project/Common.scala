@@ -27,7 +27,7 @@ object Common extends AutoPlugin {
       ScmInfo(url(EswKeys.homepageValue), "git@github.com:tmtsoftware/esw.git")
     ),
     resolvers += "jitpack" at "https://jitpack.io",
-    resolvers += "bintray" at "http://jcenter.bintray.com",
+    resolvers += "bintray" at "https://jcenter.bintray.com",
     autoCompilerPlugins := true,
     enableFatalWarnings := false,
     suppressAnnotatedWarnings := true,

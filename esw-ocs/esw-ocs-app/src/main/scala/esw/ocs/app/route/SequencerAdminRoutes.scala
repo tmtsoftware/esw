@@ -10,11 +10,11 @@ import esw.ocs.api.codecs.SequencerAdminHttpCodecs
 import esw.ocs.api.protocol.{SequencerAdminPostRequest, SequencerAdminWebsocketRequest}
 import mscoket.impl.HttpCodecs
 import mscoket.impl.ws.WsServerFlow
-import msocket.api.RequestHandler
+import msocket.api.MessageHandler
 
 class SequencerAdminRoutes(
-    postHandler: RequestHandler[SequencerAdminPostRequest, StandardRoute],
-    websocketHandler: RequestHandler[SequencerAdminWebsocketRequest, Source[Message, NotUsed]]
+    postHandler: MessageHandler[SequencerAdminPostRequest, StandardRoute],
+    websocketHandler: MessageHandler[SequencerAdminWebsocketRequest, Source[Message, NotUsed]]
 ) extends SequencerAdminHttpCodecs
     with HttpCodecs {
 
