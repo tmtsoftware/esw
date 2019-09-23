@@ -7,7 +7,6 @@ import csw.location.api.scaladsl.LocationService
 import csw.time.scheduler.TimeServiceSchedulerFactory
 import esw.dsl.script.services._
 import esw.ocs.api.SequencerAdminFactoryApi
-import scala.language.experimental.macros
 
 class CswServices(
     private[esw] val sequenceOperatorFactory: () => SequenceOperator,

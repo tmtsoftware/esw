@@ -19,9 +19,9 @@ class EngineTest extends BaseTestSuite {
 
   private class Mocks {
     val sequenceOperator: SequenceOperatorImpl = mock[SequenceOperatorImpl]
-    val script: Script                     = mock[Script]
-    val cmd: SequenceCommand               = mock[SequenceCommand]
-    val id: Id                             = mock[Id]
+    val script: Script                         = mock[Script]
+    val cmd: SequenceCommand                   = mock[SequenceCommand]
+    val id: Id                                 = mock[Id]
   }
 
   "Engine" must {
