@@ -11,7 +11,7 @@ import esw.gateway.api.{AlarmApi, CommandApi, EventApi}
 import esw.gateway.impl.{AlarmImpl, CommandImpl, EventImpl}
 import esw.gateway.server.handlers.{PostHandlerImpl, WebsocketHandlerImpl}
 import esw.http.core.wiring.{HttpService, ServerWiring}
-import msocket.api.RequestHandler
+import msocket.api.MessageHandler
 
 import scala.concurrent.duration.DurationLong
 
@@ -26,9 +26,8 @@ class GatewayWiring(_port: Option[Int] = None) extends GatewayCodecs {
   lazy val eventApi: EventApi     = new EventImpl(eventService, eventSubscriberUtil)
   lazy val commandApi: CommandApi = new CommandImpl(componentFactory.commandService)
 
-  lazy val postHandler: RequestHandler[PostRequest, StandardRoute] =
-    new PostHandlerImpl(alarmApi, commandApi, eventApi)
-  lazy val websocketHandler: RequestHandler[WebsocketRequest, Source[Message, NotUsed]] =
+  lazy val postHandler: MessageHandler[PostRequest, StandardRoute] = new PostHandlerImpl(alarmApi, commandApi, eventApi)
+  lazy val websocketHandler: MessageHandler[WebsocketRequest, Source[Message, NotUsed]] =
     new WebsocketHandlerImpl(commandApi, eventApi)
 
   lazy val routes      = new Routes(postHandler, websocketHandler, logger)

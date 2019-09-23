@@ -35,6 +35,7 @@ class ControlDslTest extends BaseTestSuite {
       (() => getCounter, loopFinished)
     }
 
+    override protected implicit def strandEc: StrandEc = StrandEc()
   }
 
   override implicit def patienceConfig: PatienceConfig = PatienceConfig(5.seconds)

@@ -6,23 +6,26 @@ import csw.time.core.models.UTCTime
 import esw.dsl.script.exceptions.UnhandledCommandException
 import esw.dsl.script.utils.{FunctionBuilder, FunctionHandlers}
 import esw.ocs.api.protocol.PullNextResult
+import esw.ocs.macros.StrandEc
 
 import scala.concurrent.Future
+import scala.concurrent.duration.DurationInt
 import scala.reflect.ClassTag
 
 trait BaseScriptDsl {
-  private[ocs] def execute(command: SequenceCommand): Future[Unit]
-  private[ocs] def executeGoOnline(): Future[Done]
-  private[ocs] def executeGoOffline(): Future[Done]
-  private[ocs] def executeShutdown(): Future[Done]
-  private[ocs] def executeAbort(): Future[Done]
-  private[ocs] def executeDiagnosticMode(startTime: UTCTime, hint: String): Future[Done]
-  private[ocs] def executeOperationsMode(): Future[Done]
+  private[esw] def execute(command: SequenceCommand): Future[Unit]
+  private[esw] def executeGoOnline(): Future[Done]
+  private[esw] def executeGoOffline(): Future[Done]
+  private[esw] def executeShutdown(): Future[Done]
+  private[esw] def executeAbort(): Future[Done]
+  private[esw] def executeDiagnosticMode(startTime: UTCTime, hint: String): Future[Done]
+  private[esw] def executeOperationsMode(): Future[Done]
 }
 
 class Script(val csw: CswServices) extends ScriptDsl {
   // todo: should this come from conf file?
-  override private[esw] val loopInterval = 50.millis
+  override private[esw] val loopInterval             = 50.millis
+  override protected implicit def strandEc: StrandEc = StrandEc()
 }
 
 trait ScriptDsl extends ControlDsl with BaseScriptDsl {

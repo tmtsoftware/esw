@@ -5,7 +5,7 @@ import akka.stream.Materializer
 import akka.stream.scaladsl.Source
 import csw.params.commands.CommandResponse.Error
 import csw.params.core.models.Id
-import esw.dsl.script.Script
+import esw.dsl.script.{BaseScriptDsl, SequenceOperator}
 import esw.ocs.api.protocol.{PullNextResult, Unhandled}
 
 import scala.async.Async._

@@ -7,11 +7,11 @@ import java.util.function.Supplier
 import akka.Done
 import csw.params.commands.{Observe, SequenceCommand, Setup}
 import csw.time.core.models.UTCTime
+import esw.dsl.script.Async.{async, await}
+import esw.dsl.script.exceptions.UnhandledCommandException
+import esw.dsl.script.utils.{FunctionBuilder, FunctionHandlers}
+import esw.dsl.script.{BaseScriptDsl, CswServices}
 import esw.ocs.api.protocol.PullNextResult
-import esw.ocs.impl.dsl.Async._
-import esw.ocs.impl.dsl.utils.{FunctionBuilder, FunctionHandlers}
-import esw.ocs.impl.dsl.{BaseScriptDsl, CswServices}
-import esw.ocs.impl.exceptions.UnhandledCommandException
 import esw.ocs.macros.StrandEc
 
 import scala.compat.java8.FutureConverters.{CompletionStageOps, FutureOps}
@@ -50,29 +50,29 @@ abstract class JScript(val csw: CswServices) extends BaseScriptDsl {
       CompletableFuture.failedFuture(new UnhandledCommandException(input))
     }
 
-  private[ocs] def execute(command: SequenceCommand): Future[Unit] = commandHandler(command).toScala.map(_ => ())
+  private[esw] def execute(command: SequenceCommand): Future[Unit] = commandHandler(command).toScala.map(_ => ())
 
   private def executeHandler[T, S](f: FunctionHandlers[Unit, CompletionStage[Void]]): Future[Unit] =
     Future.sequence(f.execute(()).map(_.toScala)).map(_ => ())
 
-  private[ocs] def executeGoOnline(): Future[Done] =
+  private[esw] def executeGoOnline(): Future[Done] =
     executeHandler(onlineHandlers).map { _ =>
       isOnline = true
       Done
     }
 
-  private[ocs] def executeGoOffline(): Future[Done] = {
+  private[esw] def executeGoOffline(): Future[Done] = {
     isOnline = false
     executeHandler(offlineHandlers).map(_ => Done)
   }
 
-  private[ocs] def executeShutdown(): Future[Done] = executeHandler(shutdownHandlers).map(_ => Done)
+  private[esw] def executeShutdown(): Future[Done] = executeHandler(shutdownHandlers).map(_ => Done)
 
-  private[ocs] def executeAbort(): Future[Done] = executeHandler(abortHandlers).map(_ => Done)
+  private[esw] def executeAbort(): Future[Done] = executeHandler(abortHandlers).map(_ => Done)
 
   // todo:
-  private[ocs] def executeDiagnosticMode(startTime: UTCTime, hint: String): Future[Done] = ???
-  private[ocs] def executeOperationsMode(): Future[Done]                                 = ???
+  private[esw] def executeDiagnosticMode(startTime: UTCTime, hint: String): Future[Done] = ???
+  private[esw] def executeOperationsMode(): Future[Done]                                 = ???
 
   protected final def jNextIf(f: SequenceCommand => Boolean): CompletionStage[Optional[SequenceCommand]] =
     async {

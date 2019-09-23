@@ -3,10 +3,10 @@ package esw.dsl.script
 import akka.Done
 import esw.dsl.script.utils.FutureUtils
 import esw.ocs.macros.{AsyncMacros, StrandEc}
-import scala.language.experimental.macros
 
-import scala.concurrent.duration.{DurationDouble, FiniteDuration}
+import scala.concurrent.duration.FiniteDuration
 import scala.concurrent.{ExecutionContext, Future}
+import scala.language.experimental.macros
 
 trait ControlDsl {
   protected implicit def strandEc: StrandEc

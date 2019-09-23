@@ -11,13 +11,13 @@ import esw.gateway.api.codecs.GatewayCodecs
 import esw.gateway.api.protocol.{PostRequest, WebsocketRequest}
 import mscoket.impl.HttpCodecs
 import mscoket.impl.ws.WsServerFlow
-import msocket.api.RequestHandler
+import msocket.api.MessageHandler
 
 import scala.util.control.NonFatal
 
 class Routes(
-    postHandler: RequestHandler[PostRequest, StandardRoute],
-    websocketHandler: RequestHandler[WebsocketRequest, Source[Message, NotUsed]],
+    postHandler: MessageHandler[PostRequest, StandardRoute],
+    websocketHandler: MessageHandler[WebsocketRequest, Source[Message, NotUsed]],
     log: Logger
 ) extends GatewayCodecs
     with HttpCodecs {

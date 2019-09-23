@@ -11,16 +11,16 @@ import esw.ocs.api.protocol.SequencerAdminPostRequest._
 import esw.ocs.api.protocol.SequencerAdminWebsocketRequest.QueryFinal
 import esw.ocs.api.protocol.{SequencerAdminPostRequest, SequencerAdminWebsocketRequest, _}
 import io.bullet.borer.Decoder
-import msocket.api.RequestClient
+import msocket.api.Transport
 import org.mockito.ArgumentMatchers.{any, eq => argsEq}
 
 import scala.concurrent.Future
 
 class SequencerAdminClientTest extends BaseTestSuite with SequencerAdminHttpCodecs {
 
-  private val postClient                                                     = mock[RequestClient[SequencerAdminPostRequest]]
-  private val websocketClient: RequestClient[SequencerAdminWebsocketRequest] = mock[RequestClient[SequencerAdminWebsocketRequest]]
-  private val sequencerAdminClient                                           = new SequencerAdminClient(postClient, websocketClient)
+  private val postClient                                                 = mock[Transport[SequencerAdminPostRequest]]
+  private val websocketClient: Transport[SequencerAdminWebsocketRequest] = mock[Transport[SequencerAdminWebsocketRequest]]
+  private val sequencerAdminClient                                       = new SequencerAdminClient(postClient, websocketClient)
   "SequencerAdminClient" must {
 
     "call postClient with GetSequence request | ESW-222" in {

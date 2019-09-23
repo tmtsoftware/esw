@@ -13,16 +13,13 @@ import csw.location.models.Connection.AkkaConnection
 import csw.location.models.{AkkaLocation, AkkaRegistration, ComponentId, ComponentType}
 import csw.network.utils.SocketUtils
 import esw.dsl.script.Async.{async, await}
+import esw.dsl.script.{BaseScriptDsl, CswServices}
 import esw.dsl.script.utils.ScriptLoader
-import esw.dsl.script.{CswServices, Script}
 import esw.dsl.sequence_manager.LocationServiceUtil
 import esw.http.core.wiring.{ActorRuntime, CswWiring, HttpService, Settings}
 import esw.ocs.api.protocol.RegistrationError
 import esw.ocs.app.route.{PostHandlerImpl, SequencerAdminRoutes, WebsocketHandlerImpl}
 import esw.ocs.impl.core._
-import esw.ocs.impl.dsl.Async.{async, await}
-import esw.ocs.impl.dsl.utils.ScriptLoader
-import esw.ocs.impl.dsl.{BaseScriptDsl, CswServices}
 import esw.ocs.impl.internal.{SequencerServer, Timeouts}
 import esw.ocs.impl.messages.SequencerMessages.{EswSequencerMessage, Shutdown}
 import esw.ocs.impl.syntax.FutureSyntax.FutureOps

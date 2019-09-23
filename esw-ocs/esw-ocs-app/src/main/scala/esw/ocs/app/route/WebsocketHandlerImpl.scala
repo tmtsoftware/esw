@@ -8,10 +8,10 @@ import esw.ocs.api.codecs.SequencerAdminHttpCodecs
 import esw.ocs.api.protocol.SequencerAdminWebsocketRequest
 import esw.ocs.api.protocol.SequencerAdminWebsocketRequest.QueryFinal
 import mscoket.impl.ws.WebsocketStreamExtensions
-import msocket.api.RequestHandler
+import msocket.api.MessageHandler
 
 class WebsocketHandlerImpl(sequencerAdmin: SequencerAdminApi)
-    extends RequestHandler[SequencerAdminWebsocketRequest, Source[Message, NotUsed]]
+    extends MessageHandler[SequencerAdminWebsocketRequest, Source[Message, NotUsed]]
     with SequencerAdminHttpCodecs
     with WebsocketStreamExtensions {
 

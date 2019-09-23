@@ -7,10 +7,10 @@ import esw.gateway.api.protocol.PostRequest
 import esw.gateway.api.protocol.PostRequest.{CommandRequest, GetEvent, PublishEvent, SetAlarmSeverity}
 import esw.gateway.api.{AlarmApi, CommandApi, EventApi}
 import mscoket.impl.HttpCodecs
-import msocket.api.RequestHandler
+import msocket.api.MessageHandler
 
 class PostHandlerImpl(alarmApi: AlarmApi, commandApi: CommandApi, eventApi: EventApi)
-    extends RequestHandler[PostRequest, StandardRoute]
+    extends MessageHandler[PostRequest, StandardRoute]
     with GatewayCodecs
     with HttpCodecs {
 

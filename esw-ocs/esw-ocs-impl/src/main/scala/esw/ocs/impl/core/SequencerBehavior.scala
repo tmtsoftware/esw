@@ -15,7 +15,7 @@ import csw.location.models.Connection.AkkaConnection
 import csw.logging.client.commons.LogAdminUtil
 import csw.params.commands.Sequence
 import csw.time.core.models.UTCTime
-import esw.dsl.script.ScriptDsl
+import esw.dsl.script.BaseScriptDsl
 import esw.ocs.api.codecs.OcsCodecs
 import esw.ocs.api.protocol._
 import esw.ocs.impl.internal.Timeouts

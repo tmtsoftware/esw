@@ -15,9 +15,9 @@ import esw.gateway.api.codecs.GatewayCodecs
 import esw.gateway.api.protocol.CommandAction.{Oneway, Submit, Validate}
 import esw.gateway.api.protocol.{PostRequest, WebsocketRequest}
 import esw.http.core.FutureEitherExt
-import mscoket.impl.post.PostClient
-import mscoket.impl.ws.WebsocketClient
-import msocket.api.RequestClient
+import mscoket.impl.post.HttpPostTransport
+import mscoket.impl.ws.WebsocketTransport
+import msocket.api.Transport
 import org.scalatest.WordSpecLike
 
 import scala.concurrent.Future
@@ -46,9 +46,9 @@ class CommandGatewayTest extends ScalaTestFrameworkTestKit with WordSpecLike wit
   "CommandApi" must {
 
     "handle validate, oneway, submit, subscribe current state and queryFinal commands | ESW-223, ESW-100, ESW-91, ESW-216" in {
-      val postClient: RequestClient[PostRequest] = new PostClient[PostRequest](s"http://localhost:$port/post")
-      val websocketClient: RequestClient[WebsocketRequest] =
-        new WebsocketClient[WebsocketRequest](s"ws://localhost:$port/websocket")
+      val postClient: Transport[PostRequest] = new HttpPostTransport[PostRequest](s"http://localhost:$port/post", None)
+      val websocketClient: Transport[WebsocketRequest] =
+        new WebsocketTransport[WebsocketRequest](s"ws://localhost:$port/websocket")
       val commandClient = new CommandClient(postClient, websocketClient)
 
       frameworkTestKit.spawnStandalone(ConfigFactory.load("standalone.conf"))

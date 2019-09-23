@@ -5,7 +5,7 @@ import csw.command.client.CommandResponseManager
 import csw.event.api.scaladsl.EventService
 import csw.location.api.scaladsl.LocationService
 import csw.time.scheduler.TimeServiceSchedulerFactory
-import esw.dsl.script.services._
+import esw.dsl.script.javadsl._
 import esw.ocs.api.SequencerAdminFactoryApi
 
 class CswServices(

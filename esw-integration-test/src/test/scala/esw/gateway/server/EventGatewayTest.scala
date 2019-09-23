@@ -15,9 +15,9 @@ import esw.gateway.api.clients.EventClient
 import esw.gateway.api.codecs.GatewayCodecs
 import esw.gateway.api.protocol.{EmptyEventKeys, PostRequest, WebsocketRequest}
 import esw.http.core.FutureEitherExt
-import mscoket.impl.post.PostClient
-import mscoket.impl.ws.WebsocketClient
-import msocket.api.RequestClient
+import mscoket.impl.post.HttpPostTransport
+import mscoket.impl.ws.WebsocketTransport
+import msocket.api.Transport
 import org.scalatest.WordSpecLike
 
 import scala.concurrent.duration.{DurationInt, FiniteDuration}
@@ -57,9 +57,9 @@ class EventGatewayTest extends ScalaTestFrameworkTestKit(EventServer) with WordS
 
   "EventApi" must {
     "publish, get, subscribe and pattern subscribe events | ESW-94, ESW-93, ESW-92, ESW-216" in {
-      val postClient: RequestClient[PostRequest] = new PostClient[PostRequest](s"http://localhost:$port/post")
-      val websocketClient: RequestClient[WebsocketRequest] =
-        new WebsocketClient[WebsocketRequest](s"ws://localhost:$port/websocket")
+      val postClient: Transport[PostRequest] = new HttpPostTransport[PostRequest](s"http://localhost:$port/post", None)
+      val websocketClient: Transport[WebsocketRequest] =
+        new WebsocketTransport[WebsocketRequest](s"ws://localhost:$port/websocket")
       val eventClient: EventClient = new EventClient(postClient, websocketClient)
 
       val eventsF  = eventClient.subscribe(eventKeys, None).take(4).runWith(Sink.seq)
@@ -84,9 +84,9 @@ class EventGatewayTest extends ScalaTestFrameworkTestKit(EventServer) with WordS
     }
 
     "subscribe events returns an EmptyEventKeys error on sending no event keys in subscription| ESW-93, ESW-216" in {
-      val postClient: RequestClient[PostRequest] = new PostClient[PostRequest](s"http://localhost:$port/post")
-      val websocketClient: RequestClient[WebsocketRequest] =
-        new WebsocketClient[WebsocketRequest](s"ws://localhost:$port/websocket")
+      val postClient: Transport[PostRequest] = new HttpPostTransport[PostRequest](s"http://localhost:$port/post", None)
+      val websocketClient: Transport[WebsocketRequest] =
+        new WebsocketTransport[WebsocketRequest](s"ws://localhost:$port/websocket")
       val eventClient: EventClient = new EventClient(postClient, websocketClient)
 
       eventClient.subscribe(Set.empty, None).toMat(Sink.head)(Keep.left).run().futureValue.get should ===(EmptyEventKeys)
