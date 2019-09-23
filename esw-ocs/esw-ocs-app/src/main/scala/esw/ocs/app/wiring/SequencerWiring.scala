@@ -12,6 +12,9 @@ import csw.location.client.ActorSystemFactory
 import csw.location.models.Connection.AkkaConnection
 import csw.location.models.{AkkaLocation, AkkaRegistration, ComponentId, ComponentType}
 import csw.network.utils.SocketUtils
+import esw.dsl.script.Async.{async, await}
+import esw.dsl.script.utils.ScriptLoader
+import esw.dsl.script.{CswServices, Script}
 import esw.dsl.sequence_manager.LocationServiceUtil
 import esw.http.core.wiring.{ActorRuntime, CswWiring, HttpService, Settings}
 import esw.ocs.api.protocol.RegistrationError
@@ -50,7 +53,7 @@ private[ocs] class SequencerWiring(val sequencerId: String, val observingMode: S
 
   //Pass lambda to break circular dependency shown below.
   //SequencerRef -> Script -> cswServices -> SequencerOperator -> SequencerRef
-  private lazy val sequenceOperatorFactory = () => new SequenceOperator(sequencerRef)
+  private lazy val sequenceOperatorFactory = () => new SequenceOperatorImpl(sequencerRef)
   private lazy val componentId             = ComponentId(sequencerName, ComponentType.Sequencer)
   private lazy val script: BaseScriptDsl   = ScriptLoader.loadKotlinScript(scriptClass, cswServices)
 

@@ -1,9 +1,9 @@
 package esw.ocs.impl.internal
 
+import esw.dsl.script.CswServices
 import esw.ocs.api.BaseTestSuite
-import esw.ocs.impl.dsl.CswServices
-import esw.ocs.impl.dsl.utils.ScriptLoader
-import esw.ocs.impl.exceptions.ScriptLoadingException._
+import esw.dsl.script.utils.ScriptLoader
+import esw.dsl.script.exceptions.ScriptLoadingException._
 
 class ScriptLoaderTest extends BaseTestSuite {
 

@@ -3,6 +3,7 @@ package esw.ocs.impl.dsl
 import java.util.concurrent.atomic.AtomicInteger
 
 import akka.Done
+import esw.dsl.script.{ControlDsl, StopIf}
 import esw.ocs.api.BaseTestSuite
 import esw.ocs.macros.StrandEc
 import org.scalatest.time.SpanSugar.convertFloatToGrainOfTime
@@ -14,8 +15,7 @@ import scala.concurrent.duration.FiniteDuration
 class ControlDslTest extends BaseTestSuite {
 
   class TestDsl() extends ControlDsl {
-    override protected implicit def strandEc: StrandEc = StrandEc()
-    override private[ocs] val loopInterval             = 500.millis
+    override private[esw] val loopInterval = 500.millis
     def counterLoop(minimumDelay: Option[FiniteDuration] = None): (() => Future[Int], Future[Done]) = {
       var counter = 0
 

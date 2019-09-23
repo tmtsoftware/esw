@@ -1,7 +1,7 @@
 package esw.ocs.impl.dsl
 
 import esw.ocs.api.BaseTestSuite
-import esw.ocs.impl.dsl.utils.FutureUtils
+import esw.dsl.script.utils.FutureUtils
 import esw.ocs.macros.StrandEc
 
 import scala.concurrent.Future
