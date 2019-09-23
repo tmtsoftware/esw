@@ -23,6 +23,7 @@ class ComponentFactory(locationService: LocationService, commandServiceFactory: 
         case None               => throw new IllegalArgumentException(s"Could not find component - $componentName of type - $componentType")
       }
 
+  //fixme: Return Either[ErrorResponseMsg, CommandService]
   def commandService(componentName: String, componentType: ComponentType): Future[CommandService] =
     resolve(componentName, componentType)(commandServiceFactory.make)
 }

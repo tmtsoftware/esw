@@ -4,9 +4,10 @@ import caseapp.{CommandApp, RemainingArgs}
 import csw.location.client.utils.LocationServerStatus
 import csw.location.models.AkkaLocation
 import csw.logging.api.scaladsl.Logger
-import esw.ocs.api.models.messages.error.RegistrationError
-import esw.ocs.app.SequencerAppCommand.{SequenceComponent, Sequencer}
-import esw.ocs.internal.{ActorRuntime, SequenceComponentWiring, SequencerWiring}
+import esw.http.core.wiring.ActorRuntime
+import esw.ocs.api.protocol.RegistrationError
+import esw.ocs.app.SequencerAppCommand._
+import esw.ocs.app.wiring.{SequenceComponentWiring, SequencerWiring}
 
 import scala.util.control.NonFatal
 
@@ -20,38 +21,44 @@ object SequencerApp extends CommandApp[SequencerAppCommand] {
     run(command)
   }
 
+  def sequencerWiringWithHttp(
+      sequencerId: String,
+      observingMode: String,
+      sequenceComponentName: Option[String]
+  ): SequencerWiring = new SequencerWiring(sequencerId, observingMode, sequenceComponentName)
+
   def run(command: SequencerAppCommand, enableLogging: Boolean = true): Unit =
     command match {
-      case SequenceComponent(name) =>
-        val wiring = new SequenceComponentWiring(name)
-        startSequenceComponent(name, wiring, enableLogging)
+      case SequenceComponent(prefix) =>
+        val wiring = new SequenceComponentWiring(prefix, sequencerWiringWithHttp(_, _, _).sequencerServer)
+        startSequenceComponent(wiring, enableLogging)
 
       case Sequencer(id, mode) =>
-        val wiring = new SequencerWiring(id, mode)
+        val wiring: SequencerWiring = sequencerWiringWithHttp(id, mode, None)
         startSequencer(wiring, enableLogging)
     }
 
-  def startSequenceComponent(name: String, sequenceComponentWiring: SequenceComponentWiring, enableLogging: Boolean): Unit = {
+  def startSequenceComponent(sequenceComponentWiring: SequenceComponentWiring, enableLogging: Boolean): Unit = {
     import sequenceComponentWiring._
-    withLogging(actorRuntime, enableLogging) {
+    withLogging(actorRuntime, cswWiring.logger, enableLogging) {
       sequenceComponentWiring.start()
     }
   }
 
   def startSequencer(sequencerWiring: SequencerWiring, enableLogging: Boolean): Unit = {
     import sequencerWiring._
-    withLogging(actorRuntime, enableLogging) {
-      sequencerWiring.start()
+    withLogging(actorRuntime, cswWiring.logger, enableLogging) {
+      sequencerServer.start()
     }
   }
 
-  private def withLogging[T](actorRuntime: ActorRuntime, enableLogging: Boolean)(
+  private def withLogging(actorRuntime: ActorRuntime, log: Logger, enableLogging: Boolean)(
       f: => Either[RegistrationError, AkkaLocation]
   ): Unit = {
     import actorRuntime._
     def cleanup(): Unit = typedSystem.terminate()
     try {
-      if (enableLogging) startLogging()
+      if (enableLogging) startLogging(typedSystem.name)
       report(f, log, enableLogging)(() => cleanup())
     } catch {
       case NonFatal(e) => cleanup(); throw e

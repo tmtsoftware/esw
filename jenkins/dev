@@ -1,0 +1,85 @@
+pipeline {
+    agent {
+        label 'master'
+    }
+
+    options {
+        timeout(time: 2, unit: 'HOURS')
+        timestamps()
+    }
+
+    stages {
+
+        stage('Checkout') {
+            steps {
+                git 'git@github.com:tmtsoftware/esw.git'
+            }
+        }
+
+        stage('Build') {
+            steps {
+                sh "sbt scalafmtCheck"
+                sh "sbt clean makeSite"
+                sh "sbt ';set every Seq(enableFatalWarnings := true, scalafmtOnCompile := false); compile'"
+            }
+        }
+
+        stage('Test') {
+            steps {
+                sh "sbt -DenableCoverage=true -DgenerateStoryReport=true ';set every enableFatalWarnings := true; clean; test:test'"
+            }
+            post {
+                always {
+                    sh "sbt -DenableCoverage=true coverageReport"
+                    sh "sbt coverageAggregate"
+                    junit testResults: '**/target/test-reports/*.xml', allowEmptyResults: true
+                    publishHTML(target: [
+                            allowMissing         : true,
+                            alwaysLinkToLastBuild: false,
+                            keepAll              : true,
+                            reportDir            : './target/scala-2.12/scoverage-report',
+                            reportFiles          : 'index.html',
+                            reportName           : "Scoverage Report"
+                    ])
+
+                    publishHTML(target: [
+                            alwaysLinkToLastBuild: false,
+                            keepAll              : true,
+                            reportDir            : './target/testStoryMapping/',
+                            reportFiles          : 'index.html',
+                            reportName           : "Test story mapping"
+                    ])
+                }
+            }
+        }
+    }
+
+    post {
+        always {
+            script {
+                sendNotification(currentBuild.result)
+            }
+        }
+    }
+}
+
+def sendNotification(String buildStatus = 'STARTED') {
+    buildStatus = buildStatus ?: 'SUCCESS'
+
+    def colorCode = '#FF0000'
+    def subject = "${buildStatus}: Job '${env.JOB_NAME}' [${env.BUILD_NUMBER}]'"
+    def summary = "${subject} (${env.BUILD_URL})"
+
+    // override default values based on build status
+    if (buildStatus == 'STARTED') {
+        color = 'YELLOW'
+        colorCode = '#FFFF00'
+    } else if (buildStatus == 'SUCCESS') {
+        color = 'GREEN'
+        colorCode = '#00FF00'
+    } else {
+        color = 'RED'
+        colorCode = '#FF0000'
+    }
+    slackSend(channel: "#esw-build", color: colorCode, message: summary)
+}

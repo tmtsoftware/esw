@@ -3,7 +3,7 @@ package esw.ocs.api.models
 import csw.params.commands.SequenceCommand
 import csw.params.core.models.Id
 import esw.ocs.api.models.StepStatus.{Finished, InFlight, Pending}
-import esw.ocs.api.models.messages.error.StepListError._
+import esw.ocs.api.protocol.EditorError._
 
 case class Step private[ocs] (command: SequenceCommand, status: StepStatus, hasBreakpoint: Boolean) {
   def id: Id             = command.runId
@@ -19,20 +19,17 @@ case class Step private[ocs] (command: SequenceCommand, status: StepStatus, hasB
 
   def isInFlight: Boolean = status == StepStatus.InFlight
 
-  def addBreakpoint(): Either[NotSupported, Step] =
+  def addBreakpoint(): Either[CannotOperateOnAnInFlightOrFinishedStep.type, Step] =
     if (isPending) Right(copy(hasBreakpoint = true))
-    else Left(NotSupported(status))
+    else Left(CannotOperateOnAnInFlightOrFinishedStep)
 
   def removeBreakpoint(): Step = if (hasBreakpoint) copy(hasBreakpoint = false) else this
 
-  def withStatus(newStatus: StepStatus): Either[UpdateNotSupported, Step] =
+  def withStatus(newStatus: StepStatus): Step =
     (status, newStatus) match {
-      case (Pending, InFlight) | (InFlight, _: Finished) => Right(copy(status = newStatus))
-      case (from, to)                                    => Left(UpdateNotSupported(from, to))
+      case (Pending, InFlight) | (InFlight, _: Finished) => copy(status = newStatus)
+      case _                                             => this
     }
-
-  // special case to simplify types in SequencerImpl
-  private[ocs] def withStatus(oldStatus: Pending.type, newStatus: InFlight.type): Step = copy(status = newStatus)
 }
 
 object Step {

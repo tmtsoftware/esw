@@ -1,12 +1,19 @@
 package esw.http.core
 
-import org.mockito.{ArgumentMatchersSugar, MockitoSugar}
-import org.scalatest.{BeforeAndAfterAll, BeforeAndAfterEach, Matchers, WordSpec}
+import org.scalactic.TypeCheckedTripleEquals
+import org.scalatest._
+import org.scalatest.concurrent.{Eventually, ScalaFutures}
+import org.scalatestplus.mockito.MockitoSugar
 
 trait BaseTestSuite
     extends WordSpec
     with Matchers
-    with BeforeAndAfterEach
     with BeforeAndAfterAll
+    with BeforeAndAfterEach
+    with ScalaFutures
+    with OptionValues
+    with EitherValues
     with MockitoSugar
-    with ArgumentMatchersSugar
+    with TypeCheckedTripleEquals
+    with Eventually
+    with FutureEitherExt

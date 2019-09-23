@@ -10,6 +10,7 @@ import csw.location.models.{AkkaLocation, ComponentId, ComponentType}
 import csw.params.core.models.Prefix
 import esw.http.core.BaseTestSuite
 import esw.http.core.wiring.ActorRuntime
+import org.mockito.Mockito.{verify, when}
 
 import scala.concurrent.duration.DurationInt
 import scala.concurrent.{Await, Future}
@@ -25,7 +26,6 @@ class ComponentFactoryTest extends BaseTestSuite {
     super.afterAll()
   }
 
-  // fixme: follow tests naming convention, refer StepListTest.scala
   "ComponentFactory" must {
     "resolve components using location service | ESW-91" in {
       val locationService       = mock[LocationService]
@@ -59,7 +59,7 @@ class ComponentFactoryTest extends BaseTestSuite {
       when(locationService.resolve(connection, 5.seconds)).thenReturn(expectedLocation)
 
       componentFactory.commandService(componentName, componentType)
-      verify(commandServiceFactory).make(location)
+      eventually(verify(commandServiceFactory).make(location))
     }
   }
 }
