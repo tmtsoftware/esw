@@ -1,9 +1,9 @@
-package esw.ocs.impl.dsl.utils
+package esw.dsl.script.utils
 
-import esw.ocs.impl.dsl.{CswServices, Script}
-import esw.ocs.impl.exceptions.ScriptLoadingException.{InvalidScriptException, ScriptNotFound}
+import esw.dsl.script.exceptions.ScriptLoadingException.{InvalidScriptException, ScriptNotFound}
+import esw.dsl.script.{CswServices, Script}
 
-private[ocs] object ScriptLoader {
+private[esw] object ScriptLoader {
 
   def load(scriptClass: String, cswServices: CswServices): Script = {
     try {

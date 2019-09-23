@@ -1,8 +1,8 @@
-package esw.ocs.impl.dsl.utils
+package esw.dsl.script.utils
 
 import scala.collection.mutable
 
-private[ocs] class FunctionHandlers[I, O] {
+private[esw] class FunctionHandlers[I, O] {
   private val handlers: mutable.Buffer[I => O] = mutable.Buffer.empty
 
   def add(handler: I => O): Unit = handlers += handler

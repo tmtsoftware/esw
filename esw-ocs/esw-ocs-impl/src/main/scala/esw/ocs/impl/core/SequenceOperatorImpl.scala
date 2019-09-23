@@ -5,14 +5,16 @@ import akka.actor.typed.scaladsl.AskPattern._
 import akka.actor.typed.{ActorRef, ActorSystem}
 import akka.util.Timeout
 import csw.params.commands.CommandResponse.SubmitResponse
+import esw.dsl.script.SequenceOperator
 import esw.ocs.api.models.Step
-import esw.ocs.impl.messages.SequencerMessages._
 import esw.ocs.api.protocol.{OkOrUnhandledResponse, PullNextResponse}
 import esw.ocs.impl.internal.Timeouts
+import esw.ocs.impl.messages.SequencerMessages._
 
 import scala.concurrent.Future
 
-private[ocs] class SequenceOperator(sequencer: ActorRef[EswSequencerMessage])(implicit system: ActorSystem[_]) {
+private[ocs] class SequenceOperatorImpl(sequencer: ActorRef[EswSequencerMessage])(implicit system: ActorSystem[_])
+    extends SequenceOperator {
   private implicit val scheduler: Scheduler = system.scheduler
   private implicit val timeout: Timeout     = Timeouts.LongTimeout
 

@@ -1,4 +1,4 @@
-package esw.ocs.impl.dsl.utils
+package esw.dsl.script.utils
 
 import java.util.concurrent.ScheduledExecutorService
 
@@ -8,7 +8,7 @@ import scala.async.Async.{async, await}
 import scala.concurrent.duration.FiniteDuration
 import scala.concurrent.{Future, Promise}
 
-private[ocs] object FutureUtils {
+private[esw] object FutureUtils {
 
   /**
    * returns a future which completes either

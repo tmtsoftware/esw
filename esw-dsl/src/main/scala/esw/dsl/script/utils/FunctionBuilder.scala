@@ -1,9 +1,9 @@
-package esw.ocs.impl.dsl.utils
+package esw.dsl.script.utils
 
 import scala.collection.mutable
 import scala.reflect.ClassTag
 
-private[ocs] class FunctionBuilder[I, O] {
+private[esw] class FunctionBuilder[I, O] {
 
   private val handlers: mutable.Buffer[PartialFunction[I, O]] = mutable.Buffer.empty
 

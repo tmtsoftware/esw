@@ -3,6 +3,7 @@ package esw.dsl.script
 import csw.event.api.scaladsl.{EventPublisher, EventService, EventSubscriber}
 import csw.params.core.models.Prefix
 import csw.params.events.{Event, EventKey, EventName, SystemEvent}
+import esw.dsl.script.services.EventServiceDsl
 import esw.ocs.api.BaseTestSuite
 import esw.ocs.macros.StrandEc
 import org.mockito.ArgumentMatchers.{any, eq => argsEq}

@@ -4,6 +4,7 @@ import java.util.concurrent.CountDownLatch
 
 import csw.params.commands.{CommandName, Observe, Setup}
 import csw.params.core.models.Prefix
+import esw.dsl.script.{CswServices, ScriptDsl}
 import esw.ocs.api.BaseTestSuite
 
 import scala.collection.mutable.ArrayBuffer

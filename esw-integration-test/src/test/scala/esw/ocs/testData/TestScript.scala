@@ -7,8 +7,8 @@ import csw.params.core.generics.KeyType.{StringKey, UTCTimeKey}
 import csw.params.core.models.Units.NoUnits
 import csw.params.core.models.{Id, Prefix}
 import csw.time.core.models.UTCTime
-import esw.dsl.script.Util.RichCommand
-import esw.ocs.impl.dsl.{CswServices, Script}
+import esw.dsl.script.utils.CommandUtils.RichCommand
+import esw.dsl.script.{CswServices, Script}
 
 import scala.concurrent.duration.DurationDouble
 

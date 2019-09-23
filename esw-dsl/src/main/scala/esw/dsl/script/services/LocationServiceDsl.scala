@@ -1,9 +1,9 @@
-package esw.dsl.script
+package esw.dsl.script.services
 
 import csw.location.api.scaladsl.LocationService
 import csw.location.models.ComponentType.Sequencer
-import csw.location.models.{AkkaLocation, ComponentId}
 import csw.location.models.Connection.AkkaConnection
+import csw.location.models.{AkkaLocation, ComponentId}
 import esw.dsl.Timeouts
 
 import scala.async.Async.{async, await}

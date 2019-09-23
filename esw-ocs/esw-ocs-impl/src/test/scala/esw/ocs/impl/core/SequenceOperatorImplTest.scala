@@ -12,7 +12,7 @@ import esw.ocs.impl.messages.SequencerMessages.{MaybeNext, PullNext, ReadyToExec
 import esw.ocs.api.protocol.PullNextResult
 import esw.ocs.api.protocol.{Ok, PullNextResult}
 
-class SequenceOperatorTest extends ScalaTestWithActorTestKit with BaseTestSuite {
+class SequenceOperatorImplTest extends ScalaTestWithActorTestKit with BaseTestSuite {
 
   private val command = Setup(Prefix("esw.test"), CommandName("command-1"), None)
 
@@ -32,7 +32,7 @@ class SequenceOperatorTest extends ScalaTestWithActorTestKit with BaseTestSuite 
   }
 
   private val sequencer        = spawn(mockedBehavior)
-  private val sequenceOperator = new SequenceOperator(sequencer)
+  private val sequenceOperator = new SequenceOperatorImpl(sequencer)
 
   "pullNext" in {
     sequenceOperator.pullNext.futureValue should ===(pullNextResponse)

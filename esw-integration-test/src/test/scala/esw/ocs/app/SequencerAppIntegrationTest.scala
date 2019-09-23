@@ -18,7 +18,7 @@ import csw.testkit.scaladsl.ScalaTestFrameworkTestKit
 import esw.ocs.api.BaseTestSuite
 import esw.ocs.api.protocol.LoadScriptResponse
 import esw.ocs.app.SequencerAppCommand.{SequenceComponent, Sequencer}
-import esw.ocs.impl.exceptions.ScriptLoadingException.ScriptNotFound
+import esw.dsl.script.exceptions.ScriptLoadingException.ScriptNotFound
 import esw.ocs.impl.messages.SequenceComponentMsg
 import esw.ocs.impl.messages.SequenceComponentMsg.{LoadScript, UnloadScript}
 

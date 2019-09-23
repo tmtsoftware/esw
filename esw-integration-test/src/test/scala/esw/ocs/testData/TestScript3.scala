@@ -3,7 +3,7 @@ package esw.ocs.testData
 import csw.params.core.generics.KeyType.StringKey
 import csw.params.core.models.Prefix
 import csw.params.events.{EventName, SystemEvent}
-import esw.ocs.impl.dsl.{CswServices, Script}
+import esw.dsl.script.{CswServices, Script}
 
 class TestScript3(csw: CswServices) extends Script(csw) {
 

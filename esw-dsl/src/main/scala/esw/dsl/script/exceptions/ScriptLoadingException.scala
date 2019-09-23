@@ -1,4 +1,4 @@
-package esw.ocs.impl.exceptions
+package esw.dsl.script.exceptions
 
 object ScriptLoadingException {
   class ScriptConfigurationMissingException(sequencerId: String, observingMode: String)

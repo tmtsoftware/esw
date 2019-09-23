@@ -1,3 +1,3 @@
-package esw.ocs.impl.dsl
+package esw.dsl.script
 
 final case class StopIf(condition: Boolean)

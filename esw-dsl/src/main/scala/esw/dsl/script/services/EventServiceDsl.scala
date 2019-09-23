@@ -1,4 +1,4 @@
-package esw.dsl.script
+package esw.dsl.script.services
 
 import akka.Done
 import akka.actor.Cancellable

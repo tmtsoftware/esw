@@ -21,7 +21,7 @@ import esw.ocs.api.protocol.RegistrationError
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future
 
-class LocationServiceUtilTest extends ScalaTestWithActorTestKit with BaseTestSuite {
+class LocationServiceCommandUtilsTest extends ScalaTestWithActorTestKit with BaseTestSuite {
 
   private val locationService = mock[LocationService]
 

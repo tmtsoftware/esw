@@ -15,6 +15,7 @@ import csw.location.models.{AkkaLocation, AkkaRegistration, ComponentId, Compone
 import csw.params.commands.CommandResponse.Started
 import csw.params.commands.Sequence
 import csw.params.core.models.{Id, Prefix}
+import esw.dsl.script.services.SequencerCommandServiceDsl
 import esw.ocs.api.BaseTestSuite
 import esw.dsl.sequence_manager.LocationServiceUtil
 import org.mockito.ArgumentMatchers.any

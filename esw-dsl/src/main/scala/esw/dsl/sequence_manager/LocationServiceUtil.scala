@@ -11,7 +11,7 @@ import csw.location.models.ConnectionType.AkkaType
 import csw.location.models._
 import csw.params.core.models.Subsystem
 import esw.dsl.Timeouts
-import esw.dsl.script.LocationServiceDsl
+import esw.dsl.script.services.LocationServiceDsl
 import esw.ocs.api.protocol.RegistrationError
 
 import scala.concurrent.{ExecutionContext, Future}

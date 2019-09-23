@@ -1,4 +1,4 @@
-package esw.dsl.script
+package esw.dsl.script.services
 
 import java.time.Duration
 

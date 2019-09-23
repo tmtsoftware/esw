@@ -1,4 +1,4 @@
-package esw.dsl.script
+package esw.dsl.script.services
 
 import akka.actor.typed.ActorSystem
 import csw.command.client.messages.DiagnosticDataMessage.{DiagnosticMode, OperationsMode}

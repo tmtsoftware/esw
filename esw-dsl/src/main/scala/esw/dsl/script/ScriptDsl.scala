@@ -1,11 +1,11 @@
-package esw.ocs.impl.dsl
+package esw.dsl.script
 
 import akka.Done
 import csw.params.commands.{Observe, SequenceCommand, Setup}
 import csw.time.core.models.UTCTime
+import esw.dsl.script.exceptions.UnhandledCommandException
+import esw.dsl.script.utils.{FunctionBuilder, FunctionHandlers}
 import esw.ocs.api.protocol.PullNextResult
-import esw.ocs.impl.dsl.utils.{FunctionBuilder, FunctionHandlers}
-import esw.ocs.impl.exceptions.UnhandledCommandException
 
 import scala.concurrent.Future
 import scala.concurrent.duration.DurationDouble
@@ -13,7 +13,7 @@ import scala.reflect.ClassTag
 
 class Script(val csw: CswServices) extends ScriptDsl {
   // todo: should this come from conf file?
-  override private[ocs] val loopInterval = 50.millis
+  override private[esw] val loopInterval = 50.millis
 }
 
 trait ScriptDsl extends ControlDsl {
@@ -41,27 +41,27 @@ trait ScriptDsl extends ControlDsl {
       }
     }
 
-  private[ocs] def execute(command: SequenceCommand): Future[Unit] = spawn(commandHandler(command).await)
+  private[esw] def execute(command: SequenceCommand): Future[Unit] = spawn(commandHandler(command).await)
 
-  private[ocs] def executeGoOnline(): Future[Done] =
+  private[esw] def executeGoOnline(): Future[Done] =
     Future.sequence(onlineHandlers.execute(())).map { _ =>
       isOnline = true
       Done
     }
 
-  private[ocs] def executeGoOffline(): Future[Done] = {
+  private[esw] def executeGoOffline(): Future[Done] = {
     isOnline = false
     Future.sequence(offlineHandlers.execute(())).map(_ => Done)
   }
 
-  private[ocs] def executeShutdown(): Future[Done] = Future.sequence(shutdownHandlers.execute(())).map(_ => Done)
+  private[esw] def executeShutdown(): Future[Done] = Future.sequence(shutdownHandlers.execute(())).map(_ => Done)
 
-  private[ocs] def executeAbort(): Future[Done] = Future.sequence(abortHandlers.execute(())).map(_ => Done)
+  private[esw] def executeAbort(): Future[Done] = Future.sequence(abortHandlers.execute(())).map(_ => Done)
 
-  private[ocs] def executeDiagnosticMode(startTime: UTCTime, hint: String): Future[Done] =
+  private[esw] def executeDiagnosticMode(startTime: UTCTime, hint: String): Future[Done] =
     Future.sequence(diagnosticModeHandlers.execute((startTime, hint))).map(_ => Done)
 
-  private[ocs] def executeOperationsMode(): Future[Done] = Future.sequence(operationsModeHandlers.execute(())).map(_ => Done)
+  private[esw] def executeOperationsMode(): Future[Done] = Future.sequence(operationsModeHandlers.execute(())).map(_ => Done)
 
   protected final def nextIf(f: SequenceCommand => Boolean): Future[Option[SequenceCommand]] =
     spawn {

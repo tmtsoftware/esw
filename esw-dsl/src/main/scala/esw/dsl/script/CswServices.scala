@@ -1,17 +1,16 @@
-package esw.ocs.impl.dsl
+package esw.dsl.script
 
 import akka.actor.typed.ActorSystem
 import csw.command.client.CommandResponseManager
 import csw.event.api.scaladsl.EventService
 import csw.location.api.scaladsl.LocationService
 import csw.time.scheduler.TimeServiceSchedulerFactory
-import esw.dsl.script.{DiagnosticDsl, EventServiceDsl, LocationServiceDsl, TimeServiceDsl}
+import esw.dsl.script.services._
 import esw.ocs.api.SequencerAdminFactoryApi
-import esw.ocs.impl.core.SequenceOperator
-import esw.ocs.impl.internal.SequencerCommandServiceDsl
+import scala.language.experimental.macros
 
 class CswServices(
-    private[ocs] val sequenceOperatorFactory: () => SequenceOperator,
+    private[esw] val sequenceOperatorFactory: () => SequenceOperator,
     val crm: CommandResponseManager,
     protected val actorSystem: ActorSystem[_],
     private[esw] val locationService: LocationService,

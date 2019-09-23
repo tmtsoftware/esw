@@ -1,17 +1,17 @@
-package esw.ocs.impl.dsl
+package esw.dsl.script
 
 import akka.Done
-import esw.ocs.impl.dsl.utils.FutureUtils
+import esw.dsl.script.utils.FutureUtils
 import esw.ocs.macros.{AsyncMacros, StrandEc}
+import scala.language.experimental.macros
 
 import scala.concurrent.duration.FiniteDuration
 import scala.concurrent.{ExecutionContext, Future}
-import scala.language.experimental.macros
 
 trait ControlDsl {
   implicit lazy val strandEc: StrandEc               = StrandEc()
   protected implicit lazy val toEc: ExecutionContext = strandEc.ec
-  private[ocs] def loopInterval: FiniteDuration
+  private[esw] def loopInterval: FiniteDuration
 
   protected final def par[T](fs: List[Future[T]]): Future[List[T]] = Future.sequence(fs)
   protected final def par[T](fs: Future[T]*): Future[List[T]]      = par(fs.toList)

@@ -6,6 +6,7 @@ import akka.actor.Scheduler
 import csw.time.core.models.{TMTTime, UTCTime}
 import csw.time.scheduler.TimeServiceSchedulerFactory
 import csw.time.scheduler.api.{Cancellable, TimeServiceScheduler}
+import esw.dsl.script.services.TimeServiceDsl
 import esw.ocs.api.BaseTestSuite
 import esw.ocs.macros.StrandEc
 import org.mockito.ArgumentMatchers.{any, eq => argsEq}
