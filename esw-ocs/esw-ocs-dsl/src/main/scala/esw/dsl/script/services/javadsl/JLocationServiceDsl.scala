@@ -20,9 +20,8 @@ trait JLocationServiceDsl {
   // it is ok to pass actor system's ec, because only map operations on returned future requires it and does not mutate
   private[esw] implicit lazy val ec: ExecutionContext = actorSystem.executionContext
 
-  // To be used by Script Writer
   //TODO: method should filter on all locations instead of AkkaLocations only (b'case Sequencer can have HttpLocation)
-  def resolveSequencer(sequencerId: String, observingMode: String)(
+  def findSequencer(sequencerId: String, observingMode: String)(
       implicit ec: ExecutionContext
   ): CompletionStage[AkkaLocation] =
     async {

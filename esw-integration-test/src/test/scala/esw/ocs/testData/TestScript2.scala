@@ -6,6 +6,8 @@ import csw.params.core.models.Prefix
 import csw.params.events.{EventName, SystemEvent}
 import esw.dsl.script.{CswServices, Script}
 
+import scala.compat.java8.FutureConverters.CompletionStageOps
+
 class TestScript2(csw: CswServices) extends Script(csw) {
 
   handleSetupCommand("command-1") { command =>
@@ -39,7 +41,7 @@ class TestScript2(csw: CswServices) extends Script(csw) {
       // do some actions to go offline
       val param = BooleanKey.make("offline").set(true)
       val event = SystemEvent(Prefix("TCS.test"), EventName("offline")).add(param)
-      csw.publishEvent(event).await
+      csw.publishEvent(event).toScala.await
     }
   }
 
@@ -48,7 +50,7 @@ class TestScript2(csw: CswServices) extends Script(csw) {
       // do some actions to go online
       val param = BooleanKey.make("online").set(true)
       val event = SystemEvent(Prefix("TCS.test"), EventName("online")).add(param)
-      csw.publishEvent(event).await
+      csw.publishEvent(event).toScala.await
     }
   }
 

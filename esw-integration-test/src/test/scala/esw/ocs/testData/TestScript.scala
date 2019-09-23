@@ -6,11 +6,9 @@ import java.util.concurrent.CompletableFuture
 import csw.location.models.ComponentType.Assembly
 import csw.params.commands.CommandResponse.{Completed, Error}
 import csw.params.commands.{CommandName, Sequence, Setup}
-import csw.params.core.generics.KeyType.{StringKey, UTCTimeKey}
+import csw.params.core.generics.KeyType.StringKey
 import csw.params.core.models.Units.NoUnits
 import csw.params.core.models.{Id, Prefix}
-import csw.time.core.models.UTCTime
-import esw.dsl.script.utils.CommandUtils.RichCommand
 import esw.dsl.script.{CswServices, Script}
 
 import scala.jdk.FutureConverters.CompletionStageOps
