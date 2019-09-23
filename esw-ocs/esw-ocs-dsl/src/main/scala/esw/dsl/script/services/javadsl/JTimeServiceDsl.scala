@@ -1,4 +1,4 @@
-package esw.dsl.script.javadsl
+package esw.dsl.script.services.javadsl
 
 import java.time.Duration
 import java.util.concurrent.CompletionStage
