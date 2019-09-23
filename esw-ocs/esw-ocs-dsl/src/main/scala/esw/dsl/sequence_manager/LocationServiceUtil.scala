@@ -6,6 +6,7 @@ import akka.actor.typed.{ActorRef, ActorSystem}
 import csw.command.client.extensions.AkkaLocationExt.RichAkkaLocation
 import csw.command.client.messages.ComponentMessage
 import csw.location.api.scaladsl.{LocationService, RegistrationResult}
+import csw.location.models.ComponentType.Sequencer
 import csw.location.models.Connection.AkkaConnection
 import csw.location.models.ConnectionType.AkkaType
 import csw.location.models._
@@ -73,4 +74,14 @@ class LocationServiceUtil(private[esw] val locationService: LocationService)(imp
       case None => throw new IllegalArgumentException(s"Could not find any component with name: $componentName")
     }
   }
+
+  def resolveSequencer(sequencerId: String, observingMode: String)(implicit ec: ExecutionContext): Future[AkkaLocation] =
+    locationService
+      .resolve(AkkaConnection(ComponentId(s"$sequencerId@$observingMode", Sequencer)), Timeouts.DefaultTimeout)
+      .collect {
+        case Some(location: AkkaLocation) => location
+        case Some(location) =>
+          throw new RuntimeException(s"Sequencer is registered with wrong connection type: ${location.connection.connectionType}")
+        case None => throw new IllegalArgumentException(s"Could not find any sequencer with name: $sequencerId@$observingMode")
+      }
 }
