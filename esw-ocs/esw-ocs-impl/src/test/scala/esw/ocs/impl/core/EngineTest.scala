@@ -5,10 +5,9 @@ import akka.stream.{ActorMaterializer, Materializer}
 import csw.params.commands.CommandResponse.Error
 import csw.params.commands.SequenceCommand
 import csw.params.core.models.Id
-import esw.dsl.script.Script
+import esw.dsl.script.{Script, SequenceOperator}
 import esw.ocs.api.BaseTestSuite
 import esw.ocs.api.models.Step
-import esw.ocs.api.protocol.PullNextResult
 import esw.ocs.api.protocol.{Ok, PullNextResult}
 
 import scala.concurrent.Future
@@ -18,10 +17,10 @@ class EngineTest extends BaseTestSuite {
   private implicit val mat: Materializer = ActorMaterializer()
 
   private class Mocks {
-    val sequenceOperator: SequenceOperatorImpl = mock[SequenceOperatorImpl]
-    val script: Script                         = mock[Script]
-    val cmd: SequenceCommand                   = mock[SequenceCommand]
-    val id: Id                                 = mock[Id]
+    val sequenceOperator: SequenceOperator = mock[SequenceOperator]
+    val script: Script                     = mock[Script]
+    val cmd: SequenceCommand               = mock[SequenceCommand]
+    val id: Id                             = mock[Id]
   }
 
   "Engine" must {
