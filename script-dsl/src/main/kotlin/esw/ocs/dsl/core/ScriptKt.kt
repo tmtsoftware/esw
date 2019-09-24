@@ -1,5 +1,6 @@
 package esw.ocs.dsl.core
 
+import akka.actor.typed.ActorSystem
 import csw.event.api.javadsl.IEventService
 import csw.location.api.javadsl.ILocationService
 import csw.location.client.internal.JLocationServiceImpl
@@ -97,8 +98,9 @@ class ReusableScript(
     override val eventService: IEventService = cswServices.eventService()
     override val timeServiceScheduler: TimeServiceScheduler =
         cswServices.timeServiceSchedulerFactory().make(_strandEc.ec())
-    override val locationService: ILocationService
-        get() = JLocationServiceImpl(cswServices._locationService(), _strandEc.ec())
+    override val locationService: ILocationService =
+        JLocationServiceImpl(cswServices._locationService(), _strandEc.ec())
+    override val actorSystem: ActorSystem<*> = cswServices.actorSystem()
 }
 
 open class ScriptKt(override val cswServices: CswServices) : BaseScript() {
@@ -106,6 +108,7 @@ open class ScriptKt(override val cswServices: CswServices) : BaseScript() {
     private val job = Job()
     private val dispatcher = _strandEc.executorService().asCoroutineDispatcher()
 
+    override val actorSystem: ActorSystem<*> = cswServices.actorSystem()
     override val locationService: ILocationService
         get() = JLocationServiceImpl(cswServices._locationService(), _strandEc.ec())
     override val eventService: IEventService = cswServices.eventService()
