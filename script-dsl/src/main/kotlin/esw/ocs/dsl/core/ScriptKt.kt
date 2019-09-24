@@ -1,6 +1,7 @@
 package esw.ocs.dsl.core
 
 import akka.actor.typed.ActorSystem
+import csw.command.client.CommandResponseManager
 import csw.event.api.javadsl.IEventService
 import csw.location.api.javadsl.ILocationService
 import csw.location.client.internal.JLocationServiceImpl
@@ -15,17 +16,18 @@ import esw.ocs.dsl.highlevel.CswHighLevelDsl
 import esw.ocs.dsl.nullable
 import esw.ocs.impl.dsl.javadsl.JScript
 import esw.ocs.macros.StrandEc
-import java.util.concurrent.CompletionStage
-import kotlin.coroutines.CoroutineContext
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.asCoroutineDispatcher
 import kotlinx.coroutines.future.await
 import kotlinx.coroutines.future.future
 import kotlinx.coroutines.launch
+import java.util.concurrent.CompletionStage
+import kotlin.coroutines.CoroutineContext
 
 sealed class BaseScript : CoroutineScope, CswHighLevelDsl {
 
+    abstract val cswServices: CswServices
     // this needs to be lazy otherwise handlers does not get loaded properly
     val jScript: JScript by lazy { JScriptFactory.make(cswServices, strandEc()) }
 
@@ -95,12 +97,13 @@ class ReusableScript(
     override val coroutineContext: CoroutineContext
 ) : BaseScript() {
     override fun strandEc(): StrandEc = _strandEc
+    override val actorSystem: ActorSystem<*> = cswServices.actorSystem()
     override val eventService: IEventService = cswServices.eventService()
     override val timeServiceScheduler: TimeServiceScheduler =
         cswServices.timeServiceSchedulerFactory().make(_strandEc.ec())
     override val locationService: ILocationService =
         JLocationServiceImpl(cswServices._locationService(), _strandEc.ec())
-    override val actorSystem: ActorSystem<*> = cswServices.actorSystem()
+    override val crm: CommandResponseManager = cswServices.crm()
 }
 
 open class ScriptKt(override val cswServices: CswServices) : BaseScript() {
@@ -114,6 +117,7 @@ open class ScriptKt(override val cswServices: CswServices) : BaseScript() {
     override val eventService: IEventService = cswServices.eventService()
     override val timeServiceScheduler: TimeServiceScheduler =
         cswServices.timeServiceSchedulerFactory().make(_strandEc.ec())
+    override val crm: CommandResponseManager = cswServices.crm()
 
     override val coroutineContext: CoroutineContext
         get() = job + dispatcher
