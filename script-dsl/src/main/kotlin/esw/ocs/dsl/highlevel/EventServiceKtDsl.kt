@@ -2,12 +2,13 @@ package esw.ocs.dsl.highlevel
 
 import akka.Done
 import akka.actor.Cancellable
+import csw.event.api.javadsl.IEventPublisher
+import csw.event.api.javadsl.IEventService
+import csw.event.api.javadsl.IEventSubscriber
 import csw.event.api.javadsl.IEventSubscription
 import csw.params.core.generics.Parameter
-import csw.params.events.Event
-import csw.params.events.ObserveEvent
-import csw.params.events.SystemEvent
-import esw.dsl.script.CswServices
+import csw.params.core.models.Prefix
+import csw.params.events.*
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.future.await
 import kotlinx.coroutines.future.future
@@ -16,23 +17,35 @@ import kotlin.time.Duration
 import kotlin.time.toJavaDuration
 
 interface EventServiceKtDsl : CoroutineScope {
-    val cswServices: CswServices
+    val eventService: IEventService
+
+    private val defaultPublisher: IEventPublisher
+        get() = eventService.defaultPublisher()
+
+    private val defaultSubscriber: IEventSubscriber
+        get() = eventService.defaultSubscriber()
+
 
     fun systemEvent(sourcePrefix: String, eventName: String, vararg parameters: Parameter<*>): SystemEvent =
-        cswServices.systemEvent(sourcePrefix, eventName, parameters.toSet())
+        SystemEvent(Prefix(sourcePrefix), EventName(eventName)).jMadd(parameters.toSet())
 
     fun observeEvent(sourcePrefix: String, eventName: String, vararg parameters: Parameter<*>): ObserveEvent =
-        cswServices.observeEvent(sourcePrefix, eventName, parameters.toSet())
+        ObserveEvent(Prefix(sourcePrefix), EventName(eventName)).jMadd(parameters.toSet())
 
-    suspend fun publishEvent(event: Event): Done =
-        cswServices.publishEvent(event).await()
+    suspend fun publishEvent(event: Event): Done = defaultPublisher.publish(event).await()
 
     fun publishEvent(every: Duration, eventGenerator: suspend () -> Event?): Cancellable =
-        cswServices.publishEvent(every.toJavaDuration()) { future { Optional.ofNullable(eventGenerator()) } }
+        defaultPublisher.publishAsync({
+            future { Optional.ofNullable(eventGenerator()) }
+        }, every.toJavaDuration())
+
 
     fun onEvent(vararg eventKeys: String, callback: suspend (Event) -> Unit): IEventSubscription =
-        cswServices.onEvent(eventKeys.toSet()) { future { callback(it) } }
+        defaultSubscriber.subscribeAsync(eventKeys.toEventKeys()) { future { callback(it) } }
 
     suspend fun getEvent(vararg eventKeys: String): Set<Event> =
-        cswServices.getEvent(eventKeys.toSet()).await().toSet()
+        defaultSubscriber.get(eventKeys.toEventKeys()).await().toSet()
+    
+    private fun (Array<out String>).toEventKeys(): Set<EventKey> =
+        this.let { it.map { x -> EventKey.apply(x) } }.toSet()
 }
