@@ -18,19 +18,22 @@ import csw.params.commands.Observe
 import csw.params.commands.Setup
 import csw.params.core.models.ObsId
 import csw.params.core.models.Prefix
-import kotlinx.coroutines.future.await
-import scala.concurrent.duration.Duration.create
 import java.time.Duration
 import java.util.*
 import java.util.concurrent.CompletableFuture
 import java.util.concurrent.TimeUnit
+import kotlinx.coroutines.future.await
+import scala.concurrent.duration.Duration.create
 
 interface CommandServiceKtDsl {
     val locationService: ILocationService
     val actorSystem: ActorSystem<*>
 
-    private val duration: Duration get() = Duration.ofSeconds(10)
-    private val timeout: Timeout get() = Timeout(create(10, TimeUnit.SECONDS))
+    private val duration: Duration
+        get() = Duration.ofSeconds(10)
+
+    private val timeout: Timeout
+        get() = Timeout(create(10, TimeUnit.SECONDS))
 
     fun setup(prefix: String, commandName: String, obsId: String?) =
         Setup(Prefix(prefix), CommandName(commandName), obsId.toOptionalObsId())
@@ -77,7 +80,6 @@ interface CommandServiceKtDsl {
     private suspend fun oneWay(name: String, compType: ComponentType, command: ControlCommand): OnewayResponse =
         send(name, compType) { it.oneway(command, timeout) }
 
-
     private suspend fun <T> send(
         name: String,
         compType: ComponentType,
@@ -95,7 +97,6 @@ interface CommandServiceKtDsl {
             duration
         )
         .await()
-
 
     private fun String?.toOptionalObsId() = Optional.ofNullable(this?.let { ObsId(it) })
 }

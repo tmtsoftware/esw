@@ -44,6 +44,5 @@ interface EventServiceKtDsl : CoroutineScope {
     suspend fun getEvent(vararg eventKeys: String): Set<Event> =
         defaultSubscriber.get(eventKeys.toEventKeys()).await().toSet()
 
-    private fun (Array<out String>).toEventKeys(): Set<EventKey> =
-        this.let { it.map { x -> EventKey.apply(x) } }.toSet()
+    private fun (Array<out String>).toEventKeys(): Set<EventKey> = map { EventKey.apply(it) }.toSet()
 }

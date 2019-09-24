@@ -14,7 +14,7 @@ interface TimeServiceKtDsl : CoroutineScope {
 
     private fun (suspend () -> Unit).toJavaFuture(): CompletionStage<Void> =
         this.let {
-            return future { it() }.thenAccept { }
+            future { it() }.thenAccept { }
         }
 
     // todo : Verify task works fine this way

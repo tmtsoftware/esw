@@ -4,7 +4,7 @@ import esw.ocs.dsl.core.script
 import kotlin.time.seconds
 import kotlinx.coroutines.future.await
 
-script { csw ->
+script { _ ->
 
     val publishStream = publishEvent(10.seconds) {
         systemEvent("iris.test", "system")

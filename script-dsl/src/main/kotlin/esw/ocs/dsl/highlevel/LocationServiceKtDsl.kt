@@ -10,14 +10,13 @@ interface LocationServiceKtDsl : CoroutineScope {
     val locationService: ILocationService
 
     suspend fun resolveSequencer(sequencerId: String, observingMode: String): AkkaLocation {
-        locationService.list().await()
+        val location = locationService.list().await()
             .find { location -> location.connection().componentId().name().contains("$sequencerId@$observingMode") }
-            .let {
-                when (it) {
-                    is AkkaLocation -> return it
-                    is Location -> throw RuntimeException("Sequencer is registered with wrong connection type: ${it.connection().connectionType()}")
-                    else -> throw IllegalArgumentException("Could not find any sequencer with name: $sequencerId@$observingMode")
-                }
-            }
+
+        when (location) {
+            is AkkaLocation -> return location
+            is Location -> throw RuntimeException("Sequencer is registered with wrong connection type: ${location.connection().connectionType()}")
+            else -> throw IllegalArgumentException("Could not find any sequencer with name: $sequencerId@$observingMode")
+        }
     }
 }

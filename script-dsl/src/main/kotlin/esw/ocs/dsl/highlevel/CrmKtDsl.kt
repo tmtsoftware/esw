@@ -6,19 +6,21 @@ import csw.params.commands.CommandResponse.QueryResponse
 import csw.params.commands.CommandResponse.SubmitResponse
 import csw.params.commands.SequenceCommand
 import csw.params.core.models.Id
-import kotlinx.coroutines.future.await
 import kotlin.time.Duration
 import kotlin.time.toJavaDuration
+import kotlinx.coroutines.future.await
 
 interface CrmKtDsl {
     val crm: CommandResponseManager
 
-    fun addOrUpdateCommand(cmdStatus: SubmitResponse) = crm.addOrUpdateCommand(cmdStatus)
+    fun addOrUpdateCommand(cmdStatus: SubmitResponse) =
+        crm.addOrUpdateCommand(cmdStatus)
 
     fun addSubCommand(parentCmd: SequenceCommand, childCmd: SequenceCommand) =
         crm.addSubCommand(parentCmd.runId(), childCmd.runId())
 
-    fun updateSubCommand(cmdStatus: SubmitResponse) = crm.updateSubCommand(cmdStatus)
+    fun updateSubCommand(cmdStatus: SubmitResponse) =
+        crm.updateSubCommand(cmdStatus)
 
     suspend fun query(runId: Id, timeout: Duration): QueryResponse =
         crm.jQuery(runId, Timeout.create(timeout.toJavaDuration())).await()
