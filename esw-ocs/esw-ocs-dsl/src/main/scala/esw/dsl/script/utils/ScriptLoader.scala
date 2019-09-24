@@ -1,8 +1,8 @@
 package esw.dsl.script.utils
 
 import esw.dsl.script.exceptions.ScriptLoadingException.{InvalidScriptException, ScriptNotFound}
+import esw.dsl.script.javadsl.JScript
 import esw.dsl.script.{BaseScriptDsl, CswServices, Script}
-import esw.ocs.impl.dsl.javadsl.JScript
 
 import scala.language.reflectiveCalls
 

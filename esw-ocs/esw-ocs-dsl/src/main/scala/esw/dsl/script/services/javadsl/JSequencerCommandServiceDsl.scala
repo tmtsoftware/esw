@@ -16,7 +16,7 @@ trait JSequencerCommandServiceDsl {
 
   private[esw] def _locationService: LocationService
   implicit protected def actorSystem: ActorSystem[_]
-  private implicit val ec: ExecutionContext = actorSystem.executionContext
+  private implicit lazy val ec: ExecutionContext = actorSystem.executionContext
 
   def submitSequence(sequencerName: String, observingMode: String, sequence: Sequence): CompletionStage[SubmitResponse] =
     new LocationServiceUtil(_locationService)

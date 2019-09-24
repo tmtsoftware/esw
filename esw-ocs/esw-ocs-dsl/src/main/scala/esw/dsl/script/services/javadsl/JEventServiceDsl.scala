@@ -42,4 +42,7 @@ trait JEventServiceDsl {
 
   def getEvent(eventKeys: util.Set[String]): CompletableFuture[util.Set[Event]] =
     subscriber.get(eventKeys.asScala.map(EventKey(_)).toSet.asJava)
+
+  def getEvent(eventKey: String): CompletableFuture[Event] =
+    subscriber.get(EventKey(eventKey))
 }

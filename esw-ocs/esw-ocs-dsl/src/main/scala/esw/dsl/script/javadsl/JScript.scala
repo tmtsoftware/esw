@@ -1,4 +1,4 @@
-package esw.ocs.impl.dsl.javadsl
+package esw.dsl.script.javadsl
 
 import java.util.Optional
 import java.util.concurrent.{CompletableFuture, CompletionStage}

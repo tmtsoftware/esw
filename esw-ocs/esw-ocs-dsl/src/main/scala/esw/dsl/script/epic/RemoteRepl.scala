@@ -1,4 +1,4 @@
-package esw.ocs.impl.dsl.epic
+package esw.dsl.script.epic
 
 import akka.actor.typed.ActorSystem
 

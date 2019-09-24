@@ -21,6 +21,7 @@ trait JCommandServiceDsl {
   private[esw] val _locationService: LocationService
   private[esw] def actorSystem: ActorSystem[_]
 
+  // fixme: think about timeout strategy, what should be the timeout for submitAndWait command?
   implicit val timeout: Timeout = Timeouts.DefaultTimeout
 
   // ====== Assembly =========

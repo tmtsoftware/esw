@@ -1,11 +1,11 @@
-package esw.ocs.impl.dsl.epic
+package esw.dsl.script.epic
 
 import akka.Done
 import akka.actor.typed.ActorSystem
 import akka.stream.Materializer
 import akka.stream.typed.scaladsl.ActorMaterializer
-import esw.ocs.impl.dsl.epic.internal.Machine
-import esw.ocs.impl.dsl.epic.internal.event.MockEventService
+import esw.dsl.script.epic.internal.Machine
+import esw.dsl.script.epic.internal.event.MockEventService
 import esw.ocs.macros.StrandEc
 
 import scala.concurrent.{ExecutionContext, Future}

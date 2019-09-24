@@ -16,7 +16,7 @@ trait DiagnosticDsl {
   protected val sequencerAdminFactory: SequencerAdminFactoryApi
   implicit protected val actorSystem: ActorSystem[_]
   private[esw] val locationService: LocationService
-  private val locationServiceUtil = new LocationServiceUtil(locationService)
+  private lazy val locationServiceUtil = new LocationServiceUtil(locationService)
 
   def diagnosticModeForComponent(
       componentName: String,

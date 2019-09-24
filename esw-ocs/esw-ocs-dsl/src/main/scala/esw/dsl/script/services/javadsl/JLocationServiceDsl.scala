@@ -18,12 +18,10 @@ trait JLocationServiceDsl {
   lazy val locationService: ILocationService = _locationService.asJava
 
   // it is ok to pass actor system's ec, because only map operations on returned future requires it and does not mutate
-  private[esw] implicit lazy val ec: ExecutionContext = actorSystem.executionContext
+  private implicit lazy val ec: ExecutionContext = actorSystem.executionContext
 
   //TODO: method should filter on all locations instead of AkkaLocations only (b'case Sequencer can have HttpLocation)
-  def findSequencer(sequencerId: String, observingMode: String)(
-      implicit ec: ExecutionContext
-  ): CompletionStage[AkkaLocation] =
+  def findSequencer(sequencerId: String, observingMode: String): CompletionStage[AkkaLocation] =
     async {
       await(_locationService.list)
         .find(location => location.connection.componentId.name.contains(s"$sequencerId@$observingMode"))

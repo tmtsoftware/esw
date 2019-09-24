@@ -19,20 +19,21 @@ trait JDiagnosticDsl {
   private[esw] val _locationService: LocationService
   protected implicit val actorSystem: ActorSystem[_]
   protected val sequencerAdminFactory: SequencerAdminFactoryApi
-  private val locationServiceUtil: LocationServiceUtil = new LocationServiceUtil(_locationService)
+  private implicit lazy val ec: ExecutionContext            = actorSystem.executionContext
+  private lazy val locationServiceUtil: LocationServiceUtil = new LocationServiceUtil(_locationService)
 
   def diagnosticModeForComponent(
       componentName: String,
       componentType: ComponentType,
       startTime: UTCTime,
       hint: String
-  )(implicit ec: ExecutionContext): CompletionStage[Unit] =
+  ): CompletionStage[Unit] =
     sendMsgToComponent(componentName, componentType, DiagnosticMode(startTime, hint))
 
   def operationsModeForComponent(
       componentName: String,
       componentType: ComponentType
-  )(implicit ec: ExecutionContext): CompletionStage[Unit] =
+  ): CompletionStage[Unit] =
     sendMsgToComponent(componentName, componentType, OperationsMode)
 
   def diagnosticModeForSequencer(
@@ -40,29 +41,29 @@ trait JDiagnosticDsl {
       observingMode: String,
       startTime: UTCTime,
       hint: String
-  )(implicit ec: ExecutionContext): CompletionStage[Unit] =
+  ): CompletionStage[Unit] =
     sendMsgToSequencer(sequencerId, observingMode, (x: SequencerAdminApi) => x.diagnosticMode(startTime, hint))
 
   def operationsModeForSequencer(
       sequencerId: String,
       observingMode: String
-  )(implicit ec: ExecutionContext): CompletionStage[Unit] =
+  ): CompletionStage[Unit] =
     sendMsgToSequencer(sequencerId, observingMode, (x: SequencerAdminApi) => x.operationsMode())
 
   private def sendMsgToSequencer(
       sequencerId: String,
       observingMode: String,
       action: SequencerAdminApi => Unit
-  )(implicit ec: ExecutionContext): CompletionStage[Unit] =
+  ): CompletionStage[Unit] =
     sequencerAdminFactory.make(sequencerId, observingMode).map(action).toJava
 
   private def sendMsgToComponent(
       componentName: String,
       componentType: ComponentType,
       msg: DiagnosticDataMessage
-  )(implicit ec: ExecutionContext): CompletionStage[Unit] =
+  ): CompletionStage[Unit] =
     locationServiceUtil
       .resolveComponentRef(componentName, componentType)
-      .map(x => x ! msg)
+      .map(_ ! msg)
       .toJava
 }
