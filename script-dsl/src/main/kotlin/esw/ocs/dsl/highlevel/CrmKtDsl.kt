@@ -7,9 +7,9 @@ import csw.params.commands.CommandResponse.SubmitResponse
 import csw.params.commands.SequenceCommand
 import csw.params.core.models.Id
 import esw.dsl.script.CswServices
-import kotlinx.coroutines.future.await
 import kotlin.time.Duration
 import kotlin.time.toJavaDuration
+import kotlinx.coroutines.future.await
 
 interface CrmKtDsl {
     val cswServices: CswServices

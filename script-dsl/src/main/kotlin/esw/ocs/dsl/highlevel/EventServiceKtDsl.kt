@@ -9,12 +9,12 @@ import csw.event.api.javadsl.IEventSubscription
 import csw.params.core.generics.Parameter
 import csw.params.core.models.Prefix
 import csw.params.events.*
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.future.await
-import kotlinx.coroutines.future.future
 import java.util.*
 import kotlin.time.Duration
 import kotlin.time.toJavaDuration
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.future.await
+import kotlinx.coroutines.future.future
 
 interface EventServiceKtDsl : CoroutineScope {
     val eventService: IEventService
@@ -24,7 +24,6 @@ interface EventServiceKtDsl : CoroutineScope {
 
     private val defaultSubscriber: IEventSubscriber
         get() = eventService.defaultSubscriber()
-
 
     fun systemEvent(sourcePrefix: String, eventName: String, vararg parameters: Parameter<*>): SystemEvent =
         SystemEvent(Prefix(sourcePrefix), EventName(eventName)).jMadd(parameters.toSet())
@@ -39,13 +38,12 @@ interface EventServiceKtDsl : CoroutineScope {
             future { Optional.ofNullable(eventGenerator()) }
         }, every.toJavaDuration())
 
-
     fun onEvent(vararg eventKeys: String, callback: suspend (Event) -> Unit): IEventSubscription =
         defaultSubscriber.subscribeAsync(eventKeys.toEventKeys()) { future { callback(it) } }
 
     suspend fun getEvent(vararg eventKeys: String): Set<Event> =
         defaultSubscriber.get(eventKeys.toEventKeys()).await().toSet()
-    
+
     private fun (Array<out String>).toEventKeys(): Set<EventKey> =
         this.let { it.map { x -> EventKey.apply(x) } }.toSet()
 }

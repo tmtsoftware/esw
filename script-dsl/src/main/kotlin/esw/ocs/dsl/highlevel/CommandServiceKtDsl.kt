@@ -8,8 +8,8 @@ import csw.params.commands.Setup
 import csw.params.core.models.ObsId
 import csw.params.core.models.Prefix
 import esw.dsl.script.CswServices
-import kotlinx.coroutines.future.await
 import java.util.*
+import kotlinx.coroutines.future.await
 
 interface CommandServiceKtDsl {
 
