@@ -1,9 +1,8 @@
-package esw.ocs.impl.internal
+package esw.dsl.script.utils
 
 import esw.dsl.script.CswServices
-import esw.ocs.api.BaseTestSuite
-import esw.dsl.script.utils.ScriptLoader
 import esw.dsl.script.exceptions.ScriptLoadingException._
+import esw.ocs.api.BaseTestSuite
 
 class ScriptLoaderTest extends BaseTestSuite {
 
@@ -13,7 +12,7 @@ class ScriptLoaderTest extends BaseTestSuite {
     "load script class if sequencerId and observingMode is provided | ESW-102" in {
       val scriptClass = classOf[ValidTestScript].getCanonicalName
 
-      val loader = ScriptLoader.load(scriptClass, cswServices)
+      val loader = ScriptLoader.loadClass(scriptClass, cswServices)
       loader shouldBe a[ValidTestScript]
     }
 
@@ -21,7 +20,7 @@ class ScriptLoaderTest extends BaseTestSuite {
       val scriptClass = classOf[InvalidTestScript].getCanonicalName
 
       val exception = intercept[InvalidScriptException] {
-        ScriptLoader.load(scriptClass, cswServices)
+        ScriptLoader.loadClass(scriptClass, cswServices)
       }
 
       val invalidTestScript = new InvalidTestScript(cswServices).getClass.getCanonicalName
@@ -32,7 +31,7 @@ class ScriptLoaderTest extends BaseTestSuite {
       val invalidScriptClass = "invalid.path.TestScriptDoesNotExist"
 
       val exception = intercept[ScriptNotFound] {
-        ScriptLoader.load(invalidScriptClass, cswServices)
+        ScriptLoader.loadClass(invalidScriptClass, cswServices)
       }
 
       exception.getMessage shouldBe "invalid.path.TestScriptDoesNotExist not found at configured path"

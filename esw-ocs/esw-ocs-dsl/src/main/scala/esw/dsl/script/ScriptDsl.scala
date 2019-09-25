@@ -1,4 +1,4 @@
-package esw.dsl.script.javadsl
+package esw.dsl.script
 
 import java.util.Optional
 import java.util.concurrent.{CompletableFuture, CompletionStage}
@@ -7,7 +7,6 @@ import java.util.function.Supplier
 import akka.Done
 import csw.params.commands.{Observe, SequenceCommand, Setup}
 import csw.time.core.models.UTCTime
-import esw.dsl.script.CswServices
 import esw.dsl.script.exceptions.UnhandledCommandException
 import esw.dsl.script.utils.{FunctionBuilder, FunctionHandlers}
 import esw.ocs.api.protocol.PullNextResult
@@ -18,7 +17,7 @@ import scala.compat.java8.FutureConverters.{CompletionStageOps, FutureOps}
 import scala.concurrent.{ExecutionContext, Future}
 import scala.reflect.ClassTag
 
-abstract class JScript(val csw: CswServices) {
+abstract class ScriptDsl(val csw: CswServices) {
 
   protected implicit def strandEc: StrandEc
   protected implicit lazy val toEc: ExecutionContext = strandEc.ec
@@ -34,7 +33,7 @@ abstract class JScript(val csw: CswServices) {
   private val diagnosticHandlers: FunctionHandlers[Unit, CompletionStage[Void]] = new FunctionHandlers
   private val operationsHandlers: FunctionHandlers[Unit, CompletionStage[Void]] = new FunctionHandlers
 
-  private[esw] def merge(that: JScript): JScript = {
+  private[esw] def merge(that: ScriptDsl): ScriptDsl = {
     commandHandlerBuilder ++ that.commandHandlerBuilder
     onlineHandlers ++ that.onlineHandlers
     offlineHandlers ++ that.offlineHandlers

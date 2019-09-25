@@ -1,11 +1,9 @@
-package esw.ocs.impl.dsl
+package esw.dsl.script
 
 import java.util.concurrent.{CompletableFuture, CountDownLatch}
 
 import csw.params.commands.{CommandName, Observe, Setup}
 import csw.params.core.models.Prefix
-import esw.dsl.script.CswServices
-import esw.dsl.script.javadsl.JScript
 import esw.ocs.api.BaseTestSuite
 import esw.ocs.macros.StrandEc
 
@@ -19,7 +17,7 @@ class ScriptDslTest extends BaseTestSuite {
       var receivedPrefix: Option[Prefix] = None
 
       val csw: CswServices = mock[CswServices]
-      val script: JScript = new JScript(csw) {
+      val script: ScriptDsl = new ScriptDsl(csw) {
         override protected implicit def strandEc: StrandEc = StrandEc()
 
         jHandleSetupCommand("iris") { cmd =>
@@ -39,7 +37,7 @@ class ScriptDslTest extends BaseTestSuite {
       var receivedPrefix: Option[Prefix] = None
 
       val csw: CswServices = mock[CswServices]
-      val script: JScript = new JScript(csw) {
+      val script: ScriptDsl = new ScriptDsl(csw) {
         override protected implicit def strandEc: StrandEc = StrandEc()
 
         jHandleObserveCommand("iris") { cmd =>
@@ -59,7 +57,7 @@ class ScriptDslTest extends BaseTestSuite {
       val orderOfShutdownCalled = ArrayBuffer.empty[Int]
 
       val csw: CswServices = mock[CswServices]
-      val script: JScript = new JScript(csw) {
+      val script: ScriptDsl = new ScriptDsl(csw) {
         override protected implicit def strandEc: StrandEc = StrandEc()
         jHandleShutdown {
           orderOfShutdownCalled += 1
@@ -80,7 +78,7 @@ class ScriptDslTest extends BaseTestSuite {
       val orderOfAbortCalled = ArrayBuffer.empty[Int]
 
       val csw: CswServices = mock[CswServices]
-      val script: JScript = new JScript(csw) {
+      val script: ScriptDsl = new ScriptDsl(csw) {
         override protected implicit def strandEc: StrandEc = StrandEc()
         jHandleAbort {
           orderOfAbortCalled += 1
@@ -101,7 +99,7 @@ class ScriptDslTest extends BaseTestSuite {
 
       val latch            = new CountDownLatch(3)
       val csw: CswServices = mock[CswServices]
-      val script: JScript = new JScript(csw) {
+      val script: ScriptDsl = new ScriptDsl(csw) {
         override protected implicit def strandEc: StrandEc = StrandEc()
 
         def decrement: CompletableFuture[Unit] =

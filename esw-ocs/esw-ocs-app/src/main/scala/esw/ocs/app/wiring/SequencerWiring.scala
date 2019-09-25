@@ -12,8 +12,7 @@ import csw.location.client.ActorSystemFactory
 import csw.location.models.Connection.AkkaConnection
 import csw.location.models.{AkkaLocation, AkkaRegistration, ComponentId, ComponentType}
 import csw.network.utils.SocketUtils
-import esw.dsl.script.CswServices
-import esw.dsl.script.javadsl.JScript
+import esw.dsl.script.{CswServices, ScriptDsl}
 import esw.dsl.script.utils.ScriptLoader
 import esw.dsl.sequence_manager.LocationServiceUtil
 import esw.http.core.wiring.{ActorRuntime, CswWiring, HttpService, Settings}
@@ -53,7 +52,7 @@ private[ocs] class SequencerWiring(val sequencerId: String, val observingMode: S
   //SequencerRef -> Script -> cswServices -> SequencerOperator -> SequencerRef
   private lazy val sequenceOperatorFactory = () => new SequenceOperatorImpl(sequencerRef)
   private lazy val componentId             = ComponentId(sequencerName, ComponentType.Sequencer)
-  private lazy val script: JScript         = ScriptLoader.loadKotlinScript(scriptClass, cswServices)
+  private lazy val script: ScriptDsl       = ScriptLoader.loadKotlinScript(scriptClass, cswServices)
 
   lazy private val locationServiceUtil = new LocationServiceUtil(locationService)
   lazy private val adminFactory        = new SequencerAdminFactoryImpl(locationServiceUtil)

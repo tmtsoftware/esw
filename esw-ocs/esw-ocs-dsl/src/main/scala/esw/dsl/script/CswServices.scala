@@ -11,8 +11,8 @@ class CswServices(
     private[esw] val sequenceOperatorFactory: () => SequenceOperator,
     val crm: CommandResponseManager,
     val actorSystem: ActorSystem[_],
-    private[esw] val _locationService: LocationService,
-    private[esw] val _eventService: EventService,
+    private[esw] val locationService: LocationService,
+    private[esw] val eventService: EventService,
     private[esw] val timeServiceSchedulerFactory: TimeServiceSchedulerFactory,
     private[esw] val sequencerAdminFactory: SequencerAdminFactoryApi
 )

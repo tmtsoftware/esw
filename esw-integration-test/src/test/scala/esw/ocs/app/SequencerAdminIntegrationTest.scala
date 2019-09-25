@@ -184,7 +184,7 @@ class SequencerAdminIntegrationTest
     // assert sequencer goes offline and offline handlers are called
     sequencerAdmin.goOffline().futureValue should ===(Ok)
 
-    val subscriber   = wiring.cswServices._eventService.defaultSubscriber
+    val subscriber   = wiring.cswServices.eventService.defaultSubscriber
     val offlineEvent = subscriber.get(EventKey("TCS.test.offline")).futureValue
     offlineEvent.paramType.exists(BooleanKey.make("offline")) should ===(true)
 

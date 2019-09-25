@@ -2,9 +2,10 @@ package esw.ocs.app.wiring
 
 import com.typesafe.config.{Config, ConfigFactory}
 import csw.params.core.models.Prefix
-import esw.http.core.BaseTestSuite
 import esw.dsl.script.exceptions.ScriptLoadingException.ScriptConfigurationMissingException
-import esw.ocs.impl.internal.ValidTestScript
+import esw.dsl.script.{CswServices, ScriptDsl}
+import esw.http.core.BaseTestSuite
+import esw.ocs.macros.StrandEc
 
 class SequencerConfigTest extends BaseTestSuite {
   private val config: Config = ConfigFactory.load()
@@ -41,4 +42,8 @@ class SequencerConfigTest extends BaseTestSuite {
       exception.getMessage should ===(s"Script configuration missing for $sequencerId with $observingMode")
     }
   }
+}
+
+class ValidTestScript(csw: CswServices) extends ScriptDsl(csw) {
+  override protected implicit def strandEc: StrandEc = ???
 }

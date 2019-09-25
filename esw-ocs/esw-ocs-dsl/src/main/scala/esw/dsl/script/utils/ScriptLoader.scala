@@ -1,14 +1,14 @@
 package esw.dsl.script.utils
 
-import esw.dsl.script.CswServices
+import esw.dsl.script.{CswServices, ScriptDsl}
 import esw.dsl.script.exceptions.ScriptLoadingException.{InvalidScriptException, ScriptNotFound}
-import esw.dsl.script.javadsl.JScript
 
 import scala.language.reflectiveCalls
 
 private[esw] object ScriptLoader {
 
-  def loadKotlinScript(scriptClass: String, cswServices: CswServices): JScript =
+  // this loads .kts script
+  def loadKotlinScript(scriptClass: String, cswServices: CswServices): ScriptDsl =
     withScript(scriptClass) { clazz =>
       val script = clazz.getConstructor(classOf[Array[String]]).newInstance(Array(""))
 
@@ -16,16 +16,17 @@ private[esw] object ScriptLoader {
       val $$resultField = clazz.getDeclaredField("$$result")
       $$resultField.setAccessible(true)
 
-      type ScriptKt = { val getJScript: JScript }
+      type ScriptKt = { val getJScript: ScriptDsl }
       type Result   = { def invoke(services: CswServices): ScriptKt }
       // todo: see if there is other way than using structural types without adding `script-dsl` dependency on this project
       val result = $$resultField.get(script).asInstanceOf[Result]
       result.invoke(cswServices).getJScript
     }
 
-  def load(scriptClass: String, cswServices: CswServices): JScript =
+  // this loads .kt or class file
+  def loadClass(scriptClass: String, cswServices: CswServices): ScriptDsl =
     withScript(scriptClass) { clazz =>
-      clazz.getConstructor(classOf[CswServices]).newInstance(cswServices).asInstanceOf[JScript]
+      clazz.getConstructor(classOf[CswServices]).newInstance(cswServices).asInstanceOf[ScriptDsl]
     }
 
   private def withScript[T](scriptClass: String)(block: Class[_] => T): T =
