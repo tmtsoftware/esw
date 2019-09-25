@@ -27,10 +27,12 @@ abstract class JScript(val csw: CswServices) extends BaseScriptDsl {
 
   private val commandHandlerBuilder: FunctionBuilder[SequenceCommand, CompletionStage[Void]] = new FunctionBuilder
 
-  private val onlineHandlers: FunctionHandlers[Unit, CompletionStage[Void]]   = new FunctionHandlers
-  private val offlineHandlers: FunctionHandlers[Unit, CompletionStage[Void]]  = new FunctionHandlers
-  private val shutdownHandlers: FunctionHandlers[Unit, CompletionStage[Void]] = new FunctionHandlers
-  private val abortHandlers: FunctionHandlers[Unit, CompletionStage[Void]]    = new FunctionHandlers
+  private val onlineHandlers: FunctionHandlers[Unit, CompletionStage[Void]]     = new FunctionHandlers
+  private val offlineHandlers: FunctionHandlers[Unit, CompletionStage[Void]]    = new FunctionHandlers
+  private val shutdownHandlers: FunctionHandlers[Unit, CompletionStage[Void]]   = new FunctionHandlers
+  private val abortHandlers: FunctionHandlers[Unit, CompletionStage[Void]]      = new FunctionHandlers
+  private val diagnosticHandlers: FunctionHandlers[Unit, CompletionStage[Void]] = new FunctionHandlers
+  private val operationsHandlers: FunctionHandlers[Unit, CompletionStage[Void]] = new FunctionHandlers
 
   private[esw] def merge(that: JScript): JScript = {
     commandHandlerBuilder ++ that.commandHandlerBuilder
@@ -38,6 +40,8 @@ abstract class JScript(val csw: CswServices) extends BaseScriptDsl {
     offlineHandlers ++ that.offlineHandlers
     shutdownHandlers ++ that.shutdownHandlers
     abortHandlers ++ that.abortHandlers
+    diagnosticHandlers ++ that.diagnosticHandlers
+    operationsHandlers ++ that.operationsHandlers
     this
   }
 
@@ -70,9 +74,9 @@ abstract class JScript(val csw: CswServices) extends BaseScriptDsl {
 
   private[esw] def executeAbort(): Future[Done] = executeHandler(abortHandlers).map(_ => Done)
 
-  // todo:
-  private[esw] def executeDiagnosticMode(startTime: UTCTime, hint: String): Future[Done] = ???
-  private[esw] def executeOperationsMode(): Future[Done]                                 = ???
+  private[esw] def executeDiagnosticMode(startTime: UTCTime, hint: String): Future[Done] =
+    executeHandler(diagnosticHandlers).map(_ => Done)
+  private[esw] def executeOperationsMode(): Future[Done] = executeHandler(operationsHandlers).map(_ => Done)
 
   protected final def jNextIf(f: SequenceCommand => Boolean): CompletionStage[Optional[SequenceCommand]] =
     async {
@@ -98,4 +102,8 @@ abstract class JScript(val csw: CswServices) extends BaseScriptDsl {
   protected final def jHandleAbort(handler: Supplier[CompletionStage[Void]]): Unit     = abortHandlers.add(_ => handler.get())
   protected final def jHandleShutdown(handler: Supplier[CompletionStage[Void]]): Unit  = shutdownHandlers.add(_ => handler.get())
   protected final def jHandleGoOffline(handler: Supplier[CompletionStage[Void]]): Unit = offlineHandlers.add(_ => handler.get())
+  protected final def jHandleDiagnosticMode(handler: Supplier[CompletionStage[Void]]): Unit =
+    diagnosticHandlers.add(_ => handler.get())
+  protected final def jHandleOperationsMode(handler: Supplier[CompletionStage[Void]]): Unit =
+    operationsHandlers.add(_ => handler.get())
 }
