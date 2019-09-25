@@ -1,8 +1,11 @@
 package esw.ocs.dsl.epics
 
-import csw.params.events.Event
+import csw.params.core.generics.Parameter
+import csw.params.core.generics.ParameterSetType
 import csw.params.events.EventKey
+import csw.params.events.SystemEvent
 import esw.ocs.dsl.highlevel.EventServiceKtDsl
+import esw.ocs.dsl.nullable
 import esw.ocs.dsl.params.KeyHolder
 import java.util.concurrent.Executors
 import kotlin.coroutines.CoroutineContext
@@ -59,20 +62,31 @@ abstract class Machine(private val name: String, init: String) : CoroutineScope,
 
     fun <T> createVar(initial: T, eventKey: String, key: KeyHolder<T>) = Var(initial, eventKey, this, this, key)
 
-    inline fun reactiveEvent(
-        key: String,
-        crossinline onChange: (property: KProperty<*>, oldValue: Event, newValue: Event) -> Unit
-    ): ReadWriteProperty<Any?, Event> =
-        object : ObservableProperty<Event>(Event.invalidEvent(EventKey.apply(key))) {
-            override fun afterChange(property: KProperty<*>, oldValue: Event, newValue: Event) =
+    inline fun <T> reactiveEvent(
+        initial: T,
+        eventKey: String,
+        keyHolder: KeyHolder<T>,
+        crossinline onChange: (property: KProperty<*>, oldValue: T, newValue: T) -> Unit
+    ): ReadWriteProperty<Any?, T> =
+        object : ObservableProperty<T>(initial) {
+            private val _eventKey = EventKey.apply(eventKey)
+
+            // todo: should allow creating any type of event
+            private fun event(param: Parameter<T>): SystemEvent =
+                SystemEvent(_eventKey.source(), _eventKey.eventName()).add(param)
+
+            override fun afterChange(property: KProperty<*>, oldValue: T, newValue: T) =
                 onChange(property, oldValue, newValue)
 
-            override fun getValue(thisRef: Any?, property: KProperty<*>): Event =
-                runBlocking(coroutineContext) { getEvent(key).first() }
-
-            override fun setValue(thisRef: Any?, property: KProperty<*>, value: Event) =
+            override fun getValue(thisRef: Any?, property: KProperty<*>): T =
                 runBlocking(coroutineContext) {
-                    publishEvent(value)
+                    val paramType: ParameterSetType<*>? = getEvent(eventKey).first().paramType()
+                    paramType?.jGet(keyHolder.key)?.nullable()?.jGet(0)?.nullable() ?: initial
+                }
+
+            override fun setValue(thisRef: Any?, property: KProperty<*>, value: T) =
+                runBlocking(coroutineContext) {
+                    publishEvent(event(keyHolder.set(value)))
                     super.setValue(thisRef, property, value)
                 }
         }

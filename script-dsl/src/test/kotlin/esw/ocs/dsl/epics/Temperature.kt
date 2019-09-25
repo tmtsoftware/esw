@@ -8,7 +8,7 @@ import esw.ocs.dsl.params.intKey
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.runBlocking
 
-val machine1 = object : Machine("temp-monitor", "Init") {
+abstract class TestMachine(name: String, init: String) : Machine(name, init) {
     override val eventService: IEventService
         get() = TODO("not implemented") // To change initializer of created properties use File | Settings | File Templates.
 
@@ -22,6 +22,10 @@ val machine1 = object : Machine("temp-monitor", "Init") {
 
     val prefix = "esw.epic"
     val tempKey = intKey("temp")
+}
+
+val machine1 = object : TestMachine("temp-monitor", "Init") {
+
     var temp = createVar(0, "$prefix.temp", tempKey)
 
     override suspend fun logic(state: String) {
@@ -53,8 +57,40 @@ val machine1 = object : Machine("temp-monitor", "Init") {
     override fun debugString(): String = "temp = $temp"
 }
 
-fun main() = runBlocking {
-    machine1.refresh("Init")
+val machine2 = object : TestMachine("temp-monitor", "Init") {
+    var temp by reactiveEvent(0, "$prefix.temp", tempKey) { _, o, n ->
+        println("Temp changed from [$o to $n]")
+    }
 
-    delay(100000)
+    override suspend fun logic(state: String) {
+        when (state) {
+            "Init" -> {
+                `when`() {
+                    temp = 45
+                    become("Ok")
+                }
+            }
+
+            "Ok" -> {
+                `when`(temp > 40) {
+                    temp = 25
+                    become("High")
+                }
+            }
+
+            "High" -> {
+                `when`(temp < 30) {
+                    become("Ok")
+                }
+            }
+        }
+    }
+
+    override fun debugString(): String = "temp = $temp"
+}
+
+fun main() = runBlocking {
+    machine2.refresh("Init")
+
+    delay(10000)
 }
