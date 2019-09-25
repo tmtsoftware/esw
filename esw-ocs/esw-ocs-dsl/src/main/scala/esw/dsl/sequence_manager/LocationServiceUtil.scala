@@ -1,5 +1,7 @@
 package esw.dsl.sequence_manager
 
+import java.util.concurrent.CompletionStage
+
 import akka.actor.CoordinatedShutdown
 import akka.actor.typed.scaladsl.adapter.TypedActorSystemOps
 import akka.actor.typed.{ActorRef, ActorSystem}
@@ -15,6 +17,7 @@ import esw.dsl.Timeouts
 import esw.dsl.script.services.LocationServiceDsl
 import esw.ocs.api.protocol.RegistrationError
 
+import scala.compat.java8.FutureConverters.FutureOps
 import scala.concurrent.{ExecutionContext, Future}
 import scala.util.control.NonFatal
 
@@ -75,6 +78,10 @@ class LocationServiceUtil(private[esw] val locationService: LocationService)(imp
     }
   }
 
+  // Added this to be accessed by kotlin
+  def jResolveComponentRef(componentName: String, componentType: ComponentType): CompletionStage[ActorRef[ComponentMessage]] =
+    resolveComponentRef(componentName, componentType).toJava
+
   private[esw] def resolveSequencer(sequencerId: String, observingMode: String): Future[AkkaLocation] =
     locationService
       .resolve(AkkaConnection(ComponentId(s"$sequencerId@$observingMode", Sequencer)), Timeouts.DefaultTimeout)
@@ -84,4 +91,5 @@ class LocationServiceUtil(private[esw] val locationService: LocationService)(imp
           throw new RuntimeException(s"Sequencer is registered with wrong connection type: ${location.connection.connectionType}")
         case None => throw new IllegalArgumentException(s"Could not find any sequencer with name: $sequencerId@$observingMode")
       }
+
 }

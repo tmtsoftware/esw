@@ -42,7 +42,7 @@ trait JDiagnosticDsl {
       startTime: UTCTime,
       hint: String
   ): CompletionStage[Unit] =
-    sendMsgToSequencer(sequencerId, observingMode, (x: SequencerAdminApi) => x.diagnosticMode(startTime, hint))
+    sendMsgToSequencer(sequencerId, observingMode, _.diagnosticMode(startTime, hint))
 
   def operationsModeForSequencer(
       sequencerId: String,

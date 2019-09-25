@@ -7,17 +7,18 @@ object Libs {
   private val SilencerVersion      = "1.4.2"
   private val MSocketVersion       = "f59cf20"
 
-  val `scala-reflect`    = "org.scala-lang" % "scala-reflect" % ScalaVersion
-  val scalatest          = "org.scalatest" %% "scalatest" % "3.0.8" //Apache License 2.0
-  val scopt              = "com.github.scopt" %% "scopt" % "4.0.0-RC2" //MIT License
-  val `scala-async`      = "org.scala-lang.modules" %% "scala-async" % "0.10.0" //BSD 3-clause "New" or "Revised" License
-  val `mockito-scala`    = "org.mockito" %% "mockito-scala" % "1.5.13" // MIT License
-  val enumeratum         = dep("com.beachape" %%% "enumeratum" % "1.5.13") //MIT License
-  val `case-app`         = "com.github.alexarchambault" %% "case-app" % "2.0.0-M9"
-  val `silencer-plugin`  = compilerPlugin("com.github.ghik" %% "silencer-plugin" % SilencerVersion)
-  val `silencer-lib`     = "com.github.ghik" %% "silencer-lib" % SilencerVersion % Compile
-  val `msocket-api`      = dep("com.github.tmtsoftware.msocket" %%% "msocket-api" % MSocketVersion)
-  val `msocket-impl-jvm` = "com.github.tmtsoftware.msocket" %% "msocket-impl-jvm" % MSocketVersion
+  val `scala-reflect`      = "org.scala-lang" % "scala-reflect" % ScalaVersion
+  val scalatest            = "org.scalatest" %% "scalatest" % "3.0.8" //Apache License 2.0
+  val scopt                = "com.github.scopt" %% "scopt" % "4.0.0-RC2" //MIT License
+  val `scala-async`        = "org.scala-lang.modules" %% "scala-async" % "0.10.0" //BSD 3-clause "New" or "Revised" License
+  val `mockito-scala`      = "org.mockito" %% "mockito-scala" % "1.5.13" // MIT License
+  val enumeratum           = dep("com.beachape" %%% "enumeratum" % "1.5.13") //MIT License
+  val `case-app`           = "com.github.alexarchambault" %% "case-app" % "2.0.0-M9"
+  val `silencer-plugin`    = compilerPlugin("com.github.ghik" %% "silencer-plugin" % SilencerVersion)
+  val `silencer-lib`       = "com.github.ghik" %% "silencer-lib" % SilencerVersion % Compile
+  val `scala-java8-compat` = "org.scala-lang.modules" %% "scala-java8-compat" % "0.9.0" //BSD 3-clause "New" or "Revised" License
+  val `msocket-api`        = dep("com.github.tmtsoftware.msocket" %%% "msocket-api" % MSocketVersion)
+  val `msocket-impl-jvm`   = "com.github.tmtsoftware.msocket" %% "msocket-impl-jvm" % MSocketVersion
 }
 
 object Csw {
