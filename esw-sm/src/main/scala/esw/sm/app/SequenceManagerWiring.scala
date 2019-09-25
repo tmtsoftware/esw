@@ -8,6 +8,8 @@ import csw.location.api.scaladsl.LocationService
 import csw.location.client.scaladsl.HttpLocationServiceFactory
 import esw.dsl.sequence_manager.LocationServiceUtil
 import esw.http.core.wiring.ActorRuntime
+import esw.ocs.api.SequencerAdminFactoryApi
+import esw.ocs.impl.SequencerAdminFactoryImpl
 import esw.sm.api.SequenceManagerMsg
 import esw.sm.impl.SequenceManagerBehaviour
 
@@ -22,9 +24,13 @@ class SequenceManagerWiring {
   private lazy val actorRuntime = new ActorRuntime(_actorSystem)
   import actorRuntime._
 
-  private lazy val locationService: LocationService = HttpLocationServiceFactory.makeLocalClient
-  private lazy val locationServiceUtil              = new LocationServiceUtil(locationService)
+  private lazy val locationService: LocationService                = HttpLocationServiceFactory.makeLocalClient
+  private lazy val locationServiceUtil                             = new LocationServiceUtil(locationService)
+  private lazy val sequencerAdminFactory: SequencerAdminFactoryApi = new SequencerAdminFactoryImpl(locationServiceUtil)
 
   lazy val sequenceManagerRef: ActorRef[SequenceManagerMsg] =
-    Await.result(typedSystem ? Spawn(SequenceManagerBehaviour.behaviour(locationServiceUtil), "sequencer-manager"), 5.seconds)
+    Await.result(
+      typedSystem ? Spawn(SequenceManagerBehaviour.behaviour(locationServiceUtil, sequencerAdminFactory), "sequencer-manager"),
+      5.seconds
+    )
 }

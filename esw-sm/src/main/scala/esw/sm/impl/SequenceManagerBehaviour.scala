@@ -1,8 +1,9 @@
 package esw.sm.impl
 
-import akka.actor.typed.Behavior
 import akka.actor.typed.scaladsl.Behaviors
+import akka.actor.typed.{ActorSystem, Behavior, SpawnProtocol}
 import esw.dsl.sequence_manager.LocationServiceUtil
+import esw.ocs.api.{SequencerAdminFactoryApi, protocol}
 import esw.sm.api.Response.{Error, Ok}
 import esw.sm.api.SequenceManagerMsg._
 import esw.sm.api.{RichSequence, SequenceManagerMsg, SequenceStatus}
@@ -10,8 +11,12 @@ import esw.sm.api.{RichSequence, SequenceManagerMsg, SequenceStatus}
 object SequenceManagerBehaviour {
   var sequences: List[RichSequence] = List.empty
 
-  def behaviour(locationService: LocationServiceUtil): Behavior[SequenceManagerMsg] =
+  def behaviour(
+      locationService: LocationServiceUtil,
+      sequencerAdminFactory: SequencerAdminFactoryApi
+  )(implicit actorSystem: ActorSystem[SpawnProtocol]): Behavior[SequenceManagerMsg] =
     Behaviors.receiveMessage[SequenceManagerMsg] { msg =>
+      import actorSystem.executionContext
       msg match {
         case Shutdown(replyTo) =>
           //unregister from location service
@@ -21,9 +26,8 @@ object SequenceManagerBehaviour {
         case AcceptSequence(sequence, replyTo) =>
           sequences = sequences :+ RichSequence(sequence)
           replyTo ! Ok
-        case ValidateSequence(sequence, replyTo) => {
-          //handleValidate
-        }
+        case ValidateSequence(sequence, replyTo) =>
+        //handleValidate
         case StartSequence(runId, replyTo) =>
           val sequence: Option[RichSequence] = sequences.find(_.sequence.runId == runId)
           sequence match {
@@ -46,13 +50,19 @@ object SequenceManagerBehaviour {
           // sequenceComponent ! UnloadScript
           replyTo ! Ok
         case GoOnlineSequencer(sequencerId, observingMode, replyTo) =>
-          // locationUtils.resolve(sequencerId, observingMode) ==> sequencer
-          // sequencer ! GoOnline
-          replyTo ! Ok
+          sequencerAdminFactory.make(sequencerId, observingMode).map { sequencerAdmin =>
+            sequencerAdmin.goOnline().foreach {
+              case protocol.Ok => replyTo ! Ok
+              case response    => replyTo ! Error(s"failed with error ${response.toString}")
+            }
+          }
         case GoOfflineSequencer(sequencerId, observingMode, replyTo) =>
-          // locationUtils.resolve(sequencerId, observingMode) ==> sequencer
-          // sequencer ! GoOffline
-          replyTo ! Ok
+          sequencerAdminFactory.make(sequencerId, observingMode).map { sequencerAdmin =>
+            sequencerAdmin.goOffline().foreach {
+              case protocol.Ok => replyTo ! Ok
+              case response    => replyTo ! Error(s"failed with error ${response.toString}")
+            }
+          }
       }
 
       Behaviors.same
