@@ -19,6 +19,9 @@ object Libs {
   val `scala-java8-compat` = "org.scala-lang.modules" %% "scala-java8-compat" % "0.9.0" //BSD 3-clause "New" or "Revised" License
   val `msocket-api`        = dep("com.github.tmtsoftware.msocket" %%% "msocket-api" % MSocketVersion)
   val `msocket-impl-jvm`   = "com.github.tmtsoftware.msocket" %% "msocket-impl-jvm" % MSocketVersion
+
+  // fixme: find appropriate place to keep kotlin test scripts used in integration-test project
+  val `examples`       = "com.github.tmtsoftware.script-dsl" % "examples" % "c887da8f11a37fe9e34e5169fd81f61b6de8e3bb"
 }
 
 object Csw {

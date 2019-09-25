@@ -69,7 +69,8 @@ object Dependencies {
       Csw.`csw-testkit`        % Test,
       Csw.`csw-admin-server`   % Test,
       Csw.`csw-logging-models` % Test,
-      Libs.scalatest           % Test
+      Libs.scalatest           % Test,
+      Libs.examples            % Test
     )
   )
 
