@@ -110,7 +110,7 @@ val machine2 = object : TestMachine("temp-monitor", "Init") {
 }
 
 val machine3 = object : TestMachine("temp-monitor", "Init") {
-    var temp = createVar(0, "$prefix.temp", tempKey)
+    var temp = Var(0, "$prefix.temp", tempKey)
 
     override suspend fun logic(state: String) {
         when (state) {
@@ -142,12 +142,9 @@ val machine3 = object : TestMachine("temp-monitor", "Init") {
 }
 
 fun main() = runBlocking {
-<<<<<<< HEAD
     println("============= MACHINE 1 =============")
     machine1.refresh("Init")
-=======
-    machine3.refresh("Init")
->>>>>>> Adding machine using pvMonitor()
+//    machine3.refresh("Init")
 
     println()
     println("============= MACHINE 2 =============")
