@@ -38,7 +38,7 @@ sealed class ScriptDslKt : CoroutineScope, CswHighLevelDsl {
     }
 
     // this needs to be lazy otherwise handlers does not get loaded properly
-    internal val scriptDsl: ScriptDsl by lazy { ScriptDslFactory.make(cswServices, strandEc()) }
+    val scriptDsl: ScriptDsl by lazy { ScriptDslFactory.make(cswServices, strandEc()) }
 
     fun initialize(block: suspend () -> Unit) = launch { block() }
 
