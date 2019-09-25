@@ -7,18 +7,18 @@ import java.util.function.Supplier
 import akka.Done
 import csw.params.commands.{Observe, SequenceCommand, Setup}
 import csw.time.core.models.UTCTime
-import esw.dsl.script.Async.{async, await}
+import esw.dsl.script.CswServices
 import esw.dsl.script.exceptions.UnhandledCommandException
 import esw.dsl.script.utils.{FunctionBuilder, FunctionHandlers}
-import esw.dsl.script.{BaseScriptDsl, CswServices}
 import esw.ocs.api.protocol.PullNextResult
 import esw.ocs.macros.StrandEc
 
+import scala.async.Async.{async, await}
 import scala.compat.java8.FutureConverters.{CompletionStageOps, FutureOps}
 import scala.concurrent.{ExecutionContext, Future}
 import scala.reflect.ClassTag
 
-abstract class JScript(val csw: CswServices) extends BaseScriptDsl {
+abstract class JScript(val csw: CswServices) {
 
   protected implicit def strandEc: StrandEc
   protected implicit lazy val toEc: ExecutionContext = strandEc.ec

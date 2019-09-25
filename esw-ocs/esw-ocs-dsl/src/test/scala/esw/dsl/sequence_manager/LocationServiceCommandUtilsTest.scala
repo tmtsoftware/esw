@@ -209,7 +209,7 @@ class LocationServiceCommandUtilsTest extends ScalaTestWithActorTestKit with Bas
 
       val locationServiceDsl = new LocationServiceUtil(locationService)
       val actualLocations =
-        locationServiceDsl.findSequencer("TCS", "obsMode1").futureValue
+        locationServiceDsl.resolveSequencer("TCS", "obsMode1").futureValue
       actualLocations should ===(tcsLocation)
     }
 
@@ -237,7 +237,7 @@ class LocationServiceCommandUtilsTest extends ScalaTestWithActorTestKit with Bas
 
       val locationServiceDsl = new LocationServiceUtil(locationService)
       intercept[IllegalArgumentException] {
-        locationServiceDsl.findSequencer("TCS", "obsMode2").awaitResult
+        locationServiceDsl.resolveSequencer("TCS", "obsMode2").awaitResult
       }
     }
   }

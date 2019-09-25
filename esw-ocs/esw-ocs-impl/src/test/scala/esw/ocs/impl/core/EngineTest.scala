@@ -5,7 +5,8 @@ import akka.stream.{ActorMaterializer, Materializer}
 import csw.params.commands.CommandResponse.Error
 import csw.params.commands.SequenceCommand
 import csw.params.core.models.Id
-import esw.dsl.script.{Script, SequenceOperator}
+import esw.dsl.script.SequenceOperator
+import esw.dsl.script.javadsl.JScript
 import esw.ocs.api.BaseTestSuite
 import esw.ocs.api.models.Step
 import esw.ocs.api.protocol.{Ok, PullNextResult}
@@ -18,7 +19,7 @@ class EngineTest extends BaseTestSuite {
 
   private class Mocks {
     val sequenceOperator: SequenceOperator = mock[SequenceOperator]
-    val script: Script                     = mock[Script]
+    val script: JScript                    = mock[JScript]
     val cmd: SequenceCommand               = mock[SequenceCommand]
     val id: Id                             = mock[Id]
   }

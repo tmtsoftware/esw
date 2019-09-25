@@ -5,7 +5,8 @@ import akka.stream.Materializer
 import akka.stream.scaladsl.Source
 import csw.params.commands.CommandResponse.Error
 import csw.params.core.models.Id
-import esw.dsl.script.{BaseScriptDsl, SequenceOperator}
+import esw.dsl.script.SequenceOperator
+import esw.dsl.script.javadsl.JScript
 import esw.ocs.api.protocol.{PullNextResult, Unhandled}
 
 import scala.async.Async._
@@ -15,7 +16,7 @@ import scala.util.control.NonFatal
 private[ocs] class Engine(implicit mat: Materializer) {
   import mat.executionContext
 
-  def start(sequenceOperator: SequenceOperator, script: BaseScriptDsl): Future[Done] = {
+  def start(sequenceOperator: SequenceOperator, script: JScript): Future[Done] = {
     Source.repeat(()).mapAsync(1)(_ => processStep(sequenceOperator, script)).runForeach(_ => ())
   }
 
@@ -24,7 +25,7 @@ private[ocs] class Engine(implicit mat: Materializer) {
     job of engine is to pull only one command and wait for its completion then pull next
     this is achieved with the combination of pullNext and readyToExecuteNext
    */
-  private def processStep(sequenceOperator: SequenceOperator, script: BaseScriptDsl): Future[Done] = async {
+  private def processStep(sequenceOperator: SequenceOperator, script: JScript): Future[Done] = async {
     val pullNextResponse = await(sequenceOperator.pullNext)
 
     pullNextResponse match {

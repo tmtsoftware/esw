@@ -1,15 +1,12 @@
 package esw.dsl.script.utils
 
+import esw.dsl.script.CswServices
 import esw.dsl.script.exceptions.ScriptLoadingException.{InvalidScriptException, ScriptNotFound}
 import esw.dsl.script.javadsl.JScript
-import esw.dsl.script.{BaseScriptDsl, CswServices, Script}
 
 import scala.language.reflectiveCalls
 
 private[esw] object ScriptLoader {
-
-  def load(scriptClass: String, cswServices: CswServices): Script   = load0[Script](scriptClass, cswServices)
-  def jLoad(scriptClass: String, cswServices: CswServices): JScript = load0[JScript](scriptClass, cswServices)
 
   def loadKotlinScript(scriptClass: String, cswServices: CswServices): JScript =
     withScript(scriptClass) { clazz =>
@@ -26,10 +23,9 @@ private[esw] object ScriptLoader {
       result.invoke(cswServices).getJScript
     }
 
-  // fixme: Change to JScriptDsl or ScriptDsl
-  private def load0[T <: BaseScriptDsl](scriptClass: String, cswServices: CswServices): T =
+  def load(scriptClass: String, cswServices: CswServices): JScript =
     withScript(scriptClass) { clazz =>
-      clazz.getConstructor(classOf[CswServices]).newInstance(cswServices).asInstanceOf[T]
+      clazz.getConstructor(classOf[CswServices]).newInstance(cswServices).asInstanceOf[JScript]
     }
 
   private def withScript[T](scriptClass: String)(block: Class[_] => T): T =

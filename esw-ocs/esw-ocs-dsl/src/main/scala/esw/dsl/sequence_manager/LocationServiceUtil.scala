@@ -8,21 +8,19 @@ import akka.actor.typed.{ActorRef, ActorSystem}
 import csw.command.client.extensions.AkkaLocationExt.RichAkkaLocation
 import csw.command.client.messages.ComponentMessage
 import csw.location.api.scaladsl.{LocationService, RegistrationResult}
-import csw.location.models.ComponentType.Sequencer
 import csw.location.models.Connection.AkkaConnection
 import csw.location.models.ConnectionType.AkkaType
 import csw.location.models._
 import csw.params.core.models.Subsystem
 import esw.dsl.Timeouts
-import esw.dsl.script.services.LocationServiceDsl
 import esw.ocs.api.protocol.RegistrationError
 
+import scala.async.Async.{async, await}
 import scala.compat.java8.FutureConverters.FutureOps
 import scala.concurrent.{ExecutionContext, Future}
 import scala.util.control.NonFatal
 
-class LocationServiceUtil(private[esw] val locationService: LocationService)(implicit val actorSystem: ActorSystem[_])
-    extends LocationServiceDsl {
+class LocationServiceUtil(private[esw] val locationService: LocationService)(implicit val actorSystem: ActorSystem[_]) {
   implicit val ec: ExecutionContext = actorSystem.executionContext
 
   private def addCoordinatedShutdownTask(
@@ -83,13 +81,14 @@ class LocationServiceUtil(private[esw] val locationService: LocationService)(imp
     resolveComponentRef(componentName, componentType).toJava
 
   private[esw] def resolveSequencer(sequencerId: String, observingMode: String): Future[AkkaLocation] =
-    locationService
-      .resolve(AkkaConnection(ComponentId(s"$sequencerId@$observingMode", Sequencer)), Timeouts.DefaultTimeout)
-      .collect {
-        case Some(location: AkkaLocation) => location
-        case Some(location) =>
-          throw new RuntimeException(s"Sequencer is registered with wrong connection type: ${location.connection.connectionType}")
-        case None => throw new IllegalArgumentException(s"Could not find any sequencer with name: $sequencerId@$observingMode")
-      }
-
+    async {
+      await(locationService.list)
+      // sequencer has two registrations - http and akka, contains will return any but we need akka here
+        .find(location => location.connection.componentId.name.contains(s"$sequencerId@$observingMode"))
+    }.collect {
+      case Some(location: AkkaLocation) => location
+      case Some(location) =>
+        throw new RuntimeException(s"Sequencer is registered with wrong connection type: ${location.connection.connectionType}")
+      case None => throw new IllegalArgumentException(s"Could not find any sequencer with name: $sequencerId@$observingMode")
+    }
 }

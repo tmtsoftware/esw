@@ -34,7 +34,6 @@ import mscoket.impl.ws.WebsocketTransport
 
 import scala.concurrent.Future
 import scala.concurrent.duration.DurationLong
-import scala.jdk.FutureConverters.CompletionStageOps
 
 class SequencerAdminIntegrationTest
     extends ScalaTestFrameworkTestKit(EventServer)
@@ -184,7 +183,9 @@ class SequencerAdminIntegrationTest
 
     // assert sequencer goes offline and offline handlers are called
     sequencerAdmin.goOffline().futureValue should ===(Ok)
-    val offlineEvent = wiring.cswServices.getEvent("TCS.test.offline").asScala.futureValue
+
+    val subscriber   = wiring.cswServices._eventService.defaultSubscriber
+    val offlineEvent = subscriber.get(EventKey("TCS.test.offline")).futureValue
     offlineEvent.paramType.exists(BooleanKey.make("offline")) should ===(true)
 
     // assert sequencer does not accept editor commands in offline state
@@ -194,7 +195,7 @@ class SequencerAdminIntegrationTest
     sequencerAdmin.goOnline().futureValue should ===(Ok)
     sequencerAdmin.isOnline.futureValue should ===(true)
 
-    val onlineEvent = wiring.cswServices.getEvent("TCS.test.online").asScala.futureValue
+    val onlineEvent = subscriber.get(EventKey("TCS.test.online")).futureValue
     onlineEvent.paramType.exists(BooleanKey.make("online")) should ===(true)
 
     sequencerAdmin.loadSequence(sequence).futureValue should ===(Ok)
