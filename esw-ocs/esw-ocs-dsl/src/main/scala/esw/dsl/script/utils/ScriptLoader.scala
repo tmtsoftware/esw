@@ -16,11 +16,11 @@ private[esw] object ScriptLoader {
       val $$resultField = clazz.getDeclaredField("$$result")
       $$resultField.setAccessible(true)
 
-      type ScriptKt = { val getJScript: ScriptDsl }
-      type Result   = { def invoke(services: CswServices): ScriptKt }
+      type Script = { val  getScriptDsl: ScriptDsl }
+      type Result = { def invoke(services: CswServices): Script }
       // todo: see if there is other way than using structural types without adding `script-dsl` dependency on this project
       val result = $$resultField.get(script).asInstanceOf[Result]
-      result.invoke(cswServices).getJScript
+      result.invoke(cswServices).getScriptDsl
     }
 
   // this loads .kt or class file
