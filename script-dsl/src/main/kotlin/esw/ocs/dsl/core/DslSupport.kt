@@ -4,13 +4,13 @@ import esw.dsl.script.CswServices
 import esw.ocs.macros.StrandEc
 import kotlin.coroutines.CoroutineContext
 
-class Result(val scriptFactory: (CswServices) -> ScriptKt) {
-    operator fun invoke(cswService: CswServices): ScriptKt = scriptFactory(cswService)
+class Result(val scriptFactory: (CswServices) -> Script) {
+    operator fun invoke(cswService: CswServices): Script = scriptFactory(cswService)
 }
 
-fun script(block: ScriptKt.(csw: CswServices) -> Unit): Result =
+fun script(block: Script.(csw: CswServices) -> Unit): Result =
     Result {
-        ScriptKt(it).apply { block(it) }
+        Script(it).apply { block(it) }
     }
 
 class ReusableScriptResult(val scriptFactory: (CswServices, StrandEc, CoroutineContext) -> ReusableScript) {

@@ -2,12 +2,12 @@ package esw.ocs.scripts.examples.class_based
 
 import csw.params.commands.CommandResponse.Completed
 import esw.dsl.script.CswServices
-import esw.ocs.dsl.core.ScriptKt
+import esw.ocs.dsl.core.Script
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 
 @Deprecated("Use script based approach to write scripts")
-class Script1(cswServices: CswServices) : ScriptKt(cswServices) {
+class Script1(cswServices: CswServices) : Script(cswServices) {
     init {
         val eventKey = "csw.a.b."
         fun event(id: Int) = systemEvent("csw.a.b", id.toString())
