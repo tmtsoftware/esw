@@ -143,5 +143,11 @@ lazy val `esw-test-reporter` = project
   .in(file("esw-test-reporter"))
   .settings(libraryDependencies += Libs.scalatest)
 
+lazy val `esw-sm` = project
+  .in(file("esw-sm"))
+  .settings(
+    libraryDependencies ++= Dependencies.EswSM.value
+  )
+  .dependsOn(`esw-ocs-api`.jvm)
 /* ================= Paradox Docs ============== */
 lazy val docs = project.enablePlugins(NoPublish, ParadoxSite)
