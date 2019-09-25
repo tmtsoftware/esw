@@ -21,7 +21,7 @@ object Libs {
   val `msocket-impl-jvm`   = "com.github.tmtsoftware.msocket" %% "msocket-impl-jvm" % MSocketVersion
 
   // fixme: find appropriate place to keep kotlin test scripts used in integration-test project
-  val `examples`       = "com.github.tmtsoftware.script-dsl" % "examples" % "c887da8f11a37fe9e34e5169fd81f61b6de8e3bb"
+  val `examples`       = "com.github.tmtsoftware.script-dsl" % "examples" % "c4a00bf70c06c99bd9f34c8c6871e5963a91c3d0"
 }
 
 object Csw {

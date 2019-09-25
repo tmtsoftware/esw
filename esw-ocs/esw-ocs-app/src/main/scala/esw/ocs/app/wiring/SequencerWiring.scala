@@ -7,8 +7,11 @@ import akka.util.Timeout
 import com.typesafe.config.{Config, ConfigFactory}
 import csw.command.client.messages.CommandResponseManagerMessage
 import csw.command.client.{CRMCacheProperties, CommandResponseManager, CommandResponseManagerActor}
+import csw.event.client.internal.commons.javawrappers.JEventService
 import csw.location.api.extensions.ActorExtension.RichActor
+import csw.location.api.javadsl.ILocationService
 import csw.location.client.ActorSystemFactory
+import csw.location.client.javadsl.JHttpLocationServiceFactory
 import csw.location.models.Connection.AkkaConnection
 import csw.location.models.{AkkaLocation, AkkaRegistration, ComponentId, ComponentType}
 import csw.network.utils.SocketUtils
@@ -57,12 +60,14 @@ private[ocs] class SequencerWiring(val sequencerId: String, val observingMode: S
   lazy private val locationServiceUtil = new LocationServiceUtil(locationService)
   lazy private val adminFactory        = new SequencerAdminFactoryImpl(locationServiceUtil)
 
+  lazy val jLocationService: ILocationService = JHttpLocationServiceFactory.makeLocalClient(actorSystem, actorRuntime.mat)
+  lazy val jEventService: JEventService       = new JEventService(eventService)
   lazy val cswServices = new CswServices(
     sequenceOperatorFactory,
     commandResponseManager,
     typedSystem,
-    locationService,
-    eventService,
+    jLocationService,
+    jEventService,
     timeServiceSchedulerFactory,
     adminFactory
   )
