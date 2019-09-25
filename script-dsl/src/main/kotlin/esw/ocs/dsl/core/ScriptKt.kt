@@ -12,9 +12,9 @@ import csw.params.commands.SequenceCommand
 import csw.params.commands.Setup
 import csw.time.scheduler.api.TimeServiceScheduler
 import esw.dsl.script.CswServices
+import esw.dsl.script.javadsl.JScript
 import esw.ocs.dsl.highlevel.CswHighLevelDsl
 import esw.ocs.dsl.nullable
-import esw.ocs.impl.dsl.javadsl.JScript
 import esw.ocs.macros.StrandEc
 import java.util.concurrent.CompletionStage
 import kotlin.coroutines.CoroutineContext

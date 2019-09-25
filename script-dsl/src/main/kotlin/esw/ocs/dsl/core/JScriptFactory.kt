@@ -1,7 +1,7 @@
 package esw.ocs.dsl.core
 
 import esw.dsl.script.CswServices
-import esw.ocs.impl.dsl.javadsl.JScript
+import esw.dsl.script.javadsl.JScript
 import esw.ocs.macros.StrandEc
 
 object JScriptFactory {
