@@ -13,17 +13,18 @@ import csw.params.commands.Setup
 import csw.time.scheduler.api.TimeServiceScheduler
 import esw.dsl.script.CswServices
 import esw.dsl.script.javadsl.JScript
+import esw.ocs.api.SequencerAdminFactoryApi
 import esw.ocs.dsl.highlevel.CswHighLevelDsl
 import esw.ocs.dsl.nullable
 import esw.ocs.macros.StrandEc
-import java.util.concurrent.CompletionStage
-import kotlin.coroutines.CoroutineContext
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.asCoroutineDispatcher
 import kotlinx.coroutines.future.await
 import kotlinx.coroutines.future.future
 import kotlinx.coroutines.launch
+import java.util.concurrent.CompletionStage
+import kotlin.coroutines.CoroutineContext
 
 sealed class BaseScript : CoroutineScope, CswHighLevelDsl {
 
@@ -93,11 +94,12 @@ class ReusableScript(
     override val coroutineContext: CoroutineContext
 ) : BaseScript() {
     override fun strandEc(): StrandEc = _strandEc
-
     override val locationService: ILocationService by lazy {
         JLocationServiceImpl(cswServices._locationService(), _strandEc.ec())
     }
-
+    override val sequencerAdminFactory: SequencerAdminFactoryApi by lazy {
+        cswServices.sequencerAdminFactory()
+    }
     override val timeServiceScheduler: TimeServiceScheduler by lazy {
         cswServices.timeServiceSchedulerFactory().make(_strandEc.ec())
     }
@@ -111,7 +113,9 @@ open class ScriptKt(final override val cswServices: CswServices) : BaseScript() 
     override val locationService: ILocationService by lazy {
         JLocationServiceImpl(cswServices._locationService(), _strandEc.ec())
     }
-
+    override val sequencerAdminFactory: SequencerAdminFactoryApi by lazy {
+        cswServices.sequencerAdminFactory()
+    }
     override val timeServiceScheduler: TimeServiceScheduler by lazy {
         cswServices.timeServiceSchedulerFactory().make(_strandEc.ec())
     }

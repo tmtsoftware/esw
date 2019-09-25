@@ -10,8 +10,8 @@ interface LocationServiceKtDsl : CoroutineScope {
     val locationService: ILocationService
 
     suspend fun resolveSequencer(sequencerId: String, observingMode: String): AkkaLocation {
-        val location = locationService.list().await()
-            .find { location -> location.connection().componentId().name().contains("$sequencerId@$observingMode") }
+        val location: Location? = locationService.list().await()
+            .find { it.connection().componentId().name().contains("$sequencerId@$observingMode") }
 
         when (location) {
             is AkkaLocation -> return location
