@@ -148,6 +148,10 @@ lazy val `esw-sm` = project
   .settings(
     libraryDependencies ++= Dependencies.EswSM.value
   )
-  .dependsOn(`esw-ocs-api`.jvm)
+  .dependsOn(
+    `esw-ocs-api`.jvm,
+    `esw-ocs-dsl`,
+    `esw-http-core`
+  )
 /* ================= Paradox Docs ============== */
 lazy val docs = project.enablePlugins(NoPublish, ParadoxSite)
