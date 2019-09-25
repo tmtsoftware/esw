@@ -54,5 +54,5 @@ class Var<T> internal constructor(
         refreshable.refresh(source)
     }
 
-    override fun toString(): String = _value.toString()
+    override fun toString(): String = get().toString()
 }

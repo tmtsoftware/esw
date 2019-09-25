@@ -5,20 +5,21 @@ import csw.event.api.javadsl.IEventService
 import csw.params.events.Event
 import esw.ocs.dsl.compareTo
 import esw.ocs.dsl.params.intKey
-import kotlinx.coroutines.delay
 import kotlinx.coroutines.runBlocking
 
 abstract class TestMachine(name: String, init: String) : Machine(name, init) {
+    private var database = mutableMapOf<String, Event>()
+
     override val eventService: IEventService
         get() = TODO("not implemented") // To change initializer of created properties use File | Settings | File Templates.
 
     override suspend fun publishEvent(event: Event): Done {
+        database[event.eventKey().key()] = event
         return Done.done()
     }
 
-    override suspend fun getEvent(vararg eventKeys: String): Set<Event> {
-        return setOf(Event.badEvent())
-    }
+    override suspend fun getEvent(vararg eventKeys: String): Set<Event> =
+        eventKeys.mapNotNull { database[it] }.toSet()
 
     val prefix = "esw.epic"
     val tempKey = intKey("temp")
@@ -26,7 +27,7 @@ abstract class TestMachine(name: String, init: String) : Machine(name, init) {
 
 val machine1 = object : TestMachine("temp-monitor", "Init") {
 
-    var temp = createVar(0, "$prefix.temp", tempKey)
+    var temp = Var(0, "$prefix.temp", tempKey)
 
     override suspend fun logic(state: String) {
         when (state) {
@@ -58,8 +59,7 @@ val machine1 = object : TestMachine("temp-monitor", "Init") {
 }
 
 val machine2 = object : TestMachine("temp-monitor", "Init") {
-    var temp by reactiveEvent(0, "$prefix.temp", tempKey) { _, o, n ->
-        println("Temp changed from [$o to $n]")
+    var temp by reactiveEvent(0, "$prefix.temp", tempKey) { _, _ ->
     }
 
     override suspend fun logic(state: String) {
@@ -90,7 +90,10 @@ val machine2 = object : TestMachine("temp-monitor", "Init") {
 }
 
 fun main() = runBlocking {
-    machine2.refresh("Init")
+    println("============= MACHINE 1 =============")
+    machine1.refresh("Init")
 
-    delay(10000)
+    println()
+    println("============= MACHINE 2 =============")
+    machine2.refresh("Init")
 }

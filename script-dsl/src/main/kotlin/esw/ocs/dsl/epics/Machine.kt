@@ -36,7 +36,7 @@ abstract class Machine(private val name: String, init: String) : CoroutineScope,
 
     override suspend fun refresh(source: String) {
         println(
-            "machine = $name%-8s    previousState = $previousState%-8s     currentState = $currentState%-8s    action = $source%-8s     ${debugString()}%8s"
+            "machine = $name    previousState = $previousState     currentState = $currentState    action = $source     ${debugString()}"
         )
         logic(currentState)
     }
@@ -60,23 +60,29 @@ abstract class Machine(private val name: String, init: String) : CoroutineScope,
         }
     }
 
-    fun <T> createVar(initial: T, eventKey: String, key: KeyHolder<T>) = Var(initial, eventKey, this, this, key)
+    fun <T> Var(initial: T, eventKey: String, key: KeyHolder<T>) = Var(initial, eventKey, this, this, key)
 
     inline fun <T> reactiveEvent(
         initial: T,
         eventKey: String,
         keyHolder: KeyHolder<T>,
-        crossinline onChange: (property: KProperty<*>, oldValue: T, newValue: T) -> Unit
+        crossinline onChange: (oldValue: T, newValue: T) -> Unit
     ): ReadWriteProperty<Any?, T> =
         object : ObservableProperty<T>(initial) {
             private val _eventKey = EventKey.apply(eventKey)
+
+            init {
+                runBlocking {
+                    publishEvent(event(keyHolder.set(initial)))
+                }
+            }
 
             // todo: should allow creating any type of event
             private fun event(param: Parameter<T>): SystemEvent =
                 SystemEvent(_eventKey.source(), _eventKey.eventName()).add(param)
 
             override fun afterChange(property: KProperty<*>, oldValue: T, newValue: T) =
-                onChange(property, oldValue, newValue)
+                onChange(oldValue, newValue)
 
             override fun getValue(thisRef: Any?, property: KProperty<*>): T =
                 runBlocking(coroutineContext) {
