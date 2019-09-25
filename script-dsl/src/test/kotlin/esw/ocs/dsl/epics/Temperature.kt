@@ -1,40 +1,41 @@
 package esw.ocs.dsl.epics
 
 import akka.Done
-import akka.actor.typed.SpawnProtocol
-import akka.stream.ActorMaterializer
 import csw.event.api.javadsl.IEventService
-import csw.event.client.EventServiceFactory
-import csw.event.client.models.EventStores
-import csw.location.api.javadsl.ILocationService
-import csw.location.client.ActorSystemFactory
-import csw.location.client.javadsl.JHttpLocationServiceFactory
+import csw.event.api.javadsl.IEventSubscription
 import csw.params.events.Event
 import esw.ocs.dsl.compareTo
+import esw.ocs.dsl.core.utils.bgLoop
 import esw.ocs.dsl.params.intKey
-import io.lettuce.core.RedisClient
-import kotlinx.coroutines.delay
 import kotlinx.coroutines.runBlocking
+import java.util.concurrent.CompletableFuture
 import kotlin.time.seconds
+
+typealias SubscriptionCallback = suspend (Event) -> Unit
 
 abstract class TestMachine(name: String, init: String) : Machine(name, init) {
     private var database = mutableMapOf<String, Event>()
-
-
-    val system = ActorSystemFactory.remote(SpawnProtocol.behavior())
-    val mat = ActorMaterializer.apply(null, null)
-    val locationService: ILocationService = JHttpLocationServiceFactory.makeLocalClient(system, mat)
-    val redisClient = RedisClient.create()
-    val eventServiceFactory: EventServiceFactory = object : EventServiceFactory(EventStores.RedisStore(redisClient))
-    val service: IEventService = eventServiceFactory.jMake(locationService, system)
+    private var subscriptions = mutableMapOf<String, List<SubscriptionCallback>>()
 
     override val eventService: IEventService
-        get() = service
-//    TODO("not implemented") // To change initializer of created properties use File | Settings | File Templates.
+        get() = TODO("not implemented") // To change initializer of created properties use File | Settings | File Templates.
+
+    private val mockedEventSubscription = object : IEventSubscription {
+        override fun unsubscribe(): CompletableFuture<Done> = TODO("not implemented")
+        override fun ready(): CompletableFuture<Done> = TODO("not implemented")
+    }
 
     override suspend fun publishEvent(event: Event): Done {
         database[event.eventKey().key()] = event
+        subscriptions[event.eventKey().key()]?.forEach { it(event) }
         return Done.done()
+    }
+
+    override fun onEvent(vararg eventKeys: String, callback: suspend (Event) -> Unit): IEventSubscription {
+        eventKeys.map {
+            subscriptions.merge(it, listOf(callback)) { old, new -> old + new }
+        }
+        return mockedEventSubscription
     }
 
     override suspend fun getEvent(vararg eventKeys: String): Set<Event> =
@@ -111,6 +112,18 @@ val machine2 = object : TestMachine("temp-monitor", "Init") {
 
 val machine3 = object : TestMachine("temp-monitor", "Init") {
     var temp = Var(0, "$prefix.temp", tempKey)
+    var counter = 0
+
+    init {
+        // for testing purpose
+        bgLoop(1.seconds) {
+            val value = (20..60).random()
+            temp.set(value)
+            temp.pvPut()
+            counter += 1
+            stopWhen(counter == 10)
+        }
+    }
 
     override suspend fun logic(state: String) {
         when (state) {
@@ -144,9 +157,12 @@ val machine3 = object : TestMachine("temp-monitor", "Init") {
 fun main() = runBlocking {
     println("============= MACHINE 1 =============")
     machine1.refresh("Init")
-//    machine3.refresh("Init")
 
     println()
     println("============= MACHINE 2 =============")
     machine2.refresh("Init")
+
+    println()
+    println("============= MACHINE 3 =============")
+    machine3.refresh("Init")
 }
