@@ -5,6 +5,7 @@ import java.util.concurrent.{CompletableFuture, CompletionStage}
 import java.util.function.Supplier
 
 import akka.Done
+import akka.actor.typed.ActorSystem
 import csw.command.client.SequencerCommandServiceFactory
 import csw.params.commands.CommandResponse.SubmitResponse
 import csw.params.commands.{Observe, Sequence, SequenceCommand, Setup}
@@ -115,7 +116,7 @@ abstract class ScriptDsl(val csw: CswServices) {
       observingMode: String,
       sequence: Sequence
   ): CompletionStage[SubmitResponse] = {
-    implicit val actorSystem = csw.actorSystem
+    implicit val actorSystem: ActorSystem[_] = csw.actorSystem
     new LocationServiceUtil(csw.locationService.asScala)
       .resolveSequencer(sequencerName, observingMode)
       .map(SequencerCommandServiceFactory.make)
