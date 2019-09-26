@@ -1,3 +1,4 @@
+import com.adarshr.gradle.testlogger.theme.ThemeType
 import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 
 plugins {
@@ -5,6 +6,7 @@ plugins {
     kotlin("jvm") version "1.3.50" apply false
     `maven-publish`
     id("org.jmailen.kotlinter") version "2.1.1"
+    id("com.adarshr.test-logger") version "1.7.0"
 }
 
 allprojects {
@@ -24,13 +26,17 @@ subprojects {
     apply(plugin = "org.jetbrains.kotlin.jvm")
     apply(plugin = "org.gradle.maven-publish")
     apply(plugin = "org.jmailen.kotlinter")
+    apply(plugin = "com.adarshr.test-logger")
 
     tasks.withType<Test> {
         useJUnitPlatform()
-        testLogging {
-            showStandardStreams = true
-            events("passed", "skipped", "failed")
+        testlogger {
+            theme = ThemeType.MOCHA
         }
+//        testLogging {
+//            showStandardStreams = true
+//            events("passed", "skipped", "failed")
+//        }
     }
 
     dependencies {
