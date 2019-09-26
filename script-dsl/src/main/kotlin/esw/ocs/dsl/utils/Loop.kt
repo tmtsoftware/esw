@@ -1,4 +1,4 @@
-package esw.ocs.dsl.core.utils
+package esw.ocs.dsl.utils
 
 import kotlin.time.Duration
 import kotlin.time.milliseconds

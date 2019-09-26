@@ -15,18 +15,19 @@ import esw.dsl.script.CswServices
 import esw.dsl.script.ScriptDsl
 import esw.ocs.api.SequencerAdminFactoryApi
 import esw.ocs.dsl.highlevel.CswHighLevelDsl
-import esw.ocs.dsl.nullable
+import esw.ocs.dsl.internal.nullable
+import esw.ocs.dsl.utils.CswExtensions
 import esw.ocs.macros.StrandEc
+import java.util.concurrent.CompletionStage
+import kotlin.coroutines.CoroutineContext
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.asCoroutineDispatcher
 import kotlinx.coroutines.future.await
 import kotlinx.coroutines.future.future
 import kotlinx.coroutines.launch
-import java.util.concurrent.CompletionStage
-import kotlin.coroutines.CoroutineContext
 
-sealed class ScriptDslKt : CoroutineScope, CswHighLevelDsl {
+sealed class ScriptDslKt : CoroutineScope, CswHighLevelDsl, CswExtensions {
 
     abstract val cswServices: CswServices
 
@@ -121,8 +122,7 @@ open class Script(final override val cswServices: CswServices) : ScriptDslKt() {
         cswServices.timeServiceSchedulerFactory().make(_strandEc.ec())
     }
 
-    override val coroutineContext: CoroutineContext
-        get() = job + dispatcher
+    override val coroutineContext: CoroutineContext get() = job + dispatcher
 
     override fun strandEc(): StrandEc = _strandEc
 

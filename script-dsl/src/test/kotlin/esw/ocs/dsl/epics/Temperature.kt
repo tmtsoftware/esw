@@ -4,9 +4,8 @@ import akka.Done
 import csw.event.api.javadsl.IEventService
 import csw.event.api.javadsl.IEventSubscription
 import csw.params.events.Event
-import esw.ocs.dsl.compareTo
-import esw.ocs.dsl.core.utils.bgLoop
-import esw.ocs.dsl.params.intKey
+import esw.ocs.dsl.utils.bgLoop
+import esw.ocs.dsl.utils.intKey
 import java.util.concurrent.CompletableFuture
 import kotlin.time.seconds
 import kotlinx.coroutines.runBlocking

@@ -1,7 +1,5 @@
 package esw.ocs.dsl.utils
 
-import esw.ocs.dsl.core.utils.bgLoop
-import esw.ocs.dsl.core.utils.loop
 import kotlin.time.seconds
 import kotlinx.coroutines.runBlocking
 

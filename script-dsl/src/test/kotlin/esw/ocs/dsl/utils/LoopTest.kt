@@ -1,7 +1,5 @@
 package esw.ocs.dsl.utils
 
-import esw.ocs.dsl.core.utils.bgLoop
-import esw.ocs.dsl.core.utils.loop
 import io.kotlintest.matchers.numerics.shouldBeInRange
 import io.kotlintest.matchers.numerics.shouldBeLessThan
 import io.kotlintest.shouldBe

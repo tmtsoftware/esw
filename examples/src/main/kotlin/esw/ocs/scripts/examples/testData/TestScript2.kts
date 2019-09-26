@@ -3,8 +3,7 @@ package esw.ocs.scripts.examples.testData
 import csw.params.commands.CommandResponse.Completed
 import csw.params.commands.CommandResponse.Error
 import esw.ocs.dsl.core.script
-import esw.ocs.dsl.params.booleanKey
-import esw.ocs.dsl.params.runId
+import esw.ocs.dsl.utils.booleanKey
 import kotlinx.coroutines.delay
 
 script {

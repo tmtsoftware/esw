@@ -1,4 +1,4 @@
-package esw.ocs.dsl.params
+package esw.ocs.dsl.utils
 
 import csw.params.core.generics.GChoiceKey
 import csw.params.core.generics.Key
@@ -17,8 +17,6 @@ data class KeyHolder<T>(val key: Key<T>) {
     val units: Units = key.units()
     fun set(vararg elm: T, units: Units = NoUnits): Parameter<T> = key.set(elm, units)
 }
-
-fun GChoiceKey.set(vararg choices: Choice, units: Units = NoUnits): Parameter<Choice> = set(choices, units)
 
 fun choicesOf(vararg choices: String): Choices = Choices.from(choices.toSet())
 

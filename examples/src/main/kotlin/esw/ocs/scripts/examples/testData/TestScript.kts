@@ -1,17 +1,15 @@
 package esw.ocs.scripts.examples.testData
 
-import csw.location.models.ComponentType.`Assembly$`
+import csw.location.api.javadsl.JComponentType.Assembly
 import csw.params.commands.*
 import csw.params.core.models.Id
 import csw.params.core.models.Prefix
-import csw.time.core.models.UTCTime
 import esw.ocs.dsl.core.script
-import esw.ocs.dsl.params.runId
+import java.util.*
 import kotlinx.coroutines.delay
 import scala.Option
 import scala.collection.immutable.HashSet
 import scala.jdk.javaapi.CollectionConverters
-import java.util.*
 
 script {
 
@@ -53,16 +51,12 @@ script {
     }
 
     handleDiagnosticMode { startTime, hint ->
-        when {
-            startTime is UTCTime && hint is String ->
-                // do some actions to go to diagnostic mode based on hint
-                // fixme : find easy way to use Scala case objects in Script
-                diagnosticModeForComponent("test", `Assembly$`.`MODULE$`, startTime, hint)
-        }
+        // do some actions to go to diagnostic mode based on hint
+        diagnosticModeForComponent("test", Assembly, startTime, hint)
     }
 
     handleOperationsMode {
         // do some actions to go to operations mode
-        operationsModeForComponent("test", `Assembly$`.`MODULE$`)
+        operationsModeForComponent("test", Assembly)
     }
 }

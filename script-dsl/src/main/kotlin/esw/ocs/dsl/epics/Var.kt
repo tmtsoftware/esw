@@ -5,8 +5,8 @@ import csw.params.events.Event
 import csw.params.events.EventKey
 import csw.params.events.SystemEvent
 import esw.ocs.dsl.highlevel.EventServiceDsl
-import esw.ocs.dsl.nullable
-import esw.ocs.dsl.params.KeyHolder
+import esw.ocs.dsl.internal.nullable
+import esw.ocs.dsl.utils.KeyHolder
 
 interface Refreshable {
     suspend fun refresh(source: String)
