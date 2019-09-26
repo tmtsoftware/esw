@@ -29,9 +29,7 @@ interface DiagnosticDsl {
 
     suspend fun operationsModeForComponent(
         componentName: String,
-        componentType: ComponentType,
-        startTime: UTCTime,
-        hint: String
+        componentType: ComponentType
     ): Unit = sendMsgToComponent(componentName, componentType, `OperationsMode$`.`MODULE$`)
 
     suspend fun diagnosticModeForSequencer(

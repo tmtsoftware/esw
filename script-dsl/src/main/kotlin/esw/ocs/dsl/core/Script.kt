@@ -9,6 +9,7 @@ import csw.params.commands.Observe
 import csw.params.commands.Sequence
 import csw.params.commands.SequenceCommand
 import csw.params.commands.Setup
+import csw.time.core.models.UTCTime
 import csw.time.scheduler.api.TimeServiceScheduler
 import esw.dsl.script.CswServices
 import esw.dsl.script.ScriptDsl
@@ -16,14 +17,14 @@ import esw.ocs.api.SequencerAdminFactoryApi
 import esw.ocs.dsl.highlevel.CswHighLevelDsl
 import esw.ocs.dsl.nullable
 import esw.ocs.macros.StrandEc
-import java.util.concurrent.CompletionStage
-import kotlin.coroutines.CoroutineContext
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.asCoroutineDispatcher
 import kotlinx.coroutines.future.await
 import kotlinx.coroutines.future.future
 import kotlinx.coroutines.launch
+import java.util.concurrent.CompletionStage
+import kotlin.coroutines.CoroutineContext
 
 sealed class ScriptDslKt : CoroutineScope, CswHighLevelDsl {
 
@@ -67,6 +68,14 @@ sealed class ScriptDslKt : CoroutineScope, CswHighLevelDsl {
 
     fun handleShutdown(block: suspend () -> Unit) {
         scriptDsl.jHandleShutdown { block.toJavaFutureVoid() }
+    }
+
+    fun handleDiagnosticMode(block: suspend (x: UTCTime, y: String) -> Unit) {
+        scriptDsl.jHandleDiagnosticMode { x: UTCTime, y: String -> future { block(x, y) }.thenAccept { } }
+    }
+
+    fun handleOperationsMode(block: suspend () -> Unit) {
+        scriptDsl.jHandleOperationsMode { block.toJavaFutureVoid() }
     }
 
     fun log(msg: String) = println("[${Thread.currentThread().name}] $msg")
