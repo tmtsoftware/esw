@@ -16,7 +16,7 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.future.await
 import kotlinx.coroutines.future.future
 
-interface EventServiceKtDsl : CoroutineScope {
+interface EventServiceDsl : CoroutineScope {
     val eventService: IEventService
 
     private val defaultPublisher: IEventPublisher

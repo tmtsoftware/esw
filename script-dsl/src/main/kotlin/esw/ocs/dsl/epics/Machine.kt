@@ -4,7 +4,7 @@ import csw.params.core.generics.Parameter
 import csw.params.core.generics.ParameterSetType
 import csw.params.events.EventKey
 import csw.params.events.SystemEvent
-import esw.ocs.dsl.highlevel.EventServiceKtDsl
+import esw.ocs.dsl.highlevel.EventServiceDsl
 import esw.ocs.dsl.nullable
 import esw.ocs.dsl.params.KeyHolder
 import java.util.concurrent.Executors
@@ -16,7 +16,7 @@ import kotlin.time.Duration
 import kotlinx.coroutines.*
 
 abstract class Machine(private val name: String, init: String) : CoroutineScope,
-    Refreshable, EventServiceKtDsl {
+    Refreshable, EventServiceDsl {
 
     private val ec = Executors.newSingleThreadScheduledExecutor()
     private val job = Job()

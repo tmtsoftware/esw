@@ -10,7 +10,7 @@ import kotlin.time.Duration
 import kotlin.time.toJavaDuration
 import kotlinx.coroutines.future.await
 
-interface CrmKtDsl {
+interface CrmDsl {
     val crm: CommandResponseManager
 
     fun addOrUpdateCommand(cmdStatus: SubmitResponse) =

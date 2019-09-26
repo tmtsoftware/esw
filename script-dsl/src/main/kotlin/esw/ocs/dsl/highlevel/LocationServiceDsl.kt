@@ -6,7 +6,7 @@ import csw.location.models.Location
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.future.await
 
-interface LocationServiceKtDsl : CoroutineScope {
+interface LocationServiceDsl : CoroutineScope {
     val locationService: ILocationService
 
     suspend fun resolveSequencer(sequencerId: String, observingMode: String): AkkaLocation {

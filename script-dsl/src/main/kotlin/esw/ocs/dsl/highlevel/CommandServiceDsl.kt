@@ -25,7 +25,7 @@ import java.util.concurrent.TimeUnit
 import kotlinx.coroutines.future.await
 import scala.concurrent.duration.Duration.create
 
-interface CommandServiceKtDsl {
+interface CommandServiceDsl {
     val locationService: ILocationService
     val actorSystem: ActorSystem<*>
 
@@ -88,15 +88,8 @@ interface CommandServiceKtDsl {
         .orElseThrow { IllegalArgumentException("Could not find component - $name of type - $compType") }
         .let { action(CommandServiceFactory.jMake(it, actorSystem)).await() }
 
-    private suspend fun resolve(
-        name: String,
-        compType: ComponentType
-    ): Optional<AkkaLocation> = locationService
-        .resolve(
-            Connection.AkkaConnection(ComponentId(name, compType)),
-            duration
-        )
-        .await()
+    private suspend fun resolve(name: String, compType: ComponentType): Optional<AkkaLocation> =
+        locationService.resolve(Connection.AkkaConnection(ComponentId(name, compType)), duration).await()
 
     private fun String?.toOptionalObsId() = Optional.ofNullable(this?.let { ObsId(it) })
 }

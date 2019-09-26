@@ -9,7 +9,7 @@ import kotlin.time.toJavaDuration
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.future.future
 
-interface TimeServiceKtDsl : CoroutineScope {
+interface TimeServiceDsl : CoroutineScope {
     val timeServiceScheduler: TimeServiceScheduler
 
     private fun (suspend () -> Unit).toJavaFuture(): CompletionStage<Void> =

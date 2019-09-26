@@ -7,9 +7,9 @@ import csw.params.events.Event
 import esw.ocs.dsl.compareTo
 import esw.ocs.dsl.core.utils.bgLoop
 import esw.ocs.dsl.params.intKey
-import kotlinx.coroutines.runBlocking
 import java.util.concurrent.CompletableFuture
 import kotlin.time.seconds
+import kotlinx.coroutines.runBlocking
 
 typealias SubscriptionCallback = suspend (Event) -> Unit
 
@@ -44,7 +44,6 @@ abstract class TestMachine(name: String, init: String) : Machine(name, init) {
     val prefix = "esw.epic"
     val tempKey = intKey("temp")
 }
-
 
 val machine1 = object : TestMachine("temp-get", "Init") {
 

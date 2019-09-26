@@ -4,7 +4,7 @@ import csw.params.core.generics.Parameter
 import csw.params.events.Event
 import csw.params.events.EventKey
 import csw.params.events.SystemEvent
-import esw.ocs.dsl.highlevel.EventServiceKtDsl
+import esw.ocs.dsl.highlevel.EventServiceDsl
 import esw.ocs.dsl.nullable
 import esw.ocs.dsl.params.KeyHolder
 
@@ -15,7 +15,7 @@ interface Refreshable {
 class Var<T> internal constructor(
     initial: T,
     private val eventKey: String,
-    private val eventService: EventServiceKtDsl,
+    private val eventService: EventServiceDsl,
     private val refreshable: Refreshable,
     private val keyHolder: KeyHolder<T>
 ) {
