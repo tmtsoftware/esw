@@ -44,18 +44,17 @@ script {
         publishEvent(event)
     }
 
-//    handleDiagnosticMode {
-//        case (startTime, hint) =>
-//        spawn {
-//            // do some actions to go to diagnostic mode based on hint
-//            csw.diagnosticModeForSequencer("testSequencerId6", "testObservingMode6", startTime, hint)
-//        }
-//    }
-//
-//    handleOperationsMode {
-//        spawn {
-//            // do some actions to go to operations mode
-//            csw.operationsModeForSequencer("testSequencerId6", "testObservingMode6")
-//        }
-//    }
+    handleDiagnosticMode { startTime, hint ->
+        // do some actions to go to diagnostic mode based on hint
+        diagnosticModeForSequencer(
+            "testSequencerId6", "testObservingMode6",
+            startTime,
+            hint
+        )
+    }
+
+    handleOperationsMode {
+        // do some actions to go to operations mode
+        operationsModeForSequencer("testSequencerId6", "testObservingMode6")
+    }
 }

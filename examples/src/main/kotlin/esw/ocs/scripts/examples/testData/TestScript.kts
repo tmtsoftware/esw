@@ -5,11 +5,11 @@ import csw.params.commands.*
 import csw.params.core.models.Id
 import csw.params.core.models.Prefix
 import esw.ocs.dsl.core.script
-import java.util.*
 import kotlinx.coroutines.delay
 import scala.Option
 import scala.collection.immutable.HashSet
 import scala.jdk.javaapi.CollectionConverters
+import java.util.*
 
 script {
 
