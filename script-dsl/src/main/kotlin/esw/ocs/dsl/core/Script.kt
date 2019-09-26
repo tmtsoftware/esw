@@ -88,7 +88,7 @@ sealed class ScriptDslKt : CoroutineScope, CswHighLevelDsl, CswExtensions {
     }
 
     suspend fun submitSequence(sequencerName: String, observingMode: String, sequence: Sequence): SubmitResponse =
-        TODO("cswServices.submitSequence(sequencerName, observingMode, sequence).await()")
+        this.scriptDsl.submitSequence(sequencerName, observingMode, sequence).await()
 
     private fun (suspend () -> Unit).toJavaFutureVoid(): CompletionStage<Void> {
         val block = this
