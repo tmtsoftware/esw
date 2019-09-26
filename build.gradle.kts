@@ -27,6 +27,10 @@ subprojects {
 
     tasks.withType<Test> {
         useJUnitPlatform()
+        testLogging {
+            showStandardStreams = true
+            events("passed", "skipped", "failed")
+        }
     }
 
     dependencies {
@@ -95,3 +99,5 @@ dependencies {
         archives(it)
     }
 }
+
+
