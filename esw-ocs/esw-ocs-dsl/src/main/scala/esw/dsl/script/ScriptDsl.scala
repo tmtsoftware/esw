@@ -102,8 +102,8 @@ abstract class ScriptDsl(val csw: CswServices) {
   protected final def jHandleAbort(handler: Supplier[CompletionStage[Void]]): Unit     = abortHandlers.add(_ => handler.get())
   protected final def jHandleShutdown(handler: Supplier[CompletionStage[Void]]): Unit  = shutdownHandlers.add(_ => handler.get())
   protected final def jHandleGoOffline(handler: Supplier[CompletionStage[Void]]): Unit = offlineHandlers.add(_ => handler.get())
-  protected final def jHandleDiagnosticMode(handler: Supplier[CompletionStage[Void]]): Unit =
-    diagnosticHandlers.add(_ => handler.get())
+  protected final def jHandleDiagnosticMode(handler: (UTCTime, String) => CompletionStage[Void]): Unit =
+    diagnosticHandlers.add((x: (UTCTime, String)) => handler(x._1, x._2))
   protected final def jHandleOperationsMode(handler: Supplier[CompletionStage[Void]]): Unit =
     operationsHandlers.add(_ => handler.get())
 }
