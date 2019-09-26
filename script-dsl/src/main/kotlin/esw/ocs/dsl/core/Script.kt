@@ -4,6 +4,7 @@ import akka.actor.typed.ActorSystem
 import csw.command.client.CommandResponseManager
 import csw.event.api.javadsl.IEventService
 import csw.location.api.javadsl.ILocationService
+import csw.location.models.AkkaLocation
 import csw.params.commands.CommandResponse.SubmitResponse
 import csw.params.commands.Observe
 import csw.params.commands.Sequence
@@ -13,6 +14,7 @@ import csw.time.core.models.UTCTime
 import csw.time.scheduler.api.TimeServiceScheduler
 import esw.dsl.script.CswServices
 import esw.dsl.script.ScriptDsl
+import esw.dsl.sequence_manager.LocationServiceUtil
 import esw.ocs.api.SequencerAdminFactoryApi
 import esw.ocs.dsl.highlevel.CswHighLevelDsl
 import esw.ocs.dsl.internal.nullable
@@ -86,6 +88,10 @@ sealed class ScriptDslKt : CoroutineScope, CswHighLevelDsl, CswExtensions {
             this.scriptDsl.merge(it(cswServices, strandEc(), coroutineContext).scriptDsl)
         }
     }
+
+    suspend fun resolveSequencer(sequencerId: String, observingMode: String): AkkaLocation =
+        LocationServiceUtil(locationService.asScala(), actorSystem)
+            .jResolveSequencer(sequencerId, observingMode).await()
 
     suspend fun submitSequence(sequencerName: String, observingMode: String, sequence: Sequence): SubmitResponse =
         this.scriptDsl.submitSequence(sequencerName, observingMode, sequence).await()

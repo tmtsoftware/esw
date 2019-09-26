@@ -33,15 +33,11 @@ subprojects {
         testlogger {
             theme = ThemeType.MOCHA
         }
-//        testLogging {
-//            showStandardStreams = true
-//            events("passed", "skipped", "failed")
-//        }
     }
 
     dependencies {
         implementation(kotlin("stdlib-jdk8"))
-        implementation("com.github.tmtsoftware.esw:esw-ocs-app_2.13:7a5c3138636368978346130cd1b3b6b069188bf3")
+        implementation("com.github.tmtsoftware.esw:esw-ocs-app_2.13:32dad6b3895ae959e8a6dcfc068406c980c6df7f")
         compile("org.jetbrains.kotlinx", "kotlinx-coroutines-jdk8", "1.3.0")
         compile("org.jetbrains.kotlin", "kotlin-script-runtime", "1.3.50")
 
@@ -105,5 +101,3 @@ dependencies {
         archives(it)
     }
 }
-
-
