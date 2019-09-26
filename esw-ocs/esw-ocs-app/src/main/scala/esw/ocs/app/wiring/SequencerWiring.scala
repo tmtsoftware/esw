@@ -15,8 +15,8 @@ import csw.location.client.javadsl.JHttpLocationServiceFactory
 import csw.location.models.Connection.AkkaConnection
 import csw.location.models.{AkkaLocation, AkkaRegistration, ComponentId, ComponentType}
 import csw.network.utils.SocketUtils
-import esw.dsl.script.{CswServices, ScriptDsl}
 import esw.dsl.script.utils.ScriptLoader
+import esw.dsl.script.{CswServices, ScriptDsl}
 import esw.dsl.sequence_manager.LocationServiceUtil
 import esw.http.core.wiring.{ActorRuntime, CswWiring, HttpService, Settings}
 import esw.ocs.api.protocol.RegistrationError

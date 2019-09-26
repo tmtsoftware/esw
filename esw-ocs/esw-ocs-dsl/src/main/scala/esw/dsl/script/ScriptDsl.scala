@@ -5,10 +5,13 @@ import java.util.concurrent.{CompletableFuture, CompletionStage}
 import java.util.function.Supplier
 
 import akka.Done
-import csw.params.commands.{Observe, SequenceCommand, Setup}
+import csw.command.client.SequencerCommandServiceFactory
+import csw.params.commands.CommandResponse.SubmitResponse
+import csw.params.commands.{Observe, Sequence, SequenceCommand, Setup}
 import csw.time.core.models.UTCTime
 import esw.dsl.script.exceptions.UnhandledCommandException
 import esw.dsl.script.utils.{FunctionBuilder, FunctionHandlers}
+import esw.dsl.sequence_manager.LocationServiceUtil
 import esw.ocs.api.protocol.PullNextResult
 import esw.ocs.macros.StrandEc
 
@@ -106,4 +109,17 @@ abstract class ScriptDsl(val csw: CswServices) {
     diagnosticHandlers.add((x: (UTCTime, String)) => handler(x._1, x._2))
   protected final def jHandleOperationsMode(handler: Supplier[CompletionStage[Void]]): Unit =
     operationsHandlers.add(_ => handler.get())
+
+  protected final def submitSequence(
+      sequencerName: String,
+      observingMode: String,
+      sequence: Sequence
+  ): CompletionStage[SubmitResponse] = {
+    implicit val actorSystem = csw.actorSystem
+    new LocationServiceUtil(csw.locationService.asScala)
+      .resolveSequencer(sequencerName, observingMode)
+      .map(SequencerCommandServiceFactory.make)
+      .flatMap(_.submitAndWait(sequence))
+      .toJava
+  }
 }

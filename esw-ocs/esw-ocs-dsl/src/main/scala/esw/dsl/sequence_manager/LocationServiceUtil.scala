@@ -15,7 +15,7 @@ import csw.params.core.models.Subsystem
 import esw.dsl.Timeouts
 import esw.ocs.api.protocol.RegistrationError
 
-import scala.async.Async.{async, await}
+import scala.annotation.tailrec
 import scala.compat.java8.FutureConverters.FutureOps
 import scala.concurrent.{ExecutionContext, Future}
 import scala.util.control.NonFatal
@@ -80,15 +80,19 @@ class LocationServiceUtil(private[esw] val locationService: LocationService)(imp
   def jResolveComponentRef(componentName: String, componentType: ComponentType): CompletionStage[ActorRef[ComponentMessage]] =
     resolveComponentRef(componentName, componentType).toJava
 
-  private[esw] def resolveSequencer(sequencerId: String, observingMode: String): Future[AkkaLocation] =
-    async {
-      await(locationService.list)
-      // sequencer has two registrations - http and akka, contains will return any but we need akka here
-        .find(location => location.connection.componentId.name.contains(s"$sequencerId@$observingMode"))
-    }.collect {
-      case Some(location: AkkaLocation) => location
-      case Some(location) =>
-        throw new RuntimeException(s"Sequencer is registered with wrong connection type: ${location.connection.connectionType}")
-      case None => throw new IllegalArgumentException(s"Could not find any sequencer with name: $sequencerId@$observingMode")
+  private[esw] def resolveSequencer(sequencerId: String, observingMode: String): Future[AkkaLocation] = {
+
+    @tailrec
+    def getSequencerAkkaLoc(locations: List[Location]): AkkaLocation = locations match {
+      case Nil                               => throw new IllegalArgumentException(s"Could not find any sequencer with name: $sequencerId@$observingMode")
+      case (akkaLocation: AkkaLocation) :: _ => akkaLocation
+      case invalidLoc :: Nil =>
+        throw new RuntimeException(s"Sequencer is registered with wrong connection type: ${invalidLoc.connection.connectionType}")
+      case _ :: tail => getSequencerAkkaLoc(tail)
     }
+
+    locationService.list
+      .map(_.filter(_.connection.componentId.name.contains(s"$sequencerId@$observingMode")))
+      .map(getSequencerAkkaLoc)
+  }
 }
