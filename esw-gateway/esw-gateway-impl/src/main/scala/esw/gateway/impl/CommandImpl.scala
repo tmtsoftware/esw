@@ -4,7 +4,7 @@ import akka.stream.OverflowStrategy
 import akka.stream.scaladsl.Source
 import akka.util.Timeout
 import csw.command.api.scaladsl.CommandService
-import csw.location.models.{ComponentId, ComponentType}
+import csw.location.models.ComponentId
 import csw.params.commands.CommandResponse.{OnewayResponse, SubmitResponse, ValidateResponse}
 import csw.params.commands.ControlCommand
 import csw.params.core.models.Id
@@ -17,7 +17,7 @@ import scala.concurrent.{ExecutionContext, Future}
 import scala.util.control.NonFatal
 
 //fixme: Inject commandService from eswUtils later
-class CommandImpl(commandService: (String, ComponentType) => Future[CommandService])(
+class CommandImpl(commandService: ComponentId => Future[CommandService])(
     implicit ec: ExecutionContext,
     timeout: Timeout
 ) extends CommandApi {
@@ -37,7 +37,7 @@ class CommandImpl(commandService: (String, ComponentType) => Future[CommandServi
   }
 
   def process[T](componentId: ComponentId, action: CommandService => Future[T]): Future[Either[InvalidComponent, T]] = {
-    commandService(componentId.name, componentId.componentType)
+    commandService(componentId)
       .flatMap(action)
       .map(Right(_))
       .recover {
@@ -52,7 +52,7 @@ class CommandImpl(commandService: (String, ComponentType) => Future[CommandServi
   ): Source[CurrentState, Future[Option[CommandError]]] = {
 
     def futureSource: Future[Source[CurrentState, Future[Option[InvalidComponent]]]] =
-      commandService(componentId.name, componentId.componentType)
+      commandService(componentId)
         .map(commandService => Utils.sourceWithNoError(commandService.subscribeCurrentState(stateNames)))
         .recover {
           case NonFatal(ex) => Utils.emptySourceWithError(InvalidComponent(ex.getMessage))

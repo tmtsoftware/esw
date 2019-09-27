@@ -63,7 +63,7 @@ class WebsocketRouteTest extends BaseTestSuite with ScalatestRouteTest with Gate
       val componentId   = ComponentId(componentName, componentType)
       val queryFinal    = QueryFinal(componentId, runId)
 
-      when(componentFactory.commandService(componentName, componentType)).thenReturn(Future.successful(commandService))
+      when(componentFactory.commandService(componentId)).thenReturn(Future.successful(commandService))
       when(commandService.queryFinal(runId)(100.hours)).thenReturn(Future.successful(Completed(runId)))
 
       WS("/websocket", wsClient.flow) ~> route ~> check {
@@ -83,7 +83,7 @@ class WebsocketRouteTest extends BaseTestSuite with ScalatestRouteTest with Gate
 
       val errmsg = s"Could not find component $componentName of type - $componentType"
 
-      when(componentFactory.commandService(componentName, componentType))
+      when(componentFactory.commandService(componentId))
         .thenReturn(Future.failed(new IllegalArgumentException(errmsg)))
 
       WS("/websocket", wsClient.flow) ~> route ~> check {
@@ -108,7 +108,7 @@ class WebsocketRouteTest extends BaseTestSuite with ScalatestRouteTest with Gate
       val currentStateSubscription = mock[CurrentStateSubscription]
       val currentStateStream       = Source(List(currentState1, currentState2)).mapMaterializedValue(_ => currentStateSubscription)
 
-      when(componentFactory.commandService(componentName, componentType)).thenReturn(Future.successful(commandService))
+      when(componentFactory.commandService(componentId)).thenReturn(Future.successful(commandService))
       when(commandService.subscribeCurrentState(stateNames)).thenReturn(currentStateStream)
 
       WS("/websocket", wsClient.flow) ~> route ~> check {
@@ -140,7 +140,7 @@ class WebsocketRouteTest extends BaseTestSuite with ScalatestRouteTest with Gate
       val currentStateStream = Source(List(currentState1, currentState2))
         .mapMaterializedValue(_ => currentStateSubscription)
 
-      when(componentFactory.commandService(componentName, componentType)).thenReturn(Future.successful(commandService))
+      when(componentFactory.commandService(componentId)).thenReturn(Future.successful(commandService))
       when(commandService.subscribeCurrentState(stateNames)).thenReturn(currentStateStream)
 
       WS("/websocket", wsClient.flow) ~> route ~> check {

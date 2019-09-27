@@ -5,7 +5,7 @@ import csw.command.api.scaladsl.CommandService
 import csw.command.client.ICommandServiceFactory
 import csw.location.api.scaladsl.LocationService
 import csw.location.models.Connection.AkkaConnection
-import csw.location.models.{AkkaLocation, ComponentId, ComponentType}
+import csw.location.models.{AkkaLocation, ComponentId}
 
 import scala.concurrent.Future
 import scala.concurrent.duration.DurationLong
@@ -15,15 +15,18 @@ class ComponentFactory(locationService: LocationService, commandServiceFactory: 
 ) {
   import typedSystem.executionContext
 
-  private[http] def resolve[T](componentName: String, componentType: ComponentType)(f: AkkaLocation => T): Future[T] =
+  private[http] def resolve[T](componentId: ComponentId)(f: AkkaLocation => T): Future[T] =
     locationService
-      .resolve(AkkaConnection(ComponentId(componentName, componentType)), 5.seconds)
+      .resolve(AkkaConnection(componentId), 5.seconds)
       .map {
         case Some(akkaLocation) => f(akkaLocation)
-        case None               => throw new IllegalArgumentException(s"Could not find component - $componentName of type - $componentType")
+        case None =>
+          throw new IllegalArgumentException(
+            s"Could not find component - ${componentId.name} of type - ${componentId.componentType}"
+          )
       }
 
   //fixme: Return Either[ErrorResponseMsg, CommandService]
-  def commandService(componentName: String, componentType: ComponentType): Future[CommandService] =
-    resolve(componentName, componentType)(commandServiceFactory.make)
+  def commandService(componentId: ComponentId): Future[CommandService] =
+    resolve(componentId)(commandServiceFactory.make)
 }

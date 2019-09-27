@@ -31,7 +31,8 @@ class ComponentFactoryTest extends BaseTestSuite {
       val locationService       = mock[LocationService]
       val componentName         = "testComponent"
       val componentType         = mock[ComponentType]
-      val connection            = AkkaConnection(ComponentId(componentName, componentType))
+      val componentId           = ComponentId(componentName, componentType)
+      val connection            = AkkaConnection(componentId)
       val commandServiceFactory = mock[ICommandServiceFactory]
 
       val location         = AkkaLocation(connection, mock[Prefix], new URI("actor-path"))
@@ -40,7 +41,7 @@ class ComponentFactoryTest extends BaseTestSuite {
       when(locationService.resolve(connection, 5.seconds)).thenReturn(expectedLocation)
 
       val componentFactory = new ComponentFactory(locationService, commandServiceFactory)
-      componentFactory.resolve(componentName, componentType) { actualLocation =>
+      componentFactory.resolve(componentId) { actualLocation =>
         actualLocation shouldBe location
       }
     }
@@ -51,14 +52,15 @@ class ComponentFactoryTest extends BaseTestSuite {
       val componentFactory      = new ComponentFactory(locationService, commandServiceFactory)
       val componentName         = "testComponent"
       val componentType         = ComponentType.Assembly
-      val connection            = AkkaConnection(ComponentId(componentName, componentType))
+      val componentId           = ComponentId(componentName, componentType)
+      val connection            = AkkaConnection(componentId)
 
       val location         = AkkaLocation(connection, mock[Prefix], new URI("actor-path"))
       val expectedLocation = Future.successful(Some(location))
 
       when(locationService.resolve(connection, 5.seconds)).thenReturn(expectedLocation)
 
-      componentFactory.commandService(componentName, componentType)
+      componentFactory.commandService(componentId)
       eventually(verify(commandServiceFactory).make(location))
     }
   }

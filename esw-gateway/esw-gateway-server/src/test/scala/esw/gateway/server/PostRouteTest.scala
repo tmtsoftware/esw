@@ -59,7 +59,7 @@ class PostRouteTest extends BaseTestSuite with ScalatestRouteTest with GatewayCo
       val componentId   = ComponentId(componentName, componentType)
       val submitRequest = Submit(componentId, command)
 
-      when(componentFactory.commandService(componentName, componentType)).thenReturn(Future.successful(commandService))
+      when(componentFactory.commandService(componentId)).thenReturn(Future.successful(commandService))
       when(commandService.submit(command)).thenReturn(Future.successful(Started(runId)))
 
       Post("/post", submitRequest) ~> route ~> check {
@@ -75,7 +75,7 @@ class PostRouteTest extends BaseTestSuite with ScalatestRouteTest with GatewayCo
       val componentId     = ComponentId(componentName, componentType)
       val validateRequest = Validate(componentId, command)
 
-      when(componentFactory.commandService(componentName, componentType)).thenReturn(Future.successful(commandService))
+      when(componentFactory.commandService(componentId)).thenReturn(Future.successful(commandService))
       when(commandService.validate(command)).thenReturn(Future.successful(Accepted(runId)))
 
       Post("/post", validateRequest) ~> route ~> check {
@@ -91,7 +91,7 @@ class PostRouteTest extends BaseTestSuite with ScalatestRouteTest with GatewayCo
       val componentId   = ComponentId(componentName, componentType)
       val onewayRequest = Oneway(componentId, command)
 
-      when(componentFactory.commandService(componentName, componentType)).thenReturn(Future.successful(commandService))
+      when(componentFactory.commandService(componentId)).thenReturn(Future.successful(commandService))
       when(commandService.oneway(command)).thenReturn(Future.successful(Accepted(runId)))
 
       Post("/post", onewayRequest) ~> route ~> check {
@@ -109,7 +109,7 @@ class PostRouteTest extends BaseTestSuite with ScalatestRouteTest with GatewayCo
 
       val errmsg = s"Could not find component $componentName of type - $componentType"
 
-      when(componentFactory.commandService(componentName, componentType))
+      when(componentFactory.commandService(componentId))
         .thenReturn(Future.failed(new IllegalArgumentException(errmsg)))
 
       Post("/post", submitRequest) ~> route ~> check {
