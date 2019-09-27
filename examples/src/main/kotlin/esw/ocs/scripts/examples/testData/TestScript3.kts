@@ -8,7 +8,7 @@ import esw.ocs.dsl.utils.stringKey
 
 script {
 
-    handleDiagnosticMode { startTime, hint ->
+    handleDiagnosticMode { _, _ ->
         // todo: try to remove match case
         // do some actions to go to diagnostic mode based on hint
         val diagnosticModeParam = stringKey("mode").set("diagnostic")
