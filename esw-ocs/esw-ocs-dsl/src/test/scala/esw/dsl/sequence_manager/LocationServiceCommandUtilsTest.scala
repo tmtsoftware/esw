@@ -236,7 +236,7 @@ class LocationServiceCommandUtilsTest extends ScalaTestWithActorTestKit with Bas
       when(locationService.list).thenReturn(Future.successful(tcsLocation :: ocsLocations))
 
       val locationServiceDsl = new LocationServiceUtil(locationService)
-      intercept[IllegalArgumentException] {
+      intercept[RuntimeException] {
         locationServiceDsl.resolveSequencer("TCS", "obsMode2").awaitResult
       }
     }
