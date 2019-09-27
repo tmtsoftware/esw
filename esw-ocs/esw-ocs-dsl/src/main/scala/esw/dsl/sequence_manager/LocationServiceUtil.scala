@@ -2,12 +2,9 @@ package esw.dsl.sequence_manager
 
 import java.util.concurrent.CompletionStage
 
+import akka.actor.CoordinatedShutdown
 import akka.actor.typed.scaladsl.adapter.TypedActorSystemOps
 import akka.actor.typed.{ActorRef, ActorSystem}
-import akka.actor.{CoordinatedShutdown, Scheduler}
-import akka.stream.OverflowStrategy
-import akka.stream.scaladsl.{Sink, Source}
-import akka.stream.typed.scaladsl.ActorMaterializer
 import csw.command.client.extensions.AkkaLocationExt.RichAkkaLocation
 import csw.command.client.messages.ComponentMessage
 import csw.location.api.scaladsl.{LocationService, RegistrationResult}
@@ -19,17 +16,13 @@ import esw.dsl.Timeouts
 import esw.ocs.api.protocol.RegistrationError
 
 import scala.compat.java8.FutureConverters.FutureOps
-import scala.concurrent.duration.DurationInt
-import scala.concurrent.{ExecutionContext, Future}
+import scala.concurrent.duration.{DurationInt, FiniteDuration}
+import scala.concurrent.{ExecutionContext, Future, Promise}
+import scala.util.Success
 import scala.util.control.NonFatal
-
-object LocationServiceUtil {
-  private[esw] val ResolveTimeout = 5.seconds
-}
 
 class LocationServiceUtil(private[esw] val locationService: LocationService)(implicit val actorSystem: ActorSystem[_]) {
   implicit val ec: ExecutionContext = actorSystem.executionContext
-  private val scheduler: Scheduler  = actorSystem.scheduler
 
   private def addCoordinatedShutdownTask(
       coordinatedShutdown: CoordinatedShutdown,
@@ -84,36 +77,34 @@ class LocationServiceUtil(private[esw] val locationService: LocationService)(imp
     }
   }
 
-  private[esw] def resolveSequencer(sequencerId: String, observingMode: String): Future[AkkaLocation] = {
-    implicit val mat: ActorMaterializer = ActorMaterializer()
-    val (queue, source)                 = Source.queue[Future[Option[AkkaLocation]]](20, OverflowStrategy.dropNew).preMaterialize()
+  private[esw] def resolveSequencer(
+      sequencerId: String,
+      observingMode: String,
+      timeout: FiniteDuration = Timeouts.DefaultTimeout
+  ): Future[AkkaLocation] = {
+    val pollInterval = 50.millis
 
-    val cancellable = scheduler.schedule(0.millis, 500.millis) {
-      val eventualMaybeLocation = locationService.list
-        .map {
-          _.collectFirst {
-            case location: AkkaLocation if location.connection.componentId.name.contains(s"$sequencerId@$observingMode") =>
-              location
-          }
-        }
-      queue.offer(eventualMaybeLocation)
+    def findLocation() =
+      locationService.list.map(_.collectFirst {
+        case loc: AkkaLocation if loc.connection.componentId.name.contains(s"$sequencerId@$observingMode") => loc
+      })
+
+    def delay(duration: FiniteDuration) = {
+      val p = Promise[Unit]
+      actorSystem.scheduler.scheduleOnce(duration)(p.complete(Success(())))
+      p.future
     }
 
-    source
-      .mapAsync(1)(identity)
-      .collect {
-        case Some(location) =>
-          cancellable.cancel()
-          location
+    def go(remaining: FiniteDuration): Future[AkkaLocation] = {
+      findLocation().flatMap {
+        case Some(location) => Future.successful(location)
+        case _ if remaining.length <= 0 =>
+          Future.failed(new RuntimeException(s"Could not find any sequencer with name: $sequencerId@$observingMode"))
+        case _ => delay(pollInterval min remaining).flatMap(_ => go(remaining - pollInterval))
       }
-      .takeWithin(LocationServiceUtil.ResolveTimeout)
-      .runWith(Sink.headOption)
-      .map {
-        case Some(location) => location
-        case None =>
-          cancellable.cancel()
-          throw new RuntimeException(s"Could not find any sequencer with name: $sequencerId@$observingMode")
-      }
+    }
+
+    go(timeout)
   }
 
   // Added this to be accessed by kotlin

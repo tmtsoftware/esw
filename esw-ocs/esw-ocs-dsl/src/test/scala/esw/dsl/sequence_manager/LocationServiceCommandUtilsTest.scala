@@ -20,6 +20,7 @@ import esw.ocs.api.protocol.RegistrationError
 
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future
+import scala.concurrent.duration.DurationDouble
 
 class LocationServiceCommandUtilsTest extends ScalaTestWithActorTestKit with BaseTestSuite {
 
@@ -237,7 +238,7 @@ class LocationServiceCommandUtilsTest extends ScalaTestWithActorTestKit with Bas
 
       val locationServiceUtil = new LocationServiceUtil(locationService)
       intercept[RuntimeException] {
-        locationServiceUtil.resolveSequencer("TCS", "obsMode2").awaitResult
+        locationServiceUtil.resolveSequencer("TCS", "obsMode2", 200.millis).awaitResult
       }
     }
   }
