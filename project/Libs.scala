@@ -5,28 +5,25 @@ import sbt._
 object Libs {
   private val ScalaVersion: String = EswKeys.scalaVersion
   private val SilencerVersion      = "1.4.2"
-  private val MSocketVersion       = "f59cf20"
+  private val MSocketVersion       = "568f59d"
 
-  val `scala-reflect`      = "org.scala-lang" % "scala-reflect" % ScalaVersion
-  val scalatest            = "org.scalatest" %% "scalatest" % "3.0.8" //Apache License 2.0
-  val scopt                = "com.github.scopt" %% "scopt" % "4.0.0-RC2" //MIT License
-  val `scala-async`        = "org.scala-lang.modules" %% "scala-async" % "0.10.0" //BSD 3-clause "New" or "Revised" License
-  val `mockito-scala`      = "org.mockito" %% "mockito-scala" % "1.5.13" // MIT License
-  val enumeratum           = dep("com.beachape" %%% "enumeratum" % "1.5.13") //MIT License
-  val `case-app`           = "com.github.alexarchambault" %% "case-app" % "2.0.0-M9"
-  val `silencer-plugin`    = compilerPlugin("com.github.ghik" %% "silencer-plugin" % SilencerVersion)
-  val `silencer-lib`       = "com.github.ghik" %% "silencer-lib" % SilencerVersion % Compile
+  val `scala-reflect`    = "org.scala-lang" % "scala-reflect" % ScalaVersion
+  val `silencer-lib`     = "com.github.ghik" %% "silencer-lib" % SilencerVersion % Compile
+  val `silencer-plugin`  = compilerPlugin("com.github.ghik" %% "silencer-plugin" % SilencerVersion)
+  val `case-app`         = "com.github.alexarchambault" %% "case-app" % "2.0.0-M9"
+  val enumeratum         = dep("com.beachape" %%% "enumeratum" % "1.5.13") //MIT License
+  val `mockito-scala`    = "org.mockito" %% "mockito-scala" % "1.5.17" // MIT License
+  val `scala-async`      = "org.scala-lang.modules" %% "scala-async" % "0.10.0" //BSD 3-clause "New" or "Revised" License
+  val scopt              = "com.github.scopt" %% "scopt" % "4.0.0-RC2" //MIT License
+  val scalatest          = "org.scalatest" %% "scalatest" % "3.0.8" //Apache License 2.0
   val `scala-java8-compat` = "org.scala-lang.modules" %% "scala-java8-compat" % "0.9.0" //BSD 3-clause "New" or "Revised" License
   val `msocket-api`        = dep("com.github.tmtsoftware.msocket" %%% "msocket-api" % MSocketVersion)
   val `msocket-impl-jvm`   = "com.github.tmtsoftware.msocket" %% "msocket-impl-jvm" % MSocketVersion
-
-  // fixme: find appropriate place to keep kotlin test scripts used in integration-test project
-  val `examples` = "com.github.tmtsoftware.script-dsl" % "examples" % "68041a55e3ed9a9cfaafdc0af30cb10ef5bc534f"
 }
 
 object Csw {
   private val Org     = "com.github.tmtsoftware.csw"
-  private val Version = "4d4c9df" //change this to 0.1-SNAPSHOT to test with local csw changes (after publishLocal)
+  private val Version = "c94116c" //change this to 0.1-SNAPSHOT to test with local csw changes (after publishLocal)
 
   val `csw-alarm-api`       = Org %% "csw-alarm-api" % Version
   val `csw-command-api`     = Org %% "csw-command-api" % Version
@@ -60,7 +57,7 @@ object Akka {
 }
 
 object AkkaHttp {
-  private val Version = "10.1.9" //all akka is Apache License 2.0
+  private val Version = "10.1.10" //all akka is Apache License 2.0
 
   val `akka-http`         = "com.typesafe.akka" %% "akka-http"         % Version
   val `akka-http-testkit` = "com.typesafe.akka" %% "akka-http-testkit" % Version

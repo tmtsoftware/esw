@@ -8,6 +8,7 @@ import akka.actor.typed.{ActorRef, ActorSystem}
 import csw.command.client.extensions.AkkaLocationExt.RichAkkaLocation
 import csw.command.client.messages.ComponentMessage
 import csw.location.api.scaladsl.{LocationService, RegistrationResult}
+import csw.location.models.ComponentType.Sequencer
 import csw.location.models.Connection.AkkaConnection
 import csw.location.models.ConnectionType.AkkaType
 import csw.location.models._
@@ -76,20 +77,15 @@ class LocationServiceUtil(private[esw] val locationService: LocationService)(imp
     }
   }
 
-  private[esw] def resolveSequencer(sequencerId: String, observingMode: String): Future[AkkaLocation] = async {
-    val locations = await(locationService.list)
-    val sequencerLocation = locations.find { loc =>
-      loc.connection.componentId.name.contains(s"$sequencerId@$observingMode") && loc.connection.connectionType == AkkaType
-    }
-
-    sequencerLocation match {
-      case Some(location: AkkaLocation) => location
-      case Some(location) =>
-        throw new RuntimeException(s"Sequencer is registered with wrong connection type: ${location.connection.connectionType}")
-      case None => throw new RuntimeException(s"Could not find any sequencer with name: $sequencerId@$observingMode")
-    }
-  }
-
+  def resolveSequencer(sequencerId: String, observingMode: String)(implicit ec: ExecutionContext): Future[AkkaLocation] =
+    locationService
+      .resolve(AkkaConnection(ComponentId(s"$sequencerId@$observingMode", Sequencer)), Timeouts.DefaultTimeout)
+      }
+          throw new RuntimeException(s"Sequencer is registered with wrong connection type: ${location.connection.connectionType}")
+        case None => throw new IllegalArgumentException(s"Could not find any sequencer with name: $sequencerId@$observingMode")
+        case Some(location) =>
+        case Some(location: AkkaLocation) => location
+      .collect {
   // Added this to be accessed by kotlin
   def jResolveComponentRef(componentName: String, componentType: ComponentType): CompletionStage[ActorRef[ComponentMessage]] =
     resolveComponentRef(componentName, componentType).toJava
