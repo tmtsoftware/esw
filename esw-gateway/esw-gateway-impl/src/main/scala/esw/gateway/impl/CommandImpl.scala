@@ -5,13 +5,12 @@ import akka.stream.scaladsl.Source
 import akka.util.Timeout
 import csw.command.api.scaladsl.CommandService
 import csw.location.models.{ComponentId, ComponentType}
-import csw.params.commands.CommandResponse.SubmitResponse
-import csw.params.commands.{CommandResponse, ControlCommand}
+import csw.params.commands.CommandResponse.{OnewayResponse, SubmitResponse, ValidateResponse}
+import csw.params.commands.ControlCommand
 import csw.params.core.models.Id
 import csw.params.core.states.{CurrentState, StateName}
 import esw.gateway.api.CommandApi
-import esw.gateway.api.protocol.CommandAction.{Oneway, Submit, Validate}
-import esw.gateway.api.protocol.{CommandAction, CommandError, InvalidComponent, InvalidMaxFrequency}
+import esw.gateway.api.protocol.{CommandError, InvalidComponent, InvalidMaxFrequency}
 
 import scala.concurrent.duration.DurationInt
 import scala.concurrent.{ExecutionContext, Future}
@@ -23,19 +22,36 @@ class CommandImpl(commandService: (String, ComponentType) => Future[CommandServi
     timeout: Timeout
 ) extends CommandApi {
 
-  def process(
+  def submit(
       componentId: ComponentId,
-      command: ControlCommand,
-      action: CommandAction
-  ): Future[Either[InvalidComponent, CommandResponse]] = {
+      command: ControlCommand
+  ): Future[Either[InvalidComponent, SubmitResponse]] = {
     commandService(componentId.name, componentId.componentType)
-      .flatMap { commandService =>
-        action match {
-          case Oneway   => commandService.oneway(command)
-          case Submit   => commandService.submit(command)
-          case Validate => commandService.validate(command)
-        }
+      .flatMap(commandService => commandService.submit(command))
+      .map(Right(_))
+      .recover {
+        case NonFatal(ex) => Left(InvalidComponent(ex.getMessage))
       }
+  }
+
+  def oneway(
+      componentId: ComponentId,
+      command: ControlCommand
+  ): Future[Either[InvalidComponent, OnewayResponse]] = {
+    commandService(componentId.name, componentId.componentType)
+      .flatMap(commandService => commandService.oneway(command))
+      .map(Right(_))
+      .recover {
+        case NonFatal(ex) => Left(InvalidComponent(ex.getMessage))
+      }
+  }
+
+  def validate(
+      componentId: ComponentId,
+      command: ControlCommand
+  ): Future[Either[InvalidComponent, ValidateResponse]] = {
+    commandService(componentId.name, componentId.componentType)
+      .flatMap(commandService => commandService.validate(command))
       .map(Right(_))
       .recover {
         case NonFatal(ex) => Left(InvalidComponent(ex.getMessage))

@@ -2,20 +2,29 @@ package esw.gateway.api
 
 import akka.stream.scaladsl.Source
 import csw.location.models.ComponentId
-import csw.params.commands.CommandResponse.SubmitResponse
-import csw.params.commands.{CommandResponse, ControlCommand}
+import csw.params.commands.CommandResponse.{OnewayResponse, SubmitResponse, ValidateResponse}
+import csw.params.commands.ControlCommand
 import csw.params.core.models.Id
 import csw.params.core.states.{CurrentState, StateName}
-import esw.gateway.api.protocol.{CommandAction, CommandError, InvalidComponent}
+import esw.gateway.api.protocol.{CommandError, InvalidComponent}
 
 import scala.concurrent.Future
 
 trait CommandApi {
-  def process(
+  def submit(
       componentId: ComponentId,
-      command: ControlCommand,
-      action: CommandAction
-  ): Future[Either[InvalidComponent, CommandResponse]]
+      command: ControlCommand
+  ): Future[Either[InvalidComponent, SubmitResponse]]
+
+  def oneway(
+      componentId: ComponentId,
+      command: ControlCommand
+  ): Future[Either[InvalidComponent, OnewayResponse]]
+
+  def validate(
+      componentId: ComponentId,
+      command: ControlCommand
+  ): Future[Either[InvalidComponent, ValidateResponse]]
 
   def queryFinal(componentId: ComponentId, runId: Id): Future[Either[InvalidComponent, SubmitResponse]]
 

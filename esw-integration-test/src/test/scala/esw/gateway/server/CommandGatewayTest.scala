@@ -12,7 +12,6 @@ import csw.params.core.states.{CurrentState, StateName}
 import csw.testkit.scaladsl.ScalaTestFrameworkTestKit
 import esw.gateway.api.clients.CommandClient
 import esw.gateway.api.codecs.GatewayCodecs
-import esw.gateway.api.protocol.CommandAction.{Oneway, Submit, Validate}
 import esw.gateway.api.protocol.{PostRequest, WebsocketRequest}
 import esw.http.core.FutureEitherExt
 import mscoket.impl.post.HttpPostTransport
@@ -67,11 +66,11 @@ class CommandGatewayTest extends ScalaTestFrameworkTestKit with WordSpecLike wit
       Thread.sleep(1000)
 
       //validate
-      commandClient.process(componentId, command, Validate).rightValue should ===(Accepted(runId))
+      commandClient.validate(componentId, command).rightValue should ===(Accepted(runId))
       //oneway
-      commandClient.process(componentId, command, Oneway).rightValue should ===(Accepted(runId))
+      commandClient.oneway(componentId, command).rightValue should ===(Accepted(runId))
       //submit
-      commandClient.process(componentId, command, Submit).rightValue should ===(Completed(runId))
+      commandClient.submit(componentId, command).rightValue should ===(Completed(runId))
 
       //subscribe current state returns set of states successfully
       currentStatesF.futureValue.toSet should ===(Set(currentState1, currentState2))

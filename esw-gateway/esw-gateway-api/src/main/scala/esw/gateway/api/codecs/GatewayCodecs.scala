@@ -5,7 +5,7 @@ import csw.alarm.codecs.AlarmCodecs
 import csw.alarm.models.Key.AlarmKey
 import csw.location.api.codec.DoneCodec
 import csw.location.models.codecs.LocationCodecs
-import csw.params.core.formats.{CodecHelpers, ParamCodecs}
+import csw.params.core.formats.ParamCodecs
 import csw.params.events.EventKey
 import esw.gateway.api.protocol.PostRequest._
 import esw.gateway.api.protocol.WebsocketRequest.{QueryFinal, Subscribe, SubscribeCurrentState, SubscribeWithPattern}
@@ -41,13 +41,14 @@ trait GatewayCodecs extends ParamCodecs with LocationCodecs with AlarmCodecs wit
 
   implicit def postRequestCodec[T <: PostRequest]: Codec[T] = postRequestValue.asInstanceOf[Codec[T]]
   lazy val postRequestValue: Codec[PostRequest] = {
-    @silent implicit lazy val commandRequestCodec: Codec[CommandRequest]     = deriveCodec[CommandRequest]
+    @silent implicit lazy val submitCodec: Codec[Submit]                     = deriveCodec[Submit]
+    @silent implicit lazy val onewayCodec: Codec[Oneway]                     = deriveCodec[Oneway]
+    @silent implicit lazy val validateCodec: Codec[Validate]                 = deriveCodec[Validate]
     @silent implicit lazy val publishEventCodec: Codec[PublishEvent]         = deriveCodec[PublishEvent]
     @silent implicit lazy val getEventCodec: Codec[GetEvent]                 = deriveCodec[GetEvent]
     @silent implicit lazy val setAlarmSeverityCodec: Codec[SetAlarmSeverity] = deriveCodec[SetAlarmSeverity]
     deriveCodec[PostRequest]
   }
-  implicit lazy val commandActionCodec: Codec[CommandAction] = CodecHelpers.enumCodec[CommandAction]
 
   implicit def websocketRequestCodec[T <: WebsocketRequest]: Codec[T] =
     websocketRequestCodecValue.asInstanceOf[Codec[T]]

@@ -16,8 +16,7 @@ import csw.params.commands.{CommandName, CommandResponse, Setup}
 import csw.params.core.models.{Id, ObsId, Prefix, Subsystem}
 import csw.params.events.{Event, EventKey, EventName, SystemEvent}
 import esw.gateway.api.codecs.GatewayCodecs
-import esw.gateway.api.protocol.CommandAction.{Oneway, Submit, Validate}
-import esw.gateway.api.protocol.PostRequest.{CommandRequest, GetEvent, PublishEvent, SetAlarmSeverity}
+import esw.gateway.api.protocol.PostRequest.{GetEvent, Oneway, PublishEvent, SetAlarmSeverity, Submit, Validate}
 import esw.gateway.api.protocol.{EmptyEventKeys, EventServerUnavailable, InvalidComponent, SetAlarmSeverityFailure}
 import esw.gateway.api.{AlarmApi, CommandApi, EventApi}
 import esw.gateway.impl.{AlarmImpl, CommandImpl, EventImpl}
@@ -58,7 +57,7 @@ class PostRouteTest extends BaseTestSuite with ScalatestRouteTest with GatewayCo
       val componentType = Assembly
       val command       = Setup(Prefix("esw.test"), CommandName("c1"), Some(ObsId("obsId"))).copy(runId = runId)
       val componentId   = ComponentId(componentName, componentType)
-      val submitRequest = CommandRequest(componentId, command, Submit)
+      val submitRequest = Submit(componentId, command)
 
       when(componentFactory.commandService(componentName, componentType)).thenReturn(Future.successful(commandService))
       when(commandService.submit(command)).thenReturn(Future.successful(Started(runId)))
@@ -74,7 +73,7 @@ class PostRouteTest extends BaseTestSuite with ScalatestRouteTest with GatewayCo
       val componentType   = Assembly
       val command         = Setup(Prefix("esw.test"), CommandName("c1"), Some(ObsId("obsId"))).copy(runId = runId)
       val componentId     = ComponentId(componentName, componentType)
-      val validateRequest = CommandRequest(componentId, command, Validate)
+      val validateRequest = Validate(componentId, command)
 
       when(componentFactory.commandService(componentName, componentType)).thenReturn(Future.successful(commandService))
       when(commandService.validate(command)).thenReturn(Future.successful(Accepted(runId)))
@@ -90,7 +89,7 @@ class PostRouteTest extends BaseTestSuite with ScalatestRouteTest with GatewayCo
       val componentType = Assembly
       val command       = Setup(Prefix("esw.test"), CommandName("c1"), Some(ObsId("obsId"))).copy(runId = runId)
       val componentId   = ComponentId(componentName, componentType)
-      val onewayRequest = CommandRequest(componentId, command, Oneway)
+      val onewayRequest = Oneway(componentId, command)
 
       when(componentFactory.commandService(componentName, componentType)).thenReturn(Future.successful(commandService))
       when(commandService.oneway(command)).thenReturn(Future.successful(Accepted(runId)))
@@ -106,7 +105,7 @@ class PostRouteTest extends BaseTestSuite with ScalatestRouteTest with GatewayCo
       val componentType = Assembly
       val command       = Setup(Prefix("esw.test"), CommandName("c1"), Some(ObsId("obsId"))).copy(runId = runId)
       val componentId   = ComponentId(componentName, componentType)
-      val submitRequest = CommandRequest(componentId, command, Submit)
+      val submitRequest = Submit(componentId, command)
 
       val errmsg = s"Could not find component $componentName of type - $componentType"
 
