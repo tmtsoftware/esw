@@ -73,6 +73,10 @@ class EventGatewayTest extends ScalaTestFrameworkTestKit(EventServer) with WordS
       //get set of events
       eventClient.get(Set(EventKey(prefix, name1))).rightValue should ===(Set(event1))
 
+      // get returns invalid event for event that hasn't been published
+      val name4 = EventName("event4")
+      eventClient.get(Set(EventKey(prefix, name4))).rightValue should ===(Set(Event.invalidEvent(EventKey(prefix, name4))))
+
       //subscribe events returns a set of events successfully
       val invalidEvent1 = Event.invalidEvent(EventKey(prefix, name1))
       val invalidEvent2 = Event.invalidEvent(EventKey(prefix, name2))
