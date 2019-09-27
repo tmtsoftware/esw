@@ -22,10 +22,7 @@ class CommandImpl(commandService: (String, ComponentType) => Future[CommandServi
     timeout: Timeout
 ) extends CommandApi {
 
-  def submit(
-      componentId: ComponentId,
-      command: ControlCommand
-  ): Future[Either[InvalidComponent, SubmitResponse]] = {
+  def submit(componentId: ComponentId, command: ControlCommand): Future[Either[InvalidComponent, SubmitResponse]] = {
     commandService(componentId.name, componentId.componentType)
       .flatMap(commandService => commandService.submit(command))
       .map(Right(_))
@@ -34,10 +31,7 @@ class CommandImpl(commandService: (String, ComponentType) => Future[CommandServi
       }
   }
 
-  def oneway(
-      componentId: ComponentId,
-      command: ControlCommand
-  ): Future[Either[InvalidComponent, OnewayResponse]] = {
+  def oneway(componentId: ComponentId, command: ControlCommand): Future[Either[InvalidComponent, OnewayResponse]] = {
     commandService(componentId.name, componentId.componentType)
       .flatMap(commandService => commandService.oneway(command))
       .map(Right(_))
@@ -46,10 +40,7 @@ class CommandImpl(commandService: (String, ComponentType) => Future[CommandServi
       }
   }
 
-  def validate(
-      componentId: ComponentId,
-      command: ControlCommand
-  ): Future[Either[InvalidComponent, ValidateResponse]] = {
+  def validate(componentId: ComponentId, command: ControlCommand): Future[Either[InvalidComponent, ValidateResponse]] = {
     commandService(componentId.name, componentId.componentType)
       .flatMap(commandService => commandService.validate(command))
       .map(Right(_))

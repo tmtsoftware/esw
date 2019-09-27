@@ -11,21 +11,9 @@ import esw.gateway.api.protocol.{CommandError, InvalidComponent}
 import scala.concurrent.Future
 
 trait CommandApi {
-  def submit(
-      componentId: ComponentId,
-      command: ControlCommand
-  ): Future[Either[InvalidComponent, SubmitResponse]]
-
-  def oneway(
-      componentId: ComponentId,
-      command: ControlCommand
-  ): Future[Either[InvalidComponent, OnewayResponse]]
-
-  def validate(
-      componentId: ComponentId,
-      command: ControlCommand
-  ): Future[Either[InvalidComponent, ValidateResponse]]
-
+  def submit(componentId: ComponentId, command: ControlCommand): Future[Either[InvalidComponent, SubmitResponse]]
+  def oneway(componentId: ComponentId, command: ControlCommand): Future[Either[InvalidComponent, OnewayResponse]]
+  def validate(componentId: ComponentId, command: ControlCommand): Future[Either[InvalidComponent, ValidateResponse]]
   def queryFinal(componentId: ComponentId, runId: Id): Future[Either[InvalidComponent, SubmitResponse]]
 
   def subscribeCurrentState(

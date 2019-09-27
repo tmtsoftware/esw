@@ -19,28 +19,19 @@ class CommandClient(postClient: Transport[PostRequest], websocketClient: Transpo
     extends CommandApi
     with GatewayCodecs {
 
-  override def submit(
-      componentId: ComponentId,
-      command: ControlCommand
-  ): Future[Either[InvalidComponent, SubmitResponse]] = {
+  override def submit(componentId: ComponentId, command: ControlCommand): Future[Either[InvalidComponent, SubmitResponse]] = {
     postClient.requestResponse[Either[InvalidComponent, SubmitResponse]](
       Submit(componentId, command)
     )
   }
 
-  override def oneway(
-      componentId: ComponentId,
-      command: ControlCommand
-  ): Future[Either[InvalidComponent, OnewayResponse]] = {
+  override def oneway(componentId: ComponentId, command: ControlCommand): Future[Either[InvalidComponent, OnewayResponse]] = {
     postClient.requestResponse[Either[InvalidComponent, OnewayResponse]](
       Oneway(componentId, command)
     )
   }
 
-  override def validate(
-      componentId: ComponentId,
-      command: ControlCommand
-  ): Future[Either[InvalidComponent, ValidateResponse]] = {
+  override def validate(componentId: ComponentId, command: ControlCommand): Future[Either[InvalidComponent, ValidateResponse]] = {
     postClient.requestResponse[Either[InvalidComponent, ValidateResponse]](
       Validate(componentId, command)
     )
