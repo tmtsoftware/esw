@@ -22,36 +22,23 @@ class CommandImpl(commandService: (String, ComponentType) => Future[CommandServi
     timeout: Timeout
 ) extends CommandApi {
 
-  def submit(componentId: ComponentId, command: ControlCommand): Future[Either[InvalidComponent, SubmitResponse]] = {
-    commandService(componentId.name, componentId.componentType)
-      .flatMap(commandService => commandService.submit(command))
-      .map(Right(_))
-      .recover {
-        case NonFatal(ex) => Left(InvalidComponent(ex.getMessage))
-      }
-  }
+  def submit(componentId: ComponentId, command: ControlCommand): Future[Either[InvalidComponent, SubmitResponse]] =
+    process(componentId, _.submit(command))
 
-  def oneway(componentId: ComponentId, command: ControlCommand): Future[Either[InvalidComponent, OnewayResponse]] = {
-    commandService(componentId.name, componentId.componentType)
-      .flatMap(commandService => commandService.oneway(command))
-      .map(Right(_))
-      .recover {
-        case NonFatal(ex) => Left(InvalidComponent(ex.getMessage))
-      }
-  }
+  def oneway(componentId: ComponentId, command: ControlCommand): Future[Either[InvalidComponent, OnewayResponse]] =
+    process(componentId, _.oneway(command))
 
   def validate(componentId: ComponentId, command: ControlCommand): Future[Either[InvalidComponent, ValidateResponse]] = {
-    commandService(componentId.name, componentId.componentType)
-      .flatMap(commandService => commandService.validate(command))
-      .map(Right(_))
-      .recover {
-        case NonFatal(ex) => Left(InvalidComponent(ex.getMessage))
-      }
+    process(componentId, _.validate(command))
   }
 
   def queryFinal(componentId: ComponentId, runId: Id): Future[Either[InvalidComponent, SubmitResponse]] = {
+    process(componentId, _.queryFinal(runId)(Timeout(100.hours)))
+  }
+
+  def process[T](componentId: ComponentId, action: CommandService => Future[T]): Future[Either[InvalidComponent, T]] = {
     commandService(componentId.name, componentId.componentType)
-      .flatMap(_.queryFinal(runId)(Timeout(100.hours)))
+      .flatMap(action)
       .map(Right(_))
       .recover {
         case NonFatal(ex) => Left(InvalidComponent(ex.getMessage))
