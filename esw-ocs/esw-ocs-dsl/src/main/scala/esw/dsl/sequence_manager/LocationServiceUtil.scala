@@ -2,9 +2,9 @@ package esw.dsl.sequence_manager
 
 import java.util.concurrent.CompletionStage
 
-import akka.actor.CoordinatedShutdown
 import akka.actor.typed.scaladsl.adapter.TypedActorSystemOps
 import akka.actor.typed.{ActorRef, ActorSystem}
+import akka.actor.{Cancellable, CoordinatedShutdown, Scheduler}
 import csw.command.client.extensions.AkkaLocationExt.RichAkkaLocation
 import csw.command.client.messages.ComponentMessage
 import csw.location.api.scaladsl.{LocationService, RegistrationResult}
@@ -13,15 +13,21 @@ import csw.location.models.ConnectionType.AkkaType
 import csw.location.models._
 import csw.params.core.models.Subsystem
 import esw.dsl.Timeouts
+import esw.dsl.sequence_manager.LocationServiceUtil.ResolveTimeout
 import esw.ocs.api.protocol.RegistrationError
 
-import scala.async.Async.{async, await}
 import scala.compat.java8.FutureConverters.FutureOps
+import scala.concurrent.duration.DurationInt
 import scala.concurrent.{ExecutionContext, Future}
 import scala.util.control.NonFatal
 
+object LocationServiceUtil {
+  private[esw] val ResolveTimeout = 5.seconds
+}
+
 class LocationServiceUtil(private[esw] val locationService: LocationService)(implicit val actorSystem: ActorSystem[_]) {
   implicit val ec: ExecutionContext = actorSystem.executionContext
+  private val scheduler: Scheduler  = actorSystem.scheduler
 
   private def addCoordinatedShutdownTask(
       coordinatedShutdown: CoordinatedShutdown,
@@ -76,18 +82,26 @@ class LocationServiceUtil(private[esw] val locationService: LocationService)(imp
     }
   }
 
-  private[esw] def resolveSequencer(sequencerId: String, observingMode: String): Future[AkkaLocation] = async {
-    val locations = await(locationService.list)
-    val sequencerLocation = locations.find { loc =>
-      loc.connection.componentId.name.contains(s"$sequencerId@$observingMode") && loc.connection.connectionType == AkkaType
-    }
+  private[esw] def resolveSequencer(sequencerId: String, observingMode: String): Future[AkkaLocation] = {
+    var maybeCancellable: Option[Cancellable] = None
+    var breakLoop                             = false
 
-    sequencerLocation match {
-      case Some(location: AkkaLocation) => location
-      case Some(location) =>
-        throw new RuntimeException(s"Sequencer is registered with wrong connection type: ${location.connection.connectionType}")
-      case None => throw new RuntimeException(s"Could not find any sequencer with name: $sequencerId@$observingMode")
+    def resolveLoop(): Future[AkkaLocation] = locationService.list.flatMap { locations =>
+      val sequencerLocation = locations.find { loc: Location =>
+        loc.connection.componentId.name.contains(s"$sequencerId@$observingMode") && loc.connection.connectionType == AkkaType
+      }
+
+      sequencerLocation match {
+        case Some(location: AkkaLocation) =>
+          maybeCancellable.foreach(_.cancel)
+          Future.successful(location)
+        case _ if breakLoop =>
+          Future.failed(new RuntimeException(s"Could not find any sequencer with name: $sequencerId@$observingMode"))
+        case _ => resolveLoop()
+      }
     }
+    maybeCancellable = Some(scheduler.scheduleOnce(ResolveTimeout) { breakLoop = true })
+    resolveLoop()
   }
 
   // Added this to be accessed by kotlin

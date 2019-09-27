@@ -213,7 +213,7 @@ class LocationServiceCommandUtilsTest extends ScalaTestWithActorTestKit with Bas
       actualLocations should ===(tcsLocation)
     }
 
-    "return an IllegalArgumentException when no matching sequencerId and observing mode is found | ESW-119" in {
+    "return a RuntimeException when no matching sequencerId and observing mode is found | ESW-119" in {
       val testUri = new URI("test-uri")
       val tcsLocation =
         AkkaLocation(
@@ -235,9 +235,9 @@ class LocationServiceCommandUtilsTest extends ScalaTestWithActorTestKit with Bas
       )
       when(locationService.list).thenReturn(Future.successful(tcsLocation :: ocsLocations))
 
-      val locationServiceDsl = new LocationServiceUtil(locationService)
+      val locationServiceUtil = new LocationServiceUtil(locationService)
       intercept[RuntimeException] {
-        locationServiceDsl.resolveSequencer("TCS", "obsMode2").awaitResult
+        locationServiceUtil.resolveSequencer("TCS", "obsMode2").awaitResult
       }
     }
   }
