@@ -4,7 +4,10 @@ import java.util.concurrent.CompletionStage
 
 import akka.actor.typed.scaladsl.adapter.TypedActorSystemOps
 import akka.actor.typed.{ActorRef, ActorSystem}
-import akka.actor.{Cancellable, CoordinatedShutdown, Scheduler}
+import akka.actor.{CoordinatedShutdown, Scheduler}
+import akka.stream.OverflowStrategy
+import akka.stream.scaladsl.{Sink, Source}
+import akka.stream.typed.scaladsl.ActorMaterializer
 import csw.command.client.extensions.AkkaLocationExt.RichAkkaLocation
 import csw.command.client.messages.ComponentMessage
 import csw.location.api.scaladsl.{LocationService, RegistrationResult}
@@ -13,7 +16,6 @@ import csw.location.models.ConnectionType.AkkaType
 import csw.location.models._
 import csw.params.core.models.Subsystem
 import esw.dsl.Timeouts
-import esw.dsl.sequence_manager.LocationServiceUtil.ResolveTimeout
 import esw.ocs.api.protocol.RegistrationError
 
 import scala.compat.java8.FutureConverters.FutureOps
@@ -83,25 +85,31 @@ class LocationServiceUtil(private[esw] val locationService: LocationService)(imp
   }
 
   private[esw] def resolveSequencer(sequencerId: String, observingMode: String): Future[AkkaLocation] = {
-    var maybeCancellable: Option[Cancellable] = None
-    var breakLoop                             = false
+    implicit val mat: ActorMaterializer = ActorMaterializer()
+    val (queue, source)                 = Source.queue[Future[Option[AkkaLocation]]](20, OverflowStrategy.dropNew).preMaterialize()
 
-    def resolveLoop(): Future[AkkaLocation] = locationService.list.flatMap { locations =>
-      val sequencerLocation = locations.find { loc: Location =>
-        loc.connection.componentId.name.contains(s"$sequencerId@$observingMode") && loc.connection.connectionType == AkkaType
+    val cancellable = scheduler.schedule(0.millis, 500.millis) {
+      val location: Future[Option[AkkaLocation]] = locationService.list.map {
+        _.collectFirst {
+          case location: AkkaLocation if location.connection.componentId.name.contains(s"$sequencerId@$observingMode") => location
+        }
       }
-
-      sequencerLocation match {
-        case Some(location: AkkaLocation) =>
-          maybeCancellable.foreach(_.cancel)
-          Future.successful(location)
-        case _ if breakLoop =>
-          Future.failed(new RuntimeException(s"Could not find any sequencer with name: $sequencerId@$observingMode"))
-        case _ => resolveLoop()
-      }
+      queue.offer(location)
     }
-    maybeCancellable = Some(scheduler.scheduleOnce(ResolveTimeout) { breakLoop = true })
-    resolveLoop()
+
+    source
+      .mapAsync(1)(identity)
+      .collect {
+        case Some(location) =>
+          cancellable.cancel()
+          location
+      }
+      .takeWithin(LocationServiceUtil.ResolveTimeout)
+      .runWith(Sink.headOption)
+      .map {
+        case Some(value) => value
+        case None        => throw new RuntimeException(s"Could not find any sequencer with name: $sequencerId@$observingMode")
+      }
   }
 
   // Added this to be accessed by kotlin
