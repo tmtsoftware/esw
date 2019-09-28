@@ -89,11 +89,13 @@ class LocationServiceUtil(private[esw] val locationService: LocationService)(imp
     val (queue, source)                 = Source.queue[Future[Option[AkkaLocation]]](20, OverflowStrategy.dropNew).preMaterialize()
 
     val cancellable = scheduler.schedule(0.millis, 500.millis) {
-      val eventualMaybeLocation: Future[Option[AkkaLocation]] = locationService.list.map {
-        _.collectFirst {
-          case location: AkkaLocation if location.connection.componentId.name.contains(s"$sequencerId@$observingMode") => location
+      val eventualMaybeLocation = locationService.list
+        .map {
+          _.collectFirst {
+            case location: AkkaLocation if location.connection.componentId.name.contains(s"$sequencerId@$observingMode") =>
+              location
+          }
         }
-      }
       queue.offer(eventualMaybeLocation)
     }
 
@@ -107,7 +109,7 @@ class LocationServiceUtil(private[esw] val locationService: LocationService)(imp
       .takeWithin(LocationServiceUtil.ResolveTimeout)
       .runWith(Sink.headOption)
       .map {
-        case Some(value) => value
+        case Some(location) => location
         case None =>
           cancellable.cancel()
           throw new RuntimeException(s"Could not find any sequencer with name: $sequencerId@$observingMode")
