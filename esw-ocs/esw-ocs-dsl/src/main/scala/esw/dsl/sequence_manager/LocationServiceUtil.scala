@@ -5,7 +5,7 @@ import java.util.concurrent.CompletionStage
 import akka.actor.CoordinatedShutdown
 import akka.actor.typed.scaladsl.adapter.TypedActorSystemOps
 import akka.actor.typed.{ActorRef, ActorSystem}
-import akka.pattern
+import akka.pattern.after
 import csw.command.client.extensions.AkkaLocationExt.RichAkkaLocation
 import csw.command.client.messages.ComponentMessage
 import csw.location.api.scaladsl.{LocationService, RegistrationResult}
@@ -83,7 +83,7 @@ class LocationServiceUtil(private[esw] val locationService: LocationService)(imp
       timeout: FiniteDuration = Timeouts.DefaultTimeout
   ): Future[AkkaLocation] = {
     val ResolveInterval = 50.millis
-    def resolve(remainingDuration: FiniteDuration): Future[AkkaLocation] =
+    def resolveLoop(remainingDuration: FiniteDuration): Future[AkkaLocation] =
       locationService.list
         .map {
           _.collectFirst {
@@ -96,12 +96,12 @@ class LocationServiceUtil(private[esw] val locationService: LocationService)(imp
           case _ if remainingDuration.length <= 0 =>
             throw new RuntimeException(s"Could not find any sequencer with name: $sequencerId@$observingMode")
           case _ =>
-            pattern.after(remainingDuration min ResolveInterval, actorSystem.scheduler) {
-              resolve(remainingDuration minus ResolveInterval)
+            after(remainingDuration min ResolveInterval, actorSystem.scheduler) {
+              resolveLoop(remainingDuration minus ResolveInterval)
             }
         }
 
-    resolve(timeout)
+    resolveLoop(timeout)
   }
 
   // Added this to be accessed by kotlin
