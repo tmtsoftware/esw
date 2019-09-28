@@ -1,0 +1,279 @@
+{
+	"info": {
+		"_postman_id": "0642f2e5-9452-44af-83e4-0bc34d65f038",
+		"name": "gateway_demo",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+	},
+	"item": [
+		{
+			"name": "submit",
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "Content-Type",
+						"name": "Content-Type",
+						"value": "application/json",
+						"type": "text"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n    \"Submit\": {\n        \"componentId\": {\n            \"name\": \"SampleHcd\",\n            \"componentType\": \"HCD\"\n        },\n        \"command\": {\n            \"Setup\": {\n                \"runId\": \"test-runId\",\n                \"source\": \"wfos.blue.filter\",\n                \"commandName\": \"sleep\",\n                \"maybeObsId\": \"Obs001\",\n                \"paramSet\": []\n            }\n        }\n    }\n}"
+				},
+				"url": {
+					"raw": "localhost:8090/post",
+					"host": [
+						"localhost"
+					],
+					"port": "8090",
+					"path": [
+						"post"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "validate",
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "Content-Type",
+						"name": "Content-Type",
+						"type": "text",
+						"value": "application/json"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n    \"Validate\": {\n        \"componentId\": {\n            \"name\": \"SampleHcd\",\n            \"componentType\": \"HCD\"\n        },\n        \"command\": {\n            \"Setup\": {\n                \"runId\": \"test-runId\",\n                \"source\": \"wfos.blue.filter\",\n                \"commandName\": \"sleep\",\n                \"maybeObsId\": \"Obs001\",\n                \"paramSet\": []\n            }\n        }\n    }\n}"
+				},
+				"url": {
+					"raw": "localhost:8090/post",
+					"host": [
+						"localhost"
+					],
+					"port": "8090",
+					"path": [
+						"post"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "oneway",
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "Content-Type",
+						"name": "Content-Type",
+						"type": "text",
+						"value": "application/json"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n    \"Oneway\": {\n        \"componentId\": {\n            \"name\": \"SampleHcd\",\n            \"componentType\": \"HCD\"\n        },\n        \"command\": {\n            \"Setup\": {\n                \"runId\": \"test-runId\",\n                \"source\": \"wfos.blue.filter\",\n                \"commandName\": \"jump\",\n                \"maybeObsId\": \"Obs001\",\n                \"paramSet\": []\n            }\n        }\n    }\n}"
+				},
+				"url": {
+					"raw": "localhost:8090/post",
+					"host": [
+						"localhost"
+					],
+					"port": "8090",
+					"path": [
+						"post"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "publish",
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "Content-Type",
+						"name": "Content-Type",
+						"type": "text",
+						"value": "application/json"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n    \"PublishEvent\": {\n        \"event\": {\n            \"ObserveEvent\": {\n                \"eventId\": \"7a4cd6ab-6077-476d-a035-6f83be1de42c\",\n                \"source\": \"wfos.blue.filter\",\n                \"eventName\": \"filter_wheel\",\n                \"eventTime\": \"2017-08-09T06:40:00.898Z\",\n                \"paramSet\": [\n                    {\n                        \"StructKey\": {\n                            \"keyName\": \"myStruct\",\n                            \"values\": [\n                                {\n                                    \"paramSet\": [\n                                        {\n                                            \"StringKey\": {\n                                                \"keyName\": \"ra\",\n                                                \"values\": [\n                                                    \"12:13:14.1\"\n                                                ],\n                                                \"units\": \"NoUnits\"\n                                            }\n                                        },\n                                        {\n                                            \"StringKey\": {\n                                                \"keyName\": \"dec\",\n                                                \"values\": [\n                                                    \"32:33:34.4\"\n                                                ],\n                                                \"units\": \"NoUnits\"\n                                            }\n                                        },\n                                        {\n                                            \"DoubleKey\": {\n                                                \"keyName\": \"epoch\",\n                                                \"values\": [\n                                                    1950\n                                                ],\n                                                \"units\": \"NoUnits\"\n                                            }\n                                        }\n                                    ]\n                                }\n                            ],\n                            \"units\": \"NoUnits\"\n                        }\n                    }\n                ]\n            }\n        }\n    }\n}"
+				},
+				"url": {
+					"raw": "localhost:8090/post",
+					"host": [
+						"localhost"
+					],
+					"port": "8090",
+					"path": [
+						"post"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "get",
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "Content-Type",
+						"name": "Content-Type",
+						"type": "text",
+						"value": "application/json"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n    \"GetEvent\": {\n        \"eventKeys\": [\n            {\n                \"source\": \"wfos.blue.filter\",\n                \"eventName\": \"filter_wheel\"\n            }\n        ]\n    }\n}"
+				},
+				"url": {
+					"raw": "localhost:8090/post",
+					"host": [
+						"localhost"
+					],
+					"port": "8090",
+					"path": [
+						"post"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "setSeverity",
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "Content-Type",
+						"name": "Content-Type",
+						"type": "text",
+						"value": "application/json"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n    \"SetAlarmSeverity\": {\n        \"alarmKey\": {\n            \"subsystem\": \"NFIRAOS\",\n            \"component\": \"SampleHcd\",\n            \"name\": \"counterTooHighAlarm\"\n        },\n        \"severity\":\"Major\"\n    }\n}"
+				},
+				"url": {
+					"raw": "localhost:8090/post",
+					"host": [
+						"localhost"
+					],
+					"port": "8090",
+					"path": [
+						"post"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "queryFinal",
+			"protocolProfileBehavior": {
+				"disableBodyPruning": true
+			},
+			"request": {
+				"method": "GET",
+				"header": [
+					{
+						"key": "Content-Type",
+						"name": "Content-Type",
+						"type": "text",
+						"value": "application/json"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n    \"QueryFinal\": {\n        \"componentId\": {\n            \"name\": \"SampleHcd\",\n            \"componentType\": \"HCD\"\n        },\n        \"runId\": \"test-runId\"\n    }\n}"
+				},
+				"url": {
+					"raw": "localhost:8090/websocket",
+					"host": [
+						"localhost"
+					],
+					"port": "8090",
+					"path": [
+						"websocket"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "subscribeCurrentState",
+			"protocolProfileBehavior": {
+				"disableBodyPruning": true
+			},
+			"request": {
+				"method": "GET",
+				"header": [
+					{
+						"key": "Content-Type",
+						"name": "Content-Type",
+						"type": "text",
+						"value": "application/json"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n    \"SubscribeCurrentState\": {\n        \"componentId\": {\n            \"name\": \"SampleHcd\",\n            \"componentType\": \"HCD\"\n        },\n        \"stateNames\": [\n            {\n                \"name\": \"stateName1\"\n            }\n        ],\n        \"maxFrequency\": [\n            2\n        ]\n    }\n}"
+				},
+				"url": {
+					"raw": "localhost:8090/websocket",
+					"host": [
+						"localhost"
+					],
+					"port": "8090",
+					"path": [
+						"websocket"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "subscribe",
+			"protocolProfileBehavior": {
+				"disableBodyPruning": true
+			},
+			"request": {
+				"method": "GET",
+				"header": [
+					{
+						"key": "Content-Type",
+						"name": "Content-Type",
+						"type": "text",
+						"value": "application/json"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n    \"Subscribe\": {\n        \"eventKeys\": [\n            {\n                \"source\": \"wfos.blue.filter\",\n                \"eventName\": \"filter_wheel\"\n            }\n        ],\n        \"maxFrequency\": [\n            2\n        ]\n    }\n}"
+				},
+				"url": {
+					"raw": "localhost:8090/websocket",
+					"host": [
+						"localhost"
+					],
+					"port": "8090",
+					"path": [
+						"websocket"
+					]
+				}
+			},
+			"response": []
+		}
+	]
+}
