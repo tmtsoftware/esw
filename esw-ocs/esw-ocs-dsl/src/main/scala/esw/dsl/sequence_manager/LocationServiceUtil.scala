@@ -5,6 +5,7 @@ import java.util.concurrent.CompletionStage
 import akka.actor.CoordinatedShutdown
 import akka.actor.typed.scaladsl.adapter.TypedActorSystemOps
 import akka.actor.typed.{ActorRef, ActorSystem}
+import akka.pattern
 import csw.command.client.extensions.AkkaLocationExt.RichAkkaLocation
 import csw.command.client.messages.ComponentMessage
 import csw.location.api.scaladsl.{LocationService, RegistrationResult}
@@ -17,8 +18,7 @@ import esw.ocs.api.protocol.RegistrationError
 
 import scala.compat.java8.FutureConverters.FutureOps
 import scala.concurrent.duration.{DurationInt, FiniteDuration}
-import scala.concurrent.{ExecutionContext, Future, Promise}
-import scala.util.Success
+import scala.concurrent.{ExecutionContext, Future}
 import scala.util.control.NonFatal
 
 class LocationServiceUtil(private[esw] val locationService: LocationService)(implicit val actorSystem: ActorSystem[_]) {
@@ -80,31 +80,28 @@ class LocationServiceUtil(private[esw] val locationService: LocationService)(imp
   private[esw] def resolveSequencer(
       sequencerId: String,
       observingMode: String,
-      timeout: FiniteDuration = Timeouts.DefaultTimeout
+      timeout: FiniteDuration = 5.seconds
   ): Future[AkkaLocation] = {
-    val pollInterval = 50.millis
-
-    def findLocation() =
-      locationService.list.map(_.collectFirst {
-        case loc: AkkaLocation if loc.connection.componentId.name.contains(s"$sequencerId@$observingMode") => loc
-      })
-
-    def delay(duration: FiniteDuration) = {
-      val p = Promise[Unit]
-      actorSystem.scheduler.scheduleOnce(duration)(p.complete(Success(())))
-      p.future
+    val ResolveInterval = 50.millis
+    def resolve(remainingDuration: FiniteDuration): Future[AkkaLocation] = {
+      locationService.list
+        .map {
+          _.collectFirst {
+            case location: AkkaLocation if location.connection.componentId.name.contains(s"$sequencerId@$observingMode") =>
+              location
+          }
+        }
+        .flatMap {
+          case Some(location) => Future.successful(location)
+          case _ if remainingDuration.length <= 0 =>
+            throw new RuntimeException(s"Could not find any sequencer with name: $sequencerId@$observingMode")
+          case _ =>
+            pattern.after(remainingDuration min ResolveInterval, actorSystem.scheduler) {
+              resolve(remainingDuration minus ResolveInterval)
+            }
+        }
     }
-
-    def go(remaining: FiniteDuration): Future[AkkaLocation] = {
-      findLocation().flatMap {
-        case Some(location) => Future.successful(location)
-        case _ if remaining.length <= 0 =>
-          Future.failed(new RuntimeException(s"Could not find any sequencer with name: $sequencerId@$observingMode"))
-        case _ => delay(pollInterval min remaining).flatMap(_ => go(remaining - pollInterval))
-      }
-    }
-
-    go(timeout)
+    resolve(timeout)
   }
 
   // Added this to be accessed by kotlin
