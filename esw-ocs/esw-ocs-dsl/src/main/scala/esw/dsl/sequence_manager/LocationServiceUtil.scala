@@ -80,10 +80,10 @@ class LocationServiceUtil(private[esw] val locationService: LocationService)(imp
   private[esw] def resolveSequencer(
       sequencerId: String,
       observingMode: String,
-      timeout: FiniteDuration = 5.seconds
+      timeout: FiniteDuration = Timeouts.DefaultTimeout
   ): Future[AkkaLocation] = {
     val ResolveInterval = 50.millis
-    def resolve(remainingDuration: FiniteDuration): Future[AkkaLocation] = {
+    def resolve(remainingDuration: FiniteDuration): Future[AkkaLocation] =
       locationService.list
         .map {
           _.collectFirst {
@@ -100,7 +100,7 @@ class LocationServiceUtil(private[esw] val locationService: LocationService)(imp
               resolve(remainingDuration minus ResolveInterval)
             }
         }
-    }
+
     resolve(timeout)
   }
 
