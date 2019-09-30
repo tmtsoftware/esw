@@ -4,6 +4,7 @@ import caseapp.core.Error
 import caseapp.core.argparser.SimpleArgParser
 import caseapp.{CommandName, HelpMessage}
 import csw.params.core.models.Subsystem
+import esw.ocs.impl.internal.NameValidator
 
 import scala.util.control.NonFatal
 
@@ -16,6 +17,17 @@ object SequencerAppCommand {
       try Right(Subsystem.withNameInsensitive(subsystemStr))
       catch {
         case NonFatal(_) => Left(Error.Other(s"Subsystem [$subsystemStr] is invalid"))
+      }
+    }
+  }
+
+  implicit val stringParser: SimpleArgParser[String] = {
+    SimpleArgParser.from[String](description = "string field") { str =>
+      try {
+        NameValidator.validate(str)
+        Right(str)
+      } catch {
+        case NonFatal(_) => Left(Error.Other(s"[$str] is invalid"))
       }
     }
   }
