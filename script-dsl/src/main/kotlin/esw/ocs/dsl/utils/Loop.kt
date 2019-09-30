@@ -18,6 +18,8 @@ fun CoroutineScope.bgLoop(minInterval: Duration, block: suspend LoopDsl.() -> Un
     async { loop(minInterval, block) }
 
 object LoopDsl {
+    suspend inline fun waitFor(crossinline condition: () -> Boolean) = loop { stopWhen(condition()) }
+
     suspend fun stopWhen(condition: Boolean): Unit = coroutineScope {
         suspendCancellableCoroutine<Unit> {
             if (condition) it.cancel() else it.resumeWith(Result.success(Unit))
