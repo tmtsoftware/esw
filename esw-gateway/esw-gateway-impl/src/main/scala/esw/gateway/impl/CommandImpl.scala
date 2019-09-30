@@ -10,8 +10,8 @@ import csw.params.commands.ControlCommand
 import csw.params.core.models.Id
 import csw.params.core.states.{CurrentState, StateName}
 import esw.gateway.api.CommandApi
-import esw.gateway.api.protocol.InvalidComponent
-import msocket.api.utils.{StreamError, StreamStatus}
+import esw.gateway.api.protocol.{InvalidComponent, InvalidMaxFrequency}
+import msocket.api.utils.StreamStatus
 
 import scala.concurrent.duration.DurationInt
 import scala.concurrent.{ExecutionContext, Future}
@@ -37,7 +37,7 @@ class CommandImpl(commandService: ComponentId => Future[CommandService])(
     process(componentId, _.queryFinal(runId)(Timeout(100.hours)))
   }
 
-  def process[T](componentId: ComponentId, action: CommandService => Future[T]): Future[Either[InvalidComponent, T]] = {
+  private def process[T](componentId: ComponentId, action: CommandService => Future[T]): Future[Either[InvalidComponent, T]] = {
     commandService(componentId)
       .flatMap(action)
       .map(Right(_))
@@ -56,7 +56,7 @@ class CommandImpl(commandService: ComponentId => Future[CommandService])(
       commandService(componentId)
         .map(commandService => Utils.sourceWithNoError(commandService.subscribeCurrentState(stateNames)))
         .recover {
-          case NonFatal(ex) => Utils.emptySourceWithError(StreamError("InvalidComponent", ex.getMessage))
+          case NonFatal(ex) => Utils.emptySourceWithError(InvalidComponent(ex.getMessage).toStreamError)
         }
 
     def currentStateSource: Source[CurrentState, Future[StreamStatus]] = {
@@ -64,10 +64,9 @@ class CommandImpl(commandService: ComponentId => Future[CommandService])(
     }
 
     maxFrequency match {
-      case Some(x) if x <= 0 =>
-        Utils.emptySourceWithError(StreamError("InvalidMaxFrequency", "Max frequency should be greater than zero"))
-      case Some(frequency) => currentStateSource.buffer(1, OverflowStrategy.dropHead).throttle(frequency, 1.second)
-      case None            => currentStateSource
+      case Some(x) if x <= 0 => Utils.emptySourceWithError(InvalidMaxFrequency.toStreamError)
+      case Some(frequency)   => currentStateSource.buffer(1, OverflowStrategy.dropHead).throttle(frequency, 1.second)
+      case None              => currentStateSource
     }
   }
 }

@@ -10,7 +10,7 @@ import csw.params.core.models.Subsystem
 import csw.params.events.{Event, EventKey}
 import esw.gateway.api.EventApi
 import esw.gateway.api.protocol._
-import msocket.api.utils.{StreamError, StreamStatus}
+import msocket.api.utils.StreamStatus
 
 import scala.concurrent.{ExecutionContext, Future}
 import scala.util.{Failure, Success}
@@ -42,7 +42,7 @@ class EventImpl(eventService: EventService, eventSubscriberUtil: EventSubscriber
     if (eventKeys.nonEmpty) {
       maxFrequency match {
         case Some(x) if x <= 0 =>
-          Utils.emptySourceWithError(StreamError("InvalidMaxFrequency", "Max frequency should be greater than zero"))
+          Utils.emptySourceWithError(InvalidMaxFrequency.toStreamError)
         case Some(frequency) =>
           Utils.sourceWithNoError(
             subscriber.subscribe(eventKeys, Utils.maxFrequencyToDuration(frequency), RateLimiterMode)
@@ -50,7 +50,7 @@ class EventImpl(eventService: EventService, eventSubscriberUtil: EventSubscriber
         case None =>
           Utils.sourceWithNoError(subscriber.subscribe(eventKeys))
       }
-    } else Utils.emptySourceWithError(StreamError("EmptyEventKeys", "Request is missing event key"))
+    } else Utils.emptySourceWithError(EmptyEventKeys.toStreamError)
   }
 
   def pSubscribe(
@@ -62,7 +62,7 @@ class EventImpl(eventService: EventService, eventSubscriberUtil: EventSubscriber
     def events: Source[Event, EventSubscription] = subscriber.pSubscribe(subsystem, pattern)
     maxFrequency match {
       case Some(x) if x <= 0 =>
-        Utils.emptySourceWithError(StreamError("InvalidMaxFrequency", "Max frequency should be greater than zero"))
+        Utils.emptySourceWithError(InvalidMaxFrequency.toStreamError)
       case Some(f) =>
         Utils.sourceWithNoError(
           events.via(eventSubscriberUtil.subscriptionModeStage(Utils.maxFrequencyToDuration(f), RateLimiterMode))
