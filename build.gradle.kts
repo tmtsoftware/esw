@@ -41,6 +41,7 @@ subprojects {
         compile("org.jetbrains.kotlinx", "kotlinx-coroutines-jdk8", "1.3.0")
         compile("org.jetbrains.kotlin", "kotlin-script-runtime", "1.3.50")
 
+        testImplementation("io.mockk:mockk:1.9")
         testImplementation("io.kotlintest:kotlintest-runner-junit5:3.3.2")
         testCompile("junit", "junit", "4.12")
     }

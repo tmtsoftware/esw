@@ -9,12 +9,12 @@ import csw.event.api.javadsl.IEventSubscription
 import csw.params.core.generics.Parameter
 import csw.params.core.models.Prefix
 import csw.params.events.*
-import java.util.*
-import kotlin.time.Duration
-import kotlin.time.toJavaDuration
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.future.await
 import kotlinx.coroutines.future.future
+import java.util.*
+import kotlin.time.Duration
+import kotlin.time.toJavaDuration
 
 interface EventServiceDsl : CoroutineScope {
     val eventService: IEventService
