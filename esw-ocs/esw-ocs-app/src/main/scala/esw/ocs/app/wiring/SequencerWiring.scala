@@ -14,6 +14,8 @@ import csw.location.client.ActorSystemFactory
 import csw.location.client.javadsl.JHttpLocationServiceFactory
 import csw.location.models.Connection.AkkaConnection
 import csw.location.models.{AkkaLocation, AkkaRegistration, ComponentId, ComponentType}
+import csw.logging.api.scaladsl.Logger
+import csw.logging.client.scaladsl.LoggerFactory
 import csw.network.utils.SocketUtils
 import esw.dsl.script.utils.ScriptLoader
 import esw.dsl.script.{CswServices, ScriptDsl}
@@ -38,12 +40,15 @@ private[ocs] class SequencerWiring(val sequencerId: String, val observingMode: S
   lazy val actorSystem: ActorSystem[SpawnProtocol] = ActorSystemFactory.remote(SpawnProtocol.behavior, "sequencer-system")
 
   implicit lazy val timeout: Timeout = Timeouts.DefaultTimeout
-  lazy val cswWiring: CswWiring      = CswWiring.make(actorSystem, sequencerName)
+  lazy val cswWiring: CswWiring      = CswWiring.make(actorSystem)
   import cswWiring._
   import cswWiring.actorRuntime._
 
+  lazy val loggerFactory  = new LoggerFactory(sequencerName)
+  lazy val logger: Logger = loggerFactory.getLogger
+
   lazy val crmRef: ActorRef[CommandResponseManagerMessage] =
-    (actorSystem ? Spawn(CommandResponseManagerActor.behavior(CRMCacheProperties(), cswWiring.loggerFactory), "crm")).block
+    (actorSystem ? Spawn(CommandResponseManagerActor.behavior(CRMCacheProperties(), loggerFactory), "crm")).block
   lazy val commandResponseManager: CommandResponseManager =
     new CommandResponseManager(crmRef)(actorSystem)
 

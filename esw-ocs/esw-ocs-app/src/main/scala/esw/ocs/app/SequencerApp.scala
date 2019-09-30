@@ -4,6 +4,7 @@ import caseapp.{CommandApp, RemainingArgs}
 import csw.location.client.utils.LocationServerStatus
 import csw.location.models.AkkaLocation
 import csw.logging.api.scaladsl.Logger
+import csw.logging.client.scaladsl.LoggerFactory
 import esw.http.core.wiring.ActorRuntime
 import esw.ocs.api.protocol.RegistrationError
 import esw.ocs.app.SequencerAppCommand._
@@ -29,25 +30,27 @@ object SequencerApp extends CommandApp[SequencerAppCommand] {
 
   def run(command: SequencerAppCommand, enableLogging: Boolean = true): Unit =
     command match {
-      case SequenceComponent(prefix) =>
-        val wiring = new SequenceComponentWiring(prefix, sequencerWiringWithHttp(_, _, _).sequencerServer)
-        startSequenceComponent(wiring, enableLogging)
+      case SequenceComponent(subsystem, name) =>
+        val wiring                                 = new SequenceComponentWiring(subsystem, name, sequencerWiringWithHttp(_, _, _).sequencerServer)
+        val loggerFactory                          = new LoggerFactory("sequence component")
+        val genericSequenceComponentLogger: Logger = loggerFactory.getLogger
+        startSequenceComponent(wiring, genericSequenceComponentLogger, enableLogging)
 
       case Sequencer(id, mode) =>
         val wiring: SequencerWiring = sequencerWiringWithHttp(id, mode, None)
         startSequencer(wiring, enableLogging)
     }
 
-  def startSequenceComponent(sequenceComponentWiring: SequenceComponentWiring, enableLogging: Boolean): Unit = {
+  def startSequenceComponent(sequenceComponentWiring: SequenceComponentWiring, logger: Logger, enableLogging: Boolean): Unit = {
     import sequenceComponentWiring._
-    withLogging(actorRuntime, cswWiring.logger, enableLogging) {
+    withLogging(actorRuntime, logger, enableLogging) {
       sequenceComponentWiring.start()
     }
   }
 
   def startSequencer(sequencerWiring: SequencerWiring, enableLogging: Boolean): Unit = {
     import sequencerWiring._
-    withLogging(actorRuntime, cswWiring.logger, enableLogging) {
+    withLogging(actorRuntime, logger, enableLogging) {
       sequencerServer.start()
     }
   }

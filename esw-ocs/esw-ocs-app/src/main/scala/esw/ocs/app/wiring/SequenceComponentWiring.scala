@@ -5,7 +5,9 @@ import akka.actor.typed.SpawnProtocol.Spawn
 import akka.actor.typed.scaladsl.AskPattern.Askable
 import akka.util.Timeout
 import csw.location.models.AkkaLocation
-import csw.params.core.models.Prefix
+import csw.logging.api.scaladsl.Logger
+import csw.logging.client.scaladsl.LoggerFactory
+import csw.params.core.models.Subsystem
 import esw.http.core.wiring.{ActorRuntime, CswWiring}
 import esw.ocs.api.protocol.RegistrationError
 import esw.ocs.impl.core.SequenceComponentBehavior
@@ -16,10 +18,14 @@ import esw.ocs.impl.syntax.FutureSyntax.FutureOps
 import scala.concurrent.Future
 
 // $COVERAGE-OFF$
-private[ocs] class SequenceComponentWiring(prefix: Prefix, sequencerServerFactory: SequencerServerFactory) {
+private[ocs] class SequenceComponentWiring(
+    subsystem: Subsystem,
+    name: Option[String],
+    sequencerServerFactory: SequencerServerFactory
+) {
   private val registrationRetryCount = 10
 
-  lazy val cswWiring = new CswWiring(prefix.prefix)
+  lazy val cswWiring = new CswWiring()
   import cswWiring._
   import cswWiring.actorRuntime._
   lazy val actorRuntime: ActorRuntime = cswWiring.actorRuntime
@@ -27,15 +33,18 @@ private[ocs] class SequenceComponentWiring(prefix: Prefix, sequencerServerFactor
   implicit lazy val timeout: Timeout = Timeouts.DefaultTimeout
 
   def sequenceComponentFactory(sequenceComponentName: String): Future[ActorRef[SequenceComponentMsg]] = {
-    logger.info(s"Starting sequence component with name: $sequenceComponentName")
+    val loggerFactory                   = new LoggerFactory(sequenceComponentName)
+    val sequenceComponentLogger: Logger = loggerFactory.getLogger
+
+    sequenceComponentLogger.info(s"Starting sequence component with name: $sequenceComponentName")
     typedSystem ? Spawn(
-      SequenceComponentBehavior.behavior(sequenceComponentName, logger, sequencerServerFactory),
+      SequenceComponentBehavior.behavior(sequenceComponentName, sequenceComponentLogger, sequencerServerFactory),
       sequenceComponentName
     )
   }
 
   private lazy val sequenceComponentRegistration =
-    new SequenceComponentRegistration(prefix, locationService, sequenceComponentFactory)
+    new SequenceComponentRegistration(subsystem, name, locationService, sequenceComponentFactory)
 
   def start(): Either[RegistrationError, AkkaLocation] =
     sequenceComponentRegistration.registerWithRetry(registrationRetryCount).block

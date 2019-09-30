@@ -33,8 +33,6 @@ class CswWiringMocks(system: ActorSystem[SpawnProtocol]) {
   val eventPublisher: EventPublisher           = mock[EventPublisher]
   val eventSubscriber: EventSubscriber         = mock[EventSubscriber]
 
-  when(cswWiring.logger).thenReturn(logger)
-
   when(cswWiring.componentFactory).thenReturn(componentFactory)
 
   when(cswWiring.eventSubscriberUtil).thenReturn(eventSubscriberUtil)

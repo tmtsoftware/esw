@@ -1,9 +1,9 @@
 package esw.ocs.app
 
 import caseapp.core.Error
-import caseapp.core.argparser.{ArgParser, SimpleArgParser}
+import caseapp.core.argparser.SimpleArgParser
 import caseapp.{CommandName, HelpMessage}
-import csw.params.core.models.Prefix
+import csw.params.core.models.Subsystem
 
 import scala.util.control.NonFatal
 
@@ -11,18 +11,21 @@ sealed trait SequencerAppCommand
 
 object SequencerAppCommand {
 
-  implicit val prefixParser: ArgParser[Prefix] =
-    SimpleArgParser.from[Prefix]("prefix") { prefixStr =>
-      try Right(Prefix(prefixStr))
+  implicit val subsystemParser: SimpleArgParser[Subsystem] = {
+    SimpleArgParser.from[Subsystem]("subsystem") { subsystemStr =>
+      try Right(Subsystem.withNameInsensitive(subsystemStr))
       catch {
-        case NonFatal(_) => Left(Error.Other(s"Prefix [$prefixStr] is invalid"))
+        case NonFatal(_) => Left(Error.Other(s"Subsystem [$subsystemStr] is invalid"))
       }
     }
+  }
 
   @CommandName("seqcomp")
   final case class SequenceComponent(
-      @HelpMessage("prefix of the sequence component, ex: tcs.mobie.blue.filter")
-      prefix: Prefix
+      @HelpMessage("subsystem of the sequence component, ex: tcs")
+      subsystem: Subsystem,
+      @HelpMessage("optional name for sequence component, ex: primary, backup etc")
+      name: Option[String]
   ) extends SequencerAppCommand
 
   final case class Sequencer(
