@@ -5,7 +5,7 @@ import sbt._
 object Libs {
   private val ScalaVersion: String = EswKeys.scalaVersion
   private val SilencerVersion      = "1.4.2"
-  private val MSocketVersion       = "568f59d"
+  private val MSocketVersion       = "18b028f"
 
   // fixme: find appropriate place to keep kotlin test scripts used in integration-test project
   val `examples` = "com.github.tmtsoftware.script-dsl" % "examples" % "e687b1d155"
@@ -26,7 +26,7 @@ object Libs {
 
 object Csw {
   private val Org     = "com.github.tmtsoftware.csw"
-  private val Version = "bb5dffed43" //change this to 0.1-SNAPSHOT to test with local csw changes (after publishLocal)
+  private val Version = "5d18023" //change this to 0.1-SNAPSHOT to test with local csw changes (after publishLocal)
 
   val `csw-alarm-api`       = Org %% "csw-alarm-api" % Version
   val `csw-command-api`     = Org %% "csw-command-api" % Version
