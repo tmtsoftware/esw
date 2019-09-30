@@ -6,7 +6,8 @@ import csw.params.commands.CommandResponse.{OnewayResponse, SubmitResponse, Vali
 import csw.params.commands.ControlCommand
 import csw.params.core.models.Id
 import csw.params.core.states.{CurrentState, StateName}
-import esw.gateway.api.protocol.{CommandError, InvalidComponent}
+import esw.gateway.api.protocol.InvalidComponent
+import msocket.api.utils.StreamStatus
 
 import scala.concurrent.Future
 
@@ -20,5 +21,5 @@ trait CommandApi {
       componentId: ComponentId,
       stateNames: Set[StateName],
       maxFrequency: Option[Int]
-  ): Source[CurrentState, Future[Option[CommandError]]]
+  ): Source[CurrentState, Future[StreamStatus]]
 }

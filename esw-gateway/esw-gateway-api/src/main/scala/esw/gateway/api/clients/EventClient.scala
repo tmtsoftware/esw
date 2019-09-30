@@ -10,6 +10,7 @@ import esw.gateway.api.protocol.PostRequest.{GetEvent, PublishEvent}
 import esw.gateway.api.protocol.WebsocketRequest.{Subscribe, SubscribeWithPattern}
 import esw.gateway.api.protocol._
 import msocket.api.Transport
+import msocket.api.utils.StreamStatus
 
 import scala.concurrent.Future
 
@@ -23,16 +24,16 @@ class EventClient(postClient: Transport[PostRequest], websocketClient: Transport
   override def get(eventKeys: Set[EventKey]): Future[Either[GetEventError, Set[Event]]] =
     postClient.requestResponse[Either[GetEventError, Set[Event]]](GetEvent(eventKeys))
 
-  override def subscribe(eventKeys: Set[EventKey], maxFrequency: Option[Int]): Source[Event, Future[Option[EventError]]] = {
-    websocketClient.requestStreamWithError[Event, EventError](Subscribe(eventKeys, maxFrequency))
+  override def subscribe(eventKeys: Set[EventKey], maxFrequency: Option[Int]): Source[Event, Future[StreamStatus]] = {
+    websocketClient.requestStreamWithError[Event](Subscribe(eventKeys, maxFrequency))
   }
 
   override def pSubscribe(
       subsystem: Subsystem,
       maxFrequency: Option[Int],
       pattern: String = "*"
-  ): Source[Event, Future[Option[InvalidMaxFrequency.type]]] = {
-    websocketClient.requestStreamWithError[Event, InvalidMaxFrequency.type](
+  ): Source[Event, Future[StreamStatus]] = {
+    websocketClient.requestStreamWithError[Event](
       SubscribeWithPattern(subsystem, maxFrequency, pattern)
     )
   }

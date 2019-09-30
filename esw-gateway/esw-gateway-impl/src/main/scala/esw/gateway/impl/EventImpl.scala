@@ -10,6 +10,7 @@ import csw.params.core.models.Subsystem
 import csw.params.events.{Event, EventKey}
 import esw.gateway.api.EventApi
 import esw.gateway.api.protocol._
+import msocket.api.utils.StreamStatus
 
 import scala.concurrent.{ExecutionContext, Future}
 import scala.util.{Failure, Success}
@@ -36,36 +37,38 @@ class EventImpl(eventService: EventService, eventSubscriberUtil: EventSubscriber
       } else Future.successful(Left(EmptyEventKeys))
   }
 
-  def subscribe(eventKeys: Set[EventKey], maxFrequency: Option[Int]): Source[Event, Future[Option[EventError]]] = {
+  def subscribe(eventKeys: Set[EventKey], maxFrequency: Option[Int]): Source[Event, Future[StreamStatus]] = {
 
     if (eventKeys.nonEmpty) {
       maxFrequency match {
-        case Some(x) if x <= 0 => Utils.emptySourceWithError(InvalidMaxFrequency)
+        case Some(x) if x <= 0 =>
+          Utils.emptySourceWithError(InvalidMaxFrequency.toStreamError)
         case Some(frequency) =>
           Utils.sourceWithNoError(
-            subscriber
-              .subscribe(eventKeys, Utils.maxFrequencyToDuration(frequency), RateLimiterMode)
+            subscriber.subscribe(eventKeys, Utils.maxFrequencyToDuration(frequency), RateLimiterMode)
           )
-        case None => Utils.sourceWithNoError(subscriber.subscribe(eventKeys))
+        case None =>
+          Utils.sourceWithNoError(subscriber.subscribe(eventKeys))
       }
-    } else Utils.emptySourceWithError(EmptyEventKeys)
+    } else Utils.emptySourceWithError(EmptyEventKeys.toStreamError)
   }
 
   def pSubscribe(
       subsystem: Subsystem,
       maxFrequency: Option[Int],
       pattern: String = "*"
-  ): Source[Event, Future[Option[InvalidMaxFrequency.type]]] = {
+  ): Source[Event, Future[StreamStatus]] = {
 
     def events: Source[Event, EventSubscription] = subscriber.pSubscribe(subsystem, pattern)
     maxFrequency match {
-      case Some(x) if x <= 0 => Utils.emptySourceWithError(InvalidMaxFrequency)
+      case Some(x) if x <= 0 =>
+        Utils.emptySourceWithError(InvalidMaxFrequency.toStreamError)
       case Some(f) =>
         Utils.sourceWithNoError(
-          events
-            .via(eventSubscriberUtil.subscriptionModeStage(Utils.maxFrequencyToDuration(f), RateLimiterMode))
+          events.via(eventSubscriberUtil.subscriptionModeStage(Utils.maxFrequencyToDuration(f), RateLimiterMode))
         )
-      case None => Utils.sourceWithNoError(events)
+      case None =>
+        Utils.sourceWithNoError(events)
     }
   }
 

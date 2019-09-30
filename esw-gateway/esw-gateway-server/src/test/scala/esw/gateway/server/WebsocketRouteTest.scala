@@ -26,6 +26,7 @@ import esw.http.core.BaseTestSuite
 import io.bullet.borer.Decoder
 import mscoket.impl.HttpCodecs
 import mscoket.impl.ws.Encoding.JsonText
+import msocket.api.utils.StreamStatus
 import org.mockito.Mockito.when
 
 import scala.concurrent.Future
@@ -116,7 +117,7 @@ class WebsocketRouteTest extends BaseTestSuite with ScalatestRouteTest with Gate
         isWebSocketUpgrade shouldBe true
 
         val responseSet = Source(1 to 2)
-          .map(_ => decodeMessage[Either[CommandError, CurrentState]](wsClient))
+          .map(_ => decodeMessage[Either[StreamStatus, CurrentState]](wsClient))
           .runWith(Sink.seq)
           .futureValue
           .map(_.rightValue)
@@ -148,7 +149,7 @@ class WebsocketRouteTest extends BaseTestSuite with ScalatestRouteTest with Gate
         isWebSocketUpgrade shouldBe true
 
         val responseSet = Source
-          .single(decodeMessage[Either[CommandError, CurrentState]](wsClient))
+          .single(decodeMessage[Either[StreamStatus, CurrentState]](wsClient))
           .runWith(Sink.seq)
           .futureValue
           .map(_.rightValue)
@@ -171,11 +172,11 @@ class WebsocketRouteTest extends BaseTestSuite with ScalatestRouteTest with Gate
         isWebSocketUpgrade shouldBe true
 
         val response = Source(1 to 10)
-          .map(_ => decodeMessage[Either[CommandError, CurrentState]](wsClient))
+          .map(_ => decodeMessage[Either[StreamStatus, CurrentState]](wsClient))
           .runWith(Sink.head)
           .leftValue
 
-        response shouldEqual InvalidMaxFrequency
+        response shouldEqual InvalidMaxFrequency.toStreamError
       }
     }
   }
@@ -208,7 +209,7 @@ class WebsocketRouteTest extends BaseTestSuite with ScalatestRouteTest with Gate
         isWebSocketUpgrade shouldBe true
 
         val responseSet = Source(1 to 2)
-          .map(_ => decodeMessage[Either[EventError, Event]](wsClient))
+          .map(_ => decodeMessage[Either[StreamStatus, Event]](wsClient))
           .runWith(Sink.seq)
           .futureValue
           .map(_.rightValue)
@@ -245,7 +246,7 @@ class WebsocketRouteTest extends BaseTestSuite with ScalatestRouteTest with Gate
         isWebSocketUpgrade shouldBe true
 
         val responseSet = Source(1 to 2)
-          .map(_ => decodeMessage[Either[EventError, Event]](wsClient))
+          .map(_ => decodeMessage[Either[StreamStatus, Event]](wsClient))
           .runWith(Sink.seq)
           .futureValue
           .map(_.rightValue)
@@ -268,11 +269,11 @@ class WebsocketRouteTest extends BaseTestSuite with ScalatestRouteTest with Gate
         isWebSocketUpgrade shouldBe true
 
         val response = Source(1 to 10)
-          .map(_ => decodeMessage[Either[EventError, Event]](wsClient))
+          .map(_ => decodeMessage[Either[StreamStatus, Event]](wsClient))
           .runWith(Sink.head)
           .leftValue
 
-        response shouldEqual InvalidMaxFrequency
+        response shouldEqual InvalidMaxFrequency.toStreamError
       }
     }
   }
@@ -298,7 +299,7 @@ class WebsocketRouteTest extends BaseTestSuite with ScalatestRouteTest with Gate
 
         val responseSet = Source(1 to 2)
           .take(1)
-          .map(_ => decodeMessage[Either[EventError, Event]](wsClient))
+          .map(_ => decodeMessage[Either[StreamStatus, Event]](wsClient))
           .runWith(Sink.seq)
           .futureValue
           .map(_.rightValue)
@@ -331,7 +332,7 @@ class WebsocketRouteTest extends BaseTestSuite with ScalatestRouteTest with Gate
 
         val responseSet = Source(1 to 2)
           .take(1)
-          .map(_ => decodeMessage[Either[EventError, Event]](wsClient))
+          .map(_ => decodeMessage[Either[StreamStatus, Event]](wsClient))
           .runWith(Sink.seq)
           .futureValue
           .map(_.rightValue)
@@ -349,11 +350,11 @@ class WebsocketRouteTest extends BaseTestSuite with ScalatestRouteTest with Gate
         isWebSocketUpgrade shouldBe true
 
         val response = Source(1 to 10)
-          .map(_ => decodeMessage[Either[InvalidMaxFrequency.type, Event]](wsClient))
+          .map(_ => decodeMessage[Either[StreamStatus, Event]](wsClient))
           .runWith(Sink.head)
           .leftValue
 
-        response shouldEqual InvalidMaxFrequency
+        response shouldEqual InvalidMaxFrequency.toStreamError
       }
     }
   }

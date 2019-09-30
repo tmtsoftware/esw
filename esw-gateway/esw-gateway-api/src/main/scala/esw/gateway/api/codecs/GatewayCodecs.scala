@@ -16,27 +16,18 @@ import msocket.api.utils.EitherCodecs
 
 trait GatewayCodecs extends ParamCodecs with LocationCodecs with AlarmCodecs with EitherCodecs with DoneCodec {
 
-  def singletonErrorCodec[T <: SingletonError with Singleton](a: T): Codec[T] =
-    Codec.bimap[String, T](_.msg, _ => a)
+  def singletonErrorCodec[T <: SingletonError with Singleton](a: T): Codec[T] = Codec.bimap[String, T](_.msg, _ => a)
 
-  implicit def eventErrorCodec[T <: EventError]: Codec[T] = eventErrorCodecValue.asInstanceOf[Codec[T]]
-  lazy val eventErrorCodecValue: Codec[EventError] = {
-    @silent implicit def getEventErrorCodec: Codec[GetEventError]             = deriveCodec[GetEventError]
+  implicit def getEventErrorCodec[T <: GetEventError]: Codec[T] = getEventErrorCodecValue.asInstanceOf[Codec[T]]
+  lazy val getEventErrorCodecValue: Codec[GetEventError] = {
     @silent implicit lazy val emptyEventKeysCodec: Codec[EmptyEventKeys.type] = singletonCodec(EmptyEventKeys)
     @silent implicit lazy val eventServerNotAvailableCodec: Codec[EventServerUnavailable.type] =
       singletonCodec(EventServerUnavailable)
-    invalidMaxFrequencyCodec
-    deriveCodec[EventError]
+    deriveCodec[GetEventError]
   }
 
-  implicit def commandErrorMsgCodec[T <: CommandError]: Codec[T] = commandErrorMsgCodecValue.asInstanceOf[Codec[T]]
-  lazy val commandErrorMsgCodecValue: Codec[CommandError] = {
-    @silent implicit lazy val invalidComponentCodec: Codec[InvalidComponent] = deriveCodec[InvalidComponent]
-    invalidMaxFrequencyCodec
-    deriveCodec[CommandError]
-  }
+  implicit lazy val invalidComponentCodec: Codec[InvalidComponent] = deriveCodec[InvalidComponent]
 
-  implicit lazy val invalidMaxFrequencyCodec: Codec[InvalidMaxFrequency.type]    = singletonCodec(InvalidMaxFrequency)
   implicit lazy val setAlarmSeverityFailureCodec: Codec[SetAlarmSeverityFailure] = deriveCodec[SetAlarmSeverityFailure]
 
   implicit def postRequestCodec[T <: PostRequest]: Codec[T] = postRequestValue.asInstanceOf[Codec[T]]

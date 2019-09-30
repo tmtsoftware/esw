@@ -10,7 +10,8 @@ import csw.params.commands.ControlCommand
 import csw.params.core.models.Id
 import csw.params.core.states.{CurrentState, StateName}
 import esw.gateway.api.CommandApi
-import esw.gateway.api.protocol.{CommandError, InvalidComponent, InvalidMaxFrequency}
+import esw.gateway.api.protocol.{InvalidComponent, InvalidMaxFrequency}
+import msocket.api.utils.StreamStatus
 
 import scala.concurrent.duration.DurationInt
 import scala.concurrent.{ExecutionContext, Future}
@@ -36,7 +37,7 @@ class CommandImpl(commandService: ComponentId => Future[CommandService])(
     process(componentId, _.queryFinal(runId)(Timeout(100.hours)))
   }
 
-  def process[T](componentId: ComponentId, action: CommandService => Future[T]): Future[Either[InvalidComponent, T]] = {
+  private def process[T](componentId: ComponentId, action: CommandService => Future[T]): Future[Either[InvalidComponent, T]] = {
     commandService(componentId)
       .flatMap(action)
       .map(Right(_))
@@ -49,21 +50,21 @@ class CommandImpl(commandService: ComponentId => Future[CommandService])(
       componentId: ComponentId,
       stateNames: Set[StateName],
       maxFrequency: Option[Int]
-  ): Source[CurrentState, Future[Option[CommandError]]] = {
+  ): Source[CurrentState, Future[StreamStatus]] = {
 
-    def futureSource: Future[Source[CurrentState, Future[Option[InvalidComponent]]]] =
+    def futureSource: Future[Source[CurrentState, Future[StreamStatus]]] =
       commandService(componentId)
         .map(commandService => Utils.sourceWithNoError(commandService.subscribeCurrentState(stateNames)))
         .recover {
-          case NonFatal(ex) => Utils.emptySourceWithError(InvalidComponent(ex.getMessage))
+          case NonFatal(ex) => Utils.emptySourceWithError(InvalidComponent(ex.getMessage).toStreamError)
         }
 
-    def currentStateSource: Source[CurrentState, Future[Option[InvalidComponent]]] = {
+    def currentStateSource: Source[CurrentState, Future[StreamStatus]] = {
       Source.fromFutureSource(futureSource).mapMaterializedValue(_.flatten)
     }
 
     maxFrequency match {
-      case Some(x) if x <= 0 => Utils.emptySourceWithError(InvalidMaxFrequency)
+      case Some(x) if x <= 0 => Utils.emptySourceWithError(InvalidMaxFrequency.toStreamError)
       case Some(frequency)   => currentStateSource.buffer(1, OverflowStrategy.dropHead).throttle(frequency, 1.second)
       case None              => currentStateSource
     }
