@@ -20,12 +20,12 @@ class SequencerAdminRoutes(
 
   val route: Route = cors() {
     post {
-      path("post") {
+      path("post-endpoint") {
         entity(as[SequencerAdminPostRequest])(postHandler.handle)
       }
     } ~
     get {
-      path("websocket") {
+      path("websocket-endpoint") {
         handleWebSocketMessages {
           new WsServerFlow(websocketHandler).flow
         }

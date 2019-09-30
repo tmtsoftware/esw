@@ -22,7 +22,7 @@ class SequencerAdminWebsocketRouteTest
 
   "SequencerRoutes" must {
     "return final submit response of sequence for QueryFinal request | ESW-101" in {
-      WS("/websocket", wsClient.flow) ~> route ~> check {
+      WS("/websocket-endpoint", wsClient.flow) ~> route ~> check {
         wsClient.sendMessage(JsonText.strictMessage(QueryFinal))
         isWebSocketUpgrade shouldBe true
       }

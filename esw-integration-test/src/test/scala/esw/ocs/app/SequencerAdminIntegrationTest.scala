@@ -70,8 +70,8 @@ class SequencerAdminIntegrationTest
     wiring.sequencerServer.start()
     val componentId     = ComponentId(s"$sequencerId@$observingMode@http", ComponentType.Service)
     val uri             = locationService.resolve(HttpConnection(componentId), 5.seconds).futureValue.get.uri
-    val httpUrl         = s"${uri.toString}post"
-    val wsUrl           = s"ws://${uri.getHost}:${uri.getPort}/websocket"
+    val httpUrl         = s"${uri.toString}post-endpoint"
+    val wsUrl           = s"ws://${uri.getHost}:${uri.getPort}/websocket-endpoint"
     val postClient      = new HttpPostTransport[SequencerAdminPostRequest](httpUrl, None)
     val websocketClient = new WebsocketTransport[SequencerAdminWebsocketRequest](wsUrl)
 

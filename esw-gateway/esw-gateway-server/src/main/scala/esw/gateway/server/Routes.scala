@@ -34,14 +34,14 @@ class Routes(
   val route: Route = handleExceptions(commonExceptionHandlers) {
     handleRejections(RejectionHandler.default) {
       get {
-        path("websocket") {
+        path("websocket-endpoint") {
           handleWebSocketMessages {
             new WsServerFlow(websocketHandler).flow
           }
         }
       } ~
       post {
-        path("post") {
+        path("post-endpoint") {
           entity(as[PostRequest])(postHandler.handle)
         }
       }

@@ -57,9 +57,9 @@ class EventGatewayTest extends ScalaTestFrameworkTestKit(EventServer) with WordS
 
   "EventApi" must {
     "publish, get, subscribe and pattern subscribe events | ESW-94, ESW-93, ESW-92, ESW-216" in {
-      val postClient: Transport[PostRequest] = new HttpPostTransport[PostRequest](s"http://localhost:$port/post", None)
+      val postClient: Transport[PostRequest] = new HttpPostTransport[PostRequest](s"http://localhost:$port/post-endpoint", None)
       val websocketClient: Transport[WebsocketRequest] =
-        new WebsocketTransport[WebsocketRequest](s"ws://localhost:$port/websocket")
+        new WebsocketTransport[WebsocketRequest](s"ws://localhost:$port/websocket-endpoint")
       val eventClient: EventClient = new EventClient(postClient, websocketClient)
 
       val eventsF  = eventClient.subscribe(eventKeys, None).take(4).runWith(Sink.seq)
@@ -88,9 +88,9 @@ class EventGatewayTest extends ScalaTestFrameworkTestKit(EventServer) with WordS
     }
 
     "subscribe events returns an EmptyEventKeys error on sending no event keys in subscription| ESW-93, ESW-216" in {
-      val postClient: Transport[PostRequest] = new HttpPostTransport[PostRequest](s"http://localhost:$port/post", None)
+      val postClient: Transport[PostRequest] = new HttpPostTransport[PostRequest](s"http://localhost:$port/post-endpoint", None)
       val websocketClient: Transport[WebsocketRequest] =
-        new WebsocketTransport[WebsocketRequest](s"ws://localhost:$port/websocket")
+        new WebsocketTransport[WebsocketRequest](s"ws://localhost:$port/websocket-endpoint")
       val eventClient: EventClient = new EventClient(postClient, websocketClient)
 
       eventClient.subscribe(Set.empty, None).toMat(Sink.head)(Keep.left).run().futureValue.get should ===(EmptyEventKeys)

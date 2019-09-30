@@ -62,7 +62,7 @@ class PostRouteTest extends BaseTestSuite with ScalatestRouteTest with GatewayCo
       when(componentFactory.commandService(componentId)).thenReturn(Future.successful(commandService))
       when(commandService.submit(command)).thenReturn(Future.successful(Started(runId)))
 
-      Post("/post", submitRequest) ~> route ~> check {
+      Post("/post-endpoint", submitRequest) ~> route ~> check {
         responseAs[Either[InvalidComponent, CommandResponse]].rightValue shouldEqual Started(runId)
       }
     }
@@ -78,7 +78,7 @@ class PostRouteTest extends BaseTestSuite with ScalatestRouteTest with GatewayCo
       when(componentFactory.commandService(componentId)).thenReturn(Future.successful(commandService))
       when(commandService.validate(command)).thenReturn(Future.successful(Accepted(runId)))
 
-      Post("/post", validateRequest) ~> route ~> check {
+      Post("/post-endpoint", validateRequest) ~> route ~> check {
         responseAs[Either[InvalidComponent, CommandResponse]].rightValue shouldEqual Accepted(runId)
       }
     }
@@ -94,7 +94,7 @@ class PostRouteTest extends BaseTestSuite with ScalatestRouteTest with GatewayCo
       when(componentFactory.commandService(componentId)).thenReturn(Future.successful(commandService))
       when(commandService.oneway(command)).thenReturn(Future.successful(Accepted(runId)))
 
-      Post("/post", onewayRequest) ~> route ~> check {
+      Post("/post-endpoint", onewayRequest) ~> route ~> check {
         responseAs[Either[InvalidComponent, CommandResponse]].rightValue shouldEqual Accepted(runId)
       }
     }
@@ -112,7 +112,7 @@ class PostRouteTest extends BaseTestSuite with ScalatestRouteTest with GatewayCo
       when(componentFactory.commandService(componentId))
         .thenReturn(Future.failed(new IllegalArgumentException(errmsg)))
 
-      Post("/post", submitRequest) ~> route ~> check {
+      Post("/post-endpoint", submitRequest) ~> route ~> check {
         responseAs[Either[InvalidComponent, CommandResponse]].leftValue shouldEqual InvalidComponent(errmsg)
       }
     }
@@ -127,7 +127,7 @@ class PostRouteTest extends BaseTestSuite with ScalatestRouteTest with GatewayCo
 
       when(eventPublisher.publish(event)).thenReturn(Future.successful(Done))
 
-      Post("/post", publishEvent) ~> route ~> check {
+      Post("/post-endpoint", publishEvent) ~> route ~> check {
         responseAs[Either[EventServerUnavailable.type, Done]].rightValue shouldEqual Done
       }
     }
@@ -141,7 +141,7 @@ class PostRouteTest extends BaseTestSuite with ScalatestRouteTest with GatewayCo
       when(eventPublisher.publish(event))
         .thenReturn(Future.failed(PublishFailure(event, new RuntimeException("Event server is down"))))
 
-      Post("/post", publishEvent) ~> route ~> check {
+      Post("/post-endpoint", publishEvent) ~> route ~> check {
         responseAs[Either[EventServerUnavailable.type, Done]].leftValue shouldEqual EventServerUnavailable
       }
     }
@@ -157,13 +157,13 @@ class PostRouteTest extends BaseTestSuite with ScalatestRouteTest with GatewayCo
 
       when(eventSubscriber.get(Set(eventKey))).thenReturn(Future.successful(Set(event)))
 
-      Post("/post", getEvent) ~> route ~> check {
+      Post("/post-endpoint", getEvent) ~> route ~> check {
         responseAs[Either[EmptyEventKeys.type, Set[Event]]].rightValue shouldEqual Set(event)
       }
     }
 
     "return EmptyEventKeys error on sending no event keys in request | ESW-94, ESW-216" in {
-      Post("/post", GetEvent(Set())) ~> route ~> check {
+      Post("/post-endpoint", GetEvent(Set())) ~> route ~> check {
         responseAs[Either[EmptyEventKeys.type, Set[Event]]].leftValue shouldEqual EmptyEventKeys
       }
     }
@@ -177,7 +177,7 @@ class PostRouteTest extends BaseTestSuite with ScalatestRouteTest with GatewayCo
       when(eventSubscriber.get(Set(eventKey)))
         .thenReturn(Future.failed(EventServerNotAvailable(new RuntimeException("Redis server is not available"))))
 
-      Post("/post", getEvent) ~> route ~> check {
+      Post("/post-endpoint", getEvent) ~> route ~> check {
         responseAs[Either[EmptyEventKeys.type, Set[Event]]].leftValue shouldEqual EventServerUnavailable
       }
     }
@@ -187,7 +187,7 @@ class PostRouteTest extends BaseTestSuite with ScalatestRouteTest with GatewayCo
 
       val eventKey = EventKey(Prefix("tcs.test.gateway"), EventName("event1"))
 
-      Post("/post", GetEvent(Set(eventKey))) ~> route ~> check {
+      Post("/post-endpoint", GetEvent(Set(eventKey))) ~> route ~> check {
         status shouldBe StatusCodes.InternalServerError
       }
     }
@@ -204,7 +204,7 @@ class PostRouteTest extends BaseTestSuite with ScalatestRouteTest with GatewayCo
 
       when(alarmService.setSeverity(alarmKey, majorSeverity)).thenReturn(Future.successful(Done))
 
-      Post("/post", setAlarmSeverity) ~> route ~> check {
+      Post("/post-endpoint", setAlarmSeverity) ~> route ~> check {
         responseAs[Either[SetAlarmSeverityFailure, Done]].rightValue shouldEqual Done
       }
     }
@@ -219,7 +219,7 @@ class PostRouteTest extends BaseTestSuite with ScalatestRouteTest with GatewayCo
 
       when(alarmService.setSeverity(alarmKey, majorSeverity)).thenReturn(Future.failed(new KeyNotFoundException("")))
 
-      Post("/post", setAlarmSeverity) ~> route ~> check {
+      Post("/post-endpoint", setAlarmSeverity) ~> route ~> check {
         responseAs[Either[SetAlarmSeverityFailure, Done]].leftValue shouldEqual SetAlarmSeverityFailure("")
       }
     }
