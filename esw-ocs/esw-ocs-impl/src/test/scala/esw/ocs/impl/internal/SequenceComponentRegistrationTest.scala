@@ -23,23 +23,22 @@ import org.mockito.ArgumentMatchers.any
 import scala.concurrent.{ExecutionContext, Future}
 
 class SequenceComponentRegistrationTest extends ScalaTestWithActorTestKit with BaseTestSuite {
-  private val locationService = mock[LocationService]
-
   private val subsystem = Subsystem.TCS
   private val uri       = new URI("uri")
 
-  "registerWithRetry" must {
+  "registerSequenceComponent with name provided" must {
+    val retryCount         = 2
+    val registrationResult = mock[RegistrationResult]
+    val name               = Some("primary")
+    val akkaConnection     = AkkaConnection(ComponentId("TCS.primary", SequenceComponent))
+    val prefix             = Prefix("TCS.primary")
+    val akkaLocation       = AkkaLocation(akkaConnection, prefix, uri)
+
     "return successful RegistrationResult | ESW-144" in {
       implicit val system: ActorSystem[SpawnProtocol] = ActorSystem(SpawnProtocol.behavior, "test")
-
-      implicit val ec: ExecutionContext = system.executionContext
-      val coordinatedShutdown           = CoordinatedShutdown(system.toUntyped)
-      val retryCount                    = 2
-      val registrationResult            = mock[RegistrationResult]
-      val name                          = Some("primary")
-      val akkaConnection                = AkkaConnection(ComponentId("TCS.primary", SequenceComponent))
-      val prefix                        = Prefix("TCS.primary")
-      val akkaLocation                  = AkkaLocation(akkaConnection, prefix, uri)
+      implicit val ec: ExecutionContext               = system.executionContext
+      val coordinatedShutdown                         = CoordinatedShutdown(system.toUntyped)
+      val locationService                             = mock[LocationService]
 
       when(registrationResult.location).thenReturn(akkaLocation)
       when(registrationResult.unregister()).thenReturn(Future.successful(Done))
@@ -59,7 +58,7 @@ class SequenceComponentRegistrationTest extends ScalaTestWithActorTestKit with B
         )
 
       sequenceComponentRegistration
-        .registerWithRetry(retryCount)
+        .registerSequenceComponent(retryCount)
         .rightValue should ===(
         akkaLocation
       )
@@ -67,24 +66,17 @@ class SequenceComponentRegistrationTest extends ScalaTestWithActorTestKit with B
       verify(registrationResult).unregister()
     }
 
-    "retry if OtherLocationIsRegistered | ESW-144" in {
+    "map location service registration failure to RegistrationError | ESW-144" in {
       implicit val system: ActorSystem[SpawnProtocol] = ActorSystem(SpawnProtocol.behavior, "test")
+      val errorMsg                                    = "error message"
+      val locationService                             = mock[LocationService]
 
-      val name           = Some("primary")
-      val akkaConnection = AkkaConnection(ComponentId("TCS.primary", SequenceComponent))
-      val prefix         = Prefix("TCS.primary")
-      val akkaLocation   = AkkaLocation(akkaConnection, prefix, uri)
-
-      val coordinatedShutdown = CoordinatedShutdown(system.toUntyped)
-      val errorMsg            = "error message"
-      val retryCount          = 1
-      val registrationResult  = mock[RegistrationResult]
-
+      when(locationService.register(any[AkkaRegistration]))
+        .thenReturn(
+          Future.failed(OtherLocationIsRegistered(errorMsg))
+        )
       when(registrationResult.location).thenReturn(akkaLocation)
       when(registrationResult.unregister()).thenReturn(Future.successful(Done))
-      when(locationService.register(any[AkkaRegistration]))
-        .thenReturn(Future.failed(OtherLocationIsRegistered(errorMsg)), Future.successful(registrationResult))
-      when(locationService.list(ComponentType.SequenceComponent)).thenReturn(Future.successful(List(akkaLocation)))
 
       val sequenceComponentProbe: TestProbe[SequenceComponentMsg] = TestProbe[SequenceComponentMsg]()
       def sequenceComponentFactory(sequenceComponentName: String): Future[ActorRef[SequenceComponentMsg]] =
@@ -93,7 +85,82 @@ class SequenceComponentRegistrationTest extends ScalaTestWithActorTestKit with B
       val sequenceComponentRegistration =
         new SequenceComponentRegistration(subsystem, name, locationService, sequenceComponentFactory)
 
-      val regResult = sequenceComponentRegistration.registerWithRetry(retryCount)
+      sequenceComponentRegistration
+        .registerSequenceComponent(retryCount)
+        .leftValue should ===(
+        RegistrationError(errorMsg)
+      )
+
+      //assert that No retry attempt in case of subsystem and name are provided
+      verify(locationService, times(1)).register(any[AkkaRegistration])
+    }
+  }
+
+  "registerSequenceComponent without name" must {
+    val registrationResult = mock[RegistrationResult]
+    val akkaConnection     = AkkaConnection(ComponentId("TCS.TCS_23", SequenceComponent))
+    val prefix             = Prefix("TCS.TCS_23")
+    val akkaLocation       = AkkaLocation(akkaConnection, prefix, uri)
+    val locationService    = mock[LocationService]
+
+    "return successful RegistrationResult | ESW-144" in {
+      implicit val system: ActorSystem[SpawnProtocol] = ActorSystem(SpawnProtocol.behavior, "test")
+      implicit val ec: ExecutionContext               = system.executionContext
+      val coordinatedShutdown                         = CoordinatedShutdown(system.toUntyped)
+      val retryCount                                  = 2
+
+      when(locationService.register(any[AkkaRegistration])).thenReturn(Future(registrationResult))
+      when(registrationResult.location).thenReturn(akkaLocation)
+      when(registrationResult.unregister()).thenReturn(Future.successful(Done))
+
+      val sequenceComponentProbe: TestProbe[SequenceComponentMsg] = TestProbe[SequenceComponentMsg]()
+      def sequenceComponentFactory(sequenceComponentName: String): Future[ActorRef[SequenceComponentMsg]] =
+        Future.successful(sequenceComponentProbe.ref)
+      val sequenceComponentRegistration =
+        new SequenceComponentRegistration(
+          subsystem,
+          None,
+          locationService,
+          sequenceComponentFactory
+        )
+
+      sequenceComponentRegistration
+        .registerSequenceComponent(retryCount)
+        .rightValue should ===(
+        akkaLocation
+      )
+
+      coordinatedShutdown.run(UnknownReason).futureValue
+      verify(registrationResult).unregister()
+    }
+
+    "retry if OtherLocationIsRegistered | ESW-144" in {
+      implicit val system: ActorSystem[SpawnProtocol] = ActorSystem(SpawnProtocol.behavior, "test")
+      val coordinatedShutdown                         = CoordinatedShutdown(system.toUntyped)
+      val locationService                             = mock[LocationService]
+
+      val errorMsg           = "error message"
+      val retryCount         = 1
+      val registrationResult = mock[RegistrationResult]
+
+      when(locationService.register(any[AkkaRegistration]))
+        .thenReturn(
+          Future.failed(OtherLocationIsRegistered(errorMsg)),
+          Future.successful(registrationResult)
+        )
+      when(registrationResult.location).thenReturn(akkaLocation)
+      when(registrationResult.unregister()).thenReturn(Future.successful(Done))
+
+      val sequenceComponentProbe: TestProbe[SequenceComponentMsg] = TestProbe[SequenceComponentMsg]()
+      def sequenceComponentFactory(sequenceComponentName: String): Future[ActorRef[SequenceComponentMsg]] =
+        Future.successful(sequenceComponentProbe.ref)
+
+      val sequenceComponentRegistration =
+        new SequenceComponentRegistration(subsystem, None, locationService, sequenceComponentFactory)
+
+      val regResult = sequenceComponentRegistration.registerSequenceComponent(retryCount)
+
+      //Assert that sequenceComponentActor ref receives Stop message once when OtherLocationIsRegistered is received
       sequenceComponentProbe.expectMessage(Stop)
       regResult.rightValue should ===(akkaLocation)
       coordinatedShutdown.run(UnknownReason).futureValue
@@ -102,31 +169,26 @@ class SequenceComponentRegistrationTest extends ScalaTestWithActorTestKit with B
 
     "not retry if RegistrationFailed | ESW-144" in {
       implicit val system: ActorSystem[SpawnProtocol] = ActorSystem(SpawnProtocol.behavior, "test")
+      implicit val ec: ExecutionContext               = system.executionContext
+      val locationService                             = mock[LocationService]
 
-      val name           = Some("primary")
-      val akkaConnection = AkkaConnection(ComponentId("TCS.primary", SequenceComponent))
-      val prefix         = Prefix("TCS.primary")
-      val akkaLocation   = AkkaLocation(akkaConnection, prefix, uri)
+      val errorMsg           = "error message"
+      val retryCount         = 3
+      val registrationResult = mock[RegistrationResult]
 
-      implicit val ec: ExecutionContext = system.executionContext
-      val errorMsg                      = "error message"
-      val retryCount                    = 3
-      val registrationResult            = mock[RegistrationResult]
-
-      when(registrationResult.location).thenReturn(akkaLocation)
-      when(registrationResult.unregister()).thenReturn(Future.successful(Done))
       when(locationService.register(any[AkkaRegistration]))
         .thenReturn(Future.failed(RegistrationFailed(errorMsg)), Future(registrationResult))
-      when(locationService.list(ComponentType.SequenceComponent)).thenReturn(Future.successful(List(akkaLocation)))
+      when(registrationResult.location).thenReturn(akkaLocation)
+      when(registrationResult.unregister()).thenReturn(Future.successful(Done))
 
       val sequenceComponentProbe: TestProbe[SequenceComponentMsg] = TestProbe[SequenceComponentMsg]()
       def sequenceComponentFactory(sequenceComponentName: String): Future[ActorRef[SequenceComponentMsg]] =
         Future.successful(sequenceComponentProbe.ref)
 
       val sequenceComponentRegistration =
-        new SequenceComponentRegistration(subsystem, name, locationService, sequenceComponentFactory)
+        new SequenceComponentRegistration(subsystem, None, locationService, sequenceComponentFactory)
       sequenceComponentRegistration
-        .registerWithRetry(retryCount)
+        .registerSequenceComponent(retryCount)
         .leftValue should ===(
         RegistrationError(errorMsg)
       )
@@ -135,36 +197,34 @@ class SequenceComponentRegistrationTest extends ScalaTestWithActorTestKit with B
 
     "map location service registration failure to RegistrationError if could not register after retry attempts | ESW-144" in {
       implicit val system: ActorSystem[SpawnProtocol] = ActorSystem(SpawnProtocol.behavior, "test")
-      val name                                        = Some("primary")
-      val akkaConnection                              = AkkaConnection(ComponentId("TCS.primary", SequenceComponent))
-      val prefix                                      = Prefix("TCS.primary")
-      val akkaLocation                                = AkkaLocation(akkaConnection, prefix, uri)
+      val locationService                             = mock[LocationService]
 
       val errorMsg   = "error message"
       val retryCount = 2
+
       when(locationService.register(any[AkkaRegistration]))
         .thenReturn(
           Future.failed(OtherLocationIsRegistered(errorMsg)),
           Future.failed(OtherLocationIsRegistered(errorMsg)),
           Future.failed(OtherLocationIsRegistered(errorMsg))
         )
-      when(locationService.list(ComponentType.SequenceComponent)).thenReturn(Future.successful(List(akkaLocation)))
+      when(registrationResult.location).thenReturn(akkaLocation)
+      when(registrationResult.unregister()).thenReturn(Future.successful(Done))
 
       val sequenceComponentProbe: TestProbe[SequenceComponentMsg] = TestProbe[SequenceComponentMsg]()
       def sequenceComponentFactory(sequenceComponentName: String): Future[ActorRef[SequenceComponentMsg]] =
         Future.successful(sequenceComponentProbe.ref)
 
       val sequenceComponentRegistration =
-        new SequenceComponentRegistration(subsystem, name, locationService, sequenceComponentFactory)
+        new SequenceComponentRegistration(subsystem, None, locationService, sequenceComponentFactory)
 
       sequenceComponentRegistration
-        .registerWithRetry(retryCount)
+        .registerSequenceComponent(retryCount)
         .leftValue should ===(
         RegistrationError(errorMsg)
       )
       system.terminate()
     }
-
   }
 
 }

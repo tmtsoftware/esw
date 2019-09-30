@@ -47,7 +47,7 @@ private[ocs] class SequenceComponentWiring(
     new SequenceComponentRegistration(subsystem, name, locationService, sequenceComponentFactory)
 
   def start(): Either[RegistrationError, AkkaLocation] =
-    sequenceComponentRegistration.registerWithRetry(registrationRetryCount).block
+    sequenceComponentRegistration.registerSequenceComponent(registrationRetryCount).block
 
 }
 // $COVERAGE-ON$
