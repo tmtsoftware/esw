@@ -19,7 +19,7 @@ trait CommandApi {
 
   def subscribeCurrentState(
       componentId: ComponentId,
-      stateNames: Set[StateName],
-      maxFrequency: Option[Int]
+      stateNames: Set[StateName] = Set.empty,
+      maxFrequency: Option[Int] = None
   ): Source[CurrentState, Future[StreamStatus]]
 }

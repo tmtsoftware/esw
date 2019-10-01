@@ -54,7 +54,7 @@ class EventImpl(eventService: EventService, eventSubscriberUtil: EventSubscriber
   def pSubscribe(
       subsystem: Subsystem,
       maxFrequency: Option[Int],
-      pattern: String = "*"
+      pattern: String
   ): Source[Event, Future[StreamStatus]] = {
 
     def events: Source[Event, EventSubscription] = subscriber.pSubscribe(subsystem, pattern)

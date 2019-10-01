@@ -31,7 +31,7 @@ class EventClient(postClient: Transport[PostRequest], websocketClient: Transport
   override def pSubscribe(
       subsystem: Subsystem,
       maxFrequency: Option[Int],
-      pattern: String = "*"
+      pattern: String
   ): Source[Event, Future[StreamStatus]] = {
     websocketClient.requestStreamWithStatus[Event](
       SubscribeWithPattern(subsystem, maxFrequency, pattern)
