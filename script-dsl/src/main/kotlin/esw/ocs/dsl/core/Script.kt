@@ -2,7 +2,9 @@ package esw.ocs.dsl.core
 
 import akka.actor.typed.ActorSystem
 import csw.command.client.CommandResponseManager
+import csw.event.api.javadsl.IEventPublisher
 import csw.event.api.javadsl.IEventService
+import csw.event.api.javadsl.IEventSubscriber
 import csw.location.api.javadsl.ILocationService
 import csw.location.models.AkkaLocation
 import csw.params.commands.CommandResponse.SubmitResponse
@@ -20,22 +22,29 @@ import esw.ocs.dsl.highlevel.CswHighLevelDsl
 import esw.ocs.dsl.internal.nullable
 import esw.ocs.dsl.utils.CswExtensions
 import esw.ocs.macros.StrandEc
+import java.util.concurrent.CompletionStage
+import kotlin.coroutines.CoroutineContext
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.asCoroutineDispatcher
 import kotlinx.coroutines.future.await
 import kotlinx.coroutines.future.future
 import kotlinx.coroutines.launch
-import java.util.concurrent.CompletionStage
-import kotlin.coroutines.CoroutineContext
 
 sealed class ScriptDslKt : CoroutineScope, CswHighLevelDsl, CswExtensions {
 
     abstract val cswServices: CswServices
+    val eventService: IEventService by lazy { cswServices.eventService() }
 
     override val actorSystem: ActorSystem<*> by lazy { cswServices.actorSystem() }
     override val locationService: ILocationService by lazy { cswServices.locationService() }
-    override val eventService: IEventService by lazy { cswServices.eventService() }
+    override val locationServiceUtil: LocationServiceUtil by lazy {
+        LocationServiceUtil(locationService.asScala(), actorSystem)
+    }
+
+    override val defaultPublisher: IEventPublisher by lazy { eventService.defaultPublisher() }
+    override val defaultSubscriber: IEventSubscriber by lazy { eventService.defaultSubscriber() }
+
     override val crm: CommandResponseManager by lazy { cswServices.crm() }
     override val sequencerAdminFactory: SequencerAdminFactoryApi by lazy {
         cswServices.sequencerAdminFactory()

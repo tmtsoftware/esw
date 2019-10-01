@@ -3,27 +3,23 @@ package esw.ocs.dsl.highlevel
 import akka.Done
 import akka.actor.Cancellable
 import csw.event.api.javadsl.IEventPublisher
-import csw.event.api.javadsl.IEventService
 import csw.event.api.javadsl.IEventSubscriber
 import csw.event.api.javadsl.IEventSubscription
 import csw.params.core.generics.Parameter
 import csw.params.core.models.Prefix
 import csw.params.events.*
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.future.await
-import kotlinx.coroutines.future.future
 import java.util.*
 import kotlin.time.Duration
 import kotlin.time.toJavaDuration
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.future.await
+import kotlinx.coroutines.future.future
 
 interface EventServiceDsl : CoroutineScope {
-    val eventService: IEventService
 
-    private val defaultPublisher: IEventPublisher
-        get() = eventService.defaultPublisher()
+    val defaultPublisher: IEventPublisher
 
-    private val defaultSubscriber: IEventSubscriber
-        get() = eventService.defaultSubscriber()
+    val defaultSubscriber: IEventSubscriber
 
     fun systemEvent(sourcePrefix: String, eventName: String, vararg parameters: Parameter<*>): SystemEvent =
         SystemEvent(Prefix(sourcePrefix), EventName(eventName)).jMadd(parameters.toSet())

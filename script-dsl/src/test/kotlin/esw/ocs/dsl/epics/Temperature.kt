@@ -1,7 +1,8 @@
 package esw.ocs.dsl.epics
 
 import akka.Done
-import csw.event.api.javadsl.IEventService
+import csw.event.api.javadsl.IEventPublisher
+import csw.event.api.javadsl.IEventSubscriber
 import csw.event.api.javadsl.IEventSubscription
 import csw.params.events.Event
 import esw.ocs.dsl.utils.bgLoop
@@ -16,7 +17,10 @@ abstract class TestMachine(name: String, init: String) : Machine(name, init) {
     private var database = mutableMapOf<String, Event>()
     private var subscriptions = mutableMapOf<String, List<SubscriptionCallback>>()
 
-    override val eventService: IEventService
+    override val defaultPublisher: IEventPublisher
+        get() = TODO("not implemented") // To change initializer of created properties use File | Settings | File Templates.
+
+    override val defaultSubscriber: IEventSubscriber
         get() = TODO("not implemented") // To change initializer of created properties use File | Settings | File Templates.
 
     private val mockedEventSubscription = object : IEventSubscription {

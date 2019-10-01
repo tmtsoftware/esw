@@ -3,7 +3,6 @@ package esw.ocs.dsl.highlevel
 import akka.Done.done
 import akka.actor.Cancellable
 import csw.event.api.javadsl.IEventPublisher
-import csw.event.api.javadsl.IEventService
 import csw.event.api.javadsl.IEventSubscriber
 import csw.event.api.javadsl.IEventSubscription
 import csw.params.core.models.Prefix
@@ -13,10 +12,10 @@ import io.kotlintest.specs.WordSpec
 import io.mockk.every
 import io.mockk.mockk
 import io.mockk.verify
-import kotlinx.coroutines.Job
 import java.util.concurrent.CompletableFuture
 import kotlin.coroutines.CoroutineContext
 import kotlin.time.milliseconds
+import kotlinx.coroutines.Job
 
 class EventServiceDslTest : WordSpec({
 
@@ -34,24 +33,22 @@ class EventServiceDslTest : WordSpec({
 
         val eventPublisher: IEventPublisher = mockk()
         val eventSubscriber: IEventSubscriber = mockk()
-        val _eventService: IEventService = mockk()
 
         init {
-            every { _eventService.defaultPublisher() }.answers { eventPublisher }
-            every { _eventService.defaultSubscriber() }.answers { eventSubscriber }
             eventKeys.add(EventKey.apply(key))
             eventSet.add(event)
         }
 
         val eventServiceDsl = object : EventServiceDsl {
             override val coroutineContext: CoroutineContext = Job()
-            override val eventService: IEventService = _eventService
+            override val defaultPublisher: IEventPublisher = eventPublisher
+            override val defaultSubscriber: IEventSubscriber = eventSubscriber
         }
     }
 
     "EventServiceDsl" should {
 
-        "systemEvent should return a SystemEvent created with given parameters"{
+        "systemEvent should return a SystemEvent created with given parameters" {
             with(Mocks()) {
                 val eventName = "systemEvent1"
                 val eventPrefix = "TCS.filter.wheel"
@@ -68,7 +65,7 @@ class EventServiceDslTest : WordSpec({
             }
         }
 
-        "observeEvent should return a ObserveEvent created with given parameters"{
+        "observeEvent should return a ObserveEvent created with given parameters" {
             with(Mocks()) {
                 val eventName = "observeEvent1"
                 val eventPrefix = "TCS.filter.wheel"
@@ -92,7 +89,6 @@ class EventServiceDslTest : WordSpec({
 
                 eventServiceDsl.publishEvent(event) shouldBe done()
 
-                verify { _eventService.defaultPublisher() }
                 verify { eventPublisher.publish(event) }
             }
         }
@@ -103,7 +99,6 @@ class EventServiceDslTest : WordSpec({
 
                 eventServiceDsl.publishEvent(duration) { event } shouldBe cancellable
 
-                verify { _eventService.defaultPublisher() }
                 verify { eventPublisher.publishAsync(any(), any()) }
             }
         }
@@ -114,10 +109,8 @@ class EventServiceDslTest : WordSpec({
 
                 eventServiceDsl.onEvent(key) { eventCallback } shouldBe eventSubscription
 
-                verify { _eventService.defaultSubscriber() }
                 verify { eventSubscriber.subscribeAsync(eventKeys, any()) }
             }
-
         }
 
         "getEvent should delegate to subscriber.get" {
@@ -126,7 +119,6 @@ class EventServiceDslTest : WordSpec({
 
                 eventServiceDsl.getEvent(key) shouldBe eventSet
 
-                verify { _eventService.defaultSubscriber() }
                 verify { eventSubscriber.get(eventKeys) }
             }
         }

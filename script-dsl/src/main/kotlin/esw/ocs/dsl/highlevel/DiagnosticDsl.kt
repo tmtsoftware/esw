@@ -1,10 +1,8 @@
 package esw.ocs.dsl.highlevel
 
-import akka.actor.typed.ActorSystem
 import csw.command.client.messages.DiagnosticDataMessage
 import csw.command.client.messages.DiagnosticDataMessage.DiagnosticMode
 import csw.command.client.messages.DiagnosticDataMessage.`OperationsMode$`
-import csw.location.api.javadsl.ILocationService
 import csw.location.models.ComponentType
 import csw.time.core.models.UTCTime
 import esw.dsl.sequence_manager.LocationServiceUtil
@@ -15,10 +13,8 @@ import kotlinx.coroutines.future.await
 interface DiagnosticDsl {
 
     val sequencerAdminFactory: SequencerAdminFactoryApi
-    val actorSystem: ActorSystem<*>
-    val locationService: ILocationService
-    private val locationServiceUtil: LocationServiceUtil
-        get() = LocationServiceUtil(locationService.asScala(), actorSystem)
+
+    val locationServiceUtil: LocationServiceUtil
 
     suspend fun diagnosticModeForComponent(
         componentName: String,
