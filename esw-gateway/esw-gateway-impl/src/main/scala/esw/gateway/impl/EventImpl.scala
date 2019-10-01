@@ -10,7 +10,7 @@ import csw.params.core.models.Subsystem
 import csw.params.events.{Event, EventKey}
 import esw.gateway.api.EventApi
 import esw.gateway.api.protocol._
-import msocket.api.utils.StreamStatus
+import msocket.api.models.StreamStatus
 
 import scala.concurrent.{ExecutionContext, Future}
 import scala.util.{Failure, Success}

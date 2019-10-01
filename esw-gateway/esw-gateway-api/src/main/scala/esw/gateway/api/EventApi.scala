@@ -5,7 +5,7 @@ import akka.stream.scaladsl.Source
 import csw.params.core.models.Subsystem
 import csw.params.events.{Event, EventKey}
 import esw.gateway.api.protocol.{EventServerUnavailable, GetEventError}
-import msocket.api.utils.StreamStatus
+import msocket.api.models.StreamStatus
 
 import scala.concurrent.Future
 

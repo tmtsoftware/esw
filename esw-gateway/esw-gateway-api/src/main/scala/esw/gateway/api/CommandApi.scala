@@ -7,7 +7,7 @@ import csw.params.commands.ControlCommand
 import csw.params.core.models.Id
 import csw.params.core.states.{CurrentState, StateName}
 import esw.gateway.api.protocol.InvalidComponent
-import msocket.api.utils.StreamStatus
+import msocket.api.models.StreamStatus
 
 import scala.concurrent.Future
 

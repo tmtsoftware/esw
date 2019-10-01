@@ -1,6 +1,6 @@
 package esw.gateway.api.protocol
 
-import msocket.api.utils.StreamError
+import msocket.api.models.StreamError
 
 case class InvalidComponent(msg: String) {
   def toStreamError = StreamError(this.getClass.getSimpleName, msg)

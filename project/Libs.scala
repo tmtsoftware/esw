@@ -5,7 +5,7 @@ import sbt._
 object Libs {
   private val ScalaVersion: String = EswKeys.scalaVersion
   private val SilencerVersion      = "1.4.2"
-  private val MSocketVersion       = "18b028f"
+  private val MSocketVersion       = "14f4e3e"
 
   // fixme: find appropriate place to keep kotlin test scripts used in integration-test project
   val `examples` = "com.github.tmtsoftware.script-dsl" % "examples" % "e687b1d155"

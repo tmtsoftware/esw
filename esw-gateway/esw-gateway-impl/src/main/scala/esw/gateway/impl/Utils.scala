@@ -1,7 +1,8 @@
 package esw.gateway.impl
 
-import akka.stream.scaladsl.Source
-import msocket.api.utils.{StreamError, StreamSuccess}
+import akka.stream.KillSwitches
+import akka.stream.scaladsl.{Keep, Source}
+import msocket.api.models.{StreamError, StreamStarted}
 
 import scala.concurrent.Future
 import scala.concurrent.duration.FiniteDuration
@@ -13,7 +14,9 @@ object Utils {
   def emptySourceWithError[S](error: StreamError): Source[S, Future[StreamError]] =
     Source.empty.mapMaterializedValue(_ => Future.successful(error))
 
-  def sourceWithNoError[O, M](source: Source[O, M]): Source[O, Future[StreamSuccess.type]] = {
-    source.mapMaterializedValue(_ => Future.successful(StreamSuccess))
+  def sourceWithNoError[O, M](source: Source[O, M]): Source[O, Future[StreamStarted]] = {
+    source
+      .viaMat(KillSwitches.single)(Keep.right)
+      .mapMaterializedValue(switch => Future.successful(StreamStarted(() => switch.shutdown())))
   }
 }
