@@ -40,7 +40,7 @@ class SequencerAppIntegrationTest extends ScalaTestFrameworkTestKit with BaseTes
   }
 
   "SequenceComponent command" must {
-    "start sequence component with provided prefix and register it with location service | ESW-102, ESW-103, ESW-147, ESW-151, ESW-214" in {
+    "start sequence component with provided subsystem and name and register it with location service | ESW-102, ESW-103, ESW-147, ESW-151, ESW-214" in {
       val subsystem    = Subsystem.ESW
       val name: String = "primary"
 
@@ -81,6 +81,18 @@ class SequencerAppIntegrationTest extends ScalaTestFrameworkTestKit with BaseTes
       probe2.expectMessage(Done)
     }
 
+    "start sequence component and register with automatically generated random uniqueIDs if name is not provided| ESW-144" in {
+      val subsystem = Subsystem.ESW
+
+      SequencerApp.run(SequenceComponent(subsystem, None), enableLogging = false)
+
+      val sequenceComponentLocation = testLocationService.list(ComponentType.SequenceComponent).futureValue.head
+
+      //assert that componentName and prefix contain subsystem provided
+      sequenceComponentLocation.connection.componentId.name.contains("ESW.ESW_") shouldEqual true
+      sequenceComponentLocation.asInstanceOf[AkkaLocation].prefix.prefix.contains("ESW.ESW_") shouldEqual true
+    }
+
     "start sequence component concurrently and register with automatically generated random uniqueIDs if name is not provided| ESW-144" in {
       val subsystem = Subsystem.ESW
 
@@ -103,18 +115,6 @@ class SequencerAppIntegrationTest extends ScalaTestFrameworkTestKit with BaseTes
           location.asInstanceOf[AkkaLocation].prefix.prefix.contains("ESW.ESW_") shouldEqual true
         }
       }
-    }
-
-    "start sequence component and register with automatically generated random uniqueIDs if name is not provided| ESW-144" in {
-      val subsystem = Subsystem.ESW
-
-      SequencerApp.run(SequenceComponent(subsystem, None), enableLogging = false)
-
-      val sequenceComponentLocation = testLocationService.list(ComponentType.SequenceComponent).futureValue.head
-
-      //assert that componentName and prefix contain subsystem provided
-      sequenceComponentLocation.connection.componentId.name.contains("ESW.ESW_") shouldEqual true
-      sequenceComponentLocation.asInstanceOf[AkkaLocation].prefix.prefix.contains("ESW.ESW_") shouldEqual true
     }
   }
 
