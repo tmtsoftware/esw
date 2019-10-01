@@ -11,6 +11,7 @@ import csw.params.core.models.Id
 import csw.params.core.states.{CurrentState, StateName}
 import esw.gateway.api.CommandApi
 import esw.gateway.api.protocol.{InvalidComponent, InvalidMaxFrequency}
+import esw.gateway.impl.SourceExtensions.RichSource
 import msocket.api.models.StreamStatus
 
 import scala.concurrent.duration.DurationInt
@@ -54,9 +55,9 @@ class CommandImpl(commandService: ComponentId => Future[CommandService])(
 
     def futureSource: Future[Source[CurrentState, Future[StreamStatus]]] =
       commandService(componentId)
-        .map(commandService => Utils.sourceWithNoError(commandService.subscribeCurrentState(stateNames)))
+        .map(commandService => commandService.subscribeCurrentState(stateNames).withSubscription())
         .recover {
-          case NonFatal(ex) => Utils.emptySourceWithError(InvalidComponent(ex.getMessage).toStreamError)
+          case NonFatal(ex) => Source.empty.withError(InvalidComponent(ex.getMessage).toStreamError)
         }
 
     def currentStateSource: Source[CurrentState, Future[StreamStatus]] = {
@@ -64,7 +65,7 @@ class CommandImpl(commandService: ComponentId => Future[CommandService])(
     }
 
     maxFrequency match {
-      case Some(x) if x <= 0 => Utils.emptySourceWithError(InvalidMaxFrequency.toStreamError)
+      case Some(x) if x <= 0 => Source.empty.withError(InvalidMaxFrequency.toStreamError)
       case Some(frequency)   => currentStateSource.buffer(1, OverflowStrategy.dropHead).throttle(frequency, 1.second)
       case None              => currentStateSource
     }

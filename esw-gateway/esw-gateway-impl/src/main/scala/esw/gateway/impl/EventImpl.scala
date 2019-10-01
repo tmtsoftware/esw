@@ -14,6 +14,7 @@ import msocket.api.models.StreamStatus
 
 import scala.concurrent.{ExecutionContext, Future}
 import scala.util.{Failure, Success}
+import SourceExtensions.RichSource
 
 class EventImpl(eventService: EventService, eventSubscriberUtil: EventSubscriberUtil)(implicit ec: ExecutionContext)
     extends EventApi {
@@ -42,15 +43,12 @@ class EventImpl(eventService: EventService, eventSubscriberUtil: EventSubscriber
     if (eventKeys.nonEmpty) {
       maxFrequency match {
         case Some(x) if x <= 0 =>
-          Utils.emptySourceWithError(InvalidMaxFrequency.toStreamError)
+          Source.empty.withError(InvalidMaxFrequency.toStreamError)
         case Some(frequency) =>
-          Utils.sourceWithNoError(
-            subscriber.subscribe(eventKeys, Utils.maxFrequencyToDuration(frequency), RateLimiterMode)
-          )
-        case None =>
-          Utils.sourceWithNoError(subscriber.subscribe(eventKeys))
+          subscriber.subscribe(eventKeys, Utils.maxFrequencyToDuration(frequency), RateLimiterMode).withSubscription()
+        case None => subscriber.subscribe(eventKeys).withSubscription()
       }
-    } else Utils.emptySourceWithError(EmptyEventKeys.toStreamError)
+    } else Source.empty.withError(EmptyEventKeys.toStreamError)
   }
 
   def pSubscribe(
@@ -62,13 +60,11 @@ class EventImpl(eventService: EventService, eventSubscriberUtil: EventSubscriber
     def events: Source[Event, EventSubscription] = subscriber.pSubscribe(subsystem, pattern)
     maxFrequency match {
       case Some(x) if x <= 0 =>
-        Utils.emptySourceWithError(InvalidMaxFrequency.toStreamError)
+        Source.empty.withError(InvalidMaxFrequency.toStreamError)
       case Some(f) =>
-        Utils.sourceWithNoError(
-          events.via(eventSubscriberUtil.subscriptionModeStage(Utils.maxFrequencyToDuration(f), RateLimiterMode))
-        )
+        events.via(eventSubscriberUtil.subscriptionModeStage(Utils.maxFrequencyToDuration(f), RateLimiterMode)).withSubscription()
       case None =>
-        Utils.sourceWithNoError(events)
+        events.withSubscription()
     }
   }
 
