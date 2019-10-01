@@ -3,6 +3,7 @@ import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 
 plugins {
     java
+    `java-library`
     kotlin("jvm") version "1.3.50" apply false
     `maven-publish`
     id("org.jmailen.kotlinter") version "2.1.1"
@@ -35,15 +36,20 @@ subprojects {
         }
     }
 
+    /**
+     * Dependencies appearing in the api configurations will be transitively exposed to consumers of the library, and as
+     * such will appear on the compile classpath of consumers. Dependencies found in the implementation configuration will,
+     * on the other hand, not be exposed to consumers, and therefore not leak into the consumers' compile classpath
+     */
     dependencies {
-        implementation(kotlin("stdlib-jdk8"))
+        api(kotlin("stdlib-jdk8"))
         implementation("com.github.tmtsoftware.esw:esw-ocs-app_2.13:32dad6b3895ae959e8a6dcfc068406c980c6df7f")
-        compile("org.jetbrains.kotlinx", "kotlinx-coroutines-jdk8", "1.3.0")
-        compile("org.jetbrains.kotlin", "kotlin-script-runtime", "1.3.50")
+        api("org.jetbrains.kotlinx", "kotlinx-coroutines-jdk8", "1.3.0")
+        api("org.jetbrains.kotlin", "kotlin-script-runtime", "1.3.50")
 
         testImplementation("io.mockk:mockk:1.9")
         testImplementation("io.kotlintest:kotlintest-runner-junit5:3.3.2")
-        testCompile("junit", "junit", "4.12")
+        testImplementation("junit", "junit", "4.12")
     }
 
     tasks.withType<KotlinCompile>().configureEach {
