@@ -44,6 +44,7 @@ abstract class TestMachine(name: String, init: String) : Machine(name, init) {
     val tempKey = intKey("temp")
 }
 
+// ESW-228: SPIKE : snl , epics in kotlin env
 val machine1 = object : TestMachine("temp-get", "Init") {
 
     var temp = Var(0, "$prefix.temp", tempKey)

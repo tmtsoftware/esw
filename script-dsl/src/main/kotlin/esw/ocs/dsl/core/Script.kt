@@ -73,7 +73,7 @@ sealed class ScriptDslKt : CoroutineScope, CswHighLevelDsl, CswExtensions {
         scriptDsl.jHandleShutdown { block.toJavaFutureVoid() }
     }
 
-    fun handleDiagnosticMode(block: suspend (x: UTCTime, y: String) -> Unit) {
+    fun handleDiagnosticMode(block: suspend (UTCTime, String) -> Unit) {
         scriptDsl.jHandleDiagnosticMode { x: UTCTime, y: String -> future { block(x, y) }.thenAccept { } }
     }
 
