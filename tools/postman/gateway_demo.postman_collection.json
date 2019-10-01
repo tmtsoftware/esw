@@ -228,7 +228,7 @@
 				],
 				"body": {
 					"mode": "raw",
-					"raw": "{\n    \"SubscribeCurrentState\": {\n        \"componentId\": {\n            \"name\": \"SampleHcd\",\n            \"componentType\": \"HCD\"\n        },\n        \"stateNames\": [\n            \"stateName1\"\n        ],\n        \"maxFrequency\": [\n            2\n        ]\n    }\n}"
+					"raw": "{\n    \"SubscribeCurrentState\": {\n        \"componentId\": {\n            \"name\": \"SampleHcd\",\n            \"componentType\": \"HCD\"\n        },\n        \"stateNames\": [\n            \"stateName1\"\n        ],\n        \"maxFrequency\": 2\n    }\n}"
 				},
 				"url": {
 					"raw": "localhost:8090/websocket-endpoint",
@@ -260,7 +260,7 @@
 				],
 				"body": {
 					"mode": "raw",
-					"raw": "{\n    \"Subscribe\": {\n        \"eventKeys\": [\n            {\n                \"source\": \"wfos.blue.filter\",\n                \"eventName\": \"filter_wheel\"\n            }\n        ],\n        \"maxFrequency\": [\n            2\n        ]\n    }\n}"
+					"raw": "{\n    \"Subscribe\": {\n        \"eventKeys\": [\n            {\n                \"source\": \"wfos.blue.filter\",\n                \"eventName\": \"filter_wheel\"\n            }\n        ],\n        \"maxFrequency\": 2\n    }\n}"
 				},
 				"url": {
 					"raw": "localhost:8090/websocket-endpoint",

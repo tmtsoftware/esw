@@ -8,10 +8,10 @@ Content-Type: application/json
 GET http://localhost:8090/websocket-endpoint
 Content-Type: application/json
 
-{"SubscribeCurrentState": {"componentId": {"name": "SampleHcd", "componentType": "HCD"}, "stateNames": ["stateName1"], "maxFrequency": [2]}}
+{"SubscribeCurrentState": {"componentId": {"name": "SampleHcd", "componentType": "HCD"}, "stateNames": ["stateName1"], "maxFrequency": 2}}
 
 ### subscribe
 GET http://localhost:8090/websocket-endpoint
 Content-Type: application/json
 
-{"Subscribe": {"eventKeys": [{"source": "wfos.blue.filter", "eventName": "filter_wheel"}], "maxFrequency": [2]}}
+{"Subscribe": {"eventKeys": [{"source": "wfos.blue.filter", "eventName": "filter_wheel"}], "maxFrequency": 2}}
