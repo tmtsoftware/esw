@@ -13,7 +13,7 @@ import csw.location.api.exceptions.OtherLocationIsRegistered
 import csw.location.api.scaladsl.LocationService
 import csw.location.client.scaladsl.HttpLocationServiceFactory
 import csw.location.models.HttpRegistration
-import csw.network.utils.Networks
+import csw.network.utils.{Networks, SocketUtils}
 import csw.testkit.LocationTestKit
 import esw.http.core.BaseTestSuite
 
@@ -90,7 +90,8 @@ class HttpServiceTest extends BaseTestSuite {
 
       a[OtherLocationIsRegistered] shouldBe thrownBy(Await.result(httpService.registeredLazyBinding, 5.seconds))
 
-      //TODO: Find a way to assert server is not bounded
+      SocketUtils.isAddressInUse("localhost", 4007) shouldEqual false
+
       try Await.result(actorRuntime.shutdown(UnknownReason), 5.seconds)
       catch {
         case NonFatal(_) =>
