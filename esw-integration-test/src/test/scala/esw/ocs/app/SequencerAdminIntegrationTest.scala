@@ -175,7 +175,7 @@ class SequencerAdminIntegrationTest
     )
   }
 
-  "Go online and offline | ESW-194, ESW-222, ESW-101" in {
+  "Go online and offline | ESW-194, ESW-222, ESW-101, ESW-134" in {
     val sequence = Sequence(command1, command2)
 
     val seqResponse: Future[SubmitResponse] = sequencer ? (SubmitSequenceAndWait(sequence, _))
@@ -201,7 +201,7 @@ class SequencerAdminIntegrationTest
     sequencerAdmin.loadSequence(sequence).futureValue should ===(Ok)
   }
 
-  "DiagnosticMode and OperationsMode| ESW-143" in {
+  "DiagnosticMode and OperationsMode| ESW-143, ESW-134" in {
     val tcsSequencerWiring = new SequencerWiring("testSequencerId6", "testObservingMode6", None)
     tcsSequencerWiring.sequencerServer.start()
 
