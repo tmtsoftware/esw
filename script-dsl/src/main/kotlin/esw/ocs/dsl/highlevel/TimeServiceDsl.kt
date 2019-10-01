@@ -17,7 +17,7 @@ interface TimeServiceDsl : CoroutineScope {
             future { it() }.thenAccept { }
         }
 
-    // todo : Verify task works fine this way
+    // todo : Verify task gets scheduled on strandEc.
     suspend fun scheduleOnce(startTime: TMTTime, task: suspend () -> Unit): Cancellable =
         timeServiceScheduler.scheduleOnce(startTime, Runnable { task.toJavaFuture() })
 
