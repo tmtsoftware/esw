@@ -15,8 +15,8 @@ import io.kotlintest.specs.WordSpec
 import io.mockk.every
 import io.mockk.mockk
 import io.mockk.verify
-import scala.concurrent.Future
 import java.util.concurrent.CompletableFuture
+import scala.concurrent.Future
 
 class DiagnosticDslTest : WordSpec({
 

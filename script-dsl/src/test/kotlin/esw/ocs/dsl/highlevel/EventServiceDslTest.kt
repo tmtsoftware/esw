@@ -48,7 +48,7 @@ class EventServiceDslTest : WordSpec({
 
     "EventServiceDsl" should {
 
-        "systemEvent should return a SystemEvent created with given parameters" {
+        "systemEvent should return a SystemEvent created with given parameters | ESW-120" {
             with(Mocks()) {
                 val eventName = "systemEvent1"
                 val eventPrefix = "TCS.filter.wheel"
@@ -65,7 +65,7 @@ class EventServiceDslTest : WordSpec({
             }
         }
 
-        "observeEvent should return a ObserveEvent created with given parameters" {
+        "observeEvent should return a ObserveEvent created with given parameters | ESW-120" {
             with(Mocks()) {
                 val eventName = "observeEvent1"
                 val eventPrefix = "TCS.filter.wheel"
@@ -82,7 +82,7 @@ class EventServiceDslTest : WordSpec({
             }
         }
 
-        "publish should delegate to publisher.publish" {
+        "publish should delegate to publisher.publish | ESW-120" {
             with(Mocks()) {
                 every { (eventPublisher.publish(event)) }
                     .returns(CompletableFuture.completedFuture(done()))
@@ -93,7 +93,7 @@ class EventServiceDslTest : WordSpec({
             }
         }
 
-        "publishEvent should delegate to publisher.publishAsync" {
+        "publishEvent should delegate to publisher.publishAsync | ESW-120" {
             with(Mocks()) {
                 every { eventPublisher.publishAsync(any(), any()) }.answers { cancellable }
 
@@ -103,7 +103,7 @@ class EventServiceDslTest : WordSpec({
             }
         }
 
-        "onEvent should delegate to subscriber.subscribeAsync" {
+        "onEvent should delegate to subscriber.subscribeAsync | ESW-120" {
             with(Mocks()) {
                 every { eventSubscriber.subscribeAsync(eventKeys, any()) }.answers { eventSubscription }
 
@@ -113,7 +113,7 @@ class EventServiceDslTest : WordSpec({
             }
         }
 
-        "getEvent should delegate to subscriber.get" {
+        "getEvent should delegate to subscriber.get | ESW-120" {
             with(Mocks()) {
                 every { eventSubscriber.get(eventKeys) }.answers { CompletableFuture.completedFuture(eventSet) }
 
