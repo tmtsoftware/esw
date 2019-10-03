@@ -17,7 +17,7 @@ import csw.location.models.{AkkaLocation, AkkaRegistration, ComponentId, Compone
 import csw.logging.api.scaladsl.Logger
 import csw.logging.client.scaladsl.LoggerFactory
 import csw.network.utils.SocketUtils
-import esw.dsl.script.utils.ScriptLoader
+import esw.dsl.script.utils.{LockUnlockUtil, ScriptLoader}
 import esw.dsl.script.{CswServices, ScriptDsl}
 import esw.dsl.sequence_manager.LocationServiceUtil
 import esw.http.core.wiring.{ActorRuntime, CswWiring, HttpService, Settings}
@@ -65,6 +65,8 @@ private[ocs] class SequencerWiring(val sequencerId: String, val observingMode: S
   lazy private val locationServiceUtil = new LocationServiceUtil(locationService)
   lazy private val adminFactory        = new SequencerAdminFactoryImpl(locationServiceUtil)
 
+  lazy private val lockUnlockUtil = new LockUnlockUtil(locationServiceUtil)(actorSystem)
+
   lazy val jLocationService: ILocationService = JHttpLocationServiceFactory.makeLocalClient(actorSystem, actorRuntime.mat)
   lazy val jEventService: JEventService       = new JEventService(eventService)
   lazy val cswServices = new CswServices(
@@ -74,7 +76,8 @@ private[ocs] class SequencerWiring(val sequencerId: String, val observingMode: S
     jLocationService,
     jEventService,
     timeServiceSchedulerFactory,
-    adminFactory
+    adminFactory,
+    lockUnlockUtil
   )
 
   private lazy val sequencerAdmin   = new SequencerAdminImpl(sequencerRef)
