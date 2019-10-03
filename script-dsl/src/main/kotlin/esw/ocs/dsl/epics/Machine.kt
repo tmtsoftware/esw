@@ -5,9 +5,9 @@ import csw.params.core.generics.ParameterSetType
 import csw.params.events.EventKey
 import csw.params.events.SystemEvent
 import esw.ocs.dsl.highlevel.EventServiceDsl
-import esw.ocs.dsl.internal.nullable
+import esw.ocs.dsl.params.KeyKt
 import esw.ocs.dsl.utils.CswExtensions
-import esw.ocs.dsl.utils.KeyHolder
+import esw.ocs.dsl.utils.nullable
 import java.util.concurrent.Executors
 import kotlin.coroutines.CoroutineContext
 import kotlin.properties.ObservableProperty
@@ -61,12 +61,12 @@ abstract class Machine(private val name: String, init: String) : CoroutineScope,
         }
     }
 
-    fun <T> Var(initial: T, eventKey: String, key: KeyHolder<T>) = Var(initial, eventKey, this, this, key)
+    fun <T> Var(initial: T, eventKey: String, key: KeyKt<T>) = Var(initial, eventKey, this, this, key)
 
     inline fun <T> reactiveEvent(
         initial: T,
         eventKey: String,
-        keyHolder: KeyHolder<T>,
+        keyKt: KeyKt<T>,
         crossinline onChange: (oldValue: T, newValue: T) -> Unit
     ): ReadWriteProperty<Any?, T> =
         object : ObservableProperty<T>(initial) {
@@ -74,7 +74,7 @@ abstract class Machine(private val name: String, init: String) : CoroutineScope,
 
             init {
                 runBlocking {
-                    publishEvent(event(keyHolder.set(initial)))
+                    publishEvent(event(keyKt.set(initial)))
                 }
             }
 
@@ -88,12 +88,12 @@ abstract class Machine(private val name: String, init: String) : CoroutineScope,
             override fun getValue(thisRef: Any?, property: KProperty<*>): T =
                 runBlocking(coroutineContext) {
                     val paramType: ParameterSetType<*>? = getEvent(eventKey).first().paramType()
-                    paramType?.jGet(keyHolder.key)?.nullable()?.jGet(0)?.nullable() ?: initial
+                    paramType?.jGet(keyKt.key)?.nullable()?.jGet(0)?.nullable() ?: initial
                 }
 
             override fun setValue(thisRef: Any?, property: KProperty<*>, value: T) =
                 runBlocking(coroutineContext) {
-                    publishEvent(event(keyHolder.set(value)))
+                    publishEvent(event(keyKt.set(value)))
                     super.setValue(thisRef, property, value)
                 }
         }

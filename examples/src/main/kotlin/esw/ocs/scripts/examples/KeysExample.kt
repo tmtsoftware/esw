@@ -4,7 +4,7 @@ import csw.params.core.models.Prefix
 import csw.params.events.EventName
 import csw.params.events.SystemEvent
 import csw.params.javadsl.JUnits
-import esw.ocs.dsl.utils.*
+import esw.ocs.dsl.params.*
 
 // =================================================
 // ================= Sample Usage ==================

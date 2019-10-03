@@ -5,8 +5,8 @@ import csw.params.events.Event
 import csw.params.events.EventKey
 import csw.params.events.SystemEvent
 import esw.ocs.dsl.highlevel.EventServiceDsl
-import esw.ocs.dsl.internal.nullable
-import esw.ocs.dsl.utils.KeyHolder
+import esw.ocs.dsl.params.KeyKt
+import esw.ocs.dsl.utils.nullable
 
 interface Refreshable {
     suspend fun refresh(source: String)
@@ -17,22 +17,22 @@ class Var<T> internal constructor(
     private val eventKey: String,
     private val eventService: EventServiceDsl,
     private val refreshable: Refreshable,
-    private val keyHolder: KeyHolder<T>
+    private val keyKt: KeyKt<T>
 ) {
     private val _eventKey = EventKey.apply(eventKey)
-    private var _value: Event = event(keyHolder.set(initial))
+    private var _value: Event = event(keyKt.set(initial))
 
     // todo: should allow creating any type of event
     private fun event(param: Parameter<T>): SystemEvent =
         SystemEvent(_eventKey.source(), _eventKey.eventName()).add(param)
 
     fun set(value: T) {
-        _value = event(keyHolder.set(value))
+        _value = event(keyKt.set(value))
     }
 
     fun get(): T? {
         val paramType = _value.paramType()
-        return paramType.jGet(keyHolder.key).nullable()?.jGet(0)?.nullable()
+        return paramType.jGet(keyKt.key).nullable()?.jGet(0)?.nullable()
     }
 
     suspend fun pvPut() {

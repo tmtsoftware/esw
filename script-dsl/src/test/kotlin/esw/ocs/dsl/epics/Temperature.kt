@@ -5,8 +5,8 @@ import csw.event.api.javadsl.IEventPublisher
 import csw.event.api.javadsl.IEventSubscriber
 import csw.event.api.javadsl.IEventSubscription
 import csw.params.events.Event
+import esw.ocs.dsl.params.intKey
 import esw.ocs.dsl.utils.bgLoop
-import esw.ocs.dsl.utils.intKey
 import java.util.concurrent.CompletableFuture
 import kotlin.time.seconds
 import kotlinx.coroutines.runBlocking
