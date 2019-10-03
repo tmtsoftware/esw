@@ -2,5 +2,6 @@ rootProject.name = 'scripts'
 
 include(
         "script-dsl",
-        "examples"
+        "examples",
+        "integration-test"
 )
