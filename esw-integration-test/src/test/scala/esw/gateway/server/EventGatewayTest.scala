@@ -4,7 +4,7 @@ import akka.actor.CoordinatedShutdown.UnknownReason
 import akka.actor.typed.ActorSystem
 import akka.actor.typed.scaladsl.adapter.TypedActorSystemOps
 import akka.stream.Materializer
-import akka.stream.scaladsl.{Keep, Sink}
+import akka.stream.scaladsl.Sink
 import akka.{Done, actor}
 import csw.params.core.generics.KeyType
 import csw.params.core.models.{ArrayData, Prefix, Subsystem}
@@ -63,7 +63,7 @@ class EventGatewayTest extends ScalaTestFrameworkTestKit(EventServer) with WordS
       val eventClient: EventClient = new EventClient(postClient, websocketClient)
 
       val eventsF  = eventClient.subscribe(eventKeys, None).take(4).runWith(Sink.seq)
-      val pEventsF = eventClient.pSubscribe(Subsystem.TCS, None, "*").take(2).runWith(Sink.seq)
+      val pEventsF = eventClient.pSubscribe(Subsystem.TCS, None).take(2).runWith(Sink.seq)
       Thread.sleep(500)
 
       //publish event successfully
@@ -93,9 +93,9 @@ class EventGatewayTest extends ScalaTestFrameworkTestKit(EventServer) with WordS
         new WebsocketTransport[WebsocketRequest](s"ws://localhost:$port/websocket-endpoint")
       val eventClient: EventClient = new EventClient(postClient, websocketClient)
 
-      eventClient.subscribe(Set.empty, None).toMat(Sink.head)(Keep.left).run().futureValue should ===(
-        EmptyEventKeys.toStreamError
-      )
+      val (statusF, _) = eventClient.subscribe(Set.empty, None).preMaterialize()
+
+      statusF.futureValue should ===(EmptyEventKeys.toStreamError)
     }
 
   }
