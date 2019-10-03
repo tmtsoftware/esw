@@ -5,6 +5,7 @@ import csw.params.commands.CommandResponse.Error
 import esw.ocs.dsl.core.reusableScript
 import esw.ocs.dsl.core.script
 import esw.ocs.dsl.params.booleanKey
+import esw.ocs.dsl.params.set
 import kotlinx.coroutines.delay
 
 // ESW-134: Reuse code by ability to import logic from one script into another

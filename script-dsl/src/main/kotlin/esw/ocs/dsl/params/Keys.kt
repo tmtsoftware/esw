@@ -1,58 +1,70 @@
 package esw.ocs.dsl.params
 
+import csw.params.core.generics.Key
+import csw.params.core.generics.KeyType
+import csw.params.core.generics.Parameter
 import csw.params.core.models.*
 import csw.params.javadsl.JKeyType.*
+import csw.params.javadsl.JUnits
 import csw.time.core.models.TAITime
 import csw.time.core.models.UTCTime
 
-fun choicesOf(vararg choices: String): Choices = Choices.from(choices.toSet())
+/** ========== Key<T> extensions ======== **/
+val <T> Key<T>.keyName: String? get() = keyName()
+val <T> Key<T>.keyType: KeyType<T> get() = keyType()
+val <T> Key<T>.units: Units get() = units()
+fun <T> Key<T>.set(vararg elm: T, units: Units = JUnits.NoUnits): Parameter<T> = set(elm, units)
 
-// ============= Misc Keys ===========
-fun choiceKey(name: String, choices: Choices): KeyKt<Choice> = KeyKt(ChoiceKey().make(name, choices))
+/** ============= Misc Keys =========== **/
+fun choiceKey(name: String, choices: Choices): Key<Choice> = ChoiceKey().make(name, choices)
 
-fun choiceKey(name: String, vararg choices: Choice): KeyKt<Choice> =
-    KeyKt(ChoiceKey().make(name, Choices.fromChoices(choices.toSet())))
+fun choiceKey(name: String, vararg choices: Choice): Key<Choice> =
+    ChoiceKey().make(name, Choices.fromChoices(choices.toSet()))
 
-fun raDecKey(name: String): KeyKt<RaDec> = KeyKt(RaDecKey().make(name))
-fun eqCoordKey(name: String): KeyKt<Coords.EqCoord> = KeyKt(EqCoordKey().make(name))
-fun solarSystemCoordKey(name: String): KeyKt<Coords.SolarSystemCoord> = KeyKt(SolarSystemCoordKey().make(name))
-fun minorPlanetCoordKey(name: String): KeyKt<Coords.MinorPlanetCoord> = KeyKt(MinorPlanetCoordKey().make(name))
-fun cometCoordKey(name: String): KeyKt<Coords.CometCoord> = KeyKt(CometCoordKey().make(name))
-fun altAzCoordKey(name: String): KeyKt<Coords.AltAzCoord> = KeyKt(AltAzCoordKey().make(name))
-fun coordKey(name: String): KeyKt<Coords.Coord> = KeyKt(CoordKey().make(name))
-fun stringKey(name: String): KeyKt<String> = KeyKt(StringKey().make(name))
-fun structKey(name: String): KeyKt<Struct> = KeyKt(StructKey().make(name))
-fun utcTimeKey(name: String): KeyKt<UTCTime> = KeyKt(UTCTimeKey().make(name))
-fun taiTimeKey(name: String): KeyKt<TAITime> = KeyKt(TAITimeKey().make(name))
+fun raDecKey(name: String): Key<RaDec> = RaDecKey().make(name)
+fun eqCoordKey(name: String): Key<Coords.EqCoord> = EqCoordKey().make(name)
+fun solarSystemCoordKey(name: String): Key<Coords.SolarSystemCoord> = SolarSystemCoordKey().make(name)
+fun minorPlanetCoordKey(name: String): Key<Coords.MinorPlanetCoord> = MinorPlanetCoordKey().make(name)
+fun cometCoordKey(name: String): Key<Coords.CometCoord> = CometCoordKey().make(name)
+fun altAzCoordKey(name: String): Key<Coords.AltAzCoord> = AltAzCoordKey().make(name)
+fun coordKey(name: String): Key<Coords.Coord> = CoordKey().make(name)
+fun stringKey(name: String): Key<String> = StringKey().make(name)
+fun structKey(name: String): Key<Struct> = StructKey().make(name)
+fun utcTimeKey(name: String): Key<UTCTime> = UTCTimeKey().make(name)
+fun taiTimeKey(name: String): Key<TAITime> = TAITimeKey().make(name)
 
-// ============= Simple Keys ===========
-fun booleanKey(name: String): KeyKt<Boolean> = KeyKt(BooleanKey().make(name))
+/** ============= Simple Keys =========== **/
+fun booleanKey(name: String): Key<Boolean> = BooleanKey().make(name)
 
-fun charKey(name: String): KeyKt<Char> = KeyKt(CharKey().make(name))
-fun byteKey(name: String): KeyKt<Byte> = KeyKt(ByteKey().make(name))
-fun shortKey(name: String): KeyKt<Short> = KeyKt(ShortKey().make(name))
-fun longKey(name: String): KeyKt<Long> = KeyKt(LongKey().make(name))
-fun intKey(name: String): KeyKt<Int> = KeyKt(IntKey().make(name))
-fun floatKey(name: String): KeyKt<Float> = KeyKt(FloatKey().make(name))
-fun doubleKey(name: String): KeyKt<Double> = KeyKt(DoubleKey().make(name))
+fun charKey(name: String): Key<Char> = CharKey().make(name)
+fun byteKey(name: String): Key<Byte> = ByteKey().make(name)
+fun shortKey(name: String): Key<Short> = ShortKey().make(name)
+fun longKey(name: String): Key<Long> = LongKey().make(name)
+fun intKey(name: String): Key<Int> = IntKey().make(name)
+fun floatKey(name: String): Key<Float> = FloatKey().make(name)
+fun doubleKey(name: String): Key<Double> = DoubleKey().make(name)
 
-// ============= Array Keys ===========
-fun byteArrayKey(name: String): KeyKt<ArrayData<Byte>> = KeyKt(ByteArrayKey().make(name))
+/** =============  Array Keys =========== **/
+fun byteArrayKey(name: String): Key<ArrayData<Byte>> = ByteArrayKey().make(name)
 
-fun shortArrayKey(name: String): KeyKt<ArrayData<Short>> = KeyKt(ShortArrayKey().make(name))
-fun longArrayKey(name: String): KeyKt<ArrayData<Long>> = KeyKt(LongArrayKey().make(name))
-fun intArrayKey(name: String): KeyKt<ArrayData<Int>> = KeyKt(IntArrayKey().make(name))
-fun floatArrayKey(name: String): KeyKt<ArrayData<Float>> = KeyKt(FloatArrayKey().make(name))
-fun doubleArrayKey(name: String): KeyKt<ArrayData<Double>> = KeyKt(DoubleArrayKey().make(name))
+fun shortArrayKey(name: String): Key<ArrayData<Short>> = ShortArrayKey().make(name)
+fun longArrayKey(name: String): Key<ArrayData<Long>> = LongArrayKey().make(name)
+fun intArrayKey(name: String): Key<ArrayData<Int>> = IntArrayKey().make(name)
+fun floatArrayKey(name: String): Key<ArrayData<Float>> = FloatArrayKey().make(name)
+fun doubleArrayKey(name: String): Key<ArrayData<Double>> = DoubleArrayKey().make(name)
 
-// ============= Matrix Keys ===========
-fun byteMatrixKey(name: String): KeyKt<MatrixData<Byte>> = KeyKt(ByteMatrixKey().make(name))
+/** =============  Matrix Keys =========== **/
+fun byteMatrixKey(name: String): Key<MatrixData<Byte>> = ByteMatrixKey().make(name)
 
-fun shortMatrixKey(name: String): KeyKt<MatrixData<Short>> = KeyKt(ShortMatrixKey().make(name))
-fun longMatrixKey(name: String): KeyKt<MatrixData<Long>> = KeyKt(LongMatrixKey().make(name))
-fun intMatrixKey(name: String): KeyKt<MatrixData<Int>> = KeyKt(IntMatrixKey().make(name))
-fun floatMatrixKey(name: String): KeyKt<MatrixData<Float>> = KeyKt(FloatMatrixKey().make(name))
-fun doubleMatrixKey(name: String): KeyKt<MatrixData<Double>> = KeyKt(DoubleMatrixKey().make(name))
+fun shortMatrixKey(name: String): Key<MatrixData<Short>> = ShortMatrixKey().make(name)
+fun longMatrixKey(name: String): Key<MatrixData<Long>> = LongMatrixKey().make(name)
+fun intMatrixKey(name: String): Key<MatrixData<Int>> = IntMatrixKey().make(name)
+fun floatMatrixKey(name: String): Key<MatrixData<Float>> = FloatMatrixKey().make(name)
+fun doubleMatrixKey(name: String): Key<MatrixData<Double>> = DoubleMatrixKey().make(name)
 
+/** =============  Helpers =========== **/
 fun <T> arrayData(elms: Array<T>): ArrayData<T> = ArrayData.fromJavaArray(elms)
+
 inline fun <reified T> matrixData(elms: Array<Array<T>>): MatrixData<T> = MatrixData.fromJavaArrays(T::class.java, elms)
+
+fun choicesOf(vararg choices: String): Choices = Choices.from(choices.toSet())

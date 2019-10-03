@@ -21,6 +21,8 @@ interface EventServiceDsl : CoroutineScope {
 
     val defaultSubscriber: IEventSubscriber
 
+    fun eventKey(prefix: String, eventName: String): EventKey = EventKey(Prefix(prefix), EventName(eventName))
+
     fun systemEvent(sourcePrefix: String, eventName: String, vararg parameters: Parameter<*>): SystemEvent =
         SystemEvent(Prefix(sourcePrefix), EventName(eventName)).jMadd(parameters.toSet())
 
@@ -41,4 +43,9 @@ interface EventServiceDsl : CoroutineScope {
         defaultSubscriber.get(eventKeys.toEventKeys()).await().toSet()
 
     private fun (Array<out String>).toEventKeys(): Set<EventKey> = map { EventKey.apply(it) }.toSet()
+
+    /** ========== Extensions ============ **/
+    suspend fun IEventSubscription.cancel(): Done = unsubscribe().await()
+
+    suspend fun IEventSubscription.completed(): Done = ready().await()
 }

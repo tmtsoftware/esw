@@ -1,13 +1,13 @@
 package esw.ocs.dsl.epics
 
+import csw.params.core.generics.Key
 import csw.params.core.generics.Parameter
 import csw.params.core.generics.ParameterSetType
 import csw.params.events.EventKey
 import csw.params.events.SystemEvent
 import esw.ocs.dsl.highlevel.EventServiceDsl
-import esw.ocs.dsl.params.KeyKt
-import esw.ocs.dsl.utils.CswExtensions
-import esw.ocs.dsl.utils.nullable
+import esw.ocs.dsl.nullable
+import esw.ocs.dsl.params.set
 import java.util.concurrent.Executors
 import kotlin.coroutines.CoroutineContext
 import kotlin.properties.ObservableProperty
@@ -17,7 +17,7 @@ import kotlin.time.Duration
 import kotlinx.coroutines.*
 
 abstract class Machine(private val name: String, init: String) : CoroutineScope,
-    Refreshable, EventServiceDsl, CswExtensions {
+    Refreshable, EventServiceDsl {
 
     private val ec = Executors.newSingleThreadScheduledExecutor()
     private val job = Job()
@@ -61,12 +61,12 @@ abstract class Machine(private val name: String, init: String) : CoroutineScope,
         }
     }
 
-    fun <T> Var(initial: T, eventKey: String, key: KeyKt<T>) = Var(initial, eventKey, this, this, key)
+    fun <T> Var(initial: T, eventKey: String, key: Key<T>) = Var(initial, eventKey, this, this, key)
 
     inline fun <T> reactiveEvent(
         initial: T,
         eventKey: String,
-        keyKt: KeyKt<T>,
+        key: Key<T>,
         crossinline onChange: (oldValue: T, newValue: T) -> Unit
     ): ReadWriteProperty<Any?, T> =
         object : ObservableProperty<T>(initial) {
@@ -74,7 +74,7 @@ abstract class Machine(private val name: String, init: String) : CoroutineScope,
 
             init {
                 runBlocking {
-                    publishEvent(event(keyKt.set(initial)))
+                    publishEvent(event(key.set(initial)))
                 }
             }
 
@@ -88,12 +88,12 @@ abstract class Machine(private val name: String, init: String) : CoroutineScope,
             override fun getValue(thisRef: Any?, property: KProperty<*>): T =
                 runBlocking(coroutineContext) {
                     val paramType: ParameterSetType<*>? = getEvent(eventKey).first().paramType()
-                    paramType?.jGet(keyKt.key)?.nullable()?.jGet(0)?.nullable() ?: initial
+                    paramType?.jGet(key)?.nullable()?.jGet(0)?.nullable() ?: initial
                 }
 
             override fun setValue(thisRef: Any?, property: KProperty<*>, value: T) =
                 runBlocking(coroutineContext) {
-                    publishEvent(event(keyKt.set(value)))
+                    publishEvent(event(key.set(value)))
                     super.setValue(thisRef, property, value)
                 }
         }

@@ -5,10 +5,7 @@ import csw.params.commands.CommandResponse.Error
 import csw.params.core.models.Choice
 import csw.params.events.SystemEvent
 import esw.ocs.dsl.core.script
-import esw.ocs.dsl.params.booleanKey
-import esw.ocs.dsl.params.choiceKey
-import esw.ocs.dsl.params.choicesOf
-import esw.ocs.dsl.params.floatKey
+import esw.ocs.dsl.params.*
 import esw.ocs.dsl.utils.loop
 import kotlin.math.sqrt
 import kotlin.time.milliseconds

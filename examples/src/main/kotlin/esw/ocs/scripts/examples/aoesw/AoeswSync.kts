@@ -1,8 +1,7 @@
 package esw.ocs.scripts.examples.aoesw
 
 import esw.ocs.dsl.core.script
-import esw.ocs.dsl.params.floatKey
-import esw.ocs.dsl.params.taiTimeKey
+import esw.ocs.dsl.params.*
 
 script {
     val prefix = "aoesw.aosq"
@@ -21,7 +20,7 @@ script {
         val probeOffsetYParam = probeOffsetYKey.set(offsetY(0))
 
         val probeCommand = setup(prefix, "scheduledOffset", command.obsId)
-                .madd(probeOffsetXParam, probeOffsetYParam)
+            .madd(probeOffsetXParam, probeOffsetYParam)
 
         addSubCommand(command, probeCommand)
         scheduleOnce(scheduledTime(0)) {

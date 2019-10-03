@@ -11,13 +11,12 @@ import csw.location.models.AkkaLocation
 import csw.location.models.ComponentId
 import csw.location.models.ComponentType
 import csw.location.models.Connection
-import csw.params.commands.CommandName
+import csw.params.commands.*
 import csw.params.commands.CommandResponse.*
-import csw.params.commands.ControlCommand
-import csw.params.commands.Observe
-import csw.params.commands.Setup
+import csw.params.core.models.Id
 import csw.params.core.models.ObsId
 import csw.params.core.models.Prefix
+import esw.ocs.dsl.nullable
 import java.time.Duration
 import java.util.*
 import java.util.concurrent.CompletableFuture
@@ -40,6 +39,8 @@ interface CommandServiceDsl {
 
     fun observe(prefix: String, commandName: String, obsId: String?) =
         Observe(Prefix(prefix), CommandName(commandName), obsId.toOptionalObsId())
+
+    fun sequenceOf(vararg sequenceCommand: SequenceCommand): Sequence = Sequence.create(sequenceCommand.toList())
 
     /************* Assembly *************/
     suspend fun validateAssemblyCommand(assemblyName: String, command: ControlCommand): ValidateResponse =
@@ -91,5 +92,8 @@ interface CommandServiceDsl {
     private suspend fun resolve(name: String, compType: ComponentType): Optional<AkkaLocation> =
         locationService.resolve(Connection.AkkaConnection(ComponentId(name, compType)), duration).await()
 
+    /** ========== Extensions ============ **/
+    val Command.obsId: String? get() = jMaybeObsId().map { it.obsId() }.nullable()
+    val Command.runId: Id get() = runId()
     private fun String?.toOptionalObsId() = Optional.ofNullable(this?.let { ObsId(it) })
 }
