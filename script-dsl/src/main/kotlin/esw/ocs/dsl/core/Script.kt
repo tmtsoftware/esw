@@ -16,6 +16,7 @@ import csw.time.core.models.UTCTime
 import csw.time.scheduler.api.TimeServiceScheduler
 import esw.dsl.script.CswServices
 import esw.dsl.script.ScriptDsl
+import esw.dsl.script.utils.LockUnlockUtil
 import esw.dsl.sequence_manager.LocationServiceUtil
 import esw.ocs.api.SequencerAdminFactoryApi
 import esw.ocs.dsl.highlevel.CswHighLevelDsl
@@ -49,6 +50,8 @@ sealed class ScriptDslKt : CoroutineScope, CswHighLevelDsl, CswExtensions {
     override val sequencerAdminFactory: SequencerAdminFactoryApi by lazy {
         cswServices.sequencerAdminFactory()
     }
+
+    override val lockUnlockUtil: LockUnlockUtil by lazy { cswServices.lockUnlockUtil() }
 
     // this needs to be lazy otherwise handlers does not get loaded properly
     val scriptDsl: ScriptDsl by lazy { ScriptDslFactory.make(cswServices, strandEc()) }
