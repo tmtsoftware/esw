@@ -1,6 +1,5 @@
 package esw.ocs.dsl.params
 
-import csw.params.core.generics.GChoiceKey
 import csw.params.core.models.*
 import csw.params.javadsl.JKeyType.*
 import csw.time.core.models.TAITime
@@ -9,9 +8,10 @@ import csw.time.core.models.UTCTime
 fun choicesOf(vararg choices: String): Choices = Choices.from(choices.toSet())
 
 // ============= Misc Keys ===========
-fun choiceKey(name: String, choices: Choices): GChoiceKey = ChoiceKey().make(name, choices)
+fun choiceKey(name: String, choices: Choices): KeyKt<Choice> = KeyKt(ChoiceKey().make(name, choices))
 
-fun choiceKey(name: String, vararg choices: Choice): GChoiceKey = ChoiceKey().make(name, Choices.fromChoices(choices.toSet()))
+fun choiceKey(name: String, vararg choices: Choice): KeyKt<Choice> =
+    KeyKt(ChoiceKey().make(name, Choices.fromChoices(choices.toSet())))
 
 fun raDecKey(name: String): KeyKt<RaDec> = KeyKt(RaDecKey().make(name))
 fun eqCoordKey(name: String): KeyKt<Coords.EqCoord> = KeyKt(EqCoordKey().make(name))

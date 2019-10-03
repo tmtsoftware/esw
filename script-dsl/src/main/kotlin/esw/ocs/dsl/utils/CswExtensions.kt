@@ -27,16 +27,15 @@ interface CswExtensions {
     fun eventKey(prefix: String, eventName: String) = EventKey(Prefix(prefix), EventName(eventName))
     fun sequenceOf(vararg sequenceCommand: SequenceCommand): Sequence = Sequence.create(sequenceCommand.toList())
 
+    fun <T : ParameterSetType<T>> T.params(): ParameterSetTypeKt<T> = ParameterSetTypeKt(this)
+
     // =========== Command ==============
     val Command.obsId: String? get() = jMaybeObsId().map { it.obsId() }.nullable()
     val Command.runId: Id get() = runId()
-
-    fun <T : ParameterSetType<T>> T.params(): ParameterSetTypeKt<T> = ParameterSetTypeKt(this)
-
-    operator fun <S> Event.invoke(keyKt: KeyKt<S>): ParameterKt<S> = ParameterKt(paramType().apply(keyKt.key))
-    operator fun Event.invoke(choiceKey: GChoiceKey): ParameterKt<Choice> = ParameterKt(paramType().apply(choiceKey))
     operator fun <S> Command.invoke(keyKt: KeyKt<S>): ParameterKt<S> = ParameterKt(paramType().apply(keyKt.key))
-    operator fun Command.invoke(choiceKey: GChoiceKey): ParameterKt<Choice> = ParameterKt(paramType().apply(choiceKey))
+
+    // =========== Event ==============
+    operator fun <S> Event.invoke(keyKt: KeyKt<S>): ParameterKt<S> = ParameterKt(paramType().apply(keyKt.key))
 
     // =========== Misc ==============
     suspend fun IEventSubscription.cancel(): Done = unsubscribe().await()
