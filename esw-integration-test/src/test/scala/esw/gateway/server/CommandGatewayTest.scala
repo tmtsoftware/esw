@@ -44,7 +44,7 @@ class CommandGatewayTest extends ScalaTestFrameworkTestKit with WordSpecLike wit
 
   "CommandApi" must {
 
-    "handle validate, oneway, submit, subscribe current state and queryFinal commands | ESW-223, ESW-100, ESW-91, ESW-216" in {
+    "handle validate, oneway, submit, subscribe current state and queryFinal commands | ESW-223, ESW-100, ESW-91, ESW-216, ESW-86" in {
       val postClient: Transport[PostRequest] = new HttpPostTransport[PostRequest](s"http://localhost:$port/post-endpoint", None)
       val websocketClient: Transport[WebsocketRequest] =
         new WebsocketTransport[WebsocketRequest](s"ws://localhost:$port/websocket-endpoint")

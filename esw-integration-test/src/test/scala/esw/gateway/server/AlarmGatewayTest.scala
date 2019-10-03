@@ -40,7 +40,7 @@ class AlarmGatewayTest extends ScalaTestFrameworkTestKit(AlarmServer) with WordS
   }
 
   "AlarmApi" must {
-    "set alarm severity of a given alarm | ESW-216" in {
+    "set alarm severity of a given alarm | ESW-216, ESW-86" in {
       val postClient  = new HttpPostTransport[PostRequest](s"http://localhost:$port/post-endpoint", None)
       val alarmClient = new AlarmClient(postClient)
 
