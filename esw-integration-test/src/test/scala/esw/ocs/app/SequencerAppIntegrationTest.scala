@@ -18,7 +18,6 @@ import csw.testkit.scaladsl.ScalaTestFrameworkTestKit
 import esw.ocs.api.BaseTestSuite
 import esw.ocs.api.protocol.LoadScriptResponse
 import esw.ocs.app.SequencerAppCommand.{SequenceComponent, Sequencer}
-import esw.ocs.dsl.script.exceptions.ScriptLoadingException.ScriptNotFound
 import esw.ocs.impl.messages.SequenceComponentMsg
 import esw.ocs.impl.messages.SequenceComponentMsg.{LoadScript, UnloadScript}
 
@@ -120,12 +119,14 @@ class SequencerAppIntegrationTest extends ScalaTestFrameworkTestKit with BaseTes
 
   "Sequencer command" must {
     "start sequencer with provided id, mode and register it with location service | ESW-103, ESW-147, ESW-151" in {
-      val packageId     = "esw"
+      val subsystem     = Subsystem.ESW
+      val name          = Some("primary")
+      val packageId     = Some("esw")
       val observingMode = "darknight"
-      val sequencerName = s"$packageId@$observingMode"
+      val sequencerName = "ESW.primary@esw@darknight"
 
       // start Sequencer
-      SequencerApp.run(Sequencer(packageId, observingMode), enableLogging = false)
+      SequencerApp.run(Sequencer(subsystem, name, packageId, observingMode), enableLogging = false)
 
       // verify that sequencer is started and able to process sequence command
       val connection        = AkkaConnection(ComponentId(sequencerName, ComponentType.Sequencer))
@@ -139,13 +140,15 @@ class SequencerAppIntegrationTest extends ScalaTestFrameworkTestKit with BaseTes
       commandService.submitAndWait(sequence).futureValue shouldBe Completed(sequence.runId)
     }
 
-    "throw exception if provided script configuration is invalid | ESW-102" in {
-      val packageId     = "tcs"
+    /*"throw exception if provided script configuration is invalid | ESW-102" in {
+      val subsystem     = Subsystem.ESW
+      val name          = Some("primary")
+      val packageId     = Some("tcs")
       val observingMode = "darknight"
 
       intercept[ScriptNotFound] {
-        SequencerApp.run(Sequencer(packageId, observingMode), enableLogging = false)
+        SequencerApp.run(Sequencer(subsystem, name, packageId, observingMode), enableLogging = false)
       }
-    }
+    }*/
   }
 }

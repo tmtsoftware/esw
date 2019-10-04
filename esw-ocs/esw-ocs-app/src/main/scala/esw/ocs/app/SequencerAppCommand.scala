@@ -33,8 +33,12 @@ object SequencerAppCommand {
   ) extends SequencerAppCommand
 
   final case class Sequencer(
-      @HelpMessage("Package ID, ex: iris")
-      id: String,
+      @HelpMessage("subsystem of the sequence component, ex: tcs")
+      subsystem: Subsystem,
+      @HelpMessage("optional name for sequence component, ex: primary, backup etc")
+      name: Option[String],
+      @HelpMessage("optional package ID of script, ex: tcs, iris etc. Default value: subsystem provided")
+      id: Option[String],
       @HelpMessage("observing mode, ex: darknight")
       mode: String
   ) extends SequencerAppCommand

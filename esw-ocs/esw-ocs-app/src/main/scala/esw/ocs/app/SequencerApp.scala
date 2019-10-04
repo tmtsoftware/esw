@@ -1,15 +1,23 @@
 package esw.ocs.app
 
+import akka.actor.typed.ActorRef
+import akka.actor.typed.scaladsl.AskPattern.Askable
 import caseapp.{CommandApp, RemainingArgs}
+import csw.location.api.extensions.URIExtension.RichURI
 import csw.location.client.utils.LocationServerStatus
 import csw.location.models.AkkaLocation
 import csw.logging.api.scaladsl.Logger
 import csw.logging.client.scaladsl.LoggerFactory
+import csw.params.core.models.Subsystem
 import esw.http.core.wiring.ActorRuntime
-import esw.ocs.api.protocol.RegistrationError
+import esw.ocs.api.protocol.{LoadScriptResponse, RegistrationError}
 import esw.ocs.app.SequencerAppCommand._
 import esw.ocs.app.wiring.{SequenceComponentWiring, SequencerWiring}
+import esw.ocs.impl.messages.SequenceComponentMsg
+import esw.ocs.impl.messages.SequenceComponentMsg.LoadScript
+import esw.ocs.impl.syntax.FutureSyntax.FutureOps
 
+import scala.concurrent.Future
 import scala.util.control.NonFatal
 
 object SequencerApp extends CommandApp[SequencerAppCommand] {
@@ -31,27 +39,45 @@ object SequencerApp extends CommandApp[SequencerAppCommand] {
   def run(command: SequencerAppCommand, enableLogging: Boolean = true): Unit =
     command match {
       case SequenceComponent(subsystem, name) =>
-        val wiring                                 = new SequenceComponentWiring(subsystem, name, sequencerWiringWithHttp(_, _, _).sequencerServer)
-        val loggerFactory                          = new LoggerFactory("sequence component")
-        val genericSequenceComponentLogger: Logger = loggerFactory.getLogger
-        startSequenceComponent(wiring, genericSequenceComponentLogger, enableLogging)
+        startSequenceComponent(subsystem, name, enableLogging)
 
-      case Sequencer(id, mode) =>
-        val wiring: SequencerWiring = sequencerWiringWithHttp(id, mode, None)
-        startSequencer(wiring, enableLogging)
+      case Sequencer(subsystem, name, id, mode) =>
+        val sequenceComponentWiring =
+          new SequenceComponentWiring(subsystem, name, sequencerWiringWithHttp(_, _, _).sequencerServer)
+        val loggerFactory  = new LoggerFactory("sequence component")
+        val logger: Logger = loggerFactory.getLogger
+        import sequenceComponentWiring._
+        withLogging(actorRuntime, logger, enableLogging) {
+          loadAndStartSequencer(id.getOrElse(subsystem.name), mode, sequenceComponentWiring)
+        }
     }
 
-  def startSequenceComponent(sequenceComponentWiring: SequenceComponentWiring, logger: Logger, enableLogging: Boolean): Unit = {
-    import sequenceComponentWiring._
+  def startSequenceComponent(subsystem: Subsystem, name: Option[String], enableLogging: Boolean): Unit = {
+    val wiring         = new SequenceComponentWiring(subsystem, name, sequencerWiringWithHttp(_, _, _).sequencerServer)
+    val loggerFactory  = new LoggerFactory("sequence component")
+    val logger: Logger = loggerFactory.getLogger
+    import wiring._
     withLogging(actorRuntime, logger, enableLogging) {
-      sequenceComponentWiring.start()
+      wiring.start()
     }
   }
 
-  def startSequencer(sequencerWiring: SequencerWiring, enableLogging: Boolean): Unit = {
-    import sequencerWiring._
-    withLogging(actorRuntime, logger, enableLogging) {
-      sequencerServer.start()
+  private def loadAndStartSequencer(
+      id: String,
+      mode: String,
+      sequenceComponentWiring: SequenceComponentWiring
+  ): Either[RegistrationError, AkkaLocation] = {
+    import sequenceComponentWiring._
+    import sequenceComponentWiring.actorRuntime.{scheduler, _}
+    import sequenceComponentWiring.cswWiring.actorSystem
+
+    val wiring = sequenceComponentWiring.start()
+    wiring.flatMap { akkaLocation =>
+      val actorRef: ActorRef[SequenceComponentMsg] =
+        akkaLocation.uri.toActorRef(actorSystem).unsafeUpcast[SequenceComponentMsg]
+
+      val response: Future[LoadScriptResponse] = actorRef ? (LoadScript(id, mode, _))
+      response.map(_.response).block
     }
   }
 
@@ -64,7 +90,8 @@ object SequencerApp extends CommandApp[SequencerAppCommand] {
       if (enableLogging) startLogging(typedSystem.name)
       report(f, log, enableLogging)(() => cleanup())
     } catch {
-      case NonFatal(e) => cleanup(); throw e
+      case NonFatal(e) =>
+        cleanup(); throw e
     }
   }
 
