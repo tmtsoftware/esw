@@ -15,10 +15,10 @@ import csw.params.commands.CommandResponse.Completed
 import csw.params.commands.{CommandName, Sequence, Setup}
 import csw.params.core.models.{Prefix, Subsystem}
 import csw.testkit.scaladsl.ScalaTestFrameworkTestKit
-import esw.dsl.script.exceptions.ScriptLoadingException.ScriptNotFound
 import esw.ocs.api.BaseTestSuite
 import esw.ocs.api.protocol.LoadScriptResponse
 import esw.ocs.app.SequencerAppCommand.{SequenceComponent, Sequencer}
+import esw.ocs.dsl.script.exceptions.ScriptLoadingException.ScriptNotFound
 import esw.ocs.impl.messages.SequenceComponentMsg
 import esw.ocs.impl.messages.SequenceComponentMsg.{LoadScript, UnloadScript}
 

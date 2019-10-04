@@ -26,10 +26,6 @@ object Dependencies {
     )
   )
 
-  val OcsMacros: Def.Initialize[Seq[ModuleID]] = Def.setting(
-    Seq(Libs.`scala-reflect`, Libs.scalatest % Test)
-  )
-
   val OcsApp: Def.Initialize[Seq[ModuleID]] = Def.setting(
     Seq(
       Libs.`case-app`,

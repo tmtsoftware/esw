@@ -2,10 +2,9 @@ package esw.ocs.app.wiring
 
 import com.typesafe.config.{Config, ConfigFactory}
 import csw.params.core.models.Prefix
-import esw.dsl.script.exceptions.ScriptLoadingException.ScriptConfigurationMissingException
-import esw.dsl.script.{CswServices, ScriptDsl}
 import esw.http.core.BaseTestSuite
-import esw.ocs.macros.StrandEc
+import esw.ocs.dsl.script.exceptions.ScriptLoadingException.ScriptConfigurationMissingException
+import esw.ocs.dsl.script.{CswServices, ScriptDsl, StrandEc}
 
 class SequencerConfigTest extends BaseTestSuite {
   private val config: Config = ConfigFactory.load()

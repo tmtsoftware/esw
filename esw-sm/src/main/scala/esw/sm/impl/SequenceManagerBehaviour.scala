@@ -2,8 +2,8 @@ package esw.sm.impl
 
 import akka.actor.typed.scaladsl.Behaviors
 import akka.actor.typed.{ActorSystem, Behavior, SpawnProtocol}
-import esw.dsl.sequence_manager.LocationServiceUtil
 import esw.ocs.api.{SequencerAdminFactoryApi, protocol}
+import esw.ocs.dsl.sequence_manager.LocationServiceUtil
 import esw.sm.api.Response.{Error, Ok}
 import esw.sm.api.SequenceManagerMsg._
 import esw.sm.api.{RichSequence, SequenceManagerMsg, SequenceStatus}

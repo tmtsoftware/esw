@@ -10,7 +10,6 @@ object Libs {
   // fixme: find appropriate place to keep kotlin test scripts used in integration-test project
   val `examples` = "com.github.tmtsoftware.script-dsl" % "examples" % "ee7e976787ffe31ed564378c5541803d3739cfd1"
 
-  val `scala-reflect`      = "org.scala-lang" % "scala-reflect" % ScalaVersion
   val `silencer-lib`       = "com.github.ghik" %% "silencer-lib" % SilencerVersion % Compile
   val `silencer-plugin`    = compilerPlugin("com.github.ghik" %% "silencer-plugin" % SilencerVersion)
   val `case-app`           = "com.github.alexarchambault" %% "case-app" % "2.0.0-M9"

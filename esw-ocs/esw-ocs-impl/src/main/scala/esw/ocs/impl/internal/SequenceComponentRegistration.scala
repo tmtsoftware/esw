@@ -8,8 +8,8 @@ import csw.location.api.scaladsl.LocationService
 import csw.location.models.Connection.AkkaConnection
 import csw.location.models.{AkkaLocation, AkkaRegistration, ComponentId, ComponentType}
 import csw.params.core.models.{Prefix, Subsystem}
-import esw.dsl.sequence_manager.LocationServiceUtil
 import esw.ocs.api.protocol.RegistrationError
+import esw.ocs.dsl.sequence_manager.LocationServiceUtil
 import esw.ocs.impl.messages.SequenceComponentMsg
 import esw.ocs.impl.messages.SequenceComponentMsg.Stop
 

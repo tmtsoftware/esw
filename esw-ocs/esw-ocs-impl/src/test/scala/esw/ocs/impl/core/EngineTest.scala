@@ -5,10 +5,10 @@ import akka.stream.{ActorMaterializer, Materializer}
 import csw.params.commands.CommandResponse.Error
 import csw.params.commands.SequenceCommand
 import csw.params.core.models.Id
-import esw.dsl.script.{ScriptDsl, SequenceOperator}
 import esw.ocs.api.BaseTestSuite
 import esw.ocs.api.models.Step
 import esw.ocs.api.protocol.{Ok, PullNextResult}
+import esw.ocs.dsl.script.{ScriptDsl, SequenceOperator}
 
 import scala.concurrent.Future
 

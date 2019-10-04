@@ -17,12 +17,12 @@ import csw.location.models.{AkkaLocation, AkkaRegistration, ComponentId, Compone
 import csw.logging.api.scaladsl.Logger
 import csw.logging.client.scaladsl.LoggerFactory
 import csw.network.utils.SocketUtils
-import esw.dsl.script.utils.{LockUnlockUtil, ScriptLoader}
-import esw.dsl.script.{CswServices, ScriptDsl}
-import esw.dsl.sequence_manager.LocationServiceUtil
 import esw.http.core.wiring.{ActorRuntime, CswWiring, HttpService, Settings}
 import esw.ocs.api.protocol.RegistrationError
 import esw.ocs.app.route.{PostHandlerImpl, SequencerAdminRoutes, WebsocketHandlerImpl}
+import esw.ocs.dsl.script.utils.{LockUnlockUtil, ScriptLoader}
+import esw.ocs.dsl.script.{CswServices, ScriptDsl}
+import esw.ocs.dsl.sequence_manager.LocationServiceUtil
 import esw.ocs.impl.core._
 import esw.ocs.impl.internal.{SequencerServer, Timeouts}
 import esw.ocs.impl.messages.SequencerMessages.{EswSequencerMessage, Shutdown}

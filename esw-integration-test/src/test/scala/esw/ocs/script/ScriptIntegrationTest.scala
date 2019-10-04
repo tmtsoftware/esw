@@ -25,10 +25,10 @@ import csw.params.events.{Event, EventKey, EventName, SystemEvent}
 import csw.testkit.scaladsl.CSWService.EventServer
 import csw.testkit.scaladsl.ScalaTestFrameworkTestKit
 import csw.time.core.models.UTCTime
-import esw.dsl.sequence_manager.LocationServiceUtil
 import esw.ocs.api.BaseTestSuite
 import esw.ocs.api.protocol.{DiagnosticModeResponse, Ok, OperationsModeResponse}
 import esw.ocs.app.wiring.SequencerWiring
+import esw.ocs.dsl.sequence_manager.LocationServiceUtil
 import esw.ocs.impl.internal.Timeouts
 import esw.ocs.impl.messages.SequencerMessages.{DiagnosticMode, OperationsMode}
 
