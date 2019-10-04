@@ -57,7 +57,6 @@ class SequenceComponentBehaviorTest extends ScalaTestFrameworkTestKit with BaseT
       //LoadScript
       sequenceComponentRef ! LoadScript(packageId, observingMode, loadScriptResponseProbe.ref)
 
-      //todo: try resolving from location service
       //Assert if script loaded and returns AkkaLocation of sequencer
       val loadScriptLocationResponse: AkkaLocation = loadScriptResponseProbe.receiveMessage.response.rightValue
       loadScriptLocationResponse.connection shouldEqual AkkaConnection(
