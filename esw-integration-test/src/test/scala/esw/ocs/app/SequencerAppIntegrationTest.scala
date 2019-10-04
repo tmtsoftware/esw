@@ -137,6 +137,14 @@ class SequencerAppIntegrationTest extends ScalaTestFrameworkTestKit with BaseTes
       // start Sequencer
       SequencerApp.run(Sequencer(subsystem, name, packageId, observingMode), enableLogging = false)
 
+
+      // verify sequence component is started
+      val compName = s"$subsystem.${name.value}"
+      val compConnection        = AkkaConnection(ComponentId(compName, ComponentType.SequenceComponent))
+      val sequencerCompLocation = testLocationService.resolve(compConnection, 5.seconds).futureValue.value
+
+      sequencerCompLocation.connection.componentId.name shouldBe compName
+
       // verify that sequencer is started and able to process sequence command
       val connection        = AkkaConnection(ComponentId(sequencerName, ComponentType.Sequencer))
       val sequencerLocation = testLocationService.resolve(connection, 5.seconds).futureValue.value
