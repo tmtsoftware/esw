@@ -11,4 +11,5 @@ dependencies {
     testImplementation("com.typesafe.akka:akka-testkit_${scalaVersion}:${akkaVersion}")
     testImplementation("com.typesafe.akka:akka-actor-testkit-typed_${scalaVersion}:${akkaVersion}")
     testImplementation(project(":examples"))
+    testImplementation(project(":script-dsl"))
 }

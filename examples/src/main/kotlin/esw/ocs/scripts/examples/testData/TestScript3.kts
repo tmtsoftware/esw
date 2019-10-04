@@ -9,7 +9,6 @@ import esw.ocs.dsl.params.stringKey
 script {
 
     handleDiagnosticMode { _, _ ->
-        // todo: try to remove match case
         // do some actions to go to diagnostic mode based on hint
         val diagnosticModeParam = stringKey("mode").set("diagnostic")
         val event = SystemEvent(Prefix("tcs.test"), EventName("diagnostic-data")).add(diagnosticModeParam)
