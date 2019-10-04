@@ -8,7 +8,7 @@ object Libs {
   private val MSocketVersion       = "5d45d67"
 
   // fixme: find appropriate place to keep kotlin test scripts used in integration-test project
-  val `examples` = "com.github.tmtsoftware.script-dsl" % "examples" % "c6ed1708c9184e84af4c35b2f50f8e6fae5dba3d"
+  val `examples` = "com.github.tmtsoftware.script-dsl" % "examples" % "ca4cabdc79e52561d0a2923858819271d98773e5"
 
   val `silencer-lib`       = "com.github.ghik" %% "silencer-lib" % SilencerVersion % Compile
   val `silencer-plugin`    = compilerPlugin("com.github.ghik" %% "silencer-plugin" % SilencerVersion)
