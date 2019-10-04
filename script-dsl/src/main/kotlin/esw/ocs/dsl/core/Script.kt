@@ -11,19 +11,19 @@ import csw.params.commands.*
 import csw.params.commands.CommandResponse.SubmitResponse
 import csw.time.core.models.UTCTime
 import csw.time.scheduler.api.TimeServiceScheduler
-import esw.dsl.script.CswServices
-import esw.dsl.script.ScriptDsl
-import esw.dsl.script.utils.LockUnlockUtil
-import esw.dsl.sequence_manager.LocationServiceUtil
 import esw.ocs.api.SequencerAdminFactoryApi
 import esw.ocs.dsl.highlevel.CswHighLevelDsl
 import esw.ocs.dsl.nullable
-import esw.ocs.macros.StrandEc
-import java.util.concurrent.CompletionStage
-import kotlin.coroutines.CoroutineContext
+import esw.ocs.dsl.script.CswServices
+import esw.ocs.dsl.script.ScriptDsl
+import esw.ocs.dsl.script.StrandEc
+import esw.ocs.dsl.script.utils.LockUnlockUtil
+import esw.ocs.dsl.sequence_manager.LocationServiceUtil
 import kotlinx.coroutines.*
 import kotlinx.coroutines.future.await
 import kotlinx.coroutines.future.future
+import java.util.concurrent.CompletionStage
+import kotlin.coroutines.CoroutineContext
 
 sealed class ScriptDslKt : CoroutineScope, CswHighLevelDsl {
 

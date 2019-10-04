@@ -7,10 +7,10 @@ import csw.command.client.messages.DiagnosticDataMessage.`OperationsMode$`
 import csw.location.api.javadsl.JComponentType
 import csw.location.models.ComponentType
 import csw.time.core.models.UTCTime
-import esw.dsl.sequence_manager.LocationServiceUtil
 import esw.ocs.api.SequencerAdminApi
 import esw.ocs.api.SequencerAdminFactoryApi
 import esw.ocs.api.protocol.`Ok$`
+import esw.ocs.dsl.sequence_manager.LocationServiceUtil
 import io.kotlintest.specs.WordSpec
 import io.mockk.every
 import io.mockk.mockk

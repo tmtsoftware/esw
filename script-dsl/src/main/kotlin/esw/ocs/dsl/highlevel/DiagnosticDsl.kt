@@ -5,9 +5,9 @@ import csw.command.client.messages.DiagnosticDataMessage.DiagnosticMode
 import csw.command.client.messages.DiagnosticDataMessage.`OperationsMode$`
 import csw.location.models.ComponentType
 import csw.time.core.models.UTCTime
-import esw.dsl.sequence_manager.LocationServiceUtil
 import esw.ocs.api.SequencerAdminApi
 import esw.ocs.api.SequencerAdminFactoryApi
+import esw.ocs.dsl.sequence_manager.LocationServiceUtil
 import kotlinx.coroutines.future.await
 
 interface DiagnosticDsl {

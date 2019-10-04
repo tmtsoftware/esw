@@ -1,7 +1,7 @@
 package esw.ocs.dsl.core
 
-import esw.dsl.script.CswServices
-import esw.ocs.macros.StrandEc
+import esw.ocs.dsl.script.CswServices
+import esw.ocs.dsl.script.StrandEc
 import kotlin.coroutines.CoroutineContext
 
 class Result(val scriptFactory: (CswServices) -> Script) {

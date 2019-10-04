@@ -4,7 +4,7 @@ import csw.command.client.models.framework.LockingResponse
 import csw.location.api.javadsl.JComponentType.Assembly
 import csw.location.api.javadsl.JComponentType.HCD
 import csw.params.core.models.Prefix
-import esw.dsl.script.utils.LockUnlockUtil
+import esw.ocs.dsl.script.utils.LockUnlockUtil
 import java.time.Duration
 import kotlinx.coroutines.future.await
 
