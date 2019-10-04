@@ -12,6 +12,7 @@ import csw.params.commands.CommandResponse.SubmitResponse
 import csw.time.core.models.UTCTime
 import csw.time.scheduler.api.TimeServiceScheduler
 import esw.ocs.api.SequencerAdminFactoryApi
+import esw.ocs.dsl.highlevel.CommonUtils
 import esw.ocs.dsl.highlevel.CswHighLevelDsl
 import esw.ocs.dsl.nullable
 import esw.ocs.dsl.script.CswServices
@@ -32,7 +33,7 @@ sealed class ScriptDslKt : CoroutineScope, CswHighLevelDsl {
 
     override val actorSystem: ActorSystem<*> by lazy { cswServices.actorSystem() }
     override val locationService: ILocationService by lazy { cswServices.locationService() }
-    override val locationServiceUtil: LocationServiceUtil by lazy {
+    private val locationServiceUtil: LocationServiceUtil by lazy {
         LocationServiceUtil(locationService.asScala(), actorSystem)
     }
 
@@ -40,9 +41,12 @@ sealed class ScriptDslKt : CoroutineScope, CswHighLevelDsl {
     override val defaultSubscriber: IEventSubscriber by lazy { eventService.defaultSubscriber() }
 
     override val crm: CommandResponseManager by lazy { cswServices.crm() }
-    override val sequencerAdminFactory: SequencerAdminFactoryApi by lazy {
+    private val sequencerAdminFactory: SequencerAdminFactoryApi by lazy {
         cswServices.sequencerAdminFactory()
     }
+
+    // fixme: should not be visible from script
+    override val commonUtils: CommonUtils by lazy { CommonUtils(sequencerAdminFactory, locationServiceUtil) }
 
     override val lockUnlockUtil: LockUnlockUtil by lazy { cswServices.lockUnlockUtil() }
 

@@ -115,8 +115,8 @@ class ScriptIntegrationTest : FunSpec() {
         locationService = JHttpLocationServiceFactory.makeLocalClient(actorSystem, mat)
         locationService.register(tcsRegistration).get(5, TimeUnit.SECONDS)
         ocsWiring = SequencerWiring(ocsSequencerId, ocsObservingMode, Option.empty())
-        ocsSequencer = ocsWiring.sequencerServer().start().rightValue().uri().toActorRef(actorSystem)
-            .unsafeUpcast<SequencerMsg>()
+        ocsWiring.sequencerServer().start()
+        ocsSequencer = ocsWiring.sequencerRef()
     }
 
     override fun afterTest(testCase: TestCase, result: TestResult) {

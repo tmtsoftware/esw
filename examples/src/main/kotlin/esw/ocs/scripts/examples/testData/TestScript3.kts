@@ -4,6 +4,7 @@ import csw.params.core.models.Prefix
 import csw.params.events.EventName
 import csw.params.events.SystemEvent
 import esw.ocs.dsl.core.script
+import esw.ocs.dsl.params.set
 import esw.ocs.dsl.params.stringKey
 
 script {
