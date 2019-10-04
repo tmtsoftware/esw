@@ -5,6 +5,7 @@ import akka.http.scaladsl.model.ws.Message
 import akka.http.scaladsl.model.{HttpResponse, StatusCodes}
 import akka.http.scaladsl.server.Directives._
 import akka.http.scaladsl.server.{ExceptionHandler, RejectionHandler, Route, StandardRoute}
+import akka.stream.Materializer
 import akka.stream.scaladsl.Source
 import csw.logging.api.scaladsl.Logger
 import esw.gateway.api.codecs.GatewayCodecs
@@ -19,7 +20,8 @@ class Routes(
     postHandler: MessageHandler[PostRequest, StandardRoute],
     websocketHandler: MessageHandler[WebsocketRequest, Source[Message, NotUsed]],
     log: Logger
-) extends GatewayCodecs
+)(implicit mat: Materializer)
+    extends GatewayCodecs
     with HttpCodecs {
 
   //fixme: Is this necessary? whats the default behavior of akka http on future failure?
