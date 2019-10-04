@@ -19,11 +19,11 @@ import esw.ocs.dsl.script.ScriptDsl
 import esw.ocs.dsl.script.StrandEc
 import esw.ocs.dsl.script.utils.LockUnlockUtil
 import esw.ocs.dsl.sequence_manager.LocationServiceUtil
+import java.util.concurrent.CompletionStage
+import kotlin.coroutines.CoroutineContext
 import kotlinx.coroutines.*
 import kotlinx.coroutines.future.await
 import kotlinx.coroutines.future.future
-import java.util.concurrent.CompletionStage
-import kotlin.coroutines.CoroutineContext
 
 sealed class ScriptDslKt : CoroutineScope, CswHighLevelDsl {
 
