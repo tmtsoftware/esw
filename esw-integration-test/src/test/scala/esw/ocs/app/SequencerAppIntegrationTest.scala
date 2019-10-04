@@ -50,7 +50,7 @@ class SequencerAppIntegrationTest extends ScalaTestFrameworkTestKit with BaseTes
       // verify Sequence component is started and registered with location service
       val sequenceCompLocation: AkkaLocation =
         testLocationService
-          .resolve(AkkaConnection(ComponentId(s"${subsystem}.$name", ComponentType.SequenceComponent)), 5.seconds)
+          .resolve(AkkaConnection(ComponentId(s"$subsystem.$name", ComponentType.SequenceComponent)), 5.seconds)
           .futureValue
           .get
 
