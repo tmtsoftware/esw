@@ -48,8 +48,8 @@ class SequencerAdminIntegrationTest
   private implicit val askTimeout: Timeout  = Timeout(10.seconds)
   private implicit val scheduler: Scheduler = actorSystem.scheduler
 
-  private val packageId     = "testSequencerId5"
-  private val observingMode = "testObservingMode5"
+  private val packageId     = "nfarios"
+  private val observingMode = "darknight"
 
   private val command1 = Setup(Prefix("esw.test"), CommandName("command-1"), None)
   private val command2 = Setup(Prefix("esw.test"), CommandName("command-2"), None)
@@ -202,8 +202,8 @@ class SequencerAdminIntegrationTest
   }
 
   "DiagnosticMode and OperationsMode| ESW-143, ESW-134" in {
-    val tcsSequencerWiring = new SequencerWiring("testSequencerId6", "testObservingMode6", None)
-    tcsSequencerWiring.sequencerServer.start()
+    val sequencerWiring = new SequencerWiring("testSequencerId6", "testObservingMode6", None)
+    sequencerWiring.sequencerServer.start()
 
     val startTime = UTCTime.now()
     val hint      = "engineering"
@@ -234,7 +234,7 @@ class SequencerAdminIntegrationTest
 
     expectedOperationsEvent.paramSet.head shouldBe operationsModeParam
 
-    tcsSequencerWiring.sequencerServer.shutDown().futureValue
+    sequencerWiring.sequencerServer.shutDown().futureValue
   }
 
   private def resolveSequencer(): ActorRef[SequencerMsg] =

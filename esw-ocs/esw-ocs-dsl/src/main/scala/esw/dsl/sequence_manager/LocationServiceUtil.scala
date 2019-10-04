@@ -57,8 +57,8 @@ class LocationServiceUtil(private[esw] val locationService: LocationService)(imp
         case akkaLocation @ AkkaLocation(_, prefix, _) if prefix.subsystem == subsystem => akkaLocation
       })
 
-  //Can be used to listBySequencerId() and listByObsMode(), in future. Separate APIs can be created once we have concrete
-  //classes for `SequencerId` and `ObsMode`
+  //Can be used to listByPackageId() and listByObsMode(), in future. Separate APIs can be created once we have concrete
+  //classes for `PackageId` and `ObsMode`
   def listByComponentName(name: String): Future[List[Location]] =
     locationService.list.map(_.filter(_.connection.componentId.name.contains(name)))
 

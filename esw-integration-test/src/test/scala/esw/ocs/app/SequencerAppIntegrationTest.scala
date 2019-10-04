@@ -60,7 +60,7 @@ class SequencerAppIntegrationTest extends ScalaTestFrameworkTestKit with BaseTes
       // LoadScript
       val seqCompRef = sequenceCompLocation.uri.toActorRef.unsafeUpcast[SequenceComponentMsg]
       val probe      = TestProbe[LoadScriptResponse]
-      seqCompRef ! LoadScript("testSequencerId1", "testObservingMode1", probe.ref)
+      seqCompRef ! LoadScript("esw", "darknight", probe.ref)
 
       // verify that loaded sequencer is started and able to process sequence command
       val response          = probe.expectMessageType[LoadScriptResponse]
@@ -68,7 +68,7 @@ class SequencerAppIntegrationTest extends ScalaTestFrameworkTestKit with BaseTes
 
       //verify sequencerName has SequenceComponentName
       val actualSequencerName: String = sequencerLocation.connection.componentId.name
-      actualSequencerName shouldEqual "ESW.primary@testSequencerId1@testObservingMode1"
+      actualSequencerName shouldEqual "ESW.primary@esw@darknight"
 
       val commandService = new SequencerCommandServiceImpl(sequencerLocation)
       val setup          = Setup(Prefix("wfos.home.datum"), CommandName("command-1"), None)
@@ -120,8 +120,8 @@ class SequencerAppIntegrationTest extends ScalaTestFrameworkTestKit with BaseTes
 
   "Sequencer command" must {
     "start sequencer with provided id, mode and register it with location service | ESW-103, ESW-147, ESW-151" in {
-      val packageId     = "testSequencerId1"
-      val observingMode = "testObservingMode1"
+      val packageId     = "esw"
+      val observingMode = "darknight"
       val sequencerName = s"$packageId@$observingMode"
 
       // start Sequencer
@@ -140,8 +140,8 @@ class SequencerAppIntegrationTest extends ScalaTestFrameworkTestKit with BaseTes
     }
 
     "throw exception if provided script configuration is invalid | ESW-102" in {
-      val packageId     = "testSequencerId3"
-      val observingMode = "testObservingMode3"
+      val packageId     = "tcs"
+      val observingMode = "darknight"
 
       intercept[ScriptNotFound] {
         SequencerApp.run(Sequencer(packageId, observingMode), enableLogging = false)

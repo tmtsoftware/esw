@@ -45,8 +45,8 @@ class ScriptIntegrationTest extends ScalaTestFrameworkTestKit(EventServer) with 
   private implicit val askTimeout: Timeout             = Timeouts.DefaultTimeout
   override implicit def patienceConfig: PatienceConfig = PatienceConfig(10.seconds)
 
-  private val ocsPackageId     = "testSequencerId4"
-  private val ocsObservingMode = "testObservingMode4"
+  private val ocsPackageId     = "esw"
+  private val ocsObservingMode = "darknight"
 
   var locationService: LocationService             = _
   private var ocsWiring: SequencerWiring           = _

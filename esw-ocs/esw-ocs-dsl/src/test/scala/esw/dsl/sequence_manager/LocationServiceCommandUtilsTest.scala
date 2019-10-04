@@ -186,7 +186,7 @@ class LocationServiceCommandUtilsTest extends ScalaTestWithActorTestKit with Bas
 
   "resolveSequencer" must {
 
-    "return a location which matches a given sequencerId and observing mode | ESW-119" in {
+    "return a location which matches a given packageId and observing mode | ESW-119" in {
       val testUri = new URI("test-uri")
       val tcsLocation =
         AkkaLocation(
@@ -214,7 +214,7 @@ class LocationServiceCommandUtilsTest extends ScalaTestWithActorTestKit with Bas
       actualLocations should ===(tcsLocation)
     }
 
-    "return a RuntimeException when no matching sequencerId and observing mode is found | ESW-119" in {
+    "return a RuntimeException when no matching packageId and observing mode is found | ESW-119" in {
       val testUri = new URI("test-uri")
       val tcsLocation =
         AkkaLocation(

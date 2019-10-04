@@ -51,8 +51,8 @@ class SequenceComponentBehaviorTest extends ScalaTestFrameworkTestKit with BaseT
 
       val loadScriptResponseProbe = TestProbe[LoadScriptResponse]
       val getStatusProbe          = TestProbe[GetStatusResponse]
-      val packageId               = "testSequencerId1"
-      val observingMode           = "testObservingMode1"
+      val packageId               = "esw"
+      val observingMode           = "darknight"
 
       //LoadScript
       sequenceComponentRef ! LoadScript(packageId, observingMode, loadScriptResponseProbe.ref)
@@ -91,8 +91,8 @@ class SequenceComponentBehaviorTest extends ScalaTestFrameworkTestKit with BaseT
       )).futureValue
 
       val loadScriptResponseProbe = TestProbe[LoadScriptResponse]
-      val packageId               = "testSequencerId2"
-      val observingMode           = "testObservingMode2"
+      val packageId               = "iris"
+      val observingMode           = "darknight"
 
       //LoadScript
       sequenceComponentRef ! LoadScript(packageId, observingMode, loadScriptResponseProbe.ref)
@@ -103,7 +103,7 @@ class SequenceComponentBehaviorTest extends ScalaTestFrameworkTestKit with BaseT
         ComponentId(s"$ocsSequenceComponentName@$packageId@$observingMode", ComponentType.Sequencer)
       )
 
-      sequenceComponentRef ! LoadScript("sequencerId3", "observingMode3", loadScriptResponseProbe.ref)
+      sequenceComponentRef ! LoadScript("tcs", "darknight", loadScriptResponseProbe.ref)
       loadScriptResponseProbe.receiveMessage.response.leftValue shouldBe RegistrationError(
         "Loading script failed: Sequencer already running"
       )

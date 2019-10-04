@@ -36,7 +36,7 @@ class SequenceComponentImplTest extends ScalaTestWithActorTestKit with BaseTestS
   private val sequenceComponentClient = new SequenceComponentImpl(sequenceComponent)
 
   "LoadScript | ESW-103" in {
-    sequenceComponentClient.loadScript("sequencerId", "observingMode").futureValue should ===(loadScriptResponse)
+    sequenceComponentClient.loadScript("esw", "darknight").futureValue should ===(loadScriptResponse)
   }
 
   "GetStatus | ESW-103" in {

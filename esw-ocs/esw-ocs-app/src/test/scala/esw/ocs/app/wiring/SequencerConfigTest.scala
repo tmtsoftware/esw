@@ -11,29 +11,29 @@ class SequencerConfigTest extends BaseTestSuite {
   private val config: Config = ConfigFactory.load()
 
   "from" must {
-    "create SequencerConfig based on sequencerId and observingMode | ESW-103" in {
-      val packageId        = "testSequencerId1"
-      val observingMode    = "testObservingMode1"
+    "create SequencerConfig based on packageId and observingMode | ESW-103" in {
+      val packageId        = "esw"
+      val observingMode    = "darknight"
       val sequencerConfigs = SequencerConfig.from(config, packageId, observingMode, None)
 
-      sequencerConfigs.sequencerName should ===("testSequencerId1@testObservingMode1")
+      sequencerConfigs.sequencerName should ===("esw@darknight")
       sequencerConfigs.prefix should ===(Prefix("esw.ocs.prefix1"))
       sequencerConfigs.scriptClass should ===(classOf[ValidTestScript].getCanonicalName)
     }
 
-    "create SequencerConfig based on sequencerId and observingMode | ESW-103, ESW-214" in {
-      val packageId             = "testSequencerId1"
-      val observingMode         = "testObservingMode1"
-      val sequenceComponentName = "OCS_1"
+    "create SequencerConfig based on packageId and observingMode | ESW-103, ESW-214" in {
+      val packageId             = "esw"
+      val observingMode         = "darknight"
+      val sequenceComponentName = "ESW_1"
       val sequencerConfigs      = SequencerConfig.from(config, packageId, observingMode, Some(sequenceComponentName))
 
-      sequencerConfigs.sequencerName should ===("OCS_1@testSequencerId1@testObservingMode1")
+      sequencerConfigs.sequencerName should ===("ESW_1@esw@darknight")
       sequencerConfigs.prefix should ===(Prefix("esw.ocs.prefix1"))
       sequencerConfigs.scriptClass should ===(classOf[ValidTestScript].getCanonicalName)
     }
 
-    "throw ScriptConfigurationMissingException if script config is not provided for given sequencerId and observingMode | ESW-103" in {
-      val packageId     = "invalidSequencerId"
+    "throw ScriptConfigurationMissingException if script config is not provided for given packageId and observingMode | ESW-103" in {
+      val packageId     = "invalidPackageId"
       val observingMode = "invalidObservingMode"
 
       val exception = intercept[ScriptConfigurationMissingException] {

@@ -9,7 +9,7 @@ class ScriptLoaderTest extends BaseTestSuite {
   private val cswServices = mock[CswServices]
 
   "load" must {
-    "load script class if sequencerId and observingMode is provided | ESW-102" in {
+    "load script class if packageId and observingMode is provided | ESW-102" in {
       val scriptClass = classOf[ValidTestScript].getCanonicalName
 
       val loader = ScriptLoader.loadClass(scriptClass, cswServices)
