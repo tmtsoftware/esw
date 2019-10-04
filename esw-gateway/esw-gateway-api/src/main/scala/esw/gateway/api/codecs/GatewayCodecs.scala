@@ -5,6 +5,8 @@ import csw.alarm.codecs.AlarmCodecs
 import csw.alarm.models.Key.AlarmKey
 import csw.location.api.codec.DoneCodec
 import csw.location.models.codecs.LocationCodecs
+import csw.logging.models.Level
+import csw.logging.models.codecs.LoggingCodecs
 import csw.params.core.formats.ParamCodecs
 import csw.params.events.EventKey
 import esw.gateway.api.protocol.PostRequest._
@@ -38,6 +40,8 @@ trait GatewayCodecs extends ParamCodecs with LocationCodecs with AlarmCodecs wit
     @silent implicit lazy val publishEventCodec: Codec[PublishEvent]         = deriveCodec[PublishEvent]
     @silent implicit lazy val getEventCodec: Codec[GetEvent]                 = deriveCodec[GetEvent]
     @silent implicit lazy val setAlarmSeverityCodec: Codec[SetAlarmSeverity] = deriveCodec[SetAlarmSeverity]
+    @silent implicit lazy val levelCodec: Codec[Level]                       = LoggingCodecs.levelCodec
+    @silent implicit lazy val logCodec: Codec[Log]                           = deriveCodec[Log]
     deriveCodec[PostRequest]
   }
 

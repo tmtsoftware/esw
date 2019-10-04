@@ -21,6 +21,7 @@ object Libs {
   val `scala-java8-compat` = "org.scala-lang.modules" %% "scala-java8-compat" % "0.9.0" //BSD 3-clause "New" or "Revised" License
   val `msocket-api`        = dep("com.github.tmtsoftware.msocket" %%% "msocket-api" % MSocketVersion)
   val `msocket-impl-jvm`   = "com.github.tmtsoftware.msocket" %% "msocket-impl-jvm" % MSocketVersion
+  val `caffeine`           = "com.github.ben-manes.caffeine" % "caffeine" % "2.8.0"
 }
 
 object Csw {

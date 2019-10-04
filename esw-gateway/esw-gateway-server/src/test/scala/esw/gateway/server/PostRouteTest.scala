@@ -11,19 +11,22 @@ import csw.alarm.models.Key.AlarmKey
 import csw.event.api.exceptions.{EventServerNotAvailable, PublishFailure}
 import csw.location.models.ComponentId
 import csw.location.models.ComponentType.Assembly
+import csw.logging.macros.SourceFactory
+import csw.logging.models.{AnyId, Level}
 import csw.params.commands.CommandResponse.{Accepted, Started}
 import csw.params.commands.{CommandName, CommandResponse, Setup}
 import csw.params.core.models.{Id, ObsId, Prefix, Subsystem}
 import csw.params.events.{Event, EventKey, EventName, SystemEvent}
 import esw.gateway.api.codecs.GatewayCodecs
-import esw.gateway.api.protocol.PostRequest.{GetEvent, Oneway, PublishEvent, SetAlarmSeverity, Submit, Validate}
+import esw.gateway.api.protocol.PostRequest._
 import esw.gateway.api.protocol.{EmptyEventKeys, EventServerUnavailable, InvalidComponent, SetAlarmSeverityFailure}
-import esw.gateway.api.{AlarmApi, CommandApi, EventApi}
-import esw.gateway.impl.{AlarmImpl, CommandImpl, EventImpl}
+import esw.gateway.api.{AlarmApi, CommandApi, EventApi, LoggingApi}
+import esw.gateway.impl._
 import esw.gateway.server.handlers.PostHandlerImpl
 import esw.http.core.BaseTestSuite
+import io.bullet.borer.Dom.{IntElem, MapElem, NullElem, StringElem}
 import mscoket.impl.HttpCodecs
-import org.mockito.ArgumentMatchers.any
+import org.mockito.ArgumentMatchers.{any, eq => argsEq}
 import org.mockito.Mockito.when
 import org.mockito.MockitoSugar._
 
@@ -46,7 +49,8 @@ class PostRouteTest extends BaseTestSuite with ScalatestRouteTest with GatewayCo
   private val alarmApi: AlarmApi     = new AlarmImpl(alarmService)
   private val eventApi: EventApi     = new EventImpl(eventService, eventSubscriberUtil)
   private val commandApi: CommandApi = new CommandImpl(componentFactory.commandService)
-  private val postHandlerImpl        = new PostHandlerImpl(alarmApi, commandApi, eventApi)
+  private val loggingApi: LoggingApi = new LoggingImpl(loggerCache)
+  private val postHandlerImpl        = new PostHandlerImpl(alarmApi, commandApi, eventApi, loggingApi)
   private val route                  = new Routes(postHandlerImpl, null, logger).route
 
   // fixme: add failure scenario when event server/ alarm server is down
@@ -225,4 +229,35 @@ class PostRouteTest extends BaseTestSuite with ScalatestRouteTest with GatewayCo
     }
   }
 
+  "Log" must {
+    "log the message and return Done | ESW-200" in {
+      val log = Log(
+        "esw-test",
+        Level.FATAL,
+        "test-message",
+        MapElem.Unsized(
+          ("additional-info", IntElem(45)),
+          (
+            "nested-data",
+            MapElem.Unsized(
+              ("city", StringElem("LA")),
+              ("preferences", NullElem)
+            )
+          )
+        )
+      )
+      Post("/post-endpoint", log) ~> route ~> check {
+        responseAs[Done] shouldEqual Done
+        val expectedMetadata = Map(
+          "additional-info" -> 45,
+          "nested-data" -> Map(
+            "city" -> "LA"
+          )
+        )
+        verify(logger).fatal(argsEq("test-message"), argsEq(expectedMetadata), any[Throwable], any[AnyId])(
+          any[SourceFactory]
+        )
+      }
+    }
+  }
 }
