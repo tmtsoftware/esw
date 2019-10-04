@@ -10,7 +10,7 @@ import csw.logging.api.scaladsl.Logger
 import csw.logging.client.scaladsl.LoggerFactory
 import csw.params.core.models.Subsystem
 import esw.http.core.wiring.ActorRuntime
-import esw.ocs.api.protocol.{LoadScriptResponse, RegistrationError}
+import esw.ocs.api.protocol.{LoadScriptResponse, LoadScriptError}
 import esw.ocs.app.SequencerAppCommand._
 import esw.ocs.app.wiring.{SequenceComponentWiring, SequencerWiring}
 import esw.ocs.impl.messages.SequenceComponentMsg
@@ -66,7 +66,7 @@ object SequencerApp extends CommandApp[SequencerAppCommand] {
       id: String,
       mode: String,
       sequenceComponentWiring: SequenceComponentWiring
-  ): Either[RegistrationError, AkkaLocation] = {
+  ): Either[LoadScriptError, AkkaLocation] = {
     import sequenceComponentWiring._
     import sequenceComponentWiring.actorRuntime.{scheduler, _}
     import sequenceComponentWiring.cswWiring.actorSystem
@@ -82,7 +82,7 @@ object SequencerApp extends CommandApp[SequencerAppCommand] {
   }
 
   private def withLogging(actorRuntime: ActorRuntime, log: Logger, enableLogging: Boolean)(
-      f: => Either[RegistrationError, AkkaLocation]
+      f: => Either[LoadScriptError, AkkaLocation]
   ): Unit = {
     import actorRuntime._
     def cleanup(): Unit = typedSystem.terminate()
@@ -95,7 +95,7 @@ object SequencerApp extends CommandApp[SequencerAppCommand] {
     }
   }
 
-  private def report(either: Either[RegistrationError, AkkaLocation], log: Logger, enableLogging: Boolean)(
+  private def report(either: Either[LoadScriptError, AkkaLocation], log: Logger, enableLogging: Boolean)(
       cleanup: () => Unit
   ): Unit =
     either match {

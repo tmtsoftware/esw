@@ -5,7 +5,7 @@ import akka.actor.typed.Behavior
 import akka.actor.typed.scaladsl.Behaviors
 import csw.location.models.AkkaLocation
 import csw.logging.api.scaladsl.Logger
-import esw.ocs.api.protocol.{GetStatusResponse, LoadScriptResponse, RegistrationError}
+import esw.ocs.api.protocol.{GetStatusResponse, LoadScriptResponse, LoadScriptError}
 import esw.ocs.impl.internal.{SequencerServer, SequencerServerFactory}
 import esw.ocs.impl.messages.SequenceComponentMsg
 import esw.ocs.impl.messages.SequenceComponentMsg.{GetStatus, LoadScript, Stop, UnloadScript}
@@ -56,7 +56,7 @@ object SequenceComponentBehavior {
             replyTo ! GetStatusResponse(Some(location))
             Behaviors.same
           case LoadScript(_, _, replyTo) =>
-            replyTo ! LoadScriptResponse(Left(RegistrationError("Loading script failed: Sequencer already running")))
+            replyTo ! LoadScriptResponse(Left(LoadScriptError("Loading script failed: Sequencer already running")))
             Behaviors.same
           case Stop => Behaviors.same
         }

@@ -18,7 +18,7 @@ import csw.logging.api.scaladsl.Logger
 import csw.logging.client.scaladsl.LoggerFactory
 import csw.network.utils.SocketUtils
 import esw.http.core.wiring.{ActorRuntime, CswWiring, HttpService, Settings}
-import esw.ocs.api.protocol.RegistrationError
+import esw.ocs.api.protocol.LoadScriptError
 import esw.ocs.app.route.{PostHandlerImpl, SequencerAdminRoutes, WebsocketHandlerImpl}
 import esw.ocs.dsl.script.utils.{LockUnlockUtil, ScriptLoader}
 import esw.ocs.dsl.script.{CswServices, ScriptDsl}
@@ -31,6 +31,7 @@ import esw.ocs.impl.{SequencerAdminFactoryImpl, SequencerAdminImpl}
 
 import scala.async.Async.{async, await}
 import scala.concurrent.Future
+import scala.util.control.NonFatal
 
 private[ocs] class SequencerWiring(val packageId: String, val observingMode: String, sequenceComponentName: Option[String]) {
   private lazy val config: Config       = ConfigFactory.load()
@@ -104,13 +105,17 @@ private[ocs] class SequencerWiring(val packageId: String, val observingMode: Str
     )
 
   lazy val sequencerServer: SequencerServer = new SequencerServer {
-    override def start(): Either[RegistrationError, AkkaLocation] = {
-      new Engine().start(sequenceOperatorFactory(), script)
+    override def start(): Either[LoadScriptError, AkkaLocation] = {
+      try {
+        new Engine().start(sequenceOperatorFactory(), script)
 
-      httpService.registeredLazyBinding.block
+        httpService.registeredLazyBinding.block
 
-      val registration = AkkaRegistration(AkkaConnection(componentId), prefix, sequencerRef.toURI)
-      new LocationServiceUtil(locationService).register(registration).block
+        val registration = AkkaRegistration(AkkaConnection(componentId), prefix, sequencerRef.toURI)
+        new LocationServiceUtil(locationService).register(registration).block
+      } catch {
+        case NonFatal(e) => Left(LoadScriptError(e.getMessage))
+      }
     }
 
     override def shutDown(): Future[Done] = {

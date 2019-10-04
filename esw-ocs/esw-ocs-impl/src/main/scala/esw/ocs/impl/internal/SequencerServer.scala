@@ -2,12 +2,12 @@ package esw.ocs.impl.internal
 
 import akka.Done
 import csw.location.models.AkkaLocation
-import esw.ocs.api.protocol.RegistrationError
+import esw.ocs.api.protocol.LoadScriptError
 
 import scala.concurrent.Future
 
 trait SequencerServer {
-  def start(): Either[RegistrationError, AkkaLocation]
+  def start(): Either[LoadScriptError, AkkaLocation]
   def shutDown(): Future[Done]
 }
 

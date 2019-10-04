@@ -9,7 +9,7 @@ import csw.logging.api.scaladsl.Logger
 import csw.logging.client.scaladsl.LoggerFactory
 import csw.params.core.models.Subsystem
 import esw.http.core.wiring.{ActorRuntime, CswWiring}
-import esw.ocs.api.protocol.RegistrationError
+import esw.ocs.api.protocol.LoadScriptError
 import esw.ocs.impl.core.SequenceComponentBehavior
 import esw.ocs.impl.internal.{SequenceComponentRegistration, SequencerServerFactory, Timeouts}
 import esw.ocs.impl.messages.SequenceComponentMsg
@@ -46,7 +46,7 @@ private[ocs] class SequenceComponentWiring(
   private lazy val sequenceComponentRegistration =
     new SequenceComponentRegistration(subsystem, name, locationService, sequenceComponentFactory)
 
-  def start(): Either[RegistrationError, AkkaLocation] =
+  def start(): Either[LoadScriptError, AkkaLocation] =
     sequenceComponentRegistration.registerSequenceComponent(registrationRetryCount).block
 
 }

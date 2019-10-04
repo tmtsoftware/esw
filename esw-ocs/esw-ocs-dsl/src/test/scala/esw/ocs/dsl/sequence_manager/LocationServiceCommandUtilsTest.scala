@@ -16,7 +16,7 @@ import csw.location.models.Connection.AkkaConnection
 import csw.location.models.{AkkaLocation, AkkaRegistration, ComponentId}
 import csw.params.core.models.{Prefix, Subsystem}
 import esw.ocs.api.BaseTestSuite
-import esw.ocs.api.protocol.RegistrationError
+import esw.ocs.api.protocol.LoadScriptError
 
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future
@@ -56,7 +56,7 @@ class LocationServiceCommandUtilsTest extends ScalaTestWithActorTestKit with Bas
       val locationServiceDsl = new LocationServiceUtil(locationService)
 
       locationServiceDsl.register(registration).leftValue should ===(
-        RegistrationError(errorMsg)
+        LoadScriptError(errorMsg)
       )
       system.terminate()
     }

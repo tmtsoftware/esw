@@ -139,16 +139,5 @@ class SequencerAppIntegrationTest extends ScalaTestFrameworkTestKit with BaseTes
       val sequence       = Sequence(setup)
       commandService.submitAndWait(sequence).futureValue shouldBe Completed(sequence.runId)
     }
-
-    /*"throw exception if provided script configuration is invalid | ESW-102" in {
-      val subsystem     = Subsystem.ESW
-      val name          = Some("primary")
-      val packageId     = Some("tcs")
-      val observingMode = "darknight"
-
-      intercept[ScriptNotFound] {
-        SequencerApp.run(Sequencer(subsystem, name, packageId, observingMode), enableLogging = false)
-      }
-    }*/
   }
 }

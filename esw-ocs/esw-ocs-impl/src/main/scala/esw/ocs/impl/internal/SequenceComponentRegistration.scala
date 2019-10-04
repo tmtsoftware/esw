@@ -8,7 +8,7 @@ import csw.location.api.scaladsl.LocationService
 import csw.location.models.Connection.AkkaConnection
 import csw.location.models.{AkkaLocation, AkkaRegistration, ComponentId, ComponentType}
 import csw.params.core.models.{Prefix, Subsystem}
-import esw.ocs.api.protocol.RegistrationError
+import esw.ocs.api.protocol.LoadScriptError
 import esw.ocs.dsl.sequence_manager.LocationServiceUtil
 import esw.ocs.impl.messages.SequenceComponentMsg
 import esw.ocs.impl.messages.SequenceComponentMsg.Stop
@@ -26,14 +26,14 @@ class SequenceComponentRegistration(
     implicit override val actorSystem: ActorSystem[SpawnProtocol]
 ) extends LocationServiceUtil(_locationService) {
 
-  def registerSequenceComponent(retryCount: Int): Future[Either[RegistrationError, AkkaLocation]] = name match {
+  def registerSequenceComponent(retryCount: Int): Future[Either[LoadScriptError, AkkaLocation]] = name match {
     case Some(_) =>
       // Don't retry if subsystem and name is provided
       registerWithRetry(retryCount = 0)
     case None => registerWithRetry(retryCount)
   }
 
-  private def registerWithRetry(retryCount: Int): Future[Either[RegistrationError, AkkaLocation]] =
+  private def registerWithRetry(retryCount: Int): Future[Either[LoadScriptError, AkkaLocation]] =
     registration().flatMap { akkaRegistration =>
       register(
         akkaRegistration,
@@ -42,7 +42,7 @@ class SequenceComponentRegistration(
             //kill actor ref if registration fails. Retry attempt will create new actor ref
             akkaRegistration.actorRefURI.toActorRef.unsafeUpcast[SequenceComponentMsg] ! Stop
             registerWithRetry(retryCount - 1)
-          case NonFatal(e) => Future.successful(Left(RegistrationError(e.getMessage)))
+          case NonFatal(e) => Future.successful(Left(LoadScriptError(e.getMessage)))
         }
       )
     }

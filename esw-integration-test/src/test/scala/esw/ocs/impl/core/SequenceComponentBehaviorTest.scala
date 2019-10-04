@@ -13,7 +13,7 @@ import csw.location.models.{AkkaLocation, ComponentId, ComponentType, Location}
 import csw.logging.client.scaladsl.LoggerFactory
 import csw.testkit.scaladsl.ScalaTestFrameworkTestKit
 import esw.ocs.api.BaseTestSuite
-import esw.ocs.api.protocol.{GetStatusResponse, LoadScriptResponse, RegistrationError}
+import esw.ocs.api.protocol.{GetStatusResponse, LoadScriptResponse, LoadScriptError}
 import esw.ocs.app.wiring.SequencerWiring
 import esw.ocs.impl.messages.SequenceComponentMsg
 import esw.ocs.impl.messages.SequenceComponentMsg.{GetStatus, LoadScript, Stop, UnloadScript}
@@ -104,7 +104,7 @@ class SequenceComponentBehaviorTest extends ScalaTestFrameworkTestKit with BaseT
       )
 
       sequenceComponentRef ! LoadScript("tcs", "darknight", loadScriptResponseProbe.ref)
-      loadScriptResponseProbe.receiveMessage.response.leftValue shouldBe RegistrationError(
+      loadScriptResponseProbe.receiveMessage.response.leftValue shouldBe LoadScriptError(
         "Loading script failed: Sequencer already running"
       )
     }

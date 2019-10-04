@@ -13,7 +13,7 @@ import csw.location.models.Connection.AkkaConnection
 import csw.location.models.ConnectionType.AkkaType
 import csw.location.models._
 import csw.params.core.models.Subsystem
-import esw.ocs.api.protocol.RegistrationError
+import esw.ocs.api.protocol.LoadScriptError
 import esw.ocs.dsl.Timeouts
 
 import scala.compat.java8.FutureConverters.FutureOps
@@ -45,9 +45,9 @@ class LocationServiceUtil(private[esw] val locationService: LocationService)(imp
       }
       .recoverWith(onFailure)
 
-  def register(akkaRegistration: AkkaRegistration): Future[Either[RegistrationError, AkkaLocation]] =
+  def register(akkaRegistration: AkkaRegistration): Future[Either[LoadScriptError, AkkaLocation]] =
     register(akkaRegistration, onFailure = {
-      case NonFatal(e) => Future.successful(Left(RegistrationError(e.getMessage)))
+      case NonFatal(e) => Future.successful(Left(LoadScriptError(e.getMessage)))
     })
 
   def listBy(subsystem: Subsystem, componentType: ComponentType): Future[List[AkkaLocation]] =
