@@ -30,11 +30,11 @@ class SequenceComponentBehaviorTest extends ScalaTestFrameworkTestKit with BaseT
   implicit val timeOut: Timeout     = frameworkTestKit.timeout
 
   def sequencerWiring(
-      sequencerId: String,
+      packageId: String,
       observingMode: String,
       sequenceComponentName: Option[String]
   ): SequencerWiring =
-    new SequencerWiring(sequencerId, observingMode, sequenceComponentName)
+    new SequencerWiring(packageId, observingMode, sequenceComponentName)
 
   private def createBehaviorTestKit(): BehaviorTestKit[SequenceComponentMsg] = BehaviorTestKit(
     Behaviors.setup[SequenceComponentMsg] { _ =>
@@ -51,17 +51,17 @@ class SequenceComponentBehaviorTest extends ScalaTestFrameworkTestKit with BaseT
 
       val loadScriptResponseProbe = TestProbe[LoadScriptResponse]
       val getStatusProbe          = TestProbe[GetStatusResponse]
-      val sequencerId             = "testSequencerId1"
+      val packageId               = "testSequencerId1"
       val observingMode           = "testObservingMode1"
 
       //LoadScript
-      sequenceComponentRef ! LoadScript(sequencerId, observingMode, loadScriptResponseProbe.ref)
+      sequenceComponentRef ! LoadScript(packageId, observingMode, loadScriptResponseProbe.ref)
 
       //todo: try resolving from location service
       //Assert if script loaded and returns AkkaLocation of sequencer
       val loadScriptLocationResponse: AkkaLocation = loadScriptResponseProbe.receiveMessage.response.rightValue
       loadScriptLocationResponse.connection shouldEqual AkkaConnection(
-        ComponentId(s"$ocsSequenceComponentName@$sequencerId@$observingMode", ComponentType.Sequencer)
+        ComponentId(s"$ocsSequenceComponentName@$packageId@$observingMode", ComponentType.Sequencer)
       )
 
       //GetStatus
@@ -70,7 +70,7 @@ class SequenceComponentBehaviorTest extends ScalaTestFrameworkTestKit with BaseT
       //Assert if get status returns AkkaLocation of sequencer currently running
       val getStatusLocationResponse: Location = getStatusProbe.receiveMessage(5.seconds).response.get
       getStatusLocationResponse.connection shouldEqual AkkaConnection(
-        ComponentId(s"$ocsSequenceComponentName@$sequencerId@$observingMode", ComponentType.Sequencer)
+        ComponentId(s"$ocsSequenceComponentName@$packageId@$observingMode", ComponentType.Sequencer)
       )
 
       //UnloadScript
@@ -91,16 +91,16 @@ class SequenceComponentBehaviorTest extends ScalaTestFrameworkTestKit with BaseT
       )).futureValue
 
       val loadScriptResponseProbe = TestProbe[LoadScriptResponse]
-      val sequencerId             = "testSequencerId2"
+      val packageId               = "testSequencerId2"
       val observingMode           = "testObservingMode2"
 
       //LoadScript
-      sequenceComponentRef ! LoadScript(sequencerId, observingMode, loadScriptResponseProbe.ref)
+      sequenceComponentRef ! LoadScript(packageId, observingMode, loadScriptResponseProbe.ref)
 
       //Assert if script loaded and returns AkkaLocation of sequencer
       val loadScriptLocationResponse: AkkaLocation = loadScriptResponseProbe.receiveMessage.response.rightValue
       loadScriptLocationResponse.connection shouldEqual AkkaConnection(
-        ComponentId(s"$ocsSequenceComponentName@$sequencerId@$observingMode", ComponentType.Sequencer)
+        ComponentId(s"$ocsSequenceComponentName@$packageId@$observingMode", ComponentType.Sequencer)
       )
 
       sequenceComponentRef ! LoadScript("sequencerId3", "observingMode3", loadScriptResponseProbe.ref)

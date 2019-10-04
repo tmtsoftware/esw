@@ -33,7 +33,7 @@ object SequencerAppCommand {
   ) extends SequencerAppCommand
 
   final case class Sequencer(
-      @HelpMessage("sequencer ID, ex: iris")
+      @HelpMessage("Package ID, ex: iris")
       id: String,
       @HelpMessage("observing mode, ex: darknight")
       mode: String

@@ -48,7 +48,7 @@ class SequencerAdminIntegrationTest
   private implicit val askTimeout: Timeout  = Timeout(10.seconds)
   private implicit val scheduler: Scheduler = actorSystem.scheduler
 
-  private val sequencerId   = "testSequencerId5"
+  private val packageId     = "testSequencerId5"
   private val observingMode = "testObservingMode5"
 
   private val command1 = Setup(Prefix("esw.test"), CommandName("command-1"), None)
@@ -66,9 +66,9 @@ class SequencerAdminIntegrationTest
   }
 
   override protected def beforeEach(): Unit = {
-    wiring = new SequencerWiring(sequencerId, observingMode, None)
+    wiring = new SequencerWiring(packageId, observingMode, None)
     wiring.sequencerServer.start()
-    val componentId     = ComponentId(s"$sequencerId@$observingMode@http", ComponentType.Service)
+    val componentId     = ComponentId(s"$packageId@$observingMode@http", ComponentType.Service)
     val uri             = locationService.resolve(HttpConnection(componentId), 5.seconds).futureValue.get.uri
     val httpUrl         = s"${uri.toString}post-endpoint"
     val wsUrl           = s"ws://${uri.getHost}:${uri.getPort}/websocket-endpoint"
@@ -239,7 +239,7 @@ class SequencerAdminIntegrationTest
 
   private def resolveSequencer(): ActorRef[SequencerMsg] =
     locationService
-      .resolve(AkkaConnection(ComponentId(s"$sequencerId@$observingMode", ComponentType.Sequencer)), 5.seconds)
+      .resolve(AkkaConnection(ComponentId(s"$packageId@$observingMode", ComponentType.Sequencer)), 5.seconds)
       .futureValue
       .value
       .uri

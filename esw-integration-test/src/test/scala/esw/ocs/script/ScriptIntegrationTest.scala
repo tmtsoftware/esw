@@ -45,7 +45,7 @@ class ScriptIntegrationTest extends ScalaTestFrameworkTestKit(EventServer) with 
   private implicit val askTimeout: Timeout             = Timeouts.DefaultTimeout
   override implicit def patienceConfig: PatienceConfig = PatienceConfig(10.seconds)
 
-  private val ocsSequencerId   = "testSequencerId4"
+  private val ocsPackageId     = "testSequencerId4"
   private val ocsObservingMode = "testObservingMode4"
 
   var locationService: LocationService             = _
@@ -53,9 +53,9 @@ class ScriptIntegrationTest extends ScalaTestFrameworkTestKit(EventServer) with 
   private var ocsSequencer: ActorRef[SequencerMsg] = _
 
   private val tcsSequencer: ActorRef[SequencerMsg] = (actorSystem ? Spawn(TestSequencer.beh, "testSequencer")).awaitResult
-  private val tcsSequencerId                       = "TCS"
+  private val tcsPackageId                         = "TCS"
   private val tcsObservingMode                     = "testObservingMode4"
-  private val tcsConnection                        = AkkaConnection(ComponentId(s"$tcsSequencerId@$tcsObservingMode", ComponentType.Sequencer))
+  private val tcsConnection                        = AkkaConnection(ComponentId(s"$tcsPackageId@$tcsObservingMode", ComponentType.Sequencer))
   private val tcsRegistration                      = AkkaRegistration(tcsConnection, Prefix("TCS.test"), tcsSequencer.toURI)
   private var sequenceReceivedByTCSProbe: Sequence = _
 
@@ -63,7 +63,7 @@ class ScriptIntegrationTest extends ScalaTestFrameworkTestKit(EventServer) with 
     locationService = HttpLocationServiceFactory.makeLocalClient
     new LocationServiceUtil(locationService).register(tcsRegistration).awaitResult
 
-    ocsWiring = new SequencerWiring(ocsSequencerId, ocsObservingMode, None)
+    ocsWiring = new SequencerWiring(ocsPackageId, ocsObservingMode, None)
     ocsSequencer = ocsWiring.sequencerServer.start().rightValue.uri.toActorRef.unsafeUpcast[SequencerMsg]
   }
 

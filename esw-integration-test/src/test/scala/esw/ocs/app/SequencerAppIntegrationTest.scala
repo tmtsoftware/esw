@@ -120,12 +120,12 @@ class SequencerAppIntegrationTest extends ScalaTestFrameworkTestKit with BaseTes
 
   "Sequencer command" must {
     "start sequencer with provided id, mode and register it with location service | ESW-103, ESW-147, ESW-151" in {
-      val sequencerId   = "testSequencerId1"
+      val packageId     = "testSequencerId1"
       val observingMode = "testObservingMode1"
-      val sequencerName = s"$sequencerId@$observingMode"
+      val sequencerName = s"$packageId@$observingMode"
 
       // start Sequencer
-      SequencerApp.run(Sequencer(sequencerId, observingMode), enableLogging = false)
+      SequencerApp.run(Sequencer(packageId, observingMode), enableLogging = false)
 
       // verify that sequencer is started and able to process sequence command
       val connection        = AkkaConnection(ComponentId(sequencerName, ComponentType.Sequencer))
@@ -140,11 +140,11 @@ class SequencerAppIntegrationTest extends ScalaTestFrameworkTestKit with BaseTes
     }
 
     "throw exception if provided script configuration is invalid | ESW-102" in {
-      val sequencerId   = "testSequencerId3"
+      val packageId     = "testSequencerId3"
       val observingMode = "testObservingMode3"
 
       intercept[ScriptNotFound] {
-        SequencerApp.run(Sequencer(sequencerId, observingMode), enableLogging = false)
+        SequencerApp.run(Sequencer(packageId, observingMode), enableLogging = false)
       }
     }
   }

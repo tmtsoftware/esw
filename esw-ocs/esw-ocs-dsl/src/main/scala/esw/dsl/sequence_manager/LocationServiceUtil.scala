@@ -78,7 +78,7 @@ class LocationServiceUtil(private[esw] val locationService: LocationService)(imp
   }
 
   private[esw] def resolveSequencer(
-      sequencerId: String,
+      packageId: String,
       observingMode: String,
       timeout: FiniteDuration = Timeouts.DefaultTimeout
   ): Future[AkkaLocation] = {
@@ -87,14 +87,14 @@ class LocationServiceUtil(private[esw] val locationService: LocationService)(imp
       locationService.list
         .map {
           _.collectFirst {
-            case location: AkkaLocation if location.connection.componentId.name.contains(s"$sequencerId@$observingMode") =>
+            case location: AkkaLocation if location.connection.componentId.name.contains(s"$packageId@$observingMode") =>
               location
           }
         }
         .flatMap {
           case Some(location) => Future.successful(location)
           case _ if remainingDuration.length <= 0 =>
-            throw new RuntimeException(s"Could not find any sequencer with name: $sequencerId@$observingMode")
+            throw new RuntimeException(s"Could not find any sequencer with name: $packageId@$observingMode")
           case _ =>
             after(remainingDuration min ResolveInterval, actorSystem.scheduler) {
               resolveLoop(remainingDuration minus ResolveInterval)
@@ -108,7 +108,7 @@ class LocationServiceUtil(private[esw] val locationService: LocationService)(imp
   def jResolveComponentRef(componentName: String, componentType: ComponentType): CompletionStage[ActorRef[ComponentMessage]] =
     resolveComponentRef(componentName, componentType).toJava
 
-  def jResolveSequencer(sequencerId: String, observingMode: String): CompletionStage[AkkaLocation] =
-    resolveSequencer(sequencerId, observingMode).toJava
+  def jResolveSequencer(packageId: String, observingMode: String): CompletionStage[AkkaLocation] =
+    resolveSequencer(packageId, observingMode).toJava
 
 }

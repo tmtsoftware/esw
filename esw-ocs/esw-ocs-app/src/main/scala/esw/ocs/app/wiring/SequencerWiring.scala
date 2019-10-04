@@ -32,9 +32,9 @@ import esw.ocs.impl.{SequencerAdminFactoryImpl, SequencerAdminImpl}
 import scala.async.Async.{async, await}
 import scala.concurrent.Future
 
-private[ocs] class SequencerWiring(val sequencerId: String, val observingMode: String, sequenceComponentName: Option[String]) {
+private[ocs] class SequencerWiring(val packageId: String, val observingMode: String, sequenceComponentName: Option[String]) {
   private lazy val config: Config       = ConfigFactory.load()
-  private[esw] lazy val sequencerConfig = SequencerConfig.from(config, sequencerId, observingMode, sequenceComponentName)
+  private[esw] lazy val sequencerConfig = SequencerConfig.from(config, packageId, observingMode, sequenceComponentName)
   import sequencerConfig._
 
   lazy val actorSystem: ActorSystem[SpawnProtocol] = ActorSystemFactory.remote(SpawnProtocol.behavior, "sequencer-system")

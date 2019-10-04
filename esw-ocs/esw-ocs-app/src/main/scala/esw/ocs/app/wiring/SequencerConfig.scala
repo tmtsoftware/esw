@@ -7,17 +7,17 @@ import esw.dsl.script.exceptions.ScriptLoadingException.ScriptConfigurationMissi
 private[app] final case class SequencerConfig(sequencerName: String, prefix: Prefix, scriptClass: String)
 
 private[app] object SequencerConfig {
-  def from(config: Config, sequencerId: String, observingMode: String, sequenceComponentName: Option[String]): SequencerConfig = {
+  def from(config: Config, packageId: String, observingMode: String, sequenceComponentName: Option[String]): SequencerConfig = {
     val scriptConfig =
       try {
-        config.getConfig(s"scripts.$sequencerId.$observingMode")
+        config.getConfig(s"scripts.$packageId.$observingMode")
       } catch {
-        case _: ConfigException.Missing => throw new ScriptConfigurationMissingException(sequencerId, observingMode)
+        case _: ConfigException.Missing => throw new ScriptConfigurationMissingException(packageId, observingMode)
       }
 
     val sequencerName = sequenceComponentName match {
-      case Some(name) => s"$name@$sequencerId@$observingMode"
-      case None       => s"$sequencerId@$observingMode"
+      case Some(name) => s"$name@$packageId@$observingMode"
+      case None       => s"$packageId@$observingMode"
     }
 
     val prefix      = scriptConfig.getString("prefix")

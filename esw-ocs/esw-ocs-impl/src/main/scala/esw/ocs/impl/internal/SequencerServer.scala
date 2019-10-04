@@ -12,5 +12,5 @@ trait SequencerServer {
 }
 
 trait SequencerServerFactory {
-  def make(sequencerId: String, observingMode: String, sequenceComponentName: Option[String]): SequencerServer
+  def make(packageId: String, observingMode: String, sequenceComponentName: Option[String]): SequencerServer
 }

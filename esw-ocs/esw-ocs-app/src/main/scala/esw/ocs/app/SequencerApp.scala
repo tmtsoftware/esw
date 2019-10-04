@@ -23,10 +23,10 @@ object SequencerApp extends CommandApp[SequencerAppCommand] {
   }
 
   def sequencerWiringWithHttp(
-      sequencerId: String,
+      packageId: String,
       observingMode: String,
       sequenceComponentName: Option[String]
-  ): SequencerWiring = new SequencerWiring(sequencerId, observingMode, sequenceComponentName)
+  ): SequencerWiring = new SequencerWiring(packageId, observingMode, sequenceComponentName)
 
   def run(command: SequencerAppCommand, enableLogging: Boolean = true): Unit =
     command match {

@@ -21,13 +21,13 @@ object SequenceComponentBehavior {
     lazy val idle: Behavior[SequenceComponentMsg] = Behaviors.receiveMessage[SequenceComponentMsg] { msg =>
       log.debug(s"Sequence Component in lifecycle state :Idle, received message :[$msg]")
       msg match {
-        case LoadScript(sequencerId, observingMode, replyTo) =>
-          val sequencerServer    = sequencerServerFactory.make(sequencerId, observingMode, Some(sequenceComponentName))
+        case LoadScript(packageId, observingMode, replyTo) =>
+          val sequencerServer    = sequencerServerFactory.make(packageId, observingMode, Some(sequenceComponentName))
           val registrationResult = sequencerServer.start()
           replyTo ! LoadScriptResponse(registrationResult)
           registrationResult match {
             case Right(value) =>
-              log.info(s"Successfully started sequencer with sequencer id :$sequencerId in observation mode: $observingMode")
+              log.info(s"Successfully started sequencer with sequencer id :$packageId in observation mode: $observingMode")
               running(sequencerServer, value)
             case Left(value) =>
               log.error(s"Failed to start sequencer: ${value.msg}")

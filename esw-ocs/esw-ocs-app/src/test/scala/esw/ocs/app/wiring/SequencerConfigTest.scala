@@ -12,9 +12,9 @@ class SequencerConfigTest extends BaseTestSuite {
 
   "from" must {
     "create SequencerConfig based on sequencerId and observingMode | ESW-103" in {
-      val sequencerId      = "testSequencerId1"
+      val packageId        = "testSequencerId1"
       val observingMode    = "testObservingMode1"
-      val sequencerConfigs = SequencerConfig.from(config, sequencerId, observingMode, None)
+      val sequencerConfigs = SequencerConfig.from(config, packageId, observingMode, None)
 
       sequencerConfigs.sequencerName should ===("testSequencerId1@testObservingMode1")
       sequencerConfigs.prefix should ===(Prefix("esw.ocs.prefix1"))
@@ -22,10 +22,10 @@ class SequencerConfigTest extends BaseTestSuite {
     }
 
     "create SequencerConfig based on sequencerId and observingMode | ESW-103, ESW-214" in {
-      val sequencerId           = "testSequencerId1"
+      val packageId             = "testSequencerId1"
       val observingMode         = "testObservingMode1"
       val sequenceComponentName = "OCS_1"
-      val sequencerConfigs      = SequencerConfig.from(config, sequencerId, observingMode, Some(sequenceComponentName))
+      val sequencerConfigs      = SequencerConfig.from(config, packageId, observingMode, Some(sequenceComponentName))
 
       sequencerConfigs.sequencerName should ===("OCS_1@testSequencerId1@testObservingMode1")
       sequencerConfigs.prefix should ===(Prefix("esw.ocs.prefix1"))
@@ -33,13 +33,13 @@ class SequencerConfigTest extends BaseTestSuite {
     }
 
     "throw ScriptConfigurationMissingException if script config is not provided for given sequencerId and observingMode | ESW-103" in {
-      val sequencerId   = "invalidSequencerId"
+      val packageId     = "invalidSequencerId"
       val observingMode = "invalidObservingMode"
 
       val exception = intercept[ScriptConfigurationMissingException] {
-        SequencerConfig.from(config, sequencerId, observingMode, None)
+        SequencerConfig.from(config, packageId, observingMode, None)
       }
-      exception.getMessage should ===(s"Script configuration missing for $sequencerId with $observingMode")
+      exception.getMessage should ===(s"Script configuration missing for $packageId with $observingMode")
     }
   }
 }
