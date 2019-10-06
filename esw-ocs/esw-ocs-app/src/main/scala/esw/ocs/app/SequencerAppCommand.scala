@@ -7,7 +7,10 @@ import csw.params.core.models.Subsystem
 
 import scala.util.Try
 
-sealed trait SequencerAppCommand
+sealed trait SequencerAppCommand {
+  def subsystem: Subsystem
+  def name: Option[String]
+}
 
 object SequencerAppCommand {
 
