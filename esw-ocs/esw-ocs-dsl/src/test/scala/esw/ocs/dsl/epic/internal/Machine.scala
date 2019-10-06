@@ -1,8 +1,8 @@
-package esw.ocs.dsl.script.epic.internal
+package esw.ocs.dsl.epic.internal
 
 import akka.Done
-import esw.ocs.dsl.script.epic.internal.event.Utils
-import esw.ocs.dsl.script.epic.{ProgramContext, Refreshable}
+import esw.ocs.dsl.epic.internal.event.Utils
+import esw.ocs.dsl.epic.{ProgramContext, Refreshable}
 
 import scala.concurrent.Future
 import scala.concurrent.duration.FiniteDuration

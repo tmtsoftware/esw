@@ -1,4 +1,4 @@
-package esw.ocs.dsl.script.epic
+package esw.ocs.dsl.epic
 
 import akka.actor.typed.{ActorSystem, SpawnProtocol}
 

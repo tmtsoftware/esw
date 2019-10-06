@@ -1,4 +1,4 @@
-package esw.ocs.dsl.script.epic.internal.event
+package esw.ocs.dsl.epic.internal.event
 
 import java.util
 import java.util.concurrent.{CompletionStage, ScheduledExecutorService}

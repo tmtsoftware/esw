@@ -1,8 +1,8 @@
-package esw.ocs.dsl.script.epic
+package esw.ocs.dsl.epic
 
 import akka.actor.typed.ActorSystem
-import esw.ocs.dsl.script.epic.TemperatureProgram.{High, Init, Ok, State}
-import esw.ocs.dsl.script.epic.internal.{Machine, Var}
+import esw.ocs.dsl.epic.TemperatureProgram.{High, Init, Ok, State}
+import esw.ocs.dsl.epic.internal.{Machine, Var}
 
 import scala.concurrent.duration.DurationLong
 

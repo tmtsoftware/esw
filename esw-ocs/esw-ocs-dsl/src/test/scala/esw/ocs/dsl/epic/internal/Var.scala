@@ -1,9 +1,9 @@
-package esw.ocs.dsl.script.epic.internal
+package esw.ocs.dsl.epic.internal
 
 import akka.Done
 import akka.stream.KillSwitch
 import akka.stream.scaladsl.Sink
-import esw.ocs.dsl.script.epic.{ProgramContext, Refreshable}
+import esw.ocs.dsl.epic.{ProgramContext, Refreshable}
 
 import scala.concurrent.Future
 import scala.reflect.ClassTag
