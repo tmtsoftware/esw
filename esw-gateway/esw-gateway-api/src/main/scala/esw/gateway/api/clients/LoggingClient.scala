@@ -6,13 +6,12 @@ import esw.gateway.api.LoggingApi
 import esw.gateway.api.codecs.GatewayCodecs
 import esw.gateway.api.protocol.PostRequest
 import esw.gateway.api.protocol.PostRequest.Log
-import io.bullet.borer.Dom.MapElem
 import msocket.api.Transport
 
 import scala.concurrent.Future
 
 class LoggingClient(postClient: Transport[PostRequest]) extends LoggingApi with GatewayCodecs {
-  def log(appName: String, level: Level, message: String, metadata: MapElem): Future[Done] = {
+  def log(appName: String, level: Level, message: String, metadata: Map[String, Any]): Future[Done] = {
     postClient.requestResponse[Done](Log(appName, level, message, metadata))
   }
 }

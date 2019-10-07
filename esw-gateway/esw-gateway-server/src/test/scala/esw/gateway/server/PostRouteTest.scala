@@ -24,7 +24,6 @@ import esw.gateway.api.{AlarmApi, CommandApi, EventApi, LoggingApi}
 import esw.gateway.impl._
 import esw.gateway.server.handlers.PostHandlerImpl
 import esw.http.core.BaseTestSuite
-import io.bullet.borer.Dom.{IntElem, MapElem, NullElem, StringElem}
 import mscoket.impl.HttpCodecs
 import org.mockito.ArgumentMatchers.{any, eq => argsEq}
 import org.mockito.Mockito.when
@@ -235,24 +234,17 @@ class PostRouteTest extends BaseTestSuite with ScalatestRouteTest with GatewayCo
         "esw-test",
         Level.FATAL,
         "test-message",
-        MapElem.Unsized(
-          ("additional-info", IntElem(45)),
-          (
-            "nested-data",
-            MapElem.Unsized(
-              ("city", StringElem("LA")),
-              ("preferences", NullElem)
-            )
-          )
+        Map(
+          "additional-info" -> 45,
+          "city"            -> "LA"
         )
       )
+
       Post("/post-endpoint", log) ~> route ~> check {
         responseAs[Done] shouldEqual Done
         val expectedMetadata = Map(
           "additional-info" -> 45,
-          "nested-data" -> Map(
-            "city" -> "LA"
-          )
+          "city"            -> "LA"
         )
         verify(logger).fatal(argsEq("test-message"), argsEq(expectedMetadata), any[Throwable], any[AnyId])(
           any[SourceFactory]
