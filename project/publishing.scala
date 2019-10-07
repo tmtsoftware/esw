@@ -25,23 +25,6 @@ object PublishBintray extends AutoPlugin {
   )
 }
 
-// used for doc publish using ghpagesPushSite
-object GithubPublishDocs extends AutoPlugin {
-  import com.typesafe.sbt.SbtGit.GitKeys
-  import com.typesafe.sbt.sbtghpages.GhpagesPlugin
-  import GhpagesPlugin.autoImport._
-
-  override def requires: Plugins = GhpagesPlugin
-
-  override def projectSettings: Seq[Setting[_]] = Seq(
-    ghpagesBranch := "master",
-    includeFilter in ghpagesCleanSite := new FileFilter {
-      override def accept(pathname: File): Boolean = pathname.getAbsolutePath.contains(s"${EswKeys.projectName}/${version.value}")
-    },
-    GitKeys.gitRemoteRepo := "git@github.com:tmtsoftware/tmtsoftware.github.io.git"
-  )
-}
-
 object DeployApp extends AutoPlugin {
   import com.typesafe.sbt.packager.SettingsHelper
   import com.typesafe.sbt.packager.archetypes.JavaAppPackaging

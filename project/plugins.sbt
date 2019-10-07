@@ -18,6 +18,9 @@ addSbtPlugin("org.scala-js"       % "sbt-scalajs"                % "0.6.29")
 resolvers += "Jenkins repo" at "https://repo.jenkins-ci.org/public/"
 addSbtPlugin("ohnosequences" % "sbt-github-release" % "0.7.0")
 
+resolvers += Resolver.bintrayRepo("twtmt", "sbt-plugins")
+addSbtPlugin("com.github.tmtsoftware" % "sbt-docs" % "0.1.2")
+
 libraryDependencies += "com.sun.activation" % "javax.activation" % "1.2.0"
 
 scalacOptions ++= Seq(
