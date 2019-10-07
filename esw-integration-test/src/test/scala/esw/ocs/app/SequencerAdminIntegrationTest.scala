@@ -22,23 +22,18 @@ import csw.testkit.scaladsl.ScalaTestFrameworkTestKit
 import csw.time.core.models.UTCTime
 import esw.ocs.api.BaseTestSuite
 import esw.ocs.api.client.SequencerAdminClient
-import esw.ocs.api.codecs.SequencerAdminHttpCodecs
 import esw.ocs.api.models.StepStatus.Finished.{Failure, Success}
 import esw.ocs.api.models.StepStatus.Pending
 import esw.ocs.api.models.{Step, StepList}
 import esw.ocs.api.protocol._
 import esw.ocs.app.wiring.SequencerWiring
+import esw.ocs.impl.SequencerAdminClientFactory
 import esw.ocs.impl.messages.SequencerState.Offline
-import mscoket.impl.post.HttpPostTransport
-import mscoket.impl.ws.WebsocketTransport
 
 import scala.concurrent.Future
 import scala.concurrent.duration.DurationLong
 
-class SequencerAdminIntegrationTest
-    extends ScalaTestFrameworkTestKit(EventServer)
-    with BaseTestSuite
-    with SequencerAdminHttpCodecs {
+class SequencerAdminIntegrationTest extends ScalaTestFrameworkTestKit(EventServer) with BaseTestSuite {
 
   import frameworkTestKit._
   private implicit val sys: ActorSystem[SpawnProtocol] = actorSystem
@@ -68,14 +63,12 @@ class SequencerAdminIntegrationTest
   override protected def beforeEach(): Unit = {
     wiring = new SequencerWiring(packageId, observingMode, None)
     wiring.sequencerServer.start()
-    val componentId     = ComponentId(s"$packageId@$observingMode@http", ComponentType.Service)
-    val uri             = locationService.resolve(HttpConnection(componentId), 5.seconds).futureValue.get.uri
-    val httpUrl         = s"${uri.toString}post-endpoint"
-    val wsUrl           = s"ws://${uri.getHost}:${uri.getPort}/websocket-endpoint"
-    val postClient      = new HttpPostTransport[SequencerAdminPostRequest](httpUrl, None)
-    val websocketClient = new WebsocketTransport[SequencerAdminWebsocketRequest](wsUrl)
+    val componentId = ComponentId(s"$packageId@$observingMode@http", ComponentType.Service)
+    val uri         = locationService.resolve(HttpConnection(componentId), 5.seconds).futureValue.get.uri
+    val postUrl     = s"${uri.toString}post-endpoint"
+    val wsUrl       = s"ws://${uri.getHost}:${uri.getPort}/websocket-endpoint"
 
-    sequencerAdmin = new SequencerAdminClient(postClient, websocketClient)
+    sequencerAdmin = SequencerAdminClientFactory.make(postUrl, wsUrl, None)
     sequencer = resolveSequencer()
   }
 

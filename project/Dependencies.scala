@@ -20,6 +20,7 @@ object Dependencies {
       Akka.`akka-stream-typed`,
       Libs.`scala-async`,
       Libs.enumeratum.value,
+      Libs.`msocket-impl-jvm`,
       Libs.scalatest                  % Test,
       Akka.`akka-actor-testkit-typed` % Test,
       Libs.`mockito-scala`            % Test
