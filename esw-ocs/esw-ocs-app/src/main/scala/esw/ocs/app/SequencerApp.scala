@@ -67,7 +67,7 @@ object SequencerApp extends CommandApp[SequencerAppCommand] {
   private def report(appResult: Either[LoadScriptError, AkkaLocation]) = appResult match {
     case Left(err) => logAndThrowError(s"Failed to start with error: $err")
     case Right(location) =>
-      logInfo(s"Successfully started and registered Component with Location: [$location]")
+      logInfo(s"Successfully started and registered ${location.connection.componentId.componentType} with Location: [$location]")
       location
   }
 
