@@ -180,5 +180,18 @@ class SequencerAppIntegrationTest extends ScalaTestFrameworkTestKit with BaseTes
 
       sequencerLocation.connection.componentId.name shouldBe sequencerName
     }
+
+    "throw exception if LoadScriptError is returned | ESW-102" in {
+      val subsystem        = Subsystem.ESW
+      val name             = Some("primary")
+      val invalidPackageId = "invalid package"
+      val observingMode    = "darknight"
+
+      val exception = intercept[RuntimeException] {
+        SequencerApp.run(Sequencer(subsystem, name, Some(invalidPackageId), observingMode), enableLogging = false)
+      }
+
+      exception.getMessage shouldEqual s"Failed to start with error: LoadScriptError(Script configuration missing for $invalidPackageId with $observingMode)"
+    }
   }
 }

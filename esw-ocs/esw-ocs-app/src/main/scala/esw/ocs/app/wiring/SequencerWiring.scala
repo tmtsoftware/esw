@@ -108,7 +108,9 @@ private[ocs] class SequencerWiring(val packageId: String, val observingMode: Str
   lazy val sequencerServer: SequencerServer = new SequencerServer {
     override def start(): Either[LoadScriptError, AkkaLocation] = {
       try {
-        new Engine().start(sequenceOperatorFactory(), script)
+        // evaluate lazy val script first to fail early before engine starts
+        val _script = script
+        new Engine().start(sequenceOperatorFactory(), _script)
 
         httpService.registeredLazyBinding.block
 

@@ -46,9 +46,8 @@ object SequencerApp extends CommandApp[SequencerAppCommand] {
       }
     } catch {
       case NonFatal(e) =>
-        e.printStackTrace()
         shutdown(FailureReason(e)).block
-        exit(255)
+        throw e
     }
   }
 
