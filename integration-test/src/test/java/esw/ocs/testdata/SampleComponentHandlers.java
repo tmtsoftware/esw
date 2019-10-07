@@ -83,11 +83,13 @@ public class SampleComponentHandlers extends JComponentHandlers {
 
     @Override
     public void onGoOffline() {
-
+        SystemEvent event = new SystemEvent(Prefix.apply("tcs.filter.wheel"), EventName.apply("offline"));
+        cswCtx.eventService().defaultPublisher().publish(event);
     }
 
     @Override
     public void onGoOnline() {
-
+        SystemEvent event = new SystemEvent(Prefix.apply("tcs.filter.wheel"), EventName.apply("online"));
+        cswCtx.eventService().defaultPublisher().publish(event);
     }
 }

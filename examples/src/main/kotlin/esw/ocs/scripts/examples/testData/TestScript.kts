@@ -5,11 +5,11 @@ import csw.params.commands.*
 import csw.params.core.models.Id
 import csw.params.core.models.Prefix
 import esw.ocs.dsl.core.script
-import java.util.*
 import kotlinx.coroutines.delay
 import scala.Option
 import scala.collection.immutable.HashSet
 import scala.jdk.javaapi.CollectionConverters
+import java.util.*
 
 script {
 
@@ -58,5 +58,15 @@ script {
     handleOperationsMode {
         // do some actions to go to operations mode
         operationsModeForComponent("test", Assembly)
+    }
+
+    handleGoOffline {
+        // do some actions to go offline
+        goOfflineModeForComponent("test", Assembly)
+    }
+
+    handleGoOnline {
+        // do some actions to go online
+        goOnlineModeForComponent("test", Assembly)
     }
 }

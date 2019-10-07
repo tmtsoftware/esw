@@ -7,8 +7,12 @@ import csw.event.api.javadsl.IEventService
 import csw.event.api.javadsl.IEventSubscriber
 import csw.location.api.javadsl.ILocationService
 import csw.location.models.AkkaLocation
-import csw.params.commands.*
+import csw.location.models.ComponentType
 import csw.params.commands.CommandResponse.SubmitResponse
+import csw.params.commands.Observe
+import csw.params.commands.Sequence
+import csw.params.commands.SequenceCommand
+import csw.params.commands.Setup
 import csw.time.core.models.UTCTime
 import csw.time.scheduler.api.TimeServiceScheduler
 import esw.ocs.api.SequencerAdminFactoryApi
@@ -22,9 +26,12 @@ import esw.ocs.dsl.script.utils.LockUnlockUtil
 import esw.ocs.dsl.sequence_manager.LocationServiceUtil
 import java.util.concurrent.CompletionStage
 import kotlin.coroutines.CoroutineContext
-import kotlinx.coroutines.*
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.asCoroutineDispatcher
 import kotlinx.coroutines.future.await
 import kotlinx.coroutines.future.future
+import kotlinx.coroutines.launch
 
 sealed class ScriptDslKt : CoroutineScope, CswHighLevelDsl {
 

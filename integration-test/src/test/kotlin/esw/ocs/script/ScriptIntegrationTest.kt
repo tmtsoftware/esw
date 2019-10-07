@@ -35,15 +35,17 @@ import csw.params.events.SystemEvent
 import csw.testkit.javadsl.FrameworkTestKitJunitResource
 import csw.testkit.javadsl.JCSWService
 import csw.time.core.models.UTCTime
-import esw.ocs.api.protocol.DiagnosticModeResponse
-import esw.ocs.api.protocol.OperationsModeResponse
-import esw.ocs.api.protocol.`Ok$`
+import esw.ocs.api.protocol.*
 import esw.ocs.app.wiring.SequencerWiring
 import esw.ocs.dsl.params.stringKey
-import esw.ocs.impl.messages.SequencerMessages.DiagnosticMode
-import esw.ocs.impl.messages.SequencerMessages.OperationsMode
+import esw.ocs.impl.messages.SequencerMessages.*
 import io.kotlintest.*
 import io.kotlintest.specs.FunSpec
+import java.net.URI
+import java.time.Duration
+import java.util.*
+import java.util.concurrent.CompletionStage
+import java.util.concurrent.TimeUnit
 import kotlinx.coroutines.future.await
 import scala.Option
 import scala.concurrent.Await
@@ -51,11 +53,6 @@ import scala.concurrent.Future
 import scala.concurrent.duration.FiniteDuration
 import scala.jdk.javaapi.CollectionConverters
 import scala.util.Either
-import java.net.URI
-import java.time.Duration
-import java.util.*
-import java.util.concurrent.CompletionStage
-import java.util.concurrent.TimeUnit
 
 class ScriptIntegrationTest : FunSpec() {
 
@@ -90,8 +87,7 @@ class ScriptIntegrationTest : FunSpec() {
         `AkkaTypedExtension$`.`MODULE$`.UserActorFactory(this).spawn(behavior, name, props)
 
     private infix fun <T, R> ActorRef<T>.ask(msg: (ActorRef<R>) -> T): CompletionStage<R> = AskPattern.ask<T, R>(this,
-        Function { replyTo -> msg(replyTo) }
-        , 10.seconds, actorSystem.scheduler())
+        Function { replyTo -> msg(replyTo) }, 10.seconds, actorSystem.scheduler())
 
     private fun <T> List<T>.toScala() = CollectionConverters.asScala<T>(this).toSeq()
     private fun <T> Set<T>.toScala() = CollectionConverters.asScala<T>(this).toSet<T>()
@@ -159,7 +155,7 @@ class ScriptIntegrationTest : FunSpec() {
                 EventServiceFactory().jMake(JHttpLocationServiceFactory.makeLocalClient(actorSystem, mat), actorSystem)
             val eventKey = EventKey(Prefix("tcs.filter.wheel"), EventName("diagnostic-data"))
 
-            val load = ConfigFactory.parseString (
+            val load = ConfigFactory.parseString(
                 """
                     name = "test"
                     componentType = assembly
@@ -176,7 +172,7 @@ class ScriptIntegrationTest : FunSpec() {
             subscription.ready().await()
             testProbe.expectMessageClass(SystemEvent::class.java)
 
-            //diagnosticMode
+            // diagnosticMode
             val diagnosticModeParam = stringKey("mode").set(listOf("diagnostic").toScala())
             val diagnosticModeResF: CompletionStage<DiagnosticModeResponse> =
                 ocsSequencer ask { replyTo: ActorRef<DiagnosticModeResponse> ->
@@ -188,7 +184,7 @@ class ScriptIntegrationTest : FunSpec() {
             val expectedDiagEvent = testProbe.expectMessageClass(SystemEvent::class.java)
             expectedDiagEvent.paramSet().head() shouldBe diagnosticModeParam
 
-            //operationsMode
+            // operationsMode
             val operationsModeParam = stringKey("mode").set(listOf("operations").toScala())
 
             val operationsModeResF: CompletionStage<OperationsModeResponse> =
@@ -199,6 +195,58 @@ class ScriptIntegrationTest : FunSpec() {
 
             val expectedOpEvent = testProbe.expectMessageClass(SystemEvent::class.java)
             expectedOpEvent.paramSet().head() shouldBe operationsModeParam
+        }
+
+        // todo: test goOnline/goOffline to sequencer dsl
+        test("CswServices must be able to forward GoOnline/GoOffline message to downstream components | ESW-118") {
+            val eventService =
+                EventServiceFactory().jMake(JHttpLocationServiceFactory.makeLocalClient(actorSystem, mat), actorSystem)
+            val onlineKey = EventKey(Prefix("tcs.filter.wheel"), EventName("online"))
+            val offlineKey = EventKey(Prefix("tcs.filter.wheel"), EventName("offline"))
+
+            val load = ConfigFactory.parseString(
+                """
+                    name = "test"
+                    componentType = assembly
+                    behaviorFactoryClassName = esw.ocs.testdata.AssemblyBehaviourFactory
+                    prefix = esw.test
+                    locationServiceUsage = RegisterOnly
+                    connections = []
+                """.trimIndent()
+            )
+            testKit.spawnStandalone(load)
+            val testProbe = TestProbe.create<Event>(actorSystem)
+
+            val onlineSubscription = eventService.defaultSubscriber().subscribeActorRef(setOf(onlineKey), testProbe.ref)
+            onlineSubscription.ready().await()
+            testProbe.expectMessageClass(SystemEvent::class.java)
+
+            val offlineSubscription =
+                eventService.defaultSubscriber().subscribeActorRef(setOf(offlineKey), testProbe.ref)
+            offlineSubscription.ready().await()
+            testProbe.expectMessageClass(SystemEvent::class.java)
+
+            // goOffline
+            val goOfflineResF: CompletionStage<OkOrUnhandledResponse> =
+                ocsSequencer ask { replyTo: ActorRef<OkOrUnhandledResponse> ->
+                    GoOffline(replyTo)
+                }
+
+            goOfflineResF.await() shouldBe `Ok$`.`MODULE$`
+
+            val expectedOfflineEvent = testProbe.expectMessageClass(SystemEvent::class.java)
+            expectedOfflineEvent.eventKey() shouldBe offlineKey
+
+            // goOnline
+            val goOnlineResF: CompletionStage<GoOnlineResponse> =
+                ocsSequencer ask { replyTo: ActorRef<GoOnlineResponse> ->
+                    GoOnline(replyTo)
+                }
+
+            goOnlineResF.await() shouldBe `Ok$`.`MODULE$`
+
+            val expectedOnlineEvent = testProbe.expectMessageClass(SystemEvent::class.java)
+            expectedOnlineEvent.eventKey() shouldBe onlineKey
         }
     }
 }
