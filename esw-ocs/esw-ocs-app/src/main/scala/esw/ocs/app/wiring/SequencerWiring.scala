@@ -6,6 +6,7 @@ import akka.actor.typed.{ActorRef, ActorSystem, SpawnProtocol}
 import akka.util.Timeout
 import com.typesafe.config.{Config, ConfigFactory}
 import csw.command.client.messages.CommandResponseManagerMessage
+import csw.command.client.messages.sequencer.SequencerMsg
 import csw.command.client.{CRMCacheProperties, CommandResponseManager, CommandResponseManagerActor}
 import csw.event.client.internal.commons.javawrappers.JEventService
 import csw.location.api.extensions.ActorExtension.RichActor
@@ -25,7 +26,7 @@ import esw.ocs.dsl.script.{CswServices, ScriptDsl}
 import esw.ocs.dsl.sequence_manager.LocationServiceUtil
 import esw.ocs.impl.core._
 import esw.ocs.impl.internal.{SequencerServer, Timeouts}
-import esw.ocs.impl.messages.SequencerMessages.{EswSequencerMessage, Shutdown}
+import esw.ocs.impl.messages.SequencerMessages.Shutdown
 import esw.ocs.impl.syntax.FutureSyntax.FutureOps
 import esw.ocs.impl.{SequencerAdminFactoryImpl, SequencerAdminImpl}
 
@@ -55,7 +56,7 @@ private[ocs] class SequencerWiring(val packageId: String, val observingMode: Str
 
   implicit lazy val actorRuntime: ActorRuntime = cswWiring.actorRuntime
 
-  lazy val sequencerRef: ActorRef[EswSequencerMessage] = (typedSystem ? Spawn(sequencerBehavior.setup, sequencerName)).block
+  lazy val sequencerRef: ActorRef[SequencerMsg] = (typedSystem ? Spawn(sequencerBehavior.setup, sequencerName)).block
 
   //Pass lambda to break circular dependency shown below.
   //SequencerRef -> Script -> cswServices -> SequencerOperator -> SequencerRef

@@ -40,8 +40,8 @@ class SequencerAppIntegrationTest extends ScalaTestFrameworkTestKit with BaseTes
 
   "SequenceComponent command" must {
     "start sequence component with provided subsystem and name and register it with location service | ESW-102, ESW-103, ESW-147, ESW-151, ESW-214" in {
-      val subsystem    = Subsystem.ESW
-      val name: String = "primary"
+      val subsystem             = Subsystem.ESW
+      val name: String          = "primary"
       val expectedSequencerName = "ESW.primary@esw@darknight"
 
       // start Sequence Component
@@ -137,9 +137,8 @@ class SequencerAppIntegrationTest extends ScalaTestFrameworkTestKit with BaseTes
       // start Sequencer
       SequencerApp.run(Sequencer(subsystem, name, packageId, observingMode), enableLogging = false)
 
-
       // verify sequence component is started
-      val compName = s"$subsystem.${name.value}"
+      val compName              = s"$subsystem.${name.value}"
       val compConnection        = AkkaConnection(ComponentId(compName, ComponentType.SequenceComponent))
       val sequencerCompLocation = testLocationService.resolve(compConnection, 5.seconds).futureValue.value
 
