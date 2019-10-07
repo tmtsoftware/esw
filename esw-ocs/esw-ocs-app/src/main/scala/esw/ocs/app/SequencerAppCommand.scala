@@ -2,7 +2,7 @@ package esw.ocs.app
 
 import caseapp.core.Error
 import caseapp.core.argparser.SimpleArgParser
-import caseapp.{CommandName, HelpMessage}
+import caseapp.{CommandName, HelpMessage, ExtraName => Short}
 import csw.params.core.models.Subsystem
 
 import scala.util.Try
@@ -30,19 +30,25 @@ object SequencerAppCommand {
   @CommandName("seqcomp")
   final case class SequenceComponent(
       @HelpMessage("subsystem of the sequence component, ex: tcs")
+      @Short("s")
       subsystem: Subsystem,
       @HelpMessage("optional name for sequence component, ex: primary, backup etc")
+      @Short("n")
       name: Option[String]
   ) extends SequencerAppCommand
 
   final case class Sequencer(
       @HelpMessage("subsystem of the sequence component, ex: tcs")
+      @Short("s")
       subsystem: Subsystem,
       @HelpMessage("optional name for sequence component, ex: primary, backup etc")
+      @Short("n")
       name: Option[String],
       @HelpMessage("optional package ID of script, ex: tcs, iris etc. Default value: subsystem provided")
+      @Short("i")
       id: Option[String],
       @HelpMessage("observing mode, ex: darknight")
+      @Short("m")
       mode: String
   ) extends SequencerAppCommand
 
