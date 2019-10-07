@@ -1,6 +1,7 @@
 package esw.ocs.dsl.script
 
 import akka.actor.typed.ActorSystem
+import csw.alarm.api.javadsl.IAlarmService
 import csw.command.client.CommandResponseManager
 import csw.event.api.javadsl.IEventService
 import csw.location.api.javadsl.ILocationService
@@ -16,5 +17,6 @@ class CswServices(
     private[esw] val eventService: IEventService,
     private[esw] val timeServiceSchedulerFactory: TimeServiceSchedulerFactory,
     private[esw] val sequencerAdminFactory: SequencerAdminFactoryApi,
-    private[esw] val lockUnlockUtil: LockUnlockUtil
+    private[esw] val lockUnlockUtil: LockUnlockUtil,
+    private[esw] val alarmService: IAlarmService
 )

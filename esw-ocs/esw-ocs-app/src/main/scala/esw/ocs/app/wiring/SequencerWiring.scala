@@ -5,6 +5,7 @@ import akka.actor.typed.scaladsl.AskPattern.Askable
 import akka.actor.typed.{ActorRef, ActorSystem, SpawnProtocol}
 import akka.util.Timeout
 import com.typesafe.config.{Config, ConfigFactory}
+import csw.alarm.api.javadsl.IAlarmService
 import csw.command.client.messages.CommandResponseManagerMessage
 import csw.command.client.messages.sequencer.SequencerMsg
 import csw.command.client.{CRMCacheProperties, CommandResponseManager, CommandResponseManagerActor}
@@ -71,6 +72,9 @@ private[ocs] class SequencerWiring(val packageId: String, val observingMode: Str
 
   lazy val jLocationService: ILocationService = JHttpLocationServiceFactory.makeLocalClient(actorSystem, actorRuntime.mat)
   lazy val jEventService: JEventService       = new JEventService(eventService)
+
+  private lazy val jAlarmService: IAlarmService = alarmServiceFactory.jMakeClientApi(jLocationService, typedSystem)
+
   lazy val cswServices = new CswServices(
     sequenceOperatorFactory,
     commandResponseManager,
@@ -79,7 +83,8 @@ private[ocs] class SequencerWiring(val packageId: String, val observingMode: Str
     jEventService,
     timeServiceSchedulerFactory,
     adminFactory,
-    lockUnlockUtil
+    lockUnlockUtil,
+    jAlarmService
   )
 
   private lazy val sequencerAdmin   = new SequencerAdminImpl(sequencerRef)
