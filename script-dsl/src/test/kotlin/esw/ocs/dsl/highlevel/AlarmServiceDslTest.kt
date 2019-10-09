@@ -25,7 +25,7 @@ class AlarmServiceDslTest : WordSpec(), AlarmServiceDsl {
 
     init {
         "AlarmServiceDsl" should {
-            "set " {
+            "set severity of alarms | ESW-125" {
 
                 val alarmKey = AlarmKey(TCS, "filter_assembly", "temperature")
                 val severity = Major

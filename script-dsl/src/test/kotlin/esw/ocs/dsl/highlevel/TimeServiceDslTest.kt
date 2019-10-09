@@ -5,7 +5,6 @@ import csw.time.scheduler.api.Cancellable
 import csw.time.scheduler.api.TimeServiceScheduler
 import io.kotlintest.matchers.beGreaterThanOrEqualTo
 import io.kotlintest.matchers.beLessThanOrEqualTo
-import io.kotlintest.matchers.doubles.plusOrMinus
 import io.kotlintest.should
 import io.kotlintest.shouldBe
 import io.kotlintest.specs.WordSpec
