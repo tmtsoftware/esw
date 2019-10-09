@@ -12,21 +12,9 @@ import csw.params.events.EventKey
 import esw.gateway.api.protocol.PostRequest._
 import esw.gateway.api.protocol.WebsocketRequest.{QueryFinal, Subscribe, SubscribeCurrentState, SubscribeWithPattern}
 import esw.gateway.api.protocol._
-import io.bullet.borer.Dom.{
-  ArrayElem,
-  BooleanElem,
-  DoubleElem,
-  Element,
-  Float16Elem,
-  FloatElem,
-  IntElem,
-  LongElem,
-  MapElem,
-  NumberStringElem,
-  StringElem
-}
+import io.bullet.borer
 import io.bullet.borer.derivation.MapBasedCodecs.deriveCodec
-import io.bullet.borer.{Codec, Decoder, Encoder}
+import io.bullet.borer.{Codec, Decoder, Encoder, Writer}
 import msocket.api.codecs.EitherCodecs
 
 trait GatewayCodecs extends ParamCodecs with LocationCodecs with AlarmCodecs with EitherCodecs with DoneCodec {
@@ -46,35 +34,62 @@ trait GatewayCodecs extends ParamCodecs with LocationCodecs with AlarmCodecs wit
     @silent implicit lazy val getEventCodec: Codec[GetEvent]                 = deriveCodec[GetEvent]
     @silent implicit lazy val setAlarmSeverityCodec: Codec[SetAlarmSeverity] = deriveCodec[SetAlarmSeverity]
     @silent implicit lazy val levelCodec: Codec[Level]                       = LoggingCodecs.levelCodec
-    @silent implicit val metadataDec: Decoder[Map[String, Any]] = {
-      @silent implicit val anyDec: Decoder[Any] = Decoder.apply[Any](r => {
-        if (r.hasString)
-          r.readString
-        else if (r.hasInt)
-          r.readInt
-        else if (r.hasLong)
-          r.readLong
-        else if (r.hasBoolean)
-          r.readBoolean
-        else if (r.hasDouble)
-          r.readDouble
-        else if (r.hasFloat)
-          r.readFloat
-        else null
-      })
+    def decodeAny(r: borer.Reader): Any = {
+//todo: handle null
+//        if (r.hasNull)
+//          r.readNull()
+      if (r.hasString)
+        r.readString
+      else if (r.hasInt)
+        r.readInt
+      else if (r.hasLong)
+        r.readLong
+      else if (r.hasBoolean)
+        r.readBoolean
+      else if (r.hasDouble)
+        r.readDouble
+      else if (r.hasFloat)
+        r.readFloat
+//todo: handle nesting
+//        else if (r.hasMapStart) {
+//          r.readMapStart()
+//          val x = decodeAny(r)
+//          x
+//        }
+//        else if (r.hasBreak)
+//          r.readBreak()
+      else {
+        throw new RuntimeException("unsupported input format")
+      }
+    }
+    def encodeAny(writer: Writer, value: Any): Writer = {
+      value match {
+//todo:handle nulls
+//        case x if x == null => writer.writeNull()
+        case x: Int     => writer.write(x)
+        case x: Long    => writer.write(x)
+        case x: Double  => writer.write(x)
+        case x: Float   => writer.write(x)
+        case x: String  => writer.write(x)
+        case x: Boolean => writer.write(x)
+//todo: handle nested maps
+//        case x: Map[String, Any] =>
+//          writer.writeMapStart()
+//          x.foreach(e => {
+//            if (e._2 != null) {
+//              encodeAny(writer, e._1)
+//              encodeAny(writer, e._2)
+//            }
+//          })
+//          writer.writeMapClose()
+      }
+    }
+    @silent implicit lazy val metadataDec: Decoder[Map[String, Any]] = {
+      @silent implicit lazy val anyDec: Decoder[Any] = Decoder.apply[Any](decodeAny)
       Decoder.forMap
     }
     @silent implicit val metadataEnc: Encoder[Map[String, Any]] = {
-      @silent implicit val anyEnc: Encoder[Any] = Encoder.apply[Any]((writer, value) => {
-        value match {
-          case x: Int    => writer.write(x)
-          case x: Long   => writer.write(x)
-          case x: Double => writer.write(x)
-          case x: Float  => writer.write(x)
-          case x: String => writer.write(x)
-          case null      => writer.writeNull()
-        }
-      })
+      @silent implicit val anyEnc: Encoder[Any] = Encoder.apply[Any](encodeAny)
       Encoder.forMap
     }
     @silent implicit lazy val logCodec: Codec[Log] = deriveCodec[Log]
@@ -99,35 +114,8 @@ trait GatewayCodecs extends ParamCodecs with LocationCodecs with AlarmCodecs wit
 
   def singletonErrorCodec[T <: SingletonError with Singleton](a: T): Codec[T] = Codec.bimap[String, T](_.msg, _ => a)
 
-  private def getValue(element: Element): Any = {
-    element match {
-      case BooleanElem(value)      => value
-      case StringElem(value)       => value
-      case IntElem(value)          => value
-      case LongElem(value)         => value
-      case NumberStringElem(value) => value
-      case DoubleElem(value)       => value
-      case FloatElem(value)        => value
-      case Float16Elem(value)      => value
-      case elem: ArrayElem         => Array(elem.elements.map(getValue))
-      case elem: MapElem           => getMap(elem)
-      case _                       => null
-    }
-  }
-
   implicit def websocketRequestCodec[T <: WebsocketRequest]: Codec[T] =
     websocketRequestCodecValue.asInstanceOf[Codec[T]]
-
-  private def getMap(element: MapElem): Map[String, Any] =
-    element
-      .asInstanceOf[MapElem]
-      .toMap
-      .map[String, Any] {
-        case (k, v) => (k.asInstanceOf[StringElem].value, getValue(v))
-      }
-      .filter({
-        case (_, v) => v != null
-      })
 
   //Todo: move to csw
   implicit lazy val eventKeyCodec: Codec[EventKey] = deriveCodec[EventKey]
