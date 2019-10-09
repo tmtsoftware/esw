@@ -1,9 +1,12 @@
 package esw.ocs.scripts.examples.testData
 
+import csw.alarm.api.javadsl.JAlarmSeverity.Major
+import csw.alarm.models.Key.AlarmKey
 import csw.location.api.javadsl.JComponentType.Assembly
 import csw.params.commands.*
 import csw.params.core.models.Id
 import csw.params.core.models.Prefix
+import csw.params.javadsl.JSubsystem.NFIRAOS
 import esw.ocs.dsl.core.script
 import java.util.*
 import kotlinx.coroutines.delay
@@ -48,6 +51,13 @@ script {
 
     handleSetup("fail-command") { command ->
         addOrUpdateCommand(CommandResponse.Error(command.runId(), command.commandName().name()))
+    }
+
+    handleSetup("set-alarm-severity") { command ->
+        val alarmKey = AlarmKey(NFIRAOS, "trombone", "tromboneAxisHighLimitAlarm")
+        setSeverity(alarmKey, Major)
+        delay(500)
+        addOrUpdateCommand(CommandResponse.Completed(command.runId()))
     }
 
     handleDiagnosticMode { startTime, hint ->
