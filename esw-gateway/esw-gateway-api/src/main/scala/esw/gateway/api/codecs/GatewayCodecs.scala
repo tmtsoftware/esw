@@ -36,11 +36,27 @@ trait GatewayCodecs extends ParamCodecs with LocationCodecs with AlarmCodecs wit
     @silent implicit lazy val levelCodec: Codec[Level]                       = LoggingCodecs.levelCodec
 
     @silent implicit val metadataEnc: Encoder[Map[String, Any]] = {
-      implicitly[Encoder[Map[String, Element]]].contramap(m => m.view.mapValues(ElementConverter.fromAny).toMap)
+      implicitly[Encoder[Map[String, Element]]].contramap(
+        m =>
+          m.view
+            .mapValues(ElementConverter.fromAny)
+            .filter {
+              case (_, v) => v != null
+            }
+            .toMap
+      )
     }
 
     @silent implicit val metadataDec: Decoder[Map[String, Any]] = {
-      implicitly[Decoder[Map[String, Element]]].map(m => m.view.mapValues(ElementConverter.toAny).toMap)
+      implicitly[Decoder[Map[String, Element]]].map(
+        m =>
+          m.view
+            .mapValues(ElementConverter.toAny)
+            .filter {
+              case (_, v) => v != null
+            }
+            .toMap
+      )
     }
 
     @silent implicit lazy val logCodec: Codec[Log] = deriveCodec[Log]

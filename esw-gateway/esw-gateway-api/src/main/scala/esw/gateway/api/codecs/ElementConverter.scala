@@ -14,9 +14,12 @@ object ElementConverter {
     case Dom.DoubleElem(value)    => value
     case Dom.StringElem(value)    => value
     case Dom.ByteArrayElem(value) => value
-    case elem: Dom.ArrayElem      => elem.elements.map(toAny)
-    case elem: Dom.MapElem        => elem.toMap.map { case (k, v) => toAny(k) -> toAny(v) }
-    case elem                     => throw new RuntimeException(s"can not extract value from element=$elem")
+    case elem: Dom.ArrayElem      => elem.elements.map(toAny).filter(_ != null)
+    case elem: Dom.MapElem =>
+      elem.toMap
+        .map { case (k, v) => toAny(k) -> toAny(v) }
+        .filter(_._2 != null)
+    case elem => throw new RuntimeException(s"can not extract value from element=$elem")
   }
 
   def fromAny(any: Any): Element = any match {
@@ -28,9 +31,13 @@ object ElementConverter {
     case x: Double      => Dom.DoubleElem(x)
     case x: String      => Dom.StringElem(x)
     case x: Array[Byte] => Dom.ByteArrayElem(x)
-    case x: Seq[_]      => Dom.ArrayElem.Unsized(x.map(fromAny): _*)
-    case x: Map[_, _]   => Dom.MapElem.Unsized(x.map { case (k, v) => fromAny(k) -> fromAny(v) }: Map[Element, Element])
-    case x              => throw new RuntimeException(s"can not create an element from value =$x")
+    case x: Seq[_]      => Dom.ArrayElem.Unsized(x.map(fromAny).filter(_ != null): _*)
+    case x: Map[_, _] =>
+      Dom.MapElem.Unsized(
+        x.map { case (k, v) => fromAny(k) -> fromAny(v) }
+          .filter(_._2 != null): Map[Element, Element]
+      )
+    case x => throw new RuntimeException(s"can not create an element from value =$x")
   }
 
 }
