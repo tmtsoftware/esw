@@ -19,9 +19,9 @@ import msocket.api.codecs.EitherCodecs
 
 trait GatewayCodecs extends ParamCodecs with LocationCodecs with AlarmCodecs with EitherCodecs with DoneCodec {
   lazy val getEventErrorCodecValue: Codec[GetEventError] = {
-    @silent implicit lazy val emptyEventKeysCodec: Codec[EmptyEventKeys.type] = singletonCodec(EmptyEventKeys)
+    @silent implicit lazy val emptyEventKeysCodec: Codec[EmptyEventKeys.type] = deriveCodec[EmptyEventKeys.type]
     @silent implicit lazy val eventServerNotAvailableCodec: Codec[EventServerUnavailable.type] =
-      singletonCodec(EventServerUnavailable)
+      deriveCodec[EventServerUnavailable.type]
     deriveCodec[GetEventError]
   }
 
