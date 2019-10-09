@@ -1,13 +1,13 @@
 package esw.ocs.dsl.core
 
 import akka.actor.typed.ActorSystem
+import csw.alarm.api.javadsl.IAlarmService
 import csw.command.client.CommandResponseManager
 import csw.event.api.javadsl.IEventPublisher
 import csw.event.api.javadsl.IEventService
 import csw.event.api.javadsl.IEventSubscriber
 import csw.location.api.javadsl.ILocationService
 import csw.location.models.AkkaLocation
-import csw.location.models.ComponentType
 import csw.params.commands.CommandResponse.SubmitResponse
 import csw.params.commands.Observe
 import csw.params.commands.Sequence
@@ -16,6 +16,7 @@ import csw.params.commands.Setup
 import csw.time.core.models.UTCTime
 import csw.time.scheduler.api.TimeServiceScheduler
 import esw.ocs.api.SequencerAdminFactoryApi
+import esw.ocs.dsl.highlevel.AlarmSeverityData
 import esw.ocs.dsl.highlevel.CommonUtils
 import esw.ocs.dsl.highlevel.CswHighLevelDsl
 import esw.ocs.dsl.nullable
@@ -46,6 +47,9 @@ sealed class ScriptDslKt : CoroutineScope, CswHighLevelDsl {
 
     override val defaultPublisher: IEventPublisher by lazy { eventService.defaultPublisher() }
     override val defaultSubscriber: IEventSubscriber by lazy { eventService.defaultSubscriber() }
+
+    override val alarmService: IAlarmService by lazy { cswServices.alarmService() }
+    override val alarmSeverityData: AlarmSeverityData by lazy { AlarmSeverityData(HashMap()) }
 
     override val crm: CommandResponseManager by lazy { cswServices.crm() }
     private val sequencerAdminFactory: SequencerAdminFactoryApi by lazy {
