@@ -8,6 +8,9 @@ import akka.actor.typed.scaladsl.Behaviors
 import akka.actor.typed.{ActorRef, ActorSystem, SpawnProtocol}
 import akka.util.Timeout
 import com.typesafe.config.ConfigFactory
+import csw.alarm.client.AlarmServiceFactory
+import csw.alarm.models.AlarmSeverity
+import csw.alarm.models.Key.AlarmKey
 import csw.command.client.messages.sequencer.{SequencerMsg, SubmitSequenceAndWait}
 import csw.event.client.EventServiceFactory
 import csw.location.api.extensions.ActorExtension.RichActor
@@ -20,9 +23,10 @@ import csw.params.commands.CommandResponse.{Completed, Started, SubmitResponse}
 import csw.params.commands.{CommandName, Sequence, Setup}
 import csw.params.core.generics.KeyType.StringKey
 import csw.params.core.generics.Parameter
+import csw.params.core.models.Subsystem.NFIRAOS
 import csw.params.core.models.{Id, Prefix}
 import csw.params.events.{Event, EventKey, EventName, SystemEvent}
-import csw.testkit.scaladsl.CSWService.EventServer
+import csw.testkit.scaladsl.CSWService.{AlarmServer, EventServer}
 import csw.testkit.scaladsl.ScalaTestFrameworkTestKit
 import csw.time.core.models.UTCTime
 import esw.ocs.api.BaseTestSuite
@@ -35,7 +39,7 @@ import esw.ocs.impl.messages.SequencerMessages.{DiagnosticMode, OperationsMode}
 import scala.concurrent.Future
 import scala.concurrent.duration.DurationDouble
 
-class ScriptIntegrationTest extends ScalaTestFrameworkTestKit(EventServer) with BaseTestSuite {
+class ScriptIntegrationTest extends ScalaTestFrameworkTestKit(EventServer, AlarmServer) with BaseTestSuite {
 
   import frameworkTestKit.mat
 
@@ -121,6 +125,23 @@ class ScriptIntegrationTest extends ScalaTestFrameworkTestKit(EventServer) with 
 
       val expectedOpEvent = testProbe.expectMessageType[SystemEvent]
       expectedOpEvent.paramSet.head shouldBe operationsModeParam
+    }
+
+    "be able to set severity of sequencer alarms | ESW-125" in {
+      val config            = ConfigFactory.parseResources("alarm_key.conf")
+      val alarmAdminService = new AlarmServiceFactory().makeAdminApi(locationService)
+      alarmAdminService.initAlarms(config, reset = true).futureValue
+
+      val alarmKey = AlarmKey(NFIRAOS, "trombone", "tromboneAxisHighLimitAlarm")
+      val command  = Setup(Prefix("NFIRAOS.test"), CommandName("set-alarm-severity"), None)
+      val sequence = Sequence(command)
+
+      frameworkTestKit.spawnStandalone(ConfigFactory.load("standalone.conf"))
+
+      val sequenceRes: Future[SubmitResponse] = ocsSequencer ? (SubmitSequenceAndWait(sequence, _))
+
+      sequenceRes.futureValue should ===(Completed(sequence.runId))
+      alarmAdminService.getCurrentSeverity(alarmKey).futureValue should ===(AlarmSeverity.Major)
     }
   }
 
