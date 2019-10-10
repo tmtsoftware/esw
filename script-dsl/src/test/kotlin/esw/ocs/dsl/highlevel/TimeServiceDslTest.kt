@@ -28,7 +28,7 @@ class TimeServiceDslTest : WordSpec(), TimeServiceDsl {
     override val timeServiceScheduler: TimeServiceScheduler = scheduler
     override val coroutineContext: CoroutineContext = EmptyCoroutineContext
 
-    private fun checkWithIn(expected: Duration, result: Duration, tolerance: Duration) {
+    private fun assertWithin(expected: Duration, result: Duration, tolerance: Duration) {
         val diff = expected - result
         diff should beLessThanOrEqualTo(tolerance)
         diff should beGreaterThanOrEqualTo(-tolerance)
@@ -53,17 +53,17 @@ class TimeServiceDslTest : WordSpec(), TimeServiceDsl {
 
             "offsetFromNow should give offset between current time and provided instance of the time" {
                 val offset: Duration = UTCTime.after(FiniteDuration(1, TimeUnit.SECONDS)).offsetFromNow()
-                checkWithIn(expected = 1.seconds, result = offset, tolerance = 2.milliseconds)
+                assertWithin(expected = 1.seconds, result = offset, tolerance = 2.milliseconds)
             }
 
             "utcTimeAfter should give UTC time of after given duration from now" {
                 val offset: Duration = utcTimeAfter(1.seconds).offsetFromNow()
-                checkWithIn(expected = 1.seconds, result = offset, tolerance = 2.milliseconds)
+                assertWithin(expected = 1.seconds, result = offset, tolerance = 2.milliseconds)
             }
 
             "taiTimeAfter should give time TAI of after given duration from now" {
                 val offset: Duration = taiTimeAfter(1.seconds).offsetFromNow()
-                checkWithIn(expected = 1.seconds, result = offset, tolerance = 2.milliseconds)
+                assertWithin(expected = 1.seconds, result = offset, tolerance = 2.milliseconds)
             }
         }
     }

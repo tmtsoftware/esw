@@ -6,11 +6,11 @@ import csw.alarm.api.javadsl.JAlarmSeverity.Major
 import csw.alarm.models.Key.AlarmKey
 import csw.params.javadsl.JSubsystem.TCS
 import io.kotlintest.eventually
+import io.kotlintest.seconds
 import io.kotlintest.specs.WordSpec
 import io.mockk.every
 import io.mockk.mockk
 import io.mockk.verify
-import java.time.Duration
 import java.util.concurrent.CompletableFuture.completedFuture
 import kotlin.coroutines.CoroutineContext
 import kotlin.coroutines.EmptyCoroutineContext
@@ -36,7 +36,7 @@ class AlarmServiceDslTest : WordSpec(), AlarmServiceDsl {
 
                 setSeverity(alarmKey, severity)
 
-                eventually(Duration.ofSeconds(5)) {
+                eventually(5.seconds) {
                     verify { mockedAlarmService.setSeverity(alarmKey, severity) }
                 }
             }

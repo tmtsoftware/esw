@@ -30,9 +30,9 @@ class LockUnlockDslTest : WordSpec(), LockUnlockDsl {
     init {
         "LockUnlockDsl" should {
             "lockAssembly should delegate to LockUnlockUtil.jLock | ESW-126" {
-                every { mockLockUnlockUtil.jLock(componentName, assembly, prefix, jLeaseDuration) }.returns(
-                    CompletableFuture.completedFuture(lockingResponse)
-                )
+                every {
+                    mockLockUnlockUtil.jLock(componentName, assembly, prefix, jLeaseDuration)
+                }.returns(CompletableFuture.completedFuture(lockingResponse))
 
                 lockAssembly(componentName, prefix, jLeaseDuration)
                 verify { lockUnlockUtil.jLock(componentName, assembly, prefix, jLeaseDuration) }
@@ -40,11 +40,7 @@ class LockUnlockDslTest : WordSpec(), LockUnlockDsl {
 
             "unlockAssembly should delegate to LockUnlockUtil.jUnlock | ESW-126" {
                 every {
-                    mockLockUnlockUtil.jUnlock(
-                        componentName,
-                        assembly,
-                        prefix
-                    )
+                    mockLockUnlockUtil.jUnlock(componentName, assembly, prefix)
                 }.returns(CompletableFuture.completedFuture(lockingResponse))
 
                 unlockAssembly(componentName, prefix)
@@ -53,12 +49,7 @@ class LockUnlockDslTest : WordSpec(), LockUnlockDsl {
 
             "lockHcd should delegate to LockUnlockUtil.jLock | ESW-126" {
                 every {
-                    mockLockUnlockUtil.jLock(
-                        componentName,
-                        hcd,
-                        prefix,
-                        jLeaseDuration
-                    )
+                    mockLockUnlockUtil.jLock(componentName, hcd, prefix, jLeaseDuration)
                 }.returns(CompletableFuture.completedFuture(lockingResponse))
 
                 lockHcd(componentName, prefix, jLeaseDuration)
@@ -67,11 +58,7 @@ class LockUnlockDslTest : WordSpec(), LockUnlockDsl {
 
             "unlockHcd should delegate to LockUnlockUtil.jUnlock | ESW-126" {
                 every {
-                    mockLockUnlockUtil.jUnlock(
-                        componentName,
-                        hcd,
-                        prefix
-                    )
+                    mockLockUnlockUtil.jUnlock(componentName, hcd, prefix)
                 }.returns(CompletableFuture.completedFuture(lockingResponse))
 
                 unlockHcd(componentName, prefix)
