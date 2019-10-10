@@ -18,60 +18,52 @@ import io.mockk.verify
 import java.util.concurrent.CompletableFuture
 import scala.concurrent.Future
 
-class DiagnosticDslTest : WordSpec({
+class DiagnosticDslTest : WordSpec(), DiagnosticDsl {
 
-    class Mocks {
-        val componentName = "testComponent1"
-        val sequencerId = "testSequencer"
-        val observingMode = "DarkNight"
-        val hint = "test-hint"
-        val componentType: ComponentType = JComponentType.HCD
+    private val componentName = "testComponent1"
+    private val sequencerId = "testSequencer"
+    private val observingMode = "DarkNight"
+    private val hint = "test-hint"
+    private val componentType: ComponentType = JComponentType.HCD
 
-        val _locationServiceUtil: LocationServiceUtil = mockk()
-        val sequencerAdminApi: SequencerAdminApi = mockk()
-        val sequencerAdminFactoryApi: SequencerAdminFactoryApi = mockk()
-        val componentRef: ActorRef<ComponentMessage> = mockk()
+    private val locationServiceUtil: LocationServiceUtil = mockk()
+    private val sequencerAdminApi: SequencerAdminApi = mockk()
+    private val sequencerAdminFactoryApi: SequencerAdminFactoryApi = mockk()
+    private val componentRef: ActorRef<ComponentMessage> = mockk()
 
-        val startTime: UTCTime = UTCTime.now()
+    private val startTime: UTCTime = UTCTime.now()
 
-        val diagnosticDsl = object : DiagnosticDsl {
-            override val commonUtils: CommonUtils = CommonUtils(sequencerAdminFactoryApi, _locationServiceUtil)
-        }
-    }
+    override val commonUtils: CommonUtils = CommonUtils(sequencerAdminFactoryApi, locationServiceUtil)
 
-    "DiagnosticDsl" should {
-        "diagnosticModeForComponent should resolve component ref and send DiagnosticMode msg | ESW-118" {
-            with(Mocks()) {
+    init {
+        "DiagnosticDsl" should {
+            "diagnosticModeForComponent should resolve component ref and send DiagnosticMode msg | ESW-118" {
                 val diagnosticMode = DiagnosticMode(startTime, hint)
 
                 every { componentRef.tell(diagnosticMode) }.answers { Unit }
-                every { _locationServiceUtil.jResolveComponentRef(componentName, componentType) }
+                every { locationServiceUtil.jResolveComponentRef(componentName, componentType) }
                     .answers { CompletableFuture.completedFuture(componentRef) }
 
-                diagnosticDsl.diagnosticModeForComponent(componentName, componentType, startTime, hint)
+                diagnosticModeForComponent(componentName, componentType, startTime, hint)
 
-                verify { _locationServiceUtil.jResolveComponentRef(componentName, componentType) }
+                verify { locationServiceUtil.jResolveComponentRef(componentName, componentType) }
                 verify { componentRef.tell(diagnosticMode) }
             }
-        }
 
-        "operationsModeForComponent should resolve component ref and send OperationsMode msg | ESW-118" {
-            with(Mocks()) {
+            "operationsModeForComponent should resolve component ref and send OperationsMode msg | ESW-118" {
                 val opsMode = `OperationsMode$`.`MODULE$`
 
                 every { componentRef.tell(opsMode) }.answers { Unit }
-                every { _locationServiceUtil.jResolveComponentRef(componentName, componentType) }
+                every { locationServiceUtil.jResolveComponentRef(componentName, componentType) }
                     .answers { CompletableFuture.completedFuture(componentRef) }
 
-                diagnosticDsl.operationsModeForComponent(componentName, componentType)
+                operationsModeForComponent(componentName, componentType)
 
-                verify { _locationServiceUtil.jResolveComponentRef(componentName, componentType) }
+                verify { locationServiceUtil.jResolveComponentRef(componentName, componentType) }
                 verify { componentRef.tell(opsMode) }
             }
-        }
 
-        "diagnosticModeForSequencer should delegate to sequencerAdminApi.diagnosticMode | ESW-143" {
-            with(Mocks()) {
+            "diagnosticModeForSequencer should delegate to sequencerAdminApi.diagnosticMode | ESW-143" {
 
                 // return value gets discarded
                 every { sequencerAdminApi.diagnosticMode(startTime, hint) }
@@ -80,26 +72,24 @@ class DiagnosticDslTest : WordSpec({
                 every { sequencerAdminFactoryApi.jMake(sequencerId, observingMode) }
                     .returns(CompletableFuture.completedFuture(sequencerAdminApi))
 
-                diagnosticDsl.diagnosticModeForSequencer(sequencerId, observingMode, startTime, hint)
+                diagnosticModeForSequencer(sequencerId, observingMode, startTime, hint)
 
                 verify { sequencerAdminFactoryApi.jMake(sequencerId, observingMode) }
                 verify { sequencerAdminApi.diagnosticMode(startTime, hint) }
             }
-        }
 
-        "operationsModeForSequencer should delegate to sequencerAdminApi.operationsMode | ESW-143" {
-            with(Mocks()) {
+            "operationsModeForSequencer should delegate to sequencerAdminApi.operationsMode | ESW-143" {
 
                 every { sequencerAdminApi.operationsMode() }
                     .answers { Future.successful(`Ok$`.`MODULE$`) }
                 every { sequencerAdminFactoryApi.jMake(sequencerId, observingMode) }
                     .returns(CompletableFuture.completedFuture(sequencerAdminApi))
 
-                diagnosticDsl.operationsModeForSequencer(sequencerId, observingMode)
+                operationsModeForSequencer(sequencerId, observingMode)
 
                 verify { sequencerAdminFactoryApi.jMake(sequencerId, observingMode) }
                 verify { sequencerAdminApi.operationsMode() }
             }
         }
     }
-})
+}

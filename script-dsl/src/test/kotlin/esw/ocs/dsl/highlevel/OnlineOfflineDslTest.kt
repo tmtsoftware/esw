@@ -18,57 +18,49 @@ import io.mockk.verify
 import java.util.concurrent.CompletableFuture
 import scala.concurrent.Future
 
-class OnlineOfflineDslTest : WordSpec({
+class OnlineOfflineDslTest : WordSpec(), OnlineOfflineDsl {
 
-    class Mocks {
-        val componentName = "testComponent1"
-        val sequencerId = "testSequencer"
-        val observingMode = "DarkNight"
-        val componentType: ComponentType = JComponentType.HCD
+    private val componentName = "testComponent1"
+    private val sequencerId = "testSequencer"
+    private val observingMode = "DarkNight"
+    private val componentType: ComponentType = JComponentType.HCD
 
-        val _locationServiceUtil: LocationServiceUtil = mockk()
-        val sequencerAdminApi: SequencerAdminApi = mockk()
-        val sequencerAdminFactoryApi: SequencerAdminFactoryApi = mockk()
-        val componentRef: ActorRef<ComponentMessage> = mockk()
+    private val locationServiceUtil: LocationServiceUtil = mockk()
+    private val sequencerAdminApi: SequencerAdminApi = mockk()
+    private val sequencerAdminFactoryApi: SequencerAdminFactoryApi = mockk()
+    private val componentRef: ActorRef<ComponentMessage> = mockk()
 
-        val onlineOfflineDsl = object : OnlineOfflineDsl {
-            override val commonUtils: CommonUtils = CommonUtils(sequencerAdminFactoryApi, _locationServiceUtil)
-        }
-    }
+    override val commonUtils: CommonUtils = CommonUtils(sequencerAdminFactoryApi, locationServiceUtil)
 
-    "OnlineOfflineDsl" should {
-        "goOnlineModeForComponent should resolve component ref and send GoOnline msg | ESW-236" {
-            with(Mocks()) {
+    init {
+        "OnlineOfflineDsl" should {
+            "goOnlineModeForComponent should resolve component ref and send GoOnline msg | ESW-236" {
                 val goOnlineMsg = Lifecycle(`GoOnline$`.`MODULE$`)
 
                 every { componentRef.tell(goOnlineMsg) }.answers { Unit }
-                every { _locationServiceUtil.jResolveComponentRef(componentName, componentType) }
+                every { locationServiceUtil.jResolveComponentRef(componentName, componentType) }
                     .answers { CompletableFuture.completedFuture(componentRef) }
 
-                onlineOfflineDsl.goOnlineModeForComponent(componentName, componentType)
+                goOnlineModeForComponent(componentName, componentType)
 
-                verify { _locationServiceUtil.jResolveComponentRef(componentName, componentType) }
+                verify { locationServiceUtil.jResolveComponentRef(componentName, componentType) }
                 verify { componentRef.tell(goOnlineMsg) }
             }
-        }
 
-        "goOfflineModeForComponent should resolve component ref and send GoOffline msg | ESW-236" {
-            with(Mocks()) {
+            "goOfflineModeForComponent should resolve component ref and send GoOffline msg | ESW-236" {
                 val goOfflineMsg = Lifecycle(`GoOffline$`.`MODULE$`)
 
                 every { componentRef.tell(goOfflineMsg) }.answers { Unit }
-                every { _locationServiceUtil.jResolveComponentRef(componentName, componentType) }
+                every { locationServiceUtil.jResolveComponentRef(componentName, componentType) }
                     .answers { CompletableFuture.completedFuture(componentRef) }
 
-                onlineOfflineDsl.goOfflineModeForComponent(componentName, componentType)
+                goOfflineModeForComponent(componentName, componentType)
 
-                verify { _locationServiceUtil.jResolveComponentRef(componentName, componentType) }
+                verify { locationServiceUtil.jResolveComponentRef(componentName, componentType) }
                 verify { componentRef.tell(goOfflineMsg) }
             }
-        }
 
-        "goOnlineModeForSequencer should delegate to sequencerAdminApi.goOnline | ESW-236" {
-            with(Mocks()) {
+            "goOnlineModeForSequencer should delegate to sequencerAdminApi.goOnline | ESW-236" {
 
                 // return value gets discarded
                 every { sequencerAdminApi.goOnline() }
@@ -77,26 +69,24 @@ class OnlineOfflineDslTest : WordSpec({
                 every { sequencerAdminFactoryApi.jMake(sequencerId, observingMode) }
                     .returns(CompletableFuture.completedFuture(sequencerAdminApi))
 
-                onlineOfflineDsl.goOnlineModeForSequencer(sequencerId, observingMode)
+                goOnlineModeForSequencer(sequencerId, observingMode)
 
                 verify { sequencerAdminFactoryApi.jMake(sequencerId, observingMode) }
                 verify { sequencerAdminApi.goOnline() }
             }
-        }
 
-        "goOfflineModeForSequencer should delegate to sequencerAdminApi.goOffline | ESW-236" {
-            with(Mocks()) {
+            "goOfflineModeForSequencer should delegate to sequencerAdminApi.goOffline | ESW-236" {
 
                 every { sequencerAdminApi.goOffline() }
                     .answers { Future.successful(`Ok$`.`MODULE$`) }
                 every { sequencerAdminFactoryApi.jMake(sequencerId, observingMode) }
                     .returns(CompletableFuture.completedFuture(sequencerAdminApi))
 
-                onlineOfflineDsl.goOfflineModeForSequencer(sequencerId, observingMode)
+                goOfflineModeForSequencer(sequencerId, observingMode)
 
                 verify { sequencerAdminFactoryApi.jMake(sequencerId, observingMode) }
                 verify { sequencerAdminApi.goOffline() }
             }
         }
     }
-})
+}

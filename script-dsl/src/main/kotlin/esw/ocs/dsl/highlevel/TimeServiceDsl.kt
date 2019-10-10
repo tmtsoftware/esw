@@ -17,11 +17,6 @@ import scala.concurrent.duration.FiniteDuration
 interface TimeServiceDsl : CoroutineScope {
     val timeServiceScheduler: TimeServiceScheduler
 
-    private fun (suspend () -> Unit).toJavaFuture(): CompletionStage<Void> =
-        this.let {
-            future { it() }.thenAccept { }
-        }
-
     suspend fun scheduleOnce(startTime: TMTTime, task: suspend () -> Unit): Cancellable =
         timeServiceScheduler.scheduleOnce(startTime, Runnable { task.toJavaFuture() })
 
@@ -39,18 +34,15 @@ interface TimeServiceDsl : CoroutineScope {
 
     fun taiTimeNow(): TAITime = TAITime.now()
 
-    fun utcTimeAfter(duration: Duration): UTCTime {
-        val jDuration = duration.toJavaDuration()
-        return UTCTime.after(FiniteDuration(jDuration.toNanos(), TimeUnit.NANOSECONDS))
-    }
+    fun utcTimeAfter(duration: Duration): UTCTime =
+        UTCTime.after(FiniteDuration(duration.toLongNanoseconds(), TimeUnit.NANOSECONDS))
 
-    fun taiTimeAfter(duration: Duration): TAITime {
-        val jDuration = duration.toJavaDuration()
-        return TAITime.after(FiniteDuration(jDuration.toNanos(), TimeUnit.NANOSECONDS))
-    }
+    fun taiTimeAfter(duration: Duration): TAITime =
+        TAITime.after(FiniteDuration(duration.toLongNanoseconds(), TimeUnit.NANOSECONDS))
 
     // fixme : move to appropriate place in clubed extension methods
-    fun (TMTTime).offsetFromNow(): Duration {
-        return durationFromNow().toNanos().nanoseconds
-    }
+    fun TMTTime.offsetFromNow(): Duration = durationFromNow().toNanos().nanoseconds
+
+    private fun (suspend () -> Unit).toJavaFuture(): CompletionStage<Void> =
+        future { this@toJavaFuture }.thenAccept { }
 }

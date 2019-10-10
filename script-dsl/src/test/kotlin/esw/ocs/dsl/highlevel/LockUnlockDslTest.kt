@@ -14,37 +14,31 @@ import kotlin.time.Duration
 import kotlin.time.seconds
 import kotlin.time.toJavaDuration
 
-class LockUnlockDslTest : WordSpec({
-    class Mocks {
-        val mockLockUnlockUtil = mockk<LockUnlockUtil>()
-        val componentName = "test-component"
-        val assembly = Assembly
-        val hcd = HCD
-        val prefix = Prefix("esw")
-        val leaseDuration: Duration = 10.seconds
-        val jLeaseDuration = leaseDuration.toJavaDuration()
-        val lockingResponse = mockk<LockingResponse>()
+class LockUnlockDslTest : WordSpec(), LockUnlockDsl {
+    private val componentName = "test-component"
+    private val assembly = Assembly
+    private val hcd = HCD
+    private val prefix = Prefix("esw")
+    private val leaseDuration: Duration = 10.seconds
+    private val jLeaseDuration = leaseDuration.toJavaDuration()
 
-        val lockUnlockDsl = object : LockUnlockDsl {
-            override val lockUnlockUtil: LockUnlockUtil = mockLockUnlockUtil
-        }
-    }
+    private val mockLockUnlockUtil = mockk<LockUnlockUtil>()
+    private val lockingResponse = mockk<LockingResponse>()
 
-    "LockUnlockDsl" should {
-        "lockAssembly should delegate to LockUnlockUtil.jLock | ESW-126" {
-            with(Mocks()) {
+    override val lockUnlockUtil: LockUnlockUtil = mockLockUnlockUtil
+
+    init {
+        "LockUnlockDsl" should {
+            "lockAssembly should delegate to LockUnlockUtil.jLock | ESW-126" {
                 every { mockLockUnlockUtil.jLock(componentName, assembly, prefix, jLeaseDuration) }.returns(
                     CompletableFuture.completedFuture(lockingResponse)
                 )
 
-                lockUnlockDsl.lockAssembly(componentName, prefix, jLeaseDuration)
-
-                verify { lockUnlockDsl.lockUnlockUtil.jLock(componentName, assembly, prefix, jLeaseDuration) }
+                lockAssembly(componentName, prefix, jLeaseDuration)
+                verify { lockUnlockUtil.jLock(componentName, assembly, prefix, jLeaseDuration) }
             }
-        }
 
-        "unlockAssembly should delegate to LockUnlockUtil.jUnlock | ESW-126" {
-            with(Mocks()) {
+            "unlockAssembly should delegate to LockUnlockUtil.jUnlock | ESW-126" {
                 every {
                     mockLockUnlockUtil.jUnlock(
                         componentName,
@@ -53,14 +47,11 @@ class LockUnlockDslTest : WordSpec({
                     )
                 }.returns(CompletableFuture.completedFuture(lockingResponse))
 
-                lockUnlockDsl.unlockAssembly(componentName, prefix)
-
-                verify { lockUnlockDsl.lockUnlockUtil.jUnlock(componentName, assembly, prefix) }
+                unlockAssembly(componentName, prefix)
+                verify { lockUnlockUtil.jUnlock(componentName, assembly, prefix) }
             }
-        }
 
-        "lockHcd should delegate to LockUnlockUtil.jLock | ESW-126" {
-            with(Mocks()) {
+            "lockHcd should delegate to LockUnlockUtil.jLock | ESW-126" {
                 every {
                     mockLockUnlockUtil.jLock(
                         componentName,
@@ -70,14 +61,11 @@ class LockUnlockDslTest : WordSpec({
                     )
                 }.returns(CompletableFuture.completedFuture(lockingResponse))
 
-                lockUnlockDsl.lockHcd(componentName, prefix, jLeaseDuration)
-
-                verify { lockUnlockDsl.lockUnlockUtil.jLock(componentName, hcd, prefix, jLeaseDuration) }
+                lockHcd(componentName, prefix, jLeaseDuration)
+                verify { lockUnlockUtil.jLock(componentName, hcd, prefix, jLeaseDuration) }
             }
-        }
 
-        "unlockHcd should delegate to LockUnlockUtil.jUnlock | ESW-126" {
-            with(Mocks()) {
+            "unlockHcd should delegate to LockUnlockUtil.jUnlock | ESW-126" {
                 every {
                     mockLockUnlockUtil.jUnlock(
                         componentName,
@@ -86,10 +74,9 @@ class LockUnlockDslTest : WordSpec({
                     )
                 }.returns(CompletableFuture.completedFuture(lockingResponse))
 
-                lockUnlockDsl.unlockHcd(componentName, prefix)
-
-                verify { lockUnlockDsl.lockUnlockUtil.jUnlock(componentName, hcd, prefix) }
+                unlockHcd(componentName, prefix)
+                verify { lockUnlockUtil.jUnlock(componentName, hcd, prefix) }
             }
         }
     }
-})
+}

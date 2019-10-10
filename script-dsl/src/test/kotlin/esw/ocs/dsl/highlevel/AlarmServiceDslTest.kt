@@ -15,36 +15,31 @@ import java.util.concurrent.CompletableFuture.completedFuture
 import kotlin.coroutines.CoroutineContext
 import kotlin.coroutines.EmptyCoroutineContext
 
-class AlarmServiceDslTest : WordSpec({
+class AlarmServiceDslTest : WordSpec(), AlarmServiceDsl {
 
-    class Mocks {
-        val _alarmService: IAlarmService = mockk()
+    private val mockedAlarmService: IAlarmService = mockk()
 
-        val alarmServiceDsl = object : AlarmServiceDsl {
-            override val coroutineContext: CoroutineContext
-                get() = EmptyCoroutineContext
-            override val alarmService = _alarmService
-            override val alarmSeverityData = AlarmSeverityData(HashMap())
-        }
-    }
+    override val coroutineContext: CoroutineContext = EmptyCoroutineContext
+    override val alarmService: IAlarmService = mockedAlarmService
+    override val alarmSeverityData: AlarmSeverityData = AlarmSeverityData(HashMap())
 
-    "AlarmServiceDsl" should {
-        "set " {
+    init {
+        "AlarmServiceDsl" should {
+            "set " {
 
-            with(Mocks()) {
                 val alarmKey = AlarmKey(TCS, "filter_assembly", "temperature")
                 val severity = Major
 
                 every {
-                    _alarmService.setSeverity(alarmKey, severity)
+                    mockedAlarmService.setSeverity(alarmKey, severity)
                 } answers { completedFuture(done()) }
 
-                alarmServiceDsl.setSeverity(alarmKey, severity)
+                setSeverity(alarmKey, severity)
 
                 eventually(Duration.ofSeconds(5)) {
-                    verify { _alarmService.setSeverity(alarmKey, severity) }
+                    verify { mockedAlarmService.setSeverity(alarmKey, severity) }
                 }
             }
         }
     }
-})
+}

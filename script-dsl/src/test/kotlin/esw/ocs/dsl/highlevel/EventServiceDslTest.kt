@@ -14,45 +14,37 @@ import io.mockk.mockk
 import io.mockk.verify
 import java.util.concurrent.CompletableFuture
 import kotlin.coroutines.CoroutineContext
+import kotlin.coroutines.EmptyCoroutineContext
 import kotlin.time.milliseconds
-import kotlinx.coroutines.Job
 
-class EventServiceDslTest : WordSpec({
+class EventServiceDslTest : WordSpec(), EventServiceDsl {
 
-    class Mocks {
-        val key = "TCS.test.eventkey1"
-        val duration = 10.milliseconds
+    private val key = "TCS.test.eventkey1"
+    private val duration = 10.milliseconds
 
-        val event: Event = mockk<ObserveEvent>()
-        val eventKeys = HashSet<EventKey>()
-        val eventSet = HashSet<Event>(1)
-        val eventSubscription = mockk<IEventSubscription>()
+    private val event: Event = mockk<ObserveEvent>()
+    private val eventKeys = HashSet<EventKey>()
+    private val eventSet = HashSet<Event>(1)
 
-        val cancellable = mockk<Cancellable>()
-        val eventCallback = mockk<(Event) -> CompletableFuture<*>>()
+    private val eventSubscription = mockk<IEventSubscription>()
+    private val cancellable = mockk<Cancellable>()
+    private val eventCallback = mockk<(Event) -> CompletableFuture<*>>()
+    private val eventPublisher: IEventPublisher = mockk()
+    private val eventSubscriber: IEventSubscriber = mockk()
 
-        val eventPublisher: IEventPublisher = mockk()
-        val eventSubscriber: IEventSubscriber = mockk()
+    override val coroutineContext: CoroutineContext = EmptyCoroutineContext
+    override val defaultPublisher: IEventPublisher = eventPublisher
+    override val defaultSubscriber: IEventSubscriber = eventSubscriber
 
-        init {
-            eventKeys.add(EventKey.apply(key))
-            eventSet.add(event)
-        }
+    init {
+        eventKeys.add(EventKey.apply(key))
+        eventSet.add(event)
+        "EventServiceDsl" should {
 
-        val eventServiceDsl = object : EventServiceDsl {
-            override val coroutineContext: CoroutineContext = Job()
-            override val defaultPublisher: IEventPublisher = eventPublisher
-            override val defaultSubscriber: IEventSubscriber = eventSubscriber
-        }
-    }
-
-    "EventServiceDsl" should {
-
-        "systemEvent should return a SystemEvent created with given parameters | ESW-120" {
-            with(Mocks()) {
+            "systemEvent should return a SystemEvent created with given parameters | ESW-120" {
                 val eventName = "systemEvent1"
                 val eventPrefix = "TCS.filter.wheel"
-                val systemEvent = eventServiceDsl.systemEvent(eventPrefix, eventName)
+                val systemEvent = systemEvent(eventPrefix, eventName)
 
                 // Verify that  event with provided prefix and eventName is created.
                 systemEvent shouldBe SystemEvent(
@@ -63,13 +55,11 @@ class EventServiceDslTest : WordSpec({
                     systemEvent.paramSet()
                 )
             }
-        }
 
-        "observeEvent should return a ObserveEvent created with given parameters | ESW-120" {
-            with(Mocks()) {
+            "observeEvent should return a ObserveEvent created with given parameters | ESW-120" {
                 val eventName = "observeEvent1"
                 val eventPrefix = "TCS.filter.wheel"
-                val observeEvent = eventServiceDsl.observeEvent(eventPrefix, eventName)
+                val observeEvent = observeEvent(eventPrefix, eventName)
 
                 // Verify that event with provided prefix and eventName is created.
                 observeEvent shouldBe ObserveEvent(
@@ -80,47 +70,30 @@ class EventServiceDslTest : WordSpec({
                     observeEvent.paramSet()
                 )
             }
-        }
 
-        "publish should delegate to publisher.publish | ESW-120" {
-            with(Mocks()) {
-                every { (eventPublisher.publish(event)) }
-                    .returns(CompletableFuture.completedFuture(done()))
-
-                eventServiceDsl.publishEvent(event) shouldBe done()
-
+            "publish should delegate to publisher.publish | ESW-120" {
+                every { (eventPublisher.publish(event)) }.returns(CompletableFuture.completedFuture(done()))
+                publishEvent(event) shouldBe done()
                 verify { eventPublisher.publish(event) }
             }
-        }
 
-        "publishEvent should delegate to publisher.publishAsync | ESW-120" {
-            with(Mocks()) {
+            "publishEvent should delegate to publisher.publishAsync | ESW-120" {
                 every { eventPublisher.publishAsync(any(), any()) }.answers { cancellable }
-
-                eventServiceDsl.publishEvent(duration) { event } shouldBe cancellable
-
+                publishEvent(duration) { event } shouldBe cancellable
                 verify { eventPublisher.publishAsync(any(), any()) }
             }
-        }
 
-        "onEvent should delegate to subscriber.subscribeAsync | ESW-120" {
-            with(Mocks()) {
+            "onEvent should delegate to subscriber.subscribeAsync | ESW-120" {
                 every { eventSubscriber.subscribeAsync(eventKeys, any()) }.answers { eventSubscription }
-
-                eventServiceDsl.onEvent(key) { eventCallback } shouldBe eventSubscription
-
+                onEvent(key) { eventCallback } shouldBe eventSubscription
                 verify { eventSubscriber.subscribeAsync(eventKeys, any()) }
             }
-        }
 
-        "getEvent should delegate to subscriber.get | ESW-120" {
-            with(Mocks()) {
+            "getEvent should delegate to subscriber.get | ESW-120" {
                 every { eventSubscriber.get(eventKeys) }.answers { CompletableFuture.completedFuture(eventSet) }
-
-                eventServiceDsl.getEvent(key) shouldBe eventSet
-
+                getEvent(key) shouldBe eventSet
                 verify { eventSubscriber.get(eventKeys) }
             }
         }
     }
-})
+}
