@@ -22,4 +22,16 @@ script {
         val event = SystemEvent(Prefix("tcs.test"), EventName("diagnostic-data")).add(operationsModeParam)
         publishEvent(event)
     }
+
+    handleGoOnline {
+        val onlineParam = stringKey("mode").set("online")
+        val event = SystemEvent(Prefix("tcs.test"), EventName("online")).add(onlineParam)
+        publishEvent(event)
+    }
+
+    handleGoOffline {
+        val offlineParam = stringKey("mode").set("offline")
+        val event = SystemEvent(Prefix("tcs.test"), EventName("offline")).add(offlineParam)
+        publishEvent(event)
+    }
 }

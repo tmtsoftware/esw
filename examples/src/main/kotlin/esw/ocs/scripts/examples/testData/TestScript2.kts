@@ -4,24 +4,19 @@ import csw.params.commands.CommandResponse.Completed
 import csw.params.commands.CommandResponse.Error
 import esw.ocs.dsl.core.reusableScript
 import esw.ocs.dsl.core.script
-import esw.ocs.dsl.params.booleanKey
 import esw.ocs.dsl.params.set
 import kotlinx.coroutines.delay
 
 // ESW-134: Reuse code by ability to import logic from one script into another
 val onlineOfflineHandlers = reusableScript {
     handleGoOffline {
-        // do some actions to go offline
-        val param = booleanKey("offline").set(true)
-        val event = systemEvent("TCS.test", "offline").add(param)
-        publishEvent(event)
+        goOfflineModeForSequencer("testSequencerId6", "testObservingMode6")
+        delay(1000)
     }
 
     handleGoOnline {
-        // do some actions to go online
-        val param = booleanKey("online").set(true)
-        val event = systemEvent("TCS.test", "online").add(param)
-        publishEvent(event)
+        goOnlineModeForSequencer("testSequencerId6", "testObservingMode6")
+        delay(1000)
     }
 }
 
