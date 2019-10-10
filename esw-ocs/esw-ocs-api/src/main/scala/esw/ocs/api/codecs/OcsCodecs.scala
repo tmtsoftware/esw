@@ -12,46 +12,40 @@ import io.bullet.borer.derivation.ArrayBasedCodecs.deriveUnaryCodec
 import io.bullet.borer.derivation.MapBasedCodecs.deriveCodec
 
 trait OcsCodecs extends ParamCodecs with LocationCodecs {
-
-  def singletonErrorCodec[T <: SingletonError with Singleton](a: T): Codec[T] =
-    Codec.bimap[String, T](_.msg, _ => a)
-
   //StepList Codecs
-  implicit lazy val stepCodec: Codec[Step]                    = deriveCodec[Step]
-  implicit lazy val stepListCodec: Codec[StepList]            = deriveCodec[StepList]
-  implicit lazy val successStatusCodec: Codec[Success]        = deriveCodec[Success]
-  implicit lazy val failureStatusCodec: Codec[Failure]        = deriveCodec[Failure]
-  implicit lazy val pendingStatusCodec: Codec[Pending.type]   = deriveCodec[Pending.type]
-  implicit lazy val inflightStatusCodec: Codec[InFlight.type] = deriveCodec[InFlight.type]
-  implicit lazy val stepStatusCodec: Codec[StepStatus]        = deriveCodec[StepStatus]
+  implicit lazy val stepCodec: Codec[Step]                    = deriveCodec
+  implicit lazy val stepListCodec: Codec[StepList]            = deriveCodec
+  implicit lazy val successStatusCodec: Codec[Success]        = deriveCodec
+  implicit lazy val failureStatusCodec: Codec[Failure]        = deriveCodec
+  implicit lazy val pendingStatusCodec: Codec[Pending.type]   = deriveCodec
+  implicit lazy val inflightStatusCodec: Codec[InFlight.type] = deriveCodec
+  implicit lazy val stepStatusCodec: Codec[StepStatus]        = deriveCodec
 
   //StepListResponse Codecs
-  implicit lazy val pullNextResultCodec: Codec[PullNextResult] = deriveCodec[PullNextResult]
-  implicit lazy val sequenceResultCodec: Codec[SequenceResult] = deriveCodec[SequenceResult]
-  implicit lazy val okCodec: Codec[Ok.type]                    = deriveCodec[Ok.type]
+  implicit lazy val pullNextResultCodec: Codec[PullNextResult] = deriveCodec
+  implicit lazy val sequenceResultCodec: Codec[SequenceResult] = deriveCodec
+  implicit lazy val okCodec: Codec[Ok.type]                    = deriveCodec
 
-  implicit lazy val unhandledCodec: Codec[Unhandled]           = deriveCodec[Unhandled]
-  implicit lazy val idDoesNotExistCodec: Codec[IdDoesNotExist] = deriveCodec[IdDoesNotExist]
-  implicit lazy val inFlightOrFinishedStepErrorCodec: Codec[CannotOperateOnAnInFlightOrFinishedStep.type] =
-    deriveCodec[CannotOperateOnAnInFlightOrFinishedStep.type]
-  implicit lazy val duplicateIdsFoundCodec: Codec[DuplicateIdsFound.type]       = singletonErrorCodec(DuplicateIdsFound)
-  implicit lazy val goOnlineHookFailedCodec: Codec[GoOnlineHookFailed.type]     = singletonErrorCodec(GoOnlineHookFailed)
-  implicit lazy val diagnosticHookFailedCodec: Codec[DiagnosticHookFailed.type] = singletonErrorCodec(DiagnosticHookFailed)
-  implicit lazy val operationsHookFailedCodec: Codec[OperationsHookFailed.type] = singletonErrorCodec(OperationsHookFailed)
-  implicit lazy val responseCodec: Codec[EswSequencerResponse]                  = deriveCodec[EswSequencerResponse]
-
-  implicit lazy val loadScriptErrorCodec: Codec[LoadScriptError] = deriveCodec[LoadScriptError]
+  implicit lazy val unhandledCodec: Codec[Unhandled]                                                      = deriveCodec
+  implicit lazy val idDoesNotExistCodec: Codec[IdDoesNotExist]                                            = deriveCodec
+  implicit lazy val inFlightOrFinishedStepErrorCodec: Codec[CannotOperateOnAnInFlightOrFinishedStep.type] = deriveCodec
+  implicit lazy val duplicateIdsFoundCodec: Codec[DuplicateIdsFound.type]                                 = deriveCodec
+  implicit lazy val goOnlineHookFailedCodec: Codec[GoOnlineHookFailed.type]                               = deriveCodec
+  implicit lazy val diagnosticHookFailedCodec: Codec[DiagnosticHookFailed.type]                           = deriveCodec
+  implicit lazy val operationsHookFailedCodec: Codec[OperationsHookFailed.type]                           = deriveCodec
+  implicit lazy val responseCodec: Codec[EswSequencerResponse]                                            = deriveCodec
+  implicit lazy val loadScriptErrorCodec: Codec[LoadScriptError]                                          = deriveCodec
 
   //SequenceComponentResponse Codecs
-  implicit lazy val loadScriptResponseCodec: Codec[LoadScriptResponse]             = deriveUnaryCodec[LoadScriptResponse]
-  implicit lazy val getStatusResponseCodec: Codec[GetStatusResponse]               = deriveUnaryCodec[GetStatusResponse]
-  implicit lazy val pauseResponseCodec: Codec[PauseResponse]                       = deriveCodec[PauseResponse]
-  implicit lazy val okOrUnhandledResponseCodec: Codec[OkOrUnhandledResponse]       = deriveCodec[OkOrUnhandledResponse]
-  implicit lazy val genericResponseCodec: Codec[GenericResponse]                   = deriveCodec[GenericResponse]
-  implicit lazy val removeBreakpointResponseCodec: Codec[RemoveBreakpointResponse] = deriveCodec[RemoveBreakpointResponse]
-  implicit lazy val goOnlineResponseCodec: Codec[GoOnlineResponse]                 = deriveCodec[GoOnlineResponse]
-  implicit lazy val diagnosticModeResponseCodec: Codec[DiagnosticModeResponse]     = deriveCodec[DiagnosticModeResponse]
-  implicit lazy val operationsModeResponseCodec: Codec[OperationsModeResponse]     = deriveCodec[OperationsModeResponse]
-  implicit lazy val loadSequenceResponseCodec: Codec[LoadSequenceResponse]         = deriveCodec[LoadSequenceResponse]
-  implicit lazy val sequenceResponseCodec: Codec[SequenceResponse]                 = deriveCodec[SequenceResponse]
+  implicit lazy val loadScriptResponseCodec: Codec[LoadScriptResponse]             = deriveUnaryCodec
+  implicit lazy val getStatusResponseCodec: Codec[GetStatusResponse]               = deriveUnaryCodec
+  implicit lazy val pauseResponseCodec: Codec[PauseResponse]                       = deriveCodec
+  implicit lazy val okOrUnhandledResponseCodec: Codec[OkOrUnhandledResponse]       = deriveCodec
+  implicit lazy val genericResponseCodec: Codec[GenericResponse]                   = deriveCodec
+  implicit lazy val removeBreakpointResponseCodec: Codec[RemoveBreakpointResponse] = deriveCodec
+  implicit lazy val goOnlineResponseCodec: Codec[GoOnlineResponse]                 = deriveCodec
+  implicit lazy val diagnosticModeResponseCodec: Codec[DiagnosticModeResponse]     = deriveCodec
+  implicit lazy val operationsModeResponseCodec: Codec[OperationsModeResponse]     = deriveCodec
+  implicit lazy val loadSequenceResponseCodec: Codec[LoadSequenceResponse]         = deriveCodec
+  implicit lazy val sequenceResponseCodec: Codec[SequenceResponse]                 = deriveCodec
 }
