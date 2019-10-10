@@ -208,16 +208,18 @@ class SequencerBehaviorTest extends ScalaTestWithActorTestKit with BaseTestSuite
       import sequencerSetup._
 
       loadAndStartSequenceThenAssertInProgress()
-      mockAllCommands()
-      pullNextCommand()   // why is this necessary?
+//      mockAllCommands()
+      mockCommand(command1.runId, Promise().future) //  future will not complete
+      pullNextCommand()                             // why is this necessary?
 
       val expectedSteps = List(
         Step(command1, InFlight, hasBreakpoint = false),
-        Step(command2, Pending, hasBreakpoint = false),
+        Step(command2, Pending, hasBreakpoint = false)
       )
 
       assertCurrentSequence(Some(StepList(sequence.runId, expectedSteps)))
     }
+
     "return sequence when in finished state | ESW-157" in {
       val sequencerSetup = SequencerTestSetup.idle(sequence)
       import sequencerSetup._
@@ -228,7 +230,7 @@ class SequencerBehaviorTest extends ScalaTestWithActorTestKit with BaseTestSuite
 
       val expectedSteps = List(
         Step(command1, Finished(command1.runId), hasBreakpoint = false),
-        Step(command2, Finished(command2.runId), hasBreakpoint = false),
+        Step(command2, Finished(command2.runId), hasBreakpoint = false)
       )
 
       assertCurrentSequence(Some(StepList(sequence.runId, expectedSteps)))
