@@ -16,8 +16,6 @@ import csw.event.client.models.EventStores.RedisStore
 import csw.location.api.scaladsl.LocationService
 import csw.location.client.ActorSystemFactory
 import csw.location.client.scaladsl.HttpLocationServiceFactory
-import csw.logging.api.scaladsl.Logger
-import csw.logging.client.scaladsl.LoggerFactory
 import csw.time.scheduler.TimeServiceSchedulerFactory
 import esw.http.core.utils.ComponentFactory
 import io.lettuce.core.RedisClient
@@ -27,7 +25,7 @@ import scala.concurrent.{ExecutionContext, Future}
 /**
  * Represents a class that lazily initializes necessary instances to run a component(s)
  */
-class CswWiring(componentName: String) {
+class CswWiring() {
   lazy val actorSystem: ActorSystem[SpawnProtocol] = ActorSystemFactory.remote(SpawnProtocol.behavior, "service-system")
   lazy val actorRuntime: ActorRuntime              = new ActorRuntime(actorSystem)
   import actorRuntime._
@@ -44,8 +42,6 @@ class CswWiring(componentName: String) {
   lazy val alarmServiceFactory: AlarmServiceFactory = new AlarmServiceFactory(redisClient)
   lazy val alarmService: AlarmService               = alarmServiceFactory.makeClientApi(locationService)
 
-  lazy val loggerFactory               = new LoggerFactory(componentName)
-  lazy val logger: Logger              = loggerFactory.getLogger
   lazy val componentFactory            = new ComponentFactory(locationService, CommandServiceFactory)
   lazy val timeServiceSchedulerFactory = new TimeServiceSchedulerFactory
 
@@ -66,7 +62,7 @@ class CswWiring(componentName: String) {
 }
 
 object CswWiring {
-  def make(_actorSystem: ActorSystem[SpawnProtocol], componentName: String): CswWiring = new CswWiring(componentName) {
+  def make(_actorSystem: ActorSystem[SpawnProtocol]): CswWiring = new CswWiring() {
     override lazy val actorSystem: ActorSystem[SpawnProtocol] = _actorSystem
   }
 }

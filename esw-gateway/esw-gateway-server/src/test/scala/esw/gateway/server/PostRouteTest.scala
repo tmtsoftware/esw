@@ -11,19 +11,21 @@ import csw.alarm.models.Key.AlarmKey
 import csw.event.api.exceptions.{EventServerNotAvailable, PublishFailure}
 import csw.location.models.ComponentId
 import csw.location.models.ComponentType.Assembly
+import csw.logging.macros.SourceFactory
+import csw.logging.models.{AnyId, Level}
 import csw.params.commands.CommandResponse.{Accepted, Started}
 import csw.params.commands.{CommandName, CommandResponse, Setup}
 import csw.params.core.models.{Id, ObsId, Prefix, Subsystem}
 import csw.params.events.{Event, EventKey, EventName, SystemEvent}
 import esw.gateway.api.codecs.GatewayCodecs
-import esw.gateway.api.protocol.PostRequest.{GetEvent, Oneway, PublishEvent, SetAlarmSeverity, Submit, Validate}
+import esw.gateway.api.protocol.PostRequest._
 import esw.gateway.api.protocol.{EmptyEventKeys, EventServerUnavailable, InvalidComponent, SetAlarmSeverityFailure}
-import esw.gateway.api.{AlarmApi, CommandApi, EventApi}
-import esw.gateway.impl.{AlarmImpl, CommandImpl, EventImpl}
+import esw.gateway.api.{AlarmApi, CommandApi, EventApi, LoggingApi}
+import esw.gateway.impl._
 import esw.gateway.server.handlers.PostHandlerImpl
 import esw.http.core.BaseTestSuite
 import mscoket.impl.HttpCodecs
-import org.mockito.ArgumentMatchers.any
+import org.mockito.ArgumentMatchers.{any, eq => argsEq}
 import org.mockito.Mockito.when
 import org.mockito.MockitoSugar._
 
@@ -46,7 +48,8 @@ class PostRouteTest extends BaseTestSuite with ScalatestRouteTest with GatewayCo
   private val alarmApi: AlarmApi     = new AlarmImpl(alarmService)
   private val eventApi: EventApi     = new EventImpl(eventService, eventSubscriberUtil)
   private val commandApi: CommandApi = new CommandImpl(componentFactory.commandService)
-  private val postHandlerImpl        = new PostHandlerImpl(alarmApi, commandApi, eventApi)
+  private val loggingApi: LoggingApi = new LoggingImpl(loggerCache)
+  private val postHandlerImpl        = new PostHandlerImpl(alarmApi, commandApi, eventApi, loggingApi)
   private val route                  = new Routes(postHandlerImpl, null, logger).route
 
   // fixme: add failure scenario when event server/ alarm server is down
@@ -62,7 +65,7 @@ class PostRouteTest extends BaseTestSuite with ScalatestRouteTest with GatewayCo
       when(componentFactory.commandService(componentId)).thenReturn(Future.successful(commandService))
       when(commandService.submit(command)).thenReturn(Future.successful(Started(runId)))
 
-      Post("/post", submitRequest) ~> route ~> check {
+      Post("/post-endpoint", submitRequest) ~> route ~> check {
         responseAs[Either[InvalidComponent, CommandResponse]].rightValue shouldEqual Started(runId)
       }
     }
@@ -78,7 +81,7 @@ class PostRouteTest extends BaseTestSuite with ScalatestRouteTest with GatewayCo
       when(componentFactory.commandService(componentId)).thenReturn(Future.successful(commandService))
       when(commandService.validate(command)).thenReturn(Future.successful(Accepted(runId)))
 
-      Post("/post", validateRequest) ~> route ~> check {
+      Post("/post-endpoint", validateRequest) ~> route ~> check {
         responseAs[Either[InvalidComponent, CommandResponse]].rightValue shouldEqual Accepted(runId)
       }
     }
@@ -94,7 +97,7 @@ class PostRouteTest extends BaseTestSuite with ScalatestRouteTest with GatewayCo
       when(componentFactory.commandService(componentId)).thenReturn(Future.successful(commandService))
       when(commandService.oneway(command)).thenReturn(Future.successful(Accepted(runId)))
 
-      Post("/post", onewayRequest) ~> route ~> check {
+      Post("/post-endpoint", onewayRequest) ~> route ~> check {
         responseAs[Either[InvalidComponent, CommandResponse]].rightValue shouldEqual Accepted(runId)
       }
     }
@@ -112,7 +115,7 @@ class PostRouteTest extends BaseTestSuite with ScalatestRouteTest with GatewayCo
       when(componentFactory.commandService(componentId))
         .thenReturn(Future.failed(new IllegalArgumentException(errmsg)))
 
-      Post("/post", submitRequest) ~> route ~> check {
+      Post("/post-endpoint", submitRequest) ~> route ~> check {
         responseAs[Either[InvalidComponent, CommandResponse]].leftValue shouldEqual InvalidComponent(errmsg)
       }
     }
@@ -127,7 +130,7 @@ class PostRouteTest extends BaseTestSuite with ScalatestRouteTest with GatewayCo
 
       when(eventPublisher.publish(event)).thenReturn(Future.successful(Done))
 
-      Post("/post", publishEvent) ~> route ~> check {
+      Post("/post-endpoint", publishEvent) ~> route ~> check {
         responseAs[Either[EventServerUnavailable.type, Done]].rightValue shouldEqual Done
       }
     }
@@ -141,7 +144,7 @@ class PostRouteTest extends BaseTestSuite with ScalatestRouteTest with GatewayCo
       when(eventPublisher.publish(event))
         .thenReturn(Future.failed(PublishFailure(event, new RuntimeException("Event server is down"))))
 
-      Post("/post", publishEvent) ~> route ~> check {
+      Post("/post-endpoint", publishEvent) ~> route ~> check {
         responseAs[Either[EventServerUnavailable.type, Done]].leftValue shouldEqual EventServerUnavailable
       }
     }
@@ -157,13 +160,13 @@ class PostRouteTest extends BaseTestSuite with ScalatestRouteTest with GatewayCo
 
       when(eventSubscriber.get(Set(eventKey))).thenReturn(Future.successful(Set(event)))
 
-      Post("/post", getEvent) ~> route ~> check {
+      Post("/post-endpoint", getEvent) ~> route ~> check {
         responseAs[Either[EmptyEventKeys.type, Set[Event]]].rightValue shouldEqual Set(event)
       }
     }
 
     "return EmptyEventKeys error on sending no event keys in request | ESW-94, ESW-216" in {
-      Post("/post", GetEvent(Set())) ~> route ~> check {
+      Post("/post-endpoint", GetEvent(Set())) ~> route ~> check {
         responseAs[Either[EmptyEventKeys.type, Set[Event]]].leftValue shouldEqual EmptyEventKeys
       }
     }
@@ -177,7 +180,7 @@ class PostRouteTest extends BaseTestSuite with ScalatestRouteTest with GatewayCo
       when(eventSubscriber.get(Set(eventKey)))
         .thenReturn(Future.failed(EventServerNotAvailable(new RuntimeException("Redis server is not available"))))
 
-      Post("/post", getEvent) ~> route ~> check {
+      Post("/post-endpoint", getEvent) ~> route ~> check {
         responseAs[Either[EmptyEventKeys.type, Set[Event]]].leftValue shouldEqual EventServerUnavailable
       }
     }
@@ -187,7 +190,7 @@ class PostRouteTest extends BaseTestSuite with ScalatestRouteTest with GatewayCo
 
       val eventKey = EventKey(Prefix("tcs.test.gateway"), EventName("event1"))
 
-      Post("/post", GetEvent(Set(eventKey))) ~> route ~> check {
+      Post("/post-endpoint", GetEvent(Set(eventKey))) ~> route ~> check {
         status shouldBe StatusCodes.InternalServerError
       }
     }
@@ -204,7 +207,7 @@ class PostRouteTest extends BaseTestSuite with ScalatestRouteTest with GatewayCo
 
       when(alarmService.setSeverity(alarmKey, majorSeverity)).thenReturn(Future.successful(Done))
 
-      Post("/post", setAlarmSeverity) ~> route ~> check {
+      Post("/post-endpoint", setAlarmSeverity) ~> route ~> check {
         responseAs[Either[SetAlarmSeverityFailure, Done]].rightValue shouldEqual Done
       }
     }
@@ -219,10 +222,34 @@ class PostRouteTest extends BaseTestSuite with ScalatestRouteTest with GatewayCo
 
       when(alarmService.setSeverity(alarmKey, majorSeverity)).thenReturn(Future.failed(new KeyNotFoundException("")))
 
-      Post("/post", setAlarmSeverity) ~> route ~> check {
+      Post("/post-endpoint", setAlarmSeverity) ~> route ~> check {
         responseAs[Either[SetAlarmSeverityFailure, Done]].leftValue shouldEqual SetAlarmSeverityFailure("")
       }
     }
   }
 
+  "Log" must {
+    "log the message and return Done | ESW-200" in {
+      val log = Log(
+        "esw-test",
+        Level.FATAL,
+        "test-message",
+        Map(
+          "additional-info" -> 45,
+          "city"            -> "LA"
+        )
+      )
+
+      Post("/post-endpoint", log) ~> route ~> check {
+        responseAs[Done] shouldEqual Done
+        val expectedMetadata = Map(
+          "additional-info" -> 45,
+          "city"            -> "LA"
+        )
+        verify(logger).fatal(argsEq("test-message"), argsEq(expectedMetadata), any[Throwable], any[AnyId])(
+          any[SourceFactory]
+        )
+      }
+    }
+  }
 }

@@ -22,13 +22,13 @@
 					"raw": "{\n    \"Submit\": {\n        \"componentId\": {\n            \"name\": \"SampleHcd\",\n            \"componentType\": \"HCD\"\n        },\n        \"command\": {\n            \"Setup\": {\n                \"runId\": \"test-runId\",\n                \"source\": \"wfos.blue.filter\",\n                \"commandName\": \"sleep\",\n                \"maybeObsId\": \"Obs001\",\n                \"paramSet\": []\n            }\n        }\n    }\n}"
 				},
 				"url": {
-					"raw": "localhost:8090/post",
+					"raw": "localhost:8090/post-endpoint",
 					"host": [
 						"localhost"
 					],
 					"port": "8090",
 					"path": [
-						"post"
+						"post-endpoint"
 					]
 				}
 			},
@@ -51,13 +51,13 @@
 					"raw": "{\n    \"Validate\": {\n        \"componentId\": {\n            \"name\": \"SampleHcd\",\n            \"componentType\": \"HCD\"\n        },\n        \"command\": {\n            \"Setup\": {\n                \"runId\": \"test-runId\",\n                \"source\": \"wfos.blue.filter\",\n                \"commandName\": \"sleep\",\n                \"maybeObsId\": \"Obs001\",\n                \"paramSet\": []\n            }\n        }\n    }\n}"
 				},
 				"url": {
-					"raw": "localhost:8090/post",
+					"raw": "localhost:8090/post-endpoint",
 					"host": [
 						"localhost"
 					],
 					"port": "8090",
 					"path": [
-						"post"
+						"post-endpoint"
 					]
 				}
 			},
@@ -77,16 +77,16 @@
 				],
 				"body": {
 					"mode": "raw",
-					"raw": "{\n    \"Oneway\": {\n        \"componentId\": {\n            \"name\": \"SampleHcd\",\n            \"componentType\": \"HCD\"\n        },\n        \"command\": {\n            \"Setup\": {\n                \"runId\": \"test-runId\",\n                \"source\": \"wfos.blue.filter\",\n                \"commandName\": \"jump\",\n                \"maybeObsId\": \"Obs001\",\n                \"paramSet\": []\n            }\n        }\n    }\n}"
+					"raw": "{\n    \"Oneway\": {\n        \"componentId\": {\n            \"name\": \"SampleHcd\",\n            \"componentType\": \"HCD\"\n        },\n        \"command\": {\n            \"Setup\": {\n                \"runId\": \"test-runId\",\n                \"source\": \"wfos.blue.filter\",\n                \"commandName\": \"sleep\",\n                \"maybeObsId\": \"Obs001\",\n                \"paramSet\": []\n            }\n        }\n    }\n}"
 				},
 				"url": {
-					"raw": "localhost:8090/post",
+					"raw": "localhost:8090/post-endpoint",
 					"host": [
 						"localhost"
 					],
 					"port": "8090",
 					"path": [
-						"post"
+						"post-endpoint"
 					]
 				}
 			},
@@ -109,13 +109,13 @@
 					"raw": "{\n    \"PublishEvent\": {\n        \"event\": {\n            \"ObserveEvent\": {\n                \"eventId\": \"7a4cd6ab-6077-476d-a035-6f83be1de42c\",\n                \"source\": \"wfos.blue.filter\",\n                \"eventName\": \"filter_wheel\",\n                \"eventTime\": \"2017-08-09T06:40:00.898Z\",\n                \"paramSet\": [\n                    {\n                        \"StructKey\": {\n                            \"keyName\": \"myStruct\",\n                            \"values\": [\n                                {\n                                    \"paramSet\": [\n                                        {\n                                            \"StringKey\": {\n                                                \"keyName\": \"ra\",\n                                                \"values\": [\n                                                    \"12:13:14.1\"\n                                                ],\n                                                \"units\": \"NoUnits\"\n                                            }\n                                        },\n                                        {\n                                            \"StringKey\": {\n                                                \"keyName\": \"dec\",\n                                                \"values\": [\n                                                    \"32:33:34.4\"\n                                                ],\n                                                \"units\": \"NoUnits\"\n                                            }\n                                        },\n                                        {\n                                            \"DoubleKey\": {\n                                                \"keyName\": \"epoch\",\n                                                \"values\": [\n                                                    1950\n                                                ],\n                                                \"units\": \"NoUnits\"\n                                            }\n                                        }\n                                    ]\n                                }\n                            ],\n                            \"units\": \"NoUnits\"\n                        }\n                    }\n                ]\n            }\n        }\n    }\n}"
 				},
 				"url": {
-					"raw": "localhost:8090/post",
+					"raw": "localhost:8090/post-endpoint",
 					"host": [
 						"localhost"
 					],
 					"port": "8090",
 					"path": [
-						"post"
+						"post-endpoint"
 					]
 				}
 			},
@@ -138,13 +138,13 @@
 					"raw": "{\n    \"GetEvent\": {\n        \"eventKeys\": [\n            {\n                \"source\": \"wfos.blue.filter\",\n                \"eventName\": \"filter_wheel\"\n            }\n        ]\n    }\n}"
 				},
 				"url": {
-					"raw": "localhost:8090/post",
+					"raw": "localhost:8090/post-endpoint",
 					"host": [
 						"localhost"
 					],
 					"port": "8090",
 					"path": [
-						"post"
+						"post-endpoint"
 					]
 				}
 			},
@@ -167,13 +167,13 @@
 					"raw": "{\n    \"SetAlarmSeverity\": {\n        \"alarmKey\": {\n            \"subsystem\": \"NFIRAOS\",\n            \"component\": \"SampleHcd\",\n            \"name\": \"counterTooHighAlarm\"\n        },\n        \"severity\":\"Major\"\n    }\n}"
 				},
 				"url": {
-					"raw": "localhost:8090/post",
+					"raw": "localhost:8090/post-endpoint",
 					"host": [
 						"localhost"
 					],
 					"port": "8090",
 					"path": [
-						"post"
+						"post-endpoint"
 					]
 				}
 			},
@@ -199,13 +199,13 @@
 					"raw": "{\n    \"QueryFinal\": {\n        \"componentId\": {\n            \"name\": \"SampleHcd\",\n            \"componentType\": \"HCD\"\n        },\n        \"runId\": \"test-runId\"\n    }\n}"
 				},
 				"url": {
-					"raw": "localhost:8090/websocket",
+					"raw": "localhost:8090/websocket-endpoint",
 					"host": [
 						"localhost"
 					],
 					"port": "8090",
 					"path": [
-						"websocket"
+						"websocket-endpoint"
 					]
 				}
 			},
@@ -228,16 +228,16 @@
 				],
 				"body": {
 					"mode": "raw",
-					"raw": "{\n    \"SubscribeCurrentState\": {\n        \"componentId\": {\n            \"name\": \"SampleHcd\",\n            \"componentType\": \"HCD\"\n        },\n        \"stateNames\": [\n            {\n                \"name\": \"stateName1\"\n            }\n        ],\n        \"maxFrequency\": [\n            2\n        ]\n    }\n}"
+					"raw": "{\n    \"SubscribeCurrentState\": {\n        \"componentId\": {\n            \"name\": \"SampleHcd\",\n            \"componentType\": \"HCD\"\n        },\n        \"stateNames\": [\n            \"stateName1\"\n        ],\n        \"maxFrequency\": 2\n    }\n}"
 				},
 				"url": {
-					"raw": "localhost:8090/websocket",
+					"raw": "localhost:8090/websocket-endpoint",
 					"host": [
 						"localhost"
 					],
 					"port": "8090",
 					"path": [
-						"websocket"
+						"websocket-endpoint"
 					]
 				}
 			},
@@ -260,16 +260,16 @@
 				],
 				"body": {
 					"mode": "raw",
-					"raw": "{\n    \"Subscribe\": {\n        \"eventKeys\": [\n            {\n                \"source\": \"wfos.blue.filter\",\n                \"eventName\": \"filter_wheel\"\n            }\n        ],\n        \"maxFrequency\": [\n            2\n        ]\n    }\n}"
+					"raw": "{\n    \"Subscribe\": {\n        \"eventKeys\": [\n            {\n                \"source\": \"wfos.blue.filter\",\n                \"eventName\": \"filter_wheel\"\n            }\n        ],\n        \"maxFrequency\": 2\n    }\n}"
 				},
 				"url": {
-					"raw": "localhost:8090/websocket",
+					"raw": "localhost:8090/websocket-endpoint",
 					"host": [
 						"localhost"
 					],
 					"port": "8090",
 					"path": [
-						"websocket"
+						"websocket-endpoint"
 					]
 				}
 			},

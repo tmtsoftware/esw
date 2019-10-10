@@ -5,10 +5,10 @@ import akka.stream.{ActorMaterializer, Materializer}
 import csw.params.commands.CommandResponse.Error
 import csw.params.commands.SequenceCommand
 import csw.params.core.models.Id
-import esw.dsl.script.{ScriptDsl, SequenceOperator}
 import esw.ocs.api.BaseTestSuite
 import esw.ocs.api.models.Step
 import esw.ocs.api.protocol.{Ok, PullNextResult}
+import esw.ocs.dsl.script.{ScriptDsl, SequenceOperator}
 
 import scala.concurrent.Future
 
@@ -36,11 +36,11 @@ class EngineTest extends BaseTestSuite {
       when(step2.command).thenReturn(cmd)
       when(step2.id).thenReturn(id)
 
-      val engine = new Engine()
+      val engine = new Engine(script)
       when(sequenceOperator.pullNext)
         .thenReturn(Future.successful(PullNextResult(step1)), Future.successful(PullNextResult(step2)))
       when(sequenceOperator.readyToExecuteNext).thenReturn(Future.successful(Ok))
-      engine.start(sequenceOperator, script)
+      engine.start(sequenceOperator)
       eventually(verify(script).execute(step1.command))
       eventually(verify(script).execute(step2.command))
     }
@@ -54,10 +54,10 @@ class EngineTest extends BaseTestSuite {
       when(step.command).thenReturn(cmd)
       when(step.id).thenReturn(id)
 
-      val engine = new Engine()
+      val engine = new Engine(script)
       when(sequenceOperator.pullNext).thenReturn(Future.successful(PullNextResult(step)))
       when(script.execute(step.command)).thenReturn(Future.failed(new RuntimeException(errorMsg)))
-      engine.start(sequenceOperator, script)
+      engine.start(sequenceOperator)
       eventually(verify(sequenceOperator).update(Error(step.id, errorMsg)))
     }
   }

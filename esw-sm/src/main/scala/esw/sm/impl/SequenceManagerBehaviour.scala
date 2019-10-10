@@ -2,8 +2,8 @@ package esw.sm.impl
 
 import akka.actor.typed.scaladsl.Behaviors
 import akka.actor.typed.{ActorSystem, Behavior, SpawnProtocol}
-import esw.dsl.sequence_manager.LocationServiceUtil
 import esw.ocs.api.{SequencerAdminFactoryApi, protocol}
+import esw.ocs.dsl.sequence_manager.LocationServiceUtil
 import esw.sm.api.Response.{Error, Ok}
 import esw.sm.api.SequenceManagerMsg._
 import esw.sm.api.{RichSequence, SequenceManagerMsg, SequenceStatus}
@@ -38,26 +38,26 @@ object SequenceManagerBehaviour {
               replyTo ! Ok
             case None => replyTo ! Error(s"sequence with runId $runId does not exist")
           }
-        case ListSequence(replyTo)                               => replyTo ! sequences
-        case GetSequence(runId, replyTo)                         => replyTo ! sequences.find(_.sequence.runId == runId)
-        case StartSequencer(sequencerId, observingMode, replyTo) =>
+        case ListSequence(replyTo)                             => replyTo ! sequences
+        case GetSequence(runId, replyTo)                       => replyTo ! sequences.find(_.sequence.runId == runId)
+        case StartSequencer(packageId, observingMode, replyTo) =>
           //find available sequence component with given subsystem
-          // sequenceComponent ! LoadScript(sequencerId, observingMode)
+          // sequenceComponent ! LoadScript(packageId, observingMode)
           replyTo ! Ok
-        case ShutdownSequencer(sequencerId, observingMode, replyTo) =>
-          // locationUtils.resolve(sequencerId, observingMode) ==> sequencer
+        case ShutdownSequencer(packageId, observingMode, replyTo) =>
+          // locationUtils.resolve(packageId, observingMode) ==> sequencer
           // get sequence component name from sequencer name
           // sequenceComponent ! UnloadScript
           replyTo ! Ok
-        case GoOnlineSequencer(sequencerId, observingMode, replyTo) =>
-          sequencerAdminFactory.make(sequencerId, observingMode).map { sequencerAdmin =>
+        case GoOnlineSequencer(packageId, observingMode, replyTo) =>
+          sequencerAdminFactory.make(packageId, observingMode).map { sequencerAdmin =>
             sequencerAdmin.goOnline().foreach {
               case protocol.Ok => replyTo ! Ok
               case response    => replyTo ! Error(s"failed with error ${response.toString}")
             }
           }
-        case GoOfflineSequencer(sequencerId, observingMode, replyTo) =>
-          sequencerAdminFactory.make(sequencerId, observingMode).map { sequencerAdmin =>
+        case GoOfflineSequencer(packageId, observingMode, replyTo) =>
+          sequencerAdminFactory.make(packageId, observingMode).map { sequencerAdmin =>
             sequencerAdmin.goOffline().foreach {
               case protocol.Ok => replyTo ! Ok
               case response    => replyTo ! Error(s"failed with error ${response.toString}")

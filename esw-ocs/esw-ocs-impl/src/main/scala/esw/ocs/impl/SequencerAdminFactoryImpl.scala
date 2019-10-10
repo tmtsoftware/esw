@@ -2,8 +2,8 @@ package esw.ocs.impl
 
 import akka.util.Timeout
 import csw.command.client.extensions.AkkaLocationExt.RichAkkaLocation
-import esw.dsl.sequence_manager.LocationServiceUtil
 import esw.ocs.api.{SequencerAdminApi, SequencerAdminFactoryApi}
+import esw.ocs.dsl.sequence_manager.LocationServiceUtil
 
 import scala.concurrent.Future
 
@@ -13,8 +13,8 @@ class SequencerAdminFactoryImpl(locationServiceUtil: LocationServiceUtil)(implic
   import locationServiceUtil.actorSystem
   import actorSystem.executionContext
 
-  def make(sequencerId: String, observingMode: String): Future[SequencerAdminApi] =
+  def make(packageId: String, observingMode: String): Future[SequencerAdminApi] =
     locationServiceUtil
-      .resolveSequencer(sequencerId, observingMode)
+      .resolveSequencer(packageId, observingMode)
       .map(akkaLocation => new SequencerAdminImpl(akkaLocation.sequencerRef))
 }

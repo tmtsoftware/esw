@@ -18,9 +18,9 @@ import scala.concurrent.Future
 
 class SequencerAdminClientTest extends BaseTestSuite with SequencerAdminHttpCodecs {
 
-  private val postClient                                                 = mock[Transport[SequencerAdminPostRequest]]
-  private val websocketClient: Transport[SequencerAdminWebsocketRequest] = mock[Transport[SequencerAdminWebsocketRequest]]
-  private val sequencerAdminClient                                       = new SequencerAdminClient(postClient, websocketClient)
+  private val postClient           = mock[Transport[SequencerAdminPostRequest]]
+  private val websocketClient      = mock[Transport[SequencerAdminWebsocketRequest]]
+  private val sequencerAdminClient = new SequencerAdminClient(postClient, websocketClient)
   "SequencerAdminClient" must {
 
     "call postClient with GetSequence request | ESW-222" in {

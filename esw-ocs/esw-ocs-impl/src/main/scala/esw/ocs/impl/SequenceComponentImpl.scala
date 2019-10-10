@@ -17,8 +17,8 @@ class SequenceComponentImpl(sequenceComponentRef: ActorRef[SequenceComponentMsg]
     implicit scheduler: Scheduler,
     timeout: Timeout
 ) extends SequenceComponentApi {
-  def loadScript(sequencerId: String, observingMode: String): Future[LoadScriptResponse] =
-    sequenceComponentRef ? (LoadScript(sequencerId, observingMode, _))
+  def loadScript(packageId: String, observingMode: String): Future[LoadScriptResponse] =
+    sequenceComponentRef ? (LoadScript(packageId, observingMode, _))
 
   def status: Future[GetStatusResponse] = sequenceComponentRef ? GetStatus
 

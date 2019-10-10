@@ -13,17 +13,17 @@ trait SequencerAdminHttpCodecs extends OcsCodecs {
     sequencerAdminPostRequestValue.asInstanceOf[Codec[T]]
 
   lazy val sequencerAdminPostRequestValue: Codec[SequencerAdminPostRequest] = {
-    @silent implicit lazy val getSequenceCodec: Codec[GetSequence.type]       = singletonCodec(GetSequence)
-    @silent implicit lazy val isAvailableCodec: Codec[IsAvailable.type]       = singletonCodec(IsAvailable)
-    @silent implicit lazy val isOnlineCodec: Codec[IsOnline.type]             = singletonCodec(IsOnline)
-    @silent implicit lazy val pauseCodec: Codec[Pause.type]                   = singletonCodec(Pause)
-    @silent implicit lazy val resumeCodec: Codec[Resume.type]                 = singletonCodec(Resume)
-    @silent implicit lazy val resetCodec: Codec[Reset.type]                   = singletonCodec(Reset)
-    @silent implicit lazy val abortSequenceCodec: Codec[AbortSequence.type]   = singletonCodec(AbortSequence)
-    @silent implicit lazy val goOnlineCodec: Codec[GoOnline.type]             = singletonCodec(GoOnline)
-    @silent implicit lazy val goOfflineCodec: Codec[GoOffline.type]           = singletonCodec(GoOffline)
-    @silent implicit lazy val startSequenceCodec: Codec[StartSequence.type]   = singletonCodec(StartSequence)
-    @silent implicit lazy val operationsModeCodec: Codec[OperationsMode.type] = singletonCodec(OperationsMode)
+    @silent implicit lazy val getSequenceCodec: Codec[GetSequence.type]       = deriveCodec[GetSequence.type]
+    @silent implicit lazy val isAvailableCodec: Codec[IsAvailable.type]       = deriveCodec[IsAvailable.type]
+    @silent implicit lazy val isOnlineCodec: Codec[IsOnline.type]             = deriveCodec[IsOnline.type]
+    @silent implicit lazy val pauseCodec: Codec[Pause.type]                   = deriveCodec[Pause.type]
+    @silent implicit lazy val resumeCodec: Codec[Resume.type]                 = deriveCodec[Resume.type]
+    @silent implicit lazy val resetCodec: Codec[Reset.type]                   = deriveCodec[Reset.type]
+    @silent implicit lazy val abortSequenceCodec: Codec[AbortSequence.type]   = deriveCodec[AbortSequence.type]
+    @silent implicit lazy val goOnlineCodec: Codec[GoOnline.type]             = deriveCodec[GoOnline.type]
+    @silent implicit lazy val goOfflineCodec: Codec[GoOffline.type]           = deriveCodec[GoOffline.type]
+    @silent implicit lazy val startSequenceCodec: Codec[StartSequence.type]   = deriveCodec[StartSequence.type]
+    @silent implicit lazy val operationsModeCodec: Codec[OperationsMode.type] = deriveCodec[OperationsMode.type]
     @silent implicit lazy val diagnosticModeCodec: Codec[DiagnosticMode]      = deriveCodec[DiagnosticMode]
     @silent implicit lazy val loadCodec: Codec[LoadSequence]                  = deriveCodec[LoadSequence]
     @silent implicit lazy val submitSequenceCodec: Codec[SubmitSequence]      = deriveCodec[SubmitSequence]
@@ -42,7 +42,7 @@ trait SequencerAdminHttpCodecs extends OcsCodecs {
     sequencerAdminWebsocketRequestValue.asInstanceOf[Codec[T]]
 
   lazy val sequencerAdminWebsocketRequestValue: Codec[SequencerAdminWebsocketRequest] = {
-    @silent implicit lazy val queryFinalCodec: Codec[QueryFinal.type] = singletonCodec(QueryFinal)
+    @silent implicit lazy val queryFinalCodec: Codec[QueryFinal.type] = deriveCodec[QueryFinal.type]
     deriveCodec[SequencerAdminWebsocketRequest]
   }
 }

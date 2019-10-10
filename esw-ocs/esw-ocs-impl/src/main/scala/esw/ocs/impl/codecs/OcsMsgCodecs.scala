@@ -57,7 +57,7 @@ trait OcsMsgCodecs extends MessageCodecs with DoneCodec {
   implicit lazy val loadScriptCodec: Codec[LoadScript]     = deriveCodec[LoadScript]
   implicit lazy val getStatusCodec: Codec[GetStatus]       = deriveCodec[GetStatus]
   implicit lazy val unloadScriptCodec: Codec[UnloadScript] = deriveCodec[UnloadScript]
-  implicit lazy val stopCodec: Codec[Stop.type]            = singletonCodec(Stop)
+  implicit lazy val stopCodec: Codec[Stop.type]            = deriveCodec[Stop.type]
 
   implicit lazy val sequenceComponentMsgCodec: Codec[SequenceComponentMsg] = deriveCodec[SequenceComponentMsg]
 

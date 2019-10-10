@@ -1,4 +1,10 @@
+import org.tmt.sbt.docs.DocKeys._
+import org.tmt.sbt.docs.{Settings => DocSettings}
 import sbtcrossproject.CrossPlugin.autoImport.{CrossType, crossProject}
+
+docsRepo in ThisBuild := "git@github.com:tmtsoftware/tmtsoftware.github.io.git"
+docsParentDir in ThisBuild := EswKeys.projectName
+gitCurrentRepo in ThisBuild := "https://github.com/tmtsoftware/esw"
 
 lazy val aggregateProjects: Seq[ProjectReference] =
   Seq(
@@ -20,17 +26,16 @@ val MaybeCoverage: Plugins = if (enableCoverage) Coverage else Plugins.empty
 
 lazy val esw = (project in file("."))
   .aggregate(aggregateProjects: _*)
-  .enablePlugins(NoPublish, UnidocSite, GithubPublishDocs, GitBranchPrompt, GithubRelease)
+  .enablePlugins(NoPublish, UnidocSitePlugin, GithubPublishPlugin, GitBranchPrompt, GithubRelease)
   .disablePlugins(BintrayPlugin)
-  .settings(Settings.mergeSiteWith(docs))
+  .settings(DocSettings.makeSiteMappings(docs))
   .settings(Settings.addAliases)
-  .settings(Settings.docExclusions(unidocExclusions))
+  .settings(DocSettings.docExclusions(unidocExclusions))
 //  .settings(GithubRelease.githubReleases(githubReleases))
 
 lazy val `esw-ocs` = project
   .in(file("esw-ocs"))
   .aggregate(
-    `esw-ocs-macros`,
     `esw-ocs-api`.js,
     `esw-ocs-api`.jvm,
     `esw-ocs-dsl`,
@@ -56,18 +61,9 @@ lazy val `esw-ocs-impl` = project
   )
   .dependsOn(
     `esw-ocs-api`.jvm % "compile->compile;test->test",
-    `esw-ocs-macros`,
     `esw-ocs-dsl`,
     `esw-test-reporter` % Test
   )
-
-lazy val `esw-ocs-macros` = project
-  .in(file("esw-ocs/esw-ocs-macros"))
-  .enablePlugins(MaybeCoverage, PublishBintray)
-  .settings(
-    libraryDependencies ++= Dependencies.OcsMacros.value
-  )
-  .dependsOn(`esw-test-reporter` % Test)
 
 lazy val `esw-ocs-app` = project
   .in(file("esw-ocs/esw-ocs-app"))
@@ -104,7 +100,7 @@ lazy val `esw-integration-test` = project
 lazy val `esw-ocs-dsl` = project
   .in(file("esw-ocs/esw-ocs-dsl"))
   .settings(libraryDependencies ++= Dependencies.Utils.value)
-  .dependsOn(`esw-ocs-api`.jvm % "compile->compile;test->test", `esw-ocs-macros`, `esw-test-reporter` % Test)
+  .dependsOn(`esw-ocs-api`.jvm % "compile->compile;test->test", `esw-test-reporter` % Test)
 
 lazy val `esw-gateway` = project
   .aggregate(
@@ -155,4 +151,4 @@ lazy val `esw-sm` = project
     `esw-ocs-impl`
   )
 /* ================= Paradox Docs ============== */
-lazy val docs = project.enablePlugins(NoPublish, ParadoxSite)
+lazy val docs = project.enablePlugins(NoPublish, ParadoxMaterialSitePlugin)

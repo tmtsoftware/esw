@@ -12,9 +12,9 @@ import csw.params.commands.CommandResponse.{Completed, SubmitResponse}
 import csw.params.commands.{Sequence, SequenceCommand}
 import csw.params.core.models.Id
 import csw.time.core.models.UTCTime
-import esw.dsl.script.ScriptDsl
 import esw.ocs.api.models.{Step, StepList}
 import esw.ocs.api.protocol._
+import esw.ocs.dsl.script.ScriptDsl
 import esw.ocs.impl.messages.SequencerMessages.{Pause, _}
 import esw.ocs.impl.messages.SequencerState
 import esw.ocs.impl.messages.SequencerState.{Idle, InProgress}

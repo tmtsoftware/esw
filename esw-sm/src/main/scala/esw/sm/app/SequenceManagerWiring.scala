@@ -6,9 +6,9 @@ import akka.actor.typed.{ActorRef, ActorSystem, SpawnProtocol}
 import akka.util.Timeout
 import csw.location.api.scaladsl.LocationService
 import csw.location.client.scaladsl.HttpLocationServiceFactory
-import esw.dsl.sequence_manager.LocationServiceUtil
 import esw.http.core.wiring.ActorRuntime
 import esw.ocs.api.SequencerAdminFactoryApi
+import esw.ocs.dsl.sequence_manager.LocationServiceUtil
 import esw.ocs.impl.SequencerAdminFactoryImpl
 import esw.sm.api.SequenceManagerMsg
 import esw.sm.impl.SequenceManagerBehaviour

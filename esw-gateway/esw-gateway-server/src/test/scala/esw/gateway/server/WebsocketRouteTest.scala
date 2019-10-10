@@ -26,6 +26,7 @@ import esw.http.core.BaseTestSuite
 import io.bullet.borer.Decoder
 import mscoket.impl.HttpCodecs
 import mscoket.impl.ws.Encoding.JsonText
+import msocket.api.models.StreamError
 import org.mockito.Mockito.when
 
 import scala.concurrent.Future
@@ -66,7 +67,7 @@ class WebsocketRouteTest extends BaseTestSuite with ScalatestRouteTest with Gate
       when(componentFactory.commandService(componentId)).thenReturn(Future.successful(commandService))
       when(commandService.queryFinal(runId)(100.hours)).thenReturn(Future.successful(Completed(runId)))
 
-      WS("/websocket", wsClient.flow) ~> route ~> check {
+      WS("/websocket-endpoint", wsClient.flow) ~> route ~> check {
         wsClient.sendMessage(JsonText.strictMessage(queryFinal))
         isWebSocketUpgrade shouldBe true
         val response = decodeMessage[Either[InvalidComponent, SubmitResponse]](wsClient)
@@ -86,7 +87,7 @@ class WebsocketRouteTest extends BaseTestSuite with ScalatestRouteTest with Gate
       when(componentFactory.commandService(componentId))
         .thenReturn(Future.failed(new IllegalArgumentException(errmsg)))
 
-      WS("/websocket", wsClient.flow) ~> route ~> check {
+      WS("/websocket-endpoint", wsClient.flow) ~> route ~> check {
         wsClient.sendMessage(JsonText.strictMessage(queryFinal))
         isWebSocketUpgrade shouldBe true
         val response = decodeMessage[Either[InvalidComponent, SubmitResponse]](wsClient)
@@ -111,12 +112,12 @@ class WebsocketRouteTest extends BaseTestSuite with ScalatestRouteTest with Gate
       when(componentFactory.commandService(componentId)).thenReturn(Future.successful(commandService))
       when(commandService.subscribeCurrentState(stateNames)).thenReturn(currentStateStream)
 
-      WS("/websocket", wsClient.flow) ~> route ~> check {
+      WS("/websocket-endpoint", wsClient.flow) ~> route ~> check {
         wsClient.sendMessage(JsonText.strictMessage(subscribeCurrentState))
         isWebSocketUpgrade shouldBe true
 
         val responseSet = Source(1 to 2)
-          .map(_ => decodeMessage[Either[CommandError, CurrentState]](wsClient))
+          .map(_ => decodeMessage[Either[StreamError, CurrentState]](wsClient))
           .runWith(Sink.seq)
           .futureValue
           .map(_.rightValue)
@@ -143,12 +144,12 @@ class WebsocketRouteTest extends BaseTestSuite with ScalatestRouteTest with Gate
       when(componentFactory.commandService(componentId)).thenReturn(Future.successful(commandService))
       when(commandService.subscribeCurrentState(stateNames)).thenReturn(currentStateStream)
 
-      WS("/websocket", wsClient.flow) ~> route ~> check {
+      WS("/websocket-endpoint", wsClient.flow) ~> route ~> check {
         wsClient.sendMessage(JsonText.strictMessage(subscribeCurrentState))
         isWebSocketUpgrade shouldBe true
 
         val responseSet = Source
-          .single(decodeMessage[Either[CommandError, CurrentState]](wsClient))
+          .single(decodeMessage[Either[StreamError, CurrentState]](wsClient))
           .runWith(Sink.seq)
           .futureValue
           .map(_.rightValue)
@@ -166,16 +167,16 @@ class WebsocketRouteTest extends BaseTestSuite with ScalatestRouteTest with Gate
       val stateNames            = Set(StateName("stateName1"), StateName("stateName2"))
       val subscribeCurrentState = SubscribeCurrentState(componentId, stateNames, Some(-1))
 
-      WS("/websocket", wsClient.flow) ~> route ~> check {
+      WS("/websocket-endpoint", wsClient.flow) ~> route ~> check {
         wsClient.sendMessage(JsonText.strictMessage(subscribeCurrentState))
         isWebSocketUpgrade shouldBe true
 
         val response = Source(1 to 10)
-          .map(_ => decodeMessage[Either[CommandError, CurrentState]](wsClient))
+          .map(_ => decodeMessage[Either[StreamError, CurrentState]](wsClient))
           .runWith(Sink.head)
           .leftValue
 
-        response shouldEqual InvalidMaxFrequency
+        response shouldEqual InvalidMaxFrequency.toStreamError
       }
     }
   }
@@ -203,12 +204,12 @@ class WebsocketRouteTest extends BaseTestSuite with ScalatestRouteTest with Gate
 
       when(eventSubscriber.subscribe(eventKeys)).thenReturn(eventStream)
 
-      WS("/websocket", wsClient.flow) ~> route ~> check {
+      WS("/websocket-endpoint", wsClient.flow) ~> route ~> check {
         wsClient.sendMessage(JsonText.strictMessage(eventSubscriptionRequest))
         isWebSocketUpgrade shouldBe true
 
         val responseSet = Source(1 to 2)
-          .map(_ => decodeMessage[Either[EventError, Event]](wsClient))
+          .map(_ => decodeMessage[Either[StreamError, Event]](wsClient))
           .runWith(Sink.seq)
           .futureValue
           .map(_.rightValue)
@@ -240,12 +241,12 @@ class WebsocketRouteTest extends BaseTestSuite with ScalatestRouteTest with Gate
 
       when(eventSubscriber.subscribe(eventKeys, 100.millis, RateLimiterMode)).thenReturn(eventStream)
 
-      WS("/websocket", wsClient.flow) ~> route ~> check {
+      WS("/websocket-endpoint", wsClient.flow) ~> route ~> check {
         wsClient.sendMessage(JsonText.strictMessage(eventSubscriptionRequest))
         isWebSocketUpgrade shouldBe true
 
         val responseSet = Source(1 to 2)
-          .map(_ => decodeMessage[Either[EventError, Event]](wsClient))
+          .map(_ => decodeMessage[Either[StreamError, Event]](wsClient))
           .runWith(Sink.seq)
           .futureValue
           .map(_.rightValue)
@@ -263,16 +264,16 @@ class WebsocketRouteTest extends BaseTestSuite with ScalatestRouteTest with Gate
       val eventKeys       = Set(eventKey1, eventKey2)
 
       val eventSubscriptionRequest = Subscribe(eventKeys, Some(-1))
-      WS("/websocket", wsClient.flow) ~> route ~> check {
+      WS("/websocket-endpoint", wsClient.flow) ~> route ~> check {
         wsClient.sendMessage(JsonText.strictMessage(eventSubscriptionRequest))
         isWebSocketUpgrade shouldBe true
 
         val response = Source(1 to 10)
-          .map(_ => decodeMessage[Either[EventError, Event]](wsClient))
+          .map(_ => decodeMessage[Either[StreamError, Event]](wsClient))
           .runWith(Sink.head)
           .leftValue
 
-        response shouldEqual InvalidMaxFrequency
+        response shouldEqual InvalidMaxFrequency.toStreamError
       }
     }
   }
@@ -292,13 +293,13 @@ class WebsocketRouteTest extends BaseTestSuite with ScalatestRouteTest with Gate
 
       when(eventSubscriber.pSubscribe(TCS, "*")).thenReturn(eventStream)
 
-      WS("/websocket", wsClient.flow) ~> route ~> check {
+      WS("/websocket-endpoint", wsClient.flow) ~> route ~> check {
         wsClient.sendMessage(JsonText.strictMessage(eventSubscriptionRequest))
         isWebSocketUpgrade shouldBe true
 
         val responseSet = Source(1 to 2)
           .take(1)
-          .map(_ => decodeMessage[Either[EventError, Event]](wsClient))
+          .map(_ => decodeMessage[Either[StreamError, Event]](wsClient))
           .runWith(Sink.seq)
           .futureValue
           .map(_.rightValue)
@@ -325,13 +326,13 @@ class WebsocketRouteTest extends BaseTestSuite with ScalatestRouteTest with Gate
       when(eventSubscriberUtil.subscriptionModeStage(200.millis, RateLimiterMode))
         .thenReturn(new RateLimiterStub[Event](200.millis))
 
-      WS("/websocket", wsClient.flow) ~> route ~> check {
+      WS("/websocket-endpoint", wsClient.flow) ~> route ~> check {
         wsClient.sendMessage(JsonText.strictMessage(eventSubscriptionRequest))
         isWebSocketUpgrade shouldBe true
 
         val responseSet = Source(1 to 2)
           .take(1)
-          .map(_ => decodeMessage[Either[EventError, Event]](wsClient))
+          .map(_ => decodeMessage[Either[StreamError, Event]](wsClient))
           .runWith(Sink.seq)
           .futureValue
           .map(_.rightValue)
@@ -344,16 +345,16 @@ class WebsocketRouteTest extends BaseTestSuite with ScalatestRouteTest with Gate
 
     "return InvalidMaxFrequency when maxFrequency <= 0 | ESW-93, ESW-216" in {
       val eventSubscriptionRequest = SubscribeWithPattern(TCS, Some(-1), "*")
-      WS("/websocket", wsClient.flow) ~> route ~> check {
+      WS("/websocket-endpoint", wsClient.flow) ~> route ~> check {
         wsClient.sendMessage(JsonText.strictMessage(eventSubscriptionRequest))
         isWebSocketUpgrade shouldBe true
 
         val response = Source(1 to 10)
-          .map(_ => decodeMessage[Either[InvalidMaxFrequency.type, Event]](wsClient))
+          .map(_ => decodeMessage[Either[StreamError, Event]](wsClient))
           .runWith(Sink.head)
           .leftValue
 
-        response shouldEqual InvalidMaxFrequency
+        response shouldEqual InvalidMaxFrequency.toStreamError
       }
     }
   }

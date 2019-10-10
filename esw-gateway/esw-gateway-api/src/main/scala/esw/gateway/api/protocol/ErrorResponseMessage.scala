@@ -1,23 +1,27 @@
 package esw.gateway.api.protocol
 
-sealed trait CommandError
-case class InvalidComponent(msg: String) extends CommandError
+import msocket.api.models.StreamError
+
+case class InvalidComponent(msg: String) {
+  def toStreamError = StreamError(this.getClass.getSimpleName, msg)
+}
 
 trait SingletonError {
   def msg: String
+  def toStreamError = StreamError(this.getClass.getSimpleName, msg)
 }
 
-sealed trait EventError
-sealed trait GetEventError extends EventError
+sealed trait GetEventError
 
 case object EmptyEventKeys extends GetEventError with SingletonError {
   def msg = "Request is missing event key"
+
 }
 case object EventServerUnavailable extends GetEventError with SingletonError {
   def msg = "Event server is unavailable"
 }
 
-case object InvalidMaxFrequency extends EventError with CommandError with SingletonError {
+object InvalidMaxFrequency extends SingletonError {
   def msg = "Max frequency should be greater than zero"
 }
 

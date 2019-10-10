@@ -8,6 +8,9 @@ import akka.actor.typed.scaladsl.Behaviors
 import akka.actor.typed.{ActorRef, ActorSystem, SpawnProtocol}
 import akka.util.Timeout
 import com.typesafe.config.ConfigFactory
+import csw.alarm.client.AlarmServiceFactory
+import csw.alarm.models.AlarmSeverity
+import csw.alarm.models.Key.AlarmKey
 import csw.command.client.messages.sequencer.{SequencerMsg, SubmitSequenceAndWait}
 import csw.event.client.EventServiceFactory
 import csw.location.api.extensions.ActorExtension.RichActor
@@ -20,22 +23,23 @@ import csw.params.commands.CommandResponse.{Completed, Started, SubmitResponse}
 import csw.params.commands.{CommandName, Sequence, Setup}
 import csw.params.core.generics.KeyType.StringKey
 import csw.params.core.generics.Parameter
+import csw.params.core.models.Subsystem.NFIRAOS
 import csw.params.core.models.{Id, Prefix}
 import csw.params.events.{Event, EventKey, EventName, SystemEvent}
-import csw.testkit.scaladsl.CSWService.EventServer
+import csw.testkit.scaladsl.CSWService.{AlarmServer, EventServer}
 import csw.testkit.scaladsl.ScalaTestFrameworkTestKit
 import csw.time.core.models.UTCTime
-import esw.dsl.sequence_manager.LocationServiceUtil
 import esw.ocs.api.BaseTestSuite
 import esw.ocs.api.protocol.{DiagnosticModeResponse, Ok, OperationsModeResponse}
 import esw.ocs.app.wiring.SequencerWiring
+import esw.ocs.dsl.sequence_manager.LocationServiceUtil
 import esw.ocs.impl.internal.Timeouts
 import esw.ocs.impl.messages.SequencerMessages.{DiagnosticMode, OperationsMode}
 
 import scala.concurrent.Future
 import scala.concurrent.duration.DurationDouble
 
-class ScriptIntegrationTest extends ScalaTestFrameworkTestKit(EventServer) with BaseTestSuite {
+class ScriptIntegrationTest extends ScalaTestFrameworkTestKit(EventServer, AlarmServer) with BaseTestSuite {
 
   import frameworkTestKit.mat
 
@@ -45,17 +49,17 @@ class ScriptIntegrationTest extends ScalaTestFrameworkTestKit(EventServer) with 
   private implicit val askTimeout: Timeout             = Timeouts.DefaultTimeout
   override implicit def patienceConfig: PatienceConfig = PatienceConfig(10.seconds)
 
-  private val ocsSequencerId   = "testSequencerId4"
-  private val ocsObservingMode = "testObservingMode4"
+  private val ocsPackageId     = "esw"
+  private val ocsObservingMode = "darknight"
 
   var locationService: LocationService             = _
   private var ocsWiring: SequencerWiring           = _
   private var ocsSequencer: ActorRef[SequencerMsg] = _
 
   private val tcsSequencer: ActorRef[SequencerMsg] = (actorSystem ? Spawn(TestSequencer.beh, "testSequencer")).awaitResult
-  private val tcsSequencerId                       = "TCS"
+  private val tcsPackageId                         = "TCS"
   private val tcsObservingMode                     = "testObservingMode4"
-  private val tcsConnection                        = AkkaConnection(ComponentId(s"$tcsSequencerId@$tcsObservingMode", ComponentType.Sequencer))
+  private val tcsConnection                        = AkkaConnection(ComponentId(s"$tcsPackageId@$tcsObservingMode", ComponentType.Sequencer))
   private val tcsRegistration                      = AkkaRegistration(tcsConnection, Prefix("TCS.test"), tcsSequencer.toURI)
   private var sequenceReceivedByTCSProbe: Sequence = _
 
@@ -63,7 +67,7 @@ class ScriptIntegrationTest extends ScalaTestFrameworkTestKit(EventServer) with 
     locationService = HttpLocationServiceFactory.makeLocalClient
     new LocationServiceUtil(locationService).register(tcsRegistration).awaitResult
 
-    ocsWiring = new SequencerWiring(ocsSequencerId, ocsObservingMode, None)
+    ocsWiring = new SequencerWiring(ocsPackageId, ocsObservingMode, None)
     ocsSequencer = ocsWiring.sequencerServer.start().rightValue.uri.toActorRef.unsafeUpcast[SequencerMsg]
   }
 
@@ -121,6 +125,23 @@ class ScriptIntegrationTest extends ScalaTestFrameworkTestKit(EventServer) with 
 
       val expectedOpEvent = testProbe.expectMessageType[SystemEvent]
       expectedOpEvent.paramSet.head shouldBe operationsModeParam
+    }
+
+    "be able to set severity of sequencer alarms | ESW-125" in {
+      val config            = ConfigFactory.parseResources("alarm_key.conf")
+      val alarmAdminService = new AlarmServiceFactory().makeAdminApi(locationService)
+      alarmAdminService.initAlarms(config, reset = true).futureValue
+
+      val alarmKey = AlarmKey(NFIRAOS, "trombone", "tromboneAxisHighLimitAlarm")
+      val command  = Setup(Prefix("NFIRAOS.test"), CommandName("set-alarm-severity"), None)
+      val sequence = Sequence(command)
+
+      frameworkTestKit.spawnStandalone(ConfigFactory.load("standalone.conf"))
+
+      val sequenceRes: Future[SubmitResponse] = ocsSequencer ? (SubmitSequenceAndWait(sequence, _))
+
+      sequenceRes.futureValue should ===(Completed(sequence.runId))
+      alarmAdminService.getCurrentSeverity(alarmKey).futureValue should ===(AlarmSeverity.Major)
     }
   }
 

@@ -13,7 +13,7 @@ import csw.location.api.exceptions.OtherLocationIsRegistered
 import csw.location.api.scaladsl.LocationService
 import csw.location.client.scaladsl.HttpLocationServiceFactory
 import csw.location.models.HttpRegistration
-import csw.network.utils.Networks
+import csw.network.utils.{Networks, SocketUtils}
 import csw.testkit.LocationTestKit
 import esw.http.core.BaseTestSuite
 
@@ -52,7 +52,7 @@ class HttpServiceTest extends BaseTestSuite {
 
       val wiring = new ServerWiring(Some(_servicePort))
       import wiring._
-      import wiring.cswWiring.{actorRuntime, locationService, logger}
+      import wiring.cswWiring.{actorRuntime, locationService}
 
       val httpService             = new HttpService(logger, locationService, route, settings, actorRuntime)
       val (_, registrationResult) = Await.result(httpService.registeredLazyBinding, 5.seconds)
@@ -69,7 +69,7 @@ class HttpServiceTest extends BaseTestSuite {
       val _servicePort = 4452 // Location Service runs on this port
       val wiring       = new ServerWiring(Some(_servicePort))
       import wiring._
-      import wiring.cswWiring.{actorRuntime, locationService, logger}
+      import wiring.cswWiring.{actorRuntime, locationService}
 
       val httpService = new HttpService(logger, locationService, route, settings, actorRuntime)
 
@@ -81,7 +81,7 @@ class HttpServiceTest extends BaseTestSuite {
       val _servicePort = 4007
       val wiring       = new ServerWiring(Some(_servicePort))
       import wiring._
-      import wiring.cswWiring.{actorRuntime, locationService, logger}
+      import wiring.cswWiring.{actorRuntime, locationService}
 
       val httpService = new HttpService(logger, locationService, route, settings, actorRuntime)
 
@@ -90,7 +90,8 @@ class HttpServiceTest extends BaseTestSuite {
 
       a[OtherLocationIsRegistered] shouldBe thrownBy(Await.result(httpService.registeredLazyBinding, 5.seconds))
 
-      //TODO: Find a way to assert server is not bounded
+      SocketUtils.isAddressInUse("localhost", 4007) shouldEqual false
+
       try Await.result(actorRuntime.shutdown(UnknownReason), 5.seconds)
       catch {
         case NonFatal(_) =>

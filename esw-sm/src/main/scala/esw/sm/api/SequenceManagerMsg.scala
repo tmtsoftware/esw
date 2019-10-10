@@ -18,9 +18,8 @@ object SequenceManagerMsg {
   case class ListSequence(replyTo: ActorRef[List[RichSequence]])             extends SequenceManagerMsg
   case class GetSequence(runId: Id, replyTo: ActorRef[Option[RichSequence]]) extends SequenceManagerMsg
 
-  case class StartSequencer(sequencerId: String, observingMode: String, replyTo: ActorRef[Response])    extends SequenceManagerMsg
-  case class ShutdownSequencer(sequencerId: String, observingMode: String, replyTo: ActorRef[Response]) extends SequenceManagerMsg
-  case class GoOnlineSequencer(sequencerId: String, observingMode: String, replyTo: ActorRef[Response]) extends SequenceManagerMsg
-  case class GoOfflineSequencer(sequencerId: String, observingMode: String, replyTo: ActorRef[Response])
-      extends SequenceManagerMsg
+  case class StartSequencer(packageId: String, observingMode: String, replyTo: ActorRef[Response])     extends SequenceManagerMsg
+  case class ShutdownSequencer(packageId: String, observingMode: String, replyTo: ActorRef[Response])  extends SequenceManagerMsg
+  case class GoOnlineSequencer(packageId: String, observingMode: String, replyTo: ActorRef[Response])  extends SequenceManagerMsg
+  case class GoOfflineSequencer(packageId: String, observingMode: String, replyTo: ActorRef[Response]) extends SequenceManagerMsg
 }

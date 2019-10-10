@@ -10,9 +10,11 @@ import csw.params.core.models.Subsystem
 import csw.params.events.{Event, EventKey}
 import esw.gateway.api.EventApi
 import esw.gateway.api.protocol._
+import msocket.api.models.StreamStatus
 
 import scala.concurrent.{ExecutionContext, Future}
 import scala.util.{Failure, Success}
+import SourceExtensions.RichSource
 
 class EventImpl(eventService: EventService, eventSubscriberUtil: EventSubscriberUtil)(implicit ec: ExecutionContext)
     extends EventApi {
@@ -33,39 +35,38 @@ class EventImpl(eventService: EventService, eventSubscriberUtil: EventSubscriber
         case Success(events)                     => Success(Right(events))
         case Failure(EventServerNotAvailable(_)) => Success(Left(EventServerUnavailable))
         case Failure(ex)                         => throw ex
-      } else Future.successful(Left(EmptyEventKeys))
+      }
+    else Future.successful(Left(EmptyEventKeys))
   }
 
-  def subscribe(eventKeys: Set[EventKey], maxFrequency: Option[Int]): Source[Event, Future[Option[EventError]]] = {
+  def subscribe(eventKeys: Set[EventKey], maxFrequency: Option[Int]): Source[Event, Future[StreamStatus]] = {
 
     if (eventKeys.nonEmpty) {
       maxFrequency match {
-        case Some(x) if x <= 0 => Utils.emptySourceWithError(InvalidMaxFrequency)
+        case Some(x) if x <= 0 =>
+          Source.empty.withError(InvalidMaxFrequency.toStreamError)
         case Some(frequency) =>
-          Utils.sourceWithNoError(
-            subscriber
-              .subscribe(eventKeys, Utils.maxFrequencyToDuration(frequency), RateLimiterMode)
-          )
-        case None => Utils.sourceWithNoError(subscriber.subscribe(eventKeys))
+          subscriber.subscribe(eventKeys, Utils.maxFrequencyToDuration(frequency), RateLimiterMode).withSubscription()
+        case None => subscriber.subscribe(eventKeys).withSubscription()
       }
-    } else Utils.emptySourceWithError(EmptyEventKeys)
+    }
+    else Source.empty.withError(EmptyEventKeys.toStreamError)
   }
 
   def pSubscribe(
       subsystem: Subsystem,
       maxFrequency: Option[Int],
-      pattern: String = "*"
-  ): Source[Event, Future[Option[InvalidMaxFrequency.type]]] = {
+      pattern: String
+  ): Source[Event, Future[StreamStatus]] = {
 
     def events: Source[Event, EventSubscription] = subscriber.pSubscribe(subsystem, pattern)
     maxFrequency match {
-      case Some(x) if x <= 0 => Utils.emptySourceWithError(InvalidMaxFrequency)
+      case Some(x) if x <= 0 =>
+        Source.empty.withError(InvalidMaxFrequency.toStreamError)
       case Some(f) =>
-        Utils.sourceWithNoError(
-          events
-            .via(eventSubscriberUtil.subscriptionModeStage(Utils.maxFrequencyToDuration(f), RateLimiterMode))
-        )
-      case None => Utils.sourceWithNoError(events)
+        events.via(eventSubscriberUtil.subscriptionModeStage(Utils.maxFrequencyToDuration(f), RateLimiterMode)).withSubscription()
+      case None =>
+        events.withSubscription()
     }
   }
 

@@ -22,23 +22,18 @@ import csw.testkit.scaladsl.ScalaTestFrameworkTestKit
 import csw.time.core.models.UTCTime
 import esw.ocs.api.BaseTestSuite
 import esw.ocs.api.client.SequencerAdminClient
-import esw.ocs.api.codecs.SequencerAdminHttpCodecs
 import esw.ocs.api.models.StepStatus.Finished.{Failure, Success}
 import esw.ocs.api.models.StepStatus.Pending
 import esw.ocs.api.models.{Step, StepList}
 import esw.ocs.api.protocol._
 import esw.ocs.app.wiring.SequencerWiring
+import esw.ocs.impl.SequencerAdminClientFactory
 import esw.ocs.impl.messages.SequencerState.Offline
-import mscoket.impl.post.HttpPostTransport
-import mscoket.impl.ws.WebsocketTransport
 
 import scala.concurrent.Future
 import scala.concurrent.duration.DurationLong
 
-class SequencerAdminIntegrationTest
-    extends ScalaTestFrameworkTestKit(EventServer)
-    with BaseTestSuite
-    with SequencerAdminHttpCodecs {
+class SequencerAdminIntegrationTest extends ScalaTestFrameworkTestKit(EventServer) with BaseTestSuite {
 
   import frameworkTestKit._
   private implicit val sys: ActorSystem[SpawnProtocol] = actorSystem
@@ -48,8 +43,8 @@ class SequencerAdminIntegrationTest
   private implicit val askTimeout: Timeout  = Timeout(10.seconds)
   private implicit val scheduler: Scheduler = actorSystem.scheduler
 
-  private val sequencerId   = "testSequencerId5"
-  private val observingMode = "testObservingMode5"
+  private val packageId     = "nfarios"
+  private val observingMode = "darknight"
 
   private val command1 = Setup(Prefix("esw.test"), CommandName("command-1"), None)
   private val command2 = Setup(Prefix("esw.test"), CommandName("command-2"), None)
@@ -66,16 +61,14 @@ class SequencerAdminIntegrationTest
   }
 
   override protected def beforeEach(): Unit = {
-    wiring = new SequencerWiring(sequencerId, observingMode, None)
+    wiring = new SequencerWiring(packageId, observingMode, None)
     wiring.sequencerServer.start()
-    val componentId     = ComponentId(s"$sequencerId@$observingMode@http", ComponentType.Service)
-    val uri             = locationService.resolve(HttpConnection(componentId), 5.seconds).futureValue.get.uri
-    val httpUrl         = s"${uri.toString}post"
-    val wsUrl           = s"ws://${uri.getHost}:${uri.getPort}/websocket"
-    val postClient      = new HttpPostTransport[SequencerAdminPostRequest](httpUrl, None)
-    val websocketClient = new WebsocketTransport[SequencerAdminWebsocketRequest](wsUrl)
+    val componentId = ComponentId(s"$packageId@$observingMode@http", ComponentType.Service)
+    val uri         = locationService.resolve(HttpConnection(componentId), 5.seconds).futureValue.get.uri
+    val postUrl     = s"${uri.toString}post-endpoint"
+    val wsUrl       = s"ws://${uri.getHost}:${uri.getPort}/websocket-endpoint"
 
-    sequencerAdmin = new SequencerAdminClient(postClient, websocketClient)
+    sequencerAdmin = SequencerAdminClientFactory.make(postUrl, wsUrl, None)
     sequencer = resolveSequencer()
   }
 
@@ -175,7 +168,7 @@ class SequencerAdminIntegrationTest
     )
   }
 
-  "Go online and offline | ESW-194, ESW-222, ESW-101" in {
+  "Go online and offline | ESW-194, ESW-222, ESW-101, ESW-134" in {
     val sequence = Sequence(command1, command2)
 
     val seqResponse: Future[SubmitResponse] = sequencer ? (SubmitSequenceAndWait(sequence, _))
@@ -201,9 +194,9 @@ class SequencerAdminIntegrationTest
     sequencerAdmin.loadSequence(sequence).futureValue should ===(Ok)
   }
 
-  "DiagnosticMode and OperationsMode| ESW-143" in {
-    val tcsSequencerWiring = new SequencerWiring("testSequencerId6", "testObservingMode6", None)
-    tcsSequencerWiring.sequencerServer.start()
+  "DiagnosticMode and OperationsMode| ESW-143, ESW-134" in {
+    val sequencerWiring = new SequencerWiring("testSequencerId6", "testObservingMode6", None)
+    sequencerWiring.sequencerServer.start()
 
     val startTime = UTCTime.now()
     val hint      = "engineering"
@@ -234,12 +227,12 @@ class SequencerAdminIntegrationTest
 
     expectedOperationsEvent.paramSet.head shouldBe operationsModeParam
 
-    tcsSequencerWiring.sequencerServer.shutDown().futureValue
+    sequencerWiring.sequencerServer.shutDown().futureValue
   }
 
   private def resolveSequencer(): ActorRef[SequencerMsg] =
     locationService
-      .resolve(AkkaConnection(ComponentId(s"$sequencerId@$observingMode", ComponentType.Sequencer)), 5.seconds)
+      .resolve(AkkaConnection(ComponentId(s"$packageId@$observingMode", ComponentType.Sequencer)), 5.seconds)
       .futureValue
       .value
       .uri

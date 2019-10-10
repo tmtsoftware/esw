@@ -29,7 +29,7 @@ class SequencerAdminPostRouteTest extends BaseTestSuite with ScalatestRouteTest 
       val stepList = StepList(Id(), List.empty)
       when(sequencerAdmin.getSequence).thenReturn(Future.successful(Some(stepList)))
 
-      Post("/post", GetSequence) ~> route ~> check {
+      Post("/post-endpoint", GetSequence) ~> route ~> check {
         responseAs[Option[StepList]].get should ===(stepList)
       }
     }
@@ -37,7 +37,7 @@ class SequencerAdminPostRouteTest extends BaseTestSuite with ScalatestRouteTest 
     "return true if sequencer is available for isAvailable request | ESW-222" in {
       when(sequencerAdmin.isAvailable).thenReturn(Future.successful(true))
 
-      Post("/post", IsAvailable) ~> route ~> check {
+      Post("/post-endpoint", IsAvailable) ~> route ~> check {
         responseAs[Boolean] should ===(true)
       }
     }
@@ -45,7 +45,7 @@ class SequencerAdminPostRouteTest extends BaseTestSuite with ScalatestRouteTest 
     "return true if sequencer is online for isOnline request | ESW-222" in {
       when(sequencerAdmin.isOnline).thenReturn(Future.successful(true))
 
-      Post("/post", IsOnline) ~> route ~> check {
+      Post("/post-endpoint", IsOnline) ~> route ~> check {
         responseAs[Boolean] should ===(true)
       }
     }
@@ -53,7 +53,7 @@ class SequencerAdminPostRouteTest extends BaseTestSuite with ScalatestRouteTest 
     "return Ok for Pause request | ESW-222" in {
       when(sequencerAdmin.pause).thenReturn(Future.successful(Ok))
 
-      Post("/post", Pause) ~> route ~> check {
+      Post("/post-endpoint", Pause) ~> route ~> check {
         responseAs[PauseResponse] should ===(Ok)
       }
     }
@@ -61,7 +61,7 @@ class SequencerAdminPostRouteTest extends BaseTestSuite with ScalatestRouteTest 
     "return CannotOperateOnAnInFlightOrFinishedStep for Pause request | ESW-222" in {
       when(sequencerAdmin.pause).thenReturn(Future.successful(CannotOperateOnAnInFlightOrFinishedStep))
 
-      Post("/post", Pause) ~> route ~> check {
+      Post("/post-endpoint", Pause) ~> route ~> check {
         responseAs[PauseResponse] should ===(CannotOperateOnAnInFlightOrFinishedStep)
       }
     }
@@ -69,7 +69,7 @@ class SequencerAdminPostRouteTest extends BaseTestSuite with ScalatestRouteTest 
     "return Ok for Resume request | ESW-222" in {
       when(sequencerAdmin.resume).thenReturn(Future.successful(Ok))
 
-      Post("/post", Resume) ~> route ~> check {
+      Post("/post-endpoint", Resume) ~> route ~> check {
         responseAs[OkOrUnhandledResponse] should ===(Ok)
       }
     }
@@ -77,7 +77,7 @@ class SequencerAdminPostRouteTest extends BaseTestSuite with ScalatestRouteTest 
     "return Ok for Reset request | ESW-222" in {
       when(sequencerAdmin.reset()).thenReturn(Future.successful(Ok))
 
-      Post("/post", Reset) ~> route ~> check {
+      Post("/post-endpoint", Reset) ~> route ~> check {
         responseAs[OkOrUnhandledResponse] should ===(Ok)
       }
     }
@@ -86,7 +86,7 @@ class SequencerAdminPostRouteTest extends BaseTestSuite with ScalatestRouteTest 
       val unhandled = Unhandled("Finished", "reset")
       when(sequencerAdmin.reset()).thenReturn(Future.successful(unhandled))
 
-      Post("/post", Reset) ~> route ~> check {
+      Post("/post-endpoint", Reset) ~> route ~> check {
         responseAs[OkOrUnhandledResponse] should ===(unhandled)
       }
     }
@@ -94,7 +94,7 @@ class SequencerAdminPostRouteTest extends BaseTestSuite with ScalatestRouteTest 
     "return Ok for AbortSequence request | ESW-222" in {
       when(sequencerAdmin.abortSequence()).thenReturn(Future.successful(Ok))
 
-      Post("/post", AbortSequence) ~> route ~> check {
+      Post("/post-endpoint", AbortSequence) ~> route ~> check {
         responseAs[OkOrUnhandledResponse] should ===(Ok)
       }
     }
@@ -102,7 +102,7 @@ class SequencerAdminPostRouteTest extends BaseTestSuite with ScalatestRouteTest 
     "return Ok for GoOnline request | ESW-222" in {
       when(sequencerAdmin.goOnline()).thenReturn(Future.successful(Ok))
 
-      Post("/post", GoOnline) ~> route ~> check {
+      Post("/post-endpoint", GoOnline) ~> route ~> check {
         responseAs[GoOnlineResponse] should ===(Ok)
       }
     }
@@ -110,7 +110,7 @@ class SequencerAdminPostRouteTest extends BaseTestSuite with ScalatestRouteTest 
     "return GoOnlineHookFailed for GoOnline request | ESW-222" in {
       when(sequencerAdmin.goOnline()).thenReturn(Future.successful(GoOnlineHookFailed))
 
-      Post("/post", GoOnline) ~> route ~> check {
+      Post("/post-endpoint", GoOnline) ~> route ~> check {
         responseAs[GoOnlineResponse] should ===(GoOnlineHookFailed)
       }
     }
@@ -118,7 +118,7 @@ class SequencerAdminPostRouteTest extends BaseTestSuite with ScalatestRouteTest 
     "return Ok for GoOffline request | ESW-222" in {
       when(sequencerAdmin.goOffline()).thenReturn(Future.successful(Ok))
 
-      Post("/post", GoOffline) ~> route ~> check {
+      Post("/post-endpoint", GoOffline) ~> route ~> check {
         responseAs[OkOrUnhandledResponse] should ===(Ok)
       }
     }
@@ -126,7 +126,7 @@ class SequencerAdminPostRouteTest extends BaseTestSuite with ScalatestRouteTest 
     "return Ok for Add request | ESW-222" in {
       when(sequencerAdmin.add(List.empty)).thenReturn(Future.successful(Ok))
 
-      Post("/post", Add(List.empty)) ~> route ~> check {
+      Post("/post-endpoint", Add(List.empty)) ~> route ~> check {
         responseAs[OkOrUnhandledResponse] should ===(Ok)
       }
     }
@@ -134,7 +134,7 @@ class SequencerAdminPostRouteTest extends BaseTestSuite with ScalatestRouteTest 
     "return Ok for Prepend request | ESW-222" in {
       when(sequencerAdmin.prepend(List.empty)).thenReturn(Future.successful(Ok))
 
-      Post("/post", Prepend(List.empty)) ~> route ~> check {
+      Post("/post-endpoint", Prepend(List.empty)) ~> route ~> check {
         responseAs[OkOrUnhandledResponse] should ===(Ok)
       }
     }
@@ -143,7 +143,7 @@ class SequencerAdminPostRouteTest extends BaseTestSuite with ScalatestRouteTest 
       val id = Id()
       when(sequencerAdmin.replace(id, List.empty)).thenReturn(Future.successful(Ok))
 
-      Post("/post", Replace(id, List.empty)) ~> route ~> check {
+      Post("/post-endpoint", Replace(id, List.empty)) ~> route ~> check {
         responseAs[GenericResponse] should ===(Ok)
       }
     }
@@ -152,7 +152,7 @@ class SequencerAdminPostRouteTest extends BaseTestSuite with ScalatestRouteTest 
       val id = Id()
       when(sequencerAdmin.replace(id, List.empty)).thenReturn(Future.successful(IdDoesNotExist(id)))
 
-      Post("/post", Replace(id, List.empty)) ~> route ~> check {
+      Post("/post-endpoint", Replace(id, List.empty)) ~> route ~> check {
         responseAs[GenericResponse] should ===(IdDoesNotExist(id))
       }
     }
@@ -161,7 +161,7 @@ class SequencerAdminPostRouteTest extends BaseTestSuite with ScalatestRouteTest 
       val id = Id()
       when(sequencerAdmin.insertAfter(id, List.empty)).thenReturn(Future.successful(Ok))
 
-      Post("/post", InsertAfter(id, List.empty)) ~> route ~> check {
+      Post("/post-endpoint", InsertAfter(id, List.empty)) ~> route ~> check {
         responseAs[GenericResponse] should ===(Ok)
       }
     }
@@ -170,7 +170,7 @@ class SequencerAdminPostRouteTest extends BaseTestSuite with ScalatestRouteTest 
       val id = Id()
       when(sequencerAdmin.delete(id)).thenReturn(Future.successful(Ok))
 
-      Post("/post", SequencerAdminPostRequest.Delete(id)) ~> route ~> check {
+      Post("/post-endpoint", SequencerAdminPostRequest.Delete(id)) ~> route ~> check {
         responseAs[GenericResponse] should ===(Ok)
       }
     }
@@ -179,7 +179,7 @@ class SequencerAdminPostRouteTest extends BaseTestSuite with ScalatestRouteTest 
       val id = Id()
       when(sequencerAdmin.addBreakpoint(id)).thenReturn(Future.successful(Ok))
 
-      Post("/post", AddBreakpoint(id)) ~> route ~> check {
+      Post("/post-endpoint", AddBreakpoint(id)) ~> route ~> check {
         responseAs[GenericResponse] should ===(Ok)
       }
     }
@@ -188,7 +188,7 @@ class SequencerAdminPostRouteTest extends BaseTestSuite with ScalatestRouteTest 
       val id = Id()
       when(sequencerAdmin.removeBreakpoint(id)).thenReturn(Future.successful(Ok))
 
-      Post("/post", RemoveBreakpoint(id)) ~> route ~> check {
+      Post("/post-endpoint", RemoveBreakpoint(id)) ~> route ~> check {
         responseAs[GenericResponse] should ===(Ok)
       }
     }
@@ -198,7 +198,7 @@ class SequencerAdminPostRouteTest extends BaseTestSuite with ScalatestRouteTest 
       val sequence = Sequence(command1)
       when(sequencerAdmin.loadSequence(sequence)).thenReturn(Future.successful(Ok))
 
-      Post("/post", LoadSequence(sequence)) ~> route ~> check {
+      Post("/post-endpoint", LoadSequence(sequence)) ~> route ~> check {
         responseAs[LoadSequenceResponse] should ===(Ok)
       }
     }
@@ -206,7 +206,7 @@ class SequencerAdminPostRouteTest extends BaseTestSuite with ScalatestRouteTest 
     "return Ok for StartSequence request | ESW-101" in {
       when(sequencerAdmin.startSequence).thenReturn(Future.successful(Ok))
 
-      Post("/post", StartSequence) ~> route ~> check {
+      Post("/post-endpoint", StartSequence) ~> route ~> check {
         responseAs[OkOrUnhandledResponse] should ===(Ok)
       }
     }
@@ -216,7 +216,7 @@ class SequencerAdminPostRouteTest extends BaseTestSuite with ScalatestRouteTest 
       val sequence = Sequence(command1)
       when(sequencerAdmin.submitSequence(sequence)).thenReturn(Future.successful(Ok))
 
-      Post("/post", SubmitSequence(sequence)) ~> route ~> check {
+      Post("/post-endpoint", SubmitSequence(sequence)) ~> route ~> check {
         responseAs[LoadSequenceResponse] should ===(Ok)
       }
     }
@@ -226,7 +226,7 @@ class SequencerAdminPostRouteTest extends BaseTestSuite with ScalatestRouteTest 
       val hint      = "engineering"
       when(sequencerAdmin.diagnosticMode(startTime, hint)).thenReturn(Future.successful(Ok))
 
-      Post("/post", DiagnosticMode(startTime, hint)) ~> route ~> check {
+      Post("/post-endpoint", DiagnosticMode(startTime, hint)) ~> route ~> check {
         responseAs[DiagnosticModeResponse] should ===(Ok)
       }
     }
@@ -234,7 +234,7 @@ class SequencerAdminPostRouteTest extends BaseTestSuite with ScalatestRouteTest 
     "return Ok for OperationsMode request | ESW-143" in {
       when(sequencerAdmin.operationsMode()).thenReturn(Future.successful(Ok))
 
-      Post("/post", OperationsMode) ~> route ~> check {
+      Post("/post-endpoint", OperationsMode) ~> route ~> check {
         responseAs[OperationsModeResponse] should ===(Ok)
       }
     }
@@ -242,7 +242,7 @@ class SequencerAdminPostRouteTest extends BaseTestSuite with ScalatestRouteTest 
     "show internal server error when there is an exception at server side" in {
       when(sequencerAdmin.getSequence).thenReturn(Future.failed(new RuntimeException("test")))
 
-      Post("/post", GetSequence) ~> route ~> check {
+      Post("/post-endpoint", GetSequence) ~> route ~> check {
         status should ===(StatusCodes.InternalServerError)
       }
     }

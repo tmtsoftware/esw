@@ -202,6 +202,37 @@ class SequencerBehaviorTest extends ScalaTestWithActorTestKit with BaseTestSuite
       loadSequenceAndAssertResponse(Ok)
       assertCurrentSequence(StepList(sequence).toOption)
     }
+
+    "return sequence when in inProgress state | ESW-157" in {
+      val sequencerSetup = SequencerTestSetup.idle(sequence)
+      import sequencerSetup._
+
+      loadAndStartSequenceThenAssertInProgress()
+      mockAllCommands()
+      pullNextCommand()   // why is this necessary?
+
+      val expectedSteps = List(
+        Step(command1, InFlight, hasBreakpoint = false),
+        Step(command2, Pending, hasBreakpoint = false),
+      )
+
+      assertCurrentSequence(Some(StepList(sequence.runId, expectedSteps)))
+    }
+    "return sequence when in finished state | ESW-157" in {
+      val sequencerSetup = SequencerTestSetup.idle(sequence)
+      import sequencerSetup._
+
+      loadAndStartSequenceThenAssertInProgress()
+
+      pullAllStepsAndAssertSequenceIsFinished()
+
+      val expectedSteps = List(
+        Step(command1, Finished(command1.runId), hasBreakpoint = false),
+        Step(command2, Finished(command2.runId), hasBreakpoint = false),
+      )
+
+      assertCurrentSequence(Some(StepList(sequence.runId, expectedSteps)))
+    }
   }
 
   "GetSequencerState" must {

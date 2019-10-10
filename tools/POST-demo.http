@@ -1,5 +1,5 @@
 ### submit
-POST http://localhost:8090/post
+POST http://localhost:8090/post-endpoint
 Content-Type: application/json
 
 {
@@ -21,7 +21,7 @@ Content-Type: application/json
 }
 
 ### validate
-POST http://localhost:8090/post
+POST http://localhost:8090/post-endpoint
 Content-Type: application/json
 
 {
@@ -43,7 +43,7 @@ Content-Type: application/json
 }
 
 ### oneway
-POST http://localhost:8090/post
+POST http://localhost:8090/post-endpoint
 Content-Type: application/json
 
 {
@@ -56,7 +56,7 @@ Content-Type: application/json
       "Setup": {
         "runId": "test-runId",
         "source": "wfos.blue.filter",
-        "commandName": "jump",
+        "commandName": "sleep",
         "maybeObsId": "Obs001",
         "paramSet": []
       }
@@ -65,7 +65,7 @@ Content-Type: application/json
 }
 
 ### publish
-POST http://localhost:8090/post
+POST http://localhost:8090/post-endpoint
 Content-Type: application/json
 
 {
@@ -123,7 +123,7 @@ Content-Type: application/json
 }
 
 ### get
-POST http://localhost:8090/post
+POST http://localhost:8090/post-endpoint
 Content-Type: application/json
 
 {
@@ -138,7 +138,7 @@ Content-Type: application/json
 }
 
 ### setSeverity
-POST http://localhost:8090/post
+POST http://localhost:8090/post-endpoint
 Content-Type: application/json
 
 {

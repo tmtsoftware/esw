@@ -20,14 +20,11 @@ object Dependencies {
       Akka.`akka-stream-typed`,
       Libs.`scala-async`,
       Libs.enumeratum.value,
+      Libs.`msocket-impl-jvm`,
       Libs.scalatest                  % Test,
       Akka.`akka-actor-testkit-typed` % Test,
       Libs.`mockito-scala`            % Test
     )
-  )
-
-  val OcsMacros: Def.Initialize[Seq[ModuleID]] = Def.setting(
-    Seq(Libs.`scala-reflect`, Libs.scalatest % Test)
   )
 
   val OcsApp: Def.Initialize[Seq[ModuleID]] = Def.setting(
@@ -82,6 +79,7 @@ object Dependencies {
       Csw.`csw-command-client`,
       Csw.`csw-time-scheduler`,
       Csw.`csw-command-client`,
+      Csw.`csw-alarm-client`,
       Libs.`mockito-scala`            % Test,
       Akka.`akka-actor-testkit-typed` % Test
     )
@@ -98,7 +96,8 @@ object Dependencies {
 
   val EswGatewayImpl: Def.Initialize[Seq[ModuleID]] = Def.setting(
     Seq(
-      Csw.`csw-event-client`
+      Csw.`csw-event-client`,
+      Libs.`caffeine`
     )
   )
 

@@ -5,7 +5,7 @@ import akka.actor.typed.Behavior
 import akka.actor.typed.scaladsl.Behaviors
 import csw.location.models.AkkaLocation
 import csw.logging.api.scaladsl.Logger
-import esw.ocs.api.protocol.{GetStatusResponse, LoadScriptResponse, RegistrationError}
+import esw.ocs.api.protocol.{GetStatusResponse, LoadScriptResponse, LoadScriptError}
 import esw.ocs.impl.internal.{SequencerServer, SequencerServerFactory}
 import esw.ocs.impl.messages.SequenceComponentMsg
 import esw.ocs.impl.messages.SequenceComponentMsg.{GetStatus, LoadScript, Stop, UnloadScript}
@@ -21,13 +21,13 @@ object SequenceComponentBehavior {
     lazy val idle: Behavior[SequenceComponentMsg] = Behaviors.receiveMessage[SequenceComponentMsg] { msg =>
       log.debug(s"Sequence Component in lifecycle state :Idle, received message :[$msg]")
       msg match {
-        case LoadScript(sequencerId, observingMode, replyTo) =>
-          val sequencerServer    = sequencerServerFactory.make(sequencerId, observingMode, Some(sequenceComponentName))
+        case LoadScript(packageId, observingMode, replyTo) =>
+          val sequencerServer    = sequencerServerFactory.make(packageId, observingMode, Some(sequenceComponentName))
           val registrationResult = sequencerServer.start()
           replyTo ! LoadScriptResponse(registrationResult)
           registrationResult match {
             case Right(value) =>
-              log.info(s"Successfully started sequencer with sequencer id :$sequencerId in observation mode: $observingMode")
+              log.info(s"Successfully started sequencer with sequencer id :$packageId in observation mode: $observingMode")
               running(sequencerServer, value)
             case Left(value) =>
               log.error(s"Failed to start sequencer: ${value.msg}")
@@ -56,7 +56,7 @@ object SequenceComponentBehavior {
             replyTo ! GetStatusResponse(Some(location))
             Behaviors.same
           case LoadScript(_, _, replyTo) =>
-            replyTo ! LoadScriptResponse(Left(RegistrationError("Loading script failed: Sequencer already running")))
+            replyTo ! LoadScriptResponse(Left(LoadScriptError("Loading script failed: Sequencer already running")))
             Behaviors.same
           case Stop => Behaviors.same
         }

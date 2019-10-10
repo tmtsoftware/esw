@@ -33,7 +33,7 @@ class DynamicLogLevelTest extends ScalaTestFrameworkTestKit with BaseTestSuite w
     LoggingSystemFactory.start("logging", "version", "localhost", sys)
     adminWiring = AdminWiring.make(Some(adminPort))
     adminWiring.adminHttpService.registeredLazyBinding.futureValue
-    wiring = new SequencerWiring("testSequencerId1", "testObservingMode1", None)
+    wiring = new SequencerWiring("esw", "darknight", None)
     sequencerLocation = wiring.sequencerServer.start().rightValue
   }
 
