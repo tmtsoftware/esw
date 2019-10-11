@@ -13,6 +13,7 @@ sealed trait RemoveBreakpointResponse extends EswSequencerResponse
 sealed trait LoadSequenceResponse     extends EswSequencerResponse
 sealed trait PullNextResponse         extends EswSequencerResponse
 sealed trait GoOnlineResponse         extends EswSequencerResponse
+sealed trait GoOfflineResponse        extends EswSequencerResponse
 sealed trait DiagnosticModeResponse   extends EswSequencerResponse
 sealed trait OperationsModeResponse   extends EswSequencerResponse
 
@@ -31,6 +32,7 @@ case object Ok
     with RemoveBreakpointResponse
     with LoadSequenceResponse
     with GoOnlineResponse
+    with GoOfflineResponse
     with DiagnosticModeResponse
     with OperationsModeResponse
 
@@ -44,6 +46,7 @@ final case class Unhandled private[ocs] (state: String, messageType: String, msg
     with RemoveBreakpointResponse
     with LoadSequenceResponse
     with GoOnlineResponse
+    with GoOfflineResponse
     with SequenceResponse
     with PullNextResponse
 
@@ -66,6 +69,10 @@ case object DuplicateIdsFound extends LoadSequenceResponse with SequenceResponse
 
 case object GoOnlineHookFailed extends GoOnlineResponse with SingletonError {
   val msg = "Sequencer could not go online because online handlers failed to execute successfully"
+}
+
+case object GoOfflineHookFailed extends GoOfflineResponse with SingletonError {
+  val msg = "Sequencer could not go online because offline handlers failed to execute successfully"
 }
 
 case object DiagnosticHookFailed extends DiagnosticModeResponse with SingletonError {

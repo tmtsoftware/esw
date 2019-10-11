@@ -145,7 +145,7 @@ class ScriptIntegrationTest extends ScalaTestFrameworkTestKit(EventServer, Alarm
       testProbe.expectMessageType[SystemEvent] // discard invalid event
 
       //goOffline
-      val goOfflineResF: Future[OkOrUnhandledResponse] = ocsSequencer ? GoOffline
+      val goOfflineResF: Future[GoOfflineResponse] = ocsSequencer ? GoOffline
       goOfflineResF.futureValue should ===(Ok)
 
       val expectedOfflineEvent = testProbe.expectMessageType[SystemEvent]

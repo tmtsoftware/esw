@@ -31,6 +31,7 @@ trait OcsCodecs extends ParamCodecs with LocationCodecs {
   implicit lazy val inFlightOrFinishedStepErrorCodec: Codec[CannotOperateOnAnInFlightOrFinishedStep.type] = deriveCodec
   implicit lazy val duplicateIdsFoundCodec: Codec[DuplicateIdsFound.type]                                 = deriveCodec
   implicit lazy val goOnlineHookFailedCodec: Codec[GoOnlineHookFailed.type]                               = deriveCodec
+  implicit lazy val goOfflineHookFailedCodec: Codec[GoOfflineHookFailed.type]                             = deriveCodec
   implicit lazy val diagnosticHookFailedCodec: Codec[DiagnosticHookFailed.type]                           = deriveCodec
   implicit lazy val operationsHookFailedCodec: Codec[OperationsHookFailed.type]                           = deriveCodec
   implicit lazy val responseCodec: Codec[EswSequencerResponse]                                            = deriveCodec
@@ -44,6 +45,7 @@ trait OcsCodecs extends ParamCodecs with LocationCodecs {
   implicit lazy val genericResponseCodec: Codec[GenericResponse]                   = deriveCodec
   implicit lazy val removeBreakpointResponseCodec: Codec[RemoveBreakpointResponse] = deriveCodec
   implicit lazy val goOnlineResponseCodec: Codec[GoOnlineResponse]                 = deriveCodec
+  implicit lazy val goOfflineResponseCodec: Codec[GoOfflineResponse]               = deriveCodec
   implicit lazy val diagnosticModeResponseCodec: Codec[DiagnosticModeResponse]     = deriveCodec
   implicit lazy val operationsModeResponseCodec: Codec[OperationsModeResponse]     = deriveCodec
   implicit lazy val loadSequenceResponseCodec: Codec[LoadSequenceResponse]         = deriveCodec

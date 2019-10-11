@@ -52,8 +52,8 @@ object SequencerMessages {
   case class OperationsMode(replyTo: ActorRef[OperationsModeResponse]) extends DiagnosticDataMessage
 
   // lifecycle msgs
-  final case class GoOnline(replyTo: ActorRef[GoOnlineResponse])       extends OfflineMessage
-  final case class GoOffline(replyTo: ActorRef[OkOrUnhandledResponse]) extends IdleMessage with SequenceLoadedMessage
+  final case class GoOnline(replyTo: ActorRef[GoOnlineResponse])   extends OfflineMessage
+  final case class GoOffline(replyTo: ActorRef[GoOfflineResponse]) extends IdleMessage with SequenceLoadedMessage
 
   // editor msgs
   final case class Add(commands: List[SequenceCommand], replyTo: ActorRef[OkOrUnhandledResponse])           extends EditorAction
@@ -77,7 +77,8 @@ object SequencerMessages {
   final private[esw] case class Update(submitResponse: SubmitResponse, replyTo: ActorRef[OkOrUnhandledResponse]) // this is internal message and replyTo is not used anywhere
       extends InProgressMessage
   final private[esw] case class GoIdle(replyTo: ActorRef[OkOrUnhandledResponse])                extends InProgressMessage
-  final private[esw] case class GoneOffline(replyTo: ActorRef[OkOrUnhandledResponse])           extends GoingOfflineMessage
+  final private[esw] case class GoOfflineSuccess(replyTo: ActorRef[GoOfflineResponse])          extends GoingOfflineMessage
+  final private[esw] case class GoOfflineFailed(replyTo: ActorRef[GoOfflineResponse])           extends GoingOfflineMessage
   final private[esw] case class GoOnlineSuccess(replyTo: ActorRef[GoOnlineResponse])            extends GoingOnlineMessage
   final private[esw] case class GoOnlineFailed(replyTo: ActorRef[GoOnlineResponse])             extends GoingOnlineMessage
   final private[esw] case class ShutdownComplete(replyTo: ActorRef[Ok.type])                    extends ShuttingDownMessage

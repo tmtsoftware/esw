@@ -690,12 +690,12 @@ class SequencerBehaviorTest extends ScalaTestWithActorTestKit with BaseTestSuite
       assertCurrentSequence(None)
     }
 
-    "go to Offline state even if the offline handlers fail | ESW-194" in {
+    "not go to Offline state even if the offline handlers fail | ESW-194" in {
       val sequencerSetup = SequencerTestSetup.idle(sequence)
       import sequencerSetup._
 
-      goOfflineAndAssertResponse(Ok, Future.failed(new RuntimeException("GoOffline Hook Failed")))
-      assertSequencerState(Offline)
+      goOfflineAndAssertResponse(GoOfflineHookFailed, Future.failed(new RuntimeException("GoOffline Hook Failed")))
+      assertSequencerState(Idle)
     }
   }
 
@@ -895,7 +895,8 @@ class SequencerBehaviorTest extends ScalaTestWithActorTestKit with BaseTestSuite
       GoOnlineFailed,
       Update(Completed(Id()), _),
       GoIdle,
-      GoneOffline,
+      GoOfflineSuccess,
+      GoOfflineFailed,
       Add(cmds, _),
       Prepend(cmds, _),
       Replace(Id(), cmds, _),
@@ -939,7 +940,8 @@ class SequencerBehaviorTest extends ScalaTestWithActorTestKit with BaseTestSuite
       GoOnlineSuccess,
       GoOnlineFailed,
       GoOffline,
-      GoneOffline
+      GoOfflineSuccess,
+      GoOfflineFailed
     )
   }
 
@@ -967,7 +969,8 @@ class SequencerBehaviorTest extends ScalaTestWithActorTestKit with BaseTestSuite
       Reset,
       GoOnlineSuccess,
       GoOnlineFailed,
-      GoneOffline,
+      GoOfflineSuccess,
+      GoOfflineFailed,
       GoIdle,
       PullNext,
       Update(Completed(Id()), _),
