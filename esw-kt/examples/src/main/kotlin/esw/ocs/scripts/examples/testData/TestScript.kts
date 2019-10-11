@@ -6,6 +6,7 @@ import csw.location.api.javadsl.JComponentType.Assembly
 import csw.params.commands.*
 import csw.params.core.models.Id
 import csw.params.core.models.Prefix
+import csw.params.events.Event
 import csw.params.javadsl.JSubsystem.NFIRAOS
 import esw.ocs.dsl.core.script
 import java.util.*
@@ -30,18 +31,25 @@ script {
         addOrUpdateCommand(CommandResponse.Completed(command.runId))
     }
 
+    handleSetup("get-event") {
+        val event: Event = getEvent("TCS.get.event").elementAt(0)
+        val successEvent = systemEvent("TCS", "get.success")
+        if (!event.isInvalid) publishEvent(successEvent)
+        addOrUpdateCommand(CommandResponse.Completed(it.runId()))
+    }
+
     handleSetup("command-4") { command ->
         // try sending concrete sequence
         val command4 = Setup(
-            Id("testCommandIdString123"),
-            Prefix("TCS.test"),
-            CommandName("command-to-assert-on"),
-            Option.apply(null),
-            HashSet()
+                Id("testCommandIdString123"),
+                Prefix("TCS.test"),
+                CommandName("command-to-assert-on"),
+                Option.apply(null),
+                HashSet()
         )
         val sequence = Sequence(
-            Id("testSequenceIdString123"),
-            CollectionConverters.asScala(Collections.singleton<SequenceCommand>(command4)).toSeq()
+                Id("testSequenceIdString123"),
+                CollectionConverters.asScala(Collections.singleton<SequenceCommand>(command4)).toSeq()
         )
 
         // ESW-145, ESW-195

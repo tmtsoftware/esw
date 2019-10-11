@@ -173,6 +173,24 @@ class ScriptIntegrationTest extends ScalaTestFrameworkTestKit(EventServer, Alarm
       sequenceRes.futureValue should ===(Completed(sequence.runId))
       alarmAdminService.getCurrentSeverity(alarmKey).futureValue should ===(AlarmSeverity.Major)
     }
+
+    "be able to get a published event | ESW-120" in {
+      val eventService = new EventServiceFactory().make(HttpLocationServiceFactory.makeLocalClient)
+      val publishF     = eventService.defaultPublisher.publish(SystemEvent(Prefix("TCS"), EventName("get.event")))
+      publishF.futureValue
+
+      val command  = Setup(Prefix("TCS"), CommandName("get-event"), None)
+      val id       = Id()
+      val sequence = Sequence(id, Seq(command))
+
+      val submitResponse: Future[SubmitResponse] = ocsSequencer ? (SubmitSequenceAndWait(sequence, _))
+      submitResponse.futureValue should ===(Completed(id))
+
+      val successKey        = EventKey("TCS.get.success")
+      val getPublishedEvent = eventService.defaultSubscriber.get(successKey).futureValue
+
+      getPublishedEvent.isInvalid should ===(false)
+    }
   }
 
   object TestSequencer {
