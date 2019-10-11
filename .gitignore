@@ -9,6 +9,7 @@ tmp
 .history
 dist
 .idea
+!.idea/gradle.xml
 *.iml
 /out
 .idea_modules

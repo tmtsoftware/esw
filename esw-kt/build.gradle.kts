@@ -12,7 +12,7 @@ plugins {
 
 allprojects {
     group = "com.github.tmtsoftware.script-dsl"
-    version = "0.1-SNAPSHOT"
+    version = "0.1.0-SNAPSHOT"
 
     repositories {
         mavenLocal()
