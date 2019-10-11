@@ -186,12 +186,12 @@ class SequencerAdminIntegrationTest extends ScalaTestFrameworkTestKit(EventServe
     //#################
 
     // creating subscriber for offline event
-    val testProbe1               = TestProbe[Event]
+    val testProbe                = TestProbe[Event]
     val offlineSubscriber        = wiring.cswWiring.eventService.defaultSubscriber
     val offlineKey               = EventKey("tcs.test.offline")
-    val offlineEventSubscription = offlineSubscriber.subscribeActorRef(Set(offlineKey), testProbe1.ref)
+    val offlineEventSubscription = offlineSubscriber.subscribeActorRef(Set(offlineKey), testProbe.ref)
     offlineEventSubscription.ready().futureValue
-    testProbe1.expectMessageType[SystemEvent] // discard invalid event
+    testProbe.expectMessageType[SystemEvent] // discard invalid event
     //##############
 
     // assert first sequencer is in offline state on sending goOffline message
@@ -204,7 +204,7 @@ class SequencerAdminIntegrationTest extends ScalaTestFrameworkTestKit(EventServe
     secondSequencerAdmin.isOnline.futureValue should ===(false)
 
     // assert sequencer's offline handlers are called
-    val offlineEvent = testProbe1.expectMessageType[SystemEvent]
+    val offlineEvent = testProbe.expectMessageType[SystemEvent]
     offlineEvent.paramSet.head.values.head shouldBe "offline"
 
     // assert sequencer does not accept editor commands in offline state
@@ -214,12 +214,11 @@ class SequencerAdminIntegrationTest extends ScalaTestFrameworkTestKit(EventServe
     // assert sequencer goes online and online handlers are called
 
     // creating subscriber for online event
-    val testProbe2              = TestProbe[Event]
     val onlineSubscriber        = wiring.cswWiring.eventService.defaultSubscriber
     val onlineKey               = EventKey("tcs.test.online")
-    val onlineEventSubscription = onlineSubscriber.subscribeActorRef(Set(onlineKey), testProbe2.ref)
+    val onlineEventSubscription = onlineSubscriber.subscribeActorRef(Set(onlineKey), testProbe.ref)
     onlineEventSubscription.ready().futureValue
-    testProbe2.expectMessageType[SystemEvent] // discard invalid event
+    testProbe.expectMessageType[SystemEvent] // discard invalid event
 
     sequencerAdmin.goOnline().futureValue should ===(Ok)
     sequencerAdmin.isOnline.futureValue should ===(true)
@@ -229,7 +228,7 @@ class SequencerAdminIntegrationTest extends ScalaTestFrameworkTestKit(EventServe
     secondSequencerAdmin.isOnline.futureValue should ===(true)
 
     // assert sequencer's online handlers are called
-    val onlineEvent = testProbe2.expectMessageType[SystemEvent]
+    val onlineEvent = testProbe.expectMessageType[SystemEvent]
     onlineEvent.paramSet.head.values.head shouldBe "online"
   }
 

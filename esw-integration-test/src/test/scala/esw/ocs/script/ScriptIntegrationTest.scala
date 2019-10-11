@@ -30,11 +30,11 @@ import csw.testkit.scaladsl.CSWService.{AlarmServer, EventServer}
 import csw.testkit.scaladsl.ScalaTestFrameworkTestKit
 import csw.time.core.models.UTCTime
 import esw.ocs.api.BaseTestSuite
-import esw.ocs.api.protocol.{DiagnosticModeResponse, Ok, OperationsModeResponse}
+import esw.ocs.api.protocol._
 import esw.ocs.app.wiring.SequencerWiring
 import esw.ocs.dsl.sequence_manager.LocationServiceUtil
 import esw.ocs.impl.internal.Timeouts
-import esw.ocs.impl.messages.SequencerMessages.{DiagnosticMode, OperationsMode}
+import esw.ocs.impl.messages.SequencerMessages.{DiagnosticMode, GoOffline, GoOnline, OperationsMode}
 
 import scala.concurrent.Future
 import scala.concurrent.duration.DurationDouble
@@ -62,6 +62,11 @@ class ScriptIntegrationTest extends ScalaTestFrameworkTestKit(EventServer, Alarm
   private val tcsConnection                        = AkkaConnection(ComponentId(s"$tcsPackageId@$tcsObservingMode", ComponentType.Sequencer))
   private val tcsRegistration                      = AkkaRegistration(tcsConnection, Prefix("TCS.test"), tcsSequencer.toURI)
   private var sequenceReceivedByTCSProbe: Sequence = _
+
+  override def beforeAll(): Unit = {
+    super.beforeAll()
+    frameworkTestKit.spawnStandalone(ConfigFactory.load("standalone.conf"))
+  }
 
   override def beforeEach(): Unit = {
     locationService = HttpLocationServiceFactory.makeLocalClient
@@ -101,8 +106,6 @@ class ScriptIntegrationTest extends ScalaTestFrameworkTestKit(EventServer, Alarm
       val eventService = new EventServiceFactory().make(HttpLocationServiceFactory.makeLocalClient)
       val eventKey     = EventKey(Prefix("tcs.filter.wheel"), EventName("diagnostic-data"))
 
-      frameworkTestKit.spawnStandalone(ConfigFactory.load("standalone.conf"))
-
       val testProbe    = TestProbe[Event]
       val subscription = eventService.defaultSubscriber.subscribeActorRef(Set(eventKey), testProbe.ref)
       subscription.ready().futureValue
@@ -127,6 +130,35 @@ class ScriptIntegrationTest extends ScalaTestFrameworkTestKit(EventServer, Alarm
       expectedOpEvent.paramSet.head shouldBe operationsModeParam
     }
 
+    "be able to forward GoOnline/GoOffline message to downstream components | ESW-236" in {
+      val eventService = new EventServiceFactory().make(HttpLocationServiceFactory.makeLocalClient)
+      val onlineKey    = EventKey(Prefix("tcs.filter.wheel"), EventName("online"))
+      val offlineKey   = EventKey(Prefix("tcs.filter.wheel"), EventName("offline"))
+
+      val testProbe          = TestProbe[Event]
+      val onlineSubscription = eventService.defaultSubscriber.subscribeActorRef(Set(onlineKey), testProbe.ref)
+      onlineSubscription.ready().futureValue
+      testProbe.expectMessageType[SystemEvent] // discard invalid event
+
+      val offlineSubscription = eventService.defaultSubscriber.subscribeActorRef(Set(offlineKey), testProbe.ref)
+      offlineSubscription.ready().futureValue
+      testProbe.expectMessageType[SystemEvent] // discard invalid event
+
+      //goOffline
+      val goOfflineResF: Future[OkOrUnhandledResponse] = ocsSequencer ? GoOffline
+      goOfflineResF.futureValue should ===(Ok)
+
+      val expectedOfflineEvent = testProbe.expectMessageType[SystemEvent]
+      expectedOfflineEvent.eventKey should ===(offlineKey)
+
+      //goOnline
+      val goOnlineResF: Future[GoOnlineResponse] = ocsSequencer ? GoOnline
+      goOnlineResF.futureValue should ===(Ok)
+
+      val expectedOnlineEvent = testProbe.expectMessageType[SystemEvent]
+      expectedOnlineEvent.eventKey should ===(onlineKey)
+    }
+
     "be able to set severity of sequencer alarms | ESW-125" in {
       val config            = ConfigFactory.parseResources("alarm_key.conf")
       val alarmAdminService = new AlarmServiceFactory().makeAdminApi(locationService)
@@ -135,8 +167,6 @@ class ScriptIntegrationTest extends ScalaTestFrameworkTestKit(EventServer, Alarm
       val alarmKey = AlarmKey(NFIRAOS, "trombone", "tromboneAxisHighLimitAlarm")
       val command  = Setup(Prefix("NFIRAOS.test"), CommandName("set-alarm-severity"), None)
       val sequence = Sequence(command)
-
-      frameworkTestKit.spawnStandalone(ConfigFactory.load("standalone.conf"))
 
       val sequenceRes: Future[SubmitResponse] = ocsSequencer ? (SubmitSequenceAndWait(sequence, _))
 
