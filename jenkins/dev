@@ -16,7 +16,13 @@ pipeline {
             }
         }
 
-        stage('Build') {
+        stage('Build - Kotlin') {
+            steps {
+                sh "./esw-kt/gradlew -p esw-kt clean compileKotlin"
+            }
+        }
+
+        stage('Build - Scala') {
             steps {
                 sh "sbt scalafmtCheck"
                 sh "sbt clean makeSite"
@@ -24,7 +30,14 @@ pipeline {
             }
         }
 
-        stage('Test') {
+        stage('Test - Kotlin') {
+            steps {
+                sh "./esw-kt/gradlew -p esw-kt clean test"
+                sh "./esw-kt/publish.sh"
+            }
+        }
+
+        stage('Test - Scala') {
             steps {
                 sh "sbt -DenableCoverage=true -DgenerateStoryReport=true ';set every enableFatalWarnings := true; clean; test:test'"
             }
