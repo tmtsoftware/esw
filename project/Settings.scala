@@ -4,7 +4,7 @@ object Settings {
   def addAliases: Seq[Setting[_]] = {
     addCommandAlias(
       "testAll",
-      "test; multi-jvm:test"
+      "test; gradle clean test"
     ) ++
     addCommandAlias(
       "buildAll",

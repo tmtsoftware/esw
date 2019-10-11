@@ -18,7 +18,7 @@ pipeline {
 
         stage('Build - Kotlin') {
             steps {
-                sh "./esw-kt/gradlew -p esw-kt clean compileKotlin"
+                sh "gradle clean compileKotlin"
             }
         }
 
@@ -32,7 +32,7 @@ pipeline {
 
         stage('Test - Kotlin') {
             steps {
-                sh "./esw-kt/gradlew -p esw-kt clean test"
+                sh "gradle clean test"
                 sh "./esw-kt/publish.sh"
             }
         }

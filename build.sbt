@@ -109,6 +109,14 @@ lazy val publishKotlin: Def.Initialize[Task[Unit]] = Def.task {
     .foreach(msg => println(s"[Kotlin] $msg"))
 }
 
+lazy val gradle = inputKey[Unit]("")
+import complete.DefaultParsers._
+gradle := {
+  val args: Seq[String] = spaceDelimited("<arg>").parsed
+  s"./esw-kt/gradle.sh ${args.mkString(" ")}".lineStream_!
+    .foreach(msg => println(s"[esw-kt] $msg"))
+}
+
 lazy val `esw-ocs-dsl` = project
   .in(file("esw-ocs/esw-ocs-dsl"))
   .settings(libraryDependencies ++= Dependencies.Utils.value)
