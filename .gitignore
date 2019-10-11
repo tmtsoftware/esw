@@ -18,6 +18,7 @@ dist
 .settings
 .DS_Store
 test-output/
+*.class
 
 build
 

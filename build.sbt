@@ -5,7 +5,6 @@ lazy val aggregateProjects: Seq[ProjectReference] =
   Seq(
     `esw-ocs`,
     `esw-http-core`,
-    `esw-integration-test`,
     `esw-gateway`
   )
 

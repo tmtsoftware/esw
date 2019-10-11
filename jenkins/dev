@@ -16,17 +16,17 @@ pipeline {
             }
         }
 
-        stage('Build - Kotlin') {
-            steps {
-                sh "./gradle.sh clean compileKotlin"
-            }
-        }
-
         stage('Build - Scala') {
             steps {
                 sh "sbt scalafmtCheck"
                 sh "sbt clean makeSite"
                 sh "sbt ';set every Seq(enableFatalWarnings := true, scalafmtOnCompile := false); compile'"
+            }
+        }
+
+        stage('Build - Kotlin') {
+            steps {
+                sh "./gradle.sh clean compileKotlin"
             }
         }
 
@@ -44,7 +44,7 @@ pipeline {
 
         stage('Test - Scala') {
             steps {
-                sh "sbt -DenableCoverage=true -DgenerateStoryReport=true ';set every enableFatalWarnings := true; clean; test:test'"
+                sh "sbt -DenableCoverage=true -DgenerateStoryReport=true ';set every enableFatalWarnings := true; clean; test:test; esw-integration-test/test'"
             }
             post {
                 always {

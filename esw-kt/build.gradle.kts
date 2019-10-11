@@ -1,6 +1,9 @@
 import com.adarshr.gradle.testlogger.theme.ThemeType
 import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 
+val snapshotVersion: String = "0.1.0-SNAPSHOT"
+val eswVersion: String = System.getProperty("ESW_VERSION") ?: System.getenv("ESW_VERSION")  ?: snapshotVersion
+
 plugins {
     java
     `java-library`
@@ -23,6 +26,12 @@ allprojects {
     }
 }
 
+tasks.register("sbt publishM2", Exec::class) {
+    description = "[Scala] Publish local esw-ocs-app"
+    workingDir = projectDir.parentFile
+    commandLine = "sbt publishM2".split(" ")
+}
+
 subprojects {
     apply(plugin = "org.jetbrains.kotlin.jvm")
     apply(plugin = "org.gradle.maven-publish")
@@ -43,7 +52,7 @@ subprojects {
      */
     dependencies {
         api(kotlin("stdlib-jdk8"))
-        implementation("com.github.tmtsoftware.esw:esw-ocs-app_2.13:da8d0bc")
+        implementation("com.github.tmtsoftware.esw:esw-ocs-app_2.13:$eswVersion")
         api("org.jetbrains.kotlinx", "kotlinx-coroutines-jdk8", "1.3.0")
         api("org.jetbrains.kotlin", "kotlin-script-runtime", "1.3.50")
 
@@ -53,6 +62,7 @@ subprojects {
     }
 
     tasks.withType<KotlinCompile>().configureEach {
+        if (eswVersion == snapshotVersion) dependsOn(":sbt publishM2")
         kotlinOptions {
             jvmTarget = "1.8"
 //            freeCompilerArgs = listOf("-Xuse-experimental=kotlin.Experimental")
