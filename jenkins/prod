@@ -16,7 +16,13 @@ pipeline {
             }
         }
 
-        stage('Build') {
+        stage('Build - Kotlin') {
+            steps {
+                sh "./gradle.sh clean compileKotlin"
+            }
+        }
+
+        stage('Build - Scala') {
             steps {
                 sh "sbt scalafmtCheck"
                 sh "sbt clean makeSite"
@@ -24,7 +30,19 @@ pipeline {
             }
         }
 
-        stage('Test') {
+        stage('Test - Kotlin') {
+            steps {
+                sh "./gradle.sh clean test"
+            }
+        }
+
+        stage('Publish Local - Kotlin') {
+            steps {
+                sh "./gradle.sh publishToMavenLocal"
+            }
+        }
+
+        stage('Test - Scala') {
             steps {
                 sh "sbt -DenableCoverage=true -DgenerateStoryReport=true ';set every enableFatalWarnings := true; clean; test:test'"
             }
@@ -72,7 +90,13 @@ pipeline {
             }
         }
 
-        stage('Bintray Publish') {
+        stage('Bintray Publish - Kotlin') {
+            steps {
+                sh "./gradlew publish"
+            }
+        }
+
+        stage('Bintray Publish - Scala') {
             steps {
                 sh "sbt -Dprod.publish=true -DenableCoverage=false publish"
             }

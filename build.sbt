@@ -16,7 +16,7 @@ lazy val aggregateProjects: Seq[ProjectReference] =
     `esw-gateway`
   )
 
-lazy val githubReleases: Seq[ProjectReference] = Seq.empty
+lazy val githubReleases: Seq[ProjectReference] = Seq(`esw-ocs-app`)
 lazy val unidocExclusions: Seq[ProjectReference] = Seq(
   `esw-integration-test`,
   `esw-ocs-api`.js,
@@ -86,20 +86,6 @@ lazy val `esw-http-core` = project
     libraryDependencies ++= Dependencies.EswHttpCore.value
   )
   .dependsOn(`esw-test-reporter` % Test)
-
-// ================= Kotlin Tasks ==================
-lazy val publishKotlin: Def.Initialize[Task[Unit]] =
-  Def.task {
-    runKotlin(Seq("publishToMavenLocal"))
-  }
-
-lazy val gradle = inputKey[Unit]("")
-gradle := runKotlin(spaceDelimited("<arg>").parsed)
-
-def runKotlin(args: Seq[String]): Unit =
-  s"./gradle.sh ${args.mkString(" ")}".lineStream_!
-    .foreach(msg => println(s"[Kotlin] $msg"))
-// =================================================
 
 lazy val `esw-integration-test` = project
   .in(file("esw-integration-test"))
@@ -174,3 +160,17 @@ lazy val `esw-sm` = project
   )
 /* ================= Paradox Docs ============== */
 lazy val docs = project.enablePlugins(NoPublish, ParadoxMaterialSitePlugin)
+
+// ================= Kotlin Tasks ==================
+lazy val publishKotlin: Def.Initialize[Task[Unit]] =
+  Def.task {
+    runKotlin(Seq("publishToMavenLocal"))
+  }
+
+lazy val gradle = inputKey[Unit]("")
+gradle := runKotlin(spaceDelimited("<arg>").parsed)
+
+def runKotlin(args: Seq[String]): Unit =
+  s"./gradle.sh ${args.mkString(" ")}".lineStream_!
+    .foreach(msg => println(s"[Kotlin] $msg"))
+// =================================================
