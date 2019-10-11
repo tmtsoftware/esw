@@ -1,12 +1,5 @@
-import org.tmt.sbt.docs.DocKeys._
 import org.tmt.sbt.docs.{Settings => DocSettings}
 import sbtcrossproject.CrossPlugin.autoImport.{CrossType, crossProject}
-import scala.sys.process._
-import complete.DefaultParsers._
-
-docsRepo in ThisBuild := "git@github.com:tmtsoftware/tmtsoftware.github.io.git"
-docsParentDir in ThisBuild := EswKeys.projectName
-gitCurrentRepo in ThisBuild := "https://github.com/tmtsoftware/esw"
 
 lazy val aggregateProjects: Seq[ProjectReference] =
   Seq(
@@ -33,7 +26,7 @@ lazy val esw = (project in file("."))
   .settings(DocSettings.makeSiteMappings(docs))
   .settings(Settings.addAliases)
   .settings(DocSettings.docExclusions(unidocExclusions))
-//  .settings(GithubRelease.githubReleases(githubReleases))
+  .settings(GithubRelease.githubReleases(githubReleases))
 
 lazy val `esw-ocs` = project
   .in(file("esw-ocs"))
@@ -89,14 +82,9 @@ lazy val `esw-http-core` = project
 
 lazy val `esw-integration-test` = project
   .in(file("esw-integration-test"))
+  .enablePlugins(KotlinPlugin)
   .settings(libraryDependencies ++= Dependencies.IntegrationTest.value)
   .settings(fork in Test := true)
-  .settings(
-    update := {
-      publishKotlin.value
-      update.value
-    }
-  )
   .dependsOn(
     `esw-gateway-server` % "test->compile;test->test",
     `esw-http-core`      % "test->compile;test->test",
@@ -160,17 +148,3 @@ lazy val `esw-sm` = project
   )
 /* ================= Paradox Docs ============== */
 lazy val docs = project.enablePlugins(NoPublish, ParadoxMaterialSitePlugin)
-
-// ================= Kotlin Tasks ==================
-lazy val publishKotlin: Def.Initialize[Task[Unit]] =
-  Def.task {
-    runKotlin(Seq("publishToMavenLocal"))
-  }
-
-lazy val gradle = inputKey[Unit]("")
-gradle := runKotlin(spaceDelimited("<arg>").parsed)
-
-def runKotlin(args: Seq[String]): Unit =
-  s"./gradle.sh ${args.mkString(" ")}".lineStream_!
-    .foreach(msg => println(s"[Kotlin] $msg"))
-// =================================================
