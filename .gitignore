@@ -8,7 +8,7 @@ target
 tmp
 .history
 dist
-.idea
+.idea/*
 !.idea/gradle.xml
 *.iml
 /out
