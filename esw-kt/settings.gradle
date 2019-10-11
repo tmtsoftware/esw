@@ -1,7 +1,3 @@
-rootProject.name = 'scripts'
+rootProject.name = 'esw-kt'
 
-include(
-        "script-dsl",
-        "examples",
-        "integration-test"
-)
+include("script-dsl", "examples")
