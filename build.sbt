@@ -1,6 +1,8 @@
 import org.tmt.sbt.docs.DocKeys._
 import org.tmt.sbt.docs.{Settings => DocSettings}
 import sbtcrossproject.CrossPlugin.autoImport.{CrossType, crossProject}
+import scala.sys.process._
+import complete.DefaultParsers._
 
 docsRepo in ThisBuild := "git@github.com:tmtsoftware/tmtsoftware.github.io.git"
 docsParentDir in ThisBuild := EswKeys.projectName
@@ -85,6 +87,20 @@ lazy val `esw-http-core` = project
   )
   .dependsOn(`esw-test-reporter` % Test)
 
+// ================= Kotlin Tasks ==================
+lazy val publishKotlin: Def.Initialize[Task[Unit]] =
+  Def.task {
+    runKotlin(Seq("publishToMavenLocal"))
+  }
+
+lazy val gradle = inputKey[Unit]("")
+gradle := runKotlin(spaceDelimited("<arg>").parsed)
+
+def runKotlin(args: Seq[String]): Unit =
+  s"./gradle.sh ${args.mkString(" ")}".lineStream_!
+    .foreach(msg => println(s"[Kotlin] $msg"))
+// =================================================
+
 lazy val `esw-integration-test` = project
   .in(file("esw-integration-test"))
   .settings(libraryDependencies ++= Dependencies.IntegrationTest.value)
@@ -102,20 +118,6 @@ lazy val `esw-integration-test` = project
     `esw-ocs-app`,
     `esw-test-reporter` % Test
   )
-
-import scala.sys.process._
-lazy val publishKotlin: Def.Initialize[Task[Unit]] = Def.task {
-  "./esw-kt/publish.sh".lineStream_!
-    .foreach(msg => println(s"[Kotlin] $msg"))
-}
-
-lazy val gradle = inputKey[Unit]("")
-import complete.DefaultParsers._
-gradle := {
-  val args: Seq[String] = spaceDelimited("<arg>").parsed
-  s"./esw-kt/gradle.sh ${args.mkString(" ")}".lineStream_!
-    .foreach(msg => println(s"[esw-kt] $msg"))
-}
 
 lazy val `esw-ocs-dsl` = project
   .in(file("esw-ocs/esw-ocs-dsl"))

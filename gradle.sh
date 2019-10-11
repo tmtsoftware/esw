@@ -3,4 +3,4 @@
 # Run from the directory containing the script
 cd "$(dirname "${BASH_SOURCE[0]}")" || exit
 
-./gradlew "$@"
+./esw-kt/gradlew -p esw-kt "$@"

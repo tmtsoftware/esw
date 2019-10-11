@@ -18,7 +18,7 @@ pipeline {
 
         stage('Build - Kotlin') {
             steps {
-                sh "./esw-kt/gradlew -p esw-kt clean compileKotlin"
+                sh "./gradle.sh clean compileKotlin"
             }
         }
 
@@ -32,8 +32,13 @@ pipeline {
 
         stage('Test - Kotlin') {
             steps {
-                sh "./esw-kt/gradlew -p esw-kt clean test"
-                sh "./esw-kt/publish.sh"
+                sh "./gradle.sh clean test"
+            }
+        }
+
+        stage('Publish Local - Kotlin') {
+            steps {
+                sh "./gradle.sh publishToMavenLocal"
             }
         }
 
