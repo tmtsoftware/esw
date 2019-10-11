@@ -44,10 +44,12 @@ pipeline {
 
         stage('Test - Scala') {
             steps {
-                sh "sbt -DenableCoverage=true -DgenerateStoryReport=true ';set every enableFatalWarnings := true; clean; test:test; esw-integration-test/test'"
+                sh "sbt -DenableCoverage=true -DgenerateStoryReport=true ';set every enableFatalWarnings := true; clean; test:test'"
+                sh "sbt -DenableCoverage=true -DgenerateStoryReport=true esw-integration-test/test"
             }
             post {
                 always {
+                    sh "sbt -DenableCoverage=true esw-integration-test/coverageReport"
                     sh "sbt -DenableCoverage=true coverageReport"
                     sh "sbt coverageAggregate"
                     junit testResults: '**/target/test-reports/*.xml', allowEmptyResults: true

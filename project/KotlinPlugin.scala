@@ -1,5 +1,6 @@
-import sbt.Keys.update
-import sbt.{AutoPlugin, Def, Keys, Plugins, Setting, Task, plugins}
+import sbt.Keys.compile
+import sbt.librarymanagement.Configurations.Compile
+import sbt.{AutoPlugin, Def, Plugins, Setting, Task, plugins}
 
 import scala.sys.process.stringToProcess
 
@@ -7,9 +8,9 @@ object KotlinPlugin extends AutoPlugin {
   override def requires: Plugins = plugins.JvmPlugin
 
   override def projectSettings: Seq[Setting[_]] = Seq(
-    update := {
+    compile in Compile := {
       publishKotlinTask.value
-      update.value
+      (compile in Compile).value
     }
   )
 
