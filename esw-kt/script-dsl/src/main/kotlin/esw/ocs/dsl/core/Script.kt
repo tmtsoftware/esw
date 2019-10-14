@@ -26,7 +26,6 @@ import esw.ocs.dsl.script.StrandEc
 import esw.ocs.dsl.script.utils.LockUnlockUtil
 import esw.ocs.dsl.sequence_manager.LocationServiceUtil
 import java.util.concurrent.CompletionStage
-import kotlin.coroutines.CoroutineContext
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.asCoroutineDispatcher
@@ -34,8 +33,9 @@ import kotlinx.coroutines.future.await
 import kotlinx.coroutines.future.future
 import kotlinx.coroutines.launch
 
-sealed class ScriptDslKt : CoroutineScope, CswHighLevelDsl {
+sealed class ScriptDslKt : CswHighLevelDsl {
 
+    abstract override val coroutineScope: CoroutineScope
     abstract val cswServices: CswServices
     val eventService: IEventService by lazy { cswServices.eventService() }
 
@@ -64,10 +64,10 @@ sealed class ScriptDslKt : CoroutineScope, CswHighLevelDsl {
     // this needs to be lazy otherwise handlers does not get loaded properly
     val scriptDsl: ScriptDsl by lazy { ScriptDslFactory.make(cswServices, strandEc()) }
 
-    fun initialize(block: suspend () -> Unit) = launch { block() }
+    fun initialize(block: suspend () -> Unit) = coroutineScope.launch { block() }
 
     suspend fun nextIf(predicate: (SequenceCommand) -> Boolean): SequenceCommand? =
-        scriptDsl.jNextIf { predicate(it) }.await().nullable()
+            scriptDsl.jNextIf { predicate(it) }.await().nullable()
 
     fun handleSetup(name: String, block: suspend (Setup) -> Unit) {
         scriptDsl.jHandleSetupCommand(name) { block.toJavaFuture(it) }
@@ -94,7 +94,7 @@ sealed class ScriptDslKt : CoroutineScope, CswHighLevelDsl {
     }
 
     fun handleDiagnosticMode(block: suspend (UTCTime, String) -> Unit) {
-        scriptDsl.jHandleDiagnosticMode { x: UTCTime, y: String -> future { block(x, y) }.thenAccept { } }
+        scriptDsl.jHandleDiagnosticMode { x: UTCTime, y: String -> coroutineScope.future { block(x, y) }.thenAccept { } }
     }
 
     fun handleOperationsMode(block: suspend () -> Unit) {
@@ -105,32 +105,32 @@ sealed class ScriptDslKt : CoroutineScope, CswHighLevelDsl {
 
     fun loadScripts(vararg reusableScriptResult: ReusableScriptResult) {
         reusableScriptResult.forEach {
-            this.scriptDsl.merge(it(cswServices, strandEc(), coroutineContext).scriptDsl)
+            this.scriptDsl.merge(it(cswServices, strandEc(), coroutineScope).scriptDsl)
         }
     }
 
     suspend fun resolveSequencer(sequencerId: String, observingMode: String): AkkaLocation =
-        LocationServiceUtil(locationService.asScala(), actorSystem)
-            .jResolveSequencer(sequencerId, observingMode).await()
+            LocationServiceUtil(locationService.asScala(), actorSystem)
+                    .jResolveSequencer(sequencerId, observingMode).await()
 
     suspend fun submitSequence(sequencerName: String, observingMode: String, sequence: Sequence): SubmitResponse =
-        this.scriptDsl.submitSequence(sequencerName, observingMode, sequence).await()
+            this.scriptDsl.submitSequence(sequencerName, observingMode, sequence).await()
 
     private fun (suspend () -> Unit).toJavaFutureVoid(): CompletionStage<Void> {
         val block = this
-        return future { block() }.thenAccept { }
+        return coroutineScope.future { block() }.thenAccept { }
     }
 
     private fun <T> (suspend (T) -> Unit).toJavaFuture(value: T): CompletionStage<Void> {
         val block = this
-        return future { block(value) }.thenAccept { }
+        return coroutineScope.future { block(value) }.thenAccept { }
     }
 }
 
 class ReusableScript(
     override val cswServices: CswServices,
     private val _strandEc: StrandEc,
-    override val coroutineContext: CoroutineContext
+    override val coroutineScope: CoroutineScope
 ) : ScriptDslKt() {
     override fun strandEc(): StrandEc = _strandEc
 
@@ -148,7 +148,7 @@ open class Script(final override val cswServices: CswServices) : ScriptDslKt() {
         cswServices.timeServiceSchedulerFactory().make(_strandEc.ec())
     }
 
-    override val coroutineContext: CoroutineContext get() = job + dispatcher
+    override val coroutineScope: CoroutineScope get() = CoroutineScope(job + dispatcher)
 
     override fun strandEc(): StrandEc = _strandEc
 

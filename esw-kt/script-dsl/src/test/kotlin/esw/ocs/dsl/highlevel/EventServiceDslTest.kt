@@ -13,9 +13,9 @@ import io.mockk.every
 import io.mockk.mockk
 import io.mockk.verify
 import java.util.concurrent.CompletableFuture
-import kotlin.coroutines.CoroutineContext
 import kotlin.coroutines.EmptyCoroutineContext
 import kotlin.time.milliseconds
+import kotlinx.coroutines.CoroutineScope
 
 class EventServiceDslTest : WordSpec(), EventServiceDsl {
 
@@ -32,7 +32,7 @@ class EventServiceDslTest : WordSpec(), EventServiceDsl {
     private val eventPublisher: IEventPublisher = mockk()
     private val eventSubscriber: IEventSubscriber = mockk()
 
-    override val coroutineContext: CoroutineContext = EmptyCoroutineContext
+    override val coroutineScope: CoroutineScope = CoroutineScope(EmptyCoroutineContext)
     override val defaultPublisher: IEventPublisher = eventPublisher
     override val defaultSubscriber: IEventSubscriber = eventSubscriber
 

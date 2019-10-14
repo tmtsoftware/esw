@@ -12,9 +12,9 @@ import io.mockk.every
 import io.mockk.mockk
 import io.mockk.verify
 import java.util.concurrent.TimeUnit
-import kotlin.coroutines.CoroutineContext
 import kotlin.coroutines.EmptyCoroutineContext
 import kotlin.time.*
+import kotlinx.coroutines.CoroutineScope
 import scala.concurrent.duration.FiniteDuration
 
 class TimeServiceDslTest : WordSpec(), TimeServiceDsl {
@@ -26,7 +26,7 @@ class TimeServiceDslTest : WordSpec(), TimeServiceDsl {
     private val jDuration = duration.toJavaDuration()
 
     override val timeServiceScheduler: TimeServiceScheduler = scheduler
-    override val coroutineContext: CoroutineContext = EmptyCoroutineContext
+    override val coroutineScope: CoroutineScope = CoroutineScope(EmptyCoroutineContext)
 
     private fun assertWithin(expected: Duration, result: Duration, tolerance: Duration) {
         val diff = expected - result

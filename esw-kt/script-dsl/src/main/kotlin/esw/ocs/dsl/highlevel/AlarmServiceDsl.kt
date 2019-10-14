@@ -7,12 +7,14 @@ import esw.ocs.dsl.utils.bgLoop
 import kotlin.time.seconds
 import kotlinx.coroutines.CoroutineScope
 
-interface AlarmServiceDsl : CoroutineScope {
+interface AlarmServiceDsl {
+
+    val coroutineScope: CoroutineScope
 
     val alarmService: IAlarmService
     val alarmSeverityData: AlarmSeverityData
 
-    private fun startSetSeverity() = bgLoop(5.seconds) {
+    private fun startSetSeverity() = coroutineScope.bgLoop(5.seconds) {
         alarmSeverityData.map.keys.forEach { key -> alarmService.setSeverity(key, alarmSeverityData.map[key]) }
     }
 

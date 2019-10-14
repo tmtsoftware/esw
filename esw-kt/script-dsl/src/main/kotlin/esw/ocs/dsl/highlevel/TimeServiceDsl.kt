@@ -14,7 +14,9 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.future.future
 import scala.concurrent.duration.FiniteDuration
 
-interface TimeServiceDsl : CoroutineScope {
+interface TimeServiceDsl {
+    val coroutineScope: CoroutineScope
+
     val timeServiceScheduler: TimeServiceScheduler
 
     suspend fun scheduleOnce(startTime: TMTTime, task: suspend () -> Unit): Cancellable =
@@ -44,5 +46,5 @@ interface TimeServiceDsl : CoroutineScope {
     fun TMTTime.offsetFromNow(): Duration = durationFromNow().toNanos().nanoseconds
 
     private fun (suspend () -> Unit).toJavaFuture(): CompletionStage<Void> =
-        future { this@toJavaFuture }.thenAccept { }
+            coroutineScope.future { this@toJavaFuture }.thenAccept { }
 }

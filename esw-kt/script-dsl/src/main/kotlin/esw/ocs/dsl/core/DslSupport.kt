@@ -2,7 +2,7 @@ package esw.ocs.dsl.core
 
 import esw.ocs.dsl.script.CswServices
 import esw.ocs.dsl.script.StrandEc
-import kotlin.coroutines.CoroutineContext
+import kotlinx.coroutines.CoroutineScope
 
 class Result(val scriptFactory: (CswServices) -> Script) {
     operator fun invoke(cswService: CswServices): Script = scriptFactory(cswService)
@@ -13,9 +13,9 @@ fun script(block: Script.(csw: CswServices) -> Unit): Result =
         Script(it).apply { block(it) }
     }
 
-class ReusableScriptResult(val scriptFactory: (CswServices, StrandEc, CoroutineContext) -> ReusableScript) {
-    operator fun invoke(cswService: CswServices, strandEc: StrandEc, coroutineContext: CoroutineContext) =
-        scriptFactory(cswService, strandEc, coroutineContext)
+class ReusableScriptResult(val scriptFactory: (CswServices, StrandEc, CoroutineScope) -> ReusableScript) {
+    operator fun invoke(cswService: CswServices, strandEc: StrandEc, coroutineScope: CoroutineScope) =
+        scriptFactory(cswService, strandEc, coroutineScope)
 }
 
 fun reusableScript(block: ReusableScript.(csw: CswServices) -> Unit) =

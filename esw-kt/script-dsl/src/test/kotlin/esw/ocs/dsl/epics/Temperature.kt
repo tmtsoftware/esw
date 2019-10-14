@@ -119,7 +119,7 @@ val machine3 = object : TestMachine("temp-monitor", "Init") {
 
     init {
         // for testing purpose
-        bgLoop(1.seconds) {
+        coroutineScope.bgLoop(1.seconds) {
             val value = (20..60).random()
             temp.set(value)
             temp.pvPut()

@@ -12,14 +12,14 @@ import io.mockk.every
 import io.mockk.mockk
 import io.mockk.verify
 import java.util.concurrent.CompletableFuture.completedFuture
-import kotlin.coroutines.CoroutineContext
 import kotlin.coroutines.EmptyCoroutineContext
+import kotlinx.coroutines.CoroutineScope
 
 class AlarmServiceDslTest : WordSpec(), AlarmServiceDsl {
 
     private val mockedAlarmService: IAlarmService = mockk()
 
-    override val coroutineContext: CoroutineContext = EmptyCoroutineContext
+    override val coroutineScope: CoroutineScope = CoroutineScope(EmptyCoroutineContext)
     override val alarmService: IAlarmService = mockedAlarmService
     override val alarmSeverityData: AlarmSeverityData = AlarmSeverityData(HashMap())
 

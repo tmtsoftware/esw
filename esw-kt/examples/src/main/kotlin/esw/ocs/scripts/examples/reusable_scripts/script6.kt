@@ -14,7 +14,7 @@ val script6 = reusableScript {
         log("============ command-1 ================")
 
         repeat(50) {
-            launch {
+            coroutineScope.launch {
                 log("Publishing event $it")
                 delay(1000)
                 publishEvent(event(it))
