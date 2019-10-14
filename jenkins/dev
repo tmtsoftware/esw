@@ -16,29 +16,18 @@ pipeline {
             }
         }
 
-        stage('Build - Scala') {
+        stage('Build and Publish Local') {
             steps {
                 sh "sbt scalafmtCheck"
                 sh "sbt clean makeSite"
                 sh "sbt ';set every Seq(enableFatalWarnings := true, scalafmtOnCompile := false); compile'"
-            }
-        }
-
-        stage('Build - Kotlin') {
-            steps {
-                sh "./gradle.sh clean compileKotlin"
+                sh "./build.sh"
             }
         }
 
         stage('Test - Kotlin') {
             steps {
-                sh "./gradle.sh clean test"
-            }
-        }
-
-        stage('Publish Local - Kotlin') {
-            steps {
-                sh "./gradle.sh publishToMavenLocal"
+                sh "./gradle.sh test"
             }
         }
 

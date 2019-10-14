@@ -81,7 +81,6 @@ lazy val `esw-http-core` = project
 
 lazy val `esw-integration-test` = project
   .in(file("esw-integration-test"))
-  .enablePlugins(KotlinPlugin)
   .settings(libraryDependencies ++= Dependencies.IntegrationTest.value)
   .settings(fork in Test := true)
   .dependsOn(

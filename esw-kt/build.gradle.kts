@@ -26,12 +26,6 @@ allprojects {
     }
 }
 
-tasks.register("sbt publishM2", Exec::class) {
-    description = "[Scala] Publish local esw-ocs-app"
-    workingDir = projectDir.parentFile
-    commandLine = "sbt publishM2".split(" ")
-}
-
 subprojects {
     apply(plugin = "org.jetbrains.kotlin.jvm")
     apply(plugin = "org.gradle.maven-publish")
@@ -62,7 +56,6 @@ subprojects {
     }
 
     tasks.withType<KotlinCompile>().configureEach {
-        if (eswVersion == snapshotVersion) dependsOn(":sbt publishM2")
         kotlinOptions {
             jvmTarget = "1.8"
 //            freeCompilerArgs = listOf("-Xuse-experimental=kotlin.Experimental")
