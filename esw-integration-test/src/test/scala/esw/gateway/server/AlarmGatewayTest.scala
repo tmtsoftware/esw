@@ -23,8 +23,8 @@ class AlarmGatewayTest extends ScalaTestFrameworkTestKit(AlarmServer) with WordS
   import frameworkWiring.{alarmServiceFactory, locationService}
 
   implicit val typedSystem: ActorSystem[SpawnProtocol.Command] = actorSystem
-  private val port: Int                                = 6490
-  private val gatewayWiring: GatewayWiring             = new GatewayWiring(Some(port))
+  private val port: Int                                        = 6490
+  private val gatewayWiring: GatewayWiring                     = new GatewayWiring(Some(port))
 
   implicit val timeout: FiniteDuration                 = 10.seconds
   override implicit def patienceConfig: PatienceConfig = PatienceConfig(timeout)

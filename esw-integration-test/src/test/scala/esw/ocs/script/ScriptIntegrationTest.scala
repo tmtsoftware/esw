@@ -39,7 +39,7 @@ class ScriptIntegrationTest extends ScalaTestFrameworkTestKit(EventServer, Alarm
   import frameworkTestKit.mat
 
   implicit val actorSystem: ActorSystem[SpawnProtocol.Command] = frameworkTestKit.actorSystem
-  implicit val scheduler: Scheduler                    = actorSystem.scheduler
+  implicit val scheduler: Scheduler                            = actorSystem.scheduler
 
   private implicit val askTimeout: Timeout = Timeouts.DefaultTimeout
 
