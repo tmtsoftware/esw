@@ -38,7 +38,6 @@ pipeline {
             }
             post {
                 always {
-                    sh "sbt -DenableCoverage=true esw-integration-test/coverageReport"
                     sh "sbt -DenableCoverage=true coverageReport"
                     sh "sbt coverageAggregate"
                     junit testResults: '**/target/test-reports/*.xml', allowEmptyResults: true
