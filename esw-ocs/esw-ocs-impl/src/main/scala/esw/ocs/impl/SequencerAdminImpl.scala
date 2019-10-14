@@ -1,8 +1,7 @@
 package esw.ocs.impl
 
-import akka.actor.Scheduler
 import akka.actor.typed.scaladsl.AskPattern._
-import akka.actor.typed.{ActorRef, ActorSystem}
+import akka.actor.typed.{ActorRef, ActorSystem, Scheduler}
 import akka.util.Timeout
 import csw.command.client.messages.sequencer.SequencerMsg
 import csw.params.commands.{Sequence, SequenceCommand}

@@ -1,9 +1,8 @@
 package esw.ocs.app
 
 import akka.Done
-import akka.actor.Scheduler
 import akka.actor.testkit.typed.scaladsl.TestProbe
-import akka.actor.typed.ActorSystem
+import akka.actor.typed.{ActorSystem, Scheduler}
 import akka.util.Timeout
 import csw.command.client.internal.SequencerCommandServiceImpl
 import csw.location.api.extensions.URIExtension.RichURI

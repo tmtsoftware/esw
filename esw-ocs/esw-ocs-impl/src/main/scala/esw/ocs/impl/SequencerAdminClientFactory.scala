@@ -13,7 +13,7 @@ object SequencerAdminClientFactory extends SequencerAdminHttpCodecs {
   def make(postUrl: String, websocketUrl: String, tokenFactory: => Option[String])(
       implicit actorSystem: ActorSystem[_]
   ): SequencerAdminClient = {
-    implicit val untypedSystem: actor.ActorSystem = actorSystem.toUntyped
+    implicit val untypedSystem: actor.ActorSystem = actorSystem.toClassic
     val postClient                                = new HttpPostTransport[SequencerAdminPostRequest](postUrl, None)
     val websocketClient                           = new WebsocketTransport[SequencerAdminWebsocketRequest](websocketUrl)
     new SequencerAdminClient(postClient, websocketClient)

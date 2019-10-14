@@ -26,7 +26,7 @@ import scala.concurrent.duration.{DurationInt, FiniteDuration}
 class EventGatewayTest extends ScalaTestFrameworkTestKit(EventServer) with WordSpecLike with FutureEitherExt with GatewayCodecs {
 
   private implicit val system: ActorSystem[_]                = frameworkTestKit.actorSystem
-  private implicit val untypedActorSystem: actor.ActorSystem = system.toUntyped
+  private implicit val untypedActorSystem: actor.ActorSystem = system.toClassic
   private implicit val mat: Materializer                     = frameworkTestKit.mat
   private implicit val timeout: FiniteDuration               = 20.seconds
   private val port: Int                                      = 6490

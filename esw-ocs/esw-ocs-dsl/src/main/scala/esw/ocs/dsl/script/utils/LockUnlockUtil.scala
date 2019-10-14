@@ -3,9 +3,9 @@ package esw.ocs.dsl.script.utils
 import java.time.Duration
 import java.util.concurrent.{CompletionStage, TimeUnit}
 
-import akka.actor.Scheduler
 import akka.actor.typed.scaladsl.AskPattern.Askable
 import akka.actor.typed.{ActorRef, ActorSystem, SpawnProtocol}
+import akka.actor.typed.{ActorSystem, Scheduler, SpawnProtocol}
 import akka.util.Timeout
 import csw.command.client.messages.SupervisorLockMessage
 import csw.command.client.messages.SupervisorLockMessage.{Lock, Unlock}
@@ -18,7 +18,7 @@ import scala.compat.java8.FutureConverters.FutureOps
 import scala.concurrent.ExecutionContext
 import scala.concurrent.duration.{DurationLong, FiniteDuration}
 
-class LockUnlockUtil(locationServiceUtil: LocationServiceUtil)(actorSystem: ActorSystem[SpawnProtocol]) {
+class LockUnlockUtil(locationServiceUtil: LocationServiceUtil)(actorSystem: ActorSystem[SpawnProtocol.Command]) {
   implicit val timeout: Timeout     = 5.seconds
   implicit val scheduler: Scheduler = actorSystem.scheduler
   implicit val ec: ExecutionContext = actorSystem.executionContext

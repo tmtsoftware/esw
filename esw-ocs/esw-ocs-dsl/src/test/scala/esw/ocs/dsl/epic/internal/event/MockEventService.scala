@@ -6,7 +6,6 @@ import java.util.function.Consumer
 
 import akka.actor.typed
 import akka.stream.scaladsl.{Keep, Sink, Source, SourceQueueWithComplete}
-import akka.stream.typed.scaladsl.ActorMaterializer
 import akka.stream.{KillSwitch, KillSwitches, Materializer, OverflowStrategy}
 import akka.{Done, NotUsed}
 import esw.ocs.dsl.script.StrandEc
@@ -34,7 +33,7 @@ class MockEventService(implicit val actorSystem: typed.ActorSystem[_]) {
 
   implicit val strandEc: StrandEc   = StrandEc()
   implicit val ec: ExecutionContext = strandEc.ec
-  implicit val mat: Materializer    = ActorMaterializer()
+  implicit val mat: Materializer    = Materializer(actorSystem)
 
   def get(key: String): Future[MockEvent] = Utils.timeout(2.seconds, strandEc.executorService).map { _ =>
     database.getOrElse(key, MockEvent.empty(key))

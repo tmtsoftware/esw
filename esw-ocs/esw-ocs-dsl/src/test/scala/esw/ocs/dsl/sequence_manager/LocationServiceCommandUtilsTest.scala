@@ -35,7 +35,7 @@ class LocationServiceCommandUtilsTest extends ScalaTestWithActorTestKit with Bas
   "register" must {
     "return successful RegistrationResult | ESW-214" in {
       implicit val system: ActorSystem[_] = ActorSystem(Behaviors.empty, "test")
-      val coordinatedShutdown             = CoordinatedShutdown(system.toUntyped)
+      val coordinatedShutdown             = CoordinatedShutdown(system.toClassic)
       val registrationResult              = mock[RegistrationResult]
       when(registrationResult.location).thenReturn(akkaLocation)
       when(registrationResult.unregister()).thenReturn(Future.successful(Done))

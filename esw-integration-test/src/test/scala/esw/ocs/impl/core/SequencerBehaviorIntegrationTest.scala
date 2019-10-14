@@ -15,7 +15,7 @@ import scala.concurrent.duration.DurationDouble
 
 class SequencerBehaviorIntegrationTest extends ScalaTestFrameworkTestKit with BaseTestSuite {
 
-  implicit val actorSystem: ActorSystem[SpawnProtocol] = frameworkTestKit.actorSystem
+  implicit val actorSystem: ActorSystem[SpawnProtocol.Command] = frameworkTestKit.actorSystem
 
   private val ocsPackageId     = "esw"
   private val ocsObservingMode = "darknight"

@@ -22,7 +22,7 @@ object Libs {
 
 object Csw {
   private val Org     = "com.github.tmtsoftware.csw"
-  private val Version = "5759504" //change this to 0.1-SNAPSHOT to test with local csw changes (after publishLocal)
+  private val Version = "99340c0" //change this to 0.1-SNAPSHOT to test with local csw changes (after publishLocal)
 
   val `csw-alarm-api`       = Org %% "csw-alarm-api" % Version
   val `csw-command-api`     = Org %% "csw-command-api" % Version
@@ -45,7 +45,7 @@ object Csw {
 }
 
 object Akka {
-  private val Version     = "2.5.25"
+  private val Version     = "2.6.0-M8"
   val `akka-actor-typed`  = "com.typesafe.akka" %% "akka-actor-typed" % Version
   val `akka-stream-typed` = "com.typesafe.akka" %% "akka-stream-typed" % Version
   val `akka-stream`       = "com.typesafe.akka" %% "akka-stream" % Version

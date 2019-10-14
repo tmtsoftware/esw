@@ -23,7 +23,7 @@ class SequenceComponentRegistration(
     _locationService: LocationService,
     sequenceComponentFactory: String => Future[ActorRef[SequenceComponentMsg]]
 )(
-    implicit override val actorSystem: ActorSystem[SpawnProtocol]
+    implicit override val actorSystem: ActorSystem[SpawnProtocol.Command]
 ) extends LocationServiceUtil(_locationService) {
 
   def registerSequenceComponent(retryCount: Int): Future[Either[LoadScriptError, AkkaLocation]] = name match {

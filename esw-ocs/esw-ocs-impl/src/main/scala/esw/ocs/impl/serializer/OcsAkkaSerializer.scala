@@ -2,7 +2,7 @@ package esw.ocs.impl.serializer
 
 import akka.actor.ExtendedActorSystem
 import akka.actor.typed.ActorSystem
-import akka.actor.typed.scaladsl.adapter.UntypedActorSystemOps
+import akka.actor.typed.scaladsl.adapter._
 import akka.serialization.Serializer
 import csw.command.client.messages.sequencer.SequencerMsg
 import csw.logging.api.scaladsl.Logger

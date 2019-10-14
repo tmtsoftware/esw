@@ -38,7 +38,7 @@ object ElementConverter {
     case x: Array[Byte] => Dom.ByteArrayElem(x)
     case x: Seq[_]      => fromSeq(x)
     case x: Map[_, _]   => fromMap(x)
-    case x              => throw new RuntimeException(s"can not create an element from value =$x")
+    case x              => throw new RuntimeException(s"can not create an element from value=$x")
   }
 
   def fromMap(input: Map[_, Any]): Dom.MapElem = Dom.MapElem.Unsized {

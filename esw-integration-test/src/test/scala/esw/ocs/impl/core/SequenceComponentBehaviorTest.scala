@@ -1,19 +1,18 @@
 package esw.ocs.impl.core
 
 import akka.Done
-import akka.actor.Scheduler
 import akka.actor.testkit.typed.scaladsl.{BehaviorTestKit, TestProbe}
 import akka.actor.typed.SpawnProtocol.Spawn
 import akka.actor.typed.scaladsl.AskPattern._
 import akka.actor.typed.scaladsl.Behaviors
-import akka.actor.typed.{ActorRef, ActorSystem, SpawnProtocol}
+import akka.actor.typed.{ActorRef, ActorSystem, Props, Scheduler, SpawnProtocol}
 import akka.util.Timeout
 import csw.location.models.Connection.AkkaConnection
 import csw.location.models.{AkkaLocation, ComponentId, ComponentType, Location}
 import csw.logging.client.scaladsl.LoggerFactory
 import csw.testkit.scaladsl.ScalaTestFrameworkTestKit
 import esw.ocs.api.BaseTestSuite
-import esw.ocs.api.protocol.{GetStatusResponse, LoadScriptResponse, LoadScriptError}
+import esw.ocs.api.protocol.{GetStatusResponse, LoadScriptError, LoadScriptResponse}
 import esw.ocs.app.wiring.SequencerWiring
 import esw.ocs.impl.messages.SequenceComponentMsg
 import esw.ocs.impl.messages.SequenceComponentMsg.{GetStatus, LoadScript, Stop, UnloadScript}
@@ -21,8 +20,8 @@ import esw.ocs.impl.messages.SequenceComponentMsg.{GetStatus, LoadScript, Stop, 
 import scala.concurrent.duration.DurationLong
 
 class SequenceComponentBehaviorTest extends ScalaTestFrameworkTestKit with BaseTestSuite {
-  private implicit val typedSystem: ActorSystem[SpawnProtocol] = frameworkTestKit.actorSystem
-  val ocsSequenceComponentName                                 = "OCS_1"
+  private implicit val typedSystem: ActorSystem[SpawnProtocol.Command] = frameworkTestKit.actorSystem
+  val ocsSequenceComponentName                                         = "OCS_1"
 
   private val factory = new LoggerFactory("SequenceComponentTest")
 
@@ -44,10 +43,15 @@ class SequenceComponentBehaviorTest extends ScalaTestFrameworkTestKit with BaseT
 
   "SequenceComponentBehavior" must {
     "load/unload script and get appropriate status | ESW-103" in {
-      val sequenceComponentRef: ActorRef[SequenceComponentMsg] = (typedSystem ? Spawn(
-        SequenceComponentBehavior.behavior(ocsSequenceComponentName, factory.getLogger, sequencerWiring(_, _, _).sequencerServer),
-        ocsSequenceComponentName
-      )).futureValue
+      val sequenceComponentRef: ActorRef[SequenceComponentMsg] = (typedSystem ? { x: ActorRef[ActorRef[SequenceComponentMsg]] =>
+        Spawn(
+          SequenceComponentBehavior
+            .behavior(ocsSequenceComponentName, factory.getLogger, sequencerWiring(_, _, _).sequencerServer),
+          ocsSequenceComponentName,
+          Props.empty,
+          x
+        )
+      }).futureValue
 
       val loadScriptResponseProbe = TestProbe[LoadScriptResponse]
       val getStatusProbe          = TestProbe[GetStatusResponse]
@@ -84,10 +88,15 @@ class SequenceComponentBehaviorTest extends ScalaTestFrameworkTestKit with BaseT
     }
 
     "load script and give LoadScriptError if sequencer is already running | ESW-103" in {
-      val sequenceComponentRef: ActorRef[SequenceComponentMsg] = (typedSystem ? Spawn(
-        SequenceComponentBehavior.behavior(ocsSequenceComponentName, factory.getLogger, sequencerWiring(_, _, _).sequencerServer),
-        ocsSequenceComponentName
-      )).futureValue
+      val sequenceComponentRef: ActorRef[SequenceComponentMsg] = (typedSystem ? { x: ActorRef[ActorRef[SequenceComponentMsg]] =>
+        Spawn(
+          SequenceComponentBehavior
+            .behavior(ocsSequenceComponentName, factory.getLogger, sequencerWiring(_, _, _).sequencerServer),
+          ocsSequenceComponentName,
+          Props.empty,
+          x
+        )
+      }).futureValue
 
       val loadScriptResponseProbe = TestProbe[LoadScriptResponse]
       val packageId               = "iris"
@@ -109,10 +118,15 @@ class SequenceComponentBehaviorTest extends ScalaTestFrameworkTestKit with BaseT
     }
 
     "unload script and return Done if sequence component is not running any sequencer | ESW-103" in {
-      val sequenceComponentRef: ActorRef[SequenceComponentMsg] = (typedSystem ? Spawn(
-        SequenceComponentBehavior.behavior(ocsSequenceComponentName, factory.getLogger, sequencerWiring(_, _, _).sequencerServer),
-        ocsSequenceComponentName
-      )).futureValue
+      val sequenceComponentRef: ActorRef[SequenceComponentMsg] = (typedSystem ? { x: ActorRef[ActorRef[SequenceComponentMsg]] =>
+        Spawn(
+          SequenceComponentBehavior
+            .behavior(ocsSequenceComponentName, factory.getLogger, sequencerWiring(_, _, _).sequencerServer),
+          ocsSequenceComponentName,
+          Props.empty,
+          x
+        )
+      }).futureValue
 
       val unloadScriptResponseProbe = TestProbe[Done]
       val getStatusProbe            = TestProbe[GetStatusResponse]

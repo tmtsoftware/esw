@@ -1,9 +1,8 @@
 package esw.ocs.app
 
-import akka.actor.Scheduler
 import akka.actor.testkit.typed.scaladsl.TestProbe
 import akka.actor.typed.scaladsl.AskPattern._
-import akka.actor.typed.{ActorRef, ActorSystem, SpawnProtocol}
+import akka.actor.typed.{ActorRef, ActorSystem, Scheduler, SpawnProtocol}
 import akka.util.Timeout
 import csw.command.client.messages.sequencer.{SequencerMsg, SubmitSequenceAndWait}
 import csw.event.client.EventServiceFactory
@@ -36,7 +35,7 @@ import scala.concurrent.duration.DurationLong
 class SequencerAdminIntegrationTest extends ScalaTestFrameworkTestKit(EventServer) with BaseTestSuite {
 
   import frameworkTestKit._
-  private implicit val sys: ActorSystem[SpawnProtocol] = actorSystem
+  private implicit val sys: ActorSystem[SpawnProtocol.Command] = actorSystem
 
   override implicit def patienceConfig: PatienceConfig = PatienceConfig(10.seconds)
 

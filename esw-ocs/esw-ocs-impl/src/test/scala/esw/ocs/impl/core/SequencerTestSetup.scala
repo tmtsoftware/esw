@@ -24,7 +24,7 @@ import org.scalatest.{Assertion, Matchers}
 import org.scalatestplus.mockito.MockitoSugar
 
 import scala.concurrent.duration.DurationLong
-import scala.concurrent.{Await, ExecutionContext, Future, Promise}
+import scala.concurrent.{ExecutionContext, Future, Promise}
 import scala.util.Success
 
 class SequencerTestSetup(sequence: Sequence)(implicit system: ActorSystem[_], timeout: Timeout) {
@@ -41,9 +41,8 @@ class SequencerTestSetup(sequence: Sequence)(implicit system: ActorSystem[_], ti
   private def mockShutdownHttpService: () => Future[Done.type] = () => Future { Done }
   private val sequencerBehavior                                = new SequencerBehavior(componentId, script, locationService, crm, mockShutdownHttpService)
 
-  val sequencerName = s"SequencerActor${math.random()}"
-  val sequencerActor: ActorRef[SequencerMsg] =
-    Await.result(system.systemActorOf(sequencerBehavior.setup, sequencerName), 5.seconds)
+  val sequencerName                          = s"SequencerActor${math.random()}"
+  val sequencerActor: ActorRef[SequencerMsg] = system.systemActorOf(sequencerBehavior.setup, sequencerName)
 
   private val completionPromise = Promise[SubmitResponse]()
   mockCommand(sequence.runId, completionPromise.future)

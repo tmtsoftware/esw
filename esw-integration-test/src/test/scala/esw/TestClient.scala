@@ -1,9 +1,8 @@
 package esw
 
-import akka.actor.Scheduler
 import akka.actor.typed.scaladsl.AskPattern.Askable
-import akka.actor.typed.{ActorSystem, SpawnProtocol}
-import akka.stream.typed.scaladsl.ActorMaterializer
+import akka.actor.typed.{ActorSystem, Scheduler, SpawnProtocol}
+import akka.stream.Materializer
 import akka.util.Timeout
 import csw.command.client.SequencerCommandServiceFactory
 import csw.command.client.internal.SequencerCommandServiceImpl
@@ -20,10 +19,10 @@ import scala.concurrent.duration._
 
 object TestClient extends App {
 
-  implicit val system: ActorSystem[SpawnProtocol] = ActorSystemFactory.remote(SpawnProtocol.behavior)
-  implicit val timeout: Timeout                   = Timeout(1.minute)
-  implicit val mat: ActorMaterializer             = ActorMaterializer()
-  val _locationService                            = HttpLocationServiceFactory.makeLocalClient
+  implicit val system: ActorSystem[SpawnProtocol.Command] = ActorSystemFactory.remote(SpawnProtocol())
+  implicit val timeout: Timeout                           = Timeout(1.minute)
+  implicit val mat: Materializer                          = Materializer(system)
+  val _locationService                                    = HttpLocationServiceFactory.makeLocalClient
   import system.executionContext
 
   implicit val sched: Scheduler = system.scheduler

@@ -40,7 +40,7 @@ class LocationServiceUtil(private[esw] val locationService: LocationService)(imp
     locationService
       .register(akkaRegistration)
       .map { result =>
-        addCoordinatedShutdownTask(CoordinatedShutdown(actorSystem.toUntyped), result)
+        addCoordinatedShutdownTask(CoordinatedShutdown(actorSystem.toClassic), result)
         Right(result.location.asInstanceOf[AkkaLocation])
       }
       .recoverWith(onFailure)
@@ -96,7 +96,7 @@ class LocationServiceUtil(private[esw] val locationService: LocationService)(imp
           case _ if remainingDuration.length <= 0 =>
             throw new RuntimeException(s"Could not find any sequencer with name: $packageId@$observingMode")
           case _ =>
-            after(remainingDuration min ResolveInterval, actorSystem.scheduler) {
+            after(remainingDuration min ResolveInterval, actorSystem.toClassic.scheduler) {
               resolveLoop(remainingDuration minus ResolveInterval)
             }
         }

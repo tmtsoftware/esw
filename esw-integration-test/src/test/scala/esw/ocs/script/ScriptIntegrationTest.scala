@@ -1,9 +1,8 @@
 package esw.ocs.script
 
-import akka.actor.Scheduler
 import akka.actor.testkit.typed.scaladsl.TestProbe
 import akka.actor.typed.scaladsl.AskPattern._
-import akka.actor.typed.{ActorRef, ActorSystem, SpawnProtocol}
+import akka.actor.typed.{ActorRef, ActorSystem, Scheduler, SpawnProtocol}
 import akka.util.Timeout
 import com.typesafe.config.ConfigFactory
 import csw.alarm.client.AlarmServiceFactory
@@ -39,7 +38,7 @@ class ScriptIntegrationTest extends ScalaTestFrameworkTestKit(EventServer, Alarm
 
   import frameworkTestKit.mat
 
-  implicit val actorSystem: ActorSystem[SpawnProtocol] = frameworkTestKit.actorSystem
+  implicit val actorSystem: ActorSystem[SpawnProtocol.Command] = frameworkTestKit.actorSystem
   implicit val scheduler: Scheduler                    = actorSystem.scheduler
 
   private implicit val askTimeout: Timeout = Timeouts.DefaultTimeout

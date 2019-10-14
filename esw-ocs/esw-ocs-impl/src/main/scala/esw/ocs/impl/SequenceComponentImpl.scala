@@ -1,8 +1,7 @@
 package esw.ocs.impl
 
 import akka.Done
-import akka.actor.Scheduler
-import akka.actor.typed.ActorRef
+import akka.actor.typed.{ActorRef, Scheduler}
 import akka.actor.typed.scaladsl.AskPattern._
 import akka.util.Timeout
 import esw.ocs.api.SequenceComponentApi

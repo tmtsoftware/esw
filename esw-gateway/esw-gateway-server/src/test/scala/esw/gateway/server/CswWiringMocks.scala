@@ -16,7 +16,7 @@ import org.mockito.MockitoSugar._
 
 import scala.concurrent.duration.FiniteDuration
 
-class CswWiringMocks(system: ActorSystem[SpawnProtocol]) {
+class CswWiringMocks(system: ActorSystem[SpawnProtocol.Command]) {
 
   val cswWiring: CswWiring       = mock[CswWiring]
   val actorRuntime: ActorRuntime = new ActorRuntime(system)

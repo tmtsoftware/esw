@@ -22,7 +22,7 @@ class AlarmGatewayTest extends ScalaTestFrameworkTestKit(AlarmServer) with WordS
   import frameworkTestKit._
   import frameworkWiring.{alarmServiceFactory, locationService}
 
-  implicit val typedSystem: ActorSystem[SpawnProtocol] = actorSystem
+  implicit val typedSystem: ActorSystem[SpawnProtocol.Command] = actorSystem
   private val port: Int                                = 6490
   private val gatewayWiring: GatewayWiring             = new GatewayWiring(Some(port))
 

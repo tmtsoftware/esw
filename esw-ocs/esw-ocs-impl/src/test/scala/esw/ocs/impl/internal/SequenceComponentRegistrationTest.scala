@@ -35,10 +35,10 @@ class SequenceComponentRegistrationTest extends ScalaTestWithActorTestKit with B
     val akkaLocation       = AkkaLocation(akkaConnection, prefix, uri)
 
     "return successful RegistrationResult | ESW-144" in {
-      implicit val system: ActorSystem[SpawnProtocol] = ActorSystem(SpawnProtocol.behavior, "test")
-      implicit val ec: ExecutionContext               = system.executionContext
-      val coordinatedShutdown                         = CoordinatedShutdown(system.toUntyped)
-      val locationService                             = mock[LocationService]
+      implicit val system: ActorSystem[SpawnProtocol.Command] = ActorSystem(SpawnProtocol(), "test")
+      implicit val ec: ExecutionContext                       = system.executionContext
+      val coordinatedShutdown                                 = CoordinatedShutdown(system.toClassic)
+      val locationService                                     = mock[LocationService]
 
       when(registrationResult.location).thenReturn(akkaLocation)
       when(registrationResult.unregister()).thenReturn(Future.successful(Done))
@@ -67,9 +67,9 @@ class SequenceComponentRegistrationTest extends ScalaTestWithActorTestKit with B
     }
 
     "map location service registration failure to RegistrationError | ESW-144" in {
-      implicit val system: ActorSystem[SpawnProtocol] = ActorSystem(SpawnProtocol.behavior, "test")
-      val errorMsg                                    = "error message"
-      val locationService                             = mock[LocationService]
+      implicit val system: ActorSystem[SpawnProtocol.Command] = ActorSystem(SpawnProtocol(), "test")
+      val errorMsg                                            = "error message"
+      val locationService                                     = mock[LocationService]
 
       when(locationService.register(any[AkkaRegistration]))
         .thenReturn(
@@ -104,10 +104,10 @@ class SequenceComponentRegistrationTest extends ScalaTestWithActorTestKit with B
     val locationService    = mock[LocationService]
 
     "return successful RegistrationResult | ESW-144" in {
-      implicit val system: ActorSystem[SpawnProtocol] = ActorSystem(SpawnProtocol.behavior, "test")
-      implicit val ec: ExecutionContext               = system.executionContext
-      val coordinatedShutdown                         = CoordinatedShutdown(system.toUntyped)
-      val retryCount                                  = 2
+      implicit val system: ActorSystem[SpawnProtocol.Command] = ActorSystem(SpawnProtocol(), "test")
+      implicit val ec: ExecutionContext                       = system.executionContext
+      val coordinatedShutdown                                 = CoordinatedShutdown(system.toClassic)
+      val retryCount                                          = 2
 
       when(locationService.register(any[AkkaRegistration])).thenReturn(Future(registrationResult))
       when(registrationResult.location).thenReturn(akkaLocation)
@@ -135,9 +135,9 @@ class SequenceComponentRegistrationTest extends ScalaTestWithActorTestKit with B
     }
 
     "retry if OtherLocationIsRegistered | ESW-144" in {
-      implicit val system: ActorSystem[SpawnProtocol] = ActorSystem(SpawnProtocol.behavior, "test")
-      val coordinatedShutdown                         = CoordinatedShutdown(system.toUntyped)
-      val locationService                             = mock[LocationService]
+      implicit val system: ActorSystem[SpawnProtocol.Command] = ActorSystem(SpawnProtocol(), "test")
+      val coordinatedShutdown                                 = CoordinatedShutdown(system.toClassic)
+      val locationService                                     = mock[LocationService]
 
       val errorMsg           = "error message"
       val retryCount         = 1
@@ -168,9 +168,9 @@ class SequenceComponentRegistrationTest extends ScalaTestWithActorTestKit with B
     }
 
     "not retry if RegistrationFailed | ESW-144" in {
-      implicit val system: ActorSystem[SpawnProtocol] = ActorSystem(SpawnProtocol.behavior, "test")
-      implicit val ec: ExecutionContext               = system.executionContext
-      val locationService                             = mock[LocationService]
+      implicit val system: ActorSystem[SpawnProtocol.Command] = ActorSystem(SpawnProtocol(), "test")
+      implicit val ec: ExecutionContext                       = system.executionContext
+      val locationService                                     = mock[LocationService]
 
       val errorMsg           = "error message"
       val retryCount         = 3
@@ -196,8 +196,8 @@ class SequenceComponentRegistrationTest extends ScalaTestWithActorTestKit with B
     }
 
     "map location service registration failure to RegistrationError if could not register after retry attempts | ESW-144" in {
-      implicit val system: ActorSystem[SpawnProtocol] = ActorSystem(SpawnProtocol.behavior, "test")
-      val locationService                             = mock[LocationService]
+      implicit val system: ActorSystem[SpawnProtocol.Command] = ActorSystem(SpawnProtocol(), "test")
+      val locationService                                     = mock[LocationService]
 
       val errorMsg   = "error message"
       val retryCount = 2

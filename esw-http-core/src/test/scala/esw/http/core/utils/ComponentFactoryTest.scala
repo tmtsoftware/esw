@@ -16,8 +16,8 @@ import scala.concurrent.duration.DurationInt
 import scala.concurrent.{Await, Future}
 
 class ComponentFactoryTest extends BaseTestSuite {
-  val actorSystem: ActorSystem[SpawnProtocol] = ActorSystem(SpawnProtocol.behavior, "test")
-  val actorRuntime                            = new ActorRuntime(actorSystem)
+  val actorSystem: ActorSystem[SpawnProtocol.Command] = ActorSystem(SpawnProtocol(), "test")
+  val actorRuntime                                    = new ActorRuntime(actorSystem)
   import actorRuntime._
 
   override protected def afterAll(): Unit = {

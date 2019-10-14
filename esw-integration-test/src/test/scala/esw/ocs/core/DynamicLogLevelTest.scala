@@ -20,7 +20,7 @@ import scala.concurrent.duration.DurationLong
 
 class DynamicLogLevelTest extends ScalaTestFrameworkTestKit with BaseTestSuite with LoggingCodecs with HttpCodecs {
   import frameworkTestKit._
-  private implicit val sys: ActorSystem[SpawnProtocol] = actorSystem
+  private implicit val sys: ActorSystem[SpawnProtocol.Command] = actorSystem
   override implicit def patienceConfig: PatienceConfig = PatienceConfig(10.seconds)
 
   private var wiring: SequencerWiring         = _

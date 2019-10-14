@@ -1,10 +1,9 @@
 package esw.ocs.impl.core
 
 import akka.Done
-import akka.actor.Scheduler
 import akka.actor.typed.scaladsl.AskPattern._
 import akka.actor.typed.scaladsl.Behaviors
-import akka.actor.typed.{ActorRef, ActorSystem, Behavior}
+import akka.actor.typed.{ActorRef, ActorSystem, Behavior, Scheduler}
 import akka.util.Timeout
 import csw.command.client.CommandResponseManager
 import csw.command.client.messages.sequencer.{SequencerMsg, SubmitSequenceAndWait}

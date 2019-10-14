@@ -14,7 +14,7 @@ object SequenceManagerBehaviour {
   def behaviour(
       locationService: LocationServiceUtil,
       sequencerAdminFactory: SequencerAdminFactoryApi
-  )(implicit actorSystem: ActorSystem[SpawnProtocol]): Behavior[SequenceManagerMsg] =
+  )(implicit actorSystem: ActorSystem[SpawnProtocol.Command]): Behavior[SequenceManagerMsg] =
     Behaviors.receiveMessage[SequenceManagerMsg] { msg =>
       import actorSystem.executionContext
       msg match {

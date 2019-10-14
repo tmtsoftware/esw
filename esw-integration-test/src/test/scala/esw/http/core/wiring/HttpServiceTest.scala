@@ -8,7 +8,7 @@ import akka.actor.typed.scaladsl.Behaviors
 import akka.http.scaladsl.model.{ContentTypes, HttpEntity}
 import akka.http.scaladsl.server.Directives.{complete, get, path}
 import akka.http.scaladsl.server.Route
-import akka.stream.typed.scaladsl.ActorMaterializer
+import akka.stream.Materializer
 import csw.location.api.exceptions.OtherLocationIsRegistered
 import csw.location.api.scaladsl.LocationService
 import csw.location.client.scaladsl.HttpLocationServiceFactory
@@ -25,7 +25,7 @@ class HttpServiceTest extends BaseTestSuite {
 
   private val testKit                              = LocationTestKit()
   implicit val system: ActorSystem[_]              = ActorSystem(Behaviors.empty, "test")
-  implicit val mat: ActorMaterializer              = ActorMaterializer()
+  implicit val mat: Materializer                   = Materializer(system)
   private val testLocationService: LocationService = HttpLocationServiceFactory.makeLocalClient
   private val route: Route = {
     path("hello") {

@@ -1,7 +1,7 @@
 package esw.ocs.impl.core
 
 import akka.actor.ActorSystem
-import akka.stream.{ActorMaterializer, Materializer}
+import akka.stream.Materializer
 import csw.params.commands.CommandResponse.Error
 import csw.params.commands.SequenceCommand
 import csw.params.core.models.Id
@@ -14,7 +14,7 @@ import scala.concurrent.Future
 
 class EngineTest extends BaseTestSuite {
   private implicit val test: ActorSystem = ActorSystem("test")
-  private implicit val mat: Materializer = ActorMaterializer()
+  private implicit val mat: Materializer = Materializer(test)
 
   private class Mocks {
     val sequenceOperator: SequenceOperator = mock[SequenceOperator]

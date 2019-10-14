@@ -1,8 +1,7 @@
 package esw.ocs.impl.core
 
-import akka.actor.Scheduler
 import akka.actor.typed.scaladsl.AskPattern._
-import akka.actor.typed.{ActorRef, ActorSystem}
+import akka.actor.typed.{ActorRef, ActorSystem, Scheduler}
 import akka.util.Timeout
 import csw.params.commands.CommandResponse.SubmitResponse
 import esw.ocs.api.models.Step

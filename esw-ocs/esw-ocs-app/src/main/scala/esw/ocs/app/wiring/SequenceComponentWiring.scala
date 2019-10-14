@@ -1,6 +1,6 @@
 package esw.ocs.app.wiring
 
-import akka.actor.typed.ActorRef
+import akka.actor.typed.{ActorRef, Props}
 import akka.actor.typed.SpawnProtocol.Spawn
 import akka.actor.typed.scaladsl.AskPattern.Askable
 import akka.util.Timeout
@@ -37,10 +37,14 @@ private[ocs] class SequenceComponentWiring(
     val sequenceComponentLogger: Logger = loggerFactory.getLogger
 
     sequenceComponentLogger.info(s"Starting sequence component with name: $sequenceComponentName")
-    typedSystem ? Spawn(
-      SequenceComponentBehavior.behavior(sequenceComponentName, sequenceComponentLogger, sequencerServerFactory),
-      sequenceComponentName
-    )
+    typedSystem ? { x =>
+      Spawn(
+        SequenceComponentBehavior.behavior(sequenceComponentName, sequenceComponentLogger, sequencerServerFactory),
+        sequenceComponentName,
+        Props.empty,
+        x
+      )
+    }
   }
 
   private lazy val sequenceComponentRegistration =

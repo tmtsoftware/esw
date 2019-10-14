@@ -33,7 +33,7 @@ import scala.concurrent.Future
 import scala.concurrent.duration.DurationLong
 
 class WebsocketRouteTest extends BaseTestSuite with ScalatestRouteTest with GatewayCodecs with HttpCodecs {
-  private val actorSystem: ActorSystem[SpawnProtocol] = ActorSystem(SpawnProtocol.behavior, "test-system")
+  private val actorSystem: ActorSystem[SpawnProtocol.Command] = ActorSystem(SpawnProtocol(), "test-system")
 
   private val cswCtxMocks = new CswWiringMocks(actorSystem)
   import cswCtxMocks._

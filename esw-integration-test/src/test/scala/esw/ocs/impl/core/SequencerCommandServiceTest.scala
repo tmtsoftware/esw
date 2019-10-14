@@ -15,7 +15,7 @@ import org.scalatest.time.SpanSugar.convertDoubleToGrainOfTime
 
 class SequencerCommandServiceTest extends ScalaTestFrameworkTestKit with BaseTestSuite {
   import frameworkTestKit._
-  private implicit val sys: ActorSystem[SpawnProtocol] = actorSystem
+  private implicit val sys: ActorSystem[SpawnProtocol.Command] = actorSystem
 
   private var wiring: SequencerWiring                                  = _
   private var sequencerLocation: Either[LoadScriptError, AkkaLocation] = _

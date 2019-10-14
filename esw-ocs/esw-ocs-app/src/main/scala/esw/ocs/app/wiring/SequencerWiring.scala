@@ -2,7 +2,7 @@ package esw.ocs.app.wiring
 import akka.Done
 import akka.actor.typed.SpawnProtocol.Spawn
 import akka.actor.typed.scaladsl.AskPattern.Askable
-import akka.actor.typed.{ActorRef, ActorSystem, SpawnProtocol}
+import akka.actor.typed.{ActorRef, ActorSystem, Props, SpawnProtocol}
 import akka.util.Timeout
 import com.typesafe.config.{Config, ConfigFactory}
 import csw.alarm.api.javadsl.IAlarmService
@@ -40,7 +40,7 @@ private[ocs] class SequencerWiring(val packageId: String, val observingMode: Str
   private[esw] lazy val sequencerConfig = SequencerConfig.from(config, packageId, observingMode, sequenceComponentName)
   import sequencerConfig._
 
-  lazy val actorSystem: ActorSystem[SpawnProtocol] = ActorSystemFactory.remote(SpawnProtocol.behavior, "sequencer-system")
+  lazy val actorSystem: ActorSystem[SpawnProtocol.Command] = ActorSystemFactory.remote(SpawnProtocol(), "sequencer-system")
 
   implicit lazy val timeout: Timeout = Timeouts.DefaultTimeout
   lazy val cswWiring: CswWiring      = CswWiring.make(actorSystem)
@@ -51,13 +51,17 @@ private[ocs] class SequencerWiring(val packageId: String, val observingMode: Str
   lazy val logger: Logger = loggerFactory.getLogger
 
   lazy val crmRef: ActorRef[CommandResponseManagerMessage] =
-    (actorSystem ? Spawn(CommandResponseManagerActor.behavior(CRMCacheProperties(), loggerFactory), "crm")).block
+    (actorSystem ? { x: ActorRef[ActorRef[CommandResponseManagerMessage]] =>
+      Spawn(CommandResponseManagerActor.behavior(CRMCacheProperties(), loggerFactory), "crm", Props.empty, x)
+    }).block
   lazy val commandResponseManager: CommandResponseManager =
     new CommandResponseManager(crmRef)(actorSystem)
 
   implicit lazy val actorRuntime: ActorRuntime = cswWiring.actorRuntime
 
-  lazy val sequencerRef: ActorRef[SequencerMsg] = (typedSystem ? Spawn(sequencerBehavior.setup, sequencerName)).block
+  lazy val sequencerRef: ActorRef[SequencerMsg] = (typedSystem ? { x: ActorRef[ActorRef[SequencerMsg]] =>
+    Spawn(sequencerBehavior.setup, sequencerName, Props.empty, x)
+  }).block
 
   //Pass lambda to break circular dependency shown below.
   //SequencerRef -> Script -> cswServices -> SequencerOperator -> SequencerRef

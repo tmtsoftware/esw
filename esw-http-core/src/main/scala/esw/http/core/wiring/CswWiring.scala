@@ -26,8 +26,8 @@ import scala.concurrent.{ExecutionContext, Future}
  * Represents a class that lazily initializes necessary instances to run a component(s)
  */
 class CswWiring() {
-  lazy val actorSystem: ActorSystem[SpawnProtocol] = ActorSystemFactory.remote(SpawnProtocol.behavior, "service-system")
-  lazy val actorRuntime: ActorRuntime              = new ActorRuntime(actorSystem)
+  lazy val actorSystem: ActorSystem[SpawnProtocol.Command] = ActorSystemFactory.remote(SpawnProtocol(), "service-system")
+  lazy val actorRuntime: ActorRuntime                      = new ActorRuntime(actorSystem)
   import actorRuntime._
 
   lazy val locationService: LocationService = HttpLocationServiceFactory.makeLocalClient(actorSystem, actorRuntime.mat)
@@ -62,7 +62,7 @@ class CswWiring() {
 }
 
 object CswWiring {
-  def make(_actorSystem: ActorSystem[SpawnProtocol]): CswWiring = new CswWiring() {
-    override lazy val actorSystem: ActorSystem[SpawnProtocol] = _actorSystem
+  def make(_actorSystem: ActorSystem[SpawnProtocol.Command]): CswWiring = new CswWiring() {
+    override lazy val actorSystem: ActorSystem[SpawnProtocol.Command] = _actorSystem
   }
 }
