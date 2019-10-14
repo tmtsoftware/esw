@@ -33,7 +33,7 @@ pipeline {
 
         stage('Test - Scala') {
             steps {
-                sh "sbt -DenableCoverage=true -DgenerateStoryReport=true ';set every enableFatalWarnings := true; clean; test:test'"
+                sh "sbt -DenableCoverage=true -DgenerateStoryReport=true test:test"
                 sh "sbt -DenableCoverage=true -DgenerateStoryReport=true esw-integration-test/test"
             }
             post {
