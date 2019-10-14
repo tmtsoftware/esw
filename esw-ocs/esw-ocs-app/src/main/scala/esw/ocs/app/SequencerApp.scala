@@ -2,7 +2,7 @@ package esw.ocs.app
 
 import akka.actor.typed.ActorRef
 import akka.actor.typed.scaladsl.AskPattern.Askable
-import caseapp.{CommandApp, RemainingArgs}
+import caseapp.{CommandApp, RemainingArgs, core}
 import csw.location.api.extensions.URIExtension.RichURI
 import csw.location.client.utils.LocationServerStatus
 import csw.location.models.AkkaLocation
@@ -30,6 +30,14 @@ object SequencerApp extends CommandApp[SequencerAppCommand] {
   def run(command: SequencerAppCommand, args: RemainingArgs): Unit = {
     LocationServerStatus.requireUpLocally()
     run(command)
+  }
+
+  override def error(message: core.Error): Nothing = {
+    println(message.message)
+    print(beforeCommandMessages.help)
+    println(s"Available commands: ${commands.mkString(", ")}\n")
+    println(s"Type  $progName command --help  for help on an individual command")
+    exit(255)
   }
 
   def run(command: SequencerAppCommand, enableLogging: Boolean = true): Unit = {
