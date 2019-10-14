@@ -40,21 +40,27 @@ script {
 
     handleSetup("command-4") { command ->
         // try sending concrete sequence
-        val command4 = Setup(
+        val setupCommand = Setup(
                 Id("testCommandIdString123"),
                 Prefix("TCS.test"),
-                CommandName("command-to-assert-on"),
+                CommandName("command-3"),
                 Option.apply(null),
                 HashSet()
         )
         val sequence = Sequence(
                 Id("testSequenceIdString123"),
-                CollectionConverters.asScala(Collections.singleton<SequenceCommand>(command4)).toSeq()
+                CollectionConverters.asScala(Collections.singleton<SequenceCommand>(setupCommand)).toSeq()
         )
 
         // ESW-145, ESW-195
-        submitSequence("TCS", "testObservingMode4", sequence)
+        submitSequence("tcs", "darknight", sequence)
         addOrUpdateCommand(CommandResponse.Completed(command.runId()))
+    }
+
+    handleSetup("test-sequencer-hierarchy") {
+        delay(5000)
+
+        addOrUpdateCommand(CommandResponse.Completed(it.runId()))
     }
 
     handleSetup("fail-command") { command ->
