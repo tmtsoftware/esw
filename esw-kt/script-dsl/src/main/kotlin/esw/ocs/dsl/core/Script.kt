@@ -109,10 +109,6 @@ sealed class ScriptDslKt : CswHighLevelDsl {
         }
     }
 
-    suspend fun resolveSequencer(sequencerId: String, observingMode: String): AkkaLocation =
-            LocationServiceUtil(locationService.asScala(), actorSystem)
-                    .jResolveSequencer(sequencerId, observingMode).await()
-
     suspend fun submitSequence(sequencerName: String, observingMode: String, sequence: Sequence): SubmitResponse =
             this.scriptDsl.submitSequence(sequencerName, observingMode, sequence).await()
 
