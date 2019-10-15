@@ -12,22 +12,14 @@ import kotlin.time.milliseconds
 
 object aosq {
     val prefix = "aoesw.aosq"
-    val name = "ao-sequencer"
-}
-
-object oiwfsPoaAssembly {
-    val prefix = "iris.oiwfs.poa"
-    val name = "oiwfs-poa-assembly"
 }
 
 object oiwfsDetectorAssembly {
-    val prefix = "iris.oiwfs.detector"
     val name = "oiwfs-detector-assembly"
 }
 
 object rtcAssembly {
     val prefix = "nfiraos.rtc"
-    val name = "nfiraos-rtc-assembly"
 }
 
 script {
@@ -69,6 +61,7 @@ script {
     val oiwfsLoopKey = choiceKey("oiwfsPoa", oiwfsLoopStatesChoices)
 
     fun handleOiwfsLoopOpen(oiwfsProbeNum: Int) {
+        println(oiwfsProbeNum)
         // Do something
     }
 
@@ -145,8 +138,10 @@ script {
                         ttfFluxLow -> increaseExposureTime() // period tbd
                         isOffsetRequired(xoffset, yoffset) -> {
                             val offsetResponse = offsetTcs(xoffset, yoffset, ttfProbeNum, command.obsId)
+                            println("offsetResponse = $offsetResponse")
                             timesGuideStarLocked = 0
                         }
+                        ttfFluxHigh -> println() // do something
                         else -> timesGuideStarLocked += 1
                     }
 
