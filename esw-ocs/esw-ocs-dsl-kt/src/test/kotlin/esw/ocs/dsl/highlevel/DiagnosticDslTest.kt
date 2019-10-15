@@ -11,14 +11,15 @@ import esw.ocs.api.SequencerAdminApi
 import esw.ocs.api.SequencerAdminFactoryApi
 import esw.ocs.api.protocol.`Ok$`
 import esw.ocs.dsl.sequence_manager.LocationServiceUtil
-import io.kotlintest.specs.WordSpec
 import io.mockk.every
 import io.mockk.mockk
 import io.mockk.verify
-import java.util.concurrent.CompletableFuture
+import kotlinx.coroutines.runBlocking
+import org.junit.jupiter.api.Test
 import scala.concurrent.Future
+import java.util.concurrent.CompletableFuture
 
-class DiagnosticDslTest : WordSpec(), DiagnosticDsl {
+class DiagnosticDslTest : DiagnosticDsl {
 
     private val componentName = "testComponent1"
     private val sequencerId = "testSequencer"
@@ -35,61 +36,61 @@ class DiagnosticDslTest : WordSpec(), DiagnosticDsl {
 
     override val commonUtils: CommonUtils = CommonUtils(sequencerAdminFactoryApi, locationServiceUtil)
 
-    init {
-        "DiagnosticDsl" should {
-            "diagnosticModeForComponent should resolve component ref and send DiagnosticMode msg | ESW-118" {
-                val diagnosticMode = DiagnosticMode(startTime, hint)
+    @Test
+    fun `DiagnosticDsl should diagnosticModeForComponent should resolve component ref and send DiagnosticMode msg | ESW-118`() = runBlocking {
+        val diagnosticMode = DiagnosticMode(startTime, hint)
 
-                every { componentRef.tell(diagnosticMode) }.answers { Unit }
-                every { locationServiceUtil.jResolveComponentRef(componentName, componentType) }
-                    .answers { CompletableFuture.completedFuture(componentRef) }
+        every { componentRef.tell(diagnosticMode) }.answers { Unit }
+        every { locationServiceUtil.jResolveComponentRef(componentName, componentType) }
+                .answers { CompletableFuture.completedFuture(componentRef) }
 
-                diagnosticModeForComponent(componentName, componentType, startTime, hint)
+        diagnosticModeForComponent(componentName, componentType, startTime, hint)
 
-                verify { locationServiceUtil.jResolveComponentRef(componentName, componentType) }
-                verify { componentRef.tell(diagnosticMode) }
-            }
+        verify { locationServiceUtil.jResolveComponentRef(componentName, componentType) }
+        verify { componentRef.tell(diagnosticMode) }
+    }
 
-            "operationsModeForComponent should resolve component ref and send OperationsMode msg | ESW-118" {
-                val opsMode = `OperationsMode$`.`MODULE$`
+    @Test
+    fun `operationsModeForComponent should resolve component ref and send OperationsMode msg | ESW-118`() = runBlocking {
+        val opsMode = `OperationsMode$`.`MODULE$`
 
-                every { componentRef.tell(opsMode) }.answers { Unit }
-                every { locationServiceUtil.jResolveComponentRef(componentName, componentType) }
-                    .answers { CompletableFuture.completedFuture(componentRef) }
+        every { componentRef.tell(opsMode) }.answers { Unit }
+        every { locationServiceUtil.jResolveComponentRef(componentName, componentType) }
+                .answers { CompletableFuture.completedFuture(componentRef) }
 
-                operationsModeForComponent(componentName, componentType)
+        operationsModeForComponent(componentName, componentType)
 
-                verify { locationServiceUtil.jResolveComponentRef(componentName, componentType) }
-                verify { componentRef.tell(opsMode) }
-            }
+        verify { locationServiceUtil.jResolveComponentRef(componentName, componentType) }
+        verify { componentRef.tell(opsMode) }
+    }
 
-            "diagnosticModeForSequencer should delegate to sequencerAdminApi.diagnosticMode | ESW-143" {
+    @Test
+    fun `diagnosticModeForSequencer should delegate to sequencerAdminApi#diagnosticMode | ESW-143`() = runBlocking {
 
-                // return value gets discarded
-                every { sequencerAdminApi.diagnosticMode(startTime, hint) }
-                    .answers { Future.successful(`Ok$`.`MODULE$`) }
+        // return value gets discarded
+        every { sequencerAdminApi.diagnosticMode(startTime, hint) }
+                .answers { Future.successful(`Ok$`.`MODULE$`) }
 
-                every { sequencerAdminFactoryApi.jMake(sequencerId, observingMode) }
-                    .returns(CompletableFuture.completedFuture(sequencerAdminApi))
+        every { sequencerAdminFactoryApi.jMake(sequencerId, observingMode) }
+                .returns(CompletableFuture.completedFuture(sequencerAdminApi))
 
-                diagnosticModeForSequencer(sequencerId, observingMode, startTime, hint)
+        diagnosticModeForSequencer(sequencerId, observingMode, startTime, hint)
 
-                verify { sequencerAdminFactoryApi.jMake(sequencerId, observingMode) }
-                verify { sequencerAdminApi.diagnosticMode(startTime, hint) }
-            }
+        verify { sequencerAdminFactoryApi.jMake(sequencerId, observingMode) }
+        verify { sequencerAdminApi.diagnosticMode(startTime, hint) }
+    }
 
-            "operationsModeForSequencer should delegate to sequencerAdminApi.operationsMode | ESW-143" {
+    @Test
+    fun `operationsModeForSequencer should delegate to sequencerAdminApi#operationsMode | ESW-143`() = runBlocking {
 
-                every { sequencerAdminApi.operationsMode() }
-                    .answers { Future.successful(`Ok$`.`MODULE$`) }
-                every { sequencerAdminFactoryApi.jMake(sequencerId, observingMode) }
-                    .returns(CompletableFuture.completedFuture(sequencerAdminApi))
+        every { sequencerAdminApi.operationsMode() }
+                .answers { Future.successful(`Ok$`.`MODULE$`) }
+        every { sequencerAdminFactoryApi.jMake(sequencerId, observingMode) }
+                .returns(CompletableFuture.completedFuture(sequencerAdminApi))
 
-                operationsModeForSequencer(sequencerId, observingMode)
+        operationsModeForSequencer(sequencerId, observingMode)
 
-                verify { sequencerAdminFactoryApi.jMake(sequencerId, observingMode) }
-                verify { sequencerAdminApi.operationsMode() }
-            }
-        }
+        verify { sequencerAdminFactoryApi.jMake(sequencerId, observingMode) }
+        verify { sequencerAdminApi.operationsMode() }
     }
 }

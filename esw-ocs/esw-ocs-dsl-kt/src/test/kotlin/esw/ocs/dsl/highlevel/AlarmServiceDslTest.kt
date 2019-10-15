@@ -14,8 +14,9 @@ import io.mockk.verify
 import java.util.concurrent.CompletableFuture.completedFuture
 import kotlin.coroutines.EmptyCoroutineContext
 import kotlinx.coroutines.CoroutineScope
+import org.junit.jupiter.api.Test
 
-class AlarmServiceDslTest : WordSpec(), AlarmServiceDsl {
+class AlarmServiceDslTest : AlarmServiceDsl {
 
     private val mockedAlarmService: IAlarmService = mockk()
 
@@ -23,23 +24,20 @@ class AlarmServiceDslTest : WordSpec(), AlarmServiceDsl {
     override val alarmService: IAlarmService = mockedAlarmService
     override val alarmSeverityData: AlarmSeverityData = AlarmSeverityData(HashMap())
 
-    init {
-        "AlarmServiceDsl" should {
-            "set severity of alarms | ESW-125" {
+    @Test
+    fun `AlarmServiceDsl should set severity of alarms | ESW-125`() {
 
-                val alarmKey = AlarmKey(TCS, "filter_assembly", "temperature")
-                val severity = Major
+        val alarmKey = AlarmKey(TCS, "filter_assembly", "temperature")
+        val severity = Major
 
-                every {
-                    mockedAlarmService.setSeverity(alarmKey, severity)
-                } answers { completedFuture(done()) }
+        every {
+            mockedAlarmService.setSeverity(alarmKey, severity)
+        } answers { completedFuture(done()) }
 
-                setSeverity(alarmKey, severity)
+        setSeverity(alarmKey, severity)
 
-                eventually(5.seconds) {
-                    verify { mockedAlarmService.setSeverity(alarmKey, severity) }
-                }
-            }
+        eventually(5.seconds) {
+            verify { mockedAlarmService.setSeverity(alarmKey, severity) }
         }
     }
 }

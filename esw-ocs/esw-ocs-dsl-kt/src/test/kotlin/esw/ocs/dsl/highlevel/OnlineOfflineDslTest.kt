@@ -11,14 +11,15 @@ import esw.ocs.api.SequencerAdminApi
 import esw.ocs.api.SequencerAdminFactoryApi
 import esw.ocs.api.protocol.`Ok$`
 import esw.ocs.dsl.sequence_manager.LocationServiceUtil
-import io.kotlintest.specs.WordSpec
 import io.mockk.every
 import io.mockk.mockk
 import io.mockk.verify
-import java.util.concurrent.CompletableFuture
+import kotlinx.coroutines.runBlocking
+import org.junit.jupiter.api.Test
 import scala.concurrent.Future
+import java.util.concurrent.CompletableFuture
 
-class OnlineOfflineDslTest : WordSpec(), OnlineOfflineDsl {
+class OnlineOfflineDslTest : OnlineOfflineDsl {
 
     private val componentName = "testComponent1"
     private val sequencerId = "testSequencer"
@@ -32,61 +33,61 @@ class OnlineOfflineDslTest : WordSpec(), OnlineOfflineDsl {
 
     override val commonUtils: CommonUtils = CommonUtils(sequencerAdminFactoryApi, locationServiceUtil)
 
-    init {
-        "OnlineOfflineDsl" should {
-            "goOnlineModeForComponent should resolve component ref and send GoOnline msg | ESW-236" {
-                val goOnlineMsg = Lifecycle(`GoOnline$`.`MODULE$`)
+    @Test
+    fun `OnlineOfflineDsl should goOnlineModeForComponent should resolve component ref and send GoOnline msg | ESW-236`() = runBlocking {
+        val goOnlineMsg = Lifecycle(`GoOnline$`.`MODULE$`)
 
-                every { componentRef.tell(goOnlineMsg) }.answers { Unit }
-                every { locationServiceUtil.jResolveComponentRef(componentName, componentType) }
-                    .answers { CompletableFuture.completedFuture(componentRef) }
+        every { componentRef.tell(goOnlineMsg) }.answers { Unit }
+        every { locationServiceUtil.jResolveComponentRef(componentName, componentType) }
+                .answers { CompletableFuture.completedFuture(componentRef) }
 
-                goOnlineModeForComponent(componentName, componentType)
+        goOnlineModeForComponent(componentName, componentType)
 
-                verify { locationServiceUtil.jResolveComponentRef(componentName, componentType) }
-                verify { componentRef.tell(goOnlineMsg) }
-            }
+        verify { locationServiceUtil.jResolveComponentRef(componentName, componentType) }
+        verify { componentRef.tell(goOnlineMsg) }
+    }
 
-            "goOfflineModeForComponent should resolve component ref and send GoOffline msg | ESW-236" {
-                val goOfflineMsg = Lifecycle(`GoOffline$`.`MODULE$`)
+    @Test
+    fun `goOfflineModeForComponent should resolve component ref and send GoOffline msg | ESW-236`() = runBlocking {
+        val goOfflineMsg = Lifecycle(`GoOffline$`.`MODULE$`)
 
-                every { componentRef.tell(goOfflineMsg) }.answers { Unit }
-                every { locationServiceUtil.jResolveComponentRef(componentName, componentType) }
-                    .answers { CompletableFuture.completedFuture(componentRef) }
+        every { componentRef.tell(goOfflineMsg) }.answers { Unit }
+        every { locationServiceUtil.jResolveComponentRef(componentName, componentType) }
+                .answers { CompletableFuture.completedFuture(componentRef) }
 
-                goOfflineModeForComponent(componentName, componentType)
+        goOfflineModeForComponent(componentName, componentType)
 
-                verify { locationServiceUtil.jResolveComponentRef(componentName, componentType) }
-                verify { componentRef.tell(goOfflineMsg) }
-            }
+        verify { locationServiceUtil.jResolveComponentRef(componentName, componentType) }
+        verify { componentRef.tell(goOfflineMsg) }
+    }
 
-            "goOnlineModeForSequencer should delegate to sequencerAdminApi.goOnline | ESW-236" {
+    @Test
+    fun `goOnlineModeForSequencer should delegate to sequencerAdminApi#goOnline | ESW-236`() = runBlocking {
 
-                // return value gets discarded
-                every { sequencerAdminApi.goOnline() }
-                    .answers { Future.successful(`Ok$`.`MODULE$`) }
+        // return value gets discarded
+        every { sequencerAdminApi.goOnline() }
+                .answers { Future.successful(`Ok$`.`MODULE$`) }
 
-                every { sequencerAdminFactoryApi.jMake(sequencerId, observingMode) }
-                    .returns(CompletableFuture.completedFuture(sequencerAdminApi))
+        every { sequencerAdminFactoryApi.jMake(sequencerId, observingMode) }
+                .returns(CompletableFuture.completedFuture(sequencerAdminApi))
 
-                goOnlineModeForSequencer(sequencerId, observingMode)
+        goOnlineModeForSequencer(sequencerId, observingMode)
 
-                verify { sequencerAdminFactoryApi.jMake(sequencerId, observingMode) }
-                verify { sequencerAdminApi.goOnline() }
-            }
+        verify { sequencerAdminFactoryApi.jMake(sequencerId, observingMode) }
+        verify { sequencerAdminApi.goOnline() }
+    }
 
-            "goOfflineModeForSequencer should delegate to sequencerAdminApi.goOffline | ESW-236" {
+    @Test
+    fun `goOfflineModeForSequencer should delegate to sequencerAdminApi#goOffline | ESW-236`() = runBlocking {
 
-                every { sequencerAdminApi.goOffline() }
-                    .answers { Future.successful(`Ok$`.`MODULE$`) }
-                every { sequencerAdminFactoryApi.jMake(sequencerId, observingMode) }
-                    .returns(CompletableFuture.completedFuture(sequencerAdminApi))
+        every { sequencerAdminApi.goOffline() }
+                .answers { Future.successful(`Ok$`.`MODULE$`) }
+        every { sequencerAdminFactoryApi.jMake(sequencerId, observingMode) }
+                .returns(CompletableFuture.completedFuture(sequencerAdminApi))
 
-                goOfflineModeForSequencer(sequencerId, observingMode)
+        goOfflineModeForSequencer(sequencerId, observingMode)
 
-                verify { sequencerAdminFactoryApi.jMake(sequencerId, observingMode) }
-                verify { sequencerAdminApi.goOffline() }
-            }
-        }
+        verify { sequencerAdminFactoryApi.jMake(sequencerId, observingMode) }
+        verify { sequencerAdminApi.goOffline() }
     }
 }
