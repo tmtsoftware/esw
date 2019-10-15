@@ -44,30 +44,30 @@ class EventServiceDslTest : WordSpec(), EventServiceDsl {
             "systemEvent should return a SystemEvent created with given parameters | ESW-120" {
                 val eventName = "systemEvent1"
                 val eventPrefix = "TCS.filter.wheel"
-                val systemEvent = systemEvent(eventPrefix, eventName)
+                val actualEvent = systemEvent(eventPrefix, eventName)
 
                 // Verify that  event with provided prefix and eventName is created.
-                systemEvent shouldBe SystemEvent(
-                    systemEvent.eventId(),
+                actualEvent shouldBe SystemEvent(
+                    actualEvent.eventId(),
                     Prefix(eventPrefix),
                     EventName(eventName),
-                    systemEvent.eventTime(),
-                    systemEvent.paramSet()
+                    actualEvent.eventTime(),
+                    actualEvent.paramSet()
                 )
             }
 
             "observeEvent should return a ObserveEvent created with given parameters | ESW-120" {
                 val eventName = "observeEvent1"
                 val eventPrefix = "TCS.filter.wheel"
-                val observeEvent = observeEvent(eventPrefix, eventName)
+                val actualEvent = observeEvent(eventPrefix, eventName)
 
                 // Verify that event with provided prefix and eventName is created.
-                observeEvent shouldBe ObserveEvent(
-                    observeEvent.eventId(),
+                actualEvent shouldBe ObserveEvent(
+                    actualEvent.eventId(),
                     Prefix(eventPrefix),
                     EventName(eventName),
-                    observeEvent.eventTime(),
-                    observeEvent.paramSet()
+                    actualEvent.eventTime(),
+                    actualEvent.paramSet()
                 )
             }
 
@@ -87,6 +87,30 @@ class EventServiceDslTest : WordSpec(), EventServiceDsl {
                 every { eventSubscriber.subscribeAsync(eventKeys, any()) }.answers { eventSubscription }
                 onEvent(key) { eventCallback } shouldBe eventSubscription
                 verify { eventSubscriber.subscribeAsync(eventKeys, any()) }
+            }
+
+            "cancel should delegate to IEventSubscription.unsubscribe() | ESW-120" {
+                every { eventSubscriber.subscribeAsync(eventKeys, any()) }.answers { eventSubscription }
+                every {eventSubscription.unsubscribe()}.answers{ CompletableFuture.completedFuture(done()) }
+
+                val subscription: IEventSubscription = onEvent(key) { eventCallback }
+                subscription shouldBe eventSubscription
+                verify { eventSubscriber.subscribeAsync(eventKeys, any()) }
+
+                subscription.cancel()
+                verify {eventSubscription.unsubscribe()}
+            }
+
+            "completed should delegate to IEventSubscription.ready() | ESW-120" {
+                every { eventSubscriber.subscribeAsync(eventKeys, any()) }.answers { eventSubscription }
+                every {eventSubscription.ready()}.answers{ CompletableFuture.completedFuture(done()) }
+
+                val subscription: IEventSubscription = onEvent(key) { eventCallback }
+                subscription shouldBe eventSubscription
+                verify { eventSubscriber.subscribeAsync(eventKeys, any()) }
+
+                subscription.completed()
+                verify {eventSubscription.ready()}
             }
 
             "getEvent should delegate to subscriber.get | ESW-120" {
