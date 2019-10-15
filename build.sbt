@@ -93,7 +93,7 @@ lazy val `esw-integration-test` = project
 
 lazy val `esw-ocs-dsl` = project
   .in(file("esw-ocs/esw-ocs-dsl"))
-  .settings(libraryDependencies ++= Dependencies.Utils.value)
+  .settings(libraryDependencies ++= Dependencies.OcsDsl.value)
   .dependsOn(`esw-ocs-api`.jvm % "compile->compile;test->test", `esw-test-reporter` % Test)
 
 lazy val `esw-gateway` = project
