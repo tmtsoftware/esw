@@ -85,6 +85,16 @@ object Dependencies {
     )
   )
 
+  val OcsDslKt: Def.Initialize[Seq[ModuleID]] = Def.setting(
+    Seq(
+      Kotlin.`stdlib-jdk8`,
+      Kotlin.`script-runtime`,
+      Kotlin.`coroutines-jdk8`,
+      Kotlin.mockk % Test,
+      Kotlin.kotlintest % Test
+    )
+  )
+
   val EswGatewayApi: Def.Initialize[Seq[ModuleID]] = Def.setting(
     Seq(
       Libs.`msocket-api`.value,

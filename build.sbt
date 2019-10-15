@@ -96,6 +96,16 @@ lazy val `esw-ocs-dsl` = project
   .settings(libraryDependencies ++= Dependencies.OcsDsl.value)
   .dependsOn(`esw-ocs-api`.jvm % "compile->compile;test->test", `esw-test-reporter` % Test)
 
+lazy val `esw-ocs-dsl-kt` = project
+  .in(file("esw-ocs/esw-ocs-dsl-kt"))
+  .enablePlugins(KotlinPlugin)
+  .settings(
+    kotlincOptions ++= Seq("-Xuse-experimental=kotlin.time.ExperimentalTime", "-jvm-target", "1.8")
+  )
+  .settings(libraryDependencies ++= Dependencies.OcsDslKt.value)
+  .dependsOn(`esw-ocs-dsl`)
+
+
 lazy val `esw-gateway` = project
   .aggregate(
     `esw-gateway-api`.jvm,
@@ -146,3 +156,11 @@ lazy val `esw-sm` = project
   )
 /* ================= Paradox Docs ============== */
 lazy val docs = project.enablePlugins(NoPublish, ParadoxMaterialSitePlugin)
+
+lazy val `examples` = project
+  .in(file("examples"))
+  .enablePlugins(KotlinPlugin)
+  .settings(
+    kotlincOptions ++= Seq("-Xuse-experimental=kotlin.time.ExperimentalTime", "-jvm-target", "1.8")
+  )
+  .dependsOn(`esw-ocs-dsl-kt`)
