@@ -7,7 +7,6 @@ import csw.alarm.models.Key.AlarmKey
 import csw.params.javadsl.JSubsystem.TCS
 import io.kotlintest.eventually
 import io.kotlintest.seconds
-import io.kotlintest.specs.WordSpec
 import io.mockk.every
 import io.mockk.mockk
 import io.mockk.verify

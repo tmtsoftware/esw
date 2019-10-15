@@ -8,7 +8,6 @@ import csw.event.api.javadsl.IEventSubscription
 import csw.params.core.models.Prefix
 import csw.params.events.*
 import io.kotlintest.shouldBe
-import io.kotlintest.specs.WordSpec
 import io.mockk.every
 import io.mockk.mockk
 import io.mockk.verify

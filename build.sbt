@@ -14,7 +14,8 @@ lazy val githubReleases: Seq[ProjectReference] = Seq(`esw-ocs-app`)
 lazy val unidocExclusions: Seq[ProjectReference] = Seq(
   `esw-integration-test`,
   `esw-ocs-api`.js,
-  `esw-gateway-api`.js
+  `esw-gateway-api`.js,
+  examples
 )
 
 val enableCoverage         = sys.props.get("enableCoverage").contains("true")
@@ -35,6 +36,7 @@ lazy val `esw-ocs` = project
     `esw-ocs-api`.js,
     `esw-ocs-api`.jvm,
     `esw-ocs-dsl`,
+    `esw-ocs-dsl-kt`,
     `esw-ocs-impl`,
     `esw-ocs-app`
   )

@@ -26,7 +26,7 @@ class LoopTest {
 
         counter.get() shouldBe 5
         // default interval is 50ms, loop should run 5 times which means it should take around 50*5=250ms
-        loopTime shouldBeInRange 250L..300L
+        loopTime shouldBeInRange 250L..350L
     }
 
     @Test
@@ -81,7 +81,7 @@ class LoopTest {
 
         counter.get() shouldBe 5
         // default interval is 50ms, loop should run 5 times which means it should take around 50*5=250ms
-        loopTime shouldBeInRange 250L..300L
+        loopTime shouldBeInRange 250L..350L
     }
 
     @Test
