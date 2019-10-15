@@ -7,8 +7,6 @@ object Libs {
   private val SilencerVersion      = "1.4.2"
   private val MSocketVersion       = "5d45d67"
 
-  val `examples` = "com.github.tmtsoftware.script-dsl" % "examples" % "0.1.0-SNAPSHOT"
-
   val `silencer-lib`       = "com.github.ghik" %% "silencer-lib" % SilencerVersion % Compile
   val `silencer-plugin`    = compilerPlugin("com.github.ghik" %% "silencer-plugin" % SilencerVersion)
   val `case-app`           = "com.github.alexarchambault" %% "case-app" % "2.0.0-M9"
@@ -21,6 +19,7 @@ object Libs {
   val `msocket-api`        = dep("com.github.tmtsoftware.msocket" %%% "msocket-api" % MSocketVersion)
   val `msocket-impl-jvm`   = "com.github.tmtsoftware.msocket" %% "msocket-impl-jvm" % MSocketVersion
   val `caffeine`           = "com.github.ben-manes.caffeine" % "caffeine" % "2.8.0"
+  val `jupiter-interface`  = "net.aichler" % "jupiter-interface" % "0.8.3"
 }
 
 object Csw {
@@ -73,4 +72,15 @@ object Borer {
   val `borer-core`        = Org %% "borer-core"        % Version
   val `borer-derivation`  = Org %% "borer-derivation"  % Version
   val `borer-compat-akka` = Org %% "borer-compat-akka" % Version
+}
+
+object Kotlin {
+  private val KotlinVersion = "1.3.50"
+
+  val `stdlib-jdk8`    = "org.jetbrains.kotlin" % "kotlin-stdlib-jdk8"    % KotlinVersion
+
+  val `coroutines-jdk8` = "org.jetbrains.kotlinx" % "kotlinx-coroutines-jdk8" % "1.3.2"
+
+  val kotlintest = "io.kotlintest" % "kotlintest-core" % "3.4.2"
+  val mockk      = "io.mockk"      % "mockk"           % "1.9.3"
 }

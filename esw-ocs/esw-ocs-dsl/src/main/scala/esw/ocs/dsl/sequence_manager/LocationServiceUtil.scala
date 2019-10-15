@@ -108,7 +108,4 @@ class LocationServiceUtil(private[esw] val locationService: LocationService)(imp
   def jResolveComponentRef(componentName: String, componentType: ComponentType): CompletionStage[ActorRef[ComponentMessage]] =
     resolveComponentRef(componentName, componentType).toJava
 
-  def jResolveSequencer(packageId: String, observingMode: String): CompletionStage[AkkaLocation] =
-    resolveSequencer(packageId, observingMode).toJava
-
 }

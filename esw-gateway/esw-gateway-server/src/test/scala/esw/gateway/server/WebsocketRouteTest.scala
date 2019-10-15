@@ -43,7 +43,7 @@ class WebsocketRouteTest extends BaseTestSuite with ScalatestRouteTest with Gate
   implicit override val patienceConfig: PatienceConfig = PatienceConfig(10.seconds)
 
   private val eventApi: EventApi     = new EventImpl(eventService, eventSubscriberUtil)
-  private val commandApi: CommandApi = new CommandImpl(componentFactory.commandService)
+  private val commandApi: CommandApi = new CommandImpl(commandServiceFactory)
   private val websocketHandlerImpl   = new WebsocketHandlerImpl(commandApi, eventApi)
   private val route                  = new Routes(null, websocketHandlerImpl, logger).route
 
@@ -64,7 +64,7 @@ class WebsocketRouteTest extends BaseTestSuite with ScalatestRouteTest with Gate
       val componentId   = ComponentId(componentName, componentType)
       val queryFinal    = QueryFinal(componentId, runId)
 
-      when(componentFactory.commandService(componentId)).thenReturn(Future.successful(commandService))
+      when(commandServiceFactory.commandService(componentId)).thenReturn(Future.successful(Right(commandService)))
       when(commandService.queryFinal(runId)(100.hours)).thenReturn(Future.successful(Completed(runId)))
 
       WS("/websocket-endpoint", wsClient.flow) ~> route ~> check {
@@ -84,8 +84,8 @@ class WebsocketRouteTest extends BaseTestSuite with ScalatestRouteTest with Gate
 
       val errmsg = s"Could not find component $componentName of type - $componentType"
 
-      when(componentFactory.commandService(componentId))
-        .thenReturn(Future.failed(new IllegalArgumentException(errmsg)))
+      when(commandServiceFactory.commandService(componentId))
+        .thenReturn(Future.successful(Left(InvalidComponent(errmsg))))
 
       WS("/websocket-endpoint", wsClient.flow) ~> route ~> check {
         wsClient.sendMessage(JsonText.strictMessage(queryFinal))
@@ -109,7 +109,7 @@ class WebsocketRouteTest extends BaseTestSuite with ScalatestRouteTest with Gate
       val currentStateSubscription = mock[CurrentStateSubscription]
       val currentStateStream       = Source(List(currentState1, currentState2)).mapMaterializedValue(_ => currentStateSubscription)
 
-      when(componentFactory.commandService(componentId)).thenReturn(Future.successful(commandService))
+      when(commandServiceFactory.commandService(componentId)).thenReturn(Future.successful(Right(commandService)))
       when(commandService.subscribeCurrentState(stateNames)).thenReturn(currentStateStream)
 
       WS("/websocket-endpoint", wsClient.flow) ~> route ~> check {
@@ -141,7 +141,7 @@ class WebsocketRouteTest extends BaseTestSuite with ScalatestRouteTest with Gate
       val currentStateStream = Source(List(currentState1, currentState2))
         .mapMaterializedValue(_ => currentStateSubscription)
 
-      when(componentFactory.commandService(componentId)).thenReturn(Future.successful(commandService))
+      when(commandServiceFactory.commandService(componentId)).thenReturn(Future.successful(Right(commandService)))
       when(commandService.subscribeCurrentState(stateNames)).thenReturn(currentStateStream)
 
       WS("/websocket-endpoint", wsClient.flow) ~> route ~> check {

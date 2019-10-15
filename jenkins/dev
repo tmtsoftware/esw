@@ -16,7 +16,7 @@ pipeline {
             }
         }
 
-        stage('Build - Scala') {
+        stage('Build') {
             steps {
                 sh "sbt scalafmtCheck"
                 sh "sbt clean makeSite"
@@ -24,32 +24,13 @@ pipeline {
             }
         }
 
-        stage('Build - Kotlin') {
+        stage('Test') {
             steps {
-                sh "./gradle.sh clean compileKotlin"
-            }
-        }
-
-        stage('Test - Kotlin') {
-            steps {
-                sh "./gradle.sh clean test"
-            }
-        }
-
-        stage('Publish Local - Kotlin') {
-            steps {
-                sh "./gradle.sh publishToMavenLocal"
-            }
-        }
-
-        stage('Test - Scala') {
-            steps {
-                sh "sbt -DenableCoverage=true -DgenerateStoryReport=true ';set every enableFatalWarnings := true; clean; test:test'"
-                sh "sbt -DenableCoverage=true -DgenerateStoryReport=true esw-integration-test/test"
+                sh "sbt -DenableCoverage=true -DgenerateStoryReport=true test:test"
+                sh "sbt -DenableCoverage=true -DgenerateStoryReport=true 'esw-ocs-dsl-kt/testOnly -- *'" // execute kotlin tests
             }
             post {
                 always {
-                    sh "sbt -DenableCoverage=true esw-integration-test/coverageReport"
                     sh "sbt -DenableCoverage=true coverageReport"
                     sh "sbt coverageAggregate"
                     junit testResults: '**/target/test-reports/*.xml', allowEmptyResults: true

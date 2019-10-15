@@ -5,14 +5,17 @@ lazy val aggregateProjects: Seq[ProjectReference] =
   Seq(
     `esw-ocs`,
     `esw-http-core`,
-    `esw-gateway`
+    `esw-gateway`,
+    `esw-integration-test`,
+    examples
   )
 
 lazy val githubReleases: Seq[ProjectReference] = Seq(`esw-ocs-app`)
 lazy val unidocExclusions: Seq[ProjectReference] = Seq(
   `esw-integration-test`,
   `esw-ocs-api`.js,
-  `esw-gateway-api`.js
+  `esw-gateway-api`.js,
+  examples
 )
 
 val enableCoverage         = sys.props.get("enableCoverage").contains("true")
@@ -33,6 +36,7 @@ lazy val `esw-ocs` = project
     `esw-ocs-api`.js,
     `esw-ocs-api`.jvm,
     `esw-ocs-dsl`,
+    `esw-ocs-dsl-kt`,
     `esw-ocs-impl`,
     `esw-ocs-app`
   )
@@ -81,21 +85,32 @@ lazy val `esw-http-core` = project
 
 lazy val `esw-integration-test` = project
   .in(file("esw-integration-test"))
-  .enablePlugins(KotlinPlugin)
   .settings(libraryDependencies ++= Dependencies.IntegrationTest.value)
   .settings(fork in Test := true)
   .dependsOn(
     `esw-gateway-server` % "test->compile;test->test",
     `esw-http-core`      % "test->compile;test->test",
     `esw-ocs-impl`       % "test->compile;test->test",
+    examples,
     `esw-ocs-app`,
     `esw-test-reporter` % Test
   )
 
 lazy val `esw-ocs-dsl` = project
   .in(file("esw-ocs/esw-ocs-dsl"))
-  .settings(libraryDependencies ++= Dependencies.Utils.value)
+  .settings(libraryDependencies ++= Dependencies.OcsDsl.value)
   .dependsOn(`esw-ocs-api`.jvm % "compile->compile;test->test", `esw-test-reporter` % Test)
+
+lazy val `esw-ocs-dsl-kt` = project
+  .in(file("esw-ocs/esw-ocs-dsl-kt"))
+  .enablePlugins(KotlinPlugin)
+  .settings(
+    fork in Test := true, // fixme: temp fix to run test sequentially, otherwise LoopTest fails because of timings
+    kotlinVersion := "1.3.50",
+    kotlincOptions ++= Seq("-Xuse-experimental=kotlin.time.ExperimentalTime", "-jvm-target", "1.8")
+  )
+  .settings(libraryDependencies ++= Dependencies.OcsDslKt.value)
+  .dependsOn(`esw-ocs-dsl`)
 
 lazy val `esw-gateway` = project
   .aggregate(
@@ -147,3 +162,12 @@ lazy val `esw-sm` = project
   )
 /* ================= Paradox Docs ============== */
 lazy val docs = project.enablePlugins(NoPublish, ParadoxMaterialSitePlugin)
+
+lazy val examples = project
+  .in(file("examples"))
+  .enablePlugins(KotlinPlugin)
+  .settings(
+    kotlinVersion := "1.3.50",
+    kotlincOptions ++= Seq("-Xuse-experimental=kotlin.time.ExperimentalTime", "-jvm-target", "1.8")
+  )
+  .dependsOn(`esw-ocs-dsl-kt`)

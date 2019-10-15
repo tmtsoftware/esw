@@ -2,9 +2,7 @@ package esw.ocs.script
 
 import akka.actor.Scheduler
 import akka.actor.testkit.typed.scaladsl.TestProbe
-import akka.actor.typed.SpawnProtocol.Spawn
 import akka.actor.typed.scaladsl.AskPattern._
-import akka.actor.typed.scaladsl.Behaviors
 import akka.actor.typed.{ActorRef, ActorSystem, SpawnProtocol}
 import akka.util.Timeout
 import com.typesafe.config.ConfigFactory
@@ -13,13 +11,10 @@ import csw.alarm.models.AlarmSeverity
 import csw.alarm.models.Key.AlarmKey
 import csw.command.client.messages.sequencer.{SequencerMsg, SubmitSequenceAndWait}
 import csw.event.client.EventServiceFactory
-import csw.location.api.extensions.ActorExtension.RichActor
 import csw.location.api.extensions.URIExtension.RichURI
 import csw.location.api.scaladsl.LocationService
 import csw.location.client.scaladsl.HttpLocationServiceFactory
-import csw.location.models.Connection.AkkaConnection
-import csw.location.models.{AkkaRegistration, ComponentId, ComponentType}
-import csw.params.commands.CommandResponse.{Completed, Started, SubmitResponse}
+import csw.params.commands.CommandResponse.{Completed, SubmitResponse}
 import csw.params.commands.{CommandName, Sequence, Setup}
 import csw.params.core.generics.KeyType.StringKey
 import csw.params.core.generics.Parameter
@@ -30,11 +25,12 @@ import csw.testkit.scaladsl.CSWService.{AlarmServer, EventServer}
 import csw.testkit.scaladsl.ScalaTestFrameworkTestKit
 import csw.time.core.models.UTCTime
 import esw.ocs.api.BaseTestSuite
+import esw.ocs.api.models.StepStatus.Finished.Success
+import esw.ocs.api.models.{Step, StepList}
 import esw.ocs.api.protocol._
 import esw.ocs.app.wiring.SequencerWiring
-import esw.ocs.dsl.sequence_manager.LocationServiceUtil
 import esw.ocs.impl.internal.Timeouts
-import esw.ocs.impl.messages.SequencerMessages.{DiagnosticMode, GoOffline, GoOnline, OperationsMode}
+import esw.ocs.impl.messages.SequencerMessages._
 
 import scala.concurrent.Future
 import scala.concurrent.duration.DurationDouble
@@ -46,22 +42,20 @@ class ScriptIntegrationTest extends ScalaTestFrameworkTestKit(EventServer, Alarm
   implicit val actorSystem: ActorSystem[SpawnProtocol] = frameworkTestKit.actorSystem
   implicit val scheduler: Scheduler                    = actorSystem.scheduler
 
-  private implicit val askTimeout: Timeout             = Timeouts.DefaultTimeout
+  private implicit val askTimeout: Timeout = Timeouts.DefaultTimeout
+
   override implicit def patienceConfig: PatienceConfig = PatienceConfig(10.seconds)
 
   private val ocsPackageId     = "esw"
   private val ocsObservingMode = "darknight"
+  private val tcsPackageId     = "tcs"
+  private val tcsObservingMode = "darknight"
 
-  var locationService: LocationService             = _
+  private var locationService: LocationService     = _
   private var ocsWiring: SequencerWiring           = _
   private var ocsSequencer: ActorRef[SequencerMsg] = _
-
-  private val tcsSequencer: ActorRef[SequencerMsg] = (actorSystem ? Spawn(TestSequencer.beh, "testSequencer")).awaitResult
-  private val tcsPackageId                         = "TCS"
-  private val tcsObservingMode                     = "testObservingMode4"
-  private val tcsConnection                        = AkkaConnection(ComponentId(s"$tcsPackageId@$tcsObservingMode", ComponentType.Sequencer))
-  private val tcsRegistration                      = AkkaRegistration(tcsConnection, Prefix("TCS.test"), tcsSequencer.toURI)
-  private var sequenceReceivedByTCSProbe: Sequence = _
+  private var tcsWiring: SequencerWiring           = _
+  private var tcsSequencer: ActorRef[SequencerMsg] = _
 
   override def beforeAll(): Unit = {
     super.beforeAll()
@@ -70,7 +64,9 @@ class ScriptIntegrationTest extends ScalaTestFrameworkTestKit(EventServer, Alarm
 
   override def beforeEach(): Unit = {
     locationService = HttpLocationServiceFactory.makeLocalClient
-    new LocationServiceUtil(locationService).register(tcsRegistration).awaitResult
+    tcsWiring = new SequencerWiring(tcsPackageId, tcsObservingMode, None)
+    tcsWiring.sequencerServer.start()
+    tcsSequencer = tcsWiring.sequencerRef
 
     ocsWiring = new SequencerWiring(ocsPackageId, ocsObservingMode, None)
     ocsSequencer = ocsWiring.sequencerServer.start().rightValue.uri.toActorRef.unsafeUpcast[SequencerMsg]
@@ -78,7 +74,7 @@ class ScriptIntegrationTest extends ScalaTestFrameworkTestKit(EventServer, Alarm
 
   override def afterEach(): Unit = {
     ocsWiring.sequencerServer.shutDown().futureValue
-    locationService.unregister(tcsConnection).futureValue
+    tcsWiring.sequencerServer.shutDown().futureValue
   }
 
   "CswServices" must {
@@ -90,16 +86,18 @@ class ScriptIntegrationTest extends ScalaTestFrameworkTestKit(EventServer, Alarm
 
       ocsSequencer ! SubmitSequenceAndWait(sequence, submitResponseProbe.ref)
 
+      val commandId = Id("testCommandIdString123")
       // This has to match with sequence created in TestScript -> handleSetupCommand("command-4")
       val assertableCommand =
-        Setup(Id("testCommandIdString123"), Prefix("TCS.test"), CommandName("command-to-assert-on"), None, Set.empty)
-      val assertableSequence = Sequence(Id("testSequenceIdString123"), Seq(assertableCommand))
+        Setup(commandId, Prefix("TCS.test"), CommandName("command-3"), None, Set.empty)
+      val steps            = List(Step(assertableCommand).copy(status = Success(Completed(commandId))))
+      val expectedStepList = StepList(Id("testSequenceIdString123"), steps)
+      Thread.sleep(1000)
 
+      val actualStepList: Future[Option[StepList]] = tcsSequencer ? GetSequence
       // response received by irisSequencer
       submitResponseProbe.expectMessage(Completed(sequenceId))
-
-      // sequence sent to tcsSequencer by irisSequencer script
-      eventually(sequenceReceivedByTCSProbe) shouldBe assertableSequence
+      actualStepList.futureValue.get should ===(expectedStepList)
     }
 
     "be able to forward diagnostic mode to downstream components | ESW-118" in {
@@ -190,16 +188,6 @@ class ScriptIntegrationTest extends ScalaTestFrameworkTestKit(EventServer, Alarm
       val getPublishedEvent = eventService.defaultSubscriber.get(successKey).futureValue
 
       getPublishedEvent.isInvalid should ===(false)
-    }
-  }
-
-  object TestSequencer {
-    def beh: Behaviors.Receive[SequencerMsg] = Behaviors.receiveMessage[SequencerMsg] {
-      case SubmitSequenceAndWait(sequence, replyTo) =>
-        sequenceReceivedByTCSProbe = sequence
-        replyTo ! Started(sequence.runId)
-        Behaviors.same
-      case _ => Behaviors.same
     }
   }
 }
