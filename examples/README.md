@@ -17,7 +17,6 @@ scripts {
   }
 }
 ```
-- Then run following command to start `sequencer` in standalone mode 
-```./gradlew examples:run --args="sequencer --id iris --mode darknight"```
+- Then run sequencer app `esw-ocs-app`  
    
  

@@ -1,5 +1,3 @@
-import java.io.File
-
 import sbt.Keys._
 import sbt._
 
