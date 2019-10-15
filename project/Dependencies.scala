@@ -91,7 +91,8 @@ object Dependencies {
       Kotlin.`script-runtime`,
       Kotlin.`coroutines-jdk8`,
       Kotlin.mockk % Test,
-      Kotlin.kotlintest % Test
+      Kotlin.kotlintest % Test,
+      Libs.`jupiter-interface` % Test
     )
   )
 

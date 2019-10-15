@@ -1,7 +1,7 @@
 package esw.ocs.dsl.utils
 
-import io.kotlintest.matchers.numerics.shouldBeInRange
 import io.kotlintest.matchers.numerics.shouldBeLessThan
+import io.kotlintest.matchers.shouldBeInRange
 import io.kotlintest.shouldBe
 import io.kotlintest.specs.WordSpec
 import java.util.concurrent.atomic.AtomicInteger
