@@ -21,20 +21,13 @@ pipeline {
                 sh "sbt scalafmtCheck"
                 sh "sbt clean makeSite"
                 sh "sbt ';set every Seq(enableFatalWarnings := true, scalafmtOnCompile := false); compile'"
-                sh "./build.sh"
             }
         }
 
-        stage('Test - Kotlin') {
-            steps {
-                sh "./gradle.sh test"
-            }
-        }
-
-        stage('Test - Scala') {
+        stage('Test') {
             steps {
                 sh "sbt -DenableCoverage=true -DgenerateStoryReport=true test:test"
-                sh "sbt -DenableCoverage=true -DgenerateStoryReport=true esw-integration-test/test"
+                sh "sbt -DenableCoverage=true -DgenerateStoryReport=true 'esw-ocs-dsl-kt/testOnly -- *'" // execute kotlin tests
             }
             post {
                 always {
