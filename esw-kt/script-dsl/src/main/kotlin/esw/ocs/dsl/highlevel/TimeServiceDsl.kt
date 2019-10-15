@@ -42,7 +42,6 @@ interface TimeServiceDsl {
     fun taiTimeAfter(duration: Duration): TAITime =
         TAITime.after(FiniteDuration(duration.toLongNanoseconds(), TimeUnit.NANOSECONDS))
 
-    // fixme : move to appropriate place in clubed extension methods
     fun TMTTime.offsetFromNow(): Duration = durationFromNow().toNanos().nanoseconds
 
     private fun (suspend () -> Unit).toJavaFuture(): CompletionStage<Void> =
