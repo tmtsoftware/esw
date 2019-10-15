@@ -66,27 +66,27 @@ sealed class ScriptDslKt : CswHighLevelDsl {
     suspend fun nextIf(predicate: (SequenceCommand) -> Boolean): SequenceCommand? =
             scriptDsl.nextIf { predicate(it) }.await().nullable()
 
-    fun handleSetup(name: String, block: suspend (Setup) -> Unit) {
+    fun handleSetup(name: String, block: suspend CoroutineScope.(Setup) -> Unit) {
         scriptDsl.handleSetupCommand(name) { block.toJavaFuture(it) }
     }
 
-    fun handleObserve(name: String, block: suspend (Observe) -> Unit) {
+    fun handleObserve(name: String, block: suspend CoroutineScope.(Observe) -> Unit) {
         scriptDsl.handleObserveCommand(name) { block.toJavaFuture(it) }
     }
 
-    fun handleGoOnline(block: suspend () -> Unit) {
+    fun handleGoOnline(block: suspend CoroutineScope.() -> Unit) {
         scriptDsl.handleGoOnline { block.toJavaFutureVoid() }
     }
 
-    fun handleGoOffline(block: suspend () -> Unit) {
+    fun handleGoOffline(block: suspend CoroutineScope.() -> Unit) {
         scriptDsl.handleGoOffline { block.toJavaFutureVoid() }
     }
 
-    fun handleAbort(block: suspend () -> Unit) {
+    fun handleAbort(block: suspend CoroutineScope.() -> Unit) {
         scriptDsl.handleAbort { block.toJavaFutureVoid() }
     }
 
-    fun handleShutdown(block: suspend () -> Unit) {
+    fun handleShutdown(block: suspend CoroutineScope.() -> Unit) {
         scriptDsl.handleShutdown { block.toJavaFutureVoid() }
     }
 
@@ -94,7 +94,7 @@ sealed class ScriptDslKt : CswHighLevelDsl {
         scriptDsl.handleDiagnosticMode { x: UTCTime, y: String -> coroutineScope.future { block(x, y) }.thenAccept { } }
     }
 
-    fun handleOperationsMode(block: suspend () -> Unit) {
+    fun handleOperationsMode(block: suspend CoroutineScope.() -> Unit) {
         scriptDsl.handleOperationsMode { block.toJavaFutureVoid() }
     }
 
@@ -109,7 +109,7 @@ sealed class ScriptDslKt : CswHighLevelDsl {
     suspend fun submitSequence(sequencerName: String, observingMode: String, sequence: Sequence): SubmitResponse =
             this.scriptDsl.submitSequence(sequencerName, observingMode, sequence).await()
 
-    private fun (suspend () -> Unit).toJavaFutureVoid(): CompletionStage<Void> {
+    private fun (suspend CoroutineScope.() -> Unit).toJavaFutureVoid(): CompletionStage<Void> {
         val block = this
         return coroutineScope.future { block() }
                 .whenComplete { v, e ->
@@ -117,16 +117,18 @@ sealed class ScriptDslKt : CswHighLevelDsl {
                         CompletableFuture.completedFuture(v)
                     } else {
                         log("exception : ${e.message}")
-                        //fixme: call exception handlers whenever implemented
+                        // fixme: call exception handlers whenever implemented
                         CompletableFuture.failedFuture<Unit>(e)
                     }
                 }
                 .thenAccept { }
     }
 
-    private fun <T> (suspend (T) -> Unit).toJavaFuture(value: T): CompletionStage<Void> {
+    private fun <T> (suspend CoroutineScope.(T) -> Unit).toJavaFuture(value: T): CompletionStage<Void> {
         val block = this
-        return suspend { block(value) }.toJavaFutureVoid()
+
+        val curriedBlock: suspend (CoroutineScope) -> Unit = { a: CoroutineScope -> block(a, value) }
+        return curriedBlock.toJavaFutureVoid()
     }
 }
 
@@ -151,7 +153,7 @@ open class Script(final override val cswServices: CswServices) : ScriptDslKt() {
         cswServices.timeServiceSchedulerFactory().make(_strandEc.ec())
     }
     private val exceptionHandler = CoroutineExceptionHandler {
-        //fixme: call exception handlers whenever implemented
+        // fixme: call exception handlers whenever implemented
         _, exception ->
         log("Exception: ${exception.message}")
     }

@@ -1,8 +1,8 @@
 package esw.ocs.dsl.utils
 
+import kotlinx.coroutines.*
 import kotlin.time.Duration
 import kotlin.time.milliseconds
-import kotlinx.coroutines.*
 
 private val loopInterval = 50.milliseconds
 
@@ -15,7 +15,7 @@ suspend fun loop(minInterval: Duration, block: suspend LoopDsl.() -> Unit): Job 
 fun CoroutineScope.bgLoop(block: suspend LoopDsl.() -> Unit): Deferred<Job> = async { loop(loopInterval, block) }
 
 fun CoroutineScope.bgLoop(minInterval: Duration, block: suspend LoopDsl.() -> Unit): Deferred<Job> =
-    async { loop(minInterval, block) }
+        async { loop(minInterval, block) }
 
 object LoopDsl {
     suspend inline fun waitFor(crossinline condition: suspend () -> Boolean) = loop { stopWhen(condition()) }
