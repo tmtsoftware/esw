@@ -8,8 +8,10 @@ import csw.command.api.scaladsl.CommandService
 import csw.event.api.scaladsl.{EventPublisher, EventService, EventSubscriber}
 import csw.event.client.internal.commons.EventSubscriberUtil
 import csw.logging.api.scaladsl.Logger
-import esw.http.core.utils.ComponentFactory
+import esw.gateway.impl.LoggerCache
+import esw.gateway.server.utils.CommandServiceFactory
 import esw.http.core.wiring.{ActorRuntime, CswWiring}
+import org.mockito.ArgumentMatchers.any
 import org.mockito.MockitoSugar._
 
 import scala.concurrent.duration.FiniteDuration
@@ -19,10 +21,12 @@ class CswWiringMocks(system: ActorSystem[SpawnProtocol]) {
   val cswWiring: CswWiring       = mock[CswWiring]
   val actorRuntime: ActorRuntime = new ActorRuntime(system)
   val logger: Logger             = mock[Logger]
+  val loggerCache: LoggerCache   = mock[LoggerCache]
+  when(loggerCache.get(any[String])).thenReturn(logger)
 
   //command service mocks
-  val componentFactory: ComponentFactory = mock[ComponentFactory]
-  val commandService: CommandService     = mock[CommandService]
+  val commandServiceFactory: CommandServiceFactory = mock[CommandServiceFactory]
+  val commandService: CommandService               = mock[CommandService]
 
   //alarm service mocks
   val alarmService: AlarmAdminService = mock[AlarmAdminService]
@@ -32,8 +36,6 @@ class CswWiringMocks(system: ActorSystem[SpawnProtocol]) {
   val eventSubscriberUtil: EventSubscriberUtil = mock[EventSubscriberUtil]
   val eventPublisher: EventPublisher           = mock[EventPublisher]
   val eventSubscriber: EventSubscriber         = mock[EventSubscriber]
-
-  when(cswWiring.componentFactory).thenReturn(componentFactory)
 
   when(cswWiring.eventSubscriberUtil).thenReturn(eventSubscriberUtil)
   when(cswWiring.eventService).thenReturn(eventService)

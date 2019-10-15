@@ -26,7 +26,6 @@ class ComponentFactory(locationService: LocationService, commandServiceFactory: 
           )
       }
 
-  //fixme: Return Either[ErrorResponseMsg, CommandService]
   def commandService(componentId: ComponentId): Future[CommandService] =
     resolve(componentId)(commandServiceFactory.make)
 }

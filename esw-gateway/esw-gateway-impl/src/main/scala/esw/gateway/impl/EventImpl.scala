@@ -35,7 +35,8 @@ class EventImpl(eventService: EventService, eventSubscriberUtil: EventSubscriber
         case Success(events)                     => Success(Right(events))
         case Failure(EventServerNotAvailable(_)) => Success(Left(EventServerUnavailable))
         case Failure(ex)                         => throw ex
-      } else Future.successful(Left(EmptyEventKeys))
+      }
+    else Future.successful(Left(EmptyEventKeys))
   }
 
   def subscribe(eventKeys: Set[EventKey], maxFrequency: Option[Int]): Source[Event, Future[StreamStatus]] = {
@@ -48,7 +49,8 @@ class EventImpl(eventService: EventService, eventSubscriberUtil: EventSubscriber
           subscriber.subscribe(eventKeys, Utils.maxFrequencyToDuration(frequency), RateLimiterMode).withSubscription()
         case None => subscriber.subscribe(eventKeys).withSubscription()
       }
-    } else Source.empty.withError(EmptyEventKeys.toStreamError)
+    }
+    else Source.empty.withError(EmptyEventKeys.toStreamError)
   }
 
   def pSubscribe(

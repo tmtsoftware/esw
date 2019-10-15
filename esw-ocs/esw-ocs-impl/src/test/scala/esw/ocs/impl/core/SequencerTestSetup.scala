@@ -159,10 +159,10 @@ class SequencerTestSetup(sequence: Sequence)(implicit system: ActorSystem[_], ti
     probe.expectMessage(response)
   }
 
-  def goOfflineAndAssertResponse(response: OkOrUnhandledResponse, handlerMockResponse: Future[Done]): OkOrUnhandledResponse = {
+  def goOfflineAndAssertResponse(response: GoOfflineResponse, handlerMockResponse: Future[Done]): GoOfflineResponse = {
     when(script.executeGoOffline()).thenReturn(handlerMockResponse)
 
-    val probe = TestProbe[OkOrUnhandledResponse]
+    val probe = TestProbe[GoOfflineResponse]
     sequencerActor ! GoOffline(probe.ref)
     probe.expectMessage(response)
   }

@@ -47,7 +47,7 @@ class SequencerBehavior(
     case SubmitSequenceAndWaitInternal(sequence, replyTo) => submitSequenceAndWait(sequence, data, replyTo)
     case SubmitSequence(sequence, replyTo)                => submitSequence(sequence, data, replyTo)
     case QueryFinal(replyTo)                              => idle(data.querySequence(replyTo))
-    case GoOffline(replyTo)                               => goOffline(replyTo, data)
+    case GoOffline(replyTo)                               => goOffline(replyTo, data)(idle)
     case PullNext(replyTo)                                => idle(data.pullNextStep(replyTo))
   }
 
@@ -55,7 +55,7 @@ class SequencerBehavior(
     case QueryFinal(replyTo)        => loaded(data.querySequence(replyTo))
     case AbortSequence(replyTo)     => abortSequence(data, Loaded, replyTo)(nextBehavior = idle)
     case editorAction: EditorAction => handleEditorAction(editorAction, data, Loaded)(nextBehavior = loaded)
-    case GoOffline(replyTo)         => goOffline(replyTo, data)
+    case GoOffline(replyTo)         => goOffline(replyTo, data)(loaded)
     case StartSequence(replyTo)     => inProgress(data.startSequence(replyTo))
   }
 
@@ -85,8 +85,11 @@ class SequencerBehavior(
       case GoOnlineFailed(replyTo)  => replyTo ! GoOnlineHookFailed; offline(data)
     }
 
-  private def goingOffline(data: SequencerData): Behavior[SequencerMsg] = receive(GoingOffline, data, goingOffline) {
-    case GoneOffline(replyTo) => replyTo ! Ok; offline(data.copy(stepList = None))
+  private def goingOffline(data: SequencerData)(
+      currentBehavior: SequencerData => Behavior[SequencerMsg]
+  ): Behavior[SequencerMsg] = receive(GoingOffline, data, currentBehavior) {
+    case GoOfflineSuccess(replyTo) => replyTo ! Ok; offline(data.copy(stepList = None))
+    case GoOfflineFailed(replyTo)  => replyTo ! GoOfflineHookFailed; currentBehavior(data)
   }
 
   private def abortingSequence(
@@ -193,7 +196,7 @@ class SequencerBehavior(
     val f1 = locationService.unregister(AkkaConnection(componentId))
     val f2 = script.executeShutdown()
     val f3 = shutdownHttpService()
-    f1.onComplete(_ => f2.onComplete(_ => (f3.onComplete(_ => data.self ! ShutdownComplete(replyTo)))))
+    f1.onComplete(_ => f2.onComplete(_ => f3.onComplete(_ => data.self ! ShutdownComplete(replyTo))))
 
     shuttingDown(data)
   }
@@ -206,10 +209,15 @@ class SequencerBehavior(
     goingOnline(data)
   }
 
-  private def goOffline(replyTo: ActorRef[OkOrUnhandledResponse], data: SequencerData): Behavior[SequencerMsg] = {
+  private def goOffline(replyTo: ActorRef[GoOfflineResponse], data: SequencerData)(
+      currentBehavior: SequencerData => Behavior[SequencerMsg]
+  ): Behavior[SequencerMsg] = {
     // go to offline state even if handler fails, note that this is different than GoOnline
-    script.executeGoOffline().onComplete(_ => data.self ! GoneOffline(replyTo))
-    goingOffline(data)
+    script.executeGoOffline().onComplete {
+      case Success(_) => data.self ! GoOfflineSuccess(replyTo)
+      case Failure(_) => data.self ! GoOfflineFailed(replyTo)
+    }
+    goingOffline(data)(currentBehavior)
   }
 
   private def goToDiagnosticMode(

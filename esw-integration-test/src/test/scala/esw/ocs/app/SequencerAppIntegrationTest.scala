@@ -40,8 +40,8 @@ class SequencerAppIntegrationTest extends ScalaTestFrameworkTestKit with BaseTes
 
   "SequenceComponent command" must {
     "start sequence component with provided subsystem and name and register it with location service | ESW-102, ESW-103, ESW-147, ESW-151, ESW-214" in {
-      val subsystem    = Subsystem.ESW
-      val name: String = "primary"
+      val subsystem             = Subsystem.ESW
+      val name: String          = "primary"
       val expectedSequencerName = "ESW.primary@esw@darknight"
 
       // start Sequence Component
@@ -137,13 +137,12 @@ class SequencerAppIntegrationTest extends ScalaTestFrameworkTestKit with BaseTes
       // start Sequencer
       SequencerApp.run(Sequencer(subsystem, name, packageId, observingMode), enableLogging = false)
 
-
       // verify sequence component is started
-      val compName = s"$subsystem.${name.value}"
-      val compConnection        = AkkaConnection(ComponentId(compName, ComponentType.SequenceComponent))
-      val sequencerCompLocation = testLocationService.resolve(compConnection, 5.seconds).futureValue.value
+      val sequenceComponentName       = s"$subsystem.${name.value}"
+      val sequenceComponentConnection = AkkaConnection(ComponentId(sequenceComponentName, ComponentType.SequenceComponent))
+      val sequenceComponentLocation   = testLocationService.resolve(sequenceComponentConnection, 5.seconds).futureValue.value
 
-      sequencerCompLocation.connection.componentId.name shouldBe compName
+      sequenceComponentLocation.connection.componentId.name shouldBe sequenceComponentName
 
       // verify that sequencer is started and able to process sequence command
       val connection        = AkkaConnection(ComponentId(sequencerName, ComponentType.Sequencer))
@@ -155,6 +154,44 @@ class SequencerAppIntegrationTest extends ScalaTestFrameworkTestKit with BaseTes
       val setup          = Setup(Prefix("wfos.home.datum"), CommandName("command-1"), None)
       val sequence       = Sequence(setup)
       commandService.submitAndWait(sequence).futureValue shouldBe Completed(sequence.runId)
+    }
+
+    "start sequencer with provided mandatory subsystem, mode register it with location service | ESW-103" in {
+      val subsystem     = Subsystem.ESW
+      val observingMode = "darknight"
+
+      // start Sequencer
+      SequencerApp.run(Sequencer(subsystem, None, None, observingMode), enableLogging = false)
+
+      val sequenceComponentLocation = testLocationService.list(ComponentType.SequenceComponent).futureValue.head
+
+      //assert that componentName and prefix contain subsystem provided
+      sequenceComponentLocation.connection.componentId.name.contains("ESW.ESW_") shouldEqual true
+      sequenceComponentLocation.asInstanceOf[AkkaLocation].prefix.prefix.contains("ESW.ESW_") shouldEqual true
+
+      val sequenceComponentName = sequenceComponentLocation.connection.componentId.name
+
+      //sequencer name will have sequence component name and optional packageId is defaulted to subsystem
+      val sequencerName = s"$sequenceComponentName@esw@darknight"
+
+      // verify that sequencer is started and able to process sequence command
+      val connection        = AkkaConnection(ComponentId(sequencerName, ComponentType.Sequencer))
+      val sequencerLocation = testLocationService.resolve(connection, 5.seconds).futureValue.value
+
+      sequencerLocation.connection.componentId.name shouldBe sequencerName
+    }
+
+    "throw exception if LoadScriptError is returned | ESW-102" in {
+      val subsystem        = Subsystem.ESW
+      val name             = Some("primary")
+      val invalidPackageId = "invalid package"
+      val observingMode    = "darknight"
+
+      val exception = intercept[RuntimeException] {
+        SequencerApp.run(Sequencer(subsystem, name, Some(invalidPackageId), observingMode), enableLogging = false)
+      }
+
+      exception.getMessage shouldEqual s"Failed to start with error: LoadScriptError(Script configuration missing for $invalidPackageId with $observingMode)"
     }
   }
 }

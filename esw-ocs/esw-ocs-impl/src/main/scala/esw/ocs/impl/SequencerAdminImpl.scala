@@ -39,7 +39,7 @@ class SequencerAdminImpl(sequencer: ActorRef[EswSequencerMessage])(implicit syst
   override def reset(): Future[OkOrUnhandledResponse]                     = sequencer ? Reset
   override def abortSequence(): Future[OkOrUnhandledResponse]             = sequencer ? AbortSequence
   override def goOnline(): Future[GoOnlineResponse]                       = sequencer ? GoOnline
-  override def goOffline(): Future[OkOrUnhandledResponse]                 = sequencer ? GoOffline
+  override def goOffline(): Future[GoOfflineResponse]                     = sequencer ? GoOffline
 
   override def diagnosticMode(startTime: UTCTime, hint: String): Future[DiagnosticModeResponse] =
     sequencer ? (DiagnosticMode(startTime, hint, _))

@@ -17,6 +17,7 @@ dist
 .settings
 .DS_Store
 test-output/
+*.class
 
 build
 
@@ -39,3 +40,7 @@ snapshots
 project/.bloop
 project/project/.bloop
 
+.metals
+.gradle
+*/**/.kotlintest
+out

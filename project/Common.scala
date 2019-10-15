@@ -1,5 +1,6 @@
 import Libs.{`silencer-lib`, `silencer-plugin`}
 import org.scalafmt.sbt.ScalafmtPlugin.autoImport.scalafmtOnCompile
+import org.tmt.sbt.docs.DocKeys._
 import sbt.Keys._
 import sbt.librarymanagement.ScmInfo
 import sbt.plugins.JvmPlugin
@@ -26,8 +27,14 @@ object Common extends AutoPlugin {
     scmInfo := Some(
       ScmInfo(url(EswKeys.homepageValue), "git@github.com:tmtsoftware/esw.git")
     ),
+    // ======== sbt-docs Settings =========
+    docsRepo := "git@github.com:tmtsoftware/tmtsoftware.github.io.git",
+    docsParentDir := EswKeys.projectName,
+    gitCurrentRepo := "https://github.com/tmtsoftware/esw",
+    // ================================
     resolvers += "jitpack" at "https://jitpack.io",
     resolvers += "bintray" at "https://jcenter.bintray.com",
+    resolvers += Resolver.mavenLocal, // required to resolve kotlin `examples` deps published locally
     autoCompilerPlugins := true,
     enableFatalWarnings := false,
     suppressAnnotatedWarnings := true,
@@ -63,7 +70,7 @@ object Common extends AutoPlugin {
     version := {
       sys.props.get("prod.publish") match {
         case Some("true") => version.value
-        case _            => "0.1-SNAPSHOT"
+        case _            => "0.1.0-SNAPSHOT"
       }
     },
     fork := true,

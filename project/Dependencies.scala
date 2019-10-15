@@ -20,6 +20,7 @@ object Dependencies {
       Akka.`akka-stream-typed`,
       Libs.`scala-async`,
       Libs.enumeratum.value,
+      Libs.`msocket-impl-jvm`,
       Libs.scalatest                  % Test,
       Akka.`akka-actor-testkit-typed` % Test,
       Libs.`mockito-scala`            % Test
@@ -28,7 +29,6 @@ object Dependencies {
 
   val OcsApp: Def.Initialize[Seq[ModuleID]] = Def.setting(
     Seq(
-      Libs.`case-app`,
       Libs.`msocket-impl-jvm`,
       AkkaHttp.`akka-http-cors`,
       Libs.scalatest                  % Test,
@@ -50,6 +50,7 @@ object Dependencies {
       Csw.`csw-params`.value,
       Csw.`csw-config-client`,
       Csw.`csw-time-scheduler`,
+      Libs.`case-app`,
       Libs.`scala-async`,
       Libs.scalatest                  % Test,
       Csw.`csw-testkit`               % Test,
@@ -66,20 +67,30 @@ object Dependencies {
       Csw.`csw-testkit`         % Test,
       Csw.`csw-admin-server`    % Test,
       Csw.`csw-logging-models`  % Test,
-      Libs.scalatest            % Test,
-      Libs.examples             % Test
+      Libs.scalatest            % Test
     )
   )
 
-  val Utils: Def.Initialize[Seq[ModuleID]] = Def.setting(
+  val OcsDsl: Def.Initialize[Seq[ModuleID]] = Def.setting(
     Seq(
       Csw.`csw-location-client`,
       Csw.`csw-event-client`,
       Csw.`csw-command-client`,
       Csw.`csw-time-scheduler`,
       Csw.`csw-command-client`,
+      Csw.`csw-alarm-client`,
       Libs.`mockito-scala`            % Test,
       Akka.`akka-actor-testkit-typed` % Test
+    )
+  )
+
+  val OcsDslKt: Def.Initialize[Seq[ModuleID]] = Def.setting(
+    Seq(
+      Kotlin.`stdlib-jdk8`,
+      Kotlin.`coroutines-jdk8`,
+      Kotlin.mockk % Test,
+      Kotlin.kotlintest % Test,
+      Libs.`jupiter-interface` % Test
     )
   )
 
@@ -94,14 +105,14 @@ object Dependencies {
 
   val EswGatewayImpl: Def.Initialize[Seq[ModuleID]] = Def.setting(
     Seq(
-      Csw.`csw-event-client`
+      Csw.`csw-event-client`,
+      Libs.`caffeine`
     )
   )
 
   val EswGatewayServer: Def.Initialize[Seq[ModuleID]] = Def.setting(
     Seq(
-      Libs.`msocket-impl-jvm`,
-      Libs.`case-app`
+      Libs.`msocket-impl-jvm`
     )
   )
 

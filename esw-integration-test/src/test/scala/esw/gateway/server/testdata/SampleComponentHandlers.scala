@@ -48,9 +48,15 @@ class SampleComponentHandlers(ctx: ActorContext[TopLevelActorMessage], cswCtx: C
     Future.unit
   }
 
-  override def onGoOffline(): Unit = ???
+  override def onGoOffline(): Unit = {
+    val event = new SystemEvent(Prefix("tcs.filter.wheel"), EventName("offline"))
+    eventService.defaultPublisher.publish(event)
+  }
 
-  override def onGoOnline(): Unit = ???
+  override def onGoOnline(): Unit = {
+    val event = new SystemEvent(Prefix("tcs.filter.wheel"), EventName("online"))
+    eventService.defaultPublisher.publish(event)
+  }
 
   override def onDiagnosticMode(startTime: UTCTime, hint: String): Unit = {
     val diagnosticModeParam = StringKey.make("mode").set("diagnostic")

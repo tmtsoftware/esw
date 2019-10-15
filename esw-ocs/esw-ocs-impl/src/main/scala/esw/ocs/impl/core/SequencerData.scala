@@ -60,7 +60,8 @@ private[core] case class SequencerData(
     if (stepList.exists(_.isRunningButNotInFlight) && (state == InProgress)) {
       replyTo ! Ok
       copy(readyToExecuteSubscriber = None)
-    } else copy(readyToExecuteSubscriber = Some(replyTo))
+    }
+    else copy(readyToExecuteSubscriber = Some(replyTo))
 
   def updateStepListResult[T >: Ok.type](
       replyTo: ActorRef[T],

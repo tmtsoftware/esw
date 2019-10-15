@@ -11,19 +11,21 @@ import csw.alarm.models.Key.AlarmKey
 import csw.event.api.exceptions.{EventServerNotAvailable, PublishFailure}
 import csw.location.models.ComponentId
 import csw.location.models.ComponentType.Assembly
+import csw.logging.macros.SourceFactory
+import csw.logging.models.{AnyId, Level}
 import csw.params.commands.CommandResponse.{Accepted, Started}
 import csw.params.commands.{CommandName, CommandResponse, Setup}
 import csw.params.core.models.{Id, ObsId, Prefix, Subsystem}
 import csw.params.events.{Event, EventKey, EventName, SystemEvent}
 import esw.gateway.api.codecs.GatewayCodecs
-import esw.gateway.api.protocol.PostRequest.{GetEvent, Oneway, PublishEvent, SetAlarmSeverity, Submit, Validate}
+import esw.gateway.api.protocol.PostRequest._
 import esw.gateway.api.protocol.{EmptyEventKeys, EventServerUnavailable, InvalidComponent, SetAlarmSeverityFailure}
-import esw.gateway.api.{AlarmApi, CommandApi, EventApi}
-import esw.gateway.impl.{AlarmImpl, CommandImpl, EventImpl}
+import esw.gateway.api.{AlarmApi, CommandApi, EventApi, LoggingApi}
+import esw.gateway.impl._
 import esw.gateway.server.handlers.PostHandlerImpl
 import esw.http.core.BaseTestSuite
 import mscoket.impl.HttpCodecs
-import org.mockito.ArgumentMatchers.any
+import org.mockito.ArgumentMatchers.{any, eq => argsEq}
 import org.mockito.Mockito.when
 import org.mockito.MockitoSugar._
 
@@ -45,11 +47,11 @@ class PostRouteTest extends BaseTestSuite with ScalatestRouteTest with GatewayCo
 
   private val alarmApi: AlarmApi     = new AlarmImpl(alarmService)
   private val eventApi: EventApi     = new EventImpl(eventService, eventSubscriberUtil)
-  private val commandApi: CommandApi = new CommandImpl(componentFactory.commandService)
-  private val postHandlerImpl        = new PostHandlerImpl(alarmApi, commandApi, eventApi)
+  private val commandApi: CommandApi = new CommandImpl(commandServiceFactory)
+  private val loggingApi: LoggingApi = new LoggingImpl(loggerCache)
+  private val postHandlerImpl        = new PostHandlerImpl(alarmApi, commandApi, eventApi, loggingApi)
   private val route                  = new Routes(postHandlerImpl, null, logger).route
 
-  // fixme: add failure scenario when event server/ alarm server is down
   "Submit Command" must {
     "handle submit command and return started command response | ESW-91, ESW-216" in {
       val componentName = "test"
@@ -59,7 +61,7 @@ class PostRouteTest extends BaseTestSuite with ScalatestRouteTest with GatewayCo
       val componentId   = ComponentId(componentName, componentType)
       val submitRequest = Submit(componentId, command)
 
-      when(componentFactory.commandService(componentId)).thenReturn(Future.successful(commandService))
+      when(commandServiceFactory.commandService(componentId)).thenReturn(Future.successful(Right(commandService)))
       when(commandService.submit(command)).thenReturn(Future.successful(Started(runId)))
 
       Post("/post-endpoint", submitRequest) ~> route ~> check {
@@ -75,7 +77,7 @@ class PostRouteTest extends BaseTestSuite with ScalatestRouteTest with GatewayCo
       val componentId     = ComponentId(componentName, componentType)
       val validateRequest = Validate(componentId, command)
 
-      when(componentFactory.commandService(componentId)).thenReturn(Future.successful(commandService))
+      when(commandServiceFactory.commandService(componentId)).thenReturn(Future.successful(Right(commandService)))
       when(commandService.validate(command)).thenReturn(Future.successful(Accepted(runId)))
 
       Post("/post-endpoint", validateRequest) ~> route ~> check {
@@ -91,7 +93,7 @@ class PostRouteTest extends BaseTestSuite with ScalatestRouteTest with GatewayCo
       val componentId   = ComponentId(componentName, componentType)
       val onewayRequest = Oneway(componentId, command)
 
-      when(componentFactory.commandService(componentId)).thenReturn(Future.successful(commandService))
+      when(commandServiceFactory.commandService(componentId)).thenReturn(Future.successful(Right(commandService)))
       when(commandService.oneway(command)).thenReturn(Future.successful(Accepted(runId)))
 
       Post("/post-endpoint", onewayRequest) ~> route ~> check {
@@ -109,8 +111,8 @@ class PostRouteTest extends BaseTestSuite with ScalatestRouteTest with GatewayCo
 
       val errmsg = s"Could not find component $componentName of type - $componentType"
 
-      when(componentFactory.commandService(componentId))
-        .thenReturn(Future.failed(new IllegalArgumentException(errmsg)))
+      when(commandServiceFactory.commandService(componentId))
+        .thenReturn(Future.successful(Left(InvalidComponent(errmsg))))
 
       Post("/post-endpoint", submitRequest) ~> route ~> check {
         responseAs[Either[InvalidComponent, CommandResponse]].leftValue shouldEqual InvalidComponent(errmsg)
@@ -225,4 +227,28 @@ class PostRouteTest extends BaseTestSuite with ScalatestRouteTest with GatewayCo
     }
   }
 
+  "Log" must {
+    "log the message and return Done | ESW-200" in {
+      val log = Log(
+        "esw-test",
+        Level.FATAL,
+        "test-message",
+        Map(
+          "additional-info" -> 45,
+          "city"            -> "LA"
+        )
+      )
+
+      Post("/post-endpoint", log) ~> route ~> check {
+        responseAs[Done] shouldEqual Done
+        val expectedMetadata = Map(
+          "additional-info" -> 45,
+          "city"            -> "LA"
+        )
+        verify(logger).fatal(argsEq("test-message"), argsEq(expectedMetadata), any[Throwable], any[AnyId])(
+          any[SourceFactory]
+        )
+      }
+    }
+  }
 }

@@ -1,5 +1,3 @@
-import java.io.File
-
 import sbt.Keys._
 import sbt._
 
@@ -22,23 +20,6 @@ object PublishBintray extends AutoPlugin {
   override def projectSettings: Seq[Setting[_]] = Seq(
     bintrayOrganization := Some("twtmt"),
     bintrayPackage := name.value
-  )
-}
-
-// used for doc publish using ghpagesPushSite
-object GithubPublishDocs extends AutoPlugin {
-  import com.typesafe.sbt.SbtGit.GitKeys
-  import com.typesafe.sbt.sbtghpages.GhpagesPlugin
-  import GhpagesPlugin.autoImport._
-
-  override def requires: Plugins = GhpagesPlugin
-
-  override def projectSettings: Seq[Setting[_]] = Seq(
-    ghpagesBranch := "master",
-    includeFilter in ghpagesCleanSite := new FileFilter {
-      override def accept(pathname: File): Boolean = pathname.getAbsolutePath.contains(s"${EswKeys.projectName}/${version.value}")
-    },
-    GitKeys.gitRemoteRepo := "git@github.com:tmtsoftware/tmtsoftware.github.io.git"
   )
 }
 

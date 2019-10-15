@@ -79,8 +79,8 @@ class SequencerAdminClient(
     postClient.requestResponse[GoOnlineResponse](GoOnline)
   }
 
-  override def goOffline(): Future[OkOrUnhandledResponse] = {
-    postClient.requestResponse[OkOrUnhandledResponse](GoOffline)
+  override def goOffline(): Future[GoOfflineResponse] = {
+    postClient.requestResponse[GoOfflineResponse](GoOffline)
   }
 
   override def diagnosticMode(startTime: UTCTime, hint: String): Future[DiagnosticModeResponse] = {

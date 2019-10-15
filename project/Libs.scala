@@ -7,9 +7,6 @@ object Libs {
   private val SilencerVersion      = "1.4.2"
   private val MSocketVersion       = "5d45d67"
 
-  // fixme: find appropriate place to keep kotlin test scripts used in integration-test project
-  val `examples` = "com.github.tmtsoftware.script-dsl" % "examples" % "ca4cabdc79e52561d0a2923858819271d98773e5"
-
   val `silencer-lib`       = "com.github.ghik" %% "silencer-lib" % SilencerVersion % Compile
   val `silencer-plugin`    = compilerPlugin("com.github.ghik" %% "silencer-plugin" % SilencerVersion)
   val `case-app`           = "com.github.alexarchambault" %% "case-app" % "2.0.0-M9"
@@ -21,11 +18,13 @@ object Libs {
   val `scala-java8-compat` = "org.scala-lang.modules" %% "scala-java8-compat" % "0.9.0" //BSD 3-clause "New" or "Revised" License
   val `msocket-api`        = dep("com.github.tmtsoftware.msocket" %%% "msocket-api" % MSocketVersion)
   val `msocket-impl-jvm`   = "com.github.tmtsoftware.msocket" %% "msocket-impl-jvm" % MSocketVersion
+  val `caffeine`           = "com.github.ben-manes.caffeine" % "caffeine" % "2.8.0"
+  val `jupiter-interface`  = "net.aichler" % "jupiter-interface" % "0.8.3"
 }
 
 object Csw {
   private val Org     = "com.github.tmtsoftware.csw"
-  private val Version = "5d18023" //change this to 0.1-SNAPSHOT to test with local csw changes (after publishLocal)
+  private val Version = "5759504" //change this to 0.1-SNAPSHOT to test with local csw changes (after publishLocal)
 
   val `csw-alarm-api`       = Org %% "csw-alarm-api" % Version
   val `csw-command-api`     = Org %% "csw-command-api" % Version
@@ -73,4 +72,15 @@ object Borer {
   val `borer-core`        = Org %% "borer-core"        % Version
   val `borer-derivation`  = Org %% "borer-derivation"  % Version
   val `borer-compat-akka` = Org %% "borer-compat-akka" % Version
+}
+
+object Kotlin {
+  private val KotlinVersion = "1.3.50"
+
+  val `stdlib-jdk8`    = "org.jetbrains.kotlin" % "kotlin-stdlib-jdk8"    % KotlinVersion
+
+  val `coroutines-jdk8` = "org.jetbrains.kotlinx" % "kotlinx-coroutines-jdk8" % "1.3.2"
+
+  val kotlintest = "io.kotlintest" % "kotlintest-core" % "3.4.2"
+  val mockk      = "io.mockk"      % "mockk"           % "1.9.3"
 }

@@ -24,7 +24,7 @@ trait SequencerAdminApi {
   def reset(): Future[OkOrUnhandledResponse]
   def abortSequence(): Future[OkOrUnhandledResponse]
   def goOnline(): Future[GoOnlineResponse]
-  def goOffline(): Future[OkOrUnhandledResponse]
+  def goOffline(): Future[GoOfflineResponse]
   def diagnosticMode(startTime: UTCTime, hint: String): Future[DiagnosticModeResponse]
   def operationsMode(): Future[OperationsModeResponse]
 

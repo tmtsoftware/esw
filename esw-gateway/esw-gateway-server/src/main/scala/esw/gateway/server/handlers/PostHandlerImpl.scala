@@ -4,13 +4,17 @@ import akka.http.scaladsl.server.Directives._
 import akka.http.scaladsl.server.StandardRoute
 import esw.gateway.api.codecs.GatewayCodecs
 import esw.gateway.api.protocol.PostRequest
-import esw.gateway.api.protocol.PostRequest.{GetEvent, Oneway, PublishEvent, SetAlarmSeverity, Submit, Validate}
-import esw.gateway.api.{AlarmApi, CommandApi, EventApi}
+import esw.gateway.api.protocol.PostRequest._
+import esw.gateway.api.{AlarmApi, CommandApi, EventApi, LoggingApi}
 import mscoket.impl.HttpCodecs
 import msocket.api.MessageHandler
 
-class PostHandlerImpl(alarmApi: AlarmApi, commandApi: CommandApi, eventApi: EventApi)
-    extends MessageHandler[PostRequest, StandardRoute]
+class PostHandlerImpl(
+    alarmApi: AlarmApi,
+    commandApi: CommandApi,
+    eventApi: EventApi,
+    loggingApi: LoggingApi
+) extends MessageHandler[PostRequest, StandardRoute]
     with GatewayCodecs
     with HttpCodecs {
 
@@ -21,5 +25,6 @@ class PostHandlerImpl(alarmApi: AlarmApi, commandApi: CommandApi, eventApi: Even
     case PublishEvent(event)                  => complete(eventApi.publish(event))
     case GetEvent(eventKeys)                  => complete(eventApi.get(eventKeys))
     case SetAlarmSeverity(alarmKey, severity) => complete(alarmApi.setSeverity(alarmKey, severity))
+    case Log(appName, level, message, map)    => complete(loggingApi.log(appName, level, message, map))
   }
 }

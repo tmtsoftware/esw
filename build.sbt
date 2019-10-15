@@ -1,18 +1,21 @@
+import org.tmt.sbt.docs.{Settings => DocSettings}
 import sbtcrossproject.CrossPlugin.autoImport.{CrossType, crossProject}
 
 lazy val aggregateProjects: Seq[ProjectReference] =
   Seq(
     `esw-ocs`,
     `esw-http-core`,
+    `esw-gateway`,
     `esw-integration-test`,
-    `esw-gateway`
+    examples
   )
 
-lazy val githubReleases: Seq[ProjectReference] = Seq.empty
+lazy val githubReleases: Seq[ProjectReference] = Seq(`esw-ocs-app`)
 lazy val unidocExclusions: Seq[ProjectReference] = Seq(
   `esw-integration-test`,
   `esw-ocs-api`.js,
-  `esw-gateway-api`.js
+  `esw-gateway-api`.js,
+  examples
 )
 
 val enableCoverage         = sys.props.get("enableCoverage").contains("true")
@@ -20,12 +23,12 @@ val MaybeCoverage: Plugins = if (enableCoverage) Coverage else Plugins.empty
 
 lazy val esw = (project in file("."))
   .aggregate(aggregateProjects: _*)
-  .enablePlugins(NoPublish, UnidocSite, GithubPublishDocs, GitBranchPrompt, GithubRelease)
+  .enablePlugins(NoPublish, UnidocSitePlugin, GithubPublishPlugin, GitBranchPrompt, GithubRelease)
   .disablePlugins(BintrayPlugin)
-  .settings(Settings.mergeSiteWith(docs))
+  .settings(DocSettings.makeSiteMappings(docs))
   .settings(Settings.addAliases)
-  .settings(Settings.docExclusions(unidocExclusions))
-//  .settings(GithubRelease.githubReleases(githubReleases))
+  .settings(DocSettings.docExclusions(unidocExclusions))
+  .settings(GithubRelease.githubReleases(githubReleases))
 
 lazy val `esw-ocs` = project
   .in(file("esw-ocs"))
@@ -33,6 +36,7 @@ lazy val `esw-ocs` = project
     `esw-ocs-api`.js,
     `esw-ocs-api`.jvm,
     `esw-ocs-dsl`,
+    `esw-ocs-dsl-kt`,
     `esw-ocs-impl`,
     `esw-ocs-app`
   )
@@ -87,14 +91,26 @@ lazy val `esw-integration-test` = project
     `esw-gateway-server` % "test->compile;test->test",
     `esw-http-core`      % "test->compile;test->test",
     `esw-ocs-impl`       % "test->compile;test->test",
+    examples,
     `esw-ocs-app`,
     `esw-test-reporter` % Test
   )
 
 lazy val `esw-ocs-dsl` = project
   .in(file("esw-ocs/esw-ocs-dsl"))
-  .settings(libraryDependencies ++= Dependencies.Utils.value)
+  .settings(libraryDependencies ++= Dependencies.OcsDsl.value)
   .dependsOn(`esw-ocs-api`.jvm % "compile->compile;test->test", `esw-test-reporter` % Test)
+
+lazy val `esw-ocs-dsl-kt` = project
+  .in(file("esw-ocs/esw-ocs-dsl-kt"))
+  .enablePlugins(KotlinPlugin)
+  .settings(
+    fork in Test := true, // fixme: temp fix to run test sequentially, otherwise LoopTest fails because of timings
+    kotlinVersion := "1.3.50",
+    kotlincOptions ++= Seq("-Xuse-experimental=kotlin.time.ExperimentalTime", "-jvm-target", "1.8")
+  )
+  .settings(libraryDependencies ++= Dependencies.OcsDslKt.value)
+  .dependsOn(`esw-ocs-dsl`)
 
 lazy val `esw-gateway` = project
   .aggregate(
@@ -145,4 +161,13 @@ lazy val `esw-sm` = project
     `esw-ocs-impl`
   )
 /* ================= Paradox Docs ============== */
-lazy val docs = project.enablePlugins(NoPublish, ParadoxSite)
+lazy val docs = project.enablePlugins(NoPublish, ParadoxMaterialSitePlugin)
+
+lazy val examples = project
+  .in(file("examples"))
+  .enablePlugins(KotlinPlugin)
+  .settings(
+    kotlinVersion := "1.3.50",
+    kotlincOptions ++= Seq("-Xuse-experimental=kotlin.time.ExperimentalTime", "-jvm-target", "1.8")
+  )
+  .dependsOn(`esw-ocs-dsl-kt`)
