@@ -9,17 +9,15 @@ import csw.params.commands.CommandResponse.{OnewayResponse, SubmitResponse, Vali
 import csw.params.commands.ControlCommand
 import csw.params.core.models.Id
 import csw.params.core.states.{CurrentState, StateName}
-import esw.gateway.api.CommandApi
 import esw.gateway.api.protocol.{InvalidComponent, InvalidMaxFrequency}
+import esw.gateway.api.{CommandApi, CommandServiceFactoryApi}
 import esw.gateway.impl.SourceExtensions.RichSource
 import msocket.api.models.StreamStatus
 
 import scala.concurrent.duration.DurationInt
 import scala.concurrent.{ExecutionContext, Future}
-import scala.util.control.NonFatal
 
-//fixme: Inject commandService from eswUtils later
-class CommandImpl(commandService: ComponentId => Future[CommandService])(
+class CommandImpl(commandServiceFactory: CommandServiceFactoryApi)(
     implicit ec: ExecutionContext,
     timeout: Timeout
 ) extends CommandApi {
@@ -39,11 +37,11 @@ class CommandImpl(commandService: ComponentId => Future[CommandService])(
   }
 
   private def process[T](componentId: ComponentId, action: CommandService => Future[T]): Future[Either[InvalidComponent, T]] = {
-    commandService(componentId)
-      .flatMap(action)
-      .map(Right(_))
-      .recover {
-        case NonFatal(ex) => Left(InvalidComponent(ex.getMessage))
+    commandServiceFactory
+      .commandService(componentId)
+      .flatMap {
+        case Right(commandService) => action(commandService).map(Right(_))
+        case Left(value)           => Future.successful(Left(value))
       }
   }
 
@@ -54,10 +52,11 @@ class CommandImpl(commandService: ComponentId => Future[CommandService])(
   ): Source[CurrentState, Future[StreamStatus]] = {
 
     def futureSource: Future[Source[CurrentState, Future[StreamStatus]]] =
-      commandService(componentId)
-        .map(commandService => commandService.subscribeCurrentState(stateNames).withSubscription())
-        .recover {
-          case NonFatal(ex) => Source.empty.withError(InvalidComponent(ex.getMessage).toStreamError)
+      commandServiceFactory
+        .commandService(componentId)
+        .map {
+          case Right(commandService)       => commandService.subscribeCurrentState(stateNames).withSubscription()
+          case Left(err: InvalidComponent) => Source.empty.withError(err.toStreamError)
         }
 
     def currentStateSource: Source[CurrentState, Future[StreamStatus]] = {

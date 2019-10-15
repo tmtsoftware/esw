@@ -47,12 +47,11 @@ class PostRouteTest extends BaseTestSuite with ScalatestRouteTest with GatewayCo
 
   private val alarmApi: AlarmApi     = new AlarmImpl(alarmService)
   private val eventApi: EventApi     = new EventImpl(eventService, eventSubscriberUtil)
-  private val commandApi: CommandApi = new CommandImpl(componentFactory.commandService)
+  private val commandApi: CommandApi = new CommandImpl(commandServiceFactory)
   private val loggingApi: LoggingApi = new LoggingImpl(loggerCache)
   private val postHandlerImpl        = new PostHandlerImpl(alarmApi, commandApi, eventApi, loggingApi)
   private val route                  = new Routes(postHandlerImpl, null, logger).route
 
-  // fixme: add failure scenario when event server/ alarm server is down
   "Submit Command" must {
     "handle submit command and return started command response | ESW-91, ESW-216" in {
       val componentName = "test"
@@ -62,7 +61,7 @@ class PostRouteTest extends BaseTestSuite with ScalatestRouteTest with GatewayCo
       val componentId   = ComponentId(componentName, componentType)
       val submitRequest = Submit(componentId, command)
 
-      when(componentFactory.commandService(componentId)).thenReturn(Future.successful(commandService))
+      when(commandServiceFactory.commandService(componentId)).thenReturn(Future.successful(Right(commandService)))
       when(commandService.submit(command)).thenReturn(Future.successful(Started(runId)))
 
       Post("/post-endpoint", submitRequest) ~> route ~> check {
@@ -78,7 +77,7 @@ class PostRouteTest extends BaseTestSuite with ScalatestRouteTest with GatewayCo
       val componentId     = ComponentId(componentName, componentType)
       val validateRequest = Validate(componentId, command)
 
-      when(componentFactory.commandService(componentId)).thenReturn(Future.successful(commandService))
+      when(commandServiceFactory.commandService(componentId)).thenReturn(Future.successful(Right(commandService)))
       when(commandService.validate(command)).thenReturn(Future.successful(Accepted(runId)))
 
       Post("/post-endpoint", validateRequest) ~> route ~> check {
@@ -94,7 +93,7 @@ class PostRouteTest extends BaseTestSuite with ScalatestRouteTest with GatewayCo
       val componentId   = ComponentId(componentName, componentType)
       val onewayRequest = Oneway(componentId, command)
 
-      when(componentFactory.commandService(componentId)).thenReturn(Future.successful(commandService))
+      when(commandServiceFactory.commandService(componentId)).thenReturn(Future.successful(Right(commandService)))
       when(commandService.oneway(command)).thenReturn(Future.successful(Accepted(runId)))
 
       Post("/post-endpoint", onewayRequest) ~> route ~> check {
@@ -112,8 +111,8 @@ class PostRouteTest extends BaseTestSuite with ScalatestRouteTest with GatewayCo
 
       val errmsg = s"Could not find component $componentName of type - $componentType"
 
-      when(componentFactory.commandService(componentId))
-        .thenReturn(Future.failed(new IllegalArgumentException(errmsg)))
+      when(commandServiceFactory.commandService(componentId))
+        .thenReturn(Future.successful(Left(InvalidComponent(errmsg))))
 
       Post("/post-endpoint", submitRequest) ~> route ~> check {
         responseAs[Either[InvalidComponent, CommandResponse]].leftValue shouldEqual InvalidComponent(errmsg)

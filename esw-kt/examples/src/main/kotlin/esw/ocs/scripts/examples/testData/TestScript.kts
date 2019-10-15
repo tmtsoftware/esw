@@ -59,7 +59,6 @@ script {
 
     handleSetup("test-sequencer-hierarchy") {
         delay(5000)
-
         addOrUpdateCommand(CommandResponse.Completed(it.runId()))
     }
 
