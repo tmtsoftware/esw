@@ -7,8 +7,6 @@ object Libs {
   private val SilencerVersion      = "1.4.2"
   private val MSocketVersion       = "5d45d67"
 
-  val `examples` = "com.github.tmtsoftware.script-dsl" % "examples" % "0.1.0-SNAPSHOT"
-
   val `silencer-lib`       = "com.github.ghik" %% "silencer-lib" % SilencerVersion % Compile
   val `silencer-plugin`    = compilerPlugin("com.github.ghik" %% "silencer-plugin" % SilencerVersion)
   val `case-app`           = "com.github.alexarchambault" %% "case-app" % "2.0.0-M9"
