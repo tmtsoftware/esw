@@ -14,12 +14,13 @@ import java.util.concurrent.CompletableFuture.completedFuture
 import kotlin.coroutines.EmptyCoroutineContext
 import kotlinx.coroutines.CoroutineScope
 import org.junit.jupiter.api.Test
+import kotlinx.coroutines.SupervisorJob
 
 class AlarmServiceDslTest : AlarmServiceDsl {
 
     private val mockedAlarmService: IAlarmService = mockk()
 
-    override val coroutineScope: CoroutineScope = CoroutineScope(EmptyCoroutineContext)
+    override val coroutineScope: CoroutineScope = CoroutineScope(SupervisorJob())
     override val alarmService: IAlarmService = mockedAlarmService
     override val alarmSeverityData: AlarmSeverityData = AlarmSeverityData(HashMap())
 

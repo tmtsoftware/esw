@@ -24,13 +24,11 @@ import esw.ocs.dsl.script.JScriptDsl
 import esw.ocs.dsl.script.StrandEc
 import esw.ocs.dsl.script.utils.LockUnlockUtil
 import esw.ocs.dsl.sequence_manager.LocationServiceUtil
-import java.util.concurrent.CompletionStage
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Job
-import kotlinx.coroutines.asCoroutineDispatcher
+import kotlinx.coroutines.*
 import kotlinx.coroutines.future.await
 import kotlinx.coroutines.future.future
-import kotlinx.coroutines.launch
+import java.util.concurrent.CompletableFuture
+import java.util.concurrent.CompletionStage
 
 sealed class ScriptDslKt : CswHighLevelDsl {
 
@@ -113,19 +111,29 @@ sealed class ScriptDslKt : CswHighLevelDsl {
 
     private fun (suspend () -> Unit).toJavaFutureVoid(): CompletionStage<Void> {
         val block = this
-        return coroutineScope.future { block() }.thenAccept { }
+        return coroutineScope.future { block() }
+                .whenComplete { v, e ->
+                    if (e == null) {
+                        CompletableFuture.completedFuture(v)
+                    } else {
+                        log("exception : ${e.message}")
+                        //fixme: call exception handlers whenever implemented
+                        CompletableFuture.failedFuture<Unit>(e)
+                    }
+                }
+                .thenAccept { }
     }
 
     private fun <T> (suspend (T) -> Unit).toJavaFuture(value: T): CompletionStage<Void> {
         val block = this
-        return coroutineScope.future { block(value) }.thenAccept { }
+        return suspend { block(value) }.toJavaFutureVoid()
     }
 }
 
 class ReusableScript(
-    override val cswServices: CswServices,
-    private val _strandEc: StrandEc,
-    override val coroutineScope: CoroutineScope
+        override val cswServices: CswServices,
+        private val _strandEc: StrandEc,
+        override val coroutineScope: CoroutineScope
 ) : ScriptDslKt() {
     override fun strandEc(): StrandEc = _strandEc
 
@@ -136,19 +144,23 @@ class ReusableScript(
 
 open class Script(final override val cswServices: CswServices) : ScriptDslKt() {
     private val _strandEc = StrandEc.apply()
-    private val job = Job()
+    private val supervisorJob = SupervisorJob()
     private val dispatcher = _strandEc.executorService().asCoroutineDispatcher()
 
     override val timeServiceScheduler: TimeServiceScheduler by lazy {
         cswServices.timeServiceSchedulerFactory().make(_strandEc.ec())
     }
-
-    override val coroutineScope: CoroutineScope get() = CoroutineScope(job + dispatcher)
+    private val exceptionHandler = CoroutineExceptionHandler {
+        //fixme: call exception handlers whenever implemented
+        _, exception ->
+        log("Exception: ${exception.message}")
+    }
+    override val coroutineScope: CoroutineScope get() = CoroutineScope(supervisorJob + dispatcher + exceptionHandler)
 
     override fun strandEc(): StrandEc = _strandEc
 
     fun close() {
-        job.cancel()
+        supervisorJob.cancel()
         dispatcher.close()
     }
 }
