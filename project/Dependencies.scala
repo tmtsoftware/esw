@@ -29,7 +29,6 @@ object Dependencies {
 
   val OcsApp: Def.Initialize[Seq[ModuleID]] = Def.setting(
     Seq(
-      Libs.`case-app`,
       Libs.`msocket-impl-jvm`,
       AkkaHttp.`akka-http-cors`,
       Libs.scalatest                  % Test,
@@ -51,6 +50,7 @@ object Dependencies {
       Csw.`csw-params`.value,
       Csw.`csw-config-client`,
       Csw.`csw-time-scheduler`,
+      Libs.`case-app`,
       Libs.`scala-async`,
       Libs.scalatest                  % Test,
       Csw.`csw-testkit`               % Test,
@@ -103,8 +103,7 @@ object Dependencies {
 
   val EswGatewayServer: Def.Initialize[Seq[ModuleID]] = Def.setting(
     Seq(
-      Libs.`msocket-impl-jvm`,
-      Libs.`case-app`
+      Libs.`msocket-impl-jvm`
     )
   )
 

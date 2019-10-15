@@ -2,13 +2,14 @@ package esw.ocs.app
 
 import akka.actor.typed.ActorRef
 import akka.actor.typed.scaladsl.AskPattern.Askable
-import caseapp.{CommandApp, RemainingArgs, core}
+import caseapp.RemainingArgs
 import csw.location.api.extensions.URIExtension.RichURI
 import csw.location.client.utils.LocationServerStatus
 import csw.location.models.AkkaLocation
 import csw.logging.api.scaladsl.Logger
 import csw.logging.client.scaladsl.LoggerFactory
 import esw.http.core.commons.CoordinatedShutdownReasons.FailureReason
+import esw.http.core.commons.EswCommandApp
 import esw.ocs.api.protocol.{LoadScriptError, LoadScriptResponse}
 import esw.ocs.app.SequencerAppCommand._
 import esw.ocs.app.wiring.{SequenceComponentWiring, SequencerWiring}
@@ -19,7 +20,7 @@ import esw.ocs.impl.syntax.FutureSyntax.FutureOps
 import scala.concurrent.Future
 import scala.util.control.NonFatal
 
-object SequencerApp extends CommandApp[SequencerAppCommand] {
+object SequencerApp extends EswCommandApp[SequencerAppCommand] {
   override def appName: String    = getClass.getSimpleName.dropRight(1) // remove $ from class name
   override def appVersion: String = BuildInfo.version
   override def progName: String   = BuildInfo.name
@@ -30,14 +31,6 @@ object SequencerApp extends CommandApp[SequencerAppCommand] {
   def run(command: SequencerAppCommand, args: RemainingArgs): Unit = {
     LocationServerStatus.requireUpLocally()
     run(command)
-  }
-
-  override def error(message: core.Error): Nothing = {
-    println(message.message)
-    print(beforeCommandMessages.help)
-    println(s"Available commands: ${commands.mkString(", ")}\n")
-    println(s"Type  $progName command --help  for help on an individual command")
-    exit(255)
   }
 
   def run(command: SequencerAppCommand, enableLogging: Boolean = true): Unit = {
@@ -73,20 +66,13 @@ object SequencerApp extends CommandApp[SequencerAppCommand] {
   }
 
   private def report(appResult: Either[LoadScriptError, AkkaLocation]) = appResult match {
-    case Left(err) => logAndThrowError(s"Failed to start with error: $err")
+    case Left(err) => logAndThrowError(log, s"Failed to start with error: $err")
     case Right(location) =>
-      logInfo(s"Successfully started and registered ${location.connection.componentId.componentType} with Location: [$location]")
+      logInfo(
+        log,
+        s"Successfully started and registered ${location.connection.componentId.componentType} with Location: [$location]"
+      )
       location
   }
 
-  private def logAndThrowError(msg: String) = {
-    log.error(msg)
-    println(s"[ERROR] $msg")
-    throw new RuntimeException(msg)
-  }
-
-  private def logInfo(msg: String): Unit = {
-    log.info(msg)
-    println(s"[INFO] $msg")
-  }
 }
