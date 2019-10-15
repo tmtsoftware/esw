@@ -16,7 +16,7 @@ pipeline {
             }
         }
 
-        stage('Build and Publish Local') {
+        stage('Build') {
             steps {
                 sh "sbt scalafmtCheck"
                 sh "sbt clean makeSite"

@@ -16,7 +16,7 @@ pipeline {
             }
         }
 
-        stage('Build and Publish Local') {
+        stage('Build') {
             steps {
                 sh "sbt scalafmtCheck"
                 sh "sbt clean makeSite"
@@ -27,7 +27,8 @@ pipeline {
         stage('Test - Scala') {
             steps {
                 sh "sbt -DenableCoverage=true -DgenerateStoryReport=true ';set every enableFatalWarnings := true; clean; test:test'"
-                sh "sbt -DenableCoverage=true -DgenerateStoryReport=true 'esw-ocs-dsl-kt/testOnly -- *'" // execute kotlin tests
+                sh "sbt -DenableCoverage=true -DgenerateStoryReport=true 'esw-ocs-dsl-kt/testOnly -- *'"
+                // execute kotlin tests
             }
             post {
                 always {
