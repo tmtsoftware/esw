@@ -30,7 +30,10 @@ object SequencerMessages {
   sealed trait EditorAction          extends SequenceLoadedMessage with InProgressMessage
 
   // startup msgs
-  final case class LoadSequence(sequence: Sequence, replyTo: ActorRef[LoadSequenceResponse])   extends IdleMessage
+  final case class LoadSequence(sequence: Sequence, replyTo: ActorRef[LoadSequenceResponse])
+      extends IdleMessage
+      with SequenceLoadedMessage
+
   final case class StartSequence(replyTo: ActorRef[OkOrUnhandledResponse])                     extends SequenceLoadedMessage
   final case class SubmitSequence(sequence: Sequence, replyTo: ActorRef[LoadSequenceResponse]) extends IdleMessage
   final case class QueryFinal(replyTo: ActorRef[SequenceResponse])

@@ -43,6 +43,12 @@ class SequencerBehaviorTest extends ScalaTestWithActorTestKit with BaseTestSuite
       loadSequenceAndAssertResponse(Ok)
     }
 
+    "load the given sequence in loaded state | ESW-145" in {
+      val sequencerSetup = SequencerTestSetup.loaded(sequence)
+      import sequencerSetup._
+      loadSequenceAndAssertResponse(Ok)
+    }
+
     "fail when given sequence contains duplicate Ids | ESW-145" in {
       val invalidSequence = Sequence(Id(), Seq(command1, command1))
       val sequencerSetup  = SequencerTestSetup.idle(invalidSequence)
@@ -916,7 +922,6 @@ class SequencerBehaviorTest extends ScalaTestWithActorTestKit with BaseTestSuite
 
     assertUnhandled(
       Loaded,
-      LoadSequence(sequence, _),
       SubmitSequenceAndWaitInternal(sequence, _),
       Update(Completed(Id()), _),
       GoOnline,
