@@ -25,7 +25,7 @@ class LockUnlockUtilTest extends BaseTestSuite {
     val prefix                                           = Prefix("esw")
     val leaseDuration                                    = Duration.ofSeconds(5)
 
-    "send lock message to component" in {
+    "send lock message to component | ESW-126" in {
       val componentRef = TestProbe[ComponentMessage]()
 
       when(locationServiceUtil.resolveComponentRef(componentName, componentType)).thenReturn(Future.successful(componentRef.ref))
@@ -39,30 +39,13 @@ class LockUnlockUtilTest extends BaseTestSuite {
       msg.replyTo.isInstanceOf[ActorRef[LockingResponse]]
     }
 
-    "throw RuntimeException exception when resolve component fails" in {
+    "throw RuntimeException exception when resolve component fails | ESW-126" in {
       val exception         = new RuntimeException("RuntimeException error")
       val expectedException = new ExecutionException(exception)
       val lockUnlockUtil    = new LockUnlockUtil(locationServiceUtil)(actorSystem)
 
       when(locationServiceUtil.resolveComponentRef(componentName, componentType))
         .thenReturn(Future.failed(exception))
-
-      val lockingResponse: CompletionStage[LockingResponse] =
-        lockUnlockUtil.jLock(componentName, componentType, prefix, leaseDuration)
-
-      lockingResponse.toCompletableFuture.isCompletedExceptionally shouldEqual true
-      val actualException = intercept[ExecutionException] {
-        lockingResponse.toCompletableFuture.get()
-      }
-      actualException.getMessage shouldEqual expectedException.getMessage
-    }
-
-    "throw IllegalArgumentException exception when resolve component fails" in {
-      val exception         = new IllegalArgumentException("IllegalArgumentException error")
-      val expectedException = new ExecutionException(exception)
-      val lockUnlockUtil    = new LockUnlockUtil(locationServiceUtil)(actorSystem)
-
-      when(locationServiceUtil.resolveComponentRef(componentName, componentType)).thenReturn(Future.failed(exception))
 
       val lockingResponse: CompletionStage[LockingResponse] =
         lockUnlockUtil.jLock(componentName, componentType, prefix, leaseDuration)
@@ -82,7 +65,7 @@ class LockUnlockUtilTest extends BaseTestSuite {
     val componentType                                    = ComponentType.Assembly
     val prefix                                           = Prefix("esw")
 
-    "send unlock message to component" in {
+    "send unlock message to component | ESW-126" in {
       val componentRef = TestProbe[ComponentMessage]()
 
       when(locationServiceUtil.resolveComponentRef(componentName, componentType)).thenReturn(Future.successful(componentRef.ref))
@@ -95,30 +78,13 @@ class LockUnlockUtilTest extends BaseTestSuite {
       msg.replyTo.isInstanceOf[ActorRef[LockingResponse]]
     }
 
-    "throw RuntimeException exception when resolve component fails" in {
+    "throw RuntimeException exception when resolve component fails | ESW-126" in {
       val exception         = new RuntimeException("RuntimeException error")
       val expectedException = new ExecutionException(exception)
       val lockUnlockUtil    = new LockUnlockUtil(locationServiceUtil)(actorSystem)
 
       when(locationServiceUtil.resolveComponentRef(componentName, componentType))
         .thenReturn(Future.failed(exception))
-
-      val lockingResponse: CompletionStage[LockingResponse] =
-        lockUnlockUtil.jUnlock(componentName, componentType, prefix)
-
-      lockingResponse.toCompletableFuture.isCompletedExceptionally shouldEqual true
-      val actualException = intercept[ExecutionException] {
-        lockingResponse.toCompletableFuture.get()
-      }
-      actualException.getMessage shouldEqual expectedException.getMessage
-    }
-
-    "throw IllegalArgumentException exception when resolve component fails" in {
-      val exception         = new IllegalArgumentException("IllegalArgumentException error")
-      val expectedException = new ExecutionException(exception)
-      val lockUnlockUtil    = new LockUnlockUtil(locationServiceUtil)(actorSystem)
-
-      when(locationServiceUtil.resolveComponentRef(componentName, componentType)).thenReturn(Future.failed(exception))
 
       val lockingResponse: CompletionStage[LockingResponse] =
         lockUnlockUtil.jUnlock(componentName, componentType, prefix)
