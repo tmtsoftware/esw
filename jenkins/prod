@@ -27,8 +27,6 @@ pipeline {
         stage('Test - Scala') {
             steps {
                 sh "sbt -DenableCoverage=true -DgenerateStoryReport=true ';set every enableFatalWarnings := true; clean; test:test'"
-                sh "sbt -DenableCoverage=true -DgenerateStoryReport=true 'esw-ocs-dsl-kt/testOnly -- *'"
-                // execute kotlin tests
             }
             post {
                 always {

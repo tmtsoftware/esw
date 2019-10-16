@@ -27,7 +27,6 @@ pipeline {
         stage('Test') {
             steps {
                 sh "sbt -DenableCoverage=true -DgenerateStoryReport=true test:test"
-                sh "sbt -DenableCoverage=true -DgenerateStoryReport=true 'esw-ocs-dsl-kt/testOnly -- *'" // execute kotlin tests
             }
             post {
                 always {
