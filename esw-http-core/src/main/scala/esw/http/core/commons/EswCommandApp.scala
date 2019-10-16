@@ -6,6 +6,7 @@ import caseapp.core.commandparser.CommandParser
 import caseapp.core.help.CommandsHelp
 import csw.logging.api.scaladsl.Logger
 
+// $COVERAGE-OFF$
 abstract class EswCommandApp[T](implicit commandParser: CommandParser[T], commandsMessages: CommandsHelp[T])
     extends CommandApp[T] {
 
@@ -41,3 +42,4 @@ abstract class EswCommandApp[T](implicit commandParser: CommandParser[T], comman
   }
 
 }
+// $COVERAGE-ON$
