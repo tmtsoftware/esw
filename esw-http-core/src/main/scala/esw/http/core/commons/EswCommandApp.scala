@@ -9,22 +9,35 @@ import csw.logging.api.scaladsl.Logger
 abstract class EswCommandApp[T](implicit commandParser: CommandParser[T], commandsMessages: CommandsHelp[T])
     extends CommandApp[T] {
 
+  override def helpAsked(): Nothing = {
+    help()
+    exit(0)
+  }
+
   override def error(message: core.Error): Nothing = {
-    println(message.message)
-    print(beforeCommandMessages.help)
-    println(s"Available commands: ${commands.mkString(", ")}\n")
-    println(s"Type  $progName command --help  for help on an individual command")
+    colored(Console.RED, message.message)
+    println()
+    help()
     exit(255)
   }
 
   def logAndThrowError(log: Logger, msg: String) = {
     log.error(msg)
-    println(s"[ERROR] $msg")
+    colored(Console.RED, msg)
     throw new RuntimeException(msg)
   }
 
   def logInfo(log: Logger, msg: String): Unit = {
     log.info(msg)
-    println(s"[INFO] $msg")
+    println(msg)
   }
+
+  private def colored(color: String, msg: String): Unit = println(s"$color$msg${Console.RESET}")
+
+  private def help(): Unit = {
+    print(beforeCommandMessages.copy(optionsDesc = s"[command] [command-options]").help)
+    println(s"Available commands: ${commands.mkString(", ")}\n")
+    println(s"Type  $progName command --help  for help on an individual command")
+  }
+
 }
