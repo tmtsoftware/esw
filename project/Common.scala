@@ -51,6 +51,7 @@ object Common extends AutoPlugin {
       //      "-Xfuture"
       //      "-Xprint:typer"
     ),
+    javaOptions += "-Dsbt.color=always",
     libraryDependencies ++= Seq(`silencer-lib`),
     libraryDependencies ++= (if (suppressAnnotatedWarnings.value) Seq(compilerPlugin(`silencer-plugin`)) else Seq.empty),
     licenses := Seq(("Apache-2.0", url("http://www.apache.org/licenses/LICENSE-2.0")))

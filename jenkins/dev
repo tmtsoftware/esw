@@ -26,8 +26,8 @@ pipeline {
 
         stage('Test') {
             steps {
-                sh "sbt -DenableCoverage=true -DgenerateStoryReport=true -Dsbt.color=always test:test"
-                sh "sbt -DenableCoverage=true -Dsbt.color=always esw-ocs-dsl-kt/test" // fixme: test reporter does not work
+                sh "sbt -DenableCoverage=true -DgenerateStoryReport=true test:test"
+                sh "sbt -DenableCoverage=true esw-ocs-dsl-kt/test" // fixme: test reporter does not work
             }
             post {
                 always {
