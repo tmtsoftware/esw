@@ -70,9 +70,8 @@ sealed class ScriptDslKt(private val cswServices: CswServices) : CswHighLevelDsl
     suspend fun submitSequence(sequencerName: String, observingMode: String, sequence: Sequence): SubmitResponse =
         this.scriptDsl.submitSequence(sequencerName, observingMode, sequence).await()
 
-    private fun (suspend CoroutineScope.() -> Unit).toJavaFutureVoid(): CompletionStage<Void> {
-        val block = this
-        return coroutineScope.future { block() }
+    private fun (suspend CoroutineScope.() -> Unit).toJavaFutureVoid(): CompletionStage<Void> =
+        coroutineScope.future { this@toJavaFutureVoid() }
             .whenComplete { v, e ->
                 if (e == null) {
                     CompletableFuture.completedFuture(v)
@@ -83,12 +82,9 @@ sealed class ScriptDslKt(private val cswServices: CswServices) : CswHighLevelDsl
                 }
             }
             .thenAccept { }
-    }
 
     private fun <T> (suspend CoroutineScope.(T) -> Unit).toJavaFuture(value: T): CompletionStage<Void> {
-        val block = this
-
-        val curriedBlock: suspend (CoroutineScope) -> Unit = { a: CoroutineScope -> block(a, value) }
+        val curriedBlock: suspend (CoroutineScope) -> Unit = { a: CoroutineScope -> this(a, value) }
         return curriedBlock.toJavaFutureVoid()
     }
 }

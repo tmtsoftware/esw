@@ -10,21 +10,14 @@ import io.kotlintest.seconds
 import io.mockk.every
 import io.mockk.mockk
 import io.mockk.verify
-import java.util.concurrent.CompletableFuture.completedFuture
-import kotlinx.coroutines.CoroutineScope
 import org.junit.jupiter.api.Test
-import kotlinx.coroutines.SupervisorJob
+import java.util.concurrent.CompletableFuture.completedFuture
 
-class AlarmServiceDslTest : AlarmServiceDsl {
-
-    private val mockedAlarmService: IAlarmService = mockk()
-
-    override val coroutineScope: CoroutineScope = CoroutineScope(SupervisorJob())
-    override val alarmService: IAlarmService = mockedAlarmService
-    override val alarmSeverityData: AlarmSeverityData = AlarmSeverityData(HashMap())
-
+class AlarmServiceDslTest {
     @Test
     fun `AlarmServiceDsl should set severity of alarms | ESW-125`() {
+        val mockedAlarmService: IAlarmService = mockk()
+        val alarmServiceDsl: AlarmServiceDsl = AlarmServiceDslImpl(mockedAlarmService)
 
         val alarmKey = AlarmKey(TCS, "filter_assembly", "temperature")
         val severity = Major
@@ -33,7 +26,7 @@ class AlarmServiceDslTest : AlarmServiceDsl {
             mockedAlarmService.setSeverity(alarmKey, severity)
         } answers { completedFuture(done()) }
 
-        setSeverity(alarmKey, severity)
+        alarmServiceDsl.setSeverity(alarmKey, severity)
 
         eventually(5.seconds) {
             verify { mockedAlarmService.setSeverity(alarmKey, severity) }

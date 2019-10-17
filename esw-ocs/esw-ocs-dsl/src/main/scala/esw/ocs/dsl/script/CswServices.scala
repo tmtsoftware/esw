@@ -13,10 +13,10 @@ class CswServices(
     private[esw] val sequenceOperatorFactory: () => SequenceOperator,
     val crm: CommandResponseManager,
     val actorSystem: ActorSystem[_],
-    private[esw] val locationService: ILocationService,
-    private[esw] val eventService: IEventService,
+    val locationService: ILocationService,
+    val eventService: IEventService,
     private[esw] val timeServiceSchedulerFactory: TimeServiceSchedulerFactory,
     private[esw] val sequencerAdminFactory: SequencerAdminFactoryApi,
     private[esw] val lockUnlockUtil: LockUnlockUtil,
-    private[esw] val alarmService: IAlarmService
+    val alarmService: IAlarmService
 )

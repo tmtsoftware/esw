@@ -13,8 +13,9 @@ import esw.ocs.dsl.script.utils.LockUnlockUtil
 import esw.ocs.dsl.sequence_manager.LocationServiceUtil
 import kotlinx.coroutines.CoroutineScope
 
-abstract class CswHighLevelDsl(private val cswServices: CswServices) : EventServiceDsl, AlarmServiceDsl, TimeServiceDsl, CommandServiceDsl, CrmDsl, DiagnosticDsl,
-    LockUnlockDsl, OnlineOfflineDsl {
+abstract class CswHighLevelDsl(private val cswServices: CswServices) : EventServiceDsl, TimeServiceDsl, CommandServiceDsl, CrmDsl, DiagnosticDsl,
+    LockUnlockDsl, OnlineOfflineDsl,
+    AlarmServiceDsl by AlarmServiceDslImpl(cswServices.alarmService()) {
     abstract val strandEc: StrandEc
     abstract override val coroutineScope: CoroutineScope
 
@@ -22,8 +23,6 @@ abstract class CswHighLevelDsl(private val cswServices: CswServices) : EventServ
     final override val locationService: ILocationService = cswServices.locationService()
     final override val defaultPublisher: IEventPublisher by lazy { cswServices.eventService().defaultPublisher() }
     final override val defaultSubscriber: IEventSubscriber by lazy { cswServices.eventService().defaultSubscriber() }
-    final override val alarmService: IAlarmService = cswServices.alarmService()
-    final override val alarmSeverityData: AlarmSeverityData = AlarmSeverityData(HashMap())
     final override val crm: CommandResponseManager = cswServices.crm()
     // fixme: should not be visible from script
     final override val commonUtils: CommonUtils = CommonUtils(cswServices.sequencerAdminFactory(), LocationServiceUtil(locationService.asScala(), actorSystem))
