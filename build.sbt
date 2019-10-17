@@ -105,7 +105,6 @@ lazy val `esw-ocs-dsl-kt` = project
   .in(file("esw-ocs/esw-ocs-dsl-kt"))
   .enablePlugins(KotlinPlugin)
   .settings(
-    test in Test := (testOnly in Test).toTask("").value,
     fork in Test := true, // fixme: temp fix to run test sequentially, otherwise LoopTest fails because of timings
     kotlinVersion := "1.3.50",
     kotlincOptions ++= Seq("-Xuse-experimental=kotlin.time.ExperimentalTime", "-jvm-target", "1.8")
