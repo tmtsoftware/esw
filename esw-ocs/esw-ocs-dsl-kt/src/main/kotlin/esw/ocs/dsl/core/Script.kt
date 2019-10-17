@@ -61,7 +61,7 @@ sealed class ScriptDslKt : CswHighLevelDsl {
     // this needs to be lazy otherwise handlers does not get loaded properly
     val scriptDsl: JScriptDsl by lazy { ScriptDslFactory.make(cswServices, strandEc()) }
 
-    fun initialize(block: suspend () -> Unit) = coroutineScope.launch { block() }
+    fun initialize(block: suspend () -> Unit) = scriptDsl.addInitializer { runBlocking { block(); null } }
 
     suspend fun nextIf(predicate: (SequenceCommand) -> Boolean): SequenceCommand? =
             scriptDsl.nextIf { predicate(it) }.await().nullable()
