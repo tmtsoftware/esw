@@ -7,7 +7,6 @@ import csw.event.api.javadsl.IEventPublisher
 import csw.event.api.javadsl.IEventService
 import csw.event.api.javadsl.IEventSubscriber
 import csw.location.api.javadsl.ILocationService
-import csw.location.models.AkkaLocation
 import csw.params.commands.CommandResponse.SubmitResponse
 import csw.params.commands.Observe
 import csw.params.commands.Sequence
@@ -21,7 +20,7 @@ import esw.ocs.dsl.highlevel.CommonUtils
 import esw.ocs.dsl.highlevel.CswHighLevelDsl
 import esw.ocs.dsl.nullable
 import esw.ocs.dsl.script.CswServices
-import esw.ocs.dsl.script.ScriptDsl
+import esw.ocs.dsl.script.JScriptDsl
 import esw.ocs.dsl.script.StrandEc
 import esw.ocs.dsl.script.utils.LockUnlockUtil
 import esw.ocs.dsl.sequence_manager.LocationServiceUtil
@@ -62,43 +61,43 @@ sealed class ScriptDslKt : CswHighLevelDsl {
     override val lockUnlockUtil: LockUnlockUtil by lazy { cswServices.lockUnlockUtil() }
 
     // this needs to be lazy otherwise handlers does not get loaded properly
-    val scriptDsl: ScriptDsl by lazy { ScriptDslFactory.make(cswServices, strandEc()) }
+    val scriptDsl: JScriptDsl by lazy { ScriptDslFactory.make(cswServices, strandEc()) }
 
     fun initialize(block: suspend () -> Unit) = coroutineScope.launch { block() }
 
     suspend fun nextIf(predicate: (SequenceCommand) -> Boolean): SequenceCommand? =
-            scriptDsl.jNextIf { predicate(it) }.await().nullable()
+            scriptDsl.nextIf { predicate(it) }.await().nullable()
 
     fun handleSetup(name: String, block: suspend (Setup) -> Unit) {
-        scriptDsl.jHandleSetupCommand(name) { block.toJavaFuture(it) }
+        scriptDsl.handleSetupCommand(name) { block.toJavaFuture(it) }
     }
 
     fun handleObserve(name: String, block: suspend (Observe) -> Unit) {
-        scriptDsl.jHandleObserveCommand(name) { block.toJavaFuture(it) }
+        scriptDsl.handleObserveCommand(name) { block.toJavaFuture(it) }
     }
 
     fun handleGoOnline(block: suspend () -> Unit) {
-        scriptDsl.jHandleGoOnline { block.toJavaFutureVoid() }
+        scriptDsl.handleGoOnline { block.toJavaFutureVoid() }
     }
 
     fun handleGoOffline(block: suspend () -> Unit) {
-        scriptDsl.jHandleGoOffline { block.toJavaFutureVoid() }
+        scriptDsl.handleGoOffline { block.toJavaFutureVoid() }
     }
 
     fun handleAbort(block: suspend () -> Unit) {
-        scriptDsl.jHandleAbort { block.toJavaFutureVoid() }
+        scriptDsl.handleAbort { block.toJavaFutureVoid() }
     }
 
     fun handleShutdown(block: suspend () -> Unit) {
-        scriptDsl.jHandleShutdown { block.toJavaFutureVoid() }
+        scriptDsl.handleShutdown { block.toJavaFutureVoid() }
     }
 
     fun handleDiagnosticMode(block: suspend (UTCTime, String) -> Unit) {
-        scriptDsl.jHandleDiagnosticMode { x: UTCTime, y: String -> coroutineScope.future { block(x, y) }.thenAccept { } }
+        scriptDsl.handleDiagnosticMode { x: UTCTime, y: String -> coroutineScope.future { block(x, y) }.thenAccept { } }
     }
 
     fun handleOperationsMode(block: suspend () -> Unit) {
-        scriptDsl.jHandleOperationsMode { block.toJavaFutureVoid() }
+        scriptDsl.handleOperationsMode { block.toJavaFutureVoid() }
     }
 
     fun log(msg: String) = println("[${Thread.currentThread().name}] $msg")

@@ -6,13 +6,13 @@ import akka.stream.scaladsl.Source
 import csw.params.commands.CommandResponse.Error
 import csw.params.core.models.Id
 import esw.ocs.api.protocol.{PullNextResult, Unhandled}
-import esw.ocs.dsl.script.{ScriptDsl, SequenceOperator}
+import esw.ocs.dsl.script.{JScriptDsl, SequenceOperator}
 
 import scala.async.Async._
 import scala.concurrent.Future
 import scala.util.control.NonFatal
 
-private[ocs] class Engine(script: ScriptDsl) {
+private[ocs] class Engine(script: JScriptDsl) {
 
   def start(sequenceOperator: SequenceOperator)(implicit mat: Materializer): Future[Done] = {
     Source.repeat(()).mapAsync(1)(_ => processStep(sequenceOperator)).runForeach(_ => ())

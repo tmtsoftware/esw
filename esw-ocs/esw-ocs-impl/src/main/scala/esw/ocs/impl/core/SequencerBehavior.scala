@@ -17,7 +17,7 @@ import csw.params.commands.Sequence
 import csw.time.core.models.UTCTime
 import esw.ocs.api.codecs.OcsCodecs
 import esw.ocs.api.protocol._
-import esw.ocs.dsl.script.ScriptDsl
+import esw.ocs.dsl.script.JScriptDsl
 import esw.ocs.impl.internal.Timeouts
 import esw.ocs.impl.messages.SequencerMessages._
 import esw.ocs.impl.messages.SequencerState
@@ -29,7 +29,7 @@ import scala.util.{Failure, Success}
 
 class SequencerBehavior(
     componentId: ComponentId,
-    script: ScriptDsl,
+    script: JScriptDsl,
     locationService: LocationService,
     crm: CommandResponseManager,
     shutdownHttpService: () => Future[Done]

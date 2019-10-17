@@ -1,8 +1,8 @@
 package esw.ocs.dsl.script.utils
 
-import esw.ocs.dsl.script.{CswServices, ScriptDsl, StrandEc}
+import esw.ocs.dsl.script.{CswServices, JScriptDsl, StrandEc}
 
-class ValidTestScript(csw: CswServices) extends ScriptDsl(csw) {
+class ValidTestScript(csw: CswServices) extends JScriptDsl(csw) {
   override protected implicit def strandEc: StrandEc = ???
 }
 

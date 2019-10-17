@@ -32,7 +32,8 @@ script {
     }
 
     handleSetup("get-event") {
-        val event: Event = getEvent("TCS.get.event").elementAt(0)
+        // ESW-88
+        val event: Event = getEvent("TCS.get.event").first()
         val successEvent = systemEvent("TCS", "get.success")
         if (!event.isInvalid) publishEvent(successEvent)
         addOrUpdateCommand(CommandResponse.Completed(it.runId()))
@@ -52,7 +53,7 @@ script {
                 CollectionConverters.asScala(Collections.singleton<SequenceCommand>(setupCommand)).toSeq()
         )
 
-        // ESW-145, ESW-195
+        // ESW-88, ESW-145, ESW-195
         submitSequence("tcs", "darknight", sequence)
         addOrUpdateCommand(CommandResponse.Completed(command.runId()))
     }

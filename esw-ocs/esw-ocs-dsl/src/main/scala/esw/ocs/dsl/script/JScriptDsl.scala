@@ -20,7 +20,7 @@ import scala.compat.java8.FutureConverters.{CompletionStageOps, FutureOps}
 import scala.concurrent.{ExecutionContext, Future}
 import scala.reflect.ClassTag
 
-abstract class ScriptDsl(val csw: CswServices) {
+abstract class JScriptDsl(val csw: CswServices) {
 
   protected implicit def strandEc: StrandEc
   protected implicit lazy val toEc: ExecutionContext = strandEc.ec
@@ -36,7 +36,7 @@ abstract class ScriptDsl(val csw: CswServices) {
   private val diagnosticHandlers: FunctionHandlers[(UTCTime, String), CompletionStage[Void]] = new FunctionHandlers
   private val operationsHandlers: FunctionHandlers[Unit, CompletionStage[Void]]              = new FunctionHandlers
 
-  private[esw] def merge(that: ScriptDsl): ScriptDsl = {
+  private[esw] def merge(that: JScriptDsl): JScriptDsl = {
     commandHandlerBuilder ++ that.commandHandlerBuilder
     onlineHandlers ++ that.onlineHandlers
     offlineHandlers ++ that.offlineHandlers
@@ -81,7 +81,7 @@ abstract class ScriptDsl(val csw: CswServices) {
 
   private[esw] def executeOperationsMode(): Future[Done] = executeHandler(operationsHandlers).map(_ => Done)
 
-  protected final def jNextIf(f: SequenceCommand => Boolean): CompletionStage[Optional[SequenceCommand]] =
+  protected final def nextIf(f: SequenceCommand => Boolean): CompletionStage[Optional[SequenceCommand]] =
     async {
       val operator  = csw.sequenceOperatorFactory()
       val mayBeNext = await(operator.maybeNext)
@@ -95,19 +95,19 @@ abstract class ScriptDsl(val csw: CswServices) {
       }
     }.toJava
 
-  protected final def jHandleSetupCommand(name: String)(handler: Setup => CompletionStage[Void]): Unit =
+  protected final def handleSetupCommand(name: String)(handler: Setup => CompletionStage[Void]): Unit =
     handle(name)(handler(_))
 
-  protected final def jHandleObserveCommand(name: String)(handler: Observe => CompletionStage[Void]): Unit =
+  protected final def handleObserveCommand(name: String)(handler: Observe => CompletionStage[Void]): Unit =
     handle(name)(handler(_))
 
-  protected final def jHandleGoOnline(handler: Supplier[CompletionStage[Void]]): Unit  = onlineHandlers.add(_ => handler.get())
-  protected final def jHandleAbort(handler: Supplier[CompletionStage[Void]]): Unit     = abortHandlers.add(_ => handler.get())
-  protected final def jHandleShutdown(handler: Supplier[CompletionStage[Void]]): Unit  = shutdownHandlers.add(_ => handler.get())
-  protected final def jHandleGoOffline(handler: Supplier[CompletionStage[Void]]): Unit = offlineHandlers.add(_ => handler.get())
-  protected final def jHandleDiagnosticMode(handler: (UTCTime, String) => CompletionStage[Void]): Unit =
+  protected final def handleGoOnline(handler: Supplier[CompletionStage[Void]]): Unit  = onlineHandlers.add(_ => handler.get())
+  protected final def handleAbort(handler: Supplier[CompletionStage[Void]]): Unit     = abortHandlers.add(_ => handler.get())
+  protected final def handleShutdown(handler: Supplier[CompletionStage[Void]]): Unit  = shutdownHandlers.add(_ => handler.get())
+  protected final def handleGoOffline(handler: Supplier[CompletionStage[Void]]): Unit = offlineHandlers.add(_ => handler.get())
+  protected final def handleDiagnosticMode(handler: (UTCTime, String) => CompletionStage[Void]): Unit =
     diagnosticHandlers.add((x: (UTCTime, String)) => handler(x._1, x._2))
-  protected final def jHandleOperationsMode(handler: Supplier[CompletionStage[Void]]): Unit =
+  protected final def handleOperationsMode(handler: Supplier[CompletionStage[Void]]): Unit =
     operationsHandlers.add(_ => handler.get())
 
   protected final def submitSequence(

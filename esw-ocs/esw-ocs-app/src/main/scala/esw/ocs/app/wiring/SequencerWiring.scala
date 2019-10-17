@@ -23,7 +23,7 @@ import esw.http.core.wiring.{ActorRuntime, CswWiring, HttpService, Settings}
 import esw.ocs.api.protocol.LoadScriptError
 import esw.ocs.app.route.{PostHandlerImpl, SequencerAdminRoutes, WebsocketHandlerImpl}
 import esw.ocs.dsl.script.utils.{LockUnlockUtil, ScriptLoader}
-import esw.ocs.dsl.script.{CswServices, ScriptDsl}
+import esw.ocs.dsl.script.{CswServices, JScriptDsl}
 import esw.ocs.dsl.sequence_manager.LocationServiceUtil
 import esw.ocs.impl.core._
 import esw.ocs.impl.internal.{SequencerServer, Timeouts}
@@ -63,7 +63,7 @@ private[ocs] class SequencerWiring(val packageId: String, val observingMode: Str
   //SequencerRef -> Script -> cswServices -> SequencerOperator -> SequencerRef
   private lazy val sequenceOperatorFactory = () => new SequenceOperatorImpl(sequencerRef)
   private lazy val componentId             = ComponentId(sequencerName, ComponentType.Sequencer)
-  private lazy val script: ScriptDsl       = ScriptLoader.loadKotlinScript(scriptClass, cswServices)
+  private lazy val script: JScriptDsl      = ScriptLoader.loadKotlinScript(scriptClass, cswServices)
 
   lazy private val locationServiceUtil = new LocationServiceUtil(locationService)
   lazy private val adminFactory        = new SequencerAdminFactoryImpl(locationServiceUtil)
@@ -124,9 +124,7 @@ private[ocs] class SequencerWiring(val packageId: String, val observingMode: Str
       }
     }
 
-    override def shutDown(): Future[Done] = {
-      (sequencerRef ? Shutdown).map(_ => Done)
-    }
+    override def shutDown(): Future[Done] = (sequencerRef ? Shutdown).map(_ => Done)
   }
 
 }

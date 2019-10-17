@@ -9,17 +9,18 @@ import esw.ocs.api.BaseTestSuite
 import scala.collection.mutable.ArrayBuffer
 import scala.concurrent.duration.DurationDouble
 
-class ScriptDslTest extends BaseTestSuite {
+class JScriptDslTest extends BaseTestSuite {
   override implicit def patienceConfig: PatienceConfig = PatienceConfig(20.seconds)
+
   "ScriptDsl" must {
     "allow adding and executing setup handler" in {
       var receivedPrefix: Option[Prefix] = None
 
       val csw: CswServices = mock[CswServices]
-      val script: ScriptDsl = new ScriptDsl(csw) {
+      val script: JScriptDsl = new JScriptDsl(csw) {
         override protected implicit def strandEc: StrandEc = StrandEc()
 
-        jHandleSetupCommand("iris") { cmd =>
+        handleSetupCommand("iris") { cmd =>
           receivedPrefix = Some(cmd.source)
           CompletableFuture.completedFuture(null)
         }
@@ -36,10 +37,10 @@ class ScriptDslTest extends BaseTestSuite {
       var receivedPrefix: Option[Prefix] = None
 
       val csw: CswServices = mock[CswServices]
-      val script: ScriptDsl = new ScriptDsl(csw) {
+      val script: JScriptDsl = new JScriptDsl(csw) {
         override protected implicit def strandEc: StrandEc = StrandEc()
 
-        jHandleObserveCommand("iris") { cmd =>
+        handleObserveCommand("iris") { cmd =>
           receivedPrefix = Some(cmd.source)
           CompletableFuture.completedFuture(null)
         }
@@ -56,14 +57,15 @@ class ScriptDslTest extends BaseTestSuite {
       val orderOfShutdownCalled = ArrayBuffer.empty[Int]
 
       val csw: CswServices = mock[CswServices]
-      val script: ScriptDsl = new ScriptDsl(csw) {
+      val script: JScriptDsl = new JScriptDsl(csw) {
         override protected implicit def strandEc: StrandEc = StrandEc()
-        jHandleShutdown {
+
+        handleShutdown {
           orderOfShutdownCalled += 1
           () => CompletableFuture.completedFuture(null)
         }
 
-        jHandleShutdown {
+        handleShutdown {
           orderOfShutdownCalled += 2
           () => CompletableFuture.completedFuture(null)
         }
@@ -77,14 +79,15 @@ class ScriptDslTest extends BaseTestSuite {
       val orderOfAbortCalled = ArrayBuffer.empty[Int]
 
       val csw: CswServices = mock[CswServices]
-      val script: ScriptDsl = new ScriptDsl(csw) {
+      val script: JScriptDsl = new JScriptDsl(csw) {
         override protected implicit def strandEc: StrandEc = StrandEc()
-        jHandleAbort {
+
+        handleAbort {
           orderOfAbortCalled += 1
           () => CompletableFuture.completedFuture(null)
         }
 
-        jHandleAbort {
+        handleAbort {
           orderOfAbortCalled += 2
           () => CompletableFuture.completedFuture(null)
         }
@@ -93,31 +96,5 @@ class ScriptDslTest extends BaseTestSuite {
       script.executeAbort().futureValue
       orderOfAbortCalled shouldBe ArrayBuffer(1, 2)
     }
-
-    "allow running operations sequentially | ESW-88" in {
-
-      val latch            = new CountDownLatch(3)
-      val csw: CswServices = mock[CswServices]
-      val script: ScriptDsl = new ScriptDsl(csw) {
-        override protected implicit def strandEc: StrandEc = StrandEc()
-
-        def decrement: CompletableFuture[Unit] =
-          CompletableFuture.completedFuture { Thread.sleep(100); latch.countDown() }
-
-        jHandleSetupCommand("iris") { _ =>
-          decrement.get()
-          decrement.get()
-          decrement.get()
-          CompletableFuture.completedFuture(null)
-        }
-      }
-
-      val prefix    = Prefix("iris.move")
-      val irisSetup = Setup(prefix, CommandName("iris"), None)
-      script.execute(irisSetup).futureValue
-
-      latch.getCount should ===(0L)
-    }
   }
-
 }
