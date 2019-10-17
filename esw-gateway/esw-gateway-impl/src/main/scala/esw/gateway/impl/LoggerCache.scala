@@ -10,5 +10,6 @@ class LoggerCache {
     .maximumSize(2048)
     .build(key => new LoggerFactory(key.toLowerCase).getLogger)
 
+  // loggerCache.get will enter LoggerFactory against key if not present
   def get(componentName: String): Logger = loggerCache.get(componentName)
 }

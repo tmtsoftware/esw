@@ -11,7 +11,6 @@ import msocket.api.Transport
 import scala.concurrent.Future
 
 class LoggingClient(postClient: Transport[PostRequest]) extends LoggingApi with GatewayCodecs {
-  def log(appName: String, level: Level, message: String, metadata: Map[String, Any]): Future[Done] = {
+  def log(appName: String, level: Level, message: String, metadata: Map[String, Any]): Future[Done] =
     postClient.requestResponse[Done](Log(appName, level, message, metadata))
-  }
 }

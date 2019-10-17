@@ -228,7 +228,7 @@ class PostRouteTest extends BaseTestSuite with ScalatestRouteTest with GatewayCo
   }
 
   "Log" must {
-    "log the message and return Done | ESW-200" in {
+    "log the message, metadata and return Done | ESW-200" in {
       val log = Log(
         "esw-test",
         Level.FATAL,
@@ -246,6 +246,21 @@ class PostRouteTest extends BaseTestSuite with ScalatestRouteTest with GatewayCo
           "city"            -> "LA"
         )
         verify(logger).fatal(argsEq("test-message"), argsEq(expectedMetadata), any[Throwable], any[AnyId])(
+          any[SourceFactory]
+        )
+      }
+    }
+
+    "log the message and return Done | ESW-200" in {
+      val log = Log(
+        "esw-test",
+        Level.FATAL,
+        "test-message"
+      )
+
+      Post("/post-endpoint", log) ~> route ~> check {
+        responseAs[Done] shouldEqual Done
+        verify(logger).fatal(argsEq("test-message"), argsEq(Map.empty), any[Throwable], any[AnyId])(
           any[SourceFactory]
         )
       }
