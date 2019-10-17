@@ -50,12 +50,12 @@ class SequencerAdminIntegrationTest extends ScalaTestFrameworkTestKit(EventServe
   private val command2 = Setup(Prefix("esw.test"), CommandName("command-2"), None)
   private val command3 = Setup(Prefix("esw.test"), CommandName("command-3"), None)
 
-  private var locationService: LocationService           = _
-  private var wiring: SequencerWiring                    = _
-  private var secondSequencerWiring: SequencerWiring     = _
-  private var sequencer: ActorRef[SequencerMsg]          = _
-  private var sequencerAdmin: SequencerAdminClient       = _
-  private var secondSequencerAdmin: SequencerAdminClient = _
+  private var locationService: LocationService       = _
+  private var wiring: SequencerWiring                = _
+  private var secondSequencerWiring: SequencerWiring = _
+  private var sequencer: ActorRef[SequencerMsg]      = _
+  private var sequencerAdmin1: SequencerAdminClient  = _
+  private var sequencerAdmin2: SequencerAdminClient  = _
 
   override def beforeAll(): Unit = {
     super.beforeAll()
@@ -63,18 +63,19 @@ class SequencerAdminIntegrationTest extends ScalaTestFrameworkTestKit(EventServe
   }
 
   override protected def beforeEach(): Unit = {
+    //first sequencer, starts with TestScript2
     wiring = new SequencerWiring(packageId, observingMode, None)
     wiring.sequencerServer.start()
 
-    sequencerAdmin = resolveSequencerAdmin(packageId, observingMode)
+    sequencerAdmin1 = resolveSequencerAdmin(packageId, observingMode)
     sequencer = resolveSequencer()
 
-    // second sequencer initialization
+    // second sequencer, starts with TestScript3
     val secondSequencerId            = "testSequencerId6"
     val secondSequencerObservingMode = "testObservingMode6"
     secondSequencerWiring = new SequencerWiring(secondSequencerId, secondSequencerObservingMode, None)
     secondSequencerWiring.sequencerServer.start()
-    secondSequencerAdmin = resolveSequencerAdmin(secondSequencerId, secondSequencerObservingMode)
+    sequencerAdmin2 = resolveSequencerAdmin(secondSequencerId, secondSequencerObservingMode)
   }
 
   override protected def afterEach(): Unit = {
@@ -86,41 +87,41 @@ class SequencerAdminIntegrationTest extends ScalaTestFrameworkTestKit(EventServe
   "LoadSequence, Start it and Query its response | ESW-145, ESW-154, ESW-221, ESW-194, ESW-158, ESW-222, ESW-101" in {
     val sequence = Sequence(command1, command2)
 
-    sequencerAdmin.loadSequence(sequence).futureValue should ===(Ok)
-    sequencerAdmin.startSequence.futureValue should ===(Ok)
-    sequencerAdmin.queryFinal.futureValue should ===(SequenceResult(Completed(sequence.runId)))
+    sequencerAdmin1.loadSequence(sequence).futureValue should ===(Ok)
+    sequencerAdmin1.startSequence.futureValue should ===(Ok)
+    sequencerAdmin1.queryFinal.futureValue should ===(SequenceResult(Completed(sequence.runId)))
 
     val expectedSteps = List(
       Step(command1, Success(Completed(command1.runId)), hasBreakpoint = false),
       Step(command2, Success(Completed(command2.runId)), hasBreakpoint = false)
     )
     val expectedSequence = Some(StepList(sequence.runId, expectedSteps))
-    sequencerAdmin.getSequence.futureValue should ===(expectedSequence)
+    sequencerAdmin1.getSequence.futureValue should ===(expectedSequence)
 
     // assert sequencer does not accept LoadSequence/Start/QuerySequenceResponse messages in offline state
-    sequencerAdmin.goOffline().futureValue should ===(Ok)
-    sequencerAdmin.loadSequence(sequence).futureValue should ===(Unhandled(Offline.entryName, "LoadSequence"))
+    sequencerAdmin1.goOffline().futureValue should ===(Ok)
+    sequencerAdmin1.loadSequence(sequence).futureValue should ===(Unhandled(Offline.entryName, "LoadSequence"))
 
-    sequencerAdmin.startSequence.futureValue should ===(Unhandled(Offline.entryName, "StartSequence"))
-    sequencerAdmin.queryFinal.futureValue should ===(Unhandled(Offline.entryName, "QueryFinal"))
+    sequencerAdmin1.startSequence.futureValue should ===(Unhandled(Offline.entryName, "StartSequence"))
+    sequencerAdmin1.queryFinal.futureValue should ===(Unhandled(Offline.entryName, "QueryFinal"))
   }
 
   "Load, Add commands and Start sequence - ensures sequence doesn't start on loading | ESW-222, ESW-101" in {
     val sequence = Sequence(command1)
 
-    sequencerAdmin.loadSequence(sequence).futureValue should ===(Ok)
+    sequencerAdmin1.loadSequence(sequence).futureValue should ===(Ok)
 
-    sequencerAdmin.add(List(command2)).futureValue should ===(Ok)
+    sequencerAdmin1.add(List(command2)).futureValue should ===(Ok)
 
-    sequencerAdmin.getSequence.futureValue should ===(Some(StepList(sequence.runId, List(Step(command1), Step(command2)))))
+    sequencerAdmin1.getSequence.futureValue should ===(Some(StepList(sequence.runId, List(Step(command1), Step(command2)))))
 
-    sequencerAdmin.startSequence.futureValue should ===(Ok)
+    sequencerAdmin1.startSequence.futureValue should ===(Ok)
 
     val expectedFinishedSteps = List(
       Step(command1, Success(Completed(command1.runId)), hasBreakpoint = false),
       Step(command2, Success(Completed(command2.runId)), hasBreakpoint = false)
     )
-    eventually(sequencerAdmin.getSequence.futureValue should ===(Some(StepList(sequence.runId, expectedFinishedSteps))))
+    eventually(sequencerAdmin1.getSequence.futureValue should ===(Some(StepList(sequence.runId, expectedFinishedSteps))))
 
   }
 
@@ -128,12 +129,12 @@ class SequencerAdminIntegrationTest extends ScalaTestFrameworkTestKit(EventServe
     val sequence = Sequence(command1, command2)
 
     val processSeqResponse: Future[SubmitResponse] = sequencer ? (SubmitSequenceAndWait(sequence, _))
-    eventually(sequencerAdmin.getSequence.futureValue shouldBe a[Some[_]])
+    eventually(sequencerAdmin1.getSequence.futureValue shouldBe a[Some[_]])
 
-    sequencerAdmin.add(List(command3)).futureValue should ===(Ok)
+    sequencerAdmin1.add(List(command3)).futureValue should ===(Ok)
     processSeqResponse.futureValue should ===(Completed(sequence.runId))
 
-    sequencerAdmin.getSequence.futureValue should ===(
+    sequencerAdmin1.getSequence.futureValue should ===(
       Some(
         StepList(
           sequence.runId,
@@ -157,11 +158,11 @@ class SequencerAdminIntegrationTest extends ScalaTestFrameworkTestKit(EventServe
     val sequence = Sequence(command1, command2, command3)
 
     val processSeqResponse: Future[SubmitResponse] = sequencer ? (SubmitSequenceAndWait(sequence, _))
-    eventually(sequencerAdmin.getSequence.futureValue shouldBe a[Some[_]])
+    eventually(sequencerAdmin1.getSequence.futureValue shouldBe a[Some[_]])
 
     processSeqResponse.futureValue should ===(Error(sequence.runId, failCommandName))
 
-    sequencerAdmin.getSequence.futureValue should ===(
+    sequencerAdmin1.getSequence.futureValue should ===(
       Some(
         StepList(
           sequence.runId,
@@ -175,11 +176,11 @@ class SequencerAdminIntegrationTest extends ScalaTestFrameworkTestKit(EventServe
     )
   }
 
-  "Go online and offline | ESW-194, ESW-222, ESW-101, ESW-134" in {
+  "Go online and offline | ESW-194, ESW-222, ESW-101, ESW-134, ESW-236" in {
 
     //****************** Go offline ******************************
 
-    //sending sequence to first sequencer
+    //sending sequence to first sequencer(TestScript2)
     val sequence                            = Sequence(command1, command2)
     val seqResponse: Future[SubmitResponse] = sequencer ? (SubmitSequenceAndWait(sequence, _))
     seqResponse.futureValue should ===(Completed(sequence.runId)) // asserting the response
@@ -195,23 +196,23 @@ class SequencerAdminIntegrationTest extends ScalaTestFrameworkTestKit(EventServe
     //##############
 
     // assert first sequencer is in offline state on sending goOffline message
-    sequencerAdmin.goOffline().futureValue should ===(Ok)
-    sequencerAdmin.isOnline.futureValue should ===(false)
-    //##############
-    Thread.sleep(1000)
+    sequencerAdmin1.goOffline().futureValue should ===(Ok)
+    sequencerAdmin1.isOnline.futureValue should ===(false)
+
+    // assert first sequencer does not accept editor commands in offline state
+    sequencerAdmin1.add(List(command3)).futureValue should ===(Unhandled(Offline.entryName, "Add"))
+
+    Thread.sleep(1000) // wait till goOffline msg from sequencer1 reaches to sequencer2
 
     //second sequencer should go in offline mode
-    secondSequencerAdmin.isOnline.futureValue should ===(false)
+    sequencerAdmin2.isOnline.futureValue should ===(false)
 
-    // assert sequencer's offline handlers are called
+    // assert second sequencer's offline handlers are called
     val offlineEvent = testProbe.expectMessageType[SystemEvent]
     offlineEvent.paramSet.head.values.head shouldBe "offline"
 
-    // assert sequencer does not accept editor commands in offline state
-    sequencerAdmin.add(List(command3)).futureValue should ===(Unhandled(Offline.entryName, "Add"))
-
     //****************** go online ******************************
-    // assert sequencer goes online and online handlers are called
+    // assert both the sequencers goes online and online handlers are called
 
     // creating subscriber for online event
     val onlineSubscriber        = wiring.cswWiring.eventService.defaultSubscriber
@@ -220,14 +221,15 @@ class SequencerAdminIntegrationTest extends ScalaTestFrameworkTestKit(EventServe
     onlineEventSubscription.ready().futureValue
     testProbe.expectMessageType[SystemEvent] // discard invalid event
 
-    sequencerAdmin.goOnline().futureValue should ===(Ok)
-    sequencerAdmin.isOnline.futureValue should ===(true)
-    Thread.sleep(1000)
+    sequencerAdmin1.goOnline().futureValue should ===(Ok)
+    sequencerAdmin1.isOnline.futureValue should ===(true)
+
+    Thread.sleep(1000) // wait till goOnline msg from sequencer1 reaches to sequencer2
 
     //second sequencer should go in online mode
-    secondSequencerAdmin.isOnline.futureValue should ===(true)
+    sequencerAdmin2.isOnline.futureValue should ===(true)
 
-    // assert sequencer's online handlers are called
+    // assert second sequencer's online handlers are called
     val onlineEvent = testProbe.expectMessageType[SystemEvent]
     onlineEvent.paramSet.head.values.head shouldBe "online"
   }
@@ -247,7 +249,7 @@ class SequencerAdminIntegrationTest extends ScalaTestFrameworkTestKit(EventServe
     testProbe.expectMessageType[SystemEvent] // discard invalid event
 
     //Diagnostic Mode
-    sequencerAdmin.diagnosticMode(startTime, hint).futureValue should ===(Ok)
+    sequencerAdmin1.diagnosticMode(startTime, hint).futureValue should ===(Ok)
 
     val expectedDiagnosticEvent = testProbe.expectMessageType[SystemEvent]
 
@@ -256,7 +258,7 @@ class SequencerAdminIntegrationTest extends ScalaTestFrameworkTestKit(EventServe
     //Operations Mode
     val operationsModeParam = StringKey.make("mode").set("operations")
 
-    sequencerAdmin.operationsMode().futureValue should ===(Ok)
+    sequencerAdmin1.operationsMode().futureValue should ===(Ok)
 
     val expectedOperationsEvent = testProbe.expectMessageType[SystemEvent]
 

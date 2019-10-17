@@ -46,6 +46,7 @@ class ScriptIntegrationTest extends ScalaTestFrameworkTestKit(EventServer, Alarm
 
   override implicit def patienceConfig: PatienceConfig = PatienceConfig(10.seconds)
 
+  // TestScript.kt
   private val ocsPackageId     = "esw"
   private val ocsObservingMode = "darknight"
   private val tcsPackageId     = "tcs"

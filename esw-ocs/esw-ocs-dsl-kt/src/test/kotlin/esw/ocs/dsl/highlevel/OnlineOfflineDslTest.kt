@@ -34,7 +34,7 @@ class OnlineOfflineDslTest : OnlineOfflineDsl {
     override val commonUtils: CommonUtils = CommonUtils(sequencerAdminFactoryApi, locationServiceUtil)
 
     @Test
-    fun `OnlineOfflineDsl should goOnlineModeForComponent should resolve component ref and send GoOnline msg | ESW-236`() = runBlocking {
+    fun `goOnlineModeForComponent should resolve component ref and send GoOnline msg | ESW-236`() = runBlocking {
         val goOnlineMsg = Lifecycle(`GoOnline$`.`MODULE$`)
 
         every { componentRef.tell(goOnlineMsg) }.answers { Unit }
