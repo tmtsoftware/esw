@@ -1,6 +1,6 @@
 package esw.ocs.dsl.script
 
-import java.util.concurrent.{CompletableFuture, CountDownLatch}
+import java.util.concurrent.CompletableFuture
 
 import csw.params.commands.{CommandName, Observe, Setup}
 import csw.params.core.models.Prefix
