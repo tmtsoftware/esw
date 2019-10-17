@@ -1,10 +1,6 @@
 import org.tmt.sbt.docs.{Settings => DocSettings}
 import sbtcrossproject.CrossPlugin.autoImport.{CrossType, crossProject}
 
-initialize ~= { _ =>
-  System.setProperty("sbt.color", "always")
-}
-
 lazy val aggregateProjects: Seq[ProjectReference] =
   Seq(
     `esw-ocs`,
