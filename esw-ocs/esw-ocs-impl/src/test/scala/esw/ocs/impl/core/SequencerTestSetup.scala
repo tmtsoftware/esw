@@ -119,6 +119,7 @@ class SequencerTestSetup(sequence: Sequence)(implicit system: ActorSystem[_], ti
       case InProgress                      => stepList.get.nextPending shouldBe None
       case x: SequencerState[SequencerMsg] => assert(false, s"$x is not valid state after AbortSequence")
     }
+    eventually(verify(script).executeAbort())
     probe
   }
 
