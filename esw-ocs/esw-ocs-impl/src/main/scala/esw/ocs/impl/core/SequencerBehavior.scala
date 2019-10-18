@@ -53,7 +53,6 @@ class SequencerBehavior(
 
   private def loaded(data: SequencerData): Behavior[SequencerMsg] = receive(Loaded, data, loaded) {
     case QueryFinal(replyTo)             => loaded(data.querySequence(replyTo))
-    case AbortSequence(replyTo)          => abortSequence(data, Loaded, replyTo)(nextBehavior = idle)
     case editorAction: EditorAction      => handleEditorAction(editorAction, data, Loaded)(nextBehavior = loaded)
     case GoOffline(replyTo)              => goOffline(replyTo, data)(loaded)
     case StartSequence(replyTo)          => inProgress(data.startSequence(replyTo))

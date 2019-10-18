@@ -70,7 +70,7 @@ object SequencerMessages {
   final case class Resume(replyTo: ActorRef[OkOrUnhandledResponse])                                         extends EditorAction
   final case class Reset(replyTo: ActorRef[OkOrUnhandledResponse])                                          extends EditorAction
 
-  final case class AbortSequence(replyTo: ActorRef[OkOrUnhandledResponse]) extends SequenceLoadedMessage with InProgressMessage
+  final case class AbortSequence(replyTo: ActorRef[OkOrUnhandledResponse]) extends InProgressMessage
 
   // engine & internal
   final private[ocs] case class SubmitSequenceAndWaitInternal(sequence: Sequence, replyTo: ActorRef[SequenceResponse])
