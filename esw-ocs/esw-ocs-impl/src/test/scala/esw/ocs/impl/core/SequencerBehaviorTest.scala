@@ -887,7 +887,7 @@ class SequencerBehaviorTest extends ScalaTestWithActorTestKit with BaseTestSuite
     }
   }
 
-  "Idle -> Unhandled | ESW-111" in {
+  "Idle -> Unhandled | ESW-111  | 113" in {
     val sequencerSetup = new SequencerTestSetup(sequence)
     import sequencerSetup._
     val cmds = List(command1, command2)
@@ -904,7 +904,7 @@ class SequencerBehaviorTest extends ScalaTestWithActorTestKit with BaseTestSuite
       GoOfflineSuccess,
       GoOfflineFailed,
       Add(cmds, _),
-      Prepend(cmds, _),
+      Prepend(cmds, _), // ESW-113 : should not allow to prepend in a finished Sequence
       Replace(Id(), cmds, _),
       InsertAfter(Id(), cmds, _), // ESW-111 : Error should be thrown when inserting in a finished sequence
       Delete(Id(), _),
