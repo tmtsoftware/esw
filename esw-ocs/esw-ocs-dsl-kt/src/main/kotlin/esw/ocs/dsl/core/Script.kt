@@ -11,7 +11,10 @@ import esw.ocs.dsl.nullable
 import esw.ocs.dsl.script.CswServices
 import esw.ocs.dsl.script.JScriptDsl
 import esw.ocs.dsl.script.StrandEc
-import kotlinx.coroutines.*
+import kotlinx.coroutines.CoroutineExceptionHandler
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.SupervisorJob
+import kotlinx.coroutines.asCoroutineDispatcher
 import kotlinx.coroutines.future.await
 import kotlinx.coroutines.future.future
 import java.util.concurrent.CompletableFuture
@@ -22,10 +25,8 @@ sealed class ScriptDslKt(private val cswServices: CswServices) : CswHighLevelDsl
     // this needs to be lazy otherwise handlers does not get loaded properly
     val scriptDsl: JScriptDsl by lazy { ScriptDslFactory.make(cswServices, strandEc) }
 
-    fun initialize(block: suspend CoroutineScope.() -> Unit) = scriptDsl.addInitializer { runBlocking { block(); null } }
-
     suspend fun nextIf(predicate: (SequenceCommand) -> Boolean): SequenceCommand? =
-        scriptDsl.nextIf { predicate(it) }.await().nullable()
+            scriptDsl.nextIf { predicate(it) }.await().nullable()
 
     fun handleSetup(name: String, block: suspend CoroutineScope.(Setup) -> Unit) {
         scriptDsl.handleSetupCommand(name) { block.toJavaFuture(it) }
@@ -68,20 +69,20 @@ sealed class ScriptDslKt(private val cswServices: CswServices) : CswHighLevelDsl
     }
 
     suspend fun submitSequence(sequencerName: String, observingMode: String, sequence: Sequence): SubmitResponse =
-        this.scriptDsl.submitSequence(sequencerName, observingMode, sequence).await()
+            this.scriptDsl.submitSequence(sequencerName, observingMode, sequence).await()
 
     private fun (suspend CoroutineScope.() -> Unit).toJavaFutureVoid(): CompletionStage<Void> =
-        coroutineScope.future { this@toJavaFutureVoid() }
-            .whenComplete { v, e ->
-                if (e == null) {
-                    CompletableFuture.completedFuture(v)
-                } else {
-                    log("exception : ${e.message}")
-                    // fixme: call exception handlers whenever implemented
-                    CompletableFuture.failedFuture<Unit>(e)
-                }
-            }
-            .thenAccept { }
+            coroutineScope.future { this@toJavaFutureVoid() }
+                    .whenComplete { v, e ->
+                        if (e == null) {
+                            CompletableFuture.completedFuture(v)
+                        } else {
+                            log("exception : ${e.message}")
+                            // fixme: call exception handlers whenever implemented
+                            CompletableFuture.failedFuture<Unit>(e)
+                        }
+                    }
+                    .thenAccept { }
 
     private fun <T> (suspend CoroutineScope.(T) -> Unit).toJavaFuture(value: T): CompletionStage<Void> {
         val curriedBlock: suspend (CoroutineScope) -> Unit = { a: CoroutineScope -> this(a, value) }
@@ -90,9 +91,9 @@ sealed class ScriptDslKt(private val cswServices: CswServices) : CswHighLevelDsl
 }
 
 class ReusableScript(
-    cswServices: CswServices,
-    override val strandEc: StrandEc,
-    override val coroutineScope: CoroutineScope
+        cswServices: CswServices,
+        override val strandEc: StrandEc,
+        override val coroutineScope: CoroutineScope
 ) : ScriptDslKt(cswServices)
 
 

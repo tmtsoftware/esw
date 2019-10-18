@@ -35,7 +35,6 @@ abstract class JScriptDsl(val csw: CswServices) {
   private val abortHandlers: FunctionHandlers[Unit, CompletionStage[Void]]                   = new FunctionHandlers
   private val diagnosticHandlers: FunctionHandlers[(UTCTime, String), CompletionStage[Void]] = new FunctionHandlers
   private val operationsHandlers: FunctionHandlers[Unit, CompletionStage[Void]]              = new FunctionHandlers
-  private var initializer: Supplier[Void]                                                    = () => null // default handler
 
   private[esw] def merge(that: JScriptDsl): JScriptDsl = {
     commandHandlerBuilder ++ that.commandHandlerBuilder
@@ -95,10 +94,6 @@ abstract class JScriptDsl(val csw: CswServices) {
         case _ => Optional.empty[SequenceCommand]
       }
     }.toJava
-
-  private[esw] def initialize(): Unit = initializer.get()
-
-  protected final def addInitializer(block: Supplier[Void]): Unit = initializer = block
 
   protected final def handleSetupCommand(name: String)(handler: Setup => CompletionStage[Void]): Unit =
     handle(name)(handler(_))
