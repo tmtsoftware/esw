@@ -15,9 +15,10 @@ object GatewayMain extends EswCommandApp[ServerCommand] {
       case StartCommand(port) => start(port, startLogging = true)
     }
 
-  def start(port: Option[Int], startLogging: Boolean): Unit = {
-    val gatewayWiring = new GatewayWiring()
+  def start(port: Option[Int], startLogging: Boolean): Unit =
+    start(new GatewayWiring(port), startLogging)
 
+  private[esw] def start(gatewayWiring: GatewayWiring, startLogging: Boolean): Unit = {
     import gatewayWiring._
     import gatewayWiring.wiring.cswWiring.actorRuntime
     if (startLogging) actorRuntime.startLogging(BuildInfo.name, BuildInfo.version)

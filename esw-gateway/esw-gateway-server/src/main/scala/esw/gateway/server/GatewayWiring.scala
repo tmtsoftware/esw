@@ -17,7 +17,7 @@ import msocket.api.MessageHandler
 
 import scala.concurrent.duration.DurationLong
 
-class GatewayWiring(_port: Option[Int] = None) extends GatewayCodecs {
+class GatewayWiring(_port: Option[Int]) extends GatewayCodecs {
   lazy val wiring = new ServerWiring(_port)
   import wiring._
   import cswWiring.actorRuntime.{ec, mat}
