@@ -14,19 +14,10 @@ import esw.gateway.api.protocol.PostRequest
 import esw.http.core.FutureEitherExt
 import mscoket.impl.post.HttpPostTransport
 import org.scalatest.WordSpecLike
-import play.api.libs.json.{JsObject, JsString, Json}
+import play.api.libs.json.{JsObject, Json}
 
 import scala.collection.mutable
 import scala.concurrent.duration.{DurationInt, FiniteDuration}
-
-object DD {
-  implicit class RichJsObject(val xs: JsObject) extends AnyVal {
-    def getString(key: String): String = xs.value.getOrElse(key, JsString("")) match {
-      case x: JsString => x.value
-      case x           => x.toString()
-    }
-  }
-}
 
 class TestAppender(callback: Any => Unit) extends LogAppenderBuilder {
 
