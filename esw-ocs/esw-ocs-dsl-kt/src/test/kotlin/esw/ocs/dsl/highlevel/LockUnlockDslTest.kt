@@ -18,8 +18,8 @@ import kotlin.time.toJavaDuration
 
 class LockUnlockDslTest : LockUnlockDsl {
     private val componentName = "test-component"
-    private val assembly = Assembly
-    private val hcd = HCD
+    private val assembly = Assembly()
+    private val hcd = HCD()
     private val prefix = Prefix("esw")
     private val leaseDuration: Duration = 10.seconds
     private val jLeaseDuration = leaseDuration.toJavaDuration()

@@ -1,7 +1,8 @@
 package esw.ocs.app.wiring
+
 import akka.Done
 import akka.actor.typed.SpawnProtocol.Spawn
-import akka.actor.typed.scaladsl.AskPattern.Askable
+import akka.actor.typed.scaladsl.AskPattern._
 import akka.actor.typed.{ActorRef, ActorSystem, Props, SpawnProtocol}
 import akka.util.Timeout
 import com.typesafe.config.{Config, ConfigFactory}

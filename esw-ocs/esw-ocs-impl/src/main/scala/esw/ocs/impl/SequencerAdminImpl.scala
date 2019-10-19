@@ -1,7 +1,7 @@
 package esw.ocs.impl
 
 import akka.actor.typed.scaladsl.AskPattern._
-import akka.actor.typed.{ActorRef, ActorSystem, Scheduler}
+import akka.actor.typed.{ActorRef, ActorSystem}
 import akka.util.Timeout
 import csw.command.client.messages.sequencer.SequencerMsg
 import csw.params.commands.{Sequence, SequenceCommand}
@@ -18,7 +18,6 @@ import scala.concurrent.{ExecutionContext, Future}
 
 class SequencerAdminImpl(sequencer: ActorRef[EswSequencerMessage])(implicit system: ActorSystem[_], timeout: Timeout)
     extends SequencerAdminApi {
-  private implicit val scheduler: Scheduler = system.scheduler
   private implicit val ec: ExecutionContext = system.executionContext
 
   override def getSequence: Future[Option[StepList]] = sequencer ? GetSequence

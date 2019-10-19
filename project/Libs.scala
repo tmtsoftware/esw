@@ -4,7 +4,7 @@ import sbt._
 
 object Libs {
   private val SilencerVersion = "1.4.2"
-  private val MSocketVersion  = "5d45d67"
+  private val MSocketVersion  = "8a649e8"
 
   val `silencer-lib`       = "com.github.ghik" %% "silencer-lib" % SilencerVersion % Compile
   val `silencer-plugin`    = compilerPlugin("com.github.ghik" %% "silencer-plugin" % SilencerVersion)
@@ -22,7 +22,7 @@ object Libs {
 
 object Csw {
   private val Org     = "com.github.tmtsoftware.csw"
-  private val Version = "99340c0" //change this to 0.1-SNAPSHOT to test with local csw changes (after publishLocal)
+  private val Version = "9dbb3c0" //change this to 0.1-SNAPSHOT to test with local csw changes (after publishLocal)
 
   val `csw-alarm-api`       = Org %% "csw-alarm-api" % Version
   val `csw-command-api`     = Org %% "csw-command-api" % Version
@@ -45,7 +45,7 @@ object Csw {
 }
 
 object Akka {
-  private val Version     = "2.6.0-M8"
+  private val Version     = "2.6.0-RC1"
   val `akka-actor-typed`  = "com.typesafe.akka" %% "akka-actor-typed" % Version
   val `akka-stream-typed` = "com.typesafe.akka" %% "akka-stream-typed" % Version
   val `akka-stream`       = "com.typesafe.akka" %% "akka-stream" % Version

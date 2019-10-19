@@ -2,7 +2,7 @@ package esw.ocs.app
 
 import akka.actor.testkit.typed.scaladsl.TestProbe
 import akka.actor.typed.scaladsl.AskPattern._
-import akka.actor.typed.{ActorRef, ActorSystem, Scheduler, SpawnProtocol}
+import akka.actor.typed.{ActorRef, ActorSystem, SpawnProtocol}
 import akka.util.Timeout
 import csw.command.client.messages.sequencer.{SequencerMsg, SubmitSequenceAndWait}
 import csw.event.client.EventServiceFactory
@@ -39,8 +39,7 @@ class SequencerAdminIntegrationTest extends ScalaTestFrameworkTestKit(EventServe
 
   override implicit def patienceConfig: PatienceConfig = PatienceConfig(10.seconds)
 
-  private implicit val askTimeout: Timeout  = Timeout(10.seconds)
-  private implicit val scheduler: Scheduler = actorSystem.scheduler
+  private implicit val askTimeout: Timeout = Timeout(10.seconds)
 
   private val packageId     = "nfarios"
   private val observingMode = "darknight"

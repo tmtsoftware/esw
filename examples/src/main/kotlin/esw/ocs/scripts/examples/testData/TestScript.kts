@@ -69,28 +69,28 @@ script {
 
     handleSetup("set-alarm-severity") { command ->
         val alarmKey = AlarmKey(NFIRAOS, "trombone", "tromboneAxisHighLimitAlarm")
-        setSeverity(alarmKey, Major)
+        setSeverity(alarmKey, Major())
         delay(500)
         addOrUpdateCommand(CommandResponse.Completed(command.runId()))
     }
 
     handleDiagnosticMode { startTime, hint ->
         // do some actions to go to diagnostic mode based on hint
-        diagnosticModeForComponent("test", Assembly, startTime, hint)
+        diagnosticModeForComponent("test", Assembly(), startTime, hint)
     }
 
     handleOperationsMode {
         // do some actions to go to operations mode
-        operationsModeForComponent("test", Assembly)
+        operationsModeForComponent("test", Assembly())
     }
 
     handleGoOffline {
         // do some actions to go offline
-        goOfflineModeForComponent("test", Assembly)
+        goOfflineModeForComponent("test", Assembly())
     }
 
     handleGoOnline {
         // do some actions to go online
-        goOnlineModeForComponent("test", Assembly)
+        goOnlineModeForComponent("test", Assembly())
     }
 }

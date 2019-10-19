@@ -1,7 +1,7 @@
 package esw.ocs.app
 
 import akka.actor.typed.ActorRef
-import akka.actor.typed.scaladsl.AskPattern.Askable
+import akka.actor.typed.scaladsl.AskPattern._
 import caseapp.RemainingArgs
 import csw.location.api.extensions.URIExtension.RichURI
 import csw.location.client.utils.LocationServerStatus

@@ -5,7 +5,7 @@ import akka.actor.testkit.typed.scaladsl.{BehaviorTestKit, TestProbe}
 import akka.actor.typed.SpawnProtocol.Spawn
 import akka.actor.typed.scaladsl.AskPattern._
 import akka.actor.typed.scaladsl.Behaviors
-import akka.actor.typed.{ActorRef, ActorSystem, Props, Scheduler, SpawnProtocol}
+import akka.actor.typed.{ActorRef, ActorSystem, Props, SpawnProtocol}
 import akka.util.Timeout
 import csw.location.models.Connection.AkkaConnection
 import csw.location.models.{AkkaLocation, ComponentId, ComponentType, Location}
@@ -25,8 +25,7 @@ class SequenceComponentBehaviorTest extends ScalaTestFrameworkTestKit with BaseT
 
   private val factory = new LoggerFactory("SequenceComponentTest")
 
-  implicit val scheduler: Scheduler = typedSystem.scheduler
-  implicit val timeOut: Timeout     = frameworkTestKit.timeout
+  implicit val timeOut: Timeout = frameworkTestKit.timeout
 
   def sequencerWiring(
       packageId: String,

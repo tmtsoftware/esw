@@ -1,7 +1,7 @@
 package esw.ocs.impl.core
 
 import akka.actor.typed.scaladsl.AskPattern._
-import akka.actor.typed.{ActorRef, ActorSystem, Scheduler}
+import akka.actor.typed.{ActorRef, ActorSystem}
 import akka.util.Timeout
 import csw.params.commands.CommandResponse.SubmitResponse
 import esw.ocs.api.models.Step
@@ -14,8 +14,7 @@ import scala.concurrent.Future
 
 private[ocs] class SequenceOperatorImpl(sequencer: ActorRef[EswSequencerMessage])(implicit system: ActorSystem[_])
     extends SequenceOperator {
-  private implicit val scheduler: Scheduler = system.scheduler
-  private implicit val timeout: Timeout     = Timeouts.LongTimeout
+  private implicit val timeout: Timeout = Timeouts.LongTimeout
 
   def pullNext: Future[PullNextResponse]                = sequencer ? PullNext
   def maybeNext: Future[Option[Step]]                   = sequencer ? MaybeNext

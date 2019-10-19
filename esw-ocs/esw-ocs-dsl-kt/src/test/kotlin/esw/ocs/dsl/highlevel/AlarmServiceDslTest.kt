@@ -20,7 +20,7 @@ class AlarmServiceDslTest {
         val alarmServiceDsl: AlarmServiceDsl = AlarmServiceDslImpl(mockedAlarmService)
 
         val alarmKey = AlarmKey(TCS, "filter_assembly", "temperature")
-        val severity = Major
+        val severity = Major()
 
         every {
             mockedAlarmService.setSeverity(alarmKey, severity)

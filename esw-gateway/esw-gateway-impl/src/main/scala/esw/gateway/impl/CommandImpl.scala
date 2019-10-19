@@ -60,7 +60,7 @@ class CommandImpl(commandServiceFactory: CommandServiceFactoryApi)(
         }
 
     def currentStateSource: Source[CurrentState, Future[StreamStatus]] = {
-      Source.fromFutureSource(futureSource).mapMaterializedValue(_.flatten)
+      Source.futureSource(futureSource).mapMaterializedValue(_.flatten)
     }
 
     maxFrequency match {

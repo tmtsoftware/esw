@@ -32,7 +32,8 @@ class SequenceComponentImplTest extends ScalaTestWithActorTestKit with BaseTestS
     Behaviors.same
   }
 
-  private val sequenceComponent       = spawn(mockedBehavior)
+  private val sequenceComponent = spawn(mockedBehavior)
+
   private val sequenceComponentClient = new SequenceComponentImpl(sequenceComponent)
 
   "LoadScript | ESW-103" in {

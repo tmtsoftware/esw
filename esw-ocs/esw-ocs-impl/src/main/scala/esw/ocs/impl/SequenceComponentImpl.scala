@@ -1,8 +1,8 @@
 package esw.ocs.impl
 
 import akka.Done
-import akka.actor.typed.{ActorRef, Scheduler}
 import akka.actor.typed.scaladsl.AskPattern._
+import akka.actor.typed.{ActorRef, ActorSystem}
 import akka.util.Timeout
 import esw.ocs.api.SequenceComponentApi
 import esw.ocs.api.protocol.{GetStatusResponse, LoadScriptResponse}
@@ -13,7 +13,7 @@ import scala.concurrent.Future
 
 // fixme: can this take AkkaLocation similar to other wrappers like CommandService?
 class SequenceComponentImpl(sequenceComponentRef: ActorRef[SequenceComponentMsg])(
-    implicit scheduler: Scheduler,
+    implicit actorSystem: ActorSystem[_],
     timeout: Timeout
 ) extends SequenceComponentApi {
   def loadScript(packageId: String, observingMode: String): Future[LoadScriptResponse] =

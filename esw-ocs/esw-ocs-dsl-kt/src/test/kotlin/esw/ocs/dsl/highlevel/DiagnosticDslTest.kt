@@ -25,7 +25,7 @@ class DiagnosticDslTest : DiagnosticDsl {
     private val sequencerId = "testSequencer"
     private val observingMode = "DarkNight"
     private val hint = "test-hint"
-    private val componentType: ComponentType = JComponentType.HCD
+    private val componentType: ComponentType = JComponentType.HCD()
 
     private val locationServiceUtil: LocationServiceUtil = mockk()
     private val sequencerAdminApi: SequencerAdminApi = mockk()

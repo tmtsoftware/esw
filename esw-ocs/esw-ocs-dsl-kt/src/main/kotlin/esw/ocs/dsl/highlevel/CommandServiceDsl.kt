@@ -44,29 +44,29 @@ interface CommandServiceDsl {
 
     /************* Assembly *************/
     suspend fun validateAssemblyCommand(assemblyName: String, command: ControlCommand): ValidateResponse =
-        validate(assemblyName, Assembly, command)
+        validate(assemblyName, Assembly(), command)
 
     suspend fun submitCommandToAssembly(assemblyName: String, command: ControlCommand): SubmitResponse =
-        submit(assemblyName, Assembly, command)
+        submit(assemblyName, Assembly(), command)
 
     suspend fun submitAndWaitCommandToAssembly(assemblyName: String, command: ControlCommand): SubmitResponse =
-        submitAndWait(assemblyName, Assembly, command)
+        submitAndWait(assemblyName, Assembly(), command)
 
     suspend fun oneWayCommandToAssembly(assemblyName: String, command: ControlCommand): OnewayResponse =
-        oneWay(assemblyName, Assembly, command)
+        oneWay(assemblyName, Assembly(), command)
 
     /************* HCD *************/
     suspend fun validateHcdCommand(hcdName: String, command: ControlCommand): ValidateResponse =
-        validate(hcdName, HCD, command)
+        validate(hcdName, HCD(), command)
 
     suspend fun submitCommandToHcd(hcdName: String, command: ControlCommand): SubmitResponse =
-        submit(hcdName, HCD, command)
+        submit(hcdName, HCD(), command)
 
     suspend fun submitAndWaitCommandToHcd(hcdName: String, command: ControlCommand): SubmitResponse =
-        submitAndWait(hcdName, HCD, command)
+        submitAndWait(hcdName, HCD(), command)
 
     suspend fun oneWayCommandToHcd(hcdName: String, command: ControlCommand): OnewayResponse =
-        oneWay(hcdName, HCD, command)
+        oneWay(hcdName, HCD(), command)
 
     /******************************/
     private suspend fun validate(name: String, compType: ComponentType, command: ControlCommand): ValidateResponse =

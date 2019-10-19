@@ -3,7 +3,7 @@ package esw.ocs.impl.core
 import akka.Done
 import akka.actor.typed.scaladsl.AskPattern._
 import akka.actor.typed.scaladsl.Behaviors
-import akka.actor.typed.{ActorRef, ActorSystem, Behavior, Scheduler}
+import akka.actor.typed.{ActorRef, ActorSystem, Behavior}
 import akka.util.Timeout
 import csw.command.client.CommandResponseManager
 import csw.command.client.messages.sequencer.{SequencerMsg, SubmitSequenceAndWait}
@@ -253,8 +253,7 @@ class SequencerBehavior(
       currentBehavior: SequencerData => Behavior[SequencerMsg]
   )(f: T => Behavior[SequencerMsg]): Behavior[SequencerMsg] =
     Behaviors.receive { (ctx, msg) =>
-      implicit val timeout: Timeout     = Timeouts.LongTimeout
-      implicit val scheduler: Scheduler = ctx.system.scheduler
+      implicit val timeout: Timeout = Timeouts.LongTimeout
 
       msg match {
         case msg: CommonMessage     => handleCommonMessage(msg, state, data, currentBehavior)

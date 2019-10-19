@@ -35,8 +35,8 @@ class TestAppender(callback: Any => Unit) extends LogAppenderBuilder {
 class LoggingGatewayTest extends ScalaTestFrameworkTestKit with WordSpecLike with FutureEitherExt with GatewayCodecs {
   import frameworkTestKit._
 
-  implicit val typedSystem: ActorSystem[SpawnProtocol] = actorSystem
-  implicit val timeout: FiniteDuration                 = 10.seconds
+  implicit val typedSystem: ActorSystem[SpawnProtocol.Command] = actorSystem
+  implicit val timeout: FiniteDuration                         = 10.seconds
 
   private val port: Int                           = 6490
   private val gatewayWiring: GatewayWiring        = new GatewayWiring(Some(port))
