@@ -214,7 +214,6 @@ class SequencerBehaviorTest extends ScalaTestWithActorTestKit with BaseTestSuite
       import sequencerSetup._
 
       loadAndStartSequenceThenAssertInProgress()
-//      mockAllCommands()
       mockCommand(command1.runId, Promise().future) //  future will not complete
       pullNextCommand()                             // why is this necessary?
 
