@@ -198,7 +198,7 @@ class ScriptIntegrationTest extends ScalaTestFrameworkTestKit(EventServer, Alarm
       getPublishedEvent.isInvalid should ===(false)
     }
 
-    "be able to send abortSequence to downstream sequencers | ESW-137, ESW-155" in {
+    "be able to send abortSequence to downstream sequencers and call abortHandler | ESW-137, ESW-155" in {
       val eventService = new EventServiceFactory().make(HttpLocationServiceFactory.makeLocalClient)
       val eventKey     = EventKey(Prefix("IRMS"), EventName("abort.success"))
 
@@ -208,15 +208,21 @@ class ScriptIntegrationTest extends ScalaTestFrameworkTestKit(EventServer, Alarm
       testProbe.expectMessageType[SystemEvent] // discard invalid event
 
       // Submit sequence to OCS as AbortSequence is accepted only in InProgress State
-      val command             = Setup(Prefix("IRMS.test"), CommandName("command-irms"), None)
+      val command1            = Setup(Prefix("IRMS.test"), CommandName("command-irms"), None)
+      val command2            = Setup(Prefix("IRIS.test"), CommandName("command-1"), None)
+      val command3            = Setup(Prefix("TCS.test"), CommandName("command-2"), None)
       val submitResponseProbe = TestProbe[SubmitResponse]
       val sequenceId          = Id()
-      val sequence            = Sequence(sequenceId, Seq(command))
+      val sequence            = Sequence(sequenceId, Seq(command1, command2, command3))
 
       ocsSequencer ! SubmitSequenceAndWait(sequence, submitResponseProbe.ref)
 
       val abortSequenceResponseF: Future[OkOrUnhandledResponse] = ocsSequencer ? AbortSequence
       abortSequenceResponseF.futureValue should ===(Ok)
+
+      //Expect Pending steps in OCS sequence are aborted
+      val maybeStepListF: Future[Option[StepList]] = ocsSequencer ? GetSequence
+      maybeStepListF.futureValue.get.nextPending shouldBe None
 
       //Ocs will call abortSequenceHandler TestScript.kts. which sends abortSequence to IRMS downstream sequencer
       //Expect abort success event from IRMS sequencer script (TestScript4.kt abortSequenceHandler)
