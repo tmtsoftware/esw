@@ -82,12 +82,12 @@ class JScriptDslTest extends BaseTestSuite {
       val script: JScriptDsl = new JScriptDsl(csw) {
         override protected implicit def strandEc: StrandEc = StrandEc()
 
-        handleAbort {
+        handleAbortSequence {
           orderOfAbortCalled += 1
           () => CompletableFuture.completedFuture(null)
         }
 
-        handleAbort {
+        handleAbortSequence {
           orderOfAbortCalled += 2
           () => CompletableFuture.completedFuture(null)
         }

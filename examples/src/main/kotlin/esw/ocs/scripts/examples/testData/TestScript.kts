@@ -74,6 +74,27 @@ script {
         addOrUpdateCommand(CommandResponse.Completed(command.runId()))
     }
 
+    handleSetup("command-irms") { command ->
+        // To avoid sequencer to finish immediately so that other Add, Append command gets time
+        val setupCommand = Setup(
+                Id("command-4-irms"),
+                Prefix("IRMS.test"),
+                CommandName("command-irms"),
+                Option.apply(null),
+                HashSet()
+        )
+        val sequence = Sequence(
+                Id("testSequenceIdString123"),
+                CollectionConverters.asScala(Collections.singleton<SequenceCommand>(setupCommand)).toSeq()
+        )
+
+        submitSequence("irms", "darknight", sequence)
+
+        delay(500)
+
+        addOrUpdateCommand(CommandResponse.Completed(command.runId))
+    }
+
     handleDiagnosticMode { startTime, hint ->
         // do some actions to go to diagnostic mode based on hint
         diagnosticModeForComponent("test", Assembly(), startTime, hint)
@@ -92,5 +113,12 @@ script {
     handleGoOnline {
         // do some actions to go online
         goOnlineModeForComponent("test", Assembly())
+    }
+
+    handleAbortSequence {
+        //do some actions to abort sequence
+
+        //send abortSequence command to downstream sequencer
+        abortSequenceForSequencer("irms", "darknight")
     }
 }

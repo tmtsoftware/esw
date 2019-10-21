@@ -50,11 +50,16 @@ class ScriptIntegrationTest extends ScalaTestFrameworkTestKit(EventServer, Alarm
   private val tcsPackageId     = "tcs"
   private val tcsObservingMode = "darknight"
 
+  // TestScript4.kts
+  private val irmsPackageId     = "irms"
+  private val irmsObservingMode = "darknight"
+
   private var locationService: LocationService     = _
   private var ocsWiring: SequencerWiring           = _
   private var ocsSequencer: ActorRef[SequencerMsg] = _
   private var tcsWiring: SequencerWiring           = _
   private var tcsSequencer: ActorRef[SequencerMsg] = _
+  private var irmsWiring: SequencerWiring          = _
 
   override def beforeAll(): Unit = {
     super.beforeAll()
@@ -66,6 +71,10 @@ class ScriptIntegrationTest extends ScalaTestFrameworkTestKit(EventServer, Alarm
     tcsWiring = new SequencerWiring(tcsPackageId, tcsObservingMode, None)
     tcsWiring.sequencerServer.start()
     tcsSequencer = tcsWiring.sequencerRef
+
+    //start IRMS sequencer as OCS sends AbortSequence to IRMS downstream sequencer
+    irmsWiring = new SequencerWiring(irmsPackageId, irmsObservingMode, None)
+    irmsWiring.sequencerServer.start()
 
     ocsWiring = new SequencerWiring(ocsPackageId, ocsObservingMode, None)
     ocsSequencer = ocsWiring.sequencerServer.start().rightValue.uri.toActorRef.unsafeUpcast[SequencerMsg]
@@ -188,5 +197,31 @@ class ScriptIntegrationTest extends ScalaTestFrameworkTestKit(EventServer, Alarm
 
       getPublishedEvent.isInvalid should ===(false)
     }
+
+    "be able to send abortSequence to downstream sequencers | ESW-137, ESW-155" in {
+      val eventService = new EventServiceFactory().make(HttpLocationServiceFactory.makeLocalClient)
+      val eventKey     = EventKey(Prefix("IRMS"), EventName("abort.success"))
+
+      val testProbe    = TestProbe[Event]
+      val subscription = eventService.defaultSubscriber.subscribeActorRef(Set(eventKey), testProbe.ref)
+      subscription.ready().futureValue
+      testProbe.expectMessageType[SystemEvent] // discard invalid event
+
+      // Submit sequence to OCS as AbortSequence is accepted only in InProgress State
+      val command             = Setup(Prefix("IRMS.test"), CommandName("command-irms"), None)
+      val submitResponseProbe = TestProbe[SubmitResponse]
+      val sequenceId          = Id()
+      val sequence            = Sequence(sequenceId, Seq(command))
+
+      ocsSequencer ! SubmitSequenceAndWait(sequence, submitResponseProbe.ref)
+
+      val abortSequenceResponseF: Future[OkOrUnhandledResponse] = ocsSequencer ? AbortSequence
+      abortSequenceResponseF.futureValue should ===(Ok)
+
+      //Ocs will call abortSequenceHandler TestScript.kts. which sends abortSequence to IRMS downstream sequencer
+      //Expect abort success event from IRMS sequencer script (TestScript4.kt abortSequenceHandler)
+      testProbe.expectMessageType[SystemEvent]
+    }
+
   }
 }

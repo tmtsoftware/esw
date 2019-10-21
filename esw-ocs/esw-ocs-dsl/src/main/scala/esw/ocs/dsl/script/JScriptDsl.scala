@@ -106,10 +106,10 @@ abstract class JScriptDsl(val csw: CswServices) {
   protected final def handleObserveCommand(name: String)(handler: Observe => CompletionStage[Void]): Unit =
     handle(name)(handler(_))
 
-  protected final def handleGoOnline(handler: Supplier[CompletionStage[Void]]): Unit  = onlineHandlers.add(_ => handler.get())
-  protected final def handleAbort(handler: Supplier[CompletionStage[Void]]): Unit     = abortHandlers.add(_ => handler.get())
-  protected final def handleShutdown(handler: Supplier[CompletionStage[Void]]): Unit  = shutdownHandlers.add(_ => handler.get())
-  protected final def handleGoOffline(handler: Supplier[CompletionStage[Void]]): Unit = offlineHandlers.add(_ => handler.get())
+  protected final def handleGoOnline(handler: Supplier[CompletionStage[Void]]): Unit      = onlineHandlers.add(_ => handler.get())
+  protected final def handleAbortSequence(handler: Supplier[CompletionStage[Void]]): Unit = abortHandlers.add(_ => handler.get())
+  protected final def handleShutdown(handler: Supplier[CompletionStage[Void]]): Unit      = shutdownHandlers.add(_ => handler.get())
+  protected final def handleGoOffline(handler: Supplier[CompletionStage[Void]]): Unit     = offlineHandlers.add(_ => handler.get())
   protected final def handleDiagnosticMode(handler: (UTCTime, String) => CompletionStage[Void]): Unit =
     diagnosticHandlers.add((x: (UTCTime, String)) => handler(x._1, x._2))
   protected final def handleOperationsMode(handler: Supplier[CompletionStage[Void]]): Unit =

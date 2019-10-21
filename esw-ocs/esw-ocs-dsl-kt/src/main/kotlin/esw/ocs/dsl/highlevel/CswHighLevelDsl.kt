@@ -14,7 +14,7 @@ import esw.ocs.dsl.sequence_manager.LocationServiceUtil
 import kotlinx.coroutines.CoroutineScope
 
 abstract class CswHighLevelDsl(private val cswServices: CswServices) : EventServiceDsl, TimeServiceDsl, CommandServiceDsl, CrmDsl, DiagnosticDsl,
-    LockUnlockDsl, OnlineOfflineDsl,
+    LockUnlockDsl, OnlineOfflineDsl, AbortSequenceDsl,
     AlarmServiceDsl by AlarmServiceDslImpl(cswServices.alarmService()) {
     abstract val strandEc: StrandEc
     abstract override val coroutineScope: CoroutineScope

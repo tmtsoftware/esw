@@ -43,8 +43,8 @@ sealed class ScriptDslKt(private val cswServices: CswServices) : CswHighLevelDsl
         scriptDsl.handleGoOffline { block.toJavaFutureVoid() }
     }
 
-    fun handleAbort(block: suspend CoroutineScope.() -> Unit) {
-        scriptDsl.handleAbort { block.toJavaFutureVoid() }
+    fun handleAbortSequence(block: suspend CoroutineScope.() -> Unit) {
+        scriptDsl.handleAbortSequence { block.toJavaFutureVoid() }
     }
 
     fun handleShutdown(block: suspend CoroutineScope.() -> Unit) {
