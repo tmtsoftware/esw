@@ -98,11 +98,7 @@ class SequencerBehavior(
     receive[AbortSequenceMessage](AbortingSequence, data, abortingSequence(_, state)(nextBehavior)) {
       case AbortSequenceComplete(replyTo) =>
         import data._
-        val maybeStepList = stepList.flatMap { x =>
-          val inProgressStepList = x.discardPending
-          if (inProgressStepList.steps.isEmpty) None
-          else Some(inProgressStepList)
-        }
+        val maybeStepList = stepList.map(_.discardPending)
         nextBehavior(updateStepList(replyTo, state, maybeStepList))
     }
 
