@@ -12,6 +12,7 @@ import csw.command.client.messages.sequencer.SequencerMsg
 import csw.command.client.{CRMCacheProperties, CommandResponseManager, CommandResponseManagerActor}
 import csw.config.api.javadsl.IConfigClientService
 import csw.config.client.javadsl.JConfigClientFactory
+import csw.command.client.{CRMCacheProperties, CommandResponseManager, CommandResponseManagerActor, CommandServiceFactory}
 import csw.event.client.internal.commons.javawrappers.JEventService
 import csw.location.api.extensions.ActorExtension.RichActor
 import csw.location.api.javadsl.ILocationService
@@ -93,6 +94,7 @@ private[ocs] class SequencerWiring(val packageId: String, val observingMode: Str
     adminFactory,
     lockUnlockUtil,
     jConfigClientService,
+    CommandServiceFactory,
     jAlarmService
   )
 

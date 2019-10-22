@@ -4,6 +4,7 @@ import akka.actor.typed.ActorSystem
 import akka.util.Timeout
 import csw.command.api.javadsl.ICommandService
 import csw.command.client.CommandServiceFactory
+import csw.command.client.ICommandServiceFactory
 import csw.location.api.javadsl.ILocationService
 import csw.location.api.javadsl.JComponentType.Assembly
 import csw.location.api.javadsl.JComponentType.HCD
@@ -27,6 +28,7 @@ import scala.concurrent.duration.Duration.create
 interface CommandServiceDsl {
     val locationService: ILocationService
     val actorSystem: ActorSystem<*>
+    val commandServiceFactory: ICommandServiceFactory
 
     private val duration: Duration
         get() = Duration.ofSeconds(10)
@@ -87,7 +89,7 @@ interface CommandServiceDsl {
         action: (commandService: ICommandService) -> CompletableFuture<T>
     ) = resolve(name, compType)
         .orElseThrow { IllegalArgumentException("Could not find component - $name of type - $compType") }
-        .let { action(CommandServiceFactory.jMake(it, actorSystem)).await() }
+        .let { action(commandServiceFactory.jMake(it, actorSystem)).await() }
 
     private suspend fun resolve(name: String, compType: ComponentType): Optional<AkkaLocation> =
         locationService.resolve(Connection.AkkaConnection(ComponentId(name, compType)), duration).await()
