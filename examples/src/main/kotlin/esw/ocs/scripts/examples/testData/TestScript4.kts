@@ -17,4 +17,10 @@ script {
         val successEvent = systemEvent("IRMS", "abort.success")
         publishEvent(successEvent)
     }
+
+    handleStop {
+        //do some actions to abort sequence
+        val successEvent = systemEvent("IRMS", "stop.success")
+        publishEvent(successEvent)
+    }
 }

@@ -121,4 +121,11 @@ script {
         //send abortSequence command to downstream sequencer
         abortSequenceForSequencer("irms", "darknight")
     }
+
+    handleStop {
+        //do some actions to stop
+
+        //send stop command to downstream sequencer
+        stop("irms", "darknight")
+    }
 }
