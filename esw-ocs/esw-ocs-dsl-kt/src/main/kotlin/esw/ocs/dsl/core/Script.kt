@@ -22,8 +22,9 @@ import java.util.concurrent.CompletionStage
 
 sealed class ScriptDslKt(private val cswServices: CswServices) : CswHighLevelDsl(cswServices) {
 
-    // this needs to be lazy otherwise handlers does not get loaded properly
-    val scriptDsl: JScriptDsl by lazy { ScriptDslFactory.make(cswServices, strandEc) }
+    // https://stackoverflow.com/questions/58497383/is-it-possible-to-provide-custom-name-for-internal-delegated-properties-in-kotli/58497535#58497535
+    @get:JvmName("scriptDsl")
+    internal val scriptDsl: JScriptDsl by lazy { ScriptDslFactory.make(cswServices, strandEc) }
 
     suspend fun nextIf(predicate: (SequenceCommand) -> Boolean): SequenceCommand? =
             scriptDsl.nextIf { predicate(it) }.await().nullable()
