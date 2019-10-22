@@ -198,7 +198,7 @@ class ScriptIntegrationTest extends ScalaTestFrameworkTestKit(EventServer, Alarm
       getPublishedEvent.isInvalid should ===(false)
     }
 
-    "be able to send abortSequence to downstream sequencers and call abortHandler | ESW-137, ESW-155" in {
+    "be able to send abortSequence to downstream sequencers and call abortHandler | ESW-137, ESW-155" ignore {
       val eventService = new EventServiceFactory().make(HttpLocationServiceFactory.makeLocalClient)
       val eventKey     = EventKey(Prefix("IRMS"), EventName("abort.success"))
 
@@ -231,7 +231,7 @@ class ScriptIntegrationTest extends ScalaTestFrameworkTestKit(EventServer, Alarm
       testProbe1.receiveMessage().eventId shouldNot be(-1)
     }
 
-    "be able to send stop to downstream sequencers and call abortHandler | ESW-138, ESW-156" in {
+    "be able to send stop to downstream sequencers and call stopHandler | ESW-138, ESW-156" ignore {
       val eventService = new EventServiceFactory().make(HttpLocationServiceFactory.makeLocalClient)
       val eventKey     = EventKey(Prefix("IRMS"), EventName("stop.success"))
 
