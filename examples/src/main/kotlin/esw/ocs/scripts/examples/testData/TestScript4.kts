@@ -7,8 +7,8 @@ import kotlinx.coroutines.delay
 script {
 
     handleSetup("command-irms") { command ->
-        // To avoid sequencer to finish immediately so that other Add, Append command gets time
-        delay(300)
+        // To avoid sequencer to finish immediately so that other commands gets time
+        delay(500)
         addOrUpdateCommand(CommandResponse.Completed(command.runId))
     }
 

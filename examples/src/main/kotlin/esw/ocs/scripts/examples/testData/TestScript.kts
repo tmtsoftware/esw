@@ -90,7 +90,7 @@ script {
 
         submitSequence("irms", "darknight", sequence)
 
-        delay(500)
+        delay(800)
 
         addOrUpdateCommand(CommandResponse.Completed(command.runId))
     }
