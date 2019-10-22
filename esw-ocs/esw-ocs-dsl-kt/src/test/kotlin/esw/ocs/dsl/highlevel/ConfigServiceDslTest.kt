@@ -23,21 +23,21 @@ class ConfigServiceDslTest : ConfigServiceDsl {
 
 
     @Test
-    fun `existsConfig should delegate to configClientService#exists`() = runBlocking {
+    fun `existsConfig should delegate to configClientService#exists | ESW-123`() = runBlocking {
         every { configClientService.exists(any()) }.returns(CompletableFuture.completedFuture(true))
         existsConfig(path)
         verify { configClientService.exists(any()) }
     }
 
     @Test
-    fun `getConfig should delegate to configClientService#getActive and return null if ConfigData is empty`() = runBlocking {
+    fun `getConfig should delegate to configClientService#getActive and return null if ConfigData is empty | ESW-123`() = runBlocking {
         every { configClientService.getActive(any()) }.returns(CompletableFuture.completedFuture(Optional.empty()))
         getConfig(path) shouldBe null
         verify { configClientService.getActive(any()) }
     }
 
     @Test
-    fun `getConfig should delegate to configClientService#getActive and return ConfigData`() = runBlocking {
+    fun `getConfig should delegate to configClientService#getActive and return ConfigData | ESW-123`() = runBlocking {
         val configData = ConfigData.fromBytes(ByteArray(1))
         every { configClientService.getActive(any()) }.returns(CompletableFuture.completedFuture(Optional.of(configData)))
         getConfig(path) shouldBe configData
