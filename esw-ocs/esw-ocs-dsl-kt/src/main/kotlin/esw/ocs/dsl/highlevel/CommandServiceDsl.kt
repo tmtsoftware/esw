@@ -28,7 +28,6 @@ import scala.concurrent.duration.Duration.create
 interface CommandServiceDsl {
     val locationService: ILocationService
     val actorSystem: ActorSystem<*>
-    val commandServiceFactory: ICommandServiceFactory
 
     private val duration: Duration
         get() = Duration.ofSeconds(10)
@@ -89,7 +88,7 @@ interface CommandServiceDsl {
         action: (commandService: ICommandService) -> CompletableFuture<T>
     ) = resolve(name, compType)
         .orElseThrow { IllegalArgumentException("Could not find component - $name of type - $compType") }
-        .let { action(commandServiceFactory.jMake(it, actorSystem)).await() }
+        .let { action(CommandServiceFactory.jMake(it, actorSystem)).await() }
 
     private suspend fun resolve(name: String, compType: ComponentType): Optional<AkkaLocation> =
         locationService.resolve(Connection.AkkaConnection(ComponentId(name, compType)), duration).await()

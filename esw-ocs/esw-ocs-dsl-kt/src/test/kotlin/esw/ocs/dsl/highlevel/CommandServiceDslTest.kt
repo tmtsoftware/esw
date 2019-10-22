@@ -2,7 +2,7 @@ package esw.ocs.dsl.highlevel
 
 import akka.actor.typed.ActorSystem
 import csw.command.api.javadsl.ICommandService
-import csw.command.client.ICommandServiceFactory
+import csw.command.client.CommandServiceFactory
 import csw.location.api.javadsl.ILocationService
 import csw.location.api.javadsl.JComponentType
 import csw.location.models.AkkaLocation
@@ -12,14 +12,14 @@ import csw.params.commands.CommandName
 import csw.params.commands.CommandResponse.*
 import csw.params.commands.Observe
 import csw.params.commands.Setup
-import csw.params.core.models.Id
 import csw.params.core.models.ObsId
 import csw.params.core.models.Prefix
 import io.kotlintest.shouldBe
-import io.mockk.every
-import io.mockk.mockk
-import io.mockk.verify
+import io.kotlintest.specs.AbstractAnnotationSpec
+import io.kotlintest.specs.AbstractAnnotationSpec.*
+import io.mockk.*
 import kotlinx.coroutines.runBlocking
+import org.junit.jupiter.api.BeforeAll
 import org.junit.jupiter.api.Test
 import java.util.*
 import java.util.concurrent.CompletableFuture
@@ -27,7 +27,6 @@ import java.util.concurrent.CompletableFuture
 class CommandServiceDslTest : CommandServiceDsl {
     override val locationService: ILocationService = mockk()
     override val actorSystem: ActorSystem<*> = mockk()
-    override val commandServiceFactory: ICommandServiceFactory = mockk()
     private val akkaLocation: AkkaLocation = mockk()
     private val commandService: ICommandService = mockk()
 
@@ -37,6 +36,12 @@ class CommandServiceDslTest : CommandServiceDsl {
     private val hcdAkkaConnection = Connection.AkkaConnection(ComponentId(hcdName, JComponentType.HCD()))
     private val assemblyAkkaConnection = Connection.AkkaConnection(ComponentId(assemblyName, JComponentType.Assembly()))
     private val setupCommand = setup("esw.test", "move", "testObsId")
+
+    @BeforeEach
+    fun setup() {
+        mockkStatic(CommandServiceFactory::class)
+        every { CommandServiceFactory.jMake(akkaLocation, actorSystem) }.answers { commandService }
+    }
 
     @Test
     fun `setup method should construct a Setup command with given prefix, commandName and obsId | ESW-121`() = runBlocking {
@@ -60,8 +65,9 @@ class CommandServiceDslTest : CommandServiceDsl {
     @Test
     fun `validateHcdCommand should resolve commandService for given hcd and call validate method on it | ESW-121`() = runBlocking {
 
+        mockkStatic(CommandServiceFactory::class)
+        every { CommandServiceFactory.jMake(akkaLocation, actorSystem) }.answers { commandService }
         every { locationService.resolve(hcdAkkaConnection, any()) }.answers { CompletableFuture.completedFuture(Optional.of(akkaLocation)) }
-        every { commandServiceFactory.jMake(akkaLocation, actorSystem) }.answers { commandService }
         every { commandService.validate(setupCommand) }.answers { CompletableFuture.completedFuture(Accepted(setupCommand.runId())) }
 
         validateHcdCommand(hcdName, setupCommand)
@@ -72,8 +78,9 @@ class CommandServiceDslTest : CommandServiceDsl {
     @Test
     fun `validateAssemblyCommand should resolve commandService for given assembly and call validate method on it | ESW-121`() = runBlocking {
 
+        mockkStatic(CommandServiceFactory::class)
+        every { CommandServiceFactory.jMake(akkaLocation, actorSystem) }.answers { commandService }
         every { locationService.resolve(assemblyAkkaConnection, any()) }.answers { CompletableFuture.completedFuture(Optional.of(akkaLocation)) }
-        every { commandServiceFactory.jMake(akkaLocation, actorSystem) }.answers { commandService }
         every { commandService.validate(setupCommand) }.answers { CompletableFuture.completedFuture(Accepted(setupCommand.runId())) }
 
         validateAssemblyCommand(assemblyName, setupCommand)
@@ -84,8 +91,9 @@ class CommandServiceDslTest : CommandServiceDsl {
     @Test
     fun `submitCommandToHcd should resolve commandService for given hcd and call submit method on it | ESW-121`() = runBlocking {
 
+        mockkStatic(CommandServiceFactory::class)
+        every { CommandServiceFactory.jMake(akkaLocation, actorSystem) }.answers { commandService }
         every { locationService.resolve(hcdAkkaConnection, any()) }.answers { CompletableFuture.completedFuture(Optional.of(akkaLocation)) }
-        every { commandServiceFactory.jMake(akkaLocation, actorSystem) }.answers { commandService }
         every { commandService.submit(setupCommand, any()) }.answers { CompletableFuture.completedFuture(Started(setupCommand.runId())) }
 
         submitCommandToHcd(hcdName, setupCommand)
@@ -96,8 +104,9 @@ class CommandServiceDslTest : CommandServiceDsl {
     @Test
     fun `submitCommandToAssembly should resolve commandService for given assembly and call submit method on it | ESW-121`() = runBlocking {
 
+        mockkStatic(CommandServiceFactory::class)
+        every { CommandServiceFactory.jMake(akkaLocation, actorSystem) }.answers { commandService }
         every { locationService.resolve(assemblyAkkaConnection, any()) }.answers { CompletableFuture.completedFuture(Optional.of(akkaLocation)) }
-        every { commandServiceFactory.jMake(akkaLocation, actorSystem) }.answers { commandService }
         every { commandService.submit(setupCommand, any()) }.answers { CompletableFuture.completedFuture(Started(setupCommand.runId())) }
 
         submitCommandToAssembly(assemblyName, setupCommand)
@@ -108,8 +117,9 @@ class CommandServiceDslTest : CommandServiceDsl {
     @Test
     fun `submitAndWaitCommandToHcd should resolve commandService for given hcd and call submitAndWait method on it | ESW-121`() = runBlocking {
 
+        mockkStatic(CommandServiceFactory::class)
+        every { CommandServiceFactory.jMake(akkaLocation, actorSystem) }.answers { commandService }
         every { locationService.resolve(hcdAkkaConnection, any()) }.answers { CompletableFuture.completedFuture(Optional.of(akkaLocation)) }
-        every { commandServiceFactory.jMake(akkaLocation, actorSystem) }.answers { commandService }
         every { commandService.submitAndWait(setupCommand, any()) }.answers { CompletableFuture.completedFuture(Completed(setupCommand.runId())) }
 
         submitAndWaitCommandToHcd(hcdName, setupCommand)
@@ -120,8 +130,9 @@ class CommandServiceDslTest : CommandServiceDsl {
     @Test
     fun `submitAndWaitCommandToAssembly should resolve commandService for given assembly and call submitAndWait method on it | ESW-121`() = runBlocking {
 
+        mockkStatic(CommandServiceFactory::class)
+        every { CommandServiceFactory.jMake(akkaLocation, actorSystem) }.answers { commandService }
         every { locationService.resolve(assemblyAkkaConnection, any()) }.answers { CompletableFuture.completedFuture(Optional.of(akkaLocation)) }
-        every { commandServiceFactory.jMake(akkaLocation, actorSystem) }.answers { commandService }
         every { commandService.submitAndWait(setupCommand, any()) }.answers { CompletableFuture.completedFuture(Completed(setupCommand.runId())) }
 
         submitAndWaitCommandToAssembly(assemblyName, setupCommand)
@@ -132,8 +143,9 @@ class CommandServiceDslTest : CommandServiceDsl {
     @Test
     fun `oneWayCommandToHcd should resolve commandService for given hcd and call oneway method on it | ESW-121`() = runBlocking {
 
+        mockkStatic(CommandServiceFactory::class)
+        every { CommandServiceFactory.jMake(akkaLocation, actorSystem) }.answers { commandService }
         every { locationService.resolve(hcdAkkaConnection, any()) }.answers { CompletableFuture.completedFuture(Optional.of(akkaLocation)) }
-        every { commandServiceFactory.jMake(akkaLocation, actorSystem) }.answers { commandService }
         every { commandService.oneway(setupCommand, any()) }.answers { CompletableFuture.completedFuture(Accepted(setupCommand.runId())) }
 
         oneWayCommandToHcd(hcdName, setupCommand)
@@ -144,8 +156,9 @@ class CommandServiceDslTest : CommandServiceDsl {
     @Test
     fun `oneWayCommandToAssembly should resolve commandService for given assembly and call oneway method on it | ESW-121`() = runBlocking {
 
+        mockkStatic(CommandServiceFactory::class)
+        every { CommandServiceFactory.jMake(akkaLocation, actorSystem) }.answers { commandService }
         every { locationService.resolve(assemblyAkkaConnection, any()) }.answers { CompletableFuture.completedFuture(Optional.of(akkaLocation)) }
-        every { commandServiceFactory.jMake(akkaLocation, actorSystem) }.answers { commandService }
         every { commandService.oneway(setupCommand, any()) }.answers { CompletableFuture.completedFuture(Accepted(setupCommand.runId())) }
 
         oneWayCommandToAssembly(assemblyName, setupCommand)

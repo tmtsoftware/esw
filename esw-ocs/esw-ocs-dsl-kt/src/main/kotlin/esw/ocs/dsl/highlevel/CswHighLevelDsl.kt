@@ -25,7 +25,6 @@ abstract class CswHighLevelDsl(private val cswServices: CswServices) : EventServ
     final override val defaultPublisher: IEventPublisher by lazy { cswServices.eventService().defaultPublisher() }
     final override val defaultSubscriber: IEventSubscriber by lazy { cswServices.eventService().defaultSubscriber() }
     final override val crm: CommandResponseManager = cswServices.crm()
-    final override val commandServiceFactory: ICommandServiceFactory by lazy { cswServices.commandServiceFactory() }
     // fixme: should not be visible from script
     final override val commonUtils: CommonUtils = CommonUtils(cswServices.sequencerAdminFactory(), LocationServiceUtil(locationService.asScala(), actorSystem))
     final override val lockUnlockUtil: LockUnlockUtil = cswServices.lockUnlockUtil()
