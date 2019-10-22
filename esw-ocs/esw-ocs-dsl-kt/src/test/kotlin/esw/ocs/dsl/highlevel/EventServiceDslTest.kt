@@ -44,7 +44,7 @@ class EventServiceDslTest : EventServiceDsl {
     }
 
     @Test
-    fun `EventServiceDsl should systemEvent should return a SystemEvent created with given parameters | ESW-120`() {
+    fun `systemEvent should return a SystemEvent created with given parameters | ESW-120`() {
         val eventName = "systemEvent1"
         val eventPrefix = "TCS.filter.wheel"
         val actualEvent = systemEvent(eventPrefix, eventName)

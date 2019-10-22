@@ -10,6 +10,8 @@ import csw.alarm.api.javadsl.IAlarmService
 import csw.command.client.messages.CommandResponseManagerMessage
 import csw.command.client.messages.sequencer.SequencerMsg
 import csw.command.client.{CRMCacheProperties, CommandResponseManager, CommandResponseManagerActor}
+import csw.config.api.javadsl.IConfigClientService
+import csw.config.client.javadsl.JConfigClientFactory
 import csw.event.client.internal.commons.javawrappers.JEventService
 import csw.location.api.extensions.ActorExtension.RichActor
 import csw.location.api.javadsl.ILocationService
@@ -75,8 +77,9 @@ private[ocs] class SequencerWiring(val packageId: String, val observingMode: Str
 
   lazy private val lockUnlockUtil = new LockUnlockUtil(locationServiceUtil)(actorSystem)
 
-  lazy val jLocationService: ILocationService = JHttpLocationServiceFactory.makeLocalClient(actorSystem, actorRuntime.mat)
-  lazy val jEventService: JEventService       = new JEventService(eventService)
+  lazy val jLocationService: ILocationService         = JHttpLocationServiceFactory.makeLocalClient(actorSystem, actorRuntime.mat)
+  lazy val jConfigClientService: IConfigClientService = JConfigClientFactory.clientApi(actorSystem, jLocationService)
+  lazy val jEventService: JEventService               = new JEventService(eventService)
 
   private lazy val jAlarmService: IAlarmService = alarmServiceFactory.jMakeClientApi(jLocationService, typedSystem)
 
@@ -89,6 +92,7 @@ private[ocs] class SequencerWiring(val packageId: String, val observingMode: Str
     timeServiceSchedulerFactory,
     adminFactory,
     lockUnlockUtil,
+    jConfigClientService,
     jAlarmService
   )
 

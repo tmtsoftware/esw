@@ -3,6 +3,7 @@ package esw.ocs.dsl.highlevel
 import akka.actor.typed.ActorSystem
 import csw.alarm.api.javadsl.IAlarmService
 import csw.command.client.CommandResponseManager
+import csw.config.api.javadsl.IConfigClientService
 import csw.event.api.javadsl.IEventPublisher
 import csw.event.api.javadsl.IEventSubscriber
 import csw.location.api.javadsl.ILocationService
@@ -14,7 +15,7 @@ import esw.ocs.dsl.sequence_manager.LocationServiceUtil
 import kotlinx.coroutines.CoroutineScope
 
 abstract class CswHighLevelDsl(private val cswServices: CswServices) : EventServiceDsl, TimeServiceDsl, CommandServiceDsl, CrmDsl, DiagnosticDsl,
-    LockUnlockDsl, OnlineOfflineDsl, AbortSequenceDsl, StopDsl,
+    LockUnlockDsl, OnlineOfflineDsl, AbortSequenceDsl, StopDsl, ConfigServiceDsl,
     AlarmServiceDsl by AlarmServiceDslImpl(cswServices.alarmService()) {
     abstract val strandEc: StrandEc
     abstract override val coroutineScope: CoroutineScope
@@ -30,5 +31,9 @@ abstract class CswHighLevelDsl(private val cswServices: CswServices) : EventServ
 
     final override val timeServiceScheduler: TimeServiceScheduler by lazy {
         cswServices.timeServiceSchedulerFactory().make(strandEc.ec())
+    }
+
+    final override val configClientService: IConfigClientService by lazy {
+        cswServices.configClientService()
     }
 }
