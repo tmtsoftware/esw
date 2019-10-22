@@ -226,7 +226,9 @@ class ScriptIntegrationTest extends ScalaTestFrameworkTestKit(EventServer, Alarm
 
       //Ocs will call abortSequenceHandler TestScript.kts. which sends abortSequence to IRMS downstream sequencer
       //Expect abort success event from IRMS sequencer script (TestScript4.kt abortSequenceHandler)
-      eventually { testProbe.expectMessageType[SystemEvent] }
+      val testProbe1 = TestProbe[Event]
+      eventService.defaultSubscriber.subscribeActorRef(Set(eventKey), testProbe1.ref)
+      testProbe1.receiveMessage().eventId shouldNot be(-1)
     }
 
     "be able to send stop to downstream sequencers and call abortHandler | ESW-138, ESW-156" in {
@@ -253,7 +255,11 @@ class ScriptIntegrationTest extends ScalaTestFrameworkTestKit(EventServer, Alarm
 
       //stopHandler for Ocs (TestScript.kts) will be called which sends Stop to IRMS downstream sequencer
       //Expect stop.success event from IRMS sequencer script (TestScript4.kt stopHandler)
-      eventually { testProbe.expectMessageType[SystemEvent] }
+      //Ocs will call abortSequenceHandler TestScript.kts. which sends abortSequence to IRMS downstream sequencer
+      //Expect abort success event from IRMS sequencer script (TestScript4.kt abortSequenceHandler)
+      val testProbe1 = TestProbe[Event]
+      eventService.defaultSubscriber.subscribeActorRef(Set(eventKey), testProbe1.ref)
+      testProbe1.receiveMessage().eventId shouldNot be(-1)
     }
 
   }
