@@ -39,7 +39,7 @@ class CommandServiceDslTest : CommandServiceDsl {
     private val setupCommand = setup("esw.test", "move", "testObsId")
 
     @Test
-    fun `setup method should construct a Setup command with given prefix, commandName and obsId`() = runBlocking {
+    fun `setup method should construct a Setup command with given prefix, commandName and obsId | ESW-121`() = runBlocking {
         val actualSetupCommand: Setup = setup("esw.test", "move", "testObsId")
         val expectedSetupCommand = Setup(Prefix("esw.test"), CommandName("move"), Optional.of(ObsId("testObsId")))
 
@@ -49,7 +49,7 @@ class CommandServiceDslTest : CommandServiceDsl {
     }
 
     @Test
-    fun `observe method should construct a Observe command with given prefix, commandName and obsId`() = runBlocking {
+    fun `observe method should construct a Observe command with given prefix, commandName and obsId | ESW-121`() = runBlocking {
         val expectedObserveCommand = Observe(Prefix("esw.test"), CommandName("move"), Optional.of(ObsId("testObsId")))
         val actualObserveCommand: Observe = observe("esw.test", "move", "testObsId")
         actualObserveCommand.source() shouldBe expectedObserveCommand.source()
@@ -58,7 +58,7 @@ class CommandServiceDslTest : CommandServiceDsl {
     }
 
     @Test
-    fun `validateHcdCommand should resolve commandService for given hcd and call validate method on it`() = runBlocking {
+    fun `validateHcdCommand should resolve commandService for given hcd and call validate method on it | ESW-121`() = runBlocking {
 
         every { locationService.resolve(hcdAkkaConnection, any()) }.answers { CompletableFuture.completedFuture(Optional.of(akkaLocation)) }
         every { commandServiceFactory.jMake(akkaLocation, actorSystem) }.answers { commandService }
@@ -70,7 +70,7 @@ class CommandServiceDslTest : CommandServiceDsl {
     }
 
     @Test
-    fun `validateAssemblyCommand should resolve commandService for given assembly and call validate method on it`() = runBlocking {
+    fun `validateAssemblyCommand should resolve commandService for given assembly and call validate method on it | ESW-121`() = runBlocking {
 
         every { locationService.resolve(assemblyAkkaConnection, any()) }.answers { CompletableFuture.completedFuture(Optional.of(akkaLocation)) }
         every { commandServiceFactory.jMake(akkaLocation, actorSystem) }.answers { commandService }
@@ -82,7 +82,7 @@ class CommandServiceDslTest : CommandServiceDsl {
     }
 
     @Test
-    fun `submitCommandToHcd should resolve commandService for given hcd and call submit method on it`() = runBlocking {
+    fun `submitCommandToHcd should resolve commandService for given hcd and call submit method on it | ESW-121`() = runBlocking {
 
         every { locationService.resolve(hcdAkkaConnection, any()) }.answers { CompletableFuture.completedFuture(Optional.of(akkaLocation)) }
         every { commandServiceFactory.jMake(akkaLocation, actorSystem) }.answers { commandService }
@@ -94,7 +94,7 @@ class CommandServiceDslTest : CommandServiceDsl {
     }
 
     @Test
-    fun `submitCommandToAssembly should resolve commandService for given assembly and call submit method on it`() = runBlocking {
+    fun `submitCommandToAssembly should resolve commandService for given assembly and call submit method on it | ESW-121`() = runBlocking {
 
         every { locationService.resolve(assemblyAkkaConnection, any()) }.answers { CompletableFuture.completedFuture(Optional.of(akkaLocation)) }
         every { commandServiceFactory.jMake(akkaLocation, actorSystem) }.answers { commandService }
@@ -106,7 +106,7 @@ class CommandServiceDslTest : CommandServiceDsl {
     }
 
     @Test
-    fun `submitAndWaitCommandToHcd should resolve commandService for given hcd and call submitAndWait method on it`() = runBlocking {
+    fun `submitAndWaitCommandToHcd should resolve commandService for given hcd and call submitAndWait method on it | ESW-121`() = runBlocking {
 
         every { locationService.resolve(hcdAkkaConnection, any()) }.answers { CompletableFuture.completedFuture(Optional.of(akkaLocation)) }
         every { commandServiceFactory.jMake(akkaLocation, actorSystem) }.answers { commandService }
@@ -118,7 +118,7 @@ class CommandServiceDslTest : CommandServiceDsl {
     }
 
     @Test
-    fun `submitAndWaitCommandToAssembly should resolve commandService for given assembly and call submitAndWait method on it`() = runBlocking {
+    fun `submitAndWaitCommandToAssembly should resolve commandService for given assembly and call submitAndWait method on it | ESW-121`() = runBlocking {
 
         every { locationService.resolve(assemblyAkkaConnection, any()) }.answers { CompletableFuture.completedFuture(Optional.of(akkaLocation)) }
         every { commandServiceFactory.jMake(akkaLocation, actorSystem) }.answers { commandService }
@@ -130,7 +130,7 @@ class CommandServiceDslTest : CommandServiceDsl {
     }
 
     @Test
-    fun `oneWayCommandToHcd should resolve commandService for given hcd and call oneway method on it`() = runBlocking {
+    fun `oneWayCommandToHcd should resolve commandService for given hcd and call oneway method on it | ESW-121`() = runBlocking {
 
         every { locationService.resolve(hcdAkkaConnection, any()) }.answers { CompletableFuture.completedFuture(Optional.of(akkaLocation)) }
         every { commandServiceFactory.jMake(akkaLocation, actorSystem) }.answers { commandService }
@@ -142,7 +142,7 @@ class CommandServiceDslTest : CommandServiceDsl {
     }
 
     @Test
-    fun `oneWayCommandToAssembly should resolve commandService for given assembly and call oneway method on it`() = runBlocking {
+    fun `oneWayCommandToAssembly should resolve commandService for given assembly and call oneway method on it | ESW-121`() = runBlocking {
 
         every { locationService.resolve(assemblyAkkaConnection, any()) }.answers { CompletableFuture.completedFuture(Optional.of(akkaLocation)) }
         every { commandServiceFactory.jMake(akkaLocation, actorSystem) }.answers { commandService }

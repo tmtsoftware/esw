@@ -39,6 +39,11 @@ script {
         addOrUpdateCommand(CommandResponse.Completed(it.runId()))
     }
 
+    handleSetup("command-for-assembly") {command ->
+        submitCommandToAssembly("test", command)
+        addOrUpdateCommand(CommandResponse.Completed(command.runId()))
+    }
+
     handleSetup("command-4") { command ->
         // try sending concrete sequence
         val setupCommand = Setup(

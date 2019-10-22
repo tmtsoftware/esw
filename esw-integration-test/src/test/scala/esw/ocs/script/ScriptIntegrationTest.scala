@@ -123,8 +123,8 @@ class ScriptIntegrationTest extends ScalaTestFrameworkTestKit(EventServer, Alarm
       val diagnosticModeResF: Future[DiagnosticModeResponse] = ocsSequencer ? (DiagnosticMode(UTCTime.now(), "engineering", _))
       diagnosticModeResF.futureValue should ===(Ok)
 
-      val expectedDiagEvent = testProbe.expectMessageType[SystemEvent]
-      expectedDiagEvent.paramSet.head shouldBe diagnosticModeParam
+      val actualDiagEvent = testProbe.expectMessageType[SystemEvent]
+      actualDiagEvent.paramSet.head shouldBe diagnosticModeParam
 
       //operationsMode
       val operationsModeParam = StringKey.make("mode").set("operations")
@@ -132,8 +132,8 @@ class ScriptIntegrationTest extends ScalaTestFrameworkTestKit(EventServer, Alarm
       val operationsModeResF: Future[OperationsModeResponse] = ocsSequencer ? OperationsMode
       operationsModeResF.futureValue should ===(Ok)
 
-      val expectedOpEvent = testProbe.expectMessageType[SystemEvent]
-      expectedOpEvent.paramSet.head shouldBe operationsModeParam
+      val actualOpEvent = testProbe.expectMessageType[SystemEvent]
+      actualOpEvent.paramSet.head shouldBe operationsModeParam
     }
 
     "be able to forward GoOnline/GoOffline message to downstream components | ESW-236" in {
@@ -154,15 +154,15 @@ class ScriptIntegrationTest extends ScalaTestFrameworkTestKit(EventServer, Alarm
       val goOfflineResF: Future[GoOfflineResponse] = ocsSequencer ? GoOffline
       goOfflineResF.futureValue should ===(Ok)
 
-      val expectedOfflineEvent = testProbe.expectMessageType[SystemEvent]
-      expectedOfflineEvent.eventKey should ===(offlineKey)
+      val actualOfflineEvent = testProbe.expectMessageType[SystemEvent]
+      actualOfflineEvent.eventKey should ===(offlineKey)
 
       //goOnline
       val goOnlineResF: Future[GoOnlineResponse] = ocsSequencer ? GoOnline
       goOnlineResF.futureValue should ===(Ok)
 
-      val expectedOnlineEvent = testProbe.expectMessageType[SystemEvent]
-      expectedOnlineEvent.eventKey should ===(onlineKey)
+      val actualOnlineEvent = testProbe.expectMessageType[SystemEvent]
+      actualOnlineEvent.eventKey should ===(onlineKey)
     }
 
     "be able to set severity of sequencer alarms | ESW-125" in {
@@ -212,8 +212,7 @@ class ScriptIntegrationTest extends ScalaTestFrameworkTestKit(EventServer, Alarm
       val command2            = Setup(Prefix("IRIS.test"), CommandName("command-1"), None)
       val command3            = Setup(Prefix("TCS.test"), CommandName("command-2"), None)
       val submitResponseProbe = TestProbe[SubmitResponse]
-      val sequenceId          = Id()
-      val sequence            = Sequence(sequenceId, Seq(command1, command2, command3))
+      val sequence            = Sequence(Id(), Seq(command1, command2, command3))
 
       ocsSequencer ! SubmitSequenceAndWait(sequence, submitResponseProbe.ref)
 
@@ -262,5 +261,24 @@ class ScriptIntegrationTest extends ScalaTestFrameworkTestKit(EventServer, Alarm
       testProbe1.receiveMessage().eventId shouldNot be(-1)
     }
 
+    "be able to send commands to downstream assembly | ESW-121" in {
+      val eventService = new EventServiceFactory().make(HttpLocationServiceFactory.makeLocalClient)
+      val eventKey     = EventKey(Prefix("tcs.filter.wheel"), EventName("setup-command-from-script"))
+
+      val command    = Setup(Prefix("IRIS.test"), CommandName("command-for-assembly"), None)
+      val sequenceId = Id()
+      val sequence   = Sequence(sequenceId, Seq(command))
+
+      val testProbe    = TestProbe[Event]
+      val subscription = eventService.defaultSubscriber.subscribeActorRef(Set(eventKey), testProbe.ref)
+      subscription.ready().futureValue
+      testProbe.expectMessageType[SystemEvent] // discard invalid event
+
+      val submitSequenceResponseF: Future[SubmitResponse] = ocsSequencer ? (SubmitSequenceAndWait(sequence, _))
+      submitSequenceResponseF.futureValue should ===(Completed(sequenceId))
+
+      val actualSetupEvent: SystemEvent = testProbe.expectMessageType[SystemEvent]
+      actualSetupEvent.eventKey should ===(eventKey)
+    }
   }
 }

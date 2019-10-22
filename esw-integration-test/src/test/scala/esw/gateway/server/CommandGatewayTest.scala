@@ -1,14 +1,20 @@
 package esw.gateway.server
 
 import akka.actor.CoordinatedShutdown.UnknownReason
+import akka.actor.testkit.typed.scaladsl.TestProbe
+import akka.actor.typed.{ActorSystem, SpawnProtocol}
 import akka.stream.scaladsl.Sink
 import com.typesafe.config.ConfigFactory
+import csw.event.client.EventServiceFactory
+import csw.location.client.scaladsl.HttpLocationServiceFactory
 import csw.location.models.ComponentId
 import csw.location.models.ComponentType.Assembly
 import csw.params.commands.CommandResponse.{Accepted, Completed}
 import csw.params.commands.{CommandName, Setup}
 import csw.params.core.models.{Id, ObsId, Prefix}
 import csw.params.core.states.{CurrentState, StateName}
+import csw.params.events.{Event, EventKey, EventName, SystemEvent}
+import csw.testkit.scaladsl.CSWService.EventServer
 import csw.testkit.scaladsl.ScalaTestFrameworkTestKit
 import esw.gateway.api.clients.CommandClient
 import esw.gateway.api.codecs.GatewayCodecs
@@ -22,12 +28,17 @@ import org.scalatest.WordSpecLike
 import scala.concurrent.Future
 import scala.concurrent.duration.{DurationInt, FiniteDuration}
 
-class CommandGatewayTest extends ScalaTestFrameworkTestKit with WordSpecLike with FutureEitherExt with GatewayCodecs {
+class CommandGatewayTest
+    extends ScalaTestFrameworkTestKit(EventServer)
+    with WordSpecLike
+    with FutureEitherExt
+    with GatewayCodecs {
 
   import frameworkTestKit._
 
-  private val port: Int                    = 6490
-  private val gatewayWiring: GatewayWiring = new GatewayWiring(Some(port))
+  private implicit val typedSystem: ActorSystem[SpawnProtocol.Command] = actorSystem
+  private val port: Int                                                = 6490
+  private val gatewayWiring: GatewayWiring                             = new GatewayWiring(Some(port))
 
   implicit val timeout: FiniteDuration                 = 10.seconds
   override implicit def patienceConfig: PatienceConfig = PatienceConfig(timeout)
@@ -51,6 +62,9 @@ class CommandGatewayTest extends ScalaTestFrameworkTestKit with WordSpecLike wit
         new WebsocketTransport[WebsocketRequest](s"ws://localhost:$port/websocket-endpoint")
       val commandClient = new CommandClient(postClient, websocketClient)
 
+      val eventService = new EventServiceFactory().make(HttpLocationServiceFactory.makeLocalClient)
+      val eventKey     = EventKey(Prefix("tcs.filter.wheel"), EventName("setup-command-from-script"))
+
       val componentName = "test"
       val runId         = Id("123")
       val componentType = Assembly
@@ -68,8 +82,20 @@ class CommandGatewayTest extends ScalaTestFrameworkTestKit with WordSpecLike wit
       commandClient.validate(componentId, command).rightValue should ===(Accepted(runId))
       //oneway
       commandClient.oneway(componentId, command).rightValue should ===(Accepted(runId))
-      //submit
+
+      //submit-setup-command-subscription
+      val testProbe    = TestProbe[Event]
+      val subscription = eventService.defaultSubscriber.subscribeActorRef(Set(eventKey), testProbe.ref)
+      subscription.ready().futureValue
+      testProbe.expectMessageType[SystemEvent] // discard invalid event
+
+      //submit the setup command
       commandClient.submit(componentId, command).rightValue should ===(Completed(runId))
+
+      val actualSetupEvent: SystemEvent = testProbe.expectMessageType[SystemEvent]
+
+      //assert the event which is publish in onSubmit handler of component
+      actualSetupEvent.eventKey should ===(eventKey)
 
       //subscribe current state returns set of states successfully
       currentStatesF.futureValue.toSet should ===(Set(currentState1, currentState2))
