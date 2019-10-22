@@ -1,8 +1,9 @@
 package esw.ocs.dsl.highlevel
 
 import akka.actor.typed.ActorSystem
+import csw.alarm.models.AlarmSeverity
+import csw.alarm.models.Key
 import csw.command.client.CommandResponseManager
-import csw.command.client.ICommandServiceFactory
 import csw.config.api.javadsl.IConfigClientService
 import csw.event.api.javadsl.IEventPublisher
 import csw.event.api.javadsl.IEventSubscriber
@@ -13,10 +14,11 @@ import esw.ocs.dsl.script.StrandEc
 import esw.ocs.dsl.script.utils.LockUnlockUtil
 import esw.ocs.dsl.sequence_manager.LocationServiceUtil
 import kotlinx.coroutines.CoroutineScope
+import kotlin.time.seconds
 
 abstract class CswHighLevelDsl(private val cswServices: CswServices) : EventServiceDsl, TimeServiceDsl, CommandServiceDsl, CrmDsl, DiagnosticDsl,
-        LockUnlockDsl, OnlineOfflineDsl, AbortSequenceDsl, StopDsl, ConfigServiceDsl,
-        AlarmServiceDsl by AlarmServiceDslImpl(cswServices.alarmService()) {
+    LockUnlockDsl, OnlineOfflineDsl, AbortSequenceDsl, StopDsl, ConfigServiceDsl,
+    AlarmServiceDsl, LoopDsl {
     abstract val strandEc: StrandEc
     abstract override val coroutineScope: CoroutineScope
 
@@ -35,5 +37,18 @@ abstract class CswHighLevelDsl(private val cswServices: CswServices) : EventServ
 
     final override val configClientService: IConfigClientService by lazy {
         cswServices.configClientService()
+    }
+
+    // fixme: move to appropriate place (moved it here b'cuse it used bgLoop construct which needs top level coroutine scope)
+    /******* alarm service dsl impl *********/
+    private val map: HashMap<Key.AlarmKey, AlarmSeverity> = HashMap()
+
+    private fun startSetSeverity() = bgLoop(5.seconds) {
+        map.keys.forEach { key -> cswServices.alarmService().setSeverity(key, map[key]) }
+    }
+
+    override fun setSeverity(alarmKey: Key.AlarmKey, _severity: AlarmSeverity) {
+        if (map.size == 0) startSetSeverity()
+        map[alarmKey] = _severity
     }
 }
