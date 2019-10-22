@@ -33,6 +33,7 @@ abstract class JScriptDsl(val csw: CswServices) {
   private val offlineHandlers: FunctionHandlers[Unit, CompletionStage[Void]]                 = new FunctionHandlers
   private val shutdownHandlers: FunctionHandlers[Unit, CompletionStage[Void]]                = new FunctionHandlers
   private val abortHandlers: FunctionHandlers[Unit, CompletionStage[Void]]                   = new FunctionHandlers
+  private val stopHandlers: FunctionHandlers[Unit, CompletionStage[Void]]                    = new FunctionHandlers
   private val diagnosticHandlers: FunctionHandlers[(UTCTime, String), CompletionStage[Void]] = new FunctionHandlers
   private val operationsHandlers: FunctionHandlers[Unit, CompletionStage[Void]]              = new FunctionHandlers
 
@@ -42,6 +43,7 @@ abstract class JScriptDsl(val csw: CswServices) {
     offlineHandlers ++ that.offlineHandlers
     shutdownHandlers ++ that.shutdownHandlers
     abortHandlers ++ that.abortHandlers
+    stopHandlers ++ that.stopHandlers
     diagnosticHandlers ++ that.diagnosticHandlers
     operationsHandlers ++ that.operationsHandlers
     this
@@ -76,6 +78,8 @@ abstract class JScriptDsl(val csw: CswServices) {
 
   private[esw] def executeAbort(): Future[Done] = executeHandler(abortHandlers).map(_ => Done)
 
+  private[esw] def executeStop(): Future[Done] = executeHandler(stopHandlers).map(_ => Done)
+
   private[esw] def executeDiagnosticMode(startTime: UTCTime, hint: String): Future[Done] =
     Future.sequence(diagnosticHandlers.execute((startTime, hint)).map(_.toScala)).map(_ => Done)
 
@@ -103,6 +107,7 @@ abstract class JScriptDsl(val csw: CswServices) {
 
   protected final def handleGoOnline(handler: Supplier[CompletionStage[Void]]): Unit      = onlineHandlers.add(_ => handler.get())
   protected final def handleAbortSequence(handler: Supplier[CompletionStage[Void]]): Unit = abortHandlers.add(_ => handler.get())
+  protected final def handleStop(handler: Supplier[CompletionStage[Void]]): Unit          = stopHandlers.add(_ => handler.get())
   protected final def handleShutdown(handler: Supplier[CompletionStage[Void]]): Unit      = shutdownHandlers.add(_ => handler.get())
   protected final def handleGoOffline(handler: Supplier[CompletionStage[Void]]): Unit     = offlineHandlers.add(_ => handler.get())
   protected final def handleDiagnosticMode(handler: (UTCTime, String) => CompletionStage[Void]): Unit =

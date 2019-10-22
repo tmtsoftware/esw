@@ -99,6 +99,14 @@ class SequencerAdminPostRouteTest extends BaseTestSuite with ScalatestRouteTest 
       }
     }
 
+    "return Ok for Stop request | ESW-222" in {
+      when(sequencerAdmin.stop()).thenReturn(Future.successful(Ok))
+
+      Post("/post-endpoint", Stop) ~> route ~> check {
+        responseAs[OkOrUnhandledResponse] should ===(Ok)
+      }
+    }
+
     "return Ok for GoOnline request | ESW-222" in {
       when(sequencerAdmin.goOnline()).thenReturn(Future.successful(Ok))
 

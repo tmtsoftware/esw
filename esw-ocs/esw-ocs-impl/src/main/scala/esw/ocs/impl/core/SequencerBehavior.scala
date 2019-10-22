@@ -61,6 +61,7 @@ class SequencerBehavior(
   private def inProgress(data: SequencerData): Behavior[SequencerMsg] = receive(InProgress, data, inProgress) {
     case QueryFinal(replyTo)       => inProgress(data.querySequence(replyTo))
     case AbortSequence(replyTo)    => abortSequence(data, InProgress, replyTo)(nextBehavior = inProgress)
+    case Stop(replyTo)             => stop(data, InProgress, replyTo)(nextBehavior = inProgress)
     case msg: EditorAction         => handleEditorAction(msg, data, InProgress)(nextBehavior = inProgress)
     case PullNext(replyTo)         => inProgress(data.pullNextStep(replyTo))
     case Update(submitResponse, _) => inProgress(data.updateStepStatus(submitResponse, InProgress))
@@ -100,6 +101,16 @@ class SequencerBehavior(
         import data._
         val maybeStepList = stepList.map(_.discardPending)
         nextBehavior(updateStepList(replyTo, state, maybeStepList))
+    }
+
+  private def stopping(
+      data: SequencerData,
+      state: SequencerState[SequencerMsg]
+  )(nextBehavior: SequencerData => Behavior[SequencerMsg]): Behavior[SequencerMsg] =
+    receive[StopMessage](Stopping, data, stopping(_, state)(nextBehavior)) {
+      case StopComplete(replyTo) =>
+        import data._
+        nextBehavior(updateStepList(replyTo, state, stepList))
     }
 
   private def handleCommonMessage[T <: SequencerMsg](
@@ -147,6 +158,13 @@ class SequencerBehavior(
   ): Behavior[SequencerMsg] = {
     script.executeAbort().onComplete(_ => data.self ! AbortSequenceComplete(replyTo))
     abortingSequence(data, state)(nextBehavior)
+  }
+
+  private def stop(data: SequencerData, state: SequencerState[SequencerMsg], replyTo: ActorRef[OkOrUnhandledResponse])(
+      nextBehavior: SequencerData => Behavior[SequencerMsg]
+  ): Behavior[SequencerMsg] = {
+    script.executeStop().onComplete(_ => data.self ! StopComplete(replyTo))
+    stopping(data, state)(nextBehavior)
   }
 
   private def createStepList(sequence: Sequence, data: SequencerData, replyTo: ActorRef[DuplicateIdsFound.type])(

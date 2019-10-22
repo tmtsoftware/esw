@@ -123,6 +123,36 @@ class SequencerTestSetup(sequence: Sequence)(implicit system: ActorSystem[_], ti
     probe
   }
 
+  def stopAndAssertResponse(
+      response: OkOrUnhandledResponse,
+      expectedState: SequencerState[SequencerMsg]
+  ): TestProbe[OkOrUnhandledResponse] = {
+    val probe                          = TestProbe[OkOrUnhandledResponse]
+    val p: TestProbe[Option[StepList]] = TestProbe[Option[StepList]]
+
+    when(script.executeStop()).thenReturn(Future.successful(Done))
+    sequencerActor ! Stop(probe.ref)
+
+    //GetSequence msg while aborting sequence
+    sequencerActor ! GetSequence(p.ref)
+
+    probe.expectMessage(response)
+
+    //GetSequence should be handled and return response while aborting sequence
+    p.expectMessageType[Option[StepList]]
+
+    //After stop sequence
+    sequencerActor ! GetSequence(p.ref)
+    val stepList = p.expectMessageType[Option[StepList]]
+    expectedState match {
+      case Idle                            => stepList shouldNot be(None)
+      case InProgress                      => stepList shouldNot be(None)
+      case x: SequencerState[SequencerMsg] => assert(false, s"$x is not valid state after AbortSequence")
+    }
+    eventually(verify(script).executeStop())
+    probe
+  }
+
   def pauseAndAssertResponse(response: PauseResponse): PauseResponse = {
     val probe = TestProbe[PauseResponse]
     sequencerActor ! Pause(probe.ref)

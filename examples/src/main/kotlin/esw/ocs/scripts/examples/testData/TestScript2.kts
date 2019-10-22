@@ -55,6 +55,22 @@ script {
         addOrUpdateCommand(Completed(command.runId))
     }
 
+    handleSetup("command-4") { command ->
+        //Don't complete immediately as this is used to abort sequence usecase
+        delay(700)
+        addOrUpdateCommand(Completed(command.runId))
+    }
+
+    handleSetup("command-5") { command ->
+
+        addOrUpdateCommand(Completed(command.runId))
+    }
+
+    handleSetup("command-6") { command ->
+
+        addOrUpdateCommand(Completed(command.runId))
+    }
+
     handleSetup("fail-command") { command ->
 
         addOrUpdateCommand(Error(command.runId, command.commandName().name()))

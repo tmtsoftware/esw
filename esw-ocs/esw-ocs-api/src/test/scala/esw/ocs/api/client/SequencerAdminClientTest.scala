@@ -116,6 +116,12 @@ class SequencerAdminClientTest extends BaseTestSuite with SequencerAdminHttpCode
       sequencerAdminClient.abortSequence().futureValue should ===(Ok)
     }
 
+    "call postClient with Stop request | ESW-222" in {
+      when(postClient.requestResponse[OkOrUnhandledResponse](argsEq(Stop))(any[Decoder[OkOrUnhandledResponse]]()))
+        .thenReturn(Future.successful(Ok))
+      sequencerAdminClient.stop().futureValue should ===(Ok)
+    }
+
     "call postClient with GoOffline request | ESW-222" in {
       when(postClient.requestResponse[OkOrUnhandledResponse](argsEq(GoOffline))(any[Decoder[OkOrUnhandledResponse]]()))
         .thenReturn(Future.successful(Ok))

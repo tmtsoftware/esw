@@ -649,6 +649,15 @@ class SequencerBehaviorTest extends ScalaTestWithActorTestKit with BaseTestSuite
     }
   }
 
+  "Stop" must {
+    "stop the given sequence in InProgress state | ESW-156, ESW-138" in {
+      val sequencerSetup = SequencerTestSetup.inProgress(sequence)
+      import sequencerSetup._
+
+      stopAndAssertResponse(Ok, InProgress)
+    }
+  }
+
   "GoOnline" must {
     "go to Idle state when sequencer is Offline | ESW-194" in {
       val sequencerSetup = SequencerTestSetup.offline(sequence)
@@ -878,7 +887,7 @@ class SequencerBehaviorTest extends ScalaTestWithActorTestKit with BaseTestSuite
     }
   }
 
-  "Idle -> Unhandled | ESW-104, ESW-105, ESW-106, ESW-107, ESW-108, ESW-110, ESW-111, ESW-112, ESW-113, ESW-114, ESW-154, ESW-155, ESW-194" in {
+  "Idle -> Unhandled | ESW-104, ESW-105, ESW-106, ESW-107, ESW-108, ESW-110, ESW-111, ESW-112, ESW-113, ESW-114, ESW-154, ESW-155, ESW-194, ESW-156" in {
     val sequencerSetup = new SequencerTestSetup(sequence)
     import sequencerSetup._
     val cmds = List(command1, command2)
@@ -888,6 +897,8 @@ class SequencerBehaviorTest extends ScalaTestWithActorTestKit with BaseTestSuite
       StartSequence, //ESW-154
       AbortSequence, //ESW-155
       AbortSequenceComplete,
+      Stop, //ESW-156
+      StopComplete,
       GoOnline,
       GoOnlineSuccess,
       GoOnlineFailed,
@@ -908,7 +919,7 @@ class SequencerBehaviorTest extends ScalaTestWithActorTestKit with BaseTestSuite
     )
   }
 
-  "Loaded -> Unhandled | ESW-145, ESW-155, ESW-194" in {
+  "Loaded -> Unhandled | ESW-145, ESW-155, ESW-194, ESW-156" in {
     val sequencerSetup = SequencerTestSetup.loaded(sequence)
     import sequencerSetup._
 
@@ -916,6 +927,8 @@ class SequencerBehaviorTest extends ScalaTestWithActorTestKit with BaseTestSuite
       Loaded,
       AbortSequence, //ESW-155
       AbortSequenceComplete,
+      Stop, //ESW-156
+      StopComplete,
       SubmitSequenceAndWaitInternal(sequence, _),
       Update(Completed(Id()), _),
       GoOnline,
@@ -944,7 +957,7 @@ class SequencerBehaviorTest extends ScalaTestWithActorTestKit with BaseTestSuite
     )
   }
 
-  "Offline -> Unhandled | ESW-194, ESW-104, ESW-105, ESW-106, ESW-107, ESW-108, ESW-110, ESW-111, ESW-112, ESW-113, ESW-114, ESW-154, ESW-155" in {
+  "Offline -> Unhandled | ESW-194, ESW-104, ESW-105, ESW-106, ESW-107, ESW-108, ESW-110, ESW-111, ESW-112, ESW-113, ESW-114, ESW-154, ESW-155, ESW-156" in {
     val sequencerSetup = SequencerTestSetup.offline(sequence)
     import sequencerSetup._
     val cmds = List(command1, command2)
@@ -957,6 +970,8 @@ class SequencerBehaviorTest extends ScalaTestWithActorTestKit with BaseTestSuite
       StartSequence, //ESW-154
       AbortSequence, //ESW-155
       AbortSequenceComplete,
+      Stop, //ESW-156
+      StopComplete,
       Add(cmds, _),               //ESW-114
       Prepend(cmds, _),           //ESW-113
       Replace(Id(), cmds, _),     //ESW-108

@@ -27,7 +27,7 @@ import esw.ocs.api.models.{Step, StepList}
 import esw.ocs.api.protocol._
 import esw.ocs.app.wiring.SequencerWiring
 import esw.ocs.impl.SequencerAdminClientFactory
-import esw.ocs.impl.messages.SequencerState.Offline
+import esw.ocs.impl.messages.SequencerState.{Loaded, Offline}
 
 import scala.concurrent.Future
 import scala.concurrent.duration.DurationLong
@@ -47,6 +47,9 @@ class SequencerAdminIntegrationTest extends ScalaTestFrameworkTestKit(EventServe
   private val command1 = Setup(Prefix("esw.test"), CommandName("command-1"), None)
   private val command2 = Setup(Prefix("esw.test"), CommandName("command-2"), None)
   private val command3 = Setup(Prefix("esw.test"), CommandName("command-3"), None)
+  private val command4 = Setup(Prefix("esw.test"), CommandName("command-4"), None)
+  private val command5 = Setup(Prefix("esw.test"), CommandName("command-5"), None)
+  private val command6 = Setup(Prefix("esw.test"), CommandName("command-6"), None)
 
   private var locationService: LocationService       = _
   private var wiring: SequencerWiring                = _
@@ -230,6 +233,52 @@ class SequencerAdminIntegrationTest extends ScalaTestFrameworkTestKit(EventServe
     // assert second sequencer's online handlers are called
     val onlineEvent = testProbe.expectMessageType[SystemEvent]
     onlineEvent.paramSet.head.values.head shouldBe "online"
+  }
+
+  "LoadSequence, Start it and Abort sequence | ESW-155, ESW-137" in {
+    val sequence = Sequence(command4, command5, command6)
+
+    sequencerAdmin1.loadSequence(sequence).futureValue should ===(Ok)
+
+    //assert that it does not accept AbortSequence in loaded state
+    sequencerAdmin1.abortSequence().futureValue should ===(Unhandled(Loaded.entryName, "AbortSequence"))
+
+    sequencerAdmin1.startSequence.futureValue should ===(Ok)
+
+    //assert that AbortSequence is accepted in InProgress state
+    sequencerAdmin1.abortSequence().futureValue should ===(Ok)
+
+    val expectedSteps = List(
+      Step(command4, Success(Completed(command4.runId)), hasBreakpoint = false)
+    )
+    val expectedSequence = Some(StepList(sequence.runId, expectedSteps))
+    val expectedResponse = SequenceResult(Completed(sequence.runId))
+    sequencerAdmin1.queryFinal.futureValue should ===(expectedResponse)
+    sequencerAdmin1.getSequence.futureValue should ===(expectedSequence)
+  }
+
+  "LoadSequence, Start it and Stop | ESW-156, ESW-138" in {
+    val sequence = Sequence(command4, command5, command6)
+
+    sequencerAdmin1.loadSequence(sequence).futureValue should ===(Ok)
+
+    //assert that it does not accept Stop in loaded state
+    sequencerAdmin1.stop().futureValue should ===(Unhandled(Loaded.entryName, "Stop"))
+
+    sequencerAdmin1.startSequence.futureValue should ===(Ok)
+
+    //assert that Stop is accepted in InProgress state
+    sequencerAdmin1.stop().futureValue should ===(Ok)
+
+    val expectedSteps = List(
+      Step(command4, Success(Completed(command4.runId)), hasBreakpoint = false),
+      Step(command5, Success(Completed(command5.runId)), hasBreakpoint = false),
+      Step(command6, Success(Completed(command6.runId)), hasBreakpoint = false)
+    )
+    val expectedSequence = Some(StepList(sequence.runId, expectedSteps))
+    val expectedResponse = SequenceResult(Completed(sequence.runId))
+    sequencerAdmin1.queryFinal.futureValue should ===(expectedResponse)
+    sequencerAdmin1.getSequence.futureValue should ===(expectedSequence)
   }
 
   "DiagnosticMode and OperationsMode| ESW-143, ESW-134" in {

@@ -75,6 +75,10 @@ class SequencerAdminClient(
     postClient.requestResponse[OkOrUnhandledResponse](AbortSequence)
   }
 
+  override def stop(): Future[OkOrUnhandledResponse] = {
+    postClient.requestResponse[OkOrUnhandledResponse](Stop)
+  }
+
   override def goOnline(): Future[GoOnlineResponse] = {
     postClient.requestResponse[GoOnlineResponse](GoOnline)
   }

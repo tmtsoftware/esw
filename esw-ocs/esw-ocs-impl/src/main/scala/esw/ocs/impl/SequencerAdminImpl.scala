@@ -36,6 +36,7 @@ class SequencerAdminImpl(sequencer: ActorRef[EswSequencerMessage])(implicit syst
   override def removeBreakpoint(id: Id): Future[RemoveBreakpointResponse] = sequencer ? (RemoveBreakpoint(id, _))
   override def reset(): Future[OkOrUnhandledResponse]                     = sequencer ? Reset
   override def abortSequence(): Future[OkOrUnhandledResponse]             = sequencer ? AbortSequence
+  override def stop(): Future[OkOrUnhandledResponse]                      = sequencer ? Stop
   override def goOnline(): Future[GoOnlineResponse]                       = sequencer ? GoOnline
   override def goOffline(): Future[GoOfflineResponse]                     = sequencer ? GoOffline
 

@@ -12,7 +12,7 @@ import org.junit.jupiter.api.Test
 import scala.concurrent.Future
 import java.util.concurrent.CompletableFuture
 
-class AbortSequenceDslTest : AbortSequenceDsl {
+class StopDslTest : StopDsl {
 
     private val sequencerId = "testSequencer"
     private val observingMode = "DarkNight"
@@ -24,18 +24,18 @@ class AbortSequenceDslTest : AbortSequenceDsl {
     override val commonUtils: CommonUtils = CommonUtils(sequencerAdminFactoryApi, locationServiceUtil)
 
     @Test
-    fun `abortSequenceForSequencer should delegate to sequencerAdminApi#abortSequence | ESW-155, ESW-137`() = runBlocking {
+    fun `stop should delegate to sequencerAdminApi#stop | ESW-156, ESW-138`() = runBlocking {
 
         // return value gets discarded
-        every { sequencerAdminApi.abortSequence() }
+        every { sequencerAdminApi.stop() }
                 .answers { Future.successful(`Ok$`.`MODULE$`) }
 
         every { sequencerAdminFactoryApi.jMake(sequencerId, observingMode) }
                 .returns(CompletableFuture.completedFuture(sequencerAdminApi))
 
-        abortSequenceForSequencer(sequencerId, observingMode)
+        stop(sequencerId, observingMode)
 
         verify { sequencerAdminFactoryApi.jMake(sequencerId, observingMode) }
-        verify { sequencerAdminApi.abortSequence() }
+        verify { sequencerAdminApi.stop() }
     }
 }

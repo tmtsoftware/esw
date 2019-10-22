@@ -61,6 +61,10 @@ sealed class ScriptDslKt(private val cswServices: CswServices) : CswHighLevelDsl
         scriptDsl.handleOperationsMode { block.toJavaFutureVoid() }
     }
 
+    fun handleStop(block: suspend CoroutineScope.() -> Unit) {
+        scriptDsl.handleStop { block.toJavaFutureVoid() }
+    }
+
     fun log(msg: String) = println("[${Thread.currentThread().name}] $msg")
 
     fun loadScripts(vararg reusableScriptResult: ReusableScriptResult) {

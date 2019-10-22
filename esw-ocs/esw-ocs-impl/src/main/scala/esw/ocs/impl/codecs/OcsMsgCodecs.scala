@@ -50,7 +50,11 @@ trait OcsMsgCodecs extends MessageCodecs with DoneCodec with CommonCodecs {
   implicit lazy val abortSequenceCodec: Codec[AbortSequence]                 = deriveUnaryCodec
   implicit lazy val abortSequenceCompleteCodec: Codec[AbortSequenceComplete] = deriveUnaryCodec
 
-  implicit lazy val eswSequencerMessageCodec: Codec[EswSequencerMessage] = deriveCodec
+  implicit lazy val stopMsgCodec: Codec[Stop]              = deriveUnaryCodec
+  implicit lazy val stopCompleteCodec: Codec[StopComplete] = deriveUnaryCodec
+
+  implicit lazy val eswSequencerMessageCodec: Codec[EswSequencerMessage] =
+    deriveCodec
 
   implicit lazy val sequencerBehaviorStateCodec: Codec[SequencerState[SequencerMsg]] = enumCodec[SequencerState[SequencerMsg]]
 

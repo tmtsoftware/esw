@@ -23,6 +23,7 @@ trait SequencerAdminApi {
   def removeBreakpoint(id: Id): Future[RemoveBreakpointResponse]
   def reset(): Future[OkOrUnhandledResponse]
   def abortSequence(): Future[OkOrUnhandledResponse]
+  def stop(): Future[OkOrUnhandledResponse]
   def goOnline(): Future[GoOnlineResponse]
   def goOffline(): Future[GoOfflineResponse]
   def diagnosticMode(startTime: UTCTime, hint: String): Future[DiagnosticModeResponse]

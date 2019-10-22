@@ -12,7 +12,7 @@ import esw.ocs.api.models.StepList
 import esw.ocs.api.protocol.EditorError.{CannotOperateOnAnInFlightOrFinishedStep, IdDoesNotExist}
 import esw.ocs.api.protocol.{GoOnlineHookFailed, Ok, SequenceResult, Unhandled}
 import esw.ocs.impl.messages.SequencerMessages._
-import esw.ocs.impl.messages.SequencerState.{Idle, InProgress, Loaded, Offline}
+import esw.ocs.impl.messages.SequencerState.{Idle, Loaded, Offline}
 
 class SequencerAdminImplTest extends ScalaTestWithActorTestKit with BaseTestSuite {
   private val command = Setup(Prefix("esw.test"), CommandName("command-1"), None)
@@ -33,7 +33,8 @@ class SequencerAdminImplTest extends ScalaTestWithActorTestKit with BaseTestSuit
   private val replaceResponse              = CannotOperateOnAnInFlightOrFinishedStep
   private val insertAfterResponse          = Ok
   private val resetResponse                = Ok
-  private val abortResponse                = Unhandled(InProgress.entryName, "AbortSequence")
+  private val abortResponse                = Unhandled(Loaded.entryName, "AbortSequence")
+  private val stopResponse                 = Unhandled(Loaded.entryName, "Stop")
   private val deleteResponse               = IdDoesNotExist(Id())
   private val addBreakpointResponse        = Unhandled(Idle.entryName, "AddBreakpoint")
   private val goOnlineResponse             = GoOnlineHookFailed
@@ -59,6 +60,7 @@ class SequencerAdminImplTest extends ScalaTestWithActorTestKit with BaseTestSuit
         case Resume(replyTo)                                        => replyTo ! resumeResponse
         case Reset(replyTo)                                         => replyTo ! resetResponse
         case AbortSequence(replyTo)                                 => replyTo ! abortResponse
+        case Stop(replyTo)                                          => replyTo ! stopResponse
         case AddBreakpoint(`command`.runId, replyTo)                => replyTo ! addBreakpointResponse
         case RemoveBreakpoint(`command`.runId, replyTo)             => replyTo ! removeBreakpointResponse
         case GoOnline(replyTo)                                      => replyTo ! goOnlineResponse
@@ -132,6 +134,10 @@ class SequencerAdminImplTest extends ScalaTestWithActorTestKit with BaseTestSuit
 
   "abortSequence | ESW-222" in {
     sequencerAdmin.abortSequence().futureValue should ===(abortResponse)
+  }
+
+  "stop | ESW-222" in {
+    sequencerAdmin.stop().futureValue should ===(stopResponse)
   }
 
   "loadSequence | ESW-101" in {

@@ -27,6 +27,7 @@ object SequencerMessages {
   sealed trait GoingOnlineMessage    extends UnhandleableSequencerMessage
   sealed trait GoingOfflineMessage   extends UnhandleableSequencerMessage
   sealed trait AbortSequenceMessage  extends UnhandleableSequencerMessage
+  sealed trait StopMessage           extends UnhandleableSequencerMessage
   sealed trait EditorAction          extends SequenceLoadedMessage with InProgressMessage
 
   // startup msgs
@@ -70,7 +71,9 @@ object SequencerMessages {
   final case class Resume(replyTo: ActorRef[OkOrUnhandledResponse])                                         extends EditorAction
   final case class Reset(replyTo: ActorRef[OkOrUnhandledResponse])                                          extends EditorAction
 
+  // inProgress msgs
   final case class AbortSequence(replyTo: ActorRef[OkOrUnhandledResponse]) extends InProgressMessage
+  final case class Stop(replyTo: ActorRef[OkOrUnhandledResponse])          extends InProgressMessage
 
   // engine & internal
   final private[ocs] case class SubmitSequenceAndWaitInternal(sequence: Sequence, replyTo: ActorRef[SequenceResponse])
@@ -86,4 +89,5 @@ object SequencerMessages {
   final private[esw] case class GoOnlineFailed(replyTo: ActorRef[GoOnlineResponse])             extends GoingOnlineMessage
   final private[esw] case class ShutdownComplete(replyTo: ActorRef[Ok.type])                    extends ShuttingDownMessage
   final private[esw] case class AbortSequenceComplete(replyTo: ActorRef[OkOrUnhandledResponse]) extends AbortSequenceMessage
+  final private[esw] case class StopComplete(replyTo: ActorRef[OkOrUnhandledResponse])          extends StopMessage
 }

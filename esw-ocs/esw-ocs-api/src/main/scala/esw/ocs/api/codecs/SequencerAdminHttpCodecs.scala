@@ -20,6 +20,7 @@ trait SequencerAdminHttpCodecs extends OcsCodecs {
     @silent implicit lazy val resumeCodec: Codec[Resume.type]                 = deriveCodec
     @silent implicit lazy val resetCodec: Codec[Reset.type]                   = deriveCodec
     @silent implicit lazy val abortSequenceCodec: Codec[AbortSequence.type]   = deriveCodec
+    @silent implicit lazy val stopCodec: Codec[Stop.type]                     = deriveCodec
     @silent implicit lazy val goOnlineCodec: Codec[GoOnline.type]             = deriveCodec
     @silent implicit lazy val goOfflineCodec: Codec[GoOffline.type]           = deriveCodec
     @silent implicit lazy val startSequenceCodec: Codec[StartSequence.type]   = deriveCodec
