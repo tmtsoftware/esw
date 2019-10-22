@@ -17,7 +17,7 @@ import csw.params.commands.CommandResponse.{Completed, SubmitResponse}
 import csw.params.commands.{CommandName, Sequence, Setup}
 import csw.params.core.generics.KeyType.StringKey
 import csw.params.core.generics.Parameter
-import csw.params.core.models.Subsystem.NFIRAOS
+import csw.params.core.models.Subsystem.{IRMS, NFIRAOS}
 import csw.params.core.models.{Id, Prefix}
 import csw.params.events.{Event, EventKey, EventName, SystemEvent}
 import csw.testkit.scaladsl.CSWService.{AlarmServer, EventServer}
@@ -201,14 +201,12 @@ class ScriptIntegrationTest extends ScalaTestFrameworkTestKit(EventServer, Alarm
       getPublishedEvent.isInvalid should ===(false)
     }
 
-    "be able to send abortSequence to downstream sequencers and call abortHandler | ESW-137, ESW-155" ignore {
-      val eventService = new EventServiceFactory().make(HttpLocationServiceFactory.makeLocalClient)
-      val eventKey     = EventKey(Prefix("IRMS"), EventName("abort.success"))
+    "be able to send abortSequence to downstream sequencers and call abortHandler | ESW-137, ESW-155" in {
+      val config            = ConfigFactory.parseResources("alarm_key.conf")
+      val alarmAdminService = new AlarmServiceFactory().makeAdminApi(locationService)
+      alarmAdminService.initAlarms(config, reset = true).futureValue
 
-      val testProbe    = TestProbe[Event]
-      val subscription = eventService.defaultSubscriber.subscribeActorRef(Set(eventKey), testProbe.ref)
-      subscription.ready().futureValue
-      testProbe.expectMessageType[SystemEvent] // discard invalid event
+      val alarmKey = AlarmKey(IRMS, "irmsSequencer", "alarmAbort")
 
       // Submit sequence to OCS as AbortSequence is accepted only in InProgress State
       val command1            = Setup(Prefix("IRMS.test"), CommandName("command-irms"), None)
@@ -226,23 +224,17 @@ class ScriptIntegrationTest extends ScalaTestFrameworkTestKit(EventServer, Alarm
       val maybeStepListF: Future[Option[StepList]] = ocsSequencer ? GetSequence
       maybeStepListF.futureValue.get.nextPending shouldBe None
 
-      //Ocs will call abortSequenceHandler TestScript.kts. which sends abortSequence to IRMS downstream sequencer
-      //Expect abort success event from IRMS sequencer script (TestScript4.kt abortSequenceHandler)
-      val testProbe1 = TestProbe[Event]
-      eventService.defaultSubscriber.subscribeActorRef(Set(eventKey), testProbe1.ref)
-      testProbe1.receiveMessage().eventId shouldNot be(-1)
+      alarmAdminService.getCurrentSeverity(alarmKey).futureValue should ===(AlarmSeverity.Major)
     }
 
-    "be able to send stop to downstream sequencers and call stopHandler | ESW-138, ESW-156" ignore {
-      val eventService = new EventServiceFactory().make(HttpLocationServiceFactory.makeLocalClient)
-      val eventKey     = EventKey(Prefix("IRMS"), EventName("stop.success"))
+    "be able to send stop to downstream sequencers and call stopHandler | ESW-138, ESW-156" in {
+      val config            = ConfigFactory.parseResources("alarm_key.conf")
+      val alarmAdminService = new AlarmServiceFactory().makeAdminApi(locationService)
+      alarmAdminService.initAlarms(config, reset = true).futureValue
 
-      val testProbe    = TestProbe[Event]
-      val subscription = eventService.defaultSubscriber.subscribeActorRef(Set(eventKey), testProbe.ref)
-      subscription.ready().futureValue
-      testProbe.expectMessageType[SystemEvent] // discard invalid event
+      val alarmKey = AlarmKey(IRMS, "irmsSequencer", "alarmStop")
 
-      // Submit sequence to OCS as AbortSequence is accepted only in InProgress State
+      // Submit sequence to OCS as Stop is accepted only in InProgress State
       val command1            = Setup(Prefix("IRMS.test"), CommandName("command-irms"), None)
       val command2            = Setup(Prefix("IRIS.test"), CommandName("command-1"), None)
       val command3            = Setup(Prefix("TCS.test"), CommandName("command-2"), None)
@@ -255,13 +247,7 @@ class ScriptIntegrationTest extends ScalaTestFrameworkTestKit(EventServer, Alarm
       val stopResponseF: Future[OkOrUnhandledResponse] = ocsSequencer ? Stop
       stopResponseF.futureValue should ===(Ok)
 
-      //stopHandler for Ocs (TestScript.kts) will be called which sends Stop to IRMS downstream sequencer
-      //Expect stop.success event from IRMS sequencer script (TestScript4.kt stopHandler)
-      //Ocs will call abortSequenceHandler TestScript.kts. which sends abortSequence to IRMS downstream sequencer
-      //Expect abort success event from IRMS sequencer script (TestScript4.kt abortSequenceHandler)
-      val testProbe1 = TestProbe[Event]
-      eventService.defaultSubscriber.subscribeActorRef(Set(eventKey), testProbe1.ref)
-      testProbe1.receiveMessage().eventId shouldNot be(-1)
+      alarmAdminService.getCurrentSeverity(alarmKey).futureValue should ===(AlarmSeverity.Major)
     }
 
     "be able to send commands to downstream assembly | ESW-121" in {

@@ -1,6 +1,9 @@
 package esw.ocs.scripts.examples.testData
 
+import csw.alarm.api.javadsl.JAlarmSeverity
+import csw.alarm.models.Key
 import csw.params.commands.CommandResponse
+import csw.params.javadsl.JSubsystem
 import esw.ocs.dsl.core.script
 import kotlinx.coroutines.delay
 
@@ -14,13 +17,13 @@ script {
 
     handleAbortSequence {
         //do some actions to abort sequence
-        val successEvent = systemEvent("IRMS", "abort.success")
-        publishEvent(successEvent)
+        val alarmKey = Key.AlarmKey(JSubsystem.IRMS, "irmsSequencer", "alarmAbort")
+        setSeverity(alarmKey, JAlarmSeverity.Major())
     }
 
     handleStop {
-        //do some actions to abort sequence
-        val successEvent = systemEvent("IRMS", "stop.success")
-        publishEvent(successEvent)
+        //do some actions to stop
+        val alarmKey = Key.AlarmKey(JSubsystem.IRMS, "irmsSequencer", "alarmStop")
+        setSeverity(alarmKey, JAlarmSeverity.Major())
     }
 }
