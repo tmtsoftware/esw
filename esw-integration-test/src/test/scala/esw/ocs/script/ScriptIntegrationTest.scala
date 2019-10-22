@@ -86,7 +86,7 @@ class ScriptIntegrationTest extends ScalaTestFrameworkTestKit(EventServer, Alarm
   }
 
   "CswServices" must {
-    "be able to send sequence to other Sequencer by resolving location through TestScript | ESW-88, ESW-145, ESW-154, ESW-195, ESW-119" in {
+    "be able to send sequence to other Sequencer by resolving location through TestScript | ESW-88, ESW-145, ESW-190, ESW-195, ESW-119" in {
       val command             = Setup(Prefix("TCS.test"), CommandName("command-4"), None)
       val submitResponseProbe = TestProbe[SubmitResponse]
       val sequenceId          = Id()
