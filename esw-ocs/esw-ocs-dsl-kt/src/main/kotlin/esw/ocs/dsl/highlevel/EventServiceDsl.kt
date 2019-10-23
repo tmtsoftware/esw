@@ -25,23 +25,23 @@ interface EventServiceDsl {
     fun eventKey(prefix: String, eventName: String): EventKey = EventKey(Prefix(prefix), EventName(eventName))
 
     fun systemEvent(sourcePrefix: String, eventName: String, vararg parameters: Parameter<*>): SystemEvent =
-            SystemEvent(Prefix(sourcePrefix), EventName(eventName)).jMadd(parameters.toSet())
+        SystemEvent(Prefix(sourcePrefix), EventName(eventName)).jMadd(parameters.toSet())
 
     fun observeEvent(sourcePrefix: String, eventName: String, vararg parameters: Parameter<*>): ObserveEvent =
-            ObserveEvent(Prefix(sourcePrefix), EventName(eventName)).jMadd(parameters.toSet())
+        ObserveEvent(Prefix(sourcePrefix), EventName(eventName)).jMadd(parameters.toSet())
 
     suspend fun publishEvent(event: Event): Done = defaultPublisher.publish(event).await()
 
     fun publishEvent(every: Duration, eventGenerator: suspend () -> Event?): Cancellable =
-            defaultPublisher.publishAsync({
-                coroutineScope.future { Optional.ofNullable(eventGenerator()) }
-            }, every.toJavaDuration())
+        defaultPublisher.publishAsync({
+            coroutineScope.future { Optional.ofNullable(eventGenerator()) }
+        }, every.toJavaDuration())
 
     fun onEvent(vararg eventKeys: String, callback: suspend (Event) -> Unit): IEventSubscription =
-            defaultSubscriber.subscribeAsync(eventKeys.toEventKeys()) { coroutineScope.future { callback(it) } }
+        defaultSubscriber.subscribeAsync(eventKeys.toEventKeys()) { coroutineScope.future { callback(it) } }
 
     suspend fun getEvent(vararg eventKeys: String): Set<Event> =
-            defaultSubscriber.get(eventKeys.toEventKeys()).await().toSet()
+        defaultSubscriber.get(eventKeys.toEventKeys()).await().toSet()
 
     private fun (Array<out String>).toEventKeys(): Set<EventKey> = map { EventKey.apply(it) }.toSet()
 

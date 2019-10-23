@@ -28,11 +28,10 @@ interface CommandServiceDsl {
     val locationService: ILocationService
     val actorSystem: ActorSystem<*>
 
-    private val duration: Duration
-        get() = Duration.ofSeconds(10)
-
-    private val timeout: Timeout
-        get() = Timeout(create(10, TimeUnit.SECONDS))
+    companion object {
+        private val duration: Duration = Duration.ofSeconds(10)
+        private val timeout: Timeout = Timeout(create(10, TimeUnit.SECONDS))
+    }
 
     fun setup(prefix: String, commandName: String, obsId: String?) =
         Setup(Prefix(prefix), CommandName(commandName), obsId.toOptionalObsId())

@@ -9,12 +9,11 @@ import java.nio.file.Path
 
 interface ConfigServiceDsl {
 
-    val configClientService: IConfigClientService
+    val configClient: IConfigClientService
 
     suspend fun existsConfig(path: String, id: String? = null): Boolean =
-            id?.let { configClientService.exists(Path.of(path), ConfigId(id)).await() }
-                    ?: configClientService.exists(Path.of(path)).await()
+        id?.let { configClient.exists(Path.of(path), ConfigId(id)).await() }
+            ?: configClient.exists(Path.of(path)).await()
 
-
-    suspend fun getConfig(path: String): ConfigData? = configClientService.getActive(Path.of(path)).await().nullable()
+    suspend fun getConfig(path: String): ConfigData? = configClient.getActive(Path.of(path)).await().nullable()
 }

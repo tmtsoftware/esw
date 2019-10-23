@@ -5,8 +5,9 @@ import kotlin.time.Duration
 import kotlin.time.milliseconds
 
 interface LoopDsl {
-    private val loopInterval: Duration
-        get() = 50.milliseconds
+    companion object {
+        private val loopInterval: Duration = 50.milliseconds
+    }
 
     val coroutineScope: CoroutineScope
 

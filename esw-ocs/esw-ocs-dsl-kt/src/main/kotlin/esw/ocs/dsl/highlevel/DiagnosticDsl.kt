@@ -18,12 +18,10 @@ interface DiagnosticDsl {
         it.tell(DiagnosticMode(startTime, hint))
     }
 
-    suspend fun operationsModeForComponent(
-        componentName: String,
-        componentType: ComponentType
-    ): Unit = commonUtils.sendMsgToComponent(componentName, componentType) {
-        it.tell(`OperationsMode$`.`MODULE$`)
-    }
+    suspend fun operationsModeForComponent(componentName: String, componentType: ComponentType): Unit =
+        commonUtils.sendMsgToComponent(componentName, componentType) {
+            it.tell(`OperationsMode$`.`MODULE$`)
+        }
 
     suspend fun diagnosticModeForSequencer(
         sequencerId: String,
@@ -34,10 +32,8 @@ interface DiagnosticDsl {
         it.diagnosticMode(startTime, hint)
     }
 
-    suspend fun operationsModeForSequencer(
-        sequencerId: String,
-        observingMode: String
-    ): Unit = commonUtils.sendMsgToSequencer(sequencerId, observingMode) {
-        it.operationsMode()
-    }
+    suspend fun operationsModeForSequencer(sequencerId: String, observingMode: String): Unit =
+        commonUtils.sendMsgToSequencer(sequencerId, observingMode) {
+            it.operationsMode()
+        }
 }

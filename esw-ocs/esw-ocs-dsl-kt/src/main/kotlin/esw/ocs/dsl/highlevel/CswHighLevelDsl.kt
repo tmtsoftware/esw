@@ -35,7 +35,7 @@ abstract class CswHighLevelDsl(private val cswServices: CswServices) : EventServ
         cswServices.timeServiceSchedulerFactory().make(strandEc.ec())
     }
 
-    final override val configClientService: IConfigClientService by lazy {
+    final override val configClient: IConfigClientService by lazy {
         cswServices.configClientService()
     }
 
