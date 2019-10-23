@@ -56,12 +56,13 @@ class ScriptIntegrationTest extends ScalaTestFrameworkTestKit(EventServer, Alarm
   private val irmsPackageId     = "irms"
   private val irmsObservingMode = "darknight"
 
-  private var locationService: LocationService     = _
-  private var ocsWiring: SequencerWiring           = _
-  private var ocsSequencer: ActorRef[SequencerMsg] = _
-  private var tcsWiring: SequencerWiring           = _
-  private var tcsSequencer: ActorRef[SequencerMsg] = _
-  private var irmsWiring: SequencerWiring          = _
+  private var locationService: LocationService      = _
+  private var ocsWiring: SequencerWiring            = _
+  private var ocsSequencer: ActorRef[SequencerMsg]  = _
+  private var tcsWiring: SequencerWiring            = _
+  private var tcsSequencer: ActorRef[SequencerMsg]  = _
+  private var irmsWiring: SequencerWiring           = _
+  private var irmsSequencer: ActorRef[SequencerMsg] = _
 
   override def beforeAll(): Unit = {
     super.beforeAll()
@@ -81,6 +82,7 @@ class ScriptIntegrationTest extends ScalaTestFrameworkTestKit(EventServer, Alarm
     //start IRMS sequencer as OCS send commands to IRMS downstream sequencer
     irmsWiring = new SequencerWiring(irmsPackageId, irmsObservingMode, None)
     irmsWiring.sequencerServer.start()
+    irmsSequencer = irmsWiring.sequencerRef
 
     ocsWiring = new SequencerWiring(ocsPackageId, ocsObservingMode, None)
     ocsSequencer = ocsWiring.sequencerServer.start().rightValue.uri.toActorRef.unsafeUpcast[SequencerMsg]
@@ -226,6 +228,14 @@ class ScriptIntegrationTest extends ScalaTestFrameworkTestKit(EventServer, Alarm
 
       ocsSequencer ! SubmitSequenceAndWait(sequence, submitResponseProbe.ref)
 
+      val maybeOcsStepListF: Future[Option[StepList]] = ocsSequencer ? GetSequence
+      maybeOcsStepListF.futureValue.get.isInFlight shouldBe true
+
+      eventually {
+        val maybeIrmsStepListF: Future[Option[StepList]] = irmsSequencer ? GetSequence
+        maybeIrmsStepListF.futureValue.get.isInFlight shouldBe true
+      }
+
       val abortSequenceResponseF: Future[OkOrUnhandledResponse] = ocsSequencer ? AbortSequence
       abortSequenceResponseF.futureValue should ===(Ok)
 
@@ -257,6 +267,14 @@ class ScriptIntegrationTest extends ScalaTestFrameworkTestKit(EventServer, Alarm
 
       ocsSequencer ! SubmitSequenceAndWait(sequence, submitResponseProbe.ref)
 
+      val maybeOcsStepListF: Future[Option[StepList]] = ocsSequencer ? GetSequence
+      maybeOcsStepListF.futureValue.get.isInFlight shouldBe true
+
+      eventually {
+        val maybeIrmsStepListF: Future[Option[StepList]] = irmsSequencer ? GetSequence
+        maybeIrmsStepListF.futureValue.get.isInFlight shouldBe true
+      }
+
       val stopResponseF: Future[OkOrUnhandledResponse] = ocsSequencer ? Stop
       stopResponseF.futureValue should ===(Ok)
 
@@ -264,6 +282,7 @@ class ScriptIntegrationTest extends ScalaTestFrameworkTestKit(EventServer, Alarm
         val event = testProbe.receiveMessage()
         event.eventId shouldNot be(-1)
       }
+
     }
 
     "be able to send commands to downstream assembly | ESW-121" in {
