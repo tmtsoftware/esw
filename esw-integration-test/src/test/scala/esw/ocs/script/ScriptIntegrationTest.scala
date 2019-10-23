@@ -13,11 +13,13 @@ import csw.event.client.EventServiceFactory
 import csw.location.api.extensions.URIExtension.RichURI
 import csw.location.api.scaladsl.LocationService
 import csw.location.client.scaladsl.HttpLocationServiceFactory
+import csw.logging.client.scaladsl.LoggingSystemFactory
+import csw.logging.models.Level
 import csw.params.commands.CommandResponse.{Completed, SubmitResponse}
 import csw.params.commands.{CommandName, Sequence, Setup}
 import csw.params.core.generics.KeyType.StringKey
 import csw.params.core.generics.Parameter
-import csw.params.core.models.Subsystem.{IRMS, NFIRAOS}
+import csw.params.core.models.Subsystem.NFIRAOS
 import csw.params.core.models.{Id, Prefix}
 import csw.params.events.{Event, EventKey, EventName, SystemEvent}
 import csw.testkit.scaladsl.CSWService.{AlarmServer, EventServer}
@@ -64,6 +66,10 @@ class ScriptIntegrationTest extends ScalaTestFrameworkTestKit(EventServer, Alarm
   override def beforeAll(): Unit = {
     super.beforeAll()
     frameworkTestKit.spawnStandalone(ConfigFactory.load("standalone.conf"))
+    val system = LoggingSystemFactory.start("abort-test", "", "", actorSystem)
+    system.setAkkaLevel(Level.INFO)
+    system.setDefaultLogLevel(Level.INFO)
+    system.setSlf4jLevel(Level.INFO)
   }
 
   override def beforeEach(): Unit = {
@@ -202,11 +208,13 @@ class ScriptIntegrationTest extends ScalaTestFrameworkTestKit(EventServer, Alarm
     }
 
     "be able to send abortSequence to downstream sequencers and call abortHandler | ESW-137, ESW-155" in {
-      val config            = ConfigFactory.parseResources("alarm_key.conf")
-      val alarmAdminService = new AlarmServiceFactory().makeAdminApi(locationService)
-      alarmAdminService.initAlarms(config, reset = true).futureValue
+      val eventService = new EventServiceFactory().make(HttpLocationServiceFactory.makeLocalClient)
+      val eventKey     = EventKey(Prefix("tcs"), EventName("abort.success"))
 
-      val alarmKey = AlarmKey(IRMS, "irmsSequencer", "alarmAbort")
+      val testProbe    = TestProbe[Event]
+      val subscription = eventService.defaultSubscriber.subscribeActorRef(Set(eventKey), testProbe.ref)
+      subscription.ready().futureValue
+      testProbe.expectMessageType[SystemEvent] // discard invalid event
 
       // Submit sequence to OCS as AbortSequence is accepted only in InProgress State
       val command1            = Setup(Prefix("IRMS.test"), CommandName("command-irms"), None)
@@ -221,18 +229,22 @@ class ScriptIntegrationTest extends ScalaTestFrameworkTestKit(EventServer, Alarm
       abortSequenceResponseF.futureValue should ===(Ok)
 
       //Expect Pending steps in OCS sequence are aborted
-      val maybeStepListF: Future[Option[StepList]] = ocsSequencer ? GetSequence
-      maybeStepListF.futureValue.get.nextPending shouldBe None
-
-      alarmAdminService.getCurrentSeverity(alarmKey).futureValue should ===(AlarmSeverity.Major)
+      eventually {
+        val maybeStepListF: Future[Option[StepList]] = ocsSequencer ? GetSequence
+        maybeStepListF.futureValue.get.nextPending shouldBe None
+        val event = testProbe.receiveMessage()
+        event.eventId shouldNot be(-1)
+      }
     }
 
     "be able to send stop to downstream sequencers and call stopHandler | ESW-138, ESW-156" in {
-      val config            = ConfigFactory.parseResources("alarm_key.conf")
-      val alarmAdminService = new AlarmServiceFactory().makeAdminApi(locationService)
-      alarmAdminService.initAlarms(config, reset = true).futureValue
+      val eventService = new EventServiceFactory().make(HttpLocationServiceFactory.makeLocalClient)
+      val eventKey     = EventKey(Prefix("tcs"), EventName("stop.success"))
 
-      val alarmKey = AlarmKey(IRMS, "irmsSequencer", "alarmStop")
+      val testProbe    = TestProbe[Event]
+      val subscription = eventService.defaultSubscriber.subscribeActorRef(Set(eventKey), testProbe.ref)
+      subscription.ready().futureValue
+      testProbe.expectMessageType[SystemEvent] // discard invalid event
 
       // Submit sequence to OCS as Stop is accepted only in InProgress State
       val command1            = Setup(Prefix("IRMS.test"), CommandName("command-irms"), None)
@@ -247,7 +259,10 @@ class ScriptIntegrationTest extends ScalaTestFrameworkTestKit(EventServer, Alarm
       val stopResponseF: Future[OkOrUnhandledResponse] = ocsSequencer ? Stop
       stopResponseF.futureValue should ===(Ok)
 
-      alarmAdminService.getCurrentSeverity(alarmKey).futureValue should ===(AlarmSeverity.Major)
+      eventually {
+        val event = testProbe.receiveMessage()
+        event.eventId shouldNot be(-1)
+      }
     }
 
     "be able to send commands to downstream assembly | ESW-121" in {
