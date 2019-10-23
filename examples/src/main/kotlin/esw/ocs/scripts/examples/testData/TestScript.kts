@@ -79,7 +79,7 @@ script {
         addOrUpdateCommand(CommandResponse.Completed(command.runId()))
     }
 
-    handleSetup("command-irms") { command ->
+    handleSetup("command-irms") { _ ->
         // To avoid sequencer to finish immediately so that other Add, Append command gets time
         val setupCommand = Setup(
                 Id("command-4-irms"),

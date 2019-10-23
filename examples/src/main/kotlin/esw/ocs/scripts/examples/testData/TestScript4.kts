@@ -4,7 +4,7 @@ import esw.ocs.dsl.core.script
 
 script {
 
-    handleSetup("command-irms") { command ->
+    handleSetup("command-irms") { _ ->
         // To avoid sequencer to finish so that other commands gets time
     }
 

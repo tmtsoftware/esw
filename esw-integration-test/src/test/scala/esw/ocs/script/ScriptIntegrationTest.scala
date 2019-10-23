@@ -88,6 +88,7 @@ class ScriptIntegrationTest extends ScalaTestFrameworkTestKit(EventServer, Alarm
 
   override def afterEach(): Unit = {
     ocsWiring.sequencerServer.shutDown().futureValue
+    irmsWiring.sequencerServer.shutDown().futureValue
     tcsWiring.sequencerServer.shutDown().futureValue
   }
 
