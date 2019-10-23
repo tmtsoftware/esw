@@ -9,27 +9,19 @@ interface OnlineOfflineDsl {
 
     val commonUtils: CommonUtils
 
-    suspend fun goOnlineModeForSequencer(
-        sequencerId: String,
-        observingMode: String
-    ): Unit = commonUtils.sendMsgToSequencer(sequencerId, observingMode) { it.goOnline() }
+    suspend fun goOnlineModeForSequencer(sequencerId: String, observingMode: String): Unit =
+        commonUtils.sendMsgToSequencer(sequencerId, observingMode) { it.goOnline() }
 
-    suspend fun goOfflineModeForSequencer(
-        sequencerId: String,
-        observingMode: String
-    ): Unit = commonUtils.sendMsgToSequencer(sequencerId, observingMode) { it.goOffline() }
+    suspend fun goOfflineModeForSequencer(sequencerId: String, observingMode: String): Unit =
+        commonUtils.sendMsgToSequencer(sequencerId, observingMode) { it.goOffline() }
 
-    suspend fun goOnlineModeForComponent(
-        componentName: String,
-        componentType: ComponentType
-    ): Unit = commonUtils.sendMsgToComponent(componentName, componentType) {
-        it.tell(Lifecycle(`GoOnline$`.`MODULE$`))
-    }
+    suspend fun goOnlineModeForComponent(componentName: String, componentType: ComponentType): Unit =
+        commonUtils.sendMsgToComponent(componentName, componentType) {
+            it.tell(Lifecycle(`GoOnline$`.`MODULE$`))
+        }
 
-    suspend fun goOfflineModeForComponent(
-        componentName: String,
-        componentType: ComponentType
-    ): Unit = commonUtils.sendMsgToComponent(componentName, componentType) {
-        it.tell(Lifecycle(`GoOffline$`.`MODULE$`))
-    }
+    suspend fun goOfflineModeForComponent(componentName: String, componentType: ComponentType): Unit =
+        commonUtils.sendMsgToComponent(componentName, componentType) {
+            it.tell(Lifecycle(`GoOffline$`.`MODULE$`))
+        }
 }

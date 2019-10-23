@@ -9,11 +9,11 @@ import csw.params.core.models.Prefix
 import csw.params.events.Event
 import csw.params.javadsl.JSubsystem.NFIRAOS
 import esw.ocs.dsl.core.script
-import java.util.*
 import kotlinx.coroutines.delay
 import scala.Option
 import scala.collection.immutable.HashSet
 import scala.jdk.javaapi.CollectionConverters
+import java.util.*
 
 script {
 
@@ -24,6 +24,22 @@ script {
     }
 
     handleSetup("command-2") { command ->
+        addOrUpdateCommand(CommandResponse.Completed(command.runId))
+    }
+
+    handleSetup("check-config") { command ->
+        if (existsConfig("/tmt/test/wfos.conf"))
+            publishEvent(systemEvent("WFOS", "config.success"))
+        addOrUpdateCommand(CommandResponse.Completed(command.runId))
+    }
+
+    handleSetup("get-config-data") { command ->
+        val configValue = "component = wfos"
+        val configData = getConfig("/tmt/test/wfos.conf")
+        configData?.let {
+            if (it == configValue)
+                publishEvent(systemEvent("WFOS", "config.success"))
+        }
         addOrUpdateCommand(CommandResponse.Completed(command.runId))
     }
 
@@ -39,7 +55,7 @@ script {
         addOrUpdateCommand(CommandResponse.Completed(it.runId()))
     }
 
-    handleSetup("command-for-assembly") {command ->
+    handleSetup("command-for-assembly") { command ->
         submitCommandToAssembly("test", command)
         addOrUpdateCommand(CommandResponse.Completed(command.runId()))
     }
@@ -79,7 +95,7 @@ script {
         addOrUpdateCommand(CommandResponse.Completed(command.runId()))
     }
 
-    handleSetup("command-irms") { command ->
+    handleSetup("command-irms") { _ ->
         // To avoid sequencer to finish immediately so that other Add, Append command gets time
         val setupCommand = Setup(
                 Id("command-4-irms"),
@@ -94,10 +110,6 @@ script {
         )
 
         submitSequence("irms", "darknight", sequence)
-
-        delay(800)
-
-        addOrUpdateCommand(CommandResponse.Completed(command.runId))
     }
 
     handleDiagnosticMode { startTime, hint ->

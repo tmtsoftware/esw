@@ -4,7 +4,6 @@ import akka.actor.typed.ActorSystem
 import akka.util.Timeout
 import csw.command.api.javadsl.ICommandService
 import csw.command.client.CommandServiceFactory
-import csw.command.client.ICommandServiceFactory
 import csw.location.api.javadsl.ILocationService
 import csw.location.api.javadsl.JComponentType.Assembly
 import csw.location.api.javadsl.JComponentType.HCD
@@ -18,22 +17,21 @@ import csw.params.core.models.Id
 import csw.params.core.models.ObsId
 import csw.params.core.models.Prefix
 import esw.ocs.dsl.nullable
+import kotlinx.coroutines.future.await
+import scala.concurrent.duration.Duration.create
 import java.time.Duration
 import java.util.*
 import java.util.concurrent.CompletableFuture
 import java.util.concurrent.TimeUnit
-import kotlinx.coroutines.future.await
-import scala.concurrent.duration.Duration.create
 
 interface CommandServiceDsl {
     val locationService: ILocationService
     val actorSystem: ActorSystem<*>
 
-    private val duration: Duration
-        get() = Duration.ofSeconds(10)
-
-    private val timeout: Timeout
-        get() = Timeout(create(10, TimeUnit.SECONDS))
+    companion object {
+        private val duration: Duration = Duration.ofSeconds(10)
+        private val timeout: Timeout = Timeout(create(10, TimeUnit.SECONDS))
+    }
 
     fun setup(prefix: String, commandName: String, obsId: String?) =
         Setup(Prefix(prefix), CommandName(commandName), obsId.toOptionalObsId())

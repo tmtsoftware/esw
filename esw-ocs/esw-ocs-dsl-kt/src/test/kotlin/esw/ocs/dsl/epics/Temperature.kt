@@ -6,10 +6,9 @@ import csw.event.api.javadsl.IEventSubscriber
 import csw.event.api.javadsl.IEventSubscription
 import csw.params.events.Event
 import esw.ocs.dsl.params.intKey
-import esw.ocs.dsl.utils.bgLoop
+import kotlinx.coroutines.runBlocking
 import java.util.concurrent.CompletableFuture
 import kotlin.time.seconds
-import kotlinx.coroutines.runBlocking
 
 typealias SubscriptionCallback = suspend (Event) -> Unit
 
@@ -119,7 +118,7 @@ val machine3 = object : TestMachine("temp-monitor", "Init") {
 
     init {
         // for testing purpose
-        coroutineScope.bgLoop(1.seconds) {
+        bgLoop(1.seconds) {
             val value = (20..60).random()
             temp.set(value)
             temp.pvPut()

@@ -7,7 +7,6 @@ import csw.params.events.EventKey
 import csw.params.events.SystemEvent
 import esw.ocs.dsl.highlevel.EventServiceDsl
 import esw.ocs.dsl.nullable
-import esw.ocs.dsl.params.set
 
 interface Refreshable {
     suspend fun refresh(source: String)

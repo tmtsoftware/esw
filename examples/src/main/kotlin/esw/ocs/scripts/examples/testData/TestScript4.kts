@@ -1,26 +1,24 @@
 package esw.ocs.scripts.examples.testData
 
-import csw.params.commands.CommandResponse
 import esw.ocs.dsl.core.script
-import kotlinx.coroutines.delay
 
 script {
 
-    handleSetup("command-irms") { command ->
-        // To avoid sequencer to finish immediately so that other commands gets time
-        delay(500)
-        addOrUpdateCommand(CommandResponse.Completed(command.runId))
+    handleSetup("command-irms") { _ ->
+        // To avoid sequencer to finish so that other commands gets time
     }
 
     handleAbortSequence {
         //do some actions to abort sequence
-        val successEvent = systemEvent("IRMS", "abort.success")
+        println("abort irms")
+        val successEvent = systemEvent("tcs", "abort.success")
         publishEvent(successEvent)
     }
 
     handleStop {
-        //do some actions to abort sequence
-        val successEvent = systemEvent("IRMS", "stop.success")
+        //do some actions to stop
+        println("stop irms")
+        val successEvent = systemEvent("tcs", "stop.success")
         publishEvent(successEvent)
     }
 }

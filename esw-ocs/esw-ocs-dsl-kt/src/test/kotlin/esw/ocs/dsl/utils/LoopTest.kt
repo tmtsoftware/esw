@@ -1,17 +1,21 @@
 package esw.ocs.dsl.utils
 
+import esw.ocs.dsl.highlevel.LoopDsl
 import io.kotlintest.matchers.numerics.shouldBeLessThan
 import io.kotlintest.matchers.shouldBeInRange
 import io.kotlintest.shouldBe
+import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
 import org.junit.jupiter.api.Test
 import java.util.concurrent.atomic.AtomicInteger
+import kotlin.coroutines.EmptyCoroutineContext
 import kotlin.system.measureTimeMillis
 import kotlin.time.milliseconds
 
-class LoopTest {
+class LoopTest : LoopDsl {
+    override val coroutineScope: CoroutineScope = CoroutineScope(EmptyCoroutineContext)
 
     @Test
     fun `loop should run till condition becomes true when interval is default | ESW-89`() = runBlocking {

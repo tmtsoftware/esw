@@ -16,17 +16,12 @@ import scala.concurrent.duration.FiniteDuration
 
 interface TimeServiceDsl {
     val coroutineScope: CoroutineScope
-
     val timeServiceScheduler: TimeServiceScheduler
 
     suspend fun scheduleOnce(startTime: TMTTime, task: suspend () -> Unit): Cancellable =
         timeServiceScheduler.scheduleOnce(startTime, Runnable { task.toJavaFuture() })
 
-    fun schedulePeriodically(
-        startTime: TMTTime,
-        interval: Duration,
-        task: suspend () -> Unit
-    ): Cancellable =
+    fun schedulePeriodically(startTime: TMTTime, interval: Duration, task: suspend () -> Unit): Cancellable =
         timeServiceScheduler.schedulePeriodically(
             startTime,
             interval.toJavaDuration(),
@@ -45,5 +40,5 @@ interface TimeServiceDsl {
     fun TMTTime.offsetFromNow(): Duration = durationFromNow().toNanos().nanoseconds
 
     private fun (suspend () -> Unit).toJavaFuture(): CompletionStage<Void> =
-            coroutineScope.future { this@toJavaFuture }.thenAccept { }
+        coroutineScope.future { this@toJavaFuture }.thenAccept { }
 }

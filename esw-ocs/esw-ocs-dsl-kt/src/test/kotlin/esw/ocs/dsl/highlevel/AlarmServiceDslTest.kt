@@ -10,14 +10,16 @@ import io.kotlintest.seconds
 import io.mockk.every
 import io.mockk.mockk
 import io.mockk.verify
+import kotlinx.coroutines.CoroutineScope
 import org.junit.jupiter.api.Test
 import java.util.concurrent.CompletableFuture.completedFuture
+import kotlin.coroutines.EmptyCoroutineContext
 
 class AlarmServiceDslTest {
     @Test
     fun `AlarmServiceDsl should set severity of alarms | ESW-125`() {
         val mockedAlarmService: IAlarmService = mockk()
-        val alarmServiceDsl: AlarmServiceDsl = AlarmServiceDslImpl(mockedAlarmService)
+        val alarmServiceDsl: AlarmServiceDsl = AlarmServiceDslImpl(mockedAlarmService, CoroutineScope(EmptyCoroutineContext))
 
         val alarmKey = AlarmKey(TCS, "filter_assembly", "temperature")
         val severity = Major()
