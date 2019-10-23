@@ -66,7 +66,7 @@ class ScriptIntegrationTest extends ScalaTestFrameworkTestKit(EventServer, Alarm
   override def beforeAll(): Unit = {
     super.beforeAll()
     frameworkTestKit.spawnStandalone(ConfigFactory.load("standalone.conf"))
-    val system = LoggingSystemFactory.start("abort-test", "", "", actorSystem)
+    val system = LoggingSystemFactory.start("ScriptIntegrationTest", "", "", actorSystem)
     system.setAkkaLevel(Level.INFO)
     system.setDefaultLogLevel(Level.INFO)
     system.setSlf4jLevel(Level.INFO)
@@ -78,7 +78,7 @@ class ScriptIntegrationTest extends ScalaTestFrameworkTestKit(EventServer, Alarm
     tcsWiring.sequencerServer.start()
     tcsSequencer = tcsWiring.sequencerRef
 
-    //start IRMS sequencer as OCS sends AbortSequence to IRMS downstream sequencer
+    //start IRMS sequencer as OCS send commands to IRMS downstream sequencer
     irmsWiring = new SequencerWiring(irmsPackageId, irmsObservingMode, None)
     irmsWiring.sequencerServer.start()
 
