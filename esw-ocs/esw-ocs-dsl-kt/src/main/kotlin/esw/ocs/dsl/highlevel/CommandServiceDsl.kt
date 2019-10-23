@@ -4,7 +4,6 @@ import akka.actor.typed.ActorSystem
 import akka.util.Timeout
 import csw.command.api.javadsl.ICommandService
 import csw.command.client.CommandServiceFactory
-import csw.command.client.ICommandServiceFactory
 import csw.location.api.javadsl.ILocationService
 import csw.location.api.javadsl.JComponentType.Assembly
 import csw.location.api.javadsl.JComponentType.HCD
@@ -18,12 +17,12 @@ import csw.params.core.models.Id
 import csw.params.core.models.ObsId
 import csw.params.core.models.Prefix
 import esw.ocs.dsl.nullable
+import kotlinx.coroutines.future.await
+import scala.concurrent.duration.Duration.create
 import java.time.Duration
 import java.util.*
 import java.util.concurrent.CompletableFuture
 import java.util.concurrent.TimeUnit
-import kotlinx.coroutines.future.await
-import scala.concurrent.duration.Duration.create
 
 interface CommandServiceDsl {
     val locationService: ILocationService

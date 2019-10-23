@@ -128,6 +128,6 @@ class LoopTest : LoopDsl {
             stopWhen(exposureCount == numExposures)
         }
 
-        numExposures shouldBe 5
+        exposureCount shouldBe 5
     }
 }

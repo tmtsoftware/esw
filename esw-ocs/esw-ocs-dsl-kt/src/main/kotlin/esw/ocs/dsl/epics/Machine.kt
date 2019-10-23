@@ -8,7 +8,6 @@ import csw.params.events.SystemEvent
 import esw.ocs.dsl.highlevel.EventServiceDsl
 import esw.ocs.dsl.highlevel.LoopDsl
 import esw.ocs.dsl.nullable
-import esw.ocs.dsl.params.set
 import kotlinx.coroutines.*
 import java.util.concurrent.Executors
 import kotlin.properties.ObservableProperty
