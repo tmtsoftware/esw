@@ -27,6 +27,22 @@ script {
         addOrUpdateCommand(CommandResponse.Completed(command.runId))
     }
 
+    handleSetup("check-config") { command ->
+        if (existsConfig("/tmt/test/wfos.conf"))
+            publishEvent(systemEvent("WFOS", "config.success"))
+        addOrUpdateCommand(CommandResponse.Completed(command.runId))
+    }
+
+    handleSetup("get-config-data") { command ->
+        val configValue = "component = wfos"
+        val configData = getConfig("/tmt/test/wfos.conf")
+        configData?.let {
+            if (it == configValue)
+                publishEvent(systemEvent("WFOS", "config.success"))
+        }
+        addOrUpdateCommand(CommandResponse.Completed(command.runId))
+    }
+
     handleSetup("command-3") { command ->
         addOrUpdateCommand(CommandResponse.Completed(command.runId))
     }
@@ -39,7 +55,7 @@ script {
         addOrUpdateCommand(CommandResponse.Completed(it.runId()))
     }
 
-    handleSetup("command-for-assembly") {command ->
+    handleSetup("command-for-assembly") { command ->
         submitCommandToAssembly("test", command)
         addOrUpdateCommand(CommandResponse.Completed(command.runId()))
     }

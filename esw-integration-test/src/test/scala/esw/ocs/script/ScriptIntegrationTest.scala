@@ -1,5 +1,7 @@
 package esw.ocs.script
 
+import java.nio.file.Path
+
 import akka.actor.testkit.typed.scaladsl.TestProbe
 import akka.actor.typed.scaladsl.AskPattern._
 import akka.actor.typed.{ActorRef, ActorSystem, SpawnProtocol}
@@ -9,6 +11,9 @@ import csw.alarm.client.AlarmServiceFactory
 import csw.alarm.models.AlarmSeverity
 import csw.alarm.models.Key.AlarmKey
 import csw.command.client.messages.sequencer.{SequencerMsg, SubmitSequenceAndWait}
+import csw.config.api.scaladsl.ConfigService
+import csw.config.api.{ConfigData, TokenFactory}
+import csw.config.client.scaladsl.ConfigClientFactory
 import csw.event.client.EventServiceFactory
 import csw.location.api.extensions.URIExtension.RichURI
 import csw.location.api.scaladsl.LocationService
@@ -22,7 +27,8 @@ import csw.params.core.generics.Parameter
 import csw.params.core.models.Subsystem.NFIRAOS
 import csw.params.core.models.{Id, Prefix}
 import csw.params.events.{Event, EventKey, EventName, SystemEvent}
-import csw.testkit.scaladsl.CSWService.{AlarmServer, EventServer}
+import csw.testkit.ConfigTestKit
+import csw.testkit.scaladsl.CSWService.{AlarmServer, ConfigServer, EventServer}
 import csw.testkit.scaladsl.ScalaTestFrameworkTestKit
 import csw.time.core.models.UTCTime
 import esw.ocs.api.BaseTestSuite
@@ -36,7 +42,7 @@ import esw.ocs.impl.messages.SequencerMessages._
 import scala.concurrent.Future
 import scala.concurrent.duration.DurationDouble
 
-class ScriptIntegrationTest extends ScalaTestFrameworkTestKit(EventServer, AlarmServer) with BaseTestSuite {
+class ScriptIntegrationTest extends ScalaTestFrameworkTestKit(EventServer, AlarmServer, ConfigServer) with BaseTestSuite {
 
   import frameworkTestKit.mat
 
@@ -63,6 +69,7 @@ class ScriptIntegrationTest extends ScalaTestFrameworkTestKit(EventServer, Alarm
   private var tcsSequencer: ActorRef[SequencerMsg]  = _
   private var irmsWiring: SequencerWiring           = _
   private var irmsSequencer: ActorRef[SequencerMsg] = _
+  private val configTestKit: ConfigTestKit          = frameworkTestKit.configTestKit
 
   override def beforeAll(): Unit = {
     super.beforeAll()
@@ -94,7 +101,7 @@ class ScriptIntegrationTest extends ScalaTestFrameworkTestKit(EventServer, Alarm
     tcsWiring.sequencerServer.shutDown().futureValue
   }
 
-  "CswServices" must {
+  "Script Writer" must {
     "be able to send sequence to other Sequencer by resolving location through TestScript | ESW-88, ESW-145, ESW-190, ESW-195, ESW-119" in {
       val command             = Setup(Prefix("TCS.test"), CommandName("command-4"), None)
       val submitResponseProbe = TestProbe[SubmitResponse]
@@ -303,6 +310,66 @@ class ScriptIntegrationTest extends ScalaTestFrameworkTestKit(EventServer, Alarm
 
       val actualSetupEvent: SystemEvent = testProbe.expectMessageType[SystemEvent]
       actualSetupEvent.eventKey should ===(eventKey)
+    }
+
+    "be able to check existence of a config file | ESW-123" in {
+      val factory = mock[TokenFactory]
+      when(factory.getToken).thenReturn("valid")
+
+      val eventService = new EventServiceFactory().make(HttpLocationServiceFactory.makeLocalClient)
+
+      val adminApi: ConfigService = ConfigClientFactory.adminApi(configTestKit.actorSystem, locationService, factory)
+      configTestKit.initSvnRepo()
+      val file = Path.of("/tmt/test/wfos.conf")
+      val configValue1: String =
+        """
+          |component = wfos
+          |""".stripMargin
+      adminApi.create(file, ConfigData.fromString(configValue1), annex = false, "First commit").futureValue
+
+      val command  = Setup(Prefix("WFOS"), CommandName("check-config"), None)
+      val id       = Id()
+      val sequence = Sequence(id, Seq(command))
+
+      val submitResponse: Future[SubmitResponse] = ocsSequencer ? (SubmitSequenceAndWait(sequence, _))
+      submitResponse.futureValue should ===(Completed(id))
+
+      val successKey        = EventKey(Prefix("WFOS"), EventName("config.success"))
+      val getPublishedEvent = eventService.defaultSubscriber.get(successKey).futureValue
+
+      getPublishedEvent.eventKey should ===(successKey)
+      configTestKit.deleteServerFiles()
+
+    }
+
+    "be able to retrieve ConfigData stored in a config file | ESW-123" in {
+      val factory = mock[TokenFactory]
+      when(factory.getToken).thenReturn("valid")
+
+      val eventService = new EventServiceFactory().make(HttpLocationServiceFactory.makeLocalClient)
+
+      val adminApi: ConfigService = ConfigClientFactory.adminApi(configTestKit.actorSystem, locationService, factory)
+      configTestKit.initSvnRepo()
+      val file = Path.of("/tmt/test/wfos.conf")
+      val configValue1: String =
+        """
+          |component = wfos
+          |""".stripMargin
+      adminApi.create(file, ConfigData.fromString(configValue1), annex = false, "First commit").futureValue
+
+      val command  = Setup(Prefix("WFOS"), CommandName("get-config-data"), None)
+      val id       = Id()
+      val sequence = Sequence(id, Seq(command))
+
+      val submitResponse: Future[SubmitResponse] = ocsSequencer ? (SubmitSequenceAndWait(sequence, _))
+      submitResponse.futureValue should ===(Completed(id))
+
+      val successKey        = EventKey(Prefix("WFOS"), EventName("config.success"))
+      val getPublishedEvent = eventService.defaultSubscriber.get(successKey).futureValue
+
+      getPublishedEvent.eventKey should ===(successKey)
+      configTestKit.deleteServerFiles()
+
     }
   }
 }
