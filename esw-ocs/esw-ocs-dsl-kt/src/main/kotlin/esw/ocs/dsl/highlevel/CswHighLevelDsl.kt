@@ -1,6 +1,7 @@
 package esw.ocs.dsl.highlevel
 
 import akka.actor.typed.ActorSystem
+import akka.stream.Materializer
 import csw.alarm.models.AlarmSeverity
 import csw.alarm.models.Key.AlarmKey
 import csw.command.client.CommandResponseManager
@@ -22,6 +23,7 @@ abstract class CswHighLevelDsl(private val cswServices: CswServices) : EventServ
     abstract override val coroutineScope: CoroutineScope
 
     final override val actorSystem: ActorSystem<*> = cswServices.actorSystem()
+    final override val materializer: Materializer = Materializer.createMaterializer(actorSystem)
     final override val locationService: ILocationService = cswServices.locationService()
     final override val defaultPublisher: IEventPublisher by lazy { cswServices.eventService().defaultPublisher() }
     final override val defaultSubscriber: IEventSubscriber by lazy { cswServices.eventService().defaultSubscriber() }

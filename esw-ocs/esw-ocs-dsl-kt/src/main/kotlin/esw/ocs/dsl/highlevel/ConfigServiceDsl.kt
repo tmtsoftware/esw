@@ -1,6 +1,5 @@
 package esw.ocs.dsl.highlevel
 
-import akka.actor.typed.ActorSystem
 import akka.stream.Materializer
 import csw.config.api.javadsl.IConfigClientService
 import csw.config.models.ConfigId
@@ -12,14 +11,14 @@ interface ConfigServiceDsl {
 
     val configClient: IConfigClientService
 
-    val actorSystem: ActorSystem<*>
+    val materializer: Materializer
 
     suspend fun existsConfig(path: String, id: String? = null): Boolean =
-        id?.let { configClient.exists(Path.of(path), ConfigId(id)).await() }
-            ?: configClient.exists(Path.of(path)).await()
+            id?.let { configClient.exists(Path.of(path), ConfigId(id)).await() }
+                    ?: configClient.exists(Path.of(path)).await()
 
     suspend fun getConfig(path: String): String? {
         val configData = configClient.getActive(Path.of(path)).await().nullable()
-        return configData?.toJStringF(Materializer.createMaterializer(actorSystem))?.await()
+        return configData?.toJStringF(materializer)?.await()
     }
 }
