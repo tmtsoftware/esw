@@ -93,6 +93,20 @@ class SequencerTestSetup(sequence: Sequence)(implicit system: ActorSystem[_], ti
     probe.expectMessage(expected)
   }
 
+  def assertEngineCanExecuteNext(isReadyToExecuteNext: Boolean): Unit = {
+    val probe = TestProbe[Ok.type]
+    sequencerActor ! ReadyToExecuteNext(probe.ref)
+    if (isReadyToExecuteNext) {
+      probe.expectMessage(Ok)
+    }
+    else {
+      intercept[AssertionError] {
+        //ReadyToExecuteNext won't respond and timeout will be captured by AssertionError
+        probe.receiveMessage()
+      }
+    }
+  }
+
   def abortSequenceAndAssertResponse(
       response: OkOrUnhandledResponse,
       expectedState: SequencerState[SequencerMsg]
@@ -309,6 +323,17 @@ object SequencerTestSetup {
   def inProgress(sequence: Sequence)(implicit system: ActorSystem[_], timeout: Timeout): SequencerTestSetup = {
     val sequencerSetup = idle(sequence)
     sequencerSetup.mockCommand(sequence.commands.head.runId, Promise[SubmitResponse].future)
+    sequencerSetup.loadAndStartSequenceThenAssertInProgress()
+    sequencerSetup.pullNextCommand()
+    sequencerSetup
+  }
+
+  def inProgressWithFirstCommandComplete(
+      sequence: Sequence
+  )(implicit system: ActorSystem[_], timeout: Timeout): SequencerTestSetup = {
+    val sequencerSetup    = idle(sequence)
+    val firstCommandRunId = sequence.commands.head.runId
+    sequencerSetup.mockCommand(firstCommandRunId, Future.successful(Completed(firstCommandRunId)))
     sequencerSetup.loadAndStartSequenceThenAssertInProgress()
     sequencerSetup.pullNextCommand()
     sequencerSetup

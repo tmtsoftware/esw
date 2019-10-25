@@ -324,27 +324,32 @@ class SequencerBehaviorTest extends ScalaTestWithActorTestKit with BaseTestSuite
 
   "Pause" must {
     "pause sequencer when it is InProgress | ESW-104" in {
-      val sequencerSetup = SequencerTestSetup.inProgress(sequence)
+      val sequencerSetup = SequencerTestSetup.inProgressWithFirstCommandComplete(sequence)
       import sequencerSetup._
 
       val beforePauseStepList = Some(
         StepList(
           sequence.runId,
-          List(Step(command1, InFlight, hasBreakpoint = false), Step(command2, Pending, hasBreakpoint = false))
+          List(Step(command1, Finished(command1.runId), hasBreakpoint = false), Step(command2, Pending, hasBreakpoint = false))
         )
       )
 
       assertCurrentSequence(beforePauseStepList)
+
+      //Engine can execute next step as 1st step is completed
+      assertEngineCanExecuteNext(isReadyToExecuteNext = true)
 
       pauseAndAssertResponse(Ok)
 
       val afterPauseStepList = Some(
         StepList(
           sequence.runId,
-          List(Step(command1, InFlight, hasBreakpoint = false), Step(command2, Pending, hasBreakpoint = true))
+          List(Step(command1, Finished(command1.runId), hasBreakpoint = false), Step(command2, Pending, hasBreakpoint = true))
         )
       )
 
+      //Engine can NOT execute next step as 1st step is completed but 2nd one is paused
+      assertEngineCanExecuteNext(isReadyToExecuteNext = false)
       assertCurrentSequence(afterPauseStepList)
     }
 
@@ -357,6 +362,8 @@ class SequencerBehaviorTest extends ScalaTestWithActorTestKit with BaseTestSuite
         List(Step(command1, Pending, hasBreakpoint = false), Step(command2, Pending, hasBreakpoint = false))
       )
       assertCurrentSequence(Some(beforePauseStepList))
+      //Engine can NOT execute next step as sequence is NOT inProgress state. (It's just Loaded sequence)
+      assertEngineCanExecuteNext(isReadyToExecuteNext = false)
 
       pauseAndAssertResponse(Ok)
 
@@ -365,6 +372,8 @@ class SequencerBehaviorTest extends ScalaTestWithActorTestKit with BaseTestSuite
         List(Step(command1, Pending, hasBreakpoint = true), Step(command2, Pending, hasBreakpoint = false))
       )
 
+      //Engine can NOT execute next step as sequence is NOT inProgress state and it is paused as well
+      assertEngineCanExecuteNext(isReadyToExecuteNext = false)
       assertCurrentSequence(Some(afterPauseStepList))
     }
   }
