@@ -18,8 +18,6 @@ import csw.event.client.EventServiceFactory
 import csw.location.api.extensions.URIExtension.RichURI
 import csw.location.api.scaladsl.LocationService
 import csw.location.client.scaladsl.HttpLocationServiceFactory
-import csw.logging.client.scaladsl.LoggingSystemFactory
-import csw.logging.models.Level
 import csw.params.commands.CommandResponse.{Completed, SubmitResponse}
 import csw.params.commands.{CommandName, Sequence, Setup}
 import csw.params.core.generics.KeyType.StringKey
@@ -74,10 +72,6 @@ class ScriptIntegrationTest extends ScalaTestFrameworkTestKit(EventServer, Alarm
   override def beforeAll(): Unit = {
     super.beforeAll()
     frameworkTestKit.spawnStandalone(ConfigFactory.load("standalone.conf"))
-    val system = LoggingSystemFactory.start("ScriptIntegrationTest", "", "", actorSystem)
-    system.setAkkaLevel(Level.INFO)
-    system.setDefaultLogLevel(Level.INFO)
-    system.setSlf4jLevel(Level.INFO)
   }
 
   override def beforeEach(): Unit = {

@@ -96,7 +96,8 @@ script {
     }
 
     handleSetup("command-irms") { _ ->
-        // To avoid sequencer to finish immediately so that other Add, Append command gets time
+        // NOT update command response to avoid sequencer to finish immediately
+        // so that other Add, Append command gets time
         val setupCommand = Setup(
                 Id("command-4-irms"),
                 Prefix("IRMS.test"),
