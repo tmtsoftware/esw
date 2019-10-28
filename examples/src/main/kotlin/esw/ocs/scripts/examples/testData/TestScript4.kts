@@ -1,6 +1,7 @@
 package esw.ocs.scripts.examples.testData
 
 import esw.ocs.dsl.core.script
+import kotlin.time.seconds
 
 script {
 
@@ -19,5 +20,15 @@ script {
         //do some actions to stop
         val successEvent = systemEvent("tcs", "stop.success")
         publishEvent(successEvent)
+    }
+
+    handleSetup("time-service-dsl") { command ->
+        val offset = utcTimeAfter(2.seconds).offsetFromNow()
+        val taskToSchedule: suspend () -> Unit =
+                { publishEvent(systemEvent("irms", "publish.success")) }
+
+        schedulePeriodically(utcTimeAfter(5.seconds), offset, taskToSchedule)
+
+        scheduleOnce(taiTimeNow(), taskToSchedule)
     }
 }
