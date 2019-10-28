@@ -1,6 +1,5 @@
 package esw.ocs.scripts.examples.testData
 
-import csw.time.core.models.TAITime
 import esw.ocs.dsl.core.script
 import kotlin.time.seconds
 
