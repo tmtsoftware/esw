@@ -5,7 +5,7 @@ import akka.actor.testkit.typed.scaladsl.{ScalaTestWithActorTestKit, TestProbe}
 import akka.util.Timeout
 import csw.command.client.messages.sequencer.SubmitSequenceAndWait
 import csw.command.client.messages.{GetComponentLogMetadata, SetComponentLogLevel}
-import csw.logging.models.Level.DEBUG
+import csw.logging.models.Level.{DEBUG, INFO}
 import csw.logging.models.LogMetadata
 import csw.params.commands.CommandResponse.{Completed, Error, SubmitResponse}
 import csw.params.commands.{CommandName, Sequence, Setup}
@@ -887,12 +887,18 @@ class SequencerBehaviorTest extends ScalaTestWithActorTestKit with BaseTestSuite
       import sequencerSetup._
       val logMetadataProbe = TestProbe[LogMetadata]
 
+      sequencerActor ! GetComponentLogMetadata(sequencerName, logMetadataProbe.ref)
+
+      val logMetadata1 = logMetadataProbe.expectMessageType[LogMetadata]
+
+      logMetadata1.componentLevel shouldBe INFO
+
       sequencerActor ! SetComponentLogLevel(sequencerName, DEBUG)
       sequencerActor ! GetComponentLogMetadata(sequencerName, logMetadataProbe.ref)
 
-      val logMetadata = logMetadataProbe.expectMessageType[LogMetadata]
+      val logMetadata2 = logMetadataProbe.expectMessageType[LogMetadata]
 
-      logMetadata.componentLevel shouldBe DEBUG
+      logMetadata2.componentLevel shouldBe DEBUG
     }
   }
 
