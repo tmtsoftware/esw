@@ -24,7 +24,9 @@ import esw.gateway.api.{AlarmApi, CommandApi, EventApi, LoggingApi}
 import esw.gateway.impl._
 import esw.gateway.server.handlers.PostHandlerImpl
 import esw.http.core.BaseTestSuite
-import mscoket.impl.HttpCodecs
+import msocket.impl.Encoding
+import msocket.impl.Encoding.JsonText
+import msocket.impl.post.ClientHttpCodecs
 import org.mockito.ArgumentMatchers.{any, eq => argsEq}
 import org.mockito.Mockito.when
 import org.mockito.MockitoSugar._
@@ -32,7 +34,10 @@ import org.mockito.MockitoSugar._
 import scala.concurrent.Future
 import scala.concurrent.duration.DurationLong
 
-class PostRouteTest extends BaseTestSuite with ScalatestRouteTest with GatewayCodecs with HttpCodecs {
+class PostRouteTest extends BaseTestSuite with ScalatestRouteTest with GatewayCodecs with ClientHttpCodecs {
+
+  override def encoding: Encoding[_] = JsonText
+
   val actorSystem: ActorSystem[SpawnProtocol.Command] = ActorSystem(SpawnProtocol(), "test-system")
 
   protected override def afterAll(): Unit = {

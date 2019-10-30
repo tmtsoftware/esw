@@ -33,6 +33,7 @@ import esw.ocs.impl.internal.{SequencerServer, Timeouts}
 import esw.ocs.impl.messages.SequencerMessages.Shutdown
 import esw.ocs.impl.syntax.FutureSyntax.FutureOps
 import esw.ocs.impl.{SequencerAdminFactoryImpl, SequencerAdminImpl}
+import msocket.impl.Encoding
 
 import scala.async.Async.{async, await}
 import scala.concurrent.Future
@@ -96,10 +97,10 @@ private[ocs] class SequencerWiring(val packageId: String, val observingMode: Str
     jAlarmService
   )
 
-  private lazy val sequencerAdmin   = new SequencerAdminImpl(sequencerRef)
-  private lazy val postHandler      = new PostHandlerImpl(sequencerAdmin)
-  private lazy val websocketHandler = new WebsocketHandlerImpl(sequencerAdmin)
-  private lazy val routes           = new SequencerAdminRoutes(postHandler, websocketHandler)
+  private lazy val sequencerAdmin                            = new SequencerAdminImpl(sequencerRef)
+  private lazy val postHandler                               = new PostHandlerImpl(sequencerAdmin)
+  private def websocketHandlerFactory(encoding: Encoding[_]) = new WebsocketHandlerImpl(sequencerAdmin, encoding)
+  private lazy val routes                                    = new SequencerAdminRoutes(postHandler, websocketHandlerFactory)
 
   private lazy val settings = new Settings(Some(SocketUtils.getFreePort), Some(s"$sequencerName@http"), config)
   private lazy val httpService: HttpService =

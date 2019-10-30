@@ -10,8 +10,9 @@ import esw.ocs.api.protocol._
 import io.bullet.borer.Codec
 import io.bullet.borer.derivation.ArrayBasedCodecs.deriveUnaryCodec
 import io.bullet.borer.derivation.MapBasedCodecs.deriveCodec
+import msocket.api.codecs.EitherCodecs
 
-trait OcsCodecs extends ParamCodecs with LocationCodecs {
+trait OcsCodecs extends ParamCodecs with LocationCodecs with EitherCodecs {
   //StepList Codecs
   implicit lazy val stepCodec: Codec[Step]                    = deriveCodec
   implicit lazy val stepListCodec: Codec[StepList]            = deriveCodec

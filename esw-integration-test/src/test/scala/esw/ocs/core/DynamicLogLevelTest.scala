@@ -14,12 +14,18 @@ import csw.network.utils.Networks
 import csw.testkit.scaladsl.ScalaTestFrameworkTestKit
 import esw.ocs.api.BaseTestSuite
 import esw.ocs.app.wiring.SequencerWiring
-import mscoket.impl.HttpCodecs
+import msocket.impl.Encoding
+import msocket.impl.Encoding.JsonText
+import msocket.impl.post.ClientHttpCodecs
 
 import scala.concurrent.duration.DurationLong
 
-class DynamicLogLevelTest extends ScalaTestFrameworkTestKit with BaseTestSuite with LoggingCodecs with HttpCodecs {
+class DynamicLogLevelTest extends ScalaTestFrameworkTestKit with BaseTestSuite with LoggingCodecs with ClientHttpCodecs {
+
   import frameworkTestKit._
+
+  override def encoding: Encoding[_] = JsonText
+
   private implicit val sys: ActorSystem[SpawnProtocol.Command] = actorSystem
   override implicit def patienceConfig: PatienceConfig         = PatienceConfig(10.seconds)
 

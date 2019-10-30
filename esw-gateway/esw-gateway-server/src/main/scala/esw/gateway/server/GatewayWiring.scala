@@ -14,6 +14,7 @@ import esw.gateway.server.handlers.{PostHandlerImpl, WebsocketHandlerImpl}
 import esw.gateway.server.utils.CommandServiceFactory
 import esw.http.core.wiring.{HttpService, ServerWiring}
 import msocket.api.MessageHandler
+import msocket.impl.Encoding
 
 import scala.concurrent.duration.DurationLong
 
@@ -33,9 +34,9 @@ class GatewayWiring(_port: Option[Int]) extends GatewayCodecs {
 
   lazy val postHandler: MessageHandler[PostRequest, StandardRoute] =
     new PostHandlerImpl(alarmApi, commandApi, eventApi, loggingApi)
-  lazy val websocketHandler: MessageHandler[WebsocketRequest, Source[Message, NotUsed]] =
-    new WebsocketHandlerImpl(commandApi, eventApi)
+  def websocketHandlerFactory(encoding: Encoding[_]): MessageHandler[WebsocketRequest, Source[Message, NotUsed]] =
+    new WebsocketHandlerImpl(commandApi, eventApi, encoding)
 
-  lazy val routes      = new Routes(postHandler, websocketHandler, logger)
+  lazy val routes      = new Routes(postHandler, websocketHandlerFactory, logger)
   lazy val httpService = new HttpService(logger, locationService, routes.route, settings, actorRuntime)
 }

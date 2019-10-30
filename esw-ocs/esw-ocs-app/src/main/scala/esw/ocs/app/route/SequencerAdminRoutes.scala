@@ -9,16 +9,17 @@ import akka.stream.scaladsl.Source
 import ch.megard.akka.http.cors.scaladsl.CorsDirectives.cors
 import esw.ocs.api.codecs.SequencerAdminHttpCodecs
 import esw.ocs.api.protocol.{SequencerAdminPostRequest, SequencerAdminWebsocketRequest}
-import mscoket.impl.HttpCodecs
-import mscoket.impl.ws.WsServerFlow
+import msocket.impl.post.ServerHttpCodecs
+import msocket.impl.ws.WsServerFlow
 import msocket.api.MessageHandler
+import msocket.impl.Encoding
 
 class SequencerAdminRoutes(
     postHandler: MessageHandler[SequencerAdminPostRequest, StandardRoute],
-    websocketHandler: MessageHandler[SequencerAdminWebsocketRequest, Source[Message, NotUsed]]
+    websocketHandlerFactory: Encoding[_] => MessageHandler[SequencerAdminWebsocketRequest, Source[Message, NotUsed]]
 )(implicit mat: Materializer)
     extends SequencerAdminHttpCodecs
-    with HttpCodecs {
+    with ServerHttpCodecs {
 
   val route: Route = cors() {
     post {
@@ -29,7 +30,7 @@ class SequencerAdminRoutes(
     get {
       path("websocket-endpoint") {
         handleWebSocketMessages {
-          new WsServerFlow(websocketHandler).flow
+          new WsServerFlow(websocketHandlerFactory).flow
         }
       }
     }

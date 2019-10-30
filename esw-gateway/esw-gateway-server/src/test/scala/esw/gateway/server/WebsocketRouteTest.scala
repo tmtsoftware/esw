@@ -2,7 +2,7 @@ package esw.gateway.server
 
 import akka.Done
 import akka.actor.typed.{ActorSystem, SpawnProtocol}
-import akka.http.scaladsl.model.ws.TextMessage
+import akka.http.scaladsl.model.ws.{BinaryMessage, TextMessage}
 import akka.http.scaladsl.testkit.{ScalatestRouteTest, WSProbe}
 import akka.stream.scaladsl.{Sink, Source}
 import akka.util.Timeout
@@ -24,15 +24,19 @@ import esw.gateway.impl.{CommandImpl, EventImpl}
 import esw.gateway.server.handlers.WebsocketHandlerImpl
 import esw.http.core.BaseTestSuite
 import io.bullet.borer.Decoder
-import mscoket.impl.HttpCodecs
-import mscoket.impl.ws.Encoding.JsonText
+import msocket.impl.post.ClientHttpCodecs
+import msocket.impl.Encoding.{CborBinary, JsonText}
 import msocket.api.models.StreamError
+import msocket.impl.Encoding
 import org.mockito.Mockito.when
 
 import scala.concurrent.Future
 import scala.concurrent.duration.DurationLong
 
-class WebsocketRouteTest extends BaseTestSuite with ScalatestRouteTest with GatewayCodecs with HttpCodecs {
+class WebsocketRouteTest extends BaseTestSuite with ScalatestRouteTest with GatewayCodecs with ClientHttpCodecs {
+
+  override def encoding: Encoding[_] = JsonText
+
   private val actorSystem: ActorSystem[SpawnProtocol.Command] = ActorSystem(SpawnProtocol(), "test-system")
 
   private val cswCtxMocks = new CswWiringMocks(actorSystem)
@@ -42,10 +46,10 @@ class WebsocketRouteTest extends BaseTestSuite with ScalatestRouteTest with Gate
   private var wsClient: WSProbe                        = _
   implicit override val patienceConfig: PatienceConfig = PatienceConfig(10.seconds)
 
-  private val eventApi: EventApi     = new EventImpl(eventService, eventSubscriberUtil)
-  private val commandApi: CommandApi = new CommandImpl(commandServiceFactory)
-  private val websocketHandlerImpl   = new WebsocketHandlerImpl(commandApi, eventApi)
-  private val route                  = new Routes(null, websocketHandlerImpl, logger).route
+  private val eventApi: EventApi                          = new EventImpl(eventService, eventSubscriberUtil)
+  private val commandApi: CommandApi                      = new CommandImpl(commandServiceFactory)
+  private def websocketHandlerImpl(encoding: Encoding[_]) = new WebsocketHandlerImpl(commandApi, eventApi, encoding)
+  private val route                                       = new Routes(null, websocketHandlerImpl, logger).route
 
   override def beforeEach(): Unit = {
     wsClient = WSProbe()
@@ -361,8 +365,9 @@ class WebsocketRouteTest extends BaseTestSuite with ScalatestRouteTest with Gate
 
   private def decodeMessage[T](wsClient: WSProbe)(implicit decoder: Decoder[T]): T = {
     wsClient.expectMessage() match {
-      case TextMessage.Strict(text) => JsonText.decodeText[T](text)
-      case _                        => throw new RuntimeException("The expected message is not TextMessage")
+      case TextMessage.Strict(text)   => JsonText.decode[T](text)
+      case BinaryMessage.Strict(data) => CborBinary.decode[T](data)
+      case _                          => throw new RuntimeException("The expected message is not Strict")
     }
   }
 

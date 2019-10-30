@@ -10,19 +10,20 @@ import akka.stream.scaladsl.Source
 import csw.logging.api.scaladsl.Logger
 import esw.gateway.api.codecs.GatewayCodecs
 import esw.gateway.api.protocol.{PostRequest, WebsocketRequest}
-import mscoket.impl.HttpCodecs
-import mscoket.impl.ws.WsServerFlow
+import msocket.impl.post.ServerHttpCodecs
+import msocket.impl.ws.WsServerFlow
 import msocket.api.MessageHandler
+import msocket.impl.Encoding
 
 import scala.util.control.NonFatal
 
 class Routes(
     postHandler: MessageHandler[PostRequest, StandardRoute],
-    websocketHandler: MessageHandler[WebsocketRequest, Source[Message, NotUsed]],
+    websocketHandler: Encoding[_] => MessageHandler[WebsocketRequest, Source[Message, NotUsed]],
     log: Logger
 )(implicit mat: Materializer)
     extends GatewayCodecs
-    with HttpCodecs {
+    with ServerHttpCodecs {
 
   //fixme: Is this necessary? whats the default behavior of akka http on future failure?
   // Is there a better way to log?

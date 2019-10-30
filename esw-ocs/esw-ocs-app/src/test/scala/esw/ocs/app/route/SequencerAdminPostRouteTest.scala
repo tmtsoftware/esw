@@ -12,17 +12,25 @@ import esw.ocs.api.protocol.EditorError.{CannotOperateOnAnInFlightOrFinishedStep
 import esw.ocs.api.protocol.SequencerAdminPostRequest._
 import esw.ocs.api.protocol.{SequencerAdminPostRequest, _}
 import esw.ocs.impl.SequencerAdminImpl
-import mscoket.impl.HttpCodecs
+import msocket.impl.Encoding
+import msocket.impl.Encoding.JsonText
+import msocket.impl.post.ClientHttpCodecs
 import org.mockito.Mockito.when
 
 import scala.concurrent.Future
 
-class SequencerAdminPostRouteTest extends BaseTestSuite with ScalatestRouteTest with SequencerAdminHttpCodecs with HttpCodecs {
+class SequencerAdminPostRouteTest
+    extends BaseTestSuite
+    with ScalatestRouteTest
+    with SequencerAdminHttpCodecs
+    with ClientHttpCodecs {
 
-  private val sequencerAdmin: SequencerAdminImpl = mock[SequencerAdminImpl]
-  private val postHandler                        = new PostHandlerImpl(sequencerAdmin)
-  private val websocketHandler                   = new WebsocketHandlerImpl(sequencerAdmin)
-  private val route                              = new SequencerAdminRoutes(postHandler, websocketHandler).route
+  override def encoding: Encoding[_] = JsonText
+
+  private val sequencerAdmin: SequencerAdminImpl             = mock[SequencerAdminImpl]
+  private val postHandler                                    = new PostHandlerImpl(sequencerAdmin)
+  private def websocketHandlerFactory(encoding: Encoding[_]) = new WebsocketHandlerImpl(sequencerAdmin, encoding)
+  private val route                                          = new SequencerAdminRoutes(postHandler, websocketHandlerFactory).route
 
   "SequencerRoutes" must {
     "return sequence for getSequence request | ESW-222" in {

@@ -12,7 +12,8 @@ import esw.gateway.api.clients.LoggingClient
 import esw.gateway.api.codecs.GatewayCodecs
 import esw.gateway.api.protocol.PostRequest
 import esw.http.core.FutureEitherExt
-import mscoket.impl.post.HttpPostTransport
+import msocket.impl.Encoding.JsonText
+import msocket.impl.post.HttpPostTransport
 import org.scalatest.WordSpecLike
 import play.api.libs.json.{JsObject, Json}
 
@@ -65,7 +66,7 @@ class LoggingGatewayTest extends ScalaTestFrameworkTestKit with WordSpecLike wit
 
   "LoggingApi" must {
     "should generate log statement with given app name, severity level and message | ESW-200" in {
-      val postClient    = new HttpPostTransport[PostRequest](s"http://localhost:$port/post-endpoint", None)
+      val postClient    = new HttpPostTransport[PostRequest](s"http://localhost:$port/post-endpoint", JsonText, () => None)
       val loggingClient = new LoggingClient(postClient)
 
       val componentName = "test-app"

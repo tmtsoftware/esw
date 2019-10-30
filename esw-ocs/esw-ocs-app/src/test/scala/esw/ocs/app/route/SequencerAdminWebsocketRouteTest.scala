@@ -5,20 +5,23 @@ import esw.http.core.BaseTestSuite
 import esw.ocs.api.codecs.SequencerAdminHttpCodecs
 import esw.ocs.api.protocol.SequencerAdminWebsocketRequest.QueryFinal
 import esw.ocs.impl.SequencerAdminImpl
-import mscoket.impl.HttpCodecs
-import mscoket.impl.ws.Encoding.JsonText
+import msocket.impl.Encoding
+import msocket.impl.post.ClientHttpCodecs
+import msocket.impl.Encoding.JsonText
 
 class SequencerAdminWebsocketRouteTest
     extends BaseTestSuite
     with ScalatestRouteTest
     with SequencerAdminHttpCodecs
-    with HttpCodecs {
+    with ClientHttpCodecs {
 
-  private val sequencerAdmin: SequencerAdminImpl = mock[SequencerAdminImpl]
-  private val postHandler                        = new PostHandlerImpl(sequencerAdmin)
-  private val websocketHandler                   = new WebsocketHandlerImpl(sequencerAdmin)
-  private val route                              = new SequencerAdminRoutes(postHandler, websocketHandler).route
-  private val wsClient                           = WSProbe()
+  override def encoding: Encoding[_] = JsonText
+
+  private val sequencerAdmin: SequencerAdminImpl             = mock[SequencerAdminImpl]
+  private val postHandler                                    = new PostHandlerImpl(sequencerAdmin)
+  private def websocketHandlerFactory(encoding: Encoding[_]) = new WebsocketHandlerImpl(sequencerAdmin, encoding)
+  private val route                                          = new SequencerAdminRoutes(postHandler, websocketHandlerFactory).route
+  private val wsClient                                       = WSProbe()
 
   "SequencerRoutes" must {
     "return final submit response of sequence for QueryFinal request | ESW-101" in {

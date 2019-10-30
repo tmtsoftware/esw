@@ -8,10 +8,11 @@ import esw.gateway.api.codecs.GatewayCodecs
 import esw.gateway.api.protocol.WebsocketRequest
 import esw.gateway.api.protocol.WebsocketRequest.{QueryFinal, Subscribe, SubscribeCurrentState, SubscribeWithPattern}
 import esw.gateway.api.{CommandApi, EventApi}
-import mscoket.impl.ws.WebsocketStreamExtensions
+import msocket.impl.ws.WebsocketStreamExtensions
 import msocket.api.MessageHandler
+import msocket.impl.Encoding
 
-class WebsocketHandlerImpl(commandApi: CommandApi, eventApi: EventApi)(implicit mat: Materializer)
+class WebsocketHandlerImpl(commandApi: CommandApi, eventApi: EventApi, val encoding: Encoding[_])(implicit mat: Materializer)
     extends MessageHandler[WebsocketRequest, Source[Message, NotUsed]]
     with GatewayCodecs
     with WebsocketStreamExtensions {

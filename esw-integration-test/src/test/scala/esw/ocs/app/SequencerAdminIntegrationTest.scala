@@ -28,6 +28,7 @@ import esw.ocs.api.protocol._
 import esw.ocs.app.wiring.SequencerWiring
 import esw.ocs.impl.SequencerAdminClientFactory
 import esw.ocs.impl.messages.SequencerState.{Loaded, Offline}
+import msocket.impl.Encoding.JsonText
 
 import scala.concurrent.Future
 import scala.concurrent.duration.DurationLong
@@ -327,6 +328,6 @@ class SequencerAdminIntegrationTest extends ScalaTestFrameworkTestKit(EventServe
     val postUrl     = s"${uri.toString}post-endpoint"
     val wsUrl       = s"ws://${uri.getHost}:${uri.getPort}/websocket-endpoint"
 
-    SequencerAdminClientFactory.make(postUrl, wsUrl, None)
+    SequencerAdminClientFactory.make(postUrl, wsUrl, JsonText, () => None)
   }
 }

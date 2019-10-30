@@ -6,13 +6,13 @@ import esw.ocs.api.SequencerAdminApi
 import esw.ocs.api.codecs.SequencerAdminHttpCodecs
 import esw.ocs.api.protocol.SequencerAdminPostRequest
 import esw.ocs.api.protocol.SequencerAdminPostRequest._
-import mscoket.impl.HttpCodecs
+import msocket.impl.post.ServerHttpCodecs
 import msocket.api.MessageHandler
 
 class PostHandlerImpl(sequencerAdmin: SequencerAdminApi)
     extends MessageHandler[SequencerAdminPostRequest, StandardRoute]
     with SequencerAdminHttpCodecs
-    with HttpCodecs {
+    with ServerHttpCodecs {
 
   override def handle(request: SequencerAdminPostRequest): StandardRoute = request match {
     case GetSequence                     => complete(sequencerAdmin.getSequence)

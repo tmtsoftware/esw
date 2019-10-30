@@ -6,7 +6,7 @@ import esw.gateway.api.codecs.GatewayCodecs
 import esw.gateway.api.protocol.PostRequest
 import esw.gateway.api.protocol.PostRequest._
 import esw.gateway.api.{AlarmApi, CommandApi, EventApi, LoggingApi}
-import mscoket.impl.HttpCodecs
+import msocket.impl.post.ServerHttpCodecs
 import msocket.api.MessageHandler
 
 class PostHandlerImpl(
@@ -16,7 +16,7 @@ class PostHandlerImpl(
     loggingApi: LoggingApi
 ) extends MessageHandler[PostRequest, StandardRoute]
     with GatewayCodecs
-    with HttpCodecs {
+    with ServerHttpCodecs {
 
   override def handle(request: PostRequest): StandardRoute = request match {
     case Submit(componentId, command)         => complete(commandApi.submit(componentId, command))

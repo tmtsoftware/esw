@@ -4,7 +4,7 @@ import sbt._
 
 object Libs {
   private val SilencerVersion = "1.4.2"
-  private val MSocketVersion  = "8a649e8"
+  private val MSocketVersion  = "92fc8a9"
 
   val `silencer-lib`       = "com.github.ghik" %% "silencer-lib" % SilencerVersion % Compile
   val `silencer-plugin`    = compilerPlugin("com.github.ghik" %% "silencer-plugin" % SilencerVersion)
@@ -64,7 +64,7 @@ object AkkaHttp {
 }
 
 object Borer {
-  private val Version = "1.0.0"
+  private val Version = "1.1.0"
   private val Org     = "io.bullet"
 
   val `borer-core`        = Org %% "borer-core"        % Version
