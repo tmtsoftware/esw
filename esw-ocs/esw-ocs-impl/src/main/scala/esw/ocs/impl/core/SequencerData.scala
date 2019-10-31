@@ -78,7 +78,6 @@ private[core] case class SequencerData(
   }
 
   def stepSuccess(state: SequencerState[SequencerMsg]): SequencerData = {
-
     val newStepList = stepList.map { stepList =>
       stepList.copy(steps = stepList.steps.map {
         case x if x.status == InFlight => x.withStatus(Success)
@@ -142,8 +141,8 @@ private[core] case class SequencerData(
     if (stepList.exists(_.isFinished)) {
       val submitResponse = getSequencerResponse
       subscribers.foreach(s => s.tell(SequenceResult(submitResponse)))
+      self ! GoIdle(actorSystem.deadLetters)
     }
-    self ! GoIdle(actorSystem.deadLetters)
     this
   }
 

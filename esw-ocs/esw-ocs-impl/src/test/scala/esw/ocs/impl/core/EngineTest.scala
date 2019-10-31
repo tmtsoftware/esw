@@ -58,7 +58,7 @@ class EngineTest extends BaseTestSuite {
       when(sequenceOperator.pullNext).thenReturn(Future.successful(PullNextResult(step)))
       when(script.execute(step.command)).thenReturn(Future.failed(new RuntimeException(errorMsg)))
       engine.start(sequenceOperator)
-      eventually(verify(sequenceOperator).update(Error(step.id, errorMsg)))
+      eventually(verify(sequenceOperator).stepFailure(errorMsg))
     }
   }
 }

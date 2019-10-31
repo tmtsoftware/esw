@@ -30,7 +30,7 @@ class SequencerBehavior(
     script: JScriptDsl,
     locationService: LocationService,
     shutdownHttpService: () => Future[Done]
-)(implicit val actorSystem: ActorSystem[_], timeout: Timeout)
+)(implicit val actorSystem: ActorSystem[_])
     extends OcsCodecs {
   import actorSystem.executionContext
 
