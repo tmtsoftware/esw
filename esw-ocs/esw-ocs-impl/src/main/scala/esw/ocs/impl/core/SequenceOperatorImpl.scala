@@ -19,6 +19,6 @@ private[ocs] class SequenceOperatorImpl(sequencer: ActorRef[EswSequencerMessage]
   def pullNext: Future[PullNextResponse]                = sequencer ? PullNext
   def maybeNext: Future[Option[Step]]                   = sequencer ? MaybeNext
   def readyToExecuteNext: Future[OkOrUnhandledResponse] = sequencer ? ReadyToExecuteNext
-  def stepSuccess(stepId: Id): Unit                     = sequencer ! StepSuccess(stepId, system.deadLetters)
-  def stepFailure(stepId: Id, message: String): Unit    = sequencer ! StepFailure(stepId, message, system.deadLetters)
+  def stepSuccess(): Unit                               = sequencer ! StepSuccess(system.deadLetters)
+  def stepFailure(message: String): Unit                = sequencer ! StepFailure(message, system.deadLetters)
 }

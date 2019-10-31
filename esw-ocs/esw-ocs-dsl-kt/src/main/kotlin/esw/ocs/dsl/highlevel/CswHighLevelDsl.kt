@@ -4,7 +4,6 @@ import akka.actor.typed.ActorSystem
 import akka.stream.Materializer
 import csw.alarm.models.AlarmSeverity
 import csw.alarm.models.Key.AlarmKey
-import csw.command.client.CommandResponseManager
 import csw.config.api.javadsl.IConfigClientService
 import csw.event.api.javadsl.IEventPublisher
 import csw.event.api.javadsl.IEventSubscriber
@@ -16,9 +15,9 @@ import esw.ocs.dsl.script.utils.LockUnlockUtil
 import esw.ocs.dsl.sequence_manager.LocationServiceUtil
 import kotlinx.coroutines.CoroutineScope
 
-abstract class CswHighLevelDsl(private val cswServices: CswServices) : EventServiceDsl, TimeServiceDsl, CommandServiceDsl, CrmDsl, DiagnosticDsl,
-    LockUnlockDsl, OnlineOfflineDsl, AbortSequenceDsl, StopDsl, ConfigServiceDsl,
-    AlarmServiceDsl, LoopDsl {
+abstract class CswHighLevelDsl(private val cswServices: CswServices) : EventServiceDsl, TimeServiceDsl, CommandServiceDsl, DiagnosticDsl,
+        LockUnlockDsl, OnlineOfflineDsl, AbortSequenceDsl, StopDsl, ConfigServiceDsl,
+        AlarmServiceDsl, LoopDsl {
     abstract val strandEc: StrandEc
     abstract override val coroutineScope: CoroutineScope
 
@@ -27,7 +26,6 @@ abstract class CswHighLevelDsl(private val cswServices: CswServices) : EventServ
     final override val locationService: ILocationService = cswServices.locationService()
     final override val defaultPublisher: IEventPublisher by lazy { cswServices.eventService().defaultPublisher() }
     final override val defaultSubscriber: IEventSubscriber by lazy { cswServices.eventService().defaultSubscriber() }
-    final override val crm: CommandResponseManager = cswServices.crm()
     // fixme: should not be visible from script
     final override val commonUtils: CommonUtils = CommonUtils(cswServices.sequencerAdminFactory(), LocationServiceUtil(locationService.asScala(), actorSystem))
     final override val lockUnlockUtil: LockUnlockUtil = cswServices.lockUnlockUtil()

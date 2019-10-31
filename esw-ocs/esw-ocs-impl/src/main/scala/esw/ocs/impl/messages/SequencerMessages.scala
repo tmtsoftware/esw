@@ -82,10 +82,9 @@ object SequencerMessages {
 //  final private[esw] case class Update(submitResponse: SubmitResponse, replyTo: ActorRef[OkOrUnhandledResponse]) // this is internal message and replyTo is not used anywhere
 //      extends InProgressMessage
   // this is internal message and replyTo is not used anywhere
-  final private[esw] case class StepSuccess(stepId: Id, replyTo: ActorRef[OkOrUnhandledResponse]) extends InProgressMessage
+  final private[esw] case class StepSuccess(replyTo: ActorRef[OkOrUnhandledResponse]) extends InProgressMessage
   // this is internal message and replyTo is not used anywhere
-  final private[esw] case class StepFailure(stepId: Id, message: String, replyTo: ActorRef[OkOrUnhandledResponse])
-      extends InProgressMessage
+  final private[esw] case class StepFailure(message: String, replyTo: ActorRef[OkOrUnhandledResponse]) extends InProgressMessage
 
   final private[esw] case class GoIdle(replyTo: ActorRef[OkOrUnhandledResponse])                extends InProgressMessage
   final private[esw] case class GoOfflineSuccess(replyTo: ActorRef[GoOfflineResponse])          extends GoingOfflineMessage

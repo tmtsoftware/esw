@@ -1,7 +1,5 @@
 package esw.ocs.api.models
 
-import csw.params.commands.CommandResponse.SubmitResponse
-
 sealed trait StepStatus
 
 object StepStatus {
@@ -9,7 +7,7 @@ object StepStatus {
   case object InFlight  extends StepStatus
   sealed trait Finished extends StepStatus
   object Finished {
-    case class Success(response: SubmitResponse) extends Finished
-    case class Failure(error: SubmitResponse)    extends Finished
+    case object Success                 extends Finished
+    case class Failure(message: String) extends Finished
   }
 }
