@@ -3,7 +3,7 @@ package esw.ocs.impl.core
 import akka.actor.typed.scaladsl.AskPattern._
 import akka.actor.typed.{ActorRef, ActorSystem}
 import akka.util.Timeout
-import csw.params.commands.CommandResponse.SubmitResponse
+import csw.params.core.models.Id
 import esw.ocs.api.models.Step
 import esw.ocs.api.protocol.{OkOrUnhandledResponse, PullNextResponse}
 import esw.ocs.dsl.script.SequenceOperator
@@ -19,5 +19,6 @@ private[ocs] class SequenceOperatorImpl(sequencer: ActorRef[EswSequencerMessage]
   def pullNext: Future[PullNextResponse]                = sequencer ? PullNext
   def maybeNext: Future[Option[Step]]                   = sequencer ? MaybeNext
   def readyToExecuteNext: Future[OkOrUnhandledResponse] = sequencer ? ReadyToExecuteNext
-  def update(submitResponse: SubmitResponse): Unit      = sequencer ! Update(submitResponse, system.deadLetters)
+  def stepSuccess(stepId: Id): Unit                     = sequencer ! StepSuccess(stepId, system.deadLetters)
+  def stepFailure(stepId: Id, message: String): Unit    = sequencer ! StepFailure(stepId, message, system.deadLetters)
 }

@@ -10,17 +10,16 @@ sealed trait OkOrUnhandledResponse    extends EswSequencerResponse // fixme: thi
 sealed trait GenericResponse          extends EswSequencerResponse // fixme: think about better name
 sealed trait PauseResponse            extends EswSequencerResponse
 sealed trait RemoveBreakpointResponse extends EswSequencerResponse
-sealed trait LoadSequenceResponse     extends EswSequencerResponse
-sealed trait PullNextResponse         extends EswSequencerResponse
-sealed trait GoOnlineResponse         extends EswSequencerResponse
-sealed trait GoOfflineResponse        extends EswSequencerResponse
-sealed trait DiagnosticModeResponse   extends EswSequencerResponse
-sealed trait OperationsModeResponse   extends EswSequencerResponse
+//sealed trait LoadSequenceResponse     extends EswSequencerResponse
+sealed trait PullNextResponse       extends EswSequencerResponse
+sealed trait GoOnlineResponse       extends EswSequencerResponse
+sealed trait GoOfflineResponse      extends EswSequencerResponse
+sealed trait DiagnosticModeResponse extends EswSequencerResponse
+sealed trait OperationsModeResponse extends EswSequencerResponse
 
 sealed trait SequenceResponse extends EswSequencerResponse {
   def toSubmitResponse(sequenceId: Id): SubmitResponse = this match {
     case SequenceResult(submitResponse) => submitResponse
-    case DuplicateIdsFound              => Error(sequenceId, DuplicateIdsFound.msg)
     case unhandled: Unhandled           => Error(sequenceId, unhandled.msg)
   }
 }
@@ -30,7 +29,7 @@ case object Ok
     with GenericResponse
     with PauseResponse
     with RemoveBreakpointResponse
-    with LoadSequenceResponse
+//    with LoadSequenceResponse
     with GoOnlineResponse
     with GoOfflineResponse
     with DiagnosticModeResponse
@@ -44,7 +43,6 @@ final case class Unhandled private[ocs] (state: String, messageType: String, msg
     with GenericResponse
     with PauseResponse
     with RemoveBreakpointResponse
-    with LoadSequenceResponse
     with GoOnlineResponse
     with GoOfflineResponse
     with SequenceResponse
@@ -61,10 +59,6 @@ object Unhandled {
 
 trait SingletonError {
   def msg: String
-}
-
-case object DuplicateIdsFound extends LoadSequenceResponse with SequenceResponse with SingletonError {
-  val msg = "Duplicate command Ids found in given sequence"
 }
 
 case object GoOnlineHookFailed extends GoOnlineResponse with SingletonError {

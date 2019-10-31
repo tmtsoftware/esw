@@ -10,8 +10,8 @@ import csw.logging.client.scaladsl.LoggerFactory
 import esw.ocs.api.codecs.OcsCodecs
 import esw.ocs.api.models.StepList
 import esw.ocs.api.protocol.{EswSequencerResponse, GetStatusResponse, LoadScriptResponse}
-import esw.ocs.impl.messages.SequencerMessages._
 import esw.ocs.impl.codecs.OcsMsgCodecs
+import esw.ocs.impl.messages.SequencerMessages._
 import esw.ocs.impl.messages.{SequenceComponentMsg, SequencerState}
 import io.bullet.borer.{Cbor, Decoder}
 
