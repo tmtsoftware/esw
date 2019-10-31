@@ -16,7 +16,7 @@ trait OcsCodecs extends ParamCodecs with LocationCodecs with EitherCodecs {
   //StepList Codecs
   implicit lazy val stepCodec: Codec[Step]                    = deriveCodec
   implicit lazy val stepListCodec: Codec[StepList]            = deriveCodec
-  implicit lazy val successStatusCodec: Codec[Success]        = deriveCodec
+  implicit lazy val successStatusCodec: Codec[Success.type]   = deriveCodec
   implicit lazy val failureStatusCodec: Codec[Failure]        = deriveCodec
   implicit lazy val pendingStatusCodec: Codec[Pending.type]   = deriveCodec
   implicit lazy val inflightStatusCodec: Codec[InFlight.type] = deriveCodec

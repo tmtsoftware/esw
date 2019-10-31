@@ -5,6 +5,7 @@ import csw.command.client.messages.sequencer.SequencerMsg
 import csw.params.commands.CommandResponse.{Completed, Error, SubmitResponse}
 import csw.params.commands.Sequence
 import csw.params.core.models.Id
+import esw.ocs.api.models.StepStatus.Finished.{Failure, Success}
 import esw.ocs.api.models.StepStatus.{Finished, InFlight}
 import esw.ocs.api.models.{Step, StepList}
 import esw.ocs.api.protocol._
@@ -76,20 +77,28 @@ private[core] case class SequencerData(
         .sendNextPendingStepIfAvailable()
   }
 
-  def stepSuccess(id: Id, state: SequencerState[SequencerMsg]): SequencerData = {
-    val stepStatus = Finished.Success(Completed(id))
+  def stepSuccess(state: SequencerState[SequencerMsg]): SequencerData = {
 
-    val newStepList = stepList.map(_.updateStatus(id, stepStatus))
+    val newStepList = stepList.map { stepList =>
+      stepList.copy(steps = stepList.steps.map {
+        case x if x.status == InFlight => x.withStatus(Success)
+        case x                         => x
+      })
+    }
 
     copy(stepList = newStepList)
       .checkForSequenceCompletion()
       .notifyReadyToExecuteNextSubscriber(state)
   }
 
-  def stepFailure(id: Id, message: String, state: SequencerState[SequencerMsg]): SequencerData = {
-    val stepStatus = Finished.Failure(Error(id, message))
+  def stepFailure(message: String, state: SequencerState[SequencerMsg]): SequencerData = {
 
-    val newStepList = stepList.map(_.updateStatus(id, stepStatus))
+    val newStepList = stepList.map { stepList =>
+      stepList.copy(steps = stepList.steps.map {
+        case x if x.status == InFlight => x.withStatus(Failure(message))
+        case x                         => x
+      })
+    }
 
     copy(stepList = newStepList)
       .checkForSequenceCompletion()
@@ -124,8 +133,8 @@ private[core] case class SequencerData(
       }
 
     maybeFailure match {
-      case Some(Finished.Failure(error: Error)) => Error(sequenceId.get, error.message)
-      case _                                    => Completed(sequenceId.get)
+      case Some(Finished.Failure(message)) => Error(sequenceId.get, message)
+      case _                               => Completed(sequenceId.get)
     }
   }
 

@@ -27,14 +27,36 @@ sealed class ScriptDslKt(private val cswServices: CswServices) : CswHighLevelDsl
     internal val scriptDsl: JScriptDsl by lazy { ScriptDslFactory.make(cswServices, strandEc) }
 
     suspend fun nextIf(predicate: (SequenceCommand) -> Boolean): SequenceCommand? =
-        scriptDsl.nextIf { predicate(it) }.await().nullable()
+            scriptDsl.nextIf { predicate(it) }.await().nullable()
+
+    private val sequenceOperator = cswServices.sequenceOperatorFactory().apply()
+
+    fun finishWithError(message: String): Nothing = throw RuntimeException(message)
 
     fun handleSetup(name: String, block: suspend CoroutineScope.(Setup) -> Unit) {
-        scriptDsl.handleSetupCommand(name) { block.toJavaFuture(it) }
+        scriptDsl.handleSetupCommand(name) {
+            block.toJavaFuture(it)
+                    .thenAccept {
+                        sequenceOperator.stepSuccess()
+                    }
+                    .exceptionally {
+                        sequenceOperator.stepFailure(it.message.orEmpty())
+                        null
+                    }
+        }
     }
 
     fun handleObserve(name: String, block: suspend CoroutineScope.(Observe) -> Unit) {
-        scriptDsl.handleObserveCommand(name) { block.toJavaFuture(it) }
+        scriptDsl.handleObserveCommand(name) {
+            block.toJavaFuture(it)
+                    .thenAccept {
+                        sequenceOperator.stepSuccess()
+                    }
+                    .exceptionally {
+                        sequenceOperator.stepFailure(it.message.orEmpty())
+                        null
+                    }
+        }
     }
 
     fun handleGoOnline(block: suspend CoroutineScope.() -> Unit) {
@@ -74,20 +96,20 @@ sealed class ScriptDslKt(private val cswServices: CswServices) : CswHighLevelDsl
     }
 
     suspend fun submitSequence(sequencerName: String, observingMode: String, sequence: Sequence): SubmitResponse =
-        this.scriptDsl.submitSequence(sequencerName, observingMode, sequence).await()
+            this.scriptDsl.submitSequence(sequencerName, observingMode, sequence).await()
 
     private fun (suspend CoroutineScope.() -> Unit).toJavaFutureVoid(): CompletionStage<Void> =
-        coroutineScope.future { this@toJavaFutureVoid() }
-            .whenComplete { v, e ->
-                if (e == null) {
-                    CompletableFuture.completedFuture(v)
-                } else {
-                    log("exception : ${e.message}")
-                    // fixme: call exception handlers whenever implemented
-                    CompletableFuture.failedFuture<Unit>(e)
-                }
-            }
-            .thenAccept { }
+            coroutineScope.future { this@toJavaFutureVoid() }
+                    .whenComplete { v, e ->
+                        if (e == null) {
+                            CompletableFuture.completedFuture(v)
+                        } else {
+                            log("exception : ${e.message}")
+                            // fixme: call exception handlers whenever implemented
+                            CompletableFuture.failedFuture<Unit>(e)
+                        }
+                    }
+                    .thenAccept { }
 
     private fun <T> (suspend CoroutineScope.(T) -> Unit).toJavaFuture(value: T): CompletionStage<Void> {
         val curriedBlock: suspend (CoroutineScope) -> Unit = { a: CoroutineScope -> this(a, value) }
@@ -96,9 +118,9 @@ sealed class ScriptDslKt(private val cswServices: CswServices) : CswHighLevelDsl
 }
 
 class ReusableScript(
-    cswServices: CswServices,
-    override val strandEc: StrandEc,
-    override val coroutineScope: CoroutineScope
+        cswServices: CswServices,
+        override val strandEc: StrandEc,
+        override val coroutineScope: CoroutineScope
 ) : ScriptDslKt(cswServices)
 
 

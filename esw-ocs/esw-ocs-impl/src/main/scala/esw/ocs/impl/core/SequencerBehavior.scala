@@ -57,16 +57,16 @@ class SequencerBehavior(
   }
 
   private def inProgress(data: SequencerData): Behavior[SequencerMsg] = receive(InProgress, data, inProgress) {
-    case QueryFinal(replyTo)         => inProgress(data.addSequenceSubscriber(replyTo))
-    case AbortSequence(replyTo)      => abortSequence(data, InProgress, replyTo)(nextBehavior = inProgress)
-    case Stop(replyTo)               => stop(data, InProgress, replyTo)(nextBehavior = inProgress)
-    case msg: EditorAction           => handleEditorAction(msg, data, InProgress)(nextBehavior = inProgress)
-    case Pause(replyTo)              => inProgress(data.updateStepListResult(replyTo, InProgress, data.stepList.map(_.pause)))
-    case Resume(replyTo)             => inProgress(data.updateStepList(replyTo, InProgress, data.stepList.map(_.resume)))
-    case PullNext(replyTo)           => inProgress(data.pullNextStep(replyTo))
-    case StepSuccess(id, _)          => inProgress(data.stepSuccess(id, InProgress))
-    case StepFailure(id, message, _) => inProgress(data.stepFailure(id, message, InProgress))
-    case _: GoIdle                   => idle(data)
+    case QueryFinal(replyTo)     => inProgress(data.addSequenceSubscriber(replyTo))
+    case AbortSequence(replyTo)  => abortSequence(data, InProgress, replyTo)(nextBehavior = inProgress)
+    case Stop(replyTo)           => stop(data, InProgress, replyTo)(nextBehavior = inProgress)
+    case msg: EditorAction       => handleEditorAction(msg, data, InProgress)(nextBehavior = inProgress)
+    case Pause(replyTo)          => inProgress(data.updateStepListResult(replyTo, InProgress, data.stepList.map(_.pause)))
+    case Resume(replyTo)         => inProgress(data.updateStepList(replyTo, InProgress, data.stepList.map(_.resume)))
+    case PullNext(replyTo)       => inProgress(data.pullNextStep(replyTo))
+    case StepSuccess(_)          => inProgress(data.stepSuccess(InProgress))
+    case StepFailure(message, _) => inProgress(data.stepFailure(message, InProgress))
+    case _: GoIdle               => idle(data)
   }
 
   private def offline(data: SequencerData): Behavior[SequencerMsg] = receive(Offline, data, offline) {
