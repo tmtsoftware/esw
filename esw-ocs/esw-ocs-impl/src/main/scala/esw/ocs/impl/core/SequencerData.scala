@@ -1,56 +1,42 @@
 package esw.ocs.impl.core
 
 import akka.actor.typed.{ActorRef, ActorSystem}
-import akka.util.Timeout
-import csw.command.client.CommandResponseManager
 import csw.command.client.messages.sequencer.SequencerMsg
-import csw.params.commands.CommandResponse.{Completed, Error, Started, SubmitResponse}
-import csw.params.commands.{CommandResponse, Sequence}
+import csw.params.commands.CommandResponse.{Completed, Error, SubmitResponse}
+import csw.params.commands.Sequence
 import csw.params.core.models.Id
 import esw.ocs.api.models.StepStatus.{Finished, InFlight}
 import esw.ocs.api.models.{Step, StepList}
-import esw.ocs.api.protocol.{DuplicateIdsFound, Ok, PullNextResult, SequenceResponse, SequenceResult}
-import esw.ocs.impl.messages.SequencerMessages.{GoIdle, Update}
+import esw.ocs.api.protocol._
+import esw.ocs.impl.messages.SequencerMessages.GoIdle
 import esw.ocs.impl.messages.SequencerState
 import esw.ocs.impl.messages.SequencerState.{InProgress, Loaded}
-
-import scala.concurrent.Future
-import scala.util.{Failure, Success}
 
 private[core] case class SequencerData(
     stepList: Option[StepList],
     readyToExecuteSubscriber: Option[ActorRef[Ok.type]],
     stepRefSubscriber: Option[ActorRef[PullNextResult]],
     self: ActorRef[SequencerMsg],
-    crm: CommandResponseManager,
     actorSystem: ActorSystem[_],
-    timeout: Timeout
+    subscribers: Set[ActorRef[SequenceResponse]]
 ) {
 
-  implicit private val _timeout: Timeout = timeout
+  private val sequenceId = stepList.map(_.runId)
 
-  import actorSystem.executionContext
-
-  private val sequenceId   = stepList.map(_.runId)
-  private val emptyChildId = Id("empty-child") // fixme
-
-  def createStepList(sequence: Sequence): Either[DuplicateIdsFound.type, SequencerData] =
-    StepList(sequence).map(currentStepList => copy(stepList = Some(currentStepList)))
+  def createStepList(sequence: Sequence): SequencerData =
+    copy(stepList = Some(StepList(sequence)))
 
   def startSequence(replyTo: ActorRef[Ok.type]): SequencerData = {
     replyTo ! Ok
-    processSequence(onComplete = _ => goToIdle())
+    processSequence()
   }
 
-  def processSequence(onComplete: SubmitResponse => Unit): SequencerData =
+  def processSequence(): SequencerData =
     sendNextPendingStepIfAvailable()
       .notifyReadyToExecuteNextSubscriber(InProgress)
-      .updateSequenceInCrmAndHandleFinalResponse(onComplete)
 
-  def querySequence(replyTo: ActorRef[SequenceResponse]): SequencerData = {
-    sequenceId.foreach(id => crm.queryFinal(id).foreach(replyTo ! SequenceResult(_)))
-    this
-  }
+  def addSequenceSubscriber(replyTo: ActorRef[SequenceResponse]): SequencerData =
+    copy(subscribers = subscribers + replyTo)
 
   def pullNextStep(replyTo: ActorRef[PullNextResult]): SequencerData =
     copy(stepRefSubscriber = Some(replyTo))
@@ -90,14 +76,20 @@ private[core] case class SequencerData(
         .sendNextPendingStepIfAvailable()
   }
 
-  def updateStepStatus(submitResponse: SubmitResponse, state: SequencerState[SequencerMsg]): SequencerData = {
-    val stepStatus = submitResponse match {
-      case submitResponse if CommandResponse.isPositive(submitResponse) => Finished.Success(submitResponse)
-      case failureResponse                                              => Finished.Failure(failureResponse)
-    }
+  def stepSuccess(id: Id, state: SequencerState[SequencerMsg]): SequencerData = {
+    val stepStatus = Finished.Success(Completed(id))
 
-    crm.updateSubCommand(submitResponse)
-    val newStepList = stepList.map(_.updateStatus(submitResponse.runId, stepStatus))
+    val newStepList = stepList.map(_.updateStatus(id, stepStatus))
+
+    copy(stepList = newStepList)
+      .checkForSequenceCompletion()
+      .notifyReadyToExecuteNextSubscriber(state)
+  }
+
+  def stepFailure(id: Id, message: String, state: SequencerState[SequencerMsg]): SequencerData = {
+    val stepStatus = Finished.Failure(Error(id, message))
+
+    val newStepList = stepList.map(_.updateStatus(id, stepStatus))
 
     copy(stepList = newStepList)
       .checkForSequenceCompletion()
@@ -120,45 +112,29 @@ private[core] case class SequencerData(
   private def setInFlight(step: Step): (Step, SequencerData) = {
     val inflightStep = step.withStatus(InFlight)
     val updatedData  = copy(stepList = stepList.map(_.updateStep(inflightStep)))
-    updateStepInCrmAndHandleResponse(step.id)
     (inflightStep, updatedData)
   }
 
-  private def updateSequenceInCrmAndHandleFinalResponse(
-      onComplete: SubmitResponse => Unit
-  ): SequencerData = {
-    sequenceId.foreach { id =>
-      crm.addOrUpdateCommand(Started(id))
-      crm.addSubCommand(id, emptyChildId)
-      val sequenceResponseF = crm.queryFinal(id)
-      handleSubmitResponse(id, sequenceResponseF, onComplete)
+  private def getSequencerResponse: SubmitResponse = {
+    val maybeFailure = stepList
+      .map(_.steps.map(_.status))
+      .getOrElse(List.empty)
+      .collectFirst {
+        case f @ Finished.Failure(_) => f
+      }
+
+    maybeFailure match {
+      case Some(Finished.Failure(error: Error)) => Error(sequenceId.get, error.message)
+      case _                                    => Completed(sequenceId.get)
     }
-    this
   }
-
-  private def updateStepInCrmAndHandleResponse(stepId: Id): Unit =
-    sequenceId.foreach { id =>
-      crm.addOrUpdateCommand(CommandResponse.Started(stepId))
-      crm.addSubCommand(id, stepId)
-      val stepResponseF = crm.queryFinal(stepId)
-      handleSubmitResponse(stepId, stepResponseF, onComplete = self ! Update(_, actorSystem.deadLetters))
-    }
-
-  private def handleSubmitResponse(
-      id: Id,
-      submitResponseF: Future[SubmitResponse],
-      onComplete: SubmitResponse => Unit
-  ): Unit = submitResponseF.onComplete {
-    case Failure(e)              => onComplete(Error(id, e.getMessage))
-    case Success(submitResponse) => onComplete(submitResponse)
-  }
-
-  def goToIdle(): Unit = self ! GoIdle(actorSystem.deadLetters)
 
   private def checkForSequenceCompletion(): SequencerData = {
     if (stepList.exists(_.isFinished)) {
-      crm.updateSubCommand(Completed(emptyChildId))
+      val submitResponse = getSequencerResponse
+      subscribers.foreach(s => s.tell(SequenceResult(submitResponse)))
     }
+    self ! GoIdle(actorSystem.deadLetters)
     this
   }
 
@@ -167,8 +143,7 @@ private[core] case class SequencerData(
 }
 
 private[core] object SequencerData {
-  def initial(self: ActorRef[SequencerMsg], crm: CommandResponseManager)(
-      implicit actorSystem: ActorSystem[_],
-      timeout: Timeout
-  ): SequencerData = SequencerData(None, None, None, self, crm, actorSystem, timeout)
+  def initial(self: ActorRef[SequencerMsg])(
+      implicit actorSystem: ActorSystem[_]
+  ): SequencerData = SequencerData(None, None, None, self, actorSystem, Set.empty)
 }

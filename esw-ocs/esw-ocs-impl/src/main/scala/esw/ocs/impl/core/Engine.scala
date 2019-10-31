@@ -3,8 +3,6 @@ package esw.ocs.impl.core
 import akka.Done
 import akka.stream.Materializer
 import akka.stream.scaladsl.Source
-import csw.params.commands.CommandResponse.Error
-import csw.params.core.models.Id
 import esw.ocs.api.protocol.{PullNextResult, Unhandled}
 import esw.ocs.dsl.script.{JScriptDsl, SequenceOperator}
 
@@ -31,9 +29,9 @@ private[ocs] class Engine(script: JScriptDsl) {
       pullNextResponse match {
         case PullNextResult(step) =>
           script.execute(step.command).recover {
-            case NonFatal(e) => sequenceOperator.update(Error(step.id, e.getMessage))
+            case NonFatal(e) => sequenceOperator.stepFailure(step.id, e.getMessage)
           }
-        case e: Unhandled => sequenceOperator.update(Error(Id("Invalid"), e.msg))
+        case _: Unhandled =>
       }
 
       await(sequenceOperator.readyToExecuteNext)

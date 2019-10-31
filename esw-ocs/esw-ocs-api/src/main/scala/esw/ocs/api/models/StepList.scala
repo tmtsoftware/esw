@@ -3,8 +3,8 @@ package esw.ocs.api.models
 import csw.params.commands.{Sequence, SequenceCommand}
 import csw.params.core.models.Id
 import esw.ocs.api.codecs.OcsAkkaSerializable
+import esw.ocs.api.protocol.EditorError
 import esw.ocs.api.protocol.EditorError._
-import esw.ocs.api.protocol.{DuplicateIdsFound, EditorError}
 
 final case class StepList private[models] (runId: Id, steps: List[Step]) extends OcsAkkaSerializable {
   //query
@@ -112,9 +112,6 @@ final case class StepList private[models] (runId: Id, steps: List[Step]) extends
 }
 
 object StepList {
-  def apply(sequence: Sequence): Either[DuplicateIdsFound.type, StepList] = {
-    val steps = sequence.commands.toList.map(Step.apply)
-    if (steps.map(_.id).toSet.size == steps.size) Right(StepList(sequence.runId, steps))
-    else Left(DuplicateIdsFound)
-  }
+  def apply(sequence: Sequence): StepList =
+    StepList(sequence.runId, sequence.commands.toList.map(Step.apply))
 }

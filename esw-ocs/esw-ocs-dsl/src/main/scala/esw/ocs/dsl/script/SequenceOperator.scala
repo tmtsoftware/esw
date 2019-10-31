@@ -1,6 +1,6 @@
 package esw.ocs.dsl.script
 
-import csw.params.commands.CommandResponse.SubmitResponse
+import csw.params.core.models.Id
 import esw.ocs.api.models.Step
 import esw.ocs.api.protocol.{OkOrUnhandledResponse, PullNextResponse}
 
@@ -10,5 +10,6 @@ trait SequenceOperator {
   def pullNext: Future[PullNextResponse]
   def maybeNext: Future[Option[Step]]
   def readyToExecuteNext: Future[OkOrUnhandledResponse]
-  def update(submitResponse: SubmitResponse): Unit
+  def stepSuccess(stepId: Id): Unit
+  def stepFailure(stepId: Id, message: String): Unit
 }

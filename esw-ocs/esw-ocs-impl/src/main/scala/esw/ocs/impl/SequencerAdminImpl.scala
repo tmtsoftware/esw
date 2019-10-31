@@ -49,11 +49,11 @@ class SequencerAdminImpl(sequencer: ActorRef[EswSequencerMessage])(implicit syst
 
   private def getState: Future[SequencerState[SequencerMsg]] = sequencer ? GetSequencerState
 
-  override def loadSequence(sequence: Sequence): Future[LoadSequenceResponse] = sequencer ? (LoadSequence(sequence, _))
+  override def loadSequence(sequence: Sequence): Future[OkOrUnhandledResponse] = sequencer ? (LoadSequence(sequence, _))
 
   override def startSequence: Future[OkOrUnhandledResponse] = sequencer ? StartSequence
 
-  override def submitSequence(sequence: Sequence): Future[LoadSequenceResponse] =
+  override def submitSequence(sequence: Sequence): Future[OkOrUnhandledResponse] =
     sequencer ? (SubmitSequence(sequence, _))
 
   // fixme: shouldn't this call have long timeout and not the default?
