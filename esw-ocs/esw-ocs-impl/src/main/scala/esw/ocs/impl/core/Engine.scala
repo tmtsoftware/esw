@@ -29,7 +29,7 @@ private[ocs] class Engine(script: JScriptDsl) {
       pullNextResponse match {
         case PullNextResult(step) =>
           script.execute(step.command).recover {
-            case NonFatal(e) => sequenceOperator.stepFailure(step.id, e.getMessage)
+            case NonFatal(e) => sequenceOperator.stepFailure(e.getMessage)
           }
         case _: Unhandled =>
       }

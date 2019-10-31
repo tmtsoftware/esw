@@ -3,7 +3,6 @@ package esw.ocs.impl.core
 import akka.actor.typed.scaladsl.AskPattern._
 import akka.actor.typed.{ActorRef, ActorSystem}
 import akka.util.Timeout
-import csw.params.core.models.Id
 import esw.ocs.api.models.Step
 import esw.ocs.api.protocol.{OkOrUnhandledResponse, PullNextResponse}
 import esw.ocs.dsl.script.SequenceOperator

@@ -29,7 +29,7 @@ sealed class ScriptDslKt(private val cswServices: CswServices) : CswHighLevelDsl
     suspend fun nextIf(predicate: (SequenceCommand) -> Boolean): SequenceCommand? =
             scriptDsl.nextIf { predicate(it) }.await().nullable()
 
-    private val sequenceOperator = cswServices.sequenceOperatorFactory().apply()
+    private fun sequenceOperator() = cswServices.sequenceOperatorFactory().apply()
 
     fun finishWithError(message: String): Nothing = throw RuntimeException(message)
 
@@ -37,10 +37,10 @@ sealed class ScriptDslKt(private val cswServices: CswServices) : CswHighLevelDsl
         scriptDsl.handleSetupCommand(name) {
             block.toJavaFuture(it)
                     .thenAccept {
-                        sequenceOperator.stepSuccess()
+                        sequenceOperator().stepSuccess()
                     }
                     .exceptionally {
-                        sequenceOperator.stepFailure(it.message.orEmpty())
+                        sequenceOperator().stepFailure(it.message.orEmpty())
                         null
                     }
         }
@@ -50,10 +50,10 @@ sealed class ScriptDslKt(private val cswServices: CswServices) : CswHighLevelDsl
         scriptDsl.handleObserveCommand(name) {
             block.toJavaFuture(it)
                     .thenAccept {
-                        sequenceOperator.stepSuccess()
+                        sequenceOperator().stepSuccess()
                     }
                     .exceptionally {
-                        sequenceOperator.stepFailure(it.message.orEmpty())
+                        sequenceOperator().stepFailure(it.message.orEmpty())
                         null
                     }
         }
