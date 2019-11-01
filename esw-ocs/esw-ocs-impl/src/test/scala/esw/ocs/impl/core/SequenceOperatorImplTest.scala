@@ -15,9 +15,8 @@ class SequenceOperatorImplTest extends ScalaTestWithActorTestKit with BaseTestSu
 
   private val command = Setup(Prefix("esw.test"), CommandName("command-1"), None)
 
-  private val pullNextResponse  = PullNextResult(Step(command))
-  private val mayBeNextResponse = Some(Step(command))
-//  private val updateFailureProbe = TestProbe[CommandResponse]()
+  private val pullNextResponse   = PullNextResult(Step(command))
+  private val mayBeNextResponse  = Some(Step(command))
   private val updateFailureProbe = TestProbe[StepStatus]()
   private val updateSuccessProbe = TestProbe[StepStatus]()
 

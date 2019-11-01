@@ -284,20 +284,6 @@ class ScriptIntegrationTest extends ScalaTestFrameworkTestKit(EventServer, Alarm
         event.eventId shouldNot be(-1)
       }
     }
-  }
-
-  "New Sequencer with no CRM" must {
-    "handle success scenario for top level commands/steps" in {
-      val craWiring    = new SequencerWiring("nocrm", "noCrmTest", None)
-      val craSequencer = craWiring.sequencerServer.start().rightValue.uri.toActorRef.unsafeUpcast[SequencerMsg]
-      val command1     = Setup(Prefix("TCS"), CommandName("command-1"), None)
-      val command2     = Setup(Prefix("TCS"), CommandName("command-2"), None)
-      val sequence     = Sequence(command1, command2)
-
-      val submitResponse: Future[SubmitResponse] = craSequencer ? (SubmitSequenceAndWait(sequence, _))
-      println(submitResponse.futureValue)
-      craWiring.sequencerServer.shutDown().futureValue
-    }
 
     "be able to send commands to downstream assembly | ESW-121" in {
       val eventService = new EventServiceFactory().make(HttpLocationServiceFactory.makeLocalClient)
@@ -377,6 +363,46 @@ class ScriptIntegrationTest extends ScalaTestFrameworkTestKit(EventServer, Alarm
       getPublishedEvent.eventKey should ===(successKey)
       configTestKit.deleteServerFiles()
 
+    }
+  }
+
+  "New Sequencer with no CRM" must {
+    "handle success scenario for top level commands/steps" in {
+      val wiring    = new SequencerWiring("nocrm", "noCrmTest", None)
+      val sequencer = wiring.sequencerServer.start().rightValue.uri.toActorRef.unsafeUpcast[SequencerMsg]
+      val command1  = Setup(Prefix("TCS"), CommandName("command-1"), None)
+      val command2  = Setup(Prefix("TCS"), CommandName("command-2"), None)
+      val sequence  = Sequence(command1, command2)
+
+      val submitResponse: Future[SubmitResponse] = sequencer ? (SubmitSequenceAndWait(sequence, _))
+      println(submitResponse.futureValue)
+      wiring.sequencerServer.shutDown().futureValue
+    }
+
+    "handle exception scenario for top level commands" in {
+      val wiring    = new SequencerWiring("nocrm", "noCrmTest", None)
+      val sequencer = wiring.sequencerServer.start().rightValue.uri.toActorRef.unsafeUpcast[SequencerMsg]
+      val command3  = Setup(Prefix("TCS"), CommandName("command-3"), None)
+      val command4  = Setup(Prefix("TCS"), CommandName("command-4"), None)
+      val id        = Id()
+      val sequence  = Sequence(id, Seq(command3, command4))
+
+      val submitResponse: Future[SubmitResponse] = sequencer ? (SubmitSequenceAndWait(sequence, _))
+      println(submitResponse.futureValue)
+      wiring.sequencerServer.shutDown().futureValue
+    }
+
+    "handle 'finishWithError' scenario for top level commands" in {
+      val wiring    = new SequencerWiring("nocrm", "noCrmTest", None)
+      val sequencer = wiring.sequencerServer.start().rightValue.uri.toActorRef.unsafeUpcast[SequencerMsg]
+      val command5  = Setup(Prefix("TCS"), CommandName("command-5"), None)
+      val command6  = Setup(Prefix("TCS"), CommandName("command-6"), None)
+      val id        = Id()
+      val sequence  = Sequence(id, Seq(command5, command6))
+
+      val submitResponse: Future[SubmitResponse] = sequencer ? (SubmitSequenceAndWait(sequence, _))
+      println(submitResponse.futureValue)
+      wiring.sequencerServer.shutDown().futureValue
     }
   }
 }

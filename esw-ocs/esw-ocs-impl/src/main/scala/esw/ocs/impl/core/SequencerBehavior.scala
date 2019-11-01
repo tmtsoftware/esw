@@ -43,13 +43,13 @@ class SequencerBehavior(
     case LoadSequence(sequence, replyTo)                  => load(sequence, replyTo, data)
     case SubmitSequenceAndWaitInternal(sequence, replyTo) => submitSequenceAndWait(sequence, data, replyTo)
     case SubmitSequence(sequence, replyTo)                => submitSequence(sequence, data, replyTo)
-    case QueryFinal(replyTo)                              => idle(data.addSequenceSubscriber(replyTo))
+    case QueryFinal(replyTo)                              => idle(data.queryFinal(replyTo))
     case GoOffline(replyTo)                               => goOffline(replyTo, data)(idle)
     case PullNext(replyTo)                                => idle(data.pullNextStep(replyTo))
   }
 
   private def loaded(data: SequencerData): Behavior[SequencerMsg] = receive(Loaded, data, loaded) {
-    case QueryFinal(replyTo)             => loaded(data.addSequenceSubscriber(replyTo))
+    case QueryFinal(replyTo)             => loaded(data.queryFinal(replyTo))
     case editorAction: EditorAction      => handleEditorAction(editorAction, data, Loaded)(nextBehavior = loaded)
     case GoOffline(replyTo)              => goOffline(replyTo, data)(loaded)
     case StartSequence(replyTo)          => inProgress(data.startSequence(replyTo))
@@ -57,7 +57,7 @@ class SequencerBehavior(
   }
 
   private def inProgress(data: SequencerData): Behavior[SequencerMsg] = receive(InProgress, data, inProgress) {
-    case QueryFinal(replyTo)     => inProgress(data.addSequenceSubscriber(replyTo))
+    case QueryFinal(replyTo)     => inProgress(data.queryFinal(replyTo))
     case AbortSequence(replyTo)  => abortSequence(data, InProgress, replyTo)(nextBehavior = inProgress)
     case Stop(replyTo)           => stop(data, InProgress, replyTo)(nextBehavior = inProgress)
     case msg: EditorAction       => handleEditorAction(msg, data, InProgress)(nextBehavior = inProgress)
@@ -166,17 +166,9 @@ class SequencerBehavior(
     stopping(data, state)(nextBehavior)
   }
 
-//  private def createStepList(sequence: Sequence, data: SequencerData, replyTo: ActorRef[DuplicateIdsFound.type])(
-  //      onSuccess: SequencerData => Behavior[SequencerMsg]
-  //  ): Behavior[SequencerMsg] = data.createStepList(sequence) match {
-  ////    case Left(err)          => replyTo ! err; Behaviors.same
-  //    case updatedData => onSuccess(updatedData)
-  //  }
-
   private def load(sequence: Sequence, replyTo: ActorRef[OkOrUnhandledResponse], data: SequencerData): Behavior[SequencerMsg] = {
-    val updatedData = data.createStepList(sequence)
     replyTo ! Ok
-    loaded(updatedData)
+    loaded(data.createStepList(sequence))
   }
 
   // fixme: Ok is sent twice to replyTo
@@ -185,9 +177,12 @@ class SequencerBehavior(
       data: SequencerData,
       replyTo: ActorRef[OkOrUnhandledResponse]
   ): Behavior[SequencerMsg] = {
-    val updatedData = data.createStepList(sequence)
     replyTo ! Ok
-    inProgress(updatedData.startSequence(replyTo))
+    inProgress(
+      data
+        .createStepList(sequence)
+        .startSequence(replyTo)
+    )
   }
 
   private def submitSequenceAndWait(
@@ -198,8 +193,8 @@ class SequencerBehavior(
     inProgress(
       data
         .createStepList(sequence)
+        .queryFinal(replyTo)
         .processSequence()
-        .addSequenceSubscriber(replyTo)
     )
   }
 

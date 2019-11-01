@@ -1,6 +1,5 @@
 package esw.ocs.api.protocol
 
-import csw.params.commands.CommandName
 import csw.params.commands.CommandResponse.{Error, SubmitResponse}
 import csw.params.core.models.Id
 import esw.ocs.api.codecs.OcsAkkaSerializable
@@ -11,12 +10,11 @@ sealed trait OkOrUnhandledResponse    extends EswSequencerResponse // fixme: thi
 sealed trait GenericResponse          extends EswSequencerResponse // fixme: think about better name
 sealed trait PauseResponse            extends EswSequencerResponse
 sealed trait RemoveBreakpointResponse extends EswSequencerResponse
-//sealed trait LoadSequenceResponse     extends EswSequencerResponse
-sealed trait PullNextResponse       extends EswSequencerResponse
-sealed trait GoOnlineResponse       extends EswSequencerResponse
-sealed trait GoOfflineResponse      extends EswSequencerResponse
-sealed trait DiagnosticModeResponse extends EswSequencerResponse
-sealed trait OperationsModeResponse extends EswSequencerResponse
+sealed trait PullNextResponse         extends EswSequencerResponse
+sealed trait GoOnlineResponse         extends EswSequencerResponse
+sealed trait GoOfflineResponse        extends EswSequencerResponse
+sealed trait DiagnosticModeResponse   extends EswSequencerResponse
+sealed trait OperationsModeResponse   extends EswSequencerResponse
 
 sealed trait SequenceResponse extends EswSequencerResponse {
   def toSubmitResponse(sequenceId: Id): SubmitResponse = this match {
@@ -30,7 +28,6 @@ case object Ok
     with GenericResponse
     with PauseResponse
     with RemoveBreakpointResponse
-//    with LoadSequenceResponse
     with GoOnlineResponse
     with GoOfflineResponse
     with DiagnosticModeResponse

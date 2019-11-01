@@ -4,7 +4,6 @@ import akka.Done
 import akka.actor.testkit.typed.scaladsl.TestProbe
 import akka.actor.typed.{ActorRef, ActorSystem}
 import akka.util.Timeout
-import csw.command.client.CommandResponseManager
 import csw.command.client.messages.sequencer.{SequencerMsg, SubmitSequenceAndWait}
 import csw.location.api.scaladsl.LocationService
 import csw.location.models.ComponentId
@@ -12,8 +11,7 @@ import csw.params.commands.CommandResponse.{Completed, SubmitResponse}
 import csw.params.commands.{Sequence, SequenceCommand}
 import csw.params.core.models.Id
 import csw.time.core.models.UTCTime
-import esw.ocs.api.models.StepStatus.Finished
-import esw.ocs.api.models.{Step, StepList, StepStatus}
+import esw.ocs.api.models.{Step, StepList}
 import esw.ocs.api.protocol._
 import esw.ocs.dsl.script.JScriptDsl
 import esw.ocs.impl.messages.SequencerMessages.{Pause, _}
@@ -313,36 +311,19 @@ class SequencerTestSetup(sequence: Sequence)(implicit system: ActorSystem[_], ti
     probe.expectMessageType[PullNextResult]
   }
 
-  def startPullNext() = {
+  def startPullNext(): Unit = {
     val probe = TestProbe[PullNextResponse]
     sequencerActor ! PullNext(probe.ref)
   }
 
-  def finishStepWithSuccess() = {
+  def finishStepWithSuccess(): Unit =
     sequencerActor ! StepSuccess(deadletter)
-  }
 
-  def finishStepWithError(message: String) = {
+  def finishStepWithError(message: String): Unit =
     sequencerActor ! StepFailure(message, deadletter)
-  }
-
-//  def pullNextCommandWithSuccess(): PullNextResult = {
-//    val probe = TestProbe[PullNextResponse]
-//    sequencerActor ! PullNext(probe.ref)
-//    sequencerActor ! StepSuccess(deadletter)
-//    probe.expectMessageType[PullNextResult]
-//  }
-//
-//  def pullNextCommandWithFailure(message: String = ""): PullNextResult = {
-//    val probe = TestProbe[PullNextResponse]
-//    sequencerActor ! PullNext(probe.ref)
-//    sequencerActor ! StepFailure(message, deadletter)
-//    probe.expectMessageType[PullNextResult]
-//  }
 
   // this is to simulate engine pull and executing steps
-  private def pullAllSteps(sequencer: ActorRef[SequencerMsg]) = {
-//    mockAllCommands()
+  private def pullAllSteps(sequencer: ActorRef[SequencerMsg]): Unit = {
     (1 to sequence.commands.size).foreach(_ => {
       pullNextCommand()
       sequencer ! StepSuccess(deadletter)
@@ -371,7 +352,6 @@ object SequencerTestSetup {
 
   def inProgress(sequence: Sequence)(implicit system: ActorSystem[_], timeout: Timeout): SequencerTestSetup = {
     val sequencerSetup = idle(sequence)
-//    sequencerSetup.mockCommand(sequence.commands.head.runId, Promise[SubmitResponse].future)
     sequencerSetup.loadAndStartSequenceThenAssertInProgress()
     sequencerSetup.startPullNext()
     sequencerSetup
@@ -380,9 +360,7 @@ object SequencerTestSetup {
   def inProgressWithFirstCommandComplete(
       sequence: Sequence
   )(implicit system: ActorSystem[_], timeout: Timeout): SequencerTestSetup = {
-    val sequencerSetup    = idle(sequence)
-    val firstCommandRunId = sequence.commands.head.runId
-//    sequencerSetup.mockCommand(firstCommandRunId, Future.successful(Completed(firstCommandRunId)))
+    val sequencerSetup = idle(sequence)
     sequencerSetup.loadAndStartSequenceThenAssertInProgress()
     sequencerSetup.startPullNext()
     sequencerSetup.finishStepWithSuccess()

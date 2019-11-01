@@ -6,7 +6,7 @@ import csw.params.commands.CommandResponse.{Completed, Error, SubmitResponse}
 import csw.params.commands.Sequence
 import esw.ocs.api.models.StepStatus.Finished.{Failure, Success}
 import esw.ocs.api.models.StepStatus.{Finished, InFlight}
-import esw.ocs.api.models.{Step, StepList}
+import esw.ocs.api.models.{Step, StepList, StepStatus}
 import esw.ocs.api.protocol._
 import esw.ocs.impl.messages.SequencerMessages.GoIdle
 import esw.ocs.impl.messages.SequencerState
@@ -18,7 +18,7 @@ private[core] case class SequencerData(
     stepRefSubscriber: Option[ActorRef[PullNextResult]],
     self: ActorRef[SequencerMsg],
     actorSystem: ActorSystem[_],
-    subscribers: Set[ActorRef[SequenceResponse]]
+    sequenceResponseSubscribers: Set[ActorRef[SequenceResponse]]
 ) {
 
   private val sequenceId = stepList.map(_.runId)
@@ -35,14 +35,14 @@ private[core] case class SequencerData(
     sendNextPendingStepIfAvailable()
       .notifyReadyToExecuteNextSubscriber(InProgress)
 
-  def addSequenceSubscriber(replyTo: ActorRef[SequenceResponse]): SequencerData = {
+  def queryFinal(replyTo: ActorRef[SequenceResponse]): SequencerData = {
     {
       if (stepList.exists(_.isFinished)) {
         replyTo ! SequenceResult(getSequencerResponse)
         this
       }
       else {
-        copy(subscribers = subscribers + replyTo)
+        copy(sequenceResponseSubscribers = sequenceResponseSubscribers + replyTo)
       }
     }
   }
@@ -85,32 +85,23 @@ private[core] case class SequencerData(
         .sendNextPendingStepIfAvailable()
   }
 
-  def stepSuccess(state: SequencerState[SequencerMsg]): SequencerData = {
+  private def changeStepStatus(state: SequencerState[SequencerMsg], newStatus: StepStatus) = {
     val newStepList = stepList.map { stepList =>
       stepList.copy(steps = stepList.steps.map {
-        case x if x.status == InFlight => x.withStatus(Success)
+        case x if x.status == InFlight => x.withStatus(newStatus)
         case x                         => x
       })
     }
-
     copy(stepList = newStepList)
       .checkForSequenceCompletion()
       .notifyReadyToExecuteNextSubscriber(state)
   }
 
-  def stepFailure(message: String, state: SequencerState[SequencerMsg]): SequencerData = {
+  def stepSuccess(state: SequencerState[SequencerMsg]): SequencerData =
+    changeStepStatus(state, Success)
 
-    val newStepList = stepList.map { stepList =>
-      stepList.copy(steps = stepList.steps.map {
-        case x if x.status == InFlight => x.withStatus(Failure(message))
-        case x                         => x
-      })
-    }
-
-    copy(stepList = newStepList)
-      .checkForSequenceCompletion()
-      .notifyReadyToExecuteNextSubscriber(state)
-  }
+  def stepFailure(message: String, state: SequencerState[SequencerMsg]): SequencerData =
+    changeStepStatus(state, Failure(message))
 
   private def sendNextPendingStepIfAvailable(): SequencerData = {
     val maybeData = for {
@@ -132,14 +123,12 @@ private[core] case class SequencerData(
   }
 
   private def getSequencerResponse: SubmitResponse = {
-    val maybeFailure = stepList
+    stepList
       .map(_.steps.map(_.status))
       .getOrElse(List.empty)
       .collectFirst {
         case f @ Finished.Failure(_) => f
-      }
-
-    maybeFailure match {
+      } match {
       case Some(Finished.Failure(message)) => Error(sequenceId.get, message)
       case _                               => Completed(sequenceId.get)
     }
@@ -148,10 +137,13 @@ private[core] case class SequencerData(
   private def checkForSequenceCompletion(): SequencerData = {
     if (stepList.exists(_.isFinished)) {
       val submitResponse = getSequencerResponse
-      subscribers.foreach(s => s.tell(SequenceResult(submitResponse)))
+      sequenceResponseSubscribers.foreach(s => s.tell(SequenceResult(submitResponse)))
       self ! GoIdle(actorSystem.deadLetters)
+      copy(sequenceResponseSubscribers = Set.empty)
     }
-    this
+    else {
+      this
+    }
   }
 
   private def notifyReadyToExecuteNextSubscriber(state: SequencerState[SequencerMsg]): SequencerData =
