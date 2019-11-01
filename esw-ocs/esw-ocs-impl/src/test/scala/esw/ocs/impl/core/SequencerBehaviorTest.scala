@@ -352,6 +352,39 @@ class SequencerBehaviorTest extends ScalaTestWithActorTestKit with BaseTestSuite
       assertEngineCanExecuteNext(isReadyToExecuteNext = false)
       assertCurrentSequence(afterPauseStepList)
     }
+
+    "pause sequencer when it is InProgress and then resume and wait for completion | ESW-104" in {
+      val sequencerSetup = SequencerTestSetup.inProgressWithFirstCommandComplete(sequence)
+      import sequencerSetup._
+
+      val expectedPausedSteps = List(
+        Step(command1, Finished(command1.runId), hasBreakpoint = false),
+        Step(command2, Pending, hasBreakpoint = true)
+      )
+      val expectedPausedSequence = Some(StepList(sequence.runId, expectedPausedSteps))
+
+      val expectedResumedSteps = List(
+        Step(command1, Finished(command1.runId), hasBreakpoint = false),
+        Step(command2, Pending, hasBreakpoint = false)
+      )
+      val expectedResumedSequence = Some(StepList(sequence.runId, expectedResumedSteps))
+
+      pauseAndAssertResponse(Ok)
+      //Sequence is paused so engine can NOT execute next step
+      assertEngineCanExecuteNext(isReadyToExecuteNext = false)
+      assertCurrentSequence(expectedPausedSequence)
+      resumeAndAssertResponse(Ok)
+      //Sequence is resumed so engine can execute next step
+      assertEngineCanExecuteNext(isReadyToExecuteNext = true)
+      assertCurrentSequence(expectedResumedSequence)
+
+      //mock remaining command and pull next command
+      mockCommand(command2.runId, Future.successful(Completed(command2.runId)))
+      sequencerSetup.pullNextCommand()
+
+      //assert for sequence completion
+      eventually { sequencerSetup.assertSequenceIsFinished() }
+    }
   }
 
   "Resume" must {
