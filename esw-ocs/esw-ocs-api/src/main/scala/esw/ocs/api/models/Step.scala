@@ -29,6 +29,8 @@ case class Step private[ocs] (id: Id, command: SequenceCommand, status: StepStat
       case (Pending, InFlight) | (InFlight, _: Finished) => copy(status = newStatus)
       case _                                             => this
     }
+
+  private[ocs] def withId(id: Id): Step = copy(id = id)
 }
 
 object Step {

@@ -167,7 +167,13 @@ class StepListTest extends BaseTestSuite {
       val id              = Id()
       val stepList        = StepList(id, List(step1, step2, step3))
       val updatedStepList = stepList.replace(step2.id, List(setup4, setup5))
-      updatedStepList.toOption.get should ===(StepList(id, List(step1, Step(setup4), Step(setup5), step3)))
+
+      val setup4Id = updatedStepList.map(_.steps(1).id).toOption.get
+      val setup5Id = updatedStepList.map(_.steps(2).id).toOption.get
+
+      updatedStepList.toOption.get should ===(
+        StepList(id, List(step1, Step(setup4).withId(setup4Id), Step(setup5).withId(setup5Id), step3))
+      )
     }
 
     "fail with CannotOperateOnAnInFlightOrFinishedStep error when Id matches but is in InFlight status | ESW-108" in {
@@ -220,7 +226,9 @@ class StepListTest extends BaseTestSuite {
       val id              = Id()
       val stepList        = StepList(id, List(step1, step2))
       val updatedStepList = stepList.prepend(List(setup3, setup4))
-      updatedStepList should ===(StepList(id, List(step1, Step(setup3), Step(setup4), step2)))
+      val setup3Id        = updatedStepList.steps(1).id
+      val setup4Id        = updatedStepList.steps(2).id
+      updatedStepList should ===(StepList(id, List(step1, Step(setup3).withId(setup3Id), Step(setup4).withId(setup4Id), step2)))
     }
 
     "add provided steps at the end of StepList when StepList doesn't have Pending step | ESW-113" in {
@@ -230,7 +238,8 @@ class StepListTest extends BaseTestSuite {
       val stepList = StepList(Id(), List(step1, step2))
 
       val updatedStepList = stepList.prepend(List(setup3))
-      updatedStepList should ===(StepList(stepList.runId, List(step1, step2, Step(setup3))))
+      val setup3Id        = updatedStepList.steps(2).id
+      updatedStepList should ===(StepList(stepList.runId, List(step1, step2, Step(setup3).withId(setup3Id))))
     }
   }
 
@@ -247,7 +256,9 @@ class StepListTest extends BaseTestSuite {
       val id              = Id()
       val stepList        = StepList(id, List(step1, step2))
       val updatedStepList = stepList.append(List(setup3, setup4))
-      updatedStepList should ===(StepList(id, List(step1, step2, Step(setup3), Step(setup4))))
+      val setup3Id        = updatedStepList.steps(2).id
+      val setup4Id        = updatedStepList.steps(3).id
+      updatedStepList should ===(StepList(id, List(step1, step2, Step(setup3).withId(setup3Id), Step(setup4).withId(setup4Id))))
     }
   }
 
@@ -309,7 +320,11 @@ class StepListTest extends BaseTestSuite {
       val id              = Id()
       val stepList        = StepList(id, List(step1, step2))
       val updatedStepList = stepList.insertAfter(step1.id, List(setup3, setup4))
-      updatedStepList.toOption.get should ===(StepList(id, List(step1, Step(setup3), Step(setup4), step2)))
+      val setup3Id        = updatedStepList.map(_.steps(1).id).toOption.get
+      val setup4Id        = updatedStepList.map(_.steps(2).id).toOption.get
+      updatedStepList.toOption.get should ===(
+        StepList(id, List(step1, Step(setup3).withId(setup3Id), Step(setup4).withId(setup4Id), step2))
+      )
     }
 
     "insert provided commands after last InFlight step | ESW-111" in {
@@ -318,7 +333,8 @@ class StepListTest extends BaseTestSuite {
       val id              = Id()
       val stepList        = StepList(id, List(step1))
       val updatedStepList = stepList.insertAfter(step1.id, List(setup2))
-      updatedStepList.toOption.get should ===(StepList(id, List(step1, Step(setup2))))
+      val setup2Id        = updatedStepList.map(_.steps(1).id).toOption.get
+      updatedStepList.toOption.get should ===(StepList(id, List(step1, Step(setup2).withId(setup2Id))))
     }
 
     "fail with IdDoesNotExist error when provided Id doesn't exist in StepList | ESW-111" in {
