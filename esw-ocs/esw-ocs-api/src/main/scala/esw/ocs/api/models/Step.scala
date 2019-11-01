@@ -33,4 +33,6 @@ case class Step private[ocs] (id: Id, command: SequenceCommand, status: StepStat
 
 object Step {
   def apply(command: SequenceCommand): Step = Step(Id(), command, StepStatus.Pending, hasBreakpoint = false)
+  def apply(command: SequenceCommand, status: StepStatus, hasBreakpoint: Boolean): Step =
+    new Step(Id(), command, status, hasBreakpoint)
 }

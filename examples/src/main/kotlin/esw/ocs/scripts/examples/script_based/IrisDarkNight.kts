@@ -1,5 +1,6 @@
 //package esw.ocs.scripts.examples.script_based
 //
+//import csw.params.commands.CommandResponse
 //import esw.ocs.dsl.core.script
 //import kotlin.time.seconds
 //import kotlinx.coroutines.future.await
@@ -20,30 +21,24 @@
 //        val command1 = setup("esw.test-commandA1", "commandA1", "test-obsId")
 //        val command2 = setup("esw.test-commandA2", "commandA2", "test-obsId")
 //
-//        addSubCommand(command, command1)
-//        addSubCommand(command, command2)
-//
 //        val maybeCommandB = nextIf { it.commandName().name() == "setup-iris" }
 //
 //        maybeCommandB?.let { commandB ->
 //            val commandB1 = setup("esw.test-commandB1", "setup-iris", "test-obsId")
 //            val commandB2 = setup("esw.test-commandB2", "setup-iris", "test-obsId")
 //
-//            addSubCommand(commandB, commandB1)
-//            addSubCommand(commandB, commandB2)
-//
 //            val assemblyResponse3 = submitCommandToAssembly("Sample1Assembly", commandB1)
-//            updateSubCommand(assemblyResponse3)
+//            if (assemblyResponse3 is CommandResponse.Error) finishWithError(assemblyResponse3.message())
 //
 //            val assemblyResponse4 = submitCommandToAssembly("Sample1Assembly", commandB2)
-//            updateSubCommand(assemblyResponse4)
+//            if (assemblyResponse4 is CommandResponse.Error) finishWithError(assemblyResponse4.message())
 //        }
 //
 //        val assemblyResponse1 = submitCommandToAssembly("Sample1Assembly", command1)
-//        updateSubCommand(assemblyResponse1)
+//        if (assemblyResponse1 is CommandResponse.Error) finishWithError(assemblyResponse1.message())
 //
 //        val assemblyResponse2 = submitCommandToAssembly("Sample1Assembly", command2)
-//        updateSubCommand(assemblyResponse2)
+//        if (assemblyResponse2 is CommandResponse.Error) finishWithError(assemblyResponse2.message())
 //    }
 //
 //    handleShutdown {
