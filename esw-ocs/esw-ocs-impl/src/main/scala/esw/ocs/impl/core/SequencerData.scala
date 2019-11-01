@@ -4,7 +4,6 @@ import akka.actor.typed.{ActorRef, ActorSystem}
 import csw.command.client.messages.sequencer.SequencerMsg
 import csw.params.commands.CommandResponse.{Completed, Error, SubmitResponse}
 import csw.params.commands.Sequence
-import csw.params.core.models.Id
 import esw.ocs.api.models.StepStatus.Finished.{Failure, Success}
 import esw.ocs.api.models.StepStatus.{Finished, InFlight}
 import esw.ocs.api.models.{Step, StepList}
@@ -36,8 +35,17 @@ private[core] case class SequencerData(
     sendNextPendingStepIfAvailable()
       .notifyReadyToExecuteNextSubscriber(InProgress)
 
-  def addSequenceSubscriber(replyTo: ActorRef[SequenceResponse]): SequencerData =
-    copy(subscribers = subscribers + replyTo)
+  def addSequenceSubscriber(replyTo: ActorRef[SequenceResponse]): SequencerData = {
+    {
+      if (stepList.exists(_.isFinished)) {
+        replyTo ! SequenceResult(getSequencerResponse)
+        this
+      }
+      else {
+        copy(subscribers = subscribers + replyTo)
+      }
+    }
+  }
 
   def pullNextStep(replyTo: ActorRef[PullNextResult]): SequencerData =
     copy(stepRefSubscriber = Some(replyTo))

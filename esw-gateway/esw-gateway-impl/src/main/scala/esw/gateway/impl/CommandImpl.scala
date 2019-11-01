@@ -5,7 +5,7 @@ import akka.stream.scaladsl.Source
 import akka.util.Timeout
 import csw.command.api.scaladsl.CommandService
 import csw.location.models.ComponentId
-import csw.params.commands.CommandResponse.{OnewayResponse, QueryResponse, SubmitResponse, ValidateResponse}
+import csw.params.commands.CommandResponse.{OnewayResponse, SubmitResponse, ValidateResponse}
 import csw.params.commands.ControlCommand
 import csw.params.core.models.Id
 import csw.params.core.states.{CurrentState, StateName}
@@ -32,7 +32,7 @@ class CommandImpl(commandServiceFactory: CommandServiceFactoryApi)(
     process(componentId, _.validate(command))
   }
 
-  def queryFinal(componentId: ComponentId, runId: Id): Future[Either[InvalidComponent, QueryResponse]] = {
+  def queryFinal(componentId: ComponentId, runId: Id): Future[Either[InvalidComponent, SubmitResponse]] = {
     process(componentId, _.queryFinal(runId)(Timeout(100.hours)))
   }
 

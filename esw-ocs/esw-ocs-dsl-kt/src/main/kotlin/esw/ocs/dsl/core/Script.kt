@@ -31,7 +31,7 @@ sealed class ScriptDslKt(private val cswServices: CswServices) : CswHighLevelDsl
 
     private fun sequenceOperator() = cswServices.sequenceOperatorFactory().apply()
 
-    fun finishWithError(message: String): Nothing = throw RuntimeException(message)
+    fun finishWithError(message: String = ""): Nothing = throw RuntimeException(message)
 
     fun handleSetup(name: String, block: suspend CoroutineScope.(Setup) -> Unit) {
         scriptDsl.handleSetupCommand(name) {

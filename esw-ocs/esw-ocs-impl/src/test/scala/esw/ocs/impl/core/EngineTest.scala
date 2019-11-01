@@ -1,8 +1,8 @@
 package esw.ocs.impl.core
 
-import akka.actor.ActorSystem
+import akka.actor.{ActorSystem, CoordinatedShutdown}
+import akka.actor.CoordinatedShutdown.UnknownReason
 import akka.stream.Materializer
-import csw.params.commands.CommandResponse.Error
 import csw.params.commands.SequenceCommand
 import csw.params.core.models.Id
 import esw.ocs.api.BaseTestSuite
@@ -15,6 +15,10 @@ import scala.concurrent.Future
 class EngineTest extends BaseTestSuite {
   private implicit val test: ActorSystem = ActorSystem("test")
   private implicit val mat: Materializer = Materializer(test)
+
+  private val coordinatedShutdown: CoordinatedShutdown = CoordinatedShutdown(test)
+
+  override def afterAll(): Unit = coordinatedShutdown.run(UnknownReason).futureValue
 
   private class Mocks {
     val sequenceOperator: SequenceOperator = mock[SequenceOperator]
