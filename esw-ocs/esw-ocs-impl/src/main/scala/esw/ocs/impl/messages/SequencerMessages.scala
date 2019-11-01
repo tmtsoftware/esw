@@ -67,13 +67,13 @@ object SequencerMessages {
   final case class Delete(ids: Id, replyTo: ActorRef[GenericResponse])                                      extends EditorAction
   final case class AddBreakpoint(id: Id, replyTo: ActorRef[GenericResponse])                                extends EditorAction
   final case class RemoveBreakpoint(id: Id, replyTo: ActorRef[RemoveBreakpointResponse])                    extends EditorAction
-  final case class Pause(replyTo: ActorRef[PauseResponse])                                                  extends EditorAction
-  final case class Resume(replyTo: ActorRef[OkOrUnhandledResponse])                                         extends EditorAction
   final case class Reset(replyTo: ActorRef[OkOrUnhandledResponse])                                          extends EditorAction
 
   // inProgress msgs
   final case class AbortSequence(replyTo: ActorRef[OkOrUnhandledResponse]) extends InProgressMessage
   final case class Stop(replyTo: ActorRef[OkOrUnhandledResponse])          extends InProgressMessage
+  final case class Pause(replyTo: ActorRef[PauseResponse])                 extends InProgressMessage
+  final case class Resume(replyTo: ActorRef[OkOrUnhandledResponse])        extends InProgressMessage
 
   // engine & internal
   final private[ocs] case class SubmitSequenceAndWaitInternal(sequence: Sequence, replyTo: ActorRef[SequenceResponse])

@@ -63,6 +63,8 @@ class SequencerBehavior(
     case AbortSequence(replyTo)    => abortSequence(data, InProgress, replyTo)(nextBehavior = inProgress)
     case Stop(replyTo)             => stop(data, InProgress, replyTo)(nextBehavior = inProgress)
     case msg: EditorAction         => handleEditorAction(msg, data, InProgress)(nextBehavior = inProgress)
+    case Pause(replyTo)            => inProgress(data.updateStepListResult(replyTo, InProgress, data.stepList.map(_.pause)))
+    case Resume(replyTo)           => inProgress(data.updateStepList(replyTo, InProgress, data.stepList.map(_.resume)))
     case PullNext(replyTo)         => inProgress(data.pullNextStep(replyTo))
     case Update(submitResponse, _) => inProgress(data.updateStepStatus(submitResponse, InProgress))
     case _: GoIdle                 => idle(data)
@@ -137,8 +139,6 @@ class SequencerBehavior(
     import data._
     editorAction match {
       case Add(commands, replyTo)            => nextBehavior(updateStepList(replyTo, state, stepList.map(_.append(commands))))
-      case Pause(replyTo)                    => nextBehavior(updateStepListResult(replyTo, state, stepList.map(_.pause)))
-      case Resume(replyTo)                   => nextBehavior(updateStepList(replyTo, state, stepList.map(_.resume)))
       case Prepend(commands, replyTo)        => nextBehavior(updateStepList(replyTo, state, stepList.map(_.prepend(commands))))
       case Delete(id, replyTo)               => nextBehavior(updateStepListResult(replyTo, state, stepList.map(_.delete(id))))
       case Reset(replyTo) if state == Loaded => idle(updateStepList(replyTo, state, stepList = None))
