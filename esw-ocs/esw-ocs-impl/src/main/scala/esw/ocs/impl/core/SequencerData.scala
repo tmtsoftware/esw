@@ -35,17 +35,12 @@ private[core] case class SequencerData(
     sendNextPendingStepIfAvailable()
       .notifyReadyToExecuteNextSubscriber(InProgress)
 
-  def queryFinal(replyTo: ActorRef[SequenceResponse]): SequencerData = {
-    {
-      if (stepList.exists(_.isFinished)) {
-        replyTo ! SequenceResult(getSequencerResponse)
-        this
-      }
-      else {
-        copy(sequenceResponseSubscribers = sequenceResponseSubscribers + replyTo)
-      }
+  def queryFinal(replyTo: ActorRef[SequenceResponse]): SequencerData =
+    if (stepList.exists(_.isFinished)) {
+      replyTo ! SequenceResult(getSequencerResponse)
+      this
     }
-  }
+    else copy(sequenceResponseSubscribers = sequenceResponseSubscribers + replyTo)
 
   def pullNextStep(replyTo: ActorRef[PullNextResult]): SequencerData =
     copy(stepRefSubscriber = Some(replyTo))
@@ -88,8 +83,8 @@ private[core] case class SequencerData(
   private def changeStepStatus(state: SequencerState[SequencerMsg], newStatus: StepStatus) = {
     val newStepList = stepList.map { stepList =>
       stepList.copy(steps = stepList.steps.map {
-        case x if x.status == InFlight => x.withStatus(newStatus)
-        case x                         => x
+        case step if step.isInFlight => step.withStatus(newStatus)
+        case x                       => x
       })
     }
     copy(stepList = newStepList)
@@ -122,36 +117,29 @@ private[core] case class SequencerData(
     (inflightStep, updatedData)
   }
 
-  private def getSequencerResponse: SubmitResponse = {
+  private def getSequencerResponse: SubmitResponse =
     stepList
-      .map(_.steps.map(_.status))
-      .getOrElse(List.empty)
-      .collectFirst {
-        case f @ Finished.Failure(_) => f
-      } match {
-      case Some(Finished.Failure(message)) => Error(sequenceId.get, message)
-      case _                               => Completed(sequenceId.get)
-    }
-  }
+      .flatMap {
+        _.steps.map(_.status).collectFirst {
+          case Finished.Failure(message) => Error(sequenceId.get, message)
+        }
+      }
+      .getOrElse(Completed(sequenceId.get))
 
-  private def checkForSequenceCompletion(): SequencerData = {
+  private def checkForSequenceCompletion(): SequencerData =
     if (stepList.exists(_.isFinished)) {
       val submitResponse = getSequencerResponse
-      sequenceResponseSubscribers.foreach(s => s.tell(SequenceResult(submitResponse)))
+      sequenceResponseSubscribers.foreach(_ ! SequenceResult(submitResponse))
       self ! GoIdle(actorSystem.deadLetters)
       copy(sequenceResponseSubscribers = Set.empty)
     }
-    else {
-      this
-    }
-  }
+    else this
 
   private def notifyReadyToExecuteNextSubscriber(state: SequencerState[SequencerMsg]): SequencerData =
     readyToExecuteSubscriber.map(replyTo => readyToExecuteNext(replyTo, state)).getOrElse(this)
 }
 
 private[core] object SequencerData {
-  def initial(self: ActorRef[SequencerMsg])(
-      implicit actorSystem: ActorSystem[_]
-  ): SequencerData = SequencerData(None, None, None, self, actorSystem, Set.empty)
+  def initial(self: ActorRef[SequencerMsg])(implicit actorSystem: ActorSystem[_]): SequencerData =
+    SequencerData(None, None, None, self, actorSystem, Set.empty)
 }
