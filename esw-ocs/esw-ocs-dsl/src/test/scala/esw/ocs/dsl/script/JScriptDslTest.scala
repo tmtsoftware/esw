@@ -96,5 +96,24 @@ class JScriptDslTest extends BaseTestSuite {
       script.executeAbort().futureValue
       orderOfAbortCalled shouldBe ArrayBuffer(1, 2)
     }
+
+    "allow adding and executing exception handlers | ESW-139" in {
+      var receivedPrefix: Option[Throwable] = None
+
+      val csw: CswServices = mock[CswServices]
+      val script: JScriptDsl = new JScriptDsl(csw) {
+        override protected implicit def strandEc: StrandEc = StrandEc()
+
+        handleException { ex =>
+          receivedPrefix = Some(ex)
+          CompletableFuture.completedFuture(null)
+        }
+      }
+
+      val exception = new RuntimeException("testing exception handlers")
+      script.executeExceptionHandlers(exception).toCompletableFuture.get()
+
+      receivedPrefix.value shouldBe exception
+    }
   }
 }

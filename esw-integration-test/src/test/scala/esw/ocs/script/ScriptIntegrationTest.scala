@@ -19,7 +19,7 @@ import csw.location.api.extensions.URIExtension.RichURI
 import csw.location.api.scaladsl.LocationService
 import csw.location.client.scaladsl.HttpLocationServiceFactory
 import csw.params.commands.CommandResponse.{Completed, SubmitResponse}
-import csw.params.commands.{CommandName, Sequence, Setup}
+import csw.params.commands.{CommandName, CommandResponse, Sequence, Setup}
 import csw.params.core.generics.KeyType.StringKey
 import csw.params.core.generics.Parameter
 import csw.params.core.models.Subsystem.NFIRAOS
@@ -364,6 +364,39 @@ class ScriptIntegrationTest extends ScalaTestFrameworkTestKit(EventServer, Alarm
       getPublishedEvent.eventKey should ===(successKey)
       configTestKit.deleteServerFiles()
 
+    }
+
+    "invoke exception handlers when exception is thrown from handleSetup and must fail the command with message of give exception | ESW-139" in {
+      val eventService = new EventServiceFactory().make(HttpLocationServiceFactory.makeLocalClient)
+
+      val command  = Setup(Prefix("TCS"), CommandName("exceptional-command"), None)
+      val id       = Id()
+      val sequence = Sequence(id, Seq(command))
+
+      val commandFailureMsg = "command-failed"
+      val eventKey          = EventKey("tcs." + commandFailureMsg)
+
+      val testProbe    = TestProbe[Event]
+      val subscription = eventService.defaultSubscriber.subscribeActorRef(Set(eventKey), testProbe.ref)
+      subscription.ready().futureValue
+      testProbe.expectMessageType[SystemEvent] // discard invalid event
+
+      val submitResponseF: Future[SubmitResponse] = ocsSequencer ? (SubmitSequenceAndWait(sequence, _))
+      val error                                   = submitResponseF.futureValue.asInstanceOf[CommandResponse.Error]
+      error.runId shouldBe id
+      error.message.contains(commandFailureMsg) shouldBe true
+
+      // exception handler publishes a event with exception msg as event name
+      val event = testProbe.expectMessageType[SystemEvent]
+      event.eventName.name shouldBe commandFailureMsg
+
+      // assert that next sequence is accepted and executed properly
+      val command1  = Setup(Prefix("TCS"), CommandName("next-command"), None)
+      val id1       = Id()
+      val sequence1 = Sequence(id1, Seq(command1))
+
+      val submitResponse1: Future[SubmitResponse] = ocsSequencer ? (SubmitSequenceAndWait(sequence1, _))
+      submitResponse1.futureValue should ===(Completed(id1))
     }
   }
 }

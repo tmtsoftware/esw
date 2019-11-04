@@ -4,6 +4,7 @@ import csw.alarm.api.javadsl.JAlarmSeverity.Major
 import csw.alarm.models.Key.AlarmKey
 import csw.location.api.javadsl.JComponentType.Assembly
 import csw.params.commands.*
+import csw.params.commands.CommandResponse.Completed
 import csw.params.core.models.Id
 import csw.params.core.models.Prefix
 import csw.params.events.Event
@@ -20,17 +21,17 @@ script {
     handleSetup("command-1") { command ->
         // To avoid sequencer to finish immediately so that other Add, Append command gets time
         delay(200)
-        addOrUpdateCommand(CommandResponse.Completed(command.runId))
+        addOrUpdateCommand(Completed(command.runId))
     }
 
     handleSetup("command-2") { command ->
-        addOrUpdateCommand(CommandResponse.Completed(command.runId))
+        addOrUpdateCommand(Completed(command.runId))
     }
 
     handleSetup("check-config") { command ->
         if (existsConfig("/tmt/test/wfos.conf"))
             publishEvent(systemEvent("WFOS", "config.success"))
-        addOrUpdateCommand(CommandResponse.Completed(command.runId))
+        addOrUpdateCommand(Completed(command.runId))
     }
 
     handleSetup("get-config-data") { command ->
@@ -40,11 +41,11 @@ script {
             if (it == configValue)
                 publishEvent(systemEvent("WFOS", "config.success"))
         }
-        addOrUpdateCommand(CommandResponse.Completed(command.runId))
+        addOrUpdateCommand(Completed(command.runId))
     }
 
     handleSetup("command-3") { command ->
-        addOrUpdateCommand(CommandResponse.Completed(command.runId))
+        addOrUpdateCommand(Completed(command.runId))
     }
 
     handleSetup("get-event") {
@@ -52,12 +53,12 @@ script {
         val event: Event = getEvent("TCS.get.event").first()
         val successEvent = systemEvent("TCS", "get.success")
         if (!event.isInvalid) publishEvent(successEvent)
-        addOrUpdateCommand(CommandResponse.Completed(it.runId()))
+        addOrUpdateCommand(Completed(it.runId()))
     }
 
     handleSetup("command-for-assembly") { command ->
         submitCommandToAssembly("test", command)
-        addOrUpdateCommand(CommandResponse.Completed(command.runId()))
+        addOrUpdateCommand(Completed(command.runId()))
     }
 
     handleSetup("command-4") { command ->
@@ -76,12 +77,12 @@ script {
 
         // ESW-88, ESW-145, ESW-195
         submitSequence("tcs", "darknight", sequence)
-        addOrUpdateCommand(CommandResponse.Completed(command.runId()))
+        addOrUpdateCommand(Completed(command.runId()))
     }
 
     handleSetup("test-sequencer-hierarchy") {
         delay(5000)
-        addOrUpdateCommand(CommandResponse.Completed(it.runId()))
+        addOrUpdateCommand(Completed(it.runId()))
     }
 
     handleSetup("fail-command") { command ->
@@ -92,7 +93,7 @@ script {
         val alarmKey = AlarmKey(NFIRAOS, "trombone", "tromboneAxisHighLimitAlarm")
         setSeverity(alarmKey, Major())
         delay(500)
-        addOrUpdateCommand(CommandResponse.Completed(command.runId()))
+        addOrUpdateCommand(Completed(command.runId()))
     }
 
     handleSetup("command-irms") { _ ->
@@ -145,5 +146,20 @@ script {
 
         //send stop command to downstream sequencer
         stop("irms", "darknight")
+    }
+
+    // ************* exception handling test ****************
+    handleSetup("exceptional-command") {
+        throw RuntimeException("command-failed")
+    }
+
+    handleSetup("next-command") { command ->
+        addOrUpdateCommand(Completed(command.runId()))
+    }
+
+    onException { exception ->
+        log("calling handler _--------------------------")
+        val successEvent = systemEvent("tcs", exception.message + "")
+        publishEvent(successEvent)
     }
 }

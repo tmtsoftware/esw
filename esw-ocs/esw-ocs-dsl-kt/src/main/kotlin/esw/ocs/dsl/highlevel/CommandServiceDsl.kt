@@ -12,7 +12,9 @@ import csw.location.models.ComponentId
 import csw.location.models.ComponentType
 import csw.location.models.Connection
 import csw.params.commands.*
-import csw.params.commands.CommandResponse.*
+import csw.params.commands.CommandResponse.OnewayResponse
+import csw.params.commands.CommandResponse.SubmitResponse
+import csw.params.commands.CommandResponse.ValidateResponse
 import csw.params.core.models.Id
 import csw.params.core.models.ObsId
 import csw.params.core.models.Prefix
