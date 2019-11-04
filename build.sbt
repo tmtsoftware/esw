@@ -70,6 +70,7 @@ lazy val `esw-ocs-app` = project
     libraryDependencies ++= Dependencies.OcsApp.value
   )
   .dependsOn(
+    examples,
     `esw-ocs-impl`      % "compile->compile;test->test",
     `esw-http-core`     % "compile->compile;test->test",
     `esw-test-reporter` % Test

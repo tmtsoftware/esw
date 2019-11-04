@@ -106,7 +106,8 @@ private[ocs] class SequencerWiring(val packageId: String, val observingMode: Str
   private def websocketHandlerFactory(encoding: Encoding[_]) = new WebsocketHandlerImpl(sequencerAdmin, encoding)
   private lazy val routes                                    = new SequencerAdminRoutes(postHandler, websocketHandlerFactory)
 
-  private lazy val settings = new Settings(Some(SocketUtils.getFreePort), Some(s"$sequencerName@http"), config)
+  private val port: Int     = SocketUtils.getFreePort
+  private lazy val settings = new Settings(Some(port), Some(s"$sequencerName@http"), config)
 
   private lazy val httpService: HttpService =
     new HttpService(logger, locationService, routes.route, settings, actorRuntime)
@@ -130,6 +131,7 @@ private[ocs] class SequencerWiring(val packageId: String, val observingMode: Str
         new Engine(script).start(sequenceOperatorFactory())
 
         httpService.registeredLazyBinding.block
+        println(s"http service started on port: $port")
 
         val registration = AkkaRegistration(AkkaConnection(componentId), prefix, sequencerRef.toURI)
         new LocationServiceUtil(locationService).register(registration).block
