@@ -14,6 +14,7 @@ import csw.logging.client.commons.LogAdminUtil
 import csw.params.commands.Sequence
 import csw.time.core.models.UTCTime
 import esw.ocs.api.codecs.OcsCodecs
+import esw.ocs.api.models.SequencerInsight
 import esw.ocs.api.protocol._
 import esw.ocs.dsl.script.JScriptDsl
 import esw.ocs.impl.internal.Timeouts
@@ -29,13 +30,14 @@ class SequencerBehavior(
     componentId: ComponentId,
     script: JScriptDsl,
     locationService: LocationService,
-    shutdownHttpService: () => Future[Done]
+    shutdownHttpService: () => Future[Done],
+    insightsSubscriber: ActorRef[SequencerInsight]
 )(implicit val actorSystem: ActorSystem[_])
     extends OcsCodecs {
   import actorSystem.executionContext
 
   def setup: Behavior[SequencerMsg] = Behaviors.setup { ctx =>
-    idle(SequencerData.initial(ctx.self))
+    idle(SequencerData.initial(ctx.self, insightsSubscriber))
   }
 
   //BEHAVIORS

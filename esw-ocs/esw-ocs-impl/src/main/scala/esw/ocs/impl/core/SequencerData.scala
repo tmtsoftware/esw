@@ -6,7 +6,7 @@ import csw.params.commands.CommandResponse.{Completed, Error, SubmitResponse}
 import csw.params.commands.Sequence
 import esw.ocs.api.models.StepStatus.Finished.{Failure, Success}
 import esw.ocs.api.models.StepStatus.{Finished, InFlight}
-import esw.ocs.api.models.{Step, StepList, StepStatus}
+import esw.ocs.api.models.{SequencerInsight, Step, StepList, StepStatus}
 import esw.ocs.api.protocol._
 import esw.ocs.impl.messages.SequencerMessages.GoIdle
 import esw.ocs.impl.messages.SequencerState
@@ -18,7 +18,8 @@ private[core] case class SequencerData(
     stepRefSubscriber: Option[ActorRef[PullNextResult]],
     self: ActorRef[SequencerMsg],
     actorSystem: ActorSystem[_],
-    sequenceResponseSubscribers: Set[ActorRef[SequenceResponse]]
+    sequenceResponseSubscribers: Set[ActorRef[SequenceResponse]],
+    insightSubscriber: ActorRef[SequencerInsight]
 ) {
 
   private val sequenceId = stepList.map(_.runId)
@@ -151,7 +152,7 @@ private[core] case class SequencerData(
 }
 
 private[core] object SequencerData {
-  def initial(self: ActorRef[SequencerMsg])(
+  def initial(self: ActorRef[SequencerMsg], insightSubscriber: ActorRef[SequencerInsight])(
       implicit actorSystem: ActorSystem[_]
-  ): SequencerData = SequencerData(None, None, None, self, actorSystem, Set.empty)
+  ): SequencerData = SequencerData(None, None, None, self, actorSystem, Set.empty, insightSubscriber)
 }

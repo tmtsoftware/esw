@@ -6,10 +6,10 @@ import akka.stream.scaladsl.Source
 import esw.ocs.api.SequencerAdminApi
 import esw.ocs.api.codecs.SequencerAdminHttpCodecs
 import esw.ocs.api.protocol.SequencerAdminWebsocketRequest
-import esw.ocs.api.protocol.SequencerAdminWebsocketRequest.QueryFinal
-import msocket.impl.ws.WebsocketStreamExtensions
+import esw.ocs.api.protocol.SequencerAdminWebsocketRequest.{GetInsights, QueryFinal}
 import msocket.api.MessageHandler
 import msocket.impl.Encoding
+import msocket.impl.ws.WebsocketStreamExtensions
 
 class WebsocketHandlerImpl(sequencerAdmin: SequencerAdminApi, val encoding: Encoding[_])
     extends MessageHandler[SequencerAdminWebsocketRequest, Source[Message, NotUsed]]
@@ -17,6 +17,7 @@ class WebsocketHandlerImpl(sequencerAdmin: SequencerAdminApi, val encoding: Enco
     with WebsocketStreamExtensions {
 
   override def handle(request: SequencerAdminWebsocketRequest): Source[Message, NotUsed] = request match {
-    case QueryFinal => futureAsStream(sequencerAdmin.queryFinal)
+    case QueryFinal  => futureAsStream(sequencerAdmin.queryFinal)
+    case GetInsights => stream(sequencerAdmin.getInsights)
   }
 }

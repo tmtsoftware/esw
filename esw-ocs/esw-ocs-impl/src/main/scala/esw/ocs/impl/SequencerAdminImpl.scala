@@ -1,14 +1,16 @@
 package esw.ocs.impl
 
+import akka.NotUsed
 import akka.actor.typed.scaladsl.AskPattern._
 import akka.actor.typed.{ActorRef, ActorSystem}
+import akka.stream.scaladsl.Source
 import akka.util.Timeout
 import csw.command.client.messages.sequencer.SequencerMsg
 import csw.params.commands.{Sequence, SequenceCommand}
 import csw.params.core.models.Id
 import csw.time.core.models.UTCTime
 import esw.ocs.api.SequencerAdminApi
-import esw.ocs.api.models.StepList
+import esw.ocs.api.models.{SequencerInsight, StepList}
 import esw.ocs.api.protocol._
 import esw.ocs.impl.messages.SequencerMessages._
 import esw.ocs.impl.messages.SequencerState
@@ -16,8 +18,10 @@ import esw.ocs.impl.messages.SequencerState.{Idle, Offline}
 
 import scala.concurrent.{ExecutionContext, Future}
 
-class SequencerAdminImpl(sequencer: ActorRef[EswSequencerMessage])(implicit system: ActorSystem[_], timeout: Timeout)
-    extends SequencerAdminApi {
+class SequencerAdminImpl(sequencer: ActorRef[EswSequencerMessage], insightSource: Source[SequencerInsight, NotUsed])(
+    implicit system: ActorSystem[_],
+    timeout: Timeout
+) extends SequencerAdminApi {
   private implicit val ec: ExecutionContext = system.executionContext
 
   override def getSequence: Future[Option[StepList]] = sequencer ? GetSequence
@@ -58,4 +62,6 @@ class SequencerAdminImpl(sequencer: ActorRef[EswSequencerMessage])(implicit syst
 
   // fixme: shouldn't this call have long timeout and not the default?
   override def queryFinal: Future[SequenceResponse] = sequencer ? QueryFinal
+
+  override def getInsights: Source[SequencerInsight, NotUsed] = insightSource
 }

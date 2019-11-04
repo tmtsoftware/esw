@@ -1,10 +1,14 @@
 package esw.ocs.app.wiring
 
-import akka.Done
 import akka.actor.typed.SpawnProtocol.Spawn
 import akka.actor.typed.scaladsl.AskPattern._
+import akka.actor.typed.scaladsl.adapter.ClassicActorRefOps
 import akka.actor.typed.{ActorRef, ActorSystem, Props, SpawnProtocol}
+import akka.http.scaladsl.server.RouteConcatenation
+import akka.stream.OverflowStrategy
+import akka.stream.scaladsl.Source
 import akka.util.Timeout
+import akka.{Done, NotUsed}
 import com.typesafe.config.{Config, ConfigFactory}
 import csw.alarm.api.javadsl.IAlarmService
 import csw.command.client.messages.sequencer.SequencerMsg
@@ -21,6 +25,7 @@ import csw.logging.api.scaladsl.Logger
 import csw.logging.client.scaladsl.LoggerFactory
 import csw.network.utils.SocketUtils
 import esw.http.core.wiring.{ActorRuntime, CswWiring, HttpService, Settings}
+import esw.ocs.api.models.SequencerInsight
 import esw.ocs.api.protocol.LoadScriptError
 import esw.ocs.app.route.{PostHandlerImpl, SequencerAdminRoutes, WebsocketHandlerImpl}
 import esw.ocs.dsl.script.utils.{LockUnlockUtil, ScriptLoader}
@@ -37,7 +42,8 @@ import scala.async.Async.{async, await}
 import scala.concurrent.Future
 import scala.util.control.NonFatal
 
-private[ocs] class SequencerWiring(val packageId: String, val observingMode: String, sequenceComponentName: Option[String]) {
+private[ocs] class SequencerWiring(val packageId: String, val observingMode: String, sequenceComponentName: Option[String])
+    extends RouteConcatenation {
   private lazy val config: Config       = ConfigFactory.load()
   private[esw] lazy val sequencerConfig = SequencerConfig.from(config, packageId, observingMode, sequenceComponentName)
   import sequencerConfig._
@@ -65,7 +71,15 @@ private[ocs] class SequencerWiring(val packageId: String, val observingMode: Str
   private lazy val script: JScriptDsl      = ScriptLoader.loadKotlinScript(scriptClass, cswServices)
 
   lazy private val locationServiceUtil = new LocationServiceUtil(locationService)
-  lazy private val adminFactory        = new SequencerAdminFactoryImpl(locationServiceUtil)
+
+  private lazy val t = Source
+    .actorRef(1024, OverflowStrategy.dropTail)
+    .preMaterialize()
+
+  private val insightRef: ActorRef[SequencerInsight]           = t._1.toTyped[SequencerInsight]
+  private val insightSource: Source[SequencerInsight, NotUsed] = t._2
+
+  lazy private val adminFactory = new SequencerAdminFactoryImpl(locationServiceUtil, insightSource)
 
   lazy private val lockUnlockUtil = new LockUnlockUtil(locationServiceUtil)(actorSystem)
 
@@ -87,12 +101,13 @@ private[ocs] class SequencerWiring(val packageId: String, val observingMode: Str
     jAlarmService
   )
 
-  private lazy val sequencerAdmin                            = new SequencerAdminImpl(sequencerRef)
+  private lazy val sequencerAdmin                            = new SequencerAdminImpl(sequencerRef, insightSource)
   private lazy val postHandler                               = new PostHandlerImpl(sequencerAdmin)
   private def websocketHandlerFactory(encoding: Encoding[_]) = new WebsocketHandlerImpl(sequencerAdmin, encoding)
   private lazy val routes                                    = new SequencerAdminRoutes(postHandler, websocketHandlerFactory)
 
   private lazy val settings = new Settings(Some(SocketUtils.getFreePort), Some(s"$sequencerName@http"), config)
+
   private lazy val httpService: HttpService =
     new HttpService(logger, locationService, routes.route, settings, actorRuntime)
 
@@ -105,7 +120,7 @@ private[ocs] class SequencerWiring(val packageId: String, val observingMode: Str
     }
 
   lazy val sequencerBehavior =
-    new SequencerBehavior(componentId, script, locationService, shutdownHttpService)(
+    new SequencerBehavior(componentId, script, locationService, shutdownHttpService, insightRef)(
       typedSystem
     )
 
@@ -125,5 +140,4 @@ private[ocs] class SequencerWiring(val packageId: String, val observingMode: Str
 
     override def shutDown(): Future[Done] = (sequencerRef ? Shutdown).map(_ => Done)
   }
-
 }

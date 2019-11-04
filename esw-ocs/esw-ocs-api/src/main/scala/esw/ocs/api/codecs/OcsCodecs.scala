@@ -4,7 +4,7 @@ import csw.location.models.codecs.LocationCodecs
 import csw.params.core.formats.ParamCodecs
 import esw.ocs.api.models.StepStatus.Finished.{Failure, Success}
 import esw.ocs.api.models.StepStatus.{InFlight, Pending}
-import esw.ocs.api.models.{Step, StepList, StepStatus}
+import esw.ocs.api.models.{SequencerInsight, Step, StepList, StepStatus}
 import esw.ocs.api.protocol.EditorError.{CannotOperateOnAnInFlightOrFinishedStep, IdDoesNotExist}
 import esw.ocs.api.protocol._
 import io.bullet.borer.Codec
@@ -14,6 +14,7 @@ import msocket.api.codecs.EitherCodecs
 
 trait OcsCodecs extends ParamCodecs with LocationCodecs with EitherCodecs {
   //StepList Codecs
+  implicit lazy val sequencerInsight: Codec[SequencerInsight] = deriveCodec
   implicit lazy val stepCodec: Codec[Step]                    = deriveCodec
   implicit lazy val stepListCodec: Codec[StepList]            = deriveCodec
   implicit lazy val successStatusCodec: Codec[Success.type]   = deriveCodec

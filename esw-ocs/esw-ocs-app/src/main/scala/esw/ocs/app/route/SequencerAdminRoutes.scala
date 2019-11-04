@@ -9,10 +9,10 @@ import akka.stream.scaladsl.Source
 import ch.megard.akka.http.cors.scaladsl.CorsDirectives.cors
 import esw.ocs.api.codecs.SequencerAdminHttpCodecs
 import esw.ocs.api.protocol.{SequencerAdminPostRequest, SequencerAdminWebsocketRequest}
-import msocket.impl.post.ServerHttpCodecs
-import msocket.impl.ws.WsServerFlow
 import msocket.api.MessageHandler
 import msocket.impl.Encoding
+import msocket.impl.post.ServerHttpCodecs
+import msocket.impl.ws.WsServerFlow
 
 class SequencerAdminRoutes(
     postHandler: MessageHandler[SequencerAdminPostRequest, StandardRoute],

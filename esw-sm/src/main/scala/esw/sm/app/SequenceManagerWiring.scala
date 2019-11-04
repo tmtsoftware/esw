@@ -3,6 +3,7 @@ package esw.sm.app
 import akka.actor.typed.SpawnProtocol.Spawn
 import akka.actor.typed.scaladsl.AskPattern._
 import akka.actor.typed.{ActorRef, ActorSystem, Props, SpawnProtocol}
+import akka.stream.scaladsl.Source
 import akka.util.Timeout
 import csw.location.api.scaladsl.LocationService
 import csw.location.client.scaladsl.HttpLocationServiceFactory
@@ -24,9 +25,10 @@ class SequenceManagerWiring {
   private lazy val actorRuntime = new ActorRuntime(_actorSystem)
   import actorRuntime._
 
-  private lazy val locationService: LocationService                = HttpLocationServiceFactory.makeLocalClient
-  private lazy val locationServiceUtil                             = new LocationServiceUtil(locationService)
-  private lazy val sequencerAdminFactory: SequencerAdminFactoryApi = new SequencerAdminFactoryImpl(locationServiceUtil)
+  private lazy val locationService: LocationService = HttpLocationServiceFactory.makeLocalClient
+  private lazy val locationServiceUtil              = new LocationServiceUtil(locationService)
+  private lazy val sequencerAdminFactory: SequencerAdminFactoryApi =
+    new SequencerAdminFactoryImpl(locationServiceUtil, Source.empty)
 
   lazy val sequenceManagerRef: ActorRef[SequenceManagerMsg] =
     Await.result(

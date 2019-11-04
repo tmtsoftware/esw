@@ -1,9 +1,11 @@
 package esw.ocs.api
 
+import akka.NotUsed
+import akka.stream.scaladsl.Source
 import csw.params.commands.{Sequence, SequenceCommand}
 import csw.params.core.models.Id
 import csw.time.core.models.UTCTime
-import esw.ocs.api.models.StepList
+import esw.ocs.api.models.{SequencerInsight, StepList}
 import esw.ocs.api.protocol._
 
 import scala.concurrent.Future
@@ -34,4 +36,5 @@ trait SequencerAdminApi {
   def submitSequence(sequence: Sequence): Future[OkOrUnhandledResponse]
 
   def queryFinal: Future[SequenceResponse]
+  def getInsights: Source[SequencerInsight, NotUsed]
 }

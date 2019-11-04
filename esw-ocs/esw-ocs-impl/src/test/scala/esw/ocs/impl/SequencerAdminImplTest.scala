@@ -2,6 +2,7 @@ package esw.ocs.impl
 
 import akka.actor.testkit.typed.scaladsl.ScalaTestWithActorTestKit
 import akka.actor.typed.scaladsl.Behaviors
+import akka.stream.scaladsl.Source
 import csw.command.client.messages.sequencer.SequencerMsg
 import csw.params.commands.CommandResponse.Completed
 import csw.params.commands.{CommandName, Sequence, Setup}
@@ -78,7 +79,7 @@ class SequencerAdminImplTest extends ScalaTestWithActorTestKit with BaseTestSuit
 
   private val sequencer = spawn(mockedBehavior)
 
-  private val sequencerAdmin = new SequencerAdminImpl(sequencer)
+  private val sequencerAdmin = new SequencerAdminImpl(sequencer, Source.empty)
 
   "getSequence | ESW-222" in {
     sequencerAdmin.getSequence.futureValue should ===(getSequenceResponse)

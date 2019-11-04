@@ -2,7 +2,7 @@ package esw.ocs.api.codecs
 
 import com.github.ghik.silencer.silent
 import esw.ocs.api.protocol.SequencerAdminPostRequest._
-import esw.ocs.api.protocol.SequencerAdminWebsocketRequest.QueryFinal
+import esw.ocs.api.protocol.SequencerAdminWebsocketRequest.{GetInsights, QueryFinal}
 import esw.ocs.api.protocol.{SequencerAdminPostRequest, SequencerAdminWebsocketRequest}
 import io.bullet.borer.Codec
 import io.bullet.borer.derivation.MapBasedCodecs.deriveCodec
@@ -42,7 +42,8 @@ trait SequencerAdminHttpCodecs extends OcsCodecs {
     sequencerAdminWebsocketRequestValue.asInstanceOf[Codec[T]]
 
   lazy val sequencerAdminWebsocketRequestValue: Codec[SequencerAdminWebsocketRequest] = {
-    @silent implicit lazy val queryFinalCodec: Codec[QueryFinal.type] = deriveCodec
+    @silent implicit lazy val queryFinalCodec: Codec[QueryFinal.type]   = deriveCodec
+    @silent implicit lazy val getInsightsCodec: Codec[GetInsights.type] = deriveCodec
     deriveCodec
   }
 }
