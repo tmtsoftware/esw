@@ -3,8 +3,6 @@ package esw.ocs.impl.core
 import akka.Done
 import akka.actor.testkit.typed.scaladsl.TestProbe
 import akka.actor.typed.{ActorRef, ActorSystem}
-import akka.util.Timeout
-import csw.command.client.CommandResponseManager
 import csw.command.client.messages.sequencer.{SequencerMsg, SubmitSequenceAndWait}
 import csw.location.api.scaladsl.LocationService
 import csw.location.models.ComponentId
@@ -27,7 +25,7 @@ import scala.concurrent.duration.DurationLong
 import scala.concurrent.{ExecutionContext, Future, Promise}
 import scala.util.Success
 
-class SequencerTestSetup(sequence: Sequence)(implicit system: ActorSystem[_], timeout: Timeout) {
+class SequencerTestSetup(sequence: Sequence)(implicit system: ActorSystem[_]) {
   import Matchers._
   import MockitoSugar._
 
@@ -37,34 +35,24 @@ class SequencerTestSetup(sequence: Sequence)(implicit system: ActorSystem[_], ti
   private val componentId                                      = mock[ComponentId]
   private val script                                           = mock[JScriptDsl]
   private val locationService                                  = mock[LocationService]
-  private val crm: CommandResponseManager                      = mock[CommandResponseManager]
   private def mockShutdownHttpService: () => Future[Done.type] = () => Future { Done }
-  private val sequencerBehavior                                = new SequencerBehavior(componentId, script, locationService, crm, mockShutdownHttpService)
+  private val sequencerBehavior                                = new SequencerBehavior(componentId, script, locationService, mockShutdownHttpService)
 
   val sequencerName                          = s"SequencerActor${math.random()}"
   val sequencerActor: ActorRef[SequencerMsg] = system.systemActorOf(sequencerBehavior.setup, sequencerName)
 
+  private def deadletter = system.deadLetters
+
   private val completionPromise = Promise[SubmitResponse]()
-  mockCommand(sequence.runId, completionPromise.future)
 
-  def mockCommand(id: Id, mockResponse: Future[SubmitResponse]): Unit = {
-    when(crm.queryFinal(id)).thenAnswer(_ => mockResponse)
-  }
-
-  // mock all commands to return Completed submit response
-  def mockAllCommands(): Unit =
-    sequence.commands.foreach { command =>
-      mockCommand(command.runId, Future.successful(Completed(command.runId)))
-    }
-
-  def loadSequenceAndAssertResponse(expected: LoadSequenceResponse): Unit = {
-    val probe = TestProbe[LoadSequenceResponse]
+  def loadSequenceAndAssertResponse(expected: OkOrUnhandledResponse): Unit = {
+    val probe = TestProbe[OkOrUnhandledResponse]
     sequencerActor ! LoadSequence(sequence, probe.ref)
     probe.expectMessage(expected)
   }
 
   def loadAndStartSequenceThenAssertInProgress(): Assertion = {
-    val probe = TestProbe[LoadSequenceResponse]
+    val probe = TestProbe[OkOrUnhandledResponse]
     sequencerActor ! SubmitSequence(sequence, probe.ref)
 
     val p: TestProbe[Option[StepList]] = TestProbe[Option[StepList]]
@@ -83,15 +71,32 @@ class SequencerTestSetup(sequence: Sequence)(implicit system: ActorSystem[_], ti
       stepList.get.runId should ===(sequence.runId)
     }
 
-    pullAllSteps()
+    pullAllSteps(sequencerActor)
     eventually(assertSequenceIsFinished())
   }
 
   def assertCurrentSequence(expected: Option[StepList]): Unit = {
     val probe = TestProbe[Option[StepList]]
     sequencerActor ! GetSequence(probe.ref)
-    probe.expectMessage(expected)
+    val message = probe.receiveMessage()
+
+    if (expected.isEmpty) message should ===(None)
+    else {
+      val actualStepList   = message.get
+      val expectedStepList = expected.get
+
+      actualStepList.steps should have size expectedStepList.steps.size
+
+      actualStepList.steps.zip(expectedStepList.steps).foreach {
+        case (e, a) =>
+          e.status should ===(a.status)
+          e.command should ===(a.command)
+          e.hasBreakpoint should ===(a.hasBreakpoint)
+      }
+    }
   }
+
+  def assertCurrentSequence(expected: StepList): Unit = assertCurrentSequence(Some(expected))
 
   def assertEngineCanExecuteNext(isReadyToExecuteNext: Boolean): Unit = {
     val probe = TestProbe[Ok.type]
@@ -283,7 +288,7 @@ class SequencerTestSetup(sequence: Sequence)(implicit system: ActorSystem[_], ti
     val stepList = probe.expectMessageType[Option[StepList]]
     val finished = stepList.get.isFinished
 
-    if (finished) completionPromise.complete(Success(Completed(sequence.runId)))
+    if (finished) completionPromise.complete(Success(Completed(stepList.get.runId)))
 
     finished should ===(true)
   }
@@ -294,10 +299,23 @@ class SequencerTestSetup(sequence: Sequence)(implicit system: ActorSystem[_], ti
     probe.expectMessageType[PullNextResult]
   }
 
+  def startPullNext(): Unit = {
+    val probe = TestProbe[PullNextResponse]
+    sequencerActor ! PullNext(probe.ref)
+  }
+
+  def finishStepWithSuccess(): Unit =
+    sequencerActor ! StepSuccess(deadletter)
+
+  def finishStepWithError(message: String): Unit =
+    sequencerActor ! StepFailure(message, deadletter)
+
   // this is to simulate engine pull and executing steps
-  private def pullAllSteps(): Seq[PullNextResult] = {
-    mockAllCommands()
-    (1 to sequence.commands.size).map(_ => pullNextCommand())
+  private def pullAllSteps(sequencer: ActorRef[SequencerMsg]): Unit = {
+    (1 to sequence.commands.size).foreach(_ => {
+      pullNextCommand()
+      sequencer ! StepSuccess(deadletter)
+    })
   }
 
   def getSequence(): Option[StepList] = {
@@ -309,43 +327,41 @@ class SequencerTestSetup(sequence: Sequence)(implicit system: ActorSystem[_], ti
 
 object SequencerTestSetup {
 
-  def idle(sequence: Sequence)(implicit system: ActorSystem[_], timeout: Timeout): SequencerTestSetup = {
+  def idle(sequence: Sequence)(implicit system: ActorSystem[_]): SequencerTestSetup = {
     val testSetup = new SequencerTestSetup(sequence)
     testSetup
   }
 
-  def loaded(sequence: Sequence)(implicit system: ActorSystem[_], timeout: Timeout): SequencerTestSetup = {
+  def loaded(sequence: Sequence)(implicit system: ActorSystem[_]): SequencerTestSetup = {
     val sequencerSetup = idle(sequence)
     sequencerSetup.loadSequenceAndAssertResponse(Ok)
     sequencerSetup
   }
 
-  def inProgress(sequence: Sequence)(implicit system: ActorSystem[_], timeout: Timeout): SequencerTestSetup = {
+  def inProgress(sequence: Sequence)(implicit system: ActorSystem[_]): SequencerTestSetup = {
     val sequencerSetup = idle(sequence)
-    sequencerSetup.mockCommand(sequence.commands.head.runId, Promise[SubmitResponse].future)
     sequencerSetup.loadAndStartSequenceThenAssertInProgress()
-    sequencerSetup.pullNextCommand()
+    sequencerSetup.startPullNext()
     sequencerSetup
   }
 
   def inProgressWithFirstCommandComplete(
       sequence: Sequence
-  )(implicit system: ActorSystem[_], timeout: Timeout): SequencerTestSetup = {
-    val sequencerSetup    = idle(sequence)
-    val firstCommandRunId = sequence.commands.head.runId
-    sequencerSetup.mockCommand(firstCommandRunId, Future.successful(Completed(firstCommandRunId)))
+  )(implicit system: ActorSystem[_]): SequencerTestSetup = {
+    val sequencerSetup = idle(sequence)
     sequencerSetup.loadAndStartSequenceThenAssertInProgress()
-    sequencerSetup.pullNextCommand()
+    sequencerSetup.startPullNext()
+    sequencerSetup.finishStepWithSuccess()
     sequencerSetup
   }
 
-  def offline(sequence: Sequence)(implicit system: ActorSystem[_], timeout: Timeout): SequencerTestSetup = {
+  def offline(sequence: Sequence)(implicit system: ActorSystem[_]): SequencerTestSetup = {
     val testSetup = new SequencerTestSetup(sequence)
     testSetup.goOfflineAndAssertResponse(Ok, Future.successful(Done))
     testSetup
   }
 
-  def finished(sequence: Sequence)(implicit system: ActorSystem[_], timeout: Timeout): SequencerTestSetup = {
+  def finished(sequence: Sequence)(implicit system: ActorSystem[_]): SequencerTestSetup = {
     val sequencerSetup = new SequencerTestSetup(sequence)
     import sequencerSetup._
     val probe = TestProbe[SubmitResponse]

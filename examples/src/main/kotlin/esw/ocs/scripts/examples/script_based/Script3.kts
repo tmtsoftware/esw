@@ -25,7 +25,6 @@ script {
         }
 
         log("============ command-3 End ================")
-        addOrUpdateCommand(Completed(command.runId()))
     }
 
     handleShutdown {

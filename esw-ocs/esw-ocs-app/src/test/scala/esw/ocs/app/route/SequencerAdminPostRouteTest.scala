@@ -215,7 +215,7 @@ class SequencerAdminPostRouteTest
       when(sequencerAdmin.loadSequence(sequence)).thenReturn(Future.successful(Ok))
 
       Post("/post-endpoint", LoadSequence(sequence)) ~> route ~> check {
-        responseAs[LoadSequenceResponse] should ===(Ok)
+        responseAs[OkOrUnhandledResponse] should ===(Ok)
       }
     }
 
@@ -233,7 +233,7 @@ class SequencerAdminPostRouteTest
       when(sequencerAdmin.submitSequence(sequence)).thenReturn(Future.successful(Ok))
 
       Post("/post-endpoint", SubmitSequence(sequence)) ~> route ~> check {
-        responseAs[LoadSequenceResponse] should ===(Ok)
+        responseAs[OkOrUnhandledResponse] should ===(Ok)
       }
     }
 

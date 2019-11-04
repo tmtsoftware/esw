@@ -1,7 +1,6 @@
 package esw.ocs.scripts.examples.aoesw
 
 import csw.params.commands.CommandResponse.Completed
-import csw.params.commands.CommandResponse.Error
 import csw.params.core.models.Choice
 import csw.params.events.SystemEvent
 import esw.ocs.dsl.core.script
@@ -40,19 +39,19 @@ script {
     val tcsOffsetXKey = floatKey("x")
     val tcsOffsetYKey = floatKey("y")
     val tcsOffsetVirtualTelescopeChoices =
-        choicesOf(
-            "MOUNT",
-            "OIWFS1",
-            "OIWFS2",
-            "OIWFS3",
-            "OIWFS4",
-            "ODGW1",
-            "ODGW2",
-            "ODGW3",
-            "ODGW4",
-            "GUIDER1",
-            "GUIDER2"
-        )
+            choicesOf(
+                    "MOUNT",
+                    "OIWFS1",
+                    "OIWFS2",
+                    "OIWFS3",
+                    "OIWFS4",
+                    "ODGW1",
+                    "ODGW2",
+                    "ODGW3",
+                    "ODGW4",
+                    "GUIDER1",
+                    "GUIDER2"
+            )
     val tcsOffsetVTKey = choiceKey("virtualTelescope", tcsOffsetVirtualTelescopeChoices)
 
     val loopeventKey = eventKey(rtcAssembly.prefix, "loop")
@@ -82,16 +81,16 @@ script {
     }
 
     suspend fun offsetTcs(xoffset: Float, yoffset: Float, probeNum: Int, obsId: String?) =
-        submitSequence(
-            "tcs", "darknight",
-            sequenceOf(
-                setup(aosq.prefix, "offset", obsId)
-                    .add(tcsOffsetCoordSystemKey.set(Choice("RADEC")))
-                    .add(tcsOffsetXKey.set(xoffset))
-                    .add(tcsOffsetYKey.set(yoffset))
-                    .add(tcsOffsetVTKey.set(Choice("OIWFS$probeNum")))
+            submitSequence(
+                    "tcs", "darknight",
+                    sequenceOf(
+                            setup(aosq.prefix, "offset", obsId)
+                                    .add(tcsOffsetCoordSystemKey.set(Choice("RADEC")))
+                                    .add(tcsOffsetXKey.set(xoffset))
+                                    .add(tcsOffsetYKey.set(yoffset))
+                                    .add(tcsOffsetVTKey.set(Choice("OIWFS$probeNum")))
+                    )
             )
-        )
 
     handleSetup("enableOiwfsTtf") { command ->
         val ttfProbeNum = when (val event = getEvent(oiwfsStateEvent.key()).first()) {
@@ -119,9 +118,9 @@ script {
 
         // start continuous exposures on TTF probe
         val probeExpModes =
-            (0..2).map { if (it == ttfProbeNum) Choice("CONTINUOUS") else Choice("NOOP") }.toTypedArray()
+                (0..2).map { if (it == ttfProbeNum) Choice("CONTINUOUS") else Choice("NOOP") }.toTypedArray()
         val startExposureCommand = setup(aosq.prefix, "exposure", command.obsId)
-            .add(oiwfsExposureModeKey.set(*probeExpModes))
+                .add(oiwfsExposureModeKey.set(*probeExpModes))
 
         val response = submitAndWaitCommandToAssembly(oiwfsDetectorAssembly.name, startExposureCommand)
 
@@ -148,10 +147,9 @@ script {
                     stopWhen((timesGuideStarLocked == guideStarLockedThreshold) || (attempts == maxAttempts))
                 }
 
-                if (timesGuideStarLocked == guideStarLockedThreshold) addOrUpdateCommand(Completed(command.runId()))
-                else addOrUpdateCommand(Error(command.runId(), "Guide Star Unstable"))
+                if (timesGuideStarLocked != guideStarLockedThreshold) finishWithError("Guide Star Unstable")
             }
-            else -> addOrUpdateCommand(Error(command.runId(), "Error starting WFS exposures: $response"))
+            else -> finishWithError("Error starting WFS exposures: $response")
         }
         subscription.cancel()
     }

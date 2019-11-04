@@ -62,7 +62,7 @@ class PostRouteTest extends BaseTestSuite with ScalatestRouteTest with GatewayCo
       val componentName = "test"
       val runId         = Id("123")
       val componentType = Assembly
-      val command       = Setup(Prefix("esw.test"), CommandName("c1"), Some(ObsId("obsId"))).copy(runId = runId)
+      val command       = Setup(Prefix("esw.test"), CommandName("c1"), Some(ObsId("obsId")))
       val componentId   = ComponentId(componentName, componentType)
       val submitRequest = Submit(componentId, command)
 
@@ -78,7 +78,7 @@ class PostRouteTest extends BaseTestSuite with ScalatestRouteTest with GatewayCo
       val componentName   = "test"
       val runId           = Id("123")
       val componentType   = Assembly
-      val command         = Setup(Prefix("esw.test"), CommandName("c1"), Some(ObsId("obsId"))).copy(runId = runId)
+      val command         = Setup(Prefix("esw.test"), CommandName("c1"), Some(ObsId("obsId")))
       val componentId     = ComponentId(componentName, componentType)
       val validateRequest = Validate(componentId, command)
 
@@ -94,7 +94,7 @@ class PostRouteTest extends BaseTestSuite with ScalatestRouteTest with GatewayCo
       val componentName = "test"
       val runId         = Id("123")
       val componentType = Assembly
-      val command       = Setup(Prefix("esw.test"), CommandName("c1"), Some(ObsId("obsId"))).copy(runId = runId)
+      val command       = Setup(Prefix("esw.test"), CommandName("c1"), Some(ObsId("obsId")))
       val componentId   = ComponentId(componentName, componentType)
       val onewayRequest = Oneway(componentId, command)
 
@@ -108,9 +108,8 @@ class PostRouteTest extends BaseTestSuite with ScalatestRouteTest with GatewayCo
 
     "return InvalidComponent response for invalid component id | ESW-91, ESW-216" in {
       val componentName = "test"
-      val runId         = Id("123")
       val componentType = Assembly
-      val command       = Setup(Prefix("esw.test"), CommandName("c1"), Some(ObsId("obsId"))).copy(runId = runId)
+      val command       = Setup(Prefix("esw.test"), CommandName("c1"), Some(ObsId("obsId")))
       val componentId   = ComponentId(componentName, componentType)
       val submitRequest = Submit(componentId, command)
 

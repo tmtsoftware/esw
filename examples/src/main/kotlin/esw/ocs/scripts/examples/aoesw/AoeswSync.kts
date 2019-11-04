@@ -1,5 +1,6 @@
 package esw.ocs.scripts.examples.aoesw
 
+import csw.params.commands.CommandResponse
 import esw.ocs.dsl.core.script
 import esw.ocs.dsl.params.*
 
@@ -22,10 +23,11 @@ script {
         val probeCommand = setup(prefix, "scheduledOffset", command.obsId)
             .madd(probeOffsetXParam, probeOffsetYParam)
 
-        addSubCommand(command, probeCommand)
         scheduleOnce(scheduledTime(0)) {
             val response = submitAndWaitCommandToAssembly("probeAssembly", probeCommand)
-            updateSubCommand(response)
+            if(response is CommandResponse.Error){
+                finishWithError(response.message())
+            }
         }
     }
 

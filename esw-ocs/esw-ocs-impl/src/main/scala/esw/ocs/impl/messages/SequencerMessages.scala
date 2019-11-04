@@ -2,7 +2,6 @@ package esw.ocs.impl.messages
 
 import akka.actor.typed.ActorRef
 import csw.command.client.messages.sequencer.SequencerMsg
-import csw.params.commands.CommandResponse.SubmitResponse
 import csw.params.commands.{Sequence, SequenceCommand}
 import csw.params.core.models.Id
 import csw.time.core.models.UTCTime
@@ -31,12 +30,12 @@ object SequencerMessages {
   sealed trait EditorAction          extends SequenceLoadedMessage with InProgressMessage
 
   // startup msgs
-  final case class LoadSequence(sequence: Sequence, replyTo: ActorRef[LoadSequenceResponse])
+  final case class LoadSequence(sequence: Sequence, replyTo: ActorRef[OkOrUnhandledResponse])
       extends IdleMessage
       with SequenceLoadedMessage
 
-  final case class StartSequence(replyTo: ActorRef[OkOrUnhandledResponse])                     extends SequenceLoadedMessage
-  final case class SubmitSequence(sequence: Sequence, replyTo: ActorRef[LoadSequenceResponse]) extends IdleMessage
+  final case class StartSequence(replyTo: ActorRef[OkOrUnhandledResponse])                      extends SequenceLoadedMessage
+  final case class SubmitSequence(sequence: Sequence, replyTo: ActorRef[OkOrUnhandledResponse]) extends IdleMessage
   final case class QueryFinal(replyTo: ActorRef[SequenceResponse])
       extends IdleMessage
       with SequenceLoadedMessage
@@ -80,8 +79,13 @@ object SequencerMessages {
       extends IdleMessage
 
   final private[esw] case class PullNext(replyTo: ActorRef[PullNextResponse]) extends IdleMessage with InProgressMessage
-  final private[esw] case class Update(submitResponse: SubmitResponse, replyTo: ActorRef[OkOrUnhandledResponse]) // this is internal message and replyTo is not used anywhere
-      extends InProgressMessage
+//  final private[esw] case class Update(submitResponse: SubmitResponse, replyTo: ActorRef[OkOrUnhandledResponse]) // this is internal message and replyTo is not used anywhere
+//      extends InProgressMessage
+  // this is internal message and replyTo is not used anywhere
+  final private[esw] case class StepSuccess(replyTo: ActorRef[OkOrUnhandledResponse]) extends InProgressMessage
+  // this is internal message and replyTo is not used anywhere
+  final private[esw] case class StepFailure(message: String, replyTo: ActorRef[OkOrUnhandledResponse]) extends InProgressMessage
+
   final private[esw] case class GoIdle(replyTo: ActorRef[OkOrUnhandledResponse])                extends InProgressMessage
   final private[esw] case class GoOfflineSuccess(replyTo: ActorRef[GoOfflineResponse])          extends GoingOfflineMessage
   final private[esw] case class GoOfflineFailed(replyTo: ActorRef[GoOfflineResponse])           extends GoingOfflineMessage

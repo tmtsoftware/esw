@@ -68,6 +68,7 @@ class SequenceComponentRegistrationTest extends ScalaTestWithActorTestKit with B
 
     "map location service registration failure to RegistrationError | ESW-144" in {
       implicit val system: ActorSystem[SpawnProtocol.Command] = ActorSystem(SpawnProtocol(), "test")
+      val coordinatedShutdown                                 = CoordinatedShutdown(system.toClassic)
       val errorMsg                                            = "error message"
       val locationService                                     = mock[LocationService]
 
@@ -93,6 +94,7 @@ class SequenceComponentRegistrationTest extends ScalaTestWithActorTestKit with B
 
       //assert that No retry attempt in case of subsystem and name are provided
       verify(locationService, times(1)).register(any[AkkaRegistration])
+      coordinatedShutdown.run(UnknownReason).futureValue
     }
   }
 

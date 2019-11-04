@@ -29,12 +29,34 @@ sealed class ScriptDslKt(private val cswServices: CswServices) : CswHighLevelDsl
     suspend fun nextIf(predicate: (SequenceCommand) -> Boolean): SequenceCommand? =
             scriptDsl.nextIf { predicate(it) }.await().nullable()
 
+    private fun sequenceOperator() = cswServices.sequenceOperatorFactory().apply()
+
+    fun finishWithError(message: String = ""): Nothing = throw RuntimeException(message)
+
     fun handleSetup(name: String, block: suspend CoroutineScope.(Setup) -> Unit) {
-        scriptDsl.handleSetupCommand(name) { block.toJavaFuture(it) }
+        scriptDsl.handleSetupCommand(name) {
+            block.toJavaFuture(it)
+                    .thenAccept {
+                        sequenceOperator().stepSuccess()
+                    }
+                    .exceptionally {
+                        sequenceOperator().stepFailure(it.message.orEmpty())
+                        null
+                    }
+        }
     }
 
     fun handleObserve(name: String, block: suspend CoroutineScope.(Observe) -> Unit) {
-        scriptDsl.handleObserveCommand(name) { block.toJavaFuture(it) }
+        scriptDsl.handleObserveCommand(name) {
+            block.toJavaFuture(it)
+                    .thenAccept {
+                        sequenceOperator().stepSuccess()
+                    }
+                    .exceptionally {
+                        sequenceOperator().stepFailure(it.message.orEmpty())
+                        null
+                    }
+        }
     }
 
     fun handleGoOnline(block: suspend CoroutineScope.() -> Unit) {

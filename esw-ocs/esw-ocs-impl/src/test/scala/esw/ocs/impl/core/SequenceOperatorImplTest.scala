@@ -3,14 +3,13 @@ package esw.ocs.impl.core
 import akka.actor.testkit.typed.scaladsl.{ScalaTestWithActorTestKit, TestProbe}
 import akka.actor.typed.scaladsl.Behaviors
 import csw.command.client.messages.sequencer.SequencerMsg
-import csw.params.commands.CommandResponse.Error
-import csw.params.commands.{CommandName, CommandResponse, Setup}
+import csw.params.commands.{CommandName, Setup}
 import csw.params.core.models.Prefix
 import esw.ocs.api.BaseTestSuite
-import esw.ocs.api.models.Step
-import esw.ocs.impl.messages.SequencerMessages.{MaybeNext, PullNext, ReadyToExecuteNext, Update}
-import esw.ocs.api.protocol.PullNextResult
+import esw.ocs.api.models.StepStatus.Finished
+import esw.ocs.api.models.{Step, StepStatus}
 import esw.ocs.api.protocol.{Ok, PullNextResult}
+import esw.ocs.impl.messages.SequencerMessages._
 
 class SequenceOperatorImplTest extends ScalaTestWithActorTestKit with BaseTestSuite {
 
@@ -18,14 +17,16 @@ class SequenceOperatorImplTest extends ScalaTestWithActorTestKit with BaseTestSu
 
   private val pullNextResponse   = PullNextResult(Step(command))
   private val mayBeNextResponse  = Some(Step(command))
-  private val updateFailureProbe = TestProbe[CommandResponse]()
+  private val updateFailureProbe = TestProbe[StepStatus]()
+  private val updateSuccessProbe = TestProbe[StepStatus]()
 
   private val mockedBehavior: Behaviors.Receive[SequencerMsg] = Behaviors.receiveMessage[SequencerMsg] { msg =>
     msg match {
       case PullNext(replyTo)           => replyTo ! pullNextResponse
       case MaybeNext(replyTo)          => replyTo ! mayBeNextResponse
       case ReadyToExecuteNext(replyTo) => replyTo ! Ok
-      case Update(submitResponse, _)   => updateFailureProbe.ref ! submitResponse
+      case StepSuccess(_)              => updateSuccessProbe.ref ! Finished.Success
+      case StepFailure(message, _)     => updateFailureProbe.ref ! Finished.Failure(message)
       case _                           =>
     }
     Behaviors.same
@@ -47,9 +48,8 @@ class SequenceOperatorImplTest extends ScalaTestWithActorTestKit with BaseTestSu
   }
 
   "updateFailure" in {
-    val response = Error(command.runId, "Failed")
-    sequenceOperator.update(response)
-    updateFailureProbe.expectMessage(response)
+    sequenceOperator.stepFailure("Failed")
+    updateFailureProbe.expectMessage(Finished.Failure("Failed"))
   }
 
 }

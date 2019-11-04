@@ -23,7 +23,7 @@ class SequencerAdminImplTest extends ScalaTestWithActorTestKit with BaseTestSuit
   private val startTime = UTCTime.now()
   private val hint      = "engineering"
 
-  private val getSequenceResponse          = StepList(Sequence(command)).toOption
+  private val getSequenceResponse          = Some(StepList(Sequence(command)))
   private val getStateResponse             = Loaded
   private val addResponse                  = Ok
   private val pauseResponse                = CannotOperateOnAnInFlightOrFinishedStep

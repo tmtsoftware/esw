@@ -93,12 +93,18 @@ class SequencerAdminIntegrationTest extends ScalaTestFrameworkTestKit(EventServe
     sequencerAdmin1.startSequence.futureValue should ===(Ok)
     sequencerAdmin1.queryFinal.futureValue should ===(SequenceResult(Completed(sequence.runId)))
 
-    val expectedSteps = List(
-      Step(command1, Success(Completed(command1.runId)), hasBreakpoint = false),
-      Step(command2, Success(Completed(command2.runId)), hasBreakpoint = false)
-    )
-    val expectedSequence = Some(StepList(sequence.runId, expectedSteps))
-    sequencerAdmin1.getSequence.futureValue should ===(expectedSequence)
+    val step1         = Step(command1, Success, hasBreakpoint = false)
+    val step2         = Step(command2, Success, hasBreakpoint = false)
+    val expectedSteps = List(step1, step2)
+
+    val expectedSequence = StepList(sequence.runId, expectedSteps)
+
+    val actualSequenceResponse = sequencerAdmin1.getSequence.futureValue.get
+    val actualSteps = actualSequenceResponse.steps.zipWithIndex.map {
+      case (step, index) => step.withId(expectedSteps(index).id)
+    }
+
+    actualSteps should ===(expectedSequence.steps)
 
     // assert sequencer does not accept LoadSequence/Start/QuerySequenceResponse messages in offline state
     sequencerAdmin1.goOffline().futureValue should ===(Ok)
@@ -109,22 +115,22 @@ class SequencerAdminIntegrationTest extends ScalaTestFrameworkTestKit(EventServe
   }
 
   "Load, Add commands and Start sequence - ensures sequence doesn't start on loading | ESW-222, ESW-101" in {
+
     val sequence = Sequence(command1)
 
     sequencerAdmin1.loadSequence(sequence).futureValue should ===(Ok)
 
     sequencerAdmin1.add(List(command2)).futureValue should ===(Ok)
 
-    sequencerAdmin1.getSequence.futureValue should ===(Some(StepList(sequence.runId, List(Step(command1), Step(command2)))))
+    compareStepList(sequencerAdmin1.getSequence.futureValue, Some(StepList(sequence.runId, List(Step(command1), Step(command2)))))
 
     sequencerAdmin1.startSequence.futureValue should ===(Ok)
 
     val expectedFinishedSteps = List(
-      Step(command1, Success(Completed(command1.runId)), hasBreakpoint = false),
-      Step(command2, Success(Completed(command2.runId)), hasBreakpoint = false)
+      Step(command1, Success, hasBreakpoint = false),
+      Step(command2, Success, hasBreakpoint = false)
     )
-    eventually(sequencerAdmin1.getSequence.futureValue should ===(Some(StepList(sequence.runId, expectedFinishedSteps))))
-
+    eventually(compareStepList(sequencerAdmin1.getSequence.futureValue, (Some(StepList(sequence.runId, expectedFinishedSteps)))))
   }
 
   "SubmitSequenceAndWait for a sequence and execute commands that are added later | ESW-145, ESW-154, ESW-222" in {
@@ -136,14 +142,15 @@ class SequencerAdminIntegrationTest extends ScalaTestFrameworkTestKit(EventServe
     sequencerAdmin1.add(List(command3)).futureValue should ===(Ok)
     processSeqResponse.futureValue should ===(Completed(sequence.runId))
 
-    sequencerAdmin1.getSequence.futureValue should ===(
+    compareStepList(
+      sequencerAdmin1.getSequence.futureValue,
       Some(
         StepList(
           sequence.runId,
           List(
-            Step(command1, Success(Completed(command1.runId)), hasBreakpoint = false),
-            Step(command2, Success(Completed(command2.runId)), hasBreakpoint = false),
-            Step(command3, Success(Completed(command3.runId)), hasBreakpoint = false)
+            Step(command1, Success, hasBreakpoint = false),
+            Step(command2, Success, hasBreakpoint = false),
+            Step(command3, Success, hasBreakpoint = false)
           )
         )
       )
@@ -160,17 +167,20 @@ class SequencerAdminIntegrationTest extends ScalaTestFrameworkTestKit(EventServe
     val sequence = Sequence(command1, command2, command3)
 
     val processSeqResponse: Future[SubmitResponse] = sequencer ? (SubmitSequenceAndWait(sequence, _))
-    eventually(sequencerAdmin1.getSequence.futureValue shouldBe a[Some[_]])
+    eventually(sequencerAdmin1.getSequence.futureValue should not be empty)
 
-    processSeqResponse.futureValue should ===(Error(sequence.runId, failCommandName))
+    processSeqResponse.futureValue shouldBe an[Error]
 
-    sequencerAdmin1.getSequence.futureValue should ===(
+    processSeqResponse.futureValue.runId should ===(sequence.runId)
+
+    compareStepList(
+      sequencerAdmin1.getSequence.futureValue,
       Some(
         StepList(
           sequence.runId,
           List(
-            Step(command1, Success(Completed(command1.runId)), hasBreakpoint = false),
-            Step(command2, Failure(Error(command2.runId, failCommandName)), hasBreakpoint = false),
+            Step(command1, Success, hasBreakpoint = false),
+            Step(command2, Failure("java.lang.RuntimeException: " + failCommandName), hasBreakpoint = false),
             Step(command3, Pending, hasBreakpoint = false)
           )
         )
@@ -250,12 +260,12 @@ class SequencerAdminIntegrationTest extends ScalaTestFrameworkTestKit(EventServe
     sequencerAdmin1.abortSequence().futureValue should ===(Ok)
 
     val expectedSteps = List(
-      Step(command4, Success(Completed(command4.runId)), hasBreakpoint = false)
+      Step(command4, Success, hasBreakpoint = false)
     )
     val expectedSequence = Some(StepList(sequence.runId, expectedSteps))
     val expectedResponse = SequenceResult(Completed(sequence.runId))
     sequencerAdmin1.queryFinal.futureValue should ===(expectedResponse)
-    sequencerAdmin1.getSequence.futureValue should ===(expectedSequence)
+    compareStepList(sequencerAdmin1.getSequence.futureValue, expectedSequence)
   }
 
   "LoadSequence, Start it and Stop | ESW-156, ESW-138" in {
@@ -272,14 +282,14 @@ class SequencerAdminIntegrationTest extends ScalaTestFrameworkTestKit(EventServe
     sequencerAdmin1.stop().futureValue should ===(Ok)
 
     val expectedSteps = List(
-      Step(command4, Success(Completed(command4.runId)), hasBreakpoint = false),
-      Step(command5, Success(Completed(command5.runId)), hasBreakpoint = false),
-      Step(command6, Success(Completed(command6.runId)), hasBreakpoint = false)
+      Step(command4, Success, hasBreakpoint = false),
+      Step(command5, Success, hasBreakpoint = false),
+      Step(command6, Success, hasBreakpoint = false)
     )
     val expectedSequence = Some(StepList(sequence.runId, expectedSteps))
     val expectedResponse = SequenceResult(Completed(sequence.runId))
     sequencerAdmin1.queryFinal.futureValue should ===(expectedResponse)
-    sequencerAdmin1.getSequence.futureValue should ===(expectedSequence)
+    compareStepList(sequencerAdmin1.getSequence.futureValue, expectedSequence)
   }
 
   "DiagnosticMode and OperationsMode| ESW-143, ESW-134" in {
@@ -311,6 +321,23 @@ class SequencerAdminIntegrationTest extends ScalaTestFrameworkTestKit(EventServe
     val expectedOperationsEvent = testProbe.expectMessageType[SystemEvent]
 
     expectedOperationsEvent.paramSet.head shouldBe operationsModeParam
+  }
+
+  private def compareStepList(actual: Option[StepList], expected: Option[StepList]): Unit = {
+    if (expected.isEmpty) actual should ===(None)
+    else {
+      val actualStepList   = actual.get
+      val expectedStepList = expected.get
+
+      actualStepList.steps should have size expectedStepList.steps.size
+
+      actualStepList.steps.zip(expectedStepList.steps).foreach {
+        case (e, a) =>
+          e.status should ===(a.status)
+          e.command should ===(a.command)
+          e.hasBreakpoint should ===(a.hasBreakpoint)
+      }
+    }
   }
 
   private def resolveSequencer(): ActorRef[SequencerMsg] =

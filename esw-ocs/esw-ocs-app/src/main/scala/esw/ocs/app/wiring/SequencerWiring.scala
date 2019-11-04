@@ -7,9 +7,7 @@ import akka.actor.typed.{ActorRef, ActorSystem, Props, SpawnProtocol}
 import akka.util.Timeout
 import com.typesafe.config.{Config, ConfigFactory}
 import csw.alarm.api.javadsl.IAlarmService
-import csw.command.client.messages.CommandResponseManagerMessage
 import csw.command.client.messages.sequencer.SequencerMsg
-import csw.command.client.{CRMCacheProperties, CommandResponseManager, CommandResponseManagerActor}
 import csw.config.api.javadsl.IConfigClientService
 import csw.config.client.javadsl.JConfigClientFactory
 import csw.event.client.internal.commons.javawrappers.JEventService
@@ -54,13 +52,6 @@ private[ocs] class SequencerWiring(val packageId: String, val observingMode: Str
   lazy val loggerFactory  = new LoggerFactory(sequencerName)
   lazy val logger: Logger = loggerFactory.getLogger
 
-  lazy val crmRef: ActorRef[CommandResponseManagerMessage] =
-    (actorSystem ? { x: ActorRef[ActorRef[CommandResponseManagerMessage]] =>
-      Spawn(CommandResponseManagerActor.behavior(CRMCacheProperties(), loggerFactory), "crm", Props.empty, x)
-    }).block
-  lazy val commandResponseManager: CommandResponseManager =
-    new CommandResponseManager(crmRef)(actorSystem)
-
   implicit lazy val actorRuntime: ActorRuntime = cswWiring.actorRuntime
 
   lazy val sequencerRef: ActorRef[SequencerMsg] = (typedSystem ? { x: ActorRef[ActorRef[SequencerMsg]] =>
@@ -86,7 +77,6 @@ private[ocs] class SequencerWiring(val packageId: String, val observingMode: Str
 
   lazy val cswServices = new CswServices(
     sequenceOperatorFactory,
-    commandResponseManager,
     typedSystem,
     jLocationService,
     jEventService,
@@ -115,9 +105,8 @@ private[ocs] class SequencerWiring(val packageId: String, val observingMode: Str
     }
 
   lazy val sequencerBehavior =
-    new SequencerBehavior(componentId, script, locationService, commandResponseManager, shutdownHttpService)(
-      typedSystem,
-      timeout
+    new SequencerBehavior(componentId, script, locationService, shutdownHttpService)(
+      typedSystem
     )
 
   lazy val sequencerServer: SequencerServer = new SequencerServer {

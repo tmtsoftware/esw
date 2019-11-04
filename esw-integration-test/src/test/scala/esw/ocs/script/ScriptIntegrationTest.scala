@@ -18,7 +18,7 @@ import csw.event.client.EventServiceFactory
 import csw.location.api.extensions.URIExtension.RichURI
 import csw.location.api.scaladsl.LocationService
 import csw.location.client.scaladsl.HttpLocationServiceFactory
-import csw.params.commands.CommandResponse.{Completed, SubmitResponse}
+import csw.params.commands.CommandResponse.{Completed, Error, SubmitResponse}
 import csw.params.commands.{CommandName, Sequence, Setup}
 import csw.params.core.generics.KeyType.StringKey
 import csw.params.core.generics.Parameter
@@ -57,9 +57,9 @@ class ScriptIntegrationTest extends ScalaTestFrameworkTestKit(EventServer, Alarm
   private val tcsObservingMode = "darknight"
 
   // TestScript4.kts
-  private val irmsPackageId     = "irms"
-  private val irmsObservingMode = "darknight"
-
+  private val irmsPackageId                         = "irms"
+  private val irmsObservingMode                     = "darknight"
+  private val configTestKit: ConfigTestKit          = frameworkTestKit.configTestKit
   private var locationService: LocationService      = _
   private var ocsWiring: SequencerWiring            = _
   private var ocsSequencer: ActorRef[SequencerMsg]  = _
@@ -67,7 +67,6 @@ class ScriptIntegrationTest extends ScalaTestFrameworkTestKit(EventServer, Alarm
   private var tcsSequencer: ActorRef[SequencerMsg]  = _
   private var irmsWiring: SequencerWiring           = _
   private var irmsSequencer: ActorRef[SequencerMsg] = _
-  private val configTestKit: ConfigTestKit          = frameworkTestKit.configTestKit
 
   override def beforeAll(): Unit = {
     super.beforeAll()
@@ -95,7 +94,18 @@ class ScriptIntegrationTest extends ScalaTestFrameworkTestKit(EventServer, Alarm
     tcsWiring.sequencerServer.shutDown().futureValue
   }
 
-  "Script Writer" must {
+  private def withIds(stepListMaybe: Future[Option[StepList]], ids: Id*): Future[Option[StepList]] = {
+    import actorSystem.executionContext
+    stepListMaybe.map {
+      _.map { x =>
+        StepList(x.runId, x.steps.zip(ids).map {
+          case (step, id) => step.withId(id)
+        })
+      }
+    }
+  }
+
+  "Sequencer Script" must {
     "be able to send sequence to other Sequencer by resolving location through TestScript | ESW-88, ESW-145, ESW-190, ESW-195, ESW-119" in {
       val command             = Setup(Prefix("TCS.test"), CommandName("command-4"), None)
       val submitResponseProbe = TestProbe[SubmitResponse]
@@ -111,14 +121,15 @@ class ScriptIntegrationTest extends ScalaTestFrameworkTestKit(EventServer, Alarm
       // This has to match with sequence created in TestScript -> handleSetupCommand("command-4")
       val assertableCommand =
         Setup(commandId, Prefix("TCS.test"), CommandName("command-3"), None, Set.empty)
-      val steps            = List(Step(assertableCommand).copy(status = Success(Completed(commandId))))
+      val step             = Step(assertableCommand).copy(status = Success)
+      val steps            = List(step)
       val expectedStepList = StepList(Id("testSequenceIdString123"), steps)
       Thread.sleep(1000)
 
       val actualStepList: Future[Option[StepList]] = tcsSequencer ? GetSequence
       // response received by irisSequencer
       submitResponseProbe.expectMessage(Completed(sequenceId))
-      actualStepList.futureValue.get should ===(expectedStepList)
+      withIds(actualStepList, step.id).futureValue.get should ===(expectedStepList)
     }
 
     "be able to forward diagnostic mode to downstream components | ESW-118" in {
@@ -283,7 +294,6 @@ class ScriptIntegrationTest extends ScalaTestFrameworkTestKit(EventServer, Alarm
         val event = testProbe.receiveMessage()
         event.eventId shouldNot be(-1)
       }
-
     }
 
     "be able to send commands to downstream assembly | ESW-121" in {
@@ -364,6 +374,19 @@ class ScriptIntegrationTest extends ScalaTestFrameworkTestKit(EventServer, Alarm
       getPublishedEvent.eventKey should ===(successKey)
       configTestKit.deleteServerFiles()
 
+    }
+
+    "be able to handle unexpected exception and finish the sequence | ESW-241" in {
+      val command1 = Setup(Prefix("TCS"), CommandName("check-exception-1"), None)
+      val command2 = Setup(Prefix("TCS"), CommandName("check-exception-2"), None)
+      val id       = Id()
+      val sequence = Sequence(id, Seq(command1, command2))
+
+      val submitResponseF: Future[SubmitResponse] = ocsSequencer ? (SubmitSequenceAndWait(sequence, _))
+
+      val response = submitResponseF.futureValue
+      response shouldBe an[Error]
+      response.asInstanceOf[Error].message should ===("java.lang.RuntimeException: boom")
     }
   }
 }

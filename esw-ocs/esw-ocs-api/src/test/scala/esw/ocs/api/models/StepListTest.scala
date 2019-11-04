@@ -1,32 +1,21 @@
 package esw.ocs.api.models
 
-import csw.params.commands.CommandResponse.Completed
 import csw.params.commands._
 import csw.params.core.models.{Id, Prefix}
 import esw.ocs.api.models.StepStatus.{Finished, InFlight, Pending}
-import esw.ocs.api.protocol.DuplicateIdsFound
 import esw.ocs.api.protocol.EditorError.{CannotOperateOnAnInFlightOrFinishedStep, IdDoesNotExist}
 import esw.ocs.api.{BaseTestSuite, models}
 
 class StepListTest extends BaseTestSuite {
-  def finished(id: Id): Finished.Success = Finished.Success(Completed(id))
 
   "apply" must {
     "return a StepList" in {
       val setup1 = Setup(Prefix("esw.ocs.move1"), CommandName("test1"), None)
       val setup2 = Setup(Prefix("esw.ocs.move2"), CommandName("test2"), None)
 
-      val stepList = StepList(Sequence(setup1, setup2)).toOption.get
+      val stepList = StepList(Sequence(setup1, setup2))
 
       stepList.steps.length should ===(2)
-    }
-
-    "fail when duplicate Ids provided" in {
-      val setup1 = Setup(Prefix("esw.ocs.move1"), CommandName("test1"), None)
-      val setup2 = Setup(Prefix("esw.ocs.move2"), CommandName("test2"), None).copy(runId = setup1.runId)
-
-      val sequence = Sequence(setup1, setup2)
-      StepList(sequence).left.value should ===(DuplicateIdsFound)
     }
   }
 
@@ -40,15 +29,15 @@ class StepListTest extends BaseTestSuite {
     }
 
     "return true when all steps are Finished" in {
-      val step1 = Step(setup1, finished(setup1.runId), hasBreakpoint = false)
-      val step2 = models.Step(setup2, finished(setup2.runId), hasBreakpoint = false)
+      val step1 = Step(setup1, Finished.Success, hasBreakpoint = false)
+      val step2 = models.Step(setup2, Finished.Success, hasBreakpoint = false)
 
       val stepList = StepList(Id(), List(step1, step2))
       stepList.isFinished should ===(true)
     }
 
     "return true when any step is Failed" in {
-      val step1 = Step(setup1, Finished.Failure(Completed(setup1.runId)), hasBreakpoint = false)
+      val step1 = Step(setup1, Finished.Failure(), hasBreakpoint = false)
       val step2 = Step(setup2, InFlight, hasBreakpoint = false)
 
       val stepList = StepList(Id(), List(step1, step2))
@@ -56,7 +45,7 @@ class StepListTest extends BaseTestSuite {
     }
 
     "return false when any step is not Finished" in {
-      val step1 = models.Step(setup1, finished(setup1.runId), hasBreakpoint = false)
+      val step1 = models.Step(setup1, Finished.Success, hasBreakpoint = false)
       val step2 = Step(setup2, InFlight, hasBreakpoint = false)
 
       val stepList = StepList(Id(), List(step1, step2))
@@ -105,7 +94,7 @@ class StepListTest extends BaseTestSuite {
     }
 
     "return false when no InFlight step exist" in {
-      val step1 = models.Step(setup1, finished(setup1.runId), hasBreakpoint = false)
+      val step1 = models.Step(setup1, Finished.Success, hasBreakpoint = false)
       val step2 = Step(setup2, Pending, hasBreakpoint = false)
 
       val stepList = StepList(Id(), List(step1, step2))
@@ -128,7 +117,7 @@ class StepListTest extends BaseTestSuite {
     "return none when no pending step present" in {
       val setup1 = Setup(Prefix("esw.ocs.move1"), CommandName("test1"), None)
       val setup2 = Setup(Prefix("esw.ocs.move2"), CommandName("test2"), None)
-      val step1  = models.Step(setup1, finished(setup1.runId), hasBreakpoint = false)
+      val step1  = models.Step(setup1, Finished.Success, hasBreakpoint = false)
       val step2  = Step(setup2, InFlight, hasBreakpoint = false)
 
       val stepList = StepList(Id(), List(step1, step2))
@@ -177,32 +166,37 @@ class StepListTest extends BaseTestSuite {
 
       val id              = Id()
       val stepList        = StepList(id, List(step1, step2, step3))
-      val updatedStepList = stepList.replace(setup2.runId, List(setup4, setup5))
-      updatedStepList.toOption.get should ===(StepList(id, List(step1, Step(setup4), Step(setup5), step3)))
+      val updatedStepList = stepList.replace(step2.id, List(setup4, setup5))
+
+      val setup4Id = updatedStepList.map(_.steps(1).id).toOption.get
+      val setup5Id = updatedStepList.map(_.steps(2).id).toOption.get
+
+      updatedStepList.toOption.get should ===(
+        StepList(id, List(step1, Step(setup4).withId(setup4Id), Step(setup5).withId(setup5Id), step3))
+      )
     }
 
     "fail with CannotOperateOnAnInFlightOrFinishedStep error when Id matches but is in InFlight status | ESW-108" in {
-      val step1Status = finished(setup1.runId)
+      val step1Status = Finished.Success
       val step2Status = InFlight
       val step1       = models.Step(setup1, step1Status, hasBreakpoint = false)
       val step2       = Step(setup2, step2Status, hasBreakpoint = false)
       val step3       = Step(setup3, Pending, hasBreakpoint = false)
 
       val stepList        = StepList(Id(), List(step1, step2, step3))
-      val id              = setup2.runId
-      val updatedStepList = stepList.replace(id, List(setup4, setup5))
+      val updatedStepList = stepList.replace(step2.id, List(setup4, setup5))
       updatedStepList.left.value should ===(CannotOperateOnAnInFlightOrFinishedStep)
     }
 
     "fail with CannotOperateOnAnInFlightOrFinishedStep error when Id matches but is in Finished status | ESW-108" in {
-      val step1Status = finished(setup1.runId)
-      val step2Status = finished(setup2.runId)
+      val step1Status = Finished.Success
+      val step2Status = Finished.Success
       val step1       = models.Step(setup1, step1Status, hasBreakpoint = false)
       val step2       = models.Step(setup2, step2Status, hasBreakpoint = false)
       val step3       = Step(setup3, Pending, hasBreakpoint = false)
 
       val stepList        = StepList(Id(), List(step1, step2, step3))
-      val id              = setup2.runId
+      val id              = step2.id
       val updatedStepList = stepList.replace(id, List(setup4, setup5))
       updatedStepList.left.value should ===(CannotOperateOnAnInFlightOrFinishedStep)
     }
@@ -232,7 +226,9 @@ class StepListTest extends BaseTestSuite {
       val id              = Id()
       val stepList        = StepList(id, List(step1, step2))
       val updatedStepList = stepList.prepend(List(setup3, setup4))
-      updatedStepList should ===(StepList(id, List(step1, Step(setup3), Step(setup4), step2)))
+      val setup3Id        = updatedStepList.steps(1).id
+      val setup4Id        = updatedStepList.steps(2).id
+      updatedStepList should ===(StepList(id, List(step1, Step(setup3).withId(setup3Id), Step(setup4).withId(setup4Id), step2)))
     }
 
     "add provided steps at the end of StepList when StepList doesn't have Pending step | ESW-113" in {
@@ -242,7 +238,8 @@ class StepListTest extends BaseTestSuite {
       val stepList = StepList(Id(), List(step1, step2))
 
       val updatedStepList = stepList.prepend(List(setup3))
-      updatedStepList should ===(StepList(stepList.runId, List(step1, step2, Step(setup3))))
+      val setup3Id        = updatedStepList.steps(2).id
+      updatedStepList should ===(StepList(stepList.runId, List(step1, step2, Step(setup3).withId(setup3Id))))
     }
   }
 
@@ -259,7 +256,9 @@ class StepListTest extends BaseTestSuite {
       val id              = Id()
       val stepList        = StepList(id, List(step1, step2))
       val updatedStepList = stepList.append(List(setup3, setup4))
-      updatedStepList should ===(StepList(id, List(step1, step2, Step(setup3), Step(setup4))))
+      val setup3Id        = updatedStepList.steps(2).id
+      val setup4Id        = updatedStepList.steps(3).id
+      updatedStepList should ===(StepList(id, List(step1, step2, Step(setup3).withId(setup3Id), Step(setup4).withId(setup4Id))))
     }
   }
 
@@ -269,13 +268,13 @@ class StepListTest extends BaseTestSuite {
     val setup3 = Setup(Prefix("esw.ocs.move3"), CommandName("test3"), None)
 
     "delete provided id when step status is Pending | ESW-112" in {
-      val step1 = models.Step(setup1, finished(setup1.runId), hasBreakpoint = false)
+      val step1 = models.Step(setup1, Finished.Success, hasBreakpoint = false)
       val step2 = Step(setup2, Pending, hasBreakpoint = false)
       val step3 = Step(setup3, Pending, hasBreakpoint = false)
 
       val id              = Id()
       val stepList        = StepList(id, List(step1, step2, step3))
-      val updatedStepList = stepList.delete(setup2.runId)
+      val updatedStepList = stepList.delete(step2.id)
       updatedStepList.toOption.get should ===(StepList(id, List(step1, step3)))
     }
 
@@ -284,18 +283,18 @@ class StepListTest extends BaseTestSuite {
       val step2 = Step(setup2, Pending, hasBreakpoint = false)
 
       val stepList        = StepList(Id(), List(step1, step2))
-      val updatedStepList = stepList.delete(setup1.runId)
+      val updatedStepList = stepList.delete(step1.id)
       updatedStepList.left.value should ===(CannotOperateOnAnInFlightOrFinishedStep)
     }
 
     "fail with CannotOperateOnAnInFlightOrFinishedStep error when step status is Finished | ESW-112" in {
-      val step1Status = finished(setup1.runId)
+      val step1Status = Finished.Success
       val step1       = models.Step(setup1, step1Status, hasBreakpoint = false)
       val step2       = Step(setup2, InFlight, hasBreakpoint = false)
       val step3       = Step(setup3, Pending, hasBreakpoint = false)
 
       val stepList        = StepList(Id(), List(step1, step2, step3))
-      val updatedStepList = stepList.delete(setup1.runId)
+      val updatedStepList = stepList.delete(step1.id)
       updatedStepList.left.value should ===(CannotOperateOnAnInFlightOrFinishedStep)
     }
     "fail with IdDoesNotExist error when step does not exist | ESW-112" in {
@@ -315,13 +314,17 @@ class StepListTest extends BaseTestSuite {
     val setup4 = Setup(Prefix("esw.ocs.move4"), CommandName("test4"), None)
 
     "insert provided commands after given Id | ESW-111" in {
-      val step1 = models.Step(setup1, finished(setup1.runId), hasBreakpoint = false)
+      val step1 = models.Step(setup1, Finished.Success, hasBreakpoint = false)
       val step2 = Step(setup2, Pending, hasBreakpoint = false)
 
       val id              = Id()
       val stepList        = StepList(id, List(step1, step2))
       val updatedStepList = stepList.insertAfter(step1.id, List(setup3, setup4))
-      updatedStepList.toOption.get should ===(StepList(id, List(step1, Step(setup3), Step(setup4), step2)))
+      val setup3Id        = updatedStepList.map(_.steps(1).id).toOption.get
+      val setup4Id        = updatedStepList.map(_.steps(2).id).toOption.get
+      updatedStepList.toOption.get should ===(
+        StepList(id, List(step1, Step(setup3).withId(setup3Id), Step(setup4).withId(setup4Id), step2))
+      )
     }
 
     "insert provided commands after last InFlight step | ESW-111" in {
@@ -330,7 +333,8 @@ class StepListTest extends BaseTestSuite {
       val id              = Id()
       val stepList        = StepList(id, List(step1))
       val updatedStepList = stepList.insertAfter(step1.id, List(setup2))
-      updatedStepList.toOption.get should ===(StepList(id, List(step1, Step(setup2))))
+      val setup2Id        = updatedStepList.map(_.steps(1).id).toOption.get
+      updatedStepList.toOption.get should ===(StepList(id, List(step1, Step(setup2).withId(setup2Id))))
     }
 
     "fail with IdDoesNotExist error when provided Id doesn't exist in StepList | ESW-111" in {
@@ -345,8 +349,8 @@ class StepListTest extends BaseTestSuite {
     }
 
     "fail with CannotOperateOnAnInFlightOrFinishedStep error when trying to insert before a Finished step in StepList | ESW-111" in {
-      val step1 = models.Step(setup1, finished(setup1.runId), hasBreakpoint = false)
-      val step2 = models.Step(setup2, finished(setup2.runId), hasBreakpoint = false)
+      val step1 = models.Step(setup1, Finished.Success, hasBreakpoint = false)
+      val step2 = models.Step(setup2, Finished.Success, hasBreakpoint = false)
       val step3 = Step(setup3, InFlight, hasBreakpoint = false)
 
       val stepList = StepList(Id(), List(step1, step2, step3))
@@ -356,7 +360,7 @@ class StepListTest extends BaseTestSuite {
     }
 
     "fail with CannotOperateOnAnInFlightOrFinishedStep error when trying to insert before an inFlight step in StepList | ESW-111" in {
-      val step1 = models.Step(setup1, finished(setup1.runId), hasBreakpoint = false)
+      val step1 = models.Step(setup1, Finished.Success, hasBreakpoint = false)
       val step2 = Step(setup2, InFlight, hasBreakpoint = false)
 
       val stepList = StepList(Id(), List(step1, step2))
@@ -373,7 +377,7 @@ class StepListTest extends BaseTestSuite {
     val setup4 = Setup(Prefix("esw.ocs.move4"), CommandName("test4"), None)
 
     "discard all the pending steps from StepList | ESW-110" in {
-      val step1 = models.Step(setup1, finished(setup1.runId), hasBreakpoint = false)
+      val step1 = models.Step(setup1, Finished.Success, hasBreakpoint = false)
       val step2 = Step(setup2, Pending, hasBreakpoint = false)
       val step3 = Step(setup3, InFlight, hasBreakpoint = false)
       val step4 = Step(setup4, Pending, hasBreakpoint = false)
@@ -390,12 +394,12 @@ class StepListTest extends BaseTestSuite {
     val setup2 = Setup(Prefix("esw.ocs.move2"), CommandName("test2"), None)
 
     "add breakpoint to provided id when step status is Pending | ESW-106" in {
-      val step1 = models.Step(setup1, finished(setup1.runId), hasBreakpoint = false)
+      val step1 = models.Step(setup1, Finished.Success, hasBreakpoint = false)
       val step2 = Step(setup2, Pending, hasBreakpoint = false)
 
       val id              = Id()
       val stepList        = StepList(id, List(step1, step2))
-      val updatedStepList = stepList.addBreakpoint(setup2.runId)
+      val updatedStepList = stepList.addBreakpoint(step2.id)
       updatedStepList.toOption.get should ===(StepList(id, List(step1, step2.copy(hasBreakpoint = true))))
     }
 
@@ -414,12 +418,12 @@ class StepListTest extends BaseTestSuite {
     val setup2 = Setup(Prefix("esw.ocs.move2"), CommandName("test2"), None)
 
     "remove breakpoint from provided id | ESW-107" in {
-      val step1 = models.Step(setup1, finished(setup1.runId), hasBreakpoint = false)
+      val step1 = models.Step(setup1, Finished.Success, hasBreakpoint = false)
       val step2 = Step(setup2, Pending, hasBreakpoint = true)
 
       val id              = Id()
       val stepList        = StepList(id, List(step1, step2))
-      val updatedStepList = stepList.removeBreakpoint(setup2.runId)
+      val updatedStepList = stepList.removeBreakpoint(step2.id)
       updatedStepList.toOption.get should ===(StepList(id, List(step1, step2.copy(hasBreakpoint = false))))
     }
 
@@ -440,7 +444,7 @@ class StepListTest extends BaseTestSuite {
     val setup4 = Setup(Prefix("esw.ocs.move4"), CommandName("test4"), None)
 
     "add breakpoint to next pending step | ESW-104" in {
-      val step1 = models.Step(setup1, finished(setup1.runId), hasBreakpoint = false)
+      val step1 = models.Step(setup1, Finished.Success, hasBreakpoint = false)
       val step2 = Step(setup2, InFlight, hasBreakpoint = false)
       val step3 = Step(setup3, Pending, hasBreakpoint = false)
       val step4 = Step(setup4, Pending, hasBreakpoint = false)
@@ -452,7 +456,7 @@ class StepListTest extends BaseTestSuite {
     }
 
     "fail with CannotOperateOnAnInFlightOrFinishedStep error when Pending step doesn't exist in StepList | ESW-104" in {
-      val step1 = models.Step(setup1, finished(setup1.runId), hasBreakpoint = false)
+      val step1 = models.Step(setup1, Finished.Success, hasBreakpoint = false)
       val step2 = Step(setup2, InFlight, hasBreakpoint = false)
 
       val stepList        = StepList(Id(), List(step1, step2))
@@ -467,7 +471,7 @@ class StepListTest extends BaseTestSuite {
     val setup3 = Setup(Prefix("esw.ocs.move3"), CommandName("test3"), None)
 
     "remove breakpoint from next pending step | ESW-105" in {
-      val step1 = models.Step(setup1, finished(setup1.runId), hasBreakpoint = false)
+      val step1 = models.Step(setup1, Finished.Success, hasBreakpoint = false)
       val step2 = Step(setup2, InFlight, hasBreakpoint = false)
       val step3 = Step(setup3, Pending, hasBreakpoint = true)
 
@@ -478,7 +482,7 @@ class StepListTest extends BaseTestSuite {
     }
 
     "be no-op when Pending step doesn't exist in StepList | ESW-105" in {
-      val step1 = models.Step(setup1, finished(setup1.runId), hasBreakpoint = false)
+      val step1 = models.Step(setup1, Finished.Success, hasBreakpoint = false)
       val step2 = Step(setup2, InFlight, hasBreakpoint = false)
 
       val stepList        = StepList(Id(), List(step1, step2))
@@ -493,18 +497,18 @@ class StepListTest extends BaseTestSuite {
     val setup3 = Setup(Prefix("esw.ocs.move3"), CommandName("test3"), None)
 
     "update status of step matching provided Id with given status" in {
-      val step1 = models.Step(setup1, finished(setup1.runId), hasBreakpoint = false)
+      val step1 = models.Step(setup1, Finished.Success, hasBreakpoint = false)
       val step2 = Step(setup2, InFlight, hasBreakpoint = false)
       val step3 = Step(setup3, Pending, hasBreakpoint = false)
 
       val id               = Id()
       val stepList         = StepList(id, List(step1, step2, step3))
-      val step2Status      = finished(setup2.runId)
-      val updatedStepList1 = stepList.updateStatus(setup2.runId, step2Status)
+      val step2Status      = Finished.Success
+      val updatedStepList1 = stepList.updateStatus(step2.id, step2Status)
       val updatedStep2     = step2.copy(status = step2Status)
       updatedStepList1 shouldBe StepList(id, List(step1, updatedStep2, step3))
 
-      val updatedStepList2 = updatedStepList1.updateStatus(setup3.runId, InFlight)
+      val updatedStepList2 = updatedStepList1.updateStatus(step3.id, InFlight)
       val updatedStep3     = step3.copy(status = InFlight)
       updatedStepList2 should ===(StepList(id, List(step1, updatedStep2, updatedStep3)))
     }

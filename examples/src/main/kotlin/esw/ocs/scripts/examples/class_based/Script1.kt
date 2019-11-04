@@ -25,7 +25,6 @@ class Script1(cswServices: CswServices) : Script(cswServices) {
             }
 
             log("============ command-1 -End ================")
-            addOrUpdateCommand(Completed(command.runId()))
         }
 
         handleSetup("command-2") { command ->
@@ -35,7 +34,6 @@ class Script1(cswServices: CswServices) : Script(cswServices) {
             events.forEach(::println)
 
             log("============ command-2 End ================")
-            addOrUpdateCommand(Completed(command.runId()))
         }
 
         handleSetup("command-3") { command ->
@@ -49,7 +47,6 @@ class Script1(cswServices: CswServices) : Script(cswServices) {
             }
 
             log("============ command-3 End ================")
-            addOrUpdateCommand(Completed(command.runId()))
         }
 
         handleShutdown {

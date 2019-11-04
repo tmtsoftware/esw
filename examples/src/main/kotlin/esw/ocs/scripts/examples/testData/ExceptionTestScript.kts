@@ -16,7 +16,6 @@ script {
     }
 
     handleSetup("next-command") { command ->
-        addOrUpdateCommand(CommandResponse.Completed(command.runId()))
     }
 
 }

@@ -4,7 +4,7 @@ import csw.alarm.api.javadsl.JAlarmSeverity.Major
 import csw.alarm.models.Key.AlarmKey
 import csw.location.api.javadsl.JComponentType.Assembly
 import csw.params.commands.*
-import csw.params.commands.CommandResponse.Completed
+import csw.params.commands.CommandResponse.*
 import csw.params.core.models.Id
 import csw.params.core.models.Prefix
 import csw.params.events.Event
@@ -24,17 +24,14 @@ script {
     handleSetup("command-1") { command ->
         // To avoid sequencer to finish immediately so that other Add, Append command gets time
         delay(200)
-        addOrUpdateCommand(Completed(command.runId))
     }
 
     handleSetup("command-2") { command ->
-        addOrUpdateCommand(Completed(command.runId))
     }
 
     handleSetup("check-config") { command ->
         if (existsConfig("/tmt/test/wfos.conf"))
             publishEvent(systemEvent("WFOS", "config.success"))
-        addOrUpdateCommand(Completed(command.runId))
     }
 
     handleSetup("get-config-data") { command ->
@@ -44,11 +41,9 @@ script {
             if (it == configValue)
                 publishEvent(systemEvent("WFOS", "config.success"))
         }
-        addOrUpdateCommand(Completed(command.runId))
     }
 
     handleSetup("command-3") { command ->
-        addOrUpdateCommand(Completed(command.runId))
     }
 
     handleSetup("get-event") {
@@ -56,12 +51,10 @@ script {
         val event: Event = getEvent("TCS.get.event").first()
         val successEvent = systemEvent("TCS", "get.success")
         if (!event.isInvalid) publishEvent(successEvent)
-        addOrUpdateCommand(Completed(it.runId()))
     }
 
     handleSetup("command-for-assembly") { command ->
         submitCommandToAssembly("test", command)
-        addOrUpdateCommand(Completed(command.runId()))
     }
 
     handleSetup("command-4") { command ->
@@ -80,34 +73,35 @@ script {
 
         // ESW-88, ESW-145, ESW-195
         submitSequence("tcs", "darknight", sequence)
-        addOrUpdateCommand(Completed(command.runId()))
     }
 
     handleSetup("test-sequencer-hierarchy") {
         delay(5000)
-        addOrUpdateCommand(Completed(it.runId()))
     }
 
     handleSetup("fail-command") { command ->
-        addOrUpdateCommand(CommandResponse.Error(command.runId(), command.commandName().name()))
+    }
+
+    handleSetup("check-exception-1") { command ->
+        throw RuntimeException("boom")
+    }
+
+    handleSetup("check-exception-2") { command ->
     }
 
     handleSetup("set-alarm-severity") { command ->
         val alarmKey = AlarmKey(NFIRAOS, "trombone", "tromboneAxisHighLimitAlarm")
         setSeverity(alarmKey, Major())
         delay(500)
-        addOrUpdateCommand(Completed(command.runId()))
     }
 
     handleSetup("command-irms") { _ ->
         // NOT update command response to avoid sequencer to finish immediately
         // so that other Add, Append command gets time
         val setupCommand = Setup(
-                Id("command-4-irms"),
                 Prefix("IRMS.test"),
                 CommandName("command-irms"),
-                Option.apply(null),
-                HashSet()
+                Optional.ofNullable(null)
         )
         val sequence = Sequence(
                 Id("testSequenceIdString123"),

@@ -26,7 +26,7 @@ class SequencerAdminClientTest extends BaseTestSuite with SequencerAdminHttpCode
     "call postClient with GetSequence request | ESW-222" in {
       val command1 = Setup(Prefix("esw.test"), CommandName("command-1"), None)
       val sequence = Sequence(command1)
-      val stepList = StepList(sequence).rightValue
+      val stepList = StepList(sequence)
 
       when(postClient.requestResponse[Option[StepList]](argsEq(GetSequence))(any[Decoder[Option[StepList]]]()))
         .thenReturn(Future.successful(Some(stepList)))
@@ -137,8 +137,9 @@ class SequencerAdminClientTest extends BaseTestSuite with SequencerAdminHttpCode
     "call postClient with LoadSequence request | ESW-222" in {
       val command1 = Setup(Prefix("esw.test"), CommandName("command-1"), None)
       val sequence = Sequence(command1)
-      when(postClient.requestResponse[LoadSequenceResponse](argsEq(LoadSequence(sequence)))(any[Decoder[LoadSequenceResponse]]()))
-        .thenReturn(Future.successful(Ok))
+      when(
+        postClient.requestResponse[OkOrUnhandledResponse](argsEq(LoadSequence(sequence)))(any[Decoder[OkOrUnhandledResponse]]())
+      ).thenReturn(Future.successful(Ok))
       sequencerAdminClient.loadSequence(sequence).futureValue should ===(Ok)
     }
 
@@ -153,7 +154,7 @@ class SequencerAdminClientTest extends BaseTestSuite with SequencerAdminHttpCode
       val sequence = Sequence(command1)
       when(
         postClient
-          .requestResponse[LoadSequenceResponse](argsEq(SubmitSequence(sequence)))(any[Decoder[LoadSequenceResponse]]())
+          .requestResponse[OkOrUnhandledResponse](argsEq(SubmitSequence(sequence)))(any[Decoder[OkOrUnhandledResponse]]())
       ).thenReturn(Future.successful(Ok))
       sequencerAdminClient.submitSequence(sequence).futureValue should ===(Ok)
     }

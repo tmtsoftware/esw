@@ -7,7 +7,7 @@ import csw.params.commands.{CommandName, Sequence, Setup}
 import csw.params.core.models.{Id, Prefix}
 import csw.testkit.scaladsl.ScalaTestFrameworkTestKit
 import esw.ocs.api.BaseTestSuite
-import esw.ocs.api.protocol.{LoadSequenceResponse, Ok, Unhandled}
+import esw.ocs.api.protocol.{Ok, OkOrUnhandledResponse, Unhandled}
 import esw.ocs.app.wiring.SequencerWiring
 import esw.ocs.impl.messages.SequencerMessages.{LoadSequence, SubmitSequence}
 
@@ -37,8 +37,8 @@ class SequencerBehaviorIntegrationTest extends ScalaTestFrameworkTestKit with Ba
   "Sequencer" must {
     "not receive sequence when already processing a sequence | ESW-145" in {
       val command                   = Setup(Prefix("TCS.test"), CommandName("test-sequencer-hierarchy"), None)
-      val submitResponseProbe       = TestProbe[LoadSequenceResponse]
-      val loadSequenceResponseProbe = TestProbe[LoadSequenceResponse]
+      val submitResponseProbe       = TestProbe[OkOrUnhandledResponse]
+      val loadSequenceResponseProbe = TestProbe[OkOrUnhandledResponse]
       val sequenceId                = Id()
       val sequence                  = Sequence(sequenceId, Seq(command))
 

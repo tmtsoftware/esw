@@ -14,6 +14,5 @@ val script7 = reusableScript {
         events.forEach(::println)
 
         log("============ command-2 End ================")
-        addOrUpdateCommand(Completed(command.runId()))
     }
 }

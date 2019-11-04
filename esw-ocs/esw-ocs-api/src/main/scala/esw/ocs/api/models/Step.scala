@@ -5,8 +5,7 @@ import csw.params.core.models.Id
 import esw.ocs.api.models.StepStatus.{Finished, InFlight, Pending}
 import esw.ocs.api.protocol.EditorError._
 
-case class Step private[ocs] (command: SequenceCommand, status: StepStatus, hasBreakpoint: Boolean) {
-  def id: Id             = command.runId
+case class Step private[ocs] (id: Id, command: SequenceCommand, status: StepStatus, hasBreakpoint: Boolean) {
   def isPending: Boolean = status == StepStatus.Pending
   def isFailed: Boolean = status match {
     case _: Finished.Failure => true
@@ -30,8 +29,12 @@ case class Step private[ocs] (command: SequenceCommand, status: StepStatus, hasB
       case (Pending, InFlight) | (InFlight, _: Finished) => copy(status = newStatus)
       case _                                             => this
     }
+
+  private[ocs] def withId(id: Id): Step = copy(id = id)
 }
 
 object Step {
-  def apply(command: SequenceCommand): Step = Step(command, StepStatus.Pending, hasBreakpoint = false)
+  def apply(command: SequenceCommand): Step = Step(Id(), command, StepStatus.Pending, hasBreakpoint = false)
+  def apply(command: SequenceCommand, status: StepStatus, hasBreakpoint: Boolean): Step =
+    new Step(Id(), command, status, hasBreakpoint)
 }

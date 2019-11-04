@@ -21,8 +21,8 @@ class Script5(cswServices: CswServices) : Script(cswServices) {
         var totalEventsRec = 0
 
         loadScripts(
-            script6,
-            script7
+                script6,
+                script7
         )
 
         handleSetup("command-3") { command ->
@@ -37,7 +37,6 @@ class Script5(cswServices: CswServices) : Script(cswServices) {
             }
 
             log("============ command-3 End ================")
-            addOrUpdateCommand(Completed(command.runId()))
         }
 
         handleShutdown {
