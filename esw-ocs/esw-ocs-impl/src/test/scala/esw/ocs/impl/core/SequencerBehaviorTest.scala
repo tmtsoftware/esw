@@ -323,60 +323,9 @@ class SequencerBehaviorTest extends ScalaTestWithActorTestKit with BaseTestSuite
       assertEngineCanExecuteNext(isReadyToExecuteNext = false)
       assertCurrentSequence(afterPauseStepList)
     }
-
-    "pause sequencer when it is in Loaded state | ESW-104" in {
-      val sequencerSetup = SequencerTestSetup.loaded(sequence)
-      import sequencerSetup._
-
-      val beforePauseStepList = StepList(
-        sequence.runId,
-        List(Step(command1, Pending, hasBreakpoint = false), Step(command2, Pending, hasBreakpoint = false))
-      )
-      assertCurrentSequence(Some(beforePauseStepList))
-      //Engine can NOT execute next step as sequence is NOT inProgress state. (It's just Loaded sequence)
-      assertEngineCanExecuteNext(isReadyToExecuteNext = false)
-
-      pauseAndAssertResponse(Ok)
-
-      val afterPauseStepList = StepList(
-        sequence.runId,
-        List(Step(command1, Pending, hasBreakpoint = true), Step(command2, Pending, hasBreakpoint = false))
-      )
-
-      //Engine can NOT execute next step as sequence is NOT inProgress state and it is paused as well
-      assertEngineCanExecuteNext(isReadyToExecuteNext = false)
-      assertCurrentSequence(Some(afterPauseStepList))
-    }
   }
 
   "Resume" must {
-    "resume a paused sequence when sequencer is loaded | ESW-105" in {
-      val sequencerSetup = SequencerTestSetup.loaded(sequence)
-      import sequencerSetup._
-      val expectedPausedSteps = List(
-        Step(command1, Pending, hasBreakpoint = true),
-        Step(command2, Pending, hasBreakpoint = false)
-      )
-
-      val expectedPausedSequence = Some(StepList(sequence.runId, expectedPausedSteps))
-
-      val expectedResumedSteps = List(
-        Step(command1, Pending, hasBreakpoint = false),
-        Step(command2, Pending, hasBreakpoint = false)
-      )
-
-      val expectedResumedSequence = Some(StepList(sequence.runId, expectedResumedSteps))
-
-      pauseAndAssertResponse(Ok)
-      //Sequence is just Loaded so engine can NOT execute next step
-      assertEngineCanExecuteNext(isReadyToExecuteNext = false)
-      assertCurrentSequence(expectedPausedSequence)
-      resumeAndAssertResponse(Ok)
-      //Sequence is just Loaded so engine can NOT execute next step
-      assertEngineCanExecuteNext(isReadyToExecuteNext = false)
-      assertCurrentSequence(expectedResumedSequence)
-    }
-
     "resume a paused sequence when sequencer is InProgress | ESW-105" in {
       val sequencerSetup = SequencerTestSetup.inProgressWithFirstCommandComplete(sequence)
       import sequencerSetup._
