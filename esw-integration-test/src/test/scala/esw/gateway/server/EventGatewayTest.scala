@@ -1,11 +1,10 @@
 package esw.gateway.server
 
+import akka.Done
 import akka.actor.CoordinatedShutdown.UnknownReason
 import akka.actor.typed.ActorSystem
-import akka.actor.typed.scaladsl.adapter.TypedActorSystemOps
 import akka.stream.Materializer
 import akka.stream.scaladsl.Sink
-import akka.{Done, actor}
 import csw.params.core.generics.KeyType.{ByteKey, StructKey}
 import csw.params.core.generics.{KeyType, Parameter}
 import csw.params.core.models._
@@ -16,22 +15,21 @@ import esw.gateway.api.clients.EventClient
 import esw.gateway.api.codecs.GatewayCodecs
 import esw.gateway.api.protocol.{EmptyEventKeys, PostRequest, WebsocketRequest}
 import esw.http.core.FutureEitherExt
-import msocket.impl.post.HttpPostTransport
-import msocket.impl.ws.WebsocketTransport
 import msocket.api.Transport
 import msocket.impl.Encoding.JsonText
+import msocket.impl.post.HttpPostTransport
+import msocket.impl.ws.WebsocketTransport
 import org.scalatest.WordSpecLike
 
 import scala.concurrent.duration.{DurationInt, FiniteDuration}
 
 class EventGatewayTest extends ScalaTestFrameworkTestKit(EventServer) with WordSpecLike with FutureEitherExt with GatewayCodecs {
 
-  private implicit val system: ActorSystem[_]                = frameworkTestKit.actorSystem
-  private implicit val untypedActorSystem: actor.ActorSystem = system.toClassic
-  private implicit val mat: Materializer                     = frameworkTestKit.mat
-  private implicit val timeout: FiniteDuration               = 20.seconds
-  private val port: Int                                      = 6490
-  private val gatewayWiring: GatewayWiring                   = new GatewayWiring(Some(port))
+  private implicit val system: ActorSystem[_]  = frameworkTestKit.actorSystem
+  private implicit val mat: Materializer       = frameworkTestKit.mat
+  private implicit val timeout: FiniteDuration = 20.seconds
+  private val port: Int                        = 6490
+  private val gatewayWiring: GatewayWiring     = new GatewayWiring(Some(port))
 
   override implicit def patienceConfig: PatienceConfig = PatienceConfig(timeout)
   //Event

@@ -2,7 +2,6 @@ package esw.ocs.impl.codecs
 
 import csw.command.client.cbor.MessageCodecs
 import csw.command.client.messages.sequencer.SequencerMsg
-import csw.location.api.codec.DoneCodec
 import csw.params.core.formats.CommonCodecs
 import esw.ocs.impl.messages.SequenceComponentMsg.{GetStatus, LoadScript, Stop, UnloadScript}
 import esw.ocs.impl.messages.SequencerMessages._
@@ -11,7 +10,7 @@ import io.bullet.borer.Codec
 import io.bullet.borer.derivation.ArrayBasedCodecs.deriveUnaryCodec
 import io.bullet.borer.derivation.MapBasedCodecs.deriveCodec
 
-trait OcsMsgCodecs extends MessageCodecs with DoneCodec with CommonCodecs {
+trait OcsMsgCodecs extends MessageCodecs with CommonCodecs {
   implicit lazy val loadSequenceCodec: Codec[LoadSequence]                                   = deriveCodec
   implicit lazy val startSequenceCodec: Codec[StartSequence]                                 = deriveCodec
   implicit lazy val seqMsgQueryFinalCodec: Codec[QueryFinal]                                 = deriveCodec
