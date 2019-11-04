@@ -2,7 +2,8 @@ package esw.ocs.app
 
 import akka.Done
 import akka.actor.testkit.typed.scaladsl.TestProbe
-import akka.actor.typed.{ActorSystem, Scheduler}
+import akka.actor.typed.scaladsl.AskPattern._
+import akka.actor.typed.{ActorRef, ActorSystem}
 import akka.util.Timeout
 import csw.command.client.internal.SequencerCommandServiceImpl
 import csw.location.api.extensions.URIExtension.RichURI
@@ -15,7 +16,7 @@ import csw.params.commands.{CommandName, Sequence, Setup}
 import csw.params.core.models.{Prefix, Subsystem}
 import csw.testkit.scaladsl.ScalaTestFrameworkTestKit
 import esw.ocs.api.BaseTestSuite
-import esw.ocs.api.protocol.LoadScriptResponse
+import esw.ocs.api.protocol.{LoadScriptError, LoadScriptResponse}
 import esw.ocs.app.SequencerAppCommand.{SequenceComponent, Sequencer}
 import esw.ocs.impl.messages.SequenceComponentMsg
 import esw.ocs.impl.messages.SequenceComponentMsg.{LoadScript, UnloadScript}
@@ -26,8 +27,6 @@ import scala.concurrent.duration.DurationInt
 class SequencerAppIntegrationTest extends ScalaTestFrameworkTestKit with BaseTestSuite {
   import frameworkTestKit._
   implicit val typedSystem: ActorSystem[_]         = actorSystem
-  implicit val scheduler: Scheduler                = typedSystem.scheduler
-  implicit val timeout: Timeout                    = Timeout(25.seconds)
   private val testLocationService: LocationService = HttpLocationServiceFactory.makeLocalClient
 
   override implicit def patienceConfig: PatienceConfig = PatienceConfig(15.seconds)
@@ -121,6 +120,40 @@ class SequencerAppIntegrationTest extends ScalaTestFrameworkTestKit with BaseTes
           location.connection.componentId.name.contains("ESW.ESW_") shouldEqual true
           location.asInstanceOf[AkkaLocation].prefix.prefix.contains("ESW.ESW_") shouldEqual true
         }
+      }
+    }
+
+    "throw return LoadScriptError| ESW-102" in {
+      val subsystem        = Subsystem.ESW
+      val name             = "primary"
+      val invalidPackageId = "invalid_package"
+      val observingMode    = "darknight"
+
+      // start Sequence Component
+      SequencerApp.run(SequenceComponent(subsystem, Some(name)), enableLogging = false)
+
+      // verify Sequence component is started and registered with location service
+      val sequenceCompLocation: AkkaLocation =
+        testLocationService
+          .resolve(AkkaConnection(ComponentId(s"$subsystem.$name", ComponentType.SequenceComponent)), 5.seconds)
+          .futureValue
+          .get
+
+      sequenceCompLocation.connection shouldEqual AkkaConnection(ComponentId("ESW.primary", ComponentType.SequenceComponent))
+      sequenceCompLocation.prefix shouldEqual Prefix("ESW.primary")
+
+      val timeout = Timeout(10.seconds)
+      // LoadScript
+      val seqCompRef: ActorRef[SequenceComponentMsg] = sequenceCompLocation.uri.toActorRef.unsafeUpcast[SequenceComponentMsg]
+      val loadScriptResponse: Future[LoadScriptResponse] =
+        seqCompRef.ask(LoadScript(invalidPackageId, observingMode, _))(timeout, schedulerFromActorSystem)
+
+      val response: Either[LoadScriptError, AkkaLocation] = loadScriptResponse.futureValue.response
+
+      response match {
+        case Left(v) =>
+          v shouldEqual LoadScriptError(s"Script configuration missing for $invalidPackageId with $observingMode")
+        case Right(_) => throw new RuntimeException("test failed as this test expects LoadScriptError")
       }
     }
   }
