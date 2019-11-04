@@ -93,12 +93,19 @@ class SequencerAdminIntegrationTest extends ScalaTestFrameworkTestKit(EventServe
     sequencerAdmin1.startSequence.futureValue should ===(Ok)
     sequencerAdmin1.queryFinal.futureValue should ===(SequenceResult(Completed(sequence.runId)))
 
-    val expectedSteps = List(
-      Step(command1, Success, hasBreakpoint = false),
-      Step(command2, Success, hasBreakpoint = false)
-    )
-    val expectedSequence = Some(StepList(sequence.runId, expectedSteps))
-    sequencerAdmin1.getSequence.futureValue should ===(expectedSequence)
+    val step1         = Step(command1, Success, hasBreakpoint = false)
+    val step2         = Step(command2, Success, hasBreakpoint = false)
+    val expectedSteps = List(step1, step2)
+
+    val expectedSequence = StepList(sequence.runId, expectedSteps)
+
+    val actualSequenceResponse = sequencerAdmin1.getSequence.futureValue.get
+    val actualSteps = actualSequenceResponse.steps.zipWithIndex.map {
+      case (step, 0) => step.withId(step1.id)
+      case (step, 1) => step.withId(step2.id)
+    }
+
+    actualSteps should ===(expectedSequence.steps)
 
     // assert sequencer does not accept LoadSequence/Start/QuerySequenceResponse messages in offline state
     sequencerAdmin1.goOffline().futureValue should ===(Ok)

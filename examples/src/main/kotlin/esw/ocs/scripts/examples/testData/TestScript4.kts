@@ -1,6 +1,7 @@
 package esw.ocs.scripts.examples.testData
 
 import esw.ocs.dsl.core.script
+import kotlinx.coroutines.delay
 import kotlin.time.seconds
 
 script {
@@ -8,6 +9,7 @@ script {
     handleSetup("command-irms") { _ ->
         // NOT update command response To avoid sequencer to
         // finish so that other commands gets time
+        delay(10000)
     }
 
     handleAbortSequence {

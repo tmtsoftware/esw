@@ -79,6 +79,13 @@ script {
     handleSetup("fail-command") { command ->
     }
 
+    handleSetup("check-exception-1") { command ->
+        throw RuntimeException("boom")
+    }
+
+    handleSetup("check-exception-2") { command ->
+    }
+
     handleSetup("set-alarm-severity") { command ->
         val alarmKey = AlarmKey(NFIRAOS, "trombone", "tromboneAxisHighLimitAlarm")
         setSeverity(alarmKey, Major())
@@ -89,11 +96,9 @@ script {
         // NOT update command response to avoid sequencer to finish immediately
         // so that other Add, Append command gets time
         val setupCommand = Setup(
-                Id("command-4-irms"),
                 Prefix("IRMS.test"),
                 CommandName("command-irms"),
-                Option.apply(null),
-                HashSet()
+                Optional.ofNullable(null)
         )
         val sequence = Sequence(
                 Id("testSequenceIdString123"),

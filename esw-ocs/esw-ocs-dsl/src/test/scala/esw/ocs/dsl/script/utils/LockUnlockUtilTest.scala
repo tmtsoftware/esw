@@ -3,8 +3,6 @@ package esw.ocs.dsl.script.utils
 import java.time.Duration
 import java.util.concurrent.{CompletionStage, ExecutionException, TimeUnit}
 
-import akka.actor.CoordinatedShutdown
-import akka.actor.CoordinatedShutdown.UnknownReason
 import akka.actor.testkit.typed.scaladsl.TestProbe
 import akka.actor.typed.{ActorRef, ActorSystem, SpawnProtocol}
 import csw.command.client.messages.ComponentMessage
@@ -14,24 +12,18 @@ import csw.location.models.ComponentType
 import csw.params.core.models.Prefix
 import esw.ocs.api.BaseTestSuite
 import esw.ocs.dsl.sequence_manager.LocationServiceUtil
-import akka.actor.typed.scaladsl.adapter.TypedActorSystemOps
 
 import scala.concurrent.Future
 import scala.concurrent.duration.FiniteDuration
 
 class LockUnlockUtilTest extends BaseTestSuite {
-
-  private implicit val actorSystem: ActorSystem[SpawnProtocol.Command] = ActorSystem(SpawnProtocol(), "test")
-  private val coordinatedShutdown: CoordinatedShutdown                 = CoordinatedShutdown(actorSystem.toClassic)
-
-  override def afterAll(): Unit = coordinatedShutdown.run(UnknownReason).futureValue
-
   "jLock" must {
-    val locationServiceUtil: LocationServiceUtil = mock[LocationServiceUtil]
-    val componentName                            = "test-assembly"
-    val componentType                            = ComponentType.Assembly
-    val prefix                                   = Prefix("esw")
-    val leaseDuration                            = Duration.ofSeconds(5)
+    implicit val actorSystem: ActorSystem[SpawnProtocol.Command] = ActorSystem(SpawnProtocol(), "test")
+    val locationServiceUtil: LocationServiceUtil                 = mock[LocationServiceUtil]
+    val componentName                                            = "test-assembly"
+    val componentType                                            = ComponentType.Assembly
+    val prefix                                                   = Prefix("esw")
+    val leaseDuration                                            = Duration.ofSeconds(5)
 
     "send lock message to component | ESW-126" in {
       val componentRef = TestProbe[ComponentMessage]()
@@ -67,10 +59,11 @@ class LockUnlockUtilTest extends BaseTestSuite {
   }
 
   "jUnlock" must {
-    val locationServiceUtil: LocationServiceUtil = mock[LocationServiceUtil]
-    val componentName                            = "test-assembly"
-    val componentType                            = ComponentType.Assembly
-    val prefix                                   = Prefix("esw")
+    implicit val actorSystem: ActorSystem[SpawnProtocol.Command] = ActorSystem(SpawnProtocol(), "test")
+    val locationServiceUtil: LocationServiceUtil                 = mock[LocationServiceUtil]
+    val componentName                                            = "test-assembly"
+    val componentType                                            = ComponentType.Assembly
+    val prefix                                                   = Prefix("esw")
 
     "send unlock message to component | ESW-126" in {
       val componentRef = TestProbe[ComponentMessage]()
