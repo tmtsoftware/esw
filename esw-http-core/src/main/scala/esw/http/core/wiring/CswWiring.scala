@@ -26,7 +26,7 @@ import scala.concurrent.{ExecutionContext, Future}
  * Represents a class that lazily initializes necessary instances to run a component(s)
  */
 class CswWiring() {
-  lazy val actorSystem: ActorSystem[SpawnProtocol.Command] = ActorSystemFactory.remote(SpawnProtocol(), "service-system")
+  lazy val actorSystem: ActorSystem[SpawnProtocol.Command] = ActorSystemFactory.remote(SpawnProtocol(), "esw-system")
   lazy val actorRuntime: ActorRuntime                      = new ActorRuntime(actorSystem)
   import actorRuntime._
 
