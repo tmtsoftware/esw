@@ -148,18 +148,4 @@ script {
         stop("irms", "darknight")
     }
 
-    // ************* exception handling test ****************
-    handleSetup("exceptional-command") {
-        throw RuntimeException("command-failed")
-    }
-
-    handleSetup("next-command") { command ->
-        addOrUpdateCommand(Completed(command.runId()))
-    }
-
-    onException { exception ->
-        log("calling handler _--------------------------")
-        val successEvent = systemEvent("tcs", exception.message + "")
-        publishEvent(successEvent)
-    }
 }
