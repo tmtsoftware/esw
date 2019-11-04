@@ -87,6 +87,10 @@ sealed class ScriptDslKt(private val cswServices: CswServices) : CswHighLevelDsl
         scriptDsl.handleStop { block.toJavaFutureVoid() }
     }
 
+    fun onException(block: suspend CoroutineScope.(Throwable) -> Unit) {
+        scriptDsl.handleException { block.toJavaFuture<Throwable>(it) }
+    }
+
     fun log(msg: String) = println("[${Thread.currentThread().name}] $msg")
 
     fun loadScripts(vararg reusableScriptResult: ReusableScriptResult) {
@@ -104,8 +108,8 @@ sealed class ScriptDslKt(private val cswServices: CswServices) : CswHighLevelDsl
                         if (e == null) {
                             CompletableFuture.completedFuture(v)
                         } else {
-                            log("exception : ${e.message}")
-                            // fixme: call exception handlers whenever implemented
+                            log("Script handler failed with message : ${e.message}")
+                            scriptDsl.executeExceptionHandlers(e)
                             CompletableFuture.failedFuture<Unit>(e)
                         }
                     }
@@ -129,11 +133,11 @@ open class Script(cswServices: CswServices) : ScriptDslKt(cswServices) {
     private val supervisorJob = SupervisorJob()
     private val dispatcher = _strandEc.executorService().asCoroutineDispatcher()
 
-    private val exceptionHandler = CoroutineExceptionHandler {
-        // fixme: call exception handlers whenever implemented
-        _, exception ->
-        log("Exception: ${exception.message}")
+    private val exceptionHandler = CoroutineExceptionHandler { _, exception ->
+        log("Exception thrown in script with message: ${exception.message}")
+        scriptDsl.executeExceptionHandlers(exception)
     }
+
     override val coroutineScope: CoroutineScope get() = CoroutineScope(supervisorJob + dispatcher + exceptionHandler)
     override val strandEc: StrandEc get() = _strandEc
 

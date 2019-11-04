@@ -18,6 +18,9 @@ import java.util.*
 
 script {
 
+    // ESW-134: Reuse code by ability to import logic from one script into another
+    loadScripts(InitialCommandHandler)
+
     handleSetup("command-1") { command ->
         // To avoid sequencer to finish immediately so that other Add, Append command gets time
         delay(200)
@@ -141,4 +144,5 @@ script {
         //send stop command to downstream sequencer
         stop("irms", "darknight")
     }
+
 }

@@ -36,6 +36,7 @@ abstract class JScriptDsl(val csw: CswServices) {
   private val stopHandlers: FunctionHandlers[Unit, CompletionStage[Void]]                    = new FunctionHandlers
   private val diagnosticHandlers: FunctionHandlers[(UTCTime, String), CompletionStage[Void]] = new FunctionHandlers
   private val operationsHandlers: FunctionHandlers[Unit, CompletionStage[Void]]              = new FunctionHandlers
+  private val exceptionHandlers: FunctionHandlers[Throwable, CompletionStage[Void]]          = new FunctionHandlers
 
   private[esw] def merge(that: JScriptDsl): JScriptDsl = {
     commandHandlerBuilder ++ that.commandHandlerBuilder
@@ -46,6 +47,7 @@ abstract class JScriptDsl(val csw: CswServices) {
     stopHandlers ++ that.stopHandlers
     diagnosticHandlers ++ that.diagnosticHandlers
     operationsHandlers ++ that.operationsHandlers
+    exceptionHandlers ++ that.exceptionHandlers
     this
   }
 
@@ -60,30 +62,33 @@ abstract class JScriptDsl(val csw: CswServices) {
 
   private[esw] def execute(command: SequenceCommand): Future[Unit] = commandHandler(command).toScala.map(_ => ())
 
-  private def executeHandler[T, S](f: FunctionHandlers[Unit, CompletionStage[Void]]): Future[Unit] =
-    Future.sequence(f.execute(()).map(_.toScala)).map(_ => ())
+  private def executeHandler[T](f: FunctionHandlers[T, CompletionStage[Void]], arg: T): Future[Unit] =
+    Future.sequence(f.execute(arg).map(_.toScala)).map(_ => ())
 
   private[esw] def executeGoOnline(): Future[Done] =
-    executeHandler(onlineHandlers).map { _ =>
+    executeHandler(onlineHandlers, ()).map { _ =>
       isOnline = true
       Done
     }
 
   private[esw] def executeGoOffline(): Future[Done] = {
     isOnline = false
-    executeHandler(offlineHandlers).map(_ => Done)
+    executeHandler(offlineHandlers, ()).map(_ => Done)
   }
 
-  private[esw] def executeShutdown(): Future[Done] = executeHandler(shutdownHandlers).map(_ => Done)
+  private[esw] def executeShutdown(): Future[Done] = executeHandler(shutdownHandlers, ()).map(_ => Done)
 
-  private[esw] def executeAbort(): Future[Done] = executeHandler(abortHandlers).map(_ => Done)
+  private[esw] def executeAbort(): Future[Done] = executeHandler(abortHandlers, ()).map(_ => Done)
 
-  private[esw] def executeStop(): Future[Done] = executeHandler(stopHandlers).map(_ => Done)
+  private[esw] def executeStop(): Future[Done] = executeHandler(stopHandlers, ()).map(_ => Done)
 
   private[esw] def executeDiagnosticMode(startTime: UTCTime, hint: String): Future[Done] =
     Future.sequence(diagnosticHandlers.execute((startTime, hint)).map(_.toScala)).map(_ => Done)
 
-  private[esw] def executeOperationsMode(): Future[Done] = executeHandler(operationsHandlers).map(_ => Done)
+  private[esw] def executeOperationsMode(): Future[Done] = executeHandler(operationsHandlers, ()).map(_ => Done)
+
+  private[esw] def executeExceptionHandlers(ex: Throwable): CompletionStage[Void] =
+    executeHandler(exceptionHandlers, ex).toJava.thenAccept(_ => ())
 
   protected final def nextIf(f: SequenceCommand => Boolean): CompletionStage[Optional[SequenceCommand]] =
     async {
@@ -114,6 +119,8 @@ abstract class JScriptDsl(val csw: CswServices) {
     diagnosticHandlers.add((x: (UTCTime, String)) => handler(x._1, x._2))
   protected final def handleOperationsMode(handler: Supplier[CompletionStage[Void]]): Unit =
     operationsHandlers.add(_ => handler.get())
+
+  protected final def handleException(handler: Throwable => CompletionStage[Void]): Unit = exceptionHandlers.add(handler)
 
   protected final def submitSequence(
       sequencerName: String,
