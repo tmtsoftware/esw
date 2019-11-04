@@ -9,7 +9,7 @@ import csw.event.client.EventServiceFactory
 import csw.location.api.extensions.URIExtension.RichURI
 import csw.location.client.scaladsl.HttpLocationServiceFactory
 import csw.params.commands.CommandResponse.{Completed, SubmitResponse}
-import csw.params.commands.{CommandName, CommandResponse, Observe, Sequence, Setup}
+import csw.params.commands._
 import csw.params.core.models.{Id, Prefix}
 import csw.params.events.{Event, EventKey, SystemEvent}
 import csw.testkit.scaladsl.CSWService.EventServer
@@ -28,54 +28,80 @@ import scala.concurrent.duration.DurationInt
 class ScriptExceptionsIntegrationTest extends ScalaTestFrameworkTestKit(EventServer) with BaseTestSuite {
 
   implicit val actorSystem: ActorSystem[SpawnProtocol.Command] = frameworkTestKit.actorSystem
+  private implicit val askTimeout: Timeout                     = Timeouts.DefaultTimeout
+  override implicit def patienceConfig: PatienceConfig         = PatienceConfig(10.seconds)
 
-  private implicit val askTimeout: Timeout = Timeouts.DefaultTimeout
-
-  override implicit def patienceConfig: PatienceConfig = PatienceConfig(10.seconds)
-
-  // TestScript.kt
   private val ocsPackageId     = "esw"
-  private val ocsObservingMode = "exceptionscript"
+  private val ocsObservingMode = "exceptionscript" // ExceptionTestScript.kt
 
-  private var ocsWiring: SequencerWiring           = _
-  private var ocsSequencer: ActorRef[SequencerMsg] = _
+  private val tcsPackageId      = "tcs"
+  private val tcsObservingMode  = "exceptionscript2" // ExceptionTestScript2.kt
+  private val tcsObservingMode2 = "exceptionscript3" // ExceptionTestScript3.kt
 
-  override def beforeEach(): Unit = {
-    ocsWiring = new SequencerWiring(ocsPackageId, ocsObservingMode, None)
-    ocsSequencer = ocsWiring.sequencerServer.start().rightValue.uri.toActorRef.unsafeUpcast[SequencerMsg]
-  }
-
-  override def afterEach(): Unit = {
-    ocsWiring.sequencerServer.shutDown().futureValue
-  }
-
-  val failSetupCommand    = Setup(Prefix("TCS"), CommandName("fail-setup"), None)
-  val failSetupId         = Id()
-  val failSetupSequence   = Sequence(failSetupId, Seq(failSetupCommand))
-  val failObserveCommand  = Observe(Prefix("TCS"), CommandName("fail-observe"), None)
-  val failObserveId       = Id()
-  val failObserveSequence = Sequence(failObserveId, Seq(failObserveCommand))
-
-  val idleStateTestCases: TableFor2[SequencerMsg, String] = Table.apply(
-    ("sequencer msg", "failure msg"),
-    (SubmitSequenceAndWait(failSetupSequence, TestProbe[SubmitResponse].ref), "handle-setup-failed"),
-    (SubmitSequenceAndWait(failObserveSequence, TestProbe[SubmitResponse].ref), "handle-observe-failed"),
-    (GoOffline(TestProbe[GoOfflineResponse].ref), "handle-goOffline-failed"),
-    // fixme : uncomment and fix.
-    //    (Shutdown(TestProbe[Ok.type].ref), "handle-shutdown-failed"),
-    //    (DiagnosticMode(UTCTime.now(), "any", TestProbe[DiagnosticModeResponse].ref), "handle-diagnostic-mode-failed"),
-    (OperationsMode(TestProbe[OperationsModeResponse].ref), "handle-operations-mode-failed")
-  )
-
-  val inProgressStateTestCases: TableFor2[SequencerMsg, String] = Table.apply(
-    ("sequencer msg", "failure msg"),
-    (Stop(TestProbe[OkOrUnhandledResponse].ref), "handle-stop-failed"),
-    (AbortSequence(TestProbe[OkOrUnhandledResponse].ref), "handle-abort-failed")
-  )
+  private val eventService = new EventServiceFactory().make(HttpLocationServiceFactory.makeLocalClient)
 
   "Script" must {
+
+    // *********  Test cases of Idle state *************
+    val setupSequence   = Sequence(Setup(Prefix("TCS"), CommandName("fail-setup"), None))
+    val observeSequence = Sequence(Observe(Prefix("TCS"), CommandName("fail-observe"), None))
+
+    val idleStateTestCases: TableFor2[SequencerMsg, String] = Table.apply(
+      ("sequencer msg", "failure msg"),
+      (SubmitSequenceAndWait(setupSequence, TestProbe[SubmitResponse].ref), "handle-setup-failed"),
+      (SubmitSequenceAndWait(observeSequence, TestProbe[SubmitResponse].ref), "handle-observe-failed"),
+      (GoOffline(TestProbe[GoOfflineResponse].ref), "handle-goOffline-failed"),
+      (OperationsMode(TestProbe[OperationsModeResponse].ref), "handle-operations-mode-failed")
+      // fixme : uncomment and fix.
+      //    (DiagnosticMode(UTCTime.now(), "any", TestProbe[DiagnosticModeResponse].ref), "handle-diagnostic-mode-failed"),
+    )
+
+    forAll(idleStateTestCases) { (msg, reason) =>
+      s"invoke exception handler when ${reason} | ESW-139" in {
+        val setup = new SequencerSetup(ocsPackageId, ocsObservingMode)
+        import setup._
+
+        val eventKey = EventKey("tcs." + reason)
+        val probe    = createProbeFor(eventKey)
+
+        sequencer ! msg
+        assertReason(probe, reason)
+        shutdownSequencer()
+      }
+    }
+
+    // *********  Test cases of InProgress state *************
+    val inProgressStateTestCases: TableFor2[SequencerMsg, String] = Table.apply(
+      ("sequencer msg", "failure msg"),
+      (Stop(TestProbe[OkOrUnhandledResponse].ref), "handle-stop-failed"),
+      (AbortSequence(TestProbe[OkOrUnhandledResponse].ref), "handle-abort-failed")
+    )
+
+    forAll(inProgressStateTestCases) { (msg, reason) =>
+      s"invoke exception handler when ${reason} | ESW-139" in {
+        val setup = new SequencerSetup(ocsPackageId, ocsObservingMode)
+        import setup._
+
+        val eventKey = EventKey("tcs." + reason)
+        val probe    = createProbeFor(eventKey)
+
+        val longRunningSetupCommand  = Setup(Prefix("TCS"), CommandName("long-running-setup"), None)
+        val longRunningSetupSequence = Sequence(longRunningSetupCommand)
+
+        sequencer ? ((x: ActorRef[SubmitResponse]) => SubmitSequenceAndWait(longRunningSetupSequence, x))
+        sequencer ! msg
+
+        assertReason(probe, reason)
+        shutdownSequencer()
+      }
+    }
+  }
+
+  "Script2" must {
+
     "invoke exception handlers when exception is thrown from handler and must fail the command with message of given exception | ESW-139" in {
-      val eventService = new EventServiceFactory().make(HttpLocationServiceFactory.makeLocalClient)
+      val setup = new SequencerSetup(ocsPackageId, ocsObservingMode)
+      import setup._
 
       val command  = Setup(Prefix("TCS"), CommandName("fail-setup"), None)
       val id       = Id()
@@ -84,12 +110,9 @@ class ScriptExceptionsIntegrationTest extends ScalaTestFrameworkTestKit(EventSer
       val commandFailureMsg = "handle-setup-failed"
       val eventKey          = EventKey("tcs." + commandFailureMsg)
 
-      val testProbe    = TestProbe[Event]
-      val subscription = eventService.defaultSubscriber.subscribeActorRef(Set(eventKey), testProbe.ref)
-      subscription.ready().futureValue
-      testProbe.expectMessageType[SystemEvent] // discard invalid event
+      val testProbe = createProbeFor(eventKey)
 
-      val submitResponseF: Future[SubmitResponse] = ocsSequencer ? (SubmitSequenceAndWait(sequence, _))
+      val submitResponseF: Future[SubmitResponse] = sequencer ? (SubmitSequenceAndWait(sequence, _))
       val error                                   = submitResponseF.futureValue.asInstanceOf[CommandResponse.Error]
       error.runId shouldBe id
       error.message.contains(commandFailureMsg) shouldBe true
@@ -103,52 +126,61 @@ class ScriptExceptionsIntegrationTest extends ScalaTestFrameworkTestKit(EventSer
       val id1       = Id()
       val sequence1 = Sequence(id1, Seq(command1))
 
-      val submitResponse1: Future[SubmitResponse] = ocsSequencer ? (SubmitSequenceAndWait(sequence1, _))
+      val submitResponse1: Future[SubmitResponse] = sequencer ? (SubmitSequenceAndWait(sequence1, _))
       submitResponse1.futureValue should ===(Completed(id1))
+      shutdownSequencer()
     }
 
-    forAll(idleStateTestCases) { (msg, reason) =>
-      s"invoke exception handler when ${reason}" in {
-        val eventService = new EventServiceFactory().make(HttpLocationServiceFactory.makeLocalClient)
-        val eventKey     = EventKey("tcs." + reason)
+    "invoke exception handler when handle-goOnline-failed | ESW-139" in {
+      val reason    = "handle-goOnline-failed"
+      val eventKey  = EventKey("tcs." + reason)
+      val testProbe = createProbeFor(eventKey)
 
-        val testProbe    = TestProbe[Event]
-        val subscription = eventService.defaultSubscriber.subscribeActorRef(Set(eventKey), testProbe.ref)
-        subscription.ready().futureValue
-        testProbe.expectMessageType[SystemEvent] // discard invalid event
+      val setup = new SequencerSetup(tcsPackageId, tcsObservingMode)
+      import setup._
 
-        ocsSequencer ! msg
+      (sequencer ? GoOffline).awaitResult
+      sequencer ! GoOnline(TestProbe[GoOnlineResponse].ref)
 
-        // exception handler publishes a event with exception msg as event name
-        eventually {
-          val event = testProbe.expectMessageType[SystemEvent]
-          event.eventName.name shouldBe reason
-        }
-      }
+      assertReason(testProbe, reason)
+
+      shutdownSequencer()
     }
 
-    forAll(inProgressStateTestCases) { (msg, reason) =>
-      s"invoke exception handler when ${reason}" in {
-        val eventService = new EventServiceFactory().make(HttpLocationServiceFactory.makeLocalClient)
-        val eventKey     = EventKey("tcs." + reason)
+    "invoke exception handler when handle-shutdown-failed" in {
+      val reason    = "handle-shutdown-failed"
+      val eventKey  = EventKey("tcs." + reason)
+      val testProbe = createProbeFor(eventKey)
 
-        val testProbe    = TestProbe[Event]
-        val subscription = eventService.defaultSubscriber.subscribeActorRef(Set(eventKey), testProbe.ref)
-        subscription.ready().futureValue
-        testProbe.expectMessageType[SystemEvent] // discard invalid event
+      val setup = new SequencerSetup(tcsPackageId, tcsObservingMode2)
+      import setup._
 
-        val longRunningSetupCommand  = Setup(Prefix("TCS"), CommandName("long-running-setup"), None)
-        val longRunningSetupSequence = Sequence(longRunningSetupCommand)
+      val eventualResponse: Future[GoOfflineResponse] = sequencer ? GoOffline
+      eventualResponse.awaitResult
+      sequencer ! Shutdown(TestProbe[Ok.type].ref)
 
-        ocsSequencer ? ((x: ActorRef[SubmitResponse]) => SubmitSequenceAndWait(longRunningSetupSequence, x))
-        ocsSequencer ! msg
-
-        // exception handler publishes a event with exception msg as event name
-        eventually {
-          val event = testProbe.expectMessageType[SystemEvent]
-          event.eventName.name shouldBe reason
-        }
-      }
+      assertReason(testProbe, reason)
     }
+  }
+
+  private class SequencerSetup(id: String, mode: String) {
+    val wiring                    = new SequencerWiring(id, mode, None)
+    val sequencer                 = wiring.sequencerServer.start().rightValue.uri.toActorRef.unsafeUpcast[SequencerMsg]
+    def shutdownSequencer(): Unit = wiring.sequencerServer.shutDown().futureValue
+  }
+
+  private def assertReason(probe: TestProbe[Event], reason: String): Unit = {
+    eventually {
+      val event = probe.expectMessageType[SystemEvent]
+      event.eventName.name shouldBe reason
+    }
+  }
+
+  private def createProbeFor(eventKey: EventKey): TestProbe[Event] = {
+    val testProbe    = TestProbe[Event]
+    val subscription = eventService.defaultSubscriber.subscribeActorRef(Set(eventKey), testProbe.ref)
+    subscription.ready().futureValue
+    testProbe.expectMessageType[SystemEvent] // discard msg
+    testProbe
   }
 }

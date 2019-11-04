@@ -5,15 +5,19 @@ import kotlinx.coroutines.delay
 
 script {
 
-    onException { exception ->
-        val successEvent = systemEvent("tcs", exception.message + "")
-        publishEvent(successEvent)
+    loadScripts(exceptionHandlerScript)
+
+    handleSetup("successful-command") {
+        println("completed successfully")
+    }
+
+    handleSetup("long-running-setup") {
+        delay(50000)
     }
 
     handleSetup("fail-setup") {
         throw RuntimeException("handle-setup-failed")
     }
-
 
     handleObserve("fail-observe") {
         throw RuntimeException("handle-observe-failed")
@@ -35,19 +39,11 @@ script {
         throw RuntimeException("handle-operations-mode-failed")
     }
 
-    handleSetup("long-running-setup") {
-        delay(50000)
-    }
-
     handleStop {
         throw RuntimeException("handle-stop-failed")
     }
 
     handleAbortSequence {
         throw RuntimeException("handle-abort-failed")
-    }
-
-    handleSetup("successful-command") {
-        println("completed successfully")
     }
 }
