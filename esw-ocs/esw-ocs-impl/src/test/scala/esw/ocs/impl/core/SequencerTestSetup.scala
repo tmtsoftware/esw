@@ -3,7 +3,6 @@ package esw.ocs.impl.core
 import akka.Done
 import akka.actor.testkit.typed.scaladsl.TestProbe
 import akka.actor.typed.{ActorRef, ActorSystem}
-import akka.util.Timeout
 import csw.command.client.messages.sequencer.{SequencerMsg, SubmitSequenceAndWait}
 import csw.location.api.scaladsl.LocationService
 import csw.location.models.ComponentId
@@ -26,7 +25,7 @@ import scala.concurrent.duration.DurationLong
 import scala.concurrent.{ExecutionContext, Future, Promise}
 import scala.util.Success
 
-class SequencerTestSetup(sequence: Sequence)(implicit system: ActorSystem[_], timeout: Timeout) {
+class SequencerTestSetup(sequence: Sequence)(implicit system: ActorSystem[_]) {
   import Matchers._
   import MockitoSugar._
 
@@ -45,17 +44,6 @@ class SequencerTestSetup(sequence: Sequence)(implicit system: ActorSystem[_], ti
   private def deadletter = system.deadLetters
 
   private val completionPromise = Promise[SubmitResponse]()
-//  mockCommand(sequence.runId, completionPromise.future)
-
-//  def mockCommand(id: Id, mockResponse: Future[SubmitResponse]): Unit = {
-////    when(crm.queryFinal(id)).thenAnswer(_ => mockResponse)
-//  }
-//
-//  // mock all commands to return Completed submit response
-//  def mockAllCommands(): Unit =
-//    sequence.commands.foreach { command =>
-//      mockCommand(command.runId, Future.successful(Completed(command.runId)))
-//    }
 
   def loadSequenceAndAssertResponse(expected: OkOrUnhandledResponse): Unit = {
     val probe = TestProbe[OkOrUnhandledResponse]
@@ -339,18 +327,18 @@ class SequencerTestSetup(sequence: Sequence)(implicit system: ActorSystem[_], ti
 
 object SequencerTestSetup {
 
-  def idle(sequence: Sequence)(implicit system: ActorSystem[_], timeout: Timeout): SequencerTestSetup = {
+  def idle(sequence: Sequence)(implicit system: ActorSystem[_]): SequencerTestSetup = {
     val testSetup = new SequencerTestSetup(sequence)
     testSetup
   }
 
-  def loaded(sequence: Sequence)(implicit system: ActorSystem[_], timeout: Timeout): SequencerTestSetup = {
+  def loaded(sequence: Sequence)(implicit system: ActorSystem[_]): SequencerTestSetup = {
     val sequencerSetup = idle(sequence)
     sequencerSetup.loadSequenceAndAssertResponse(Ok)
     sequencerSetup
   }
 
-  def inProgress(sequence: Sequence)(implicit system: ActorSystem[_], timeout: Timeout): SequencerTestSetup = {
+  def inProgress(sequence: Sequence)(implicit system: ActorSystem[_]): SequencerTestSetup = {
     val sequencerSetup = idle(sequence)
     sequencerSetup.loadAndStartSequenceThenAssertInProgress()
     sequencerSetup.startPullNext()
@@ -359,7 +347,7 @@ object SequencerTestSetup {
 
   def inProgressWithFirstCommandComplete(
       sequence: Sequence
-  )(implicit system: ActorSystem[_], timeout: Timeout): SequencerTestSetup = {
+  )(implicit system: ActorSystem[_]): SequencerTestSetup = {
     val sequencerSetup = idle(sequence)
     sequencerSetup.loadAndStartSequenceThenAssertInProgress()
     sequencerSetup.startPullNext()
@@ -367,13 +355,13 @@ object SequencerTestSetup {
     sequencerSetup
   }
 
-  def offline(sequence: Sequence)(implicit system: ActorSystem[_], timeout: Timeout): SequencerTestSetup = {
+  def offline(sequence: Sequence)(implicit system: ActorSystem[_]): SequencerTestSetup = {
     val testSetup = new SequencerTestSetup(sequence)
     testSetup.goOfflineAndAssertResponse(Ok, Future.successful(Done))
     testSetup
   }
 
-  def finished(sequence: Sequence)(implicit system: ActorSystem[_], timeout: Timeout): SequencerTestSetup = {
+  def finished(sequence: Sequence)(implicit system: ActorSystem[_]): SequencerTestSetup = {
     val sequencerSetup = new SequencerTestSetup(sequence)
     import sequencerSetup._
     val probe = TestProbe[SubmitResponse]

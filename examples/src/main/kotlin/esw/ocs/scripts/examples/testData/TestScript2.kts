@@ -66,7 +66,7 @@ script {
     }
 
     handleSetup("fail-command") { command ->
-        finishWithError()
+        finishWithError(command.commandName().name())
     }
 
     // ESW-134: Reuse code by ability to import logic from one script into another

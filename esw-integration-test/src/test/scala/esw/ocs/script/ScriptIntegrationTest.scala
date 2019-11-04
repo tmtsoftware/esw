@@ -386,9 +386,7 @@ class ScriptIntegrationTest extends ScalaTestFrameworkTestKit(EventServer, Alarm
 
       val response = submitResponseF.futureValue
       response shouldBe an[Error]
-      response match {
-        case Error(_, message) => message should ===("java.lang.RuntimeException: boom")
-      }
+      response.asInstanceOf[Error].message should ===("java.lang.RuntimeException: boom")
     }
   }
 }

@@ -2,12 +2,11 @@ package esw.ocs.impl.core
 
 import akka.Done
 import akka.actor.testkit.typed.scaladsl.{ScalaTestWithActorTestKit, TestProbe}
-import akka.util.Timeout
 import csw.command.client.messages.sequencer.SubmitSequenceAndWait
 import csw.command.client.messages.{GetComponentLogMetadata, SetComponentLogLevel}
 import csw.logging.models.Level.{DEBUG, INFO}
 import csw.logging.models.LogMetadata
-import csw.params.commands.CommandResponse.{Completed, Error, QueryResponse, SubmitResponse}
+import csw.params.commands.CommandResponse.{Completed, Error, SubmitResponse}
 import csw.params.commands.{CommandName, Sequence, Setup}
 import csw.params.core.models.{Id, Prefix}
 import csw.time.core.models.UTCTime
@@ -30,8 +29,7 @@ class SequencerBehaviorTest extends ScalaTestWithActorTestKit with BaseTestSuite
   private val command4 = Setup(Prefix("esw.test"), CommandName("command-4"), None)
   private val sequence = Sequence(Id(), Seq(command1, command2))
 
-  private implicit val timeoutDuration: Timeout = timeout
-  private val maxWaitForExpectNoMessage         = 200.millis
+  private val maxWaitForExpectNoMessage = 200.millis
 
   "LoadSequence" must {
     "load the given sequence in idle state | ESW-145" in {
