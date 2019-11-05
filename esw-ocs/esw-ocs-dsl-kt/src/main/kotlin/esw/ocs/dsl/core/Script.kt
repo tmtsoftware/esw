@@ -11,7 +11,10 @@ import esw.ocs.dsl.nullable
 import esw.ocs.dsl.script.CswServices
 import esw.ocs.dsl.script.JScriptDsl
 import esw.ocs.dsl.script.StrandEc
-import kotlinx.coroutines.*
+import kotlinx.coroutines.CoroutineExceptionHandler
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.SupervisorJob
+import kotlinx.coroutines.asCoroutineDispatcher
 import kotlinx.coroutines.future.await
 import kotlinx.coroutines.future.future
 import java.util.concurrent.CompletableFuture
@@ -61,7 +64,11 @@ sealed class ScriptDslKt(private val cswServices: CswServices) : CswHighLevelDsl
             scriptDsl.handleStop { block.toJavaFutureVoid() }
 
     fun onException(block: suspend CoroutineScope.(Throwable) -> Unit) =
-            scriptDsl.handleException { block.toJavaFuture<Throwable>(it) }
+            scriptDsl.handleException { x: Throwable ->
+                coroutineScope.future { block(x) }
+                        .exceptionally { ex -> log("Exception is thrown from Exception handler with message : ${ex.message}") }
+                        .thenAccept { }
+            }
 
     fun loadScripts(vararg reusableScriptResult: ReusableScriptResult) =
             reusableScriptResult.forEach {

@@ -27,11 +27,7 @@ script {
         throw RuntimeException("handle-goOffline-failed")
     }
 
-    handleShutdown {
-        throw RuntimeException("handle-shutdown-failed")
-    }
-
-    handleDiagnosticMode { _, _ ->
+    handleDiagnosticMode { time, hint ->
         throw RuntimeException("handle-diagnostic-mode-failed")
     }
 

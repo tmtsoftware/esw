@@ -25,7 +25,7 @@ import org.scalatest.prop.TableFor2
 import scala.concurrent.Future
 import scala.concurrent.duration.DurationInt
 
-class ScriptExceptionsIntegrationTest extends ScalaTestFrameworkTestKit(EventServer) with BaseTestSuite {
+class ExceptionsHandlerIntegrationTest extends ScalaTestFrameworkTestKit(EventServer) with BaseTestSuite {
 
   implicit val actorSystem: ActorSystem[SpawnProtocol.Command] = frameworkTestKit.actorSystem
   private implicit val askTimeout: Timeout                     = Timeouts.DefaultTimeout
@@ -59,18 +59,17 @@ class ScriptExceptionsIntegrationTest extends ScalaTestFrameworkTestKit(EventSer
     forAll(idleStateTestCases) { (msg, reason) =>
       s"invoke exception handler when ${reason} | ESW-139" in {
         val setup = new SequencerSetup(ocsPackageId, ocsObservingMode)
-        import setup._
 
         val eventKey = EventKey("tcs." + reason)
         val probe    = createProbeFor(eventKey)
 
-        sequencer ! msg
+        setup.sequencer ! msg
         assertReason(probe, reason)
-        shutdownSequencer()
+        setup.shutdownSequencer()
       }
     }
 
-    // *********  Test cases of InProgress state *************
+//    ********* Test cases of InProgress state *************
     val inProgressStateTestCases: TableFor2[SequencerMsg, String] = Table.apply(
       ("sequencer msg", "failure msg"),
       (Stop(TestProbe[OkOrUnhandledResponse].ref), "handle-stop-failed"),
@@ -80,7 +79,6 @@ class ScriptExceptionsIntegrationTest extends ScalaTestFrameworkTestKit(EventSer
     forAll(inProgressStateTestCases) { (msg, reason) =>
       s"invoke exception handler when ${reason} | ESW-139" in {
         val setup = new SequencerSetup(ocsPackageId, ocsObservingMode)
-        import setup._
 
         val eventKey = EventKey("tcs." + reason)
         val probe    = createProbeFor(eventKey)
@@ -88,11 +86,11 @@ class ScriptExceptionsIntegrationTest extends ScalaTestFrameworkTestKit(EventSer
         val longRunningSetupCommand  = Setup(Prefix("TCS"), CommandName("long-running-setup"), None)
         val longRunningSetupSequence = Sequence(longRunningSetupCommand)
 
-        sequencer ? ((x: ActorRef[SubmitResponse]) => SubmitSequenceAndWait(longRunningSetupSequence, x))
-        sequencer ! msg
+        setup.sequencer ? ((x: ActorRef[SubmitResponse]) => SubmitSequenceAndWait(longRunningSetupSequence, x))
+        setup.sequencer ! msg
 
         assertReason(probe, reason)
-        shutdownSequencer()
+        setup.shutdownSequencer()
       }
     }
   }
@@ -101,7 +99,6 @@ class ScriptExceptionsIntegrationTest extends ScalaTestFrameworkTestKit(EventSer
 
     "invoke exception handlers when exception is thrown from handler and must fail the command with message of given exception | ESW-139" in {
       val setup = new SequencerSetup(ocsPackageId, ocsObservingMode)
-      import setup._
 
       val command  = Setup(Prefix("TCS"), CommandName("fail-setup"), None)
       val id       = Id()
@@ -112,7 +109,7 @@ class ScriptExceptionsIntegrationTest extends ScalaTestFrameworkTestKit(EventSer
 
       val testProbe = createProbeFor(eventKey)
 
-      val submitResponseF: Future[SubmitResponse] = sequencer ? (SubmitSequenceAndWait(sequence, _))
+      val submitResponseF: Future[SubmitResponse] = setup.sequencer ? (SubmitSequenceAndWait(sequence, _))
       val error                                   = submitResponseF.futureValue.asInstanceOf[CommandResponse.Error]
       error.runId shouldBe id
       error.message.contains(commandFailureMsg) shouldBe true
@@ -126,9 +123,9 @@ class ScriptExceptionsIntegrationTest extends ScalaTestFrameworkTestKit(EventSer
       val id1       = Id()
       val sequence1 = Sequence(id1, Seq(command1))
 
-      val submitResponse1: Future[SubmitResponse] = sequencer ? (SubmitSequenceAndWait(sequence1, _))
+      val submitResponse1: Future[SubmitResponse] = setup.sequencer ? (SubmitSequenceAndWait(sequence1, _))
       submitResponse1.futureValue should ===(Completed(id1))
-      shutdownSequencer()
+      setup.shutdownSequencer()
     }
 
     "invoke exception handler when handle-goOnline-failed | ESW-139" in {
@@ -137,14 +134,13 @@ class ScriptExceptionsIntegrationTest extends ScalaTestFrameworkTestKit(EventSer
       val testProbe = createProbeFor(eventKey)
 
       val setup = new SequencerSetup(tcsPackageId, tcsObservingMode)
-      import setup._
 
-      (sequencer ? GoOffline).awaitResult
-      sequencer ! GoOnline(TestProbe[GoOnlineResponse].ref)
+      (setup.sequencer ? GoOffline).awaitResult
+      setup.sequencer ! GoOnline(TestProbe[GoOnlineResponse].ref)
 
       assertReason(testProbe, reason)
 
-      shutdownSequencer()
+      setup.shutdownSequencer()
     }
 
     "invoke exception handler when handle-shutdown-failed" in {
@@ -152,14 +148,15 @@ class ScriptExceptionsIntegrationTest extends ScalaTestFrameworkTestKit(EventSer
       val eventKey  = EventKey("tcs." + reason)
       val testProbe = createProbeFor(eventKey)
 
-      val setup = new SequencerSetup(tcsPackageId, tcsObservingMode2)
-      import setup._
-
-      val eventualResponse: Future[GoOfflineResponse] = sequencer ? GoOffline
+      val setup                                       = new SequencerSetup(tcsPackageId, tcsObservingMode2)
+      val eventualResponse: Future[GoOfflineResponse] = setup.sequencer ? GoOffline
       eventualResponse.awaitResult
-      sequencer ! Shutdown(TestProbe[Ok.type].ref)
+
+      val probe = TestProbe[Ok.type]
+      setup.sequencer ! Shutdown(probe.ref)
 
       assertReason(testProbe, reason)
+      probe.expectMessage(Ok)
     }
   }
 
