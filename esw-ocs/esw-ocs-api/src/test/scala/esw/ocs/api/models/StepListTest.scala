@@ -490,27 +490,4 @@ class StepListTest extends BaseTestSuite {
       updatedStepList should ===(stepList)
     }
   }
-
-  "updateStatus" must {
-    val setup1 = Setup(Prefix("esw.ocs.move1"), CommandName("test1"), None)
-    val setup2 = Setup(Prefix("esw.ocs.move2"), CommandName("test2"), None)
-    val setup3 = Setup(Prefix("esw.ocs.move3"), CommandName("test3"), None)
-
-    "update status of step matching provided Id with given status" in {
-      val step1 = models.Step(setup1, Finished.Success, hasBreakpoint = false)
-      val step2 = Step(setup2, InFlight, hasBreakpoint = false)
-      val step3 = Step(setup3, Pending, hasBreakpoint = false)
-
-      val id               = Id()
-      val stepList         = StepList(id, List(step1, step2, step3))
-      val step2Status      = Finished.Success
-      val updatedStepList1 = stepList.updateStatus(step2.id, step2Status)
-      val updatedStep2     = step2.copy(status = step2Status)
-      updatedStepList1 shouldBe StepList(id, List(step1, updatedStep2, step3))
-
-      val updatedStepList2 = updatedStepList1.updateStatus(step3.id, InFlight)
-      val updatedStep3     = step3.copy(status = InFlight)
-      updatedStepList2 should ===(StepList(id, List(step1, updatedStep2, updatedStep3)))
-    }
-  }
 }

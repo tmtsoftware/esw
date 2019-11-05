@@ -73,16 +73,6 @@ final case class StepList private[models] (runId: Id, steps: List[Step]) extends
       .map(step => updateStep(step.removeBreakpoint()))
       .getOrElse(this)
 
-  // fixme: no one seems to be using this method, can we delete it?
-  private[ocs] def updateStatus(id: Id, stepStatus: StepStatus): StepList =
-    copy(
-      steps = steps
-        .foldLeft[List[Step]](List.empty) {
-          case (acc, step) if step.id == id => acc :+ step.withStatus(stepStatus)
-          case (acc, step)                  => acc :+ step
-        }
-    )
-
   private def replaceSteps(id: Id, steps: List[Step]): Either[EditorError, StepList] =
     insertStepsAfter(id, steps).map(updatedSteps => copy(runId, updatedSteps.filterNot(_.id == id)))
 
