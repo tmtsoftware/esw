@@ -29,6 +29,7 @@ private[ocs] class Engine(script: JScriptDsl) {
       pullNextResponse match {
         case PullNextResult(step) =>
           script.execute(step.command).recover {
+            // fixme: will this ever get called? this is handled in handlers defined in Script.kt?
             case NonFatal(e) => sequenceOperator.stepFailure(e.getMessage)
           }
         case _: Unhandled =>

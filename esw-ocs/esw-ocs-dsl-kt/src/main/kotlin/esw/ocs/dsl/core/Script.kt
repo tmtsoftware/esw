@@ -11,10 +11,7 @@ import esw.ocs.dsl.nullable
 import esw.ocs.dsl.script.CswServices
 import esw.ocs.dsl.script.JScriptDsl
 import esw.ocs.dsl.script.StrandEc
-import kotlinx.coroutines.CoroutineExceptionHandler
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.SupervisorJob
-import kotlinx.coroutines.asCoroutineDispatcher
+import kotlinx.coroutines.*
 import kotlinx.coroutines.future.await
 import kotlinx.coroutines.future.future
 import java.util.concurrent.CompletableFuture
@@ -25,82 +22,57 @@ sealed class ScriptDslKt(private val cswServices: CswServices) : CswHighLevelDsl
     // https://stackoverflow.com/questions/58497383/is-it-possible-to-provide-custom-name-for-internal-delegated-properties-in-kotli/58497535#58497535
     @get:JvmName("scriptDsl")
     internal val scriptDsl: JScriptDsl by lazy { ScriptDslFactory.make(cswServices, strandEc) }
+    private val sequenceOperator by lazy { cswServices.sequenceOperatorFactory().apply() }
 
     suspend fun nextIf(predicate: (SequenceCommand) -> Boolean): SequenceCommand? =
             scriptDsl.nextIf { predicate(it) }.await().nullable()
 
-    private fun sequenceOperator() = cswServices.sequenceOperatorFactory().apply()
-
     fun finishWithError(message: String = ""): Nothing = throw RuntimeException(message)
 
-    fun handleSetup(name: String, block: suspend CoroutineScope.(Setup) -> Unit) {
-        scriptDsl.handleSetupCommand(name) {
-            block.toJavaFuture(it)
-                    .thenAccept {
-                        sequenceOperator().stepSuccess()
-                    }
-                    .exceptionally {
-                        sequenceOperator().stepFailure(it.message.orEmpty())
-                        null
-                    }
-        }
-    }
+    fun handleSetup(name: String, block: suspend CoroutineScope.(Setup) -> Unit) =
+            scriptDsl.handleSetupCommand(name) {
+                block.toJavaFuture(it).thenUpdateStepStatus()
+            }
 
-    fun handleObserve(name: String, block: suspend CoroutineScope.(Observe) -> Unit) {
-        scriptDsl.handleObserveCommand(name) {
-            block.toJavaFuture(it)
-                    .thenAccept {
-                        sequenceOperator().stepSuccess()
-                    }
-                    .exceptionally {
-                        sequenceOperator().stepFailure(it.message.orEmpty())
-                        null
-                    }
-        }
-    }
+    fun handleObserve(name: String, block: suspend CoroutineScope.(Observe) -> Unit) =
+            scriptDsl.handleObserveCommand(name) {
+                block.toJavaFuture(it).thenUpdateStepStatus()
+            }
 
-    fun handleGoOnline(block: suspend CoroutineScope.() -> Unit) {
-        scriptDsl.handleGoOnline { block.toJavaFutureVoid() }
-    }
+    fun handleGoOnline(block: suspend CoroutineScope.() -> Unit) =
+            scriptDsl.handleGoOnline { block.toJavaFutureVoid() }
 
-    fun handleGoOffline(block: suspend CoroutineScope.() -> Unit) {
-        scriptDsl.handleGoOffline { block.toJavaFutureVoid() }
-    }
+    fun handleGoOffline(block: suspend CoroutineScope.() -> Unit) =
+            scriptDsl.handleGoOffline { block.toJavaFutureVoid() }
 
-    fun handleAbortSequence(block: suspend CoroutineScope.() -> Unit) {
-        scriptDsl.handleAbortSequence { block.toJavaFutureVoid() }
-    }
+    fun handleAbortSequence(block: suspend CoroutineScope.() -> Unit) =
+            scriptDsl.handleAbortSequence { block.toJavaFutureVoid() }
 
-    fun handleShutdown(block: suspend CoroutineScope.() -> Unit) {
-        scriptDsl.handleShutdown { block.toJavaFutureVoid() }
-    }
+    fun handleShutdown(block: suspend CoroutineScope.() -> Unit) =
+            scriptDsl.handleShutdown { block.toJavaFutureVoid() }
 
-    fun handleDiagnosticMode(block: suspend (UTCTime, String) -> Unit) {
-        scriptDsl.handleDiagnosticMode { x: UTCTime, y: String -> coroutineScope.future { block(x, y) }.thenAccept { } }
-    }
+    fun handleDiagnosticMode(block: suspend (UTCTime, String) -> Unit) =
+            scriptDsl.handleDiagnosticMode { x: UTCTime, y: String -> coroutineScope.future { block(x, y) }.thenAccept { } }
 
-    fun handleOperationsMode(block: suspend CoroutineScope.() -> Unit) {
-        scriptDsl.handleOperationsMode { block.toJavaFutureVoid() }
-    }
+    fun handleOperationsMode(block: suspend CoroutineScope.() -> Unit) =
+            scriptDsl.handleOperationsMode { block.toJavaFutureVoid() }
 
-    fun handleStop(block: suspend CoroutineScope.() -> Unit) {
-        scriptDsl.handleStop { block.toJavaFutureVoid() }
-    }
+    fun handleStop(block: suspend CoroutineScope.() -> Unit) =
+            scriptDsl.handleStop { block.toJavaFutureVoid() }
 
-    fun onException(block: suspend CoroutineScope.(Throwable) -> Unit) {
-        scriptDsl.handleException { block.toJavaFuture<Throwable>(it) }
-    }
+    fun onException(block: suspend CoroutineScope.(Throwable) -> Unit) =
+            scriptDsl.handleException { block.toJavaFuture<Throwable>(it) }
 
-    fun log(msg: String) = println("[${Thread.currentThread().name}] $msg")
-
-    fun loadScripts(vararg reusableScriptResult: ReusableScriptResult) {
-        reusableScriptResult.forEach {
-            this.scriptDsl.merge(it(cswServices, strandEc, coroutineScope).scriptDsl)
-        }
-    }
+    fun loadScripts(vararg reusableScriptResult: ReusableScriptResult) =
+            reusableScriptResult.forEach {
+                this.scriptDsl.merge(it(cswServices, strandEc, coroutineScope).scriptDsl)
+            }
 
     suspend fun submitSequence(sequencerName: String, observingMode: String, sequence: Sequence): SubmitResponse =
             this.scriptDsl.submitSequence(sequencerName, observingMode, sequence).await()
+
+    // fixme: use logging service
+    fun log(msg: String) = println("[${Thread.currentThread().name}] $msg")
 
     private fun (suspend CoroutineScope.() -> Unit).toJavaFutureVoid(): CompletionStage<Void> =
             coroutineScope.future { this@toJavaFutureVoid() }
@@ -119,6 +91,17 @@ sealed class ScriptDslKt(private val cswServices: CswServices) : CswHighLevelDsl
         val curriedBlock: suspend (CoroutineScope) -> Unit = { a: CoroutineScope -> this(a, value) }
         return curriedBlock.toJavaFutureVoid()
     }
+
+    // todo: can we add a comment here?
+    //  why stepSuccess and stepFailure being called from here?
+    //  why not from engine recover block of execute?
+    private fun CompletionStage<Void>.thenUpdateStepStatus() =
+            thenAccept {
+                sequenceOperator.stepSuccess()
+            }.exceptionally {
+                sequenceOperator.stepFailure(it.message.orEmpty())
+                null
+            }
 }
 
 class ReusableScript(
@@ -141,6 +124,7 @@ open class Script(cswServices: CswServices) : ScriptDslKt(cswServices) {
     override val coroutineScope: CoroutineScope get() = CoroutineScope(supervisorJob + dispatcher + exceptionHandler)
     override val strandEc: StrandEc get() = _strandEc
 
+    // fixme: call me when shutting down sequencer
     fun close() {
         supervisorJob.cancel()
         dispatcher.close()
