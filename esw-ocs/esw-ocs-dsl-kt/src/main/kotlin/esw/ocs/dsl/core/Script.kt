@@ -11,10 +11,6 @@ import esw.ocs.dsl.nullable
 import esw.ocs.dsl.script.CswServices
 import esw.ocs.dsl.script.JScriptDsl
 import esw.ocs.dsl.script.StrandEc
-import kotlinx.coroutines.CoroutineExceptionHandler
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.SupervisorJob
-import kotlinx.coroutines.asCoroutineDispatcher
 import kotlinx.coroutines.*
 import kotlinx.coroutines.future.asCompletableFuture
 import kotlinx.coroutines.future.await
@@ -51,7 +47,9 @@ sealed class ScriptDslKt(private val cswServices: CswServices) : CswHighLevelDsl
             scriptDsl.handleShutdown { block.toJavaFutureVoid() }
 
     fun handleDiagnosticMode(block: suspend (UTCTime, String) -> Unit) =
-            scriptDsl.handleDiagnosticMode { x: UTCTime, y: String -> coroutineScope.future { block(x, y) }.thenAccept { } }
+            scriptDsl.handleDiagnosticMode { x: UTCTime, y: String ->
+                coroutineScope.launch { block(x, y) }.asCompletableFuture().thenAccept { }
+            }
 
     fun handleOperationsMode(block: suspend CoroutineScope.() -> Unit) =
             scriptDsl.handleOperationsMode { block.toJavaFutureVoid() }
@@ -62,7 +60,8 @@ sealed class ScriptDslKt(private val cswServices: CswServices) : CswHighLevelDsl
     fun onException(block: suspend CoroutineScope.(Throwable) -> Unit) =
             scriptDsl.handleException {
                 coroutineScope.future { block(it) }
-                        .exceptionally { ex -> log("Exception is thrown from Exception handler with message : ${ex.message}") }
+                        // To swallow the exception coming from exception handlers
+                        .exceptionally { log("Exception is thrown from Exception handler with message : ${it.message}") }
                         .thenAccept { }
             }
 

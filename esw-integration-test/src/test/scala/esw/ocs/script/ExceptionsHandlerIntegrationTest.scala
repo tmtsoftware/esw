@@ -15,6 +15,7 @@ import csw.params.core.models.{Id, Prefix}
 import csw.params.events.{Event, EventKey, SystemEvent}
 import csw.testkit.scaladsl.CSWService.EventServer
 import csw.testkit.scaladsl.ScalaTestFrameworkTestKit
+import csw.time.core.models.UTCTime
 import esw.ocs.api.BaseTestSuite
 import esw.ocs.api.protocol._
 import esw.ocs.app.wiring.SequencerWiring
@@ -52,9 +53,8 @@ class ExceptionsHandlerIntegrationTest extends ScalaTestFrameworkTestKit(EventSe
       (SubmitSequenceAndWait(setupSequence, TestProbe[SubmitResponse].ref), "handle-setup-failed"),
       (SubmitSequenceAndWait(observeSequence, TestProbe[SubmitResponse].ref), "handle-observe-failed"),
       (GoOffline(TestProbe[GoOfflineResponse].ref), "handle-goOffline-failed"),
-      (OperationsMode(TestProbe[OperationsModeResponse].ref), "handle-operations-mode-failed")
-      // fixme : uncomment and fix.
-      //    (DiagnosticMode(UTCTime.now(), "any", TestProbe[DiagnosticModeResponse].ref), "handle-diagnostic-mode-failed"),
+      (OperationsMode(TestProbe[OperationsModeResponse].ref), "handle-operations-mode-failed"),
+      (DiagnosticMode(UTCTime.now(), "any", TestProbe[DiagnosticModeResponse].ref), "handle-diagnostic-mode-failed")
     )
 
     forAll(idleStateTestCases) { (msg, reason) =>
@@ -65,6 +65,7 @@ class ExceptionsHandlerIntegrationTest extends ScalaTestFrameworkTestKit(EventSe
         val probe    = createProbeFor(eventKey)
 
         setup.sequencer ! msg
+
         assertReason(probe, reason)
         setup.shutdownSequencer()
       }
