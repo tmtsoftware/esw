@@ -2,8 +2,8 @@ package esw.ocs.scripts.examples.script_based
 
 import csw.params.commands.CommandResponse
 import esw.ocs.dsl.core.script
-import kotlin.time.seconds
 import kotlinx.coroutines.future.await
+import kotlin.time.seconds
 
 script { _ ->
 
@@ -23,7 +23,7 @@ script { _ ->
 
         val maybeCommandB = nextIf { it.commandName().name() == "setup-iris" }
 
-        maybeCommandB?.let { commandB ->
+        maybeCommandB?.let {
             val commandB1 = setup("esw.test-commandB1", "setup-iris", "test-obsId")
             val commandB2 = setup("esw.test-commandB2", "setup-iris", "test-obsId")
 

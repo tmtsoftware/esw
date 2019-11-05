@@ -1,6 +1,5 @@
 package esw.ocs.scripts.examples.class_based
 
-import csw.params.commands.CommandResponse.Completed
 import esw.ocs.dsl.core.Script
 import esw.ocs.dsl.script.CswServices
 import kotlinx.coroutines.delay
@@ -12,7 +11,7 @@ class Script1(cswServices: CswServices) : Script(cswServices) {
         val eventKey = "csw.a.b."
         fun event(id: Int) = systemEvent("csw.a.b", id.toString())
 
-        handleSetup("command-1") { command ->
+        handleSetup("command-1") { 
             log("============ command-1 ================")
 
             repeat(50) {
@@ -27,7 +26,7 @@ class Script1(cswServices: CswServices) : Script(cswServices) {
             log("============ command-1 -End ================")
         }
 
-        handleSetup("command-2") { command ->
+        handleSetup("command-2") { 
             log("============ command-2 ================")
             val events = getEvent(eventKey + 1)
             log(events.toString())
@@ -36,7 +35,7 @@ class Script1(cswServices: CswServices) : Script(cswServices) {
             log("============ command-2 End ================")
         }
 
-        handleSetup("command-3") { command ->
+        handleSetup("command-3") { 
             log("============ command-3 ================")
 
             val keys = (0.until(50)).map { eventKey + it }.toTypedArray()

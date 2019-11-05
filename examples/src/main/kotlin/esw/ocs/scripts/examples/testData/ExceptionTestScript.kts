@@ -27,7 +27,7 @@ script {
         throw RuntimeException("handle-shutdown-failed")
     }
 
-    handleDiagnosticMode { time, hint ->
+    handleDiagnosticMode { _, _ ->
         throw RuntimeException("handle-diagnostic-mode-failed")
     }
 

@@ -1,6 +1,5 @@
 package esw.ocs.scripts.examples.reusable_scripts
 
-import csw.params.commands.CommandResponse.Completed
 import esw.ocs.dsl.core.reusableScript
 import esw.ocs.scripts.examples.class_based.event
 import kotlinx.coroutines.delay
@@ -10,7 +9,7 @@ val script6 = reusableScript {
 
     log("============= Loading script 6 ============")
 
-    handleSetup("command-1") { command ->
+    handleSetup("command-1") {
         log("============ command-1 ================")
 
         repeat(50) {

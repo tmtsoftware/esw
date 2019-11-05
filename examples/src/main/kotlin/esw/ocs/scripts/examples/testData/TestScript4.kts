@@ -6,7 +6,7 @@ import kotlin.time.seconds
 
 script {
 
-    handleSetup("command-irms") { _ ->
+    handleSetup("command-irms") {
         // NOT update command response To avoid sequencer to
         // finish so that other commands gets time
         delay(10000)
@@ -24,7 +24,7 @@ script {
         publishEvent(successEvent)
     }
 
-    handleSetup("time-service-dsl") { command ->
+    handleSetup("time-service-dsl") {
         val offset = utcTimeAfter(2.seconds).offsetFromNow()
         val taskToSchedule: suspend () -> Unit =
                 { publishEvent(systemEvent("irms", "publish.success")) }

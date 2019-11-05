@@ -1,35 +1,29 @@
 package esw.ocs.scripts.examples.testData
 
-import csw.params.commands.CommandResponse.Completed
-import csw.params.commands.CommandResponse.Error
 import esw.ocs.dsl.core.script
 import kotlinx.coroutines.delay
 
 script {
-    handleSetup("command-1") { command ->
+    handleSetup("command-1") {
         // To avoid sequencer to finish immediately so that other Add, Append command gets time
         delay(200)
     }
 
-    handleSetup("command-2") { command ->
-
+    handleSetup("command-2") {
     }
 
-    handleSetup("command-3") { command ->
-
+    handleSetup("command-3") {
     }
 
-    handleSetup("command-4") { command ->
+    handleSetup("command-4") {
         //Don't complete immediately as this is used to abort sequence usecase
         delay(700)
     }
 
-    handleSetup("command-5") { command ->
-
+    handleSetup("command-5") {
     }
 
-    handleSetup("command-6") { command ->
-
+    handleSetup("command-6") {
     }
 
     handleSetup("fail-command") { command ->

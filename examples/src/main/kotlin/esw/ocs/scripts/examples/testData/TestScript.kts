@@ -21,20 +21,20 @@ script {
     // ESW-134: Reuse code by ability to import logic from one script into another
     loadScripts(InitialCommandHandler)
 
-    handleSetup("command-1") { command ->
+    handleSetup("command-1") {
         // To avoid sequencer to finish immediately so that other Add, Append command gets time
         delay(200)
     }
 
-    handleSetup("command-2") { command ->
+    handleSetup("command-2") {
     }
 
-    handleSetup("check-config") { command ->
+    handleSetup("check-config") {
         if (existsConfig("/tmt/test/wfos.conf"))
             publishEvent(systemEvent("WFOS", "config.success"))
     }
 
-    handleSetup("get-config-data") { command ->
+    handleSetup("get-config-data") {
         val configValue = "component = wfos"
         val configData = getConfig("/tmt/test/wfos.conf")
         configData?.let {
@@ -43,7 +43,7 @@ script {
         }
     }
 
-    handleSetup("command-3") { command ->
+    handleSetup("command-3") {
     }
 
     handleSetup("get-event") {
@@ -57,7 +57,7 @@ script {
         submitCommandToAssembly("test", command)
     }
 
-    handleSetup("command-4") { command ->
+    handleSetup("command-4") {
         // try sending concrete sequence
         val setupCommand = Setup(
                 Id("testCommandIdString123"),
@@ -79,23 +79,20 @@ script {
         delay(5000)
     }
 
-    handleSetup("fail-command") { command ->
-    }
-
-    handleSetup("check-exception-1") { command ->
+    handleSetup("check-exception-1") {
         throw RuntimeException("boom")
     }
 
-    handleSetup("check-exception-2") { command ->
+    handleSetup("check-exception-2") {
     }
 
-    handleSetup("set-alarm-severity") { command ->
+    handleSetup("set-alarm-severity") {
         val alarmKey = AlarmKey(NFIRAOS, "trombone", "tromboneAxisHighLimitAlarm")
         setSeverity(alarmKey, Major())
         delay(500)
     }
 
-    handleSetup("command-irms") { _ ->
+    handleSetup("command-irms") {
         // NOT update command response to avoid sequencer to finish immediately
         // so that other Add, Append command gets time
         val setupCommand = Setup(
