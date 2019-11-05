@@ -2,7 +2,7 @@ package esw.ocs.impl.core
 
 import akka.Done
 import akka.actor.testkit.typed.scaladsl.{ScalaTestWithActorTestKit, TestProbe}
-import csw.command.client.messages.sequencer.SubmitSequenceAndWait
+import csw.command.client.messages.sequencer.SequencerMsg.{QueryFinal, SubmitSequenceAndWait}
 import csw.command.client.messages.{GetComponentLogMetadata, SetComponentLogLevel}
 import csw.logging.models.Level.{DEBUG, INFO}
 import csw.logging.models.LogMetadata
@@ -15,7 +15,7 @@ import esw.ocs.api.models.StepStatus.{Finished, InFlight, Pending}
 import esw.ocs.api.models.{Step, StepList}
 import esw.ocs.api.protocol.EditorError.{CannotOperateOnAnInFlightOrFinishedStep, IdDoesNotExist}
 import esw.ocs.api.protocol._
-import esw.ocs.impl.messages.SequencerMessages.{AbortSequence, AddBreakpoint, QueryFinal, _}
+import esw.ocs.impl.messages.SequencerMessages.{AbortSequence, AddBreakpoint, QueryFinalInternal, _}
 import esw.ocs.impl.messages.SequencerState.{Idle, InProgress, Loaded, Offline}
 
 import scala.concurrent.Future
@@ -83,9 +83,9 @@ class SequencerBehaviorTest extends ScalaTestWithActorTestKit with BaseTestSuite
       finishStepWithError(message)
       assertSequencerState(Idle)
 
-      val qfProbe = createTestProbe[SequenceResponse]()
+      val qfProbe = createTestProbe[SubmitResponse]()
       sequencerActor ! QueryFinal(qfProbe.ref)
-      qfProbe.expectMessage(SequenceResult(Error(sequence1.runId, message)))
+      qfProbe.expectMessage(Error(sequence1.runId, message))
     }
   }
 
@@ -106,7 +106,7 @@ class SequencerBehaviorTest extends ScalaTestWithActorTestKit with BaseTestSuite
       val sequencerSetup = SequencerTestSetup.idle(sequence)
       import sequencerSetup._
 
-      val seqResProbe = createTestProbe[SequenceResponse]
+      val seqResProbe = createTestProbe[SubmitResponse]
       sequencerActor ! QueryFinal(seqResProbe.ref)
       seqResProbe.expectNoMessage(maxWaitForExpectNoMessage)
     }
@@ -116,7 +116,7 @@ class SequencerBehaviorTest extends ScalaTestWithActorTestKit with BaseTestSuite
       import sequencerSetup._
 
       val seqResProbe = createTestProbe[SequenceResponse]
-      sequencerActor ! QueryFinal(seqResProbe.ref)
+      sequencerActor ! QueryFinalInternal(seqResProbe.ref)
       seqResProbe.expectNoMessage(maxWaitForExpectNoMessage)
 
       val startSeqProbe = createTestProbe[OkOrUnhandledResponse]
@@ -139,24 +139,24 @@ class SequencerBehaviorTest extends ScalaTestWithActorTestKit with BaseTestSuite
       startPullNext()
       assertSequencerState(InProgress)
 
-      val seqResProbe = createTestProbe[SequenceResponse]
+      val seqResProbe = createTestProbe[SubmitResponse]
       sequencerActor ! QueryFinal(seqResProbe.ref)
       seqResProbe.expectNoMessage(maxWaitForExpectNoMessage)
 
       finishStepWithSuccess()
       assertSequenceIsFinished()
 
-      seqResProbe.expectMessage(SequenceResult(Completed(sequence1.runId)))
+      seqResProbe.expectMessage(Completed(sequence1.runId))
     }
 
     "return Sequence result with Completed when sequencer has finished executing a sequence | ESW-145, ESW-154, ESW-221" in {
       val sequencerSetup = SequencerTestSetup.finished(sequence)
       import sequencerSetup._
 
-      val seqResProbe = createTestProbe[SequenceResponse]
+      val seqResProbe = createTestProbe[SubmitResponse]
       sequencerActor ! QueryFinal(seqResProbe.ref)
 
-      seqResProbe.expectMessage(SequenceResult(Completed(sequence.runId)))
+      seqResProbe.expectMessage(Completed(sequence.runId))
     }
 
   }
@@ -945,7 +945,7 @@ class SequencerBehaviorTest extends ScalaTestWithActorTestKit with BaseTestSuite
       GoIdle,
       PullNext,
       StepSuccess,
-      QueryFinal
+      QueryFinalInternal
     )
   }
 }

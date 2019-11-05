@@ -3,7 +3,8 @@ package esw.ocs.impl.core
 import akka.Done
 import akka.actor.testkit.typed.scaladsl.TestProbe
 import akka.actor.typed.{ActorRef, ActorSystem}
-import csw.command.client.messages.sequencer.{SequencerMsg, SubmitSequenceAndWait}
+import csw.command.client.messages.sequencer.SequencerMsg
+import csw.command.client.messages.sequencer.SequencerMsg.SubmitSequenceAndWait
 import csw.location.api.scaladsl.LocationService
 import csw.location.models.ComponentId
 import csw.params.commands.CommandResponse.{Completed, SubmitResponse}

@@ -1,6 +1,7 @@
 package esw.ocs.api.protocol
 
-import csw.params.commands.CommandResponse.{Error, SubmitResponse}
+import csw.params.commands.CommandIssue.UnsupportedCommandInStateIssue
+import csw.params.commands.CommandResponse.{Invalid, SubmitResponse}
 import csw.params.core.models.Id
 import esw.ocs.api.codecs.OcsAkkaSerializable
 import esw.ocs.api.models.Step
@@ -17,9 +18,9 @@ sealed trait DiagnosticModeResponse   extends EswSequencerResponse
 sealed trait OperationsModeResponse   extends EswSequencerResponse
 
 sealed trait SequenceResponse extends EswSequencerResponse {
-  def toSubmitResponse(sequenceId: Id): SubmitResponse = this match {
+  def toSubmitResponse(sequenceId: Id = Id("IdNotAvailable")): SubmitResponse = this match {
     case SequenceResult(submitResponse) => submitResponse
-    case unhandled: Unhandled           => Error(sequenceId, unhandled.msg)
+    case unhandled: Unhandled           => Invalid(sequenceId, UnsupportedCommandInStateIssue(unhandled.msg))
   }
 }
 

@@ -57,5 +57,5 @@ class SequencerAdminImpl(sequencer: ActorRef[EswSequencerMessage])(implicit syst
     sequencer ? (SubmitSequence(sequence, _))
 
   // fixme: shouldn't this call have long timeout and not the default?
-  override def queryFinal: Future[SequenceResponse] = sequencer ? QueryFinal
+  override def queryFinal: Future[SequenceResponse] = sequencer ? QueryFinalInternal
 }

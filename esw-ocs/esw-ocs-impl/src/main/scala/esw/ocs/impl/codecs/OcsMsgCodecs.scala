@@ -13,7 +13,7 @@ import io.bullet.borer.derivation.MapBasedCodecs.deriveCodec
 trait OcsMsgCodecs extends MessageCodecs with CommonCodecs {
   implicit lazy val loadSequenceCodec: Codec[LoadSequence]                                   = deriveCodec
   implicit lazy val startSequenceCodec: Codec[StartSequence]                                 = deriveCodec
-  implicit lazy val seqMsgQueryFinalCodec: Codec[QueryFinal]                                 = deriveCodec
+  implicit lazy val seqMsgQueryFinalCodec: Codec[QueryFinalInternal]                         = deriveCodec
   implicit lazy val submitSequenceCodec: Codec[SubmitSequence]                               = deriveCodec
   implicit lazy val submitSequenceAndWaitInternalCodec: Codec[SubmitSequenceAndWaitInternal] = deriveCodec
 

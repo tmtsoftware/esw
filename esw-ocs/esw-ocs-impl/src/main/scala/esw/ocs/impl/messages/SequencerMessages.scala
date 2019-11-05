@@ -36,7 +36,7 @@ object SequencerMessages {
 
   final case class StartSequence(replyTo: ActorRef[OkOrUnhandledResponse])                      extends SequenceLoadedMessage
   final case class SubmitSequence(sequence: Sequence, replyTo: ActorRef[OkOrUnhandledResponse]) extends IdleMessage
-  final case class QueryFinal(replyTo: ActorRef[SequenceResponse])
+  final case class QueryFinalInternal(replyTo: ActorRef[SequenceResponse])
       extends IdleMessage
       with SequenceLoadedMessage
       with InProgressMessage

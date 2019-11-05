@@ -4,7 +4,8 @@ import akka.actor.testkit.typed.scaladsl.TestProbe
 import akka.actor.typed.scaladsl.AskPattern._
 import akka.actor.typed.{ActorRef, ActorSystem, SpawnProtocol}
 import akka.util.Timeout
-import csw.command.client.messages.sequencer.{SequencerMsg, SubmitSequenceAndWait}
+import csw.command.client.messages.sequencer.SequencerMsg
+import csw.command.client.messages.sequencer.SequencerMsg.SubmitSequenceAndWait
 import csw.event.client.EventServiceFactory
 import csw.location.api.extensions.URIExtension.RichURI
 import csw.location.api.scaladsl.LocationService
@@ -111,7 +112,7 @@ class SequencerAdminIntegrationTest extends ScalaTestFrameworkTestKit(EventServe
     sequencerAdmin1.loadSequence(sequence).futureValue should ===(Unhandled(Offline.entryName, "LoadSequence"))
 
     sequencerAdmin1.startSequence.futureValue should ===(Unhandled(Offline.entryName, "StartSequence"))
-    sequencerAdmin1.queryFinal.futureValue should ===(Unhandled(Offline.entryName, "QueryFinal"))
+    sequencerAdmin1.queryFinal.futureValue should ===(Unhandled(Offline.entryName, "QueryFinalInternal"))
   }
 
   "Load, Add commands and Start sequence - ensures sequence doesn't start on loading | ESW-222, ESW-101" in {

@@ -10,7 +10,8 @@ import com.typesafe.config.ConfigFactory
 import csw.alarm.client.AlarmServiceFactory
 import csw.alarm.models.AlarmSeverity
 import csw.alarm.models.Key.AlarmKey
-import csw.command.client.messages.sequencer.{SequencerMsg, SubmitSequenceAndWait}
+import csw.command.client.messages.sequencer.SequencerMsg.SubmitSequenceAndWait
+import csw.command.client.messages.sequencer.SequencerMsg
 import csw.config.api.scaladsl.ConfigService
 import csw.config.api.{ConfigData, TokenFactory}
 import csw.config.client.scaladsl.ConfigClientFactory
