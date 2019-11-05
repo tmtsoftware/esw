@@ -4,7 +4,8 @@ import akka.actor.testkit.typed.scaladsl.TestProbe
 import akka.actor.typed.scaladsl.AskPattern._
 import akka.actor.typed.{ActorRef, ActorSystem, SpawnProtocol}
 import akka.util.Timeout
-import csw.command.client.messages.sequencer.{SequencerMsg, SubmitSequenceAndWait}
+import csw.command.client.messages.sequencer.SequencerMsg
+import csw.command.client.messages.sequencer.SequencerMsg.SubmitSequenceAndWait
 import csw.event.client.EventServiceFactory
 import csw.location.api.extensions.URIExtension.RichURI
 import csw.location.client.scaladsl.HttpLocationServiceFactory
