@@ -18,13 +18,15 @@ import esw.ocs.impl.messages.SequencerState.{Idle, Loaded, Offline}
 class SequencerAdminImplTest extends ScalaTestWithActorTestKit with BaseTestSuite {
   private val command = Setup(Prefix("esw.test"), CommandName("command-1"), None)
 
-  private val command1 = Setup(Prefix("esw.test"), CommandName("command-1"), None)
-  private val sequence = Sequence(command1)
+  private val sequence = Sequence(command)
 
   private val startTime = UTCTime.now()
   private val hint      = "engineering"
 
-  private val getSequenceResponse          = Some(StepList(Sequence(command)))
+  private val getSequenceResponse = Some(StepList(Sequence(command)))
+
+  private val stepId = getSequenceResponse.get.steps.head.id
+
   private val getStateResponse             = Loaded
   private val addResponse                  = Ok
   private val pauseResponse                = CannotOperateOnAnInFlightOrFinishedStep
@@ -50,29 +52,29 @@ class SequencerAdminImplTest extends ScalaTestWithActorTestKit with BaseTestSuit
   private val mockedBehavior: Behaviors.Receive[SequencerMsg] =
     Behaviors.receiveMessage[SequencerMsg] { msg =>
       msg match {
-        case GetSequence(replyTo)                                   => replyTo ! getSequenceResponse
-        case GetSequencerState(replyTo)                             => replyTo ! getStateResponse
-        case Add(List(`command`), replyTo)                          => replyTo ! addResponse
-        case Prepend(List(`command`), replyTo)                      => replyTo ! prependResponse
-        case Replace(`command`.runId, List(`command`), replyTo)     => replyTo ! replaceResponse
-        case InsertAfter(`command`.runId, List(`command`), replyTo) => replyTo ! insertAfterResponse
-        case Delete(`command`.runId, replyTo)                       => replyTo ! deleteResponse
-        case Pause(replyTo)                                         => replyTo ! pauseResponse
-        case Resume(replyTo)                                        => replyTo ! resumeResponse
-        case Reset(replyTo)                                         => replyTo ! resetResponse
-        case AbortSequence(replyTo)                                 => replyTo ! abortResponse
-        case Stop(replyTo)                                          => replyTo ! stopResponse
-        case AddBreakpoint(`command`.runId, replyTo)                => replyTo ! addBreakpointResponse
-        case RemoveBreakpoint(`command`.runId, replyTo)             => replyTo ! removeBreakpointResponse
-        case GoOnline(replyTo)                                      => replyTo ! goOnlineResponse
-        case GoOffline(replyTo)                                     => replyTo ! goOfflineResponse
-        case LoadSequence(`sequence`, replyTo)                      => replyTo ! loadSequenceResponse
-        case StartSequence(replyTo)                                 => replyTo ! startSequenceResponse
-        case SubmitSequence(`sequence`, replyTo)                    => replyTo ! loadAndStartSequenceResponse
-        case QueryFinal(replyTo)                                    => replyTo ! queryFinalResponse
-        case DiagnosticMode(`startTime`, `hint`, replyTo)           => replyTo ! diagnosticModeResponse
-        case OperationsMode(replyTo)                                => replyTo ! operationsModeResponse
-        case _                                                      => //
+        case GetSequence(replyTo)                            => replyTo ! getSequenceResponse
+        case GetSequencerState(replyTo)                      => replyTo ! getStateResponse
+        case Add(List(`command`), replyTo)                   => replyTo ! addResponse
+        case Prepend(List(`command`), replyTo)               => replyTo ! prependResponse
+        case Replace(`stepId`, List(`command`), replyTo)     => replyTo ! replaceResponse
+        case InsertAfter(`stepId`, List(`command`), replyTo) => replyTo ! insertAfterResponse
+        case Delete(`stepId`, replyTo)                       => replyTo ! deleteResponse
+        case Pause(replyTo)                                  => replyTo ! pauseResponse
+        case Resume(replyTo)                                 => replyTo ! resumeResponse
+        case Reset(replyTo)                                  => replyTo ! resetResponse
+        case AbortSequence(replyTo)                          => replyTo ! abortResponse
+        case Stop(replyTo)                                   => replyTo ! stopResponse
+        case AddBreakpoint(`stepId`, replyTo)                => replyTo ! addBreakpointResponse
+        case RemoveBreakpoint(`stepId`, replyTo)             => replyTo ! removeBreakpointResponse
+        case GoOnline(replyTo)                               => replyTo ! goOnlineResponse
+        case GoOffline(replyTo)                              => replyTo ! goOfflineResponse
+        case LoadSequence(`sequence`, replyTo)               => replyTo ! loadSequenceResponse
+        case StartSequence(replyTo)                          => replyTo ! startSequenceResponse
+        case SubmitSequence(`sequence`, replyTo)             => replyTo ! loadAndStartSequenceResponse
+        case QueryFinal(replyTo)                             => replyTo ! queryFinalResponse
+        case DiagnosticMode(`startTime`, `hint`, replyTo)    => replyTo ! diagnosticModeResponse
+        case OperationsMode(replyTo)                         => replyTo ! operationsModeResponse
+        case _                                               => //
       }
       Behaviors.same
     }
@@ -102,15 +104,15 @@ class SequencerAdminImplTest extends ScalaTestWithActorTestKit with BaseTestSuit
   }
 
   "replace | ESW-222" in {
-    sequencerAdmin.replace(command.runId, List(command)).futureValue should ===(replaceResponse)
+    sequencerAdmin.replace(stepId, List(command)).futureValue should ===(replaceResponse)
   }
 
   "insertAfter | ESW-222" in {
-    sequencerAdmin.insertAfter(command.runId, List(command)).futureValue should ===(insertAfterResponse)
+    sequencerAdmin.insertAfter(stepId, List(command)).futureValue should ===(insertAfterResponse)
   }
 
   "delete | ESW-222" in {
-    sequencerAdmin.delete(command.runId).futureValue should ===(deleteResponse)
+    sequencerAdmin.delete(stepId).futureValue should ===(deleteResponse)
   }
 
   "pause | ESW-222" in {
@@ -122,11 +124,11 @@ class SequencerAdminImplTest extends ScalaTestWithActorTestKit with BaseTestSuit
   }
 
   "addBreakpoint | ESW-222" in {
-    sequencerAdmin.addBreakpoint(command.runId).futureValue should ===(addBreakpointResponse)
+    sequencerAdmin.addBreakpoint(stepId).futureValue should ===(addBreakpointResponse)
   }
 
   "removeBreakpoint | ESW-222" in {
-    sequencerAdmin.removeBreakpoint(command.runId).futureValue should ===(removeBreakpointResponse)
+    sequencerAdmin.removeBreakpoint(stepId).futureValue should ===(removeBreakpointResponse)
   }
 
   "reset | ESW-222" in {
