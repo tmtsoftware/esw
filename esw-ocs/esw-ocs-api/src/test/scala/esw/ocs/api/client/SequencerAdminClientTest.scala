@@ -1,6 +1,6 @@
 package esw.ocs.api.client
 
-import csw.params.commands.CommandResponse.Completed
+import csw.params.commands.CommandResponse.{Completed, SubmitResponse}
 import csw.params.commands.{CommandName, Sequence, Setup}
 import csw.params.core.models.{Id, Prefix}
 import csw.time.core.models.UTCTime
@@ -178,9 +178,9 @@ class SequencerAdminClientTest extends BaseTestSuite with SequencerAdminHttpCode
 
     "call websocket with QueryFinal request | ESW-222" in {
       val id = mock[Id]
-      when(websocketClient.requestResponse[SequenceResponse](argsEq(QueryFinal))(any[Decoder[SequenceResponse]]()))
-        .thenReturn(Future.successful(SequenceResult(Completed(id))))
-      sequencerAdminClient.queryFinal.futureValue should ===(SequenceResult(Completed(id)))
+      when(websocketClient.requestResponse[SubmitResponse](argsEq(QueryFinal))(any[Decoder[SubmitResponse]]()))
+        .thenReturn(Future.successful(Completed(id)))
+      sequencerAdminClient.queryFinal.futureValue should ===(Completed(id))
     }
   }
 }

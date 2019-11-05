@@ -3,6 +3,7 @@ package esw.ocs.impl
 import akka.actor.testkit.typed.scaladsl.ScalaTestWithActorTestKit
 import akka.actor.typed.scaladsl.Behaviors
 import csw.command.client.messages.sequencer.SequencerMsg
+import csw.command.client.messages.sequencer.SequencerMsg.QueryFinal
 import csw.params.commands.CommandResponse.Completed
 import csw.params.commands.{CommandName, Sequence, Setup}
 import csw.params.core.models.{Id, Prefix}
@@ -10,7 +11,7 @@ import csw.time.core.models.UTCTime
 import esw.ocs.api.BaseTestSuite
 import esw.ocs.api.models.StepList
 import esw.ocs.api.protocol.EditorError.{CannotOperateOnAnInFlightOrFinishedStep, IdDoesNotExist}
-import esw.ocs.api.protocol.{GoOnlineHookFailed, Ok, SequenceResult, Unhandled}
+import esw.ocs.api.protocol.{GoOnlineHookFailed, Ok, Unhandled}
 import esw.ocs.impl.messages.SequencerMessages._
 import esw.ocs.impl.messages.SequencerState.{Idle, Loaded, Offline}
 
@@ -44,7 +45,7 @@ class SequencerAdminImplTest extends ScalaTestWithActorTestKit with BaseTestSuit
   private val loadAndStartSequenceResponse = Ok
   private val diagnosticModeResponse       = Ok
   private val operationsModeResponse       = Ok
-  private val queryFinalResponse           = SequenceResult(Completed(Id()))
+  private val queryFinalResponse           = Completed(Id())
 
   private val mockedBehavior: Behaviors.Receive[SequencerMsg] =
     Behaviors.receiveMessage[SequencerMsg] { msg =>
@@ -68,7 +69,7 @@ class SequencerAdminImplTest extends ScalaTestWithActorTestKit with BaseTestSuit
         case LoadSequence(`sequence`, replyTo)                      => replyTo ! loadSequenceResponse
         case StartSequence(replyTo)                                 => replyTo ! startSequenceResponse
         case SubmitSequence(`sequence`, replyTo)                    => replyTo ! loadAndStartSequenceResponse
-        case QueryFinalInternal(replyTo)                            => replyTo ! queryFinalResponse
+        case QueryFinal(replyTo)                                    => replyTo ! queryFinalResponse
         case DiagnosticMode(`startTime`, `hint`, replyTo)           => replyTo ! diagnosticModeResponse
         case OperationsMode(replyTo)                                => replyTo ! operationsModeResponse
         case _                                                      => //

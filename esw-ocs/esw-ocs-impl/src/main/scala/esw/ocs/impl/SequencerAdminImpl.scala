@@ -4,6 +4,8 @@ import akka.actor.typed.scaladsl.AskPattern._
 import akka.actor.typed.{ActorRef, ActorSystem}
 import akka.util.Timeout
 import csw.command.client.messages.sequencer.SequencerMsg
+import csw.command.client.messages.sequencer.SequencerMsg.QueryFinal
+import csw.params.commands.CommandResponse.SubmitResponse
 import csw.params.commands.{Sequence, SequenceCommand}
 import csw.params.core.models.Id
 import csw.time.core.models.UTCTime
@@ -16,7 +18,7 @@ import esw.ocs.impl.messages.SequencerState.{Idle, Offline}
 
 import scala.concurrent.{ExecutionContext, Future}
 
-class SequencerAdminImpl(sequencer: ActorRef[EswSequencerMessage])(implicit system: ActorSystem[_], timeout: Timeout)
+class SequencerAdminImpl(sequencer: ActorRef[SequencerMsg])(implicit system: ActorSystem[_], timeout: Timeout)
     extends SequencerAdminApi {
   private implicit val ec: ExecutionContext = system.executionContext
 
@@ -57,5 +59,5 @@ class SequencerAdminImpl(sequencer: ActorRef[EswSequencerMessage])(implicit syst
     sequencer ? (SubmitSequence(sequence, _))
 
   // fixme: shouldn't this call have long timeout and not the default?
-  override def queryFinal: Future[SequenceResponse] = sequencer ? QueryFinalInternal
+  override def queryFinal: Future[SubmitResponse] = sequencer ? QueryFinal
 }

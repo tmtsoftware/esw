@@ -12,10 +12,11 @@ import csw.location.api.scaladsl.LocationService
 import csw.location.client.scaladsl.HttpLocationServiceFactory
 import csw.location.models.Connection.{AkkaConnection, HttpConnection}
 import csw.location.models.{ComponentId, ComponentType}
-import csw.params.commands.CommandResponse.{Completed, Error, SubmitResponse}
+import csw.params.commands.CommandIssue.UnsupportedCommandInStateIssue
+import csw.params.commands.CommandResponse.{Completed, Error, Invalid, SubmitResponse}
 import csw.params.commands.{CommandName, Sequence, Setup}
 import csw.params.core.generics.KeyType.StringKey
-import csw.params.core.models.Prefix
+import csw.params.core.models.{Id, Prefix}
 import csw.params.events.{Event, EventKey, EventName, SystemEvent}
 import csw.testkit.scaladsl.CSWService.EventServer
 import csw.testkit.scaladsl.ScalaTestFrameworkTestKit
@@ -92,7 +93,7 @@ class SequencerAdminIntegrationTest extends ScalaTestFrameworkTestKit(EventServe
 
     sequencerAdmin1.loadSequence(sequence).futureValue should ===(Ok)
     sequencerAdmin1.startSequence.futureValue should ===(Ok)
-    sequencerAdmin1.queryFinal.futureValue should ===(SequenceResult(Completed(sequence.runId)))
+    sequencerAdmin1.queryFinal.futureValue should ===(Completed(sequence.runId))
 
     val step1         = Step(command1, Success, hasBreakpoint = false)
     val step2         = Step(command2, Success, hasBreakpoint = false)
@@ -112,7 +113,9 @@ class SequencerAdminIntegrationTest extends ScalaTestFrameworkTestKit(EventServe
     sequencerAdmin1.loadSequence(sequence).futureValue should ===(Unhandled(Offline.entryName, "LoadSequence"))
 
     sequencerAdmin1.startSequence.futureValue should ===(Unhandled(Offline.entryName, "StartSequence"))
-    sequencerAdmin1.queryFinal.futureValue should ===(Unhandled(Offline.entryName, "QueryFinalInternal"))
+    val invalidResponse =
+      Invalid(Id("IdNotAvailable"), UnsupportedCommandInStateIssue(Unhandled(Offline.entryName, "QueryFinalInternal").msg))
+    sequencerAdmin1.queryFinal.futureValue should ===(invalidResponse)
   }
 
   "Load, Add commands and Start sequence - ensures sequence doesn't start on loading | ESW-222, ESW-101" in {
@@ -264,7 +267,7 @@ class SequencerAdminIntegrationTest extends ScalaTestFrameworkTestKit(EventServe
       Step(command4, Success, hasBreakpoint = false)
     )
     val expectedSequence = Some(StepList(sequence.runId, expectedSteps))
-    val expectedResponse = SequenceResult(Completed(sequence.runId))
+    val expectedResponse = Completed(sequence.runId)
     sequencerAdmin1.queryFinal.futureValue should ===(expectedResponse)
     compareStepList(sequencerAdmin1.getSequence.futureValue, expectedSequence)
   }
@@ -288,7 +291,7 @@ class SequencerAdminIntegrationTest extends ScalaTestFrameworkTestKit(EventServe
       Step(command6, Success, hasBreakpoint = false)
     )
     val expectedSequence = Some(StepList(sequence.runId, expectedSteps))
-    val expectedResponse = SequenceResult(Completed(sequence.runId))
+    val expectedResponse = Completed(sequence.runId)
     sequencerAdmin1.queryFinal.futureValue should ===(expectedResponse)
     compareStepList(sequencerAdmin1.getSequence.futureValue, expectedSequence)
   }

@@ -1,5 +1,6 @@
 package esw.ocs.api
 
+import csw.params.commands.CommandResponse.SubmitResponse
 import csw.params.commands.{Sequence, SequenceCommand}
 import csw.params.core.models.Id
 import csw.time.core.models.UTCTime
@@ -33,5 +34,5 @@ trait SequencerAdminApi {
   def startSequence: Future[OkOrUnhandledResponse]
   def submitSequence(sequence: Sequence): Future[OkOrUnhandledResponse]
 
-  def queryFinal: Future[SequenceResponse]
+  def queryFinal: Future[SubmitResponse]
 }

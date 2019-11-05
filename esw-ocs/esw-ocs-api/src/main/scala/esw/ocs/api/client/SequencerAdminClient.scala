@@ -1,5 +1,6 @@
 package esw.ocs.api.client
 
+import csw.params.commands.CommandResponse.SubmitResponse
 import csw.params.commands.{Sequence, SequenceCommand}
 import csw.params.core.models.Id
 import csw.time.core.models.UTCTime
@@ -107,7 +108,7 @@ class SequencerAdminClient(
     postClient.requestResponse[OkOrUnhandledResponse](SubmitSequence(sequence))
   }
 
-  override def queryFinal: Future[SequenceResponse] = {
-    websocketClient.requestResponse[SequenceResponse](QueryFinal)
+  override def queryFinal: Future[SubmitResponse] = {
+    websocketClient.requestResponse[SubmitResponse](QueryFinal)
   }
 }
