@@ -95,11 +95,7 @@ script {
     handleSetup("command-irms") {
         // NOT update command response to avoid sequencer to finish immediately
         // so that other Add, Append command gets time
-        val setupCommand = Setup(
-                Prefix("IRMS.test"),
-                CommandName("command-irms"),
-                Optional.ofNullable(null)
-        )
+        val setupCommand = setup("IRMS.test", "command-irms")
         val sequence = Sequence(
                 Id("testSequenceIdString123"),
                 CollectionConverters.asScala(Collections.singleton<SequenceCommand>(setupCommand)).toSeq()

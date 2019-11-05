@@ -35,10 +35,10 @@ interface CommandServiceDsl {
         private val timeout: Timeout = Timeout(create(10, TimeUnit.SECONDS))
     }
 
-    fun setup(prefix: String, commandName: String, obsId: String?) =
+    fun setup(prefix: String, commandName: String, obsId: String? = null) =
             Setup(Prefix(prefix), CommandName(commandName), obsId.toOptionalObsId())
 
-    fun observe(prefix: String, commandName: String, obsId: String?) =
+    fun observe(prefix: String, commandName: String, obsId: String? = null) =
             Observe(Prefix(prefix), CommandName(commandName), obsId.toOptionalObsId())
 
     fun sequenceOf(vararg sequenceCommand: SequenceCommand): Sequence = Sequence.create(sequenceCommand.toList())

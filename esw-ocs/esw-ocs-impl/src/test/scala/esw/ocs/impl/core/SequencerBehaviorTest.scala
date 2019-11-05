@@ -79,14 +79,9 @@ class SequencerBehaviorTest extends ScalaTestWithActorTestKit with BaseTestSuite
       assertSequencerState(InProgress)
 
       startPullNext()
-
       val message = "Some error"
-
       finishStepWithError(message)
-
       assertSequencerState(Idle)
-
-      println(getSequence())
 
       val qfProbe = createTestProbe[SequenceResponse]()
       sequencerActor ! QueryFinal(qfProbe.ref)
