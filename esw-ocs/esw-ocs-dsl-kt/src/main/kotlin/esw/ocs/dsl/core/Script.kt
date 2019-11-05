@@ -15,9 +15,10 @@ import kotlinx.coroutines.CoroutineExceptionHandler
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.asCoroutineDispatcher
+import kotlinx.coroutines.*
+import kotlinx.coroutines.future.asCompletableFuture
 import kotlinx.coroutines.future.await
 import kotlinx.coroutines.future.future
-import java.util.concurrent.CompletableFuture
 import java.util.concurrent.CompletionStage
 
 sealed class ScriptDslKt(private val cswServices: CswServices) : CswHighLevelDsl(cswServices) {
@@ -25,7 +26,6 @@ sealed class ScriptDslKt(private val cswServices: CswServices) : CswHighLevelDsl
     // https://stackoverflow.com/questions/58497383/is-it-possible-to-provide-custom-name-for-internal-delegated-properties-in-kotli/58497535#58497535
     @get:JvmName("scriptDsl")
     internal val scriptDsl: JScriptDsl by lazy { ScriptDslFactory.make(cswServices, strandEc) }
-    private val sequenceOperator by lazy { cswServices.sequenceOperatorFactory().apply() }
 
     suspend fun nextIf(predicate: (SequenceCommand) -> Boolean): SequenceCommand? =
             scriptDsl.nextIf { predicate(it) }.await().nullable()
@@ -33,14 +33,10 @@ sealed class ScriptDslKt(private val cswServices: CswServices) : CswHighLevelDsl
     fun finishWithError(message: String = ""): Nothing = throw RuntimeException(message)
 
     fun handleSetup(name: String, block: suspend CoroutineScope.(Setup) -> Unit) =
-            scriptDsl.handleSetupCommand(name) {
-                block.toJavaFuture(it).thenUpdateStepStatus()
-            }
+            scriptDsl.handleSetupCommand(name) { block.toJavaFuture(it) }
 
     fun handleObserve(name: String, block: suspend CoroutineScope.(Observe) -> Unit) =
-            scriptDsl.handleObserveCommand(name) {
-                block.toJavaFuture(it).thenUpdateStepStatus()
-            }
+            scriptDsl.handleObserveCommand(name) { block.toJavaFuture(it) }
 
     fun handleGoOnline(block: suspend CoroutineScope.() -> Unit) =
             scriptDsl.handleGoOnline { block.toJavaFutureVoid() }
@@ -64,8 +60,8 @@ sealed class ScriptDslKt(private val cswServices: CswServices) : CswHighLevelDsl
             scriptDsl.handleStop { block.toJavaFutureVoid() }
 
     fun onException(block: suspend CoroutineScope.(Throwable) -> Unit) =
-            scriptDsl.handleException { x: Throwable ->
-                coroutineScope.future { block(x) }
+            scriptDsl.handleException {
+                coroutineScope.future { block(it) }
                         .exceptionally { ex -> log("Exception is thrown from Exception handler with message : ${ex.message}") }
                         .thenAccept { }
             }
@@ -82,33 +78,12 @@ sealed class ScriptDslKt(private val cswServices: CswServices) : CswHighLevelDsl
     fun log(msg: String) = println("[${Thread.currentThread().name}] $msg")
 
     private fun (suspend CoroutineScope.() -> Unit).toJavaFutureVoid(): CompletionStage<Void> =
-            coroutineScope.future { this@toJavaFutureVoid() }
-                    .whenComplete { v, e ->
-                        if (e == null) {
-                            CompletableFuture.completedFuture(v)
-                        } else {
-                            log("Script handler failed with message : ${e.message}")
-                            scriptDsl.executeExceptionHandlers(e)
-                            CompletableFuture.failedFuture<Unit>(e)
-                        }
-                    }
-                    .thenAccept { }
+            coroutineScope.launch { this@toJavaFutureVoid() }.asCompletableFuture().thenAccept { }
 
     private fun <T> (suspend CoroutineScope.(T) -> Unit).toJavaFuture(value: T): CompletionStage<Void> {
         val curriedBlock: suspend (CoroutineScope) -> Unit = { a: CoroutineScope -> this(a, value) }
         return curriedBlock.toJavaFutureVoid()
     }
-
-    // todo: can we add a comment here?
-    //  why stepSuccess and stepFailure being called from here?
-    //  why not from engine recover block of execute?
-    private fun CompletionStage<Void>.thenUpdateStepStatus() =
-            thenAccept {
-                sequenceOperator.stepSuccess()
-            }.exceptionally {
-                sequenceOperator.stepFailure(it.message.orEmpty())
-                null
-            }
 }
 
 class ReusableScript(
