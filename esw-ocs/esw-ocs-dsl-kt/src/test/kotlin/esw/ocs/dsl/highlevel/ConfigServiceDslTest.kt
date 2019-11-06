@@ -1,8 +1,9 @@
 package esw.ocs.dsl.highlevel
 
-import  akka.actor.typed.ActorSystem
+import akka.actor.typed.ActorSystem
 import akka.actor.typed.javadsl.Behaviors
 import akka.stream.Materializer
+import com.typesafe.config.ConfigFactory
 import csw.config.api.ConfigData
 import csw.config.api.javadsl.IConfigClientService
 import io.kotlintest.shouldBe
@@ -18,9 +19,9 @@ import java.util.*
 import java.util.concurrent.CompletableFuture
 
 @TestInstance(Lifecycle.PER_CLASS)
-class ConfigServiceDslTest : ConfigServiceDsl  {
+class ConfigServiceDslTest : ConfigServiceDsl {
 
-    val actorSystem: ActorSystem<Any> = ActorSystem.create(Behaviors.empty(),"config-dsl")
+    val actorSystem: ActorSystem<Any> = ActorSystem.create(Behaviors.empty(), "config-dsl")
     override val materializer: Materializer = Materializer.createMaterializer(actorSystem)
 
     @AfterAll
@@ -49,9 +50,8 @@ class ConfigServiceDslTest : ConfigServiceDsl  {
         val defaultStrConf = "foo { bar { baz : 1234 } }"
         val configData = ConfigData.fromString(defaultStrConf)
         every { configClient.getActive(any()) }.returns(CompletableFuture.completedFuture(Optional.of(configData)))
-        getConfig(path) shouldBe defaultStrConf
+        getConfig(path) shouldBe ConfigFactory.parseString(defaultStrConf)
         verify { configClient.getActive(any()) }
     }
-
 
 }

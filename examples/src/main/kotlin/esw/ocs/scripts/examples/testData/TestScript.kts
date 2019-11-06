@@ -1,5 +1,6 @@
 package esw.ocs.scripts.examples.testData
 
+import com.typesafe.config.ConfigFactory
 import csw.alarm.api.javadsl.JAlarmSeverity.Major
 import csw.alarm.models.Key.AlarmKey
 import csw.location.api.javadsl.JComponentType.Assembly
@@ -30,15 +31,15 @@ script {
 
     handleSetup("check-config") {
         if (existsConfig("/tmt/test/wfos.conf"))
-            publishEvent(systemEvent("WFOS", "config.success"))
+            publishEvent(systemEvent("WFOS", "check-config.success"))
     }
 
     handleSetup("get-config-data") {
         val configValue = "component = wfos"
         val configData = getConfig("/tmt/test/wfos.conf")
         configData?.let {
-            if (it == configValue)
-                publishEvent(systemEvent("WFOS", "config.success"))
+            if (it == ConfigFactory.parseString(configValue))
+                publishEvent(systemEvent("WFOS", "get-config.success"))
         }
     }
 

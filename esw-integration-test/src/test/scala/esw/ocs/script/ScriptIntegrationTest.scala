@@ -321,7 +321,7 @@ class ScriptIntegrationTest extends ScalaTestFrameworkTestKit(EventServer, Alarm
       actualSetupEvent.eventKey should ===(eventKey)
     }
 
-    "be able to check existence of a config file | ESW-123" in {
+    "be able to check existence of a config file and fetch config | ESW-123" in {
       val factory = mock[TokenFactory]
       when(factory.getToken).thenReturn("valid")
 
@@ -336,49 +336,25 @@ class ScriptIntegrationTest extends ScalaTestFrameworkTestKit(EventServer, Alarm
           |""".stripMargin
       adminApi.create(file, ConfigData.fromString(configValue1), annex = false, "First commit").futureValue
 
-      val command  = Setup(Prefix("WFOS"), CommandName("check-config"), None)
-      val id       = Id()
-      val sequence = Sequence(id, Seq(command))
+      val existConfigCommand = Setup(Prefix("WFOS"), CommandName("check-config"), None)
+      val getConfigCommand   = Setup(Prefix("WFOS"), CommandName("get-config-data"), None)
+      val id                 = Id()
+      val sequence           = Sequence(id, Seq(existConfigCommand, getConfigCommand))
 
       val submitResponse: Future[SubmitResponse] = ocsSequencer ? (SubmitSequenceAndWait(sequence, _))
       submitResponse.futureValue should ===(Completed(id))
 
-      val successKey        = EventKey(Prefix("WFOS"), EventName("config.success"))
-      val getPublishedEvent = eventService.defaultSubscriber.get(successKey).futureValue
+      // verify existConfig api
+      val existConfigKey   = EventKey(Prefix("WFOS"), EventName("check-config.success"))
+      val existConfigEvent = eventService.defaultSubscriber.get(existConfigKey).futureValue
+      existConfigEvent.eventKey should ===(existConfigKey)
 
-      getPublishedEvent.eventKey should ===(successKey)
+      // verify getConfig api
+      val getConfigKey   = EventKey(Prefix("WFOS"), EventName("get-config.success"))
+      val getConfigEvent = eventService.defaultSubscriber.get(getConfigKey).futureValue
+      getConfigEvent.eventKey should ===(getConfigKey)
+
       configTestKit.deleteServerFiles()
-
-    }
-
-    "be able to retrieve ConfigData stored in a config file | ESW-123" in {
-      val factory = mock[TokenFactory]
-      when(factory.getToken).thenReturn("valid")
-
-      val eventService = new EventServiceFactory().make(HttpLocationServiceFactory.makeLocalClient)
-
-      val adminApi: ConfigService = ConfigClientFactory.adminApi(configTestKit.actorSystem, locationService, factory)
-      configTestKit.initSvnRepo()
-      val file = Path.of("/tmt/test/wfos.conf")
-      val configValue1: String =
-        """
-          |component = wfos
-          |""".stripMargin
-      adminApi.create(file, ConfigData.fromString(configValue1), annex = false, "First commit").futureValue
-
-      val command  = Setup(Prefix("WFOS"), CommandName("get-config-data"), None)
-      val id       = Id()
-      val sequence = Sequence(id, Seq(command))
-
-      val submitResponse: Future[SubmitResponse] = ocsSequencer ? (SubmitSequenceAndWait(sequence, _))
-      submitResponse.futureValue should ===(Completed(id))
-
-      val successKey        = EventKey(Prefix("WFOS"), EventName("config.success"))
-      val getPublishedEvent = eventService.defaultSubscriber.get(successKey).futureValue
-
-      getPublishedEvent.eventKey should ===(successKey)
-      configTestKit.deleteServerFiles()
-
     }
 
     "be able to handle unexpected exception and finish the sequence | ESW-241" in {
