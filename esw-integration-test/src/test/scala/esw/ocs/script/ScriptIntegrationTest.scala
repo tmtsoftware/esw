@@ -252,10 +252,12 @@ class ScriptIntegrationTest extends ScalaTestFrameworkTestKit(EventServer, Alarm
       val abortSequenceResponseF: Future[OkOrUnhandledResponse] = ocsSequencer ? AbortSequence
       abortSequenceResponseF.futureValue should ===(Ok)
 
-      //Expect Pending steps in OCS sequence are aborted
+      // Expect Pending steps in OCS sequence are aborted
       eventually {
         val maybeStepListF: Future[Option[StepList]] = ocsSequencer ? GetSequence
         maybeStepListF.futureValue.get.nextPending shouldBe None
+        // handleAbortSequence from ocs script sends abort sequence message to downstream irms sequencer
+        // irms sequencer publish abort event on invocation of handle abort hook which is verified here
         val event = testProbe.receiveMessage()
         event.eventId shouldNot be(-1)
       }

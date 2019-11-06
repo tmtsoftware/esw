@@ -10,6 +10,8 @@ import kotlinx.coroutines.future.await
 
 class CommonUtils(private val sequencerAdminFactory: SequencerAdminFactoryApi, private val locationServiceUtil: LocationServiceUtil) {
 
+    // fixme: `action` here is a method call on SequencerAdminApi and all API's return Future[T]
+    //  so action should be something like => `action: (SequencerAdminApi) -> CompletionStage[T]` and then await on action in the impl
     internal suspend fun sendMsgToSequencer(
         sequencerId: String,
         observingMode: String,

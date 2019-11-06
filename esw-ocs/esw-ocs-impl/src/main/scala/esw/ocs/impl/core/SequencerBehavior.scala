@@ -51,7 +51,7 @@ class SequencerBehavior(
 
   private def loaded(data: SequencerData): Behavior[SequencerMsg] = receive(Loaded, data, loaded) {
     case QueryFinalInternal(replyTo)     => loaded(data.queryFinal(replyTo))
-    case editorAction: EditorAction      => handleEditorAction(editorAction, data, Loaded)(nextBehavior = loaded)
+    case msg: EditorAction               => handleEditorAction(msg, data, Loaded)(nextBehavior = loaded)
     case GoOffline(replyTo)              => goOffline(replyTo, data)(loaded)
     case StartSequence(replyTo)          => inProgress(data.startSequence(replyTo))
     case LoadSequence(sequence, replyTo) => load(sequence, replyTo, data)
@@ -66,7 +66,7 @@ class SequencerBehavior(
     case Resume(replyTo)             => inProgress(data.updateStepList(replyTo, InProgress, data.stepList.map(_.resume)))
     case PullNext(replyTo)           => inProgress(data.pullNextStep(replyTo))
     case StepSuccess(_)              => inProgress(data.stepSuccess(InProgress))
-    case StepFailure(message, _)     => inProgress(data.stepFailure(message, InProgress))
+    case StepFailure(reason, _)      => inProgress(data.stepFailure(reason, InProgress))
     case _: GoIdle                   => idle(data)
   }
 
