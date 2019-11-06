@@ -4,7 +4,6 @@ import csw.alarm.api.javadsl.JAlarmSeverity.Major
 import csw.alarm.models.Key.AlarmKey
 import csw.location.api.javadsl.JComponentType.Assembly
 import csw.params.commands.*
-import csw.params.commands.CommandResponse.*
 import csw.params.core.models.Id
 import csw.params.core.models.Prefix
 import csw.params.events.Event
@@ -135,7 +134,7 @@ script {
         //do some actions to stop
 
         //send stop command to downstream sequencer
-        stop("irms", "darknight")
+        stopSequencer("irms", "darknight")
     }
 
 }

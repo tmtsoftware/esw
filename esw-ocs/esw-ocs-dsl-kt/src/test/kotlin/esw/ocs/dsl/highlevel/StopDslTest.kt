@@ -33,7 +33,7 @@ class StopDslTest : StopDsl {
         every { sequencerAdminFactoryApi.jMake(sequencerId, observingMode) }
                 .returns(CompletableFuture.completedFuture(sequencerAdminApi))
 
-        stop(sequencerId, observingMode)
+        stopSequencer(sequencerId, observingMode)
 
         verify { sequencerAdminFactoryApi.jMake(sequencerId, observingMode) }
         verify { sequencerAdminApi.stop() }

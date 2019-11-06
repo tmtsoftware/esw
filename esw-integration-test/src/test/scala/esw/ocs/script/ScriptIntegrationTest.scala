@@ -294,6 +294,8 @@ class ScriptIntegrationTest extends ScalaTestFrameworkTestKit(EventServer, Alarm
       stopResponseF.futureValue should ===(Ok)
 
       eventually {
+        // handleStop from ocs script sends stop message to downstream irms sequencer
+        // irms sequencer publish stop event on invocation of handle stop hook which is verified here
         val event = testProbe.receiveMessage()
         event.eventId shouldNot be(-1)
       }
