@@ -19,6 +19,7 @@ import scala.async.Async._
 import scala.concurrent.Future
 import scala.concurrent.duration.DurationLong
 import scala.util.control.NonFatal
+import ch.megard.akka.http.cors.scaladsl.CorsDirectives._
 
 /**
  * Initialises HTTP Server at given port and register with location service
@@ -64,6 +65,10 @@ class HttpService(
     httpTerminatedF.flatMap(_ => actorRuntime.shutdown(reason))
   }
 
+  private def applicationRoute: Route = cors() {
+    route
+  }
+
   private def bind() = {
     val _host = Networks().hostname
     val _port = settings.port
@@ -78,7 +83,7 @@ class HttpService(
     }
 
     Http().bindAndHandle(
-      handler = route,
+      handler = applicationRoute,
       interface = "0.0.0.0",
       port = _port
     )

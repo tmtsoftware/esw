@@ -24,10 +24,11 @@ import esw.gateway.impl.{CommandImpl, EventImpl}
 import esw.gateway.server.handlers.WebsocketHandlerImpl
 import esw.http.core.BaseTestSuite
 import io.bullet.borer.Decoder
-import msocket.impl.post.ClientHttpCodecs
-import msocket.impl.Encoding.{CborBinary, JsonText}
 import msocket.api.models.StreamError
-import msocket.impl.Encoding
+import msocket.impl.Encoding.{CborBinary, JsonText}
+import msocket.impl.post.ClientHttpCodecs
+import msocket.impl.ws.WebsocketRouteFactory
+import msocket.impl.{Encoding, RouteFactory}
 import org.mockito.Mockito.when
 
 import scala.concurrent.Future
@@ -49,7 +50,7 @@ class WebsocketRouteTest extends BaseTestSuite with ScalatestRouteTest with Gate
   private val eventApi: EventApi                          = new EventImpl(eventService, eventSubscriberUtil)
   private val commandApi: CommandApi                      = new CommandImpl(commandServiceFactory)
   private def websocketHandlerImpl(encoding: Encoding[_]) = new WebsocketHandlerImpl(commandApi, eventApi, encoding)
-  private val route                                       = new Routes(null, websocketHandlerImpl, logger).route
+  private val route                                       = RouteFactory.combine(new WebsocketRouteFactory("websocket-endpoint", websocketHandlerImpl))
 
   override def beforeEach(): Unit = {
     wsClient = WSProbe()

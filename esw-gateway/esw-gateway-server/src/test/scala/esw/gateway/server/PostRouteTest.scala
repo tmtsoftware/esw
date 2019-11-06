@@ -24,9 +24,9 @@ import esw.gateway.api.{AlarmApi, CommandApi, EventApi, LoggingApi}
 import esw.gateway.impl._
 import esw.gateway.server.handlers.PostHandlerImpl
 import esw.http.core.BaseTestSuite
-import msocket.impl.Encoding
+import msocket.impl.{Encoding, RouteFactory}
 import msocket.impl.Encoding.JsonText
-import msocket.impl.post.ClientHttpCodecs
+import msocket.impl.post.{ClientHttpCodecs, PostRouteFactory}
 import org.mockito.ArgumentMatchers.{any, eq => argsEq}
 import org.mockito.Mockito.when
 import org.mockito.MockitoSugar._
@@ -55,7 +55,7 @@ class PostRouteTest extends BaseTestSuite with ScalatestRouteTest with GatewayCo
   private val commandApi: CommandApi = new CommandImpl(commandServiceFactory)
   private val loggingApi: LoggingApi = new LoggingImpl(loggerCache)
   private val postHandlerImpl        = new PostHandlerImpl(alarmApi, commandApi, eventApi, loggingApi)
-  private val route                  = new Routes(postHandlerImpl, null, logger).route
+  private val route                  = RouteFactory.combine(new PostRouteFactory("post-endpoint", postHandlerImpl))
 
   "Submit Command" must {
     "handle submit command and return started command response | ESW-91, ESW-216" in {

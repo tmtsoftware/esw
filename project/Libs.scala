@@ -4,7 +4,7 @@ import sbt._
 
 object Libs {
   private val SilencerVersion = "1.4.2"
-  private val MSocketVersion  = "d18f08f"
+  private val MSocketVersion  = "4c71a6c"
 
   val `silencer-lib`       = "com.github.ghik" %% "silencer-lib" % SilencerVersion % Compile
   val `silencer-plugin`    = compilerPlugin("com.github.ghik" %% "silencer-plugin" % SilencerVersion)
@@ -58,9 +58,11 @@ object Akka {
 object AkkaHttp {
   private val Version = "10.1.10" //all akka is Apache License 2.0
 
-  val `akka-http`         = "com.typesafe.akka" %% "akka-http"         % Version
-  val `akka-http-testkit` = "com.typesafe.akka" %% "akka-http-testkit" % Version
-  val `akka-http-cors`    = "ch.megard"         %% "akka-http-cors"    % "0.4.1"
+  val `akka-http`            = "com.typesafe.akka" %% "akka-http"            % Version
+  val `akka-http-testkit`    = "com.typesafe.akka" %% "akka-http-testkit"    % Version
+  val `akka-http-spray-json` = "com.typesafe.akka" %% "akka-http-spray-json" % Version
+
+  val `akka-http-cors` = "ch.megard" %% "akka-http-cors" % "0.4.1"
 }
 
 object Borer {

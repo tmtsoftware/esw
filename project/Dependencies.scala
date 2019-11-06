@@ -30,7 +30,6 @@ object Dependencies {
   val OcsApp: Def.Initialize[Seq[ModuleID]] = Def.setting(
     Seq(
       Libs.`msocket-impl-jvm`,
-      AkkaHttp.`akka-http-cors`,
       Libs.scalatest                  % Test,
       Libs.`mockito-scala`            % Test,
       Akka.`akka-actor-testkit-typed` % Test
@@ -46,6 +45,7 @@ object Dependencies {
       Csw.`csw-alarm-client`,
       Akka.`akka-actor-typed`,
       Csw.`csw-command-client`,
+      AkkaHttp.`akka-http-cors`,
       Csw.`csw-event-client`,
       Csw.`csw-params`.value,
       Csw.`csw-config-client`,
@@ -89,8 +89,8 @@ object Dependencies {
     Seq(
       Kotlin.`stdlib-jdk8`,
       Kotlin.`coroutines-jdk8`,
-      Kotlin.mockk % Test,
-      Kotlin.kotlintest % Test,
+      Kotlin.mockk             % Test,
+      Kotlin.kotlintest        % Test,
       Libs.`jupiter-interface` % Test
     )
   )

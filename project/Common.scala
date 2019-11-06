@@ -21,6 +21,7 @@ object Common extends AutoPlugin {
 
   import autoImport._
   override def globalSettings: Seq[Setting[_]] = Seq(
+    dependencyOverrides += AkkaHttp.`akka-http-spray-json`,
     organization := "com.github.tmtsoftware.esw",
     organizationName := "TMT Org",
     scalaVersion := EswKeys.scalaVersion,
