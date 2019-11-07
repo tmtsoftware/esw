@@ -44,7 +44,7 @@ class Var<T> internal constructor(
         setValue(event, eventKey)
     }
 
-    fun pvMonitor() =
+    suspend fun pvMonitor() =
         eventService.onEvent(eventKey) {
             setValue(it, eventKey)
         }

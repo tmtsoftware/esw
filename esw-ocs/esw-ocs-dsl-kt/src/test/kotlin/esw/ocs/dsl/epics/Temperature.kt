@@ -33,7 +33,7 @@ abstract class TestMachine(name: String, init: String) : Machine(name, init) {
         return Done.done()
     }
 
-    override fun onEvent(vararg eventKeys: String, callback: suspend (Event) -> Unit): IEventSubscription {
+    override suspend fun onEvent(vararg eventKeys: String, callback: suspend (Event) -> Unit): IEventSubscription {
         eventKeys.map {
             subscriptions.merge(it, listOf(callback)) { old, new -> old + new }
         }

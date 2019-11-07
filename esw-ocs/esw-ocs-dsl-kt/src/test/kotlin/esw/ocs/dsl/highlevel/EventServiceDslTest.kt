@@ -90,8 +90,10 @@ class EventServiceDslTest : EventServiceDsl {
     }
 
     @Test
-    fun `onEvent should delegate to subscriber#subscribeAsync | ESW-120`() {
+    fun `onEvent should delegate to subscriber#subscribeAsync | ESW-120`() = runBlocking {
         every { eventSubscriber.subscribeAsync(eventKeys, any()) }.answers { eventSubscription }
+        every { eventSubscription.ready() }.answers { CompletableFuture.completedFuture(done()) }
+
         onEvent(key) { eventCallback } shouldBe eventSubscription
         verify { eventSubscriber.subscribeAsync(eventKeys, any()) }
     }
@@ -100,6 +102,7 @@ class EventServiceDslTest : EventServiceDsl {
     fun `cancel should delegate to IEventSubscription#unsubscribe() | ESW-120`() = runBlocking {
         every { eventSubscriber.subscribeAsync(eventKeys, any()) }.answers { eventSubscription }
         every { eventSubscription.unsubscribe() }.answers { CompletableFuture.completedFuture(done()) }
+        every { eventSubscription.ready() }.answers { CompletableFuture.completedFuture(done()) }
 
         val subscription: IEventSubscription = onEvent(key) { eventCallback }
         subscription shouldBe eventSubscription

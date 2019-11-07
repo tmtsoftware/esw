@@ -57,7 +57,7 @@ abstract class Machine(private val name: String, init: String) : Refreshable, Ev
         `when`(body = body)
     }
 
-    fun entry(body: () -> Unit) {
+    suspend fun entry(body: suspend () -> Unit) {
         if (currentState != previousState) {
             body()
         }

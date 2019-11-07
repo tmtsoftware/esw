@@ -37,8 +37,11 @@ interface EventServiceDsl {
             coroutineScope.future { Optional.ofNullable(eventGenerator()) }
         }, every.toJavaDuration())
 
-    fun onEvent(vararg eventKeys: String, callback: suspend (Event) -> Unit): IEventSubscription =
-        defaultSubscriber.subscribeAsync(eventKeys.toEventKeys()) { coroutineScope.future { callback(it) } }
+    suspend fun onEvent(vararg eventKeys: String, callback: suspend (Event) -> Unit): IEventSubscription {
+        val subscription = defaultSubscriber.subscribeAsync(eventKeys.toEventKeys()) { coroutineScope.future { callback(it) } }
+        subscription.ready().await()
+        return subscription
+    }
 
     suspend fun getEvent(vararg eventKeys: String): Set<Event> =
         defaultSubscriber.get(eventKeys.toEventKeys()).await().toSet()
