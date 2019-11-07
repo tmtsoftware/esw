@@ -13,7 +13,6 @@ import kotlin.time.nanoseconds
 import kotlin.time.toJavaDuration
 
 interface TimeServiceDsl : JavaFutureInterop {
-    override val coroutineScope: CoroutineScope
     val timeServiceScheduler: TimeServiceScheduler
 
     fun scheduleOnce(startTime: TMTTime, task: suspend CoroutineScope.() -> Unit): Cancellable =

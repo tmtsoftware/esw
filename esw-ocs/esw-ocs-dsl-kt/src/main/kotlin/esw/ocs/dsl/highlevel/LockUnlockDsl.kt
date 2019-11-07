@@ -5,23 +5,33 @@ import csw.location.api.javadsl.JComponentType.Assembly
 import csw.location.api.javadsl.JComponentType.HCD
 import csw.params.core.models.Prefix
 import esw.ocs.dsl.script.utils.LockUnlockUtil
-import java.time.Duration
+import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.future.await
+import kotlin.time.Duration
+import kotlin.time.toJavaDuration
 
-interface LockUnlockDsl {
+interface LockUnlockDsl : JavaFutureInterop {
     val lockUnlockUtil: LockUnlockUtil
 
     /************* Assembly *************/
-    suspend fun lockAssembly(assemblyName: String, prefix: Prefix, leaseDuration: Duration): LockingResponse =
-        lockUnlockUtil.lock(assemblyName, Assembly(), prefix, leaseDuration).await()
+    suspend fun lockAssembly(
+            assemblyName: String,
+            prefix: Prefix,
+            leaseDuration: Duration,
+            callback: suspend CoroutineScope.(LockingResponse) -> Unit
+    ) {
+        lockUnlockUtil.lock(assemblyName, Assembly(), prefix, leaseDuration.toJavaDuration()) { callback.toJavaFuture(it) }
+    }
 
     suspend fun unlockAssembly(assemblyName: String, prefix: Prefix): LockingResponse =
-        lockUnlockUtil.unlock(assemblyName, Assembly(), prefix).await()
+            lockUnlockUtil.unlock(assemblyName, Assembly(), prefix).await()
 
     /************* HCD *************/
-    suspend fun lockHcd(hcdName: String, prefix: Prefix, leaseDuration: Duration): LockingResponse =
-        lockUnlockUtil.lock(hcdName, HCD(), prefix, leaseDuration).await()
+    suspend fun lockHcd(hcdName: String, prefix: Prefix, leaseDuration: Duration, callback: suspend CoroutineScope.(LockingResponse) -> Unit) {
+        lockUnlockUtil.lock(hcdName, HCD(), prefix, leaseDuration.toJavaDuration()) { callback.toJavaFuture(it) }
+    }
 
     suspend fun unlockHcd(hcdName: String, prefix: Prefix): LockingResponse =
-        lockUnlockUtil.unlock(hcdName, HCD(), prefix).await()
+            lockUnlockUtil.unlock(hcdName, HCD(), prefix).await()
+
 }
