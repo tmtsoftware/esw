@@ -9,7 +9,7 @@ import csw.logging.api.scaladsl.Logger
 import csw.params.commands.CommandResponse.{Accepted, Completed}
 import csw.params.commands.{CommandResponse, ControlCommand}
 import csw.params.core.generics.KeyType.StringKey
-import csw.params.core.models.Prefix
+import csw.params.core.models.{Id, Prefix}
 import csw.params.core.states.{CurrentState, StateName}
 import csw.params.events.{EventName, SystemEvent}
 import csw.time.core.models.UTCTime
@@ -29,16 +29,17 @@ class SampleComponentHandlers(ctx: ActorContext[TopLevelActorMessage], cswCtx: C
 
   override def onLocationTrackingEvent(trackingEvent: TrackingEvent): Unit = ???
 
-  override def validateCommand(controlCommand: ControlCommand): CommandResponse.ValidateCommandResponse =
-    Accepted(controlCommand.runId)
+  override def validateCommand(runId: Id, controlCommand: ControlCommand): CommandResponse.ValidateCommandResponse =
+    Accepted(runId)
 
-  override def onSubmit(controlCommand: ControlCommand): CommandResponse.SubmitResponse = {
+  override def onSubmit(runId: Id, controlCommand: ControlCommand): CommandResponse.SubmitResponse = {
+    log.info(s"Run Id is $runId")
     val event = new SystemEvent(Prefix("tcs.filter.wheel"), EventName("setup-command-from-script"))
     eventService.defaultPublisher.publish(event)
-    Completed(controlCommand.runId)
+    Completed(runId)
   }
 
-  override def onOneway(controlCommand: ControlCommand): Unit = {
+  override def onOneway(runId: Id, controlCommand: ControlCommand): Unit = {
     val currentState1 = CurrentState(Prefix("esw.a.b"), StateName("stateName1"))
     val currentState2 = CurrentState(Prefix("esw.a.b"), StateName("stateName2"))
     currentStatePublisher.publish(currentState1)
