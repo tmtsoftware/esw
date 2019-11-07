@@ -56,10 +56,10 @@ sealed class ScriptDslKt(private val cswServices: CswServices) : CswHighLevelDsl
     fun handleStop(block: suspend CoroutineScope.() -> Unit) =
             scriptDsl.handleStop { block.toJavaFutureVoid() }
 
-    fun onException(block: suspend CoroutineScope.(Throwable) -> Unit) =
+    fun handleException(block: suspend CoroutineScope.(Throwable) -> Unit) =
             scriptDsl.handleException {
+                // "future" is used to swallow the exception coming from exception handlers
                 coroutineScope.future { block(it) }
-                        // To swallow the exception coming from exception handlers
                         .exceptionally { log("Exception is thrown from Exception handler with message : ${it.message}") }
                         .thenAccept { }
             }
