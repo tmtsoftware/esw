@@ -4,13 +4,13 @@ import sbt._
 
 object Libs {
   private val SilencerVersion = "1.4.2"
-  private val MSocketVersion  = "4c71a6c"
+  private val MSocketVersion  = "b6e3211"
 
   val `silencer-lib`       = "com.github.ghik" %% "silencer-lib" % SilencerVersion % Compile
   val `silencer-plugin`    = compilerPlugin("com.github.ghik" %% "silencer-plugin" % SilencerVersion)
   val `case-app`           = "com.github.alexarchambault" %% "case-app" % "2.0.0-M9"
   val enumeratum           = dep("com.beachape" %%% "enumeratum" % "1.5.13") //MIT License
-  val `mockito-scala`      = "org.mockito" %% "mockito-scala" % "1.5.18" // MIT License
+  val `mockito-scala`      = "org.mockito" %% "mockito-scala" % "1.7.1" // MIT License
   val `scala-async`        = "org.scala-lang.modules" %% "scala-async" % "0.10.0" //BSD 3-clause "New" or "Revised" License
   val scalatest            = "org.scalatest" %% "scalatest" % "3.0.8" //Apache License 2.0
   val `scala-java8-compat` = "org.scala-lang.modules" %% "scala-java8-compat" % "0.9.0" //BSD 3-clause "New" or "Revised" License
@@ -22,7 +22,7 @@ object Libs {
 
 object Csw {
   private val Org     = "com.github.tmtsoftware.csw"
-  private val Version = "db0fca2" //change this to 0.1-SNAPSHOT to test with local csw changes (after publishLocal)
+  private val Version = "685c42f" //change this to 0.1-SNAPSHOT to test with local csw changes (after publishLocal)
 
   val `csw-alarm-api`       = Org %% "csw-alarm-api" % Version
   val `csw-command-api`     = Org %% "csw-command-api" % Version
@@ -45,7 +45,7 @@ object Csw {
 }
 
 object Akka {
-  private val Version     = "2.6.0-RC1"
+  private val Version     = "2.6.0"
   val `akka-actor-typed`  = "com.typesafe.akka" %% "akka-actor-typed" % Version
   val `akka-stream-typed` = "com.typesafe.akka" %% "akka-stream-typed" % Version
   val `akka-stream`       = "com.typesafe.akka" %% "akka-stream" % Version
