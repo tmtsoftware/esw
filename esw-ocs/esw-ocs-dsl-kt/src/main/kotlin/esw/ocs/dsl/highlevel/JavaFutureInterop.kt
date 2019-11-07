@@ -6,7 +6,7 @@ import kotlinx.coroutines.launch
 import java.util.concurrent.CompletionStage
 
 
-interface RichJavaCompletableFuture {
+interface JavaFutureInterop {
     val coroutineScope: CoroutineScope
 
     fun (suspend CoroutineScope.() -> Unit).toJavaFutureVoid(): CompletionStage<Void> =

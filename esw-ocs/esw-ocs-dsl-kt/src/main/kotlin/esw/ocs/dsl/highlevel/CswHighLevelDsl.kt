@@ -17,7 +17,7 @@ import kotlinx.coroutines.CoroutineScope
 
 abstract class CswHighLevelDsl(private val cswServices: CswServices) : EventServiceDsl, TimeServiceDsl, CommandServiceDsl, DiagnosticDsl,
         LockUnlockDsl, OnlineOfflineDsl, AbortSequenceDsl, StopDsl, ConfigServiceDsl,
-        AlarmServiceDsl, LoopDsl, RichJavaCompletableFuture {
+        AlarmServiceDsl, LoopDsl, JavaFutureInterop {
     abstract val strandEc: StrandEc
     abstract override val coroutineScope: CoroutineScope
 

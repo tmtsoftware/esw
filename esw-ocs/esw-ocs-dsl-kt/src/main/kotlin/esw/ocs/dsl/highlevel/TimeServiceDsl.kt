@@ -12,7 +12,7 @@ import kotlin.time.Duration
 import kotlin.time.nanoseconds
 import kotlin.time.toJavaDuration
 
-interface TimeServiceDsl : RichJavaCompletableFuture {
+interface TimeServiceDsl : JavaFutureInterop {
     override val coroutineScope: CoroutineScope
     val timeServiceScheduler: TimeServiceScheduler
 

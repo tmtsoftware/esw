@@ -86,9 +86,12 @@ class ExceptionsHandlerIntegrationTest extends ScalaTestFrameworkTestKit(EventSe
         val probe    = createProbeFor(eventKey)
 
         val longRunningSetupCommand  = Setup(Prefix("TCS"), CommandName("long-running-setup"), None)
-        val longRunningSetupSequence = Sequence(longRunningSetupCommand)
+        val command1                 = Setup(Prefix("TCS"), CommandName("successful-command"), None)
+        val longRunningSetupSequence = Sequence(longRunningSetupCommand, command1)
 
         setup.sequencer ? ((x: ActorRef[SubmitResponse]) => SubmitSequenceAndWait(longRunningSetupSequence, x))
+        // Pause sequence so it will remain in InProgress state and then other inProgressState msgs can be processed
+        setup.sequencer ? ((x: ActorRef[PauseResponse]) => Pause(x))
         setup.sequencer ! msg
 
         assertReason(probe, reason)
