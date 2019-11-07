@@ -10,8 +10,8 @@ import com.typesafe.config.ConfigFactory
 import csw.alarm.client.AlarmServiceFactory
 import csw.alarm.models.AlarmSeverity
 import csw.alarm.models.Key.AlarmKey
-import csw.command.client.messages.sequencer.SequencerMsg.SubmitSequenceAndWait
 import csw.command.client.messages.sequencer.SequencerMsg
+import csw.command.client.messages.sequencer.SequencerMsg.SubmitSequenceAndWait
 import csw.config.api.scaladsl.ConfigService
 import csw.config.api.{ConfigData, TokenFactory}
 import csw.config.client.scaladsl.ConfigClientFactory
@@ -218,6 +218,27 @@ class ScriptIntegrationTest extends ScalaTestFrameworkTestKit(EventServer, Alarm
       submitResponse.futureValue should ===(Completed(id))
 
       val successKey        = EventKey("TCS.get.success")
+      val getPublishedEvent = eventService.defaultSubscriber.get(successKey).futureValue
+
+      getPublishedEvent.isInvalid should ===(false)
+    }
+
+    "be able to subscribe a event key | ESW-120" in {
+      val eventService = new EventServiceFactory().make(HttpLocationServiceFactory.makeLocalClient)
+
+      val command  = Setup(Prefix("TCS"), CommandName("on-event"), None)
+      val id       = Id()
+      val sequence = Sequence(id, Seq(command))
+
+      val submitResponse: Future[SubmitResponse] = ocsSequencer ? (SubmitSequenceAndWait(sequence, _))
+      submitResponse.futureValue should ===(Completed(id))
+
+      val publishF = eventService.defaultPublisher.publish(SystemEvent(Prefix("TCS"), EventName("get.event")))
+      publishF.futureValue
+
+      Thread.sleep(1000)
+
+      val successKey        = EventKey("TCS.onEvent.success")
       val getPublishedEvent = eventService.defaultSubscriber.get(successKey).futureValue
 
       getPublishedEvent.isInvalid should ===(false)

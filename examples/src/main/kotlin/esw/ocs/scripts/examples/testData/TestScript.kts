@@ -53,6 +53,13 @@ script {
         if (!event.isInvalid) publishEvent(successEvent)
     }
 
+    handleSetup("on-event") {
+        onEvent("TCS.get.event") {
+            val successEvent = SystemEvent("TCS", "onEvent.success")
+            if (!it.isInvalid) publishEvent(successEvent)
+        }
+    }
+
     handleSetup("command-for-assembly") { command ->
         submitCommandToAssembly("test", command)
     }
