@@ -23,7 +23,7 @@ class LockUnlockUtil(locationServiceUtil: LocationServiceUtil)(actorSystem: Acto
   implicit val scheduler: Scheduler = actorSystem.scheduler
   implicit val ec: ExecutionContext = actorSystem.executionContext
 
-  def jLock(
+  def lock(
       componentName: String,
       componentType: ComponentType,
       prefix: Prefix,
@@ -32,7 +32,7 @@ class LockUnlockUtil(locationServiceUtil: LocationServiceUtil)(actorSystem: Acto
     Lock(prefix, _, FiniteDuration(leaseDuration.toNanos, TimeUnit.NANOSECONDS))
   }
 
-  def jUnlock(
+  def unlock(
       componentName: String,
       componentType: ComponentType,
       prefix: Prefix

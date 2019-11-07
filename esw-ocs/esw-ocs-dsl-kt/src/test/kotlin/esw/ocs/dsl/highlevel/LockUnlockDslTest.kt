@@ -32,40 +32,40 @@ class LockUnlockDslTest : LockUnlockDsl {
     @Test
     fun `LockUnlockDsl should lockAssembly should delegate to LockUnlockUtil#jLock | ESW-126`() = runBlocking {
         every {
-            mockLockUnlockUtil.jLock(componentName, assembly, prefix, jLeaseDuration)
+            mockLockUnlockUtil.lock(componentName, assembly, prefix, jLeaseDuration)
         }.returns(CompletableFuture.completedFuture(lockingResponse))
 
         lockAssembly(componentName, prefix, jLeaseDuration) shouldBe lockingResponse
-        verify { lockUnlockUtil.jLock(componentName, assembly, prefix, jLeaseDuration) }
+        verify { lockUnlockUtil.lock(componentName, assembly, prefix, jLeaseDuration) }
     }
 
     @Test
     fun `unlockAssembly should delegate to LockUnlockUtil#jUnlock | ESW-126`() = runBlocking {
         every {
-            mockLockUnlockUtil.jUnlock(componentName, assembly, prefix)
+            mockLockUnlockUtil.unlock(componentName, assembly, prefix)
         }.returns(CompletableFuture.completedFuture(lockingResponse))
 
         unlockAssembly(componentName, prefix) shouldBe lockingResponse
-        verify { lockUnlockUtil.jUnlock(componentName, assembly, prefix) }
+        verify { lockUnlockUtil.unlock(componentName, assembly, prefix) }
     }
 
     @Test
     fun `lockHcd should delegate to LockUnlockUtil#jLock | ESW-126`() = runBlocking {
         every {
-            mockLockUnlockUtil.jLock(componentName, hcd, prefix, jLeaseDuration)
+            mockLockUnlockUtil.lock(componentName, hcd, prefix, jLeaseDuration)
         }.returns(CompletableFuture.completedFuture(lockingResponse))
 
         lockHcd(componentName, prefix, jLeaseDuration) shouldBe lockingResponse
-        verify { lockUnlockUtil.jLock(componentName, hcd, prefix, jLeaseDuration) }
+        verify { lockUnlockUtil.lock(componentName, hcd, prefix, jLeaseDuration) }
     }
 
     @Test
     fun `unlockHcd should delegate to LockUnlockUtil#jUnlock | ESW-126`() = runBlocking {
         every {
-            mockLockUnlockUtil.jUnlock(componentName, hcd, prefix)
+            mockLockUnlockUtil.unlock(componentName, hcd, prefix)
         }.returns(CompletableFuture.completedFuture(lockingResponse))
 
         unlockHcd(componentName, prefix) shouldBe lockingResponse
-        verify { lockUnlockUtil.jUnlock(componentName, hcd, prefix) }
+        verify { lockUnlockUtil.unlock(componentName, hcd, prefix) }
     }
 }

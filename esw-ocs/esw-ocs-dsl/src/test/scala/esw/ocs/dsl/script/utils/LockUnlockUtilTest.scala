@@ -31,7 +31,7 @@ class LockUnlockUtilTest extends BaseTestSuite {
       when(locationServiceUtil.resolveComponentRef(componentName, componentType)).thenReturn(Future.successful(componentRef.ref))
 
       val lockUnlockUtil = new LockUnlockUtil(locationServiceUtil)(actorSystem)
-      lockUnlockUtil.jLock(componentName, componentType, prefix, leaseDuration)
+      lockUnlockUtil.lock(componentName, componentType, prefix, leaseDuration)
 
       val msg: Lock = componentRef.expectMessageType[Lock]
       msg.source shouldEqual prefix
@@ -48,7 +48,7 @@ class LockUnlockUtilTest extends BaseTestSuite {
         .thenReturn(Future.failed(exception))
 
       val lockingResponse: CompletionStage[LockingResponse] =
-        lockUnlockUtil.jLock(componentName, componentType, prefix, leaseDuration)
+        lockUnlockUtil.lock(componentName, componentType, prefix, leaseDuration)
 
       lockingResponse.toCompletableFuture.isCompletedExceptionally shouldEqual true
       val actualException = intercept[ExecutionException] {
@@ -71,7 +71,7 @@ class LockUnlockUtilTest extends BaseTestSuite {
       when(locationServiceUtil.resolveComponentRef(componentName, componentType)).thenReturn(Future.successful(componentRef.ref))
 
       val lockUnlockUtil = new LockUnlockUtil(locationServiceUtil)(actorSystem)
-      lockUnlockUtil.jUnlock(componentName, componentType, prefix)
+      lockUnlockUtil.unlock(componentName, componentType, prefix)
 
       val msg: Unlock = componentRef.expectMessageType[Unlock]
       msg.source shouldEqual prefix
@@ -87,7 +87,7 @@ class LockUnlockUtilTest extends BaseTestSuite {
         .thenReturn(Future.failed(exception))
 
       val lockingResponse: CompletionStage[LockingResponse] =
-        lockUnlockUtil.jUnlock(componentName, componentType, prefix)
+        lockUnlockUtil.unlock(componentName, componentType, prefix)
 
       lockingResponse.toCompletableFuture.isCompletedExceptionally shouldEqual true
       val actualException = intercept[ExecutionException] {

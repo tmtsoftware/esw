@@ -13,15 +13,15 @@ interface LockUnlockDsl {
 
     /************* Assembly *************/
     suspend fun lockAssembly(assemblyName: String, prefix: Prefix, leaseDuration: Duration): LockingResponse =
-        lockUnlockUtil.jLock(assemblyName, Assembly(), prefix, leaseDuration).await()
+        lockUnlockUtil.lock(assemblyName, Assembly(), prefix, leaseDuration).await()
 
     suspend fun unlockAssembly(assemblyName: String, prefix: Prefix): LockingResponse =
-        lockUnlockUtil.jUnlock(assemblyName, Assembly(), prefix).await()
+        lockUnlockUtil.unlock(assemblyName, Assembly(), prefix).await()
 
     /************* HCD *************/
     suspend fun lockHcd(hcdName: String, prefix: Prefix, leaseDuration: Duration): LockingResponse =
-        lockUnlockUtil.jLock(hcdName, HCD(), prefix, leaseDuration).await()
+        lockUnlockUtil.lock(hcdName, HCD(), prefix, leaseDuration).await()
 
     suspend fun unlockHcd(hcdName: String, prefix: Prefix): LockingResponse =
-        lockUnlockUtil.jUnlock(hcdName, HCD(), prefix).await()
+        lockUnlockUtil.unlock(hcdName, HCD(), prefix).await()
 }
