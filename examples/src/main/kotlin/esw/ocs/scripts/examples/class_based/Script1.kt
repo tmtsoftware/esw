@@ -9,7 +9,7 @@ import kotlinx.coroutines.launch
 class Script1(cswServices: CswServices) : Script(cswServices) {
     init {
         val eventKey = "csw.a.b."
-        fun event(id: Int) = systemEvent("csw.a.b", id.toString())
+        fun event(id: Int) = SystemEvent("csw.a.b", id.toString())
 
         handleSetup("command-1") { 
             log("============ command-1 ================")

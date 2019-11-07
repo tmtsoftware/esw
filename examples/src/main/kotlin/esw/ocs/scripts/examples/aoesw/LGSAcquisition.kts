@@ -24,13 +24,13 @@ script {
     val oiwfsExposureModeChoices = choicesOf("SINGLE", "CONTINUOUS", "STOP", "NOOP")
     val oiwfsExposureModeKey = choiceKey("mode", oiwfsExposureModeChoices)
 
-    val oiwfsStateEvent = eventKey(rtcAssembly.prefix, "oiwfsState")
+    val oiwfsStateEvent = EventKey(rtcAssembly.prefix, "oiwfsState")
     val oiwfsStateEnableChoices = choicesOf("NONE", "TT", "TTF")
     val oiwfsStateEnableKey = choiceKey("enable", oiwfsStateEnableChoices)
     val oiwfsStateFluxHighKey = booleanKey("fluxHigh")
     val oiwfsStateFluxLowKey = booleanKey("fluxlow")
 
-    val ttfOffsetEvent = eventKey(rtcAssembly.prefix, "telOffloadTt") // ??
+    val ttfOffsetEvent = EventKey(rtcAssembly.prefix, "telOffloadTt") // ??
     val ttfOffsetXKey = floatKey("x")
     val ttfOffsetYKey = floatKey("y")
 
@@ -54,7 +54,7 @@ script {
             )
     val tcsOffsetVTKey = choiceKey("virtualTelescope", tcsOffsetVirtualTelescopeChoices)
 
-    val loopeventKey = eventKey(rtcAssembly.prefix, "loop")
+    val loopeventKey = EventKey(rtcAssembly.prefix, "loop")
     val oiwfsLoopStatesChoices = choicesOf("IDLE", "LOST", "ACTIVE")
     val oiwfsLoopKey = choiceKey("oiwfsPoa", oiwfsLoopStatesChoices)
 

@@ -8,7 +8,7 @@ import kotlin.time.seconds
 script { _ ->
 
     val publishStream = publishEvent(10.seconds) {
-        systemEvent("iris.test", "system")
+        SystemEvent("iris.test", "system")
     }
 
     val subscriptionStream = onEvent("iris.test.system") {

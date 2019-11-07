@@ -4,7 +4,7 @@ import esw.ocs.dsl.core.reusableScript
 
 val exceptionHandlerScript = reusableScript {
     onException { exception ->
-        val successEvent = systemEvent("tcs", exception.message + "")
+        val successEvent = SystemEvent("tcs", exception.message + "")
         publishEvent(successEvent)
     }
 }

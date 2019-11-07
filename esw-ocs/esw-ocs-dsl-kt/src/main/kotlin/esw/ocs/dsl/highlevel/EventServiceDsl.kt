@@ -22,12 +22,12 @@ interface EventServiceDsl {
     val defaultPublisher: IEventPublisher
     val defaultSubscriber: IEventSubscriber
 
-    fun eventKey(prefix: String, eventName: String): EventKey = EventKey(Prefix(prefix), EventName(eventName))
+    fun EventKey(prefix: String, eventName: String): EventKey = EventKey(Prefix(prefix), EventName(eventName))
 
-    fun systemEvent(sourcePrefix: String, eventName: String, vararg parameters: Parameter<*>): SystemEvent =
+    fun SystemEvent(sourcePrefix: String, eventName: String, vararg parameters: Parameter<*>): SystemEvent =
         SystemEvent(Prefix(sourcePrefix), EventName(eventName)).jMadd(parameters.toSet())
 
-    fun observeEvent(sourcePrefix: String, eventName: String, vararg parameters: Parameter<*>): ObserveEvent =
+    fun ObserveEvent(sourcePrefix: String, eventName: String, vararg parameters: Parameter<*>): ObserveEvent =
         ObserveEvent(Prefix(sourcePrefix), EventName(eventName)).jMadd(parameters.toSet())
 
     suspend fun publishEvent(event: Event): Done = defaultPublisher.publish(event).await()

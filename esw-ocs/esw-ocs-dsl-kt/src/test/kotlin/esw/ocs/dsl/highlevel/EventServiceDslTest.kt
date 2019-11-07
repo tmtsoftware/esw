@@ -47,7 +47,7 @@ class EventServiceDslTest : EventServiceDsl {
     fun `systemEvent should return a SystemEvent created with given parameters | ESW-120`() {
         val eventName = "systemEvent1"
         val eventPrefix = "TCS.filter.wheel"
-        val actualEvent = systemEvent(eventPrefix, eventName)
+        val actualEvent = SystemEvent(eventPrefix, eventName)
 
         // Verify that  event with provided prefix and eventName is created.
         actualEvent shouldBe SystemEvent(
@@ -63,7 +63,7 @@ class EventServiceDslTest : EventServiceDsl {
     fun `observeEvent should return a ObserveEvent created with given parameters | ESW-120`() {
         val eventName = "observeEvent1"
         val eventPrefix = "TCS.filter.wheel"
-        val actualEvent = observeEvent(eventPrefix, eventName)
+        val actualEvent = ObserveEvent(eventPrefix, eventName)
 
         // Verify that event with provided prefix and eventName is created.
         actualEvent shouldBe ObserveEvent(

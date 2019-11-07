@@ -14,20 +14,20 @@ script {
 
     handleAbortSequence {
         //do some actions to abort sequence
-        val successEvent = systemEvent("tcs", "abort.success")
+        val successEvent = SystemEvent("tcs", "abort.success")
         publishEvent(successEvent)
     }
 
     handleStop {
         //do some actions to stop
-        val successEvent = systemEvent("tcs", "stop.success")
+        val successEvent = SystemEvent("tcs", "stop.success")
         publishEvent(successEvent)
     }
 
     handleSetup("time-service-dsl") {
         val offset = utcTimeAfter(2.seconds).offsetFromNow()
         val taskToSchedule: suspend () -> Unit =
-                { publishEvent(systemEvent("irms", "publish.success")) }
+                { publishEvent(SystemEvent("irms", "publish.success")) }
 
         schedulePeriodically(utcTimeAfter(5.seconds), offset, taskToSchedule)
 

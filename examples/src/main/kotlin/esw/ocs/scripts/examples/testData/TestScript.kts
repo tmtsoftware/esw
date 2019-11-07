@@ -31,7 +31,7 @@ script {
 
     handleSetup("check-config") {
         if (existsConfig("/tmt/test/wfos.conf"))
-            publishEvent(systemEvent("WFOS", "check-config.success"))
+            publishEvent(SystemEvent("WFOS", "check-config.success"))
     }
 
     handleSetup("get-config-data") {
@@ -39,7 +39,7 @@ script {
         val configData = getConfig("/tmt/test/wfos.conf")
         configData?.let {
             if (it == ConfigFactory.parseString(configValue))
-                publishEvent(systemEvent("WFOS", "get-config.success"))
+                publishEvent(SystemEvent("WFOS", "get-config.success"))
         }
     }
 
@@ -49,7 +49,7 @@ script {
     handleSetup("get-event") {
         // ESW-88
         val event: Event = getEvent("TCS.get.event").first()
-        val successEvent = systemEvent("TCS", "get.success")
+        val successEvent = SystemEvent("TCS", "get.success")
         if (!event.isInvalid) publishEvent(successEvent)
     }
 
