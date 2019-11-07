@@ -14,7 +14,7 @@ interface LockUnlockDsl : JavaFutureInterop {
     val lockUnlockUtil: LockUnlockUtil
 
     /************* Assembly *************/
-    suspend fun lockAssembly(
+    fun lockAssembly(
             assemblyName: String,
             prefix: Prefix,
             leaseDuration: Duration,
@@ -27,7 +27,7 @@ interface LockUnlockDsl : JavaFutureInterop {
             lockUnlockUtil.unlock(assemblyName, Assembly(), prefix).await()
 
     /************* HCD *************/
-    suspend fun lockHcd(hcdName: String, prefix: Prefix, leaseDuration: Duration, callback: suspend CoroutineScope.(LockingResponse) -> Unit) {
+    fun lockHcd(hcdName: String, prefix: Prefix, leaseDuration: Duration, callback: suspend CoroutineScope.(LockingResponse) -> Unit) {
         lockUnlockUtil.lock(hcdName, HCD(), prefix, leaseDuration.toJavaDuration()) { callback.toJavaFuture(it) }
     }
 

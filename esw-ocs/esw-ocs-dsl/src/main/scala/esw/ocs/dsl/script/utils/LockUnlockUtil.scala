@@ -2,12 +2,11 @@ package esw.ocs.dsl.script.utils
 
 import java.time.Duration
 import java.util.concurrent.{CompletionStage, TimeUnit}
-import java.util.function.Consumer
 
 import akka.Done
 import akka.actor.typed.scaladsl.AskPattern.Askable
 import akka.actor.typed.{ActorRef, ActorSystem, Scheduler, SpawnProtocol}
-import akka.stream.scaladsl.{Sink, Source}
+import akka.stream.scaladsl.Sink
 import akka.stream.typed.scaladsl.ActorSource
 import akka.stream.{Materializer, OverflowStrategy}
 import akka.util.Timeout
@@ -19,8 +18,8 @@ import csw.params.core.models.Prefix
 import esw.ocs.dsl.sequence_manager.LocationServiceUtil
 
 import scala.compat.java8.FutureConverters.FutureOps
-import scala.concurrent.{ExecutionContext, Future}
 import scala.concurrent.duration.{FiniteDuration, _}
+import scala.concurrent.{ExecutionContext, Future}
 import scala.jdk.FutureConverters.CompletionStageOps
 
 class LockUnlockUtil(locationServiceUtil: LocationServiceUtil)(actorSystem: ActorSystem[SpawnProtocol.Command]) {
@@ -35,19 +34,15 @@ class LockUnlockUtil(locationServiceUtil: LocationServiceUtil)(actorSystem: Acto
     val leaseFiniteDuration  = FiniteDuration(leaseDuration.toNanos, TimeUnit.NANOSECONDS)
     val eventualComponentRef = locationServiceUtil.resolveComponentRef(componentName, componentType)
 
-    val streamOfLockResponses = eventualComponentRef.map { compRef =>
+    eventualComponentRef.flatMap { compRef =>
       actorSource
         .mapMaterializedValue { lockResponseReplyTo =>
           compRef ! Lock(prefix, lockResponseReplyTo, leaseFiniteDuration)
         }
-    }
-
-    Source
-      .futureSource(streamOfLockResponses)
-      .mapAsync(1)(executeCallback(callback))
-      .takeWhile(isNotFinalLockResponse)
-      .runWith(Sink.ignore)
-      .toJava
+        .mapAsync(1)(executeCallback(callback))
+        .takeWhile(isNotFinalLockResponse)
+        .runWith(Sink.ignore)
+    }.toJava
   }
 
   def unlock(componentName: String, componentType: ComponentType, prefix: Prefix): CompletionStage[LockingResponse] =
