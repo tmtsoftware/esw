@@ -26,11 +26,13 @@ script {
 
     handleSetup("time-service-dsl") {
         val offset = utcTimeAfter(2.seconds).offsetFromNow()
-        val taskToSchedule: suspend () -> Unit =
-                { publishEvent(SystemEvent("irms", "publish.success")) }
 
-        schedulePeriodically(utcTimeAfter(5.seconds), offset, taskToSchedule)
+        schedulePeriodically(utcTimeAfter(5.seconds), offset) {
+            publishEvent(SystemEvent("irms", "publish.success"))
+        }
 
-        scheduleOnce(taiTimeNow(), taskToSchedule)
+        scheduleOnce(taiTimeNow()) {
+            publishEvent(SystemEvent("irms", "publish.success"))
+        }
     }
 }

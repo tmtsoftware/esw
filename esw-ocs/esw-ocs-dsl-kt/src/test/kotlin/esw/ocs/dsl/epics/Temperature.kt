@@ -6,11 +6,12 @@ import csw.event.api.javadsl.IEventSubscriber
 import csw.event.api.javadsl.IEventSubscription
 import csw.params.events.Event
 import esw.ocs.dsl.params.intKey
+import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.runBlocking
 import java.util.concurrent.CompletableFuture
 import kotlin.time.seconds
 
-typealias SubscriptionCallback = suspend (Event) -> Unit
+typealias SubscriptionCallback = suspend CoroutineScope.(Event) -> Unit
 
 abstract class TestMachine(name: String, init: String) : Machine(name, init) {
     private var database = mutableMapOf<String, Event>()
@@ -29,11 +30,11 @@ abstract class TestMachine(name: String, init: String) : Machine(name, init) {
 
     override suspend fun publishEvent(event: Event): Done {
         database[event.eventKey().key()] = event
-        subscriptions[event.eventKey().key()]?.forEach { it(event) }
+        subscriptions[event.eventKey().key()]?.forEach { it(coroutineScope, event) }
         return Done.done()
     }
 
-    override suspend fun onEvent(vararg eventKeys: String, callback: suspend (Event) -> Unit): IEventSubscription {
+    override suspend fun onEvent(vararg eventKeys: String, callback: suspend CoroutineScope.(Event) -> Unit): IEventSubscription {
         eventKeys.map {
             subscriptions.merge(it, listOf(callback)) { old, new -> old + new }
         }
@@ -41,7 +42,7 @@ abstract class TestMachine(name: String, init: String) : Machine(name, init) {
     }
 
     override suspend fun getEvent(vararg eventKeys: String): Set<Event> =
-        eventKeys.mapNotNull { database[it] }.toSet()
+            eventKeys.mapNotNull { database[it] }.toSet()
 
     val prefix = "esw.epic"
     val tempKey = intKey("temp")

@@ -6,26 +6,24 @@ import csw.time.core.models.UTCTime
 import csw.time.scheduler.api.Cancellable
 import csw.time.scheduler.api.TimeServiceScheduler
 import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.future.future
 import scala.concurrent.duration.FiniteDuration
-import java.util.concurrent.CompletionStage
 import java.util.concurrent.TimeUnit
 import kotlin.time.Duration
 import kotlin.time.nanoseconds
 import kotlin.time.toJavaDuration
 
-interface TimeServiceDsl {
-    val coroutineScope: CoroutineScope
+interface TimeServiceDsl : RichJavaCompletableFuture {
+    override val coroutineScope: CoroutineScope
     val timeServiceScheduler: TimeServiceScheduler
 
-    suspend fun scheduleOnce(startTime: TMTTime, task: suspend () -> Unit): Cancellable =
-            timeServiceScheduler.scheduleOnce(startTime, Runnable { task.toJavaFuture() })
+    fun scheduleOnce(startTime: TMTTime, task: suspend CoroutineScope.() -> Unit): Cancellable =
+            timeServiceScheduler.scheduleOnce(startTime, Runnable { task.toJavaFutureVoid() })
 
-    fun schedulePeriodically(startTime: TMTTime, interval: Duration, task: suspend () -> Unit): Cancellable =
+    fun schedulePeriodically(startTime: TMTTime, interval: Duration, task: suspend CoroutineScope.() -> Unit): Cancellable =
             timeServiceScheduler.schedulePeriodically(
                     startTime,
                     interval.toJavaDuration(),
-                    Runnable { task.toJavaFuture() })
+                    Runnable { task.toJavaFutureVoid() })
 
     fun utcTimeNow(): UTCTime = UTCTime.now()
 
@@ -39,6 +37,4 @@ interface TimeServiceDsl {
 
     fun TMTTime.offsetFromNow(): Duration = durationFromNow().toNanos().nanoseconds
 
-    private fun (suspend () -> Unit).toJavaFuture(): CompletionStage<Void> =
-            coroutineScope.future { this@toJavaFuture }.thenAccept { }
 }

@@ -15,7 +15,6 @@ import kotlinx.coroutines.*
 import kotlinx.coroutines.future.asCompletableFuture
 import kotlinx.coroutines.future.await
 import kotlinx.coroutines.future.future
-import java.util.concurrent.CompletionStage
 
 sealed class ScriptDslKt(private val cswServices: CswServices) : CswHighLevelDsl(cswServices) {
 
@@ -76,13 +75,6 @@ sealed class ScriptDslKt(private val cswServices: CswServices) : CswHighLevelDsl
     // fixme: use logging service
     fun log(msg: String) = println("[${Thread.currentThread().name}] $msg")
 
-    private fun (suspend CoroutineScope.() -> Unit).toJavaFutureVoid(): CompletionStage<Void> =
-            coroutineScope.launch { this@toJavaFutureVoid() }.asCompletableFuture().thenAccept { }
-
-    private fun <T> (suspend CoroutineScope.(T) -> Unit).toJavaFuture(value: T): CompletionStage<Void> {
-        val curriedBlock: suspend (CoroutineScope) -> Unit = { a: CoroutineScope -> this(a, value) }
-        return curriedBlock.toJavaFutureVoid()
-    }
 }
 
 class ReusableScript(

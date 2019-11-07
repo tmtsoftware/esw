@@ -23,19 +23,12 @@ private[esw] object ScriptLoader {
       result.invoke(cswServices).scriptDsl
     }
 
-  // this loads .kt or class file
-  def loadClass(scriptClass: String, cswServices: CswServices): JScriptDsl =
-    withScript(scriptClass) { clazz =>
-      clazz.getConstructor(classOf[CswServices]).newInstance(cswServices).asInstanceOf[JScriptDsl]
-    }
-
   private def withScript[T](scriptClass: String)(block: Class[_] => T): T =
     try {
       val clazz = Class.forName(scriptClass)
       block(clazz)
     } catch {
-      case _: ClassCastException     => throw new InvalidScriptException(scriptClass)
       case _: ClassNotFoundException => throw new ScriptNotFound(scriptClass)
+      case _: NoSuchFieldException   => throw new InvalidScriptException(scriptClass)
     }
-
 }

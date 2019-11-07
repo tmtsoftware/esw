@@ -123,7 +123,7 @@ class SequencerAppIntegrationTest extends ScalaTestFrameworkTestKit with BaseTes
       }
     }
 
-    "throw return LoadScriptError| ESW-102" in {
+    "return LoadScriptError when script configuration is not provided| ESW-102" in {
       val subsystem        = Subsystem.ESW
       val name             = "primary"
       val invalidPackageId = "invalid_package"
