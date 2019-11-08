@@ -36,11 +36,16 @@ class ExceptionsHandlerIntegrationTest extends ScalaTestFrameworkTestKit(EventSe
   private val ocsPackageId     = "esw"
   private val ocsObservingMode = "exceptionscript" // ExceptionTestScript.kt
 
-  private val tcsPackageId      = "tcs"
-  private val tcsObservingMode  = "exceptionscript2" // ExceptionTestScript2.kt
-  private val tcsObservingMode2 = "exceptionscript3" // ExceptionTestScript3.kt
+  private val tcsPackageId     = "tcs"
+  private val tcsObservingMode = "exceptionscript2" // ExceptionTestScript2.kt
 
   private val eventService = new EventServiceFactory().make(HttpLocationServiceFactory.makeLocalClient)
+
+  private var setup: SequencerSetup = _
+
+  override def afterEach(): Unit = {
+    setup.shutdownSequencer()
+  }
 
   "Script" must {
 
@@ -59,7 +64,7 @@ class ExceptionsHandlerIntegrationTest extends ScalaTestFrameworkTestKit(EventSe
 
     forAll(idleStateTestCases) { (msg, reason) =>
       s"invoke exception handler when ${reason} | ESW-139" in {
-        val setup = new SequencerSetup(ocsPackageId, ocsObservingMode)
+        setup = new SequencerSetup(ocsPackageId, ocsObservingMode)
 
         val eventKey = EventKey("tcs." + reason)
         val probe    = createProbeFor(eventKey)
@@ -67,7 +72,6 @@ class ExceptionsHandlerIntegrationTest extends ScalaTestFrameworkTestKit(EventSe
         setup.sequencer ! msg
 
         assertReason(probe, reason)
-        setup.shutdownSequencer()
       }
     }
 
@@ -80,7 +84,7 @@ class ExceptionsHandlerIntegrationTest extends ScalaTestFrameworkTestKit(EventSe
 
     forAll(inProgressStateTestCases) { (msg, reason) =>
       s"invoke exception handler when ${reason} | ESW-139" in {
-        val setup = new SequencerSetup(ocsPackageId, ocsObservingMode)
+        setup = new SequencerSetup(ocsPackageId, ocsObservingMode)
 
         val eventKey = EventKey("tcs." + reason)
         val probe    = createProbeFor(eventKey)
@@ -95,7 +99,6 @@ class ExceptionsHandlerIntegrationTest extends ScalaTestFrameworkTestKit(EventSe
         setup.sequencer ! msg
 
         assertReason(probe, reason)
-        setup.shutdownSequencer()
       }
     }
   }
@@ -103,7 +106,7 @@ class ExceptionsHandlerIntegrationTest extends ScalaTestFrameworkTestKit(EventSe
   "Script2" must {
 
     "invoke exception handlers when exception is thrown from handler and must fail the command with message of given exception | ESW-139" in {
-      val setup = new SequencerSetup(ocsPackageId, ocsObservingMode)
+      setup = new SequencerSetup(ocsPackageId, ocsObservingMode)
 
       val command  = Setup(Prefix("TCS"), CommandName("fail-setup"), None)
       val id       = Id()
@@ -130,7 +133,6 @@ class ExceptionsHandlerIntegrationTest extends ScalaTestFrameworkTestKit(EventSe
 
       val submitResponse1: Future[SubmitResponse] = setup.sequencer ? (SubmitSequenceAndWait(sequence1, _))
       submitResponse1.futureValue should ===(Completed(id1))
-      setup.shutdownSequencer()
     }
 
     "invoke exception handler when handle-goOnline-failed | ESW-139" in {
@@ -138,30 +140,12 @@ class ExceptionsHandlerIntegrationTest extends ScalaTestFrameworkTestKit(EventSe
       val eventKey  = EventKey("tcs." + reason)
       val testProbe = createProbeFor(eventKey)
 
-      val setup = new SequencerSetup(tcsPackageId, tcsObservingMode)
+      setup = new SequencerSetup(tcsPackageId, tcsObservingMode)
 
       (setup.sequencer ? GoOffline).awaitResult
       setup.sequencer ! GoOnline(TestProbe[GoOnlineResponse].ref)
 
       assertReason(testProbe, reason)
-
-      setup.shutdownSequencer()
-    }
-
-    "invoke exception handler when handle-shutdown-failed" in {
-      val reason    = "handle-shutdown-failed"
-      val eventKey  = EventKey("tcs." + reason)
-      val testProbe = createProbeFor(eventKey)
-
-      val setup                                       = new SequencerSetup(tcsPackageId, tcsObservingMode2)
-      val eventualResponse: Future[GoOfflineResponse] = setup.sequencer ? GoOffline
-      eventualResponse.awaitResult
-
-      val probe = TestProbe[Ok.type]
-      setup.sequencer ! Shutdown(probe.ref)
-
-      assertReason(testProbe, reason)
-      probe.expectMessage(Ok)
     }
   }
 

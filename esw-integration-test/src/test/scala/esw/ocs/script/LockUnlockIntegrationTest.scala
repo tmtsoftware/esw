@@ -2,7 +2,6 @@ package esw.ocs.script
 
 import akka.actor.testkit.typed.scaladsl.TestProbe
 import akka.actor.typed.ActorRef
-import akka.util.Timeout
 import com.typesafe.config.ConfigFactory
 import csw.command.client.messages.sequencer.SequencerMsg
 import csw.command.client.messages.sequencer.SequencerMsg.SubmitSequenceAndWait
@@ -18,7 +17,6 @@ import csw.testkit.scaladsl.CSWService.EventServer
 import csw.testkit.scaladsl.ScalaTestFrameworkTestKit
 import esw.ocs.api.BaseTestSuite
 import esw.ocs.app.wiring.SequencerWiring
-import esw.ocs.impl.internal.Timeouts
 import org.scalatest.time.SpanSugar.convertDoubleToGrainOfTime
 
 class LockUnlockIntegrationTest extends ScalaTestFrameworkTestKit(EventServer) with BaseTestSuite {
@@ -28,7 +26,6 @@ class LockUnlockIntegrationTest extends ScalaTestFrameworkTestKit(EventServer) w
   private var ocsWiring: SequencerWiring           = _
   private var ocsSequencer: ActorRef[SequencerMsg] = _
   private var eventSubscriber: EventSubscriber     = _
-  private implicit val askTimeout: Timeout         = Timeouts.DefaultTimeout
 
   override implicit def patienceConfig: PatienceConfig = PatienceConfig(10.seconds)
 
