@@ -7,7 +7,7 @@ val OperationsAndDiagModeHandlers = reusableScript {
     handleDiagnosticMode { startTime, hint ->
         // do some actions to go to diagnostic mode based on hint
         diagnosticModeForSequencer(
-            "testSequencerId6", "testObservingMode6",
+            "tcs", "moonnight",
             startTime,
             hint
         )
@@ -15,6 +15,6 @@ val OperationsAndDiagModeHandlers = reusableScript {
 
     handleOperationsMode {
         // do some actions to go to operations mode
-        operationsModeForSequencer("testSequencerId6", "testObservingMode6")
+        operationsModeForSequencer("tcs", "moonnight")
     }
 }

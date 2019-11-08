@@ -24,24 +24,26 @@ object Csw {
   private val Org     = "com.github.tmtsoftware.csw"
   private val Version = "0.1-SNAPSHOT" //change this to 0.1-SNAPSHOT to test with local csw changes (after publishLocal)
 
-  val `csw-alarm-api`       = Org %% "csw-alarm-api" % Version
-  val `csw-command-api`     = Org %% "csw-command-api" % Version
-  val `csw-location-models` = dep(Org %%% "csw-location-models" % Version)
-  val `csw-logging-models`  = Org %% "csw-logging-models" % Version
-  val `csw-location-api`    = Org %% "csw-location-api" % Version
-  val `csw-event-api`       = Org %% "csw-event-api" % Version
-  val `csw-aas-http`        = Org %% "csw-aas-http" % Version
-  val `csw-alarm-client`    = Org %% "csw-alarm-client" % Version
-  val `csw-params`          = dep(Org %%% "csw-params" % Version)
-  val `csw-commons`         = Org %% "csw-commons" % Version
-  val `csw-network-utils`   = Org %% "csw-network-utils" % Version
-  val `csw-location-client` = Org %% "csw-location-client" % Version
-  val `csw-command-client`  = Org %% "csw-command-client" % Version
-  val `csw-event-client`    = Org %% "csw-event-client" % Version
-  val `csw-time-scheduler`  = Org %% "csw-time-scheduler" % Version
-  val `csw-testkit`         = Org %% "csw-testkit" % Version
-  val `csw-admin-server`    = Org %% "csw-admin-server" % Version
-  val `csw-config-client`   = Org %% "csw-config-client" % Version
+  val `csw-alarm-api`                 = Org %% "csw-alarm-api" % Version
+  val `csw-command-api`               = Org %% "csw-command-api" % Version
+  val `csw-location-models`           = dep(Org %%% "csw-location-models" % Version)
+  val `csw-logging-models`            = Org %% "csw-logging-models" % Version
+  val `csw-location-api`              = Org %% "csw-location-api" % Version
+  val `csw-event-api`                 = Org %% "csw-event-api" % Version
+  val `csw-aas-http`                  = Org %% "csw-aas-http" % Version
+  val `csw-alarm-client`              = Org %% "csw-alarm-client" % Version
+  val `csw-params`                    = dep(Org %%% "csw-params" % Version)
+  val `csw-commons`                   = Org %% "csw-commons" % Version
+  val `csw-network-utils`             = Org %% "csw-network-utils" % Version
+  val `csw-location-client`           = Org %% "csw-location-client" % Version
+  val `csw-command-client`            = Org %% "csw-command-client" % Version
+  val `csw-event-client`              = Org %% "csw-event-client" % Version
+  val `csw-time-scheduler`            = Org %% "csw-time-scheduler" % Version
+  val `csw-testkit`                   = Org %% "csw-testkit" % Version
+  val `csw-admin-server`              = Org %% "csw-admin-server" % Version
+  val `csw-config-client`             = Org %% "csw-config-client" % Version
+  val `csw-location-server-multi-jvm` = Org %% "csw-location-server" % Version classifier "multi-jvm"
+  val `csw-location-server-tests`     = Org %% "csw-location-server" % Version classifier "tests"
 }
 
 object Akka {
@@ -53,6 +55,7 @@ object Akka {
   val `akka-testkit`             = "com.typesafe.akka" %% "akka-testkit"             % Version
   val `akka-actor-testkit-typed` = "com.typesafe.akka" %% "akka-actor-testkit-typed" % Version
   val `akka-stream-testkit`      = "com.typesafe.akka" %% "akka-stream-testkit"      % Version
+  val `akka-multi-node-testkit`  = "com.typesafe.akka" %% "akka-multi-node-testkit"  % Version
 }
 
 object AkkaHttp {

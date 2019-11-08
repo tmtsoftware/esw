@@ -63,11 +63,14 @@ object Dependencies {
 
   val IntegrationTest = Def.setting(
     Seq(
+      Csw.`csw-location-server-multi-jvm`,
+      Csw.`csw-location-server-tests`,
       Libs.`scala-java8-compat` % Test,
       Csw.`csw-testkit`         % Test,
       Csw.`csw-admin-server`    % Test,
       Csw.`csw-logging-models`  % Test,
-      Libs.scalatest            % Test
+      Libs.scalatest            % Test,
+      Akka.`akka-multi-node-testkit`
     )
   )
 
