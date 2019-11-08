@@ -44,7 +44,6 @@ class ConfigServiceDslTest : ConfigServiceDsl {
         verify { configClient.getActive(any()) }
     }
 
-    //Todo: This test might work on removing `private[config]` restriction from `toJStringF()` api from CSW `ConfigData` class`
     @Test
     fun `getConfig should delegate to configClientService#getActive and return ConfigData | ESW-123`() = runBlocking {
         val defaultStrConf = "foo { bar { baz : 1234 } }"
