@@ -53,6 +53,12 @@ pipeline {
                 }
             }
         }
+
+        stage('Multi-Jvm Test') {
+            steps {
+                sh "sbt esw-integration-test/multi-jvm:test"
+            }
+        }
     }
 
     post {

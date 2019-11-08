@@ -24,7 +24,7 @@ pipeline {
             }
         }
 
-        stage('Test - Scala') {
+        stage('Test') {
             steps {
                 sh "sbt -DenableCoverage=true -DgenerateStoryReport=true ';set every enableFatalWarnings := true; clean; test:test'"
                 sh "sbt -DenableCoverage=true esw-ocs-dsl-kt/test" // fixme: test reporter does not work
@@ -51,6 +51,12 @@ pipeline {
                             reportName           : "Test story mapping"
                     ])
                 }
+            }
+        }
+
+        stage('Multi-Jvm Test') {
+            steps {
+                sh "sbt esw-integration-test/multi-jvm:test"
             }
         }
 
