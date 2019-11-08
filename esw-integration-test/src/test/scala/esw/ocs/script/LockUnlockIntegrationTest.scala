@@ -48,32 +48,32 @@ class LockUnlockIntegrationTest extends ScalaTestFrameworkTestKit(EventServer) w
   }
 
   "Script" must {
+    val lockingStringKey = StringKey.make("lockingResponse")
+    val lockingEventKey  = EventKey("esw.test.locking_response")
+
     "support locking components | ESW-126" in {
       val probe = TestProbe[String]
-      val key   = StringKey.make("lockResponse")
       eventSubscriber
-        .subscribeCallback(Set(EventKey("esw.test.lock_response")), event => {
-          val param = event.paramType.get(key).flatMap(_.get(0))
+        .subscribeCallback(Set(lockingEventKey), event => {
+          val param = event.paramType.get(lockingStringKey).flatMap(_.get(0))
           param.foreach(probe.ref ! _)
         })
 
       val lockCommand = Setup(Prefix("TCS.test"), CommandName("lock-assembly"), None)
       ocsSequencer ! SubmitSequenceAndWait(Sequence(lockCommand), TestProbe[SubmitResponse].ref)
 
-      probe.expectMessage("LockAcquired")
-      probe.expectMessage("LockExpiringShortly")
-      probe.expectMessage("LockExpired")
+      probe.expectMessage("LockAcquired$")
+      probe.expectMessage("LockExpiringShortly$")
+      probe.expectMessage("LockExpired$")
     }
 
     "support unlocking components | ESW-126" in {
-      val eventSubscriber = new EventServiceFactory().make(locationService).defaultSubscriber
-      val unlockCommand   = Setup(Prefix("TCS.test"), CommandName("unlock-assembly"), None)
-      val unlockKey       = StringKey.make("unlockResponse")
+      val unlockCommand = Setup(Prefix("TCS.test"), CommandName("unlock-assembly"), None)
 
       ocsSequencer ! SubmitSequenceAndWait(Sequence(unlockCommand), TestProbe[SubmitResponse].ref)
       eventually {
-        val unlockEvent = eventSubscriber.get(EventKey("esw.test.unlock_response")).futureValue
-        unlockEvent.paramType.get(unlockKey).flatMap(_.get(0)) should ===(Some("LockAlreadyReleased"))
+        val unlockEvent = eventSubscriber.get(lockingEventKey).futureValue
+        unlockEvent.paramType.get(lockingStringKey).flatMap(_.get(0)) should ===(Some("LockAlreadyReleased$"))
       }
     }
   }

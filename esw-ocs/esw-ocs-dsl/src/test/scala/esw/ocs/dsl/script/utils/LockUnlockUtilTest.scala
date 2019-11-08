@@ -3,7 +3,6 @@ package esw.ocs.dsl.script.utils
 import java.time.Duration
 import java.util.concurrent.{CompletionStage, ExecutionException, TimeUnit}
 
-import akka.Done
 import akka.actor.testkit.typed.scaladsl.TestProbe
 import akka.actor.typed.{ActorRef, ActorSystem, SpawnProtocol}
 import csw.command.client.messages.ComponentMessage
@@ -33,9 +32,7 @@ class LockUnlockUtilTest extends BaseTestSuite {
       when(locationServiceUtil.resolveComponentRef(componentName, componentType)).thenReturn(Future.successful(componentRef.ref))
 
       val lockUnlockUtil = new LockUnlockUtil(locationServiceUtil)(actorSystem)
-      lockUnlockUtil.lock(componentName, componentType, prefix, leaseDuration) { _ =>
-        ???
-      }
+      lockUnlockUtil.lock(componentName, componentType, prefix, leaseDuration)(() => ???, () => ???)
 
       val msg: Lock = componentRef.expectMessageType[Lock]
       msg.source shouldEqual prefix
@@ -50,10 +47,8 @@ class LockUnlockUtilTest extends BaseTestSuite {
       when(locationServiceUtil.resolveComponentRef(componentName, componentType))
         .thenReturn(Future.failed(exception))
 
-      val lockingResponse: CompletionStage[Done] =
-        lockUnlockUtil.lock(componentName, componentType, prefix, leaseDuration) { _ =>
-          ???
-        }
+      val lockingResponse: CompletionStage[LockingResponse] =
+        lockUnlockUtil.lock(componentName, componentType, prefix, leaseDuration)(() => ???, () => ???)
 
       val actualException = intercept[RuntimeException] {
         lockingResponse.asScala.awaitResult

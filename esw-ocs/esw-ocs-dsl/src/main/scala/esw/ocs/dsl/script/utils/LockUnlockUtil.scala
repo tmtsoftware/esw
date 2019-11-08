@@ -3,10 +3,9 @@ package esw.ocs.dsl.script.utils
 import java.time.Duration
 import java.util.concurrent.{CompletionStage, TimeUnit}
 
-import akka.Done
 import akka.actor.typed.scaladsl.AskPattern.Askable
 import akka.actor.typed.{ActorRef, ActorSystem, Scheduler, SpawnProtocol}
-import akka.stream.scaladsl.Sink
+import akka.stream.scaladsl.{Keep, Sink}
 import akka.stream.typed.scaladsl.ActorSource
 import akka.stream.{Materializer, OverflowStrategy}
 import akka.util.Timeout
@@ -19,8 +18,9 @@ import esw.ocs.dsl.sequence_manager.LocationServiceUtil
 
 import scala.compat.java8.FutureConverters.FutureOps
 import scala.concurrent.duration.{FiniteDuration, _}
-import scala.concurrent.{ExecutionContext, Future}
+import scala.concurrent.{ExecutionContext, Future, Promise}
 import scala.jdk.FutureConverters.CompletionStageOps
+import scala.util.Success
 
 class LockUnlockUtil(locationServiceUtil: LocationServiceUtil)(actorSystem: ActorSystem[SpawnProtocol.Command]) {
   implicit val timeout: Timeout             = 5.seconds
@@ -29,19 +29,27 @@ class LockUnlockUtil(locationServiceUtil: LocationServiceUtil)(actorSystem: Acto
   private implicit val mat: Materializer    = Materializer(actorSystem)
 
   def lock(componentName: String, componentType: ComponentType, prefix: Prefix, leaseDuration: Duration)(
-      callback: LockingResponse => CompletionStage[Void]
-  ): CompletionStage[Done] = {
+      onLockAboutToExpire: () => CompletionStage[Void],
+      onLockExpired: () => CompletionStage[Void]
+  ): CompletionStage[LockingResponse] = {
     val leaseFiniteDuration  = FiniteDuration(leaseDuration.toNanos, TimeUnit.NANOSECONDS)
     val eventualComponentRef = locationServiceUtil.resolveComponentRef(componentName, componentType)
+
+    val firstLockResponse: Promise[LockingResponse] = Promise()
 
     eventualComponentRef.flatMap { compRef =>
       actorSource
         .mapMaterializedValue { lockResponseReplyTo =>
           compRef ! Lock(prefix, lockResponseReplyTo, leaseFiniteDuration)
+          firstLockResponse.future
         }
-        .mapAsync(1)(executeCallback(callback))
+        .mapAsync(1) { lockResponse =>
+          firstLockResponse.tryComplete(Success(lockResponse))
+          executeCallbacks(onLockAboutToExpire, onLockExpired)(lockResponse)
+        }
         .takeWhile(isNotFinalLockResponse)
-        .runWith(Sink.ignore)
+        .toMat(Sink.ignore)(Keep.left)
+        .run()
     }.toJava
   }
 
@@ -68,7 +76,12 @@ class LockUnlockUtil(locationServiceUtil: LocationServiceUtil)(actorSystem: Acto
 
   private def isNotFinalLockResponse: LockingResponse => Boolean = !isFinalLockResponse(_)
 
-  private def executeCallback[T](cb: T => CompletionStage[Void]): T => Future[T] = { res =>
-    cb(res).asScala.map(_ => res)
+  private def executeCallbacks(
+      onLockAboutToExpire: () => CompletionStage[Void],
+      onLockExpired: () => CompletionStage[Void]
+  ): LockingResponse => Future[LockingResponse] = {
+    case res @ LockExpired         => onLockExpired().asScala.map(_ => res)
+    case res @ LockExpiringShortly => onLockAboutToExpire().asScala.map(_ => res)
+    case res                       => Future.successful(res)
   }
 }
