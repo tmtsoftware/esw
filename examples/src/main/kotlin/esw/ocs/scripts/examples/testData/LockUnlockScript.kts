@@ -21,7 +21,7 @@ script {
                 prefix = "esw.test",
                 leaseDuration = 200.milliseconds,
                 onLockAboutToExpire = { publishLockingResponse(lockExpiringShortly()) },
-                onLockExpired = { publishLockingResponse(`LockExpired$`.`MODULE$`) }
+                onLockExpired = { publishLockingResponse(lockExpired()) }
         )
 
         publishLockingResponse(initialLockResponse)
