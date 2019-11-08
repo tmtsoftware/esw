@@ -6,8 +6,8 @@ import csw.framework.models.CswContext
 import csw.framework.scaladsl.ComponentHandlers
 import csw.location.models.TrackingEvent
 import csw.logging.api.scaladsl.Logger
-import csw.params.commands.CommandResponse.{Accepted, Completed}
-import csw.params.commands.{CommandResponse, ControlCommand}
+import csw.params.commands.CommandResponse.{Accepted, Completed, Error, Started}
+import csw.params.commands.{CommandName, CommandResponse, ControlCommand}
 import csw.params.core.generics.KeyType.StringKey
 import csw.params.core.models.{Id, Prefix}
 import csw.params.core.states.{CurrentState, StateName}
@@ -36,7 +36,14 @@ class SampleComponentHandlers(ctx: ActorContext[TopLevelActorMessage], cswCtx: C
     log.info(s"Run Id is $runId")
     val event = new SystemEvent(Prefix("tcs.filter.wheel"), EventName("setup-command-from-script"))
     eventService.defaultPublisher.publish(event)
-    Completed(runId)
+
+    controlCommand.commandName.name match {
+      case "long-running" =>
+        commandResponseManager.updateCommand(Completed(runId))
+        Started(runId)
+      case _ => Completed(runId)
+    }
+
   }
 
   override def onOneway(runId: Id, controlCommand: ControlCommand): Unit = {
