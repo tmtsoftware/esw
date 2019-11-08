@@ -1,7 +1,12 @@
 package esw.ocs.scripts.examples.testData
 
+import csw.params.commands.Sequence
+import csw.params.commands.SequenceCommand
+import csw.params.core.models.Id
 import esw.ocs.dsl.core.script
 import kotlinx.coroutines.delay
+import scala.jdk.javaapi.CollectionConverters
+import java.util.*
 
 script {
     handleSetup("command-1") {
@@ -28,6 +33,14 @@ script {
 
     handleSetup("fail-command") { command ->
         finishWithError(command.commandName().name())
+    }
+
+    handleSetup("multi-node") {command ->
+        val sequence = Sequence(
+                Id("testSequenceIdString123"),
+                CollectionConverters.asScala(Collections.singleton<SequenceCommand>(command)).toSeq()
+        )
+        submitSequence("tcs", "moonnight", sequence)
     }
 
     // ESW-134: Reuse code by ability to import logic from one script into another

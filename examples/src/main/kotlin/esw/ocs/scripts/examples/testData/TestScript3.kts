@@ -1,7 +1,11 @@
 package esw.ocs.scripts.examples.testData
 
+import csw.params.commands.SequenceCommand
+import csw.params.core.models.Id
 import esw.ocs.dsl.core.script
 import esw.ocs.dsl.params.stringKey
+import scala.jdk.javaapi.CollectionConverters
+import java.util.*
 
 script {
 
@@ -29,5 +33,9 @@ script {
         val offlineParam = stringKey("mode").set("offline")
         val event = SystemEvent("tcs.test", "offline", offlineParam)
         publishEvent(event)
+    }
+
+    handleSetup("multi-node") {command ->
+        submitCommandToAssembly("SampleAssembly", command)
     }
 }

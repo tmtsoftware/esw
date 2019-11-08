@@ -87,6 +87,7 @@ lazy val `esw-integration-test` = project
   .in(file("esw-integration-test"))
   .settings(libraryDependencies ++= Dependencies.IntegrationTest.value)
   .settings(fork in Test := true)
+  .enablePlugins(AutoMultiJvm)
   .dependsOn(
     `esw-gateway-server` % "test->compile;test->test",
     `esw-http-core`      % "test->compile;test->test",
