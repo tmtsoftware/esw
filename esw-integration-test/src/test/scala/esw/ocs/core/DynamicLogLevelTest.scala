@@ -48,7 +48,7 @@ class DynamicLogLevelTest extends ScalaTestFrameworkTestKit with BaseTestSuite w
     super.afterAll()
   }
 
-  "get/set log level for sequencer dynamically | ESW-183" in {
+  "get/set log level for sequencer dynamically directly in log-admin-server| ESW-183" in {
     val defaultLogLevel = FATAL
     val newLogLevel     = ERROR
 

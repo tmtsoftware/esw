@@ -4,6 +4,7 @@ import akka.Done
 import akka.actor.testkit.typed.scaladsl.{ScalaTestWithActorTestKit, TestProbe}
 import csw.command.client.messages.sequencer.SequencerMsg.{QueryFinal, SubmitSequenceAndWait}
 import csw.command.client.messages.{GetComponentLogMetadata, SetComponentLogLevel}
+import csw.logging.client.commons.LogAdminUtil
 import csw.logging.models.Level.{DEBUG, INFO}
 import csw.logging.models.LogMetadata
 import csw.params.commands.CommandResponse.{Completed, Error, SubmitResponse}
@@ -833,13 +834,18 @@ class SequencerBehaviorTest extends ScalaTestWithActorTestKit with BaseTestSuite
       val logMetadata1 = logMetadataProbe.expectMessageType[LogMetadata]
 
       logMetadata1.componentLevel shouldBe INFO
+      val initialMetadata = LogAdminUtil.getLogMetadata(sequencerName)
+      initialMetadata.componentLevel shouldBe INFO
 
       sequencerActor ! SetComponentLogLevel(sequencerName, DEBUG)
       sequencerActor ! GetComponentLogMetadata(sequencerName, logMetadataProbe.ref)
 
       val logMetadata2 = logMetadataProbe.expectMessageType[LogMetadata]
-
       logMetadata2.componentLevel shouldBe DEBUG
+
+      // this verifies that log metadata is updated in LogAdminUtil
+      val finalMetadata = LogAdminUtil.getLogMetadata(sequencerName)
+      finalMetadata.componentLevel shouldBe DEBUG
     }
   }
 
