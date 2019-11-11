@@ -50,7 +50,6 @@ interface CommandServiceDsl {
             .orElseThrow { IllegalArgumentException("Could not find component - $name of type - $compType") }
             .let { CommandServiceFactory.jMake(it, actorSystem) }
 
-
     private suspend fun resolve(name: String, compType: ComponentType): Optional<AkkaLocation> =
             locationService.resolve(Connection.AkkaConnection(ComponentId(name, compType)), duration).await()
 
