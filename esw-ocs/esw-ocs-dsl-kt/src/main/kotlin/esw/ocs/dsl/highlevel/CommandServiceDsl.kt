@@ -12,10 +12,7 @@ import csw.location.models.ComponentId
 import csw.location.models.ComponentType
 import csw.location.models.Connection
 import csw.params.commands.*
-import csw.params.commands.CommandResponse.OnewayResponse
-import csw.params.commands.CommandResponse.SubmitResponse
-import csw.params.commands.CommandResponse.ValidateResponse
-import csw.params.core.models.Id
+import csw.params.commands.CommandResponse.*
 import csw.params.core.models.ObsId
 import csw.params.core.models.Prefix
 import esw.ocs.dsl.nullable
@@ -43,52 +40,16 @@ interface CommandServiceDsl {
 
     fun sequenceOf(vararg sequenceCommand: SequenceCommand): Sequence = Sequence.create(sequenceCommand.toList())
 
-    /************* Assembly *************/
-    suspend fun validateAssemblyCommand(assemblyName: String, command: ControlCommand): ValidateResponse =
-            validate(assemblyName, Assembly(), command)
+    suspend fun Assembly(name: String) = InternalCommandServiceHandler(commandService(name, Assembly()), timeout)
+    suspend fun HCD(name: String) = InternalCommandServiceHandler(commandService(name, HCD()), timeout)
 
-    suspend fun submitCommandToAssembly(assemblyName: String, command: ControlCommand): SubmitResponse =
-            submit(assemblyName, Assembly(), command)
-
-    suspend fun submitAndWaitCommandToAssembly(assemblyName: String, command: ControlCommand): SubmitResponse =
-            submitAndWait(assemblyName, Assembly(), command)
-
-    suspend fun oneWayCommandToAssembly(assemblyName: String, command: ControlCommand): OnewayResponse =
-            oneWay(assemblyName, Assembly(), command)
-
-    /************* HCD *************/
-    suspend fun validateHcdCommand(hcdName: String, command: ControlCommand): ValidateResponse =
-            validate(hcdName, HCD(), command)
-
-    suspend fun submitCommandToHcd(hcdName: String, command: ControlCommand): SubmitResponse =
-            submit(hcdName, HCD(), command)
-
-    suspend fun submitAndWaitCommandToHcd(hcdName: String, command: ControlCommand): SubmitResponse =
-            submitAndWait(hcdName, HCD(), command)
-
-    suspend fun oneWayCommandToHcd(hcdName: String, command: ControlCommand): OnewayResponse =
-            oneWay(hcdName, HCD(), command)
-
-    /******************************/
-    private suspend fun validate(name: String, compType: ComponentType, command: ControlCommand): ValidateResponse =
-            send(name, compType) { it.validate(command) }
-
-    private suspend fun submit(name: String, compType: ComponentType, command: ControlCommand): SubmitResponse =
-            send(name, compType) { it.submit(command, timeout) }
-
-    private suspend fun submitAndWait(name: String, compType: ComponentType, command: ControlCommand): SubmitResponse =
-            send(name, compType) { it.submitAndWait(command, timeout) }
-
-    private suspend fun oneWay(name: String, compType: ComponentType, command: ControlCommand): OnewayResponse =
-            send(name, compType) { it.oneway(command, timeout) }
-
-    private suspend fun <T> send(
+    private suspend fun commandService(
             name: String,
-            compType: ComponentType,
-            action: (commandService: ICommandService) -> CompletableFuture<T>
-    ) = resolve(name, compType)
+            compType: ComponentType
+    ): ICommandService = resolve(name, compType)
             .orElseThrow { IllegalArgumentException("Could not find component - $name of type - $compType") }
-            .let { action(CommandServiceFactory.jMake(it, actorSystem)).await() }
+            .let { CommandServiceFactory.jMake(it, actorSystem) }
+
 
     private suspend fun resolve(name: String, compType: ComponentType): Optional<AkkaLocation> =
             locationService.resolve(Connection.AkkaConnection(ComponentId(name, compType)), duration).await()

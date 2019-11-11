@@ -61,7 +61,8 @@ script {
     }
 
     handleSetup("command-for-assembly") { command ->
-        submitCommandToAssembly("test", command)
+        val assembly = Assembly("test")
+        assembly.submit(command)
     }
 
     handleSetup("command-4") {

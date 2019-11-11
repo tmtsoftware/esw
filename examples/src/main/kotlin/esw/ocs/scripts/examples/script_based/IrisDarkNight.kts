@@ -23,21 +23,23 @@ script { _ ->
 
         val maybeCommandB = nextIf { it.commandName().name() == "setup-iris" }
 
+        val assembly = Assembly("Sample1Assembly")
+
         maybeCommandB?.let {
             val commandB1 = setup("esw.test-commandB1", "setup-iris", "test-obsId")
             val commandB2 = setup("esw.test-commandB2", "setup-iris", "test-obsId")
 
-            val assemblyResponse3 = submitCommandToAssembly("Sample1Assembly", commandB1)
+            val assemblyResponse3 = assembly.submit(commandB1)
             if (assemblyResponse3 is CommandResponse.Error) finishWithError(assemblyResponse3.message())
 
-            val assemblyResponse4 = submitCommandToAssembly("Sample1Assembly", commandB2)
+            val assemblyResponse4 = assembly.submit(commandB2)
             if (assemblyResponse4 is CommandResponse.Error) finishWithError(assemblyResponse4.message())
         }
 
-        val assemblyResponse1 = submitCommandToAssembly("Sample1Assembly", command1)
+        val assemblyResponse1 = assembly.submit(command1)
         if (assemblyResponse1 is CommandResponse.Error) finishWithError(assemblyResponse1.message())
 
-        val assemblyResponse2 = submitCommandToAssembly("Sample1Assembly", command2)
+        val assemblyResponse2 = assembly.submit(command2)
         if (assemblyResponse2 is CommandResponse.Error) finishWithError(assemblyResponse2.message())
     }
 

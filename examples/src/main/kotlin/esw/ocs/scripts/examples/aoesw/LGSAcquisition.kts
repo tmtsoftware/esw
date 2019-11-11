@@ -122,7 +122,8 @@ script {
         val startExposureCommand = setup(aosq.prefix, "exposure", command.obsId)
                 .add(oiwfsExposureModeKey.set(*probeExpModes))
 
-        val response = submitAndWaitCommandToAssembly(oiwfsDetectorAssembly.name, startExposureCommand)
+        val assembly = Assembly(oiwfsDetectorAssembly.name)
+        val response = assembly.submitAndWait(startExposureCommand)
 
         when (response) {
             is Completed -> {

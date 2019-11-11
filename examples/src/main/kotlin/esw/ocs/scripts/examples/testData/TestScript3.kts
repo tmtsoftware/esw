@@ -36,6 +36,7 @@ script {
     }
 
     handleSetup("multi-node") {command ->
-        submitCommandToAssembly("SampleAssembly", command)
+        val assembly = Assembly("SampleAssembly")
+        assembly.submit(command)
     }
 }

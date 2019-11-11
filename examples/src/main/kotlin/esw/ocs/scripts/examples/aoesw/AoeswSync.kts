@@ -24,7 +24,8 @@ script {
             .madd(probeOffsetXParam, probeOffsetYParam)
 
         scheduleOnce(scheduledTime(0)) {
-            val response = submitAndWaitCommandToAssembly("probeAssembly", probeCommand)
+            val probeAssembly = Assembly("probeAssembly")
+            val response = probeAssembly.submitAndWait(probeCommand)
             if(response is CommandResponse.Error){
                 finishWithError(response.message())
             }
