@@ -9,7 +9,7 @@ import csw.event.client.EventServiceFactory
 import csw.location.client.scaladsl.HttpLocationServiceFactory
 import csw.location.models.ComponentId
 import csw.location.models.ComponentType.Assembly
-import csw.params.commands.CommandResponse.{Accepted, Completed}
+import csw.params.commands.CommandResponse.{Accepted, Completed, Started}
 import csw.params.commands.{CommandName, Setup}
 import csw.params.core.models.{ObsId, Prefix}
 import csw.params.core.states.{CurrentState, StateName}
@@ -67,13 +67,14 @@ class CommandGatewayTest
       val eventService = new EventServiceFactory().make(HttpLocationServiceFactory.makeLocalClient)
       val eventKey     = EventKey(Prefix("tcs.filter.wheel"), EventName("setup-command-from-script"))
 
-      val componentName = "test"
-      val componentType = Assembly
-      val command       = Setup(Prefix("esw.test"), CommandName("c1"), Some(ObsId("obsId")))
-      val componentId   = ComponentId(componentName, componentType)
-      val stateNames    = Set(StateName("stateName1"), StateName("stateName2"))
-      val currentState1 = CurrentState(Prefix("esw.a.b"), StateName("stateName1"))
-      val currentState2 = CurrentState(Prefix("esw.a.b"), StateName("stateName2"))
+      val componentName      = "test"
+      val componentType      = Assembly
+      val command            = Setup(Prefix("esw.test"), CommandName("c1"), Some(ObsId("obsId")))
+      val longRunningCommand = Setup(Prefix("esw.test"), CommandName("long-running"), Some(ObsId("obsId")))
+      val componentId        = ComponentId(componentName, componentType)
+      val stateNames         = Set(StateName("stateName1"), StateName("stateName2"))
+      val currentState1      = CurrentState(Prefix("esw.a.b"), StateName("stateName1"))
+      val currentState2      = CurrentState(Prefix("esw.a.b"), StateName("stateName2"))
 
       val currentStatesF: Future[Seq[CurrentState]] =
         commandClient.subscribeCurrentState(componentId, stateNames, None).take(2).runWith(Sink.seq)
@@ -91,8 +92,8 @@ class CommandGatewayTest
       testProbe.expectMessageType[SystemEvent] // discard invalid event
 
       //submit the setup command
-      val submitResponse = commandClient.submit(componentId, command).rightValue
-      submitResponse shouldBe a[Completed]
+      val submitResponse = commandClient.submit(componentId, longRunningCommand).rightValue
+      submitResponse shouldBe a[Started]
 
       val actualSetupEvent: SystemEvent = testProbe.expectMessageType[SystemEvent]
 

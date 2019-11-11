@@ -67,11 +67,9 @@ script {
     handleSetup("command-4") {
         // try sending concrete sequence
         val setupCommand = Setup(
-                Id("testCommandIdString123"),
                 Prefix("TCS.test"),
                 CommandName("command-3"),
-                Option.apply(null),
-                HashSet()
+                Optional.ofNullable(null)
         )
         val sequence = Sequence(
                 Id("testSequenceIdString123"),

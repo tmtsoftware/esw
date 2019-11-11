@@ -118,10 +118,9 @@ class ScriptIntegrationTest extends ScalaTestFrameworkTestKit(EventServer, Alarm
 
       ocsSequencer ! SubmitSequenceAndWait(sequence, submitResponseProbe.ref)
 
-      val commandId = Id("testCommandIdString123")
       // This has to match with sequence created in TestScript -> handleSetupCommand("command-4")
       val assertableCommand =
-        Setup(commandId, Prefix("TCS.test"), CommandName("command-3"), None, Set.empty)
+        Setup(Prefix("TCS.test"), CommandName("command-3"), None, Set.empty)
       val step             = Step(assertableCommand).copy(status = Success)
       val steps            = List(step)
       val expectedStepList = StepList(Id("testSequenceIdString123"), steps)
