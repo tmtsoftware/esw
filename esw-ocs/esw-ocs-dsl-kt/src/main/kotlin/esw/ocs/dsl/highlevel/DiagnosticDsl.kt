@@ -28,12 +28,11 @@ interface DiagnosticDsl {
         observingMode: String,
         startTime: UTCTime,
         hint: String
-    ): Unit = commonUtils.sendMsgToSequencer(sequencerId, observingMode) {
-        it.diagnosticMode(startTime, hint)
+    ): Unit {
+        commonUtils.sendMsgToSequencer(sequencerId, observingMode) { it.diagnosticMode(startTime, hint) }
     }
 
-    suspend fun operationsModeForSequencer(sequencerId: String, observingMode: String): Unit =
-        commonUtils.sendMsgToSequencer(sequencerId, observingMode) {
-            it.operationsMode()
-        }
+    suspend fun operationsModeForSequencer(sequencerId: String, observingMode: String): Unit {
+        commonUtils.sendMsgToSequencer(sequencerId, observingMode) { it.operationsMode() }
+    }
 }
