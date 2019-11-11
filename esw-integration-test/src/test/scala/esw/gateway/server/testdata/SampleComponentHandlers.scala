@@ -6,8 +6,8 @@ import csw.framework.models.CswContext
 import csw.framework.scaladsl.ComponentHandlers
 import csw.location.models.TrackingEvent
 import csw.logging.api.scaladsl.Logger
-import csw.params.commands.CommandResponse.{Accepted, Completed, Error, Started}
-import csw.params.commands.{CommandName, CommandResponse, ControlCommand}
+import csw.params.commands.CommandResponse.{Accepted, Completed, Started}
+import csw.params.commands.{CommandResponse, ControlCommand}
 import csw.params.core.generics.KeyType.StringKey
 import csw.params.core.models.{Id, Prefix}
 import csw.params.core.states.{CurrentState, StateName}
