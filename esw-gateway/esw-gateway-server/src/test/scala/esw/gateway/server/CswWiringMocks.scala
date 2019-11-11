@@ -1,6 +1,5 @@
 package esw.gateway.server
 
-import akka.actor.typed.{ActorSystem, SpawnProtocol}
 import akka.stream.stage.{GraphStage, GraphStageLogic, InHandler, OutHandler}
 import akka.stream.{Attributes, FlowShape, Inlet, Outlet}
 import csw.alarm.api.scaladsl.AlarmAdminService
@@ -10,18 +9,18 @@ import csw.event.client.internal.commons.EventSubscriberUtil
 import csw.logging.api.scaladsl.Logger
 import esw.gateway.impl.LoggerCache
 import esw.gateway.server.utils.CommandServiceFactory
-import esw.http.core.wiring.{ActorRuntime, CswWiring}
+import esw.http.core.wiring.CswWiring
 import org.mockito.ArgumentMatchers.any
 import org.mockito.MockitoSugar._
 
 import scala.concurrent.duration.FiniteDuration
 
-class CswWiringMocks(system: ActorSystem[SpawnProtocol.Command]) {
+class CswWiringMocks() {
 
-  val cswWiring: CswWiring       = mock[CswWiring]
-  val actorRuntime: ActorRuntime = new ActorRuntime(system)
-  val logger: Logger             = mock[Logger]
-  val loggerCache: LoggerCache   = mock[LoggerCache]
+  val cswWiring: CswWiring = mock[CswWiring]
+//  val actorRuntime: ActorRuntime = new ActorRuntime(system)
+  val logger: Logger           = mock[Logger]
+  val loggerCache: LoggerCache = mock[LoggerCache]
   when(loggerCache.get(any[String])).thenReturn(logger)
 
   //command service mocks
