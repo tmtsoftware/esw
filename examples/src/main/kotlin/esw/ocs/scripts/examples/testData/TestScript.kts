@@ -100,13 +100,13 @@ script {
     handleSetup("command-irms") {
         // NOT update command response to avoid sequencer to finish immediately
         // so that other Add, Append command gets time
-        val setupCommand = setup("IRMS.test", "command-irms")
+        val setupCommand = setup("LGSF.test", "command-irms")
         val sequence = Sequence(
                 Id("testSequenceIdString123"),
                 CollectionConverters.asScala(Collections.singleton<SequenceCommand>(setupCommand)).toSeq()
         )
 
-        submitSequence("irms", "darknight", sequence)
+        submitSequence("lgsf", "darknight", sequence)
     }
 
     handleDiagnosticMode { startTime, hint ->
@@ -133,14 +133,14 @@ script {
         //do some actions to abort sequence
 
         //send abortSequence command to downstream sequencer
-        abortSequenceForSequencer("irms", "darknight")
+        abortSequenceForSequencer("lgsf", "darknight")
     }
 
     handleStop {
         //do some actions to stop
 
         //send stop command to downstream sequencer
-        stopSequencer("irms", "darknight")
+        stopSequencer("lgsf", "darknight")
     }
 
 }

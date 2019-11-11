@@ -1,7 +1,6 @@
 package esw.gateway.server
 
 import akka.Done
-import akka.actor.typed.{ActorSystem, SpawnProtocol}
 import akka.http.scaladsl.model.ws.{BinaryMessage, TextMessage}
 import akka.http.scaladsl.testkit.{ScalatestRouteTest, WSProbe}
 import akka.stream.scaladsl.{Sink, Source}

@@ -11,22 +11,22 @@ script {
         val offset = utcTimeAfter(2.seconds).offsetFromNow()
 
         schedulePeriodically(utcTimeAfter(5.seconds), offset) {
-            publishEvent(SystemEvent("irms", "publish.success"))
+            publishEvent(SystemEvent("lgsf", "publish.success"))
         }
     }
 
     handleObserve("schedule-once") {
         scheduleOnce(taiTimeNow()) {
-            publishEvent(SystemEvent("irms", "publish.success"))
+            publishEvent(SystemEvent("lgsf", "publish.success"))
         }
     }
 
     //Usage at top level
     scheduleOnce(taiTimeNow()) {
-        publishEvent(SystemEvent("irms", "publish.success"))
+        publishEvent(SystemEvent("lgsf", "publish.success"))
     }
 
     schedulePeriodically(utcTimeAfter(2.seconds), 5.seconds) {
-        publishEvent(SystemEvent("irms", "publish.success"))
+        publishEvent(SystemEvent("lgsf", "publish.success"))
     }
 }

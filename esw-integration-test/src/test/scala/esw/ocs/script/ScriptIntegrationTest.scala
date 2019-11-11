@@ -58,7 +58,7 @@ class ScriptIntegrationTest extends ScalaTestFrameworkTestKit(EventServer, Alarm
   private val tcsObservingMode = "darknight"
 
   // TestScript4.kts
-  private val irmsPackageId                         = "irms"
+  private val irmsPackageId                         = "lgsf"
   private val irmsObservingMode                     = "darknight"
   private val configTestKit: ConfigTestKit          = frameworkTestKit.configTestKit
   private var locationService: LocationService      = _
@@ -253,7 +253,7 @@ class ScriptIntegrationTest extends ScalaTestFrameworkTestKit(EventServer, Alarm
       testProbe.expectMessageType[SystemEvent] // discard invalid event
 
       // Submit sequence to OCS as AbortSequence is accepted only in InProgress State
-      val command1            = Setup(Prefix("IRMS.test"), CommandName("command-irms"), None)
+      val command1            = Setup(Prefix("LGSF.test"), CommandName("command-irms"), None)
       val command2            = Setup(Prefix("IRIS.test"), CommandName("command-1"), None)
       val command3            = Setup(Prefix("TCS.test"), CommandName("command-2"), None)
       val submitResponseProbe = TestProbe[SubmitResponse]
@@ -293,7 +293,7 @@ class ScriptIntegrationTest extends ScalaTestFrameworkTestKit(EventServer, Alarm
       testProbe.expectMessageType[SystemEvent] // discard invalid event
 
       // Submit sequence to OCS as Stop is accepted only in InProgress State
-      val command1            = Setup(Prefix("IRMS.test"), CommandName("command-irms"), None)
+      val command1            = Setup(Prefix("LGSF.test"), CommandName("command-irms"), None)
       val command2            = Setup(Prefix("IRIS.test"), CommandName("command-1"), None)
       val command3            = Setup(Prefix("TCS.test"), CommandName("command-2"), None)
       val submitResponseProbe = TestProbe[SubmitResponse]

@@ -1,7 +1,6 @@
 package esw.gateway.server
 
 import akka.Done
-import akka.actor.typed.{ActorSystem, SpawnProtocol}
 import akka.http.scaladsl.model.StatusCodes
 import akka.http.scaladsl.testkit.ScalatestRouteTest
 import akka.util.Timeout
@@ -24,9 +23,9 @@ import esw.gateway.api.{AlarmApi, CommandApi, EventApi, LoggingApi}
 import esw.gateway.impl._
 import esw.gateway.server.handlers.PostHandlerImpl
 import esw.http.core.BaseTestSuite
-import msocket.impl.{Encoding, RouteFactory}
 import msocket.impl.Encoding.JsonText
 import msocket.impl.post.{ClientHttpCodecs, PostRouteFactory}
+import msocket.impl.{Encoding, RouteFactory}
 import org.mockito.ArgumentMatchers.{any, eq => argsEq}
 import org.mockito.Mockito.when
 import org.mockito.MockitoSugar._
