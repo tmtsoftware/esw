@@ -38,9 +38,7 @@ class WebsocketRouteTest extends BaseTestSuite with ScalatestRouteTest with Gate
 
   override def encoding: Encoding[_] = JsonText
 
-  private val actorSystem: ActorSystem[SpawnProtocol.Command] = ActorSystem(SpawnProtocol(), "test-system")
-
-  private val cswCtxMocks = new CswWiringMocks(actorSystem)
+  private val cswCtxMocks = new CswWiringMocks()
   import cswCtxMocks._
 
   implicit val timeout: Timeout                        = Timeout(5.seconds)
@@ -54,10 +52,6 @@ class WebsocketRouteTest extends BaseTestSuite with ScalatestRouteTest with Gate
 
   override def beforeEach(): Unit = {
     wsClient = WSProbe()
-  }
-
-  override def afterAll(): Unit = {
-    actorSystem.terminate()
   }
 
   "QueryFinal" must {
