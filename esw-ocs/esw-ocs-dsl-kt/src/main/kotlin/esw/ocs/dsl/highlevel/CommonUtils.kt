@@ -7,16 +7,19 @@ import esw.ocs.api.SequencerAdminApi
 import esw.ocs.api.SequencerAdminFactoryApi
 import esw.ocs.dsl.sequence_manager.LocationServiceUtil
 import kotlinx.coroutines.future.await
+import scala.compat.java8.FutureConverters
+import scala.concurrent.Future
 
 class CommonUtils(private val sequencerAdminFactory: SequencerAdminFactoryApi, private val locationServiceUtil: LocationServiceUtil) {
 
-    // fixme: `action` here is a method call on SequencerAdminApi and all API's return Future[T]
-    //  so action should be something like => `action: (SequencerAdminApi) -> CompletionStage[T]` and then await on action in the impl
-    internal suspend fun sendMsgToSequencer(
+    internal suspend fun <T> sendMsgToSequencer(
         sequencerId: String,
         observingMode: String,
-        action: (SequencerAdminApi) -> Unit
-    ): Unit = action(sequencerAdminFactory.jMake(sequencerId, observingMode).await())
+        action: suspend (SequencerAdminApi) -> Future<T>
+    ): T {
+        val resultF = action(sequencerAdminFactory.jMake(sequencerId, observingMode).await())
+        return FutureConverters.toJava(resultF).await()
+    }
 
     internal suspend fun sendMsgToComponent(
         componentName: String,

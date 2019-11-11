@@ -9,11 +9,13 @@ interface OnlineOfflineDsl {
 
     val commonUtils: CommonUtils
 
-    suspend fun goOnlineModeForSequencer(sequencerId: String, observingMode: String): Unit =
+    suspend fun goOnlineModeForSequencer(sequencerId: String, observingMode: String): Unit {
         commonUtils.sendMsgToSequencer(sequencerId, observingMode) { it.goOnline() }
+    }
 
-    suspend fun goOfflineModeForSequencer(sequencerId: String, observingMode: String): Unit =
+    suspend fun goOfflineModeForSequencer(sequencerId: String, observingMode: String): Unit {
         commonUtils.sendMsgToSequencer(sequencerId, observingMode) { it.goOffline() }
+    }
 
     suspend fun goOnlineModeForComponent(componentName: String, componentType: ComponentType): Unit =
         commonUtils.sendMsgToComponent(componentName, componentType) {
