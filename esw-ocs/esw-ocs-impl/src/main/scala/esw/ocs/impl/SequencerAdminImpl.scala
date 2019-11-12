@@ -4,8 +4,6 @@ import akka.actor.typed.scaladsl.AskPattern._
 import akka.actor.typed.{ActorRef, ActorSystem}
 import akka.util.Timeout
 import csw.command.client.messages.sequencer.SequencerMsg
-import csw.command.client.messages.sequencer.SequencerMsg.QueryFinal
-import csw.params.commands.CommandResponse.SubmitResponse
 import csw.params.commands.{Sequence, SequenceCommand}
 import csw.params.core.models.Id
 import csw.time.core.models.UTCTime
@@ -54,7 +52,4 @@ class SequencerAdminImpl(sequencer: ActorRef[SequencerMsg])(implicit system: Act
   override def loadSequence(sequence: Sequence): Future[OkOrUnhandledResponse]   = sequencer ? (LoadSequence(sequence, _))
   override def startSequence: Future[OkOrUnhandledResponse]                      = sequencer ? StartSequence
   override def submitSequence(sequence: Sequence): Future[OkOrUnhandledResponse] = sequencer ? (SubmitSequence(sequence, _))
-
-  // fixme: shouldn't this call have long timeout and not the default?
-  override def queryFinal: Future[SubmitResponse] = sequencer ? QueryFinal
 }

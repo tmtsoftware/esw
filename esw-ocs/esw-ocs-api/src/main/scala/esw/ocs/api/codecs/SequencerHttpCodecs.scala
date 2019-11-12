@@ -2,12 +2,12 @@ package esw.ocs.api.codecs
 
 import com.github.ghik.silencer.silent
 import esw.ocs.api.protocol.SequencerAdminPostRequest._
-import esw.ocs.api.protocol.SequencerAdminWebsocketRequest.QueryFinal
-import esw.ocs.api.protocol.{SequencerAdminPostRequest, SequencerAdminWebsocketRequest}
+import esw.ocs.api.protocol.SequencerCommandWebsocketRequest.QueryFinal
+import esw.ocs.api.protocol.{SequencerAdminPostRequest, SequencerCommandWebsocketRequest}
 import io.bullet.borer.Codec
 import io.bullet.borer.derivation.MapBasedCodecs.deriveCodec
 
-trait SequencerAdminHttpCodecs extends OcsCodecs {
+trait SequencerHttpCodecs extends OcsCodecs {
 
   implicit def sequencerAdminPostRequestCodec[T <: SequencerAdminPostRequest]: Codec[T] =
     sequencerAdminPostRequestValue.asInstanceOf[Codec[T]]
@@ -38,10 +38,10 @@ trait SequencerAdminHttpCodecs extends OcsCodecs {
     deriveCodec
   }
 
-  implicit def sequencerAdminWebsocketRequestCodec[T <: SequencerAdminWebsocketRequest]: Codec[T] =
-    sequencerAdminWebsocketRequestValue.asInstanceOf[Codec[T]]
+  implicit def sequencerCommandWebsocketRequestCodec[T <: SequencerCommandWebsocketRequest]: Codec[T] =
+    sequencerCommandWebsocketRequestValue.asInstanceOf[Codec[T]]
 
-  lazy val sequencerAdminWebsocketRequestValue: Codec[SequencerAdminWebsocketRequest] = {
+  lazy val sequencerCommandWebsocketRequestValue: Codec[SequencerCommandWebsocketRequest] = {
     @silent implicit lazy val queryFinalCodec: Codec[QueryFinal.type] = deriveCodec
     deriveCodec
   }

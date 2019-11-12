@@ -3,7 +3,7 @@ package esw.ocs.app.route
 import akka.http.scaladsl.server.Directives.complete
 import akka.http.scaladsl.server.StandardRoute
 import esw.ocs.api.SequencerAdminApi
-import esw.ocs.api.codecs.SequencerAdminHttpCodecs
+import esw.ocs.api.codecs.SequencerHttpCodecs
 import esw.ocs.api.protocol.SequencerAdminPostRequest
 import esw.ocs.api.protocol.SequencerAdminPostRequest._
 import msocket.impl.post.ServerHttpCodecs
@@ -11,7 +11,7 @@ import msocket.api.MessageHandler
 
 class PostHandlerImpl(sequencerAdmin: SequencerAdminApi)
     extends MessageHandler[SequencerAdminPostRequest, StandardRoute]
-    with SequencerAdminHttpCodecs
+    with SequencerHttpCodecs
     with ServerHttpCodecs {
 
   override def handle(request: SequencerAdminPostRequest): StandardRoute = request match {

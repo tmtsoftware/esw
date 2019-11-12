@@ -1,5 +1,7 @@
 package esw.ocs.app
 
+import java.net.URI
+
 import akka.actor.testkit.typed.scaladsl.TestProbe
 import akka.actor.typed.scaladsl.AskPattern._
 import akka.actor.typed.{ActorRef, ActorSystem, SpawnProtocol}
@@ -22,13 +24,13 @@ import csw.testkit.scaladsl.CSWService.EventServer
 import csw.testkit.scaladsl.ScalaTestFrameworkTestKit
 import csw.time.core.models.UTCTime
 import esw.ocs.api.BaseTestSuite
-import esw.ocs.api.client.SequencerAdminClient
+import esw.ocs.api.client.{SequencerAdminClient, SequencerCommandClient}
 import esw.ocs.api.models.StepStatus.Finished.{Failure, Success}
 import esw.ocs.api.models.StepStatus.Pending
 import esw.ocs.api.models.{Step, StepList}
 import esw.ocs.api.protocol._
 import esw.ocs.app.wiring.SequencerWiring
-import esw.ocs.impl.SequencerAdminClientFactory
+import esw.ocs.impl.{SequencerAdminClientFactory, SequencerCommandClientFactory}
 import esw.ocs.impl.messages.SequencerState.{Loaded, Offline}
 import msocket.impl.Encoding.JsonText
 
@@ -54,12 +56,13 @@ class SequencerAdminIntegrationTest extends ScalaTestFrameworkTestKit(EventServe
   private val command5 = Setup(Prefix("esw.test"), CommandName("command-5"), None)
   private val command6 = Setup(Prefix("esw.test"), CommandName("command-6"), None)
 
-  private var locationService: LocationService        = _
-  private var ocsSequencerWiring: SequencerWiring     = _
-  private var tcsSequencerWiring: SequencerWiring     = _
-  private var ocsSequencer: ActorRef[SequencerMsg]    = _
-  private var ocsSequencerAdmin: SequencerAdminClient = _
-  private var tcsSequencerAdmin: SequencerAdminClient = _
+  private var locationService: LocationService            = _
+  private var ocsSequencerWiring: SequencerWiring         = _
+  private var tcsSequencerWiring: SequencerWiring         = _
+  private var ocsSequencer: ActorRef[SequencerMsg]        = _
+  private var ocsSequencerAdmin: SequencerAdminClient     = _
+  private var ocsSequencerCommand: SequencerCommandClient = _
+  private var tcsSequencerAdmin: SequencerAdminClient     = _
 
   override def beforeAll(): Unit = {
     super.beforeAll()
@@ -72,7 +75,8 @@ class SequencerAdminIntegrationTest extends ScalaTestFrameworkTestKit(EventServe
     ocsSequencerWiring.sequencerServer.start()
 
     ocsSequencerAdmin = resolveSequencerAdmin(packageId, observingMode)
-    ocsSequencer = resolveSequencer()
+    ocsSequencerCommand = resolveSequencerCommandClient(packageId, observingMode)
+    ocsSequencer = resolveSequencerAkka()
 
     // tcs sequencer, starts with TestScript3
     val tcsSequencerId            = "tcs"
@@ -93,7 +97,7 @@ class SequencerAdminIntegrationTest extends ScalaTestFrameworkTestKit(EventServe
 
     ocsSequencerAdmin.loadSequence(sequence).futureValue should ===(Ok)
     ocsSequencerAdmin.startSequence.futureValue should ===(Ok)
-    ocsSequencerAdmin.queryFinal.futureValue should ===(Completed(sequence.runId))
+    ocsSequencerCommand.queryFinal.futureValue should ===(Completed(sequence.runId))
 
     val step1         = Step(command1, Success, hasBreakpoint = false)
     val step2         = Step(command2, Success, hasBreakpoint = false)
@@ -115,7 +119,7 @@ class SequencerAdminIntegrationTest extends ScalaTestFrameworkTestKit(EventServe
     ocsSequencerAdmin.startSequence.futureValue should ===(Unhandled(Offline.entryName, "StartSequence"))
     val invalidResponse =
       Invalid(Id("IdNotAvailable"), UnsupportedCommandInStateIssue(Unhandled(Offline.entryName, "QueryFinalInternal").msg))
-    ocsSequencerAdmin.queryFinal.futureValue should ===(invalidResponse)
+    ocsSequencerCommand.queryFinal.futureValue should ===(invalidResponse)
   }
 
   "Load, Add commands and Start sequence - ensures sequence doesn't start on loading | ESW-222, ESW-101" in {
@@ -273,7 +277,7 @@ class SequencerAdminIntegrationTest extends ScalaTestFrameworkTestKit(EventServe
     )
     val expectedSequence = Some(StepList(sequence.runId, expectedSteps))
     val expectedResponse = Completed(sequence.runId)
-    ocsSequencerAdmin.queryFinal.futureValue should ===(expectedResponse)
+    ocsSequencerCommand.queryFinal.futureValue should ===(expectedResponse)
     compareStepList(ocsSequencerAdmin.getSequence.futureValue, expectedSequence)
   }
 
@@ -297,7 +301,7 @@ class SequencerAdminIntegrationTest extends ScalaTestFrameworkTestKit(EventServe
     )
     val expectedSequence = Some(StepList(sequence.runId, expectedSteps))
     val expectedResponse = Completed(sequence.runId)
-    ocsSequencerAdmin.queryFinal.futureValue should ===(expectedResponse)
+    ocsSequencerCommand.queryFinal.futureValue should ===(expectedResponse)
     compareStepList(ocsSequencerAdmin.getSequence.futureValue, expectedSequence)
   }
 
@@ -349,7 +353,7 @@ class SequencerAdminIntegrationTest extends ScalaTestFrameworkTestKit(EventServe
     }
   }
 
-  private def resolveSequencer(): ActorRef[SequencerMsg] =
+  private def resolveSequencerAkka(): ActorRef[SequencerMsg] =
     locationService
       .resolve(AkkaConnection(ComponentId(s"$packageId@$observingMode", ComponentType.Sequencer)), 5.seconds)
       .futureValue
@@ -358,12 +362,20 @@ class SequencerAdminIntegrationTest extends ScalaTestFrameworkTestKit(EventServe
       .toActorRef
       .unsafeUpcast[SequencerMsg]
 
-  private def resolveSequencerAdmin(packageId: String, observingMode: String): SequencerAdminClient = {
-    val componentId = ComponentId(s"$packageId@$observingMode@http", ComponentType.Service)
-    val uri         = locationService.resolve(HttpConnection(componentId), 5.seconds).futureValue.get.uri
-    val postUrl     = s"${uri.toString}post-endpoint"
-    val wsUrl       = s"ws://${uri.getHost}:${uri.getPort}/websocket-endpoint"
+  private def resolveSequencerHttp(packageId: String, observingMode: String, serviceName: String): URI = {
+    val componentId = ComponentId(s"$packageId@$observingMode@$serviceName@http", ComponentType.Service)
+    locationService.resolve(HttpConnection(componentId), 5.seconds).futureValue.get.uri
+  }
 
-    SequencerAdminClientFactory.make(postUrl, wsUrl, JsonText, () => None)
+  private def resolveSequencerAdmin(packageId: String, observingMode: String): SequencerAdminClient = {
+    val uri     = resolveSequencerHttp(packageId, observingMode, "admin")
+    val postUrl = s"${uri.toString}post-endpoint"
+    SequencerAdminClientFactory.make(postUrl, JsonText, () => None)
+  }
+
+  private def resolveSequencerCommandClient(packageId: String, observingMode: String): SequencerCommandClient = {
+    val uri   = resolveSequencerHttp(packageId, observingMode, "command")
+    val wsUrl = s"ws://${uri.getHost}:${uri.getPort}/websocket-endpoint"
+    SequencerCommandClientFactory.make(wsUrl, JsonText, () => None)
   }
 }

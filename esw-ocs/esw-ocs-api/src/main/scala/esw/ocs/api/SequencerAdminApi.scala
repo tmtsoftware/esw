@@ -33,6 +33,4 @@ trait SequencerAdminApi {
   def loadSequence(sequence: Sequence): Future[OkOrUnhandledResponse]
   def startSequence: Future[OkOrUnhandledResponse]
   def submitSequence(sequence: Sequence): Future[OkOrUnhandledResponse]
-
-  def queryFinal: Future[SubmitResponse]
 }

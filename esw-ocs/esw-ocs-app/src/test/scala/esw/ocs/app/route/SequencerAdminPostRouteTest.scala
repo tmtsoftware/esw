@@ -6,12 +6,12 @@ import csw.params.commands.{CommandName, Sequence, Setup}
 import csw.params.core.models.{Id, Prefix}
 import csw.time.core.models.UTCTime
 import esw.http.core.BaseTestSuite
-import esw.ocs.api.codecs.SequencerAdminHttpCodecs
+import esw.ocs.api.codecs.SequencerHttpCodecs
 import esw.ocs.api.models.StepList
 import esw.ocs.api.protocol.EditorError.{CannotOperateOnAnInFlightOrFinishedStep, IdDoesNotExist}
 import esw.ocs.api.protocol.SequencerAdminPostRequest._
 import esw.ocs.api.protocol.{SequencerAdminPostRequest, _}
-import esw.ocs.impl.SequencerAdminImpl
+import esw.ocs.impl.{SequencerAdminImpl, SequencerCommandImpl}
 import msocket.impl.Encoding
 import msocket.impl.Encoding.JsonText
 import msocket.impl.post.ClientHttpCodecs
@@ -19,18 +19,15 @@ import org.mockito.Mockito.when
 
 import scala.concurrent.Future
 
-class SequencerAdminPostRouteTest
-    extends BaseTestSuite
-    with ScalatestRouteTest
-    with SequencerAdminHttpCodecs
-    with ClientHttpCodecs {
+class SequencerAdminPostRouteTest extends BaseTestSuite with ScalatestRouteTest with SequencerHttpCodecs with ClientHttpCodecs {
 
   override def encoding: Encoding[_] = JsonText
 
   private val sequencerAdmin: SequencerAdminImpl             = mock[SequencerAdminImpl]
+  private val sequencerCommand: SequencerCommandImpl         = mock[SequencerCommandImpl]
   private val postHandler                                    = new PostHandlerImpl(sequencerAdmin)
-  private def websocketHandlerFactory(encoding: Encoding[_]) = new WebsocketHandlerImpl(sequencerAdmin, encoding)
-  private val route                                          = new SequencerAdminRoutes(postHandler, websocketHandlerFactory).route
+  private def websocketHandlerFactory(encoding: Encoding[_]) = new WebsocketHandlerImpl(sequencerCommand, encoding)
+  private val route                                          = new SequencerAdminRoutes(postHandler).route
 
   "SequencerRoutes" must {
     "return sequence for getSequence request | ESW-222" in {

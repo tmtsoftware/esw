@@ -2,9 +2,9 @@ package esw.ocs.app.route
 
 import akka.http.scaladsl.testkit.{ScalatestRouteTest, WSProbe}
 import esw.http.core.BaseTestSuite
-import esw.ocs.api.codecs.SequencerAdminHttpCodecs
-import esw.ocs.api.protocol.SequencerAdminWebsocketRequest.QueryFinal
-import esw.ocs.impl.SequencerAdminImpl
+import esw.ocs.api.codecs.SequencerHttpCodecs
+import esw.ocs.api.protocol.SequencerCommandWebsocketRequest.QueryFinal
+import esw.ocs.impl.{SequencerAdminImpl, SequencerCommandImpl}
 import msocket.impl.Encoding
 import msocket.impl.post.ClientHttpCodecs
 import msocket.impl.Encoding.JsonText
@@ -12,15 +12,16 @@ import msocket.impl.Encoding.JsonText
 class SequencerAdminWebsocketRouteTest
     extends BaseTestSuite
     with ScalatestRouteTest
-    with SequencerAdminHttpCodecs
+    with SequencerHttpCodecs
     with ClientHttpCodecs {
 
   override def encoding: Encoding[_] = JsonText
 
-  private val sequencerAdmin: SequencerAdminImpl             = mock[SequencerAdminImpl]
-  private val postHandler                                    = new PostHandlerImpl(sequencerAdmin)
-  private def websocketHandlerFactory(encoding: Encoding[_]) = new WebsocketHandlerImpl(sequencerAdmin, encoding)
-  private val route                                          = new SequencerAdminRoutes(postHandler, websocketHandlerFactory).route
+  private val sequencerAdmin: SequencerAdminImpl     = mock[SequencerAdminImpl]
+  private val sequencerCommand: SequencerCommandImpl = mock[SequencerCommandImpl]
+//  private val postHandler                                    = new PostHandlerImpl(sequencerAdmin)
+  private def websocketHandlerFactory(encoding: Encoding[_]) = new WebsocketHandlerImpl(sequencerCommand, encoding)
+  private val route                                          = new SequencerCommandRoutes(websocketHandlerFactory).route
   private val wsClient                                       = WSProbe()
 
   "SequencerRoutes" must {

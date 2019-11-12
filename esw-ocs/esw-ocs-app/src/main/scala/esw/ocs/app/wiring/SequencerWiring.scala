@@ -22,7 +22,7 @@ import csw.logging.client.scaladsl.LoggerFactory
 import csw.network.utils.SocketUtils
 import esw.http.core.wiring.{ActorRuntime, CswWiring, HttpService, Settings}
 import esw.ocs.api.protocol.LoadScriptError
-import esw.ocs.app.route.{PostHandlerImpl, SequencerAdminRoutes, WebsocketHandlerImpl}
+import esw.ocs.app.route.{PostHandlerImpl, SequencerAdminRoutes, SequencerCommandRoutes, WebsocketHandlerImpl}
 import esw.ocs.dsl.script.utils.{LockUnlockUtil, ScriptLoader}
 import esw.ocs.dsl.script.{CswServices, JScriptDsl}
 import esw.ocs.dsl.sequence_manager.LocationServiceUtil
@@ -30,7 +30,7 @@ import esw.ocs.impl.core._
 import esw.ocs.impl.internal.{SequencerServer, Timeouts}
 import esw.ocs.impl.messages.SequencerMessages.Shutdown
 import esw.ocs.impl.syntax.FutureSyntax.FutureOps
-import esw.ocs.impl.{SequencerAdminFactoryImpl, SequencerAdminImpl}
+import esw.ocs.impl.{SequencerAdminFactoryImpl, SequencerAdminImpl, SequencerCommandImpl}
 import msocket.impl.Encoding
 
 import scala.async.Async.{async, await}
@@ -88,33 +88,40 @@ private[ocs] class SequencerWiring(val packageId: String, val observingMode: Str
   )
 
   private lazy val sequencerAdmin                            = new SequencerAdminImpl(sequencerRef)
+  private lazy val sequencerCommandApi                       = new SequencerCommandImpl(sequencerRef)
   private lazy val postHandler                               = new PostHandlerImpl(sequencerAdmin)
-  private def websocketHandlerFactory(encoding: Encoding[_]) = new WebsocketHandlerImpl(sequencerAdmin, encoding)
-  private lazy val routes                                    = new SequencerAdminRoutes(postHandler, websocketHandlerFactory)
+  private def websocketHandlerFactory(encoding: Encoding[_]) = new WebsocketHandlerImpl(sequencerCommandApi, encoding)
+  private lazy val adminRoutes                               = new SequencerAdminRoutes(postHandler)
+  private lazy val commandRoutes                             = new SequencerCommandRoutes(websocketHandlerFactory)
 
-  private lazy val settings = new Settings(Some(SocketUtils.getFreePort), Some(s"$sequencerName@http"), config)
-  private lazy val httpService: HttpService =
-    new HttpService(logger, locationService, routes.route, settings, actorRuntime)
+  private lazy val adminSettings   = new Settings(Some(SocketUtils.getFreePort), Some(s"$sequencerName@admin@http"), config)
+  private lazy val commandSettings = new Settings(Some(SocketUtils.getFreePort), Some(s"$sequencerName@command@http"), config)
+  private lazy val adminHttpService: HttpService =
+    new HttpService(logger, locationService, adminRoutes.route, adminSettings, actorRuntime)
+  private lazy val commandHttpService: HttpService =
+    new HttpService(logger, locationService, commandRoutes.route, commandSettings, actorRuntime)
 
   private val shutdownHttpService = () =>
     async {
-      val (serverBinding, registrationResult) = await(httpService.registeredLazyBinding)
-      val eventualTerminated                  = serverBinding.terminate(Timeouts.DefaultTimeout)
-      val eventualDone                        = registrationResult.unregister()
-      await(eventualTerminated.flatMap(_ => eventualDone))
+      val (serverBinding1, registrationResult1) = await(adminHttpService.registeredLazyBinding)
+      val (serverBinding2, registrationResult2) = await(commandHttpService.registeredLazyBinding)
+      val eventualTerminated1                   = serverBinding1.terminate(Timeouts.DefaultTimeout)
+      val eventualTerminated2                   = serverBinding2.terminate(Timeouts.DefaultTimeout)
+      val eventualDone1                         = registrationResult1.unregister()
+      val eventualDone2                         = registrationResult2.unregister()
+      await(eventualTerminated1.flatMap(_ => eventualDone1))
+      await(eventualTerminated2.flatMap(_ => eventualDone2))
     }
 
-  lazy val sequencerBehavior =
-    new SequencerBehavior(componentId, script, locationService, shutdownHttpService)(
-      typedSystem
-    )
+  lazy val sequencerBehavior = new SequencerBehavior(componentId, script, locationService, shutdownHttpService)(typedSystem)
 
   lazy val sequencerServer: SequencerServer = new SequencerServer {
     override def start(): Either[LoadScriptError, AkkaLocation] = {
       try {
         new Engine(script).start(sequenceOperatorFactory())
 
-        httpService.registeredLazyBinding.block
+        adminHttpService.registeredLazyBinding.block
+        commandHttpService.registeredLazyBinding.block
 
         val registration = AkkaRegistration(AkkaConnection(componentId), prefix, sequencerRef.toURI)
         new LocationServiceUtil(locationService).register(registration).block

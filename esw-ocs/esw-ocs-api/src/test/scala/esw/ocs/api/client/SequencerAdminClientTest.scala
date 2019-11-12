@@ -5,22 +5,22 @@ import csw.params.commands.{CommandName, Sequence, Setup}
 import csw.params.core.models.{Id, Prefix}
 import csw.time.core.models.UTCTime
 import esw.ocs.api.BaseTestSuite
-import esw.ocs.api.codecs.SequencerAdminHttpCodecs
+import esw.ocs.api.codecs.SequencerHttpCodecs
 import esw.ocs.api.models.StepList
 import esw.ocs.api.protocol.SequencerAdminPostRequest._
-import esw.ocs.api.protocol.SequencerAdminWebsocketRequest.QueryFinal
-import esw.ocs.api.protocol.{SequencerAdminPostRequest, SequencerAdminWebsocketRequest, _}
+import esw.ocs.api.protocol.SequencerCommandWebsocketRequest.QueryFinal
+import esw.ocs.api.protocol.{SequencerAdminPostRequest, SequencerCommandWebsocketRequest, _}
 import io.bullet.borer.Decoder
 import msocket.api.Transport
 import org.mockito.ArgumentMatchers.{any, eq => argsEq}
 
 import scala.concurrent.Future
 
-class SequencerAdminClientTest extends BaseTestSuite with SequencerAdminHttpCodecs {
+class SequencerAdminClientTest extends BaseTestSuite with SequencerHttpCodecs {
 
   private val postClient           = mock[Transport[SequencerAdminPostRequest]]
-  private val websocketClient      = mock[Transport[SequencerAdminWebsocketRequest]]
-  private val sequencerAdminClient = new SequencerAdminClient(postClient, websocketClient)
+  private val websocketClient      = mock[Transport[SequencerCommandWebsocketRequest]]
+  private val sequencerAdminClient = new SequencerAdminClient(postClient)
   "SequencerAdminClient" must {
 
     "call postClient with GetSequence request | ESW-222" in {
@@ -176,11 +176,11 @@ class SequencerAdminClientTest extends BaseTestSuite with SequencerAdminHttpCode
       sequencerAdminClient.operationsMode().futureValue should ===(Ok)
     }
 
-    "call websocket with QueryFinal request | ESW-222" in {
-      val id = mock[Id]
-      when(websocketClient.requestResponse[SubmitResponse](argsEq(QueryFinal))(any[Decoder[SubmitResponse]]()))
-        .thenReturn(Future.successful(Completed(id)))
-      sequencerAdminClient.queryFinal.futureValue should ===(Completed(id))
-    }
+//    "call websocket with QueryFinal request | ESW-222" in {
+//      val id = mock[Id]
+//      when(websocketClient.requestResponse[SubmitResponse](argsEq(QueryFinal))(any[Decoder[SubmitResponse]]()))
+//        .thenReturn(Future.successful(Completed(id)))
+//      sequencerAdminClient.queryFinal.futureValue should ===(Completed(id))
+//    }
   }
 }

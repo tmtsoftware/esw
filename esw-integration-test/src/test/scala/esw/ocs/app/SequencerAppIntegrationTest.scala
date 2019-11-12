@@ -146,7 +146,10 @@ class SequencerAppIntegrationTest extends ScalaTestFrameworkTestKit with BaseTes
       // LoadScript
       val seqCompRef: ActorRef[SequenceComponentMsg] = sequenceCompLocation.uri.toActorRef.unsafeUpcast[SequenceComponentMsg]
       val loadScriptResponse: Future[LoadScriptResponse] =
-        seqCompRef.ask(LoadScript(invalidPackageId, observingMode, _))(timeout, schedulerFromActorSystem)
+        seqCompRef.ask((ref: ActorRef[LoadScriptResponse]) => LoadScript(invalidPackageId, observingMode, ref))(
+          timeout,
+          schedulerFromActorSystem
+        )
 
       val response: Either[LoadScriptError, AkkaLocation] = loadScriptResponse.futureValue.response
 
