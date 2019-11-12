@@ -40,7 +40,9 @@ script {
                 Id("testSequenceIdString123"),
                 CollectionConverters.asScala(Collections.singleton<SequenceCommand>(command)).toSeq()
         )
-        submitSequence("tcs", "moonnight", sequence)
+
+        val tcs = Sequencer("tcs", "moonnight")
+        tcs.submit(sequence)
     }
 
     // ESW-134: Reuse code by ability to import logic from one script into another

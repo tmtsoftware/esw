@@ -46,7 +46,9 @@ class CommandServiceUtil(private val componentRef: ActorRef<ComponentMessage>, p
     suspend fun unlock(prefix: String): LockingResponse =
             lockUnlockUtil.unlock(componentRef, Prefix(prefix)).await()
 
-    fun diagnosticMode(startTime: UTCTime, hint: String): Unit = componentRef.tell(DiagnosticDataMessage.DiagnosticMode(startTime, hint))
+    fun diagnosticMode(startTime: UTCTime, hint: String): Unit =
+            componentRef.tell(DiagnosticDataMessage.DiagnosticMode(startTime, hint))
+
     fun operationsMode(): Unit = componentRef.tell(DiagnosticDataMessage.`OperationsMode$`.`MODULE$`)
 
     fun goOnline(): Unit =

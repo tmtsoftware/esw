@@ -1,22 +1,14 @@
 package esw.ocs.dsl.highlevel
 
-import akka.actor.typed.ActorRef
 import akka.util.Timeout
 import csw.command.api.javadsl.ICommandService
-import csw.command.client.messages.ComponentMessage
-import csw.command.client.messages.DiagnosticDataMessage
-import csw.command.client.messages.RunningMessage
 import csw.command.client.models.framework.LockingResponse
-import csw.command.client.models.framework.ToComponentLifecycleMessage
 import csw.params.commands.CommandResponse.*
 import csw.params.commands.ControlCommand
-import csw.params.core.models.Prefix
 import csw.time.core.models.UTCTime
-import esw.ocs.dsl.script.utils.LockUnlockUtil
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.future.await
 import kotlin.time.Duration
-import kotlin.time.toJavaDuration
 
 class InternalCommandService(private val commandService: ICommandService, private val commandServiceUtil: CommandServiceUtil,private val timeout: Timeout) {
 

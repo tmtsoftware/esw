@@ -1,7 +1,7 @@
 package esw.ocs.dsl.script.utils
 
 import java.time.Duration
-import java.util.concurrent.{CompletionStage, ExecutionException, TimeUnit}
+import java.util.concurrent.TimeUnit
 
 import akka.actor.testkit.typed.scaladsl.TestProbe
 import akka.actor.typed.{ActorRef, ActorSystem, SpawnProtocol}
@@ -15,7 +15,6 @@ import esw.ocs.dsl.sequence_manager.LocationServiceUtil
 
 import scala.concurrent.Future
 import scala.concurrent.duration.FiniteDuration
-import scala.jdk.FutureConverters.CompletionStageOps
 
 class LockUnlockUtilTest extends BaseTestSuite {
   "Lock" must {
@@ -32,7 +31,7 @@ class LockUnlockUtilTest extends BaseTestSuite {
       when(locationServiceUtil.resolveComponentRef(componentName, componentType)).thenReturn(Future.successful(componentRef.ref))
 
       val lockUnlockUtil = new LockUnlockUtil(locationServiceUtil)(actorSystem)
-      lockUnlockUtil.lock(componentName, componentType, prefix, leaseDuration)(() => ???, () => ???)
+      lockUnlockUtil.lock(componentRef.ref, prefix, leaseDuration)(() => ???, () => ???)
 
       val msg: Lock = componentRef.expectMessageType[Lock]
       msg.source shouldEqual prefix
@@ -40,21 +39,21 @@ class LockUnlockUtilTest extends BaseTestSuite {
       msg.replyTo.isInstanceOf[ActorRef[LockingResponse]]
     }
 
-    "throw RuntimeException exception when resolve component fails | ESW-126" in {
-      val exception      = new RuntimeException("RuntimeException error")
-      val lockUnlockUtil = new LockUnlockUtil(locationServiceUtil)(actorSystem)
-
-      when(locationServiceUtil.resolveComponentRef(componentName, componentType))
-        .thenReturn(Future.failed(exception))
-
-      val lockingResponse: CompletionStage[LockingResponse] =
-        lockUnlockUtil.lock(componentName, componentType, prefix, leaseDuration)(() => ???, () => ???)
-
-      val actualException = intercept[RuntimeException] {
-        lockingResponse.asScala.awaitResult
-      }
-      actualException.getMessage shouldEqual exception.getMessage
-    }
+//    "throw RuntimeException exception when resolve component fails | ESW-126" in {
+//      val exception      = new RuntimeException("RuntimeException error")
+//      val lockUnlockUtil = new LockUnlockUtil(locationServiceUtil)(actorSystem)
+//
+//      when(locationServiceUtil.resolveComponentRef(componentName, componentType))
+//        .thenReturn(Future.failed(exception))
+//
+//      val lockingResponse: CompletionStage[LockingResponse] =
+//        lockUnlockUtil.lock(co, prefix, leaseDuration)(() => ???, () => ???)
+//
+//      val actualException = intercept[RuntimeException] {
+//        lockingResponse.asScala.awaitResult
+//      }
+//      actualException.getMessage shouldEqual exception.getMessage
+//    }
   }
 
   "Unlock" must {
@@ -70,29 +69,29 @@ class LockUnlockUtilTest extends BaseTestSuite {
       when(locationServiceUtil.resolveComponentRef(componentName, componentType)).thenReturn(Future.successful(componentRef.ref))
 
       val lockUnlockUtil = new LockUnlockUtil(locationServiceUtil)(actorSystem)
-      lockUnlockUtil.unlock(componentName, componentType, prefix)
+      lockUnlockUtil.unlock(componentRef.ref, prefix)
 
       val msg: Unlock = componentRef.expectMessageType[Unlock]
       msg.source shouldEqual prefix
       msg.replyTo.isInstanceOf[ActorRef[LockingResponse]]
     }
 
-    "throw RuntimeException exception when resolve component fails | ESW-126" in {
-      val exception         = new RuntimeException("RuntimeException error")
-      val expectedException = new ExecutionException(exception)
-      val lockUnlockUtil    = new LockUnlockUtil(locationServiceUtil)(actorSystem)
-
-      when(locationServiceUtil.resolveComponentRef(componentName, componentType))
-        .thenReturn(Future.failed(exception))
-
-      val lockingResponse: CompletionStage[LockingResponse] =
-        lockUnlockUtil.unlock(componentName, componentType, prefix)
-
-      lockingResponse.toCompletableFuture.isCompletedExceptionally shouldEqual true
-      val actualException = intercept[ExecutionException] {
-        lockingResponse.toCompletableFuture.get()
-      }
-      actualException.getMessage shouldEqual expectedException.getMessage
-    }
+//    "throw RuntimeException exception when resolve component fails | ESW-126" in {
+//      val exception         = new RuntimeException("RuntimeException error")
+//      val expectedException = new ExecutionException(exception)
+//      val lockUnlockUtil    = new LockUnlockUtil(locationServiceUtil)(actorSystem)
+//
+//      when(locationServiceUtil.resolveComponentRef(componentName, componentType))
+//        .thenReturn(Future.failed(exception))
+//
+//      val lockingResponse: CompletionStage[LockingResponse] =
+//        lockUnlockUtil.unlock(compo, prefix)
+//
+//      lockingResponse.toCompletableFuture.isCompletedExceptionally shouldEqual true
+//      val actualException = intercept[ExecutionException] {
+//        lockingResponse.toCompletableFuture.get()
+//      }
+//      actualException.getMessage shouldEqual expectedException.getMessage
+//    }
   }
 }

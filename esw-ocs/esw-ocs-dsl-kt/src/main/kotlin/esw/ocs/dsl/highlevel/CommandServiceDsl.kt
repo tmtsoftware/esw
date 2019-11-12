@@ -20,6 +20,9 @@ interface CommandServiceDsl {
     suspend fun Assembly(name: String): InternalCommandService = commonUtils.resolveAssembly(name)
     suspend fun HCD(name: String): InternalCommandService = commonUtils.resolveHcd(name)
 
+    suspend fun Sequencer(sequencerId: String, observingMode: String): InternalSequencerCommandService =
+            commonUtils.resolveSequencer(sequencerId, observingMode)
+
     /** ========== Extensions ============ **/
     val Command.obsId: String? get() = jMaybeObsId().map { it.obsId() }.nullable()
 
