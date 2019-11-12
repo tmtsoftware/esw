@@ -16,8 +16,8 @@ script {
 
     handleSetup("lock-assembly") {
 
-        val initialLockResponse = lockAssembly(
-                assemblyName = "test",
+        val assembly = Assembly("test")
+        val initialLockResponse = assembly.lock(
                 prefix = "esw.test",
                 leaseDuration = 200.milliseconds,
                 onLockAboutToExpire = { publishLockingResponse(lockExpiringShortly()) },
@@ -28,7 +28,8 @@ script {
     }
 
     handleSetup("unlock-assembly") {
-        val response = unlockAssembly("test", "esw.test")
+        val assembly = Assembly("test")
+        val response = assembly.unlock( "esw.test")
         publishLockingResponse(response)
     }
 }

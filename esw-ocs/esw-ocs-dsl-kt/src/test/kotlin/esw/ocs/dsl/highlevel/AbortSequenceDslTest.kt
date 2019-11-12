@@ -21,7 +21,7 @@ class AbortSequenceDslTest : AbortSequenceDsl {
     private val sequencerAdminApi: SequencerAdminApi = mockk()
     private val sequencerAdminFactoryApi: SequencerAdminFactoryApi = mockk()
 
-    override val commonUtils: CommonUtils = CommonUtils(sequencerAdminFactoryApi, locationServiceUtil)
+    override val commonUtils: CommonUtils = CommonUtils(sequencerAdminFactoryApi, locationServiceUtil, mockk(), mockk(), mockk())
 
     @Test
     fun `abortSequenceForSequencer should delegate to sequencerAdminApi#abortSequence | ESW-155, ESW-137`() = runBlocking {

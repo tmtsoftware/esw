@@ -9,10 +9,10 @@ import akka.stream.scaladsl.{Keep, Sink}
 import akka.stream.typed.scaladsl.ActorSource
 import akka.stream.{Materializer, OverflowStrategy}
 import akka.util.Timeout
+import csw.command.client.messages.ComponentMessage
 import csw.command.client.messages.SupervisorLockMessage.{Lock, Unlock}
 import csw.command.client.models.framework.LockingResponse
 import csw.command.client.models.framework.LockingResponse._
-import csw.location.models.ComponentType
 import csw.params.core.models.Prefix
 import esw.ocs.dsl.sequence_manager.LocationServiceUtil
 
@@ -28,36 +28,31 @@ class LockUnlockUtil(locationServiceUtil: LocationServiceUtil)(actorSystem: Acto
   private implicit val ec: ExecutionContext = actorSystem.executionContext
   private implicit val mat: Materializer    = Materializer(actorSystem)
 
-  def lock(componentName: String, componentType: ComponentType, prefix: Prefix, leaseDuration: Duration)(
+  def lock(componentRef: ActorRef[ComponentMessage], prefix: Prefix, leaseDuration: Duration)(
       onLockAboutToExpire: () => CompletionStage[Void],
       onLockExpired: () => CompletionStage[Void]
   ): CompletionStage[LockingResponse] = {
-    val leaseFiniteDuration  = FiniteDuration(leaseDuration.toNanos, TimeUnit.NANOSECONDS)
-    val eventualComponentRef = locationServiceUtil.resolveComponentRef(componentName, componentType)
+    val leaseFiniteDuration = FiniteDuration(leaseDuration.toNanos, TimeUnit.NANOSECONDS)
 
     val firstLockResponse: Promise[LockingResponse] = Promise()
 
-    eventualComponentRef.flatMap { compRef =>
-      actorSource
-        .mapMaterializedValue { lockResponseReplyTo =>
-          compRef ! Lock(prefix, lockResponseReplyTo, leaseFiniteDuration)
-          firstLockResponse.future
-        }
-        .mapAsync(1) { lockResponse =>
-          firstLockResponse.tryComplete(Success(lockResponse))
-          executeCallbacks(onLockAboutToExpire, onLockExpired)(lockResponse)
-        }
-        .takeWhile(isNotFinalLockResponse)
-        .toMat(Sink.ignore)(Keep.left)
-        .run()
-    }.toJava
+    actorSource
+      .mapMaterializedValue { lockResponseReplyTo =>
+        componentRef ! Lock(prefix, lockResponseReplyTo, leaseFiniteDuration)
+        firstLockResponse.future
+      }
+      .mapAsync(1) { lockResponse =>
+        firstLockResponse.tryComplete(Success(lockResponse))
+        executeCallbacks(onLockAboutToExpire, onLockExpired)(lockResponse)
+      }
+      .takeWhile(isNotFinalLockResponse)
+      .toMat(Sink.ignore)(Keep.left)
+      .run()
+      .toJava
   }
 
-  def unlock(componentName: String, componentType: ComponentType, prefix: Prefix): CompletionStage[LockingResponse] =
-    locationServiceUtil
-      .resolveComponentRef(componentName, componentType)
-      .flatMap(_ ? (Unlock(prefix, _: ActorRef[LockingResponse])))
-      .toJava
+  def unlock(componentRef: ActorRef[ComponentMessage], prefix: Prefix): CompletionStage[LockingResponse] =
+    (componentRef ? (Unlock(prefix, _: ActorRef[LockingResponse]))).toJava
 
   private def actorSource =
     ActorSource

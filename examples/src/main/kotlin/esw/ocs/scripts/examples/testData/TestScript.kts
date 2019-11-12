@@ -3,8 +3,10 @@ package esw.ocs.scripts.examples.testData
 import com.typesafe.config.ConfigFactory
 import csw.alarm.api.javadsl.JAlarmSeverity.Major
 import csw.alarm.models.Key.AlarmKey
-import csw.location.api.javadsl.JComponentType.Assembly
-import csw.params.commands.*
+import csw.params.commands.CommandName
+import csw.params.commands.Sequence
+import csw.params.commands.SequenceCommand
+import csw.params.commands.Setup
 import csw.params.core.models.Id
 import csw.params.core.models.Prefix
 import csw.params.events.Event
@@ -114,22 +116,26 @@ script {
 
     handleDiagnosticMode { startTime, hint ->
         // do some actions to go to diagnostic mode based on hint
-        diagnosticModeForComponent("test", Assembly(), startTime, hint)
+        val assembly = Assembly("test")
+        assembly.diagnosticMode(startTime, hint)
     }
 
     handleOperationsMode {
         // do some actions to go to operations mode
-        operationsModeForComponent("test", Assembly())
+        val assembly = Assembly("test")
+        assembly.operationsMode()
     }
 
     handleGoOffline {
         // do some actions to go offline
-        goOfflineModeForComponent("test", Assembly())
+        val assembly = Assembly("test")
+        assembly.goOffline()
     }
 
     handleGoOnline {
         // do some actions to go online
-        goOnlineModeForComponent("test", Assembly())
+        val assembly = Assembly("test")
+        assembly.goOnline()
     }
 
     handleAbortSequence {

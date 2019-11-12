@@ -2,8 +2,6 @@ package esw.ocs.dsl.highlevel
 
 import akka.actor.typed.ActorRef
 import csw.command.client.messages.ComponentMessage
-import csw.command.client.messages.DiagnosticDataMessage.DiagnosticMode
-import csw.command.client.messages.DiagnosticDataMessage.`OperationsMode$`
 import csw.location.api.javadsl.JComponentType
 import csw.location.models.ComponentType
 import csw.time.core.models.UTCTime
@@ -34,35 +32,7 @@ class DiagnosticDslTest : DiagnosticDsl {
 
     private val startTime: UTCTime = UTCTime.now()
 
-    override val commonUtils: CommonUtils = CommonUtils(sequencerAdminFactoryApi, locationServiceUtil)
-
-    @Test
-    fun `DiagnosticDsl should diagnosticModeForComponent should resolve component ref and send DiagnosticMode msg | ESW-118`() = runBlocking {
-        val diagnosticMode = DiagnosticMode(startTime, hint)
-
-        every { componentRef.tell(diagnosticMode) }.answers { Unit }
-        every { locationServiceUtil.jResolveComponentRef(componentName, componentType) }
-                .answers { CompletableFuture.completedFuture(componentRef) }
-
-        diagnosticModeForComponent(componentName, componentType, startTime, hint)
-
-        verify { locationServiceUtil.jResolveComponentRef(componentName, componentType) }
-        verify { componentRef.tell(diagnosticMode) }
-    }
-
-    @Test
-    fun `operationsModeForComponent should resolve component ref and send OperationsMode msg | ESW-118`() = runBlocking {
-        val opsMode = `OperationsMode$`.`MODULE$`
-
-        every { componentRef.tell(opsMode) }.answers { Unit }
-        every { locationServiceUtil.jResolveComponentRef(componentName, componentType) }
-                .answers { CompletableFuture.completedFuture(componentRef) }
-
-        operationsModeForComponent(componentName, componentType)
-
-        verify { locationServiceUtil.jResolveComponentRef(componentName, componentType) }
-        verify { componentRef.tell(opsMode) }
-    }
+    override val commonUtils: CommonUtils = CommonUtils(sequencerAdminFactoryApi, locationServiceUtil, mockk(), mockk(), mockk())
 
     @Test
     fun `diagnosticModeForSequencer should delegate to sequencerAdminApi#diagnosticMode | ESW-143`() = runBlocking {

@@ -21,7 +21,7 @@ class StopDslTest : StopDsl {
     private val sequencerAdminApi: SequencerAdminApi = mockk()
     private val sequencerAdminFactoryApi: SequencerAdminFactoryApi = mockk()
 
-    override val commonUtils: CommonUtils = CommonUtils(sequencerAdminFactoryApi, locationServiceUtil)
+    override val commonUtils: CommonUtils = CommonUtils(sequencerAdminFactoryApi, locationServiceUtil, mockk(), mockk(), mockk())
 
     @Test
     fun `stop should delegate to sequencerAdminApi#stop | ESW-156, ESW-138`() = runBlocking {

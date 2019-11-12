@@ -16,19 +16,19 @@ import esw.ocs.dsl.sequence_manager.LocationServiceUtil
 import kotlinx.coroutines.CoroutineScope
 
 abstract class CswHighLevelDsl(private val cswServices: CswServices) : EventServiceDsl, TimeServiceDsl, CommandServiceDsl, DiagnosticDsl,
-        LockUnlockDsl, OnlineOfflineDsl, AbortSequenceDsl, StopDsl, ConfigServiceDsl,
+        OnlineOfflineDsl, AbortSequenceDsl, StopDsl, ConfigServiceDsl,
         AlarmServiceDsl, LoopDsl, JavaFutureInterop {
     abstract val strandEc: StrandEc
     abstract override val coroutineScope: CoroutineScope
 
-    final override val actorSystem: ActorSystem<*> = cswServices.actorSystem()
+    val actorSystem: ActorSystem<*> = cswServices.actorSystem()
+    val locationService: ILocationService = cswServices.locationService()
     final override val materializer: Materializer = Materializer.createMaterializer(actorSystem)
-    final override val locationService: ILocationService = cswServices.locationService()
     final override val defaultPublisher: IEventPublisher by lazy { cswServices.eventService().defaultPublisher() }
     final override val defaultSubscriber: IEventSubscriber by lazy { cswServices.eventService().defaultSubscriber() }
     // fixme: should not be visible from script
-    final override val commonUtils: CommonUtils = CommonUtils(cswServices.sequencerAdminFactory(), LocationServiceUtil(locationService.asScala(), actorSystem))
-    final override val lockUnlockUtil: LockUnlockUtil = cswServices.lockUnlockUtil()
+    private val lockUnlockUtil: LockUnlockUtil = cswServices.lockUnlockUtil()
+    final override val commonUtils: CommonUtils by lazy { CommonUtils(cswServices.sequencerAdminFactory(), LocationServiceUtil(locationService.asScala(), actorSystem), lockUnlockUtil, actorSystem, coroutineScope) }
 
     final override val timeServiceScheduler: TimeServiceScheduler by lazy { cswServices.timeServiceSchedulerFactory().make(strandEc.ec()) }
     final override val configClient: IConfigClientService by lazy { cswServices.configClientService() }
@@ -37,4 +37,5 @@ abstract class CswHighLevelDsl(private val cswServices: CswServices) : EventServ
     private val alarmServiceDslImpl by lazy { AlarmServiceDslImpl(cswServices.alarmService(), coroutineScope) }
 
     override fun setSeverity(alarmKey: AlarmKey, severity: AlarmSeverity) = alarmServiceDslImpl.setSeverity(alarmKey, severity)
+
 }
