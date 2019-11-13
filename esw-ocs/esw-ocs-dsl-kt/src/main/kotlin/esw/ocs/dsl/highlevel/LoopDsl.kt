@@ -17,10 +17,10 @@ interface LoopDsl {
     suspend fun loop(minInterval: Duration, block: suspend StopWhen.() -> Unit): Job = loop0(minInterval, block)
 
     /****** Background loops *******/
-    fun bgLoop(block: suspend StopWhen.() -> Unit): Deferred<Job> = coroutineScope.async { loop(loopInterval, block) }
+    fun bgLoop(block: suspend StopWhen.() -> Unit): Job = coroutineScope.launch { loop(loopInterval, block) }
 
-    fun bgLoop(minInterval: Duration, block: suspend StopWhen.() -> Unit): Deferred<Job> =
-        coroutineScope.async { loop(minInterval, block) }
+    fun bgLoop(minInterval: Duration, block: suspend StopWhen.() -> Unit): Job =
+            coroutineScope.launch { loop(minInterval, block) }
 
     /****** Waiting for condition to be true *******/
     suspend fun waitFor(condition: suspend () -> Boolean) = loop { stopWhen(condition()) }
