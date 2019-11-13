@@ -1,4 +1,4 @@
-package esw.ocs.dsl.highlevel.internal
+package esw.ocs.dsl.highlevel
 
 import akka.actor.typed.ActorRef
 import akka.actor.typed.ActorSystem
@@ -16,7 +16,7 @@ import csw.params.commands.CommandResponse.*
 import csw.params.commands.ControlCommand
 import csw.params.core.models.Prefix
 import csw.time.core.models.UTCTime
-import esw.ocs.dsl.highlevel.JavaFutureInterop
+import esw.ocs.dsl.jdk.SuspendToJavaConverter
 import esw.ocs.dsl.script.utils.LockUnlockUtil
 import esw.ocs.dsl.sequence_manager.LocationServiceUtil
 import kotlinx.coroutines.CoroutineScope
@@ -24,7 +24,7 @@ import kotlinx.coroutines.future.await
 import kotlin.time.Duration
 import kotlin.time.toJavaDuration
 
-class InternalCommandService(
+class RichCommandService(
         private val name: String,
         private val compType: ComponentType,
         private val lockUnlockUtil: LockUnlockUtil,
@@ -32,7 +32,7 @@ class InternalCommandService(
         private val actorSystem: ActorSystem<*>,
         private val timeout: Timeout,
         override val coroutineScope: CoroutineScope
-) : JavaFutureInterop {
+) : SuspendToJavaConverter {
 
     suspend fun validate(command: ControlCommand): ValidateResponse = commandService().validate(command).await()
     suspend fun oneway(command: ControlCommand): OnewayResponse = commandService().oneway(command, timeout).await()

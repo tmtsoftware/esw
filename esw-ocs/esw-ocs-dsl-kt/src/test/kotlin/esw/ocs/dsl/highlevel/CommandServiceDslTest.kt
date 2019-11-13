@@ -9,8 +9,8 @@ import csw.params.core.models.ObsId
 import csw.params.core.models.Prefix
 import csw.time.core.models.UTCTime
 import esw.ocs.api.protocol.`Ok$`
-import esw.ocs.dsl.highlevel.internal.InternalCommandService
-import esw.ocs.dsl.highlevel.internal.InternalSequencerCommandService
+import esw.ocs.dsl.highlevel.RichCommandService
+import esw.ocs.dsl.highlevel.RichSequencerCommandService
 import io.kotlintest.shouldBe
 import io.mockk.*
 import kotlinx.coroutines.runBlocking
@@ -24,9 +24,9 @@ class CommandServiceDslTest : CommandServiceDsl {
     private val assemblyName = "sampleAssembly"
 
     private val setupCommand = setup("esw.test", "move", "testObsId")
-    private val assemblyCommandService: InternalCommandService = mockk()
-    private val hcdCommandService: InternalCommandService = mockk()
-    private val sequencerCommandService: InternalSequencerCommandService = mockk()
+    private val assemblyCommandService: RichCommandService = mockk()
+    private val hcdCommandService: RichCommandService = mockk()
+    private val sequencerCommandService: RichSequencerCommandService = mockk()
 
     @Test
     fun `setup method should construct a Setup command with given prefix, commandName and obsId | ESW-121`() = runBlocking {

@@ -1,4 +1,4 @@
-package esw.ocs.dsl.highlevel.internal
+package esw.ocs.dsl.highlevel
 
 import akka.actor.typed.ActorRef
 import akka.actor.typed.ActorSystem
@@ -28,7 +28,7 @@ import org.junit.jupiter.api.Test
 import java.util.*
 import java.util.concurrent.CompletableFuture
 
-class InternalCommandServiceTest {
+class RichCommandServiceTest {
 
     private val hint = "test-hint"
     private val startTime: UTCTime = UTCTime.now()
@@ -43,8 +43,8 @@ class InternalCommandServiceTest {
     private val timeout: Timeout = mockk()
     private val coroutineScope: CoroutineScope = mockk()
 
-    private val assembly: InternalCommandService =
-            InternalCommandService(
+    private val assembly: RichCommandService =
+            RichCommandService(
                     componentName,
                     componentType,
                     lockUnlockUtil,
@@ -111,7 +111,7 @@ class InternalCommandServiceTest {
     }
 
     @Test
-    fun `diagnosticMode should resolve actorRef for given assembly and send diagnosticMode message to it | ESW-118, ESW-245 `() = runBlocking {
+    fun `diagnosticMode should resolve actorRef for given assembly and send DiagnosticMode message to it | ESW-118, ESW-245 `() = runBlocking {
 
         val diagnosticMessage = DiagnosticDataMessage.DiagnosticMode(startTime, hint)
 
@@ -124,7 +124,7 @@ class InternalCommandServiceTest {
     }
 
     @Test
-    fun `operationsMode should resolve actorRef for given assembly and send operationsMode message to it | ESW-118, ESW-245 `() = runBlocking {
+    fun `operationsMode should resolve actorRef for given assembly and send OperationsMode message to it | ESW-118, ESW-245 `() = runBlocking {
 
         val operationsModeMessage = DiagnosticDataMessage.`OperationsMode$`.`MODULE$`
 
@@ -137,7 +137,7 @@ class InternalCommandServiceTest {
     }
 
     @Test
-    fun `goOnline should resolve actorRef for given assembly and send goOnline message to it | ESW-118, ESW-245 `() = runBlocking {
+    fun `goOnline should resolve actorRef for given assembly and send GoOnline message to it | ESW-236, ESW-245 `() = runBlocking {
 
         val goOnlineMessage = RunningMessage.Lifecycle(ToComponentLifecycleMessage.`GoOnline$`.`MODULE$`)
 
@@ -147,6 +147,19 @@ class InternalCommandServiceTest {
         assembly.goOnline()
 
         verify { assemblyRef.tell(goOnlineMessage) }
+    }
+
+    @Test
+    fun `goOffline should resolve actorRef for given assembly and send GoOffline message to it | ESW-236, ESW-245 `() = runBlocking {
+
+        val goOfflineMessage = RunningMessage.Lifecycle(ToComponentLifecycleMessage.`GoOffline$`.`MODULE$`)
+
+        every { locationServiceUtil.jResolveComponentRef(componentName, componentType) }.answers { CompletableFuture.completedFuture(assemblyRef) }
+        every { assemblyRef.tell(goOfflineMessage) }.answers { Unit }
+
+        assembly.goOffline()
+
+        verify { assemblyRef.tell(goOfflineMessage) }
     }
 
 }

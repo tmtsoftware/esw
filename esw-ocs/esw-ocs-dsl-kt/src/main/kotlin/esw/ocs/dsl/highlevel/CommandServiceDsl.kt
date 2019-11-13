@@ -3,8 +3,8 @@ package esw.ocs.dsl.highlevel
 import csw.params.commands.*
 import csw.params.core.models.ObsId
 import csw.params.core.models.Prefix
-import esw.ocs.dsl.highlevel.internal.InternalCommandService
-import esw.ocs.dsl.highlevel.internal.InternalSequencerCommandService
+import esw.ocs.dsl.highlevel.RichCommandService
+import esw.ocs.dsl.highlevel.RichSequencerCommandService
 import esw.ocs.dsl.nullable
 import java.util.*
 
@@ -19,10 +19,11 @@ interface CommandServiceDsl {
 
     fun sequenceOf(vararg sequenceCommand: SequenceCommand): Sequence = Sequence.create(sequenceCommand.toList())
 
-    suspend fun Assembly(name: String): InternalCommandService = commonUtils.resolveAssembly(name)
-    suspend fun HCD(name: String): InternalCommandService = commonUtils.resolveHcd(name)
+    suspend fun Assembly(name: String): RichCommandService = commonUtils.resolveAssembly(name)
 
-    suspend fun Sequencer(sequencerId: String, observingMode: String): InternalSequencerCommandService =
+    suspend fun HCD(name: String): RichCommandService = commonUtils.resolveHcd(name)
+
+    suspend fun Sequencer(sequencerId: String, observingMode: String): RichSequencerCommandService =
             commonUtils.resolveSequencer(sequencerId, observingMode)
 
     /** ========== Extensions ============ **/

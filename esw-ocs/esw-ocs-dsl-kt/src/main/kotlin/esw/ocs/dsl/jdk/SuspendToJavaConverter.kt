@@ -1,12 +1,11 @@
-package esw.ocs.dsl.highlevel
+package esw.ocs.dsl.jdk
 
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.future.asCompletableFuture
 import kotlinx.coroutines.launch
 import java.util.concurrent.CompletionStage
 
-
-interface JavaFutureInterop {
+interface SuspendToJavaConverter {
     val coroutineScope: CoroutineScope
 
     fun (suspend CoroutineScope.() -> Unit).toJavaFutureVoid(): CompletionStage<Void> =

@@ -9,6 +9,7 @@ import csw.event.api.javadsl.IEventPublisher
 import csw.event.api.javadsl.IEventSubscriber
 import csw.location.api.javadsl.ILocationService
 import csw.time.scheduler.api.TimeServiceScheduler
+import esw.ocs.dsl.jdk.SuspendToJavaConverter
 import esw.ocs.dsl.script.CswServices
 import esw.ocs.dsl.script.StrandEc
 import esw.ocs.dsl.script.utils.LockUnlockUtil
@@ -16,7 +17,7 @@ import esw.ocs.dsl.sequence_manager.LocationServiceUtil
 import kotlinx.coroutines.CoroutineScope
 
 abstract class CswHighLevelDsl(private val cswServices: CswServices) : EventServiceDsl, TimeServiceDsl, CommandServiceDsl,
-        ConfigServiceDsl, AlarmServiceDsl, LoopDsl, JavaFutureInterop {
+        ConfigServiceDsl, AlarmServiceDsl, LoopDsl, SuspendToJavaConverter {
     abstract val strandEc: StrandEc
     abstract override val coroutineScope: CoroutineScope
 
