@@ -10,13 +10,13 @@ import esw.ocs.api.SequencerAdminFactoryApi
 import esw.ocs.dsl.script.utils.LockUnlockUtil
 
 class CswServices(
-    private[esw] val sequenceOperatorFactory: () => SequenceOperator,
+    val sequenceOperatorFactory: () => SequenceOperator,
     val actorSystem: ActorSystem[_],
     val locationService: ILocationService,
     val eventService: IEventService,
-    private[esw] val timeServiceSchedulerFactory: TimeServiceSchedulerFactory,
-    private[esw] val sequencerAdminFactory: SequencerAdminFactoryApi,
-    private[esw] val lockUnlockUtil: LockUnlockUtil,
-    private[esw] val configClientService: IConfigClientService,
+    val timeServiceSchedulerFactory: TimeServiceSchedulerFactory,
+    val sequencerAdminFactory: SequencerAdminFactoryApi,
+    val lockUnlockUtil: LockUnlockUtil,
+    val configClientService: IConfigClientService,
     val alarmService: IAlarmService
 )

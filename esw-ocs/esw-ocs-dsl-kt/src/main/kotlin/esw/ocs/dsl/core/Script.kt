@@ -1,5 +1,9 @@
 package esw.ocs.dsl.core
 
+import csw.alarm.api.javadsl.IAlarmService
+import csw.config.api.javadsl.IConfigClientService
+import csw.event.api.javadsl.IEventService
+import csw.location.api.javadsl.ILocationService
 import csw.params.commands.CommandResponse.SubmitResponse
 import csw.params.commands.Observe
 import csw.params.commands.Sequence
@@ -16,7 +20,7 @@ import kotlinx.coroutines.future.asCompletableFuture
 import kotlinx.coroutines.future.await
 import kotlinx.coroutines.future.future
 
-sealed class ScriptDslKt(private val cswServices: CswServices) : CswHighLevelDsl(cswServices) {
+sealed class ScriptDslKt(val cswServices: CswServices) : CswHighLevelDsl(cswServices) {
 
     // https://stackoverflow.com/questions/58497383/is-it-possible-to-provide-custom-name-for-internal-delegated-properties-in-kotli/58497535#58497535
     @get:JvmName("scriptDsl")
