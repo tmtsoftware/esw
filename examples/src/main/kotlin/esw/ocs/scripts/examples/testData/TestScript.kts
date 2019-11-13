@@ -99,10 +99,10 @@ script {
         delay(500)
     }
 
-    onSetup("command-irms") {
+    onSetup("command-lgsf") {
         // NOT update command response to avoid sequencer to finish immediately
         // so that other Add, Append command gets time
-        val setupCommand = setup("LGSF.test", "command-irms")
+        val setupCommand = setup("LGSF.test", "command-lgsf")
         val sequence = Sequence(
                 Id("testSequenceIdString123"),
                 CollectionConverters.asScala(Collections.singleton<SequenceCommand>(setupCommand)).toSeq()

@@ -6,7 +6,7 @@ import kotlin.time.seconds
 
 script {
 
-    onSetup("command-irms") {
+    onSetup("command-lgsf") {
         // NOT update command response To avoid sequencer to
         // finish so that other commands gets time
         delay(10000)

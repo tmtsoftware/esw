@@ -58,16 +58,16 @@ class ScriptIntegrationTest extends ScalaTestFrameworkTestKit(EventServer, Alarm
   private val tcsObservingMode = "darknight"
 
   // TestScript4.kts
-  private val irmsPackageId                         = "lgsf"
-  private val irmsObservingMode                     = "darknight"
+  private val lgsfPackageId                         = "lgsf"
+  private val lgsfObservingMode                     = "darknight"
   private val configTestKit: ConfigTestKit          = frameworkTestKit.configTestKit
   private var locationService: LocationService      = _
   private var ocsWiring: SequencerWiring            = _
   private var ocsSequencer: ActorRef[SequencerMsg]  = _
   private var tcsWiring: SequencerWiring            = _
   private var tcsSequencer: ActorRef[SequencerMsg]  = _
-  private var irmsWiring: SequencerWiring           = _
-  private var irmsSequencer: ActorRef[SequencerMsg] = _
+  private var lgsfWiring: SequencerWiring           = _
+  private var lgsfSequencer: ActorRef[SequencerMsg] = _
 
   override def beforeAll(): Unit = {
     super.beforeAll()
@@ -80,10 +80,10 @@ class ScriptIntegrationTest extends ScalaTestFrameworkTestKit(EventServer, Alarm
     tcsWiring.sequencerServer.start()
     tcsSequencer = tcsWiring.sequencerRef
 
-    //start IRMS sequencer as OCS send commands to IRMS downstream sequencer
-    irmsWiring = new SequencerWiring(irmsPackageId, irmsObservingMode, None)
-    irmsWiring.sequencerServer.start()
-    irmsSequencer = irmsWiring.sequencerRef
+    //start LGSF sequencer as OCS send commands to LGSF downstream sequencer
+    lgsfWiring = new SequencerWiring(lgsfPackageId, lgsfObservingMode, None)
+    lgsfWiring.sequencerServer.start()
+    lgsfSequencer = lgsfWiring.sequencerRef
 
     ocsWiring = new SequencerWiring(ocsPackageId, ocsObservingMode, None)
     ocsSequencer = ocsWiring.sequencerServer.start().rightValue.uri.toActorRef.unsafeUpcast[SequencerMsg]
@@ -91,7 +91,7 @@ class ScriptIntegrationTest extends ScalaTestFrameworkTestKit(EventServer, Alarm
 
   override def afterEach(): Unit = {
     ocsWiring.sequencerServer.shutDown().futureValue
-    irmsWiring.sequencerServer.shutDown().futureValue
+    lgsfWiring.sequencerServer.shutDown().futureValue
     tcsWiring.sequencerServer.shutDown().futureValue
   }
 
@@ -253,7 +253,7 @@ class ScriptIntegrationTest extends ScalaTestFrameworkTestKit(EventServer, Alarm
       testProbe.expectMessageType[SystemEvent] // discard invalid event
 
       // Submit sequence to OCS as AbortSequence is accepted only in InProgress State
-      val command1            = Setup(Prefix("LGSF.test"), CommandName("command-irms"), None)
+      val command1            = Setup(Prefix("LGSF.test"), CommandName("command-lgsf"), None)
       val command2            = Setup(Prefix("IRIS.test"), CommandName("command-1"), None)
       val command3            = Setup(Prefix("TCS.test"), CommandName("command-2"), None)
       val submitResponseProbe = TestProbe[SubmitResponse]
@@ -265,8 +265,8 @@ class ScriptIntegrationTest extends ScalaTestFrameworkTestKit(EventServer, Alarm
       maybeOcsStepListF.futureValue.get.isInFlight shouldBe true
 
       eventually {
-        val maybeIrmsStepListF: Future[Option[StepList]] = irmsSequencer ? GetSequence
-        maybeIrmsStepListF.futureValue.get.isInFlight shouldBe true
+        val maybeLgsfStepListF: Future[Option[StepList]] = lgsfSequencer ? GetSequence
+        maybeLgsfStepListF.futureValue.get.isInFlight shouldBe true
       }
 
       val abortSequenceResponseF: Future[OkOrUnhandledResponse] = ocsSequencer ? AbortSequence
@@ -276,8 +276,8 @@ class ScriptIntegrationTest extends ScalaTestFrameworkTestKit(EventServer, Alarm
       eventually {
         val maybeStepListF: Future[Option[StepList]] = ocsSequencer ? GetSequence
         maybeStepListF.futureValue.get.nextPending shouldBe None
-        // handleAbortSequence from ocs script sends abort sequence message to downstream irms sequencer
-        // irms sequencer publish abort event on invocation of handle abort hook which is verified here
+        // handleAbortSequence from ocs script sends abort sequence message to downstream lgsf sequencer
+        // lgsf sequencer publish abort event on invocation of handle abort hook which is verified here
         val event = testProbe.receiveMessage()
         event.eventId shouldNot be(-1)
       }
@@ -293,7 +293,7 @@ class ScriptIntegrationTest extends ScalaTestFrameworkTestKit(EventServer, Alarm
       testProbe.expectMessageType[SystemEvent] // discard invalid event
 
       // Submit sequence to OCS as Stop is accepted only in InProgress State
-      val command1            = Setup(Prefix("LGSF.test"), CommandName("command-irms"), None)
+      val command1            = Setup(Prefix("LGSF.test"), CommandName("command-lgsf"), None)
       val command2            = Setup(Prefix("IRIS.test"), CommandName("command-1"), None)
       val command3            = Setup(Prefix("TCS.test"), CommandName("command-2"), None)
       val submitResponseProbe = TestProbe[SubmitResponse]
@@ -306,16 +306,16 @@ class ScriptIntegrationTest extends ScalaTestFrameworkTestKit(EventServer, Alarm
       maybeOcsStepListF.futureValue.get.isInFlight shouldBe true
 
       eventually {
-        val maybeIrmsStepListF: Future[Option[StepList]] = irmsSequencer ? GetSequence
-        maybeIrmsStepListF.futureValue.get.isInFlight shouldBe true
+        val maybeLgsfStepListF: Future[Option[StepList]] = lgsfSequencer ? GetSequence
+        maybeLgsfStepListF.futureValue.get.isInFlight shouldBe true
       }
 
       val stopResponseF: Future[OkOrUnhandledResponse] = ocsSequencer ? Stop
       stopResponseF.futureValue should ===(Ok)
 
       eventually {
-        // handleStop from ocs script sends stop message to downstream irms sequencer
-        // irms sequencer publish stop event on invocation of handle stop hook which is verified here
+        // handleStop from ocs script sends stop message to downstream lgsf sequencer
+        // lgsf sequencer publish stop event on invocation of handle stop hook which is verified here
         val event = testProbe.receiveMessage()
         event.eventId shouldNot be(-1)
       }
