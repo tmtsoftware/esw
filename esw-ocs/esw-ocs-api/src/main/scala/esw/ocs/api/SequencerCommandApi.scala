@@ -10,6 +10,5 @@ trait SequencerCommandApi {
   def loadSequence(sequence: Sequence): Future[OkOrUnhandledResponse]
   def startSequence(): Future[SubmitResponse]
   def submit(sequence: Sequence): Future[SubmitResponse]
-//  def submitAndWait(sequence: Sequence): Future[SubmitResponse]
   def queryFinal(): Future[SubmitResponse]
 }

@@ -39,7 +39,7 @@ class HttpService(
 
   import actorRuntime._
   lazy val registeredLazyBinding: Future[(ServerBinding, RegistrationResult)] = async {
-    val binding = await(bind()) // create HttpBinding with appropriate hostname and port
+    val binding            = await(bind())                                     // create HttpBinding with appropriate hostname and port
     val registrationResult = await(register(binding, settings.httpConnection)) // create HttpRegistration and register it with location service
 
     // Add the task to unregister the HttpRegistration from location service.

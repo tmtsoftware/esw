@@ -25,10 +25,5 @@ class SequencerCommandClient(
   override def submit(sequence: Sequence): Future[SubmitResponse] =
     postClient.requestResponse[SubmitResponse](SubmitSequence(sequence))
 
-//  override def submitAndWait(sequence: Sequence): Future[SubmitResponse] = submit(sequence).flatMap {
-//    case Started(_) => queryFinal()
-//    case x          => Future.successful(x)
-//  }
-
   override def queryFinal(): Future[SubmitResponse] = websocketClient.requestResponse[SubmitResponse](QueryFinal)
 }

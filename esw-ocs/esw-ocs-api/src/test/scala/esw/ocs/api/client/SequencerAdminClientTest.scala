@@ -1,6 +1,5 @@
 package esw.ocs.api.client
 
-import csw.params.commands.CommandResponse.{Completed, Started, SubmitResponse}
 import csw.params.commands.{CommandName, Sequence, Setup}
 import csw.params.core.models.{Id, Prefix}
 import csw.time.core.models.UTCTime
@@ -8,7 +7,6 @@ import esw.ocs.api.BaseTestSuite
 import esw.ocs.api.codecs.SequencerHttpCodecs
 import esw.ocs.api.models.StepList
 import esw.ocs.api.protocol.SequencerAdminPostRequest._
-import esw.ocs.api.protocol.SequencerCommandWebsocketRequest.QueryFinal
 import esw.ocs.api.protocol.{SequencerAdminPostRequest, SequencerCommandWebsocketRequest, _}
 import io.bullet.borer.Decoder
 import msocket.api.Transport
@@ -19,7 +17,6 @@ import scala.concurrent.Future
 class SequencerAdminClientTest extends BaseTestSuite with SequencerHttpCodecs {
 
   private val postClient           = mock[Transport[SequencerAdminPostRequest]]
-  private val websocketClient      = mock[Transport[SequencerCommandWebsocketRequest]]
   private val sequencerAdminClient = new SequencerAdminClient(postClient)
   "SequencerAdminClient" must {
 
