@@ -11,7 +11,7 @@ class Script1(cswServices: CswServices) : Script(cswServices) {
         val eventKey = "csw.a.b."
         fun event(id: Int) = SystemEvent("csw.a.b", id.toString())
 
-        handleSetup("command-1") { 
+        onSetup("command-1") {
             log("============ command-1 ================")
 
             repeat(50) {
@@ -26,7 +26,7 @@ class Script1(cswServices: CswServices) : Script(cswServices) {
             log("============ command-1 -End ================")
         }
 
-        handleSetup("command-2") { 
+        onSetup("command-2") {
             log("============ command-2 ================")
             val events = getEvent(eventKey + 1)
             log(events.toString())
@@ -35,7 +35,7 @@ class Script1(cswServices: CswServices) : Script(cswServices) {
             log("============ command-2 End ================")
         }
 
-        handleSetup("command-3") { 
+        onSetup("command-3") {
             log("============ command-3 ================")
 
             val keys = (0.until(50)).map { eventKey + it }.toTypedArray()
@@ -48,7 +48,7 @@ class Script1(cswServices: CswServices) : Script(cswServices) {
             log("============ command-3 End ================")
         }
 
-        handleShutdown {
+        onShutdown {
             close()
         }
     }

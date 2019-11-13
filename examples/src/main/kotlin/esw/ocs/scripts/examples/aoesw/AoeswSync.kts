@@ -12,7 +12,7 @@ script {
     val probeOffsetXKey = floatKey("x")
     val probeOffsetYKey = floatKey("y")
 
-    handleSetup("offset") { command ->
+    onSetup("offset") { command ->
         val scheduledTime = command(aoeswOffsetTime)
         val offsetX = command(aoeswOffsetXKey)
         val offsetY = command(aoeswOffsetYKey)
@@ -31,7 +31,7 @@ script {
         }
     }
 
-    handleShutdown {
+    onShutdown {
         println("shutdown ocs")
     }
 }

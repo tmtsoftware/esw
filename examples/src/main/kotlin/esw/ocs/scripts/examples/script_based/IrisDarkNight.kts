@@ -15,7 +15,7 @@ script { _ ->
         log("------------------> received-event for iris on key: ${it.eventKey()}")
     }
 
-    handleSetup("setup-iris") { command ->
+    onSetup("setup-iris") { command ->
         log("[Iris] Received command: ${command.commandName()}")
 
         val command1 = setup("esw.test-commandA1", "commandA1", "test-obsId")
@@ -41,7 +41,7 @@ script { _ ->
         if (assemblyResponse2 is CommandResponse.Error) finishWithError(assemblyResponse2.message())
     }
 
-    handleShutdown {
+    onShutdown {
         publishStream.cancel()
         subscriptionStream.unsubscribe().await()
         log("shutdown iris")

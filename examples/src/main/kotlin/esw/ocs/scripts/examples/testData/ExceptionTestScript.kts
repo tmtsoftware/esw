@@ -7,39 +7,39 @@ script {
 
     loadScripts(exceptionHandlerScript)
 
-    handleSetup("successful-command") {
+    onSetup("successful-command") {
         println("completed successfully")
     }
 
-    handleSetup("long-running-setup") {
+    onSetup("long-running-setup") {
         delay(50000)
     }
 
-    handleSetup("fail-setup") {
+    onSetup("fail-setup") {
         throw RuntimeException("handle-setup-failed")
     }
 
-    handleObserve("fail-observe") {
+    onObserve("fail-observe") {
         throw RuntimeException("handle-observe-failed")
     }
 
-    handleGoOffline {
+    onGoOffline {
         throw RuntimeException("handle-goOffline-failed")
     }
 
-    handleDiagnosticMode { _, _ ->
+    onDiagnosticMode { _, _ ->
         throw RuntimeException("handle-diagnostic-mode-failed")
     }
 
-    handleOperationsMode {
+    onOperationsMode {
         throw RuntimeException("handle-operations-mode-failed")
     }
 
-    handleStop {
+    onStop {
         throw RuntimeException("handle-stop-failed")
     }
 
-    handleAbortSequence {
+    onAbortSequence {
         throw RuntimeException("handle-abort-failed")
     }
 }

@@ -20,7 +20,7 @@ class JScriptDslTest extends BaseTestSuite {
       val script: JScriptDsl = new JScriptDsl(csw) {
         override protected implicit def strandEc: StrandEc = StrandEc()
 
-        handleSetupCommand("iris") { cmd =>
+        onSetupCommand("iris") { cmd =>
           receivedPrefix = Some(cmd.source)
           CompletableFuture.completedFuture(null)
         }
@@ -40,7 +40,7 @@ class JScriptDslTest extends BaseTestSuite {
       val script: JScriptDsl = new JScriptDsl(csw) {
         override protected implicit def strandEc: StrandEc = StrandEc()
 
-        handleObserveCommand("iris") { cmd =>
+        onObserveCommand("iris") { cmd =>
           receivedPrefix = Some(cmd.source)
           CompletableFuture.completedFuture(null)
         }
@@ -60,12 +60,12 @@ class JScriptDslTest extends BaseTestSuite {
       val script: JScriptDsl = new JScriptDsl(csw) {
         override protected implicit def strandEc: StrandEc = StrandEc()
 
-        handleShutdown {
+        onShutdown {
           orderOfShutdownCalled += 1
           () => CompletableFuture.completedFuture(null)
         }
 
-        handleShutdown {
+        onShutdown {
           orderOfShutdownCalled += 2
           () => CompletableFuture.completedFuture(null)
         }
@@ -82,12 +82,12 @@ class JScriptDslTest extends BaseTestSuite {
       val script: JScriptDsl = new JScriptDsl(csw) {
         override protected implicit def strandEc: StrandEc = StrandEc()
 
-        handleAbortSequence {
+        onAbortSequence {
           orderOfAbortCalled += 1
           () => CompletableFuture.completedFuture(null)
         }
 
-        handleAbortSequence {
+        onAbortSequence {
           orderOfAbortCalled += 2
           () => CompletableFuture.completedFuture(null)
         }
@@ -104,7 +104,7 @@ class JScriptDslTest extends BaseTestSuite {
       val script: JScriptDsl = new JScriptDsl(csw) {
         override protected implicit def strandEc: StrandEc = StrandEc()
 
-        handleException { ex =>
+        onException { ex =>
           receivedPrefix = Some(ex)
           CompletableFuture.completedFuture(null)
         }

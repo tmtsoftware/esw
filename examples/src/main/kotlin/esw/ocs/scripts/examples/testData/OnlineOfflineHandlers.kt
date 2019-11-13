@@ -5,12 +5,12 @@ import kotlinx.coroutines.delay
 
 // ESW-134: Reuse code by ability to import logic from one script into another
 val OnlineOfflineHandlers = reusableScript {
-    handleGoOffline {
+    onGoOffline {
         goOfflineModeForSequencer("tcs", "moonnight")
         delay(1000)
     }
 
-    handleGoOnline {
+    onGoOnline {
         goOnlineModeForSequencer("tcs", "moonnight")
         delay(1000)
     }
