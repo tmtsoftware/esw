@@ -8,6 +8,7 @@ import csw.command.client.CommandServiceFactory
 import csw.command.client.messages.ComponentMessage
 import csw.command.client.messages.DiagnosticDataMessage
 import csw.command.client.messages.RunningMessage
+import csw.command.client.models.framework.LockingResponse
 import csw.command.client.models.framework.ToComponentLifecycleMessage
 import csw.location.api.javadsl.JComponentType
 import csw.location.models.AkkaLocation
@@ -27,6 +28,9 @@ import kotlinx.coroutines.runBlocking
 import org.junit.jupiter.api.Test
 import java.util.*
 import java.util.concurrent.CompletableFuture
+import kotlin.time.Duration
+import kotlin.time.seconds
+import kotlin.time.toJavaDuration
 
 class RichCommandServiceTest {
 
@@ -36,6 +40,11 @@ class RichCommandServiceTest {
     private val componentName: String = "tcsAssembly"
     private val componentType: ComponentType = JComponentType.Assembly()
     private val setupCommand = Setup(Prefix("esw.test"), CommandName("move"), Optional.of(ObsId("testObsId")))
+
+    private val prefixStr = "esw"
+    private val prefix = Prefix(prefixStr)
+    private val leaseDuration: Duration = 10.seconds
+    private val jLeaseDuration: java.time.Duration = leaseDuration.toJavaDuration()
 
     private val lockUnlockUtil: LockUnlockUtil = mockk()
     private val locationServiceUtil: LocationServiceUtil = mockk()
@@ -160,6 +169,28 @@ class RichCommandServiceTest {
         assembly.goOffline()
 
         verify { assemblyRef.tell(goOfflineMessage) }
+    }
+
+    @Test
+    fun `lock should resolve actorRef for given assembly and send Lock message to it | ESW-126, ESW-245 `() = runBlocking {
+
+        every { locationServiceUtil.jResolveComponentRef(componentName, componentType) }.answers { CompletableFuture.completedFuture(assemblyRef) }
+        every { lockUnlockUtil.lock(assemblyRef, prefix, jLeaseDuration, any(), any()) }.answers { CompletableFuture.completedFuture(LockingResponse.`LockAcquired$`.`MODULE$`) }
+
+        assembly.lock(prefixStr, leaseDuration, {}, {})
+
+        verify { lockUnlockUtil.lock(assemblyRef, prefix, jLeaseDuration, any(), any()) }
+    }
+
+    @Test
+    fun `unlock should resolve actorRef for given assembly and send Unlock message to it | ESW-126, ESW-245 `() = runBlocking {
+
+        every { locationServiceUtil.jResolveComponentRef(componentName, componentType) }.answers { CompletableFuture.completedFuture(assemblyRef) }
+        every { lockUnlockUtil.unlock(assemblyRef, prefix) }.answers { CompletableFuture.completedFuture(LockingResponse.`LockReleased$`.`MODULE$`) }
+
+        assembly.unlock(prefixStr)
+
+        verify { lockUnlockUtil.unlock(assemblyRef, prefix) }
     }
 
 }
