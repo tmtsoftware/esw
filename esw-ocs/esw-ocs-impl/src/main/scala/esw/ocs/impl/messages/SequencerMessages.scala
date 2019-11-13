@@ -34,8 +34,8 @@ object SequencerMessages {
       extends IdleMessage
       with SequenceLoadedMessage
 
-  final case class StartSequence(replyTo: ActorRef[OkOrUnhandledResponse])                      extends SequenceLoadedMessage
-  final case class SubmitSequence(sequence: Sequence, replyTo: ActorRef[OkOrUnhandledResponse]) extends IdleMessage
+  final case class StartSequence(replyTo: ActorRef[SequenceResponse])                      extends SequenceLoadedMessage
+  final case class SubmitSequence(sequence: Sequence, replyTo: ActorRef[SequenceResponse]) extends IdleMessage
   final case class QueryFinalInternal(replyTo: ActorRef[SequenceResponse])
       extends IdleMessage
       with SequenceLoadedMessage

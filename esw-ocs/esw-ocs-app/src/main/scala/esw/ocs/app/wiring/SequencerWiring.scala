@@ -22,7 +22,7 @@ import csw.logging.client.scaladsl.LoggerFactory
 import csw.network.utils.SocketUtils
 import esw.http.core.wiring.{ActorRuntime, CswWiring, HttpService, Settings}
 import esw.ocs.api.protocol.LoadScriptError
-import esw.ocs.app.route.{PostHandlerImpl, SequencerAdminRoutes, SequencerCommandRoutes, WebsocketHandlerImpl}
+import esw.ocs.app.route._
 import esw.ocs.dsl.script.utils.{LockUnlockUtil, ScriptLoader}
 import esw.ocs.dsl.script.{CswServices, JScriptDsl}
 import esw.ocs.dsl.sequence_manager.LocationServiceUtil
@@ -89,10 +89,11 @@ private[ocs] class SequencerWiring(val packageId: String, val observingMode: Str
 
   private lazy val sequencerAdmin                            = new SequencerAdminImpl(sequencerRef)
   private lazy val sequencerCommandApi                       = new SequencerCommandImpl(sequencerRef)
-  private lazy val postHandler                               = new PostHandlerImpl(sequencerAdmin)
-  private def websocketHandlerFactory(encoding: Encoding[_]) = new WebsocketHandlerImpl(sequencerCommandApi, encoding)
-  private lazy val adminRoutes                               = new SequencerAdminRoutes(postHandler)
-  private lazy val commandRoutes                             = new SequencerCommandRoutes(websocketHandlerFactory)
+  private lazy val adminPostHandler                          = new AdminPostHandlerImpl(sequencerAdmin)
+  private lazy val commandPostHandler                        = new CommandPostHandlerImpl(sequencerCommandApi)
+  private def websocketHandlerFactory(encoding: Encoding[_]) = new CommandWebsocketHandlerImpl(sequencerCommandApi, encoding)
+  private lazy val adminRoutes                               = new SequencerAdminRoutes(adminPostHandler)
+  private lazy val commandRoutes                             = new SequencerCommandRoutes(commandPostHandler, websocketHandlerFactory)
 
   private lazy val adminSettings   = new Settings(Some(SocketUtils.getFreePort), Some(s"$sequencerName@admin@http"), config)
   private lazy val commandSettings = new Settings(Some(SocketUtils.getFreePort), Some(s"$sequencerName@command@http"), config)

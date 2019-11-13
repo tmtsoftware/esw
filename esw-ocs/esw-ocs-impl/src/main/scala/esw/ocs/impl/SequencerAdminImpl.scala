@@ -4,7 +4,7 @@ import akka.actor.typed.scaladsl.AskPattern._
 import akka.actor.typed.{ActorRef, ActorSystem}
 import akka.util.Timeout
 import csw.command.client.messages.sequencer.SequencerMsg
-import csw.params.commands.{Sequence, SequenceCommand}
+import csw.params.commands.SequenceCommand
 import csw.params.core.models.Id
 import csw.time.core.models.UTCTime
 import esw.ocs.api.SequencerAdminApi
@@ -48,8 +48,4 @@ class SequencerAdminImpl(sequencer: ActorRef[SequencerMsg])(implicit system: Act
   override def isOnline: Future[Boolean]    = getState.map(_ != Offline)
 
   private def getState: Future[SequencerState[SequencerMsg]] = sequencer ? GetSequencerState
-
-  override def loadSequence(sequence: Sequence): Future[OkOrUnhandledResponse]   = sequencer ? (LoadSequence(sequence, _))
-  override def startSequence: Future[OkOrUnhandledResponse]                      = sequencer ? StartSequence
-  override def submitSequence(sequence: Sequence): Future[OkOrUnhandledResponse] = sequencer ? (SubmitSequence(sequence, _))
 }

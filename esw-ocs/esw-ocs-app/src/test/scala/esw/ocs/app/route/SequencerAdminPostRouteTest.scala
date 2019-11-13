@@ -2,8 +2,7 @@ package esw.ocs.app.route
 
 import akka.http.scaladsl.model.StatusCodes
 import akka.http.scaladsl.testkit.ScalatestRouteTest
-import csw.params.commands.{CommandName, Sequence, Setup}
-import csw.params.core.models.{Id, Prefix}
+import csw.params.core.models.Id
 import csw.time.core.models.UTCTime
 import esw.http.core.BaseTestSuite
 import esw.ocs.api.codecs.SequencerHttpCodecs
@@ -11,7 +10,7 @@ import esw.ocs.api.models.StepList
 import esw.ocs.api.protocol.EditorError.{CannotOperateOnAnInFlightOrFinishedStep, IdDoesNotExist}
 import esw.ocs.api.protocol.SequencerAdminPostRequest._
 import esw.ocs.api.protocol.{SequencerAdminPostRequest, _}
-import esw.ocs.impl.{SequencerAdminImpl, SequencerCommandImpl}
+import esw.ocs.impl.SequencerAdminImpl
 import msocket.impl.Encoding
 import msocket.impl.Encoding.JsonText
 import msocket.impl.post.ClientHttpCodecs
@@ -23,11 +22,9 @@ class SequencerAdminPostRouteTest extends BaseTestSuite with ScalatestRouteTest 
 
   override def encoding: Encoding[_] = JsonText
 
-  private val sequencerAdmin: SequencerAdminImpl             = mock[SequencerAdminImpl]
-  private val sequencerCommand: SequencerCommandImpl         = mock[SequencerCommandImpl]
-  private val postHandler                                    = new PostHandlerImpl(sequencerAdmin)
-  private def websocketHandlerFactory(encoding: Encoding[_]) = new WebsocketHandlerImpl(sequencerCommand, encoding)
-  private val route                                          = new SequencerAdminRoutes(postHandler).route
+  private val sequencerAdmin: SequencerAdminImpl = mock[SequencerAdminImpl]
+  private val postHandler                        = new AdminPostHandlerImpl(sequencerAdmin)
+  private val route                              = new SequencerAdminRoutes(postHandler).route
 
   "SequencerRoutes" must {
     "return sequence for getSequence request | ESW-222" in {
@@ -206,33 +203,33 @@ class SequencerAdminPostRouteTest extends BaseTestSuite with ScalatestRouteTest 
       }
     }
 
-    "return Ok for LoadSequence request | ESW-101" in {
-      val command1 = Setup(Prefix("esw.test"), CommandName("command-1"), None)
-      val sequence = Sequence(command1)
-      when(sequencerAdmin.loadSequence(sequence)).thenReturn(Future.successful(Ok))
-
-      Post("/post-endpoint", LoadSequence(sequence)) ~> route ~> check {
-        responseAs[OkOrUnhandledResponse] should ===(Ok)
-      }
-    }
-
-    "return Ok for StartSequence request | ESW-101" in {
-      when(sequencerAdmin.startSequence).thenReturn(Future.successful(Ok))
-
-      Post("/post-endpoint", StartSequence) ~> route ~> check {
-        responseAs[OkOrUnhandledResponse] should ===(Ok)
-      }
-    }
-
-    "return Ok for LoadAndStartSequence request | ESW-101" in {
-      val command1 = Setup(Prefix("esw.test"), CommandName("command-1"), None)
-      val sequence = Sequence(command1)
-      when(sequencerAdmin.submitSequence(sequence)).thenReturn(Future.successful(Ok))
-
-      Post("/post-endpoint", SubmitSequence(sequence)) ~> route ~> check {
-        responseAs[OkOrUnhandledResponse] should ===(Ok)
-      }
-    }
+//    "return Ok for LoadSequence request | ESW-101" in {
+//      val command1 = Setup(Prefix("esw.test"), CommandName("command-1"), None)
+//      val sequence = Sequence(command1)
+//      when(sequencerAdmin.loadSequence(sequence)).thenReturn(Future.successful(Ok))
+//
+//      Post("/post-endpoint", LoadSequence(sequence)) ~> route ~> check {
+//        responseAs[OkOrUnhandledResponse] should ===(Ok)
+//      }
+//    }
+//
+//    "return Ok for StartSequence request | ESW-101" in {
+//      when(sequencerAdmin.startSequence).thenReturn(Future.successful(Ok))
+//
+//      Post("/post-endpoint", StartSequence) ~> route ~> check {
+//        responseAs[OkOrUnhandledResponse] should ===(Ok)
+//      }
+//    }
+//
+//    "return Ok for LoadAndStartSequence request | ESW-101" in {
+//      val command1 = Setup(Prefix("esw.test"), CommandName("command-1"), None)
+//      val sequence = Sequence(command1)
+//      when(sequencerAdmin.submitSequence(sequence)).thenReturn(Future.successful(Ok))
+//
+//      Post("/post-endpoint", SubmitSequence(sequence)) ~> route ~> check {
+//        responseAs[OkOrUnhandledResponse] should ===(Ok)
+//      }
+//    }
 
     "return Ok for DiagnosticMode request | ESW-143" in {
       val startTime = UTCTime.now()

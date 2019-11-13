@@ -11,7 +11,7 @@ import msocket.api.MessageHandler
 import msocket.impl.Encoding
 import msocket.impl.ws.WebsocketStreamExtensions
 
-class WebsocketHandlerImpl(sequencerCommandApi: SequencerCommandApi, val encoding: Encoding[_])
+class CommandWebsocketHandlerImpl(sequencerCommandApi: SequencerCommandApi, val encoding: Encoding[_])
     extends MessageHandler[SequencerCommandWebsocketRequest, Source[Message, NotUsed]]
     with SequencerHttpCodecs
     with WebsocketStreamExtensions {

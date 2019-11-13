@@ -9,7 +9,7 @@ import msocket.impl.Encoding
 import msocket.impl.post.ClientHttpCodecs
 import msocket.impl.Encoding.JsonText
 
-class SequencerAdminWebsocketRouteTest
+class SequencerCommandWebsocketRouteTest
     extends BaseTestSuite
     with ScalatestRouteTest
     with SequencerHttpCodecs
@@ -17,11 +17,10 @@ class SequencerAdminWebsocketRouteTest
 
   override def encoding: Encoding[_] = JsonText
 
-  private val sequencerAdmin: SequencerAdminImpl     = mock[SequencerAdminImpl]
-  private val sequencerCommand: SequencerCommandImpl = mock[SequencerCommandImpl]
-//  private val postHandler                                    = new PostHandlerImpl(sequencerAdmin)
-  private def websocketHandlerFactory(encoding: Encoding[_]) = new WebsocketHandlerImpl(sequencerCommand, encoding)
-  private val route                                          = new SequencerCommandRoutes(websocketHandlerFactory).route
+  private val sequencerCommand: SequencerCommandImpl         = mock[SequencerCommandImpl]
+  private val postHandler                                    = new CommandPostHandlerImpl(sequencerCommand)
+  private def websocketHandlerFactory(encoding: Encoding[_]) = new CommandWebsocketHandlerImpl(sequencerCommand, encoding)
+  private val route                                          = new SequencerCommandRoutes(postHandler, websocketHandlerFactory).route
   private val wsClient                                       = WSProbe()
 
   "SequencerRoutes" must {

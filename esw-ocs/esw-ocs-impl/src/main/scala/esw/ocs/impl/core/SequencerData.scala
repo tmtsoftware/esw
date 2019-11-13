@@ -2,7 +2,7 @@ package esw.ocs.impl.core
 
 import akka.actor.typed.{ActorRef, ActorSystem}
 import csw.command.client.messages.sequencer.SequencerMsg
-import csw.params.commands.CommandResponse.{Completed, Error, SubmitResponse}
+import csw.params.commands.CommandResponse.{Completed, Error, Started, SubmitResponse}
 import csw.params.commands.Sequence
 import esw.ocs.api.models.StepStatus.Finished.{Failure, Success}
 import esw.ocs.api.models.StepStatus.{Finished, InFlight}
@@ -26,8 +26,8 @@ private[core] case class SequencerData(
   def createStepList(sequence: Sequence): SequencerData =
     copy(stepList = Some(StepList(sequence)))
 
-  def startSequence(replyTo: ActorRef[Ok.type]): SequencerData = {
-    replyTo ! Ok
+  def startSequence(replyTo: ActorRef[SequenceResult]): SequencerData = {
+    replyTo ! SequenceResult(Started(sequenceId.get))
     processSequence()
   }
 

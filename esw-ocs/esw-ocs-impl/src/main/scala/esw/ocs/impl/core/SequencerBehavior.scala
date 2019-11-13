@@ -12,6 +12,7 @@ import csw.location.api.scaladsl.LocationService
 import csw.location.models.ComponentId
 import csw.location.models.Connection.AkkaConnection
 import csw.logging.client.commons.LogAdminUtil
+import csw.params.commands.CommandResponse.{Completed, Started}
 import csw.params.commands.Sequence
 import csw.time.core.models.UTCTime
 import esw.ocs.api.codecs.OcsCodecs
@@ -172,19 +173,14 @@ class SequencerBehavior(
     loaded(data.createStepList(sequence))
   }
 
-  // fixme: Ok is sent twice to replyTo
   private def submitSequence(
       sequence: Sequence,
       data: SequencerData,
-      replyTo: ActorRef[OkOrUnhandledResponse]
-  ): Behavior[SequencerMsg] = {
-    replyTo ! Ok
+      replyTo: ActorRef[SequenceResponse]
+  ): Behavior[SequencerMsg] =
     inProgress(
-      data
-        .createStepList(sequence)
-        .startSequence(replyTo)
+      data.createStepList(sequence).startSequence(replyTo)
     )
-  }
 
   private def submitSequenceAndWait(
       sequence: Sequence,

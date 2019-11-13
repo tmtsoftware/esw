@@ -1,15 +1,13 @@
 package esw.ocs.api.client
 
-import csw.params.commands.CommandResponse.SubmitResponse
-import csw.params.commands.{Sequence, SequenceCommand}
+import csw.params.commands.SequenceCommand
 import csw.params.core.models.Id
 import csw.time.core.models.UTCTime
 import esw.ocs.api.SequencerAdminApi
 import esw.ocs.api.codecs.SequencerHttpCodecs
 import esw.ocs.api.models.StepList
 import esw.ocs.api.protocol.SequencerAdminPostRequest._
-import esw.ocs.api.protocol.SequencerCommandWebsocketRequest.QueryFinal
-import esw.ocs.api.protocol.{SequencerCommandWebsocketRequest, _}
+import esw.ocs.api.protocol._
 import msocket.api.Transport
 
 import scala.concurrent.Future
@@ -93,17 +91,5 @@ class SequencerAdminClient(
 
   override def operationsMode(): Future[OperationsModeResponse] = {
     postClient.requestResponse[OperationsModeResponse](OperationsMode)
-  }
-
-  override def loadSequence(sequence: Sequence): Future[OkOrUnhandledResponse] = {
-    postClient.requestResponse[OkOrUnhandledResponse](LoadSequence(sequence))
-  }
-
-  override def startSequence: Future[OkOrUnhandledResponse] = {
-    postClient.requestResponse[OkOrUnhandledResponse](StartSequence)
-  }
-
-  override def submitSequence(sequence: Sequence): Future[OkOrUnhandledResponse] = {
-    postClient.requestResponse[OkOrUnhandledResponse](SubmitSequence(sequence))
   }
 }

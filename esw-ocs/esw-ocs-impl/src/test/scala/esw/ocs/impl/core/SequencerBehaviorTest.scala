@@ -7,7 +7,7 @@ import csw.command.client.messages.{GetComponentLogMetadata, SetComponentLogLeve
 import csw.logging.client.commons.LogAdminUtil
 import csw.logging.models.Level.{DEBUG, INFO}
 import csw.logging.models.LogMetadata
-import csw.params.commands.CommandResponse.{Completed, Error, SubmitResponse}
+import csw.params.commands.CommandResponse.{Completed, Error, Started, SubmitResponse}
 import csw.params.commands.{CommandName, Sequence, Setup}
 import csw.params.core.models.{Id, Prefix}
 import csw.time.core.models.UTCTime
@@ -51,10 +51,10 @@ class SequencerBehaviorTest extends ScalaTestWithActorTestKit with BaseTestSuite
       val sequencerSetup = SequencerTestSetup.loaded(sequence)
       import sequencerSetup._
 
-      val probe = createTestProbe[OkOrUnhandledResponse]
+      val probe = createTestProbe[SequenceResponse]
       sequencerActor ! StartSequence(probe.ref)
       pullAllStepsAndAssertSequenceIsFinished()
-      probe.expectMessage(Ok)
+      probe.expectMessage(SequenceResult(Started(sequence.runId)))
     }
   }
 
@@ -63,10 +63,10 @@ class SequencerBehaviorTest extends ScalaTestWithActorTestKit with BaseTestSuite
       val sequencerSetup = SequencerTestSetup.idle(sequence)
       import sequencerSetup._
 
-      val probe = createTestProbe[OkOrUnhandledResponse]
+      val probe = createTestProbe[SequenceResponse]
       sequencerActor ! SubmitSequence(sequence, probe.ref)
       pullAllStepsAndAssertSequenceIsFinished()
-      probe.expectMessage(Ok)
+      probe.expectMessage(SequenceResult(Started(sequence.runId)))
     }
 
     "return Ok even if the processing of sequence fails | ESW-145, ESW-154, ESW-221" in {
@@ -74,9 +74,9 @@ class SequencerBehaviorTest extends ScalaTestWithActorTestKit with BaseTestSuite
       val sequencerSetup = SequencerTestSetup.idle(sequence1)
       import sequencerSetup._
 
-      val client = createTestProbe[OkOrUnhandledResponse]
+      val client = createTestProbe[SequenceResponse]
       sequencerActor ! SubmitSequence(sequence1, client.ref)
-      client.expectMessage(Ok)
+      client.expectMessage(SequenceResult(Started(sequence1.runId)))
       assertSequencerState(InProgress)
 
       startPullNext()
@@ -120,9 +120,9 @@ class SequencerBehaviorTest extends ScalaTestWithActorTestKit with BaseTestSuite
       sequencerActor ! QueryFinalInternal(seqResProbe.ref)
       seqResProbe.expectNoMessage(maxWaitForExpectNoMessage)
 
-      val startSeqProbe = createTestProbe[OkOrUnhandledResponse]
+      val startSeqProbe = createTestProbe[SequenceResponse]
       sequencerActor ! StartSequence(startSeqProbe.ref)
-      startSeqProbe.expectMessage(Ok)
+      startSeqProbe.expectMessage(SequenceResult(Started(sequence.runId)))
       pullAllStepsAndAssertSequenceIsFinished()
 
       seqResProbe.expectMessage(SequenceResult(Completed(sequence.runId)))
@@ -133,9 +133,9 @@ class SequencerBehaviorTest extends ScalaTestWithActorTestKit with BaseTestSuite
       val sequencerSetup = SequencerTestSetup.loaded(sequence1)
       import sequencerSetup._
 
-      val startSeqProbe = createTestProbe[OkOrUnhandledResponse]
+      val startSeqProbe = createTestProbe[SequenceResponse]
       sequencerActor ! StartSequence(startSeqProbe.ref)
-      startSeqProbe.expectMessage(Ok)
+      startSeqProbe.expectMessage(SequenceResult(Started(sequence1.runId)))
 
       startPullNext()
       assertSequencerState(InProgress)
@@ -696,7 +696,7 @@ class SequencerBehaviorTest extends ScalaTestWithActorTestKit with BaseTestSuite
       probe.expectNoMessage(maxWaitForExpectNoMessage)
 
       // start the sequence and assert Ok is sent to the readyToExecuteNext subscriber as soon as a step is ready
-      sequencerActor ! StartSequence(createTestProbe[OkOrUnhandledResponse].ref)
+      sequencerActor ! StartSequence(createTestProbe[SequenceResponse].ref)
       probe.expectMessage(Ok)
     }
 

@@ -1,6 +1,6 @@
 package esw.ocs.api.protocol
 
-import csw.params.commands.{Sequence, SequenceCommand}
+import csw.params.commands.SequenceCommand
 import csw.params.core.models.Id
 import csw.time.core.models.UTCTime
 
@@ -16,10 +16,7 @@ private[ocs] object SequencerAdminPostRequest {
   case object Stop                                                      extends SequencerAdminPostRequest
   case object GoOnline                                                  extends SequencerAdminPostRequest
   case object GoOffline                                                 extends SequencerAdminPostRequest
-  case object StartSequence                                             extends SequencerAdminPostRequest
   case object OperationsMode                                            extends SequencerAdminPostRequest
-  final case class LoadSequence(sequence: Sequence)                     extends SequencerAdminPostRequest
-  final case class SubmitSequence(sequence: Sequence)                   extends SequencerAdminPostRequest
   final case class Add(commands: List[SequenceCommand])                 extends SequencerAdminPostRequest
   final case class Prepend(commands: List[SequenceCommand])             extends SequencerAdminPostRequest
   final case class Replace(id: Id, commands: List[SequenceCommand])     extends SequencerAdminPostRequest

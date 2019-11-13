@@ -9,7 +9,7 @@ import esw.ocs.api.protocol.SequencerAdminPostRequest._
 import msocket.impl.post.ServerHttpCodecs
 import msocket.api.MessageHandler
 
-class PostHandlerImpl(sequencerAdmin: SequencerAdminApi)
+class AdminPostHandlerImpl(sequencerAdmin: SequencerAdminApi)
     extends MessageHandler[SequencerAdminPostRequest, StandardRoute]
     with SequencerHttpCodecs
     with ServerHttpCodecs {
@@ -33,9 +33,6 @@ class PostHandlerImpl(sequencerAdmin: SequencerAdminApi)
     case Delete(id)                      => complete(sequencerAdmin.delete(id))
     case AddBreakpoint(id)               => complete(sequencerAdmin.addBreakpoint(id))
     case RemoveBreakpoint(id)            => complete(sequencerAdmin.removeBreakpoint(id))
-    case LoadSequence(sequence)          => complete(sequencerAdmin.loadSequence(sequence))
-    case StartSequence                   => complete(sequencerAdmin.startSequence)
-    case SubmitSequence(sequence)        => complete(sequencerAdmin.submitSequence(sequence))
     case DiagnosticMode(startTime, hint) => complete(sequencerAdmin.diagnosticMode(startTime, hint))
   }
 }
