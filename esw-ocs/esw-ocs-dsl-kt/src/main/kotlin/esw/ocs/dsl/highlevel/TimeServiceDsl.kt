@@ -17,13 +17,13 @@ interface TimeServiceDsl : SuspendToJavaConverter {
     val timeServiceScheduler: TimeServiceScheduler
 
     fun scheduleOnce(startTime: TMTTime, task: suspend CoroutineScope.() -> Unit): Cancellable =
-            timeServiceScheduler.scheduleOnce(startTime, Runnable { task.toJavaFutureVoid() })
+            timeServiceScheduler.scheduleOnce(startTime, Runnable { task.toJava() })
 
     fun schedulePeriodically(startTime: TMTTime, interval: Duration, task: suspend CoroutineScope.() -> Unit): Cancellable =
             timeServiceScheduler.schedulePeriodically(
                     startTime,
                     interval.toJavaDuration(),
-                    Runnable { task.toJavaFutureVoid() })
+                    Runnable { task.toJava() })
 
     fun utcTimeNow(): UTCTime = UTCTime.now()
 

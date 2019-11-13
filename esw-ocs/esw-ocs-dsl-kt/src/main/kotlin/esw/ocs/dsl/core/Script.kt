@@ -1,12 +1,6 @@
 package esw.ocs.dsl.core
 
-import csw.alarm.api.javadsl.IAlarmService
-import csw.config.api.javadsl.IConfigClientService
-import csw.event.api.javadsl.IEventService
-import csw.location.api.javadsl.ILocationService
-import csw.params.commands.CommandResponse.SubmitResponse
 import csw.params.commands.Observe
-import csw.params.commands.Sequence
 import csw.params.commands.SequenceCommand
 import csw.params.commands.Setup
 import csw.time.core.models.UTCTime
@@ -32,22 +26,22 @@ sealed class ScriptDslKt(val cswServices: CswServices) : CswHighLevelDsl(cswServ
     fun finishWithError(message: String = ""): Nothing = throw RuntimeException(message)
 
     fun onSetup(name: String, block: suspend CoroutineScope.(Setup) -> Unit) =
-            scriptDsl.onSetupCommand(name) { block.toJavaFuture(it) }
+            scriptDsl.onSetupCommand(name) { block.toJava(it) }
 
     fun onObserve(name: String, block: suspend CoroutineScope.(Observe) -> Unit) =
-            scriptDsl.onObserveCommand(name) { block.toJavaFuture(it) }
+            scriptDsl.onObserveCommand(name) { block.toJava(it) }
 
     fun onGoOnline(block: suspend CoroutineScope.() -> Unit) =
-            scriptDsl.onGoOnline { block.toJavaFutureVoid() }
+            scriptDsl.onGoOnline { block.toJava() }
 
     fun onGoOffline(block: suspend CoroutineScope.() -> Unit) =
-            scriptDsl.onGoOffline { block.toJavaFutureVoid() }
+            scriptDsl.onGoOffline { block.toJava() }
 
     fun onAbortSequence(block: suspend CoroutineScope.() -> Unit) =
-            scriptDsl.onAbortSequence { block.toJavaFutureVoid() }
+            scriptDsl.onAbortSequence { block.toJava() }
 
     fun onShutdown(block: suspend CoroutineScope.() -> Unit) =
-            scriptDsl.onShutdown { block.toJavaFutureVoid() }
+            scriptDsl.onShutdown { block.toJava() }
 
     fun onDiagnosticMode(block: suspend (UTCTime, String) -> Unit) =
             scriptDsl.onDiagnosticMode { x: UTCTime, y: String ->
@@ -55,16 +49,16 @@ sealed class ScriptDslKt(val cswServices: CswServices) : CswHighLevelDsl(cswServ
             }
 
     fun onOperationsMode(block: suspend CoroutineScope.() -> Unit) =
-            scriptDsl.onOperationsMode { block.toJavaFutureVoid() }
+            scriptDsl.onOperationsMode { block.toJava() }
 
     fun onStop(block: suspend CoroutineScope.() -> Unit) =
-            scriptDsl.onStop { block.toJavaFutureVoid() }
+            scriptDsl.onStop { block.toJava() }
 
     fun onException(block: suspend CoroutineScope.(Throwable) -> Unit) =
             scriptDsl.onException {
                 // "future" is used to swallow the exception coming from exception handlers
                 coroutineScope.future { block(it) }
-                        .exceptionally { log("Exception is thrown from Exception handler with message : ${it.message}") }
+                        .exceptionally { log("Exception thrown from Exception handler with a message : ${it.message}") }
                         .thenAccept { }
             }
 
@@ -84,14 +78,13 @@ class ReusableScript(
         override val coroutineScope: CoroutineScope
 ) : ScriptDslKt(cswServices)
 
-
 open class Script(cswServices: CswServices) : ScriptDslKt(cswServices) {
     private val _strandEc = StrandEc.apply()
     private val supervisorJob = SupervisorJob()
     private val dispatcher = _strandEc.executorService().asCoroutineDispatcher()
 
     private val exceptionHandler = CoroutineExceptionHandler { _, exception ->
-        log("Exception thrown in script with message: ${exception.message}")
+        log("Exception thrown in script with a message: ${exception.message}")
         scriptDsl.executeExceptionHandlers(exception)
     }
 
