@@ -80,17 +80,18 @@ script {
         // not sure how this is done
     }
 
-    suspend fun offsetTcs(xoffset: Float, yoffset: Float, probeNum: Int, obsId: String?) =
-            submitSequence(
-                    "tcs", "darknight",
-                    sequenceOf(
-                            setup(aosq.prefix, "offset", obsId)
-                                    .add(tcsOffsetCoordSystemKey.set(Choice("RADEC")))
-                                    .add(tcsOffsetXKey.set(xoffset))
-                                    .add(tcsOffsetYKey.set(yoffset))
-                                    .add(tcsOffsetVTKey.set(Choice("OIWFS$probeNum")))
-                    )
-            )
+    suspend fun offsetTcs(xoffset: Float, yoffset: Float, probeNum: Int, obsId: String?) {
+        val tcsSequencer = Sequencer("tcs", "darknight")
+        tcsSequencer.submitAndWait(
+                sequenceOf(
+                        setup(aosq.prefix, "offset", obsId)
+                                .add(tcsOffsetCoordSystemKey.set(Choice("RADEC")))
+                                .add(tcsOffsetXKey.set(xoffset))
+                                .add(tcsOffsetYKey.set(yoffset))
+                                .add(tcsOffsetVTKey.set(Choice("OIWFS$probeNum")))
+                )
+        )
+    }
 
     handleSetup("enableOiwfsTtf") { command ->
         val ttfProbeNum = when (val event = getEvent(oiwfsStateEvent.key()).first()) {

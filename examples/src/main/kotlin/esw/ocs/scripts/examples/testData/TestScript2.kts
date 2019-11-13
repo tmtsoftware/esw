@@ -42,7 +42,7 @@ script {
         )
 
         val tcs = Sequencer("tcs", "moonnight")
-        tcs.submit(sequence)
+        tcs.submitAndWait(sequence)
     }
 
     // ESW-134: Reuse code by ability to import logic from one script into another

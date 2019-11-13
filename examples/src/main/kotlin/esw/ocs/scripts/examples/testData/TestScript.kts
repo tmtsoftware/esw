@@ -82,7 +82,8 @@ script {
         )
 
         // ESW-88, ESW-145, ESW-195
-        submitSequence("tcs", "darknight", sequence)
+        val tcsSequencer = Sequencer("tcs", "darknight")
+        tcsSequencer.submitAndWait(sequence)
     }
 
     handleSetup("test-sequencer-hierarchy") {
@@ -111,7 +112,8 @@ script {
                 CollectionConverters.asScala(Collections.singleton<SequenceCommand>(setupCommand)).toSeq()
         )
 
-        submitSequence("irms", "darknight", sequence)
+        val irmsSequencer = Sequencer("irms", "darknight")
+        irmsSequencer.submitAndWait(sequence)
     }
 
     handleDiagnosticMode { startTime, hint ->
@@ -142,14 +144,16 @@ script {
         //do some actions to abort sequence
 
         //send abortSequence command to downstream sequencer
-        abortSequenceForSequencer("irms", "darknight")
+        val irmsSequencer = Sequencer("irms", "darknight")
+        irmsSequencer.abortSequence()
     }
 
     handleStop {
         //do some actions to stop
 
         //send stop command to downstream sequencer
-        stopSequencer("irms", "darknight")
+        val irmsSequencer = Sequencer("irms", "darknight")
+        irmsSequencer.stop()
     }
 
 }

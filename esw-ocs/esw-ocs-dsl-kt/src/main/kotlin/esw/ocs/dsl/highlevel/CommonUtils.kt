@@ -1,16 +1,12 @@
 package esw.ocs.dsl.highlevel
 
-import akka.actor.typed.ActorRef
 import akka.actor.typed.ActorSystem
 import akka.util.Timeout
-import csw.command.api.javadsl.ICommandService
-import csw.command.client.CommandServiceFactory
-import csw.command.client.SequencerCommandServiceFactory
-import csw.command.client.messages.ComponentMessage
 import csw.location.api.javadsl.JComponentType
-import csw.location.models.ComponentType
 import esw.ocs.api.SequencerAdminApi
 import esw.ocs.api.SequencerAdminFactoryApi
+import esw.ocs.dsl.highlevel.internal.InternalCommandService
+import esw.ocs.dsl.highlevel.internal.InternalSequencerCommandService
 import esw.ocs.dsl.script.utils.LockUnlockUtil
 import esw.ocs.dsl.script.utils.SequencerCommandServiceUtil
 import esw.ocs.dsl.sequence_manager.LocationServiceUtil
@@ -35,30 +31,19 @@ class CommonUtils(
             action: (SequencerAdminApi) -> Unit
     ): Unit = action(sequencerAdminFactory.jMake(sequencerId, observingMode).await())
 
-    suspend fun resolveAssembly(name: String): InternalCommandService {
-        val actorRef: ActorRef<ComponentMessage> = locationServiceUtil.jResolveComponentRef(name, JComponentType.Assembly()).await()
-        val commandServiceUtil = CommandServiceUtil(actorRef, lockUnlockUtil, coroutineScope)
-        return InternalCommandService(commandService(name, JComponentType.Assembly()), commandServiceUtil, timeout)
+    fun resolveAssembly(name: String): InternalCommandService {
+        val commandServiceUtil = CommandServiceUtil(lockUnlockUtil, coroutineScope)
+        return InternalCommandService(name, JComponentType.Assembly(), commandServiceUtil, locationServiceUtil, actorSystem, timeout)
     }
 
-    suspend fun resolveHcd(name: String): InternalCommandService {
-        val actorRef: ActorRef<ComponentMessage> = locationServiceUtil.jResolveComponentRef(name, JComponentType.HCD()).await()
-        val commandServiceUtil = CommandServiceUtil(actorRef, lockUnlockUtil, coroutineScope)
-
-        return InternalCommandService(commandService(name, JComponentType.HCD()), commandServiceUtil, timeout)
+    fun resolveHcd(name: String): InternalCommandService {
+        val commandServiceUtil = CommandServiceUtil(lockUnlockUtil, coroutineScope)
+        return InternalCommandService(name, JComponentType.HCD(), commandServiceUtil, locationServiceUtil, actorSystem, timeout)
     }
 
-    suspend fun resolveSequencer(sequencerId: String, observingMode: String):InternalSequencerCommandService {
-        val sequencerLocation = locationServiceUtil.jResolveSequencer(sequencerId, observingMode, timeout.duration()).await()
-        val sequencerCommandService = SequencerCommandServiceFactory.make(sequencerLocation, actorSystem)
-        val sequencerAdmin = sequencerAdminFactory.jMake(sequencerId, observingMode).await()
-
-        return InternalSequencerCommandService(SequencerCommandServiceUtil(sequencerCommandService, sequencerAdmin))
+    fun resolveSequencer(sequencerId: String, observingMode: String): InternalSequencerCommandService {
+        val sequencerCommandServiceUtil = SequencerCommandServiceUtil(sequencerAdminFactory, locationServiceUtil, actorSystem)
+        return InternalSequencerCommandService(sequencerId, observingMode, sequencerCommandServiceUtil)
     }
-
-    private suspend fun commandService(
-            name: String,
-            compType: ComponentType
-    ): ICommandService = CommandServiceFactory.jMake(locationServiceUtil.jResolveAkkaLocation(name, compType).await(), actorSystem)
 
 }

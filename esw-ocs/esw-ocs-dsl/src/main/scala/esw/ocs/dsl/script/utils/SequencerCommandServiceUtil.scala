@@ -2,28 +2,52 @@ package esw.ocs.dsl.script.utils
 
 import java.util.concurrent.CompletionStage
 
-import csw.command.api.scaladsl.SequencerCommandService
+import akka.actor.typed.ActorSystem
+import csw.command.client.SequencerCommandServiceFactory
 import csw.params.commands.CommandResponse.SubmitResponse
 import csw.params.commands.Sequence
 import csw.time.core.models.UTCTime
-import esw.ocs.api.SequencerAdminApi
+import esw.ocs.api.SequencerAdminFactoryApi
 import esw.ocs.api.protocol._
+import esw.ocs.dsl.sequence_manager.LocationServiceUtil
 
 import scala.compat.java8.FutureConverters.FutureOps
 
-class SequencerCommandServiceUtil(sequencerCommandService: SequencerCommandService, sequencerAdmin: SequencerAdminApi) {
+class SequencerCommandServiceUtil(
+    sequencerAdminFactory: SequencerAdminFactoryApi,
+    locationServiceUtil: LocationServiceUtil
+)(implicit actorSystem: ActorSystem[_]) {
 
-  def submitAndWait(sequence: Sequence): CompletionStage[SubmitResponse] = sequencerCommandService.submitAndWait(sequence).toJava
-  def queryFinal(): CompletionStage[SubmitResponse]                      = sequencerCommandService.queryFinal().toJava
+  import actorSystem.executionContext
 
-  def submit(sequence: Sequence): CompletionStage[OkOrUnhandledResponse] = sequencerAdmin.submitSequence(sequence).toJava
+  private def sequencerCommandService(sequencerId: String, observingMode: String) =
+    locationServiceUtil.resolveSequencer(sequencerId, observingMode).map(SequencerCommandServiceFactory.make)
+  private def sequencerAdmin(sequencerId: String, observingMode: String) = sequencerAdminFactory.make(sequencerId, observingMode)
 
-  def goOnline(): CompletionStage[GoOnlineResponse]   = sequencerAdmin.goOnline().toJava
-  def goOffline(): CompletionStage[GoOfflineResponse] = sequencerAdmin.goOffline().toJava
+  def submitAndWait(sequencerId: String, observingMode: String, sequence: Sequence): CompletionStage[SubmitResponse] =
+    sequencerCommandService(sequencerId, observingMode).flatMap(_.submitAndWait(sequence)).toJava
 
-  def diagnosticMode(startTime: UTCTime, hint: String): CompletionStage[DiagnosticModeResponse] =
-    sequencerAdmin.diagnosticMode(startTime, hint).toJava
-  def operationsMode(): CompletionStage[OperationsModeResponse] = sequencerAdmin.operationsMode().toJava
-  def abortSequence(): CompletionStage[OkOrUnhandledResponse]   = sequencerAdmin.abortSequence().toJava
+  def goOnline(sequencerId: String, observingMode: String): CompletionStage[GoOnlineResponse] =
+    sequencerAdmin(sequencerId, observingMode).flatMap(_.goOnline()).toJava
+
+  def goOffline(sequencerId: String, observingMode: String): CompletionStage[GoOfflineResponse] =
+    sequencerAdmin(sequencerId, observingMode).flatMap(_.goOffline()).toJava
+
+  def diagnosticMode(
+      sequencerId: String,
+      observingMode: String,
+      startTime: UTCTime,
+      hint: String
+  ): CompletionStage[DiagnosticModeResponse] =
+    sequencerAdmin(sequencerId, observingMode).flatMap(_.diagnosticMode(startTime, hint)).toJava
+
+  def operationsMode(sequencerId: String, observingMode: String): CompletionStage[OperationsModeResponse] =
+    sequencerAdmin(sequencerId, observingMode).flatMap(_.operationsMode()).toJava
+
+  def abortSequence(sequencerId: String, observingMode: String): CompletionStage[OkOrUnhandledResponse] =
+    sequencerAdmin(sequencerId, observingMode).flatMap(_.abortSequence()).toJava
+
+  def stop(sequencerId: String, observingMode: String): CompletionStage[OkOrUnhandledResponse] =
+    sequencerAdmin(sequencerId, observingMode).flatMap(_.stop()).toJava
 
 }

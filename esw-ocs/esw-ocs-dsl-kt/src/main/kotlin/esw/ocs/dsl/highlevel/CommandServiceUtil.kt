@@ -14,7 +14,7 @@ import kotlinx.coroutines.future.await
 import kotlin.time.Duration
 import kotlin.time.toJavaDuration
 
-class CommandServiceUtil(private val componentRef: ActorRef<ComponentMessage>, private val lockUnlockUtil: LockUnlockUtil, override val coroutineScope: CoroutineScope) : JavaFutureInterop {
+class CommandServiceUtil(private val lockUnlockUtil: LockUnlockUtil, override val coroutineScope: CoroutineScope) : JavaFutureInterop {
 
     /**
      * @param prefix prefix of component that is acquiring lock
@@ -26,6 +26,7 @@ class CommandServiceUtil(private val componentRef: ActorRef<ComponentMessage>, p
      * — [csw.command.client.models.framework.LockingResponse.AcquiringLockFailed]
      */
     suspend fun lock(
+            componentRef: ActorRef<ComponentMessage>,
             prefix: String,
             leaseDuration: Duration,
             onLockAboutToExpire: suspend CoroutineScope.() -> Unit,
@@ -43,18 +44,18 @@ class CommandServiceUtil(private val componentRef: ActorRef<ComponentMessage>, p
      * @param prefix prefix of component that has acquired lock previously
      * @return lock release response either successful or failure
      */
-    suspend fun unlock(prefix: String): LockingResponse =
+    suspend fun unlock(componentRef: ActorRef<ComponentMessage>, prefix: String): LockingResponse =
             lockUnlockUtil.unlock(componentRef, Prefix(prefix)).await()
 
-    fun diagnosticMode(startTime: UTCTime, hint: String): Unit =
+    fun diagnosticMode(componentRef: ActorRef<ComponentMessage>, startTime: UTCTime, hint: String): Unit =
             componentRef.tell(DiagnosticDataMessage.DiagnosticMode(startTime, hint))
 
-    fun operationsMode(): Unit = componentRef.tell(DiagnosticDataMessage.`OperationsMode$`.`MODULE$`)
+    fun operationsMode(componentRef: ActorRef<ComponentMessage>): Unit = componentRef.tell(DiagnosticDataMessage.`OperationsMode$`.`MODULE$`)
 
-    fun goOnline(): Unit =
+    fun goOnline(componentRef: ActorRef<ComponentMessage>): Unit =
             componentRef.tell(Lifecycle(ToComponentLifecycleMessage.`GoOnline$`.`MODULE$`))
 
-    fun goOffline(): Unit =
+    fun goOffline(componentRef: ActorRef<ComponentMessage>): Unit =
             componentRef.tell(Lifecycle(ToComponentLifecycleMessage.`GoOffline$`.`MODULE$`))
 
 }

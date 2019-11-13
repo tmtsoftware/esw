@@ -7,10 +7,11 @@ import csw.params.commands.Setup
 import csw.params.core.models.ObsId
 import csw.params.core.models.Prefix
 import csw.time.core.models.UTCTime
+import esw.ocs.api.protocol.`Ok$`
+import esw.ocs.dsl.highlevel.internal.InternalCommandService
+import esw.ocs.dsl.highlevel.internal.InternalSequencerCommandService
 import io.kotlintest.shouldBe
-import io.mockk.coEvery
-import io.mockk.coVerify
-import io.mockk.mockk
+import io.mockk.*
 import kotlinx.coroutines.runBlocking
 import org.junit.jupiter.api.Test
 import java.util.*
@@ -24,6 +25,7 @@ class CommandServiceDslTest : CommandServiceDsl {
     private val setupCommand = setup("esw.test", "move", "testObsId")
     private val assemblyCommandService: InternalCommandService = mockk()
     private val hcdCommandService: InternalCommandService = mockk()
+    private val sequencerCommandService: InternalSequencerCommandService = mockk()
 
     @Test
     fun `setup method should construct a Setup command with given prefix, commandName and obsId | ESW-121`() = runBlocking {
@@ -239,4 +241,97 @@ class CommandServiceDslTest : CommandServiceDsl {
 
         coVerify { hcdCommandService.goOnline() }
     }
+
+    @Test
+    fun `Sequencer()#goOnline should resolve sequencerCommandService for given sequencer and call goOnline method on it | ESW-236`() = runBlocking {
+
+        val sequencerId = "testSequencer"
+        val observingMode = "DarkNight"
+
+        coEvery { commonUtils.resolveSequencer(sequencerId, observingMode) }.answers { sequencerCommandService }
+        coEvery{sequencerCommandService.goOnline()}.answers{`Ok$`.`MODULE$`}
+
+        val sequencer = Sequencer(sequencerId, observingMode)
+        sequencer.goOnline()
+
+        coVerify { sequencerCommandService.goOnline() }
+    }
+
+    @Test
+    fun `Sequencer()#goOffline should resolve sequencerCommandService for given sequencer and call goOffline method on it | ESW-236`() = runBlocking {
+
+        val sequencerId = "testSequencer"
+        val observingMode = "DarkNight"
+
+        coEvery { commonUtils.resolveSequencer(sequencerId, observingMode) }.answers { sequencerCommandService }
+        coEvery{sequencerCommandService.goOffline()}.answers{`Ok$`.`MODULE$`}
+
+        val sequencer = Sequencer(sequencerId, observingMode)
+        sequencer.goOffline()
+
+        coVerify { sequencerCommandService.goOffline() }
+    }
+
+    @Test
+    fun `Sequencer()#abortSequence should resolve sequencerCommandService for given sequencer and call abortSequence method on it  | ESW-155, ESW-137`() = runBlocking {
+
+        val sequencerId = "testSequencer"
+        val observingMode = "DarkNight"
+
+        coEvery { commonUtils.resolveSequencer(sequencerId, observingMode) }.answers { sequencerCommandService }
+        coEvery{sequencerCommandService.abortSequence()}.answers{`Ok$`.`MODULE$`}
+
+        val sequencer = Sequencer(sequencerId, observingMode)
+        sequencer.abortSequence()
+
+        coVerify { sequencerCommandService.abortSequence() }
+    }
+
+    @Test
+    fun `Sequencer()#diagnosticMode should resolve sequencerCommandService for given sequencer and call diagnosticMode method on it | ESW-143`() = runBlocking {
+        val hint = "test-hint"
+        val startTime: UTCTime = UTCTime.now()
+
+        val sequencerId = "testSequencer"
+        val observingMode = "DarkNight"
+
+        coEvery { commonUtils.resolveSequencer(sequencerId, observingMode) }.answers { sequencerCommandService }
+        coEvery{sequencerCommandService.diagnosticMode(startTime, hint)}.answers{`Ok$`.`MODULE$`}
+
+        val sequencer = Sequencer(sequencerId, observingMode)
+        sequencer.diagnosticMode(startTime, hint)
+
+        coVerify { sequencerCommandService.diagnosticMode(startTime, hint) }
+    }
+
+    @Test
+    fun `Sequencer()#operationsMode should resolve sequencerCommandService for given sequencer and call operationsMode method on it | ESW-143`() = runBlocking {
+
+        val sequencerId = "testSequencer"
+        val observingMode = "DarkNight"
+
+        coEvery { commonUtils.resolveSequencer(sequencerId, observingMode) }.answers { sequencerCommandService }
+        coEvery{sequencerCommandService.operationsMode()}.answers{`Ok$`.`MODULE$`}
+
+        val sequencer = Sequencer(sequencerId, observingMode)
+        sequencer.operationsMode()
+
+        coVerify { sequencerCommandService.operationsMode() }
+    }
+
+    @Test
+    fun `Sequencer()#stop should resolve sequencerCommandService for given sequencer and call stop method on it | ESW-156, ESW-138`() = runBlocking {
+
+        val sequencerId = "testSequencer"
+        val observingMode = "DarkNight"
+
+        coEvery { commonUtils.resolveSequencer(sequencerId, observingMode) }.answers { sequencerCommandService }
+        coEvery{sequencerCommandService.stop()}.answers{`Ok$`.`MODULE$`}
+
+        val sequencer = Sequencer(sequencerId, observingMode)
+        sequencer.stop()
+
+        coVerify { sequencerCommandService.stop() }
+    }
+
 }

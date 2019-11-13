@@ -69,9 +69,6 @@ sealed class ScriptDslKt(private val cswServices: CswServices) : CswHighLevelDsl
                 this.scriptDsl.merge(it(cswServices, strandEc, coroutineScope).scriptDsl)
             }
 
-    suspend fun submitSequence(sequencerName: String, observingMode: String, sequence: Sequence): SubmitResponse =
-            this.scriptDsl.submitSequence(sequencerName, observingMode, sequence).await()
-
     // fixme: use logging service
     fun log(msg: String) = println("[${Thread.currentThread().name}] $msg")
 
