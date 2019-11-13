@@ -34,9 +34,6 @@ class InternalCommandService(
         override val coroutineScope: CoroutineScope
 ) : JavaFutureInterop {
 
-    private suspend fun commandService(): ICommandService = CommandServiceFactory.jMake(locationServiceUtil.jResolveAkkaLocation(name, compType).await(), actorSystem)
-    private suspend fun componentRef(): ActorRef<ComponentMessage> = locationServiceUtil.jResolveComponentRef(name, JComponentType.Assembly()).await()
-
     suspend fun validate(command: ControlCommand): ValidateResponse = commandService().validate(command).await()
     suspend fun oneway(command: ControlCommand): OnewayResponse = commandService().oneway(command, timeout).await()
     suspend fun submit(command: ControlCommand): SubmitResponse = commandService().submit(command, timeout).await()
@@ -64,4 +61,6 @@ class InternalCommandService(
 
     suspend fun unlock(prefix: String): LockingResponse = lockUnlockUtil.unlock(componentRef(), Prefix(prefix)).await()
 
+    private suspend fun commandService(): ICommandService = CommandServiceFactory.jMake(locationServiceUtil.jResolveAkkaLocation(name, compType).await(), actorSystem)
+    private suspend fun componentRef(): ActorRef<ComponentMessage> = locationServiceUtil.jResolveComponentRef(name, JComponentType.Assembly()).await()
 }

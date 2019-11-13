@@ -196,7 +196,7 @@ class CommandServiceDslTest : CommandServiceDsl {
     }
 
     @Test
-    fun `Assembly()#goOffline should resolve InternalCommandService for given assembly and call goOffline method on it | ESW-118`() = runBlocking {
+    fun `Assembly()#goOffline should resolve InternalCommandService for given assembly and call goOffline method on it | ESW-236`() = runBlocking {
 
         coEvery { commonUtils.resolveAssembly(assemblyName) }.answers { assemblyCommandService }
         coEvery { assemblyCommandService.goOffline() }.answers { Unit }
@@ -208,7 +208,7 @@ class CommandServiceDslTest : CommandServiceDsl {
     }
 
     @Test
-    fun `Assembly()#goOnline should resolve InternalCommandService for given assembly and call goOnline method on it | ESW-118`() = runBlocking {
+    fun `Assembly()#goOnline should resolve InternalCommandService for given assembly and call goOnline method on it | ESW-236`() = runBlocking {
 
         coEvery { commonUtils.resolveAssembly(assemblyName) }.answers { assemblyCommandService }
         coEvery { assemblyCommandService.goOnline() }.answers { Unit }
@@ -220,7 +220,7 @@ class CommandServiceDslTest : CommandServiceDsl {
     }
 
     @Test
-    fun `HCD()#goOffline should resolve InternalCommandService for given hcd and call goOffline method on it | ESW-118`() = runBlocking {
+    fun `HCD()#goOffline should resolve InternalCommandService for given hcd and call goOffline method on it | ESW-236`() = runBlocking {
 
         coEvery { commonUtils.resolveHcd(hcdName) }.answers { hcdCommandService }
         coEvery { hcdCommandService.goOffline() }.answers { Unit }
@@ -232,7 +232,7 @@ class CommandServiceDslTest : CommandServiceDsl {
     }
 
     @Test
-    fun `HCD()#goOnline should resolve InternalCommandService for given hcd and call goOnline method on it | ESW-118`() = runBlocking {
+    fun `HCD()#goOnline should resolve InternalCommandService for given hcd and call goOnline method on it | ESW-236`() = runBlocking {
 
         coEvery { commonUtils.resolveHcd(hcdName) }.answers { hcdCommandService }
         coEvery { hcdCommandService.goOnline() }.answers { Unit }
