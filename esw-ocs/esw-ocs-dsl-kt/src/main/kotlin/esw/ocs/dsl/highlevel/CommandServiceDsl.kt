@@ -1,15 +1,17 @@
 package esw.ocs.dsl.highlevel
 
+import csw.location.api.javadsl.JComponentType.Assembly
+import csw.location.api.javadsl.JComponentType.HCD
+import csw.location.models.ComponentType
 import csw.params.commands.*
 import csw.params.core.models.ObsId
 import csw.params.core.models.Prefix
-import esw.ocs.dsl.highlevel.RichCommandService
-import esw.ocs.dsl.highlevel.RichSequencerCommandService
 import esw.ocs.dsl.nullable
 import java.util.*
 
 interface CommandServiceDsl {
-    val commonUtils: CommonUtils
+    fun resolveComponent(name: String, componentType: ComponentType): RichComponent
+    fun resolveSequencer(sequencerId: String, observingMode: String): RichSequencer
 
     fun setup(prefix: String, commandName: String, obsId: String? = null) =
             Setup(Prefix(prefix), CommandName(commandName), obsId.toOptionalObsId())
@@ -19,12 +21,9 @@ interface CommandServiceDsl {
 
     fun sequenceOf(vararg sequenceCommand: SequenceCommand): Sequence = Sequence.create(sequenceCommand.toList())
 
-    suspend fun Assembly(name: String): RichCommandService = commonUtils.resolveAssembly(name)
-
-    suspend fun HCD(name: String): RichCommandService = commonUtils.resolveHcd(name)
-
-    suspend fun Sequencer(sequencerId: String, observingMode: String): RichSequencerCommandService =
-            commonUtils.resolveSequencer(sequencerId, observingMode)
+    suspend fun Assembly(name: String): RichComponent = resolveComponent(name, Assembly())
+    suspend fun HCD(name: String): RichComponent = resolveComponent(name, HCD())
+    suspend fun Sequencer(sequencerId: String, observingMode: String): RichSequencer = resolveSequencer(sequencerId, observingMode)
 
     /** ========== Extensions ============ **/
     val Command.obsId: String? get() = jMaybeObsId().map { it.obsId() }.nullable()

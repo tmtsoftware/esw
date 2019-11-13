@@ -1,5 +1,8 @@
 package esw.ocs.dsl.highlevel
 
+import csw.location.api.javadsl.JComponentType.Assembly
+import csw.location.api.javadsl.JComponentType.HCD
+import csw.location.models.ComponentType
 import csw.params.commands.CommandName
 import csw.params.commands.CommandResponse.*
 import csw.params.commands.Observe
@@ -9,24 +12,31 @@ import csw.params.core.models.ObsId
 import csw.params.core.models.Prefix
 import csw.time.core.models.UTCTime
 import esw.ocs.api.protocol.`Ok$`
-import esw.ocs.dsl.highlevel.RichCommandService
-import esw.ocs.dsl.highlevel.RichSequencerCommandService
 import io.kotlintest.shouldBe
-import io.mockk.*
+import io.mockk.coEvery
+import io.mockk.coVerify
+import io.mockk.mockk
 import kotlinx.coroutines.runBlocking
 import org.junit.jupiter.api.Test
 import java.util.*
 
 class CommandServiceDslTest : CommandServiceDsl {
-    override val commonUtils: CommonUtils = mockk()
 
     private val hcdName = "sampleHcd"
     private val assemblyName = "sampleAssembly"
 
     private val setupCommand = setup("esw.test", "move", "testObsId")
-    private val assemblyCommandService: RichCommandService = mockk()
-    private val hcdCommandService: RichCommandService = mockk()
-    private val sequencerCommandService: RichSequencerCommandService = mockk()
+    private val assemblyCommandService: RichComponent = mockk()
+    private val hcdCommandService: RichComponent = mockk()
+    private val sequencerCommandService: RichSequencer = mockk()
+
+    override fun resolveComponent(name: String, componentType: ComponentType): RichComponent = when (componentType) {
+        HCD() -> hcdCommandService
+        Assembly() -> assemblyCommandService
+        else -> throw IllegalArgumentException("Unsupported component type: $componentType provided!")
+    }
+
+    override fun resolveSequencer(sequencerId: String, observingMode: String): RichSequencer = sequencerCommandService
 
     @Test
     fun `setup method should construct a Setup command with given prefix, commandName and obsId | ESW-121`() = runBlocking {
@@ -48,9 +58,7 @@ class CommandServiceDslTest : CommandServiceDsl {
     }
 
     @Test
-    fun `HCD()#validate should resolve InternalCommandService for given hcd and call validate method on it | ESW-121`() = runBlocking {
-
-        coEvery { commonUtils.resolveHcd(hcdName) }.answers { hcdCommandService }
+    fun `HCD()#validate should resolve RichComponent for given hcd and call validate method on it | ESW-121`() = runBlocking {
         coEvery { hcdCommandService.validate(setupCommand) }.answers { Accepted(Id.apply()) }
 
         val hcd = HCD(hcdName)
@@ -60,9 +68,7 @@ class CommandServiceDslTest : CommandServiceDsl {
     }
 
     @Test
-    fun `Assembly()#validate should resolve InternalCommandService for given assembly and call validate method on it | ESW-121`() = runBlocking {
-
-        coEvery { commonUtils.resolveAssembly(assemblyName) }.answers { assemblyCommandService }
+    fun `Assembly()#validate should resolve RichComponent for given assembly and call validate method on it | ESW-121`() = runBlocking {
         coEvery { assemblyCommandService.validate(setupCommand) }.answers { Accepted(Id.apply()) }
 
         val assembly = Assembly(assemblyName)
@@ -72,9 +78,7 @@ class CommandServiceDslTest : CommandServiceDsl {
     }
 
     @Test
-    fun `Hcd#submit should resolve InternalCommandService for given hcd and call submit method on it | ESW-121`() = runBlocking {
-
-        coEvery { commonUtils.resolveHcd(hcdName) }.answers { hcdCommandService }
+    fun `Hcd#submit should resolve RichComponent for given hcd and call submit method on it | ESW-121`() = runBlocking {
         coEvery { hcdCommandService.submit(setupCommand) }.answers { Started(Id.apply()) }
 
         val hcd = HCD(hcdName)
@@ -84,9 +88,7 @@ class CommandServiceDslTest : CommandServiceDsl {
     }
 
     @Test
-    fun `Assembly()#submit should resolve InternalCommandService for given assembly and call submit method on it | ESW-121`() = runBlocking {
-
-        coEvery { commonUtils.resolveAssembly(assemblyName) }.answers { assemblyCommandService }
+    fun `Assembly()#submit should resolve RichComponent for given assembly and call submit method on it | ESW-121`() = runBlocking {
         coEvery { assemblyCommandService.submit(setupCommand) }.answers { Started(Id.apply()) }
 
         val assembly = Assembly(assemblyName)
@@ -96,9 +98,7 @@ class CommandServiceDslTest : CommandServiceDsl {
     }
 
     @Test
-    fun `Hcd()#submitAndWait should resolve InternalCommandService for given hcd and call submitAndWait method on it | ESW-121`() = runBlocking {
-
-        coEvery { commonUtils.resolveHcd(hcdName) }.answers { hcdCommandService }
+    fun `Hcd()#submitAndWait should resolve RichComponent for given hcd and call submitAndWait method on it | ESW-121`() = runBlocking {
         coEvery { hcdCommandService.submitAndWait(setupCommand) }.answers { Completed(Id.apply()) }
 
         val hcd = HCD(hcdName)
@@ -108,9 +108,7 @@ class CommandServiceDslTest : CommandServiceDsl {
     }
 
     @Test
-    fun `Assembly()#submitAndWait should resolve InternalCommandService for given assembly and call submitAndWait method on it | ESW-121`() = runBlocking {
-
-        coEvery { commonUtils.resolveAssembly(assemblyName) }.answers { assemblyCommandService }
+    fun `Assembly()#submitAndWait should resolve RichComponent for given assembly and call submitAndWait method on it | ESW-121`() = runBlocking {
         coEvery { assemblyCommandService.submitAndWait(setupCommand) }.answers { Completed(Id.apply()) }
 
         val assembly = Assembly(assemblyName)
@@ -120,9 +118,7 @@ class CommandServiceDslTest : CommandServiceDsl {
     }
 
     @Test
-    fun `Hcd#oneway should resolve InternalCommandService for given hcd and call oneway method on it | ESW-121`() = runBlocking {
-
-        coEvery { commonUtils.resolveHcd(hcdName) }.answers { hcdCommandService }
+    fun `Hcd#oneway should resolve RichComponent for given hcd and call oneway method on it | ESW-121`() = runBlocking {
         coEvery { hcdCommandService.oneway(setupCommand) }.answers { Accepted(Id.apply()) }
 
         val hcd = HCD(hcdName)
@@ -132,9 +128,7 @@ class CommandServiceDslTest : CommandServiceDsl {
     }
 
     @Test
-    fun `Assembly()#oneway should resolve InternalCommandService for given assembly and call oneway method on it | ESW-121`() = runBlocking {
-
-        coEvery { commonUtils.resolveAssembly(assemblyName) }.answers { assemblyCommandService }
+    fun `Assembly()#oneway should resolve RichComponent for given assembly and call oneway method on it | ESW-121`() = runBlocking {
         coEvery { assemblyCommandService.oneway(setupCommand) }.answers { Accepted(Id.apply()) }
 
         val assembly = Assembly(assemblyName)
@@ -144,11 +138,10 @@ class CommandServiceDslTest : CommandServiceDsl {
     }
 
     @Test
-    fun `Assembly()#diagnosticMode should resolve InternalCommandService for given assembly and call diagnosticMode method on it | ESW-118`() = runBlocking {
+    fun `Assembly()#diagnosticMode should resolve RichComponent for given assembly and call diagnosticMode method on it | ESW-118`() = runBlocking {
         val hint = "test-hint"
         val startTime: UTCTime = UTCTime.now()
 
-        coEvery { commonUtils.resolveAssembly(assemblyName) }.answers { assemblyCommandService }
         coEvery { assemblyCommandService.diagnosticMode(startTime, hint) }.answers { Unit }
 
         val assembly = Assembly(assemblyName)
@@ -158,9 +151,7 @@ class CommandServiceDslTest : CommandServiceDsl {
     }
 
     @Test
-    fun `Assembly()#operationsMode should resolve InternalCommandService for given assembly and call operationsMode method on it | ESW-118`() = runBlocking {
-
-        coEvery { commonUtils.resolveAssembly(assemblyName) }.answers { assemblyCommandService }
+    fun `Assembly()#operationsMode should resolve RichComponent for given assembly and call operationsMode method on it | ESW-118`() = runBlocking {
         coEvery { assemblyCommandService.operationsMode() }.answers { Unit }
 
         val assembly = Assembly(assemblyName)
@@ -170,11 +161,9 @@ class CommandServiceDslTest : CommandServiceDsl {
     }
 
     @Test
-    fun `HCD()#diagnosticMode should resolve InternalCommandService for given hcd and call diagnosticMode method on it | ESW-118`() = runBlocking {
+    fun `HCD()#diagnosticMode should resolve RichComponent for given hcd and call diagnosticMode method on it | ESW-118`() = runBlocking {
         val hint = "test-hint"
         val startTime: UTCTime = UTCTime.now()
-
-        coEvery { commonUtils.resolveHcd(hcdName) }.answers { hcdCommandService }
         coEvery { hcdCommandService.diagnosticMode(startTime, hint) }.answers { Unit }
 
         val hcd = HCD(hcdName)
@@ -184,9 +173,7 @@ class CommandServiceDslTest : CommandServiceDsl {
     }
 
     @Test
-    fun `HCD()#operationsMode should resolve InternalCommandService for given hcd and call operationsMode method on it | ESW-118`() = runBlocking {
-
-        coEvery { commonUtils.resolveHcd(hcdName) }.answers { hcdCommandService }
+    fun `HCD()#operationsMode should resolve RichComponent for given hcd and call operationsMode method on it | ESW-118`() = runBlocking {
         coEvery { hcdCommandService.operationsMode() }.answers { Unit }
 
         val hcd = HCD(hcdName)
@@ -196,9 +183,7 @@ class CommandServiceDslTest : CommandServiceDsl {
     }
 
     @Test
-    fun `Assembly()#goOffline should resolve InternalCommandService for given assembly and call goOffline method on it | ESW-236`() = runBlocking {
-
-        coEvery { commonUtils.resolveAssembly(assemblyName) }.answers { assemblyCommandService }
+    fun `Assembly()#goOffline should resolve RichComponent for given assembly and call goOffline method on it | ESW-236`() = runBlocking {
         coEvery { assemblyCommandService.goOffline() }.answers { Unit }
 
         val assembly = Assembly(assemblyName)
@@ -208,9 +193,7 @@ class CommandServiceDslTest : CommandServiceDsl {
     }
 
     @Test
-    fun `Assembly()#goOnline should resolve InternalCommandService for given assembly and call goOnline method on it | ESW-236`() = runBlocking {
-
-        coEvery { commonUtils.resolveAssembly(assemblyName) }.answers { assemblyCommandService }
+    fun `Assembly()#goOnline should resolve RichComponent for given assembly and call goOnline method on it | ESW-236`() = runBlocking {
         coEvery { assemblyCommandService.goOnline() }.answers { Unit }
 
         val assembly = Assembly(assemblyName)
@@ -220,9 +203,7 @@ class CommandServiceDslTest : CommandServiceDsl {
     }
 
     @Test
-    fun `HCD()#goOffline should resolve InternalCommandService for given hcd and call goOffline method on it | ESW-236`() = runBlocking {
-
-        coEvery { commonUtils.resolveHcd(hcdName) }.answers { hcdCommandService }
+    fun `HCD()#goOffline should resolve RichComponent for given hcd and call goOffline method on it | ESW-236`() = runBlocking {
         coEvery { hcdCommandService.goOffline() }.answers { Unit }
 
         val hcd = HCD(hcdName)
@@ -232,9 +213,7 @@ class CommandServiceDslTest : CommandServiceDsl {
     }
 
     @Test
-    fun `HCD()#goOnline should resolve InternalCommandService for given hcd and call goOnline method on it | ESW-236`() = runBlocking {
-
-        coEvery { commonUtils.resolveHcd(hcdName) }.answers { hcdCommandService }
+    fun `HCD()#goOnline should resolve RichComponent for given hcd and call goOnline method on it | ESW-236`() = runBlocking {
         coEvery { hcdCommandService.goOnline() }.answers { Unit }
 
         val hcd = HCD(hcdName)
@@ -244,13 +223,11 @@ class CommandServiceDslTest : CommandServiceDsl {
     }
 
     @Test
-    fun `Sequencer()#goOnline should resolve InternalSequencerCommandService for given sequencer and call goOnline method on it | ESW-236`() = runBlocking {
-
+    fun `Sequencer()#goOnline should resolve RichSequencer for given sequencer and call goOnline method on it | ESW-236`() = runBlocking {
         val sequencerId = "testSequencer"
         val observingMode = "DarkNight"
 
-        coEvery { commonUtils.resolveSequencer(sequencerId, observingMode) }.answers { sequencerCommandService }
-        coEvery{sequencerCommandService.goOnline()}.answers{`Ok$`.`MODULE$`}
+        coEvery { sequencerCommandService.goOnline() }.answers { `Ok$`.`MODULE$` }
 
         val sequencer = Sequencer(sequencerId, observingMode)
         sequencer.goOnline()
@@ -259,13 +236,11 @@ class CommandServiceDslTest : CommandServiceDsl {
     }
 
     @Test
-    fun `Sequencer()#goOffline should resolve InternalSequencerCommandService for given sequencer and call goOffline method on it | ESW-236`() = runBlocking {
-
+    fun `Sequencer()#goOffline should resolve RichSequencer for given sequencer and call goOffline method on it | ESW-236`() = runBlocking {
         val sequencerId = "testSequencer"
         val observingMode = "DarkNight"
 
-        coEvery { commonUtils.resolveSequencer(sequencerId, observingMode) }.answers { sequencerCommandService }
-        coEvery{sequencerCommandService.goOffline()}.answers{`Ok$`.`MODULE$`}
+        coEvery { sequencerCommandService.goOffline() }.answers { `Ok$`.`MODULE$` }
 
         val sequencer = Sequencer(sequencerId, observingMode)
         sequencer.goOffline()
@@ -274,13 +249,11 @@ class CommandServiceDslTest : CommandServiceDsl {
     }
 
     @Test
-    fun `Sequencer()#abortSequence should resolve InternalSequencerCommandService for given sequencer and call abortSequence method on it  | ESW-155, ESW-137`() = runBlocking {
-
+    fun `Sequencer()#abortSequence should resolve RichSequencer for given sequencer and call abortSequence method on it  | ESW-155, ESW-137`() = runBlocking {
         val sequencerId = "testSequencer"
         val observingMode = "DarkNight"
 
-        coEvery { commonUtils.resolveSequencer(sequencerId, observingMode) }.answers { sequencerCommandService }
-        coEvery{sequencerCommandService.abortSequence()}.answers{`Ok$`.`MODULE$`}
+        coEvery { sequencerCommandService.abortSequence() }.answers { `Ok$`.`MODULE$` }
 
         val sequencer = Sequencer(sequencerId, observingMode)
         sequencer.abortSequence()
@@ -289,15 +262,14 @@ class CommandServiceDslTest : CommandServiceDsl {
     }
 
     @Test
-    fun `Sequencer()#diagnosticMode should resolve InternalSequencerCommandService for given sequencer and call diagnosticMode method on it | ESW-143`() = runBlocking {
+    fun `Sequencer()#diagnosticMode should resolve RichSequencer for given sequencer and call diagnosticMode method on it | ESW-143`() = runBlocking {
         val hint = "test-hint"
         val startTime: UTCTime = UTCTime.now()
 
         val sequencerId = "testSequencer"
         val observingMode = "DarkNight"
 
-        coEvery { commonUtils.resolveSequencer(sequencerId, observingMode) }.answers { sequencerCommandService }
-        coEvery{sequencerCommandService.diagnosticMode(startTime, hint)}.answers{`Ok$`.`MODULE$`}
+        coEvery { sequencerCommandService.diagnosticMode(startTime, hint) }.answers { `Ok$`.`MODULE$` }
 
         val sequencer = Sequencer(sequencerId, observingMode)
         sequencer.diagnosticMode(startTime, hint)
@@ -306,13 +278,11 @@ class CommandServiceDslTest : CommandServiceDsl {
     }
 
     @Test
-    fun `Sequencer()#operationsMode should resolve InternalSequencerCommandService for given sequencer and call operationsMode method on it | ESW-143`() = runBlocking {
-
+    fun `Sequencer()#operationsMode should resolve RichSequencer for given sequencer and call operationsMode method on it | ESW-143`() = runBlocking {
         val sequencerId = "testSequencer"
         val observingMode = "DarkNight"
 
-        coEvery { commonUtils.resolveSequencer(sequencerId, observingMode) }.answers { sequencerCommandService }
-        coEvery{sequencerCommandService.operationsMode()}.answers{`Ok$`.`MODULE$`}
+        coEvery { sequencerCommandService.operationsMode() }.answers { `Ok$`.`MODULE$` }
 
         val sequencer = Sequencer(sequencerId, observingMode)
         sequencer.operationsMode()
@@ -321,18 +291,15 @@ class CommandServiceDslTest : CommandServiceDsl {
     }
 
     @Test
-    fun `Sequencer()#stop should resolve InternalSequencerCommandService for given sequencer and call stop method on it | ESW-156, ESW-138`() = runBlocking {
-
+    fun `Sequencer()#stop should resolve RichSequencer for given sequencer and call stop method on it | ESW-156, ESW-138`() = runBlocking {
         val sequencerId = "testSequencer"
         val observingMode = "DarkNight"
 
-        coEvery { commonUtils.resolveSequencer(sequencerId, observingMode) }.answers { sequencerCommandService }
-        coEvery{sequencerCommandService.stop()}.answers{`Ok$`.`MODULE$`}
+        coEvery { sequencerCommandService.stop() }.answers { `Ok$`.`MODULE$` }
 
         val sequencer = Sequencer(sequencerId, observingMode)
         sequencer.stop()
 
         coVerify { sequencerCommandService.stop() }
     }
-
 }

@@ -13,7 +13,7 @@ import esw.ocs.dsl.jdk.toJava
 import esw.ocs.dsl.sequence_manager.LocationServiceUtil
 import kotlinx.coroutines.future.await
 
-class RichSequencerCommandService(
+class RichSequencer(
         private val sequencerId: String,
         private val observingMode: String,
         private val sequencerAdminFactory: SequencerAdminFactoryApi,

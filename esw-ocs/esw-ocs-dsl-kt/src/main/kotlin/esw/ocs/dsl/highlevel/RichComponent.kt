@@ -24,7 +24,7 @@ import kotlinx.coroutines.future.await
 import kotlin.time.Duration
 import kotlin.time.toJavaDuration
 
-class RichCommandService(
+class RichComponent(
         private val name: String,
         private val compType: ComponentType,
         private val lockUnlockUtil: LockUnlockUtil,
@@ -42,8 +42,8 @@ class RichCommandService(
     suspend fun diagnosticMode(startTime: UTCTime, hint: String): Unit = componentRef().tell(DiagnosticDataMessage.DiagnosticMode(startTime, hint))
     suspend fun operationsMode(): Unit = componentRef().tell(DiagnosticDataMessage.`OperationsMode$`.`MODULE$`)
 
-    suspend fun goOnline(): Unit = componentRef().tell(RunningMessage.Lifecycle(ToComponentLifecycleMessage.`GoOnline$`.`MODULE$`))
-    suspend fun goOffline(): Unit = componentRef().tell(RunningMessage.Lifecycle(ToComponentLifecycleMessage.`GoOffline$`.`MODULE$`))
+    suspend fun goOnline(): Unit = componentRef().tell(RunningMessage.Lifecycle(ToComponentLifecycleMessage.jGoOnline()))
+    suspend fun goOffline(): Unit = componentRef().tell(RunningMessage.Lifecycle(ToComponentLifecycleMessage.jGoOffline()))
 
     suspend fun lock(
             prefix: String,
@@ -55,8 +55,8 @@ class RichCommandService(
                     componentRef(),
                     Prefix(prefix),
                     leaseDuration.toJavaDuration(),
-                    { onLockAboutToExpire.toJavaFutureVoid() },
-                    { onLockExpired.toJavaFutureVoid() }
+                    { onLockAboutToExpire.toJava() },
+                    { onLockExpired.toJava() }
             ).await()
 
     suspend fun unlock(prefix: String): LockingResponse = lockUnlockUtil.unlock(componentRef(), Prefix(prefix)).await()

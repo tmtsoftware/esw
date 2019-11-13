@@ -32,8 +32,7 @@ import kotlin.time.Duration
 import kotlin.time.seconds
 import kotlin.time.toJavaDuration
 
-class RichCommandServiceTest {
-
+class RichComponentTest {
     private val hint = "test-hint"
     private val startTime: UTCTime = UTCTime.now()
 
@@ -52,8 +51,8 @@ class RichCommandServiceTest {
     private val timeout: Timeout = mockk()
     private val coroutineScope: CoroutineScope = mockk()
 
-    private val assembly: RichCommandService =
-            RichCommandService(
+    private val assembly: RichComponent =
+            RichComponent(
                     componentName,
                     componentType,
                     lockUnlockUtil,
@@ -69,7 +68,6 @@ class RichCommandServiceTest {
 
     @Test
     fun `validate should resolve commandService for given assembly and call validate method on it | ESW-121, ESW-245 `() = runBlocking {
-
         mockkStatic(CommandServiceFactory::class)
         every { locationServiceUtil.jResolveAkkaLocation(componentName, componentType) }.answers { CompletableFuture.completedFuture(assemblyLocation) }
         every { CommandServiceFactory.jMake(assemblyLocation, actorSystem) }.answers { assemblyCommandService }
@@ -82,7 +80,6 @@ class RichCommandServiceTest {
 
     @Test
     fun `oneway should resolve commandService for given assembly and call oneway method on it | ESW-121, ESW-245 `() = runBlocking {
-
         mockkStatic(CommandServiceFactory::class)
         every { locationServiceUtil.jResolveAkkaLocation(componentName, componentType) }.answers { CompletableFuture.completedFuture(assemblyLocation) }
         every { CommandServiceFactory.jMake(assemblyLocation, actorSystem) }.answers { assemblyCommandService }
@@ -95,7 +92,6 @@ class RichCommandServiceTest {
 
     @Test
     fun `submit should resolve commandService for given assembly and call submit method on it | ESW-121, ESW-245 `() = runBlocking {
-
         mockkStatic(CommandServiceFactory::class)
         every { locationServiceUtil.jResolveAkkaLocation(componentName, componentType) }.answers { CompletableFuture.completedFuture(assemblyLocation) }
         every { CommandServiceFactory.jMake(assemblyLocation, actorSystem) }.answers { assemblyCommandService }
@@ -108,7 +104,6 @@ class RichCommandServiceTest {
 
     @Test
     fun `submitAndWait should resolve commandService for given assembly and call submitAndWait method on it | ESW-121, ESW-245 `() = runBlocking {
-
         mockkStatic(CommandServiceFactory::class)
         every { locationServiceUtil.jResolveAkkaLocation(componentName, componentType) }.answers { CompletableFuture.completedFuture(assemblyLocation) }
         every { CommandServiceFactory.jMake(assemblyLocation, actorSystem) }.answers { assemblyCommandService }
@@ -121,7 +116,6 @@ class RichCommandServiceTest {
 
     @Test
     fun `diagnosticMode should resolve actorRef for given assembly and send DiagnosticMode message to it | ESW-118, ESW-245 `() = runBlocking {
-
         val diagnosticMessage = DiagnosticDataMessage.DiagnosticMode(startTime, hint)
 
         every { locationServiceUtil.jResolveComponentRef(componentName, componentType) }.answers { CompletableFuture.completedFuture(assemblyRef) }
@@ -134,7 +128,6 @@ class RichCommandServiceTest {
 
     @Test
     fun `operationsMode should resolve actorRef for given assembly and send OperationsMode message to it | ESW-118, ESW-245 `() = runBlocking {
-
         val operationsModeMessage = DiagnosticDataMessage.`OperationsMode$`.`MODULE$`
 
         every { locationServiceUtil.jResolveComponentRef(componentName, componentType) }.answers { CompletableFuture.completedFuture(assemblyRef) }
@@ -147,7 +140,6 @@ class RichCommandServiceTest {
 
     @Test
     fun `goOnline should resolve actorRef for given assembly and send GoOnline message to it | ESW-236, ESW-245 `() = runBlocking {
-
         val goOnlineMessage = RunningMessage.Lifecycle(ToComponentLifecycleMessage.`GoOnline$`.`MODULE$`)
 
         every { locationServiceUtil.jResolveComponentRef(componentName, componentType) }.answers { CompletableFuture.completedFuture(assemblyRef) }
@@ -160,7 +152,6 @@ class RichCommandServiceTest {
 
     @Test
     fun `goOffline should resolve actorRef for given assembly and send GoOffline message to it | ESW-236, ESW-245 `() = runBlocking {
-
         val goOfflineMessage = RunningMessage.Lifecycle(ToComponentLifecycleMessage.`GoOffline$`.`MODULE$`)
 
         every { locationServiceUtil.jResolveComponentRef(componentName, componentType) }.answers { CompletableFuture.completedFuture(assemblyRef) }
@@ -173,7 +164,6 @@ class RichCommandServiceTest {
 
     @Test
     fun `lock should resolve actorRef for given assembly and send Lock message to it | ESW-126, ESW-245 `() = runBlocking {
-
         every { locationServiceUtil.jResolveComponentRef(componentName, componentType) }.answers { CompletableFuture.completedFuture(assemblyRef) }
         every { lockUnlockUtil.lock(assemblyRef, prefix, jLeaseDuration, any(), any()) }.answers { CompletableFuture.completedFuture(LockingResponse.`LockAcquired$`.`MODULE$`) }
 
@@ -184,7 +174,6 @@ class RichCommandServiceTest {
 
     @Test
     fun `unlock should resolve actorRef for given assembly and send Unlock message to it | ESW-126, ESW-245 `() = runBlocking {
-
         every { locationServiceUtil.jResolveComponentRef(componentName, componentType) }.answers { CompletableFuture.completedFuture(assemblyRef) }
         every { lockUnlockUtil.unlock(assemblyRef, prefix) }.answers { CompletableFuture.completedFuture(LockingResponse.`LockReleased$`.`MODULE$`) }
 
