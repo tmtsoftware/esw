@@ -13,7 +13,7 @@ script {
         script7
     )
 
-    handleSetup("command-3") {
+    onSetup("command-3") {
         log("============ command-3 ================")
 
         val keys = (1..50).map { eventKey + it }.toTypedArray()
@@ -26,7 +26,7 @@ script {
         log("============ command-3 End ================")
     }
 
-    handleShutdown {
+    onShutdown {
         close()
     }
 }

@@ -17,13 +17,17 @@ import scala.concurrent.Future
 import scala.concurrent.duration.FiniteDuration
 
 class LockUnlockUtilTest extends BaseTestSuite {
+
+  implicit val actorSystem: ActorSystem[SpawnProtocol.Command] = ActorSystem(SpawnProtocol(), "test")
+
+  override def afterAll() = actorSystem.terminate()
+
   "Lock" must {
-    implicit val actorSystem: ActorSystem[SpawnProtocol.Command] = ActorSystem(SpawnProtocol(), "test")
-    val locationServiceUtil: LocationServiceUtil                 = mock[LocationServiceUtil]
-    val componentName                                            = "test-assembly"
-    val componentType                                            = ComponentType.Assembly
-    val prefix                                                   = Prefix("esw")
-    val leaseDuration                                            = Duration.ofSeconds(5)
+    val locationServiceUtil: LocationServiceUtil = mock[LocationServiceUtil]
+    val componentName                            = "test-assembly"
+    val componentType                            = ComponentType.Assembly
+    val prefix                                   = Prefix("esw")
+    val leaseDuration                            = Duration.ofSeconds(5)
 
     "send lock message to component | ESW-126" in {
       val componentRef = TestProbe[ComponentMessage]()
@@ -57,11 +61,10 @@ class LockUnlockUtilTest extends BaseTestSuite {
   }
 
   "Unlock" must {
-    implicit val actorSystem: ActorSystem[SpawnProtocol.Command] = ActorSystem(SpawnProtocol(), "test")
-    val locationServiceUtil: LocationServiceUtil                 = mock[LocationServiceUtil]
-    val componentName                                            = "test-assembly"
-    val componentType                                            = ComponentType.Assembly
-    val prefix                                                   = Prefix("esw")
+    val locationServiceUtil: LocationServiceUtil = mock[LocationServiceUtil]
+    val componentName                            = "test-assembly"
+    val componentType                            = ComponentType.Assembly
+    val prefix                                   = Prefix("esw")
 
     "send unlock message to component | ESW-126" in {
       val componentRef = TestProbe[ComponentMessage]()

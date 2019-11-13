@@ -24,7 +24,7 @@ class Script5(cswServices: CswServices) : Script(cswServices) {
                 script7
         )
 
-        handleSetup("command-3") {
+        onSetup("command-3") {
             log("============ command-3 ================")
 
             val keys = (0.until(50)).map { eventKey + it }.toTypedArray()
@@ -38,7 +38,7 @@ class Script5(cswServices: CswServices) : Script(cswServices) {
             log("============ command-3 End ================")
         }
 
-        handleShutdown {
+        onShutdown {
             while (totalEventsRec <= 49) {
                 delay(100)
             }

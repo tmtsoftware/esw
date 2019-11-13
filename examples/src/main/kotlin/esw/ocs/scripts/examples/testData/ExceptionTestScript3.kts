@@ -6,7 +6,7 @@ script {
 
     loadScripts(exceptionHandlerScript)
 
-    handleShutdown {
+    onShutdown {
         throw RuntimeException("handle-shutdown-failed")
     }
 }

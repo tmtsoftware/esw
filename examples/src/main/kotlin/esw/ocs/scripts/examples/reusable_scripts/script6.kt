@@ -9,7 +9,7 @@ val script6 = reusableScript {
 
     log("============= Loading script 6 ============")
 
-    handleSetup("command-1") {
+    onSetup("command-1") {
         log("============ command-1 ================")
 
         repeat(50) {

@@ -27,37 +27,37 @@ sealed class ScriptDslKt(private val cswServices: CswServices) : CswHighLevelDsl
 
     fun finishWithError(message: String = ""): Nothing = throw RuntimeException(message)
 
-    fun handleSetup(name: String, block: suspend CoroutineScope.(Setup) -> Unit) =
-            scriptDsl.handleSetupCommand(name) { block.toJavaFuture(it) }
+    fun onSetup(name: String, block: suspend CoroutineScope.(Setup) -> Unit) =
+            scriptDsl.onSetupCommand(name) { block.toJavaFuture(it) }
 
-    fun handleObserve(name: String, block: suspend CoroutineScope.(Observe) -> Unit) =
-            scriptDsl.handleObserveCommand(name) { block.toJavaFuture(it) }
+    fun onObserve(name: String, block: suspend CoroutineScope.(Observe) -> Unit) =
+            scriptDsl.onObserveCommand(name) { block.toJavaFuture(it) }
 
-    fun handleGoOnline(block: suspend CoroutineScope.() -> Unit) =
-            scriptDsl.handleGoOnline { block.toJavaFutureVoid() }
+    fun onGoOnline(block: suspend CoroutineScope.() -> Unit) =
+            scriptDsl.onGoOnline { block.toJavaFutureVoid() }
 
-    fun handleGoOffline(block: suspend CoroutineScope.() -> Unit) =
-            scriptDsl.handleGoOffline { block.toJavaFutureVoid() }
+    fun onGoOffline(block: suspend CoroutineScope.() -> Unit) =
+            scriptDsl.onGoOffline { block.toJavaFutureVoid() }
 
-    fun handleAbortSequence(block: suspend CoroutineScope.() -> Unit) =
-            scriptDsl.handleAbortSequence { block.toJavaFutureVoid() }
+    fun onAbortSequence(block: suspend CoroutineScope.() -> Unit) =
+            scriptDsl.onAbortSequence { block.toJavaFutureVoid() }
 
-    fun handleShutdown(block: suspend CoroutineScope.() -> Unit) =
-            scriptDsl.handleShutdown { block.toJavaFutureVoid() }
+    fun onShutdown(block: suspend CoroutineScope.() -> Unit) =
+            scriptDsl.onShutdown { block.toJavaFutureVoid() }
 
-    fun handleDiagnosticMode(block: suspend (UTCTime, String) -> Unit) =
-            scriptDsl.handleDiagnosticMode { x: UTCTime, y: String ->
+    fun onDiagnosticMode(block: suspend (UTCTime, String) -> Unit) =
+            scriptDsl.onDiagnosticMode { x: UTCTime, y: String ->
                 coroutineScope.launch { block(x, y) }.asCompletableFuture().thenAccept { }
             }
 
-    fun handleOperationsMode(block: suspend CoroutineScope.() -> Unit) =
-            scriptDsl.handleOperationsMode { block.toJavaFutureVoid() }
+    fun onOperationsMode(block: suspend CoroutineScope.() -> Unit) =
+            scriptDsl.onOperationsMode { block.toJavaFutureVoid() }
 
-    fun handleStop(block: suspend CoroutineScope.() -> Unit) =
-            scriptDsl.handleStop { block.toJavaFutureVoid() }
+    fun onStop(block: suspend CoroutineScope.() -> Unit) =
+            scriptDsl.onStop { block.toJavaFutureVoid() }
 
-    fun handleException(block: suspend CoroutineScope.(Throwable) -> Unit) =
-            scriptDsl.handleException {
+    fun onException(block: suspend CoroutineScope.(Throwable) -> Unit) =
+            scriptDsl.onException {
                 // "future" is used to swallow the exception coming from exception handlers
                 coroutineScope.future { block(it) }
                         .exceptionally { log("Exception is thrown from Exception handler with message : ${it.message}") }

@@ -8,7 +8,7 @@ import csw.location.models.TrackingEvent
 import csw.logging.api.scaladsl.Logger
 import csw.params.commands.CommandResponse.{Accepted, Completed}
 import csw.params.commands.{CommandResponse, ControlCommand}
-import csw.params.core.models.Prefix
+import csw.params.core.models.{Id, Prefix}
 import csw.params.events.{EventName, SystemEvent}
 import csw.time.core.models.UTCTime
 
@@ -27,16 +27,16 @@ class SampleComponentHandlers(ctx: ActorContext[TopLevelActorMessage], cswCtx: C
 
   override def onLocationTrackingEvent(trackingEvent: TrackingEvent): Unit = ???
 
-  override def validateCommand(controlCommand: ControlCommand): CommandResponse.ValidateCommandResponse =
-    Accepted(controlCommand.runId)
+  override def validateCommand(runId: Id, controlCommand: ControlCommand): CommandResponse.ValidateCommandResponse =
+    Accepted(runId)
 
-  override def onSubmit(controlCommand: ControlCommand): CommandResponse.SubmitResponse = {
+  override def onSubmit(runId: Id, controlCommand: ControlCommand): CommandResponse.SubmitResponse = {
     val event = new SystemEvent(Prefix("tcs.filter.wheel"), EventName("setup-command-from-tcs-sequencer"))
     eventService.defaultPublisher.publish(event)
-    Completed(controlCommand.runId)
+    Completed(runId)
   }
 
-  override def onOneway(controlCommand: ControlCommand): Unit = {}
+  override def onOneway(runId: Id, controlCommand: ControlCommand): Unit = {}
 
   override def onShutdown(): Future[Unit] = {
     log.info("Shutting down Component TLA")

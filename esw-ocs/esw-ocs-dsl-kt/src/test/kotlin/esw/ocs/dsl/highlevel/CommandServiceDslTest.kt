@@ -4,6 +4,7 @@ import csw.params.commands.CommandName
 import csw.params.commands.CommandResponse.*
 import csw.params.commands.Observe
 import csw.params.commands.Setup
+import csw.params.core.models.Id
 import csw.params.core.models.ObsId
 import csw.params.core.models.Prefix
 import csw.time.core.models.UTCTime
@@ -50,7 +51,7 @@ class CommandServiceDslTest : CommandServiceDsl {
     fun `HCD()#validate should resolve commandService for given hcd and call validate method on it | ESW-121`() = runBlocking {
 
         coEvery { commonUtils.resolveHcd(hcdName) }.answers { hcdCommandService }
-        coEvery { hcdCommandService.validate(setupCommand) }.answers { Accepted(setupCommand.runId()) }
+        coEvery { hcdCommandService.validate(setupCommand) }.answers { Accepted(Id.apply()) }
 
         val hcd = HCD(hcdName)
         hcd.validate(setupCommand)
@@ -62,7 +63,7 @@ class CommandServiceDslTest : CommandServiceDsl {
     fun `Assembly()#validate should resolve commandService for given assembly and call validate method on it | ESW-121`() = runBlocking {
 
         coEvery { commonUtils.resolveAssembly(assemblyName) }.answers { assemblyCommandService }
-        coEvery { assemblyCommandService.validate(setupCommand) }.answers { Accepted(setupCommand.runId()) }
+        coEvery { assemblyCommandService.validate(setupCommand) }.answers { Accepted(Id.apply()) }
 
         val assembly = Assembly(assemblyName)
         assembly.validate(setupCommand)
@@ -74,7 +75,7 @@ class CommandServiceDslTest : CommandServiceDsl {
     fun `Hcd#submit should resolve commandService for given hcd and call submit method on it | ESW-121`() = runBlocking {
 
         coEvery { commonUtils.resolveHcd(hcdName) }.answers { hcdCommandService }
-        coEvery { hcdCommandService.submit(setupCommand) }.answers { Started(setupCommand.runId()) }
+        coEvery { hcdCommandService.submit(setupCommand) }.answers { Started(Id.apply()) }
 
         val hcd = HCD(hcdName)
         hcd.submit(setupCommand)
@@ -86,7 +87,7 @@ class CommandServiceDslTest : CommandServiceDsl {
     fun `Assembly()#submit should resolve commandService for given assembly and call submit method on it | ESW-121`() = runBlocking {
 
         coEvery { commonUtils.resolveAssembly(assemblyName) }.answers { assemblyCommandService }
-        coEvery { assemblyCommandService.submit(setupCommand) }.answers { Started(setupCommand.runId()) }
+        coEvery { assemblyCommandService.submit(setupCommand) }.answers { Started(Id.apply()) }
 
         val assembly = Assembly(assemblyName)
         assembly.submit(setupCommand)
@@ -98,7 +99,7 @@ class CommandServiceDslTest : CommandServiceDsl {
     fun `Hcd()#submitAndWait should resolve commandService for given hcd and call submitAndWait method on it | ESW-121`() = runBlocking {
 
         coEvery { commonUtils.resolveHcd(hcdName) }.answers { hcdCommandService }
-        coEvery { hcdCommandService.submitAndWait(setupCommand) }.answers { Completed(setupCommand.runId()) }
+        coEvery { hcdCommandService.submitAndWait(setupCommand) }.answers { Completed(Id.apply()) }
 
         val hcd = HCD(hcdName)
         hcd.submitAndWait(setupCommand)
@@ -110,7 +111,7 @@ class CommandServiceDslTest : CommandServiceDsl {
     fun `Assembly()#submitAndWait should resolve commandService for given assembly and call submitAndWait method on it | ESW-121`() = runBlocking {
 
         coEvery { commonUtils.resolveAssembly(assemblyName) }.answers { assemblyCommandService }
-        coEvery { assemblyCommandService.submitAndWait(setupCommand) }.answers { Completed(setupCommand.runId()) }
+        coEvery { assemblyCommandService.submitAndWait(setupCommand) }.answers { Completed(Id.apply()) }
 
         val assembly = Assembly(assemblyName)
         assembly.submitAndWait(setupCommand)
@@ -122,7 +123,7 @@ class CommandServiceDslTest : CommandServiceDsl {
     fun `Hcd#oneway should resolve commandService for given hcd and call oneway method on it | ESW-121`() = runBlocking {
 
         coEvery { commonUtils.resolveHcd(hcdName) }.answers { hcdCommandService }
-        coEvery { hcdCommandService.oneway(setupCommand) }.answers { Accepted(setupCommand.runId()) }
+        coEvery { hcdCommandService.oneway(setupCommand) }.answers { Accepted(Id.apply()) }
 
         val hcd = HCD(hcdName)
         hcd.oneway(setupCommand)
@@ -134,7 +135,7 @@ class CommandServiceDslTest : CommandServiceDsl {
     fun `Assembly()#oneway should resolve commandService for given assembly and call oneway method on it | ESW-121`() = runBlocking {
 
         coEvery { commonUtils.resolveAssembly(assemblyName) }.answers { assemblyCommandService }
-        coEvery { assemblyCommandService.oneway(setupCommand) }.answers { Accepted(setupCommand.runId()) }
+        coEvery { assemblyCommandService.oneway(setupCommand) }.answers { Accepted(Id.apply()) }
 
         val assembly = Assembly(assemblyName)
         assembly.oneway(setupCommand)

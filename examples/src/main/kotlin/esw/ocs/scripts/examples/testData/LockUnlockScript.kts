@@ -14,7 +14,7 @@ script {
         publishEvent(lockResponseEvent.add(key.set(lockingResponse.javaClass.simpleName)))
     }
 
-    handleSetup("lock-assembly") {
+    onSetup("lock-assembly") {
 
         val assembly = Assembly("test")
         val initialLockResponse = assembly.lock(
@@ -27,7 +27,7 @@ script {
         publishLockingResponse(initialLockResponse)
     }
 
-    handleSetup("unlock-assembly") {
+    onSetup("unlock-assembly") {
         val assembly = Assembly("test")
         val response = assembly.unlock( "esw.test")
         publishLockingResponse(response)

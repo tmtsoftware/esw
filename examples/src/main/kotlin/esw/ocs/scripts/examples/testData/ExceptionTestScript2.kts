@@ -6,9 +6,9 @@ script {
 
     loadScripts(exceptionHandlerScript)
 
-    handleGoOffline {}
+    onGoOffline {}
 
-    handleGoOnline {
+    onGoOnline {
         throw RuntimeException("handle-goOnline-failed")
     }
 }

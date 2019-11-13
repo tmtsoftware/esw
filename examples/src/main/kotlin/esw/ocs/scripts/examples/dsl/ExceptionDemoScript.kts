@@ -20,7 +20,7 @@ script {
         publishEvent(SystemEvent("tcs", "test.event"))
     }
 
-    handleException { exception ->
+    onException { exception ->
         when (exception) {
             is EventServerNotAvailable -> {
                 println(exception)
@@ -32,7 +32,7 @@ script {
         }
     }
 
-    handleSetup("command-1") {
+    onSetup("command-1") {
         // throws EventServerNotAvailable exception
         // 1. which will call exception handler
         // 2. mark the command as Error.
@@ -40,7 +40,7 @@ script {
     }
 
 
-    handleSetup("command-2") {
+    onSetup("command-2") {
         scheduleOnce(utcTimeNow()) {
             // throws EventServerNotAvailable exception
             // 1. which will call exception handler
