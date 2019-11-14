@@ -13,12 +13,9 @@ import io.mockk.verify
 import kotlinx.coroutines.runBlocking
 import org.junit.jupiter.api.AfterAll
 import org.junit.jupiter.api.Test
-import org.junit.jupiter.api.TestInstance
-import org.junit.jupiter.api.TestInstance.Lifecycle
 import java.util.*
 import java.util.concurrent.CompletableFuture
 
-@TestInstance(Lifecycle.PER_CLASS)
 class ConfigServiceDslTest : ConfigServiceDsl {
 
     val actorSystem: ActorSystem<Any> = ActorSystem.create(Behaviors.empty(), "config-dsl")
