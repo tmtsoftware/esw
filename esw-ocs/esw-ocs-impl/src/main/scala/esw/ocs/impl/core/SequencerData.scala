@@ -4,6 +4,7 @@ import akka.actor.typed.{ActorRef, ActorSystem}
 import csw.command.client.messages.sequencer.SequencerMsg
 import csw.params.commands.CommandResponse.{Completed, Error, Started, SubmitResponse}
 import csw.params.commands.Sequence
+import csw.params.core.models.Id
 import esw.ocs.api.models.StepStatus.Finished.{Failure, Success}
 import esw.ocs.api.models.StepStatus.{Finished, InFlight}
 import esw.ocs.api.models.{Step, StepList, StepStatus}
@@ -36,11 +37,11 @@ private[core] case class SequencerData(
       .notifyReadyToExecuteNextSubscriber(InProgress)
 
   def queryFinal(replyTo: ActorRef[SequenceResponse]): SequencerData =
-    if (stepList.exists(_.isFinished)) {
-      replyTo ! SequenceResult(getSequencerResponse)
-      this
+    stepList match {
+      case Some(stepList) if stepList.isFinished => replyTo ! SequenceResult(getSequencerResponse); this
+      case Some(_)                               => copy(sequenceResponseSubscribers = sequenceResponseSubscribers + replyTo)
+      case None                                  => replyTo ! SequenceResult(Error(Id("IdNotAvailable"), "No sequence is loaded in the sequencer")); this
     }
-    else copy(sequenceResponseSubscribers = sequenceResponseSubscribers + replyTo)
 
   def pullNextStep(replyTo: ActorRef[PullNextResult]): SequencerData =
     copy(stepRefSubscriber = Some(replyTo))

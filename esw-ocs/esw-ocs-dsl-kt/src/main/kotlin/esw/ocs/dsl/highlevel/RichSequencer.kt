@@ -33,7 +33,7 @@ class RichSequencer(
             sequencerAdminFactory.jMake(sequencerId, observingMode).await()
 
     private suspend fun sequencerCommandApi() =
-            sequencerCommandFactory.make(sequencerId, observingMode).toJava().await()
+            sequencerCommandFactory.jMake(sequencerId, observingMode).await()
 
     suspend fun submitAndWait(sequence: Sequence): SubmitResponse? =
             sequencerCommandService().submitAndWait(sequence).toJava().await()

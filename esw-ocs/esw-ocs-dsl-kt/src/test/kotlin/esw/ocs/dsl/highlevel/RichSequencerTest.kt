@@ -52,6 +52,7 @@ class RichSequencerTest {
         every { locationServiceUtil.resolveSequencer(sequencerId, observingMode, any()) }.answers { Future.successful(sequencerLocation) }
         every { SequencerCommandServiceFactory.make(sequencerLocation, actorSystem) }.answers { sequencerCommandService }
         every { sequencerCommandService.submitAndWait(sequence) }.answers { Future.successful(CommandResponse.Completed(Id.apply())) }
+        every { sequencerCommandFactory.jMake(sequencerId, observingMode) }.answers { CompletableFuture.completedFuture(sequencerCommandApi) }
 
         tcsSequencer.submitAndWait(sequence)
 
@@ -61,7 +62,7 @@ class RichSequencerTest {
     @Test
     fun `diagnosticMode should resolve sequencerAdmin for given sequencer and call diagnosticMode method on it | ESW-143, ESW-245 `() = runBlocking {
 
-        every { sequencerAdminFactory.jMake(sequencerId, observingMode) }.answers { CompletableFuture.completedFuture(sequencerAdmin) }
+        every { sequencerCommandFactory.jMake(sequencerId, observingMode) }.answers { CompletableFuture.completedFuture(sequencerCommandApi) }
         every { sequencerCommandApi.diagnosticMode(startTime, hint) }.answers { Future.successful(`Ok$`.`MODULE$`) }
 
         tcsSequencer.diagnosticMode(startTime, hint)
@@ -71,7 +72,7 @@ class RichSequencerTest {
     @Test
     fun `operationsMode should resolve sequencerAdmin for given sequencer and call operationsMode method on it | ESW-143, ESW-245 `() = runBlocking {
 
-        every { sequencerAdminFactory.jMake(sequencerId, observingMode) }.answers { CompletableFuture.completedFuture(sequencerAdmin) }
+        every { sequencerCommandFactory.jMake(sequencerId, observingMode) }.answers { CompletableFuture.completedFuture(sequencerCommandApi) }
         every { sequencerCommandApi.operationsMode() }.answers { Future.successful(`Ok$`.`MODULE$`) }
 
         tcsSequencer.operationsMode()
@@ -81,7 +82,7 @@ class RichSequencerTest {
     @Test
     fun `goOnline should resolve sequencerAdmin for given sequencer and call goOnline method on it | ESW-236, ESW-245 `() = runBlocking {
 
-        every { sequencerAdminFactory.jMake(sequencerId, observingMode) }.answers { CompletableFuture.completedFuture(sequencerAdmin) }
+        every { sequencerCommandFactory.jMake(sequencerId, observingMode) }.answers { CompletableFuture.completedFuture(sequencerCommandApi) }
         every { sequencerCommandApi.goOnline() }.answers { Future.successful(`Ok$`.`MODULE$`) }
 
         tcsSequencer.goOnline()
@@ -91,7 +92,7 @@ class RichSequencerTest {
     @Test
     fun `goOffline should resolve sequencerAdmin for given sequencer and call goOffline method on it | ESW-236, ESW-245 `() = runBlocking {
 
-        every { sequencerAdminFactory.jMake(sequencerId, observingMode) }.answers { CompletableFuture.completedFuture(sequencerAdmin) }
+        every { sequencerCommandFactory.jMake(sequencerId, observingMode) }.answers { CompletableFuture.completedFuture(sequencerCommandApi) }
         every { sequencerCommandApi.goOffline() }.answers { Future.successful(`Ok$`.`MODULE$`) }
 
         tcsSequencer.goOffline()

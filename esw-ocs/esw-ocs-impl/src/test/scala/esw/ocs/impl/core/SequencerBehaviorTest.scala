@@ -58,7 +58,7 @@ class SequencerBehaviorTest extends ScalaTestWithActorTestKit with BaseTestSuite
     }
   }
 
-  "LoadAndStartSequence" must {
+  "SubmitSequence" must {
     "load and start executing a sequence | ESW-145, ESW-154, ESW-221" in {
       val sequencerSetup = SequencerTestSetup.idle(sequence)
       import sequencerSetup._
@@ -90,7 +90,7 @@ class SequencerBehaviorTest extends ScalaTestWithActorTestKit with BaseTestSuite
     }
   }
 
-  "LoadAndProcessSequence" must {
+  "SubmitSequenceAndWait" must {
     "load and process sequence in idle state | ESW-145, ESW-154" in {
       val sequencerSetup = SequencerTestSetup.idle(sequence)
       import sequencerSetup._
@@ -103,13 +103,13 @@ class SequencerBehaviorTest extends ScalaTestWithActorTestKit with BaseTestSuite
   }
 
   "QuerySequenceResponse" must {
-    "return nothing when sequencer is Idle and hasn't executed any sequence | ESW-221" in {
+    "return error response when sequencer is Idle and hasn't executed any sequence | ESW-221" in {
       val sequencerSetup = SequencerTestSetup.idle(sequence)
       import sequencerSetup._
 
       val seqResProbe = createTestProbe[SubmitResponse]
       sequencerActor ! QueryFinal(seqResProbe.ref)
-      seqResProbe.expectNoMessage(maxWaitForExpectNoMessage)
+      seqResProbe.expectMessageType[Error]
     }
 
     "return Sequence result with Completed when sequencer is in loaded state | ESW-145, ESW-154, ESW-221" in {
