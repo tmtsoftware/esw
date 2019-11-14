@@ -13,14 +13,14 @@ import io.bullet.borer.Decoder
 import msocket.api.Transport
 import org.mockito.ArgumentMatchers.{any, eq => argsEq}
 
-import scala.concurrent.{ExecutionContext, Future}
+import scala.concurrent.ExecutionContext.Implicits.global
+import scala.concurrent.Future
 
 class SequencerCommandClientTest extends BaseTestSuite with SequencerHttpCodecs {
 
-  private val postClient                    = mock[Transport[SequencerPostRequest]]
-  private val websocketClient               = mock[Transport[SequencerWebsocketRequest]]
-  private implicit val ec: ExecutionContext = mock[ExecutionContext]
-  private val sequencerCommandClient        = new SequencerCommandClient(postClient, websocketClient)
+  private val postClient             = mock[Transport[SequencerPostRequest]]
+  private val websocketClient        = mock[Transport[SequencerWebsocketRequest]]
+  private val sequencerCommandClient = new SequencerCommandClient(postClient, websocketClient)
   "SequencerCommandClient" must {
 
     "call postClient with GoOffline request | ESW-222" in {
@@ -51,7 +51,7 @@ class SequencerCommandClientTest extends BaseTestSuite with SequencerHttpCodecs 
       sequencerCommandClient.startSequence().futureValue should ===(startedResponse)
     }
 
-    "call postClient with LoadAndStartSequence request | ESW-222" in {
+    "call postClient with SubmitSequence request | ESW-222" in {
       val command1         = Setup(Prefix("esw.test"), CommandName("command-1"), None)
       val sequence         = Sequence(command1)
       val sequenceResponse = Started(sequence.runId)
@@ -60,6 +60,23 @@ class SequencerCommandClientTest extends BaseTestSuite with SequencerHttpCodecs 
           .requestResponse[SubmitResponse](argsEq(SubmitSequence(sequence)))(any[Decoder[SubmitResponse]]())
       ).thenReturn(Future.successful(sequenceResponse))
       sequencerCommandClient.submit(sequence).futureValue should ===(sequenceResponse)
+    }
+
+    "call postClient with SubmitAndWait request | ESW-222" in {
+      val command1          = Setup(Prefix("esw.test"), CommandName("command-1"), None)
+      val sequence          = Sequence(command1)
+      val startedResponse   = Started(sequence.runId)
+      val completedResponse = Completed(sequence.runId)
+
+      when(
+        postClient
+          .requestResponse[SubmitResponse](argsEq(SubmitSequence(sequence)))(any[Decoder[SubmitResponse]]())
+      ).thenReturn(Future.successful(startedResponse))
+
+      when(websocketClient.requestResponse[SubmitResponse](argsEq(QueryFinal))(any[Decoder[SubmitResponse]]()))
+        .thenReturn(Future.successful(completedResponse))
+
+      sequencerCommandClient.submitAndWait(sequence).futureValue should ===(completedResponse)
     }
 
     "call postClient with DiagnosticMode request | ESW-143" in {

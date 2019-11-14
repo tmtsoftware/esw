@@ -37,7 +37,7 @@ import msocket.impl.Encoding.JsonText
 import scala.concurrent.Future
 import scala.concurrent.duration.DurationLong
 
-class SequencerHttpClientIntegrationTest extends ScalaTestFrameworkTestKit(EventServer) with BaseTestSuite {
+class SequencerClientIntegrationTest extends ScalaTestFrameworkTestKit(EventServer) with BaseTestSuite {
 
   import frameworkTestKit._
   private implicit val sys: ActorSystem[SpawnProtocol.Command] = actorSystem
@@ -56,13 +56,13 @@ class SequencerHttpClientIntegrationTest extends ScalaTestFrameworkTestKit(Event
   private val command5 = Setup(Prefix("esw.test"), CommandName("command-5"), None)
   private val command6 = Setup(Prefix("esw.test"), CommandName("command-6"), None)
 
-  private var locationService: LocationService            = _
-  private var ocsSequencerWiring: SequencerWiring         = _
-  private var tcsSequencerWiring: SequencerWiring         = _
-  private var ocsSequencer: ActorRef[SequencerMsg]        = _
-  private var ocsSequencerAdmin: SequencerAdminClient     = _
-  private var ocsSequencerCommand: SequencerCommandClient = _
-  private var tcsSequencerAdmin: SequencerAdminClient     = _
+  private var locationService: LocationService               = _
+  private var ocsSequencerWiring: SequencerWiring            = _
+  private var tcsSequencerWiring: SequencerWiring            = _
+  private var ocsSequencer: ActorRef[SequencerMsg]           = _
+  private var ocsSequencerAdmin: SequencerAdminClient        = _
+  private var ocsSequencerCommandApi: SequencerCommandClient = _
+  private var tcsSequencerAdmin: SequencerAdminClient        = _
 
   override def beforeAll(): Unit = {
     super.beforeAll()
@@ -75,7 +75,7 @@ class SequencerHttpClientIntegrationTest extends ScalaTestFrameworkTestKit(Event
     ocsSequencerWiring.sequencerServer.start()
 
     ocsSequencerAdmin = resolveSequencerAdmin(packageId, observingMode)
-    ocsSequencerCommand = resolveSequencerCommandClient(packageId, observingMode)
+    ocsSequencerCommandApi = resolveSequencerCommandClient(packageId, observingMode)
     ocsSequencer = resolveSequencerAkka()
 
     // tcs sequencer, starts with TestScript3
@@ -95,9 +95,9 @@ class SequencerHttpClientIntegrationTest extends ScalaTestFrameworkTestKit(Event
   "LoadSequence, Start it and Query its response | ESW-145, ESW-154, ESW-221, ESW-194, ESW-158, ESW-222, ESW-101" in {
     val sequence = Sequence(command1, command2)
 
-    ocsSequencerCommand.loadSequence(sequence).futureValue should ===(Ok)
-    ocsSequencerCommand.startSequence().futureValue should ===(Started(sequence.runId))
-    ocsSequencerCommand.queryFinal().futureValue should ===(Completed(sequence.runId))
+    ocsSequencerCommandApi.loadSequence(sequence).futureValue should ===(Ok)
+    ocsSequencerCommandApi.startSequence().futureValue should ===(Started(sequence.runId))
+    ocsSequencerCommandApi.queryFinal().futureValue should ===(Completed(sequence.runId))
 
     val step1         = Step(command1, Success, hasBreakpoint = false)
     val step2         = Step(command2, Success, hasBreakpoint = false)
@@ -113,23 +113,23 @@ class SequencerHttpClientIntegrationTest extends ScalaTestFrameworkTestKit(Event
     actualSteps should ===(expectedSequence.steps)
 
     // assert sequencer does not accept LoadSequence/Start/QuerySequenceResponse messages in offline state
-    ocsSequencerCommand.goOffline().futureValue should ===(Ok)
-    ocsSequencerCommand.loadSequence(sequence).futureValue should ===(Unhandled(Offline.entryName, "LoadSequence"))
+    ocsSequencerCommandApi.goOffline().futureValue should ===(Ok)
+    ocsSequencerCommandApi.loadSequence(sequence).futureValue should ===(Unhandled(Offline.entryName, "LoadSequence"))
 
     val invalidStartResponse =
       Invalid(Id("IdNotAvailable"), UnsupportedCommandInStateIssue(Unhandled(Offline.entryName, "StartSequence").msg))
-    ocsSequencerCommand.startSequence().futureValue should ===(invalidStartResponse)
+    ocsSequencerCommandApi.startSequence().futureValue should ===(invalidStartResponse)
 
     val invalidQueryResponse =
       Invalid(Id("IdNotAvailable"), UnsupportedCommandInStateIssue(Unhandled(Offline.entryName, "QueryFinalInternal").msg))
-    ocsSequencerCommand.queryFinal().futureValue should ===(invalidQueryResponse)
+    ocsSequencerCommandApi.queryFinal().futureValue should ===(invalidQueryResponse)
   }
-//
+
   "Load, Add commands and Start sequence - ensures sequence doesn't start on loading | ESW-222, ESW-101" in {
 
     val sequence = Sequence(command1)
 
-    ocsSequencerCommand.loadSequence(sequence).futureValue should ===(Ok)
+    ocsSequencerCommandApi.loadSequence(sequence).futureValue should ===(Ok)
 
     ocsSequencerAdmin.add(List(command2)).futureValue should ===(Ok)
 
@@ -138,7 +138,7 @@ class SequencerHttpClientIntegrationTest extends ScalaTestFrameworkTestKit(Event
       Some(StepList(sequence.runId, List(Step(command1), Step(command2))))
     )
 
-    ocsSequencerCommand.startSequence().futureValue should ===(Started(sequence.runId))
+    ocsSequencerCommandApi.startSequence().futureValue should ===(Started(sequence.runId))
 
     val expectedFinishedSteps = List(
       Step(command1, Success, hasBreakpoint = false),
@@ -152,7 +152,7 @@ class SequencerHttpClientIntegrationTest extends ScalaTestFrameworkTestKit(Event
   "SubmitSequenceAndWait for a sequence and execute commands that are added later | ESW-145, ESW-154, ESW-222" in {
     val sequence = Sequence(command1, command2)
 
-    val processSeqResponse: Future[SubmitResponse] = ocsSequencer ? (SubmitSequenceAndWait(sequence, _))
+    val processSeqResponse: Future[SubmitResponse] = ocsSequencerCommandApi.submitAndWait(sequence)
     eventually(ocsSequencerAdmin.getSequence.futureValue shouldBe a[Some[_]])
 
     ocsSequencerAdmin.add(List(command3)).futureValue should ===(Ok)
@@ -224,7 +224,7 @@ class SequencerHttpClientIntegrationTest extends ScalaTestFrameworkTestKit(Event
     //##############
 
     // assert ocs sequencer is in offline state on sending goOffline message
-    ocsSequencerCommand.goOffline().futureValue should ===(Ok)
+    ocsSequencerCommandApi.goOffline().futureValue should ===(Ok)
     ocsSequencerAdmin.isOnline.futureValue should ===(false)
 
     // assert ocs sequencer does not accept editor commands in offline state
@@ -249,7 +249,7 @@ class SequencerHttpClientIntegrationTest extends ScalaTestFrameworkTestKit(Event
     onlineEventSubscription.ready().futureValue
     testProbe.expectMessageType[SystemEvent] // discard invalid event
 
-    ocsSequencerCommand.goOnline().futureValue should ===(Ok)
+    ocsSequencerCommandApi.goOnline().futureValue should ===(Ok)
     ocsSequencerAdmin.isOnline.futureValue should ===(true)
 
     Thread.sleep(1000) // wait till goOnline msg from sequencer1 reaches to sequencer2
@@ -265,12 +265,12 @@ class SequencerHttpClientIntegrationTest extends ScalaTestFrameworkTestKit(Event
   "LoadSequence, Start it and Abort sequence | ESW-155, ESW-137" in {
     val sequence = Sequence(command4, command5, command6)
 
-    ocsSequencerCommand.loadSequence(sequence).futureValue should ===(Ok)
+    ocsSequencerCommandApi.loadSequence(sequence).futureValue should ===(Ok)
 
     //assert that it does not accept AbortSequence in loaded state
     ocsSequencerAdmin.abortSequence().futureValue should ===(Unhandled(Loaded.entryName, "AbortSequence"))
 
-    ocsSequencerCommand.startSequence().futureValue should ===(Started(sequence.runId))
+    ocsSequencerCommandApi.startSequence().futureValue should ===(Started(sequence.runId))
 
     //assert that AbortSequence is accepted in InProgress state
     ocsSequencerAdmin.abortSequence().futureValue should ===(Ok)
@@ -280,19 +280,19 @@ class SequencerHttpClientIntegrationTest extends ScalaTestFrameworkTestKit(Event
     )
     val expectedSequence = Some(StepList(sequence.runId, expectedSteps))
     val expectedResponse = Completed(sequence.runId)
-    ocsSequencerCommand.queryFinal().futureValue should ===(expectedResponse)
+    ocsSequencerCommandApi.queryFinal().futureValue should ===(expectedResponse)
     compareStepList(ocsSequencerAdmin.getSequence.futureValue, expectedSequence)
   }
 
   "LoadSequence, Start it and Stop | ESW-156, ESW-138" in {
     val sequence = Sequence(command4, command5, command6)
 
-    ocsSequencerCommand.loadSequence(sequence).futureValue should ===(Ok)
+    ocsSequencerCommandApi.loadSequence(sequence).futureValue should ===(Ok)
 
     //assert that it does not accept Stop in loaded state
     ocsSequencerAdmin.stop().futureValue should ===(Unhandled(Loaded.entryName, "Stop"))
 
-    ocsSequencerCommand.startSequence().futureValue should ===(Started(sequence.runId))
+    ocsSequencerCommandApi.startSequence().futureValue should ===(Started(sequence.runId))
 
     //assert that Stop is accepted in InProgress state
     ocsSequencerAdmin.stop().futureValue should ===(Ok)
@@ -304,7 +304,7 @@ class SequencerHttpClientIntegrationTest extends ScalaTestFrameworkTestKit(Event
     )
     val expectedSequence = Some(StepList(sequence.runId, expectedSteps))
     val expectedResponse = Completed(sequence.runId)
-    ocsSequencerCommand.queryFinal().futureValue should ===(expectedResponse)
+    ocsSequencerCommandApi.queryFinal().futureValue should ===(expectedResponse)
     compareStepList(ocsSequencerAdmin.getSequence.futureValue, expectedSequence)
   }
 
@@ -323,7 +323,7 @@ class SequencerHttpClientIntegrationTest extends ScalaTestFrameworkTestKit(Event
     testProbe.expectMessageType[SystemEvent] // discard invalid event
 
     //Diagnostic Mode
-    ocsSequencerCommand.diagnosticMode(startTime, hint).futureValue should ===(Ok)
+    ocsSequencerCommandApi.diagnosticMode(startTime, hint).futureValue should ===(Ok)
 
     val expectedDiagnosticEvent = testProbe.expectMessageType[SystemEvent]
 
@@ -332,7 +332,7 @@ class SequencerHttpClientIntegrationTest extends ScalaTestFrameworkTestKit(Event
     //Operations Mode
     val operationsModeParam = StringKey.make("mode").set("operations")
 
-    ocsSequencerCommand.operationsMode().futureValue should ===(Ok)
+    ocsSequencerCommandApi.operationsMode().futureValue should ===(Ok)
 
     val expectedOperationsEvent = testProbe.expectMessageType[SystemEvent]
 
