@@ -8,6 +8,7 @@ import csw.alarm.models.Key.AlarmKey
 import csw.config.api.javadsl.IConfigClientService
 import csw.event.api.javadsl.IEventPublisher
 import csw.event.api.javadsl.IEventSubscriber
+import csw.location.api.javadsl.JComponentType
 import csw.location.models.ComponentType
 import csw.time.scheduler.api.TimeServiceScheduler
 import esw.ocs.dsl.Timeouts
@@ -37,10 +38,16 @@ abstract class CswHighLevelDsl(private val cswServices: CswServices) : EventServ
     override fun setSeverity(alarmKey: AlarmKey, severity: AlarmSeverity) = alarmServiceDslImpl.setSeverity(alarmKey, severity)
 
     /******** Command Service helpers ********/
-    override fun richComponent(name: String, componentType: ComponentType): RichComponent =
+    private val timeout: Timeout = Timeout(Timeouts.DefaultTimeout())
+
+    private fun richComponent(name: String, componentType: ComponentType): RichComponent =
             RichComponent(name, componentType, cswServices.lockUnlockUtil(), locationServiceUtil, actorSystem, coroutineScope)
 
-    override fun richSequencer(sequencerId: String, observingMode: String): RichSequencer =
+    private fun richSequencer(sequencerId: String, observingMode: String): RichSequencer =
             RichSequencer(sequencerId, observingMode, cswServices.sequencerAdminFactory(), locationServiceUtil, actorSystem)
+
+    fun Assembly(name: String): RichComponent = richComponent(name, JComponentType.Assembly())
+    fun HCD(name: String): RichComponent = richComponent(name, JComponentType.HCD())
+    fun Sequencer(sequencerId: String, observingMode: String): RichSequencer = richSequencer(sequencerId, observingMode)
 
 }

@@ -26,8 +26,8 @@ import kotlin.time.Duration
 import kotlin.time.toJavaDuration
 
 class RichComponent(
-        private val name: String,
-        private val compType: ComponentType,
+        val name: String,
+        val componentType: ComponentType,
         private val lockUnlockUtil: LockUnlockUtil,
         private val locationServiceUtil: LocationServiceUtil,
         private val actorSystem: ActorSystem<*>,
@@ -62,6 +62,6 @@ class RichComponent(
 
     suspend fun unlock(prefix: String): LockingResponse = lockUnlockUtil.unlock(componentRef(), Prefix(prefix)).await()
 
-    private suspend fun commandService(): ICommandService = CommandServiceFactory.jMake(locationServiceUtil.jResolveAkkaLocation(name, compType).await(), actorSystem)
-    private suspend fun componentRef(): ActorRef<ComponentMessage> = locationServiceUtil.jResolveComponentRef(name, JComponentType.Assembly()).await()
+    private suspend fun commandService(): ICommandService = CommandServiceFactory.jMake(locationServiceUtil.jResolveAkkaLocation(name, componentType).await(), actorSystem)
+    private suspend fun componentRef(): ActorRef<ComponentMessage> = locationServiceUtil.jResolveComponentRef(name, componentType).await()
 }

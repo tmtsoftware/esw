@@ -27,6 +27,7 @@ import io.mockk.mockkStatic
 import io.mockk.verify
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.runBlocking
+import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
 import java.util.*
 import java.util.concurrent.CompletableFuture
@@ -34,12 +35,11 @@ import kotlin.time.Duration
 import kotlin.time.seconds
 import kotlin.time.toJavaDuration
 
+
 class RichComponentTest {
     private val hint = "test-hint"
     private val startTime: UTCTime = UTCTime.now()
 
-    private val componentName: String = "tcsAssembly"
-    private val componentType: ComponentType = JComponentType.Assembly()
     private val setupCommand = Setup(Prefix("esw.test"), CommandName("move"), Optional.of(ObsId("testObsId")))
 
     private val prefixStr = "esw"
@@ -52,134 +52,279 @@ class RichComponentTest {
     private val actorSystem: ActorSystem<*> = mockk()
     private val coroutineScope: CoroutineScope = mockk()
 
-    private val assembly: RichComponent =
-            RichComponent(
-                    componentName,
-                    componentType,
-                    lockUnlockUtil,
-                    locationServiceUtil,
-                    actorSystem,
-                    coroutineScope
-            )
 
-    private val assemblyLocation: AkkaLocation = mockk()
-    private val assemblyRef: ActorRef<ComponentMessage> = mockk()
-    private val assemblyCommandService: ICommandService = mockk()
+    @Nested
+    inner class Assembly {
+        private val componentName: String = "sampleAssembly"
+        private val componentType: ComponentType = JComponentType.Assembly()
 
-    @Test
-    fun `validate should resolve commandService for given assembly and call validate method on it | ESW-121, ESW-245 `() = runBlocking {
-        mockkStatic(CommandServiceFactory::class)
-        every { locationServiceUtil.jResolveAkkaLocation(componentName, componentType) }.answers { CompletableFuture.completedFuture(assemblyLocation) }
-        every { CommandServiceFactory.jMake(assemblyLocation, actorSystem) }.answers { assemblyCommandService }
-        every { assemblyCommandService.validate(setupCommand) }.answers { CompletableFuture.completedFuture(CommandResponse.Accepted(Id.apply())) }
+        private val assembly: RichComponent =
+                RichComponent(
+                        componentName,
+                        componentType,
+                        lockUnlockUtil,
+                        locationServiceUtil,
+                        actorSystem,
+                        coroutineScope
+                )
 
-        assembly.validate(setupCommand)
+        private val assemblyLocation: AkkaLocation = mockk()
+        private val assemblyRef: ActorRef<ComponentMessage> = mockk()
+        private val assemblyCommandService: ICommandService = mockk()
 
-        verify { assemblyCommandService.validate(setupCommand) }
+
+        @Test
+        fun `validate should resolve commandService for given assembly and call validate method on it | ESW-121, ESW-245 `() = runBlocking {
+            mockkStatic(CommandServiceFactory::class)
+            every { locationServiceUtil.jResolveAkkaLocation(componentName, componentType) }.answers { CompletableFuture.completedFuture(assemblyLocation) }
+            every { CommandServiceFactory.jMake(assemblyLocation, actorSystem) }.answers { assemblyCommandService }
+            every { assemblyCommandService.validate(setupCommand) }.answers { CompletableFuture.completedFuture(CommandResponse.Accepted(Id.apply())) }
+
+            assembly.validate(setupCommand)
+
+            verify { assemblyCommandService.validate(setupCommand) }
+        }
+
+        @Test
+        fun `oneway should resolve commandService for given assembly and call oneway method on it | ESW-121, ESW-245 `() = runBlocking {
+            mockkStatic(CommandServiceFactory::class)
+            every { locationServiceUtil.jResolveAkkaLocation(componentName, componentType) }.answers { CompletableFuture.completedFuture(assemblyLocation) }
+            every { CommandServiceFactory.jMake(assemblyLocation, actorSystem) }.answers { assemblyCommandService }
+            every { assemblyCommandService.oneway(setupCommand, any()) }.answers { CompletableFuture.completedFuture(CommandResponse.Accepted(Id.apply())) }
+
+            assembly.oneway(setupCommand)
+
+            verify { assemblyCommandService.oneway(setupCommand, any()) }
+        }
+
+        @Test
+        fun `submit should resolve commandService for given assembly and call submit method on it | ESW-121, ESW-245 `() = runBlocking {
+            mockkStatic(CommandServiceFactory::class)
+            every { locationServiceUtil.jResolveAkkaLocation(componentName, componentType) }.answers { CompletableFuture.completedFuture(assemblyLocation) }
+            every { CommandServiceFactory.jMake(assemblyLocation, actorSystem) }.answers { assemblyCommandService }
+            every { assemblyCommandService.submit(setupCommand, any()) }.answers { CompletableFuture.completedFuture(CommandResponse.Completed(Id.apply())) }
+
+            assembly.submit(setupCommand)
+
+            verify { assemblyCommandService.submit(setupCommand, any()) }
+        }
+
+        @Test
+        fun `submitAndWait should resolve commandService for given assembly and call submitAndWait method on it | ESW-121, ESW-245 `() = runBlocking {
+            mockkStatic(CommandServiceFactory::class)
+            every { locationServiceUtil.jResolveAkkaLocation(componentName, componentType) }.answers { CompletableFuture.completedFuture(assemblyLocation) }
+            every { CommandServiceFactory.jMake(assemblyLocation, actorSystem) }.answers { assemblyCommandService }
+            every { assemblyCommandService.submitAndWait(setupCommand, any()) }.answers { CompletableFuture.completedFuture(CommandResponse.Completed(Id.apply())) }
+
+            assembly.submitAndWait(setupCommand)
+
+            verify { assemblyCommandService.submitAndWait(setupCommand, any()) }
+        }
+
+        @Test
+        fun `diagnosticMode should resolve actorRef for given assembly and send DiagnosticMode message to it | ESW-118, ESW-245 `() = runBlocking {
+            val diagnosticMessage = DiagnosticDataMessage.DiagnosticMode(startTime, hint)
+
+            every { locationServiceUtil.jResolveComponentRef(componentName, componentType) }.answers { CompletableFuture.completedFuture(assemblyRef) }
+            every { assemblyRef.tell(diagnosticMessage) }.answers { Unit }
+
+            assembly.diagnosticMode(startTime, hint)
+
+            verify { assemblyRef.tell(diagnosticMessage) }
+        }
+
+        @Test
+        fun `operationsMode should resolve actorRef for given assembly and send OperationsMode message to it | ESW-118, ESW-245 `() = runBlocking {
+            val operationsModeMessage = DiagnosticDataMessage.`OperationsMode$`.`MODULE$`
+
+            every { locationServiceUtil.jResolveComponentRef(componentName, componentType) }.answers { CompletableFuture.completedFuture(assemblyRef) }
+            every { assemblyRef.tell(operationsModeMessage) }.answers { Unit }
+
+            assembly.operationsMode()
+
+            verify { assemblyRef.tell(operationsModeMessage) }
+        }
+
+        @Test
+        fun `goOnline should resolve actorRef for given assembly and send GoOnline message to it | ESW-236, ESW-245 `() = runBlocking {
+            val goOnlineMessage = RunningMessage.Lifecycle(ToComponentLifecycleMessage.`GoOnline$`.`MODULE$`)
+
+            every { locationServiceUtil.jResolveComponentRef(componentName, componentType) }.answers { CompletableFuture.completedFuture(assemblyRef) }
+            every { assemblyRef.tell(goOnlineMessage) }.answers { Unit }
+
+            assembly.goOnline()
+
+            verify { assemblyRef.tell(goOnlineMessage) }
+        }
+
+        @Test
+        fun `goOffline should resolve actorRef for given assembly and send GoOffline message to it | ESW-236, ESW-245 `() = runBlocking {
+            val goOfflineMessage = RunningMessage.Lifecycle(ToComponentLifecycleMessage.`GoOffline$`.`MODULE$`)
+
+            every { locationServiceUtil.jResolveComponentRef(componentName, componentType) }.answers { CompletableFuture.completedFuture(assemblyRef) }
+            every { assemblyRef.tell(goOfflineMessage) }.answers { Unit }
+
+            assembly.goOffline()
+
+            verify { assemblyRef.tell(goOfflineMessage) }
+        }
+
+        @Test
+        fun `lock should resolve actorRef for given assembly and send Lock message to it | ESW-126, ESW-245 `() = runBlocking {
+            every { locationServiceUtil.jResolveComponentRef(componentName, componentType) }.answers { CompletableFuture.completedFuture(assemblyRef) }
+            every { lockUnlockUtil.lock(assemblyRef, prefix, jLeaseDuration, any(), any()) }.answers { CompletableFuture.completedFuture(LockingResponse.`LockAcquired$`.`MODULE$`) }
+
+            assembly.lock(prefixStr, leaseDuration, {}, {})
+
+            verify { lockUnlockUtil.lock(assemblyRef, prefix, jLeaseDuration, any(), any()) }
+        }
+
+        @Test
+        fun `unlock should resolve actorRef for given assembly and send Unlock message to it | ESW-126, ESW-245 `() = runBlocking {
+            every { locationServiceUtil.jResolveComponentRef(componentName, componentType) }.answers { CompletableFuture.completedFuture(assemblyRef) }
+            every { lockUnlockUtil.unlock(assemblyRef, prefix) }.answers { CompletableFuture.completedFuture(LockingResponse.`LockReleased$`.`MODULE$`) }
+
+            assembly.unlock(prefixStr)
+
+            verify { lockUnlockUtil.unlock(assemblyRef, prefix) }
+        }
     }
 
-    @Test
-    fun `oneway should resolve commandService for given assembly and call oneway method on it | ESW-121, ESW-245 `() = runBlocking {
-        mockkStatic(CommandServiceFactory::class)
-        every { locationServiceUtil.jResolveAkkaLocation(componentName, componentType) }.answers { CompletableFuture.completedFuture(assemblyLocation) }
-        every { CommandServiceFactory.jMake(assemblyLocation, actorSystem) }.answers { assemblyCommandService }
-        every { assemblyCommandService.oneway(setupCommand, any()) }.answers { CompletableFuture.completedFuture(CommandResponse.Accepted(Id.apply())) }
+    @Nested
+    inner class HCD {
+        private val hcdName: String = "sampleHcd"
+        private val componentType: ComponentType = JComponentType.HCD()
 
-        assembly.oneway(setupCommand)
+        private val hcd: RichComponent =
+                RichComponent(
+                        hcdName,
+                        componentType,
+                        lockUnlockUtil,
+                        locationServiceUtil,
+                        actorSystem,
+                        coroutineScope
+                )
 
-        verify { assemblyCommandService.oneway(setupCommand, any()) }
-    }
+        private val hcdLocation: AkkaLocation = mockk()
+        private val hcdRef: ActorRef<ComponentMessage> = mockk()
+        private val hcdCommandService: ICommandService = mockk()
 
-    @Test
-    fun `submit should resolve commandService for given assembly and call submit method on it | ESW-121, ESW-245 `() = runBlocking {
-        mockkStatic(CommandServiceFactory::class)
-        every { locationServiceUtil.jResolveAkkaLocation(componentName, componentType) }.answers { CompletableFuture.completedFuture(assemblyLocation) }
-        every { CommandServiceFactory.jMake(assemblyLocation, actorSystem) }.answers { assemblyCommandService }
-        every { assemblyCommandService.submit(setupCommand, any()) }.answers { CompletableFuture.completedFuture(CommandResponse.Completed(Id.apply())) }
 
-        assembly.submit(setupCommand)
+        @Test
+        fun `validate should resolve commandService for given hcd and call validate method on it | ESW-121, ESW-245 `() = runBlocking {
+            mockkStatic(CommandServiceFactory::class)
+            every { locationServiceUtil.jResolveAkkaLocation(hcdName, componentType) }.answers { CompletableFuture.completedFuture(hcdLocation) }
+            every { CommandServiceFactory.jMake(hcdLocation, actorSystem) }.answers { hcdCommandService }
+            every { hcdCommandService.validate(setupCommand) }.answers { CompletableFuture.completedFuture(CommandResponse.Accepted(Id.apply())) }
 
-        verify { assemblyCommandService.submit(setupCommand, any()) }
-    }
+            hcd.validate(setupCommand)
 
-    @Test
-    fun `submitAndWait should resolve commandService for given assembly and call submitAndWait method on it | ESW-121, ESW-245 `() = runBlocking {
-        mockkStatic(CommandServiceFactory::class)
-        every { locationServiceUtil.jResolveAkkaLocation(componentName, componentType) }.answers { CompletableFuture.completedFuture(assemblyLocation) }
-        every { CommandServiceFactory.jMake(assemblyLocation, actorSystem) }.answers { assemblyCommandService }
-        every { assemblyCommandService.submitAndWait(setupCommand, any()) }.answers { CompletableFuture.completedFuture(CommandResponse.Completed(Id.apply())) }
+            verify { hcdCommandService.validate(setupCommand) }
+        }
 
-        assembly.submitAndWait(setupCommand)
+        @Test
+        fun `oneway should resolve commandService for given hcd and call oneway method on it | ESW-121, ESW-245 `() = runBlocking {
+            mockkStatic(CommandServiceFactory::class)
+            every { locationServiceUtil.jResolveAkkaLocation(hcdName, componentType) }.answers { CompletableFuture.completedFuture(hcdLocation) }
+            every { CommandServiceFactory.jMake(hcdLocation, actorSystem) }.answers { hcdCommandService }
+            every { hcdCommandService.oneway(setupCommand, any()) }.answers { CompletableFuture.completedFuture(CommandResponse.Accepted(Id.apply())) }
 
-        verify { assemblyCommandService.submitAndWait(setupCommand, any()) }
-    }
+            hcd.oneway(setupCommand)
 
-    @Test
-    fun `diagnosticMode should resolve actorRef for given assembly and send DiagnosticMode message to it | ESW-118, ESW-245 `() = runBlocking {
-        val diagnosticMessage = DiagnosticDataMessage.DiagnosticMode(startTime, hint)
+            verify { hcdCommandService.oneway(setupCommand, any()) }
+        }
 
-        every { locationServiceUtil.jResolveComponentRef(componentName, componentType) }.answers { CompletableFuture.completedFuture(assemblyRef) }
-        every { assemblyRef.tell(diagnosticMessage) }.answers { Unit }
+        @Test
+        fun `submit should resolve commandService for given hcd and call submit method on it | ESW-121, ESW-245 `() = runBlocking {
+            mockkStatic(CommandServiceFactory::class)
+            every { locationServiceUtil.jResolveAkkaLocation(hcdName, componentType) }.answers { CompletableFuture.completedFuture(hcdLocation) }
+            every { CommandServiceFactory.jMake(hcdLocation, actorSystem) }.answers { hcdCommandService }
+            every { hcdCommandService.submit(setupCommand, any()) }.answers { CompletableFuture.completedFuture(CommandResponse.Completed(Id.apply())) }
 
-        assembly.diagnosticMode(startTime, hint)
+            hcd.submit(setupCommand)
 
-        verify { assemblyRef.tell(diagnosticMessage) }
-    }
+            verify { hcdCommandService.submit(setupCommand, any()) }
+        }
 
-    @Test
-    fun `operationsMode should resolve actorRef for given assembly and send OperationsMode message to it | ESW-118, ESW-245 `() = runBlocking {
-        val operationsModeMessage = DiagnosticDataMessage.`OperationsMode$`.`MODULE$`
+        @Test
+        fun `submitAndWait should resolve commandService for given hcd and call submitAndWait method on it | ESW-121, ESW-245 `() = runBlocking {
+            mockkStatic(CommandServiceFactory::class)
+            every { locationServiceUtil.jResolveAkkaLocation(hcdName, componentType) }.answers { CompletableFuture.completedFuture(hcdLocation) }
+            every { CommandServiceFactory.jMake(hcdLocation, actorSystem) }.answers { hcdCommandService }
+            every { hcdCommandService.submitAndWait(setupCommand, any()) }.answers { CompletableFuture.completedFuture(CommandResponse.Completed(Id.apply())) }
 
-        every { locationServiceUtil.jResolveComponentRef(componentName, componentType) }.answers { CompletableFuture.completedFuture(assemblyRef) }
-        every { assemblyRef.tell(operationsModeMessage) }.answers { Unit }
+            hcd.submitAndWait(setupCommand)
 
-        assembly.operationsMode()
+            verify { hcdCommandService.submitAndWait(setupCommand, any()) }
+        }
 
-        verify { assemblyRef.tell(operationsModeMessage) }
-    }
+        @Test
+        fun `diagnosticMode should resolve actorRef for given hcd and send DiagnosticMode message to it | ESW-118, ESW-245 `() = runBlocking {
+            val diagnosticMessage = DiagnosticDataMessage.DiagnosticMode(startTime, hint)
 
-    @Test
-    fun `goOnline should resolve actorRef for given assembly and send GoOnline message to it | ESW-236, ESW-245 `() = runBlocking {
-        val goOnlineMessage = RunningMessage.Lifecycle(ToComponentLifecycleMessage.`GoOnline$`.`MODULE$`)
+            every { locationServiceUtil.jResolveComponentRef(hcdName, componentType) }.answers { CompletableFuture.completedFuture(hcdRef) }
+            every { hcdRef.tell(diagnosticMessage) }.answers { Unit }
 
-        every { locationServiceUtil.jResolveComponentRef(componentName, componentType) }.answers { CompletableFuture.completedFuture(assemblyRef) }
-        every { assemblyRef.tell(goOnlineMessage) }.answers { Unit }
+            hcd.diagnosticMode(startTime, hint)
 
-        assembly.goOnline()
+            verify { hcdRef.tell(diagnosticMessage) }
+        }
 
-        verify { assemblyRef.tell(goOnlineMessage) }
-    }
+        @Test
+        fun `operationsMode should resolve actorRef for given hcd and send OperationsMode message to it | ESW-118, ESW-245 `() = runBlocking {
+            val operationsModeMessage = DiagnosticDataMessage.`OperationsMode$`.`MODULE$`
 
-    @Test
-    fun `goOffline should resolve actorRef for given assembly and send GoOffline message to it | ESW-236, ESW-245 `() = runBlocking {
-        val goOfflineMessage = RunningMessage.Lifecycle(ToComponentLifecycleMessage.`GoOffline$`.`MODULE$`)
+            every { locationServiceUtil.jResolveComponentRef(hcdName, componentType) }.answers { CompletableFuture.completedFuture(hcdRef) }
+            every { hcdRef.tell(operationsModeMessage) }.answers { Unit }
 
-        every { locationServiceUtil.jResolveComponentRef(componentName, componentType) }.answers { CompletableFuture.completedFuture(assemblyRef) }
-        every { assemblyRef.tell(goOfflineMessage) }.answers { Unit }
+            hcd.operationsMode()
 
-        assembly.goOffline()
+            verify { hcdRef.tell(operationsModeMessage) }
+        }
 
-        verify { assemblyRef.tell(goOfflineMessage) }
-    }
+        @Test
+        fun `goOnline should resolve actorRef for given hcd and send GoOnline message to it | ESW-236, ESW-245 `() = runBlocking {
+            val goOnlineMessage = RunningMessage.Lifecycle(ToComponentLifecycleMessage.`GoOnline$`.`MODULE$`)
 
-    @Test
-    fun `lock should resolve actorRef for given assembly and send Lock message to it | ESW-126, ESW-245 `() = runBlocking {
-        every { locationServiceUtil.jResolveComponentRef(componentName, componentType) }.answers { CompletableFuture.completedFuture(assemblyRef) }
-        every { lockUnlockUtil.lock(assemblyRef, prefix, jLeaseDuration, any(), any()) }.answers { CompletableFuture.completedFuture(LockingResponse.`LockAcquired$`.`MODULE$`) }
+            every { locationServiceUtil.jResolveComponentRef(hcdName, componentType) }.answers { CompletableFuture.completedFuture(hcdRef) }
+            every { hcdRef.tell(goOnlineMessage) }.answers { Unit }
 
-        assembly.lock(prefixStr, leaseDuration, {}, {})
+            hcd.goOnline()
 
-        verify { lockUnlockUtil.lock(assemblyRef, prefix, jLeaseDuration, any(), any()) }
-    }
+            verify { hcdRef.tell(goOnlineMessage) }
+        }
 
-    @Test
-    fun `unlock should resolve actorRef for given assembly and send Unlock message to it | ESW-126, ESW-245 `() = runBlocking {
-        every { locationServiceUtil.jResolveComponentRef(componentName, componentType) }.answers { CompletableFuture.completedFuture(assemblyRef) }
-        every { lockUnlockUtil.unlock(assemblyRef, prefix) }.answers { CompletableFuture.completedFuture(LockingResponse.`LockReleased$`.`MODULE$`) }
+        @Test
+        fun `goOffline should resolve actorRef for given hcd and send GoOffline message to it | ESW-236, ESW-245 `() = runBlocking {
+            val goOfflineMessage = RunningMessage.Lifecycle(ToComponentLifecycleMessage.`GoOffline$`.`MODULE$`)
 
-        assembly.unlock(prefixStr)
+            every { locationServiceUtil.jResolveComponentRef(hcdName, componentType) }.answers { CompletableFuture.completedFuture(hcdRef) }
+            every { hcdRef.tell(goOfflineMessage) }.answers { Unit }
 
-        verify { lockUnlockUtil.unlock(assemblyRef, prefix) }
+            hcd.goOffline()
+
+            verify { hcdRef.tell(goOfflineMessage) }
+        }
+
+        @Test
+        fun `lock should resolve actorRef for given hcd and send Lock message to it | ESW-126, ESW-245 `() = runBlocking {
+            every { locationServiceUtil.jResolveComponentRef(hcdName, componentType) }.answers { CompletableFuture.completedFuture(hcdRef) }
+            every { lockUnlockUtil.lock(hcdRef, prefix, jLeaseDuration, any(), any()) }.answers { CompletableFuture.completedFuture(LockingResponse.`LockAcquired$`.`MODULE$`) }
+
+            hcd.lock(prefixStr, leaseDuration, {}, {})
+
+            verify { lockUnlockUtil.lock(hcdRef, prefix, jLeaseDuration, any(), any()) }
+        }
+
+        @Test
+        fun `unlock should resolve actorRef for given hcd and send Unlock message to it | ESW-126, ESW-245 `() = runBlocking {
+            every { locationServiceUtil.jResolveComponentRef(hcdName, componentType) }.answers { CompletableFuture.completedFuture(hcdRef) }
+            every { lockUnlockUtil.unlock(hcdRef, prefix) }.answers { CompletableFuture.completedFuture(LockingResponse.`LockReleased$`.`MODULE$`) }
+
+            hcd.unlock(prefixStr)
+
+            verify { lockUnlockUtil.unlock(hcdRef, prefix) }
+        }
     }
 
 }
