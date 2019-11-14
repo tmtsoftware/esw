@@ -3,29 +3,19 @@ package esw.ocs.impl
 import akka.actor.testkit.typed.scaladsl.ScalaTestWithActorTestKit
 import akka.actor.typed.scaladsl.Behaviors
 import csw.command.client.messages.sequencer.SequencerMsg
-import csw.command.client.messages.sequencer.SequencerMsg.QueryFinal
-import csw.params.commands.CommandResponse.{Completed, Started}
 import csw.params.commands.{CommandName, Sequence, Setup}
 import csw.params.core.models.{Id, Prefix}
-import csw.time.core.models.UTCTime
 import esw.ocs.api.BaseTestSuite
 import esw.ocs.api.models.StepList
 import esw.ocs.api.protocol.EditorError.{CannotOperateOnAnInFlightOrFinishedStep, IdDoesNotExist}
-import esw.ocs.api.protocol.{GoOnlineHookFailed, Ok, SequenceResult, Unhandled}
+import esw.ocs.api.protocol.{Ok, Unhandled}
 import esw.ocs.impl.messages.SequencerMessages._
 import esw.ocs.impl.messages.SequencerState.{Idle, Loaded, Offline}
 
 class SequencerAdminImplTest extends ScalaTestWithActorTestKit with BaseTestSuite {
-  private val command = Setup(Prefix("esw.test"), CommandName("command-1"), None)
-
-  private val sequence = Sequence(command)
-
-  private val startTime = UTCTime.now()
-  private val hint      = "engineering"
-
+  private val command             = Setup(Prefix("esw.test"), CommandName("command-1"), None)
   private val getSequenceResponse = Some(StepList(Sequence(command)))
-
-  private val stepId = getSequenceResponse.get.steps.head.id
+  private val stepId              = getSequenceResponse.get.steps.head.id
 
   private val getStateResponse         = Loaded
   private val addResponse              = Ok
@@ -40,14 +30,6 @@ class SequencerAdminImplTest extends ScalaTestWithActorTestKit with BaseTestSuit
   private val stopResponse             = Unhandled(Loaded.entryName, "Stop")
   private val deleteResponse           = IdDoesNotExist(Id())
   private val addBreakpointResponse    = Unhandled(Idle.entryName, "AddBreakpoint")
-  private val goOnlineResponse         = GoOnlineHookFailed
-  private val goOfflineResponse        = Unhandled(Offline.entryName, "Offline")
-  private val loadSequenceResponse     = Ok
-  private val startSequenceResponse    = SequenceResult(Started(Id("runId1")))
-  private val submitSequenceResponse   = SequenceResult(Started(Id("runId2")))
-  private val diagnosticModeResponse   = Ok
-  private val operationsModeResponse   = Ok
-  private val queryFinalResponse       = Completed(Id())
 
   private val mockedBehavior: Behaviors.Receive[SequencerMsg] =
     Behaviors.receiveMessage[SequencerMsg] { msg =>
@@ -66,14 +48,6 @@ class SequencerAdminImplTest extends ScalaTestWithActorTestKit with BaseTestSuit
         case Stop(replyTo)                                   => replyTo ! stopResponse
         case AddBreakpoint(`stepId`, replyTo)                => replyTo ! addBreakpointResponse
         case RemoveBreakpoint(`stepId`, replyTo)             => replyTo ! removeBreakpointResponse
-        case GoOnline(replyTo)                               => replyTo ! goOnlineResponse
-        case GoOffline(replyTo)                              => replyTo ! goOfflineResponse
-        case LoadSequence(`sequence`, replyTo)               => replyTo ! loadSequenceResponse
-        case StartSequence(replyTo)                          => replyTo ! startSequenceResponse
-        case SubmitSequence(`sequence`, replyTo)             => replyTo ! submitSequenceResponse
-        case QueryFinal(replyTo)                             => replyTo ! queryFinalResponse
-        case DiagnosticMode(`startTime`, `hint`, replyTo)    => replyTo ! diagnosticModeResponse
-        case OperationsMode(replyTo)                         => replyTo ! operationsModeResponse
         case _                                               => //
       }
       Behaviors.same
@@ -142,28 +116,4 @@ class SequencerAdminImplTest extends ScalaTestWithActorTestKit with BaseTestSuit
   "stop | ESW-222" in {
     sequencerAdmin.stop().futureValue should ===(stopResponse)
   }
-
-//  "loadSequence | ESW-101" in {
-//    sequencerAdmin.loadSequence(sequence).futureValue should ===(Ok)
-//  }
-//
-//  "startSequence | ESW-101" in {
-//    sequencerAdmin.startSequence.futureValue should ===(Ok)
-//  }
-//
-//  "loadAndStartSequence | ESW-101" in {
-//    sequencerAdmin.submitSequence(sequence).futureValue should ===(Ok)
-//  }
-
-//  "queryFinal | ESW-101" in {
-//    sequencerAdmin.queryFinal.futureValue should ===(queryFinalResponse)
-//  }
-
-//  "diagnosticMode | ESW-143" in {
-//    sequencerAdmin.diagnosticMode(startTime, hint).futureValue should ===(diagnosticModeResponse)
-//  }
-//
-//  "operationsMode | ESW-143" in {
-//    sequencerAdmin.operationsMode().futureValue should ===(operationsModeResponse)
-//  }
 }

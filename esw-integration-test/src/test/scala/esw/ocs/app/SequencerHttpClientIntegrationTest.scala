@@ -14,10 +14,11 @@ import csw.location.api.scaladsl.LocationService
 import csw.location.client.scaladsl.HttpLocationServiceFactory
 import csw.location.models.Connection.{AkkaConnection, HttpConnection}
 import csw.location.models.{ComponentId, ComponentType}
-import csw.params.commands.CommandResponse.{Completed, Error, SubmitResponse}
+import csw.params.commands.CommandIssue.UnsupportedCommandInStateIssue
+import csw.params.commands.CommandResponse.{Completed, Error, Invalid, Started, SubmitResponse}
 import csw.params.commands.{CommandName, Sequence, Setup}
 import csw.params.core.generics.KeyType.StringKey
-import csw.params.core.models.Prefix
+import csw.params.core.models.{Id, Prefix}
 import csw.params.events.{Event, EventKey, EventName, SystemEvent}
 import csw.testkit.scaladsl.CSWService.EventServer
 import csw.testkit.scaladsl.ScalaTestFrameworkTestKit
@@ -29,14 +30,14 @@ import esw.ocs.api.models.StepStatus.Pending
 import esw.ocs.api.models.{Step, StepList}
 import esw.ocs.api.protocol._
 import esw.ocs.app.wiring.SequencerWiring
-import esw.ocs.impl.messages.SequencerState.Offline
+import esw.ocs.impl.messages.SequencerState.{Loaded, Offline}
 import esw.ocs.impl.{SequencerAdminClientFactory, SequencerCommandClientFactory}
 import msocket.impl.Encoding.JsonText
 
 import scala.concurrent.Future
 import scala.concurrent.duration.DurationLong
 
-class SequencerAdminIntegrationTest extends ScalaTestFrameworkTestKit(EventServer) with BaseTestSuite {
+class SequencerHttpClientIntegrationTest extends ScalaTestFrameworkTestKit(EventServer) with BaseTestSuite {
 
   import frameworkTestKit._
   private implicit val sys: ActorSystem[SpawnProtocol.Command] = actorSystem
@@ -55,13 +56,13 @@ class SequencerAdminIntegrationTest extends ScalaTestFrameworkTestKit(EventServe
   private val command5 = Setup(Prefix("esw.test"), CommandName("command-5"), None)
   private val command6 = Setup(Prefix("esw.test"), CommandName("command-6"), None)
 
-  private var locationService: LocationService        = _
-  private var ocsSequencerWiring: SequencerWiring     = _
-  private var tcsSequencerWiring: SequencerWiring     = _
-  private var ocsSequencer: ActorRef[SequencerMsg]    = _
-  private var ocsSequencerAdmin: SequencerAdminClient = _
-//  private var ocsSequencerCommand: SequencerCommandClient = _
-  private var tcsSequencerAdmin: SequencerAdminClient = _
+  private var locationService: LocationService            = _
+  private var ocsSequencerWiring: SequencerWiring         = _
+  private var tcsSequencerWiring: SequencerWiring         = _
+  private var ocsSequencer: ActorRef[SequencerMsg]        = _
+  private var ocsSequencerAdmin: SequencerAdminClient     = _
+  private var ocsSequencerCommand: SequencerCommandClient = _
+  private var tcsSequencerAdmin: SequencerAdminClient     = _
 
   override def beforeAll(): Unit = {
     super.beforeAll()
@@ -74,7 +75,7 @@ class SequencerAdminIntegrationTest extends ScalaTestFrameworkTestKit(EventServe
     ocsSequencerWiring.sequencerServer.start()
 
     ocsSequencerAdmin = resolveSequencerAdmin(packageId, observingMode)
-//    ocsSequencerCommand = resolveSequencerCommandClient(packageId, observingMode)
+    ocsSequencerCommand = resolveSequencerCommandClient(packageId, observingMode)
     ocsSequencer = resolveSequencerAkka()
 
     // tcs sequencer, starts with TestScript3
@@ -91,59 +92,61 @@ class SequencerAdminIntegrationTest extends ScalaTestFrameworkTestKit(EventServe
     tcsSequencerWiring.sequencerServer.shutDown().futureValue
   }
 
-//  "LoadSequence, Start it and Query its response | ESW-145, ESW-154, ESW-221, ESW-194, ESW-158, ESW-222, ESW-101" in {
-//    val sequence = Sequence(command1, command2)
+  "LoadSequence, Start it and Query its response | ESW-145, ESW-154, ESW-221, ESW-194, ESW-158, ESW-222, ESW-101" in {
+    val sequence = Sequence(command1, command2)
+
+    ocsSequencerCommand.loadSequence(sequence).futureValue should ===(Ok)
+    ocsSequencerCommand.startSequence().futureValue should ===(Started(sequence.runId))
+    ocsSequencerCommand.queryFinal().futureValue should ===(Completed(sequence.runId))
+
+    val step1         = Step(command1, Success, hasBreakpoint = false)
+    val step2         = Step(command2, Success, hasBreakpoint = false)
+    val expectedSteps = List(step1, step2)
+
+    val expectedSequence = StepList(sequence.runId, expectedSteps)
+
+    val actualSequenceResponse = ocsSequencerAdmin.getSequence.futureValue.get
+    val actualSteps = actualSequenceResponse.steps.zipWithIndex.map {
+      case (step, index) => step.withId(expectedSteps(index).id)
+    }
+
+    actualSteps should ===(expectedSequence.steps)
+
+    // assert sequencer does not accept LoadSequence/Start/QuerySequenceResponse messages in offline state
+    ocsSequencerCommand.goOffline().futureValue should ===(Ok)
+    ocsSequencerCommand.loadSequence(sequence).futureValue should ===(Unhandled(Offline.entryName, "LoadSequence"))
+
+    ocsSequencerCommand.startSequence().futureValue should ===(
+      Invalid(sequence.runId, UnsupportedCommandInStateIssue(Unhandled(Offline.entryName, "StartSequence").msg))
+    )
+    val invalidResponse =
+      Invalid(Id("IdNotAvailable"), UnsupportedCommandInStateIssue(Unhandled(Offline.entryName, "QueryFinalInternal").msg))
+    ocsSequencerCommand.queryFinal().futureValue should ===(invalidResponse)
+  }
 //
-//    ocsSequencerAdmin.loadSequence(sequence).futureValue should ===(Ok)
-//    ocsSequencerAdmin.startSequence.futureValue should ===(Ok)
-//    ocsSequencerCommand.queryFinal.futureValue should ===(Completed(sequence.runId))
-//
-//    val step1         = Step(command1, Success, hasBreakpoint = false)
-//    val step2         = Step(command2, Success, hasBreakpoint = false)
-//    val expectedSteps = List(step1, step2)
-//
-//    val expectedSequence = StepList(sequence.runId, expectedSteps)
-//
-//    val actualSequenceResponse = ocsSequencerAdmin.getSequence.futureValue.get
-//    val actualSteps = actualSequenceResponse.steps.zipWithIndex.map {
-//      case (step, index) => step.withId(expectedSteps(index).id)
-//    }
-//
-//    actualSteps should ===(expectedSequence.steps)
-//
-//    // assert sequencer does not accept LoadSequence/Start/QuerySequenceResponse messages in offline state
-//    ocsSequencerAdmin.goOffline().futureValue should ===(Ok)
-//    ocsSequencerAdmin.loadSequence(sequence).futureValue should ===(Unhandled(Offline.entryName, "LoadSequence"))
-//
-//    ocsSequencerAdmin.startSequence.futureValue should ===(Unhandled(Offline.entryName, "StartSequence"))
-//    val invalidResponse =
-//      Invalid(Id("IdNotAvailable"), UnsupportedCommandInStateIssue(Unhandled(Offline.entryName, "QueryFinalInternal").msg))
-//    ocsSequencerCommand.queryFinal.futureValue should ===(invalidResponse)
-//  }
-//
-//  "Load, Add commands and Start sequence - ensures sequence doesn't start on loading | ESW-222, ESW-101" in {
-//
-//    val sequence = Sequence(command1)
-//
-//    ocsSequencerAdmin.loadSequence(sequence).futureValue should ===(Ok)
-//
-//    ocsSequencerAdmin.add(List(command2)).futureValue should ===(Ok)
-//
-//    compareStepList(
-//      ocsSequencerAdmin.getSequence.futureValue,
-//      Some(StepList(sequence.runId, List(Step(command1), Step(command2))))
-//    )
-//
-//    ocsSequencerAdmin.startSequence.futureValue should ===(Ok)
-//
-//    val expectedFinishedSteps = List(
-//      Step(command1, Success, hasBreakpoint = false),
-//      Step(command2, Success, hasBreakpoint = false)
-//    )
-//    eventually(
-//      compareStepList(ocsSequencerAdmin.getSequence.futureValue, (Some(StepList(sequence.runId, expectedFinishedSteps))))
-//    )
-//  }
+  "Load, Add commands and Start sequence - ensures sequence doesn't start on loading | ESW-222, ESW-101" in {
+
+    val sequence = Sequence(command1)
+
+    ocsSequencerCommand.loadSequence(sequence).futureValue should ===(Ok)
+
+    ocsSequencerAdmin.add(List(command2)).futureValue should ===(Ok)
+
+    compareStepList(
+      ocsSequencerAdmin.getSequence.futureValue,
+      Some(StepList(sequence.runId, List(Step(command1), Step(command2))))
+    )
+
+    ocsSequencerCommand.startSequence().futureValue should ===(Started(sequence.runId))
+
+    val expectedFinishedSteps = List(
+      Step(command1, Success, hasBreakpoint = false),
+      Step(command2, Success, hasBreakpoint = false)
+    )
+    eventually(
+      compareStepList(ocsSequencerAdmin.getSequence.futureValue, (Some(StepList(sequence.runId, expectedFinishedSteps))))
+    )
+  }
 
   "SubmitSequenceAndWait for a sequence and execute commands that are added later | ESW-145, ESW-154, ESW-222" in {
     val sequence = Sequence(command1, command2)
@@ -220,8 +223,8 @@ class SequencerAdminIntegrationTest extends ScalaTestFrameworkTestKit(EventServe
     //##############
 
     // assert ocs sequencer is in offline state on sending goOffline message
-//    ocsSequencerAdmin.goOffline().futureValue should ===(Ok)
-//    ocsSequencerAdmin.isOnline.futureValue should ===(false)
+    ocsSequencerCommand.goOffline().futureValue should ===(Ok)
+    ocsSequencerAdmin.isOnline.futureValue should ===(false)
 
     // assert ocs sequencer does not accept editor commands in offline state
     ocsSequencerAdmin.add(List(command3)).futureValue should ===(Unhandled(Offline.entryName, "Add"))
@@ -245,8 +248,8 @@ class SequencerAdminIntegrationTest extends ScalaTestFrameworkTestKit(EventServe
     onlineEventSubscription.ready().futureValue
     testProbe.expectMessageType[SystemEvent] // discard invalid event
 
-//    ocsSequencerAdmin.goOnline().futureValue should ===(Ok)
-//    ocsSequencerAdmin.isOnline.futureValue should ===(true)
+    ocsSequencerCommand.goOnline().futureValue should ===(Ok)
+    ocsSequencerAdmin.isOnline.futureValue should ===(true)
 
     Thread.sleep(1000) // wait till goOnline msg from sequencer1 reaches to sequencer2
 
@@ -258,51 +261,51 @@ class SequencerAdminIntegrationTest extends ScalaTestFrameworkTestKit(EventServe
     onlineEvent.paramSet.head.values.head shouldBe "online"
   }
 
-//  "LoadSequence, Start it and Abort sequence | ESW-155, ESW-137" in {
-//    val sequence = Sequence(command4, command5, command6)
-//
-//    ocsSequencerAdmin.loadSequence(sequence).futureValue should ===(Ok)
-//
-//    //assert that it does not accept AbortSequence in loaded state
-//    ocsSequencerAdmin.abortSequence().futureValue should ===(Unhandled(Loaded.entryName, "AbortSequence"))
-//
-//    ocsSequencerAdmin.startSequence.futureValue should ===(Ok)
-//
-//    //assert that AbortSequence is accepted in InProgress state
-//    ocsSequencerAdmin.abortSequence().futureValue should ===(Ok)
-//
-//    val expectedSteps = List(
-//      Step(command4, Success, hasBreakpoint = false)
-//    )
-//    val expectedSequence = Some(StepList(sequence.runId, expectedSteps))
-//    val expectedResponse = Completed(sequence.runId)
-//    ocsSequencerCommand.queryFinal.futureValue should ===(expectedResponse)
-//    compareStepList(ocsSequencerAdmin.getSequence.futureValue, expectedSequence)
-//  }
+  "LoadSequence, Start it and Abort sequence | ESW-155, ESW-137" in {
+    val sequence = Sequence(command4, command5, command6)
 
-//  "LoadSequence, Start it and Stop | ESW-156, ESW-138" in {
-//    val sequence = Sequence(command4, command5, command6)
-//
-//    ocsSequencerAdmin.loadSequence(sequence).futureValue should ===(Ok)
-//
-//    //assert that it does not accept Stop in loaded state
-//    ocsSequencerAdmin.stop().futureValue should ===(Unhandled(Loaded.entryName, "Stop"))
-//
-//    ocsSequencerAdmin.startSequence.futureValue should ===(Ok)
-//
-//    //assert that Stop is accepted in InProgress state
-//    ocsSequencerAdmin.stop().futureValue should ===(Ok)
-//
-//    val expectedSteps = List(
-//      Step(command4, Success, hasBreakpoint = false),
-//      Step(command5, Success, hasBreakpoint = false),
-//      Step(command6, Success, hasBreakpoint = false)
-//    )
-//    val expectedSequence = Some(StepList(sequence.runId, expectedSteps))
-//    val expectedResponse = Completed(sequence.runId)
-//    ocsSequencerCommand.queryFinal.futureValue should ===(expectedResponse)
-//    compareStepList(ocsSequencerAdmin.getSequence.futureValue, expectedSequence)
-//  }
+    ocsSequencerCommand.loadSequence(sequence).futureValue should ===(Ok)
+
+    //assert that it does not accept AbortSequence in loaded state
+    ocsSequencerAdmin.abortSequence().futureValue should ===(Unhandled(Loaded.entryName, "AbortSequence"))
+
+    ocsSequencerCommand.startSequence().futureValue should ===(Started(sequence.runId))
+
+    //assert that AbortSequence is accepted in InProgress state
+    ocsSequencerAdmin.abortSequence().futureValue should ===(Ok)
+
+    val expectedSteps = List(
+      Step(command4, Success, hasBreakpoint = false)
+    )
+    val expectedSequence = Some(StepList(sequence.runId, expectedSteps))
+    val expectedResponse = Completed(sequence.runId)
+    ocsSequencerCommand.queryFinal().futureValue should ===(expectedResponse)
+    compareStepList(ocsSequencerAdmin.getSequence.futureValue, expectedSequence)
+  }
+
+  "LoadSequence, Start it and Stop | ESW-156, ESW-138" in {
+    val sequence = Sequence(command4, command5, command6)
+
+    ocsSequencerCommand.loadSequence(sequence).futureValue should ===(Ok)
+
+    //assert that it does not accept Stop in loaded state
+    ocsSequencerAdmin.stop().futureValue should ===(Unhandled(Loaded.entryName, "Stop"))
+
+    ocsSequencerCommand.startSequence().futureValue should ===(Started(sequence.runId))
+
+    //assert that Stop is accepted in InProgress state
+    ocsSequencerAdmin.stop().futureValue should ===(Ok)
+
+    val expectedSteps = List(
+      Step(command4, Success, hasBreakpoint = false),
+      Step(command5, Success, hasBreakpoint = false),
+      Step(command6, Success, hasBreakpoint = false)
+    )
+    val expectedSequence = Some(StepList(sequence.runId, expectedSteps))
+    val expectedResponse = Completed(sequence.runId)
+    ocsSequencerCommand.queryFinal().futureValue should ===(expectedResponse)
+    compareStepList(ocsSequencerAdmin.getSequence.futureValue, expectedSequence)
+  }
 
   "DiagnosticMode and OperationsMode| ESW-143, ESW-134" in {
     val startTime = UTCTime.now()
@@ -319,7 +322,7 @@ class SequencerAdminIntegrationTest extends ScalaTestFrameworkTestKit(EventServe
     testProbe.expectMessageType[SystemEvent] // discard invalid event
 
     //Diagnostic Mode
-//    ocsSequencerAdmin.diagnosticMode(startTime, hint).futureValue should ===(Ok)
+    ocsSequencerCommand.diagnosticMode(startTime, hint).futureValue should ===(Ok)
 
     val expectedDiagnosticEvent = testProbe.expectMessageType[SystemEvent]
 
@@ -328,7 +331,7 @@ class SequencerAdminIntegrationTest extends ScalaTestFrameworkTestKit(EventServe
     //Operations Mode
     val operationsModeParam = StringKey.make("mode").set("operations")
 
-//    ocsSequencerAdmin.operationsMode().futureValue should ===(Ok)
+    ocsSequencerCommand.operationsMode().futureValue should ===(Ok)
 
     val expectedOperationsEvent = testProbe.expectMessageType[SystemEvent]
 
