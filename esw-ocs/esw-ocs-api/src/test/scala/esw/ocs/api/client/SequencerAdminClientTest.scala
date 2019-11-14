@@ -5,8 +5,8 @@ import csw.params.core.models.{Id, Prefix}
 import esw.ocs.api.BaseTestSuite
 import esw.ocs.api.codecs.SequencerHttpCodecs
 import esw.ocs.api.models.StepList
-import esw.ocs.api.protocol.SequencerAdminPostRequest._
-import esw.ocs.api.protocol.{SequencerAdminPostRequest, _}
+import esw.ocs.api.protocol.SequencerPostRequest._
+import esw.ocs.api.protocol.{SequencerPostRequest, _}
 import io.bullet.borer.Decoder
 import msocket.api.Transport
 import org.mockito.ArgumentMatchers.{any, eq => argsEq}
@@ -15,7 +15,7 @@ import scala.concurrent.Future
 
 class SequencerAdminClientTest extends BaseTestSuite with SequencerHttpCodecs {
 
-  private val postClient           = mock[Transport[SequencerAdminPostRequest]]
+  private val postClient           = mock[Transport[SequencerPostRequest]]
   private val sequencerAdminClient = new SequencerAdminClient(postClient)
   "SequencerAdminClient" must {
 

@@ -3,7 +3,7 @@ package esw.ocs.impl
 import akka.actor.typed.ActorSystem
 import esw.ocs.api.client.SequencerCommandClient
 import esw.ocs.api.codecs.SequencerHttpCodecs
-import esw.ocs.api.protocol.{SequencerAdminPostRequest, SequencerCommandPostRequest, SequencerCommandWebsocketRequest}
+import esw.ocs.api.protocol.{SequencerPostRequest, SequencerWebsocketRequest}
 import msocket.impl.Encoding
 import msocket.impl.post.HttpPostTransport
 import msocket.impl.ws.WebsocketTransport
@@ -14,8 +14,8 @@ object SequencerCommandClientFactory extends SequencerHttpCodecs {
   ): SequencerCommandClient = {
     import actorSystem.executionContext
 
-    val postClient      = new HttpPostTransport[SequencerCommandPostRequest](postUrl, encoding, tokenFactory)
-    val websocketClient = new WebsocketTransport[SequencerCommandWebsocketRequest](websocketUrl, encoding)
+    val postClient      = new HttpPostTransport[SequencerPostRequest](postUrl, encoding, tokenFactory)
+    val websocketClient = new WebsocketTransport[SequencerWebsocketRequest](websocketUrl, encoding)
     new SequencerCommandClient(postClient, websocketClient)
   }
 }

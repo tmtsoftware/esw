@@ -5,16 +5,16 @@ import csw.params.commands.Sequence
 import csw.time.core.models.UTCTime
 import esw.ocs.api.SequencerCommandApi
 import esw.ocs.api.codecs.SequencerHttpCodecs
-import esw.ocs.api.protocol.SequencerCommandPostRequest._
-import esw.ocs.api.protocol.SequencerCommandWebsocketRequest.QueryFinal
+import esw.ocs.api.protocol.SequencerPostRequest._
+import esw.ocs.api.protocol.SequencerWebsocketRequest.QueryFinal
 import esw.ocs.api.protocol._
 import msocket.api.Transport
 
 import scala.concurrent.{ExecutionContext, Future}
 
 class SequencerCommandClient(
-    postClient: Transport[SequencerCommandPostRequest],
-    websocketClient: Transport[SequencerCommandWebsocketRequest]
+    postClient: Transport[SequencerPostRequest],
+    websocketClient: Transport[SequencerWebsocketRequest]
 )(implicit ec: ExecutionContext)
     extends SequencerCommandApi
     with SequencerHttpCodecs {

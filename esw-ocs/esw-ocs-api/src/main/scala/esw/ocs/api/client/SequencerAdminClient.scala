@@ -2,18 +2,17 @@ package esw.ocs.api.client
 
 import csw.params.commands.SequenceCommand
 import csw.params.core.models.Id
-import csw.time.core.models.UTCTime
 import esw.ocs.api.SequencerAdminApi
 import esw.ocs.api.codecs.SequencerHttpCodecs
 import esw.ocs.api.models.StepList
-import esw.ocs.api.protocol.SequencerAdminPostRequest._
+import esw.ocs.api.protocol.SequencerPostRequest._
 import esw.ocs.api.protocol._
 import msocket.api.Transport
 
 import scala.concurrent.Future
 
 class SequencerAdminClient(
-    postClient: Transport[SequencerAdminPostRequest]
+    postClient: Transport[SequencerPostRequest]
 ) extends SequencerAdminApi
     with SequencerHttpCodecs {
 
