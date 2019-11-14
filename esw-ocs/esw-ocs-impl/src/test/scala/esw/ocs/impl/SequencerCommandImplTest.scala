@@ -54,11 +54,11 @@ class SequencerCommandImplTest extends ScalaTestWithActorTestKit with BaseTestSu
   }
 
   "startSequence | ESW-101" in {
-    sequencerCommandApi.startSequence().futureValue should ===(Started(sequence.runId))
+    sequencerCommandApi.startSequence().futureValue should ===(startSequenceResponse)
   }
 
   "loadAndStartSequence | ESW-101" in {
-    sequencerCommandApi.submit(sequence).futureValue should ===(Started(sequence.runId))
+    sequencerCommandApi.submit(sequence).futureValue should ===(submitSequenceResponse)
   }
 
   "queryFinal | ESW-101" in {

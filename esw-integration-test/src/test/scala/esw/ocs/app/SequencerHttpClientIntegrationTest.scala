@@ -116,12 +116,13 @@ class SequencerHttpClientIntegrationTest extends ScalaTestFrameworkTestKit(Event
     ocsSequencerCommand.goOffline().futureValue should ===(Ok)
     ocsSequencerCommand.loadSequence(sequence).futureValue should ===(Unhandled(Offline.entryName, "LoadSequence"))
 
-    ocsSequencerCommand.startSequence().futureValue should ===(
-      Invalid(sequence.runId, UnsupportedCommandInStateIssue(Unhandled(Offline.entryName, "StartSequence").msg))
-    )
-    val invalidResponse =
+    val invalidStartResponse =
+      Invalid(Id("IdNotAvailable"), UnsupportedCommandInStateIssue(Unhandled(Offline.entryName, "StartSequence").msg))
+    ocsSequencerCommand.startSequence().futureValue should ===(invalidStartResponse)
+
+    val invalidQueryResponse =
       Invalid(Id("IdNotAvailable"), UnsupportedCommandInStateIssue(Unhandled(Offline.entryName, "QueryFinalInternal").msg))
-    ocsSequencerCommand.queryFinal().futureValue should ===(invalidResponse)
+    ocsSequencerCommand.queryFinal().futureValue should ===(invalidQueryResponse)
   }
 //
   "Load, Add commands and Start sequence - ensures sequence doesn't start on loading | ESW-222, ESW-101" in {

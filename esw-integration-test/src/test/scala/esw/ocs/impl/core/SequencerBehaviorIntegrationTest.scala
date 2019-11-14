@@ -8,7 +8,7 @@ import csw.params.commands.{CommandName, Sequence, Setup}
 import csw.params.core.models.{Id, Prefix}
 import csw.testkit.scaladsl.ScalaTestFrameworkTestKit
 import esw.ocs.api.BaseTestSuite
-import esw.ocs.api.protocol.{Ok, OkOrUnhandledResponse, SequenceResponse, SequenceResult, Unhandled}
+import esw.ocs.api.protocol.{OkOrUnhandledResponse, SequenceResponse, SequenceResult, Unhandled}
 import esw.ocs.app.wiring.SequencerWiring
 import esw.ocs.impl.messages.SequencerMessages.{LoadSequence, SubmitSequence}
 
