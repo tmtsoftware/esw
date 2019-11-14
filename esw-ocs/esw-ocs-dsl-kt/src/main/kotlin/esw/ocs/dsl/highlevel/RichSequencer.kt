@@ -28,7 +28,7 @@ class RichSequencer(
     }
 
     private suspend fun sequencerAdmin() =
-            sequencerAdminFactory.make(sequencerId, observingMode).toJava().await()
+            sequencerAdminFactory.jMake(sequencerId, observingMode).await()
 
     suspend fun submitAndWait(sequence: Sequence): SubmitResponse? =
             sequencerCommandService().submitAndWait(sequence).toJava().await()

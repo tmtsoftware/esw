@@ -10,8 +10,8 @@ import esw.ocs.dsl.nullable
 import java.util.*
 
 interface CommandServiceDsl {
-    fun resolveComponent(name: String, componentType: ComponentType): RichComponent
-    fun resolveSequencer(sequencerId: String, observingMode: String): RichSequencer
+    fun richComponent(name: String, componentType: ComponentType): RichComponent
+    fun richSequencer(sequencerId: String, observingMode: String): RichSequencer
 
     fun setup(prefix: String, commandName: String, obsId: String? = null) =
             Setup(Prefix(prefix), CommandName(commandName), obsId.toOptionalObsId())
@@ -21,9 +21,9 @@ interface CommandServiceDsl {
 
     fun sequenceOf(vararg sequenceCommand: SequenceCommand): Sequence = Sequence.create(sequenceCommand.toList())
 
-    suspend fun Assembly(name: String): RichComponent = resolveComponent(name, Assembly())
-    suspend fun HCD(name: String): RichComponent = resolveComponent(name, HCD())
-    suspend fun Sequencer(sequencerId: String, observingMode: String): RichSequencer = resolveSequencer(sequencerId, observingMode)
+    suspend fun Assembly(name: String): RichComponent = richComponent(name, Assembly())
+    suspend fun HCD(name: String): RichComponent = richComponent(name, HCD())
+    suspend fun Sequencer(sequencerId: String, observingMode: String): RichSequencer = richSequencer(sequencerId, observingMode)
 
     /** ========== Extensions ============ **/
     val Command.obsId: String? get() = jMaybeObsId().map { it.obsId() }.nullable()

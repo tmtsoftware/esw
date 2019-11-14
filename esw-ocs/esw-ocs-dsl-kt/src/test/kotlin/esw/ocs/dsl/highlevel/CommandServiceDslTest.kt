@@ -30,13 +30,13 @@ class CommandServiceDslTest : CommandServiceDsl {
     private val hcdCommandService: RichComponent = mockk()
     private val sequencerCommandService: RichSequencer = mockk()
 
-    override fun resolveComponent(name: String, componentType: ComponentType): RichComponent = when (componentType) {
+    override fun richComponent(name: String, componentType: ComponentType): RichComponent = when (componentType) {
         JComponentType.HCD() -> hcdCommandService
         JComponentType.Assembly() -> assemblyCommandService
         else -> throw IllegalArgumentException("Unsupported component type: $componentType provided!")
     }
 
-    override fun resolveSequencer(sequencerId: String, observingMode: String): RichSequencer = sequencerCommandService
+    override fun richSequencer(sequencerId: String, observingMode: String): RichSequencer = sequencerCommandService
 
     @Test
     fun `setup method should construct a Setup command with given prefix, commandName and obsId | ESW-121`() = runBlocking {

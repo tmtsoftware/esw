@@ -39,10 +39,10 @@ abstract class CswHighLevelDsl(private val cswServices: CswServices) : EventServ
     /******** Command Service helpers ********/
     private val timeout: Timeout = Timeout(Timeouts.DefaultTimeout())
 
-    override fun resolveComponent(name: String, componentType: ComponentType): RichComponent =
+    override fun richComponent(name: String, componentType: ComponentType): RichComponent =
             RichComponent(name, componentType, cswServices.lockUnlockUtil(), locationServiceUtil, actorSystem, timeout, coroutineScope)
 
-    override fun resolveSequencer(sequencerId: String, observingMode: String): RichSequencer =
+    override fun richSequencer(sequencerId: String, observingMode: String): RichSequencer =
             RichSequencer(sequencerId, observingMode, cswServices.sequencerAdminFactory(), locationServiceUtil, actorSystem)
 
 }
