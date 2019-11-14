@@ -37,10 +37,8 @@ abstract class CswHighLevelDsl(private val cswServices: CswServices) : EventServ
     override fun setSeverity(alarmKey: AlarmKey, severity: AlarmSeverity) = alarmServiceDslImpl.setSeverity(alarmKey, severity)
 
     /******** Command Service helpers ********/
-    private val timeout: Timeout = Timeout(Timeouts.DefaultTimeout())
-
     override fun richComponent(name: String, componentType: ComponentType): RichComponent =
-            RichComponent(name, componentType, cswServices.lockUnlockUtil(), locationServiceUtil, actorSystem, timeout, coroutineScope)
+            RichComponent(name, componentType, cswServices.lockUnlockUtil(), locationServiceUtil, actorSystem, coroutineScope)
 
     override fun richSequencer(sequencerId: String, observingMode: String): RichSequencer =
             RichSequencer(sequencerId, observingMode, cswServices.sequencerAdminFactory(), locationServiceUtil, actorSystem)

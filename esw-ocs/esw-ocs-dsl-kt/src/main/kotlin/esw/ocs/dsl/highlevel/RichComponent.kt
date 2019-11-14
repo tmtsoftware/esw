@@ -16,6 +16,7 @@ import csw.params.commands.CommandResponse.*
 import csw.params.commands.ControlCommand
 import csw.params.core.models.Prefix
 import csw.time.core.models.UTCTime
+import esw.ocs.dsl.Timeouts
 import esw.ocs.dsl.jdk.SuspendToJavaConverter
 import esw.ocs.dsl.script.utils.LockUnlockUtil
 import esw.ocs.dsl.sequence_manager.LocationServiceUtil
@@ -30,9 +31,9 @@ class RichComponent(
         private val lockUnlockUtil: LockUnlockUtil,
         private val locationServiceUtil: LocationServiceUtil,
         private val actorSystem: ActorSystem<*>,
-        private val timeout: Timeout,
         override val coroutineScope: CoroutineScope
 ) : SuspendToJavaConverter {
+    private val timeout: Timeout = Timeout(Timeouts.DefaultTimeout())
 
     suspend fun validate(command: ControlCommand): ValidateResponse = commandService().validate(command).await()
     suspend fun oneway(command: ControlCommand): OnewayResponse = commandService().oneway(command, timeout).await()

@@ -2,7 +2,6 @@ package esw.ocs.dsl.highlevel
 
 import akka.actor.typed.ActorRef
 import akka.actor.typed.ActorSystem
-import akka.util.Timeout
 import csw.command.api.javadsl.ICommandService
 import csw.command.client.CommandServiceFactory
 import csw.command.client.messages.ComponentMessage
@@ -22,7 +21,10 @@ import csw.params.core.models.Prefix
 import csw.time.core.models.UTCTime
 import esw.ocs.dsl.script.utils.LockUnlockUtil
 import esw.ocs.dsl.sequence_manager.LocationServiceUtil
-import io.mockk.*
+import io.mockk.every
+import io.mockk.mockk
+import io.mockk.mockkStatic
+import io.mockk.verify
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.runBlocking
 import org.junit.jupiter.api.Test
@@ -48,7 +50,6 @@ class RichComponentTest {
     private val lockUnlockUtil: LockUnlockUtil = mockk()
     private val locationServiceUtil: LocationServiceUtil = mockk()
     private val actorSystem: ActorSystem<*> = mockk()
-    private val timeout: Timeout = mockk()
     private val coroutineScope: CoroutineScope = mockk()
 
     private val assembly: RichComponent =
@@ -58,7 +59,6 @@ class RichComponentTest {
                     lockUnlockUtil,
                     locationServiceUtil,
                     actorSystem,
-                    timeout,
                     coroutineScope
             )
 
