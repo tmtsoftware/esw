@@ -55,13 +55,13 @@ class SequencerAdminIntegrationTest extends ScalaTestFrameworkTestKit(EventServe
   private val command5 = Setup(Prefix("esw.test"), CommandName("command-5"), None)
   private val command6 = Setup(Prefix("esw.test"), CommandName("command-6"), None)
 
-  private var locationService: LocationService            = _
-  private var ocsSequencerWiring: SequencerWiring         = _
-  private var tcsSequencerWiring: SequencerWiring         = _
-  private var ocsSequencer: ActorRef[SequencerMsg]        = _
-  private var ocsSequencerAdmin: SequencerAdminClient     = _
-  private var ocsSequencerCommand: SequencerCommandClient = _
-  private var tcsSequencerAdmin: SequencerAdminClient     = _
+  private var locationService: LocationService        = _
+  private var ocsSequencerWiring: SequencerWiring     = _
+  private var tcsSequencerWiring: SequencerWiring     = _
+  private var ocsSequencer: ActorRef[SequencerMsg]    = _
+  private var ocsSequencerAdmin: SequencerAdminClient = _
+//  private var ocsSequencerCommand: SequencerCommandClient = _
+  private var tcsSequencerAdmin: SequencerAdminClient = _
 
   override def beforeAll(): Unit = {
     super.beforeAll()
@@ -74,7 +74,7 @@ class SequencerAdminIntegrationTest extends ScalaTestFrameworkTestKit(EventServe
     ocsSequencerWiring.sequencerServer.start()
 
     ocsSequencerAdmin = resolveSequencerAdmin(packageId, observingMode)
-    ocsSequencerCommand = resolveSequencerCommandClient(packageId, observingMode)
+//    ocsSequencerCommand = resolveSequencerCommandClient(packageId, observingMode)
     ocsSequencer = resolveSequencerAkka()
 
     // tcs sequencer, starts with TestScript3
@@ -361,19 +361,19 @@ class SequencerAdminIntegrationTest extends ScalaTestFrameworkTestKit(EventServe
       .toActorRef
       .unsafeUpcast[SequencerMsg]
 
-  private def resolveSequencerHttp(packageId: String, observingMode: String, serviceName: String): URI = {
-    val componentId = ComponentId(s"$packageId@$observingMode@$serviceName@http", ComponentType.Service)
+  private def resolveSequencerHttp(packageId: String, observingMode: String): URI = {
+    val componentId = ComponentId(s"$packageId@$observingMode@http", ComponentType.Service)
     locationService.resolve(HttpConnection(componentId), 5.seconds).futureValue.get.uri
   }
 
   private def resolveSequencerAdmin(packageId: String, observingMode: String): SequencerAdminClient = {
-    val uri     = resolveSequencerHttp(packageId, observingMode, "admin")
+    val uri     = resolveSequencerHttp(packageId, observingMode)
     val postUrl = s"${uri.toString}post-endpoint"
     SequencerAdminClientFactory.make(postUrl, JsonText, () => None)
   }
 
   private def resolveSequencerCommandClient(packageId: String, observingMode: String): SequencerCommandClient = {
-    val uri     = resolveSequencerHttp(packageId, observingMode, "command")
+    val uri     = resolveSequencerHttp(packageId, observingMode)
     val postUrl = s"${uri.toString}post-endpoint"
     val wsUrl   = s"ws://${uri.getHost}:${uri.getPort}/websocket-endpoint"
     SequencerCommandClientFactory.make(postUrl, wsUrl, JsonText, () => None)
