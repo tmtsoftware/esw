@@ -17,6 +17,8 @@ import scala.jdk.javaapi.CollectionConverters
 import java.util.*
 
 script {
+    val lgsfSequencer = Sequencer("lgsf", "darknight")
+    val testAssembly = Assembly("test")
 
     // ESW-134: Reuse code by ability to import logic from one script into another
     loadScripts(InitialCommandHandler)
@@ -61,8 +63,7 @@ script {
     }
 
     onSetup("command-for-assembly") { command ->
-        val assembly = Assembly("test")
-        assembly.submit(command)
+        testAssembly.submit(command)
     }
 
     onSetup("command-4") {
@@ -108,39 +109,33 @@ script {
                 CollectionConverters.asScala(Collections.singleton<SequenceCommand>(setupCommand)).toSeq()
         )
 
-        val lgsfSequencer = Sequencer("lgsf", "darknight")
         lgsfSequencer.submitAndWait(sequence)
     }
 
     onDiagnosticMode { startTime, hint ->
         // do some actions to go to diagnostic mode based on hint
-        val assembly = Assembly("test")
-        assembly.diagnosticMode(startTime, hint)
+        testAssembly.diagnosticMode(startTime, hint)
     }
 
     onOperationsMode {
         // do some actions to go to operations mode
-        val assembly = Assembly("test")
-        assembly.operationsMode()
+        testAssembly.operationsMode()
     }
 
     onGoOffline {
         // do some actions to go offline
-        val assembly = Assembly("test")
-        assembly.goOffline()
+        testAssembly.goOffline()
     }
 
     onGoOnline {
         // do some actions to go online
-        val assembly = Assembly("test")
-        assembly.goOnline()
+        testAssembly.goOnline()
     }
 
     onAbortSequence {
         //do some actions to abort sequence
 
         //send abortSequence command to downstream sequencer
-        val lgsfSequencer = Sequencer("lgsf", "darknight")
         lgsfSequencer.abortSequence()
     }
 
@@ -148,7 +143,6 @@ script {
         //do some actions to stop
 
         //send stop command to downstream sequencer
-        val lgsfSequencer = Sequencer("lgsf", "darknight")
         lgsfSequencer.stop()
     }
 

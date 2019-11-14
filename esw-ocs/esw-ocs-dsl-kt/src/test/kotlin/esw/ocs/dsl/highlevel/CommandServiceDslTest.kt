@@ -105,7 +105,7 @@ class CommandServiceDslTest : CommandServiceDsl {
             val startTime = UTCTime.now()
             coEvery { hcdCommandService.diagnosticMode(startTime, hint) }.answers { Unit }
 
-            var hcd: RichComponent = HCD(hcdName)
+            val hcd: RichComponent = HCD(hcdName)
             hcd.diagnosticMode(startTime, hint)
             coVerify { hcdCommandService.diagnosticMode(startTime, hint) }
         }

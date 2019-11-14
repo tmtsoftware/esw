@@ -21,9 +21,9 @@ interface CommandServiceDsl {
 
     fun sequenceOf(vararg sequenceCommand: SequenceCommand): Sequence = Sequence.create(sequenceCommand.toList())
 
-    suspend fun Assembly(name: String): RichComponent = richComponent(name, Assembly())
-    suspend fun HCD(name: String): RichComponent = richComponent(name, HCD())
-    suspend fun Sequencer(sequencerId: String, observingMode: String): RichSequencer = richSequencer(sequencerId, observingMode)
+    fun Assembly(name: String): RichComponent = richComponent(name, Assembly())
+    fun HCD(name: String): RichComponent = richComponent(name, HCD())
+    fun Sequencer(sequencerId: String, observingMode: String): RichSequencer = richSequencer(sequencerId, observingMode)
 
     /** ========== Extensions ============ **/
     val Command.obsId: String? get() = jMaybeObsId().map { it.obsId() }.nullable()
