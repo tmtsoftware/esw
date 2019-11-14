@@ -2,20 +2,24 @@ package esw.ocs.api.client
 
 import csw.params.commands.CommandResponse.SubmitResponse
 import csw.params.commands.Sequence
+import csw.time.core.models.UTCTime
 import esw.ocs.api.SequencerCommandApi
 import esw.ocs.api.codecs.SequencerHttpCodecs
-import esw.ocs.api.protocol.SequencerCommandPostRequest.{LoadSequence, StartSequence, SubmitSequence}
+import esw.ocs.api.protocol.SequencerCommandPostRequest._
 import esw.ocs.api.protocol.SequencerCommandWebsocketRequest.QueryFinal
-import esw.ocs.api.protocol.{OkOrUnhandledResponse, SequencerCommandPostRequest, SequencerCommandWebsocketRequest}
+import esw.ocs.api.protocol._
 import msocket.api.Transport
 
-import scala.concurrent.Future
+import scala.concurrent.{ExecutionContext, Future}
 
 class SequencerCommandClient(
     postClient: Transport[SequencerCommandPostRequest],
     websocketClient: Transport[SequencerCommandWebsocketRequest]
-) extends SequencerCommandApi
+)(implicit ec: ExecutionContext)
+    extends SequencerCommandApi
     with SequencerHttpCodecs {
+
+  override implicit def executionContext: ExecutionContext = ec
 
   override def loadSequence(sequence: Sequence): Future[OkOrUnhandledResponse] =
     postClient.requestResponse[OkOrUnhandledResponse](LoadSequence(sequence))
@@ -26,4 +30,14 @@ class SequencerCommandClient(
     postClient.requestResponse[SubmitResponse](SubmitSequence(sequence))
 
   override def queryFinal(): Future[SubmitResponse] = websocketClient.requestResponse[SubmitResponse](QueryFinal)
+
+  override def goOnline(): Future[GoOnlineResponse] = postClient.requestResponse[GoOnlineResponse](GoOnline)
+
+  override def goOffline(): Future[GoOfflineResponse] = postClient.requestResponse[GoOfflineResponse](GoOffline)
+
+  override def diagnosticMode(startTime: UTCTime, hint: String): Future[DiagnosticModeResponse] =
+    postClient.requestResponse[DiagnosticModeResponse](DiagnosticMode(startTime, hint))
+
+  override def operationsMode(): Future[OperationsModeResponse] =
+    postClient.requestResponse[OperationsModeResponse](OperationsMode)
 }

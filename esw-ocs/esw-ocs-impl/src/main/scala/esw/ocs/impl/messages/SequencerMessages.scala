@@ -75,6 +75,7 @@ object SequencerMessages {
   final case class Resume(replyTo: ActorRef[OkOrUnhandledResponse])        extends InProgressMessage
 
   // engine & internal
+  // this message is not needed, as SubmitSequence, StartSequence can be composed on client side
   final private[ocs] case class SubmitSequenceAndWaitInternal(sequence: Sequence, replyTo: ActorRef[SequenceResponse])
       extends IdleMessage
 

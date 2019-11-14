@@ -3,7 +3,6 @@ package esw.ocs.app.route
 import akka.http.scaladsl.model.StatusCodes
 import akka.http.scaladsl.testkit.ScalatestRouteTest
 import csw.params.core.models.Id
-import csw.time.core.models.UTCTime
 import esw.http.core.BaseTestSuite
 import esw.ocs.api.codecs.SequencerHttpCodecs
 import esw.ocs.api.models.StepList
@@ -109,29 +108,29 @@ class SequencerAdminPostRouteTest extends BaseTestSuite with ScalatestRouteTest 
       }
     }
 
-    "return Ok for GoOnline request | ESW-222" in {
-      when(sequencerAdmin.goOnline()).thenReturn(Future.successful(Ok))
-
-      Post("/post-endpoint", GoOnline) ~> route ~> check {
-        responseAs[GoOnlineResponse] should ===(Ok)
-      }
-    }
-
-    "return GoOnlineHookFailed for GoOnline request | ESW-222" in {
-      when(sequencerAdmin.goOnline()).thenReturn(Future.successful(GoOnlineHookFailed))
-
-      Post("/post-endpoint", GoOnline) ~> route ~> check {
-        responseAs[GoOnlineResponse] should ===(GoOnlineHookFailed)
-      }
-    }
-
-    "return Ok for GoOffline request | ESW-222" in {
-      when(sequencerAdmin.goOffline()).thenReturn(Future.successful(Ok))
-
-      Post("/post-endpoint", GoOffline) ~> route ~> check {
-        responseAs[OkOrUnhandledResponse] should ===(Ok)
-      }
-    }
+//    "return Ok for GoOnline request | ESW-222" in {
+//      when(sequencerAdmin.goOnline()).thenReturn(Future.successful(Ok))
+//
+//      Post("/post-endpoint", GoOnline) ~> route ~> check {
+//        responseAs[GoOnlineResponse] should ===(Ok)
+//      }
+//    }
+//
+//    "return GoOnlineHookFailed for GoOnline request | ESW-222" in {
+//      when(sequencerAdmin.goOnline()).thenReturn(Future.successful(GoOnlineHookFailed))
+//
+//      Post("/post-endpoint", GoOnline) ~> route ~> check {
+//        responseAs[GoOnlineResponse] should ===(GoOnlineHookFailed)
+//      }
+//    }
+//
+//    "return Ok for GoOffline request | ESW-222" in {
+//      when(sequencerAdmin.goOffline()).thenReturn(Future.successful(Ok))
+//
+//      Post("/post-endpoint", GoOffline) ~> route ~> check {
+//        responseAs[OkOrUnhandledResponse] should ===(Ok)
+//      }
+//    }
 
     "return Ok for Add request | ESW-222" in {
       when(sequencerAdmin.add(List.empty)).thenReturn(Future.successful(Ok))
@@ -231,23 +230,23 @@ class SequencerAdminPostRouteTest extends BaseTestSuite with ScalatestRouteTest 
 //      }
 //    }
 
-    "return Ok for DiagnosticMode request | ESW-143" in {
-      val startTime = UTCTime.now()
-      val hint      = "engineering"
-      when(sequencerAdmin.diagnosticMode(startTime, hint)).thenReturn(Future.successful(Ok))
-
-      Post("/post-endpoint", DiagnosticMode(startTime, hint)) ~> route ~> check {
-        responseAs[DiagnosticModeResponse] should ===(Ok)
-      }
-    }
-
-    "return Ok for OperationsMode request | ESW-143" in {
-      when(sequencerAdmin.operationsMode()).thenReturn(Future.successful(Ok))
-
-      Post("/post-endpoint", OperationsMode) ~> route ~> check {
-        responseAs[OperationsModeResponse] should ===(Ok)
-      }
-    }
+//    "return Ok for DiagnosticMode request | ESW-143" in {
+//      val startTime = UTCTime.now()
+//      val hint      = "engineering"
+//      when(sequencerAdmin.diagnosticMode(startTime, hint)).thenReturn(Future.successful(Ok))
+//
+//      Post("/post-endpoint", DiagnosticMode(startTime, hint)) ~> route ~> check {
+//        responseAs[DiagnosticModeResponse] should ===(Ok)
+//      }
+//    }
+//
+//    "return Ok for OperationsMode request | ESW-143" in {
+//      when(sequencerAdmin.operationsMode()).thenReturn(Future.successful(Ok))
+//
+//      Post("/post-endpoint", OperationsMode) ~> route ~> check {
+//        responseAs[OperationsModeResponse] should ===(Ok)
+//      }
+//    }
 
     "show internal server error when there is an exception at server side" in {
       when(sequencerAdmin.getSequence).thenReturn(Future.failed(new RuntimeException("test")))

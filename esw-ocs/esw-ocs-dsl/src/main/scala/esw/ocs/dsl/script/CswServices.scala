@@ -6,7 +6,7 @@ import csw.config.api.javadsl.IConfigClientService
 import csw.event.api.javadsl.IEventService
 import csw.location.api.javadsl.ILocationService
 import csw.time.scheduler.TimeServiceSchedulerFactory
-import esw.ocs.api.SequencerAdminFactoryApi
+import esw.ocs.api.{SequencerAdminFactoryApi, SequencerCommandFactoryApi}
 import esw.ocs.dsl.script.utils.LockUnlockUtil
 
 class CswServices(
@@ -16,6 +16,7 @@ class CswServices(
     val eventService: IEventService,
     val timeServiceSchedulerFactory: TimeServiceSchedulerFactory,
     val sequencerAdminFactory: SequencerAdminFactoryApi,
+    val sequencerCommandFactory: SequencerCommandFactoryApi,
     val lockUnlockUtil: LockUnlockUtil,
     val configClientService: IConfigClientService,
     val alarmService: IAlarmService

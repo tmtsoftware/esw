@@ -37,12 +37,6 @@ class SequencerAdminImpl(sequencer: ActorRef[SequencerMsg])(implicit system: Act
   override def reset(): Future[OkOrUnhandledResponse]                     = sequencer ? Reset
   override def abortSequence(): Future[OkOrUnhandledResponse]             = sequencer ? AbortSequence
   override def stop(): Future[OkOrUnhandledResponse]                      = sequencer ? Stop
-  override def goOnline(): Future[GoOnlineResponse]                       = sequencer ? GoOnline
-  override def goOffline(): Future[GoOfflineResponse]                     = sequencer ? GoOffline
-
-  override def diagnosticMode(startTime: UTCTime, hint: String): Future[DiagnosticModeResponse] =
-    sequencer ? (DiagnosticMode(startTime, hint, _))
-  override def operationsMode(): Future[OperationsModeResponse] = sequencer ? OperationsMode
 
   override def isAvailable: Future[Boolean] = getState.map(_ == Idle)
   override def isOnline: Future[Boolean]    = getState.map(_ != Offline)

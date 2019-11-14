@@ -159,11 +159,11 @@ class SequencerAdminImplTest extends ScalaTestWithActorTestKit with BaseTestSuit
 //    sequencerAdmin.queryFinal.futureValue should ===(queryFinalResponse)
 //  }
 
-  "diagnosticMode | ESW-143" in {
-    sequencerAdmin.diagnosticMode(startTime, hint).futureValue should ===(diagnosticModeResponse)
-  }
-
-  "operationsMode | ESW-143" in {
-    sequencerAdmin.operationsMode().futureValue should ===(operationsModeResponse)
-  }
+//  "diagnosticMode | ESW-143" in {
+//    sequencerAdmin.diagnosticMode(startTime, hint).futureValue should ===(diagnosticModeResponse)
+//  }
+//
+//  "operationsMode | ESW-143" in {
+//    sequencerAdmin.operationsMode().futureValue should ===(operationsModeResponse)
+//  }
 }

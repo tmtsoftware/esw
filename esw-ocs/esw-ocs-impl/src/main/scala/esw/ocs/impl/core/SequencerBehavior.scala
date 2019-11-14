@@ -12,7 +12,6 @@ import csw.location.api.scaladsl.LocationService
 import csw.location.models.ComponentId
 import csw.location.models.Connection.AkkaConnection
 import csw.logging.client.commons.LogAdminUtil
-import csw.params.commands.CommandResponse.{Completed, Started}
 import csw.params.commands.Sequence
 import csw.time.core.models.UTCTime
 import esw.ocs.api.codecs.OcsCodecs
@@ -53,7 +52,7 @@ class SequencerBehavior(
   private def loaded(data: SequencerData): Behavior[SequencerMsg] = receive(Loaded, data, loaded) {
     case QueryFinalInternal(replyTo)     => loaded(data.queryFinal(replyTo))
     case msg: EditorAction               => handleEditorAction(msg, data, Loaded)(nextBehavior = loaded)
-    case GoOffline(replyTo)              => goOffline(replyTo, data)(loaded)
+    case GoOffline(replyTo)              => goOffline(replyTo, data)(loaded) // respondTo&clear queryFinal subscribers
     case StartSequence(replyTo)          => inProgress(data.startSequence(replyTo))
     case LoadSequence(sequence, replyTo) => load(sequence, replyTo, data)
   }

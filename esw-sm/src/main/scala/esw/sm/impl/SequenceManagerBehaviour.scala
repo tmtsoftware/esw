@@ -2,7 +2,7 @@ package esw.sm.impl
 
 import akka.actor.typed.scaladsl.Behaviors
 import akka.actor.typed.{ActorSystem, Behavior, SpawnProtocol}
-import esw.ocs.api.{SequencerAdminFactoryApi, protocol}
+import esw.ocs.api.{SequencerCommandFactoryApi, protocol}
 import esw.ocs.dsl.sequence_manager.LocationServiceUtil
 import esw.sm.api.Response.{Error, Ok}
 import esw.sm.api.SequenceManagerMsg._
@@ -13,7 +13,7 @@ object SequenceManagerBehaviour {
 
   def behaviour(
       locationService: LocationServiceUtil,
-      sequencerAdminFactory: SequencerAdminFactoryApi
+      sequencerCommandFactory: SequencerCommandFactoryApi
   )(implicit actorSystem: ActorSystem[SpawnProtocol.Command]): Behavior[SequenceManagerMsg] =
     Behaviors.receiveMessage[SequenceManagerMsg] { msg =>
       import actorSystem.executionContext
@@ -50,15 +50,15 @@ object SequenceManagerBehaviour {
           // sequenceComponent ! UnloadScript
           replyTo ! Ok
         case GoOnlineSequencer(packageId, observingMode, replyTo) =>
-          sequencerAdminFactory.make(packageId, observingMode).map { sequencerAdmin =>
-            sequencerAdmin.goOnline().foreach {
+          sequencerCommandFactory.make(packageId, observingMode).map { sequencerCommandApi =>
+            sequencerCommandApi.goOnline().foreach {
               case protocol.Ok => replyTo ! Ok
               case response    => replyTo ! Error(s"failed with error ${response.toString}")
             }
           }
         case GoOfflineSequencer(packageId, observingMode, replyTo) =>
-          sequencerAdminFactory.make(packageId, observingMode).map { sequencerAdmin =>
-            sequencerAdmin.goOffline().foreach {
+          sequencerCommandFactory.make(packageId, observingMode).map { sequencerCommandApi =>
+            sequencerCommandApi.goOffline().foreach {
               case protocol.Ok => replyTo ! Ok
               case response    => replyTo ! Error(s"failed with error ${response.toString}")
             }
