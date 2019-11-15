@@ -36,6 +36,7 @@ class SequencerPostHandlerImpl(adminApi: SequencerAdminApi, commandApi: Sequence
     case LoadSequence(sequence)          => complete(commandApi.loadSequence(sequence))
     case StartSequence                   => complete(commandApi.startSequence())
     case SubmitSequence(sequence)        => complete(commandApi.submit(sequence))
+    case Query(runId)                    => complete(commandApi.query(runId))
     case GoOnline                        => complete(commandApi.goOnline())
     case GoOffline                       => complete(commandApi.goOffline())
     case DiagnosticMode(startTime, hint) => complete(commandApi.diagnosticMode(startTime, hint))

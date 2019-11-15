@@ -9,7 +9,7 @@ import csw.params.commands.{CommandName, Sequence, Setup}
 import csw.params.core.models.{Id, Prefix}
 import csw.time.core.models.UTCTime
 import esw.ocs.api.BaseTestSuite
-import esw.ocs.api.protocol.{GoOnlineHookFailed, Ok, SequenceResult, Unhandled}
+import esw.ocs.api.protocol.{GoOnlineHookFailed, Ok, SubmitResult, Unhandled}
 import esw.ocs.impl.messages.SequencerMessages._
 import esw.ocs.impl.messages.SequencerState.Offline
 
@@ -23,8 +23,8 @@ class SequencerCommandImplTest extends ScalaTestWithActorTestKit with BaseTestSu
   private val goOnlineResponse       = GoOnlineHookFailed
   private val goOfflineResponse      = Unhandled(Offline.entryName, "Offline")
   private val loadSequenceResponse   = Ok
-  private val startSequenceResponse  = SequenceResult(Started(Id("runId1")))
-  private val submitSequenceResponse = SequenceResult(Started(Id("runId2")))
+  private val startSequenceResponse  = SubmitResult(Started(Id("runId1")))
+  private val submitSequenceResponse = SubmitResult(Started(Id("runId2")))
   private val diagnosticModeResponse = Ok
   private val operationsModeResponse = Ok
   private val queryFinalResponse     = Completed(Id())

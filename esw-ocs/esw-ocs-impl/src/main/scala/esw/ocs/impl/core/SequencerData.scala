@@ -2,7 +2,7 @@ package esw.ocs.impl.core
 
 import akka.actor.typed.{ActorRef, ActorSystem}
 import csw.command.client.messages.sequencer.SequencerMsg
-import csw.params.commands.CommandResponse.{Completed, Error, Started, SubmitResponse}
+import csw.params.commands.CommandResponse._
 import csw.params.commands.Sequence
 import csw.params.core.models.Id
 import esw.ocs.api.models.StepStatus.Finished.{Failure, Success}
@@ -20,15 +20,15 @@ private[core] case class SequencerData(
     stepRefSubscriber: Option[ActorRef[PullNextResult]],
     self: ActorRef[SequencerMsg],
     actorSystem: ActorSystem[_],
-    sequenceResponseSubscribers: Set[ActorRef[SequenceResponse]]
+    sequenceResponseSubscribers: Set[ActorRef[SequencerSubmitResponse]]
 ) {
 
   def createStepList(sequence: Sequence): SequencerData =
     copy(stepList = Some(StepList(sequence)))
 
-  def startSequence(replyTo: ActorRef[SequenceResult]): SequencerData = {
+  def startSequence(replyTo: ActorRef[SubmitResult]): SequencerData = {
     val runId = Id()
-    replyTo ! SequenceResult(Started(runId))
+    replyTo ! SubmitResult(Started(runId))
     copy(runId = Some(runId))
       .processSequence()
   }
@@ -37,14 +37,25 @@ private[core] case class SequencerData(
     sendNextPendingStepIfAvailable()
       .notifyReadyToExecuteNextSubscriber(InProgress)
 
-  def queryFinal(runId: Id, replyTo: ActorRef[SequenceResponse]): SequencerData =
+  def queryFinal(runId: Id, replyTo: ActorRef[SequencerSubmitResponse]): SequencerData =
     this.runId match {
       case Some(id) if id == runId && stepList.get.isFinished =>
-        replyTo ! SequenceResult(getSequencerResponse); this
+        replyTo ! SubmitResult(getSequencerResponse); this
       case Some(id) if id == runId =>
         copy(sequenceResponseSubscribers = sequenceResponseSubscribers + replyTo)
-      case _ => replyTo ! SequenceResult(Error(runId, s"No sequence with $runId is loaded in the sequencer")); this
+      case _ => replyTo ! SubmitResult(Error(runId, s"No sequence with $runId is loaded in the sequencer")); this
     }
+
+  def query(runId: Id, replyTo: ActorRef[SequencerQueryResponse]): SequencerData = {
+    this.runId match {
+      case Some(id) if id == runId && stepList.get.isFinished =>
+        replyTo ! QueryResult(getSequencerResponse)
+      case Some(id) if id == runId =>
+        replyTo ! QueryResult(Started(id))
+      case _ => replyTo ! QueryResult(CommandNotAvailable(runId))
+    }
+    this
+  }
 
   def pullNextStep(replyTo: ActorRef[PullNextResult]): SequencerData =
     copy(stepRefSubscriber = Some(replyTo))
@@ -133,7 +144,7 @@ private[core] case class SequencerData(
   private def checkForSequenceCompletion(): SequencerData =
     if (stepList.exists(_.isFinished)) {
       val submitResponse = getSequencerResponse
-      sequenceResponseSubscribers.foreach(_ ! SequenceResult(submitResponse))
+      sequenceResponseSubscribers.foreach(_ ! SubmitResult(submitResponse))
       self ! GoIdle(actorSystem.deadLetters)
       copy(sequenceResponseSubscribers = Set.empty)
     }

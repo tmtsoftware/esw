@@ -1,7 +1,7 @@
 package esw.ocs.api.protocol
 
 import csw.params.commands.CommandIssue.UnsupportedCommandInStateIssue
-import csw.params.commands.CommandResponse.{Invalid, SubmitResponse}
+import csw.params.commands.CommandResponse.{Invalid, QueryResponse, SubmitResponse}
 import csw.params.core.models.Id
 import esw.ocs.api.codecs.OcsAkkaSerializable
 import esw.ocs.api.models.Step
@@ -17,10 +17,17 @@ sealed trait GoOfflineResponse        extends EswSequencerResponse
 sealed trait DiagnosticModeResponse   extends EswSequencerResponse
 sealed trait OperationsModeResponse   extends EswSequencerResponse
 
-sealed trait SequenceResponse extends EswSequencerResponse {
-  def toSubmitResponse(sequenceId: Id = Id("IdNotAvailable")): SubmitResponse = this match {
-    case SequenceResult(submitResponse) => submitResponse
-    case unhandled: Unhandled           => Invalid(sequenceId, UnsupportedCommandInStateIssue(unhandled.msg))
+sealed trait SequencerSubmitResponse extends EswSequencerResponse {
+  def toSubmitResponse(runId: Id = Id("IdNotAvailable")): SubmitResponse = this match {
+    case SubmitResult(submitResponse) => submitResponse
+    case unhandled: Unhandled         => Invalid(runId, UnsupportedCommandInStateIssue(unhandled.msg))
+  }
+}
+
+sealed trait SequencerQueryResponse extends EswSequencerResponse {
+  def toQueryResponse(runId: Id = Id("IdNotAvailable")): QueryResponse = this match {
+    case QueryResult(queryResponse) => queryResponse
+    case unhandled: Unhandled       => Invalid(runId, UnsupportedCommandInStateIssue(unhandled.msg))
   }
 }
 
@@ -34,8 +41,9 @@ case object Ok
     with DiagnosticModeResponse
     with OperationsModeResponse
 
-final case class PullNextResult(step: Step)                     extends PullNextResponse
-final case class SequenceResult(submitResponse: SubmitResponse) extends SequenceResponse
+final case class PullNextResult(step: Step)                   extends PullNextResponse
+final case class SubmitResult(submitResponse: SubmitResponse) extends SequencerSubmitResponse
+final case class QueryResult(queryResponse: QueryResponse)    extends SequencerQueryResponse
 
 final case class Unhandled private[ocs] (state: String, messageType: String, msg: String)
     extends OkOrUnhandledResponse
@@ -44,7 +52,8 @@ final case class Unhandled private[ocs] (state: String, messageType: String, msg
     with RemoveBreakpointResponse
     with GoOnlineResponse
     with GoOfflineResponse
-    with SequenceResponse
+    with SequencerSubmitResponse
+    with SequencerQueryResponse
     with PullNextResponse
 
 object Unhandled {

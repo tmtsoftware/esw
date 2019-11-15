@@ -53,7 +53,7 @@ class SequencerTestSetup(sequence: Sequence)(implicit system: ActorSystem[_]) {
   }
 
   def loadAndStartSequenceThenAssertInProgress(): Assertion = {
-    val probe = TestProbe[SequenceResponse]
+    val probe = TestProbe[SequencerSubmitResponse]
     sequencerActor ! SubmitSequence(sequence, probe.ref)
 
     val p: TestProbe[Option[StepList]] = TestProbe[Option[StepList]]

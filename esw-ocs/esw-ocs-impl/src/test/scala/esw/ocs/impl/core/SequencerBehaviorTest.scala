@@ -51,10 +51,10 @@ class SequencerBehaviorTest extends ScalaTestWithActorTestKit with BaseTestSuite
       val sequencerSetup = SequencerTestSetup.loaded(sequence)
       import sequencerSetup._
 
-      val probe = createTestProbe[SequenceResponse]
+      val probe = createTestProbe[SequencerSubmitResponse]
       sequencerActor ! StartSequence(probe.ref)
       pullAllStepsAndAssertSequenceIsFinished()
-      val sequenceResult = probe.expectMessageType[SequenceResult]
+      val sequenceResult = probe.expectMessageType[SubmitResult]
       sequenceResult.submitResponse shouldBe a[Started]
     }
   }
@@ -64,10 +64,10 @@ class SequencerBehaviorTest extends ScalaTestWithActorTestKit with BaseTestSuite
       val sequencerSetup = SequencerTestSetup.idle(sequence)
       import sequencerSetup._
 
-      val probe = createTestProbe[SequenceResponse]
+      val probe = createTestProbe[SequencerSubmitResponse]
       sequencerActor ! SubmitSequence(sequence, probe.ref)
       pullAllStepsAndAssertSequenceIsFinished()
-      val sequenceResult = probe.expectMessageType[SequenceResult]
+      val sequenceResult = probe.expectMessageType[SubmitResult]
       sequenceResult.submitResponse shouldBe a[Started]
     }
 
@@ -76,11 +76,12 @@ class SequencerBehaviorTest extends ScalaTestWithActorTestKit with BaseTestSuite
       val sequencerSetup = SequencerTestSetup.idle(sequence1)
       import sequencerSetup._
 
-      val client = createTestProbe[SequenceResponse]
+      val client = createTestProbe[SequencerSubmitResponse]
       sequencerActor ! SubmitSequence(sequence1, client.ref)
-      val sequenceResult = client.expectMessageType[SequenceResult]
+      val sequenceResult = client.expectMessageType[SubmitResult]
       sequenceResult.submitResponse shouldBe a[Started]
       val startedResponse = sequenceResult.toSubmitResponse()
+
       assertSequencerState(InProgress)
 
       startPullNext()
@@ -131,18 +132,18 @@ class SequencerBehaviorTest extends ScalaTestWithActorTestKit with BaseTestSuite
       val sequencerSetup = SequencerTestSetup.loaded(sequence)
       import sequencerSetup._
 
-      val startSeqProbe = createTestProbe[SequenceResponse]
+      val startSeqProbe = createTestProbe[SequencerSubmitResponse]
       sequencerActor ! StartSequence(startSeqProbe.ref)
-      val sequenceResult  = startSeqProbe.expectMessageType[SequenceResult]
-      val startedResponse = sequenceResult.submitResponse
+      val sequenceResult  = startSeqProbe.expectMessageType[SequencerSubmitResponse]
+      val startedResponse = sequenceResult.toSubmitResponse()
       startedResponse shouldBe a[Started]
 
-      val seqResProbe = createTestProbe[SequenceResponse]
+      val seqResProbe = createTestProbe[SequencerSubmitResponse]
       sequencerActor ! QueryFinalInternal(startedResponse.runId, seqResProbe.ref)
 
       pullAllStepsAndAssertSequenceIsFinished()
 
-      seqResProbe.expectMessage(SequenceResult(Completed(startedResponse.runId)))
+      seqResProbe.expectMessage(SubmitResult(Completed(startedResponse.runId)))
     }
 
     "return Sequence result with Completed when sequencer is inProgress state | ESW-145, ESW-154, ESW-221" in {
@@ -150,9 +151,9 @@ class SequencerBehaviorTest extends ScalaTestWithActorTestKit with BaseTestSuite
       val sequencerSetup = SequencerTestSetup.loaded(sequence1)
       import sequencerSetup._
 
-      val startSeqProbe = createTestProbe[SequenceResponse]
+      val startSeqProbe = createTestProbe[SequencerSubmitResponse]
       sequencerActor ! StartSequence(startSeqProbe.ref)
-      val sequenceResult  = startSeqProbe.expectMessageType[SequenceResult]
+      val sequenceResult  = startSeqProbe.expectMessageType[SubmitResult]
       val startedResponse = sequenceResult.submitResponse
       startedResponse shouldBe a[Started]
 
@@ -710,7 +711,7 @@ class SequencerBehaviorTest extends ScalaTestWithActorTestKit with BaseTestSuite
       probe.expectNoMessage(maxWaitForExpectNoMessage)
 
       // start the sequence and assert Ok is sent to the readyToExecuteNext subscriber as soon as a step is ready
-      sequencerActor ! StartSequence(createTestProbe[SequenceResponse].ref)
+      sequencerActor ! StartSequence(createTestProbe[SequencerSubmitResponse].ref)
       probe.expectMessage(Ok)
     }
 

@@ -121,6 +121,7 @@ class SequencerBehavior(
       data: SequencerData,
       currentBehavior: SequencerData => Behavior[SequencerMsg]
   ): Behavior[SequencerMsg] = message match {
+    case Query(runId, replyTo)                    => data.query(runId, replyTo); Behaviors.same
     case Shutdown(replyTo)                        => shutdown(data, replyTo)
     case GetSequence(replyTo)                     => replyTo ! data.stepList; Behaviors.same
     case GetSequencerState(replyTo)               => replyTo ! state; Behaviors.same
@@ -175,7 +176,7 @@ class SequencerBehavior(
   private def submitSequence(
       sequence: Sequence,
       data: SequencerData,
-      replyTo: ActorRef[SequenceResponse]
+      replyTo: ActorRef[SequencerSubmitResponse]
   ): Behavior[SequencerMsg] =
     inProgress(
       data.createStepList(sequence).startSequence(replyTo)
@@ -184,7 +185,7 @@ class SequencerBehavior(
   private def submitSequenceAndWait(
       sequence: Sequence,
       data: SequencerData,
-      replyTo: ActorRef[SequenceResponse]
+      replyTo: ActorRef[SequencerSubmitResponse]
   ): Behavior[SequencerMsg] = {
     val updatedData = data.createStepList(sequence).startSequence(actorSystem.deadLetters)
     inProgress(updatedData.queryFinal(updatedData.runId.get, replyTo))
@@ -264,11 +265,11 @@ class SequencerBehavior(
         case msg: UnhandleableSequencerMessage =>
           msg.replyTo ! Unhandled(state.entryName, msg.getClass.getSimpleName); Behaviors.same
         case SubmitSequenceAndWait(sequence, replyTo) =>
-          val sequenceResponseF: Future[SequenceResponse] = ctx.self ? (SubmitSequenceAndWaitInternal(sequence, _))
+          val sequenceResponseF: Future[SequencerSubmitResponse] = ctx.self ? (SubmitSequenceAndWaitInternal(sequence, _))
           sequenceResponseF.foreach(res => replyTo ! res.toSubmitResponse())
           Behaviors.same
         case QueryFinal(runId, replyTo) =>
-          val sequenceResponseF: Future[SequenceResponse] = ctx.self ? (QueryFinalInternal(runId, _))
+          val sequenceResponseF: Future[SequencerSubmitResponse] = ctx.self ? (QueryFinalInternal(runId, _))
           sequenceResponseF.foreach(res => replyTo ! res.toSubmitResponse(runId))
           Behaviors.same
 

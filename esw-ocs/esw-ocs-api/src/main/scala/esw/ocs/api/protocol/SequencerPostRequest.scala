@@ -27,6 +27,7 @@ private[ocs] object SequencerPostRequest {
   case class SubmitSequence(sequence: Sequence)                     extends SequencerPostRequest
   final case class LoadSequence(sequence: Sequence)                 extends SequencerPostRequest
   case object StartSequence                                         extends SequencerPostRequest
+  case class Query(runId: Id)                                       extends SequencerPostRequest
   case object GoOnline                                              extends SequencerPostRequest
   case object GoOffline                                             extends SequencerPostRequest
   final case class DiagnosticMode(startTime: UTCTime, hint: String) extends SequencerPostRequest

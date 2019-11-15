@@ -5,7 +5,7 @@ import akka.actor.typed.{ActorRef, ActorSystem}
 import akka.util.Timeout
 import csw.command.client.messages.sequencer.SequencerMsg
 import csw.command.client.messages.sequencer.SequencerMsg.QueryFinal
-import csw.params.commands.CommandResponse.SubmitResponse
+import csw.params.commands.CommandResponse.{QueryResponse, SubmitResponse}
 import csw.params.commands.Sequence
 import csw.params.core.models.Id
 import csw.time.core.models.UTCTime
@@ -26,16 +26,21 @@ class SequencerCommandImpl(sequencer: ActorRef[SequencerMsg])(implicit system: A
     sequencer ? (LoadSequence(sequence, _))
 
   override def startSequence(): Future[SubmitResponse] = {
-    val sequenceResponse: Future[SequenceResponse] = sequencer ? StartSequence
+    val sequenceResponse: Future[SequencerSubmitResponse] = sequencer ? StartSequence
     sequenceResponse.map(_.toSubmitResponse())
   }
 
   override def submit(sequence: Sequence): Future[SubmitResponse] = {
-    val sequenceResponseF: Future[SequenceResponse] = sequencer ? (SubmitSequence(sequence, _))
+    val sequenceResponseF: Future[SequencerSubmitResponse] = sequencer ? (SubmitSequence(sequence, _))
     sequenceResponseF.map(_.toSubmitResponse())
   }
 
   override def submitAndWait(sequence: Sequence): Future[SubmitResponse] = extensions.submitAndWait(sequence)
+
+  override def query(runId: Id): Future[QueryResponse] = {
+    val sequenceResponseF: Future[SequencerQueryResponse] = sequencer ? (Query(runId, _))
+    sequenceResponseF.map(_.toQueryResponse(runId))
+  }
 
   // fixme: shouldn't this call have long timeout and not the default?
   override def queryFinal(runId: Id): Future[SubmitResponse] = sequencer ? (QueryFinal(runId, _))
