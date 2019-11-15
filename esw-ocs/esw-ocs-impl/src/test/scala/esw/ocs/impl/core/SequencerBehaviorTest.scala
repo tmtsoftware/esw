@@ -2,11 +2,9 @@ package esw.ocs.impl.core
 
 import akka.Done
 import akka.actor.testkit.typed.scaladsl.{ScalaTestWithActorTestKit, TestProbe}
-import akka.actor.typed.{ActorSystem, SpawnProtocol}
 import csw.command.client.messages.sequencer.SequencerMsg.{QueryFinal, SubmitSequenceAndWait}
 import csw.command.client.messages.{GetComponentLogMetadata, SetComponentLogLevel}
 import csw.logging.client.commons.LogAdminUtil
-import csw.logging.client.scaladsl.LoggingSystemFactory
 import csw.logging.models.Level.{DEBUG, INFO}
 import csw.logging.models.LogMetadata
 import csw.params.commands.CommandResponse.{Completed, Error, Started, SubmitResponse}

@@ -9,16 +9,18 @@ import csw.params.commands.CommandResponse.SubmitResponse
 import csw.params.commands.Sequence
 import csw.params.core.models.Id
 import csw.time.core.models.UTCTime
-import esw.ocs.api.SequencerCommandApi
 import esw.ocs.api.protocol._
+import esw.ocs.api.{SequencerCommandApi, SequencerCommandExtensions}
 import esw.ocs.impl.messages.SequencerMessages._
 
-import scala.concurrent.{ExecutionContext, Future}
+import scala.concurrent.Future
 
 class SequencerCommandImpl(sequencer: ActorRef[SequencerMsg])(implicit system: ActorSystem[_], timeout: Timeout)
     extends SequencerCommandApi {
 
-  override implicit def executionContext: ExecutionContext = system.executionContext
+  import system.executionContext
+
+  private val extensions = new SequencerCommandExtensions(this)
 
   override def loadSequence(sequence: Sequence): Future[OkOrUnhandledResponse] =
     sequencer ? (LoadSequence(sequence, _))
@@ -32,6 +34,8 @@ class SequencerCommandImpl(sequencer: ActorRef[SequencerMsg])(implicit system: A
     val sequenceResponseF: Future[SequenceResponse] = sequencer ? (SubmitSequence(sequence, _))
     sequenceResponseF.map(_.toSubmitResponse(sequence.runId))
   }
+
+  override def submitAndWait(sequence: Sequence): Future[SubmitResponse] = extensions.submitAndWait(sequence)
 
   // fixme: shouldn't this call have long timeout and not the default?
   override def queryFinal(sequenceId: Id): Future[SubmitResponse] = sequencer ? (QueryFinal(sequenceId, _))

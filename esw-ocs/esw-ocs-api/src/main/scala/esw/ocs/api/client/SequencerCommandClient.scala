@@ -4,7 +4,7 @@ import csw.params.commands.CommandResponse.SubmitResponse
 import csw.params.commands.Sequence
 import csw.params.core.models.Id
 import csw.time.core.models.UTCTime
-import esw.ocs.api.SequencerCommandApi
+import esw.ocs.api.{SequencerCommandApi, SequencerCommandExtensions}
 import esw.ocs.api.codecs.SequencerHttpCodecs
 import esw.ocs.api.protocol.SequencerPostRequest._
 import esw.ocs.api.protocol.SequencerWebsocketRequest.QueryFinal
@@ -20,7 +20,7 @@ class SequencerCommandClient(
     extends SequencerCommandApi
     with SequencerHttpCodecs {
 
-  override implicit def executionContext: ExecutionContext = ec
+  private val extensions = new SequencerCommandExtensions(this)
 
   override def loadSequence(sequence: Sequence): Future[OkOrUnhandledResponse] =
     postClient.requestResponse[OkOrUnhandledResponse](LoadSequence(sequence))
@@ -29,6 +29,8 @@ class SequencerCommandClient(
 
   override def submit(sequence: Sequence): Future[SubmitResponse] =
     postClient.requestResponse[SubmitResponse](SubmitSequence(sequence))
+
+  override def submitAndWait(sequence: Sequence): Future[SubmitResponse] = extensions.submitAndWait(sequence)
 
   override def queryFinal(sequenceId: Id): Future[SubmitResponse] =
     websocketClient.requestResponse[SubmitResponse](QueryFinal(sequenceId))
