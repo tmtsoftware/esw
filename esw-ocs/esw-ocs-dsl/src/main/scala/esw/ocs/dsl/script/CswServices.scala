@@ -5,12 +5,16 @@ import csw.alarm.api.javadsl.IAlarmService
 import csw.config.api.javadsl.IConfigClientService
 import csw.event.api.javadsl.IEventService
 import csw.location.api.javadsl.ILocationService
+import csw.logging.api.javadsl.ILogger
+import csw.params.core.models.Prefix
 import csw.time.scheduler.TimeServiceSchedulerFactory
 import esw.ocs.api.{SequencerAdminFactoryApi, SequencerCommandFactoryApi}
 import esw.ocs.dsl.script.utils.LockUnlockUtil
 
 class CswServices(
+    val prefix: Prefix,
     val sequenceOperatorFactory: () => SequenceOperator,
+    val jLogger: ILogger,
     val actorSystem: ActorSystem[_],
     val locationService: ILocationService,
     val eventService: IEventService,

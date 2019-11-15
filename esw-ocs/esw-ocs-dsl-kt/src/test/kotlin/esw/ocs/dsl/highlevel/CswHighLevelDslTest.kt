@@ -6,6 +6,8 @@ import akka.stream.Materializer
 import csw.location.api.javadsl.ILocationService
 import csw.location.api.javadsl.JComponentType
 import csw.location.api.scaladsl.LocationService
+import csw.logging.api.javadsl.ILogger
+import csw.params.core.models.Prefix
 import esw.ocs.dsl.script.CswServices
 import esw.ocs.dsl.script.StrandEc
 import esw.ocs.dsl.script.utils.LockUnlockUtil
@@ -28,11 +30,15 @@ class CswHighLevelDslTest {
     private val jLocationService: ILocationService = mockk()
     private val locationService: LocationService = mockk()
     private val lockUnlockUtil: LockUnlockUtil = mockk()
+    private val jLogger: ILogger = mockk()
+    private val prefix: Prefix = mockk()
 
     init {
         every { cswServices.actorSystem() }.answers { actorSystem }
         every { cswServices.lockUnlockUtil() }.answers { lockUnlockUtil }
         every { cswServices.locationService() }.answers { jLocationService }
+        every { cswServices.jLogger() }.answers { jLogger }
+        every { cswServices.prefix() }.answers { prefix }
         every { jLocationService.asScala() }.answers { locationService }
     }
 

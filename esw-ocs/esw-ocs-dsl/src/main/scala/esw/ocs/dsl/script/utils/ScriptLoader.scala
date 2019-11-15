@@ -23,7 +23,7 @@ private[esw] object ScriptLoader {
       result.invoke(cswServices).scriptDsl
     }
 
-  private def withScript[T](scriptClass: String)(block: Class[_] => T): T =
+  def withScript[T](scriptClass: String)(block: Class[_] => T): T =
     try {
       val clazz = Class.forName(scriptClass)
       block(clazz)

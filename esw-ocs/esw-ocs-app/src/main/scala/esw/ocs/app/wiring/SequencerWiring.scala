@@ -18,6 +18,7 @@ import csw.location.client.ActorSystemFactory
 import csw.location.client.javadsl.JHttpLocationServiceFactory
 import csw.location.models.Connection.AkkaConnection
 import csw.location.models.{AkkaLocation, AkkaRegistration, ComponentId, ComponentType}
+import csw.logging.api.javadsl.ILogger
 import csw.logging.api.scaladsl.Logger
 import csw.logging.client.scaladsl.LoggerFactory
 import csw.network.utils.SocketUtils
@@ -54,9 +55,6 @@ private[ocs] class SequencerWiring(val packageId: String, val observingMode: Str
   import cswWiring._
   import cswWiring.actorRuntime._
 
-  lazy val loggerFactory  = new LoggerFactory(sequencerName)
-  lazy val logger: Logger = loggerFactory.getLogger
-
   implicit lazy val actorRuntime: ActorRuntime = cswWiring.actorRuntime
 
   lazy val sequencerRef: ActorRef[SequencerMsg] = (typedSystem ? { x: ActorRef[ActorRef[SequencerMsg]] =>
@@ -81,8 +79,15 @@ private[ocs] class SequencerWiring(val packageId: String, val observingMode: Str
 
   private lazy val jAlarmService: IAlarmService = alarmServiceFactory.jMakeClientApi(jLocationService, typedSystem)
 
+  private lazy val loggerFactory    = new LoggerFactory(sequencerName)
+  private lazy val jLoggerFactory   = loggerFactory.asJava
+  private lazy val logger: Logger   = loggerFactory.getLogger
+  private lazy val jLogger: ILogger = ScriptLoader.withScript(scriptClass)(jLoggerFactory.getLogger)
+
   lazy val cswServices = new CswServices(
+    prefix,
     sequenceOperatorFactory,
+    jLogger,
     typedSystem,
     jLocationService,
     jEventService,
