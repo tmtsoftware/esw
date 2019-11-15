@@ -65,7 +65,7 @@ lazy val `esw-ocs-impl` = project
 
 lazy val `esw-ocs-app` = project
   .in(file("esw-ocs/esw-ocs-app"))
-  .enablePlugins(EswBuildInfo, DeployApp, MaybeCoverage)
+  .enablePlugins(EswBuildInfo, DeployApp) // disable coverage for time-being
   .settings(
     libraryDependencies ++= Dependencies.OcsApp.value
   )
