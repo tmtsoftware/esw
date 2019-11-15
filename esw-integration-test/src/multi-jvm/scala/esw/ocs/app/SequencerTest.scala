@@ -6,14 +6,14 @@ import csw.location.helpers.{LSNodeSpec, TwoMembersAndSeed}
 import csw.location.models.Connection.HttpConnection
 import csw.location.models.{ComponentId, ComponentType}
 import csw.location.server.http.MultiNodeHTTPLocationService
+import csw.params.commands.CommandResponse.Started
 import csw.params.commands.{CommandName, Sequence, Setup}
 import csw.params.core.models.Prefix
 import csw.params.events.{Event, EventKey, SystemEvent}
 import csw.testkit.{EventTestKit, FrameworkTestKit}
-import esw.ocs.api.client.SequencerAdminClient
-import esw.ocs.api.protocol.Ok
+import esw.ocs.api.client.SequencerCommandClient
 import esw.ocs.app.wiring.SequencerWiring
-import esw.ocs.impl.SequencerAdminClientFactory
+import esw.ocs.impl.SequencerCommandClientFactory
 import msocket.impl.Encoding.JsonText
 import org.scalatest.concurrent.ScalaFutures.convertScalaFuture
 
@@ -76,9 +76,9 @@ class SequencerTest(ignore: Int, mode: String)
       eventTestKit.start()
       enterBarrier("event-server-started")
 
-      val ocsSequencerAdmin = resolveSequencerAdmin(ocsSequencerId, ocsSequencerObsMode)
+      val ocsSequencerCommandApi = resolveSequencerCommandApi(ocsSequencerId, ocsSequencerObsMode)
 
-      ocsSequencerAdmin.submitSequence(sequence).await should ===(Ok)
+      ocsSequencerCommandApi.submit(sequence).await should ===(Started(sequence.runId))
       enterBarrier("submit-sequence-to-ocs")
     }
 
@@ -95,12 +95,11 @@ class SequencerTest(ignore: Int, mode: String)
     enterBarrier("end")
   }
 
-  private def resolveSequencerAdmin(packageId: String, observingMode: String): SequencerAdminClient = {
+  private def resolveSequencerCommandApi(packageId: String, observingMode: String): SequencerCommandClient = {
     val componentId = ComponentId(s"$packageId@$observingMode@http", ComponentType.Service)
     val uri         = locationService.resolve(HttpConnection(componentId), 5.seconds).futureValue.get.uri
     val postUrl     = s"${uri.toString}post-endpoint"
     val wsUrl       = s"ws://${uri.getHost}:${uri.getPort}/websocket-endpoint"
-
-    SequencerAdminClientFactory.make(postUrl, wsUrl, JsonText, () => None)
+    SequencerCommandClientFactory.make(postUrl, wsUrl, JsonText, () => None)
   }
 }
