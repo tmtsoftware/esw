@@ -1,7 +1,6 @@
 package esw.ocs.dsl.highlevel
 
 import akka.actor.typed.ActorSystem
-import akka.stream.Materializer
 import akka.util.Timeout
 import csw.alarm.models.AlarmSeverity
 import csw.alarm.models.Key.AlarmKey
@@ -23,9 +22,8 @@ abstract class CswHighLevelDsl(private val cswServices: CswServices) : EventServ
     abstract val strandEc: StrandEc
     abstract override val coroutineScope: CoroutineScope
 
-    private val actorSystem: ActorSystem<*> = cswServices.actorSystem()
-    private val locationServiceUtil = LocationServiceUtil(cswServices.locationService().asScala(), actorSystem)
-    final override val materializer: Materializer = Materializer.createMaterializer(actorSystem)
+    final override val system: ActorSystem<*> = cswServices.actorSystem()
+    private val locationServiceUtil = LocationServiceUtil(cswServices.locationService().asScala(), system)
     final override val defaultPublisher: IEventPublisher by lazy { cswServices.eventService().defaultPublisher() }
     final override val defaultSubscriber: IEventSubscriber by lazy { cswServices.eventService().defaultSubscriber() }
 
@@ -39,10 +37,10 @@ abstract class CswHighLevelDsl(private val cswServices: CswServices) : EventServ
 
     /******** Command Service helpers ********/
     private fun richComponent(name: String, componentType: ComponentType): RichComponent =
-            RichComponent(name, componentType, cswServices.lockUnlockUtil(), locationServiceUtil, actorSystem, coroutineScope)
+            RichComponent(name, componentType, cswServices.lockUnlockUtil(), locationServiceUtil, system, coroutineScope)
 
     private fun richSequencer(sequencerId: String, observingMode: String): RichSequencer =
-            RichSequencer(sequencerId, observingMode, cswServices.sequencerAdminFactory(), cswServices.sequencerCommandFactory(), locationServiceUtil, actorSystem)
+            RichSequencer(sequencerId, observingMode, cswServices.sequencerAdminFactory(), cswServices.sequencerCommandFactory(), locationServiceUtil, system)
 
     fun Assembly(name: String): RichComponent = richComponent(name, JComponentType.Assembly())
     fun HCD(name: String): RichComponent = richComponent(name, JComponentType.HCD())

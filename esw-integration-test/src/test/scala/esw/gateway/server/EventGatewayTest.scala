@@ -3,7 +3,6 @@ package esw.gateway.server
 import akka.Done
 import akka.actor.CoordinatedShutdown.UnknownReason
 import akka.actor.typed.ActorSystem
-import akka.stream.Materializer
 import akka.stream.scaladsl.Sink
 import csw.params.core.generics.KeyType.{ByteKey, StructKey}
 import csw.params.core.generics.{KeyType, Parameter}
@@ -26,7 +25,6 @@ import scala.concurrent.duration.{DurationInt, FiniteDuration}
 class EventGatewayTest extends ScalaTestFrameworkTestKit(EventServer) with WordSpecLike with FutureEitherExt with GatewayCodecs {
 
   private implicit val system: ActorSystem[_]  = frameworkTestKit.actorSystem
-  private implicit val mat: Materializer       = frameworkTestKit.mat
   private implicit val timeout: FiniteDuration = 20.seconds
   private val port: Int                        = 6490
   private val gatewayWiring: GatewayWiring     = new GatewayWiring(Some(port))

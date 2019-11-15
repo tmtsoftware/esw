@@ -3,6 +3,7 @@ package esw.gateway.server
 import akka.actor.CoordinatedShutdown.UnknownReason
 import akka.actor.testkit.typed.scaladsl.TestProbe
 import akka.actor.typed.{ActorSystem, SpawnProtocol}
+import akka.stream.Materializer
 import akka.stream.scaladsl.Sink
 import com.typesafe.config.ConfigFactory
 import csw.event.client.EventServiceFactory
@@ -38,6 +39,7 @@ class CommandGatewayTest
   import frameworkTestKit._
 
   private implicit val typedSystem: ActorSystem[SpawnProtocol.Command] = actorSystem
+  private implicit val mat: Materializer                               = Materializer.matFromSystem(typedSystem)
   private val port: Int                                                = 6490
   private val gatewayWiring: GatewayWiring                             = new GatewayWiring(Some(port))
 

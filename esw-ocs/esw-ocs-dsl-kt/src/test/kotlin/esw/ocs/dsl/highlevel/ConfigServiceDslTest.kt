@@ -2,7 +2,6 @@ package esw.ocs.dsl.highlevel
 
 import akka.actor.typed.ActorSystem
 import akka.actor.typed.javadsl.Behaviors
-import akka.stream.Materializer
 import com.typesafe.config.ConfigFactory
 import csw.config.api.ConfigData
 import csw.config.api.javadsl.IConfigClientService
@@ -18,11 +17,10 @@ import java.util.concurrent.CompletableFuture
 
 class ConfigServiceDslTest : ConfigServiceDsl {
 
-    val actorSystem: ActorSystem<Any> = ActorSystem.create(Behaviors.empty(), "config-dsl")
-    override val materializer: Materializer = Materializer.createMaterializer(actorSystem)
+    override val system: ActorSystem<Any> = ActorSystem.create(Behaviors.empty(), "config-dsl")
 
     @AfterAll
-    fun tearDown() = actorSystem.terminate()
+    fun tearDown() = system.terminate()
 
     override val configClient: IConfigClientService = mockk()
     private val path = "/test/config1.conf"

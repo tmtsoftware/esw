@@ -1,6 +1,5 @@
 package esw.ocs.core
 
-import akka.actor.typed.{ActorSystem, SpawnProtocol}
 import akka.http.scaladsl.Http
 import akka.http.scaladsl.model.{HttpMethods, HttpRequest, StatusCodes, Uri}
 import akka.http.scaladsl.unmarshalling.Unmarshal
@@ -26,8 +25,7 @@ class DynamicLogLevelTest extends ScalaTestFrameworkTestKit with BaseTestSuite w
 
   override def encoding: Encoding[_] = JsonText
 
-  private implicit val sys: ActorSystem[SpawnProtocol.Command] = actorSystem
-  override implicit def patienceConfig: PatienceConfig         = PatienceConfig(10.seconds)
+  override implicit def patienceConfig: PatienceConfig = PatienceConfig(10.seconds)
 
   private var wiring: SequencerWiring         = _
   private var adminWiring: AdminWiring        = _
@@ -36,7 +34,7 @@ class DynamicLogLevelTest extends ScalaTestFrameworkTestKit with BaseTestSuite w
 
   override def beforeAll(): Unit = {
     super.beforeAll()
-    LoggingSystemFactory.start("logging", "version", "localhost", sys)
+    LoggingSystemFactory.start("logging", "version", "localhost", actorSystem)
     adminWiring = AdminWiring.make(Some(adminPort))
     adminWiring.adminHttpService.registeredLazyBinding.futureValue
     wiring = new SequencerWiring("esw", "darknight", None)

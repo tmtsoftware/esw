@@ -43,8 +43,6 @@ import scala.concurrent.duration.DurationDouble
 
 class ScriptIntegrationTest extends ScalaTestFrameworkTestKit(EventServer, AlarmServer, ConfigServer) with BaseTestSuite {
 
-  import frameworkTestKit.mat
-
   implicit val actorSystem: ActorSystem[SpawnProtocol.Command] = frameworkTestKit.actorSystem
 
   private implicit val askTimeout: Timeout = Timeouts.DefaultTimeout

@@ -46,7 +46,7 @@ trait SequencerHttpCodecs extends OcsCodecs {
     sequencerWebsocketRequestValue.asInstanceOf[Codec[T]]
 
   lazy val sequencerWebsocketRequestValue: Codec[SequencerWebsocketRequest] = {
-    @silent implicit lazy val queryFinalCodec: Codec[QueryFinal.type] = deriveCodec
+    @silent implicit lazy val queryFinalCodec: Codec[QueryFinal] = deriveCodec
     deriveCodec
   }
 }

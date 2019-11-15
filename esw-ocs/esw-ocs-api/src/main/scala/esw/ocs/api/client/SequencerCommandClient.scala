@@ -2,6 +2,7 @@ package esw.ocs.api.client
 
 import csw.params.commands.CommandResponse.SubmitResponse
 import csw.params.commands.Sequence
+import csw.params.core.models.Id
 import csw.time.core.models.UTCTime
 import esw.ocs.api.SequencerCommandApi
 import esw.ocs.api.codecs.SequencerHttpCodecs
@@ -29,7 +30,8 @@ class SequencerCommandClient(
   override def submit(sequence: Sequence): Future[SubmitResponse] =
     postClient.requestResponse[SubmitResponse](SubmitSequence(sequence))
 
-  override def queryFinal(): Future[SubmitResponse] = websocketClient.requestResponse[SubmitResponse](QueryFinal)
+  override def queryFinal(sequenceId: Id): Future[SubmitResponse] =
+    websocketClient.requestResponse[SubmitResponse](QueryFinal(sequenceId))
 
   override def goOnline(): Future[GoOnlineResponse] = postClient.requestResponse[GoOnlineResponse](GoOnline)
 

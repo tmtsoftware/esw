@@ -7,6 +7,7 @@ import csw.command.client.messages.sequencer.SequencerMsg
 import csw.command.client.messages.sequencer.SequencerMsg.QueryFinal
 import csw.params.commands.CommandResponse.SubmitResponse
 import csw.params.commands.Sequence
+import csw.params.core.models.Id
 import csw.time.core.models.UTCTime
 import esw.ocs.api.SequencerCommandApi
 import esw.ocs.api.protocol._
@@ -33,7 +34,7 @@ class SequencerCommandImpl(sequencer: ActorRef[SequencerMsg])(implicit system: A
   }
 
   // fixme: shouldn't this call have long timeout and not the default?
-  override def queryFinal(): Future[SubmitResponse] = sequencer ? QueryFinal
+  override def queryFinal(sequenceId: Id): Future[SubmitResponse] = sequencer ? (QueryFinal(sequenceId, _))
 
   override def goOnline(): Future[GoOnlineResponse] = sequencer ? GoOnline
 

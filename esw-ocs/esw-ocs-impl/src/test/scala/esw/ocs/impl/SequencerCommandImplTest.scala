@@ -14,10 +14,11 @@ import esw.ocs.impl.messages.SequencerMessages._
 import esw.ocs.impl.messages.SequencerState.Offline
 
 class SequencerCommandImplTest extends ScalaTestWithActorTestKit with BaseTestSuite {
-  private val command   = Setup(Prefix("esw.test"), CommandName("command-1"), None)
-  private val sequence  = Sequence(command)
-  private val startTime = UTCTime.now()
-  private val hint      = "engineering"
+  private val command    = Setup(Prefix("esw.test"), CommandName("command-1"), None)
+  private val sequence   = Sequence(command)
+  private val sequenceId = sequence.runId
+  private val startTime  = UTCTime.now()
+  private val hint       = "engineering"
 
   private val goOnlineResponse       = GoOnlineHookFailed
   private val goOfflineResponse      = Unhandled(Offline.entryName, "Offline")
@@ -37,7 +38,7 @@ class SequencerCommandImplTest extends ScalaTestWithActorTestKit with BaseTestSu
         case LoadSequence(`sequence`, replyTo)            => replyTo ! loadSequenceResponse
         case StartSequence(replyTo)                       => replyTo ! startSequenceResponse
         case SubmitSequence(`sequence`, replyTo)          => replyTo ! submitSequenceResponse
-        case QueryFinal(replyTo)                          => replyTo ! queryFinalResponse
+        case QueryFinal(`sequenceId`, replyTo)            => replyTo ! queryFinalResponse
         case DiagnosticMode(`startTime`, `hint`, replyTo) => replyTo ! diagnosticModeResponse
         case OperationsMode(replyTo)                      => replyTo ! operationsModeResponse
         case _                                            => //
@@ -66,7 +67,7 @@ class SequencerCommandImplTest extends ScalaTestWithActorTestKit with BaseTestSu
   }
 
   "queryFinal | ESW-101" in {
-    sequencerCommandApi.queryFinal().futureValue should ===(queryFinalResponse)
+    sequencerCommandApi.queryFinal(sequenceId).futureValue should ===(queryFinalResponse)
   }
 
   "diagnosticMode | ESW-143" in {

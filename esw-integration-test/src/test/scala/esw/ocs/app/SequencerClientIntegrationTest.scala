@@ -97,7 +97,7 @@ class SequencerClientIntegrationTest extends ScalaTestFrameworkTestKit(EventServ
 
     ocsSequencerCommandApi.loadSequence(sequence).futureValue should ===(Ok)
     ocsSequencerCommandApi.startSequence().futureValue should ===(Started(sequence.runId))
-    ocsSequencerCommandApi.queryFinal().futureValue should ===(Completed(sequence.runId))
+    ocsSequencerCommandApi.queryFinal(sequence.runId).futureValue should ===(Completed(sequence.runId))
 
     val step1         = Step(command1, Success, hasBreakpoint = false)
     val step2         = Step(command2, Success, hasBreakpoint = false)
@@ -115,14 +115,15 @@ class SequencerClientIntegrationTest extends ScalaTestFrameworkTestKit(EventServ
     // assert sequencer does not accept LoadSequence/Start/QuerySequenceResponse messages in offline state
     ocsSequencerCommandApi.goOffline().futureValue should ===(Ok)
     ocsSequencerCommandApi.loadSequence(sequence).futureValue should ===(Unhandled(Offline.entryName, "LoadSequence"))
+    val invalidId = Id("IdNotAvailable")
 
     val invalidStartResponse =
-      Invalid(Id("IdNotAvailable"), UnsupportedCommandInStateIssue(Unhandled(Offline.entryName, "StartSequence").msg))
+      Invalid(invalidId, UnsupportedCommandInStateIssue(Unhandled(Offline.entryName, "StartSequence").msg))
     ocsSequencerCommandApi.startSequence().futureValue should ===(invalidStartResponse)
 
     val invalidQueryResponse =
-      Invalid(Id("IdNotAvailable"), UnsupportedCommandInStateIssue(Unhandled(Offline.entryName, "QueryFinalInternal").msg))
-    ocsSequencerCommandApi.queryFinal().futureValue should ===(invalidQueryResponse)
+      Invalid(invalidId, UnsupportedCommandInStateIssue(Unhandled(Offline.entryName, "QueryFinalInternal").msg))
+    ocsSequencerCommandApi.queryFinal(invalidId).futureValue should ===(invalidQueryResponse)
   }
 
   "Load, Add commands and Start sequence - ensures sequence doesn't start on loading | ESW-222, ESW-101" in {
@@ -280,7 +281,7 @@ class SequencerClientIntegrationTest extends ScalaTestFrameworkTestKit(EventServ
     )
     val expectedSequence = Some(StepList(sequence.runId, expectedSteps))
     val expectedResponse = Completed(sequence.runId)
-    ocsSequencerCommandApi.queryFinal().futureValue should ===(expectedResponse)
+    ocsSequencerCommandApi.queryFinal(sequence.runId).futureValue should ===(expectedResponse)
     compareStepList(ocsSequencerAdmin.getSequence.futureValue, expectedSequence)
   }
 
@@ -304,7 +305,7 @@ class SequencerClientIntegrationTest extends ScalaTestFrameworkTestKit(EventServ
     )
     val expectedSequence = Some(StepList(sequence.runId, expectedSteps))
     val expectedResponse = Completed(sequence.runId)
-    ocsSequencerCommandApi.queryFinal().futureValue should ===(expectedResponse)
+    ocsSequencerCommandApi.queryFinal(sequence.runId).futureValue should ===(expectedResponse)
     compareStepList(ocsSequencerAdmin.getSequence.futureValue, expectedSequence)
   }
 

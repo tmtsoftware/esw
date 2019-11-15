@@ -75,7 +75,7 @@ private[ocs] class SequencerWiring(val packageId: String, val observingMode: Str
 
   lazy private val lockUnlockUtil = new LockUnlockUtil(locationServiceUtil)(actorSystem)
 
-  lazy val jLocationService: ILocationService         = JHttpLocationServiceFactory.makeLocalClient(actorSystem, actorRuntime.mat)
+  lazy val jLocationService: ILocationService         = JHttpLocationServiceFactory.makeLocalClient(actorSystem)
   lazy val jConfigClientService: IConfigClientService = JConfigClientFactory.clientApi(actorSystem, jLocationService)
   lazy val jEventService: JEventService               = new JEventService(eventService)
 

@@ -17,6 +17,6 @@ class SequencerWebsocketHandlerImpl(commandApi: SequencerCommandApi, val encodin
     with WebsocketStreamExtensions {
 
   override def handle(request: SequencerWebsocketRequest): Source[Message, NotUsed] = request match {
-    case QueryFinal => futureAsStream(commandApi.queryFinal())
+    case QueryFinal(sequenceId) => futureAsStream(commandApi.queryFinal(sequenceId))
   }
 }

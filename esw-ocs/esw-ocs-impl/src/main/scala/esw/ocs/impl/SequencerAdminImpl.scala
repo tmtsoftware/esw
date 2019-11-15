@@ -6,7 +6,6 @@ import akka.util.Timeout
 import csw.command.client.messages.sequencer.SequencerMsg
 import csw.params.commands.SequenceCommand
 import csw.params.core.models.Id
-import csw.time.core.models.UTCTime
 import esw.ocs.api.SequencerAdminApi
 import esw.ocs.api.models.StepList
 import esw.ocs.api.protocol._

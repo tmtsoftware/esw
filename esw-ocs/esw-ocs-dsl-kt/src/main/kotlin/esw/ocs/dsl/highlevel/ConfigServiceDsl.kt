@@ -1,5 +1,6 @@
 package esw.ocs.dsl.highlevel
 
+import akka.actor.typed.ActorSystem
 import akka.stream.Materializer
 import com.typesafe.config.Config
 import csw.config.api.javadsl.IConfigClientService
@@ -11,7 +12,7 @@ import java.nio.file.Path
 interface ConfigServiceDsl {
 
     val configClient: IConfigClientService
-    val materializer: Materializer
+    val system: ActorSystem<*>
 
     suspend fun existsConfig(path: String, id: String? = null): Boolean =
             id?.let { configClient.exists(Path.of(path), ConfigId(id)).await() }
@@ -19,6 +20,6 @@ interface ConfigServiceDsl {
 
     suspend fun getConfig(path: String): Config? {
         val configData = configClient.getActive(Path.of(path)).await().nullable()
-        return configData?.toJConfigObject(materializer)?.await()
+        return configData?.toJConfigObject(system)?.await()
     }
 }

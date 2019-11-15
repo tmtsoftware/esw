@@ -73,7 +73,7 @@ class SequencerCommandClientTest extends BaseTestSuite with SequencerHttpCodecs 
           .requestResponse[SubmitResponse](argsEq(SubmitSequence(sequence)))(any[Decoder[SubmitResponse]]())
       ).thenReturn(Future.successful(startedResponse))
 
-      when(websocketClient.requestResponse[SubmitResponse](argsEq(QueryFinal))(any[Decoder[SubmitResponse]]()))
+      when(websocketClient.requestResponse[SubmitResponse](argsEq(QueryFinal(sequence.runId)))(any[Decoder[SubmitResponse]]()))
         .thenReturn(Future.successful(completedResponse))
 
       sequencerCommandClient.submitAndWait(sequence).futureValue should ===(completedResponse)
@@ -98,9 +98,9 @@ class SequencerCommandClientTest extends BaseTestSuite with SequencerHttpCodecs 
 
     "call websocket with QueryFinal request | ESW-222" in {
       val id = mock[Id]
-      when(websocketClient.requestResponse[SubmitResponse](argsEq(QueryFinal))(any[Decoder[SubmitResponse]]()))
+      when(websocketClient.requestResponse[SubmitResponse](argsEq(QueryFinal(id)))(any[Decoder[SubmitResponse]]()))
         .thenReturn(Future.successful(Completed(id)))
-      sequencerCommandClient.queryFinal().futureValue should ===(Completed(id))
+      sequencerCommandClient.queryFinal(id).futureValue should ===(Completed(id))
     }
   }
 }
