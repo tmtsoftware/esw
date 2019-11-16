@@ -44,8 +44,8 @@ import scala.util.control.NonFatal
 
 private[ocs] class SequencerWiring(val packageId: String, val observingMode: String, sequenceComponentName: Option[String])
     extends SequencerHttpCodecs {
-  private lazy val config: Config       = ConfigFactory.load()
-  private[esw] lazy val sequencerConfig = SequencerConfig.from(config, packageId, observingMode, sequenceComponentName)
+  private lazy val config: Config  = ConfigFactory.load()
+  private lazy val sequencerConfig = SequencerConfig.from(config, packageId, observingMode, sequenceComponentName)
   import sequencerConfig._
 
   lazy val actorSystem: ActorSystem[SpawnProtocol.Command] = ActorSystemFactory.remote(SpawnProtocol(), "sequencer-system")

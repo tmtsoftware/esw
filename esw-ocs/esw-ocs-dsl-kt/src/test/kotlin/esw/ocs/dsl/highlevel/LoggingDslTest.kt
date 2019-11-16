@@ -70,10 +70,10 @@ class LoggingDslTest : LoggingDsl {
 
     @Test
     fun `warn method should call the Logger#warn with given message and with default value of absent argument | ESW-127`() {
-        every { logger.warn(message, mapOnlyWithPrefixEntry, any<Throwable>()) }.answers { Unit }
+        every { logger.warn(message, mapOnlyWithPrefixEntry) }.answers { Unit }
 
         warn(message)
-        verify { logger.warn(message, mapOnlyWithPrefixEntry, any<Throwable>()) }
+        verify { logger.warn(message, mapOnlyWithPrefixEntry) }
     }
 
     @Test
@@ -89,10 +89,10 @@ class LoggingDslTest : LoggingDsl {
 
     @Test
     fun `error method should call the Logger#error with given message and with default value of absent argument | ESW-127`() {
-        every { logger.error(message, mapOnlyWithPrefixEntry, any<Throwable>()) }.answers { Unit }
+        every { logger.error(message, mapOnlyWithPrefixEntry) }.answers { Unit }
 
         error(message)
-        verify { logger.error(message, mapOnlyWithPrefixEntry, any<Throwable>()) }
+        verify { logger.error(message, mapOnlyWithPrefixEntry) }
     }
 
     @Test
@@ -108,10 +108,10 @@ class LoggingDslTest : LoggingDsl {
 
     @Test
     fun `fatal method should call the Logger#fatal with given message and with default value of absent argument | ESW-127`() {
-        every { logger.fatal(message, mapOnlyWithPrefixEntry, any<Throwable>()) }.answers { Unit }
+        every { logger.fatal(message, mapOnlyWithPrefixEntry) }.answers { Unit }
 
         fatal(message)
-        verify { logger.fatal(message, mapOnlyWithPrefixEntry, any<Throwable>()) }
+        verify { logger.fatal(message, mapOnlyWithPrefixEntry) }
     }
 
     @Test
