@@ -89,9 +89,9 @@ lazy val `esw-integration-test` = project
   .settings(fork in Test := true)
   .enablePlugins(AutoMultiJvm)
   .dependsOn(
-    `esw-gateway-server` % "test->compile;test->test",
-    `esw-http-core`      % "test->compile;test->test",
-    `esw-ocs-impl`       % "test->compile;test->test",
+    `esw-gateway-server`,
+    `esw-http-core`,
+    `esw-ocs-impl`,
     examples,
     `esw-ocs-app`,
     `esw-test-reporter` % Test
