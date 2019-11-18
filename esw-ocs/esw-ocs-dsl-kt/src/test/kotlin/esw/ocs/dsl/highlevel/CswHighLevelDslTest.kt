@@ -3,6 +3,7 @@ package esw.ocs.dsl.highlevel
 import akka.actor.typed.ActorSystem
 import akka.actor.typed.javadsl.Behaviors
 import akka.stream.Materializer
+import csw.database.DatabaseServiceFactory
 import csw.location.api.javadsl.ILocationService
 import csw.location.api.javadsl.JComponentType
 import csw.location.api.scaladsl.LocationService
@@ -30,6 +31,7 @@ class CswHighLevelDslTest {
     private val jLocationService: ILocationService = mockk()
     private val locationService: LocationService = mockk()
     private val lockUnlockUtil: LockUnlockUtil = mockk()
+    private val databaseServiceFactory: DatabaseServiceFactory = mockk()
     private val jLogger: ILogger = mockk()
     private val prefix: Prefix = mockk()
 
@@ -37,6 +39,7 @@ class CswHighLevelDslTest {
         every { cswServices.actorSystem() }.answers { actorSystem }
         every { cswServices.lockUnlockUtil() }.answers { lockUnlockUtil }
         every { cswServices.locationService() }.answers { jLocationService }
+        every { cswServices.databaseServiceFactory() }.answers { databaseServiceFactory }
         every { cswServices.jLogger() }.answers { jLogger }
         every { cswServices.prefix() }.answers { prefix }
         every { jLocationService.asScala() }.answers { locationService }

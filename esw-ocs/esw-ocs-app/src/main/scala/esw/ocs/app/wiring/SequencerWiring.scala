@@ -11,6 +11,7 @@ import csw.alarm.api.javadsl.IAlarmService
 import csw.command.client.messages.sequencer.SequencerMsg
 import csw.config.api.javadsl.IConfigClientService
 import csw.config.client.javadsl.JConfigClientFactory
+import csw.database.DatabaseServiceFactory
 import csw.event.client.internal.commons.javawrappers.JEventService
 import csw.location.api.extensions.ActorExtension.RichActor
 import csw.location.api.javadsl.ILocationService
@@ -83,6 +84,8 @@ private[ocs] class SequencerWiring(val packageId: String, val observingMode: Str
   private lazy val logger: Logger   = loggerFactory.getLogger
   private lazy val jLogger: ILogger = ScriptLoader.withScript(scriptClass)(jLoggerFactory.getLogger)
 
+  private lazy val databaseServiceFactory = new DatabaseServiceFactory(actorSystem)
+
   lazy val cswServices = new CswServices(
     prefix,
     sequenceOperatorFactory,
@@ -93,6 +96,7 @@ private[ocs] class SequencerWiring(val packageId: String, val observingMode: Str
     timeServiceSchedulerFactory,
     adminFactory,
     commandFactory,
+    databaseServiceFactory,
     lockUnlockUtil,
     jConfigClientService,
     jAlarmService

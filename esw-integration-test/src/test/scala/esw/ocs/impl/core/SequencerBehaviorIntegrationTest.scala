@@ -28,6 +28,7 @@ class SequencerBehaviorIntegrationTest extends ScalaTestFrameworkTestKit with Ba
 
   override def beforeEach(): Unit = {
     ocsWiring = new SequencerWiring(ocsPackageId, ocsObservingMode, None)
+    ocsWiring.sequencerServer.start()
     ocsSequencer = ocsWiring.sequencerRef
   }
 

@@ -4,8 +4,10 @@ import akka.actor.typed.ActorSystem
 import csw.alarm.models.AlarmSeverity
 import csw.alarm.models.Key.AlarmKey
 import csw.config.api.javadsl.IConfigClientService
+import csw.database.DatabaseServiceFactory
 import csw.event.api.javadsl.IEventPublisher
 import csw.event.api.javadsl.IEventSubscriber
+import csw.location.api.javadsl.ILocationService
 import csw.location.api.javadsl.JComponentType
 import csw.location.models.ComponentType
 import csw.logging.api.javadsl.ILogger
@@ -18,7 +20,7 @@ import esw.ocs.dsl.sequence_manager.LocationServiceUtil
 import kotlinx.coroutines.CoroutineScope
 
 abstract class CswHighLevelDsl(private val cswServices: CswServices) : EventServiceDsl, TimeServiceDsl, CommandServiceDsl,
-        ConfigServiceDsl, AlarmServiceDsl, LoopDsl, SuspendToJavaConverter, LoggingDsl {
+        ConfigServiceDsl, AlarmServiceDsl, LoopDsl, SuspendToJavaConverter, LoggingDsl, DatabaseServiceDsl {
     abstract val strandEc: StrandEc
     abstract override val coroutineScope: CoroutineScope
 
@@ -32,6 +34,9 @@ abstract class CswHighLevelDsl(private val cswServices: CswServices) : EventServ
 
     final override val timeServiceScheduler: TimeServiceScheduler by lazy { cswServices.timeServiceSchedulerFactory().make(strandEc.ec()) }
     final override val configClient: IConfigClientService by lazy { cswServices.configClientService() }
+
+    final override val locationService: ILocationService = cswServices.locationService()
+    final override val databaseServiceFactory: DatabaseServiceFactory = cswServices.databaseServiceFactory()
 
     /***** AlarmServiceDSl impl *****/
     private val alarmServiceDslImpl by lazy { AlarmServiceDslImpl(cswServices.alarmService(), coroutineScope) }

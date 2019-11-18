@@ -3,6 +3,7 @@ package esw.ocs.dsl.script
 import akka.actor.typed.ActorSystem
 import csw.alarm.api.javadsl.IAlarmService
 import csw.config.api.javadsl.IConfigClientService
+import csw.database.DatabaseServiceFactory
 import csw.event.api.javadsl.IEventService
 import csw.location.api.javadsl.ILocationService
 import csw.logging.api.javadsl.ILogger
@@ -21,6 +22,7 @@ class CswServices(
     val timeServiceSchedulerFactory: TimeServiceSchedulerFactory,
     val sequencerAdminFactory: SequencerAdminFactoryApi,
     val sequencerCommandFactory: SequencerCommandFactoryApi,
+    val databaseServiceFactory: DatabaseServiceFactory,
     val lockUnlockUtil: LockUnlockUtil,
     val configClientService: IConfigClientService,
     val alarmService: IAlarmService

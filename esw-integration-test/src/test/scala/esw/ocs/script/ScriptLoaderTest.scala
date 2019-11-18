@@ -3,6 +3,7 @@ package esw.ocs.script
 import akka.actor.typed.{ActorSystem, SpawnProtocol}
 import csw.alarm.api.javadsl.IAlarmService
 import csw.config.api.javadsl.IConfigClientService
+import csw.database.DatabaseServiceFactory
 import csw.event.api.javadsl.IEventService
 import csw.location.api.javadsl.ILocationService
 import csw.logging.api.javadsl.ILogger
@@ -27,6 +28,7 @@ class ScriptLoaderTest extends BaseTestSuite {
   private val timeServiceSchedulerFactory = mock[TimeServiceSchedulerFactory]
   private val sequencerAdminFactoryApi    = mock[SequencerAdminFactoryApi]
   private val sequencerCommandFactoryApi  = mock[SequencerCommandFactoryApi]
+  private val databaseServiceFactory      = mock[DatabaseServiceFactory]
   private val lockUnlockUtil              = mock[LockUnlockUtil]
   private val iConfigClientService        = mock[IConfigClientService]
   private val iAlarmService               = mock[IAlarmService]
@@ -42,6 +44,7 @@ class ScriptLoaderTest extends BaseTestSuite {
     timeServiceSchedulerFactory,
     sequencerAdminFactoryApi,
     sequencerCommandFactoryApi,
+    databaseServiceFactory,
     lockUnlockUtil,
     iConfigClientService,
     iAlarmService

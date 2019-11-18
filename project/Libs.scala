@@ -42,6 +42,7 @@ object Csw {
   val `csw-testkit`                   = Org %% "csw-testkit" % Version
   val `csw-admin-server`              = Org %% "csw-admin-server" % Version
   val `csw-config-client`             = Org %% "csw-config-client" % Version
+  val `csw-database`                  = Org %% "csw-database" % Version
   val `csw-location-server-multi-jvm` = Org %% "csw-location-server" % Version classifier "multi-jvm"
   val `csw-location-server-tests`     = Org %% "csw-location-server" % Version classifier "tests"
 }
