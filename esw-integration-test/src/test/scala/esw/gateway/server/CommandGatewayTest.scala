@@ -2,8 +2,6 @@ package esw.gateway.server
 
 import akka.actor.CoordinatedShutdown.UnknownReason
 import akka.actor.testkit.typed.scaladsl.TestProbe
-import akka.actor.typed.{ActorSystem, SpawnProtocol}
-import akka.stream.Materializer
 import akka.stream.scaladsl.Sink
 import com.typesafe.config.ConfigFactory
 import csw.event.client.EventServiceFactory
@@ -16,35 +14,20 @@ import csw.params.core.models.{ObsId, Prefix}
 import csw.params.core.states.{CurrentState, StateName}
 import csw.params.events.{Event, EventKey, EventName, SystemEvent}
 import csw.testkit.scaladsl.CSWService.EventServer
-import csw.testkit.scaladsl.ScalaTestFrameworkTestKit
 import esw.gateway.api.clients.CommandClient
 import esw.gateway.api.codecs.GatewayCodecs
 import esw.gateway.api.protocol.{PostRequest, WebsocketRequest}
-import esw.http.core.FutureEitherExt
+import esw.ocs.testkit.EswTestKit
 import msocket.api.Transport
 import msocket.impl.Encoding.JsonText
 import msocket.impl.post.HttpPostTransport
 import msocket.impl.ws.WebsocketTransport
-import org.scalatest.WordSpecLike
 
 import scala.concurrent.Future
-import scala.concurrent.duration.{DurationInt, FiniteDuration}
 
-class CommandGatewayTest
-    extends ScalaTestFrameworkTestKit(EventServer)
-    with WordSpecLike
-    with FutureEitherExt
-    with GatewayCodecs {
-
-  import frameworkTestKit._
-
-  private implicit val typedSystem: ActorSystem[SpawnProtocol.Command] = actorSystem
-  private implicit val mat: Materializer                               = Materializer.matFromSystem(typedSystem)
-  private val port: Int                                                = 6490
-  private val gatewayWiring: GatewayWiring                             = new GatewayWiring(Some(port))
-
-  implicit val timeout: FiniteDuration                 = 10.seconds
-  override implicit def patienceConfig: PatienceConfig = PatienceConfig(timeout)
+class CommandGatewayTest extends EswTestKit(EventServer) with GatewayCodecs {
+  private val port: Int                    = 6490
+  private val gatewayWiring: GatewayWiring = new GatewayWiring(Some(port))
 
   override def beforeAll(): Unit = {
     super.beforeAll()
@@ -52,7 +35,7 @@ class CommandGatewayTest
     frameworkTestKit.spawnStandalone(ConfigFactory.load("standalone.conf"))
   }
 
-  override protected def afterAll(): Unit = {
+  override def afterAll(): Unit = {
     gatewayWiring.httpService.shutdown(UnknownReason).futureValue
     super.afterAll()
   }
@@ -135,5 +118,4 @@ class CommandGatewayTest
       currentStatesF.futureValue.toSet should ===(Set(currentState1, currentState2))
     }
   }
-
 }

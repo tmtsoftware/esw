@@ -2,40 +2,30 @@ package esw.gateway.server
 
 import akka.Done
 import akka.actor.CoordinatedShutdown.UnknownReason
-import akka.actor.typed.{ActorSystem, SpawnProtocol}
 import com.typesafe.config.ConfigFactory
 import csw.alarm.models.AlarmSeverity
 import csw.alarm.models.Key.AlarmKey
 import csw.params.core.models.Subsystem
 import csw.testkit.scaladsl.CSWService.AlarmServer
-import csw.testkit.scaladsl.ScalaTestFrameworkTestKit
 import esw.gateway.api.clients.AlarmClient
 import esw.gateway.api.codecs.GatewayCodecs
 import esw.gateway.api.protocol.PostRequest
-import esw.http.core.FutureEitherExt
+import esw.ocs.testkit.EswTestKit
 import msocket.impl.Encoding.JsonText
 import msocket.impl.post.HttpPostTransport
-import org.scalatest.WordSpecLike
 
-import scala.concurrent.duration.{DurationInt, FiniteDuration}
+class AlarmGatewayTest extends EswTestKit(AlarmServer) with GatewayCodecs {
+  import frameworkTestKit.frameworkWiring.alarmServiceFactory
 
-class AlarmGatewayTest extends ScalaTestFrameworkTestKit(AlarmServer) with WordSpecLike with FutureEitherExt with GatewayCodecs {
-  import frameworkTestKit._
-  import frameworkWiring.{alarmServiceFactory, locationService}
-
-  implicit val typedSystem: ActorSystem[SpawnProtocol.Command] = actorSystem
-  private val port: Int                                        = 6490
-  private val gatewayWiring: GatewayWiring                     = new GatewayWiring(Some(port))
-
-  implicit val timeout: FiniteDuration                 = 10.seconds
-  override implicit def patienceConfig: PatienceConfig = PatienceConfig(timeout)
+  private val port: Int                    = 6490
+  private val gatewayWiring: GatewayWiring = new GatewayWiring(Some(port))
 
   override def beforeAll(): Unit = {
     super.beforeAll()
     gatewayWiring.httpService.registeredLazyBinding.futureValue
   }
 
-  override protected def afterAll(): Unit = {
+  override def afterAll(): Unit = {
     gatewayWiring.httpService.shutdown(UnknownReason).futureValue
     super.afterAll()
   }
@@ -58,5 +48,4 @@ class AlarmGatewayTest extends ScalaTestFrameworkTestKit(AlarmServer) with WordS
       alarmClient.setSeverity(alarmKey, majorSeverity).rightValue should ===(Done)
     }
   }
-
 }

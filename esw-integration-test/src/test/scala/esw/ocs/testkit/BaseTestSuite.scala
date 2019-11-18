@@ -4,7 +4,7 @@ import org.mockito.MockitoSugar
 import org.scalactic.TypeCheckedTripleEquals
 import org.scalatest.concurrent.ScalaFutures
 import org.scalatest.time.SpanSugar.convertFloatToGrainOfTime
-import org.scalatest.{BeforeAndAfterEach, EitherValues, Matchers, WordSpecLike}
+import org.scalatest.{BeforeAndAfterAll, BeforeAndAfterEach, EitherValues, Matchers, WordSpecLike}
 
 import scala.concurrent.duration.Duration
 import scala.concurrent.{Await, Future}
@@ -12,6 +12,7 @@ import scala.concurrent.{Await, Future}
 trait BaseTestSuite
     extends WordSpecLike
     with Matchers
+    with BeforeAndAfterAll
     with BeforeAndAfterEach
     with ScalaFutures
     with EitherValues

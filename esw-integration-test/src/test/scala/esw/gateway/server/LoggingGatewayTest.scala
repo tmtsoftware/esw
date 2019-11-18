@@ -2,23 +2,20 @@ package esw.gateway.server
 
 import akka.Done
 import akka.actor.CoordinatedShutdown.UnknownReason
-import akka.actor.typed.{ActorSystem, SpawnProtocol}
+import akka.actor.typed.ActorSystem
 import csw.logging.client.appenders.{LogAppenderBuilder, StdOutAppender}
 import csw.logging.client.internal.JsonExtensions.RichJsObject
 import csw.logging.client.internal.LoggingSystem
 import csw.logging.models.Level.FATAL
-import csw.testkit.scaladsl.ScalaTestFrameworkTestKit
 import esw.gateway.api.clients.LoggingClient
 import esw.gateway.api.codecs.GatewayCodecs
 import esw.gateway.api.protocol.PostRequest
-import esw.http.core.FutureEitherExt
+import esw.ocs.testkit.EswTestKit
 import msocket.impl.Encoding.JsonText
 import msocket.impl.post.HttpPostTransport
-import org.scalatest.WordSpecLike
 import play.api.libs.json.{JsObject, Json}
 
 import scala.collection.mutable
-import scala.concurrent.duration.{DurationInt, FiniteDuration}
 
 class TestAppender(callback: Any => Unit) extends LogAppenderBuilder {
 
@@ -33,20 +30,13 @@ class TestAppender(callback: Any => Unit) extends LogAppenderBuilder {
     new StdOutAppender(system, stdHeaders, callback)
 }
 
-class LoggingGatewayTest extends ScalaTestFrameworkTestKit with WordSpecLike with FutureEitherExt with GatewayCodecs {
-  import frameworkTestKit._
-
-  implicit val typedSystem: ActorSystem[SpawnProtocol.Command] = actorSystem
-  implicit val timeout: FiniteDuration                         = 10.seconds
-
+class LoggingGatewayTest extends EswTestKit with GatewayCodecs {
   private val port: Int                           = 6490
   private val gatewayWiring: GatewayWiring        = new GatewayWiring(Some(port))
   private val logBuffer: mutable.Buffer[JsObject] = mutable.Buffer.empty[JsObject]
   private val testAppender = new TestAppender(x => {
     logBuffer += Json.parse(x.toString).as[JsObject]
   })
-
-  override implicit def patienceConfig: PatienceConfig = PatienceConfig(timeout)
 
   var loggingSystem: LoggingSystem = _
 
@@ -56,10 +46,10 @@ class LoggingGatewayTest extends ScalaTestFrameworkTestKit with WordSpecLike wit
     import gatewayWiring.wiring.cswWiring.actorRuntime
     loggingSystem = actorRuntime.startLogging("test", "0.0.1")
     loggingSystem.setAppenders(List(testAppender))
-    httpService.registeredLazyBinding
+    httpService.registeredLazyBinding.futureValue
   }
 
-  override protected def afterAll(): Unit = {
+  override def afterAll(): Unit = {
     gatewayWiring.httpService.shutdown(UnknownReason).futureValue
     super.afterAll()
   }
