@@ -5,44 +5,27 @@ import akka.actor.typed.ActorRef
 import com.typesafe.config.ConfigFactory
 import csw.command.client.messages.sequencer.SequencerMsg
 import csw.command.client.messages.sequencer.SequencerMsg.SubmitSequenceAndWait
-import csw.event.api.scaladsl.EventSubscriber
-import csw.event.client.EventServiceFactory
-import csw.location.api.extensions.URIExtension.RichURI
 import csw.params.commands.CommandResponse.SubmitResponse
 import csw.params.commands.{CommandName, Sequence, Setup}
 import csw.params.core.generics.KeyType.StringKey
 import csw.params.core.models.Prefix
 import csw.params.events.EventKey
 import csw.testkit.scaladsl.CSWService.EventServer
-import csw.testkit.scaladsl.ScalaTestFrameworkTestKit
-import esw.ocs.api.BaseTestSuite
-import esw.ocs.app.wiring.SequencerWiring
-import org.scalatest.time.SpanSugar.convertDoubleToGrainOfTime
+import esw.ocs.testkit.EswTestKit
 
-class LockUnlockIntegrationTest extends ScalaTestFrameworkTestKit(EventServer) with BaseTestSuite {
-  import frameworkTestKit.frameworkWiring.actorRuntime._
-  import frameworkTestKit.frameworkWiring.locationService
-
-  private var ocsWiring: SequencerWiring           = _
+class LockUnlockIntegrationTest extends EswTestKit(EventServer) {
   private var ocsSequencer: ActorRef[SequencerMsg] = _
-  private var eventSubscriber: EventSubscriber     = _
-
-  override implicit def patienceConfig: PatienceConfig = PatienceConfig(10.seconds)
 
   override def beforeAll(): Unit = {
     super.beforeAll()
     frameworkTestKit.spawnStandalone(ConfigFactory.load("standalone.conf"))
-    eventSubscriber = new EventServiceFactory().make(locationService).defaultSubscriber
   }
 
   override def beforeEach(): Unit = {
-    ocsWiring = new SequencerWiring("esw", "lockUnlockScript", None)
-    ocsSequencer = ocsWiring.sequencerServer.start().rightValue.uri.toActorRef.unsafeUpcast[SequencerMsg]
+    ocsSequencer = spawnSequencerRef("esw", "lockUnlockScript")
   }
 
-  override def afterEach(): Unit = {
-    ocsWiring.sequencerServer.shutDown()
-  }
+  override def afterEach(): Unit = shutdownAllSequencers()
 
   "Script" must {
     val lockingStringKey = StringKey.make("lockingResponse")

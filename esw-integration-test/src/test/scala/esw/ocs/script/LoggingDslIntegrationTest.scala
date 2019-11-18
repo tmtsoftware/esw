@@ -1,52 +1,36 @@
 package esw.ocs.script
 
+import akka.actor.typed.ActorRef
 import akka.actor.typed.scaladsl.AskPattern._
-import akka.actor.typed.{ActorRef, ActorSystem, SpawnProtocol}
-import akka.util.Timeout
 import csw.command.client.messages.sequencer.SequencerMsg
 import csw.command.client.messages.sequencer.SequencerMsg.SubmitSequenceAndWait
 import csw.logging.client.internal.JsonExtensions.RichJsObject
 import csw.logging.client.internal.LoggingSystem
+import csw.logging.client.scaladsl.LoggingSystemFactory
 import csw.params.commands.CommandResponse.{Completed, SubmitResponse}
 import csw.params.commands.{CommandName, Sequence, Setup}
 import csw.params.core.models.Prefix
-import csw.testkit.scaladsl.ScalaTestFrameworkTestKit
 import esw.gateway.server.TestAppender
-import esw.ocs.api.BaseTestSuite
-import esw.ocs.app.wiring.SequencerWiring
+import esw.ocs.testkit.EswTestKit
 import play.api.libs.json.{JsObject, Json}
 
 import scala.collection.mutable
 import scala.concurrent.Future
-import scala.concurrent.duration.DurationDouble
 
-class LoggingDslIntegrationTest extends ScalaTestFrameworkTestKit with BaseTestSuite {
+class LoggingDslIntegrationTest extends EswTestKit {
 
-  implicit val actorSystem: ActorSystem[SpawnProtocol.Command] = frameworkTestKit.actorSystem
-  private implicit val timeout: Timeout                        = 10.seconds
-
-  private var ocsWiring: SequencerWiring     = _
   private var ocsRef: ActorRef[SequencerMsg] = _
 
   private val logBuffer: mutable.Buffer[JsObject] = mutable.Buffer.empty[JsObject]
-  private val testAppender = new TestAppender(x => {
-    logBuffer += Json.parse(x.toString).as[JsObject]
-  })
+  private val testAppender                        = new TestAppender(x => logBuffer += Json.parse(x.toString).as[JsObject])
 
   var loggingSystem: LoggingSystem = _
 
-  protected override def beforeAll(): Unit = {
+  override def beforeAll(): Unit = {
     super.beforeAll()
-    ocsWiring = new SequencerWiring("ocs", "moonnight", None)
-    ocsWiring.sequencerServer.start()
-    loggingSystem = ocsWiring.actorRuntime.startLogging("", "")
+    ocsRef = spawnSequencerRef("ocs", "moonnight", None)
+    loggingSystem = LoggingSystemFactory.start("LoggingDslIntegrationTest", "", "", system)
     loggingSystem.setAppenders(List(testAppender))
-    ocsRef = ocsWiring.sequencerRef
-  }
-
-  protected override def afterAll(): Unit = {
-    ocsWiring.sequencerServer.shutDown()
-    super.afterAll()
   }
 
   "Script" must {
@@ -67,5 +51,4 @@ class LoggingDslIntegrationTest extends ScalaTestFrameworkTestKit with BaseTestS
       log.getString("message") shouldBe "log-message"
     }
   }
-
 }

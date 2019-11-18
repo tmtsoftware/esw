@@ -12,17 +12,16 @@ import csw.location.models.{AkkaLocation, ComponentId, ComponentType}
 import csw.params.commands.CommandResponse.Completed
 import csw.params.commands.{CommandName, Sequence, Setup}
 import csw.params.core.models.{Prefix, Subsystem}
-import esw.ocs.EswTestKit
-import esw.ocs.api.BaseTestSuite
 import esw.ocs.api.protocol.{ScriptError, ScriptResponse}
 import esw.ocs.app.SequencerAppCommand.{SequenceComponent, Sequencer}
 import esw.ocs.impl.messages.SequenceComponentMsg
 import esw.ocs.impl.messages.SequenceComponentMsg.{LoadScript, UnloadScript}
+import esw.ocs.testkit.EswTestKit
 
 import scala.concurrent.Future
 import scala.concurrent.duration.DurationInt
 
-class SequencerAppIntegrationTest extends EswTestKit with BaseTestSuite {
+class SequencerAppIntegrationTest extends EswTestKit {
 
   override def afterEach(): Unit = locationService.unregisterAll()
 

@@ -1,51 +1,32 @@
 package esw.ocs.script
 
 import akka.actor.testkit.typed.scaladsl.TestProbe
+import akka.actor.typed.ActorRef
 import akka.actor.typed.scaladsl.AskPattern._
-import akka.actor.typed.{ActorRef, ActorSystem, SpawnProtocol}
-import akka.util.Timeout
 import csw.command.client.messages.sequencer.SequencerMsg
 import csw.command.client.messages.sequencer.SequencerMsg.SubmitSequenceAndWait
-import csw.event.client.EventServiceFactory
-import csw.location.api.extensions.URIExtension.RichURI
-import csw.location.client.scaladsl.HttpLocationServiceFactory
 import csw.params.commands.CommandResponse.{Completed, SubmitResponse}
 import csw.params.commands._
 import csw.params.core.models.{Id, Prefix}
 import csw.params.events.{Event, EventKey, SystemEvent}
 import csw.testkit.scaladsl.CSWService.EventServer
-import csw.testkit.scaladsl.ScalaTestFrameworkTestKit
 import csw.time.core.models.UTCTime
-import esw.ocs.api.BaseTestSuite
 import esw.ocs.api.protocol._
-import esw.ocs.app.wiring.SequencerWiring
-import esw.ocs.impl.internal.Timeouts
 import esw.ocs.impl.messages.SequencerMessages._
+import esw.ocs.testkit.EswTestKit
 import org.scalatest.prop.TableDrivenPropertyChecks._
 import org.scalatest.prop.TableFor2
 
 import scala.concurrent.Future
-import scala.concurrent.duration.DurationInt
 
-class ExceptionsHandlerIntegrationTest extends ScalaTestFrameworkTestKit(EventServer) with BaseTestSuite {
-
-  implicit val actorSystem: ActorSystem[SpawnProtocol.Command] = frameworkTestKit.actorSystem
-  private implicit val askTimeout: Timeout                     = Timeouts.DefaultTimeout
-  override implicit def patienceConfig: PatienceConfig         = PatienceConfig(10.seconds)
-
+class ExceptionsHandlerIntegrationTest extends EswTestKit(EventServer) {
   private val ocsPackageId     = "esw"
   private val ocsObservingMode = "exceptionscript" // ExceptionTestScript.kt
 
   private val tcsPackageId     = "tcs"
   private val tcsObservingMode = "exceptionscript2" // ExceptionTestScript2.kt
 
-  private val eventService = new EventServiceFactory().make(HttpLocationServiceFactory.makeLocalClient)
-
-  private var setup: SequencerSetup = _
-
-  override def afterEach(): Unit = {
-    setup.shutdownSequencer()
-  }
+  override def afterEach(): Unit = shutdownAllSequencers()
 
   "Script" must {
 
@@ -64,12 +45,12 @@ class ExceptionsHandlerIntegrationTest extends ScalaTestFrameworkTestKit(EventSe
 
     forAll(idleStateTestCases) { (msg, reason) =>
       s"invoke exception handler when ${reason} | ESW-139" in {
-        setup = new SequencerSetup(ocsPackageId, ocsObservingMode)
+        val sequencer = spawnSequencerRef(ocsPackageId, ocsObservingMode)
 
         val eventKey = EventKey("tcs." + reason)
         val probe    = createProbeFor(eventKey)
 
-        setup.sequencer ! msg
+        sequencer ! msg
 
         assertReason(probe, reason)
       }
@@ -83,8 +64,8 @@ class ExceptionsHandlerIntegrationTest extends ScalaTestFrameworkTestKit(EventSe
     )
 
     forAll(inProgressStateTestCases) { (msg, reason) =>
-      s"invoke exception handler when ${reason} | ESW-139" in {
-        setup = new SequencerSetup(ocsPackageId, ocsObservingMode)
+      s"invoke exception handler when $reason | ESW-139" in {
+        val sequencer = spawnSequencerRef(ocsPackageId, ocsObservingMode)
 
         val eventKey = EventKey("tcs." + reason)
         val probe    = createProbeFor(eventKey)
@@ -93,10 +74,10 @@ class ExceptionsHandlerIntegrationTest extends ScalaTestFrameworkTestKit(EventSe
         val command1                 = Setup(Prefix("TCS"), CommandName("successful-command"), None)
         val longRunningSetupSequence = Sequence(longRunningSetupCommand, command1)
 
-        setup.sequencer ? ((x: ActorRef[SubmitResponse]) => SubmitSequenceAndWait(longRunningSetupSequence, x))
+        sequencer ? ((x: ActorRef[SubmitResponse]) => SubmitSequenceAndWait(longRunningSetupSequence, x))
         // Pause sequence so it will remain in InProgress state and then other inProgressState msgs can be processed
-        setup.sequencer ? ((x: ActorRef[PauseResponse]) => Pause(x))
-        setup.sequencer ! msg
+        sequencer ? ((x: ActorRef[PauseResponse]) => Pause(x))
+        sequencer ! msg
 
         assertReason(probe, reason)
       }
@@ -106,7 +87,7 @@ class ExceptionsHandlerIntegrationTest extends ScalaTestFrameworkTestKit(EventSe
   "Script2" must {
 
     "invoke exception handlers when exception is thrown from handler and must fail the command with message of given exception | ESW-139" in {
-      setup = new SequencerSetup(ocsPackageId, ocsObservingMode)
+      val sequencer = spawnSequencerRef(ocsPackageId, ocsObservingMode)
 
       val command  = Setup(Prefix("TCS"), CommandName("fail-setup"), None)
       val id       = Id()
@@ -117,7 +98,7 @@ class ExceptionsHandlerIntegrationTest extends ScalaTestFrameworkTestKit(EventSe
 
       val testProbe = createProbeFor(eventKey)
 
-      val submitResponseF: Future[SubmitResponse] = setup.sequencer ? (SubmitSequenceAndWait(sequence, _))
+      val submitResponseF: Future[SubmitResponse] = sequencer ? (SubmitSequenceAndWait(sequence, _))
       val error                                   = submitResponseF.futureValue.asInstanceOf[CommandResponse.Error]
       error.runId shouldBe id
       error.message.contains(commandFailureMsg) shouldBe true
@@ -131,7 +112,7 @@ class ExceptionsHandlerIntegrationTest extends ScalaTestFrameworkTestKit(EventSe
       val id1       = Id()
       val sequence1 = Sequence(id1, Seq(command1))
 
-      val submitResponse1: Future[SubmitResponse] = setup.sequencer ? (SubmitSequenceAndWait(sequence1, _))
+      val submitResponse1: Future[SubmitResponse] = sequencer ? (SubmitSequenceAndWait(sequence1, _))
       submitResponse1.futureValue should ===(Completed(id1))
     }
 
@@ -140,19 +121,13 @@ class ExceptionsHandlerIntegrationTest extends ScalaTestFrameworkTestKit(EventSe
       val eventKey  = EventKey("tcs." + reason)
       val testProbe = createProbeFor(eventKey)
 
-      setup = new SequencerSetup(tcsPackageId, tcsObservingMode)
+      val sequencer = spawnSequencerRef(tcsPackageId, tcsObservingMode)
 
-      (setup.sequencer ? GoOffline).awaitResult
-      setup.sequencer ! GoOnline(TestProbe[GoOnlineResponse].ref)
+      (sequencer ? GoOffline).awaitResult
+      sequencer ! GoOnline(TestProbe[GoOnlineResponse].ref)
 
       assertReason(testProbe, reason)
     }
-  }
-
-  private class SequencerSetup(id: String, mode: String) {
-    val wiring                    = new SequencerWiring(id, mode, None)
-    val sequencer                 = wiring.sequencerServer.start().rightValue.uri.toActorRef.unsafeUpcast[SequencerMsg]
-    def shutdownSequencer(): Unit = wiring.sequencerServer.shutDown()
   }
 
   private def assertReason(probe: TestProbe[Event], reason: String): Unit = {
@@ -164,7 +139,7 @@ class ExceptionsHandlerIntegrationTest extends ScalaTestFrameworkTestKit(EventSe
 
   private def createProbeFor(eventKey: EventKey): TestProbe[Event] = {
     val testProbe    = TestProbe[Event]
-    val subscription = eventService.defaultSubscriber.subscribeActorRef(Set(eventKey), testProbe.ref)
+    val subscription = eventSubscriber.subscribeActorRef(Set(eventKey), testProbe.ref)
     subscription.ready().futureValue
     testProbe.expectMessageType[SystemEvent] // discard msg
     testProbe

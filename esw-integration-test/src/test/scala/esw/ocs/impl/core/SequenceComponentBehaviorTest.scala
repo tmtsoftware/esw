@@ -5,30 +5,24 @@ import akka.actor.testkit.typed.scaladsl.{BehaviorTestKit, TestProbe}
 import akka.actor.typed.SpawnProtocol.Spawn
 import akka.actor.typed.scaladsl.AskPattern._
 import akka.actor.typed.scaladsl.Behaviors
-import akka.actor.typed.{ActorRef, ActorSystem, Props, SpawnProtocol}
-import akka.util.Timeout
+import akka.actor.typed.{ActorRef, Props}
 import csw.location.models.Connection.AkkaConnection
 import csw.location.models.{AkkaLocation, ComponentId, ComponentType, Location}
 import csw.logging.client.scaladsl.LoggerFactory
-import csw.testkit.scaladsl.ScalaTestFrameworkTestKit
-import esw.ocs.api.BaseTestSuite
 import esw.ocs.api.protocol.{GetStatusResponse, ScriptError, ScriptResponse}
 import esw.ocs.app.wiring.SequencerWiring
 import esw.ocs.impl.messages.SequenceComponentMsg
-import esw.ocs.impl.messages.SequenceComponentMsg.{GetStatus, LoadScript, Restart, Stop, UnloadScript}
+import esw.ocs.impl.messages.SequenceComponentMsg._
+import esw.ocs.testkit.EswTestKit
 
 import scala.concurrent.duration.DurationLong
 
-class SequenceComponentBehaviorTest extends ScalaTestFrameworkTestKit with BaseTestSuite {
-  private implicit val typedSystem: ActorSystem[SpawnProtocol.Command] = frameworkTestKit.actorSystem
-  val ocsSequenceComponentName                                         = "OCS_1"
-
-  private val factory = new LoggerFactory("SequenceComponentTest")
-
-  implicit val timeOut: Timeout = frameworkTestKit.timeout
+class SequenceComponentBehaviorTest extends EswTestKit {
+  private val ocsSequenceComponentName = "OCS_1"
+  private val factory                  = new LoggerFactory("SequenceComponentTest")
 
   private def spawnSequenceComponent() = {
-    (typedSystem ? { x: ActorRef[ActorRef[SequenceComponentMsg]] =>
+    (system ? { x: ActorRef[ActorRef[SequenceComponentMsg]] =>
       Spawn(
         SequenceComponentBehavior
           .behavior(ocsSequenceComponentName, factory.getLogger, sequencerWiring(_, _, _).sequencerServer),

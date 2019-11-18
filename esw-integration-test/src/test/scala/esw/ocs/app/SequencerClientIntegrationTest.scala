@@ -15,18 +15,17 @@ import csw.params.core.models.{Id, Prefix}
 import csw.params.events.{Event, EventKey, EventName, SystemEvent}
 import csw.testkit.scaladsl.CSWService.EventServer
 import csw.time.core.models.UTCTime
-import esw.ocs.EswTestKit
-import esw.ocs.api.BaseTestSuite
 import esw.ocs.api.client.{SequencerAdminClient, SequencerCommandClient}
 import esw.ocs.api.models.StepStatus.Finished.{Failure, Success}
 import esw.ocs.api.models.StepStatus.Pending
 import esw.ocs.api.models.{Step, StepList}
 import esw.ocs.api.protocol._
 import esw.ocs.impl.messages.SequencerState.{Loaded, Offline}
+import esw.ocs.testkit.EswTestKit
 
 import scala.concurrent.Future
 
-class SequencerClientIntegrationTest extends EswTestKit(EventServer) with BaseTestSuite {
+class SequencerClientIntegrationTest extends EswTestKit(EventServer) {
   private val packageId     = "ocs"
   private val observingMode = "moonnight"
 
