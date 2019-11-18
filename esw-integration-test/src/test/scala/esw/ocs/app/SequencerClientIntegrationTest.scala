@@ -1,19 +1,12 @@
 package esw.ocs.app
 
-import java.net.URI
-
 import akka.actor.testkit.typed.scaladsl.TestProbe
+import akka.actor.typed.ActorRef
 import akka.actor.typed.scaladsl.AskPattern._
-import akka.actor.typed.{ActorRef, ActorSystem, SpawnProtocol}
-import akka.util.Timeout
 import csw.command.client.messages.sequencer.SequencerMsg
 import csw.command.client.messages.sequencer.SequencerMsg.SubmitSequenceAndWait
 import csw.event.client.EventServiceFactory
-import csw.location.api.extensions.URIExtension.RichURI
-import csw.location.api.scaladsl.LocationService
 import csw.location.client.scaladsl.HttpLocationServiceFactory
-import csw.location.models.Connection.{AkkaConnection, HttpConnection}
-import csw.location.models.{ComponentId, ComponentType}
 import csw.params.commands.CommandIssue.UnsupportedCommandInStateIssue
 import csw.params.commands.CommandResponse.{Completed, Error, Invalid, Started, SubmitResponse}
 import csw.params.commands.{CommandName, Sequence, Setup}
@@ -21,31 +14,19 @@ import csw.params.core.generics.KeyType.StringKey
 import csw.params.core.models.{Id, Prefix}
 import csw.params.events.{Event, EventKey, EventName, SystemEvent}
 import csw.testkit.scaladsl.CSWService.EventServer
-import csw.testkit.scaladsl.ScalaTestFrameworkTestKit
 import csw.time.core.models.UTCTime
+import esw.ocs.EswTestKit
 import esw.ocs.api.BaseTestSuite
 import esw.ocs.api.client.{SequencerAdminClient, SequencerCommandClient}
 import esw.ocs.api.models.StepStatus.Finished.{Failure, Success}
 import esw.ocs.api.models.StepStatus.Pending
 import esw.ocs.api.models.{Step, StepList}
 import esw.ocs.api.protocol._
-import esw.ocs.app.wiring.SequencerWiring
 import esw.ocs.impl.messages.SequencerState.{Loaded, Offline}
-import esw.ocs.impl.{SequencerAdminClientFactory, SequencerCommandClientFactory}
-import msocket.impl.Encoding.JsonText
 
 import scala.concurrent.Future
-import scala.concurrent.duration.DurationLong
 
-class SequencerClientIntegrationTest extends ScalaTestFrameworkTestKit(EventServer) with BaseTestSuite {
-
-  import frameworkTestKit._
-  private implicit val sys: ActorSystem[SpawnProtocol.Command] = actorSystem
-
-  override implicit def patienceConfig: PatienceConfig = PatienceConfig(10.seconds)
-
-  private implicit val askTimeout: Timeout = Timeout(10.seconds)
-
+class SequencerClientIntegrationTest extends EswTestKit(EventServer) with BaseTestSuite {
   private val packageId     = "ocs"
   private val observingMode = "moonnight"
 
@@ -56,41 +37,27 @@ class SequencerClientIntegrationTest extends ScalaTestFrameworkTestKit(EventServ
   private val command5 = Setup(Prefix("esw.test"), CommandName("command-5"), None)
   private val command6 = Setup(Prefix("esw.test"), CommandName("command-6"), None)
 
-  private var locationService: LocationService               = _
-  private var ocsSequencerWiring: SequencerWiring            = _
-  private var tcsSequencerWiring: SequencerWiring            = _
   private var ocsSequencer: ActorRef[SequencerMsg]           = _
   private var ocsSequencerAdmin: SequencerAdminClient        = _
   private var ocsSequencerCommandApi: SequencerCommandClient = _
   private var tcsSequencerAdmin: SequencerAdminClient        = _
 
-  override def beforeAll(): Unit = {
-    super.beforeAll()
-    locationService = HttpLocationServiceFactory.makeLocalClient
-  }
-
   override protected def beforeEach(): Unit = {
     //ocs sequencer, starts with TestScript2
-    ocsSequencerWiring = new SequencerWiring(packageId, observingMode, None)
-    ocsSequencerWiring.sequencerServer.start()
+    spawnSequencer(packageId, observingMode)
 
-    ocsSequencerAdmin = resolveSequencerAdmin(packageId, observingMode)
-    ocsSequencerCommandApi = resolveSequencerCommandClient(packageId, observingMode)
-    ocsSequencer = resolveSequencerAkka()
+    ocsSequencerAdmin = sequencerAdminClient(packageId, observingMode)
+    ocsSequencerCommandApi = sequencerCommandClient(packageId, observingMode)
+    ocsSequencer = resolveSequencer(packageId, observingMode)
 
     // tcs sequencer, starts with TestScript3
     val tcsSequencerId            = "tcs"
     val tcsSequencerObservingMode = "moonnight"
-    tcsSequencerWiring = new SequencerWiring(tcsSequencerId, tcsSequencerObservingMode, None)
-    tcsSequencerWiring.sequencerServer.start()
-    tcsSequencerAdmin = resolveSequencerAdmin(tcsSequencerId, tcsSequencerObservingMode)
+    spawnSequencer(tcsSequencerId, tcsSequencerObservingMode)
+    tcsSequencerAdmin = sequencerAdminClient(tcsSequencerId, tcsSequencerObservingMode)
   }
 
-  override protected def afterEach(): Unit = {
-    ocsSequencerWiring.sequencerServer.shutDown()
-    // shutting down the tcs sequencer
-    tcsSequencerWiring.sequencerServer.shutDown()
-  }
+  override protected def afterEach(): Unit = shutdownAllSequencers()
 
   "LoadSequence, Start it and Query its response | ESW-145, ESW-154, ESW-221, ESW-194, ESW-158, ESW-222, ESW-101" in {
     val sequence = Sequence(command1, command2)
@@ -217,9 +184,8 @@ class SequencerClientIntegrationTest extends ScalaTestFrameworkTestKit(EventServ
 
     // creating subscriber for offline event
     val testProbe                = TestProbe[Event]
-    val offlineSubscriber        = ocsSequencerWiring.cswWiring.eventService.defaultSubscriber
     val offlineKey               = EventKey("tcs.test.offline")
-    val offlineEventSubscription = offlineSubscriber.subscribeActorRef(Set(offlineKey), testProbe.ref)
+    val offlineEventSubscription = eventSubscriber.subscribeActorRef(Set(offlineKey), testProbe.ref)
     offlineEventSubscription.ready().futureValue
     testProbe.expectMessageType[SystemEvent] // discard invalid event
     //##############
@@ -244,9 +210,8 @@ class SequencerClientIntegrationTest extends ScalaTestFrameworkTestKit(EventServ
     // assert both the sequencers goes online and online handlers are called
 
     // creating subscriber for online event
-    val onlineSubscriber        = ocsSequencerWiring.cswWiring.eventService.defaultSubscriber
     val onlineKey               = EventKey("tcs.test.online")
-    val onlineEventSubscription = onlineSubscriber.subscribeActorRef(Set(onlineKey), testProbe.ref)
+    val onlineEventSubscription = eventSubscriber.subscribeActorRef(Set(onlineKey), testProbe.ref)
     onlineEventSubscription.ready().futureValue
     testProbe.expectMessageType[SystemEvent] // discard invalid event
 
@@ -355,32 +320,5 @@ class SequencerClientIntegrationTest extends ScalaTestFrameworkTestKit(EventServ
           e.hasBreakpoint should ===(a.hasBreakpoint)
       }
     }
-  }
-
-  private def resolveSequencerAkka(): ActorRef[SequencerMsg] =
-    locationService
-      .resolve(AkkaConnection(ComponentId(s"$packageId@$observingMode", ComponentType.Sequencer)), 5.seconds)
-      .futureValue
-      .value
-      .uri
-      .toActorRef
-      .unsafeUpcast[SequencerMsg]
-
-  private def resolveSequencerHttp(packageId: String, observingMode: String): URI = {
-    val componentId = ComponentId(s"$packageId@$observingMode@http", ComponentType.Service)
-    locationService.resolve(HttpConnection(componentId), 5.seconds).futureValue.get.uri
-  }
-
-  private def resolveSequencerAdmin(packageId: String, observingMode: String): SequencerAdminClient = {
-    val uri     = resolveSequencerHttp(packageId, observingMode)
-    val postUrl = s"${uri.toString}post-endpoint"
-    SequencerAdminClientFactory.make(postUrl, JsonText, () => None)
-  }
-
-  private def resolveSequencerCommandClient(packageId: String, observingMode: String): SequencerCommandClient = {
-    val uri     = resolveSequencerHttp(packageId, observingMode)
-    val postUrl = s"${uri.toString}post-endpoint"
-    val wsUrl   = s"ws://${uri.getHost}:${uri.getPort}/websocket-endpoint"
-    SequencerCommandClientFactory.make(postUrl, wsUrl, JsonText, () => None)
   }
 }

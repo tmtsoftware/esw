@@ -2,19 +2,17 @@ package esw.ocs.app
 
 import akka.Done
 import akka.actor.testkit.typed.scaladsl.TestProbe
+import akka.actor.typed.ActorRef
 import akka.actor.typed.scaladsl.AskPattern._
-import akka.actor.typed.{ActorRef, ActorSystem}
 import akka.util.Timeout
 import csw.command.client.internal.SequencerCommandServiceImpl
 import csw.location.api.extensions.URIExtension.RichURI
-import csw.location.api.scaladsl.LocationService
-import csw.location.client.scaladsl.HttpLocationServiceFactory
 import csw.location.models.Connection.AkkaConnection
 import csw.location.models.{AkkaLocation, ComponentId, ComponentType}
 import csw.params.commands.CommandResponse.Completed
 import csw.params.commands.{CommandName, Sequence, Setup}
 import csw.params.core.models.{Prefix, Subsystem}
-import csw.testkit.scaladsl.ScalaTestFrameworkTestKit
+import esw.ocs.EswTestKit
 import esw.ocs.api.BaseTestSuite
 import esw.ocs.api.protocol.{ScriptError, ScriptResponse}
 import esw.ocs.app.SequencerAppCommand.{SequenceComponent, Sequencer}
@@ -24,17 +22,9 @@ import esw.ocs.impl.messages.SequenceComponentMsg.{LoadScript, UnloadScript}
 import scala.concurrent.Future
 import scala.concurrent.duration.DurationInt
 
-class SequencerAppIntegrationTest extends ScalaTestFrameworkTestKit with BaseTestSuite {
-  import frameworkTestKit._
-  implicit val typedSystem: ActorSystem[_]         = actorSystem
-  private val testLocationService: LocationService = HttpLocationServiceFactory.makeLocalClient
+class SequencerAppIntegrationTest extends EswTestKit with BaseTestSuite {
 
-  override implicit def patienceConfig: PatienceConfig = PatienceConfig(15.seconds)
-
-  override def afterEach(): Unit = {
-    super.afterEach()
-    testLocationService.unregisterAll()
-  }
+  override def afterEach(): Unit = locationService.unregisterAll()
 
   "SequenceComponent command" must {
     "start sequence component with provided subsystem and name and register it with location service | ESW-102, ESW-103, ESW-147, ESW-151, ESW-214" in {
@@ -46,11 +36,7 @@ class SequencerAppIntegrationTest extends ScalaTestFrameworkTestKit with BaseTes
       SequencerApp.run(SequenceComponent(subsystem, Some(name)), enableLogging = false)
 
       // verify Sequence component is started and registered with location service
-      val sequenceCompLocation: AkkaLocation =
-        testLocationService
-          .resolve(AkkaConnection(ComponentId(s"$subsystem.$name", ComponentType.SequenceComponent)), 5.seconds)
-          .futureValue
-          .get
+      val sequenceCompLocation: AkkaLocation = resolveSequenceComponentLocation(s"$subsystem.$name")
 
       sequenceCompLocation.connection shouldEqual AkkaConnection(ComponentId("ESW.primary", ComponentType.SequenceComponent))
       sequenceCompLocation.prefix shouldEqual Prefix("ESW.primary")
@@ -69,11 +55,7 @@ class SequencerAppIntegrationTest extends ScalaTestFrameworkTestKit with BaseTes
       actualSequencerName shouldEqual expectedSequencerName
 
       // verify Sequencer is started and registered with location service with expected name
-      val sequencerLocationCheck: AkkaLocation =
-        testLocationService
-          .resolve(AkkaConnection(ComponentId(expectedSequencerName, ComponentType.Sequencer)), 5.seconds)
-          .futureValue
-          .get
+      val sequencerLocationCheck: AkkaLocation = resolveSequencerLocation(expectedSequencerName)
       sequencerLocationCheck shouldEqual sequencerLocation
 
       val commandService = new SequencerCommandServiceImpl(sequencerLocation)
@@ -92,7 +74,7 @@ class SequencerAppIntegrationTest extends ScalaTestFrameworkTestKit with BaseTes
 
       SequencerApp.run(SequenceComponent(subsystem, None), enableLogging = false)
 
-      val sequenceComponentLocation = testLocationService.list(ComponentType.SequenceComponent).futureValue.head
+      val sequenceComponentLocation = locationService.list(ComponentType.SequenceComponent).futureValue.head
 
       //assert that componentName and prefix contain subsystem provided
       sequenceComponentLocation.connection.componentId.name.contains("ESW.ESW_") shouldEqual true
@@ -110,10 +92,10 @@ class SequencerAppIntegrationTest extends ScalaTestFrameworkTestKit with BaseTes
       //Wait till futures registering sequence component complete
       Thread.sleep(5000)
 
-      val sequenceComponentLocations = testLocationService.list(ComponentType.SequenceComponent).futureValue
+      val sequenceComponentLocations = locationService.list(ComponentType.SequenceComponent).futureValue
 
       //assert if all 3 sequence components are registered
-      testLocationService.list(ComponentType.SequenceComponent).futureValue.length shouldEqual 3
+      locationService.list(ComponentType.SequenceComponent).futureValue.length shouldEqual 3
       sequenceComponentLocations.foreach { location =>
         {
           //assert that componentName and prefix contain subsystem provided
@@ -133,11 +115,7 @@ class SequencerAppIntegrationTest extends ScalaTestFrameworkTestKit with BaseTes
       SequencerApp.run(SequenceComponent(subsystem, Some(name)), enableLogging = false)
 
       // verify Sequence component is started and registered with location service
-      val sequenceCompLocation: AkkaLocation =
-        testLocationService
-          .resolve(AkkaConnection(ComponentId(s"$subsystem.$name", ComponentType.SequenceComponent)), 5.seconds)
-          .futureValue
-          .get
+      val sequenceCompLocation: AkkaLocation = resolveSequenceComponentLocation(s"$subsystem.$name")
 
       sequenceCompLocation.connection shouldEqual AkkaConnection(ComponentId("ESW.primary", ComponentType.SequenceComponent))
       sequenceCompLocation.prefix shouldEqual Prefix("ESW.primary")
@@ -173,15 +151,13 @@ class SequencerAppIntegrationTest extends ScalaTestFrameworkTestKit with BaseTes
       SequencerApp.run(Sequencer(subsystem, name, packageId, observingMode), enableLogging = false)
 
       // verify sequence component is started
-      val sequenceComponentName       = s"$subsystem.${name.value}"
-      val sequenceComponentConnection = AkkaConnection(ComponentId(sequenceComponentName, ComponentType.SequenceComponent))
-      val sequenceComponentLocation   = testLocationService.resolve(sequenceComponentConnection, 5.seconds).futureValue.value
-
+      val sequenceComponentName     = s"$subsystem.${name.value}"
+      val sequenceComponentLocation = resolveSequenceComponentLocation(sequenceComponentName)
       sequenceComponentLocation.connection.componentId.name shouldBe sequenceComponentName
 
       // verify that sequencer is started and able to process sequence command
       val connection        = AkkaConnection(ComponentId(sequencerName, ComponentType.Sequencer))
-      val sequencerLocation = testLocationService.resolve(connection, 5.seconds).futureValue.value
+      val sequencerLocation = locationService.resolve(connection, 5.seconds).futureValue.value
 
       sequencerLocation.connection.componentId.name shouldBe sequencerName
 
@@ -198,7 +174,7 @@ class SequencerAppIntegrationTest extends ScalaTestFrameworkTestKit with BaseTes
       // start Sequencer
       SequencerApp.run(Sequencer(subsystem, None, None, observingMode), enableLogging = false)
 
-      val sequenceComponentLocation = testLocationService.list(ComponentType.SequenceComponent).futureValue.head
+      val sequenceComponentLocation = locationService.list(ComponentType.SequenceComponent).futureValue.head
 
       //assert that componentName and prefix contain subsystem provided
       sequenceComponentLocation.connection.componentId.name.contains("ESW.ESW_") shouldEqual true
@@ -208,10 +184,9 @@ class SequencerAppIntegrationTest extends ScalaTestFrameworkTestKit with BaseTes
 
       //sequencer name will have sequence component name and optional packageId is defaulted to subsystem
       val sequencerName = s"$sequenceComponentName@esw@darknight"
-
       // verify that sequencer is started and able to process sequence command
-      val connection        = AkkaConnection(ComponentId(sequencerName, ComponentType.Sequencer))
-      val sequencerLocation = testLocationService.resolve(connection, 5.seconds).futureValue.value
+      resolveSequencerLocation(sequencerName)
+      val sequencerLocation = resolveSequencerLocation(sequencerName)
 
       sequencerLocation.connection.componentId.name shouldBe sequencerName
     }
