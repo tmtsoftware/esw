@@ -16,7 +16,7 @@ import csw.params.commands.{CommandName, Sequence, Setup}
 import csw.params.core.models.{Prefix, Subsystem}
 import csw.testkit.scaladsl.ScalaTestFrameworkTestKit
 import esw.ocs.api.BaseTestSuite
-import esw.ocs.api.protocol.{LoadScriptError, LoadScriptResponse}
+import esw.ocs.api.protocol.{ScriptError, ScriptResponse}
 import esw.ocs.app.SequencerAppCommand.{SequenceComponent, Sequencer}
 import esw.ocs.impl.messages.SequenceComponentMsg
 import esw.ocs.impl.messages.SequenceComponentMsg.{LoadScript, UnloadScript}
@@ -57,11 +57,11 @@ class SequencerAppIntegrationTest extends ScalaTestFrameworkTestKit with BaseTes
 
       // LoadScript
       val seqCompRef = sequenceCompLocation.uri.toActorRef.unsafeUpcast[SequenceComponentMsg]
-      val probe      = TestProbe[LoadScriptResponse]
+      val probe      = TestProbe[ScriptResponse]
       seqCompRef ! LoadScript("esw", "darknight", probe.ref)
 
       // verify that loaded sequencer is started and able to process sequence command
-      val response          = probe.expectMessageType[LoadScriptResponse]
+      val response          = probe.expectMessageType[ScriptResponse]
       val sequencerLocation = response.response.rightValue
 
       //verify sequencerName has SequenceComponentName
@@ -123,7 +123,7 @@ class SequencerAppIntegrationTest extends ScalaTestFrameworkTestKit with BaseTes
       }
     }
 
-    "return LoadScriptError when script configuration is not provided| ESW-102" in {
+    "return ScriptError when script configuration is not provided| ESW-102" in {
       val subsystem        = Subsystem.ESW
       val name             = "primary"
       val invalidPackageId = "invalid_package"
@@ -145,18 +145,18 @@ class SequencerAppIntegrationTest extends ScalaTestFrameworkTestKit with BaseTes
       val timeout = Timeout(10.seconds)
       // LoadScript
       val seqCompRef: ActorRef[SequenceComponentMsg] = sequenceCompLocation.uri.toActorRef.unsafeUpcast[SequenceComponentMsg]
-      val loadScriptResponse: Future[LoadScriptResponse] =
-        seqCompRef.ask((ref: ActorRef[LoadScriptResponse]) => LoadScript(invalidPackageId, observingMode, ref))(
+      val loadScriptResponse: Future[ScriptResponse] =
+        seqCompRef.ask((ref: ActorRef[ScriptResponse]) => LoadScript(invalidPackageId, observingMode, ref))(
           timeout,
           schedulerFromActorSystem
         )
 
-      val response: Either[LoadScriptError, AkkaLocation] = loadScriptResponse.futureValue.response
+      val response: Either[ScriptError, AkkaLocation] = loadScriptResponse.futureValue.response
 
       response match {
         case Left(v) =>
-          v shouldEqual LoadScriptError(s"Script configuration missing for $invalidPackageId with $observingMode")
-        case Right(_) => throw new RuntimeException("test failed as this test expects LoadScriptError")
+          v shouldEqual ScriptError(s"Script configuration missing for $invalidPackageId with $observingMode")
+        case Right(_) => throw new RuntimeException("test failed as this test expects ScriptError")
       }
     }
   }
@@ -216,7 +216,7 @@ class SequencerAppIntegrationTest extends ScalaTestFrameworkTestKit with BaseTes
       sequencerLocation.connection.componentId.name shouldBe sequencerName
     }
 
-    "throw exception if LoadScriptError is returned | ESW-102" in {
+    "throw exception if ScriptError is returned | ESW-102" in {
       val subsystem        = Subsystem.ESW
       val name             = Some("primary")
       val invalidPackageId = "invalid package"
@@ -226,7 +226,7 @@ class SequencerAppIntegrationTest extends ScalaTestFrameworkTestKit with BaseTes
         SequencerApp.run(Sequencer(subsystem, name, Some(invalidPackageId), observingMode), enableLogging = false)
       }
 
-      exception.getMessage shouldEqual s"Failed to start with error: LoadScriptError(Script configuration missing for $invalidPackageId with $observingMode)"
+      exception.getMessage shouldEqual s"Failed to start with error: ScriptError(Script configuration missing for $invalidPackageId with $observingMode)"
     }
   }
 }

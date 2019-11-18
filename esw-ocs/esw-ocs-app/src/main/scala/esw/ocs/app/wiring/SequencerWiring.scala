@@ -24,7 +24,7 @@ import csw.logging.client.scaladsl.LoggerFactory
 import csw.network.utils.SocketUtils
 import esw.http.core.wiring.{ActorRuntime, CswWiring, HttpService, Settings}
 import esw.ocs.api.codecs.SequencerHttpCodecs
-import esw.ocs.api.protocol.LoadScriptError
+import esw.ocs.api.protocol.ScriptError
 import esw.ocs.app.route._
 import esw.ocs.dsl.script.utils.{LockUnlockUtil, ScriptLoader}
 import esw.ocs.dsl.script.{CswServices, JScriptDsl}
@@ -122,7 +122,7 @@ private[ocs] class SequencerWiring(val packageId: String, val observingMode: Str
   lazy val sequencerBehavior = new SequencerBehavior(componentId, script, locationService, shutdownHttpService)(typedSystem)
 
   lazy val sequencerServer: SequencerServer = new SequencerServer {
-    override def start(): Either[LoadScriptError, AkkaLocation] = {
+    override def start(): Either[ScriptError, AkkaLocation] = {
       try {
         new Engine(script).start(sequenceOperatorFactory())
 
@@ -131,7 +131,7 @@ private[ocs] class SequencerWiring(val packageId: String, val observingMode: Str
         val registration = AkkaRegistration(AkkaConnection(componentId), prefix, sequencerRef.toURI)
         new LocationServiceUtil(locationService).register(registration).block
       } catch {
-        case NonFatal(e) => Left(LoadScriptError(e.getMessage))
+        case NonFatal(e) => Left(ScriptError(e.getMessage))
       }
     }
 

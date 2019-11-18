@@ -10,7 +10,7 @@ import csw.logging.api.scaladsl.Logger
 import csw.logging.client.scaladsl.LoggerFactory
 import esw.http.core.commons.CoordinatedShutdownReasons.FailureReason
 import esw.http.core.commons.EswCommandApp
-import esw.ocs.api.protocol.{LoadScriptError, LoadScriptResponse}
+import esw.ocs.api.protocol.{ScriptError, ScriptResponse}
 import esw.ocs.app.SequencerAppCommand._
 import esw.ocs.app.wiring.{SequenceComponentWiring, SequencerWiring}
 import esw.ocs.impl.messages.SequenceComponentMsg
@@ -57,15 +57,15 @@ object SequencerApp extends EswCommandApp[SequencerAppCommand] {
       mode: String,
       sequenceComponentLocation: AkkaLocation,
       sequenceComponentWiring: SequenceComponentWiring
-  ): Either[LoadScriptError, AkkaLocation] = {
+  ): Either[ScriptError, AkkaLocation] = {
     import sequenceComponentWiring._
     import actorRuntime._
     val actorRef: ActorRef[SequenceComponentMsg] = sequenceComponentLocation.uri.toActorRef.unsafeUpcast[SequenceComponentMsg]
-    val response: Future[LoadScriptResponse]     = actorRef ? (LoadScript(id, mode, _))
+    val response: Future[ScriptResponse]         = actorRef ? (LoadScript(id, mode, _))
     response.map(_.response).block
   }
 
-  private def report(appResult: Either[LoadScriptError, AkkaLocation]) = appResult match {
+  private def report(appResult: Either[ScriptError, AkkaLocation]) = appResult match {
     case Left(err) => logAndThrowError(log, s"Failed to start with error: $err")
     case Right(location) =>
       logInfo(

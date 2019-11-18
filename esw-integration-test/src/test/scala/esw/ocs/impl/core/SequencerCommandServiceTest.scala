@@ -9,7 +9,7 @@ import csw.params.commands.{CommandName, Sequence, Setup}
 import csw.params.core.models.Prefix
 import csw.testkit.scaladsl.ScalaTestFrameworkTestKit
 import esw.ocs.api.BaseTestSuite
-import esw.ocs.api.protocol.LoadScriptError
+import esw.ocs.api.protocol.ScriptError
 import esw.ocs.app.wiring.SequencerWiring
 import org.scalatest.time.SpanSugar.convertDoubleToGrainOfTime
 
@@ -17,8 +17,8 @@ class SequencerCommandServiceTest extends ScalaTestFrameworkTestKit with BaseTes
   import frameworkTestKit._
   private implicit val sys: ActorSystem[SpawnProtocol.Command] = actorSystem
 
-  private var wiring: SequencerWiring                                  = _
-  private var sequencerLocation: Either[LoadScriptError, AkkaLocation] = _
+  private var wiring: SequencerWiring                              = _
+  private var sequencerLocation: Either[ScriptError, AkkaLocation] = _
 
   override def beforeAll(): Unit = {
     super.beforeAll()

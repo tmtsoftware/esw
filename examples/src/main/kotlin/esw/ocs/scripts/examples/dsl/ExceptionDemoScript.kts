@@ -9,7 +9,7 @@ script {
     // *************** Script initialisation **********
 
     //  throws EventServerNotAvailable exception
-    //  1. returns LoadScriptError with the message of the exception
+    //  1. returns ScriptError with the message of the exception
     //  2. script initialisation fails
     publishEvent(SystemEvent("tcs", "test.event"))
 
