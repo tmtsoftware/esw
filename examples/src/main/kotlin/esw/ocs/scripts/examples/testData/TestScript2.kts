@@ -45,6 +45,10 @@ script {
         tcs.submitAndWait(sequence)
     }
 
+    onSetup("log-command") {
+        fatal("log-message")
+    }
+
     // ESW-134: Reuse code by ability to import logic from one script into another
     loadScripts(
         InitialCommandHandler,
