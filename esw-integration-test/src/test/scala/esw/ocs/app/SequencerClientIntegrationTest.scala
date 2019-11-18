@@ -87,9 +87,9 @@ class SequencerClientIntegrationTest extends ScalaTestFrameworkTestKit(EventServ
   }
 
   override protected def afterEach(): Unit = {
-    ocsSequencerWiring.sequencerServer.shutDown().futureValue
+    ocsSequencerWiring.sequencerServer.shutDown()
     // shutting down the tcs sequencer
-    tcsSequencerWiring.sequencerServer.shutDown().futureValue
+    tcsSequencerWiring.sequencerServer.shutDown()
   }
 
   "LoadSequence, Start it and Query its response | ESW-145, ESW-154, ESW-221, ESW-194, ESW-158, ESW-222, ESW-101" in {

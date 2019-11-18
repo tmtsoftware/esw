@@ -42,7 +42,7 @@ class DynamicLogLevelTest extends ScalaTestFrameworkTestKit with BaseTestSuite w
   }
 
   override protected def afterAll(): Unit = {
-    wiring.sequencerServer.shutDown().futureValue
+    wiring.sequencerServer.shutDown()
     super.afterAll()
   }
 

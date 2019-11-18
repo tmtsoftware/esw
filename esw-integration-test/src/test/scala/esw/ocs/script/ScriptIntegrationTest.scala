@@ -88,9 +88,9 @@ class ScriptIntegrationTest extends ScalaTestFrameworkTestKit(EventServer, Alarm
   }
 
   override def afterEach(): Unit = {
-    ocsWiring.sequencerServer.shutDown().futureValue
-    lgsfWiring.sequencerServer.shutDown().futureValue
-    tcsWiring.sequencerServer.shutDown().futureValue
+    ocsWiring.sequencerServer.shutDown()
+    lgsfWiring.sequencerServer.shutDown()
+    tcsWiring.sequencerServer.shutDown()
   }
 
   private def withIds(stepListMaybe: Future[Option[StepList]], ids: Id*): Future[Option[StepList]] = {

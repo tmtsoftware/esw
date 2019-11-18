@@ -32,7 +32,7 @@ class SequencerBehaviorIntegrationTest extends ScalaTestFrameworkTestKit with Ba
   }
 
   override def afterEach(): Unit = {
-    ocsWiring.sequencerServer.shutDown().futureValue
+    ocsWiring.sequencerServer.shutDown()
   }
 
   "Sequencer" must {

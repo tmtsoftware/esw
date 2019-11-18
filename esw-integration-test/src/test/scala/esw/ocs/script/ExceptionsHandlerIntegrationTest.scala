@@ -152,7 +152,7 @@ class ExceptionsHandlerIntegrationTest extends ScalaTestFrameworkTestKit(EventSe
   private class SequencerSetup(id: String, mode: String) {
     val wiring                    = new SequencerWiring(id, mode, None)
     val sequencer                 = wiring.sequencerServer.start().rightValue.uri.toActorRef.unsafeUpcast[SequencerMsg]
-    def shutdownSequencer(): Unit = wiring.sequencerServer.shutDown().futureValue
+    def shutdownSequencer(): Unit = wiring.sequencerServer.shutDown()
   }
 
   private def assertReason(probe: TestProbe[Event], reason: String): Unit = {

@@ -41,7 +41,7 @@ class LockUnlockIntegrationTest extends ScalaTestFrameworkTestKit(EventServer) w
   }
 
   override def afterEach(): Unit = {
-    ocsWiring.sequencerServer.shutDown().futureValue
+    ocsWiring.sequencerServer.shutDown()
   }
 
   "Script" must {

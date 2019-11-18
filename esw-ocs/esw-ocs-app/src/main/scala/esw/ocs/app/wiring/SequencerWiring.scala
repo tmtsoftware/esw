@@ -39,7 +39,6 @@ import msocket.impl.ws.WebsocketRouteFactory
 import msocket.impl.{Encoding, RouteFactory}
 
 import scala.async.Async.{async, await}
-import scala.concurrent.Future
 import scala.util.control.NonFatal
 
 private[ocs] class SequencerWiring(val packageId: String, val observingMode: String, sequenceComponentName: Option[String])
