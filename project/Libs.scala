@@ -65,7 +65,7 @@ object AkkaHttp {
   val `akka-http-testkit`    = "com.typesafe.akka" %% "akka-http-testkit"    % Version
   val `akka-http-spray-json` = "com.typesafe.akka" %% "akka-http-spray-json" % Version
 
-  val `akka-http-cors` = "ch.megard" %% "akka-http-cors" % "0.4.1"
+  val `akka-http-cors` = "ch.megard" %% "akka-http-cors" % "0.4.2"
 }
 
 object Borer {
