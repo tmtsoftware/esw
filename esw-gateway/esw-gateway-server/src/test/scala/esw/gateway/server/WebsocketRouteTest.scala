@@ -1,6 +1,8 @@
 package esw.gateway.server
 
 import akka.Done
+import akka.actor.typed.ActorSystem
+import akka.actor.typed.scaladsl.adapter.ClassicActorSystemOps
 import akka.http.scaladsl.model.ws.{BinaryMessage, TextMessage}
 import akka.http.scaladsl.testkit.{ScalatestRouteTest, WSProbe}
 import akka.stream.scaladsl.{Sink, Source}
@@ -43,6 +45,7 @@ class WebsocketRouteTest extends BaseTestSuite with ScalatestRouteTest with Gate
   implicit val timeout: Timeout                        = Timeout(5.seconds)
   private var wsClient: WSProbe                        = _
   implicit override val patienceConfig: PatienceConfig = PatienceConfig(10.seconds)
+  implicit val typedSystem: ActorSystem[_]             = system.toTyped
 
   private val eventApi: EventApi                          = new EventImpl(eventService, eventSubscriberUtil)
   private val commandApi: CommandApi                      = new CommandImpl(commandServiceFactory)
