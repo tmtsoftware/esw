@@ -136,7 +136,7 @@ private[ocs] class SequencerWiring(val packageId: String, val observingMode: Str
       }
     }
 
-    override def shutDown(): Future[Done] = (sequencerRef ? Shutdown).map(_ => Done)
+    override def shutDown(): Done = (sequencerRef ? Shutdown).map(_ => Done).block
   }
 
 }

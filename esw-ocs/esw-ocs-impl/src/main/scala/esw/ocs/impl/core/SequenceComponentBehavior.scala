@@ -44,13 +44,12 @@ object SequenceComponentBehavior {
     }
 
     def running(sequencerServer: SequencerServer, location: AkkaLocation): Behavior[SequenceComponentMsg] =
-      Behaviors.receive[SequenceComponentMsg] { (ctx, msg) =>
-        import ctx.executionContext
+      Behaviors.receiveMessage[SequenceComponentMsg] { msg =>
         log.debug(s"Sequence Component in lifecycle state :Running, received message :[$msg]")
         msg match {
           case UnloadScript(replyTo) =>
             log.info(s"Unloaded script successfully")
-            sequencerServer.shutDown().foreach(_ => replyTo ! Done)
+            replyTo ! sequencerServer.shutDown()
             idle
           case GetStatus(replyTo) =>
             replyTo ! GetStatusResponse(Some(location))
