@@ -192,7 +192,7 @@ class PostRouteTest extends BaseTestSuite with ScalatestRouteTest with GatewayCo
   }
 
   "Set Alarm Severity" must {
-    "returns Done on success | ESW-193, ESW-216" in {
+    "returns Done on success | ESW-193, ESW-216, ESW-233" in {
       val componentName    = "testComponent"
       val alarmName        = "testAlarmName"
       val subsystemName    = Subsystem.IRIS
@@ -207,7 +207,7 @@ class PostRouteTest extends BaseTestSuite with ScalatestRouteTest with GatewayCo
       }
     }
 
-    "returns SetAlarmSeverityFailure on key not found or invalid key | ESW-193, ESW-216" in {
+    "returns SetAlarmSeverityFailure on key not found or invalid key | ESW-193, ESW-216, ESW-233" in {
       val componentName    = "testComponent"
       val alarmName        = "testAlarmName"
       val subsystemName    = Subsystem.IRIS
