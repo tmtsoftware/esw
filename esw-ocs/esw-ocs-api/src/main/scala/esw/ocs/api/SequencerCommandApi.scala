@@ -14,7 +14,7 @@ trait SequencerCommandApi {
   def submit(sequence: Sequence): Future[SubmitResponse]
 
   def submitAndWait(sequence: Sequence): Future[SubmitResponse]
-  def queryFinal(sequenceId: Id): Future[SubmitResponse]
+  def queryFinal(runId: Id): Future[SubmitResponse]
 
   def goOnline(): Future[GoOnlineResponse]
   def goOffline(): Future[GoOfflineResponse]

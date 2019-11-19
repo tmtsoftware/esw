@@ -32,8 +32,8 @@ class SequencerCommandClient(
 
   override def submitAndWait(sequence: Sequence): Future[SubmitResponse] = extensions.submitAndWait(sequence)
 
-  override def queryFinal(sequenceId: Id): Future[SubmitResponse] =
-    websocketClient.requestResponse[SubmitResponse](QueryFinal(sequenceId))
+  override def queryFinal(runId: Id): Future[SubmitResponse] =
+    websocketClient.requestResponse[SubmitResponse](QueryFinal(runId))
 
   override def goOnline(): Future[GoOnlineResponse] = postClient.requestResponse[GoOnlineResponse](GoOnline)
 

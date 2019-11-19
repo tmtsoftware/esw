@@ -38,7 +38,7 @@ class SequencerCommandImpl(sequencer: ActorRef[SequencerMsg])(implicit system: A
   override def submitAndWait(sequence: Sequence): Future[SubmitResponse] = extensions.submitAndWait(sequence)
 
   // fixme: shouldn't this call have long timeout and not the default?
-  override def queryFinal(sequenceId: Id): Future[SubmitResponse] = sequencer ? (QueryFinal(sequenceId, _))
+  override def queryFinal(runId: Id): Future[SubmitResponse] = sequencer ? (QueryFinal(runId, _))
 
   override def goOnline(): Future[GoOnlineResponse] = sequencer ? GoOnline
 

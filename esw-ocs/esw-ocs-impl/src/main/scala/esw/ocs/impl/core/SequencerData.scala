@@ -36,13 +36,13 @@ private[core] case class SequencerData(
     sendNextPendingStepIfAvailable()
       .notifyReadyToExecuteNextSubscriber(InProgress)
 
-  def queryFinal(sequenceId: Id, replyTo: ActorRef[SequenceResponse]): SequencerData =
+  def queryFinal(runId: Id, replyTo: ActorRef[SequenceResponse]): SequencerData =
     stepList match {
-      case Some(stepList) if stepList.runId == sequenceId && stepList.isFinished =>
+      case Some(stepList) if stepList.runId == runId && stepList.isFinished =>
         replyTo ! SequenceResult(getSequencerResponse); this
-      case Some(stepList) if stepList.runId == sequenceId =>
+      case Some(stepList) if stepList.runId == runId =>
         copy(sequenceResponseSubscribers = sequenceResponseSubscribers + replyTo)
-      case _ => replyTo ! SequenceResult(Error(sequenceId, s"No sequence with $sequenceId is loaded in the sequencer")); this
+      case _ => replyTo ! SequenceResult(Error(runId, s"No sequence with $runId is loaded in the sequencer")); this
     }
 
   def pullNextStep(replyTo: ActorRef[PullNextResult]): SequencerData =
