@@ -7,7 +7,7 @@ addSbtPlugin("org.foundweekends"  % "sbt-bintray"              % "0.5.5")
 addSbtPlugin("org.scalameta"      % "sbt-scalafmt"             % "2.2.1")
 addSbtPlugin("com.dwijnand"       % "sbt-dynver"               % "4.0.0")
 addSbtPlugin("org.portable-scala" % "sbt-scalajs-crossproject" % "0.6.1")
-addSbtPlugin("org.scala-js"       % "sbt-scalajs"              % "0.6.29")
+addSbtPlugin("org.scala-js"       % "sbt-scalajs"              % "0.6.30")
 addSbtPlugin("com.typesafe.sbt"   % "sbt-multi-jvm"            % "0.4.0")
 
 resolvers += "Jenkins repo" at "https://repo.jenkins-ci.org/public/"
