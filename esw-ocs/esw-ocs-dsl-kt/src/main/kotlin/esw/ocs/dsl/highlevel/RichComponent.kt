@@ -10,7 +10,6 @@ import csw.command.client.messages.DiagnosticDataMessage
 import csw.command.client.messages.RunningMessage
 import csw.command.client.models.framework.LockingResponse
 import csw.command.client.models.framework.ToComponentLifecycleMessage
-import csw.location.api.javadsl.JComponentType
 import csw.location.models.ComponentType
 import csw.params.commands.CommandResponse.*
 import csw.params.commands.ControlCommand

@@ -23,11 +23,11 @@ object SequenceComponentBehavior {
       val registrationResult = sequencerServer.start()
       replyTo ! ScriptResponse(registrationResult)
       registrationResult match {
-        case Right(value) =>
+        case Right(location) =>
           log.info(s"Successfully started sequencer with sequencer id :$packageId in observation mode: $observingMode")
-          running(packageId, observingMode, sequencerServer, value)
-        case Left(value) =>
-          log.error(s"Failed to start sequencer: ${value.msg}")
+          running(packageId, observingMode, sequencerServer, location)
+        case Left(scriptError) =>
+          log.error(s"Failed to start sequencer: ${scriptError.msg}")
           Behaviors.same
       }
     }
