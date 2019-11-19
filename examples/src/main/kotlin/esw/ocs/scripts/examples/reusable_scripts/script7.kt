@@ -2,6 +2,7 @@ package esw.ocs.scripts.examples.reusable_scripts
 
 import esw.ocs.dsl.core.reusableScript
 import esw.ocs.scripts.examples.class_based.eventKey
+import esw.ocs.scripts.examples.class_based.log
 
 val script7 = reusableScript {
     log("============= Loading script 7 ============")

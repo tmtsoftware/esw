@@ -2,6 +2,7 @@ package esw.ocs.scripts.examples.reusable_scripts
 
 import esw.ocs.dsl.core.reusableScript
 import esw.ocs.scripts.examples.class_based.event
+import esw.ocs.scripts.examples.class_based.log
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 

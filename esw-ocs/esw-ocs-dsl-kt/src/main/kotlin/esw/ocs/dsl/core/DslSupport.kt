@@ -16,7 +16,7 @@ fun script(block: suspend Script.(csw: CswServices) -> Unit): Result =
                 try {
                     runBlocking { block(it) }
                 } catch (ex: Exception) {
-                    log("Script initialisation failed with message : " + ex.message)
+                    error("Script initialisation failed with message : " + ex.message)
                     throw ScriptInitialisationFailedException(ex.message)
                 }
             }

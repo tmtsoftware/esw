@@ -58,7 +58,7 @@ sealed class ScriptDslKt(val cswServices: CswServices) : CswHighLevelDsl(cswServ
             scriptDsl.onException {
                 // "future" is used to swallow the exception coming from exception handlers
                 coroutineScope.future { block(it) }
-                        .exceptionally { log("Exception thrown from Exception handler with a message : ${it.message}") }
+                        .exceptionally { error("Exception thrown from Exception handler with a message : ${it.message}", ex = it) }
                         .thenAccept { }
             }
 
@@ -66,10 +66,6 @@ sealed class ScriptDslKt(val cswServices: CswServices) : CswHighLevelDsl(cswServ
             reusableScriptResult.forEach {
                 this.scriptDsl.merge(it(cswServices, strandEc, coroutineScope).scriptDsl)
             }
-
-    // fixme: use logging service
-    fun log(msg: String) = println("[${Thread.currentThread().name}] $msg")
-
 }
 
 class ReusableScript(
@@ -84,7 +80,7 @@ open class Script(cswServices: CswServices) : ScriptDslKt(cswServices) {
     private val dispatcher = _strandEc.executorService().asCoroutineDispatcher()
 
     private val exceptionHandler = CoroutineExceptionHandler { _, exception ->
-        log("Exception thrown in script with a message: ${exception.message}")
+        warn("Exception thrown in script with a message: ${exception.message}, invoking exception handler", ex = exception)
         scriptDsl.executeExceptionHandlers(exception)
     }
 

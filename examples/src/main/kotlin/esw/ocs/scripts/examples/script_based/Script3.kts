@@ -1,6 +1,7 @@
 package esw.ocs.scripts.examples.script_based
 
 import esw.ocs.dsl.core.script
+import esw.ocs.scripts.examples.class_based.log
 import esw.ocs.scripts.examples.reusable_scripts.script6
 import esw.ocs.scripts.examples.reusable_scripts.script7
 

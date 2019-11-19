@@ -49,6 +49,6 @@ script {
 
         // more APIs like scheduleOnce are  "schedulePeriodically, publishAsync, OnEvent"
     }
-    // IMP - - exceptions thrown from Exception Handlers will be logged and then ignored.
+    // IMP — exceptions thrown from Exception Handlers will be logged and then ignored.
 
 }

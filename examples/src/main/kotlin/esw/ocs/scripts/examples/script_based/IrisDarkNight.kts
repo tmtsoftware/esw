@@ -12,11 +12,11 @@ script { _ ->
     }
 
     val subscriptionStream = onEvent("iris.test.system") {
-        log("------------------> received-event for iris on key: ${it.eventKey()}")
+        info("------------------> received-event for iris on key: ${it.eventKey()}")
     }
 
     onSetup("setup-iris") { command ->
-        log("[Iris] Received command: ${command.commandName()}")
+        info("[Iris] Received command: ${command.commandName()}")
 
         val command1 = setup("esw.test-commandA1", "commandA1", "test-obsId")
         val command2 = setup("esw.test-commandA2", "commandA2", "test-obsId")
@@ -46,6 +46,6 @@ script { _ ->
     onShutdown {
         publishStream.cancel()
         subscriptionStream.unsubscribe().await()
-        log("shutdown iris")
+        info("shutdown iris")
     }
 }

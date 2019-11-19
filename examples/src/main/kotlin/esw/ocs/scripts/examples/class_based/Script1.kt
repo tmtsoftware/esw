@@ -5,6 +5,8 @@ import esw.ocs.dsl.script.CswServices
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 
+fun log(msg: String) = println("[${Thread.currentThread().name}] $msg")
+
 @Deprecated("Use script based approach to write scripts")
 class Script1(cswServices: CswServices) : Script(cswServices) {
     init {
