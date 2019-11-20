@@ -9,15 +9,15 @@ import esw.ocs.dsl.highlevel.EventServiceDsl
 import esw.ocs.dsl.nullable
 
 interface Refreshable {
-    suspend fun refresh(source: String)
+    suspend fun refresh()
 }
 
-class Var<T> internal constructor(
-    initial: T,
-    private val eventKey: String,
-    private val eventService: EventServiceDsl,
-    private val refreshable: Refreshable,
-    private val key: Key<T>
+class Var<T> constructor(
+        initial: T,
+        private val eventKey: String,
+        private val key: Key<T>,
+        private val refreshable: Refreshable,
+        private val eventService: EventServiceDsl
 ) {
     private val _eventKey = EventKey.apply(eventKey)
     private var _value: Event = event(key.set(initial))
@@ -41,17 +41,17 @@ class Var<T> internal constructor(
 
     suspend fun pvGet() {
         val event = eventService.getEvent(eventKey).first()
-        setValue(event, eventKey)
+        setValue(event)
     }
 
     suspend fun pvMonitor() =
         eventService.onEvent(eventKey) {
-            setValue(it, eventKey)
+            setValue(it)
         }
 
-    private suspend fun setValue(value: Event, source: String) {
+    private suspend fun setValue(value: Event) {
         _value = value
-        refreshable.refresh(source)
+        refreshable.refresh()
     }
 
     override fun toString(): String = get().toString()

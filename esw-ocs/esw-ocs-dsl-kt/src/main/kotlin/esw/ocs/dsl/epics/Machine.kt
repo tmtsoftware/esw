@@ -1,60 +1,72 @@
 package esw.ocs.dsl.epics
 
-import csw.params.core.generics.Key
-import csw.params.core.generics.Parameter
-import csw.params.core.generics.ParameterSetType
-import csw.params.events.EventKey
-import csw.params.events.SystemEvent
 import esw.ocs.dsl.highlevel.EventServiceDsl
 import esw.ocs.dsl.highlevel.LoopDsl
-import esw.ocs.dsl.nullable
 import kotlinx.coroutines.*
-import java.util.concurrent.Executors
-import kotlin.properties.ObservableProperty
-import kotlin.properties.ReadWriteProperty
-import kotlin.reflect.KProperty
+import java.lang.RuntimeException
 import kotlin.time.Duration
 
-abstract class Machine(private val name: String, init: String) : Refreshable, EventServiceDsl, LoopDsl {
-
-    private val ec = Executors.newSingleThreadScheduledExecutor()
-    private val job = Job()
-    private val dispatcher = ec.asCoroutineDispatcher()
-
-    val coroutineContext = job + dispatcher
-
-    override val coroutineScope: CoroutineScope
-        get() {
-            return CoroutineScope(coroutineContext)
-        }
-
-    private var currentState: String = init
+abstract class Machine(private val name: String, override val coroutineScope: CoroutineScope) : Refreshable, LoopDsl {
+    private var currentState: String? = null
     private var previousState: String? = null
 
-    abstract suspend fun logic(state: String)
+    private var fsmJob: Job? = null // Gets CANCELLED whenever the FSM is completed
+    private var fsmCompletorJob: CompletableJob = Job() // Gets COMPLETED whenever the FSM is completed
+
+    //fixme : do we need to passas receiver coroutine scope to state lambda
+    val states = mutableMapOf<String, suspend () -> Unit>()
+
+    fun state(name: String, block: suspend () -> Unit) {
+        states += Pair(name, block)
+    }
 
     protected fun become(state: String) {
-        currentState = state
+        if (states.keys.any { it.equals(state,true) }){
+            currentState = state
+            //fixme: add concerete exception for this
+        } else throw RuntimeException("Failed transition to invalid state:  $state")
     }
 
-    override suspend fun refresh(source: String) {
+    fun start(initState: String){
+        fsmJob = coroutineScope.launch {
+            become(initState)
+            refresh()
+        }
+    }
+
+    suspend fun await() {
+        fsmCompletorJob.join()
+    }
+
+    suspend fun startAndWait(initState: String) {
+        start(initState)
+        await()
+    }
+
+    suspend fun completeFsm() {
+        fsmJob?.cancelAndJoin()
+        fsmCompletorJob.complete()
+    }
+
+    override suspend fun refresh() {
         println(
-            "machine = $name    previousState = $previousState     currentState = $currentState    action = $source     ${debugString()}"
+                "machine = $name    previousState = $previousState     currentState = $currentState}"
         )
-        logic(currentState)
+        //fixme: what happens when there is no entry for given state
+        states[currentState]?.invoke()
     }
 
-    suspend fun `when`(condition: Boolean = true, body: suspend () -> Unit) {
+    suspend fun on(condition: Boolean = true, body: suspend () -> Unit) {
         previousState = currentState
         if (condition) {
             body()
-            refresh("when")
+            refresh()
         }
     }
 
-    suspend fun `when`(duration: Duration, body: suspend () -> Unit) {
+    suspend fun on(duration: Duration, body: suspend () -> Unit) {
         delay(duration.toLongMilliseconds())
-        `when`(body = body)
+        on(body = body)
     }
 
     suspend fun entry(body: suspend () -> Unit) {
@@ -63,47 +75,8 @@ abstract class Machine(private val name: String, init: String) : Refreshable, Ev
         }
     }
 
-    fun <T> Var(initial: T, eventKey: String, key: Key<T>) = Var(initial, eventKey, this, this, key)
-
-    inline fun <T> reactiveEvent(
-        initial: T,
-        eventKey: String,
-        key: Key<T>,
-        crossinline onChange: (oldValue: T, newValue: T) -> Unit
-    ): ReadWriteProperty<Any?, T> =
-        object : ObservableProperty<T>(initial) {
-            private val _eventKey = EventKey.apply(eventKey)
-
-            init {
-                runBlocking {
-                    publishEvent(event(key.set(initial)))
-                }
-            }
-
-            // todo: should allow creating any type of event
-            private fun event(param: Parameter<T>): SystemEvent =
-                SystemEvent(_eventKey.source(), _eventKey.eventName()).add(param)
-
-            override fun afterChange(property: KProperty<*>, oldValue: T, newValue: T) =
-                onChange(oldValue, newValue)
-
-            override fun getValue(thisRef: Any?, property: KProperty<*>): T =
-                runBlocking(coroutineContext) {
-                    val paramType: ParameterSetType<*>? = getEvent(eventKey).first().paramType()
-                    paramType?.jGet(key)?.nullable()?.jGet(0)?.nullable() ?: initial
-                }
-
-            override fun setValue(thisRef: Any?, property: KProperty<*>, value: T) =
-                runBlocking(coroutineContext) {
-                    publishEvent(event(key.set(value)))
-                    super.setValue(thisRef, property, value)
-                }
-        }
-
     // todo: can we use generics here?
     operator fun Int?.compareTo(other: Int?): Int =
-        if (this != null && other != null) this.compareTo(other)
-        else -1
-
-    open fun debugString(): String = ""
+            if (this != null && other != null) this.compareTo(other)
+            else -1
 }
