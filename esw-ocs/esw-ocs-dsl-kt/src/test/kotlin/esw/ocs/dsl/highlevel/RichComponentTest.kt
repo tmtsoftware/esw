@@ -33,11 +33,9 @@ import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
 import java.util.*
 import java.util.concurrent.CompletableFuture
-import java.util.function.Consumer
 import kotlin.time.Duration
 import kotlin.time.seconds
 import kotlin.time.toJavaDuration
-
 
 class RichComponentTest {
     private val hint = "test-hint"
@@ -65,6 +63,7 @@ class RichComponentTest {
                 RichComponent(
                         componentName,
                         componentType,
+                        prefix,
                         lockUnlockUtil,
                         locationServiceUtil,
                         actorSystem,
@@ -134,7 +133,7 @@ class RichComponentTest {
             every { CommandServiceFactory.jMake(assemblyLocation, actorSystem) }.answers { assemblyCommandService }
             every { assemblyCommandService.subscribeCurrentState(stateNames, any()) }.answers { currentStateSubscription }
 
-            assembly.subscribeCurrentState(stateNames, {})
+            assembly.subscribeCurrentState(stateNames) {}
 
             verify { assemblyCommandService.subscribeCurrentState(stateNames, any()) }
         }
@@ -192,7 +191,7 @@ class RichComponentTest {
             every { locationServiceUtil.jResolveComponentRef(componentName, componentType) }.answers { CompletableFuture.completedFuture(assemblyRef) }
             every { lockUnlockUtil.lock(assemblyRef, prefix, jLeaseDuration, any(), any()) }.answers { CompletableFuture.completedFuture(LockingResponse.`LockAcquired$`.`MODULE$`) }
 
-            assembly.lock(prefixStr, leaseDuration, {}, {})
+            assembly.lock(leaseDuration, {}, {})
 
             verify { lockUnlockUtil.lock(assemblyRef, prefix, jLeaseDuration, any(), any()) }
         }
@@ -202,7 +201,7 @@ class RichComponentTest {
             every { locationServiceUtil.jResolveComponentRef(componentName, componentType) }.answers { CompletableFuture.completedFuture(assemblyRef) }
             every { lockUnlockUtil.unlock(assemblyRef, prefix) }.answers { CompletableFuture.completedFuture(LockingResponse.`LockReleased$`.`MODULE$`) }
 
-            assembly.unlock(prefixStr)
+            assembly.unlock()
 
             verify { lockUnlockUtil.unlock(assemblyRef, prefix) }
         }
@@ -217,6 +216,7 @@ class RichComponentTest {
                 RichComponent(
                         hcdName,
                         componentType,
+                        prefix,
                         lockUnlockUtil,
                         locationServiceUtil,
                         actorSystem,
@@ -286,7 +286,7 @@ class RichComponentTest {
             every { CommandServiceFactory.jMake(hcdLocation, actorSystem) }.answers { hcdCommandService }
             every { hcdCommandService.subscribeCurrentState(stateNames, any()) }.answers { currentStateSubscription }
 
-            hcd.subscribeCurrentState(stateNames, {})
+            hcd.subscribeCurrentState(stateNames) {}
 
             verify { hcdCommandService.subscribeCurrentState(stateNames, any()) }
         }
@@ -344,7 +344,7 @@ class RichComponentTest {
             every { locationServiceUtil.jResolveComponentRef(hcdName, componentType) }.answers { CompletableFuture.completedFuture(hcdRef) }
             every { lockUnlockUtil.lock(hcdRef, prefix, jLeaseDuration, any(), any()) }.answers { CompletableFuture.completedFuture(LockingResponse.`LockAcquired$`.`MODULE$`) }
 
-            hcd.lock(prefixStr, leaseDuration, {}, {})
+            hcd.lock(leaseDuration)
 
             verify { lockUnlockUtil.lock(hcdRef, prefix, jLeaseDuration, any(), any()) }
         }
@@ -354,7 +354,7 @@ class RichComponentTest {
             every { locationServiceUtil.jResolveComponentRef(hcdName, componentType) }.answers { CompletableFuture.completedFuture(hcdRef) }
             every { lockUnlockUtil.unlock(hcdRef, prefix) }.answers { CompletableFuture.completedFuture(LockingResponse.`LockReleased$`.`MODULE$`) }
 
-            hcd.unlock(prefixStr)
+            hcd.unlock()
 
             verify { lockUnlockUtil.unlock(hcdRef, prefix) }
         }

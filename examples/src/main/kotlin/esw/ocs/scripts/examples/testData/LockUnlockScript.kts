@@ -7,18 +7,16 @@ import esw.ocs.dsl.params.stringKey
 import kotlin.time.milliseconds
 
 script {
-    val lockResponseEvent = SystemEvent("esw.test", "locking_response")
+    val lockResponseEvent = SystemEvent("esw.ocs.lock_unlock", "locking_response")
     val key = stringKey("lockingResponse")
+    val assembly = Assembly("test")
 
     suspend fun publishLockingResponse(lockingResponse: LockingResponse) {
         publishEvent(lockResponseEvent.add(key.set(lockingResponse.javaClass.simpleName)))
     }
 
     onSetup("lock-assembly") {
-
-        val assembly = Assembly("test")
         val initialLockResponse = assembly.lock(
-                prefix = "esw.test",
                 leaseDuration = 200.milliseconds,
                 onLockAboutToExpire = { publishLockingResponse(lockExpiringShortly()) },
                 onLockExpired = { publishLockingResponse(lockExpired()) }
@@ -28,8 +26,7 @@ script {
     }
 
     onSetup("unlock-assembly") {
-        val assembly = Assembly("test")
-        val response = assembly.unlock( "esw.test")
+        val response = assembly.unlock()
         publishLockingResponse(response)
     }
 }
