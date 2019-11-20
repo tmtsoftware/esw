@@ -54,7 +54,8 @@ class SequencerCommandClientTest extends BaseTestSuite with SequencerHttpCodecs 
     "call postClient with SubmitSequence request | ESW-222" in {
       val command1         = Setup(Prefix("esw.test"), CommandName("command-1"), None)
       val sequence         = Sequence(command1)
-      val sequenceResponse = Started(sequence.runId)
+      val sequenceId       = Id()
+      val sequenceResponse = Started(sequenceId)
       when(
         postClient
           .requestResponse[SubmitResponse](argsEq(SubmitSequence(sequence)))(any[Decoder[SubmitResponse]]())
@@ -65,15 +66,16 @@ class SequencerCommandClientTest extends BaseTestSuite with SequencerHttpCodecs 
     "call postClient with SubmitAndWait request | ESW-222" in {
       val command1          = Setup(Prefix("esw.test"), CommandName("command-1"), None)
       val sequence          = Sequence(command1)
-      val startedResponse   = Started(sequence.runId)
-      val completedResponse = Completed(sequence.runId)
+      val sequenceId        = Id()
+      val startedResponse   = Started(sequenceId)
+      val completedResponse = Completed(sequenceId)
 
       when(
         postClient
           .requestResponse[SubmitResponse](argsEq(SubmitSequence(sequence)))(any[Decoder[SubmitResponse]]())
       ).thenReturn(Future.successful(startedResponse))
 
-      when(websocketClient.requestResponse[SubmitResponse](argsEq(QueryFinal(sequence.runId)))(any[Decoder[SubmitResponse]]()))
+      when(websocketClient.requestResponse[SubmitResponse](argsEq(QueryFinal(sequenceId)))(any[Decoder[SubmitResponse]]()))
         .thenReturn(Future.successful(completedResponse))
 
       sequencerCommandClient.submitAndWait(sequence).futureValue should ===(completedResponse)

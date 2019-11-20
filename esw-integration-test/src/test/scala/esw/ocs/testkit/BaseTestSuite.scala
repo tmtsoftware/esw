@@ -4,7 +4,7 @@ import org.mockito.MockitoSugar
 import org.scalactic.TypeCheckedTripleEquals
 import org.scalatest.concurrent.ScalaFutures
 import org.scalatest.time.SpanSugar.convertFloatToGrainOfTime
-import org.scalatest.{BeforeAndAfterAll, BeforeAndAfterEach, EitherValues, Matchers, WordSpecLike}
+import org.scalatest._
 
 import scala.concurrent.duration.Duration
 import scala.concurrent.{Await, Future}

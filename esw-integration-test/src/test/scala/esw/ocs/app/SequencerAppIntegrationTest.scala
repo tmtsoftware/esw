@@ -60,7 +60,7 @@ class SequencerAppIntegrationTest extends EswTestKit {
       val commandService = new SequencerCommandServiceImpl(sequencerLocation)
       val setup          = Setup(Prefix("wfos.home.datum"), CommandName("command-1"), None)
       val sequence       = Sequence(setup)
-      commandService.submitAndWait(sequence).futureValue shouldBe Completed(sequence.runId)
+      commandService.submitAndWait(sequence).futureValue shouldBe a[Completed]
 
       // UnloadScript
       val probe2 = TestProbe[Done]
@@ -163,7 +163,7 @@ class SequencerAppIntegrationTest extends EswTestKit {
       val commandService = new SequencerCommandServiceImpl(sequencerLocation)
       val setup          = Setup(Prefix("wfos.home.datum"), CommandName("command-1"), None)
       val sequence       = Sequence(setup)
-      commandService.submitAndWait(sequence).futureValue shouldBe Completed(sequence.runId)
+      commandService.submitAndWait(sequence).futureValue shouldBe a[Completed]
     }
 
     "start sequencer with provided mandatory subsystem, mode register it with location service | ESW-103" in {

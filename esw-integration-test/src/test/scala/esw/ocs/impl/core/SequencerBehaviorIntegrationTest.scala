@@ -1,9 +1,8 @@
 package esw.ocs.impl.core
 
 import akka.actor.testkit.typed.scaladsl.TestProbe
-import csw.params.commands.CommandResponse.Started
 import csw.params.commands.{CommandName, Sequence, Setup}
-import csw.params.core.models.{Id, Prefix}
+import csw.params.core.models.Prefix
 import esw.ocs.api.protocol.{OkOrUnhandledResponse, SequenceResponse, SequenceResult, Unhandled}
 import esw.ocs.impl.messages.SequencerMessages.{LoadSequence, SubmitSequence}
 import esw.ocs.testkit.EswTestKit
@@ -17,15 +16,14 @@ class SequencerBehaviorIntegrationTest extends EswTestKit {
       val command                   = Setup(Prefix("TCS.test"), CommandName("test-sequencer-hierarchy"), None)
       val submitResponseProbe       = TestProbe[SequenceResponse]
       val loadSequenceResponseProbe = TestProbe[OkOrUnhandledResponse]
-      val sequenceId                = Id()
-      val sequence                  = Sequence(sequenceId, Seq(command))
+      val sequence                  = Sequence(Seq(command))
       val ocsSequencer              = spawnSequencerRef(ocsPackageId, ocsObservingMode)
 
       ocsSequencer ! SubmitSequence(sequence, submitResponseProbe.ref)
       ocsSequencer ! LoadSequence(sequence, loadSequenceResponseProbe.ref)
 
       // response received by irisSequencer
-      submitResponseProbe.expectMessage(SequenceResult(Started(sequenceId)))
+      submitResponseProbe.expectMessageType[SequenceResult]
       loadSequenceResponseProbe.expectMessage(Unhandled("InProgress", "LoadSequence"))
     }
   }

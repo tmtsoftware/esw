@@ -66,7 +66,7 @@ class ScriptIntegrationTest extends EswTestKit(EventServer, AlarmServer, ConfigS
   private def withIds(stepListMaybe: Future[Option[StepList]], ids: Id*): Future[Option[StepList]] = {
     stepListMaybe.map {
       _.map { x =>
-        StepList(x.runId, x.steps.zip(ids).map {
+        StepList(x.steps.zip(ids).map {
           case (step, id) => step.withId(id)
         })
       }
@@ -77,8 +77,7 @@ class ScriptIntegrationTest extends EswTestKit(EventServer, AlarmServer, ConfigS
     "be able to send sequence to other Sequencer by resolving location through TestScript | ESW-88, ESW-145, ESW-190, ESW-195, ESW-119" in {
       val command             = Setup(Prefix("TCS.test"), CommandName("command-4"), None)
       val submitResponseProbe = TestProbe[SubmitResponse]
-      val sequenceId          = Id()
-      val sequence            = Sequence(sequenceId, Seq(command))
+      val sequence            = Sequence(Seq(command))
 
       val initialStepList: Future[Option[StepList]] = tcsSequencer ? GetSequence
       initialStepList.futureValue shouldBe None
@@ -90,12 +89,14 @@ class ScriptIntegrationTest extends EswTestKit(EventServer, AlarmServer, ConfigS
         Setup(Prefix("TCS.test"), CommandName("command-3"), None, Set.empty)
       val step             = Step(assertableCommand).copy(status = Success)
       val steps            = List(step)
-      val expectedStepList = StepList(Id("testSequenceIdString123"), steps)
+      val expectedStepList = StepList(steps)
       Thread.sleep(1000)
 
       val actualStepList: Future[Option[StepList]] = tcsSequencer ? GetSequence
+      // fixme: instead of SubmitSequenceAndWait, Submit and QueryFinal can be done to avoid asserting on `any`
+      // fixme: why admin api is not used to send messages to sequencer
       // response received by irisSequencer
-      submitResponseProbe.expectMessage(Completed(sequenceId))
+      submitResponseProbe.expectMessageType[Completed]
       withIds(actualStepList, step.id).futureValue.get should ===(expectedStepList)
     }
 
@@ -165,7 +166,7 @@ class ScriptIntegrationTest extends EswTestKit(EventServer, AlarmServer, ConfigS
 
       val sequenceRes: Future[SubmitResponse] = ocsSequencer ? (SubmitSequenceAndWait(sequence, _))
 
-      sequenceRes.futureValue should ===(Completed(sequence.runId))
+      sequenceRes.futureValue shouldBe a[Completed]
       alarmAdminService.getCurrentSeverity(alarmKey).futureValue should ===(AlarmSeverity.Major)
     }
 
@@ -175,11 +176,10 @@ class ScriptIntegrationTest extends EswTestKit(EventServer, AlarmServer, ConfigS
       publishF.futureValue
 
       val command  = Setup(Prefix("TCS"), CommandName("get-event"), None)
-      val id       = Id()
-      val sequence = Sequence(id, Seq(command))
+      val sequence = Sequence(Seq(command))
 
       val submitResponse: Future[SubmitResponse] = ocsSequencer ? (SubmitSequenceAndWait(sequence, _))
-      submitResponse.futureValue should ===(Completed(id))
+      submitResponse.futureValue shouldBe a[Completed]
 
       val successKey        = EventKey("TCS.get.success")
       val getPublishedEvent = eventSubscriber.get(successKey).futureValue
@@ -191,11 +191,10 @@ class ScriptIntegrationTest extends EswTestKit(EventServer, AlarmServer, ConfigS
       val eventService = new EventServiceFactory().make(HttpLocationServiceFactory.makeLocalClient)
 
       val command  = Setup(Prefix("TCS"), CommandName("on-event"), None)
-      val id       = Id()
-      val sequence = Sequence(id, Seq(command))
+      val sequence = Sequence(Seq(command))
 
       val submitResponse: Future[SubmitResponse] = ocsSequencer ? (SubmitSequenceAndWait(sequence, _))
-      submitResponse.futureValue should ===(Completed(id))
+      submitResponse.futureValue shouldBe a[Completed]
 
       val publishF = eventService.defaultPublisher.publish(SystemEvent(Prefix("TCS"), EventName("get.event")))
       publishF.futureValue
@@ -220,7 +219,7 @@ class ScriptIntegrationTest extends EswTestKit(EventServer, AlarmServer, ConfigS
       val command2            = Setup(Prefix("IRIS.test"), CommandName("command-1"), None)
       val command3            = Setup(Prefix("TCS.test"), CommandName("command-2"), None)
       val submitResponseProbe = TestProbe[SubmitResponse]
-      val sequence            = Sequence(Id(), Seq(command1, command2, command3))
+      val sequence            = Sequence(Seq(command1, command2, command3))
 
       ocsSequencer ! SubmitSequenceAndWait(sequence, submitResponseProbe.ref)
 
@@ -259,8 +258,7 @@ class ScriptIntegrationTest extends EswTestKit(EventServer, AlarmServer, ConfigS
       val command2            = Setup(Prefix("IRIS.test"), CommandName("command-1"), None)
       val command3            = Setup(Prefix("TCS.test"), CommandName("command-2"), None)
       val submitResponseProbe = TestProbe[SubmitResponse]
-      val sequenceId          = Id()
-      val sequence            = Sequence(sequenceId, Seq(command1, command2, command3))
+      val sequence            = Sequence(Seq(command1, command2, command3))
 
       ocsSequencer ! SubmitSequenceAndWait(sequence, submitResponseProbe.ref)
 
@@ -286,9 +284,8 @@ class ScriptIntegrationTest extends EswTestKit(EventServer, AlarmServer, ConfigS
     "be able to send commands to downstream assembly | ESW-121" in {
       val eventKey = EventKey(Prefix("tcs.filter.wheel"), EventName("setup-command-from-script"))
 
-      val command    = Setup(Prefix("IRIS.test"), CommandName("command-for-assembly"), None)
-      val sequenceId = Id()
-      val sequence   = Sequence(sequenceId, Seq(command))
+      val command  = Setup(Prefix("IRIS.test"), CommandName("command-for-assembly"), None)
+      val sequence = Sequence(Seq(command))
 
       val testProbe    = TestProbe[Event]
       val subscription = eventSubscriber.subscribeActorRef(Set(eventKey), testProbe.ref)
@@ -296,7 +293,7 @@ class ScriptIntegrationTest extends EswTestKit(EventServer, AlarmServer, ConfigS
       testProbe.expectMessageType[SystemEvent] // discard invalid event
 
       val submitSequenceResponseF: Future[SubmitResponse] = ocsSequencer ? (SubmitSequenceAndWait(sequence, _))
-      submitSequenceResponseF.futureValue should ===(Completed(sequenceId))
+      submitSequenceResponseF.futureValue shouldBe a[Completed]
 
       val actualSetupEvent: SystemEvent = testProbe.expectMessageType[SystemEvent]
       actualSetupEvent.eventKey should ===(eventKey)
@@ -317,11 +314,10 @@ class ScriptIntegrationTest extends EswTestKit(EventServer, AlarmServer, ConfigS
 
       val existConfigCommand = Setup(Prefix("WFOS"), CommandName("check-config"), None)
       val getConfigCommand   = Setup(Prefix("WFOS"), CommandName("get-config-data"), None)
-      val id                 = Id()
-      val sequence           = Sequence(id, Seq(existConfigCommand, getConfigCommand))
+      val sequence           = Sequence(Seq(existConfigCommand, getConfigCommand))
 
       val submitResponse: Future[SubmitResponse] = ocsSequencer ? (SubmitSequenceAndWait(sequence, _))
-      submitResponse.futureValue should ===(Completed(id))
+      submitResponse.futureValue shouldBe a[Completed]
 
       // verify existConfig api
       val existConfigKey   = EventKey(Prefix("WFOS"), EventName("check-config.success"))
@@ -339,8 +335,7 @@ class ScriptIntegrationTest extends EswTestKit(EventServer, AlarmServer, ConfigS
     "be able to handle unexpected exception and finish the sequence | ESW-241" in {
       val command1 = Setup(Prefix("TCS"), CommandName("check-exception-1"), None)
       val command2 = Setup(Prefix("TCS"), CommandName("check-exception-2"), None)
-      val id       = Id()
-      val sequence = Sequence(id, Seq(command1, command2))
+      val sequence = Sequence(Seq(command1, command2))
 
       val submitResponseF: Future[SubmitResponse] = ocsSequencer ? (SubmitSequenceAndWait(sequence, _))
 

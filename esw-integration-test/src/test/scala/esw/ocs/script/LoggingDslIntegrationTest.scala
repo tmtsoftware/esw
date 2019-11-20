@@ -39,7 +39,7 @@ class LoggingDslIntegrationTest extends EswTestKit {
       val sequence                    = Sequence(command)
       val res: Future[SubmitResponse] = ocsRef ? (SubmitSequenceAndWait(sequence, _))
 
-      res.futureValue should ===(Completed(sequence.runId))
+      res.futureValue shouldBe a[Completed]
 
       Thread.sleep(500)
 

@@ -7,7 +7,7 @@ import csw.command.client.messages.sequencer.SequencerMsg
 import csw.command.client.messages.sequencer.SequencerMsg.SubmitSequenceAndWait
 import csw.params.commands.CommandResponse.{Completed, SubmitResponse}
 import csw.params.commands._
-import csw.params.core.models.{Id, Prefix}
+import csw.params.core.models.Prefix
 import csw.params.events.{Event, EventKey, SystemEvent}
 import csw.testkit.scaladsl.CSWService.EventServer
 import csw.time.core.models.UTCTime
@@ -90,8 +90,7 @@ class ExceptionsHandlerIntegrationTest extends EswTestKit(EventServer) {
       val sequencer = spawnSequencerRef(ocsPackageId, ocsObservingMode)
 
       val command  = Setup(Prefix("TCS"), CommandName("fail-setup"), None)
-      val id       = Id()
-      val sequence = Sequence(id, Seq(command))
+      val sequence = Sequence(Seq(command))
 
       val commandFailureMsg = "handle-setup-failed"
       val eventKey          = EventKey("tcs." + commandFailureMsg)
@@ -100,7 +99,6 @@ class ExceptionsHandlerIntegrationTest extends EswTestKit(EventServer) {
 
       val submitResponseF: Future[SubmitResponse] = sequencer ? (SubmitSequenceAndWait(sequence, _))
       val error                                   = submitResponseF.futureValue.asInstanceOf[CommandResponse.Error]
-      error.runId shouldBe id
       error.message.contains(commandFailureMsg) shouldBe true
 
       // exception handler publishes a event with exception msg as event name
@@ -109,11 +107,10 @@ class ExceptionsHandlerIntegrationTest extends EswTestKit(EventServer) {
 
       // assert that next sequence is accepted and executed properly
       val command1  = Setup(Prefix("TCS"), CommandName("successful-command"), None)
-      val id1       = Id()
-      val sequence1 = Sequence(id1, Seq(command1))
+      val sequence1 = Sequence(Seq(command1))
 
       val submitResponse1: Future[SubmitResponse] = sequencer ? (SubmitSequenceAndWait(sequence1, _))
-      submitResponse1.futureValue should ===(Completed(id1))
+      submitResponse1.futureValue shouldBe a[Completed]
     }
 
     "invoke exception handler when handle-goOnline-failed | ESW-139" in {

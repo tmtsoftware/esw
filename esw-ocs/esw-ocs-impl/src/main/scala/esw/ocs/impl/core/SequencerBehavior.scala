@@ -186,12 +186,8 @@ class SequencerBehavior(
       data: SequencerData,
       replyTo: ActorRef[SequenceResponse]
   ): Behavior[SequencerMsg] = {
-    inProgress(
-      data
-        .createStepList(sequence)
-        .queryFinal(sequence.runId, replyTo)
-        .processSequence()
-    )
+    val updatedData = data.createStepList(sequence).startSequence(actorSystem.deadLetters)
+    inProgress(updatedData.queryFinal(updatedData.runId.get, replyTo))
   }
 
   private def shutdown(data: SequencerData, replyTo: ActorRef[Ok.type]): Behavior[SequencerMsg] = {
@@ -269,7 +265,7 @@ class SequencerBehavior(
           msg.replyTo ! Unhandled(state.entryName, msg.getClass.getSimpleName); Behaviors.same
         case SubmitSequenceAndWait(sequence, replyTo) =>
           val sequenceResponseF: Future[SequenceResponse] = ctx.self ? (SubmitSequenceAndWaitInternal(sequence, _))
-          sequenceResponseF.foreach(res => replyTo ! res.toSubmitResponse(sequence.runId))
+          sequenceResponseF.foreach(res => replyTo ! res.toSubmitResponse())
           Behaviors.same
         case QueryFinal(runId, replyTo) =>
           val sequenceResponseF: Future[SequenceResponse] = ctx.self ? (QueryFinalInternal(runId, _))

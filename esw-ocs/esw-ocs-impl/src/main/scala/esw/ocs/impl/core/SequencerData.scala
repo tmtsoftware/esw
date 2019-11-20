@@ -15,6 +15,7 @@ import esw.ocs.impl.messages.SequencerState.{InProgress, Loaded}
 
 private[core] case class SequencerData(
     stepList: Option[StepList],
+    runId: Option[Id],
     readyToExecuteSubscriber: Option[ActorRef[Ok.type]],
     stepRefSubscriber: Option[ActorRef[PullNextResult]],
     self: ActorRef[SequencerMsg],
@@ -22,14 +23,14 @@ private[core] case class SequencerData(
     sequenceResponseSubscribers: Set[ActorRef[SequenceResponse]]
 ) {
 
-  private val sequenceId = stepList.map(_.runId)
-
   def createStepList(sequence: Sequence): SequencerData =
     copy(stepList = Some(StepList(sequence)))
 
   def startSequence(replyTo: ActorRef[SequenceResult]): SequencerData = {
-    replyTo ! SequenceResult(Started(sequenceId.get))
-    processSequence()
+    val runId = Id()
+    replyTo ! SequenceResult(Started(runId))
+    copy(runId = Some(runId))
+      .processSequence()
   }
 
   def processSequence(): SequencerData =
@@ -37,10 +38,10 @@ private[core] case class SequencerData(
       .notifyReadyToExecuteNextSubscriber(InProgress)
 
   def queryFinal(runId: Id, replyTo: ActorRef[SequenceResponse]): SequencerData =
-    stepList match {
-      case Some(stepList) if stepList.runId == runId && stepList.isFinished =>
+    this.runId match {
+      case Some(id) if id == runId && stepList.get.isFinished =>
         replyTo ! SequenceResult(getSequencerResponse); this
-      case Some(stepList) if stepList.runId == runId =>
+      case Some(id) if id == runId =>
         copy(sequenceResponseSubscribers = sequenceResponseSubscribers + replyTo)
       case _ => replyTo ! SequenceResult(Error(runId, s"No sequence with $runId is loaded in the sequencer")); this
     }
@@ -124,10 +125,10 @@ private[core] case class SequencerData(
     stepList
       .flatMap {
         _.steps.map(_.status).collectFirst {
-          case Finished.Failure(message) => Error(sequenceId.get, message)
+          case Finished.Failure(message) => Error(runId.get, message)
         }
       }
-      .getOrElse(Completed(sequenceId.get))
+      .getOrElse(Completed(runId.get))
 
   private def checkForSequenceCompletion(): SequencerData =
     if (stepList.exists(_.isFinished)) {
@@ -144,5 +145,5 @@ private[core] case class SequencerData(
 
 private[core] object SequencerData {
   def initial(self: ActorRef[SequencerMsg])(implicit actorSystem: ActorSystem[_]): SequencerData =
-    SequencerData(None, None, None, self, actorSystem, Set.empty)
+    SequencerData(None, None, None, None, self, actorSystem, Set.empty)
 }

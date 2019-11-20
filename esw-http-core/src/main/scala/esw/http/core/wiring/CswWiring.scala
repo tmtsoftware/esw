@@ -3,14 +3,12 @@ package esw.http.core.wiring
 import akka.Done
 import akka.actor.CoordinatedShutdown
 import akka.actor.typed.{ActorSystem, SpawnProtocol}
-import akka.stream.{ActorAttributes, Attributes, Supervision}
 import csw.alarm.api.scaladsl.AlarmService
 import csw.alarm.client.AlarmServiceFactory
 import csw.command.client.CommandServiceFactory
 import csw.config.api.scaladsl.ConfigClientService
 import csw.config.client.commons.ConfigUtils
 import csw.config.client.scaladsl.ConfigClientFactory
-import csw.event.api.exceptions.EventServerNotAvailable
 import csw.event.api.scaladsl.EventService
 import csw.event.client.EventServiceFactory
 import csw.event.client.internal.commons.EventSubscriberUtil
@@ -36,11 +34,6 @@ class CswWiring() {
 
   lazy val configClientService: ConfigClientService = ConfigClientFactory.clientApi(actorSystem, locationService)
   lazy val configUtils: ConfigUtils                 = new ConfigUtils(configClientService)(actorSystem)
-
-  implicit lazy val attributes: Attributes = ActorAttributes.supervisionStrategy {
-    case _: EventServerNotAvailable => Supervision.Stop
-    case _                          => Supervision.Resume
-  }
 
   lazy val eventSubscriberUtil: EventSubscriberUtil = new EventSubscriberUtil()
   lazy val eventServiceFactory: EventServiceFactory = new EventServiceFactory(RedisStore(redisClient))

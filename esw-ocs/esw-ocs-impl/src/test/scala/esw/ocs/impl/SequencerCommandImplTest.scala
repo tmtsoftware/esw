@@ -16,7 +16,7 @@ import esw.ocs.impl.messages.SequencerState.Offline
 class SequencerCommandImplTest extends ScalaTestWithActorTestKit with BaseTestSuite {
   private val command    = Setup(Prefix("esw.test"), CommandName("command-1"), None)
   private val sequence   = Sequence(command)
-  private val sequenceId = sequence.runId
+  private val sequenceId = Id()
   private val startTime  = UTCTime.now()
   private val hint       = "engineering"
 
@@ -38,7 +38,7 @@ class SequencerCommandImplTest extends ScalaTestWithActorTestKit with BaseTestSu
         case LoadSequence(`sequence`, replyTo)            => replyTo ! loadSequenceResponse
         case StartSequence(replyTo)                       => replyTo ! startSequenceResponse
         case SubmitSequence(`sequence`, replyTo)          => replyTo ! submitSequenceResponse
-        case QueryFinal(`sequenceId`, replyTo)            => replyTo ! queryFinalResponse
+        case QueryFinal(_, replyTo)                       => replyTo ! queryFinalResponse
         case DiagnosticMode(`startTime`, `hint`, replyTo) => replyTo ! diagnosticModeResponse
         case OperationsMode(replyTo)                      => replyTo ! operationsModeResponse
         case _                                            => //
@@ -55,11 +55,11 @@ class SequencerCommandImplTest extends ScalaTestWithActorTestKit with BaseTestSu
   }
 
   "startSequence | ESW-101" in {
-    sequencerCommandApi.startSequence().futureValue should ===(startSequenceResponse.toSubmitResponse(sequence.runId))
+    sequencerCommandApi.startSequence().futureValue should ===(startSequenceResponse.toSubmitResponse())
   }
 
   "submit | ESW-101" in {
-    sequencerCommandApi.submit(sequence).futureValue should ===(submitSequenceResponse.toSubmitResponse(sequence.runId))
+    sequencerCommandApi.submit(sequence).futureValue should ===(submitSequenceResponse.toSubmitResponse())
   }
 
   "submitAndWait | ESW-101" in {

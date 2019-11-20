@@ -74,7 +74,6 @@ script {
                 Optional.ofNullable(null)
         )
         val sequence = Sequence(
-                Id("testSequenceIdString123"),
                 CollectionConverters.asScala(Collections.singleton<SequenceCommand>(setupCommand)).toSeq()
         )
 
@@ -105,7 +104,6 @@ script {
         // so that other Add, Append command gets time
         val setupCommand = setup("LGSF.test", "command-lgsf")
         val sequence = Sequence(
-                Id("testSequenceIdString123"),
                 CollectionConverters.asScala(Collections.singleton<SequenceCommand>(setupCommand)).toSeq()
         )
 

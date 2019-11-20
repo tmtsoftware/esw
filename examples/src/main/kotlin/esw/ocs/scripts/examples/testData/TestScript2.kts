@@ -37,7 +37,6 @@ script {
 
     onSetup("multi-node") { command ->
         val sequence = Sequence(
-                Id("testSequenceIdString123"),
                 CollectionConverters.asScala(Collections.singleton<SequenceCommand>(command)).toSeq()
         )
 

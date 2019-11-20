@@ -16,6 +16,6 @@ class SequencerCommandServiceTest extends EswTestKit {
     val sequence = Sequence(command1)
 
     val sequencerCommandService: SequencerCommandService = SequencerCommandServiceFactory.make(sequencerLocation)
-    sequencerCommandService.submitAndWait(sequence).futureValue should ===(Completed(sequence.runId))
+    sequencerCommandService.submitAndWait(sequence).futureValue shouldBe a[Completed]
   }
 }

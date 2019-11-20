@@ -8,8 +8,8 @@ import scala.concurrent.{ExecutionContext, Future}
 class SequencerCommandExtensions(sequencerCommandApi: SequencerCommandApi)(implicit ec: ExecutionContext) {
   def submitAndWait(sequence: Sequence): Future[SubmitResponse] = {
     sequencerCommandApi.submit(sequence).flatMap {
-      case Started(_) => sequencerCommandApi.queryFinal(sequence.runId)
-      case x          => Future.successful(x)
+      case Started(runId) => sequencerCommandApi.queryFinal(runId)
+      case x              => Future.successful(x)
     }
   }
 }

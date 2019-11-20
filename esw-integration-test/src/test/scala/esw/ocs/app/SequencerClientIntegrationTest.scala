@@ -62,14 +62,15 @@ class SequencerClientIntegrationTest extends EswTestKit(EventServer) {
     val sequence = Sequence(command1, command2)
 
     ocsSequencerCommandApi.loadSequence(sequence).futureValue should ===(Ok)
-    ocsSequencerCommandApi.startSequence().futureValue should ===(Started(sequence.runId))
-    ocsSequencerCommandApi.queryFinal(sequence.runId).futureValue should ===(Completed(sequence.runId))
+    val startedResponse = ocsSequencerCommandApi.startSequence().futureValue
+    startedResponse shouldBe a[Started]
+    ocsSequencerCommandApi.queryFinal(startedResponse.runId).futureValue should ===(Completed(startedResponse.runId))
 
     val step1         = Step(command1, Success, hasBreakpoint = false)
     val step2         = Step(command2, Success, hasBreakpoint = false)
     val expectedSteps = List(step1, step2)
 
-    val expectedSequence = StepList(sequence.runId, expectedSteps)
+    val expectedSequence = StepList(expectedSteps)
 
     val actualSequenceResponse = ocsSequencerAdmin.getSequence.futureValue.get
     val actualSteps = actualSequenceResponse.steps.zipWithIndex.map {
@@ -102,17 +103,17 @@ class SequencerClientIntegrationTest extends EswTestKit(EventServer) {
 
     compareStepList(
       ocsSequencerAdmin.getSequence.futureValue,
-      Some(StepList(sequence.runId, List(Step(command1), Step(command2))))
+      Some(StepList(List(Step(command1), Step(command2))))
     )
 
-    ocsSequencerCommandApi.startSequence().futureValue should ===(Started(sequence.runId))
+    ocsSequencerCommandApi.startSequence().futureValue shouldBe a[Started]
 
     val expectedFinishedSteps = List(
       Step(command1, Success, hasBreakpoint = false),
       Step(command2, Success, hasBreakpoint = false)
     )
     eventually(
-      compareStepList(ocsSequencerAdmin.getSequence.futureValue, (Some(StepList(sequence.runId, expectedFinishedSteps))))
+      compareStepList(ocsSequencerAdmin.getSequence.futureValue, (Some(StepList(expectedFinishedSteps))))
     )
   }
 
@@ -123,13 +124,12 @@ class SequencerClientIntegrationTest extends EswTestKit(EventServer) {
     eventually(ocsSequencerAdmin.getSequence.futureValue shouldBe a[Some[_]])
 
     ocsSequencerAdmin.add(List(command3)).futureValue should ===(Ok)
-    processSeqResponse.futureValue should ===(Completed(sequence.runId))
+    processSeqResponse.futureValue shouldBe a[Completed]
 
     compareStepList(
       ocsSequencerAdmin.getSequence.futureValue,
       Some(
         StepList(
-          sequence.runId,
           List(
             Step(command1, Success, hasBreakpoint = false),
             Step(command2, Success, hasBreakpoint = false),
@@ -154,13 +154,10 @@ class SequencerClientIntegrationTest extends EswTestKit(EventServer) {
 
     processSeqResponse.futureValue shouldBe an[Error]
 
-    processSeqResponse.futureValue.runId should ===(sequence.runId)
-
     compareStepList(
       ocsSequencerAdmin.getSequence.futureValue,
       Some(
         StepList(
-          sequence.runId,
           List(
             Step(command1, Success, hasBreakpoint = false),
             Step(command2, Failure("java.lang.RuntimeException: " + failCommandName), hasBreakpoint = false),
@@ -178,7 +175,7 @@ class SequencerClientIntegrationTest extends EswTestKit(EventServer) {
     //sending sequence to ocs sequencer(TestScript2)
     val sequence                            = Sequence(command1, command2)
     val seqResponse: Future[SubmitResponse] = ocsSequencer ? (SubmitSequenceAndWait(sequence, _))
-    seqResponse.futureValue should ===(Completed(sequence.runId)) // asserting the response
+    seqResponse.futureValue shouldBe a[Completed] // asserting the response
     //#################
 
     // creating subscriber for offline event
@@ -235,7 +232,8 @@ class SequencerClientIntegrationTest extends EswTestKit(EventServer) {
     //assert that it does not accept AbortSequence in loaded state
     ocsSequencerAdmin.abortSequence().futureValue should ===(Unhandled(Loaded.entryName, "AbortSequence"))
 
-    ocsSequencerCommandApi.startSequence().futureValue should ===(Started(sequence.runId))
+    val startedResponse = ocsSequencerCommandApi.startSequence().futureValue
+    startedResponse shouldBe a[Started]
 
     //assert that AbortSequence is accepted in InProgress state
     ocsSequencerAdmin.abortSequence().futureValue should ===(Ok)
@@ -243,9 +241,9 @@ class SequencerClientIntegrationTest extends EswTestKit(EventServer) {
     val expectedSteps = List(
       Step(command4, Success, hasBreakpoint = false)
     )
-    val expectedSequence = Some(StepList(sequence.runId, expectedSteps))
-    val expectedResponse = Completed(sequence.runId)
-    ocsSequencerCommandApi.queryFinal(sequence.runId).futureValue should ===(expectedResponse)
+    val expectedSequence = Some(StepList(expectedSteps))
+    val expectedResponse = Completed(startedResponse.runId)
+    ocsSequencerCommandApi.queryFinal(startedResponse.runId).futureValue should ===(expectedResponse)
     compareStepList(ocsSequencerAdmin.getSequence.futureValue, expectedSequence)
   }
 
@@ -257,7 +255,8 @@ class SequencerClientIntegrationTest extends EswTestKit(EventServer) {
     //assert that it does not accept Stop in loaded state
     ocsSequencerAdmin.stop().futureValue should ===(Unhandled(Loaded.entryName, "Stop"))
 
-    ocsSequencerCommandApi.startSequence().futureValue should ===(Started(sequence.runId))
+    val startedResponse = ocsSequencerCommandApi.startSequence().futureValue
+    startedResponse shouldBe a[Started]
 
     //assert that Stop is accepted in InProgress state
     ocsSequencerAdmin.stop().futureValue should ===(Ok)
@@ -267,9 +266,9 @@ class SequencerClientIntegrationTest extends EswTestKit(EventServer) {
       Step(command5, Success, hasBreakpoint = false),
       Step(command6, Success, hasBreakpoint = false)
     )
-    val expectedSequence = Some(StepList(sequence.runId, expectedSteps))
-    val expectedResponse = Completed(sequence.runId)
-    ocsSequencerCommandApi.queryFinal(sequence.runId).futureValue should ===(expectedResponse)
+    val expectedSequence = Some(StepList(expectedSteps))
+    val expectedResponse = Completed(startedResponse.runId)
+    ocsSequencerCommandApi.queryFinal(startedResponse.runId).futureValue should ===(expectedResponse)
     compareStepList(ocsSequencerAdmin.getSequence.futureValue, expectedSequence)
   }
 

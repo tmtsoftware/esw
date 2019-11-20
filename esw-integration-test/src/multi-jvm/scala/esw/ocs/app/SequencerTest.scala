@@ -78,7 +78,7 @@ class SequencerTest(ignore: Int, mode: String)
 
       val ocsSequencerCommandApi = resolveSequencerCommandApi(ocsSequencerId, ocsSequencerObsMode)
 
-      ocsSequencerCommandApi.submit(sequence).await should ===(Started(sequence.runId))
+      ocsSequencerCommandApi.submit(sequence).await shouldBe a[Started]
       enterBarrier("submit-sequence-to-ocs")
     }
 

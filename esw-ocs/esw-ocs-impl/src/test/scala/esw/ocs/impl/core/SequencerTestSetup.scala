@@ -68,8 +68,7 @@ class SequencerTestSetup(sequence: Sequence)(implicit system: ActorSystem[_]) {
     eventually {
       val probe = TestProbe[Option[StepList]]
       sequencerActor ! GetSequence(probe.ref)
-      val stepList = probe.expectMessageType[Option[StepList]]
-      stepList.get.runId should ===(sequence.runId)
+      probe.expectMessageType[Option[StepList]]
     }
 
     pullAllSteps(sequencerActor)
@@ -289,7 +288,7 @@ class SequencerTestSetup(sequence: Sequence)(implicit system: ActorSystem[_]) {
     val stepList = probe.expectMessageType[Option[StepList]]
     val finished = stepList.get.isFinished
 
-    if (finished) completionPromise.complete(Success(Completed(stepList.get.runId)))
+    if (finished) completionPromise.complete(Success(Completed(Id())))
 
     finished should ===(true)
   }
@@ -362,13 +361,13 @@ object SequencerTestSetup {
     testSetup
   }
 
-  def finished(sequence: Sequence)(implicit system: ActorSystem[_]): SequencerTestSetup = {
+  def finished(sequence: Sequence)(implicit system: ActorSystem[_]): (Completed, SequencerTestSetup) = {
     val sequencerSetup = new SequencerTestSetup(sequence)
     import sequencerSetup._
     val probe = TestProbe[SubmitResponse]
     sequencerActor ! SubmitSequenceAndWait(sequence, probe.ref)
     pullAllStepsAndAssertSequenceIsFinished()
-    probe.expectMessage(Completed(sequence.runId))
-    sequencerSetup
+    val completedResponse = probe.expectMessageType[Completed]
+    (completedResponse, sequencerSetup)
   }
 }
