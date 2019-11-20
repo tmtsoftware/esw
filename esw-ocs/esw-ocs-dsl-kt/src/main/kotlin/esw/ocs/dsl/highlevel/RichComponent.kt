@@ -41,7 +41,7 @@ class RichComponent(
     suspend fun oneway(command: ControlCommand): OnewayResponse = commandService().oneway(command, timeout).await()
     suspend fun submit(command: ControlCommand): SubmitResponse = commandService().submit(command, timeout).await()
     suspend fun submitAndWait(command: ControlCommand): SubmitResponse = commandService().submitAndWait(command, timeout).await()
-    suspend fun subscribeCurrentState(stateNames: Set<StateName>, callback: suspend CoroutineScope.() -> Unit): CurrentStateSubscription? =
+    suspend fun subscribeCurrentState(stateNames: Set<StateName>, callback: suspend CoroutineScope.() -> Unit): CurrentStateSubscription =
             commandService().subscribeCurrentState(stateNames) { callback.toJava() }
 
     suspend fun diagnosticMode(startTime: UTCTime, hint: String): Unit = componentRef().tell(DiagnosticDataMessage.DiagnosticMode(startTime, hint))
