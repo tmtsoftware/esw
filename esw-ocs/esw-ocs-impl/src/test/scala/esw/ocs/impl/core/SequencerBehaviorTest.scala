@@ -28,7 +28,7 @@ class SequencerBehaviorTest extends ScalaTestWithActorTestKit with BaseTestSuite
   private val command2 = Setup(Prefix("esw.test"), CommandName("command-2"), None)
   private val command3 = Setup(Prefix("esw.test"), CommandName("command-3"), None)
   private val command4 = Setup(Prefix("esw.test"), CommandName("command-4"), None)
-  private val sequence = Sequence(Seq(command1, command2))
+  private val sequence = Sequence(command1, command2)
 
   private val maxWaitForExpectNoMessage = 200.millis
 

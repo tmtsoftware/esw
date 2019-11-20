@@ -13,23 +13,24 @@ interface Refreshable {
     suspend fun refresh()
 }
 
-class Var<T> constructor(
-        initial: T,
-        private val eventKey: String,
-        private val key: Key<T>,
-        private val eventService: EventServiceDsl
+class ProcessVariable<T> constructor(
+    initial: T,
+    private val eventKey: String,
+    private val key: Key<T>,
+    private val eventService: EventServiceDsl
 ) {
     private val _eventKey = EventKey.apply(eventKey)
     private var _value: Event = event(key.set(initial))
     private val subscribers: Set<Refreshable> = mutableSetOf()
 
-    fun bind(refreshable: Refreshable){
+    suspend fun bind(refreshable: Refreshable) {
         subscribers + refreshable
+        if (subscribers.size == 1) startSubscription()
     }
 
     // todo: should allow creating any type of event
     private fun event(param: Parameter<T>): SystemEvent =
-            SystemEvent(_eventKey.source(), _eventKey.eventName()).add(param)
+        SystemEvent(_eventKey.source(), _eventKey.eventName()).add(param)
 
     fun set(value: T) {
         _value = event(key.set(value))
@@ -44,15 +45,12 @@ class Var<T> constructor(
         eventService.publishEvent(_value)
     }
 
-    suspend fun pvGet() {
-        val event = eventService.getEvent(eventKey).first()
-        setValue(event)
-    }
+    suspend fun getEvent() = _value
 
-    suspend fun pvMonitor() =
-            eventService.onEvent(eventKey) {
-                setValue(it)
-            }
+    private suspend fun startSubscription() =
+        eventService.onEvent(eventKey) {
+            setValue(it)
+        }
 
     private suspend fun setValue(value: Event) {
         _value = value

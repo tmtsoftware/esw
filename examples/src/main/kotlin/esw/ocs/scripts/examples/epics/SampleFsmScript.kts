@@ -1,10 +1,14 @@
 package esw.ocs.scripts.examples.epics
 
 import esw.ocs.dsl.core.script
+import esw.ocs.dsl.params.booleanKey
 import kotlinx.coroutines.delay
 
 script {
-    val fsm = FSM("Trigger FSM") {
+
+    val processVar = ProcessVar(true, "tcs.trigger", booleanKey("flag"))
+
+    val fsm = FSM("Trigger FSM", "INIT") {
         state("INIT") {
             println("INIT state")
             delay(1000)
@@ -25,8 +29,10 @@ script {
         }
     }
 
+    processVar.bind(fsm)
+
     onSetup("command-1") { command1 ->
-        fsm.start("INIT")
+        fsm.start()
         fsm.await()
     }
 }
