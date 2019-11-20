@@ -3,6 +3,7 @@ package esw.ocs.dsl.highlevel
 import akka.actor.typed.ActorRef
 import akka.actor.typed.ActorSystem
 import akka.util.Timeout
+import csw.command.api.CurrentStateSubscription
 import csw.command.api.javadsl.ICommandService
 import csw.command.client.CommandServiceFactory
 import csw.command.client.messages.ComponentMessage
@@ -14,6 +15,7 @@ import csw.location.models.ComponentType
 import csw.params.commands.CommandResponse.*
 import csw.params.commands.ControlCommand
 import csw.params.core.models.Prefix
+import csw.params.core.states.StateName
 import csw.time.core.models.UTCTime
 import esw.ocs.dsl.Timeouts
 import esw.ocs.dsl.jdk.SuspendToJavaConverter
@@ -38,6 +40,8 @@ class RichComponent(
     suspend fun oneway(command: ControlCommand): OnewayResponse = commandService().oneway(command, timeout).await()
     suspend fun submit(command: ControlCommand): SubmitResponse = commandService().submit(command, timeout).await()
     suspend fun submitAndWait(command: ControlCommand): SubmitResponse = commandService().submitAndWait(command, timeout).await()
+    suspend fun subscribeCurrentState(stateNames: Set<StateName>, callback: suspend CoroutineScope.() -> Unit): CurrentStateSubscription? =
+            commandService().subscribeCurrentState(stateNames) { callback.toJava() }
 
     suspend fun diagnosticMode(startTime: UTCTime, hint: String): Unit = componentRef().tell(DiagnosticDataMessage.DiagnosticMode(startTime, hint))
     suspend fun operationsMode(): Unit = componentRef().tell(DiagnosticDataMessage.`OperationsMode$`.`MODULE$`)

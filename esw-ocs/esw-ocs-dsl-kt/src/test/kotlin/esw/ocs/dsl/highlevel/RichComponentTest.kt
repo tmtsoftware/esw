@@ -2,6 +2,7 @@ package esw.ocs.dsl.highlevel
 
 import akka.actor.typed.ActorRef
 import akka.actor.typed.ActorSystem
+import csw.command.api.CurrentStateSubscription
 import csw.command.api.javadsl.ICommandService
 import csw.command.client.CommandServiceFactory
 import csw.command.client.messages.ComponentMessage
@@ -18,6 +19,7 @@ import csw.params.commands.Setup
 import csw.params.core.models.Id
 import csw.params.core.models.ObsId
 import csw.params.core.models.Prefix
+import csw.params.core.states.StateName
 import csw.time.core.models.UTCTime
 import esw.ocs.dsl.script.utils.LockUnlockUtil
 import esw.ocs.dsl.sequence_manager.LocationServiceUtil
@@ -31,6 +33,7 @@ import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
 import java.util.*
 import java.util.concurrent.CompletableFuture
+import java.util.function.Consumer
 import kotlin.time.Duration
 import kotlin.time.seconds
 import kotlin.time.toJavaDuration
@@ -119,6 +122,21 @@ class RichComponentTest {
             assembly.submitAndWait(setupCommand)
 
             verify { assemblyCommandService.submitAndWait(setupCommand, any()) }
+        }
+
+        @Test
+        fun `subscribeCurrentState should resolve commandService for given assembly and call subscribeCurrentState method on it | ESW-121, ESW-245 `() = runBlocking {
+            val stateNames: Set<StateName> = mockk()
+            val currentStateSubscription: CurrentStateSubscription = mockk()
+
+            mockkStatic(CommandServiceFactory::class)
+            every { locationServiceUtil.jResolveAkkaLocation(componentName, componentType) }.answers { CompletableFuture.completedFuture(assemblyLocation) }
+            every { CommandServiceFactory.jMake(assemblyLocation, actorSystem) }.answers { assemblyCommandService }
+            every { assemblyCommandService.subscribeCurrentState(stateNames, any()) }.answers { currentStateSubscription }
+
+            assembly.subscribeCurrentState(stateNames, {})
+
+            verify { assemblyCommandService.subscribeCurrentState(stateNames, any()) }
         }
 
         @Test
@@ -256,6 +274,21 @@ class RichComponentTest {
             hcd.submitAndWait(setupCommand)
 
             verify { hcdCommandService.submitAndWait(setupCommand, any()) }
+        }
+
+        @Test
+        fun `subscribeCurrentState should resolve commandService for given hcd and call subscribeCurrentState method on it | ESW-121, ESW-245 `() = runBlocking {
+            val stateNames: Set<StateName> = mockk()
+            val currentStateSubscription: CurrentStateSubscription = mockk()
+
+            mockkStatic(CommandServiceFactory::class)
+            every { locationServiceUtil.jResolveAkkaLocation(hcdName, componentType) }.answers { CompletableFuture.completedFuture(hcdLocation) }
+            every { CommandServiceFactory.jMake(hcdLocation, actorSystem) }.answers { hcdCommandService }
+            every { hcdCommandService.subscribeCurrentState(stateNames, any()) }.answers { currentStateSubscription }
+
+            hcd.subscribeCurrentState(stateNames, {})
+
+            verify { hcdCommandService.subscribeCurrentState(stateNames, any()) }
         }
 
         @Test
