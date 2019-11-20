@@ -29,7 +29,7 @@ abstract class EswTestKit(services: CSWService*) extends ScalaTestFrameworkTestK
   implicit lazy val ec: ExecutionContext                       = frameworkTestKit.frameworkWiring.actorRuntime.ec
   implicit lazy val askTimeout: Timeout                        = Timeout(10.seconds)
   lazy val locationService: LocationService                    = frameworkTestKit.frameworkWiring.locationService
-  lazy val untypedSystem: actor.ActorSystem                    = frameworkTestKit.frameworkWiring.actorRuntime.untypedSystem
+  lazy val untypedSystem: actor.ActorSystem                    = frameworkTestKit.frameworkWiring.actorRuntime.classicSystem
 
   private lazy val eventService: EventService = frameworkTestKit.frameworkWiring.eventServiceFactory.make(locationService)
   lazy val eventSubscriber: EventSubscriber   = eventService.defaultSubscriber
