@@ -1,12 +1,9 @@
 package esw.ocs.dsl.epics
 
-import esw.ocs.dsl.highlevel.EventServiceDsl
-import esw.ocs.dsl.highlevel.LoopDsl
 import kotlinx.coroutines.*
-import java.lang.RuntimeException
 import kotlin.time.Duration
 
-abstract class Machine(private val name: String, override val coroutineScope: CoroutineScope) : Refreshable, LoopDsl {
+class StateMachine(private val name: String, val coroutineScope: CoroutineScope) : Refreshable {
     private var currentState: String? = null
     private var previousState: String? = null
 
@@ -20,9 +17,10 @@ abstract class Machine(private val name: String, override val coroutineScope: Co
         states += Pair(name, block)
     }
 
-    protected fun become(state: String) {
+    suspend fun become(state: String) {
         if (states.keys.any { it.equals(state,true) }){
             currentState = state
+            refresh()
             //fixme: add concerete exception for this
         } else throw RuntimeException("Failed transition to invalid state:  $state")
     }
@@ -60,7 +58,6 @@ abstract class Machine(private val name: String, override val coroutineScope: Co
         previousState = currentState
         if (condition) {
             body()
-            refresh()
         }
     }
 
@@ -69,6 +66,7 @@ abstract class Machine(private val name: String, override val coroutineScope: Co
         on(body = body)
     }
 
+    //fixme: restrict entry only to lambda passed to state
     suspend fun entry(body: suspend () -> Unit) {
         if (currentState != previousState) {
             body()

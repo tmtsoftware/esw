@@ -20,7 +20,7 @@ import esw.ocs.dsl.sequence_manager.LocationServiceUtil
 import kotlinx.coroutines.CoroutineScope
 
 abstract class CswHighLevelDsl(private val cswServices: CswServices) : EventServiceDsl, TimeServiceDsl, CommandServiceDsl,
-        ConfigServiceDsl, AlarmServiceDsl, LoopDsl, SuspendToJavaConverter, LoggingDsl, DatabaseServiceDsl {
+        ConfigServiceDsl, AlarmServiceDsl, LoopDsl, SuspendToJavaConverter, LoggingDsl, DatabaseServiceDsl, FSMDsl {
     abstract val strandEc: StrandEc
     abstract override val coroutineScope: CoroutineScope
 
@@ -53,5 +53,4 @@ abstract class CswHighLevelDsl(private val cswServices: CswServices) : EventServ
     fun Assembly(name: String): RichComponent = richComponent(name, JComponentType.Assembly())
     fun HCD(name: String): RichComponent = richComponent(name, JComponentType.HCD())
     fun Sequencer(sequencerId: String, observingMode: String): RichSequencer = richSequencer(sequencerId, observingMode)
-
 }
