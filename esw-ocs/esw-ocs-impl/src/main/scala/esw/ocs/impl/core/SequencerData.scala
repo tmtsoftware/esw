@@ -13,7 +13,7 @@ import esw.ocs.impl.messages.SequencerMessages.GoIdle
 import esw.ocs.impl.messages.SequencerState
 import esw.ocs.impl.messages.SequencerState.{InProgress, Loaded}
 
-private[core] case class SequencerData(
+private[ocs] case class SequencerData(
     stepList: Option[StepList],
     runId: Option[Id],
     readyToExecuteSubscriber: Option[ActorRef[Ok.type]],

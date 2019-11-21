@@ -22,7 +22,7 @@ import esw.ocs.impl.internal.Timeouts
 import esw.ocs.impl.messages.SequencerMessages._
 import esw.ocs.impl.messages.SequencerState
 import esw.ocs.impl.messages.SequencerState._
-
+import esw.ocs.impl.extensions.SequencerInsightExtension._
 import scala.concurrent.Future
 import scala.reflect.ClassTag
 import scala.util.{Failure, Success}
@@ -266,7 +266,7 @@ class SequencerBehavior(
   )(f: T => Behavior[SequencerMsg]): Behavior[SequencerMsg] =
     Behaviors.receive { (ctx, msg) =>
       implicit val timeout: Timeout = Timeouts.LongTimeout
-
+      data.insightSubscriber ! SequencerInsight(data)
       msg match {
         case msg: CommonMessage     => handleCommonMessage(msg, state, data, currentBehavior)
         case msg: LogControlMessage => handleLogMessages(msg)

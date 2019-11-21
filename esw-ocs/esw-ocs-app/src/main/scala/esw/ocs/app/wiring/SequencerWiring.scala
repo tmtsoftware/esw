@@ -75,7 +75,7 @@ private[ocs] class SequencerWiring(val packageId: String, val observingMode: Str
   lazy private val locationServiceUtil = new LocationServiceUtil(locationService)
 
   private lazy val t = Source
-    .actorRef(1024, OverflowStrategy.dropTail)
+    .actorRef(1024, OverflowStrategy.dropHead)
     .preMaterialize()
 
   private val insightRef: ActorRef[SequencerInsight]           = t._1.toTyped[SequencerInsight]
@@ -118,7 +118,7 @@ private[ocs] class SequencerWiring(val packageId: String, val observingMode: Str
   private lazy val adminApi                                  = new SequencerAdminImpl(sequencerRef, insightSource)
   private lazy val commandApi                                = new SequencerCommandImpl(sequencerRef)
   private lazy val postHandler                               = new SequencerPostHandlerImpl(adminApi, commandApi)
-  private def websocketHandlerFactory(encoding: Encoding[_]) = new SequencerWebsocketHandlerImpl(commandApi, encoding)
+  private def websocketHandlerFactory(encoding: Encoding[_]) = new SequencerWebsocketHandlerImpl(commandApi, adminApi, encoding)
 
   lazy val routes: Route = RouteFactory.combine(
     new PostRouteFactory("post-endpoint", postHandler),
