@@ -45,7 +45,7 @@ class ProcessVariable<T> constructor(
         eventService.publishEvent(_value)
     }
 
-    suspend fun getEvent() = _value
+    fun getEvent() = _value
 
     private suspend fun startSubscription() =
         eventService.onEvent(eventKey) {

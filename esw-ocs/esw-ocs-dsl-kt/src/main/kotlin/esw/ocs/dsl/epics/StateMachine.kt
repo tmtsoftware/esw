@@ -28,8 +28,7 @@ class StateMachine(private val name: String, initialState: String, val coroutine
             previousState = currentState
             currentState = state
             refresh()
-            //fixme: add concerete exception for this
-        } else throw RuntimeException("Failed transition to invalid state:  $state")
+        } else throw InvalidStateException(state)
     }
 
     fun start() {
