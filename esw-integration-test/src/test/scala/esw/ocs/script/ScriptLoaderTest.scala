@@ -53,13 +53,13 @@ class ScriptLoaderTest extends BaseTestSuite {
 
   "load" must {
 
-    "load script class if packageId and observingMode is provided | ESW-102" in {
+    "load script class if packageId and observingMode is provided | ESW-102, ESW-136" in {
       val loader: JScriptDsl =
         ScriptLoader.loadKotlinScript("esw.ocs.scripts.examples.testData.scriptLoader.ValidTestScript", cswServices)
       loader shouldBe a[JScriptDsl]
     }
 
-    "throw InvalidScriptException if provided class is not a script | ESW-102" in {
+    "throw InvalidScriptException if provided class is not a script | ESW-102, ESW-136" in {
       val exception = intercept[InvalidScriptException] {
         ScriptLoader.loadKotlinScript("esw.ocs.scripts.examples.testData.scriptLoader.InvalidTestScript", cswServices)
       }
@@ -67,7 +67,7 @@ class ScriptLoaderTest extends BaseTestSuite {
       exception.getMessage shouldBe s"esw.ocs.scripts.examples.testData.scriptLoader.InvalidTestScript should be subclass of Script"
     }
 
-    "throw ScriptNotFound if provided class does not exist at configured path | ESW-102" in {
+    "throw ScriptNotFound if provided class does not exist at configured path | ESW-102, ESW-136" in {
       val invalidScriptClass = "invalid.path.TestScriptDoesNotExist"
 
       val exception = intercept[ScriptNotFound] {
@@ -77,7 +77,7 @@ class ScriptLoaderTest extends BaseTestSuite {
       exception.getMessage shouldBe "invalid.path.TestScriptDoesNotExist not found at configured path"
     }
 
-    "throw ScriptInitialisationFailedException if script initialisation fails | ESW-102,ESW-243" in {
+    "throw ScriptInitialisationFailedException if script initialisation fails | ESW-102, ESW-136, ESW-243" in {
       val exception = intercept[ScriptInitialisationFailedException] {
         ScriptLoader.loadKotlinScript(
           "esw.ocs.scripts.examples.testData.scriptLoader.InitialisationExceptionTestScript",

@@ -26,7 +26,7 @@ class SequencerAppIntegrationTest extends EswTestKit {
   override def afterEach(): Unit = locationService.unregisterAll()
 
   "SequenceComponent command" must {
-    "start sequence component with provided subsystem and name and register it with location service | ESW-102, ESW-103, ESW-147, ESW-151, ESW-214" in {
+    "start sequence component with provided subsystem and name and register it with location service | ESW-102, ESW-136, ESW-103, ESW-147, ESW-151, ESW-214" in {
       val subsystem             = Subsystem.ESW
       val name: String          = "primary"
       val expectedSequencerName = "ESW.primary@esw@darknight"
@@ -104,7 +104,7 @@ class SequencerAppIntegrationTest extends EswTestKit {
       }
     }
 
-    "return ScriptError when script configuration is not provided| ESW-102" in {
+    "return ScriptError when script configuration is not provided| ESW-102, ESW-136" in {
       val subsystem        = Subsystem.ESW
       val name             = "primary"
       val invalidPackageId = "invalid_package"
@@ -139,7 +139,7 @@ class SequencerAppIntegrationTest extends EswTestKit {
   }
 
   "Sequencer command" must {
-    "start sequencer with provided id, mode and register it with location service | ESW-102, ESW-103, ESW-147, ESW-151" in {
+    "start sequencer with provided id, mode and register it with location service | ESW-102, ESW-136, ESW-103, ESW-147, ESW-151" in {
       val subsystem     = Subsystem.ESW
       val name          = Some("primary")
       val packageId     = Some("esw")
@@ -190,7 +190,7 @@ class SequencerAppIntegrationTest extends EswTestKit {
       sequencerLocation.connection.componentId.name shouldBe sequencerName
     }
 
-    "throw exception if ScriptError is returned | ESW-102" in {
+    "throw exception if ScriptError is returned | ESW-102, ESW-136" in {
       val subsystem        = Subsystem.ESW
       val name             = Some("primary")
       val invalidPackageId = "invalid package"
