@@ -5,7 +5,7 @@ import akka.actor.typed.ActorSystem
 import akka.actor.typed.scaladsl.adapter.ClassicActorSystemOps
 import akka.http.scaladsl.model.ws.{BinaryMessage, TextMessage}
 import akka.http.scaladsl.testkit.{ScalatestRouteTest, WSProbe}
-import akka.stream.scaladsl.{Sink, Source}
+import akka.stream.scaladsl.Source
 import akka.util.Timeout
 import csw.command.api.CurrentStateSubscription
 import csw.event.api.scaladsl.EventSubscription
@@ -113,18 +113,14 @@ class WebsocketRouteTest extends BaseTestSuite with ScalatestRouteTest with Gate
       when(commandServiceFactory.commandService(componentId)).thenReturn(Future.successful(Right(commandService)))
       when(commandService.subscribeCurrentState(stateNames)).thenReturn(currentStateStream)
 
+      def response: Either[StreamError, CurrentState] = decodeMessage[Either[StreamError, CurrentState]](wsClient)
+
       WS("/websocket-endpoint", wsClient.flow) ~> route ~> check {
         wsClient.sendMessage(JsonText.strictMessage(subscribeCurrentState))
         isWebSocketUpgrade shouldBe true
 
-        val responseSet = Source(1 to 2)
-          .map(_ => decodeMessage[Either[StreamError, CurrentState]](wsClient))
-          .runWith(Sink.seq)
-          .futureValue
-          .map(_.rightValue)
-          .toSet
-
-        responseSet shouldEqual Set(currentState1, currentState2)
+        response.rightValue shouldEqual currentState1
+        response.rightValue shouldEqual currentState2
       }
 
     }
@@ -149,14 +145,9 @@ class WebsocketRouteTest extends BaseTestSuite with ScalatestRouteTest with Gate
         wsClient.sendMessage(JsonText.strictMessage(subscribeCurrentState))
         isWebSocketUpgrade shouldBe true
 
-        val responseSet = Source
-          .single(decodeMessage[Either[StreamError, CurrentState]](wsClient))
-          .runWith(Sink.seq)
-          .futureValue
-          .map(_.rightValue)
-          .toSet
+        val response = decodeMessage[Either[StreamError, CurrentState]](wsClient)
 
-        responseSet shouldEqual Set(currentState2)
+        response.rightValue shouldEqual currentState2
       }
 
     }
@@ -172,12 +163,8 @@ class WebsocketRouteTest extends BaseTestSuite with ScalatestRouteTest with Gate
         wsClient.sendMessage(JsonText.strictMessage(subscribeCurrentState))
         isWebSocketUpgrade shouldBe true
 
-        val response = Source(1 to 10)
-          .map(_ => decodeMessage[Either[StreamError, CurrentState]](wsClient))
-          .runWith(Sink.head)
-          .leftValue
-
-        response shouldEqual InvalidMaxFrequency.toStreamError
+        val response = decodeMessage[Either[StreamError, CurrentState]](wsClient)
+        response.leftValue shouldEqual InvalidMaxFrequency.toStreamError
       }
     }
   }
@@ -209,14 +196,10 @@ class WebsocketRouteTest extends BaseTestSuite with ScalatestRouteTest with Gate
         wsClient.sendMessage(JsonText.strictMessage(eventSubscriptionRequest))
         isWebSocketUpgrade shouldBe true
 
-        val responseSet = Source(1 to 2)
-          .map(_ => decodeMessage[Either[StreamError, Event]](wsClient))
-          .runWith(Sink.seq)
-          .futureValue
-          .map(_.rightValue)
-          .toSet
+        def response: Either[StreamError, Event] = decodeMessage[Either[StreamError, Event]](wsClient)
 
-        responseSet shouldEqual Set(event1, event2)
+        response.rightValue shouldEqual event1
+        response.rightValue shouldEqual event2
       }
     }
 
@@ -246,14 +229,10 @@ class WebsocketRouteTest extends BaseTestSuite with ScalatestRouteTest with Gate
         wsClient.sendMessage(JsonText.strictMessage(eventSubscriptionRequest))
         isWebSocketUpgrade shouldBe true
 
-        val responseSet = Source(1 to 2)
-          .map(_ => decodeMessage[Either[StreamError, Event]](wsClient))
-          .runWith(Sink.seq)
-          .futureValue
-          .map(_.rightValue)
-          .toSet
+        def response: Either[StreamError, Event] = decodeMessage[Either[StreamError, Event]](wsClient)
 
-        responseSet shouldEqual Set(event1, event2)
+        response.rightValue shouldEqual event1
+        response.rightValue shouldEqual event2
       }
     }
 
@@ -269,12 +248,9 @@ class WebsocketRouteTest extends BaseTestSuite with ScalatestRouteTest with Gate
         wsClient.sendMessage(JsonText.strictMessage(eventSubscriptionRequest))
         isWebSocketUpgrade shouldBe true
 
-        val response = Source(1 to 10)
-          .map(_ => decodeMessage[Either[StreamError, Event]](wsClient))
-          .runWith(Sink.head)
-          .leftValue
+        val response = decodeMessage[Either[StreamError, Event]](wsClient)
 
-        response shouldEqual InvalidMaxFrequency.toStreamError
+        response.leftValue shouldEqual InvalidMaxFrequency.toStreamError
       }
     }
   }
@@ -298,15 +274,9 @@ class WebsocketRouteTest extends BaseTestSuite with ScalatestRouteTest with Gate
         wsClient.sendMessage(JsonText.strictMessage(eventSubscriptionRequest))
         isWebSocketUpgrade shouldBe true
 
-        val responseSet = Source(1 to 2)
-          .take(1)
-          .map(_ => decodeMessage[Either[StreamError, Event]](wsClient))
-          .runWith(Sink.seq)
-          .futureValue
-          .map(_.rightValue)
-          .toSet
+        val response = decodeMessage[Either[StreamError, Event]](wsClient)
 
-        responseSet shouldEqual Set(event1)
+        response.rightValue shouldEqual event1
 
       }
     }
@@ -331,15 +301,9 @@ class WebsocketRouteTest extends BaseTestSuite with ScalatestRouteTest with Gate
         wsClient.sendMessage(JsonText.strictMessage(eventSubscriptionRequest))
         isWebSocketUpgrade shouldBe true
 
-        val responseSet = Source(1 to 2)
-          .take(1)
-          .map(_ => decodeMessage[Either[StreamError, Event]](wsClient))
-          .runWith(Sink.seq)
-          .futureValue
-          .map(_.rightValue)
-          .toSet
+        val response = decodeMessage[Either[StreamError, Event]](wsClient)
 
-        responseSet shouldEqual Set(event1)
+        response.rightValue shouldEqual event1
 
       }
     }
@@ -350,12 +314,9 @@ class WebsocketRouteTest extends BaseTestSuite with ScalatestRouteTest with Gate
         wsClient.sendMessage(JsonText.strictMessage(eventSubscriptionRequest))
         isWebSocketUpgrade shouldBe true
 
-        val response = Source(1 to 10)
-          .map(_ => decodeMessage[Either[StreamError, Event]](wsClient))
-          .runWith(Sink.head)
-          .leftValue
+        val response = decodeMessage[Either[StreamError, Event]](wsClient)
 
-        response shouldEqual InvalidMaxFrequency.toStreamError
+        response.leftValue shouldEqual InvalidMaxFrequency.toStreamError
       }
     }
   }
