@@ -18,24 +18,16 @@ private[esw] object ScriptLoader {
 
       type Script = { val scriptDsl: JScriptDsl }
       type Result = { def invoke(services: CswServices): Script }
-      // todo: see if there is other way than using structural types without adding `script-dsl` dependency on this project
       val result = $$resultField.get(script).asInstanceOf[Result]
       result.invoke(cswServices).scriptDsl
     }
 
-  // this loads .kt or class file
-  def loadClass(scriptClass: String, cswServices: CswServices): JScriptDsl =
-    withScript(scriptClass) { clazz =>
-      clazz.getConstructor(classOf[CswServices]).newInstance(cswServices).asInstanceOf[JScriptDsl]
-    }
-
-  private def withScript[T](scriptClass: String)(block: Class[_] => T): T =
+  def withScript[T](scriptClass: String)(block: Class[_] => T): T =
     try {
       val clazz = Class.forName(scriptClass)
       block(clazz)
     } catch {
-      case _: ClassCastException     => throw new InvalidScriptException(scriptClass)
       case _: ClassNotFoundException => throw new ScriptNotFound(scriptClass)
+      case _: NoSuchFieldException   => throw new InvalidScriptException(scriptClass)
     }
-
 }

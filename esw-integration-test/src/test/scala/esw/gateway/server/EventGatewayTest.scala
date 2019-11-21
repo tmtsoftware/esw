@@ -1,39 +1,27 @@
 package esw.gateway.server
 
+import akka.Done
 import akka.actor.CoordinatedShutdown.UnknownReason
-import akka.actor.typed.ActorSystem
-import akka.actor.typed.scaladsl.adapter.TypedActorSystemOps
-import akka.stream.Materializer
 import akka.stream.scaladsl.Sink
-import akka.{Done, actor}
 import csw.params.core.generics.KeyType.{ByteKey, StructKey}
 import csw.params.core.generics.{KeyType, Parameter}
 import csw.params.core.models._
 import csw.params.events.{Event, EventKey, EventName, SystemEvent}
 import csw.testkit.scaladsl.CSWService.EventServer
-import csw.testkit.scaladsl.ScalaTestFrameworkTestKit
 import esw.gateway.api.clients.EventClient
 import esw.gateway.api.codecs.GatewayCodecs
 import esw.gateway.api.protocol.{EmptyEventKeys, PostRequest, WebsocketRequest}
-import esw.http.core.FutureEitherExt
-import msocket.impl.post.HttpPostTransport
-import msocket.impl.ws.WebsocketTransport
+import esw.ocs.testkit.EswTestKit
 import msocket.api.Transport
 import msocket.impl.Encoding.JsonText
-import org.scalatest.WordSpecLike
+import msocket.impl.post.HttpPostTransport
+import msocket.impl.ws.WebsocketTransport
 
-import scala.concurrent.duration.{DurationInt, FiniteDuration}
+class EventGatewayTest extends EswTestKit(EventServer) with GatewayCodecs {
 
-class EventGatewayTest extends ScalaTestFrameworkTestKit(EventServer) with WordSpecLike with FutureEitherExt with GatewayCodecs {
+  private val port: Int                    = 6490
+  private val gatewayWiring: GatewayWiring = new GatewayWiring(Some(port))
 
-  private implicit val system: ActorSystem[_]                = frameworkTestKit.actorSystem
-  private implicit val untypedActorSystem: actor.ActorSystem = system.toClassic
-  private implicit val mat: Materializer                     = frameworkTestKit.mat
-  private implicit val timeout: FiniteDuration               = 20.seconds
-  private val port: Int                                      = 6490
-  private val gatewayWiring: GatewayWiring                   = new GatewayWiring(Some(port))
-
-  override implicit def patienceConfig: PatienceConfig = PatienceConfig(timeout)
   //Event
   private val a1: Array[Int] = Array(1, 2, 3, 4, 5)
   private val a2: Array[Int] = Array(10, 20, 30, 40, 50)
@@ -64,7 +52,7 @@ class EventGatewayTest extends ScalaTestFrameworkTestKit(EventServer) with WordS
     gatewayWiring.httpService.registeredLazyBinding.futureValue
   }
 
-  override protected def afterAll(): Unit = {
+  override def afterAll(): Unit = {
     gatewayWiring.httpService.shutdown(UnknownReason).futureValue
     super.afterAll()
   }
@@ -86,17 +74,17 @@ class EventGatewayTest extends ScalaTestFrameworkTestKit(EventServer) with WordS
       eventClient.publish(event2).futureValue should ===(Right(Done))
 
       //get set of events
-      eventClient.get(Set(EventKey(prefix, name1))).rightValue should ===(Set(event1))
+      eventClient.get(Set(EventKey(prefix, name1))).rightValue shouldBe Set(event1)
 
       // get returns invalid event for event that hasn't been published
       val name4 = EventName("event4")
-      eventClient.get(Set(EventKey(prefix, name4))).rightValue should ===(Set(Event.invalidEvent(EventKey(prefix, name4))))
+      eventClient.get(Set(EventKey(prefix, name4))).rightValue shouldBe Set(Event.invalidEvent(EventKey(prefix, name4)))
 
       //subscribe events returns a set of events successfully
-      eventsF.futureValue.toSet should ===(Set(invalidEvent1, invalidEvent2, event1, event2))
+      eventsF.futureValue.toSet shouldBe Set(invalidEvent1, invalidEvent2, event1, event2)
 
       //pSubscribe events returns a set of events successfully
-      pEventsF.futureValue.toSet should ===(Set(event1, event2))
+      pEventsF.futureValue.toSet shouldBe Set(event1, event2)
 
     }
 
@@ -123,9 +111,7 @@ class EventGatewayTest extends ScalaTestFrameworkTestKit(EventServer) with WordS
       Thread.sleep(500)
 
       eventClient.publish(largeEvent).futureValue should ===(Right(Done))
-      eventsF.futureValue.toSet should ===(Set(invalidEvent3, largeEvent))
+      eventsF.futureValue.toSet shouldBe Set(invalidEvent3, largeEvent)
     }
-
   }
-
 }

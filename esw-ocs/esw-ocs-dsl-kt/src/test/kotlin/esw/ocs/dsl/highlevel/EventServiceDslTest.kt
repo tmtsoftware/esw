@@ -47,7 +47,7 @@ class EventServiceDslTest : EventServiceDsl {
     fun `systemEvent should return a SystemEvent created with given parameters | ESW-120`() {
         val eventName = "systemEvent1"
         val eventPrefix = "TCS.filter.wheel"
-        val actualEvent = systemEvent(eventPrefix, eventName)
+        val actualEvent = SystemEvent(eventPrefix, eventName)
 
         // Verify that  event with provided prefix and eventName is created.
         actualEvent shouldBe SystemEvent(
@@ -63,7 +63,7 @@ class EventServiceDslTest : EventServiceDsl {
     fun `observeEvent should return a ObserveEvent created with given parameters | ESW-120`() {
         val eventName = "observeEvent1"
         val eventPrefix = "TCS.filter.wheel"
-        val actualEvent = observeEvent(eventPrefix, eventName)
+        val actualEvent = ObserveEvent(eventPrefix, eventName)
 
         // Verify that event with provided prefix and eventName is created.
         actualEvent shouldBe ObserveEvent(
@@ -90,8 +90,10 @@ class EventServiceDslTest : EventServiceDsl {
     }
 
     @Test
-    fun `onEvent should delegate to subscriber#subscribeAsync | ESW-120`() {
+    fun `onEvent should delegate to subscriber#subscribeAsync | ESW-120`() = runBlocking {
         every { eventSubscriber.subscribeAsync(eventKeys, any()) }.answers { eventSubscription }
+        every { eventSubscription.ready() }.answers { CompletableFuture.completedFuture(done()) }
+
         onEvent(key) { eventCallback } shouldBe eventSubscription
         verify { eventSubscriber.subscribeAsync(eventKeys, any()) }
     }
@@ -100,6 +102,7 @@ class EventServiceDslTest : EventServiceDsl {
     fun `cancel should delegate to IEventSubscription#unsubscribe() | ESW-120`() = runBlocking {
         every { eventSubscriber.subscribeAsync(eventKeys, any()) }.answers { eventSubscription }
         every { eventSubscription.unsubscribe() }.answers { CompletableFuture.completedFuture(done()) }
+        every { eventSubscription.ready() }.answers { CompletableFuture.completedFuture(done()) }
 
         val subscription: IEventSubscription = onEvent(key) { eventCallback }
         subscription shouldBe eventSubscription

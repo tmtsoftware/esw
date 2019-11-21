@@ -13,7 +13,7 @@ import csw.location.models.Connection.AkkaConnection
 import csw.location.models.ConnectionType.AkkaType
 import csw.location.models._
 import csw.params.core.models.Subsystem
-import esw.ocs.api.protocol.LoadScriptError
+import esw.ocs.api.protocol.ScriptError
 import esw.ocs.dsl.Timeouts
 
 import scala.compat.java8.FutureConverters.FutureOps
@@ -45,9 +45,9 @@ class LocationServiceUtil(private[esw] val locationService: LocationService)(imp
       }
       .recoverWith(onFailure)
 
-  def register(akkaRegistration: AkkaRegistration): Future[Either[LoadScriptError, AkkaLocation]] =
+  def register(akkaRegistration: AkkaRegistration): Future[Either[ScriptError, AkkaLocation]] =
     register(akkaRegistration, onFailure = {
-      case NonFatal(e) => Future.successful(Left(LoadScriptError(e.getMessage)))
+      case NonFatal(e) => Future.successful(Left(ScriptError(e.getMessage)))
     })
 
   def listBy(subsystem: Subsystem, componentType: ComponentType): Future[List[AkkaLocation]] =
@@ -104,8 +104,23 @@ class LocationServiceUtil(private[esw] val locationService: LocationService)(imp
     resolveLoop(timeout)
   }
 
+  def resolveAkkaLocation(componentName: String, componentType: ComponentType): Future[AkkaLocation] = {
+    val connection = AkkaConnection(ComponentId(componentName, componentType))
+    locationService.resolve(connection, Timeouts.DefaultTimeout).map {
+      case Some(location: AkkaLocation) => location
+      case Some(location) =>
+        throw new RuntimeException(
+          s"Incorrect connection type of the component. Expected $AkkaType, found ${location.connection.connectionType}"
+        )
+      case None => throw new IllegalArgumentException(s"Could not find any component with name: $componentName")
+    }
+  }
+
   // Added this to be accessed by kotlin
   def jResolveComponentRef(componentName: String, componentType: ComponentType): CompletionStage[ActorRef[ComponentMessage]] =
     resolveComponentRef(componentName, componentType).toJava
+
+  def jResolveAkkaLocation(componentName: String, componentType: ComponentType): CompletionStage[AkkaLocation] =
+    resolveAkkaLocation(componentName, componentType).toJava
 
 }

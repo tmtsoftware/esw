@@ -6,7 +6,7 @@ import esw.ocs.api.codecs.OcsAkkaSerializable
 import esw.ocs.api.protocol.EditorError
 import esw.ocs.api.protocol.EditorError._
 
-final case class StepList private[models] (runId: Id, steps: List[Step]) extends OcsAkkaSerializable {
+final case class StepList private[models] (steps: List[Step]) extends OcsAkkaSerializable {
   //query
   private[ocs] def isEmpty: Boolean    = steps.isEmpty
   def isFinished: Boolean              = !isEmpty && (steps.forall(_.isFinished) || steps.exists(_.isFailed))
@@ -28,11 +28,11 @@ final case class StepList private[models] (runId: Id, steps: List[Step]) extends
 
   def prepend(commands: List[SequenceCommand]): StepList = {
     val (pre, post) = steps.span(!_.isPending)
-    copy(runId, pre ::: toSteps(commands) ::: post)
+    copy(pre ::: toSteps(commands) ::: post)
   }
 
   // fixme: should check if given commands have duplicateIds
-  def append(commands: List[SequenceCommand]): StepList = copy(runId, steps ::: toSteps(commands))
+  def append(commands: List[SequenceCommand]): StepList = copy(steps ::: toSteps(commands))
 
   def delete(id: Id): Either[EditorError, StepList] = ifExists(id) { _ =>
     steps
@@ -41,15 +41,15 @@ final case class StepList private[models] (runId: Id, steps: List[Step]) extends
         case (_, step) if step.id == id                     => Left(CannotOperateOnAnInFlightOrFinishedStep)
         case (acc, step)                                    => acc.map(_ :+ step)
       }
-      .map(steps => copy(runId, steps))
+      .map(steps => copy(steps))
   }
 
   def insertAfter(id: Id, commands: List[SequenceCommand]): Either[EditorError, StepList] =
     ifExists[EditorError](id) { _ =>
-      insertStepsAfter(id, toSteps(commands)).map(updatedSteps => copy(runId, updatedSteps))
+      insertStepsAfter(id, toSteps(commands)).map(updatedSteps => copy(updatedSteps))
     }
 
-  def discardPending: StepList = copy(runId, steps.filterNot(_.isPending))
+  def discardPending: StepList = copy(steps.filterNot(_.isPending))
 
   def addBreakpoint(id: Id): Either[EditorError, StepList] = ifExists(id) { _ =>
     steps
@@ -57,7 +57,7 @@ final case class StepList private[models] (runId: Id, steps: List[Step]) extends
         case (acc, step) if step.id == id => step.addBreakpoint().flatMap(step => acc.map(_ :+ step))
         case (acc, step)                  => acc.map(_ :+ step)
       }
-      .map(steps => copy(runId, steps))
+      .map(steps => copy(steps))
   }
 
   def removeBreakpoint(id: Id): Either[IdDoesNotExist, StepList] =
@@ -73,17 +73,8 @@ final case class StepList private[models] (runId: Id, steps: List[Step]) extends
       .map(step => updateStep(step.removeBreakpoint()))
       .getOrElse(this)
 
-  private[ocs] def updateStatus(id: Id, stepStatus: StepStatus): StepList =
-    copy(
-      steps = steps
-        .foldLeft[List[Step]](List.empty) {
-          case (acc, step) if step.id == id => acc :+ step.withStatus(stepStatus)
-          case (acc, step)                  => acc :+ step
-        }
-    )
-
   private def replaceSteps(id: Id, steps: List[Step]): Either[EditorError, StepList] =
-    insertStepsAfter(id, steps).map(updatedSteps => copy(runId, updatedSteps.filterNot(_.id == id)))
+    insertStepsAfter(id, steps).map(updatedSteps => copy(updatedSteps.filterNot(_.id == id)))
 
   private def insertStepsAfter(id: Id, newSteps: List[Step]): Either[CannotOperateOnAnInFlightOrFinishedStep.type, List[Step]] = {
     val (pre, post)        = steps.span(_.id != id)
@@ -97,7 +88,7 @@ final case class StepList private[models] (runId: Id, steps: List[Step]) extends
   private[ocs] def updateStep(step: Step): StepList = updateAll(step.id, _ => step)
 
   private def updateAll(id: Id, f: Step => Step): StepList =
-    copy(runId, steps.map {
+    copy(steps.map {
       case step if id == step.id => f(step)
       case step                  => step
     })
@@ -113,5 +104,5 @@ final case class StepList private[models] (runId: Id, steps: List[Step]) extends
 
 object StepList {
   def apply(sequence: Sequence): StepList =
-    StepList(sequence.runId, sequence.commands.toList.map(Step.apply))
+    StepList(sequence.commands.toList.map(Step.apply))
 }

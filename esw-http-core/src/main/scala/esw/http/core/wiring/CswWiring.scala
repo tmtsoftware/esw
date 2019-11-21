@@ -30,10 +30,10 @@ class CswWiring() {
   lazy val actorRuntime: ActorRuntime                      = new ActorRuntime(actorSystem)
   import actorRuntime._
 
-  lazy val locationService: LocationService = HttpLocationServiceFactory.makeLocalClient(actorSystem, actorRuntime.mat)
+  lazy val locationService: LocationService = HttpLocationServiceFactory.makeLocalClient(actorSystem)
 
   lazy val configClientService: ConfigClientService = ConfigClientFactory.clientApi(actorSystem, locationService)
-  lazy val configUtils: ConfigUtils                 = new ConfigUtils(configClientService)(actorSystem, actorRuntime.mat)
+  lazy val configUtils: ConfigUtils                 = new ConfigUtils(configClientService)(actorSystem)
 
   lazy val eventSubscriberUtil: EventSubscriberUtil = new EventSubscriberUtil()
   lazy val eventServiceFactory: EventServiceFactory = new EventServiceFactory(RedisStore(redisClient))

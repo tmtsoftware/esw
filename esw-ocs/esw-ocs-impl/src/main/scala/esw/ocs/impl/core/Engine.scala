@@ -8,7 +8,7 @@ import esw.ocs.dsl.script.{JScriptDsl, SequenceOperator}
 
 import scala.async.Async._
 import scala.concurrent.Future
-import scala.util.control.NonFatal
+import scala.util.{Failure, Success}
 
 private[ocs] class Engine(script: JScriptDsl) {
 
@@ -28,8 +28,9 @@ private[ocs] class Engine(script: JScriptDsl) {
 
       pullNextResponse match {
         case PullNextResult(step) =>
-          script.execute(step.command).recover {
-            case NonFatal(e) => sequenceOperator.stepFailure(e.getMessage)
+          script.execute(step.command).onComplete {
+            case _: Success[_] => sequenceOperator.stepSuccess()
+            case Failure(e)    => sequenceOperator.stepFailure(e.getMessage)
           }
         case _: Unhandled =>
       }

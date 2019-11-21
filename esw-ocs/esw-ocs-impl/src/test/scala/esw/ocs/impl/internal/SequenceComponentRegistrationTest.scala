@@ -15,7 +15,7 @@ import csw.location.models.Connection.AkkaConnection
 import csw.location.models.{AkkaLocation, AkkaRegistration, ComponentId, ComponentType}
 import csw.params.core.models.{Prefix, Subsystem}
 import esw.ocs.api.BaseTestSuite
-import esw.ocs.api.protocol.LoadScriptError
+import esw.ocs.api.protocol.ScriptError
 import esw.ocs.impl.messages.SequenceComponentMsg
 import esw.ocs.impl.messages.SequenceComponentMsg.Stop
 import org.mockito.ArgumentMatchers.any
@@ -89,7 +89,7 @@ class SequenceComponentRegistrationTest extends ScalaTestWithActorTestKit with B
       sequenceComponentRegistration
         .registerSequenceComponent(retryCount)
         .leftValue should ===(
-        LoadScriptError(errorMsg)
+        ScriptError(errorMsg)
       )
 
       //assert that No retry attempt in case of subsystem and name are provided
@@ -192,7 +192,7 @@ class SequenceComponentRegistrationTest extends ScalaTestWithActorTestKit with B
       sequenceComponentRegistration
         .registerSequenceComponent(retryCount)
         .leftValue should ===(
-        LoadScriptError(errorMsg)
+        ScriptError(errorMsg)
       )
       system.terminate()
     }
@@ -223,7 +223,7 @@ class SequenceComponentRegistrationTest extends ScalaTestWithActorTestKit with B
       sequenceComponentRegistration
         .registerSequenceComponent(retryCount)
         .leftValue should ===(
-        LoadScriptError(errorMsg)
+        ScriptError(errorMsg)
       )
       system.terminate()
     }

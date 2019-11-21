@@ -2,19 +2,19 @@ package esw.ocs.impl.codecs
 
 import csw.command.client.cbor.MessageCodecs
 import csw.command.client.messages.sequencer.SequencerMsg
-import csw.location.api.codec.DoneCodec
 import csw.params.core.formats.CommonCodecs
-import esw.ocs.impl.messages.SequenceComponentMsg.{GetStatus, LoadScript, Stop, UnloadScript}
+import esw.ocs.impl.messages.SequenceComponentMsg.{GetStatus, LoadScript, Restart, Stop, UnloadScript}
 import esw.ocs.impl.messages.SequencerMessages._
 import esw.ocs.impl.messages.{SequenceComponentMsg, SequencerState}
 import io.bullet.borer.Codec
 import io.bullet.borer.derivation.ArrayBasedCodecs.deriveUnaryCodec
 import io.bullet.borer.derivation.MapBasedCodecs.deriveCodec
 
-trait OcsMsgCodecs extends MessageCodecs with DoneCodec with CommonCodecs {
+trait OcsMsgCodecs extends MessageCodecs with CommonCodecs {
   implicit lazy val loadSequenceCodec: Codec[LoadSequence]                                   = deriveCodec
   implicit lazy val startSequenceCodec: Codec[StartSequence]                                 = deriveCodec
-  implicit lazy val seqMsgQueryFinalCodec: Codec[QueryFinal]                                 = deriveCodec
+  implicit lazy val seqMsgQueryFinalCodec: Codec[QueryFinalInternal]                         = deriveCodec
+  implicit lazy val seqMsgQueryCodec: Codec[Query]                                           = deriveCodec
   implicit lazy val submitSequenceCodec: Codec[SubmitSequence]                               = deriveCodec
   implicit lazy val submitSequenceAndWaitInternalCodec: Codec[SubmitSequenceAndWaitInternal] = deriveCodec
 
@@ -62,6 +62,7 @@ trait OcsMsgCodecs extends MessageCodecs with DoneCodec with CommonCodecs {
 
   //SequenceComponentCodecs
   implicit lazy val loadScriptCodec: Codec[LoadScript]                     = deriveCodec
+  implicit lazy val sequenceComponentRestartCodec: Codec[Restart]          = deriveCodec
   implicit lazy val getStatusCodec: Codec[GetStatus]                       = deriveCodec
   implicit lazy val unloadScriptCodec: Codec[UnloadScript]                 = deriveCodec
   implicit lazy val stopCodec: Codec[Stop.type]                            = deriveCodec

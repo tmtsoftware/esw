@@ -1,6 +1,5 @@
 package esw.ocs.scripts.examples.class_based
 
-import csw.params.commands.CommandResponse.Completed
 import csw.params.core.models.Prefix
 import csw.params.events.EventName
 import csw.params.events.SystemEvent
@@ -25,7 +24,7 @@ class Script5(cswServices: CswServices) : Script(cswServices) {
                 script7
         )
 
-        handleSetup("command-3") { command ->
+        onSetup("command-3") {
             log("============ command-3 ================")
 
             val keys = (0.until(50)).map { eventKey + it }.toTypedArray()
@@ -39,7 +38,7 @@ class Script5(cswServices: CswServices) : Script(cswServices) {
             log("============ command-3 End ================")
         }
 
-        handleShutdown {
+        onShutdown {
             while (totalEventsRec <= 49) {
                 delay(100)
             }

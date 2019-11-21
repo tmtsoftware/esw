@@ -10,9 +10,10 @@ import esw.ocs.api.protocol._
 import io.bullet.borer.Codec
 import io.bullet.borer.derivation.ArrayBasedCodecs.deriveUnaryCodec
 import io.bullet.borer.derivation.MapBasedCodecs.deriveCodec
-import msocket.api.codecs.EitherCodecs
+import msocket.api.codecs.BasicCodecs
 
-trait OcsCodecs extends ParamCodecs with LocationCodecs with EitherCodecs {
+trait OcsCodecs extends ParamCodecs with LocationCodecs {
+  import BasicCodecs._
   //StepList Codecs
   implicit lazy val sequencerInsight: Codec[SequencerInsight] = deriveCodec
   implicit lazy val stepCodec: Codec[Step]                    = deriveCodec
@@ -25,7 +26,8 @@ trait OcsCodecs extends ParamCodecs with LocationCodecs with EitherCodecs {
 
   //StepListResponse Codecs
   implicit lazy val pullNextResultCodec: Codec[PullNextResult] = deriveCodec
-  implicit lazy val sequenceResultCodec: Codec[SequenceResult] = deriveCodec
+  implicit lazy val submitResultCodec: Codec[SubmitResult]     = deriveUnaryCodec
+  implicit lazy val queryResultCodec: Codec[QueryResult]       = deriveUnaryCodec
   implicit lazy val okCodec: Codec[Ok.type]                    = deriveCodec
 
   implicit lazy val unhandledCodec: Codec[Unhandled]                                                      = deriveCodec
@@ -36,10 +38,10 @@ trait OcsCodecs extends ParamCodecs with LocationCodecs with EitherCodecs {
   implicit lazy val diagnosticHookFailedCodec: Codec[DiagnosticHookFailed.type]                           = deriveCodec
   implicit lazy val operationsHookFailedCodec: Codec[OperationsHookFailed.type]                           = deriveCodec
   implicit lazy val responseCodec: Codec[EswSequencerResponse]                                            = deriveCodec
-  implicit lazy val loadScriptErrorCodec: Codec[LoadScriptError]                                          = deriveCodec
+  implicit lazy val scriptErrorCodec: Codec[ScriptError]                                                  = deriveCodec
 
   //SequenceComponentResponse Codecs
-  implicit lazy val loadScriptResponseCodec: Codec[LoadScriptResponse]             = deriveUnaryCodec
+  implicit lazy val loadScriptResponseCodec: Codec[ScriptResponse]                 = deriveUnaryCodec
   implicit lazy val getStatusResponseCodec: Codec[GetStatusResponse]               = deriveUnaryCodec
   implicit lazy val pauseResponseCodec: Codec[PauseResponse]                       = deriveCodec
   implicit lazy val okOrUnhandledResponseCodec: Codec[OkOrUnhandledResponse]       = deriveCodec
@@ -49,5 +51,6 @@ trait OcsCodecs extends ParamCodecs with LocationCodecs with EitherCodecs {
   implicit lazy val goOfflineResponseCodec: Codec[GoOfflineResponse]               = deriveCodec
   implicit lazy val diagnosticModeResponseCodec: Codec[DiagnosticModeResponse]     = deriveCodec
   implicit lazy val operationsModeResponseCodec: Codec[OperationsModeResponse]     = deriveCodec
-  implicit lazy val sequenceResponseCodec: Codec[SequenceResponse]                 = deriveCodec
+  implicit lazy val sequencerSubmitResponseCodec: Codec[SequencerSubmitResponse]   = deriveCodec
+  implicit lazy val sequencerQueryResponseCodec: Codec[SequencerQueryResponse]     = deriveCodec
 }

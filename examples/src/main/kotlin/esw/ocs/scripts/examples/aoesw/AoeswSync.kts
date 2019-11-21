@@ -12,7 +12,7 @@ script {
     val probeOffsetXKey = floatKey("x")
     val probeOffsetYKey = floatKey("y")
 
-    handleSetup("offset") { command ->
+    onSetup("offset") { command ->
         val scheduledTime = command(aoeswOffsetTime)
         val offsetX = command(aoeswOffsetXKey)
         val offsetY = command(aoeswOffsetYKey)
@@ -24,14 +24,15 @@ script {
             .madd(probeOffsetXParam, probeOffsetYParam)
 
         scheduleOnce(scheduledTime(0)) {
-            val response = submitAndWaitCommandToAssembly("probeAssembly", probeCommand)
+            val probeAssembly = Assembly("probeAssembly")
+            val response = probeAssembly.submitAndWait(probeCommand)
             if(response is CommandResponse.Error){
                 finishWithError(response.message())
             }
         }
     }
 
-    handleShutdown {
+    onShutdown {
         println("shutdown ocs")
     }
 }

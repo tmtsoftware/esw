@@ -5,15 +5,11 @@ import java.util.concurrent.{CompletableFuture, CompletionStage}
 import java.util.function.Supplier
 
 import akka.Done
-import akka.actor.typed.ActorSystem
-import csw.command.client.SequencerCommandServiceFactory
-import csw.params.commands.CommandResponse.SubmitResponse
-import csw.params.commands.{Observe, Sequence, SequenceCommand, Setup}
+import csw.params.commands.{Observe, SequenceCommand, Setup}
 import csw.time.core.models.UTCTime
 import esw.ocs.api.protocol.PullNextResult
 import esw.ocs.dsl.script.exceptions.UnhandledCommandException
 import esw.ocs.dsl.script.utils.{FunctionBuilder, FunctionHandlers}
-import esw.ocs.dsl.sequence_manager.LocationServiceUtil
 
 import scala.async.Async.{async, await}
 import scala.compat.java8.FutureConverters.{CompletionStageOps, FutureOps}
@@ -104,34 +100,22 @@ abstract class JScriptDsl(val csw: CswServices) {
       }
     }.toJava
 
-  protected final def handleSetupCommand(name: String)(handler: Setup => CompletionStage[Void]): Unit =
+  protected final def onSetupCommand(name: String)(handler: Setup => CompletionStage[Void]): Unit =
     handle(name)(handler(_))
 
-  protected final def handleObserveCommand(name: String)(handler: Observe => CompletionStage[Void]): Unit =
+  protected final def onObserveCommand(name: String)(handler: Observe => CompletionStage[Void]): Unit =
     handle(name)(handler(_))
 
-  protected final def handleGoOnline(handler: Supplier[CompletionStage[Void]]): Unit      = onlineHandlers.add(_ => handler.get())
-  protected final def handleAbortSequence(handler: Supplier[CompletionStage[Void]]): Unit = abortHandlers.add(_ => handler.get())
-  protected final def handleStop(handler: Supplier[CompletionStage[Void]]): Unit          = stopHandlers.add(_ => handler.get())
-  protected final def handleShutdown(handler: Supplier[CompletionStage[Void]]): Unit      = shutdownHandlers.add(_ => handler.get())
-  protected final def handleGoOffline(handler: Supplier[CompletionStage[Void]]): Unit     = offlineHandlers.add(_ => handler.get())
-  protected final def handleDiagnosticMode(handler: (UTCTime, String) => CompletionStage[Void]): Unit =
+  protected final def onGoOnline(handler: Supplier[CompletionStage[Void]]): Unit      = onlineHandlers.add(_ => handler.get())
+  protected final def onAbortSequence(handler: Supplier[CompletionStage[Void]]): Unit = abortHandlers.add(_ => handler.get())
+  protected final def onStop(handler: Supplier[CompletionStage[Void]]): Unit          = stopHandlers.add(_ => handler.get())
+  protected final def onShutdown(handler: Supplier[CompletionStage[Void]]): Unit      = shutdownHandlers.add(_ => handler.get())
+  protected final def onGoOffline(handler: Supplier[CompletionStage[Void]]): Unit     = offlineHandlers.add(_ => handler.get())
+  protected final def onDiagnosticMode(handler: (UTCTime, String) => CompletionStage[Void]): Unit =
     diagnosticHandlers.add((x: (UTCTime, String)) => handler(x._1, x._2))
-  protected final def handleOperationsMode(handler: Supplier[CompletionStage[Void]]): Unit =
+  protected final def onOperationsMode(handler: Supplier[CompletionStage[Void]]): Unit =
     operationsHandlers.add(_ => handler.get())
 
-  protected final def handleException(handler: Throwable => CompletionStage[Void]): Unit = exceptionHandlers.add(handler)
+  protected final def onException(handler: Throwable => CompletionStage[Void]): Unit = exceptionHandlers.add(handler)
 
-  protected final def submitSequence(
-      sequencerName: String,
-      observingMode: String,
-      sequence: Sequence
-  ): CompletionStage[SubmitResponse] = {
-    implicit val actorSystem: ActorSystem[_] = csw.actorSystem
-    new LocationServiceUtil(csw.locationService.asScala)
-      .resolveSequencer(sequencerName, observingMode)
-      .map(SequencerCommandServiceFactory.make)
-      .flatMap(_.submitAndWait(sequence))
-      .toJava
-  }
 }

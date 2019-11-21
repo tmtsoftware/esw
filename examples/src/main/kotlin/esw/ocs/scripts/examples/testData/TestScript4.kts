@@ -6,31 +6,33 @@ import kotlin.time.seconds
 
 script {
 
-    handleSetup("command-irms") { _ ->
+    onSetup("command-lgsf") {
         // NOT update command response To avoid sequencer to
         // finish so that other commands gets time
         delay(10000)
     }
 
-    handleAbortSequence {
+    onAbortSequence {
         //do some actions to abort sequence
-        val successEvent = systemEvent("tcs", "abort.success")
+        val successEvent = SystemEvent("tcs", "abort.success")
         publishEvent(successEvent)
     }
 
-    handleStop {
+    onStop {
         //do some actions to stop
-        val successEvent = systemEvent("tcs", "stop.success")
+        val successEvent = SystemEvent("tcs", "stop.success")
         publishEvent(successEvent)
     }
 
-    handleSetup("time-service-dsl") { command ->
+    onSetup("time-service-dsl") {
         val offset = utcTimeAfter(2.seconds).offsetFromNow()
-        val taskToSchedule: suspend () -> Unit =
-                { publishEvent(systemEvent("irms", "publish.success")) }
 
-        schedulePeriodically(utcTimeAfter(5.seconds), offset, taskToSchedule)
+        schedulePeriodically(utcTimeAfter(5.seconds), offset) {
+            publishEvent(SystemEvent("lgsf", "publish.success"))
+        }
 
-        scheduleOnce(taiTimeNow(), taskToSchedule)
+        scheduleOnce(taiTimeNow()) {
+            publishEvent(SystemEvent("lgsf", "publish.success"))
+        }
     }
 }

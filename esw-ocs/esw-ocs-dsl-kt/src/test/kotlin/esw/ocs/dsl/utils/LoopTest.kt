@@ -45,7 +45,7 @@ class LoopTest : LoopDsl {
         }
 
         counter.get() shouldBe 3
-        // custom loop interval is 300ms, loop should run 3 times which means it should take around 300*3=900ms
+        // custom loop interval is 300ms, loop should run 3 times that means it should take around 300*3=900ms
         loopTime shouldBeInRange 900L..1000L
     }
 
@@ -80,7 +80,7 @@ class LoopTest : LoopDsl {
 
             // here counter is less than 5 proves that loop is still running in the background
             counter.get() shouldBeLessThan 5
-            loopResult.await()
+            loopResult.join()
         }
 
         counter.get() shouldBe 5
@@ -100,11 +100,11 @@ class LoopTest : LoopDsl {
 
             // here counter is less than 3 proves that loop is still running in the background
             counter.get() shouldBeLessThan 3
-            loopResult.await()
+            loopResult.join()
         }
 
         counter.get() shouldBe 3
-        // custom loop interval is 300ms, loop should run 3 times which means it should take around 300*3=900ms
+        // custom loop interval is 300ms, loop should run 3 times that means it should take around 300*3=900ms
         loopTime shouldBeInRange 900L..1000L
     }
 
@@ -114,7 +114,7 @@ class LoopTest : LoopDsl {
         var exposureCount = 0
         var exposureReady = false
 
-        // simulate background task which is setting exposureReady flag to true after 200 ms
+        // simulate background task that is setting exposureReady flag to true after 200 ms
         launch {
             delay(200)
             exposureReady = true

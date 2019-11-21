@@ -4,7 +4,7 @@ import akka.actor.typed.SpawnProtocol.Spawn
 import akka.actor.typed.scaladsl.AskPattern._
 import akka.actor.typed.scaladsl.adapter.ClassicActorRefOps
 import akka.actor.typed.{ActorRef, ActorSystem, Props, SpawnProtocol}
-import akka.http.scaladsl.server.RouteConcatenation
+import akka.http.scaladsl.server.{Route, RouteConcatenation}
 import akka.stream.OverflowStrategy
 import akka.stream.scaladsl.Source
 import akka.util.Timeout
@@ -14,6 +14,7 @@ import csw.alarm.api.javadsl.IAlarmService
 import csw.command.client.messages.sequencer.SequencerMsg
 import csw.config.api.javadsl.IConfigClientService
 import csw.config.client.javadsl.JConfigClientFactory
+import csw.database.DatabaseServiceFactory
 import csw.event.client.internal.commons.javawrappers.JEventService
 import csw.location.api.extensions.ActorExtension.RichActor
 import csw.location.api.javadsl.ILocationService
@@ -21,13 +22,15 @@ import csw.location.client.ActorSystemFactory
 import csw.location.client.javadsl.JHttpLocationServiceFactory
 import csw.location.models.Connection.AkkaConnection
 import csw.location.models.{AkkaLocation, AkkaRegistration, ComponentId, ComponentType}
+import csw.logging.api.javadsl.ILogger
 import csw.logging.api.scaladsl.Logger
 import csw.logging.client.scaladsl.LoggerFactory
 import csw.network.utils.SocketUtils
 import esw.http.core.wiring.{ActorRuntime, CswWiring, HttpService, Settings}
+import esw.ocs.api.codecs.SequencerHttpCodecs
 import esw.ocs.api.models.SequencerInsight
-import esw.ocs.api.protocol.LoadScriptError
-import esw.ocs.app.route.{PostHandlerImpl, SequencerAdminRoutes, WebsocketHandlerImpl}
+import esw.ocs.api.protocol.ScriptError
+import esw.ocs.app.route.{SequencerPostHandlerImpl, SequencerWebsocketHandlerImpl}
 import esw.ocs.dsl.script.utils.{LockUnlockUtil, ScriptLoader}
 import esw.ocs.dsl.script.{CswServices, JScriptDsl}
 import esw.ocs.dsl.sequence_manager.LocationServiceUtil
@@ -35,17 +38,19 @@ import esw.ocs.impl.core._
 import esw.ocs.impl.internal.{SequencerServer, Timeouts}
 import esw.ocs.impl.messages.SequencerMessages.Shutdown
 import esw.ocs.impl.syntax.FutureSyntax.FutureOps
-import esw.ocs.impl.{SequencerAdminFactoryImpl, SequencerAdminImpl}
-import msocket.impl.Encoding
+import esw.ocs.impl.{SequencerAdminFactoryImpl, SequencerAdminImpl, SequencerCommandFactoryImpl, SequencerCommandImpl}
+import msocket.impl.post.PostRouteFactory
+import msocket.impl.ws.WebsocketRouteFactory
+import msocket.impl.{Encoding, RouteFactory}
 
 import scala.async.Async.{async, await}
-import scala.concurrent.Future
 import scala.util.control.NonFatal
 
 private[ocs] class SequencerWiring(val packageId: String, val observingMode: String, sequenceComponentName: Option[String])
-    extends RouteConcatenation {
-  private lazy val config: Config       = ConfigFactory.load()
-  private[esw] lazy val sequencerConfig = SequencerConfig.from(config, packageId, observingMode, sequenceComponentName)
+    extends SequencerHttpCodecs
+    with RouteConcatenation {
+  private lazy val config: Config  = ConfigFactory.load()
+  private lazy val sequencerConfig = SequencerConfig.from(config, packageId, observingMode, sequenceComponentName)
   import sequencerConfig._
 
   lazy val actorSystem: ActorSystem[SpawnProtocol.Command] = ActorSystemFactory.remote(SpawnProtocol(), "sequencer-system")
@@ -54,9 +59,6 @@ private[ocs] class SequencerWiring(val packageId: String, val observingMode: Str
   lazy val cswWiring: CswWiring      = CswWiring.make(actorSystem)
   import cswWiring._
   import cswWiring.actorRuntime._
-
-  lazy val loggerFactory  = new LoggerFactory(sequencerName)
-  lazy val logger: Logger = loggerFactory.getLogger
 
   implicit lazy val actorRuntime: ActorRuntime = cswWiring.actorRuntime
 
@@ -79,38 +81,55 @@ private[ocs] class SequencerWiring(val packageId: String, val observingMode: Str
   private val insightRef: ActorRef[SequencerInsight]           = t._1.toTyped[SequencerInsight]
   private val insightSource: Source[SequencerInsight, NotUsed] = t._2
 
-  lazy private val adminFactory = new SequencerAdminFactoryImpl(locationServiceUtil, insightSource)
+  lazy private val adminFactory   = new SequencerAdminFactoryImpl(locationServiceUtil, insightSource)
+  lazy private val commandFactory = new SequencerCommandFactoryImpl(locationServiceUtil)
 
   lazy private val lockUnlockUtil = new LockUnlockUtil(locationServiceUtil)(actorSystem)
 
-  lazy val jLocationService: ILocationService         = JHttpLocationServiceFactory.makeLocalClient(actorSystem, actorRuntime.mat)
+  lazy val jLocationService: ILocationService         = JHttpLocationServiceFactory.makeLocalClient(actorSystem)
   lazy val jConfigClientService: IConfigClientService = JConfigClientFactory.clientApi(actorSystem, jLocationService)
   lazy val jEventService: JEventService               = new JEventService(eventService)
 
   private lazy val jAlarmService: IAlarmService = alarmServiceFactory.jMakeClientApi(jLocationService, typedSystem)
 
+  private lazy val loggerFactory    = new LoggerFactory(sequencerName)
+  private lazy val jLoggerFactory   = loggerFactory.asJava
+  private lazy val logger: Logger   = loggerFactory.getLogger
+  private lazy val jLogger: ILogger = ScriptLoader.withScript(scriptClass)(jLoggerFactory.getLogger)
+
+  private lazy val databaseServiceFactory = new DatabaseServiceFactory(actorSystem)
+
   lazy val cswServices = new CswServices(
+    prefix,
     sequenceOperatorFactory,
+    jLogger,
     typedSystem,
     jLocationService,
     jEventService,
     timeServiceSchedulerFactory,
     adminFactory,
+    commandFactory,
+    databaseServiceFactory,
     lockUnlockUtil,
     jConfigClientService,
     jAlarmService
   )
 
-  private lazy val sequencerAdmin                            = new SequencerAdminImpl(sequencerRef, insightSource)
-  private lazy val postHandler                               = new PostHandlerImpl(sequencerAdmin)
-  private def websocketHandlerFactory(encoding: Encoding[_]) = new WebsocketHandlerImpl(sequencerAdmin, encoding)
-  private lazy val routes                                    = new SequencerAdminRoutes(postHandler, websocketHandlerFactory)
+  private lazy val adminApi                                  = new SequencerAdminImpl(sequencerRef, insightSource)
+  private lazy val commandApi                                = new SequencerCommandImpl(sequencerRef)
+  private lazy val postHandler                               = new SequencerPostHandlerImpl(adminApi, commandApi)
+  private def websocketHandlerFactory(encoding: Encoding[_]) = new SequencerWebsocketHandlerImpl(commandApi, encoding)
+
+  lazy val routes: Route = RouteFactory.combine(
+    new PostRouteFactory("post-endpoint", postHandler),
+    new WebsocketRouteFactory("websocket-endpoint", websocketHandlerFactory)
+  )
 
   private val port: Int     = SocketUtils.getFreePort
   private lazy val settings = new Settings(Some(port), Some(s"$sequencerName@http"), config)
 
   private lazy val httpService: HttpService =
-    new HttpService(logger, locationService, routes.route, settings, actorRuntime)
+    new HttpService(logger, locationService, routes, settings, actorRuntime)
 
   private val shutdownHttpService = () =>
     async {
@@ -126,7 +145,7 @@ private[ocs] class SequencerWiring(val packageId: String, val observingMode: Str
     )
 
   lazy val sequencerServer: SequencerServer = new SequencerServer {
-    override def start(): Either[LoadScriptError, AkkaLocation] = {
+    override def start(): Either[ScriptError, AkkaLocation] = {
       try {
         new Engine(script).start(sequenceOperatorFactory())
 
@@ -136,10 +155,10 @@ private[ocs] class SequencerWiring(val packageId: String, val observingMode: Str
         val registration = AkkaRegistration(AkkaConnection(componentId), prefix, sequencerRef.toURI)
         new LocationServiceUtil(locationService).register(registration).block
       } catch {
-        case NonFatal(e) => Left(LoadScriptError(e.getMessage))
+        case NonFatal(e) => Left(ScriptError(e.getMessage))
       }
     }
 
-    override def shutDown(): Future[Done] = (sequencerRef ? Shutdown).map(_ => Done)
+    override def shutDown(): Done = (sequencerRef ? Shutdown).map(_ => Done).block
   }
 }

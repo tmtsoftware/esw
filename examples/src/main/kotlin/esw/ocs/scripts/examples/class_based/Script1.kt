@@ -1,18 +1,19 @@
 package esw.ocs.scripts.examples.class_based
 
-import csw.params.commands.CommandResponse.Completed
 import esw.ocs.dsl.core.Script
 import esw.ocs.dsl.script.CswServices
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 
+fun log(msg: String) = println("[${Thread.currentThread().name}] $msg")
+
 @Deprecated("Use script based approach to write scripts")
 class Script1(cswServices: CswServices) : Script(cswServices) {
     init {
         val eventKey = "csw.a.b."
-        fun event(id: Int) = systemEvent("csw.a.b", id.toString())
+        fun event(id: Int) = SystemEvent("csw.a.b", id.toString())
 
-        handleSetup("command-1") { command ->
+        onSetup("command-1") {
             log("============ command-1 ================")
 
             repeat(50) {
@@ -27,7 +28,7 @@ class Script1(cswServices: CswServices) : Script(cswServices) {
             log("============ command-1 -End ================")
         }
 
-        handleSetup("command-2") { command ->
+        onSetup("command-2") {
             log("============ command-2 ================")
             val events = getEvent(eventKey + 1)
             log(events.toString())
@@ -36,7 +37,7 @@ class Script1(cswServices: CswServices) : Script(cswServices) {
             log("============ command-2 End ================")
         }
 
-        handleSetup("command-3") { command ->
+        onSetup("command-3") {
             log("============ command-3 ================")
 
             val keys = (0.until(50)).map { eventKey + it }.toTypedArray()
@@ -49,7 +50,7 @@ class Script1(cswServices: CswServices) : Script(cswServices) {
             log("============ command-3 End ================")
         }
 
-        handleShutdown {
+        onShutdown {
             close()
         }
     }

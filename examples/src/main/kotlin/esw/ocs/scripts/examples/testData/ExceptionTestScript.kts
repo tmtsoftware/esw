@@ -1,21 +1,45 @@
 package esw.ocs.scripts.examples.testData
 
-import csw.params.commands.CommandResponse
 import esw.ocs.dsl.core.script
-
+import kotlinx.coroutines.delay
 
 script {
 
-    onException { exception ->
-        val successEvent = systemEvent("tcs", exception.message + "")
-        publishEvent(successEvent)
+    loadScripts(exceptionHandlerScript)
+
+    onSetup("successful-command") {
+        println("completed successfully")
     }
 
-    handleSetup("fail-setup") {
-        throw RuntimeException("setup-failed")
+    onSetup("long-running-setup") {
+        delay(50000)
     }
 
-    handleSetup("next-command") { command ->
+    onSetup("fail-setup") {
+        throw RuntimeException("handle-setup-failed")
     }
 
+    onObserve("fail-observe") {
+        throw RuntimeException("handle-observe-failed")
+    }
+
+    onGoOffline {
+        throw RuntimeException("handle-goOffline-failed")
+    }
+
+    onDiagnosticMode { _, _ ->
+        throw RuntimeException("handle-diagnostic-mode-failed")
+    }
+
+    onOperationsMode {
+        throw RuntimeException("handle-operations-mode-failed")
+    }
+
+    onStop {
+        throw RuntimeException("handle-stop-failed")
+    }
+
+    onAbortSequence {
+        throw RuntimeException("handle-abort-failed")
+    }
 }

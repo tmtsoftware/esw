@@ -8,12 +8,12 @@ import csw.event.api.javadsl.IEventSubscription
 import csw.params.core.generics.Parameter
 import csw.params.core.models.Prefix
 import csw.params.events.*
-import java.util.*
-import kotlin.time.Duration
-import kotlin.time.toJavaDuration
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.future.await
 import kotlinx.coroutines.future.future
+import java.util.*
+import kotlin.time.Duration
+import kotlin.time.toJavaDuration
 
 interface EventServiceDsl {
 
@@ -22,26 +22,29 @@ interface EventServiceDsl {
     val defaultPublisher: IEventPublisher
     val defaultSubscriber: IEventSubscriber
 
-    fun eventKey(prefix: String, eventName: String): EventKey = EventKey(Prefix(prefix), EventName(eventName))
+    fun EventKey(prefix: String, eventName: String): EventKey = EventKey(Prefix(prefix), EventName(eventName))
 
-    fun systemEvent(sourcePrefix: String, eventName: String, vararg parameters: Parameter<*>): SystemEvent =
-        SystemEvent(Prefix(sourcePrefix), EventName(eventName)).jMadd(parameters.toSet())
+    fun SystemEvent(sourcePrefix: String, eventName: String, vararg parameters: Parameter<*>): SystemEvent =
+            SystemEvent(Prefix(sourcePrefix), EventName(eventName)).jMadd(parameters.toSet())
 
-    fun observeEvent(sourcePrefix: String, eventName: String, vararg parameters: Parameter<*>): ObserveEvent =
-        ObserveEvent(Prefix(sourcePrefix), EventName(eventName)).jMadd(parameters.toSet())
+    fun ObserveEvent(sourcePrefix: String, eventName: String, vararg parameters: Parameter<*>): ObserveEvent =
+            ObserveEvent(Prefix(sourcePrefix), EventName(eventName)).jMadd(parameters.toSet())
 
     suspend fun publishEvent(event: Event): Done = defaultPublisher.publish(event).await()
 
-    fun publishEvent(every: Duration, eventGenerator: suspend () -> Event?): Cancellable =
-        defaultPublisher.publishAsync({
-            coroutineScope.future { Optional.ofNullable(eventGenerator()) }
-        }, every.toJavaDuration())
+    fun publishEvent(every: Duration, eventGenerator: suspend CoroutineScope.() -> Event?): Cancellable =
+            defaultPublisher.publishAsync({
+                coroutineScope.future { Optional.ofNullable(eventGenerator()) }
+            }, every.toJavaDuration())
 
-    fun onEvent(vararg eventKeys: String, callback: suspend (Event) -> Unit): IEventSubscription =
-        defaultSubscriber.subscribeAsync(eventKeys.toEventKeys()) { coroutineScope.future { callback(it) } }
+    suspend fun onEvent(vararg eventKeys: String, callback: suspend CoroutineScope.(Event) -> Unit): IEventSubscription {
+        val subscription = defaultSubscriber.subscribeAsync(eventKeys.toEventKeys()) { coroutineScope.future { callback(it) } }
+        subscription.ready().await()
+        return subscription
+    }
 
     suspend fun getEvent(vararg eventKeys: String): Set<Event> =
-        defaultSubscriber.get(eventKeys.toEventKeys()).await().toSet()
+            defaultSubscriber.get(eventKeys.toEventKeys()).await().toSet()
 
     private fun (Array<out String>).toEventKeys(): Set<EventKey> = map { EventKey.apply(it) }.toSet()
 

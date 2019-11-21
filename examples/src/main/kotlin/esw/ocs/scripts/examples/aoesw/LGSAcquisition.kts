@@ -24,13 +24,13 @@ script {
     val oiwfsExposureModeChoices = choicesOf("SINGLE", "CONTINUOUS", "STOP", "NOOP")
     val oiwfsExposureModeKey = choiceKey("mode", oiwfsExposureModeChoices)
 
-    val oiwfsStateEvent = eventKey(rtcAssembly.prefix, "oiwfsState")
+    val oiwfsStateEvent = EventKey(rtcAssembly.prefix, "oiwfsState")
     val oiwfsStateEnableChoices = choicesOf("NONE", "TT", "TTF")
     val oiwfsStateEnableKey = choiceKey("enable", oiwfsStateEnableChoices)
     val oiwfsStateFluxHighKey = booleanKey("fluxHigh")
     val oiwfsStateFluxLowKey = booleanKey("fluxlow")
 
-    val ttfOffsetEvent = eventKey(rtcAssembly.prefix, "telOffloadTt") // ??
+    val ttfOffsetEvent = EventKey(rtcAssembly.prefix, "telOffloadTt") // ??
     val ttfOffsetXKey = floatKey("x")
     val ttfOffsetYKey = floatKey("y")
 
@@ -54,7 +54,7 @@ script {
             )
     val tcsOffsetVTKey = choiceKey("virtualTelescope", tcsOffsetVirtualTelescopeChoices)
 
-    val loopeventKey = eventKey(rtcAssembly.prefix, "loop")
+    val loopeventKey = EventKey(rtcAssembly.prefix, "loop")
     val oiwfsLoopStatesChoices = choicesOf("IDLE", "LOST", "ACTIVE")
     val oiwfsLoopKey = choiceKey("oiwfsPoa", oiwfsLoopStatesChoices)
 
@@ -80,19 +80,20 @@ script {
         // not sure how this is done
     }
 
-    suspend fun offsetTcs(xoffset: Float, yoffset: Float, probeNum: Int, obsId: String?) =
-            submitSequence(
-                    "tcs", "darknight",
-                    sequenceOf(
-                            setup(aosq.prefix, "offset", obsId)
-                                    .add(tcsOffsetCoordSystemKey.set(Choice("RADEC")))
-                                    .add(tcsOffsetXKey.set(xoffset))
-                                    .add(tcsOffsetYKey.set(yoffset))
-                                    .add(tcsOffsetVTKey.set(Choice("OIWFS$probeNum")))
-                    )
-            )
+    suspend fun offsetTcs(xoffset: Float, yoffset: Float, probeNum: Int, obsId: String?) {
+        val tcsSequencer = Sequencer("tcs", "darknight")
+        tcsSequencer.submitAndWait(
+                sequenceOf(
+                        setup(aosq.prefix, "offset", obsId)
+                                .add(tcsOffsetCoordSystemKey.set(Choice("RADEC")))
+                                .add(tcsOffsetXKey.set(xoffset))
+                                .add(tcsOffsetYKey.set(yoffset))
+                                .add(tcsOffsetVTKey.set(Choice("OIWFS$probeNum")))
+                )
+        )
+    }
 
-    handleSetup("enableOiwfsTtf") { command ->
+    onSetup("enableOiwfsTtf") { command ->
         val ttfProbeNum = when (val event = getEvent(oiwfsStateEvent.key()).first()) {
             is SystemEvent -> event(oiwfsStateEnableKey).values.indexOf(Choice("TTF"))
             else -> -1
@@ -122,7 +123,8 @@ script {
         val startExposureCommand = setup(aosq.prefix, "exposure", command.obsId)
                 .add(oiwfsExposureModeKey.set(*probeExpModes))
 
-        val response = submitAndWaitCommandToAssembly(oiwfsDetectorAssembly.name, startExposureCommand)
+        val assembly = Assembly(oiwfsDetectorAssembly.name)
+        val response = assembly.submitAndWait(startExposureCommand)
 
         when (response) {
             is Completed -> {

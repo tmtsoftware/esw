@@ -2,47 +2,32 @@ package esw.gateway.server
 
 import akka.actor.CoordinatedShutdown.UnknownReason
 import akka.actor.testkit.typed.scaladsl.TestProbe
-import akka.actor.typed.{ActorSystem, SpawnProtocol}
 import akka.stream.scaladsl.Sink
 import com.typesafe.config.ConfigFactory
 import csw.event.client.EventServiceFactory
 import csw.location.client.scaladsl.HttpLocationServiceFactory
 import csw.location.models.ComponentId
 import csw.location.models.ComponentType.Assembly
-import csw.params.commands.CommandResponse.{Accepted, Completed}
+import csw.params.commands.CommandResponse.{Accepted, Completed, Started}
 import csw.params.commands.{CommandName, Setup}
 import csw.params.core.models.{ObsId, Prefix}
 import csw.params.core.states.{CurrentState, StateName}
 import csw.params.events.{Event, EventKey, EventName, SystemEvent}
 import csw.testkit.scaladsl.CSWService.EventServer
-import csw.testkit.scaladsl.ScalaTestFrameworkTestKit
 import esw.gateway.api.clients.CommandClient
 import esw.gateway.api.codecs.GatewayCodecs
 import esw.gateway.api.protocol.{PostRequest, WebsocketRequest}
-import esw.http.core.FutureEitherExt
+import esw.ocs.testkit.EswTestKit
 import msocket.api.Transport
 import msocket.impl.Encoding.JsonText
 import msocket.impl.post.HttpPostTransport
 import msocket.impl.ws.WebsocketTransport
-import org.scalatest.WordSpecLike
 
 import scala.concurrent.Future
-import scala.concurrent.duration.{DurationInt, FiniteDuration}
 
-class CommandGatewayTest
-    extends ScalaTestFrameworkTestKit(EventServer)
-    with WordSpecLike
-    with FutureEitherExt
-    with GatewayCodecs {
-
-  import frameworkTestKit._
-
-  private implicit val typedSystem: ActorSystem[SpawnProtocol.Command] = actorSystem
-  private val port: Int                                                = 6490
-  private val gatewayWiring: GatewayWiring                             = new GatewayWiring(Some(port))
-
-  implicit val timeout: FiniteDuration                 = 10.seconds
-  override implicit def patienceConfig: PatienceConfig = PatienceConfig(timeout)
+class CommandGatewayTest extends EswTestKit(EventServer) with GatewayCodecs {
+  private val port: Int                    = 6490
+  private val gatewayWiring: GatewayWiring = new GatewayWiring(Some(port))
 
   override def beforeAll(): Unit = {
     super.beforeAll()
@@ -50,7 +35,7 @@ class CommandGatewayTest
     frameworkTestKit.spawnStandalone(ConfigFactory.load("standalone.conf"))
   }
 
-  override protected def afterAll(): Unit = {
+  override def afterAll(): Unit = {
     gatewayWiring.httpService.shutdown(UnknownReason).futureValue
     super.afterAll()
   }
@@ -67,13 +52,14 @@ class CommandGatewayTest
       val eventService = new EventServiceFactory().make(HttpLocationServiceFactory.makeLocalClient)
       val eventKey     = EventKey(Prefix("tcs.filter.wheel"), EventName("setup-command-from-script"))
 
-      val componentName = "test"
-      val componentType = Assembly
-      val command       = Setup(Prefix("esw.test"), CommandName("c1"), Some(ObsId("obsId")))
-      val componentId   = ComponentId(componentName, componentType)
-      val stateNames    = Set(StateName("stateName1"), StateName("stateName2"))
-      val currentState1 = CurrentState(Prefix("esw.a.b"), StateName("stateName1"))
-      val currentState2 = CurrentState(Prefix("esw.a.b"), StateName("stateName2"))
+      val componentName      = "test"
+      val componentType      = Assembly
+      val command            = Setup(Prefix("esw.test"), CommandName("c1"), Some(ObsId("obsId")))
+      val longRunningCommand = Setup(Prefix("esw.test"), CommandName("long-running"), Some(ObsId("obsId")))
+      val componentId        = ComponentId(componentName, componentType)
+      val stateNames         = Set(StateName("stateName1"), StateName("stateName2"))
+      val currentState1      = CurrentState(Prefix("esw.a.b"), StateName("stateName1"))
+      val currentState2      = CurrentState(Prefix("esw.a.b"), StateName("stateName2"))
 
       val currentStatesF: Future[Seq[CurrentState]] =
         commandClient.subscribeCurrentState(componentId, stateNames, None).take(2).runWith(Sink.seq)
@@ -91,8 +77,8 @@ class CommandGatewayTest
       testProbe.expectMessageType[SystemEvent] // discard invalid event
 
       //submit the setup command
-      val submitResponse = commandClient.submit(componentId, command).rightValue
-      submitResponse shouldBe a[Completed]
+      val submitResponse = commandClient.submit(componentId, longRunningCommand).rightValue
+      submitResponse shouldBe a[Started]
 
       val actualSetupEvent: SystemEvent = testProbe.expectMessageType[SystemEvent]
 
@@ -132,5 +118,4 @@ class CommandGatewayTest
       currentStatesF.futureValue.toSet should ===(Set(currentState1, currentState2))
     }
   }
-
 }

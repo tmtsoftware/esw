@@ -65,7 +65,7 @@ lazy val `esw-ocs-impl` = project
 
 lazy val `esw-ocs-app` = project
   .in(file("esw-ocs/esw-ocs-app"))
-  .enablePlugins(EswBuildInfo, DeployApp, MaybeCoverage)
+  .enablePlugins(EswBuildInfo, DeployApp) // disable coverage for time-being
   .settings(
     libraryDependencies ++= Dependencies.OcsApp.value
   )
@@ -88,10 +88,11 @@ lazy val `esw-integration-test` = project
   .in(file("esw-integration-test"))
   .settings(libraryDependencies ++= Dependencies.IntegrationTest.value)
   .settings(fork in Test := true)
+  .enablePlugins(AutoMultiJvm)
   .dependsOn(
-    `esw-gateway-server` % "test->compile;test->test",
-    `esw-http-core`      % "test->compile;test->test",
-    `esw-ocs-impl`       % "test->compile;test->test",
+    `esw-gateway-server`,
+    `esw-http-core`,
+    `esw-ocs-impl`,
     examples,
     `esw-ocs-app`,
     `esw-test-reporter` % Test
@@ -150,17 +151,6 @@ lazy val `esw-test-reporter` = project
   .in(file("esw-test-reporter"))
   .settings(libraryDependencies += Libs.scalatest)
 
-lazy val `esw-sm` = project
-  .in(file("esw-sm"))
-  .settings(
-    libraryDependencies ++= Dependencies.EswSM.value
-  )
-  .dependsOn(
-    `esw-ocs-api`.jvm,
-    `esw-ocs-dsl`,
-    `esw-http-core`,
-    `esw-ocs-impl`
-  )
 /* ================= Paradox Docs ============== */
 lazy val docs = project.enablePlugins(NoPublish, ParadoxMaterialSitePlugin)
 

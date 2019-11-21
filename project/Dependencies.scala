@@ -6,6 +6,7 @@ object Dependencies {
     Seq(
       Csw.`csw-params`.value,
       Csw.`csw-location-models`.value,
+      Csw.`csw-database`,
       Libs.`scala-java8-compat`,
       Libs.`msocket-api`.value,
       Libs.scalatest       % Test,
@@ -30,7 +31,6 @@ object Dependencies {
   val OcsApp: Def.Initialize[Seq[ModuleID]] = Def.setting(
     Seq(
       Libs.`msocket-impl-jvm`,
-      AkkaHttp.`akka-http-cors`,
       Libs.scalatest                  % Test,
       Libs.`mockito-scala`            % Test,
       Akka.`akka-actor-testkit-typed` % Test
@@ -46,6 +46,7 @@ object Dependencies {
       Csw.`csw-alarm-client`,
       Akka.`akka-actor-typed`,
       Csw.`csw-command-client`,
+      AkkaHttp.`akka-http-cors`,
       Csw.`csw-event-client`,
       Csw.`csw-params`.value,
       Csw.`csw-config-client`,
@@ -63,11 +64,15 @@ object Dependencies {
 
   val IntegrationTest = Def.setting(
     Seq(
-      Libs.`scala-java8-compat` % Test,
-      Csw.`csw-testkit`         % Test,
-      Csw.`csw-admin-server`    % Test,
-      Csw.`csw-logging-models`  % Test,
-      Libs.scalatest            % Test
+      Akka.`akka-actor-testkit-typed`     % Test,
+      Libs.`scala-java8-compat`           % Test,
+      Csw.`csw-testkit`                   % Test,
+      Csw.`csw-admin-server`              % Test,
+      Csw.`csw-logging-models`            % Test,
+      Libs.scalatest                      % Test,
+      Csw.`csw-location-server-tests`     % Test,
+      Csw.`csw-location-server-multi-jvm` % Test,
+      Akka.`akka-multi-node-testkit`      % Test
     )
   )
 
@@ -89,8 +94,8 @@ object Dependencies {
     Seq(
       Kotlin.`stdlib-jdk8`,
       Kotlin.`coroutines-jdk8`,
-      Kotlin.mockk % Test,
-      Kotlin.kotlintest % Test,
+      Kotlin.mockk             % Test,
+      Kotlin.kotlintest        % Test,
       Libs.`jupiter-interface` % Test
     )
   )

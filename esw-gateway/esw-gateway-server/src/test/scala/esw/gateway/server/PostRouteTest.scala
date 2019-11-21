@@ -1,7 +1,6 @@
 package esw.gateway.server
 
 import akka.Done
-import akka.actor.typed.{ActorSystem, SpawnProtocol}
 import akka.http.scaladsl.model.StatusCodes
 import akka.http.scaladsl.testkit.ScalatestRouteTest
 import akka.util.Timeout
@@ -24,9 +23,9 @@ import esw.gateway.api.{AlarmApi, CommandApi, EventApi, LoggingApi}
 import esw.gateway.impl._
 import esw.gateway.server.handlers.PostHandlerImpl
 import esw.http.core.BaseTestSuite
-import msocket.impl.Encoding
 import msocket.impl.Encoding.JsonText
-import msocket.impl.post.ClientHttpCodecs
+import msocket.impl.post.{ClientHttpCodecs, PostRouteFactory}
+import msocket.impl.{Encoding, RouteFactory}
 import org.mockito.ArgumentMatchers.{any, eq => argsEq}
 import org.mockito.Mockito.when
 import org.mockito.MockitoSugar._
@@ -38,14 +37,7 @@ class PostRouteTest extends BaseTestSuite with ScalatestRouteTest with GatewayCo
 
   override def encoding: Encoding[_] = JsonText
 
-  val actorSystem: ActorSystem[SpawnProtocol.Command] = ActorSystem(SpawnProtocol(), "test-system")
-
-  protected override def afterAll(): Unit = {
-    super.afterAll()
-    actorSystem.terminate()
-  }
-
-  private val cswCtxMocks = new CswWiringMocks(actorSystem)
+  private val cswCtxMocks = new CswWiringMocks()
   import cswCtxMocks._
 
   implicit val timeout: Timeout = Timeout(5.seconds)
@@ -55,7 +47,7 @@ class PostRouteTest extends BaseTestSuite with ScalatestRouteTest with GatewayCo
   private val commandApi: CommandApi = new CommandImpl(commandServiceFactory)
   private val loggingApi: LoggingApi = new LoggingImpl(loggerCache)
   private val postHandlerImpl        = new PostHandlerImpl(alarmApi, commandApi, eventApi, loggingApi)
-  private val route                  = new Routes(postHandlerImpl, null, logger).route
+  private val route                  = RouteFactory.combine(new PostRouteFactory("post-endpoint", postHandlerImpl))
 
   "Submit Command" must {
     "handle submit command and return started command response | ESW-91, ESW-216" in {
@@ -200,7 +192,7 @@ class PostRouteTest extends BaseTestSuite with ScalatestRouteTest with GatewayCo
   }
 
   "Set Alarm Severity" must {
-    "returns Done on success | ESW-193, ESW-216" in {
+    "returns Done on success | ESW-193, ESW-216, ESW-233" in {
       val componentName    = "testComponent"
       val alarmName        = "testAlarmName"
       val subsystemName    = Subsystem.IRIS
@@ -215,7 +207,7 @@ class PostRouteTest extends BaseTestSuite with ScalatestRouteTest with GatewayCo
       }
     }
 
-    "returns SetAlarmSeverityFailure on key not found or invalid key | ESW-193, ESW-216" in {
+    "returns SetAlarmSeverityFailure on key not found or invalid key | ESW-193, ESW-216, ESW-233" in {
       val componentName    = "testComponent"
       val alarmName        = "testAlarmName"
       val subsystemName    = Subsystem.IRIS

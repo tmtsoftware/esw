@@ -4,17 +4,15 @@ import esw.ocs.dsl.core.reusableScript
 
 // ESW-134: Reuse code by ability to import logic from one script into another
 val OperationsAndDiagModeHandlers = reusableScript {
-    handleDiagnosticMode { startTime, hint ->
+    onDiagnosticMode { startTime, hint ->
         // do some actions to go to diagnostic mode based on hint
-        diagnosticModeForSequencer(
-            "testSequencerId6", "testObservingMode6",
-            startTime,
-            hint
-        )
+        val tcsSequencer = Sequencer("tcs", "moonnight")
+        tcsSequencer.diagnosticMode(startTime, hint)
     }
 
-    handleOperationsMode {
+    onOperationsMode {
         // do some actions to go to operations mode
-        operationsModeForSequencer("testSequencerId6", "testObservingMode6")
+        val tcsSequencer = Sequencer("tcs", "moonnight")
+        tcsSequencer.operationsMode()
     }
 }

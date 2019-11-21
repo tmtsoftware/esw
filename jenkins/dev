@@ -20,7 +20,7 @@ pipeline {
             steps {
                 sh "sbt scalafmtCheck"
                 sh "sbt clean makeSite"
-                sh "sbt ';set every Seq(enableFatalWarnings := true, scalafmtOnCompile := false); compile'"
+                sh "sbt ';set every Seq(enableFatalWarnings := true, scalafmtOnCompile := false); test:compile; multi-jvm:compile;'"
             }
         }
 
@@ -51,6 +51,12 @@ pipeline {
                             reportName           : "Test story mapping"
                     ])
                 }
+            }
+        }
+
+        stage('Multi-Jvm Test') {
+            steps {
+                sh "sbt esw-integration-test/multi-jvm:test"
             }
         }
     }

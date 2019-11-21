@@ -3,20 +3,18 @@ package esw.ocs.script
 import java.nio.file.Path
 
 import akka.actor.testkit.typed.scaladsl.TestProbe
+import akka.actor.typed.ActorRef
 import akka.actor.typed.scaladsl.AskPattern._
-import akka.actor.typed.{ActorRef, ActorSystem, SpawnProtocol}
-import akka.util.Timeout
 import com.typesafe.config.ConfigFactory
 import csw.alarm.client.AlarmServiceFactory
 import csw.alarm.models.AlarmSeverity
 import csw.alarm.models.Key.AlarmKey
-import csw.command.client.messages.sequencer.{SequencerMsg, SubmitSequenceAndWait}
+import csw.command.client.messages.sequencer.SequencerMsg
+import csw.command.client.messages.sequencer.SequencerMsg.SubmitSequenceAndWait
 import csw.config.api.scaladsl.ConfigService
 import csw.config.api.{ConfigData, TokenFactory}
 import csw.config.client.scaladsl.ConfigClientFactory
 import csw.event.client.EventServiceFactory
-import csw.location.api.extensions.URIExtension.RichURI
-import csw.location.api.scaladsl.LocationService
 import csw.location.client.scaladsl.HttpLocationServiceFactory
 import csw.params.commands.CommandResponse.{Completed, Error, SubmitResponse}
 import csw.params.commands.{CommandName, Sequence, Setup}
@@ -27,28 +25,16 @@ import csw.params.core.models.{Id, Prefix}
 import csw.params.events.{Event, EventKey, EventName, SystemEvent}
 import csw.testkit.ConfigTestKit
 import csw.testkit.scaladsl.CSWService.{AlarmServer, ConfigServer, EventServer}
-import csw.testkit.scaladsl.ScalaTestFrameworkTestKit
 import csw.time.core.models.UTCTime
-import esw.ocs.api.BaseTestSuite
 import esw.ocs.api.models.StepStatus.Finished.Success
 import esw.ocs.api.models.{Step, StepList}
 import esw.ocs.api.protocol._
-import esw.ocs.app.wiring.SequencerWiring
-import esw.ocs.impl.internal.Timeouts
 import esw.ocs.impl.messages.SequencerMessages._
+import esw.ocs.testkit.EswTestKit
 
 import scala.concurrent.Future
-import scala.concurrent.duration.DurationDouble
 
-class ScriptIntegrationTest extends ScalaTestFrameworkTestKit(EventServer, AlarmServer, ConfigServer) with BaseTestSuite {
-
-  import frameworkTestKit.mat
-
-  implicit val actorSystem: ActorSystem[SpawnProtocol.Command] = frameworkTestKit.actorSystem
-
-  private implicit val askTimeout: Timeout = Timeouts.DefaultTimeout
-
-  override implicit def patienceConfig: PatienceConfig = PatienceConfig(10.seconds)
+class ScriptIntegrationTest extends EswTestKit(EventServer, AlarmServer, ConfigServer) {
 
   // TestScript.kt
   private val ocsPackageId     = "esw"
@@ -57,16 +43,12 @@ class ScriptIntegrationTest extends ScalaTestFrameworkTestKit(EventServer, Alarm
   private val tcsObservingMode = "darknight"
 
   // TestScript4.kts
-  private val irmsPackageId                         = "irms"
-  private val irmsObservingMode                     = "darknight"
+  private val lgsfPackageId                         = "lgsf"
+  private val lgsfObservingMode                     = "darknight"
   private val configTestKit: ConfigTestKit          = frameworkTestKit.configTestKit
-  private var locationService: LocationService      = _
-  private var ocsWiring: SequencerWiring            = _
   private var ocsSequencer: ActorRef[SequencerMsg]  = _
-  private var tcsWiring: SequencerWiring            = _
   private var tcsSequencer: ActorRef[SequencerMsg]  = _
-  private var irmsWiring: SequencerWiring           = _
-  private var irmsSequencer: ActorRef[SequencerMsg] = _
+  private var lgsfSequencer: ActorRef[SequencerMsg] = _
 
   override def beforeAll(): Unit = {
     super.beforeAll()
@@ -74,31 +56,17 @@ class ScriptIntegrationTest extends ScalaTestFrameworkTestKit(EventServer, Alarm
   }
 
   override def beforeEach(): Unit = {
-    locationService = HttpLocationServiceFactory.makeLocalClient
-    tcsWiring = new SequencerWiring(tcsPackageId, tcsObservingMode, None)
-    tcsWiring.sequencerServer.start()
-    tcsSequencer = tcsWiring.sequencerRef
-
-    //start IRMS sequencer as OCS send commands to IRMS downstream sequencer
-    irmsWiring = new SequencerWiring(irmsPackageId, irmsObservingMode, None)
-    irmsWiring.sequencerServer.start()
-    irmsSequencer = irmsWiring.sequencerRef
-
-    ocsWiring = new SequencerWiring(ocsPackageId, ocsObservingMode, None)
-    ocsSequencer = ocsWiring.sequencerServer.start().rightValue.uri.toActorRef.unsafeUpcast[SequencerMsg]
+    tcsSequencer = spawnSequencerRef(tcsPackageId, tcsObservingMode)
+    lgsfSequencer = spawnSequencerRef(lgsfPackageId, lgsfObservingMode) //start LGSF sequencer as OCS send commands to LGSF downstream sequencer
+    ocsSequencer = spawnSequencerRef(ocsPackageId, ocsObservingMode)
   }
 
-  override def afterEach(): Unit = {
-    ocsWiring.sequencerServer.shutDown().futureValue
-    irmsWiring.sequencerServer.shutDown().futureValue
-    tcsWiring.sequencerServer.shutDown().futureValue
-  }
+  override def afterEach(): Unit = shutdownAllSequencers()
 
   private def withIds(stepListMaybe: Future[Option[StepList]], ids: Id*): Future[Option[StepList]] = {
-    import actorSystem.executionContext
     stepListMaybe.map {
       _.map { x =>
-        StepList(x.runId, x.steps.zip(ids).map {
+        StepList(x.steps.zip(ids).map {
           case (step, id) => step.withId(id)
         })
       }
@@ -109,35 +77,34 @@ class ScriptIntegrationTest extends ScalaTestFrameworkTestKit(EventServer, Alarm
     "be able to send sequence to other Sequencer by resolving location through TestScript | ESW-88, ESW-145, ESW-190, ESW-195, ESW-119" in {
       val command             = Setup(Prefix("TCS.test"), CommandName("command-4"), None)
       val submitResponseProbe = TestProbe[SubmitResponse]
-      val sequenceId          = Id()
-      val sequence            = Sequence(sequenceId, Seq(command))
+      val sequence            = Sequence(Seq(command))
 
       val initialStepList: Future[Option[StepList]] = tcsSequencer ? GetSequence
       initialStepList.futureValue shouldBe None
 
       ocsSequencer ! SubmitSequenceAndWait(sequence, submitResponseProbe.ref)
 
-      val commandId = Id("testCommandIdString123")
       // This has to match with sequence created in TestScript -> handleSetupCommand("command-4")
       val assertableCommand =
-        Setup(commandId, Prefix("TCS.test"), CommandName("command-3"), None, Set.empty)
+        Setup(Prefix("TCS.test"), CommandName("command-3"), None, Set.empty)
       val step             = Step(assertableCommand).copy(status = Success)
       val steps            = List(step)
-      val expectedStepList = StepList(Id("testSequenceIdString123"), steps)
+      val expectedStepList = StepList(steps)
       Thread.sleep(1000)
 
       val actualStepList: Future[Option[StepList]] = tcsSequencer ? GetSequence
+      // fixme: instead of SubmitSequenceAndWait, Submit and QueryFinal can be done to avoid asserting on `any`
+      // fixme: why admin api is not used to send messages to sequencer
       // response received by irisSequencer
-      submitResponseProbe.expectMessage(Completed(sequenceId))
+      submitResponseProbe.expectMessageType[Completed]
       withIds(actualStepList, step.id).futureValue.get should ===(expectedStepList)
     }
 
     "be able to forward diagnostic mode to downstream components | ESW-118" in {
-      val eventService = new EventServiceFactory().make(HttpLocationServiceFactory.makeLocalClient)
-      val eventKey     = EventKey(Prefix("tcs.filter.wheel"), EventName("diagnostic-data"))
+      val eventKey = EventKey(Prefix("tcs.filter.wheel"), EventName("diagnostic-data"))
 
       val testProbe    = TestProbe[Event]
-      val subscription = eventService.defaultSubscriber.subscribeActorRef(Set(eventKey), testProbe.ref)
+      val subscription = eventSubscriber.subscribeActorRef(Set(eventKey), testProbe.ref)
       subscription.ready().futureValue
       testProbe.expectMessageType[SystemEvent] // discard invalid event
 
@@ -161,16 +128,15 @@ class ScriptIntegrationTest extends ScalaTestFrameworkTestKit(EventServer, Alarm
     }
 
     "be able to forward GoOnline/GoOffline message to downstream components | ESW-236" in {
-      val eventService = new EventServiceFactory().make(HttpLocationServiceFactory.makeLocalClient)
-      val onlineKey    = EventKey(Prefix("tcs.filter.wheel"), EventName("online"))
-      val offlineKey   = EventKey(Prefix("tcs.filter.wheel"), EventName("offline"))
+      val onlineKey  = EventKey(Prefix("tcs.filter.wheel"), EventName("online"))
+      val offlineKey = EventKey(Prefix("tcs.filter.wheel"), EventName("offline"))
 
       val testProbe          = TestProbe[Event]
-      val onlineSubscription = eventService.defaultSubscriber.subscribeActorRef(Set(onlineKey), testProbe.ref)
+      val onlineSubscription = eventSubscriber.subscribeActorRef(Set(onlineKey), testProbe.ref)
       onlineSubscription.ready().futureValue
       testProbe.expectMessageType[SystemEvent] // discard invalid event
 
-      val offlineSubscription = eventService.defaultSubscriber.subscribeActorRef(Set(offlineKey), testProbe.ref)
+      val offlineSubscription = eventSubscriber.subscribeActorRef(Set(offlineKey), testProbe.ref)
       offlineSubscription.ready().futureValue
       testProbe.expectMessageType[SystemEvent] // discard invalid event
 
@@ -200,7 +166,7 @@ class ScriptIntegrationTest extends ScalaTestFrameworkTestKit(EventServer, Alarm
 
       val sequenceRes: Future[SubmitResponse] = ocsSequencer ? (SubmitSequenceAndWait(sequence, _))
 
-      sequenceRes.futureValue should ===(Completed(sequence.runId))
+      sequenceRes.futureValue shouldBe a[Completed]
       alarmAdminService.getCurrentSeverity(alarmKey).futureValue should ===(AlarmSeverity.Major)
     }
 
@@ -210,33 +176,50 @@ class ScriptIntegrationTest extends ScalaTestFrameworkTestKit(EventServer, Alarm
       publishF.futureValue
 
       val command  = Setup(Prefix("TCS"), CommandName("get-event"), None)
-      val id       = Id()
-      val sequence = Sequence(id, Seq(command))
+      val sequence = Sequence(Seq(command))
 
       val submitResponse: Future[SubmitResponse] = ocsSequencer ? (SubmitSequenceAndWait(sequence, _))
-      submitResponse.futureValue should ===(Completed(id))
+      submitResponse.futureValue shouldBe a[Completed]
 
       val successKey        = EventKey("TCS.get.success")
-      val getPublishedEvent = eventService.defaultSubscriber.get(successKey).futureValue
+      val getPublishedEvent = eventSubscriber.get(successKey).futureValue
+
+      getPublishedEvent.isInvalid should ===(false)
+    }
+
+    "be able to subscribe a event key | ESW-120" in {
+      val eventService = new EventServiceFactory().make(HttpLocationServiceFactory.makeLocalClient)
+
+      val command  = Setup(Prefix("TCS"), CommandName("on-event"), None)
+      val sequence = Sequence(Seq(command))
+
+      val submitResponse: Future[SubmitResponse] = ocsSequencer ? (SubmitSequenceAndWait(sequence, _))
+      submitResponse.futureValue shouldBe a[Completed]
+
+      val publishF = eventService.defaultPublisher.publish(SystemEvent(Prefix("TCS"), EventName("get.event")))
+      publishF.futureValue
+
+      Thread.sleep(1000)
+
+      val successKey        = EventKey("TCS.onEvent.success")
+      val getPublishedEvent = eventSubscriber.get(successKey).futureValue
 
       getPublishedEvent.isInvalid should ===(false)
     }
 
     "be able to send abortSequence to downstream sequencers and call abortHandler | ESW-137, ESW-155" in {
-      val eventService = new EventServiceFactory().make(HttpLocationServiceFactory.makeLocalClient)
       val eventKey     = EventKey(Prefix("tcs"), EventName("abort.success"))
-
       val testProbe    = TestProbe[Event]
-      val subscription = eventService.defaultSubscriber.subscribeActorRef(Set(eventKey), testProbe.ref)
+      val subscription = eventSubscriber.subscribeActorRef(Set(eventKey), testProbe.ref)
       subscription.ready().futureValue
       testProbe.expectMessageType[SystemEvent] // discard invalid event
 
       // Submit sequence to OCS as AbortSequence is accepted only in InProgress State
-      val command1            = Setup(Prefix("IRMS.test"), CommandName("command-irms"), None)
+      val command1            = Setup(Prefix("LGSF.test"), CommandName("command-lgsf"), None)
       val command2            = Setup(Prefix("IRIS.test"), CommandName("command-1"), None)
       val command3            = Setup(Prefix("TCS.test"), CommandName("command-2"), None)
       val submitResponseProbe = TestProbe[SubmitResponse]
-      val sequence            = Sequence(Id(), Seq(command1, command2, command3))
+      val sequence            = Sequence(Seq(command1, command2, command3))
 
       ocsSequencer ! SubmitSequenceAndWait(sequence, submitResponseProbe.ref)
 
@@ -244,38 +227,38 @@ class ScriptIntegrationTest extends ScalaTestFrameworkTestKit(EventServer, Alarm
       maybeOcsStepListF.futureValue.get.isInFlight shouldBe true
 
       eventually {
-        val maybeIrmsStepListF: Future[Option[StepList]] = irmsSequencer ? GetSequence
-        maybeIrmsStepListF.futureValue.get.isInFlight shouldBe true
+        val maybeLgsfStepListF: Future[Option[StepList]] = lgsfSequencer ? GetSequence
+        maybeLgsfStepListF.futureValue.get.isInFlight shouldBe true
       }
 
       val abortSequenceResponseF: Future[OkOrUnhandledResponse] = ocsSequencer ? AbortSequence
       abortSequenceResponseF.futureValue should ===(Ok)
 
-      //Expect Pending steps in OCS sequence are aborted
+      // Expect Pending steps in OCS sequence are aborted
       eventually {
         val maybeStepListF: Future[Option[StepList]] = ocsSequencer ? GetSequence
         maybeStepListF.futureValue.get.nextPending shouldBe None
+        // handleAbortSequence from ocs script sends abort sequence message to downstream lgsf sequencer
+        // lgsf sequencer publish abort event on invocation of handle abort hook which is verified here
         val event = testProbe.receiveMessage()
         event.eventId shouldNot be(-1)
       }
     }
 
     "be able to send stop to downstream sequencers and call stopHandler | ESW-138, ESW-156" in {
-      val eventService = new EventServiceFactory().make(HttpLocationServiceFactory.makeLocalClient)
-      val eventKey     = EventKey(Prefix("tcs"), EventName("stop.success"))
+      val eventKey = EventKey(Prefix("tcs"), EventName("stop.success"))
 
       val testProbe    = TestProbe[Event]
-      val subscription = eventService.defaultSubscriber.subscribeActorRef(Set(eventKey), testProbe.ref)
+      val subscription = eventSubscriber.subscribeActorRef(Set(eventKey), testProbe.ref)
       subscription.ready().futureValue
       testProbe.expectMessageType[SystemEvent] // discard invalid event
 
       // Submit sequence to OCS as Stop is accepted only in InProgress State
-      val command1            = Setup(Prefix("IRMS.test"), CommandName("command-irms"), None)
+      val command1            = Setup(Prefix("LGSF.test"), CommandName("command-lgsf"), None)
       val command2            = Setup(Prefix("IRIS.test"), CommandName("command-1"), None)
       val command3            = Setup(Prefix("TCS.test"), CommandName("command-2"), None)
       val submitResponseProbe = TestProbe[SubmitResponse]
-      val sequenceId          = Id()
-      val sequence            = Sequence(sequenceId, Seq(command1, command2, command3))
+      val sequence            = Sequence(Seq(command1, command2, command3))
 
       ocsSequencer ! SubmitSequenceAndWait(sequence, submitResponseProbe.ref)
 
@@ -283,44 +266,42 @@ class ScriptIntegrationTest extends ScalaTestFrameworkTestKit(EventServer, Alarm
       maybeOcsStepListF.futureValue.get.isInFlight shouldBe true
 
       eventually {
-        val maybeIrmsStepListF: Future[Option[StepList]] = irmsSequencer ? GetSequence
-        maybeIrmsStepListF.futureValue.get.isInFlight shouldBe true
+        val maybeLgsfStepListF: Future[Option[StepList]] = lgsfSequencer ? GetSequence
+        maybeLgsfStepListF.futureValue.get.isInFlight shouldBe true
       }
 
       val stopResponseF: Future[OkOrUnhandledResponse] = ocsSequencer ? Stop
       stopResponseF.futureValue should ===(Ok)
 
       eventually {
+        // handleStop from ocs script sends stop message to downstream lgsf sequencer
+        // lgsf sequencer publish stop event on invocation of handle stop hook which is verified here
         val event = testProbe.receiveMessage()
         event.eventId shouldNot be(-1)
       }
     }
 
     "be able to send commands to downstream assembly | ESW-121" in {
-      val eventService = new EventServiceFactory().make(HttpLocationServiceFactory.makeLocalClient)
-      val eventKey     = EventKey(Prefix("tcs.filter.wheel"), EventName("setup-command-from-script"))
+      val eventKey = EventKey(Prefix("tcs.filter.wheel"), EventName("setup-command-from-script"))
 
-      val command    = Setup(Prefix("IRIS.test"), CommandName("command-for-assembly"), None)
-      val sequenceId = Id()
-      val sequence   = Sequence(sequenceId, Seq(command))
+      val command  = Setup(Prefix("IRIS.test"), CommandName("command-for-assembly"), None)
+      val sequence = Sequence(Seq(command))
 
       val testProbe    = TestProbe[Event]
-      val subscription = eventService.defaultSubscriber.subscribeActorRef(Set(eventKey), testProbe.ref)
+      val subscription = eventSubscriber.subscribeActorRef(Set(eventKey), testProbe.ref)
       subscription.ready().futureValue
       testProbe.expectMessageType[SystemEvent] // discard invalid event
 
       val submitSequenceResponseF: Future[SubmitResponse] = ocsSequencer ? (SubmitSequenceAndWait(sequence, _))
-      submitSequenceResponseF.futureValue should ===(Completed(sequenceId))
+      submitSequenceResponseF.futureValue shouldBe a[Completed]
 
       val actualSetupEvent: SystemEvent = testProbe.expectMessageType[SystemEvent]
       actualSetupEvent.eventKey should ===(eventKey)
     }
 
-    "be able to check existence of a config file | ESW-123" in {
+    "be able to check existence of a config file and fetch config | ESW-123" in {
       val factory = mock[TokenFactory]
       when(factory.getToken).thenReturn("valid")
-
-      val eventService = new EventServiceFactory().make(HttpLocationServiceFactory.makeLocalClient)
 
       val adminApi: ConfigService = ConfigClientFactory.adminApi(configTestKit.actorSystem, locationService, factory)
       configTestKit.initSvnRepo()
@@ -331,56 +312,30 @@ class ScriptIntegrationTest extends ScalaTestFrameworkTestKit(EventServer, Alarm
           |""".stripMargin
       adminApi.create(file, ConfigData.fromString(configValue1), annex = false, "First commit").futureValue
 
-      val command  = Setup(Prefix("WFOS"), CommandName("check-config"), None)
-      val id       = Id()
-      val sequence = Sequence(id, Seq(command))
+      val existConfigCommand = Setup(Prefix("WFOS"), CommandName("check-config"), None)
+      val getConfigCommand   = Setup(Prefix("WFOS"), CommandName("get-config-data"), None)
+      val sequence           = Sequence(Seq(existConfigCommand, getConfigCommand))
 
       val submitResponse: Future[SubmitResponse] = ocsSequencer ? (SubmitSequenceAndWait(sequence, _))
-      submitResponse.futureValue should ===(Completed(id))
+      submitResponse.futureValue shouldBe a[Completed]
 
-      val successKey        = EventKey(Prefix("WFOS"), EventName("config.success"))
-      val getPublishedEvent = eventService.defaultSubscriber.get(successKey).futureValue
+      // verify existConfig api
+      val existConfigKey   = EventKey(Prefix("WFOS"), EventName("check-config.success"))
+      val existConfigEvent = eventSubscriber.get(existConfigKey).futureValue
+      existConfigEvent.eventKey should ===(existConfigKey)
 
-      getPublishedEvent.eventKey should ===(successKey)
+      // verify getConfig api
+      val getConfigKey   = EventKey(Prefix("WFOS"), EventName("get-config.success"))
+      val getConfigEvent = eventSubscriber.get(getConfigKey).futureValue
+      getConfigEvent.eventKey should ===(getConfigKey)
+
       configTestKit.deleteServerFiles()
-
-    }
-
-    "be able to retrieve ConfigData stored in a config file | ESW-123" in {
-      val factory = mock[TokenFactory]
-      when(factory.getToken).thenReturn("valid")
-
-      val eventService = new EventServiceFactory().make(HttpLocationServiceFactory.makeLocalClient)
-
-      val adminApi: ConfigService = ConfigClientFactory.adminApi(configTestKit.actorSystem, locationService, factory)
-      configTestKit.initSvnRepo()
-      val file = Path.of("/tmt/test/wfos.conf")
-      val configValue1: String =
-        """
-          |component = wfos
-          |""".stripMargin
-      adminApi.create(file, ConfigData.fromString(configValue1), annex = false, "First commit").futureValue
-
-      val command  = Setup(Prefix("WFOS"), CommandName("get-config-data"), None)
-      val id       = Id()
-      val sequence = Sequence(id, Seq(command))
-
-      val submitResponse: Future[SubmitResponse] = ocsSequencer ? (SubmitSequenceAndWait(sequence, _))
-      submitResponse.futureValue should ===(Completed(id))
-
-      val successKey        = EventKey(Prefix("WFOS"), EventName("config.success"))
-      val getPublishedEvent = eventService.defaultSubscriber.get(successKey).futureValue
-
-      getPublishedEvent.eventKey should ===(successKey)
-      configTestKit.deleteServerFiles()
-
     }
 
     "be able to handle unexpected exception and finish the sequence | ESW-241" in {
       val command1 = Setup(Prefix("TCS"), CommandName("check-exception-1"), None)
       val command2 = Setup(Prefix("TCS"), CommandName("check-exception-2"), None)
-      val id       = Id()
-      val sequence = Sequence(id, Seq(command1, command2))
+      val sequence = Sequence(Seq(command1, command2))
 
       val submitResponseF: Future[SubmitResponse] = ocsSequencer ? (SubmitSequenceAndWait(sequence, _))
 

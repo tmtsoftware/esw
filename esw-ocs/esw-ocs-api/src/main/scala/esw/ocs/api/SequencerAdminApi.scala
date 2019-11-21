@@ -2,11 +2,11 @@ package esw.ocs.api
 
 import akka.NotUsed
 import akka.stream.scaladsl.Source
-import csw.params.commands.{Sequence, SequenceCommand}
+import csw.params.commands.SequenceCommand
 import csw.params.core.models.Id
-import csw.time.core.models.UTCTime
 import esw.ocs.api.models.{SequencerInsight, StepList}
 import esw.ocs.api.protocol._
+import msocket.api.models.Subscription
 
 import scala.concurrent.Future
 
@@ -26,15 +26,5 @@ trait SequencerAdminApi {
   def reset(): Future[OkOrUnhandledResponse]
   def abortSequence(): Future[OkOrUnhandledResponse]
   def stop(): Future[OkOrUnhandledResponse]
-  def goOnline(): Future[GoOnlineResponse]
-  def goOffline(): Future[GoOfflineResponse]
-  def diagnosticMode(startTime: UTCTime, hint: String): Future[DiagnosticModeResponse]
-  def operationsMode(): Future[OperationsModeResponse]
-
-  def loadSequence(sequence: Sequence): Future[OkOrUnhandledResponse]
-  def startSequence: Future[OkOrUnhandledResponse]
-  def submitSequence(sequence: Sequence): Future[OkOrUnhandledResponse]
-
-  def queryFinal: Future[SequenceResponse]
-  def getInsights: Source[SequencerInsight, NotUsed]
+  def getInsights: Source[SequencerInsight, Subscription]
 }

@@ -44,7 +44,7 @@ fun intKey(name: String): Key<Int> = IntKey().make(name)
 fun floatKey(name: String): Key<Float> = FloatKey().make(name)
 fun doubleKey(name: String): Key<Double> = DoubleKey().make(name)
 
-/** =============  Array Keys =========== **/
+/** ============= Array Keys =========== **/
 fun byteArrayKey(name: String): Key<ArrayData<Byte>> = ByteArrayKey().make(name)
 
 fun shortArrayKey(name: String): Key<ArrayData<Short>> = ShortArrayKey().make(name)
@@ -53,7 +53,7 @@ fun intArrayKey(name: String): Key<ArrayData<Int>> = IntArrayKey().make(name)
 fun floatArrayKey(name: String): Key<ArrayData<Float>> = FloatArrayKey().make(name)
 fun doubleArrayKey(name: String): Key<ArrayData<Double>> = DoubleArrayKey().make(name)
 
-/** =============  Matrix Keys =========== **/
+/** ============= Matrix Keys =========== **/
 fun byteMatrixKey(name: String): Key<MatrixData<Byte>> = ByteMatrixKey().make(name)
 
 fun shortMatrixKey(name: String): Key<MatrixData<Short>> = ShortMatrixKey().make(name)
@@ -62,7 +62,7 @@ fun intMatrixKey(name: String): Key<MatrixData<Int>> = IntMatrixKey().make(name)
 fun floatMatrixKey(name: String): Key<MatrixData<Float>> = FloatMatrixKey().make(name)
 fun doubleMatrixKey(name: String): Key<MatrixData<Double>> = DoubleMatrixKey().make(name)
 
-/** =============  Helpers =========== **/
+/** ============= Helpers =========== **/
 fun <T> arrayData(elms: Array<T>): ArrayData<T> = ArrayData.fromJavaArray(elms)
 
 inline fun <reified T> matrixData(elms: Array<Array<T>>): MatrixData<T> = MatrixData.fromJavaArrays(T::class.java, elms)

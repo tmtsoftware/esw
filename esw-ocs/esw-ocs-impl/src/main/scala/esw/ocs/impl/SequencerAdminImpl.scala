@@ -3,22 +3,23 @@ package esw.ocs.impl
 import akka.NotUsed
 import akka.actor.typed.scaladsl.AskPattern._
 import akka.actor.typed.{ActorRef, ActorSystem}
-import akka.stream.scaladsl.Source
+import akka.stream.KillSwitches
+import akka.stream.scaladsl.{Keep, Source}
 import akka.util.Timeout
 import csw.command.client.messages.sequencer.SequencerMsg
-import csw.params.commands.{Sequence, SequenceCommand}
+import csw.params.commands.SequenceCommand
 import csw.params.core.models.Id
-import csw.time.core.models.UTCTime
 import esw.ocs.api.SequencerAdminApi
 import esw.ocs.api.models.{SequencerInsight, StepList}
 import esw.ocs.api.protocol._
 import esw.ocs.impl.messages.SequencerMessages._
 import esw.ocs.impl.messages.SequencerState
 import esw.ocs.impl.messages.SequencerState.{Idle, Offline}
+import msocket.api.models.Subscription
 
 import scala.concurrent.{ExecutionContext, Future}
 
-class SequencerAdminImpl(sequencer: ActorRef[EswSequencerMessage], insightSource: Source[SequencerInsight, NotUsed])(
+class SequencerAdminImpl(sequencer: ActorRef[SequencerMsg], insightSource: Source[SequencerInsight, NotUsed])(
     implicit system: ActorSystem[_],
     timeout: Timeout
 ) extends SequencerAdminApi {
@@ -41,27 +42,15 @@ class SequencerAdminImpl(sequencer: ActorRef[EswSequencerMessage], insightSource
   override def reset(): Future[OkOrUnhandledResponse]                     = sequencer ? Reset
   override def abortSequence(): Future[OkOrUnhandledResponse]             = sequencer ? AbortSequence
   override def stop(): Future[OkOrUnhandledResponse]                      = sequencer ? Stop
-  override def goOnline(): Future[GoOnlineResponse]                       = sequencer ? GoOnline
-  override def goOffline(): Future[GoOfflineResponse]                     = sequencer ? GoOffline
-
-  override def diagnosticMode(startTime: UTCTime, hint: String): Future[DiagnosticModeResponse] =
-    sequencer ? (DiagnosticMode(startTime, hint, _))
-  override def operationsMode(): Future[OperationsModeResponse] = sequencer ? OperationsMode
 
   override def isAvailable: Future[Boolean] = getState.map(_ == Idle)
-  override def isOnline: Future[Boolean]    = getState.map(_ != Offline)
 
   private def getState: Future[SequencerState[SequencerMsg]] = sequencer ? GetSequencerState
 
-  override def loadSequence(sequence: Sequence): Future[OkOrUnhandledResponse] = sequencer ? (LoadSequence(sequence, _))
+  override def isOnline: Future[Boolean] = getState.map(_ != Offline)
 
-  override def startSequence: Future[OkOrUnhandledResponse] = sequencer ? StartSequence
-
-  override def submitSequence(sequence: Sequence): Future[OkOrUnhandledResponse] =
-    sequencer ? (SubmitSequence(sequence, _))
-
-  // fixme: shouldn't this call have long timeout and not the default?
-  override def queryFinal: Future[SequenceResponse] = sequencer ? QueryFinal
-
-  override def getInsights: Source[SequencerInsight, NotUsed] = insightSource
+  override def getInsights: Source[SequencerInsight, Subscription] =
+    insightSource
+      .viaMat(KillSwitches.single)(Keep.right)
+      .mapMaterializedValue(ks => () => ks.shutdown())
 }

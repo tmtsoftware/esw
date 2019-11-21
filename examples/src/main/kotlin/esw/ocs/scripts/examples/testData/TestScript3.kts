@@ -1,37 +1,39 @@
 package esw.ocs.scripts.examples.testData
 
-import csw.params.core.models.Prefix
-import csw.params.events.EventName
-import csw.params.events.SystemEvent
 import esw.ocs.dsl.core.script
-import esw.ocs.dsl.params.set
 import esw.ocs.dsl.params.stringKey
 
 script {
 
-    handleDiagnosticMode { _, _ ->
+    onDiagnosticMode { _, _ ->
         // do some actions to go to diagnostic mode based on hint
         val diagnosticModeParam = stringKey("mode").set("diagnostic")
-        val event = SystemEvent(Prefix("tcs.test"), EventName("diagnostic-data")).add(diagnosticModeParam)
+        val event = SystemEvent("tcs.test", "diagnostic-data", diagnosticModeParam)
         publishEvent(event)
     }
 
-    handleOperationsMode {
+    onOperationsMode {
         // do some actions to go to operations mode
         val operationsModeParam = stringKey("mode").set("operations")
-        val event = SystemEvent(Prefix("tcs.test"), EventName("diagnostic-data")).add(operationsModeParam)
+        val event = SystemEvent("tcs.test", "diagnostic-data", operationsModeParam)
         publishEvent(event)
     }
 
-    handleGoOnline {
+    onGoOnline {
         val onlineParam = stringKey("mode").set("online")
-        val event = SystemEvent(Prefix("tcs.test"), EventName("online")).add(onlineParam)
+        val event = SystemEvent("tcs.test", "online", onlineParam)
         publishEvent(event)
     }
 
-    handleGoOffline {
+    onGoOffline {
         val offlineParam = stringKey("mode").set("offline")
-        val event = SystemEvent(Prefix("tcs.test"), EventName("offline")).add(offlineParam)
+        val event = SystemEvent("tcs.test", "offline", offlineParam)
         publishEvent(event)
+    }
+
+
+    onSetup("multi-node") { command ->
+        val assembly = Assembly("SampleAssembly")
+        assembly.submit(command)
     }
 }

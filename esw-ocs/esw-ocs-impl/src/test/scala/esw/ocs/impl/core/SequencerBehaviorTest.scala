@@ -2,11 +2,12 @@ package esw.ocs.impl.core
 
 import akka.Done
 import akka.actor.testkit.typed.scaladsl.{ScalaTestWithActorTestKit, TestProbe}
-import csw.command.client.messages.sequencer.SubmitSequenceAndWait
+import csw.command.client.messages.sequencer.SequencerMsg.{QueryFinal, SubmitSequenceAndWait}
 import csw.command.client.messages.{GetComponentLogMetadata, SetComponentLogLevel}
+import csw.logging.client.commons.LogAdminUtil
 import csw.logging.models.Level.{DEBUG, INFO}
 import csw.logging.models.LogMetadata
-import csw.params.commands.CommandResponse.{Completed, Error, SubmitResponse}
+import csw.params.commands.CommandResponse._
 import csw.params.commands.{CommandName, Sequence, Setup}
 import csw.params.core.models.{Id, Prefix}
 import csw.time.core.models.UTCTime
@@ -15,7 +16,7 @@ import esw.ocs.api.models.StepStatus.{Finished, InFlight, Pending}
 import esw.ocs.api.models.{Step, StepList}
 import esw.ocs.api.protocol.EditorError.{CannotOperateOnAnInFlightOrFinishedStep, IdDoesNotExist}
 import esw.ocs.api.protocol._
-import esw.ocs.impl.messages.SequencerMessages.{AbortSequence, AddBreakpoint, QueryFinal, _}
+import esw.ocs.impl.messages.SequencerMessages.{AbortSequence, AddBreakpoint, QueryFinalInternal, _}
 import esw.ocs.impl.messages.SequencerState.{Idle, InProgress, Loaded, Offline}
 
 import scala.concurrent.Future
@@ -27,7 +28,7 @@ class SequencerBehaviorTest extends ScalaTestWithActorTestKit with BaseTestSuite
   private val command2 = Setup(Prefix("esw.test"), CommandName("command-2"), None)
   private val command3 = Setup(Prefix("esw.test"), CommandName("command-3"), None)
   private val command4 = Setup(Prefix("esw.test"), CommandName("command-4"), None)
-  private val sequence = Sequence(Id(), Seq(command1, command2))
+  private val sequence = Sequence(Seq(command1, command2))
 
   private val maxWaitForExpectNoMessage = 200.millis
 
@@ -50,22 +51,24 @@ class SequencerBehaviorTest extends ScalaTestWithActorTestKit with BaseTestSuite
       val sequencerSetup = SequencerTestSetup.loaded(sequence)
       import sequencerSetup._
 
-      val probe = createTestProbe[OkOrUnhandledResponse]
+      val probe = createTestProbe[SequencerSubmitResponse]
       sequencerActor ! StartSequence(probe.ref)
       pullAllStepsAndAssertSequenceIsFinished()
-      probe.expectMessage(Ok)
+      val sequenceResult = probe.expectMessageType[SubmitResult]
+      sequenceResult.submitResponse shouldBe a[Started]
     }
   }
 
-  "LoadAndStartSequence" must {
+  "SubmitSequence" must {
     "load and start executing a sequence | ESW-145, ESW-154, ESW-221" in {
       val sequencerSetup = SequencerTestSetup.idle(sequence)
       import sequencerSetup._
 
-      val probe = createTestProbe[OkOrUnhandledResponse]
+      val probe = createTestProbe[SequencerSubmitResponse]
       sequencerActor ! SubmitSequence(sequence, probe.ref)
       pullAllStepsAndAssertSequenceIsFinished()
-      probe.expectMessage(Ok)
+      val sequenceResult = probe.expectMessageType[SubmitResult]
+      sequenceResult.submitResponse shouldBe a[Started]
     }
 
     "return Ok even if the processing of sequence fails | ESW-145, ESW-154, ESW-221" in {
@@ -73,28 +76,26 @@ class SequencerBehaviorTest extends ScalaTestWithActorTestKit with BaseTestSuite
       val sequencerSetup = SequencerTestSetup.idle(sequence1)
       import sequencerSetup._
 
-      val client = createTestProbe[OkOrUnhandledResponse]
+      val client = createTestProbe[SequencerSubmitResponse]
       sequencerActor ! SubmitSequence(sequence1, client.ref)
-      client.expectMessage(Ok)
+      val sequenceResult = client.expectMessageType[SubmitResult]
+      sequenceResult.submitResponse shouldBe a[Started]
+      val startedResponse = sequenceResult.toSubmitResponse()
+
       assertSequencerState(InProgress)
 
       startPullNext()
-
       val message = "Some error"
-
       finishStepWithError(message)
-
       assertSequencerState(Idle)
 
-      println(getSequence())
-
-      val qfProbe = createTestProbe[SequenceResponse]()
-      sequencerActor ! QueryFinal(qfProbe.ref)
-      qfProbe.expectMessage(SequenceResult(Error(sequence1.runId, message)))
+      val qfProbe = createTestProbe[SubmitResponse]()
+      sequencerActor ! QueryFinal(startedResponse.runId, qfProbe.ref)
+      qfProbe.expectMessage(Error(startedResponse.runId, message))
     }
   }
 
-  "LoadAndProcessSequence" must {
+  "SubmitSequenceAndWait" must {
     "load and process sequence in idle state | ESW-145, ESW-154" in {
       val sequencerSetup = SequencerTestSetup.idle(sequence)
       import sequencerSetup._
@@ -102,34 +103,47 @@ class SequencerBehaviorTest extends ScalaTestWithActorTestKit with BaseTestSuite
       val probe = createTestProbe[SubmitResponse]
       sequencerActor ! SubmitSequenceAndWait(sequence, probe.ref)
       pullAllStepsAndAssertSequenceIsFinished()
-      probe.expectMessage(Completed(sequence.runId))
+      val submitResponse = probe.expectMessageType[SubmitResponse]
+      submitResponse shouldBe a[Completed]
     }
   }
 
   "QuerySequenceResponse" must {
-    "return nothing when sequencer is Idle and hasn't executed any sequence | ESW-221" in {
+    "return error response when sequencer is Idle and hasn't executed any sequence | ESW-221" in {
       val sequencerSetup = SequencerTestSetup.idle(sequence)
       import sequencerSetup._
 
-      val seqResProbe = createTestProbe[SequenceResponse]
-      sequencerActor ! QueryFinal(seqResProbe.ref)
-      seqResProbe.expectNoMessage(maxWaitForExpectNoMessage)
+      val seqResProbe = createTestProbe[SubmitResponse]
+      sequencerActor ! QueryFinal(Id(), seqResProbe.ref)
+      seqResProbe.expectMessageType[Error]
+    }
+
+    "return error response when sequencerId is invalid | ESW-221" in {
+      val sequencerSetup = SequencerTestSetup.loaded(sequence)
+      import sequencerSetup._
+
+      val seqResProbe = createTestProbe[SubmitResponse]
+      val invalidId   = Id("invalid")
+      sequencerActor ! QueryFinal(invalidId, seqResProbe.ref)
+      seqResProbe.expectMessage(Error(invalidId, s"No sequence with $invalidId is loaded in the sequencer"))
     }
 
     "return Sequence result with Completed when sequencer is in loaded state | ESW-145, ESW-154, ESW-221" in {
       val sequencerSetup = SequencerTestSetup.loaded(sequence)
       import sequencerSetup._
 
-      val seqResProbe = createTestProbe[SequenceResponse]
-      sequencerActor ! QueryFinal(seqResProbe.ref)
-      seqResProbe.expectNoMessage(maxWaitForExpectNoMessage)
-
-      val startSeqProbe = createTestProbe[OkOrUnhandledResponse]
+      val startSeqProbe = createTestProbe[SequencerSubmitResponse]
       sequencerActor ! StartSequence(startSeqProbe.ref)
-      startSeqProbe.expectMessage(Ok)
+      val sequenceResult  = startSeqProbe.expectMessageType[SequencerSubmitResponse]
+      val startedResponse = sequenceResult.toSubmitResponse()
+      startedResponse shouldBe a[Started]
+
+      val seqResProbe = createTestProbe[SequencerSubmitResponse]
+      sequencerActor ! QueryFinalInternal(startedResponse.runId, seqResProbe.ref)
+
       pullAllStepsAndAssertSequenceIsFinished()
 
-      seqResProbe.expectMessage(SequenceResult(Completed(sequence.runId)))
+      seqResProbe.expectMessage(SubmitResult(Completed(startedResponse.runId)))
     }
 
     "return Sequence result with Completed when sequencer is inProgress state | ESW-145, ESW-154, ESW-221" in {
@@ -137,31 +151,32 @@ class SequencerBehaviorTest extends ScalaTestWithActorTestKit with BaseTestSuite
       val sequencerSetup = SequencerTestSetup.loaded(sequence1)
       import sequencerSetup._
 
-      val startSeqProbe = createTestProbe[OkOrUnhandledResponse]
+      val startSeqProbe = createTestProbe[SequencerSubmitResponse]
       sequencerActor ! StartSequence(startSeqProbe.ref)
-      startSeqProbe.expectMessage(Ok)
+      val sequenceResult  = startSeqProbe.expectMessageType[SubmitResult]
+      val startedResponse = sequenceResult.submitResponse
+      startedResponse shouldBe a[Started]
 
       startPullNext()
       assertSequencerState(InProgress)
 
-      val seqResProbe = createTestProbe[SequenceResponse]
-      sequencerActor ! QueryFinal(seqResProbe.ref)
+      val seqResProbe = createTestProbe[SubmitResponse]
+      sequencerActor ! QueryFinal(startedResponse.runId, seqResProbe.ref)
       seqResProbe.expectNoMessage(maxWaitForExpectNoMessage)
 
       finishStepWithSuccess()
       assertSequenceIsFinished()
 
-      seqResProbe.expectMessage(SequenceResult(Completed(sequence1.runId)))
+      seqResProbe.expectMessage(Completed(startedResponse.runId))
     }
 
     "return Sequence result with Completed when sequencer has finished executing a sequence | ESW-145, ESW-154, ESW-221" in {
-      val sequencerSetup = SequencerTestSetup.finished(sequence)
+      val (completedResponse, sequencerSetup) = SequencerTestSetup.finished(sequence)
       import sequencerSetup._
+      val seqResProbe = createTestProbe[SubmitResponse]
+      sequencerActor ! QueryFinal(completedResponse.runId, seqResProbe.ref)
 
-      val seqResProbe = createTestProbe[SequenceResponse]
-      sequencerActor ! QueryFinal(seqResProbe.ref)
-
-      seqResProbe.expectMessage(SequenceResult(Completed(sequence.runId)))
+      seqResProbe.expectMessage(Completed(completedResponse.runId))
     }
 
   }
@@ -191,7 +206,7 @@ class SequencerBehaviorTest extends ScalaTestWithActorTestKit with BaseTestSuite
         Step(command2, Pending, hasBreakpoint = false)
       )
 
-      assertCurrentSequence(Some(StepList(sequence.runId, expectedSteps)))
+      assertCurrentSequence(Some(StepList(expectedSteps)))
     }
 
     "return sequence when in finished state | ESW-157" in {
@@ -207,7 +222,7 @@ class SequencerBehaviorTest extends ScalaTestWithActorTestKit with BaseTestSuite
         Step(command2, Finished.Success, hasBreakpoint = false)
       )
 
-      assertCurrentSequence(Some(StepList(sequence.runId, expectedSteps)))
+      assertCurrentSequence(Some(StepList(expectedSteps)))
     }
   }
 
@@ -255,7 +270,7 @@ class SequencerBehaviorTest extends ScalaTestWithActorTestKit with BaseTestSuite
 
       assertCurrentSequence(
         Some(
-          StepList(sequence.runId, List(Step(command1).copy(status = InFlight), Step(command2), Step(command3)))
+          StepList(List(Step(command1).copy(status = InFlight), Step(command2), Step(command3)))
         )
       )
     }
@@ -284,7 +299,7 @@ class SequencerBehaviorTest extends ScalaTestWithActorTestKit with BaseTestSuite
 
       assertCurrentSequence(
         Some(
-          StepList(sequence.runId, List(Step(command1).copy(status = InFlight), Step(command3), Step(command2)))
+          StepList(List(Step(command1).copy(status = InFlight), Step(command3), Step(command2)))
         )
       )
     }
@@ -298,7 +313,6 @@ class SequencerBehaviorTest extends ScalaTestWithActorTestKit with BaseTestSuite
 
       val beforePauseStepList = Some(
         StepList(
-          sequence.runId,
           List(Step(command1, Finished.Success, hasBreakpoint = false), Step(command2, Pending, hasBreakpoint = false))
         )
       )
@@ -312,7 +326,6 @@ class SequencerBehaviorTest extends ScalaTestWithActorTestKit with BaseTestSuite
 
       val afterPauseStepList = Some(
         StepList(
-          sequence.runId,
           List(Step(command1, Finished.Success, hasBreakpoint = false), Step(command2, Pending, hasBreakpoint = true))
         )
       )
@@ -332,13 +345,13 @@ class SequencerBehaviorTest extends ScalaTestWithActorTestKit with BaseTestSuite
         Step(command1, Finished.Success, hasBreakpoint = false),
         Step(command2, Pending, hasBreakpoint = true)
       )
-      val expectedPausedSequence = Some(StepList(sequence.runId, expectedPausedSteps))
+      val expectedPausedSequence = Some(StepList(expectedPausedSteps))
 
       val expectedResumedSteps = List(
         Step(command1, Finished.Success, hasBreakpoint = false),
         Step(command2, Pending, hasBreakpoint = false)
       )
-      val expectedResumedSequence = Some(StepList(sequence.runId, expectedResumedSteps))
+      val expectedResumedSequence = Some(StepList(expectedResumedSteps))
 
       pauseAndAssertResponse(Ok)
       //Sequence is paused so engine can NOT execute next step
@@ -362,7 +375,7 @@ class SequencerBehaviorTest extends ScalaTestWithActorTestKit with BaseTestSuite
         Step(command2, Pending, hasBreakpoint = false)
       )
 
-      val expectedSequence = Some(StepList(sequence.runId, expectedSteps))
+      val expectedSequence = Some(StepList(expectedSteps))
 
       val stepId1 = getSequence().get.steps(0).id
 
@@ -411,7 +424,7 @@ class SequencerBehaviorTest extends ScalaTestWithActorTestKit with BaseTestSuite
         Step(command4, Pending, hasBreakpoint = false)
       )
 
-      val expectedSequence = Some(StepList(sequence.runId, expectedSteps))
+      val expectedSequence = Some(StepList(expectedSteps))
 
       val step1 = getSequence().get.steps.head
       val step2 = getSequence().get.steps(1)
@@ -430,7 +443,7 @@ class SequencerBehaviorTest extends ScalaTestWithActorTestKit with BaseTestSuite
       import sequencerSetup._
 
       val expectedSteps    = List(Step(command1, Pending, hasBreakpoint = false))
-      val expectedSequence = Some(StepList(sequence.runId, expectedSteps))
+      val expectedSequence = Some(StepList(expectedSteps))
 
       val step2 = getSequence().get.steps(1)
 
@@ -446,7 +459,7 @@ class SequencerBehaviorTest extends ScalaTestWithActorTestKit with BaseTestSuite
       import sequencerSetup._
 
       val expectedSteps    = List(Step(command1, InFlight, hasBreakpoint = false))
-      val expectedSequence = Some(StepList(sequence.runId, expectedSteps))
+      val expectedSequence = Some(StepList(expectedSteps))
 
       val step2 = getSequence().get.steps(1)
 
@@ -462,7 +475,7 @@ class SequencerBehaviorTest extends ScalaTestWithActorTestKit with BaseTestSuite
       import sequencerSetup._
 
       val expectedSteps    = List(Step(command1, InFlight, hasBreakpoint = false), Step(command2, Pending, hasBreakpoint = false))
-      val expectedSequence = Some(StepList(sequence.runId, expectedSteps))
+      val expectedSequence = Some(StepList(expectedSteps))
 
       val step1 = getSequence().get.steps.head
 
@@ -483,7 +496,6 @@ class SequencerBehaviorTest extends ScalaTestWithActorTestKit with BaseTestSuite
       val expectedSequenceAfterInsertion =
         Some(
           StepList(
-            sequence.runId,
             List(Step(command1), Step(command3), Step(command4), Step(command2))
           )
         )
@@ -506,7 +518,6 @@ class SequencerBehaviorTest extends ScalaTestWithActorTestKit with BaseTestSuite
       val expectedSequenceAfterInsertion =
         Some(
           StepList(
-            sequence.runId,
             List(Step(command1, InFlight, hasBreakpoint = false), Step(command3), Step(command4), Step(command2))
           )
         )
@@ -543,7 +554,7 @@ class SequencerBehaviorTest extends ScalaTestWithActorTestKit with BaseTestSuite
       import sequencerSetup._
 
       val expectedSequenceAfterAddingBreakpoint =
-        Some(StepList(sequence.runId, List(Step(command1), Step(command2).copy(hasBreakpoint = true))))
+        Some(StepList(List(Step(command1), Step(command2).copy(hasBreakpoint = true))))
 
       val step2 = getSequence().get.steps(1)
 
@@ -551,7 +562,7 @@ class SequencerBehaviorTest extends ScalaTestWithActorTestKit with BaseTestSuite
       assertCurrentSequence(expectedSequenceAfterAddingBreakpoint)
 
       val expectedSequenceAfterRemovingBreakPoint =
-        Some(StepList(sequence.runId, List(Step(command1), Step(command2).copy(hasBreakpoint = false))))
+        Some(StepList(List(Step(command1), Step(command2).copy(hasBreakpoint = false))))
 
       removeBreakpointAndAssertResponse(step2.id, Ok)
       assertCurrentSequence(expectedSequenceAfterRemovingBreakPoint)
@@ -562,7 +573,7 @@ class SequencerBehaviorTest extends ScalaTestWithActorTestKit with BaseTestSuite
       import sequencerSetup._
 
       val expectedSequenceAfterAddingBreakpoint =
-        Some(StepList(sequence.runId, List(Step(command1).copy(status = InFlight), Step(command2).copy(hasBreakpoint = true))))
+        Some(StepList(List(Step(command1).copy(status = InFlight), Step(command2).copy(hasBreakpoint = true))))
 
       val step2 = getSequence().get.steps(1)
 
@@ -570,7 +581,7 @@ class SequencerBehaviorTest extends ScalaTestWithActorTestKit with BaseTestSuite
       assertCurrentSequence(expectedSequenceAfterAddingBreakpoint)
 
       val expectedSequenceAfterRemovingBreakpoint =
-        Some(StepList(sequence.runId, List(Step(command1).copy(status = InFlight), Step(command2).copy(hasBreakpoint = false))))
+        Some(StepList(List(Step(command1).copy(status = InFlight), Step(command2).copy(hasBreakpoint = false))))
 
       removeBreakpointAndAssertResponse(step2.id, Ok)
       assertCurrentSequence(expectedSequenceAfterRemovingBreakpoint)
@@ -594,7 +605,7 @@ class SequencerBehaviorTest extends ScalaTestWithActorTestKit with BaseTestSuite
 
       resetAndAssertResponse(Ok)
       assertSequencerState(InProgress)
-      assertCurrentSequence(Some(StepList(sequence.runId, List(Step(command1, status = InFlight, hasBreakpoint = false)))))
+      assertCurrentSequence(Some(StepList(List(Step(command1, status = InFlight, hasBreakpoint = false)))))
     }
   }
 
@@ -646,7 +657,7 @@ class SequencerBehaviorTest extends ScalaTestWithActorTestKit with BaseTestSuite
     }
 
     "clear history of the last executed sequence | ESW-194" in {
-      val sequencerSetup = SequencerTestSetup.finished(sequence)
+      val (_, sequencerSetup) = SequencerTestSetup.finished(sequence)
       import sequencerSetup._
 
       goOfflineAndAssertResponse(Ok, Future.successful(Done))
@@ -700,12 +711,12 @@ class SequencerBehaviorTest extends ScalaTestWithActorTestKit with BaseTestSuite
       probe.expectNoMessage(maxWaitForExpectNoMessage)
 
       // start the sequence and assert Ok is sent to the readyToExecuteNext subscriber as soon as a step is ready
-      sequencerActor ! StartSequence(createTestProbe[OkOrUnhandledResponse].ref)
+      sequencerActor ! StartSequence(createTestProbe[SequencerSubmitResponse].ref)
       probe.expectMessage(Ok)
     }
 
     "wait till next sequence is received if current sequence is finished" in {
-      val sequencerSetup = SequencerTestSetup.finished(sequence)
+      val (_, sequencerSetup) = SequencerTestSetup.finished(sequence)
       import sequencerSetup._
 
       val probe = TestProbe[Ok.type]
@@ -763,7 +774,7 @@ class SequencerBehaviorTest extends ScalaTestWithActorTestKit with BaseTestSuite
     }
 
     "return None if sequencer is finished" in {
-      val sequencerSetup = SequencerTestSetup.finished(sequence)
+      val (_, sequencerSetup) = SequencerTestSetup.finished(sequence)
       import sequencerSetup._
 
       mayBeNextAndAssertResponse(None)
@@ -787,7 +798,7 @@ class SequencerBehaviorTest extends ScalaTestWithActorTestKit with BaseTestSuite
       sequencerActor ! StepSuccess(probe.ref)
 
       assertCurrentSequence(
-        Some(StepList(sequence.runId, List(Step(command1, Finished.Success, hasBreakpoint = false))))
+        Some(StepList(List(Step(command1, Finished.Success, hasBreakpoint = false))))
       )
     }
 
@@ -801,7 +812,7 @@ class SequencerBehaviorTest extends ScalaTestWithActorTestKit with BaseTestSuite
       sequencerActor ! StepFailure(message, probe.ref)
 
       assertCurrentSequence(
-        Some(StepList(sequence.runId, List(Step(command1, Finished.Failure(message), hasBreakpoint = false))))
+        Some(StepList(List(Step(command1, Finished.Failure(message), hasBreakpoint = false))))
       )
     }
   }
@@ -838,13 +849,18 @@ class SequencerBehaviorTest extends ScalaTestWithActorTestKit with BaseTestSuite
       val logMetadata1 = logMetadataProbe.expectMessageType[LogMetadata]
 
       logMetadata1.componentLevel shouldBe INFO
+      val initialMetadata = LogAdminUtil.getLogMetadata(sequencerName)
+      initialMetadata.componentLevel shouldBe INFO
 
       sequencerActor ! SetComponentLogLevel(sequencerName, DEBUG)
       sequencerActor ! GetComponentLogMetadata(sequencerName, logMetadataProbe.ref)
 
       val logMetadata2 = logMetadataProbe.expectMessageType[LogMetadata]
-
       logMetadata2.componentLevel shouldBe DEBUG
+
+      // this verifies that log metadata is updated in LogAdminUtil
+      val finalMetadata = LogAdminUtil.getLogMetadata(sequencerName)
+      finalMetadata.componentLevel shouldBe DEBUG
     }
   }
 
@@ -950,7 +966,7 @@ class SequencerBehaviorTest extends ScalaTestWithActorTestKit with BaseTestSuite
       GoIdle,
       PullNext,
       StepSuccess,
-      QueryFinal
+      QueryFinalInternal(Id(), _)
     )
   }
 }

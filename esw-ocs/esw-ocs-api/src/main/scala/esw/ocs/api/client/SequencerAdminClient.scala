@@ -2,23 +2,24 @@ package esw.ocs.api.client
 
 import akka.NotUsed
 import akka.stream.scaladsl.Source
-import csw.params.commands.{Sequence, SequenceCommand}
+import csw.params.commands.SequenceCommand
 import csw.params.core.models.Id
-import csw.time.core.models.UTCTime
 import esw.ocs.api.SequencerAdminApi
-import esw.ocs.api.codecs.SequencerAdminHttpCodecs
+import esw.ocs.api.codecs.SequencerHttpCodecs
 import esw.ocs.api.models.{SequencerInsight, StepList}
-import esw.ocs.api.protocol.SequencerAdminPostRequest._
-import esw.ocs.api.protocol.SequencerAdminWebsocketRequest.{GetInsights, QueryFinal}
-import esw.ocs.api.protocol.{SequencerAdminWebsocketRequest, _}
+import esw.ocs.api.protocol.SequencerPostRequest._
+import esw.ocs.api.protocol.SequencerWebsocketRequest.GetInsights
+import esw.ocs.api.protocol._
 import msocket.api.Transport
+import msocket.api.models.Subscription
+
 import scala.concurrent.Future
 
 class SequencerAdminClient(
-    postClient: Transport[SequencerAdminPostRequest],
-    websocketClient: Transport[SequencerAdminWebsocketRequest]
+    postClient: Transport[SequencerPostRequest],
+    websocketClient: Transport[SequencerWebsocketRequest]
 ) extends SequencerAdminApi
-    with SequencerAdminHttpCodecs {
+    with SequencerHttpCodecs {
 
   override def getSequence: Future[Option[StepList]] = {
     postClient.requestResponse[Option[StepList]](GetSequence)
@@ -80,38 +81,5 @@ class SequencerAdminClient(
     postClient.requestResponse[OkOrUnhandledResponse](Stop)
   }
 
-  override def goOnline(): Future[GoOnlineResponse] = {
-    postClient.requestResponse[GoOnlineResponse](GoOnline)
-  }
-
-  override def goOffline(): Future[GoOfflineResponse] = {
-    postClient.requestResponse[GoOfflineResponse](GoOffline)
-  }
-
-  override def diagnosticMode(startTime: UTCTime, hint: String): Future[DiagnosticModeResponse] = {
-    postClient.requestResponse[DiagnosticModeResponse](DiagnosticMode(startTime, hint))
-  }
-
-  override def operationsMode(): Future[OperationsModeResponse] = {
-    postClient.requestResponse[OperationsModeResponse](OperationsMode)
-  }
-
-  override def loadSequence(sequence: Sequence): Future[OkOrUnhandledResponse] = {
-    postClient.requestResponse[OkOrUnhandledResponse](LoadSequence(sequence))
-  }
-
-  override def startSequence: Future[OkOrUnhandledResponse] = {
-    postClient.requestResponse[OkOrUnhandledResponse](StartSequence)
-  }
-
-  override def submitSequence(sequence: Sequence): Future[OkOrUnhandledResponse] = {
-    postClient.requestResponse[OkOrUnhandledResponse](SubmitSequence(sequence))
-  }
-
-  override def queryFinal: Future[SequenceResponse] = {
-    websocketClient.requestResponse[SequenceResponse](QueryFinal)
-  }
-
-  override def getInsights: Source[SequencerInsight, NotUsed] =
-    websocketClient.requestStream[SequencerInsight](GetInsights)
+  override def getInsights: Source[SequencerInsight, Subscription] = websocketClient.requestStream[SequencerInsight](GetInsights)
 }

@@ -9,16 +9,17 @@ import csw.location.models.Connection.AkkaConnection
 import csw.location.models.{AkkaLocation, ComponentId, ComponentType}
 import csw.params.core.models.Prefix
 import esw.ocs.api.BaseTestSuite
-import esw.ocs.api.protocol.{GetStatusResponse, LoadScriptResponse}
+import esw.ocs.api.protocol.{GetStatusResponse, ScriptError, ScriptResponse}
 import esw.ocs.impl.messages.SequenceComponentMsg
-import esw.ocs.impl.messages.SequenceComponentMsg.{GetStatus, LoadScript, Stop, UnloadScript}
+import esw.ocs.impl.messages.SequenceComponentMsg.{GetStatus, LoadScript, Restart, Stop, UnloadScript}
 
 import scala.concurrent.ExecutionContext
 
 class SequenceComponentImplTest extends ScalaTestWithActorTestKit with BaseTestSuite {
   private val location =
     AkkaLocation(AkkaConnection(ComponentId("test", ComponentType.Sequencer)), Prefix("esw.test"), new URI("uri"))
-  private val loadScriptResponse    = LoadScriptResponse(Right(location))
+  private val loadScriptResponse    = ScriptResponse(Right(location))
+  private val restartResponse       = ScriptResponse(Left(ScriptError("Restart error")))
   private val getStatusResponse     = GetStatusResponse(Some(location))
   implicit val ec: ExecutionContext = system.executionContext
 
@@ -27,6 +28,7 @@ class SequenceComponentImplTest extends ScalaTestWithActorTestKit with BaseTestS
       case LoadScript(_, _, replyTo) => replyTo ! loadScriptResponse
       case GetStatus(replyTo)        => replyTo ! getStatusResponse
       case UnloadScript(replyTo)     => replyTo ! Done
+      case Restart(replyTo)          => replyTo ! restartResponse
       case Stop                      => Behaviors.stopped
     }
     Behaviors.same
@@ -38,6 +40,10 @@ class SequenceComponentImplTest extends ScalaTestWithActorTestKit with BaseTestS
 
   "LoadScript | ESW-103" in {
     sequenceComponentClient.loadScript("esw", "darknight").futureValue should ===(loadScriptResponse)
+  }
+
+  "Restart | ESW-141" in {
+    sequenceComponentClient.restart().futureValue should ===(restartResponse)
   }
 
   "GetStatus | ESW-103" in {

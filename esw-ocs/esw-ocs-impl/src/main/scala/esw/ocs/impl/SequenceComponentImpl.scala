@@ -5,9 +5,9 @@ import akka.actor.typed.scaladsl.AskPattern._
 import akka.actor.typed.{ActorRef, ActorSystem}
 import akka.util.Timeout
 import esw.ocs.api.SequenceComponentApi
-import esw.ocs.api.protocol.{GetStatusResponse, LoadScriptResponse}
+import esw.ocs.api.protocol.{GetStatusResponse, ScriptResponse}
 import esw.ocs.impl.messages.SequenceComponentMsg
-import esw.ocs.impl.messages.SequenceComponentMsg.{GetStatus, LoadScript, UnloadScript}
+import esw.ocs.impl.messages.SequenceComponentMsg.{GetStatus, LoadScript, Restart, UnloadScript}
 
 import scala.concurrent.Future
 
@@ -16,10 +16,12 @@ class SequenceComponentImpl(sequenceComponentRef: ActorRef[SequenceComponentMsg]
     implicit actorSystem: ActorSystem[_],
     timeout: Timeout
 ) extends SequenceComponentApi {
-  def loadScript(packageId: String, observingMode: String): Future[LoadScriptResponse] =
+  override def loadScript(packageId: String, observingMode: String): Future[ScriptResponse] =
     sequenceComponentRef ? (LoadScript(packageId, observingMode, _))
 
-  def status: Future[GetStatusResponse] = sequenceComponentRef ? GetStatus
+  override def restart(): Future[ScriptResponse] = sequenceComponentRef ? Restart
 
-  def unloadScript(): Future[Done] = sequenceComponentRef ? UnloadScript
+  override def status: Future[GetStatusResponse] = sequenceComponentRef ? GetStatus
+
+  override def unloadScript(): Future[Done] = sequenceComponentRef ? UnloadScript
 }

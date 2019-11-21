@@ -34,14 +34,15 @@ object SequencerMessages {
       extends IdleMessage
       with SequenceLoadedMessage
 
-  final case class StartSequence(replyTo: ActorRef[OkOrUnhandledResponse])                      extends SequenceLoadedMessage
-  final case class SubmitSequence(sequence: Sequence, replyTo: ActorRef[OkOrUnhandledResponse]) extends IdleMessage
-  final case class QueryFinal(replyTo: ActorRef[SequenceResponse])
+  final case class StartSequence(replyTo: ActorRef[SequencerSubmitResponse])                      extends SequenceLoadedMessage
+  final case class SubmitSequence(sequence: Sequence, replyTo: ActorRef[SequencerSubmitResponse]) extends IdleMessage
+  final case class QueryFinalInternal(runId: Id, replyTo: ActorRef[SequencerSubmitResponse])
       extends IdleMessage
       with SequenceLoadedMessage
       with InProgressMessage
 
   // common msgs
+  final case class Query(runId: Id, replyTo: ActorRef[SequencerQueryResponse])        extends CommonMessage
   final case class Shutdown(replyTo: ActorRef[Ok.type])                               extends CommonMessage
   final case class GetSequence(replyTo: ActorRef[Option[StepList]])                   extends CommonMessage
   final case class GetSequencerState(replyTo: ActorRef[SequencerState[SequencerMsg]]) extends CommonMessage
@@ -75,16 +76,15 @@ object SequencerMessages {
   final case class Resume(replyTo: ActorRef[OkOrUnhandledResponse])        extends InProgressMessage
 
   // engine & internal
-  final private[ocs] case class SubmitSequenceAndWaitInternal(sequence: Sequence, replyTo: ActorRef[SequenceResponse])
+  // this message is not needed, as SubmitSequence, StartSequence can be composed on client side
+  final private[ocs] case class SubmitSequenceAndWaitInternal(sequence: Sequence, replyTo: ActorRef[SequencerSubmitResponse])
       extends IdleMessage
 
   final private[esw] case class PullNext(replyTo: ActorRef[PullNextResponse]) extends IdleMessage with InProgressMessage
-//  final private[esw] case class Update(submitResponse: SubmitResponse, replyTo: ActorRef[OkOrUnhandledResponse]) // this is internal message and replyTo is not used anywhere
-//      extends InProgressMessage
   // this is internal message and replyTo is not used anywhere
   final private[esw] case class StepSuccess(replyTo: ActorRef[OkOrUnhandledResponse]) extends InProgressMessage
   // this is internal message and replyTo is not used anywhere
-  final private[esw] case class StepFailure(message: String, replyTo: ActorRef[OkOrUnhandledResponse]) extends InProgressMessage
+  final private[esw] case class StepFailure(reason: String, replyTo: ActorRef[OkOrUnhandledResponse]) extends InProgressMessage
 
   final private[esw] case class GoIdle(replyTo: ActorRef[OkOrUnhandledResponse])                extends InProgressMessage
   final private[esw] case class GoOfflineSuccess(replyTo: ActorRef[GoOfflineResponse])          extends GoingOfflineMessage

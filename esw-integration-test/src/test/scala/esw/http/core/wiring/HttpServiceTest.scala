@@ -3,48 +3,26 @@ package esw.http.core.wiring
 import java.net.BindException
 
 import akka.actor.CoordinatedShutdown.UnknownReason
-import akka.actor.typed.ActorSystem
-import akka.actor.typed.scaladsl.Behaviors
 import akka.http.scaladsl.model.{ContentTypes, HttpEntity}
 import akka.http.scaladsl.server.Directives.{complete, get, path}
 import akka.http.scaladsl.server.Route
-import akka.stream.Materializer
 import csw.location.api.exceptions.OtherLocationIsRegistered
-import csw.location.api.scaladsl.LocationService
-import csw.location.client.scaladsl.HttpLocationServiceFactory
 import csw.location.models.HttpRegistration
 import csw.network.utils.{Networks, SocketUtils}
-import csw.testkit.LocationTestKit
-import esw.http.core.BaseTestSuite
+import esw.ocs.testkit.EswTestKit
 
 import scala.concurrent.Await
 import scala.concurrent.duration.DurationInt
 import scala.util.control.NonFatal
 
-class HttpServiceTest extends BaseTestSuite {
+class HttpServiceTest extends EswTestKit {
 
-  private val testKit                              = LocationTestKit()
-  implicit val system: ActorSystem[_]              = ActorSystem(Behaviors.empty, "test")
-  implicit val mat: Materializer                   = Materializer(system)
-  private val testLocationService: LocationService = HttpLocationServiceFactory.makeLocalClient
-  private val route: Route = {
+  private val route: Route =
     path("hello") {
       get {
         complete(HttpEntity(ContentTypes.`text/html(UTF-8)`, "<h1>Say hello to akka-http</h1>"))
       }
     }
-  }
-
-  override def beforeAll(): Unit = {
-    testKit.startLocationServer()
-  }
-
-  override def afterAll(): Unit = {
-    testKit.shutdownLocationServer()
-    system.terminate
-    Await.result(system.whenTerminated, 10.seconds)
-    super.afterAll()
-  }
 
   "HttpService" must {
     "start the http server and register with location service | ESW-86" in {
@@ -52,7 +30,7 @@ class HttpServiceTest extends BaseTestSuite {
 
       val wiring = new ServerWiring(Some(_servicePort))
       import wiring._
-      import wiring.cswWiring.{actorRuntime, locationService}
+      import wiring.cswWiring.actorRuntime
 
       val httpService             = new HttpService(logger, locationService, route, settings, actorRuntime)
       val (_, registrationResult) = Await.result(httpService.registeredLazyBinding, 5.seconds)
@@ -69,19 +47,19 @@ class HttpServiceTest extends BaseTestSuite {
       val _servicePort = 4452 // Location Service runs on this port
       val wiring       = new ServerWiring(Some(_servicePort))
       import wiring._
-      import wiring.cswWiring.{actorRuntime, locationService}
+      import wiring.cswWiring.actorRuntime
 
       val httpService = new HttpService(logger, locationService, route, settings, actorRuntime)
 
       a[BindException] shouldBe thrownBy(Await.result(httpService.registeredLazyBinding, 5.seconds))
-      Await.result(testLocationService.find(settings.httpConnection), 5.seconds) shouldBe None
+      Await.result(locationService.find(settings.httpConnection), 5.seconds) shouldBe None
     }
 
     "not start server if registration with location service fails | ESW-86" in {
       val _servicePort = 4007
       val wiring       = new ServerWiring(Some(_servicePort))
       import wiring._
-      import wiring.cswWiring.{actorRuntime, locationService}
+      import wiring.cswWiring.actorRuntime
 
       val httpService = new HttpService(logger, locationService, route, settings, actorRuntime)
 

@@ -3,7 +3,8 @@ package esw.ocs.impl.core
 import akka.Done
 import akka.actor.testkit.typed.scaladsl.TestProbe
 import akka.actor.typed.{ActorRef, ActorSystem}
-import csw.command.client.messages.sequencer.{SequencerMsg, SubmitSequenceAndWait}
+import csw.command.client.messages.sequencer.SequencerMsg
+import csw.command.client.messages.sequencer.SequencerMsg.SubmitSequenceAndWait
 import csw.location.api.scaladsl.LocationService
 import csw.location.models.ComponentId
 import csw.params.commands.CommandResponse.{Completed, SubmitResponse}
@@ -53,7 +54,7 @@ class SequencerTestSetup(sequence: Sequence)(implicit system: ActorSystem[_]) {
   }
 
   def loadAndStartSequenceThenAssertInProgress(): Assertion = {
-    val probe = TestProbe[OkOrUnhandledResponse]
+    val probe = TestProbe[SequencerSubmitResponse]
     sequencerActor ! SubmitSequence(sequence, probe.ref)
 
     val p: TestProbe[Option[StepList]] = TestProbe[Option[StepList]]
@@ -68,8 +69,7 @@ class SequencerTestSetup(sequence: Sequence)(implicit system: ActorSystem[_]) {
     eventually {
       val probe = TestProbe[Option[StepList]]
       sequencerActor ! GetSequence(probe.ref)
-      val stepList = probe.expectMessageType[Option[StepList]]
-      stepList.get.runId should ===(sequence.runId)
+      probe.expectMessageType[Option[StepList]]
     }
 
     pullAllSteps(sequencerActor)
@@ -289,7 +289,7 @@ class SequencerTestSetup(sequence: Sequence)(implicit system: ActorSystem[_]) {
     val stepList = probe.expectMessageType[Option[StepList]]
     val finished = stepList.get.isFinished
 
-    if (finished) completionPromise.complete(Success(Completed(stepList.get.runId)))
+    if (finished) completionPromise.complete(Success(Completed(Id())))
 
     finished should ===(true)
   }
@@ -362,13 +362,13 @@ object SequencerTestSetup {
     testSetup
   }
 
-  def finished(sequence: Sequence)(implicit system: ActorSystem[_]): SequencerTestSetup = {
+  def finished(sequence: Sequence)(implicit system: ActorSystem[_]): (Completed, SequencerTestSetup) = {
     val sequencerSetup = new SequencerTestSetup(sequence)
     import sequencerSetup._
     val probe = TestProbe[SubmitResponse]
     sequencerActor ! SubmitSequenceAndWait(sequence, probe.ref)
     pullAllStepsAndAssertSequenceIsFinished()
-    probe.expectMessage(Completed(sequence.runId))
-    sequencerSetup
+    val completedResponse = probe.expectMessageType[Completed]
+    (completedResponse, sequencerSetup)
   }
 }

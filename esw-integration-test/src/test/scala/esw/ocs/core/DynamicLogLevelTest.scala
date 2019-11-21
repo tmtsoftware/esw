@@ -1,6 +1,5 @@
 package esw.ocs.core
 
-import akka.actor.typed.{ActorSystem, SpawnProtocol}
 import akka.http.scaladsl.Http
 import akka.http.scaladsl.model.{HttpMethods, HttpRequest, StatusCodes, Uri}
 import akka.http.scaladsl.unmarshalling.Unmarshal
@@ -11,44 +10,34 @@ import csw.logging.models.Level.{ERROR, FATAL}
 import csw.logging.models.LogMetadata
 import csw.logging.models.codecs.LoggingCodecs
 import csw.network.utils.Networks
-import csw.testkit.scaladsl.ScalaTestFrameworkTestKit
-import esw.ocs.api.BaseTestSuite
-import esw.ocs.app.wiring.SequencerWiring
+import esw.ocs.testkit.EswTestKit
 import msocket.impl.Encoding
 import msocket.impl.Encoding.JsonText
 import msocket.impl.post.ClientHttpCodecs
 
-import scala.concurrent.duration.DurationLong
-
-class DynamicLogLevelTest extends ScalaTestFrameworkTestKit with BaseTestSuite with LoggingCodecs with ClientHttpCodecs {
-
-  import frameworkTestKit._
+class DynamicLogLevelTest extends EswTestKit with LoggingCodecs with ClientHttpCodecs {
 
   override def encoding: Encoding[_] = JsonText
 
-  private implicit val sys: ActorSystem[SpawnProtocol.Command] = actorSystem
-  override implicit def patienceConfig: PatienceConfig         = PatienceConfig(10.seconds)
-
-  private var wiring: SequencerWiring         = _
   private var adminWiring: AdminWiring        = _
   private val adminPort                       = 7888
   private var sequencerLocation: AkkaLocation = _
 
   override def beforeAll(): Unit = {
     super.beforeAll()
-    LoggingSystemFactory.start("logging", "version", "localhost", sys)
+    LoggingSystemFactory.start("logging", "version", "localhost", system)
     adminWiring = AdminWiring.make(Some(adminPort))
     adminWiring.adminHttpService.registeredLazyBinding.futureValue
-    wiring = new SequencerWiring("esw", "darknight", None)
-    sequencerLocation = wiring.sequencerServer.start().rightValue
+    sequencerLocation = spawnSequencer("esw", "darknight").rightValue
   }
 
-  override protected def afterAll(): Unit = {
-    wiring.sequencerServer.shutDown().futureValue
+  override def afterAll(): Unit = {
+    adminWiring.actorSystem.terminate()
+    adminWiring.actorSystem.whenTerminated.futureValue
     super.afterAll()
   }
 
-  "get/set log level for sequencer dynamically | ESW-183" in {
+  "get/set log level for sequencer dynamically directly in log-admin-server| ESW-183" in {
     val defaultLogLevel = FATAL
     val newLogLevel     = ERROR
 
@@ -65,7 +54,7 @@ class DynamicLogLevelTest extends ScalaTestFrameworkTestKit with BaseTestSuite w
 
     // set sequencer log level to FATAL
     val setLogMetadataRequest = HttpRequest(HttpMethods.POST, uri = setLogMetadataUri)
-    val setResponse           = Http().singleRequest(setLogMetadataRequest).futureValue
+    val setResponse           = Http()(untypedSystem).singleRequest(setLogMetadataRequest).futureValue
     setResponse.status should ===(StatusCodes.OK)
 
     // assert sequencer log level is changed to FATAL
@@ -82,11 +71,10 @@ class DynamicLogLevelTest extends ScalaTestFrameworkTestKit with BaseTestSuite w
     )
 
     val request  = HttpRequest(HttpMethods.GET, uri = getLogMetadataUri)
-    val response = Http().singleRequest(request).futureValue
+    val response = Http()(untypedSystem).singleRequest(request).futureValue
     response.status should ===(StatusCodes.OK)
 
     val actualLogMetadata = Unmarshal(response).to[LogMetadata].futureValue
     actualLogMetadata should ===(expectedLogMetadata)
   }
-
 }
