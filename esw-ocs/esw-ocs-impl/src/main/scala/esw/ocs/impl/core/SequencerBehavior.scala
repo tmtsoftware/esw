@@ -59,8 +59,8 @@ class SequencerBehavior(
 
   private def inProgress(data: SequencerData): Behavior[SequencerMsg] = receive(InProgress, data, inProgress) {
     case QueryFinalInternal(runId, replyTo) => inProgress(data.queryFinal(runId, replyTo))
-    case AbortSequence(replyTo)             => abortSequence(data, InProgress, replyTo)(nextBehavior = inProgress)
-    case Stop(replyTo)                      => stop(data, InProgress, replyTo)(nextBehavior = inProgress)
+    case AbortSequence(replyTo)             => abortSequence(data, InProgress, replyTo)
+    case Stop(replyTo)                      => stop(data, InProgress, replyTo)
     case msg: EditorAction                  => handleEditorAction(msg, data, InProgress)(nextBehavior = inProgress)
     case Pause(replyTo)                     => inProgress(data.updateStepListResult(replyTo, InProgress, data.stepList.map(_.pause)))
     case Resume(replyTo)                    => inProgress(data.updateStepList(replyTo, InProgress, data.stepList.map(_.resume)))
@@ -97,22 +97,22 @@ class SequencerBehavior(
   private def abortingSequence(
       data: SequencerData,
       state: SequencerState[SequencerMsg]
-  )(nextBehavior: SequencerData => Behavior[SequencerMsg]): Behavior[SequencerMsg] =
-    receive[AbortSequenceMessage](AbortingSequence, data, abortingSequence(_, state)(nextBehavior)) {
+  ): Behavior[SequencerMsg] =
+    receive[AbortSequenceMessage](AbortingSequence, data, abortingSequence(_, state)) {
       case AbortSequenceComplete(replyTo) =>
         import data._
         val maybeStepList = stepList.map(_.discardPending)
-        nextBehavior(updateStepList(replyTo, state, maybeStepList))
+        inProgress(updateStepList(replyTo, state, maybeStepList))
     }
 
   private def stopping(
       data: SequencerData,
       state: SequencerState[SequencerMsg]
-  )(nextBehavior: SequencerData => Behavior[SequencerMsg]): Behavior[SequencerMsg] =
-    receive[StopMessage](Stopping, data, stopping(_, state)(nextBehavior)) {
+  ): Behavior[SequencerMsg] =
+    receive[StopMessage](Stopping, data, stopping(_, state)) {
       case StopComplete(replyTo) =>
         import data._
-        nextBehavior(updateStepList(replyTo, state, stepList))
+        inProgress(updateStepList(replyTo, state, stepList))
     }
 
   private def handleCommonMessage[T <: SequencerMsg](
@@ -154,18 +154,22 @@ class SequencerBehavior(
     }
   }
 
-  private def abortSequence(data: SequencerData, state: SequencerState[SequencerMsg], replyTo: ActorRef[OkOrUnhandledResponse])(
-      nextBehavior: SequencerData => Behavior[SequencerMsg]
+  private def abortSequence(
+      data: SequencerData,
+      state: SequencerState[SequencerMsg],
+      replyTo: ActorRef[OkOrUnhandledResponse]
   ): Behavior[SequencerMsg] = {
     script.executeAbort().onComplete(_ => data.self ! AbortSequenceComplete(replyTo))
-    abortingSequence(data, state)(nextBehavior)
+    abortingSequence(data, state)
   }
 
-  private def stop(data: SequencerData, state: SequencerState[SequencerMsg], replyTo: ActorRef[OkOrUnhandledResponse])(
-      nextBehavior: SequencerData => Behavior[SequencerMsg]
+  private def stop(
+      data: SequencerData,
+      state: SequencerState[SequencerMsg],
+      replyTo: ActorRef[OkOrUnhandledResponse]
   ): Behavior[SequencerMsg] = {
     script.executeStop().onComplete(_ => data.self ! StopComplete(replyTo))
-    stopping(data, state)(nextBehavior)
+    stopping(data, state)
   }
 
   private def load(sequence: Sequence, replyTo: ActorRef[OkOrUnhandledResponse], data: SequencerData): Behavior[SequencerMsg] = {
