@@ -8,9 +8,9 @@ import esw.gateway.api.codecs.GatewayCodecs
 import esw.gateway.api.protocol.WebsocketRequest
 import esw.gateway.api.protocol.WebsocketRequest.{QueryFinal, Subscribe, SubscribeCurrentState, SubscribeWithPattern}
 import esw.gateway.api.{CommandApi, EventApi}
-import msocket.impl.ws.WebsocketStreamExtensions
 import msocket.api.MessageHandler
 import msocket.impl.Encoding
+import msocket.impl.ws.WebsocketStreamExtensions
 
 class WebsocketHandlerImpl(commandApi: CommandApi, eventApi: EventApi, val encoding: Encoding[_])(
     implicit actorSystem: ActorSystem[_]
@@ -21,9 +21,8 @@ class WebsocketHandlerImpl(commandApi: CommandApi, eventApi: EventApi, val encod
   override def handle(request: WebsocketRequest): Source[Message, NotUsed] = request match {
     case QueryFinal(componentId, runId) => futureAsStream(commandApi.queryFinal(componentId, runId))
     case SubscribeCurrentState(componentId, stateNames, maxFrequency) =>
-      streamWithStatus(commandApi.subscribeCurrentState(componentId, stateNames, maxFrequency))
-    case Subscribe(eventKeys, maxFrequency) => streamWithStatus(eventApi.subscribe(eventKeys, maxFrequency))
-    case SubscribeWithPattern(subsystem, maxFrequency, pattern) =>
-      streamWithStatus(eventApi.pSubscribe(subsystem, maxFrequency, pattern))
+      stream(commandApi.subscribeCurrentState(componentId, stateNames, maxFrequency))
+    case Subscribe(eventKeys, maxFrequency)                     => stream(eventApi.subscribe(eventKeys, maxFrequency))
+    case SubscribeWithPattern(subsystem, maxFrequency, pattern) => stream(eventApi.pSubscribe(subsystem, maxFrequency, pattern))
   }
 }

@@ -12,7 +12,7 @@ import esw.gateway.api.protocol.PostRequest.{Oneway, Submit, Validate}
 import esw.gateway.api.protocol.WebsocketRequest.{QueryFinal, SubscribeCurrentState}
 import esw.gateway.api.protocol.{InvalidComponent, PostRequest, WebsocketRequest}
 import msocket.api.Transport
-import msocket.api.models.StreamStatus
+import msocket.api.models.Subscription
 
 import scala.concurrent.Future
 
@@ -46,8 +46,8 @@ class CommandClient(postClient: Transport[PostRequest], websocketClient: Transpo
       componentId: ComponentId,
       stateNames: Set[StateName],
       maxFrequency: Option[Int]
-  ): Source[CurrentState, Future[StreamStatus]] = {
-    websocketClient.requestStreamWithStatus[CurrentState](
+  ): Source[CurrentState, Subscription] = {
+    websocketClient.requestStream[CurrentState](
       SubscribeCurrentState(componentId, stateNames, maxFrequency)
     )
   }

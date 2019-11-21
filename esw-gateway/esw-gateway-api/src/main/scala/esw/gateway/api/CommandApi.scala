@@ -7,7 +7,7 @@ import csw.params.commands.ControlCommand
 import csw.params.core.models.Id
 import csw.params.core.states.{CurrentState, StateName}
 import esw.gateway.api.protocol.InvalidComponent
-import msocket.api.models.StreamStatus
+import msocket.api.models.Subscription
 
 import scala.concurrent.Future
 
@@ -21,5 +21,5 @@ trait CommandApi {
       componentId: ComponentId,
       stateNames: Set[StateName] = Set.empty,
       maxFrequency: Option[Int] = None
-  ): Source[CurrentState, Future[StreamStatus]]
+  ): Source[CurrentState, Subscription]
 }
