@@ -6,7 +6,7 @@ import kotlinx.coroutines.delay
 
 script {
 
-    val processVar = ProcessVar(true, "tcs.trigger", booleanKey("flag"))
+    val processVar = SystemVar(true, "tcs.trigger", booleanKey("flag"))
 
     val fsm = FSM("Trigger FSM", "INIT") {
         state("INIT") {

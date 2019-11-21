@@ -23,6 +23,7 @@ interface EventServiceDsl {
     val defaultSubscriber: IEventSubscriber
 
     fun EventKey(prefix: String, eventName: String): EventKey = EventKey(Prefix(prefix), EventName(eventName))
+    fun EventKey(eventKeyStr: String): EventKey = EventKey.apply(eventKeyStr)
 
     fun SystemEvent(sourcePrefix: String, eventName: String, vararg parameters: Parameter<*>): SystemEvent =
             SystemEvent(Prefix(sourcePrefix), EventName(eventName)).jMadd(parameters.toSet())

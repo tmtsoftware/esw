@@ -23,7 +23,7 @@ class StateMachine(private val name: String, initialState: String, val coroutine
         states += name to block
     }
 
-    suspend fun become(state: String) {
+    fun become(state: String) {
         if (states.keys.any { it.equals(state, true) }) {
             previousState = currentState
             currentState = state
@@ -43,8 +43,8 @@ class StateMachine(private val name: String, initialState: String, val coroutine
         fsmJob.cancel()
     }
 
-    override suspend fun refresh() {
-        states[currentState]?.invoke()
+    override fun refresh() {
+        coroutineScope.launch(fsmJob) { states[currentState]?.invoke() }
     }
 
     suspend fun on(condition: Boolean = true, body: suspend () -> Unit) {
@@ -66,6 +66,6 @@ class StateMachine(private val name: String, initialState: String, val coroutine
 
     // todo: can we use generics here?
     operator fun Int?.compareTo(other: Int?): Int =
-        if (this != null && other != null) this.compareTo(other)
-        else -1
+            if (this != null && other != null) this.compareTo(other)
+            else -1
 }

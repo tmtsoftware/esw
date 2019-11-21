@@ -24,6 +24,6 @@ fun <T : ParameterSetType<T>, P : Parameter<*>> T.remove(parameter: P): T = remo
 
 operator fun <T : ParameterSetType<T>, S> T.get(key: Key<S>): Parameter<S>? = jGet(key).nullable()
 operator fun <T : ParameterSetType<T>, S> T.get(keyName: String, keyType: KeyType<S>): Parameter<S>? =
-    jGet(keyName, keyType).nullable()
+        jGet(keyName, keyType).nullable()
 
 operator fun <T : ParameterSetType<T>, S> T.invoke(key: Key<S>): Parameter<S> = apply(key)
