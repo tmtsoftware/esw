@@ -190,10 +190,13 @@ class SequencerBehavior(
       sequence: Sequence,
       data: SequencerData,
       replyTo: ActorRef[SequencerSubmitResponse]
-  ): Behavior[SequencerMsg] = {
-    val updatedData = data.createStepList(sequence).startSequence(actorSystem.deadLetters)
-    inProgress(updatedData.queryFinal(updatedData.runId.get, replyTo))
-  }
+  ): Behavior[SequencerMsg] =
+    inProgress(
+      data
+        .createStepList(sequence)
+        .startSequence(actorSystem.deadLetters)
+        .queryFinal(replyTo)
+    )
 
   private def shutdown(data: SequencerData, replyTo: ActorRef[Ok.type]): Behavior[SequencerMsg] = {
 
