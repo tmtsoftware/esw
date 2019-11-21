@@ -12,9 +12,10 @@ import esw.gateway.api.protocol.PostRequest.{Oneway, Submit, Validate}
 import esw.gateway.api.protocol.WebsocketRequest.{QueryFinal, SubscribeCurrentState}
 import esw.gateway.api.protocol.{InvalidComponent, PostRequest, WebsocketRequest}
 import msocket.api.Transport
-import msocket.api.models.StreamStatus
+import msocket.api.models.Subscription
 
 import scala.concurrent.Future
+import scala.concurrent.duration.DurationLong
 
 class CommandClient(postClient: Transport[PostRequest], websocketClient: Transport[WebsocketRequest])
     extends CommandApi
@@ -39,15 +40,15 @@ class CommandClient(postClient: Transport[PostRequest], websocketClient: Transpo
   }
 
   override def queryFinal(componentId: ComponentId, runId: Id): Future[Either[InvalidComponent, SubmitResponse]] = {
-    websocketClient.requestResponse[Either[InvalidComponent, SubmitResponse]](QueryFinal(componentId, runId))
+    websocketClient.requestResponse[Either[InvalidComponent, SubmitResponse]](QueryFinal(componentId, runId), 1.hours)
   }
 
   override def subscribeCurrentState(
       componentId: ComponentId,
       stateNames: Set[StateName],
       maxFrequency: Option[Int]
-  ): Source[CurrentState, Future[StreamStatus]] = {
-    websocketClient.requestStreamWithStatus[CurrentState](
+  ): Source[CurrentState, Subscription] = {
+    websocketClient.requestStream[CurrentState](
       SubscribeCurrentState(componentId, stateNames, maxFrequency)
     )
   }

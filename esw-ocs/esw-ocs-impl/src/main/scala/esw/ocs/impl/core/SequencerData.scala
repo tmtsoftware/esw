@@ -38,14 +38,21 @@ private[core] case class SequencerData(
     sendNextPendingStepIfAvailable()
       .notifyReadyToExecuteNextSubscriber(InProgress)
 
-  def queryFinal(runId: Id, replyTo: ActorRef[SequencerSubmitResponse]): SequencerData =
-    this.runId match {
-      case Some(id) if id == runId && stepList.get.isFinished =>
-        replyTo ! SubmitResult(getSequencerResponse); this
-      case Some(id) if id == runId =>
-        copy(sequenceResponseSubscribers = sequenceResponseSubscribers + replyTo)
-      case _ => replyTo ! SubmitResult(Error(runId, s"No sequence with $runId is loaded in the sequencer")); this
+  def queryFinal(runId: Id, replyTo: ActorRef[SequencerSubmitResponse]): SequencerData = {
+    if (this.runId.isDefined && this.runId.get == runId) queryFinal(replyTo)
+    else {
+      replyTo ! SubmitResult(Error(runId, s"No sequence with $runId is loaded in the sequencer"))
+      this
     }
+  }
+
+  def queryFinal(replyTo: ActorRef[SequencerSubmitResponse]): SequencerData = {
+    if (runId.isDefined && stepList.get.isFinished) {
+      replyTo ! SubmitResult(getSequencerResponse)
+      this
+    }
+    else copy(sequenceResponseSubscribers = sequenceResponseSubscribers + replyTo)
+  }
 
   def query(runId: Id, replyTo: ActorRef[SequencerQueryResponse]): SequencerData = {
     this.runId match {

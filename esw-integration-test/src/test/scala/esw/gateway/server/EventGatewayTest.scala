@@ -10,9 +10,10 @@ import csw.params.events.{Event, EventKey, EventName, SystemEvent}
 import csw.testkit.scaladsl.CSWService.EventServer
 import esw.gateway.api.clients.EventClient
 import esw.gateway.api.codecs.GatewayCodecs
-import esw.gateway.api.protocol.{EmptyEventKeys, PostRequest, WebsocketRequest}
+import esw.gateway.api.protocol.{PostRequest, WebsocketRequest}
 import esw.ocs.testkit.EswTestKit
 import msocket.api.Transport
+import msocket.api.models.MSocketErrorFrame
 import msocket.impl.Encoding.JsonText
 import msocket.impl.post.HttpPostTransport
 import msocket.impl.ws.WebsocketTransport
@@ -95,9 +96,9 @@ class EventGatewayTest extends EswTestKit(EventServer) with GatewayCodecs {
         new WebsocketTransport[WebsocketRequest](s"ws://localhost:$port/websocket-endpoint", JsonText)
       val eventClient: EventClient = new EventClient(postClient, websocketClient)
 
-      val (statusF, _) = eventClient.subscribe(Set.empty, None).preMaterialize()
-
-      statusF.futureValue should ===(EmptyEventKeys.toStreamError)
+      intercept[MSocketErrorFrame] {
+        eventClient.subscribe(Set.empty, None).runForeach(_ => ()).awaitResult
+      }
     }
 
     "support pubsub of large events" in {
