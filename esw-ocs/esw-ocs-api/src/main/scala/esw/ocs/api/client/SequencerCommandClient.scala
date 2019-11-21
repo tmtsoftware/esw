@@ -10,6 +10,7 @@ import esw.ocs.api.protocol.SequencerPostRequest._
 import esw.ocs.api.protocol.SequencerWebsocketRequest.QueryFinal
 import esw.ocs.api.protocol._
 import msocket.api.Transport
+import concurrent.duration.DurationLong
 
 import scala.concurrent.{ExecutionContext, Future}
 
@@ -36,7 +37,7 @@ class SequencerCommandClient(
     postClient.requestResponse[QueryResponse](Query(runId))
 
   override def queryFinal(runId: Id): Future[SubmitResponse] =
-    websocketClient.requestResponse[SubmitResponse](QueryFinal(runId))
+    websocketClient.requestResponse[SubmitResponse](QueryFinal(runId), 1.hour)
 
   override def goOnline(): Future[GoOnlineResponse] = postClient.requestResponse[GoOnlineResponse](GoOnline)
 

@@ -1,7 +1,6 @@
 package esw.gateway.server.handlers
 
 import akka.NotUsed
-import akka.actor.typed.ActorSystem
 import akka.http.scaladsl.model.ws.Message
 import akka.stream.scaladsl.Source
 import esw.gateway.api.codecs.GatewayCodecs
@@ -12,9 +11,8 @@ import msocket.api.MessageHandler
 import msocket.impl.Encoding
 import msocket.impl.ws.WebsocketStreamExtensions
 
-class WebsocketHandlerImpl(commandApi: CommandApi, eventApi: EventApi, val encoding: Encoding[_])(
-    implicit actorSystem: ActorSystem[_]
-) extends MessageHandler[WebsocketRequest, Source[Message, NotUsed]]
+class WebsocketHandlerImpl(commandApi: CommandApi, eventApi: EventApi, val encoding: Encoding[_])
+    extends MessageHandler[WebsocketRequest, Source[Message, NotUsed]]
     with GatewayCodecs
     with WebsocketStreamExtensions {
 

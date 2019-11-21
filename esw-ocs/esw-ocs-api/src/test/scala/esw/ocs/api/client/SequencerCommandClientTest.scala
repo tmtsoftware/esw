@@ -15,6 +15,7 @@ import org.mockito.ArgumentMatchers.{any, eq => argsEq}
 
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future
+import scala.concurrent.duration.FiniteDuration
 
 class SequencerCommandClientTest extends BaseTestSuite with SequencerHttpCodecs {
 
@@ -75,8 +76,10 @@ class SequencerCommandClientTest extends BaseTestSuite with SequencerHttpCodecs 
           .requestResponse[SubmitResponse](argsEq(SubmitSequence(sequence)))(any[Decoder[SubmitResponse]]())
       ).thenReturn(Future.successful(startedResponse))
 
-      when(websocketClient.requestResponse[SubmitResponse](argsEq(QueryFinal(sequenceId)))(any[Decoder[SubmitResponse]]()))
-        .thenReturn(Future.successful(completedResponse))
+      when(
+        websocketClient
+          .requestResponse[SubmitResponse](argsEq(QueryFinal(sequenceId)), any[FiniteDuration]())(any[Decoder[SubmitResponse]]())
+      ).thenReturn(Future.successful(completedResponse))
 
       sequencerCommandClient.submitAndWait(sequence).futureValue should ===(completedResponse)
     }
@@ -100,8 +103,10 @@ class SequencerCommandClientTest extends BaseTestSuite with SequencerHttpCodecs 
 
     "call websocket with QueryFinal request | ESW-222" in {
       val id = mock[Id]
-      when(websocketClient.requestResponse[SubmitResponse](argsEq(QueryFinal(id)))(any[Decoder[SubmitResponse]]()))
-        .thenReturn(Future.successful(Completed(id)))
+      when(
+        websocketClient
+          .requestResponse[SubmitResponse](argsEq(QueryFinal(id)), any[FiniteDuration]())(any[Decoder[SubmitResponse]]())
+      ).thenReturn(Future.successful(Completed(id)))
       sequencerCommandClient.queryFinal(id).futureValue should ===(Completed(id))
     }
   }

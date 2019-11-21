@@ -47,7 +47,7 @@ class EventImpl(eventService: EventService, eventSubscriberUtil: EventSubscriber
         case None              => subscriber.subscribe(eventKeys).withSubscription()
       }
     }
-    else Source.failed(throw new RuntimeException(EmptyEventKeys.msg))
+    else Source.failed(new RuntimeException(EmptyEventKeys.msg))
 
     dd.withSubscription()
   }
