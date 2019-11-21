@@ -1,6 +1,5 @@
 package esw.ocs.api.client
 
-import akka.NotUsed
 import akka.stream.scaladsl.Source
 import csw.params.commands.SequenceCommand
 import csw.params.core.models.Id

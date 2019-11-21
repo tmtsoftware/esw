@@ -7,7 +7,6 @@ import csw.command.client.extensions.AkkaLocationExt.RichAkkaLocation
 import esw.ocs.api.models.SequencerInsight
 import esw.ocs.api.{SequencerAdminApi, SequencerAdminFactoryApi}
 import esw.ocs.dsl.sequence_manager.LocationServiceUtil
-import msocket.api.models.Subscription
 
 import scala.concurrent.Future
 

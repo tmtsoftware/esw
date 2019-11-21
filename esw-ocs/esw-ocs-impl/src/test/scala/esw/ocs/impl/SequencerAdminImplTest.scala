@@ -12,7 +12,6 @@ import esw.ocs.api.protocol.EditorError.{CannotOperateOnAnInFlightOrFinishedStep
 import esw.ocs.api.protocol.{Ok, Unhandled}
 import esw.ocs.impl.messages.SequencerMessages._
 import esw.ocs.impl.messages.SequencerState.{Idle, Loaded, Offline}
-import msocket.api.models.Subscription
 
 class SequencerAdminImplTest extends ScalaTestWithActorTestKit with BaseTestSuite {
   private val command             = Setup(Prefix("esw.test"), CommandName("command-1"), None)
