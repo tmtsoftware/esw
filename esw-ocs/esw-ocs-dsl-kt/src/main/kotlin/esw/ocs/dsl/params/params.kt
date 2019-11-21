@@ -10,20 +10,22 @@ import esw.ocs.dsl.nullable
 val <T> Parameter<T>.values: List<T> get() = jValues().toList()
 val <T> Parameter<T>.first: T get() = head()
 
-operator fun <T> Parameter<T>.get(index: Int): T? = jGet(index).nullable()
+fun <T> Parameter<T>.kGet(index: Int): T? = jGet(index).nullable()
 operator fun <T> Parameter<T>.invoke(index: Int): T = value(index)
 
 /** ========== ParameterSetType =========== **/
-fun <T : ParameterSetType<T>, P : Parameter<*>> T.madd(vararg parameters: P): T = jMadd(parameters.toSet())
 
-fun <T : ParameterSetType<T>, S> T.find(parameter: Parameter<S>): Parameter<S>? = jFind(parameter).nullable()
-fun <T : ParameterSetType<T>, S> T.exists(key: Key<S>): Boolean = exists(key)
+fun <S> ParameterSetType<*>.kFind(parameter: Parameter<S>): Parameter<S>? = jFind(parameter).nullable()
 
-fun <T : ParameterSetType<T>, S> T.remove(key: Key<S>): T = remove(key)
-fun <T : ParameterSetType<T>, P : Parameter<*>> T.remove(parameter: P): T = remove(parameter)
+fun <S> ParameterSetType<*>.kExists(key: Key<S>): Boolean = exists(key)
 
-operator fun <T : ParameterSetType<T>, S> T.get(key: Key<S>): Parameter<S>? = jGet(key).nullable()
-operator fun <T : ParameterSetType<T>, S> T.get(keyName: String, keyType: KeyType<S>): Parameter<S>? =
-        jGet(keyName, keyType).nullable()
+fun <S> ParameterSetType<*>.kGet(key: Key<S>): Parameter<S>? = jGet(key).nullable()
+fun <S> ParameterSetType<*>.kGet(keyName: String, keyType: KeyType<S>): Parameter<S>? = jGet(keyName, keyType).nullable()
+operator fun <S> ParameterSetType<*>.invoke(key: Key<S>): Parameter<S> = apply(key)
 
-operator fun <T : ParameterSetType<T>, S> T.invoke(key: Key<S>): Parameter<S> = apply(key)
+// following extensions will only work on concrete supertypes of ParameterSetType, for example, ObserveEvent/Setup command
+// but not on paramType present in base types like Event/Command
+
+fun <T : ParameterSetType<T>, P : Parameter<*>> T.kMadd(vararg parameters: P): T = jMadd(parameters.toSet())
+fun <T : ParameterSetType<T>, S> T.kRemove(key: Key<S>): T = remove(key)
+fun <T : ParameterSetType<T>, P : Parameter<*>> T.kRemove(parameter: P): T = remove(parameter)

@@ -31,7 +31,7 @@ script {
 
     processVar.bind(fsm)
 
-    onSetup("command-1") { command1 ->
+    onSetup("command-1") {
         fsm.start()
         fsm.await()
     }
