@@ -20,7 +20,7 @@ private[core] case class SequencerData(
     stepRefSubscriber: Option[ActorRef[PullNextResult]],
     self: ActorRef[SequencerMsg],
     actorSystem: ActorSystem[_],
-    sequenceResponseSubscribers: Set[ActorRef[SequencerSubmitResponse]]
+    sequenceResponseSubscribers: Set[ActorRef[SubmitResponse]]
 ) {
 
   def createStepList(sequence: Sequence): SequencerData =
@@ -37,17 +37,18 @@ private[core] case class SequencerData(
     sendNextPendingStepIfAvailable()
       .notifyReadyToExecuteNextSubscriber(InProgress)
 
-  def queryFinal(runId: Id, replyTo: ActorRef[SequencerSubmitResponse]): SequencerData = {
-    if (this.runId.isDefined && this.runId.get == runId) queryFinal(replyTo)
+  def queryFinal(runId: Id, replyTo: ActorRef[SubmitResponse]): SequencerData =
+    if (this.runId.isDefined && this.runId.get == runId) {
+      queryFinal(replyTo)
+    }
     else {
-      replyTo ! SubmitResult(Error(runId, s"No sequence with $runId is loaded in the sequencer"))
+      replyTo ! Error(runId, s"No sequence with $runId is loaded in the sequencer")
       this
     }
-  }
 
-  def queryFinal(replyTo: ActorRef[SequencerSubmitResponse]): SequencerData = {
+  def queryFinal(replyTo: ActorRef[SubmitResponse]): SequencerData = {
     if (runId.isDefined && stepList.get.isFinished) {
-      replyTo ! SubmitResult(getSequencerResponse)
+      replyTo ! getSequencerResponse
       this
     }
     else copy(sequenceResponseSubscribers = sequenceResponseSubscribers + replyTo)
@@ -151,7 +152,7 @@ private[core] case class SequencerData(
   private def checkForSequenceCompletion(): SequencerData =
     if (stepList.exists(_.isFinished)) {
       val submitResponse = getSequencerResponse
-      sequenceResponseSubscribers.foreach(_ ! SubmitResult(submitResponse))
+      sequenceResponseSubscribers.foreach(_ ! submitResponse)
       self ! GoIdle(actorSystem.deadLetters)
       copy(sequenceResponseSubscribers = Set.empty)
     }

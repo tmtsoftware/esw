@@ -82,9 +82,7 @@ class SequencerClientIntegrationTest extends EswTestKit(EventServer) {
       Invalid(invalidId, UnsupportedCommandInStateIssue(Unhandled(Offline.entryName, "StartSequence").msg))
     ocsSequencerCommandApi.startSequence().futureValue should ===(invalidStartResponse)
 
-    val invalidQueryResponse =
-      Invalid(invalidId, UnsupportedCommandInStateIssue(Unhandled(Offline.entryName, "QueryFinalInternal").msg))
-    ocsSequencerCommandApi.queryFinal(invalidId).futureValue should ===(invalidQueryResponse)
+    ocsSequencerCommandApi.queryFinal(invalidId).futureValue shouldBe a[Error]
   }
 
   "Load, Add commands and Start sequence - ensures sequence doesn't start on loading | ESW-222, ESW-101" in {

@@ -16,7 +16,7 @@ import esw.ocs.api.models.StepStatus.{Finished, InFlight, Pending}
 import esw.ocs.api.models.{Step, StepList}
 import esw.ocs.api.protocol.EditorError.{CannotOperateOnAnInFlightOrFinishedStep, IdDoesNotExist}
 import esw.ocs.api.protocol._
-import esw.ocs.impl.messages.SequencerMessages.{AbortSequence, AddBreakpoint, QueryFinalInternal, _}
+import esw.ocs.impl.messages.SequencerMessages._
 import esw.ocs.impl.messages.SequencerState.{Idle, InProgress, Loaded, Offline}
 
 import scala.concurrent.Future
@@ -95,7 +95,7 @@ class SequencerBehaviorTest extends ScalaTestWithActorTestKit with BaseTestSuite
     }
   }
 
-  "QuerySequenceResponse" must {
+  "QueryFinal" must {
     "return error response when sequencer is Idle and hasn't executed any sequence | ESW-221" in {
       val sequencerSetup = SequencerTestSetup.idle(sequence)
       import sequencerSetup._
@@ -125,12 +125,12 @@ class SequencerBehaviorTest extends ScalaTestWithActorTestKit with BaseTestSuite
       val startedResponse = sequenceResult.toSubmitResponse()
       startedResponse shouldBe a[Started]
 
-      val seqResProbe = createTestProbe[SequencerSubmitResponse]
-      sequencerActor ! QueryFinalInternal(startedResponse.runId, seqResProbe.ref)
+      val seqResProbe = createTestProbe[QueryResponse]
+      sequencerActor ! QueryFinal(startedResponse.runId, seqResProbe.ref)
 
       pullAllStepsAndAssertSequenceIsFinished()
 
-      seqResProbe.expectMessage(SubmitResult(Completed(startedResponse.runId)))
+      seqResProbe.expectMessage(Completed(startedResponse.runId))
     }
 
     "return Sequence result with Completed when sequencer is inProgress state | ESW-145, ESW-154, ESW-221" in {
@@ -952,8 +952,7 @@ class SequencerBehaviorTest extends ScalaTestWithActorTestKit with BaseTestSuite
       GoOfflineFailed,
       GoIdle,
       PullNext,
-      StepSuccess,
-      QueryFinalInternal(Id(), _)
+      StepSuccess
     )
   }
 }
