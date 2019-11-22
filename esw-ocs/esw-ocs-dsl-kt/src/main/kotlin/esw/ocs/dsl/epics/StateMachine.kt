@@ -7,7 +7,21 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import kotlin.time.Duration
 
-class StateMachine(private val name: String, initialState: String, val coroutineScope: CoroutineScope) : Refreshable {
+interface FSMState {
+    fun become(state: String)
+    fun completeFsm()
+    suspend fun on(condition: Boolean = true, body: suspend () -> Unit)
+    suspend fun on(duration: Duration, body: suspend () -> Unit)
+    suspend fun entry(body: suspend () -> Unit)
+    fun state(name: String, block: suspend () -> Unit)
+}
+
+interface StateMachine : Refreshable {
+    fun start()
+    suspend fun await()
+}
+
+class StateMachineImpl(private val name: String, initialState: String, val coroutineScope: CoroutineScope) : StateMachine, FSMState {
     // fixme: Try and remove optional behavior of both variables
     private var currentState: String? = null
     private var previousState: String? = null
@@ -19,11 +33,11 @@ class StateMachine(private val name: String, initialState: String, val coroutine
         become(initialState)
     }
 
-    fun state(name: String, block: suspend () -> Unit) {
+    override fun state(name: String, block: suspend () -> Unit) {
         states += name to block
     }
 
-    fun become(state: String) {
+    override fun become(state: String) {
         if (states.keys.any { it.equals(state, true) }) {
             previousState = currentState
             currentState = state
@@ -31,15 +45,15 @@ class StateMachine(private val name: String, initialState: String, val coroutine
         } else throw InvalidStateException(state)
     }
 
-    fun start() {
+    override fun start() {
         fsmJob.start()
     }
 
-    suspend fun await() {
+    override suspend fun await() {
         fsmJob.join()
     }
 
-    fun completeFsm() {
+    override fun completeFsm() {
         fsmJob.cancel()
     }
 
@@ -47,18 +61,18 @@ class StateMachine(private val name: String, initialState: String, val coroutine
         coroutineScope.launch(fsmJob) { states[currentState]?.invoke() }
     }
 
-    suspend fun on(condition: Boolean = true, body: suspend () -> Unit) {
+    override suspend fun on(condition: Boolean, body: suspend () -> Unit) {
         if (condition) {
             body()
         }
     }
 
-    suspend fun on(duration: Duration, body: suspend () -> Unit) {
+    override suspend fun on(duration: Duration, body: suspend () -> Unit) {
         delay(duration.toLongMilliseconds())
         on(body = body)
     }
 
-    suspend fun entry(body: suspend () -> Unit) {
+    override suspend fun entry(body: suspend () -> Unit) {
         if (currentState != previousState) {
             body()
         }
