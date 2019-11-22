@@ -12,7 +12,7 @@ interface Refreshable {
     fun refresh()
 }
 
-class ProcessVariable<T> internal constructor(
+class ProcessVariable<T> constructor(
         initial: Event,
         private val key: Key<T>,
         private val eventService: EventServiceDsl
