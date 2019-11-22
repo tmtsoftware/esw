@@ -4,17 +4,18 @@ import akka.actor.testkit.typed.scaladsl.TestProbe
 import akka.actor.typed.ActorRef
 import com.typesafe.config.ConfigFactory
 import csw.command.client.messages.sequencer.SequencerMsg
-import csw.command.client.messages.sequencer.SequencerMsg.SubmitSequenceAndWait
-import csw.params.commands.CommandResponse.SubmitResponse
 import csw.params.commands.{CommandName, Sequence, Setup}
 import csw.params.core.generics.KeyType.StringKey
 import csw.params.core.models.Prefix
 import csw.params.events.EventKey
 import csw.testkit.scaladsl.CSWService.EventServer
+import esw.ocs.api.SequencerCommandApi
+import esw.ocs.impl.SequencerCommandImpl
 import esw.ocs.testkit.EswTestKit
 
 class LockUnlockIntegrationTest extends EswTestKit(EventServer) {
   private var ocsSequencer: ActorRef[SequencerMsg] = _
+  private var ocsCommandApi: SequencerCommandApi   = _
 
   override def beforeAll(): Unit = {
     super.beforeAll()
@@ -23,6 +24,7 @@ class LockUnlockIntegrationTest extends EswTestKit(EventServer) {
 
   override def beforeEach(): Unit = {
     ocsSequencer = spawnSequencerRef("esw", "lockUnlockScript")
+    ocsCommandApi = new SequencerCommandImpl(ocsSequencer)
   }
 
   override def afterEach(): Unit = shutdownAllSequencers()
@@ -40,7 +42,7 @@ class LockUnlockIntegrationTest extends EswTestKit(EventServer) {
         })
 
       val lockCommand = Setup(Prefix("TCS.test"), CommandName("lock-assembly"), None)
-      ocsSequencer ! SubmitSequenceAndWait(Sequence(lockCommand), TestProbe[SubmitResponse].ref)
+      ocsCommandApi.submitAndWait(Sequence(lockCommand))
 
       probe.expectMessage("LockAcquired$")
       probe.expectMessage("LockExpiringShortly$")
@@ -49,8 +51,7 @@ class LockUnlockIntegrationTest extends EswTestKit(EventServer) {
 
     "support unlocking components | ESW-126" in {
       val unlockCommand = Setup(Prefix("TCS.test"), CommandName("unlock-assembly"), None)
-
-      ocsSequencer ! SubmitSequenceAndWait(Sequence(unlockCommand), TestProbe[SubmitResponse].ref)
+      ocsCommandApi.submitAndWait(Sequence(unlockCommand))
       eventually {
         val unlockEvent = eventSubscriber.get(lockingEventKey).futureValue
         unlockEvent.paramType.get(lockingStringKey).flatMap(_.get(0)) should ===(Some("LockAlreadyReleased$"))

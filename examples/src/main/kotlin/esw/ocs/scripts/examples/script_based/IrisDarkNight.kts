@@ -45,7 +45,7 @@ script { _ ->
 
     onShutdown {
         publishStream.cancel()
-        subscriptionStream.unsubscribe().await()
+        subscriptionStream.cancel()
         info("shutdown iris")
     }
 }

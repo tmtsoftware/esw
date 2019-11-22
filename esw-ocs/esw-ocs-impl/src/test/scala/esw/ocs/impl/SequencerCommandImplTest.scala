@@ -37,7 +37,7 @@ class SequencerCommandImplTest extends ScalaTestWithActorTestKit with BaseTestSu
         case GoOffline(replyTo)                           => replyTo ! goOfflineResponse
         case LoadSequence(`sequence`, replyTo)            => replyTo ! loadSequenceResponse
         case StartSequence(replyTo)                       => replyTo ! startSequenceResponse
-        case SubmitSequence(`sequence`, replyTo)          => replyTo ! submitSequenceResponse
+        case SubmitSequenceInternal(`sequence`, replyTo)  => replyTo ! submitSequenceResponse
         case QueryFinal(_, replyTo)                       => replyTo ! queryFinalResponse
         case DiagnosticMode(`startTime`, `hint`, replyTo) => replyTo ! diagnosticModeResponse
         case OperationsMode(replyTo)                      => replyTo ! operationsModeResponse

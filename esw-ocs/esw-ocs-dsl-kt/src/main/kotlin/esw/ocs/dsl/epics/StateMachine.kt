@@ -1,73 +1,78 @@
 package esw.ocs.dsl.epics
 
-import kotlinx.coroutines.*
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.CoroutineStart.LAZY
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
 import kotlin.time.Duration
 
-class StateMachine(private val name: String, val coroutineScope: CoroutineScope) : Refreshable {
+interface FSMState {
+    fun become(state: String)
+    fun completeFsm()
+    suspend fun on(condition: Boolean = true, body: suspend () -> Unit)
+    suspend fun on(duration: Duration, body: suspend () -> Unit)
+    suspend fun entry(body: suspend () -> Unit)
+    fun state(name: String, block: suspend () -> Unit)
+}
+
+interface StateMachine : Refreshable {
+    fun start()
+    suspend fun await()
+}
+
+class StateMachineImpl(private val name: String, initialState: String, val coroutineScope: CoroutineScope) : StateMachine, FSMState {
+    // fixme: Try and remove optional behavior of both variables
     private var currentState: String? = null
     private var previousState: String? = null
 
-    private var fsmJob: Job? = null // Gets CANCELLED whenever the FSM is completed
-    private var fsmCompletorJob: CompletableJob = Job() // Gets COMPLETED whenever the FSM is completed
+    //fixme : do we need to pass as receiver coroutine scope to state lambda
+    private val states = mutableMapOf<String, suspend () -> Unit>()
 
-    //fixme : do we need to passas receiver coroutine scope to state lambda
-    val states = mutableMapOf<String, suspend () -> Unit>()
-
-    fun state(name: String, block: suspend () -> Unit) {
-        states += Pair(name, block)
+    private var fsmJob: Job = coroutineScope.launch(start = LAZY) {
+        become(initialState)
     }
 
-    suspend fun become(state: String) {
-        if (states.keys.any { it.equals(state,true) }){
+    override fun state(name: String, block: suspend () -> Unit) {
+        states += name to block
+    }
+
+    override fun become(state: String) {
+        if (states.keys.any { it.equals(state, true) }) {
+            previousState = currentState
             currentState = state
             refresh()
-            //fixme: add concerete exception for this
-        } else throw RuntimeException("Failed transition to invalid state:  $state")
+        } else throw InvalidStateException(state)
     }
 
-    fun start(initState: String){
-        fsmJob = coroutineScope.launch {
-            become(initState)
-            refresh()
-        }
+    override fun start() {
+        fsmJob.start()
     }
 
-    suspend fun await() {
-        fsmCompletorJob.join()
+    override suspend fun await() {
+        fsmJob.join()
     }
 
-    suspend fun startAndWait(initState: String) {
-        start(initState)
-        await()
+    override fun completeFsm() {
+        fsmJob.cancel()
     }
 
-    suspend fun completeFsm() {
-        fsmJob?.cancelAndJoin()
-        fsmCompletorJob.complete()
+    override fun refresh() {
+        coroutineScope.launch(fsmJob) { states[currentState]?.invoke() }
     }
 
-    override suspend fun refresh() {
-        println(
-                "machine = $name    previousState = $previousState     currentState = $currentState}"
-        )
-        //fixme: what happens when there is no entry for given state
-        states[currentState]?.invoke()
-    }
-
-    suspend fun on(condition: Boolean = true, body: suspend () -> Unit) {
-        previousState = currentState
+    override suspend fun on(condition: Boolean, body: suspend () -> Unit) {
         if (condition) {
             body()
         }
     }
 
-    suspend fun on(duration: Duration, body: suspend () -> Unit) {
+    override suspend fun on(duration: Duration, body: suspend () -> Unit) {
         delay(duration.toLongMilliseconds())
         on(body = body)
     }
 
-    //fixme: restrict entry only to lambda passed to state
-    suspend fun entry(body: suspend () -> Unit) {
+    override suspend fun entry(body: suspend () -> Unit) {
         if (currentState != previousState) {
             body()
         }

@@ -11,12 +11,12 @@ import io.kotlintest.shouldBe
 import io.mockk.every
 import io.mockk.mockk
 import io.mockk.verify
-import java.util.concurrent.CompletableFuture
-import kotlin.coroutines.EmptyCoroutineContext
-import kotlin.time.milliseconds
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.runBlocking
 import org.junit.jupiter.api.Test
+import java.util.concurrent.CompletableFuture
+import kotlin.coroutines.EmptyCoroutineContext
+import kotlin.time.milliseconds
 
 class EventServiceDslTest : EventServiceDsl {
 
@@ -94,7 +94,7 @@ class EventServiceDslTest : EventServiceDsl {
         every { eventSubscriber.subscribeAsync(eventKeys, any()) }.answers { eventSubscription }
         every { eventSubscription.ready() }.answers { CompletableFuture.completedFuture(done()) }
 
-        onEvent(key) { eventCallback } shouldBe eventSubscription
+        onEvent(key) { eventCallback }
         verify { eventSubscriber.subscribeAsync(eventKeys, any()) }
     }
 
@@ -104,25 +104,11 @@ class EventServiceDslTest : EventServiceDsl {
         every { eventSubscription.unsubscribe() }.answers { CompletableFuture.completedFuture(done()) }
         every { eventSubscription.ready() }.answers { CompletableFuture.completedFuture(done()) }
 
-        val subscription: IEventSubscription = onEvent(key) { eventCallback }
-        subscription shouldBe eventSubscription
+        val subscription: Subscription = onEvent(key) { eventCallback }
         verify { eventSubscriber.subscribeAsync(eventKeys, any()) }
 
         subscription.cancel()
         verify { eventSubscription.unsubscribe() }
-    }
-
-    @Test
-    fun `completed should delegate to IEventSubscription#ready() | ESW-120`() = runBlocking {
-        every { eventSubscriber.subscribeAsync(eventKeys, any()) }.answers { eventSubscription }
-        every { eventSubscription.ready() }.answers { CompletableFuture.completedFuture(done()) }
-
-        val subscription: IEventSubscription = onEvent(key) { eventCallback }
-        subscription shouldBe eventSubscription
-        verify { eventSubscriber.subscribeAsync(eventKeys, any()) }
-
-        subscription.completed()
-        verify { eventSubscription.ready() }
     }
 
     @Test

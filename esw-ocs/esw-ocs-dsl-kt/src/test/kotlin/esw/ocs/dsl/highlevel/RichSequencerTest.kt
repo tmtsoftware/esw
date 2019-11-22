@@ -1,8 +1,6 @@
 package esw.ocs.dsl.highlevel
 
-import akka.actor.typed.ActorSystem
 import csw.command.client.SequencerCommandServiceFactory
-import csw.command.client.internal.SequencerCommandServiceImpl
 import csw.location.models.AkkaLocation
 import csw.params.commands.CommandResponse
 import csw.params.commands.Sequence
@@ -35,11 +33,9 @@ class RichSequencerTest {
     private val sequencerAdminFactory: SequencerAdminFactoryApi = mockk()
     private val sequencerCommandFactory: SequencerCommandFactoryApi = mockk()
     private val locationServiceUtil: LocationServiceUtil = mockk()
-    private val actorSystem: ActorSystem<*> = mockk()
 
-    private val tcsSequencer = RichSequencer(sequencerId, observingMode, sequencerAdminFactory, sequencerCommandFactory, locationServiceUtil, actorSystem)
+    private val tcsSequencer = RichSequencer(sequencerId, observingMode, sequencerAdminFactory, sequencerCommandFactory)
 
-    private val sequencerCommandService: SequencerCommandServiceImpl = mockk()
     private val sequencerAdmin: SequencerAdminApi = mockk()
     private val sequencerCommandApi: SequencerCommandApi = mockk()
 
@@ -50,13 +46,12 @@ class RichSequencerTest {
 
         mockkStatic(SequencerCommandServiceFactory::class)
         every { locationServiceUtil.resolveSequencer(sequencerId, observingMode, any()) }.answers { Future.successful(sequencerLocation) }
-        every { SequencerCommandServiceFactory.make(sequencerLocation, actorSystem) }.answers { sequencerCommandService }
-        every { sequencerCommandService.submitAndWait(sequence) }.answers { Future.successful(CommandResponse.Completed(Id.apply())) }
+        every { sequencerCommandApi.submitAndWait(sequence) }.answers { Future.successful(CommandResponse.Completed(Id.apply())) }
         every { sequencerCommandFactory.jMake(sequencerId, observingMode) }.answers { CompletableFuture.completedFuture(sequencerCommandApi) }
 
         tcsSequencer.submitAndWait(sequence)
 
-        verify { sequencerCommandService.submitAndWait(sequence) }
+        verify { sequencerCommandApi.submitAndWait(sequence) }
     }
 
     @Test
