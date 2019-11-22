@@ -1,14 +1,14 @@
 package esw.ocs.app.wiring
 
+import akka.Done
 import akka.actor.typed.SpawnProtocol.Spawn
 import akka.actor.typed.scaladsl.AskPattern._
-import akka.actor.typed.scaladsl.adapter.ClassicActorRefOps
 import akka.actor.typed.{ActorRef, ActorSystem, Props, SpawnProtocol}
 import akka.http.scaladsl.server.{Route, RouteConcatenation}
 import akka.stream.OverflowStrategy
-import akka.stream.scaladsl.Source
+import akka.stream.scaladsl.Sink
+import akka.stream.typed.scaladsl.ActorSource
 import akka.util.Timeout
-import akka.{Done, NotUsed}
 import com.typesafe.config.{Config, ConfigFactory}
 import csw.alarm.api.javadsl.IAlarmService
 import csw.command.client.messages.sequencer.SequencerMsg
@@ -74,12 +74,14 @@ private[ocs] class SequencerWiring(val packageId: String, val observingMode: Str
 
   lazy private val locationServiceUtil = new LocationServiceUtil(locationService)
 
-  private lazy val t = Source
-    .actorRef(1024, OverflowStrategy.dropHead)
+  lazy val (insightRef, insightSource) = ActorSource
+    .actorRef[SequencerInsight](
+      completionMatcher = PartialFunction.empty,
+      failureMatcher = PartialFunction.empty,
+      bufferSize = 1,
+      overflowStrategy = OverflowStrategy.dropHead
+    )
     .preMaterialize()
-
-  private val insightRef: ActorRef[SequencerInsight]           = t._1.toTyped[SequencerInsight]
-  private val insightSource: Source[SequencerInsight, NotUsed] = t._2
 
   lazy private val adminFactory   = new SequencerAdminFactoryImpl(locationServiceUtil, insightSource)
   lazy private val commandFactory = new SequencerCommandFactoryImpl(locationServiceUtil)
@@ -147,6 +149,8 @@ private[ocs] class SequencerWiring(val packageId: String, val observingMode: Str
   lazy val sequencerServer: SequencerServer = new SequencerServer {
     override def start(): Either[ScriptError, AkkaLocation] = {
       try {
+        insightSource.runWith(Sink.ignore)
+
         new Engine(script).start(sequenceOperatorFactory())
 
         httpService.registeredLazyBinding.block

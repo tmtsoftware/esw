@@ -7,6 +7,7 @@ import akka.http.scaladsl.testkit.{ScalatestRouteTest, WSProbe}
 import csw.params.commands.CommandResponse.{Completed, SubmitResponse}
 import csw.params.core.models.Id
 import esw.http.core.BaseTestSuite
+import esw.ocs.api.SequencerAdminApi
 import esw.ocs.api.codecs.SequencerHttpCodecs
 import esw.ocs.api.protocol.SequencerWebsocketRequest.QueryFinal
 import esw.ocs.impl.SequencerCommandImpl
@@ -28,8 +29,10 @@ class SequencerCommandWebsocketRouteTest
   override def encoding: Encoding[_] = JsonText
 
   private val sequencerCommandApi: SequencerCommandImpl = mock[SequencerCommandImpl]
+  private val sequencerAdminApi: SequencerAdminApi      = mock[SequencerAdminApi]
 
-  private def websocketHandlerFactory(encoding: Encoding[_]) = new SequencerWebsocketHandlerImpl(sequencerCommandApi, encoding)
+  private def websocketHandlerFactory(encoding: Encoding[_]) =
+    new SequencerWebsocketHandlerImpl(sequencerCommandApi, sequencerAdminApi, encoding)
 
   private implicit val actorSystem: ActorSystem[SpawnProtocol.Command] = ActorSystem(SpawnProtocol(), "test-system")
 

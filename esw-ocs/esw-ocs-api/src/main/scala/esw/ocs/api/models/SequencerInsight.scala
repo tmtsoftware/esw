@@ -1,3 +1,3 @@
 package esw.ocs.api.models
 
-case class SequencerInsight(text: String = "state")
+case class SequencerInsight(number: Int = 0)

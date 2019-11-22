@@ -1,0 +1,8 @@
+POST http://localhost:49301/post-endpoint
+Content-Type: application/json
+
+{
+  "GetSequence": {}
+}
+
+###

@@ -266,7 +266,7 @@ class SequencerBehavior(
   )(f: T => Behavior[SequencerMsg]): Behavior[SequencerMsg] =
     Behaviors.receive { (ctx, msg) =>
       implicit val timeout: Timeout = Timeouts.LongTimeout
-      data.insightSubscriber ! SequencerInsight(data)
+      insightsSubscriber ! SequencerInsight(data)
       msg match {
         case msg: CommonMessage     => handleCommonMessage(msg, state, data, currentBehavior)
         case msg: LogControlMessage => handleLogMessages(msg)
