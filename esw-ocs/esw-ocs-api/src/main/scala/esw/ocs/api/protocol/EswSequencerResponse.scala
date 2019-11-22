@@ -1,7 +1,7 @@
 package esw.ocs.api.protocol
 
 import csw.params.commands.CommandIssue.UnsupportedCommandInStateIssue
-import csw.params.commands.CommandResponse.{Invalid, QueryResponse, SubmitResponse}
+import csw.params.commands.CommandResponse.{Invalid, SubmitResponse}
 import csw.params.core.models.Id
 import esw.ocs.api.codecs.OcsAkkaSerializable
 import esw.ocs.api.models.Step
@@ -24,13 +24,6 @@ sealed trait SequencerSubmitResponse extends EswSequencerResponse {
   }
 }
 
-sealed trait SequencerQueryResponse extends EswSequencerResponse {
-  def toQueryResponse(runId: Id = Id("IdNotAvailable")): QueryResponse = this match {
-    case QueryResult(queryResponse) => queryResponse
-    case unhandled: Unhandled       => Invalid(runId, UnsupportedCommandInStateIssue(unhandled.msg))
-  }
-}
-
 case object Ok
     extends OkOrUnhandledResponse
     with GenericResponse
@@ -43,7 +36,6 @@ case object Ok
 
 final case class PullNextResult(step: Step)                   extends PullNextResponse
 final case class SubmitResult(submitResponse: SubmitResponse) extends SequencerSubmitResponse
-final case class QueryResult(queryResponse: QueryResponse)    extends SequencerQueryResponse
 
 final case class Unhandled private[ocs] (state: String, messageType: String, msg: String)
     extends OkOrUnhandledResponse
@@ -53,7 +45,6 @@ final case class Unhandled private[ocs] (state: String, messageType: String, msg
     with GoOnlineResponse
     with GoOfflineResponse
     with SequencerSubmitResponse
-    with SequencerQueryResponse
     with PullNextResponse
 
 object Unhandled {

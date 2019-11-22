@@ -42,7 +42,6 @@ object SequencerMessages {
       with InProgressMessage
 
   // common msgs
-  final case class Query(runId: Id, replyTo: ActorRef[SequencerQueryResponse])        extends CommonMessage
   final case class Shutdown(replyTo: ActorRef[Ok.type])                               extends CommonMessage
   final case class GetSequence(replyTo: ActorRef[Option[StepList]])                   extends CommonMessage
   final case class GetSequencerState(replyTo: ActorRef[SequencerState[SequencerMsg]]) extends CommonMessage

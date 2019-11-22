@@ -14,7 +14,6 @@ trait OcsMsgCodecs extends MessageCodecs with CommonCodecs {
   implicit lazy val loadSequenceCodec: Codec[LoadSequence]                      = deriveCodec
   implicit lazy val startSequenceCodec: Codec[StartSequence]                    = deriveCodec
   implicit lazy val seqMsgQueryFinalCodec: Codec[QueryFinalInternal]            = deriveCodec
-  implicit lazy val seqMsgQueryCodec: Codec[Query]                              = deriveCodec
   implicit lazy val sequencerSubmitSequenceCodec: Codec[SubmitSequenceInternal] = deriveCodec
 
   implicit lazy val pullNextCodec: Codec[PullNext]                     = deriveUnaryCodec

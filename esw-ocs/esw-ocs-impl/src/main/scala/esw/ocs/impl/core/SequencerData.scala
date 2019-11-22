@@ -53,13 +53,13 @@ private[core] case class SequencerData(
     else copy(sequenceResponseSubscribers = sequenceResponseSubscribers + replyTo)
   }
 
-  def query(runId: Id, replyTo: ActorRef[SequencerQueryResponse]): SequencerData = {
+  def query(runId: Id, replyTo: ActorRef[QueryResponse]): SequencerData = {
     this.runId match {
       case Some(id) if id == runId && stepList.get.isFinished =>
-        replyTo ! QueryResult(getSequencerResponse)
+        replyTo ! getSequencerResponse
       case Some(id) if id == runId =>
-        replyTo ! QueryResult(Started(id))
-      case _ => replyTo ! QueryResult(CommandNotAvailable(runId))
+        replyTo ! Started(id)
+      case _ => replyTo ! CommandNotAvailable(runId)
     }
     this
   }

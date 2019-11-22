@@ -6,12 +6,13 @@ import akka.actor.typed.scaladsl.Behaviors
 import akka.actor.typed.{ActorRef, ActorSystem, Behavior}
 import akka.util.Timeout
 import csw.command.client.messages.sequencer.SequencerMsg
-import csw.command.client.messages.sequencer.SequencerMsg.{QueryFinal, SubmitSequence}
+import csw.command.client.messages.sequencer.SequencerMsg.{Query, QueryFinal, SubmitSequence}
 import csw.command.client.messages.{GetComponentLogMetadata, LogControlMessage, SetComponentLogLevel}
 import csw.location.api.scaladsl.LocationService
 import csw.location.models.ComponentId
 import csw.location.models.Connection.AkkaConnection
 import csw.logging.client.commons.LogAdminUtil
+import csw.params.commands.CommandResponse.QueryResponse
 import csw.params.commands.Sequence
 import csw.time.core.models.UTCTime
 import esw.ocs.api.codecs.OcsCodecs
@@ -120,7 +121,6 @@ class SequencerBehavior(
       data: SequencerData,
       currentBehavior: SequencerData => Behavior[SequencerMsg]
   ): Behavior[SequencerMsg] = message match {
-    case Query(runId, replyTo)                    => data.query(runId, replyTo); Behaviors.same
     case Shutdown(replyTo)                        => shutdown(data, replyTo)
     case GetSequence(replyTo)                     => replyTo ! data.stepList; Behaviors.same
     case GetSequencerState(replyTo)               => replyTo ! state; Behaviors.same
@@ -258,6 +258,8 @@ class SequencerBehavior(
         case msg: T                 => f(msg)
         case msg: UnhandleableSequencerMessage =>
           msg.replyTo ! Unhandled(state.entryName, msg.getClass.getSimpleName); Behaviors.same
+
+        case Query(runId, replyTo) => data.query(runId, replyTo); Behaviors.same
 
         // fixme: returning Behavior.same here doesnt ensure stepList is updated, due to this tests are flaky
         case SubmitSequence(sequence, replyTo) =>

@@ -26,7 +26,6 @@ trait OcsCodecs extends ParamCodecs with LocationCodecs {
   //StepListResponse Codecs
   implicit lazy val pullNextResultCodec: Codec[PullNextResult] = deriveCodec
   implicit lazy val submitResultCodec: Codec[SubmitResult]     = deriveUnaryCodec
-  implicit lazy val queryResultCodec: Codec[QueryResult]       = deriveUnaryCodec
   implicit lazy val okCodec: Codec[Ok.type]                    = deriveCodec
 
   implicit lazy val unhandledCodec: Codec[Unhandled]                                                      = deriveCodec
@@ -37,7 +36,7 @@ trait OcsCodecs extends ParamCodecs with LocationCodecs {
   implicit lazy val diagnosticHookFailedCodec: Codec[DiagnosticHookFailed.type]                           = deriveCodec
   implicit lazy val operationsHookFailedCodec: Codec[OperationsHookFailed.type]                           = deriveCodec
   implicit lazy val responseCodec: Codec[EswSequencerResponse]                                            = deriveCodec
-  implicit lazy val scriptErrorCodec: Codec[ScriptError]                                                  = deriveCodec
+  implicit lazy val scriptErrorCodec: Codec[ScriptError]                                                  = deriveUnaryCodec
 
   //SequenceComponentResponse Codecs
   implicit lazy val loadScriptResponseCodec: Codec[ScriptResponse]                 = deriveUnaryCodec
@@ -51,5 +50,4 @@ trait OcsCodecs extends ParamCodecs with LocationCodecs {
   implicit lazy val diagnosticModeResponseCodec: Codec[DiagnosticModeResponse]     = deriveCodec
   implicit lazy val operationsModeResponseCodec: Codec[OperationsModeResponse]     = deriveCodec
   implicit lazy val sequencerSubmitResponseCodec: Codec[SequencerSubmitResponse]   = deriveCodec
-  implicit lazy val sequencerQueryResponseCodec: Codec[SequencerQueryResponse]     = deriveCodec
 }

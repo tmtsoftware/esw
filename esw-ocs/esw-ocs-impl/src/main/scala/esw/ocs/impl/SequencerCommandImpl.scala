@@ -4,7 +4,7 @@ import akka.actor.typed.scaladsl.AskPattern._
 import akka.actor.typed.{ActorRef, ActorSystem}
 import akka.util.Timeout
 import csw.command.client.messages.sequencer.SequencerMsg
-import csw.command.client.messages.sequencer.SequencerMsg.QueryFinal
+import csw.command.client.messages.sequencer.SequencerMsg.{Query, QueryFinal}
 import csw.params.commands.CommandResponse.{QueryResponse, SubmitResponse}
 import csw.params.commands.Sequence
 import csw.params.core.models.Id
@@ -37,10 +37,7 @@ class SequencerCommandImpl(sequencer: ActorRef[SequencerMsg])(implicit system: A
 
   override def submitAndWait(sequence: Sequence): Future[SubmitResponse] = extensions.submitAndWait(sequence)
 
-  override def query(runId: Id): Future[QueryResponse] = {
-    val sequenceResponseF: Future[SequencerQueryResponse] = sequencer ? (Query(runId, _))
-    sequenceResponseF.map(_.toQueryResponse(runId))
-  }
+  override def query(runId: Id): Future[QueryResponse] = sequencer ? (Query(runId, _))
 
   // fixme: shouldn't this call have long timeout and not the default?
   override def queryFinal(runId: Id): Future[SubmitResponse] = sequencer ? (QueryFinal(runId, _))
