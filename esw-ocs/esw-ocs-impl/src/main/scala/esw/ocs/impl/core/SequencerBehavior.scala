@@ -252,7 +252,6 @@ class SequencerBehavior(
         case msg: UnhandleableSequencerMessage =>
           msg.replyTo ! Unhandled(state.entryName, msg.getClass.getSimpleName); Behaviors.same
 
-        // fixme: returning Behavior.same here doesnt ensure stepList is updated, due to this tests are flaky
         case SubmitSequence(sequence, replyTo) =>
           val submitResponse: Future[SequencerSubmitResponse] = ctx.self ? (SubmitSequenceInternal(sequence, _))
           submitResponse.foreach(res => replyTo ! res.toSubmitResponse())

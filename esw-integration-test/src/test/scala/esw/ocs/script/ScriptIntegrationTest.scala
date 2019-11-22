@@ -216,7 +216,7 @@ class ScriptIntegrationTest extends EswTestKit(EventServer, AlarmServer, ConfigS
 
       ocsCommand.submitAndWait(sequence)
 
-      ocsAdmin.getSequence.futureValue.get.isInFlight shouldBe true
+      eventually(ocsAdmin.getSequence.futureValue.get.isInFlight shouldBe true)
 
       eventually(lgsfAdmin.getSequence.futureValue.get.isInFlight shouldBe true)
 
@@ -248,7 +248,7 @@ class ScriptIntegrationTest extends EswTestKit(EventServer, AlarmServer, ConfigS
 
       ocsCommand.submitAndWait(sequence)
 
-      ocsAdmin.getSequence.futureValue.get.isInFlight shouldBe true
+      eventually(ocsAdmin.getSequence.futureValue.get.isInFlight shouldBe true)
 
       eventually(lgsfAdmin.getSequence.futureValue.get.isInFlight shouldBe true)
 

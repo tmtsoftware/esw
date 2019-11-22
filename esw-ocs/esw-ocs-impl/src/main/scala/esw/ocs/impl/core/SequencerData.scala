@@ -56,11 +56,9 @@ private[core] case class SequencerData(
 
   def query(runId: Id, replyTo: ActorRef[QueryResponse]): SequencerData = {
     this.runId match {
-      case Some(id) if id == runId && stepList.get.isFinished =>
-        replyTo ! getSequencerResponse
-      case Some(id) if id == runId =>
-        replyTo ! Started(id)
-      case _ => replyTo ! CommandNotAvailable(runId)
+      case Some(`runId`) if stepList.get.isFinished => replyTo ! getSequencerResponse
+      case Some(`runId`)                            => replyTo ! Started(runId)
+      case _                                        => replyTo ! CommandNotAvailable(runId)
     }
     this
   }
