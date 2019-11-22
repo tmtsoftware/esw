@@ -12,7 +12,6 @@ import akka.util.ByteString
 import csw.params.commands.{CommandName, CommandResponse, Sequence, Setup}
 import csw.params.core.models.{Id, Prefix}
 import esw.ocs.api.codecs.SequencerHttpCodecs
-import esw.ocs.api.models.SequencerInsight
 import esw.ocs.api.protocol.SequencerPostRequest.SubmitSequence
 import esw.ocs.api.protocol.SequencerWebsocketRequest.GetInsights
 import io.bullet.borer.Json
@@ -30,7 +29,7 @@ trait ActorRuntime {
   implicit val actorSystem  = ActorSystem(Behaviors.empty, "main")
   implicit val actorSystemU = actorSystem.toClassic
   implicit val mat          = Materializer(actorSystem)
-  val port                  = 60581
+  val port                  = 60764
 }
 
 trait WsRequest extends ActorRuntime with SequencerHttpCodecs {

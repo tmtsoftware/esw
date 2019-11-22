@@ -4,7 +4,7 @@ import sbt._
 
 object Libs {
   private val SilencerVersion = "1.4.2"
-  private val MSocketVersion  = "019fa71"
+  private val MSocketVersion  = "0.1.0-SNAPSHOT"
 
   val `silencer-lib`       = "com.github.ghik" %% "silencer-lib" % SilencerVersion % Compile
   val `silencer-plugin`    = compilerPlugin("com.github.ghik" %% "silencer-plugin" % SilencerVersion)
