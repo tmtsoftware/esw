@@ -6,7 +6,7 @@ import akka.actor.typed.scaladsl.Behaviors
 import akka.actor.typed.{ActorRef, ActorSystem, Behavior}
 import akka.util.Timeout
 import csw.command.client.messages.sequencer.SequencerMsg
-import csw.command.client.messages.sequencer.SequencerMsg.{QueryFinal, SubmitSequenceAndWait}
+import csw.command.client.messages.sequencer.SequencerMsg.{QueryFinal, SubmitSequence}
 import csw.command.client.messages.{GetComponentLogMetadata, LogControlMessage, SetComponentLogLevel}
 import csw.location.api.scaladsl.LocationService
 import csw.location.models.ComponentId
@@ -41,12 +41,11 @@ class SequencerBehavior(
 
   //BEHAVIORS
   private def idle(data: SequencerData): Behavior[SequencerMsg] = receive(Idle, data, idle) {
-    case LoadSequence(sequence, replyTo)                  => load(sequence, replyTo, data)
-    case SubmitSequenceAndWaitInternal(sequence, replyTo) => submitSequenceAndWait(sequence, data, replyTo)
-    case SubmitSequence(sequence, replyTo)                => submitSequence(sequence, data, replyTo)
-    case QueryFinalInternal(runId, replyTo)               => idle(data.queryFinal(runId, replyTo))
-    case GoOffline(replyTo)                               => goOffline(replyTo, data)(idle)
-    case PullNext(replyTo)                                => idle(data.pullNextStep(replyTo))
+    case LoadSequence(sequence, replyTo)           => load(sequence, replyTo, data)
+    case SubmitSequenceInternal(sequence, replyTo) => submitSequence(sequence, data, replyTo)
+    case QueryFinalInternal(runId, replyTo)        => idle(data.queryFinal(runId, replyTo))
+    case GoOffline(replyTo)                        => goOffline(replyTo, data)(idle)
+    case PullNext(replyTo)                         => idle(data.pullNextStep(replyTo))
   }
 
   private def loaded(data: SequencerData): Behavior[SequencerMsg] = receive(Loaded, data, loaded) {
@@ -186,18 +185,6 @@ class SequencerBehavior(
       data.createStepList(sequence).startSequence(replyTo)
     )
 
-  private def submitSequenceAndWait(
-      sequence: Sequence,
-      data: SequencerData,
-      replyTo: ActorRef[SequencerSubmitResponse]
-  ): Behavior[SequencerMsg] =
-    inProgress(
-      data
-        .createStepList(sequence)
-        .startSequence(actorSystem.deadLetters)
-        .queryFinal(replyTo)
-    )
-
   private def shutdown(data: SequencerData, replyTo: ActorRef[Ok.type]): Behavior[SequencerMsg] = {
 
     // run both the futures in parallel and wait for both to complete
@@ -271,10 +258,13 @@ class SequencerBehavior(
         case msg: T                 => f(msg)
         case msg: UnhandleableSequencerMessage =>
           msg.replyTo ! Unhandled(state.entryName, msg.getClass.getSimpleName); Behaviors.same
-        case SubmitSequenceAndWait(sequence, replyTo) =>
-          val sequenceResponseF: Future[SequencerSubmitResponse] = ctx.self ? (SubmitSequenceAndWaitInternal(sequence, _))
-          sequenceResponseF.foreach(res => replyTo ! res.toSubmitResponse())
+
+        // fixme: returning Behavior.same here doesnt ensure stepList is updated, due to this tests are flaky
+        case SubmitSequence(sequence, replyTo) =>
+          val submitResponse: Future[SequencerSubmitResponse] = ctx.self ? (SubmitSequenceInternal(sequence, _))
+          submitResponse.foreach(res => replyTo ! res.toSubmitResponse())
           Behaviors.same
+
         case QueryFinal(runId, replyTo) =>
           val sequenceResponseF: Future[SequencerSubmitResponse] = ctx.self ? (QueryFinalInternal(runId, _))
           sequenceResponseF.foreach(res => replyTo ! res.toSubmitResponse(runId))

@@ -1,10 +1,6 @@
 package esw.ocs.app
 
 import akka.actor.testkit.typed.scaladsl.TestProbe
-import akka.actor.typed.ActorRef
-import akka.actor.typed.scaladsl.AskPattern._
-import csw.command.client.messages.sequencer.SequencerMsg
-import csw.command.client.messages.sequencer.SequencerMsg.SubmitSequenceAndWait
 import csw.event.client.EventServiceFactory
 import csw.location.client.scaladsl.HttpLocationServiceFactory
 import csw.params.commands.CommandIssue.UnsupportedCommandInStateIssue
@@ -36,7 +32,6 @@ class SequencerClientIntegrationTest extends EswTestKit(EventServer) {
   private val command5 = Setup(Prefix("esw.test"), CommandName("command-5"), None)
   private val command6 = Setup(Prefix("esw.test"), CommandName("command-6"), None)
 
-  private var ocsSequencer: ActorRef[SequencerMsg]           = _
   private var ocsSequencerAdmin: SequencerAdminClient        = _
   private var ocsSequencerCommandApi: SequencerCommandClient = _
   private var tcsSequencerAdmin: SequencerAdminClient        = _
@@ -47,7 +42,6 @@ class SequencerClientIntegrationTest extends EswTestKit(EventServer) {
 
     ocsSequencerAdmin = sequencerAdminClient(packageId, observingMode)
     ocsSequencerCommandApi = sequencerCommandClient(packageId, observingMode)
-    ocsSequencer = resolveSequencer(packageId, observingMode)
 
     // tcs sequencer, starts with TestScript3
     val tcsSequencerId            = "tcs"
@@ -149,10 +143,10 @@ class SequencerClientIntegrationTest extends EswTestKit(EventServer) {
     val command3 = Setup(Prefix("esw.test"), CommandName("command-3"), None)
     val sequence = Sequence(command1, command2, command3)
 
-    val processSeqResponse: Future[SubmitResponse] = ocsSequencer ? (SubmitSequenceAndWait(sequence, _))
+    val submitResponseF = ocsSequencerCommandApi.submitAndWait(sequence)
     eventually(ocsSequencerAdmin.getSequence.futureValue should not be empty)
 
-    processSeqResponse.futureValue shouldBe an[Error]
+    submitResponseF.futureValue shouldBe an[Error]
 
     compareStepList(
       ocsSequencerAdmin.getSequence.futureValue,
@@ -173,9 +167,8 @@ class SequencerClientIntegrationTest extends EswTestKit(EventServer) {
     //****************** Go offline ******************************
 
     //sending sequence to ocs sequencer(TestScript2)
-    val sequence                            = Sequence(command1, command2)
-    val seqResponse: Future[SubmitResponse] = ocsSequencer ? (SubmitSequenceAndWait(sequence, _))
-    seqResponse.futureValue shouldBe a[Completed] // asserting the response
+    val sequence = Sequence(command1, command2)
+    ocsSequencerCommandApi.submitAndWait(sequence).futureValue shouldBe a[Completed] // asserting the response
     //#################
 
     // creating subscriber for offline event

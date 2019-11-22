@@ -34,8 +34,8 @@ object SequencerMessages {
       extends IdleMessage
       with SequenceLoadedMessage
 
-  final case class StartSequence(replyTo: ActorRef[SequencerSubmitResponse])                      extends SequenceLoadedMessage
-  final case class SubmitSequence(sequence: Sequence, replyTo: ActorRef[SequencerSubmitResponse]) extends IdleMessage
+  final case class StartSequence(replyTo: ActorRef[SequencerSubmitResponse])                              extends SequenceLoadedMessage
+  final case class SubmitSequenceInternal(sequence: Sequence, replyTo: ActorRef[SequencerSubmitResponse]) extends IdleMessage
   final case class QueryFinalInternal(runId: Id, replyTo: ActorRef[SequencerSubmitResponse])
       extends IdleMessage
       with SequenceLoadedMessage
@@ -76,10 +76,6 @@ object SequencerMessages {
   final case class Resume(replyTo: ActorRef[OkOrUnhandledResponse])        extends InProgressMessage
 
   // engine & internal
-  // this message is not needed, as SubmitSequence, StartSequence can be composed on client side
-  final private[ocs] case class SubmitSequenceAndWaitInternal(sequence: Sequence, replyTo: ActorRef[SequencerSubmitResponse])
-      extends IdleMessage
-
   final private[esw] case class PullNext(replyTo: ActorRef[PullNextResponse]) extends IdleMessage with InProgressMessage
   // this is internal message and replyTo is not used anywhere
   final private[esw] case class StepSuccess(replyTo: ActorRef[OkOrUnhandledResponse]) extends InProgressMessage

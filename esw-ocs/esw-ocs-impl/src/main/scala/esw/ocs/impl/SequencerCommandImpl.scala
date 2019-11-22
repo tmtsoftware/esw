@@ -31,7 +31,7 @@ class SequencerCommandImpl(sequencer: ActorRef[SequencerMsg])(implicit system: A
   }
 
   override def submit(sequence: Sequence): Future[SubmitResponse] = {
-    val sequenceResponseF: Future[SequencerSubmitResponse] = sequencer ? (SubmitSequence(sequence, _))
+    val sequenceResponseF: Future[SequencerSubmitResponse] = sequencer ? (SubmitSequenceInternal(sequence, _))
     sequenceResponseF.map(_.toSubmitResponse())
   }
 

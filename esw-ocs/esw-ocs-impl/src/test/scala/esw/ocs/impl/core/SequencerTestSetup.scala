@@ -4,10 +4,10 @@ import akka.Done
 import akka.actor.testkit.typed.scaladsl.TestProbe
 import akka.actor.typed.{ActorRef, ActorSystem}
 import csw.command.client.messages.sequencer.SequencerMsg
-import csw.command.client.messages.sequencer.SequencerMsg.SubmitSequenceAndWait
+import csw.command.client.messages.sequencer.SequencerMsg.SubmitSequence
 import csw.location.api.scaladsl.LocationService
 import csw.location.models.ComponentId
-import csw.params.commands.CommandResponse.{Completed, SubmitResponse}
+import csw.params.commands.CommandResponse.{Completed, Started, SubmitResponse}
 import csw.params.commands.{Sequence, SequenceCommand}
 import csw.params.core.models.Id
 import csw.time.core.models.UTCTime
@@ -54,7 +54,7 @@ class SequencerTestSetup(sequence: Sequence)(implicit system: ActorSystem[_]) {
 
   def loadAndStartSequenceThenAssertInProgress(): Assertion = {
     val probe = TestProbe[SequencerSubmitResponse]
-    sequencerActor ! SubmitSequence(sequence, probe.ref)
+    sequencerActor ! SubmitSequenceInternal(sequence, probe.ref)
 
     val p: TestProbe[Option[StepList]] = TestProbe[Option[StepList]]
     eventually {
@@ -361,13 +361,13 @@ object SequencerTestSetup {
     testSetup
   }
 
-  def finished(sequence: Sequence)(implicit system: ActorSystem[_]): (Completed, SequencerTestSetup) = {
+  def finished(sequence: Sequence)(implicit system: ActorSystem[_]): (Started, SequencerTestSetup) = {
     val sequencerSetup = new SequencerTestSetup(sequence)
     import sequencerSetup._
     val probe = TestProbe[SubmitResponse]
-    sequencerActor ! SubmitSequenceAndWait(sequence, probe.ref)
+    sequencerActor ! SubmitSequence(sequence, probe.ref)
     pullAllStepsAndAssertSequenceIsFinished()
-    val completedResponse = probe.expectMessageType[Completed]
-    (completedResponse, sequencerSetup)
+    val startedResponse = probe.expectMessageType[Started]
+    (startedResponse, sequencerSetup)
   }
 }

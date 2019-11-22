@@ -2,7 +2,7 @@ package esw.ocs.impl.core
 
 import akka.Done
 import akka.actor.testkit.typed.scaladsl.{ScalaTestWithActorTestKit, TestProbe}
-import csw.command.client.messages.sequencer.SequencerMsg.{QueryFinal, SubmitSequenceAndWait}
+import csw.command.client.messages.sequencer.SequencerMsg.QueryFinal
 import csw.command.client.messages.{GetComponentLogMetadata, SetComponentLogLevel}
 import csw.logging.client.commons.LogAdminUtil
 import csw.logging.models.Level.{DEBUG, INFO}
@@ -65,7 +65,7 @@ class SequencerBehaviorTest extends ScalaTestWithActorTestKit with BaseTestSuite
       import sequencerSetup._
 
       val probe = createTestProbe[SequencerSubmitResponse]
-      sequencerActor ! SubmitSequence(sequence, probe.ref)
+      sequencerActor ! SubmitSequenceInternal(sequence, probe.ref)
       pullAllStepsAndAssertSequenceIsFinished()
       val sequenceResult = probe.expectMessageType[SubmitResult]
       sequenceResult.submitResponse shouldBe a[Started]
@@ -77,7 +77,7 @@ class SequencerBehaviorTest extends ScalaTestWithActorTestKit with BaseTestSuite
       import sequencerSetup._
 
       val client = createTestProbe[SequencerSubmitResponse]
-      sequencerActor ! SubmitSequence(sequence1, client.ref)
+      sequencerActor ! SubmitSequenceInternal(sequence1, client.ref)
       val sequenceResult = client.expectMessageType[SubmitResult]
       sequenceResult.submitResponse shouldBe a[Started]
       val startedResponse = sequenceResult.toSubmitResponse()
@@ -92,19 +92,6 @@ class SequencerBehaviorTest extends ScalaTestWithActorTestKit with BaseTestSuite
       val qfProbe = createTestProbe[SubmitResponse]()
       sequencerActor ! QueryFinal(startedResponse.runId, qfProbe.ref)
       qfProbe.expectMessage(Error(startedResponse.runId, message))
-    }
-  }
-
-  "SubmitSequenceAndWait" must {
-    "load and process sequence in idle state | ESW-145, ESW-154" in {
-      val sequencerSetup = SequencerTestSetup.idle(sequence)
-      import sequencerSetup._
-
-      val probe = createTestProbe[SubmitResponse]
-      sequencerActor ! SubmitSequenceAndWait(sequence, probe.ref)
-      pullAllStepsAndAssertSequenceIsFinished()
-      val submitResponse = probe.expectMessageType[SubmitResponse]
-      submitResponse shouldBe a[Completed]
     }
   }
 
@@ -171,12 +158,12 @@ class SequencerBehaviorTest extends ScalaTestWithActorTestKit with BaseTestSuite
     }
 
     "return Sequence result with Completed when sequencer has finished executing a sequence | ESW-145, ESW-154, ESW-221" in {
-      val (completedResponse, sequencerSetup) = SequencerTestSetup.finished(sequence)
+      val (startedResponse, sequencerSetup) = SequencerTestSetup.finished(sequence)
       import sequencerSetup._
       val seqResProbe = createTestProbe[SubmitResponse]
-      sequencerActor ! QueryFinal(completedResponse.runId, seqResProbe.ref)
+      sequencerActor ! QueryFinal(startedResponse.runId, seqResProbe.ref)
 
-      seqResProbe.expectMessage(Completed(completedResponse.runId))
+      seqResProbe.expectMessage(Completed(startedResponse.runId))
     }
 
   }
@@ -906,7 +893,7 @@ class SequencerBehaviorTest extends ScalaTestWithActorTestKit with BaseTestSuite
       AbortSequenceComplete,
       Stop, //ESW-156
       StopComplete,
-      SubmitSequenceAndWaitInternal(sequence, _),
+      SubmitSequenceInternal(sequence, _),
       StepSuccess,
       GoOnline,
       GoOnlineSuccess,
@@ -924,7 +911,7 @@ class SequencerBehaviorTest extends ScalaTestWithActorTestKit with BaseTestSuite
       InProgress,
       LoadSequence(sequence, _),
       StartSequence, //ESW-154
-      SubmitSequenceAndWaitInternal(sequence, _),
+      SubmitSequenceInternal(sequence, _),
       GoOnline,
       GoOnlineSuccess,
       GoOnlineFailed,
@@ -942,7 +929,7 @@ class SequencerBehaviorTest extends ScalaTestWithActorTestKit with BaseTestSuite
     assertUnhandled(
       Offline,
       //Should not accept these commands in offline state
-      SubmitSequenceAndWaitInternal(sequence, _),
+      SubmitSequenceInternal(sequence, _),
       LoadSequence(sequence, _),
       StartSequence, //ESW-154
       AbortSequence, //ESW-155
