@@ -5,8 +5,23 @@ import kotlinx.coroutines.delay
 
 script {
 
-    onSetup("command-1") { command ->
-        // To avoid sequencer to finish immediately so that other Add, Append command gets time
-        delay(200)
+    onSetup("command-1") {
+        delay(1000)
+    }
+
+    onSetup("command-2") {
+        delay(1000)
+    }
+
+    onSetup("command-3") {
+        delay(1000)
+    }
+
+    onSetup("command-4") {
+        delay(1000)
+    }
+
+    onSetup("command-5") {
+        delay(1000)
     }
 }

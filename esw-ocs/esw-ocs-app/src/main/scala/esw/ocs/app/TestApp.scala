@@ -29,7 +29,7 @@ trait ActorRuntime {
   implicit val actorSystem  = ActorSystem(Behaviors.empty, "main")
   implicit val actorSystemU = actorSystem.toClassic
   implicit val mat          = Materializer(actorSystem)
-  val port                  = 63821
+  val port                  = 64293
 }
 
 trait WsRequest extends ActorRuntime with SequencerHttpCodecs {
@@ -56,8 +56,9 @@ trait WsRequest extends ActorRuntime with SequencerHttpCodecs {
 
 trait HttpReq extends ActorRuntime with SequencerHttpCodecs {
 
-  private val setup                   = Setup(Prefix("CSW"), CommandName("command-1"), None)
-  private val sequence                = Sequence(setup)
+  private val sequence = Sequence(
+    (1 to 5).map(i => Setup(Prefix("CSW"), CommandName(s"command-$i"), None))
+  )
   private val command: SubmitSequence = SubmitSequence(sequence)
 
   def submitSequence: Id = {
