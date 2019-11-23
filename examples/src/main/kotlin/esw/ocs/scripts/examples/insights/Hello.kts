@@ -6,6 +6,6 @@ import kotlinx.coroutines.delay
 script {
     for (x in 1..100)
         onSetup("command-$x"){
-            delay(150)
+            delay(1000)
         }
 }

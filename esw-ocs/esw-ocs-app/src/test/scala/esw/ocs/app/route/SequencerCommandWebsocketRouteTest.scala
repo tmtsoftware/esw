@@ -4,12 +4,14 @@ import akka.actor.typed.{ActorSystem, SpawnProtocol}
 import akka.http.scaladsl.model.ws.{BinaryMessage, TextMessage}
 import akka.http.scaladsl.server.Route
 import akka.http.scaladsl.testkit.{ScalatestRouteTest, WSProbe}
+import akka.stream.scaladsl.Source
 import csw.params.commands.CommandResponse.{Completed, SubmitResponse}
 import csw.params.core.models.Id
 import esw.http.core.BaseTestSuite
 import esw.ocs.api.SequencerAdminApi
 import esw.ocs.api.codecs.SequencerHttpCodecs
-import esw.ocs.api.protocol.SequencerWebsocketRequest.QueryFinal
+import esw.ocs.api.models.SequencerInsight
+import esw.ocs.api.protocol.SequencerWebsocketRequest.{GetInsights, QueryFinal}
 import esw.ocs.impl.SequencerCommandImpl
 import io.bullet.borer.Decoder
 import msocket.impl.Encoding
@@ -19,6 +21,7 @@ import msocket.impl.ws.WebsocketRouteFactory
 import org.mockito.Mockito.when
 
 import scala.concurrent.Future
+import scala.concurrent.duration.DurationLong
 
 class SequencerCommandWebsocketRouteTest
     extends BaseTestSuite
@@ -51,7 +54,23 @@ class SequencerCommandWebsocketRouteTest
 
         val response = decodeMessage[SubmitResponse](wsClient)
         response shouldEqual completedResponse
+      }
+    }
 
+    "return stream of sequencer insights" in {
+      when(sequencerAdminApi.getInsights).thenReturn(
+        Source(1 to 6)
+          .map(i => SequencerInsight("", Some(Id(i.toString)), None, None))
+          .throttle(1, 1.second)
+          .mapMaterializedValue(_ => () => ())
+      )
+
+      WS("/websocket-endpoint", wsClient.flow) ~> route ~> check {
+        wsClient.sendMessage(JsonText.strictMessage(GetInsights))
+        isWebSocketUpgrade shouldBe true
+
+        val response = (1 to 6).map(_ => decodeMessage[SequencerInsight](wsClient))
+        response shouldEqual (1 to 6).map(i => SequencerInsight("", Some(Id(i.toString)), None, None))
       }
     }
   }
