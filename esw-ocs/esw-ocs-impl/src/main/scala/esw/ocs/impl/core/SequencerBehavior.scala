@@ -154,6 +154,7 @@ class SequencerBehavior(
     case DiagnosticMode(startTime, hint, replyTo) => goToDiagnosticMode(startTime, hint, replyTo)
     case OperationsMode(replyTo)                  => goToOperationsMode(replyTo)
     case ReadyToExecuteNext(replyTo)              => currentBehavior(data.readyToExecuteNext(replyTo, state))
+    case GetInsight(replyTo)                      => replyTo ! SequencerInsight(data, state); Behaviors.same
     case MaybeNext(replyTo) =>
       if (state == InProgress) replyTo ! data.stepList.flatMap(_.nextExecutable)
       else replyTo ! None

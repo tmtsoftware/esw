@@ -6,7 +6,7 @@ import csw.params.commands.{Sequence, SequenceCommand}
 import csw.params.core.models.Id
 import csw.time.core.models.UTCTime
 import esw.ocs.api.codecs.OcsAkkaSerializable
-import esw.ocs.api.models.{Step, StepList}
+import esw.ocs.api.models.{SequencerInsight, Step, StepList}
 import esw.ocs.api.protocol._
 
 object SequencerMessages {
@@ -41,6 +41,7 @@ object SequencerMessages {
   final case class Shutdown(replyTo: ActorRef[Ok.type])                               extends CommonMessage
   final case class GetSequence(replyTo: ActorRef[Option[StepList]])                   extends CommonMessage
   final case class GetSequencerState(replyTo: ActorRef[SequencerState[SequencerMsg]]) extends CommonMessage
+  final private[esw] case class GetInsight(replyTo: ActorRef[SequencerInsight])       extends CommonMessage
   final private[esw] case class ReadyToExecuteNext(replyTo: ActorRef[Ok.type])        extends CommonMessage
   final private[esw] case class MaybeNext(replyTo: ActorRef[Option[Step]])            extends CommonMessage
 
