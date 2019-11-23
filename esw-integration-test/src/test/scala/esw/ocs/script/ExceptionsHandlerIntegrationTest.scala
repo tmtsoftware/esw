@@ -1,6 +1,7 @@
 package esw.ocs.script
 
 import akka.actor.testkit.typed.scaladsl.TestProbe
+import akka.stream.scaladsl.Source
 import csw.command.client.messages.sequencer.SequencerMsg
 import csw.command.client.messages.sequencer.SequencerMsg.SubmitSequence
 import csw.params.commands.CommandResponse.{Completed, SubmitResponse}
@@ -62,8 +63,9 @@ class ExceptionsHandlerIntegrationTest extends EswTestKit(EventServer) {
 
     forAll(inProgressStateTestCases) { (msg, reason) =>
       s"invoke exception handler when $reason | ESW-139" in {
-        val sequencerRef        = spawnSequencerRef(ocsPackageId, ocsObservingMode)
-        val sequencerAdmin      = new SequencerAdminImpl(sequencerRef)
+        val sequencerRef = spawnSequencerRef(ocsPackageId, ocsObservingMode)
+
+        val sequencerAdmin      = new SequencerAdminImpl(sequencerRef, Source.empty)
         val sequencerCommandApi = new SequencerCommandImpl(sequencerRef)
 
         val eventKey = EventKey("tcs." + reason)

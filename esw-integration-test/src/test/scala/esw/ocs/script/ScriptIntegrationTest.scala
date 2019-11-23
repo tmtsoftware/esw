@@ -4,6 +4,7 @@ import java.nio.file.Path
 
 import akka.actor.testkit.typed.scaladsl.TestProbe
 import akka.actor.typed.ActorRef
+import akka.stream.scaladsl.Source
 import com.typesafe.config.ConfigFactory
 import csw.alarm.client.AlarmServiceFactory
 import csw.alarm.models.AlarmSeverity
@@ -62,9 +63,9 @@ class ScriptIntegrationTest extends EswTestKit(EventServer, AlarmServer, ConfigS
     tcsSequencer = spawnSequencerRef(tcsPackageId, tcsObservingMode)
     lgsfSequencer = spawnSequencerRef(lgsfPackageId, lgsfObservingMode) //start LGSF sequencer as OCS send commands to LGSF downstream sequencer
     ocsSequencer = spawnSequencerRef(ocsPackageId, ocsObservingMode)
-    ocsAdmin = new SequencerAdminImpl(ocsSequencer)
-    tcsAdmin = new SequencerAdminImpl(tcsSequencer)
-    lgsfAdmin = new SequencerAdminImpl(lgsfSequencer)
+    ocsAdmin = new SequencerAdminImpl(ocsSequencer, Source.empty)
+    tcsAdmin = new SequencerAdminImpl(tcsSequencer, Source.empty)
+    lgsfAdmin = new SequencerAdminImpl(lgsfSequencer, Source.empty)
     ocsCommand = new SequencerCommandImpl(ocsSequencer)
   }
 
