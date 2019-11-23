@@ -3,7 +3,8 @@ package esw.ocs.api.models
 import csw.params.core.models.Id
 
 case class SequencerInsight(
-    stepList: Option[StepList],
+    sequencerState: String,
     runId: Option[Id],
-    sequencerState: String
+    stepList: Option[StepList],
+    sequenceStatus: Option[String]
 )

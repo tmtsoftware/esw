@@ -18,11 +18,12 @@ import esw.ocs.api.codecs.OcsCodecs
 import esw.ocs.api.models.SequencerInsight
 import esw.ocs.api.protocol._
 import esw.ocs.dsl.script.JScriptDsl
+import esw.ocs.impl.extensions.SequencerInsightExtension._
 import esw.ocs.impl.internal.Timeouts
 import esw.ocs.impl.messages.SequencerMessages._
 import esw.ocs.impl.messages.SequencerState
 import esw.ocs.impl.messages.SequencerState._
-import esw.ocs.impl.extensions.SequencerInsightExtension._
+
 import scala.concurrent.Future
 import scala.reflect.ClassTag
 import scala.util.{Failure, Success}
@@ -39,6 +40,34 @@ class SequencerBehavior(
 
   def setup: Behavior[SequencerMsg] = Behaviors.setup { ctx =>
     idle(SequencerData.initial(ctx.self, insightsSubscriber))
+  }
+
+  protected def receive[T <: SequencerMsg: ClassTag](
+      state: SequencerState[T],
+      data: SequencerData,
+      currentBehavior: SequencerData => Behavior[SequencerMsg]
+  )(f: T => Behavior[SequencerMsg]): Behavior[SequencerMsg] = {
+    insightsSubscriber ! SequencerInsight(data, state)
+    Behaviors.receive { (ctx, msg) =>
+      implicit val timeout: Timeout = Timeouts.LongTimeout
+      msg match {
+        case msg: CommonMessage     => handleCommonMessage(msg, state, data, currentBehavior)
+        case msg: LogControlMessage => handleLogMessages(msg)
+        case msg: T                 => f(msg)
+        case msg: UnhandleableSequencerMessage =>
+          msg.replyTo ! Unhandled(state.entryName, msg.getClass.getSimpleName); Behaviors.same
+
+        case SubmitSequence(sequence, replyTo) =>
+          val submitResponse: Future[SequencerSubmitResponse] = ctx.self ? (SubmitSequenceInternal(sequence, _))
+          submitResponse.foreach(res => replyTo ! res.toSubmitResponse())
+          Behaviors.same
+
+        case Query(runId, replyTo)      => data.query(runId, replyTo); Behaviors.same
+        case QueryFinal(runId, replyTo) => currentBehavior(data.queryFinal(runId, replyTo))
+
+        case _ => Behaviors.unhandled
+      }
+    }
   }
 
   //BEHAVIORS
@@ -238,31 +267,4 @@ class SequencerBehavior(
     case SetComponentLogLevel(componentName, logLevel) =>
       LogAdminUtil.setComponentLogLevel(componentName, logLevel); Behaviors.same
   }
-
-  protected def receive[T <: SequencerMsg: ClassTag](
-      state: SequencerState[T],
-      data: SequencerData,
-      currentBehavior: SequencerData => Behavior[SequencerMsg]
-  )(f: T => Behavior[SequencerMsg]): Behavior[SequencerMsg] =
-    Behaviors.receive { (ctx, msg) =>
-      implicit val timeout: Timeout = Timeouts.LongTimeout
-      insightsSubscriber ! SequencerInsight(data)
-      msg match {
-        case msg: CommonMessage     => handleCommonMessage(msg, state, data, currentBehavior)
-        case msg: LogControlMessage => handleLogMessages(msg)
-        case msg: T                 => f(msg)
-        case msg: UnhandleableSequencerMessage =>
-          msg.replyTo ! Unhandled(state.entryName, msg.getClass.getSimpleName); Behaviors.same
-
-        case SubmitSequence(sequence, replyTo) =>
-          val submitResponse: Future[SequencerSubmitResponse] = ctx.self ? (SubmitSequenceInternal(sequence, _))
-          submitResponse.foreach(res => replyTo ! res.toSubmitResponse())
-          Behaviors.same
-
-        case Query(runId, replyTo)      => data.query(runId, replyTo); Behaviors.same
-        case QueryFinal(runId, replyTo) => currentBehavior(data.queryFinal(runId, replyTo))
-
-        case _ => Behaviors.unhandled
-      }
-    }
 }

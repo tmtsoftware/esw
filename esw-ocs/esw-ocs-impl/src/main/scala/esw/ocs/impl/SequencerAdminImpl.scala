@@ -49,8 +49,22 @@ class SequencerAdminImpl(sequencer: ActorRef[SequencerMsg], insightSource: Sourc
 
   override def isOnline: Future[Boolean] = getState.map(_ != Offline)
 
-  override def getInsights: Source[SequencerInsight, Subscription] =
-    insightSource
+  override def getInsights: Source[SequencerInsight, Subscription] = {
+    Source
+      .future(sequencer ? GetInsight)
+      .concat(insightSource)
+      .statefulMapConcat(() => {
+        var previousSi: Option[SequencerInsight] = None
+        si => {
+          if (previousSi.contains(si))
+            List.empty
+          else {
+            previousSi = Some(si)
+            List(si)
+          }
+        }
+      })
       .viaMat(KillSwitches.single)(Keep.right)
       .mapMaterializedValue(ks => () => ks.shutdown())
+  }
 }

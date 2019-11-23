@@ -29,7 +29,7 @@ trait ActorRuntime {
   implicit val actorSystem  = ActorSystem(Behaviors.empty, "main")
   implicit val actorSystemU = actorSystem.toClassic
   implicit val mat          = Materializer(actorSystem)
-  val port                  = 60764
+  val port                  = 63821
 }
 
 trait WsRequest extends ActorRuntime with SequencerHttpCodecs {
@@ -48,9 +48,9 @@ trait WsRequest extends ActorRuntime with SequencerHttpCodecs {
     )
 
   def subscribeInsights(): Unit = {
-    val (f, _)     = Http().singleWebSocketRequest(WebSocketRequest.fromTargetUriString(url), flow)
-    val wsResponse = Await.result(f, 5.seconds)
-    println(wsResponse)
+    val (f, _) = Http().singleWebSocketRequest(WebSocketRequest.fromTargetUriString(url), flow)
+    Await.result(f, 5.seconds)
+//    println(wsResponse)
   }
 }
 
@@ -69,9 +69,8 @@ trait HttpReq extends ActorRuntime with SequencerHttpCodecs {
       )
     )
     val response = Await.result(x, 5.seconds)
-    println(response)
-    val bytes   = Await.result(response.entity.dataBytes.runFold(ByteString.emptyByteString)(_ ++ _).map(_.toArray), 5.seconds)
-    val decoded = Json.decode(bytes).to[CommandResponse].value
+    val bytes    = Await.result(response.entity.dataBytes.runFold(ByteString.emptyByteString)(_ ++ _).map(_.toArray), 5.seconds)
+    val decoded  = Json.decode(bytes).to[CommandResponse].value
     decoded.runId
   }
 }
