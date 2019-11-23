@@ -81,6 +81,12 @@ private[ocs] class SequencerWiring(val packageId: String, val observingMode: Str
       bufferSize = 1,
       overflowStrategy = OverflowStrategy.dropHead
     )
+    .map(x => {
+      println(s"SERVER ELEM: ${x.sequencerState}-${x.sequenceStatus}-${x.stepList
+        .map(_.steps.count(_.isFinished))
+        .getOrElse(0)}/${x.stepList.map(_.steps.length).getOrElse(0)}")
+      x
+    })
     .preMaterialize()
 
   lazy private val adminFactory   = new SequencerAdminFactoryImpl(locationServiceUtil, insightSource)

@@ -21,20 +21,21 @@ import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.duration.DurationInt
 
 object TestApp extends App with WsRequest with HttpReq with SequencerHttpCodecs {
+  val port: Int = 56015
   subscribeInsights()
   submitSequence
 }
 
 trait ActorRuntime {
-  implicit val actorSystem  = ActorSystem(Behaviors.empty, "main")
-  implicit val actorSystemU = actorSystem.toClassic
-  implicit val mat          = Materializer(actorSystem)
-  val port                  = 64293
+  val port: Int
+  lazy implicit val actorSystem  = ActorSystem(Behaviors.empty, "main")
+  lazy implicit val actorSystemU = actorSystem.toClassic
+  lazy implicit val mat          = Materializer(actorSystem)
 }
 
 trait WsRequest extends ActorRuntime with SequencerHttpCodecs {
-  private val url = s"ws://localhost:$port/websocket-endpoint"
-  private val flow =
+  lazy private val url = s"ws://localhost:$port/websocket-endpoint"
+  lazy private val flow =
     Flow.fromSinkAndSource(
       Sink.foreach[Message] {
         case message: TextMessage =>
@@ -49,17 +50,17 @@ trait WsRequest extends ActorRuntime with SequencerHttpCodecs {
 
   def subscribeInsights(): Unit = {
     val (f, _) = Http().singleWebSocketRequest(WebSocketRequest.fromTargetUriString(url), flow)
-    Await.result(f, 5.seconds)
+    Await.result(f, 25.seconds)
 //    println(wsResponse)
   }
 }
 
 trait HttpReq extends ActorRuntime with SequencerHttpCodecs {
 
-  private val sequence = Sequence(
-    (1 to 5).map(i => Setup(Prefix("CSW"), CommandName(s"command-$i"), None))
+  lazy private val sequence = Sequence(
+    (1 to 20).map(i => Setup(Prefix("CSW"), CommandName(s"command-$i"), None))
   )
-  private val command: SubmitSequence = SubmitSequence(sequence)
+  lazy private val command: SubmitSequence = SubmitSequence(sequence)
 
   def submitSequence: Id = {
     val x = Http().singleRequest(
