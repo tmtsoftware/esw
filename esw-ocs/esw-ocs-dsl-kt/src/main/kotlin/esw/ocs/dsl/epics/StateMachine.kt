@@ -1,17 +1,13 @@
 package esw.ocs.dsl.epics
 
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.CoroutineStart.LAZY
-import kotlinx.coroutines.Job
-import kotlinx.coroutines.delay
-import kotlinx.coroutines.launch
+import kotlinx.coroutines.*
 import kotlin.time.Duration
 
 interface FSMState {
     fun become(state: String)
     fun completeFsm()
     suspend fun on(condition: Boolean = true, body: suspend () -> Unit)
-    suspend fun on(duration: Duration, body: suspend () -> Unit)
+    suspend fun after(duration: Duration, body: suspend () -> Unit)
     suspend fun entry(body: suspend () -> Unit)
     fun state(name: String, block: suspend () -> Unit)
 }
@@ -21,7 +17,8 @@ interface StateMachine : Refreshable {
     suspend fun await()
 }
 
-class StateMachineImpl(private val name: String, initialState: String, val coroutineScope: CoroutineScope) : StateMachine, FSMState {
+// Don't remove name parameter, it will used while logging.
+class StateMachineImpl(val name: String, val initialState: String, val coroutineScope: CoroutineScope) : StateMachine, FSMState {
     // fixme: Try and remove optional behavior of both variables
     private var currentState: String? = null
     private var previousState: String? = null
@@ -29,12 +26,11 @@ class StateMachineImpl(private val name: String, initialState: String, val corou
     //fixme : do we need to pass as receiver coroutine scope to state lambda
     private val states = mutableMapOf<String, suspend () -> Unit>()
 
-    private var fsmJob: Job = coroutineScope.launch(start = LAZY) {
-        become(initialState)
-    }
+    //this is done to make new job child of the coroutine scope's job.
+    private val fsmJob: CompletableJob = Job(coroutineScope.coroutineContext[Job])
 
     override fun state(name: String, block: suspend () -> Unit) {
-        states += name to block
+        states += name.toUpperCase() to block
     }
 
     override fun become(state: String) {
@@ -46,7 +42,7 @@ class StateMachineImpl(private val name: String, initialState: String, val corou
     }
 
     override fun start() {
-        fsmJob.start()
+        become(initialState)
     }
 
     override suspend fun await() {
@@ -58,7 +54,9 @@ class StateMachineImpl(private val name: String, initialState: String, val corou
     }
 
     override fun refresh() {
-        coroutineScope.launch(fsmJob) { states[currentState]?.invoke() }
+        coroutineScope.launch(fsmJob) {
+            states[currentState?.toUpperCase()]?.invoke()
+        }
     }
 
     override suspend fun on(condition: Boolean, body: suspend () -> Unit) {
@@ -67,13 +65,13 @@ class StateMachineImpl(private val name: String, initialState: String, val corou
         }
     }
 
-    override suspend fun on(duration: Duration, body: suspend () -> Unit) {
+    override suspend fun after(duration: Duration, body: suspend () -> Unit) {
         delay(duration.toLongMilliseconds())
         on(body = body)
     }
 
     override suspend fun entry(body: suspend () -> Unit) {
-        if (currentState != previousState) {
+        if (currentState.equals(previousState, true)) {
             body()
         }
     }
