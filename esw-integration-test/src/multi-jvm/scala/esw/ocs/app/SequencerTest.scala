@@ -96,7 +96,7 @@ class SequencerTest(ignore: Int, mode: String)
   }
 
   private def resolveSequencerCommandApi(packageId: String, observingMode: String): SequencerCommandClient = {
-    val componentId = ComponentId(s"$packageId@$observingMode@http", ComponentType.Service)
+    val componentId = ComponentId(s"$packageId@$observingMode@http", ComponentType.Sequencer)
     val uri         = locationService.resolve(HttpConnection(componentId), 5.seconds).futureValue.get.uri
     val postUrl     = s"${uri.toString}post-endpoint"
     val wsUrl       = s"ws://${uri.getHost}:${uri.getPort}/websocket-endpoint"
