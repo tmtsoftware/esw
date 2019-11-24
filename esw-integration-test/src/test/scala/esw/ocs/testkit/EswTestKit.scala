@@ -79,7 +79,7 @@ abstract class EswTestKit(services: CSWService*) extends ScalaTestFrameworkTestK
   }
 
   private def resolveSequencerHttp(packageId: String, observingMode: String): URI = {
-    val componentId = ComponentId(s"$packageId@$observingMode@http", ComponentType.Service)
+    val componentId = ComponentId(s"$packageId@$observingMode@http", ComponentType.Sequencer)
     locationService.resolve(HttpConnection(componentId), 5.seconds).futureValue.get.uri
   }
 
