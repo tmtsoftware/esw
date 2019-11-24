@@ -5,7 +5,6 @@ import akka.http.scaladsl.model.ws.Message
 import akka.http.scaladsl.server.Route
 import akka.stream.scaladsl.Source
 import akka.util.Timeout
-import csw.command.client.CommandServiceFactory
 import esw.gateway.api.codecs.GatewayCodecs
 import esw.gateway.api.protocol.{PostRequest, WebsocketRequest}
 import esw.gateway.api.{AlarmApi, CommandApi, EventApi, LoggingApi}
@@ -23,11 +22,11 @@ import scala.concurrent.duration.DurationLong
 class GatewayWiring(_port: Option[Int]) extends GatewayCodecs {
   lazy val wiring = new ServerWiring(_port)
   import wiring._
-  import cswWiring.actorRuntime.{ec, typedSystem}
   import cswWiring._
+  import cswWiring.actorRuntime.{ec, typedSystem}
 
   implicit val timeout: Timeout     = 10.seconds
-  private val commandServiceFactory = new CommandServiceFactory(locationService, CommandServiceFactory)(actorSystem)
+  private val commandServiceFactory = new CommandServiceFactory(locationService)(actorSystem)
 
   lazy val alarmApi: AlarmApi     = new AlarmImpl(alarmService)
   lazy val eventApi: EventApi     = new EventImpl(eventService, eventSubscriberUtil)
