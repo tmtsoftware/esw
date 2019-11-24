@@ -15,7 +15,10 @@ import msocket.api.codecs.BasicCodecs
 trait OcsCodecs extends ParamCodecs with LocationCodecs {
   import BasicCodecs._
   //StepList Codecs
-  implicit lazy val sequencerInsight: Codec[SequencerInsight] = deriveCodec
+  implicit lazy val sequencerInsight: Codec[SequencerInsight] = {
+    import io.bullet.borer.NullOptions._
+    deriveCodec
+  }
   implicit lazy val stepCodec: Codec[Step]                    = deriveCodec
   implicit lazy val stepListCodec: Codec[StepList]            = deriveCodec
   implicit lazy val successStatusCodec: Codec[Success.type]   = deriveCodec
