@@ -134,7 +134,7 @@ private[ocs] class SequencerWiring(val packageId: String, val observingMode: Str
   )
 
   private val port: Int     = SocketUtils.getFreePort
-  private lazy val settings = new Settings(Some(port), Some(s"$sequencerName@http"), config)
+  private lazy val settings = new Settings(Some(port), Some(s"$sequencerName@http"), config, ComponentType.Sequencer)
 
   private lazy val httpService: HttpService =
     new HttpService(logger, locationService, routes, settings, actorRuntime)

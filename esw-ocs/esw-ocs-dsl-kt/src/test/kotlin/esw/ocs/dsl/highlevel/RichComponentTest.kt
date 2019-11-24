@@ -2,7 +2,6 @@ package esw.ocs.dsl.highlevel
 
 import akka.actor.typed.ActorRef
 import akka.actor.typed.ActorSystem
-import csw.command.api.CurrentStateSubscription
 import csw.command.api.javadsl.ICommandService
 import csw.command.client.CommandServiceFactory
 import csw.command.client.messages.ComponentMessage
@@ -29,6 +28,7 @@ import io.mockk.mockkStatic
 import io.mockk.verify
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.runBlocking
+import msocket.api.models.Subscription
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
 import java.util.*
@@ -126,7 +126,7 @@ class RichComponentTest {
         @Test
         fun `subscribeCurrentState should resolve commandService for given assembly and call subscribeCurrentState method on it | ESW-121, ESW-245 `() = runBlocking {
             val stateNames: Set<StateName> = mockk()
-            val currentStateSubscription: CurrentStateSubscription = mockk()
+            val currentStateSubscription: Subscription = mockk()
 
             mockkStatic(CommandServiceFactory::class)
             every { locationServiceUtil.jResolveAkkaLocation(componentName, componentType) }.answers { CompletableFuture.completedFuture(assemblyLocation) }
@@ -279,7 +279,7 @@ class RichComponentTest {
         @Test
         fun `subscribeCurrentState should resolve commandService for given hcd and call subscribeCurrentState method on it | ESW-121, ESW-245 `() = runBlocking {
             val stateNames: Set<StateName> = mockk()
-            val currentStateSubscription: CurrentStateSubscription = mockk()
+            val currentStateSubscription: Subscription = mockk()
 
             mockkStatic(CommandServiceFactory::class)
             every { locationServiceUtil.jResolveAkkaLocation(hcdName, componentType) }.answers { CompletableFuture.completedFuture(hcdLocation) }

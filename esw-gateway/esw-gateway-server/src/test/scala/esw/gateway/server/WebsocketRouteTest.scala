@@ -7,7 +7,6 @@ import akka.http.scaladsl.model.ws.{BinaryMessage, TextMessage}
 import akka.http.scaladsl.testkit.{ScalatestRouteTest, WSProbe}
 import akka.stream.scaladsl.Source
 import akka.util.Timeout
-import csw.command.api.CurrentStateSubscription
 import csw.event.api.scaladsl.EventSubscription
 import csw.event.api.scaladsl.SubscriptionModes.RateLimiterMode
 import csw.location.models.ComponentId
@@ -25,7 +24,7 @@ import esw.gateway.impl.{CommandImpl, EventImpl}
 import esw.gateway.server.handlers.WebsocketHandlerImpl
 import esw.http.core.BaseTestSuite
 import io.bullet.borer.Decoder
-import msocket.api.models.MSocketErrorFrame
+import msocket.api.models.{MSocketErrorFrame, Subscription}
 import msocket.impl.Encoding.{CborBinary, JsonText}
 import msocket.impl.post.ClientHttpCodecs
 import msocket.impl.ws.WebsocketRouteFactory
@@ -107,7 +106,7 @@ class WebsocketRouteTest extends BaseTestSuite with ScalatestRouteTest with Gate
       val currentState1         = CurrentState(Prefix("esw.a.b"), StateName("stateName1"))
       val currentState2         = CurrentState(Prefix("esw.a.b"), StateName("stateName2"))
 
-      val currentStateSubscription = mock[CurrentStateSubscription]
+      val currentStateSubscription = mock[Subscription]
       val currentStateStream       = Source(List(currentState1, currentState2)).mapMaterializedValue(_ => currentStateSubscription)
 
       when(commandServiceFactory.commandService(componentId)).thenReturn(Future.successful(Right(commandService)))
@@ -135,7 +134,7 @@ class WebsocketRouteTest extends BaseTestSuite with ScalatestRouteTest with Gate
       val currentState1         = CurrentState(Prefix("esw.a.b"), StateName("stateName1"))
       val currentState2         = CurrentState(Prefix("esw.a.b"), StateName("stateName2"))
 
-      val currentStateSubscription = mock[CurrentStateSubscription]
+      val currentStateSubscription = mock[Subscription]
       val currentStateStream = Source(List(currentState1, currentState2))
         .mapMaterializedValue(_ => currentStateSubscription)
 

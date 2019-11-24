@@ -3,7 +3,6 @@ package esw.ocs.dsl.highlevel
 import akka.actor.typed.ActorRef
 import akka.actor.typed.ActorSystem
 import akka.util.Timeout
-import csw.command.api.CurrentStateSubscription
 import csw.command.api.javadsl.ICommandService
 import csw.command.client.CommandServiceFactory
 import csw.command.client.messages.ComponentMessage
@@ -24,6 +23,7 @@ import esw.ocs.dsl.script.utils.LockUnlockUtil
 import esw.ocs.dsl.sequence_manager.LocationServiceUtil
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.future.await
+import msocket.api.models.Subscription
 import kotlin.time.Duration
 import kotlin.time.toJavaDuration
 
@@ -42,7 +42,7 @@ class RichComponent(
     suspend fun oneway(command: ControlCommand): OnewayResponse = commandService().oneway(command, timeout).await()
     suspend fun submit(command: ControlCommand): SubmitResponse = commandService().submit(command, timeout).await()
     suspend fun submitAndWait(command: ControlCommand): SubmitResponse = commandService().submitAndWait(command, timeout).await()
-    suspend fun subscribeCurrentState(stateNames: Set<StateName>, callback: suspend CoroutineScope.(CurrentState) -> Unit): CurrentStateSubscription =
+    suspend fun subscribeCurrentState(stateNames: Set<StateName>, callback: suspend CoroutineScope.(CurrentState) -> Unit): Subscription =
             commandService().subscribeCurrentState(stateNames) { callback.toJava(it) }
 
     suspend fun diagnosticMode(startTime: UTCTime, hint: String): Unit = componentRef().tell(DiagnosticDataMessage.DiagnosticMode(startTime, hint))

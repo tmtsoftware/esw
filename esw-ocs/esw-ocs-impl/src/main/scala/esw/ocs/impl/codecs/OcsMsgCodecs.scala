@@ -20,6 +20,7 @@ trait OcsMsgCodecs extends MessageCodecs with CommonCodecs {
   implicit lazy val readyToExecuteNextCodec: Codec[ReadyToExecuteNext] = deriveUnaryCodec
   implicit lazy val goIdleCodec: Codec[GoIdle]                         = deriveUnaryCodec
 
+  implicit lazy val getInsightCodec: Codec[GetInsight]               = deriveCodec
   implicit lazy val getSequenceCodec: Codec[GetSequence]             = deriveUnaryCodec
   implicit lazy val getSequencerStateCodec: Codec[GetSequencerState] = deriveUnaryCodec
   implicit lazy val addCodec: Codec[Add]                             = deriveCodec

@@ -3,7 +3,6 @@ package esw.http.core.utils
 import java.net.URI
 
 import akka.actor.typed.{ActorSystem, SpawnProtocol}
-import csw.command.client.ICommandServiceFactory
 import csw.location.api.scaladsl.LocationService
 import csw.location.models.Connection.AkkaConnection
 import csw.location.models.{AkkaLocation, ComponentId, ComponentType}
