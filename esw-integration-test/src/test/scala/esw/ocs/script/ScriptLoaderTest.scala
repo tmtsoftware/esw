@@ -16,7 +16,7 @@ import esw.ocs.dsl.script.exceptions.ScriptLoadingException.{
   ScriptNotFound
 }
 import esw.ocs.dsl.script.utils.{LockUnlockUtil, ScriptLoader}
-import esw.ocs.dsl.script.{CswServices, JScriptDsl, SequenceOperator}
+import esw.ocs.dsl.script.{CswServices, ScriptDsl, SequenceOperator}
 import esw.ocs.testkit.BaseTestSuite
 
 class ScriptLoaderTest extends BaseTestSuite {
@@ -52,9 +52,9 @@ class ScriptLoaderTest extends BaseTestSuite {
   "load" must {
 
     "load script class if packageId and observingMode is provided | ESW-102, ESW-136" in {
-      val loader: JScriptDsl =
+      val loader: ScriptDsl =
         ScriptLoader.loadKotlinScript("esw.ocs.scripts.examples.testData.scriptLoader.ValidTestScript", cswServices)
-      loader shouldBe a[JScriptDsl]
+      loader shouldBe a[ScriptDsl]
     }
 
     "throw InvalidScriptException if provided class is not a script | ESW-102, ESW-136" in {

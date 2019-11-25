@@ -1,14 +1,14 @@
 package esw.ocs.dsl.script.utils
 
 import esw.ocs.dsl.script.exceptions.ScriptLoadingException.{InvalidScriptException, ScriptNotFound}
-import esw.ocs.dsl.script.{CswServices, JScriptDsl}
+import esw.ocs.dsl.script.{CswServices, ScriptDsl}
 
 import scala.language.reflectiveCalls
 
 private[esw] object ScriptLoader {
 
   // this loads .kts script
-  def loadKotlinScript(scriptClass: String, cswServices: CswServices): JScriptDsl =
+  def loadKotlinScript(scriptClass: String, cswServices: CswServices): ScriptDsl =
     withScript(scriptClass) { clazz =>
       val script = clazz.getConstructor(classOf[Array[String]]).newInstance(Array(""))
 
@@ -16,7 +16,7 @@ private[esw] object ScriptLoader {
       val $$resultField = clazz.getDeclaredField("$$result")
       $$resultField.setAccessible(true)
 
-      type Script = { val scriptDsl: JScriptDsl }
+      type Script = { val scriptDsl: ScriptDsl }
       type Result = { def invoke(services: CswServices): Script }
       val result = $$resultField.get(script).asInstanceOf[Result]
       result.invoke(cswServices).scriptDsl

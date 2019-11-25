@@ -6,13 +6,13 @@ import esw.ocs.dsl.script.exceptions.ScriptLoadingException.ScriptInitialisation
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.runBlocking
 
-class Result(val scriptFactory: (CswServices) -> Script) {
-    operator fun invoke(cswService: CswServices): Script = scriptFactory(cswService)
+class Result(val scriptFactory: (CswServices) -> MainScript) {
+    operator fun invoke(cswService: CswServices): MainScript = scriptFactory(cswService)
 }
 
-fun script(block: suspend Script.(csw: CswServices) -> Unit): Result =
+fun script(block: suspend MainScript.(csw: CswServices) -> Unit): Result =
         Result {
-            Script(it).apply {
+            MainScript(it).apply {
                 try {
                     runBlocking { block(it) }
                 } catch (ex: Exception) {

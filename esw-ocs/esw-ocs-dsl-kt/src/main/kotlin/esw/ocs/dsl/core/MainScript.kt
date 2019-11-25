@@ -7,7 +7,7 @@ import csw.time.core.models.UTCTime
 import esw.ocs.dsl.highlevel.CswHighLevelDsl
 import esw.ocs.dsl.nullable
 import esw.ocs.dsl.script.CswServices
-import esw.ocs.dsl.script.JScriptDsl
+import esw.ocs.dsl.script.MainScriptDsl
 import esw.ocs.dsl.script.StrandEc
 import kotlinx.coroutines.*
 import kotlinx.coroutines.future.asCompletableFuture
@@ -18,7 +18,7 @@ sealed class ScriptDslKt(val cswServices: CswServices) : CswHighLevelDsl(cswServ
 
     // https://stackoverflow.com/questions/58497383/is-it-possible-to-provide-custom-name-for-internal-delegated-properties-in-kotli/58497535#58497535
     @get:JvmName("scriptDsl")
-    internal val scriptDsl: JScriptDsl by lazy { ScriptDslFactory.make(cswServices, strandEc) }
+    internal val scriptDsl: MainScriptDsl by lazy { ScriptDslFactory.make(cswServices, strandEc) }
 
     suspend fun nextIf(predicate: (SequenceCommand) -> Boolean): SequenceCommand? =
             scriptDsl.nextIf { predicate(it) }.await().nullable()
@@ -74,7 +74,7 @@ class ReusableScript(
         override val coroutineScope: CoroutineScope
 ) : ScriptDslKt(cswServices)
 
-open class Script(cswServices: CswServices) : ScriptDslKt(cswServices) {
+open class MainScript(cswServices: CswServices) : ScriptDslKt(cswServices) {
     private val _strandEc = StrandEc.apply()
     private val supervisorJob = SupervisorJob()
     private val dispatcher = _strandEc.executorService().asCoroutineDispatcher()

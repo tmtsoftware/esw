@@ -1,6 +1,6 @@
 package esw.ocs.scripts.examples.class_based
 
-import esw.ocs.dsl.core.Script
+import esw.ocs.dsl.core.MainScript
 import esw.ocs.dsl.script.CswServices
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
@@ -8,7 +8,7 @@ import kotlinx.coroutines.launch
 fun log(msg: String) = println("[${Thread.currentThread().name}] $msg")
 
 @Deprecated("Use script based approach to write scripts")
-class Script1(cswServices: CswServices) : Script(cswServices) {
+class Script1(cswServices: CswServices) : MainScript(cswServices) {
     init {
         val eventKey = "csw.a.b."
         fun event(id: Int) = SystemEvent("csw.a.b", id.toString())

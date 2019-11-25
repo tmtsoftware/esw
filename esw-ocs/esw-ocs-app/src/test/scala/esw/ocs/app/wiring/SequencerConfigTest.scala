@@ -4,7 +4,7 @@ import com.typesafe.config.{Config, ConfigFactory}
 import csw.params.core.models.Prefix
 import esw.http.core.BaseTestSuite
 import esw.ocs.dsl.script.exceptions.ScriptLoadingException.ScriptConfigurationMissingException
-import esw.ocs.dsl.script.{CswServices, JScriptDsl, StrandEc}
+import esw.ocs.dsl.script.{CswServices, MainScriptDsl, StrandEc}
 
 class SequencerConfigTest extends BaseTestSuite {
   private val config: Config = ConfigFactory.load()
@@ -43,6 +43,6 @@ class SequencerConfigTest extends BaseTestSuite {
   }
 }
 
-class ValidTestScript(csw: CswServices) extends JScriptDsl(csw) {
+class ValidTestScript(csw: CswServices) extends MainScriptDsl(csw) {
   override protected implicit def strandEc: StrandEc = ???
 }

@@ -17,7 +17,7 @@ class JScriptDslTest extends BaseTestSuite {
       var receivedPrefix: Option[Prefix] = None
 
       val csw: CswServices = mock[CswServices]
-      val script: JScriptDsl = new JScriptDsl(csw) {
+      val script: MainScriptDsl = new MainScriptDsl(csw) {
         override protected implicit def strandEc: StrandEc = StrandEc()
 
         onSetupCommand("iris") { cmd =>
@@ -37,7 +37,7 @@ class JScriptDslTest extends BaseTestSuite {
       var receivedPrefix: Option[Prefix] = None
 
       val csw: CswServices = mock[CswServices]
-      val script: JScriptDsl = new JScriptDsl(csw) {
+      val script: MainScriptDsl = new MainScriptDsl(csw) {
         override protected implicit def strandEc: StrandEc = StrandEc()
 
         onObserveCommand("iris") { cmd =>
@@ -57,7 +57,7 @@ class JScriptDslTest extends BaseTestSuite {
       val orderOfShutdownCalled = ArrayBuffer.empty[Int]
 
       val csw: CswServices = mock[CswServices]
-      val script: JScriptDsl = new JScriptDsl(csw) {
+      val script: MainScriptDsl = new MainScriptDsl(csw) {
         override protected implicit def strandEc: StrandEc = StrandEc()
 
         onShutdown {
@@ -79,7 +79,7 @@ class JScriptDslTest extends BaseTestSuite {
       val orderOfAbortCalled = ArrayBuffer.empty[Int]
 
       val csw: CswServices = mock[CswServices]
-      val script: JScriptDsl = new JScriptDsl(csw) {
+      val script: MainScriptDsl = new MainScriptDsl(csw) {
         override protected implicit def strandEc: StrandEc = StrandEc()
 
         onAbortSequence {
@@ -101,7 +101,7 @@ class JScriptDslTest extends BaseTestSuite {
       var receivedPrefix: Option[Throwable] = None
 
       val csw: CswServices = mock[CswServices]
-      val script: JScriptDsl = new JScriptDsl(csw) {
+      val script: MainScriptDsl = new MainScriptDsl(csw) {
         override protected implicit def strandEc: StrandEc = StrandEc()
 
         onException { ex =>
