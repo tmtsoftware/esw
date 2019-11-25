@@ -3,7 +3,6 @@ package esw.gateway.server
 import akka.Done
 import akka.http.scaladsl.model.StatusCodes
 import akka.http.scaladsl.testkit.ScalatestRouteTest
-import akka.util.Timeout
 import csw.alarm.api.exceptions.KeyNotFoundException
 import csw.alarm.models.AlarmSeverity
 import csw.alarm.models.Key.AlarmKey
@@ -31,7 +30,6 @@ import org.mockito.Mockito.when
 import org.mockito.MockitoSugar._
 
 import scala.concurrent.Future
-import scala.concurrent.duration.DurationLong
 
 class PostRouteTest extends BaseTestSuite with ScalatestRouteTest with GatewayCodecs with ClientHttpCodecs {
 
@@ -39,8 +37,6 @@ class PostRouteTest extends BaseTestSuite with ScalatestRouteTest with GatewayCo
 
   private val cswCtxMocks = new CswWiringMocks()
   import cswCtxMocks._
-
-  implicit val timeout: Timeout = Timeout(5.seconds)
 
   private val alarmApi: AlarmApi     = new AlarmImpl(alarmService)
   private val eventApi: EventApi     = new EventImpl(eventService, eventSubscriberUtil)

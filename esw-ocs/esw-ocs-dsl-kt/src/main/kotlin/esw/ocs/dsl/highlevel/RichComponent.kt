@@ -39,8 +39,8 @@ class RichComponent(
     private val timeout: Timeout = Timeout(Timeouts.DefaultTimeout())
 
     suspend fun validate(command: ControlCommand): ValidateResponse = commandService().validate(command).await()
-    suspend fun oneway(command: ControlCommand): OnewayResponse = commandService().oneway(command, timeout).await()
-    suspend fun submit(command: ControlCommand): SubmitResponse = commandService().submit(command, timeout).await()
+    suspend fun oneway(command: ControlCommand): OnewayResponse = commandService().oneway(command).await()
+    suspend fun submit(command: ControlCommand): SubmitResponse = commandService().submit(command).await()
     suspend fun submitAndWait(command: ControlCommand): SubmitResponse = commandService().submitAndWait(command, timeout).await()
     suspend fun subscribeCurrentState(stateNames: Set<StateName>, callback: suspend CoroutineScope.(CurrentState) -> Unit): Subscription =
             commandService().subscribeCurrentState(stateNames) { callback.toJava(it) }

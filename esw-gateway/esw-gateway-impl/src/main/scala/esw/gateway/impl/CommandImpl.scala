@@ -17,10 +17,7 @@ import msocket.api.models.Subscription
 import scala.concurrent.duration.DurationInt
 import scala.concurrent.{ExecutionContext, Future}
 
-class CommandImpl(commandServiceFactory: CommandServiceFactoryApi)(
-    implicit ec: ExecutionContext,
-    timeout: Timeout
-) extends CommandApi {
+class CommandImpl(commandServiceFactory: CommandServiceFactoryApi)(implicit ec: ExecutionContext) extends CommandApi {
 
   def submit(componentId: ComponentId, command: ControlCommand): Future[Either[InvalidComponent, SubmitResponse]] =
     process(componentId, _.submit(command))

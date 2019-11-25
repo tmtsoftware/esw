@@ -6,7 +6,6 @@ import akka.actor.typed.scaladsl.adapter.ClassicActorSystemOps
 import akka.http.scaladsl.model.ws.{BinaryMessage, TextMessage}
 import akka.http.scaladsl.testkit.{ScalatestRouteTest, WSProbe}
 import akka.stream.scaladsl.Source
-import akka.util.Timeout
 import csw.event.api.scaladsl.EventSubscription
 import csw.event.api.scaladsl.SubscriptionModes.RateLimiterMode
 import csw.location.models.ComponentId
@@ -41,7 +40,6 @@ class WebsocketRouteTest extends BaseTestSuite with ScalatestRouteTest with Gate
   private val cswCtxMocks = new CswWiringMocks()
   import cswCtxMocks._
 
-  implicit val timeout: Timeout                        = Timeout(5.seconds)
   private var wsClient: WSProbe                        = _
   implicit override val patienceConfig: PatienceConfig = PatienceConfig(10.seconds)
   implicit val typedSystem: ActorSystem[_]             = system.toTyped
