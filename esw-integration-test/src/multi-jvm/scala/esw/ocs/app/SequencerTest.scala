@@ -11,9 +11,7 @@ import csw.params.commands.{CommandName, Sequence, Setup}
 import csw.params.core.models.Prefix
 import csw.params.events.{Event, EventKey, SystemEvent}
 import csw.testkit.{EventTestKit, FrameworkTestKit}
-import esw.ocs.api.client.SequencerCommandClient
 import esw.ocs.app.wiring.SequencerWiring
-import esw.ocs.impl.SequencerCommandClientFactory
 import msocket.impl.Encoding.JsonText
 import org.scalatest.concurrent.ScalaFutures.convertScalaFuture
 

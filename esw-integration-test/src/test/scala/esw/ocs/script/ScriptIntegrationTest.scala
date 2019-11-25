@@ -24,11 +24,11 @@ import csw.params.events.{Event, EventKey, EventName, SystemEvent}
 import csw.testkit.ConfigTestKit
 import csw.testkit.scaladsl.CSWService.{AlarmServer, ConfigServer, EventServer}
 import csw.time.core.models.UTCTime
+import esw.ocs.api.SequencerAdminApi
 import esw.ocs.api.models.StepStatus.Finished.Success
 import esw.ocs.api.models.{Step, StepList}
 import esw.ocs.api.protocol._
-import esw.ocs.api.{SequencerAdminApi, SequencerCommandApi}
-import esw.ocs.impl.{SequencerAdminImpl, SequencerCommandImpl}
+import esw.ocs.impl.SequencerAdminImpl
 import esw.ocs.testkit.EswTestKit
 
 import scala.concurrent.Future
@@ -51,7 +51,6 @@ class ScriptIntegrationTest extends EswTestKit(EventServer, AlarmServer, ConfigS
   private var ocsAdmin: SequencerAdminApi           = _
   private var tcsAdmin: SequencerAdminApi           = _
   private var lgsfAdmin: SequencerAdminApi          = _
-  private var ocsCommand: SequencerCommandApi       = _
 
   override def beforeAll(): Unit = {
     super.beforeAll()
@@ -65,7 +64,6 @@ class ScriptIntegrationTest extends EswTestKit(EventServer, AlarmServer, ConfigS
     ocsAdmin = new SequencerAdminImpl(ocsSequencer)
     tcsAdmin = new SequencerAdminImpl(tcsSequencer)
     lgsfAdmin = new SequencerAdminImpl(lgsfSequencer)
-    ocsCommand = new SequencerCommandImpl(ocsSequencer)
   }
 
   override def afterEach(): Unit = shutdownAllSequencers()
@@ -87,7 +85,7 @@ class ScriptIntegrationTest extends EswTestKit(EventServer, AlarmServer, ConfigS
 
       tcsAdmin.getSequence.futureValue shouldBe None
 
-      val submitResponseF = ocsCommand.submitAndWait(sequence)
+      val submitResponseF = ocsAdmin.submitAndWait(sequence)
 
       // This has to match with sequence created in TestScript -> handleSetupCommand("command-4")
       val assertableCommand =
@@ -113,7 +111,7 @@ class ScriptIntegrationTest extends EswTestKit(EventServer, AlarmServer, ConfigS
       //diagnosticMode
       val diagnosticModeParam: Parameter[_] = StringKey.make("mode").set("diagnostic")
 
-      ocsCommand.diagnosticMode(UTCTime.now(), "engineering").futureValue should ===(Ok)
+      ocsAdmin.diagnosticMode(UTCTime.now(), "engineering").futureValue should ===(Ok)
 
       val actualDiagEvent = testProbe.expectMessageType[SystemEvent]
       actualDiagEvent.paramSet.head shouldBe diagnosticModeParam
@@ -121,7 +119,7 @@ class ScriptIntegrationTest extends EswTestKit(EventServer, AlarmServer, ConfigS
       //operationsMode
       val operationsModeParam = StringKey.make("mode").set("operations")
 
-      ocsCommand.operationsMode().futureValue should ===(Ok)
+      ocsAdmin.operationsMode().futureValue should ===(Ok)
 
       val actualOpEvent = testProbe.expectMessageType[SystemEvent]
       actualOpEvent.paramSet.head shouldBe operationsModeParam
@@ -141,13 +139,13 @@ class ScriptIntegrationTest extends EswTestKit(EventServer, AlarmServer, ConfigS
       testProbe.expectMessageType[SystemEvent] // discard invalid event
 
       //goOffline
-      ocsCommand.goOffline().futureValue should ===(Ok)
+      ocsAdmin.goOffline().futureValue should ===(Ok)
 
       val actualOfflineEvent = testProbe.expectMessageType[SystemEvent]
       actualOfflineEvent.eventKey should ===(offlineKey)
 
       //goOnline
-      ocsCommand.goOnline().futureValue should ===(Ok)
+      ocsAdmin.goOnline().futureValue should ===(Ok)
 
       val actualOnlineEvent = testProbe.expectMessageType[SystemEvent]
       actualOnlineEvent.eventKey should ===(onlineKey)
@@ -162,7 +160,7 @@ class ScriptIntegrationTest extends EswTestKit(EventServer, AlarmServer, ConfigS
       val command  = Setup(Prefix("NFIRAOS.test"), CommandName("set-alarm-severity"), None)
       val sequence = Sequence(command)
 
-      ocsCommand.submitAndWait(sequence).futureValue shouldBe a[Completed]
+      ocsAdmin.submitAndWait(sequence).futureValue shouldBe a[Completed]
       alarmAdminService.getCurrentSeverity(alarmKey).futureValue should ===(AlarmSeverity.Major)
     }
 
@@ -174,7 +172,7 @@ class ScriptIntegrationTest extends EswTestKit(EventServer, AlarmServer, ConfigS
       val command  = Setup(Prefix("TCS"), CommandName("get-event"), None)
       val sequence = Sequence(Seq(command))
 
-      ocsCommand.submitAndWait(sequence).futureValue shouldBe a[Completed]
+      ocsAdmin.submitAndWait(sequence).futureValue shouldBe a[Completed]
 
       val successKey        = EventKey("TCS.get.success")
       val getPublishedEvent = eventSubscriber.get(successKey).futureValue
@@ -188,7 +186,7 @@ class ScriptIntegrationTest extends EswTestKit(EventServer, AlarmServer, ConfigS
       val command  = Setup(Prefix("TCS"), CommandName("on-event"), None)
       val sequence = Sequence(Seq(command))
 
-      ocsCommand.submitAndWait(sequence).futureValue shouldBe a[Completed]
+      ocsAdmin.submitAndWait(sequence).futureValue shouldBe a[Completed]
 
       val publishF = eventService.defaultPublisher.publish(SystemEvent(Prefix("TCS"), EventName("get.event")))
       publishF.futureValue
@@ -214,7 +212,7 @@ class ScriptIntegrationTest extends EswTestKit(EventServer, AlarmServer, ConfigS
       val command3 = Setup(Prefix("TCS.test"), CommandName("command-2"), None)
       val sequence = Sequence(Seq(command1, command2, command3))
 
-      ocsCommand.submitAndWait(sequence)
+      ocsAdmin.submitAndWait(sequence)
 
       eventually(ocsAdmin.getSequence.futureValue.get.isInFlight shouldBe true)
 
@@ -246,7 +244,7 @@ class ScriptIntegrationTest extends EswTestKit(EventServer, AlarmServer, ConfigS
       val command3 = Setup(Prefix("TCS.test"), CommandName("command-2"), None)
       val sequence = Sequence(Seq(command1, command2, command3))
 
-      ocsCommand.submitAndWait(sequence)
+      ocsAdmin.submitAndWait(sequence)
 
       eventually(ocsAdmin.getSequence.futureValue.get.isInFlight shouldBe true)
 
@@ -273,7 +271,7 @@ class ScriptIntegrationTest extends EswTestKit(EventServer, AlarmServer, ConfigS
       subscription.ready().futureValue
       testProbe.expectMessageType[SystemEvent] // discard invalid event
 
-      ocsCommand.submitAndWait(sequence).futureValue shouldBe a[Completed]
+      ocsAdmin.submitAndWait(sequence).futureValue shouldBe a[Completed]
 
       val actualSetupEvent: SystemEvent = testProbe.expectMessageType[SystemEvent]
       actualSetupEvent.eventKey should ===(eventKey)
@@ -296,7 +294,7 @@ class ScriptIntegrationTest extends EswTestKit(EventServer, AlarmServer, ConfigS
       val getConfigCommand   = Setup(Prefix("WFOS"), CommandName("get-config-data"), None)
       val sequence           = Sequence(Seq(existConfigCommand, getConfigCommand))
 
-      ocsCommand.submitAndWait(sequence).futureValue shouldBe a[Completed]
+      ocsAdmin.submitAndWait(sequence).futureValue shouldBe a[Completed]
 
       // verify existConfig api
       val existConfigKey   = EventKey(Prefix("WFOS"), EventName("check-config.success"))
@@ -316,7 +314,7 @@ class ScriptIntegrationTest extends EswTestKit(EventServer, AlarmServer, ConfigS
       val command2 = Setup(Prefix("TCS"), CommandName("check-exception-2"), None)
       val sequence = Sequence(Seq(command1, command2))
 
-      val response = ocsCommand.submitAndWait(sequence).futureValue
+      val response = ocsAdmin.submitAndWait(sequence).futureValue
       response shouldBe an[Error]
       response.asInstanceOf[Error].message should ===("java.lang.RuntimeException: boom")
     }

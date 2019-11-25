@@ -2,14 +2,14 @@ package esw.ocs.app.route
 
 import akka.http.scaladsl.server.Directives.complete
 import akka.http.scaladsl.server.Route
+import esw.ocs.api.SequencerAdminApi
 import esw.ocs.api.codecs.SequencerHttpCodecs
 import esw.ocs.api.protocol.SequencerPostRequest
 import esw.ocs.api.protocol.SequencerPostRequest._
-import esw.ocs.api.{SequencerAdminApi, SequencerCommandApi}
 import msocket.api.MessageHandler
 import msocket.impl.post.ServerHttpCodecs
 
-class SequencerPostHandlerImpl(adminApi: SequencerAdminApi, commandApi: SequencerCommandApi)
+class SequencerPostHandlerImpl(adminApi: SequencerAdminApi)
     extends MessageHandler[SequencerPostRequest, Route]
     with SequencerHttpCodecs
     with ServerHttpCodecs {
@@ -33,13 +33,13 @@ class SequencerPostHandlerImpl(adminApi: SequencerAdminApi, commandApi: Sequence
     case RemoveBreakpoint(id)      => complete(adminApi.removeBreakpoint(id))
 
     // command protocol
-    case LoadSequence(sequence)          => complete(commandApi.loadSequence(sequence))
-    case StartSequence                   => complete(commandApi.startSequence())
-    case SubmitSequence(sequence)        => complete(commandApi.submit(sequence))
-    case Query(runId)                    => complete(commandApi.query(runId))
-    case GoOnline                        => complete(commandApi.goOnline())
-    case GoOffline                       => complete(commandApi.goOffline())
-    case DiagnosticMode(startTime, hint) => complete(commandApi.diagnosticMode(startTime, hint))
-    case OperationsMode                  => complete(commandApi.operationsMode())
+    case LoadSequence(sequence)          => complete(adminApi.loadSequence(sequence))
+    case StartSequence                   => complete(adminApi.startSequence())
+    case SubmitSequence(sequence)        => complete(adminApi.submit(sequence))
+    case Query(runId)                    => complete(adminApi.query(runId))
+    case GoOnline                        => complete(adminApi.goOnline())
+    case GoOffline                       => complete(adminApi.goOffline())
+    case DiagnosticMode(startTime, hint) => complete(adminApi.diagnosticMode(startTime, hint))
+    case OperationsMode                  => complete(adminApi.operationsMode())
   }
 }

@@ -9,8 +9,8 @@ import csw.params.commands.CommandResponse.Completed
 import csw.params.commands.{CommandName, Sequence, Setup}
 import csw.params.core.models.Prefix
 import esw.gateway.server.TestAppender
-import esw.ocs.api.SequencerCommandApi
-import esw.ocs.impl.SequencerCommandImpl
+import esw.ocs.api.SequencerAdminApi
+import esw.ocs.impl.SequencerAdminImpl
 import esw.ocs.testkit.EswTestKit
 import play.api.libs.json.{JsObject, Json}
 
@@ -18,8 +18,8 @@ import scala.collection.mutable
 
 class LoggingDslIntegrationTest extends EswTestKit {
 
-  private var ocsRef: ActorRef[SequencerMsg]  = _
-  private var ocsCommand: SequencerCommandApi = _
+  private var ocsRef: ActorRef[SequencerMsg] = _
+  private var ocsAdmin: SequencerAdminApi    = _
 
   private val logBuffer: mutable.Buffer[JsObject] = mutable.Buffer.empty[JsObject]
   private val testAppender                        = new TestAppender(x => logBuffer += Json.parse(x.toString).as[JsObject])
@@ -29,7 +29,7 @@ class LoggingDslIntegrationTest extends EswTestKit {
   override def beforeAll(): Unit = {
     super.beforeAll()
     ocsRef = spawnSequencerRef("ocs", "moonnight", None)
-    ocsCommand = new SequencerCommandImpl(ocsRef)
+    ocsAdmin = new SequencerAdminImpl(ocsRef)
     loggingSystem = LoggingSystemFactory.start("LoggingDslIntegrationTest", "", "", system)
     loggingSystem.setAppenders(List(testAppender))
   }
@@ -39,7 +39,7 @@ class LoggingDslIntegrationTest extends EswTestKit {
       val command  = Setup(Prefix("TCS.test"), CommandName("log-command"), None)
       val sequence = Sequence(command)
 
-      ocsCommand.submitAndWait(sequence).futureValue shouldBe a[Completed]
+      ocsAdmin.submitAndWait(sequence).futureValue shouldBe a[Completed]
       Thread.sleep(500)
 
       val log: JsObject = logBuffer.head

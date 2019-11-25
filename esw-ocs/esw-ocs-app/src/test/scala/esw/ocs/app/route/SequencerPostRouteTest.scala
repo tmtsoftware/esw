@@ -13,7 +13,7 @@ import esw.ocs.api.models.StepList
 import esw.ocs.api.protocol.EditorError.{CannotOperateOnAnInFlightOrFinishedStep, IdDoesNotExist}
 import esw.ocs.api.protocol.SequencerPostRequest._
 import esw.ocs.api.protocol._
-import esw.ocs.impl.{SequencerAdminImpl, SequencerCommandImpl}
+import esw.ocs.impl.SequencerAdminImpl
 import msocket.impl.Encoding
 import msocket.impl.Encoding.JsonText
 import msocket.impl.post.{ClientHttpCodecs, PostRouteFactory}
@@ -25,10 +25,9 @@ class SequencerPostRouteTest extends BaseTestSuite with ScalatestRouteTest with 
 
   override def encoding: Encoding[_] = JsonText
 
-  private val sequencerAdmin: SequencerAdminImpl        = mock[SequencerAdminImpl]
-  private val sequencerCommandApi: SequencerCommandImpl = mock[SequencerCommandImpl]
-  private val postHandler                               = new SequencerPostHandlerImpl(sequencerAdmin, sequencerCommandApi)
-  lazy val route: Route                                 = new PostRouteFactory("post-endpoint", postHandler).make()
+  private val sequencerAdmin: SequencerAdminImpl = mock[SequencerAdminImpl]
+  private val postHandler                        = new SequencerPostHandlerImpl(sequencerAdmin)
+  lazy val route: Route                          = new PostRouteFactory("post-endpoint", postHandler).make()
 
   "SequencerRoutes" must {
     "return sequence for getSequence request | ESW-222" in {
@@ -114,7 +113,7 @@ class SequencerPostRouteTest extends BaseTestSuite with ScalatestRouteTest with 
     }
 
     "return Ok for GoOnline request | ESW-222" in {
-      when(sequencerCommandApi.goOnline()).thenReturn(Future.successful(Ok))
+      when(sequencerAdmin.goOnline()).thenReturn(Future.successful(Ok))
 
       Post("/post-endpoint", GoOnline) ~> route ~> check {
         responseAs[GoOnlineResponse] should ===(Ok)
@@ -122,7 +121,7 @@ class SequencerPostRouteTest extends BaseTestSuite with ScalatestRouteTest with 
     }
 
     "return GoOnlineHookFailed for GoOnline request | ESW-222" in {
-      when(sequencerCommandApi.goOnline()).thenReturn(Future.successful(GoOnlineHookFailed))
+      when(sequencerAdmin.goOnline()).thenReturn(Future.successful(GoOnlineHookFailed))
 
       Post("/post-endpoint", GoOnline) ~> route ~> check {
         responseAs[GoOnlineResponse] should ===(GoOnlineHookFailed)
@@ -130,7 +129,7 @@ class SequencerPostRouteTest extends BaseTestSuite with ScalatestRouteTest with 
     }
 
     "return Ok for GoOffline request | ESW-222" in {
-      when(sequencerCommandApi.goOffline()).thenReturn(Future.successful(Ok))
+      when(sequencerAdmin.goOffline()).thenReturn(Future.successful(Ok))
 
       Post("/post-endpoint", GoOffline) ~> route ~> check {
         responseAs[OkOrUnhandledResponse] should ===(Ok)
@@ -210,7 +209,7 @@ class SequencerPostRouteTest extends BaseTestSuite with ScalatestRouteTest with 
     "return Ok for LoadSequence request | ESW-101" in {
       val command1 = Setup(Prefix("esw.test"), CommandName("command-1"), None)
       val sequence = Sequence(command1)
-      when(sequencerCommandApi.loadSequence(sequence)).thenReturn(Future.successful(Ok))
+      when(sequencerAdmin.loadSequence(sequence)).thenReturn(Future.successful(Ok))
 
       Post("/post-endpoint", LoadSequence(sequence)) ~> route ~> check {
         responseAs[OkOrUnhandledResponse] should ===(Ok)
@@ -219,7 +218,7 @@ class SequencerPostRouteTest extends BaseTestSuite with ScalatestRouteTest with 
 
     "return Started response for StartSequence request | ESW-101" in {
       val startedResponse = Started(Id())
-      when(sequencerCommandApi.startSequence()).thenReturn(Future.successful(startedResponse))
+      when(sequencerAdmin.startSequence()).thenReturn(Future.successful(startedResponse))
 
       Post("/post-endpoint", StartSequence) ~> route ~> check {
         responseAs[SubmitResponse] should ===(startedResponse)
@@ -230,7 +229,7 @@ class SequencerPostRouteTest extends BaseTestSuite with ScalatestRouteTest with 
       val command1          = Setup(Prefix("esw.test"), CommandName("command-1"), None)
       val sequence          = Sequence(command1)
       val completedResponse = Completed(Id())
-      when(sequencerCommandApi.submit(sequence)).thenReturn(Future.successful(completedResponse))
+      when(sequencerAdmin.submit(sequence)).thenReturn(Future.successful(completedResponse))
 
       Post("/post-endpoint", SubmitSequence(sequence)) ~> route ~> check {
         responseAs[SubmitResponse] should ===(completedResponse)
@@ -240,7 +239,7 @@ class SequencerPostRouteTest extends BaseTestSuite with ScalatestRouteTest with 
     "return Ok for DiagnosticMode request | ESW-143" in {
       val startTime = UTCTime.now()
       val hint      = "engineering"
-      when(sequencerCommandApi.diagnosticMode(startTime, hint)).thenReturn(Future.successful(Ok))
+      when(sequencerAdmin.diagnosticMode(startTime, hint)).thenReturn(Future.successful(Ok))
 
       Post("/post-endpoint", DiagnosticMode(startTime, hint)) ~> route ~> check {
         responseAs[DiagnosticModeResponse] should ===(Ok)
@@ -248,7 +247,7 @@ class SequencerPostRouteTest extends BaseTestSuite with ScalatestRouteTest with 
     }
 
     "return Ok for OperationsMode request | ESW-143" in {
-      when(sequencerCommandApi.operationsMode()).thenReturn(Future.successful(Ok))
+      when(sequencerAdmin.operationsMode()).thenReturn(Future.successful(Ok))
 
       Post("/post-endpoint", OperationsMode) ~> route ~> check {
         responseAs[OperationsModeResponse] should ===(Ok)

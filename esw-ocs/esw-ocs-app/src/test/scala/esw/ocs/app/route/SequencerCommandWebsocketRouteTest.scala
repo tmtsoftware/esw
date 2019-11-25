@@ -9,7 +9,7 @@ import csw.params.core.models.Id
 import esw.http.core.BaseTestSuite
 import esw.ocs.api.codecs.SequencerHttpCodecs
 import esw.ocs.api.protocol.SequencerWebsocketRequest.QueryFinal
-import esw.ocs.impl.SequencerCommandImpl
+import esw.ocs.impl.SequencerAdminImpl
 import io.bullet.borer.Decoder
 import msocket.impl.Encoding
 import msocket.impl.Encoding.{CborBinary, JsonText}
@@ -27,9 +27,9 @@ class SequencerCommandWebsocketRouteTest
 
   override def encoding: Encoding[_] = JsonText
 
-  private val sequencerCommandApi: SequencerCommandImpl = mock[SequencerCommandImpl]
+  private val sequencerAdmin: SequencerAdminImpl = mock[SequencerAdminImpl]
 
-  private def websocketHandlerFactory(encoding: Encoding[_]) = new SequencerWebsocketHandlerImpl(sequencerCommandApi, encoding)
+  private def websocketHandlerFactory(encoding: Encoding[_]) = new SequencerWebsocketHandlerImpl(sequencerAdmin, encoding)
 
   private implicit val actorSystem: ActorSystem[SpawnProtocol.Command] = ActorSystem(SpawnProtocol(), "test-system")
 
@@ -40,7 +40,7 @@ class SequencerCommandWebsocketRouteTest
     "return final submit response of sequence for QueryFinal request | ESW-101" in {
       val id                = Id("some")
       val completedResponse = Completed(id)
-      when(sequencerCommandApi.queryFinal(id)).thenReturn(Future.successful(completedResponse))
+      when(sequencerAdmin.queryFinal(id)).thenReturn(Future.successful(completedResponse))
 
       WS("/websocket-endpoint", wsClient.flow) ~> route ~> check {
         wsClient.sendMessage(JsonText.strictMessage(QueryFinal(id)))
