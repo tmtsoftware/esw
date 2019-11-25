@@ -3,11 +3,12 @@ import sbt.Def.{setting => dep}
 import sbt._
 
 object Libs {
-  private val SilencerVersion = "1.4.2"
-  private val MSocketVersion  = "0a05fdc"
+  private val SilencerVersion = "1.4.4"
+  private val MSocketVersion  = "7b3f305"
 
-  val `silencer-lib`       = "com.github.ghik" %% "silencer-lib" % SilencerVersion % Compile
-  val `silencer-plugin`    = compilerPlugin("com.github.ghik" %% "silencer-plugin" % SilencerVersion)
+  val `silencer-plugin` = "com.github.ghik" % "silencer-plugin" % SilencerVersion cross CrossVersion.full
+  val `silencer-lib`    = "com.github.ghik" % "silencer-lib"    % SilencerVersion cross CrossVersion.full
+
   val `case-app`           = "com.github.alexarchambault" %% "case-app" % "2.0.0-M9"
   val enumeratum           = dep("com.beachape" %%% "enumeratum" % "1.5.13") //MIT License
   val `mockito-scala`      = "org.mockito" %% "mockito-scala" % "1.7.1" // MIT License
@@ -22,7 +23,7 @@ object Libs {
 
 object Csw {
   private val Org     = "com.github.tmtsoftware.csw"
-  private val Version = "a3b397d" //change this to 0.1-SNAPSHOT to test with local csw changes (after publishLocal)
+  private val Version = "2a8a8a7" //change this to 0.1-SNAPSHOT to test with local csw changes (after publishLocal)
 
   val `csw-alarm-api`                 = Org %% "csw-alarm-api" % Version
   val `csw-command-api`               = Org %% "csw-command-api" % Version
@@ -66,7 +67,7 @@ object AkkaHttp {
   val `akka-http-testkit`    = "com.typesafe.akka" %% "akka-http-testkit"    % Version
   val `akka-http-spray-json` = "com.typesafe.akka" %% "akka-http-spray-json" % Version
 
-  val `akka-http-cors` = "ch.megard" %% "akka-http-cors" % "0.4.1"
+  val `akka-http-cors` = "ch.megard" %% "akka-http-cors" % "0.4.2"
 }
 
 object Borer {
@@ -79,7 +80,7 @@ object Borer {
 }
 
 object Kotlin {
-  val `stdlib-jdk8`     = "org.jetbrains.kotlin"  % "kotlin-stdlib-jdk8"      % "1.3.50"
+  val `stdlib-jdk8`     = "org.jetbrains.kotlin"  % "kotlin-stdlib-jdk8"      % "1.3.60"
   val `coroutines-jdk8` = "org.jetbrains.kotlinx" % "kotlinx-coroutines-jdk8" % "1.3.2"
   val kotlintest        = "io.kotlintest"         % "kotlintest-core"         % "3.4.2"
   val mockk             = "io.mockk"              % "mockk"                   % "1.9.3"
