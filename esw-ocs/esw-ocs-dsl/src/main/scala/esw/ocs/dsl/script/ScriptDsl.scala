@@ -16,7 +16,7 @@ import scala.compat.java8.FutureConverters.{CompletionStageOps, FutureOps}
 import scala.concurrent.{ExecutionContext, Future}
 import scala.reflect.ClassTag
 
-class MainScriptDsl(val csw: CswServices, strandEc: StrandEc) {
+class ScriptDsl(val csw: CswServices, strandEc: StrandEc) {
   protected implicit lazy val toEc: ExecutionContext = strandEc.ec
 
   var isOnline = true
@@ -32,7 +32,7 @@ class MainScriptDsl(val csw: CswServices, strandEc: StrandEc) {
   private val operationsHandlers: FunctionHandlers[Unit, CompletionStage[Void]]              = new FunctionHandlers
   private val exceptionHandlers: FunctionHandlers[Throwable, CompletionStage[Void]]          = new FunctionHandlers
 
-  private[esw] def merge(that: MainScriptDsl): MainScriptDsl = {
+  private[esw] def merge(that: ScriptDsl): ScriptDsl = {
     commandHandlerBuilder ++ that.commandHandlerBuilder
     onlineHandlers ++ that.onlineHandlers
     offlineHandlers ++ that.offlineHandlers
@@ -118,11 +118,11 @@ class MainScriptDsl(val csw: CswServices, strandEc: StrandEc) {
 
 }
 
-class FSMScriptDsl(override val csw: CswServices, val strandEc: StrandEc) extends MainScriptDsl(csw, strandEc) {
+class FSMScriptDsl(override val csw: CswServices, val strandEc: StrandEc) extends ScriptDsl(csw, strandEc) {
   protected var currentState: String = "DEFAULT"
   // fixme : should not be null.
-  protected var currentStateDsl: MainScriptDsl = _
-  protected var stateMap                       = Map.empty[String, Supplier[MainScriptDsl]]
+  protected var currentStateDsl: ScriptDsl = _
+  protected var stateMap                   = Map.empty[String, Supplier[ScriptDsl]]
 
   def become(nextState: String): Unit =
     if (currentState != nextState) {
@@ -130,7 +130,7 @@ class FSMScriptDsl(override val csw: CswServices, val strandEc: StrandEc) extend
       currentState = nextState
     }
 
-  def add(state: String, script: Supplier[MainScriptDsl]): Unit = stateMap += (state -> script)
+  def add(state: String, script: Supplier[ScriptDsl]): Unit = stateMap += (state -> script)
 
   override def execute(command: SequenceCommand): Future[Unit] = stateMap.get(currentState) match {
     case Some(_) => currentStateDsl.execute(command)

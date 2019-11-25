@@ -8,17 +8,16 @@ import esw.ocs.dsl.highlevel.CswHighLevelDsl
 import esw.ocs.dsl.nullable
 import esw.ocs.dsl.script.CswServices
 import esw.ocs.dsl.script.FSMScriptDsl
-import esw.ocs.dsl.script.MainScriptDsl
+import esw.ocs.dsl.script.ScriptDsl
 import esw.ocs.dsl.script.StrandEc
-import esw.ocs.dsl.script.exceptions.ScriptLoadingException
 import esw.ocs.dsl.script.exceptions.ScriptLoadingException.ScriptInitialisationFailedException
 import kotlinx.coroutines.*
 import kotlinx.coroutines.future.asCompletableFuture
 import kotlinx.coroutines.future.await
 import kotlinx.coroutines.future.future
 
-sealed class ScriptDslKt(val cswServices: CswServices) : CswHighLevelDsl(cswServices) {
-    internal open val scriptDsl: MainScriptDsl by lazy { MainScriptDsl(cswServices, strandEc) }
+sealed class CommonScriptDsl(val cswServices: CswServices) : CswHighLevelDsl(cswServices) {
+    internal open val scriptDsl: ScriptDsl by lazy { ScriptDsl(cswServices, strandEc) }
 
     suspend fun nextIf(predicate: (SequenceCommand) -> Boolean): SequenceCommand? =
             scriptDsl.nextIf { predicate(it) }.await().nullable()
@@ -72,9 +71,9 @@ class ReusableScript(
         cswServices: CswServices,
         override val strandEc: StrandEc,
         override val coroutineScope: CoroutineScope
-) : ScriptDslKt(cswServices)
+) : CommonScriptDsl(cswServices)
 
-open class MainScript(cswServices: CswServices) : ScriptDslKt(cswServices) {
+open class MainScript(cswServices: CswServices) : CommonScriptDsl(cswServices) {
     private val _strandEc = StrandEc.apply()
     private val supervisorJob = SupervisorJob()
     private val dispatcher = _strandEc.executorService().asCoroutineDispatcher()
@@ -96,7 +95,7 @@ open class MainScript(cswServices: CswServices) : ScriptDslKt(cswServices) {
 
 class FSMScript(cswServices: CswServices) : MainScript(cswServices) {
     private val fsmScriptDsl: FSMScriptDsl by lazy { FSMScriptDsl(cswServices, strandEc) }
-    override val scriptDsl: MainScriptDsl by lazy { fsmScriptDsl }
+    override val scriptDsl: ScriptDsl by lazy { fsmScriptDsl }
 
     fun state(state: String, block: suspend ReusableScript.() -> Unit) {
         fun reusableScript(): ReusableScript = ReusableScript(cswServices, strandEc, coroutineScope).apply {

@@ -28,7 +28,7 @@ import esw.ocs.api.codecs.SequencerHttpCodecs
 import esw.ocs.api.protocol.ScriptError
 import esw.ocs.app.route._
 import esw.ocs.dsl.script.utils.{LockUnlockUtil, ScriptLoader}
-import esw.ocs.dsl.script.{CswServices, MainScriptDsl}
+import esw.ocs.dsl.script.{CswServices, ScriptDsl}
 import esw.ocs.dsl.sequence_manager.LocationServiceUtil
 import esw.ocs.impl.core._
 import esw.ocs.impl.internal.{SequencerServer, Timeouts}
@@ -65,7 +65,7 @@ private[ocs] class SequencerWiring(val packageId: String, val observingMode: Str
   //SequencerRef -> Script -> cswServices -> SequencerOperator -> SequencerRef
   private lazy val sequenceOperatorFactory = () => new SequenceOperatorImpl(sequencerRef)
   private lazy val componentId             = ComponentId(sequencerName, ComponentType.Sequencer)
-  private lazy val script: MainScriptDsl   = ScriptLoader.loadKotlinScript(scriptClass, cswServices)
+  private lazy val script: ScriptDsl       = ScriptLoader.loadKotlinScript(scriptClass, cswServices)
 
   lazy private val locationServiceUtil = new LocationServiceUtil(locationService)
   lazy private val adminFactory        = new SequencerAdminFactoryImpl(locationServiceUtil)

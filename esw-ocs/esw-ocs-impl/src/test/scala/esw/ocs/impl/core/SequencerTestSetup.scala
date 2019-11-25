@@ -13,7 +13,7 @@ import csw.params.core.models.Id
 import csw.time.core.models.UTCTime
 import esw.ocs.api.models.{Step, StepList}
 import esw.ocs.api.protocol._
-import esw.ocs.dsl.script.MainScriptDsl
+import esw.ocs.dsl.script.ScriptDsl
 import esw.ocs.impl.messages.SequencerMessages.{Pause, _}
 import esw.ocs.impl.messages.SequencerState
 import esw.ocs.impl.messages.SequencerState.{Idle, InProgress}
@@ -34,7 +34,7 @@ class SequencerTestSetup(sequence: Sequence)(implicit system: ActorSystem[_]) {
   implicit val ec: ExecutionContext                   = system.executionContext
 
   private val componentId                                      = mock[ComponentId]
-  private val script                                           = mock[MainScriptDsl]
+  private val script                                           = mock[ScriptDsl]
   private val locationService                                  = mock[LocationService]
   private def mockShutdownHttpService: () => Future[Done.type] = () => Future { Done }
   private val sequencerBehavior                                = new SequencerBehavior(componentId, script, locationService, mockShutdownHttpService)

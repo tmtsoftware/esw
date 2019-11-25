@@ -1,14 +1,14 @@
 package esw.ocs.dsl.core
 
 import esw.ocs.dsl.script.CswServices
-import esw.ocs.dsl.script.MainScriptDsl
+import esw.ocs.dsl.script.ScriptDsl
 import esw.ocs.dsl.script.StrandEc
 import esw.ocs.dsl.script.exceptions.ScriptLoadingException.ScriptInitialisationFailedException
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.runBlocking
 
-class Result(val scriptFactory: (CswServices) -> MainScriptDsl) {
-    operator fun invoke(cswService: CswServices): MainScriptDsl = scriptFactory(cswService)
+class Result(val scriptFactory: (CswServices) -> ScriptDsl) {
+    operator fun invoke(cswService: CswServices): ScriptDsl = scriptFactory(cswService)
 }
 
 fun script(block: suspend MainScript.(csw: CswServices) -> Unit): Result =
