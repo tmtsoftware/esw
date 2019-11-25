@@ -4,7 +4,7 @@ import sbt._
 
 object Libs {
   private val SilencerVersion = "1.4.4"
-  private val MSocketVersion  = "7b3f305"
+  private val MSocketVersion  = "0426b6a"
 
   val `silencer-plugin` = "com.github.ghik" % "silencer-plugin" % SilencerVersion cross CrossVersion.full
   val `silencer-lib`    = "com.github.ghik" % "silencer-lib"    % SilencerVersion cross CrossVersion.full
@@ -23,12 +23,12 @@ object Libs {
 
 object Csw {
   private val Org     = "com.github.tmtsoftware.csw"
-  private val Version = "2a8a8a7" //change this to 0.1-SNAPSHOT to test with local csw changes (after publishLocal)
+  private val Version = "d4c09ce" //change this to 0.1-SNAPSHOT to test with local csw changes (after publishLocal)
 
   val `csw-alarm-api`                 = Org %% "csw-alarm-api" % Version
-  val `csw-command-api`               = Org %% "csw-command-api" % Version
+  val `csw-command-api`               = dep(Org %%% "csw-command-api" % Version)
   val `csw-location-models`           = dep(Org %%% "csw-location-models" % Version)
-  val `csw-logging-models`            = Org %% "csw-logging-models" % Version
+  val `csw-logging-models`            = dep(Org %%% "csw-logging-models" % Version)
   val `csw-location-api`              = Org %% "csw-location-api" % Version
   val `csw-event-api`                 = Org %% "csw-event-api" % Version
   val `csw-aas-http`                  = Org %% "csw-aas-http" % Version

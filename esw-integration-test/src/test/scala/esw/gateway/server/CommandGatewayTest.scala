@@ -14,7 +14,7 @@ import csw.params.core.models.{ObsId, Prefix}
 import csw.params.core.states.{CurrentState, StateName}
 import csw.params.events.{Event, EventKey, EventName, SystemEvent}
 import csw.testkit.scaladsl.CSWService.EventServer
-import esw.gateway.api.clients.CommandClient
+import esw.gateway.api.clients.CommandClientFactory
 import esw.gateway.api.codecs.GatewayCodecs
 import esw.gateway.api.protocol.{PostRequest, WebsocketRequest}
 import esw.ocs.testkit.EswTestKit
@@ -47,7 +47,7 @@ class CommandGatewayTest extends EswTestKit(EventServer) with GatewayCodecs {
         new HttpPostTransport[PostRequest](s"http://localhost:$port/post-endpoint", JsonText, () => None)
       val websocketClient: Transport[WebsocketRequest] =
         new WebsocketTransport[WebsocketRequest](s"ws://localhost:$port/websocket-endpoint", JsonText)
-      val commandClient = new CommandClient(postClient, websocketClient)
+      val commandClientFactory = new CommandClientFactory(postClient, websocketClient)
 
       val eventService = new EventServiceFactory().make(HttpLocationServiceFactory.makeLocalClient)
       val eventKey     = EventKey(Prefix("tcs.filter.wheel"), EventName("setup-command-from-script"))
@@ -61,14 +61,14 @@ class CommandGatewayTest extends EswTestKit(EventServer) with GatewayCodecs {
       val currentState1      = CurrentState(Prefix("esw.a.b"), StateName("stateName1"))
       val currentState2      = CurrentState(Prefix("esw.a.b"), StateName("stateName2"))
 
-      val currentStatesF: Future[Seq[CurrentState]] =
-        commandClient.subscribeCurrentState(componentId, stateNames, None).take(2).runWith(Sink.seq)
+      val commandClient                             = commandClientFactory.make(componentId)
+      val currentStatesF: Future[Seq[CurrentState]] = commandClient.subscribeCurrentState(stateNames).take(2).runWith(Sink.seq)
       Thread.sleep(1000)
 
       //validate
-      commandClient.validate(componentId, command).rightValue shouldBe an[Accepted]
+      commandClient.validate(command).futureValue shouldBe an[Accepted]
       //oneway
-      commandClient.oneway(componentId, command).rightValue shouldBe an[Accepted]
+      commandClient.oneway(command).futureValue shouldBe an[Accepted]
 
       //submit-setup-command-subscription
       val testProbe    = TestProbe[Event]
@@ -77,7 +77,7 @@ class CommandGatewayTest extends EswTestKit(EventServer) with GatewayCodecs {
       testProbe.expectMessageType[SystemEvent] // discard invalid event
 
       //submit the setup command
-      val submitResponse = commandClient.submit(componentId, longRunningCommand).rightValue
+      val submitResponse = commandClient.submit(longRunningCommand).futureValue
       submitResponse shouldBe a[Started]
 
       val actualSetupEvent: SystemEvent = testProbe.expectMessageType[SystemEvent]
@@ -89,7 +89,7 @@ class CommandGatewayTest extends EswTestKit(EventServer) with GatewayCodecs {
       currentStatesF.futureValue.toSet should ===(Set(currentState1, currentState2))
 
       //queryFinal
-      commandClient.queryFinal(componentId, submitResponse.runId).rightValue should ===(Completed(submitResponse.runId))
+      commandClient.queryFinal(submitResponse.runId).futureValue should ===(Completed(submitResponse.runId))
     }
 
     "handle large websocket requests" in {
@@ -97,7 +97,7 @@ class CommandGatewayTest extends EswTestKit(EventServer) with GatewayCodecs {
         new HttpPostTransport[PostRequest](s"http://localhost:$port/post-endpoint", JsonText, () => None)
       val websocketClient: Transport[WebsocketRequest] =
         new WebsocketTransport[WebsocketRequest](s"ws://localhost:$port/websocket-endpoint", JsonText)
-      val commandClient = new CommandClient(postClient, websocketClient)
+      val commandClientFactory = new CommandClientFactory(postClient, websocketClient)
 
       val componentName = "test"
       val componentType = Assembly
@@ -107,12 +107,12 @@ class CommandGatewayTest extends EswTestKit(EventServer) with GatewayCodecs {
       val currentState1 = CurrentState(Prefix("esw.a.b"), StateName("stateName1"))
       val currentState2 = CurrentState(Prefix("esw.a.b"), StateName("stateName2"))
 
-      val currentStatesF: Future[Seq[CurrentState]] =
-        commandClient.subscribeCurrentState(componentId, stateNames, None).take(2).runWith(Sink.seq)
+      val commandClient                             = commandClientFactory.make(componentId)
+      val currentStatesF: Future[Seq[CurrentState]] = commandClient.subscribeCurrentState(stateNames).take(2).runWith(Sink.seq)
       Thread.sleep(500)
 
       //oneway
-      commandClient.oneway(componentId, command).futureValue.rightValue shouldBe an[Accepted]
+      commandClient.oneway(command).futureValue shouldBe an[Accepted]
 
       //subscribe current state returns set of states successfully
       currentStatesF.futureValue.toSet should ===(Set(currentState1, currentState2))
