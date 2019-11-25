@@ -7,8 +7,10 @@ import csw.time.core.models.UTCTime
 import esw.ocs.dsl.highlevel.CswHighLevelDsl
 import esw.ocs.dsl.nullable
 import esw.ocs.dsl.script.CswServices
+import esw.ocs.dsl.script.FSMScriptDsl
 import esw.ocs.dsl.script.MainScriptDsl
 import esw.ocs.dsl.script.StrandEc
+import esw.ocs.dsl.script.exceptions.ScriptLoadingException
 import kotlinx.coroutines.*
 import kotlinx.coroutines.future.asCompletableFuture
 import kotlinx.coroutines.future.await
@@ -92,4 +94,26 @@ open class MainScript(cswServices: CswServices) : ScriptDslKt(cswServices) {
         supervisorJob.cancel()
         dispatcher.close()
     }
+}
+
+class FSMScript(cswServices: CswServices) : MainScript(cswServices) {
+    private val fsmScriptDsl: FSMScriptDsl by lazy {
+        object : FSMScriptDsl(cswServices, scriptDsl) {
+            override fun strandEc(): StrandEc = strandEc
+        }
+    }
+
+    fun state(state: String, block: suspend ReusableScript.(csw: CswServices) -> Unit) {
+        fun reusableScript(): ReusableScript = ReusableScript(cswServices, strandEc, coroutineScope).apply {
+            try {
+                runBlocking { block(cswServices) }
+            } catch (ex: Exception) {
+                error("Script initialisation failed with message : " + ex.message)
+                throw ScriptLoadingException.ScriptInitialisationFailedException(ex.message)
+            }
+        }
+
+        fsmScriptDsl.add(state) { reusableScript().scriptDsl }
+    }
+
 }

@@ -16,10 +16,9 @@ private[esw] object ScriptLoader {
       val $$resultField = clazz.getDeclaredField("$$result")
       $$resultField.setAccessible(true)
 
-      type Script = { val scriptDsl: ScriptDsl }
-      type Result = { def invoke(services: CswServices): Script }
+      type Result = { def invoke(services: CswServices): ScriptDsl }
       val result = $$resultField.get(script).asInstanceOf[Result]
-      result.invoke(cswServices).scriptDsl
+      result.invoke(cswServices)
     }
 
   def withScript[T](scriptClass: String)(block: Class[_] => T): T =

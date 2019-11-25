@@ -31,63 +31,6 @@ private[esw] trait ScriptDsl {
   private[esw] def executeExceptionHandlers(ex: Throwable): CompletionStage[Void]
 }
 
-abstract class FSMScriptDsl(override val csw: CswServices) extends MainScriptDsl(csw) {
-  protected var currentState: String = "DEFAULT"
-  // fixme : should not be null.
-  protected var currentStateDsl: MainScriptDsl = _
-  protected var stateMap                       = Map.empty[String, Supplier[MainScriptDsl]]
-
-  def become(nextState: String): Unit = {
-    if (currentState != nextState) {
-      currentStateDsl = stateMap(nextState).get()
-      currentState = nextState
-    }
-  }
-
-  def add(state: String, script: Supplier[MainScriptDsl]): Unit = stateMap += (state -> script)
-
-  override def execute(command: SequenceCommand): Future[Unit] = stateMap.get(currentState) match {
-    case Some(_) => currentStateDsl.execute(command)
-    case None    => Future.failed(new RuntimeException(s"Invalid state = $currentState"))
-  }
-
-  override def executeGoOnline(): Future[Done] = currentStateDsl.executeGoOnline().flatMap { _ =>
-    super.executeGoOnline().map { _ =>
-      isOnline = true
-      Done
-    }
-  }
-
-  override def executeGoOffline(): Future[Done] = {
-    isOnline = false
-    //fixme: check if isOnline needs to be changed inside map
-    currentStateDsl.executeGoOffline().flatMap { _ =>
-      super.executeGoOffline()
-    }
-  }
-
-  override def executeShutdown(): Future[Done] = currentStateDsl.executeShutdown().flatMap { _ =>
-    super.executeShutdown()
-  }
-  override def executeAbort(): Future[Done] = currentStateDsl.executeAbort().flatMap { _ =>
-    super.executeAbort()
-  }
-  override def executeStop(): Future[Done] = currentStateDsl.executeStop().flatMap { _ =>
-    super.executeStop()
-  }
-  override def executeDiagnosticMode(startTime: UTCTime, hint: String): Future[Done] =
-    currentStateDsl.executeDiagnosticMode(startTime, hint).flatMap { _ =>
-      super.executeDiagnosticMode(startTime, hint)
-    }
-  override def executeOperationsMode(): Future[Done] = currentStateDsl.executeOperationsMode().flatMap { _ =>
-    super.executeOperationsMode()
-  }
-  override def executeExceptionHandlers(ex: Throwable): CompletionStage[Void] =
-    currentStateDsl.executeExceptionHandlers(ex).thenAccept { _ =>
-      super.executeExceptionHandlers(ex)
-    }
-}
-
 abstract class MainScriptDsl(val csw: CswServices) extends ScriptDsl {
   var isOnline = true
 
@@ -186,4 +129,68 @@ abstract class MainScriptDsl(val csw: CswServices) extends ScriptDsl {
 
   protected final def onException(handler: Throwable => CompletionStage[Void]): Unit = exceptionHandlers.add(handler)
 
+}
+
+abstract class FSMScriptDsl(val csw: CswServices, topLevelHandlers: MainScriptDsl) extends ScriptDsl {
+  protected var currentState: String = "DEFAULT"
+  // fixme : should not be null.
+  protected var currentStateDsl: MainScriptDsl = _
+  protected var stateMap                       = Map.empty[String, Supplier[MainScriptDsl]]
+
+  var isOnline = true
+
+  def become(nextState: String): Unit = {
+    if (currentState != nextState) {
+      currentStateDsl = stateMap(nextState).get()
+      currentState = nextState
+    }
+  }
+
+  def add(state: String, script: Supplier[MainScriptDsl]): Unit = stateMap += (state -> script)
+
+  override def execute(command: SequenceCommand): Future[Unit] = stateMap.get(currentState) match {
+    case Some(_) => currentStateDsl.execute(command)
+    case None    => Future.failed(new RuntimeException(s"Invalid state = $currentState"))
+  }
+
+  override def executeGoOnline(): Future[Done] = currentStateDsl.executeGoOnline().flatMap { _ =>
+    topLevelHandlers.executeGoOnline().map { _ =>
+      isOnline = true
+      Done
+    }
+  }
+
+  override def executeGoOffline(): Future[Done] = {
+    isOnline = false
+    //fixme: check if isOnline needs to be changed inside map
+    currentStateDsl.executeGoOffline().flatMap { _ =>
+      topLevelHandlers.executeGoOffline()
+    }
+  }
+
+  override def executeShutdown(): Future[Done] = currentStateDsl.executeShutdown().flatMap { _ =>
+    topLevelHandlers.executeShutdown()
+  }
+
+  override def executeAbort(): Future[Done] = currentStateDsl.executeAbort().flatMap { _ =>
+    topLevelHandlers.executeAbort()
+  }
+
+  override def executeStop(): Future[Done] = currentStateDsl.executeStop().flatMap { _ =>
+    topLevelHandlers.executeStop()
+  }
+
+  override def executeDiagnosticMode(startTime: UTCTime, hint: String): Future[Done] =
+    currentStateDsl.executeDiagnosticMode(startTime, hint).flatMap { _ =>
+      topLevelHandlers.executeDiagnosticMode(startTime, hint)
+    }
+
+  override def executeOperationsMode(): Future[Done] = currentStateDsl.executeOperationsMode().flatMap { _ =>
+    topLevelHandlers.executeOperationsMode()
+  }
+
+  override def executeExceptionHandlers(ex: Throwable): CompletionStage[Void] =
+    currentStateDsl.executeExceptionHandlers(ex).thenAccept { _ =>
+      topLevelHandlers.executeExceptionHandlers(ex)
+    }
 }
