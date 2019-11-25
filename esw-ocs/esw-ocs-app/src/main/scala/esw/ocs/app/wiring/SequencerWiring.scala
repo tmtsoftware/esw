@@ -28,7 +28,7 @@ import esw.ocs.api.codecs.SequencerHttpCodecs
 import esw.ocs.api.protocol.ScriptError
 import esw.ocs.app.route._
 import esw.ocs.dsl.script.utils.{LockUnlockUtil, ScriptLoader}
-import esw.ocs.dsl.script.{CswServices, MainScriptDsl, ScriptDsl}
+import esw.ocs.dsl.script.{CswServices, ScriptDsl}
 import esw.ocs.dsl.sequence_manager.LocationServiceUtil
 import esw.ocs.impl.core._
 import esw.ocs.impl.internal.{SequencerServer, Timeouts}
