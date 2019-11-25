@@ -11,16 +11,14 @@ import esw.ocs.dsl.script.FSMScriptDsl
 import esw.ocs.dsl.script.MainScriptDsl
 import esw.ocs.dsl.script.StrandEc
 import esw.ocs.dsl.script.exceptions.ScriptLoadingException
+import esw.ocs.dsl.script.exceptions.ScriptLoadingException.ScriptInitialisationFailedException
 import kotlinx.coroutines.*
 import kotlinx.coroutines.future.asCompletableFuture
 import kotlinx.coroutines.future.await
 import kotlinx.coroutines.future.future
 
 sealed class ScriptDslKt(val cswServices: CswServices) : CswHighLevelDsl(cswServices) {
-
-    // https://stackoverflow.com/questions/58497383/is-it-possible-to-provide-custom-name-for-internal-delegated-properties-in-kotli/58497535#58497535
-    @get:JvmName("scriptDsl")
-    internal val scriptDsl: MainScriptDsl by lazy { ScriptDslFactory.make(cswServices, strandEc) }
+    internal open val scriptDsl: MainScriptDsl by lazy { MainScriptDsl(cswServices, strandEc) }
 
     suspend fun nextIf(predicate: (SequenceCommand) -> Boolean): SequenceCommand? =
             scriptDsl.nextIf { predicate(it) }.await().nullable()
@@ -97,23 +95,19 @@ open class MainScript(cswServices: CswServices) : ScriptDslKt(cswServices) {
 }
 
 class FSMScript(cswServices: CswServices) : MainScript(cswServices) {
-    private val fsmScriptDsl: FSMScriptDsl by lazy {
-        object : FSMScriptDsl(cswServices, scriptDsl) {
-            override fun strandEc(): StrandEc = strandEc
-        }
-    }
+    private val fsmScriptDsl: FSMScriptDsl by lazy { FSMScriptDsl(cswServices, strandEc) }
+    override val scriptDsl: MainScriptDsl by lazy { fsmScriptDsl }
 
-    fun state(state: String, block: suspend ReusableScript.(csw: CswServices) -> Unit) {
+    fun state(state: String, block: suspend ReusableScript.() -> Unit) {
         fun reusableScript(): ReusableScript = ReusableScript(cswServices, strandEc, coroutineScope).apply {
             try {
-                runBlocking { block(cswServices) }
+                runBlocking { block() }
             } catch (ex: Exception) {
-                error("Script initialisation failed with message : " + ex.message)
-                throw ScriptLoadingException.ScriptInitialisationFailedException(ex.message)
+                error("Failed to initialize state: $state", ex = ex)
+                throw ScriptInitialisationFailedException(ex.message)
             }
         }
 
         fsmScriptDsl.add(state) { reusableScript().scriptDsl }
     }
-
 }

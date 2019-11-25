@@ -43,6 +43,4 @@ class SequencerConfigTest extends BaseTestSuite {
   }
 }
 
-class ValidTestScript(csw: CswServices) extends MainScriptDsl(csw) {
-  override protected implicit def strandEc: StrandEc = ???
-}
+class ValidTestScript(csw: CswServices) extends MainScriptDsl(csw, StrandEc())

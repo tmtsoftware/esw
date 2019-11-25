@@ -16,22 +16,9 @@ import scala.compat.java8.FutureConverters.{CompletionStageOps, FutureOps}
 import scala.concurrent.{ExecutionContext, Future}
 import scala.reflect.ClassTag
 
-private[esw] trait ScriptDsl {
-  protected implicit def strandEc: StrandEc
+class MainScriptDsl(val csw: CswServices, strandEc: StrandEc) {
   protected implicit lazy val toEc: ExecutionContext = strandEc.ec
 
-  private[esw] def execute(command: SequenceCommand): Future[Unit]
-  private[esw] def executeGoOnline(): Future[Done]
-  private[esw] def executeGoOffline(): Future[Done]
-  private[esw] def executeShutdown(): Future[Done]
-  private[esw] def executeAbort(): Future[Done]
-  private[esw] def executeStop(): Future[Done]
-  private[esw] def executeDiagnosticMode(startTime: UTCTime, hint: String): Future[Done]
-  private[esw] def executeOperationsMode(): Future[Done]
-  private[esw] def executeExceptionHandlers(ex: Throwable): CompletionStage[Void]
-}
-
-abstract class MainScriptDsl(val csw: CswServices) extends ScriptDsl {
   var isOnline = true
 
   private val commandHandlerBuilder: FunctionBuilder[SequenceCommand, CompletionStage[Void]] = new FunctionBuilder
@@ -131,20 +118,17 @@ abstract class MainScriptDsl(val csw: CswServices) extends ScriptDsl {
 
 }
 
-abstract class FSMScriptDsl(val csw: CswServices, topLevelHandlers: MainScriptDsl) extends ScriptDsl {
+class FSMScriptDsl(override val csw: CswServices, val strandEc: StrandEc) extends MainScriptDsl(csw, strandEc) {
   protected var currentState: String = "DEFAULT"
   // fixme : should not be null.
   protected var currentStateDsl: MainScriptDsl = _
   protected var stateMap                       = Map.empty[String, Supplier[MainScriptDsl]]
 
-  var isOnline = true
-
-  def become(nextState: String): Unit = {
+  def become(nextState: String): Unit =
     if (currentState != nextState) {
       currentStateDsl = stateMap(nextState).get()
       currentState = nextState
     }
-  }
 
   def add(state: String, script: Supplier[MainScriptDsl]): Unit = stateMap += (state -> script)
 
@@ -153,44 +137,22 @@ abstract class FSMScriptDsl(val csw: CswServices, topLevelHandlers: MainScriptDs
     case None    => Future.failed(new RuntimeException(s"Invalid state = $currentState"))
   }
 
-  override def executeGoOnline(): Future[Done] = currentStateDsl.executeGoOnline().flatMap { _ =>
-    topLevelHandlers.executeGoOnline().map { _ =>
-      isOnline = true
-      Done
-    }
-  }
+  override def executeGoOnline(): Future[Done] = currentStateDsl.executeGoOnline().flatMap(_ => super.executeGoOnline())
 
-  override def executeGoOffline(): Future[Done] = {
-    isOnline = false
-    //fixme: check if isOnline needs to be changed inside map
-    currentStateDsl.executeGoOffline().flatMap { _ =>
-      topLevelHandlers.executeGoOffline()
-    }
-  }
+  override def executeGoOffline(): Future[Done] = currentStateDsl.executeGoOffline().flatMap(_ => super.executeGoOffline())
 
-  override def executeShutdown(): Future[Done] = currentStateDsl.executeShutdown().flatMap { _ =>
-    topLevelHandlers.executeShutdown()
-  }
+  override def executeShutdown(): Future[Done] = currentStateDsl.executeShutdown().flatMap(_ => super.executeShutdown())
 
-  override def executeAbort(): Future[Done] = currentStateDsl.executeAbort().flatMap { _ =>
-    topLevelHandlers.executeAbort()
-  }
+  override def executeAbort(): Future[Done] = currentStateDsl.executeAbort().flatMap(_ => super.executeAbort())
 
-  override def executeStop(): Future[Done] = currentStateDsl.executeStop().flatMap { _ =>
-    topLevelHandlers.executeStop()
-  }
+  override def executeStop(): Future[Done] = currentStateDsl.executeStop().flatMap(_ => super.executeStop())
 
   override def executeDiagnosticMode(startTime: UTCTime, hint: String): Future[Done] =
-    currentStateDsl.executeDiagnosticMode(startTime, hint).flatMap { _ =>
-      topLevelHandlers.executeDiagnosticMode(startTime, hint)
-    }
+    currentStateDsl.executeDiagnosticMode(startTime, hint).flatMap(_ => super.executeDiagnosticMode(startTime, hint))
 
-  override def executeOperationsMode(): Future[Done] = currentStateDsl.executeOperationsMode().flatMap { _ =>
-    topLevelHandlers.executeOperationsMode()
-  }
+  override def executeOperationsMode(): Future[Done] =
+    currentStateDsl.executeOperationsMode().flatMap(_ => super.executeOperationsMode())
 
   override def executeExceptionHandlers(ex: Throwable): CompletionStage[Void] =
-    currentStateDsl.executeExceptionHandlers(ex).thenAccept { _ =>
-      topLevelHandlers.executeExceptionHandlers(ex)
-    }
+    currentStateDsl.executeExceptionHandlers(ex).thenAccept(_ => super.executeExceptionHandlers(ex))
 }
