@@ -5,8 +5,8 @@ import kotlin.time.Duration
 
 interface FSMState {
     fun become(state: String)
-    fun completeFsm()
-    suspend fun on(condition: Boolean = true, body: suspend () -> Unit)
+    fun completeFSM()
+    suspend fun on(condition: Boolean, body: suspend () -> Unit)
     suspend fun after(duration: Duration, body: suspend () -> Unit)
     suspend fun entry(body: suspend () -> Unit)
     fun state(name: String, block: suspend () -> Unit)
@@ -49,7 +49,7 @@ class StateMachineImpl(val name: String, val initialState: String, val coroutine
         fsmJob.join()
     }
 
-    override fun completeFsm() {
+    override fun completeFSM() {
         fsmJob.cancel()
     }
 
@@ -67,7 +67,7 @@ class StateMachineImpl(val name: String, val initialState: String, val coroutine
 
     override suspend fun after(duration: Duration, body: suspend () -> Unit) {
         delay(duration.toLongMilliseconds())
-        on(body = body)
+        body()
     }
 
     override suspend fun entry(body: suspend () -> Unit) {

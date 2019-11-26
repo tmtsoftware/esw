@@ -103,4 +103,6 @@ class FSMScript(
 
         fsmScriptDsl.add(state) { reusableScript().scriptDsl }
     }
+
+    fun become(nextState: String) = fsmScriptDsl.become(nextState)
 }

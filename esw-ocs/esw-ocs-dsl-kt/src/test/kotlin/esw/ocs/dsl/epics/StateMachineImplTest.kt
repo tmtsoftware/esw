@@ -183,7 +183,7 @@ class StateMachineImplTest {
 
         stateMachine.state(inProgress) {
             shouldChange = true
-            stateMachine.completeFsm()
+            stateMachine.completeFSM()
             shouldNotChange = true
         }
 
@@ -214,7 +214,7 @@ class StateMachineImplTest {
         eventually(timeout) { waitingStarted shouldBe true }
         eventually(timeout) { waitingFinished shouldBe false }
 
-        stateMachine.completeFsm()
+        stateMachine.completeFSM()
 
         eventually(timeout) { waitingFinished shouldBe true }
     }
