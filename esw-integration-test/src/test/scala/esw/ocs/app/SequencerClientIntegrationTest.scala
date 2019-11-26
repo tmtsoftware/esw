@@ -50,13 +50,13 @@ class SequencerClientIntegrationTest extends EswTestKit(EventServer) {
 
   override protected def afterEach(): Unit = shutdownAllSequencers()
 
-  "LoadSequence, Start it and Query its response | ESW-145, ESW-154, ESW-221, ESW-194, ESW-158, ESW-222, ESW-101" in {
+  "LoadSequence, Start it and Query its response | ESW-145, ESW-154, ESW-221, ESW-194, ESW-158, ESW-222, ESW-101, ESW-244" in {
     val sequence = Sequence(command1, command2)
 
     ocsSequencerAdmin.loadSequence(sequence).futureValue should ===(Ok)
     val startedResponse = ocsSequencerAdmin.startSequence().futureValue
     startedResponse shouldBe a[Started]
-    ocsSequencerAdmin.queryFinal(startedResponse.runId).futureValue should ===(Completed(startedResponse.runId))
+    eventually(ocsSequencerAdmin.query(startedResponse.runId).futureValue should ===(Completed(startedResponse.runId)))
 
     val step1         = Step(command1, Success, hasBreakpoint = false)
     val step2         = Step(command2, Success, hasBreakpoint = false)

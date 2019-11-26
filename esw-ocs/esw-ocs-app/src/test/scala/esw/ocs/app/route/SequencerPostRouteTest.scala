@@ -3,7 +3,7 @@ package esw.ocs.app.route
 import akka.http.scaladsl.model.StatusCodes
 import akka.http.scaladsl.server.Route
 import akka.http.scaladsl.testkit.ScalatestRouteTest
-import csw.params.commands.CommandResponse.{Completed, Started, SubmitResponse}
+import csw.params.commands.CommandResponse._
 import csw.params.commands.{CommandName, Sequence, Setup}
 import csw.params.core.models.{Id, Prefix}
 import csw.time.core.models.UTCTime
@@ -233,6 +233,16 @@ class SequencerPostRouteTest extends BaseTestSuite with ScalatestRouteTest with 
 
       Post("/post-endpoint", SubmitSequence(sequence)) ~> route ~> check {
         responseAs[SubmitResponse] should ===(completedResponse)
+      }
+    }
+
+    "return QueryResponse for Query request | ESW-101, ESW-244" in {
+      val sequenceId        = Id()
+      val completedResponse = CommandNotAvailable(sequenceId)
+      when(sequencerAdmin.query(sequenceId)).thenReturn(Future.successful(completedResponse))
+
+      Post("/post-endpoint", Query(sequenceId)) ~> route ~> check {
+        responseAs[QueryResponse] should ===(completedResponse)
       }
     }
 
