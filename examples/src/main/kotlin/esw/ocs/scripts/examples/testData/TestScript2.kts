@@ -2,11 +2,11 @@ package esw.ocs.scripts.examples.testData
 
 import csw.params.commands.Sequence
 import csw.params.commands.SequenceCommand
-import csw.params.core.models.Id
 import esw.ocs.dsl.core.script
 import kotlinx.coroutines.delay
 import scala.jdk.javaapi.CollectionConverters
 import java.util.*
+import kotlin.time.seconds
 
 script {
     onSetup("command-1") {
@@ -41,7 +41,7 @@ script {
         )
 
         val tcs = Sequencer("tcs", "moonnight")
-        tcs.submitAndWait(sequence)
+        tcs.submitAndWait(sequence, 10.seconds)
     }
 
     onSetup("log-command") {

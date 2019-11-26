@@ -16,9 +16,7 @@ import scala.compat.java8.FutureConverters.{CompletionStageOps, FutureOps}
 import scala.concurrent.{ExecutionContext, Future}
 import scala.reflect.ClassTag
 
-abstract class JScriptDsl(val csw: CswServices) {
-
-  protected implicit def strandEc: StrandEc
+private[esw] class ScriptDsl(val csw: CswServices, strandEc: StrandEc) {
   protected implicit lazy val toEc: ExecutionContext = strandEc.ec
 
   var isOnline = true
@@ -34,7 +32,7 @@ abstract class JScriptDsl(val csw: CswServices) {
   private val operationsHandlers: FunctionHandlers[Unit, CompletionStage[Void]]              = new FunctionHandlers
   private val exceptionHandlers: FunctionHandlers[Throwable, CompletionStage[Void]]          = new FunctionHandlers
 
-  private[esw] def merge(that: JScriptDsl): JScriptDsl = {
+  def merge(that: ScriptDsl): ScriptDsl = {
     commandHandlerBuilder ++ that.commandHandlerBuilder
     onlineHandlers ++ that.onlineHandlers
     offlineHandlers ++ that.offlineHandlers
@@ -56,34 +54,34 @@ abstract class JScriptDsl(val csw: CswServices) {
       CompletableFuture.failedFuture(new UnhandledCommandException(input))
     }
 
-  private[esw] def execute(command: SequenceCommand): Future[Unit] = commandHandler(command).toScala.map(_ => ())
+  def execute(command: SequenceCommand): Future[Unit] = commandHandler(command).toScala.map(_ => ())
 
   private def executeHandler[T](f: FunctionHandlers[T, CompletionStage[Void]], arg: T): Future[Unit] =
     Future.sequence(f.execute(arg).map(_.toScala)).map(_ => ())
 
-  private[esw] def executeGoOnline(): Future[Done] =
+  def executeGoOnline(): Future[Done] =
     executeHandler(onlineHandlers, ()).map { _ =>
       isOnline = true
       Done
     }
 
-  private[esw] def executeGoOffline(): Future[Done] = {
+  def executeGoOffline(): Future[Done] = {
     isOnline = false
     executeHandler(offlineHandlers, ()).map(_ => Done)
   }
 
-  private[esw] def executeShutdown(): Future[Done] = executeHandler(shutdownHandlers, ()).map(_ => Done)
+  def executeShutdown(): Future[Done] = executeHandler(shutdownHandlers, ()).map(_ => Done)
 
-  private[esw] def executeAbort(): Future[Done] = executeHandler(abortHandlers, ()).map(_ => Done)
+  def executeAbort(): Future[Done] = executeHandler(abortHandlers, ()).map(_ => Done)
 
-  private[esw] def executeStop(): Future[Done] = executeHandler(stopHandlers, ()).map(_ => Done)
+  def executeStop(): Future[Done] = executeHandler(stopHandlers, ()).map(_ => Done)
 
-  private[esw] def executeDiagnosticMode(startTime: UTCTime, hint: String): Future[Done] =
+  def executeDiagnosticMode(startTime: UTCTime, hint: String): Future[Done] =
     Future.sequence(diagnosticHandlers.execute((startTime, hint)).map(_.toScala)).map(_ => Done)
 
-  private[esw] def executeOperationsMode(): Future[Done] = executeHandler(operationsHandlers, ()).map(_ => Done)
+  def executeOperationsMode(): Future[Done] = executeHandler(operationsHandlers, ()).map(_ => Done)
 
-  private[esw] def executeExceptionHandlers(ex: Throwable): CompletionStage[Void] =
+  def executeExceptionHandlers(ex: Throwable): CompletionStage[Void] =
     executeHandler(exceptionHandlers, ex).toJava.thenAccept(_ => ())
 
   protected final def nextIf(f: SequenceCommand => Boolean): CompletionStage[Optional[SequenceCommand]] =
@@ -101,10 +99,10 @@ abstract class JScriptDsl(val csw: CswServices) {
     }.toJava
 
   protected final def onSetupCommand(name: String)(handler: Setup => CompletionStage[Void]): Unit =
-    handle(name)(handler(_))
+    handle[Setup](name)(handler(_))
 
   protected final def onObserveCommand(name: String)(handler: Observe => CompletionStage[Void]): Unit =
-    handle(name)(handler(_))
+    handle[Observe](name)(handler(_))
 
   protected final def onGoOnline(handler: Supplier[CompletionStage[Void]]): Unit      = onlineHandlers.add(_ => handler.get())
   protected final def onAbortSequence(handler: Supplier[CompletionStage[Void]]): Unit = abortHandlers.add(_ => handler.get())
@@ -117,5 +115,4 @@ abstract class JScriptDsl(val csw: CswServices) {
     operationsHandlers.add(_ => handler.get())
 
   protected final def onException(handler: Throwable => CompletionStage[Void]): Unit = exceptionHandlers.add(handler)
-
 }

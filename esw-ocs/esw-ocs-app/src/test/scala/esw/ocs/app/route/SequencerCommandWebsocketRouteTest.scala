@@ -4,15 +4,18 @@ import akka.actor.typed.{ActorSystem, SpawnProtocol}
 import akka.http.scaladsl.model.ws.{BinaryMessage, TextMessage}
 import akka.http.scaladsl.server.Route
 import akka.http.scaladsl.testkit.{ScalatestRouteTest, WSProbe}
+import akka.util.Timeout
 import akka.stream.scaladsl.Source
 import csw.params.commands.CommandResponse.{Completed, SubmitResponse}
 import csw.params.core.models.Id
 import esw.http.core.BaseTestSuite
 import esw.ocs.api.SequencerAdminApi
 import esw.ocs.api.codecs.SequencerHttpCodecs
+import esw.ocs.api.protocol.SequencerWebsocketRequest.QueryFinal
+import scala.concurrent.duration.DurationLong
+import esw.ocs.impl.SequencerAdminImpl
 import esw.ocs.api.models.SequencerInsight
 import esw.ocs.api.protocol.SequencerWebsocketRequest.{GetInsights, QueryFinal}
-import esw.ocs.impl.SequencerCommandImpl
 import io.bullet.borer.Decoder
 import msocket.impl.Encoding
 import msocket.impl.Encoding.{CborBinary, JsonText}
@@ -31,11 +34,9 @@ class SequencerCommandWebsocketRouteTest
 
   override def encoding: Encoding[_] = JsonText
 
-  private val sequencerCommandApi: SequencerCommandImpl = mock[SequencerCommandImpl]
-  private val sequencerAdminApi: SequencerAdminApi      = mock[SequencerAdminApi]
+  private val sequencerAdmin: SequencerAdminImpl = mock[SequencerAdminImpl]
 
-  private def websocketHandlerFactory(encoding: Encoding[_]) =
-    new SequencerWebsocketHandlerImpl(sequencerCommandApi, sequencerAdminApi, encoding)
+  private def websocketHandlerFactory(encoding: Encoding[_]) = new SequencerWebsocketHandlerImpl(sequencerAdmin, encoding)
 
   private implicit val actorSystem: ActorSystem[SpawnProtocol.Command] = ActorSystem(SpawnProtocol(), "test-system")
 
@@ -44,12 +45,13 @@ class SequencerCommandWebsocketRouteTest
 
   "SequencerRoutes" must {
     "return final submit response of sequence for QueryFinal request | ESW-101" in {
-      val id                = Id("some")
-      val completedResponse = Completed(id)
-      when(sequencerCommandApi.queryFinal(id)).thenReturn(Future.successful(completedResponse))
+      val id                        = Id("some")
+      implicit val timeout: Timeout = Timeout(10.seconds)
+      val completedResponse         = Completed(id)
+      when(sequencerAdmin.queryFinal(id)).thenReturn(Future.successful(completedResponse))
 
       WS("/websocket-endpoint", wsClient.flow) ~> route ~> check {
-        wsClient.sendMessage(JsonText.strictMessage(QueryFinal(id)))
+        wsClient.sendMessage(JsonText.strictMessage(QueryFinal(id, timeout)))
         isWebSocketUpgrade shouldBe true
 
         val response = decodeMessage[SubmitResponse](wsClient)
@@ -58,7 +60,7 @@ class SequencerCommandWebsocketRouteTest
     }
 
     "return stream of sequencer insights" in {
-      when(sequencerAdminApi.getInsights).thenReturn(
+      when(sequencerAdmin.getInsights).thenReturn(
         Source(1 to 6)
           .map(i => SequencerInsight("", Some(Id(i.toString)), None, None))
           .throttle(1, 1.second)

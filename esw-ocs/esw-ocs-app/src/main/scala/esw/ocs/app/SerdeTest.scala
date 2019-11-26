@@ -1,7 +1,5 @@
 package esw.ocs.app
 
-import csw.params.commands.{CommandName, Setup}
-import csw.params.core.models.{ObsId, Prefix}
 import io.bullet.borer.{Codec, Json}
 
 object SerdeTest extends App {

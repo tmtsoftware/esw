@@ -9,14 +9,14 @@ import csw.location.api.javadsl.ILocationService
 import csw.logging.api.javadsl.ILogger
 import csw.params.core.models.Prefix
 import csw.time.scheduler.TimeServiceSchedulerFactory
-import esw.ocs.api.{SequencerAdminFactoryApi, SequencerCommandFactoryApi}
+import esw.ocs.api.SequencerAdminFactoryApi
 import esw.ocs.dsl.script.exceptions.ScriptLoadingException.{
   InvalidScriptException,
   ScriptInitialisationFailedException,
   ScriptNotFound
 }
 import esw.ocs.dsl.script.utils.{LockUnlockUtil, ScriptLoader}
-import esw.ocs.dsl.script.{CswServices, JScriptDsl, SequenceOperator}
+import esw.ocs.dsl.script.{CswServices, ScriptDsl, SequenceOperator}
 import esw.ocs.testkit.BaseTestSuite
 
 class ScriptLoaderTest extends BaseTestSuite {
@@ -28,7 +28,6 @@ class ScriptLoaderTest extends BaseTestSuite {
   private val iEventService               = mock[IEventService]
   private val timeServiceSchedulerFactory = mock[TimeServiceSchedulerFactory]
   private val sequencerAdminFactoryApi    = mock[SequencerAdminFactoryApi]
-  private val sequencerCommandFactoryApi  = mock[SequencerCommandFactoryApi]
   private val databaseServiceFactory      = mock[DatabaseServiceFactory]
   private val lockUnlockUtil              = mock[LockUnlockUtil]
   private val iConfigClientService        = mock[IConfigClientService]
@@ -44,7 +43,6 @@ class ScriptLoaderTest extends BaseTestSuite {
     iEventService,
     timeServiceSchedulerFactory,
     sequencerAdminFactoryApi,
-    sequencerCommandFactoryApi,
     databaseServiceFactory,
     lockUnlockUtil,
     iConfigClientService,
@@ -54,9 +52,9 @@ class ScriptLoaderTest extends BaseTestSuite {
   "load" must {
 
     "load script class if packageId and observingMode is provided | ESW-102, ESW-136" in {
-      val loader: JScriptDsl =
+      val loader: ScriptDsl =
         ScriptLoader.loadKotlinScript("esw.ocs.scripts.examples.testData.scriptLoader.ValidTestScript", cswServices)
-      loader shouldBe a[JScriptDsl]
+      loader shouldBe a[ScriptDsl]
     }
 
     "throw InvalidScriptException if provided class is not a script | ESW-102, ESW-136" in {

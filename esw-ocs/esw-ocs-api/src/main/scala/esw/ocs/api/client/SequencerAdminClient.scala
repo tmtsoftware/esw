@@ -1,24 +1,31 @@
 package esw.ocs.api.client
 
+import akka.util.Timeout
+import csw.params.commands.CommandResponse.{QueryResponse, SubmitResponse}
+import csw.params.commands.{Sequence, SequenceCommand}
 import akka.stream.scaladsl.Source
 import csw.params.commands.SequenceCommand
 import csw.params.core.models.Id
-import esw.ocs.api.SequencerAdminApi
+import csw.time.core.models.UTCTime
 import esw.ocs.api.codecs.SequencerHttpCodecs
 import esw.ocs.api.models.{SequencerInsight, StepList}
 import esw.ocs.api.protocol.SequencerPostRequest._
-import esw.ocs.api.protocol.SequencerWebsocketRequest.GetInsights
+import esw.ocs.api.protocol.SequencerWebsocketRequest._
 import esw.ocs.api.protocol._
+import esw.ocs.api.{SequencerAdminApi, SequencerCommandExtensions}
 import msocket.api.Transport
 import msocket.api.models.Subscription
 
-import scala.concurrent.Future
+import scala.concurrent.{ExecutionContext, Future}
 
 class SequencerAdminClient(
     postClient: Transport[SequencerPostRequest],
     websocketClient: Transport[SequencerWebsocketRequest]
-) extends SequencerAdminApi
+)(implicit ec: ExecutionContext)
+    extends SequencerAdminApi
     with SequencerHttpCodecs {
+
+  private val extensions = new SequencerCommandExtensions(this)
 
   override def getSequence: Future[Option[StepList]] = {
     postClient.requestResponse[Option[StepList]](GetSequence)
@@ -81,4 +88,32 @@ class SequencerAdminClient(
   }
 
   override def getInsights: Source[SequencerInsight, Subscription] = websocketClient.requestStream[SequencerInsight](GetInsights)
+
+  // commandApi
+  override def loadSequence(sequence: Sequence): Future[OkOrUnhandledResponse] =
+    postClient.requestResponse[OkOrUnhandledResponse](LoadSequence(sequence))
+
+  override def startSequence(): Future[SubmitResponse] = postClient.requestResponse[SubmitResponse](StartSequence)
+
+  override def submit(sequence: Sequence): Future[SubmitResponse] =
+    postClient.requestResponse[SubmitResponse](SubmitSequence(sequence))
+
+  override def submitAndWait(sequence: Sequence)(implicit timeout: Timeout): Future[SubmitResponse] =
+    extensions.submitAndWait(sequence)
+
+  override def query(runId: Id): Future[QueryResponse] =
+    postClient.requestResponse[QueryResponse](Query(runId))
+
+  override def queryFinal(runId: Id)(implicit timeout: Timeout): Future[SubmitResponse] =
+    websocketClient.requestResponse[SubmitResponse](QueryFinal(runId, timeout), timeout.duration)
+
+  override def goOnline(): Future[GoOnlineResponse] = postClient.requestResponse[GoOnlineResponse](GoOnline)
+
+  override def goOffline(): Future[GoOfflineResponse] = postClient.requestResponse[GoOfflineResponse](GoOffline)
+
+  override def diagnosticMode(startTime: UTCTime, hint: String): Future[DiagnosticModeResponse] =
+    postClient.requestResponse[DiagnosticModeResponse](DiagnosticMode(startTime, hint))
+
+  override def operationsMode(): Future[OperationsModeResponse] =
+    postClient.requestResponse[OperationsModeResponse](OperationsMode)
 }

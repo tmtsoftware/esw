@@ -1,6 +1,6 @@
 package esw.ocs.dsl.highlevel
 
-import csw.command.client.SequencerCommandServiceFactory
+import akka.util.Timeout
 import csw.location.models.AkkaLocation
 import csw.params.commands.CommandResponse
 import csw.params.commands.Sequence
@@ -8,18 +8,17 @@ import csw.params.core.models.Id
 import csw.time.core.models.UTCTime
 import esw.ocs.api.SequencerAdminApi
 import esw.ocs.api.SequencerAdminFactoryApi
-import esw.ocs.api.SequencerCommandApi
-import esw.ocs.api.SequencerCommandFactoryApi
 import esw.ocs.api.protocol.`Ok$`
 import esw.ocs.dsl.sequence_manager.LocationServiceUtil
 import io.mockk.every
 import io.mockk.mockk
-import io.mockk.mockkStatic
 import io.mockk.verify
 import kotlinx.coroutines.runBlocking
 import org.junit.jupiter.api.Test
 import scala.concurrent.Future
 import java.util.concurrent.CompletableFuture
+import java.util.concurrent.TimeUnit
+import kotlin.time.seconds
 
 class RichSequencerTest {
 
@@ -31,67 +30,65 @@ class RichSequencerTest {
     private val sequence: Sequence = mockk()
 
     private val sequencerAdminFactory: SequencerAdminFactoryApi = mockk()
-    private val sequencerCommandFactory: SequencerCommandFactoryApi = mockk()
     private val locationServiceUtil: LocationServiceUtil = mockk()
 
-    private val tcsSequencer = RichSequencer(sequencerId, observingMode, sequencerAdminFactory, sequencerCommandFactory)
+    private val tcsSequencer = RichSequencer(sequencerId, observingMode, sequencerAdminFactory)
 
     private val sequencerAdmin: SequencerAdminApi = mockk()
-    private val sequencerCommandApi: SequencerCommandApi = mockk()
 
     private val sequencerLocation: AkkaLocation = mockk()
+    private val timeout = Timeout(10, TimeUnit.SECONDS)
 
     @Test
     fun `submitAndWait should resolve sequencerCommandService for given sequencer and call submitAndWait method on it | ESW-245 `() = runBlocking {
 
-        mockkStatic(SequencerCommandServiceFactory::class)
         every { locationServiceUtil.resolveSequencer(sequencerId, observingMode, any()) }.answers { Future.successful(sequencerLocation) }
-        every { sequencerCommandApi.submitAndWait(sequence) }.answers { Future.successful(CommandResponse.Completed(Id.apply())) }
-        every { sequencerCommandFactory.jMake(sequencerId, observingMode) }.answers { CompletableFuture.completedFuture(sequencerCommandApi) }
+        every { sequencerAdmin.submitAndWait(sequence, timeout) }.answers { Future.successful(CommandResponse.Completed(Id.apply())) }
+        every { sequencerAdminFactory.jMake(sequencerId, observingMode) }.answers { CompletableFuture.completedFuture(sequencerAdmin) }
 
-        tcsSequencer.submitAndWait(sequence)
+        tcsSequencer.submitAndWait(sequence, 10.seconds)
 
-        verify { sequencerCommandApi.submitAndWait(sequence) }
+        verify { sequencerAdmin.submitAndWait(sequence, timeout) }
     }
 
     @Test
     fun `diagnosticMode should resolve sequencerAdmin for given sequencer and call diagnosticMode method on it | ESW-143, ESW-245 `() = runBlocking {
 
-        every { sequencerCommandFactory.jMake(sequencerId, observingMode) }.answers { CompletableFuture.completedFuture(sequencerCommandApi) }
-        every { sequencerCommandApi.diagnosticMode(startTime, hint) }.answers { Future.successful(`Ok$`.`MODULE$`) }
+        every { sequencerAdminFactory.jMake(sequencerId, observingMode) }.answers { CompletableFuture.completedFuture(sequencerAdmin) }
+        every { sequencerAdmin.diagnosticMode(startTime, hint) }.answers { Future.successful(`Ok$`.`MODULE$`) }
 
         tcsSequencer.diagnosticMode(startTime, hint)
-        verify { sequencerCommandApi.diagnosticMode(startTime, hint) }
+        verify { sequencerAdmin.diagnosticMode(startTime, hint) }
     }
 
     @Test
     fun `operationsMode should resolve sequencerAdmin for given sequencer and call operationsMode method on it | ESW-143, ESW-245 `() = runBlocking {
 
-        every { sequencerCommandFactory.jMake(sequencerId, observingMode) }.answers { CompletableFuture.completedFuture(sequencerCommandApi) }
-        every { sequencerCommandApi.operationsMode() }.answers { Future.successful(`Ok$`.`MODULE$`) }
+        every { sequencerAdminFactory.jMake(sequencerId, observingMode) }.answers { CompletableFuture.completedFuture(sequencerAdmin) }
+        every { sequencerAdmin.operationsMode() }.answers { Future.successful(`Ok$`.`MODULE$`) }
 
         tcsSequencer.operationsMode()
-        verify { sequencerCommandApi.operationsMode() }
+        verify { sequencerAdmin.operationsMode() }
     }
 
     @Test
     fun `goOnline should resolve sequencerAdmin for given sequencer and call goOnline method on it | ESW-236, ESW-245 `() = runBlocking {
 
-        every { sequencerCommandFactory.jMake(sequencerId, observingMode) }.answers { CompletableFuture.completedFuture(sequencerCommandApi) }
-        every { sequencerCommandApi.goOnline() }.answers { Future.successful(`Ok$`.`MODULE$`) }
+        every { sequencerAdminFactory.jMake(sequencerId, observingMode) }.answers { CompletableFuture.completedFuture(sequencerAdmin) }
+        every { sequencerAdmin.goOnline() }.answers { Future.successful(`Ok$`.`MODULE$`) }
 
         tcsSequencer.goOnline()
-        verify { sequencerCommandApi.goOnline() }
+        verify { sequencerAdmin.goOnline() }
     }
 
     @Test
     fun `goOffline should resolve sequencerAdmin for given sequencer and call goOffline method on it | ESW-236, ESW-245 `() = runBlocking {
 
-        every { sequencerCommandFactory.jMake(sequencerId, observingMode) }.answers { CompletableFuture.completedFuture(sequencerCommandApi) }
-        every { sequencerCommandApi.goOffline() }.answers { Future.successful(`Ok$`.`MODULE$`) }
+        every { sequencerAdminFactory.jMake(sequencerId, observingMode) }.answers { CompletableFuture.completedFuture(sequencerAdmin) }
+        every { sequencerAdmin.goOffline() }.answers { Future.successful(`Ok$`.`MODULE$`) }
 
         tcsSequencer.goOffline()
-        verify { sequencerCommandApi.goOffline() }
+        verify { sequencerAdmin.goOffline() }
     }
 
     @Test

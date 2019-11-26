@@ -11,9 +11,9 @@ import csw.params.commands.{CommandName, Sequence, Setup}
 import csw.params.core.models.Prefix
 import csw.params.events.{Event, EventKey, SystemEvent}
 import csw.testkit.{EventTestKit, FrameworkTestKit}
-import esw.ocs.api.client.SequencerCommandClient
+import esw.ocs.api.SequencerAdminApi
 import esw.ocs.app.wiring.SequencerWiring
-import esw.ocs.impl.SequencerCommandClientFactory
+import esw.ocs.impl.SequencerAdminClientFactory
 import msocket.impl.Encoding.JsonText
 import org.scalatest.concurrent.ScalaFutures.convertScalaFuture
 
@@ -76,9 +76,9 @@ class SequencerTest(ignore: Int, mode: String)
       eventTestKit.start()
       enterBarrier("event-server-started")
 
-      val ocsSequencerCommandApi = resolveSequencerCommandApi(ocsSequencerId, ocsSequencerObsMode)
+      val ocsSequencerAdmin = resolveSequencerAdmin(ocsSequencerId, ocsSequencerObsMode)
 
-      ocsSequencerCommandApi.submit(sequence).await shouldBe a[Started]
+      ocsSequencerAdmin.submit(sequence).await shouldBe a[Started]
       enterBarrier("submit-sequence-to-ocs")
     }
 
@@ -95,11 +95,11 @@ class SequencerTest(ignore: Int, mode: String)
     enterBarrier("end")
   }
 
-  private def resolveSequencerCommandApi(packageId: String, observingMode: String): SequencerCommandClient = {
+  private def resolveSequencerAdmin(packageId: String, observingMode: String): SequencerAdminApi = {
     val componentId = ComponentId(s"$packageId@$observingMode@http", ComponentType.Sequencer)
     val uri         = locationService.resolve(HttpConnection(componentId), 5.seconds).futureValue.get.uri
     val postUrl     = s"${uri.toString}post-endpoint"
     val wsUrl       = s"ws://${uri.getHost}:${uri.getPort}/websocket-endpoint"
-    SequencerCommandClientFactory.make(postUrl, wsUrl, JsonText, () => None)
+    SequencerAdminClientFactory.make(postUrl, wsUrl, JsonText, () => None)
   }
 }

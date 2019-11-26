@@ -17,7 +17,7 @@ import csw.time.core.models.UTCTime
 import esw.ocs.api.codecs.OcsCodecs
 import esw.ocs.api.models.SequencerInsight
 import esw.ocs.api.protocol._
-import esw.ocs.dsl.script.JScriptDsl
+import esw.ocs.dsl.script.ScriptDsl
 import esw.ocs.impl.extensions.SequencerInsightExtension._
 import esw.ocs.impl.internal.Timeouts
 import esw.ocs.impl.messages.SequencerMessages._
@@ -30,7 +30,7 @@ import scala.util.{Failure, Success}
 
 class SequencerBehavior(
     componentId: ComponentId,
-    script: JScriptDsl,
+    script: ScriptDsl,
     locationService: LocationService,
     shutdownHttpService: () => Future[Done],
     insightsSubscriber: ActorRef[SequencerInsight]

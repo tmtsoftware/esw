@@ -12,13 +12,16 @@ import scala.concurrent.duration.DurationDouble
 class JScriptDslTest extends BaseTestSuite {
   override implicit def patienceConfig: PatienceConfig = PatienceConfig(20.seconds)
 
+  private val strandEc = StrandEc()
+
+  override protected def afterAll(): Unit = strandEc.shutdown()
+
   "ScriptDsl" must {
     "allow adding and executing setup handler" in {
       var receivedPrefix: Option[Prefix] = None
 
       val csw: CswServices = mock[CswServices]
-      val script: JScriptDsl = new JScriptDsl(csw) {
-        override protected implicit def strandEc: StrandEc = StrandEc()
+      val script: ScriptDsl = new ScriptDsl(csw, strandEc) {
 
         onSetupCommand("iris") { cmd =>
           receivedPrefix = Some(cmd.source)
@@ -37,8 +40,7 @@ class JScriptDslTest extends BaseTestSuite {
       var receivedPrefix: Option[Prefix] = None
 
       val csw: CswServices = mock[CswServices]
-      val script: JScriptDsl = new JScriptDsl(csw) {
-        override protected implicit def strandEc: StrandEc = StrandEc()
+      val script: ScriptDsl = new ScriptDsl(csw, strandEc) {
 
         onObserveCommand("iris") { cmd =>
           receivedPrefix = Some(cmd.source)
@@ -57,8 +59,7 @@ class JScriptDslTest extends BaseTestSuite {
       val orderOfShutdownCalled = ArrayBuffer.empty[Int]
 
       val csw: CswServices = mock[CswServices]
-      val script: JScriptDsl = new JScriptDsl(csw) {
-        override protected implicit def strandEc: StrandEc = StrandEc()
+      val script: ScriptDsl = new ScriptDsl(csw, strandEc) {
 
         onShutdown {
           orderOfShutdownCalled += 1
@@ -79,8 +80,7 @@ class JScriptDslTest extends BaseTestSuite {
       val orderOfAbortCalled = ArrayBuffer.empty[Int]
 
       val csw: CswServices = mock[CswServices]
-      val script: JScriptDsl = new JScriptDsl(csw) {
-        override protected implicit def strandEc: StrandEc = StrandEc()
+      val script: ScriptDsl = new ScriptDsl(csw, strandEc) {
 
         onAbortSequence {
           orderOfAbortCalled += 1
@@ -101,8 +101,7 @@ class JScriptDslTest extends BaseTestSuite {
       var receivedPrefix: Option[Throwable] = None
 
       val csw: CswServices = mock[CswServices]
-      val script: JScriptDsl = new JScriptDsl(csw) {
-        override protected implicit def strandEc: StrandEc = StrandEc()
+      val script: ScriptDsl = new ScriptDsl(csw, strandEc) {
 
         onException { ex =>
           receivedPrefix = Some(ex)

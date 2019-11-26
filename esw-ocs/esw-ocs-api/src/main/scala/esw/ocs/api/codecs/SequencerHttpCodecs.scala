@@ -8,7 +8,7 @@ import io.bullet.borer.Codec
 import io.bullet.borer.derivation.MapBasedCodecs.deriveCodec
 
 trait SequencerHttpCodecs extends OcsCodecs {
-
+  import msocket.api.codecs.BasicCodecs._
   implicit def sequencerAdminPostRequestCodec[T <: SequencerPostRequest]: Codec[T] =
     sequencerAdminPostRequestValue.asInstanceOf[Codec[T]]
 
@@ -44,9 +44,9 @@ trait SequencerHttpCodecs extends OcsCodecs {
   }
 
   implicit def sequencerWebsocketRequestCodec[T <: SequencerWebsocketRequest]: Codec[T] =
-    sequencerAdminWebsocketRequestValue.asInstanceOf[Codec[T]]
+    sequencerWebsocketRequestValue.asInstanceOf[Codec[T]]
 
-  lazy val sequencerAdminWebsocketRequestValue: Codec[SequencerWebsocketRequest] = {
+  lazy val sequencerWebsocketRequestValue: Codec[SequencerWebsocketRequest] = {
     @silent implicit lazy val queryFinalCodec: Codec[QueryFinal.type]   = deriveCodec
     @silent implicit lazy val getInsightsCodec: Codec[GetInsights.type] = deriveCodec
     deriveCodec

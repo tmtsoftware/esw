@@ -7,6 +7,7 @@ import esw.ocs.dsl.core.script
 import esw.ocs.dsl.params.*
 import kotlin.math.sqrt
 import kotlin.time.milliseconds
+import kotlin.time.seconds
 
 object aosq {
     val prefix = "aoesw.aosq"
@@ -89,8 +90,8 @@ script {
                                 .add(tcsOffsetXKey.set(xoffset))
                                 .add(tcsOffsetYKey.set(yoffset))
                                 .add(tcsOffsetVTKey.set(Choice("OIWFS$probeNum")))
-                )
-        )
+                ),
+        10.seconds)
     }
 
     onSetup("enableOiwfsTtf") { command ->

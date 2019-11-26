@@ -1,7 +1,6 @@
 package esw.ocs.impl.core
 
-import csw.command.api.scaladsl.SequencerCommandService
-import csw.command.client.SequencerCommandServiceFactory
+import csw.command.client.internal.SequencerCommandServiceImpl
 import csw.params.commands.CommandResponse.Completed
 import csw.params.commands.{CommandName, Sequence, Setup}
 import csw.params.core.models.Prefix
@@ -15,7 +14,7 @@ class SequencerCommandServiceTest extends EswTestKit {
     val command1 = Setup(Prefix("esw.test"), CommandName("command-1"), None)
     val sequence = Sequence(command1)
 
-    val sequencerCommandService: SequencerCommandService = SequencerCommandServiceFactory.make(sequencerLocation)
+    val sequencerCommandService = new SequencerCommandServiceImpl(sequencerLocation)
     sequencerCommandService.submitAndWait(sequence).futureValue shouldBe a[Completed]
   }
 }

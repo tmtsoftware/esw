@@ -7,29 +7,27 @@ import csw.time.core.models.UTCTime
 import esw.ocs.dsl.highlevel.CswHighLevelDsl
 import esw.ocs.dsl.nullable
 import esw.ocs.dsl.script.CswServices
-import esw.ocs.dsl.script.JScriptDsl
+import esw.ocs.dsl.script.FSMScriptDsl
+import esw.ocs.dsl.script.ScriptDsl
 import esw.ocs.dsl.script.StrandEc
+import esw.ocs.dsl.script.exceptions.ScriptLoadingException.ScriptInitialisationFailedException
 import kotlinx.coroutines.*
 import kotlinx.coroutines.future.asCompletableFuture
 import kotlinx.coroutines.future.await
 import kotlinx.coroutines.future.future
 
-sealed class ScriptDslKt(val cswServices: CswServices) : CswHighLevelDsl(cswServices) {
+@DslMarker
+annotation class ScriptMarker
 
-    // https://stackoverflow.com/questions/58497383/is-it-possible-to-provide-custom-name-for-internal-delegated-properties-in-kotli/58497535#58497535
-    @get:JvmName("scriptDsl")
-    internal val scriptDsl: JScriptDsl by lazy { ScriptDslFactory.make(cswServices, strandEc) }
+sealed class BaseScript(val cswServices: CswServices, scope: CoroutineScope) : CswHighLevelDsl(cswServices) {
+    internal open val scriptDsl: ScriptDsl by lazy { ScriptDsl(cswServices, strandEc) }
 
-    suspend fun nextIf(predicate: (SequenceCommand) -> Boolean): SequenceCommand? =
-            scriptDsl.nextIf { predicate(it) }.await().nullable()
+    private val exceptionHandler = CoroutineExceptionHandler { _, exception ->
+        warn("Exception thrown in script with a message: ${exception.message}, invoking exception handler", ex = exception)
+        scriptDsl.executeExceptionHandlers(exception)
+    }
 
-    fun finishWithError(message: String = ""): Nothing = throw RuntimeException(message)
-
-    fun onSetup(name: String, block: suspend CoroutineScope.(Setup) -> Unit) =
-            scriptDsl.onSetupCommand(name) { block.toJava(it) }
-
-    fun onObserve(name: String, block: suspend CoroutineScope.(Observe) -> Unit) =
-            scriptDsl.onObserveCommand(name) { block.toJava(it) }
+    override val coroutineScope: CoroutineScope = scope + exceptionHandler
 
     fun onGoOnline(block: suspend CoroutineScope.() -> Unit) =
             scriptDsl.onGoOnline { block.toJava() }
@@ -54,6 +52,26 @@ sealed class ScriptDslKt(val cswServices: CswServices) : CswHighLevelDsl(cswServ
     fun onStop(block: suspend CoroutineScope.() -> Unit) =
             scriptDsl.onStop { block.toJava() }
 
+}
+
+@ScriptMarker
+class Script(
+        cswServices: CswServices,
+        override val strandEc: StrandEc,
+        scope: CoroutineScope
+) : BaseScript(cswServices, scope) {
+
+    fun finishWithError(message: String = ""): Nothing = throw RuntimeException(message)
+
+    suspend fun nextIf(predicate: (SequenceCommand) -> Boolean): SequenceCommand? =
+            scriptDsl.nextIf { predicate(it) }.await().nullable()
+
+    fun onSetup(name: String, block: suspend CoroutineScope.(Setup) -> Unit) =
+            scriptDsl.onSetupCommand(name) { block.toJava(it) }
+
+    fun onObserve(name: String, block: suspend CoroutineScope.(Observe) -> Unit) =
+            scriptDsl.onObserveCommand(name) { block.toJava(it) }
+
     fun onException(block: suspend CoroutineScope.(Throwable) -> Unit) =
             scriptDsl.onException {
                 // "future" is used to swallow the exception coming from exception handlers
@@ -68,28 +86,28 @@ sealed class ScriptDslKt(val cswServices: CswServices) : CswHighLevelDsl(cswServ
             }
 }
 
-class ReusableScript(
+@ScriptMarker
+class FSMScript(
         cswServices: CswServices,
         override val strandEc: StrandEc,
-        override val coroutineScope: CoroutineScope
-) : ScriptDslKt(cswServices)
+        scope: CoroutineScope
+) : BaseScript(cswServices, scope) {
+    private val fsmScriptDsl: FSMScriptDsl by lazy { FSMScriptDsl(cswServices, strandEc) }
 
-open class Script(cswServices: CswServices) : ScriptDslKt(cswServices) {
-    private val _strandEc = StrandEc.apply()
-    private val supervisorJob = SupervisorJob()
-    private val dispatcher = _strandEc.executorService().asCoroutineDispatcher()
+    override val scriptDsl: ScriptDsl by lazy { fsmScriptDsl }
 
-    private val exceptionHandler = CoroutineExceptionHandler { _, exception ->
-        warn("Exception thrown in script with a message: ${exception.message}, invoking exception handler", ex = exception)
-        scriptDsl.executeExceptionHandlers(exception)
+    fun state(state: String, block: suspend Script.() -> Unit) {
+        fun reusableScript(): Script = Script(cswServices, strandEc, coroutineScope).apply {
+            try {
+                runBlocking { block() }
+            } catch (ex: Exception) {
+                error("Failed to initialize state: $state", ex = ex)
+                throw ScriptInitialisationFailedException(ex.message)
+            }
+        }
+
+        fsmScriptDsl.add(state) { reusableScript().scriptDsl }
     }
 
-    override val coroutineScope: CoroutineScope get() = CoroutineScope(supervisorJob + dispatcher + exceptionHandler)
-    override val strandEc: StrandEc get() = _strandEc
-
-    // fixme: call me when shutting down sequencer
-    fun close() {
-        supervisorJob.cancel()
-        dispatcher.close()
-    }
+    fun become(nextState: String) = fsmScriptDsl.become(nextState)
 }

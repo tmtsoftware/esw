@@ -9,7 +9,7 @@ import csw.location.api.javadsl.ILocationService
 import csw.logging.api.javadsl.ILogger
 import csw.params.core.models.Prefix
 import csw.time.scheduler.TimeServiceSchedulerFactory
-import esw.ocs.api.{SequencerAdminFactoryApi, SequencerCommandFactoryApi}
+import esw.ocs.api.SequencerAdminFactoryApi
 import esw.ocs.dsl.script.utils.LockUnlockUtil
 
 class CswServices(
@@ -21,7 +21,6 @@ class CswServices(
     val eventService: IEventService,
     val timeServiceSchedulerFactory: TimeServiceSchedulerFactory,
     val sequencerAdminFactory: SequencerAdminFactoryApi,
-    val sequencerCommandFactory: SequencerCommandFactoryApi,
     val databaseServiceFactory: DatabaseServiceFactory,
     val lockUnlockUtil: LockUnlockUtil,
     val configClientService: IConfigClientService,

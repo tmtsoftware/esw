@@ -15,6 +15,7 @@ import esw.ocs.dsl.core.script
 import kotlinx.coroutines.delay
 import scala.jdk.javaapi.CollectionConverters
 import java.util.*
+import kotlin.time.seconds
 
 script {
     val lgsfSequencer = Sequencer("lgsf", "darknight")
@@ -79,7 +80,7 @@ script {
 
         // ESW-88, ESW-145, ESW-195
         val tcsSequencer = Sequencer("tcs", "darknight")
-        tcsSequencer.submitAndWait(sequence)
+        tcsSequencer.submitAndWait(sequence, 10.seconds)
     }
 
     onSetup("test-sequencer-hierarchy") {
@@ -107,7 +108,7 @@ script {
                 CollectionConverters.asScala(Collections.singleton<SequenceCommand>(setupCommand)).toSeq()
         )
 
-        lgsfSequencer.submitAndWait(sequence)
+        lgsfSequencer.submitAndWait(sequence, 10.seconds)
     }
 
     onDiagnosticMode { startTime, hint ->

@@ -6,7 +6,7 @@ import akka.actor.typed.scaladsl.adapter.ClassicActorSystemOps
 import akka.http.scaladsl.model.ws.{BinaryMessage, TextMessage}
 import akka.http.scaladsl.testkit.{ScalatestRouteTest, WSProbe}
 import akka.stream.scaladsl.Source
-import akka.util.Timeout
+import csw.command.api.messages.CommandServiceWebsocketMessage.{QueryFinal, SubscribeCurrentState}
 import csw.event.api.scaladsl.EventSubscription
 import csw.event.api.scaladsl.SubscriptionModes.RateLimiterMode
 import csw.location.models.ComponentId
@@ -16,11 +16,11 @@ import csw.params.core.models.Subsystem.TCS
 import csw.params.core.models.{Id, Prefix}
 import csw.params.core.states.{CurrentState, StateName}
 import csw.params.events.{Event, EventKey, EventName, ObserveEvent}
+import esw.gateway.api.EventApi
 import esw.gateway.api.codecs.GatewayCodecs
-import esw.gateway.api.protocol.WebsocketRequest.{QueryFinal, Subscribe, SubscribeCurrentState, SubscribeWithPattern}
+import esw.gateway.api.protocol.WebsocketRequest.{ComponentCommand, Subscribe, SubscribeWithPattern}
 import esw.gateway.api.protocol._
-import esw.gateway.api.{CommandApi, EventApi}
-import esw.gateway.impl.{CommandImpl, EventImpl}
+import esw.gateway.impl.EventImpl
 import esw.gateway.server.handlers.WebsocketHandlerImpl
 import esw.http.core.BaseTestSuite
 import io.bullet.borer.Decoder
@@ -41,14 +41,12 @@ class WebsocketRouteTest extends BaseTestSuite with ScalatestRouteTest with Gate
   private val cswCtxMocks = new CswWiringMocks()
   import cswCtxMocks._
 
-  implicit val timeout: Timeout                        = Timeout(5.seconds)
   private var wsClient: WSProbe                        = _
   implicit override val patienceConfig: PatienceConfig = PatienceConfig(10.seconds)
   implicit val typedSystem: ActorSystem[_]             = system.toTyped
 
   private val eventApi: EventApi                          = new EventImpl(eventService, eventSubscriberUtil)
-  private val commandApi: CommandApi                      = new CommandImpl(commandServiceFactory)
-  private def websocketHandlerImpl(encoding: Encoding[_]) = new WebsocketHandlerImpl(commandApi, eventApi, encoding)
+  private def websocketHandlerImpl(encoding: Encoding[_]) = new WebsocketHandlerImpl(commandServiceResolver, eventApi, encoding)
   private val route                                       = RouteFactory.combine(new WebsocketRouteFactory("websocket-endpoint", websocketHandlerImpl))
 
   override def beforeEach(): Unit = {
@@ -62,16 +60,16 @@ class WebsocketRouteTest extends BaseTestSuite with ScalatestRouteTest with Gate
       val runId         = Id("123")
       val componentType = Assembly
       val componentId   = ComponentId(componentName, componentType)
-      val queryFinal    = QueryFinal(componentId, runId)
+      val queryFinal    = ComponentCommand(componentId, QueryFinal(runId, 100.hours))
 
-      when(commandServiceFactory.commandService(componentId)).thenReturn(Future.successful(Right(commandService)))
+      when(commandServiceResolver.resolve(componentId)).thenReturn(Future.successful(Some(commandService)))
       when(commandService.queryFinal(runId)(100.hours)).thenReturn(Future.successful(Completed(runId)))
 
       WS("/websocket-endpoint", wsClient.flow) ~> route ~> check {
         wsClient.sendMessage(JsonText.strictMessage(queryFinal))
         isWebSocketUpgrade shouldBe true
-        val response = decodeMessage[Either[InvalidComponent, SubmitResponse]](wsClient)
-        response.rightValue shouldEqual Completed(runId)
+        val response = decodeMessage[SubmitResponse](wsClient)
+        response shouldEqual Completed(runId)
       }
     }
 
@@ -80,18 +78,17 @@ class WebsocketRouteTest extends BaseTestSuite with ScalatestRouteTest with Gate
       val runId         = Id("123")
       val componentType = Assembly
       val componentId   = ComponentId(componentName, componentType)
-      val queryFinal    = QueryFinal(componentId, runId)
+      val queryFinal    = ComponentCommand(componentId, QueryFinal(runId, 100.hours))
 
-      val errmsg = s"Could not find component $componentName of type - $componentType"
+      val errmsg = s"No component is registered with id $componentId "
 
-      when(commandServiceFactory.commandService(componentId))
-        .thenReturn(Future.successful(Left(InvalidComponent(errmsg))))
+      when(commandServiceResolver.resolve(componentId)).thenReturn(Future.successful(None))
 
       WS("/websocket-endpoint", wsClient.flow) ~> route ~> check {
         wsClient.sendMessage(JsonText.strictMessage(queryFinal))
         isWebSocketUpgrade shouldBe true
-        val response = decodeMessage[Either[InvalidComponent, SubmitResponse]](wsClient)
-        response.leftValue shouldEqual InvalidComponent(errmsg)
+        val response = decodeMessage[MSocketErrorFrame](wsClient).`stream-error`
+        response shouldEqual InvalidComponent(errmsg).toStreamError
       }
     }
   }
@@ -102,14 +99,14 @@ class WebsocketRouteTest extends BaseTestSuite with ScalatestRouteTest with Gate
       val componentType         = Assembly
       val componentId           = ComponentId(componentName, componentType)
       val stateNames            = Set(StateName("stateName1"), StateName("stateName2"))
-      val subscribeCurrentState = SubscribeCurrentState(componentId, stateNames, None)
+      val subscribeCurrentState = ComponentCommand(componentId, SubscribeCurrentState(stateNames))
       val currentState1         = CurrentState(Prefix("esw.a.b"), StateName("stateName1"))
       val currentState2         = CurrentState(Prefix("esw.a.b"), StateName("stateName2"))
 
       val currentStateSubscription = mock[Subscription]
       val currentStateStream       = Source(List(currentState1, currentState2)).mapMaterializedValue(_ => currentStateSubscription)
 
-      when(commandServiceFactory.commandService(componentId)).thenReturn(Future.successful(Right(commandService)))
+      when(commandServiceResolver.resolve(componentId)).thenReturn(Future.successful(Some(commandService)))
       when(commandService.subscribeCurrentState(stateNames)).thenReturn(currentStateStream)
 
       def response: CurrentState = decodeMessage[CurrentState](wsClient)
@@ -122,51 +119,6 @@ class WebsocketRouteTest extends BaseTestSuite with ScalatestRouteTest with Gate
         response shouldEqual currentState2
       }
 
-    }
-
-    //fixme: why does buffer not work?
-    "returns throttled states, for a given componentId and maxFrequency > 0 | ESW-223, ESW-216" ignore {
-      val componentName         = "test"
-      val componentType         = Assembly
-      val componentId           = ComponentId(componentName, componentType)
-      val stateNames            = Set(StateName("stateName1"), StateName("stateName2"))
-      val subscribeCurrentState = SubscribeCurrentState(componentId, stateNames, Some(1))
-      val currentState1         = CurrentState(Prefix("esw.a.b"), StateName("stateName1"))
-      val currentState2         = CurrentState(Prefix("esw.a.b"), StateName("stateName2"))
-
-      val currentStateSubscription = mock[Subscription]
-      val currentStateStream = Source(List(currentState1, currentState2))
-        .mapMaterializedValue(_ => currentStateSubscription)
-
-      when(commandServiceFactory.commandService(componentId)).thenReturn(Future.successful(Right(commandService)))
-      when(commandService.subscribeCurrentState(stateNames)).thenReturn(currentStateStream)
-
-      WS("/websocket-endpoint", wsClient.flow) ~> route ~> check {
-        wsClient.sendMessage(JsonText.strictMessage(subscribeCurrentState))
-        isWebSocketUpgrade shouldBe true
-
-        def response = decodeMessage[CurrentState](wsClient)
-
-        response shouldEqual currentState2
-      }
-
-    }
-
-    "return InvalidMaxFrequency with maxFrequency <= 0 | ESW-223, ESW-216" in {
-      val componentName         = "test"
-      val componentType         = Assembly
-      val componentId           = ComponentId(componentName, componentType)
-      val stateNames            = Set(StateName("stateName1"), StateName("stateName2"))
-      val subscribeCurrentState = SubscribeCurrentState(componentId, stateNames, Some(-1))
-
-      WS("/websocket-endpoint", wsClient.flow) ~> route ~> check {
-        wsClient.sendMessage(JsonText.strictMessage(subscribeCurrentState))
-        isWebSocketUpgrade shouldBe true
-
-        intercept[MSocketErrorFrame] {
-          decodeMessage[CurrentState](wsClient)
-        }
-      }
     }
   }
 

@@ -92,11 +92,11 @@ class RichComponentTest {
             mockkStatic(CommandServiceFactory::class)
             every { locationServiceUtil.jResolveAkkaLocation(componentName, componentType) }.answers { CompletableFuture.completedFuture(assemblyLocation) }
             every { CommandServiceFactory.jMake(assemblyLocation, actorSystem) }.answers { assemblyCommandService }
-            every { assemblyCommandService.oneway(setupCommand, any()) }.answers { CompletableFuture.completedFuture(CommandResponse.Accepted(Id.apply())) }
+            every { assemblyCommandService.oneway(setupCommand) }.answers { CompletableFuture.completedFuture(CommandResponse.Accepted(Id.apply())) }
 
             assembly.oneway(setupCommand)
 
-            verify { assemblyCommandService.oneway(setupCommand, any()) }
+            verify { assemblyCommandService.oneway(setupCommand) }
         }
 
         @Test
@@ -104,11 +104,11 @@ class RichComponentTest {
             mockkStatic(CommandServiceFactory::class)
             every { locationServiceUtil.jResolveAkkaLocation(componentName, componentType) }.answers { CompletableFuture.completedFuture(assemblyLocation) }
             every { CommandServiceFactory.jMake(assemblyLocation, actorSystem) }.answers { assemblyCommandService }
-            every { assemblyCommandService.submit(setupCommand, any()) }.answers { CompletableFuture.completedFuture(CommandResponse.Completed(Id.apply())) }
+            every { assemblyCommandService.submit(setupCommand) }.answers { CompletableFuture.completedFuture(CommandResponse.Completed(Id.apply())) }
 
             assembly.submit(setupCommand)
 
-            verify { assemblyCommandService.submit(setupCommand, any()) }
+            verify { assemblyCommandService.submit(setupCommand) }
         }
 
         @Test
@@ -245,11 +245,11 @@ class RichComponentTest {
             mockkStatic(CommandServiceFactory::class)
             every { locationServiceUtil.jResolveAkkaLocation(hcdName, componentType) }.answers { CompletableFuture.completedFuture(hcdLocation) }
             every { CommandServiceFactory.jMake(hcdLocation, actorSystem) }.answers { hcdCommandService }
-            every { hcdCommandService.oneway(setupCommand, any()) }.answers { CompletableFuture.completedFuture(CommandResponse.Accepted(Id.apply())) }
+            every { hcdCommandService.oneway(setupCommand) }.answers { CompletableFuture.completedFuture(CommandResponse.Accepted(Id.apply())) }
 
             hcd.oneway(setupCommand)
 
-            verify { hcdCommandService.oneway(setupCommand, any()) }
+            verify { hcdCommandService.oneway(setupCommand) }
         }
 
         @Test
@@ -257,11 +257,11 @@ class RichComponentTest {
             mockkStatic(CommandServiceFactory::class)
             every { locationServiceUtil.jResolveAkkaLocation(hcdName, componentType) }.answers { CompletableFuture.completedFuture(hcdLocation) }
             every { CommandServiceFactory.jMake(hcdLocation, actorSystem) }.answers { hcdCommandService }
-            every { hcdCommandService.submit(setupCommand, any()) }.answers { CompletableFuture.completedFuture(CommandResponse.Completed(Id.apply())) }
+            every { hcdCommandService.submit(setupCommand) }.answers { CompletableFuture.completedFuture(CommandResponse.Completed(Id.apply())) }
 
             hcd.submit(setupCommand)
 
-            verify { hcdCommandService.submit(setupCommand, any()) }
+            verify { hcdCommandService.submit(setupCommand) }
         }
 
         @Test

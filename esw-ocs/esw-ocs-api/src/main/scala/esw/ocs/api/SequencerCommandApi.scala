@@ -1,5 +1,6 @@
 package esw.ocs.api
 
+import akka.util.Timeout
 import csw.params.commands.CommandResponse.{QueryResponse, SubmitResponse}
 import csw.params.commands.Sequence
 import csw.params.core.models.Id
@@ -12,9 +13,9 @@ trait SequencerCommandApi {
   def loadSequence(sequence: Sequence): Future[OkOrUnhandledResponse]
   def startSequence(): Future[SubmitResponse]
   def submit(sequence: Sequence): Future[SubmitResponse]
-  def submitAndWait(sequence: Sequence): Future[SubmitResponse]
+  def submitAndWait(sequence: Sequence)(implicit timeout: Timeout): Future[SubmitResponse]
   def query(runId: Id): Future[QueryResponse]
-  def queryFinal(runId: Id): Future[SubmitResponse]
+  def queryFinal(runId: Id)(implicit timeout: Timeout): Future[SubmitResponse]
 
   def goOnline(): Future[GoOnlineResponse]
   def goOffline(): Future[GoOfflineResponse]

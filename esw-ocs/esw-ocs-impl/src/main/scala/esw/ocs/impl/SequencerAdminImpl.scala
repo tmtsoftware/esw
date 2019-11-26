@@ -7,11 +7,16 @@ import akka.stream.KillSwitches
 import akka.stream.scaladsl.{Keep, Source}
 import akka.util.Timeout
 import csw.command.client.messages.sequencer.SequencerMsg
-import csw.params.commands.SequenceCommand
+import csw.command.client.messages.sequencer.SequencerMsg.{Query, QueryFinal}
+import csw.params.commands.CommandResponse.{QueryResponse, SubmitResponse}
+import csw.params.commands.{Sequence, SequenceCommand}
 import csw.params.core.models.Id
 import esw.ocs.api.SequencerAdminApi
 import esw.ocs.api.models.{SequencerInsight, StepList}
+import csw.time.core.models.UTCTime
+import esw.ocs.api.models.StepList
 import esw.ocs.api.protocol._
+import esw.ocs.api.{SequencerAdminApi, SequencerCommandExtensions}
 import esw.ocs.impl.messages.SequencerMessages._
 import esw.ocs.impl.messages.SequencerState
 import esw.ocs.impl.messages.SequencerState.{Idle, Offline}
@@ -24,6 +29,7 @@ class SequencerAdminImpl(sequencer: ActorRef[SequencerMsg], insightSource: Sourc
     timeout: Timeout
 ) extends SequencerAdminApi {
   private implicit val ec: ExecutionContext = system.executionContext
+  private val extensions                    = new SequencerCommandExtensions(this)
 
   override def getSequence: Future[Option[StepList]] = sequencer ? GetSequence
 
@@ -45,9 +51,9 @@ class SequencerAdminImpl(sequencer: ActorRef[SequencerMsg], insightSource: Sourc
 
   override def isAvailable: Future[Boolean] = getState.map(_ == Idle)
 
-  private def getState: Future[SequencerState[SequencerMsg]] = sequencer ? GetSequencerState
-
   override def isOnline: Future[Boolean] = getState.map(_ != Offline)
+
+  private def getState: Future[SequencerState[SequencerMsg]] = sequencer ? GetSequencerState
 
   override def getInsights: Source[SequencerInsight, Subscription] = {
     Source
@@ -67,4 +73,35 @@ class SequencerAdminImpl(sequencer: ActorRef[SequencerMsg], insightSource: Sourc
       .viaMat(KillSwitches.single)(Keep.right)
       .mapMaterializedValue(ks => () => ks.shutdown())
   }
+
+  // commands
+
+  override def loadSequence(sequence: Sequence): Future[OkOrUnhandledResponse] =
+    sequencer ? (LoadSequence(sequence, _))
+
+  override def startSequence(): Future[SubmitResponse] = {
+    val sequenceResponse: Future[SequencerSubmitResponse] = sequencer ? StartSequence
+    sequenceResponse.map(_.toSubmitResponse())
+  }
+
+  override def submit(sequence: Sequence): Future[SubmitResponse] = {
+    val sequenceResponseF: Future[SequencerSubmitResponse] = sequencer ? (SubmitSequenceInternal(sequence, _))
+    sequenceResponseF.map(_.toSubmitResponse())
+  }
+
+  override def submitAndWait(sequence: Sequence)(implicit timeout: Timeout): Future[SubmitResponse] =
+    extensions.submitAndWait(sequence)
+
+  override def query(runId: Id): Future[QueryResponse] = sequencer ? (Query(runId, _))
+
+  override def queryFinal(runId: Id)(implicit timeout: Timeout): Future[SubmitResponse] = sequencer ? (QueryFinal(runId, _))
+
+  override def goOnline(): Future[GoOnlineResponse] = sequencer ? GoOnline
+
+  override def goOffline(): Future[GoOfflineResponse] = sequencer ? GoOffline
+
+  override def diagnosticMode(startTime: UTCTime, hint: String): Future[DiagnosticModeResponse] =
+    sequencer ? (DiagnosticMode(startTime, hint, _))
+
+  override def operationsMode(): Future[OperationsModeResponse] = sequencer ? OperationsMode
 }

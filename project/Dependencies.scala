@@ -68,7 +68,7 @@ object Dependencies {
       Libs.`scala-java8-compat`           % Test,
       Csw.`csw-testkit`                   % Test,
       Csw.`csw-admin-server`              % Test,
-      Csw.`csw-logging-models`            % Test,
+      Csw.`csw-logging-models`.value      % Test,
       Libs.scalatest                      % Test,
       Csw.`csw-location-server-tests`     % Test,
       Csw.`csw-location-server-multi-jvm` % Test,
@@ -104,8 +104,8 @@ object Dependencies {
     Seq(
       Libs.`msocket-api`.value,
       Csw.`csw-alarm-api`,
-      Csw.`csw-command-api`,
-      Csw.`csw-logging-models`,
+      Csw.`csw-command-api`.value,
+      Csw.`csw-logging-models`.value,
       Csw.`csw-event-api`
     )
   )

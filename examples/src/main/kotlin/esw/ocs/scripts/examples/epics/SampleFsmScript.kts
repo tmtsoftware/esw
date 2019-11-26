@@ -25,7 +25,7 @@ script {
 
         state("DONE") {
             publishEvent(SystemEvent("tcs", "trigger.DONE.state"))
-            completeFsm()
+            completeFSM()
         }
     }
 
