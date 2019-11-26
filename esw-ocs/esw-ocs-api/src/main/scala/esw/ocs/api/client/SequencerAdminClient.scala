@@ -1,6 +1,7 @@
 package esw.ocs.api.client
 
 import akka.util.Timeout
+import csw.command.api.scaladsl.SequencerCommandServiceExtension
 import csw.params.commands.CommandResponse.{QueryResponse, SubmitResponse}
 import csw.params.commands.{Sequence, SequenceCommand}
 import csw.params.core.models.Id
@@ -10,7 +11,7 @@ import esw.ocs.api.models.StepList
 import esw.ocs.api.protocol.SequencerPostRequest._
 import esw.ocs.api.protocol.SequencerWebsocketRequest.QueryFinal
 import esw.ocs.api.protocol._
-import esw.ocs.api.{SequencerAdminApi, SequencerCommandExtensions}
+import esw.ocs.api.SequencerAdminApi
 import msocket.api.Transport
 
 import scala.concurrent.{ExecutionContext, Future}
@@ -22,7 +23,7 @@ class SequencerAdminClient(
     extends SequencerAdminApi
     with SequencerHttpCodecs {
 
-  private val extensions = new SequencerCommandExtensions(this)
+  private val extensions = new SequencerCommandServiceExtension(this)
 
   override def getSequence: Future[Option[StepList]] = {
     postClient.requestResponse[Option[StepList]](GetSequence)

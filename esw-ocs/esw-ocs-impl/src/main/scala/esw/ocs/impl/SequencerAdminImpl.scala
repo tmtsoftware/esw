@@ -3,15 +3,16 @@ package esw.ocs.impl
 import akka.actor.typed.scaladsl.AskPattern._
 import akka.actor.typed.{ActorRef, ActorSystem}
 import akka.util.Timeout
+import csw.command.api.scaladsl.SequencerCommandServiceExtension
 import csw.command.client.messages.sequencer.SequencerMsg
 import csw.command.client.messages.sequencer.SequencerMsg.{Query, QueryFinal}
 import csw.params.commands.CommandResponse.{QueryResponse, SubmitResponse}
 import csw.params.commands.{Sequence, SequenceCommand}
 import csw.params.core.models.Id
 import csw.time.core.models.UTCTime
+import esw.ocs.api.SequencerAdminApi
 import esw.ocs.api.models.StepList
 import esw.ocs.api.protocol._
-import esw.ocs.api.{SequencerAdminApi, SequencerCommandExtensions}
 import esw.ocs.impl.messages.SequencerMessages._
 import esw.ocs.impl.messages.SequencerState
 import esw.ocs.impl.messages.SequencerState.{Idle, Offline}
@@ -21,7 +22,8 @@ import scala.concurrent.{ExecutionContext, Future}
 class SequencerAdminImpl(sequencer: ActorRef[SequencerMsg])(implicit system: ActorSystem[_], timeout: Timeout)
     extends SequencerAdminApi {
   private implicit val ec: ExecutionContext = system.executionContext
-  private val extensions                    = new SequencerCommandExtensions(this)
+
+  private val extensions = new SequencerCommandServiceExtension(this)
 
   override def getSequence: Future[Option[StepList]] = sequencer ? GetSequence
 
