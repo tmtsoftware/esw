@@ -34,7 +34,7 @@ import esw.ocs.impl.core._
 import esw.ocs.impl.internal.{SequencerServer, Timeouts}
 import esw.ocs.impl.messages.SequencerMessages.Shutdown
 import esw.ocs.impl.syntax.FutureSyntax.FutureOps
-import esw.ocs.impl.{SequencerAdminFactoryImpl, SequencerAdminImpl}
+import esw.ocs.impl.{SequencerAdminFactory, SequencerAdminImpl}
 import msocket.impl.post.PostRouteFactory
 import msocket.impl.ws.WebsocketRouteFactory
 import msocket.impl.{Encoding, RouteFactory}
@@ -68,7 +68,7 @@ private[ocs] class SequencerWiring(val packageId: String, val observingMode: Str
   private lazy val script: ScriptDsl       = ScriptLoader.loadKotlinScript(scriptClass, cswServices)
 
   lazy private val locationServiceUtil = new LocationServiceUtil(locationService)
-  lazy private val adminFactory        = new SequencerAdminFactoryImpl(locationServiceUtil)
+  lazy private val adminFactory        = new SequencerAdminFactory(locationServiceUtil)
 
   lazy private val lockUnlockUtil = new LockUnlockUtil(locationServiceUtil)(actorSystem)
 
@@ -93,7 +93,7 @@ private[ocs] class SequencerWiring(val packageId: String, val observingMode: Str
     jLocationService,
     jEventService,
     timeServiceSchedulerFactory,
-    adminFactory,
+    adminFactory.jMake,
     databaseServiceFactory,
     lockUnlockUtil,
     jConfigClientService,
