@@ -3,33 +3,44 @@ package esw.ocs.dsl.epics
 import kotlinx.coroutines.*
 import kotlin.time.Duration
 
-interface FSMState {
-    fun become(state: String)
-    fun completeFSM()
-    suspend fun on(condition: Boolean, body: suspend () -> Unit)
-    suspend fun after(duration: Duration, body: suspend () -> Unit)
-    suspend fun entry(body: suspend () -> Unit)
-    fun state(name: String, block: suspend () -> Unit)
-}
+@DslMarker
+annotation class FSMDslMarker
 
+// this interface is exposed to outside world
 interface StateMachine : Refreshable {
     fun start()
     suspend fun await()
 }
 
+// this interface is exposed at top level of FSM
+@FSMDslMarker
+interface FSMTopLevel {
+    fun state(name: String, block: suspend FSMState.() -> Unit)
+}
+
+// this interface is exposed in side each state of FSM
+@FSMDslMarker
+interface FSMState {
+    fun become(state: String)
+    fun completeFSM()
+    suspend fun on(condition: Boolean = true, body: suspend () -> Unit)
+    suspend fun after(duration: Duration, body: suspend () -> Unit)
+    suspend fun entry(body: suspend () -> Unit)
+}
+
 // Don't remove name parameter, it will used while logging.
-class StateMachineImpl(val name: String, val initialState: String, val coroutineScope: CoroutineScope) : StateMachine, FSMState {
+class StateMachineImpl(val name: String, val initialState: String, val coroutineScope: CoroutineScope) : StateMachine, FSMTopLevel, FSMState {
     // fixme: Try and remove optional behavior of both variables
     private var currentState: String? = null
     private var previousState: String? = null
 
     //fixme : do we need to pass as receiver coroutine scope to state lambda
-    private val states = mutableMapOf<String, suspend () -> Unit>()
+    private val states = mutableMapOf<String, suspend FSMState.() -> Unit>()
 
     //this is done to make new job child of the coroutine scope's job.
     private val fsmJob: CompletableJob = Job(coroutineScope.coroutineContext[Job])
 
-    override fun state(name: String, block: suspend () -> Unit) {
+    override fun state(name: String, block: suspend FSMState.() -> Unit) {
         states += name.toUpperCase() to block
     }
 
@@ -55,7 +66,7 @@ class StateMachineImpl(val name: String, val initialState: String, val coroutine
 
     override fun refresh() {
         coroutineScope.launch(fsmJob) {
-            states[currentState?.toUpperCase()]?.invoke()
+            states[currentState?.toUpperCase()]?.invoke(this@StateMachineImpl)
         }
     }
 
