@@ -16,7 +16,7 @@ import scala.compat.java8.FutureConverters.{CompletionStageOps, FutureOps}
 import scala.concurrent.{ExecutionContext, Future}
 import scala.reflect.ClassTag
 
-class ScriptDsl(val csw: CswServices, strandEc: StrandEc) {
+private[esw] class ScriptDsl(val csw: CswServices, strandEc: StrandEc) {
   protected implicit lazy val toEc: ExecutionContext = strandEc.ec
 
   var isOnline = true
@@ -32,7 +32,7 @@ class ScriptDsl(val csw: CswServices, strandEc: StrandEc) {
   private val operationsHandlers: FunctionHandlers[Unit, CompletionStage[Void]]              = new FunctionHandlers
   private val exceptionHandlers: FunctionHandlers[Throwable, CompletionStage[Void]]          = new FunctionHandlers
 
-  private[esw] def merge(that: ScriptDsl): ScriptDsl = {
+  def merge(that: ScriptDsl): ScriptDsl = {
     commandHandlerBuilder ++ that.commandHandlerBuilder
     onlineHandlers ++ that.onlineHandlers
     offlineHandlers ++ that.offlineHandlers
@@ -54,34 +54,34 @@ class ScriptDsl(val csw: CswServices, strandEc: StrandEc) {
       CompletableFuture.failedFuture(new UnhandledCommandException(input))
     }
 
-  private[esw] def execute(command: SequenceCommand): Future[Unit] = commandHandler(command).toScala.map(_ => ())
+  def execute(command: SequenceCommand): Future[Unit] = commandHandler(command).toScala.map(_ => ())
 
   private def executeHandler[T](f: FunctionHandlers[T, CompletionStage[Void]], arg: T): Future[Unit] =
     Future.sequence(f.execute(arg).map(_.toScala)).map(_ => ())
 
-  private[esw] def executeGoOnline(): Future[Done] =
+  def executeGoOnline(): Future[Done] =
     executeHandler(onlineHandlers, ()).map { _ =>
       isOnline = true
       Done
     }
 
-  private[esw] def executeGoOffline(): Future[Done] = {
+  def executeGoOffline(): Future[Done] = {
     isOnline = false
     executeHandler(offlineHandlers, ()).map(_ => Done)
   }
 
-  private[esw] def executeShutdown(): Future[Done] = executeHandler(shutdownHandlers, ()).map(_ => Done)
+  def executeShutdown(): Future[Done] = executeHandler(shutdownHandlers, ()).map(_ => Done)
 
-  private[esw] def executeAbort(): Future[Done] = executeHandler(abortHandlers, ()).map(_ => Done)
+  def executeAbort(): Future[Done] = executeHandler(abortHandlers, ()).map(_ => Done)
 
-  private[esw] def executeStop(): Future[Done] = executeHandler(stopHandlers, ()).map(_ => Done)
+  def executeStop(): Future[Done] = executeHandler(stopHandlers, ()).map(_ => Done)
 
-  private[esw] def executeDiagnosticMode(startTime: UTCTime, hint: String): Future[Done] =
+  def executeDiagnosticMode(startTime: UTCTime, hint: String): Future[Done] =
     Future.sequence(diagnosticHandlers.execute((startTime, hint)).map(_.toScala)).map(_ => Done)
 
-  private[esw] def executeOperationsMode(): Future[Done] = executeHandler(operationsHandlers, ()).map(_ => Done)
+  def executeOperationsMode(): Future[Done] = executeHandler(operationsHandlers, ()).map(_ => Done)
 
-  private[esw] def executeExceptionHandlers(ex: Throwable): CompletionStage[Void] =
+  def executeExceptionHandlers(ex: Throwable): CompletionStage[Void] =
     executeHandler(exceptionHandlers, ex).toJava.thenAccept(_ => ())
 
   protected final def nextIf(f: SequenceCommand => Boolean): CompletionStage[Optional[SequenceCommand]] =
@@ -115,44 +115,4 @@ class ScriptDsl(val csw: CswServices, strandEc: StrandEc) {
     operationsHandlers.add(_ => handler.get())
 
   protected final def onException(handler: Throwable => CompletionStage[Void]): Unit = exceptionHandlers.add(handler)
-
-}
-
-class FSMScriptDsl(override val csw: CswServices, val strandEc: StrandEc) extends ScriptDsl(csw, strandEc) {
-  protected var currentState: String = "DEFAULT"
-  // fixme : should not be null.
-  protected var currentStateDsl: ScriptDsl = _
-  protected var stateMap                   = Map.empty[String, Supplier[ScriptDsl]]
-
-  def become(nextState: String): Unit =
-    if (currentState != nextState) {
-      currentStateDsl = stateMap(nextState).get()
-      currentState = nextState
-    }
-
-  def add(state: String, script: Supplier[ScriptDsl]): Unit = stateMap += (state -> script)
-
-  override def execute(command: SequenceCommand): Future[Unit] = stateMap.get(currentState) match {
-    case Some(_) => currentStateDsl.execute(command)
-    case None    => Future.failed(new RuntimeException(s"Invalid state = $currentState"))
-  }
-
-  override def executeGoOnline(): Future[Done] = currentStateDsl.executeGoOnline().flatMap(_ => super.executeGoOnline())
-
-  override def executeGoOffline(): Future[Done] = currentStateDsl.executeGoOffline().flatMap(_ => super.executeGoOffline())
-
-  override def executeShutdown(): Future[Done] = currentStateDsl.executeShutdown().flatMap(_ => super.executeShutdown())
-
-  override def executeAbort(): Future[Done] = currentStateDsl.executeAbort().flatMap(_ => super.executeAbort())
-
-  override def executeStop(): Future[Done] = currentStateDsl.executeStop().flatMap(_ => super.executeStop())
-
-  override def executeDiagnosticMode(startTime: UTCTime, hint: String): Future[Done] =
-    currentStateDsl.executeDiagnosticMode(startTime, hint).flatMap(_ => super.executeDiagnosticMode(startTime, hint))
-
-  override def executeOperationsMode(): Future[Done] =
-    currentStateDsl.executeOperationsMode().flatMap(_ => super.executeOperationsMode())
-
-  override def executeExceptionHandlers(ex: Throwable): CompletionStage[Void] =
-    currentStateDsl.executeExceptionHandlers(ex).thenAccept(_ => super.executeExceptionHandlers(ex))
 }

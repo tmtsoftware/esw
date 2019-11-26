@@ -16,6 +16,9 @@ import kotlinx.coroutines.future.asCompletableFuture
 import kotlinx.coroutines.future.await
 import kotlinx.coroutines.future.future
 
+@DslMarker
+annotation class ScriptMarker
+
 sealed class BaseScript(val cswServices: CswServices, scope: CoroutineScope) : CswHighLevelDsl(cswServices) {
     internal open val scriptDsl: ScriptDsl by lazy { ScriptDsl(cswServices, strandEc) }
 
@@ -51,6 +54,7 @@ sealed class BaseScript(val cswServices: CswServices, scope: CoroutineScope) : C
 
 }
 
+@ScriptMarker
 class Script(
         cswServices: CswServices,
         override val strandEc: StrandEc,
@@ -82,6 +86,7 @@ class Script(
             }
 }
 
+@ScriptMarker
 class FSMScript(
         cswServices: CswServices,
         override val strandEc: StrandEc,

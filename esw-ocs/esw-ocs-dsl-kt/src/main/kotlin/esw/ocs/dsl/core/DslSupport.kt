@@ -31,6 +31,7 @@ fun FSMScript(initState: String, block: suspend FSMScript.(csw: CswServices) -> 
             FSMScript(it, wiring.strandEc, wiring.scope).apply {
                 try {
                     runBlocking { block(it) }
+                    become(initState)
                 } catch (ex: Exception) {
                     error("Script initialisation failed with message : " + ex.message)
                     throw ScriptInitialisationFailedException(ex.message)
