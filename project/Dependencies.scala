@@ -5,6 +5,7 @@ object Dependencies {
   val OcsApi: Def.Initialize[Seq[ModuleID]] = Def.setting(
     Seq(
       Csw.`csw-params`.value,
+      Csw.`csw-command-api`.value,
       Csw.`csw-location-models`.value,
       Csw.`csw-database`,
       Libs.`scala-java8-compat`,

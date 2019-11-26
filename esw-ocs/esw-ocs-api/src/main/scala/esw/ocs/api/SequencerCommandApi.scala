@@ -1,21 +1,16 @@
 package esw.ocs.api
 
-import akka.util.Timeout
-import csw.params.commands.CommandResponse.{QueryResponse, SubmitResponse}
+import csw.command.api.scaladsl.SequencerCommandService
+import csw.params.commands.CommandResponse.SubmitResponse
 import csw.params.commands.Sequence
-import csw.params.core.models.Id
 import csw.time.core.models.UTCTime
 import esw.ocs.api.protocol._
 
 import scala.concurrent.Future
 
-trait SequencerCommandApi {
+trait SequencerCommandApi extends SequencerCommandService {
   def loadSequence(sequence: Sequence): Future[OkOrUnhandledResponse]
   def startSequence(): Future[SubmitResponse]
-  def submit(sequence: Sequence): Future[SubmitResponse]
-  def submitAndWait(sequence: Sequence)(implicit timeout: Timeout): Future[SubmitResponse]
-  def query(runId: Id): Future[QueryResponse]
-  def queryFinal(runId: Id)(implicit timeout: Timeout): Future[SubmitResponse]
 
   def goOnline(): Future[GoOnlineResponse]
   def goOffline(): Future[GoOfflineResponse]
