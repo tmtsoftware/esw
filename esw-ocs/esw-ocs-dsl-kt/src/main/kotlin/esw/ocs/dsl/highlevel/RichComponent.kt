@@ -41,7 +41,11 @@ class RichComponent(
     suspend fun validate(command: ControlCommand): ValidateResponse = commandService().validate(command).await()
     suspend fun oneway(command: ControlCommand): OnewayResponse = commandService().oneway(command).await()
     suspend fun submit(command: ControlCommand): SubmitResponse = commandService().submit(command).await()
+
+    //fixme: why queryFinal API is missing?
+    //fixme: submitAndWait could be called for long-running commands, why is default timeout being passed?
     suspend fun submitAndWait(command: ControlCommand): SubmitResponse = commandService().submitAndWait(command, timeout).await()
+
     suspend fun subscribeCurrentState(stateNames: Set<StateName>, callback: suspend CoroutineScope.(CurrentState) -> Unit): Subscription =
             commandService().subscribeCurrentState(stateNames) { callback.toJava(it) }
 

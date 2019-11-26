@@ -1,5 +1,6 @@
 package esw.ocs.dsl.highlevel
 
+import akka.util.Timeout
 import csw.command.client.SequencerCommandServiceFactory
 import csw.location.models.AkkaLocation
 import csw.params.commands.CommandResponse
@@ -18,6 +19,8 @@ import kotlinx.coroutines.runBlocking
 import org.junit.jupiter.api.Test
 import scala.concurrent.Future
 import java.util.concurrent.CompletableFuture
+import java.util.concurrent.TimeUnit
+import kotlin.time.seconds
 
 class RichSequencerTest {
 
@@ -36,18 +39,19 @@ class RichSequencerTest {
     private val sequencerAdmin: SequencerAdminApi = mockk()
 
     private val sequencerLocation: AkkaLocation = mockk()
+    private val timeout = Timeout(10, TimeUnit.SECONDS)
 
     @Test
     fun `submitAndWait should resolve sequencerCommandService for given sequencer and call submitAndWait method on it | ESW-245 `() = runBlocking {
 
         mockkStatic(SequencerCommandServiceFactory::class)
         every { locationServiceUtil.resolveSequencer(sequencerId, observingMode, any()) }.answers { Future.successful(sequencerLocation) }
-        every { sequencerAdmin.submitAndWait(sequence) }.answers { Future.successful(CommandResponse.Completed(Id.apply())) }
+        every { sequencerAdmin.submitAndWait(sequence, timeout) }.answers { Future.successful(CommandResponse.Completed(Id.apply())) }
         every { sequencerAdminFactory.jMake(sequencerId, observingMode) }.answers { CompletableFuture.completedFuture(sequencerAdmin) }
 
-        tcsSequencer.submitAndWait(sequence)
+        tcsSequencer.submitAndWait(sequence, 10.seconds)
 
-        verify { sequencerAdmin.submitAndWait(sequence) }
+        verify { sequencerAdmin.submitAndWait(sequence, timeout) }
     }
 
     @Test

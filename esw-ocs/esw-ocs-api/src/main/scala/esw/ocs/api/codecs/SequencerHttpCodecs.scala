@@ -8,7 +8,7 @@ import io.bullet.borer.Codec
 import io.bullet.borer.derivation.MapBasedCodecs.deriveCodec
 
 trait SequencerHttpCodecs extends OcsCodecs {
-
+  import msocket.api.codecs.BasicCodecs._
   implicit def sequencerAdminPostRequestCodec[T <: SequencerPostRequest]: Codec[T] =
     sequencerAdminPostRequestValue.asInstanceOf[Codec[T]]
 

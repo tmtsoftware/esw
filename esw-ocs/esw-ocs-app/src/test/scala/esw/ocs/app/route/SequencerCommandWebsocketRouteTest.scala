@@ -4,11 +4,14 @@ import akka.actor.typed.{ActorSystem, SpawnProtocol}
 import akka.http.scaladsl.model.ws.{BinaryMessage, TextMessage}
 import akka.http.scaladsl.server.Route
 import akka.http.scaladsl.testkit.{ScalatestRouteTest, WSProbe}
+import akka.util.Timeout
 import csw.params.commands.CommandResponse.{Completed, SubmitResponse}
 import csw.params.core.models.Id
 import esw.http.core.BaseTestSuite
 import esw.ocs.api.codecs.SequencerHttpCodecs
 import esw.ocs.api.protocol.SequencerWebsocketRequest.QueryFinal
+
+import scala.concurrent.duration.DurationLong
 import esw.ocs.impl.SequencerAdminImpl
 import io.bullet.borer.Decoder
 import msocket.impl.Encoding
@@ -38,12 +41,13 @@ class SequencerCommandWebsocketRouteTest
 
   "SequencerRoutes" must {
     "return final submit response of sequence for QueryFinal request | ESW-101" in {
-      val id                = Id("some")
-      val completedResponse = Completed(id)
+      val id                        = Id("some")
+      implicit val timeout: Timeout = Timeout(10.seconds)
+      val completedResponse         = Completed(id)
       when(sequencerAdmin.queryFinal(id)).thenReturn(Future.successful(completedResponse))
 
       WS("/websocket-endpoint", wsClient.flow) ~> route ~> check {
-        wsClient.sendMessage(JsonText.strictMessage(QueryFinal(id)))
+        wsClient.sendMessage(JsonText.strictMessage(QueryFinal(id, timeout)))
         isWebSocketUpgrade shouldBe true
 
         val response = decodeMessage[SubmitResponse](wsClient)

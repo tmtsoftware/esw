@@ -1,5 +1,6 @@
 package esw.ocs.dsl.highlevel
 
+import akka.util.Timeout
 import csw.params.commands.CommandResponse.SubmitResponse
 import csw.params.commands.Sequence
 import csw.time.core.models.UTCTime
@@ -7,6 +8,8 @@ import esw.ocs.api.SequencerAdminFactoryApi
 import esw.ocs.api.protocol.*
 import esw.ocs.dsl.jdk.toJava
 import kotlinx.coroutines.future.await
+import java.util.concurrent.TimeUnit
+import kotlin.time.Duration
 
 class RichSequencer(
         private val sequencerId: String,
@@ -17,8 +20,10 @@ class RichSequencer(
     private suspend fun sequencerAdmin() =
             sequencerAdminFactory.jMake(sequencerId, observingMode).await()
 
-    suspend fun submitAndWait(sequence: Sequence): SubmitResponse? =
-            sequencerAdmin().submitAndWait(sequence).toJava().await()
+    suspend fun submitAndWait(sequence: Sequence, timeout: Duration): SubmitResponse? {
+        val akkaTimeout = Timeout(timeout.toLongNanoseconds(), TimeUnit.NANOSECONDS)
+        return sequencerAdmin().submitAndWait(sequence, akkaTimeout).toJava().await()
+    }
 
     suspend fun goOnline(): GoOnlineResponse? =
             sequencerAdmin().goOnline().toJava().await()

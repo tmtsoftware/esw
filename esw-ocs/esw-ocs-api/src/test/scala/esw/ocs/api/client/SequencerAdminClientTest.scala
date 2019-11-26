@@ -1,5 +1,6 @@
 package esw.ocs.api.client
 
+import akka.util.Timeout
 import csw.params.commands.CommandResponse.{Completed, Started, SubmitResponse}
 import csw.params.commands.{CommandName, Sequence, Setup}
 import csw.params.core.models.{Id, Prefix}
@@ -17,12 +18,14 @@ import org.mockito.ArgumentMatchers.{any, eq => argsEq}
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future
 import scala.concurrent.duration.FiniteDuration
+import scala.concurrent.duration.DurationLong
 
 class SequencerAdminClientTest extends BaseTestSuite with SequencerHttpCodecs {
 
   private val postClient           = mock[Transport[SequencerPostRequest]]
   private val websocketClient      = mock[Transport[SequencerWebsocketRequest]]
   private val sequencerAdminClient = new SequencerAdminClient(postClient, websocketClient)
+
   "SequencerAdminClient" must {
 
     "call postClient with GetSequence request | ESW-222" in {
@@ -165,11 +168,12 @@ class SequencerAdminClientTest extends BaseTestSuite with SequencerHttpCodecs {
     }
 
     "call postClient with SubmitAndWait request | ESW-222" in {
-      val command1          = Setup(Prefix("esw.test"), CommandName("command-1"), None)
-      val sequence          = Sequence(command1)
-      val sequenceId        = Id()
-      val startedResponse   = Started(sequenceId)
-      val completedResponse = Completed(sequenceId)
+      val command1                  = Setup(Prefix("esw.test"), CommandName("command-1"), None)
+      val sequence                  = Sequence(command1)
+      val sequenceId                = Id()
+      val startedResponse           = Started(sequenceId)
+      val completedResponse         = Completed(sequenceId)
+      implicit val timeout: Timeout = Timeout(10.seconds)
 
       when(
         postClient
@@ -178,7 +182,9 @@ class SequencerAdminClientTest extends BaseTestSuite with SequencerHttpCodecs {
 
       when(
         websocketClient
-          .requestResponse[SubmitResponse](argsEq(QueryFinal(sequenceId)), any[FiniteDuration]())(any[Decoder[SubmitResponse]]())
+          .requestResponse[SubmitResponse](argsEq(QueryFinal(sequenceId, timeout)), any[FiniteDuration]())(
+            any[Decoder[SubmitResponse]]()
+          )
       ).thenReturn(Future.successful(completedResponse))
 
       sequencerAdminClient.submitAndWait(sequence).futureValue should ===(completedResponse)
@@ -203,9 +209,11 @@ class SequencerAdminClientTest extends BaseTestSuite with SequencerHttpCodecs {
 
     "call websocket with QueryFinal request | ESW-222" in {
       val id = mock[Id]
+
+      implicit val timeout: Timeout = Timeout(10.seconds)
       when(
         websocketClient
-          .requestResponse[SubmitResponse](argsEq(QueryFinal(id)), any[FiniteDuration]())(any[Decoder[SubmitResponse]]())
+          .requestResponse[SubmitResponse](argsEq(QueryFinal(id, timeout)), any[FiniteDuration]())(any[Decoder[SubmitResponse]]())
       ).thenReturn(Future.successful(Completed(id)))
       sequencerAdminClient.queryFinal(id).futureValue should ===(Completed(id))
     }

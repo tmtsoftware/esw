@@ -61,12 +61,12 @@ class SequencerAdminImpl(sequencer: ActorRef[SequencerMsg])(implicit system: Act
     sequenceResponseF.map(_.toSubmitResponse())
   }
 
-  override def submitAndWait(sequence: Sequence): Future[SubmitResponse] = extensions.submitAndWait(sequence)
+  override def submitAndWait(sequence: Sequence)(implicit timeout: Timeout): Future[SubmitResponse] =
+    extensions.submitAndWait(sequence)
 
   override def query(runId: Id): Future[QueryResponse] = sequencer ? (Query(runId, _))
 
-  // fixme: shouldn't this call have long timeout and not the default?
-  override def queryFinal(runId: Id): Future[SubmitResponse] = sequencer ? (QueryFinal(runId, _))
+  override def queryFinal(runId: Id)(implicit timeout: Timeout): Future[SubmitResponse] = sequencer ? (QueryFinal(runId, _))
 
   override def goOnline(): Future[GoOnlineResponse] = sequencer ? GoOnline
 

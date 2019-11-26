@@ -1,5 +1,6 @@
 package esw.ocs.api.client
 
+import akka.util.Timeout
 import csw.params.commands.CommandResponse.{QueryResponse, SubmitResponse}
 import csw.params.commands.{Sequence, SequenceCommand}
 import csw.params.core.models.Id
@@ -12,7 +13,6 @@ import esw.ocs.api.protocol._
 import esw.ocs.api.{SequencerAdminApi, SequencerCommandExtensions}
 import msocket.api.Transport
 
-import scala.concurrent.duration.DurationDouble
 import scala.concurrent.{ExecutionContext, Future}
 
 class SequencerAdminClient(
@@ -93,13 +93,14 @@ class SequencerAdminClient(
   override def submit(sequence: Sequence): Future[SubmitResponse] =
     postClient.requestResponse[SubmitResponse](SubmitSequence(sequence))
 
-  override def submitAndWait(sequence: Sequence): Future[SubmitResponse] = extensions.submitAndWait(sequence)
+  override def submitAndWait(sequence: Sequence)(implicit timeout: Timeout): Future[SubmitResponse] =
+    extensions.submitAndWait(sequence)
 
   override def query(runId: Id): Future[QueryResponse] =
     postClient.requestResponse[QueryResponse](Query(runId))
 
-  override def queryFinal(runId: Id): Future[SubmitResponse] =
-    websocketClient.requestResponse[SubmitResponse](QueryFinal(runId), 1.hour)
+  override def queryFinal(runId: Id)(implicit timeout: Timeout): Future[SubmitResponse] =
+    websocketClient.requestResponse[SubmitResponse](QueryFinal(runId, timeout), timeout.duration)
 
   override def goOnline(): Future[GoOnlineResponse] = postClient.requestResponse[GoOnlineResponse](GoOnline)
 
