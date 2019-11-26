@@ -4,14 +4,13 @@ import akka.actor.typed.scaladsl.AskPattern.Askable
 import akka.actor.typed.{ActorSystem, Scheduler, SpawnProtocol}
 import akka.stream.Materializer
 import akka.util.Timeout
-import csw.command.client.SequencerCommandServiceFactory
-import csw.command.client.internal.SequencerCommandServiceImpl
 import csw.location.api.extensions.URIExtension.RichURI
 import csw.location.client.ActorSystemFactory
 import csw.location.client.scaladsl.HttpLocationServiceFactory
 import csw.params.commands.{CommandName, Sequence, Setup}
 import csw.params.core.models.Prefix
 import esw.ocs.dsl.sequence_manager.LocationServiceUtil
+import esw.ocs.impl.SequencerAdminImpl
 import esw.ocs.impl.messages.SequencerMessages.{EswSequencerMessage, Shutdown}
 
 import scala.concurrent.Await
@@ -37,9 +36,10 @@ object TestClient extends App {
   private val cmd2 = Setup(Prefix("esw.a.a"), CommandName("command-2"), None)
   private val cmd3 = Setup(Prefix("esw.a.a"), CommandName("command-3"), None)
 
-  private val factory: SequencerCommandServiceImpl = SequencerCommandServiceFactory.make(location)
+  import csw.command.client.extensions.AkkaLocationExt._
+  private val sequencerAdmin = new SequencerAdminImpl(location.sequencerRef)
 
-  factory.submitAndWait(Sequence(cmd1, cmd2, cmd3)).onComplete { _ =>
+  sequencerAdmin.submitAndWait(Sequence(cmd1, cmd2, cmd3)).onComplete { _ =>
     Thread.sleep(2000)
     Await.result(location.uri.toActorRef.unsafeUpcast[EswSequencerMessage] ? Shutdown, 10.seconds)
     system.terminate()
