@@ -10,6 +10,7 @@ import esw.ocs.dsl.sequence_manager.LocationServiceUtil
 import scala.compat.java8.FutureConverters.FutureOps
 import scala.concurrent.Future
 
+//fixme: why is it taking LocationServiceUtil, should this factory reside in DSL
 class SequencerAdminFactory(locationServiceUtil: LocationServiceUtil)(implicit timeout: Timeout) {
 
   import locationServiceUtil.actorSystem

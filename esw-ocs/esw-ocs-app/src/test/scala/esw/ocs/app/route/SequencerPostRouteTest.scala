@@ -14,6 +14,7 @@ import esw.ocs.api.protocol.EditorError.{CannotOperateOnAnInFlightOrFinishedStep
 import esw.ocs.api.protocol.SequencerPostRequest._
 import esw.ocs.api.protocol._
 import esw.ocs.impl.SequencerAdminImpl
+import esw.ocs.impl.handlers.SequencerPostHandler
 import msocket.impl.Encoding
 import msocket.impl.Encoding.JsonText
 import msocket.impl.post.{ClientHttpCodecs, PostRouteFactory}
@@ -26,7 +27,7 @@ class SequencerPostRouteTest extends BaseTestSuite with ScalatestRouteTest with 
   override def encoding: Encoding[_] = JsonText
 
   private val sequencerAdmin: SequencerAdminImpl = mock[SequencerAdminImpl]
-  private val postHandler                        = new SequencerPostHandlerImpl(sequencerAdmin)
+  private val postHandler                        = new SequencerPostHandler(sequencerAdmin)
   lazy val route: Route                          = new PostRouteFactory("post-endpoint", postHandler).make()
 
   "SequencerRoutes" must {

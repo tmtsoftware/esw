@@ -13,6 +13,7 @@ import esw.ocs.api.protocol.SequencerWebsocketRequest.QueryFinal
 
 import scala.concurrent.duration.DurationLong
 import esw.ocs.impl.SequencerAdminImpl
+import esw.ocs.impl.handlers.SequencerWebsocketHandler
 import io.bullet.borer.Decoder
 import msocket.impl.Encoding
 import msocket.impl.Encoding.{CborBinary, JsonText}
@@ -32,7 +33,7 @@ class SequencerCommandWebsocketRouteTest
 
   private val sequencerAdmin: SequencerAdminImpl = mock[SequencerAdminImpl]
 
-  private def websocketHandlerFactory(encoding: Encoding[_]) = new SequencerWebsocketHandlerImpl(sequencerAdmin, encoding)
+  private def websocketHandlerFactory(encoding: Encoding[_]) = new SequencerWebsocketHandler(sequencerAdmin, encoding)
 
   private implicit val actorSystem: ActorSystem[SpawnProtocol.Command] = ActorSystem(SpawnProtocol(), "test-system")
 

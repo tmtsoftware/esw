@@ -26,11 +26,11 @@ import csw.network.utils.SocketUtils
 import esw.http.core.wiring.{ActorRuntime, CswWiring, HttpService, Settings}
 import esw.ocs.api.codecs.SequencerHttpCodecs
 import esw.ocs.api.protocol.ScriptError
-import esw.ocs.app.route._
 import esw.ocs.dsl.script.utils.{LockUnlockUtil, ScriptLoader}
 import esw.ocs.dsl.script.{CswServices, ScriptDsl}
 import esw.ocs.dsl.sequence_manager.LocationServiceUtil
 import esw.ocs.impl.core._
+import esw.ocs.impl.handlers.{SequencerPostHandler, SequencerWebsocketHandler}
 import esw.ocs.impl.internal.{SequencerServer, Timeouts}
 import esw.ocs.impl.messages.SequencerMessages.Shutdown
 import esw.ocs.impl.syntax.FutureSyntax.FutureOps
@@ -101,8 +101,8 @@ private[ocs] class SequencerWiring(val packageId: String, val observingMode: Str
   )
 
   private lazy val adminApi                                  = new SequencerAdminImpl(sequencerRef)
-  private lazy val postHandler                               = new SequencerPostHandlerImpl(adminApi)
-  private def websocketHandlerFactory(encoding: Encoding[_]) = new SequencerWebsocketHandlerImpl(adminApi, encoding)
+  private lazy val postHandler                               = new SequencerPostHandler(adminApi)
+  private def websocketHandlerFactory(encoding: Encoding[_]) = new SequencerWebsocketHandler(adminApi, encoding)
 
   lazy val routes: Route = RouteFactory.combine(
     new PostRouteFactory("post-endpoint", postHandler),

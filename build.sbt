@@ -130,6 +130,7 @@ lazy val `esw-gateway-api` = crossProject(JSPlatform, JVMPlatform)
   .settings(
     libraryDependencies ++= Dependencies.EswGatewayApi.value
   )
+  .dependsOn(`esw-ocs-api`)
 
 lazy val `esw-gateway-impl` = project
   .in(file("esw-gateway/esw-gateway-impl"))
@@ -144,7 +145,12 @@ lazy val `esw-gateway-server` = project
   .settings(
     libraryDependencies ++= Dependencies.EswGatewayServer.value
   )
-  .dependsOn(`esw-gateway-impl`, `esw-http-core` % "compile->compile;test->test", `esw-test-reporter` % Test)
+  .dependsOn(
+    `esw-gateway-impl`,
+    `esw-ocs-impl`,
+    `esw-http-core` % "compile->compile;test->test",
+    `esw-test-reporter` % Test
+  )
 
 lazy val `esw-test-reporter` = project
   .in(file("esw-test-reporter"))

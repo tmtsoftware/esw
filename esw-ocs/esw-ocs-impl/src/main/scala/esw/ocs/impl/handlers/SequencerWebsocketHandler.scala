@@ -1,4 +1,4 @@
-package esw.ocs.app.route
+package esw.ocs.impl.handlers
 
 import akka.NotUsed
 import akka.http.scaladsl.model.ws.Message
@@ -11,7 +11,7 @@ import msocket.api.MessageHandler
 import msocket.impl.Encoding
 import msocket.impl.ws.WebsocketStreamExtensions
 
-class SequencerWebsocketHandlerImpl(adminApi: SequencerAdminApi, val encoding: Encoding[_])
+class SequencerWebsocketHandler(adminApi: SequencerAdminApi, val encoding: Encoding[_])
     extends MessageHandler[SequencerWebsocketRequest, Source[Message, NotUsed]]
     with SequencerHttpCodecs
     with WebsocketStreamExtensions {

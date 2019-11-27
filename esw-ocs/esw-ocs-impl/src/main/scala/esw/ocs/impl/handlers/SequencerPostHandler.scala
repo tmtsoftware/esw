@@ -1,4 +1,4 @@
-package esw.ocs.app.route
+package esw.ocs.impl.handlers
 
 import akka.http.scaladsl.server.Directives.complete
 import akka.http.scaladsl.server.Route
@@ -9,7 +9,8 @@ import esw.ocs.api.protocol.SequencerPostRequest._
 import msocket.api.MessageHandler
 import msocket.impl.post.ServerHttpCodecs
 
-class SequencerPostHandlerImpl(adminApi: SequencerAdminApi)
+// fixme: Having handlers in ocs-impl adds dependency on akka-http, consider making another module
+class SequencerPostHandler(adminApi: SequencerAdminApi)
     extends MessageHandler[SequencerPostRequest, Route]
     with SequencerHttpCodecs
     with ServerHttpCodecs {
