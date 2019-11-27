@@ -26,10 +26,8 @@ script {
 
         state("READY") {
             val parameter: Parameter<Int> = JKeyType.IntKey().make("encoder").set(1)
-            val event = SystemEvent("tcs", "trigger.READY.state")
-            publishEvent(event)
-
-            become("DONE").with(event.kMadd(parameter).jParamSet())
+            params.add(parameter)
+            become("DONE").with(params)
         }
 
         state("DONE") {

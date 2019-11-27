@@ -227,7 +227,7 @@ class StateMachineImplTest {
 
     @Test
     fun `with should update params | ESW-142`() = runBlocking {
-        stateMachine.params shouldBe null
+        stateMachine.params shouldBe mutableSetOf()
 
         val parameter: Parameter<Int> = JKeyType.IntKey().make("encoder").set(1)
         val expectedParams = mutableSetOf(parameter)

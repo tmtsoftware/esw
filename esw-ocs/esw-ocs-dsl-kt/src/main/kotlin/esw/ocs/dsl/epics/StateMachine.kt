@@ -20,13 +20,13 @@ interface FSMTopLevel {
 }
 
 interface ParameterUtil {
-    fun with(params: MutableSet<Parameter<*>>?)
+    fun with(params: MutableSet<Parameter<*>>)
 }
 
 // this interface is exposed in side each state of FSM
 @FSMDslMarker
 interface FSMState {
-    var params: MutableSet<Parameter<*>>?
+    var params: MutableSet<Parameter<*>>
     fun become(state: String): ParameterUtil
     fun completeFSM()
     suspend fun on(condition: Boolean = true, body: suspend () -> Unit)
@@ -41,7 +41,7 @@ class StateMachineImpl(val name: String, val initialState: String, val coroutine
     private var currentState: String? = null
     private var previousState: String? = null
 
-    override var params: MutableSet<Parameter<*>>? = null
+    override var params: MutableSet<Parameter<*>> = mutableSetOf()
 
     //fixme : do we need to pass as receiver coroutine scope to state lambda
     private val states = mutableMapOf<String, suspend FSMState.() -> Unit>()
@@ -62,7 +62,7 @@ class StateMachineImpl(val name: String, val initialState: String, val coroutine
         } else throw InvalidStateException(state)
     }
 
-    override fun with(params: MutableSet<Parameter<*>>?) {
+    override fun with(params: MutableSet<Parameter<*>>) {
         this.params = params
     }
 
