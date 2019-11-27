@@ -30,6 +30,7 @@ class StateMachineImplTest {
 
     val init = "INIT"
     val inProgress = "INPROGRESS"
+    val waiting = "WAITING"
     val invalid = "INVALIDSTATE"
     val testMachineName = "test-state-machine"
     val timeout = 100.jMilliseconds
@@ -85,6 +86,27 @@ class StateMachineImplTest {
     fun `become should treat stateNames case insensitively | ESW-142`() {
         stateMachine.become(init.toLowerCase())
         checkInitFlag()
+    }
+
+    @Test
+    fun `become should be able to pass parameters to next state | ESW-142`() = runBlocking {
+        val parameter: Parameter<Int> = JKeyType.IntKey().make("encoder").set(1)
+        val event = SystemEvent(Prefix("tcs"), EventName("trigger.INIT.state")).add(parameter)
+        val expectedParamsInProgressState = event.jParamSet()
+        val expectedParamsWaitingState = setOf<Parameter<*>>()
+
+        stateMachine.state(inProgress) { params ->
+            params shouldBe expectedParamsInProgressState
+            become(waiting)
+        }
+
+        stateMachine.state(waiting) { params ->
+            params shouldBe expectedParamsWaitingState
+        }
+
+        stateMachine.start()
+
+        stateMachine.become(inProgress, event.jParamSet())
     }
 
     @Test
@@ -223,18 +245,5 @@ class StateMachineImplTest {
         stateMachine.completeFSM()
 
         eventually(timeout) { waitingFinished shouldBe true }
-    }
-
-    @Test
-    fun `with should update params | ESW-142`() = runBlocking {
-        stateMachine.params shouldBe mutableSetOf()
-
-        val parameter: Parameter<Int> = JKeyType.IntKey().make("encoder").set(1)
-        val expectedParams = mutableSetOf(parameter)
-        val event = SystemEvent(Prefix("tcs"), EventName("trigger.INIT.state")).add(parameter)
-
-        stateMachine.become(init.toLowerCase()).with(event.jParamSet())
-
-        stateMachine.params shouldBe expectedParams
     }
 }

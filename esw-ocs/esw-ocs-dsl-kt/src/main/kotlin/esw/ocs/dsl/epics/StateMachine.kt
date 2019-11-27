@@ -16,18 +16,13 @@ interface StateMachine : Refreshable {
 // this interface is exposed at top level of FSM
 @FSMDslMarker
 interface FSMTopLevel {
-    fun state(name: String, block: suspend FSMState.() -> Unit)
-}
-
-interface ParameterUtil {
-    fun with(params: MutableSet<Parameter<*>>)
+    fun state(name: String, block: suspend FSMState.(params: Set<Parameter<*>>) -> Unit)
 }
 
 // this interface is exposed in side each state of FSM
 @FSMDslMarker
 interface FSMState {
-    var params: MutableSet<Parameter<*>>
-    fun become(state: String): ParameterUtil
+    fun become(state: String, params: Set<Parameter<*>> = setOf())
     fun completeFSM()
     suspend fun on(condition: Boolean = true, body: suspend () -> Unit)
     suspend fun after(duration: Duration, body: suspend () -> Unit)
@@ -35,35 +30,28 @@ interface FSMState {
 }
 
 // Don't remove name parameter, it will used while logging.
-class StateMachineImpl(val name: String, val initialState: String, val coroutineScope: CoroutineScope) : StateMachine, FSMTopLevel, FSMState, ParameterUtil {
+class StateMachineImpl(val name: String, val initialState: String, val coroutineScope: CoroutineScope) : StateMachine, FSMTopLevel, FSMState {
 
     // fixme: Try and remove optional behavior of both variables
     private var currentState: String? = null
     private var previousState: String? = null
 
-    override var params: MutableSet<Parameter<*>> = mutableSetOf()
-
     //fixme : do we need to pass as receiver coroutine scope to state lambda
-    private val states = mutableMapOf<String, suspend FSMState.() -> Unit>()
+    private val states = mutableMapOf<String, suspend FSMState.(params: Set<Parameter<*>>) -> Unit>()
 
     //this is done to make new job child of the coroutine scope's job.
     private val fsmJob: CompletableJob = Job(coroutineScope.coroutineContext[Job])
 
-    override fun state(name: String, block: suspend FSMState.() -> Unit) {
+    override fun state(name: String, block: suspend FSMState.(params: Set<Parameter<*>>) -> Unit) {
         states += name.toUpperCase() to block
     }
 
-    override fun become(state: String): ParameterUtil {
+    override fun become(state: String, params: Set<Parameter<*>>) {
         if (states.keys.any { it.equals(state, true) }) {
             previousState = currentState
             currentState = state
-            refresh()
-            return this
+            refresh(params)
         } else throw InvalidStateException(state)
-    }
-
-    override fun with(params: MutableSet<Parameter<*>>) {
-        this.params = params
     }
 
     override fun start() {
@@ -78,9 +66,9 @@ class StateMachineImpl(val name: String, val initialState: String, val coroutine
         fsmJob.cancel()
     }
 
-    override fun refresh() {
+    override fun refresh(params: Set<Parameter<*>>) {
         coroutineScope.launch(fsmJob) {
-            states[currentState?.toUpperCase()]?.invoke(this@StateMachineImpl)
+            states[currentState?.toUpperCase()]?.invoke(this@StateMachineImpl, params)
         }
     }
 

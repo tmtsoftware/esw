@@ -4,7 +4,6 @@ import csw.params.core.generics.Parameter
 import csw.params.javadsl.JKeyType
 import esw.ocs.dsl.core.script
 import esw.ocs.dsl.params.booleanKey
-import esw.ocs.dsl.params.kMadd
 import esw.ocs.dsl.params.set
 import kotlinx.coroutines.delay
 
@@ -20,14 +19,13 @@ script {
             val event = SystemEvent("tcs", "trigger.INIT.state", parameter)
             publishEvent(event)
             on(true) {
-                become("READY").with(event.jParamSet())
+                become("READY", event.jParamSet())
             }
         }
 
-        state("READY") {
+        state("READY") { params ->
             val parameter: Parameter<Int> = JKeyType.IntKey().make("encoder").set(1)
-            params.add(parameter)
-            become("DONE").with(params)
+            become("DONE", params.plus(parameter))
         }
 
         state("DONE") {
