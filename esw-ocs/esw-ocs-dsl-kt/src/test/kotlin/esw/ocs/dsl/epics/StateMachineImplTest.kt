@@ -5,6 +5,7 @@ import csw.params.core.models.Prefix
 import csw.params.events.EventName
 import csw.params.events.SystemEvent
 import csw.params.javadsl.JKeyType
+import esw.ocs.dsl.params.Params
 import esw.ocs.dsl.params.set
 import esw.ocs.dsl.script.StrandEc
 import io.kotlintest.eventually
@@ -92,8 +93,8 @@ class StateMachineImplTest {
     fun `become should be able to pass parameters to next state | ESW-142`() = runBlocking {
         val parameter: Parameter<Int> = JKeyType.IntKey().make("encoder").set(1)
         val event = SystemEvent(Prefix("tcs"), EventName("trigger.INIT.state")).add(parameter)
-        val expectedParamsInProgressState = event.jParamSet()
-        val expectedParamsWaitingState = setOf<Parameter<*>>()
+        val expectedParamsInProgressState = Params(event.jParamSet())
+        val expectedParamsWaitingState = Params(setOf<Parameter<*>>())
 
         stateMachine.state(inProgress) { params ->
             params shouldBe expectedParamsInProgressState
@@ -106,7 +107,7 @@ class StateMachineImplTest {
 
         stateMachine.start()
 
-        stateMachine.become(inProgress, event.jParamSet())
+        stateMachine.become(inProgress, Params(event.jParamSet()))
     }
 
     @Test
