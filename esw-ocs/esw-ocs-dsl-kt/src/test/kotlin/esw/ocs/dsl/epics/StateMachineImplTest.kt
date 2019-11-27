@@ -1,5 +1,11 @@
 package esw.ocs.dsl.epics
 
+import csw.params.core.generics.Parameter
+import csw.params.core.models.Prefix
+import csw.params.events.EventName
+import csw.params.events.SystemEvent
+import csw.params.javadsl.JKeyType
+import esw.ocs.dsl.params.set
 import esw.ocs.dsl.script.StrandEc
 import io.kotlintest.eventually
 import io.kotlintest.shouldBe
@@ -217,5 +223,18 @@ class StateMachineImplTest {
         stateMachine.completeFSM()
 
         eventually(timeout) { waitingFinished shouldBe true }
+    }
+
+    @Test
+    fun `with should update params | ESW-142`() = runBlocking {
+        stateMachine.params shouldBe null
+
+        val parameter: Parameter<Int> = JKeyType.IntKey().make("encoder").set(1)
+        val expectedParams = mutableSetOf(parameter)
+        val event = SystemEvent(Prefix("tcs"), EventName("trigger.INIT.state")).add(parameter)
+
+        stateMachine.become(init.toLowerCase()).with(event.jParamSet())
+
+        stateMachine.params shouldBe expectedParams
     }
 }
