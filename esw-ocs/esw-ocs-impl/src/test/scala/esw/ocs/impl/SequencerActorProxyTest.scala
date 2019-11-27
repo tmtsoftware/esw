@@ -15,7 +15,7 @@ import esw.ocs.api.protocol.{GoOnlineHookFailed, Ok, SubmitResult, Unhandled}
 import esw.ocs.impl.messages.SequencerMessages._
 import esw.ocs.impl.messages.SequencerState.{Idle, Loaded, Offline}
 
-class SequencerAdminImplTest extends ScalaTestWithActorTestKit with BaseTestSuite {
+class SequencerActorProxyTest extends ScalaTestWithActorTestKit with BaseTestSuite {
   private val command             = Setup(Prefix("esw.test"), CommandName("command-1"), None)
   private val getSequenceResponse = Some(StepList(Sequence(command)))
   private val stepId              = getSequenceResponse.get.steps.head.id
@@ -78,97 +78,96 @@ class SequencerAdminImplTest extends ScalaTestWithActorTestKit with BaseTestSuit
       Behaviors.same
     }
 
-  private val sequencer = spawn(mockedBehavior)
-
-  private val sequencerAdmin = new SequencerAdminImpl(sequencer)
+  private val sequencerRef = spawn(mockedBehavior)
+  private val sequencer    = new SequencerActorProxy(sequencerRef)
 
   "getSequence | ESW-222" in {
-    sequencerAdmin.getSequence.futureValue should ===(getSequenceResponse)
+    sequencer.getSequence.futureValue should ===(getSequenceResponse)
   }
 
   "isAvailable | ESW-222" in {
-    sequencerAdmin.isAvailable.futureValue should ===(false)
+    sequencer.isAvailable.futureValue should ===(false)
   }
 
   "isOnline | ESW-222" in {
-    sequencerAdmin.isOnline.futureValue should ===(true)
+    sequencer.isOnline.futureValue should ===(true)
   }
 
   "add | ESW-222" in {
-    sequencerAdmin.add(List(command)).futureValue should ===(addResponse)
+    sequencer.add(List(command)).futureValue should ===(addResponse)
   }
 
   "prepend | ESW-222" in {
-    sequencerAdmin.prepend(List(command)).futureValue should ===(prependResponse)
+    sequencer.prepend(List(command)).futureValue should ===(prependResponse)
   }
 
   "replace | ESW-222" in {
-    sequencerAdmin.replace(stepId, List(command)).futureValue should ===(replaceResponse)
+    sequencer.replace(stepId, List(command)).futureValue should ===(replaceResponse)
   }
 
   "insertAfter | ESW-222" in {
-    sequencerAdmin.insertAfter(stepId, List(command)).futureValue should ===(insertAfterResponse)
+    sequencer.insertAfter(stepId, List(command)).futureValue should ===(insertAfterResponse)
   }
 
   "delete | ESW-222" in {
-    sequencerAdmin.delete(stepId).futureValue should ===(deleteResponse)
+    sequencer.delete(stepId).futureValue should ===(deleteResponse)
   }
 
   "pause | ESW-222" in {
-    sequencerAdmin.pause.futureValue should ===(pauseResponse)
+    sequencer.pause.futureValue should ===(pauseResponse)
   }
 
   "resume | ESW-222" in {
-    sequencerAdmin.resume.futureValue should ===(resumeResponse)
+    sequencer.resume.futureValue should ===(resumeResponse)
   }
 
   "addBreakpoint | ESW-222" in {
-    sequencerAdmin.addBreakpoint(stepId).futureValue should ===(addBreakpointResponse)
+    sequencer.addBreakpoint(stepId).futureValue should ===(addBreakpointResponse)
   }
 
   "removeBreakpoint | ESW-222" in {
-    sequencerAdmin.removeBreakpoint(stepId).futureValue should ===(removeBreakpointResponse)
+    sequencer.removeBreakpoint(stepId).futureValue should ===(removeBreakpointResponse)
   }
 
   "reset | ESW-222" in {
-    sequencerAdmin.reset().futureValue should ===(resetResponse)
+    sequencer.reset().futureValue should ===(resetResponse)
   }
 
   "abortSequence | ESW-222" in {
-    sequencerAdmin.abortSequence().futureValue should ===(abortResponse)
+    sequencer.abortSequence().futureValue should ===(abortResponse)
   }
 
   "stop | ESW-222" in {
-    sequencerAdmin.stop().futureValue should ===(stopResponse)
+    sequencer.stop().futureValue should ===(stopResponse)
   }
 
   // commandApi
 
   "loadSequence | ESW-101" in {
-    sequencerAdmin.loadSequence(sequence).futureValue should ===(Ok)
+    sequencer.loadSequence(sequence).futureValue should ===(Ok)
   }
 
   "startSequence | ESW-101" in {
-    sequencerAdmin.startSequence().futureValue should ===(startSequenceResponse.toSubmitResponse())
+    sequencer.startSequence().futureValue should ===(startSequenceResponse.toSubmitResponse())
   }
 
   "submit | ESW-101" in {
-    sequencerAdmin.submit(sequence).futureValue should ===(submitSequenceResponse.toSubmitResponse())
+    sequencer.submit(sequence).futureValue should ===(submitSequenceResponse.toSubmitResponse())
   }
 
   "submitAndWait | ESW-101" in {
-    sequencerAdmin.submitAndWait(sequence).futureValue should ===(queryFinalResponse)
+    sequencer.submitAndWait(sequence).futureValue should ===(queryFinalResponse)
   }
 
   "queryFinal | ESW-101" in {
-    sequencerAdmin.queryFinal(sequenceId).futureValue should ===(queryFinalResponse)
+    sequencer.queryFinal(sequenceId).futureValue should ===(queryFinalResponse)
   }
 
   "diagnosticMode | ESW-143" in {
-    sequencerAdmin.diagnosticMode(startTime, hint).futureValue should ===(diagnosticModeResponse)
+    sequencer.diagnosticMode(startTime, hint).futureValue should ===(diagnosticModeResponse)
   }
 
   "operationsMode | ESW-143" in {
-    sequencerAdmin.operationsMode().futureValue should ===(operationsModeResponse)
+    sequencer.operationsMode().futureValue should ===(operationsModeResponse)
   }
 }

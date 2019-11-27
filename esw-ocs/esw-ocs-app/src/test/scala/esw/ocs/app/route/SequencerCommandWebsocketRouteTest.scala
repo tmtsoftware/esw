@@ -12,7 +12,7 @@ import esw.ocs.api.codecs.SequencerHttpCodecs
 import esw.ocs.api.protocol.SequencerWebsocketRequest.QueryFinal
 
 import scala.concurrent.duration.DurationLong
-import esw.ocs.impl.SequencerAdminImpl
+import esw.ocs.impl.SequencerActorProxy
 import esw.ocs.impl.handlers.SequencerWebsocketHandler
 import io.bullet.borer.Decoder
 import msocket.impl.Encoding
@@ -31,9 +31,9 @@ class SequencerCommandWebsocketRouteTest
 
   override def encoding: Encoding[_] = JsonText
 
-  private val sequencerAdmin: SequencerAdminImpl = mock[SequencerAdminImpl]
+  private val sequencer: SequencerActorProxy = mock[SequencerActorProxy]
 
-  private def websocketHandlerFactory(encoding: Encoding[_]) = new SequencerWebsocketHandler(sequencerAdmin, encoding)
+  private def websocketHandlerFactory(encoding: Encoding[_]) = new SequencerWebsocketHandler(sequencer, encoding)
 
   private implicit val actorSystem: ActorSystem[SpawnProtocol.Command] = ActorSystem(SpawnProtocol(), "test-system")
 
@@ -45,7 +45,7 @@ class SequencerCommandWebsocketRouteTest
       val id                        = Id("some")
       implicit val timeout: Timeout = Timeout(10.seconds)
       val completedResponse         = Completed(id)
-      when(sequencerAdmin.queryFinal(id)).thenReturn(Future.successful(completedResponse))
+      when(sequencer.queryFinal(id)).thenReturn(Future.successful(completedResponse))
 
       WS("/websocket-endpoint", wsClient.flow) ~> route ~> check {
         wsClient.sendMessage(JsonText.strictMessage(QueryFinal(id, timeout)))

@@ -10,7 +10,7 @@ import csw.params.commands.CommandResponse.{QueryResponse, SubmitResponse}
 import csw.params.commands.{Sequence, SequenceCommand}
 import csw.params.core.models.Id
 import csw.time.core.models.UTCTime
-import esw.ocs.api.SequencerAdminApi
+import esw.ocs.api.SequencerApi
 import esw.ocs.api.models.StepList
 import esw.ocs.api.protocol._
 import esw.ocs.impl.messages.SequencerMessages._
@@ -19,8 +19,8 @@ import esw.ocs.impl.messages.SequencerState.{Idle, Offline}
 
 import scala.concurrent.{ExecutionContext, Future}
 
-class SequencerAdminImpl(sequencer: ActorRef[SequencerMsg])(implicit system: ActorSystem[_], timeout: Timeout)
-    extends SequencerAdminApi {
+class SequencerActorProxy(sequencer: ActorRef[SequencerMsg])(implicit system: ActorSystem[_], timeout: Timeout)
+    extends SequencerApi {
   private implicit val ec: ExecutionContext = system.executionContext
 
   private val extensions = new SequencerCommandServiceExtension(this)
@@ -44,7 +44,8 @@ class SequencerAdminImpl(sequencer: ActorRef[SequencerMsg])(implicit system: Act
   override def stop(): Future[OkOrUnhandledResponse]                      = sequencer ? Stop
 
   override def isAvailable: Future[Boolean] = getState.map(_ == Idle)
-  override def isOnline: Future[Boolean]    = getState.map(_ != Offline)
+
+  override def isOnline: Future[Boolean] = getState.map(_ != Offline)
 
   private def getState: Future[SequencerState[SequencerMsg]] = sequencer ? GetSequencerState
 

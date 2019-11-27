@@ -10,7 +10,7 @@ import csw.location.client.scaladsl.HttpLocationServiceFactory
 import csw.params.commands.{CommandName, Sequence, Setup}
 import csw.params.core.models.Prefix
 import esw.ocs.dsl.sequence_manager.LocationServiceUtil
-import esw.ocs.impl.SequencerAdminImpl
+import esw.ocs.impl.SequencerActorProxy
 import esw.ocs.impl.messages.SequencerMessages.{EswSequencerMessage, Shutdown}
 
 import scala.concurrent.Await
@@ -37,9 +37,9 @@ object TestClient extends App {
   private val cmd3 = Setup(Prefix("esw.a.a"), CommandName("command-3"), None)
 
   import csw.command.client.extensions.AkkaLocationExt._
-  private val sequencerAdmin = new SequencerAdminImpl(location.sequencerRef)
+  private val sequencer = new SequencerActorProxy(location.sequencerRef)
 
-  sequencerAdmin.submitAndWait(Sequence(cmd1, cmd2, cmd3)).onComplete { _ =>
+  sequencer.submitAndWait(Sequence(cmd1, cmd2, cmd3)).onComplete { _ =>
     Thread.sleep(2000)
     Await.result(location.uri.toActorRef.unsafeUpcast[EswSequencerMessage] ? Shutdown, 10.seconds)
     system.terminate()

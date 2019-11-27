@@ -10,7 +10,7 @@ import esw.ocs.api.protocol._
 
 import scala.concurrent.Future
 
-trait SequencerAdminApi extends SequencerCommandService {
+trait SequencerApi extends SequencerCommandService {
 
   //Editor API
   def getSequence: Future[Option[StepList]]

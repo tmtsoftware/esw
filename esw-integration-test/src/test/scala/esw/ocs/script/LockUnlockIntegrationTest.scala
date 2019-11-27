@@ -9,13 +9,13 @@ import csw.params.core.generics.KeyType.StringKey
 import csw.params.core.models.Prefix
 import csw.params.events.EventKey
 import csw.testkit.scaladsl.CSWService.EventServer
-import esw.ocs.api.SequencerAdminApi
-import esw.ocs.impl.SequencerAdminImpl
+import esw.ocs.api.SequencerApi
+import esw.ocs.impl.SequencerActorProxy
 import esw.ocs.testkit.EswTestKit
 
 class LockUnlockIntegrationTest extends EswTestKit(EventServer) {
-  private var ocsSequencer: ActorRef[SequencerMsg] = _
-  private var ocsAdmin: SequencerAdminApi          = _
+  private var ocsSequencerRef: ActorRef[SequencerMsg] = _
+  private var ocsSequencer: SequencerApi              = _
 
   override def beforeAll(): Unit = {
     super.beforeAll()
@@ -23,8 +23,8 @@ class LockUnlockIntegrationTest extends EswTestKit(EventServer) {
   }
 
   override def beforeEach(): Unit = {
-    ocsSequencer = spawnSequencerRef("esw", "lockUnlockScript")
-    ocsAdmin = new SequencerAdminImpl(ocsSequencer)
+    ocsSequencerRef = spawnSequencerRef("esw", "lockUnlockScript")
+    ocsSequencer = new SequencerActorProxy(ocsSequencerRef)
   }
 
   override def afterEach(): Unit = shutdownAllSequencers()
@@ -42,7 +42,7 @@ class LockUnlockIntegrationTest extends EswTestKit(EventServer) {
         })
 
       val lockCommand = Setup(Prefix("TCS.test"), CommandName("lock-assembly"), None)
-      ocsAdmin.submitAndWait(Sequence(lockCommand))
+      ocsSequencer.submitAndWait(Sequence(lockCommand))
 
       probe.expectMessage("LockAcquired$")
       probe.expectMessage("LockExpiringShortly$")
@@ -51,7 +51,7 @@ class LockUnlockIntegrationTest extends EswTestKit(EventServer) {
 
     "support unlocking components | ESW-126" in {
       val unlockCommand = Setup(Prefix("TCS.test"), CommandName("unlock-assembly"), None)
-      ocsAdmin.submitAndWait(Sequence(unlockCommand))
+      ocsSequencer.submitAndWait(Sequence(unlockCommand))
       eventually {
         val unlockEvent = eventSubscriber.get(lockingEventKey).futureValue
         unlockEvent.paramType.get(lockingStringKey).flatMap(_.get(0)) should ===(Some("LockAlreadyReleased$"))

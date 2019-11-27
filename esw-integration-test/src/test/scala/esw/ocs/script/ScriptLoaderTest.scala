@@ -12,7 +12,7 @@ import csw.location.api.javadsl.ILocationService
 import csw.logging.api.javadsl.ILogger
 import csw.params.core.models.Prefix
 import csw.time.scheduler.TimeServiceSchedulerFactory
-import esw.ocs.api.SequencerAdminApi
+import esw.ocs.api.SequencerApi
 import esw.ocs.dsl.script.exceptions.ScriptLoadingException.{
   InvalidScriptException,
   ScriptInitialisationFailedException,
@@ -30,7 +30,7 @@ class ScriptLoaderTest extends BaseTestSuite {
   private val iLocationService            = mock[ILocationService]
   private val iEventService               = mock[IEventService]
   private val timeServiceSchedulerFactory = mock[TimeServiceSchedulerFactory]
-  private val sequencerAdminFactory       = mock[BiFunction[String, String, CompletionStage[SequencerAdminApi]]]
+  private val sequencerClientFactory      = mock[BiFunction[String, String, CompletionStage[SequencerApi]]]
   private val databaseServiceFactory      = mock[DatabaseServiceFactory]
   private val lockUnlockUtil              = mock[LockUnlockUtil]
   private val iConfigClientService        = mock[IConfigClientService]
@@ -45,7 +45,7 @@ class ScriptLoaderTest extends BaseTestSuite {
     iLocationService,
     iEventService,
     timeServiceSchedulerFactory,
-    sequencerAdminFactory,
+    sequencerClientFactory,
     databaseServiceFactory,
     lockUnlockUtil,
     iConfigClientService,

@@ -9,10 +9,10 @@ import io.bullet.borer.derivation.MapBasedCodecs.deriveCodec
 
 trait SequencerHttpCodecs extends OcsCodecs {
   import msocket.api.codecs.BasicCodecs._
-  implicit def sequencerAdminPostRequestCodec[T <: SequencerPostRequest]: Codec[T] =
-    sequencerAdminPostRequestValue.asInstanceOf[Codec[T]]
+  implicit def sequencerPostRequestCodec[T <: SequencerPostRequest]: Codec[T] =
+    sequencerPostRequestValue.asInstanceOf[Codec[T]]
 
-  lazy val sequencerAdminPostRequestValue: Codec[SequencerPostRequest] = {
+  lazy val sequencerPostRequestValue: Codec[SequencerPostRequest] = {
     // admin codecs
     @silent implicit lazy val getSequenceCodec: Codec[GetSequence.type]      = deriveCodec
     @silent implicit lazy val isAvailableCodec: Codec[IsAvailable.type]      = deriveCodec

@@ -34,7 +34,7 @@ import esw.ocs.impl.handlers.{SequencerPostHandler, SequencerWebsocketHandler}
 import esw.ocs.impl.internal.{SequencerServer, Timeouts}
 import esw.ocs.impl.messages.SequencerMessages.Shutdown
 import esw.ocs.impl.syntax.FutureSyntax.FutureOps
-import esw.ocs.impl.{SequencerAdminFactory, SequencerAdminImpl}
+import esw.ocs.impl.{SequencerActorProxyFactory, SequencerActorProxy}
 import msocket.impl.post.PostRouteFactory
 import msocket.impl.ws.WebsocketRouteFactory
 import msocket.impl.{Encoding, RouteFactory}
@@ -67,8 +67,8 @@ private[ocs] class SequencerWiring(val packageId: String, val observingMode: Str
   private lazy val componentId             = ComponentId(sequencerName, ComponentType.Sequencer)
   private lazy val script: ScriptDsl       = ScriptLoader.loadKotlinScript(scriptClass, cswServices)
 
-  lazy private val locationServiceUtil = new LocationServiceUtil(locationService)
-  lazy private val adminFactory        = new SequencerAdminFactory(locationServiceUtil)
+  lazy private val locationServiceUtil   = new LocationServiceUtil(locationService)
+  lazy private val sequencerProxyFactory = new SequencerActorProxyFactory(locationServiceUtil)
 
   lazy private val lockUnlockUtil = new LockUnlockUtil(locationServiceUtil)(actorSystem)
 
@@ -93,16 +93,16 @@ private[ocs] class SequencerWiring(val packageId: String, val observingMode: Str
     jLocationService,
     jEventService,
     timeServiceSchedulerFactory,
-    adminFactory.jMake,
+    sequencerProxyFactory.jMake,
     databaseServiceFactory,
     lockUnlockUtil,
     jConfigClientService,
     jAlarmService
   )
 
-  private lazy val adminApi                                  = new SequencerAdminImpl(sequencerRef)
-  private lazy val postHandler                               = new SequencerPostHandler(adminApi)
-  private def websocketHandlerFactory(encoding: Encoding[_]) = new SequencerWebsocketHandler(adminApi, encoding)
+  private lazy val sequencerApi                              = new SequencerActorProxy(sequencerRef)
+  private lazy val postHandler                               = new SequencerPostHandler(sequencerApi)
+  private def websocketHandlerFactory(encoding: Encoding[_]) = new SequencerWebsocketHandler(sequencerApi, encoding)
 
   lazy val routes: Route = RouteFactory.combine(
     new PostRouteFactory("post-endpoint", postHandler),

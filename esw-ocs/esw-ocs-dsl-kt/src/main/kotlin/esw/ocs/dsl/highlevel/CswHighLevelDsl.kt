@@ -48,7 +48,7 @@ abstract class CswHighLevelDsl(private val cswServices: CswServices) : EventServ
             RichComponent(name, componentType, prefix, cswServices.lockUnlockUtil(), locationServiceUtil, system, coroutineScope)
 
     private fun richSequencer(sequencerId: String, observingMode: String): RichSequencer {
-        return RichSequencer(sequencerId, observingMode, cswServices.sequencerAdminFactory())
+        return RichSequencer(sequencerId, observingMode, cswServices.sequencerApiFactory())
     }
 
     fun Assembly(name: String): RichComponent = richComponent(name, JComponentType.Assembly())

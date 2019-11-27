@@ -8,8 +8,8 @@ import csw.command.client.extensions.AkkaLocationExt.RichAkkaLocation
 import csw.location.api.scaladsl.LocationService
 import csw.location.models.ComponentId
 import csw.location.models.Connection.AkkaConnection
-import esw.ocs.api.SequencerAdminApi
-import esw.ocs.impl.SequencerAdminImpl
+import esw.ocs.api.SequencerApi
+import esw.ocs.impl.SequencerActorProxy
 
 import scala.concurrent.Future
 import scala.concurrent.duration.DurationLong
@@ -22,13 +22,13 @@ class Resolver(locationService: LocationService)(implicit typedSystem: ActorSyst
   def resolveCommandService(componentId: ComponentId): Future[Option[CommandService]] =
     locationService.resolve(AkkaConnection(componentId), timeout.duration).map(_.map(CommandServiceFactory.make))
 
-  def resolveSequencer(componentId: ComponentId): Future[Option[SequencerAdminApi]] =
+  def resolveSequencer(componentId: ComponentId): Future[Option[SequencerApi]] =
     locationService
       .resolve(AkkaConnection(componentId), timeout.duration)
       .map(
         _.map(
           loc =>
-            new SequencerAdminImpl(
+            new SequencerActorProxy(
               loc.sequencerRef
             )
         )
