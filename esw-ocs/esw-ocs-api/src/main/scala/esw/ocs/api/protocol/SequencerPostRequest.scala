@@ -5,7 +5,7 @@ import csw.params.core.models.Id
 import csw.time.core.models.UTCTime
 
 sealed trait SequencerPostRequest
-private[ocs] object SequencerPostRequest {
+object SequencerPostRequest {
   // Admin Protocol
   case object GetSequence                                               extends SequencerPostRequest
   case object IsAvailable                                               extends SequencerPostRequest

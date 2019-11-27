@@ -46,7 +46,7 @@ class WebsocketRouteTest extends BaseTestSuite with ScalatestRouteTest with Gate
   implicit val typedSystem: ActorSystem[_]             = system.toTyped
 
   private val eventApi: EventApi                          = new EventImpl(eventService, eventSubscriberUtil)
-  private def websocketHandlerImpl(encoding: Encoding[_]) = new WebsocketHandlerImpl(commandServiceResolver, eventApi, encoding)
+  private def websocketHandlerImpl(encoding: Encoding[_]) = new WebsocketHandlerImpl(resolver, eventApi, encoding)
   private val route                                       = RouteFactory.combine(new WebsocketRouteFactory("websocket-endpoint", websocketHandlerImpl))
 
   override def beforeEach(): Unit = {
@@ -62,7 +62,7 @@ class WebsocketRouteTest extends BaseTestSuite with ScalatestRouteTest with Gate
       val componentId   = ComponentId(componentName, componentType)
       val queryFinal    = ComponentCommand(componentId, QueryFinal(runId, 100.hours))
 
-      when(commandServiceResolver.resolveCommandService(componentId)).thenReturn(Future.successful(Some(commandService)))
+      when(resolver.resolveCommandService(componentId)).thenReturn(Future.successful(Some(commandService)))
       when(commandService.queryFinal(runId)(100.hours)).thenReturn(Future.successful(Completed(runId)))
 
       WS("/websocket-endpoint", wsClient.flow) ~> route ~> check {
@@ -82,7 +82,7 @@ class WebsocketRouteTest extends BaseTestSuite with ScalatestRouteTest with Gate
 
       val errmsg = s"No component is registered with id $componentId "
 
-      when(commandServiceResolver.resolveCommandService(componentId)).thenReturn(Future.successful(None))
+      when(resolver.resolveCommandService(componentId)).thenReturn(Future.successful(None))
 
       WS("/websocket-endpoint", wsClient.flow) ~> route ~> check {
         wsClient.sendMessage(JsonText.strictMessage(queryFinal))
@@ -106,7 +106,7 @@ class WebsocketRouteTest extends BaseTestSuite with ScalatestRouteTest with Gate
       val currentStateSubscription = mock[Subscription]
       val currentStateStream       = Source(List(currentState1, currentState2)).mapMaterializedValue(_ => currentStateSubscription)
 
-      when(commandServiceResolver.resolveCommandService(componentId)).thenReturn(Future.successful(Some(commandService)))
+      when(resolver.resolveCommandService(componentId)).thenReturn(Future.successful(Some(commandService)))
       when(commandService.subscribeCurrentState(stateNames)).thenReturn(currentStateStream)
 
       def response: CurrentState = decodeMessage[CurrentState](wsClient)
