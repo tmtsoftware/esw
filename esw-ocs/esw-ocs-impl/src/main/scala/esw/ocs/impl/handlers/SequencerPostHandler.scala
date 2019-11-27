@@ -37,7 +37,7 @@ class SequencerPostHandler(sequencerApi: SequencerApi)
     // command protocol
     case LoadSequence(sequence)          => complete(loadSequence(sequence))
     case StartSequence                   => complete(startSequence())
-    case SubmitSequence(sequence)        => complete(submit(sequence))
+    case Submit(sequence)                => complete(submit(sequence))
     case Query(runId)                    => complete(query(runId))
     case GoOnline                        => complete(goOnline())
     case GoOffline                       => complete(goOffline())

@@ -24,7 +24,7 @@ private[ocs] object SequencerPostRequest {
   final case class RemoveBreakpoint(id: Id)                             extends SequencerPostRequest
 
   // Command Protocol
-  case class SubmitSequence(sequence: Sequence)                     extends SequencerPostRequest
+  case class Submit(sequence: Sequence)                             extends SequencerPostRequest
   final case class LoadSequence(sequence: Sequence)                 extends SequencerPostRequest
   case object StartSequence                                         extends SequencerPostRequest
   case class Query(runId: Id)                                       extends SequencerPostRequest

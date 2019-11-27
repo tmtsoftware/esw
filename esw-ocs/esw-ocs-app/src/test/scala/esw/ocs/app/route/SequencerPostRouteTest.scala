@@ -232,7 +232,7 @@ class SequencerPostRouteTest extends BaseTestSuite with ScalatestRouteTest with 
       val completedResponse = Completed(Id())
       when(sequencer.submit(sequence)).thenReturn(Future.successful(completedResponse))
 
-      Post("/post-endpoint", SubmitSequence(sequence)) ~> route ~> check {
+      Post("/post-endpoint", Submit(sequence)) ~> route ~> check {
         responseAs[SubmitResponse] should ===(completedResponse)
       }
     }

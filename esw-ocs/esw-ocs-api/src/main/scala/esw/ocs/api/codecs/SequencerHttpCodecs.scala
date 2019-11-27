@@ -31,7 +31,7 @@ trait SequencerHttpCodecs extends OcsCodecs {
     @silent implicit lazy val removeBreakpointCodec: Codec[RemoveBreakpoint] = deriveCodec
 
     // command codecs
-    @silent implicit lazy val submitSequenceCodec: Codec[SubmitSequence]      = deriveCodec
+    @silent implicit lazy val submitSequenceCodec: Codec[Submit]              = deriveCodec
     @silent implicit lazy val loadSequenceCodec: Codec[LoadSequence]          = deriveCodec
     @silent implicit lazy val startSequenceCodec: Codec[StartSequence.type]   = deriveCodec
     @silent implicit lazy val queryCodec: Codec[Query]                        = deriveCodec

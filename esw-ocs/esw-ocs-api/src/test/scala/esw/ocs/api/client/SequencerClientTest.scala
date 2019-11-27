@@ -161,7 +161,7 @@ class SequencerClientTest extends BaseTestSuite with SequencerHttpCodecs {
       val sequenceResponse = Started(sequenceId)
       when(
         postClient
-          .requestResponse[SubmitResponse](argsEq(SubmitSequence(sequence)))(any[Decoder[SubmitResponse]]())
+          .requestResponse[SubmitResponse](argsEq(Submit(sequence)))(any[Decoder[SubmitResponse]]())
       ).thenReturn(Future.successful(sequenceResponse))
       sequencer.submit(sequence).futureValue should ===(sequenceResponse)
     }
@@ -176,7 +176,7 @@ class SequencerClientTest extends BaseTestSuite with SequencerHttpCodecs {
 
       when(
         postClient
-          .requestResponse[SubmitResponse](argsEq(SubmitSequence(sequence)))(any[Decoder[SubmitResponse]]())
+          .requestResponse[SubmitResponse](argsEq(Submit(sequence)))(any[Decoder[SubmitResponse]]())
       ).thenReturn(Future.successful(startedResponse))
 
       when(
