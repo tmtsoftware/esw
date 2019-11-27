@@ -7,10 +7,7 @@ import kotlinx.coroutines.coroutineScope
 
 fun <T> Optional<T>.nullable(): T? = orElse(null)
 
-interface Dsl {
-
-    suspend fun <T> par(vararg tasks: suspend () -> T): List<T> = coroutineScope {
-        val deferreds = tasks.map { async { it() } }
-        deferreds.awaitAll()
-    }
+suspend fun <T> par(vararg tasks: suspend () -> T): List<T> = coroutineScope {
+    val deferreds = tasks.map { async { it() } }
+    deferreds.awaitAll()
 }

@@ -1,4 +1,4 @@
-package esw.ocs.dsl.utils
+package esw.ocs.dsl.highlevel
 
 import esw.ocs.dsl.highlevel.LoopDsl
 import io.kotlintest.matchers.numerics.shouldBeLessThan
@@ -14,7 +14,7 @@ import kotlin.coroutines.EmptyCoroutineContext
 import kotlin.system.measureTimeMillis
 import kotlin.time.milliseconds
 
-class LoopTest : LoopDsl {
+class LoopDslTest : LoopDsl {
     override val coroutineScope: CoroutineScope = CoroutineScope(EmptyCoroutineContext)
 
     @Test

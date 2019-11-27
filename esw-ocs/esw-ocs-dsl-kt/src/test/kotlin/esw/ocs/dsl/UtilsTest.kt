@@ -1,6 +1,6 @@
-package esw.ocs.dsl.utils
+package esw.ocs.dsl
 
-import esw.ocs.dsl.Dsl
+import esw.ocs.dsl.par
 import io.kotlintest.matchers.numerics.shouldBeGreaterThan
 import io.kotlintest.matchers.numerics.shouldBeLessThan
 import io.kotlintest.shouldBe
@@ -9,7 +9,7 @@ import kotlinx.coroutines.runBlocking
 import org.junit.jupiter.api.Test
 import kotlin.system.measureTimeMillis
 
-class DslTest : Dsl {
+class UtilsTest {
 
     @Test
     fun `par should execute provided tasks concurrently and return result once all tasks finished | ESW-87`() = runBlocking {
@@ -34,6 +34,7 @@ class DslTest : Dsl {
         // because these are running concurrently, total time taken is less than 250ms and not 500ms
         timeTaken shouldBeLessThan 250
     }
+
     @Test
     fun `should execute provided tasks sequentially by default and return result once all tasks finished | ESW-88`() = runBlocking {
         suspend fun submitCommand(): Int {
@@ -53,6 +54,6 @@ class DslTest : Dsl {
 
         // the individual operation takes 100ms and we are running such 5 operations
         // because these are running concurrently, total time taken is less than 250ms and not 500ms
-        timeTaken shouldBeGreaterThan  500
+        timeTaken shouldBeGreaterThan 500
     }
 }
