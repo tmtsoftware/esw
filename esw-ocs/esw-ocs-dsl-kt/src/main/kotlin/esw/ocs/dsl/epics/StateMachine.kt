@@ -1,5 +1,6 @@
 package esw.ocs.dsl.epics
 
+import csw.params.core.generics.Parameter
 import kotlinx.coroutines.*
 import kotlin.time.Duration
 
@@ -18,10 +19,15 @@ interface FSMTopLevel {
     fun state(name: String, block: suspend FSMState.() -> Unit)
 }
 
+interface ParameterUtil {
+    fun with(params: MutableSet<Parameter<*>>?)
+}
+
 // this interface is exposed in side each state of FSM
 @FSMDslMarker
 interface FSMState {
-    fun become(state: String)
+    var params: MutableSet<Parameter<*>>?
+    fun become(state: String): ParameterUtil
     fun completeFSM()
     suspend fun on(condition: Boolean = true, body: suspend () -> Unit)
     suspend fun after(duration: Duration, body: suspend () -> Unit)
@@ -29,10 +35,13 @@ interface FSMState {
 }
 
 // Don't remove name parameter, it will used while logging.
-class StateMachineImpl(val name: String, val initialState: String, val coroutineScope: CoroutineScope) : StateMachine, FSMTopLevel, FSMState {
+class StateMachineImpl(val name: String, val initialState: String, val coroutineScope: CoroutineScope) : StateMachine, FSMTopLevel, FSMState, ParameterUtil {
+
     // fixme: Try and remove optional behavior of both variables
     private var currentState: String? = null
     private var previousState: String? = null
+
+    override var params: MutableSet<Parameter<*>>? = null
 
     //fixme : do we need to pass as receiver coroutine scope to state lambda
     private val states = mutableMapOf<String, suspend FSMState.() -> Unit>()
@@ -44,12 +53,17 @@ class StateMachineImpl(val name: String, val initialState: String, val coroutine
         states += name.toUpperCase() to block
     }
 
-    override fun become(state: String) {
+    override fun become(state: String): ParameterUtil {
         if (states.keys.any { it.equals(state, true) }) {
             previousState = currentState
             currentState = state
             refresh()
+            return this
         } else throw InvalidStateException(state)
+    }
+
+    override fun with(params: MutableSet<Parameter<*>>?) {
+        this.params = params
     }
 
     override fun start() {

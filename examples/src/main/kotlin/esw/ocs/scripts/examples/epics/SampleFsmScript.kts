@@ -1,7 +1,11 @@
 package esw.ocs.scripts.examples.epics
 
+import csw.params.core.generics.Parameter
+import csw.params.javadsl.JKeyType
 import esw.ocs.dsl.core.script
 import esw.ocs.dsl.params.booleanKey
+import esw.ocs.dsl.params.kMadd
+import esw.ocs.dsl.params.set
 import kotlinx.coroutines.delay
 
 script {
@@ -12,15 +16,20 @@ script {
         state("INIT") {
             println("INIT state")
             delay(1000)
-            publishEvent(SystemEvent("tcs", "trigger.INIT.state"))
+            val parameter: Parameter<Int> = JKeyType.IntKey().make("encoder").set(1)
+            val event = SystemEvent("tcs", "trigger.INIT.state", parameter)
+            publishEvent(event)
             on(true) {
-                become("READY")
+                become("READY").with(event.jParamSet())
             }
         }
 
         state("READY") {
-            publishEvent(SystemEvent("tcs", "trigger.READY.state"))
-            become("DONE")
+            val parameter: Parameter<Int> = JKeyType.IntKey().make("encoder").set(1)
+            val event = SystemEvent("tcs", "trigger.READY.state")
+            publishEvent(event)
+
+            become("DONE").with(event.kMadd(parameter).jParamSet())
         }
 
         state("DONE") {
