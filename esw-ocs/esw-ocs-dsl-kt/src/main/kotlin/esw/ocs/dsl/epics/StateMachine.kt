@@ -13,7 +13,7 @@ interface StateMachine : Refreshable {
     suspend fun await()
 }
 
-// this interface is exposed at top level of FSM
+// this interface is exposed at top-level of FSM
 @FSMDslMarker
 interface FSMTopLevel {
     fun state(name: String, block: suspend FSMState.(params: Params) -> Unit)
@@ -29,10 +29,9 @@ interface FSMState {
     suspend fun entry(body: suspend () -> Unit)
 }
 
-// Don't remove name parameter, it will used while logging.
-class StateMachineImpl(val name: String, val initialState: String, val coroutineScope: CoroutineScope) : StateMachine, FSMTopLevel, FSMState {
-
-    // fixme: Try and remove optional behavior of both variables
+// Don't remove name parameter, it will be used while logging.
+class StateMachineImpl(val name: String, private val initialState: String, val coroutineScope: CoroutineScope) : StateMachine, FSMTopLevel, FSMState {
+    // fixme: Try to remove optional behavior of both variables
     private var currentState: String? = null
     private var previousState: String? = null
     private var params: Params = Params(setOf())
@@ -56,17 +55,11 @@ class StateMachineImpl(val name: String, val initialState: String, val coroutine
         } else throw InvalidStateException(state)
     }
 
-    override fun start() {
-        become(initialState)
-    }
+    override fun start() = become(initialState)
 
-    override suspend fun await() {
-        fsmJob.join()
-    }
+    override suspend fun await() = fsmJob.join()
 
-    override fun completeFSM() {
-        fsmJob.cancel()
-    }
+    override fun completeFSM() = fsmJob.cancel()
 
     override fun refresh() {
         coroutineScope.launch(fsmJob) {
@@ -90,9 +83,4 @@ class StateMachineImpl(val name: String, val initialState: String, val coroutine
             body()
         }
     }
-
-    // todo: can we use generics here?
-    operator fun Int?.compareTo(other: Int?): Int =
-            if (this != null && other != null) this.compareTo(other)
-            else -1
 }
