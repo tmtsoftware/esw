@@ -5,12 +5,11 @@ import csw.params.events.Event
 import csw.params.events.ObserveEvent
 import csw.params.events.SystemEvent
 import esw.ocs.dsl.highlevel.EventServiceDsl
-import esw.ocs.dsl.params.Params
 import esw.ocs.dsl.params.first
 import esw.ocs.dsl.params.invoke
 
 interface Refreshable {
-    fun refresh(params: Params = Params(setOf()))
+    fun refresh()
 }
 
 class ProcessVariable<T> constructor(

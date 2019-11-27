@@ -37,6 +37,7 @@ class StateMachineImplTest {
     val timeout = 100.jMilliseconds
 
     var initFlag = false
+    var parameterSet = Params(setOf())
     // instantiating to not to deal with nullable
     var stateMachine = StateMachineImpl(testMachineName, invalid, coroutineScope)
 
@@ -94,20 +95,25 @@ class StateMachineImplTest {
         val parameter: Parameter<Int> = JKeyType.IntKey().make("encoder").set(1)
         val event = SystemEvent(Prefix("tcs"), EventName("trigger.INIT.state")).add(parameter)
         val expectedParamsInProgressState = Params(event.jParamSet())
-        val expectedParamsWaitingState = Params(setOf<Parameter<*>>())
 
         stateMachine.state(inProgress) { params ->
-            params shouldBe expectedParamsInProgressState
-            become(waiting)
-        }
-
-        stateMachine.state(waiting) { params ->
-            params shouldBe expectedParamsWaitingState
+            parameterSet = params
         }
 
         stateMachine.start()
 
         stateMachine.become(inProgress, Params(event.jParamSet()))
+
+        eventually(timeout) {
+            parameterSet shouldBe expectedParamsInProgressState
+        }
+
+        stateMachine.refresh()
+
+        eventually(timeout) {
+            parameterSet shouldBe expectedParamsInProgressState
+        }
+
     }
 
     @Test

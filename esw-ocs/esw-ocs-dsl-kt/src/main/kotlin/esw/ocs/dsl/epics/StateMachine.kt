@@ -35,6 +35,7 @@ class StateMachineImpl(val name: String, val initialState: String, val coroutine
     // fixme: Try and remove optional behavior of both variables
     private var currentState: String? = null
     private var previousState: String? = null
+    private var params: Params = Params(setOf())
 
     //fixme : do we need to pass as receiver coroutine scope to state lambda
     private val states = mutableMapOf<String, suspend FSMState.(params: Params) -> Unit>()
@@ -50,7 +51,8 @@ class StateMachineImpl(val name: String, val initialState: String, val coroutine
         if (states.keys.any { it.equals(state, true) }) {
             previousState = currentState
             currentState = state
-            refresh(params)
+            this.params = params
+            refresh()
         } else throw InvalidStateException(state)
     }
 
@@ -66,7 +68,7 @@ class StateMachineImpl(val name: String, val initialState: String, val coroutine
         fsmJob.cancel()
     }
 
-    override fun refresh(params: Params) {
+    override fun refresh() {
         coroutineScope.launch(fsmJob) {
             states[currentState?.toUpperCase()]?.invoke(this@StateMachineImpl, params)
         }
