@@ -9,7 +9,7 @@ import esw.ocs.api.BaseTestSuite
 import scala.collection.mutable.ArrayBuffer
 import scala.concurrent.duration.DurationDouble
 
-class JScriptDslTest extends BaseTestSuite {
+class ScriptDslTest extends BaseTestSuite {
   override implicit def patienceConfig: PatienceConfig = PatienceConfig(20.seconds)
 
   private val strandEc = StrandEc()

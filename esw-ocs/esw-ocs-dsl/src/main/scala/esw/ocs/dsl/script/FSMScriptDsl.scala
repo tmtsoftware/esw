@@ -9,43 +9,48 @@ import csw.time.core.models.UTCTime
 
 import scala.concurrent.Future
 
-private[esw] class FSMScriptDsl(override val csw: CswServices, val strandEc: StrandEc) extends ScriptDsl(csw, strandEc) {
-  protected var currentState                          = "UN_INITIALIZED"
-  protected var maybeCurrentScript: Option[ScriptDsl] = None
-  protected var stateMap                              = Map.empty[String, Supplier[ScriptDsl]]
+private[esw] class FSMScriptDsl(
+    private val csw: CswServices,
+    private val strandEc: StrandEc,
+    private val initialState: FSMScriptState
+) extends ScriptDsl(csw, strandEc) {
 
-  def become(nextState: String): Unit =
-    if (currentState != nextState) {
-      maybeCurrentScript = Some(getScript(nextState))
-      currentState = nextState
-    }
+  def this(csw: CswServices, strandEc: StrandEc) = this(csw, strandEc, FSMScriptState.init())
 
-  def add(state: String, script: Supplier[ScriptDsl]): Unit = stateMap += (state -> script)
+  private var scriptState = initialState
 
-  override def execute(command: SequenceCommand): Future[Unit] = currentScript.execute(command)
+  def become(nextState: String): Unit = {
+    scriptState = scriptState.transition(nextState)
+  }
 
-  override def executeGoOnline(): Future[Done] = currentScript.executeGoOnline().flatMap(_ => super.executeGoOnline())
+  def add(state: String, script: Supplier[ScriptDsl]): Unit = {
+    scriptState = scriptState.add(state, script)
+  }
 
-  override def executeGoOffline(): Future[Done] = currentScript.executeGoOffline().flatMap(_ => super.executeGoOffline())
+  override def execute(command: SequenceCommand): Future[Unit] =
+    scriptState.currentScript.execute(command)
 
-  override def executeShutdown(): Future[Done] = currentScript.executeShutdown().flatMap(_ => super.executeShutdown())
+  override def executeGoOnline(): Future[Done] =
+    scriptState.currentScript.executeGoOnline().flatMap(_ => super.executeGoOnline())
 
-  override def executeAbort(): Future[Done] = currentScript.executeAbort().flatMap(_ => super.executeAbort())
+  override def executeGoOffline(): Future[Done] =
+    scriptState.currentScript.executeGoOffline().flatMap(_ => super.executeGoOffline())
 
-  override def executeStop(): Future[Done] = currentScript.executeStop().flatMap(_ => super.executeStop())
+  override def executeShutdown(): Future[Done] =
+    scriptState.currentScript.executeShutdown().flatMap(_ => super.executeShutdown())
+
+  override def executeAbort(): Future[Done] =
+    scriptState.currentScript.executeAbort().flatMap(_ => super.executeAbort())
+
+  override def executeStop(): Future[Done] =
+    scriptState.currentScript.executeStop().flatMap(_ => super.executeStop())
 
   override def executeDiagnosticMode(startTime: UTCTime, hint: String): Future[Done] =
-    currentScript.executeDiagnosticMode(startTime, hint).flatMap(_ => super.executeDiagnosticMode(startTime, hint))
+    scriptState.currentScript.executeDiagnosticMode(startTime, hint).flatMap(_ => super.executeDiagnosticMode(startTime, hint))
 
   override def executeOperationsMode(): Future[Done] =
-    currentScript.executeOperationsMode().flatMap(_ => super.executeOperationsMode())
+    scriptState.currentScript.executeOperationsMode().flatMap(_ => super.executeOperationsMode())
 
   override def executeExceptionHandlers(ex: Throwable): CompletionStage[Void] =
-    currentScript.executeExceptionHandlers(ex).thenAccept(_ => super.executeExceptionHandlers(ex))
-
-  private def currentScript =
-    maybeCurrentScript.getOrElse(throw new RuntimeException("Current script handler is not initialized"))
-
-  private def getScript(state: String) =
-    stateMap.getOrElse(state, throw new RuntimeException(s"No command handlers found for state: $state")).get()
+    scriptState.currentScript.executeExceptionHandlers(ex).thenAccept(_ => super.executeExceptionHandlers(ex))
 }
