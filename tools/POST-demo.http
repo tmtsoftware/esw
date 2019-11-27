@@ -3,18 +3,21 @@ POST http://localhost:8090/post-endpoint
 Content-Type: application/json
 
 {
-  "Submit": {
+  "ComponentCommand": {
     "componentId": {
-      "name": "SampleHcd",
-      "componentType": "HCD"
+      "name": "test",
+      "componentType": "assembly"
     },
     "command": {
-      "Setup": {
-        "runId": "test-runId",
-        "source": "wfos.blue.filter",
-        "commandName": "sleep",
-        "maybeObsId": "Obs001",
-        "paramSet": []
+      "Submit": {
+        "Setup": {
+          "source": "esw.test",
+          "commandName": "c1",
+          "maybeObsId": [
+            "obsId"
+          ],
+          "paramSet": []
+        }
       }
     }
   }
@@ -25,18 +28,21 @@ POST http://localhost:8090/post-endpoint
 Content-Type: application/json
 
 {
-  "Validate": {
+  "ComponentCommand": {
     "componentId": {
-      "name": "SampleHcd",
-      "componentType": "HCD"
+      "name": "test",
+      "componentType": "assembly"
     },
     "command": {
-      "Setup": {
-        "runId": "test-runId",
-        "source": "wfos.blue.filter",
-        "commandName": "sleep",
-        "maybeObsId": "Obs001",
-        "paramSet": []
+      "Validate": {
+        "Setup": {
+          "source": "esw.test",
+          "commandName": "c1",
+          "maybeObsId": [
+            "obsId"
+          ],
+          "paramSet": []
+        }
       }
     }
   }
@@ -47,18 +53,21 @@ POST http://localhost:8090/post-endpoint
 Content-Type: application/json
 
 {
-  "Oneway": {
+  "ComponentCommand": {
     "componentId": {
-      "name": "SampleHcd",
-      "componentType": "HCD"
+      "name": "test",
+      "componentType": "assembly"
     },
     "command": {
-      "Setup": {
-        "runId": "test-runId",
-        "source": "wfos.blue.filter",
-        "commandName": "sleep",
-        "maybeObsId": "Obs001",
-        "paramSet": []
+      "Oneway": {
+        "Setup": {
+          "source": "esw.test",
+          "commandName": "c1",
+          "maybeObsId": [
+            "obsId"
+          ],
+          "paramSet": []
+        }
       }
     }
   }
