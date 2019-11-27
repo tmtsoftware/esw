@@ -63,9 +63,10 @@ lazy val `esw-ocs-impl` = project
     `esw-test-reporter` % Test
   )
 
+//todo: enable coverage
 lazy val `esw-ocs-app` = project
   .in(file("esw-ocs/esw-ocs-app"))
-  .enablePlugins(EswBuildInfo, DeployApp, MaybeCoverage)
+  .enablePlugins(EswBuildInfo, DeployApp)
   .settings(
     libraryDependencies ++= Dependencies.OcsApp.value
   )
@@ -139,9 +140,10 @@ lazy val `esw-gateway-impl` = project
   )
   .dependsOn(`esw-gateway-api`.jvm, `esw-test-reporter` % Test)
 
+//todo: enable coverage
 lazy val `esw-gateway-server` = project
   .in(file("esw-gateway/esw-gateway-server"))
-  .enablePlugins(MaybeCoverage, EswBuildInfo)
+  .enablePlugins(EswBuildInfo)
   .settings(
     libraryDependencies ++= Dependencies.EswGatewayServer.value
   )
