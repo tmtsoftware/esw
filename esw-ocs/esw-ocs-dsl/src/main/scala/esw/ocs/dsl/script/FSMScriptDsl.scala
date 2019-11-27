@@ -53,4 +53,7 @@ private[esw] class FSMScriptDsl(
 
   override def executeExceptionHandlers(ex: Throwable): CompletionStage[Void] =
     scriptState.currentScript.executeExceptionHandlers(ex).thenAccept(_ => super.executeExceptionHandlers(ex))
+
+  // for testing purpose
+  private[script] def getState = scriptState
 }
