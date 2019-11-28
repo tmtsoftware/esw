@@ -5,6 +5,7 @@ import esw.ocs.api.protocol.SequencerPostRequest._
 import esw.ocs.api.protocol.SequencerWebsocketRequest.QueryFinal
 import esw.ocs.api.protocol.{SequencerPostRequest, SequencerWebsocketRequest}
 import io.bullet.borer.Codec
+import io.bullet.borer.derivation.ArrayBasedCodecs.deriveUnaryCodec
 import io.bullet.borer.derivation.MapBasedCodecs.deriveCodec
 
 trait SequencerHttpCodecs extends OcsCodecs {
@@ -34,7 +35,7 @@ trait SequencerHttpCodecs extends OcsCodecs {
     @silent implicit lazy val submitSequenceCodec: Codec[Submit]              = deriveCodec
     @silent implicit lazy val loadSequenceCodec: Codec[LoadSequence]          = deriveCodec
     @silent implicit lazy val startSequenceCodec: Codec[StartSequence.type]   = deriveCodec
-    @silent implicit lazy val queryCodec: Codec[Query]                        = deriveCodec
+    @silent implicit lazy val queryCodec: Codec[Query]                        = deriveUnaryCodec
     @silent implicit lazy val goOnlineCodec: Codec[GoOnline.type]             = deriveCodec
     @silent implicit lazy val goOfflineCodec: Codec[GoOffline.type]           = deriveCodec
     @silent implicit lazy val operationsModeCodec: Codec[OperationsMode.type] = deriveCodec

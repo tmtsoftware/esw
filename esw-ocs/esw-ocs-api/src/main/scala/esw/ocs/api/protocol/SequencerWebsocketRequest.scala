@@ -5,7 +5,7 @@ import csw.params.core.models.Id
 
 sealed trait SequencerWebsocketRequest
 
-private[ocs] object SequencerWebsocketRequest {
-  // Sequencer Command Protocol
+// Sequencer Command Protocol
+object SequencerWebsocketRequest {
   case class QueryFinal(runId: Id, timeout: Timeout) extends SequencerWebsocketRequest
 }

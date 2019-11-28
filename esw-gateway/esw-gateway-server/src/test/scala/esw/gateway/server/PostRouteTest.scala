@@ -23,7 +23,7 @@ import esw.gateway.api.{AlarmApi, EventApi, LoggingApi}
 import esw.gateway.impl._
 import esw.gateway.server.handlers.PostHandlerImpl
 import esw.http.core.BaseTestSuite
-import esw.ocs.api.protocol.SequencerPostRequest
+import esw.ocs.api.protocol.{Ok, OkOrUnhandledResponse, SequencerPostRequest}
 import msocket.impl.Encoding.JsonText
 import msocket.impl.post.{ClientHttpCodecs, PostRouteFactory}
 import msocket.impl.{Encoding, RouteFactory}
@@ -112,10 +112,8 @@ class PostRouteTest extends BaseTestSuite with ScalatestRouteTest with GatewayCo
 
   "SequencerRoutes" must {
     "handle submit command and return started command response | ESW-250" in {
-      val componentName  = "test"
-      val componentType  = Sequencer
       val sequence       = Sequence(Setup(Prefix("esw.test"), CommandName("c1"), Some(ObsId("obsId"))))
-      val componentId    = ComponentId(componentName, componentType)
+      val componentId    = ComponentId("test", Sequencer)
       val submitRequest  = SequencerCommand(componentId, SequencerPostRequest.Submit(sequence))
       val submitResponse = Started(Id("123"))
 
@@ -128,10 +126,8 @@ class PostRouteTest extends BaseTestSuite with ScalatestRouteTest with GatewayCo
     }
 
     "handle query command and return query response | ESW-250" in {
-      val componentName = "test"
       val runId         = Id("runId")
-      val componentType = Sequencer
-      val componentId   = ComponentId(componentName, componentType)
+      val componentId   = ComponentId("test", Sequencer)
       val queryRequest  = SequencerCommand(componentId, SequencerPostRequest.Query(runId))
       val queryResponse = CommandNotAvailable(runId)
 
@@ -140,6 +136,18 @@ class PostRouteTest extends BaseTestSuite with ScalatestRouteTest with GatewayCo
 
       Post("/post-endpoint", queryRequest) ~> route ~> check {
         responseAs[CommandResponse] shouldEqual queryResponse
+      }
+    }
+
+    "handle go online command and return Ok response | ESW-250" in {
+      val componentId     = ComponentId("test", Sequencer)
+      val goOnlineRequest = SequencerCommand(componentId, SequencerPostRequest.GoOnline)
+
+      when(resolver.resolveSequencer(componentId)).thenReturn(Future.successful(Some(sequencer)))
+      when(sequencer.goOnline()).thenReturn(Future.successful(Ok))
+
+      Post("/post-endpoint", goOnlineRequest) ~> route ~> check {
+        responseAs[OkOrUnhandledResponse] shouldEqual Ok
       }
     }
   }

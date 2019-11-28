@@ -140,17 +140,16 @@ lazy val `esw-gateway-impl` = project
   )
   .dependsOn(`esw-gateway-api`.jvm, `esw-test-reporter` % Test)
 
-//todo: enable coverage
 lazy val `esw-gateway-server` = project
   .in(file("esw-gateway/esw-gateway-server"))
-  .enablePlugins(EswBuildInfo)
+  .enablePlugins(EswBuildInfo, MaybeCoverage)
   .settings(
     libraryDependencies ++= Dependencies.EswGatewayServer.value
   )
   .dependsOn(
     `esw-gateway-impl`,
     `esw-ocs-impl`,
-    `esw-http-core` % "compile->compile;test->test",
+    `esw-http-core`     % "compile->compile;test->test",
     `esw-test-reporter` % Test
   )
 
