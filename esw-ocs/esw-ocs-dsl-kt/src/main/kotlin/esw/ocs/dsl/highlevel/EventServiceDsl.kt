@@ -4,9 +4,12 @@ import akka.Done
 import akka.actor.Cancellable
 import csw.event.api.javadsl.IEventPublisher
 import csw.event.api.javadsl.IEventSubscriber
+import csw.params.core.generics.Key
 import csw.params.core.generics.Parameter
 import csw.params.core.models.Prefix
 import csw.params.events.*
+import esw.ocs.dsl.epics.ProcessVariable
+import esw.ocs.dsl.params.set
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.future.await
 import kotlinx.coroutines.future.future
@@ -45,6 +48,18 @@ interface EventServiceDsl {
 
     suspend fun getEvent(vararg eventKeys: String): Set<Event> =
             defaultSubscriber.get(eventKeys.toEventKeys()).await().toSet()
+
+    suspend fun <T> SystemVar(initial: T, eventKeyStr: String, key: Key<T>): ProcessVariable<T> {
+        val eventKey = EventKey(eventKeyStr)
+        val systemEvent = SystemEvent(eventKey.source().prefix(), eventKey.eventName().name(), key.set(initial))
+        return ProcessVariable(systemEvent, key, this)
+    }
+
+    suspend fun <T> ObserveVar(initial: T, eventKeyStr: String, key: Key<T>): ProcessVariable<T> {
+        val eventKey = EventKey(eventKeyStr)
+        val observeEvent = ObserveEvent(eventKey.source().prefix(), eventKey.eventName().name(), key.set(initial))
+        return ProcessVariable(observeEvent, key, this)
+    }
 
     private fun (Array<out String>).toEventKeys(): Set<EventKey> = map { EventKey.apply(it) }.toSet()
 }

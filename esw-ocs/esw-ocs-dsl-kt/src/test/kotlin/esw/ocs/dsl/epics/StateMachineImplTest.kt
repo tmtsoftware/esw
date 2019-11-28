@@ -31,7 +31,6 @@ class StateMachineImplTest {
 
     val init = "INIT"
     val inProgress = "INPROGRESS"
-    val waiting = "WAITING"
     val invalid = "INVALIDSTATE"
     val testMachineName = "test-state-machine"
     val timeout = 100.jMilliseconds
@@ -66,7 +65,7 @@ class StateMachineImplTest {
     }
 
     @Test
-    fun `become should transition state to given state and evaluate it | ESW-142`() = runBlocking {
+    fun `become should transition state to given state and evaluate it | ESW-142, ESW-252`() = runBlocking {
         var inProgressFlag = false
         stateMachine.state(inProgress) { inProgressFlag = true }
 
@@ -78,20 +77,20 @@ class StateMachineImplTest {
     }
 
     @Test
-    fun `become should throw exception if invalid state is given | ESW-142`() {
+    fun `become should throw exception if invalid state is given | ESW-142, ESW-252`() {
         shouldThrow<InvalidStateException> {
             stateMachine.become("INVALIDSTATE")
         }
     }
 
     @Test
-    fun `become should treat stateNames case insensitively | ESW-142`() {
+    fun `become should treat stateNames case insensitively | ESW-142, ESW-252`() {
         stateMachine.become(init.toLowerCase())
         checkInitFlag()
     }
 
     @Test
-    fun `become should be able to pass parameters to next state | ESW-142`() = runBlocking {
+    fun `become should be able to pass parameters to next state | ESW-252`() = runBlocking {
         val parameter: Parameter<Int> = JKeyType.IntKey().make("encoder").set(1)
         val event = SystemEvent(Prefix("tcs"), EventName("trigger.INIT.state")).add(parameter)
         val expectedParamsInProgressState = Params(event.jParamSet())
@@ -253,4 +252,5 @@ class StateMachineImplTest {
 
         eventually(timeout) { waitingFinished shouldBe true }
     }
+
 }

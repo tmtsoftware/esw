@@ -8,10 +8,6 @@ import esw.ocs.dsl.highlevel.EventServiceDsl
 import esw.ocs.dsl.params.first
 import esw.ocs.dsl.params.invoke
 
-interface Refreshable {
-    fun refresh()
-}
-
 class ProcessVariable<T> constructor(
         initial: Event,
         private val key: Key<T>,

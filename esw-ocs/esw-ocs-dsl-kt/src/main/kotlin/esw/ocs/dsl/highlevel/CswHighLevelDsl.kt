@@ -13,6 +13,10 @@ import csw.location.models.ComponentType
 import csw.logging.api.javadsl.ILogger
 import csw.params.core.models.Prefix
 import csw.time.scheduler.api.TimeServiceScheduler
+import esw.ocs.dsl.epics.CommandFlag
+import esw.ocs.dsl.epics.FSMTopLevel
+import esw.ocs.dsl.epics.StateMachine
+import esw.ocs.dsl.epics.StateMachineImpl
 import esw.ocs.dsl.jdk.SuspendToJavaConverter
 import esw.ocs.dsl.script.CswServices
 import esw.ocs.dsl.script.StrandEc
@@ -20,7 +24,7 @@ import esw.ocs.dsl.sequence_manager.LocationServiceUtil
 import kotlinx.coroutines.CoroutineScope
 
 abstract class CswHighLevelDsl(private val cswServices: CswServices) : EventServiceDsl, TimeServiceDsl, CommandServiceDsl,
-        ConfigServiceDsl, AlarmServiceDsl, LoopDsl, SuspendToJavaConverter, LoggingDsl, DatabaseServiceDsl, FSMDsl {
+        ConfigServiceDsl, AlarmServiceDsl, LoopDsl, SuspendToJavaConverter, LoggingDsl, DatabaseServiceDsl {
     abstract val strandEc: StrandEc
     abstract override val coroutineScope: CoroutineScope
 
@@ -54,4 +58,11 @@ abstract class CswHighLevelDsl(private val cswServices: CswServices) : EventServ
     fun Assembly(name: String): RichComponent = richComponent(name, JComponentType.Assembly())
     fun HCD(name: String): RichComponent = richComponent(name, JComponentType.HCD())
     fun Sequencer(sequencerId: String, observingMode: String): RichSequencer = richSequencer(sequencerId, observingMode)
+
+    /************* FSM helpers **********/
+    suspend fun FSM(name: String, initState: String, block: suspend FSMTopLevel.() -> Unit): StateMachine =
+            StateMachineImpl(name, initState, coroutineScope).apply { block() }
+
+    fun commandFlag() = CommandFlag()
+
 }
