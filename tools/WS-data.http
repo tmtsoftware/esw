@@ -2,16 +2,55 @@
 GET http://localhost:8090/websocket-endpoint
 Content-Type: application/json
 
-{"QueryFinal": {"componentId": {"name": "SampleHcd", "componentType": "HCD"}, "runId": "test-runId"}}
+{
+  "ComponentCommand": {
+    "componentId": {
+      "name": "test",
+      "componentType": "assembly"
+    },
+    "command": {
+      "QueryFinal": {
+        "runId": "123",
+        "timeout": [
+          100,
+          "HOURS"
+        ]
+      }
+    }
+  }
+}
 
 ### subscribeCurrentState
 GET http://localhost:8090/websocket-endpoint
 Content-Type: application/json
 
-{"SubscribeCurrentState": {"componentId": {"name": "SampleHcd", "componentType": "HCD"}, "stateNames": ["stateName1"], "maxFrequency": 2}}
+{
+  "ComponentCommand": {
+    "componentId": {
+      "name": "test",
+      "componentType": "assembly"
+    },
+    "command": {
+      "SubscribeCurrentState": [
+        "stateName1",
+        "stateName2"
+      ]
+    }
+  }
+}
 
 ### subscribe
 GET http://localhost:8090/websocket-endpoint
 Content-Type: application/json
 
-{"Subscribe": {"eventKeys": [{"source": "wfos.blue.filter", "eventName": "filter_wheel"}], "maxFrequency": 2}}
+{
+  "Subscribe": {
+    "eventKeys": [
+      {
+        "source": "wfos.blue.filter",
+        "eventName": "filter_wheel"
+      }
+    ],
+    "maxFrequency": 2
+  }
+}

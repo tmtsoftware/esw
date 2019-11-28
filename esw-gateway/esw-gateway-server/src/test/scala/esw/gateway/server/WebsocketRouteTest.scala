@@ -6,11 +6,12 @@ import akka.actor.typed.scaladsl.adapter.ClassicActorSystemOps
 import akka.http.scaladsl.model.ws.{BinaryMessage, TextMessage}
 import akka.http.scaladsl.testkit.{ScalatestRouteTest, WSProbe}
 import akka.stream.scaladsl.Source
+import akka.util.Timeout
 import csw.command.api.messages.CommandServiceWebsocketMessage.{QueryFinal, SubscribeCurrentState}
 import csw.event.api.scaladsl.EventSubscription
 import csw.event.api.scaladsl.SubscriptionModes.RateLimiterMode
 import csw.location.models.ComponentId
-import csw.location.models.ComponentType.Assembly
+import csw.location.models.ComponentType.{Assembly, Sequencer}
 import csw.params.commands.CommandResponse.{Completed, SubmitResponse}
 import csw.params.core.models.Subsystem.TCS
 import csw.params.core.models.{Id, Prefix}
@@ -18,11 +19,12 @@ import csw.params.core.states.{CurrentState, StateName}
 import csw.params.events.{Event, EventKey, EventName, ObserveEvent}
 import esw.gateway.api.EventApi
 import esw.gateway.api.codecs.GatewayCodecs
-import esw.gateway.api.protocol.WebsocketRequest.{ComponentCommand, Subscribe, SubscribeWithPattern}
+import esw.gateway.api.protocol.WebsocketRequest.{ComponentCommand, SequencerCommand, Subscribe, SubscribeWithPattern}
 import esw.gateway.api.protocol._
 import esw.gateway.impl.EventImpl
 import esw.gateway.server.handlers.WebsocketHandlerImpl
 import esw.http.core.BaseTestSuite
+import esw.ocs.api.protocol.SequencerWebsocketRequest
 import io.bullet.borer.Decoder
 import msocket.api.models.{MSocketErrorFrame, Subscription}
 import msocket.impl.Encoding.{CborBinary, JsonText}
@@ -46,14 +48,14 @@ class WebsocketRouteTest extends BaseTestSuite with ScalatestRouteTest with Gate
   implicit val typedSystem: ActorSystem[_]             = system.toTyped
 
   private val eventApi: EventApi                          = new EventImpl(eventService, eventSubscriberUtil)
-  private def websocketHandlerImpl(encoding: Encoding[_]) = new WebsocketHandlerImpl(commandServiceResolver, eventApi, encoding)
+  private def websocketHandlerImpl(encoding: Encoding[_]) = new WebsocketHandlerImpl(resolver, eventApi, encoding)
   private val route                                       = RouteFactory.combine(new WebsocketRouteFactory("websocket-endpoint", websocketHandlerImpl))
 
   override def beforeEach(): Unit = {
     wsClient = WSProbe()
   }
 
-  "QueryFinal" must {
+  "QueryFinal for Component" must {
 
     "return SubmitResponse for a command | ESW-100, ESW-216" in {
       val componentName = "test"
@@ -62,7 +64,7 @@ class WebsocketRouteTest extends BaseTestSuite with ScalatestRouteTest with Gate
       val componentId   = ComponentId(componentName, componentType)
       val queryFinal    = ComponentCommand(componentId, QueryFinal(runId, 100.hours))
 
-      when(commandServiceResolver.resolve(componentId)).thenReturn(Future.successful(Some(commandService)))
+      when(resolver.resolveComponent(componentId)).thenReturn(Future.successful(Some(commandService)))
       when(commandService.queryFinal(runId)(100.hours)).thenReturn(Future.successful(Completed(runId)))
 
       WS("/websocket-endpoint", wsClient.flow) ~> route ~> check {
@@ -82,13 +84,35 @@ class WebsocketRouteTest extends BaseTestSuite with ScalatestRouteTest with Gate
 
       val errmsg = s"No component is registered with id $componentId "
 
-      when(commandServiceResolver.resolve(componentId)).thenReturn(Future.successful(None))
+      when(resolver.resolveComponent(componentId)).thenReturn(Future.successful(None))
 
       WS("/websocket-endpoint", wsClient.flow) ~> route ~> check {
         wsClient.sendMessage(JsonText.strictMessage(queryFinal))
         isWebSocketUpgrade shouldBe true
         val response = decodeMessage[MSocketErrorFrame](wsClient).`stream-error`
         response shouldEqual InvalidComponent(errmsg).toStreamError
+      }
+    }
+  }
+
+  "QueryFinal for Sequencer" must {
+
+    "return SubmitResponse for sequence | ESW-250" in {
+      val sequenceId                = Id()
+      val componentId               = ComponentId("test", Sequencer)
+      implicit val timeout: Timeout = Timeout(10.seconds)
+
+      val queryFinalRequest  = SequencerCommand(componentId, SequencerWebsocketRequest.QueryFinal(sequenceId, timeout))
+      val queryFinalResponse = Completed(sequenceId)
+
+      when(resolver.resolveSequencer(componentId)).thenReturn(Future.successful(Some(sequencer)))
+      when(sequencer.queryFinal(sequenceId)).thenReturn(Future.successful(queryFinalResponse))
+
+      WS("/websocket-endpoint", wsClient.flow) ~> route ~> check {
+        wsClient.sendMessage(JsonText.strictMessage(queryFinalRequest))
+        isWebSocketUpgrade shouldBe true
+        val response = decodeMessage[SubmitResponse](wsClient)
+        response shouldEqual queryFinalResponse
       }
     }
   }
@@ -106,7 +130,7 @@ class WebsocketRouteTest extends BaseTestSuite with ScalatestRouteTest with Gate
       val currentStateSubscription = mock[Subscription]
       val currentStateStream       = Source(List(currentState1, currentState2)).mapMaterializedValue(_ => currentStateSubscription)
 
-      when(commandServiceResolver.resolve(componentId)).thenReturn(Future.successful(Some(commandService)))
+      when(resolver.resolveComponent(componentId)).thenReturn(Future.successful(Some(commandService)))
       when(commandService.subscribeCurrentState(stateNames)).thenReturn(currentStateStream)
 
       def response: CurrentState = decodeMessage[CurrentState](wsClient)

@@ -30,15 +30,15 @@ import esw.http.core.wiring.{ActorRuntime, CswWiring, HttpService, Settings}
 import esw.ocs.api.codecs.SequencerHttpCodecs
 import esw.ocs.api.models.SequencerInsight
 import esw.ocs.api.protocol.ScriptError
-import esw.ocs.app.route.{SequencerPostHandlerImpl, SequencerWebsocketHandlerImpl}
 import esw.ocs.dsl.script.utils.{LockUnlockUtil, ScriptLoader}
 import esw.ocs.dsl.script.{CswServices, ScriptDsl}
 import esw.ocs.dsl.sequence_manager.LocationServiceUtil
+import esw.ocs.handler.{SequencerPostHandler, SequencerWebsocketHandler}
 import esw.ocs.impl.core._
 import esw.ocs.impl.internal.{SequencerServer, Timeouts}
 import esw.ocs.impl.messages.SequencerMessages.Shutdown
 import esw.ocs.impl.syntax.FutureSyntax.FutureOps
-import esw.ocs.impl.{SequencerAdminFactoryImpl, SequencerAdminImpl}
+import esw.ocs.impl.{SequencerActorProxy, SequencerActorProxyFactory}
 import msocket.impl.post.PostRouteFactory
 import msocket.impl.ws.WebsocketRouteFactory
 import msocket.impl.{Encoding, RouteFactory}
@@ -72,8 +72,8 @@ private[ocs] class SequencerWiring(val packageId: String, val observingMode: Str
   private lazy val componentId             = ComponentId(sequencerName, ComponentType.Sequencer)
   private lazy val script: ScriptDsl       = ScriptLoader.loadKotlinScript(scriptClass, cswServices)
 
-  lazy private val locationServiceUtil = new LocationServiceUtil(locationService)
-  lazy private val adminFactory        = new SequencerAdminFactoryImpl(locationServiceUtil, insightSource)
+  lazy private val locationServiceUtil   = new LocationServiceUtil(locationService)
+  lazy private val sequencerProxyFactory = new SequencerActorProxyFactory(locationServiceUtil, insightSource)
 
   lazy val (insightRef, insightSource) = ActorSource
     .actorRef[SequencerInsight](
@@ -107,16 +107,16 @@ private[ocs] class SequencerWiring(val packageId: String, val observingMode: Str
     jLocationService,
     jEventService,
     timeServiceSchedulerFactory,
-    adminFactory,
+    sequencerProxyFactory.jMake,
     databaseServiceFactory,
     lockUnlockUtil,
     jConfigClientService,
     jAlarmService
   )
 
-  private lazy val adminApi                                  = new SequencerAdminImpl(sequencerRef, insightSource)
-  private lazy val postHandler                               = new SequencerPostHandlerImpl(adminApi)
-  private def websocketHandlerFactory(encoding: Encoding[_]) = new SequencerWebsocketHandlerImpl(adminApi, encoding)
+  private lazy val sequencerApi                              = new SequencerActorProxy(sequencerRef, insightSource)
+  private lazy val postHandler                               = new SequencerPostHandler(sequencerApi)
+  private def websocketHandlerFactory(encoding: Encoding[_]) = new SequencerWebsocketHandler(sequencerApi, encoding)
 
   lazy val routes: Route = RouteFactory.combine(
     new PostRouteFactory("post-endpoint", postHandler),

@@ -11,7 +11,7 @@ import csw.params.events.{Event, EventKey, SystemEvent}
 import csw.testkit.scaladsl.CSWService.EventServer
 import csw.time.core.models.UTCTime
 import esw.ocs.api.protocol._
-import esw.ocs.impl.SequencerAdminImpl
+import esw.ocs.impl.SequencerActorProxy
 import esw.ocs.impl.messages.SequencerMessages._
 import esw.ocs.testkit.EswTestKit
 import org.scalatest.prop.TableDrivenPropertyChecks._
@@ -63,8 +63,8 @@ class ExceptionsHandlerIntegrationTest extends EswTestKit(EventServer) {
 
     forAll(inProgressStateTestCases) { (msg, reason) =>
       s"invoke exception handler when $reason | ESW-139" in {
-        val sequencerRef   = spawnSequencerRef(ocsPackageId, ocsObservingMode)
-        val sequencerAdmin = new SequencerAdminImpl(sequencerRef, Source.empty)
+        val sequencerRef = spawnSequencerRef(ocsPackageId, ocsObservingMode)
+        val sequencer    = new SequencerActorProxy(sequencerRef, Source.empty)
 
         val eventKey = EventKey("tcs." + reason)
         val probe    = createProbeFor(eventKey)
@@ -73,9 +73,9 @@ class ExceptionsHandlerIntegrationTest extends EswTestKit(EventServer) {
         val command1                 = Setup(Prefix("TCS"), CommandName("successful-command"), None)
         val longRunningSetupSequence = Sequence(longRunningSetupCommand, command1)
 
-        sequencerAdmin.submit(longRunningSetupSequence)
+        sequencer.submit(longRunningSetupSequence)
         // Pause sequence so it will remain in InProgress state and then other inProgressState msgs can be processed
-        sequencerAdmin.pause
+        sequencer.pause
         sequencerRef ! msg
 
         assertReason(probe, reason)
@@ -86,8 +86,8 @@ class ExceptionsHandlerIntegrationTest extends EswTestKit(EventServer) {
   "Script2" must {
 
     "invoke exception handlers when exception is thrown from handler and must fail the command with message of given exception | ESW-139" in {
-      val sequencerRef   = spawnSequencerRef(ocsPackageId, ocsObservingMode)
-      val sequencerAdmin = new SequencerAdminImpl(sequencerRef, Source.empty)
+      val sequencerRef = spawnSequencerRef(ocsPackageId, ocsObservingMode)
+      val sequencer    = new SequencerActorProxy(sequencerRef, Source.empty)
 
       val command  = Setup(Prefix("TCS"), CommandName("fail-setup"), None)
       val sequence = Sequence(Seq(command))
@@ -97,7 +97,7 @@ class ExceptionsHandlerIntegrationTest extends EswTestKit(EventServer) {
 
       val testProbe = createProbeFor(eventKey)
 
-      val submitResponseF = sequencerAdmin.submitAndWait(sequence)
+      val submitResponseF = sequencer.submitAndWait(sequence)
       val error           = submitResponseF.futureValue.asInstanceOf[CommandResponse.Error]
       error.message.contains(commandFailureMsg) shouldBe true
 
@@ -109,7 +109,7 @@ class ExceptionsHandlerIntegrationTest extends EswTestKit(EventServer) {
       val command1  = Setup(Prefix("TCS"), CommandName("successful-command"), None)
       val sequence1 = Sequence(Seq(command1))
 
-      sequencerAdmin.submitAndWait(sequence1).futureValue shouldBe a[Completed]
+      sequencer.submitAndWait(sequence1).futureValue shouldBe a[Completed]
     }
 
     "invoke exception handler when handle-goOnline-failed | ESW-139" in {
@@ -117,11 +117,11 @@ class ExceptionsHandlerIntegrationTest extends EswTestKit(EventServer) {
       val eventKey  = EventKey("tcs." + reason)
       val testProbe = createProbeFor(eventKey)
 
-      val sequencerRef   = spawnSequencerRef(tcsPackageId, tcsObservingMode)
-      val sequencerAdmin = new SequencerAdminImpl(sequencerRef, Source.empty)
+      val sequencerRef = spawnSequencerRef(tcsPackageId, tcsObservingMode)
+      val sequencer    = new SequencerActorProxy(sequencerRef, Source.empty)
 
-      sequencerAdmin.goOffline().awaitResult
-      sequencerAdmin.goOnline()
+      sequencer.goOffline().awaitResult
+      sequencer.goOnline()
 
       assertReason(testProbe, reason)
     }

@@ -5,14 +5,15 @@ import esw.ocs.api.protocol.SequencerPostRequest._
 import esw.ocs.api.protocol.SequencerWebsocketRequest.{GetInsights, QueryFinal}
 import esw.ocs.api.protocol.{SequencerPostRequest, SequencerWebsocketRequest}
 import io.bullet.borer.Codec
+import io.bullet.borer.derivation.ArrayBasedCodecs.deriveUnaryCodec
 import io.bullet.borer.derivation.MapBasedCodecs.deriveCodec
 
 trait SequencerHttpCodecs extends OcsCodecs {
   import msocket.api.codecs.BasicCodecs._
-  implicit def sequencerAdminPostRequestCodec[T <: SequencerPostRequest]: Codec[T] =
-    sequencerAdminPostRequestValue.asInstanceOf[Codec[T]]
+  implicit def sequencerPostRequestCodec[T <: SequencerPostRequest]: Codec[T] =
+    sequencerPostRequestValue.asInstanceOf[Codec[T]]
 
-  lazy val sequencerAdminPostRequestValue: Codec[SequencerPostRequest] = {
+  lazy val sequencerPostRequestValue: Codec[SequencerPostRequest] = {
     // admin codecs
     @silent implicit lazy val getSequenceCodec: Codec[GetSequence.type]      = deriveCodec
     @silent implicit lazy val isAvailableCodec: Codec[IsAvailable.type]      = deriveCodec
@@ -31,10 +32,10 @@ trait SequencerHttpCodecs extends OcsCodecs {
     @silent implicit lazy val removeBreakpointCodec: Codec[RemoveBreakpoint] = deriveCodec
 
     // command codecs
-    @silent implicit lazy val submitSequenceCodec: Codec[SubmitSequence]      = deriveCodec
+    @silent implicit lazy val submitSequenceCodec: Codec[Submit]              = deriveCodec
     @silent implicit lazy val loadSequenceCodec: Codec[LoadSequence]          = deriveCodec
     @silent implicit lazy val startSequenceCodec: Codec[StartSequence.type]   = deriveCodec
-    @silent implicit lazy val queryCodec: Codec[Query]                        = deriveCodec
+    @silent implicit lazy val queryCodec: Codec[Query]                        = deriveUnaryCodec
     @silent implicit lazy val goOnlineCodec: Codec[GoOnline.type]             = deriveCodec
     @silent implicit lazy val goOfflineCodec: Codec[GoOffline.type]           = deriveCodec
     @silent implicit lazy val operationsModeCodec: Codec[OperationsMode.type] = deriveCodec

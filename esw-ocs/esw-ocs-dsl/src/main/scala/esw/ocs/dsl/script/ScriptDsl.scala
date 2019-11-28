@@ -16,7 +16,7 @@ import scala.compat.java8.FutureConverters.{CompletionStageOps, FutureOps}
 import scala.concurrent.{ExecutionContext, Future}
 import scala.reflect.ClassTag
 
-private[esw] class ScriptDsl(val csw: CswServices, strandEc: StrandEc) {
+private[esw] class ScriptDsl(private val csw: CswServices, private val strandEc: StrandEc) {
   protected implicit lazy val toEc: ExecutionContext = strandEc.ec
 
   var isOnline = true

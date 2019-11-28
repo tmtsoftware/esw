@@ -1,5 +1,12 @@
 package esw.ocs.dsl.epics
 
+import csw.params.core.generics.Parameter
+import csw.params.core.models.Prefix
+import csw.params.events.EventName
+import csw.params.events.SystemEvent
+import csw.params.javadsl.JKeyType
+import esw.ocs.dsl.params.Params
+import esw.ocs.dsl.params.set
 import esw.ocs.dsl.script.StrandEc
 import io.kotlintest.eventually
 import io.kotlintest.shouldBe
@@ -29,6 +36,7 @@ class StateMachineImplTest {
     val timeout = 100.jMilliseconds
 
     var initFlag = false
+    var parameterSet = Params(setOf())
     // instantiating to not to deal with nullable
     var stateMachine = StateMachineImpl(testMachineName, invalid, coroutineScope)
 
@@ -57,7 +65,7 @@ class StateMachineImplTest {
     }
 
     @Test
-    fun `become should transition state to given state and evaluate it | ESW-142`() = runBlocking {
+    fun `become should transition state to given state and evaluate it | ESW-142, ESW-252`() = runBlocking {
         var inProgressFlag = false
         stateMachine.state(inProgress) { inProgressFlag = true }
 
@@ -69,16 +77,42 @@ class StateMachineImplTest {
     }
 
     @Test
-    fun `become should throw exception if invalid state is given | ESW-142`() {
+    fun `become should throw exception if invalid state is given | ESW-142, ESW-252`() {
         shouldThrow<InvalidStateException> {
             stateMachine.become("INVALIDSTATE")
         }
     }
 
     @Test
-    fun `become should treat stateNames case insensitively | ESW-142`() {
+    fun `become should treat stateNames case insensitively | ESW-142, ESW-252`() {
         stateMachine.become(init.toLowerCase())
         checkInitFlag()
+    }
+
+    @Test
+    fun `become should be able to pass parameters to next state | ESW-252`() = runBlocking {
+        val parameter: Parameter<Int> = JKeyType.IntKey().make("encoder").set(1)
+        val event = SystemEvent(Prefix("tcs"), EventName("trigger.INIT.state")).add(parameter)
+        val expectedParamsInProgressState = Params(event.jParamSet())
+
+        stateMachine.state(inProgress) { params ->
+            parameterSet = params
+        }
+
+        stateMachine.start()
+
+        stateMachine.become(inProgress, Params(event.jParamSet()))
+
+        eventually(timeout) {
+            parameterSet shouldBe expectedParamsInProgressState
+        }
+
+        stateMachine.refresh()
+
+        eventually(timeout) {
+            parameterSet shouldBe expectedParamsInProgressState
+        }
+
     }
 
     @Test
@@ -218,4 +252,5 @@ class StateMachineImplTest {
 
         eventually(timeout) { waitingFinished shouldBe true }
     }
+
 }

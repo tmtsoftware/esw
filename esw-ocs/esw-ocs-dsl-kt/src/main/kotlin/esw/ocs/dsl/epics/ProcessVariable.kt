@@ -5,12 +5,8 @@ import csw.params.events.Event
 import csw.params.events.ObserveEvent
 import csw.params.events.SystemEvent
 import esw.ocs.dsl.highlevel.EventServiceDsl
-import esw.ocs.dsl.nullable
-import esw.ocs.dsl.params.set
-
-interface Refreshable {
-    fun refresh()
-}
+import esw.ocs.dsl.params.first
+import esw.ocs.dsl.params.invoke
 
 class ProcessVariable<T> constructor(
         initial: Event,
@@ -19,10 +15,10 @@ class ProcessVariable<T> constructor(
 ) {
     private val eventKey: String = initial.eventKey().key()
     private var latestEvent: Event = initial
-    private val subscribers: Set<Refreshable> = mutableSetOf()
+    private val subscribers: MutableSet<Refreshable> = mutableSetOf()
 
     suspend fun bind(refreshable: Refreshable) {
-        subscribers + refreshable
+        subscribers.add(refreshable)
         if (subscribers.size == 1) startSubscription()
     }
 
@@ -36,7 +32,9 @@ class ProcessVariable<T> constructor(
         eventService.publishEvent(latestEvent)
     }
 
-    fun get(): T? = latestEvent.paramType().jGet(key).nullable()?.jGet(0)?.nullable()
+    // extract first value from a parameter against provided key from param set
+    // if not present, throw an exception
+    fun get(): T = (latestEvent.paramType())(key).first
 
     private suspend fun startSubscription() =
             eventService.onEvent(eventKey) { event ->

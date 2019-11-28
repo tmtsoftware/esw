@@ -8,8 +8,9 @@ import csw.event.api.scaladsl.{EventPublisher, EventService, EventSubscriber}
 import csw.event.client.internal.commons.EventSubscriberUtil
 import csw.logging.api.scaladsl.Logger
 import esw.gateway.impl.LoggerCache
-import esw.gateway.server.utils.CommandServiceResolver
+import esw.gateway.server.utils.Resolver
 import esw.http.core.wiring.CswWiring
+import esw.ocs.api.SequencerApi
 import org.mockito.ArgumentMatchers.any
 import org.mockito.MockitoSugar._
 
@@ -24,8 +25,9 @@ class CswWiringMocks() {
   when(loggerCache.get(any[String])).thenReturn(logger)
 
   //command service mocks
-  val commandServiceResolver: CommandServiceResolver = mock[CommandServiceResolver]
-  val commandService: CommandService                 = mock[CommandService]
+  val resolver: Resolver             = mock[Resolver]
+  val commandService: CommandService = mock[CommandService]
+  val sequencer: SequencerApi        = mock[SequencerApi]
 
   //alarm service mocks
   val alarmService: AlarmAdminService = mock[AlarmAdminService]

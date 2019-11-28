@@ -9,7 +9,7 @@ import esw.gateway.api.protocol.{PostRequest, WebsocketRequest}
 import esw.gateway.api.{AlarmApi, EventApi, LoggingApi}
 import esw.gateway.impl._
 import esw.gateway.server.handlers.{PostHandlerImpl, WebsocketHandlerImpl}
-import esw.gateway.server.utils.CommandServiceResolver
+import esw.gateway.server.utils.Resolver
 import esw.http.core.wiring.{HttpService, ServerWiring}
 import msocket.api.MessageHandler
 import msocket.impl.post.PostRouteFactory
@@ -22,16 +22,16 @@ class GatewayWiring(_port: Option[Int]) extends GatewayCodecs {
   import cswWiring._
   import cswWiring.actorRuntime.{ec, typedSystem}
 
-  private val commandServiceResolver = new CommandServiceResolver(locationService)(actorSystem)
+  private val resolver = new Resolver(locationService, )(actorSystem)
 
   lazy val alarmApi: AlarmApi     = new AlarmImpl(alarmService)
   lazy val eventApi: EventApi     = new EventImpl(eventService, eventSubscriberUtil)
   lazy val loggingApi: LoggingApi = new LoggingImpl(new LoggerCache)
 
   lazy val postHandler: MessageHandler[PostRequest, Route] =
-    new PostHandlerImpl(alarmApi, commandServiceResolver, eventApi, loggingApi)
+    new PostHandlerImpl(alarmApi, resolver, eventApi, loggingApi)
   def websocketHandlerFactory(encoding: Encoding[_]): MessageHandler[WebsocketRequest, Source[Message, NotUsed]] =
-    new WebsocketHandlerImpl(commandServiceResolver, eventApi, encoding)
+    new WebsocketHandlerImpl(resolver, eventApi, encoding)
 
   lazy val routes: Route = RouteFactory.combine(
     new PostRouteFactory("post-endpoint", postHandler),

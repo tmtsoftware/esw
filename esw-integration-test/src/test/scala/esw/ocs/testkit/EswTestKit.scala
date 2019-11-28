@@ -13,10 +13,10 @@ import csw.location.models.Connection.{AkkaConnection, HttpConnection}
 import csw.location.models.{AkkaLocation, ComponentId, ComponentType}
 import csw.params.core.models.Subsystem
 import csw.testkit.scaladsl.{CSWService, ScalaTestFrameworkTestKit}
-import esw.ocs.api.client.SequencerAdminClient
+import esw.ocs.api.client.SequencerClient
 import esw.ocs.api.protocol.ScriptError
 import esw.ocs.app.wiring.{SequenceComponentWiring, SequencerWiring}
-import esw.ocs.impl.SequencerAdminClientFactory
+import esw.ocs.impl.SequencerClientFactory
 import esw.ocs.impl.messages.SequenceComponentMsg
 import msocket.impl.Encoding.JsonText
 
@@ -83,11 +83,11 @@ abstract class EswTestKit(services: CSWService*) extends ScalaTestFrameworkTestK
     locationService.resolve(HttpConnection(componentId), 5.seconds).futureValue.get.uri
   }
 
-  def sequencerAdminClient(packageId: String, observingMode: String): SequencerAdminClient = {
+  def sequencerClient(packageId: String, observingMode: String): SequencerClient = {
     val uri     = resolveSequencerHttp(packageId, observingMode)
     val postUrl = s"${uri.toString}post-endpoint"
     val wsUrl   = s"ws://${uri.getHost}:${uri.getPort}/websocket-endpoint"
-    SequencerAdminClientFactory.make(postUrl, wsUrl, JsonText, () => None)
+    SequencerClientFactory.make(postUrl, wsUrl, JsonText, () => None)
   }
 
   def resolveSequencerLocation(sequencerName: String): AkkaLocation =

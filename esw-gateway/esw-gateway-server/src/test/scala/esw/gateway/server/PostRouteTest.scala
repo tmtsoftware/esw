@@ -9,11 +9,11 @@ import csw.alarm.models.Key.AlarmKey
 import csw.command.api.messages.CommandServiceHttpMessage.{Oneway, Submit, Validate}
 import csw.event.api.exceptions.{EventServerNotAvailable, PublishFailure}
 import csw.location.models.ComponentId
-import csw.location.models.ComponentType.Assembly
+import csw.location.models.ComponentType.{Assembly, Sequencer}
 import csw.logging.macros.SourceFactory
 import csw.logging.models.{AnyId, Level}
-import csw.params.commands.CommandResponse.{Accepted, Started}
-import csw.params.commands.{CommandName, CommandResponse, Setup}
+import csw.params.commands.CommandResponse.{Accepted, CommandNotAvailable, Started}
+import csw.params.commands.{CommandName, CommandResponse, Sequence, Setup}
 import csw.params.core.models.{Id, ObsId, Prefix, Subsystem}
 import csw.params.events.{Event, EventKey, EventName, SystemEvent}
 import esw.gateway.api.codecs.GatewayCodecs
@@ -23,6 +23,7 @@ import esw.gateway.api.{AlarmApi, EventApi, LoggingApi}
 import esw.gateway.impl._
 import esw.gateway.server.handlers.PostHandlerImpl
 import esw.http.core.BaseTestSuite
+import esw.ocs.api.protocol.{Ok, OkOrUnhandledResponse, SequencerPostRequest}
 import msocket.impl.Encoding.JsonText
 import msocket.impl.post.{ClientHttpCodecs, PostRouteFactory}
 import msocket.impl.{Encoding, RouteFactory}
@@ -42,7 +43,7 @@ class PostRouteTest extends BaseTestSuite with ScalatestRouteTest with GatewayCo
   private val alarmApi: AlarmApi     = new AlarmImpl(alarmService)
   private val eventApi: EventApi     = new EventImpl(eventService, eventSubscriberUtil)
   private val loggingApi: LoggingApi = new LoggingImpl(loggerCache)
-  private val postHandlerImpl        = new PostHandlerImpl(alarmApi, commandServiceResolver, eventApi, loggingApi)
+  private val postHandlerImpl        = new PostHandlerImpl(alarmApi, resolver, eventApi, loggingApi)
   private val route                  = RouteFactory.combine(new PostRouteFactory("post-endpoint", postHandlerImpl))
 
   "Submit Command" must {
@@ -54,7 +55,7 @@ class PostRouteTest extends BaseTestSuite with ScalatestRouteTest with GatewayCo
       val componentId   = ComponentId(componentName, componentType)
       val submitRequest = ComponentCommand(componentId, Submit(command))
 
-      when(commandServiceResolver.resolve(componentId)).thenReturn(Future.successful(Some(commandService)))
+      when(resolver.resolveComponent(componentId)).thenReturn(Future.successful(Some(commandService)))
       when(commandService.submit(command)).thenReturn(Future.successful(Started(runId)))
 
       Post("/post-endpoint", submitRequest) ~> route ~> check {
@@ -70,7 +71,7 @@ class PostRouteTest extends BaseTestSuite with ScalatestRouteTest with GatewayCo
       val componentId     = ComponentId(componentName, componentType)
       val validateRequest = ComponentCommand(componentId, Validate(command))
 
-      when(commandServiceResolver.resolve(componentId)).thenReturn(Future.successful(Some(commandService)))
+      when(resolver.resolveComponent(componentId)).thenReturn(Future.successful(Some(commandService)))
       when(commandService.validate(command)).thenReturn(Future.successful(Accepted(runId)))
 
       Post("/post-endpoint", validateRequest) ~> route ~> check {
@@ -86,7 +87,7 @@ class PostRouteTest extends BaseTestSuite with ScalatestRouteTest with GatewayCo
       val componentId   = ComponentId(componentName, componentType)
       val onewayRequest = ComponentCommand(componentId, Oneway(command))
 
-      when(commandServiceResolver.resolve(componentId)).thenReturn(Future.successful(Some(commandService)))
+      when(resolver.resolveComponent(componentId)).thenReturn(Future.successful(Some(commandService)))
       when(commandService.oneway(command)).thenReturn(Future.successful(Accepted(runId)))
 
       Post("/post-endpoint", onewayRequest) ~> route ~> check {
@@ -101,10 +102,52 @@ class PostRouteTest extends BaseTestSuite with ScalatestRouteTest with GatewayCo
       val componentId   = ComponentId(componentName, componentType)
       val submitRequest = ComponentCommand(componentId, Submit(command))
 
-      when(commandServiceResolver.resolve(componentId)).thenReturn(Future.successful(None))
+      when(resolver.resolveComponent(componentId)).thenReturn(Future.successful(None))
 
       Post("/post-endpoint", submitRequest) ~> route ~> check {
         status shouldEqual StatusCodes.BadRequest
+      }
+    }
+  }
+
+  "SequencerRoutes" must {
+    "handle submit command and return started command response | ESW-250" in {
+      val sequence       = Sequence(Setup(Prefix("esw.test"), CommandName("c1"), Some(ObsId("obsId"))))
+      val componentId    = ComponentId("test", Sequencer)
+      val submitRequest  = SequencerCommand(componentId, SequencerPostRequest.Submit(sequence))
+      val submitResponse = Started(Id("123"))
+
+      when(resolver.resolveSequencer(componentId)).thenReturn(Future.successful(Some(sequencer)))
+      when(sequencer.submit(sequence)).thenReturn(Future.successful(submitResponse))
+
+      Post("/post-endpoint", submitRequest) ~> route ~> check {
+        responseAs[CommandResponse] shouldEqual submitResponse
+      }
+    }
+
+    "handle query command and return query response | ESW-250" in {
+      val runId         = Id("runId")
+      val componentId   = ComponentId("test", Sequencer)
+      val queryRequest  = SequencerCommand(componentId, SequencerPostRequest.Query(runId))
+      val queryResponse = CommandNotAvailable(runId)
+
+      when(resolver.resolveSequencer(componentId)).thenReturn(Future.successful(Some(sequencer)))
+      when(sequencer.query(runId)).thenReturn(Future.successful(queryResponse))
+
+      Post("/post-endpoint", queryRequest) ~> route ~> check {
+        responseAs[CommandResponse] shouldEqual queryResponse
+      }
+    }
+
+    "handle go online command and return Ok response | ESW-250" in {
+      val componentId     = ComponentId("test", Sequencer)
+      val goOnlineRequest = SequencerCommand(componentId, SequencerPostRequest.GoOnline)
+
+      when(resolver.resolveSequencer(componentId)).thenReturn(Future.successful(Some(sequencer)))
+      when(sequencer.goOnline()).thenReturn(Future.successful(Ok))
+
+      Post("/post-endpoint", goOnlineRequest) ~> route ~> check {
+        responseAs[OkOrUnhandledResponse] shouldEqual Ok
       }
     }
   }
@@ -255,4 +298,5 @@ class PostRouteTest extends BaseTestSuite with ScalatestRouteTest with GatewayCo
       }
     }
   }
+
 }

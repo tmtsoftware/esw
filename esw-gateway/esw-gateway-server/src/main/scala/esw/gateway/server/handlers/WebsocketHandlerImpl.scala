@@ -3,28 +3,41 @@ package esw.gateway.server.handlers
 import akka.NotUsed
 import akka.http.scaladsl.model.ws.Message
 import akka.stream.scaladsl.Source
+import csw.command.api.messages.CommandServiceWebsocketMessage
 import csw.command.client.handlers.CommandServiceWebsocketHandlers
+import csw.location.models.ComponentId
 import esw.gateway.api.EventApi
 import esw.gateway.api.codecs.GatewayCodecs
-import esw.gateway.api.protocol.WebsocketRequest.{ComponentCommand, Subscribe, SubscribeWithPattern}
+import esw.gateway.api.protocol.WebsocketRequest.{ComponentCommand, SequencerCommand, Subscribe, SubscribeWithPattern}
 import esw.gateway.api.protocol.{InvalidComponent, WebsocketRequest}
-import esw.gateway.server.utils.CommandServiceResolver
+import esw.gateway.server.utils.Resolver
+import esw.ocs.api.protocol.SequencerWebsocketRequest
+import esw.ocs.handler.SequencerWebsocketHandler
 import msocket.api.MessageHandler
 import msocket.impl.Encoding
 import msocket.impl.ws.WebsocketStreamExtensions
 
-class WebsocketHandlerImpl(commandServiceResolver: CommandServiceResolver, eventApi: EventApi, val encoding: Encoding[_])
+class WebsocketHandlerImpl(resolver: Resolver, eventApi: EventApi, val encoding: Encoding[_])
     extends MessageHandler[WebsocketRequest, Source[Message, NotUsed]]
     with GatewayCodecs
     with WebsocketStreamExtensions {
 
   override def handle(request: WebsocketRequest): Source[Message, NotUsed] = request match {
-    case ComponentCommand(componentId, command) =>
-      Source.future(commandServiceResolver.resolve(componentId)).flatMapConcat {
-        case Some(commandService) => new CommandServiceWebsocketHandlers(commandService, encoding).handle(command)
-        case None                 => Source.failed(InvalidComponent(s"No component is registered with id $componentId "))
-      }
+    case ComponentCommand(componentId, command)                 => onComponentCommand(componentId, command)
+    case SequencerCommand(componentId, command)                 => onSequencerCommand(componentId, command)
     case Subscribe(eventKeys, maxFrequency)                     => stream(eventApi.subscribe(eventKeys, maxFrequency))
     case SubscribeWithPattern(subsystem, maxFrequency, pattern) => stream(eventApi.pSubscribe(subsystem, maxFrequency, pattern))
   }
+
+  private def onComponentCommand(componentId: ComponentId, command: CommandServiceWebsocketMessage): Source[Message, NotUsed] =
+    Source.future(resolver.resolveComponent(componentId)).flatMapConcat {
+      case Some(commandService) => new CommandServiceWebsocketHandlers(commandService, encoding).handle(command)
+      case None                 => Source.failed(InvalidComponent(s"No component is registered with id $componentId "))
+    }
+
+  private def onSequencerCommand(componentId: ComponentId, command: SequencerWebsocketRequest): Source[Message, NotUsed] =
+    Source.future(resolver.resolveSequencer(componentId)).flatMapConcat {
+      case Some(sequencerApi) => new SequencerWebsocketHandler(sequencerApi, encoding).handle(command)
+      case None               => Source.failed(InvalidComponent(s"No sequencer is registered with id $componentId "))
+    }
 }

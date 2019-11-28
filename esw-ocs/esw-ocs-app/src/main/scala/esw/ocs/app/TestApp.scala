@@ -12,7 +12,7 @@ import akka.util.ByteString
 import csw.params.commands.{CommandName, CommandResponse, Sequence, Setup}
 import csw.params.core.models.{Id, Prefix}
 import esw.ocs.api.codecs.SequencerHttpCodecs
-import esw.ocs.api.protocol.SequencerPostRequest.SubmitSequence
+import esw.ocs.api.protocol.SequencerPostRequest.Submit
 import esw.ocs.api.protocol.SequencerWebsocketRequest.GetInsights
 import io.bullet.borer.Json
 
@@ -60,7 +60,7 @@ trait HttpReq extends ActorRuntime with SequencerHttpCodecs {
   lazy private val sequence = Sequence(
     (1 to 20).map(i => Setup(Prefix("CSW"), CommandName(s"command-$i"), None))
   )
-  lazy private val command: SubmitSequence = SubmitSequence(sequence)
+  lazy private val command: Submit = Submit(sequence)
 
   def submitSequence: Id = {
     val x = Http().singleRequest(
