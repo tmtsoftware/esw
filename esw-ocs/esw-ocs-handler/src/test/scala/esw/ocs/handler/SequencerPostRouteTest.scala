@@ -1,4 +1,4 @@
-package esw.ocs.app.route
+package esw.ocs.handler
 
 import akka.http.scaladsl.model.StatusCodes
 import akka.http.scaladsl.server.Route
@@ -7,26 +7,23 @@ import csw.params.commands.CommandResponse._
 import csw.params.commands.{CommandName, Sequence, Setup}
 import csw.params.core.models.{Id, Prefix}
 import csw.time.core.models.UTCTime
-import esw.http.core.BaseTestSuite
 import esw.ocs.api.codecs.SequencerHttpCodecs
 import esw.ocs.api.models.StepList
 import esw.ocs.api.protocol.EditorError.{CannotOperateOnAnInFlightOrFinishedStep, IdDoesNotExist}
 import esw.ocs.api.protocol.SequencerPostRequest._
 import esw.ocs.api.protocol._
-import esw.ocs.impl.SequencerActorProxy
-import esw.ocs.impl.handlers.SequencerPostHandler
+import esw.ocs.api.{BaseTestSuite, SequencerApi}
 import msocket.impl.Encoding
 import msocket.impl.Encoding.JsonText
 import msocket.impl.post.{ClientHttpCodecs, PostRouteFactory}
-import org.mockito.Mockito.when
 
 import scala.concurrent.Future
 
 class SequencerPostRouteTest extends BaseTestSuite with ScalatestRouteTest with SequencerHttpCodecs with ClientHttpCodecs {
 
-  lazy val route: Route                      = new PostRouteFactory("post-endpoint", postHandler).make()
-  private val sequencer: SequencerActorProxy = mock[SequencerActorProxy]
-  private val postHandler                    = new SequencerPostHandler(sequencer)
+  lazy val route: Route               = new PostRouteFactory("post-endpoint", postHandler).make()
+  private val sequencer: SequencerApi = mock[SequencerApi]
+  private val postHandler             = new SequencerPostHandler(sequencer)
 
   override def encoding: Encoding[_] = JsonText
 

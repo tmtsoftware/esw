@@ -15,6 +15,7 @@ lazy val unidocExclusions: Seq[ProjectReference] = Seq(
   `esw-integration-test`,
   `esw-ocs-api`.js,
   `esw-gateway-api`.js,
+  `esw-ocs-handler`,
   examples
 )
 
@@ -51,6 +52,14 @@ lazy val `esw-ocs-api` = crossProject(JSPlatform, JVMPlatform)
     libraryDependencies ++= Dependencies.OcsApi.value
   )
 
+lazy val `esw-ocs-handler` = project
+  .in(file("esw-ocs/esw-ocs-handler"))
+  .enablePlugins(MaybeCoverage, PublishBintray)
+  .settings(
+    libraryDependencies ++= Dependencies.OcsHandler.value
+  )
+  .dependsOn(`esw-ocs-api`.jvm)
+
 lazy val `esw-ocs-impl` = project
   .in(file("esw-ocs/esw-ocs-impl"))
   .enablePlugins(MaybeCoverage, PublishBintray)
@@ -70,6 +79,7 @@ lazy val `esw-ocs-app` = project
     libraryDependencies ++= Dependencies.OcsApp.value
   )
   .dependsOn(
+    `esw-ocs-handler`,
     `esw-ocs-impl`      % "compile->compile;test->test",
     `esw-http-core`     % "compile->compile;test->test",
     `esw-test-reporter` % Test
@@ -147,6 +157,7 @@ lazy val `esw-gateway-server` = project
   )
   .dependsOn(
     `esw-gateway-impl`,
+    `esw-ocs-handler`,
     `esw-ocs-impl`,
     `esw-http-core`     % "compile->compile;test->test",
     `esw-test-reporter` % Test

@@ -12,7 +12,7 @@ import esw.gateway.api.protocol.WebsocketRequest.{ComponentCommand, SequencerCom
 import esw.gateway.api.protocol.{InvalidComponent, WebsocketRequest}
 import esw.gateway.server.utils.Resolver
 import esw.ocs.api.protocol.SequencerWebsocketRequest
-import esw.ocs.impl.handlers.SequencerWebsocketHandler
+import esw.ocs.handler.SequencerWebsocketHandler
 import msocket.api.MessageHandler
 import msocket.impl.Encoding
 import msocket.impl.ws.WebsocketStreamExtensions

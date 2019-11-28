@@ -12,7 +12,7 @@ import esw.gateway.api.protocol.PostRequest._
 import esw.gateway.api.{AlarmApi, EventApi, LoggingApi}
 import esw.gateway.server.utils.Resolver
 import esw.ocs.api.protocol.SequencerPostRequest
-import esw.ocs.impl.handlers.SequencerPostHandler
+import esw.ocs.handler.SequencerPostHandler
 import msocket.api.MessageHandler
 import msocket.impl.post.ServerHttpCodecs
 

@@ -1,4 +1,4 @@
-package esw.ocs.app.route
+package esw.ocs.handler
 
 import akka.actor.typed.{ActorSystem, SpawnProtocol}
 import akka.http.scaladsl.model.ws.{BinaryMessage, TextMessage}
@@ -7,21 +7,17 @@ import akka.http.scaladsl.testkit.{ScalatestRouteTest, WSProbe}
 import akka.util.Timeout
 import csw.params.commands.CommandResponse.{Completed, SubmitResponse}
 import csw.params.core.models.Id
-import esw.http.core.BaseTestSuite
 import esw.ocs.api.codecs.SequencerHttpCodecs
 import esw.ocs.api.protocol.SequencerWebsocketRequest.QueryFinal
-
-import scala.concurrent.duration.DurationLong
-import esw.ocs.impl.SequencerActorProxy
-import esw.ocs.impl.handlers.SequencerWebsocketHandler
+import esw.ocs.api.{BaseTestSuite, SequencerApi}
 import io.bullet.borer.Decoder
 import msocket.impl.Encoding
 import msocket.impl.Encoding.{CborBinary, JsonText}
 import msocket.impl.post.ClientHttpCodecs
 import msocket.impl.ws.WebsocketRouteFactory
-import org.mockito.Mockito.when
 
 import scala.concurrent.Future
+import scala.concurrent.duration.DurationLong
 
 class SequencerCommandWebsocketRouteTest
     extends BaseTestSuite
@@ -31,7 +27,7 @@ class SequencerCommandWebsocketRouteTest
 
   override def encoding: Encoding[_] = JsonText
 
-  private val sequencer: SequencerActorProxy = mock[SequencerActorProxy]
+  private val sequencer: SequencerApi = mock[SequencerApi]
 
   private def websocketHandlerFactory(encoding: Encoding[_]) = new SequencerWebsocketHandler(sequencer, encoding)
 

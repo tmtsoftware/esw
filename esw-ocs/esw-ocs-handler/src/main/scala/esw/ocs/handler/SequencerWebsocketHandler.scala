@@ -1,4 +1,4 @@
-package esw.ocs.impl.handlers
+package esw.ocs.handler
 
 import akka.NotUsed
 import akka.http.scaladsl.model.ws.Message
