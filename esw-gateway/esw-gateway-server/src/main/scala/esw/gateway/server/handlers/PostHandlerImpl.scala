@@ -27,20 +27,20 @@ class PostHandlerImpl(
 
   override def handle(request: PostRequest): Route = request match {
     case ComponentCommand(componentId, command) => onComponentCommand(componentId, command)
-    case SequencerCommand(componentId, command) => onSequenceCommand(componentId, command)
+    case SequencerCommand(componentId, command) => onSequencerCommand(componentId, command)
     case PublishEvent(event)                    => complete(eventApi.publish(event))
     case GetEvent(eventKeys)                    => complete(eventApi.get(eventKeys))
     case SetAlarmSeverity(alarmKey, severity)   => complete(alarmApi.setSeverity(alarmKey, severity))
     case Log(appName, level, message, map)      => complete(loggingApi.log(appName, level, message, map))
   }
 
-  private def onComponentCommand(componentId: ComponentId, command: CommandServiceHttpMessage) =
-    onSuccess(resolver.resolveCommandService(componentId)) {
+  private def onComponentCommand(componentId: ComponentId, command: CommandServiceHttpMessage): Route =
+    onSuccess(resolver.resolveComponent(componentId)) {
       case Some(commandService) => new CommandServiceHttpHandlers(commandService).handle(command)
       case None                 => complete(StatusCodes.BadRequest -> s"No component is registered with id $componentId ")
     }
 
-  private def onSequenceCommand(componentId: ComponentId, command: SequencerPostRequest) =
+  private def onSequencerCommand(componentId: ComponentId, command: SequencerPostRequest): Route =
     onSuccess(resolver.resolveSequencer(componentId)) {
       case Some(sequencerApi) => new SequencerPostHandler(sequencerApi).handle(command)
       case None               => complete(StatusCodes.BadRequest -> s"No sequencer is registered with id $componentId ")

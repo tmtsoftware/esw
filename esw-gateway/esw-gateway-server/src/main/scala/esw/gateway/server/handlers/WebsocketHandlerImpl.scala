@@ -29,13 +29,13 @@ class WebsocketHandlerImpl(resolver: Resolver, eventApi: EventApi, val encoding:
     case SubscribeWithPattern(subsystem, maxFrequency, pattern) => stream(eventApi.pSubscribe(subsystem, maxFrequency, pattern))
   }
 
-  private def onComponentCommand(componentId: ComponentId, command: CommandServiceWebsocketMessage) =
-    Source.future(resolver.resolveCommandService(componentId)).flatMapConcat {
+  private def onComponentCommand(componentId: ComponentId, command: CommandServiceWebsocketMessage): Source[Message, NotUsed] =
+    Source.future(resolver.resolveComponent(componentId)).flatMapConcat {
       case Some(commandService) => new CommandServiceWebsocketHandlers(commandService, encoding).handle(command)
       case None                 => Source.failed(InvalidComponent(s"No component is registered with id $componentId "))
     }
 
-  private def onSequencerCommand(componentId: ComponentId, command: SequencerWebsocketRequest) =
+  private def onSequencerCommand(componentId: ComponentId, command: SequencerWebsocketRequest): Source[Message, NotUsed] =
     Source.future(resolver.resolveSequencer(componentId)).flatMapConcat {
       case Some(sequencerApi) => new SequencerWebsocketHandler(sequencerApi, encoding).handle(command)
       case None               => Source.failed(InvalidComponent(s"No sequencer is registered with id $componentId "))

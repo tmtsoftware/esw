@@ -19,18 +19,13 @@ class Resolver(locationService: LocationService)(implicit typedSystem: ActorSyst
   import typedSystem.executionContext
   private implicit val timeout: Timeout = 5.seconds
 
-  def resolveCommandService(componentId: ComponentId): Future[Option[CommandService]] =
-    locationService.resolve(AkkaConnection(componentId), timeout.duration).map(_.map(CommandServiceFactory.make))
+  def resolveComponent(componentId: ComponentId): Future[Option[CommandService]] =
+    locationService
+      .resolve(AkkaConnection(componentId), timeout.duration)
+      .map(_.map(CommandServiceFactory.make))
 
   def resolveSequencer(componentId: ComponentId): Future[Option[SequencerApi]] =
     locationService
       .resolve(AkkaConnection(componentId), timeout.duration)
-      .map(
-        _.map(
-          loc =>
-            new SequencerActorProxy(
-              loc.sequencerRef
-            )
-        )
-      )
+      .map(_.map(loc => new SequencerActorProxy(loc.sequencerRef)))
 }

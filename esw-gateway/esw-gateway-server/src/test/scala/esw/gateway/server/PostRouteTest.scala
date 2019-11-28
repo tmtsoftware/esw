@@ -55,7 +55,7 @@ class PostRouteTest extends BaseTestSuite with ScalatestRouteTest with GatewayCo
       val componentId   = ComponentId(componentName, componentType)
       val submitRequest = ComponentCommand(componentId, Submit(command))
 
-      when(resolver.resolveCommandService(componentId)).thenReturn(Future.successful(Some(commandService)))
+      when(resolver.resolveComponent(componentId)).thenReturn(Future.successful(Some(commandService)))
       when(commandService.submit(command)).thenReturn(Future.successful(Started(runId)))
 
       Post("/post-endpoint", submitRequest) ~> route ~> check {
@@ -71,7 +71,7 @@ class PostRouteTest extends BaseTestSuite with ScalatestRouteTest with GatewayCo
       val componentId     = ComponentId(componentName, componentType)
       val validateRequest = ComponentCommand(componentId, Validate(command))
 
-      when(resolver.resolveCommandService(componentId)).thenReturn(Future.successful(Some(commandService)))
+      when(resolver.resolveComponent(componentId)).thenReturn(Future.successful(Some(commandService)))
       when(commandService.validate(command)).thenReturn(Future.successful(Accepted(runId)))
 
       Post("/post-endpoint", validateRequest) ~> route ~> check {
@@ -87,7 +87,7 @@ class PostRouteTest extends BaseTestSuite with ScalatestRouteTest with GatewayCo
       val componentId   = ComponentId(componentName, componentType)
       val onewayRequest = ComponentCommand(componentId, Oneway(command))
 
-      when(resolver.resolveCommandService(componentId)).thenReturn(Future.successful(Some(commandService)))
+      when(resolver.resolveComponent(componentId)).thenReturn(Future.successful(Some(commandService)))
       when(commandService.oneway(command)).thenReturn(Future.successful(Accepted(runId)))
 
       Post("/post-endpoint", onewayRequest) ~> route ~> check {
@@ -102,7 +102,7 @@ class PostRouteTest extends BaseTestSuite with ScalatestRouteTest with GatewayCo
       val componentId   = ComponentId(componentName, componentType)
       val submitRequest = ComponentCommand(componentId, Submit(command))
 
-      when(resolver.resolveCommandService(componentId)).thenReturn(Future.successful(None))
+      when(resolver.resolveComponent(componentId)).thenReturn(Future.successful(None))
 
       Post("/post-endpoint", submitRequest) ~> route ~> check {
         status shouldEqual StatusCodes.BadRequest
