@@ -142,153 +142,153 @@ class PostRouteTest extends BaseTestSuite with ScalatestRouteTest with GatewayCo
         responseAs[CommandResponse] shouldEqual queryResponse
       }
     }
-
-    "Publish Event" must {
-      "return Done on successful publish | ESW-92, ESW-216" in {
-        val prefix       = Prefix("tcs.test.gateway")
-        val name         = EventName("event1")
-        val event        = SystemEvent(prefix, name, Set.empty)
-        val publishEvent = PublishEvent(event)
-
-        when(eventPublisher.publish(event)).thenReturn(Future.successful(Done))
-
-        Post("/post-endpoint", publishEvent) ~> route ~> check {
-          responseAs[Either[EventServerUnavailable.type, Done]].rightValue shouldEqual Done
-        }
-      }
-
-      "return EventServerUnavailable error when EventServer is down | ESW-92, ESW-216" in {
-        val prefix       = Prefix("tcs.test.gateway")
-        val name         = EventName("event1")
-        val event        = SystemEvent(prefix, name, Set.empty)
-        val publishEvent = PublishEvent(event)
-
-        when(eventPublisher.publish(event))
-          .thenReturn(Future.failed(PublishFailure(event, new RuntimeException("Event server is down"))))
-
-        Post("/post-endpoint", publishEvent) ~> route ~> check {
-          responseAs[Either[EventServerUnavailable.type, Done]].leftValue shouldEqual EventServerUnavailable
-        }
-      }
-    }
-
-    "Get Event" must {
-      "return an event successfully | ESW-94, ESW-216" in {
-        val prefix   = Prefix("tcs.test.gateway")
-        val name     = EventName("event1")
-        val event    = SystemEvent(prefix, name, Set.empty)
-        val eventKey = EventKey(prefix, name)
-        val getEvent = GetEvent(Set(eventKey))
-
-        when(eventSubscriber.get(Set(eventKey))).thenReturn(Future.successful(Set(event)))
-
-        Post("/post-endpoint", getEvent) ~> route ~> check {
-          responseAs[Either[EmptyEventKeys.type, Set[Event]]].rightValue shouldEqual Set(event)
-        }
-      }
-
-      "return EmptyEventKeys error on sending no event keys in request | ESW-94, ESW-216" in {
-        Post("/post-endpoint", GetEvent(Set())) ~> route ~> check {
-          responseAs[Either[EmptyEventKeys.type, Set[Event]]].leftValue shouldEqual EmptyEventKeys
-        }
-      }
-
-      "return EventServerUnavailable error when EventServer is down | ESW-94, ESW-216" in {
-        val prefix   = Prefix("tcs.test.gateway")
-        val name     = EventName("event1")
-        val eventKey = EventKey(prefix, name)
-        val getEvent = GetEvent(Set(eventKey))
-
-        when(eventSubscriber.get(Set(eventKey)))
-          .thenReturn(Future.failed(EventServerNotAvailable(new RuntimeException("Redis server is not available"))))
-
-        Post("/post-endpoint", getEvent) ~> route ~> check {
-          responseAs[Either[EmptyEventKeys.type, Set[Event]]].leftValue shouldEqual EventServerUnavailable
-        }
-      }
-
-      "return InternalServerError if get event fails for some unwanted reason | ESW-94, ESW-216" in {
-        when(eventSubscriber.get(any[Set[EventKey]])).thenReturn(Future.failed(new RuntimeException("failed")))
-
-        val eventKey = EventKey(Prefix("tcs.test.gateway"), EventName("event1"))
-
-        Post("/post-endpoint", GetEvent(Set(eventKey))) ~> route ~> check {
-          status shouldBe StatusCodes.InternalServerError
-        }
-      }
-    }
-
-    "Set Alarm Severity" must {
-      "returns Done on success | ESW-193, ESW-216, ESW-233" in {
-        val componentName    = "testComponent"
-        val alarmName        = "testAlarmName"
-        val subsystemName    = Subsystem.IRIS
-        val majorSeverity    = AlarmSeverity.Major
-        val alarmKey         = AlarmKey(subsystemName, componentName, alarmName)
-        val setAlarmSeverity = SetAlarmSeverity(alarmKey, majorSeverity)
-
-        when(alarmService.setSeverity(alarmKey, majorSeverity)).thenReturn(Future.successful(Done))
-
-        Post("/post-endpoint", setAlarmSeverity) ~> route ~> check {
-          responseAs[Either[SetAlarmSeverityFailure, Done]].rightValue shouldEqual Done
-        }
-      }
-
-      "returns SetAlarmSeverityFailure on key not found or invalid key | ESW-193, ESW-216, ESW-233" in {
-        val componentName    = "testComponent"
-        val alarmName        = "testAlarmName"
-        val subsystemName    = Subsystem.IRIS
-        val majorSeverity    = AlarmSeverity.Major
-        val alarmKey         = AlarmKey(subsystemName, componentName, alarmName)
-        val setAlarmSeverity = SetAlarmSeverity(alarmKey, majorSeverity)
-
-        when(alarmService.setSeverity(alarmKey, majorSeverity)).thenReturn(Future.failed(new KeyNotFoundException("")))
-
-        Post("/post-endpoint", setAlarmSeverity) ~> route ~> check {
-          responseAs[Either[SetAlarmSeverityFailure, Done]].leftValue shouldEqual SetAlarmSeverityFailure("")
-        }
-      }
-    }
-
-    "Log" must {
-      "log the message, metadata and return Done | ESW-200" in {
-        val log = Log(
-          "esw-test",
-          Level.FATAL,
-          "test-message",
-          Map(
-            "additional-info" -> 45,
-            "city"            -> "LA"
-          )
-        )
-
-        Post("/post-endpoint", log) ~> route ~> check {
-          responseAs[Done] shouldEqual Done
-          val expectedMetadata = Map(
-            "additional-info" -> 45,
-            "city"            -> "LA"
-          )
-          verify(logger).fatal(argsEq("test-message"), argsEq(expectedMetadata), any[Throwable], any[AnyId])(
-            any[SourceFactory]
-          )
-        }
-      }
-
-      "log the message and return Done | ESW-200" in {
-        val log = Log(
-          "esw-test",
-          Level.FATAL,
-          "test-message"
-        )
-
-        Post("/post-endpoint", log) ~> route ~> check {
-          responseAs[Done] shouldEqual Done
-          verify(logger).fatal(argsEq("test-message"), argsEq(Map.empty), any[Throwable], any[AnyId])(
-            any[SourceFactory]
-          )
-        }
-      }
-    }
-
   }
+
+  "Publish Event" must {
+    "return Done on successful publish | ESW-92, ESW-216" in {
+      val prefix       = Prefix("tcs.test.gateway")
+      val name         = EventName("event1")
+      val event        = SystemEvent(prefix, name, Set.empty)
+      val publishEvent = PublishEvent(event)
+
+      when(eventPublisher.publish(event)).thenReturn(Future.successful(Done))
+
+      Post("/post-endpoint", publishEvent) ~> route ~> check {
+        responseAs[Either[EventServerUnavailable.type, Done]].rightValue shouldEqual Done
+      }
+    }
+
+    "return EventServerUnavailable error when EventServer is down | ESW-92, ESW-216" in {
+      val prefix       = Prefix("tcs.test.gateway")
+      val name         = EventName("event1")
+      val event        = SystemEvent(prefix, name, Set.empty)
+      val publishEvent = PublishEvent(event)
+
+      when(eventPublisher.publish(event))
+        .thenReturn(Future.failed(PublishFailure(event, new RuntimeException("Event server is down"))))
+
+      Post("/post-endpoint", publishEvent) ~> route ~> check {
+        responseAs[Either[EventServerUnavailable.type, Done]].leftValue shouldEqual EventServerUnavailable
+      }
+    }
+  }
+
+  "Get Event" must {
+    "return an event successfully | ESW-94, ESW-216" in {
+      val prefix   = Prefix("tcs.test.gateway")
+      val name     = EventName("event1")
+      val event    = SystemEvent(prefix, name, Set.empty)
+      val eventKey = EventKey(prefix, name)
+      val getEvent = GetEvent(Set(eventKey))
+
+      when(eventSubscriber.get(Set(eventKey))).thenReturn(Future.successful(Set(event)))
+
+      Post("/post-endpoint", getEvent) ~> route ~> check {
+        responseAs[Either[EmptyEventKeys.type, Set[Event]]].rightValue shouldEqual Set(event)
+      }
+    }
+
+    "return EmptyEventKeys error on sending no event keys in request | ESW-94, ESW-216" in {
+      Post("/post-endpoint", GetEvent(Set())) ~> route ~> check {
+        responseAs[Either[EmptyEventKeys.type, Set[Event]]].leftValue shouldEqual EmptyEventKeys
+      }
+    }
+
+    "return EventServerUnavailable error when EventServer is down | ESW-94, ESW-216" in {
+      val prefix   = Prefix("tcs.test.gateway")
+      val name     = EventName("event1")
+      val eventKey = EventKey(prefix, name)
+      val getEvent = GetEvent(Set(eventKey))
+
+      when(eventSubscriber.get(Set(eventKey)))
+        .thenReturn(Future.failed(EventServerNotAvailable(new RuntimeException("Redis server is not available"))))
+
+      Post("/post-endpoint", getEvent) ~> route ~> check {
+        responseAs[Either[EmptyEventKeys.type, Set[Event]]].leftValue shouldEqual EventServerUnavailable
+      }
+    }
+
+    "return InternalServerError if get event fails for some unwanted reason | ESW-94, ESW-216" in {
+      when(eventSubscriber.get(any[Set[EventKey]])).thenReturn(Future.failed(new RuntimeException("failed")))
+
+      val eventKey = EventKey(Prefix("tcs.test.gateway"), EventName("event1"))
+
+      Post("/post-endpoint", GetEvent(Set(eventKey))) ~> route ~> check {
+        status shouldBe StatusCodes.InternalServerError
+      }
+    }
+  }
+
+  "Set Alarm Severity" must {
+    "returns Done on success | ESW-193, ESW-216, ESW-233" in {
+      val componentName    = "testComponent"
+      val alarmName        = "testAlarmName"
+      val subsystemName    = Subsystem.IRIS
+      val majorSeverity    = AlarmSeverity.Major
+      val alarmKey         = AlarmKey(subsystemName, componentName, alarmName)
+      val setAlarmSeverity = SetAlarmSeverity(alarmKey, majorSeverity)
+
+      when(alarmService.setSeverity(alarmKey, majorSeverity)).thenReturn(Future.successful(Done))
+
+      Post("/post-endpoint", setAlarmSeverity) ~> route ~> check {
+        responseAs[Either[SetAlarmSeverityFailure, Done]].rightValue shouldEqual Done
+      }
+    }
+
+    "returns SetAlarmSeverityFailure on key not found or invalid key | ESW-193, ESW-216, ESW-233" in {
+      val componentName    = "testComponent"
+      val alarmName        = "testAlarmName"
+      val subsystemName    = Subsystem.IRIS
+      val majorSeverity    = AlarmSeverity.Major
+      val alarmKey         = AlarmKey(subsystemName, componentName, alarmName)
+      val setAlarmSeverity = SetAlarmSeverity(alarmKey, majorSeverity)
+
+      when(alarmService.setSeverity(alarmKey, majorSeverity)).thenReturn(Future.failed(new KeyNotFoundException("")))
+
+      Post("/post-endpoint", setAlarmSeverity) ~> route ~> check {
+        responseAs[Either[SetAlarmSeverityFailure, Done]].leftValue shouldEqual SetAlarmSeverityFailure("")
+      }
+    }
+  }
+
+  "Log" must {
+    "log the message, metadata and return Done | ESW-200" in {
+      val log = Log(
+        "esw-test",
+        Level.FATAL,
+        "test-message",
+        Map(
+          "additional-info" -> 45,
+          "city"            -> "LA"
+        )
+      )
+
+      Post("/post-endpoint", log) ~> route ~> check {
+        responseAs[Done] shouldEqual Done
+        val expectedMetadata = Map(
+          "additional-info" -> 45,
+          "city"            -> "LA"
+        )
+        verify(logger).fatal(argsEq("test-message"), argsEq(expectedMetadata), any[Throwable], any[AnyId])(
+          any[SourceFactory]
+        )
+      }
+    }
+
+    "log the message and return Done | ESW-200" in {
+      val log = Log(
+        "esw-test",
+        Level.FATAL,
+        "test-message"
+      )
+
+      Post("/post-endpoint", log) ~> route ~> check {
+        responseAs[Done] shouldEqual Done
+        verify(logger).fatal(argsEq("test-message"), argsEq(Map.empty), any[Throwable], any[AnyId])(
+          any[SourceFactory]
+        )
+      }
+    }
+  }
+
 }
