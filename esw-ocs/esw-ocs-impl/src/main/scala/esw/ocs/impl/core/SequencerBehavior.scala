@@ -4,6 +4,9 @@ import akka.Done
 import akka.actor.typed.scaladsl.AskPattern._
 import akka.actor.typed.scaladsl.Behaviors
 import akka.actor.typed.{ActorRef, ActorSystem, Behavior}
+import akka.stream.OverflowStrategy
+import akka.stream.scaladsl.StreamRefs
+import akka.stream.typed.scaladsl.ActorSource
 import akka.util.Timeout
 import csw.command.client.messages.sequencer.SequencerMsg
 import csw.command.client.messages.sequencer.SequencerMsg.{Query, QueryFinal, SubmitSequence}
@@ -32,14 +35,13 @@ class SequencerBehavior(
     componentId: ComponentId,
     script: ScriptDsl,
     locationService: LocationService,
-    shutdownHttpService: () => Future[Done],
-    insightsSubscriber: ActorRef[SequencerInsight]
+    shutdownHttpService: () => Future[Done]
 )(implicit val actorSystem: ActorSystem[_])
     extends OcsCodecs {
   import actorSystem.executionContext
 
   def setup: Behavior[SequencerMsg] = Behaviors.setup { ctx =>
-    idle(SequencerData.initial(ctx.self, insightsSubscriber))
+    idle(SequencerData.initial(ctx.self))
   }
 
   protected def receive[T <: SequencerMsg: ClassTag](
@@ -47,7 +49,7 @@ class SequencerBehavior(
       data: SequencerData,
       currentBehavior: SequencerData => Behavior[SequencerMsg]
   )(f: T => Behavior[SequencerMsg]): Behavior[SequencerMsg] = {
-    insightsSubscriber ! SequencerInsight(data, state)
+    data.insightSubscribers.foreach(_ ! SequencerInsight(data, state))
     Behaviors.receive { (ctx, msg) =>
       implicit val timeout: Timeout = Timeouts.LongTimeout
       msg match {
@@ -154,7 +156,21 @@ class SequencerBehavior(
     case DiagnosticMode(startTime, hint, replyTo) => goToDiagnosticMode(startTime, hint, replyTo)
     case OperationsMode(replyTo)                  => goToOperationsMode(replyTo)
     case ReadyToExecuteNext(replyTo)              => currentBehavior(data.readyToExecuteNext(replyTo, state))
-    case GetInsight(replyTo)                      => replyTo ! SequencerInsight(data, state); Behaviors.same
+    case GetInsight(replyTo) =>
+      val (ref, source) = ActorSource
+        .actorRef[SequencerInsight](
+          PartialFunction.empty,
+          PartialFunction.empty,
+          1,
+          OverflowStrategy.dropHead
+        )
+        .preMaterialize()
+      val sourceRef = source.runWith(StreamRefs.sourceRef())
+      //send the source-ref to client
+      replyTo ! sourceRef
+      //send the first state immediately
+      ref ! SequencerInsight(data, state)
+      currentBehavior(data.addInsightSubscriber(ref))
     case MaybeNext(replyTo) =>
       if (state == InProgress) replyTo ! data.stepList.flatMap(_.nextExecutable)
       else replyTo ! None

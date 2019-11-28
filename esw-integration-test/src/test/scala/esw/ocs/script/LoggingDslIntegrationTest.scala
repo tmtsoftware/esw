@@ -1,7 +1,6 @@
 package esw.ocs.script
 
 import akka.actor.typed.ActorRef
-import akka.stream.scaladsl.Source
 import csw.command.client.messages.sequencer.SequencerMsg
 import csw.logging.client.internal.JsonExtensions.RichJsObject
 import csw.logging.client.internal.LoggingSystem
@@ -28,7 +27,7 @@ class LoggingDslIntegrationTest extends EswTestKit {
   override def beforeAll(): Unit = {
     super.beforeAll()
     ocsRef = spawnSequencerRef("ocs", "moonnight", None)
-    ocsSequencer = new SequencerActorProxy(ocsRef, Source.empty)
+    ocsSequencer = new SequencerActorProxy(ocsRef)
     loggingSystem = LoggingSystemFactory.start("LoggingDslIntegrationTest", "", "", system)
     loggingSystem.setAppenders(List(testAppender))
   }

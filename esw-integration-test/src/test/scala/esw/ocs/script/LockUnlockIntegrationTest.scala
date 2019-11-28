@@ -2,7 +2,6 @@ package esw.ocs.script
 
 import akka.actor.testkit.typed.scaladsl.TestProbe
 import akka.actor.typed.ActorRef
-import akka.stream.scaladsl.Source
 import com.typesafe.config.ConfigFactory
 import csw.command.client.messages.sequencer.SequencerMsg
 import csw.params.commands.{CommandName, Sequence, Setup}
@@ -25,7 +24,7 @@ class LockUnlockIntegrationTest extends EswTestKit(EventServer) {
 
   override def beforeEach(): Unit = {
     ocsSequencerRef = spawnSequencerRef("esw", "lockUnlockScript")
-    ocsSequencer = new SequencerActorProxy(ocsSequencerRef, Source.empty)
+    ocsSequencer = new SequencerActorProxy(ocsSequencerRef)
   }
 
   override def afterEach(): Unit = shutdownAllSequencers()

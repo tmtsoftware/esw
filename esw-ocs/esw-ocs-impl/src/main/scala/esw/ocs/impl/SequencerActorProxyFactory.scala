@@ -14,10 +14,7 @@ import scala.compat.java8.FutureConverters.FutureOps
 import scala.concurrent.Future
 
 //fixme: why is it taking LocationServiceUtil, should this factory reside in DSL
-class SequencerActorProxyFactory(
-    locationServiceUtil: LocationServiceUtil,
-    insightsSource: Source[SequencerInsight, NotUsed]
-)(implicit timeout: Timeout) {
+class SequencerActorProxyFactory(locationServiceUtil: LocationServiceUtil)(implicit timeout: Timeout) {
 
   import locationServiceUtil.actorSystem
   import actorSystem.executionContext
@@ -25,7 +22,7 @@ class SequencerActorProxyFactory(
   private def make(packageId: String, observingMode: String): Future[SequencerApi] =
     locationServiceUtil
       .resolveSequencer(packageId, observingMode)
-      .map(akkaLocation => new SequencerActorProxy(akkaLocation.sequencerRef, insightsSource))
+      .map(akkaLocation => new SequencerActorProxy(akkaLocation.sequencerRef))
 
   def jMake(packageId: String, observingMode: String): CompletionStage[SequencerApi] =
     make(packageId, observingMode).toJava

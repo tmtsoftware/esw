@@ -3,8 +3,6 @@ package esw.ocs.script
 import java.nio.file.Path
 
 import akka.actor.testkit.typed.scaladsl.TestProbe
-import akka.actor.typed.ActorRef
-import akka.stream.scaladsl.Source
 import com.typesafe.config.ConfigFactory
 import csw.alarm.client.AlarmServiceFactory
 import csw.alarm.models.AlarmSeverity
@@ -58,9 +56,9 @@ class ScriptIntegrationTest extends EswTestKit(EventServer, AlarmServer, ConfigS
     val tcsSequencerRef  = spawnSequencerRef(tcsPackageId, tcsObservingMode)
     val lgsfSequencerRef = spawnSequencerRef(lgsfPackageId, lgsfObservingMode) //start LGSF sequencer as OCS send commands to LGSF downstream sequencer
     val ocsSequencerRef  = spawnSequencerRef(ocsPackageId, ocsObservingMode)
-    ocsSequencer = new SequencerActorProxy(ocsSequencerRef, Source.empty)
-    tcsSequencer = new SequencerActorProxy(tcsSequencerRef, Source.empty)
-    lgsfSequencer = new SequencerActorProxy(lgsfSequencerRef, Source.empty)
+    ocsSequencer = new SequencerActorProxy(ocsSequencerRef)
+    tcsSequencer = new SequencerActorProxy(tcsSequencerRef)
+    lgsfSequencer = new SequencerActorProxy(lgsfSequencerRef)
   }
 
   override def afterEach(): Unit = shutdownAllSequencers()

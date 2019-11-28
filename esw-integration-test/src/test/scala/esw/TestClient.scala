@@ -3,7 +3,6 @@ package esw
 import akka.actor.typed.scaladsl.AskPattern.Askable
 import akka.actor.typed.{ActorSystem, Scheduler, SpawnProtocol}
 import akka.stream.Materializer
-import akka.stream.scaladsl.Source
 import akka.util.Timeout
 import csw.location.api.extensions.URIExtension.RichURI
 import csw.location.client.ActorSystemFactory
@@ -38,7 +37,7 @@ object TestClient extends App {
   private val cmd3 = Setup(Prefix("esw.a.a"), CommandName("command-3"), None)
 
   import csw.command.client.extensions.AkkaLocationExt._
-  private val sequencer = new SequencerActorProxy(location.sequencerRef, Source.empty)
+  private val sequencer = new SequencerActorProxy(location.sequencerRef)
 
   sequencer.submitAndWait(Sequence(cmd1, cmd2, cmd3)).onComplete { _ =>
     Thread.sleep(2000)

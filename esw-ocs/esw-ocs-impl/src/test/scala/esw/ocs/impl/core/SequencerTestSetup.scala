@@ -40,7 +40,7 @@ class SequencerTestSetup(sequence: Sequence)(implicit system: ActorSystem[_]) {
 
   private def deadletter = system.deadLetters
 
-  private val sequencerBehavior = new SequencerBehavior(componentId, script, locationService, mockShutdownHttpService, deadletter)
+  private val sequencerBehavior = new SequencerBehavior(componentId, script, locationService, mockShutdownHttpService)
 
   val sequencerName                          = s"SequencerActor${math.random()}"
   val sequencerActor: ActorRef[SequencerMsg] = system.systemActorOf(sequencerBehavior.setup, sequencerName)

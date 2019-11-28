@@ -5,9 +5,6 @@ import akka.actor.typed.SpawnProtocol.Spawn
 import akka.actor.typed.scaladsl.AskPattern._
 import akka.actor.typed.{ActorRef, ActorSystem, Props, SpawnProtocol}
 import akka.http.scaladsl.server.{Route, RouteConcatenation}
-import akka.stream.OverflowStrategy
-import akka.stream.scaladsl.Sink
-import akka.stream.typed.scaladsl.ActorSource
 import akka.util.Timeout
 import com.typesafe.config.{Config, ConfigFactory}
 import csw.alarm.api.javadsl.IAlarmService
@@ -28,7 +25,6 @@ import csw.logging.client.scaladsl.LoggerFactory
 import csw.network.utils.SocketUtils
 import esw.http.core.wiring.{ActorRuntime, CswWiring, HttpService, Settings}
 import esw.ocs.api.codecs.SequencerHttpCodecs
-import esw.ocs.api.models.SequencerInsight
 import esw.ocs.api.protocol.ScriptError
 import esw.ocs.dsl.script.utils.{LockUnlockUtil, ScriptLoader}
 import esw.ocs.dsl.script.{CswServices, ScriptDsl}
@@ -73,16 +69,7 @@ private[ocs] class SequencerWiring(val packageId: String, val observingMode: Str
   private lazy val script: ScriptDsl       = ScriptLoader.loadKotlinScript(scriptClass, cswServices)
 
   lazy private val locationServiceUtil   = new LocationServiceUtil(locationService)
-  lazy private val sequencerProxyFactory = new SequencerActorProxyFactory(locationServiceUtil, insightSource)
-
-  lazy val (insightRef, insightSource) = ActorSource
-    .actorRef[SequencerInsight](
-      completionMatcher = PartialFunction.empty,
-      failureMatcher = PartialFunction.empty,
-      bufferSize = 1,
-      overflowStrategy = OverflowStrategy.dropHead
-    )
-    .preMaterialize()
+  lazy private val sequencerProxyFactory = new SequencerActorProxyFactory(locationServiceUtil)
 
   lazy private val lockUnlockUtil = new LockUnlockUtil(locationServiceUtil)(actorSystem)
 
@@ -114,7 +101,7 @@ private[ocs] class SequencerWiring(val packageId: String, val observingMode: Str
     jAlarmService
   )
 
-  private lazy val sequencerApi                              = new SequencerActorProxy(sequencerRef, insightSource)
+  private lazy val sequencerApi                              = new SequencerActorProxy(sequencerRef)
   private lazy val postHandler                               = new SequencerPostHandler(sequencerApi)
   private def websocketHandlerFactory(encoding: Encoding[_]) = new SequencerWebsocketHandler(sequencerApi, encoding)
 
@@ -138,15 +125,13 @@ private[ocs] class SequencerWiring(val packageId: String, val observingMode: Str
     }
 
   lazy val sequencerBehavior =
-    new SequencerBehavior(componentId, script, locationService, shutdownHttpService, insightRef)(
+    new SequencerBehavior(componentId, script, locationService, shutdownHttpService)(
       typedSystem
     )
 
   lazy val sequencerServer: SequencerServer = new SequencerServer {
     override def start(): Either[ScriptError, AkkaLocation] = {
       try {
-        insightSource.runWith(Sink.ignore)
-
         new Engine(script).start(sequenceOperatorFactory())
 
         httpService.registeredLazyBinding.block

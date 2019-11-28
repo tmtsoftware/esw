@@ -21,8 +21,8 @@ import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.duration.DurationInt
 
 object TestApp extends App with WsRequest with HttpReq with SequencerHttpCodecs {
-  val port: Int = 56015
-  subscribeInsights()
+  val port: Int = 50116
+//  subscribeInsights()
   submitSequence
 }
 

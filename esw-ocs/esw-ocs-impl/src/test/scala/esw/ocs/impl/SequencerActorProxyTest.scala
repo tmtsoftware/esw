@@ -81,7 +81,7 @@ class SequencerActorProxyTest extends ScalaTestWithActorTestKit with BaseTestSui
 
   private val sequencerRef = spawn(mockedBehavior)
 
-  private val sequencer    = new SequencerActorProxy(sequencerRef, Source.empty)
+  private val sequencer = new SequencerActorProxy(sequencerRef)
 
   "getSequence | ESW-222" in {
     sequencer.getSequence.futureValue should ===(getSequenceResponse)

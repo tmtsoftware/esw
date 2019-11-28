@@ -1,6 +1,5 @@
 package esw.ocs.impl
 
-import akka.NotUsed
 import akka.actor.typed.scaladsl.AskPattern._
 import akka.actor.typed.{ActorRef, ActorSystem}
 import akka.stream.KillSwitches
@@ -23,7 +22,7 @@ import msocket.api.models.Subscription
 
 import scala.concurrent.{ExecutionContext, Future}
 
-class SequencerActorProxy(sequencer: ActorRef[SequencerMsg], insightSource: Source[SequencerInsight, NotUsed])(
+class SequencerActorProxy(sequencer: ActorRef[SequencerMsg])(
     implicit system: ActorSystem[_],
     timeout: Timeout
 ) extends SequencerApi {
@@ -51,14 +50,14 @@ class SequencerActorProxy(sequencer: ActorRef[SequencerMsg], insightSource: Sour
 
   override def isAvailable: Future[Boolean] = getState.map(_ == Idle)
 
-  override def isOnline: Future[Boolean] = getState.map(_ != Offline)
-
   private def getState: Future[SequencerState[SequencerMsg]] = sequencer ? GetSequencerState
 
-  override def getInsights: Source[SequencerInsight, Subscription] = {
+  override def isOnline: Future[Boolean] = getState.map(_ != Offline)
+
+  override def getInsights: Source[SequencerInsight, Subscription] =
     Source
-      .future(sequencer ? GetInsight)
-      .concat(insightSource)
+      .futureSource((sequencer ? GetInsight).map(_.source))
+      //DistinctUntilChanged
       .statefulMapConcat(() => {
         var previousSi: Option[SequencerInsight] = None
         si => {
@@ -70,12 +69,12 @@ class SequencerActorProxy(sequencer: ActorRef[SequencerMsg], insightSource: Sour
           }
         }
       })
+      //fixme: materializer future is being ignored here
+      //prepare subscription
       .viaMat(KillSwitches.single)(Keep.right)
       .mapMaterializedValue(ks => () => ks.shutdown())
-  }
 
   // commands
-
   override def loadSequence(sequence: Sequence): Future[OkOrUnhandledResponse] =
     sequencer ? (LoadSequence(sequence, _))
 

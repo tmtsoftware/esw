@@ -1,8 +1,6 @@
 package esw.gateway.server.utils
 
-import akka.NotUsed
 import akka.actor.typed.ActorSystem
-import akka.stream.scaladsl.Source
 import akka.util.Timeout
 import csw.command.api.scaladsl.CommandService
 import csw.command.client.CommandServiceFactory
@@ -11,16 +9,12 @@ import csw.location.api.scaladsl.LocationService
 import csw.location.models.ComponentId
 import csw.location.models.Connection.AkkaConnection
 import esw.ocs.api.SequencerApi
-import esw.ocs.api.models.SequencerInsight
 import esw.ocs.impl.SequencerActorProxy
 
 import scala.concurrent.Future
 import scala.concurrent.duration.DurationLong
 
-class Resolver(
-    locationService: LocationService,
-    insightsSource: Source[SequencerInsight, NotUsed]
-)(implicit typedSystem: ActorSystem[_]) {
+class Resolver(locationService: LocationService)(implicit typedSystem: ActorSystem[_]) {
 
   import typedSystem.executionContext
   private implicit val timeout: Timeout = 5.seconds
@@ -33,5 +27,5 @@ class Resolver(
   def resolveSequencer(componentId: ComponentId): Future[Option[SequencerApi]] =
     locationService
       .resolve(AkkaConnection(componentId), timeout.duration)
-      .map(_.map(loc => new SequencerActorProxy(loc.sequencerRef, insightsSource)))
+      .map(_.map(loc => new SequencerActorProxy(loc.sequencerRef)))
 }

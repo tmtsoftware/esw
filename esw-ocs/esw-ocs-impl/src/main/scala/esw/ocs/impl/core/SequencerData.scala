@@ -21,8 +21,11 @@ private[ocs] case class SequencerData(
     self: ActorRef[SequencerMsg],
     actorSystem: ActorSystem[_],
     sequenceResponseSubscribers: Set[ActorRef[SubmitResponse]],
-    insightSubscriber: ActorRef[SequencerInsight]
+    insightSubscribers: Set[ActorRef[SequencerInsight]]
 ) {
+
+  def addInsightSubscriber(actorRef: ActorRef[SequencerInsight]): SequencerData =
+    copy(insightSubscribers = insightSubscribers + actorRef)
 
   def createStepList(sequence: Sequence): SequencerData =
     copy(stepList = Some(StepList(sequence)))
@@ -162,7 +165,7 @@ private[ocs] case class SequencerData(
 }
 
 private[core] object SequencerData {
-  def initial(self: ActorRef[SequencerMsg], insightSubscriber: ActorRef[SequencerInsight])(
+  def initial(self: ActorRef[SequencerMsg])(
       implicit actorSystem: ActorSystem[_]
-  ): SequencerData = SequencerData(None, None, None, None, self, actorSystem, Set.empty, insightSubscriber)
+  ): SequencerData = SequencerData(None, None, None, None, self, actorSystem, Set.empty, Set.empty)
 }
