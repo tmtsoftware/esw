@@ -16,7 +16,7 @@ import csw.testkit.scaladsl.{CSWService, ScalaTestFrameworkTestKit}
 import esw.ocs.api.client.SequencerClient
 import esw.ocs.api.protocol.ScriptError
 import esw.ocs.app.wiring.{SequenceComponentWiring, SequencerWiring}
-import esw.ocs.impl.SequencerClientFactory
+import esw.ocs.impl.{SequencerActorProxy, SequencerClientFactory}
 import esw.ocs.impl.messages.SequenceComponentMsg
 import msocket.impl.Encoding.JsonText
 
@@ -61,6 +61,13 @@ abstract class EswTestKit(services: CSWService*) extends ScalaTestFrameworkTestK
       sequenceComponentName: Option[String] = None
   ): ActorRef[SequencerMsg] =
     spawnSequencer(packageId, observingMode, sequenceComponentName).toOption.get.uri.toActorRef.unsafeUpcast[SequencerMsg]
+
+  def spawnSequencerProxy(
+      packageId: String,
+      observingMode: String,
+      sequenceComponentName: Option[String] = None
+  ): SequencerActorProxy =
+    new SequencerActorProxy(spawnSequencerRef(packageId, observingMode, sequenceComponentName))
 
   def spawnSequencer(
       packageId: String,

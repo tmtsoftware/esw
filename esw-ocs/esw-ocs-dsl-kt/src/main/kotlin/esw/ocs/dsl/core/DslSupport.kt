@@ -30,13 +30,15 @@ fun FSMScript(initState: String, block: suspend FSMScript.(csw: CswServices) -> 
             val wiring = ScriptWiring()
             FSMScript(it, wiring.strandEc, wiring.scope).apply {
                 try {
-                    runBlocking { block(it) }
-                    become(initState)
+                    runBlocking {
+                        block(it)
+                        become(initState)
+                    }
                 } catch (ex: Exception) {
                     error("Script initialisation failed with message : " + ex.message)
                     throw ScriptInitialisationFailedException(ex.message)
                 }
-            }.scriptDsl
+            }.fsmScriptDsl
         }
 
 class ScriptResult(val scriptFactory: (CswServices) -> ScriptDsl) {

@@ -55,7 +55,7 @@ sealed class BaseScript(val cswServices: CswServices, scope: CoroutineScope) : C
 }
 
 @ScriptMarker
-class Script(
+open class Script(
         cswServices: CswServices,
         override val strandEc: StrandEc,
         scope: CoroutineScope
@@ -86,18 +86,27 @@ class Script(
             }
 }
 
+class FSMStateDsl(
+        cswServices: CswServices,
+        override val strandEc: StrandEc,
+        scope: CoroutineScope,
+        val fsmScriptDsl: FSMScriptDsl
+) : Script(cswServices, strandEc, scope) {
+    fun become(nextState: String) = fsmScriptDsl.become(nextState)
+}
+
 @ScriptMarker
 class FSMScript(
         cswServices: CswServices,
         override val strandEc: StrandEc,
         scope: CoroutineScope
 ) : BaseScript(cswServices, scope) {
-    private val fsmScriptDsl: FSMScriptDsl by lazy { FSMScriptDsl(cswServices, strandEc) }
+    internal val fsmScriptDsl: FSMScriptDsl by lazy { FSMScriptDsl(cswServices, strandEc) }
 
     override val scriptDsl: ScriptDsl by lazy { fsmScriptDsl }
 
-    fun state(state: String, block: suspend Script.() -> Unit) {
-        fun reusableScript(): Script = Script(cswServices, strandEc, coroutineScope).apply {
+    fun state(state: String, block: suspend FSMStateDsl.() -> Unit) {
+        fun reusableScript(): FSMStateDsl = FSMStateDsl(cswServices, strandEc, coroutineScope, fsmScriptDsl).apply {
             try {
                 runBlocking { block() }
             } catch (ex: Exception) {
@@ -109,5 +118,5 @@ class FSMScript(
         fsmScriptDsl.add(state) { reusableScript().scriptDsl }
     }
 
-    fun become(nextState: String) = fsmScriptDsl.become(nextState)
+    internal fun become(nextState: String) = fsmScriptDsl.become(nextState)
 }

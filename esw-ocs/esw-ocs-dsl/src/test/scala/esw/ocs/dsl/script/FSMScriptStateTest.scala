@@ -5,17 +5,13 @@ import java.util.function.Supplier
 import esw.ocs.api.BaseTestSuite
 
 class FSMScriptStateTest extends BaseTestSuite {
-  private val script1 = mock[ScriptDsl]
-  private val script2 = mock[ScriptDsl]
+  private val script1: Supplier[ScriptDsl] = () => mock[ScriptDsl]
+  private val script2: Supplier[ScriptDsl] = () => mock[ScriptDsl]
 
   private val INIT_STATE    = "INIT"
   private val STARTED_STATE = "STARTED"
 
-  private val stateHandlers: Map[String, Supplier[ScriptDsl]] =
-    Map(
-      INIT_STATE    -> (() => script1),
-      STARTED_STATE -> (() => script2)
-    )
+  private val stateHandlers: Map[String, Supplier[ScriptDsl]] = Map(INIT_STATE -> script1, STARTED_STATE -> script2)
 
   "init" must {
     "initialize script state with empty values" in {
@@ -42,9 +38,8 @@ class FSMScriptStateTest extends BaseTestSuite {
 
   "add" must {
     "allow adding new handlers against provided state in existing script state" in {
-      val initialState                 = FSMScriptState.init()
-      val handler: Supplier[ScriptDsl] = () => script1
-      initialState.add(INIT_STATE, handler) should ===(FSMScriptState(None, None, Map(INIT_STATE -> handler)))
+      val initialState = FSMScriptState.init()
+      initialState.add(INIT_STATE, script1) should ===(FSMScriptState(None, None, Map(INIT_STATE -> script1)))
     }
   }
 
@@ -56,7 +51,7 @@ class FSMScriptStateTest extends BaseTestSuite {
 
     "return current script dsl when it is available in the script state" in {
       val state = FSMScriptState(Some(INIT_STATE), Some(script1), stateHandlers)
-      state.currentScript should ===(script1)
+      state.currentScript shouldBe a[ScriptDsl]
     }
   }
 }
