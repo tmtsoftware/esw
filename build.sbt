@@ -63,10 +63,9 @@ lazy val `esw-ocs-impl` = project
     `esw-test-reporter` % Test
   )
 
-//todo: enable coverage
 lazy val `esw-ocs-app` = project
   .in(file("esw-ocs/esw-ocs-app"))
-  .enablePlugins(EswBuildInfo, DeployApp)
+  .enablePlugins(EswBuildInfo, DeployApp, MaybeCoverage)
   .settings(
     libraryDependencies ++= Dependencies.OcsApp.value
   )
