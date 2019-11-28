@@ -15,10 +15,10 @@ class ProcessVariable<T> constructor(
 ) {
     private val eventKey: String = initial.eventKey().key()
     private var latestEvent: Event = initial
-    private val subscribers: Set<Refreshable> = mutableSetOf()
+    private val subscribers: MutableSet<Refreshable> = mutableSetOf()
 
     suspend fun bind(refreshable: Refreshable) {
-        subscribers + refreshable
+        subscribers.add(refreshable)
         if (subscribers.size == 1) startSubscription()
     }
 
