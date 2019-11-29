@@ -36,24 +36,23 @@ FSMScript("INIT") {
      */
     val temperatureFSM = FSM("TEMP", "OK") {
         state(OK) {
-            println("[@@@====== OK ======= @@@@]")
-            publishSate(tempFSMEvent, OK)
+            entry {
+                publishSate(tempFSMEvent, OK)
+            }
 
-            val temp = temperatureVar.get()
-            println("[FSM (OK)] temp = $temp")
-            on(temp == 30L) {
-                println("[FSM] -----------Competing FSM ")
+            on(temperatureVar.get() == 30L) {
                 completeFSM()
             }
 
-            on(temp > 40) {
+            on(temperatureVar.get() > 40) {
                 become(ERROR)
             }
         }
 
         state(ERROR) {
-            println("[@@@====== ERROR ======= @@@@]")
-            publishSate(tempFSMEvent, ERROR)
+            entry {
+                publishSate(tempFSMEvent, ERROR)
+            }
 
             on(temperatureVar.get() < 40) {
                 become("OK")
@@ -86,7 +85,6 @@ FSMScript("INIT") {
         onSetup("set-temp") { cmd ->
             val receivedTemp = cmd(tempKey).first
             publishEvent(SystemEvent("esw.temperature", "temp", tempKey.set(receivedTemp)))
-            println("TEMP = $receivedTemp")
 
             if (receivedTemp == 30L) {
                 temperatureFSM.await()

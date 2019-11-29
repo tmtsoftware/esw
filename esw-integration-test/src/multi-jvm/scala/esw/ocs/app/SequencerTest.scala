@@ -95,7 +95,7 @@ class SequencerTest(ignore: Int, mode: String)
   }
 
   private def sequencerClient(packageId: String, observingMode: String): SequencerApi = {
-    val componentId = ComponentId(s"$packageId@$observingMode@http", ComponentType.Sequencer)
+    val componentId = ComponentId(s"$packageId@$observingMode", ComponentType.Sequencer)
     val location    = locationService.resolve(HttpConnection(componentId), 5.seconds).futureValue.get
     SequencerApiFactory.make(location)
   }

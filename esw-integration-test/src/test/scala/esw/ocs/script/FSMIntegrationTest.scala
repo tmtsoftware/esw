@@ -13,7 +13,7 @@ class FSMIntegrationTest extends EswTestKit(EventServer) {
 
   "FSM" must {
 
-    "start child fsm and accept commands" ignore {
+    "start child fsm and accept commands" in {
       val mainFsmKey = EventKey("esw.commandFSM.state")
       val tempFsmKey = EventKey("esw.temperatureFSM.state")
       val stateKey   = StringKey.make("state")
@@ -54,6 +54,7 @@ class FSMIntegrationTest extends EswTestKit(EventServer) {
 
       tempFsmStateProbe.expectMessage("ERROR")
       tempFsmStateProbe.expectMessage("OK")
+      tempFsmStateProbe.expectMessage("FINISHED")
       mainFsmStateProbe.expectMessage("TERMINATE")
 
       fsmSequencer.stop().awaitResult

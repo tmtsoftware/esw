@@ -1,7 +1,6 @@
 package esw.ocs.dsl.script
 
 import java.util.concurrent.CompletionStage
-import java.util.function.Supplier
 
 import akka.Done
 import csw.params.commands.SequenceCommand
@@ -24,7 +23,7 @@ private[esw] class FSMScriptDsl(
     scriptState.currentScript
   }
 
-  def add(state: String, script: Supplier[ScriptDsl]): Unit = {
+  def add(state: String, script: () => ScriptDsl): Unit = {
     scriptState = scriptState.add(state, script)
   }
 

@@ -14,6 +14,8 @@ class ProcessVariable<T> constructor(
         private val eventService: EventServiceDsl
 ) {
     private val eventKey: String = initial.eventKey().key()
+
+    // todo: should initial event be published?
     private var latestEvent: Event = initial
     private val subscribers: MutableSet<Refreshable> = mutableSetOf()
 
@@ -38,7 +40,9 @@ class ProcessVariable<T> constructor(
 
     private suspend fun startSubscription() =
             eventService.onEvent(eventKey) { event ->
-                latestEvent = event
-                subscribers.forEach { it.refresh() }
+                if (!event.isInvalid) {
+                    latestEvent = event
+                    subscribers.forEach { it.refresh() }
+                }
             }
 }

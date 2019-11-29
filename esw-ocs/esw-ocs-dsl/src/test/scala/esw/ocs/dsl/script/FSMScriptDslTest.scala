@@ -1,7 +1,6 @@
 package esw.ocs.dsl.script
 
 import java.util.concurrent.CompletableFuture
-import java.util.function.Supplier
 
 import akka.Done
 import csw.params.commands.SequenceCommand
@@ -33,9 +32,9 @@ class FSMScriptDslTest extends BaseTestSuite {
 
   "add" must {
     "call add method defined on FSMScriptState and update its internal state" in {
-      val initialState                 = mock[FSMScriptState]
-      val updatedState                 = mock[FSMScriptState]
-      val handler: Supplier[ScriptDsl] = () => mock[ScriptDsl]
+      val initialState = mock[FSMScriptState]
+      val updatedState = mock[FSMScriptState]
+      val handler      = () => mock[ScriptDsl]
       when(initialState.add(STARTED_STATE, handler)).thenReturn(updatedState)
 
       val scriptDsl = new FSMScriptDsl(cswServices, strandEc, initialState)

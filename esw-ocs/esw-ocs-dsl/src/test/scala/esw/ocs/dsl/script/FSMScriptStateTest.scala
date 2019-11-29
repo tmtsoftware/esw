@@ -1,17 +1,15 @@
 package esw.ocs.dsl.script
 
-import java.util.function.Supplier
-
 import esw.ocs.api.BaseTestSuite
 
 class FSMScriptStateTest extends BaseTestSuite {
-  private val script1: Supplier[ScriptDsl] = () => mock[ScriptDsl]
-  private val script2: Supplier[ScriptDsl] = () => mock[ScriptDsl]
+  private val script1 = () => mock[ScriptDsl]
+  private val script2 = () => mock[ScriptDsl]
 
   private val INIT_STATE    = "INIT"
   private val STARTED_STATE = "STARTED"
 
-  private val stateHandlers: Map[String, Supplier[ScriptDsl]] = Map(INIT_STATE -> script1, STARTED_STATE -> script2)
+  private val stateHandlers: Map[String, () => ScriptDsl] = Map(INIT_STATE -> script1, STARTED_STATE -> script2)
 
   "init" must {
     "initialize script state with empty values" in {

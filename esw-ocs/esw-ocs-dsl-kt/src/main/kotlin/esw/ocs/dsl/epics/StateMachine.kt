@@ -9,7 +9,7 @@ annotation class FSMDslMarker
 
 // this interface is exposed to outside world
 interface StateMachine : Refreshable {
-    fun start()
+    suspend fun start()
     suspend fun await()
 }
 
@@ -22,7 +22,7 @@ interface FSMTopLevel {
 // this interface is exposed in side each state of FSM
 @FSMDslMarker
 interface FSMState {
-    fun become(state: String, params: Params = Params(setOf()))
+    suspend fun become(state: String, params: Params = Params(setOf()))
     fun completeFSM()
     suspend fun on(condition: Boolean = true, body: suspend () -> Unit)
     suspend fun after(duration: Duration, body: suspend () -> Unit)
@@ -46,26 +46,25 @@ class StateMachineImpl(val name: String, private val initialState: String, val c
         states += name.toUpperCase() to block
     }
 
-    override fun become(state: String, params: Params) {
+    override suspend fun become(state: String, params: Params) {
         if (states.keys.any { it.equals(state, true) }) {
             previousState = currentState
             currentState = state
             this.params = params
-            refresh()
+            coroutineScope.launch(fsmJob) {
+                states[currentState?.toUpperCase()]?.invoke(this@StateMachineImpl, params)
+            }.join()
         } else throw InvalidStateException(state)
     }
 
-    override fun start() = become(initialState)
+    override suspend fun start() = become(initialState)
 
     override suspend fun await() = fsmJob.join()
 
     override fun completeFSM() = fsmJob.cancel()
 
-    override fun refresh() {
-        coroutineScope.launch(fsmJob) {
-            states[currentState?.toUpperCase()]?.invoke(this@StateMachineImpl, params)
-        }
-    }
+    // fixme: remove !!
+    override suspend fun refresh() = become(currentState!!, params)
 
     override suspend fun on(condition: Boolean, body: suspend () -> Unit) {
         if (condition) {
@@ -79,7 +78,7 @@ class StateMachineImpl(val name: String, private val initialState: String, val c
     }
 
     override suspend fun entry(body: suspend () -> Unit) {
-        if (currentState.equals(previousState, true)) {
+        if (!currentState.equals(previousState, true)) {
             body()
         }
     }

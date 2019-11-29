@@ -24,6 +24,7 @@ sealed class BaseScript(val cswServices: CswServices, scope: CoroutineScope) : C
 
     private val exceptionHandler = CoroutineExceptionHandler { _, exception ->
         warn("Exception thrown in script with a message: ${exception.message}, invoking exception handler", ex = exception)
+        exception.printStackTrace()
         scriptDsl.executeExceptionHandlers(exception)
     }
 
