@@ -6,7 +6,6 @@ import csw.params.events.EventName
 import csw.params.events.SystemEvent
 import csw.params.javadsl.JKeyType
 import esw.ocs.dsl.params.Params
-import esw.ocs.dsl.params.set
 import esw.ocs.dsl.script.StrandEc
 import io.kotlintest.eventually
 import io.kotlintest.shouldBe
@@ -17,28 +16,27 @@ import org.junit.jupiter.api.Test
 import kotlin.time.milliseconds
 import io.kotlintest.milliseconds as jMilliseconds
 
-
 class StateMachineImplTest {
 
     // These are needed to simulate script like environment
-    val job = SupervisorJob()
+    private val job = SupervisorJob()
     private val _strandEc = StrandEc.apply()
     private val dispatcher = _strandEc.executorService().asCoroutineDispatcher()
     private val exceptionHandler = CoroutineExceptionHandler { _, exception ->
         println("Exception thrown in script with a message: ${exception.message}, invoking exception handler " + exception)
     }
-    val coroutineScope = CoroutineScope(job + exceptionHandler + dispatcher)
+    private val coroutineScope = CoroutineScope(job + exceptionHandler + dispatcher)
 
-    val init = "INIT"
-    val inProgress = "INPROGRESS"
-    val invalid = "INVALIDSTATE"
-    val testMachineName = "test-state-machine"
-    val timeout = 100.jMilliseconds
+    private val init = "INIT"
+    private val inProgress = "INPROGRESS"
+    private val invalid = "INVALIDSTATE"
+    private val testMachineName = "test-state-machine"
+    private val timeout = 100.jMilliseconds
 
-    var initFlag = false
-    var parameterSet = Params(setOf())
+    private var initFlag = false
+    private var parameterSet = Params(setOf())
     // instantiating to not to deal with nullable
-    var stateMachine = StateMachineImpl(testMachineName, invalid, coroutineScope)
+    private var stateMachine = StateMachineImpl(testMachineName, invalid, coroutineScope)
 
     @BeforeEach
     fun beforeEach() {
@@ -53,13 +51,13 @@ class StateMachineImplTest {
     }
 
     @Test
-    fun `start should start the fsm and evaluate the initial state | ESW-142`() {
+    fun `start should start the fsm and evaluate the initial state | ESW-142`() = runBlocking {
         stateMachine.start()
         checkInitFlag()
     }
 
     @Test
-    fun `start should throw exception if invalid initial state is given | ESW-142`() {
+    fun `start should throw exception if invalid initial state is given | ESW-142`() = runBlocking<Unit> {
         val invalidStateMachine = StateMachineImpl(testMachineName, invalid, coroutineScope)
         shouldThrow<InvalidStateException> { invalidStateMachine.start() }
     }
@@ -77,14 +75,14 @@ class StateMachineImplTest {
     }
 
     @Test
-    fun `become should throw exception if invalid state is given | ESW-142, ESW-252`() {
+    fun `become should throw exception if invalid state is given | ESW-142, ESW-252`() = runBlocking<Unit> {
         shouldThrow<InvalidStateException> {
             stateMachine.become("INVALIDSTATE")
         }
     }
 
     @Test
-    fun `become should treat stateNames case insensitively | ESW-142, ESW-252`() {
+    fun `become should treat stateNames case insensitively | ESW-142, ESW-252`() = runBlocking {
         stateMachine.become(init.toLowerCase())
         checkInitFlag()
     }
@@ -116,13 +114,13 @@ class StateMachineImplTest {
     }
 
     @Test
-    fun `state should add the given lambda against the state | ESW-142`() {
+    fun `state should add the given lambda against the state | ESW-142`() = runBlocking {
         stateMachine.start()
         checkInitFlag()
     }
 
     @Test
-    fun `refresh should evaluate fsm with its current state | ESW-142`() {
+    fun `refresh should evaluate fsm with its current state | ESW-142`() = runBlocking {
         var firstCalled = false
         var refreshFlag = false
 
