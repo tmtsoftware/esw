@@ -1,7 +1,5 @@
 package esw.ocs.testkit
 
-import java.net.URI
-
 import akka.actor
 import akka.actor.typed.{ActorRef, ActorSystem, SpawnProtocol}
 import akka.util.Timeout
@@ -10,15 +8,14 @@ import csw.event.api.scaladsl.{EventPublisher, EventService, EventSubscriber}
 import csw.location.api.extensions.URIExtension._
 import csw.location.api.scaladsl.LocationService
 import csw.location.models.Connection.{AkkaConnection, HttpConnection}
-import csw.location.models.{AkkaLocation, ComponentId, ComponentType}
+import csw.location.models.{AkkaLocation, ComponentId, ComponentType, HttpLocation}
 import csw.params.core.models.Subsystem
 import csw.testkit.scaladsl.{CSWService, ScalaTestFrameworkTestKit}
-import esw.ocs.api.client.SequencerClient
+import esw.ocs.api.SequencerApi
 import esw.ocs.api.protocol.ScriptError
 import esw.ocs.app.wiring.{SequenceComponentWiring, SequencerWiring}
-import esw.ocs.impl.{SequencerActorProxy, SequencerClientFactory}
 import esw.ocs.impl.messages.SequenceComponentMsg
-import msocket.impl.Encoding.JsonText
+import esw.ocs.impl.{SequencerActorProxy, SequencerApiFactory}
 
 import scala.collection.mutable
 import scala.concurrent.ExecutionContext
@@ -85,16 +82,14 @@ abstract class EswTestKit(services: CSWService*) extends ScalaTestFrameworkTestK
     wiring.start()
   }
 
-  private def resolveSequencerHttp(packageId: String, observingMode: String): URI = {
+  private def resolveSequencerHttp(packageId: String, observingMode: String): HttpLocation = {
     val componentId = ComponentId(s"$packageId@$observingMode@http", ComponentType.Sequencer)
-    locationService.resolve(HttpConnection(componentId), 5.seconds).futureValue.get.uri
+    locationService.resolve(HttpConnection(componentId), 5.seconds).futureValue.get
   }
 
-  def sequencerClient(packageId: String, observingMode: String): SequencerClient = {
-    val uri     = resolveSequencerHttp(packageId, observingMode)
-    val postUrl = s"${uri.toString}post-endpoint"
-    val wsUrl   = s"ws://${uri.getHost}:${uri.getPort}/websocket-endpoint"
-    SequencerClientFactory.make(postUrl, wsUrl, JsonText, () => None)
+  def sequencerClient(packageId: String, observingMode: String): SequencerApi = {
+    val httpLocation = resolveSequencerHttp(packageId, observingMode)
+    SequencerApiFactory.make(httpLocation)
   }
 
   def resolveSequencerLocation(sequencerName: String): AkkaLocation =
