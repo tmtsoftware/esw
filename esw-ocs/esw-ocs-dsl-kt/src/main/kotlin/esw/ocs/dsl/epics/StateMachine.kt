@@ -1,11 +1,9 @@
 package esw.ocs.dsl.epics
 
+import esw.ocs.dsl.annotation.FSMDslMarker
 import esw.ocs.dsl.params.Params
 import kotlinx.coroutines.*
 import kotlin.time.Duration
-
-@DslMarker
-annotation class FSMDslMarker
 
 // this interface is exposed to outside world
 interface StateMachine : Refreshable {

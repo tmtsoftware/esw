@@ -9,7 +9,6 @@ import csw.params.core.generics.Parameter
 import csw.params.core.models.Prefix
 import csw.params.events.*
 import esw.ocs.dsl.epics.ProcessVariable
-import esw.ocs.dsl.params.set
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.future.await
 import kotlinx.coroutines.future.future
@@ -17,7 +16,7 @@ import java.util.*
 import kotlin.time.Duration
 import kotlin.time.toJavaDuration
 
-data class Subscription(val cancel: suspend () -> Unit)
+data class EventSubscription(val cancel: suspend () -> Unit)
 
 interface EventServiceDsl {
     val coroutineScope: CoroutineScope
@@ -40,10 +39,10 @@ interface EventServiceDsl {
                 coroutineScope.future { Optional.ofNullable(eventGenerator()) }
             }, every.toJavaDuration())
 
-    suspend fun onEvent(vararg eventKeys: String, callback: suspend CoroutineScope.(Event) -> Unit): Subscription {
+    suspend fun onEvent(vararg eventKeys: String, callback: suspend CoroutineScope.(Event) -> Unit): EventSubscription {
         val subscription = defaultSubscriber.subscribeAsync(eventKeys.toEventKeys()) { coroutineScope.future { callback(it) } }
         subscription.ready().await()
-        return Subscription { subscription.unsubscribe().await() }
+        return EventSubscription { subscription.unsubscribe().await() }
     }
 
     suspend fun getEvent(vararg eventKeys: String): Set<Event> =

@@ -1,10 +1,10 @@
 package esw.ocs.dsl.epics
 
-import esw.ocs.dsl.highlevel.Subscription
+import esw.ocs.dsl.highlevel.EventSubscription
 
-data class FSMSubscription(private val eventSubscription: Subscription, private val remove: () -> Unit) {
+data class FSMSubscription(private val eventSubscription: EventSubscription, private val removeSubscriber: () -> Unit) {
     suspend fun cancel() {
-        remove()
+        removeSubscriber()
         eventSubscription.cancel()
     }
 }

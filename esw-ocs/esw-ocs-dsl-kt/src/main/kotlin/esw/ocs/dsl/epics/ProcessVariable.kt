@@ -5,7 +5,7 @@ import csw.params.events.Event
 import csw.params.events.ObserveEvent
 import csw.params.events.SystemEvent
 import esw.ocs.dsl.highlevel.EventServiceDsl
-import esw.ocs.dsl.highlevel.Subscription
+import esw.ocs.dsl.highlevel.EventSubscription
 import esw.ocs.dsl.params.first
 import esw.ocs.dsl.params.invoke
 
@@ -43,7 +43,7 @@ class ProcessVariable<T> constructor(
     // if not present, throw an exception
     fun get(): T = (latestEvent.paramType())(key).first
 
-    private suspend fun startSubscription(): Subscription =
+    private suspend fun startSubscription(): EventSubscription =
             eventService.onEvent(eventKey) { event ->
                 if (!event.isInvalid) {
                     latestEvent = event

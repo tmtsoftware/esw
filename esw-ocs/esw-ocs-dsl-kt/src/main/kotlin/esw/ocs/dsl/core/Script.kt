@@ -4,6 +4,7 @@ import csw.params.commands.Observe
 import csw.params.commands.SequenceCommand
 import csw.params.commands.Setup
 import csw.time.core.models.UTCTime
+import esw.ocs.dsl.annotation.ScriptMarker
 import esw.ocs.dsl.highlevel.CswHighLevelDsl
 import esw.ocs.dsl.nullable
 import esw.ocs.dsl.params.Params
@@ -16,9 +17,6 @@ import kotlinx.coroutines.*
 import kotlinx.coroutines.future.asCompletableFuture
 import kotlinx.coroutines.future.await
 import kotlinx.coroutines.future.future
-
-@DslMarker
-annotation class ScriptMarker
 
 sealed class BaseScript(val cswServices: CswServices, scope: CoroutineScope) : CswHighLevelDsl(cswServices) {
     internal open val scriptDsl: ScriptDsl by lazy { ScriptDsl(cswServices, strandEc) }

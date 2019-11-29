@@ -20,7 +20,7 @@ fun script(block: suspend Script.(csw: CswServices) -> Unit): ScriptResult =
             }.scriptDsl
         }
 
-fun reusableScript(block: Script.(csw: CswServices) -> Unit) =
+fun reusableScript(block: Script.(csw: CswServices) -> Unit): ReusableScriptResult =
         ReusableScriptResult { csw, ec, ctx ->
             Script(csw, ec, ctx).apply { block(csw) }
         }

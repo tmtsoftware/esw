@@ -104,7 +104,7 @@ class EventServiceDslTest : EventServiceDsl {
         every { eventSubscription.unsubscribe() }.answers { CompletableFuture.completedFuture(done()) }
         every { eventSubscription.ready() }.answers { CompletableFuture.completedFuture(done()) }
 
-        val subscription: Subscription = onEvent(key) { eventCallback }
+        val subscription: EventSubscription = onEvent(key) { eventCallback }
         verify { eventSubscriber.subscribeAsync(eventKeys, any()) }
 
         subscription.cancel()

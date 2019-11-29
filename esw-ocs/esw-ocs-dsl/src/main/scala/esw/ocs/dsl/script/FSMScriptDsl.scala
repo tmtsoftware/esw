@@ -24,7 +24,7 @@ private[esw] class FSMScriptDsl(
     scriptState.currentScript
   }
 
-  def add(state: String, script: (Params) => ScriptDsl): Unit =
+  def add(state: String, script: Params => ScriptDsl): Unit =
     scriptState = scriptState.add(state, script)
 
   override def execute(command: SequenceCommand): Future[Unit] =
