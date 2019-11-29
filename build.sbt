@@ -4,6 +4,7 @@ import sbtcrossproject.CrossPlugin.autoImport.{CrossType, crossProject}
 lazy val aggregateProjects: Seq[ProjectReference] =
   Seq(
     `esw-ocs`,
+    `esw-ocs-handler`,
     `esw-http-core`,
     `esw-gateway`,
     `esw-integration-test`,
@@ -58,7 +59,7 @@ lazy val `esw-ocs-handler` = project
   .settings(
     libraryDependencies ++= Dependencies.OcsHandler.value
   )
-  .dependsOn(`esw-ocs-api`.jvm)
+  .dependsOn(`esw-ocs-api`.jvm % "compile->compile;test->test")
 
 lazy val `esw-ocs-impl` = project
   .in(file("esw-ocs/esw-ocs-impl"))

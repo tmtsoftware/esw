@@ -21,6 +21,7 @@ object Dependencies {
       Libs.`msocket-impl-jvm`,
       Libs.scalatest               % Test,
       AkkaHttp.`akka-http-testkit` % Test,
+      Akka.`akka-stream-testkit`   % Test,
       Libs.`mockito-scala`         % Test
     )
   )
