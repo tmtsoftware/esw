@@ -21,6 +21,7 @@ private[esw] class FSMScriptDsl(
 
   def become(nextState: String): Unit = {
     scriptState = scriptState.transition(nextState)
+    scriptState.currentScript
   }
 
   def add(state: String, script: Supplier[ScriptDsl]): Unit = {

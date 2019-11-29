@@ -13,8 +13,7 @@ import csw.params.events.{Event, EventKey, SystemEvent}
 import csw.testkit.{EventTestKit, FrameworkTestKit}
 import esw.ocs.api.SequencerApi
 import esw.ocs.app.wiring.SequencerWiring
-import esw.ocs.impl.SequencerClientFactory
-import msocket.impl.Encoding.JsonText
+import esw.ocs.impl.SequencerApiFactory
 import org.scalatest.concurrent.ScalaFutures.convertScalaFuture
 
 import scala.concurrent.duration.DurationInt
@@ -97,9 +96,7 @@ class SequencerTest(ignore: Int, mode: String)
 
   private def sequencerClient(packageId: String, observingMode: String): SequencerApi = {
     val componentId = ComponentId(s"$packageId@$observingMode@http", ComponentType.Sequencer)
-    val uri         = locationService.resolve(HttpConnection(componentId), 5.seconds).futureValue.get.uri
-    val postUrl     = s"${uri.toString}post-endpoint"
-    val wsUrl       = s"ws://${uri.getHost}:${uri.getPort}/websocket-endpoint"
-    SequencerClientFactory.make(postUrl, wsUrl, JsonText, () => None)
+    val location    = locationService.resolve(HttpConnection(componentId), 5.seconds).futureValue.get
+    SequencerApiFactory.make(location)
   }
 }
