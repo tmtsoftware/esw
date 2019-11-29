@@ -6,6 +6,7 @@ import csw.params.commands.Setup
 import csw.time.core.models.UTCTime
 import esw.ocs.dsl.highlevel.CswHighLevelDsl
 import esw.ocs.dsl.nullable
+import esw.ocs.dsl.params.Params
 import esw.ocs.dsl.script.CswServices
 import esw.ocs.dsl.script.FSMScriptDsl
 import esw.ocs.dsl.script.ScriptDsl
@@ -93,7 +94,7 @@ class FSMStateDsl(
         scope: CoroutineScope,
         val fsmScriptDsl: FSMScriptDsl
 ) : Script(cswServices, strandEc, scope) {
-    fun become(nextState: String) = fsmScriptDsl.become(nextState)
+    fun become(nextState: String, params: Params = Params(setOf())) = fsmScriptDsl.become(nextState, params)
 }
 
 @ScriptMarker
@@ -106,10 +107,10 @@ class FSMScript(
 
     override val scriptDsl: ScriptDsl by lazy { fsmScriptDsl }
 
-    fun state(state: String, block: suspend FSMStateDsl.() -> Unit) {
+    fun state(state: String, block: suspend FSMStateDsl.(Params) -> Unit) {
         fun reusableScript(): FSMStateDsl = FSMStateDsl(cswServices, strandEc, coroutineScope, fsmScriptDsl).apply {
             try {
-                runBlocking { block() }
+                runBlocking { block(fsmScriptDsl.state.params()) }
             } catch (ex: Exception) {
                 error("Failed to initialize state: $state", ex = ex)
                 throw ScriptInitialisationFailedException(ex.message)
@@ -119,5 +120,5 @@ class FSMScript(
         fsmScriptDsl.add(state) { reusableScript().scriptDsl }
     }
 
-    internal fun become(nextState: String) = fsmScriptDsl.become(nextState)
+    internal fun become(nextState: String, params: Params = Params(setOf())) = fsmScriptDsl.become(nextState, params)
 }

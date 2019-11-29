@@ -11,3 +11,7 @@ case class Params(params: util.Set[Parameter[_]]) extends ParameterSetType[Param
 
   override protected def create(data: Set[Parameter[_]]): Params = copy(params = data.asJava)
 }
+
+object Params {
+  def apply(): Params = new Params(util.Set.of())
+}

@@ -27,7 +27,7 @@ FSMScript("INIT") {
 
     val temperatureVar = SystemVar(0, "esw.temperature.temp", tempKey)
 
-    suspend fun publishSate(baseEvent: SystemEvent, state: String) = publishEvent(baseEvent.add(stateKey.set(state)))
+    suspend fun publishState(baseEvent: SystemEvent, state: String) = publishEvent(baseEvent.add(stateKey.set(state)))
 
     /**
      * temp == 30               => FINISH
@@ -37,7 +37,7 @@ FSMScript("INIT") {
     val temperatureFSM = FSM("TEMP", "OK") {
         state(OK) {
             entry {
-                publishSate(tempFSMEvent, OK)
+                publishState(tempFSMEvent, OK)
             }
 
             on(temperatureVar.get() == 30L) {
@@ -51,7 +51,7 @@ FSMScript("INIT") {
 
         state(ERROR) {
             entry {
-                publishSate(tempFSMEvent, ERROR)
+                publishState(tempFSMEvent, ERROR)
             }
 
             on(temperatureVar.get() < 40) {
@@ -74,13 +74,13 @@ FSMScript("INIT") {
      * 4. shutdown
      */
     state(INIT) {
-        publishSate(commandFSMEvent, INIT)
+        publishState(commandFSMEvent, INIT)
         temperatureFSM.start()
         become(STARTED)
     }
 
     state(STARTED) {
-        publishSate(commandFSMEvent, STARTED)
+        publishState(commandFSMEvent, STARTED)
 
         onSetup("set-temp") { cmd ->
             val receivedTemp = cmd(tempKey).first
@@ -88,7 +88,7 @@ FSMScript("INIT") {
 
             if (receivedTemp == 30L) {
                 temperatureFSM.await()
-                publishSate(tempFSMEvent, "FINISHED")
+                publishState(tempFSMEvent, "FINISHED")
             }
 
             if (receivedTemp > 50L) {
@@ -98,18 +98,18 @@ FSMScript("INIT") {
     }
 
     state(TERMINATE) {
-        publishSate(commandFSMEvent, TERMINATE)
+        publishState(commandFSMEvent, TERMINATE)
 
         onObserve("wait") {
             delay(10000)
         }
 
         onStop {
-            publishSate(commandFSMEvent, "FSM:TERMINATE:STOP")
+            publishState(commandFSMEvent, "FSM:TERMINATE:STOP")
         }
     }
 
     onStop {
-        publishSate(commandFSMEvent, "MAIN:STOP")
+        publishState(commandFSMEvent, "MAIN:STOP")
     }
 }

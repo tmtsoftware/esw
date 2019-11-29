@@ -6,6 +6,7 @@ import akka.Done
 import csw.params.commands.SequenceCommand
 import csw.time.core.models.UTCTime
 import esw.ocs.api.BaseTestSuite
+import esw.ocs.dsl.params.Params
 
 import scala.concurrent.Future
 
@@ -13,6 +14,7 @@ class FSMScriptDslTest extends BaseTestSuite {
   private val strandEc      = StrandEc()
   private val cswServices   = mock[CswServices]
   private val STARTED_STATE = "STARTED"
+  private val params        = Params()
 
   override protected def afterAll(): Unit = strandEc.shutdown()
 
@@ -20,12 +22,12 @@ class FSMScriptDslTest extends BaseTestSuite {
     "call transition method defined on FSMScriptState and update its internal state" in {
       val initialState = mock[FSMScriptState]
       val updatedState = mock[FSMScriptState]
-      when(initialState.transition(STARTED_STATE)).thenReturn(updatedState)
+      when(initialState.transition(STARTED_STATE, params)).thenReturn(updatedState)
 
       val scriptDsl = new FSMScriptDsl(cswServices, strandEc, initialState)
-      scriptDsl.become(STARTED_STATE)
+      scriptDsl.become(STARTED_STATE, params)
 
-      verify(initialState).transition(STARTED_STATE)
+      verify(initialState).transition(STARTED_STATE, params)
       scriptDsl.getState should ===(updatedState)
     }
   }
@@ -34,7 +36,7 @@ class FSMScriptDslTest extends BaseTestSuite {
     "call add method defined on FSMScriptState and update its internal state" in {
       val initialState = mock[FSMScriptState]
       val updatedState = mock[FSMScriptState]
-      val handler      = () => mock[ScriptDsl]
+      val handler      = (_: Params) => mock[ScriptDsl]
       when(initialState.add(STARTED_STATE, handler)).thenReturn(updatedState)
 
       val scriptDsl = new FSMScriptDsl(cswServices, strandEc, initialState)
