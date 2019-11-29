@@ -1,20 +1,18 @@
 package esw.ocs.dsl.script
 
-import java.util.function.Supplier
-
 private[esw] case class FSMScriptState(
     private val currentState: Option[String],
-    private val maybeCurrentScript: Option[Supplier[ScriptDsl]],
-    private val stateHandlers: Map[String, Supplier[ScriptDsl]]
+    private val maybeCurrentScript: Option[() => ScriptDsl],
+    private val stateHandlers: Map[String, () => ScriptDsl]
 ) {
   lazy val currentScript: ScriptDsl =
-    maybeCurrentScript.getOrElse(throw new RuntimeException("Current script handler is not initialized")).get()
+    maybeCurrentScript.getOrElse(throw new RuntimeException("Current script handler is not initialized"))()
 
   def transition(nextState: String): FSMScriptState =
     if (currentState.isEmpty || currentState.get != nextState) copy(Some(nextState), Some(getScript(nextState)))
     else this
 
-  def add(state: String, script: Supplier[ScriptDsl]): FSMScriptState =
+  def add(state: String, script: () => ScriptDsl): FSMScriptState =
     copy(stateHandlers = stateHandlers + (state -> script))
 
   private def getScript(state: String) =
@@ -22,5 +20,5 @@ private[esw] case class FSMScriptState(
 }
 
 object FSMScriptState {
-  def init(): FSMScriptState = FSMScriptState(None, None, Map.empty[String, Supplier[ScriptDsl]])
+  def init(): FSMScriptState = FSMScriptState(None, None, Map.empty[String, () => ScriptDsl])
 }
