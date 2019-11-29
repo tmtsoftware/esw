@@ -23,7 +23,7 @@ interface FSMTopLevel {
 @FSMDslMarker
 interface FSMState {
     suspend fun become(state: String, params: Params = Params(setOf()))
-    fun completeFSM()
+    suspend fun completeFSM()
     suspend fun on(condition: Boolean = true, body: suspend () -> Unit)
     suspend fun after(duration: Duration, body: suspend () -> Unit)
     suspend fun entry(body: suspend () -> Unit)
@@ -35,6 +35,8 @@ class StateMachineImpl(val name: String, private val initialState: String, val c
     private var currentState: String? = null
     private var previousState: String? = null
     private var params: Params = Params(setOf())
+    private var fsmSubscriptions: Set<FSMSubscription> = setOf()
+
 
     //fixme : do we need to pass as receiver coroutine scope to state lambda
     private val states = mutableMapOf<String, suspend FSMState.(params: Params) -> Unit>()
@@ -61,10 +63,18 @@ class StateMachineImpl(val name: String, private val initialState: String, val c
 
     override suspend fun await() = fsmJob.join()
 
-    override fun completeFSM() = fsmJob.cancel()
+    override suspend fun completeFSM() {
+        fsmJob.cancel()
+        fsmSubscriptions.forEach { it.cancel() }
+    }
 
-    // fixme: remove !!
-    override suspend fun refresh() = become(currentState!!, params)
+    override suspend fun refresh() {
+        currentState?.let { become(it, params) }
+    }
+
+    override fun addFSMSubscription(fsmSubscription: FSMSubscription) {
+        fsmSubscriptions = fsmSubscriptions + fsmSubscription
+    }
 
     override suspend fun on(condition: Boolean, body: suspend () -> Unit) {
         if (condition) {

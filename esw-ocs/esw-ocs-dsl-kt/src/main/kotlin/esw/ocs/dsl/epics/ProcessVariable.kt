@@ -5,6 +5,7 @@ import csw.params.events.Event
 import csw.params.events.ObserveEvent
 import csw.params.events.SystemEvent
 import esw.ocs.dsl.highlevel.EventServiceDsl
+import esw.ocs.dsl.highlevel.Subscription
 import esw.ocs.dsl.params.first
 import esw.ocs.dsl.params.invoke
 
@@ -21,7 +22,11 @@ class ProcessVariable<T> constructor(
 
     suspend fun bind(refreshable: Refreshable) {
         subscribers.add(refreshable)
-        if (subscribers.size == 1) startSubscription()
+        if (subscribers.size == 1) {
+            val eventSubscription = startSubscription()
+            val subscription = FSMSubscription(eventSubscription) { subscribers -= refreshable }
+            refreshable.addFSMSubscription(subscription)
+        }
     }
 
     suspend fun set(value: T) {
@@ -38,7 +43,7 @@ class ProcessVariable<T> constructor(
     // if not present, throw an exception
     fun get(): T = (latestEvent.paramType())(key).first
 
-    private suspend fun startSubscription() =
+    private suspend fun startSubscription(): Subscription =
             eventService.onEvent(eventKey) { event ->
                 if (!event.isInvalid) {
                     latestEvent = event

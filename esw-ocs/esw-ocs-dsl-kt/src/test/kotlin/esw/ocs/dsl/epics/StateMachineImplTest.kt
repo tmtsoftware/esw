@@ -10,6 +10,10 @@ import esw.ocs.dsl.script.StrandEc
 import io.kotlintest.eventually
 import io.kotlintest.shouldBe
 import io.kotlintest.shouldThrow
+import io.mockk.coEvery
+import io.mockk.coVerify
+import io.mockk.every
+import io.mockk.mockk
 import kotlinx.coroutines.*
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
@@ -209,9 +213,17 @@ class StateMachineImplTest {
     }
 
     @Test
-    fun `completeFsm should complete fsm and cancel next operations | ESW-142`() = runBlocking {
+    fun `completeFsm should complete fsm and remove all subscriptions | ESW-142`() = runBlocking {
         var shouldChange = false
         var shouldNotChange = false
+
+        val subscription1: FSMSubscription = mockk()
+        val subscription2: FSMSubscription = mockk()
+        stateMachine.addFSMSubscription(subscription1)
+        stateMachine.addFSMSubscription(subscription2)
+
+        coEvery { subscription1.cancel() }.returns(Unit)
+        coEvery { subscription2.cancel() }.returns(Unit)
 
         stateMachine.state(inProgress) {
             shouldChange = true
@@ -228,6 +240,8 @@ class StateMachineImplTest {
             eventually(timeout) { shouldNotChange shouldBe false }
 
             stateMachine.await()
+            coVerify { subscription1.cancel() }
+            coVerify { subscription2.cancel() }
             eventually(timeout) { shouldNotChange shouldBe false }
         }.join()
     }

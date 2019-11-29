@@ -2,16 +2,20 @@ package esw.ocs.dsl.epics
 
 import akka.Done
 import csw.params.core.models.Prefix
+import csw.params.events.Event
 import csw.params.events.EventName
 import csw.params.events.SystemEvent
 import esw.ocs.dsl.highlevel.EventServiceDsl
+import esw.ocs.dsl.highlevel.Subscription
 import esw.ocs.dsl.params.booleanKey
 import esw.ocs.dsl.params.intKey
 import esw.ocs.dsl.params.set
 import io.kotlintest.shouldBe
 import io.mockk.coEvery
 import io.mockk.coVerify
+import io.mockk.every
 import io.mockk.mockk
+import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.runBlocking
 import org.junit.jupiter.api.Test
 
@@ -45,5 +49,28 @@ class ProcessVariableTest {
         val processVariable: ProcessVariable<Int> = ProcessVariable(systemEvent, intKey, eventServiceDsl)
 
         processVariable.get() shouldBe intValue
+    }
+
+    @Test
+    fun `bind should start subscription and add subscription entry in FSM | ESW-142`() = runBlocking {
+        val eventServiceDsl = mockk<EventServiceDsl>()
+        val refreshable = mockk<Refreshable>()
+        val subscription = mockk<FSMSubscription>()
+        val eventSubscription = mockk<Subscription>()
+
+        val intKey = intKey("testKey")
+        val intValue = 10
+        val systemEvent = SystemEvent(Prefix("tcs"), EventName("testEvent")).add(intKey.set(intValue))
+        val eventKey = systemEvent.eventKey().key()
+
+        every { refreshable.addFSMSubscription(any()) }.returns(Unit)
+        coEvery { eventServiceDsl.onEvent(eventKey, callback = any()) }.returns(eventSubscription)
+
+        val processVariable: ProcessVariable<Int> = ProcessVariable(systemEvent, intKey, eventServiceDsl)
+
+        processVariable.bind(refreshable)
+
+        coVerify { refreshable.addFSMSubscription(any()) }
+        coVerify { eventServiceDsl.onEvent(eventKey, callback = any()) }
     }
 }
