@@ -2,7 +2,6 @@ package esw.ocs.dsl.highlevel
 
 import akka.actor.typed.ActorSystem
 import akka.actor.typed.javadsl.Behaviors
-import akka.stream.Materializer
 import csw.database.DatabaseServiceFactory
 import csw.location.api.javadsl.ILocationService
 import csw.location.api.javadsl.JComponentType
@@ -15,13 +14,11 @@ import esw.ocs.dsl.script.utils.LockUnlockUtil
 import io.kotlintest.shouldBe
 import io.mockk.every
 import io.mockk.mockk
-import io.mockk.mockkStatic
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.runBlocking
 import org.junit.jupiter.api.AfterAll
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
-import scala.concurrent.ExecutionContextExecutor
 
 class CswHighLevelDslTest {
 

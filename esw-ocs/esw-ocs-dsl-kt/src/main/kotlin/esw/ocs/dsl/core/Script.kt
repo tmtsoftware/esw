@@ -8,10 +8,7 @@ import esw.ocs.dsl.ScriptMarker
 import esw.ocs.dsl.highlevel.CswHighLevelDsl
 import esw.ocs.dsl.nullable
 import esw.ocs.dsl.params.Params
-import esw.ocs.dsl.script.CswServices
-import esw.ocs.dsl.script.FSMScriptDsl
-import esw.ocs.dsl.script.ScriptDsl
-import esw.ocs.dsl.script.StrandEc
+import esw.ocs.dsl.script.*
 import esw.ocs.dsl.script.exceptions.ScriptLoadingException.ScriptInitialisationFailedException
 import kotlinx.coroutines.*
 import kotlinx.coroutines.future.asCompletableFuture
@@ -66,11 +63,17 @@ open class Script(
     suspend fun nextIf(predicate: (SequenceCommand) -> Boolean): SequenceCommand? =
             scriptDsl.nextIf { predicate(it) }.await().nullable()
 
-    fun onSetup(name: String, block: suspend CoroutineScope.(Setup) -> Unit) =
-            scriptDsl.onSetupCommand(name) { block.toJava(it) }
+    fun onSetup(name: String, block: suspend CoroutineScope.(Setup) -> Unit): SequenceCommandHandlerKt<Setup> {
+        val handler = SequenceCommandHandlerKt(block, coroutineScope)
+        scriptDsl.onSetupCommand(name, handler)
+        return handler
+    }
 
-    fun onObserve(name: String, block: suspend CoroutineScope.(Observe) -> Unit) =
-            scriptDsl.onObserveCommand(name) { block.toJava(it) }
+    fun onObserve(name: String, block: suspend CoroutineScope.(Observe) -> Unit): SequenceCommandHandlerKt<Observe> {
+        val handler = SequenceCommandHandlerKt(block, coroutineScope)
+        scriptDsl.onObserveCommand(name, handler)
+        return handler
+    }
 
     fun onException(block: suspend CoroutineScope.(Throwable) -> Unit) =
             scriptDsl.onException {

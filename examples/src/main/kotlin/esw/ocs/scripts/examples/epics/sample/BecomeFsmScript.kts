@@ -55,7 +55,7 @@ FSMScript("INIT") {
             become("DATUMING", Params(command.jParamSet()).kMadd(intKey("encoder").set(30)))
         }
 
-        onSetup("command-2") { command ->
+        onSetup("command-2") {
             fsm.start()
             fsm.await()
             become("FINISHED")
@@ -63,7 +63,7 @@ FSMScript("INIT") {
     }
 
     state("DATUMING") { params ->
-        onObserve("observe-command-1") { _ ->
+        onObserve("observe-command-1") {
             //do something
         }
 
