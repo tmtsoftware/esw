@@ -3,12 +3,8 @@ package esw.ocs.scripts.examples.testData
 import com.typesafe.config.ConfigFactory
 import csw.alarm.api.javadsl.JAlarmSeverity.Major
 import csw.alarm.models.Key.AlarmKey
-import csw.params.commands.CommandName
 import csw.params.commands.Sequence
 import csw.params.commands.SequenceCommand
-import csw.params.commands.Setup
-import csw.params.core.models.Id
-import csw.params.core.models.Prefix
 import csw.params.events.Event
 import csw.params.javadsl.JSubsystem.NFIRAOS
 import esw.ocs.dsl.core.script
@@ -19,7 +15,7 @@ import kotlin.time.seconds
 
 script {
     val lgsfSequencer = Sequencer("lgsf", "darknight")
-    val testAssembly = Assembly("test")
+    val testAssembly = Assembly("tcs.test")
 
     // ESW-134: Reuse code by ability to import logic from one script into another
     loadScripts(InitialCommandHandler)
@@ -52,13 +48,13 @@ script {
     onSetup("get-event") {
         // ESW-88
         val event: Event = getEvent("TCS.get.event").first()
-        val successEvent = SystemEvent("TCS", "get.success")
+        val successEvent = SystemEvent("TCS.test", "get.success")
         if (!event.isInvalid) publishEvent(successEvent)
     }
 
     onSetup("on-event") {
         onEvent("TCS.get.event") {
-            val successEvent = SystemEvent("TCS", "onEvent.success")
+            val successEvent = SystemEvent("TCS.test", "onEvent.success")
             if (!it.isInvalid) publishEvent(successEvent)
         }
     }
@@ -69,11 +65,7 @@ script {
 
     onSetup("command-4") {
         // try sending concrete sequence
-        val setupCommand = Setup(
-                Prefix("TCS.test"),
-                CommandName("command-3"),
-                Optional.ofNullable(null)
-        )
+        val setupCommand = setup("TCS.test", "command-3")
         val sequence = Sequence(
                 CollectionConverters.asScala(Collections.singleton<SequenceCommand>(setupCommand)).toSeq()
         )

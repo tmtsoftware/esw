@@ -1,8 +1,6 @@
 package esw.ocs.scripts.examples.epics
 
 
-import csw.params.core.models.Prefix
-import csw.params.events.EventName
 import csw.params.events.SystemEvent
 import esw.ocs.dsl.core.FSMScript
 import esw.ocs.dsl.params.Params
@@ -28,7 +26,7 @@ FSMScript("INIT") {
         }
 
         state(WAITING) { params ->
-            val systemEvent = SystemEvent(Prefix("esw.FSMTestScript"), EventName("WAITING")).jMadd(params.jParamSet())
+            val systemEvent = SystemEvent("esw.FSMTestScript", "WAITING").jMadd(params.jParamSet())
             publishState(systemEvent, WAITING)
             completeFSM()
         }
@@ -44,8 +42,8 @@ FSMScript("INIT") {
     }
 
     state(STARTED) { params ->
-        onSetup("command-2") { _ ->
-            val systemEvent = SystemEvent(Prefix("esw.FSMTestScript"), EventName("STARTED")).jMadd(params.jParamSet())
+        onSetup("command-2") {
+            val systemEvent = SystemEvent("esw.FSMTestScript", "STARTED").jMadd(params.jParamSet())
             publishState(systemEvent, STARTED)
         }
     }

@@ -48,16 +48,12 @@ class SequenceComponentRegistration(
     }
 
   private def registration(): Future[AkkaRegistration] = {
-    val sequenceComponentName = (subsystem, name) match {
-      case (s, Some(n)) => s"$s.$n"
-      case (s, None)    => s"${s}.${s}_${Random.between(1, 100)}"
+    val sequenceComponentPrefix = (subsystem, name) match {
+      case (s, Some(n)) => Prefix(s, n)
+      case (s, None)    => Prefix(s, s"${s}_${Random.between(1, 100)}")
     }
-    sequenceComponentFactory(sequenceComponentName).map { actorRef =>
-      AkkaRegistration(
-        AkkaConnection(ComponentId(sequenceComponentName, ComponentType.SequenceComponent)),
-        Prefix(sequenceComponentName),
-        actorRef.toURI
-      )
+    sequenceComponentFactory(sequenceComponentPrefix.value).map { actorRef =>
+      AkkaRegistration(AkkaConnection(ComponentId(sequenceComponentPrefix, ComponentType.SequenceComponent)), actorRef.toURI)
     }
   }
 }

@@ -9,7 +9,7 @@ import csw.location.api.extensions.URIExtension._
 import csw.location.api.scaladsl.LocationService
 import csw.location.models.Connection.{AkkaConnection, HttpConnection}
 import csw.location.models.{AkkaLocation, ComponentId, ComponentType, HttpLocation}
-import csw.params.core.models.Subsystem
+import csw.params.core.models.{Prefix, Subsystem}
 import csw.testkit.scaladsl.{CSWService, ScalaTestFrameworkTestKit}
 import esw.ocs.api.SequencerApi
 import esw.ocs.api.protocol.ScriptError
@@ -83,7 +83,7 @@ abstract class EswTestKit(services: CSWService*) extends ScalaTestFrameworkTestK
   }
 
   private def resolveSequencerHttp(packageId: String, observingMode: String): HttpLocation = {
-    val componentId = ComponentId(s"$packageId@$observingMode", ComponentType.Sequencer)
+    val componentId = ComponentId(Prefix(s"$packageId.$packageId@$observingMode"), ComponentType.Sequencer)
     locationService.resolve(HttpConnection(componentId), 5.seconds).futureValue.get
   }
 
@@ -92,26 +92,27 @@ abstract class EswTestKit(services: CSWService*) extends ScalaTestFrameworkTestK
     SequencerApiFactory.make(httpLocation)
   }
 
-  def resolveSequencerLocation(sequencerName: String): AkkaLocation =
-    locationService
-      .resolve(AkkaConnection(ComponentId(sequencerName, ComponentType.Sequencer)), 5.seconds)
-      .futureValue
-      .value
+  def resolveSequencerLocation(prefix: Prefix): AkkaLocation =
+    resolve(prefix, ComponentType.Sequencer)
 
   def resolveSequencerLocation(packageId: String, observingMode: String): AkkaLocation =
-    resolveSequencerLocation(s"$packageId@$observingMode")
+    resolveSequencerLocation(Prefix(s"$packageId.$packageId@$observingMode"))
 
   def resolveSequencer(packageId: String, observingMode: String): ActorRef[SequencerMsg] =
     resolveSequencerLocation(packageId, observingMode).uri.toActorRef
       .unsafeUpcast[SequencerMsg]
 
-  def resolveSequenceComponentLocation(name: String): AkkaLocation =
+  def resolveSequenceComponentLocation(prefix: Prefix): AkkaLocation =
+    resolve(prefix, ComponentType.SequenceComponent)
+
+  private def resolve(prefix: Prefix, componentType: ComponentType) = {
     locationService
-      .resolve(AkkaConnection(ComponentId(name, ComponentType.SequenceComponent)), 5.seconds)
+      .resolve(AkkaConnection(ComponentId(prefix, componentType)), 5.seconds)
       .futureValue
       .value
+  }
 
-  def resolveSequenceComponent(name: String): ActorRef[SequenceComponentMsg] =
-    resolveSequenceComponentLocation(name).uri.toActorRef
+  def resolveSequenceComponent(prefix: Prefix): ActorRef[SequenceComponentMsg] =
+    resolveSequenceComponentLocation(prefix).uri.toActorRef
       .unsafeUpcast[SequenceComponentMsg]
 }

@@ -52,7 +52,7 @@ class EventServiceDslTest : EventServiceDsl {
         // Verify that  event with provided prefix and eventName is created.
         actualEvent shouldBe SystemEvent(
                 actualEvent.eventId(),
-                Prefix(eventPrefix),
+                Prefix.apply(eventPrefix),
                 EventName(eventName),
                 actualEvent.eventTime(),
                 actualEvent.paramSet()
@@ -68,7 +68,7 @@ class EventServiceDslTest : EventServiceDsl {
         // Verify that event with provided prefix and eventName is created.
         actualEvent shouldBe ObserveEvent(
                 actualEvent.eventId(),
-                Prefix(eventPrefix),
+                Prefix.apply(eventPrefix),
                 EventName(eventName),
                 actualEvent.eventTime(),
                 actualEvent.paramSet()

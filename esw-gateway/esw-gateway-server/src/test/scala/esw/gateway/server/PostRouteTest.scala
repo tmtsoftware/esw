@@ -45,14 +45,15 @@ class PostRouteTest extends BaseTestSuite with ScalatestRouteTest with GatewayCo
   private val loggingApi: LoggingApi = new LoggingImpl(loggerCache)
   private val postHandlerImpl        = new PostHandlerImpl(alarmApi, resolver, eventApi, loggingApi)
   private val route                  = RouteFactory.combine(new PostRouteFactory("post-endpoint", postHandlerImpl))
+  private val source                 = Prefix("esw.test")
+  private val destination            = Prefix("tcs.test")
 
   "Submit Command" must {
     "handle submit command and return started command response | ESW-91, ESW-216" in {
-      val componentName = "test"
       val runId         = Id("123")
       val componentType = Assembly
-      val command       = Setup(Prefix("esw.test"), CommandName("c1"), Some(ObsId("obsId")))
-      val componentId   = ComponentId(componentName, componentType)
+      val command       = Setup(source, CommandName("c1"), Some(ObsId("obsId")))
+      val componentId   = ComponentId(destination, componentType)
       val submitRequest = ComponentCommand(componentId, Submit(command))
 
       when(resolver.resolveComponent(componentId)).thenReturn(Future.successful(Some(commandService)))
@@ -64,11 +65,10 @@ class PostRouteTest extends BaseTestSuite with ScalatestRouteTest with GatewayCo
     }
 
     "handle validate command and return accepted command response | ESW-91, ESW-216" in {
-      val componentName   = "test"
       val runId           = Id("123")
       val componentType   = Assembly
-      val command         = Setup(Prefix("esw.test"), CommandName("c1"), Some(ObsId("obsId")))
-      val componentId     = ComponentId(componentName, componentType)
+      val command         = Setup(source, CommandName("c1"), Some(ObsId("obsId")))
+      val componentId     = ComponentId(destination, componentType)
       val validateRequest = ComponentCommand(componentId, Validate(command))
 
       when(resolver.resolveComponent(componentId)).thenReturn(Future.successful(Some(commandService)))
@@ -80,11 +80,10 @@ class PostRouteTest extends BaseTestSuite with ScalatestRouteTest with GatewayCo
     }
 
     "handle oneway command and return accepted command response | ESW-91, ESW-216" in {
-      val componentName = "test"
       val runId         = Id("123")
       val componentType = Assembly
-      val command       = Setup(Prefix("esw.test"), CommandName("c1"), Some(ObsId("obsId")))
-      val componentId   = ComponentId(componentName, componentType)
+      val command       = Setup(source, CommandName("c1"), Some(ObsId("obsId")))
+      val componentId   = ComponentId(destination, componentType)
       val onewayRequest = ComponentCommand(componentId, Oneway(command))
 
       when(resolver.resolveComponent(componentId)).thenReturn(Future.successful(Some(commandService)))
@@ -96,10 +95,9 @@ class PostRouteTest extends BaseTestSuite with ScalatestRouteTest with GatewayCo
     }
 
     "return InvalidComponent response for invalid component id | ESW-91, ESW-216" in {
-      val componentName = "test"
       val componentType = Assembly
-      val command       = Setup(Prefix("esw.test"), CommandName("c1"), Some(ObsId("obsId")))
-      val componentId   = ComponentId(componentName, componentType)
+      val command       = Setup(source, CommandName("c1"), Some(ObsId("obsId")))
+      val componentId   = ComponentId(destination, componentType)
       val submitRequest = ComponentCommand(componentId, Submit(command))
 
       when(resolver.resolveComponent(componentId)).thenReturn(Future.successful(None))
@@ -112,8 +110,8 @@ class PostRouteTest extends BaseTestSuite with ScalatestRouteTest with GatewayCo
 
   "SequencerRoutes" must {
     "handle submit command and return started command response | ESW-250" in {
-      val sequence       = Sequence(Setup(Prefix("esw.test"), CommandName("c1"), Some(ObsId("obsId"))))
-      val componentId    = ComponentId("test", Sequencer)
+      val sequence       = Sequence(Setup(source, CommandName("c1"), Some(ObsId("obsId"))))
+      val componentId    = ComponentId(destination, Sequencer)
       val submitRequest  = SequencerCommand(componentId, SequencerPostRequest.Submit(sequence))
       val submitResponse = Started(Id("123"))
 
@@ -127,7 +125,7 @@ class PostRouteTest extends BaseTestSuite with ScalatestRouteTest with GatewayCo
 
     "handle query command and return query response | ESW-250" in {
       val runId         = Id("runId")
-      val componentId   = ComponentId("test", Sequencer)
+      val componentId   = ComponentId(destination, Sequencer)
       val queryRequest  = SequencerCommand(componentId, SequencerPostRequest.Query(runId))
       val queryResponse = CommandNotAvailable(runId)
 
@@ -140,7 +138,7 @@ class PostRouteTest extends BaseTestSuite with ScalatestRouteTest with GatewayCo
     }
 
     "handle go online command and return Ok response | ESW-250" in {
-      val componentId     = ComponentId("test", Sequencer)
+      val componentId     = ComponentId(destination, Sequencer)
       val goOnlineRequest = SequencerCommand(componentId, SequencerPostRequest.GoOnline)
 
       when(resolver.resolveSequencer(componentId)).thenReturn(Future.successful(Some(sequencer)))

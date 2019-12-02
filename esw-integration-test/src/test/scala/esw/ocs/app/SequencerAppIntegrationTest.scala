@@ -11,7 +11,8 @@ import csw.location.models.Connection.AkkaConnection
 import csw.location.models.{AkkaLocation, ComponentId, ComponentType}
 import csw.params.commands.CommandResponse.Completed
 import csw.params.commands.{CommandName, Sequence, Setup}
-import csw.params.core.models.Prefix
+import csw.params.core.models.Subsystem.ESW
+import csw.params.core.models.{Prefix, Subsystem}
 import esw.ocs.api.protocol.{ScriptError, ScriptResponse}
 import esw.ocs.impl.messages.SequenceComponentMsg
 import esw.ocs.impl.messages.SequenceComponentMsg.{LoadScript, UnloadScript}
@@ -25,18 +26,20 @@ class SequencerAppIntegrationTest extends EswTestKit {
   override def afterEach(): Unit = locationService.unregisterAll()
 
   "SequenceComponent command" must {
-    "start sequence component with provided subsystem and name and register it with location service | ESW-102, ESW-136, ESW-103, ESW-147, ESW-151, ESW-214" in {
-      val subsystem             = "ESW"
-      val name: String          = "primary"
-      val expectedSequencerName = "ESW.primary@esw@darknight"
+    "start sequence component with provided subsystem and prefix and register it with location service | ESW-102, ESW-136, ESW-103, ESW-147, ESW-151, ESW-214" in {
+      val name: String            = "primary"
+      val expectedSequencerPrefix = Prefix("ESW.ESW.primary@esw@darknight")
+      val sequenceComponentPrefix = Prefix(Subsystem.ESW, name)
 
       // start Sequence Component
       SequencerApp.main(Array("seqcomp", "-s", "esw", "-n", name))
 
       // verify Sequence component is started and registered with location service
-      val sequenceCompLocation: AkkaLocation = resolveSequenceComponentLocation(s"$subsystem.$name")
+      val sequenceCompLocation: AkkaLocation = resolveSequenceComponentLocation(sequenceComponentPrefix)
 
-      sequenceCompLocation.connection shouldEqual AkkaConnection(ComponentId("ESW.primary", ComponentType.SequenceComponent))
+      sequenceCompLocation.connection shouldEqual AkkaConnection(
+        ComponentId(sequenceComponentPrefix, ComponentType.SequenceComponent)
+      )
       sequenceCompLocation.prefix shouldEqual Prefix("ESW.primary")
 
       // LoadScript
@@ -49,11 +52,11 @@ class SequencerAppIntegrationTest extends EswTestKit {
       val sequencerLocation = response.response.rightValue
 
       //verify sequencerName has SequenceComponentName
-      val actualSequencerName: String = sequencerLocation.connection.componentId.name
-      actualSequencerName shouldEqual expectedSequencerName
+      val actualSequencerName: String = sequencerLocation.prefix.componentName
+      actualSequencerName shouldEqual expectedSequencerPrefix
 
-      // verify Sequencer is started and registered with location service with expected name
-      val sequencerLocationCheck: AkkaLocation = resolveSequencerLocation(expectedSequencerName)
+      // verify Sequencer is started and registered with location service with expected prefix
+      val sequencerLocationCheck: AkkaLocation = resolveSequencerLocation(expectedSequencerPrefix)
       sequencerLocationCheck shouldEqual sequencerLocation
 
       val commandService = new SequencerCommandServiceImpl(sequencerLocation)
@@ -67,18 +70,17 @@ class SequencerAppIntegrationTest extends EswTestKit {
       probe2.expectMessage(Done)
     }
 
-    "start sequence component and register with automatically generated random uniqueIDs if name is not provided| ESW-144" in {
+    "start sequence component and register with automatically generated random uniqueIDs if prefix is not provided| ESW-144" in {
       val subsystem = "ESW"
       SequencerApp.main(Array("seqcomp", "-s", subsystem))
 
       val sequenceComponentLocation = locationService.list(ComponentType.SequenceComponent).futureValue.head
 
       //assert that componentName and prefix contain subsystem provided
-      sequenceComponentLocation.connection.componentId.name.contains("ESW.ESW_") shouldEqual true
-      sequenceComponentLocation.asInstanceOf[AkkaLocation].prefix.prefix.contains("ESW.ESW_") shouldEqual true
+      sequenceComponentLocation.prefix.value.contains("ESW.ESW_") shouldEqual true
     }
 
-    "start sequence component concurrently and register with automatically generated random uniqueIDs if name is not provided| ESW-144" in {
+    "start sequence component concurrently and register with automatically generated random uniqueIDs if prefix is not provided| ESW-144" in {
       val subsystem = "ESW"
 
       //register sequence component with same subsystem concurrently
@@ -96,26 +98,25 @@ class SequencerAppIntegrationTest extends EswTestKit {
       sequenceComponentLocations.foreach { location =>
         {
           //assert that componentName and prefix contain subsystem provided
-          location.connection.componentId.name.contains("ESW.ESW_") shouldEqual true
-          location.asInstanceOf[AkkaLocation].prefix.prefix.contains("ESW.ESW_") shouldEqual true
+          location.prefix.value.contains("ESW.ESW_") shouldEqual true
         }
       }
     }
 
     "return ScriptError when script configuration is not provided| ESW-102, ESW-136" in {
-      val subsystem        = "ESW"
-      val name             = "primary"
-      val invalidPackageId = "invalid_package"
-      val observingMode    = "darknight"
+      val subsystem               = "ESW"
+      val name                    = "primary"
+      val invalidPackageId        = "invalid_package"
+      val observingMode           = "darknight"
+      val sequenceComponentPrefix = Prefix(ESW, name)
 
       // start Sequence Component
       SequencerApp.main(Array("seqcomp", "-s", subsystem, "-n", name))
 
       // verify Sequence component is started and registered with location service
-      val sequenceCompLocation: AkkaLocation = resolveSequenceComponentLocation(s"$subsystem.$name")
+      val sequenceCompLocation: AkkaLocation = resolveSequenceComponentLocation(sequenceComponentPrefix)
 
-      sequenceCompLocation.connection shouldEqual AkkaConnection(ComponentId("ESW.primary", ComponentType.SequenceComponent))
-      sequenceCompLocation.prefix shouldEqual Prefix("ESW.primary")
+      sequenceCompLocation.connection shouldEqual AkkaConnection(ComponentId(Prefix(ESW, name), ComponentType.SequenceComponent))
 
       val timeout = Timeout(10.seconds)
       // LoadScript
@@ -148,15 +149,15 @@ class SequencerAppIntegrationTest extends EswTestKit {
       SequencerApp.main(Array("sequencer", "-s", subsystem, "-n", name, "-i", packageId, "-m", observingMode))
 
       // verify sequence component is started
-      val sequenceComponentName     = s"$subsystem.$name"
-      val sequenceComponentLocation = resolveSequenceComponentLocation(sequenceComponentName)
-      sequenceComponentLocation.connection.componentId.name shouldBe sequenceComponentName
+      val sequenceComponentPrefix   = Prefix(s"$subsystem.$name")
+      val sequenceComponentLocation = resolveSequenceComponentLocation(sequenceComponentPrefix)
+      sequenceComponentLocation.connection.componentId.prefix.componentName shouldBe sequenceComponentPrefix
 
       // verify that sequencer is started and able to process sequence command
-      val connection        = AkkaConnection(ComponentId(sequencerName, ComponentType.Sequencer))
+      val connection        = AkkaConnection(ComponentId(Prefix(ESW, sequencerName), ComponentType.Sequencer))
       val sequencerLocation = locationService.resolve(connection, 5.seconds).futureValue.value
 
-      sequencerLocation.connection.componentId.name shouldBe sequencerName
+      sequencerLocation.prefix.componentName shouldBe sequencerName
 
       val commandService = new SequencerCommandServiceImpl(sequencerLocation)
       val setup          = Setup(Prefix("wfos.home.datum"), CommandName("command-1"), None)
@@ -174,18 +175,16 @@ class SequencerAppIntegrationTest extends EswTestKit {
       val sequenceComponentLocation = locationService.list(ComponentType.SequenceComponent).futureValue.head
 
       //assert that componentName and prefix contain subsystem provided
-      sequenceComponentLocation.connection.componentId.name.contains("ESW.ESW_") shouldEqual true
-      sequenceComponentLocation.asInstanceOf[AkkaLocation].prefix.prefix.contains("ESW.ESW_") shouldEqual true
+      sequenceComponentLocation.prefix.value.contains("ESW.ESW_") shouldEqual true
 
-      val sequenceComponentName = sequenceComponentLocation.connection.componentId.name
+      val sequenceComponentName = sequenceComponentLocation.prefix.componentName
 
-      //sequencer name will have sequence component name and optional packageId is defaulted to subsystem
+      //sequencer prefix will have sequence component prefix and optional packageId is defaulted to subsystem
       val sequencerName = s"$sequenceComponentName@esw@darknight"
       // verify that sequencer is started and able to process sequence command
-      resolveSequencerLocation(sequencerName)
-      val sequencerLocation = resolveSequencerLocation(sequencerName)
+      val sequencerLocation = resolveSequencerLocation(Prefix(ESW, sequencerName))
 
-      sequencerLocation.connection.componentId.name shouldBe sequencerName
+      sequencerLocation.prefix.componentName shouldBe sequencerName
     }
 
     "throw exception if ScriptError is returned | ESW-102, ESW-136" in {

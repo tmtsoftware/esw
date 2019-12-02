@@ -28,8 +28,8 @@ class ExceptionsHandlerIntegrationTest extends EswTestKit(EventServer) {
   "Script" must {
 
     // *********  Test cases of Idle state *************
-    val setupSequence   = Sequence(Setup(Prefix("TCS"), CommandName("fail-setup"), None))
-    val observeSequence = Sequence(Observe(Prefix("TCS"), CommandName("fail-observe"), None))
+    val setupSequence   = Sequence(Setup(Prefix("TCS.test"), CommandName("fail-setup"), None))
+    val observeSequence = Sequence(Observe(Prefix("TCS.test"), CommandName("fail-observe"), None))
 
     val idleStateTestCases: TableFor2[SequencerMsg, String] = Table.apply(
       ("sequencer msg", "failure msg"),
@@ -68,8 +68,8 @@ class ExceptionsHandlerIntegrationTest extends EswTestKit(EventServer) {
         val eventKey = EventKey("tcs." + reason)
         val probe    = createProbeFor(eventKey)
 
-        val longRunningSetupCommand  = Setup(Prefix("TCS"), CommandName("long-running-setup"), None)
-        val command1                 = Setup(Prefix("TCS"), CommandName("successful-command"), None)
+        val longRunningSetupCommand  = Setup(Prefix("TCS.test"), CommandName("long-running-setup"), None)
+        val command1                 = Setup(Prefix("TCS.test"), CommandName("successful-command"), None)
         val longRunningSetupSequence = Sequence(longRunningSetupCommand, command1)
 
         sequencer.submit(longRunningSetupSequence)
@@ -88,7 +88,7 @@ class ExceptionsHandlerIntegrationTest extends EswTestKit(EventServer) {
       val sequencerRef = spawnSequencerRef(ocsPackageId, ocsObservingMode)
       val sequencer    = new SequencerActorProxy(sequencerRef)
 
-      val command  = Setup(Prefix("TCS"), CommandName("fail-setup"), None)
+      val command  = Setup(Prefix("TCS.test"), CommandName("fail-setup"), None)
       val sequence = Sequence(Seq(command))
 
       val commandFailureMsg = "handle-setup-failed"
@@ -100,12 +100,12 @@ class ExceptionsHandlerIntegrationTest extends EswTestKit(EventServer) {
       val error           = submitResponseF.futureValue.asInstanceOf[CommandResponse.Error]
       error.message.contains(commandFailureMsg) shouldBe true
 
-      // exception handler publishes a event with exception msg as event name
+      // exception handler publishes a event with exception msg as event prefix
       val event = testProbe.expectMessageType[SystemEvent]
       event.eventName.name shouldBe commandFailureMsg
 
       // assert that next sequence is accepted and executed properly
-      val command1  = Setup(Prefix("TCS"), CommandName("successful-command"), None)
+      val command1  = Setup(Prefix("TCS.test"), CommandName("successful-command"), None)
       val sequence1 = Sequence(Seq(command1))
 
       sequencer.submitAndWait(sequence1).futureValue shouldBe a[Completed]

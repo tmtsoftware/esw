@@ -1,7 +1,7 @@
 package esw.ocs.api.client
 
 import akka.util.Timeout
-import csw.command.api.scaladsl.SequencerCommandServiceExtension
+import csw.command.api.utils.SequencerCommandServiceExtension
 import csw.params.commands.CommandResponse.{QueryResponse, SubmitResponse}
 import csw.params.commands.{Sequence, SequenceCommand}
 import csw.params.core.models.Id

@@ -3,7 +3,7 @@ package esw.ocs.impl
 import akka.actor.typed.scaladsl.AskPattern._
 import akka.actor.typed.{ActorRef, ActorSystem}
 import akka.util.Timeout
-import csw.command.api.scaladsl.SequencerCommandServiceExtension
+import csw.command.api.utils.SequencerCommandServiceExtension
 import csw.command.client.messages.sequencer.SequencerMsg
 import csw.command.client.messages.sequencer.SequencerMsg.{Query, QueryFinal}
 import csw.params.commands.CommandResponse.{QueryResponse, SubmitResponse}

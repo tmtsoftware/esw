@@ -9,6 +9,7 @@ import akka.actor.typed.{ActorRef, Props}
 import csw.location.models.Connection.AkkaConnection
 import csw.location.models.{AkkaLocation, ComponentId, ComponentType, Location}
 import csw.logging.client.scaladsl.LoggerFactory
+import csw.params.core.models.Prefix
 import esw.ocs.api.protocol.{GetStatusResponse, ScriptError, ScriptResponse}
 import esw.ocs.app.wiring.SequencerWiring
 import esw.ocs.impl.messages.SequenceComponentMsg
@@ -54,6 +55,7 @@ class SequenceComponentBehaviorTest extends EswTestKit {
       val getStatusProbe          = TestProbe[GetStatusResponse]
       val packageId               = "esw"
       val observingMode           = "darknight"
+      val prefix                  = Prefix(s"$packageId.$ocsSequenceComponentName@$packageId@$observingMode")
 
       //LoadScript
       sequenceComponentRef ! LoadScript(packageId, observingMode, loadScriptResponseProbe.ref)
@@ -61,7 +63,7 @@ class SequenceComponentBehaviorTest extends EswTestKit {
       //Assert if script loaded and returns AkkaLocation of sequencer
       val loadScriptLocationResponse: AkkaLocation = loadScriptResponseProbe.receiveMessage.response.rightValue
       loadScriptLocationResponse.connection shouldEqual AkkaConnection(
-        ComponentId(s"$ocsSequenceComponentName@$packageId@$observingMode", ComponentType.Sequencer)
+        ComponentId(prefix, ComponentType.Sequencer)
       )
 
       //GetStatus
@@ -70,7 +72,7 @@ class SequenceComponentBehaviorTest extends EswTestKit {
       //Assert if get status returns AkkaLocation of sequencer currently running
       val getStatusLocationResponse: Location = getStatusProbe.receiveMessage(5.seconds).response.get
       getStatusLocationResponse.connection shouldEqual AkkaConnection(
-        ComponentId(s"$ocsSequenceComponentName@$packageId@$observingMode", ComponentType.Sequencer)
+        ComponentId(prefix, ComponentType.Sequencer)
       )
 
       //UnloadScript
@@ -90,6 +92,7 @@ class SequenceComponentBehaviorTest extends EswTestKit {
       val loadScriptResponseProbe = TestProbe[ScriptResponse]
       val packageId               = "iris"
       val observingMode           = "darknight"
+      val prefix                  = Prefix(s"$packageId.$ocsSequenceComponentName@$packageId@$observingMode")
 
       //LoadScript
       sequenceComponentRef ! LoadScript(packageId, observingMode, loadScriptResponseProbe.ref)
@@ -97,7 +100,7 @@ class SequenceComponentBehaviorTest extends EswTestKit {
       //Assert if script loaded and returns AkkaLocation of sequencer
       val loadScriptLocationResponse: AkkaLocation = loadScriptResponseProbe.receiveMessage.response.rightValue
       loadScriptLocationResponse.connection shouldEqual AkkaConnection(
-        ComponentId(s"$ocsSequenceComponentName@$packageId@$observingMode", ComponentType.Sequencer)
+        ComponentId(prefix, ComponentType.Sequencer)
       )
 
       sequenceComponentRef ! LoadScript("tcs", "darknight", loadScriptResponseProbe.ref)
@@ -128,6 +131,7 @@ class SequenceComponentBehaviorTest extends EswTestKit {
 
       val packageId               = "esw"
       val observingMode           = "darknight"
+      val prefix                  = Prefix(s"$packageId.$ocsSequenceComponentName@$packageId@$observingMode")
       val loadScriptResponseProbe = TestProbe[ScriptResponse]
       val restartResponseProbe    = TestProbe[ScriptResponse]
 
@@ -140,7 +144,7 @@ class SequenceComponentBehaviorTest extends EswTestKit {
 
       val restartLocationResponse: AkkaLocation = restartResponseProbe.receiveMessage.response.rightValue
       restartLocationResponse.connection shouldEqual AkkaConnection(
-        ComponentId(s"$ocsSequenceComponentName@$packageId@$observingMode", ComponentType.Sequencer)
+        ComponentId(prefix, ComponentType.Sequencer)
       )
     }
 

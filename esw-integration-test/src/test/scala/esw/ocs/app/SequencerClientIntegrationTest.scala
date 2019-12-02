@@ -134,7 +134,7 @@ class SequencerClientIntegrationTest extends EswTestKit(EventServer) {
     val failCommandName = "fail-command"
 
     val command1 = Setup(Prefix("esw.test"), CommandName("command-1"), None)
-    // TestScript.scala returns Error on receiving command with name "fail-command"
+    // TestScript.scala returns Error on receiving command with prefix "fail-command"
     val command2 = Setup(Prefix("esw.test"), CommandName(failCommandName), None)
     val command3 = Setup(Prefix("esw.test"), CommandName("command-3"), None)
     val sequence = Sequence(command1, command2, command3)

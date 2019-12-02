@@ -4,7 +4,7 @@ import com.typesafe.config.{Config, ConfigException}
 import csw.params.core.models.Prefix
 import esw.ocs.dsl.script.exceptions.ScriptLoadingException.ScriptConfigurationMissingException
 
-private[app] final case class SequencerConfig(sequencerName: String, prefix: Prefix, scriptClass: String)
+private[app] final case class SequencerConfig(prefix: Prefix, scriptClass: String)
 
 private[app] object SequencerConfig {
   def from(config: Config, packageId: String, observingMode: String, sequenceComponentName: Option[String]): SequencerConfig = {
@@ -20,9 +20,8 @@ private[app] object SequencerConfig {
       case None       => s"$packageId@$observingMode"
     }
 
-    val prefix      = scriptConfig.getString("prefix")
     val scriptClass = scriptConfig.getString("scriptClass")
 
-    SequencerConfig(sequencerName, Prefix(prefix), scriptClass)
+    SequencerConfig(Prefix(s"$packageId.$sequencerName"), scriptClass)
   }
 }

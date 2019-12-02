@@ -4,9 +4,9 @@ import java.net.URI
 
 import akka.actor.typed.{ActorSystem, SpawnProtocol}
 import csw.location.api.scaladsl.LocationService
-import csw.location.models.Connection.AkkaConnection
 import csw.location.models.{AkkaLocation, ComponentId, ComponentType}
-import csw.params.core.models.Prefix
+import csw.location.models.Connection.AkkaConnection
+import csw.params.core.models.{Prefix, Subsystem}
 import esw.http.core.BaseTestSuite
 import esw.http.core.wiring.ActorRuntime
 import org.mockito.Mockito.{verify, when}
@@ -30,11 +30,12 @@ class ComponentFactoryTest extends BaseTestSuite {
       val locationService       = mock[LocationService]
       val componentName         = "testComponent"
       val componentType         = mock[ComponentType]
-      val componentId           = ComponentId(componentName, componentType)
+      val prefix                = Prefix(Subsystem.ESW, componentName)
+      val componentId           = ComponentId(prefix, componentType)
       val connection            = AkkaConnection(componentId)
       val commandServiceFactory = mock[ICommandServiceFactory]
 
-      val location         = AkkaLocation(connection, mock[Prefix], new URI("actor-path"))
+      val location         = AkkaLocation(connection, new URI("actor-path"))
       val expectedLocation = Future.successful(Some(location))
 
       when(locationService.resolve(connection, 5.seconds)).thenReturn(expectedLocation)
@@ -50,11 +51,12 @@ class ComponentFactoryTest extends BaseTestSuite {
       val commandServiceFactory = mock[ICommandServiceFactory]
       val componentFactory      = new ComponentFactory(locationService, commandServiceFactory)
       val componentName         = "testComponent"
+      val prefix                = Prefix(Subsystem.ESW, componentName)
       val componentType         = ComponentType.Assembly
-      val componentId           = ComponentId(componentName, componentType)
+      val componentId           = ComponentId(prefix, componentType)
       val connection            = AkkaConnection(componentId)
 
-      val location         = AkkaLocation(connection, mock[Prefix], new URI("actor-path"))
+      val location         = AkkaLocation(connection, new URI("actor-path"))
       val expectedLocation = Future.successful(Some(location))
 
       when(locationService.resolve(connection, 5.seconds)).thenReturn(expectedLocation)

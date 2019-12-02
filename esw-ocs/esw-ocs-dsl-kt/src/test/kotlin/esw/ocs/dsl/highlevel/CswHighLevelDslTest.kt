@@ -52,18 +52,18 @@ class CswHighLevelDslTest {
 
         @Test
         fun `Assembly should resolve the RichComponent with given name and assembly component type | ESW-245`() = runBlocking {
-            val sampleAssembly = Assembly("sampleAssembly")
+            val sampleAssembly = Assembly("TCS.sampleAssembly")
 
             sampleAssembly.componentType shouldBe JComponentType.Assembly()
-            sampleAssembly.name shouldBe "sampleAssembly"
+            sampleAssembly.prefix shouldBe Prefix.apply("TCS.sampleAssembly")
         }
 
         @Test
         fun `HCD should resolve the RichComponent with given name and hcd component type | ESW-245`() = runBlocking {
-            val sampleHcd = HCD("sampleHcd")
+            val sampleHcd = HCD("TCS.sampleHcd")
 
             sampleHcd.componentType shouldBe JComponentType.HCD()
-            sampleHcd.name shouldBe "sampleHcd"
+            sampleHcd.prefix shouldBe Prefix.apply("TCS.sampleHcd")
         }
     }
 

@@ -15,8 +15,8 @@ class SequencerConfigTest extends BaseTestSuite {
       val observingMode    = "darknight"
       val sequencerConfigs = SequencerConfig.from(config, packageId, observingMode, None)
 
-      sequencerConfigs.sequencerName should ===("esw@darknight")
-      sequencerConfigs.prefix should ===(Prefix("esw.ocs.prefix1"))
+      sequencerConfigs.prefix.componentName should ===("esw@darknight")
+      sequencerConfigs.prefix should ===(Prefix("esw.esw@darknight"))
       sequencerConfigs.scriptClass should ===(classOf[ValidTestScript].getCanonicalName)
     }
 
@@ -26,8 +26,8 @@ class SequencerConfigTest extends BaseTestSuite {
       val sequenceComponentName = "ESW_1"
       val sequencerConfigs      = SequencerConfig.from(config, packageId, observingMode, Some(sequenceComponentName))
 
-      sequencerConfigs.sequencerName should ===("ESW_1@esw@darknight")
-      sequencerConfigs.prefix should ===(Prefix("esw.ocs.prefix1"))
+      sequencerConfigs.prefix.componentName should ===("ESW_1@esw@darknight")
+      sequencerConfigs.prefix should ===(Prefix("esw.ESW_1@esw@darknight"))
       sequencerConfigs.scriptClass should ===(classOf[ValidTestScript].getCanonicalName)
     }
 

@@ -21,7 +21,7 @@ class ComponentFactory(locationService: LocationService, commandServiceFactory: 
         case Some(akkaLocation) => f(akkaLocation)
         case None =>
           throw new IllegalArgumentException(
-            s"Could not find component - ${componentId.name} of type - ${componentId.componentType}"
+            s"Could not find component - ${componentId.prefix.value} of type - ${componentId.componentType}"
           )
       }
 

@@ -30,9 +30,9 @@ class SequenceComponentRegistrationTest extends ScalaTestWithActorTestKit with B
     val retryCount         = 2
     val registrationResult = mock[RegistrationResult]
     val name               = Some("primary")
-    val akkaConnection     = AkkaConnection(ComponentId("TCS.primary", SequenceComponent))
     val prefix             = Prefix("TCS.primary")
-    val akkaLocation       = AkkaLocation(akkaConnection, prefix, uri)
+    val akkaConnection     = AkkaConnection(ComponentId(prefix, SequenceComponent))
+    val akkaLocation       = AkkaLocation(akkaConnection, uri)
 
     "return successful RegistrationResult | ESW-144" in {
       implicit val system: ActorSystem[SpawnProtocol.Command] = ActorSystem(SpawnProtocol(), "test")
@@ -100,9 +100,9 @@ class SequenceComponentRegistrationTest extends ScalaTestWithActorTestKit with B
 
   "registerSequenceComponent without name" must {
     val registrationResult = mock[RegistrationResult]
-    val akkaConnection     = AkkaConnection(ComponentId("TCS.TCS_23", SequenceComponent))
     val prefix             = Prefix("TCS.TCS_23")
-    val akkaLocation       = AkkaLocation(akkaConnection, prefix, uri)
+    val akkaConnection     = AkkaConnection(ComponentId(prefix, SequenceComponent))
+    val akkaLocation       = AkkaLocation(akkaConnection, uri)
     val locationService    = mock[LocationService]
 
     "return successful RegistrationResult | ESW-144" in {

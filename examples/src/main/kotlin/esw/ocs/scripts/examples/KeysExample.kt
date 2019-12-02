@@ -29,7 +29,7 @@ fun main() {
     val matrixParam1 = longMatrixKey("longMatrix").set(longMatrixData1, longMatrixData2, units = JUnits.lightyear)
 
     val systemEvent =
-        SystemEvent(Prefix("esw.event"), EventName("move")).add(longParam)
+        SystemEvent(Prefix.apply("esw.event"), EventName("move")).add(longParam)
             .madd(longParam, arrayParam, matrixParam)
 
     println(longParam)

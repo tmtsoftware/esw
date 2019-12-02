@@ -11,13 +11,13 @@ import csw.params.core.models.Prefix
 import esw.ocs.api.BaseTestSuite
 import esw.ocs.api.protocol.{GetStatusResponse, ScriptError, ScriptResponse}
 import esw.ocs.impl.messages.SequenceComponentMsg
-import esw.ocs.impl.messages.SequenceComponentMsg.{GetStatus, LoadScript, Restart, Stop, UnloadScript}
+import esw.ocs.impl.messages.SequenceComponentMsg._
 
 import scala.concurrent.ExecutionContext
 
 class SequenceComponentImplTest extends ScalaTestWithActorTestKit with BaseTestSuite {
   private val location =
-    AkkaLocation(AkkaConnection(ComponentId("test", ComponentType.Sequencer)), Prefix("esw.test"), new URI("uri"))
+    AkkaLocation(AkkaConnection(ComponentId(Prefix("esw.test"), ComponentType.Sequencer)), new URI("uri"))
   private val loadScriptResponse    = ScriptResponse(Right(location))
   private val restartResponse       = ScriptResponse(Left(ScriptError("Restart error")))
   private val getStatusResponse     = GetStatusResponse(Some(location))

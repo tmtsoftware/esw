@@ -27,7 +27,7 @@ interface FSMState {
     suspend fun entry(body: suspend () -> Unit)
 }
 
-// Don't remove name parameter, it will be used while logging.
+// Don't remove prefix parameter, it will be used while logging.
 class StateMachineImpl(val name: String, private val initialState: String, val coroutineScope: CoroutineScope) : StateMachine, FSMTopLevel, FSMState {
     // fixme: Try to remove optional behavior of both variables
     private var currentState: String? = null

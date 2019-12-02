@@ -4,6 +4,7 @@ import akka.Done
 import csw.params.core.models.Prefix
 import csw.params.events.EventName
 import csw.params.events.SystemEvent
+import csw.params.javadsl.JSubsystem.TCS
 import esw.ocs.dsl.highlevel.EventServiceDsl
 import esw.ocs.dsl.highlevel.EventSubscription
 import esw.ocs.dsl.params.booleanKey
@@ -19,7 +20,7 @@ import org.junit.jupiter.api.Test
 class ProcessVariableTest {
     @Test
     fun `set should update local value and publish new event | ESW-142`() = runBlocking {
-        val prefix = Prefix("tcs")
+        val prefix = Prefix(TCS, "test")
         val eventName = EventName("testEvent")
         val systemEvent = SystemEvent(prefix, eventName)
         val booleanKey = booleanKey("testKey")
@@ -41,7 +42,7 @@ class ProcessVariableTest {
 
         val intKey = intKey("testKey")
         val intValue = 10
-        val systemEvent = SystemEvent(Prefix("tcs"), EventName("testEvent")).add(intKey.set(intValue))
+        val systemEvent = SystemEvent(Prefix(TCS, "test"), EventName("testEvent")).add(intKey.set(intValue))
 
         val processVariable: ProcessVariable<Int> = ProcessVariable(systemEvent, intKey, eventServiceDsl)
 
@@ -52,12 +53,11 @@ class ProcessVariableTest {
     fun `bind should start subscription and add subscription entry in FSM | ESW-142`() = runBlocking {
         val eventServiceDsl = mockk<EventServiceDsl>()
         val refreshable = mockk<Refreshable>()
-        val subscription = mockk<FSMSubscription>()
         val eventSubscription = mockk<EventSubscription>()
 
         val intKey = intKey("testKey")
         val intValue = 10
-        val systemEvent = SystemEvent(Prefix("tcs"), EventName("testEvent")).add(intKey.set(intValue))
+        val systemEvent = SystemEvent(Prefix(TCS, "test"), EventName("testEvent")).add(intKey.set(intValue))
         val eventKey = systemEvent.eventKey().key()
 
         every { refreshable.addFSMSubscription(any()) }.returns(Unit)

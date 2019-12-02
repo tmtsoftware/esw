@@ -14,6 +14,7 @@ import csw.location.api.scaladsl.{LocationService, RegistrationResult}
 import csw.location.models.ComponentType._
 import csw.location.models.Connection.AkkaConnection
 import csw.location.models.{AkkaLocation, AkkaRegistration, ComponentId}
+import csw.params.core.models.Subsystem.{ESW, IRIS, TCS}
 import csw.params.core.models.{Prefix, Subsystem}
 import esw.ocs.api.BaseTestSuite
 import esw.ocs.api.protocol.ScriptError
@@ -28,9 +29,9 @@ class LocationServiceCommandUtilsTest extends ScalaTestWithActorTestKit with Bas
 
   private val prefix         = Prefix("tcs.home.datum")
   private val uri            = new URI("uri")
-  private val akkaConnection = AkkaConnection(ComponentId("ocs", Sequencer))
-  private val registration   = AkkaRegistration(akkaConnection, prefix, uri)
-  private val akkaLocation   = AkkaLocation(akkaConnection, prefix, uri)
+  private val akkaConnection = AkkaConnection(ComponentId(prefix, Sequencer))
+  private val registration   = AkkaRegistration(akkaConnection, uri)
+  private val akkaLocation   = AkkaLocation(akkaConnection, uri)
 
   "register" must {
     "return successful RegistrationResult | ESW-214" in {
@@ -66,19 +67,19 @@ class LocationServiceCommandUtilsTest extends ScalaTestWithActorTestKit with Bas
     "list all locations which match given componentType and subsystem | ESW-144, ESW-215" in {
       val testUri = new URI("test-uri")
       val tcsLocations = List(
-        AkkaLocation(AkkaConnection(ComponentId("TCS_1", SequenceComponent)), Prefix("tcs.test.filter1"), testUri),
-        AkkaLocation(AkkaConnection(ComponentId("TCS_2", SequenceComponent)), Prefix("tcs.test.filter2"), testUri),
-        AkkaLocation(AkkaConnection(ComponentId("TCS_3", SequenceComponent)), Prefix("tcs.test.filter3"), testUri)
+        AkkaLocation(AkkaConnection(ComponentId(Prefix(TCS, "TCS_1"), SequenceComponent)), testUri),
+        AkkaLocation(AkkaConnection(ComponentId(Prefix(TCS, "TCS_2"), SequenceComponent)), testUri),
+        AkkaLocation(AkkaConnection(ComponentId(Prefix(TCS, "TCS_3"), SequenceComponent)), testUri)
       )
       val sequenceComponentLocations = tcsLocations ++ List(
-        AkkaLocation(AkkaConnection(ComponentId("OSS_1", SequenceComponent)), Prefix("oss.test.filter1"), testUri),
-        AkkaLocation(AkkaConnection(ComponentId("IRIS_1", SequenceComponent)), Prefix("iris.test.filter1"), testUri)
+        AkkaLocation(AkkaConnection(ComponentId(Prefix(Subsystem.OSS, "OSS_1"), SequenceComponent)), testUri),
+        AkkaLocation(AkkaConnection(ComponentId(Prefix(IRIS, "IRIS_1"), SequenceComponent)), testUri)
       )
 
       when(locationService.list(SequenceComponent)).thenReturn(Future.successful(sequenceComponentLocations))
       val locationServiceDsl = new LocationServiceUtil(locationService)
 
-      val actualLocations = locationServiceDsl.listBy(Subsystem.TCS, SequenceComponent).futureValue
+      val actualLocations = locationServiceDsl.listBy(TCS, SequenceComponent).futureValue
 
       actualLocations should ===(tcsLocations)
     }
@@ -86,9 +87,9 @@ class LocationServiceCommandUtilsTest extends ScalaTestWithActorTestKit with Bas
     "return empty list if no matching component type and subsystem is found | ESW-144, ESW-215" in {
       val testUri = new URI("test-uri")
       val sequenceComponentLocations = List(
-        AkkaLocation(AkkaConnection(ComponentId("TCS_1", SequenceComponent)), Prefix("tcs.test.filter1"), testUri),
-        AkkaLocation(AkkaConnection(ComponentId("TCS_2", SequenceComponent)), Prefix("tcs.test.filter2"), testUri),
-        AkkaLocation(AkkaConnection(ComponentId("IRIS_1", SequenceComponent)), Prefix("iris.test.filter1"), testUri)
+        AkkaLocation(AkkaConnection(ComponentId(Prefix(TCS, "TCS_1"), SequenceComponent)), testUri),
+        AkkaLocation(AkkaConnection(ComponentId(Prefix(TCS, "TCS_2"), SequenceComponent)), testUri),
+        AkkaLocation(AkkaConnection(ComponentId(Prefix(IRIS, "IRIS_1"), SequenceComponent)), testUri)
       )
 
       when(locationService.list(SequenceComponent)).thenReturn(Future.successful(sequenceComponentLocations))
@@ -104,11 +105,11 @@ class LocationServiceCommandUtilsTest extends ScalaTestWithActorTestKit with Bas
     "return all locations which match a given name substring | ESW-215" in {
       val testUri = new URI("test-uri")
       val tcsLocations = List(
-        AkkaLocation(AkkaConnection(ComponentId("TCS@obsMode1", Sequencer)), Prefix("tcs.test.filter1"), testUri),
-        AkkaLocation(AkkaConnection(ComponentId("TCS_1", SequenceComponent)), Prefix("tcs.test.filter2"), testUri)
+        AkkaLocation(AkkaConnection(ComponentId(Prefix(TCS, "TCS@obsMode1"), Sequencer)), testUri),
+        AkkaLocation(AkkaConnection(ComponentId(Prefix(TCS, "TCS_1"), SequenceComponent)), testUri)
       )
       val ocsLocations = List(
-        AkkaLocation(AkkaConnection(ComponentId("OCS@obsMode1", Sequencer)), Prefix("esw.test.filter"), testUri)
+        AkkaLocation(AkkaConnection(ComponentId(Prefix(ESW, "OCS@obsMode1"), Sequencer)), testUri)
       )
       when(locationService.list).thenReturn(Future.successful(tcsLocations ++ ocsLocations))
 
@@ -121,11 +122,11 @@ class LocationServiceCommandUtilsTest extends ScalaTestWithActorTestKit with Bas
     "return all locations which match a given observing mode | ESW-215" in {
       val testUri = new URI("test-uri")
       val obsMode1locations = List(
-        AkkaLocation(AkkaConnection(ComponentId("TCS@obsMode1", Sequencer)), Prefix("tcs.test.filter1"), testUri),
-        AkkaLocation(AkkaConnection(ComponentId("OCS@obsMode1", Sequencer)), Prefix("esw.test.filter"), testUri)
+        AkkaLocation(AkkaConnection(ComponentId(Prefix(TCS, "TCS@obsMode1"), Sequencer)), testUri),
+        AkkaLocation(AkkaConnection(ComponentId(Prefix(ESW, "OCS@obsMode1"), Sequencer)), testUri)
       )
       val obsMode2Locations = List(
-        AkkaLocation(AkkaConnection(ComponentId("TCS_1", SequenceComponent)), Prefix("tcs.test.filter2"), testUri)
+        AkkaLocation(AkkaConnection(ComponentId(Prefix(TCS, "TCS_1"), SequenceComponent)), testUri)
       )
       when(locationService.list).thenReturn(Future.successful(obsMode1locations ++ obsMode2Locations))
 
@@ -140,10 +141,10 @@ class LocationServiceCommandUtilsTest extends ScalaTestWithActorTestKit with Bas
     "return a location which matches a given component name and type | ESW-215" in {
       val testUri = new URI("test-uri")
       val tcsLocation =
-        AkkaLocation(AkkaConnection(ComponentId("TCS@obsMode1", Sequencer)), Prefix("tcs.test.filter1"), testUri)
+        AkkaLocation(AkkaConnection(ComponentId(Prefix(TCS, "TCS@obsMode1"), Sequencer)), testUri)
       val ocsLocations = List(
-        AkkaLocation(AkkaConnection(ComponentId("OCS_1", SequenceComponent)), Prefix("esw.test.filter"), testUri),
-        AkkaLocation(AkkaConnection(ComponentId("TCS_1", SequenceComponent)), Prefix("tcs.test.filter2"), testUri)
+        AkkaLocation(AkkaConnection(ComponentId(Prefix(ESW, "OCS_1"), SequenceComponent)), testUri),
+        AkkaLocation(AkkaConnection(ComponentId(Prefix(TCS, "TCS_1"), SequenceComponent)), testUri)
       )
       when(locationService.list).thenReturn(Future.successful(tcsLocation :: ocsLocations))
       when(locationService.list(Sequencer)).thenReturn(Future.successful(List(tcsLocation)))
@@ -158,19 +159,16 @@ class LocationServiceCommandUtilsTest extends ScalaTestWithActorTestKit with Bas
       val testUri = new URI("test-uri")
       val tcsLocation =
         AkkaLocation(
-          AkkaConnection(ComponentId("TCS@obsMode1", Sequencer)),
-          Prefix("tcs.test.filter1"),
+          AkkaConnection(ComponentId(Prefix(TCS, "TCS@obsMode1"), Sequencer)),
           testUri
         )
       val ocsLocations = List(
         AkkaLocation(
-          AkkaConnection(ComponentId("OCS_1", SequenceComponent)),
-          Prefix("esw.test.filter"),
+          AkkaConnection(ComponentId(Prefix(ESW, "OCS_1"), SequenceComponent)),
           testUri
         ),
         AkkaLocation(
-          AkkaConnection(ComponentId("TCS_1", SequenceComponent)),
-          Prefix("tcs.test.filter2"),
+          AkkaConnection(ComponentId(Prefix(TCS, "TCS_1"), SequenceComponent)),
           testUri
         )
       )
@@ -190,19 +188,16 @@ class LocationServiceCommandUtilsTest extends ScalaTestWithActorTestKit with Bas
       val testUri = new URI("test-uri")
       val tcsLocation =
         AkkaLocation(
-          AkkaConnection(ComponentId("TCS@obsMode1", Sequencer)),
-          Prefix("tcs.test.filter1"),
+          AkkaConnection(ComponentId(Prefix(TCS, "TCS@obsMode1"), Sequencer)),
           testUri
         )
       val ocsLocations = List(
         AkkaLocation(
-          AkkaConnection(ComponentId("OCS_1", SequenceComponent)),
-          Prefix("esw.test.filter"),
+          AkkaConnection(ComponentId(Prefix(ESW, "OCS_1"), SequenceComponent)),
           testUri
         ),
         AkkaLocation(
-          AkkaConnection(ComponentId("TCS_1", SequenceComponent)),
-          Prefix("tcs.test.filter2"),
+          AkkaConnection(ComponentId(Prefix(TCS, "TCS_1"), SequenceComponent)),
           testUri
         )
       )
@@ -218,19 +213,16 @@ class LocationServiceCommandUtilsTest extends ScalaTestWithActorTestKit with Bas
       val testUri = new URI("test-uri")
       val tcsLocation =
         AkkaLocation(
-          AkkaConnection(ComponentId("TCS@obsMode1", Sequencer)),
-          Prefix("tcs.test.filter1"),
+          AkkaConnection(ComponentId(Prefix(TCS, "TCS@obsMode1"), Sequencer)),
           testUri
         )
       val ocsLocations = List(
         AkkaLocation(
-          AkkaConnection(ComponentId("OCS_1", SequenceComponent)),
-          Prefix("esw.test.filter"),
+          AkkaConnection(ComponentId(Prefix(ESW, "OCS_1"), SequenceComponent)),
           testUri
         ),
         AkkaLocation(
-          AkkaConnection(ComponentId("TCS_1", SequenceComponent)),
-          Prefix("tcs.test.filter2"),
+          AkkaConnection(ComponentId(Prefix(TCS, "TCS_1"), SequenceComponent)),
           testUri
         )
       )

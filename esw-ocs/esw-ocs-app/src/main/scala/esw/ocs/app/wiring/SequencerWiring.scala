@@ -58,13 +58,13 @@ private[ocs] class SequencerWiring(val packageId: String, val observingMode: Str
   implicit lazy val actorRuntime: ActorRuntime = cswWiring.actorRuntime
 
   lazy val sequencerRef: ActorRef[SequencerMsg] = (typedSystem ? { x: ActorRef[ActorRef[SequencerMsg]] =>
-    Spawn(sequencerBehavior.setup, sequencerName, Props.empty, x)
+    Spawn(sequencerBehavior.setup, prefix.value, Props.empty, x)
   }).block
 
   //Pass lambda to break circular dependency shown below.
   //SequencerRef -> Script -> cswServices -> SequencerOperator -> SequencerRef
   private lazy val sequenceOperatorFactory = () => new SequenceOperatorImpl(sequencerRef)
-  private lazy val componentId             = ComponentId(sequencerName, ComponentType.Sequencer)
+  private lazy val componentId             = ComponentId(prefix, ComponentType.Sequencer)
   private lazy val script: ScriptDsl       = ScriptLoader.loadKotlinScript(scriptClass, cswServices)
 
   lazy private val locationServiceUtil   = new LocationServiceUtil(locationService)
@@ -78,7 +78,7 @@ private[ocs] class SequencerWiring(val packageId: String, val observingMode: Str
 
   private lazy val jAlarmService: IAlarmService = alarmServiceFactory.jMakeClientApi(jLocationService, typedSystem)
 
-  private lazy val loggerFactory    = new LoggerFactory(sequencerName)
+  private lazy val loggerFactory    = new LoggerFactory(prefix.value)
   private lazy val jLoggerFactory   = loggerFactory.asJava
   private lazy val logger: Logger   = loggerFactory.getLogger
   private lazy val jLogger: ILogger = ScriptLoader.withScript(scriptClass)(jLoggerFactory.getLogger)
@@ -109,8 +109,7 @@ private[ocs] class SequencerWiring(val packageId: String, val observingMode: Str
     new WebsocketRouteFactory("websocket-endpoint", websocketHandlerFactory)
   )
 
-  private lazy val settings =
-    new Settings(Some(SocketUtils.getFreePort), Some(s"$sequencerName"), config, ComponentType.Sequencer)
+  private lazy val settings    = new Settings(Some(SocketUtils.getFreePort), Some(prefix), config, ComponentType.Sequencer)
   private lazy val httpService = new HttpService(logger, locationService, routes, settings, actorRuntime)
 
   private val shutdownHttpService = () =>
@@ -130,7 +129,7 @@ private[ocs] class SequencerWiring(val packageId: String, val observingMode: Str
 
         httpService.registeredLazyBinding.block
 
-        val registration = AkkaRegistration(AkkaConnection(componentId), prefix, sequencerRef.toURI)
+        val registration = AkkaRegistration(AkkaConnection(componentId), sequencerRef.toURI)
         new LocationServiceUtil(locationService).register(registration).block
       } catch {
         case NonFatal(e) => Left(ScriptError(e.getMessage))

@@ -23,14 +23,14 @@ interface EventServiceDsl {
     val defaultPublisher: IEventPublisher
     val defaultSubscriber: IEventSubscriber
 
-    fun EventKey(prefix: String, eventName: String): EventKey = EventKey(Prefix(prefix), EventName(eventName))
+    fun EventKey(prefix: String, eventName: String): EventKey = EventKey(Prefix.apply(prefix), EventName(eventName))
     fun EventKey(eventKeyStr: String): EventKey = EventKey.apply(eventKeyStr)
 
     fun SystemEvent(sourcePrefix: String, eventName: String, vararg parameters: Parameter<*>): SystemEvent =
-            SystemEvent(Prefix(sourcePrefix), EventName(eventName)).jMadd(parameters.toSet())
+            SystemEvent(Prefix.apply(sourcePrefix), EventName(eventName)).jMadd(parameters.toSet())
 
     fun ObserveEvent(sourcePrefix: String, eventName: String, vararg parameters: Parameter<*>): ObserveEvent =
-            ObserveEvent(Prefix(sourcePrefix), EventName(eventName)).jMadd(parameters.toSet())
+            ObserveEvent(Prefix.apply(sourcePrefix), EventName(eventName)).jMadd(parameters.toSet())
 
     suspend fun publishEvent(event: Event): Done = defaultPublisher.publish(event).await()
 
@@ -50,13 +50,13 @@ interface EventServiceDsl {
 
     suspend fun <T> SystemVar(initial: T, eventKeyStr: String, key: Key<T>): ProcessVariable<T> {
         val eventKey = EventKey(eventKeyStr)
-        val systemEvent = SystemEvent(eventKey.source().prefix(), eventKey.eventName().name(), key.set(initial))
+        val systemEvent = SystemEvent(eventKey.source().value(), eventKey.eventName().name(), key.set(initial))
         return ProcessVariable(systemEvent, key, this)
     }
 
     suspend fun <T> ObserveVar(initial: T, eventKeyStr: String, key: Key<T>): ProcessVariable<T> {
         val eventKey = EventKey(eventKeyStr)
-        val observeEvent = ObserveEvent(eventKey.source().prefix(), eventKey.eventName().name(), key.set(initial))
+        val observeEvent = ObserveEvent(eventKey.source().value(), eventKey.eventName().name(), key.set(initial))
         return ProcessVariable(observeEvent, key, this)
     }
 

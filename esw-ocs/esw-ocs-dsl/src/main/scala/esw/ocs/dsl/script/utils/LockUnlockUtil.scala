@@ -28,7 +28,7 @@ class LockUnlockUtil(locationServiceUtil: LocationServiceUtil)(actorSystem: Acto
   private implicit val ec: ExecutionContext = actorSystem.executionContext
   private implicit val mat: Materializer    = Materializer(actorSystem)
 
-  def lock(componentRef: ActorRef[ComponentMessage], prefix: Prefix, leaseDuration: Duration)(
+  def lock(componentRef: ActorRef[ComponentMessage], source: Prefix, leaseDuration: Duration)(
       onLockAboutToExpire: () => CompletionStage[Void],
       onLockExpired: () => CompletionStage[Void]
   ): CompletionStage[LockingResponse] = {
@@ -38,7 +38,7 @@ class LockUnlockUtil(locationServiceUtil: LocationServiceUtil)(actorSystem: Acto
 
     actorSource
       .mapMaterializedValue { lockResponseReplyTo =>
-        componentRef ! Lock(prefix, lockResponseReplyTo, leaseFiniteDuration)
+        componentRef ! Lock(source, lockResponseReplyTo, leaseFiniteDuration)
         firstLockResponse.future
       }
       .mapAsync(1) { lockResponse =>
@@ -51,8 +51,8 @@ class LockUnlockUtil(locationServiceUtil: LocationServiceUtil)(actorSystem: Acto
       .toJava
   }
 
-  def unlock(componentRef: ActorRef[ComponentMessage], prefix: Prefix): CompletionStage[LockingResponse] =
-    (componentRef ? (Unlock(prefix, _: ActorRef[LockingResponse]))).toJava
+  def unlock(componentRef: ActorRef[ComponentMessage], source: Prefix): CompletionStage[LockingResponse] =
+    (componentRef ? (Unlock(source, _: ActorRef[LockingResponse]))).toJava
 
   private def actorSource =
     ActorSource
