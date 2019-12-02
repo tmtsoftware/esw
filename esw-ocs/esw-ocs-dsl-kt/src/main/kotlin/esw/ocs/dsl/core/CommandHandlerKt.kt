@@ -1,23 +1,28 @@
 package esw.ocs.dsl.core
 
 import csw.params.commands.SequenceCommand
-import esw.ocs.dsl.jdk.SuspendToJavaConverter
-import esw.ocs.dsl.script.SequenceCommandHandler
+import esw.ocs.dsl.script.CommandHandler
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.future.asCompletableFuture
 import kotlinx.coroutines.launch
 import java.util.concurrent.CompletionStage
 
-class SequenceCommandHandlerKt<T : SequenceCommand>(
+/**
+ * Base trait is defined at scala side, which is used to install command handlers in ScriptDsl
+ * We want ability to add error handlers and retries on onSetup/onObserve command handlers
+ * Having implementation at kotlin side, allows us to execute onError or retry handlers inside same parent coroutine
+ * Hence if exception gets thrown even after all the retries, this gets propagated to top-level exception handler
+ */
+class CommandHandlerKt<T : SequenceCommand>(
         private val block: suspend CoroutineScope.(T) -> Unit,
-        override val coroutineScope: CoroutineScope
-) : SequenceCommandHandler<T>, SuspendToJavaConverter {
+        private val scope: CoroutineScope
+) : CommandHandler<T> {
 
     private var retryCount: Int = 0
     private var onError: (suspend CoroutineScope.(Throwable) -> Unit)? = null
 
     override fun execute(sequenceCommand: T): CompletionStage<Void> =
-            coroutineScope.launch {
+            scope.launch {
                 suspend fun go(): Unit =
                         try {
                             block(sequenceCommand)
@@ -32,7 +37,7 @@ class SequenceCommandHandlerKt<T : SequenceCommand>(
                 go()
             }.asCompletableFuture().thenAccept { }
 
-    fun onError(block: suspend CoroutineScope.(Throwable) -> Unit): SequenceCommandHandlerKt<T> {
+    fun onError(block: suspend CoroutineScope.(Throwable) -> Unit): CommandHandlerKt<T> {
         onError = block
         return this
     }

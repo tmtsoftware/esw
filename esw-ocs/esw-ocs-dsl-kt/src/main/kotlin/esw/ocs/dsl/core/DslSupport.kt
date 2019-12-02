@@ -1,5 +1,6 @@
 package esw.ocs.dsl.core
 
+import esw.ocs.dsl.internal.ScriptWiring
 import esw.ocs.dsl.script.CswServices
 import esw.ocs.dsl.script.ScriptDsl
 import esw.ocs.dsl.script.StrandEc

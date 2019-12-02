@@ -8,10 +8,10 @@ import java.util.*
 
 interface CommandServiceDsl {
 
-    fun setup(prefix: String, commandName: String, obsId: String? = null) =
+    fun Setup(prefix: String, commandName: String, obsId: String? = null) =
             Setup(Prefix(prefix), CommandName(commandName), obsId.toOptionalObsId())
 
-    fun observe(prefix: String, commandName: String, obsId: String? = null) =
+    fun Observe(prefix: String, commandName: String, obsId: String? = null) =
             Observe(Prefix(prefix), CommandName(commandName), obsId.toOptionalObsId())
 
     fun sequenceOf(vararg sequenceCommand: SequenceCommand): Sequence = Sequence.create(sequenceCommand.toList())

@@ -3,12 +3,8 @@ package esw.ocs.scripts.examples.testData
 import com.typesafe.config.ConfigFactory
 import csw.alarm.api.javadsl.JAlarmSeverity.Major
 import csw.alarm.models.Key.AlarmKey
-import csw.params.commands.CommandName
 import csw.params.commands.Sequence
 import csw.params.commands.SequenceCommand
-import csw.params.commands.Setup
-import csw.params.core.models.Id
-import csw.params.core.models.Prefix
 import csw.params.events.Event
 import csw.params.javadsl.JSubsystem.NFIRAOS
 import esw.ocs.dsl.core.script
@@ -69,14 +65,8 @@ script {
 
     onSetup("command-4") {
         // try sending concrete sequence
-        val setupCommand = Setup(
-                Prefix("TCS.test"),
-                CommandName("command-3"),
-                Optional.ofNullable(null)
-        )
-        val sequence = Sequence(
-                CollectionConverters.asScala(Collections.singleton<SequenceCommand>(setupCommand)).toSeq()
-        )
+        val setupCommand = Setup("TCS.test", "command-3")
+        val sequence = sequenceOf(setupCommand)
 
         // ESW-88, ESW-145, ESW-195
         val tcsSequencer = Sequencer("tcs", "darknight")
@@ -103,7 +93,7 @@ script {
     onSetup("command-lgsf") {
         // NOT update command response to avoid sequencer to finish immediately
         // so that other Add, Append command gets time
-        val setupCommand = setup("LGSF.test", "command-lgsf")
+        val setupCommand = Setup("LGSF.test", "command-lgsf")
         val sequence = Sequence(
                 CollectionConverters.asScala(Collections.singleton<SequenceCommand>(setupCommand)).toSeq()
         )

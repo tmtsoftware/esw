@@ -98,10 +98,10 @@ private[esw] class ScriptDsl(private val csw: CswServices, private val strandEc:
       }
     }.toJava
 
-  protected final def onSetupCommand(name: String)(handler: SequenceCommandHandler[Setup]): Unit =
+  protected final def onSetupCommand(name: String)(handler: CommandHandler[Setup]): Unit =
     handle[Setup](name)(handler.execute)
 
-  protected final def onObserveCommand(name: String)(handler: SequenceCommandHandler[Observe]): Unit =
+  protected final def onObserveCommand(name: String)(handler: CommandHandler[Observe]): Unit =
     handle[Observe](name)(handler.execute)
 
   protected final def onGoOnline(handler: Supplier[CompletionStage[Void]]): Unit      = onlineHandlers.add(_ => handler.get())

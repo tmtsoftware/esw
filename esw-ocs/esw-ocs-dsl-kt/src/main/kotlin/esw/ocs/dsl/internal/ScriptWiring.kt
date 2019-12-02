@@ -1,4 +1,4 @@
-package esw.ocs.dsl.core
+package esw.ocs.dsl.internal
 
 import esw.ocs.dsl.script.StrandEc
 import kotlinx.coroutines.CoroutineScope
