@@ -4,4 +4,4 @@ package esw.ocs.dsl
 annotation class FSMMarker
 
 @DslMarker
-annotation class ScriptMarker
+annotation class ScriptDslMarker

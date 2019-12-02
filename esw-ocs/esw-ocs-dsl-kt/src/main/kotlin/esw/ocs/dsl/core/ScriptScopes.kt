@@ -4,12 +4,10 @@ import csw.params.commands.Observe
 import csw.params.commands.SequenceCommand
 import csw.params.commands.Setup
 import csw.time.core.models.UTCTime
+import esw.ocs.dsl.ScriptDslMarker
 import esw.ocs.dsl.highlevel.CswHighLevelDslApi
 import esw.ocs.dsl.params.Params
 import kotlinx.coroutines.CoroutineScope
-
-@DslMarker
-annotation class ScriptDslMarker
 
 interface CommonHandlers : CswHighLevelDslApi {
     fun onGoOnline(block: suspend HandlerScope.() -> Unit)
@@ -50,9 +48,9 @@ interface ScriptScope : ScriptHandlers, CommonHandlers
 //--------------------------------------- FSMScript --------------------------//
 
 @ScriptDslMarker
-interface FSMStateScope : ScriptScope, BecomeDsl, CoroutineScope
+interface FSMScriptStateScope : ScriptScope, BecomeDsl, CoroutineScope
 
 @ScriptDslMarker
 interface FSMScriptScope : CommonHandlers {
-    fun state(name: String, block: suspend FSMStateScope.(Params) -> Unit)
+    fun state(name: String, block: suspend FSMScriptStateScope.(Params) -> Unit)
 }

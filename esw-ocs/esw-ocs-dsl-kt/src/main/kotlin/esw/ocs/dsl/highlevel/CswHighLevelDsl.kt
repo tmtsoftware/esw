@@ -13,7 +13,7 @@ import csw.logging.api.javadsl.ILogger
 import csw.params.core.models.Prefix
 import csw.time.scheduler.api.TimeServiceScheduler
 import esw.ocs.dsl.epics.CommandFlag
-import esw.ocs.dsl.epics.FSMTopLevel
+import esw.ocs.dsl.epics.FSMScope
 import esw.ocs.dsl.epics.StateMachine
 import esw.ocs.dsl.epics.StateMachineImpl
 import esw.ocs.dsl.jdk.SuspendToJavaConverter
@@ -29,7 +29,7 @@ interface CswHighLevelDslApi : EventServiceDsl, TimeServiceDsl, CommandServiceDs
     fun HCD(name: String): RichComponent
     fun Sequencer(sequencerId: String, observingMode: String): RichSequencer
 
-    suspend fun FSM(name: String, initState: String, block: suspend FSMTopLevel.() -> Unit): StateMachine
+    suspend fun FSM(name: String, initState: String, block: suspend FSMScope.() -> Unit): StateMachine
     fun commandFlag(): CommandFlag
 
     fun finishWithError(message: String = ""): Nothing = throw RuntimeException(message)
@@ -64,7 +64,7 @@ abstract class CswHighLevelDsl(private val cswServices: CswServices) : CswHighLe
     override fun Sequencer(sequencerId: String, observingMode: String): RichSequencer = richSequencer(sequencerId, observingMode)
 
     /************* FSM helpers **********/
-    override suspend fun FSM(name: String, initState: String, block: suspend FSMTopLevel.() -> Unit): StateMachine =
+    override suspend fun FSM(name: String, initState: String, block: suspend FSMScope.() -> Unit): StateMachine =
             StateMachineImpl(name, initState, coroutineScope).apply { block() }
 
     override fun commandFlag(): CommandFlag = CommandFlag()

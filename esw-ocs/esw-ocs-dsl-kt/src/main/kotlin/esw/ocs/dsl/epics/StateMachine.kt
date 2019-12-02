@@ -13,13 +13,13 @@ interface StateMachine : Refreshable {
 
 // this interface is exposed at top-level of FSM
 @FSMMarker
-interface FSMTopLevel {
-    fun state(name: String, block: suspend FSMState.(params: Params) -> Unit)
+interface FSMScope {
+    fun state(name: String, block: suspend FSMStateScope.(params: Params) -> Unit)
 }
 
 // this interface is exposed in side each state of FSM
 @FSMMarker
-interface FSMState {
+interface FSMStateScope {
     suspend fun become(state: String, params: Params = Params(setOf()))
     suspend fun completeFSM()
     suspend fun on(condition: Boolean = true, body: suspend () -> Unit)
@@ -28,7 +28,7 @@ interface FSMState {
 }
 
 // Don't remove name parameter, it will be used while logging.
-class StateMachineImpl(val name: String, private val initialState: String, val coroutineScope: CoroutineScope) : StateMachine, FSMTopLevel, FSMState {
+class StateMachineImpl(val name: String, private val initialState: String, val coroutineScope: CoroutineScope) : StateMachine, FSMScope, FSMStateScope {
     // fixme: Try to remove optional behavior of both variables
     private var currentState: String? = null
     private var previousState: String? = null
@@ -37,12 +37,12 @@ class StateMachineImpl(val name: String, private val initialState: String, val c
 
 
     //fixme : do we need to pass as receiver coroutine scope to state lambda
-    private val states = mutableMapOf<String, suspend FSMState.(params: Params) -> Unit>()
+    private val states = mutableMapOf<String, suspend FSMStateScope.(params: Params) -> Unit>()
 
     //this is done to make new job child of the coroutine scope's job.
     private val fsmJob: CompletableJob = Job(coroutineScope.coroutineContext[Job])
 
-    override fun state(name: String, block: suspend FSMState.(params: Params) -> Unit) {
+    override fun state(name: String, block: suspend FSMStateScope.(params: Params) -> Unit) {
         states += name.toUpperCase() to block
     }
 

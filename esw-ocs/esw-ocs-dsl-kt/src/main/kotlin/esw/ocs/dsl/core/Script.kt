@@ -117,14 +117,14 @@ class FSMScript(
 
     override val scriptDsl: ScriptDsl by lazy { fsmScriptDsl }
 
-    inner class FSMStateDsl : Script(cswServices, strandEc, scope), FSMStateScope {
+    inner class FSMScriptStateDsl : Script(cswServices, strandEc, scope), FSMScriptStateScope {
         override val coroutineContext: CoroutineContext = this@FSMScript.scope.coroutineContext
         override fun become(nextState: String, params: Params) = this@FSMScript.become(nextState, params)
     }
 
-    override fun state(name: String, block: suspend FSMStateScope.(Params) -> Unit) {
+    override fun state(name: String, block: suspend FSMScriptStateScope.(Params) -> Unit) {
 
-        fun reusableScript(): FSMStateDsl = FSMStateDsl().apply {
+        fun reusableScript(): FSMScriptStateDsl = FSMScriptStateDsl().apply {
             try {
                 runBlocking { block(this@FSMScript.fsmScriptDsl.state.params()) }
             } catch (ex: Exception) {
