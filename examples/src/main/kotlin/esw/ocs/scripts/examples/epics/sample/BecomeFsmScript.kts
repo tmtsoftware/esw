@@ -20,7 +20,7 @@ FSMScript("INIT") {
             publishEvent(event)
             event.paramType()
             on(true) {
-                become("READY", Params(event.jParamSet()))
+                become("READY", event.params)
             }
         }
 
@@ -52,7 +52,7 @@ FSMScript("INIT") {
     state("INIT") {
         onSetup("command-1") { command ->
             testAssembly.submit(command)
-            become("DATUMING", Params(command.jParamSet()).kMadd(intKey("encoder").set(30)))
+            become("DATUMING", command.params.kMadd(intKey("encoder").set(30)))
         }
 
         onSetup("command-2") {
