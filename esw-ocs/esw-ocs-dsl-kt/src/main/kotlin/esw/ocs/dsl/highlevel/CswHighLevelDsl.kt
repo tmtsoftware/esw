@@ -1,6 +1,7 @@
 package esw.ocs.dsl.highlevel
 
 import akka.actor.typed.ActorSystem
+import csw.alarm.api.javadsl.IAlarmService
 import csw.alarm.models.AlarmSeverity
 import csw.alarm.models.Key.AlarmKey
 import csw.config.api.javadsl.IConfigClientService
@@ -28,32 +29,25 @@ abstract class CswHighLevelDsl(private val cswServices: CswServices) : EventServ
     abstract val strandEc: StrandEc
     abstract override val coroutineScope: CoroutineScope
 
+    final override val prefix: Prefix = cswServices.prefix()
     final override val system: ActorSystem<*> = cswServices.actorSystem()
-    private val locationServiceUtil = LocationServiceUtil(cswServices.locationService().asScala(), system)
+    final override val locationService: ILocationService = cswServices.locationService()
+    final override val configClient: IConfigClientService = cswServices.configClientService()
+    final override val logger: ILogger = cswServices.jLogger()
+    final override val databaseServiceFactory: DatabaseServiceFactory = cswServices.databaseServiceFactory()
+    final override val alarmService: IAlarmService = cswServices.alarmService()
+
     final override val defaultPublisher: IEventPublisher by lazy { cswServices.eventService().defaultPublisher() }
     final override val defaultSubscriber: IEventSubscriber by lazy { cswServices.eventService().defaultSubscriber() }
-
-    final override val prefix: Prefix = cswServices.prefix()
-    final override val logger: ILogger = cswServices.jLogger()
-
     final override val timeServiceScheduler: TimeServiceScheduler by lazy { cswServices.timeServiceSchedulerFactory().make(strandEc.ec()) }
-    final override val configClient: IConfigClientService by lazy { cswServices.configClientService() }
 
-    final override val locationService: ILocationService = cswServices.locationService()
-    final override val databaseServiceFactory: DatabaseServiceFactory = cswServices.databaseServiceFactory()
-
-    /***** AlarmServiceDSl impl *****/
-    private val alarmServiceDslImpl by lazy { AlarmServiceDslImpl(cswServices.alarmService(), coroutineScope) }
-
-    override fun setSeverity(alarmKey: AlarmKey, severity: AlarmSeverity) = alarmServiceDslImpl.setSeverity(alarmKey, severity)
-
+    private val locationServiceUtil = LocationServiceUtil(cswServices.locationService().asScala(), system)
     /******** Command Service helpers ********/
     private fun richComponent(name: String, componentType: ComponentType): RichComponent =
             RichComponent(name, componentType, prefix, cswServices.lockUnlockUtil(), locationServiceUtil, system, coroutineScope)
 
-    private fun richSequencer(sequencerId: String, observingMode: String): RichSequencer {
-        return RichSequencer(sequencerId, observingMode, cswServices.sequencerApiFactory())
-    }
+    private fun richSequencer(sequencerId: String, observingMode: String): RichSequencer =
+            RichSequencer(sequencerId, observingMode, cswServices.sequencerApiFactory())
 
     fun Assembly(name: String): RichComponent = richComponent(name, JComponentType.Assembly())
     fun HCD(name: String): RichComponent = richComponent(name, JComponentType.HCD())

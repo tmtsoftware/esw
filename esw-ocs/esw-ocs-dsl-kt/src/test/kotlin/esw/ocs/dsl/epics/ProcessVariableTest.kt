@@ -52,7 +52,6 @@ class ProcessVariableTest {
     fun `bind should start subscription and add subscription entry in FSM | ESW-142`() = runBlocking {
         val eventServiceDsl = mockk<EventServiceDsl>()
         val refreshable = mockk<Refreshable>()
-        val subscription = mockk<FSMSubscription>()
         val eventSubscription = mockk<EventSubscription>()
 
         val intKey = intKey("testKey")
