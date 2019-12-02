@@ -2,12 +2,16 @@ package esw.ocs.script
 
 import akka.actor.testkit.typed.scaladsl.TestProbe
 import csw.params.commands.{CommandName, Observe, Sequence, Setup}
-import csw.params.core.generics.KeyType.{LongKey, StringKey}
+import csw.params.core.generics.KeyType
+import csw.params.core.generics.KeyType.{IntKey, LongKey, StringKey}
 import csw.params.core.models.Prefix
 import csw.params.events.EventKey
 import csw.testkit.scaladsl.CSWService.EventServer
 import esw.ocs.api.SequencerApi
 import esw.ocs.testkit.EswTestKit
+import scala.concurrent.duration.DurationInt
+
+import scala.concurrent.Await
 
 class FSMIntegrationTest extends EswTestKit(EventServer) {
 
@@ -61,6 +65,39 @@ class FSMIntegrationTest extends EswTestKit(EventServer) {
       mainFsmStateProbe.expectMessage("FSM:TERMINATE:STOP")
       mainFsmStateProbe.expectMessage("MAIN:STOP")
     }
-  }
 
+    "pass parameters to next state via become" in {
+      val temperatureFSmKey = IntKey.make("temperatureFSM")
+      val commandKey        = KeyType.IntKey.make("command")
+      val fsmStateProbe     = TestProbe[Int]
+
+      eventSubscriber
+        .subscribeCallback(
+          Set(EventKey("esw.FSMTestScript.WAITING")),
+          event => {
+            val param = event.paramType.get(temperatureFSmKey).flatMap(_.get(0))
+            param.foreach(fsmStateProbe.ref ! _)
+          }
+        )
+
+      eventSubscriber
+        .subscribeCallback(Set(EventKey("esw.FSMTestScript.STARTED")), event => {
+          val param = event.paramType.get(commandKey).flatMap(_.get(0))
+          param.foreach(fsmStateProbe.ref ! _)
+        })
+
+      val fsmSequencer: SequencerApi = spawnSequencerProxy("esw", "becomeFsm")
+      val command1                   = Setup(Prefix("esw.test"), CommandName("command-1"), None).madd(commandKey.set(10))
+      val command2                   = Setup(Prefix("esw.test"), CommandName("command-2"), None)
+
+      Await.result(fsmSequencer.submitAndWait(Sequence(command1, command2)), 10.seconds)
+
+      eventually {
+        fsmStateProbe.expectMessage(20)
+        fsmStateProbe.expectMessage(10)
+      }
+
+      fsmSequencer.stop().awaitResult
+    }
+  }
 }
