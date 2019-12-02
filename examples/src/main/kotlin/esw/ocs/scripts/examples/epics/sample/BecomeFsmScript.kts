@@ -1,18 +1,19 @@
-package esw.ocs.scripts.examples.epics
+package esw.ocs.scripts.examples.epics.sample
 
 import csw.params.core.generics.Parameter
-import esw.ocs.dsl.core.script
+import esw.ocs.dsl.core.FSMScript
 import esw.ocs.dsl.params.*
 import kotlinx.coroutines.delay
 
-script {
+FSMScript("INIT") {
 
+    val testAssembly = Assembly("test")
     val processVar = SystemVar(true, "tcs.trigger", booleanKey("flag"))
     val flag = commandFlag()
 
-    val fsm = FSM("Trigger FSM", "INIT") {
-        state("INIT") {
-            println("INIT state")
+    val fsm = FSM("Trigger FSM", "START") {
+        state("START") {
+            println("START state")
             delay(1000)
             val parameter: Parameter<Int> = intKey("encoder").set(1)
             val event = SystemEvent("tcs", "trigger.INIT.state", parameter)
@@ -26,14 +27,9 @@ script {
         state("READY") { params ->
             val parameter: Parameter<Int> = params(intKey("encoder"))
 
-            if(parameter.first == 1) {
+            if (parameter.first == 1) {
                 val k1 = intKey("trigger")
                 become("WAITING", params.kMadd(k1.set(22)))
-            }
-
-            onSetup("command-1") { command ->
-                println("command-1 received")
-                flag.set(command.jParamSet())
             }
 
             become("DONE")
@@ -53,8 +49,33 @@ script {
     processVar.bind(fsm)
     flag.bind(fsm)
 
-    onSetup("command-1") {
-        fsm.start()
-        fsm.await()
+    state("INIT") {
+        onSetup("command-1") { command ->
+            testAssembly.submit(command)
+            become("DATUMING", Params(command.jParamSet()).kMadd(intKey("encoder").set(30)))
+        }
+
+        onSetup("command-2") { command ->
+            fsm.start()
+            fsm.await()
+            become("FINISHED")
+        }
     }
+
+    state("DATUMING") { params ->
+        onObserve("observe-command-1") { _ ->
+            //do something
+        }
+
+        onObserve("observe-command-2") {
+            if (params.kExists(intKey("encoder"))) {
+                become("FINISHED")
+            }
+        }
+    }
+
+    state("FINISHED") {
+        // do something
+    }
+
 }
