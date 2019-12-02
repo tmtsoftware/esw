@@ -16,13 +16,26 @@ import esw.ocs.dsl.epics.CommandFlag
 import esw.ocs.dsl.epics.FSMTopLevel
 import esw.ocs.dsl.epics.StateMachine
 import esw.ocs.dsl.epics.StateMachineImpl
+import esw.ocs.dsl.jdk.SuspendToJavaConverter
 import esw.ocs.dsl.script.CswServices
 import esw.ocs.dsl.script.StrandEc
 import esw.ocs.dsl.sequence_manager.LocationServiceUtil
 import kotlinx.coroutines.CoroutineScope
 
-abstract class CswHighLevelDsl(private val cswServices: CswServices) : EventServiceDsl, TimeServiceDsl, CommandServiceDsl,
-        ConfigServiceDsl, AlarmServiceDsl, LoopDsl, LoggingDsl, DatabaseServiceDsl {
+interface CswHighLevelDslApi : EventServiceDsl, TimeServiceDsl, CommandServiceDsl,
+        ConfigServiceDsl, AlarmServiceDsl, LoopDsl, SuspendToJavaConverter, LoggingDsl, DatabaseServiceDsl {
+
+    fun Assembly(name: String): RichComponent
+    fun HCD(name: String): RichComponent
+    fun Sequencer(sequencerId: String, observingMode: String): RichSequencer
+
+    suspend fun FSM(name: String, initState: String, block: suspend FSMTopLevel.() -> Unit): StateMachine
+    fun commandFlag(): CommandFlag
+
+    fun finishWithError(message: String = ""): Nothing = throw RuntimeException(message)
+}
+
+abstract class CswHighLevelDsl(private val cswServices: CswServices) : CswHighLevelDslApi {
     abstract val strandEc: StrandEc
     abstract override val coroutineScope: CoroutineScope
 
@@ -46,14 +59,14 @@ abstract class CswHighLevelDsl(private val cswServices: CswServices) : EventServ
     private fun richSequencer(sequencerId: String, observingMode: String): RichSequencer =
             RichSequencer(sequencerId, observingMode, cswServices.sequencerApiFactory())
 
-    fun Assembly(name: String): RichComponent = richComponent(name, JComponentType.Assembly())
-    fun HCD(name: String): RichComponent = richComponent(name, JComponentType.HCD())
-    fun Sequencer(sequencerId: String, observingMode: String): RichSequencer = richSequencer(sequencerId, observingMode)
+    override fun Assembly(name: String): RichComponent = richComponent(name, JComponentType.Assembly())
+    override fun HCD(name: String): RichComponent = richComponent(name, JComponentType.HCD())
+    override fun Sequencer(sequencerId: String, observingMode: String): RichSequencer = richSequencer(sequencerId, observingMode)
 
     /************* FSM helpers **********/
-    suspend fun FSM(name: String, initState: String, block: suspend FSMTopLevel.() -> Unit): StateMachine =
+    override suspend fun FSM(name: String, initState: String, block: suspend FSMTopLevel.() -> Unit): StateMachine =
             StateMachineImpl(name, initState, coroutineScope).apply { block() }
 
-    fun commandFlag() = CommandFlag()
+    override fun commandFlag(): CommandFlag = CommandFlag()
 
 }
