@@ -1,6 +1,6 @@
 package esw.ocs.dsl.epics
 
-import esw.ocs.dsl.annotation.FSMDslMarker
+import esw.ocs.dsl.FSMDslMarker
 import esw.ocs.dsl.params.Params
 import kotlinx.coroutines.*
 import kotlin.time.Duration

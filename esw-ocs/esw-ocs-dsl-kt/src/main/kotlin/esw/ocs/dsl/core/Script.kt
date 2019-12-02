@@ -4,7 +4,7 @@ import csw.params.commands.Observe
 import csw.params.commands.SequenceCommand
 import csw.params.commands.Setup
 import csw.time.core.models.UTCTime
-import esw.ocs.dsl.annotation.ScriptMarker
+import esw.ocs.dsl.ScriptMarker
 import esw.ocs.dsl.highlevel.CswHighLevelDsl
 import esw.ocs.dsl.nullable
 import esw.ocs.dsl.params.Params
