@@ -1,6 +1,5 @@
 package esw.ocs.dsl
 
-import esw.ocs.dsl.par
 import io.kotlintest.matchers.numerics.shouldBeGreaterThan
 import io.kotlintest.matchers.numerics.shouldBeLessThan
 import io.kotlintest.shouldBe

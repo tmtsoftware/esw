@@ -8,7 +8,7 @@ import esw.ocs.dsl.script.exceptions.ScriptLoadingException.ScriptInitialisation
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.runBlocking
 
-fun script(block: suspend Script.(csw: CswServices) -> Unit): ScriptResult =
+fun script(block: suspend ScriptScope.(csw: CswServices) -> Unit): ScriptResult =
         ScriptResult {
             val wiring = ScriptWiring()
             Script(it, wiring.strandEc, wiring.scope).apply {
@@ -26,7 +26,7 @@ fun reusableScript(block: Script.(csw: CswServices) -> Unit): ReusableScriptResu
             Script(csw, ec, ctx).apply { block(csw) }
         }
 
-fun FSMScript(initState: String, block: suspend FSMScript.(csw: CswServices) -> Unit): ScriptResult =
+fun FSMScript(initState: String, block: suspend FSMScriptScope.(csw: CswServices) -> Unit): ScriptResult =
         ScriptResult {
             val wiring = ScriptWiring()
             FSMScript(it, wiring.strandEc, wiring.scope).apply {

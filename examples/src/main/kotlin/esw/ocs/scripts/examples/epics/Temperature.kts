@@ -1,6 +1,5 @@
 package esw.ocs.scripts.examples.epics
 
-
 import csw.params.events.SystemEvent
 import esw.ocs.dsl.core.FSMScript
 import esw.ocs.dsl.params.first

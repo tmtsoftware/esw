@@ -3,14 +3,10 @@ package esw.ocs.scripts.examples.testData
 import com.typesafe.config.ConfigFactory
 import csw.alarm.api.javadsl.JAlarmSeverity.Major
 import csw.alarm.models.Key.AlarmKey
-import csw.params.commands.Sequence
-import csw.params.commands.SequenceCommand
 import csw.params.events.Event
 import csw.params.javadsl.JSubsystem.NFIRAOS
 import esw.ocs.dsl.core.script
 import kotlinx.coroutines.delay
-import scala.jdk.javaapi.CollectionConverters
-import java.util.*
 import kotlin.time.seconds
 
 script {
@@ -91,7 +87,7 @@ script {
     }
 
     onSetup("command-lgsf") {
-        // NOT update command response to avoid sequencer to finish immediately
+        // NOT update command response to avoid a sequencer to finish immediately
         // so that other Add, Append command gets time
         val setupCommand = Setup("lgsf.test", "command-lgsf")
         val sequence = sequenceOf(setupCommand)

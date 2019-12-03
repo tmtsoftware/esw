@@ -1,11 +1,9 @@
 package esw.ocs.scripts.examples.epics
 
-
 import csw.params.events.SystemEvent
 import esw.ocs.dsl.core.FSMScript
 import esw.ocs.dsl.params.Params
 import esw.ocs.dsl.params.intKey
-import esw.ocs.dsl.params.set
 import esw.ocs.dsl.params.stringKey
 
 FSMScript("INIT") {
@@ -38,7 +36,6 @@ FSMScript("INIT") {
             temperatureFSM.await()
             become(STARTED, Params(command.jParamSet()))
         }
-
     }
 
     state(STARTED) { params ->

@@ -1,7 +1,7 @@
 package esw.ocs.dsl
 
 @DslMarker
-annotation class FSMDslMarker
+annotation class FSMMarker
 
 @DslMarker
-annotation class ScriptMarker
+annotation class ScriptDslMarker

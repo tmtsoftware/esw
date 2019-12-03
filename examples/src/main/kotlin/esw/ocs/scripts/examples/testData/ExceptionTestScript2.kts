@@ -6,6 +6,13 @@ script {
 
     loadScripts(exceptionHandlerScript)
 
+    onSetup("error-handling") {
+        throw RuntimeException("command-failed")
+    }.onError {
+        val errorEvent = SystemEvent("tcs", "onError-event")
+        publishEvent(errorEvent)
+    }.retry(2)
+
     onGoOffline {}
 
     onGoOnline {

@@ -1,11 +1,7 @@
 package esw.ocs.scripts.examples.testData
 
-import csw.params.commands.Sequence
-import csw.params.commands.SequenceCommand
 import esw.ocs.dsl.core.script
 import kotlinx.coroutines.delay
-import scala.jdk.javaapi.CollectionConverters
-import java.util.*
 import kotlin.time.seconds
 
 script {
@@ -36,9 +32,7 @@ script {
     }
 
     onSetup("multi-node") { command ->
-        val sequence = Sequence(
-                CollectionConverters.asScala(Collections.singleton<SequenceCommand>(command)).toSeq()
-        )
+        val sequence = sequenceOf(command)
 
         val tcs = Sequencer("tcs", "moonnight")
         tcs.submitAndWait(sequence, 10.seconds)
