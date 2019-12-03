@@ -15,7 +15,7 @@ import kotlin.time.seconds
 
 script {
     val lgsfSequencer = Sequencer("lgsf", "darknight")
-    val testAssembly = Assembly("tcs.test")
+    val testAssembly = Assembly("esw.test")
 
     // ESW-134: Reuse code by ability to import logic from one script into another
     loadScripts(InitialCommandHandler)
@@ -30,7 +30,7 @@ script {
 
     onSetup("check-config") {
         if (existsConfig("/tmt/test/wfos.conf"))
-            publishEvent(SystemEvent("WFOS", "check-config.success"))
+            publishEvent(SystemEvent("wfos.test", "check-config.success"))
     }
 
     onSetup("get-config-data") {
@@ -38,7 +38,7 @@ script {
         val configData = getConfig("/tmt/test/wfos.conf")
         configData?.let {
             if (it == ConfigFactory.parseString(configValue))
-                publishEvent(SystemEvent("WFOS", "get-config.success"))
+                publishEvent(SystemEvent("wfos.test", "get-config.success"))
         }
     }
 
@@ -47,14 +47,14 @@ script {
 
     onSetup("get-event") {
         // ESW-88
-        val event: Event = getEvent("TCS.get.event").first()
-        val successEvent = SystemEvent("TCS.test", "get.success")
+        val event: Event = getEvent("esw.test.get.event").first()
+        val successEvent = SystemEvent("esw.test", "get.success")
         if (!event.isInvalid) publishEvent(successEvent)
     }
 
     onSetup("on-event") {
-        onEvent("TCS.get.event") {
-            val successEvent = SystemEvent("TCS.test", "onEvent.success")
+        onEvent("esw.test.get.event") {
+            val successEvent = SystemEvent("esw.test", "onEvent.success")
             if (!it.isInvalid) publishEvent(successEvent)
         }
     }
@@ -65,7 +65,7 @@ script {
 
     onSetup("command-4") {
         // try sending concrete sequence
-        val setupCommand = Setup("TCS.test", "command-3")
+        val setupCommand = Setup("esw.test", "command-3")
         val sequence = sequenceOf(setupCommand)
 
         // ESW-88, ESW-145, ESW-195
@@ -93,10 +93,8 @@ script {
     onSetup("command-lgsf") {
         // NOT update command response to avoid sequencer to finish immediately
         // so that other Add, Append command gets time
-        val setupCommand = Setup("LGSF.test", "command-lgsf")
-        val sequence = Sequence(
-                CollectionConverters.asScala(Collections.singleton<SequenceCommand>(setupCommand)).toSeq()
-        )
+        val setupCommand = Setup("lgsf.test", "command-lgsf")
+        val sequence = sequenceOf(setupCommand)
 
         lgsfSequencer.submitAndWait(sequence, 10.seconds)
     }

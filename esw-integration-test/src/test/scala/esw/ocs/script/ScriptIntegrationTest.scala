@@ -75,7 +75,7 @@ class ScriptIntegrationTest extends EswTestKit(EventServer, AlarmServer, ConfigS
 
   "Sequencer Script" must {
     "be able to send sequence to other Sequencer by resolving location through TestScript | ESW-88, ESW-145, ESW-190, ESW-195, ESW-119" in {
-      val command  = Setup(Prefix("TCS.test"), CommandName("command-4"), None)
+      val command  = Setup(Prefix("esw.test"), CommandName("command-4"), None)
       val sequence = Sequence(Seq(command))
 
       tcsSequencer.getSequence.futureValue shouldBe None
@@ -84,7 +84,7 @@ class ScriptIntegrationTest extends EswTestKit(EventServer, AlarmServer, ConfigS
 
       // This has to match with sequence created in TestScript -> handleSetupCommand("command-4")
       val assertableCommand =
-        Setup(Prefix("TCS.test"), CommandName("command-3"), None, Set.empty)
+        Setup(Prefix("esw.test"), CommandName("command-3"), None, Set.empty)
       val step             = Step(assertableCommand).copy(status = Success)
       val steps            = List(step)
       val expectedStepList = StepList(steps)
@@ -161,15 +161,15 @@ class ScriptIntegrationTest extends EswTestKit(EventServer, AlarmServer, ConfigS
 
     "be able to get a published event | ESW-120" in {
       val eventService = new EventServiceFactory().make(HttpLocationServiceFactory.makeLocalClient)
-      val publishF     = eventService.defaultPublisher.publish(SystemEvent(Prefix("TCS.test"), EventName("get.event")))
+      val publishF     = eventService.defaultPublisher.publish(SystemEvent(Prefix("esw.test"), EventName("get.event")))
       publishF.futureValue
 
-      val command  = Setup(Prefix("TCS.test"), CommandName("get-event"), None)
+      val command  = Setup(Prefix("esw.test"), CommandName("get-event"), None)
       val sequence = Sequence(Seq(command))
 
       ocsSequencer.submitAndWait(sequence).futureValue shouldBe a[Completed]
 
-      val successKey        = EventKey("TCS.get.success")
+      val successKey        = EventKey("esw.test.get.success")
       val getPublishedEvent = eventSubscriber.get(successKey).futureValue
 
       getPublishedEvent.isInvalid should ===(false)
@@ -178,17 +178,17 @@ class ScriptIntegrationTest extends EswTestKit(EventServer, AlarmServer, ConfigS
     "be able to subscribe a event key | ESW-120" in {
       val eventService = new EventServiceFactory().make(HttpLocationServiceFactory.makeLocalClient)
 
-      val command  = Setup(Prefix("TCS.test"), CommandName("on-event"), None)
+      val command  = Setup(Prefix("esw.test"), CommandName("on-event"), None)
       val sequence = Sequence(Seq(command))
 
       ocsSequencer.submitAndWait(sequence).futureValue shouldBe a[Completed]
 
-      val publishF = eventService.defaultPublisher.publish(SystemEvent(Prefix("TCS.test"), EventName("get.event")))
+      val publishF = eventService.defaultPublisher.publish(SystemEvent(Prefix("esw.test"), EventName("get.event")))
       publishF.futureValue
 
       Thread.sleep(1000)
 
-      val successKey        = EventKey("TCS.onEvent.success")
+      val successKey        = EventKey("esw.test.onEvent.success")
       val getPublishedEvent = eventSubscriber.get(successKey).futureValue
 
       getPublishedEvent.isInvalid should ===(false)
@@ -307,8 +307,8 @@ class ScriptIntegrationTest extends EswTestKit(EventServer, AlarmServer, ConfigS
     }
 
     "be able to handle unexpected exception and finish the sequence | ESW-241" in {
-      val command1 = Setup(Prefix("TCS.test"), CommandName("check-exception-1"), None)
-      val command2 = Setup(Prefix("TCS.test"), CommandName("check-exception-2"), None)
+      val command1 = Setup(Prefix("esw.test"), CommandName("check-exception-1"), None)
+      val command2 = Setup(Prefix("esw.test"), CommandName("check-exception-2"), None)
       val sequence = Sequence(Seq(command1, command2))
 
       val response = ocsSequencer.submitAndWait(sequence).futureValue

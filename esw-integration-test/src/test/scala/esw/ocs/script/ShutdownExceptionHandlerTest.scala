@@ -1,7 +1,8 @@
 package esw.ocs.script
 
 import akka.actor.testkit.typed.scaladsl.TestProbe
-import csw.params.events.{Event, EventKey, SystemEvent}
+import csw.params.core.models.Prefix
+import csw.params.events.{Event, EventKey, EventName, SystemEvent}
 import csw.testkit.scaladsl.CSWService.EventServer
 import esw.ocs.api.protocol.Ok
 import esw.ocs.impl.messages.SequencerMessages.Shutdown
@@ -19,7 +20,7 @@ class ShutdownExceptionHandlerTest extends EswTestKit(EventServer) {
 
   "invoke exception handler when handle-shutdown-failed" in {
     val reason         = "handle-shutdown-failed"
-    val eventKey       = EventKey("tcs." + reason)
+    val eventKey       = EventKey(Prefix("tcs.filter.wheel"), EventName(reason))
     val assertionProbe = TestProbe[Event]
     val subscription   = eventSubscriber.subscribeActorRef(Set(eventKey), assertionProbe.ref)
     subscription.ready().futureValue

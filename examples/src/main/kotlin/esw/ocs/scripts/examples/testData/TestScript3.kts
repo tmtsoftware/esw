@@ -33,7 +33,7 @@ script {
 
 
     onSetup("multi-node") { command ->
-        val assembly = Assembly("SampleAssembly")
+        val assembly = Assembly("esw.SampleAssembly")
         assembly.submit(command)
     }
 }

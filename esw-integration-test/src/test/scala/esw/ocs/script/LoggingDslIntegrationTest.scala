@@ -41,9 +41,8 @@ class LoggingDslIntegrationTest extends EswTestKit {
       Thread.sleep(500)
 
       val log: JsObject = logBuffer.head
-      log.getString("@componentName") shouldBe "esw@moonnight"
+      log.getString("@componentName") shouldBe "esw.esw@moonnight"
       log.getString("@severity") shouldBe "FATAL"
-      log.getString("prefix") shouldBe "Prefix(esw.ocs.prefix5)"
       log.getString("class") shouldBe "esw.ocs.scripts.examples.testData.TestScript2"
       log.getString("message") shouldBe "log-message"
     }

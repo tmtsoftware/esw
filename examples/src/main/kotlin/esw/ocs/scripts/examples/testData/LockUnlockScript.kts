@@ -9,7 +9,7 @@ import kotlin.time.milliseconds
 script {
     val lockResponseEvent = SystemEvent("esw.ocs.lock_unlock", "locking_response")
     val key = stringKey("lockingResponse")
-    val assembly = Assembly("test")
+    val assembly = Assembly("esw.test")
 
     suspend fun publishLockingResponse(lockingResponse: LockingResponse) {
         publishEvent(lockResponseEvent.add(key.set(lockingResponse.javaClass.simpleName)))

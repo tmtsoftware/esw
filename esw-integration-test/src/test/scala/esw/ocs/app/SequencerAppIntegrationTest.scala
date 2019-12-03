@@ -28,7 +28,7 @@ class SequencerAppIntegrationTest extends EswTestKit {
   "SequenceComponent command" must {
     "start sequence component with provided subsystem and prefix and register it with location service | ESW-102, ESW-136, ESW-103, ESW-147, ESW-151, ESW-214" in {
       val name: String            = "primary"
-      val expectedSequencerPrefix = Prefix("ESW.ESW.primary@esw@darknight")
+      val expectedSequencerPrefix = Prefix(ESW, "esw.primary@esw@darknight")
       val sequenceComponentPrefix = Prefix(Subsystem.ESW, name)
 
       // start Sequence Component
@@ -52,8 +52,8 @@ class SequencerAppIntegrationTest extends EswTestKit {
       val sequencerLocation = response.response.rightValue
 
       //verify sequencerName has SequenceComponentName
-      val actualSequencerName: String = sequencerLocation.prefix.componentName
-      actualSequencerName shouldEqual expectedSequencerPrefix
+      val actualSequencerPrefix: Prefix = sequencerLocation.prefix
+      actualSequencerPrefix shouldEqual expectedSequencerPrefix
 
       // verify Sequencer is started and registered with location service with expected prefix
       val sequencerLocationCheck: AkkaLocation = resolveSequencerLocation(expectedSequencerPrefix)
@@ -77,7 +77,7 @@ class SequencerAppIntegrationTest extends EswTestKit {
       val sequenceComponentLocation = locationService.list(ComponentType.SequenceComponent).futureValue.head
 
       //assert that componentName and prefix contain subsystem provided
-      sequenceComponentLocation.prefix.value.contains("ESW.ESW_") shouldEqual true
+      sequenceComponentLocation.prefix.value.contains("esw.ESW_") shouldEqual true
     }
 
     "start sequence component concurrently and register with automatically generated random uniqueIDs if prefix is not provided| ESW-144" in {
@@ -98,7 +98,7 @@ class SequencerAppIntegrationTest extends EswTestKit {
       sequenceComponentLocations.foreach { location =>
         {
           //assert that componentName and prefix contain subsystem provided
-          location.prefix.value.contains("ESW.ESW_") shouldEqual true
+          location.prefix.value.contains("esw.ESW_") shouldEqual true
         }
       }
     }
@@ -143,7 +143,7 @@ class SequencerAppIntegrationTest extends EswTestKit {
       val name          = "primary"
       val packageId     = "esw"
       val observingMode = "darknight"
-      val sequencerName = "ESW.primary@esw@darknight"
+      val sequencerName = "esw.primary@esw@darknight"
 
       // start Sequencer"
       SequencerApp.main(Array("sequencer", "-s", subsystem, "-n", name, "-i", packageId, "-m", observingMode))
@@ -151,7 +151,7 @@ class SequencerAppIntegrationTest extends EswTestKit {
       // verify sequence component is started
       val sequenceComponentPrefix   = Prefix(s"$subsystem.$name")
       val sequenceComponentLocation = resolveSequenceComponentLocation(sequenceComponentPrefix)
-      sequenceComponentLocation.connection.componentId.prefix.componentName shouldBe sequenceComponentPrefix
+      sequenceComponentLocation.connection.componentId.prefix shouldBe sequenceComponentPrefix
 
       // verify that sequencer is started and able to process sequence command
       val connection        = AkkaConnection(ComponentId(Prefix(ESW, sequencerName), ComponentType.Sequencer))
@@ -175,12 +175,12 @@ class SequencerAppIntegrationTest extends EswTestKit {
       val sequenceComponentLocation = locationService.list(ComponentType.SequenceComponent).futureValue.head
 
       //assert that componentName and prefix contain subsystem provided
-      sequenceComponentLocation.prefix.value.contains("ESW.ESW_") shouldEqual true
+      sequenceComponentLocation.prefix.value.contains("esw.ESW_") shouldEqual true
 
-      val sequenceComponentName = sequenceComponentLocation.prefix.componentName
+      val sequenceComponentPrefix = sequenceComponentLocation.prefix.value
 
       //sequencer prefix will have sequence component prefix and optional packageId is defaulted to subsystem
-      val sequencerName = s"$sequenceComponentName@esw@darknight"
+      val sequencerName = s"$sequenceComponentPrefix@esw@darknight"
       // verify that sequencer is started and able to process sequence command
       val sequencerLocation = resolveSequencerLocation(Prefix(ESW, sequencerName))
 

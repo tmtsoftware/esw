@@ -29,7 +29,7 @@ abstract class CswHighLevelDsl(private val cswServices: CswServices) : EventServ
     abstract val strandEc: StrandEc
     abstract override val coroutineScope: CoroutineScope
 
-    final override val prefix: Prefix = cswServices.prefix()
+    val prefix: Prefix = cswServices.prefix()
     final override val system: ActorSystem<*> = cswServices.actorSystem()
     final override val locationService: ILocationService = cswServices.locationService()
     final override val configClient: IConfigClientService = cswServices.configClientService()
