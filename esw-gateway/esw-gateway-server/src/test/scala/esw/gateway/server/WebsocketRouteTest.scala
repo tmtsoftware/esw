@@ -26,7 +26,7 @@ import esw.gateway.server.handlers.WebsocketHandlerImpl
 import esw.http.core.BaseTestSuite
 import esw.ocs.api.protocol.SequencerWebsocketRequest
 import io.bullet.borer.Decoder
-import msocket.api.models.{MSocketErrorFrame, Subscription}
+import msocket.api.models.{MSocketException, Subscription}
 import msocket.impl.Encoding.{CborBinary, JsonText}
 import msocket.impl.post.ClientHttpCodecs
 import msocket.impl.ws.WebsocketRouteFactory
@@ -88,8 +88,8 @@ class WebsocketRouteTest extends BaseTestSuite with ScalatestRouteTest with Gate
       WS("/websocket-endpoint", wsClient.flow) ~> route ~> check {
         wsClient.sendMessage(JsonText.strictMessage(queryFinal))
         isWebSocketUpgrade shouldBe true
-        val response = decodeMessage[MSocketErrorFrame](wsClient).`stream-error`
-        response shouldEqual InvalidComponent(errmsg).toStreamError
+        val response = decodeMessage[MSocketException](wsClient).protocol_error
+        response shouldEqual InvalidComponent(errmsg).protocolError
       }
     }
   }
@@ -223,7 +223,7 @@ class WebsocketRouteTest extends BaseTestSuite with ScalatestRouteTest with Gate
         wsClient.sendMessage(JsonText.strictMessage(eventSubscriptionRequest))
         isWebSocketUpgrade shouldBe true
 
-        intercept[MSocketErrorFrame] {
+        intercept[MSocketException] {
           decodeMessage[Event](wsClient)
         }
       }
@@ -289,7 +289,7 @@ class WebsocketRouteTest extends BaseTestSuite with ScalatestRouteTest with Gate
         wsClient.sendMessage(JsonText.strictMessage(eventSubscriptionRequest))
         isWebSocketUpgrade shouldBe true
 
-        intercept[MSocketErrorFrame] {
+        intercept[MSocketException] {
           decodeMessage[Event](wsClient)
         }
       }
@@ -298,8 +298,8 @@ class WebsocketRouteTest extends BaseTestSuite with ScalatestRouteTest with Gate
 
   private def decodeMessage[T](wsClient: WSProbe)(implicit decoder: Decoder[T]): T = {
     wsClient.expectMessage() match {
-      case TextMessage.Strict(text)   => JsonText.decodeWithFrameError[T](text)
-      case BinaryMessage.Strict(data) => CborBinary.decodeWithFrameError[T](data)
+      case TextMessage.Strict(text)   => JsonText.decodeWithCustomException[T](text)
+      case BinaryMessage.Strict(data) => CborBinary.decodeWithCustomException[T](data)
       case _                          => throw new RuntimeException("The expected message is not Strict")
     }
   }
