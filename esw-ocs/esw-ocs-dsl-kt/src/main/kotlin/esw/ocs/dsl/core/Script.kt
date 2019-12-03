@@ -56,7 +56,7 @@ sealed class BaseScript(val cswServices: CswServices, scope: CoroutineScope) : C
         override val coroutineContext: CoroutineContext = this@toHandlerScope.coroutineContext
     }
 
-    private fun (suspend HandlerScope.() -> Unit).toCoroutineScope(): suspend (CoroutineScope) -> Unit = { this.invoke(it.toHandlerScope()) }
+    private fun (suspend HandlerScope.() -> Unit).toCoroutineScope(): suspend (CoroutineScope) -> Unit = { this(it.toHandlerScope()) }
 }
 
 open class Script(
