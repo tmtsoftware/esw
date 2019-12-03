@@ -2,8 +2,6 @@ package esw.ocs.dsl.highlevel
 
 import akka.actor.typed.ActorSystem
 import csw.alarm.api.javadsl.IAlarmService
-import csw.alarm.models.AlarmSeverity
-import csw.alarm.models.Key.AlarmKey
 import csw.config.api.javadsl.IConfigClientService
 import csw.database.DatabaseServiceFactory
 import csw.event.api.javadsl.IEventPublisher
@@ -18,14 +16,13 @@ import esw.ocs.dsl.epics.CommandFlag
 import esw.ocs.dsl.epics.FSMTopLevel
 import esw.ocs.dsl.epics.StateMachine
 import esw.ocs.dsl.epics.StateMachineImpl
-import esw.ocs.dsl.jdk.SuspendToJavaConverter
 import esw.ocs.dsl.script.CswServices
 import esw.ocs.dsl.script.StrandEc
 import esw.ocs.dsl.sequence_manager.LocationServiceUtil
 import kotlinx.coroutines.CoroutineScope
 
 abstract class CswHighLevelDsl(private val cswServices: CswServices) : EventServiceDsl, TimeServiceDsl, CommandServiceDsl,
-        ConfigServiceDsl, AlarmServiceDsl, LoopDsl, SuspendToJavaConverter, LoggingDsl, DatabaseServiceDsl {
+        ConfigServiceDsl, AlarmServiceDsl, LoopDsl, LoggingDsl, DatabaseServiceDsl {
     abstract val strandEc: StrandEc
     abstract override val coroutineScope: CoroutineScope
 

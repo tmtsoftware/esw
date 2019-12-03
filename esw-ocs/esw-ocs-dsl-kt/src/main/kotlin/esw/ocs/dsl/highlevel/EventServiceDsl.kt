@@ -8,6 +8,8 @@ import csw.params.core.generics.Key
 import csw.params.core.generics.Parameter
 import csw.params.core.models.Prefix
 import csw.params.events.*
+import esw.ocs.dsl.SuspendableConsumer
+import esw.ocs.dsl.SuspendableSupplier
 import esw.ocs.dsl.epics.ProcessVariable
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.future.await
@@ -34,12 +36,12 @@ interface EventServiceDsl {
 
     suspend fun publishEvent(event: Event): Done = defaultPublisher.publish(event).await()
 
-    fun publishEvent(every: Duration, eventGenerator: suspend CoroutineScope.() -> Event?): Cancellable =
+    fun publishEvent(every: Duration, eventGenerator: SuspendableSupplier<Event?>): Cancellable =
             defaultPublisher.publishAsync({
                 coroutineScope.future { Optional.ofNullable(eventGenerator()) }
             }, every.toJavaDuration())
 
-    suspend fun onEvent(vararg eventKeys: String, callback: suspend CoroutineScope.(Event) -> Unit): EventSubscription {
+    suspend fun onEvent(vararg eventKeys: String, callback: SuspendableConsumer<Event>): EventSubscription {
         val subscription = defaultSubscriber.subscribeAsync(eventKeys.toEventKeys()) { coroutineScope.future { callback(it) } }
         subscription.ready().await()
         return EventSubscription { subscription.unsubscribe().await() }

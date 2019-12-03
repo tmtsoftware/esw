@@ -1,6 +1,6 @@
 package esw.ocs.dsl.epics
 
-import esw.ocs.dsl.FSMDslMarker
+import esw.ocs.dsl.FSMMarker
 import esw.ocs.dsl.params.Params
 import kotlinx.coroutines.*
 import kotlin.time.Duration
@@ -12,13 +12,13 @@ interface StateMachine : Refreshable {
 }
 
 // this interface is exposed at top-level of FSM
-@FSMDslMarker
+@FSMMarker
 interface FSMTopLevel {
     fun state(name: String, block: suspend FSMState.(params: Params) -> Unit)
 }
 
 // this interface is exposed in side each state of FSM
-@FSMDslMarker
+@FSMMarker
 interface FSMState {
     suspend fun become(state: String, params: Params = Params(setOf()))
     suspend fun completeFSM()

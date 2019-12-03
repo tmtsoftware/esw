@@ -5,10 +5,15 @@ import csw.params.commands.SequenceCommand
 import csw.params.commands.Setup
 import csw.time.core.models.UTCTime
 import esw.ocs.dsl.ScriptMarker
+import esw.ocs.dsl.SuspendableCallback
+import esw.ocs.dsl.SuspendableConsumer
 import esw.ocs.dsl.highlevel.CswHighLevelDsl
 import esw.ocs.dsl.nullable
 import esw.ocs.dsl.params.Params
-import esw.ocs.dsl.script.*
+import esw.ocs.dsl.script.CswServices
+import esw.ocs.dsl.script.FSMScriptDsl
+import esw.ocs.dsl.script.ScriptDsl
+import esw.ocs.dsl.script.StrandEc
 import esw.ocs.dsl.script.exceptions.ScriptLoadingException.ScriptInitialisationFailedException
 import kotlinx.coroutines.*
 import kotlinx.coroutines.future.asCompletableFuture
@@ -26,16 +31,16 @@ sealed class BaseScript(val cswServices: CswServices, scope: CoroutineScope) : C
 
     override val coroutineScope: CoroutineScope = scope + exceptionHandler
 
-    fun onGoOnline(block: suspend CoroutineScope.() -> Unit) =
+    fun onGoOnline(block: SuspendableCallback) =
             scriptDsl.onGoOnline { block.toJava() }
 
-    fun onGoOffline(block: suspend CoroutineScope.() -> Unit) =
+    fun onGoOffline(block: SuspendableCallback) =
             scriptDsl.onGoOffline { block.toJava() }
 
-    fun onAbortSequence(block: suspend CoroutineScope.() -> Unit) =
+    fun onAbortSequence(block: SuspendableCallback) =
             scriptDsl.onAbortSequence { block.toJava() }
 
-    fun onShutdown(block: suspend CoroutineScope.() -> Unit) =
+    fun onShutdown(block: SuspendableCallback) =
             scriptDsl.onShutdown { block.toJava() }
 
     fun onDiagnosticMode(block: suspend (UTCTime, String) -> Unit) =
@@ -43,10 +48,10 @@ sealed class BaseScript(val cswServices: CswServices, scope: CoroutineScope) : C
                 coroutineScope.launch { block(x, y) }.asCompletableFuture().thenAccept { }
             }
 
-    fun onOperationsMode(block: suspend CoroutineScope.() -> Unit) =
+    fun onOperationsMode(block: SuspendableCallback) =
             scriptDsl.onOperationsMode { block.toJava() }
 
-    fun onStop(block: suspend CoroutineScope.() -> Unit) =
+    fun onStop(block: SuspendableCallback) =
             scriptDsl.onStop { block.toJava() }
 
 }
@@ -63,19 +68,19 @@ open class Script(
     suspend fun nextIf(predicate: (SequenceCommand) -> Boolean): SequenceCommand? =
             scriptDsl.nextIf { predicate(it) }.await().nullable()
 
-    fun onSetup(name: String, block: suspend CoroutineScope.(Setup) -> Unit): CommandHandlerKt<Setup> {
+    fun onSetup(name: String, block: SuspendableConsumer<Setup>): CommandHandlerKt<Setup> {
         val handler = CommandHandlerKt(block, coroutineScope)
         scriptDsl.onSetupCommand(name, handler)
         return handler
     }
 
-    fun onObserve(name: String, block: suspend CoroutineScope.(Observe) -> Unit): CommandHandlerKt<Observe> {
+    fun onObserve(name: String, block: SuspendableConsumer<Observe>): CommandHandlerKt<Observe> {
         val handler = CommandHandlerKt(block, coroutineScope)
         scriptDsl.onObserveCommand(name, handler)
         return handler
     }
 
-    fun onException(block: suspend CoroutineScope.(Throwable) -> Unit) =
+    fun onException(block: SuspendableConsumer<Throwable>) =
             scriptDsl.onException {
                 // "future" is used to swallow the exception coming from exception handlers
                 coroutineScope.future { block(it) }

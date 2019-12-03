@@ -17,6 +17,8 @@ import csw.params.core.models.Prefix
 import csw.params.core.states.CurrentState
 import csw.params.core.states.StateName
 import csw.time.core.models.UTCTime
+import esw.ocs.dsl.SuspendableCallback
+import esw.ocs.dsl.SuspendableConsumer
 import esw.ocs.dsl.Timeouts
 import esw.ocs.dsl.jdk.SuspendToJavaConverter
 import esw.ocs.dsl.script.utils.LockUnlockUtil
@@ -46,7 +48,7 @@ class RichComponent(
     //fixme: submitAndWait could be called for long-running commands, why is default timeout being passed?
     suspend fun submitAndWait(command: ControlCommand): SubmitResponse = commandService().submitAndWait(command, timeout).await()
 
-    suspend fun subscribeCurrentState(stateNames: Set<StateName>, callback: suspend CoroutineScope.(CurrentState) -> Unit): Subscription =
+    suspend fun subscribeCurrentState(stateNames: Set<StateName>, callback: SuspendableConsumer<CurrentState>): Subscription =
             commandService().subscribeCurrentState(stateNames) { callback.toJava(it) }
 
     suspend fun diagnosticMode(startTime: UTCTime, hint: String): Unit = componentRef().tell(DiagnosticDataMessage.DiagnosticMode(startTime, hint))
@@ -57,8 +59,8 @@ class RichComponent(
 
     suspend fun lock(
             leaseDuration: Duration,
-            onLockAboutToExpire: suspend CoroutineScope.() -> Unit = {},
-            onLockExpired: suspend CoroutineScope.() -> Unit = {}
+            onLockAboutToExpire: SuspendableCallback = {},
+            onLockExpired: SuspendableCallback = {}
     ): LockingResponse =
             lockUnlockUtil.lock(
                     componentRef(),
