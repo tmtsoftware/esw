@@ -40,16 +40,16 @@ class ExceptionsHandlerIntegrationTest extends EswTestKit(EventServer) {
       (DiagnosticMode(UTCTime.now(), "any", TestProbe[DiagnosticModeResponse].ref), "handle-diagnostic-mode-failed")
     )
 
-    forAll(idleStateTestCases) { (msg, reason) =>
-      s"invoke exception handler when ${reason} | ESW-139" in {
+    forAll(idleStateTestCases) { (msg, failureMessage) =>
+      s"invoke exception handler when $failureMessage | ESW-139" in {
         val sequencer = spawnSequencerRef(ocsPackageId, ocsObservingMode)
 
-        val eventKey = EventKey("tcs." + reason)
+        val eventKey = EventKey("tcs." + failureMessage)
         val probe    = createProbeFor(eventKey)
 
         sequencer ! msg
 
-        assertReason(probe, reason)
+        assertMessage(probe, failureMessage)
       }
     }
 
@@ -60,12 +60,12 @@ class ExceptionsHandlerIntegrationTest extends EswTestKit(EventServer) {
       (AbortSequence(TestProbe[OkOrUnhandledResponse].ref), "handle-abort-failed")
     )
 
-    forAll(inProgressStateTestCases) { (msg, reason) =>
-      s"invoke exception handler when $reason | ESW-139" in {
+    forAll(inProgressStateTestCases) { (msg, failureMessage) =>
+      s"invoke exception handler when $failureMessage | ESW-139" in {
         val sequencerRef = spawnSequencerRef(ocsPackageId, ocsObservingMode)
         val sequencer    = new SequencerActorProxy(sequencerRef)
 
-        val eventKey = EventKey("tcs." + reason)
+        val eventKey = EventKey("tcs." + failureMessage)
         val probe    = createProbeFor(eventKey)
 
         val longRunningSetupCommand  = Setup(Prefix("TCS"), CommandName("long-running-setup"), None)
@@ -77,7 +77,7 @@ class ExceptionsHandlerIntegrationTest extends EswTestKit(EventServer) {
         sequencer.pause
         sequencerRef ! msg
 
-        assertReason(probe, reason)
+        assertMessage(probe, failureMessage)
       }
     }
   }
@@ -112,9 +112,9 @@ class ExceptionsHandlerIntegrationTest extends EswTestKit(EventServer) {
     }
 
     "invoke exception handler when handle-goOnline-failed | ESW-139" in {
-      val reason    = "handle-goOnline-failed"
-      val eventKey  = EventKey("tcs." + reason)
-      val testProbe = createProbeFor(eventKey)
+      val globalExHandlerEventMessage = "handle-goOnline-failed"
+      val eventKey                    = EventKey("tcs." + globalExHandlerEventMessage)
+      val testProbe                   = createProbeFor(eventKey)
 
       val sequencerRef = spawnSequencerRef(tcsPackageId, tcsObservingMode)
       val sequencer    = new SequencerActorProxy(sequencerRef)
@@ -122,11 +122,33 @@ class ExceptionsHandlerIntegrationTest extends EswTestKit(EventServer) {
       sequencer.goOffline().awaitResult
       sequencer.goOnline()
 
-      assertReason(testProbe, reason)
+      assertMessage(testProbe, globalExHandlerEventMessage)
+    }
+
+    "call global exception handler if there is an exception in command handler even after retrying | ESW-249" in {
+      val globalExHandlerEventMessage   = "command-failed"
+      val globalExHandlerEventKey       = EventKey("tcs." + globalExHandlerEventMessage)
+      val globalExHandlerEventTestProbe = createProbeFor(globalExHandlerEventKey)
+
+      val onErrorEventMessage   = "onError-event"
+      val onErrorEventKey       = EventKey("tcs." + onErrorEventMessage)
+      val onErrorEventTestProbe = createProbeFor(onErrorEventKey)
+
+      val sequencerRef  = spawnSequencerRef(tcsPackageId, tcsObservingMode)
+      val sequencer     = new SequencerActorProxy(sequencerRef)
+      val setupSequence = Sequence(Setup(Prefix("TCS"), CommandName("error-handling"), None))
+
+      sequencer.submitAndWait(setupSequence)
+
+      assertMessage(onErrorEventTestProbe, onErrorEventMessage)
+      assertMessage(onErrorEventTestProbe, onErrorEventMessage)
+      assertMessage(onErrorEventTestProbe, onErrorEventMessage)
+
+      assertMessage(globalExHandlerEventTestProbe, globalExHandlerEventMessage)
     }
   }
 
-  private def assertReason(probe: TestProbe[Event], reason: String): Unit = {
+  private def assertMessage(probe: TestProbe[Event], reason: String): Unit = {
     eventually {
       val event = probe.expectMessageType[SystemEvent]
       event.eventName.name shouldBe reason
