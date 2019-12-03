@@ -1,10 +1,10 @@
 package esw.ocs.dsl.epics
 
-import csw.params.core.generics.Parameter
 import esw.ocs.dsl.highlevel.CommandServiceDsl
 import esw.ocs.dsl.params.Params
 import esw.ocs.dsl.params.intKey
 import esw.ocs.dsl.params.kMadd
+import esw.ocs.dsl.params.params
 import io.kotlintest.eventually
 import io.kotlintest.shouldBe
 import io.mockk.coEvery
@@ -21,22 +21,21 @@ class CommandFlagTest : CommandServiceDsl {
     fun `set should update commandFlag value | ESW-252`() = runBlocking {
         val setup = Setup("tcs.test", "command-1", "obsId")
                 .kMadd(intKey("encoder").set(1))
-        val setupCommandParams = setup.jParamSet()
 
         val commandFlag = CommandFlag()
 
         commandFlag.value() shouldBe Params(setOf())
 
-        commandFlag.set(setupCommandParams)
+        commandFlag.set(setup.params)
 
-        commandFlag.value() shouldBe Params(setupCommandParams)
+        commandFlag.value() shouldBe setup.params
     }
 
     @Test
     fun `bind should update subscribers of commandFlag | ESW-252`() = runBlocking {
         val flag = CommandFlag()
         val refreshable = mockk<Refreshable>()
-        val params = mockk<Set<Parameter<*>>>()
+        val params = mockk<Params>()
 
         flag.bind(refreshable)
         coEvery { refreshable.refresh() }.answers {}
