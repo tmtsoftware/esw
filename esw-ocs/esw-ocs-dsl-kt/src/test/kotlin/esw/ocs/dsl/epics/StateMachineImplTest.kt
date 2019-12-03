@@ -267,4 +267,15 @@ class StateMachineImplTest {
         eventually(timeout) { waitingFinished shouldBe true }
     }
 
+    @Test
+    fun `should complete FSM if an exception is thrown in any state`() = runBlocking {
+        stateMachine.state(inProgress) { throw RuntimeException("Boom!") }
+        stateMachine.start()
+        stateMachine.become(inProgress)
+        checkInitFlag()
+        withTimeout(timeout.toMillis()) {
+            stateMachine.await()
+        }
+    }
+
 }
