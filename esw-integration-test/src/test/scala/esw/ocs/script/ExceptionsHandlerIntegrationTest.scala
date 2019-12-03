@@ -128,16 +128,16 @@ class ExceptionsHandlerIntegrationTest extends EswTestKit(EventServer) {
 
     "call global exception handler if there is an exception in command handler even after retrying | ESW-249" in {
       val globalExHandlerEventMessage   = "command-failed"
-      val globalExHandlerEventKey       = EventKey("tcs." + globalExHandlerEventMessage)
+      val globalExHandlerEventKey       = EventKey(prefix, EventName(globalExHandlerEventMessage))
       val globalExHandlerEventTestProbe = createProbeFor(globalExHandlerEventKey)
 
       val onErrorEventMessage   = "onError-event"
-      val onErrorEventKey       = EventKey("tcs." + onErrorEventMessage)
+      val onErrorEventKey       = EventKey(prefix, EventName(onErrorEventMessage))
       val onErrorEventTestProbe = createProbeFor(onErrorEventKey)
 
       val sequencerRef  = spawnSequencerRef(tcsPackageId, tcsObservingMode)
       val sequencer     = new SequencerActorProxy(sequencerRef)
-      val setupSequence = Sequence(Setup(Prefix("TCS"), CommandName("error-handling"), None))
+      val setupSequence = Sequence(Setup(prefix, CommandName("error-handling"), None))
 
       sequencer.submitAndWait(setupSequence)
 

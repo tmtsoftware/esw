@@ -9,7 +9,7 @@ script {
     onSetup("error-handling") {
         throw RuntimeException("command-failed")
     }.onError {
-        val errorEvent = SystemEvent("tcs", "onError-event")
+        val errorEvent = SystemEvent("tcs.filter.wheel", "onError-event")
         publishEvent(errorEvent)
     }.retry(2)
 
