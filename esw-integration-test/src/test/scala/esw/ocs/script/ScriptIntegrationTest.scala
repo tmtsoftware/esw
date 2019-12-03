@@ -207,7 +207,7 @@ class ScriptIntegrationTest extends EswTestKit(EventServer, AlarmServer, ConfigS
       val command3 = Setup(Prefix("TCS.test"), CommandName("command-2"), None)
       val sequence = Sequence(Seq(command1, command2, command3))
 
-      ocsSequencer.submitAndWait(sequence)
+      val response = ocsSequencer.submitAndWait(sequence)
 
       eventually(ocsSequencer.getSequence.futureValue.get.isInFlight shouldBe true)
 
@@ -223,6 +223,8 @@ class ScriptIntegrationTest extends EswTestKit(EventServer, AlarmServer, ConfigS
         val event = testProbe.receiveMessage()
         event.eventId shouldNot be(-1)
       }
+
+      response.futureValue shouldBe a[Completed]
     }
 
     "be able to send stop to downstream sequencers and call stopHandler | ESW-138, ESW-156" in {

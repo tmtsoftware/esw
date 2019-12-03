@@ -65,10 +65,8 @@ script {
 
     onSetup("command-4") {
         // try sending concrete sequence
-        val setupCommand = setup("TCS.test", "command-3")
-        val sequence = Sequence(
-                CollectionConverters.asScala(Collections.singleton<SequenceCommand>(setupCommand)).toSeq()
-        )
+        val setupCommand = Setup("TCS.test", "command-3")
+        val sequence = sequenceOf(setupCommand)
 
         // ESW-88, ESW-145, ESW-195
         val tcsSequencer = Sequencer("tcs", "darknight")
@@ -95,7 +93,7 @@ script {
     onSetup("command-lgsf") {
         // NOT update command response to avoid sequencer to finish immediately
         // so that other Add, Append command gets time
-        val setupCommand = setup("LGSF.test", "command-lgsf")
+        val setupCommand = Setup("LGSF.test", "command-lgsf")
         val sequence = Sequence(
                 CollectionConverters.asScala(Collections.singleton<SequenceCommand>(setupCommand)).toSeq()
         )

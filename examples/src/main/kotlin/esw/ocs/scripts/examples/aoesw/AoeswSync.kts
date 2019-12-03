@@ -20,7 +20,7 @@ script {
         val probeOffsetXParam = probeOffsetXKey.set(offsetX(0))
         val probeOffsetYParam = probeOffsetYKey.set(offsetY(0))
 
-        val probeCommand = setup(prefix, "scheduledOffset", command.obsId)
+        val probeCommand = Setup(prefix, "scheduledOffset", command.obsId)
             .madd(probeOffsetXParam, probeOffsetYParam)
 
         scheduleOnce(scheduledTime(0)) {

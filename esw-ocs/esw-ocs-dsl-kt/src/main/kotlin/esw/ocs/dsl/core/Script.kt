@@ -63,14 +63,14 @@ open class Script(
     suspend fun nextIf(predicate: (SequenceCommand) -> Boolean): SequenceCommand? =
             scriptDsl.nextIf { predicate(it) }.await().nullable()
 
-    fun onSetup(name: String, block: suspend CoroutineScope.(Setup) -> Unit): SequenceCommandHandlerKt<Setup> {
-        val handler = SequenceCommandHandlerKt(block, coroutineScope)
+    fun onSetup(name: String, block: suspend CoroutineScope.(Setup) -> Unit): CommandHandlerKt<Setup> {
+        val handler = CommandHandlerKt(block, coroutineScope)
         scriptDsl.onSetupCommand(name, handler)
         return handler
     }
 
-    fun onObserve(name: String, block: suspend CoroutineScope.(Observe) -> Unit): SequenceCommandHandlerKt<Observe> {
-        val handler = SequenceCommandHandlerKt(block, coroutineScope)
+    fun onObserve(name: String, block: suspend CoroutineScope.(Observe) -> Unit): CommandHandlerKt<Observe> {
+        val handler = CommandHandlerKt(block, coroutineScope)
         scriptDsl.onObserveCommand(name, handler)
         return handler
     }

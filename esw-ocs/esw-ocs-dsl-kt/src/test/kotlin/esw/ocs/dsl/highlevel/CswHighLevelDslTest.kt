@@ -2,6 +2,8 @@ package esw.ocs.dsl.highlevel
 
 import akka.actor.typed.ActorSystem
 import akka.actor.typed.javadsl.Behaviors
+import csw.alarm.api.javadsl.IAlarmService
+import csw.config.api.javadsl.IConfigClientService
 import csw.database.DatabaseServiceFactory
 import csw.location.api.javadsl.ILocationService
 import csw.location.api.javadsl.JComponentType
@@ -27,6 +29,8 @@ class CswHighLevelDslTest {
     private val cswServices: CswServices = mockk()
     private val jLocationService: ILocationService = mockk()
     private val locationService: LocationService = mockk()
+    private val configClient: IConfigClientService = mockk()
+    private val alarmService: IAlarmService = mockk()
     private val lockUnlockUtil: LockUnlockUtil = mockk()
     private val databaseServiceFactory: DatabaseServiceFactory = mockk()
     private val jLogger: ILogger = mockk()
@@ -36,7 +40,9 @@ class CswHighLevelDslTest {
         every { cswServices.actorSystem() }.answers { actorSystem }
         every { cswServices.lockUnlockUtil() }.answers { lockUnlockUtil }
         every { cswServices.locationService() }.answers { jLocationService }
+        every { cswServices.configClientService() }.answers { configClient }
         every { cswServices.databaseServiceFactory() }.answers { databaseServiceFactory }
+        every { cswServices.alarmService() }.answers { alarmService }
         every { cswServices.jLogger() }.answers { jLogger }
         every { cswServices.prefix() }.answers { prefix }
         every { jLocationService.asScala() }.answers { locationService }
