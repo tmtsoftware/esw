@@ -72,13 +72,13 @@ open class Script(
             scriptDsl.nextIf { predicate(it) }.await().nullable()
 
     override fun onSetup(name: String, block: suspend CommandHandlerScope.(Setup) -> Unit): CommandHandlerKt<Setup> {
-        val handler = CommandHandlerKt(block.toCoroutineScope(), coroutineScope)
+        val handler = CommandHandlerKt(coroutineScope, block.toCoroutineScope())
         scriptDsl.onSetupCommand(name, handler)
         return handler
     }
 
     override fun onObserve(name: String, block: suspend CommandHandlerScope.(Observe) -> Unit): CommandHandlerKt<Observe> {
-        val handler = CommandHandlerKt(block.toCoroutineScope(), coroutineScope)
+        val handler = CommandHandlerKt(coroutineScope, block.toCoroutineScope())
         scriptDsl.onObserveCommand(name, handler)
         return handler
     }

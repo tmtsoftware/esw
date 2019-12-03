@@ -5,6 +5,7 @@ import esw.ocs.dsl.SuspendableConsumer
 import esw.ocs.dsl.script.CommandHandler
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.future.asCompletableFuture
+import kotlinx.coroutines.future.await
 import kotlinx.coroutines.launch
 import java.util.concurrent.CompletionStage
 
@@ -15,8 +16,8 @@ import java.util.concurrent.CompletionStage
  * Hence if exception gets thrown even after all the retries, this gets propagated to top-level exception handler
  */
 class CommandHandlerKt<T : SequenceCommand>(
-        private val block: SuspendableConsumer<T>,
-        private val scope: CoroutineScope
+        private val scope: CoroutineScope,
+        private val block: SuspendableConsumer<T>
 ) : CommandHandler<T> {
 
     private var retryCount: Int = 0
