@@ -22,7 +22,7 @@ import esw.ocs.testkit.EswTestKit
 import scala.concurrent.Future
 
 class SequencerClientIntegrationTest extends EswTestKit(EventServer) {
-  private val packageId     = "ocs"
+  private val packageId     = "esw"
   private val observingMode = "moonnight"
 
   private val command1 = Setup(Prefix("esw.test"), CommandName("command-1"), None)

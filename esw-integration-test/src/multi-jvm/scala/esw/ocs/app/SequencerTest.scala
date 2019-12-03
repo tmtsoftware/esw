@@ -31,7 +31,7 @@ class SequencerTest(ignore: Int, mode: String)
   private val frameworkTestKit = FrameworkTestKit()
   private val eventTestKit     = EventTestKit()
 
-  private val ocsSequencerId      = "ocs"
+  private val ocsSequencerId      = "esw"
   private val ocsSequencerObsMode = "moonnight"
   private val tcsSequencerId      = "tcs"
   private val tcsSequencerObsMode = "moonnight"

@@ -26,7 +26,7 @@ class LoggingDslIntegrationTest extends EswTestKit {
 
   override def beforeAll(): Unit = {
     super.beforeAll()
-    ocsRef = spawnSequencerRef("ocs", "moonnight", None)
+    ocsRef = spawnSequencerRef("esw", "moonnight", None)
     ocsSequencer = new SequencerActorProxy(ocsRef)
     loggingSystem = LoggingSystemFactory.start("LoggingDslIntegrationTest", "", "", system)
     loggingSystem.setAppenders(List(testAppender))
@@ -41,7 +41,7 @@ class LoggingDslIntegrationTest extends EswTestKit {
       Thread.sleep(500)
 
       val log: JsObject = logBuffer.head
-      log.getString("@componentName") shouldBe "ocs@moonnight"
+      log.getString("@componentName") shouldBe "esw@moonnight"
       log.getString("@severity") shouldBe "FATAL"
       log.getString("prefix") shouldBe "Prefix(esw.ocs.prefix5)"
       log.getString("class") shouldBe "esw.ocs.scripts.examples.testData.TestScript2"

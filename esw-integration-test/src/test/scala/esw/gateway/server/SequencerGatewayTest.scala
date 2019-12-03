@@ -16,7 +16,7 @@ import msocket.impl.ws.WebsocketTransport
 
 class SequencerGatewayTest extends EswTestKit with GatewayCodecs {
   private val port: Int                    = 6490
-  private val packageId                    = "ocs"
+  private val packageId                    = "esw"
   private val observingMode                = "moonnight"
   private val gatewayWiring: GatewayWiring = new GatewayWiring(Some(port))
 

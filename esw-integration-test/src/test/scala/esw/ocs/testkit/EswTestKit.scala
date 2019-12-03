@@ -56,8 +56,16 @@ abstract class EswTestKit(services: CSWService*) extends ScalaTestFrameworkTestK
       packageId: String,
       observingMode: String,
       sequenceComponentName: Option[String] = None
-  ): ActorRef[SequencerMsg] =
-    spawnSequencer(packageId, observingMode, sequenceComponentName).toOption.get.uri.toActorRef.unsafeUpcast[SequencerMsg]
+  ): ActorRef[SequencerMsg] = {
+
+    val option = spawnSequencer(packageId, observingMode, sequenceComponentName)
+    option match {
+      case Left(value)  => println(s"left $value")
+      case Right(value) => println(s"right $value")
+    }
+
+    option.toOption.get.uri.toActorRef.unsafeUpcast[SequencerMsg]
+  }
 
   def spawnSequencerProxy(
       packageId: String,
