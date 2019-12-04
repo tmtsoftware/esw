@@ -66,7 +66,7 @@ class CswHighLevelDslTest {
 
         @Test
         fun `HCD should resolve the RichComponent with given name and hcd component type | ESW-245`() = runBlocking {
-            val sampleHcd = HCD("TCS.sampleHcd")
+            val sampleHcd = Hcd("TCS.sampleHcd")
 
             sampleHcd.componentType shouldBe JComponentType.HCD()
             sampleHcd.prefix shouldBe Prefix.apply("TCS.sampleHcd")

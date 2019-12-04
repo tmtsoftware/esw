@@ -22,7 +22,7 @@ import org.junit.jupiter.api.Test
 import kotlin.time.milliseconds
 import io.kotlintest.milliseconds as jMilliseconds
 
-class StateMachineImplTest {
+class FsmImplTest {
 
     // These are needed to simulate script like environment
     private val job = SupervisorJob()
@@ -43,12 +43,12 @@ class StateMachineImplTest {
     private var initFlag = false
     private var parameterSet = Params(setOf())
     // instantiating to not to deal with nullable
-    private var stateMachine = StateMachineImpl(testMachineName, invalid, coroutineScope, cswHighLevelDslApi)
+    private var fsm = FsmImpl(testMachineName, invalid, coroutineScope, cswHighLevelDslApi)
 
     @BeforeEach
     fun beforeEach() {
-        stateMachine = StateMachineImpl(testMachineName, init, coroutineScope, cswHighLevelDslApi)
-        stateMachine.state(init) { initFlag = true }
+        fsm = FsmImpl(testMachineName, init, coroutineScope, cswHighLevelDslApi)
+        fsm.state(init) { initFlag = true }
 
         initFlag = false
     }
@@ -59,38 +59,38 @@ class StateMachineImplTest {
 
     @Test
     fun `start should start the fsm and evaluate the initial state | ESW-142`() = runBlocking {
-        stateMachine.start()
+        fsm.start()
         checkInitFlag()
     }
 
     @Test
     fun `start should throw exception if invalid initial state is given | ESW-142`() = runBlocking<Unit> {
-        val invalidStateMachine = StateMachineImpl(testMachineName, invalid, coroutineScope, cswHighLevelDslApi)
+        val invalidStateMachine = FsmImpl(testMachineName, invalid, coroutineScope, cswHighLevelDslApi)
         shouldThrow<InvalidStateException> { invalidStateMachine.start() }
     }
 
     @Test
     fun `become should transition state to given state and evaluate it | ESW-142, ESW-252`() = runBlocking {
         var inProgressFlag = false
-        stateMachine.state(inProgress) { inProgressFlag = true }
+        fsm.state(inProgress) { inProgressFlag = true }
 
-        stateMachine.start()
+        fsm.start()
         checkInitFlag()
 
-        stateMachine.become(inProgress)
+        fsm.become(inProgress)
         eventually(timeout) { inProgressFlag shouldBe true }
     }
 
     @Test
     fun `become should throw exception if invalid state is given | ESW-142, ESW-252`() = runBlocking<Unit> {
         shouldThrow<InvalidStateException> {
-            stateMachine.become("INVALIDSTATE")
+            fsm.become("INVALIDSTATE")
         }
     }
 
     @Test
     fun `become should treat stateNames case insensitively | ESW-142, ESW-252`() = runBlocking {
-        stateMachine.become(init.toLowerCase())
+        fsm.become(init.toLowerCase())
         checkInitFlag()
     }
 
@@ -100,19 +100,19 @@ class StateMachineImplTest {
         val event = SystemEvent(Prefix(JSubsystem.TCS, "test"), EventName("trigger.INIT.state")).add(parameter)
         val expectedParamsInProgressState = Params(event.jParamSet())
 
-        stateMachine.state(inProgress) { params ->
+        fsm.state(inProgress) { params ->
             parameterSet = params
         }
 
-        stateMachine.start()
+        fsm.start()
 
-        stateMachine.become(inProgress, Params(event.jParamSet()))
+        fsm.become(inProgress, Params(event.jParamSet()))
 
         eventually(timeout) {
             parameterSet shouldBe expectedParamsInProgressState
         }
 
-        stateMachine.refresh()
+        fsm.refresh()
 
         eventually(timeout) {
             parameterSet shouldBe expectedParamsInProgressState
@@ -122,7 +122,7 @@ class StateMachineImplTest {
 
     @Test
     fun `state should add the given lambda against the state | ESW-142`() = runBlocking {
-        stateMachine.start()
+        fsm.start()
         checkInitFlag()
     }
 
@@ -131,26 +131,26 @@ class StateMachineImplTest {
         var firstCalled = false
         var refreshFlag = false
 
-        stateMachine.state(inProgress) {
+        fsm.state(inProgress) {
             if (firstCalled) refreshFlag = true
             else firstCalled = true
         }
 
-        stateMachine.start()
+        fsm.start()
         checkInitFlag()
 
-        stateMachine.become(inProgress)
+        fsm.become(inProgress)
         eventually(timeout) { firstCalled shouldBe true }
         eventually(timeout) { refreshFlag shouldBe false }
 
-        stateMachine.refresh()
+        fsm.refresh()
         eventually(timeout) { refreshFlag shouldBe true }
     }
 
     @Test
     fun `on should execute the given lambda if given condition is true | ESW-142`() = runBlocking {
         var flag = false
-        stateMachine.on(true) {
+        fsm.on(true) {
             flag = true
         }
 
@@ -160,7 +160,7 @@ class StateMachineImplTest {
     @Test
     fun `on should not execute the given lambda if given condition is false | ESW-142`() = runBlocking {
         var flag = false
-        stateMachine.on(false) {
+        fsm.on(false) {
             flag = true
         }
 
@@ -171,7 +171,7 @@ class StateMachineImplTest {
     fun `after should execute given lambda after specified time | ESW-142`() = runBlocking {
         var flag = false
         coroutineScope.launch {
-            stateMachine.after(100.milliseconds) {
+            fsm.after(100.milliseconds) {
                 flag = true
             }
         }
@@ -185,12 +185,12 @@ class StateMachineImplTest {
     fun `entry should call the given lambda only if state transition happens from other state | ESW-142`() = runBlocking {
         var entryCalled = false
 
-        stateMachine.start()
+        fsm.start()
         checkInitFlag()
 
         coroutineScope.launch {
             // current state is INIT and previous state is null.
-            stateMachine.entry {
+            fsm.entry {
                 entryCalled = true
             }
             entryCalled shouldBe true
@@ -201,13 +201,13 @@ class StateMachineImplTest {
     @Test
     fun `entry should not call the given lambda if state transition happens in same state | ESW-142`() = runBlocking {
         var entryCalled = false
-        stateMachine.start()
-        stateMachine.become(init)
+        fsm.start()
+        fsm.become(init)
         checkInitFlag()
 
         coroutineScope.launch {
             // current and previous state both are INIT
-            stateMachine.entry {
+            fsm.entry {
                 entryCalled = true
             }
 
@@ -220,29 +220,29 @@ class StateMachineImplTest {
         var shouldChange = false
         var shouldNotChange = false
 
-        val subscription1: FSMSubscription = mockk()
-        val subscription2: FSMSubscription = mockk()
-        stateMachine.addFSMSubscription(subscription1)
-        stateMachine.addFSMSubscription(subscription2)
+        val subscription1: FsmSubscription = mockk()
+        val subscription2: FsmSubscription = mockk()
+        fsm.addFsmSubscription(subscription1)
+        fsm.addFsmSubscription(subscription2)
 
         coEvery { subscription1.cancel() }.returns(Unit)
         coEvery { subscription2.cancel() }.returns(Unit)
 
-        stateMachine.state(inProgress) {
+        fsm.state(inProgress) {
             shouldChange = true
-            stateMachine.completeFSM()
+            fsm.completeFsm()
             shouldNotChange = true
         }
 
-        stateMachine.start()
+        fsm.start()
         checkInitFlag()
-        stateMachine.become(inProgress)
+        fsm.become(inProgress)
 
         coroutineScope.launch {
             eventually(timeout) { shouldChange shouldBe true }
             eventually(timeout) { shouldNotChange shouldBe false }
 
-            stateMachine.await()
+            fsm.await()
             coVerify { subscription1.cancel() }
             coVerify { subscription2.cancel() }
             eventually(timeout) { shouldNotChange shouldBe false }
@@ -256,26 +256,26 @@ class StateMachineImplTest {
 
         coroutineScope.launch {
             waitingStarted = true
-            stateMachine.await()
+            fsm.await()
             waitingFinished = true
         }
 
         eventually(timeout) { waitingStarted shouldBe true }
         eventually(timeout) { waitingFinished shouldBe false }
 
-        stateMachine.completeFSM()
+        fsm.completeFsm()
 
         eventually(timeout) { waitingFinished shouldBe true }
     }
 
     @Test
-    fun `should complete FSM if an exception is thrown in any state`() = runBlocking {
-        stateMachine.state(inProgress) { throw RuntimeException("Boom!") }
-        stateMachine.start()
-        stateMachine.become(inProgress)
+    fun `should complete Fsm if an exception is thrown in any state`() = runBlocking {
+        fsm.state(inProgress) { throw RuntimeException("Boom!") }
+        fsm.start()
+        fsm.become(inProgress)
         checkInitFlag()
         withTimeout(timeout.toMillis()) {
-            stateMachine.await()
+            fsm.await()
         }
     }
 
@@ -286,7 +286,7 @@ class StateMachineImplTest {
         val exceptionHandler = CoroutineExceptionHandler { _, exception -> exceptionHandlerCalled = true }
 
         val coroutineScope = CoroutineScope(job + exceptionHandler)
-        val machine = StateMachineImpl(testMachineName, init, coroutineScope, cswHighLevelDslApi)
+        val machine = FsmImpl(testMachineName, init, coroutineScope, cswHighLevelDslApi)
 
         machine.state(init) { initFlag = true }
         machine.state(inProgress) { throw RuntimeException("Boom!") }

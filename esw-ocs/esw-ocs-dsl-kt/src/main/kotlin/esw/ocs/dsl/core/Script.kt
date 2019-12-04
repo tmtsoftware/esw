@@ -8,7 +8,7 @@ import esw.ocs.dsl.highlevel.CswHighLevelDsl
 import esw.ocs.dsl.nullable
 import esw.ocs.dsl.params.Params
 import esw.ocs.dsl.script.CswServices
-import esw.ocs.dsl.script.FSMScriptDsl
+import esw.ocs.dsl.script.FsmScriptDsl
 import esw.ocs.dsl.script.ScriptDsl
 import esw.ocs.dsl.script.StrandEc
 import esw.ocs.dsl.script.exceptions.ScriptLoadingException.ScriptInitialisationFailedException
@@ -96,7 +96,7 @@ open class Script(
                 this.scriptDsl.merge(it(cswServices, strandEc, coroutineScope).scriptDsl)
             }
 
-    override fun become(nextState: String, params: Params): Unit = throw RuntimeException("Become can not be called outside FSM scripts")
+    override fun become(nextState: String, params: Params): Unit = throw RuntimeException("Become can not be called outside Fsm scripts")
 
     private fun <T> (suspend CommandHandlerScope.(T) -> Unit).toCoroutineScope(): suspend (CoroutineScope, T) -> Unit = { _scope, value ->
         val commandHandlerScope = object : CommandHandlerScope by this@Script {
@@ -106,27 +106,27 @@ open class Script(
     }
 }
 
-class FSMScript(
+class FsmScript(
         cswServices: CswServices,
         override val strandEc: StrandEc,
         private val scope: CoroutineScope
-) : BaseScript(cswServices, scope), FSMScriptScope {
-    internal val fsmScriptDsl: FSMScriptDsl by lazy { FSMScriptDsl(cswServices, strandEc) }
+) : BaseScript(cswServices, scope), FsmScriptScope {
+    internal val fsmScriptDsl: FsmScriptDsl by lazy { FsmScriptDsl(cswServices, strandEc) }
 
     override val coroutineContext: CoroutineContext = scope.coroutineContext
 
     override val scriptDsl: ScriptDsl by lazy { fsmScriptDsl }
 
-    inner class FSMScriptStateDsl : Script(cswServices, strandEc, scope), FSMScriptStateScope {
-        override val coroutineContext: CoroutineContext = this@FSMScript.scope.coroutineContext
-        override fun become(nextState: String, params: Params) = this@FSMScript.become(nextState, params)
+    inner class FsmScriptStateDsl : Script(cswServices, strandEc, scope), FsmScriptStateScope {
+        override val coroutineContext: CoroutineContext = this@FsmScript.scope.coroutineContext
+        override fun become(nextState: String, params: Params) = this@FsmScript.become(nextState, params)
     }
 
-    override fun state(name: String, block: suspend FSMScriptStateScope.(Params) -> Unit) {
+    override fun state(name: String, block: suspend FsmScriptStateScope.(Params) -> Unit) {
 
-        fun reusableScript(): FSMScriptStateDsl = FSMScriptStateDsl().apply {
+        fun reusableScript(): FsmScriptStateDsl = FsmScriptStateDsl().apply {
             try {
-                runBlocking { block(this@FSMScript.fsmScriptDsl.state.params()) }
+                runBlocking { block(this@FsmScript.fsmScriptDsl.state.params()) }
             } catch (ex: Exception) {
                 error("Failed to initialize state: $name", ex = ex)
                 throw ScriptInitialisationFailedException(ex.message)

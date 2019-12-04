@@ -9,6 +9,7 @@ import esw.ocs.dsl.highlevel.EventServiceDsl
 import esw.ocs.dsl.highlevel.EventSubscription
 import esw.ocs.dsl.params.booleanKey
 import esw.ocs.dsl.params.intKey
+import esw.ocs.dsl.params.set
 import io.kotlintest.shouldBe
 import io.mockk.*
 import kotlinx.coroutines.runBlocking
@@ -49,7 +50,7 @@ class ProcessVariableTest {
 
     // Scenario: bind(fsm1) => bind(fsm2) => cancel1() => cancel2() => bind(fsm3)
     @Test
-    fun `bind should start subscription and add subscription entry in FSM | ESW-142`() = runBlocking {
+    fun `bind should start subscription and add subscription entry in Fsm | ESW-142`() = runBlocking {
         val eventServiceDsl = mockk<EventServiceDsl>()
         val refreshable1 = mockk<Refreshable>()
         val refreshable2 = mockk<Refreshable>()
@@ -61,9 +62,10 @@ class ProcessVariableTest {
         val systemEvent = SystemEvent(Prefix(TCS, "test"), EventName("testEvent")).add(intKey.set(intValue))
         val eventKey = systemEvent.eventKey().key()
 
-        every { refreshable1.addFSMSubscription(any()) } just runs
-        every { refreshable2.addFSMSubscription(any()) } just runs
-        every { refreshable3.addFSMSubscription(any()) } just runs
+        every { refreshable1.addFsmSubscription(any()) } just runs
+        every { refreshable2.addFsmSubscription(any()) } just runs
+        every { refreshable3.addFsmSubscription(any()) } just runs
+
         coEvery { eventServiceDsl.onEvent(eventKey, callback = any()) }.returns(eventSubscription)
         coEvery { eventSubscription.cancel() } just runs
 
@@ -72,8 +74,8 @@ class ProcessVariableTest {
         val fsmSubscription1 = processVariable.bind(refreshable1)
         val fsmSubscription2 = processVariable.bind(refreshable2)
 
-        coVerify { refreshable1.addFSMSubscription(any()) }
-        coVerify { refreshable2.addFSMSubscription(any()) }
+        coVerify { refreshable1.addFsmSubscription(any()) }
+        coVerify { refreshable2.addFsmSubscription(any()) }
         coVerify { eventServiceDsl.onEvent(eventKey, callback = any()) }
 
         fsmSubscription1.cancel()
@@ -83,7 +85,7 @@ class ProcessVariableTest {
         coVerify { eventSubscription.cancel() }
 
         processVariable.bind(refreshable3)
-        coVerify { refreshable3.addFSMSubscription(any()) }
+        coVerify { refreshable3.addFsmSubscription(any()) }
         coVerify { eventServiceDsl.onEvent(eventKey, callback = any()) }
     }
 }

@@ -8,6 +8,7 @@ import esw.ocs.dsl.highlevel.EventServiceDsl
 import esw.ocs.dsl.highlevel.EventSubscription
 import esw.ocs.dsl.params.first
 import esw.ocs.dsl.params.invoke
+import esw.ocs.dsl.params.set
 
 class ProcessVariable<T> constructor(
         initial: Event,
@@ -21,11 +22,11 @@ class ProcessVariable<T> constructor(
     private val subscribers: MutableSet<Refreshable> = mutableSetOf()
     private var eventSubscription: EventSubscription? = null
 
-    suspend fun bind(refreshable: Refreshable): FSMSubscription {
+    suspend fun bind(refreshable: Refreshable): FsmSubscription {
         subscribers.add(refreshable)
         if (subscribers.size == 1) eventSubscription = startSubscription()
-        val fsmSubscription = FSMSubscription { unsubscribe(refreshable) }
-        refreshable.addFSMSubscription(fsmSubscription)
+        val fsmSubscription = FsmSubscription { unsubscribe(refreshable) }
+        refreshable.addFsmSubscription(fsmSubscription)
         return fsmSubscription
     }
 

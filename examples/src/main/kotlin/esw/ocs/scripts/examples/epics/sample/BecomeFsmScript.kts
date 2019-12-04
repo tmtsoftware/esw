@@ -1,17 +1,17 @@
 package esw.ocs.scripts.examples.epics.sample
 
 import csw.params.core.generics.Parameter
-import esw.ocs.dsl.core.FSMScript
+import esw.ocs.dsl.core.FsmScript
 import esw.ocs.dsl.params.*
 import kotlinx.coroutines.delay
 
-FSMScript("INIT") {
+FsmScript("INIT") {
 
     val testAssembly = Assembly("test")
     val processVar = SystemVar(true, "tcs.trigger", booleanKey("flag"))
     val flag = commandFlag()
 
-    val fsm = FSM("Trigger FSM", "START") {
+    val fsm = Fsm("Trigger Fsm", "START") {
         state("START") {
             println("START state")
             delay(1000)
@@ -42,7 +42,7 @@ FSMScript("INIT") {
 
         state("DONE") {
             publishEvent(SystemEvent("tcs", "trigger.DONE.state"))
-            completeFSM()
+            completeFsm()
         }
     }
 

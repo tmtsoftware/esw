@@ -1,25 +1,25 @@
 package esw.ocs.scripts.examples.epics
 
 import csw.params.events.SystemEvent
-import esw.ocs.dsl.core.FSMScript
+import esw.ocs.dsl.core.FsmScript
 import esw.ocs.dsl.params.first
 import esw.ocs.dsl.params.invoke
 import esw.ocs.dsl.params.longKey
 import esw.ocs.dsl.params.stringKey
 import kotlinx.coroutines.delay
 
-FSMScript("INIT") {
-    // temperature FSM states
+FsmScript("INIT") {
+    // temperature Fsm states
     val OK = "OK"
     val ERROR = "ERROR"
 
-    // main script FSM states
+    // main script Fsm states
     val INIT = "INIT"
     val STARTED = "STARTED"
     val TERMINATE = "TERMINATE"
 
-    val commandFSMEvent = SystemEvent("esw.commandFSM", "state")
-    val tempFSMEvent = SystemEvent("esw.temperatureFSM", "state")
+    val commandFsmEvent = SystemEvent("esw.commandFsm", "state")
+    val tempFsmEvent = SystemEvent("esw.temperatureFsm", "state")
 
     val tempKey = longKey("temperature")
     val stateKey = stringKey("state")
@@ -33,14 +33,14 @@ FSMScript("INIT") {
      * temp > 40 or temp < 20   => ERROR
      * else                     => OK
      */
-    val temperatureFSM = FSM("TEMP", "OK") {
+    val temperatureFsm = Fsm("TEMP", "OK") {
         state(OK) {
             entry {
-                publishState(tempFSMEvent, OK)
+                publishState(tempFsmEvent, OK)
             }
 
             on(temperatureVar.get() == 30L) {
-                completeFSM()
+                completeFsm()
             }
 
             on(temperatureVar.get() > 40) {
@@ -50,7 +50,7 @@ FSMScript("INIT") {
 
         state(ERROR) {
             entry {
-                publishState(tempFSMEvent, ERROR)
+                publishState(tempFsmEvent, ERROR)
             }
 
             on(temperatureVar.get() < 40) {
@@ -59,11 +59,11 @@ FSMScript("INIT") {
         }
     }
 
-    temperatureVar.bind(temperatureFSM)
+    temperatureVar.bind(temperatureFsm)
 
     /**
      * 1. INIT =>
-     *      1.1 start Temperature FSM
+     *      1.1 start Temperature Fsm
      * 2. STARTED  =>
      *      2.1 receive cmd and set temperature process var
      *      2.2 if temp > 50 then TERMINATE
@@ -73,21 +73,21 @@ FSMScript("INIT") {
      * 4. shutdown
      */
     state(INIT) {
-        publishState(commandFSMEvent, INIT)
-        temperatureFSM.start()
+        publishState(commandFsmEvent, INIT)
+        temperatureFsm.start()
         become(STARTED)
     }
 
     state(STARTED) {
-        publishState(commandFSMEvent, STARTED)
+        publishState(commandFsmEvent, STARTED)
 
         onSetup("set-temp") { cmd ->
             val receivedTemp = cmd(tempKey).first
             publishEvent(SystemEvent("esw.temperature", "temp", tempKey.set(receivedTemp)))
 
             if (receivedTemp == 30L) {
-                temperatureFSM.await()
-                publishState(tempFSMEvent, "FINISHED")
+                temperatureFsm.await()
+                publishState(tempFsmEvent, "FINISHED")
             }
 
             if (receivedTemp > 50L) {
@@ -97,18 +97,18 @@ FSMScript("INIT") {
     }
 
     state(TERMINATE) {
-        publishState(commandFSMEvent, TERMINATE)
+        publishState(commandFsmEvent, TERMINATE)
 
         onObserve("wait") {
             delay(10000)
         }
 
         onStop {
-            publishState(commandFSMEvent, "FSM:TERMINATE:STOP")
+            publishState(commandFsmEvent, "Fsm:TERMINATE:STOP")
         }
     }
 
     onStop {
-        publishState(commandFSMEvent, "MAIN:STOP")
+        publishState(commandFsmEvent, "MAIN:STOP")
     }
 }

@@ -26,10 +26,10 @@ fun reusableScript(block: Script.(csw: CswServices) -> Unit): ReusableScriptResu
             Script(csw, ec, ctx).apply { block(csw) }
         }
 
-fun FSMScript(initState: String, block: suspend FSMScriptScope.(csw: CswServices) -> Unit): ScriptResult =
+fun FsmScript(initState: String, block: suspend FsmScriptScope.(csw: CswServices) -> Unit): ScriptResult =
         ScriptResult {
             val wiring = ScriptWiring()
-            FSMScript(it, wiring.strandEc, wiring.scope).apply {
+            FsmScript(it, wiring.strandEc, wiring.scope).apply {
                 try {
                     runBlocking {
                         block(it)

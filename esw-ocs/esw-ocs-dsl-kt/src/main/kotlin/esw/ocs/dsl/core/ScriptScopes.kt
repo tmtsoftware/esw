@@ -45,12 +45,12 @@ interface CommandHandlerScope : HandlerScope, NextIfDsl
 @ScriptDslMarker
 interface ScriptScope : ScriptHandlers, CommonHandlers
 
-//--------------------------------------- FSMScript --------------------------//
+//--------------------------------------- FsmScript --------------------------//
 
 @ScriptDslMarker
-interface FSMScriptStateScope : ScriptScope, BecomeDsl, CoroutineScope
+interface FsmScriptStateScope : ScriptScope, BecomeDsl, CoroutineScope
 
 @ScriptDslMarker
-interface FSMScriptScope : CommonHandlers {
-    fun state(name: String, block: suspend FSMScriptStateScope.(Params) -> Unit)
+interface FsmScriptScope : CommonHandlers {
+    fun state(name: String, block: suspend FsmScriptStateScope.(Params) -> Unit)
 }

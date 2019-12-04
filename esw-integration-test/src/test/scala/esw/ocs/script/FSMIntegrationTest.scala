@@ -13,13 +13,13 @@ import scala.concurrent.duration.DurationInt
 
 import scala.concurrent.Await
 
-class FSMIntegrationTest extends EswTestKit(EventServer) {
+class FsmIntegrationTest extends EswTestKit(EventServer) {
 
-  "FSM" must {
+  "Fsm" must {
 
-    "start child fsm and accept commands | ESW-251" in {
-      val mainFsmKey = EventKey("esw.commandFSM.state")
-      val tempFsmKey = EventKey("esw.temperatureFSM.state")
+    "start child Fsm and accept commands | ESW-251" in {
+      val mainFsmKey = EventKey("esw.commandFsm.state")
+      val tempFsmKey = EventKey("esw.temperatureFsm.state")
       val stateKey   = StringKey.make("state")
 
       val mainFsmStateProbe = TestProbe[String]
@@ -62,26 +62,26 @@ class FSMIntegrationTest extends EswTestKit(EventServer) {
       mainFsmStateProbe.expectMessage("TERMINATE")
 
       fsmSequencer.stop().awaitResult
-      mainFsmStateProbe.expectMessage("FSM:TERMINATE:STOP")
+      mainFsmStateProbe.expectMessage("Fsm:TERMINATE:STOP")
       mainFsmStateProbe.expectMessage("MAIN:STOP")
     }
 
-    "pass parameters to next state via become  | ESW-251" in {
-      val temperatureFSmKey = IntKey.make("temperatureFSM")
+    "pass parameters to next state via become | ESW-251" in {
+      val temperatureFsmKey = IntKey.make("temperatureFsm")
       val commandKey        = KeyType.IntKey.make("command")
       val fsmStateProbe     = TestProbe[Int]
 
       eventSubscriber
         .subscribeCallback(
-          Set(EventKey("esw.FSMTestScript.WAITING")),
+          Set(EventKey("esw.FsmTestScript.WAITING")),
           event => {
-            val param = event.paramType.get(temperatureFSmKey).flatMap(_.get(0))
+            val param = event.paramType.get(temperatureFsmKey).flatMap(_.get(0))
             param.foreach(fsmStateProbe.ref ! _)
           }
         )
 
       eventSubscriber
-        .subscribeCallback(Set(EventKey("esw.FSMTestScript.STARTED")), event => {
+        .subscribeCallback(Set(EventKey("esw.FsmTestScript.STARTED")), event => {
           val param = event.paramType.get(commandKey).flatMap(_.get(0))
           param.foreach(fsmStateProbe.ref ! _)
         })

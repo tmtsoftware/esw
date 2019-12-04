@@ -13,9 +13,9 @@ import csw.logging.api.javadsl.ILogger
 import csw.params.core.models.Prefix
 import csw.time.scheduler.api.TimeServiceScheduler
 import esw.ocs.dsl.epics.CommandFlag
-import esw.ocs.dsl.epics.FSMScope
-import esw.ocs.dsl.epics.StateMachine
-import esw.ocs.dsl.epics.StateMachineImpl
+import esw.ocs.dsl.epics.FsmScope
+import esw.ocs.dsl.epics.Fsm
+import esw.ocs.dsl.epics.FsmImpl
 import esw.ocs.dsl.script.CswServices
 import esw.ocs.dsl.script.StrandEc
 import esw.ocs.dsl.sequence_manager.LocationServiceUtil
@@ -25,10 +25,10 @@ interface CswHighLevelDslApi : EventServiceDsl, TimeServiceDsl, CommandServiceDs
         ConfigServiceDsl, AlarmServiceDsl, LoopDsl, LoggingDsl, DatabaseServiceDsl {
 
     fun Assembly(name: String): RichComponent
-    fun HCD(name: String): RichComponent
+    fun Hcd(name: String): RichComponent
     fun Sequencer(sequencerId: String, observingMode: String): RichSequencer
 
-    suspend fun FSM(name: String, initState: String, block: suspend FSMScope.() -> Unit): StateMachine
+    suspend fun Fsm(name: String, initState: String, block: suspend FsmScope.() -> Unit): Fsm
     fun commandFlag(): CommandFlag
 
     fun finishWithError(message: String = ""): Nothing = throw RuntimeException(message)
@@ -59,12 +59,12 @@ abstract class CswHighLevelDsl(private val cswServices: CswServices) : CswHighLe
             RichSequencer(sequencerId, observingMode, cswServices.sequencerApiFactory())
 
     override fun Assembly(name: String): RichComponent = richComponent(name, JComponentType.Assembly())
-    override fun HCD(name: String): RichComponent = richComponent(name, JComponentType.HCD())
+    override fun Hcd(name: String): RichComponent = richComponent(name, JComponentType.HCD())
     override fun Sequencer(sequencerId: String, observingMode: String): RichSequencer = richSequencer(sequencerId, observingMode)
 
-    /************* FSM helpers **********/
-    override suspend fun FSM(name: String, initState: String, block: suspend FSMScope.() -> Unit): StateMachine =
-            StateMachineImpl(name, initState, coroutineScope, this).apply { block() }
+    /************* Fsm helpers **********/
+    override suspend fun Fsm(name: String, initState: String, block: suspend FsmScope.() -> Unit): Fsm =
+            FsmImpl(name, initState, coroutineScope, this).apply { block() }
 
     override fun commandFlag(): CommandFlag = CommandFlag()
 

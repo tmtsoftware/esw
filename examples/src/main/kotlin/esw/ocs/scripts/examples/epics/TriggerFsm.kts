@@ -1,12 +1,12 @@
 package esw.ocs.scripts.examples.epics
 
-import esw.ocs.dsl.core.FSMScript
+import esw.ocs.dsl.core.FsmScript
 import esw.ocs.dsl.params.booleanKey
 
-FSMScript("INIT") {
+FsmScript("INIT") {
     val triggerFlag = SystemVar(false, "tcs.triggerflag", booleanKey("flag"))
 
-    val triggerFsm = FSM("triggerfsm", "Init") {
+    val triggerFsm = Fsm("triggerfsm", "Init") {
         state("Init") {
             println("Init state")
             become("Waiting")
@@ -20,25 +20,25 @@ FSMScript("INIT") {
 
         state("DONE") {
             println("Done state")
-            completeFSM()
+            completeFsm()
         }
     }
 
     triggerFlag.bind(triggerFsm)
 
-    //start FSM in background
+    //start Fsm in background
     state("INIT") {
         onSetup("command-1") {
             println("${Thread.currentThread().name} — command1 received")
 
             triggerFsm.start()
 
-            //Change triggerFlagKey which will trigger FSM
+            //Change triggerFlagKey which will trigger Fsm
             val systemEvent = SystemEvent("tcs", "triggerflag", booleanKey("flag").set(true))
             println("********** ${systemEvent.eventName()}")
             publishEvent(systemEvent)
 
-            //await on FSM to finish
+            //await on Fsm to finish
             triggerFsm.await()
         }
 
