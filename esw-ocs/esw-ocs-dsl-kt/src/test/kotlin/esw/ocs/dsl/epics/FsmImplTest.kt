@@ -24,7 +24,7 @@ import io.kotlintest.milliseconds as jMilliseconds
 
 class FsmImplTest {
 
-    // These are needed to simulate script like environment
+    // These are needed to simulate script like single threaded environment
     private val job = SupervisorJob()
     private val _strandEc = StrandEc.apply()
     private val dispatcher = _strandEc.executorService().asCoroutineDispatcher()
@@ -41,6 +41,7 @@ class FsmImplTest {
     private val timeout = 100.jMilliseconds
 
     private var initFlag = false
+    private val initState: suspend FsmStateScope.(Params) -> Unit = { initFlag = true }
     private var parameterSet = Params(setOf())
     // instantiating to not to deal with nullable
     private var fsm = FsmImpl(testMachineName, invalid, coroutineScope, cswHighLevelDslApi)
@@ -48,7 +49,7 @@ class FsmImplTest {
     @BeforeEach
     fun beforeEach() {
         fsm = FsmImpl(testMachineName, init, coroutineScope, cswHighLevelDslApi)
-        fsm.state(init) { initFlag = true }
+        fsm.state(init, initState)
 
         initFlag = false
     }
@@ -188,14 +189,12 @@ class FsmImplTest {
         fsm.start()
         checkInitFlag()
 
-        coroutineScope.launch {
-            // current state is INIT and previous state is null.
-            fsm.entry {
-                entryCalled = true
-            }
-            entryCalled shouldBe true
+        // current state is INIT and previous state is null.
+        fsm.entry {
+            entryCalled = true
 
-        }.join()
+        }
+        entryCalled shouldBe true
     }
 
     @Test
@@ -205,29 +204,32 @@ class FsmImplTest {
         fsm.become(init)
         checkInitFlag()
 
-        coroutineScope.launch {
-            // current and previous state both are INIT
-            fsm.entry {
-                entryCalled = true
-            }
 
-            entryCalled shouldBe false
-        }.join()
+        // current and previous state both are INIT
+        fsm.entry {
+            entryCalled = true
+        }
+
+        entryCalled shouldBe false
     }
 
     @Test
     fun `completeFsm should complete fsm and remove all subscriptions | ESW-142`() = runBlocking {
+        val coroutineScope = CoroutineScope(SupervisorJob() + dispatcher)
+        val fsm = FsmImpl(testMachineName, init, coroutineScope, cswHighLevelDslApi)
+
         var shouldChange = false
         var shouldNotChange = false
 
         val subscription1: FsmSubscription = mockk()
         val subscription2: FsmSubscription = mockk()
-        fsm.addFsmSubscription(subscription1)
         fsm.addFsmSubscription(subscription2)
+        fsm.addFsmSubscription(subscription1)
 
         coEvery { subscription1.cancel() }.returns(Unit)
         coEvery { subscription2.cancel() }.returns(Unit)
 
+        fsm.state(init, initState)
         fsm.state(inProgress) {
             shouldChange = true
             fsm.completeFsm()
@@ -279,6 +281,7 @@ class FsmImplTest {
         }
     }
 
+    @Test
     fun `should call the exception handler if exception is thrown in any state`() = runBlocking {
         val job = SupervisorJob()
 
@@ -286,14 +289,14 @@ class FsmImplTest {
         val exceptionHandler = CoroutineExceptionHandler { _, exception -> exceptionHandlerCalled = true }
 
         val coroutineScope = CoroutineScope(job + exceptionHandler)
-        val machine = FsmImpl(testMachineName, init, coroutineScope, cswHighLevelDslApi)
+        val fsm = FsmImpl(testMachineName, init, coroutineScope, cswHighLevelDslApi)
 
-        machine.state(init) { initFlag = true }
-        machine.state(inProgress) { throw RuntimeException("Boom!") }
+        fsm.state(init, initState)
+        fsm.state(inProgress) { throw RuntimeException("Boom!") }
 
-        machine.start()
+        fsm.start()
         checkInitFlag()
-        machine.become(inProgress)
+        fsm.become(inProgress)
 
         eventually(timeout) { exceptionHandlerCalled shouldBe true }
     }

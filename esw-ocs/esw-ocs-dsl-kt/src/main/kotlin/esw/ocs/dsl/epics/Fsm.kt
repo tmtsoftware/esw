@@ -70,6 +70,7 @@ class FsmImpl(
     override suspend fun completeFsm() {
         fsmJob.cancel()
         fsmSubscriptions.forEach { it.cancel() }
+        fsmJob.join()
     }
 
     override suspend fun refresh() {
