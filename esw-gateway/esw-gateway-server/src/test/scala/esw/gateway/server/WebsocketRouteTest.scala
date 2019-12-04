@@ -26,7 +26,7 @@ import esw.gateway.server.handlers.WebsocketHandlerImpl
 import esw.http.core.BaseTestSuite
 import esw.ocs.api.protocol.SequencerWebsocketRequest
 import io.bullet.borer.Decoder
-import msocket.api.models.{ServiceException, Subscription}
+import msocket.api.models.Subscription
 import msocket.impl.Encoding
 import msocket.impl.Encoding.{CborBinary, JsonText}
 import msocket.impl.post.ClientHttpCodecs
@@ -50,7 +50,7 @@ class WebsocketRouteTest extends BaseTestSuite with ScalatestRouteTest with Gate
   private val eventApi: EventApi                          = new EventImpl(eventService, eventSubscriberUtil)
   private def websocketHandlerImpl(encoding: Encoding[_]) = new WebsocketHandlerImpl(resolver, eventApi, encoding)
   private val route =
-    new WebsocketRouteFactory[WebsocketRequest, ServiceException]("websocket-endpoint", websocketHandlerImpl).make()
+    new WebsocketRouteFactory[WebsocketRequest, GatewayException]("websocket-endpoint", websocketHandlerImpl).make()
   private val destination = Prefix(TCS, "test")
 
   override def beforeEach(): Unit = {
@@ -89,7 +89,7 @@ class WebsocketRouteTest extends BaseTestSuite with ScalatestRouteTest with Gate
       WS("/websocket-endpoint", wsClient.flow) ~> route ~> check {
         wsClient.sendMessage(JsonText.strictMessage(queryFinal))
         isWebSocketUpgrade shouldBe true
-        decodeMessage[ServiceException](wsClient) shouldEqual ServiceException.fromThrowable(InvalidComponent(errmsg))
+        decodeMessage[InvalidComponent](wsClient) shouldEqual InvalidComponent(errmsg)
       }
     }
   }
@@ -222,7 +222,7 @@ class WebsocketRouteTest extends BaseTestSuite with ScalatestRouteTest with Gate
       WS("/websocket-endpoint", wsClient.flow) ~> route ~> check {
         wsClient.sendMessage(JsonText.strictMessage(eventSubscriptionRequest))
         isWebSocketUpgrade shouldBe true
-        decodeMessage[ServiceException](wsClient) shouldEqual ServiceException.fromThrowable(InvalidMaxFrequency())
+        decodeMessage[InvalidMaxFrequency](wsClient) shouldEqual InvalidMaxFrequency()
       }
     }
   }
@@ -285,15 +285,15 @@ class WebsocketRouteTest extends BaseTestSuite with ScalatestRouteTest with Gate
       WS("/websocket-endpoint", wsClient.flow) ~> route ~> check {
         wsClient.sendMessage(JsonText.strictMessage(eventSubscriptionRequest))
         isWebSocketUpgrade shouldBe true
-        decodeMessage[ServiceException](wsClient) shouldEqual ServiceException.fromThrowable(InvalidMaxFrequency())
+        decodeMessage[InvalidMaxFrequency](wsClient) shouldEqual InvalidMaxFrequency()
       }
     }
   }
 
   private def decodeMessage[T](wsClient: WSProbe)(implicit decoder: Decoder[T]): T = {
     wsClient.expectMessage() match {
-      case TextMessage.Strict(text)   => JsonText.decodeWithServiceException[T](text)
-      case BinaryMessage.Strict(data) => CborBinary.decodeWithServiceException[T](data)
+      case TextMessage.Strict(text)   => JsonText.decode[T](text)
+      case BinaryMessage.Strict(data) => CborBinary.decode[T](data)
       case _                          => throw new RuntimeException("The expected message is not Strict")
     }
   }

@@ -14,7 +14,6 @@ import esw.gateway.impl.SourceExtensions.RichSource
 import msocket.api.models.Subscription
 
 import scala.concurrent.{ExecutionContext, Future}
-import scala.util.{Failure, Success}
 
 class EventImpl(eventService: EventService, eventSubscriberUtil: EventSubscriberUtil)(implicit ec: ExecutionContext)
     extends EventApi {
@@ -22,34 +21,34 @@ class EventImpl(eventService: EventService, eventSubscriberUtil: EventSubscriber
   lazy val subscriber: EventSubscriber = eventService.defaultSubscriber
   lazy val publisher: EventPublisher   = eventService.defaultPublisher
 
-  override def publish(event: Event): Future[Either[EventServerUnavailable.type, Done]] =
-    publisher.publish(event).transform {
-      case Success(_)                    => Success(Right(Done))
-      case Failure(PublishFailure(_, _)) => Success(Left(EventServerUnavailable))
-      case Failure(ex)                   => throw ex
-    }
+  override def publish(event: Event): Future[Done] = publisher.publish(event).recover {
+    case PublishFailure(_, _) => throw new EventServerUnavailable
+  }
 
-  override def get(eventKeys: Set[EventKey]): Future[Either[GetEventError, Set[Event]]] = {
-    if (eventKeys.nonEmpty)
-      subscriber.get(eventKeys).transform {
-        case Success(events)                     => Success(Right(events))
-        case Failure(EventServerNotAvailable(_)) => Success(Left(EventServerUnavailable))
-        case Failure(ex)                         => throw ex
+  override def get(eventKeys: Set[EventKey]): Future[Set[Event]] = {
+    if (eventKeys.nonEmpty) {
+      subscriber.get(eventKeys).recover {
+        case EventServerNotAvailable(_) => throw new EventServerUnavailable
       }
-    else Future.successful(Left(EmptyEventKeys))
+    }
+    else {
+      Future.failed(new EmptyEventKeys)
+    }
   }
 
   def subscribe(eventKeys: Set[EventKey], maxFrequency: Option[Int]): Source[Event, Subscription] = {
-    val dd = if (eventKeys.nonEmpty) {
+    val stream = if (eventKeys.nonEmpty) {
       maxFrequency match {
         case Some(x) if x <= 0 => Source.failed(InvalidMaxFrequency())
         case Some(frequency)   => subscriber.subscribe(eventKeys, Utils.maxFrequencyToDuration(frequency), RateLimiterMode)
         case None              => subscriber.subscribe(eventKeys).withSubscription()
       }
     }
-    else Source.failed(new RuntimeException(EmptyEventKeys.msg))
+    else {
+      Source.failed(new EmptyEventKeys)
+    }
 
-    dd.withSubscription()
+    stream.withSubscription()
   }
 
   def pSubscribe(
@@ -59,13 +58,13 @@ class EventImpl(eventService: EventService, eventSubscriberUtil: EventSubscriber
   ): Source[Event, Subscription] = {
 
     def events: Source[Event, EventSubscription] = subscriber.pSubscribe(subsystem, pattern)
-    val dd = maxFrequency match {
+    val stream = maxFrequency match {
       case Some(x) if x <= 0 => Source.failed(InvalidMaxFrequency())
       case Some(f)           => events.via(eventSubscriberUtil.subscriptionModeStage(Utils.maxFrequencyToDuration(f), RateLimiterMode))
       case None              => events
     }
 
-    dd.withSubscription()
+    stream.withSubscription()
   }
 
 }

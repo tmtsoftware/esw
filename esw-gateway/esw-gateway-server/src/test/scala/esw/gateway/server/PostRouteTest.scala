@@ -45,7 +45,7 @@ class PostRouteTest extends BaseTestSuite with ScalatestRouteTest with GatewayCo
   private val eventApi: EventApi     = new EventImpl(eventService, eventSubscriberUtil)
   private val loggingApi: LoggingApi = new LoggingImpl(loggerCache)
   private val postHandlerImpl        = new PostHandlerImpl(alarmApi, resolver, eventApi, loggingApi)
-  private val route                  = new PostRouteFactory[PostRequest, ServiceException]("post-endpoint", postHandlerImpl).make()
+  private val route                  = new PostRouteFactory[PostRequest, GatewayException]("post-endpoint", postHandlerImpl).make()
   private val source                 = Prefix("esw.test")
   private val destination            = Prefix("tcs.test")
 
@@ -106,7 +106,7 @@ class PostRouteTest extends BaseTestSuite with ScalatestRouteTest with GatewayCo
 
       Post("/post-endpoint", submitRequest) ~> route ~> check {
         status shouldEqual StatusCodes.InternalServerError
-        responseAs[ServiceException] shouldEqual ServiceException.fromThrowable(InvalidComponent(message))
+        responseAs[InvalidComponent] shouldEqual InvalidComponent(message)
       }
     }
   }
@@ -163,7 +163,7 @@ class PostRouteTest extends BaseTestSuite with ScalatestRouteTest with GatewayCo
       when(eventPublisher.publish(event)).thenReturn(Future.successful(Done))
 
       Post("/post-endpoint", publishEvent) ~> route ~> check {
-        responseAs[Either[EventServerUnavailable.type, Done]].rightValue shouldEqual Done
+        responseAs[Done] shouldEqual Done
       }
     }
 
@@ -177,7 +177,8 @@ class PostRouteTest extends BaseTestSuite with ScalatestRouteTest with GatewayCo
         .thenReturn(Future.failed(PublishFailure(event, new RuntimeException("Event server is down"))))
 
       Post("/post-endpoint", publishEvent) ~> route ~> check {
-        responseAs[Either[EventServerUnavailable.type, Done]].leftValue shouldEqual EventServerUnavailable
+        status shouldEqual StatusCodes.InternalServerError
+        responseAs[EventServerUnavailable] shouldEqual EventServerUnavailable()
       }
     }
   }
@@ -193,13 +194,14 @@ class PostRouteTest extends BaseTestSuite with ScalatestRouteTest with GatewayCo
       when(eventSubscriber.get(Set(eventKey))).thenReturn(Future.successful(Set(event)))
 
       Post("/post-endpoint", getEvent) ~> route ~> check {
-        responseAs[Either[EmptyEventKeys.type, Set[Event]]].rightValue shouldEqual Set(event)
+        responseAs[Set[Event]] shouldEqual Set(event)
       }
     }
 
     "return EmptyEventKeys error on sending no event keys in request | ESW-94, ESW-216" in {
       Post("/post-endpoint", GetEvent(Set())) ~> route ~> check {
-        responseAs[Either[EmptyEventKeys.type, Set[Event]]].leftValue shouldEqual EmptyEventKeys
+        status shouldEqual StatusCodes.InternalServerError
+        responseAs[EmptyEventKeys] shouldEqual EmptyEventKeys()
       }
     }
 
@@ -213,7 +215,8 @@ class PostRouteTest extends BaseTestSuite with ScalatestRouteTest with GatewayCo
         .thenReturn(Future.failed(EventServerNotAvailable(new RuntimeException("Redis server is not available"))))
 
       Post("/post-endpoint", getEvent) ~> route ~> check {
-        responseAs[Either[EmptyEventKeys.type, Set[Event]]].leftValue shouldEqual EventServerUnavailable
+        status shouldEqual StatusCodes.InternalServerError
+        responseAs[EventServerUnavailable] shouldEqual EventServerUnavailable()
       }
     }
 
@@ -241,7 +244,7 @@ class PostRouteTest extends BaseTestSuite with ScalatestRouteTest with GatewayCo
       when(alarmService.setSeverity(alarmKey, majorSeverity)).thenReturn(Future.successful(Done))
 
       Post("/post-endpoint", setAlarmSeverity) ~> route ~> check {
-        responseAs[Either[SetAlarmSeverityFailure, Done]].rightValue shouldEqual Done
+        responseAs[Done] shouldEqual Done
       }
     }
 
@@ -256,7 +259,8 @@ class PostRouteTest extends BaseTestSuite with ScalatestRouteTest with GatewayCo
       when(alarmService.setSeverity(alarmKey, majorSeverity)).thenReturn(Future.failed(new KeyNotFoundException("")))
 
       Post("/post-endpoint", setAlarmSeverity) ~> route ~> check {
-        responseAs[Either[SetAlarmSeverityFailure, Done]].leftValue shouldEqual SetAlarmSeverityFailure("")
+        status shouldEqual StatusCodes.InternalServerError
+        responseAs[SetAlarmSeverityFailure] shouldEqual SetAlarmSeverityFailure("")
       }
     }
   }

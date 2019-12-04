@@ -12,12 +12,9 @@ import scala.util.control.NonFatal
 
 class AlarmImpl(alarmService: AlarmService)(implicit ec: ExecutionContext) extends AlarmApi {
 
-  override def setSeverity(alarmKey: AlarmKey, severity: AlarmSeverity): Future[Either[SetAlarmSeverityFailure, Done]] = {
-    alarmService
-      .setSeverity(alarmKey, severity)
-      .map(Right(_))
-      .recover {
-        case NonFatal(e) => Left(SetAlarmSeverityFailure(e.getMessage))
-      }
+  override def setSeverity(alarmKey: AlarmKey, severity: AlarmSeverity): Future[Done] = {
+    alarmService.setSeverity(alarmKey, severity).recover {
+      case NonFatal(e) => throw SetAlarmSeverityFailure(e.getMessage)
+    }
   }
 }

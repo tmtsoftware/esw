@@ -9,9 +9,8 @@ import csw.logging.client.internal.LoggingSystem
 import csw.logging.models.Level.FATAL
 import esw.gateway.api.clients.LoggingClient
 import esw.gateway.api.codecs.GatewayCodecs
-import esw.gateway.api.protocol.PostRequest
+import esw.gateway.api.protocol.{GatewayException, PostRequest}
 import esw.ocs.testkit.EswTestKit
-import msocket.api.models.ServiceException
 import msocket.impl.Encoding.JsonText
 import msocket.impl.post.HttpPostTransport
 import play.api.libs.json.{JsObject, Json}
@@ -58,7 +57,7 @@ class LoggingGatewayTest extends EswTestKit with GatewayCodecs {
   "LoggingApi" must {
     "should generate log statement with given app prefix, severity level and message | ESW-200" in {
       val postClient =
-        new HttpPostTransport[PostRequest, ServiceException](s"http://localhost:$port/post-endpoint", JsonText, () => None)
+        new HttpPostTransport[PostRequest, GatewayException](s"http://localhost:$port/post-endpoint", JsonText, () => None)
       val loggingClient = new LoggingClient(postClient)
 
       val componentName = "test-app"

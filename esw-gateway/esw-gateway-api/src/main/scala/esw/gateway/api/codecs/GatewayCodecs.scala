@@ -10,15 +10,19 @@ import esw.gateway.api.protocol._
 import esw.ocs.api.codecs.SequencerHttpCodecs
 import io.bullet.borer.Dom.MapElem
 import io.bullet.borer.derivation.MapBasedCodecs.deriveCodec
+import io.bullet.borer.derivation.ArrayBasedCodecs.deriveUnaryCodec
 import io.bullet.borer.{Codec, Decoder, Encoder}
 
 object GatewayCodecs extends GatewayCodecs
 trait GatewayCodecs extends CommandServiceCodecs with LocationCodecs with LoggingCodecs with SequencerHttpCodecs {
 
-  implicit def getEventErrorCodec[T <: GetEventError]: Codec[T] = getEventErrorCodecValue.asInstanceOf[Codec[T]]
-  lazy val getEventErrorCodecValue: Codec[GetEventError] = {
-    @silent implicit lazy val emptyEventKeysCodec: Codec[EmptyEventKeys.type]                  = deriveCodec
-    @silent implicit lazy val eventServerNotAvailableCodec: Codec[EventServerUnavailable.type] = deriveCodec
+  implicit def gatewayExceptionCodec[T <: GatewayException]: Codec[T] = gatewayExceptionCodecValue.asInstanceOf[Codec[T]]
+  lazy val gatewayExceptionCodecValue: Codec[GatewayException] = {
+    @silent implicit lazy val emptyEventKeysCodec: Codec[EmptyEventKeys]                   = deriveCodec
+    @silent implicit lazy val eventServerNotAvailableCodec: Codec[EventServerUnavailable]  = deriveCodec
+    @silent implicit lazy val invalidComponentCodec: Codec[InvalidComponent]               = deriveUnaryCodec
+    @silent implicit lazy val setAlarmSeverityFailureCodec: Codec[SetAlarmSeverityFailure] = deriveUnaryCodec
+    @silent implicit lazy val invalidMaxFrequencyCodec: Codec[InvalidMaxFrequency]         = deriveCodec
     deriveCodec
   }
 
@@ -35,9 +39,6 @@ trait GatewayCodecs extends CommandServiceCodecs with LocationCodecs with Loggin
     @silent implicit lazy val logCodec: Codec[Log]                                         = deriveCodec
     deriveCodec
   }
-
-  implicit lazy val invalidComponentCodec: Codec[InvalidComponent]               = deriveCodec
-  implicit lazy val setAlarmSeverityFailureCodec: Codec[SetAlarmSeverityFailure] = deriveCodec
 
   implicit def websocketRequestCodec[T <: WebsocketRequest]: Codec[T] = websocketRequestCodecValue.asInstanceOf[Codec[T]]
   lazy val websocketRequestCodecValue: Codec[WebsocketRequest] = {
