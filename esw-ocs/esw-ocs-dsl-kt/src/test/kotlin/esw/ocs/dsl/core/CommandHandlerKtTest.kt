@@ -5,6 +5,7 @@ import io.kotlintest.shouldBe
 import io.kotlintest.shouldNotThrow
 import io.kotlintest.shouldThrow
 import io.mockk.mockk
+import kotlinx.coroutines.CoroutineExceptionHandler
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.future.await
 import kotlinx.coroutines.runBlocking
@@ -13,7 +14,8 @@ import org.junit.jupiter.api.Test
 import kotlin.coroutines.EmptyCoroutineContext
 
 internal class CommandHandlerKtTest {
-    private fun scope() = CoroutineScope(EmptyCoroutineContext)
+    private val exceptionHandler = CoroutineExceptionHandler { _, _ -> } // to swallow all the test exceptions
+    private fun scope() = CoroutineScope(EmptyCoroutineContext + exceptionHandler)
 
     @Nested
     inner class OnError {

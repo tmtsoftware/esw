@@ -286,7 +286,7 @@ class FsmImplTest {
         val job = SupervisorJob()
 
         var exceptionHandlerCalled = false
-        val exceptionHandler = CoroutineExceptionHandler { _, exception -> exceptionHandlerCalled = true }
+        val exceptionHandler = CoroutineExceptionHandler { _, _ -> exceptionHandlerCalled = true }
 
         val coroutineScope = CoroutineScope(job + exceptionHandler)
         val fsm = FsmImpl(testMachineName, init, coroutineScope, cswHighLevelDslApi)
