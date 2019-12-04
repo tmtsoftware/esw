@@ -10,6 +10,7 @@ import esw.ocs.api.SequencerApi
 import esw.ocs.api.client.SequencerClient
 import esw.ocs.api.codecs.SequencerHttpCodecs
 import esw.ocs.api.protocol.{SequencerPostRequest, SequencerWebsocketRequest}
+import msocket.api.models.ServiceException
 import msocket.impl.Encoding.JsonText
 import msocket.impl.post.HttpPostTransport
 import msocket.impl.ws.WebsocketTransport
@@ -33,8 +34,8 @@ object SequencerApiFactory extends SequencerHttpCodecs {
     val baseUri         = httpLocation.uri.toString
     val postUri         = Uri(baseUri).withPath(Path("/post-endpoint")).toString()
     val webSocketUri    = Uri(baseUri).withScheme("ws").withPath(Path("/websocket-endpoint")).toString()
-    val postClient      = new HttpPostTransport[SequencerPostRequest](postUri, JsonText, () => None)
-    val websocketClient = new WebsocketTransport[SequencerWebsocketRequest](webSocketUri, JsonText)
+    val postClient      = new HttpPostTransport[SequencerPostRequest, ServiceException](postUri, JsonText, () => None)
+    val websocketClient = new WebsocketTransport[SequencerWebsocketRequest, ServiceException](webSocketUri, JsonText)
     new SequencerClient(postClient, websocketClient)
   }
 }

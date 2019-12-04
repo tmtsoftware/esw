@@ -13,6 +13,7 @@ import esw.ocs.api.protocol.EditorError.{CannotOperateOnAnInFlightOrFinishedStep
 import esw.ocs.api.protocol.SequencerPostRequest._
 import esw.ocs.api.protocol._
 import esw.ocs.api.{BaseTestSuite, SequencerApi}
+import msocket.api.models.ServiceException
 import msocket.impl.Encoding
 import msocket.impl.Encoding.JsonText
 import msocket.impl.post.{ClientHttpCodecs, PostRouteFactory}
@@ -21,9 +22,9 @@ import scala.concurrent.Future
 
 class SequencerPostRouteTest extends BaseTestSuite with ScalatestRouteTest with SequencerHttpCodecs with ClientHttpCodecs {
 
-  lazy val route: Route               = new PostRouteFactory("post-endpoint", postHandler).make()
   private val sequencer: SequencerApi = mock[SequencerApi]
   private val postHandler             = new SequencerPostHandler(sequencer)
+  lazy val route: Route               = new PostRouteFactory[SequencerPostRequest, ServiceException]("post-endpoint", postHandler).make()
 
   override def encoding: Encoding[_] = JsonText
 

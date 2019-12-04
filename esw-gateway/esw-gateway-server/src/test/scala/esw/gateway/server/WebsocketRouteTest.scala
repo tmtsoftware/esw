@@ -27,10 +27,10 @@ import esw.http.core.BaseTestSuite
 import esw.ocs.api.protocol.SequencerWebsocketRequest
 import io.bullet.borer.Decoder
 import msocket.api.models.{ServiceException, Subscription}
+import msocket.impl.Encoding
 import msocket.impl.Encoding.{CborBinary, JsonText}
 import msocket.impl.post.ClientHttpCodecs
 import msocket.impl.ws.WebsocketRouteFactory
-import msocket.impl.{Encoding, RouteFactory}
 import org.mockito.Mockito.when
 
 import scala.concurrent.Future
@@ -49,8 +49,9 @@ class WebsocketRouteTest extends BaseTestSuite with ScalatestRouteTest with Gate
 
   private val eventApi: EventApi                          = new EventImpl(eventService, eventSubscriberUtil)
   private def websocketHandlerImpl(encoding: Encoding[_]) = new WebsocketHandlerImpl(resolver, eventApi, encoding)
-  private val route                                       = RouteFactory.combine(new WebsocketRouteFactory("websocket-endpoint", websocketHandlerImpl))
-  private val destination                                 = Prefix(TCS, "test")
+  private val route =
+    new WebsocketRouteFactory[WebsocketRequest, ServiceException]("websocket-endpoint", websocketHandlerImpl).make()
+  private val destination = Prefix(TCS, "test")
 
   override def beforeEach(): Unit = {
     wsClient = WSProbe()
@@ -291,8 +292,8 @@ class WebsocketRouteTest extends BaseTestSuite with ScalatestRouteTest with Gate
 
   private def decodeMessage[T](wsClient: WSProbe)(implicit decoder: Decoder[T]): T = {
     wsClient.expectMessage() match {
-      case TextMessage.Strict(text)   => JsonText.decodeWithCustomException[T](text)
-      case BinaryMessage.Strict(data) => CborBinary.decodeWithCustomException[T](data)
+      case TextMessage.Strict(text)   => JsonText.decodeWithServiceException[T](text)
+      case BinaryMessage.Strict(data) => CborBinary.decodeWithServiceException[T](data)
       case _                          => throw new RuntimeException("The expected message is not Strict")
     }
   }

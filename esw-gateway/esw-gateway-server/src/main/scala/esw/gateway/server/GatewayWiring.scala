@@ -12,6 +12,7 @@ import esw.gateway.server.handlers.{PostHandlerImpl, WebsocketHandlerImpl}
 import esw.gateway.server.utils.Resolver
 import esw.http.core.wiring.{HttpService, ServerWiring}
 import msocket.api.MessageHandler
+import msocket.api.models.ServiceException
 import msocket.impl.post.PostRouteFactory
 import msocket.impl.ws.WebsocketRouteFactory
 import msocket.impl.{Encoding, RouteFactory}
@@ -34,8 +35,8 @@ class GatewayWiring(_port: Option[Int]) extends GatewayCodecs {
     new WebsocketHandlerImpl(resolver, eventApi, encoding)
 
   lazy val routes: Route = RouteFactory.combine(
-    new PostRouteFactory("post-endpoint", postHandler),
-    new WebsocketRouteFactory("websocket-endpoint", websocketHandlerFactory)
+    new PostRouteFactory[PostRequest, ServiceException]("post-endpoint", postHandler),
+    new WebsocketRouteFactory[WebsocketRequest, ServiceException]("websocket-endpoint", websocketHandlerFactory)
   )
 
   lazy val httpService = new HttpService(logger, locationService, routes, settings, actorRuntime)

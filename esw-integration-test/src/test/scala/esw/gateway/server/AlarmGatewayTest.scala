@@ -11,6 +11,7 @@ import esw.gateway.api.clients.AlarmClient
 import esw.gateway.api.codecs.GatewayCodecs
 import esw.gateway.api.protocol.PostRequest
 import esw.ocs.testkit.EswTestKit
+import msocket.api.models.ServiceException
 import msocket.impl.Encoding.JsonText
 import msocket.impl.post.HttpPostTransport
 
@@ -32,7 +33,8 @@ class AlarmGatewayTest extends EswTestKit(AlarmServer) with GatewayCodecs {
 
   "AlarmApi" must {
     "set alarm severity of a given alarm | ESW-216, ESW-86, ESW-193, ESW-233" in {
-      val postClient  = new HttpPostTransport[PostRequest](s"http://localhost:$port/post-endpoint", JsonText, () => None)
+      val postClient =
+        new HttpPostTransport[PostRequest, ServiceException](s"http://localhost:$port/post-endpoint", JsonText, () => None)
       val alarmClient = new AlarmClient(postClient)
 
       val config            = ConfigFactory.parseResources("alarm_key.conf")

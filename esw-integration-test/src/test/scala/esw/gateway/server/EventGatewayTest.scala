@@ -61,9 +61,9 @@ class EventGatewayTest extends EswTestKit(EventServer) with GatewayCodecs {
   "EventApi" must {
     "publish, get, subscribe and pattern subscribe events | ESW-94, ESW-93, ESW-92, ESW-216, ESW-86" in {
       val postClient: Transport[PostRequest] =
-        new HttpPostTransport[PostRequest](s"http://localhost:$port/post-endpoint", JsonText, () => None)
+        new HttpPostTransport[PostRequest, ServiceException](s"http://localhost:$port/post-endpoint", JsonText, () => None)
       val websocketClient: Transport[WebsocketRequest] =
-        new WebsocketTransport[WebsocketRequest](s"ws://localhost:$port/websocket-endpoint", JsonText)
+        new WebsocketTransport[WebsocketRequest, ServiceException](s"ws://localhost:$port/websocket-endpoint", JsonText)
       val eventClient: EventClient = new EventClient(postClient, websocketClient)
 
       val eventsF  = eventClient.subscribe(eventKeys, None).take(4).runWith(Sink.seq)
@@ -91,9 +91,9 @@ class EventGatewayTest extends EswTestKit(EventServer) with GatewayCodecs {
 
     "subscribe events returns an EmptyEventKeys error on sending no event keys in subscription| ESW-93, ESW-216, ESW-86" in {
       val postClient: Transport[PostRequest] =
-        new HttpPostTransport[PostRequest](s"http://localhost:$port/post-endpoint", JsonText, () => None)
+        new HttpPostTransport[PostRequest, ServiceException](s"http://localhost:$port/post-endpoint", JsonText, () => None)
       val websocketClient: Transport[WebsocketRequest] =
-        new WebsocketTransport[WebsocketRequest](s"ws://localhost:$port/websocket-endpoint", JsonText)
+        new WebsocketTransport[WebsocketRequest, ServiceException](s"ws://localhost:$port/websocket-endpoint", JsonText)
       val eventClient: EventClient = new EventClient(postClient, websocketClient)
 
       intercept[ServiceException] {
@@ -103,9 +103,9 @@ class EventGatewayTest extends EswTestKit(EventServer) with GatewayCodecs {
 
     "support pubsub of large events" in {
       val postClient: Transport[PostRequest] =
-        new HttpPostTransport[PostRequest](s"http://localhost:$port/post-endpoint", JsonText, () => None)
+        new HttpPostTransport[PostRequest, ServiceException](s"http://localhost:$port/post-endpoint", JsonText, () => None)
       val websocketClient: Transport[WebsocketRequest] =
-        new WebsocketTransport[WebsocketRequest](s"ws://localhost:$port/websocket-endpoint", JsonText)
+        new WebsocketTransport[WebsocketRequest, ServiceException](s"ws://localhost:$port/websocket-endpoint", JsonText)
       val eventClient: EventClient = new EventClient(postClient, websocketClient)
 
       val eventsF = eventClient.subscribe(Set(largeEvent.eventKey), None).take(2).runWith(Sink.seq)

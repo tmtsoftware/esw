@@ -18,16 +18,16 @@ import csw.params.core.models.{Id, ObsId, Prefix, Subsystem}
 import csw.params.events.{Event, EventKey, EventName, SystemEvent}
 import esw.gateway.api.codecs.GatewayCodecs
 import esw.gateway.api.protocol.PostRequest._
-import esw.gateway.api.protocol.{EmptyEventKeys, EventServerUnavailable, InvalidComponent, SetAlarmSeverityFailure}
+import esw.gateway.api.protocol._
 import esw.gateway.api.{AlarmApi, EventApi, LoggingApi}
 import esw.gateway.impl._
 import esw.gateway.server.handlers.PostHandlerImpl
 import esw.http.core.BaseTestSuite
 import esw.ocs.api.protocol.{Ok, OkOrUnhandledResponse, SequencerPostRequest}
 import msocket.api.models.ServiceException
+import msocket.impl.Encoding
 import msocket.impl.Encoding.JsonText
 import msocket.impl.post.{ClientHttpCodecs, PostRouteFactory}
-import msocket.impl.{Encoding, RouteFactory}
 import org.mockito.ArgumentMatchers.{any, eq => argsEq}
 import org.mockito.Mockito.when
 import org.mockito.MockitoSugar._
@@ -45,7 +45,7 @@ class PostRouteTest extends BaseTestSuite with ScalatestRouteTest with GatewayCo
   private val eventApi: EventApi     = new EventImpl(eventService, eventSubscriberUtil)
   private val loggingApi: LoggingApi = new LoggingImpl(loggerCache)
   private val postHandlerImpl        = new PostHandlerImpl(alarmApi, resolver, eventApi, loggingApi)
-  private val route                  = RouteFactory.combine(new PostRouteFactory("post-endpoint", postHandlerImpl))
+  private val route                  = new PostRouteFactory[PostRequest, ServiceException]("post-endpoint", postHandlerImpl).make()
   private val source                 = Prefix("esw.test")
   private val destination            = Prefix("tcs.test")
 

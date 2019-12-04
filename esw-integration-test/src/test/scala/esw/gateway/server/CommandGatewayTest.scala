@@ -19,6 +19,7 @@ import esw.gateway.api.codecs.GatewayCodecs
 import esw.gateway.api.protocol.{PostRequest, WebsocketRequest}
 import esw.ocs.testkit.EswTestKit
 import msocket.api.Transport
+import msocket.api.models.ServiceException
 import msocket.impl.Encoding.JsonText
 import msocket.impl.post.HttpPostTransport
 import msocket.impl.ws.WebsocketTransport
@@ -45,9 +46,9 @@ class CommandGatewayTest extends EswTestKit(EventServer) with GatewayCodecs {
     val prefix = Prefix("esw.test")
     "handle validate, oneway, submit, subscribe current state and queryFinal commands | ESW-223, ESW-100, ESW-91, ESW-216, ESW-86" in {
       val postClient: Transport[PostRequest] =
-        new HttpPostTransport[PostRequest](s"http://localhost:$port/post-endpoint", JsonText, () => None)
+        new HttpPostTransport[PostRequest, ServiceException](s"http://localhost:$port/post-endpoint", JsonText, () => None)
       val websocketClient: Transport[WebsocketRequest] =
-        new WebsocketTransport[WebsocketRequest](s"ws://localhost:$port/websocket-endpoint", JsonText)
+        new WebsocketTransport[WebsocketRequest, ServiceException](s"ws://localhost:$port/websocket-endpoint", JsonText)
       val clientFactory = new ClientFactory(postClient, websocketClient)
 
       val eventService = new EventServiceFactory().make(HttpLocationServiceFactory.makeLocalClient)
@@ -94,9 +95,9 @@ class CommandGatewayTest extends EswTestKit(EventServer) with GatewayCodecs {
 
     "handle large websocket requests" in {
       val postClient: Transport[PostRequest] =
-        new HttpPostTransport[PostRequest](s"http://localhost:$port/post-endpoint", JsonText, () => None)
+        new HttpPostTransport[PostRequest, ServiceException](s"http://localhost:$port/post-endpoint", JsonText, () => None)
       val websocketClient: Transport[WebsocketRequest] =
-        new WebsocketTransport[WebsocketRequest](s"ws://localhost:$port/websocket-endpoint", JsonText)
+        new WebsocketTransport[WebsocketRequest, ServiceException](s"ws://localhost:$port/websocket-endpoint", JsonText)
       val clientFactory = new ClientFactory(postClient, websocketClient)
 
       val componentType = Assembly
