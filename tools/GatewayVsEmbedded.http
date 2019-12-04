@@ -1,0 +1,101 @@
+### list
+GET http://localhost:7654/location/list
+
+########### component ##############
+
+### embedded (component)
+POST http://localhost:65305/post-endpoint
+Content-Type: application/json
+
+{
+  "Oneway": {
+    "Setup": {
+      "source": "esw.test",
+      "commandName": "c1",
+      "maybeObsId": [
+        "obsId"
+      ],
+      "paramSet": []
+    }
+  }
+}
+
+### gateway (component)
+POST http://localhost:6490/post-endpoint
+Content-Type: application/json
+
+{
+  "ComponentCommand": {
+    "componentId": {
+      "name": "test",
+      "componentType": "assembly"
+    },
+    "command": {
+      "Oneway": {
+        "Setup": {
+          "source": "esw.test",
+          "commandName": "c1",
+          "maybeObsId": [
+            "obsId"
+          ],
+          "paramSet": []
+        }
+      }
+    }
+  }
+}
+
+########### sequencer ##############
+
+### embedded (sequencer)
+POST http://localhost:58058/post-endpoint
+Content-Type: application/json
+
+{
+  "Submit": {
+    "sequence": [
+      {
+        "Setup": {
+          "source": "esw.test",
+          "commandName": "command-2",
+          "maybeObsId": [
+            "obsId"
+          ],
+          "paramSet": []
+        }
+      }
+    ]
+  }
+}
+
+### gateway (sequencer)
+POST http://localhost:6490/post-endpoint
+Content-Type: application/json
+
+{
+  "SequencerCommand": {
+    "componentId": {
+      "prefix": "esw.esw@moonnight1",
+      "componentType": "sequencer"
+    },
+    "command": {
+      "Submit": {
+        "sequence": [
+          {
+            "Setup": {
+              "source": "esw.test",
+              "commandName": "command-2",
+              "maybeObsId": [
+                "obsId"
+              ],
+              "paramSet": []
+            }
+          }
+        ]
+      }
+    }
+  }
+}
+
+
+###

@@ -1,14 +1,9 @@
 package esw.gateway.api.protocol
 
-import msocket.api.models.ProtocolError
-
-case class InvalidComponent(msg: String) extends RuntimeException(msg) {
-  def protocolError: ProtocolError = ProtocolError(this.getClass.getSimpleName, msg)
-}
+case class InvalidComponent(msg: String) extends RuntimeException(msg)
 
 trait SingletonError {
   def msg: String
-  def protocolError: ProtocolError = ProtocolError(this.getClass.getSimpleName, msg)
 }
 
 sealed trait GetEventError

@@ -1,6 +1,5 @@
 package esw.gateway.server.handlers
 
-import akka.http.scaladsl.model.StatusCodes
 import akka.http.scaladsl.server.Directives._
 import akka.http.scaladsl.server.Route
 import csw.command.api.messages.CommandServiceHttpMessage
@@ -35,14 +34,8 @@ class PostHandlerImpl(
   }
 
   private def onComponentCommand(componentId: ComponentId, command: CommandServiceHttpMessage): Route =
-    onSuccess(resolver.resolveComponent(componentId)) {
-      case Some(commandService) => new CommandServiceHttpHandlers(commandService).handle(command)
-      case None                 => complete(StatusCodes.BadRequest -> s"No component is registered with id $componentId ")
-    }
+    onSuccess(resolver.resolveComponent(componentId))(new CommandServiceHttpHandlers(_).handle(command))
 
   private def onSequencerCommand(componentId: ComponentId, command: SequencerPostRequest): Route =
-    onSuccess(resolver.resolveSequencer(componentId)) {
-      case Some(sequencerApi) => new SequencerPostHandler(sequencerApi).handle(command)
-      case None               => complete(StatusCodes.BadRequest -> s"No sequencer is registered with id $componentId ")
-    }
+    onSuccess(resolver.resolveSequencer(componentId))(new SequencerPostHandler(_).handle(command))
 }

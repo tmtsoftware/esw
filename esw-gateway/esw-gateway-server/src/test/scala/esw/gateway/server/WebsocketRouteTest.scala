@@ -26,7 +26,7 @@ import esw.gateway.server.handlers.WebsocketHandlerImpl
 import esw.http.core.BaseTestSuite
 import esw.ocs.api.protocol.SequencerWebsocketRequest
 import io.bullet.borer.Decoder
-import msocket.api.models.{MSocketException, Subscription}
+import msocket.api.models.{ServiceException, Subscription}
 import msocket.impl.Encoding.{CborBinary, JsonText}
 import msocket.impl.post.ClientHttpCodecs
 import msocket.impl.ws.WebsocketRouteFactory
@@ -64,7 +64,7 @@ class WebsocketRouteTest extends BaseTestSuite with ScalatestRouteTest with Gate
       val componentId   = ComponentId(destination, componentType)
       val queryFinal    = ComponentCommand(componentId, QueryFinal(runId, 100.hours))
 
-      when(resolver.resolveComponent(componentId)).thenReturn(Future.successful(Some(commandService)))
+      when(resolver.resolveComponent(componentId)).thenReturn(Future.successful(commandService))
       when(commandService.queryFinal(runId)(100.hours)).thenReturn(Future.successful(Completed(runId)))
 
       WS("/websocket-endpoint", wsClient.flow) ~> route ~> check {
@@ -83,13 +83,12 @@ class WebsocketRouteTest extends BaseTestSuite with ScalatestRouteTest with Gate
 
       val errmsg = s"No component is registered with id $componentId "
 
-      when(resolver.resolveComponent(componentId)).thenReturn(Future.successful(None))
+      when(resolver.resolveComponent(componentId)).thenReturn(Future.failed(InvalidComponent(errmsg)))
 
       WS("/websocket-endpoint", wsClient.flow) ~> route ~> check {
         wsClient.sendMessage(JsonText.strictMessage(queryFinal))
         isWebSocketUpgrade shouldBe true
-        val response = decodeMessage[MSocketException](wsClient).protocol_error
-        response shouldEqual InvalidComponent(errmsg).protocolError
+        decodeMessage[ServiceException](wsClient) shouldEqual ServiceException.fromThrowable(InvalidComponent(errmsg))
       }
     }
   }
@@ -104,7 +103,7 @@ class WebsocketRouteTest extends BaseTestSuite with ScalatestRouteTest with Gate
       val queryFinalRequest  = SequencerCommand(componentId, SequencerWebsocketRequest.QueryFinal(sequenceId, timeout))
       val queryFinalResponse = Completed(sequenceId)
 
-      when(resolver.resolveSequencer(componentId)).thenReturn(Future.successful(Some(sequencer)))
+      when(resolver.resolveSequencer(componentId)).thenReturn(Future.successful(sequencer))
       when(sequencer.queryFinal(sequenceId)).thenReturn(Future.successful(queryFinalResponse))
 
       WS("/websocket-endpoint", wsClient.flow) ~> route ~> check {
@@ -128,7 +127,7 @@ class WebsocketRouteTest extends BaseTestSuite with ScalatestRouteTest with Gate
       val currentStateSubscription = mock[Subscription]
       val currentStateStream       = Source(List(currentState1, currentState2)).mapMaterializedValue(_ => currentStateSubscription)
 
-      when(resolver.resolveComponent(componentId)).thenReturn(Future.successful(Some(commandService)))
+      when(resolver.resolveComponent(componentId)).thenReturn(Future.successful(commandService))
       when(commandService.subscribeCurrentState(stateNames)).thenReturn(currentStateStream)
 
       def response: CurrentState = decodeMessage[CurrentState](wsClient)
@@ -222,10 +221,7 @@ class WebsocketRouteTest extends BaseTestSuite with ScalatestRouteTest with Gate
       WS("/websocket-endpoint", wsClient.flow) ~> route ~> check {
         wsClient.sendMessage(JsonText.strictMessage(eventSubscriptionRequest))
         isWebSocketUpgrade shouldBe true
-
-        intercept[MSocketException] {
-          decodeMessage[Event](wsClient)
-        }
+        decodeMessage[ServiceException](wsClient) shouldEqual ServiceException.fromThrowable(InvalidMaxFrequency())
       }
     }
   }
@@ -288,10 +284,7 @@ class WebsocketRouteTest extends BaseTestSuite with ScalatestRouteTest with Gate
       WS("/websocket-endpoint", wsClient.flow) ~> route ~> check {
         wsClient.sendMessage(JsonText.strictMessage(eventSubscriptionRequest))
         isWebSocketUpgrade shouldBe true
-
-        intercept[MSocketException] {
-          decodeMessage[Event](wsClient)
-        }
+        decodeMessage[ServiceException](wsClient) shouldEqual ServiceException.fromThrowable(InvalidMaxFrequency())
       }
     }
   }

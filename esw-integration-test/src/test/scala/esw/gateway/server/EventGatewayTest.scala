@@ -13,7 +13,7 @@ import esw.gateway.api.codecs.GatewayCodecs
 import esw.gateway.api.protocol.{PostRequest, WebsocketRequest}
 import esw.ocs.testkit.EswTestKit
 import msocket.api.Transport
-import msocket.api.models.MSocketException
+import msocket.api.models.ServiceException
 import msocket.impl.Encoding.JsonText
 import msocket.impl.post.HttpPostTransport
 import msocket.impl.ws.WebsocketTransport
@@ -96,7 +96,7 @@ class EventGatewayTest extends EswTestKit(EventServer) with GatewayCodecs {
         new WebsocketTransport[WebsocketRequest](s"ws://localhost:$port/websocket-endpoint", JsonText)
       val eventClient: EventClient = new EventClient(postClient, websocketClient)
 
-      intercept[MSocketException] {
+      intercept[ServiceException] {
         eventClient.subscribe(Set.empty, None).runForeach(_ => ()).awaitResult
       }
     }

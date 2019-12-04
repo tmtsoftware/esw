@@ -18,12 +18,13 @@ import csw.params.core.models.{Id, ObsId, Prefix, Subsystem}
 import csw.params.events.{Event, EventKey, EventName, SystemEvent}
 import esw.gateway.api.codecs.GatewayCodecs
 import esw.gateway.api.protocol.PostRequest._
-import esw.gateway.api.protocol.{EmptyEventKeys, EventServerUnavailable, SetAlarmSeverityFailure}
+import esw.gateway.api.protocol.{EmptyEventKeys, EventServerUnavailable, InvalidComponent, SetAlarmSeverityFailure}
 import esw.gateway.api.{AlarmApi, EventApi, LoggingApi}
 import esw.gateway.impl._
 import esw.gateway.server.handlers.PostHandlerImpl
 import esw.http.core.BaseTestSuite
 import esw.ocs.api.protocol.{Ok, OkOrUnhandledResponse, SequencerPostRequest}
+import msocket.api.models.ServiceException
 import msocket.impl.Encoding.JsonText
 import msocket.impl.post.{ClientHttpCodecs, PostRouteFactory}
 import msocket.impl.{Encoding, RouteFactory}
@@ -56,7 +57,7 @@ class PostRouteTest extends BaseTestSuite with ScalatestRouteTest with GatewayCo
       val componentId   = ComponentId(destination, componentType)
       val submitRequest = ComponentCommand(componentId, Submit(command))
 
-      when(resolver.resolveComponent(componentId)).thenReturn(Future.successful(Some(commandService)))
+      when(resolver.resolveComponent(componentId)).thenReturn(Future.successful(commandService))
       when(commandService.submit(command)).thenReturn(Future.successful(Started(runId)))
 
       Post("/post-endpoint", submitRequest) ~> route ~> check {
@@ -71,7 +72,7 @@ class PostRouteTest extends BaseTestSuite with ScalatestRouteTest with GatewayCo
       val componentId     = ComponentId(destination, componentType)
       val validateRequest = ComponentCommand(componentId, Validate(command))
 
-      when(resolver.resolveComponent(componentId)).thenReturn(Future.successful(Some(commandService)))
+      when(resolver.resolveComponent(componentId)).thenReturn(Future.successful(commandService))
       when(commandService.validate(command)).thenReturn(Future.successful(Accepted(runId)))
 
       Post("/post-endpoint", validateRequest) ~> route ~> check {
@@ -86,7 +87,7 @@ class PostRouteTest extends BaseTestSuite with ScalatestRouteTest with GatewayCo
       val componentId   = ComponentId(destination, componentType)
       val onewayRequest = ComponentCommand(componentId, Oneway(command))
 
-      when(resolver.resolveComponent(componentId)).thenReturn(Future.successful(Some(commandService)))
+      when(resolver.resolveComponent(componentId)).thenReturn(Future.successful(commandService))
       when(commandService.oneway(command)).thenReturn(Future.successful(Accepted(runId)))
 
       Post("/post-endpoint", onewayRequest) ~> route ~> check {
@@ -100,10 +101,12 @@ class PostRouteTest extends BaseTestSuite with ScalatestRouteTest with GatewayCo
       val componentId   = ComponentId(destination, componentType)
       val submitRequest = ComponentCommand(componentId, Submit(command))
 
-      when(resolver.resolveComponent(componentId)).thenReturn(Future.successful(None))
+      val message = "component does not exist"
+      when(resolver.resolveComponent(componentId)).thenReturn(Future.failed(InvalidComponent(message)))
 
       Post("/post-endpoint", submitRequest) ~> route ~> check {
-        status shouldEqual StatusCodes.BadRequest
+        status shouldEqual StatusCodes.InternalServerError
+        responseAs[ServiceException] shouldEqual ServiceException.fromThrowable(InvalidComponent(message))
       }
     }
   }
@@ -115,7 +118,7 @@ class PostRouteTest extends BaseTestSuite with ScalatestRouteTest with GatewayCo
       val submitRequest  = SequencerCommand(componentId, SequencerPostRequest.Submit(sequence))
       val submitResponse = Started(Id("123"))
 
-      when(resolver.resolveSequencer(componentId)).thenReturn(Future.successful(Some(sequencer)))
+      when(resolver.resolveSequencer(componentId)).thenReturn(Future.successful(sequencer))
       when(sequencer.submit(sequence)).thenReturn(Future.successful(submitResponse))
 
       Post("/post-endpoint", submitRequest) ~> route ~> check {
@@ -129,7 +132,7 @@ class PostRouteTest extends BaseTestSuite with ScalatestRouteTest with GatewayCo
       val queryRequest  = SequencerCommand(componentId, SequencerPostRequest.Query(runId))
       val queryResponse = CommandNotAvailable(runId)
 
-      when(resolver.resolveSequencer(componentId)).thenReturn(Future.successful(Some(sequencer)))
+      when(resolver.resolveSequencer(componentId)).thenReturn(Future.successful(sequencer))
       when(sequencer.query(runId)).thenReturn(Future.successful(queryResponse))
 
       Post("/post-endpoint", queryRequest) ~> route ~> check {
@@ -141,7 +144,7 @@ class PostRouteTest extends BaseTestSuite with ScalatestRouteTest with GatewayCo
       val componentId     = ComponentId(destination, Sequencer)
       val goOnlineRequest = SequencerCommand(componentId, SequencerPostRequest.GoOnline)
 
-      when(resolver.resolveSequencer(componentId)).thenReturn(Future.successful(Some(sequencer)))
+      when(resolver.resolveSequencer(componentId)).thenReturn(Future.successful(sequencer))
       when(sequencer.goOnline()).thenReturn(Future.successful(Ok))
 
       Post("/post-endpoint", goOnlineRequest) ~> route ~> check {
@@ -214,13 +217,14 @@ class PostRouteTest extends BaseTestSuite with ScalatestRouteTest with GatewayCo
       }
     }
 
-    "return InternalServerError if get event fails for some unwanted reason | ESW-94, ESW-216" in {
+    "handle exceptions if get event fails for some unwanted reason | ESW-94, ESW-216" in {
       when(eventSubscriber.get(any[Set[EventKey]])).thenReturn(Future.failed(new RuntimeException("failed")))
 
       val eventKey = EventKey(Prefix("tcs.test.gateway"), EventName("event1"))
 
       Post("/post-endpoint", GetEvent(Set(eventKey))) ~> route ~> check {
-        status shouldBe StatusCodes.InternalServerError
+        status shouldEqual StatusCodes.InternalServerError
+        responseAs[ServiceException] shouldEqual ServiceException.fromThrowable(new RuntimeException("failed"))
       }
     }
   }
