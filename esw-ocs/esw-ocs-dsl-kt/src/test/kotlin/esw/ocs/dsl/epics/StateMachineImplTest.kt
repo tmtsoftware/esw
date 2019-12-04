@@ -6,6 +6,7 @@ import csw.params.events.EventName
 import csw.params.events.SystemEvent
 import csw.params.javadsl.JKeyType
 import csw.params.javadsl.JSubsystem
+import esw.ocs.dsl.highlevel.CswHighLevelDslApi
 import esw.ocs.dsl.params.Params
 import esw.ocs.dsl.params.set
 import esw.ocs.dsl.script.StrandEc
@@ -14,7 +15,6 @@ import io.kotlintest.shouldBe
 import io.kotlintest.shouldThrow
 import io.mockk.coEvery
 import io.mockk.coVerify
-import io.mockk.every
 import io.mockk.mockk
 import kotlinx.coroutines.*
 import org.junit.jupiter.api.BeforeEach
@@ -32,6 +32,7 @@ class StateMachineImplTest {
         println("Exception thrown in script with a message: ${exception.message}, invoking exception handler " + exception)
     }
     private val coroutineScope = CoroutineScope(job + exceptionHandler + dispatcher)
+    val cswHighLevelDslApi: CswHighLevelDslApi = mockk()
 
     private val init = "INIT"
     private val inProgress = "INPROGRESS"
@@ -42,11 +43,11 @@ class StateMachineImplTest {
     private var initFlag = false
     private var parameterSet = Params(setOf())
     // instantiating to not to deal with nullable
-    private var stateMachine = StateMachineImpl(testMachineName, invalid, coroutineScope)
+    private var stateMachine = StateMachineImpl(testMachineName, invalid, coroutineScope, cswHighLevelDslApi)
 
     @BeforeEach
     fun beforeEach() {
-        stateMachine = StateMachineImpl(testMachineName, init, coroutineScope)
+        stateMachine = StateMachineImpl(testMachineName, init, coroutineScope, cswHighLevelDslApi)
         stateMachine.state(init) { initFlag = true }
 
         initFlag = false
@@ -64,7 +65,7 @@ class StateMachineImplTest {
 
     @Test
     fun `start should throw exception if invalid initial state is given | ESW-142`() = runBlocking<Unit> {
-        val invalidStateMachine = StateMachineImpl(testMachineName, invalid, coroutineScope)
+        val invalidStateMachine = StateMachineImpl(testMachineName, invalid, coroutineScope, cswHighLevelDslApi)
         shouldThrow<InvalidStateException> { invalidStateMachine.start() }
     }
 
@@ -276,6 +277,25 @@ class StateMachineImplTest {
         withTimeout(timeout.toMillis()) {
             stateMachine.await()
         }
+    }
+
+    fun `should call the exception handler if exception is thrown in any state`() = runBlocking {
+        val job = SupervisorJob()
+
+        var exceptionHandlerCalled = false
+        val exceptionHandler = CoroutineExceptionHandler { _, exception -> exceptionHandlerCalled = true }
+
+        val coroutineScope = CoroutineScope(job + exceptionHandler)
+        val machine = StateMachineImpl(testMachineName, init, coroutineScope, cswHighLevelDslApi)
+
+        machine.state(init) { initFlag = true }
+        machine.state(inProgress) { throw RuntimeException("Boom!") }
+
+        machine.start()
+        checkInitFlag()
+        machine.become(inProgress)
+
+        eventually(timeout) { exceptionHandlerCalled shouldBe true }
     }
 
 }

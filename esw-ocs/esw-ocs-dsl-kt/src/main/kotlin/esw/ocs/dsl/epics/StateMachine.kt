@@ -1,6 +1,7 @@
 package esw.ocs.dsl.epics
 
-import esw.ocs.dsl.FSMMarker
+import esw.ocs.dsl.ScriptDslMarker
+import esw.ocs.dsl.highlevel.CswHighLevelDslApi
 import esw.ocs.dsl.params.Params
 import kotlinx.coroutines.*
 import kotlin.time.Duration
@@ -12,14 +13,14 @@ interface StateMachine : Refreshable {
 }
 
 // this interface is exposed at top-level of FSM
-@FSMMarker
-interface FSMScope {
+@ScriptDslMarker
+interface FSMScope : CswHighLevelDslApi {
     fun state(name: String, block: suspend FSMStateScope.(params: Params) -> Unit)
 }
 
 // this interface is exposed in side each state of FSM
-@FSMMarker
-interface FSMStateScope {
+@ScriptDslMarker
+interface FSMStateScope : CswHighLevelDslApi {
     suspend fun become(state: String, params: Params = Params(setOf()))
     suspend fun completeFSM()
     suspend fun on(condition: Boolean = true, body: suspend () -> Unit)
@@ -28,7 +29,12 @@ interface FSMStateScope {
 }
 
 // Don't remove name parameter, it will be used while logging.
-class StateMachineImpl(val name: String, private val initialState: String, val coroutineScope: CoroutineScope) : StateMachine, FSMScope, FSMStateScope {
+class StateMachineImpl(
+        val name: String,
+        private val initialState: String,
+        override val coroutineScope: CoroutineScope,
+        cswHighLevelDslApi: CswHighLevelDslApi
+) : StateMachine, FSMScope, FSMStateScope, CswHighLevelDslApi by cswHighLevelDslApi {
     // fixme: Try to remove optional behavior of both variables
     private var currentState: String? = null
     private var previousState: String? = null
@@ -37,9 +43,9 @@ class StateMachineImpl(val name: String, private val initialState: String, val c
 
 
     //fixme : do we need to pass as receiver coroutine scope to state lambda
-    private val states = mutableMapOf<String, suspend FSMStateScope.(params: Params) -> Unit>()
+    private val states: MutableMap<String, suspend FSMStateScope.(params: Params) -> Unit> = mutableMapOf()
 
-    //this is done to make new job child of the coroutine scope's job.
+    //this is needed to make new job as the child of the coroutine scope's job.
     private val fsmJob: CompletableJob = Job(coroutineScope.coroutineContext[Job])
 
     override fun state(name: String, block: suspend FSMStateScope.(params: Params) -> Unit) {

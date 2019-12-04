@@ -16,7 +16,6 @@ import esw.ocs.dsl.epics.CommandFlag
 import esw.ocs.dsl.epics.FSMScope
 import esw.ocs.dsl.epics.StateMachine
 import esw.ocs.dsl.epics.StateMachineImpl
-import esw.ocs.dsl.jdk.SuspendToJavaConverter
 import esw.ocs.dsl.script.CswServices
 import esw.ocs.dsl.script.StrandEc
 import esw.ocs.dsl.sequence_manager.LocationServiceUtil
@@ -65,7 +64,7 @@ abstract class CswHighLevelDsl(private val cswServices: CswServices) : CswHighLe
 
     /************* FSM helpers **********/
     override suspend fun FSM(name: String, initState: String, block: suspend FSMScope.() -> Unit): StateMachine =
-            StateMachineImpl(name, initState, coroutineScope).apply { block() }
+            StateMachineImpl(name, initState, coroutineScope, this).apply { block() }
 
     override fun commandFlag(): CommandFlag = CommandFlag()
 

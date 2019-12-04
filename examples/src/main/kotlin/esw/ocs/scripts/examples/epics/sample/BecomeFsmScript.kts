@@ -63,7 +63,7 @@ FSMScript("INIT") {
     }
 
     state("DATUMING") { params ->
-        onObserve("observe-command-1") {command ->
+        onObserve("observe-command-1") { command ->
             flag.set(command.params)
             //do something
         }
