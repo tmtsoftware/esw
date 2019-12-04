@@ -19,7 +19,7 @@ import kotlin.time.Duration
 import kotlin.time.toJavaDuration
 
 data class EventSubscription(private val unsubscribe: suspend () -> Unit) {
-    suspend fun cancel() = unsubscribe()
+    suspend fun cancel() = unsubscribe() // to solve mocking issue, we had to introduce this function: https://github.com/mockk/mockk/issues/288
 }
 
 interface EventServiceDsl {

@@ -74,7 +74,7 @@ class ScriptIntegrationTest extends EswTestKit(EventServer, AlarmServer, ConfigS
   }
 
   "Sequencer Script" must {
-    "be able to send sequence to other Sequencer by resolving location through TestScript | ESW-88, ESW-145, ESW-190, ESW-195, ESW-119" in {
+    "be able to send sequence to other Sequencer by resolving location through TestScript | ESW-88, ESW-145, ESW-190, ESW-195, ESW-119, ESW-251" in {
       val command  = Setup(Prefix("esw.test"), CommandName("command-4"), None)
       val sequence = Sequence(Seq(command))
 
