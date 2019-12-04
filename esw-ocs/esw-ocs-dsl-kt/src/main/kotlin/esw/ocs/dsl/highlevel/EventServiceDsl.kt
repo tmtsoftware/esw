@@ -18,7 +18,9 @@ import java.util.*
 import kotlin.time.Duration
 import kotlin.time.toJavaDuration
 
-data class EventSubscription(val cancel: suspend () -> Unit)
+data class EventSubscription(private val unsubscribe: suspend () -> Unit) {
+    suspend fun cancel() = unsubscribe()
+}
 
 interface EventServiceDsl {
     val coroutineScope: CoroutineScope

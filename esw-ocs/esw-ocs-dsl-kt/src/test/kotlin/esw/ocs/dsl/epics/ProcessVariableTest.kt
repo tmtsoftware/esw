@@ -10,10 +10,7 @@ import esw.ocs.dsl.highlevel.EventSubscription
 import esw.ocs.dsl.params.booleanKey
 import esw.ocs.dsl.params.intKey
 import io.kotlintest.shouldBe
-import io.mockk.coEvery
-import io.mockk.coVerify
-import io.mockk.every
-import io.mockk.mockk
+import io.mockk.*
 import kotlinx.coroutines.runBlocking
 import org.junit.jupiter.api.Test
 
@@ -49,10 +46,14 @@ class ProcessVariableTest {
         processVariable.get() shouldBe intValue
     }
 
+
+    // Scenario: bind(fsm1) => bind(fsm2) => cancel1() => cancel2() => bind(fsm3)
     @Test
     fun `bind should start subscription and add subscription entry in FSM | ESW-142`() = runBlocking {
         val eventServiceDsl = mockk<EventServiceDsl>()
-        val refreshable = mockk<Refreshable>()
+        val refreshable1 = mockk<Refreshable>()
+        val refreshable2 = mockk<Refreshable>()
+        val refreshable3 = mockk<Refreshable>()
         val eventSubscription = mockk<EventSubscription>()
 
         val intKey = intKey("testKey")
@@ -60,14 +61,29 @@ class ProcessVariableTest {
         val systemEvent = SystemEvent(Prefix(TCS, "test"), EventName("testEvent")).add(intKey.set(intValue))
         val eventKey = systemEvent.eventKey().key()
 
-        every { refreshable.addFSMSubscription(any()) }.returns(Unit)
+        every { refreshable1.addFSMSubscription(any()) } just runs
+        every { refreshable2.addFSMSubscription(any()) } just runs
+        every { refreshable3.addFSMSubscription(any()) } just runs
         coEvery { eventServiceDsl.onEvent(eventKey, callback = any()) }.returns(eventSubscription)
+        coEvery { eventSubscription.cancel() } just runs
 
         val processVariable: ProcessVariable<Int> = ProcessVariable(systemEvent, intKey, eventServiceDsl)
 
-        processVariable.bind(refreshable)
+        val fsmSubscription1 = processVariable.bind(refreshable1)
+        val fsmSubscription2 = processVariable.bind(refreshable2)
 
-        coVerify { refreshable.addFSMSubscription(any()) }
+        coVerify { refreshable1.addFSMSubscription(any()) }
+        coVerify { refreshable2.addFSMSubscription(any()) }
+        coVerify { eventServiceDsl.onEvent(eventKey, callback = any()) }
+
+        fsmSubscription1.cancel()
+        coVerify(exactly = 0) { eventSubscription.cancel() }
+
+        fsmSubscription2.cancel()
+        coVerify { eventSubscription.cancel() }
+
+        processVariable.bind(refreshable3)
+        coVerify { refreshable3.addFSMSubscription(any()) }
         coVerify { eventServiceDsl.onEvent(eventKey, callback = any()) }
     }
 }

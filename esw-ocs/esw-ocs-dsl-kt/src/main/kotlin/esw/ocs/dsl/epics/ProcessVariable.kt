@@ -19,14 +19,14 @@ class ProcessVariable<T> constructor(
     // todo: should initial event be published?
     private var latestEvent: Event = initial
     private val subscribers: MutableSet<Refreshable> = mutableSetOf()
+    private var eventSubscription: EventSubscription? = null
 
-    suspend fun bind(refreshable: Refreshable) {
+    suspend fun bind(refreshable: Refreshable): FSMSubscription {
         subscribers.add(refreshable)
-        if (subscribers.size == 1) {
-            val eventSubscription = startSubscription()
-            val subscription = FSMSubscription(eventSubscription) { subscribers -= refreshable }
-            refreshable.addFSMSubscription(subscription)
-        }
+        if (subscribers.size == 1) eventSubscription = startSubscription()
+        val fsmSubscription = FSMSubscription { unsubscribe(refreshable) }
+        refreshable.addFSMSubscription(fsmSubscription)
+        return fsmSubscription
     }
 
     suspend fun set(value: T) {
@@ -50,4 +50,9 @@ class ProcessVariable<T> constructor(
                     subscribers.forEach { it.refresh() }
                 }
             }
+
+    private suspend fun unsubscribe(refreshable: Refreshable) {
+        subscribers.remove(refreshable)
+        if (subscribers.isEmpty()) eventSubscription?.cancel()
+    }
 }

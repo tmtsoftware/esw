@@ -5,7 +5,6 @@ import csw.params.core.generics.KeyType
 import csw.params.core.generics.Parameter
 import csw.params.core.generics.ParameterSetType
 import esw.ocs.dsl.nullable
-import org.jooq.Param
 
 /** ========== Parameter =========== **/
 val <T> Parameter<T>.values: List<T> get() = jValues().toList()

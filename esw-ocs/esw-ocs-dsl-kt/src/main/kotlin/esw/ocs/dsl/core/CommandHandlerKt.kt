@@ -5,7 +5,6 @@ import esw.ocs.dsl.SuspendableConsumer
 import esw.ocs.dsl.script.CommandHandler
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.future.asCompletableFuture
-import kotlinx.coroutines.future.await
 import kotlinx.coroutines.launch
 import java.util.concurrent.CompletionStage
 
