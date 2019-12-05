@@ -7,8 +7,9 @@ import esw.ocs.api.protocol.{SequencerPostRequest, SequencerWebsocketRequest}
 import io.bullet.borer.Codec
 import io.bullet.borer.derivation.ArrayBasedCodecs.deriveUnaryCodec
 import io.bullet.borer.derivation.MapBasedCodecs.deriveCodec
-import msocket.api.ErrorType
-import msocket.api.models.ServiceException
+import msocket.api
+import msocket.api.ErrorProtocol
+import msocket.api.models.ServiceError
 
 trait SequencerHttpCodecs extends OcsCodecs {
   import msocket.api.codecs.BasicCodecs._
@@ -54,9 +55,9 @@ trait SequencerHttpCodecs extends OcsCodecs {
     deriveCodec
   }
 
-  implicit lazy val sequencerPostRequestErrorType: ErrorType[SequencerPostRequest] =
-    ErrorType.bind[SequencerPostRequest, ServiceException]
+  implicit lazy val sequencerPostRequestErrorProtocol: ErrorProtocol[SequencerPostRequest] =
+    ErrorProtocol.bind[SequencerPostRequest, ServiceError]
 
-  implicit lazy val sequencerWebsocketErrorType: ErrorType[SequencerWebsocketRequest] =
-    ErrorType.bind[SequencerWebsocketRequest, ServiceException]
+  implicit lazy val sequencerWebsocketErrorProtocol: api.ErrorProtocol[SequencerWebsocketRequest] =
+    ErrorProtocol.bind[SequencerWebsocketRequest, ServiceError]
 }

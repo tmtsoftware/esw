@@ -26,7 +26,7 @@ import esw.gateway.server.handlers.WebsocketHandlerImpl
 import esw.http.core.BaseTestSuite
 import esw.ocs.api.protocol.SequencerWebsocketRequest
 import io.bullet.borer.Decoder
-import msocket.api.models.Subscription
+import msocket.api.Subscription
 import msocket.impl.Encoding
 import msocket.impl.Encoding.{CborBinary, JsonText}
 import msocket.impl.post.ClientHttpCodecs

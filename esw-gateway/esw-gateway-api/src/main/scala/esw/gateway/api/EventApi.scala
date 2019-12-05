@@ -4,7 +4,7 @@ import akka.Done
 import akka.stream.scaladsl.Source
 import csw.params.core.models.Subsystem
 import csw.params.events.{Event, EventKey}
-import msocket.api.models.Subscription
+import msocket.api.Subscription
 
 import scala.concurrent.Future
 

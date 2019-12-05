@@ -24,7 +24,7 @@ import esw.gateway.impl._
 import esw.gateway.server.handlers.PostHandlerImpl
 import esw.http.core.BaseTestSuite
 import esw.ocs.api.protocol.{Ok, OkOrUnhandledResponse, SequencerPostRequest}
-import msocket.api.models.ServiceException
+import msocket.api.models.ServiceError
 import msocket.impl.Encoding
 import msocket.impl.Encoding.JsonText
 import msocket.impl.post.{ClientHttpCodecs, PostRouteFactory}
@@ -227,7 +227,7 @@ class PostRouteTest extends BaseTestSuite with ScalatestRouteTest with GatewayCo
 
       Post("/post-endpoint", GetEvent(Set(eventKey))) ~> route ~> check {
         status shouldEqual StatusCodes.InternalServerError
-        responseAs[ServiceException] shouldEqual ServiceException.fromThrowable(new RuntimeException("failed"))
+        responseAs[ServiceError] shouldEqual ServiceError.fromThrowable(new RuntimeException("failed"))
       }
     }
   }

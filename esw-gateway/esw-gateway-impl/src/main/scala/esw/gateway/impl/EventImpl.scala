@@ -11,7 +11,7 @@ import csw.params.events.{Event, EventKey}
 import esw.gateway.api.EventApi
 import esw.gateway.api.protocol._
 import esw.gateway.impl.SourceExtensions.RichSource
-import msocket.api.models.Subscription
+import msocket.api.Subscription
 
 import scala.concurrent.{ExecutionContext, Future}
 

@@ -30,7 +30,7 @@ import io.mockk.mockkStatic
 import io.mockk.verify
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.runBlocking
-import msocket.api.models.Subscription
+import msocket.api.Subscription
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
 import scala.concurrent.duration.FiniteDuration

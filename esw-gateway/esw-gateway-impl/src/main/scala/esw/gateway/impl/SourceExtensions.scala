@@ -2,7 +2,7 @@ package esw.gateway.impl
 
 import akka.stream.KillSwitches
 import akka.stream.scaladsl.{Keep, Source}
-import msocket.api.models.Subscription
+import msocket.api.Subscription
 
 object SourceExtensions {
 

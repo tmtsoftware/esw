@@ -25,8 +25,7 @@ import esw.ocs.dsl.script.utils.LockUnlockUtil
 import esw.ocs.dsl.sequence_manager.LocationServiceUtil
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.future.await
-import msocket.api.models.Subscription
-import scala.concurrent.duration.FiniteDuration
+import msocket.api.Subscription
 import java.util.concurrent.TimeUnit
 import kotlin.time.Duration
 import kotlin.time.toJavaDuration
