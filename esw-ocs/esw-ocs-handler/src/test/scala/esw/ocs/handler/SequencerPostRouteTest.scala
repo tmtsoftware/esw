@@ -27,12 +27,17 @@ class SequencerPostRouteTest extends BaseTestSuite with ScalatestRouteTest with 
 
   override def encoding: Encoding[_] = JsonText
 
+  override def afterEach(): Unit = {
+    reset(sequencer)
+  }
+
   "SequencerRoutes" must {
     "return sequence for getSequence request | ESW-222" in {
       val stepList = StepList(List.empty)
       when(sequencer.getSequence).thenReturn(Future.successful(Some(stepList)))
 
       Post("/post-endpoint", GetSequence) ~> route ~> check {
+        verify(sequencer).getSequence
         responseAs[Option[StepList]].get should ===(stepList)
       }
     }
@@ -41,6 +46,7 @@ class SequencerPostRouteTest extends BaseTestSuite with ScalatestRouteTest with 
       when(sequencer.isAvailable).thenReturn(Future.successful(true))
 
       Post("/post-endpoint", IsAvailable) ~> route ~> check {
+        verify(sequencer).isAvailable
         responseAs[Boolean] should ===(true)
       }
     }
@@ -49,6 +55,7 @@ class SequencerPostRouteTest extends BaseTestSuite with ScalatestRouteTest with 
       when(sequencer.isOnline).thenReturn(Future.successful(true))
 
       Post("/post-endpoint", IsOnline) ~> route ~> check {
+        verify(sequencer).isOnline
         responseAs[Boolean] should ===(true)
       }
     }
@@ -57,6 +64,7 @@ class SequencerPostRouteTest extends BaseTestSuite with ScalatestRouteTest with 
       when(sequencer.pause).thenReturn(Future.successful(Ok))
 
       Post("/post-endpoint", Pause) ~> route ~> check {
+        verify(sequencer).pause
         responseAs[PauseResponse] should ===(Ok)
       }
     }
@@ -65,6 +73,7 @@ class SequencerPostRouteTest extends BaseTestSuite with ScalatestRouteTest with 
       when(sequencer.pause).thenReturn(Future.successful(CannotOperateOnAnInFlightOrFinishedStep))
 
       Post("/post-endpoint", Pause) ~> route ~> check {
+        verify(sequencer).pause
         responseAs[PauseResponse] should ===(CannotOperateOnAnInFlightOrFinishedStep)
       }
     }
@@ -73,6 +82,7 @@ class SequencerPostRouteTest extends BaseTestSuite with ScalatestRouteTest with 
       when(sequencer.resume).thenReturn(Future.successful(Ok))
 
       Post("/post-endpoint", Resume) ~> route ~> check {
+        verify(sequencer).resume
         responseAs[OkOrUnhandledResponse] should ===(Ok)
       }
     }
@@ -81,6 +91,7 @@ class SequencerPostRouteTest extends BaseTestSuite with ScalatestRouteTest with 
       when(sequencer.reset()).thenReturn(Future.successful(Ok))
 
       Post("/post-endpoint", Reset) ~> route ~> check {
+        verify(sequencer).reset()
         responseAs[OkOrUnhandledResponse] should ===(Ok)
       }
     }
@@ -90,6 +101,7 @@ class SequencerPostRouteTest extends BaseTestSuite with ScalatestRouteTest with 
       when(sequencer.reset()).thenReturn(Future.successful(unhandled))
 
       Post("/post-endpoint", Reset) ~> route ~> check {
+        verify(sequencer).reset()
         responseAs[OkOrUnhandledResponse] should ===(unhandled)
       }
     }
@@ -98,6 +110,7 @@ class SequencerPostRouteTest extends BaseTestSuite with ScalatestRouteTest with 
       when(sequencer.abortSequence()).thenReturn(Future.successful(Ok))
 
       Post("/post-endpoint", AbortSequence) ~> route ~> check {
+        verify(sequencer).abortSequence()
         responseAs[OkOrUnhandledResponse] should ===(Ok)
       }
     }
@@ -106,6 +119,7 @@ class SequencerPostRouteTest extends BaseTestSuite with ScalatestRouteTest with 
       when(sequencer.stop()).thenReturn(Future.successful(Ok))
 
       Post("/post-endpoint", Stop) ~> route ~> check {
+        verify(sequencer).stop()
         responseAs[OkOrUnhandledResponse] should ===(Ok)
       }
     }
@@ -114,6 +128,7 @@ class SequencerPostRouteTest extends BaseTestSuite with ScalatestRouteTest with 
       when(sequencer.goOnline()).thenReturn(Future.successful(Ok))
 
       Post("/post-endpoint", GoOnline) ~> route ~> check {
+        verify(sequencer).goOnline()
         responseAs[GoOnlineResponse] should ===(Ok)
       }
     }
@@ -122,6 +137,7 @@ class SequencerPostRouteTest extends BaseTestSuite with ScalatestRouteTest with 
       when(sequencer.goOnline()).thenReturn(Future.successful(GoOnlineHookFailed))
 
       Post("/post-endpoint", GoOnline) ~> route ~> check {
+        verify(sequencer).goOnline()
         responseAs[GoOnlineResponse] should ===(GoOnlineHookFailed)
       }
     }
@@ -130,6 +146,7 @@ class SequencerPostRouteTest extends BaseTestSuite with ScalatestRouteTest with 
       when(sequencer.goOffline()).thenReturn(Future.successful(Ok))
 
       Post("/post-endpoint", GoOffline) ~> route ~> check {
+        verify(sequencer).goOffline()
         responseAs[OkOrUnhandledResponse] should ===(Ok)
       }
     }
@@ -138,6 +155,7 @@ class SequencerPostRouteTest extends BaseTestSuite with ScalatestRouteTest with 
       when(sequencer.add(List.empty)).thenReturn(Future.successful(Ok))
 
       Post("/post-endpoint", Add(List.empty)) ~> route ~> check {
+        verify(sequencer).add(List.empty)
         responseAs[OkOrUnhandledResponse] should ===(Ok)
       }
     }
@@ -146,6 +164,7 @@ class SequencerPostRouteTest extends BaseTestSuite with ScalatestRouteTest with 
       when(sequencer.prepend(List.empty)).thenReturn(Future.successful(Ok))
 
       Post("/post-endpoint", Prepend(List.empty)) ~> route ~> check {
+        verify(sequencer).prepend(List.empty)
         responseAs[OkOrUnhandledResponse] should ===(Ok)
       }
     }
@@ -155,6 +174,7 @@ class SequencerPostRouteTest extends BaseTestSuite with ScalatestRouteTest with 
       when(sequencer.replace(id, List.empty)).thenReturn(Future.successful(Ok))
 
       Post("/post-endpoint", Replace(id, List.empty)) ~> route ~> check {
+        verify(sequencer).replace(id, List.empty)
         responseAs[GenericResponse] should ===(Ok)
       }
     }
@@ -164,6 +184,7 @@ class SequencerPostRouteTest extends BaseTestSuite with ScalatestRouteTest with 
       when(sequencer.replace(id, List.empty)).thenReturn(Future.successful(IdDoesNotExist(id)))
 
       Post("/post-endpoint", Replace(id, List.empty)) ~> route ~> check {
+        verify(sequencer).replace(id, List.empty)
         responseAs[GenericResponse] should ===(IdDoesNotExist(id))
       }
     }
@@ -173,6 +194,7 @@ class SequencerPostRouteTest extends BaseTestSuite with ScalatestRouteTest with 
       when(sequencer.insertAfter(id, List.empty)).thenReturn(Future.successful(Ok))
 
       Post("/post-endpoint", InsertAfter(id, List.empty)) ~> route ~> check {
+        verify(sequencer).insertAfter(id, List.empty)
         responseAs[GenericResponse] should ===(Ok)
       }
     }
@@ -182,6 +204,7 @@ class SequencerPostRouteTest extends BaseTestSuite with ScalatestRouteTest with 
       when(sequencer.delete(id)).thenReturn(Future.successful(Ok))
 
       Post("/post-endpoint", SequencerPostRequest.Delete(id)) ~> route ~> check {
+        verify(sequencer).delete(id)
         responseAs[GenericResponse] should ===(Ok)
       }
     }
@@ -191,6 +214,7 @@ class SequencerPostRouteTest extends BaseTestSuite with ScalatestRouteTest with 
       when(sequencer.addBreakpoint(id)).thenReturn(Future.successful(Ok))
 
       Post("/post-endpoint", AddBreakpoint(id)) ~> route ~> check {
+        verify(sequencer).addBreakpoint(id)
         responseAs[GenericResponse] should ===(Ok)
       }
     }
@@ -200,6 +224,7 @@ class SequencerPostRouteTest extends BaseTestSuite with ScalatestRouteTest with 
       when(sequencer.removeBreakpoint(id)).thenReturn(Future.successful(Ok))
 
       Post("/post-endpoint", RemoveBreakpoint(id)) ~> route ~> check {
+        verify(sequencer).removeBreakpoint(id)
         responseAs[GenericResponse] should ===(Ok)
       }
     }
@@ -210,6 +235,7 @@ class SequencerPostRouteTest extends BaseTestSuite with ScalatestRouteTest with 
       when(sequencer.loadSequence(sequence)).thenReturn(Future.successful(Ok))
 
       Post("/post-endpoint", LoadSequence(sequence)) ~> route ~> check {
+        verify(sequencer).loadSequence(sequence)
         responseAs[OkOrUnhandledResponse] should ===(Ok)
       }
     }
@@ -219,6 +245,7 @@ class SequencerPostRouteTest extends BaseTestSuite with ScalatestRouteTest with 
       when(sequencer.startSequence()).thenReturn(Future.successful(startedResponse))
 
       Post("/post-endpoint", StartSequence) ~> route ~> check {
+        verify(sequencer).startSequence()
         responseAs[SubmitResponse] should ===(startedResponse)
       }
     }
@@ -230,6 +257,7 @@ class SequencerPostRouteTest extends BaseTestSuite with ScalatestRouteTest with 
       when(sequencer.submit(sequence)).thenReturn(Future.successful(completedResponse))
 
       Post("/post-endpoint", Submit(sequence)) ~> route ~> check {
+        verify(sequencer).submit(sequence)
         responseAs[SubmitResponse] should ===(completedResponse)
       }
     }
@@ -240,6 +268,7 @@ class SequencerPostRouteTest extends BaseTestSuite with ScalatestRouteTest with 
       when(sequencer.query(sequenceId)).thenReturn(Future.successful(completedResponse))
 
       Post("/post-endpoint", Query(sequenceId)) ~> route ~> check {
+        verify(sequencer).query(sequenceId)
         responseAs[QueryResponse] should ===(completedResponse)
       }
     }
@@ -250,6 +279,7 @@ class SequencerPostRouteTest extends BaseTestSuite with ScalatestRouteTest with 
       when(sequencer.diagnosticMode(startTime, hint)).thenReturn(Future.successful(Ok))
 
       Post("/post-endpoint", DiagnosticMode(startTime, hint)) ~> route ~> check {
+        verify(sequencer).diagnosticMode(startTime, hint)
         responseAs[DiagnosticModeResponse] should ===(Ok)
       }
     }
@@ -258,6 +288,7 @@ class SequencerPostRouteTest extends BaseTestSuite with ScalatestRouteTest with 
       when(sequencer.operationsMode()).thenReturn(Future.successful(Ok))
 
       Post("/post-endpoint", OperationsMode) ~> route ~> check {
+        verify(sequencer).operationsMode()
         responseAs[OperationsModeResponse] should ===(Ok)
       }
     }
@@ -266,6 +297,7 @@ class SequencerPostRouteTest extends BaseTestSuite with ScalatestRouteTest with 
       when(sequencer.getSequence).thenReturn(Future.failed(new RuntimeException("test")))
 
       Post("/post-endpoint", GetSequence) ~> route ~> check {
+        verify(sequencer, atLeast(1)).getSequence
         status should ===(StatusCodes.InternalServerError)
       }
     }
