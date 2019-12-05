@@ -8,7 +8,7 @@ import kotlinx.coroutines.delay
 FsmScript("INIT") {
 
     val testAssembly = Assembly("test")
-    val processVar = SystemVar(true, "tcs.trigger", booleanKey("flag"))
+    val eventVar = SystemVar(true, "tcs.trigger", booleanKey("flag"))
     val flag = commandFlag()
 
     val fsm = Fsm("Trigger Fsm", "START") {
@@ -46,7 +46,7 @@ FsmScript("INIT") {
         }
     }
 
-    processVar.bind(fsm)
+    eventVar.bind(fsm)
     flag.bind(fsm)
 
     state("INIT") {
