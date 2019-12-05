@@ -41,6 +41,44 @@ class RichSequencerTest {
     private val timeout = Timeout(10, TimeUnit.SECONDS)
 
     @Test
+    fun `submit should resolve sequencerCommandService for given sequencer and call submit method on it | ESW-245 `() = runBlocking {
+
+        every { locationServiceUtil.resolveSequencer(sequencerId, observingMode, any()) }.answers { Future.successful(sequencerLocation) }
+        every { sequencerApiFactory.apply(sequencerId, observingMode) }.answers { CompletableFuture.completedFuture(sequencerApi) }
+        every { sequencerApi.submit(sequence) }.answers { Future.successful(CommandResponse.Completed(Id.apply())) }
+
+        tcsSequencer.submit(sequence)
+
+        verify { sequencerApi.submit(sequence) }
+    }
+
+    @Test
+    fun `query should resolve sequencerCommandService for given sequencer and call query method on it | ESW-245 `() = runBlocking {
+        val runId:Id = mockk()
+
+        every { locationServiceUtil.resolveSequencer(sequencerId, observingMode, any()) }.answers { Future.successful(sequencerLocation) }
+        every { sequencerApiFactory.apply(sequencerId, observingMode) }.answers { CompletableFuture.completedFuture(sequencerApi) }
+        every { sequencerApi.query(runId) }.answers { Future.successful(CommandResponse.Completed(Id.apply())) }
+
+        tcsSequencer.query(runId)
+
+        verify { sequencerApi.query(runId) }
+    }
+
+    @Test
+    fun `queryFinal should resolve sequencerCommandService for given sequencer and call queryFinal method on it | ESW-245 `() = runBlocking {
+        val runId:Id = mockk()
+
+        every { locationServiceUtil.resolveSequencer(sequencerId, observingMode, any()) }.answers { Future.successful(sequencerLocation) }
+        every { sequencerApiFactory.apply(sequencerId, observingMode) }.answers { CompletableFuture.completedFuture(sequencerApi) }
+        every { sequencerApi.queryFinal(runId, timeout) }.answers { Future.successful(CommandResponse.Completed(Id.apply())) }
+
+        tcsSequencer.queryFinal(runId, 10.seconds)
+
+        verify { sequencerApi.queryFinal(runId, timeout) }
+    }
+
+    @Test
     fun `submitAndWait should resolve sequencerCommandService for given sequencer and call submitAndWait method on it | ESW-245 `() = runBlocking {
 
         every { locationServiceUtil.resolveSequencer(sequencerId, observingMode, any()) }.answers { Future.successful(sequencerLocation) }
