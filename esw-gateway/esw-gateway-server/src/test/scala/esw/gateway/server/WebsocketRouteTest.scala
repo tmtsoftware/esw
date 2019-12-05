@@ -49,9 +49,8 @@ class WebsocketRouteTest extends BaseTestSuite with ScalatestRouteTest with Gate
 
   private val eventApi: EventApi                          = new EventImpl(eventService, eventSubscriberUtil)
   private def websocketHandlerImpl(encoding: Encoding[_]) = new WebsocketHandlerImpl(resolver, eventApi, encoding)
-  private val route =
-    new WebsocketRouteFactory[WebsocketRequest, GatewayException]("websocket-endpoint", websocketHandlerImpl).make()
-  private val destination = Prefix(TCS, "test")
+  private val route                                       = new WebsocketRouteFactory("websocket-endpoint", websocketHandlerImpl).make()
+  private val destination                                 = Prefix(TCS, "test")
 
   override def beforeEach(): Unit = {
     wsClient = WSProbe()

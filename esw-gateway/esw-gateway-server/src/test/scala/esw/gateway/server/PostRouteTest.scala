@@ -45,7 +45,7 @@ class PostRouteTest extends BaseTestSuite with ScalatestRouteTest with GatewayCo
   private val eventApi: EventApi     = new EventImpl(eventService, eventSubscriberUtil)
   private val loggingApi: LoggingApi = new LoggingImpl(loggerCache)
   private val postHandlerImpl        = new PostHandlerImpl(alarmApi, resolver, eventApi, loggingApi)
-  private val route                  = new PostRouteFactory[PostRequest, GatewayException]("post-endpoint", postHandlerImpl).make()
+  private val route                  = new PostRouteFactory("post-endpoint", postHandlerImpl).make()
   private val source                 = Prefix("esw.test")
   private val destination            = Prefix("tcs.test")
 

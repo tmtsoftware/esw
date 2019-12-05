@@ -12,7 +12,6 @@ import esw.ocs.api.protocol.SequencerWebsocketRequest
 import esw.ocs.api.protocol.SequencerWebsocketRequest.QueryFinal
 import esw.ocs.api.{BaseTestSuite, SequencerApi}
 import io.bullet.borer.Decoder
-import msocket.api.models.ServiceException
 import msocket.impl.Encoding
 import msocket.impl.Encoding.{CborBinary, JsonText}
 import msocket.impl.post.ClientHttpCodecs
@@ -36,7 +35,7 @@ class SequencerCommandWebsocketRouteTest
   private implicit val actorSystem: ActorSystem[SpawnProtocol.Command] = ActorSystem(SpawnProtocol(), "test-system")
 
   lazy val route: Route =
-    new WebsocketRouteFactory[SequencerWebsocketRequest, ServiceException]("websocket-endpoint", websocketHandlerFactory).make()
+    new WebsocketRouteFactory[SequencerWebsocketRequest]("websocket-endpoint", websocketHandlerFactory).make()
 
   private val wsClient = WSProbe()
 

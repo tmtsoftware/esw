@@ -7,7 +7,7 @@ import csw.params.commands.{CommandName, Sequence, Setup}
 import csw.params.core.models.{ObsId, Prefix}
 import esw.gateway.api.clients.ClientFactory
 import esw.gateway.api.codecs.GatewayCodecs
-import esw.gateway.api.protocol.{GatewayException, PostRequest, WebsocketRequest}
+import esw.gateway.api.protocol.{PostRequest, WebsocketRequest}
 import esw.ocs.testkit.EswTestKit
 import msocket.api.Transport
 import msocket.impl.Encoding.JsonText
@@ -35,9 +35,9 @@ class SequencerGatewayTest extends EswTestKit with GatewayCodecs {
 
     "handle submit, queryFinal commands | ESW-250" in {
       val postClient: Transport[PostRequest] =
-        new HttpPostTransport[PostRequest, GatewayException](s"http://localhost:$port/post-endpoint", JsonText, () => None)
+        new HttpPostTransport(s"http://localhost:$port/post-endpoint", JsonText, () => None)
       val websocketClient: Transport[WebsocketRequest] =
-        new WebsocketTransport[WebsocketRequest, GatewayException](s"ws://localhost:$port/websocket-endpoint", JsonText)
+        new WebsocketTransport(s"ws://localhost:$port/websocket-endpoint", JsonText)
       val clientFactory = new ClientFactory(postClient, websocketClient)
 
       val sequence    = Sequence(Setup(Prefix("esw.test"), CommandName("command-2"), Some(ObsId("obsId"))))

@@ -12,6 +12,7 @@ import io.bullet.borer.Dom.MapElem
 import io.bullet.borer.derivation.MapBasedCodecs.deriveCodec
 import io.bullet.borer.derivation.ArrayBasedCodecs.deriveUnaryCodec
 import io.bullet.borer.{Codec, Decoder, Encoder}
+import msocket.api.ErrorType
 
 object GatewayCodecs extends GatewayCodecs
 trait GatewayCodecs extends CommandServiceCodecs with LocationCodecs with LoggingCodecs with SequencerHttpCodecs {
@@ -53,4 +54,7 @@ trait GatewayCodecs extends CommandServiceCodecs with LocationCodecs with Loggin
   //Todo: move to csw
   implicit lazy val eventKeyCodec: Codec[EventKey] = deriveCodec
   implicit lazy val alarmKeyCodec: Codec[AlarmKey] = deriveCodec
+
+  implicit lazy val PostRequestErrorType: ErrorType[PostRequest]           = ErrorType.bind[PostRequest, GatewayException]
+  implicit lazy val WebsocketRequestErrorType: ErrorType[WebsocketRequest] = ErrorType.bind[WebsocketRequest, GatewayException]
 }

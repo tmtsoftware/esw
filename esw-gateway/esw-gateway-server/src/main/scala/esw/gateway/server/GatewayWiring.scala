@@ -5,7 +5,7 @@ import akka.http.scaladsl.model.ws.Message
 import akka.http.scaladsl.server.Route
 import akka.stream.scaladsl.Source
 import esw.gateway.api.codecs.GatewayCodecs
-import esw.gateway.api.protocol.{GatewayException, PostRequest, WebsocketRequest}
+import esw.gateway.api.protocol.{PostRequest, WebsocketRequest}
 import esw.gateway.api.{AlarmApi, EventApi, LoggingApi}
 import esw.gateway.impl._
 import esw.gateway.server.handlers.{PostHandlerImpl, WebsocketHandlerImpl}
@@ -34,8 +34,8 @@ class GatewayWiring(_port: Option[Int]) extends GatewayCodecs {
     new WebsocketHandlerImpl(resolver, eventApi, encoding)
 
   lazy val routes: Route = RouteFactory.combine(
-    new PostRouteFactory[PostRequest, GatewayException]("post-endpoint", postHandler),
-    new WebsocketRouteFactory[WebsocketRequest, GatewayException]("websocket-endpoint", websocketHandlerFactory)
+    new PostRouteFactory[PostRequest]("post-endpoint", postHandler),
+    new WebsocketRouteFactory[WebsocketRequest]("websocket-endpoint", websocketHandlerFactory)
   )
 
   lazy val httpService = new HttpService(logger, locationService, routes, settings, actorRuntime)
