@@ -13,21 +13,10 @@ class SequencerConfigTest extends BaseTestSuite {
     "create SequencerConfig based on packageId and observingMode | ESW-103" in {
       val packageId        = "esw"
       val observingMode    = "darknight"
-      val sequencerConfigs = SequencerConfig.from(config, packageId, observingMode, None)
+      val sequencerConfigs = SequencerConfig.from(config, packageId, observingMode)
 
-      sequencerConfigs.prefix.componentName should ===("esw@darknight")
-      sequencerConfigs.prefix should ===(Prefix("esw.esw@darknight"))
-      sequencerConfigs.scriptClass should ===(classOf[ValidTestScript].getCanonicalName)
-    }
-
-    "create SequencerConfig based on packageId and observingMode | ESW-103, ESW-214" in {
-      val packageId             = "esw"
-      val observingMode         = "darknight"
-      val sequenceComponentName = "ESW_1"
-      val sequencerConfigs      = SequencerConfig.from(config, packageId, observingMode, Some(sequenceComponentName))
-
-      sequencerConfigs.prefix.componentName should ===("ESW_1@esw@darknight")
-      sequencerConfigs.prefix should ===(Prefix("esw.ESW_1@esw@darknight"))
+      sequencerConfigs.prefix.componentName should ===("darknight")
+      sequencerConfigs.prefix should ===(Prefix("esw.darknight"))
       sequencerConfigs.scriptClass should ===(classOf[ValidTestScript].getCanonicalName)
     }
 
@@ -36,7 +25,7 @@ class SequencerConfigTest extends BaseTestSuite {
       val observingMode = "invalidObservingMode"
 
       val exception = intercept[ScriptConfigurationMissingException] {
-        SequencerConfig.from(config, packageId, observingMode, None)
+        SequencerConfig.from(config, packageId, observingMode)
       }
       exception.getMessage should ===(s"Script configuration missing for $packageId with $observingMode")
     }

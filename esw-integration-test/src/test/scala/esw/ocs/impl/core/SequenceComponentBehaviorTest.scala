@@ -19,14 +19,15 @@ import esw.ocs.testkit.EswTestKit
 import scala.concurrent.duration.DurationLong
 
 class SequenceComponentBehaviorTest extends EswTestKit {
-  private val ocsSequenceComponentName = "OCS_1"
+  private val ocsSequenceComponentName = "ESW.ESW_1"
   private val factory                  = new LoggerFactory("SequenceComponentTest")
 
   private def spawnSequenceComponent() = {
     (system ? { x: ActorRef[ActorRef[SequenceComponentMsg]] =>
       Spawn(
-        SequenceComponentBehavior
-          .behavior(ocsSequenceComponentName, factory.getLogger, sequencerWiring(_, _, _).sequencerServer),
+        Behaviors.setup[SequenceComponentMsg] { ctx =>
+          SequenceComponentBehavior.behavior(ctx.self, factory.getLogger, sequencerWiring(_, _, _).sequencerServer)
+        },
         ocsSequenceComponentName,
         Props.empty,
         x
@@ -37,13 +38,13 @@ class SequenceComponentBehaviorTest extends EswTestKit {
   def sequencerWiring(
       packageId: String,
       observingMode: String,
-      sequenceComponentName: Option[String]
+      sequenceComponent: ActorRef[SequenceComponentMsg]
   ): SequencerWiring =
-    new SequencerWiring(packageId, observingMode, sequenceComponentName)
+    new SequencerWiring(packageId, observingMode, sequenceComponent)
 
   private def createBehaviorTestKit(): BehaviorTestKit[SequenceComponentMsg] = BehaviorTestKit(
-    Behaviors.setup[SequenceComponentMsg] { _ =>
-      SequenceComponentBehavior.behavior(ocsSequenceComponentName, factory.getLogger, sequencerWiring(_, _, _).sequencerServer)
+    Behaviors.setup[SequenceComponentMsg] { ctx =>
+      SequenceComponentBehavior.behavior(ctx.self, factory.getLogger, sequencerWiring(_, _, _).sequencerServer)
     }
   )
 
@@ -55,7 +56,7 @@ class SequenceComponentBehaviorTest extends EswTestKit {
       val getStatusProbe          = TestProbe[GetStatusResponse]
       val packageId               = "esw"
       val observingMode           = "darknight"
-      val prefix                  = Prefix(s"$packageId.$ocsSequenceComponentName@$packageId@$observingMode")
+      val prefix                  = Prefix(s"$packageId.$observingMode")
 
       //LoadScript
       sequenceComponentRef ! LoadScript(packageId, observingMode, loadScriptResponseProbe.ref)
@@ -92,7 +93,7 @@ class SequenceComponentBehaviorTest extends EswTestKit {
       val loadScriptResponseProbe = TestProbe[ScriptResponse]
       val packageId               = "iris"
       val observingMode           = "darknight"
-      val prefix                  = Prefix(s"$packageId.$ocsSequenceComponentName@$packageId@$observingMode")
+      val prefix                  = Prefix(s"$packageId.$observingMode")
 
       //LoadScript
       sequenceComponentRef ! LoadScript(packageId, observingMode, loadScriptResponseProbe.ref)
@@ -131,7 +132,7 @@ class SequenceComponentBehaviorTest extends EswTestKit {
 
       val packageId               = "esw"
       val observingMode           = "darknight"
-      val prefix                  = Prefix(s"$packageId.$ocsSequenceComponentName@$packageId@$observingMode")
+      val prefix                  = Prefix(s"$packageId.$observingMode")
       val loadScriptResponseProbe = TestProbe[ScriptResponse]
       val restartResponseProbe    = TestProbe[ScriptResponse]
 

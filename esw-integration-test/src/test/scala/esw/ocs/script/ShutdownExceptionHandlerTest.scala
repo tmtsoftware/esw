@@ -14,7 +14,7 @@ class ShutdownExceptionHandlerTest extends EswTestKit(EventServer) {
   private val tcsObservingMode = "exceptionscript3" // ExceptionTestScript3.kt
 
   override def afterAll(): Unit = {
-    clearAllWirings()
+    clearAll()
     super.afterAll()
   }
 

@@ -15,7 +15,7 @@ import esw.ocs.api.models.{Step, StepList}
 import esw.ocs.api.protocol._
 import esw.ocs.dsl.script.ScriptDsl
 import esw.ocs.impl.messages.SequencerMessages.{Pause, _}
-import esw.ocs.impl.messages.SequencerState
+import esw.ocs.impl.messages.{SequenceComponentMsg, SequencerState}
 import esw.ocs.impl.messages.SequencerState.{Idle, InProgress}
 import org.mockito.Mockito.{verify, when}
 import org.scalatest.concurrent.Eventually._
@@ -36,8 +36,10 @@ class SequencerTestSetup(sequence: Sequence)(implicit system: ActorSystem[_]) {
   private val componentId                                      = mock[ComponentId]
   private val script                                           = mock[ScriptDsl]
   private val locationService                                  = mock[LocationService]
+  private val sequenceComponent                                = TestProbe[SequenceComponentMsg]
   private def mockShutdownHttpService: () => Future[Done.type] = () => Future { Done }
-  private val sequencerBehavior                                = new SequencerBehavior(componentId, script, locationService, mockShutdownHttpService)
+  private val sequencerBehavior =
+    new SequencerBehavior(componentId, script, locationService, sequenceComponent.ref, mockShutdownHttpService)
 
   val sequencerName                          = s"SequencerActor${math.random()}"
   val sequencerActor: ActorRef[SequencerMsg] = system.systemActorOf(sequencerBehavior.setup, sequencerName)

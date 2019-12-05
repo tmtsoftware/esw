@@ -41,7 +41,7 @@ class SequencerGatewayTest extends EswTestKit with GatewayCodecs {
       val clientFactory = new ClientFactory(postClient, websocketClient)
 
       val sequence    = Sequence(Setup(Prefix("esw.test"), CommandName("command-2"), Some(ObsId("obsId"))))
-      val componentId = ComponentId(Prefix(s"$packageId.$packageId@$observingMode"), ComponentType.Sequencer)
+      val componentId = ComponentId(Prefix(s"$packageId.$observingMode"), ComponentType.Sequencer)
 
       val sequencer = clientFactory.sequencer(componentId)
 
