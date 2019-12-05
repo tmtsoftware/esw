@@ -115,6 +115,36 @@ class RichComponentTest {
         }
 
         @Test
+        fun `query should resolve commandService for given assembly and call query method on it | ESW-121, ESW-245 `() = runBlocking {
+            val commandRunId: Id = mockk()
+
+            mockkStatic(CommandServiceFactory::class)
+            every { locationServiceUtil.jResolveAkkaLocation(prefix, componentType) }.answers { CompletableFuture.completedFuture(assemblyLocation) }
+            every { CommandServiceFactory.jMake(assemblyLocation, actorSystem) }.answers { assemblyCommandService }
+            every { assemblyCommandService.query(commandRunId) }.answers { CompletableFuture.completedFuture(CommandResponse.Completed(Id.apply())) }
+
+            assembly.query(commandRunId)
+
+            verify { assemblyCommandService.query(commandRunId) }
+        }
+
+        @Test
+        fun `queryFinal should resolve commandService for given assembly and call queryFinal method on it | ESW-121, ESW-245 `() = runBlocking {
+            val commandRunId: Id = mockk()
+            val timeoutDuration: Duration = 5.seconds
+            val timeout = Timeout(timeoutDuration.toLongNanoseconds(), TimeUnit.NANOSECONDS)
+
+            mockkStatic(CommandServiceFactory::class)
+            every { locationServiceUtil.jResolveAkkaLocation(prefix, componentType) }.answers { CompletableFuture.completedFuture(assemblyLocation) }
+            every { CommandServiceFactory.jMake(assemblyLocation, actorSystem) }.answers { assemblyCommandService }
+            every { assemblyCommandService.queryFinal(commandRunId, timeout) }.answers { CompletableFuture.completedFuture(CommandResponse.Completed(Id.apply())) }
+
+            assembly.queryFinal(commandRunId, timeoutDuration)
+
+            verify { assemblyCommandService.queryFinal(commandRunId, timeout) }
+        }
+
+        @Test
         fun `submitAndWait should resolve commandService for given assembly and call submitAndWait method on it | ESW-121, ESW-245 `() = runBlocking {
             val timeoutDuration: Duration = 5.seconds
             val timeout = Timeout(timeoutDuration.toLongNanoseconds(), TimeUnit.NANOSECONDS)
@@ -268,6 +298,36 @@ class RichComponentTest {
             hcd.submit(setupCommand)
 
             verify { hcdCommandService.submit(setupCommand) }
+        }
+
+        @Test
+        fun `query should resolve commandService for given hcd and call query method on it | ESW-121, ESW-245 `() = runBlocking {
+            val commandRunId: Id = mockk()
+
+            mockkStatic(CommandServiceFactory::class)
+            every { locationServiceUtil.jResolveAkkaLocation(prefix, componentType) }.answers { CompletableFuture.completedFuture(hcdLocation) }
+            every { CommandServiceFactory.jMake(hcdLocation, actorSystem) }.answers { hcdCommandService }
+            every { hcdCommandService.query(commandRunId) }.answers { CompletableFuture.completedFuture(CommandResponse.Completed(Id.apply())) }
+
+            hcd.query(commandRunId)
+
+            verify { hcdCommandService.query(commandRunId) }
+        }
+
+        @Test
+        fun `queryFinal should resolve commandService for given hcd and call queryFinal method on it | ESW-121, ESW-245 `() = runBlocking {
+            val commandRunId: Id = mockk()
+            val timeoutDuration: Duration = 5.seconds
+            val timeout = Timeout(timeoutDuration.toLongNanoseconds(), TimeUnit.NANOSECONDS)
+
+            mockkStatic(CommandServiceFactory::class)
+            every { locationServiceUtil.jResolveAkkaLocation(prefix, componentType) }.answers { CompletableFuture.completedFuture(hcdLocation) }
+            every { CommandServiceFactory.jMake(hcdLocation, actorSystem) }.answers { hcdCommandService }
+            every { hcdCommandService.queryFinal(commandRunId, timeout) }.answers { CompletableFuture.completedFuture(CommandResponse.Completed(Id.apply())) }
+
+            hcd.queryFinal(commandRunId, timeoutDuration)
+
+            verify { hcdCommandService.queryFinal(commandRunId, timeout) }
         }
 
         @Test

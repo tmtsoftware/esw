@@ -13,6 +13,7 @@ import csw.command.client.models.framework.ToComponentLifecycleMessage
 import csw.location.models.ComponentType
 import csw.params.commands.CommandResponse.*
 import csw.params.commands.ControlCommand
+import csw.params.core.models.Id
 import csw.params.core.models.Prefix
 import csw.params.core.states.CurrentState
 import csw.params.core.states.StateName
@@ -43,8 +44,13 @@ class RichComponent(
     suspend fun validate(command: ControlCommand): ValidateResponse = commandService().validate(command).await()
     suspend fun oneway(command: ControlCommand): OnewayResponse = commandService().oneway(command).await()
     suspend fun submit(command: ControlCommand): SubmitResponse = commandService().submit(command).await()
+    suspend fun query(commandRunId: Id): QueryResponse = commandService().query(commandRunId).await()
 
-    //fixme: why queryFinal API is missing?
+    suspend fun queryFinal(commandRunId: Id, timeout: Duration): SubmitResponse {
+        val akkaTimeout = Timeout(timeout.toLongNanoseconds(), TimeUnit.NANOSECONDS)
+        return commandService().queryFinal(commandRunId, akkaTimeout).await()
+    }
+    
     suspend fun submitAndWait(command: ControlCommand, timeout: Duration): SubmitResponse {
         val akkaTimeout = Timeout(timeout.toLongNanoseconds(), TimeUnit.NANOSECONDS)
         return commandService().submitAndWait(command, akkaTimeout).await()
