@@ -22,7 +22,7 @@ interface CommonHandlers : CswHighLevelDslApi {
 interface ScriptHandlers {
     fun onSetup(name: String, block: suspend CommandHandlerScope.(Setup) -> Unit): CommandHandlerKt<Setup>
     fun onObserve(name: String, block: suspend CommandHandlerScope.(Observe) -> Unit): CommandHandlerKt<Observe>
-    fun onException(block: suspend HandlerScope.(Throwable) -> Unit)
+    fun onGlobalError(block: suspend HandlerScope.(Throwable) -> Unit)
     fun loadScripts(vararg reusableScriptResult: ReusableScriptResult)
 }
 
