@@ -34,8 +34,12 @@ class PostHandlerImpl(
   }
 
   private def onComponentCommand(componentId: ComponentId, command: CommandServiceHttpMessage): Route =
-    onSuccess(resolver.resolveComponent(componentId))(new CommandServiceHttpHandlers(_).handle(command))
+    onSuccess(resolver.resolveComponent(componentId)) { commandService =>
+      new CommandServiceHttpHandlers(commandService).handle(command)
+    }
 
   private def onSequencerCommand(componentId: ComponentId, command: SequencerPostRequest): Route =
-    onSuccess(resolver.resolveSequencer(componentId))(new SequencerPostHandler(_).handle(command))
+    onSuccess(resolver.resolveSequencer(componentId)) { sequencerApi =>
+      new SequencerPostHandler(sequencerApi).handle(command)
+    }
 }

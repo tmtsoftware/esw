@@ -4,7 +4,7 @@ GET http://localhost:7654/location/list
 ########### component ##############
 
 ### embedded (component)
-POST http://localhost:65305/post-endpoint
+POST http://localhost:65061/post-endpoint
 Content-Type: application/json
 
 {
@@ -27,7 +27,7 @@ Content-Type: application/json
 {
   "ComponentCommand": {
     "componentId": {
-      "name": "test",
+      "prefix": "esw.test",
       "componentType": "assembly"
     },
     "command": {
@@ -75,27 +75,14 @@ Content-Type: application/json
 {
   "SequencerCommand": {
     "componentId": {
-      "prefix": "esw.esw@moonnight1",
+      "prefix": "esw.moonnight",
       "componentType": "sequencer"
     },
     "command": {
-      "Submit": {
-        "sequence": [
-          {
-            "Setup": {
-              "source": "esw.test",
-              "commandName": "command-2",
-              "maybeObsId": [
-                "obsId"
-              ],
-              "paramSet": []
-            }
-          }
-        ]
-      }
     }
   }
 }
 
-
 ###
+
+
