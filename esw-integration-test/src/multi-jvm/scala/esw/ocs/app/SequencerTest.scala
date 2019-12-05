@@ -14,6 +14,7 @@ import csw.testkit.{EventTestKit, FrameworkTestKit}
 import esw.ocs.api.SequencerApi
 import esw.ocs.app.wiring.SequencerWiring
 import esw.ocs.impl.SequencerApiFactory
+import esw.ocs.impl.messages.SequenceComponentMsg
 import org.scalatest.concurrent.ScalaFutures.convertScalaFuture
 
 import scala.concurrent.duration.DurationInt
@@ -31,17 +32,18 @@ class SequencerTest(ignore: Int, mode: String)
   private val frameworkTestKit = FrameworkTestKit()
   private val eventTestKit     = EventTestKit()
 
-  private val ocsSequencerId      = "esw"
-  private val ocsSequencerObsMode = "moonnight"
-  private val tcsSequencerId      = "tcs"
-  private val tcsSequencerObsMode = "moonnight"
-  private val command1            = Setup(Prefix("esw.test"), CommandName("multi-node"), None)
-  private val command2            = Setup(Prefix("esw.test"), CommandName("command-2"), None)
-  private val sequence            = Sequence(command1, command2)
+  private val ocsSequencerId       = "esw"
+  private val ocsSequencerObsMode  = "moonnight"
+  private val tcsSequencerId       = "tcs"
+  private val tcsSequencerObsMode  = "moonnight"
+  private val command1             = Setup(Prefix("esw.test"), CommandName("multi-node"), None)
+  private val command2             = Setup(Prefix("esw.test"), CommandName("command-2"), None)
+  private val sequence             = Sequence(command1, command2)
+  private val sequenceComponentRef = TestProbe[SequenceComponentMsg].ref
 
   test("tcs sequencer should send sequence to downstream ocs sequencer which submits the command to sample assembly") {
     runOn(seed) {
-      val ocsSequencerWiring = new SequencerWiring(ocsSequencerId, ocsSequencerObsMode, None)
+      val ocsSequencerWiring = new SequencerWiring(ocsSequencerId, ocsSequencerObsMode, sequenceComponentRef)
       ocsSequencerWiring.sequencerServer.start()
 
       enterBarrier("ocs-started")
@@ -67,7 +69,7 @@ class SequencerTest(ignore: Int, mode: String)
     runOn(member1) {
       enterBarrier("ocs-started")
 
-      val tcsSequencerWiring = new SequencerWiring(tcsSequencerId, tcsSequencerObsMode, None)
+      val tcsSequencerWiring = new SequencerWiring(tcsSequencerId, tcsSequencerObsMode, sequenceComponentRef)
       tcsSequencerWiring.sequencerServer.start()
       enterBarrier("tcs-started")
       enterBarrier("assembly-started")
@@ -95,7 +97,7 @@ class SequencerTest(ignore: Int, mode: String)
   }
 
   private def sequencerClient(packageId: String, observingMode: String): SequencerApi = {
-    val componentId = ComponentId(Prefix(s"$packageId.$packageId@$observingMode"), ComponentType.Sequencer)
+    val componentId = ComponentId(Prefix(s"$packageId.$observingMode"), ComponentType.Sequencer)
     val location    = locationService.resolve(HttpConnection(componentId), 5.seconds).futureValue.get
     SequencerApiFactory.make(location)
   }

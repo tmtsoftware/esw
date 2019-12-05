@@ -34,8 +34,8 @@ class GatewayWiring(_port: Option[Int]) extends GatewayCodecs {
     new WebsocketHandlerImpl(resolver, eventApi, encoding)
 
   lazy val routes: Route = RouteFactory.combine(
-    new PostRouteFactory("post-endpoint", postHandler),
-    new WebsocketRouteFactory("websocket-endpoint", websocketHandlerFactory)
+    new PostRouteFactory[PostRequest]("post-endpoint", postHandler),
+    new WebsocketRouteFactory[WebsocketRequest]("websocket-endpoint", websocketHandlerFactory)
   )
 
   lazy val httpService = new HttpService(logger, locationService, routes, settings, actorRuntime)

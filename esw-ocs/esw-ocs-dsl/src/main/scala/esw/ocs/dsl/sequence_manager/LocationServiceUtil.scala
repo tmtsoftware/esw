@@ -87,14 +87,14 @@ class LocationServiceUtil(private[esw] val locationService: LocationService)(imp
       locationService.list
         .map {
           _.collectFirst {
-            case location: AkkaLocation if location.prefix.value.contains(s"$packageId@$observingMode") =>
+            case location: AkkaLocation if location.prefix.value.contains(s"$packageId.$observingMode") =>
               location
           }
         }
         .flatMap {
           case Some(location) => Future.successful(location)
           case _ if remainingDuration.length <= 0 =>
-            throw new RuntimeException(s"Could not find any sequencer with name: $packageId@$observingMode")
+            throw new RuntimeException(s"Could not find any sequencer with name: $packageId.$observingMode")
           case _ =>
             after(remainingDuration min ResolveInterval, actorSystem.toClassic.scheduler) {
               resolveLoop(remainingDuration minus ResolveInterval)

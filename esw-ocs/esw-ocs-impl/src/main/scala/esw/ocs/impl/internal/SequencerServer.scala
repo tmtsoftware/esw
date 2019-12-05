@@ -1,8 +1,10 @@
 package esw.ocs.impl.internal
 
 import akka.Done
+import akka.actor.typed.ActorRef
 import csw.location.models.AkkaLocation
 import esw.ocs.api.protocol.ScriptError
+import esw.ocs.impl.messages.SequenceComponentMsg
 
 // Note: The APIs in this service are blocking. SequenceComponentBehavior consumes this api and since
 // these operations are not performed very often they could be blocked. Blocking here
@@ -13,5 +15,5 @@ trait SequencerServer {
 }
 
 trait SequencerServerFactory {
-  def make(packageId: String, observingMode: String, sequenceComponentName: Option[String]): SequencerServer
+  def make(packageId: String, observingMode: String, sequenceComponent: ActorRef[SequenceComponentMsg]): SequencerServer
 }

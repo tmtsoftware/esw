@@ -20,7 +20,7 @@ script {
         publishEvent(SystemEvent("tcs", "test.event"))
     }
 
-    onException { exception ->
+    onGlobalError { exception ->
         when (exception) {
             is EventServerNotAvailable -> {
                 println(exception)

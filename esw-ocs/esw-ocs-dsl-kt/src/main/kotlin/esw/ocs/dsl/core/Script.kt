@@ -83,7 +83,7 @@ open class Script(
         return handler
     }
 
-    override fun onException(block: suspend HandlerScope.(Throwable) -> Unit) =
+    override fun onGlobalError(block: suspend HandlerScope.(Throwable) -> Unit) =
             scriptDsl.onException {
                 // "future" is used to swallow the exception coming from exception handlers
                 coroutineScope.future { block(this.toHandlerScope(), it) }

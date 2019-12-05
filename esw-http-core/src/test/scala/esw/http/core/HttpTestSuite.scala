@@ -1,10 +1,9 @@
 package esw.http.core
 
 import akka.http.scaladsl.testkit.ScalatestRouteTest
-import csw.location.client.HttpCodecs
 import csw.params.core.formats.ParamCodecs
 
-trait HttpTestSuite extends BaseTestSuite with ScalatestRouteTest with ParamCodecs with HttpCodecs {
+trait HttpTestSuite extends BaseTestSuite with ScalatestRouteTest with ParamCodecs {
 
   // fixme: do we really need this? ScalatestRouteTest already does this
   override protected def afterAll(): Unit = {

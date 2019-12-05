@@ -35,13 +35,13 @@ class SequencerGatewayTest extends EswTestKit with GatewayCodecs {
 
     "handle submit, queryFinal commands | ESW-250" in {
       val postClient: Transport[PostRequest] =
-        new HttpPostTransport[PostRequest](s"http://localhost:$port/post-endpoint", JsonText, () => None)
+        new HttpPostTransport(s"http://localhost:$port/post-endpoint", JsonText, () => None)
       val websocketClient: Transport[WebsocketRequest] =
-        new WebsocketTransport[WebsocketRequest](s"ws://localhost:$port/websocket-endpoint", JsonText)
+        new WebsocketTransport(s"ws://localhost:$port/websocket-endpoint", JsonText)
       val clientFactory = new ClientFactory(postClient, websocketClient)
 
       val sequence    = Sequence(Setup(Prefix("esw.test"), CommandName("command-2"), Some(ObsId("obsId"))))
-      val componentId = ComponentId(Prefix(s"$packageId.$packageId@$observingMode"), ComponentType.Sequencer)
+      val componentId = ComponentId(Prefix(s"$packageId.$observingMode"), ComponentType.Sequencer)
 
       val sequencer = clientFactory.sequencer(componentId)
 

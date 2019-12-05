@@ -32,8 +32,8 @@ class AlarmGatewayTest extends EswTestKit(AlarmServer) with GatewayCodecs {
 
   "AlarmApi" must {
     "set alarm severity of a given alarm | ESW-216, ESW-86, ESW-193, ESW-233" in {
-      val postClient  = new HttpPostTransport[PostRequest](s"http://localhost:$port/post-endpoint", JsonText, () => None)
-      val alarmClient = new AlarmClient(postClient)
+      val alarmClient =
+        new AlarmClient(new HttpPostTransport[PostRequest](s"http://localhost:$port/post-endpoint", JsonText, () => None))
 
       val config            = ConfigFactory.parseResources("alarm_key.conf")
       val alarmAdminService = alarmServiceFactory.makeAdminApi(locationService)
@@ -45,7 +45,7 @@ class AlarmGatewayTest extends EswTestKit(AlarmServer) with GatewayCodecs {
       val majorSeverity = AlarmSeverity.Major
       val alarmKey      = AlarmKey(subsystemName, componentName, alarmName)
 
-      alarmClient.setSeverity(alarmKey, majorSeverity).rightValue should ===(Done)
+      alarmClient.setSeverity(alarmKey, majorSeverity).futureValue should ===(Done)
     }
   }
 }

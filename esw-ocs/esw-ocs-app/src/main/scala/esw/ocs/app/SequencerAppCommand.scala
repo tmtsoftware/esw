@@ -20,13 +20,6 @@ object SequencerAppCommand {
         .getOrElse(Left(Error.Other(s"Subsystem [$subsystemStr] is invalid")))
     }
 
-  implicit val stringParser: SimpleArgParser[String] =
-    SimpleArgParser.from[String](description = "string field") { str =>
-      val invalidSymbol = "@"
-      if (str.contains(invalidSymbol)) Left(Error.Other(s"[$str] is invalid"))
-      else Right(str)
-    }
-
   @CommandName("seqcomp")
   final case class SequenceComponent(
       @HelpMessage("subsystem of the sequence component, ex: tcs")

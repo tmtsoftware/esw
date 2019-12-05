@@ -21,9 +21,9 @@ import scala.concurrent.Future
 
 class SequencerPostRouteTest extends BaseTestSuite with ScalatestRouteTest with SequencerHttpCodecs with ClientHttpCodecs {
 
-  lazy val route: Route               = new PostRouteFactory("post-endpoint", postHandler).make()
   private val sequencer: SequencerApi = mock[SequencerApi]
   private val postHandler             = new SequencerPostHandler(sequencer)
+  lazy val route: Route               = new PostRouteFactory[SequencerPostRequest]("post-endpoint", postHandler).make()
 
   override def encoding: Encoding[_] = JsonText
 

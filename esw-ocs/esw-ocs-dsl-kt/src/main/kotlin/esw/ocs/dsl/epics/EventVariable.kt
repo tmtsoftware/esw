@@ -10,7 +10,7 @@ import esw.ocs.dsl.params.first
 import esw.ocs.dsl.params.invoke
 import esw.ocs.dsl.params.set
 
-class ProcessVariable<T> constructor(
+class EventVariable<T> constructor(
         initial: Event,
         private val key: Key<T>,
         private val eventService: EventServiceDsl

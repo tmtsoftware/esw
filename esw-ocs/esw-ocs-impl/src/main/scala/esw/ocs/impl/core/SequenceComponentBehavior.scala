@@ -13,13 +13,13 @@ import esw.ocs.impl.messages.SequenceComponentMsg._
 object SequenceComponentBehavior {
 
   def behavior(
-      sequenceComponentName: String,
+      self: ActorRef[SequenceComponentMsg],
       log: Logger,
       sequencerServerFactory: SequencerServerFactory
   ): Behavior[SequenceComponentMsg] = {
 
     def load(packageId: String, observingMode: String, replyTo: ActorRef[ScriptResponse]): Behavior[SequenceComponentMsg] = {
-      val sequencerServer    = sequencerServerFactory.make(packageId, observingMode, Some(sequenceComponentName))
+      val sequencerServer    = sequencerServerFactory.make(packageId, observingMode, self)
       val registrationResult = sequencerServer.start()
       replyTo ! ScriptResponse(registrationResult)
       registrationResult match {

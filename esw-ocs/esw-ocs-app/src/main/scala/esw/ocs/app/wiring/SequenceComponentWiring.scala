@@ -2,6 +2,7 @@ package esw.ocs.app.wiring
 
 import akka.actor.typed.SpawnProtocol.Spawn
 import akka.actor.typed.scaladsl.AskPattern._
+import akka.actor.typed.scaladsl.Behaviors
 import akka.actor.typed.{ActorRef, Props}
 import akka.util.Timeout
 import csw.location.models.AkkaLocation
@@ -39,7 +40,9 @@ private[ocs] class SequenceComponentWiring(
     sequenceComponentLogger.info(s"Starting sequence component with name: $sequenceComponentName")
     typedSystem ? { x =>
       Spawn(
-        SequenceComponentBehavior.behavior(sequenceComponentName, sequenceComponentLogger, sequencerServerFactory),
+        Behaviors.setup[SequenceComponentMsg] { ctx =>
+          SequenceComponentBehavior.behavior(ctx.self, sequenceComponentLogger, sequencerServerFactory)
+        },
         sequenceComponentName,
         Props.empty,
         x
