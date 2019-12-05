@@ -19,13 +19,14 @@ import csw.params.core.states.StateName
 import csw.time.core.models.UTCTime
 import esw.ocs.dsl.SuspendableCallback
 import esw.ocs.dsl.SuspendableConsumer
-import esw.ocs.dsl.Timeouts
 import esw.ocs.dsl.jdk.SuspendToJavaConverter
 import esw.ocs.dsl.script.utils.LockUnlockUtil
 import esw.ocs.dsl.sequence_manager.LocationServiceUtil
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.future.await
 import msocket.api.models.Subscription
+import scala.concurrent.duration.FiniteDuration
+import java.util.concurrent.TimeUnit
 import kotlin.time.Duration
 import kotlin.time.toJavaDuration
 
@@ -38,15 +39,16 @@ class RichComponent(
         private val actorSystem: ActorSystem<*>,
         override val coroutineScope: CoroutineScope
 ) : SuspendToJavaConverter {
-    private val timeout: Timeout = Timeout(Timeouts.DefaultTimeout())
 
     suspend fun validate(command: ControlCommand): ValidateResponse = commandService().validate(command).await()
     suspend fun oneway(command: ControlCommand): OnewayResponse = commandService().oneway(command).await()
     suspend fun submit(command: ControlCommand): SubmitResponse = commandService().submit(command).await()
 
     //fixme: why queryFinal API is missing?
-    //fixme: submitAndWait could be called for long-running commands, why is default timeout being passed?
-    suspend fun submitAndWait(command: ControlCommand): SubmitResponse = commandService().submitAndWait(command, timeout).await()
+    suspend fun submitAndWait(command: ControlCommand, timeout: Duration): SubmitResponse {
+        val akkaTimeout = Timeout(timeout.toLongNanoseconds(), TimeUnit.NANOSECONDS)
+        return commandService().submitAndWait(command, akkaTimeout).await()
+    }
 
     suspend fun subscribeCurrentState(stateNames: Set<StateName>, callback: SuspendableConsumer<CurrentState>): Subscription =
             commandService().subscribeCurrentState(stateNames) { callback.toJava(it) }

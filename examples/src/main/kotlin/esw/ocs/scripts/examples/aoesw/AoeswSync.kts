@@ -3,6 +3,7 @@ package esw.ocs.scripts.examples.aoesw
 import csw.params.commands.CommandResponse
 import esw.ocs.dsl.core.script
 import esw.ocs.dsl.params.*
+import kotlin.time.seconds
 
 script {
     val prefix = "aoesw.aosq"
@@ -25,7 +26,7 @@ script {
 
         scheduleOnce(scheduledTime(0)) {
             val probeAssembly = Assembly("probeAssembly")
-            val response = probeAssembly.submitAndWait(probeCommand)
+            val response = probeAssembly.submitAndWait(probeCommand, 10.seconds)
             if(response is CommandResponse.Error){
                 finishWithError(response.message())
             }

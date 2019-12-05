@@ -91,7 +91,7 @@ script {
                                 .add(tcsOffsetYKey.set(yoffset))
                                 .add(tcsOffsetVTKey.set(Choice("OIWFS$probeNum")))
                 ),
-        10.seconds)
+                10.seconds)
     }
 
     onSetup("enableOiwfsTtf") { command ->
@@ -125,7 +125,7 @@ script {
                 .add(oiwfsExposureModeKey.set(*probeExpModes))
 
         val assembly = Assembly(oiwfsDetectorAssembly.name)
-        val response = assembly.submitAndWait(startExposureCommand)
+        val response = assembly.submitAndWait(startExposureCommand, 10.seconds)
 
         when (response) {
             is Completed -> {
