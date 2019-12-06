@@ -6,6 +6,7 @@ import csw.params.commands.Setup
 import csw.time.core.models.UTCTime
 import esw.ocs.dsl.ScriptDslMarker
 import esw.ocs.dsl.highlevel.CswHighLevelDslApi
+import esw.ocs.dsl.highlevel.ScriptError
 import esw.ocs.dsl.params.Params
 import kotlinx.coroutines.CoroutineScope
 
@@ -22,7 +23,7 @@ interface CommonHandlers : CswHighLevelDslApi {
 interface ScriptHandlers {
     fun onSetup(name: String, block: suspend CommandHandlerScope.(Setup) -> Unit): CommandHandlerKt<Setup>
     fun onObserve(name: String, block: suspend CommandHandlerScope.(Observe) -> Unit): CommandHandlerKt<Observe>
-    fun onGlobalError(block: suspend HandlerScope.(Throwable) -> Unit)
+    fun onGlobalError(block: suspend HandlerScope.(ScriptError) -> Unit)
     fun loadScripts(vararg reusableScriptResult: ReusableScriptResult)
 }
 

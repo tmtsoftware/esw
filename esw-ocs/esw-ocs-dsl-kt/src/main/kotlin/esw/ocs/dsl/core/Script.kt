@@ -5,6 +5,8 @@ import csw.params.commands.SequenceCommand
 import csw.params.commands.Setup
 import csw.time.core.models.UTCTime
 import esw.ocs.dsl.highlevel.CswHighLevelDsl
+import esw.ocs.dsl.highlevel.ScriptError
+import esw.ocs.dsl.internal.toScriptError
 import esw.ocs.dsl.nullable
 import esw.ocs.dsl.params.Params
 import esw.ocs.dsl.script.CswServices
@@ -83,10 +85,10 @@ open class Script(
         return handler
     }
 
-    override fun onGlobalError(block: suspend HandlerScope.(Throwable) -> Unit) =
+    override fun onGlobalError(block: suspend HandlerScope.(ScriptError) -> Unit) =
             scriptDsl.onException {
                 // "future" is used to swallow the exception coming from exception handlers
-                coroutineScope.future { block(this.toHandlerScope(), it) }
+                coroutineScope.future { block(this.toHandlerScope(), it.toScriptError()) }
                         .exceptionally { error("Exception thrown from Exception handler with a message : ${it.message}", ex = it) }
                         .thenAccept { }
             }

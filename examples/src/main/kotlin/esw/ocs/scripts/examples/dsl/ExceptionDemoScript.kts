@@ -20,14 +20,14 @@ script {
         publishEvent(SystemEvent("tcs", "test.event"))
     }
 
-    onGlobalError { exception ->
-        when (exception) {
+    onGlobalError { error ->
+        when (error.cause) {
             is EventServerNotAvailable -> {
-                println(exception)
+                println(error)
             }
 
             is KeyNotFoundException -> {
-                println(exception)
+                println(error)
             }
         }
     }

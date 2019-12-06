@@ -2,6 +2,10 @@ package esw.ocs.dsl.core
 
 import csw.params.commands.SequenceCommand
 import esw.ocs.dsl.SuspendableConsumer
+import esw.ocs.dsl.highlevel.ScriptError
+import esw.ocs.dsl.highlevel.OtherError
+import esw.ocs.dsl.highlevel.SubmitError
+import esw.ocs.dsl.internal.toScriptError
 import esw.ocs.dsl.script.CommandHandler
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.delay
@@ -22,7 +26,7 @@ class CommandHandlerKt<T : SequenceCommand>(
 ) : CommandHandler<T> {
 
     private var retryCount: Int = 0
-    private var onError: (SuspendableConsumer<Throwable>)? = null
+    private var onError: (SuspendableConsumer<ScriptError>)? = null
     private var delayInMillis: Long = 0
 
     override fun execute(sequenceCommand: T): CompletionStage<Void> =
@@ -31,7 +35,7 @@ class CommandHandlerKt<T : SequenceCommand>(
                         try {
                             block(sequenceCommand)
                         } catch (e: Exception) {
-                            onError?.let { it(e) }
+                            onError?.let { it(e.toScriptError()) }
                             if (retryCount > 0) {
                                 retryCount -= 1
                                 delay(delayInMillis)
@@ -42,7 +46,7 @@ class CommandHandlerKt<T : SequenceCommand>(
                 go()
             }.asCompletableFuture().thenAccept { }
 
-    fun onError(block: SuspendableConsumer<Throwable>): CommandHandlerKt<T> {
+    fun onError(block: SuspendableConsumer<ScriptError>): CommandHandlerKt<T> {
         onError = block
         return this
     }
