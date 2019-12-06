@@ -109,7 +109,8 @@ class SequencerBehavior(
     receive[StopMessage](Stopping, data, stopping(_, state)) {
       case StopComplete(replyTo) =>
         import data._
-        inProgress(updateStepList(replyTo, state, stepList))
+        val maybeStepList = stepList.map(_.discardPending)
+        inProgress(updateStepList(replyTo, state, maybeStepList))
     }
 
   private def handleCommonMessage[T <: SequencerMsg](
