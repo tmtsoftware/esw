@@ -10,6 +10,7 @@ import csw.logging.models.Level.{ERROR, FATAL}
 import csw.logging.models.LogMetadata
 import csw.logging.models.codecs.LoggingCodecs
 import csw.network.utils.Networks
+import csw.params.core.models.Subsystem.ESW
 import esw.ocs.testkit.EswTestKit
 import msocket.impl.Encoding
 import msocket.impl.Encoding.JsonText
@@ -28,7 +29,7 @@ class DynamicLogLevelTest extends EswTestKit with LoggingCodecs with ClientHttpC
     LoggingSystemFactory.start("logging", "version", "localhost", system)
     adminWiring = AdminWiring.make(Some(adminPort))
     adminWiring.adminHttpService.registeredLazyBinding.futureValue
-    sequencerLocation = spawnSequencer("esw", "darknight").rightValue
+    sequencerLocation = spawnSequencer(ESW, "darknight").rightValue
   }
 
   override def afterAll(): Unit = {

@@ -16,7 +16,7 @@ import csw.params.commands.CommandResponse.{Completed, Error}
 import csw.params.commands.{CommandName, Sequence, Setup}
 import csw.params.core.generics.KeyType.StringKey
 import csw.params.core.generics.Parameter
-import csw.params.core.models.Subsystem.NFIRAOS
+import csw.params.core.models.Subsystem.{ESW, LGSF, NFIRAOS, TCS}
 import csw.params.core.models.{Id, Prefix}
 import csw.params.events.{Event, EventKey, EventName, SystemEvent}
 import csw.testkit.ConfigTestKit
@@ -34,13 +34,13 @@ import scala.concurrent.Future
 class ScriptIntegrationTest extends EswTestKit(EventServer, AlarmServer, ConfigServer) {
 
   // TestScript.kt
-  private val ocsPackageId     = "esw"
+  private val ocsSubsystem     = ESW
   private val ocsObservingMode = "darknight"
-  private val tcsPackageId     = "tcs"
+  private val tcsSubsystem     = TCS
   private val tcsObservingMode = "darknight"
 
   // TestScript4.kts
-  private val lgsfPackageId                = "lgsf"
+  private val lgsfSubsystem                = LGSF
   private val lgsfObservingMode            = "darknight"
   private val configTestKit: ConfigTestKit = frameworkTestKit.configTestKit
   private var ocsSequencer: SequencerApi   = _
@@ -53,9 +53,9 @@ class ScriptIntegrationTest extends EswTestKit(EventServer, AlarmServer, ConfigS
   }
 
   override def beforeEach(): Unit = {
-    val tcsSequencerRef  = spawnSequencerRef(tcsPackageId, tcsObservingMode)
-    val lgsfSequencerRef = spawnSequencerRef(lgsfPackageId, lgsfObservingMode) //start LGSF sequencer as OCS send commands to LGSF downstream sequencer
-    val ocsSequencerRef  = spawnSequencerRef(ocsPackageId, ocsObservingMode)
+    val tcsSequencerRef  = spawnSequencerRef(tcsSubsystem, tcsObservingMode)
+    val lgsfSequencerRef = spawnSequencerRef(lgsfSubsystem, lgsfObservingMode) //start LGSF sequencer as OCS send commands to LGSF downstream sequencer
+    val ocsSequencerRef  = spawnSequencerRef(ocsSubsystem, ocsObservingMode)
     ocsSequencer = new SequencerActorProxy(ocsSequencerRef)
     tcsSequencer = new SequencerActorProxy(tcsSequencerRef)
     lgsfSequencer = new SequencerActorProxy(lgsfSequencerRef)

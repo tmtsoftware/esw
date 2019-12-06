@@ -7,6 +7,7 @@ import csw.params.commands.CommandIssue.UnsupportedCommandInStateIssue
 import csw.params.commands.CommandResponse.{Completed, Error, Invalid, Started, SubmitResponse}
 import csw.params.commands.{CommandName, Sequence, Setup}
 import csw.params.core.generics.KeyType.StringKey
+import csw.params.core.models.Subsystem.{ESW, TCS}
 import csw.params.core.models.{Id, Prefix}
 import csw.params.events.{Event, EventKey, EventName, SystemEvent}
 import csw.testkit.scaladsl.CSWService.EventServer
@@ -22,7 +23,7 @@ import esw.ocs.testkit.EswTestKit
 import scala.concurrent.Future
 
 class SequencerClientIntegrationTest extends EswTestKit(EventServer) {
-  private val packageId     = "esw"
+  private val subsystem     = ESW
   private val observingMode = "moonnight"
 
   private val command1 = Setup(Prefix("esw.test"), CommandName("command-1"), None)
@@ -37,12 +38,12 @@ class SequencerClientIntegrationTest extends EswTestKit(EventServer) {
 
   override protected def beforeEach(): Unit = {
     //ocs sequencer, starts with TestScript2
-    spawnSequencer(packageId, observingMode)
+    spawnSequencer(subsystem, observingMode)
 
-    ocsSequencer = sequencerClient(packageId, observingMode)
+    ocsSequencer = sequencerClient(subsystem, observingMode)
 
     // tcs sequencer, starts with TestScript3
-    val tcsSequencerId            = "tcs"
+    val tcsSequencerId            = TCS
     val tcsSequencerObservingMode = "moonnight"
     spawnSequencer(tcsSequencerId, tcsSequencerObservingMode)
     tcsSequencer = sequencerClient(tcsSequencerId, tcsSequencerObservingMode)

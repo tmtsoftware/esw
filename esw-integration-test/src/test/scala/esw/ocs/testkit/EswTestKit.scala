@@ -9,7 +9,7 @@ import csw.event.api.scaladsl.{EventPublisher, EventService, EventSubscriber}
 import csw.location.api.extensions.URIExtension._
 import csw.location.api.scaladsl.LocationService
 import csw.location.models.Connection.{AkkaConnection, HttpConnection}
-import csw.location.models.{AkkaLocation, ComponentId, ComponentType, HttpLocation}
+import csw.location.models.{AkkaLocation, ComponentId, ComponentType}
 import csw.params.core.models.{Prefix, Subsystem}
 import csw.testkit.scaladsl.{CSWService, ScalaTestFrameworkTestKit}
 import esw.ocs.api.SequencerApi
@@ -51,17 +51,17 @@ abstract class EswTestKit(services: CSWService*) extends ScalaTestFrameworkTestK
     clearAll()
   }
 
-  def spawnSequencerRef(packageId: String, observingMode: String): ActorRef[SequencerMsg] =
-    spawnSequencer(packageId, observingMode).rightValue.sequencerRef
+  def spawnSequencerRef(subsystem: Subsystem, observingMode: String): ActorRef[SequencerMsg] =
+    spawnSequencer(subsystem, observingMode).rightValue.sequencerRef
 
-  def spawnSequencerProxy(packageId: String, observingMode: String): SequencerActorProxy =
-    new SequencerActorProxy(spawnSequencerRef(packageId, observingMode))
+  def spawnSequencerProxy(subsystem: Subsystem, observingMode: String) =
+    new SequencerActorProxy(spawnSequencerRef(subsystem, observingMode))
 
-  def spawnSequencer(packageId: String, observingMode: String): Either[ScriptError, AkkaLocation] = {
-    val sequenceComponent = spawnSequenceComponent(Subsystem.withNameInsensitive(packageId), None)
+  def spawnSequencer(subsystem: Subsystem, observingMode: String): Either[ScriptError, AkkaLocation] = {
+    val sequenceComponent = spawnSequenceComponent(subsystem, None)
     sequenceComponent.flatMap { seqCompLocation =>
       new SequenceComponentImpl(seqCompLocation.uri.toActorRef.unsafeUpcast[SequenceComponentMsg])
-        .loadScript(packageId, observingMode)
+        .loadScript(subsystem, observingMode)
         .futureValue
         .response
     }
@@ -75,24 +75,24 @@ abstract class EswTestKit(services: CSWService*) extends ScalaTestFrameworkTestK
     }
   }
 
-  private def resolveSequencerHttp(packageId: String, observingMode: String): HttpLocation = {
-    val componentId = ComponentId(Prefix(s"$packageId.$observingMode"), ComponentType.Sequencer)
+  private def resolveSequencerHttp(subsystem: Subsystem, observingMode: String) = {
+    val componentId = ComponentId(Prefix(subsystem, observingMode), ComponentType.Sequencer)
     locationService.resolve(HttpConnection(componentId), 5.seconds).futureValue.get
   }
 
-  def sequencerClient(packageId: String, observingMode: String): SequencerApi = {
-    val httpLocation = resolveSequencerHttp(packageId, observingMode)
+  def sequencerClient(subsystem: Subsystem, observingMode: String): SequencerApi = {
+    val httpLocation = resolveSequencerHttp(subsystem, observingMode)
     SequencerApiFactory.make(httpLocation)
   }
 
   def resolveSequencerLocation(prefix: Prefix): AkkaLocation =
     resolve(prefix, ComponentType.Sequencer)
 
-  def resolveSequencerLocation(packageId: String, observingMode: String): AkkaLocation =
-    resolveSequencerLocation(Prefix(s"$packageId.$observingMode"))
+  def resolveSequencerLocation(subsystem: Subsystem, observingMode: String): AkkaLocation =
+    resolveSequencerLocation(Prefix(subsystem, observingMode))
 
-  def resolveSequencer(packageId: String, observingMode: String): ActorRef[SequencerMsg] =
-    resolveSequencerLocation(packageId, observingMode).uri.toActorRef
+  def resolveSequencer(subsystem: Subsystem, observingMode: String): ActorRef[SequencerMsg] =
+    resolveSequencerLocation(subsystem, observingMode).uri.toActorRef
       .unsafeUpcast[SequencerMsg]
 
   def resolveSequenceComponentLocation(prefix: Prefix): AkkaLocation =

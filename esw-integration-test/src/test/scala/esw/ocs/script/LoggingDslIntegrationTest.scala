@@ -8,6 +8,7 @@ import csw.logging.client.scaladsl.LoggingSystemFactory
 import csw.params.commands.CommandResponse.Completed
 import csw.params.commands.{CommandName, Sequence, Setup}
 import csw.params.core.models.Prefix
+import csw.params.core.models.Subsystem.ESW
 import esw.gateway.server.TestAppender
 import esw.ocs.api.SequencerApi
 import esw.ocs.impl.SequencerActorProxy
@@ -26,7 +27,7 @@ class LoggingDslIntegrationTest extends EswTestKit {
 
   override def beforeAll(): Unit = {
     super.beforeAll()
-    ocsRef = spawnSequencerRef("esw", "moonnight")
+    ocsRef = spawnSequencerRef(ESW, "moonnight")
     ocsSequencer = new SequencerActorProxy(ocsRef)
     loggingSystem = LoggingSystemFactory.start("LoggingDslIntegrationTest", "", "", system)
     loggingSystem.setAppenders(List(testAppender))

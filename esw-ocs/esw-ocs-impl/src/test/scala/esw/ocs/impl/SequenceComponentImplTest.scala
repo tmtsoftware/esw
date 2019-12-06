@@ -7,7 +7,7 @@ import akka.actor.testkit.typed.scaladsl.ScalaTestWithActorTestKit
 import akka.actor.typed.scaladsl.Behaviors
 import csw.location.models.Connection.AkkaConnection
 import csw.location.models.{AkkaLocation, ComponentId, ComponentType}
-import csw.params.core.models.Prefix
+import csw.params.core.models.{Prefix, Subsystem}
 import esw.ocs.api.BaseTestSuite
 import esw.ocs.api.protocol.{GetStatusResponse, ScriptError, ScriptResponse}
 import esw.ocs.impl.messages.SequenceComponentMsg
@@ -39,7 +39,7 @@ class SequenceComponentImplTest extends ScalaTestWithActorTestKit with BaseTestS
   private val sequenceComponentClient = new SequenceComponentImpl(sequenceComponent)
 
   "LoadScript | ESW-103" in {
-    sequenceComponentClient.loadScript("esw", "darknight").futureValue should ===(loadScriptResponse)
+    sequenceComponentClient.loadScript(Subsystem.ESW, "darknight").futureValue should ===(loadScriptResponse)
   }
 
   "Restart | ESW-141" in {

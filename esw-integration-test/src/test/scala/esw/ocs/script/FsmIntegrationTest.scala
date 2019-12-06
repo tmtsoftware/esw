@@ -5,12 +5,13 @@ import csw.params.commands.{CommandName, Observe, Sequence, Setup}
 import csw.params.core.generics.KeyType
 import csw.params.core.generics.KeyType.{IntKey, LongKey, StringKey}
 import csw.params.core.models.Prefix
+import csw.params.core.models.Subsystem.ESW
 import csw.params.events.EventKey
 import csw.testkit.scaladsl.CSWService.EventServer
 import esw.ocs.api.SequencerApi
 import esw.ocs.testkit.EswTestKit
-import scala.concurrent.duration.DurationInt
 
+import scala.concurrent.duration.DurationInt
 import scala.concurrent.Await
 
 class FsmIntegrationTest extends EswTestKit(EventServer) {
@@ -37,7 +38,7 @@ class FsmIntegrationTest extends EswTestKit(EventServer) {
           param.foreach(tempFsmStateProbe.ref ! _)
         })
 
-      val fsmSequencer: SequencerApi = spawnSequencerProxy("esw", "fsm")
+      val fsmSequencer: SequencerApi = spawnSequencerProxy(ESW, "fsm")
 
       mainFsmStateProbe.expectMessage("INIT")
       tempFsmStateProbe.expectMessage("OK")
@@ -86,7 +87,7 @@ class FsmIntegrationTest extends EswTestKit(EventServer) {
           param.foreach(fsmStateProbe.ref ! _)
         })
 
-      val fsmSequencer: SequencerApi = spawnSequencerProxy("esw", "becomeFsm")
+      val fsmSequencer: SequencerApi = spawnSequencerProxy(ESW, "becomeFsm")
       val command1                   = Setup(Prefix("esw.test"), CommandName("command-1"), None).madd(commandKey.set(10))
       val command2                   = Setup(Prefix("esw.test"), CommandName("command-2"), None)
 

@@ -5,6 +5,7 @@ import akka.actor.typed.scaladsl.Behaviors
 import akka.actor.typed.{ActorRef, Behavior}
 import csw.location.models.AkkaLocation
 import csw.logging.api.scaladsl.Logger
+import csw.params.core.models.Subsystem
 import esw.ocs.api.protocol.{GetStatusResponse, ScriptError, ScriptResponse}
 import esw.ocs.impl.internal.{SequencerServer, SequencerServerFactory}
 import esw.ocs.impl.messages.SequenceComponentMsg
@@ -18,14 +19,14 @@ object SequenceComponentBehavior {
       sequencerServerFactory: SequencerServerFactory
   ): Behavior[SequenceComponentMsg] = {
 
-    def load(packageId: String, observingMode: String, replyTo: ActorRef[ScriptResponse]): Behavior[SequenceComponentMsg] = {
-      val sequencerServer    = sequencerServerFactory.make(packageId, observingMode, self)
+    def load(subsystem: Subsystem, observingMode: String, replyTo: ActorRef[ScriptResponse]): Behavior[SequenceComponentMsg] = {
+      val sequencerServer    = sequencerServerFactory.make(subsystem, observingMode, self)
       val registrationResult = sequencerServer.start()
       replyTo ! ScriptResponse(registrationResult)
       registrationResult match {
         case Right(location) =>
-          log.info(s"Successfully started sequencer with sequencer id :$packageId in observation mode: $observingMode")
-          running(packageId, observingMode, sequencerServer, location)
+          log.info(s"Successfully started sequencer with sequencer id :$subsystem in observation mode: $observingMode")
+          running(subsystem, observingMode, sequencerServer, location)
         case Left(scriptError) =>
           log.error(s"Failed to start sequencer: ${scriptError.msg}")
           Behaviors.same
@@ -35,8 +36,8 @@ object SequenceComponentBehavior {
     lazy val idle: Behavior[SequenceComponentMsg] = Behaviors.receiveMessage[SequenceComponentMsg] { msg =>
       log.debug(s"Sequence Component in lifecycle state :Idle, received message :[$msg]")
       msg match {
-        case LoadScript(packageId, observingMode, replyTo) =>
-          load(packageId, observingMode, replyTo)
+        case LoadScript(subsystem, observingMode, replyTo) =>
+          load(subsystem, observingMode, replyTo)
         case GetStatus(replyTo) =>
           replyTo ! GetStatusResponse(None)
           Behaviors.same
@@ -51,12 +52,7 @@ object SequenceComponentBehavior {
       }
     }
 
-    def running(
-        packageId: String,
-        observingMode: String,
-        sequencerServer: SequencerServer,
-        location: AkkaLocation
-    ): Behavior[SequenceComponentMsg] =
+    def running(subsystem: Subsystem, observingMode: String, sequencerServer: SequencerServer, location: AkkaLocation) =
       Behaviors.receiveMessage[SequenceComponentMsg] { msg =>
         log.debug(s"Sequence Component in lifecycle state :Running, received message :[$msg]")
 
@@ -71,7 +67,7 @@ object SequenceComponentBehavior {
             idle
           case Restart(replyTo) =>
             unload()
-            load(packageId, observingMode, replyTo)
+            load(subsystem, observingMode, replyTo)
           case GetStatus(replyTo) =>
             replyTo ! GetStatusResponse(Some(location))
             Behaviors.same

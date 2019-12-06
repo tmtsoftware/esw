@@ -7,6 +7,7 @@ import csw.command.client.messages.sequencer.SequencerMsg
 import csw.params.commands.{CommandName, Sequence, Setup}
 import csw.params.core.generics.KeyType.StringKey
 import csw.params.core.models.Prefix
+import csw.params.core.models.Subsystem.ESW
 import csw.params.events.EventKey
 import csw.testkit.scaladsl.CSWService.EventServer
 import esw.ocs.api.SequencerApi
@@ -23,7 +24,7 @@ class LockUnlockIntegrationTest extends EswTestKit(EventServer) {
   }
 
   override def beforeEach(): Unit = {
-    ocsSequencerRef = spawnSequencerRef("esw", "lockUnlockScript")
+    ocsSequencerRef = spawnSequencerRef(ESW, "lockUnlockScript")
     ocsSequencer = new SequencerActorProxy(ocsSequencerRef)
   }
 

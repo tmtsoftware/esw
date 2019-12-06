@@ -4,6 +4,7 @@ import akka.actor.CoordinatedShutdown.UnknownReason
 import csw.location.models.{ComponentId, ComponentType}
 import csw.params.commands.CommandResponse.{Completed, Started}
 import csw.params.commands.{CommandName, Sequence, Setup}
+import csw.params.core.models.Subsystem.ESW
 import csw.params.core.models.{ObsId, Prefix}
 import esw.gateway.api.clients.ClientFactory
 import esw.gateway.api.codecs.GatewayCodecs
@@ -16,14 +17,14 @@ import msocket.impl.ws.WebsocketTransport
 
 class SequencerGatewayTest extends EswTestKit with GatewayCodecs {
   private val port: Int                    = 6490
-  private val packageId                    = "esw"
+  private val subsystem                    = ESW
   private val observingMode                = "moonnight"
   private val gatewayWiring: GatewayWiring = new GatewayWiring(Some(port))
 
   override def beforeAll(): Unit = {
     super.beforeAll()
     gatewayWiring.httpService.registeredLazyBinding.futureValue
-    spawnSequencerRef(packageId, observingMode)
+    spawnSequencerRef(subsystem, observingMode)
   }
 
   override def afterAll(): Unit = {
@@ -41,7 +42,7 @@ class SequencerGatewayTest extends EswTestKit with GatewayCodecs {
       val clientFactory = new ClientFactory(postClient, websocketClient)
 
       val sequence    = Sequence(Setup(Prefix("esw.test"), CommandName("command-2"), Some(ObsId("obsId"))))
-      val componentId = ComponentId(Prefix(s"$packageId.$observingMode"), ComponentType.Sequencer)
+      val componentId = ComponentId(Prefix(s"$subsystem.$observingMode"), ComponentType.Sequencer)
 
       val sequencer = clientFactory.sequencer(componentId)
 

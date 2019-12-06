@@ -9,7 +9,8 @@ import akka.actor.typed.{ActorRef, Props}
 import csw.location.models.Connection.AkkaConnection
 import csw.location.models.{AkkaLocation, ComponentId, ComponentType, Location}
 import csw.logging.client.scaladsl.LoggerFactory
-import csw.params.core.models.Prefix
+import csw.params.core.models.{Prefix, Subsystem}
+import csw.params.core.models.Subsystem.{ESW, IRIS, TCS}
 import esw.ocs.api.protocol.{GetStatusResponse, ScriptError, ScriptResponse}
 import esw.ocs.app.wiring.SequencerWiring
 import esw.ocs.impl.messages.SequenceComponentMsg
@@ -35,12 +36,8 @@ class SequenceComponentBehaviorTest extends EswTestKit {
     }).futureValue
   }
 
-  def sequencerWiring(
-      packageId: String,
-      observingMode: String,
-      sequenceComponent: ActorRef[SequenceComponentMsg]
-  ): SequencerWiring =
-    new SequencerWiring(packageId, observingMode, sequenceComponent)
+  def sequencerWiring(subsystem: Subsystem, observingMode: String, sequenceComponent: ActorRef[SequenceComponentMsg]) =
+    new SequencerWiring(subsystem, observingMode, sequenceComponent)
 
   private def createBehaviorTestKit(): BehaviorTestKit[SequenceComponentMsg] = BehaviorTestKit(
     Behaviors.setup[SequenceComponentMsg] { ctx =>
@@ -54,12 +51,12 @@ class SequenceComponentBehaviorTest extends EswTestKit {
 
       val loadScriptResponseProbe = TestProbe[ScriptResponse]
       val getStatusProbe          = TestProbe[GetStatusResponse]
-      val packageId               = "esw"
+      val subsystem               = ESW
       val observingMode           = "darknight"
-      val prefix                  = Prefix(s"$packageId.$observingMode")
+      val prefix                  = Prefix(s"$subsystem.$observingMode")
 
       //LoadScript
-      sequenceComponentRef ! LoadScript(packageId, observingMode, loadScriptResponseProbe.ref)
+      sequenceComponentRef ! LoadScript(subsystem, observingMode, loadScriptResponseProbe.ref)
 
       //Assert if script loaded and returns AkkaLocation of sequencer
       val loadScriptLocationResponse: AkkaLocation = loadScriptResponseProbe.receiveMessage.response.rightValue
@@ -91,12 +88,12 @@ class SequenceComponentBehaviorTest extends EswTestKit {
       val sequenceComponentRef: ActorRef[SequenceComponentMsg] = spawnSequenceComponent()
 
       val loadScriptResponseProbe = TestProbe[ScriptResponse]
-      val packageId               = "iris"
+      val subsystem               = IRIS
       val observingMode           = "darknight"
-      val prefix                  = Prefix(s"$packageId.$observingMode")
+      val prefix                  = Prefix(s"$subsystem.$observingMode")
 
       //LoadScript
-      sequenceComponentRef ! LoadScript(packageId, observingMode, loadScriptResponseProbe.ref)
+      sequenceComponentRef ! LoadScript(subsystem, observingMode, loadScriptResponseProbe.ref)
 
       //Assert if script loaded and returns AkkaLocation of sequencer
       val loadScriptLocationResponse: AkkaLocation = loadScriptResponseProbe.receiveMessage.response.rightValue
@@ -104,7 +101,7 @@ class SequenceComponentBehaviorTest extends EswTestKit {
         ComponentId(prefix, ComponentType.Sequencer)
       )
 
-      sequenceComponentRef ! LoadScript("tcs", "darknight", loadScriptResponseProbe.ref)
+      sequenceComponentRef ! LoadScript(TCS, "darknight", loadScriptResponseProbe.ref)
       loadScriptResponseProbe.receiveMessage.response.leftValue shouldBe ScriptError(
         "Loading script failed: Sequencer already running"
       )
@@ -130,14 +127,14 @@ class SequenceComponentBehaviorTest extends EswTestKit {
     "restart sequencer if sequence component is in running state | ESW-141" in {
       val sequenceComponentRef: ActorRef[SequenceComponentMsg] = spawnSequenceComponent()
 
-      val packageId               = "esw"
+      val subsystem               = ESW
       val observingMode           = "darknight"
-      val prefix                  = Prefix(s"$packageId.$observingMode")
+      val prefix                  = Prefix(s"$subsystem.$observingMode")
       val loadScriptResponseProbe = TestProbe[ScriptResponse]
       val restartResponseProbe    = TestProbe[ScriptResponse]
 
       //Assert if script loaded and returns AkkaLocation of sequencer
-      sequenceComponentRef ! LoadScript(packageId, observingMode, loadScriptResponseProbe.ref)
+      sequenceComponentRef ! LoadScript(subsystem, observingMode, loadScriptResponseProbe.ref)
       loadScriptResponseProbe.expectMessageType[ScriptResponse]
 
       //Restart sequencer and assert if it returns new AkkaLocation of sequencer

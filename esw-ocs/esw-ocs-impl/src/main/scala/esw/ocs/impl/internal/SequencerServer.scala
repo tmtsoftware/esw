@@ -3,6 +3,7 @@ package esw.ocs.impl.internal
 import akka.Done
 import akka.actor.typed.ActorRef
 import csw.location.models.AkkaLocation
+import csw.params.core.models.Subsystem
 import esw.ocs.api.protocol.ScriptError
 import esw.ocs.impl.messages.SequenceComponentMsg
 
@@ -15,5 +16,5 @@ trait SequencerServer {
 }
 
 trait SequencerServerFactory {
-  def make(packageId: String, observingMode: String, sequenceComponent: ActorRef[SequenceComponentMsg]): SequencerServer
+  def make(subsystem: Subsystem, observingMode: String, sequenceComponent: ActorRef[SequenceComponentMsg]): SequencerServer
 }

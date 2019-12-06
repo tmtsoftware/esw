@@ -2,6 +2,7 @@ package esw.ocs.script
 
 import akka.actor.testkit.typed.scaladsl.TestProbe
 import csw.params.core.models.Prefix
+import csw.params.core.models.Subsystem.TCS
 import csw.params.events.{Event, EventKey, EventName, SystemEvent}
 import csw.testkit.scaladsl.CSWService.EventServer
 import esw.ocs.api.protocol.Ok
@@ -10,7 +11,7 @@ import esw.ocs.testkit.EswTestKit
 
 class ShutdownExceptionHandlerTest extends EswTestKit(EventServer) {
 
-  private val tcsPackageId     = "tcs"
+  private val tcsSubsystem     = TCS
   private val tcsObservingMode = "exceptionscript3" // ExceptionTestScript3.kt
 
   override def afterAll(): Unit = {
@@ -26,7 +27,7 @@ class ShutdownExceptionHandlerTest extends EswTestKit(EventServer) {
     subscription.ready().futureValue
     assertionProbe.expectMessageType[SystemEvent] // discard msg
 
-    val sequencer = spawnSequencerRef(tcsPackageId, tcsObservingMode)
+    val sequencer = spawnSequencerRef(tcsSubsystem, tcsObservingMode)
 
     val shutdownProbe = TestProbe[Ok.type]
     sequencer ! Shutdown(shutdownProbe.ref)

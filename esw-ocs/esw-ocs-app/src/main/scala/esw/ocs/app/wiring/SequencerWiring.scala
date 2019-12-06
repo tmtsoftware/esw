@@ -23,6 +23,7 @@ import csw.logging.api.javadsl.ILogger
 import csw.logging.api.scaladsl.Logger
 import csw.logging.client.scaladsl.LoggerFactory
 import csw.network.utils.SocketUtils
+import csw.params.core.models.Subsystem
 import esw.http.core.wiring.{ActorRuntime, CswWiring, HttpService, Settings}
 import esw.ocs.api.codecs.SequencerHttpCodecs
 import esw.ocs.api.protocol.ScriptError
@@ -44,12 +45,12 @@ import scala.async.Async.{async, await}
 import scala.util.control.NonFatal
 
 private[ocs] class SequencerWiring(
-    val packageId: String,
+    val subsystem: Subsystem,
     val observingMode: String,
     sequenceComponent: ActorRef[SequenceComponentMsg]
 ) extends SequencerHttpCodecs {
   private lazy val config: Config  = ConfigFactory.load()
-  private lazy val sequencerConfig = SequencerConfig.from(config, packageId, observingMode)
+  private lazy val sequencerConfig = SequencerConfig.from(config, subsystem, observingMode)
   import sequencerConfig._
 
   lazy val actorSystem: ActorSystem[SpawnProtocol.Command] = ActorSystemFactory.remote(SpawnProtocol(), "sequencer-system")

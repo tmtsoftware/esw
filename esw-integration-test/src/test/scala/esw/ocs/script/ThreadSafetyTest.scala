@@ -4,6 +4,7 @@ import akka.actor.testkit.typed.scaladsl.TestProbe
 import csw.params.commands.{CommandName, Observe, Sequence, Setup}
 import csw.params.core.generics.KeyType.IntKey
 import csw.params.core.models.Prefix
+import csw.params.core.models.Subsystem.ESW
 import csw.params.events.EventKey
 import csw.testkit.scaladsl.CSWService.EventServer
 import esw.ocs.api.SequencerApi
@@ -29,7 +30,7 @@ class ThreadSafetyTest extends EswTestKit(EventServer) {
           param.foreach(counterProbe.ref ! _)
         })
 
-      val threadSafeSequencer: SequencerApi = spawnSequencerProxy("esw", "threadSafe")
+      val threadSafeSequencer: SequencerApi = spawnSequencerProxy(ESW, "threadSafe")
 
       val incrementCommand  = Setup(Prefix("esw.counter"), CommandName("increment"), None)
       val getCounterCommand = Observe(Prefix("esw.counter"), CommandName("get-counter"), None)

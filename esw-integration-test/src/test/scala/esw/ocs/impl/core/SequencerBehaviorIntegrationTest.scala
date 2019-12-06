@@ -3,12 +3,13 @@ package esw.ocs.impl.core
 import akka.actor.testkit.typed.scaladsl.TestProbe
 import csw.params.commands.{CommandName, Sequence, Setup}
 import csw.params.core.models.Prefix
+import csw.params.core.models.Subsystem.ESW
 import esw.ocs.api.protocol.{OkOrUnhandledResponse, SequencerSubmitResponse, SubmitResult, Unhandled}
 import esw.ocs.impl.messages.SequencerMessages.{LoadSequence, SubmitSequenceInternal}
 import esw.ocs.testkit.EswTestKit
 
 class SequencerBehaviorIntegrationTest extends EswTestKit {
-  private val ocsPackageId     = "esw"
+  private val ocsSubsystem     = ESW
   private val ocsObservingMode = "darknight"
 
   "Sequencer" must {
@@ -17,7 +18,7 @@ class SequencerBehaviorIntegrationTest extends EswTestKit {
       val submitResponseProbe       = TestProbe[SequencerSubmitResponse]
       val loadSequenceResponseProbe = TestProbe[OkOrUnhandledResponse]
       val sequence                  = Sequence(Seq(command))
-      val ocsSequencer              = spawnSequencerRef(ocsPackageId, ocsObservingMode)
+      val ocsSequencer              = spawnSequencerRef(ocsSubsystem, ocsObservingMode)
 
       ocsSequencer ! SubmitSequenceInternal(sequence, submitResponseProbe.ref)
       ocsSequencer ! LoadSequence(sequence, loadSequenceResponseProbe.ref)

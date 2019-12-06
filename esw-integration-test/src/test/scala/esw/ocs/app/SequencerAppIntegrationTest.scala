@@ -11,7 +11,7 @@ import csw.location.models.Connection.AkkaConnection
 import csw.location.models.{AkkaLocation, ComponentId, ComponentType}
 import csw.params.commands.CommandResponse.Completed
 import csw.params.commands.{CommandName, Sequence, Setup}
-import csw.params.core.models.Subsystem.ESW
+import csw.params.core.models.Subsystem.{CSW, ESW}
 import csw.params.core.models.{Prefix, Subsystem}
 import esw.ocs.api.protocol.{ScriptError, ScriptResponse}
 import esw.ocs.impl.messages.SequenceComponentMsg
@@ -45,7 +45,7 @@ class SequencerAppIntegrationTest extends EswTestKit {
       // LoadScript
       val seqCompRef = sequenceCompLocation.uri.toActorRef.unsafeUpcast[SequenceComponentMsg]
       val probe      = TestProbe[ScriptResponse]
-      seqCompRef ! LoadScript("esw", "darknight", probe.ref)
+      seqCompRef ! LoadScript(ESW, "darknight", probe.ref)
 
       // verify that loaded sequencer is started and able to process sequence command
       val response          = probe.expectMessageType[ScriptResponse]
@@ -106,7 +106,7 @@ class SequencerAppIntegrationTest extends EswTestKit {
     "return ScriptError when script configuration is not provided| ESW-102, ESW-136" in {
       val subsystem               = "ESW"
       val name                    = "primary"
-      val invalidPackageId        = "invalid_package"
+      val unexpectedSubsystem     = CSW
       val observingMode           = "darknight"
       val sequenceComponentPrefix = Prefix(ESW, name)
 
@@ -122,7 +122,7 @@ class SequencerAppIntegrationTest extends EswTestKit {
       // LoadScript
       val seqCompRef: ActorRef[SequenceComponentMsg] = sequenceCompLocation.uri.toActorRef.unsafeUpcast[SequenceComponentMsg]
       val loadScriptResponse: Future[ScriptResponse] =
-        seqCompRef.ask((ref: ActorRef[ScriptResponse]) => LoadScript(invalidPackageId, observingMode, ref))(
+        seqCompRef.ask((ref: ActorRef[ScriptResponse]) => LoadScript(unexpectedSubsystem, observingMode, ref))(
           timeout,
           schedulerFromActorSystem
         )
@@ -131,7 +131,9 @@ class SequencerAppIntegrationTest extends EswTestKit {
 
       response match {
         case Left(v) =>
-          v shouldEqual ScriptError(s"Script configuration missing for $invalidPackageId with $observingMode")
+          v shouldEqual ScriptError(
+            s"Script configuration missing for [${unexpectedSubsystem.name}] with [$observingMode]"
+          )
         case Right(_) => throw new RuntimeException("test failed as this test expects ScriptError")
       }
     }
@@ -139,13 +141,13 @@ class SequencerAppIntegrationTest extends EswTestKit {
 
   "Sequencer command" must {
     "start sequencer with provided id, mode and register it with location service | ESW-102, ESW-136, ESW-103, ESW-147, ESW-151" in {
-      val subsystem     = "ESW"
-      val name          = "primary"
-      val packageId     = "esw"
-      val observingMode = "darknight"
+      val subsystem          = "ESW"
+      val name               = "primary"
+      val sequencerSubsystem = "esw"
+      val observingMode      = "darknight"
 
       // start Sequencer"
-      SequencerApp.main(Array("sequencer", "-s", subsystem, "-n", name, "-i", packageId, "-m", observingMode))
+      SequencerApp.main(Array("sequencer", "-s", subsystem, "-n", name, "-i", sequencerSubsystem, "-m", observingMode))
 
       // verify sequence component is started and can be resolved
       val sequenceComponentPrefix = Prefix(s"$subsystem.$name")
@@ -178,16 +180,16 @@ class SequencerAppIntegrationTest extends EswTestKit {
     }
 
     "throw exception if ScriptError is returned | ESW-102, ESW-136" in {
-      val subsystem        = "ESW"
-      val name             = "primary"
-      val invalidPackageId = "invalid package"
-      val observingMode    = "darknight"
+      val subsystem           = "esw"
+      val name                = "primary"
+      val unexpectedSubsystem = "csw"
+      val observingMode       = "darknight"
 
       val exception = intercept[RuntimeException] {
-        SequencerApp.main(Array("sequencer", "-s", subsystem, "-n", name, "-i", invalidPackageId, "-m", observingMode))
+        SequencerApp.main(Array("sequencer", "-s", subsystem, "-n", name, "-i", unexpectedSubsystem, "-m", observingMode))
       }
 
-      exception.getMessage shouldEqual s"Failed to start with error: ScriptError(Script configuration missing for $invalidPackageId with $observingMode)"
+      exception.getMessage shouldEqual s"Failed to start with error: ScriptError(Script configuration missing for [${unexpectedSubsystem}] with [$observingMode])"
     }
   }
 }
