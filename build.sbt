@@ -28,7 +28,7 @@ lazy val esw = (project in file("."))
   .enablePlugins(NoPublish, UnidocSitePlugin, GithubPublishPlugin, GitBranchPrompt, GithubRelease)
   .disablePlugins(BintrayPlugin)
   .settings(DocSettings.makeSiteMappings(docs))
-  .settings(Settings.addAliases)
+  .settings(Settings.addAliases())
   .settings(DocSettings.docExclusions(unidocExclusions))
   .settings(GithubRelease.githubReleases(githubReleases))
 
