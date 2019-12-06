@@ -1,18 +1,19 @@
 package esw.ocs.script
 
 import akka.actor.testkit.typed.scaladsl.TestProbe
+import csw.params.commands.CommandResponse.Started
 import csw.params.commands.{CommandName, Observe, Sequence, Setup}
 import csw.params.core.generics.KeyType
 import csw.params.core.generics.KeyType.{IntKey, LongKey, StringKey}
 import csw.params.core.models.Prefix
 import csw.params.core.models.Subsystem.ESW
-import csw.params.events.EventKey
+import csw.params.events.{Event, EventKey}
 import csw.testkit.scaladsl.CSWService.EventServer
 import esw.ocs.api.SequencerApi
 import esw.ocs.testkit.EswTestKit
 
-import scala.concurrent.duration.DurationInt
 import scala.concurrent.Await
+import scala.concurrent.duration.DurationInt
 
 class FsmIntegrationTest extends EswTestKit(EventServer) {
 
@@ -99,6 +100,22 @@ class FsmIntegrationTest extends EswTestKit(EventServer) {
       }
 
       fsmSequencer.stop().awaitResult
+    }
+
+    "be able to bind to event variables with polling time" in {
+
+      val fsmSequencer: SequencerApi = spawnSequencerProxy(ESW, "moonnight")
+      val command1                   = Setup(Prefix("esw.test"), CommandName("start-fsm"), None)
+      val probe                      = TestProbe[Event]
+
+      eventSubscriber.subscribeActorRef(Set(EventKey("tcs.polling.test")), probe.ref)
+
+      fsmSequencer.submit(Sequence(command1)).futureValue shouldBe a[Started]
+
+      // this is to wait to publish 5 event, which asserts that INIT state is called 5 times. 1st time at 0 millies and
+      // and then next 4 at interval of 400 millis
+      Thread.sleep(1800)
+      probe.receiveMessages(4)
     }
   }
 }
