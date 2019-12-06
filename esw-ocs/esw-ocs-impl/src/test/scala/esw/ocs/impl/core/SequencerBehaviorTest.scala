@@ -2,6 +2,7 @@ package esw.ocs.impl.core
 
 import akka.Done
 import akka.actor.testkit.typed.scaladsl.{ScalaTestWithActorTestKit, TestProbe}
+import akka.actor.typed.ActorRef
 import csw.command.client.messages.sequencer.SequencerMsg.QueryFinal
 import csw.command.client.messages.{GetComponentLogMetadata, SetComponentLogLevel}
 import csw.logging.client.commons.LogAdminUtil
@@ -16,8 +17,11 @@ import esw.ocs.api.models.StepStatus.{Finished, InFlight, Pending}
 import esw.ocs.api.models.{Step, StepList}
 import esw.ocs.api.protocol.EditorError.{CannotOperateOnAnInFlightOrFinishedStep, IdDoesNotExist}
 import esw.ocs.api.protocol._
+import esw.ocs.impl.messages.SequenceComponentMsg
 import esw.ocs.impl.messages.SequencerMessages._
 import esw.ocs.impl.messages.SequencerState.{Idle, InProgress, Loaded, Offline}
+import org.scalatest.prop.TableDrivenPropertyChecks._
+import org.scalatest.prop.TableFor2
 
 import scala.concurrent.Future
 import scala.concurrent.duration.DurationLong
@@ -848,6 +852,28 @@ class SequencerBehaviorTest extends ScalaTestWithActorTestKit with BaseTestSuite
       // this verifies that log metadata is updated in LogAdminUtil
       val finalMetadata = LogAdminUtil.getLogMetadata(sequencerName)
       finalMetadata.componentLevel shouldBe DEBUG
+    }
+  }
+
+  "GetSequenceComponent" must {
+
+    val testCases: TableFor2[String, SequencerTestSetup] = Table.apply(
+      ("state", "sequencer setup"),
+      (InProgress.entryName, SequencerTestSetup.inProgress(sequence)),
+      (Idle.entryName, SequencerTestSetup.idle(sequence)),
+      (Loaded.entryName, SequencerTestSetup.loaded(sequence)),
+      (Offline.entryName, SequencerTestSetup.offline(sequence))
+    )
+
+    forAll(testCases) { (stateName, testSetup) =>
+      s"get sequence component name in $stateName state | ESW-255" in {
+        import testSetup._
+        val sequenceComponentRef = TestProbe[ActorRef[SequenceComponentMsg]]
+
+        sequencerActor ! GetSequenceComponent(sequenceComponentRef.ref)
+
+        assertForGettingSequenceComponent(sequenceComponentRef)
+      }
     }
   }
 

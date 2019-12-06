@@ -15,8 +15,8 @@ import esw.ocs.api.models.{Step, StepList}
 import esw.ocs.api.protocol._
 import esw.ocs.dsl.script.ScriptDsl
 import esw.ocs.impl.messages.SequencerMessages.{Pause, _}
-import esw.ocs.impl.messages.{SequenceComponentMsg, SequencerState}
 import esw.ocs.impl.messages.SequencerState.{Idle, InProgress}
+import esw.ocs.impl.messages.{SequenceComponentMsg, SequencerState}
 import org.mockito.Mockito.{verify, when}
 import org.scalatest.concurrent.Eventually._
 import org.scalatest.{Assertion, Matchers}
@@ -33,13 +33,13 @@ class SequencerTestSetup(sequence: Sequence)(implicit system: ActorSystem[_]) {
   implicit private val patienceConfig: PatienceConfig = PatienceConfig(5.seconds)
   implicit val ec: ExecutionContext                   = system.executionContext
 
-  private val componentId                                      = mock[ComponentId]
-  private val script                                           = mock[ScriptDsl]
-  private val locationService                                  = mock[LocationService]
-  private val sequenceComponent                                = TestProbe[SequenceComponentMsg]
-  private def mockShutdownHttpService: () => Future[Done.type] = () => Future { Done }
+  private val componentId                                       = mock[ComponentId]
+  private val script                                            = mock[ScriptDsl]
+  private val locationService                                   = mock[LocationService]
+  private val sequenceComponent: ActorRef[SequenceComponentMsg] = TestProbe[SequenceComponentMsg].ref
+  private def mockShutdownHttpService: () => Future[Done.type]  = () => Future { Done }
   private val sequencerBehavior =
-    new SequencerBehavior(componentId, script, locationService, sequenceComponent.ref, mockShutdownHttpService)
+    new SequencerBehavior(componentId, script, locationService, sequenceComponent, mockShutdownHttpService)
 
   val sequencerName                          = s"SequencerActor${math.random()}"
   val sequencerActor: ActorRef[SequencerMsg] = system.systemActorOf(sequencerBehavior.setup, sequencerName)
@@ -324,6 +324,10 @@ class SequencerTestSetup(sequence: Sequence)(implicit system: ActorSystem[_]) {
     val probe = TestProbe[Option[StepList]]
     sequencerActor ! GetSequence(probe.ref)
     probe.expectMessageType[Option[StepList]]
+  }
+
+  def assertForGettingSequenceComponent(replyTo: TestProbe[ActorRef[SequenceComponentMsg]]): Unit = {
+    replyTo.expectMessage(sequenceComponent)
   }
 }
 
