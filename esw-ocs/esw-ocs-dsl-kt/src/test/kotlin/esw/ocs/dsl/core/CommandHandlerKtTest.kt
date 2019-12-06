@@ -7,11 +7,13 @@ import io.kotlintest.shouldThrow
 import io.mockk.mockk
 import kotlinx.coroutines.CoroutineExceptionHandler
 import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.future.await
 import kotlinx.coroutines.runBlocking
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
 import kotlin.coroutines.EmptyCoroutineContext
+import kotlin.time.seconds
 
 internal class CommandHandlerKtTest {
     private val exceptionHandler = CoroutineExceptionHandler { _, _ -> } // to swallow all the test exceptions
@@ -98,6 +100,33 @@ internal class CommandHandlerKtTest {
 
             commandHandlerCounter shouldBe 3
             errorHandlerCounter shouldBe 3
+        }
+
+        @Test
+        fun `should retry command handler after given interval | ESW-249`() = runBlocking {
+            var errorHandlerCounter = 0
+            var commandHandlerCounter = 0
+
+            val sequenceCommand = mockk<Setup>()
+
+            val commandHandlerKt: CommandHandlerKt<Setup> =
+                    CommandHandlerKt<Setup>(scope()) {
+                        commandHandlerCounter++
+                        if (commandHandlerCounter < 2) throw RuntimeException("exception")
+                    }.onError { errorHandlerCounter++ }
+
+            commandHandlerKt.retry(2, 1.seconds)
+            commandHandlerKt.execute(sequenceCommand)
+
+            delay(100)
+            commandHandlerCounter shouldBe 1
+            errorHandlerCounter shouldBe 1
+
+            delay(500)
+            commandHandlerCounter shouldBe 1
+
+            delay(500)
+            commandHandlerCounter shouldBe 2
         }
     }
 }

@@ -4,9 +4,11 @@ import csw.params.commands.SequenceCommand
 import esw.ocs.dsl.SuspendableConsumer
 import esw.ocs.dsl.script.CommandHandler
 import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.future.asCompletableFuture
 import kotlinx.coroutines.launch
 import java.util.concurrent.CompletionStage
+import kotlin.time.Duration
 
 /**
  * Base trait is defined at scala side, which is used to install command handlers in ScriptDsl
@@ -21,6 +23,7 @@ class CommandHandlerKt<T : SequenceCommand>(
 
     private var retryCount: Int = 0
     private var onError: (SuspendableConsumer<Throwable>)? = null
+    private var delayInMillis: Long = 0
 
     override fun execute(sequenceCommand: T): CompletionStage<Void> =
             scope.launch {
@@ -31,6 +34,7 @@ class CommandHandlerKt<T : SequenceCommand>(
                             onError?.let { it(e) }
                             if (retryCount > 0) {
                                 retryCount -= 1
+                                delay(delayInMillis)
                                 go()
                             } else throw e
                         }
@@ -45,6 +49,11 @@ class CommandHandlerKt<T : SequenceCommand>(
 
     fun retry(count: Int) {
         retryCount = count
+    }
+
+    fun retry(count: Int, interval: Duration) {
+        retry(count)
+        delayInMillis = interval.toLongMilliseconds()
     }
 
 }
