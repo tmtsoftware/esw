@@ -23,6 +23,7 @@ class CswServices(
     val locationService: ILocationService,
     val eventService: IEventService,
     val timeServiceSchedulerFactory: TimeServiceSchedulerFactory,
+    //fixme : should this be private as the SequencerApi should not be given to script writer.
     val sequencerApiFactory: BiFunction[String, String, CompletionStage[SequencerApi]],
     val databaseServiceFactory: DatabaseServiceFactory,
     val lockUnlockUtil: LockUnlockUtil,

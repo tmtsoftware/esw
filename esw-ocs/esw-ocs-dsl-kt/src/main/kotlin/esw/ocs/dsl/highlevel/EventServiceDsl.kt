@@ -11,6 +11,7 @@ import csw.params.events.*
 import esw.ocs.dsl.SuspendableConsumer
 import esw.ocs.dsl.SuspendableSupplier
 import esw.ocs.dsl.epics.EventVariable
+import esw.ocs.dsl.params.set
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.future.await
 import kotlinx.coroutines.future.future
@@ -52,16 +53,16 @@ interface EventServiceDsl {
     suspend fun getEvent(vararg eventKeys: String): Set<Event> =
             defaultSubscriber.get(eventKeys.toEventKeys()).await().toSet()
 
-    suspend fun <T> SystemVar(initial: T, eventKeyStr: String, key: Key<T>): EventVariable<T> {
+    suspend fun <T> SystemVar(initial: T, eventKeyStr: String, key: Key<T>, duration: Duration? = null): EventVariable<T> {
         val eventKey = EventKey(eventKeyStr)
         val systemEvent = SystemEvent(eventKey.source().value(), eventKey.eventName().name(), key.set(initial))
-        return EventVariable(systemEvent, key, this)
+        return EventVariable(systemEvent, key, duration, this)
     }
 
-    suspend fun <T> ObserveVar(initial: T, eventKeyStr: String, key: Key<T>): EventVariable<T> {
+    suspend fun <T> ObserveVar(initial: T, eventKeyStr: String, key: Key<T>, duration: Duration? = null): EventVariable<T> {
         val eventKey = EventKey(eventKeyStr)
         val observeEvent = ObserveEvent(eventKey.source().value(), eventKey.eventName().name(), key.set(initial))
-        return EventVariable(observeEvent, key, this)
+        return EventVariable(observeEvent, key, duration, this)
     }
 
     private fun (Array<out String>).toEventKeys(): Set<EventKey> = map { EventKey.apply(it) }.toSet()
