@@ -2,7 +2,7 @@ package esw.ocs.api.client
 
 import akka.util.Timeout
 import csw.command.api.utils.SequencerCommandServiceExtension
-import csw.params.commands.CommandResponse.{QueryResponse, SubmitResponse}
+import csw.params.commands.CommandResponse.SubmitResponse
 import csw.params.commands.{Sequence, SequenceCommand}
 import csw.params.core.models.Id
 import csw.time.core.models.UTCTime
@@ -77,8 +77,8 @@ class SequencerClient(
   override def submitAndWait(sequence: Sequence)(implicit timeout: Timeout): Future[SubmitResponse] =
     extensions.submitAndWait(sequence)
 
-  override def query(runId: Id): Future[QueryResponse] =
-    postClient.requestResponse[QueryResponse](Query(runId))
+  override def query(runId: Id): Future[SubmitResponse] =
+    postClient.requestResponse[SubmitResponse](Query(runId))
 
   override def queryFinal(runId: Id)(implicit timeout: Timeout): Future[SubmitResponse] =
     websocketClient.requestResponse[SubmitResponse](QueryFinal(runId, timeout), timeout.duration)

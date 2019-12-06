@@ -2,6 +2,7 @@ package esw.ocs.impl.core
 
 import akka.actor.typed.{ActorRef, ActorSystem}
 import csw.command.client.messages.sequencer.SequencerMsg
+import csw.params.commands.CommandIssue.IdNotAvailableIssue
 import csw.params.commands.CommandResponse._
 import csw.params.commands.Sequence
 import csw.params.core.models.Id
@@ -54,11 +55,11 @@ private[core] case class SequencerData(
     else copy(sequenceResponseSubscribers = sequenceResponseSubscribers + replyTo)
   }
 
-  def query(runId: Id, replyTo: ActorRef[QueryResponse]): SequencerData = {
+  def query(runId: Id, replyTo: ActorRef[SubmitResponse]): SequencerData = {
     this.runId match {
       case Some(`runId`) if stepList.get.isFinished => replyTo ! getSequencerResponse
       case Some(`runId`)                            => replyTo ! Started(runId)
-      case _                                        => replyTo ! CommandNotAvailable(runId)
+      case _                                        => replyTo ! Invalid(runId, IdNotAvailableIssue(s"Sequencer is not running any sequence with runId $runId"))
     }
     this
   }

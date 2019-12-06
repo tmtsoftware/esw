@@ -12,7 +12,8 @@ import csw.location.models.ComponentId
 import csw.location.models.ComponentType.{Assembly, Sequencer}
 import csw.logging.macros.SourceFactory
 import csw.logging.models.{AnyId, Level}
-import csw.params.commands.CommandResponse.{Accepted, CommandNotAvailable, Started}
+import csw.params.commands.CommandIssue.IdNotAvailableIssue
+import csw.params.commands.CommandResponse.{Accepted, Invalid, Started}
 import csw.params.commands.{CommandName, CommandResponse, Sequence, Setup}
 import csw.params.core.models.{Id, ObsId, Prefix, Subsystem}
 import csw.params.events.{Event, EventKey, EventName, SystemEvent}
@@ -130,7 +131,7 @@ class PostRouteTest extends BaseTestSuite with ScalatestRouteTest with GatewayCo
       val runId         = Id("runId")
       val componentId   = ComponentId(destination, Sequencer)
       val queryRequest  = SequencerCommand(componentId, SequencerPostRequest.Query(runId))
-      val queryResponse = CommandNotAvailable(runId)
+      val queryResponse = Invalid(runId, IdNotAvailableIssue(s"Sequencer is not running any sequence with runId $runId"))
 
       when(resolver.resolveSequencer(componentId)).thenReturn(Future.successful(sequencer))
       when(sequencer.query(runId)).thenReturn(Future.successful(queryResponse))

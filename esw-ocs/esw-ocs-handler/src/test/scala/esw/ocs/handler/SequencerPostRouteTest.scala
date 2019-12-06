@@ -3,6 +3,7 @@ package esw.ocs.handler
 import akka.http.scaladsl.model.StatusCodes
 import akka.http.scaladsl.server.Route
 import akka.http.scaladsl.testkit.ScalatestRouteTest
+import csw.params.commands.CommandIssue.IdNotAvailableIssue
 import csw.params.commands.CommandResponse._
 import csw.params.commands.{CommandName, Sequence, Setup}
 import csw.params.core.models.{Id, Prefix}
@@ -262,14 +263,15 @@ class SequencerPostRouteTest extends BaseTestSuite with ScalatestRouteTest with 
       }
     }
 
-    "return QueryResponse for Query request | ESW-101, ESW-244" in {
-      val sequenceId        = Id()
-      val completedResponse = CommandNotAvailable(sequenceId)
+    "return SubmitResponse for Query request | ESW-101, ESW-244" in {
+      val sequenceId = Id()
+      val completedResponse =
+        Invalid(sequenceId, IdNotAvailableIssue(s"Sequencer is not running any sequence with runId $sequenceId"))
       when(sequencer.query(sequenceId)).thenReturn(Future.successful(completedResponse))
 
       Post("/post-endpoint", Query(sequenceId)) ~> route ~> check {
         verify(sequencer).query(sequenceId)
-        responseAs[QueryResponse] should ===(completedResponse)
+        responseAs[SubmitResponse] should ===(completedResponse)
       }
     }
 

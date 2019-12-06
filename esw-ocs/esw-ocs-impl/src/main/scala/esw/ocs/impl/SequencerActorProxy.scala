@@ -6,7 +6,7 @@ import akka.util.Timeout
 import csw.command.api.utils.SequencerCommandServiceExtension
 import csw.command.client.messages.sequencer.SequencerMsg
 import csw.command.client.messages.sequencer.SequencerMsg.{Query, QueryFinal}
-import csw.params.commands.CommandResponse.{QueryResponse, SubmitResponse}
+import csw.params.commands.CommandResponse.SubmitResponse
 import csw.params.commands.{Sequence, SequenceCommand}
 import csw.params.core.models.Id
 import csw.time.core.models.UTCTime
@@ -67,7 +67,7 @@ class SequencerActorProxy(sequencer: ActorRef[SequencerMsg])(implicit system: Ac
   override def submitAndWait(sequence: Sequence)(implicit timeout: Timeout): Future[SubmitResponse] =
     extensions.submitAndWait(sequence)
 
-  override def query(runId: Id): Future[QueryResponse] = sequencer ? (Query(runId, _))
+  override def query(runId: Id): Future[SubmitResponse] = sequencer ? (Query(runId, _))
 
   override def queryFinal(runId: Id)(implicit timeout: Timeout): Future[SubmitResponse] = sequencer ? (QueryFinal(runId, _))
 

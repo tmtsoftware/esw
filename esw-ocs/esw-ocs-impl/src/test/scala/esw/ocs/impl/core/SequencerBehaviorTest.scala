@@ -129,7 +129,7 @@ class SequencerBehaviorTest extends ScalaTestWithActorTestKit with BaseTestSuite
       val startedResponse = sequenceResult.toSubmitResponse()
       startedResponse shouldBe a[Started]
 
-      val seqResProbe = createTestProbe[QueryResponse]
+      val seqResProbe = createTestProbe[SubmitResponse]
       sequencerActor ! QueryFinal(startedResponse.runId, seqResProbe.ref)
 
       pullAllStepsAndAssertSequenceIsFinished()

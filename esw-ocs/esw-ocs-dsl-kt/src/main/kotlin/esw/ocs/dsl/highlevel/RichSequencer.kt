@@ -1,12 +1,10 @@
 package esw.ocs.dsl.highlevel
 
 import akka.util.Timeout
-import csw.params.commands.CommandResponse
 import csw.params.commands.CommandResponse.SubmitResponse
 import csw.params.commands.Sequence
 import csw.params.core.models.Id
 import csw.params.core.models.Subsystem
-import csw.params.javadsl.JSubsystem
 import csw.time.core.models.UTCTime
 import esw.ocs.api.SequencerApi
 import esw.ocs.api.protocol.*
@@ -26,7 +24,7 @@ class RichSequencer(
     private suspend fun sequencerAdmin() = sequencerApiFactory.apply(subsystem, observingMode).await()
 
     suspend fun submit(sequence: Sequence): SubmitResponse = sequencerAdmin().submit(sequence).toJava().await()
-    suspend fun query(runId: Id): CommandResponse.QueryResponse = sequencerAdmin().query(runId).toJava().await()
+    suspend fun query(runId: Id): SubmitResponse = sequencerAdmin().query(runId).toJava().await()
 
     suspend fun queryFinal(runId: Id, timeout: Duration): SubmitResponse {
         val akkaTimeout = Timeout(timeout.toLongNanoseconds(), TimeUnit.NANOSECONDS)
