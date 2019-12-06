@@ -252,9 +252,7 @@ class SequencerClientIntegrationTest extends EswTestKit(EventServer) {
     ocsSequencer.stop().futureValue should ===(Ok)
 
     val expectedSteps = List(
-      Step(command4, Success, hasBreakpoint = false),
-      Step(command5, Success, hasBreakpoint = false),
-      Step(command6, Success, hasBreakpoint = false)
+      Step(command4, Success, hasBreakpoint = false)
     )
     val expectedSequence = Some(StepList(expectedSteps))
     val expectedResponse = Completed(startedResponse.runId)
