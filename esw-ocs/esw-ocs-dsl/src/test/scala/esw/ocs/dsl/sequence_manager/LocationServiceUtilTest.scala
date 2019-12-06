@@ -18,12 +18,13 @@ import csw.params.core.models.Subsystem.{ESW, IRIS, TCS}
 import csw.params.core.models.{Prefix, Subsystem}
 import esw.ocs.api.BaseTestSuite
 import esw.ocs.api.protocol.ScriptError
+import esw.ocs.dsl.Timeouts
 
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future
 import scala.concurrent.duration.DurationDouble
 
-class LocationServiceCommandUtilsTest extends ScalaTestWithActorTestKit with BaseTestSuite {
+class LocationServiceUtilTest extends ScalaTestWithActorTestKit with BaseTestSuite {
 
   private val locationService = mock[LocationService]
 
@@ -102,21 +103,18 @@ class LocationServiceCommandUtilsTest extends ScalaTestWithActorTestKit with Bas
   }
 
   "listByComponentName" must {
-    "return all locations which match a given name substring | ESW-215" in {
-      val testUri = new URI("test-uri")
-      val tcsLocations = List(
-        AkkaLocation(AkkaConnection(ComponentId(Prefix(TCS, "obsMode1"), Sequencer)), testUri),
-        AkkaLocation(AkkaConnection(ComponentId(Prefix(TCS, "TCS_1"), SequenceComponent)), testUri)
-      )
-      val ocsLocations = List(
-        AkkaLocation(AkkaConnection(ComponentId(Prefix(ESW, "obsMode1"), Sequencer)), testUri)
-      )
-      when(locationService.list).thenReturn(Future.successful(tcsLocations ++ ocsLocations))
+    "return all locations which match a given componentName | ESW-215" in {
+      val testUri   = new URI("test-uri")
+      val location1 = AkkaLocation(AkkaConnection(ComponentId(Prefix(TCS, "primary"), SequenceComponent)), testUri)
+      val location2 = AkkaLocation(AkkaConnection(ComponentId(Prefix(ESW, "primary"), SequenceComponent)), testUri)
+      val location3 = AkkaLocation(AkkaConnection(ComponentId(Prefix(IRIS, "secondary"), SequenceComponent)), testUri)
+
+      when(locationService.list).thenReturn(Future.successful(List(location1, location2, location3)))
 
       val locationServiceDsl = new LocationServiceUtil(locationService)
-      val actualLocations    = locationServiceDsl.listByComponentName("tcs").futureValue
+      val actualLocations    = locationServiceDsl.listByComponentName("primary").futureValue
 
-      actualLocations should ===(tcsLocations)
+      actualLocations should ===(List(location1, location2))
     }
 
     "return all locations which match a given observing mode | ESW-215" in {
@@ -184,53 +182,30 @@ class LocationServiceCommandUtilsTest extends ScalaTestWithActorTestKit with Bas
 
   "resolveSequencer" must {
 
-    "return a location which matches a given packageId and observing mode | ESW-119" in {
+    "return a location which matches a given subsystem and observing mode | ESW-119" in {
       val testUri = new URI("test-uri")
       val tcsLocation =
         AkkaLocation(
           AkkaConnection(ComponentId(Prefix(TCS, "obsMode1"), Sequencer)),
           testUri
         )
-      val ocsLocations = List(
-        AkkaLocation(
-          AkkaConnection(ComponentId(Prefix(ESW, "OCS_1"), SequenceComponent)),
-          testUri
-        ),
-        AkkaLocation(
-          AkkaConnection(ComponentId(Prefix(TCS, "TCS_1"), SequenceComponent)),
-          testUri
-        )
-      )
-      when(locationService.list).thenReturn(Future.successful(tcsLocation :: ocsLocations))
+
+      when(locationService.resolve(AkkaConnection(ComponentId(Prefix(TCS, "obsMode1"), Sequencer)), Timeouts.DefaultTimeout))
+        .thenReturn(Future.successful(Some(tcsLocation)))
 
       val locationServiceDsl = new LocationServiceUtil(locationService)
       val actualLocations =
-        locationServiceDsl.resolveSequencer("tcs", "obsMode1").futureValue
+        locationServiceDsl.resolveSequencer(TCS, "obsMode1").futureValue
       actualLocations should ===(tcsLocation)
     }
 
     "return a RuntimeException when no matching packageId and observing mode is found | ESW-119" in {
-      val testUri = new URI("test-uri")
-      val tcsLocation =
-        AkkaLocation(
-          AkkaConnection(ComponentId(Prefix(TCS, "obsMode1"), Sequencer)),
-          testUri
-        )
-      val ocsLocations = List(
-        AkkaLocation(
-          AkkaConnection(ComponentId(Prefix(ESW, "OCS_1"), SequenceComponent)),
-          testUri
-        ),
-        AkkaLocation(
-          AkkaConnection(ComponentId(Prefix(TCS, "TCS_1"), SequenceComponent)),
-          testUri
-        )
-      )
-      when(locationService.list).thenReturn(Future.successful(tcsLocation :: ocsLocations))
+      when(locationService.resolve(AkkaConnection(ComponentId(Prefix(TCS, "obsMode1"), Sequencer)), Timeouts.DefaultTimeout))
+        .thenReturn(Future.successful(None))
 
       val locationServiceUtil = new LocationServiceUtil(locationService)
       intercept[RuntimeException] {
-        locationServiceUtil.resolveSequencer("TCS", "obsMode2", 200.millis).awaitResult
+        locationServiceUtil.resolveSequencer(TCS, "obsMode2", 200.millis).awaitResult
       }
     }
   }

@@ -4,6 +4,7 @@ import java.util.concurrent.CompletionStage
 
 import akka.util.Timeout
 import csw.command.client.extensions.AkkaLocationExt.RichAkkaLocation
+import csw.params.core.models.Subsystem
 import esw.ocs.api.SequencerApi
 import esw.ocs.dsl.sequence_manager.LocationServiceUtil
 
@@ -16,11 +17,11 @@ class SequencerActorProxyFactory(locationServiceUtil: LocationServiceUtil)(impli
   import locationServiceUtil.actorSystem
   import actorSystem.executionContext
 
-  private def make(packageId: String, observingMode: String): Future[SequencerApi] =
+  private def make(subsystem: Subsystem, observingMode: String): Future[SequencerApi] =
     locationServiceUtil
-      .resolveSequencer(packageId, observingMode)
+      .resolveSequencer(subsystem, observingMode)
       .map(akkaLocation => new SequencerActorProxy(akkaLocation.sequencerRef))
 
-  def jMake(packageId: String, observingMode: String): CompletionStage[SequencerApi] =
-    make(packageId, observingMode).toJava
+  def jMake(subsystem: Subsystem, observingMode: String): CompletionStage[SequencerApi] =
+    make(subsystem, observingMode).toJava
 }

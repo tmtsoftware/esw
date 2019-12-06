@@ -5,6 +5,8 @@ import csw.location.models.AkkaLocation
 import csw.params.commands.CommandResponse
 import csw.params.commands.Sequence
 import csw.params.core.models.Id
+import csw.params.core.models.Subsystem
+import csw.params.javadsl.JSubsystem
 import csw.time.core.models.UTCTime
 import esw.ocs.api.SequencerApi
 import esw.ocs.api.protocol.`Ok$`
@@ -26,11 +28,11 @@ class RichSequencerTest {
     private val hint = "test-hint"
     private val startTime: UTCTime = UTCTime.now()
 
-    private val sequencerId: String = "tcs"
+    private val sequencerId: Subsystem = JSubsystem.TCS
     private val observingMode: String = "darknight"
     private val sequence: Sequence = mockk()
 
-    val sequencerApiFactory: BiFunction<String, String, CompletionStage<SequencerApi>> = mockk()
+    val sequencerApiFactory: BiFunction<Subsystem, String, CompletionStage<SequencerApi>> = mockk()
     private val locationServiceUtil: LocationServiceUtil = mockk()
 
     private val tcsSequencer = RichSequencer(sequencerId, observingMode, sequencerApiFactory)

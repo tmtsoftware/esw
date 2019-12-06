@@ -3,9 +3,10 @@ package esw.ocs.dsl.highlevel
 import akka.util.Timeout
 import csw.params.commands.CommandResponse
 import csw.params.commands.CommandResponse.SubmitResponse
-import csw.params.commands.ControlCommand
 import csw.params.commands.Sequence
 import csw.params.core.models.Id
+import csw.params.core.models.Subsystem
+import csw.params.javadsl.JSubsystem
 import csw.time.core.models.UTCTime
 import esw.ocs.api.SequencerApi
 import esw.ocs.api.protocol.*
@@ -17,12 +18,12 @@ import java.util.function.BiFunction
 import kotlin.time.Duration
 
 class RichSequencer(
-        private val sequencerId: String,
+        internal val subsystem: Subsystem,
         private val observingMode: String,
-        private val sequencerApiFactory: BiFunction<String, String, CompletionStage<SequencerApi>>
+        private val sequencerApiFactory: BiFunction<Subsystem, String, CompletionStage<SequencerApi>>
 ) {
 
-    private suspend fun sequencerAdmin() = sequencerApiFactory.apply(sequencerId, observingMode).await()
+    private suspend fun sequencerAdmin() = sequencerApiFactory.apply(subsystem, observingMode).await()
 
     suspend fun submit(sequence: Sequence): SubmitResponse = sequencerAdmin().submit(sequence).toJava().await()
     suspend fun query(runId: Id): CommandResponse.QueryResponse = sequencerAdmin().query(runId).toJava().await()

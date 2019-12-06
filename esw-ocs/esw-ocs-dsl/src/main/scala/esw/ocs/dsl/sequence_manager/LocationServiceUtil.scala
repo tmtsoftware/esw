@@ -5,10 +5,10 @@ import java.util.concurrent.CompletionStage
 import akka.actor.CoordinatedShutdown
 import akka.actor.typed.scaladsl.adapter.TypedActorSystemOps
 import akka.actor.typed.{ActorRef, ActorSystem}
-import akka.pattern.after
 import csw.command.client.extensions.AkkaLocationExt.RichAkkaLocation
 import csw.command.client.messages.ComponentMessage
 import csw.location.api.scaladsl.{LocationService, RegistrationResult}
+import csw.location.models.ComponentType.Sequencer
 import csw.location.models.Connection.AkkaConnection
 import csw.location.models.ConnectionType.AkkaType
 import csw.location.models._
@@ -17,7 +17,7 @@ import esw.ocs.api.protocol.ScriptError
 import esw.ocs.dsl.Timeouts
 
 import scala.compat.java8.FutureConverters.FutureOps
-import scala.concurrent.duration.{DurationInt, FiniteDuration}
+import scala.concurrent.duration.FiniteDuration
 import scala.concurrent.{ExecutionContext, Future}
 import scala.util.control.NonFatal
 
@@ -57,10 +57,8 @@ class LocationServiceUtil(private[esw] val locationService: LocationService)(imp
         case akkaLocation: AkkaLocation if akkaLocation.prefix.subsystem == subsystem => akkaLocation
       })
 
-  //Can be used to listByPackageId() and listByObsMode(), in future. Separate APIs can be created once we have concrete
-  //classes for `PackageId` and `ObsMode`
   def listByComponentName(name: String): Future[List[Location]] =
-    locationService.list.map(_.filter(_.prefix.value.contains(name)))
+    locationService.list.map(_.filter(_.prefix.componentName.equalsIgnoreCase(name)))
 
   def resolveByComponentNameAndType(name: String, componentType: ComponentType): Future[Option[Location]] =
     locationService.list(componentType).map(_.find(_.connection.componentId.prefix.componentName == name))
@@ -78,31 +76,16 @@ class LocationServiceUtil(private[esw] val locationService: LocationService)(imp
   }
 
   private[esw] def resolveSequencer(
-      packageId: String,
+      subsystem: Subsystem,
       observingMode: String,
       timeout: FiniteDuration = Timeouts.DefaultTimeout
-  ): Future[AkkaLocation] = {
-    val ResolveInterval = 50.millis
-    def resolveLoop(remainingDuration: FiniteDuration): Future[AkkaLocation] =
-      locationService.list
-        .map {
-          _.collectFirst {
-            case location: AkkaLocation if location.prefix.value.contains(s"$packageId.$observingMode") =>
-              location
-          }
-        }
-        .flatMap {
-          case Some(location) => Future.successful(location)
-          case _ if remainingDuration.length <= 0 =>
-            throw new RuntimeException(s"Could not find any sequencer with name: $packageId.$observingMode")
-          case _ =>
-            after(remainingDuration min ResolveInterval, actorSystem.toClassic.scheduler) {
-              resolveLoop(remainingDuration minus ResolveInterval)
-            }
-        }
-
-    resolveLoop(timeout)
-  }
+  ) =
+    locationService
+      .resolve(AkkaConnection(ComponentId(Prefix(subsystem, observingMode), Sequencer)), timeout)
+      .map {
+        case Some(value) => value
+        case None        => throw new RuntimeException(s"Could not find any sequencer with name: ${subsystem.name}.$observingMode")
+      }
 
   def resolveAkkaLocation(prefix: Prefix, componentType: ComponentType): Future[AkkaLocation] = {
     val connection = AkkaConnection(ComponentId(prefix, componentType))

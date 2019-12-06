@@ -11,6 +11,7 @@ import csw.location.api.javadsl.JComponentType
 import csw.location.models.ComponentType
 import csw.logging.api.javadsl.ILogger
 import csw.params.core.models.Prefix
+import csw.params.core.models.Subsystem
 import csw.time.scheduler.api.TimeServiceScheduler
 import esw.ocs.dsl.epics.CommandFlag
 import esw.ocs.dsl.epics.FsmScope
@@ -18,6 +19,7 @@ import esw.ocs.dsl.epics.Fsm
 import esw.ocs.dsl.epics.FsmImpl
 import esw.ocs.dsl.script.CswServices
 import esw.ocs.dsl.script.StrandEc
+import esw.ocs.dsl.script.utils.SubsystemFactory
 import esw.ocs.dsl.sequence_manager.LocationServiceUtil
 import kotlinx.coroutines.CoroutineScope
 
@@ -26,7 +28,7 @@ interface CswHighLevelDslApi : EventServiceDsl, TimeServiceDsl, CommandServiceDs
 
     fun Assembly(name: String): RichComponent
     fun Hcd(name: String): RichComponent
-    fun Sequencer(sequencerId: String, observingMode: String): RichSequencer
+    fun Sequencer(subsystem: String, observingMode: String): RichSequencer
 
     suspend fun Fsm(name: String, initState: String, block: suspend FsmScope.() -> Unit): Fsm
     fun commandFlag(): CommandFlag
@@ -55,12 +57,12 @@ abstract class CswHighLevelDsl(private val cswServices: CswServices) : CswHighLe
     private fun richComponent(prefix: String, componentType: ComponentType): RichComponent =
             RichComponent(Prefix.apply(prefix), componentType, this.prefix, cswServices.lockUnlockUtil(), locationServiceUtil, system, coroutineScope)
 
-    private fun richSequencer(sequencerId: String, observingMode: String): RichSequencer =
-            RichSequencer(sequencerId, observingMode, cswServices.sequencerApiFactory())
+    private fun richSequencer(subsystem: Subsystem, observingMode: String): RichSequencer =
+            RichSequencer(subsystem, observingMode, cswServices.sequencerApiFactory())
 
     override fun Assembly(name: String): RichComponent = richComponent(name, JComponentType.Assembly())
     override fun Hcd(name: String): RichComponent = richComponent(name, JComponentType.HCD())
-    override fun Sequencer(sequencerId: String, observingMode: String): RichSequencer = richSequencer(sequencerId, observingMode)
+    override fun Sequencer(subsystem: String, observingMode: String): RichSequencer = richSequencer(SubsystemFactory.make(subsystem), observingMode)
 
     /************* Fsm helpers **********/
     override suspend fun Fsm(name: String, initState: String, block: suspend FsmScope.() -> Unit): Fsm =
