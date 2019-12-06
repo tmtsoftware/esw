@@ -25,6 +25,8 @@ object Csw {
   private val Org     = "com.github.tmtsoftware.csw"
   private val Version = "b304892" //change this to 0.1-SNAPSHOT to test with local csw changes (after publishLocal)
 
+  val `csw-admin-api`                 = dep(Org %%% "csw-admin-api" % Version)
+  val `csw-admin-impl`                = Org %% "csw-admin-impl" % Version
   val `csw-alarm-api`                 = Org %% "csw-alarm-api" % Version
   val `csw-command-api`               = dep(Org %%% "csw-command-api" % Version)
   val `csw-location-models`           = dep(Org %%% "csw-location-models" % Version)

@@ -38,6 +38,8 @@ trait GatewayCodecs extends CommandServiceCodecs with LocationCodecs with Loggin
     @silent implicit lazy val metadataEnc: Encoder[Map[String, Any]]                       = Encoder[MapElem].contramap(ElementConverter.fromMap)
     @silent implicit lazy val metadataDec: Decoder[Map[String, Any]]                       = Decoder[MapElem].map(ElementConverter.toMap)
     @silent implicit lazy val logCodec: Codec[Log]                                         = deriveCodec
+    @silent implicit lazy val getLogMetadataCodec: Codec[GetLogMetadata]                   = deriveCodec
+    @silent implicit lazy val setLogLevelCodec: Codec[SetLogLevel]                         = deriveCodec
     deriveCodec
   }
 

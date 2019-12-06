@@ -17,4 +17,6 @@ object PostRequest {
   case class GetEvent(eventKeys: Set[EventKey])                                                          extends PostRequest
   case class SetAlarmSeverity(alarmKey: AlarmKey, severity: AlarmSeverity)                               extends PostRequest
   case class Log(appName: String, level: Level, message: String, metadata: Map[String, Any] = Map.empty) extends PostRequest
+  case class SetLogLevel(componentId: ComponentId, level: Level)                                         extends PostRequest
+  case class GetLogMetadata(componentId: ComponentId)                                                    extends PostRequest
 }
