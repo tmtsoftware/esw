@@ -11,7 +11,8 @@ private[app] object SequencerConfig {
     val scriptConfig =
       try {
         config.getConfig(s"scripts.${subsystem.name}.$observingMode")
-      } catch {
+      }
+      catch {
         case _: ConfigException.Missing => throw new ScriptConfigurationMissingException(subsystem, observingMode)
       }
 

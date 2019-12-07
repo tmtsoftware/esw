@@ -137,7 +137,8 @@ private[ocs] class SequencerWiring(
 
         val registration = AkkaRegistration(AkkaConnection(componentId), sequencerRef.toURI)
         new LocationServiceUtil(locationService).register(registration).block
-      } catch {
+      }
+      catch {
         case NonFatal(e) => Left(ScriptError(e.getMessage))
       }
     }
