@@ -98,7 +98,7 @@ class FsmImplTest {
     @Test
     fun `become should be able to pass parameters to next state | ESW-252`() = runBlocking {
         val parameter: Parameter<Int> = JKeyType.IntKey().make("encoder").set(1)
-        val event = SystemEvent(Prefix(JSubsystem.TCS, "test"), EventName("trigger.INIT.state")).add(parameter)
+        val event = SystemEvent(Prefix(JSubsystem.TCS(), "test"), EventName("trigger.INIT.state")).add(parameter)
         val expectedParamsInProgressState = Params(event.jParamSet())
 
         fsm.state(inProgress) { params ->

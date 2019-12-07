@@ -28,7 +28,7 @@ class RichSequencerTest {
     private val hint = "test-hint"
     private val startTime: UTCTime = UTCTime.now()
 
-    private val sequencerId: Subsystem = JSubsystem.TCS
+    private val sequencerId: Subsystem = JSubsystem.TCS()
     private val observingMode: String = "darknight"
     private val sequence: Sequence = mockk()
 

@@ -16,7 +16,7 @@ class CommandServiceDslTest : CommandServiceDsl {
     @Test
     fun `setup method should construct a Setup command with given prefix, commandName and obsId | ESW-121`() = runBlocking {
         val actualSetupCommand: Setup = Setup("esw.test", "move", "testObsId")
-        val expectedSetupCommand = Setup(Prefix(JSubsystem.ESW, "test"), CommandName("move"), Optional.of(ObsId("testObsId")))
+        val expectedSetupCommand = Setup(Prefix(JSubsystem.ESW(), "test"), CommandName("move"), Optional.of(ObsId("testObsId")))
 
         actualSetupCommand.source() shouldBe expectedSetupCommand.source()
         actualSetupCommand.commandName() shouldBe expectedSetupCommand.commandName()
@@ -25,7 +25,7 @@ class CommandServiceDslTest : CommandServiceDsl {
 
     @Test
     fun `observe method should construct a Observe command with given prefix, commandName and obsId | ESW-121`() = runBlocking {
-        val expectedObserveCommand = Observe(Prefix(JSubsystem.ESW, "test"), CommandName("move"), Optional.of(ObsId("testObsId")))
+        val expectedObserveCommand = Observe(Prefix(JSubsystem.ESW(), "test"), CommandName("move"), Optional.of(ObsId("testObsId")))
         val actualObserveCommand: Observe = Observe("esw.test", "move", "testObsId")
         actualObserveCommand.source() shouldBe expectedObserveCommand.source()
         actualObserveCommand.commandName() shouldBe expectedObserveCommand.commandName()

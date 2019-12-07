@@ -45,7 +45,7 @@ class RichComponentTest {
     private val hint = "test-hint"
     private val startTime: UTCTime = UTCTime.now()
 
-    private val source = Prefix(ESW, "test")
+    private val source = Prefix(ESW(), "test")
     private val setupCommand = Setup(source, CommandName("move"), Optional.of(ObsId("testObsId")))
 
     private val leaseDuration: Duration = 10.seconds
@@ -61,7 +61,7 @@ class RichComponentTest {
     inner class Assembly {
         private val componentName: String = "sampleAssembly"
         private val componentType: ComponentType = JComponentType.Assembly()
-        private val prefix = Prefix(ESW, componentName)
+        private val prefix = Prefix(ESW(), componentName)
         private val assembly: RichComponent =
                 RichComponent(
                         prefix,
@@ -247,7 +247,7 @@ class RichComponentTest {
     inner class HCD {
         private val hcdName: String = "sampleHcd"
         private val componentType: ComponentType = JComponentType.HCD()
-        private val prefix = Prefix(ESW, hcdName)
+        private val prefix = Prefix(ESW(), hcdName)
         private val hcd: RichComponent =
                 RichComponent(
                         prefix,

@@ -26,7 +26,7 @@ import kotlin.time.toJavaDuration
 class EventVariableTest {
     @Test
     fun `set should update local value and publish new event | ESW-132, ESW-142`() = runBlocking {
-        val prefix = Prefix(TCS, "test")
+        val prefix = Prefix(TCS(), "test")
         val eventName = EventName("testEvent")
         val systemEvent = SystemEvent(prefix, eventName)
         val booleanKey = booleanKey("testKey")
@@ -48,7 +48,7 @@ class EventVariableTest {
 
         val intKey = intKey("testKey")
         val intValue = 10
-        val systemEvent = SystemEvent(Prefix(TCS, "test"), EventName("testEvent")).add(intKey.set(intValue))
+        val systemEvent = SystemEvent(Prefix(TCS(), "test"), EventName("testEvent")).add(intKey.set(intValue))
 
         val eventVariable: EventVariable<Int> = EventVariable(systemEvent, intKey, eventService = eventServiceDsl)
 
@@ -67,7 +67,7 @@ class EventVariableTest {
 
         val intKey = intKey("testKey")
         val intValue = 10
-        val systemEvent = SystemEvent(Prefix(TCS, "test"), EventName("testEvent")).add(intKey.set(intValue))
+        val systemEvent = SystemEvent(Prefix(TCS(), "test"), EventName("testEvent")).add(intKey.set(intValue))
         val eventKey = systemEvent.eventKey().key()
 
         every { refreshable1.addFsmSubscription(any()) } just runs
@@ -107,7 +107,7 @@ class EventVariableTest {
 
         val intKey = intKey("testKey")
         val intValue = 10
-        val systemEvent = SystemEvent(Prefix(TCS, "test"), EventName("testEvent")).add(intKey.set(intValue))
+        val systemEvent = SystemEvent(Prefix(TCS(), "test"), EventName("testEvent")).add(intKey.set(intValue))
 
         val eventKey = setOf(EventKey.apply(systemEvent.eventKey().key()))
         val duration = 100.milliseconds

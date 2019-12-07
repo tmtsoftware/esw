@@ -22,9 +22,9 @@ class AlarmServiceDslTest : AlarmServiceDsl {
 
     @Test
     fun `AlarmServiceDsl should set severity of alarms | ESW-125`() {
-        val alarmKey1 = AlarmKey(TCS, "filter_assembly1", "temperature1")
-        val alarmKey2 = AlarmKey(TCS, "filter_assembly2", "temperature2")
-        val alarmKey3 = AlarmKey(TCS, "filter_assembly3", "temperature3")
+        val alarmKey1 = AlarmKey(TCS(), "filter_assembly1", "temperature1")
+        val alarmKey2 = AlarmKey(TCS(), "filter_assembly2", "temperature2")
+        val alarmKey3 = AlarmKey(TCS(), "filter_assembly3", "temperature3")
 
         val severity = Major()
 

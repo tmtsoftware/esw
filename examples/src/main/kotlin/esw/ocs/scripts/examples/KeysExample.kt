@@ -26,7 +26,7 @@ fun main() {
     val longMatrixData1 = matrixData(longData1)
     val longMatrixData2 = matrixData(longData2)
     val matrixParam = longMatrixKey("longMatrix").set(longMatrixData1, longMatrixData2)
-    val matrixParam1 = longMatrixKey("longMatrix").set(longMatrixData1, longMatrixData2, units = JUnits.lightyear)
+    val matrixParam1 = longMatrixKey("longMatrix").set(longMatrixData1, longMatrixData2, units = JUnits.lightyear())
 
     val systemEvent =
         SystemEvent(Prefix.apply("esw.event"), EventName("move")).add(longParam)
