@@ -1,5 +1,11 @@
 ### list
-GET http://localhost:7654/location/list
+POST http://localhost:7654/post-endpoint
+Content-Type: application/json
+
+{
+  "ListEntries": {}
+}
+
 
 ########### component ##############
 
