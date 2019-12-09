@@ -1,6 +1,7 @@
 package esw.ocs.dsl.highlevel
 
 import akka.util.Timeout
+import csw.params.commands.CommandResponse
 import csw.params.commands.CommandResponse.SubmitResponse
 import csw.params.commands.Sequence
 import csw.params.core.models.Id
@@ -8,7 +9,10 @@ import csw.params.core.models.Subsystem
 import csw.time.core.models.UTCTime
 import esw.ocs.api.SequencerApi
 import esw.ocs.api.protocol.*
+import esw.ocs.dsl.SuspendableConsumer
+import esw.ocs.dsl.jdk.SuspendToJavaConverter
 import esw.ocs.dsl.jdk.toJava
+import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.future.await
 import java.util.concurrent.CompletionStage
 import java.util.concurrent.TimeUnit
@@ -18,8 +22,9 @@ import kotlin.time.Duration
 class RichSequencer(
         internal val subsystem: Subsystem,
         private val observingMode: String,
-        private val sequencerApiFactory: BiFunction<Subsystem, String, CompletionStage<SequencerApi>>
-) {
+        private val sequencerApiFactory: BiFunction<Subsystem, String, CompletionStage<SequencerApi>>,
+        override val coroutineScope: CoroutineScope
+) : SuspendToJavaConverter {
 
     private suspend fun sequencerAdmin() = sequencerApiFactory.apply(subsystem, observingMode).await()
 
@@ -31,27 +36,33 @@ class RichSequencer(
         return sequencerAdmin().queryFinal(runId, akkaTimeout).toJava().await()
     }
 
-    suspend fun submitAndWait(sequence: Sequence, timeout: Duration): SubmitResponse? {
+    suspend fun submitAndWait(sequence: Sequence, timeout: Duration, onError: (SuspendableConsumer<SubmitResponse>)? = null): SubmitResponse {
         val akkaTimeout = Timeout(timeout.toLongNanoseconds(), TimeUnit.NANOSECONDS)
-        return sequencerAdmin().submitAndWait(sequence, akkaTimeout).toJava().await()
+        val submitResponse = sequencerAdmin().submitAndWait(sequence, akkaTimeout).toJava().await()
+        return handleResponse(submitResponse, onError)
     }
 
-    suspend fun goOnline(): GoOnlineResponse? =
+    suspend fun goOnline(): GoOnlineResponse =
             sequencerAdmin().goOnline().toJava().await()
 
-    suspend fun goOffline(): GoOfflineResponse? =
+    suspend fun goOffline(): GoOfflineResponse =
             sequencerAdmin().goOffline().toJava().await()
 
-    suspend fun diagnosticMode(startTime: UTCTime, hint: String): DiagnosticModeResponse? =
+    suspend fun diagnosticMode(startTime: UTCTime, hint: String): DiagnosticModeResponse =
             sequencerAdmin().diagnosticMode(startTime, hint).toJava().await()
 
-    suspend fun operationsMode(): OperationsModeResponse? =
+    suspend fun operationsMode(): OperationsModeResponse =
             sequencerAdmin().operationsMode().toJava().await()
 
-    suspend fun abortSequence(): OkOrUnhandledResponse? =
+    suspend fun abortSequence(): OkOrUnhandledResponse =
             sequencerAdmin().abortSequence().toJava().await()
 
-    suspend fun stop(): OkOrUnhandledResponse? =
+    suspend fun stop(): OkOrUnhandledResponse =
             sequencerAdmin().stop().toJava().await()
 
+    private suspend fun handleResponse(submitResponse: SubmitResponse, handler: SuspendableConsumer<SubmitResponse>?): SubmitResponse {
+        if (CommandResponse.isNegative(submitResponse))
+            handler?.toJava(submitResponse)?.await() ?: throw SubmitError(submitResponse)
+        return submitResponse
+    }
 }

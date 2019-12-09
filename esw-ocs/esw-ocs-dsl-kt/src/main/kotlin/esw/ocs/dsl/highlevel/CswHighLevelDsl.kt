@@ -58,7 +58,7 @@ abstract class CswHighLevelDsl(private val cswServices: CswServices) : CswHighLe
             RichComponent(Prefix.apply(prefix), componentType, this.prefix, cswServices.lockUnlockUtil(), locationServiceUtil, system, coroutineScope)
 
     private fun richSequencer(subsystem: Subsystem, observingMode: String): RichSequencer =
-            RichSequencer(subsystem, observingMode, cswServices.sequencerApiFactory())
+            RichSequencer(subsystem, observingMode, cswServices.sequencerApiFactory(), coroutineScope)
 
     override fun Assembly(name: String): RichComponent = richComponent(name, JComponentType.Assembly())
     override fun Hcd(name: String): RichComponent = richComponent(name, JComponentType.HCD())

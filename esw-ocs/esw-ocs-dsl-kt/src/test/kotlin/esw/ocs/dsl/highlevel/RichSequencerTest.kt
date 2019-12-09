@@ -14,6 +14,7 @@ import esw.ocs.dsl.sequence_manager.LocationServiceUtil
 import io.mockk.every
 import io.mockk.mockk
 import io.mockk.verify
+import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.runBlocking
 import org.junit.jupiter.api.Test
 import scala.concurrent.Future
@@ -25,6 +26,8 @@ import kotlin.time.seconds
 
 class RichSequencerTest {
 
+    private val coroutineScope:CoroutineScope = mockk()
+
     private val hint = "test-hint"
     private val startTime: UTCTime = UTCTime.now()
 
@@ -32,10 +35,10 @@ class RichSequencerTest {
     private val observingMode: String = "darknight"
     private val sequence: Sequence = mockk()
 
-    val sequencerApiFactory: BiFunction<Subsystem, String, CompletionStage<SequencerApi>> = mockk()
+    private val sequencerApiFactory: BiFunction<Subsystem, String, CompletionStage<SequencerApi>> = mockk()
     private val locationServiceUtil: LocationServiceUtil = mockk()
 
-    private val tcsSequencer = RichSequencer(sequencerId, observingMode, sequencerApiFactory)
+    private val tcsSequencer = RichSequencer(sequencerId, observingMode, sequencerApiFactory, coroutineScope)
 
     private val sequencerApi: SequencerApi = mockk()
 
