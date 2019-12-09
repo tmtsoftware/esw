@@ -2,6 +2,7 @@ package esw.ocs.app
 
 import akka.actor.testkit.typed.scaladsl.TestProbe
 import csw.event.client.EventServiceFactory
+import csw.location.api.extensions.URIExtension._
 import csw.location.client.scaladsl.HttpLocationServiceFactory
 import csw.params.commands.CommandIssue.UnsupportedCommandInStateIssue
 import csw.params.commands.CommandResponse.{Completed, Error, Invalid, Started, SubmitResponse}
@@ -17,6 +18,7 @@ import esw.ocs.api.models.StepStatus.Finished.{Failure, Success}
 import esw.ocs.api.models.StepStatus.Pending
 import esw.ocs.api.models.{Step, StepList}
 import esw.ocs.api.protocol._
+import esw.ocs.impl.SequenceComponentImpl
 import esw.ocs.impl.messages.SequencerState.{Loaded, Offline}
 import esw.ocs.testkit.EswTestKit
 
@@ -289,6 +291,24 @@ class SequencerClientIntegrationTest extends EswTestKit(EventServer) {
     val expectedOperationsEvent = testProbe.expectMessageType[SystemEvent]
 
     expectedOperationsEvent.paramSet.head shouldBe operationsModeParam
+  }
+
+  "GetSequenceComponent | ESW-255" in {
+    //start sequence component
+    val sequenceComponentLocation = spawnSequenceComponent(ESW, Some("primary")).toOption.get
+    val sequenceComponentImpl     = new SequenceComponentImpl(sequenceComponentLocation.uri.toActorRef.unsafeUpcast)
+
+    //start sequencer
+    val observingMode = "darknight"
+    sequenceComponentImpl.loadScript(ESW, observingMode).futureValue.response.toOption.get
+
+    val sequencer: SequencerApi = sequencerClient(ESW, observingMode)
+
+    //assert that getSequenceComponent returns sequenceComponentLocation where sequencer is running
+    sequencer.getSequenceComponent.futureValue should ===(sequenceComponentLocation)
+
+    //cleaunp
+    sequenceComponentImpl.unloadScript()
   }
 
   private def compareStepList(actual: Option[StepList], expected: Option[StepList]): Unit = {

@@ -6,6 +6,7 @@ import akka.util.Timeout
 import csw.command.api.utils.SequencerCommandServiceExtension
 import csw.command.client.messages.sequencer.SequencerMsg
 import csw.command.client.messages.sequencer.SequencerMsg.{Query, QueryFinal}
+import csw.location.models.AkkaLocation
 import csw.params.commands.CommandResponse.SubmitResponse
 import csw.params.commands.{Sequence, SequenceCommand}
 import csw.params.core.models.Id
@@ -79,4 +80,6 @@ class SequencerActorProxy(sequencer: ActorRef[SequencerMsg])(implicit system: Ac
     sequencer ? (DiagnosticMode(startTime, hint, _))
 
   override def operationsMode(): Future[OperationsModeResponse] = sequencer ? OperationsMode
+
+  override def getSequenceComponent: Future[AkkaLocation] = sequencer ? GetSequenceComponent
 }

@@ -1,17 +1,23 @@
 package esw.ocs.impl
 
-import akka.actor.testkit.typed.scaladsl.ScalaTestWithActorTestKit
+import akka.actor.testkit.typed.scaladsl.{ScalaTestWithActorTestKit, TestProbe}
 import akka.actor.typed.scaladsl.Behaviors
 import csw.command.client.messages.sequencer.SequencerMsg
 import csw.command.client.messages.sequencer.SequencerMsg.QueryFinal
+import csw.location.api.extensions.ActorExtension._
+import csw.location.models.ComponentType.SequenceComponent
+import csw.location.models.Connection.AkkaConnection
+import csw.location.models.{AkkaLocation, ComponentId}
 import csw.params.commands.CommandResponse.{Completed, Started}
 import csw.params.commands.{CommandName, Sequence, Setup}
+import csw.params.core.models.Subsystem.ESW
 import csw.params.core.models.{Id, Prefix}
 import csw.time.core.models.UTCTime
 import esw.ocs.api.BaseTestSuite
 import esw.ocs.api.models.StepList
 import esw.ocs.api.protocol.EditorError.{CannotOperateOnAnInFlightOrFinishedStep, IdDoesNotExist}
 import esw.ocs.api.protocol.{GoOnlineHookFailed, Ok, SubmitResult, Unhandled}
+import esw.ocs.impl.messages.SequenceComponentMsg
 import esw.ocs.impl.messages.SequencerMessages._
 import esw.ocs.impl.messages.SequencerState.{Idle, Loaded, Offline}
 
@@ -45,11 +51,17 @@ class SequencerActorProxyTest extends ScalaTestWithActorTestKit with BaseTestSui
   private val diagnosticModeResponse   = Ok
   private val operationsModeResponse   = Ok
   private val queryFinalResponse       = Completed(Id())
+  private val getSequenceComponentResponse =
+    AkkaLocation(
+      AkkaConnection(ComponentId(Prefix(ESW, "primary"), SequenceComponent)),
+      TestProbe[SequenceComponentMsg].ref.toURI
+    )
 
   private val mockedBehavior: Behaviors.Receive[SequencerMsg] =
     Behaviors.receiveMessage[SequencerMsg] { msg =>
       msg match {
         case GetSequence(replyTo)                            => replyTo ! getSequenceResponse
+        case GetSequenceComponent(replyTo)                   => replyTo ! getSequenceComponentResponse
         case GetSequencerState(replyTo)                      => replyTo ! getStateResponse
         case Add(List(`command`), replyTo)                   => replyTo ! addResponse
         case Prepend(List(`command`), replyTo)               => replyTo ! prependResponse
@@ -169,5 +181,9 @@ class SequencerActorProxyTest extends ScalaTestWithActorTestKit with BaseTestSui
 
   "operationsMode | ESW-143" in {
     sequencer.operationsMode().futureValue should ===(operationsModeResponse)
+  }
+
+  "getSequenceComponent | ESW-255" in {
+    sequencer.getSequenceComponent.futureValue should ===(getSequenceComponentResponse)
   }
 }

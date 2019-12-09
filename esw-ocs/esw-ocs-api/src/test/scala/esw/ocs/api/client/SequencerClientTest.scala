@@ -1,8 +1,14 @@
 package esw.ocs.api.client
 
+import java.net.URI
+
 import akka.util.Timeout
+import csw.location.models.ComponentType.SequenceComponent
+import csw.location.models.Connection.AkkaConnection
+import csw.location.models.{AkkaLocation, ComponentId}
 import csw.params.commands.CommandResponse.{Completed, Started, SubmitResponse}
 import csw.params.commands.{CommandName, Sequence, Setup}
+import csw.params.core.models.Subsystem.ESW
 import csw.params.core.models.{Id, Prefix}
 import csw.time.core.models.UTCTime
 import esw.ocs.api.BaseTestSuite
@@ -215,6 +221,15 @@ class SequencerClientTest extends BaseTestSuite with SequencerHttpCodecs {
           .requestResponse[SubmitResponse](argsEq(QueryFinal(id, timeout)), any[FiniteDuration]())(any[Decoder[SubmitResponse]]())
       ).thenReturn(Future.successful(Completed(id)))
       sequencer.queryFinal(id).futureValue should ===(Completed(id))
+    }
+
+    "call postClient with GetSequenceComponent request | ESW-222, ESW-255" in {
+      val sequenceComponentLocation =
+        AkkaLocation(AkkaConnection(ComponentId(Prefix(ESW, "primary"), SequenceComponent)), new URI("mock-uri"))
+
+      when(postClient.requestResponse[AkkaLocation](argsEq(GetSequenceComponent))(any[Decoder[AkkaLocation]]()))
+        .thenReturn(Future.successful(sequenceComponentLocation))
+      sequencer.getSequenceComponent.futureValue should ===(sequenceComponentLocation)
     }
   }
 }

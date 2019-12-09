@@ -1,6 +1,7 @@
 package esw.ocs.api
 
 import csw.command.api.scaladsl.SequencerCommandService
+import csw.location.models.AkkaLocation
 import csw.params.commands.CommandResponse.SubmitResponse
 import csw.params.commands.{Sequence, SequenceCommand}
 import csw.params.core.models.Id
@@ -26,6 +27,7 @@ trait SequencerApi extends SequencerCommandService {
   def reset(): Future[OkOrUnhandledResponse]
   def pause: Future[PauseResponse]
   def resume: Future[OkOrUnhandledResponse]
+  def getSequenceComponent: Future[AkkaLocation]
 
   def isAvailable: Future[Boolean]
   def isOnline: Future[Boolean]

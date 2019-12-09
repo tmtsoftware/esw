@@ -18,21 +18,22 @@ trait SequencerHttpCodecs extends OcsCodecs {
 
   lazy val sequencerPostRequestValue: Codec[SequencerPostRequest] = {
     // admin codecs
-    @silent implicit lazy val getSequenceCodec: Codec[GetSequence.type]      = deriveCodec
-    @silent implicit lazy val isAvailableCodec: Codec[IsAvailable.type]      = deriveCodec
-    @silent implicit lazy val isOnlineCodec: Codec[IsOnline.type]            = deriveCodec
-    @silent implicit lazy val pauseCodec: Codec[Pause.type]                  = deriveCodec
-    @silent implicit lazy val resumeCodec: Codec[Resume.type]                = deriveCodec
-    @silent implicit lazy val resetCodec: Codec[Reset.type]                  = deriveCodec
-    @silent implicit lazy val abortSequenceCodec: Codec[AbortSequence.type]  = deriveCodec
-    @silent implicit lazy val stopCodec: Codec[Stop.type]                    = deriveCodec
-    @silent implicit lazy val addCodec: Codec[Add]                           = deriveCodec
-    @silent implicit lazy val prependCodec: Codec[Prepend]                   = deriveCodec
-    @silent implicit lazy val replaceCodec: Codec[Replace]                   = deriveCodec
-    @silent implicit lazy val insertAfterCodec: Codec[InsertAfter]           = deriveCodec
-    @silent implicit lazy val deleteCodec: Codec[Delete]                     = deriveCodec
-    @silent implicit lazy val addBreakpointCodec: Codec[AddBreakpoint]       = deriveCodec
-    @silent implicit lazy val removeBreakpointCodec: Codec[RemoveBreakpoint] = deriveCodec
+    @silent implicit lazy val getSequenceCodec: Codec[GetSequence.type]                   = deriveCodec
+    @silent implicit lazy val getSequenceComponentCodec: Codec[GetSequenceComponent.type] = deriveCodec
+    @silent implicit lazy val isAvailableCodec: Codec[IsAvailable.type]                   = deriveCodec
+    @silent implicit lazy val isOnlineCodec: Codec[IsOnline.type]                         = deriveCodec
+    @silent implicit lazy val pauseCodec: Codec[Pause.type]                               = deriveCodec
+    @silent implicit lazy val resumeCodec: Codec[Resume.type]                             = deriveCodec
+    @silent implicit lazy val resetCodec: Codec[Reset.type]                               = deriveCodec
+    @silent implicit lazy val abortSequenceCodec: Codec[AbortSequence.type]               = deriveCodec
+    @silent implicit lazy val stopCodec: Codec[Stop.type]                                 = deriveCodec
+    @silent implicit lazy val addCodec: Codec[Add]                                        = deriveCodec
+    @silent implicit lazy val prependCodec: Codec[Prepend]                                = deriveCodec
+    @silent implicit lazy val replaceCodec: Codec[Replace]                                = deriveCodec
+    @silent implicit lazy val insertAfterCodec: Codec[InsertAfter]                        = deriveCodec
+    @silent implicit lazy val deleteCodec: Codec[Delete]                                  = deriveCodec
+    @silent implicit lazy val addBreakpointCodec: Codec[AddBreakpoint]                    = deriveCodec
+    @silent implicit lazy val removeBreakpointCodec: Codec[RemoveBreakpoint]              = deriveCodec
 
     // command codecs
     @silent implicit lazy val submitSequenceCodec: Codec[Submit]              = deriveCodec
