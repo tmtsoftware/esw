@@ -11,6 +11,8 @@ import csw.time.core.models.UTCTime
 import esw.ocs.api.SequencerApi
 import esw.ocs.api.protocol.`Ok$`
 import esw.ocs.dsl.sequence_manager.LocationServiceUtil
+import io.kotlintest.shouldBe
+import io.kotlintest.shouldThrow
 import io.mockk.every
 import io.mockk.mockk
 import io.mockk.verify
@@ -22,11 +24,12 @@ import java.util.concurrent.CompletableFuture
 import java.util.concurrent.CompletionStage
 import java.util.concurrent.TimeUnit
 import java.util.function.BiFunction
+import kotlin.coroutines.EmptyCoroutineContext
 import kotlin.time.seconds
 
 class RichSequencerTest {
 
-    private val coroutineScope:CoroutineScope = mockk()
+    private val coroutineScope: CoroutineScope = CoroutineScope(EmptyCoroutineContext)
 
     private val hint = "test-hint"
     private val startTime: UTCTime = UTCTime.now()
@@ -59,7 +62,7 @@ class RichSequencerTest {
 
     @Test
     fun `query should resolve sequencerCommandService for given sequencer and call query method on it | ESW-245, ESW-195 `() = runBlocking {
-        val runId:Id = mockk()
+        val runId: Id = mockk()
 
         every { locationServiceUtil.resolveSequencer(sequencerId, observingMode, any()) }.answers { Future.successful(sequencerLocation) }
         every { sequencerApiFactory.apply(sequencerId, observingMode) }.answers { CompletableFuture.completedFuture(sequencerApi) }
@@ -72,7 +75,7 @@ class RichSequencerTest {
 
     @Test
     fun `queryFinal should resolve sequencerCommandService for given sequencer and call queryFinal method on it | ESW-245, ESW-195 `() = runBlocking {
-        val runId:Id = mockk()
+        val runId: Id = mockk()
 
         every { locationServiceUtil.resolveSequencer(sequencerId, observingMode, any()) }.answers { Future.successful(sequencerLocation) }
         every { sequencerApiFactory.apply(sequencerId, observingMode) }.answers { CompletableFuture.completedFuture(sequencerApi) }
@@ -92,6 +95,23 @@ class RichSequencerTest {
 
         tcsSequencer.submitAndWait(sequence, 10.seconds)
 
+        verify { sequencerApi.submitAndWait(sequence, timeout) }
+    }
+
+    @Test
+    fun `submitAndWait should resolve sequencerCommandService for given sequencer and call its error handler when there is a negative submit response | ESW-245, ESW-195, ESW-249 `() = runBlocking {
+
+        var errorCounter = 0
+        val message = "error-occurred"
+        val invalidSubmitResponse = CommandResponse.Error(Id.apply(), message)
+
+        every { locationServiceUtil.resolveSequencer(sequencerId, observingMode, any()) }.answers { Future.successful(sequencerLocation) }
+        every { sequencerApi.submitAndWait(sequence, timeout) }.answers { Future.successful(invalidSubmitResponse) }
+        every { sequencerApiFactory.apply(sequencerId, observingMode) }.answers { CompletableFuture.completedFuture(sequencerApi) }
+
+        shouldThrow<SubmitError> {  tcsSequencer.submitAndWait(sequence, 10.seconds) { errorCounter++ }}
+
+        errorCounter shouldBe 1
         verify { sequencerApi.submitAndWait(sequence, timeout) }
     }
 

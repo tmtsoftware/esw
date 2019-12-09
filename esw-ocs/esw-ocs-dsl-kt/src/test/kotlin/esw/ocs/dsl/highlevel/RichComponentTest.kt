@@ -24,6 +24,8 @@ import csw.params.javadsl.JSubsystem.ESW
 import csw.time.core.models.UTCTime
 import esw.ocs.dsl.script.utils.LockUnlockUtil
 import esw.ocs.dsl.sequence_manager.LocationServiceUtil
+import io.kotlintest.shouldBe
+import io.kotlintest.shouldThrow
 import io.mockk.every
 import io.mockk.mockk
 import io.mockk.mockkStatic
@@ -37,11 +39,14 @@ import scala.concurrent.duration.FiniteDuration
 import java.util.*
 import java.util.concurrent.CompletableFuture
 import java.util.concurrent.TimeUnit
+import kotlin.coroutines.EmptyCoroutineContext
 import kotlin.time.Duration
 import kotlin.time.seconds
 import kotlin.time.toJavaDuration
 
 class RichComponentTest {
+    private val coroutineScope: CoroutineScope = CoroutineScope(EmptyCoroutineContext)
+
     private val hint = "test-hint"
     private val startTime: UTCTime = UTCTime.now()
 
@@ -54,7 +59,6 @@ class RichComponentTest {
     private val lockUnlockUtil: LockUnlockUtil = mockk()
     private val locationServiceUtil: LocationServiceUtil = mockk()
     private val actorSystem: ActorSystem<*> = mockk()
-    private val coroutineScope: CoroutineScope = mockk()
 
 
     @Nested
@@ -156,6 +160,26 @@ class RichComponentTest {
 
             assembly.submitAndWait(setupCommand, timeoutDuration)
 
+            verify { assemblyCommandService.submitAndWait(setupCommand, timeout) }
+        }
+
+        @Test
+        fun `submitAndWait should resolve commandService for given assembly and call its error handler when there is a negative submit response | ESW-121, ESW-245, ESW-249 `() = runBlocking {
+            val timeoutDuration: Duration = 5.seconds
+            val timeout = Timeout(timeoutDuration.toLongNanoseconds(), TimeUnit.NANOSECONDS)
+
+            var errorCounter = 0
+            val message = "error-occurred"
+            val invalidSubmitResponse = CommandResponse.Error(Id.apply(), message)
+
+            mockkStatic(CommandServiceFactory::class)
+            every { locationServiceUtil.jResolveAkkaLocation(prefix, componentType) }.answers { CompletableFuture.completedFuture(assemblyLocation) }
+            every { CommandServiceFactory.jMake(assemblyLocation, actorSystem) }.answers { assemblyCommandService }
+            every { assemblyCommandService.submitAndWait(setupCommand, timeout) }.answers { CompletableFuture.completedFuture(invalidSubmitResponse) }
+
+            shouldThrow<SubmitError> { assembly.submitAndWait(setupCommand, timeoutDuration) { errorCounter++ } }
+
+            errorCounter shouldBe 1
             verify { assemblyCommandService.submitAndWait(setupCommand, timeout) }
         }
 
@@ -342,6 +366,26 @@ class RichComponentTest {
 
             hcd.submitAndWait(setupCommand, timeoutDuration)
 
+            verify { hcdCommandService.submitAndWait(setupCommand, timeout) }
+        }
+
+        @Test
+        fun `submitAndWait should resolve commandService for given hcd and call its error handler when there is a negative submit response | ESW-121, ESW-245, ESW-249 `() = runBlocking {
+            val timeoutDuration: Duration = 5.seconds
+            val timeout = Timeout(timeoutDuration.toLongNanoseconds(), TimeUnit.NANOSECONDS)
+
+            var errorCounter = 0
+            val message = "error-occurred"
+            val invalidSubmitResponse = CommandResponse.Error(Id.apply(), message)
+
+            mockkStatic(CommandServiceFactory::class)
+            every { locationServiceUtil.jResolveAkkaLocation(prefix, componentType) }.answers { CompletableFuture.completedFuture(hcdLocation) }
+            every { CommandServiceFactory.jMake(hcdLocation, actorSystem) }.answers { hcdCommandService }
+            every { hcdCommandService.submitAndWait(setupCommand, timeout) }.answers { CompletableFuture.completedFuture(invalidSubmitResponse) }
+
+            shouldThrow<SubmitError> { hcd.submitAndWait(setupCommand, timeoutDuration) { errorCounter++ } }
+
+            errorCounter shouldBe 1
             verify { hcdCommandService.submitAndWait(setupCommand, timeout) }
         }
 
