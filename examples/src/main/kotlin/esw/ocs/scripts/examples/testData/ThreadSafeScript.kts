@@ -7,14 +7,13 @@ import kotlinx.coroutines.launch
 script {
     var counter = 0
 
-    // keep incrementing counter 10_0000 times in the background while processing commands
+    // keep incrementing counter 100_000 times in the background while processing commands
     val job = coroutineScope.launch {
-        repeat(10_0000) { counter++ }
+        repeat(100_000) { counter++ }
     }
 
     onSetup("increment") {
-        repeat(10_0000) { counter++ }
-        counter++
+        repeat(100_000) { counter++ }
     }
 
     onObserve("get-counter") {

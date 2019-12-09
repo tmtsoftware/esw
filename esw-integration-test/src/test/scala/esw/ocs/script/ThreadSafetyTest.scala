@@ -14,9 +14,9 @@ class ThreadSafetyTest extends EswTestKit(EventServer) {
 
   "Script" must {
 
-    // 1. script starts background jon in a constructor which increments counter 10_0000 times
-    // 2. concurrently script receives, increment cmd which increments counter 10_0000 times
-    // 3. test verifies that in the end counter is 20_0001
+    // 1. script starts background job in a constructor which increments counter 100_000 times
+    // 2. concurrently script receives, increment cmd which increments counter 100_000 times
+    // 3. test verifies that in the end counter is 200_000
     // this test will fail if you change StrandEc.apply() = new StrandEc(Executors.newScheduledThreadPool(4))
     "handle concurrent shared mutable state safely | ESW-133" in {
       val counter    = EventKey("esw.counter.get-counter")
@@ -37,7 +37,7 @@ class ThreadSafetyTest extends EswTestKit(EventServer) {
 
       threadSafeSequencer.submit(Sequence(List(incrementCommand, getCounterCommand)))
 
-      counterProbe.expectMessage(20_0001)
+      counterProbe.expectMessage(200_000)
     }
   }
 }
