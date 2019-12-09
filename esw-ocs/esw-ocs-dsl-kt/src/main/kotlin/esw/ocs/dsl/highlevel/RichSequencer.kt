@@ -62,7 +62,7 @@ class RichSequencer(
 
     private suspend fun handleResponse(submitResponse: SubmitResponse, handler: SuspendableConsumer<SubmitResponse>?): SubmitResponse {
         if (CommandResponse.isNegative(submitResponse))
-            handler?.toJava(submitResponse)?.await() ?: throw SubmitError(submitResponse)
+            handler?.let { it(coroutineScope, submitResponse) } ?: throw SubmitError(submitResponse)
         return submitResponse
     }
 }

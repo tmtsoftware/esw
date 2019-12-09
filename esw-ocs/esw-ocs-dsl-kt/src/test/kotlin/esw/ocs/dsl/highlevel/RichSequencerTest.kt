@@ -109,9 +109,11 @@ class RichSequencerTest {
         every { sequencerApi.submitAndWait(sequence, timeout) }.answers { Future.successful(invalidSubmitResponse) }
         every { sequencerApiFactory.apply(sequencerId, observingMode) }.answers { CompletableFuture.completedFuture(sequencerApi) }
 
-        shouldThrow<SubmitError> {  tcsSequencer.submitAndWait(sequence, 10.seconds) { errorCounter++ }}
-
+        tcsSequencer.submitAndWait(sequence, 10.seconds) { errorCounter++ } shouldBe invalidSubmitResponse
         errorCounter shouldBe 1
+        verify { sequencerApi.submitAndWait(sequence, timeout) }
+
+        shouldThrow<SubmitError> { tcsSequencer.submitAndWait(sequence, 10.seconds) }
         verify { sequencerApi.submitAndWait(sequence, timeout) }
     }
 
