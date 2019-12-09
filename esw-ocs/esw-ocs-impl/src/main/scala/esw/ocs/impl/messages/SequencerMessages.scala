@@ -14,12 +14,14 @@ object SequencerMessages {
 
   sealed trait EswSequencerMessage extends SequencerMsg with OcsAkkaSerializable
 
+  // Messages which are handled in all states
   sealed trait CommonMessage       extends EswSequencerMessage
   sealed trait ShuttingDownMessage extends EswSequencerMessage
   sealed trait UnhandleableSequencerMessage extends EswSequencerMessage {
     def replyTo: ActorRef[Unhandled]
   }
 
+  // Having state specific messages enables exhaustive match (compile time safety) while handling messages in SequencerBehavior
   sealed trait IdleMessage           extends UnhandleableSequencerMessage
   sealed trait SequenceLoadedMessage extends UnhandleableSequencerMessage
   sealed trait InProgressMessage     extends UnhandleableSequencerMessage

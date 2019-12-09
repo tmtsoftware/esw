@@ -55,6 +55,7 @@ class EventVariable<T> constructor(
     private suspend fun polling(duration: Duration): EventSubscription {
         val callback: (Event) -> CompletableFuture<Unit> = { eventService.coroutineScope.future { if (it != latestEvent) refresh(it) } }
 
+        // todo: move to EventService DSL
         val subscription = eventService
                 .defaultSubscriber
                 .subscribeAsync(setOf(EventKey.apply(eventKey)), callback, duration.toJavaDuration(), SubscriptionModes.jRateAdapterMode())
