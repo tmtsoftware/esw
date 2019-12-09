@@ -98,7 +98,7 @@ class EventVariableTest {
     }
 
     @Test
-    fun `bind with duration should start polling the event key and refresh Fsm on changes | ESW-132, ESW-142`() = runBlocking {
+    fun `bind with duration should start polling the event key and refresh Fsm on changes | ESW-142, ESW-256`() = runBlocking {
         val eventServiceDsl = mockk<EventServiceDsl>()
         val subscriber = mockk<IEventSubscriber>()
         val refreshable = mockk<Refreshable>()
