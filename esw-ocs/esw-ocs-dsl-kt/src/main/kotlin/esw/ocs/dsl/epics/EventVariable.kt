@@ -10,7 +10,6 @@ import esw.ocs.dsl.highlevel.EventServiceDsl
 import esw.ocs.dsl.highlevel.EventSubscription
 import esw.ocs.dsl.params.first
 import esw.ocs.dsl.params.invoke
-import esw.ocs.dsl.params.set
 import kotlinx.coroutines.future.future
 import java.util.concurrent.CompletableFuture
 import kotlin.time.Duration
@@ -64,7 +63,6 @@ class EventVariable<T> constructor(
     }
 
     private suspend fun subscribe(): EventSubscription = eventService.onEvent(eventKey) { refresh(it) }
-
 
     private suspend fun refresh(event: Event) {
         if (!event.isInvalid) {

@@ -1,7 +1,6 @@
 package esw.ocs.dsl.highlevel
 
 import akka.actor.typed.ActorSystem
-import akka.stream.Materializer
 import com.typesafe.config.Config
 import csw.config.api.javadsl.IConfigClientService
 import csw.config.models.ConfigId

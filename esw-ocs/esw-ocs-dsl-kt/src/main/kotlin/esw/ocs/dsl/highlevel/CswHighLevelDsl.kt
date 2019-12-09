@@ -14,9 +14,9 @@ import csw.params.core.models.Prefix
 import csw.params.core.models.Subsystem
 import csw.time.scheduler.api.TimeServiceScheduler
 import esw.ocs.dsl.epics.CommandFlag
-import esw.ocs.dsl.epics.FsmScope
 import esw.ocs.dsl.epics.Fsm
 import esw.ocs.dsl.epics.FsmImpl
+import esw.ocs.dsl.epics.FsmScope
 import esw.ocs.dsl.script.CswServices
 import esw.ocs.dsl.script.StrandEc
 import esw.ocs.dsl.script.utils.SubsystemFactory
