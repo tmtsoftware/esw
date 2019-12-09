@@ -5,16 +5,18 @@ import akka.actor.typed.scaladsl.AskPattern._
 import akka.actor.typed.scaladsl.Behaviors
 import akka.actor.typed.{ActorRef, Props}
 import akka.util.Timeout
-import csw.location.models.AkkaLocation
+import csw.location.models.Connection.AkkaConnection
+import csw.location.models.{AkkaLocation, ComponentId, ComponentType}
 import csw.logging.api.scaladsl.Logger
 import csw.logging.client.scaladsl.LoggerFactory
-import csw.params.core.models.Subsystem
+import csw.params.core.models.{Prefix, Subsystem}
 import esw.http.core.wiring.{ActorRuntime, CswWiring}
 import esw.ocs.api.protocol.ScriptError
 import esw.ocs.impl.core.SequenceComponentBehavior
 import esw.ocs.impl.internal.{SequenceComponentRegistration, SequencerServerFactory, Timeouts}
 import esw.ocs.impl.messages.SequenceComponentMsg
 import esw.ocs.impl.syntax.FutureSyntax.FutureOps
+import csw.location.api.extensions.ActorExtension._
 
 import scala.concurrent.Future
 
@@ -33,17 +35,21 @@ private[ocs] class SequenceComponentWiring(
 
   implicit lazy val timeout: Timeout = Timeouts.DefaultTimeout
 
-  def sequenceComponentFactory(sequenceComponentName: String): Future[ActorRef[SequenceComponentMsg]] = {
-    val loggerFactory                   = new LoggerFactory(sequenceComponentName)
+  def sequenceComponentFactory(sequenceComponentPrefix: String): Future[ActorRef[SequenceComponentMsg]] = {
+    val loggerFactory                   = new LoggerFactory(sequenceComponentPrefix)
     val sequenceComponentLogger: Logger = loggerFactory.getLogger
 
-    sequenceComponentLogger.info(s"Starting sequence component with name: $sequenceComponentName")
+    sequenceComponentLogger.info(s"Starting sequence component with name: $sequenceComponentPrefix")
     typedSystem ? { x =>
       Spawn(
         Behaviors.setup[SequenceComponentMsg] { ctx =>
-          SequenceComponentBehavior.behavior(ctx.self, sequenceComponentLogger, sequencerServerFactory)
+          val location = AkkaLocation(
+            AkkaConnection(ComponentId(Prefix(sequenceComponentPrefix), ComponentType.SequenceComponent)),
+            ctx.self.toURI
+          )
+          SequenceComponentBehavior.behavior(location, sequenceComponentLogger, sequencerServerFactory)
         },
-        sequenceComponentName,
+        sequenceComponentPrefix,
         Props.empty,
         x
       )

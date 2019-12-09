@@ -6,17 +6,19 @@ import akka.actor.typed.{ActorRef, ActorSystem}
 import csw.command.client.messages.sequencer.SequencerMsg
 import csw.command.client.messages.sequencer.SequencerMsg.SubmitSequence
 import csw.location.api.scaladsl.LocationService
-import csw.location.models.ComponentId
+import csw.location.models.Connection.AkkaConnection
+import csw.location.models.{AkkaLocation, ComponentId}
 import csw.params.commands.CommandResponse.{Completed, Started, SubmitResponse}
 import csw.params.commands.{Sequence, SequenceCommand}
-import csw.params.core.models.Id
+import csw.params.core.models.Subsystem.ESW
+import csw.params.core.models.{Id, Prefix}
 import csw.time.core.models.UTCTime
 import esw.ocs.api.models.{Step, StepList}
 import esw.ocs.api.protocol._
 import esw.ocs.dsl.script.ScriptDsl
 import esw.ocs.impl.messages.SequencerMessages.{Pause, _}
-import esw.ocs.impl.messages.SequencerState.{Idle, InProgress}
 import esw.ocs.impl.messages.{SequenceComponentMsg, SequencerState}
+import esw.ocs.impl.messages.SequencerState.{Idle, InProgress}
 import org.mockito.Mockito.{verify, when}
 import org.scalatest.concurrent.Eventually._
 import org.scalatest.{Assertion, Matchers}
@@ -25,6 +27,8 @@ import org.scalatestplus.mockito.MockitoSugar
 import scala.concurrent.duration.DurationLong
 import scala.concurrent.{ExecutionContext, Future, Promise}
 import scala.util.Success
+import csw.location.api.extensions.ActorExtension._
+import csw.location.models.ComponentType.SequenceComponent
 
 class SequencerTestSetup(sequence: Sequence)(implicit system: ActorSystem[_]) {
   import Matchers._
@@ -33,11 +37,14 @@ class SequencerTestSetup(sequence: Sequence)(implicit system: ActorSystem[_]) {
   implicit private val patienceConfig: PatienceConfig = PatienceConfig(5.seconds)
   implicit val ec: ExecutionContext                   = system.executionContext
 
-  private val componentId                                       = mock[ComponentId]
-  private val script                                            = mock[ScriptDsl]
-  private val locationService                                   = mock[LocationService]
-  private val sequenceComponent: ActorRef[SequenceComponentMsg] = TestProbe[SequenceComponentMsg].ref
-  private def mockShutdownHttpService: () => Future[Done.type]  = () => Future { Done }
+  private val componentId     = mock[ComponentId]
+  private val script          = mock[ScriptDsl]
+  private val locationService = mock[LocationService]
+  private val sequenceComponent: AkkaLocation = AkkaLocation(
+    AkkaConnection(ComponentId(Prefix(ESW, "primary"), SequenceComponent)),
+    TestProbe[SequenceComponentMsg].ref.toURI
+  )
+  private def mockShutdownHttpService: () => Future[Done.type] = () => Future { Done }
   private val sequencerBehavior =
     new SequencerBehavior(componentId, script, locationService, sequenceComponent, mockShutdownHttpService)
 
@@ -326,7 +333,7 @@ class SequencerTestSetup(sequence: Sequence)(implicit system: ActorSystem[_]) {
     probe.expectMessageType[Option[StepList]]
   }
 
-  def assertForGettingSequenceComponent(replyTo: TestProbe[ActorRef[SequenceComponentMsg]]): Unit = {
+  def assertForGettingSequenceComponent(replyTo: TestProbe[AkkaLocation]): Unit = {
     replyTo.expectMessage(sequenceComponent)
   }
 }

@@ -2,9 +2,9 @@ package esw.ocs.impl.core
 
 import akka.Done
 import akka.actor.testkit.typed.scaladsl.{ScalaTestWithActorTestKit, TestProbe}
-import akka.actor.typed.ActorRef
 import csw.command.client.messages.sequencer.SequencerMsg.QueryFinal
 import csw.command.client.messages.{GetComponentLogMetadata, SetComponentLogLevel}
+import csw.location.models.AkkaLocation
 import csw.logging.client.commons.LogAdminUtil
 import csw.logging.models.Level.{DEBUG, INFO}
 import csw.logging.models.LogMetadata
@@ -17,7 +17,6 @@ import esw.ocs.api.models.StepStatus.{Finished, InFlight, Pending}
 import esw.ocs.api.models.{Step, StepList}
 import esw.ocs.api.protocol.EditorError.{CannotOperateOnAnInFlightOrFinishedStep, IdDoesNotExist}
 import esw.ocs.api.protocol._
-import esw.ocs.impl.messages.SequenceComponentMsg
 import esw.ocs.impl.messages.SequencerMessages._
 import esw.ocs.impl.messages.SequencerState.{Idle, InProgress, Loaded, Offline}
 import org.scalatest.prop.TableDrivenPropertyChecks._
@@ -868,7 +867,7 @@ class SequencerBehaviorTest extends ScalaTestWithActorTestKit with BaseTestSuite
     forAll(testCases) { (stateName, testSetup) =>
       s"get sequence component name in $stateName state | ESW-255" in {
         import testSetup._
-        val sequenceComponentRef = TestProbe[ActorRef[SequenceComponentMsg]]
+        val sequenceComponentRef = TestProbe[AkkaLocation]
 
         sequencerActor ! GetSequenceComponent(sequenceComponentRef.ref)
 

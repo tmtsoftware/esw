@@ -2,6 +2,7 @@ package esw.ocs.impl.messages
 
 import akka.actor.typed.ActorRef
 import csw.command.client.messages.sequencer.SequencerMsg
+import csw.location.models.AkkaLocation
 import csw.params.commands.{Sequence, SequenceCommand}
 import csw.params.core.models.Id
 import csw.time.core.models.UTCTime
@@ -38,12 +39,12 @@ object SequencerMessages {
   final case class SubmitSequenceInternal(sequence: Sequence, replyTo: ActorRef[SequencerSubmitResponse]) extends IdleMessage
 
   // common msgs
-  final case class Shutdown(replyTo: ActorRef[Ok.type])                                    extends CommonMessage
-  final case class GetSequence(replyTo: ActorRef[Option[StepList]])                        extends CommonMessage
-  final case class GetSequencerState(replyTo: ActorRef[SequencerState[SequencerMsg]])      extends CommonMessage
-  final case class GetSequenceComponent(replyTo: ActorRef[ActorRef[SequenceComponentMsg]]) extends CommonMessage
-  final private[esw] case class ReadyToExecuteNext(replyTo: ActorRef[Ok.type])             extends CommonMessage
-  final private[esw] case class MaybeNext(replyTo: ActorRef[Option[Step]])                 extends CommonMessage
+  final case class Shutdown(replyTo: ActorRef[Ok.type])                               extends CommonMessage
+  final case class GetSequence(replyTo: ActorRef[Option[StepList]])                   extends CommonMessage
+  final case class GetSequencerState(replyTo: ActorRef[SequencerState[SequencerMsg]]) extends CommonMessage
+  final case class GetSequenceComponent(replyTo: ActorRef[AkkaLocation])              extends CommonMessage
+  final private[esw] case class ReadyToExecuteNext(replyTo: ActorRef[Ok.type])        extends CommonMessage
+  final private[esw] case class MaybeNext(replyTo: ActorRef[Option[Step]])            extends CommonMessage
 
   // diagnostic data msgs
   sealed trait DiagnosticDataMessage extends CommonMessage

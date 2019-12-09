@@ -9,8 +9,8 @@ import csw.command.client.messages.sequencer.SequencerMsg
 import csw.command.client.messages.sequencer.SequencerMsg.{Query, QueryFinal, SubmitSequence}
 import csw.command.client.messages.{GetComponentLogMetadata, LogControlMessage, SetComponentLogLevel}
 import csw.location.api.scaladsl.LocationService
-import csw.location.models.ComponentId
 import csw.location.models.Connection.AkkaConnection
+import csw.location.models.{AkkaLocation, ComponentId}
 import csw.logging.client.commons.LogAdminUtil
 import csw.params.commands.Sequence
 import csw.time.core.models.UTCTime
@@ -19,7 +19,7 @@ import esw.ocs.api.protocol._
 import esw.ocs.dsl.script.ScriptDsl
 import esw.ocs.impl.internal.Timeouts
 import esw.ocs.impl.messages.SequencerMessages._
-import esw.ocs.impl.messages.{SequenceComponentMsg, SequencerState}
+import esw.ocs.impl.messages.SequencerState
 import esw.ocs.impl.messages.SequencerState._
 
 import scala.concurrent.Future
@@ -30,7 +30,7 @@ class SequencerBehavior(
     componentId: ComponentId,
     script: ScriptDsl,
     locationService: LocationService,
-    sequenceComponent: ActorRef[SequenceComponentMsg],
+    sequenceComponentLocation: AkkaLocation,
     shutdownHttpService: () => Future[Done]
 )(implicit val actorSystem: ActorSystem[_])
     extends OcsCodecs {
@@ -124,7 +124,7 @@ class SequencerBehavior(
     case GetSequencerState(replyTo)               => replyTo ! state; Behaviors.same
     case DiagnosticMode(startTime, hint, replyTo) => goToDiagnosticMode(startTime, hint, replyTo)
     case OperationsMode(replyTo)                  => goToOperationsMode(replyTo)
-    case GetSequenceComponent(replyTo)            => replyTo ! sequenceComponent; Behaviors.same
+    case GetSequenceComponent(replyTo)            => replyTo ! sequenceComponentLocation; Behaviors.same
     case ReadyToExecuteNext(replyTo)              => currentBehavior(data.readyToExecuteNext(replyTo, state))
     case MaybeNext(replyTo) =>
       if (state == InProgress) replyTo ! data.stepList.flatMap(_.nextExecutable)

@@ -3,8 +3,9 @@ package esw.ocs.app
 import akka.actor.testkit.typed.scaladsl.TestProbe
 import com.typesafe.config.ConfigFactory
 import csw.location.helpers.{LSNodeSpec, TwoMembersAndSeed}
-import csw.location.models.Connection.HttpConnection
-import csw.location.models.{ComponentId, ComponentType}
+import csw.location.models.ComponentType.SequenceComponent
+import csw.location.models.Connection.{AkkaConnection, HttpConnection}
+import csw.location.models.{AkkaLocation, ComponentId, ComponentType}
 import csw.location.server.http.MultiNodeHTTPLocationService
 import csw.params.commands.CommandResponse.Started
 import csw.params.commands.{CommandName, Sequence, Setup}
@@ -16,6 +17,7 @@ import esw.ocs.app.wiring.SequencerWiring
 import esw.ocs.impl.SequencerApiFactory
 import esw.ocs.impl.messages.SequenceComponentMsg
 import org.scalatest.concurrent.ScalaFutures.convertScalaFuture
+import csw.location.api.extensions.ActorExtension._
 
 import scala.concurrent.duration.DurationInt
 
@@ -39,7 +41,7 @@ class SequencerTest(ignore: Int, mode: String)
   private val command1             = Setup(Prefix("esw.test"), CommandName("multi-node"), None)
   private val command2             = Setup(Prefix("esw.test"), CommandName("command-2"), None)
   private val sequence             = Sequence(command1, command2)
-  private val sequenceComponentRef = TestProbe[SequenceComponentMsg].ref
+  private val sequenceComponentRef = AkkaLocation(AkkaConnection(ComponentId(Prefix(ESW, "primary"), SequenceComponent)), TestProbe[SequenceComponentMsg].ref.toURI)
 
   test("tcs sequencer should send sequence to downstream ocs sequencer which submits the command to sample assembly") {
     runOn(seed) {

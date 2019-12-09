@@ -33,7 +33,6 @@ import esw.ocs.dsl.sequence_manager.LocationServiceUtil
 import esw.ocs.handler.{SequencerPostHandler, SequencerWebsocketHandler}
 import esw.ocs.impl.core._
 import esw.ocs.impl.internal.{SequencerServer, Timeouts}
-import esw.ocs.impl.messages.SequenceComponentMsg
 import esw.ocs.impl.messages.SequencerMessages.Shutdown
 import esw.ocs.impl.syntax.FutureSyntax.FutureOps
 import esw.ocs.impl.{SequencerActorProxy, SequencerActorProxyFactory}
@@ -47,7 +46,7 @@ import scala.util.control.NonFatal
 private[ocs] class SequencerWiring(
     val subsystem: Subsystem,
     val observingMode: String,
-    sequenceComponent: ActorRef[SequenceComponentMsg]
+    sequenceComponentLocation: AkkaLocation
 ) extends SequencerHttpCodecs {
   private lazy val config: Config  = ConfigFactory.load()
   private lazy val sequencerConfig = SequencerConfig.from(config, subsystem, observingMode)
@@ -126,7 +125,7 @@ private[ocs] class SequencerWiring(
     }
 
   lazy val sequencerBehavior =
-    new SequencerBehavior(componentId, script, locationService, sequenceComponent, shutdownHttpService)(typedSystem)
+    new SequencerBehavior(componentId, script, locationService, sequenceComponentLocation, shutdownHttpService)(typedSystem)
 
   lazy val sequencerServer: SequencerServer = new SequencerServer {
     override def start(): Either[ScriptError, AkkaLocation] = {
