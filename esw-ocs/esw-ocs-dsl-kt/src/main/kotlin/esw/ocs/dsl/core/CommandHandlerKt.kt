@@ -20,11 +20,12 @@ import kotlin.time.Duration
  */
 class CommandHandlerKt<T : SequenceCommand>(
         private val scope: CoroutineScope,
+        private val commandHandlerScope: CommandHandlerScope,
         private val block: SuspendableConsumer<T>
 ) : CommandHandler<T> {
 
     private var retryCount: Int = 0
-    private var onError: (SuspendableConsumer<ScriptError>)? = null
+    private var onError: (suspend CommandHandlerScope.(ScriptError) -> Unit)? = null
     private var delayInMillis: Long = 0
 
     override fun execute(sequenceCommand: T): CompletionStage<Void> =
@@ -33,7 +34,7 @@ class CommandHandlerKt<T : SequenceCommand>(
                         try {
                             block(sequenceCommand)
                         } catch (e: Exception) {
-                            onError?.let { it(e.toScriptError()) }
+                            onError?.let { it(commandHandlerScope, e.toScriptError()) }
                             if (retryCount > 0) {
                                 retryCount -= 1
                                 delay(delayInMillis)
@@ -44,7 +45,7 @@ class CommandHandlerKt<T : SequenceCommand>(
                 go()
             }.asCompletableFuture().thenAccept { }
 
-    fun onError(block: SuspendableConsumer<ScriptError>): CommandHandlerKt<T> {
+    fun onError(block: suspend CommandHandlerScope.(ScriptError) -> Unit): CommandHandlerKt<T> {
         onError = block
         return this
     }

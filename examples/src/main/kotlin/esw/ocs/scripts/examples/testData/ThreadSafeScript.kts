@@ -2,6 +2,7 @@ package esw.ocs.scripts.examples.testData
 
 import esw.ocs.dsl.core.script
 import esw.ocs.dsl.params.intKey
+import esw.ocs.dsl.params.set
 import kotlinx.coroutines.launch
 
 script {
