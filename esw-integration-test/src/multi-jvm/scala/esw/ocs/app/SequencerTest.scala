@@ -45,6 +45,7 @@ class SequencerTest(ignore: Int, mode: String)
 
   test("tcs sequencer should send sequence to downstream ocs sequencer which submits the command to sample assembly") {
     runOn(seed) {
+      enterBarrier("event-server-started")
       val ocsSequencerWiring = new SequencerWiring(ocsSubsystem, ocsSequencerObsMode, sequenceComponentRef)
       ocsSequencerWiring.sequencerServer.start()
 
@@ -52,7 +53,6 @@ class SequencerTest(ignore: Int, mode: String)
       enterBarrier("tcs-started")
       enterBarrier("assembly-started")
 
-      enterBarrier("event-server-started")
       // creating subscriber for event which will be publish in onSubmit handler for sample assembly
       val testProbe                 = TestProbe[Event]
       val eventSubscriber           = ocsSequencerWiring.cswWiring.eventService.defaultSubscriber
@@ -69,15 +69,14 @@ class SequencerTest(ignore: Int, mode: String)
     }
 
     runOn(member1) {
+      eventTestKit.start()
+      enterBarrier("event-server-started")
       enterBarrier("ocs-started")
 
       val tcsSequencerWiring = new SequencerWiring(tcsSubsystem, tcsSequencerObsMode, sequenceComponentRef)
       tcsSequencerWiring.sequencerServer.start()
       enterBarrier("tcs-started")
       enterBarrier("assembly-started")
-
-      eventTestKit.start()
-      enterBarrier("event-server-started")
 
       val ocsSequencer = sequencerClient(ocsSubsystem, ocsSequencerObsMode)
 
@@ -86,13 +85,13 @@ class SequencerTest(ignore: Int, mode: String)
     }
 
     runOn(member2) {
+      enterBarrier("event-server-started")
       enterBarrier("ocs-started")
       enterBarrier("tcs-started")
 
       frameworkTestKit.spawnStandalone(ConfigFactory.load("standalone.conf"))
       enterBarrier("assembly-started")
 
-      enterBarrier("event-server-started")
       enterBarrier("submit-sequence-to-ocs")
     }
     enterBarrier("end")
