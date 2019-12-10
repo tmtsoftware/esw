@@ -36,17 +36,17 @@ class SequencerBehavior(
     extends OcsCodecs {
   import actorSystem.executionContext
 
-  private val stateToBehavior: Map[SequencerState[_], SequencerData => Behavior[SequencerMsg]] = Map(
-    Idle             -> idle,
-    Loaded           -> loaded,
-    InProgress       -> inProgress,
-    Offline          -> offline,
-    GoingOnline      -> goingOnline,
-    GoingOffline     -> goingOffline,
-    ShuttingDown     -> shuttingDown,
-    AbortingSequence -> abortingSequence,
-    Stopping         -> stopping
-  )
+  private def stateMachine(state: SequencerState[_]): SequencerData => Behavior[SequencerMsg] = state match {
+    case Idle             => idle
+    case Loaded           => loaded
+    case InProgress       => inProgress
+    case Offline          => offline
+    case GoingOnline      => goingOnline
+    case GoingOffline     => goingOffline
+    case ShuttingDown     => shuttingDown
+    case AbortingSequence => abortingSequence
+    case Stopping         => stopping
+  }
 
   def setup: Behavior[SequencerMsg] = Behaviors.setup { ctx =>
     idle(SequencerData.initial(ctx.self))
@@ -94,7 +94,7 @@ class SequencerBehavior(
     case DiagnosticMode(startTime, hint, replyTo) => goToDiagnosticMode(startTime, hint, replyTo)
     case OperationsMode(replyTo)                  => goToOperationsMode(replyTo)
     case GetSequenceComponent(replyTo)            => replyTo ! sequenceComponentLocation; Behaviors.same
-    case ReadyToExecuteNext(replyTo)              => stateToBehavior(state)(data.readyToExecuteNext(replyTo))
+    case ReadyToExecuteNext(replyTo)              => stateMachine(state)(data.readyToExecuteNext(replyTo))
     case MaybeNext(replyTo) =>
       if (state == InProgress) replyTo ! data.stepList.flatMap(_.nextExecutable)
       else replyTo ! None
@@ -109,7 +109,7 @@ class SequencerBehavior(
       state: SequencerState[SequencerMsg]
   ): Behavior[SequencerMsg] = {
     import data._
-    val currentBehavior = stateToBehavior(state)
+    val currentBehavior = stateMachine(state)
     editorAction match {
       case Add(commands, replyTo)            => currentBehavior(updateStepList(replyTo, stepList.map(_.append(commands))))
       case Prepend(commands, replyTo)        => currentBehavior(updateStepList(replyTo, stepList.map(_.prepend(commands))))
@@ -165,13 +165,12 @@ class SequencerBehavior(
     abortingSequence(data)
   }
 
-  private def abortingSequence(data: SequencerData): Behavior[SequencerMsg] =
-    receive[AbortSequenceMessage](AbortingSequence, data) {
-      case AbortSequenceComplete(replyTo) =>
-        import data._
-        val maybeStepList = stepList.map(_.discardPending)
-        inProgress(updateStepList(replyTo, maybeStepList))
-    }
+  private def abortingSequence(data: SequencerData): Behavior[SequencerMsg] = receive(AbortingSequence, data) {
+    case AbortSequenceComplete(replyTo) =>
+      import data._
+      val maybeStepList = stepList.map(_.discardPending)
+      inProgress(updateStepList(replyTo, maybeStepList))
+  }
 
   private def stop(data: SequencerData, replyTo: ActorRef[OkOrUnhandledResponse]): Behavior[SequencerMsg] = {
     script.executeStop().onComplete(_ => data.self ! StopComplete(replyTo))
@@ -259,7 +258,7 @@ class SequencerBehavior(
 
         case Query(runId, replyTo) => data.query(runId, replyTo); Behaviors.same
         // Behaviors.same is not used below, because new SequencerData (updated with subscribers) needs to passed to currentBehavior
-        case QueryFinal(runId, replyTo) => stateToBehavior(state)(data.queryFinal(runId, replyTo))
+        case QueryFinal(runId, replyTo) => stateMachine(state)(data.queryFinal(runId, replyTo))
 
         case _ => Behaviors.unhandled
       }
