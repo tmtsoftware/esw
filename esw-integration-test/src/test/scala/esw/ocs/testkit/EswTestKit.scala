@@ -59,12 +59,14 @@ abstract class EswTestKit(services: CSWService*) extends ScalaTestFrameworkTestK
 
   def spawnSequencer(subsystem: Subsystem, observingMode: String): Either[ScriptError, AkkaLocation] = {
     val sequenceComponent = spawnSequenceComponent(subsystem, None)
-    sequenceComponent.flatMap { seqCompLocation =>
+    val locationE = sequenceComponent.flatMap { seqCompLocation =>
       new SequenceComponentImpl(seqCompLocation.uri.toActorRef.unsafeUpcast[SequenceComponentMsg])
         .loadScript(subsystem, observingMode)
         .futureValue
         .response
     }
+    locationE.left.foreach(println) // this is to print the exception in case script loading fails
+    locationE
   }
 
   def spawnSequenceComponent(subsystem: Subsystem, name: Option[String]): Either[ScriptError, AkkaLocation] = {

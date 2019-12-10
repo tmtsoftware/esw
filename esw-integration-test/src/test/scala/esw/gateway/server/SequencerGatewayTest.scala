@@ -6,6 +6,7 @@ import csw.params.commands.CommandResponse.{Completed, Started}
 import csw.params.commands.{CommandName, Sequence, Setup}
 import csw.params.core.models.Subsystem.ESW
 import csw.params.core.models.{ObsId, Prefix}
+import csw.testkit.scaladsl.CSWService.EventServer
 import esw.gateway.api.clients.ClientFactory
 import esw.gateway.api.codecs.GatewayCodecs
 import esw.gateway.api.protocol.{PostRequest, WebsocketRequest}
@@ -15,7 +16,7 @@ import msocket.impl.Encoding.JsonText
 import msocket.impl.post.HttpPostTransport
 import msocket.impl.ws.WebsocketTransport
 
-class SequencerGatewayTest extends EswTestKit with GatewayCodecs {
+class SequencerGatewayTest extends EswTestKit(EventServer) with GatewayCodecs {
   private val port: Int                    = 6490
   private val subsystem                    = ESW
   private val observingMode                = "moonnight"

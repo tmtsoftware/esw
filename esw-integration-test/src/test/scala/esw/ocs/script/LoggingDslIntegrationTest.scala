@@ -9,6 +9,7 @@ import csw.params.commands.CommandResponse.Completed
 import csw.params.commands.{CommandName, Sequence, Setup}
 import csw.params.core.models.Prefix
 import csw.params.core.models.Subsystem.ESW
+import csw.testkit.scaladsl.CSWService.EventServer
 import esw.gateway.server.TestAppender
 import esw.ocs.api.SequencerApi
 import esw.ocs.impl.SequencerActorProxy
@@ -17,7 +18,7 @@ import play.api.libs.json.{JsObject, Json}
 
 import scala.collection.mutable
 
-class LoggingDslIntegrationTest extends EswTestKit {
+class LoggingDslIntegrationTest extends EswTestKit(EventServer) {
 
   private val logBuffer: mutable.Buffer[JsObject] = mutable.Buffer.empty[JsObject]
   private val testAppender                        = new TestAppender(x => logBuffer += Json.parse(x.toString).as[JsObject])
