@@ -102,39 +102,6 @@ class LocationServiceUtilTest extends ScalaTestWithActorTestKit with BaseTestSui
     }
   }
 
-  "listByComponentName" must {
-    "return all locations which match a given componentName | ESW-215" in {
-      val testUri   = new URI("test-uri")
-      val location1 = AkkaLocation(AkkaConnection(ComponentId(Prefix(TCS, "primary"), SequenceComponent)), testUri)
-      val location2 = AkkaLocation(AkkaConnection(ComponentId(Prefix(ESW, "primary"), SequenceComponent)), testUri)
-      val location3 = AkkaLocation(AkkaConnection(ComponentId(Prefix(IRIS, "secondary"), SequenceComponent)), testUri)
-
-      when(locationService.list).thenReturn(Future.successful(List(location1, location2, location3)))
-
-      val locationServiceDsl = new LocationServiceUtil(locationService)
-      val actualLocations    = locationServiceDsl.listByComponentName("primary").futureValue
-
-      actualLocations should ===(List(location1, location2))
-    }
-
-    "return all locations which match a given observing mode | ESW-215" in {
-      val testUri = new URI("test-uri")
-      val obsMode1locations = List(
-        AkkaLocation(AkkaConnection(ComponentId(Prefix(TCS, "obsMode1"), Sequencer)), testUri),
-        AkkaLocation(AkkaConnection(ComponentId(Prefix(ESW, "obsMode1"), Sequencer)), testUri)
-      )
-      val obsMode2Locations = List(
-        AkkaLocation(AkkaConnection(ComponentId(Prefix(TCS, "TCS_1"), SequenceComponent)), testUri)
-      )
-      when(locationService.list).thenReturn(Future.successful(obsMode1locations ++ obsMode2Locations))
-
-      val locationServiceDsl = new LocationServiceUtil(locationService)
-      val actualLocations    = locationServiceDsl.listByComponentName("obsMode1").futureValue
-
-      actualLocations should ===(obsMode1locations)
-    }
-  }
-
   "resolveByComponentNameAndType" must {
     "return a location which matches a given component name and type | ESW-215" in {
       val testUri = new URI("test-uri")

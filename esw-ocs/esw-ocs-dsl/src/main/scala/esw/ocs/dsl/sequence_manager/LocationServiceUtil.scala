@@ -57,11 +57,8 @@ class LocationServiceUtil(private[esw] val locationService: LocationService)(imp
         case akkaLocation: AkkaLocation if akkaLocation.prefix.subsystem == subsystem => akkaLocation
       })
 
-  def listByComponentName(name: String): Future[List[Location]] =
-    locationService.list.map(_.filter(_.prefix.componentName.equalsIgnoreCase(name)))
-
-  def resolveByComponentNameAndType(name: String, componentType: ComponentType): Future[Option[Location]] =
-    locationService.list(componentType).map(_.find(_.connection.componentId.prefix.componentName == name))
+  def resolveByComponentNameAndType(componentName: String, componentType: ComponentType): Future[Option[Location]] =
+    locationService.list(componentType).map(_.find(_.connection.componentId.prefix.componentName == componentName))
 
   def resolveComponentRef(prefix: Prefix, componentType: ComponentType): Future[ActorRef[ComponentMessage]] = {
     val connection = AkkaConnection(ComponentId(prefix, componentType))
