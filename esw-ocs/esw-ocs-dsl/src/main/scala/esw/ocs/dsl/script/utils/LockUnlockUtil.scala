@@ -14,7 +14,6 @@ import csw.command.client.messages.SupervisorLockMessage.{Lock, Unlock}
 import csw.command.client.models.framework.LockingResponse
 import csw.command.client.models.framework.LockingResponse._
 import csw.params.core.models.Prefix
-import esw.ocs.dsl.sequence_manager.LocationServiceUtil
 
 import scala.compat.java8.FutureConverters.FutureOps
 import scala.concurrent.duration.{FiniteDuration, _}
@@ -22,13 +21,13 @@ import scala.concurrent.{ExecutionContext, Future, Promise}
 import scala.jdk.FutureConverters.CompletionStageOps
 import scala.util.Success
 
-class LockUnlockUtil(locationServiceUtil: LocationServiceUtil)(actorSystem: ActorSystem[SpawnProtocol.Command]) {
+class LockUnlockUtil(val source: Prefix)(actorSystem: ActorSystem[SpawnProtocol.Command]) {
   implicit val timeout: Timeout             = 5.seconds
   private implicit val scheduler: Scheduler = actorSystem.scheduler
   private implicit val ec: ExecutionContext = actorSystem.executionContext
   private implicit val mat: Materializer    = Materializer(actorSystem)
 
-  def lock(componentRef: ActorRef[ComponentMessage], source: Prefix, leaseDuration: Duration)(
+  def lock(componentRef: ActorRef[ComponentMessage], leaseDuration: Duration)(
       onLockAboutToExpire: () => CompletionStage[Void],
       onLockExpired: () => CompletionStage[Void]
   ): CompletionStage[LockingResponse] = {
@@ -51,7 +50,7 @@ class LockUnlockUtil(locationServiceUtil: LocationServiceUtil)(actorSystem: Acto
       .toJava
   }
 
-  def unlock(componentRef: ActorRef[ComponentMessage], source: Prefix): CompletionStage[LockingResponse] =
+  def unlock(componentRef: ActorRef[ComponentMessage]): CompletionStage[LockingResponse] =
     (componentRef ? (Unlock(source, _: ActorRef[LockingResponse]))).toJava
 
   private def actorSource =

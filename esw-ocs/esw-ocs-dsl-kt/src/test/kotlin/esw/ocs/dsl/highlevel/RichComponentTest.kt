@@ -35,7 +35,6 @@ import kotlinx.coroutines.runBlocking
 import msocket.api.Subscription
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
-import scala.concurrent.duration.FiniteDuration
 import java.util.*
 import java.util.concurrent.CompletableFuture
 import java.util.concurrent.TimeUnit
@@ -71,7 +70,6 @@ class RichComponentTest {
                 RichComponent(
                         prefix,
                         componentType,
-                        source,
                         lockUnlockUtil,
                         locationServiceUtil,
                         actorSystem,
@@ -81,7 +79,6 @@ class RichComponentTest {
         private val assemblyLocation: AkkaLocation = mockk()
         private val assemblyRef: ActorRef<ComponentMessage> = mockk()
         private val assemblyCommandService: ICommandService = mockk()
-
 
         @Test
         fun `validate should resolve commandService for given assembly and call validate method on it | ESW-121, ESW-245 `() = runBlocking {
@@ -245,21 +242,21 @@ class RichComponentTest {
         @Test
         fun `lock should resolve actorRef for given assembly and send Lock message to it | ESW-126, ESW-245 `() = runBlocking {
             every { locationServiceUtil.jResolveComponentRef(prefix, componentType) }.answers { CompletableFuture.completedFuture(assemblyRef) }
-            every { lockUnlockUtil.lock(assemblyRef, source, jLeaseDuration, any(), any()) }.answers { CompletableFuture.completedFuture(LockingResponse.`LockAcquired$`.`MODULE$`) }
+            every { lockUnlockUtil.lock(assemblyRef, jLeaseDuration, any(), any()) }.answers { CompletableFuture.completedFuture(LockingResponse.`LockAcquired$`.`MODULE$`) }
 
             assembly.lock(leaseDuration, {}, {})
 
-            verify { lockUnlockUtil.lock(assemblyRef, source, jLeaseDuration, any(), any()) }
+            verify { lockUnlockUtil.lock(assemblyRef, jLeaseDuration, any(), any()) }
         }
 
         @Test
         fun `unlock should resolve actorRef for given assembly and send Unlock message to it | ESW-126, ESW-245 `() = runBlocking {
             every { locationServiceUtil.jResolveComponentRef(prefix, componentType) }.answers { CompletableFuture.completedFuture(assemblyRef) }
-            every { lockUnlockUtil.unlock(assemblyRef, source) }.answers { CompletableFuture.completedFuture(LockingResponse.`LockReleased$`.`MODULE$`) }
+            every { lockUnlockUtil.unlock(assemblyRef) }.answers { CompletableFuture.completedFuture(LockingResponse.`LockReleased$`.`MODULE$`) }
 
             assembly.unlock()
 
-            verify { lockUnlockUtil.unlock(assemblyRef, source) }
+            verify { lockUnlockUtil.unlock(assemblyRef) }
         }
     }
 
@@ -272,7 +269,6 @@ class RichComponentTest {
                 RichComponent(
                         prefix,
                         componentType,
-                        source,
                         lockUnlockUtil,
                         locationServiceUtil,
                         actorSystem,
@@ -444,21 +440,21 @@ class RichComponentTest {
         @Test
         fun `lock should resolve actorRef for given hcd and send Lock message to it | ESW-126, ESW-245 `() = runBlocking {
             every { locationServiceUtil.jResolveComponentRef(prefix, componentType) }.answers { CompletableFuture.completedFuture(hcdRef) }
-            every { lockUnlockUtil.lock(hcdRef, source, jLeaseDuration, any(), any()) }.answers { CompletableFuture.completedFuture(LockingResponse.`LockAcquired$`.`MODULE$`) }
+            every { lockUnlockUtil.lock(hcdRef, jLeaseDuration, any(), any()) }.answers { CompletableFuture.completedFuture(LockingResponse.`LockAcquired$`.`MODULE$`) }
 
             hcd.lock(leaseDuration)
 
-            verify { lockUnlockUtil.lock(hcdRef, source, jLeaseDuration, any(), any()) }
+            verify { lockUnlockUtil.lock(hcdRef, jLeaseDuration, any(), any()) }
         }
 
         @Test
         fun `unlock should resolve actorRef for given hcd and send Unlock message to it | ESW-126, ESW-245 `() = runBlocking {
             every { locationServiceUtil.jResolveComponentRef(prefix, componentType) }.answers { CompletableFuture.completedFuture(hcdRef) }
-            every { lockUnlockUtil.unlock(hcdRef, source) }.answers { CompletableFuture.completedFuture(LockingResponse.`LockReleased$`.`MODULE$`) }
+            every { lockUnlockUtil.unlock(hcdRef) }.answers { CompletableFuture.completedFuture(LockingResponse.`LockReleased$`.`MODULE$`) }
 
             hcd.unlock()
 
-            verify { lockUnlockUtil.unlock(hcdRef, source) }
+            verify { lockUnlockUtil.unlock(hcdRef) }
         }
     }
 
