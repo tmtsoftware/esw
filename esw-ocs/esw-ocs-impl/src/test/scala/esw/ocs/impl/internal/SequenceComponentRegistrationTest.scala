@@ -47,7 +47,7 @@ class SequenceComponentRegistrationTest extends ScalaTestWithActorTestKit with B
 
       val sequenceComponentProbe: TestProbe[SequenceComponentMsg] = TestProbe[SequenceComponentMsg]()
 
-      def sequenceComponentFactory(sequenceComponentName: String): Future[ActorRef[SequenceComponentMsg]] =
+      def sequenceComponentFactory(sequenceComponentPrefix: Prefix): Future[ActorRef[SequenceComponentMsg]] =
         Future.successful(sequenceComponentProbe.ref)
       val sequenceComponentRegistration =
         new SequenceComponentRegistration(
@@ -80,7 +80,7 @@ class SequenceComponentRegistrationTest extends ScalaTestWithActorTestKit with B
       when(registrationResult.unregister()).thenReturn(Future.successful(Done))
 
       val sequenceComponentProbe: TestProbe[SequenceComponentMsg] = TestProbe[SequenceComponentMsg]()
-      def sequenceComponentFactory(sequenceComponentName: String): Future[ActorRef[SequenceComponentMsg]] =
+      def sequenceComponentFactory(sequenceComponentPrefix: Prefix): Future[ActorRef[SequenceComponentMsg]] =
         Future.successful(sequenceComponentProbe.ref)
 
       val sequenceComponentRegistration =
@@ -116,7 +116,7 @@ class SequenceComponentRegistrationTest extends ScalaTestWithActorTestKit with B
       when(registrationResult.unregister()).thenReturn(Future.successful(Done))
 
       val sequenceComponentProbe: TestProbe[SequenceComponentMsg] = TestProbe[SequenceComponentMsg]()
-      def sequenceComponentFactory(sequenceComponentName: String): Future[ActorRef[SequenceComponentMsg]] =
+      def sequenceComponentFactory(sequenceComponentPrefix: Prefix): Future[ActorRef[SequenceComponentMsg]] =
         Future.successful(sequenceComponentProbe.ref)
       val sequenceComponentRegistration =
         new SequenceComponentRegistration(
@@ -154,7 +154,7 @@ class SequenceComponentRegistrationTest extends ScalaTestWithActorTestKit with B
       when(registrationResult.unregister()).thenReturn(Future.successful(Done))
 
       val sequenceComponentProbe: TestProbe[SequenceComponentMsg] = TestProbe[SequenceComponentMsg]()
-      def sequenceComponentFactory(sequenceComponentName: String): Future[ActorRef[SequenceComponentMsg]] =
+      def sequenceComponentFactory(sequenceComponentPrefix: Prefix): Future[ActorRef[SequenceComponentMsg]] =
         Future.successful(sequenceComponentProbe.ref)
 
       val sequenceComponentRegistration =
@@ -184,7 +184,7 @@ class SequenceComponentRegistrationTest extends ScalaTestWithActorTestKit with B
       when(registrationResult.unregister()).thenReturn(Future.successful(Done))
 
       val sequenceComponentProbe: TestProbe[SequenceComponentMsg] = TestProbe[SequenceComponentMsg]()
-      def sequenceComponentFactory(sequenceComponentName: String): Future[ActorRef[SequenceComponentMsg]] =
+      def sequenceComponentFactory(sequenceComponentPrefix: Prefix): Future[ActorRef[SequenceComponentMsg]] =
         Future.successful(sequenceComponentProbe.ref)
 
       val sequenceComponentRegistration =
@@ -214,7 +214,7 @@ class SequenceComponentRegistrationTest extends ScalaTestWithActorTestKit with B
       when(registrationResult.unregister()).thenReturn(Future.successful(Done))
 
       val sequenceComponentProbe: TestProbe[SequenceComponentMsg] = TestProbe[SequenceComponentMsg]()
-      def sequenceComponentFactory(sequenceComponentName: String): Future[ActorRef[SequenceComponentMsg]] =
+      def sequenceComponentFactory(sequenceComponentPrefix: Prefix): Future[ActorRef[SequenceComponentMsg]] =
         Future.successful(sequenceComponentProbe.ref)
 
       val sequenceComponentRegistration =

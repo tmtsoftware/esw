@@ -21,7 +21,7 @@ class SequenceComponentRegistration(
     subsystem: Subsystem,
     name: Option[String],
     _locationService: LocationService,
-    sequenceComponentFactory: String => Future[ActorRef[SequenceComponentMsg]]
+    sequenceComponentFactory: Prefix => Future[ActorRef[SequenceComponentMsg]]
 )(
     implicit override val actorSystem: ActorSystem[SpawnProtocol.Command]
 ) extends LocationServiceUtil(_locationService) {
@@ -52,7 +52,7 @@ class SequenceComponentRegistration(
       case (s, Some(n)) => Prefix(s, n)
       case (s, None)    => Prefix(s, s"${s}_${Random.between(1, 100)}")
     }
-    sequenceComponentFactory(sequenceComponentPrefix.value).map { actorRef =>
+    sequenceComponentFactory(sequenceComponentPrefix).map { actorRef =>
       AkkaRegistration(AkkaConnection(ComponentId(sequenceComponentPrefix, ComponentType.SequenceComponent)), actorRef.toURI)
     }
   }
