@@ -1,17 +1,19 @@
 package esw.gateway.server
 
 import akka.Done
-import akka.http.scaladsl.model.StatusCodes
+import akka.http.scaladsl.marshalling.ToEntityMarshaller
+import akka.http.scaladsl.model.{HttpRequest, StatusCodes}
 import akka.http.scaladsl.testkit.ScalatestRouteTest
+import csw.admin.api.UnresolvedAkkaLocationException
 import csw.alarm.api.exceptions.KeyNotFoundException
 import csw.alarm.models.AlarmSeverity
 import csw.alarm.models.Key.AlarmKey
 import csw.command.api.messages.CommandServiceHttpMessage.{Oneway, Submit, Validate}
 import csw.event.api.exceptions.{EventServerNotAvailable, PublishFailure}
-import csw.location.models.ComponentId
 import csw.location.models.ComponentType.{Assembly, Sequencer}
+import csw.location.models.{ComponentId, ComponentType}
 import csw.logging.macros.SourceFactory
-import csw.logging.models.{AnyId, Level}
+import csw.logging.models.{AnyId, Level, LogMetadata}
 import csw.params.commands.CommandIssue.IdNotAvailableIssue
 import csw.params.commands.CommandResponse.{Accepted, Invalid, Started}
 import csw.params.commands.{CommandName, CommandResponse, Sequence, Setup}
@@ -25,7 +27,7 @@ import esw.gateway.impl._
 import esw.gateway.server.handlers.PostHandlerImpl
 import esw.http.core.BaseTestSuite
 import esw.ocs.api.protocol.{Ok, OkOrUnhandledResponse, SequencerPostRequest}
-import msocket.api.models.ServiceError
+import msocket.api.models.{GenericError, ServiceError}
 import msocket.impl.Encoding
 import msocket.impl.Encoding.JsonText
 import msocket.impl.post.{ClientHttpCodecs, PostRouteFactory}
@@ -50,6 +52,8 @@ class PostRouteTest extends BaseTestSuite with ScalatestRouteTest with GatewayCo
   private val source                 = Prefix("esw.test")
   private val destination            = Prefix("tcs.test")
 
+  private def post[E: ToEntityMarshaller](entity: E): HttpRequest = Post("/post-endpoint", entity)
+
   "Submit Command" must {
     "handle submit command and return started command response | ESW-91, ESW-216" in {
       val runId         = Id("123")
@@ -61,7 +65,7 @@ class PostRouteTest extends BaseTestSuite with ScalatestRouteTest with GatewayCo
       when(resolver.resolveComponent(componentId)).thenReturn(Future.successful(commandService))
       when(commandService.submit(command)).thenReturn(Future.successful(Started(runId)))
 
-      Post("/post-endpoint", submitRequest) ~> route ~> check {
+      post(submitRequest) ~> route ~> check {
         responseAs[CommandResponse] shouldEqual Started(runId)
       }
     }
@@ -76,7 +80,7 @@ class PostRouteTest extends BaseTestSuite with ScalatestRouteTest with GatewayCo
       when(resolver.resolveComponent(componentId)).thenReturn(Future.successful(commandService))
       when(commandService.validate(command)).thenReturn(Future.successful(Accepted(runId)))
 
-      Post("/post-endpoint", validateRequest) ~> route ~> check {
+      post(validateRequest) ~> route ~> check {
         responseAs[CommandResponse] shouldEqual Accepted(runId)
       }
     }
@@ -105,7 +109,7 @@ class PostRouteTest extends BaseTestSuite with ScalatestRouteTest with GatewayCo
       val message = "component does not exist"
       when(resolver.resolveComponent(componentId)).thenReturn(Future.failed(InvalidComponent(message)))
 
-      Post("/post-endpoint", submitRequest) ~> route ~> check {
+      post(submitRequest) ~> route ~> check {
         status shouldEqual StatusCodes.InternalServerError
         responseAs[InvalidComponent] shouldEqual InvalidComponent(message)
       }
@@ -122,7 +126,7 @@ class PostRouteTest extends BaseTestSuite with ScalatestRouteTest with GatewayCo
       when(resolver.resolveSequencer(componentId)).thenReturn(Future.successful(sequencer))
       when(sequencer.submit(sequence)).thenReturn(Future.successful(submitResponse))
 
-      Post("/post-endpoint", submitRequest) ~> route ~> check {
+      post(submitRequest) ~> route ~> check {
         responseAs[CommandResponse] shouldEqual submitResponse
       }
     }
@@ -136,7 +140,7 @@ class PostRouteTest extends BaseTestSuite with ScalatestRouteTest with GatewayCo
       when(resolver.resolveSequencer(componentId)).thenReturn(Future.successful(sequencer))
       when(sequencer.query(runId)).thenReturn(Future.successful(queryResponse))
 
-      Post("/post-endpoint", queryRequest) ~> route ~> check {
+      post(queryRequest) ~> route ~> check {
         responseAs[CommandResponse] shouldEqual queryResponse
       }
     }
@@ -148,7 +152,7 @@ class PostRouteTest extends BaseTestSuite with ScalatestRouteTest with GatewayCo
       when(resolver.resolveSequencer(componentId)).thenReturn(Future.successful(sequencer))
       when(sequencer.goOnline()).thenReturn(Future.successful(Ok))
 
-      Post("/post-endpoint", goOnlineRequest) ~> route ~> check {
+      post(goOnlineRequest) ~> route ~> check {
         responseAs[OkOrUnhandledResponse] shouldEqual Ok
       }
     }
@@ -163,7 +167,7 @@ class PostRouteTest extends BaseTestSuite with ScalatestRouteTest with GatewayCo
 
       when(eventPublisher.publish(event)).thenReturn(Future.successful(Done))
 
-      Post("/post-endpoint", publishEvent) ~> route ~> check {
+      post(publishEvent) ~> route ~> check {
         responseAs[Done] shouldEqual Done
       }
     }
@@ -177,7 +181,7 @@ class PostRouteTest extends BaseTestSuite with ScalatestRouteTest with GatewayCo
       when(eventPublisher.publish(event))
         .thenReturn(Future.failed(PublishFailure(event, new RuntimeException("Event server is down"))))
 
-      Post("/post-endpoint", publishEvent) ~> route ~> check {
+      post(publishEvent) ~> route ~> check {
         status shouldEqual StatusCodes.InternalServerError
         responseAs[EventServerUnavailable] shouldEqual EventServerUnavailable()
       }
@@ -194,13 +198,13 @@ class PostRouteTest extends BaseTestSuite with ScalatestRouteTest with GatewayCo
 
       when(eventSubscriber.get(Set(eventKey))).thenReturn(Future.successful(Set(event)))
 
-      Post("/post-endpoint", getEvent) ~> route ~> check {
+      post(getEvent) ~> route ~> check {
         responseAs[Set[Event]] shouldEqual Set(event)
       }
     }
 
     "return EmptyEventKeys error on sending no event keys in request | ESW-94, ESW-216" in {
-      Post("/post-endpoint", GetEvent(Set())) ~> route ~> check {
+      post(GetEvent(Set())) ~> route ~> check {
         status shouldEqual StatusCodes.InternalServerError
         responseAs[EmptyEventKeys] shouldEqual EmptyEventKeys()
       }
@@ -215,7 +219,7 @@ class PostRouteTest extends BaseTestSuite with ScalatestRouteTest with GatewayCo
       when(eventSubscriber.get(Set(eventKey)))
         .thenReturn(Future.failed(EventServerNotAvailable(new RuntimeException("Redis server is not available"))))
 
-      Post("/post-endpoint", getEvent) ~> route ~> check {
+      post(getEvent) ~> route ~> check {
         status shouldEqual StatusCodes.InternalServerError
         responseAs[EventServerUnavailable] shouldEqual EventServerUnavailable()
       }
@@ -226,7 +230,7 @@ class PostRouteTest extends BaseTestSuite with ScalatestRouteTest with GatewayCo
 
       val eventKey = EventKey(Prefix("tcs.test.gateway"), EventName("event1"))
 
-      Post("/post-endpoint", GetEvent(Set(eventKey))) ~> route ~> check {
+      post(GetEvent(Set(eventKey))) ~> route ~> check {
         status shouldEqual StatusCodes.InternalServerError
         responseAs[ServiceError] shouldEqual ServiceError.fromThrowable(new RuntimeException("failed"))
       }
@@ -234,7 +238,7 @@ class PostRouteTest extends BaseTestSuite with ScalatestRouteTest with GatewayCo
   }
 
   "Set Alarm Severity" must {
-    "returns Done on success | ESW-193, ESW-216, ESW-233" in {
+    "return Done on success | ESW-193, ESW-216, ESW-233" in {
       val componentName    = "testComponent"
       val alarmName        = "testAlarmName"
       val subsystemName    = Subsystem.IRIS
@@ -244,12 +248,12 @@ class PostRouteTest extends BaseTestSuite with ScalatestRouteTest with GatewayCo
 
       when(alarmService.setSeverity(alarmKey, majorSeverity)).thenReturn(Future.successful(Done))
 
-      Post("/post-endpoint", setAlarmSeverity) ~> route ~> check {
+      post(setAlarmSeverity) ~> route ~> check {
         responseAs[Done] shouldEqual Done
       }
     }
 
-    "returns SetAlarmSeverityFailure on key not found or invalid key | ESW-193, ESW-216, ESW-233" in {
+    "return SetAlarmSeverityFailure on key not found or invalid key | ESW-193, ESW-216, ESW-233" in {
       val componentName    = "testComponent"
       val alarmName        = "testAlarmName"
       val subsystemName    = Subsystem.IRIS
@@ -259,7 +263,7 @@ class PostRouteTest extends BaseTestSuite with ScalatestRouteTest with GatewayCo
 
       when(alarmService.setSeverity(alarmKey, majorSeverity)).thenReturn(Future.failed(new KeyNotFoundException("")))
 
-      Post("/post-endpoint", setAlarmSeverity) ~> route ~> check {
+      post(setAlarmSeverity) ~> route ~> check {
         status shouldEqual StatusCodes.InternalServerError
         responseAs[SetAlarmSeverityFailure] shouldEqual SetAlarmSeverityFailure("")
       }
@@ -278,7 +282,7 @@ class PostRouteTest extends BaseTestSuite with ScalatestRouteTest with GatewayCo
         )
       )
 
-      Post("/post-endpoint", log) ~> route ~> check {
+      post(log) ~> route ~> check {
         responseAs[Done] shouldEqual Done
         val expectedMetadata = Map(
           "additional-info" -> 45,
@@ -297,7 +301,7 @@ class PostRouteTest extends BaseTestSuite with ScalatestRouteTest with GatewayCo
         "test-message"
       )
 
-      Post("/post-endpoint", log) ~> route ~> check {
+      post(log) ~> route ~> check {
         responseAs[Done] shouldEqual Done
         verify(logger).fatal(argsEq("test-message"), argsEq(Map.empty), any[Throwable], any[AnyId])(
           any[SourceFactory]
@@ -306,4 +310,54 @@ class PostRouteTest extends BaseTestSuite with ScalatestRouteTest with GatewayCo
     }
   }
 
+  "GetLogMetadata" must {
+    "return log metadata for given component | ESW-254" in {
+      val componentId = ComponentId(Prefix(Subsystem.ESW, "test1"), ComponentType.Assembly)
+      val metadata    = LogMetadata(Level.FATAL, Level.FATAL, Level.FATAL, Level.FATAL)
+
+      when(adminService.getLogMetadata(componentId)).thenReturn(Future.successful(metadata))
+
+      post(GetLogMetadata(componentId)) ~> route ~> check {
+        status shouldEqual StatusCodes.OK
+        responseAs[LogMetadata] shouldEqual metadata
+      }
+    }
+
+    "return generic error when component is not resolved | ESW-254" in {
+      val componentId = ComponentId(Prefix(Subsystem.ESW, "test1"), ComponentType.Assembly)
+      val error       = GenericError("UnresolvedAkkaLocationException", "Could not resolve esw.test1 to a valid Akka location")
+
+      when(adminService.getLogMetadata(componentId))
+        .thenReturn(Future.failed(new UnresolvedAkkaLocationException(componentId.prefix.toString)))
+
+      post(GetLogMetadata(componentId)) ~> route ~> check {
+        responseAs[GenericError] shouldEqual error
+      }
+    }
+  }
+
+  "SetLogMetadata" must {
+    "set log level for given component | ESW-254" in {
+      val componentId = ComponentId(Prefix(Subsystem.ESW, "test1"), ComponentType.Assembly)
+
+      when(adminService.setLogLevel(componentId, Level.FATAL)).thenReturn(Future.unit)
+
+      post(SetLogLevel(componentId, Level.FATAL)) ~> route ~> check {
+        status shouldEqual StatusCodes.OK
+        responseAs[Unit] shouldEqual ()
+      }
+    }
+
+    "return generic error when component is not resolved | ESW-254" in {
+      val componentId = ComponentId(Prefix(Subsystem.ESW, "test1"), ComponentType.Assembly)
+      val error       = GenericError("UnresolvedAkkaLocationException", "Could not resolve esw.test1 to a valid Akka location")
+
+      when(adminService.setLogLevel(componentId, Level.FATAL))
+        .thenReturn(Future.failed(new UnresolvedAkkaLocationException(componentId.prefix.toString)))
+
+      post(SetLogLevel(componentId, Level.FATAL)) ~> route ~> check {
+        responseAs[GenericError] shouldEqual error
+      }
+    }
+  }
 }
