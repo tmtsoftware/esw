@@ -4,6 +4,7 @@ import akka.Done
 import akka.actor.Cancellable
 import csw.event.api.javadsl.IEventPublisher
 import csw.event.api.javadsl.IEventSubscriber
+import csw.event.api.scaladsl.SubscriptionModes
 import csw.params.core.generics.Key
 import csw.params.core.generics.Parameter
 import csw.params.core.models.Prefix
@@ -46,6 +47,14 @@ interface EventServiceDsl {
 
     suspend fun onEvent(vararg eventKeys: String, callback: SuspendableConsumer<Event>): EventSubscription {
         val subscription = defaultSubscriber.subscribeAsync(eventKeys.toEventKeys()) { coroutineScope.future { callback(it) } }
+        subscription.ready().await()
+        return EventSubscription { subscription.unsubscribe().await() }
+    }
+
+    suspend fun onEvent(vararg eventKeys: String, duration: Duration, block: SuspendableConsumer<Event>): EventSubscription {
+        val callback = { event: Event -> coroutineScope.future { block(event) } }
+        val subscription = defaultSubscriber
+                .subscribeAsync(eventKeys.toEventKeys(), callback, duration.toJavaDuration(), SubscriptionModes.jRateAdapterMode())
         subscription.ready().await()
         return EventSubscription { subscription.unsubscribe().await() }
     }
