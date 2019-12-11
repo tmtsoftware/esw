@@ -6,19 +6,21 @@ import csw.params.core.generics.KeyType.IntKey
 import csw.params.core.models.Prefix
 import csw.params.core.models.Subsystem.ESW
 import csw.params.events.EventKey
-import csw.testkit.scaladsl.CSWService.EventServer
 import esw.ocs.api.SequencerApi
 import esw.ocs.testkit.EswTestKit
+import esw.ocs.testkit.Service.EventServer
 
 class ThreadSafetyTest extends EswTestKit(EventServer) {
 
   "Script" must {
 
-    // 1. script starts background job in a constructor which increments counter 100_000 times
-    // 2. concurrently script receives, increment cmd which increments counter 100_000 times
-    // 3. test verifies that in the end counter is 200_000
+    // 1. Main script starts background job in a constructor which increments counter 100_000 times
+    // 2. Reusable script starts background job in a constructor which increments counter 100_000 times
+    // 3. Concurrently script receives, increment cmd which increments counter 100_000 times
+    // 4. All the above 4 steps runs concurrently
+    // 5. This test verifies that in the end counter is 300_000
     // this test will fail if you change StrandEc.apply() = new StrandEc(Executors.newScheduledThreadPool(4))
-    "handle concurrent shared mutable state safely | ESW-133" in {
+    "handle concurrent shared mutable state safely | ESW-133, ESW-185" in {
       val counter    = EventKey("esw.counter.get-counter")
       val counterKey = IntKey.make("counter")
 
@@ -37,7 +39,7 @@ class ThreadSafetyTest extends EswTestKit(EventServer) {
 
       threadSafeSequencer.submit(Sequence(List(incrementCommand, getCounterCommand)))
 
-      counterProbe.expectMessage(200_000)
+      counterProbe.expectMessage(300_000)
     }
   }
 }

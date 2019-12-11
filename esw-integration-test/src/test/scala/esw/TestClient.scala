@@ -10,8 +10,8 @@ import csw.location.client.scaladsl.HttpLocationServiceFactory
 import csw.params.commands.{CommandName, Sequence, Setup}
 import csw.params.core.models.Prefix
 import csw.params.core.models.Subsystem.IRIS
-import esw.ocs.dsl.sequence_manager.LocationServiceUtil
 import esw.ocs.impl.SequencerActorProxy
+import esw.ocs.impl.internal.LocationServiceUtil
 import esw.ocs.impl.messages.SequencerMessages.{EswSequencerMessage, Shutdown}
 
 import scala.concurrent.Await

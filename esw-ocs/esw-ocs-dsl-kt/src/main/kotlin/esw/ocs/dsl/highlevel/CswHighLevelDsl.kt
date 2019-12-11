@@ -20,7 +20,7 @@ import esw.ocs.dsl.epics.FsmScope
 import esw.ocs.dsl.script.CswServices
 import esw.ocs.dsl.script.StrandEc
 import esw.ocs.dsl.script.utils.SubsystemFactory
-import esw.ocs.dsl.sequence_manager.LocationServiceUtil
+import esw.ocs.impl.internal.LocationServiceUtil
 import kotlinx.coroutines.CoroutineScope
 
 interface CswHighLevelDslApi : EventServiceDsl, TimeServiceDsl, CommandServiceDsl,
@@ -55,7 +55,7 @@ abstract class CswHighLevelDsl(private val cswServices: CswServices) : CswHighLe
     private val locationServiceUtil = LocationServiceUtil(cswServices.locationService().asScala(), system)
     /******** Command Service helpers ********/
     private fun richComponent(prefix: String, componentType: ComponentType): RichComponent =
-            RichComponent(Prefix.apply(prefix), componentType, this.prefix, cswServices.lockUnlockUtil(), locationServiceUtil, system, coroutineScope)
+            RichComponent(Prefix.apply(prefix), componentType, cswServices.lockUnlockUtil(), locationServiceUtil, system, coroutineScope)
 
     private fun richSequencer(subsystem: Subsystem, observingMode: String): RichSequencer =
             RichSequencer(subsystem, observingMode, cswServices.sequencerApiFactory(), coroutineScope)

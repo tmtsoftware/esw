@@ -22,7 +22,7 @@ import esw.ocs.dsl.SuspendableCallback
 import esw.ocs.dsl.SuspendableConsumer
 import esw.ocs.dsl.jdk.SuspendToJavaConverter
 import esw.ocs.dsl.script.utils.LockUnlockUtil
-import esw.ocs.dsl.sequence_manager.LocationServiceUtil
+import esw.ocs.impl.internal.LocationServiceUtil
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.future.await
 import msocket.api.Subscription
@@ -33,7 +33,6 @@ import kotlin.time.toJavaDuration
 class RichComponent(
         val prefix: Prefix,
         val componentType: ComponentType,
-        private val source: Prefix,
         private val lockUnlockUtil: LockUnlockUtil,
         private val locationServiceUtil: LocationServiceUtil,
         private val actorSystem: ActorSystem<*>,
@@ -73,20 +72,19 @@ class RichComponent(
     ): LockingResponse =
             lockUnlockUtil.lock(
                     componentRef(),
-                    source,
                     leaseDuration.toJavaDuration(),
                     { onLockAboutToExpire.toJava() },
                     { onLockExpired.toJava() }
             ).await()
 
-    suspend fun unlock(): LockingResponse = lockUnlockUtil.unlock(componentRef(), source).await()
+    suspend fun unlock(): LockingResponse = lockUnlockUtil.unlock(componentRef()).await()
 
     private suspend fun commandService(): ICommandService = CommandServiceFactory.jMake(locationServiceUtil.jResolveAkkaLocation(prefix, componentType).await(), actorSystem)
     private suspend fun componentRef(): ActorRef<ComponentMessage> = locationServiceUtil.jResolveComponentRef(prefix, componentType).await()
 
     private suspend fun handleResponse(submitResponse: SubmitResponse, handler: SuspendableConsumer<SubmitResponse>?): SubmitResponse {
         if (isNegative(submitResponse))
-            handler?.toJava(submitResponse)?.await() ?: throw SubmitError(submitResponse)
+            handler?.let { it(coroutineScope, submitResponse) } ?: throw SubmitError(submitResponse)
         return submitResponse
     }
 

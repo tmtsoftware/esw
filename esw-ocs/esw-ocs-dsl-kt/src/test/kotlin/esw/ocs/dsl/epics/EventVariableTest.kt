@@ -1,6 +1,7 @@
 package esw.ocs.dsl.epics
 
 import akka.Done
+import csw.event.api.javadsl.IEventPublisher
 import csw.event.api.javadsl.IEventSubscriber
 import csw.event.api.javadsl.IEventSubscription
 import csw.event.api.scaladsl.SubscriptionModes
@@ -13,9 +14,9 @@ import esw.ocs.dsl.highlevel.EventServiceDsl
 import esw.ocs.dsl.highlevel.EventSubscription
 import esw.ocs.dsl.params.booleanKey
 import esw.ocs.dsl.params.intKey
-import esw.ocs.dsl.params.set
 import io.kotlintest.shouldBe
 import io.mockk.*
+import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.runBlocking
 import org.junit.jupiter.api.Test
 import java.util.concurrent.CompletableFuture
@@ -99,11 +100,17 @@ class EventVariableTest {
 
     @Test
     fun `bind with duration should start polling the event key and refresh Fsm on changes | ESW-142, ESW-256`() = runBlocking {
-        val eventServiceDsl = mockk<EventServiceDsl>()
         val subscriber = mockk<IEventSubscriber>()
+        val publisher = mockk<IEventPublisher>()
+        val eventServiceDsl = object : EventServiceDsl {
+            override val coroutineScope: CoroutineScope = this@runBlocking
+            override val defaultPublisher: IEventPublisher = publisher
+            override val defaultSubscriber: IEventSubscriber = subscriber
+        }
+
         val refreshable = mockk<Refreshable>()
         val eventSubscription = mockk<IEventSubscription>()
-        val mockedFuture = mockk<CompletableFuture<Done>>()
+        val doneF = CompletableFuture.completedFuture(Done.getInstance())
 
         val intKey = intKey("testKey")
         val intValue = 10
@@ -113,9 +120,10 @@ class EventVariableTest {
         val duration = 100.milliseconds
 
         every { refreshable.addFsmSubscription(any()) } just runs
-        every { eventServiceDsl.defaultSubscriber }.answers { subscriber }
         every { subscriber.subscribeAsync(any(), any(), any(), any()) }.answers { eventSubscription }
-        every { eventSubscription.unsubscribe() }.answers { mockedFuture }
+
+        every { eventSubscription.ready() }.returns(doneF)
+        every { eventSubscription.unsubscribe() }.returns(doneF)
 
         val eventVariable = EventVariable(systemEvent, intKey, duration, eventServiceDsl)
         val fsmSubscription = eventVariable.bind(refreshable)

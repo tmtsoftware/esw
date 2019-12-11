@@ -23,7 +23,7 @@ import csw.params.core.states.StateName
 import csw.params.javadsl.JSubsystem.ESW
 import csw.time.core.models.UTCTime
 import esw.ocs.dsl.script.utils.LockUnlockUtil
-import esw.ocs.dsl.sequence_manager.LocationServiceUtil
+import esw.ocs.impl.internal.LocationServiceUtil
 import io.kotlintest.shouldBe
 import io.kotlintest.shouldThrow
 import io.mockk.every
@@ -35,7 +35,6 @@ import kotlinx.coroutines.runBlocking
 import msocket.api.Subscription
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
-import scala.concurrent.duration.FiniteDuration
 import java.util.*
 import java.util.concurrent.CompletableFuture
 import java.util.concurrent.TimeUnit
@@ -59,7 +58,8 @@ class RichComponentTest {
     private val lockUnlockUtil: LockUnlockUtil = mockk()
     private val locationServiceUtil: LocationServiceUtil = mockk()
     private val actorSystem: ActorSystem<*> = mockk()
-
+    private val timeoutDuration: Duration = 5.seconds
+    private val timeout = Timeout(timeoutDuration.toLongNanoseconds(), TimeUnit.NANOSECONDS)
 
     @Nested
     inner class Assembly {
@@ -70,7 +70,6 @@ class RichComponentTest {
                 RichComponent(
                         prefix,
                         componentType,
-                        source,
                         lockUnlockUtil,
                         locationServiceUtil,
                         actorSystem,
@@ -80,7 +79,6 @@ class RichComponentTest {
         private val assemblyLocation: AkkaLocation = mockk()
         private val assemblyRef: ActorRef<ComponentMessage> = mockk()
         private val assemblyCommandService: ICommandService = mockk()
-
 
         @Test
         fun `validate should resolve commandService for given assembly and call validate method on it | ESW-121, ESW-245 `() = runBlocking {
@@ -135,8 +133,6 @@ class RichComponentTest {
         @Test
         fun `queryFinal should resolve commandService for given assembly and call queryFinal method on it | ESW-121, ESW-245 `() = runBlocking {
             val commandRunId: Id = mockk()
-            val timeoutDuration: Duration = 5.seconds
-            val timeout = Timeout(timeoutDuration.toLongNanoseconds(), TimeUnit.NANOSECONDS)
 
             mockkStatic(CommandServiceFactory::class)
             every { locationServiceUtil.jResolveAkkaLocation(prefix, componentType) }.answers { CompletableFuture.completedFuture(assemblyLocation) }
@@ -150,9 +146,6 @@ class RichComponentTest {
 
         @Test
         fun `submitAndWait should resolve commandService for given assembly and call submitAndWait method on it | ESW-121, ESW-245 `() = runBlocking {
-            val timeoutDuration: Duration = 5.seconds
-            val timeout = Timeout(timeoutDuration.toLongNanoseconds(), TimeUnit.NANOSECONDS)
-
             mockkStatic(CommandServiceFactory::class)
             every { locationServiceUtil.jResolveAkkaLocation(prefix, componentType) }.answers { CompletableFuture.completedFuture(assemblyLocation) }
             every { CommandServiceFactory.jMake(assemblyLocation, actorSystem) }.answers { assemblyCommandService }
@@ -165,9 +158,6 @@ class RichComponentTest {
 
         @Test
         fun `submitAndWait should resolve commandService for given assembly and call its error handler when there is a negative submit response | ESW-121, ESW-245, ESW-249 `() = runBlocking {
-            val timeoutDuration: Duration = 5.seconds
-            val timeout = Timeout(timeoutDuration.toLongNanoseconds(), TimeUnit.NANOSECONDS)
-
             var errorCounter = 0
             val message = "error-occurred"
             val invalidSubmitResponse = CommandResponse.Error(Id.apply(), message)
@@ -177,9 +167,12 @@ class RichComponentTest {
             every { CommandServiceFactory.jMake(assemblyLocation, actorSystem) }.answers { assemblyCommandService }
             every { assemblyCommandService.submitAndWait(setupCommand, timeout) }.answers { CompletableFuture.completedFuture(invalidSubmitResponse) }
 
-            shouldThrow<SubmitError> { assembly.submitAndWait(setupCommand, timeoutDuration) { errorCounter++ } }
+            assembly.submitAndWait(setupCommand, timeoutDuration) { errorCounter++ }
 
             errorCounter shouldBe 1
+            verify { assemblyCommandService.submitAndWait(setupCommand, timeout) }
+
+            shouldThrow<SubmitError> { assembly.submitAndWait(setupCommand, timeoutDuration) }
             verify { assemblyCommandService.submitAndWait(setupCommand, timeout) }
         }
 
@@ -249,21 +242,21 @@ class RichComponentTest {
         @Test
         fun `lock should resolve actorRef for given assembly and send Lock message to it | ESW-126, ESW-245 `() = runBlocking {
             every { locationServiceUtil.jResolveComponentRef(prefix, componentType) }.answers { CompletableFuture.completedFuture(assemblyRef) }
-            every { lockUnlockUtil.lock(assemblyRef, source, jLeaseDuration, any(), any()) }.answers { CompletableFuture.completedFuture(LockingResponse.`LockAcquired$`.`MODULE$`) }
+            every { lockUnlockUtil.lock(assemblyRef, jLeaseDuration, any(), any()) }.answers { CompletableFuture.completedFuture(LockingResponse.`LockAcquired$`.`MODULE$`) }
 
             assembly.lock(leaseDuration, {}, {})
 
-            verify { lockUnlockUtil.lock(assemblyRef, source, jLeaseDuration, any(), any()) }
+            verify { lockUnlockUtil.lock(assemblyRef, jLeaseDuration, any(), any()) }
         }
 
         @Test
         fun `unlock should resolve actorRef for given assembly and send Unlock message to it | ESW-126, ESW-245 `() = runBlocking {
             every { locationServiceUtil.jResolveComponentRef(prefix, componentType) }.answers { CompletableFuture.completedFuture(assemblyRef) }
-            every { lockUnlockUtil.unlock(assemblyRef, source) }.answers { CompletableFuture.completedFuture(LockingResponse.`LockReleased$`.`MODULE$`) }
+            every { lockUnlockUtil.unlock(assemblyRef) }.answers { CompletableFuture.completedFuture(LockingResponse.`LockReleased$`.`MODULE$`) }
 
             assembly.unlock()
 
-            verify { lockUnlockUtil.unlock(assemblyRef, source) }
+            verify { lockUnlockUtil.unlock(assemblyRef) }
         }
     }
 
@@ -276,7 +269,6 @@ class RichComponentTest {
                 RichComponent(
                         prefix,
                         componentType,
-                        source,
                         lockUnlockUtil,
                         locationServiceUtil,
                         actorSystem,
@@ -341,9 +333,6 @@ class RichComponentTest {
         @Test
         fun `queryFinal should resolve commandService for given hcd and call queryFinal method on it | ESW-121, ESW-245 `() = runBlocking {
             val commandRunId: Id = mockk()
-            val timeoutDuration: Duration = 5.seconds
-            val timeout = Timeout(timeoutDuration.toLongNanoseconds(), TimeUnit.NANOSECONDS)
-
             mockkStatic(CommandServiceFactory::class)
             every { locationServiceUtil.jResolveAkkaLocation(prefix, componentType) }.answers { CompletableFuture.completedFuture(hcdLocation) }
             every { CommandServiceFactory.jMake(hcdLocation, actorSystem) }.answers { hcdCommandService }
@@ -356,9 +345,6 @@ class RichComponentTest {
 
         @Test
         fun `submitAndWait should resolve commandService for given hcd and call submitAndWait method on it | ESW-121, ESW-245 `() = runBlocking {
-            val timeoutDuration: Duration = 5.seconds
-            val timeout = Timeout(timeoutDuration.toLongNanoseconds(), TimeUnit.NANOSECONDS)
-
             mockkStatic(CommandServiceFactory::class)
             every { locationServiceUtil.jResolveAkkaLocation(prefix, componentType) }.answers { CompletableFuture.completedFuture(hcdLocation) }
             every { CommandServiceFactory.jMake(hcdLocation, actorSystem) }.answers { hcdCommandService }
@@ -371,9 +357,6 @@ class RichComponentTest {
 
         @Test
         fun `submitAndWait should resolve commandService for given hcd and call its error handler when there is a negative submit response | ESW-121, ESW-245, ESW-249 `() = runBlocking {
-            val timeoutDuration: Duration = 5.seconds
-            val timeout = Timeout(timeoutDuration.toLongNanoseconds(), TimeUnit.NANOSECONDS)
-
             var errorCounter = 0
             val message = "error-occurred"
             val invalidSubmitResponse = CommandResponse.Error(Id.apply(), message)
@@ -383,9 +366,11 @@ class RichComponentTest {
             every { CommandServiceFactory.jMake(hcdLocation, actorSystem) }.answers { hcdCommandService }
             every { hcdCommandService.submitAndWait(setupCommand, timeout) }.answers { CompletableFuture.completedFuture(invalidSubmitResponse) }
 
-            shouldThrow<SubmitError> { hcd.submitAndWait(setupCommand, timeoutDuration) { errorCounter++ } }
-
+            hcd.submitAndWait(setupCommand, timeoutDuration) { errorCounter++ }
             errorCounter shouldBe 1
+            verify { hcdCommandService.submitAndWait(setupCommand, timeout) }
+
+            shouldThrow<SubmitError> { hcd.submitAndWait(setupCommand, timeoutDuration) }
             verify { hcdCommandService.submitAndWait(setupCommand, timeout) }
         }
 
@@ -455,21 +440,21 @@ class RichComponentTest {
         @Test
         fun `lock should resolve actorRef for given hcd and send Lock message to it | ESW-126, ESW-245 `() = runBlocking {
             every { locationServiceUtil.jResolveComponentRef(prefix, componentType) }.answers { CompletableFuture.completedFuture(hcdRef) }
-            every { lockUnlockUtil.lock(hcdRef, source, jLeaseDuration, any(), any()) }.answers { CompletableFuture.completedFuture(LockingResponse.`LockAcquired$`.`MODULE$`) }
+            every { lockUnlockUtil.lock(hcdRef, jLeaseDuration, any(), any()) }.answers { CompletableFuture.completedFuture(LockingResponse.`LockAcquired$`.`MODULE$`) }
 
             hcd.lock(leaseDuration)
 
-            verify { lockUnlockUtil.lock(hcdRef, source, jLeaseDuration, any(), any()) }
+            verify { lockUnlockUtil.lock(hcdRef, jLeaseDuration, any(), any()) }
         }
 
         @Test
         fun `unlock should resolve actorRef for given hcd and send Unlock message to it | ESW-126, ESW-245 `() = runBlocking {
             every { locationServiceUtil.jResolveComponentRef(prefix, componentType) }.answers { CompletableFuture.completedFuture(hcdRef) }
-            every { lockUnlockUtil.unlock(hcdRef, source) }.answers { CompletableFuture.completedFuture(LockingResponse.`LockReleased$`.`MODULE$`) }
+            every { lockUnlockUtil.unlock(hcdRef) }.answers { CompletableFuture.completedFuture(LockingResponse.`LockReleased$`.`MODULE$`) }
 
             hcd.unlock()
 
-            verify { lockUnlockUtil.unlock(hcdRef, source) }
+            verify { lockUnlockUtil.unlock(hcdRef) }
         }
     }
 

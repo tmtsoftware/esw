@@ -6,12 +6,11 @@ import akka.util.Timeout
 import csw.command.client.extensions.AkkaLocationExt.RichAkkaLocation
 import csw.params.core.models.Subsystem
 import esw.ocs.api.SequencerApi
-import esw.ocs.dsl.sequence_manager.LocationServiceUtil
+import esw.ocs.impl.internal.LocationServiceUtil
 
 import scala.compat.java8.FutureConverters.FutureOps
 import scala.concurrent.Future
 
-//fixme: why is it taking LocationServiceUtil, should this factory reside in DSL
 class SequencerActorProxyFactory(locationServiceUtil: LocationServiceUtil)(implicit timeout: Timeout) {
 
   import locationServiceUtil.actorSystem

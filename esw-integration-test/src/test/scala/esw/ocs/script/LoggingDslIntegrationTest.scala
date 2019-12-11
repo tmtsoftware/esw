@@ -13,11 +13,12 @@ import esw.gateway.server.TestAppender
 import esw.ocs.api.SequencerApi
 import esw.ocs.impl.SequencerActorProxy
 import esw.ocs.testkit.EswTestKit
+import esw.ocs.testkit.Service.EventServer
 import play.api.libs.json.{JsObject, Json}
 
 import scala.collection.mutable
 
-class LoggingDslIntegrationTest extends EswTestKit {
+class LoggingDslIntegrationTest extends EswTestKit(EventServer) {
 
   private val logBuffer: mutable.Buffer[JsObject] = mutable.Buffer.empty[JsObject]
   private val testAppender                        = new TestAppender(x => logBuffer += Json.parse(x.toString).as[JsObject])

@@ -4,9 +4,7 @@ import akka.Done
 import akka.actor.testkit.typed.scaladsl.TestProbe
 import akka.actor.typed.SpawnProtocol.Spawn
 import akka.actor.typed.scaladsl.AskPattern._
-import akka.actor.typed.scaladsl.Behaviors
 import akka.actor.typed.{ActorRef, Props}
-import csw.location.api.extensions.ActorExtension._
 import csw.location.models.Connection.AkkaConnection
 import csw.location.models.{AkkaLocation, ComponentId, ComponentType, Location}
 import csw.logging.client.scaladsl.LoggerFactory
@@ -27,13 +25,8 @@ class SequenceComponentBehaviorTest extends EswTestKit {
   private def spawnSequenceComponent() = {
     (system ? { x: ActorRef[ActorRef[SequenceComponentMsg]] =>
       Spawn(
-        Behaviors.setup[SequenceComponentMsg] { ctx =>
-          val location = AkkaLocation(
-            AkkaConnection(ComponentId(Prefix(ocsSequenceComponentName), ComponentType.SequenceComponent)),
-            ctx.self.toURI
-          )
-          SequenceComponentBehavior.behavior(location, factory.getLogger, sequencerWiring(_, _, _).sequencerServer)
-        },
+        SequenceComponentBehavior
+          .behavior(Prefix(ocsSequenceComponentName), factory.getLogger, sequencerWiring(_, _, _).sequencerServer),
         ocsSequenceComponentName,
         Props.empty,
         x

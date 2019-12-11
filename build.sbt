@@ -70,7 +70,6 @@ lazy val `esw-ocs-impl` = project
   )
   .dependsOn(
     `esw-ocs-api`.jvm % "compile->compile;test->test",
-    `esw-ocs-dsl`,
     `esw-test-reporter` % Test
   )
 
@@ -82,6 +81,7 @@ lazy val `esw-ocs-app` = project
   )
   .dependsOn(
     `esw-ocs-handler`,
+    `esw-ocs-dsl`,
     `esw-ocs-impl`      % "compile->compile;test->test",
     `esw-http-core`     % "compile->compile;test->test",
     `esw-test-reporter` % Test
@@ -112,7 +112,11 @@ lazy val `esw-integration-test` = project
 lazy val `esw-ocs-dsl` = project
   .in(file("esw-ocs/esw-ocs-dsl"))
   .settings(libraryDependencies ++= Dependencies.OcsDsl.value)
-  .dependsOn(`esw-ocs-api`.jvm % "compile->compile;test->test", `esw-test-reporter` % Test)
+  .dependsOn(
+    `esw-ocs-api`.jvm % "compile->compile;test->test",
+    `esw-ocs-impl`,
+    `esw-test-reporter` % Test
+  )
 
 lazy val `esw-ocs-dsl-kt` = project
   .in(file("esw-ocs/esw-ocs-dsl-kt"))

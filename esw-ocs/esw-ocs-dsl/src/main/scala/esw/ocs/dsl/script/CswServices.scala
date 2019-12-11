@@ -1,8 +1,5 @@
 package esw.ocs.dsl.script
 
-import java.util.concurrent.CompletionStage
-import java.util.function.BiFunction
-
 import akka.actor.typed.ActorSystem
 import csw.alarm.api.javadsl.IAlarmService
 import csw.config.api.javadsl.IConfigClientService
@@ -10,10 +7,11 @@ import csw.database.DatabaseServiceFactory
 import csw.event.api.javadsl.IEventService
 import csw.location.api.javadsl.ILocationService
 import csw.logging.api.javadsl.ILogger
-import csw.params.core.models.{Prefix, Subsystem}
+import csw.params.core.models.Prefix
 import csw.time.scheduler.TimeServiceSchedulerFactory
-import esw.ocs.api.SequencerApi
 import esw.ocs.dsl.script.utils.LockUnlockUtil
+import esw.ocs.impl.SequencerActorProxyFactory
+import esw.ocs.impl.core.api.SequenceOperator
 
 class CswServices(
     val prefix: Prefix,
@@ -23,8 +21,7 @@ class CswServices(
     val locationService: ILocationService,
     val eventService: IEventService,
     val timeServiceSchedulerFactory: TimeServiceSchedulerFactory,
-    //fixme : should this be private as the SequencerApi should not be given to script writer.
-    val sequencerApiFactory: BiFunction[Subsystem, String, CompletionStage[SequencerApi]],
+    val sequencerApiFactory: SequencerActorProxyFactory,
     val databaseServiceFactory: DatabaseServiceFactory,
     val lockUnlockUtil: LockUnlockUtil,
     val configClientService: IConfigClientService,

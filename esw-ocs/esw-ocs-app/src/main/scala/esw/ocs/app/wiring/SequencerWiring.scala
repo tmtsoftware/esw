@@ -29,10 +29,9 @@ import esw.ocs.api.codecs.SequencerHttpCodecs
 import esw.ocs.api.protocol.ScriptError
 import esw.ocs.dsl.script.utils.{LockUnlockUtil, ScriptLoader}
 import esw.ocs.dsl.script.{CswServices, ScriptDsl}
-import esw.ocs.dsl.sequence_manager.LocationServiceUtil
 import esw.ocs.handler.{SequencerPostHandler, SequencerWebsocketHandler}
 import esw.ocs.impl.core._
-import esw.ocs.impl.internal.{SequencerServer, Timeouts}
+import esw.ocs.impl.internal.{LocationServiceUtil, SequencerServer, Timeouts}
 import esw.ocs.impl.messages.SequencerMessages.Shutdown
 import esw.ocs.impl.syntax.FutureSyntax.FutureOps
 import esw.ocs.impl.{SequencerActorProxy, SequencerActorProxyFactory}
@@ -71,10 +70,10 @@ private[ocs] class SequencerWiring(
   private lazy val componentId             = ComponentId(prefix, ComponentType.Sequencer)
   private lazy val script: ScriptDsl       = ScriptLoader.loadKotlinScript(scriptClass, cswServices)
 
-  lazy private val locationServiceUtil   = new LocationServiceUtil(locationService)
-  lazy private val sequencerProxyFactory = new SequencerActorProxyFactory(locationServiceUtil)
+  private lazy val locationServiceUtil   = new LocationServiceUtil(locationService)
+  private lazy val sequencerProxyFactory = new SequencerActorProxyFactory(locationServiceUtil)
 
-  lazy private val lockUnlockUtil = new LockUnlockUtil(locationServiceUtil)(actorSystem)
+  lazy private val lockUnlockUtil = new LockUnlockUtil(prefix)(actorSystem)
 
   lazy val jLocationService: ILocationService         = JHttpLocationServiceFactory.makeLocalClient(actorSystem)
   lazy val jConfigClientService: IConfigClientService = JConfigClientFactory.clientApi(actorSystem, jLocationService)
@@ -97,7 +96,7 @@ private[ocs] class SequencerWiring(
     jLocationService,
     jEventService,
     timeServiceSchedulerFactory,
-    sequencerProxyFactory.jMake,
+    sequencerProxyFactory,
     databaseServiceFactory,
     lockUnlockUtil,
     jConfigClientService,
@@ -135,7 +134,7 @@ private[ocs] class SequencerWiring(
         httpService.registeredLazyBinding.block
 
         val registration = AkkaRegistration(AkkaConnection(componentId), sequencerRef.toURI)
-        new LocationServiceUtil(locationService).register(registration).block
+        locationServiceUtil.register(registration).block
       }
       catch {
         case NonFatal(e) => Left(ScriptError(e.getMessage))

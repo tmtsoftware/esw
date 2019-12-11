@@ -8,12 +8,12 @@ import csw.params.commands._
 import csw.params.core.models.Prefix
 import csw.params.core.models.Subsystem.{ESW, TCS}
 import csw.params.events.{Event, EventKey, EventName, SystemEvent}
-import csw.testkit.scaladsl.CSWService.EventServer
 import csw.time.core.models.UTCTime
 import esw.ocs.api.protocol._
 import esw.ocs.impl.SequencerActorProxy
 import esw.ocs.impl.messages.SequencerMessages._
 import esw.ocs.testkit.EswTestKit
+import esw.ocs.testkit.Service.EventServer
 import org.scalatest.prop.TableDrivenPropertyChecks._
 import org.scalatest.prop.TableFor2
 
