@@ -134,7 +134,10 @@ class SequenceComponentBehaviorTest extends EswTestKit {
 
       //Assert if script loaded and returns AkkaLocation of sequencer
       sequenceComponentRef ! LoadScript(subsystem, observingMode, loadScriptResponseProbe.ref)
-      loadScriptResponseProbe.expectMessageType[ScriptResponse]
+      val message = loadScriptResponseProbe.receiveMessage
+      message shouldBe a[ScriptResponse]
+      message.response.isRight shouldBe true
+      val initialLocation = message.response.rightValue
 
       //Restart sequencer and assert if it returns new AkkaLocation of sequencer
       sequenceComponentRef ! Restart(restartResponseProbe.ref)
@@ -143,6 +146,7 @@ class SequenceComponentBehaviorTest extends EswTestKit {
       restartLocationResponse.connection shouldEqual AkkaConnection(
         ComponentId(prefix, ComponentType.Sequencer)
       )
+      restartLocationResponse should not equal initialLocation
     }
 
     "restart should fail if sequencer is in idle state | ESW-141" in {
