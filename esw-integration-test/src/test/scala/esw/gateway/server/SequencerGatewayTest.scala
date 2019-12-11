@@ -11,7 +11,6 @@ import esw.ocs.testkit.EswTestKit
 import esw.ocs.testkit.Service.{Gateway, EventServer}
 
 class SequencerGatewayTest extends EswTestKit(Gateway, EventServer) with GatewayCodecs {
-  private val port: Int     = 6490
   private val subsystem     = ESW
   private val observingMode = "moonnight"
 
