@@ -49,11 +49,11 @@ class RichComponent(
         return commandService().queryFinal(commandRunId, akkaTimeout).await()
     }
 
-    suspend fun submitAndWait(command: ControlCommand, timeout: Duration, onError: (SuspendableConsumer<SubmitResponse>)? = null):
-            SubmitResponse {
+    suspend fun submitAndWait(command: ControlCommand, timeout: Duration, resumeOnError: Boolean = false): SubmitResponse {
         val akkaTimeout = Timeout(timeout.toLongNanoseconds(), TimeUnit.NANOSECONDS)
-        val submitResponse = commandService().submitAndWait(command, akkaTimeout).await()
-        return handleResponse(submitResponse, onError)
+        val submitResponse: SubmitResponse = commandService().submitAndWait(command, akkaTimeout).await()
+        if (!resumeOnError && isNegative(submitResponse)) throw SubmitError(submitResponse)
+        return submitResponse
     }
 
     suspend fun subscribeCurrentState(stateNames: Set<StateName>, callback: SuspendableConsumer<CurrentState>): Subscription =
@@ -81,11 +81,5 @@ class RichComponent(
 
     private suspend fun commandService(): ICommandService = CommandServiceFactory.jMake(locationServiceUtil.jResolveAkkaLocation(prefix, componentType).await(), actorSystem)
     private suspend fun componentRef(): ActorRef<ComponentMessage> = locationServiceUtil.jResolveComponentRef(prefix, componentType).await()
-
-    private suspend fun handleResponse(submitResponse: SubmitResponse, handler: SuspendableConsumer<SubmitResponse>?): SubmitResponse {
-        if (isNegative(submitResponse))
-            handler?.let { it(coroutineScope, submitResponse) } ?: throw SubmitError(submitResponse)
-        return submitResponse
-    }
 
 }

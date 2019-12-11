@@ -12,7 +12,7 @@ import esw.ocs.api.SequencerApi
 import esw.ocs.api.protocol.`Ok$`
 import esw.ocs.impl.SequencerActorProxyFactory
 import esw.ocs.impl.internal.LocationServiceUtil
-import io.kotlintest.shouldBe
+import io.kotlintest.shouldNotThrow
 import io.kotlintest.shouldThrow
 import io.mockk.every
 import io.mockk.mockk
@@ -22,9 +22,7 @@ import kotlinx.coroutines.runBlocking
 import org.junit.jupiter.api.Test
 import scala.concurrent.Future
 import java.util.concurrent.CompletableFuture
-import java.util.concurrent.CompletionStage
 import java.util.concurrent.TimeUnit
-import java.util.function.BiFunction
 import kotlin.coroutines.EmptyCoroutineContext
 import kotlin.time.seconds
 
@@ -88,21 +86,23 @@ class RichSequencerTest {
     }
 
     @Test
-    fun `submitAndWait should resolve sequencerCommandService for given sequencer and call submitAndWait method on it | ESW-245, ESW-195 `() = runBlocking {
+    fun `submitAndWait should resolve sequencerCommandService for given sequencer, call submitAndWait and should throw exception if submit response is negative | ESW-245, ESW-195 `() = runBlocking {
+
+        val message = "error-occurred"
+        val invalidSubmitResponse = CommandResponse.Error(Id.apply(), message)
 
         every { locationServiceUtil.resolveSequencer(sequencerId, observingMode, any()) }.answers { Future.successful(sequencerLocation) }
-        every { sequencerApi.submitAndWait(sequence, timeout) }.answers { Future.successful(CommandResponse.Completed(Id.apply())) }
         every { sequencerApiFactory.jMake(sequencerId, observingMode) }.answers { CompletableFuture.completedFuture(sequencerApi) }
+        every { sequencerApi.submitAndWait(sequence, timeout) }.answers { Future.successful(invalidSubmitResponse) }
 
-        tcsSequencer.submitAndWait(sequence, 10.seconds)
+        shouldThrow<SubmitError> { tcsSequencer.submitAndWait(sequence, 10.seconds) }
 
         verify { sequencerApi.submitAndWait(sequence, timeout) }
     }
 
     @Test
-    fun `submitAndWait should resolve sequencerCommandService for given sequencer and call its error handler when there is a negative submit response | ESW-245, ESW-195, ESW-249 `() = runBlocking {
+    fun `submitAndWait should resolve sequencerCommandService for given sequencer, call submitAndWait and shouldn't throw exception if submit response is negative | ESW-245, ESW-195 `() = runBlocking {
 
-        var errorCounter = 0
         val message = "error-occurred"
         val invalidSubmitResponse = CommandResponse.Error(Id.apply(), message)
 
@@ -110,11 +110,8 @@ class RichSequencerTest {
         every { sequencerApi.submitAndWait(sequence, timeout) }.answers { Future.successful(invalidSubmitResponse) }
         every { sequencerApiFactory.jMake(sequencerId, observingMode) }.answers { CompletableFuture.completedFuture(sequencerApi) }
 
-        tcsSequencer.submitAndWait(sequence, 10.seconds) { errorCounter++ } shouldBe invalidSubmitResponse
-        errorCounter shouldBe 1
-        verify { sequencerApi.submitAndWait(sequence, timeout) }
+        shouldNotThrow<SubmitError> { tcsSequencer.submitAndWait(sequence, 10.seconds, resumeOnError = true) }
 
-        shouldThrow<SubmitError> { tcsSequencer.submitAndWait(sequence, 10.seconds) }
         verify { sequencerApi.submitAndWait(sequence, timeout) }
     }
 

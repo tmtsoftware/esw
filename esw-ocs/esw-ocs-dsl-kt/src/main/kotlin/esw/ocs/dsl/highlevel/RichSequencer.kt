@@ -9,7 +9,6 @@ import csw.params.core.models.Subsystem
 import csw.time.core.models.UTCTime
 import esw.ocs.api.SequencerApi
 import esw.ocs.api.protocol.*
-import esw.ocs.dsl.SuspendableConsumer
 import esw.ocs.dsl.jdk.SuspendToJavaConverter
 import esw.ocs.dsl.jdk.toJava
 import esw.ocs.impl.SequencerActorProxyFactory
@@ -37,10 +36,11 @@ class RichSequencer(
         return sequencerAdmin().queryFinal(runId, akkaTimeout).toJava().await()
     }
 
-    suspend fun submitAndWait(sequence: Sequence, timeout: Duration, onError: (SuspendableConsumer<SubmitResponse>)? = null): SubmitResponse {
+    suspend fun submitAndWait(sequence: Sequence, timeout: Duration, resumeOnError: Boolean = false): SubmitResponse {
         val akkaTimeout = Timeout(timeout.toLongNanoseconds(), TimeUnit.NANOSECONDS)
-        val submitResponse = sequencerAdmin().submitAndWait(sequence, akkaTimeout).toJava().await()
-        return handleResponse(submitResponse, onError)
+        val submitResponse: SubmitResponse = sequencerAdmin().submitAndWait(sequence, akkaTimeout).toJava().await()
+        if (!resumeOnError && CommandResponse.isNegative(submitResponse)) throw SubmitError(submitResponse)
+        return submitResponse
     }
 
     suspend fun goOnline(): GoOnlineResponse =
@@ -61,9 +61,4 @@ class RichSequencer(
     suspend fun stop(): OkOrUnhandledResponse =
             sequencerAdmin().stop().toJava().await()
 
-    private suspend fun handleResponse(submitResponse: SubmitResponse, handler: SuspendableConsumer<SubmitResponse>?): SubmitResponse {
-        if (CommandResponse.isNegative(submitResponse))
-            handler?.let { it(coroutineScope, submitResponse) } ?: throw SubmitError(submitResponse)
-        return submitResponse
-    }
 }
