@@ -10,7 +10,7 @@ import csw.params.javadsl.JSubsystem
 import csw.time.core.models.UTCTime
 import esw.ocs.api.SequencerApi
 import esw.ocs.api.protocol.`Ok$`
-import esw.ocs.dsl.sequence_manager.LocationServiceUtil
+import esw.ocs.impl.internal.LocationServiceUtil
 import io.kotlintest.shouldBe
 import io.kotlintest.shouldThrow
 import io.mockk.every

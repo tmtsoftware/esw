@@ -1,4 +1,4 @@
-package esw.ocs.dsl.sequence_manager
+package esw.ocs.impl.internal
 
 import java.net.URI
 
@@ -18,7 +18,6 @@ import csw.params.core.models.Subsystem.{ESW, IRIS, TCS}
 import csw.params.core.models.{Prefix, Subsystem}
 import esw.ocs.api.BaseTestSuite
 import esw.ocs.api.protocol.ScriptError
-import esw.ocs.dsl.Timeouts
 
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future

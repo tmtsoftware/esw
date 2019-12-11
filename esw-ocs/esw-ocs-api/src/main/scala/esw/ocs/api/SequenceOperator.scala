@@ -1,4 +1,4 @@
-package esw.ocs.dsl.script
+package esw.ocs.api
 
 import esw.ocs.api.models.Step
 import esw.ocs.api.protocol.{OkOrUnhandledResponse, PullNextResponse}

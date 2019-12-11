@@ -9,7 +9,6 @@ import csw.location.models.Connection.AkkaConnection
 import csw.location.models.{AkkaLocation, AkkaRegistration, ComponentId, ComponentType}
 import csw.params.core.models.{Prefix, Subsystem}
 import esw.ocs.api.protocol.ScriptError
-import esw.ocs.dsl.sequence_manager.LocationServiceUtil
 import esw.ocs.impl.messages.SequenceComponentMsg
 import esw.ocs.impl.messages.SequenceComponentMsg.Stop
 

@@ -12,14 +12,14 @@ import csw.location.api.javadsl.ILocationService
 import csw.logging.api.javadsl.ILogger
 import csw.params.core.models.{Prefix, Subsystem}
 import csw.time.scheduler.TimeServiceSchedulerFactory
-import esw.ocs.api.SequencerApi
+import esw.ocs.api.{SequenceOperator, SequencerApi}
 import esw.ocs.dsl.script.exceptions.ScriptLoadingException.{
   InvalidScriptException,
   ScriptInitialisationFailedException,
   ScriptNotFound
 }
 import esw.ocs.dsl.script.utils.{LockUnlockUtil, ScriptLoader}
-import esw.ocs.dsl.script.{CswServices, ScriptDsl, SequenceOperator}
+import esw.ocs.dsl.script.{CswServices, ScriptDsl}
 import esw.ocs.testkit.BaseTestSuite
 
 class ScriptLoaderTest extends BaseTestSuite {

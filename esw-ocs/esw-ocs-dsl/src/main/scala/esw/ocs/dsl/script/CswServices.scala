@@ -12,7 +12,7 @@ import csw.location.api.javadsl.ILocationService
 import csw.logging.api.javadsl.ILogger
 import csw.params.core.models.{Prefix, Subsystem}
 import csw.time.scheduler.TimeServiceSchedulerFactory
-import esw.ocs.api.SequencerApi
+import esw.ocs.api.{SequenceOperator, SequencerApi}
 import esw.ocs.dsl.script.utils.LockUnlockUtil
 
 class CswServices(

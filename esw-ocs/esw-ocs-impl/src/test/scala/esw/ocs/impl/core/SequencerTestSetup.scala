@@ -15,7 +15,6 @@ import csw.params.core.models.{Id, Prefix}
 import csw.time.core.models.UTCTime
 import esw.ocs.api.models.{Step, StepList}
 import esw.ocs.api.protocol._
-import esw.ocs.dsl.script.ScriptDsl
 import esw.ocs.impl.messages.SequencerMessages.{Pause, _}
 import esw.ocs.impl.messages.{SequenceComponentMsg, SequencerState}
 import esw.ocs.impl.messages.SequencerState.{Idle, InProgress}
@@ -29,6 +28,7 @@ import scala.concurrent.{ExecutionContext, Future, Promise}
 import scala.util.Success
 import csw.location.api.extensions.ActorExtension._
 import csw.location.models.ComponentType.SequenceComponent
+import esw.ocs.api.ScriptApi
 
 class SequencerTestSetup(sequence: Sequence)(implicit system: ActorSystem[_]) {
   import Matchers._
@@ -38,7 +38,7 @@ class SequencerTestSetup(sequence: Sequence)(implicit system: ActorSystem[_]) {
   implicit val ec: ExecutionContext                   = system.executionContext
 
   private val componentId     = mock[ComponentId]
-  private val script          = mock[ScriptDsl]
+  private val script          = mock[ScriptApi]
   private val locationService = mock[LocationService]
   private val sequenceComponent: AkkaLocation = AkkaLocation(
     AkkaConnection(ComponentId(Prefix(ESW, "primary"), SequenceComponent)),

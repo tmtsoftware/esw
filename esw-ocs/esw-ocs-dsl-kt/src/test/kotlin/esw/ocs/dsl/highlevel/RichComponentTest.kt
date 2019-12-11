@@ -23,7 +23,7 @@ import csw.params.core.states.StateName
 import csw.params.javadsl.JSubsystem.ESW
 import csw.time.core.models.UTCTime
 import esw.ocs.dsl.script.utils.LockUnlockUtil
-import esw.ocs.dsl.sequence_manager.LocationServiceUtil
+import esw.ocs.impl.internal.LocationServiceUtil
 import io.kotlintest.shouldBe
 import io.kotlintest.shouldThrow
 import io.mockk.every

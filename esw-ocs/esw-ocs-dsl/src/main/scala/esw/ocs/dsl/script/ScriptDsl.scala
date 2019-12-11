@@ -7,6 +7,7 @@ import java.util.function.Supplier
 import akka.Done
 import csw.params.commands.{Observe, SequenceCommand, Setup}
 import csw.time.core.models.UTCTime
+import esw.ocs.api.ScriptApi
 import esw.ocs.api.protocol.PullNextResult
 import esw.ocs.dsl.script.exceptions.UnhandledCommandException
 import esw.ocs.dsl.script.utils.{FunctionBuilder, FunctionHandlers}
@@ -16,7 +17,7 @@ import scala.compat.java8.FutureConverters.{CompletionStageOps, FutureOps}
 import scala.concurrent.{ExecutionContext, Future}
 import scala.reflect.ClassTag
 
-private[esw] class ScriptDsl(private val csw: CswServices, private val strandEc: StrandEc) {
+private[esw] class ScriptDsl(private val csw: CswServices, private val strandEc: StrandEc) extends ScriptApi {
   protected implicit lazy val toEc: ExecutionContext = strandEc.ec
 
   var isOnline = true
@@ -54,32 +55,32 @@ private[esw] class ScriptDsl(private val csw: CswServices, private val strandEc:
       CompletableFuture.failedFuture(new UnhandledCommandException(input))
     }
 
-  def execute(command: SequenceCommand): Future[Unit] = commandHandler(command).toScala.map(_ => ())
+  override def execute(command: SequenceCommand): Future[Unit] = commandHandler(command).toScala.map(_ => ())
 
   private def executeHandler[T](f: FunctionHandlers[T, CompletionStage[Void]], arg: T): Future[Unit] =
     Future.sequence(f.execute(arg).map(_.toScala)).map(_ => ())
 
-  def executeGoOnline(): Future[Done] =
+  override def executeGoOnline(): Future[Done] =
     executeHandler(onlineHandlers, ()).map { _ =>
       isOnline = true
       Done
     }
 
-  def executeGoOffline(): Future[Done] = {
+  override def executeGoOffline(): Future[Done] = {
     isOnline = false
     executeHandler(offlineHandlers, ()).map(_ => Done)
   }
 
-  def executeShutdown(): Future[Done] = executeHandler(shutdownHandlers, ()).map(_ => Done)
+  override def executeShutdown(): Future[Done] = executeHandler(shutdownHandlers, ()).map(_ => Done)
 
-  def executeAbort(): Future[Done] = executeHandler(abortHandlers, ()).map(_ => Done)
+  override def executeAbort(): Future[Done] = executeHandler(abortHandlers, ()).map(_ => Done)
 
-  def executeStop(): Future[Done] = executeHandler(stopHandlers, ()).map(_ => Done)
+  override def executeStop(): Future[Done] = executeHandler(stopHandlers, ()).map(_ => Done)
 
-  def executeDiagnosticMode(startTime: UTCTime, hint: String): Future[Done] =
+  override def executeDiagnosticMode(startTime: UTCTime, hint: String): Future[Done] =
     Future.sequence(diagnosticHandlers.execute((startTime, hint)).map(_.toScala)).map(_ => Done)
 
-  def executeOperationsMode(): Future[Done] = executeHandler(operationsHandlers, ()).map(_ => Done)
+  override def executeOperationsMode(): Future[Done] = executeHandler(operationsHandlers, ()).map(_ => Done)
 
   def executeExceptionHandlers(ex: Throwable): CompletionStage[Void] =
     executeHandler(exceptionHandlers, ex).toJava.thenAccept(_ => ())

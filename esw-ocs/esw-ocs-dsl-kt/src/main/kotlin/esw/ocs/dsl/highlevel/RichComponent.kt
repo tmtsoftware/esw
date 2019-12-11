@@ -22,7 +22,7 @@ import esw.ocs.dsl.SuspendableCallback
 import esw.ocs.dsl.SuspendableConsumer
 import esw.ocs.dsl.jdk.SuspendToJavaConverter
 import esw.ocs.dsl.script.utils.LockUnlockUtil
-import esw.ocs.dsl.sequence_manager.LocationServiceUtil
+import esw.ocs.impl.internal.LocationServiceUtil
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.future.await
 import msocket.api.Subscription

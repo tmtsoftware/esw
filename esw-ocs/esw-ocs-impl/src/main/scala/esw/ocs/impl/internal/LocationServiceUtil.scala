@@ -1,4 +1,4 @@
-package esw.ocs.dsl.sequence_manager
+package esw.ocs.impl.internal
 
 import java.util.concurrent.CompletionStage
 
@@ -14,14 +14,15 @@ import csw.location.models.ConnectionType.AkkaType
 import csw.location.models._
 import csw.params.core.models.{Prefix, Subsystem}
 import esw.ocs.api.protocol.ScriptError
-import esw.ocs.dsl.Timeouts
 
 import scala.compat.java8.FutureConverters.FutureOps
 import scala.concurrent.duration.FiniteDuration
 import scala.concurrent.{ExecutionContext, Future}
 import scala.util.control.NonFatal
 
-class LocationServiceUtil(private[esw] val locationService: LocationService)(implicit val actorSystem: ActorSystem[_]) {
+private[esw] class LocationServiceUtil(val locationService: LocationService)(
+    implicit val actorSystem: ActorSystem[_]
+) {
   implicit val ec: ExecutionContext = actorSystem.executionContext
 
   private def addCoordinatedShutdownTask(
