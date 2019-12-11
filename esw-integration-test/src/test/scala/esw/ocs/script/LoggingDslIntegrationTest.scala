@@ -9,11 +9,11 @@ import csw.params.commands.CommandResponse.Completed
 import csw.params.commands.{CommandName, Sequence, Setup}
 import csw.params.core.models.Prefix
 import csw.params.core.models.Subsystem.ESW
-import csw.testkit.scaladsl.CSWService.EventServer
 import esw.gateway.server.TestAppender
 import esw.ocs.api.SequencerApi
 import esw.ocs.impl.SequencerActorProxy
 import esw.ocs.testkit.EswTestKit
+import esw.ocs.testkit.Service.EventServer
 import play.api.libs.json.{JsObject, Json}
 
 import scala.collection.mutable
