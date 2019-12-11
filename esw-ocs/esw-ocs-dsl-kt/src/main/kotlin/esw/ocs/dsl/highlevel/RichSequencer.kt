@@ -12,6 +12,7 @@ import esw.ocs.api.protocol.*
 import esw.ocs.dsl.SuspendableConsumer
 import esw.ocs.dsl.jdk.SuspendToJavaConverter
 import esw.ocs.dsl.jdk.toJava
+import esw.ocs.impl.SequencerActorProxyFactory
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.future.await
 import java.util.concurrent.CompletionStage
@@ -22,11 +23,11 @@ import kotlin.time.Duration
 class RichSequencer(
         internal val subsystem: Subsystem,
         private val observingMode: String,
-        private val sequencerApiFactory: BiFunction<Subsystem, String, CompletionStage<SequencerApi>>,
+        private val sequencerApiFactory: SequencerActorProxyFactory,
         override val coroutineScope: CoroutineScope
 ) : SuspendToJavaConverter {
 
-    private suspend fun sequencerAdmin() = sequencerApiFactory.apply(subsystem, observingMode).await()
+    private suspend fun sequencerAdmin() = sequencerApiFactory.jMake(subsystem, observingMode).await()
 
     suspend fun submit(sequence: Sequence): SubmitResponse = sequencerAdmin().submit(sequence).toJava().await()
     suspend fun query(runId: Id): SubmitResponse = sequencerAdmin().query(runId).toJava().await()

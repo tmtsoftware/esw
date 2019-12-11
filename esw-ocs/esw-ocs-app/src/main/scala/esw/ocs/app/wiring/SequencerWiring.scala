@@ -96,7 +96,7 @@ private[ocs] class SequencerWiring(
     jLocationService,
     jEventService,
     timeServiceSchedulerFactory,
-    sequencerProxyFactory.jMake,
+    sequencerProxyFactory,
     databaseServiceFactory,
     lockUnlockUtil,
     jConfigClientService,
