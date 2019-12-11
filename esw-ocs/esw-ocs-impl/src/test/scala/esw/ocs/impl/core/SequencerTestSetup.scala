@@ -28,7 +28,7 @@ import scala.concurrent.{ExecutionContext, Future, Promise}
 import scala.util.Success
 import csw.location.api.extensions.ActorExtension._
 import csw.location.models.ComponentType.SequenceComponent
-import esw.ocs.api.ScriptApi
+import esw.ocs.impl.core.api.ScriptApi
 
 class SequencerTestSetup(sequence: Sequence)(implicit system: ActorSystem[_]) {
   import Matchers._

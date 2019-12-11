@@ -7,10 +7,10 @@ import java.util.function.Supplier
 import akka.Done
 import csw.params.commands.{Observe, SequenceCommand, Setup}
 import csw.time.core.models.UTCTime
-import esw.ocs.api.ScriptApi
 import esw.ocs.api.protocol.PullNextResult
 import esw.ocs.dsl.script.exceptions.UnhandledCommandException
 import esw.ocs.dsl.script.utils.{FunctionBuilder, FunctionHandlers}
+import esw.ocs.impl.core.api.ScriptApi
 
 import scala.async.Async.{async, await}
 import scala.compat.java8.FutureConverters.{CompletionStageOps, FutureOps}

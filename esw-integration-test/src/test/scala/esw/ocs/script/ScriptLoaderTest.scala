@@ -9,15 +9,11 @@ import csw.location.api.javadsl.ILocationService
 import csw.logging.api.javadsl.ILogger
 import csw.params.core.models.Prefix
 import csw.time.scheduler.TimeServiceSchedulerFactory
-import esw.ocs.api.SequenceOperator
-import esw.ocs.dsl.script.exceptions.ScriptLoadingException.{
-  InvalidScriptException,
-  ScriptInitialisationFailedException,
-  ScriptNotFound
-}
+import esw.ocs.dsl.script.exceptions.ScriptLoadingException._
 import esw.ocs.dsl.script.utils.{LockUnlockUtil, ScriptLoader}
 import esw.ocs.dsl.script.{CswServices, ScriptDsl}
 import esw.ocs.impl.SequencerActorProxyFactory
+import esw.ocs.impl.core.api.SequenceOperator
 import esw.ocs.testkit.BaseTestSuite
 
 class ScriptLoaderTest extends BaseTestSuite {
