@@ -2,7 +2,7 @@ package esw.ocs.scripts.examples.testData.sharedState
 
 import esw.ocs.dsl.core.script
 import esw.ocs.dsl.params.intKey
-import esw.ocs.dsl.params.set
+import esw.ocs.scripts.examples.SharedConstants.events
 import kotlinx.coroutines.launch
 
 script {
@@ -15,6 +15,6 @@ script {
 
     onObserve("get-counter") {
         job.join()
-        publishEvent(ObserveEvent("esw.counter", "get-counter", intKey("counter").set(counter)))
+        publishEvent(events.getCounter.add(intKey("counter").set(counter)))
     }
 }
