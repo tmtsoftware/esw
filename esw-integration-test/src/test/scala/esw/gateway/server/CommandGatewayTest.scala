@@ -1,6 +1,5 @@
 package esw.gateway.server
 
-import akka.actor.CoordinatedShutdown.UnknownReason
 import akka.actor.testkit.typed.scaladsl.TestProbe
 import akka.stream.scaladsl.Sink
 import com.typesafe.config.ConfigFactory
@@ -13,42 +12,25 @@ import csw.params.commands.{CommandName, Setup}
 import csw.params.core.models.{ObsId, Prefix}
 import csw.params.core.states.{CurrentState, StateName}
 import csw.params.events.{Event, EventKey, EventName, SystemEvent}
-import csw.testkit.scaladsl.CSWService.EventServer
 import esw.gateway.api.clients.ClientFactory
 import esw.gateway.api.codecs.GatewayCodecs
-import esw.gateway.api.protocol.{PostRequest, WebsocketRequest}
 import esw.ocs.testkit.EswTestKit
-import msocket.api.Transport
-import msocket.impl.Encoding.JsonText
-import msocket.impl.post.HttpPostTransport
-import msocket.impl.ws.WebsocketTransport
+import esw.ocs.testkit.Service.{EventServer, Gateway}
 
 import scala.concurrent.Future
 
-class CommandGatewayTest extends EswTestKit(EventServer) with GatewayCodecs {
-  private val port: Int                    = 6490
-  private val gatewayWiring: GatewayWiring = new GatewayWiring(Some(port))
+class CommandGatewayTest extends EswTestKit(EventServer, Gateway) with GatewayCodecs {
 
   override def beforeAll(): Unit = {
     super.beforeAll()
-    gatewayWiring.httpService.registeredLazyBinding.futureValue
     frameworkTestKit.spawnStandalone(ConfigFactory.load("standalone.conf"))
-  }
-
-  override def afterAll(): Unit = {
-    gatewayWiring.httpService.shutdown(UnknownReason).futureValue
-    super.afterAll()
   }
 
   "CommandApi" must {
 
     val prefix = Prefix("esw.test")
     "handle validate, oneway, submit, subscribe current state and queryFinal commands | ESW-223, ESW-100, ESW-91, ESW-216, ESW-86" in {
-      val postClient: Transport[PostRequest] =
-        new HttpPostTransport(s"http://localhost:$port/post-endpoint", JsonText, () => None)
-      val websocketClient: Transport[WebsocketRequest] =
-        new WebsocketTransport(s"ws://localhost:$port/websocket-endpoint", JsonText)
-      val clientFactory = new ClientFactory(postClient, websocketClient)
+      val clientFactory = new ClientFactory(gatewayPostClient, gatewayWsClient)
 
       val eventService = new EventServiceFactory().make(HttpLocationServiceFactory.makeLocalClient)
       val eventKey     = EventKey(Prefix("tcs.filter.wheel"), EventName("setup-command-from-script"))
@@ -93,11 +75,7 @@ class CommandGatewayTest extends EswTestKit(EventServer) with GatewayCodecs {
     }
 
     "handle large websocket requests" in {
-      val postClient: Transport[PostRequest] =
-        new HttpPostTransport(s"http://localhost:$port/post-endpoint", JsonText, () => None)
-      val websocketClient: Transport[WebsocketRequest] =
-        new WebsocketTransport(s"ws://localhost:$port/websocket-endpoint", JsonText)
-      val clientFactory = new ClientFactory(postClient, websocketClient)
+      val clientFactory = new ClientFactory(gatewayPostClient, gatewayWsClient)
 
       val componentType = Assembly
       val command       = Setup(prefix, CommandName("c1"), Some(ObsId("obsId")))

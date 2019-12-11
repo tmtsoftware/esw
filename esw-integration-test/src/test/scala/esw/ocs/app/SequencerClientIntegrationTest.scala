@@ -11,7 +11,6 @@ import csw.params.core.generics.KeyType.StringKey
 import csw.params.core.models.Subsystem.{ESW, TCS}
 import csw.params.core.models.{Id, Prefix}
 import csw.params.events.{Event, EventKey, EventName, SystemEvent}
-import csw.testkit.scaladsl.CSWService.EventServer
 import csw.time.core.models.UTCTime
 import esw.ocs.api.SequencerApi
 import esw.ocs.api.models.StepStatus.Finished.{Failure, Success}
@@ -21,6 +20,7 @@ import esw.ocs.api.protocol._
 import esw.ocs.impl.SequenceComponentImpl
 import esw.ocs.impl.messages.SequencerState.{Loaded, Offline}
 import esw.ocs.testkit.EswTestKit
+import esw.ocs.testkit.Service.EventServer
 
 import scala.concurrent.Future
 

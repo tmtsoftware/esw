@@ -1,7 +1,9 @@
 package esw.ocs.testkit
 
 import akka.actor
+import akka.actor.CoordinatedShutdown.UnknownReason
 import akka.actor.typed.{ActorRef, ActorSystem, SpawnProtocol}
+import akka.http.scaladsl.Http.ServerBinding
 import akka.util.Timeout
 import csw.command.client.extensions.AkkaLocationExt.RichAkkaLocation
 import csw.command.client.messages.sequencer.SequencerMsg
@@ -9,36 +11,62 @@ import csw.event.api.scaladsl.{EventPublisher, EventService, EventSubscriber}
 import csw.location.api.extensions.URIExtension._
 import csw.location.api.scaladsl.LocationService
 import csw.location.models.Connection.{AkkaConnection, HttpConnection}
-import csw.location.models.{AkkaLocation, ComponentId, ComponentType}
+import csw.location.models.{AkkaLocation, ComponentId, ComponentType, HttpLocation}
+import csw.network.utils.{Networks, SocketUtils}
 import csw.params.core.models.{Prefix, Subsystem}
-import csw.testkit.scaladsl.{CSWService, ScalaTestFrameworkTestKit}
+import csw.testkit.scaladsl.ScalaTestFrameworkTestKit
+import esw.gateway.api.codecs.GatewayCodecs
+import esw.gateway.api.protocol.{PostRequest, WebsocketRequest}
+import esw.gateway.server.GatewayWiring
 import esw.ocs.api.SequencerApi
 import esw.ocs.api.protocol.ScriptError
 import esw.ocs.app.wiring.{SequenceComponentWiring, SequencerWiring}
 import esw.ocs.impl.messages.SequenceComponentMsg
 import esw.ocs.impl.{SequenceComponentImpl, SequencerActorProxy, SequencerApiFactory}
+import esw.ocs.testkit.Service.Gateway
+import msocket.impl.Encoding.JsonText
+import msocket.impl.post.HttpPostTransport
+import msocket.impl.ws.WebsocketTransport
 
 import scala.collection.mutable
 import scala.concurrent.ExecutionContext
 import scala.concurrent.duration.DurationLong
 
-abstract class EswTestKit(services: CSWService*) extends ScalaTestFrameworkTestKit(services: _*) with BaseTestSuite {
+abstract class EswTestKit(services: Service*)
+    extends ScalaTestFrameworkTestKit(Service.convertToCsw(services): _*)
+    with BaseTestSuite
+    with GatewayCodecs {
   implicit lazy val system: ActorSystem[SpawnProtocol.Command] = frameworkTestKit.actorSystem
   implicit lazy val ec: ExecutionContext                       = frameworkTestKit.frameworkWiring.actorRuntime.ec
   implicit lazy val askTimeout: Timeout                        = Timeout(10.seconds)
   lazy val locationService: LocationService                    = frameworkTestKit.frameworkWiring.locationService
   lazy val untypedSystem: actor.ActorSystem                    = frameworkTestKit.frameworkWiring.actorRuntime.classicSystem
+  lazy val gatewayPort: Int                                    = SocketUtils.getFreePort
+  lazy val gatewayWiring: GatewayWiring                        = new GatewayWiring(Some(gatewayPort))
+  private lazy val eventService: EventService                  = frameworkTestKit.frameworkWiring.eventServiceFactory.make(locationService)
+  lazy val eventSubscriber: EventSubscriber                    = eventService.defaultSubscriber
+  lazy val eventPublisher: EventPublisher                      = eventService.defaultPublisher
+  var gatewayBinding: Option[ServerBinding]                    = None
+  var gatewayLocation: Option[HttpLocation]                    = None
 
-  private lazy val eventService: EventService = frameworkTestKit.frameworkWiring.eventServiceFactory.make(locationService)
-  lazy val eventSubscriber: EventSubscriber   = eventService.defaultSubscriber
-  lazy val eventPublisher: EventPublisher     = eventService.defaultPublisher
+  lazy val gatewayPostClient =
+    new HttpPostTransport[PostRequest](s"http://${Networks().hostname}:$gatewayPort/post-endpoint", JsonText, () => None)
+
+  lazy val gatewayWsClient =
+    new WebsocketTransport[WebsocketRequest](s"ws://${Networks().hostname}:$gatewayPort/websocket-endpoint", JsonText)
 
   private val sequenceComponentLocations: mutable.Buffer[AkkaLocation] = mutable.Buffer.empty
 
   override implicit def patienceConfig: PatienceConfig = PatienceConfig(10.seconds)
 
+  override def beforeAll(): Unit = {
+    super.beforeAll()
+    if (services.contains(Gateway)) spawnGateway()
+  }
+
   override def afterAll(): Unit = {
     shutdownAllSequencers()
+    shutdownGateway()
     super.afterAll()
   }
 
@@ -50,6 +78,17 @@ abstract class EswTestKit(services: CSWService*) extends ScalaTestFrameworkTestK
     sequenceComponentLocations.foreach(x => new SequenceComponentImpl(x.uri.toActorRef.unsafeUpcast).unloadScript())
     clearAll()
   }
+
+  def spawnGateway(): HttpLocation = {
+    val (binding, registration) = gatewayWiring.httpService.registeredLazyBinding.futureValue
+    gatewayBinding = Some(binding)
+    gatewayLocation = Some(registration.location.asInstanceOf[HttpLocation])
+    gatewayLocation.get
+  }
+
+  private def shutdownGateway(): Unit =
+    if (gatewayBinding.nonEmpty)
+      gatewayWiring.httpService.shutdown(UnknownReason).futureValue
 
   def spawnSequencerRef(subsystem: Subsystem, observingMode: String): ActorRef[SequencerMsg] =
     spawnSequencer(subsystem, observingMode).rightValue.sequencerRef

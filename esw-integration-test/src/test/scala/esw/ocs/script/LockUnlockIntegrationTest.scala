@@ -9,10 +9,10 @@ import csw.params.core.generics.KeyType.StringKey
 import csw.params.core.models.Prefix
 import csw.params.core.models.Subsystem.ESW
 import csw.params.events.EventKey
-import csw.testkit.scaladsl.CSWService.EventServer
 import esw.ocs.api.SequencerApi
 import esw.ocs.impl.SequencerActorProxy
 import esw.ocs.testkit.EswTestKit
+import esw.ocs.testkit.Service.EventServer
 
 class LockUnlockIntegrationTest extends EswTestKit(EventServer) {
   private var ocsSequencerRef: ActorRef[SequencerMsg] = _

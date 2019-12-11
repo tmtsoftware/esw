@@ -6,9 +6,9 @@ import csw.params.core.generics.KeyType.IntKey
 import csw.params.core.models.Prefix
 import csw.params.core.models.Subsystem.ESW
 import csw.params.events.EventKey
-import csw.testkit.scaladsl.CSWService.EventServer
 import esw.ocs.api.SequencerApi
 import esw.ocs.testkit.EswTestKit
+import esw.ocs.testkit.Service.EventServer
 
 class ThreadSafetyTest extends EswTestKit(EventServer) {
 
