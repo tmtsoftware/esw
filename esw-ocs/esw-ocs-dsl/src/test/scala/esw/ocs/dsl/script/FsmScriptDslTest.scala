@@ -19,7 +19,7 @@ class FsmScriptDslTest extends BaseTestSuite {
   override protected def afterAll(): Unit = strandEc.shutdown()
 
   "become" must {
-    "call transition method defined on FsmScriptState and update its internal state" in {
+    "call transition method defined on FsmScriptState and update its internal state | ESW-252" in {
       val initialState = mock[FsmScriptState]
       val updatedState = mock[FsmScriptState]
       when(initialState.transition(STARTED_STATE, params)).thenReturn(updatedState)
