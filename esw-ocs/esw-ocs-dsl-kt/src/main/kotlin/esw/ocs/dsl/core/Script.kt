@@ -6,7 +6,7 @@ import csw.params.commands.Setup
 import csw.time.core.models.UTCTime
 import esw.ocs.dsl.highlevel.CswHighLevelDsl
 import esw.ocs.dsl.highlevel.ScriptError
-import esw.ocs.dsl.internal.toScriptError
+import esw.ocs.dsl.toScriptError
 import esw.ocs.dsl.nullable
 import esw.ocs.dsl.params.Params
 import esw.ocs.dsl.script.CswServices

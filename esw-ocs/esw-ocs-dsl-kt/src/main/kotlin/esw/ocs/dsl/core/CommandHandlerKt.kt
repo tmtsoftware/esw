@@ -3,7 +3,7 @@ package esw.ocs.dsl.core
 import csw.params.commands.SequenceCommand
 import esw.ocs.dsl.SuspendableConsumer
 import esw.ocs.dsl.highlevel.ScriptError
-import esw.ocs.dsl.internal.toScriptError
+import esw.ocs.dsl.toScriptError
 import esw.ocs.dsl.script.CommandHandler
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.delay

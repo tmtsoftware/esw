@@ -1,7 +1,6 @@
 package esw.ocs.dsl.highlevel
 
 import akka.util.Timeout
-import csw.params.commands.CommandResponse
 import csw.params.commands.CommandResponse.SubmitResponse
 import csw.params.commands.Sequence
 import csw.params.core.models.Id
@@ -9,6 +8,7 @@ import csw.params.core.models.Subsystem
 import csw.time.core.models.UTCTime
 import esw.ocs.api.SequencerApi
 import esw.ocs.api.protocol.*
+import esw.ocs.dsl.isFailed
 import esw.ocs.dsl.jdk.SuspendToJavaConverter
 import esw.ocs.dsl.jdk.toJava
 import esw.ocs.impl.SequencerActorProxyFactory
@@ -39,7 +39,7 @@ class RichSequencer(
     suspend fun submitAndWait(sequence: Sequence, timeout: Duration, resumeOnError: Boolean = false): SubmitResponse {
         val akkaTimeout = Timeout(timeout.toLongNanoseconds(), TimeUnit.NANOSECONDS)
         val submitResponse: SubmitResponse = sequencerAdmin().submitAndWait(sequence, akkaTimeout).toJava().await()
-        if (!resumeOnError && CommandResponse.isNegative(submitResponse)) throw SubmitError(submitResponse)
+        if (!resumeOnError && submitResponse.isFailed) throw SubmitError(submitResponse)
         return submitResponse
     }
 

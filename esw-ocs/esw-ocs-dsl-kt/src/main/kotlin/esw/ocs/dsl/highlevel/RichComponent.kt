@@ -20,6 +20,7 @@ import csw.params.core.states.StateName
 import csw.time.core.models.UTCTime
 import esw.ocs.dsl.SuspendableCallback
 import esw.ocs.dsl.SuspendableConsumer
+import esw.ocs.dsl.isFailed
 import esw.ocs.dsl.jdk.SuspendToJavaConverter
 import esw.ocs.dsl.script.utils.LockUnlockUtil
 import esw.ocs.impl.internal.LocationServiceUtil
@@ -52,7 +53,7 @@ class RichComponent(
     suspend fun submitAndWait(command: ControlCommand, timeout: Duration, resumeOnError: Boolean = false): SubmitResponse {
         val akkaTimeout = Timeout(timeout.toLongNanoseconds(), TimeUnit.NANOSECONDS)
         val submitResponse: SubmitResponse = commandService().submitAndWait(command, akkaTimeout).await()
-        if (!resumeOnError && isNegative(submitResponse)) throw SubmitError(submitResponse)
+        if (!resumeOnError && submitResponse.isFailed) throw SubmitError(submitResponse)
         return submitResponse
     }
 

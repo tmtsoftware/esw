@@ -86,7 +86,7 @@ class RichSequencerTest {
     }
 
     @Test
-    fun `submitAndWait should resolve sequencerCommandService for given sequencer, call submitAndWait and should throw exception if submit response is negative | ESW-245, ESW-195 `() = runBlocking {
+    fun `submitAndWait should resolve sequencerCommandService for given sequencer, call submitAndWait and should throw exception if submit response is negative and resumeOnError=false | ESW-245, ESW-195 `() = runBlocking {
 
         val message = "error-occurred"
         val invalidSubmitResponse = CommandResponse.Error(Id.apply(), message)
@@ -101,7 +101,7 @@ class RichSequencerTest {
     }
 
     @Test
-    fun `submitAndWait should resolve sequencerCommandService for given sequencer, call submitAndWait and shouldn't throw exception if submit response is negative | ESW-245, ESW-195 `() = runBlocking {
+    fun `submitAndWait should resolve sequencerCommandService for given sequencer, call submitAndWait and shouldn't throw exception if submit response is negative and resumeOnError=true | ESW-245, ESW-195 `() = runBlocking {
 
         val message = "error-occurred"
         val invalidSubmitResponse = CommandResponse.Error(Id.apply(), message)
