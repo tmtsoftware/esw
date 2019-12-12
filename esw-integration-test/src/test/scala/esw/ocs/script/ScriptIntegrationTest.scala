@@ -146,7 +146,7 @@ class ScriptIntegrationTest extends EswTestKit(EventServer, AlarmServer, ConfigS
       actualOnlineEvent.eventKey should ===(onlineKey)
     }
 
-    "be able to set severity of sequencer alarms | ESW-125" in {
+    "be able to set severity of sequencer alarms and refresh it ESW-125" in {
       val config            = ConfigFactory.parseResources("alarm_key.conf")
       val alarmAdminService = new AlarmServiceFactory().makeAdminApi(locationService)
       alarmAdminService.initAlarms(config, reset = true).futureValue
@@ -156,6 +156,9 @@ class ScriptIntegrationTest extends EswTestKit(EventServer, AlarmServer, ConfigS
       val sequence = Sequence(command)
 
       ocsSequencer.submitAndWait(sequence).futureValue shouldBe a[Completed]
+      alarmAdminService.getCurrentSeverity(alarmKey).futureValue should ===(AlarmSeverity.Major)
+
+      Thread.sleep(2500) // as per test config, alarm severity will expire if not refreshed.
       alarmAdminService.getCurrentSeverity(alarmKey).futureValue should ===(AlarmSeverity.Major)
     }
 
