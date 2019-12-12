@@ -43,7 +43,13 @@ class RichComponent(
 
     suspend fun validate(command: ControlCommand): ValidateResponse = commandService().validate(command).await()
     suspend fun oneway(command: ControlCommand): OnewayResponse = commandService().oneway(command).await()
-    suspend fun submit(command: ControlCommand): SubmitResponse = commandService().submit(command).await()
+
+    suspend fun submit(command: ControlCommand, resumeOnError: Boolean = false): SubmitResponse {
+        val submitResponse: SubmitResponse = commandService().submit(command).await()
+        if (!resumeOnError && submitResponse.isFailed) throw CommandError(submitResponse)
+        return submitResponse
+    }
+
     suspend fun query(commandRunId: Id): SubmitResponse = commandService().query(commandRunId).await()
 
     suspend fun queryFinal(commandRunId: Id, timeout: Duration): SubmitResponse {

@@ -26,7 +26,12 @@ class RichSequencer(
 
     private suspend fun sequencerAdmin() = sequencerApiFactory.jMake(subsystem, observingMode).await()
 
-    suspend fun submit(sequence: Sequence): SubmitResponse = sequencerAdmin().submit(sequence).toJava().await()
+    suspend fun submit(sequence: Sequence, resumeOnError: Boolean = false): SubmitResponse {
+        val submitResponse: SubmitResponse = sequencerAdmin().submit(sequence).toJava().await()
+        if (!resumeOnError && submitResponse.isFailed) throw CommandError(submitResponse)
+        return submitResponse
+    }
+
     suspend fun query(runId: Id): SubmitResponse = sequencerAdmin().query(runId).toJava().await()
 
     suspend fun queryFinal(runId: Id, timeout: Duration): SubmitResponse {

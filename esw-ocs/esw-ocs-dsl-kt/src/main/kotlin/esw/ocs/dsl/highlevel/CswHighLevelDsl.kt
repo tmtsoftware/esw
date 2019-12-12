@@ -26,8 +26,8 @@ import kotlinx.coroutines.CoroutineScope
 interface CswHighLevelDslApi : EventServiceDsl, TimeServiceDsl, CommandServiceDsl,
         ConfigServiceDsl, AlarmServiceDsl, LoopDsl, LoggingDsl, DatabaseServiceDsl {
 
-    fun Assembly(name: String): RichComponent
-    fun Hcd(name: String): RichComponent
+    fun Assembly(prefix: String): RichComponent
+    fun Hcd(prefix: String): RichComponent
     fun Sequencer(subsystem: String, observingMode: String): RichSequencer
 
     suspend fun Fsm(name: String, initState: String, block: suspend FsmScope.() -> Unit): Fsm
@@ -59,8 +59,8 @@ abstract class CswHighLevelDsl(private val cswServices: CswServices) : CswHighLe
     private fun richSequencer(subsystem: Subsystem, observingMode: String): RichSequencer =
             RichSequencer(subsystem, observingMode, cswServices.sequencerApiFactory(), coroutineScope)
 
-    override fun Assembly(name: String): RichComponent = richComponent(name, JComponentType.Assembly())
-    override fun Hcd(name: String): RichComponent = richComponent(name, JComponentType.HCD())
+    override fun Assembly(prefix: String): RichComponent = richComponent(prefix, JComponentType.Assembly())
+    override fun Hcd(prefix: String): RichComponent = richComponent(prefix, JComponentType.HCD())
     override fun Sequencer(subsystem: String, observingMode: String): RichSequencer = richSequencer(SubsystemFactory.make(subsystem), observingMode)
 
     /************* Fsm helpers **********/

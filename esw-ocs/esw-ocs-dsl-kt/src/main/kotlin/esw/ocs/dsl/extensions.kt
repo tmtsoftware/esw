@@ -27,6 +27,10 @@ suspend fun SubmitResponse.onFailed(block: suspend (SubmitResponse) -> Unit): Su
     return this
 }
 
+suspend fun SubmitResponse.orElse(block: suspend (SubmitResponse) -> Unit): Unit {
+    block(this)
+}
+
 // =========== SubmitResponse - unsafe extensions ===========
 val SubmitResponse.completed: SubmitResponse
     get() = if (this is Completed) this else throw CommandError(this)
