@@ -615,6 +615,16 @@ class SequencerBehaviorTest extends ScalaTestWithActorTestKit with BaseTestSuite
 
       stopAndAssertResponse(Ok, InProgress)
     }
+
+    "stop given inProgress sequence when it is paused | ESW-138" in {
+      val sequencerSetup = SequencerTestSetup.inProgressWithFirstCommandComplete(sequence)
+      import sequencerSetup._
+
+      pauseAndAssertResponse(Ok)
+      assertEngineCanExecuteNext(isReadyToExecuteNext = false)
+
+      stopAndAssertResponse(Ok, InProgress)
+    }
   }
 
   "GoOnline" must {
