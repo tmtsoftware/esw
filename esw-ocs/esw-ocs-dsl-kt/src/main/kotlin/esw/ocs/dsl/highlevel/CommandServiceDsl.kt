@@ -8,11 +8,11 @@ import java.util.*
 
 interface CommandServiceDsl {
 
-    fun Setup(prefix: String, commandName: String, obsId: String? = null) =
-            Setup(Prefix.apply(prefix), CommandName(commandName), obsId.toOptionalObsId())
+    fun Setup(sourcePrefix: String, commandName: String, obsId: String? = null) =
+            Setup(Prefix.apply(sourcePrefix), CommandName(commandName), obsId.toOptionalObsId())
 
-    fun Observe(prefix: String, commandName: String, obsId: String? = null) =
-            Observe(Prefix.apply(prefix), CommandName(commandName), obsId.toOptionalObsId())
+    fun Observe(sourcePrefix: String, commandName: String, obsId: String? = null) =
+            Observe(Prefix.apply(sourcePrefix), CommandName(commandName), obsId.toOptionalObsId())
 
     fun sequenceOf(vararg sequenceCommand: SequenceCommand): Sequence = Sequence.create(sequenceCommand.toList())
 
