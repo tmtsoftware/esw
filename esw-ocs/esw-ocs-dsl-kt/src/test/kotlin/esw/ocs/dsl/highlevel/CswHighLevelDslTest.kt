@@ -34,7 +34,6 @@ class CswHighLevelDslTest {
     private val lockUnlockUtil: LockUnlockUtil = mockk()
     private val databaseServiceFactory: DatabaseServiceFactory = mockk()
     private val jLogger: ILogger = mockk()
-    private val prefix: Prefix = mockk()
 
     init {
         every { cswServices.actorSystem() }.answers { actorSystem }
@@ -44,7 +43,6 @@ class CswHighLevelDslTest {
         every { cswServices.databaseServiceFactory() }.answers { databaseServiceFactory }
         every { cswServices.alarmService() }.answers { alarmService }
         every { cswServices.jLogger() }.answers { jLogger }
-        every { cswServices.prefix() }.answers { prefix }
         every { jLocationService.asScala() }.answers { locationService }
     }
 

@@ -89,7 +89,6 @@ private[ocs] class SequencerWiring(
   private lazy val databaseServiceFactory = new DatabaseServiceFactory(actorSystem)
 
   lazy val cswServices = new CswServices(
-    prefix,
     sequenceOperatorFactory,
     jLogger,
     typedSystem,

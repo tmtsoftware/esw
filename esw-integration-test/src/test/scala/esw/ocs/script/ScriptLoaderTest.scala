@@ -7,7 +7,6 @@ import csw.database.DatabaseServiceFactory
 import csw.event.api.javadsl.IEventService
 import csw.location.api.javadsl.ILocationService
 import csw.logging.api.javadsl.ILogger
-import csw.params.core.models.Prefix
 import csw.time.scheduler.TimeServiceSchedulerFactory
 import esw.ocs.dsl.script.exceptions.ScriptLoadingException._
 import esw.ocs.dsl.script.utils.{LockUnlockUtil, ScriptLoader}
@@ -29,10 +28,8 @@ class ScriptLoaderTest extends BaseTestSuite {
   private val lockUnlockUtil              = mock[LockUnlockUtil]
   private val iConfigClientService        = mock[IConfigClientService]
   private val iAlarmService               = mock[IAlarmService]
-  private val prefix                      = mock[Prefix]
 
   val cswServices = new CswServices(
-    prefix,
     () => sequenceOperator,
     jLogger,
     actorSystem,

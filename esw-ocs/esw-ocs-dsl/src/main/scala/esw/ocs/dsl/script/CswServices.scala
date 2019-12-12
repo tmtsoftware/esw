@@ -7,14 +7,12 @@ import csw.database.DatabaseServiceFactory
 import csw.event.api.javadsl.IEventService
 import csw.location.api.javadsl.ILocationService
 import csw.logging.api.javadsl.ILogger
-import csw.params.core.models.Prefix
 import csw.time.scheduler.TimeServiceSchedulerFactory
 import esw.ocs.dsl.script.utils.LockUnlockUtil
 import esw.ocs.impl.SequencerActorProxyFactory
 import esw.ocs.impl.core.api.SequenceOperator
 
 class CswServices(
-    val prefix: Prefix,
     val sequenceOperatorFactory: () => SequenceOperator,
     val jLogger: ILogger,
     val actorSystem: ActorSystem[_],
