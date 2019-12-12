@@ -56,8 +56,6 @@ class FsmIntegrationTest extends EswTestKit(EventServer) {
 
       fsmSequencer.submit(Sequence(temp_45, temp_30, temp_55, waitCmd))
 
-      println(fsmSequencer.getSequence.futureValue)
-
       tempFsmStateProbe.expectMessage("ERROR")
       tempFsmStateProbe.expectMessage("OK")
       tempFsmStateProbe.expectMessage("FINISHED")

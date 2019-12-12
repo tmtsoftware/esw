@@ -2,9 +2,9 @@ package esw.ocs.dsl
 
 import csw.params.commands.CommandResponse.*
 import csw.params.commands.Result
+import esw.ocs.dsl.highlevel.models.CommandError
 import esw.ocs.dsl.highlevel.models.OtherError
 import esw.ocs.dsl.highlevel.models.ScriptError
-import esw.ocs.dsl.highlevel.models.CommandError
 import java.util.*
 
 // =========== SubmitResponse ===========
@@ -22,8 +22,8 @@ suspend fun SubmitResponse.onCompleted(block: suspend (Completed) -> Unit): Subm
     return this
 }
 
-suspend fun SubmitResponse.onFailed(block: suspend () -> Unit): SubmitResponse {
-    if (this.isFailed) block()
+suspend fun SubmitResponse.onFailed(block: suspend (SubmitResponse) -> Unit): SubmitResponse {
+    if (this.isFailed) block(this)
     return this
 }
 

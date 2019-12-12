@@ -87,6 +87,18 @@ class RichSequencerTest {
     }
 
     @Test
+    fun `submitAndWait should resolve sequencerCommandService for given sequencer and call submitAndWait | ESW-245, ESW-195 `() = runBlocking {
+
+        every { locationServiceUtil.resolveSequencer(sequencerId, observingMode, any()) }.answers { Future.successful(sequencerLocation) }
+        every { sequencerApiFactory.jMake(sequencerId, observingMode) }.answers { CompletableFuture.completedFuture(sequencerApi) }
+        every { sequencerApi.submitAndWait(sequence, timeout) }.answers { Future.successful(CommandResponse.Completed(Id.apply())) }
+
+        tcsSequencer.submitAndWait(sequence, 10.seconds)
+
+        verify { sequencerApi.submitAndWait(sequence, timeout) }
+    }
+
+    @Test
     fun `submitAndWait should resolve sequencerCommandService for given sequencer, call submitAndWait and should throw exception if submit response is negative and resumeOnError=false | ESW-245, ESW-195 `() = runBlocking {
 
         val message = "error-occurred"

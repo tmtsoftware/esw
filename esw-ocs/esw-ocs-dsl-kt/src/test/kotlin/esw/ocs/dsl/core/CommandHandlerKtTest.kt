@@ -51,7 +51,6 @@ internal class CommandHandlerKtTest {
 
             val commandHandlerKt: CommandHandlerKt<Setup> =
                     CommandHandlerKt<Setup>(scope(), commandHandlerScope) {
-                        println(commandHandlerCounter)
                         commandHandlerCounter += 1
                     }.onError { errorHandlerCounter++ }
 
