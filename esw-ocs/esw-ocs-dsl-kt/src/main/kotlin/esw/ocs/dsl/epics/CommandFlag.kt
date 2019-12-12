@@ -1,6 +1,5 @@
 package esw.ocs.dsl.epics
 
-import csw.params.core.generics.Parameter
 import esw.ocs.dsl.params.Params
 
 class CommandFlag {
@@ -11,8 +10,8 @@ class CommandFlag {
         subscribers.add(refreshable)
     }
 
-    suspend fun set(paramsSet: Set<Parameter<*>>) {
-        params = Params(paramsSet)
+    suspend fun set(_params: Params) {
+        params = _params
         subscribers.forEach {
             it.refresh()
         }

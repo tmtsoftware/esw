@@ -1,6 +1,5 @@
 package esw.ocs.dsl.highlevel
 
-import esw.ocs.dsl.highlevel.LoopDsl
 import io.kotlintest.matchers.numerics.shouldBeLessThan
 import io.kotlintest.matchers.shouldBeInRange
 import io.kotlintest.shouldBe

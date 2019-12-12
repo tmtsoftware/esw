@@ -2,27 +2,30 @@ package esw.ocs.app
 
 import akka.actor.testkit.typed.scaladsl.TestProbe
 import csw.event.client.EventServiceFactory
+import csw.location.api.extensions.URIExtension._
 import csw.location.client.scaladsl.HttpLocationServiceFactory
 import csw.params.commands.CommandIssue.UnsupportedCommandInStateIssue
 import csw.params.commands.CommandResponse.{Completed, Error, Invalid, Started, SubmitResponse}
 import csw.params.commands.{CommandName, Sequence, Setup}
 import csw.params.core.generics.KeyType.StringKey
+import csw.params.core.models.Subsystem.{ESW, TCS}
 import csw.params.core.models.{Id, Prefix}
 import csw.params.events.{Event, EventKey, EventName, SystemEvent}
-import csw.testkit.scaladsl.CSWService.EventServer
 import csw.time.core.models.UTCTime
 import esw.ocs.api.SequencerApi
 import esw.ocs.api.models.StepStatus.Finished.{Failure, Success}
 import esw.ocs.api.models.StepStatus.Pending
 import esw.ocs.api.models.{Step, StepList}
 import esw.ocs.api.protocol._
+import esw.ocs.impl.SequenceComponentImpl
 import esw.ocs.impl.messages.SequencerState.{Loaded, Offline}
 import esw.ocs.testkit.EswTestKit
+import esw.ocs.testkit.Service.EventServer
 
 import scala.concurrent.Future
 
 class SequencerClientIntegrationTest extends EswTestKit(EventServer) {
-  private val packageId     = "ocs"
+  private val subsystem     = ESW
   private val observingMode = "moonnight"
 
   private val command1 = Setup(Prefix("esw.test"), CommandName("command-1"), None)
@@ -37,12 +40,12 @@ class SequencerClientIntegrationTest extends EswTestKit(EventServer) {
 
   override protected def beforeEach(): Unit = {
     //ocs sequencer, starts with TestScript2
-    spawnSequencer(packageId, observingMode)
+    spawnSequencer(subsystem, observingMode)
 
-    ocsSequencer = sequencerClient(packageId, observingMode)
+    ocsSequencer = sequencerClient(subsystem, observingMode)
 
     // tcs sequencer, starts with TestScript3
-    val tcsSequencerId            = "tcs"
+    val tcsSequencerId            = TCS
     val tcsSequencerObservingMode = "moonnight"
     spawnSequencer(tcsSequencerId, tcsSequencerObservingMode)
     tcsSequencer = sequencerClient(tcsSequencerId, tcsSequencerObservingMode)
@@ -134,7 +137,7 @@ class SequencerClientIntegrationTest extends EswTestKit(EventServer) {
     val failCommandName = "fail-command"
 
     val command1 = Setup(Prefix("esw.test"), CommandName("command-1"), None)
-    // TestScript.scala returns Error on receiving command with name "fail-command"
+    // TestScript.scala returns Error on receiving command with prefix "fail-command"
     val command2 = Setup(Prefix("esw.test"), CommandName(failCommandName), None)
     val command3 = Setup(Prefix("esw.test"), CommandName("command-3"), None)
     val sequence = Sequence(command1, command2, command3)
@@ -251,9 +254,7 @@ class SequencerClientIntegrationTest extends EswTestKit(EventServer) {
     ocsSequencer.stop().futureValue should ===(Ok)
 
     val expectedSteps = List(
-      Step(command4, Success, hasBreakpoint = false),
-      Step(command5, Success, hasBreakpoint = false),
-      Step(command6, Success, hasBreakpoint = false)
+      Step(command4, Success, hasBreakpoint = false)
     )
     val expectedSequence = Some(StepList(expectedSteps))
     val expectedResponse = Completed(startedResponse.runId)
@@ -290,6 +291,24 @@ class SequencerClientIntegrationTest extends EswTestKit(EventServer) {
     val expectedOperationsEvent = testProbe.expectMessageType[SystemEvent]
 
     expectedOperationsEvent.paramSet.head shouldBe operationsModeParam
+  }
+
+  "GetSequenceComponent | ESW-255" in {
+    //start sequence component
+    val sequenceComponentLocation = spawnSequenceComponent(ESW, Some("primary")).toOption.get
+    val sequenceComponentImpl     = new SequenceComponentImpl(sequenceComponentLocation.uri.toActorRef.unsafeUpcast)
+
+    //start sequencer
+    val observingMode = "darknight"
+    sequenceComponentImpl.loadScript(ESW, observingMode).futureValue.response.toOption.get
+
+    val sequencer: SequencerApi = sequencerClient(ESW, observingMode)
+
+    //assert that getSequenceComponent returns sequenceComponentLocation where sequencer is running
+    sequencer.getSequenceComponent.futureValue should ===(sequenceComponentLocation)
+
+    //cleaunp
+    sequenceComponentImpl.unloadScript()
   }
 
   private def compareStepList(actual: Option[StepList], expected: Option[StepList]): Unit = {

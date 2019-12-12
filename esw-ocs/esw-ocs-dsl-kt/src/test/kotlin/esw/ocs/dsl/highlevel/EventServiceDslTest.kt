@@ -7,6 +7,7 @@ import csw.event.api.javadsl.IEventSubscriber
 import csw.event.api.javadsl.IEventSubscription
 import csw.params.core.models.Prefix
 import csw.params.events.*
+import esw.ocs.dsl.highlevel.models.EventSubscription
 import io.kotlintest.shouldBe
 import io.mockk.every
 import io.mockk.mockk
@@ -52,7 +53,7 @@ class EventServiceDslTest : EventServiceDsl {
         // Verify that  event with provided prefix and eventName is created.
         actualEvent shouldBe SystemEvent(
                 actualEvent.eventId(),
-                Prefix(eventPrefix),
+                Prefix.apply(eventPrefix),
                 EventName(eventName),
                 actualEvent.eventTime(),
                 actualEvent.paramSet()
@@ -68,7 +69,7 @@ class EventServiceDslTest : EventServiceDsl {
         // Verify that event with provided prefix and eventName is created.
         actualEvent shouldBe ObserveEvent(
                 actualEvent.eventId(),
-                Prefix(eventPrefix),
+                Prefix.apply(eventPrefix),
                 EventName(eventName),
                 actualEvent.eventTime(),
                 actualEvent.paramSet()
@@ -104,7 +105,7 @@ class EventServiceDslTest : EventServiceDsl {
         every { eventSubscription.unsubscribe() }.answers { CompletableFuture.completedFuture(done()) }
         every { eventSubscription.ready() }.answers { CompletableFuture.completedFuture(done()) }
 
-        val subscription: Subscription = onEvent(key) { eventCallback }
+        val subscription: EventSubscription = onEvent(key) { eventCallback }
         verify { eventSubscriber.subscribeAsync(eventKeys, any()) }
 
         subscription.cancel()

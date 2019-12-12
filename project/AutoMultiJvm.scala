@@ -1,6 +1,6 @@
 import com.typesafe.sbt.MultiJvmPlugin.autoImport._
 import com.typesafe.sbt.SbtMultiJvm
-import sbt.Keys.{artifacts, moduleName, packageBin, packagedArtifacts}
+import sbt.Keys.{artifacts, fork, moduleName, packageBin, packagedArtifacts}
 import sbt.{Def, _}
 import sbtassembly.AssemblyKeys._
 import sbtassembly.MergeStrategy
@@ -10,6 +10,7 @@ object AutoMultiJvm extends AutoPlugin {
   override def projectSettings: Seq[Setting[_]] =
     SbtMultiJvm.multiJvmSettings ++ Seq(
       multiNodeHosts in MultiJvm := multiNodeHostNames,
+      fork in MultiJvm := true,
       assemblyMergeStrategy in assembly in MultiJvm := {
         case "application.conf"                     => MergeStrategy.concat
         case x if x.contains("versions.properties") => MergeStrategy.discard

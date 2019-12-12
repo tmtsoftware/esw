@@ -1,14 +1,23 @@
 package esw.ocs.scripts.examples.testData
 
-import csw.params.commands.Sequence
-import csw.params.commands.SequenceCommand
 import esw.ocs.dsl.core.script
+import esw.ocs.dsl.params.intKey
 import kotlinx.coroutines.delay
-import scala.jdk.javaapi.CollectionConverters
-import java.util.*
+import kotlin.time.milliseconds
 import kotlin.time.seconds
 
 script {
+
+    val pollingVar = SystemVar(0, "tcs.polling.test", intKey("counter"), 400.milliseconds)
+
+    val fsm = Fsm("pollingTest", "INIT") {
+        state("INIT") {
+            val event = SystemEvent("tcs.polling", "test")
+            publishEvent(event)
+        }
+    }
+    pollingVar.bind(fsm)
+
     onSetup("command-1") {
         // To avoid sequencer to finish immediately so that other Add, Append command gets time
         delay(200)
@@ -36,9 +45,7 @@ script {
     }
 
     onSetup("multi-node") { command ->
-        val sequence = Sequence(
-                CollectionConverters.asScala(Collections.singleton<SequenceCommand>(command)).toSeq()
-        )
+        val sequence = sequenceOf(command)
 
         val tcs = Sequencer("tcs", "moonnight")
         tcs.submitAndWait(sequence, 10.seconds)
@@ -48,10 +55,14 @@ script {
         fatal("log-message")
     }
 
+    onSetup("start-fsm") {
+        fsm.start()
+    }
+
     // ESW-134: Reuse code by ability to import logic from one script into another
     loadScripts(
-        InitialCommandHandler,
-        OnlineOfflineHandlers,
-        OperationsAndDiagModeHandlers
+            InitialCommandHandler,
+            OnlineOfflineHandlers,
+            OperationsAndDiagModeHandlers
     )
 }

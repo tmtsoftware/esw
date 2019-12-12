@@ -1,80 +1,40 @@
 package esw.ocs.core
 
-import akka.http.scaladsl.Http
-import akka.http.scaladsl.model.{HttpMethods, HttpRequest, StatusCodes, Uri}
-import akka.http.scaladsl.unmarshalling.Unmarshal
-import csw.admin.server.wiring.AdminWiring
 import csw.location.models.AkkaLocation
 import csw.logging.client.scaladsl.LoggingSystemFactory
-import csw.logging.models.Level.{ERROR, FATAL}
+import csw.logging.models.Level.{ERROR, FATAL, TRACE}
 import csw.logging.models.LogMetadata
 import csw.logging.models.codecs.LoggingCodecs
-import csw.network.utils.Networks
+import csw.params.core.models.Subsystem.ESW
+import esw.gateway.api.clients.AdminClient
+import esw.gateway.api.codecs.GatewayCodecs
 import esw.ocs.testkit.EswTestKit
-import msocket.impl.Encoding
-import msocket.impl.Encoding.JsonText
-import msocket.impl.post.ClientHttpCodecs
+import esw.ocs.testkit.Service.Gateway
 
-class DynamicLogLevelTest extends EswTestKit with LoggingCodecs with ClientHttpCodecs {
+class DynamicLogLevelTest extends EswTestKit(Gateway) with LoggingCodecs with GatewayCodecs {
 
-  override def encoding: Encoding[_] = JsonText
-
-  private var adminWiring: AdminWiring        = _
-  private val adminPort                       = 7888
   private var sequencerLocation: AkkaLocation = _
 
   override def beforeAll(): Unit = {
     super.beforeAll()
     LoggingSystemFactory.start("logging", "version", "localhost", system)
-    adminWiring = AdminWiring.make(Some(adminPort))
-    adminWiring.adminHttpService.registeredLazyBinding.futureValue
-    sequencerLocation = spawnSequencer("esw", "darknight").rightValue
+    sequencerLocation = spawnSequencer(ESW, "darknight").rightValue
   }
 
-  override def afterAll(): Unit = {
-    adminWiring.actorSystem.terminate()
-    adminWiring.actorSystem.whenTerminated.futureValue
-    super.afterAll()
-  }
-
-  "get/set log level for sequencer dynamically directly in log-admin-server| ESW-183" in {
-    val defaultLogLevel = FATAL
-    val newLogLevel     = ERROR
-
-    val setLogMetadataUri = Uri.from(
-      scheme = "http",
-      host = Networks().hostname,
-      port = adminPort,
-      path = s"/admin/logging/${sequencerLocation.connection.name}/level",
-      queryString = Some(s"value=$newLogLevel")
-    )
-
+  "get/set log level for sequencer dynamically using gateway | ESW-183" in {
+    val adminClient = new AdminClient(gatewayPostClient)
+    val metadata    = adminClient.getLogMetadata(sequencerLocation.connection.componentId).futureValue
     // Get initial log levels
-    getLogMetadataAndAssertResponse(LogMetadata(defaultLogLevel, defaultLogLevel, defaultLogLevel, defaultLogLevel))
+    val expected = LogMetadata(TRACE, ERROR, TRACE, TRACE)
+    metadata should ===(expected)
 
     // set sequencer log level to FATAL
-    val setLogMetadataRequest = HttpRequest(HttpMethods.POST, uri = setLogMetadataUri)
-    val setResponse           = Http()(untypedSystem).singleRequest(setLogMetadataRequest).futureValue
-    setResponse.status should ===(StatusCodes.OK)
+    adminClient.setLogLevel(sequencerLocation.connection.componentId, FATAL).futureValue
 
     // assert sequencer log level is changed to FATAL
-    getLogMetadataAndAssertResponse(LogMetadata(defaultLogLevel, defaultLogLevel, defaultLogLevel, newLogLevel))
+    val expectedAfterModification = LogMetadata(TRACE, ERROR, TRACE, FATAL)
+    val newMetadata               = adminClient.getLogMetadata(sequencerLocation.connection.componentId).futureValue
 
-  }
-
-  private def getLogMetadataAndAssertResponse(expectedLogMetadata: LogMetadata) = {
-    val getLogMetadataUri = Uri.from(
-      scheme = "http",
-      host = Networks().hostname,
-      port = adminPort,
-      path = s"/admin/logging/${sequencerLocation.connection.name}/level"
-    )
-
-    val request  = HttpRequest(HttpMethods.GET, uri = getLogMetadataUri)
-    val response = Http()(untypedSystem).singleRequest(request).futureValue
-    response.status should ===(StatusCodes.OK)
-
-    val actualLogMetadata = Unmarshal(response).to[LogMetadata].futureValue
-    actualLogMetadata should ===(expectedLogMetadata)
+    newMetadata should ===(expectedAfterModification)
   }
 }

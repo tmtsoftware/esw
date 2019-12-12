@@ -2,6 +2,7 @@ package esw.gateway.server
 
 import akka.stream.stage.{GraphStage, GraphStageLogic, InHandler, OutHandler}
 import akka.stream.{Attributes, FlowShape, Inlet, Outlet}
+import csw.admin.api.AdminService
 import csw.alarm.api.scaladsl.AlarmAdminService
 import csw.command.api.scaladsl.CommandService
 import csw.event.api.scaladsl.{EventPublisher, EventService, EventSubscriber}
@@ -28,7 +29,7 @@ class CswWiringMocks() {
   val resolver: Resolver             = mock[Resolver]
   val commandService: CommandService = mock[CommandService]
   val sequencer: SequencerApi        = mock[SequencerApi]
-
+  val adminService: AdminService     = mock[AdminService]
   //alarm service mocks
   val alarmService: AlarmAdminService = mock[AlarmAdminService]
 

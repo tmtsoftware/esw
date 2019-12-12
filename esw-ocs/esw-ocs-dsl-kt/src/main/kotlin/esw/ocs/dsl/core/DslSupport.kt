@@ -1,5 +1,6 @@
 package esw.ocs.dsl.core
 
+import esw.ocs.dsl.internal.ScriptWiring
 import esw.ocs.dsl.script.CswServices
 import esw.ocs.dsl.script.ScriptDsl
 import esw.ocs.dsl.script.StrandEc
@@ -7,7 +8,7 @@ import esw.ocs.dsl.script.exceptions.ScriptLoadingException.ScriptInitialisation
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.runBlocking
 
-fun script(block: suspend Script.(csw: CswServices) -> Unit): ScriptResult =
+fun script(block: suspend ScriptScope.(csw: CswServices) -> Unit): ScriptResult =
         ScriptResult {
             val wiring = ScriptWiring()
             Script(it, wiring.strandEc, wiring.scope).apply {
@@ -20,15 +21,15 @@ fun script(block: suspend Script.(csw: CswServices) -> Unit): ScriptResult =
             }.scriptDsl
         }
 
-fun reusableScript(block: Script.(csw: CswServices) -> Unit) =
+fun reusableScript(block: Script.(csw: CswServices) -> Unit): ReusableScriptResult =
         ReusableScriptResult { csw, ec, ctx ->
             Script(csw, ec, ctx).apply { block(csw) }
         }
 
-fun FSMScript(initState: String, block: suspend FSMScript.(csw: CswServices) -> Unit): ScriptResult =
+fun FsmScript(initState: String, block: suspend FsmScriptScope.(csw: CswServices) -> Unit): ScriptResult =
         ScriptResult {
             val wiring = ScriptWiring()
-            FSMScript(it, wiring.strandEc, wiring.scope).apply {
+            FsmScript(it, wiring.strandEc, wiring.scope).apply {
                 try {
                     runBlocking {
                         block(it)

@@ -8,7 +8,7 @@ import csw.params.core.models.Subsystem
 import scala.util.Try
 
 sealed trait SequencerAppCommand {
-  def subsystem: Subsystem
+  def seqCompSubsystem: Subsystem
   def name: Option[String]
 }
 
@@ -20,18 +20,11 @@ object SequencerAppCommand {
         .getOrElse(Left(Error.Other(s"Subsystem [$subsystemStr] is invalid")))
     }
 
-  implicit val stringParser: SimpleArgParser[String] =
-    SimpleArgParser.from[String](description = "string field") { str =>
-      val invalidSymbol = "@"
-      if (str.contains(invalidSymbol)) Left(Error.Other(s"[$str] is invalid"))
-      else Right(str)
-    }
-
   @CommandName("seqcomp")
   final case class SequenceComponent(
       @HelpMessage("subsystem of the sequence component, ex: tcs")
       @Short("s")
-      subsystem: Subsystem,
+      seqCompSubsystem: Subsystem,
       @HelpMessage("optional name for sequence component, ex: primary, backup etc")
       @Short("n")
       name: Option[String]
@@ -40,13 +33,13 @@ object SequencerAppCommand {
   final case class Sequencer(
       @HelpMessage("subsystem of the sequence component, ex: tcs")
       @Short("s")
-      subsystem: Subsystem,
+      seqCompSubsystem: Subsystem,
       @HelpMessage("optional name for sequence component, ex: primary, backup etc")
       @Short("n")
       name: Option[String],
-      @HelpMessage("optional package ID of script, ex: tcs, iris etc. Default value: subsystem provided")
+      @HelpMessage("optional subsystem of sequencer script, ex: tcs, iris etc. Default value: subsystem provided")
       @Short("i")
-      id: Option[String],
+      seqSubsystem: Option[Subsystem],
       @HelpMessage("observing mode, ex: darknight")
       @Short("m")
       mode: String

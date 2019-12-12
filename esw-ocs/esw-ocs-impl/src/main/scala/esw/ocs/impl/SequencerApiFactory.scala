@@ -27,9 +27,7 @@ object SequencerApiFactory extends SequencerHttpCodecs {
     }
   }
 
-  private def httpClient(httpLocation: HttpLocation)(
-      implicit actorSystem: ActorSystem[_]
-  ): SequencerClient = {
+  private def httpClient(httpLocation: HttpLocation)(implicit actorSystem: ActorSystem[_]): SequencerClient = {
     import actorSystem.executionContext
 
     val baseUri         = httpLocation.uri.toString

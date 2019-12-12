@@ -26,11 +26,11 @@ import esw.gateway.server.handlers.WebsocketHandlerImpl
 import esw.http.core.BaseTestSuite
 import esw.ocs.api.protocol.SequencerWebsocketRequest
 import io.bullet.borer.Decoder
-import msocket.api.models.{MSocketErrorFrame, Subscription}
+import msocket.api.Subscription
+import msocket.impl.Encoding
 import msocket.impl.Encoding.{CborBinary, JsonText}
 import msocket.impl.post.ClientHttpCodecs
 import msocket.impl.ws.WebsocketRouteFactory
-import msocket.impl.{Encoding, RouteFactory}
 import org.mockito.Mockito.when
 
 import scala.concurrent.Future
@@ -49,7 +49,8 @@ class WebsocketRouteTest extends BaseTestSuite with ScalatestRouteTest with Gate
 
   private val eventApi: EventApi                          = new EventImpl(eventService, eventSubscriberUtil)
   private def websocketHandlerImpl(encoding: Encoding[_]) = new WebsocketHandlerImpl(resolver, eventApi, encoding)
-  private val route                                       = RouteFactory.combine(new WebsocketRouteFactory("websocket-endpoint", websocketHandlerImpl))
+  private val route                                       = new WebsocketRouteFactory("websocket-endpoint", websocketHandlerImpl).make()
+  private val destination                                 = Prefix(TCS, "test")
 
   override def beforeEach(): Unit = {
     wsClient = WSProbe()
@@ -58,13 +59,12 @@ class WebsocketRouteTest extends BaseTestSuite with ScalatestRouteTest with Gate
   "QueryFinal for Component" must {
 
     "return SubmitResponse for a command | ESW-100, ESW-216" in {
-      val componentName = "test"
       val runId         = Id("123")
       val componentType = Assembly
-      val componentId   = ComponentId(componentName, componentType)
+      val componentId   = ComponentId(destination, componentType)
       val queryFinal    = ComponentCommand(componentId, QueryFinal(runId, 100.hours))
 
-      when(resolver.resolveComponent(componentId)).thenReturn(Future.successful(Some(commandService)))
+      when(resolver.resolveComponent(componentId)).thenReturn(Future.successful(commandService))
       when(commandService.queryFinal(runId)(100.hours)).thenReturn(Future.successful(Completed(runId)))
 
       WS("/websocket-endpoint", wsClient.flow) ~> route ~> check {
@@ -76,21 +76,19 @@ class WebsocketRouteTest extends BaseTestSuite with ScalatestRouteTest with Gate
     }
 
     "return InvalidComponent for invalid component id | ESW-100, ESW-216" in {
-      val componentName = "test"
       val runId         = Id("123")
       val componentType = Assembly
-      val componentId   = ComponentId(componentName, componentType)
+      val componentId   = ComponentId(destination, componentType)
       val queryFinal    = ComponentCommand(componentId, QueryFinal(runId, 100.hours))
 
       val errmsg = s"No component is registered with id $componentId "
 
-      when(resolver.resolveComponent(componentId)).thenReturn(Future.successful(None))
+      when(resolver.resolveComponent(componentId)).thenReturn(Future.failed(InvalidComponent(errmsg)))
 
       WS("/websocket-endpoint", wsClient.flow) ~> route ~> check {
         wsClient.sendMessage(JsonText.strictMessage(queryFinal))
         isWebSocketUpgrade shouldBe true
-        val response = decodeMessage[MSocketErrorFrame](wsClient).`stream-error`
-        response shouldEqual InvalidComponent(errmsg).toStreamError
+        decodeMessage[InvalidComponent](wsClient) shouldEqual InvalidComponent(errmsg)
       }
     }
   }
@@ -99,13 +97,13 @@ class WebsocketRouteTest extends BaseTestSuite with ScalatestRouteTest with Gate
 
     "return SubmitResponse for sequence | ESW-250" in {
       val sequenceId                = Id()
-      val componentId               = ComponentId("test", Sequencer)
+      val componentId               = ComponentId(destination, Sequencer)
       implicit val timeout: Timeout = Timeout(10.seconds)
 
       val queryFinalRequest  = SequencerCommand(componentId, SequencerWebsocketRequest.QueryFinal(sequenceId, timeout))
       val queryFinalResponse = Completed(sequenceId)
 
-      when(resolver.resolveSequencer(componentId)).thenReturn(Future.successful(Some(sequencer)))
+      when(resolver.resolveSequencer(componentId)).thenReturn(Future.successful(sequencer))
       when(sequencer.queryFinal(sequenceId)).thenReturn(Future.successful(queryFinalResponse))
 
       WS("/websocket-endpoint", wsClient.flow) ~> route ~> check {
@@ -119,9 +117,8 @@ class WebsocketRouteTest extends BaseTestSuite with ScalatestRouteTest with Gate
 
   "Subscribe current state" must {
     "returns successfully for given componentId | ESW-223, ESW-216" in {
-      val componentName         = "test"
       val componentType         = Assembly
-      val componentId           = ComponentId(componentName, componentType)
+      val componentId           = ComponentId(destination, componentType)
       val stateNames            = Set(StateName("stateName1"), StateName("stateName2"))
       val subscribeCurrentState = ComponentCommand(componentId, SubscribeCurrentState(stateNames))
       val currentState1         = CurrentState(Prefix("esw.a.b"), StateName("stateName1"))
@@ -130,7 +127,7 @@ class WebsocketRouteTest extends BaseTestSuite with ScalatestRouteTest with Gate
       val currentStateSubscription = mock[Subscription]
       val currentStateStream       = Source(List(currentState1, currentState2)).mapMaterializedValue(_ => currentStateSubscription)
 
-      when(resolver.resolveComponent(componentId)).thenReturn(Future.successful(Some(commandService)))
+      when(resolver.resolveComponent(componentId)).thenReturn(Future.successful(commandService))
       when(commandService.subscribeCurrentState(stateNames)).thenReturn(currentStateStream)
 
       def response: CurrentState = decodeMessage[CurrentState](wsClient)
@@ -156,8 +153,8 @@ class WebsocketRouteTest extends BaseTestSuite with ScalatestRouteTest with Gate
 
       val eventSubscriptionRequest = Subscribe(eventKeys, None)
 
-      val event1: Event = ObserveEvent(Prefix("tcs"), EventName("event.key1"))
-      val event2: Event = ObserveEvent(Prefix("tcs"), EventName("event.key2"))
+      val event1: Event = ObserveEvent(Prefix("tcs.test"), EventName("event.key1"))
+      val event2: Event = ObserveEvent(Prefix("tcs.test"), EventName("event.key2"))
 
       val eventSubscription: EventSubscription = new EventSubscription {
         override def unsubscribe(): Future[Done] = Future.successful(Done)
@@ -189,8 +186,8 @@ class WebsocketRouteTest extends BaseTestSuite with ScalatestRouteTest with Gate
 
       val eventSubscriptionRequest = Subscribe(eventKeys, Some(10))
 
-      val event1: Event = ObserveEvent(Prefix("tcs"), EventName("event.key1"))
-      val event2: Event = ObserveEvent(Prefix("tcs"), EventName("event.key2"))
+      val event1: Event = ObserveEvent(Prefix("tcs.test"), EventName("event.key1"))
+      val event2: Event = ObserveEvent(Prefix("tcs.test"), EventName("event.key2"))
 
       val eventSubscription: EventSubscription = new EventSubscription {
         override def unsubscribe(): Future[Done] = Future.successful(Done)
@@ -224,10 +221,7 @@ class WebsocketRouteTest extends BaseTestSuite with ScalatestRouteTest with Gate
       WS("/websocket-endpoint", wsClient.flow) ~> route ~> check {
         wsClient.sendMessage(JsonText.strictMessage(eventSubscriptionRequest))
         isWebSocketUpgrade shouldBe true
-
-        intercept[MSocketErrorFrame] {
-          decodeMessage[Event](wsClient)
-        }
+        decodeMessage[InvalidMaxFrequency](wsClient) shouldEqual InvalidMaxFrequency()
       }
     }
   }
@@ -236,7 +230,7 @@ class WebsocketRouteTest extends BaseTestSuite with ScalatestRouteTest with Gate
     "return set of events on subscribe events with a given pattern | ESW-93, ESW-216" in {
       val eventSubscriptionRequest = SubscribeWithPattern(TCS, None, "*")
 
-      val event1: Event = ObserveEvent(Prefix("tcs"), EventName("event.key1"))
+      val event1: Event = ObserveEvent(Prefix("tcs.test"), EventName("event.key1"))
       val eventSubscription: EventSubscription = new EventSubscription {
         override def unsubscribe(): Future[Done] = Future.successful(Done)
 
@@ -260,7 +254,7 @@ class WebsocketRouteTest extends BaseTestSuite with ScalatestRouteTest with Gate
 
     "return set of events when maxFrequency = 5 | ESW-93, ESW-216" in {
       val eventSubscriptionRequest = SubscribeWithPattern(TCS, Some(5), "*")
-      val event1: Event            = ObserveEvent(Prefix("tcs"), EventName("event.key1"))
+      val event1: Event            = ObserveEvent(Prefix("tcs.test"), EventName("event.key1"))
 
       val eventSubscription: EventSubscription = new EventSubscription {
         override def unsubscribe(): Future[Done] = Future.successful(Done)
@@ -290,18 +284,15 @@ class WebsocketRouteTest extends BaseTestSuite with ScalatestRouteTest with Gate
       WS("/websocket-endpoint", wsClient.flow) ~> route ~> check {
         wsClient.sendMessage(JsonText.strictMessage(eventSubscriptionRequest))
         isWebSocketUpgrade shouldBe true
-
-        intercept[MSocketErrorFrame] {
-          decodeMessage[Event](wsClient)
-        }
+        decodeMessage[InvalidMaxFrequency](wsClient) shouldEqual InvalidMaxFrequency()
       }
     }
   }
 
   private def decodeMessage[T](wsClient: WSProbe)(implicit decoder: Decoder[T]): T = {
     wsClient.expectMessage() match {
-      case TextMessage.Strict(text)   => JsonText.decodeWithFrameError[T](text)
-      case BinaryMessage.Strict(data) => CborBinary.decodeWithFrameError[T](data)
+      case TextMessage.Strict(text)   => JsonText.decode[T](text)
+      case BinaryMessage.Strict(data) => CborBinary.decode[T](data)
       case _                          => throw new RuntimeException("The expected message is not Strict")
     }
   }

@@ -10,6 +10,7 @@ import csw.params.commands.CommandResponse.{Completed, SubmitResponse}
 import csw.params.core.models.Id
 import esw.ocs.api.codecs.SequencerHttpCodecs
 import esw.ocs.api.models.SequencerInsight
+import esw.ocs.api.protocol.SequencerWebsocketRequest
 import esw.ocs.api.protocol.SequencerWebsocketRequest.{GetInsights, QueryFinal}
 import esw.ocs.api.{BaseTestSuite, SequencerApi}
 import io.bullet.borer.Decoder
@@ -35,8 +36,10 @@ class SequencerCommandWebsocketRouteTest
 
   private implicit val actorSystem: ActorSystem[SpawnProtocol.Command] = ActorSystem(SpawnProtocol(), "test-system")
 
-  lazy val route: Route = new WebsocketRouteFactory("websocket-endpoint", websocketHandlerFactory).make()
-  private val wsClient  = WSProbe()
+  lazy val route: Route =
+    new WebsocketRouteFactory[SequencerWebsocketRequest]("websocket-endpoint", websocketHandlerFactory).make()
+
+  private val wsClient = WSProbe()
 
   "SequencerRoutes" must {
     "return final submit response of sequence for QueryFinal request | ESW-101" in {

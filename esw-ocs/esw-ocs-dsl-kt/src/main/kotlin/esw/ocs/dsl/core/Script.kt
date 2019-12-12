@@ -5,9 +5,12 @@ import csw.params.commands.SequenceCommand
 import csw.params.commands.Setup
 import csw.time.core.models.UTCTime
 import esw.ocs.dsl.highlevel.CswHighLevelDsl
+import esw.ocs.dsl.highlevel.models.ScriptError
+import esw.ocs.dsl.toScriptError
 import esw.ocs.dsl.nullable
+import esw.ocs.dsl.params.Params
 import esw.ocs.dsl.script.CswServices
-import esw.ocs.dsl.script.FSMScriptDsl
+import esw.ocs.dsl.script.FsmScriptDsl
 import esw.ocs.dsl.script.ScriptDsl
 import esw.ocs.dsl.script.StrandEc
 import esw.ocs.dsl.script.exceptions.ScriptLoadingException.ScriptInitialisationFailedException
@@ -15,11 +18,9 @@ import kotlinx.coroutines.*
 import kotlinx.coroutines.future.asCompletableFuture
 import kotlinx.coroutines.future.await
 import kotlinx.coroutines.future.future
+import kotlin.coroutines.CoroutineContext
 
-@DslMarker
-annotation class ScriptMarker
-
-sealed class BaseScript(val cswServices: CswServices, scope: CoroutineScope) : CswHighLevelDsl(cswServices) {
+sealed class BaseScript(val cswServices: CswServices, scope: CoroutineScope) : CswHighLevelDsl(cswServices), HandlerScope {
     internal open val scriptDsl: ScriptDsl by lazy { ScriptDsl(cswServices, strandEc) }
 
     private val exceptionHandler = CoroutineExceptionHandler { _, exception ->
@@ -30,94 +31,112 @@ sealed class BaseScript(val cswServices: CswServices, scope: CoroutineScope) : C
 
     override val coroutineScope: CoroutineScope = scope + exceptionHandler
 
-    fun onGoOnline(block: suspend CoroutineScope.() -> Unit) =
-            scriptDsl.onGoOnline { block.toJava() }
+    fun onGoOnline(block: suspend HandlerScope.() -> Unit) =
+            scriptDsl.onGoOnline { block.toCoroutineScope().toJava() }
 
-    fun onGoOffline(block: suspend CoroutineScope.() -> Unit) =
-            scriptDsl.onGoOffline { block.toJava() }
+    fun onGoOffline(block: suspend HandlerScope.() -> Unit) =
+            scriptDsl.onGoOffline { block.toCoroutineScope().toJava() }
 
-    fun onAbortSequence(block: suspend CoroutineScope.() -> Unit) =
-            scriptDsl.onAbortSequence { block.toJava() }
+    fun onAbortSequence(block: suspend HandlerScope.() -> Unit) =
+            scriptDsl.onAbortSequence { block.toCoroutineScope().toJava() }
 
-    fun onShutdown(block: suspend CoroutineScope.() -> Unit) =
-            scriptDsl.onShutdown { block.toJava() }
+    fun onShutdown(block: suspend HandlerScope.() -> Unit) =
+            scriptDsl.onShutdown { block.toCoroutineScope().toJava() }
 
-    fun onDiagnosticMode(block: suspend (UTCTime, String) -> Unit) =
+    fun onDiagnosticMode(block: suspend HandlerScope.(UTCTime, String) -> Unit) =
             scriptDsl.onDiagnosticMode { x: UTCTime, y: String ->
-                coroutineScope.launch { block(x, y) }.asCompletableFuture().thenAccept { }
+                coroutineScope.launch { block(this.toHandlerScope(), x, y) }.asCompletableFuture().thenAccept { }
             }
 
-    fun onOperationsMode(block: suspend CoroutineScope.() -> Unit) =
-            scriptDsl.onOperationsMode { block.toJava() }
+    fun onOperationsMode(block: suspend HandlerScope.() -> Unit) =
+            scriptDsl.onOperationsMode { block.toCoroutineScope().toJava() }
 
-    fun onStop(block: suspend CoroutineScope.() -> Unit) =
-            scriptDsl.onStop { block.toJava() }
+    fun onStop(block: suspend HandlerScope.() -> Unit) =
+            scriptDsl.onStop { block.toCoroutineScope().toJava() }
 
+    internal fun CoroutineScope.toHandlerScope(): HandlerScope = object : HandlerScope by this@BaseScript {
+        override val coroutineContext: CoroutineContext = this@toHandlerScope.coroutineContext
+    }
+
+    private fun (suspend HandlerScope.() -> Unit).toCoroutineScope(): suspend (CoroutineScope) -> Unit = { this(it.toHandlerScope()) }
 }
 
-@ScriptMarker
 open class Script(
         cswServices: CswServices,
         override val strandEc: StrandEc,
         scope: CoroutineScope
-) : BaseScript(cswServices, scope) {
+) : BaseScript(cswServices, scope), ScriptScope, CommandHandlerScope {
 
-    fun finishWithError(message: String = ""): Nothing = throw RuntimeException(message)
+    //todo : revisit all the places implementing CoroutineContext
+    override val coroutineContext: CoroutineContext = scope.coroutineContext // this won't be used anywhere
 
-    suspend fun nextIf(predicate: (SequenceCommand) -> Boolean): SequenceCommand? =
+    override suspend fun nextIf(predicate: (SequenceCommand) -> Boolean): SequenceCommand? =
             scriptDsl.nextIf { predicate(it) }.await().nullable()
 
-    fun onSetup(name: String, block: suspend CoroutineScope.(Setup) -> Unit) =
-            scriptDsl.onSetupCommand(name) { block.toJava(it) }
+    override fun onSetup(name: String, block: suspend CommandHandlerScope.(Setup) -> Unit): CommandHandlerKt<Setup> {
+        val handler = CommandHandlerKt(coroutineScope, this, block.toCoroutineScope())
+        scriptDsl.onSetupCommand(name, handler)
+        return handler
+    }
 
-    fun onObserve(name: String, block: suspend CoroutineScope.(Observe) -> Unit) =
-            scriptDsl.onObserveCommand(name) { block.toJava(it) }
+    override fun onObserve(name: String, block: suspend CommandHandlerScope.(Observe) -> Unit): CommandHandlerKt<Observe> {
+        val handler = CommandHandlerKt(coroutineScope, this, block.toCoroutineScope())
+        scriptDsl.onObserveCommand(name, handler)
+        return handler
+    }
 
-    fun onException(block: suspend CoroutineScope.(Throwable) -> Unit) =
+    override fun onGlobalError(block: suspend HandlerScope.(ScriptError) -> Unit) =
             scriptDsl.onException {
                 // "future" is used to swallow the exception coming from exception handlers
-                coroutineScope.future { block(it) }
+                coroutineScope.future { block(this.toHandlerScope(), it.toScriptError()) }
                         .exceptionally { error("Exception thrown from Exception handler with a message : ${it.message}", ex = it) }
                         .thenAccept { }
             }
 
-    fun loadScripts(vararg reusableScriptResult: ReusableScriptResult) =
+    override fun loadScripts(vararg reusableScriptResult: ReusableScriptResult) =
             reusableScriptResult.forEach {
                 this.scriptDsl.merge(it(cswServices, strandEc, coroutineScope).scriptDsl)
             }
+
+    override fun become(nextState: String, params: Params): Unit = throw RuntimeException("Become can not be called outside Fsm scripts")
+
+    private fun <T> (suspend CommandHandlerScope.(T) -> Unit).toCoroutineScope(): suspend (CoroutineScope, T) -> Unit = { _scope, value ->
+        val commandHandlerScope = object : CommandHandlerScope by this@Script {
+            override val coroutineContext: CoroutineContext = _scope.coroutineContext
+        }
+        this.invoke(commandHandlerScope, value)
+    }
 }
 
-class FSMStateDsl(
+class FsmScript(
         cswServices: CswServices,
         override val strandEc: StrandEc,
-        scope: CoroutineScope,
-        val fsmScriptDsl: FSMScriptDsl
-) : Script(cswServices, strandEc, scope) {
-    fun become(nextState: String) = fsmScriptDsl.become(nextState)
-}
+        private val scope: CoroutineScope
+) : BaseScript(cswServices, scope), FsmScriptScope {
+    internal val fsmScriptDsl: FsmScriptDsl by lazy { FsmScriptDsl(cswServices, strandEc) }
 
-@ScriptMarker
-class FSMScript(
-        cswServices: CswServices,
-        override val strandEc: StrandEc,
-        scope: CoroutineScope
-) : BaseScript(cswServices, scope) {
-    internal val fsmScriptDsl: FSMScriptDsl by lazy { FSMScriptDsl(cswServices, strandEc) }
+    override val coroutineContext: CoroutineContext = scope.coroutineContext
 
     override val scriptDsl: ScriptDsl by lazy { fsmScriptDsl }
 
-    fun state(state: String, block: suspend FSMStateDsl.() -> Unit) {
-        fun reusableScript(): FSMStateDsl = FSMStateDsl(cswServices, strandEc, coroutineScope, fsmScriptDsl).apply {
+    inner class FsmScriptStateDsl : Script(cswServices, strandEc, scope), FsmScriptStateScope {
+        override val coroutineContext: CoroutineContext = this@FsmScript.scope.coroutineContext
+        override fun become(nextState: String, params: Params) = this@FsmScript.become(nextState, params)
+    }
+
+    override fun state(name: String, block: suspend FsmScriptStateScope.(Params) -> Unit) {
+
+        fun reusableScript(): FsmScriptStateDsl = FsmScriptStateDsl().apply {
             try {
-                runBlocking { block() }
+                runBlocking { block(this@FsmScript.fsmScriptDsl.state.params()) }
             } catch (ex: Exception) {
-                error("Failed to initialize state: $state", ex = ex)
+                error("Failed to initialize state: $name", ex = ex)
                 throw ScriptInitialisationFailedException(ex.message)
             }
         }
 
-        fsmScriptDsl.add(state) { reusableScript().scriptDsl }
+        fsmScriptDsl.add(name) { reusableScript().scriptDsl }
     }
 
-    internal fun become(nextState: String) = fsmScriptDsl.become(nextState)
+    override fun become(nextState: String, params: Params) = fsmScriptDsl.become(nextState, params)
 }

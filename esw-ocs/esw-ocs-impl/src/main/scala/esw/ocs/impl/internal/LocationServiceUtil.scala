@@ -1,27 +1,28 @@
-package esw.ocs.dsl.sequence_manager
+package esw.ocs.impl.internal
 
 import java.util.concurrent.CompletionStage
 
 import akka.actor.CoordinatedShutdown
 import akka.actor.typed.scaladsl.adapter.TypedActorSystemOps
 import akka.actor.typed.{ActorRef, ActorSystem}
-import akka.pattern.after
 import csw.command.client.extensions.AkkaLocationExt.RichAkkaLocation
 import csw.command.client.messages.ComponentMessage
 import csw.location.api.scaladsl.{LocationService, RegistrationResult}
+import csw.location.models.ComponentType.Sequencer
 import csw.location.models.Connection.AkkaConnection
 import csw.location.models.ConnectionType.AkkaType
 import csw.location.models._
-import csw.params.core.models.Subsystem
+import csw.params.core.models.{Prefix, Subsystem}
 import esw.ocs.api.protocol.ScriptError
-import esw.ocs.dsl.Timeouts
 
 import scala.compat.java8.FutureConverters.FutureOps
-import scala.concurrent.duration.{DurationInt, FiniteDuration}
+import scala.concurrent.duration.FiniteDuration
 import scala.concurrent.{ExecutionContext, Future}
 import scala.util.control.NonFatal
 
-class LocationServiceUtil(private[esw] val locationService: LocationService)(implicit val actorSystem: ActorSystem[_]) {
+private[esw] class LocationServiceUtil(val locationService: LocationService)(
+    implicit val actorSystem: ActorSystem[_]
+) {
   implicit val ec: ExecutionContext = actorSystem.executionContext
 
   private def addCoordinatedShutdownTask(
@@ -54,73 +55,53 @@ class LocationServiceUtil(private[esw] val locationService: LocationService)(imp
     locationService
       .list(componentType)
       .map(_.collect {
-        case akkaLocation @ AkkaLocation(_, prefix, _) if prefix.subsystem == subsystem => akkaLocation
+        case akkaLocation: AkkaLocation if akkaLocation.prefix.subsystem == subsystem => akkaLocation
       })
 
-  //Can be used to listByPackageId() and listByObsMode(), in future. Separate APIs can be created once we have concrete
-  //classes for `PackageId` and `ObsMode`
-  def listByComponentName(name: String): Future[List[Location]] =
-    locationService.list.map(_.filter(_.connection.componentId.name.contains(name)))
+  def resolveByComponentNameAndType(componentName: String, componentType: ComponentType): Future[Option[Location]] =
+    locationService.list(componentType).map(_.find(_.connection.componentId.prefix.componentName == componentName))
 
-  def resolveByComponentNameAndType(name: String, componentType: ComponentType): Future[Option[Location]] =
-    locationService.list(componentType).map(_.find(_.connection.componentId.name == name))
-
-  def resolveComponentRef(componentName: String, componentType: ComponentType): Future[ActorRef[ComponentMessage]] = {
-    val connection = AkkaConnection(ComponentId(componentName, componentType))
+  def resolveComponentRef(prefix: Prefix, componentType: ComponentType): Future[ActorRef[ComponentMessage]] = {
+    val connection = AkkaConnection(ComponentId(prefix, componentType))
     locationService.resolve(connection, Timeouts.DefaultTimeout).map {
       case Some(location: AkkaLocation) => location.componentRef
       case Some(location) =>
         throw new RuntimeException(
           s"Incorrect connection type of the component. Expected $AkkaType, found ${location.connection.connectionType}"
         )
-      case None => throw new IllegalArgumentException(s"Could not find any component with name: $componentName")
+      case None => throw new IllegalArgumentException(s"Could not find any component with name: $prefix")
     }
   }
 
   private[esw] def resolveSequencer(
-      packageId: String,
+      subsystem: Subsystem,
       observingMode: String,
       timeout: FiniteDuration = Timeouts.DefaultTimeout
-  ): Future[AkkaLocation] = {
-    val ResolveInterval = 50.millis
-    def resolveLoop(remainingDuration: FiniteDuration): Future[AkkaLocation] =
-      locationService.list
-        .map {
-          _.collectFirst {
-            case location: AkkaLocation if location.connection.componentId.name.contains(s"$packageId@$observingMode") =>
-              location
-          }
-        }
-        .flatMap {
-          case Some(location) => Future.successful(location)
-          case _ if remainingDuration.length <= 0 =>
-            throw new RuntimeException(s"Could not find any sequencer with name: $packageId@$observingMode")
-          case _ =>
-            after(remainingDuration min ResolveInterval, actorSystem.toClassic.scheduler) {
-              resolveLoop(remainingDuration minus ResolveInterval)
-            }
-        }
+  ) =
+    locationService
+      .resolve(AkkaConnection(ComponentId(Prefix(subsystem, observingMode), Sequencer)), timeout)
+      .map {
+        case Some(value) => value
+        case None        => throw new RuntimeException(s"Could not find any sequencer with name: ${subsystem.name}.$observingMode")
+      }
 
-    resolveLoop(timeout)
-  }
-
-  def resolveAkkaLocation(componentName: String, componentType: ComponentType): Future[AkkaLocation] = {
-    val connection = AkkaConnection(ComponentId(componentName, componentType))
+  def resolveAkkaLocation(prefix: Prefix, componentType: ComponentType): Future[AkkaLocation] = {
+    val connection = AkkaConnection(ComponentId(prefix, componentType))
     locationService.resolve(connection, Timeouts.DefaultTimeout).map {
       case Some(location: AkkaLocation) => location
       case Some(location) =>
         throw new RuntimeException(
           s"Incorrect connection type of the component. Expected $AkkaType, found ${location.connection.connectionType}"
         )
-      case None => throw new IllegalArgumentException(s"Could not find any component with name: $componentName")
+      case None => throw new IllegalArgumentException(s"Could not find any component with name: $prefix")
     }
   }
 
   // Added this to be accessed by kotlin
-  def jResolveComponentRef(componentName: String, componentType: ComponentType): CompletionStage[ActorRef[ComponentMessage]] =
-    resolveComponentRef(componentName, componentType).toJava
+  def jResolveComponentRef(prefix: Prefix, componentType: ComponentType): CompletionStage[ActorRef[ComponentMessage]] =
+    resolveComponentRef(prefix, componentType).toJava
 
-  def jResolveAkkaLocation(componentName: String, componentType: ComponentType): CompletionStage[AkkaLocation] =
-    resolveAkkaLocation(componentName, componentType).toJava
+  def jResolveAkkaLocation(prefix: Prefix, componentType: ComponentType): CompletionStage[AkkaLocation] =
+    resolveAkkaLocation(prefix, componentType).toJava
 
 }

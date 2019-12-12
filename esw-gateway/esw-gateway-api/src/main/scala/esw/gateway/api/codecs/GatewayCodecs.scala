@@ -10,15 +10,20 @@ import esw.gateway.api.protocol._
 import esw.ocs.api.codecs.SequencerHttpCodecs
 import io.bullet.borer.Dom.MapElem
 import io.bullet.borer.derivation.MapBasedCodecs.deriveCodec
+import io.bullet.borer.derivation.ArrayBasedCodecs.deriveUnaryCodec
 import io.bullet.borer.{Codec, Decoder, Encoder}
+import msocket.api.ErrorProtocol
 
 object GatewayCodecs extends GatewayCodecs
 trait GatewayCodecs extends CommandServiceCodecs with LocationCodecs with LoggingCodecs with SequencerHttpCodecs {
 
-  implicit def getEventErrorCodec[T <: GetEventError]: Codec[T] = getEventErrorCodecValue.asInstanceOf[Codec[T]]
-  lazy val getEventErrorCodecValue: Codec[GetEventError] = {
-    @silent implicit lazy val emptyEventKeysCodec: Codec[EmptyEventKeys.type]                  = deriveCodec
-    @silent implicit lazy val eventServerNotAvailableCodec: Codec[EventServerUnavailable.type] = deriveCodec
+  implicit def gatewayExceptionCodec[T <: GatewayException]: Codec[T] = gatewayExceptionCodecValue.asInstanceOf[Codec[T]]
+  lazy val gatewayExceptionCodecValue: Codec[GatewayException] = {
+    @silent implicit lazy val emptyEventKeysCodec: Codec[EmptyEventKeys]                   = deriveCodec
+    @silent implicit lazy val eventServerNotAvailableCodec: Codec[EventServerUnavailable]  = deriveCodec
+    @silent implicit lazy val invalidComponentCodec: Codec[InvalidComponent]               = deriveUnaryCodec
+    @silent implicit lazy val setAlarmSeverityFailureCodec: Codec[SetAlarmSeverityFailure] = deriveUnaryCodec
+    @silent implicit lazy val invalidMaxFrequencyCodec: Codec[InvalidMaxFrequency]         = deriveCodec
     deriveCodec
   }
 
@@ -33,11 +38,10 @@ trait GatewayCodecs extends CommandServiceCodecs with LocationCodecs with Loggin
     @silent implicit lazy val metadataEnc: Encoder[Map[String, Any]]                       = Encoder[MapElem].contramap(ElementConverter.fromMap)
     @silent implicit lazy val metadataDec: Decoder[Map[String, Any]]                       = Decoder[MapElem].map(ElementConverter.toMap)
     @silent implicit lazy val logCodec: Codec[Log]                                         = deriveCodec
+    @silent implicit lazy val getLogMetadataCodec: Codec[GetLogMetadata]                   = deriveCodec
+    @silent implicit lazy val setLogLevelCodec: Codec[SetLogLevel]                         = deriveCodec
     deriveCodec
   }
-
-  implicit lazy val invalidComponentCodec: Codec[InvalidComponent]               = deriveCodec
-  implicit lazy val setAlarmSeverityFailureCodec: Codec[SetAlarmSeverityFailure] = deriveCodec
 
   implicit def websocketRequestCodec[T <: WebsocketRequest]: Codec[T] = websocketRequestCodecValue.asInstanceOf[Codec[T]]
   lazy val websocketRequestCodecValue: Codec[WebsocketRequest] = {
@@ -52,4 +56,8 @@ trait GatewayCodecs extends CommandServiceCodecs with LocationCodecs with Loggin
   //Todo: move to csw
   implicit lazy val eventKeyCodec: Codec[EventKey] = deriveCodec
   implicit lazy val alarmKeyCodec: Codec[AlarmKey] = deriveCodec
+
+  implicit lazy val PostRequestErrorProtocol: ErrorProtocol[PostRequest] = ErrorProtocol.bind[PostRequest, GatewayException]
+  implicit lazy val WebsocketRequestErrorProtocol: ErrorProtocol[WebsocketRequest] =
+    ErrorProtocol.bind[WebsocketRequest, GatewayException]
 }

@@ -2,13 +2,14 @@ package esw.ocs.api
 
 import akka.stream.scaladsl.Source
 import csw.command.api.scaladsl.SequencerCommandService
+import csw.location.models.AkkaLocation
 import csw.params.commands.CommandResponse.SubmitResponse
 import csw.params.commands.{Sequence, SequenceCommand}
 import csw.params.core.models.Id
 import csw.time.core.models.UTCTime
 import esw.ocs.api.models.{SequencerInsight, StepList}
 import esw.ocs.api.protocol._
-import msocket.api.models.Subscription
+import msocket.api.Subscription
 
 import scala.concurrent.Future
 
@@ -28,6 +29,7 @@ trait SequencerApi extends SequencerCommandService {
   def reset(): Future[OkOrUnhandledResponse]
   def pause: Future[PauseResponse]
   def resume: Future[OkOrUnhandledResponse]
+  def getSequenceComponent: Future[AkkaLocation]
 
   def isAvailable: Future[Boolean]
   def isOnline: Future[Boolean]

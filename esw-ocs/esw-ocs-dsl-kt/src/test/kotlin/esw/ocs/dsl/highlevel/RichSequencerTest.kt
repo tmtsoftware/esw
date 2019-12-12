@@ -5,35 +5,43 @@ import csw.location.models.AkkaLocation
 import csw.params.commands.CommandResponse
 import csw.params.commands.Sequence
 import csw.params.core.models.Id
+import csw.params.core.models.Subsystem
+import csw.params.javadsl.JSubsystem
 import csw.time.core.models.UTCTime
 import esw.ocs.api.SequencerApi
 import esw.ocs.api.protocol.`Ok$`
-import esw.ocs.dsl.sequence_manager.LocationServiceUtil
+import esw.ocs.dsl.highlevel.models.CommandError
+import esw.ocs.impl.SequencerActorProxyFactory
+import esw.ocs.impl.internal.LocationServiceUtil
+import io.kotlintest.shouldNotThrow
+import io.kotlintest.shouldThrow
 import io.mockk.every
 import io.mockk.mockk
 import io.mockk.verify
+import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.runBlocking
 import org.junit.jupiter.api.Test
 import scala.concurrent.Future
 import java.util.concurrent.CompletableFuture
-import java.util.concurrent.CompletionStage
 import java.util.concurrent.TimeUnit
-import java.util.function.BiFunction
+import kotlin.coroutines.EmptyCoroutineContext
 import kotlin.time.seconds
 
 class RichSequencerTest {
 
+    private val coroutineScope: CoroutineScope = CoroutineScope(EmptyCoroutineContext)
+
     private val hint = "test-hint"
     private val startTime: UTCTime = UTCTime.now()
 
-    private val sequencerId: String = "tcs"
+    private val sequencerId: Subsystem = JSubsystem.TCS()
     private val observingMode: String = "darknight"
     private val sequence: Sequence = mockk()
 
-    val sequencerApiFactory: BiFunction<String, String, CompletionStage<SequencerApi>> = mockk()
+    private val sequencerApiFactory: SequencerActorProxyFactory = mockk()
     private val locationServiceUtil: LocationServiceUtil = mockk()
 
-    private val tcsSequencer = RichSequencer(sequencerId, observingMode, sequencerApiFactory)
+    private val tcsSequencer = RichSequencer(sequencerId, observingMode, sequencerApiFactory, coroutineScope)
 
     private val sequencerApi: SequencerApi = mockk()
 
@@ -41,11 +49,49 @@ class RichSequencerTest {
     private val timeout = Timeout(10, TimeUnit.SECONDS)
 
     @Test
-    fun `submitAndWait should resolve sequencerCommandService for given sequencer and call submitAndWait method on it | ESW-245 `() = runBlocking {
+    fun `submit should resolve sequencerCommandService for given sequencer and call submit method on it | ESW-245, ESW-195 `() = runBlocking {
 
         every { locationServiceUtil.resolveSequencer(sequencerId, observingMode, any()) }.answers { Future.successful(sequencerLocation) }
+        every { sequencerApiFactory.jMake(sequencerId, observingMode) }.answers { CompletableFuture.completedFuture(sequencerApi) }
+        every { sequencerApi.submit(sequence) }.answers { Future.successful(CommandResponse.Completed(Id.apply())) }
+
+        tcsSequencer.submit(sequence)
+
+        verify { sequencerApi.submit(sequence) }
+    }
+
+    @Test
+    fun `query should resolve sequencerCommandService for given sequencer and call query method on it | ESW-245, ESW-195 `() = runBlocking {
+        val runId: Id = mockk()
+
+        every { locationServiceUtil.resolveSequencer(sequencerId, observingMode, any()) }.answers { Future.successful(sequencerLocation) }
+        every { sequencerApiFactory.jMake(sequencerId, observingMode) }.answers { CompletableFuture.completedFuture(sequencerApi) }
+        every { sequencerApi.query(runId) }.answers { Future.successful(CommandResponse.Completed(Id.apply())) }
+
+        tcsSequencer.query(runId)
+
+        verify { sequencerApi.query(runId) }
+    }
+
+    @Test
+    fun `queryFinal should resolve sequencerCommandService for given sequencer and call queryFinal method on it | ESW-245, ESW-195 `() = runBlocking {
+        val runId: Id = mockk()
+
+        every { locationServiceUtil.resolveSequencer(sequencerId, observingMode, any()) }.answers { Future.successful(sequencerLocation) }
+        every { sequencerApiFactory.jMake(sequencerId, observingMode) }.answers { CompletableFuture.completedFuture(sequencerApi) }
+        every { sequencerApi.queryFinal(runId, timeout) }.answers { Future.successful(CommandResponse.Completed(Id.apply())) }
+
+        tcsSequencer.queryFinal(runId, 10.seconds)
+
+        verify { sequencerApi.queryFinal(runId, timeout) }
+    }
+
+    @Test
+    fun `submitAndWait should resolve sequencerCommandService for given sequencer and call submitAndWait | ESW-245, ESW-195 `() = runBlocking {
+
+        every { locationServiceUtil.resolveSequencer(sequencerId, observingMode, any()) }.answers { Future.successful(sequencerLocation) }
+        every { sequencerApiFactory.jMake(sequencerId, observingMode) }.answers { CompletableFuture.completedFuture(sequencerApi) }
         every { sequencerApi.submitAndWait(sequence, timeout) }.answers { Future.successful(CommandResponse.Completed(Id.apply())) }
-        every { sequencerApiFactory.apply(sequencerId, observingMode) }.answers { CompletableFuture.completedFuture(sequencerApi) }
 
         tcsSequencer.submitAndWait(sequence, 10.seconds)
 
@@ -53,9 +99,39 @@ class RichSequencerTest {
     }
 
     @Test
+    fun `submitAndWait should resolve sequencerCommandService for given sequencer, call submitAndWait and should throw exception if submit response is negative and resumeOnError=false | ESW-245, ESW-195 `() = runBlocking {
+
+        val message = "error-occurred"
+        val invalidSubmitResponse = CommandResponse.Error(Id.apply(), message)
+
+        every { locationServiceUtil.resolveSequencer(sequencerId, observingMode, any()) }.answers { Future.successful(sequencerLocation) }
+        every { sequencerApiFactory.jMake(sequencerId, observingMode) }.answers { CompletableFuture.completedFuture(sequencerApi) }
+        every { sequencerApi.submitAndWait(sequence, timeout) }.answers { Future.successful(invalidSubmitResponse) }
+
+        shouldThrow<CommandError> { tcsSequencer.submitAndWait(sequence, 10.seconds) }
+
+        verify { sequencerApi.submitAndWait(sequence, timeout) }
+    }
+
+    @Test
+    fun `submitAndWait should resolve sequencerCommandService for given sequencer, call submitAndWait and shouldn't throw exception if submit response is negative and resumeOnError=true | ESW-245, ESW-195 `() = runBlocking {
+
+        val message = "error-occurred"
+        val invalidSubmitResponse = CommandResponse.Error(Id.apply(), message)
+
+        every { locationServiceUtil.resolveSequencer(sequencerId, observingMode, any()) }.answers { Future.successful(sequencerLocation) }
+        every { sequencerApi.submitAndWait(sequence, timeout) }.answers { Future.successful(invalidSubmitResponse) }
+        every { sequencerApiFactory.jMake(sequencerId, observingMode) }.answers { CompletableFuture.completedFuture(sequencerApi) }
+
+        shouldNotThrow<CommandError> { tcsSequencer.submitAndWait(sequence, 10.seconds, resumeOnError = true) }
+
+        verify { sequencerApi.submitAndWait(sequence, timeout) }
+    }
+
+    @Test
     fun `diagnosticMode should resolve sequencerAdmin for given sequencer and call diagnosticMode method on it | ESW-143, ESW-245 `() = runBlocking {
 
-        every { sequencerApiFactory.apply(sequencerId, observingMode) }.answers { CompletableFuture.completedFuture(sequencerApi) }
+        every { sequencerApiFactory.jMake(sequencerId, observingMode) }.answers { CompletableFuture.completedFuture(sequencerApi) }
         every { sequencerApi.diagnosticMode(startTime, hint) }.answers { Future.successful(`Ok$`.`MODULE$`) }
 
         tcsSequencer.diagnosticMode(startTime, hint)
@@ -65,7 +141,7 @@ class RichSequencerTest {
     @Test
     fun `operationsMode should resolve sequencerAdmin for given sequencer and call operationsMode method on it | ESW-143, ESW-245 `() = runBlocking {
 
-        every { sequencerApiFactory.apply(sequencerId, observingMode) }.answers { CompletableFuture.completedFuture(sequencerApi) }
+        every { sequencerApiFactory.jMake(sequencerId, observingMode) }.answers { CompletableFuture.completedFuture(sequencerApi) }
         every { sequencerApi.operationsMode() }.answers { Future.successful(`Ok$`.`MODULE$`) }
 
         tcsSequencer.operationsMode()
@@ -75,7 +151,7 @@ class RichSequencerTest {
     @Test
     fun `goOnline should resolve sequencerAdmin for given sequencer and call goOnline method on it | ESW-236, ESW-245 `() = runBlocking {
 
-        every { sequencerApiFactory.apply(sequencerId, observingMode) }.answers { CompletableFuture.completedFuture(sequencerApi) }
+        every { sequencerApiFactory.jMake(sequencerId, observingMode) }.answers { CompletableFuture.completedFuture(sequencerApi) }
         every { sequencerApi.goOnline() }.answers { Future.successful(`Ok$`.`MODULE$`) }
 
         tcsSequencer.goOnline()
@@ -85,7 +161,7 @@ class RichSequencerTest {
     @Test
     fun `goOffline should resolve sequencerAdmin for given sequencer and call goOffline method on it | ESW-236, ESW-245 `() = runBlocking {
 
-        every { sequencerApiFactory.apply(sequencerId, observingMode) }.answers { CompletableFuture.completedFuture(sequencerApi) }
+        every { sequencerApiFactory.jMake(sequencerId, observingMode) }.answers { CompletableFuture.completedFuture(sequencerApi) }
         every { sequencerApi.goOffline() }.answers { Future.successful(`Ok$`.`MODULE$`) }
 
         tcsSequencer.goOffline()
@@ -95,7 +171,7 @@ class RichSequencerTest {
     @Test
     fun `abortSequence should resolve sequencerAdmin for given sequencer and call abortSequence method on it | ESW-137, ESW-245 `() = runBlocking {
 
-        every { sequencerApiFactory.apply(sequencerId, observingMode) }.answers { CompletableFuture.completedFuture(sequencerApi) }
+        every { sequencerApiFactory.jMake(sequencerId, observingMode) }.answers { CompletableFuture.completedFuture(sequencerApi) }
         every { sequencerApi.abortSequence() }.answers { Future.successful(`Ok$`.`MODULE$`) }
 
         tcsSequencer.abortSequence()
@@ -105,7 +181,7 @@ class RichSequencerTest {
     @Test
     fun `stop should resolve sequencerAdmin for given sequencer and call stop method on it | ESW-138, ESW-245 `() = runBlocking {
 
-        every { sequencerApiFactory.apply(sequencerId, observingMode) }.answers { CompletableFuture.completedFuture(sequencerApi) }
+        every { sequencerApiFactory.jMake(sequencerId, observingMode) }.answers { CompletableFuture.completedFuture(sequencerApi) }
         every { sequencerApi.stop() }.answers { Future.successful(`Ok$`.`MODULE$`) }
 
         tcsSequencer.stop()

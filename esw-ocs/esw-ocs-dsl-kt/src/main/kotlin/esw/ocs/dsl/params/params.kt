@@ -29,3 +29,5 @@ operator fun <S> ParameterSetType<*>.invoke(key: Key<S>): Parameter<S> = apply(k
 fun <T : ParameterSetType<T>, P : Parameter<*>> T.kMadd(vararg parameters: P): T = jMadd(parameters.toSet())
 fun <T : ParameterSetType<T>, S> T.kRemove(key: Key<S>): T = remove(key)
 fun <T : ParameterSetType<T>, P : Parameter<*>> T.kRemove(parameter: P): T = remove(parameter)
+
+val <T : ParameterSetType<T>> T.params: Params get() = Params(this.jParamSet())

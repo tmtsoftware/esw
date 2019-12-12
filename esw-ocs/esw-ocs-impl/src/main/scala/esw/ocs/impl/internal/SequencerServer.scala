@@ -2,6 +2,7 @@ package esw.ocs.impl.internal
 
 import akka.Done
 import csw.location.models.AkkaLocation
+import csw.params.core.models.Subsystem
 import esw.ocs.api.protocol.ScriptError
 
 // Note: The APIs in this service are blocking. SequenceComponentBehavior consumes this api and since
@@ -13,5 +14,5 @@ trait SequencerServer {
 }
 
 trait SequencerServerFactory {
-  def make(packageId: String, observingMode: String, sequenceComponentName: Option[String]): SequencerServer
+  def make(subsystem: Subsystem, observingMode: String, sequenceComponentLocation: AkkaLocation): SequencerServer
 }

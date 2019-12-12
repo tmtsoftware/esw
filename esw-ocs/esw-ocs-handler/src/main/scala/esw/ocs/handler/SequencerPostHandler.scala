@@ -20,6 +20,7 @@ class SequencerPostHandler(sequencerApi: SequencerApi)
     case StartSequence          => complete(startSequence())
 
     case GetSequence               => complete(getSequence)
+    case GetSequenceComponent      => complete(getSequenceComponent)
     case Add(commands)             => complete(add(commands))
     case Prepend(commands)         => complete(prepend(commands))
     case Replace(id, commands)     => complete(replace(id, commands))

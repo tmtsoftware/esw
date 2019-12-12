@@ -25,7 +25,8 @@ private[esw] object ScriptLoader {
     try {
       val clazz = Class.forName(scriptClass)
       block(clazz)
-    } catch {
+    }
+    catch {
       case _: ClassNotFoundException => throw new ScriptNotFound(scriptClass)
       case _: NoSuchFieldException   => throw new InvalidScriptException(scriptClass)
     }

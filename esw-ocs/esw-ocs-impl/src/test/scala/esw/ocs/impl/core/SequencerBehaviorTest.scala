@@ -4,6 +4,7 @@ import akka.Done
 import akka.actor.testkit.typed.scaladsl.{ScalaTestWithActorTestKit, TestProbe}
 import csw.command.client.messages.sequencer.SequencerMsg.QueryFinal
 import csw.command.client.messages.{GetComponentLogMetadata, SetComponentLogLevel}
+import csw.location.models.AkkaLocation
 import csw.logging.client.commons.LogAdminUtil
 import csw.logging.models.Level.{DEBUG, INFO}
 import csw.logging.models.LogMetadata
@@ -18,6 +19,8 @@ import esw.ocs.api.protocol.EditorError.{CannotOperateOnAnInFlightOrFinishedStep
 import esw.ocs.api.protocol._
 import esw.ocs.impl.messages.SequencerMessages._
 import esw.ocs.impl.messages.SequencerState.{Idle, InProgress, Loaded, Offline}
+import org.scalatest.prop.TableDrivenPropertyChecks._
+import org.scalatest.prop.TableFor2
 
 import scala.concurrent.Future
 import scala.concurrent.duration.DurationLong
@@ -125,7 +128,7 @@ class SequencerBehaviorTest extends ScalaTestWithActorTestKit with BaseTestSuite
       val startedResponse = sequenceResult.toSubmitResponse()
       startedResponse shouldBe a[Started]
 
-      val seqResProbe = createTestProbe[QueryResponse]
+      val seqResProbe = createTestProbe[SubmitResponse]
       sequencerActor ! QueryFinal(startedResponse.runId, seqResProbe.ref)
 
       pullAllStepsAndAssertSequenceIsFinished()
@@ -612,6 +615,16 @@ class SequencerBehaviorTest extends ScalaTestWithActorTestKit with BaseTestSuite
 
       stopAndAssertResponse(Ok, InProgress)
     }
+
+    "stop given inProgress sequence when it is paused | ESW-138" in {
+      val sequencerSetup = SequencerTestSetup.inProgressWithFirstCommandComplete(sequence)
+      import sequencerSetup._
+
+      pauseAndAssertResponse(Ok)
+      assertEngineCanExecuteNext(isReadyToExecuteNext = false)
+
+      stopAndAssertResponse(Ok, InProgress)
+    }
   }
 
   "GoOnline" must {
@@ -848,6 +861,28 @@ class SequencerBehaviorTest extends ScalaTestWithActorTestKit with BaseTestSuite
       // this verifies that log metadata is updated in LogAdminUtil
       val finalMetadata = LogAdminUtil.getLogMetadata(sequencerName)
       finalMetadata.componentLevel shouldBe DEBUG
+    }
+  }
+
+  "GetSequenceComponent" must {
+
+    val testCases: TableFor2[String, SequencerTestSetup] = Table.apply(
+      ("state", "sequencer setup"),
+      (InProgress.entryName, SequencerTestSetup.inProgress(sequence)),
+      (Idle.entryName, SequencerTestSetup.idle(sequence)),
+      (Loaded.entryName, SequencerTestSetup.loaded(sequence)),
+      (Offline.entryName, SequencerTestSetup.offline(sequence))
+    )
+
+    forAll(testCases) { (stateName, testSetup) =>
+      s"get sequence component name in $stateName state | ESW-255" in {
+        import testSetup._
+        val sequenceComponentRef = TestProbe[AkkaLocation]
+
+        sequencerActor ! GetSequenceComponent(sequenceComponentRef.ref)
+
+        assertForGettingSequenceComponent(sequenceComponentRef)
+      }
     }
   }
 

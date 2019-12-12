@@ -8,15 +8,17 @@ import csw.logging.client.scaladsl.LoggingSystemFactory
 import csw.params.commands.CommandResponse.Completed
 import csw.params.commands.{CommandName, Sequence, Setup}
 import csw.params.core.models.Prefix
+import csw.params.core.models.Subsystem.ESW
 import esw.gateway.server.TestAppender
 import esw.ocs.api.SequencerApi
 import esw.ocs.impl.SequencerActorProxy
 import esw.ocs.testkit.EswTestKit
+import esw.ocs.testkit.Service.EventServer
 import play.api.libs.json.{JsObject, Json}
 
 import scala.collection.mutable
 
-class LoggingDslIntegrationTest extends EswTestKit {
+class LoggingDslIntegrationTest extends EswTestKit(EventServer) {
 
   private val logBuffer: mutable.Buffer[JsObject] = mutable.Buffer.empty[JsObject]
   private val testAppender                        = new TestAppender(x => logBuffer += Json.parse(x.toString).as[JsObject])
@@ -26,7 +28,7 @@ class LoggingDslIntegrationTest extends EswTestKit {
 
   override def beforeAll(): Unit = {
     super.beforeAll()
-    ocsRef = spawnSequencerRef("ocs", "moonnight", None)
+    ocsRef = spawnSequencerRef(ESW, "moonnight")
     ocsSequencer = new SequencerActorProxy(ocsRef)
     loggingSystem = LoggingSystemFactory.start("LoggingDslIntegrationTest", "", "", system)
     loggingSystem.setAppenders(List(testAppender))
@@ -41,9 +43,8 @@ class LoggingDslIntegrationTest extends EswTestKit {
       Thread.sleep(500)
 
       val log: JsObject = logBuffer.head
-      log.getString("@componentName") shouldBe "ocs@moonnight"
+      log.getString("@componentName") shouldBe "esw.moonnight"
       log.getString("@severity") shouldBe "FATAL"
-      log.getString("prefix") shouldBe "Prefix(esw.ocs.prefix5)"
       log.getString("class") shouldBe "esw.ocs.scripts.examples.testData.TestScript2"
       log.getString("message") shouldBe "log-message"
     }

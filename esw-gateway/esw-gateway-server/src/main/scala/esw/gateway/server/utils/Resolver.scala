@@ -8,6 +8,7 @@ import csw.command.client.extensions.AkkaLocationExt.RichAkkaLocation
 import csw.location.api.scaladsl.LocationService
 import csw.location.models.ComponentId
 import csw.location.models.Connection.AkkaConnection
+import esw.gateway.api.protocol.InvalidComponent
 import esw.ocs.api.SequencerApi
 import esw.ocs.impl.SequencerActorProxy
 
@@ -19,13 +20,15 @@ class Resolver(locationService: LocationService)(implicit typedSystem: ActorSyst
   import typedSystem.executionContext
   private implicit val timeout: Timeout = 5.seconds
 
-  def resolveComponent(componentId: ComponentId): Future[Option[CommandService]] =
+  def resolveComponent(componentId: ComponentId): Future[CommandService] =
     locationService
       .resolve(AkkaConnection(componentId), timeout.duration)
-      .map(_.map(CommandServiceFactory.make))
+      .map(_.getOrElse(throw InvalidComponent(s"No component is registered with id $componentId")))
+      .map(CommandServiceFactory.make)
 
-  def resolveSequencer(componentId: ComponentId): Future[Option[SequencerApi]] =
+  def resolveSequencer(componentId: ComponentId): Future[SequencerApi] =
     locationService
       .resolve(AkkaConnection(componentId), timeout.duration)
-      .map(_.map(loc => new SequencerActorProxy(loc.sequencerRef)))
+      .map(_.getOrElse(throw InvalidComponent(s"No sequencer is registered with id $componentId")))
+      .map(loc => new SequencerActorProxy(loc.sequencerRef))
 }

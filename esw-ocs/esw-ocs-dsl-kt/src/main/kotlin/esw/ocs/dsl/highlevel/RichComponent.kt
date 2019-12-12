@@ -13,40 +13,52 @@ import csw.command.client.models.framework.ToComponentLifecycleMessage
 import csw.location.models.ComponentType
 import csw.params.commands.CommandResponse.*
 import csw.params.commands.ControlCommand
+import csw.params.core.models.Id
 import csw.params.core.models.Prefix
 import csw.params.core.states.CurrentState
 import csw.params.core.states.StateName
 import csw.time.core.models.UTCTime
-import esw.ocs.dsl.Timeouts
+import esw.ocs.dsl.SuspendableCallback
+import esw.ocs.dsl.SuspendableConsumer
+import esw.ocs.dsl.highlevel.models.CommandError
+import esw.ocs.dsl.isFailed
 import esw.ocs.dsl.jdk.SuspendToJavaConverter
 import esw.ocs.dsl.script.utils.LockUnlockUtil
-import esw.ocs.dsl.sequence_manager.LocationServiceUtil
+import esw.ocs.impl.internal.LocationServiceUtil
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.future.await
-import msocket.api.models.Subscription
+import msocket.api.Subscription
+import java.util.concurrent.TimeUnit
 import kotlin.time.Duration
 import kotlin.time.toJavaDuration
 
 class RichComponent(
-        val name: String,
+        val prefix: Prefix,
         val componentType: ComponentType,
-        private val prefix: Prefix,
         private val lockUnlockUtil: LockUnlockUtil,
         private val locationServiceUtil: LocationServiceUtil,
         private val actorSystem: ActorSystem<*>,
         override val coroutineScope: CoroutineScope
 ) : SuspendToJavaConverter {
-    private val timeout: Timeout = Timeout(Timeouts.DefaultTimeout())
 
     suspend fun validate(command: ControlCommand): ValidateResponse = commandService().validate(command).await()
     suspend fun oneway(command: ControlCommand): OnewayResponse = commandService().oneway(command).await()
     suspend fun submit(command: ControlCommand): SubmitResponse = commandService().submit(command).await()
+    suspend fun query(commandRunId: Id): SubmitResponse = commandService().query(commandRunId).await()
 
-    //fixme: why queryFinal API is missing?
-    //fixme: submitAndWait could be called for long-running commands, why is default timeout being passed?
-    suspend fun submitAndWait(command: ControlCommand): SubmitResponse = commandService().submitAndWait(command, timeout).await()
+    suspend fun queryFinal(commandRunId: Id, timeout: Duration): SubmitResponse {
+        val akkaTimeout = Timeout(timeout.toLongNanoseconds(), TimeUnit.NANOSECONDS)
+        return commandService().queryFinal(commandRunId, akkaTimeout).await()
+    }
 
-    suspend fun subscribeCurrentState(stateNames: Set<StateName>, callback: suspend CoroutineScope.(CurrentState) -> Unit): Subscription =
+    suspend fun submitAndWait(command: ControlCommand, timeout: Duration, resumeOnError: Boolean = false): SubmitResponse {
+        val akkaTimeout = Timeout(timeout.toLongNanoseconds(), TimeUnit.NANOSECONDS)
+        val submitResponse: SubmitResponse = commandService().submitAndWait(command, akkaTimeout).await()
+        if (!resumeOnError && submitResponse.isFailed) throw CommandError(submitResponse)
+        return submitResponse
+    }
+
+    suspend fun subscribeCurrentState(stateNames: Set<StateName>, callback: SuspendableConsumer<CurrentState>): Subscription =
             commandService().subscribeCurrentState(stateNames) { callback.toJava(it) }
 
     suspend fun diagnosticMode(startTime: UTCTime, hint: String): Unit = componentRef().tell(DiagnosticDataMessage.DiagnosticMode(startTime, hint))
@@ -57,19 +69,19 @@ class RichComponent(
 
     suspend fun lock(
             leaseDuration: Duration,
-            onLockAboutToExpire: suspend CoroutineScope.() -> Unit = {},
-            onLockExpired: suspend CoroutineScope.() -> Unit = {}
+            onLockAboutToExpire: SuspendableCallback = {},
+            onLockExpired: SuspendableCallback = {}
     ): LockingResponse =
             lockUnlockUtil.lock(
                     componentRef(),
-                    prefix,
                     leaseDuration.toJavaDuration(),
                     { onLockAboutToExpire.toJava() },
                     { onLockExpired.toJava() }
             ).await()
 
-    suspend fun unlock(): LockingResponse = lockUnlockUtil.unlock(componentRef(), prefix).await()
+    suspend fun unlock(): LockingResponse = lockUnlockUtil.unlock(componentRef()).await()
 
-    private suspend fun commandService(): ICommandService = CommandServiceFactory.jMake(locationServiceUtil.jResolveAkkaLocation(name, componentType).await(), actorSystem)
-    private suspend fun componentRef(): ActorRef<ComponentMessage> = locationServiceUtil.jResolveComponentRef(name, componentType).await()
+    private suspend fun commandService(): ICommandService = CommandServiceFactory.jMake(locationServiceUtil.jResolveAkkaLocation(prefix, componentType).await(), actorSystem)
+    private suspend fun componentRef(): ActorRef<ComponentMessage> = locationServiceUtil.jResolveComponentRef(prefix, componentType).await()
+
 }

@@ -1,11 +1,11 @@
 package esw.ocs.api.client
 
-import akka.util.Timeout
-import csw.command.api.scaladsl.SequencerCommandServiceExtension
-import csw.params.commands.CommandResponse.{QueryResponse, SubmitResponse}
-import csw.params.commands.{Sequence, SequenceCommand}
 import akka.stream.scaladsl.Source
-import csw.params.commands.SequenceCommand
+import akka.util.Timeout
+import csw.command.api.utils.SequencerCommandServiceExtension
+import csw.location.models.AkkaLocation
+import csw.params.commands.CommandResponse.SubmitResponse
+import csw.params.commands.{Sequence, SequenceCommand}
 import csw.params.core.models.Id
 import csw.time.core.models.UTCTime
 import esw.ocs.api.SequencerApi
@@ -14,8 +14,7 @@ import esw.ocs.api.models.{SequencerInsight, StepList}
 import esw.ocs.api.protocol.SequencerPostRequest._
 import esw.ocs.api.protocol.SequencerWebsocketRequest._
 import esw.ocs.api.protocol._
-import msocket.api.Transport
-import msocket.api.models.Subscription
+import msocket.api.{Subscription, Transport}
 
 import scala.concurrent.{ExecutionContext, Future}
 
@@ -82,8 +81,8 @@ class SequencerClient(
   override def submitAndWait(sequence: Sequence)(implicit timeout: Timeout): Future[SubmitResponse] =
     extensions.submitAndWait(sequence)
 
-  override def query(runId: Id): Future[QueryResponse] =
-    postClient.requestResponse[QueryResponse](Query(runId))
+  override def query(runId: Id): Future[SubmitResponse] =
+    postClient.requestResponse[SubmitResponse](Query(runId))
 
   override def queryFinal(runId: Id)(implicit timeout: Timeout): Future[SubmitResponse] =
     websocketClient.requestResponse[SubmitResponse](QueryFinal(runId, timeout), timeout.duration)
@@ -97,4 +96,6 @@ class SequencerClient(
 
   override def operationsMode(): Future[OperationsModeResponse] =
     postClient.requestResponse[OperationsModeResponse](OperationsMode)
+
+  override def getSequenceComponent: Future[AkkaLocation] = postClient.requestResponse[AkkaLocation](GetSequenceComponent)
 }

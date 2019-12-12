@@ -118,6 +118,7 @@ object Dependencies {
       Csw.`csw-alarm-api`,
       Csw.`csw-command-api`.value,
       Csw.`csw-logging-models`.value,
+      Csw.`csw-admin-api`.value,
       Csw.`csw-event-api`
     )
   )
@@ -125,13 +126,15 @@ object Dependencies {
   val EswGatewayImpl: Def.Initialize[Seq[ModuleID]] = Def.setting(
     Seq(
       Csw.`csw-event-client`,
-      Libs.`caffeine`
+      Libs.`caffeine`,
+      Csw.`csw-location-api`
     )
   )
 
   val EswGatewayServer: Def.Initialize[Seq[ModuleID]] = Def.setting(
     Seq(
-      Libs.`msocket-impl-jvm`
+      Libs.`msocket-impl-jvm`,
+      Csw.`csw-admin-impl`
     )
   )
 

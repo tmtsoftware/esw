@@ -1,8 +1,8 @@
 package esw.gateway.server.handlers
 
-import akka.http.scaladsl.model.StatusCodes
 import akka.http.scaladsl.server.Directives._
 import akka.http.scaladsl.server.Route
+import csw.admin.api.AdminService
 import csw.command.api.messages.CommandServiceHttpMessage
 import csw.command.client.handlers.CommandServiceHttpHandlers
 import csw.location.models.ComponentId
@@ -20,7 +20,8 @@ class PostHandlerImpl(
     alarmApi: AlarmApi,
     resolver: Resolver,
     eventApi: EventApi,
-    loggingApi: LoggingApi
+    loggingApi: LoggingApi,
+    adminApi: AdminService
 ) extends MessageHandler[PostRequest, Route]
     with GatewayCodecs
     with ServerHttpCodecs {
@@ -32,17 +33,17 @@ class PostHandlerImpl(
     case GetEvent(eventKeys)                    => complete(eventApi.get(eventKeys))
     case SetAlarmSeverity(alarmKey, severity)   => complete(alarmApi.setSeverity(alarmKey, severity))
     case Log(appName, level, message, map)      => complete(loggingApi.log(appName, level, message, map))
+    case SetLogLevel(componentId, logLevel)     => complete(adminApi.setLogLevel(componentId, logLevel))
+    case GetLogMetadata(componentId)            => complete(adminApi.getLogMetadata(componentId))
   }
 
   private def onComponentCommand(componentId: ComponentId, command: CommandServiceHttpMessage): Route =
-    onSuccess(resolver.resolveComponent(componentId)) {
-      case Some(commandService) => new CommandServiceHttpHandlers(commandService).handle(command)
-      case None                 => complete(StatusCodes.BadRequest -> s"No component is registered with id $componentId ")
+    onSuccess(resolver.resolveComponent(componentId)) { commandService =>
+      new CommandServiceHttpHandlers(commandService).handle(command)
     }
 
   private def onSequencerCommand(componentId: ComponentId, command: SequencerPostRequest): Route =
-    onSuccess(resolver.resolveSequencer(componentId)) {
-      case Some(sequencerApi) => new SequencerPostHandler(sequencerApi).handle(command)
-      case None               => complete(StatusCodes.BadRequest -> s"No sequencer is registered with id $componentId ")
+    onSuccess(resolver.resolveSequencer(componentId)) { sequencerApi =>
+      new SequencerPostHandler(sequencerApi).handle(command)
     }
 }

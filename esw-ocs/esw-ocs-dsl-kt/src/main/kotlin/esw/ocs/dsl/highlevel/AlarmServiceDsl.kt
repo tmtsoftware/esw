@@ -3,22 +3,23 @@ package esw.ocs.dsl.highlevel
 import csw.alarm.api.javadsl.IAlarmService
 import csw.alarm.models.AlarmSeverity
 import csw.alarm.models.Key.AlarmKey
-import kotlinx.coroutines.CoroutineScope
 import kotlin.time.seconds
 
-interface AlarmServiceDsl {
-    fun setSeverity(alarmKey: AlarmKey, severity: AlarmSeverity)
-}
+interface AlarmServiceDsl : LoopDsl {
+    val alarmService: IAlarmService
 
-class AlarmServiceDslImpl(private val alarmService: IAlarmService, override val coroutineScope: CoroutineScope) : AlarmServiceDsl, LoopDsl {
-    private val map: HashMap<AlarmKey, AlarmSeverity> = HashMap()
-
-    private fun startSetSeverity() = bgLoop(5.seconds) {
-        map.keys.forEach { key -> alarmService.setSeverity(key, map[key]) }
+    companion object {
+        private val map: HashMap<AlarmKey, AlarmSeverity> = HashMap()
     }
 
-    override fun setSeverity(alarmKey: AlarmKey, severity: AlarmSeverity) {
+    // sets the provided [AlarmSeverity] against provided [AlarmKey] and keeps refreshing the same every 5 seconds
+    fun setSeverity(alarmKey: AlarmKey, severity: AlarmSeverity) {
         if (map.size == 0) startSetSeverity()
         map[alarmKey] = severity
+    }
+
+    // fixme: why 5.seconds?
+    private fun startSetSeverity() = bgLoop(5.seconds) {
+        map.keys.forEach { key -> alarmService.setSeverity(key, map[key]) }
     }
 }

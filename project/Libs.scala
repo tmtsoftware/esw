@@ -4,7 +4,7 @@ import sbt._
 
 object Libs {
   private val SilencerVersion = "1.4.4"
-  private val MSocketVersion  = "0426b6a"
+  private val MSocketVersion  = "5d44eef"
 
   val `silencer-plugin` = "com.github.ghik" % "silencer-plugin" % SilencerVersion cross CrossVersion.full
   val `silencer-lib`    = "com.github.ghik" % "silencer-lib"    % SilencerVersion cross CrossVersion.full
@@ -23,8 +23,10 @@ object Libs {
 
 object Csw {
   private val Org     = "com.github.tmtsoftware.csw"
-  private val Version = "6cd3cc2493" //change this to 0.1-SNAPSHOT to test with local csw changes (after publishLocal)
+  private val Version = "b304892" //change this to 0.1-SNAPSHOT to test with local csw changes (after publishLocal)
 
+  val `csw-admin-api`                 = dep(Org %%% "csw-admin-api" % Version)
+  val `csw-admin-impl`                = Org %% "csw-admin-impl" % Version
   val `csw-alarm-api`                 = Org %% "csw-alarm-api" % Version
   val `csw-command-api`               = dep(Org %%% "csw-command-api" % Version)
   val `csw-location-models`           = dep(Org %%% "csw-location-models" % Version)
@@ -49,7 +51,7 @@ object Csw {
 }
 
 object Akka {
-  private val Version     = "2.6.0"
+  private val Version     = "2.6.1"
   val `akka-actor-typed`  = "com.typesafe.akka" %% "akka-actor-typed" % Version
   val `akka-stream-typed` = "com.typesafe.akka" %% "akka-stream-typed" % Version
   val `akka-stream`       = "com.typesafe.akka" %% "akka-stream" % Version
@@ -61,7 +63,7 @@ object Akka {
 }
 
 object AkkaHttp {
-  private val Version = "10.1.10" //all akka is Apache License 2.0
+  private val Version = "10.1.11" //all akka is Apache License 2.0
 
   val `akka-http`            = "com.typesafe.akka" %% "akka-http"            % Version
   val `akka-http-testkit`    = "com.typesafe.akka" %% "akka-http-testkit"    % Version
@@ -71,7 +73,7 @@ object AkkaHttp {
 }
 
 object Borer {
-  private val Version = "1.1.0"
+  private val Version = "1.2.1"
   private val Org     = "io.bullet"
 
   val `borer-core`        = Org %% "borer-core"        % Version

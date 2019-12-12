@@ -85,13 +85,13 @@ script {
         val tcsSequencer = Sequencer("tcs", "darknight")
         tcsSequencer.submitAndWait(
                 sequenceOf(
-                        setup(aosq.prefix, "offset", obsId)
+                        Setup(aosq.prefix, "offset", obsId)
                                 .add(tcsOffsetCoordSystemKey.set(Choice("RADEC")))
                                 .add(tcsOffsetXKey.set(xoffset))
                                 .add(tcsOffsetYKey.set(yoffset))
                                 .add(tcsOffsetVTKey.set(Choice("OIWFS$probeNum")))
                 ),
-        10.seconds)
+                10.seconds)
     }
 
     onSetup("enableOiwfsTtf") { command ->
@@ -121,11 +121,11 @@ script {
         // start continuous exposures on TTF probe
         val probeExpModes =
                 (0..2).map { if (it == ttfProbeNum) Choice("CONTINUOUS") else Choice("NOOP") }.toTypedArray()
-        val startExposureCommand = setup(aosq.prefix, "exposure", command.obsId)
+        val startExposureCommand = Setup(aosq.prefix, "exposure", command.obsId)
                 .add(oiwfsExposureModeKey.set(*probeExpModes))
 
         val assembly = Assembly(oiwfsDetectorAssembly.name)
-        val response = assembly.submitAndWait(startExposureCommand)
+        val response = assembly.submitAndWait(startExposureCommand, 10.seconds)
 
         when (response) {
             is Completed -> {

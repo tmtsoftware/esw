@@ -3,18 +3,21 @@ package esw.ocs.app
 import akka.actor.testkit.typed.scaladsl.TestProbe
 import com.typesafe.config.ConfigFactory
 import csw.location.helpers.{LSNodeSpec, TwoMembersAndSeed}
-import csw.location.models.Connection.HttpConnection
-import csw.location.models.{ComponentId, ComponentType}
+import csw.location.models.ComponentType.SequenceComponent
+import csw.location.models.Connection.{AkkaConnection, HttpConnection}
+import csw.location.models.{AkkaLocation, ComponentId, ComponentType}
 import csw.location.server.http.MultiNodeHTTPLocationService
 import csw.params.commands.CommandResponse.Started
 import csw.params.commands.{CommandName, Sequence, Setup}
-import csw.params.core.models.Prefix
+import csw.params.core.models.Subsystem.{ESW, TCS}
+import csw.params.core.models.{Prefix, Subsystem}
 import csw.params.events.{Event, EventKey, SystemEvent}
 import csw.testkit.{EventTestKit, FrameworkTestKit}
-import esw.ocs.api.SequencerApi
 import esw.ocs.app.wiring.SequencerWiring
 import esw.ocs.impl.SequencerApiFactory
+import esw.ocs.impl.messages.SequenceComponentMsg
 import org.scalatest.concurrent.ScalaFutures.convertScalaFuture
+import csw.location.api.extensions.ActorExtension._
 
 import scala.concurrent.duration.DurationInt
 
@@ -31,24 +34,25 @@ class SequencerTest(ignore: Int, mode: String)
   private val frameworkTestKit = FrameworkTestKit()
   private val eventTestKit     = EventTestKit()
 
-  private val ocsSequencerId      = "ocs"
-  private val ocsSequencerObsMode = "moonnight"
-  private val tcsSequencerId      = "tcs"
-  private val tcsSequencerObsMode = "moonnight"
-  private val command1            = Setup(Prefix("esw.test"), CommandName("multi-node"), None)
-  private val command2            = Setup(Prefix("esw.test"), CommandName("command-2"), None)
-  private val sequence            = Sequence(command1, command2)
+  private val ocsSubsystem         = ESW
+  private val ocsSequencerObsMode  = "moonnight"
+  private val tcsSubsystem         = TCS
+  private val tcsSequencerObsMode  = "moonnight"
+  private val command1             = Setup(Prefix("esw.test"), CommandName("multi-node"), None)
+  private val command2             = Setup(Prefix("esw.test"), CommandName("command-2"), None)
+  private val sequence             = Sequence(command1, command2)
+  private val sequenceComponentRef = AkkaLocation(AkkaConnection(ComponentId(Prefix(ESW, "primary"), SequenceComponent)), TestProbe[SequenceComponentMsg].ref.toURI)
 
   test("tcs sequencer should send sequence to downstream ocs sequencer which submits the command to sample assembly") {
     runOn(seed) {
-      val ocsSequencerWiring = new SequencerWiring(ocsSequencerId, ocsSequencerObsMode, None)
+      enterBarrier("event-server-started")
+      val ocsSequencerWiring = new SequencerWiring(ocsSubsystem, ocsSequencerObsMode, sequenceComponentRef)
       ocsSequencerWiring.sequencerServer.start()
 
       enterBarrier("ocs-started")
       enterBarrier("tcs-started")
       enterBarrier("assembly-started")
 
-      enterBarrier("event-server-started")
       // creating subscriber for event which will be publish in onSubmit handler for sample assembly
       val testProbe                 = TestProbe[Event]
       val eventSubscriber           = ocsSequencerWiring.cswWiring.eventService.defaultSubscriber
@@ -65,37 +69,36 @@ class SequencerTest(ignore: Int, mode: String)
     }
 
     runOn(member1) {
+      eventTestKit.start()
+      enterBarrier("event-server-started")
       enterBarrier("ocs-started")
 
-      val tcsSequencerWiring = new SequencerWiring(tcsSequencerId, tcsSequencerObsMode, None)
+      val tcsSequencerWiring = new SequencerWiring(tcsSubsystem, tcsSequencerObsMode, sequenceComponentRef)
       tcsSequencerWiring.sequencerServer.start()
       enterBarrier("tcs-started")
       enterBarrier("assembly-started")
 
-      eventTestKit.start()
-      enterBarrier("event-server-started")
-
-      val ocsSequencer = sequencerClient(ocsSequencerId, ocsSequencerObsMode)
+      val ocsSequencer = sequencerClient(ocsSubsystem, ocsSequencerObsMode)
 
       ocsSequencer.submit(sequence).await shouldBe a[Started]
       enterBarrier("submit-sequence-to-ocs")
     }
 
     runOn(member2) {
+      enterBarrier("event-server-started")
       enterBarrier("ocs-started")
       enterBarrier("tcs-started")
 
       frameworkTestKit.spawnStandalone(ConfigFactory.load("standalone.conf"))
       enterBarrier("assembly-started")
 
-      enterBarrier("event-server-started")
       enterBarrier("submit-sequence-to-ocs")
     }
     enterBarrier("end")
   }
 
-  private def sequencerClient(packageId: String, observingMode: String): SequencerApi = {
-    val componentId = ComponentId(s"$packageId@$observingMode", ComponentType.Sequencer)
+  private def sequencerClient(subsystem: Subsystem, observingMode: String) = {
+    val componentId = ComponentId(Prefix(subsystem, observingMode), ComponentType.Sequencer)
     val location    = locationService.resolve(HttpConnection(componentId), 5.seconds).futureValue.get
     SequencerApiFactory.make(location)
   }

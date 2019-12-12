@@ -97,7 +97,7 @@ class HttpService(
     )
 
     log.info(
-      s"Registering ${connection.componentId.name} Service HTTP Server with Location Service using registration: [${registration.toString}]"
+      s"Registering ${connection.name} Service HTTP Server with Location Service using registration: [${registration.toString}]"
     )
     locationService.register(registration)
   }

@@ -5,27 +5,27 @@ import java.util.concurrent.CompletionStage
 import akka.Done
 import csw.params.commands.SequenceCommand
 import csw.time.core.models.UTCTime
+import esw.ocs.dsl.params.Params
 
 import scala.concurrent.Future
 
-private[esw] class FSMScriptDsl(
+private[esw] class FsmScriptDsl(
     private val csw: CswServices,
     private val strandEc: StrandEc,
-    private val initialState: FSMScriptState
+    private val initialState: FsmScriptState
 ) extends ScriptDsl(csw, strandEc) {
 
-  def this(csw: CswServices, strandEc: StrandEc) = this(csw, strandEc, FSMScriptState.init())
+  def this(csw: CswServices, strandEc: StrandEc) = this(csw, strandEc, FsmScriptState.init())
 
   private var scriptState = initialState
 
-  def become(nextState: String): Unit = {
-    scriptState = scriptState.transition(nextState)
+  def become(nextState: String, params: Params): Unit = {
+    scriptState = scriptState.transition(nextState, params)
     scriptState.currentScript
   }
 
-  def add(state: String, script: () => ScriptDsl): Unit = {
+  def add(state: String, script: Params => ScriptDsl): Unit =
     scriptState = scriptState.add(state, script)
-  }
 
   override def execute(command: SequenceCommand): Future[Unit] =
     scriptState.currentScript.execute(command)

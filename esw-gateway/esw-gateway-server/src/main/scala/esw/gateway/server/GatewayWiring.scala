@@ -4,6 +4,8 @@ import akka.NotUsed
 import akka.http.scaladsl.model.ws.Message
 import akka.http.scaladsl.server.Route
 import akka.stream.scaladsl.Source
+import csw.admin.api.AdminService
+import csw.admin.impl.AdminServiceImpl
 import esw.gateway.api.codecs.GatewayCodecs
 import esw.gateway.api.protocol.{PostRequest, WebsocketRequest}
 import esw.gateway.api.{AlarmApi, EventApi, LoggingApi}
@@ -27,15 +29,16 @@ class GatewayWiring(_port: Option[Int]) extends GatewayCodecs {
   lazy val alarmApi: AlarmApi     = new AlarmImpl(alarmService)
   lazy val eventApi: EventApi     = new EventImpl(eventService, eventSubscriberUtil)
   lazy val loggingApi: LoggingApi = new LoggingImpl(new LoggerCache)
+  lazy val adminApi: AdminService = new AdminServiceImpl(locationService)
 
   lazy val postHandler: MessageHandler[PostRequest, Route] =
-    new PostHandlerImpl(alarmApi, resolver, eventApi, loggingApi)
+    new PostHandlerImpl(alarmApi, resolver, eventApi, loggingApi, adminApi)
   def websocketHandlerFactory(encoding: Encoding[_]): MessageHandler[WebsocketRequest, Source[Message, NotUsed]] =
     new WebsocketHandlerImpl(resolver, eventApi, encoding)
 
   lazy val routes: Route = RouteFactory.combine(
-    new PostRouteFactory("post-endpoint", postHandler),
-    new WebsocketRouteFactory("websocket-endpoint", websocketHandlerFactory)
+    new PostRouteFactory[PostRequest]("post-endpoint", postHandler),
+    new WebsocketRouteFactory[WebsocketRequest]("websocket-endpoint", websocketHandlerFactory)
   )
 
   lazy val httpService = new HttpService(logger, locationService, routes, settings, actorRuntime)

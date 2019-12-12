@@ -8,8 +8,8 @@ import csw.command.client.handlers.CommandServiceWebsocketHandlers
 import csw.location.models.ComponentId
 import esw.gateway.api.EventApi
 import esw.gateway.api.codecs.GatewayCodecs
+import esw.gateway.api.protocol.WebsocketRequest
 import esw.gateway.api.protocol.WebsocketRequest.{ComponentCommand, SequencerCommand, Subscribe, SubscribeWithPattern}
-import esw.gateway.api.protocol.{InvalidComponent, WebsocketRequest}
 import esw.gateway.server.utils.Resolver
 import esw.ocs.api.protocol.SequencerWebsocketRequest
 import esw.ocs.handler.SequencerWebsocketHandler
@@ -30,14 +30,12 @@ class WebsocketHandlerImpl(resolver: Resolver, eventApi: EventApi, val encoding:
   }
 
   private def onComponentCommand(componentId: ComponentId, command: CommandServiceWebsocketMessage): Source[Message, NotUsed] =
-    Source.future(resolver.resolveComponent(componentId)).flatMapConcat {
-      case Some(commandService) => new CommandServiceWebsocketHandlers(commandService, encoding).handle(command)
-      case None                 => Source.failed(InvalidComponent(s"No component is registered with id $componentId "))
-    }
+    Source
+      .future(resolver.resolveComponent(componentId))
+      .flatMapConcat(commandService => new CommandServiceWebsocketHandlers(commandService, encoding).handle(command))
 
   private def onSequencerCommand(componentId: ComponentId, command: SequencerWebsocketRequest): Source[Message, NotUsed] =
-    Source.future(resolver.resolveSequencer(componentId)).flatMapConcat {
-      case Some(sequencerApi) => new SequencerWebsocketHandler(sequencerApi, encoding).handle(command)
-      case None               => Source.failed(InvalidComponent(s"No sequencer is registered with id $componentId "))
-    }
+    Source
+      .future(resolver.resolveSequencer(componentId))
+      .flatMapConcat(sequencerApi => new SequencerWebsocketHandler(sequencerApi, encoding).handle(command))
 }

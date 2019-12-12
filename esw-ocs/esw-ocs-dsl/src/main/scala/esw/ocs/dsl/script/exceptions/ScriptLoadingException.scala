@@ -1,8 +1,9 @@
 package esw.ocs.dsl.script.exceptions
+import csw.params.core.models.Subsystem
 
 object ScriptLoadingException {
-  class ScriptConfigurationMissingException(packageId: String, observingMode: String)
-      extends RuntimeException(s"Script configuration missing for $packageId with $observingMode")
+  class ScriptConfigurationMissingException(subsystem: Subsystem, observingMode: String)
+      extends RuntimeException(s"Script configuration missing for [${subsystem.name}] with [$observingMode]")
 
   class InvalidScriptException(scriptClass: String) extends RuntimeException(s"$scriptClass should be subclass of Script")
 

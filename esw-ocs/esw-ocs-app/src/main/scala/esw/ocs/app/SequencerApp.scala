@@ -8,6 +8,7 @@ import csw.location.client.utils.LocationServerStatus
 import csw.location.models.AkkaLocation
 import csw.logging.api.scaladsl.Logger
 import csw.logging.client.scaladsl.LoggerFactory
+import csw.params.core.models.Subsystem
 import esw.http.core.commons.CoordinatedShutdownReasons.FailureReason
 import esw.http.core.commons.EswCommandApp
 import esw.ocs.api.protocol.{ScriptError, ScriptResponse}
@@ -34,7 +35,7 @@ object SequencerApp extends EswCommandApp[SequencerAppCommand] {
   }
 
   def run(command: SequencerAppCommand, enableLogging: Boolean = true): Unit = {
-    val wiring = new SequenceComponentWiring(command.subsystem, command.name, new SequencerWiring(_, _, _).sequencerServer)
+    val wiring = new SequenceComponentWiring(command.seqCompSubsystem, command.name, new SequencerWiring(_, _, _).sequencerServer)
     import wiring.actorRuntime._
     try {
       if (enableLogging) startLogging(typedSystem.name)
@@ -42,10 +43,11 @@ object SequencerApp extends EswCommandApp[SequencerAppCommand] {
       val sequenceCompLocation = report(wiring.start())
       command match {
         case _: SequenceComponent => // sequence component is already started
-        case Sequencer(subsystem, _, id, mode) =>
-          report(loadAndStartSequencer(id.getOrElse(subsystem.name), mode, sequenceCompLocation, wiring))
+        case Sequencer(seqCompSubsystem, _, seqSubsystem, mode) =>
+          report(loadAndStartSequencer(seqSubsystem.getOrElse(seqCompSubsystem), mode, sequenceCompLocation, wiring))
       }
-    } catch {
+    }
+    catch {
       case NonFatal(e) =>
         shutdown(FailureReason(e)).block
         throw e
@@ -53,15 +55,15 @@ object SequencerApp extends EswCommandApp[SequencerAppCommand] {
   }
 
   private def loadAndStartSequencer(
-      id: String,
+      subsystem: Subsystem,
       mode: String,
       sequenceComponentLocation: AkkaLocation,
       sequenceComponentWiring: SequenceComponentWiring
-  ): Either[ScriptError, AkkaLocation] = {
+  ) = {
     import sequenceComponentWiring._
     import actorRuntime._
     val actorRef: ActorRef[SequenceComponentMsg] = sequenceComponentLocation.uri.toActorRef.unsafeUpcast[SequenceComponentMsg]
-    val response: Future[ScriptResponse]         = actorRef ? (LoadScript(id, mode, _))
+    val response: Future[ScriptResponse]         = actorRef ? (LoadScript(subsystem, mode, _))
     response.map(_.response).block
   }
 

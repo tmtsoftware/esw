@@ -9,7 +9,6 @@ import csw.location.models.Connection.AkkaConnection
 import csw.location.models.{AkkaLocation, AkkaRegistration, ComponentId, ComponentType}
 import csw.params.core.models.{Prefix, Subsystem}
 import esw.ocs.api.protocol.ScriptError
-import esw.ocs.dsl.sequence_manager.LocationServiceUtil
 import esw.ocs.impl.messages.SequenceComponentMsg
 import esw.ocs.impl.messages.SequenceComponentMsg.Stop
 
@@ -21,7 +20,7 @@ class SequenceComponentRegistration(
     subsystem: Subsystem,
     name: Option[String],
     _locationService: LocationService,
-    sequenceComponentFactory: String => Future[ActorRef[SequenceComponentMsg]]
+    sequenceComponentFactory: Prefix => Future[ActorRef[SequenceComponentMsg]]
 )(
     implicit override val actorSystem: ActorSystem[SpawnProtocol.Command]
 ) extends LocationServiceUtil(_locationService) {
@@ -48,16 +47,12 @@ class SequenceComponentRegistration(
     }
 
   private def registration(): Future[AkkaRegistration] = {
-    val sequenceComponentName = (subsystem, name) match {
-      case (s, Some(n)) => s"$s.$n"
-      case (s, None)    => s"${s}.${s}_${Random.between(1, 100)}"
+    val sequenceComponentPrefix = (subsystem, name) match {
+      case (s, Some(n)) => Prefix(s, n)
+      case (s, None)    => Prefix(s, s"${s}_${Random.between(1, 100)}")
     }
-    sequenceComponentFactory(sequenceComponentName).map { actorRef =>
-      AkkaRegistration(
-        AkkaConnection(ComponentId(sequenceComponentName, ComponentType.SequenceComponent)),
-        Prefix(sequenceComponentName),
-        actorRef.toURI
-      )
+    sequenceComponentFactory(sequenceComponentPrefix).map { actorRef =>
+      AkkaRegistration(AkkaConnection(ComponentId(sequenceComponentPrefix, ComponentType.SequenceComponent)), actorRef.toURI)
     }
   }
 }

@@ -6,38 +6,40 @@ import akka.Done
 import csw.params.commands.SequenceCommand
 import csw.time.core.models.UTCTime
 import esw.ocs.api.BaseTestSuite
+import esw.ocs.dsl.params.Params
 
 import scala.concurrent.Future
 
-class FSMScriptDslTest extends BaseTestSuite {
+class FsmScriptDslTest extends BaseTestSuite {
   private val strandEc      = StrandEc()
   private val cswServices   = mock[CswServices]
   private val STARTED_STATE = "STARTED"
+  private val params        = Params()
 
   override protected def afterAll(): Unit = strandEc.shutdown()
 
   "become" must {
-    "call transition method defined on FSMScriptState and update its internal state" in {
-      val initialState = mock[FSMScriptState]
-      val updatedState = mock[FSMScriptState]
-      when(initialState.transition(STARTED_STATE)).thenReturn(updatedState)
+    "call transition method defined on FsmScriptState and update its internal state | ESW-252" in {
+      val initialState = mock[FsmScriptState]
+      val updatedState = mock[FsmScriptState]
+      when(initialState.transition(STARTED_STATE, params)).thenReturn(updatedState)
 
-      val scriptDsl = new FSMScriptDsl(cswServices, strandEc, initialState)
-      scriptDsl.become(STARTED_STATE)
+      val scriptDsl = new FsmScriptDsl(cswServices, strandEc, initialState)
+      scriptDsl.become(STARTED_STATE, params)
 
-      verify(initialState).transition(STARTED_STATE)
+      verify(initialState).transition(STARTED_STATE, params)
       scriptDsl.getState should ===(updatedState)
     }
   }
 
   "add" must {
-    "call add method defined on FSMScriptState and update its internal state" in {
-      val initialState = mock[FSMScriptState]
-      val updatedState = mock[FSMScriptState]
-      val handler      = () => mock[ScriptDsl]
+    "call add method defined on FsmScriptState and update its internal state" in {
+      val initialState = mock[FsmScriptState]
+      val updatedState = mock[FsmScriptState]
+      val handler      = (_: Params) => mock[ScriptDsl]
       when(initialState.add(STARTED_STATE, handler)).thenReturn(updatedState)
 
-      val scriptDsl = new FSMScriptDsl(cswServices, strandEc, initialState)
+      val scriptDsl = new FsmScriptDsl(cswServices, strandEc, initialState)
       scriptDsl.add(STARTED_STATE, handler)
 
       verify(initialState).add(STARTED_STATE, handler)
@@ -47,7 +49,7 @@ class FSMScriptDslTest extends BaseTestSuite {
 
   "execute" must {
     "delegate call to appropriate execute method defined on current script present in script state" in {
-      val state           = mock[FSMScriptState]
+      val state           = mock[FsmScriptState]
       val script          = mock[ScriptDsl]
       val sequenceCommand = mock[SequenceCommand]
       val futureUnit      = mock[Future[Unit]]
@@ -70,7 +72,7 @@ class FSMScriptDslTest extends BaseTestSuite {
       when(script.executeOperationsMode()).thenReturn(futureDone)
       when(script.executeExceptionHandlers(ex)).thenReturn(completionStageVoid)
 
-      val scriptDsl = new FSMScriptDsl(cswServices, strandEc, state)
+      val scriptDsl = new FsmScriptDsl(cswServices, strandEc, state)
 
       scriptDsl.execute(sequenceCommand) should ===(futureUnit)
       verify(script).execute(sequenceCommand)

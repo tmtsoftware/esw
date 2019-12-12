@@ -2,7 +2,8 @@ package esw.ocs.dsl.highlevel
 
 import akka.actor.typed.ActorSystem
 import akka.actor.typed.javadsl.Behaviors
-import akka.stream.Materializer
+import csw.alarm.api.javadsl.IAlarmService
+import csw.config.api.javadsl.IConfigClientService
 import csw.database.DatabaseServiceFactory
 import csw.location.api.javadsl.ILocationService
 import csw.location.api.javadsl.JComponentType
@@ -15,13 +16,11 @@ import esw.ocs.dsl.script.utils.LockUnlockUtil
 import io.kotlintest.shouldBe
 import io.mockk.every
 import io.mockk.mockk
-import io.mockk.mockkStatic
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.runBlocking
 import org.junit.jupiter.api.AfterAll
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
-import scala.concurrent.ExecutionContextExecutor
 
 class CswHighLevelDslTest {
 
@@ -30,18 +29,20 @@ class CswHighLevelDslTest {
     private val cswServices: CswServices = mockk()
     private val jLocationService: ILocationService = mockk()
     private val locationService: LocationService = mockk()
+    private val configClient: IConfigClientService = mockk()
+    private val alarmService: IAlarmService = mockk()
     private val lockUnlockUtil: LockUnlockUtil = mockk()
     private val databaseServiceFactory: DatabaseServiceFactory = mockk()
     private val jLogger: ILogger = mockk()
-    private val prefix: Prefix = mockk()
 
     init {
         every { cswServices.actorSystem() }.answers { actorSystem }
         every { cswServices.lockUnlockUtil() }.answers { lockUnlockUtil }
         every { cswServices.locationService() }.answers { jLocationService }
+        every { cswServices.configClientService() }.answers { configClient }
         every { cswServices.databaseServiceFactory() }.answers { databaseServiceFactory }
+        every { cswServices.alarmService() }.answers { alarmService }
         every { cswServices.jLogger() }.answers { jLogger }
-        every { cswServices.prefix() }.answers { prefix }
         every { jLocationService.asScala() }.answers { locationService }
     }
 
@@ -55,18 +56,18 @@ class CswHighLevelDslTest {
 
         @Test
         fun `Assembly should resolve the RichComponent with given name and assembly component type | ESW-245`() = runBlocking {
-            val sampleAssembly = Assembly("sampleAssembly")
+            val sampleAssembly = Assembly("TCS.sampleAssembly")
 
             sampleAssembly.componentType shouldBe JComponentType.Assembly()
-            sampleAssembly.name shouldBe "sampleAssembly"
+            sampleAssembly.prefix shouldBe Prefix.apply("TCS.sampleAssembly")
         }
 
         @Test
         fun `HCD should resolve the RichComponent with given name and hcd component type | ESW-245`() = runBlocking {
-            val sampleHcd = HCD("sampleHcd")
+            val sampleHcd = Hcd("TCS.sampleHcd")
 
             sampleHcd.componentType shouldBe JComponentType.HCD()
-            sampleHcd.name shouldBe "sampleHcd"
+            sampleHcd.prefix shouldBe Prefix.apply("TCS.sampleHcd")
         }
     }
 

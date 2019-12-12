@@ -4,12 +4,13 @@ import csw.command.client.internal.SequencerCommandServiceImpl
 import csw.params.commands.CommandResponse.Completed
 import csw.params.commands.{CommandName, Sequence, Setup}
 import csw.params.core.models.Prefix
+import csw.params.core.models.Subsystem.ESW
 import esw.ocs.testkit.EswTestKit
 
 class SequencerCommandServiceTest extends EswTestKit {
 
   "should submit and process sequence | ESW-190, ESW-148" in {
-    val sequencerLocation = spawnSequencer("esw", "darknight").rightValue
+    val sequencerLocation = spawnSequencer(ESW, "darknight").rightValue
 
     val command1 = Setup(Prefix("esw.test"), CommandName("command-1"), None)
     val sequence = Sequence(command1)
