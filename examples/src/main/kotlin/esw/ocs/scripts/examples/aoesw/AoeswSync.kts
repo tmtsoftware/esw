@@ -2,7 +2,9 @@ package esw.ocs.scripts.examples.aoesw
 
 import csw.params.commands.CommandResponse
 import esw.ocs.dsl.core.script
-import esw.ocs.dsl.params.*
+import esw.ocs.dsl.params.floatKey
+import esw.ocs.dsl.params.invoke
+import esw.ocs.dsl.params.taiTimeKey
 import kotlin.time.seconds
 
 script {

@@ -6,17 +6,15 @@ import csw.params.commands.Sequence
 import csw.params.core.models.Id
 import csw.params.core.models.Subsystem
 import csw.time.core.models.UTCTime
-import esw.ocs.api.SequencerApi
 import esw.ocs.api.protocol.*
+import esw.ocs.dsl.highlevel.models.CommandError
 import esw.ocs.dsl.isFailed
 import esw.ocs.dsl.jdk.SuspendToJavaConverter
 import esw.ocs.dsl.jdk.toJava
 import esw.ocs.impl.SequencerActorProxyFactory
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.future.await
-import java.util.concurrent.CompletionStage
 import java.util.concurrent.TimeUnit
-import java.util.function.BiFunction
 import kotlin.time.Duration
 
 class RichSequencer(
@@ -39,7 +37,7 @@ class RichSequencer(
     suspend fun submitAndWait(sequence: Sequence, timeout: Duration, resumeOnError: Boolean = false): SubmitResponse {
         val akkaTimeout = Timeout(timeout.toLongNanoseconds(), TimeUnit.NANOSECONDS)
         val submitResponse: SubmitResponse = sequencerAdmin().submitAndWait(sequence, akkaTimeout).toJava().await()
-        if (!resumeOnError && submitResponse.isFailed) throw SubmitError(submitResponse)
+        if (!resumeOnError && submitResponse.isFailed) throw CommandError(submitResponse)
         return submitResponse
     }
 

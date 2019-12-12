@@ -12,17 +12,13 @@ import csw.params.events.*
 import esw.ocs.dsl.SuspendableConsumer
 import esw.ocs.dsl.SuspendableSupplier
 import esw.ocs.dsl.epics.EventVariable
-import esw.ocs.dsl.params.set
+import esw.ocs.dsl.highlevel.models.EventSubscription
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.future.await
 import kotlinx.coroutines.future.future
 import java.util.*
 import kotlin.time.Duration
 import kotlin.time.toJavaDuration
-
-data class EventSubscription(private val unsubscribe: suspend () -> Unit) {
-    suspend fun cancel() = unsubscribe() // to solve mocking issue, we had to introduce this function: https://github.com/mockk/mockk/issues/288
-}
 
 interface EventServiceDsl {
     val coroutineScope: CoroutineScope

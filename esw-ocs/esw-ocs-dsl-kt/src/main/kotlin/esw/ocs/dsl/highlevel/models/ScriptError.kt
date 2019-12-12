@@ -1,4 +1,4 @@
-package esw.ocs.dsl.highlevel
+package esw.ocs.dsl.highlevel.models
 
 import csw.params.commands.CommandResponse
 
@@ -7,8 +7,7 @@ sealed class ScriptError(cause: Throwable? = null) : Exception(cause) {
     override val message: String? get() = reason
 }
 
-
-data class SubmitError(val submitResponse: CommandResponse.SubmitResponse) : ScriptError() {
+data class CommandError(val submitResponse: CommandResponse.SubmitResponse) : ScriptError() {
     override val reason: String =
             when (submitResponse) {
                 is CommandResponse.Error -> submitResponse.message()

@@ -8,7 +8,6 @@ import csw.params.javadsl.JKeyType
 import csw.params.javadsl.JSubsystem
 import esw.ocs.dsl.highlevel.CswHighLevelDslApi
 import esw.ocs.dsl.params.Params
-import esw.ocs.dsl.params.set
 import esw.ocs.dsl.script.StrandEc
 import io.kotlintest.eventually
 import io.kotlintest.shouldBe

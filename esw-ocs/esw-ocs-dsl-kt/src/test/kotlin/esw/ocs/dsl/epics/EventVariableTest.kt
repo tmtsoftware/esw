@@ -11,7 +11,7 @@ import csw.params.events.EventName
 import csw.params.events.SystemEvent
 import csw.params.javadsl.JSubsystem.TCS
 import esw.ocs.dsl.highlevel.EventServiceDsl
-import esw.ocs.dsl.highlevel.EventSubscription
+import esw.ocs.dsl.highlevel.models.EventSubscription
 import esw.ocs.dsl.params.booleanKey
 import esw.ocs.dsl.params.intKey
 import io.kotlintest.shouldBe

@@ -1,7 +1,6 @@
 package esw.ocs.scripts.examples.testData
 
 import esw.ocs.dsl.core.script
-import esw.ocs.dsl.params.set
 import esw.ocs.dsl.params.stringKey
 
 script {

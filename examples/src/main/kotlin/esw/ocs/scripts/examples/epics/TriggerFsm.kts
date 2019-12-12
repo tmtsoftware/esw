@@ -2,7 +2,6 @@ package esw.ocs.scripts.examples.epics
 
 import esw.ocs.dsl.core.FsmScript
 import esw.ocs.dsl.params.booleanKey
-import esw.ocs.dsl.params.set
 
 FsmScript("INIT") {
     val triggerFlag = SystemVar(false, "tcs.triggerflag", booleanKey("flag"))

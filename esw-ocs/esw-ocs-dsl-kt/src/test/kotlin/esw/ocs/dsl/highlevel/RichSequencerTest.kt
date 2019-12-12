@@ -10,6 +10,7 @@ import csw.params.javadsl.JSubsystem
 import csw.time.core.models.UTCTime
 import esw.ocs.api.SequencerApi
 import esw.ocs.api.protocol.`Ok$`
+import esw.ocs.dsl.highlevel.models.CommandError
 import esw.ocs.impl.SequencerActorProxyFactory
 import esw.ocs.impl.internal.LocationServiceUtil
 import io.kotlintest.shouldNotThrow
@@ -95,7 +96,7 @@ class RichSequencerTest {
         every { sequencerApiFactory.jMake(sequencerId, observingMode) }.answers { CompletableFuture.completedFuture(sequencerApi) }
         every { sequencerApi.submitAndWait(sequence, timeout) }.answers { Future.successful(invalidSubmitResponse) }
 
-        shouldThrow<SubmitError> { tcsSequencer.submitAndWait(sequence, 10.seconds) }
+        shouldThrow<CommandError> { tcsSequencer.submitAndWait(sequence, 10.seconds) }
 
         verify { sequencerApi.submitAndWait(sequence, timeout) }
     }
@@ -110,7 +111,7 @@ class RichSequencerTest {
         every { sequencerApi.submitAndWait(sequence, timeout) }.answers { Future.successful(invalidSubmitResponse) }
         every { sequencerApiFactory.jMake(sequencerId, observingMode) }.answers { CompletableFuture.completedFuture(sequencerApi) }
 
-        shouldNotThrow<SubmitError> { tcsSequencer.submitAndWait(sequence, 10.seconds, resumeOnError = true) }
+        shouldNotThrow<CommandError> { tcsSequencer.submitAndWait(sequence, 10.seconds, resumeOnError = true) }
 
         verify { sequencerApi.submitAndWait(sequence, timeout) }
     }

@@ -22,6 +22,7 @@ import csw.params.core.models.Prefix
 import csw.params.core.states.StateName
 import csw.params.javadsl.JSubsystem.ESW
 import csw.time.core.models.UTCTime
+import esw.ocs.dsl.highlevel.models.CommandError
 import esw.ocs.dsl.script.utils.LockUnlockUtil
 import esw.ocs.impl.internal.LocationServiceUtil
 import io.kotlintest.shouldNotThrow
@@ -151,7 +152,7 @@ class RichComponentTest {
             every { CommandServiceFactory.jMake(assemblyLocation, actorSystem) }.answers { assemblyCommandService }
             every { assemblyCommandService.submitAndWait(setupCommand, timeout) }.answers { CompletableFuture.completedFuture(CommandResponse.Completed(Id.apply())) }
 
-            shouldNotThrow<SubmitError> { assembly.submitAndWait(setupCommand, timeoutDuration, resumeOnError = true) }
+            shouldNotThrow<CommandError> { assembly.submitAndWait(setupCommand, timeoutDuration, resumeOnError = true) }
 
             verify { assemblyCommandService.submitAndWait(setupCommand, timeout) }
         }
@@ -166,7 +167,7 @@ class RichComponentTest {
             every { CommandServiceFactory.jMake(assemblyLocation, actorSystem) }.answers { assemblyCommandService }
             every { assemblyCommandService.submitAndWait(setupCommand, timeout) }.answers { CompletableFuture.completedFuture(invalidSubmitResponse) }
 
-            shouldThrow<SubmitError> { assembly.submitAndWait(setupCommand, timeoutDuration) }
+            shouldThrow<CommandError> { assembly.submitAndWait(setupCommand, timeoutDuration) }
 
             verify { assemblyCommandService.submitAndWait(setupCommand, timeout) }
         }
@@ -345,7 +346,7 @@ class RichComponentTest {
             every { CommandServiceFactory.jMake(hcdLocation, actorSystem) }.answers { hcdCommandService }
             every { hcdCommandService.submitAndWait(setupCommand, timeout) }.answers { CompletableFuture.completedFuture(CommandResponse.Completed(Id.apply())) }
 
-            shouldNotThrow<SubmitError> { hcd.submitAndWait(setupCommand, timeoutDuration, resumeOnError = true) }
+            shouldNotThrow<CommandError> { hcd.submitAndWait(setupCommand, timeoutDuration, resumeOnError = true) }
 
             verify { hcdCommandService.submitAndWait(setupCommand, timeout) }
         }
@@ -360,7 +361,7 @@ class RichComponentTest {
             every { CommandServiceFactory.jMake(hcdLocation, actorSystem) }.answers { hcdCommandService }
             every { hcdCommandService.submitAndWait(setupCommand, timeout) }.answers { CompletableFuture.completedFuture(invalidSubmitResponse) }
 
-            shouldThrow<SubmitError> { hcd.submitAndWait(setupCommand, timeoutDuration) }
+            shouldThrow<CommandError> { hcd.submitAndWait(setupCommand, timeoutDuration) }
 
             verify { hcdCommandService.submitAndWait(setupCommand, timeout) }
         }

@@ -7,6 +7,7 @@ import csw.event.api.javadsl.IEventSubscriber
 import csw.event.api.javadsl.IEventSubscription
 import csw.params.core.models.Prefix
 import csw.params.events.*
+import esw.ocs.dsl.highlevel.models.EventSubscription
 import io.kotlintest.shouldBe
 import io.mockk.every
 import io.mockk.mockk

@@ -5,7 +5,7 @@ import csw.params.commands.SequenceCommand
 import csw.params.commands.Setup
 import csw.time.core.models.UTCTime
 import esw.ocs.dsl.highlevel.CswHighLevelDsl
-import esw.ocs.dsl.highlevel.ScriptError
+import esw.ocs.dsl.highlevel.models.ScriptError
 import esw.ocs.dsl.toScriptError
 import esw.ocs.dsl.nullable
 import esw.ocs.dsl.params.Params
