@@ -32,10 +32,10 @@ class ShutdownExceptionHandlerTest extends EswTestKit(EventServer) {
     val shutdownProbe = TestProbe[Ok.type]
     sequencer ! Shutdown(shutdownProbe.ref)
 
+    eventually { shutdownProbe.expectMessage(Ok) }
     eventually {
       val event = assertionProbe.expectMessageType[SystemEvent]
       event.eventName.name shouldBe reason
-      shutdownProbe.expectMessage(Ok)
     }
   }
 }
