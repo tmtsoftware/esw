@@ -272,7 +272,7 @@ class PostRouteTest extends BaseTestSuite with ScalatestRouteTest with GatewayCo
   }
 
   "Log" must {
-    "log the message, metadata and return Done | ESW-200" in {
+    "log the message, metadata and return Done | ESW-200, CSW-63, CSW-78" in {
       val log = Log(
         Prefix("esw.test"),
         Level.FATAL,
@@ -295,7 +295,7 @@ class PostRouteTest extends BaseTestSuite with ScalatestRouteTest with GatewayCo
       }
     }
 
-    "log the message and return Done | ESW-200" in {
+    "log the message and return Done | ESW-200, CSW-63, CSW-78" in {
       val log = Log(
         Prefix("esw.test"),
         Level.FATAL,
