@@ -21,6 +21,8 @@ import kotlinx.coroutines.runBlocking
 import org.junit.jupiter.api.AfterAll
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
+import kotlin.time.Duration
+import kotlin.time.seconds
 
 class CswHighLevelDslTest {
 
@@ -54,9 +56,11 @@ class CswHighLevelDslTest {
         override val strandEc: StrandEc = mockk()
         override val coroutineScope: CoroutineScope = mockk()
 
+        private val defaultTimeoutDuration: Duration = 5.seconds
+
         @Test
         fun `Assembly should resolve the RichComponent with given name and assembly component type | ESW-245`() = runBlocking {
-            val sampleAssembly = Assembly("TCS.sampleAssembly")
+            val sampleAssembly = Assembly("TCS.sampleAssembly", defaultTimeoutDuration)
 
             sampleAssembly.componentType shouldBe JComponentType.Assembly()
             sampleAssembly.prefix shouldBe Prefix.apply("TCS.sampleAssembly")
@@ -64,7 +68,7 @@ class CswHighLevelDslTest {
 
         @Test
         fun `HCD should resolve the RichComponent with given name and hcd component type | ESW-245`() = runBlocking {
-            val sampleHcd = Hcd("TCS.sampleHcd")
+            val sampleHcd = Hcd("TCS.sampleHcd", defaultTimeoutDuration)
 
             sampleHcd.componentType shouldBe JComponentType.HCD()
             sampleHcd.prefix shouldBe Prefix.apply("TCS.sampleHcd")

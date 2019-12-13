@@ -11,8 +11,8 @@ import kotlinx.coroutines.delay
 import kotlin.time.seconds
 
 script {
-    val lgsfSequencer = Sequencer("lgsf", "darknight")
-    val testAssembly = Assembly("esw.test")
+    val lgsfSequencer = Sequencer("lgsf", "darknight", 10.seconds)
+    val testAssembly = Assembly("esw.test", 10.seconds)
 
     // ESW-134: Reuse code by ability to import logic from one script into another
     loadScripts(InitialCommandHandler)
@@ -66,7 +66,7 @@ script {
         val sequence = sequenceOf(setupCommand)
 
         // ESW-88, ESW-145, ESW-195
-        val tcsSequencer = Sequencer("tcs", "darknight")
+        val tcsSequencer = Sequencer("tcs", "darknight", 10.seconds)
         tcsSequencer.submitAndWait(sequence, 10.seconds)
     }
 

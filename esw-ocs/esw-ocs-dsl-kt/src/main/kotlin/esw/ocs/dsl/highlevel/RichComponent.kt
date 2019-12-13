@@ -38,6 +38,7 @@ class RichComponent(
         private val lockUnlockUtil: LockUnlockUtil,
         private val locationServiceUtil: LocationServiceUtil,
         private val actorSystem: ActorSystem<*>,
+        private val defaultTimeout: Duration,
         override val coroutineScope: CoroutineScope
 ) : SuspendToJavaConverter {
 
@@ -52,12 +53,12 @@ class RichComponent(
 
     suspend fun query(commandRunId: Id): SubmitResponse = commandService().query(commandRunId).await()
 
-    suspend fun queryFinal(commandRunId: Id, timeout: Duration): SubmitResponse {
+    suspend fun queryFinal(commandRunId: Id, timeout: Duration = defaultTimeout): SubmitResponse {
         val akkaTimeout = Timeout(timeout.toLongNanoseconds(), TimeUnit.NANOSECONDS)
         return commandService().queryFinal(commandRunId, akkaTimeout).await()
     }
 
-    suspend fun submitAndWait(command: ControlCommand, timeout: Duration, resumeOnError: Boolean = false): SubmitResponse {
+    suspend fun submitAndWait(command: ControlCommand, timeout: Duration = defaultTimeout, resumeOnError: Boolean = false): SubmitResponse {
         val akkaTimeout = Timeout(timeout.toLongNanoseconds(), TimeUnit.NANOSECONDS)
         val submitResponse: SubmitResponse = commandService().submitAndWait(command, akkaTimeout).await()
         if (!resumeOnError && submitResponse.isFailed) throw CommandError(submitResponse)

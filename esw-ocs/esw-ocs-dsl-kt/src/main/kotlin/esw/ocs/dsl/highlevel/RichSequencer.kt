@@ -21,6 +21,7 @@ class RichSequencer(
         internal val subsystem: Subsystem,
         private val observingMode: String,
         private val sequencerApiFactory: SequencerActorProxyFactory,
+        private val defaultTimeout: Duration,
         override val coroutineScope: CoroutineScope
 ) : SuspendToJavaConverter {
 
@@ -34,12 +35,12 @@ class RichSequencer(
 
     suspend fun query(runId: Id): SubmitResponse = sequencerAdmin().query(runId).toJava().await()
 
-    suspend fun queryFinal(runId: Id, timeout: Duration): SubmitResponse {
+    suspend fun queryFinal(runId: Id, timeout: Duration = defaultTimeout): SubmitResponse {
         val akkaTimeout = Timeout(timeout.toLongNanoseconds(), TimeUnit.NANOSECONDS)
         return sequencerAdmin().queryFinal(runId, akkaTimeout).toJava().await()
     }
 
-    suspend fun submitAndWait(sequence: Sequence, timeout: Duration, resumeOnError: Boolean = false): SubmitResponse {
+    suspend fun submitAndWait(sequence: Sequence, timeout: Duration = defaultTimeout, resumeOnError: Boolean = false): SubmitResponse {
         val akkaTimeout = Timeout(timeout.toLongNanoseconds(), TimeUnit.NANOSECONDS)
         val submitResponse: SubmitResponse = sequencerAdmin().submitAndWait(sequence, akkaTimeout).toJava().await()
         if (!resumeOnError && submitResponse.isFailed) throw CommandError(submitResponse)

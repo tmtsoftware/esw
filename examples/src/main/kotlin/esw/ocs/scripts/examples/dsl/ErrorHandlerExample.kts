@@ -11,7 +11,7 @@ fun takeExposure(): Unit = println("Taking exposure")
 fun processResult(result: Result): Unit = println("Processing $result")
 
 script {
-    val assembly = Assembly("esw.filter.wheel")
+    val assembly = Assembly("esw.filter.wheel", 10.seconds)
 
     onSetup("submitAndWait-error-handling") { command ->
 

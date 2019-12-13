@@ -2,6 +2,7 @@ package esw.ocs.scripts.examples.testData
 
 import esw.ocs.dsl.core.script
 import esw.ocs.dsl.params.stringKey
+import kotlin.time.seconds
 
 script {
 
@@ -33,7 +34,7 @@ script {
 
 
     onSetup("multi-node") { command ->
-        val assembly = Assembly("esw.SampleAssembly")
+        val assembly = Assembly("esw.SampleAssembly", 10.seconds)
         assembly.submit(command)
     }
 }
