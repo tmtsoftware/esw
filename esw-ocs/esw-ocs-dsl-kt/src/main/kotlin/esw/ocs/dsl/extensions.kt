@@ -27,8 +27,9 @@ suspend fun SubmitResponse.onFailed(block: suspend (SubmitResponse) -> Unit): Su
     return this
 }
 
-suspend fun SubmitResponse.orElse(block: suspend (SubmitResponse) -> Unit): Unit {
-    block(this)
+fun SubmitResponse.onFailedTerminate(): SubmitResponse {
+    if (this.isFailed) throw CommandError(this)
+    return this
 }
 
 // =========== SubmitResponse - unsafe extensions ===========

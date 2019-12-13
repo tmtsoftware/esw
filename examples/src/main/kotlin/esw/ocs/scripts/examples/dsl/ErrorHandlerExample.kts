@@ -86,9 +86,7 @@ script {
                 .onCompleted { completed ->
                     info("command with ${completed.runId()} is completed with result: ${completed.result}")
                 }
-                .orElse { response ->
-                    finishWithError("Error starting WFS exposures: $response")
-                }
+                .onFailedTerminate()
 
     }.onError { err ->
         error(err.reason)
