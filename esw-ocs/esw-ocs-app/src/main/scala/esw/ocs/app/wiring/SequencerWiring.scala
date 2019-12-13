@@ -27,6 +27,7 @@ import csw.prefix.models.Subsystem
 import esw.http.core.wiring.{ActorRuntime, CswWiring, HttpService, Settings}
 import esw.ocs.api.codecs.SequencerHttpCodecs
 import esw.ocs.api.protocol.ScriptError
+import esw.ocs.app.SequencerApp.{log, logInfo}
 import esw.ocs.dsl.script.utils.{LockUnlockUtil, ScriptLoader}
 import esw.ocs.dsl.script.{CswServices, ScriptDsl}
 import esw.ocs.handler.{SequencerPostHandler, SequencerWebsocketHandler}
@@ -132,8 +133,12 @@ private[ocs] class SequencerWiring(
       try {
         new Engine(script).start(sequenceOperatorFactory())
 
-        httpService.registeredLazyBinding.block
-        println(s"http service started on port: $httpPort")
+        val x = httpService.registeredLazyBinding.block
+
+        logInfo(
+          log,
+          s"Successfully started and registered ${x._2.location.connection.componentId.componentType} with Location: [${x._2.location}]"
+        )
 
         val registration = AkkaRegistration(AkkaConnection(componentId), sequencerRef.toURI)
         locationServiceUtil.register(registration).block
