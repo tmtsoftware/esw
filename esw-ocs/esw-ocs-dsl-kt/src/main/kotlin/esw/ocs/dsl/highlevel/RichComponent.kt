@@ -52,7 +52,11 @@ class RichComponent(
         return submitResponse
     }
 
-    suspend fun query(commandRunId: Id): SubmitResponse = commandService().query(commandRunId).await()
+    suspend fun query(commandRunId: Id, resumeOnError: Boolean = false): SubmitResponse {
+        val submitResponse: SubmitResponse = commandService().query(commandRunId).await()
+        if (!resumeOnError && submitResponse.isFailed) throw CommandError(submitResponse)
+        return submitResponse
+    }
 
     suspend fun queryFinal(commandRunId: Id, timeout: Duration = defaultTimeout, resumeOnError: Boolean = false): SubmitResponse {
         val akkaTimeout = Timeout(timeout.toLongNanoseconds(), TimeUnit.NANOSECONDS)
@@ -93,5 +97,4 @@ class RichComponent(
 
     private suspend fun commandService(): ICommandService = CommandServiceFactory.jMake(locationServiceUtil.jResolveAkkaLocation(prefix, componentType).await(), actorSystem)
     private suspend fun componentRef(): ActorRef<ComponentMessage> = locationServiceUtil.jResolveComponentRef(prefix, componentType).await()
-
 }
