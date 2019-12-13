@@ -4,7 +4,7 @@ import java.util.concurrent.CompletionStage
 
 import akka.util.Timeout
 import csw.command.client.extensions.AkkaLocationExt.RichAkkaLocation
-import csw.params.core.models.Subsystem
+import csw.prefix.models.Subsystem
 import esw.ocs.api.SequencerApi
 import esw.ocs.impl.internal.LocationServiceUtil
 

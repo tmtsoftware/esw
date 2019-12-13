@@ -23,7 +23,7 @@ import csw.logging.api.javadsl.ILogger
 import csw.logging.api.scaladsl.Logger
 import csw.logging.client.scaladsl.LoggerFactory
 import csw.network.utils.SocketUtils
-import csw.params.core.models.Subsystem
+import csw.prefix.models.Subsystem
 import esw.http.core.wiring.{ActorRuntime, CswWiring, HttpService, Settings}
 import esw.ocs.api.codecs.SequencerHttpCodecs
 import esw.ocs.api.protocol.ScriptError
@@ -81,7 +81,7 @@ private[ocs] class SequencerWiring(
 
   private lazy val jAlarmService: IAlarmService = alarmServiceFactory.jMakeClientApi(jLocationService, typedSystem)
 
-  private lazy val loggerFactory    = new LoggerFactory(prefix.value)
+  private lazy val loggerFactory    = new LoggerFactory(prefix)
   private lazy val jLoggerFactory   = loggerFactory.asJava
   private lazy val logger: Logger   = loggerFactory.getLogger
   private lazy val jLogger: ILogger = ScriptLoader.withScript(scriptClass)(jLoggerFactory.getLogger)

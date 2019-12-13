@@ -4,7 +4,8 @@ import com.typesafe.config.ConfigFactory
 import csw.alarm.api.javadsl.JAlarmSeverity.Major
 import csw.alarm.models.Key.AlarmKey
 import csw.params.events.Event
-import csw.params.javadsl.JSubsystem.NFIRAOS
+import csw.prefix.javadsl.JSubsystem
+import csw.prefix.models.Subsystem
 import esw.ocs.dsl.core.script
 import kotlinx.coroutines.delay
 import kotlin.time.seconds
@@ -81,7 +82,7 @@ script {
     }
 
     onSetup("set-alarm-severity") {
-        val alarmKey = AlarmKey(NFIRAOS(), "trombone", "tromboneAxisHighLimitAlarm")
+        val alarmKey = AlarmKey(JSubsystem.NFIRAOS(), "trombone", "tromboneAxisHighLimitAlarm")
         setSeverity(alarmKey, Major())
         delay(500)
     }

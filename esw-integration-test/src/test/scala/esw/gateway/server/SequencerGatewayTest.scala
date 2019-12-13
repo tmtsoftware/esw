@@ -3,12 +3,13 @@ package esw.gateway.server
 import csw.location.models.{ComponentId, ComponentType}
 import csw.params.commands.CommandResponse.{Completed, Started}
 import csw.params.commands.{CommandName, Sequence, Setup}
-import csw.params.core.models.Subsystem.ESW
-import csw.params.core.models.{ObsId, Prefix}
+import csw.params.core.models.ObsId
+import csw.prefix.models.Prefix
+import csw.prefix.models.Subsystem.ESW
 import esw.gateway.api.clients.ClientFactory
 import esw.gateway.api.codecs.GatewayCodecs
 import esw.ocs.testkit.EswTestKit
-import esw.ocs.testkit.Service.{Gateway, EventServer}
+import esw.ocs.testkit.Service.{EventServer, Gateway}
 
 class SequencerGatewayTest extends EswTestKit(Gateway, EventServer) with GatewayCodecs {
   private val subsystem     = ESW

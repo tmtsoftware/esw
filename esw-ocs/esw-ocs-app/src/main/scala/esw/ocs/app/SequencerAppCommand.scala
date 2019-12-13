@@ -3,7 +3,7 @@ package esw.ocs.app
 import caseapp.core.Error
 import caseapp.core.argparser.SimpleArgParser
 import caseapp.{CommandName, HelpMessage, ExtraName => Short}
-import csw.params.core.models.Subsystem
+import csw.prefix.models.Subsystem
 
 import scala.util.Try
 

@@ -18,9 +18,9 @@ import csw.params.commands.CommandResponse
 import csw.params.commands.Setup
 import csw.params.core.models.Id
 import csw.params.core.models.ObsId
-import csw.params.core.models.Prefix
 import csw.params.core.states.StateName
-import csw.params.javadsl.JSubsystem.ESW
+import csw.prefix.javadsl.JSubsystem.ESW
+import csw.prefix.models.Prefix
 import csw.time.core.models.UTCTime
 import esw.ocs.dsl.highlevel.models.CommandError
 import esw.ocs.dsl.script.utils.LockUnlockUtil

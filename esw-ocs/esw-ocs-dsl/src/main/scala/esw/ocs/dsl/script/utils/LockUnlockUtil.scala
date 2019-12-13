@@ -13,7 +13,7 @@ import csw.command.client.messages.ComponentMessage
 import csw.command.client.messages.SupervisorLockMessage.{Lock, Unlock}
 import csw.command.client.models.framework.LockingResponse
 import csw.command.client.models.framework.LockingResponse._
-import csw.params.core.models.Prefix
+import csw.prefix.models.Prefix
 
 import scala.compat.java8.FutureConverters.FutureOps
 import scala.concurrent.duration.{FiniteDuration, _}

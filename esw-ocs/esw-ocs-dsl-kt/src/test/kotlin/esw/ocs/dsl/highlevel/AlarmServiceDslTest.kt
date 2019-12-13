@@ -4,7 +4,7 @@ import akka.Done.done
 import csw.alarm.api.javadsl.IAlarmService
 import csw.alarm.api.javadsl.JAlarmSeverity.Major
 import csw.alarm.models.Key.AlarmKey
-import csw.params.javadsl.JSubsystem.TCS
+import csw.prefix.javadsl.JSubsystem.TCS
 import io.kotlintest.eventually
 import io.kotlintest.seconds
 import io.mockk.clearMocks

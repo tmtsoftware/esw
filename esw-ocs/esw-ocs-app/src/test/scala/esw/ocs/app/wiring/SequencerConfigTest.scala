@@ -1,8 +1,8 @@
 package esw.ocs.app.wiring
 
 import com.typesafe.config.{Config, ConfigFactory}
-import csw.params.core.models.Subsystem.ESW
-import csw.params.core.models.{Prefix, Subsystem}
+import csw.prefix.models.Subsystem.ESW
+import csw.prefix.models.{Prefix, Subsystem}
 import esw.http.core.BaseTestSuite
 import esw.ocs.dsl.script.exceptions.ScriptLoadingException.ScriptConfigurationMissingException
 import esw.ocs.dsl.script.{CswServices, ScriptDsl, StrandEc}

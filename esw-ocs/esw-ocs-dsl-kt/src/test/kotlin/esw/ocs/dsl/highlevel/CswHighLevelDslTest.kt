@@ -9,7 +9,7 @@ import csw.location.api.javadsl.ILocationService
 import csw.location.api.javadsl.JComponentType
 import csw.location.api.scaladsl.LocationService
 import csw.logging.api.javadsl.ILogger
-import csw.params.core.models.Prefix
+import csw.prefix.models.Prefix
 import esw.ocs.dsl.script.CswServices
 import esw.ocs.dsl.script.StrandEc
 import esw.ocs.dsl.script.utils.LockUnlockUtil

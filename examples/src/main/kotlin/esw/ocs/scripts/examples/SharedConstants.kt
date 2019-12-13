@@ -1,8 +1,8 @@
 package esw.ocs.scripts.examples
 
-import csw.params.core.models.Prefix
 import csw.params.events.EventName
 import csw.params.events.ObserveEvent
+import csw.prefix.models.Prefix
 
 object SharedConstants {
     object prefixes {

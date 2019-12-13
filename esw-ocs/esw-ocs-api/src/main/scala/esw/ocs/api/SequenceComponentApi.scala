@@ -1,7 +1,7 @@
 package esw.ocs.api
 
 import akka.Done
-import csw.params.core.models.Subsystem
+import csw.prefix.models.Subsystem
 import esw.ocs.api.protocol.{GetStatusResponse, ScriptResponse}
 
 import scala.concurrent.Future

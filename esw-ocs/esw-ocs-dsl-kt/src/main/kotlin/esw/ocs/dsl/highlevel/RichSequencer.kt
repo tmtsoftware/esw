@@ -4,7 +4,7 @@ import akka.util.Timeout
 import csw.params.commands.CommandResponse.SubmitResponse
 import csw.params.commands.Sequence
 import csw.params.core.models.Id
-import csw.params.core.models.Subsystem
+import csw.prefix.models.Subsystem
 import csw.time.core.models.UTCTime
 import esw.ocs.api.protocol.*
 import esw.ocs.dsl.highlevel.models.CommandError

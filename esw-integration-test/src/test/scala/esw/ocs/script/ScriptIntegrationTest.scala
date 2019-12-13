@@ -16,9 +16,10 @@ import csw.params.commands.CommandResponse.{Completed, Error}
 import csw.params.commands.{CommandName, Sequence, Setup}
 import csw.params.core.generics.KeyType.StringKey
 import csw.params.core.generics.Parameter
-import csw.params.core.models.Subsystem.{ESW, LGSF, NFIRAOS, TCS}
-import csw.params.core.models.{Id, Prefix}
+import csw.params.core.models.Id
 import csw.params.events.{Event, EventKey, EventName, SystemEvent}
+import csw.prefix.models.Prefix
+import csw.prefix.models.Subsystem.{ESW, LGSF, NFIRAOS, TCS}
 import csw.testkit.ConfigTestKit
 import csw.time.core.models.UTCTime
 import esw.ocs.api.SequencerApi

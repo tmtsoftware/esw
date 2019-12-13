@@ -4,7 +4,7 @@ import akka.Done
 import com.typesafe.config.ConfigFactory
 import csw.alarm.models.AlarmSeverity
 import csw.alarm.models.Key.AlarmKey
-import csw.params.core.models.Subsystem
+import csw.prefix.models.Subsystem
 import esw.gateway.api.clients.AlarmClient
 import esw.gateway.api.codecs.GatewayCodecs
 import esw.ocs.testkit.EswTestKit

@@ -1,7 +1,7 @@
 package esw.ocs.api.models
 
 import csw.params.commands.{CommandName, Observe, Sequence, Setup}
-import csw.params.core.models.Prefix
+import csw.prefix.models.Prefix
 import esw.ocs.api.BaseTestSuite
 
 class SequenceTest extends BaseTestSuite {

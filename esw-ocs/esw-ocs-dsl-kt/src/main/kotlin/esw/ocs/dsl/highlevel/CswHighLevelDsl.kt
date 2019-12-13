@@ -10,8 +10,8 @@ import csw.location.api.javadsl.ILocationService
 import csw.location.api.javadsl.JComponentType
 import csw.location.models.ComponentType
 import csw.logging.api.javadsl.ILogger
-import csw.params.core.models.Prefix
-import csw.params.core.models.Subsystem
+import csw.prefix.models.Prefix
+import csw.prefix.models.Subsystem
 import csw.time.scheduler.api.TimeServiceScheduler
 import esw.ocs.dsl.epics.CommandFlag
 import esw.ocs.dsl.epics.Fsm

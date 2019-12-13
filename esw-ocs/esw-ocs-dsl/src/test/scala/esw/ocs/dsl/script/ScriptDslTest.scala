@@ -3,7 +3,7 @@ package esw.ocs.dsl.script
 import java.util.concurrent.CompletableFuture
 
 import csw.params.commands.{CommandName, Observe, Setup}
-import csw.params.core.models.Prefix
+import csw.prefix.models.Prefix
 import esw.ocs.api.BaseTestSuite
 
 import scala.collection.mutable.ArrayBuffer

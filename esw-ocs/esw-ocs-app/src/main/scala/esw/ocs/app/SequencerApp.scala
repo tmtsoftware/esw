@@ -7,8 +7,8 @@ import csw.location.api.extensions.URIExtension.RichURI
 import csw.location.client.utils.LocationServerStatus
 import csw.location.models.AkkaLocation
 import csw.logging.api.scaladsl.Logger
-import csw.logging.client.scaladsl.LoggerFactory
-import csw.params.core.models.Subsystem
+import csw.logging.client.scaladsl.GenericLoggerFactory
+import csw.prefix.models.Subsystem
 import esw.http.core.commons.CoordinatedShutdownReasons.FailureReason
 import esw.http.core.commons.EswCommandApp
 import esw.ocs.api.protocol.{ScriptError, ScriptResponse}
@@ -26,8 +26,7 @@ object SequencerApp extends EswCommandApp[SequencerAppCommand] {
   override def appVersion: String = BuildInfo.version
   override def progName: String   = BuildInfo.name
 
-  lazy val loggerFactory = new LoggerFactory("sequence component")
-  lazy val log: Logger   = loggerFactory.getLogger
+  lazy val log: Logger = GenericLoggerFactory.getLogger
 
   def run(command: SequencerAppCommand, args: RemainingArgs): Unit = {
     LocationServerStatus.requireUpLocally()

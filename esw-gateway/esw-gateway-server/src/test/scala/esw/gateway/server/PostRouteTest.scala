@@ -17,8 +17,9 @@ import csw.logging.models.{AnyId, Level, LogMetadata}
 import csw.params.commands.CommandIssue.IdNotAvailableIssue
 import csw.params.commands.CommandResponse.{Accepted, Invalid, Started}
 import csw.params.commands.{CommandName, CommandResponse, Sequence, Setup}
-import csw.params.core.models.{Id, ObsId, Prefix, Subsystem}
+import csw.params.core.models.{Id, ObsId}
 import csw.params.events.{Event, EventKey, EventName, SystemEvent}
+import csw.prefix.models.{Prefix, Subsystem}
 import esw.gateway.api.codecs.GatewayCodecs
 import esw.gateway.api.protocol.PostRequest._
 import esw.gateway.api.protocol._
@@ -273,7 +274,7 @@ class PostRouteTest extends BaseTestSuite with ScalatestRouteTest with GatewayCo
   "Log" must {
     "log the message, metadata and return Done | ESW-200" in {
       val log = Log(
-        "esw-test",
+        Prefix("esw.test"),
         Level.FATAL,
         "test-message",
         Map(
@@ -296,7 +297,7 @@ class PostRouteTest extends BaseTestSuite with ScalatestRouteTest with GatewayCo
 
     "log the message and return Done | ESW-200" in {
       val log = Log(
-        "esw-test",
+        Prefix("esw.test"),
         Level.FATAL,
         "test-message"
       )
@@ -328,7 +329,7 @@ class PostRouteTest extends BaseTestSuite with ScalatestRouteTest with GatewayCo
       val error       = GenericError("UnresolvedAkkaLocationException", "Could not resolve esw.test1 to a valid Akka location")
 
       when(adminService.getLogMetadata(componentId))
-        .thenReturn(Future.failed(new UnresolvedAkkaLocationException(componentId.prefix.toString)))
+        .thenReturn(Future.failed(new UnresolvedAkkaLocationException(componentId.prefix)))
 
       post(GetLogMetadata(componentId)) ~> route ~> check {
         responseAs[GenericError] shouldEqual error
@@ -353,7 +354,7 @@ class PostRouteTest extends BaseTestSuite with ScalatestRouteTest with GatewayCo
       val error       = GenericError("UnresolvedAkkaLocationException", "Could not resolve esw.test1 to a valid Akka location")
 
       when(adminService.setLogLevel(componentId, Level.FATAL))
-        .thenReturn(Future.failed(new UnresolvedAkkaLocationException(componentId.prefix.toString)))
+        .thenReturn(Future.failed(new UnresolvedAkkaLocationException(componentId.prefix)))
 
       post(SetLogLevel(componentId, Level.FATAL)) ~> route ~> check {
         responseAs[GenericError] shouldEqual error

@@ -5,8 +5,8 @@ import csw.location.models.AkkaLocation
 import csw.params.commands.CommandResponse
 import csw.params.commands.Sequence
 import csw.params.core.models.Id
-import csw.params.core.models.Subsystem
-import csw.params.javadsl.JSubsystem
+import csw.prefix.javadsl.JSubsystem
+import csw.prefix.models.Subsystem
 import csw.time.core.models.UTCTime
 import esw.ocs.api.SequencerApi
 import esw.ocs.api.protocol.`Ok$`

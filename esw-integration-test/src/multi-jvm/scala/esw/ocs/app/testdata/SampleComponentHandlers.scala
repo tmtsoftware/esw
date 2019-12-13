@@ -8,8 +8,9 @@ import csw.location.models.TrackingEvent
 import csw.logging.api.scaladsl.Logger
 import csw.params.commands.CommandResponse.{Accepted, Completed}
 import csw.params.commands.{CommandResponse, ControlCommand}
-import csw.params.core.models.{Id, Prefix}
+import csw.params.core.models.Id
 import csw.params.events.{EventName, SystemEvent}
+import csw.prefix.models.Prefix
 import csw.time.core.models.UTCTime
 
 import scala.concurrent.Future

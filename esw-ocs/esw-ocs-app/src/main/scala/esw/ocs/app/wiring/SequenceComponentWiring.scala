@@ -7,7 +7,7 @@ import akka.util.Timeout
 import csw.location.models.AkkaLocation
 import csw.logging.api.scaladsl.Logger
 import csw.logging.client.scaladsl.LoggerFactory
-import csw.params.core.models.{Prefix, Subsystem}
+import csw.prefix.models.{Prefix, Subsystem}
 import esw.http.core.wiring.{ActorRuntime, CswWiring}
 import esw.ocs.api.protocol.ScriptError
 import esw.ocs.impl.core.SequenceComponentBehavior
@@ -33,7 +33,7 @@ private[ocs] class SequenceComponentWiring(
   implicit lazy val timeout: Timeout = Timeouts.DefaultTimeout
 
   def sequenceComponentFactory(sequenceComponentPrefix: Prefix): Future[ActorRef[SequenceComponentMsg]] = {
-    val loggerFactory                   = new LoggerFactory(sequenceComponentPrefix.value)
+    val loggerFactory                   = new LoggerFactory(sequenceComponentPrefix)
     val sequenceComponentLogger: Logger = loggerFactory.getLogger
 
     sequenceComponentLogger.info(s"Starting sequence component with name: $sequenceComponentPrefix")

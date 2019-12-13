@@ -1,9 +1,9 @@
 package esw.ocs.script
 
 import akka.actor.testkit.typed.scaladsl.TestProbe
-import csw.params.core.models.Prefix
-import csw.params.core.models.Subsystem.TCS
 import csw.params.events.{Event, EventKey, EventName, SystemEvent}
+import csw.prefix.models.Prefix
+import csw.prefix.models.Subsystem.TCS
 import esw.ocs.api.protocol.Ok
 import esw.ocs.impl.messages.SequencerMessages.Shutdown
 import esw.ocs.testkit.EswTestKit

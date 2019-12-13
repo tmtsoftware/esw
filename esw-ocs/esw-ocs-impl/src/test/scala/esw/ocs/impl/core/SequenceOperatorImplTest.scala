@@ -4,7 +4,7 @@ import akka.actor.testkit.typed.scaladsl.{ScalaTestWithActorTestKit, TestProbe}
 import akka.actor.typed.scaladsl.Behaviors
 import csw.command.client.messages.sequencer.SequencerMsg
 import csw.params.commands.{CommandName, Setup}
-import csw.params.core.models.Prefix
+import csw.prefix.models.Prefix
 import esw.ocs.api.BaseTestSuite
 import esw.ocs.api.models.StepStatus.Finished
 import esw.ocs.api.models.{Step, StepStatus}

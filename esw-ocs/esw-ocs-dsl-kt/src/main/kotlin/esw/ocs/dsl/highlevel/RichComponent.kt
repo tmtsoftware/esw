@@ -14,9 +14,9 @@ import csw.location.models.ComponentType
 import csw.params.commands.CommandResponse.*
 import csw.params.commands.ControlCommand
 import csw.params.core.models.Id
-import csw.params.core.models.Prefix
 import csw.params.core.states.CurrentState
 import csw.params.core.states.StateName
+import csw.prefix.models.Prefix
 import csw.time.core.models.UTCTime
 import esw.ocs.dsl.SuspendableCallback
 import esw.ocs.dsl.SuspendableConsumer

@@ -5,7 +5,7 @@ import csw.logging.client.scaladsl.LoggingSystemFactory
 import csw.logging.models.Level.{ERROR, FATAL, TRACE}
 import csw.logging.models.LogMetadata
 import csw.logging.models.codecs.LoggingCodecs
-import csw.params.core.models.Subsystem.ESW
+import csw.prefix.models.Subsystem.ESW
 import esw.gateway.api.clients.AdminClient
 import esw.gateway.api.codecs.GatewayCodecs
 import esw.ocs.testkit.EswTestKit

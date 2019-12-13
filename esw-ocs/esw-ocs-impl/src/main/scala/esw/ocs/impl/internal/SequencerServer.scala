@@ -2,7 +2,7 @@ package esw.ocs.impl.internal
 
 import akka.Done
 import csw.location.models.AkkaLocation
-import csw.params.core.models.Subsystem
+import csw.prefix.models.Subsystem
 import esw.ocs.api.protocol.ScriptError
 
 // Note: The APIs in this service are blocking. SequenceComponentBehavior consumes this api and since

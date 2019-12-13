@@ -1,11 +1,11 @@
 package esw.ocs.dsl.epics
 
 import csw.params.core.generics.Parameter
-import csw.params.core.models.Prefix
 import csw.params.events.EventName
 import csw.params.events.SystemEvent
 import csw.params.javadsl.JKeyType
-import csw.params.javadsl.JSubsystem
+import csw.prefix.javadsl.JSubsystem
+import csw.prefix.models.Prefix
 import esw.ocs.dsl.highlevel.CswHighLevelDslApi
 import esw.ocs.dsl.params.Params
 import esw.ocs.dsl.script.StrandEc
