@@ -33,11 +33,17 @@ class RichSequencer(
         return submitResponse
     }
 
-    suspend fun query(runId: Id): SubmitResponse = sequencerAdmin().query(runId).toJava().await()
+    suspend fun query(runId: Id, resumeOnError: Boolean = false): SubmitResponse {
+        val submitResponse: SubmitResponse = sequencerAdmin().query(runId).toJava().await()
+        if (!resumeOnError && submitResponse.isFailed) throw CommandError(submitResponse)
+        return submitResponse
+    }
 
-    suspend fun queryFinal(runId: Id, timeout: Duration = defaultTimeout): SubmitResponse {
+    suspend fun queryFinal(runId: Id, timeout: Duration = defaultTimeout, resumeOnError: Boolean = false): SubmitResponse {
         val akkaTimeout = Timeout(timeout.toLongNanoseconds(), TimeUnit.NANOSECONDS)
-        return sequencerAdmin().queryFinal(runId, akkaTimeout).toJava().await()
+        val submitResponse: SubmitResponse = sequencerAdmin().queryFinal(runId, akkaTimeout).toJava().await()
+        if (!resumeOnError && submitResponse.isFailed) throw CommandError(submitResponse)
+        return submitResponse
     }
 
     suspend fun submitAndWait(sequence: Sequence, timeout: Duration = defaultTimeout, resumeOnError: Boolean = false): SubmitResponse {

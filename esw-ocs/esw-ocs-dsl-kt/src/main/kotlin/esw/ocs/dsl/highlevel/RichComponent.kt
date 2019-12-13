@@ -23,6 +23,7 @@ import esw.ocs.dsl.SuspendableConsumer
 import esw.ocs.dsl.highlevel.models.CommandError
 import esw.ocs.dsl.isFailed
 import esw.ocs.dsl.jdk.SuspendToJavaConverter
+import esw.ocs.dsl.jdk.toJava
 import esw.ocs.dsl.script.utils.LockUnlockUtil
 import esw.ocs.impl.internal.LocationServiceUtil
 import kotlinx.coroutines.CoroutineScope
@@ -51,11 +52,17 @@ class RichComponent(
         return submitResponse
     }
 
-    suspend fun query(commandRunId: Id): SubmitResponse = commandService().query(commandRunId).await()
+    suspend fun query(commandRunId: Id, resumeOnError: Boolean = false): SubmitResponse {
+        val submitResponse: SubmitResponse = commandService().query(commandRunId).await()
+        if (!resumeOnError && submitResponse.isFailed) throw CommandError(submitResponse)
+        return submitResponse
+    }
 
-    suspend fun queryFinal(commandRunId: Id, timeout: Duration = defaultTimeout): SubmitResponse {
+    suspend fun queryFinal(commandRunId: Id, timeout: Duration = defaultTimeout, resumeOnError: Boolean = false): SubmitResponse {
         val akkaTimeout = Timeout(timeout.toLongNanoseconds(), TimeUnit.NANOSECONDS)
-        return commandService().queryFinal(commandRunId, akkaTimeout).await()
+        val submitResponse: SubmitResponse = commandService().queryFinal(commandRunId, akkaTimeout).await()
+        if (!resumeOnError && submitResponse.isFailed) throw CommandError(submitResponse)
+        return submitResponse
     }
 
     suspend fun submitAndWait(command: ControlCommand, timeout: Duration = defaultTimeout, resumeOnError: Boolean = false): SubmitResponse {
@@ -90,5 +97,4 @@ class RichComponent(
 
     private suspend fun commandService(): ICommandService = CommandServiceFactory.jMake(locationServiceUtil.jResolveAkkaLocation(prefix, componentType).await(), actorSystem)
     private suspend fun componentRef(): ActorRef<ComponentMessage> = locationServiceUtil.jResolveComponentRef(prefix, componentType).await()
-
 }
