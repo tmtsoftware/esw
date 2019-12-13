@@ -80,6 +80,38 @@ class RichSequencerTest {
     }
 
     @Test
+    fun `query should resolve sequencerCommandService for given sequencer, call query and should throw exception if submit response is negative and resumeOnError=false | ESW-245, ESW-195 `() = runBlocking {
+        val runId: Id = mockk()
+
+        val message = "error-occurred"
+        val invalidSubmitResponse = CommandResponse.Error(Id.apply(), message)
+
+        every { locationServiceUtil.resolveSequencer(sequencerId, observingMode, any()) }.answers { Future.successful(sequencerLocation) }
+        every { sequencerApiFactory.jMake(sequencerId, observingMode) }.answers { CompletableFuture.completedFuture(sequencerApi) }
+        every { sequencerApi.query(runId) }.answers { Future.successful(invalidSubmitResponse) }
+
+        shouldThrow<CommandError> { tcsSequencer.query(runId) }
+
+        verify { sequencerApi.query(runId) }
+    }
+
+    @Test
+    fun `query should resolve sequencerCommandService for given sequencer, call query and shouldn't throw exception if submit response is negative and resumeOnError=true | ESW-245, ESW-195 `() = runBlocking {
+        val runId: Id = mockk()
+
+        val message = "error-occurred"
+        val invalidSubmitResponse = CommandResponse.Error(Id.apply(), message)
+
+        every { locationServiceUtil.resolveSequencer(sequencerId, observingMode, any()) }.answers { Future.successful(sequencerLocation) }
+        every { sequencerApi.query(runId) }.answers { Future.successful(invalidSubmitResponse) }
+        every { sequencerApiFactory.jMake(sequencerId, observingMode) }.answers { CompletableFuture.completedFuture(sequencerApi) }
+
+        shouldNotThrow<CommandError> { tcsSequencer.query(runId, resumeOnError = true) }
+
+        verify { sequencerApi.query(runId) }
+    }
+
+    @Test
     fun `queryFinal should resolve sequencerCommandService for given sequencer and call queryFinal method on it | ESW-245, ESW-195 `() = runBlocking {
         val runId: Id = mockk()
 
