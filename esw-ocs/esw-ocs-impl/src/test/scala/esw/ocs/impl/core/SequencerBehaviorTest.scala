@@ -10,7 +10,9 @@ import csw.logging.models.Level.{DEBUG, INFO}
 import csw.logging.models.LogMetadata
 import csw.params.commands.CommandResponse._
 import csw.params.commands.{CommandName, Sequence, Setup}
-import csw.params.core.models.{Id, Prefix}
+import csw.params.core.models.Id
+import csw.prefix.models.Prefix
+import csw.prefix.models.Subsystem.ESW
 import csw.time.core.models.UTCTime
 import esw.ocs.api.BaseTestSuite
 import esw.ocs.api.models.StepStatus.{Finished, InFlight, Pending}
@@ -844,22 +846,22 @@ class SequencerBehaviorTest extends ScalaTestWithActorTestKit with BaseTestSuite
       import sequencerSetup._
       val logMetadataProbe = TestProbe[LogMetadata]
 
-      sequencerActor ! GetComponentLogMetadata(sequencerName, logMetadataProbe.ref)
+      sequencerActor ! GetComponentLogMetadata(logMetadataProbe.ref)
 
       val logMetadata1 = logMetadataProbe.expectMessageType[LogMetadata]
 
       logMetadata1.componentLevel shouldBe INFO
-      val initialMetadata = LogAdminUtil.getLogMetadata(sequencerName)
+      val initialMetadata = LogAdminUtil.getLogMetadata(Prefix(ESW, sequencerName))
       initialMetadata.componentLevel shouldBe INFO
 
-      sequencerActor ! SetComponentLogLevel(sequencerName, DEBUG)
-      sequencerActor ! GetComponentLogMetadata(sequencerName, logMetadataProbe.ref)
+      sequencerActor ! SetComponentLogLevel(DEBUG)
+      sequencerActor ! GetComponentLogMetadata(logMetadataProbe.ref)
 
       val logMetadata2 = logMetadataProbe.expectMessageType[LogMetadata]
       logMetadata2.componentLevel shouldBe DEBUG
 
       // this verifies that log metadata is updated in LogAdminUtil
-      val finalMetadata = LogAdminUtil.getLogMetadata(sequencerName)
+      val finalMetadata = LogAdminUtil.getLogMetadata(Prefix(ESW, sequencerName))
       finalMetadata.componentLevel shouldBe DEBUG
     }
   }

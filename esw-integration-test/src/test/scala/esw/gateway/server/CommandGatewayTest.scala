@@ -9,9 +9,10 @@ import csw.location.models.ComponentId
 import csw.location.models.ComponentType.Assembly
 import csw.params.commands.CommandResponse.{Accepted, Completed, Started}
 import csw.params.commands.{CommandName, Setup}
-import csw.params.core.models.{ObsId, Prefix}
+import csw.params.core.models.ObsId
 import csw.params.core.states.{CurrentState, StateName}
 import csw.params.events.{Event, EventKey, EventName, SystemEvent}
+import csw.prefix.models.Prefix
 import esw.gateway.api.clients.ClientFactory
 import esw.gateway.api.codecs.GatewayCodecs
 import esw.ocs.testkit.EswTestKit

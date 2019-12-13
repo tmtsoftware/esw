@@ -2,8 +2,8 @@ package esw.ocs.impl.core
 
 import akka.actor.testkit.typed.scaladsl.TestProbe
 import csw.params.commands.{CommandName, Sequence, Setup}
-import csw.params.core.models.Prefix
-import csw.params.core.models.Subsystem.ESW
+import csw.prefix.models.Prefix
+import csw.prefix.models.Subsystem.ESW
 import esw.ocs.api.protocol.{OkOrUnhandledResponse, SequencerSubmitResponse, SubmitResult, Unhandled}
 import esw.ocs.impl.messages.SequencerMessages.{LoadSequence, SubmitSequenceInternal}
 import esw.ocs.testkit.EswTestKit

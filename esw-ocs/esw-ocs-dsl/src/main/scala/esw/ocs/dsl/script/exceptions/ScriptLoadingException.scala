@@ -1,5 +1,6 @@
 package esw.ocs.dsl.script.exceptions
-import csw.params.core.models.Subsystem
+
+import csw.prefix.models.Subsystem
 
 object ScriptLoadingException {
   class ScriptConfigurationMissingException(subsystem: Subsystem, observingMode: String)

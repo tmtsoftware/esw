@@ -4,14 +4,15 @@ import com.typesafe.config.ConfigFactory
 import csw.alarm.api.javadsl.JAlarmSeverity.Major
 import csw.alarm.models.Key.AlarmKey
 import csw.params.events.Event
-import csw.params.javadsl.JSubsystem.NFIRAOS
+import csw.prefix.javadsl.JSubsystem
+import csw.prefix.models.Subsystem
 import esw.ocs.dsl.core.script
 import kotlinx.coroutines.delay
 import kotlin.time.seconds
 
 script {
-    val lgsfSequencer = Sequencer("lgsf", "darknight")
-    val testAssembly = Assembly("esw.test")
+    val lgsfSequencer = Sequencer("lgsf", "darknight", 10.seconds)
+    val testAssembly = Assembly("esw.test", 10.seconds)
 
     // ESW-134: Reuse code by ability to import logic from one script into another
     loadScripts(InitialCommandHandler)
@@ -65,7 +66,7 @@ script {
         val sequence = sequenceOf(setupCommand)
 
         // ESW-88, ESW-145, ESW-195
-        val tcsSequencer = Sequencer("tcs", "darknight")
+        val tcsSequencer = Sequencer("tcs", "darknight", 10.seconds)
         tcsSequencer.submitAndWait(sequence, 10.seconds)
     }
 
@@ -81,7 +82,7 @@ script {
     }
 
     onSetup("set-alarm-severity") {
-        val alarmKey = AlarmKey(NFIRAOS(), "trombone", "tromboneAxisHighLimitAlarm")
+        val alarmKey = AlarmKey(JSubsystem.NFIRAOS(), "trombone", "tromboneAxisHighLimitAlarm")
         setSeverity(alarmKey, Major())
         delay(500)
     }

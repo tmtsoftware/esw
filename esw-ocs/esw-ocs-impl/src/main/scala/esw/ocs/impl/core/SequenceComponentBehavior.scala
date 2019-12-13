@@ -3,16 +3,16 @@ package esw.ocs.impl.core
 import akka.Done
 import akka.actor.typed.scaladsl.{ActorContext, Behaviors}
 import akka.actor.typed.{ActorRef, Behavior}
+import csw.location.api.extensions.ActorExtension._
 import csw.location.models.ComponentType.SequenceComponent
-import csw.location.models.{AkkaLocation, ComponentId}
 import csw.location.models.Connection.AkkaConnection
+import csw.location.models.{AkkaLocation, ComponentId}
 import csw.logging.api.scaladsl.Logger
-import csw.params.core.models.{Prefix, Subsystem}
+import csw.prefix.models.{Prefix, Subsystem}
 import esw.ocs.api.protocol.{GetStatusResponse, ScriptError, ScriptResponse}
 import esw.ocs.impl.internal.{SequencerServer, SequencerServerFactory}
 import esw.ocs.impl.messages.SequenceComponentMsg
 import esw.ocs.impl.messages.SequenceComponentMsg._
-import csw.location.api.extensions.ActorExtension._
 
 object SequenceComponentBehavior {
 

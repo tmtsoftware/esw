@@ -5,19 +5,23 @@ import akka.actor.testkit.typed.scaladsl.TestProbe
 import akka.actor.typed.{ActorRef, ActorSystem}
 import csw.command.client.messages.sequencer.SequencerMsg
 import csw.command.client.messages.sequencer.SequencerMsg.SubmitSequence
+import csw.location.api.extensions.ActorExtension._
 import csw.location.api.scaladsl.LocationService
+import csw.location.models.ComponentType.SequenceComponent
 import csw.location.models.Connection.AkkaConnection
 import csw.location.models.{AkkaLocation, ComponentId}
 import csw.params.commands.CommandResponse.{Completed, Started, SubmitResponse}
 import csw.params.commands.{Sequence, SequenceCommand}
-import csw.params.core.models.Subsystem.ESW
-import csw.params.core.models.{Id, Prefix}
+import csw.params.core.models.Id
+import csw.prefix.models.Prefix
+import csw.prefix.models.Subsystem.ESW
 import csw.time.core.models.UTCTime
 import esw.ocs.api.models.{Step, StepList}
 import esw.ocs.api.protocol._
+import esw.ocs.impl.core.api.ScriptApi
 import esw.ocs.impl.messages.SequencerMessages.{Pause, _}
-import esw.ocs.impl.messages.{SequenceComponentMsg, SequencerState}
 import esw.ocs.impl.messages.SequencerState.{Idle, InProgress}
+import esw.ocs.impl.messages.{SequenceComponentMsg, SequencerState}
 import org.mockito.Mockito.{verify, when}
 import org.scalatest.concurrent.Eventually._
 import org.scalatest.{Assertion, Matchers}
@@ -26,9 +30,6 @@ import org.scalatestplus.mockito.MockitoSugar
 import scala.concurrent.duration.DurationLong
 import scala.concurrent.{ExecutionContext, Future, Promise}
 import scala.util.Success
-import csw.location.api.extensions.ActorExtension._
-import csw.location.models.ComponentType.SequenceComponent
-import esw.ocs.impl.core.api.ScriptApi
 
 class SequencerTestSetup(sequence: Sequence)(implicit system: ActorSystem[_]) {
   import Matchers._
@@ -45,13 +46,14 @@ class SequencerTestSetup(sequence: Sequence)(implicit system: ActorSystem[_]) {
     TestProbe[SequenceComponentMsg].ref.toURI
   )
   private def mockShutdownHttpService: () => Future[Done.type] = () => Future { Done }
+  val sequencerName                                            = s"SequencerActor${math.random()}"
+  when(componentId.prefix).thenReturn(Prefix(ESW, sequencerName))
 
   private def deadletter = system.deadLetters
 
   private val sequencerBehavior =
     new SequencerBehavior(componentId, script, locationService, sequenceComponent, mockShutdownHttpService)
 
-  val sequencerName                          = s"SequencerActor${math.random()}"
   val sequencerActor: ActorRef[SequencerMsg] = system.systemActorOf(sequencerBehavior.setup, sequencerName)
 
   private val completionPromise = Promise[SubmitResponse]()

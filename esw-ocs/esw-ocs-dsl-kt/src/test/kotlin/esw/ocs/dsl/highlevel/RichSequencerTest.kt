@@ -5,8 +5,8 @@ import csw.location.models.AkkaLocation
 import csw.params.commands.CommandResponse
 import csw.params.commands.Sequence
 import csw.params.core.models.Id
-import csw.params.core.models.Subsystem
-import csw.params.javadsl.JSubsystem
+import csw.prefix.javadsl.JSubsystem
+import csw.prefix.models.Subsystem
 import csw.time.core.models.UTCTime
 import esw.ocs.api.SequencerApi
 import esw.ocs.api.protocol.`Ok$`
@@ -25,6 +25,7 @@ import scala.concurrent.Future
 import java.util.concurrent.CompletableFuture
 import java.util.concurrent.TimeUnit
 import kotlin.coroutines.EmptyCoroutineContext
+import kotlin.time.Duration
 import kotlin.time.seconds
 
 class RichSequencerTest {
@@ -41,12 +42,17 @@ class RichSequencerTest {
     private val sequencerApiFactory: SequencerActorProxyFactory = mockk()
     private val locationServiceUtil: LocationServiceUtil = mockk()
 
-    private val tcsSequencer = RichSequencer(sequencerId, observingMode, sequencerApiFactory, coroutineScope)
+    private val timeoutDuration: Duration = 10.seconds
+    private val timeout = Timeout(timeoutDuration.toLongNanoseconds(), TimeUnit.NANOSECONDS)
+
+    private val defaultTimeoutDuration: Duration = 5.seconds
+    private val defaultTimeout = Timeout(defaultTimeoutDuration.toLongNanoseconds(), TimeUnit.NANOSECONDS)
+
+    private val tcsSequencer = RichSequencer(sequencerId, observingMode, sequencerApiFactory, defaultTimeoutDuration, coroutineScope)
 
     private val sequencerApi: SequencerApi = mockk()
 
     private val sequencerLocation: AkkaLocation = mockk()
-    private val timeout = Timeout(10, TimeUnit.SECONDS)
 
     @Test
     fun `submit should resolve sequencerCommandService for given sequencer and call submit method on it | ESW-245, ESW-195 `() = runBlocking {
@@ -81,9 +87,22 @@ class RichSequencerTest {
         every { sequencerApiFactory.jMake(sequencerId, observingMode) }.answers { CompletableFuture.completedFuture(sequencerApi) }
         every { sequencerApi.queryFinal(runId, timeout) }.answers { Future.successful(CommandResponse.Completed(Id.apply())) }
 
-        tcsSequencer.queryFinal(runId, 10.seconds)
+        tcsSequencer.queryFinal(runId, timeoutDuration)
 
         verify { sequencerApi.queryFinal(runId, timeout) }
+    }
+
+    @Test
+    fun `queryFinal should resolve sequencerCommandService for given sequencer and call queryFinal method on it with defaultTimeout if timeout is not provided | ESW-245, ESW-195 `() = runBlocking {
+        val runId: Id = mockk()
+
+        every { locationServiceUtil.resolveSequencer(sequencerId, observingMode, any()) }.answers { Future.successful(sequencerLocation) }
+        every { sequencerApiFactory.jMake(sequencerId, observingMode) }.answers { CompletableFuture.completedFuture(sequencerApi) }
+        every { sequencerApi.queryFinal(runId, defaultTimeout) }.answers { Future.successful(CommandResponse.Completed(Id.apply())) }
+
+        tcsSequencer.queryFinal(runId)
+
+        verify { sequencerApi.queryFinal(runId, defaultTimeout) }
     }
 
     @Test
@@ -93,9 +112,21 @@ class RichSequencerTest {
         every { sequencerApiFactory.jMake(sequencerId, observingMode) }.answers { CompletableFuture.completedFuture(sequencerApi) }
         every { sequencerApi.submitAndWait(sequence, timeout) }.answers { Future.successful(CommandResponse.Completed(Id.apply())) }
 
-        tcsSequencer.submitAndWait(sequence, 10.seconds)
+        tcsSequencer.submitAndWait(sequence, timeoutDuration)
 
         verify { sequencerApi.submitAndWait(sequence, timeout) }
+    }
+
+    @Test
+    fun `submitAndWait should resolve sequencerCommandService for given sequencer and call submitAndWait on it with defaultTimeout if timeout is not provided | ESW-245, ESW-195 `() = runBlocking {
+
+        every { locationServiceUtil.resolveSequencer(sequencerId, observingMode, any()) }.answers { Future.successful(sequencerLocation) }
+        every { sequencerApiFactory.jMake(sequencerId, observingMode) }.answers { CompletableFuture.completedFuture(sequencerApi) }
+        every { sequencerApi.submitAndWait(sequence, defaultTimeout) }.answers { Future.successful(CommandResponse.Completed(Id.apply())) }
+
+        tcsSequencer.submitAndWait(sequence)
+
+        verify { sequencerApi.submitAndWait(sequence, defaultTimeout) }
     }
 
     @Test
@@ -108,7 +139,7 @@ class RichSequencerTest {
         every { sequencerApiFactory.jMake(sequencerId, observingMode) }.answers { CompletableFuture.completedFuture(sequencerApi) }
         every { sequencerApi.submitAndWait(sequence, timeout) }.answers { Future.successful(invalidSubmitResponse) }
 
-        shouldThrow<CommandError> { tcsSequencer.submitAndWait(sequence, 10.seconds) }
+        shouldThrow<CommandError> { tcsSequencer.submitAndWait(sequence, timeoutDuration) }
 
         verify { sequencerApi.submitAndWait(sequence, timeout) }
     }
@@ -123,7 +154,7 @@ class RichSequencerTest {
         every { sequencerApi.submitAndWait(sequence, timeout) }.answers { Future.successful(invalidSubmitResponse) }
         every { sequencerApiFactory.jMake(sequencerId, observingMode) }.answers { CompletableFuture.completedFuture(sequencerApi) }
 
-        shouldNotThrow<CommandError> { tcsSequencer.submitAndWait(sequence, 10.seconds, resumeOnError = true) }
+        shouldNotThrow<CommandError> { tcsSequencer.submitAndWait(sequence, timeoutDuration, resumeOnError = true) }
 
         verify { sequencerApi.submitAndWait(sequence, timeout) }
     }

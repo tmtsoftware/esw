@@ -5,9 +5,9 @@ import csw.command.client.messages.sequencer.SequencerMsg
 import csw.command.client.messages.sequencer.SequencerMsg.SubmitSequence
 import csw.params.commands.CommandResponse.{Completed, SubmitResponse}
 import csw.params.commands._
-import csw.params.core.models.Prefix
-import csw.params.core.models.Subsystem.{ESW, TCS}
 import csw.params.events.{Event, EventKey, EventName, SystemEvent}
+import csw.prefix.models.Prefix
+import csw.prefix.models.Subsystem.{ESW, TCS}
 import csw.time.core.models.UTCTime
 import esw.ocs.api.protocol._
 import esw.ocs.impl.SequencerActorProxy

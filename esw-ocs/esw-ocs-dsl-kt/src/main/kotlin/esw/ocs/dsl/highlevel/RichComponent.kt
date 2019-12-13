@@ -14,9 +14,9 @@ import csw.location.models.ComponentType
 import csw.params.commands.CommandResponse.*
 import csw.params.commands.ControlCommand
 import csw.params.core.models.Id
-import csw.params.core.models.Prefix
 import csw.params.core.states.CurrentState
 import csw.params.core.states.StateName
+import csw.prefix.models.Prefix
 import csw.time.core.models.UTCTime
 import esw.ocs.dsl.SuspendableCallback
 import esw.ocs.dsl.SuspendableConsumer
@@ -38,20 +38,27 @@ class RichComponent(
         private val lockUnlockUtil: LockUnlockUtil,
         private val locationServiceUtil: LocationServiceUtil,
         private val actorSystem: ActorSystem<*>,
+        private val defaultTimeout: Duration,
         override val coroutineScope: CoroutineScope
 ) : SuspendToJavaConverter {
 
     suspend fun validate(command: ControlCommand): ValidateResponse = commandService().validate(command).await()
     suspend fun oneway(command: ControlCommand): OnewayResponse = commandService().oneway(command).await()
-    suspend fun submit(command: ControlCommand): SubmitResponse = commandService().submit(command).await()
+
+    suspend fun submit(command: ControlCommand, resumeOnError: Boolean = false): SubmitResponse {
+        val submitResponse: SubmitResponse = commandService().submit(command).await()
+        if (!resumeOnError && submitResponse.isFailed) throw CommandError(submitResponse)
+        return submitResponse
+    }
+
     suspend fun query(commandRunId: Id): SubmitResponse = commandService().query(commandRunId).await()
 
-    suspend fun queryFinal(commandRunId: Id, timeout: Duration): SubmitResponse {
+    suspend fun queryFinal(commandRunId: Id, timeout: Duration = defaultTimeout): SubmitResponse {
         val akkaTimeout = Timeout(timeout.toLongNanoseconds(), TimeUnit.NANOSECONDS)
         return commandService().queryFinal(commandRunId, akkaTimeout).await()
     }
 
-    suspend fun submitAndWait(command: ControlCommand, timeout: Duration, resumeOnError: Boolean = false): SubmitResponse {
+    suspend fun submitAndWait(command: ControlCommand, timeout: Duration = defaultTimeout, resumeOnError: Boolean = false): SubmitResponse {
         val akkaTimeout = Timeout(timeout.toLongNanoseconds(), TimeUnit.NANOSECONDS)
         val submitResponse: SubmitResponse = commandService().submitAndWait(command, akkaTimeout).await()
         if (!resumeOnError && submitResponse.isFailed) throw CommandError(submitResponse)

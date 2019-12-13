@@ -6,6 +6,8 @@ import csw.logging.client.appenders.{LogAppenderBuilder, StdOutAppender}
 import csw.logging.client.internal.JsonExtensions.RichJsObject
 import csw.logging.client.internal.LoggingSystem
 import csw.logging.models.Level.FATAL
+import csw.prefix.models.Prefix
+import csw.prefix.models.Subsystem.ESW
 import esw.gateway.api.clients.LoggingClient
 import esw.gateway.api.codecs.GatewayCodecs
 import esw.ocs.testkit.EswTestKit
@@ -47,8 +49,8 @@ class LoggingGatewayTest extends EswTestKit(Gateway) with GatewayCodecs {
     "should generate log statement with given app prefix, severity level and message | ESW-200" in {
       val loggingClient = new LoggingClient(gatewayPostClient)
 
-      val componentName = "test-app"
-      loggingClient.log(componentName, FATAL, "test-message").futureValue should ===(Done)
+      val componentName = "test_app"
+      loggingClient.log(Prefix(ESW, componentName), FATAL, "test-message").futureValue should ===(Done)
 
       eventually(logBuffer.size shouldBe 1)
       val log: JsObject = logBuffer.head

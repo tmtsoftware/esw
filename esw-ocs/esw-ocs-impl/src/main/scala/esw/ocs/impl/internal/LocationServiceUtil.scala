@@ -12,7 +12,7 @@ import csw.location.models.ComponentType.Sequencer
 import csw.location.models.Connection.AkkaConnection
 import csw.location.models.ConnectionType.AkkaType
 import csw.location.models._
-import csw.params.core.models.{Prefix, Subsystem}
+import csw.prefix.models.{Prefix, Subsystem}
 import esw.ocs.api.protocol.ScriptError
 
 import scala.compat.java8.FutureConverters.FutureOps

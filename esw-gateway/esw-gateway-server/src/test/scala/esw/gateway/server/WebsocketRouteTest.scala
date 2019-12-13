@@ -13,10 +13,11 @@ import csw.event.api.scaladsl.SubscriptionModes.RateLimiterMode
 import csw.location.models.ComponentId
 import csw.location.models.ComponentType.{Assembly, Sequencer}
 import csw.params.commands.CommandResponse.{Completed, SubmitResponse}
-import csw.params.core.models.Subsystem.TCS
-import csw.params.core.models.{Id, Prefix}
+import csw.params.core.models.Id
 import csw.params.core.states.{CurrentState, StateName}
 import csw.params.events.{Event, EventKey, EventName, ObserveEvent}
+import csw.prefix.models.Prefix
+import csw.prefix.models.Subsystem.TCS
 import esw.gateway.api.EventApi
 import esw.gateway.api.codecs.GatewayCodecs
 import esw.gateway.api.protocol.WebsocketRequest.{ComponentCommand, SequencerCommand, Subscribe, SubscribeWithPattern}

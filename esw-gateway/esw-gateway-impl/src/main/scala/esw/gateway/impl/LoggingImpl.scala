@@ -2,13 +2,14 @@ package esw.gateway.impl
 
 import akka.Done
 import csw.logging.models.Level
+import csw.prefix.models.Prefix
 import esw.gateway.api.LoggingApi
 
 import scala.concurrent.Future
 
 class LoggingImpl(loggerCache: LoggerCache) extends LoggingApi {
-  override def log(appName: String, level: Level, message: String, metadata: Map[String, Any]): Future[Done] = {
-    val logger = loggerCache.get(appName)
+  override def log(prefix: Prefix, level: Level, message: String, metadata: Map[String, Any]): Future[Done] = {
+    val logger = loggerCache.get(prefix)
     level match {
       case Level.TRACE => logger.trace(message, metadata)
       case Level.DEBUG => logger.debug(message, metadata)

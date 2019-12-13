@@ -5,9 +5,9 @@ import csw.params.commands.CommandResponse.Started
 import csw.params.commands.{CommandName, Observe, Sequence, Setup}
 import csw.params.core.generics.KeyType
 import csw.params.core.generics.KeyType.{IntKey, LongKey, StringKey}
-import csw.params.core.models.Prefix
-import csw.params.core.models.Subsystem.ESW
 import csw.params.events.{Event, EventKey}
+import csw.prefix.models.Prefix
+import csw.prefix.models.Subsystem.ESW
 import esw.ocs.api.SequencerApi
 import esw.ocs.testkit.EswTestKit
 import esw.ocs.testkit.Service.EventServer

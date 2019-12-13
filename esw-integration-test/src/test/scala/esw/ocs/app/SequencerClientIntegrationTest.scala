@@ -8,9 +8,10 @@ import csw.params.commands.CommandIssue.UnsupportedCommandInStateIssue
 import csw.params.commands.CommandResponse.{Completed, Error, Invalid, Started, SubmitResponse}
 import csw.params.commands.{CommandName, Sequence, Setup}
 import csw.params.core.generics.KeyType.StringKey
-import csw.params.core.models.Subsystem.{ESW, TCS}
-import csw.params.core.models.{Id, Prefix}
+import csw.params.core.models.Id
 import csw.params.events.{Event, EventKey, EventName, SystemEvent}
+import csw.prefix.models.Prefix
+import csw.prefix.models.Subsystem.{ESW, TCS}
 import csw.time.core.models.UTCTime
 import esw.ocs.api.SequencerApi
 import esw.ocs.api.models.StepStatus.Finished.{Failure, Success}

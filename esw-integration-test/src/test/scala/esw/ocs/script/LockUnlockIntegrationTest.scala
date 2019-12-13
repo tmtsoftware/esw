@@ -6,9 +6,9 @@ import com.typesafe.config.ConfigFactory
 import csw.command.client.messages.sequencer.SequencerMsg
 import csw.params.commands.{CommandName, Sequence, Setup}
 import csw.params.core.generics.KeyType.StringKey
-import csw.params.core.models.Prefix
-import csw.params.core.models.Subsystem.ESW
 import csw.params.events.EventKey
+import csw.prefix.models.Prefix
+import csw.prefix.models.Subsystem.ESW
 import esw.ocs.api.SequencerApi
 import esw.ocs.impl.SequencerActorProxy
 import esw.ocs.testkit.EswTestKit

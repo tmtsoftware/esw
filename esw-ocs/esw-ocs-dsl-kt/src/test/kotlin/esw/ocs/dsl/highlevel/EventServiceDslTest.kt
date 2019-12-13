@@ -5,8 +5,8 @@ import akka.actor.Cancellable
 import csw.event.api.javadsl.IEventPublisher
 import csw.event.api.javadsl.IEventSubscriber
 import csw.event.api.javadsl.IEventSubscription
-import csw.params.core.models.Prefix
 import csw.params.events.*
+import csw.prefix.models.Prefix
 import esw.ocs.dsl.highlevel.models.EventSubscription
 import io.kotlintest.shouldBe
 import io.mockk.every

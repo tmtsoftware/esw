@@ -10,7 +10,8 @@ import akka.stream.Materializer
 import akka.stream.scaladsl.{Flow, Sink, Source}
 import akka.util.ByteString
 import csw.params.commands.{CommandName, CommandResponse, Sequence, Setup}
-import csw.params.core.models.{Id, Prefix}
+import csw.params.core.models.Id
+import csw.prefix.models.Prefix
 import esw.ocs.api.codecs.SequencerHttpCodecs
 import esw.ocs.api.protocol.SequencerPostRequest.Submit
 import esw.ocs.api.protocol.SequencerWebsocketRequest.GetInsights
@@ -58,11 +59,13 @@ trait WsRequest extends ActorRuntime with SequencerHttpCodecs {
 trait HttpReq extends ActorRuntime with SequencerHttpCodecs {
 
   lazy private val sequence = Sequence(
-    (1 to 20).map(i => Setup(Prefix("CSW"), CommandName(s"command-$i"), None))
+    (1 to 20).map(i => Setup(Prefix("CSW.insights"), CommandName(s"command-$i"), None))
   )
   lazy private val command: Submit = Submit(sequence)
 
   def submitSequence: Id = {
+    println(Json.encode(command).toUtf8String)
+
     val x = Http().singleRequest(
       HttpRequest(
         method = HttpMethods.POST,

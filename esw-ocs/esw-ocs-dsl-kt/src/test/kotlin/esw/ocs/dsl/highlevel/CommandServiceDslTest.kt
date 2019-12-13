@@ -4,8 +4,8 @@ import csw.params.commands.CommandName
 import csw.params.commands.Observe
 import csw.params.commands.Setup
 import csw.params.core.models.ObsId
-import csw.params.core.models.Prefix
-import csw.params.javadsl.JSubsystem
+import csw.prefix.javadsl.JSubsystem
+import csw.prefix.models.Prefix
 import io.kotlintest.shouldBe
 import kotlinx.coroutines.runBlocking
 import org.junit.jupiter.api.Test

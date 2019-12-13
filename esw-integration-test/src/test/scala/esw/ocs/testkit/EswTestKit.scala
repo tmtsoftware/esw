@@ -13,7 +13,7 @@ import csw.location.api.scaladsl.LocationService
 import csw.location.models.Connection.{AkkaConnection, HttpConnection}
 import csw.location.models.{AkkaLocation, ComponentId, ComponentType, HttpLocation}
 import csw.network.utils.{Networks, SocketUtils}
-import csw.params.core.models.{Prefix, Subsystem}
+import csw.prefix.models.{Prefix, Subsystem}
 import csw.testkit.scaladsl.ScalaTestFrameworkTestKit
 import esw.gateway.api.codecs.GatewayCodecs
 import esw.gateway.api.protocol.{PostRequest, WebsocketRequest}

@@ -10,8 +10,8 @@ import csw.location.api.javadsl.ILocationService
 import csw.location.api.javadsl.JComponentType
 import csw.location.models.ComponentType
 import csw.logging.api.javadsl.ILogger
-import csw.params.core.models.Prefix
-import csw.params.core.models.Subsystem
+import csw.prefix.models.Prefix
+import csw.prefix.models.Subsystem
 import csw.time.scheduler.api.TimeServiceScheduler
 import esw.ocs.dsl.epics.CommandFlag
 import esw.ocs.dsl.epics.Fsm
@@ -22,13 +22,14 @@ import esw.ocs.dsl.script.StrandEc
 import esw.ocs.dsl.script.utils.SubsystemFactory
 import esw.ocs.impl.internal.LocationServiceUtil
 import kotlinx.coroutines.CoroutineScope
+import kotlin.time.Duration
 
 interface CswHighLevelDslApi : EventServiceDsl, TimeServiceDsl, CommandServiceDsl,
         ConfigServiceDsl, AlarmServiceDsl, LoopDsl, LoggingDsl, DatabaseServiceDsl {
 
-    fun Assembly(name: String): RichComponent
-    fun Hcd(name: String): RichComponent
-    fun Sequencer(subsystem: String, observingMode: String): RichSequencer
+    fun Assembly(prefix: String, defaultTimeout: Duration): RichComponent
+    fun Hcd(prefix: String, defaultTimeout: Duration): RichComponent
+    fun Sequencer(subsystem: String, observingMode: String, defaultTimeout: Duration): RichSequencer
 
     suspend fun Fsm(name: String, initState: String, block: suspend FsmScope.() -> Unit): Fsm
     fun commandFlag(): CommandFlag
@@ -53,15 +54,15 @@ abstract class CswHighLevelDsl(private val cswServices: CswServices) : CswHighLe
 
     private val locationServiceUtil = LocationServiceUtil(cswServices.locationService().asScala(), system)
     /******** Command Service helpers ********/
-    private fun richComponent(prefix: String, componentType: ComponentType): RichComponent =
-            RichComponent(Prefix.apply(prefix), componentType, cswServices.lockUnlockUtil(), locationServiceUtil, system, coroutineScope)
+    private fun richComponent(prefix: String, componentType: ComponentType, defaultTimeout: Duration): RichComponent =
+            RichComponent(Prefix.apply(prefix), componentType, cswServices.lockUnlockUtil(), locationServiceUtil, system, defaultTimeout, coroutineScope)
 
-    private fun richSequencer(subsystem: Subsystem, observingMode: String): RichSequencer =
-            RichSequencer(subsystem, observingMode, cswServices.sequencerApiFactory(), coroutineScope)
+    private fun richSequencer(subsystem: Subsystem, observingMode: String, defaultTimeout: Duration): RichSequencer =
+            RichSequencer(subsystem, observingMode, cswServices.sequencerApiFactory(), defaultTimeout, coroutineScope)
 
-    override fun Assembly(name: String): RichComponent = richComponent(name, JComponentType.Assembly())
-    override fun Hcd(name: String): RichComponent = richComponent(name, JComponentType.HCD())
-    override fun Sequencer(subsystem: String, observingMode: String): RichSequencer = richSequencer(SubsystemFactory.make(subsystem), observingMode)
+    override fun Assembly(prefix: String, defaultTimeout: Duration): RichComponent = richComponent(prefix, JComponentType.Assembly(), defaultTimeout)
+    override fun Hcd(prefix: String, defaultTimeout: Duration): RichComponent = richComponent(prefix, JComponentType.HCD(), defaultTimeout)
+    override fun Sequencer(subsystem: String, observingMode: String, defaultTimeout: Duration): RichSequencer = richSequencer(SubsystemFactory.make(subsystem), observingMode, defaultTimeout)
 
     /************* Fsm helpers **********/
     override suspend fun Fsm(name: String, initState: String, block: suspend FsmScope.() -> Unit): Fsm =

@@ -6,6 +6,7 @@ import csw.params.core.generics.KeyType.{ByteKey, StructKey}
 import csw.params.core.generics.{KeyType, Parameter}
 import csw.params.core.models._
 import csw.params.events.{Event, EventKey, EventName, SystemEvent}
+import csw.prefix.models.{Prefix, Subsystem}
 import esw.gateway.api.clients.EventClient
 import esw.gateway.api.codecs.GatewayCodecs
 import esw.gateway.api.protocol.GatewayException

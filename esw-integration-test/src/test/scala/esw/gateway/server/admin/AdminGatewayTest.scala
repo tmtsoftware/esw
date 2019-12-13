@@ -26,7 +26,7 @@ import csw.logging.models.{Level, LogMetadata}
 import csw.network.utils.Networks
 import csw.params.commands.CommandResponse.OnewayResponse
 import csw.params.commands.{CommandName, Setup}
-import csw.params.core.models.{Prefix, Subsystem}
+import csw.prefix.models.{Prefix, Subsystem}
 import esw.gateway.api.clients.AdminClient
 import esw.gateway.api.codecs.GatewayCodecs
 import esw.gateway.server.TestAppender
@@ -141,7 +141,7 @@ class AdminGatewayTest extends EswTestKit(Gateway) with GatewayCodecs {
       val groupByComponentNamesLog = logBuffer.groupBy { json =>
         if (json.contains("@componentName")) json.getString("@componentName")
       }
-      val laserComponentLogs = groupByComponentNamesLog(laserComponent.info.prefix.toString)
+      val laserComponentLogs = groupByComponentNamesLog(laserComponent.info.prefix.componentName)
 
       laserComponentLogs.exists(log => log.getString("@severity").toLowerCase.equalsIgnoreCase("info")) shouldBe true
       laserComponentLogs.foreach { log =>
@@ -163,8 +163,8 @@ class AdminGatewayTest extends EswTestKit(Gateway) with GatewayCodecs {
       Thread.sleep(100)
 
       val groupByAfterFilter       = logBuffer.groupBy(json => json.getString("@componentName"))
-      val laserCompLogsAfterFilter = groupByAfterFilter(laserConnection.prefix.toString)
-      val galilCompLogsAfterFilter = groupByAfterFilter(galilConnection.prefix.toString)
+      val laserCompLogsAfterFilter = groupByAfterFilter(laserConnection.prefix.componentName)
+      val galilCompLogsAfterFilter = groupByAfterFilter(galilConnection.prefix.componentName)
 
       laserCompLogsAfterFilter.exists(log => log.getString("@severity").toLowerCase.equalsIgnoreCase("error")) shouldBe true
       laserCompLogsAfterFilter.foreach { log =>

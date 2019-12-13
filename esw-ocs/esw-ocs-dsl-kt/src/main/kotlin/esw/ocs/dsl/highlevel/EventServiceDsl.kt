@@ -7,8 +7,8 @@ import csw.event.api.javadsl.IEventSubscriber
 import csw.event.api.scaladsl.SubscriptionModes
 import csw.params.core.generics.Key
 import csw.params.core.generics.Parameter
-import csw.params.core.models.Prefix
 import csw.params.events.*
+import csw.prefix.models.Prefix
 import esw.ocs.dsl.SuspendableConsumer
 import esw.ocs.dsl.SuspendableSupplier
 import esw.ocs.dsl.epics.EventVariable

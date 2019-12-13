@@ -8,8 +8,8 @@ import akka.actor.typed.{ActorRef, ActorSystem, SpawnProtocol}
 import csw.command.client.messages.ComponentMessage
 import csw.command.client.messages.SupervisorLockMessage.{Lock, Unlock}
 import csw.command.client.models.framework.LockingResponse
-import csw.params.core.models.Prefix
-import csw.params.core.models.Subsystem.ESW
+import csw.prefix.models.Prefix
+import csw.prefix.models.Subsystem.ESW
 import esw.ocs.api.BaseTestSuite
 
 import scala.concurrent.duration.FiniteDuration
