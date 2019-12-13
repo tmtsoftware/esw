@@ -178,7 +178,7 @@ class FsmImplTest {
 
         flag shouldBe false
         delay(100)
-        eventually(30.jMilliseconds) { flag shouldBe true }
+        eventually(60.jMilliseconds) { flag shouldBe true }
     }
 
     @Test
