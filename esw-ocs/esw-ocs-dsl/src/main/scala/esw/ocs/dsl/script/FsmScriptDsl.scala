@@ -6,16 +6,18 @@ import akka.Done
 import csw.params.commands.SequenceCommand
 import csw.time.core.models.UTCTime
 import esw.ocs.dsl.params.Params
+import esw.ocs.impl.core.api.SequenceOperator
 
 import scala.concurrent.Future
 
 private[esw] class FsmScriptDsl(
-    private val csw: CswServices,
+    private val sequenceOperatorFactory: () => SequenceOperator,
     private val strandEc: StrandEc,
     private val initialState: FsmScriptState
-) extends ScriptDsl(csw, strandEc) {
+) extends ScriptDsl(sequenceOperatorFactory, strandEc) {
 
-  def this(csw: CswServices, strandEc: StrandEc) = this(csw, strandEc, FsmScriptState.init())
+  def this(sequenceOperatorFactory: () => SequenceOperator, strandEc: StrandEc) =
+    this(sequenceOperatorFactory, strandEc, FsmScriptState.init())
 
   private var scriptState = initialState
 

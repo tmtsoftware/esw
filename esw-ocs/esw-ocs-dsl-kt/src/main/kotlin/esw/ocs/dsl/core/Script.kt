@@ -6,7 +6,6 @@ import csw.params.commands.Setup
 import csw.time.core.models.UTCTime
 import esw.ocs.dsl.highlevel.CswHighLevelDsl
 import esw.ocs.dsl.highlevel.models.ScriptError
-import esw.ocs.dsl.toScriptError
 import esw.ocs.dsl.nullable
 import esw.ocs.dsl.params.Params
 import esw.ocs.dsl.script.CswServices
@@ -14,6 +13,7 @@ import esw.ocs.dsl.script.FsmScriptDsl
 import esw.ocs.dsl.script.ScriptDsl
 import esw.ocs.dsl.script.StrandEc
 import esw.ocs.dsl.script.exceptions.ScriptLoadingException.ScriptInitialisationFailedException
+import esw.ocs.dsl.toScriptError
 import kotlinx.coroutines.*
 import kotlinx.coroutines.future.asCompletableFuture
 import kotlinx.coroutines.future.await
@@ -21,7 +21,7 @@ import kotlinx.coroutines.future.future
 import kotlin.coroutines.CoroutineContext
 
 sealed class BaseScript(val cswServices: CswServices, scope: CoroutineScope) : CswHighLevelDsl(cswServices), HandlerScope {
-    internal open val scriptDsl: ScriptDsl by lazy { ScriptDsl(cswServices, strandEc) }
+    internal open val scriptDsl: ScriptDsl by lazy { ScriptDsl(cswServices.sequenceOperatorFactory(), strandEc) }
 
     private val exceptionHandler = CoroutineExceptionHandler { _, exception ->
         warn("Exception thrown in script with a message: ${exception.message}, invoking exception handler", ex = exception)
@@ -113,7 +113,7 @@ class FsmScript(
         override val strandEc: StrandEc,
         private val scope: CoroutineScope
 ) : BaseScript(cswServices, scope), FsmScriptScope {
-    internal val fsmScriptDsl: FsmScriptDsl by lazy { FsmScriptDsl(cswServices, strandEc) }
+    internal val fsmScriptDsl: FsmScriptDsl by lazy { FsmScriptDsl(cswServices.sequenceOperatorFactory(), strandEc) }
 
     override val coroutineContext: CoroutineContext = scope.coroutineContext
 

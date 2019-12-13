@@ -60,7 +60,7 @@ private[ocs] class SequencerWiring(
 
   implicit lazy val actorRuntime: ActorRuntime = cswWiring.actorRuntime
 
-  lazy val sequencerRef: ActorRef[SequencerMsg] = (typedSystem ? { x: ActorRef[ActorRef[SequencerMsg]] =>
+  lazy val sequencerRef: ActorRef[SequencerMsg] = (actorSystem ? { x: ActorRef[ActorRef[SequencerMsg]] =>
     Spawn(sequencerBehavior.setup, prefix.value, Props.empty, x)
   }).block
 
@@ -79,7 +79,7 @@ private[ocs] class SequencerWiring(
   lazy val jConfigClientService: IConfigClientService = JConfigClientFactory.clientApi(actorSystem, jLocationService)
   lazy val jEventService: JEventService               = new JEventService(eventService)
 
-  private lazy val jAlarmService: IAlarmService = alarmServiceFactory.jMakeClientApi(jLocationService, typedSystem)
+  private lazy val jAlarmService: IAlarmService = alarmServiceFactory.jMakeClientApi(jLocationService, actorSystem)
 
   private lazy val loggerFactory    = new LoggerFactory(prefix)
   private lazy val jLoggerFactory   = loggerFactory.asJava
@@ -91,7 +91,7 @@ private[ocs] class SequencerWiring(
   lazy val cswServices = new CswServices(
     sequenceOperatorFactory,
     jLogger,
-    typedSystem,
+    actorSystem,
     jLocationService,
     jEventService,
     timeServiceSchedulerFactory,
@@ -123,7 +123,7 @@ private[ocs] class SequencerWiring(
     }
 
   lazy val sequencerBehavior =
-    new SequencerBehavior(componentId, script, locationService, sequenceComponentLocation, shutdownHttpService)(typedSystem)
+    new SequencerBehavior(componentId, script, locationService, sequenceComponentLocation, shutdownHttpService)(actorSystem)
 
   lazy val sequencerServer: SequencerServer = new SequencerServer {
     override def start(): Either[ScriptError, AkkaLocation] = {

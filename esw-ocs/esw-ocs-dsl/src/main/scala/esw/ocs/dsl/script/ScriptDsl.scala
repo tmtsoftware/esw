@@ -10,14 +10,15 @@ import csw.time.core.models.UTCTime
 import esw.ocs.api.protocol.PullNextResult
 import esw.ocs.dsl.script.exceptions.UnhandledCommandException
 import esw.ocs.dsl.script.utils.{FunctionBuilder, FunctionHandlers}
-import esw.ocs.impl.core.api.ScriptApi
+import esw.ocs.impl.core.api.{ScriptApi, SequenceOperator}
 
 import scala.async.Async.{async, await}
 import scala.compat.java8.FutureConverters.{CompletionStageOps, FutureOps}
 import scala.concurrent.{ExecutionContext, Future}
 import scala.reflect.ClassTag
 
-private[esw] class ScriptDsl(private val csw: CswServices, private val strandEc: StrandEc) extends ScriptApi {
+private[esw] class ScriptDsl(private val sequenceOperatorFactory: () => SequenceOperator, private val strandEc: StrandEc)
+    extends ScriptApi {
   protected implicit lazy val toEc: ExecutionContext = strandEc.ec
 
   var isOnline = true
@@ -87,7 +88,7 @@ private[esw] class ScriptDsl(private val csw: CswServices, private val strandEc:
 
   protected final def nextIf(f: SequenceCommand => Boolean): CompletionStage[Optional[SequenceCommand]] =
     async {
-      val operator  = csw.sequenceOperatorFactory()
+      val operator  = sequenceOperatorFactory()
       val mayBeNext = await(operator.maybeNext)
       mayBeNext match {
         case Some(step) if f(step.command) =>

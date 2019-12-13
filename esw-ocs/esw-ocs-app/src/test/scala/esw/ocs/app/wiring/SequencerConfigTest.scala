@@ -33,4 +33,4 @@ class SequencerConfigTest extends BaseTestSuite {
   }
 }
 
-class ValidTestScript(csw: CswServices) extends ScriptDsl(csw, StrandEc())
+class ValidTestScript(ctx: CswServices) extends ScriptDsl(ctx.sequenceOperatorFactory, StrandEc())

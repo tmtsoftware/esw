@@ -5,6 +5,7 @@ import java.util.concurrent.CompletableFuture
 import csw.params.commands.{CommandName, Observe, Setup}
 import csw.prefix.models.Prefix
 import esw.ocs.api.BaseTestSuite
+import esw.ocs.impl.core.api.SequenceOperator
 
 import scala.collection.mutable.ArrayBuffer
 import scala.concurrent.duration.DurationDouble
@@ -20,8 +21,9 @@ class ScriptDslTest extends BaseTestSuite {
     "allow adding and executing setup handler" in {
       var receivedPrefix: Option[Prefix] = None
 
-      val csw: CswServices = mock[CswServices]
-      val script: ScriptDsl = new ScriptDsl(csw, strandEc) {
+      // todo : extract a beforeEach
+      val seqOperatorFactory = () => mock[SequenceOperator]
+      val script: ScriptDsl = new ScriptDsl(seqOperatorFactory, strandEc) {
 
         onSetupCommand("iris") { cmd =>
           receivedPrefix = Some(cmd.source)
@@ -39,8 +41,8 @@ class ScriptDslTest extends BaseTestSuite {
     "allow adding and executing observe handler" in {
       var receivedPrefix: Option[Prefix] = None
 
-      val csw: CswServices = mock[CswServices]
-      val script: ScriptDsl = new ScriptDsl(csw, strandEc) {
+      val seqOperatorFactory = () => mock[SequenceOperator]
+      val script: ScriptDsl = new ScriptDsl(seqOperatorFactory, strandEc) {
 
         onObserveCommand("iris") { cmd =>
           receivedPrefix = Some(cmd.source)
@@ -58,8 +60,8 @@ class ScriptDslTest extends BaseTestSuite {
     "allow adding and executing multiple shutdown handlers in order" in {
       val orderOfShutdownCalled = ArrayBuffer.empty[Int]
 
-      val csw: CswServices = mock[CswServices]
-      val script: ScriptDsl = new ScriptDsl(csw, strandEc) {
+      val seqOperatorFactory = () => mock[SequenceOperator]
+      val script: ScriptDsl = new ScriptDsl(seqOperatorFactory, strandEc) {
 
         onShutdown {
           orderOfShutdownCalled += 1
@@ -79,8 +81,8 @@ class ScriptDslTest extends BaseTestSuite {
     "allow adding and executing multiple abort handlers in order" in {
       val orderOfAbortCalled = ArrayBuffer.empty[Int]
 
-      val csw: CswServices = mock[CswServices]
-      val script: ScriptDsl = new ScriptDsl(csw, strandEc) {
+      val seqOperatorFactory = () => mock[SequenceOperator]
+      val script: ScriptDsl = new ScriptDsl(seqOperatorFactory, strandEc) {
 
         onAbortSequence {
           orderOfAbortCalled += 1
@@ -100,8 +102,8 @@ class ScriptDslTest extends BaseTestSuite {
     "allow adding and executing exception handlers | ESW-139" in {
       var receivedPrefix: Option[Throwable] = None
 
-      val csw: CswServices = mock[CswServices]
-      val script: ScriptDsl = new ScriptDsl(csw, strandEc) {
+      val seqOperatorFactory = () => mock[SequenceOperator]
+      val script: ScriptDsl = new ScriptDsl(seqOperatorFactory, strandEc) {
 
         onException { ex =>
           receivedPrefix = Some(ex)
