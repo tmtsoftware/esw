@@ -14,7 +14,7 @@ class LogCodecTest extends WordSpec with Matchers with GatewayCodecs {
         """
           |{
           |  "Log": {
-          |    "appName": "app1",
+          |    "prefix": "esw.app1",
           |    "level": "debug",
           |    "message": "all good",
           |    "metadata": {

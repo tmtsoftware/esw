@@ -46,10 +46,11 @@ class SequencerTestSetup(sequence: Sequence)(implicit system: ActorSystem[_]) {
     TestProbe[SequenceComponentMsg].ref.toURI
   )
   private def mockShutdownHttpService: () => Future[Done.type] = () => Future { Done }
+  val sequencerName                                            = s"SequencerActor${math.random()}"
+  when(componentId.prefix).thenReturn(Prefix(ESW, sequencerName))
   private val sequencerBehavior =
     new SequencerBehavior(componentId, script, locationService, sequenceComponent, mockShutdownHttpService)
 
-  val sequencerName                          = s"SequencerActor${math.random()}"
   val sequencerActor: ActorRef[SequencerMsg] = system.systemActorOf(sequencerBehavior.setup, sequencerName)
 
   private def deadletter = system.deadLetters
