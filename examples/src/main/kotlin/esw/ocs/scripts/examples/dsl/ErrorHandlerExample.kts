@@ -53,7 +53,7 @@ script {
         //  First approach - using custom dsl (this is an alternative to kotlin pattern match using when)
         positiveSubmitResponse
                 .onStarted { startedRes ->
-                    val completedResponse = assembly.queryFinal(startedRes.runId(), 10.seconds)
+                    val completedResponse = assembly.queryFinal(startedRes.runId())
                     info("command completed with result: ${completedResponse.result}")
                 }
                 .onCompleted { completed ->
@@ -63,7 +63,7 @@ script {
         // Second approach - using kotlin pattern matching
         when (positiveSubmitResponse) {
             is Started -> {
-                val completedResponse = assembly.queryFinal(positiveSubmitResponse.runId(), 10.seconds)
+                val completedResponse = assembly.queryFinal(positiveSubmitResponse.runId())
                 info("command completed with response: $completedResponse")
             }
             is Completed -> info("command with ${positiveSubmitResponse.runId()} is completed")
@@ -80,7 +80,7 @@ script {
         //  First approach - using custom dsl (this is an alternative to kotlin pattern match using when)
         submitResponse
                 .onStarted { startedRes ->
-                    val completedResponse = assembly.queryFinal(startedRes.runId(), 10.seconds)
+                    val completedResponse = assembly.queryFinal(startedRes.runId())
                     info("command completed with result: ${completedResponse.result}")
                 }
                 .onCompleted { completed ->
