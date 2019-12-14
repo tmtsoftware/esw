@@ -18,9 +18,9 @@ import esw.ocs.dsl.epics.Fsm
 import esw.ocs.dsl.epics.FsmImpl
 import esw.ocs.dsl.epics.FsmScope
 import esw.ocs.dsl.internal.CswServices
-import esw.ocs.impl.core.script.ScriptContext
 import esw.ocs.dsl.script.StrandEc
 import esw.ocs.dsl.script.utils.SubsystemFactory
+import esw.ocs.impl.core.script.ScriptContext
 import esw.ocs.impl.internal.LocationServiceUtil
 import kotlinx.coroutines.CoroutineScope
 import kotlin.time.Duration
@@ -29,6 +29,7 @@ import kotlin.time.toKotlinDuration
 interface CswHighLevelDslApi : EventServiceDsl, TimeServiceDsl, CommandServiceDsl,
         ConfigServiceDsl, AlarmServiceDsl, LoopDsl, LoggingDsl, DatabaseServiceDsl {
 
+    val cswServices: CswServices
     fun Assembly(prefix: String, defaultTimeout: Duration): RichComponent
     fun Hcd(prefix: String, defaultTimeout: Duration): RichComponent
     fun Sequencer(subsystem: String, observingMode: String, defaultTimeout: Duration): RichSequencer
@@ -39,7 +40,7 @@ interface CswHighLevelDslApi : EventServiceDsl, TimeServiceDsl, CommandServiceDs
     fun finishWithError(message: String = ""): Nothing = throw RuntimeException(message)
 }
 
-abstract class CswHighLevelDsl(internal val cswServices: CswServices, private val scriptContext: ScriptContext) : CswHighLevelDslApi {
+abstract class CswHighLevelDsl(override val cswServices: CswServices, private val scriptContext: ScriptContext) : CswHighLevelDslApi {
     abstract val strandEc: StrandEc
     abstract override val coroutineScope: CoroutineScope
 

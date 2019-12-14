@@ -10,11 +10,11 @@ import csw.location.client.javadsl.JHttpLocationServiceFactory
 import csw.logging.api.javadsl.ILogger
 import csw.time.scheduler.TimeServiceSchedulerFactory
 import csw.time.scheduler.api.TimeServiceScheduler
-import esw.ocs.impl.core.script.ScriptContext
 import esw.ocs.dsl.script.StrandEc
 import esw.ocs.dsl.script.utils.LockUnlockUtil
+import esw.ocs.impl.core.script.ScriptContext
 
-class CswServices(val ctx: ScriptContext, strandEc: StrandEc) {
+class CswServices(private val ctx: ScriptContext, strandEc: StrandEc) {
     val logger: ILogger = ctx.jLogger()
     val alarmService: IAlarmService = ctx.alarmService()
     val locationService: ILocationService by lazy { JHttpLocationServiceFactory.makeLocalClient(ctx.actorSystem()) }
