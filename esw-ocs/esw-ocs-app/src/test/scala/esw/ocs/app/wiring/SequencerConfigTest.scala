@@ -5,7 +5,7 @@ import csw.prefix.models.Subsystem.ESW
 import csw.prefix.models.{Prefix, Subsystem}
 import esw.http.core.BaseTestSuite
 import esw.ocs.dsl.script.exceptions.ScriptLoadingException.ScriptConfigurationMissingException
-import esw.ocs.dsl.script.{CswServices, ScriptDsl, StrandEc}
+import esw.ocs.dsl.script.{ScriptContext, ScriptDsl, StrandEc}
 
 class SequencerConfigTest extends BaseTestSuite {
   private val config: Config = ConfigFactory.load()
@@ -33,4 +33,4 @@ class SequencerConfigTest extends BaseTestSuite {
   }
 }
 
-class ValidTestScript(ctx: CswServices) extends ScriptDsl(ctx.sequenceOperatorFactory, StrandEc())
+class ValidTestScript(ctx: ScriptContext) extends ScriptDsl(ctx.sequenceOperatorFactory, StrandEc())

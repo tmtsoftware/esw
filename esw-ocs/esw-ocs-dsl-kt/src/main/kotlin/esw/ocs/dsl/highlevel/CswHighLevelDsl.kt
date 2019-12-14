@@ -17,12 +17,14 @@ import esw.ocs.dsl.epics.CommandFlag
 import esw.ocs.dsl.epics.Fsm
 import esw.ocs.dsl.epics.FsmImpl
 import esw.ocs.dsl.epics.FsmScope
-import esw.ocs.dsl.script.CswServices
+import esw.ocs.dsl.highlevel.models.CswServices
+import esw.ocs.dsl.script.ScriptContext
 import esw.ocs.dsl.script.StrandEc
 import esw.ocs.dsl.script.utils.SubsystemFactory
 import esw.ocs.impl.internal.LocationServiceUtil
 import kotlinx.coroutines.CoroutineScope
 import kotlin.time.Duration
+import kotlin.time.toKotlinDuration
 
 interface CswHighLevelDslApi : EventServiceDsl, TimeServiceDsl, CommandServiceDsl,
         ConfigServiceDsl, AlarmServiceDsl, LoopDsl, LoggingDsl, DatabaseServiceDsl {
@@ -37,28 +39,32 @@ interface CswHighLevelDslApi : EventServiceDsl, TimeServiceDsl, CommandServiceDs
     fun finishWithError(message: String = ""): Nothing = throw RuntimeException(message)
 }
 
-abstract class CswHighLevelDsl(private val cswServices: CswServices) : CswHighLevelDslApi {
+abstract class CswHighLevelDsl(internal val cswServices: CswServices, private val scriptContext: ScriptContext) : CswHighLevelDslApi {
     abstract val strandEc: StrandEc
     abstract override val coroutineScope: CoroutineScope
 
-    final override val system: ActorSystem<*> = cswServices.actorSystem()
-    final override val locationService: ILocationService = cswServices.locationService()
-    final override val configClient: IConfigClientService = cswServices.configClientService()
-    final override val logger: ILogger = cswServices.jLogger()
-    final override val databaseServiceFactory: DatabaseServiceFactory = cswServices.databaseServiceFactory()
-    final override val alarmService: IAlarmService = cswServices.alarmService()
+    final override val system: ActorSystem<*> = scriptContext.actorSystem()
+    final override val locationService: ILocationService by lazy { cswServices.locationService }
+    final override val configClient: IConfigClientService by lazy { cswServices.configClient }
+    final override val logger: ILogger by lazy { cswServices.logger }
+    final override val databaseServiceFactory: DatabaseServiceFactory by lazy { cswServices.databaseServiceFactory }
+    final override val alarmService: IAlarmService by lazy { cswServices.alarmService }
 
-    final override val defaultPublisher: IEventPublisher by lazy { cswServices.eventService().defaultPublisher() }
-    final override val defaultSubscriber: IEventSubscriber by lazy { cswServices.eventService().defaultSubscriber() }
-    final override val timeServiceScheduler: TimeServiceScheduler by lazy { cswServices.timeServiceSchedulerFactory().make(strandEc.ec()) }
+    final override val defaultPublisher: IEventPublisher by lazy { cswServices.defaultPublisher }
+    final override val defaultSubscriber: IEventSubscriber by lazy { cswServices.defaultSubscriber }
+    final override val timeServiceScheduler: TimeServiceScheduler by lazy { cswServices.timeServiceScheduler }
 
-    private val locationServiceUtil = LocationServiceUtil(cswServices.locationService().asScala(), system)
+    private val locationServiceUtil: LocationServiceUtil by lazy { LocationServiceUtil(cswServices.locationService.asScala(), system) }
+
+    private val alarmConfig = scriptContext.config().getConfig("csw-alarm")
+    override val _alarmRefreshDuration: Duration = alarmConfig.getDuration("refresh-interval").toKotlinDuration()
+
     /******** Command Service helpers ********/
     private fun richComponent(prefix: String, componentType: ComponentType, defaultTimeout: Duration): RichComponent =
-            RichComponent(Prefix.apply(prefix), componentType, cswServices.lockUnlockUtil(), locationServiceUtil, system, defaultTimeout, coroutineScope)
+            RichComponent(Prefix.apply(prefix), componentType, cswServices.lockUnlockUtil, locationServiceUtil, system, defaultTimeout, coroutineScope)
 
     private fun richSequencer(subsystem: Subsystem, observingMode: String, defaultTimeout: Duration): RichSequencer =
-            RichSequencer(subsystem, observingMode, cswServices.sequencerApiFactory(), defaultTimeout, coroutineScope)
+            RichSequencer(subsystem, observingMode, scriptContext.sequencerApiFactory(), defaultTimeout, coroutineScope)
 
     override fun Assembly(prefix: String, defaultTimeout: Duration): RichComponent = richComponent(prefix, JComponentType.Assembly(), defaultTimeout)
     override fun Hcd(prefix: String, defaultTimeout: Duration): RichComponent = richComponent(prefix, JComponentType.HCD(), defaultTimeout)

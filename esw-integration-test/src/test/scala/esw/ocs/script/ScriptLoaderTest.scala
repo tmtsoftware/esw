@@ -1,59 +1,57 @@
 package esw.ocs.script
 
 import akka.actor.typed.{ActorSystem, SpawnProtocol}
+import com.typesafe.config.Config
 import csw.alarm.api.javadsl.IAlarmService
-import csw.config.api.javadsl.IConfigClientService
-import csw.database.DatabaseServiceFactory
 import csw.event.api.javadsl.IEventService
-import csw.location.api.javadsl.ILocationService
 import csw.logging.api.javadsl.ILogger
-import csw.time.scheduler.TimeServiceSchedulerFactory
+import csw.prefix.models.Prefix
 import esw.ocs.dsl.script.exceptions.ScriptLoadingException._
-import esw.ocs.dsl.script.utils.{LockUnlockUtil, ScriptLoader}
-import esw.ocs.dsl.script.{CswServices, ScriptDsl}
+import esw.ocs.dsl.script.utils.ScriptLoader
+import esw.ocs.dsl.script.{ScriptContext, ScriptDsl}
 import esw.ocs.impl.SequencerActorProxyFactory
 import esw.ocs.impl.core.api.SequenceOperator
 import esw.ocs.testkit.BaseTestSuite
 
+import scala.concurrent.duration.DurationInt
+import scala.jdk.DurationConverters.ScalaDurationOps
+
 class ScriptLoaderTest extends BaseTestSuite {
 
-  private val actorSystem                 = ActorSystem(SpawnProtocol(), "test-system")
-  private val sequenceOperator            = mock[SequenceOperator]
-  private val jLogger                     = mock[ILogger]
-  private val iLocationService            = mock[ILocationService]
-  private val iEventService               = mock[IEventService]
-  private val timeServiceSchedulerFactory = mock[TimeServiceSchedulerFactory]
-  private val sequencerClientFactory      = mock[SequencerActorProxyFactory]
-  private val databaseServiceFactory      = mock[DatabaseServiceFactory]
-  private val lockUnlockUtil              = mock[LockUnlockUtil]
-  private val iConfigClientService        = mock[IConfigClientService]
-  private val iAlarmService               = mock[IAlarmService]
+  private val actorSystem             = ActorSystem(SpawnProtocol(), "test-system")
+  private val logger                  = mock[ILogger]
+  private val sequenceOperatorFactory = () => mock[SequenceOperator]
+  private val iEventService           = mock[IEventService]
+  private val iAlarmService           = mock[IAlarmService]
+  private val sequencerClientFactory  = mock[SequencerActorProxyFactory]
+  private val prefix                  = mock[Prefix]
+  private val config                  = mock[Config]
 
-  val cswServices = new CswServices(
-    () => sequenceOperator,
-    jLogger,
+  when(config.getConfig("csw-alarm")).thenReturn(config)
+  when(config.getDuration("refresh-interval")).thenReturn(2.seconds.toJava)
+
+  val scriptContext = new ScriptContext(
+    prefix,
+    logger,
+    sequenceOperatorFactory,
     actorSystem,
-    iLocationService,
     iEventService,
-    timeServiceSchedulerFactory,
+    iAlarmService,
     sequencerClientFactory,
-    databaseServiceFactory,
-    lockUnlockUtil,
-    iConfigClientService,
-    iAlarmService
+    config
   )
 
   "load" must {
 
     "load script class if subsystem and observingMode is provided | ESW-102, ESW-136" in {
       val loader: ScriptDsl =
-        ScriptLoader.loadKotlinScript("esw.ocs.scripts.examples.testData.scriptLoader.ValidTestScript", cswServices)
+        ScriptLoader.loadKotlinScript("esw.ocs.scripts.examples.testData.scriptLoader.ValidTestScript", scriptContext)
       loader shouldBe a[ScriptDsl]
     }
 
     "throw InvalidScriptException if provided class is not a script | ESW-102, ESW-136" in {
       val exception = intercept[InvalidScriptException] {
-        ScriptLoader.loadKotlinScript("esw.ocs.scripts.examples.testData.scriptLoader.InvalidTestScript", cswServices)
+        ScriptLoader.loadKotlinScript("esw.ocs.scripts.examples.testData.scriptLoader.InvalidTestScript", scriptContext)
       }
 
       exception.getMessage shouldBe s"esw.ocs.scripts.examples.testData.scriptLoader.InvalidTestScript should be subclass of Script"
@@ -63,7 +61,7 @@ class ScriptLoaderTest extends BaseTestSuite {
       val invalidScriptClass = "invalid.path.TestScriptDoesNotExist"
 
       val exception = intercept[ScriptNotFound] {
-        ScriptLoader.loadKotlinScript(invalidScriptClass, cswServices)
+        ScriptLoader.loadKotlinScript(invalidScriptClass, scriptContext)
       }
 
       exception.getMessage shouldBe "invalid.path.TestScriptDoesNotExist not found at configured path"
@@ -73,7 +71,7 @@ class ScriptLoaderTest extends BaseTestSuite {
       val exception = intercept[ScriptInitialisationFailedException] {
         ScriptLoader.loadKotlinScript(
           "esw.ocs.scripts.examples.testData.scriptLoader.InitialisationExceptionTestScript",
-          cswServices
+          scriptContext
         )
       }
       exception.getMessage shouldBe "Script initialization failed with : initialisation failed"

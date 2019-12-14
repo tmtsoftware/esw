@@ -6,9 +6,9 @@ import csw.params.commands.Setup
 import csw.time.core.models.UTCTime
 import esw.ocs.dsl.highlevel.CswHighLevelDsl
 import esw.ocs.dsl.highlevel.models.ScriptError
+import esw.ocs.dsl.internal.ScriptWiring
 import esw.ocs.dsl.nullable
 import esw.ocs.dsl.params.Params
-import esw.ocs.dsl.script.CswServices
 import esw.ocs.dsl.script.FsmScriptDsl
 import esw.ocs.dsl.script.ScriptDsl
 import esw.ocs.dsl.script.StrandEc
@@ -20,8 +20,8 @@ import kotlinx.coroutines.future.await
 import kotlinx.coroutines.future.future
 import kotlin.coroutines.CoroutineContext
 
-sealed class BaseScript(val cswServices: CswServices, scope: CoroutineScope) : CswHighLevelDsl(cswServices), HandlerScope {
-    internal open val scriptDsl: ScriptDsl by lazy { ScriptDsl(cswServices.sequenceOperatorFactory(), strandEc) }
+sealed class BaseScript(wiring: ScriptWiring) : CswHighLevelDsl(wiring.cswServices, wiring.scriptContext), HandlerScope {
+    internal open val scriptDsl: ScriptDsl by lazy { ScriptDsl(wiring.scriptContext.sequenceOperatorFactory(), strandEc) }
 
     private val exceptionHandler = CoroutineExceptionHandler { _, exception ->
         warn("Exception thrown in script with a message: ${exception.message}, invoking exception handler", ex = exception)
@@ -29,7 +29,7 @@ sealed class BaseScript(val cswServices: CswServices, scope: CoroutineScope) : C
         scriptDsl.executeExceptionHandlers(exception)
     }
 
-    override val coroutineScope: CoroutineScope = scope + exceptionHandler
+    override val coroutineScope: CoroutineScope = wiring.scope + exceptionHandler
 
     fun onGoOnline(block: suspend HandlerScope.() -> Unit) =
             scriptDsl.onGoOnline { block.toCoroutineScope().toJava() }
@@ -61,14 +61,11 @@ sealed class BaseScript(val cswServices: CswServices, scope: CoroutineScope) : C
     private fun (suspend HandlerScope.() -> Unit).toCoroutineScope(): suspend (CoroutineScope) -> Unit = { this(it.toHandlerScope()) }
 }
 
-open class Script(
-        cswServices: CswServices,
-        override val strandEc: StrandEc,
-        scope: CoroutineScope
-) : BaseScript(cswServices, scope), ScriptScope, CommandHandlerScope {
+open class Script(private val wiring: ScriptWiring) : BaseScript(wiring), ScriptScope, CommandHandlerScope {
+    override val strandEc: StrandEc = wiring.strandEc
 
     //todo : revisit all the places implementing CoroutineContext
-    override val coroutineContext: CoroutineContext = scope.coroutineContext // this won't be used anywhere
+    override val coroutineContext: CoroutineContext = wiring.scope.coroutineContext // this won't be used anywhere
 
     override suspend fun nextIf(predicate: (SequenceCommand) -> Boolean): SequenceCommand? =
             scriptDsl.nextIf { predicate(it) }.await().nullable()
@@ -95,7 +92,7 @@ open class Script(
 
     override fun loadScripts(vararg reusableScriptResult: ReusableScriptResult) =
             reusableScriptResult.forEach {
-                this.scriptDsl.merge(it(cswServices, strandEc, coroutineScope).scriptDsl)
+                this.scriptDsl.merge(it(wiring).scriptDsl)
             }
 
     override fun become(nextState: String, params: Params): Unit = throw RuntimeException("Become can not be called outside Fsm scripts")
@@ -108,19 +105,16 @@ open class Script(
     }
 }
 
-class FsmScript(
-        cswServices: CswServices,
-        override val strandEc: StrandEc,
-        private val scope: CoroutineScope
-) : BaseScript(cswServices, scope), FsmScriptScope {
-    internal val fsmScriptDsl: FsmScriptDsl by lazy { FsmScriptDsl(cswServices.sequenceOperatorFactory(), strandEc) }
+class FsmScript(private val wiring: ScriptWiring) : BaseScript(wiring), FsmScriptScope {
 
-    override val coroutineContext: CoroutineContext = scope.coroutineContext
-
+    override val strandEc: StrandEc = wiring.strandEc
+    override val coroutineContext: CoroutineContext = coroutineScope.coroutineContext
     override val scriptDsl: ScriptDsl by lazy { fsmScriptDsl }
 
-    inner class FsmScriptStateDsl : Script(cswServices, strandEc, scope), FsmScriptStateScope {
-        override val coroutineContext: CoroutineContext = this@FsmScript.scope.coroutineContext
+    internal val fsmScriptDsl: FsmScriptDsl by lazy { FsmScriptDsl(wiring.scriptContext.sequenceOperatorFactory(), strandEc) }
+
+    inner class FsmScriptStateDsl : Script(wiring), FsmScriptStateScope {
+        override val coroutineContext: CoroutineContext = this@FsmScript.coroutineScope.coroutineContext
         override fun become(nextState: String, params: Params) = this@FsmScript.become(nextState, params)
     }
 
