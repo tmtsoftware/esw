@@ -6,11 +6,12 @@ import csw.alarm.api.javadsl.IAlarmService
 import csw.event.api.javadsl.IEventService
 import csw.logging.api.javadsl.ILogger
 import csw.prefix.models.Prefix
-import esw.ocs.dsl.script.exceptions.ScriptLoadingException._
-import esw.ocs.dsl.script.utils.ScriptLoader
-import esw.ocs.dsl.script.{ScriptContext, ScriptDsl}
+import esw.ocs.dsl.script.ScriptDsl
+import esw.ocs.dsl.script.exceptions.ScriptInitialisationFailedException
 import esw.ocs.impl.SequencerActorProxyFactory
 import esw.ocs.impl.core.api.SequenceOperator
+import esw.ocs.impl.core.script.ScriptLoadingException.{InvalidScriptException, ScriptNotFound}
+import esw.ocs.impl.core.script.{ScriptApi, ScriptContext, ScriptLoader}
 import esw.ocs.testkit.BaseTestSuite
 
 import scala.concurrent.duration.DurationInt
@@ -44,7 +45,7 @@ class ScriptLoaderTest extends BaseTestSuite {
   "load" must {
 
     "load script class if subsystem and observingMode is provided | ESW-102, ESW-136" in {
-      val loader: ScriptDsl =
+      val loader: ScriptApi =
         ScriptLoader.loadKotlinScript("esw.ocs.scripts.examples.testData.scriptLoader.ValidTestScript", scriptContext)
       loader shouldBe a[ScriptDsl]
     }

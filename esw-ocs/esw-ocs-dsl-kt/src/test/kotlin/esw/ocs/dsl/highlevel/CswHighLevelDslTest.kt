@@ -7,11 +7,10 @@ import csw.location.api.javadsl.ILocationService
 import csw.location.api.javadsl.JComponentType
 import csw.location.api.scaladsl.LocationService
 import csw.prefix.models.Prefix
-import esw.ocs.dsl.highlevel.models.CswServices
-import esw.ocs.dsl.script.ScriptContext
+import esw.ocs.dsl.internal.CswServices
+import esw.ocs.impl.core.script.ScriptContext
 import esw.ocs.dsl.script.StrandEc
 import esw.ocs.dsl.script.utils.LockUnlockUtil
-import io.kotlintest.seconds
 import io.kotlintest.shouldBe
 import io.mockk.every
 import io.mockk.mockk
@@ -22,6 +21,7 @@ import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
 import kotlin.time.Duration
 import kotlin.time.seconds
+import kotlin.time.toJavaDuration
 
 class CswHighLevelDslTest {
 
@@ -37,7 +37,7 @@ class CswHighLevelDslTest {
 
     init {
         every { config.getConfig("csw-alarm") }.returns(alarmConfig)
-        every { alarmConfig.getDuration("refresh-interval") }.returns(2.seconds)
+        every { alarmConfig.getDuration("refresh-interval") }.returns(2.seconds.toJavaDuration())
         every { cswServices.lockUnlockUtil }.returns(lockUnlockUtil)
         every { cswServices.locationService }.returns(iLocationService)
         every { iLocationService.asScala() }.returns(locationService)

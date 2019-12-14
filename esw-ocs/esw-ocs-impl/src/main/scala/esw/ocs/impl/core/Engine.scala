@@ -4,7 +4,8 @@ import akka.Done
 import akka.stream.Materializer
 import akka.stream.scaladsl.Source
 import esw.ocs.api.protocol.{PullNextResult, Unhandled}
-import esw.ocs.impl.core.api.{ScriptApi, SequenceOperator}
+import esw.ocs.impl.core.api.SequenceOperator
+import esw.ocs.impl.core.script.ScriptApi
 
 import scala.async.Async._
 import scala.concurrent.Future

@@ -1,7 +1,6 @@
 package esw.ocs.dsl.internal
 
-import esw.ocs.dsl.highlevel.models.CswServices
-import esw.ocs.dsl.script.ScriptContext
+import esw.ocs.impl.core.script.ScriptContext
 import esw.ocs.dsl.script.StrandEc
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.SupervisorJob

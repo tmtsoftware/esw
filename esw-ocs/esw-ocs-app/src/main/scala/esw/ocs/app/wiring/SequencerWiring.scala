@@ -24,11 +24,10 @@ import csw.prefix.models.Subsystem
 import esw.http.core.wiring.{ActorRuntime, CswWiring, HttpService, Settings}
 import esw.ocs.api.codecs.SequencerHttpCodecs
 import esw.ocs.api.protocol.ScriptError
-import esw.ocs.dsl.script.utils.ScriptLoader
-import esw.ocs.dsl.script.{ScriptContext, ScriptDsl}
 import esw.ocs.handler.{SequencerPostHandler, SequencerWebsocketHandler}
 import esw.ocs.impl.core._
-import esw.ocs.impl.internal.{LocationServiceUtil, SequencerServer, Timeouts}
+import esw.ocs.impl.core.script.{ScriptApi, ScriptContext, ScriptLoader}
+import esw.ocs.impl.internal._
 import esw.ocs.impl.messages.SequencerMessages.Shutdown
 import esw.ocs.impl.syntax.FutureSyntax.FutureOps
 import esw.ocs.impl.{SequencerActorProxy, SequencerActorProxyFactory}
@@ -65,7 +64,7 @@ private[ocs] class SequencerWiring(
   //SequencerRef -> Script -> cswServices -> SequencerOperator -> SequencerRef
   private lazy val sequenceOperatorFactory = () => new SequenceOperatorImpl(sequencerRef)
   private lazy val componentId             = ComponentId(prefix, ComponentType.Sequencer)
-  private lazy val script: ScriptDsl       = ScriptLoader.loadKotlinScript(scriptClass, scriptContext)
+  private lazy val script: ScriptApi       = ScriptLoader.loadKotlinScript(scriptClass, scriptContext)
 
   private lazy val locationServiceUtil        = new LocationServiceUtil(locationService)
   private lazy val sequencerProxyFactory      = new SequencerActorProxyFactory(locationServiceUtil)

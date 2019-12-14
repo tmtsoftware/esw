@@ -1,4 +1,4 @@
-package esw.ocs.dsl.script
+package esw.ocs.impl.core.script
 
 import akka.actor.typed.{ActorSystem, SpawnProtocol}
 import com.typesafe.config.Config

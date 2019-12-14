@@ -1,4 +1,4 @@
-package esw.ocs.dsl.highlevel.models
+package esw.ocs.dsl.internal
 
 import csw.alarm.api.javadsl.IAlarmService
 import csw.config.client.javadsl.JConfigClientFactory
@@ -10,7 +10,7 @@ import csw.location.client.javadsl.JHttpLocationServiceFactory
 import csw.logging.api.javadsl.ILogger
 import csw.time.scheduler.TimeServiceSchedulerFactory
 import csw.time.scheduler.api.TimeServiceScheduler
-import esw.ocs.dsl.script.ScriptContext
+import esw.ocs.impl.core.script.ScriptContext
 import esw.ocs.dsl.script.StrandEc
 import esw.ocs.dsl.script.utils.LockUnlockUtil
 

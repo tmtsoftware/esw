@@ -17,8 +17,8 @@ import esw.ocs.dsl.epics.CommandFlag
 import esw.ocs.dsl.epics.Fsm
 import esw.ocs.dsl.epics.FsmImpl
 import esw.ocs.dsl.epics.FsmScope
-import esw.ocs.dsl.highlevel.models.CswServices
-import esw.ocs.dsl.script.ScriptContext
+import esw.ocs.dsl.internal.CswServices
+import esw.ocs.impl.core.script.ScriptContext
 import esw.ocs.dsl.script.StrandEc
 import esw.ocs.dsl.script.utils.SubsystemFactory
 import esw.ocs.impl.internal.LocationServiceUtil

@@ -1,10 +1,10 @@
 package esw.ocs.dsl.core
 
-import esw.ocs.dsl.highlevel.models.CswServices
+import esw.ocs.dsl.internal.CswServices
 import esw.ocs.dsl.internal.ScriptWiring
-import esw.ocs.dsl.script.ScriptContext
 import esw.ocs.dsl.script.ScriptDsl
-import esw.ocs.dsl.script.exceptions.ScriptLoadingException.ScriptInitialisationFailedException
+import esw.ocs.dsl.script.exceptions.ScriptInitialisationFailedException
+import esw.ocs.impl.core.script.ScriptContext
 import kotlinx.coroutines.runBlocking
 
 fun script(block: suspend ScriptScope.(csw: CswServices) -> Unit): ScriptResult =

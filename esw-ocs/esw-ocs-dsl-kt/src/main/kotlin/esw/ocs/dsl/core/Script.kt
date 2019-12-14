@@ -12,7 +12,7 @@ import esw.ocs.dsl.params.Params
 import esw.ocs.dsl.script.FsmScriptDsl
 import esw.ocs.dsl.script.ScriptDsl
 import esw.ocs.dsl.script.StrandEc
-import esw.ocs.dsl.script.exceptions.ScriptLoadingException.ScriptInitialisationFailedException
+import esw.ocs.dsl.script.exceptions.ScriptInitialisationFailedException
 import esw.ocs.dsl.toScriptError
 import kotlinx.coroutines.*
 import kotlinx.coroutines.future.asCompletableFuture

@@ -1,4 +1,4 @@
-package esw.ocs.impl.core.api
+package esw.ocs.impl.core.script
 
 import akka.Done
 import csw.params.commands.SequenceCommand

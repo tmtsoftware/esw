@@ -1,4 +1,4 @@
-package esw.ocs.dsl.script.exceptions
+package esw.ocs.impl.core.script
 
 import csw.prefix.models.Subsystem
 
@@ -10,5 +10,4 @@ object ScriptLoadingException {
 
   class ScriptNotFound(scriptClass: String) extends RuntimeException(s"$scriptClass not found at configured path")
 
-  class ScriptInitialisationFailedException(msg: String) extends RuntimeException(s"Script initialization failed with : $msg")
 }

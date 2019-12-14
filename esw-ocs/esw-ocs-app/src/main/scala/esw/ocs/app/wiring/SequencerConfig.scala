@@ -2,7 +2,7 @@ package esw.ocs.app.wiring
 
 import com.typesafe.config.{Config, ConfigException}
 import csw.prefix.models.{Prefix, Subsystem}
-import esw.ocs.dsl.script.exceptions.ScriptLoadingException.ScriptConfigurationMissingException
+import esw.ocs.impl.core.script.ScriptLoadingException.ScriptConfigurationMissingException
 
 private[app] final case class SequencerConfig(prefix: Prefix, scriptClass: String)
 

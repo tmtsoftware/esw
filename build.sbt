@@ -69,9 +69,29 @@ lazy val `esw-ocs-impl` = project
     libraryDependencies ++= Dependencies.OcsImpl.value
   )
   .dependsOn(
-    `esw-ocs-api`.jvm % "compile->compile;test->test",
+    `esw-ocs-api`.jvm   % "compile->compile;test->test",
     `esw-test-reporter` % Test
   )
+
+lazy val `esw-ocs-dsl` = project
+  .in(file("esw-ocs/esw-ocs-dsl"))
+  .settings(libraryDependencies ++= Dependencies.OcsDsl.value)
+  .dependsOn(
+    `esw-ocs-api`.jvm % "compile->compile;test->test",
+    `esw-ocs-impl`,
+    `esw-test-reporter` % Test
+  )
+
+lazy val `esw-ocs-dsl-kt` = project
+  .in(file("esw-ocs/esw-ocs-dsl-kt"))
+  .enablePlugins(KotlinPlugin)
+  .settings(
+    fork in Test := true, // fixme: temp fix to run test sequentially, otherwise LoopTest fails because of timings
+    kotlinVersion := "1.3.61",
+    kotlincOptions ++= Seq("-Xuse-experimental=kotlin.time.ExperimentalTime", "-jvm-target", "1.8")
+  )
+  .settings(libraryDependencies ++= Dependencies.OcsDslKt.value)
+  .dependsOn(`esw-ocs-dsl`)
 
 lazy val `esw-ocs-app` = project
   .in(file("esw-ocs/esw-ocs-app"))
@@ -81,7 +101,6 @@ lazy val `esw-ocs-app` = project
   )
   .dependsOn(
     `esw-ocs-handler`,
-    `esw-ocs-dsl`,
     `esw-ocs-impl`      % "compile->compile;test->test",
     `esw-http-core`     % "compile->compile;test->test",
     `esw-test-reporter` % Test
@@ -108,26 +127,6 @@ lazy val `esw-integration-test` = project
     `esw-ocs-app`,
     `esw-test-reporter` % Test
   )
-
-lazy val `esw-ocs-dsl` = project
-  .in(file("esw-ocs/esw-ocs-dsl"))
-  .settings(libraryDependencies ++= Dependencies.OcsDsl.value)
-  .dependsOn(
-    `esw-ocs-api`.jvm % "compile->compile;test->test",
-    `esw-ocs-impl`,
-    `esw-test-reporter` % Test
-  )
-
-lazy val `esw-ocs-dsl-kt` = project
-  .in(file("esw-ocs/esw-ocs-dsl-kt"))
-  .enablePlugins(KotlinPlugin)
-  .settings(
-    fork in Test := true, // fixme: temp fix to run test sequentially, otherwise LoopTest fails because of timings
-    kotlinVersion := "1.3.61",
-    kotlincOptions ++= Seq("-Xuse-experimental=kotlin.time.ExperimentalTime", "-jvm-target", "1.8")
-  )
-  .settings(libraryDependencies ++= Dependencies.OcsDslKt.value)
-  .dependsOn(`esw-ocs-dsl`)
 
 lazy val `esw-gateway` = project
   .aggregate(
