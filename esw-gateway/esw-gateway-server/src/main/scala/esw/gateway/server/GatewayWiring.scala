@@ -13,10 +13,10 @@ import esw.gateway.impl._
 import esw.gateway.server.handlers.{PostHandlerImpl, WebsocketHandlerImpl}
 import esw.gateway.server.utils.Resolver
 import esw.http.core.wiring.{HttpService, ServerWiring}
-import msocket.api.MessageHandler
+import msocket.api.{Encoding, MessageHandler}
+import msocket.impl.RouteFactory
 import msocket.impl.post.PostRouteFactory
 import msocket.impl.ws.WebsocketRouteFactory
-import msocket.impl.{Encoding, RouteFactory}
 
 class GatewayWiring(_port: Option[Int]) extends GatewayCodecs {
   lazy val wiring = new ServerWiring(_port)

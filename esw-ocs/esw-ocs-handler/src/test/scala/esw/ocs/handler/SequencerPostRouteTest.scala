@@ -15,8 +15,8 @@ import esw.ocs.api.protocol.EditorError.{CannotOperateOnAnInFlightOrFinishedStep
 import esw.ocs.api.protocol.SequencerPostRequest._
 import esw.ocs.api.protocol._
 import esw.ocs.api.{BaseTestSuite, SequencerApi}
-import msocket.impl.Encoding
-import msocket.impl.Encoding.JsonText
+import msocket.api.Encoding
+import msocket.api.Encoding.JsonText
 import msocket.impl.post.{ClientHttpCodecs, PostRouteFactory}
 
 import scala.concurrent.Future

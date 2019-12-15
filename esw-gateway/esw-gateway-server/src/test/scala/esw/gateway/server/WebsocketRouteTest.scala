@@ -27,10 +27,11 @@ import esw.gateway.server.handlers.WebsocketHandlerImpl
 import esw.http.core.BaseTestSuite
 import esw.ocs.api.protocol.SequencerWebsocketRequest
 import io.bullet.borer.Decoder
-import msocket.api.Subscription
-import msocket.impl.Encoding
-import msocket.impl.Encoding.{CborBinary, JsonText}
+import msocket.api.Encoding.JsonText
+import msocket.api.{Encoding, Subscription}
+import msocket.impl.CborByteString
 import msocket.impl.post.ClientHttpCodecs
+import msocket.impl.ws.EncodingExtensions.EncodingForMessage
 import msocket.impl.ws.WebsocketRouteFactory
 import org.mockito.Mockito.when
 
@@ -293,7 +294,7 @@ class WebsocketRouteTest extends BaseTestSuite with ScalatestRouteTest with Gate
   private def decodeMessage[T](wsClient: WSProbe)(implicit decoder: Decoder[T]): T = {
     wsClient.expectMessage() match {
       case TextMessage.Strict(text)   => JsonText.decode[T](text)
-      case BinaryMessage.Strict(data) => CborBinary.decode[T](data)
+      case BinaryMessage.Strict(data) => CborByteString.decode[T](data)
       case _                          => throw new RuntimeException("The expected message is not Strict")
     }
   }

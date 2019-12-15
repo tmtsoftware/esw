@@ -7,8 +7,7 @@ import esw.ocs.api.SequencerApi
 import esw.ocs.api.codecs.SequencerHttpCodecs
 import esw.ocs.api.protocol.SequencerWebsocketRequest
 import esw.ocs.api.protocol.SequencerWebsocketRequest.QueryFinal
-import msocket.api.MessageHandler
-import msocket.impl.Encoding
+import msocket.api.{Encoding, MessageHandler}
 import msocket.impl.ws.WebsocketStreamExtensions
 
 class SequencerWebsocketHandler(sequencerApi: SequencerApi, val encoding: Encoding[_])

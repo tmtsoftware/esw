@@ -31,9 +31,10 @@ import esw.ocs.impl.internal._
 import esw.ocs.impl.messages.SequencerMessages.Shutdown
 import esw.ocs.impl.syntax.FutureSyntax.FutureOps
 import esw.ocs.impl.{SequencerActorProxy, SequencerActorProxyFactory}
+import msocket.api.Encoding
+import msocket.impl.RouteFactory
 import msocket.impl.post.PostRouteFactory
 import msocket.impl.ws.WebsocketRouteFactory
-import msocket.impl.{Encoding, RouteFactory}
 
 import scala.async.Async.{async, await}
 import scala.util.control.NonFatal
