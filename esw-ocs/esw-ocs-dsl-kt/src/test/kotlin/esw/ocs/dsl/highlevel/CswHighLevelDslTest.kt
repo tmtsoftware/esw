@@ -30,7 +30,6 @@ class CswHighLevelDslTest {
     private val config: Config = mockk()
     private val alarmConfig: Config = mockk()
     private val cswServices: CswServices = mockk()
-    private val lockUnlockUtil: LockUnlockUtil = mockk()
     private val locationService: LocationService = mockk()
     private val iLocationService: ILocationService = mockk()
     private val scriptContext = ScriptContext(mockk(), mockk(), mockk(), actorSystem, mockk(), mockk(), mockk(), config)
@@ -38,7 +37,6 @@ class CswHighLevelDslTest {
     init {
         every { config.getConfig("csw-alarm") }.returns(alarmConfig)
         every { alarmConfig.getDuration("refresh-interval") }.returns(2.seconds.toJavaDuration())
-        every { cswServices.lockUnlockUtil }.returns(lockUnlockUtil)
         every { cswServices.locationService }.returns(iLocationService)
         every { iLocationService.asScala() }.returns(locationService)
     }
