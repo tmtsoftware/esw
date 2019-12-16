@@ -9,9 +9,9 @@ import csw.prefix.models.Prefix
 import esw.ocs.dsl.script.ScriptDsl
 import esw.ocs.dsl.script.exceptions.ScriptInitialisationFailedException
 import esw.ocs.impl.SequencerActorProxyFactory
-import esw.ocs.impl.core.api.SequenceOperator
-import esw.ocs.impl.core.script.ScriptLoadingException.{InvalidScriptException, ScriptNotFound}
-import esw.ocs.impl.core.script.{ScriptApi, ScriptContext, ScriptLoader}
+import esw.ocs.impl.core.SequenceOperator
+import esw.ocs.impl.script.ScriptLoadingException.{InvalidScriptException, ScriptNotFound}
+import esw.ocs.impl.script.{ScriptApi, ScriptContext, ScriptLoader}
 import esw.ocs.testkit.BaseTestSuite
 
 import scala.concurrent.duration.DurationInt

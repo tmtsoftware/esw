@@ -8,9 +8,8 @@ import csw.location.api.javadsl.JComponentType
 import csw.location.api.scaladsl.LocationService
 import csw.prefix.models.Prefix
 import esw.ocs.dsl.internal.CswServices
-import esw.ocs.impl.core.script.ScriptContext
+import esw.ocs.impl.script.ScriptContext
 import esw.ocs.dsl.script.StrandEc
-import esw.ocs.dsl.script.utils.LockUnlockUtil
 import io.kotlintest.shouldBe
 import io.mockk.every
 import io.mockk.mockk

@@ -7,8 +7,8 @@ import csw.prefix.models.Subsystem.ESW
 import csw.prefix.models.{Prefix, Subsystem}
 import csw.time.core.models.UTCTime
 import esw.http.core.BaseTestSuite
-import esw.ocs.impl.core.script.ScriptLoadingException.ScriptConfigurationMissingException
-import esw.ocs.impl.core.script.{ScriptApi, ScriptContext}
+import esw.ocs.impl.script.ScriptLoadingException.ScriptConfigurationMissingException
+import esw.ocs.impl.script.{ScriptApi, ScriptContext}
 
 import scala.concurrent.Future
 

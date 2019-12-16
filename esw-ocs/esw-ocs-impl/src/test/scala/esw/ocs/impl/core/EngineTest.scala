@@ -1,15 +1,14 @@
 package esw.ocs.impl.core
 
-import akka.actor.{ActorSystem, CoordinatedShutdown}
 import akka.actor.CoordinatedShutdown.UnknownReason
+import akka.actor.{ActorSystem, CoordinatedShutdown}
 import akka.stream.Materializer
 import csw.params.commands.SequenceCommand
 import csw.params.core.models.Id
 import esw.ocs.api.BaseTestSuite
 import esw.ocs.api.models.Step
 import esw.ocs.api.protocol.{Ok, PullNextResult}
-import esw.ocs.impl.core.api.SequenceOperator
-import esw.ocs.impl.core.script.ScriptApi
+import esw.ocs.impl.script.ScriptApi
 
 import scala.concurrent.Future
 

@@ -15,7 +15,7 @@ import csw.logging.api.javadsl.ILogger
 import csw.time.scheduler.TimeServiceSchedulerFactory
 import csw.time.scheduler.api.TimeServiceScheduler
 import esw.ocs.dsl.script.StrandEc
-import esw.ocs.impl.core.script.ScriptContext
+import esw.ocs.impl.script.ScriptContext
 
 class CswServices(ctx: ScriptContext, strandEc: StrandEc) {
     private val actorSystem: ActorSystem<SpawnProtocol.Command> = ctx.actorSystem()

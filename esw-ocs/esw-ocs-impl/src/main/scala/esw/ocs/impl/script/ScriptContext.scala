@@ -1,4 +1,4 @@
-package esw.ocs.impl.core.script
+package esw.ocs.impl.script
 
 import akka.actor.typed.{ActorSystem, SpawnProtocol}
 import com.typesafe.config.Config
@@ -7,7 +7,7 @@ import csw.event.api.javadsl.IEventService
 import csw.logging.api.javadsl.ILogger
 import csw.prefix.models.Prefix
 import esw.ocs.impl.SequencerActorProxyFactory
-import esw.ocs.impl.core.api.SequenceOperator
+import esw.ocs.impl.core.SequenceOperator
 
 class ScriptContext(
     val prefix: Prefix,

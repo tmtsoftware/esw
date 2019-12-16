@@ -18,7 +18,7 @@ import csw.prefix.models.Subsystem.ESW
 import csw.time.core.models.UTCTime
 import esw.ocs.api.models.{Step, StepList}
 import esw.ocs.api.protocol._
-import esw.ocs.impl.core.script.ScriptApi
+import esw.ocs.impl.script.ScriptApi
 import esw.ocs.impl.messages.SequencerMessages.{Pause, _}
 import esw.ocs.impl.messages.SequencerState.{Idle, InProgress}
 import esw.ocs.impl.messages.{SequenceComponentMsg, SequencerState}

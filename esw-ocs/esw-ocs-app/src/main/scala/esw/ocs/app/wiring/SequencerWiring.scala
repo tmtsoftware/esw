@@ -26,7 +26,7 @@ import esw.ocs.api.codecs.SequencerHttpCodecs
 import esw.ocs.api.protocol.ScriptError
 import esw.ocs.handler.{SequencerPostHandler, SequencerWebsocketHandler}
 import esw.ocs.impl.core._
-import esw.ocs.impl.core.script.{ScriptApi, ScriptContext, ScriptLoader}
+import esw.ocs.impl.script.{ScriptApi, ScriptContext, ScriptLoader}
 import esw.ocs.impl.internal._
 import esw.ocs.impl.messages.SequencerMessages.Shutdown
 import esw.ocs.impl.syntax.FutureSyntax.FutureOps
@@ -63,7 +63,7 @@ private[ocs] class SequencerWiring(
 
   //Pass lambda to break circular dependency shown below.
   //SequencerRef -> Script -> cswServices -> SequencerOperator -> SequencerRef
-  private lazy val sequenceOperatorFactory = () => new SequenceOperatorImpl(sequencerRef)
+  private lazy val sequenceOperatorFactory = () => new SequenceOperator(sequencerRef)
   private lazy val componentId             = ComponentId(prefix, ComponentType.Sequencer)
   private lazy val script: ScriptApi       = ScriptLoader.loadKotlinScript(scriptClass, scriptContext)
 

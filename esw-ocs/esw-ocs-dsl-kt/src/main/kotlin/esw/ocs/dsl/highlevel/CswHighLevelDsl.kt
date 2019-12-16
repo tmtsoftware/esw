@@ -22,8 +22,8 @@ import esw.ocs.dsl.internal.CswServices
 import esw.ocs.dsl.script.StrandEc
 import esw.ocs.dsl.script.utils.LockUnlockUtil
 import esw.ocs.dsl.script.utils.SubsystemFactory
-import esw.ocs.impl.core.script.ScriptContext
 import esw.ocs.impl.internal.LocationServiceUtil
+import esw.ocs.impl.script.ScriptContext
 import kotlinx.coroutines.CoroutineScope
 import kotlin.time.Duration
 import kotlin.time.toKotlinDuration

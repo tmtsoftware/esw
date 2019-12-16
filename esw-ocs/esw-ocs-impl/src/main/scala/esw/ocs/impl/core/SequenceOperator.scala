@@ -5,14 +5,12 @@ import akka.actor.typed.{ActorRef, ActorSystem}
 import akka.util.Timeout
 import esw.ocs.api.models.Step
 import esw.ocs.api.protocol.{OkOrUnhandledResponse, PullNextResponse}
-import esw.ocs.impl.core.api.SequenceOperator
 import esw.ocs.impl.internal.Timeouts
 import esw.ocs.impl.messages.SequencerMessages._
 
 import scala.concurrent.Future
 
-private[ocs] class SequenceOperatorImpl(sequencer: ActorRef[EswSequencerMessage])(implicit system: ActorSystem[_])
-    extends SequenceOperator {
+private[ocs] class SequenceOperator(sequencer: ActorRef[EswSequencerMessage])(implicit system: ActorSystem[_]) {
   private implicit val timeout: Timeout = Timeouts.LongTimeout
 
   def pullNext: Future[PullNextResponse]                = sequencer ? PullNext

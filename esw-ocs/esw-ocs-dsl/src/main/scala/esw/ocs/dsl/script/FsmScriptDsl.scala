@@ -6,7 +6,7 @@ import akka.Done
 import csw.params.commands.SequenceCommand
 import csw.time.core.models.UTCTime
 import esw.ocs.dsl.params.Params
-import esw.ocs.impl.core.api.SequenceOperator
+import esw.ocs.impl.core.SequenceOperator
 
 import scala.concurrent.Future
 

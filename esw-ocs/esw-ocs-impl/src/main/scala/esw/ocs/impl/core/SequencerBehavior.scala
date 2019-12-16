@@ -16,7 +16,7 @@ import csw.params.commands.Sequence
 import csw.time.core.models.UTCTime
 import esw.ocs.api.codecs.OcsCodecs
 import esw.ocs.api.protocol._
-import esw.ocs.impl.core.script.ScriptApi
+import esw.ocs.impl.script.ScriptApi
 import esw.ocs.impl.internal.Timeouts
 import esw.ocs.impl.messages.SequencerMessages._
 import esw.ocs.impl.messages.SequencerState

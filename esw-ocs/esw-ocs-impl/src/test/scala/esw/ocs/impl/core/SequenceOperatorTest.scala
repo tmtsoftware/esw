@@ -11,7 +11,7 @@ import esw.ocs.api.models.{Step, StepStatus}
 import esw.ocs.api.protocol.{Ok, PullNextResult}
 import esw.ocs.impl.messages.SequencerMessages._
 
-class SequenceOperatorImplTest extends ScalaTestWithActorTestKit with BaseTestSuite {
+class SequenceOperatorTest extends ScalaTestWithActorTestKit with BaseTestSuite {
 
   private val command = Setup(Prefix("esw.test"), CommandName("command-1"), None)
 
@@ -33,7 +33,7 @@ class SequenceOperatorImplTest extends ScalaTestWithActorTestKit with BaseTestSu
   }
 
   private val sequencer        = spawn(mockedBehavior)
-  private val sequenceOperator = new SequenceOperatorImpl(sequencer)
+  private val sequenceOperator = new SequenceOperator(sequencer)
 
   "pullNext" in {
     sequenceOperator.pullNext.futureValue should ===(pullNextResponse)

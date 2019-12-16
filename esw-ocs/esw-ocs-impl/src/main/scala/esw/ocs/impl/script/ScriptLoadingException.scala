@@ -1,4 +1,4 @@
-package esw.ocs.impl.core.script
+package esw.ocs.impl.script
 
 import csw.prefix.models.Subsystem
 

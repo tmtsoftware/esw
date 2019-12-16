@@ -1,6 +1,6 @@
-package esw.ocs.impl.core.script
+package esw.ocs.impl.script
 
-import esw.ocs.impl.core.script.ScriptLoadingException.{InvalidScriptException, ScriptNotFound}
+import esw.ocs.impl.script.ScriptLoadingException.{InvalidScriptException, ScriptNotFound}
 
 import scala.language.reflectiveCalls
 

@@ -5,7 +5,7 @@ import java.util.concurrent.CompletableFuture
 import csw.params.commands.{CommandName, Observe, Setup}
 import csw.prefix.models.Prefix
 import esw.ocs.api.BaseTestSuite
-import esw.ocs.impl.core.api.SequenceOperator
+import esw.ocs.impl.core.SequenceOperator
 
 import scala.collection.mutable.ArrayBuffer
 import scala.concurrent.duration.DurationDouble

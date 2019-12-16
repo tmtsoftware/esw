@@ -1,6 +1,6 @@
 package esw.ocs.dsl.internal
 
-import esw.ocs.impl.core.script.ScriptContext
+import esw.ocs.impl.script.ScriptContext
 import esw.ocs.dsl.script.StrandEc
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.SupervisorJob
