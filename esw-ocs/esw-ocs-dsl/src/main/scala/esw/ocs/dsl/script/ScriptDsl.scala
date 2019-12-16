@@ -84,7 +84,7 @@ private[esw] class ScriptDsl(private val sequenceOperatorFactory: () => Sequence
 
   override def executeOperationsMode(): Future[Done] = executeHandler(operationsHandlers, ()).map(_ => Done)
 
-  def executeExceptionHandlers(ex: Throwable): CompletionStage[Void] =
+  override def executeExceptionHandlers(ex: Throwable): CompletionStage[Void] =
     executeHandler(exceptionHandlers, ex).toJava.thenAccept(_ => ())
 
   protected final def nextIf(f: SequenceCommand => Boolean): CompletionStage[Optional[SequenceCommand]] =
