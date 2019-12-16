@@ -134,7 +134,7 @@ class ExceptionsHandlerIntegrationTest extends EswTestKit(EventServer) {
       assertMessage(testProbe, globalExHandlerEventMessage)
     }
 
-    "call global exception handler if there is an exception in command handler even after retrying | ESW-249" in {
+    "call global exception handler if there is an exception in command handler even after retrying | ESW-249, ESW-139" in {
       val globalExHandlerEventMessage   = "command-failed"
       val globalExHandlerEventKey       = EventKey(prefix, EventName(globalExHandlerEventMessage))
       val globalExHandlerEventTestProbe = createProbeFor(globalExHandlerEventKey)
@@ -156,7 +156,7 @@ class ExceptionsHandlerIntegrationTest extends EswTestKit(EventServer) {
       assertMessage(globalExHandlerEventTestProbe, globalExHandlerEventMessage)
     }
 
-    "not fail the command on negative submit response if resumeOnError=false | ESW-249" in {
+    "not fail the command on negative submit response if resumeOnError=false | ESW-249, ESW-139" in {
       val negativeSubmitResEventMessage   = "negative-response-error"
       val negativeSubmitResEventKey       = EventKey(prefix, EventName(negativeSubmitResEventMessage))
       val negativeSubmitResEventTestProbe = createProbeFor(negativeSubmitResEventKey)
