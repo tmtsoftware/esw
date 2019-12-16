@@ -5,8 +5,13 @@ import csw.alarm.api.javadsl.JAlarmSeverity.Major
 import csw.alarm.models.Key.AlarmKey
 import csw.params.events.Event
 import csw.prefix.javadsl.JSubsystem
-import csw.prefix.models.Subsystem
 import esw.ocs.dsl.core.script
+import esw.ocs.dsl.highlevel.LoopDsl.StopWhen.stopWhen
+import esw.ocs.dsl.params.doubleKey
+import esw.ocs.dsl.params.intKey
+import esw.ocs.dsl.params.longKey
+import esw.ocs.dsl.params.stringKey
+import kotlinx.coroutines.cancel
 import kotlinx.coroutines.delay
 import kotlin.time.seconds
 
@@ -94,6 +99,28 @@ script {
         val sequence = sequenceOf(setupCommand)
 
         lgsfSequencer.submitAndWait(sequence, 10.seconds)
+    }
+
+    onSetup("schedule-once-from-now") {
+        val currentTime = utcTimeNow()
+        scheduleOnceFromNow(1.seconds, {
+            val param = longKey("offset").set(currentTime.offsetFromNow().absoluteValue.toLongMilliseconds())
+            publishEvent(SystemEvent("esw.schedule.once", "offset", param))
+        })
+    }
+
+    onSetup("schedule-periodically-from-now") {
+        val currentTime = utcTimeNow()
+        var counter = 0
+        val a = schedulePeriodicallyFromNow(1.seconds, 1.seconds, {
+            val param = longKey("offset").set(currentTime.offsetFromNow().absoluteValue.toLongMilliseconds())
+            publishEvent(SystemEvent("esw.schedule.periodically", "offset", param))
+            counter += 1
+        })
+        loop {
+            stopWhen(counter > 0)
+        }
+        a.cancel()
     }
 
     onDiagnosticMode { startTime, hint ->

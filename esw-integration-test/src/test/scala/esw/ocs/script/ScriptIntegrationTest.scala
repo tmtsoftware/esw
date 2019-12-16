@@ -15,7 +15,7 @@ import csw.location.client.scaladsl.HttpLocationServiceFactory
 import csw.params.commands.CommandResponse.{Completed, Error}
 import csw.params.commands.{CommandName, Sequence, Setup}
 import csw.params.core.generics.KeyType.StringKey
-import csw.params.core.generics.Parameter
+import csw.params.core.generics.{KeyType, Parameter}
 import csw.params.core.models.Id
 import csw.params.events.{Event, EventKey, EventName, SystemEvent}
 import csw.prefix.models.Prefix
@@ -47,6 +47,8 @@ class ScriptIntegrationTest extends EswTestKit(EventServer, AlarmServer, ConfigS
   private var ocsSequencer: SequencerApi   = _
   private var tcsSequencer: SequencerApi   = _
   private var lgsfSequencer: SequencerApi  = _
+
+  private val tolerance: Long = 1200
 
   override def beforeAll(): Unit = {
     super.beforeAll()
@@ -281,6 +283,46 @@ class ScriptIntegrationTest extends EswTestKit(EventServer, AlarmServer, ConfigS
 
       val actualSetupEvent: SystemEvent = testProbe.expectMessageType[SystemEvent]
       actualSetupEvent.eventKey should ===(eventKey)
+    }
+
+    "be able to schedule tasks from now | ESW-122" in {
+      val eventKey = EventKey(Prefix("esw.schedule.once"), EventName("offset"))
+
+      val command  = Setup(Prefix("IRIS.test"), CommandName("schedule-once-from-now"), None)
+      val sequence = Sequence(Seq(command))
+
+      val testProbe    = TestProbe[Event]
+      val subscription = eventSubscriber.subscribeActorRef(Set(eventKey), testProbe.ref)
+      subscription.ready().futureValue
+      testProbe.expectMessageType[SystemEvent] // discard invalid event
+
+      ocsSequencer.submitAndWait(sequence).futureValue shouldBe a[Completed]
+
+      eventually {
+        val eventToBeAsserted: SystemEvent = testProbe.expectMessageType[SystemEvent]
+        val offset: Long                   = eventToBeAsserted.get("offset", KeyType.LongKey).get.head
+        offset shouldBe <=(tolerance)
+      }
+    }
+
+    "be able to schedule periodically tasks from now | ESW-122" in {
+      val eventKey = EventKey(Prefix("esw.schedule.periodically"), EventName("offset"))
+
+      val command  = Setup(Prefix("IRIS.test"), CommandName("schedule-periodically-from-now"), None)
+      val sequence = Sequence(Seq(command))
+
+      val testProbe    = TestProbe[Event]
+      val subscription = eventSubscriber.subscribeActorRef(Set(eventKey), testProbe.ref)
+      subscription.ready().futureValue
+      testProbe.expectMessageType[SystemEvent] // discard invalid event
+
+      ocsSequencer.submitAndWait(sequence).futureValue shouldBe a[Completed]
+
+      eventually {
+        val eventToBeAsserted: SystemEvent = testProbe.expectMessageType[SystemEvent]
+        val offset: Long                   = eventToBeAsserted.get("offset", KeyType.LongKey).get.head
+        offset shouldBe <=(tolerance)
+      }
     }
 
     "be able to check existence of a config file and fetch config | ESW-123" in {
