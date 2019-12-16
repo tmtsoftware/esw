@@ -7,8 +7,8 @@ import csw.location.api.javadsl.ILocationService
 import csw.location.api.javadsl.JComponentType
 import csw.location.api.scaladsl.LocationService
 import csw.prefix.models.Prefix
-import esw.ocs.dsl.internal.CswServices
 import esw.ocs.impl.script.ScriptContext
+import esw.ocs.dsl.lowlevel.CswServices
 import esw.ocs.dsl.script.StrandEc
 import io.kotlintest.shouldBe
 import io.mockk.every
@@ -24,14 +24,14 @@ import kotlin.time.toJavaDuration
 
 class CswHighLevelDslTest {
 
-    private val actorSystem: ActorSystem<SpawnProtocol.Command> = ActorSystem.create(SpawnProtocol.create(), "csw-high-level")
+    private val system: ActorSystem<SpawnProtocol.Command> = ActorSystem.create(SpawnProtocol.create(), "csw-high-level")
 
     private val config: Config = mockk()
     private val alarmConfig: Config = mockk()
     private val cswServices: CswServices = mockk()
     private val locationService: LocationService = mockk()
     private val iLocationService: ILocationService = mockk()
-    private val scriptContext = ScriptContext(mockk(), mockk(), mockk(), actorSystem, mockk(), mockk(), mockk(), config)
+    private val scriptContext = ScriptContext(mockk(), mockk(), mockk(), system, mockk(), mockk(), mockk(), config)
 
     init {
         every { config.getConfig("csw-alarm") }.returns(alarmConfig)
@@ -41,12 +41,13 @@ class CswHighLevelDslTest {
     }
 
     @AfterAll
-    fun tearDown() = actorSystem.terminate()
+    fun tearDown() = system.terminate()
 
     @Nested
     inner class Script : CswHighLevelDsl(cswServices, scriptContext) {
         override val strandEc: StrandEc = mockk()
         override val coroutineScope: CoroutineScope = mockk()
+        override val actorSystem: ActorSystem<SpawnProtocol.Command> = system
 
         private val defaultTimeoutDuration: Duration = 5.seconds
 

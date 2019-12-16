@@ -23,7 +23,6 @@ import java.util.concurrent.CompletableFuture
 import kotlin.time.milliseconds
 import kotlin.time.toJavaDuration
 
-
 class EventVariableTest {
     @Test
     fun `set should update local value and publish new event | ESW-132, ESW-142`() = runBlocking {
@@ -104,8 +103,8 @@ class EventVariableTest {
         val publisher = mockk<IEventPublisher>()
         val eventServiceDsl = object : EventServiceDsl {
             override val coroutineScope: CoroutineScope = this@runBlocking
-            override val defaultPublisher: IEventPublisher = publisher
-            override val defaultSubscriber: IEventSubscriber = subscriber
+            override val eventPublisher: IEventPublisher = publisher
+            override val eventSubscriber: IEventSubscriber = subscriber
         }
 
         val refreshable = mockk<Refreshable>()

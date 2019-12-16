@@ -1,6 +1,7 @@
 package esw.ocs.dsl.highlevel
 
 import akka.actor.typed.ActorSystem
+import akka.actor.typed.SpawnProtocol
 import akka.actor.typed.javadsl.Behaviors
 import com.typesafe.config.ConfigFactory
 import csw.config.api.ConfigData
@@ -17,10 +18,10 @@ import java.util.concurrent.CompletableFuture
 
 class ConfigServiceDslTest : ConfigServiceDsl {
 
-    override val system: ActorSystem<Any> = ActorSystem.create(Behaviors.empty(), "config-dsl")
+    override val actorSystem: ActorSystem<SpawnProtocol.Command> = ActorSystem.create(Behaviors.empty(), "config-dsl")
 
     @AfterAll
-    fun tearDown() = system.terminate()
+    fun tearDown() = actorSystem.terminate()
 
     override val configClient: IConfigClientService = mockk()
     private val path = "/test/config1.conf"

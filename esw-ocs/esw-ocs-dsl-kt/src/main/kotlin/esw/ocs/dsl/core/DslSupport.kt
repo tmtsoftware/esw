@@ -1,7 +1,7 @@
 package esw.ocs.dsl.core
 
-import esw.ocs.dsl.internal.CswServices
 import esw.ocs.dsl.internal.ScriptWiring
+import esw.ocs.dsl.lowlevel.CswServices
 import esw.ocs.dsl.script.ScriptDsl
 import esw.ocs.dsl.script.exceptions.ScriptInitialisationFailedException
 import esw.ocs.impl.script.ScriptContext
@@ -29,7 +29,7 @@ fun FsmScript(initState: String, block: suspend FsmScriptScope.(csw: CswServices
             FsmScript(wiring).apply {
                 try {
                     runBlocking {
-                        block(cswServices)
+                        block(wiring.cswServices)
                         become(initState)
                     }
                 } catch (ex: Exception) {
@@ -44,6 +44,5 @@ class ScriptResult(val scriptFactory: (ScriptContext) -> ScriptDsl) {
 }
 
 class ReusableScriptResult(val scriptFactory: (ScriptWiring) -> Script) {
-    operator fun invoke(wiring: ScriptWiring) =
-            scriptFactory(wiring)
+    operator fun invoke(wiring: ScriptWiring): Script = scriptFactory(wiring)
 }

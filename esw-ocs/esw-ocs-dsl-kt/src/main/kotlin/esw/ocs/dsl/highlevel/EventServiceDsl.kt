@@ -22,8 +22,8 @@ import kotlin.time.toJavaDuration
 
 interface EventServiceDsl {
     val coroutineScope: CoroutineScope
-    val defaultPublisher: IEventPublisher
-    val defaultSubscriber: IEventSubscriber
+    val eventPublisher: IEventPublisher
+    val eventSubscriber: IEventSubscriber
 
     fun EventKey(prefix: String, eventName: String): EventKey = EventKey(Prefix.apply(prefix), EventName(eventName))
     fun EventKey(eventKeyStr: String): EventKey = EventKey.apply(eventKeyStr)
@@ -34,29 +34,29 @@ interface EventServiceDsl {
     fun ObserveEvent(sourcePrefix: String, eventName: String, vararg parameters: Parameter<*>): ObserveEvent =
             ObserveEvent(Prefix.apply(sourcePrefix), EventName(eventName)).jMadd(parameters.toSet())
 
-    suspend fun publishEvent(event: Event): Done = defaultPublisher.publish(event).await()
+    suspend fun publishEvent(event: Event): Done = eventPublisher.publish(event).await()
 
     fun publishEvent(every: Duration, eventGenerator: SuspendableSupplier<Event?>): Cancellable =
-            defaultPublisher.publishAsync({
+            eventPublisher.publishAsync({
                 coroutineScope.future { Optional.ofNullable(eventGenerator()) }
             }, every.toJavaDuration())
 
     suspend fun onEvent(vararg eventKeys: String, callback: SuspendableConsumer<Event>): EventSubscription {
-        val subscription = defaultSubscriber.subscribeAsync(eventKeys.toEventKeys()) { coroutineScope.future { callback(it) } }
+        val subscription = eventSubscriber.subscribeAsync(eventKeys.toEventKeys()) { coroutineScope.future { callback(it) } }
         subscription.ready().await()
         return EventSubscription { subscription.unsubscribe().await() }
     }
 
     suspend fun onEvent(vararg eventKeys: String, duration: Duration, block: SuspendableConsumer<Event>): EventSubscription {
         val callback = { event: Event -> coroutineScope.future { block(event) } }
-        val subscription = defaultSubscriber
+        val subscription = eventSubscriber
                 .subscribeAsync(eventKeys.toEventKeys(), callback, duration.toJavaDuration(), SubscriptionModes.jRateAdapterMode())
         subscription.ready().await()
         return EventSubscription { subscription.unsubscribe().await() }
     }
 
     suspend fun getEvent(vararg eventKeys: String): Set<Event> =
-            defaultSubscriber.get(eventKeys.toEventKeys()).await().toSet()
+            eventSubscriber.get(eventKeys.toEventKeys()).await().toSet()
 
     suspend fun <T> SystemVar(initial: T, eventKeyStr: String, key: Key<T>, duration: Duration? = null): EventVariable<T> {
         val eventKey = EventKey(eventKeyStr)

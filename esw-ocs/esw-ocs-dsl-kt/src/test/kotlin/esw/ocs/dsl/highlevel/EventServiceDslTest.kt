@@ -31,12 +31,10 @@ class EventServiceDslTest : EventServiceDsl {
     private val eventSubscription = mockk<IEventSubscription>()
     private val cancellable = mockk<Cancellable>()
     private val eventCallback = mockk<(Event) -> CompletableFuture<*>>()
-    private val eventPublisher: IEventPublisher = mockk()
-    private val eventSubscriber: IEventSubscriber = mockk()
 
     override val coroutineScope: CoroutineScope = CoroutineScope(EmptyCoroutineContext)
-    override val defaultPublisher: IEventPublisher = eventPublisher
-    override val defaultSubscriber: IEventSubscriber = eventSubscriber
+    override val eventPublisher: IEventPublisher = mockk()
+    override val eventSubscriber: IEventSubscriber = mockk()
 
     init {
         eventKeys.add(EventKey.apply(key))
@@ -78,35 +76,35 @@ class EventServiceDslTest : EventServiceDsl {
 
     @Test
     fun `publish should delegate to publisher#publish | ESW-120`() = runBlocking {
-        every { (eventPublisher.publish(event)) }.returns(CompletableFuture.completedFuture(done()))
+        every { (this@EventServiceDslTest.eventPublisher.publish(event)) }.returns(CompletableFuture.completedFuture(done()))
         publishEvent(event) shouldBe done()
-        verify { eventPublisher.publish(event) }
+        verify { this@EventServiceDslTest.eventPublisher.publish(event) }
     }
 
     @Test
     fun `publishEvent should delegate to publisher#publishAsync | ESW-120`() {
-        every { eventPublisher.publishAsync(any(), any()) }.answers { cancellable }
+        every { this@EventServiceDslTest.eventPublisher.publishAsync(any(), any()) }.answers { cancellable }
         publishEvent(duration) { event } shouldBe cancellable
-        verify { eventPublisher.publishAsync(any(), any()) }
+        verify { this@EventServiceDslTest.eventPublisher.publishAsync(any(), any()) }
     }
 
     @Test
     fun `onEvent should delegate to subscriber#subscribeAsync | ESW-120`() = runBlocking {
-        every { eventSubscriber.subscribeAsync(eventKeys, any()) }.answers { eventSubscription }
+        every { this@EventServiceDslTest.eventSubscriber.subscribeAsync(eventKeys, any()) }.answers { eventSubscription }
         every { eventSubscription.ready() }.answers { CompletableFuture.completedFuture(done()) }
 
         onEvent(key) { eventCallback }
-        verify { eventSubscriber.subscribeAsync(eventKeys, any()) }
+        verify { this@EventServiceDslTest.eventSubscriber.subscribeAsync(eventKeys, any()) }
     }
 
     @Test
     fun `cancel should delegate to IEventSubscription#unsubscribe() | ESW-120`() = runBlocking {
-        every { eventSubscriber.subscribeAsync(eventKeys, any()) }.answers { eventSubscription }
+        every { this@EventServiceDslTest.eventSubscriber.subscribeAsync(eventKeys, any()) }.answers { eventSubscription }
         every { eventSubscription.unsubscribe() }.answers { CompletableFuture.completedFuture(done()) }
         every { eventSubscription.ready() }.answers { CompletableFuture.completedFuture(done()) }
 
         val subscription: EventSubscription = onEvent(key) { eventCallback }
-        verify { eventSubscriber.subscribeAsync(eventKeys, any()) }
+        verify { this@EventServiceDslTest.eventSubscriber.subscribeAsync(eventKeys, any()) }
 
         subscription.cancel()
         verify { eventSubscription.unsubscribe() }
@@ -114,8 +112,8 @@ class EventServiceDslTest : EventServiceDsl {
 
     @Test
     fun `getEvent should delegate to subscriber#get | ESW-120`() = runBlocking {
-        every { eventSubscriber.get(eventKeys) }.answers { CompletableFuture.completedFuture(eventSet) }
+        every { this@EventServiceDslTest.eventSubscriber.get(eventKeys) }.answers { CompletableFuture.completedFuture(eventSet) }
         getEvent(key) shouldBe eventSet
-        verify { eventSubscriber.get(eventKeys) }
+        verify { this@EventServiceDslTest.eventSubscriber.get(eventKeys) }
     }
 }

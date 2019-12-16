@@ -1,5 +1,7 @@
 package esw.ocs.dsl.core
 
+import akka.actor.typed.ActorSystem
+import akka.actor.typed.SpawnProtocol
 import csw.params.commands.Observe
 import csw.params.commands.SequenceCommand
 import csw.params.commands.Setup
@@ -21,6 +23,8 @@ import kotlinx.coroutines.future.future
 import kotlin.coroutines.CoroutineContext
 
 sealed class BaseScript(wiring: ScriptWiring) : CswHighLevelDsl(wiring.cswServices, wiring.scriptContext), HandlerScope {
+    override val actorSystem: ActorSystem<SpawnProtocol.Command> = wiring.scriptContext.actorSystem()
+
     internal open val scriptDsl: ScriptDsl by lazy { ScriptDsl(wiring.scriptContext.sequenceOperatorFactory(), strandEc) }
 
     private val exceptionHandler = CoroutineExceptionHandler { _, exception ->
