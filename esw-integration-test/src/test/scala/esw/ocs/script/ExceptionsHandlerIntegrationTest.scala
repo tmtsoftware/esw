@@ -1,6 +1,7 @@
 package esw.ocs.script
 
 import akka.actor.testkit.typed.scaladsl.TestProbe
+import com.typesafe.config.ConfigFactory
 import csw.command.client.messages.sequencer.SequencerMsg
 import csw.command.client.messages.sequencer.SequencerMsg.SubmitSequence
 import csw.params.commands.CommandResponse.{Completed, SubmitResponse}
@@ -24,7 +25,13 @@ class ExceptionsHandlerIntegrationTest extends EswTestKit(EventServer) {
   private val tcsSubsystem     = TCS
   private val tcsObservingMode = "exceptionscript2" // ExceptionTestScript2.kt
 
-  private val prefix             = Prefix("tcs.filter.wheel")
+  private val prefix = Prefix("tcs.filter.wheel")
+
+  override def beforeAll(): Unit = {
+    super.beforeAll()
+    frameworkTestKit.spawnStandalone(ConfigFactory.load("standaloneHcd.conf"))
+  }
+
   override def afterEach(): Unit = shutdownAllSequencers()
 
   "Script" must {
@@ -147,6 +154,21 @@ class ExceptionsHandlerIntegrationTest extends EswTestKit(EventServer) {
       assertMessage(onErrorEventTestProbe, onErrorEventMessage)
 
       assertMessage(globalExHandlerEventTestProbe, globalExHandlerEventMessage)
+    }
+
+    "not fail the command on negative submit response if resumeOnError=false | ESW-249" in {
+      val negativeSubmitResEventMessage   = "negative-response-error"
+      val negativeSubmitResEventKey       = EventKey(prefix, EventName(negativeSubmitResEventMessage))
+      val negativeSubmitResEventTestProbe = createProbeFor(negativeSubmitResEventKey)
+
+      val sequencerRef  = spawnSequencerRef(tcsSubsystem, tcsObservingMode)
+      val sequencer     = new SequencerActorProxy(sequencerRef)
+      val setupSequence = Sequence(Setup(prefix, CommandName("negative-submit-response"), None))
+
+      val submitResponse = sequencer.submit(setupSequence).futureValue
+
+      assertMessage(negativeSubmitResEventTestProbe, negativeSubmitResEventMessage)
+      sequencer.queryFinal(submitResponse.runId).futureValue should ===(Completed(submitResponse.runId))
     }
   }
 
