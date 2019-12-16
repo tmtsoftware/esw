@@ -17,8 +17,7 @@ import csw.time.core.models.UTCTime
 
 import scala.concurrent.Future
 
-class SampleComponentHandlers(ctx: ActorContext[TopLevelActorMessage], cswCtx: CswContext)
-    extends ComponentHandlers(ctx, cswCtx) {
+class SampleAssemblyHandlers(ctx: ActorContext[TopLevelActorMessage], cswCtx: CswContext) extends ComponentHandlers(ctx, cswCtx) {
   import cswCtx._
 
   val log: Logger = loggerFactory.getLogger(ctx)

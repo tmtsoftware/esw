@@ -20,7 +20,7 @@ class LockUnlockIntegrationTest extends EswTestKit(EventServer) {
 
   override def beforeAll(): Unit = {
     super.beforeAll()
-    frameworkTestKit.spawnStandalone(ConfigFactory.load("standalone.conf"))
+    frameworkTestKit.spawnStandalone(ConfigFactory.load("standaloneAssembly.conf"))
   }
 
   override def beforeEach(): Unit = {

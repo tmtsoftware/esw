@@ -92,7 +92,7 @@ class SequencerTest(ignore: Int, mode: String)
       enterBarrier("ocs-started")
       enterBarrier("tcs-started")
 
-      frameworkTestKit.spawnStandalone(ConfigFactory.load("standalone.conf"))
+      frameworkTestKit.spawnStandalone(ConfigFactory.load("standaloneAssembly.conf"))
       enterBarrier("assembly-started")
 
       enterBarrier("submit-sequence-to-ocs")

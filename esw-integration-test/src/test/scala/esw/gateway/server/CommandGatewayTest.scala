@@ -24,7 +24,7 @@ class CommandGatewayTest extends EswTestKit(EventServer, Gateway) with GatewayCo
 
   override def beforeAll(): Unit = {
     super.beforeAll()
-    frameworkTestKit.spawnStandalone(ConfigFactory.load("standalone.conf"))
+    frameworkTestKit.spawnStandalone(ConfigFactory.load("standaloneAssembly.conf"))
   }
 
   "CommandApi" must {

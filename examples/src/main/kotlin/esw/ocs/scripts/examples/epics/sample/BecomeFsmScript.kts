@@ -8,7 +8,7 @@ import kotlin.time.seconds
 
 FsmScript("INIT") {
 
-    val testAssembly = Assembly("test", 10.seconds)
+    val testAssembly = Assembly("esw.test", 10.seconds)
     val eventVar = SystemVar(true, "tcs.trigger", booleanKey("flag"))
     val flag = commandFlag()
 
