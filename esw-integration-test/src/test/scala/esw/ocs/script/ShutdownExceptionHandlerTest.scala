@@ -35,6 +35,7 @@ class ShutdownExceptionHandlerTest extends EswTestKit(EventServer) {
     eventually { shutdownProbe.expectMessage(Ok) }
     eventually {
       val event = assertionProbe.expectMessageType[SystemEvent]
+      event.isInvalid shouldBe false
       event.eventName.name shouldBe reason
     }
   }

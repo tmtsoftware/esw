@@ -153,6 +153,7 @@ class ExceptionsHandlerIntegrationTest extends EswTestKit(EventServer) {
   private def assertMessage(probe: TestProbe[Event], reason: String): Unit = {
     eventually {
       val event = probe.expectMessageType[SystemEvent]
+      event.isInvalid shouldBe false
       event.eventName.name shouldBe reason
     }
   }
