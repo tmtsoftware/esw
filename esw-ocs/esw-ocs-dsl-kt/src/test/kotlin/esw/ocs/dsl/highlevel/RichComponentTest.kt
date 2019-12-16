@@ -123,6 +123,36 @@ class RichComponentTest {
         }
 
         @Test
+        fun `submit should resolve commandService for given assembly, call submit method on it and should't throw exception on negative submit response if resumeOnError=true | ESW-121, ESW-245, ESW-139, ESW-249 `() = runBlocking {
+            val message = "error-occurred"
+            val invalidSubmitResponse = CommandResponse.Error(Id.apply(), message)
+
+            mockkStatic(CommandServiceFactory::class)
+            every { locationServiceUtil.jResolveAkkaLocation(prefix, componentType) }.answers { CompletableFuture.completedFuture(assemblyLocation) }
+            every { CommandServiceFactory.jMake(assemblyLocation, actorSystem) }.answers { assemblyCommandService }
+            every { assemblyCommandService.submit(setupCommand) }.answers { CompletableFuture.completedFuture(invalidSubmitResponse) }
+
+            shouldNotThrow<CommandError> { assembly.submit(setupCommand, resumeOnError = true) }
+
+            verify { assemblyCommandService.submit(setupCommand) }
+        }
+
+        @Test
+        fun `submit should resolve commandService for given assembly, call submit method on it and should throw exception on negative submit response if resumeOnError=false | ESW-121, ESW-245, ESW-139, ESW-249 `() = runBlocking {
+            val message = "error-occurred"
+            val invalidSubmitResponse = CommandResponse.Error(Id.apply(), message)
+
+            mockkStatic(CommandServiceFactory::class)
+            every { locationServiceUtil.jResolveAkkaLocation(prefix, componentType) }.answers { CompletableFuture.completedFuture(assemblyLocation) }
+            every { CommandServiceFactory.jMake(assemblyLocation, actorSystem) }.answers { assemblyCommandService }
+            every { assemblyCommandService.submit(setupCommand) }.answers { CompletableFuture.completedFuture(invalidSubmitResponse) }
+
+            shouldThrow<CommandError> { assembly.submit(setupCommand) }
+
+            verify { assemblyCommandService.submit(setupCommand) }
+        }
+
+        @Test
         fun `query should resolve commandService for given assembly and call query method on it | ESW-121, ESW-245 `() = runBlocking {
             val commandRunId: Id = mockk()
 
@@ -153,7 +183,7 @@ class RichComponentTest {
         }
 
         @Test
-        fun `query should resolve commandService for given assembly, call query method on it and should throw exception on negative submit response if resumeOnError=false | ESW-121, ESW-245, ESW-249, ESW-139, ESW-249 `() = runBlocking {
+        fun `query should resolve commandService for given assembly, call query method on it and should throw exception on negative submit response if resumeOnError=false | ESW-121, ESW-245, ESW-139, ESW-249 `() = runBlocking {
             val commandRunId: Id = mockk()
             val message = "error-occurred"
             val invalidSubmitResponse = CommandResponse.Error(Id.apply(), message)
@@ -213,7 +243,7 @@ class RichComponentTest {
         }
 
         @Test
-        fun `queryFinal should resolve commandService for given assembly, call queryFinal method on it and should throw exception on negative submit response if resumeOnError=false | ESW-121, ESW-245, ESW-249, ESW-139, ESW-249 `() = runBlocking {
+        fun `queryFinal should resolve commandService for given assembly, call queryFinal method on it and should throw exception on negative submit response if resumeOnError=false | ESW-121, ESW-245, ESW-139, ESW-249 `() = runBlocking {
             val commandRunId: Id = mockk()
             val message = "error-occurred"
             val invalidSubmitResponse = CommandResponse.Error(Id.apply(), message)
@@ -268,7 +298,7 @@ class RichComponentTest {
         }
 
         @Test
-        fun `submitAndWait should resolve commandService for given assembly, call submitAndWait method on it and should throw exception on negative submit response if resumeOnError=false | ESW-121, ESW-245, ESW-249, ESW-139, ESW-249 `() = runBlocking {
+        fun `submitAndWait should resolve commandService for given assembly, call submitAndWait method on it and should throw exception on negative submit response if resumeOnError=false | ESW-121, ESW-245, ESW-139, ESW-249 `() = runBlocking {
             val message = "error-occurred"
             val invalidSubmitResponse = CommandResponse.Error(Id.apply(), message)
 
@@ -424,6 +454,36 @@ class RichComponentTest {
         }
 
         @Test
+        fun `submit should resolve commandService for given hcd, call submit method on it and should't throw exception on negative submit response if resumeOnError=true | ESW-121, ESW-245, ESW-139, ESW-249 `() = runBlocking {
+            val message = "error-occurred"
+            val invalidSubmitResponse = CommandResponse.Error(Id.apply(), message)
+
+            mockkStatic(CommandServiceFactory::class)
+            every { locationServiceUtil.jResolveAkkaLocation(prefix, componentType) }.answers { CompletableFuture.completedFuture(hcdLocation) }
+            every { CommandServiceFactory.jMake(hcdLocation, actorSystem) }.answers { hcdCommandService }
+            every { hcdCommandService.submit(setupCommand) }.answers { CompletableFuture.completedFuture(invalidSubmitResponse) }
+
+            shouldNotThrow<CommandError> { hcd.submit(setupCommand, resumeOnError = true) }
+
+            verify { hcdCommandService.submit(setupCommand) }
+        }
+
+        @Test
+        fun `submit should resolve commandService for given hcd, call submit method on it and should throw exception on negative submit response if resumeOnError=false | ESW-121, ESW-245, ESW-139, ESW-249 `() = runBlocking {
+            val message = "error-occurred"
+            val invalidSubmitResponse = CommandResponse.Error(Id.apply(), message)
+
+            mockkStatic(CommandServiceFactory::class)
+            every { locationServiceUtil.jResolveAkkaLocation(prefix, componentType) }.answers { CompletableFuture.completedFuture(hcdLocation) }
+            every { CommandServiceFactory.jMake(hcdLocation, actorSystem) }.answers { hcdCommandService }
+            every { hcdCommandService.submit(setupCommand) }.answers { CompletableFuture.completedFuture(invalidSubmitResponse) }
+
+            shouldThrow<CommandError> { hcd.submit(setupCommand) }
+
+            verify { hcdCommandService.submit(setupCommand) }
+        }
+
+        @Test
         fun `query should resolve commandService for given hcd and call query method on it | ESW-121, ESW-245 `() = runBlocking {
             val commandRunId: Id = mockk()
 
@@ -454,7 +514,7 @@ class RichComponentTest {
         }
 
         @Test
-        fun `query should resolve commandService for given hcd, call query method on it and should throw exception on negative submit response if resumeOnError=false | ESW-121, ESW-245, ESW-249, ESW-139, ESW-249 `() = runBlocking {
+        fun `query should resolve commandService for given hcd, call query method on it and should throw exception on negative submit response if resumeOnError=false | ESW-121, ESW-245, ESW-139, ESW-249 `() = runBlocking {
             val commandRunId: Id = mockk()
             val message = "error-occurred"
             val invalidSubmitResponse = CommandResponse.Error(Id.apply(), message)
@@ -512,7 +572,7 @@ class RichComponentTest {
         }
 
         @Test
-        fun `queryFinal should resolve commandService for given hcd, call queryFinal method on it and should throw exception on negative submit response if resumeOnError=false | ESW-121, ESW-245, ESW-249, ESW-139, ESW-249 `() = runBlocking {
+        fun `queryFinal should resolve commandService for given hcd, call queryFinal method on it and should throw exception on negative submit response if resumeOnError=false | ESW-121, ESW-245, ESW-139, ESW-249 `() = runBlocking {
             val commandRunId: Id = mockk()
             val message = "error-occurred"
             val invalidSubmitResponse = CommandResponse.Error(Id.apply(), message)

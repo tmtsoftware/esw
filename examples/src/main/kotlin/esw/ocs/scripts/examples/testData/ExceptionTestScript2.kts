@@ -15,7 +15,7 @@ script {
         val hcd = Hcd("esw.testHcd", 10.seconds)
         hcd.submitAndWait(command)
 
-    }.onError { err ->
+    }.onError {
 
         val errorEvent = SystemEvent("tcs.filter.wheel", "onError-event")
         publishEvent(errorEvent)
@@ -32,7 +32,7 @@ script {
             publishEvent(negativeResponseEvent)
         }
 
-    }.onError { err ->
+    }.onError {
         val errorEvent = SystemEvent("tcs.filter.wheel", "onError-event")
         publishEvent(errorEvent)
     }
