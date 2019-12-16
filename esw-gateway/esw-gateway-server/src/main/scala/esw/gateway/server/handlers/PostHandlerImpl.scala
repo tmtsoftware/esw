@@ -32,7 +32,7 @@ class PostHandlerImpl(
     case PublishEvent(event)                    => complete(eventApi.publish(event))
     case GetEvent(eventKeys)                    => complete(eventApi.get(eventKeys))
     case SetAlarmSeverity(alarmKey, severity)   => complete(alarmApi.setSeverity(alarmKey, severity))
-    case Log(appName, level, message, map)      => complete(loggingApi.log(appName, level, message, map))
+    case Log(prefix, level, message, map)       => complete(loggingApi.log(prefix, level, message, map))
     case SetLogLevel(componentId, logLevel)     => complete(adminApi.setLogLevel(componentId, logLevel))
     case GetLogMetadata(componentId)            => complete(adminApi.getLogMetadata(componentId))
   }

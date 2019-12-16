@@ -46,15 +46,18 @@ class LoggingGatewayTest extends EswTestKit(Gateway) with GatewayCodecs {
   }
 
   "LoggingApi" must {
-    "should generate log statement with given app prefix, severity level and message | ESW-200" in {
+    "should generate log statement with given app prefix, severity level and message | ESW-200, CSW-63, CSW-78" in {
       val loggingClient = new LoggingClient(gatewayPostClient)
 
       val componentName = "test_app"
-      loggingClient.log(Prefix(ESW, componentName), FATAL, "test-message").futureValue should ===(Done)
+      val prefix        = Prefix(ESW, componentName)
+      loggingClient.log(prefix, FATAL, "test-message").futureValue should ===(Done)
 
       eventually(logBuffer.size shouldBe 1)
       val log: JsObject = logBuffer.head
       log.getString("@componentName") shouldBe componentName
+      log.getString("@subsystem") shouldBe ESW.name
+      log.getString("@prefix") shouldBe prefix.value
       log.getString("@severity") shouldBe "FATAL"
       log.getString("message") shouldBe "test-message"
     }
