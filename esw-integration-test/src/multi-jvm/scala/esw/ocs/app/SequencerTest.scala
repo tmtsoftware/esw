@@ -11,8 +11,8 @@ import csw.location.server.http.MultiNodeHTTPLocationService
 import csw.params.commands.CommandResponse.Started
 import csw.params.commands.{CommandName, Sequence, Setup}
 import csw.params.events.{Event, EventKey, SystemEvent}
-import csw.prefix.models.{Prefix, Subsystem}
 import csw.prefix.models.Subsystem.{ESW, TCS}
+import csw.prefix.models.{Prefix, Subsystem}
 import csw.testkit.{EventTestKit, FrameworkTestKit}
 import esw.ocs.app.wiring.SequencerWiring
 import esw.ocs.impl.SequencerApiFactory
@@ -92,7 +92,7 @@ class SequencerTest(ignore: Int, mode: String)
       enterBarrier("ocs-started")
       enterBarrier("tcs-started")
 
-      frameworkTestKit.spawnStandalone(ConfigFactory.load("standaloneAssembly.conf"))
+      frameworkTestKit.spawnStandalone(ConfigFactory.load("standalone.conf"))
       enterBarrier("assembly-started")
 
       enterBarrier("submit-sequence-to-ocs")
