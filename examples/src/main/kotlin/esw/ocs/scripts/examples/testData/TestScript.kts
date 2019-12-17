@@ -118,7 +118,7 @@ script {
             counter += 1
         })
         loop {
-            stopWhen(counter > 0)
+            stopWhen(counter > 1)
         }
         a.cancel()
     }

@@ -302,6 +302,7 @@ class ScriptIntegrationTest extends EswTestKit(EventServer, AlarmServer, ConfigS
         val eventToBeAsserted: SystemEvent = testProbe.expectMessageType[SystemEvent]
         val offset: Long                   = eventToBeAsserted.get("offset", KeyType.LongKey).get.head
         offset shouldBe <=(tolerance)
+        offset shouldBe >(1000L)
       }
     }
 
@@ -322,6 +323,13 @@ class ScriptIntegrationTest extends EswTestKit(EventServer, AlarmServer, ConfigS
         val eventToBeAsserted: SystemEvent = testProbe.expectMessageType[SystemEvent]
         val offset: Long                   = eventToBeAsserted.get("offset", KeyType.LongKey).get.head
         offset shouldBe <=(tolerance)
+        offset shouldBe >(1000L)
+      }
+      eventually {
+        val eventToBeAsserted: SystemEvent = testProbe.expectMessageType[SystemEvent]
+        val offset: Long                   = eventToBeAsserted.get("offset", KeyType.LongKey).get.head
+        offset shouldBe <=(2 * tolerance)
+        offset shouldBe >(2000L)
       }
     }
 
