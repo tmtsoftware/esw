@@ -8,6 +8,7 @@ import akka.actor.CoordinatedShutdown.Reason
 import akka.http.scaladsl.Http
 import akka.http.scaladsl.Http.ServerBinding
 import akka.http.scaladsl.server.Route
+import ch.megard.akka.http.cors.scaladsl.CorsDirectives._
 import csw.location.api.scaladsl.{LocationService, RegistrationResult}
 import csw.location.api.models.Connection.HttpConnection
 import csw.location.api.models.HttpRegistration
@@ -19,7 +20,6 @@ import scala.async.Async._
 import scala.concurrent.Future
 import scala.concurrent.duration.DurationLong
 import scala.util.control.NonFatal
-import ch.megard.akka.http.cors.scaladsl.CorsDirectives._
 
 /**
  * Initialises HTTP Server at given port and register with location service
@@ -83,7 +83,7 @@ class HttpService(
     }
 
     Http().bindAndHandle(
-      handler = applicationRoute,
+      handler = Metrics.withMetrics(applicationRoute),
       interface = "0.0.0.0",
       port = _port
     )
