@@ -841,7 +841,7 @@ class SequencerBehaviorTest extends ScalaTestWithActorTestKit with BaseTestSuite
   }
 
   "LogControlMessages" must {
-    "set and get log level for component name | ESW-183" in {
+    "set and get log level for component name | ESW-183, ESW-127" in {
       val sequencerSetup = SequencerTestSetup.inProgress(sequence)
       import sequencerSetup._
       val logMetadataProbe = TestProbe[LogMetadata]

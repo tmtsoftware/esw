@@ -126,10 +126,9 @@ class SequencerBehavior(
     }
   }
 
-  private def handleLogMessages(msg: LogControlMessage): Behavior[SequencerMsg] = msg match {
-    case GetComponentLogMetadata(replyTo) => replyTo ! LogAdminUtil.getLogMetadata(componentId.prefix); Behaviors.same
-    case SetComponentLogLevel(logLevel) =>
-      LogAdminUtil.setComponentLogLevel(componentId.prefix, logLevel); Behaviors.same
+  private def handleLogMessages(msg: LogControlMessage): Unit = msg match {
+    case GetComponentLogMetadata(replyTo) => replyTo ! LogAdminUtil.getLogMetadata(componentId.prefix)
+    case SetComponentLogLevel(logLevel)   => LogAdminUtil.setComponentLogLevel(componentId.prefix, logLevel)
   }
 
   private def goOnline(replyTo: ActorRef[GoOnlineResponse], data: SequencerData): Behavior[SequencerMsg] = {
@@ -243,7 +242,7 @@ class SequencerBehavior(
 
       msg match {
         case msg: CommonMessage     => handleCommonMessage(msg, state, data)
-        case msg: LogControlMessage => handleLogMessages(msg)
+        case msg: LogControlMessage => handleLogMessages(msg); Behaviors.same
         case msg: StateMessage      => stateHandler(msg)
         case msg: UnhandleableSequencerMessage =>
           msg.replyTo ! Unhandled(state.entryName, msg.getClass.getSimpleName); Behaviors.same
