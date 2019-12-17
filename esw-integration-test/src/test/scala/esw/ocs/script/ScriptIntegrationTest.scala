@@ -181,7 +181,7 @@ class ScriptIntegrationTest extends EswTestKit(EventServer, AlarmServer, ConfigS
       getPublishedEvent.isInvalid should ===(false)
     }
 
-    "be able to subscribe a event key | ESW-120" in {
+    "be able to subscribe a event key | ESW-120, CSW-80" in {
       val eventService = new EventServiceFactory().make(HttpLocationServiceFactory.makeLocalClient)
 
       val command  = Setup(Prefix("esw.test"), CommandName("on-event"), None)
@@ -194,7 +194,7 @@ class ScriptIntegrationTest extends EswTestKit(EventServer, AlarmServer, ConfigS
 
       Thread.sleep(1000)
 
-      val successKey        = EventKey("esw.test.onEvent.success")
+      val successKey        = EventKey("esw.test.onevent.success")
       val getPublishedEvent = eventSubscriber.get(successKey).futureValue
 
       getPublishedEvent.isInvalid should ===(false)

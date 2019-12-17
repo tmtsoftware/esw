@@ -56,7 +56,7 @@ script {
 
     onSetup("on-event") {
         onEvent("esw.test.get.event") {
-            val successEvent = SystemEvent("esw.test", "onEvent.success")
+            val successEvent = SystemEvent("esw.test", "onevent.success")
             if (!it.isInvalid) publishEvent(successEvent)
         }
     }

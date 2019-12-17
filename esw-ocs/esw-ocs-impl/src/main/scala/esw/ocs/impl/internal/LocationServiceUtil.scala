@@ -59,7 +59,7 @@ private[esw] class LocationServiceUtil(val locationService: LocationService)(
       })
 
   def resolveByComponentNameAndType(componentName: String, componentType: ComponentType): Future[Option[Location]] =
-    locationService.list(componentType).map(_.find(_.connection.componentId.prefix.componentName == componentName))
+    locationService.list(componentType).map(_.find(_.connection.componentId.prefix.componentName == componentName.toLowerCase))
 
   def resolveComponentRef(prefix: Prefix, componentType: ComponentType): Future[ActorRef[ComponentMessage]] = {
     val connection = AkkaConnection(ComponentId(prefix, componentType))
