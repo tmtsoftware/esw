@@ -29,7 +29,7 @@ class TimeServiceDslTest : TimeServiceDsl {
     private val duration: Duration = 10.seconds
     private val jDuration = duration.toJavaDuration()
 
-    override val timeServiceScheduler: TimeServiceScheduler = scheduler
+    override val timeService: TimeServiceScheduler = scheduler
     override val coroutineScope: CoroutineScope = CoroutineScope(EmptyCoroutineContext)
 
     private fun assertWithin(expected: Duration, result: Duration, tolerance: Duration) {

@@ -11,15 +11,15 @@ import java.nio.file.Path
 
 interface ConfigServiceDsl {
 
-    val configClient: IConfigClientService
+    val configService: IConfigClientService
     val actorSystem: ActorSystem<SpawnProtocol.Command>
 
     suspend fun existsConfig(path: String, id: String? = null): Boolean =
-            id?.let { configClient.exists(Path.of(path), ConfigId(id)).await() }
-                    ?: configClient.exists(Path.of(path)).await()
+            id?.let { configService.exists(Path.of(path), ConfigId(id)).await() }
+                    ?: configService.exists(Path.of(path)).await()
 
     suspend fun getConfig(path: String): Config? {
-        val configData = configClient.getActive(Path.of(path)).await().nullable()
+        val configData = configService.getActive(Path.of(path)).await().nullable()
         return configData?.toJConfigObject(actorSystem)?.await()
     }
 }

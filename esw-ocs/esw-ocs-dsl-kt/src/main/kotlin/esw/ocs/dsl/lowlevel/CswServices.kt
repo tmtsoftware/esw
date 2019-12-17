@@ -29,8 +29,8 @@ interface CswServices {
             override val eventPublisher: IEventPublisher by lazy { eventService.defaultPublisher() }
             override val eventSubscriber: IEventSubscriber by lazy { eventService.defaultSubscriber() }
             override val locationService: ILocationService by lazy { JHttpLocationServiceFactory.makeLocalClient(actorSystem) }
-            override val configClient: IConfigClientService by lazy { JConfigClientFactory.clientApi(actorSystem, locationService) }
-            override val timeServiceScheduler: TimeServiceScheduler by lazy { TimeServiceSchedulerFactory(actorSystem.scheduler()).make(strandEc.ec()) }
+            override val configService: IConfigClientService by lazy { JConfigClientFactory.clientApi(actorSystem, locationService) }
+            override val timeService: TimeServiceScheduler by lazy { TimeServiceSchedulerFactory(actorSystem.scheduler()).make(strandEc.ec()) }
             override val databaseServiceFactory: DatabaseServiceFactory by lazy { DatabaseServiceFactory(actorSystem) }
         }
     }
@@ -41,7 +41,7 @@ interface CswServices {
     val eventPublisher: IEventPublisher
     val eventSubscriber: IEventSubscriber
     val locationService: ILocationService
-    val configClient: IConfigClientService
-    val timeServiceScheduler: TimeServiceScheduler
+    val configService: IConfigClientService
+    val timeService: TimeServiceScheduler
     val databaseServiceFactory: DatabaseServiceFactory
 }

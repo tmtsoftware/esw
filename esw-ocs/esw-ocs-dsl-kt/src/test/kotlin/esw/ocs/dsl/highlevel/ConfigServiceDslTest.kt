@@ -23,30 +23,30 @@ class ConfigServiceDslTest : ConfigServiceDsl {
     @AfterAll
     fun tearDown() = actorSystem.terminate()
 
-    override val configClient: IConfigClientService = mockk()
+    override val configService: IConfigClientService = mockk()
     private val path = "/test/config1.conf"
 
     @Test
     fun `existsConfig should delegate to configClientService#exists | ESW-123`() = runBlocking {
-        every { configClient.exists(any()) }.returns(CompletableFuture.completedFuture(true))
+        every { configService.exists(any()) }.returns(CompletableFuture.completedFuture(true))
         existsConfig(path)
-        verify { configClient.exists(any()) }
+        verify { configService.exists(any()) }
     }
 
     @Test
     fun `getConfig should delegate to configClientService#getActive and return null if ConfigData is empty | ESW-123`() = runBlocking {
-        every { configClient.getActive(any()) }.returns(CompletableFuture.completedFuture(Optional.empty()))
+        every { configService.getActive(any()) }.returns(CompletableFuture.completedFuture(Optional.empty()))
         getConfig(path) shouldBe null
-        verify { configClient.getActive(any()) }
+        verify { configService.getActive(any()) }
     }
 
     @Test
     fun `getConfig should delegate to configClientService#getActive and return ConfigData | ESW-123`() = runBlocking {
         val defaultStrConf = "foo { bar { baz : 1234 } }"
         val configData = ConfigData.fromString(defaultStrConf)
-        every { configClient.getActive(any()) }.returns(CompletableFuture.completedFuture(Optional.of(configData)))
+        every { configService.getActive(any()) }.returns(CompletableFuture.completedFuture(Optional.of(configData)))
         getConfig(path) shouldBe ConfigFactory.parseString(defaultStrConf)
-        verify { configClient.getActive(any()) }
+        verify { configService.getActive(any()) }
     }
 
 }

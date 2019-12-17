@@ -14,16 +14,16 @@ import kotlin.time.nanoseconds
 import kotlin.time.toJavaDuration
 
 interface TimeServiceDsl : SuspendToJavaConverter {
-    val timeServiceScheduler: TimeServiceScheduler
+    val timeService: TimeServiceScheduler
 
     fun scheduleOnce(startTime: TMTTime, task: SuspendableCallback): Cancellable =
-            timeServiceScheduler.scheduleOnce(startTime, Runnable { task.toJava() })
+            timeService.scheduleOnce(startTime, Runnable { task.toJava() })
 
     fun scheduleOnceFromNow(durationFromNow: Duration, task: SuspendableCallback): Cancellable =
             scheduleOnce(utcTimeAfter(durationFromNow), task)
 
     fun schedulePeriodically(startTime: TMTTime, interval: Duration, task: SuspendableCallback): Cancellable =
-            timeServiceScheduler.schedulePeriodically(
+            timeService.schedulePeriodically(
                     startTime,
                     interval.toJavaDuration(),
                     Runnable { task.toJava() })
