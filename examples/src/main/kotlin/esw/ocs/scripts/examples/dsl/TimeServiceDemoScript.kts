@@ -7,16 +7,26 @@ import kotlin.time.seconds
 script {
 
     //Usage inside handlers - schedule tasks while handling setup/observe commands
-    onSetup("schedule-periodically") {
-        val offset = utcTimeAfter(2.seconds).offsetFromNow()
-
-        schedulePeriodically(utcTimeAfter(5.seconds), offset) {
+    onSetup("schedule-once-from-now") {
+        scheduleOnceFromNow(durationFromNow = 5.seconds) {
             publishEvent(SystemEvent("lgsf", "publish.success"))
         }
     }
 
     onObserve("schedule-once") {
-        scheduleOnce(taiTimeNow()) {
+        scheduleOnce(startTime = taiTimeNow()) {
+            publishEvent(SystemEvent("lgsf", "publish.success"))
+        }
+    }
+
+    onSetup("schedule-periodically") {
+        schedulePeriodically(startTime = utcTimeNow(), interval = 1.seconds) {
+            publishEvent(SystemEvent("lgsf", "publish.success"))
+        }
+    }
+
+    onSetup("schedule-periodically-from-now") {
+        schedulePeriodicallyFromNow(durationFromNow = 5.seconds, interval = 1.seconds) {
             publishEvent(SystemEvent("lgsf", "publish.success"))
         }
     }
@@ -26,7 +36,15 @@ script {
         publishEvent(SystemEvent("lgsf", "publish.success"))
     }
 
-    schedulePeriodically(utcTimeAfter(2.seconds), 5.seconds) {
+    scheduleOnce(taiTimeNow()) {
+        publishEvent(SystemEvent("lgsf", "publish.success"))
+    }
+
+    schedulePeriodically(utcTimeNow(), 5.seconds) {
+        publishEvent(SystemEvent("lgsf", "publish.success"))
+    }
+
+    schedulePeriodicallyFromNow(5.seconds, 1.seconds) {
         publishEvent(SystemEvent("lgsf", "publish.success"))
     }
 }
