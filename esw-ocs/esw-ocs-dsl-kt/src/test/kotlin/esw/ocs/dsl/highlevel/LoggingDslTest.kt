@@ -77,7 +77,7 @@ class LoggingDslTest : LoggingDsl {
         val ex = Exception("logging failed")
         every { logger.warn(message, map, ex) }.answers { Unit }
 
-        warn(message, map, ex)
+        warn(message, ex, map)
         verify { logger.warn(message, map, ex) }
     }
 
@@ -95,7 +95,7 @@ class LoggingDslTest : LoggingDsl {
         val ex = Exception("logging failed")
         every { logger.error(message, map, ex) }.answers { Unit }
 
-        error(message, map, ex)
+        error(message, ex, map)
         verify { logger.error(message, map, ex) }
     }
 
@@ -113,7 +113,7 @@ class LoggingDslTest : LoggingDsl {
         val ex = Exception("logging failed")
         every { logger.fatal(message, map, ex) }.answers { Unit }
 
-        fatal(message, map, ex)
+        fatal(message, ex, map)
         verify { logger.fatal(message, map, ex) }
     }
 

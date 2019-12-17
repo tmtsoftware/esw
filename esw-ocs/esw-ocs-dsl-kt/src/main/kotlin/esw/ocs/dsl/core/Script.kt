@@ -28,7 +28,7 @@ sealed class BaseScript(wiring: ScriptWiring) : CswHighLevelDsl(wiring.cswServic
     internal open val scriptDsl: ScriptDsl by lazy { ScriptDsl(wiring.scriptContext.sequenceOperatorFactory(), strandEc) }
 
     private val exceptionHandler = CoroutineExceptionHandler { _, exception ->
-        warn("Exception thrown in script with a message: ${exception.message}, invoking exception handler", ex = exception)
+        warn("Exception thrown in script with a message: ${exception.message}, invoking exception handler", cause = exception)
         exception.printStackTrace()
         scriptDsl.executeExceptionHandlers(exception)
     }
@@ -90,7 +90,7 @@ open class Script(private val wiring: ScriptWiring) : BaseScript(wiring), Script
             scriptDsl.onException {
                 // "future" is used to swallow the exception coming from exception handlers
                 coroutineScope.future { block(this.toHandlerScope(), it.toScriptError()) }
-                        .exceptionally { error("Exception thrown from Exception handler with a message : ${it.message}", ex = it) }
+                        .exceptionally { error("Exception thrown from Exception handler with a message : ${it.message}", cause = it) }
                         .thenAccept { }
             }
 
@@ -128,7 +128,7 @@ class FsmScript(private val wiring: ScriptWiring) : BaseScript(wiring), FsmScrip
             try {
                 runBlocking { block(this@FsmScript.fsmScriptDsl.state.params()) }
             } catch (ex: Exception) {
-                error("Failed to initialize state: $name", ex = ex)
+                error("Failed to initialize state: $name", cause = ex)
                 throw ScriptInitialisationFailedException(ex.message)
             }
         }
