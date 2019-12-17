@@ -106,7 +106,7 @@ class AdminGatewayTest extends EswTestKit(Gateway) with GatewayCodecs {
 
   "AdminApi" must {
 
-    "get the current component log meta data | ESW-254" in {
+    "get the current component log meta data | ESW-254, CSW-78" in {
       val logMetadata1 = adminClient.getLogMetadata(motionControllerConnection.componentId).futureValue
 
       val config     = ConfigFactory.load().getConfig("csw-logging")
