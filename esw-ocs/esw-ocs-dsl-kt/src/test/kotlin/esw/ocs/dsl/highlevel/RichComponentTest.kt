@@ -34,6 +34,7 @@ import io.mockk.verify
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.runBlocking
 import msocket.api.Subscription
+import org.junit.jupiter.api.BeforeAll
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
 import java.util.*
@@ -86,9 +87,14 @@ class RichComponentTest {
         private val assemblyRef: ActorRef<ComponentMessage> = mockk()
         private val assemblyCommandService: ICommandService = mockk()
 
+        @BeforeAll
+        fun beforeAll() {
+            mockkStatic(CommandServiceFactory::class)
+        }
+
         @Test
         fun `validate should resolve commandService for given assembly and call validate method on it | ESW-121, ESW-245 `() = runBlocking {
-            mockkStatic(CommandServiceFactory::class)
+
             every { locationServiceUtil.jResolveAkkaLocation(prefix, componentType) }.answers { CompletableFuture.completedFuture(assemblyLocation) }
             every { CommandServiceFactory.jMake(assemblyLocation, actorSystem) }.answers { assemblyCommandService }
             every { assemblyCommandService.validate(setupCommand) }.answers { CompletableFuture.completedFuture(CommandResponse.Accepted(Id.apply())) }
@@ -100,7 +106,6 @@ class RichComponentTest {
 
         @Test
         fun `oneway should resolve commandService for given assembly and call oneway method on it | ESW-121, ESW-245 `() = runBlocking {
-            mockkStatic(CommandServiceFactory::class)
             every { locationServiceUtil.jResolveAkkaLocation(prefix, componentType) }.answers { CompletableFuture.completedFuture(assemblyLocation) }
             every { CommandServiceFactory.jMake(assemblyLocation, actorSystem) }.answers { assemblyCommandService }
             every { assemblyCommandService.oneway(setupCommand) }.answers { CompletableFuture.completedFuture(CommandResponse.Accepted(Id.apply())) }
@@ -112,7 +117,6 @@ class RichComponentTest {
 
         @Test
         fun `submit should resolve commandService for given assembly and call submit method on it | ESW-121, ESW-245 `() = runBlocking {
-            mockkStatic(CommandServiceFactory::class)
             every { locationServiceUtil.jResolveAkkaLocation(prefix, componentType) }.answers { CompletableFuture.completedFuture(assemblyLocation) }
             every { CommandServiceFactory.jMake(assemblyLocation, actorSystem) }.answers { assemblyCommandService }
             every { assemblyCommandService.submit(setupCommand) }.answers { CompletableFuture.completedFuture(CommandResponse.Completed(Id.apply())) }
@@ -127,7 +131,6 @@ class RichComponentTest {
             val message = "error-occurred"
             val invalidSubmitResponse = CommandResponse.Error(Id.apply(), message)
 
-            mockkStatic(CommandServiceFactory::class)
             every { locationServiceUtil.jResolveAkkaLocation(prefix, componentType) }.answers { CompletableFuture.completedFuture(assemblyLocation) }
             every { CommandServiceFactory.jMake(assemblyLocation, actorSystem) }.answers { assemblyCommandService }
             every { assemblyCommandService.submit(setupCommand) }.answers { CompletableFuture.completedFuture(invalidSubmitResponse) }
@@ -142,7 +145,6 @@ class RichComponentTest {
             val message = "error-occurred"
             val invalidSubmitResponse = CommandResponse.Error(Id.apply(), message)
 
-            mockkStatic(CommandServiceFactory::class)
             every { locationServiceUtil.jResolveAkkaLocation(prefix, componentType) }.answers { CompletableFuture.completedFuture(assemblyLocation) }
             every { CommandServiceFactory.jMake(assemblyLocation, actorSystem) }.answers { assemblyCommandService }
             every { assemblyCommandService.submit(setupCommand) }.answers { CompletableFuture.completedFuture(invalidSubmitResponse) }
@@ -156,7 +158,6 @@ class RichComponentTest {
         fun `query should resolve commandService for given assembly and call query method on it | ESW-121, ESW-245 `() = runBlocking {
             val commandRunId: Id = mockk()
 
-            mockkStatic(CommandServiceFactory::class)
             every { locationServiceUtil.jResolveAkkaLocation(prefix, componentType) }.answers { CompletableFuture.completedFuture(assemblyLocation) }
             every { CommandServiceFactory.jMake(assemblyLocation, actorSystem) }.answers { assemblyCommandService }
             every { assemblyCommandService.query(commandRunId) }.answers { CompletableFuture.completedFuture(CommandResponse.Completed(Id.apply())) }
@@ -172,7 +173,6 @@ class RichComponentTest {
             val message = "error-occurred"
             val invalidSubmitResponse = CommandResponse.Error(Id.apply(), message)
 
-            mockkStatic(CommandServiceFactory::class)
             every { locationServiceUtil.jResolveAkkaLocation(prefix, componentType) }.answers { CompletableFuture.completedFuture(assemblyLocation) }
             every { CommandServiceFactory.jMake(assemblyLocation, actorSystem) }.answers { assemblyCommandService }
             every { assemblyCommandService.query(commandRunId) }.answers { CompletableFuture.completedFuture(invalidSubmitResponse) }
@@ -188,7 +188,6 @@ class RichComponentTest {
             val message = "error-occurred"
             val invalidSubmitResponse = CommandResponse.Error(Id.apply(), message)
 
-            mockkStatic(CommandServiceFactory::class)
             every { locationServiceUtil.jResolveAkkaLocation(prefix, componentType) }.answers { CompletableFuture.completedFuture(assemblyLocation) }
             every { CommandServiceFactory.jMake(assemblyLocation, actorSystem) }.answers { assemblyCommandService }
             every { assemblyCommandService.query(commandRunId) }.answers { CompletableFuture.completedFuture(invalidSubmitResponse) }
@@ -202,7 +201,6 @@ class RichComponentTest {
         fun `queryFinal should resolve commandService for given assembly and call queryFinal method on it | ESW-121, ESW-245 `() = runBlocking {
             val commandRunId: Id = mockk()
 
-            mockkStatic(CommandServiceFactory::class)
             every { locationServiceUtil.jResolveAkkaLocation(prefix, componentType) }.answers { CompletableFuture.completedFuture(assemblyLocation) }
             every { CommandServiceFactory.jMake(assemblyLocation, actorSystem) }.answers { assemblyCommandService }
             every { assemblyCommandService.queryFinal(commandRunId, timeout) }.answers { CompletableFuture.completedFuture(CommandResponse.Completed(Id.apply())) }
@@ -216,7 +214,6 @@ class RichComponentTest {
         fun `queryFinal should resolve commandService for given assembly and call queryFinal method on it with defaultTimeout if timeout is not provided | ESW-121, ESW-245, ESW-139, ESW-249 `() = runBlocking {
             val commandRunId: Id = mockk()
 
-            mockkStatic(CommandServiceFactory::class)
             every { locationServiceUtil.jResolveAkkaLocation(prefix, componentType) }.answers { CompletableFuture.completedFuture(assemblyLocation) }
             every { CommandServiceFactory.jMake(assemblyLocation, actorSystem) }.answers { assemblyCommandService }
             every { assemblyCommandService.queryFinal(commandRunId, defaultTimeout) }.answers { CompletableFuture.completedFuture(CommandResponse.Completed(Id.apply())) }
@@ -232,7 +229,6 @@ class RichComponentTest {
             val message = "error-occurred"
             val invalidSubmitResponse = CommandResponse.Error(Id.apply(), message)
 
-            mockkStatic(CommandServiceFactory::class)
             every { locationServiceUtil.jResolveAkkaLocation(prefix, componentType) }.answers { CompletableFuture.completedFuture(assemblyLocation) }
             every { CommandServiceFactory.jMake(assemblyLocation, actorSystem) }.answers { assemblyCommandService }
             every { assemblyCommandService.queryFinal(commandRunId, timeout) }.answers { CompletableFuture.completedFuture(invalidSubmitResponse) }
@@ -248,7 +244,6 @@ class RichComponentTest {
             val message = "error-occurred"
             val invalidSubmitResponse = CommandResponse.Error(Id.apply(), message)
 
-            mockkStatic(CommandServiceFactory::class)
             every { locationServiceUtil.jResolveAkkaLocation(prefix, componentType) }.answers { CompletableFuture.completedFuture(assemblyLocation) }
             every { CommandServiceFactory.jMake(assemblyLocation, actorSystem) }.answers { assemblyCommandService }
             every { assemblyCommandService.queryFinal(commandRunId, timeout) }.answers { CompletableFuture.completedFuture(invalidSubmitResponse) }
@@ -260,7 +255,6 @@ class RichComponentTest {
 
         @Test
         fun `submitAndWait should resolve commandService for given assembly and call submitAndWait method on it | ESW-121, ESW-245 `() = runBlocking {
-            mockkStatic(CommandServiceFactory::class)
             every { locationServiceUtil.jResolveAkkaLocation(prefix, componentType) }.answers { CompletableFuture.completedFuture(assemblyLocation) }
             every { CommandServiceFactory.jMake(assemblyLocation, actorSystem) }.answers { assemblyCommandService }
             every { assemblyCommandService.submitAndWait(setupCommand, timeout) }.answers { CompletableFuture.completedFuture(CommandResponse.Completed(Id.apply())) }
@@ -272,7 +266,6 @@ class RichComponentTest {
 
         @Test
         fun `submitAndWait should resolve commandService for given assembly and call submitAndWait method on it with defaultTimeout if timeout is not provided | ESW-121, ESW-245 `() = runBlocking {
-            mockkStatic(CommandServiceFactory::class)
             every { locationServiceUtil.jResolveAkkaLocation(prefix, componentType) }.answers { CompletableFuture.completedFuture(assemblyLocation) }
             every { CommandServiceFactory.jMake(assemblyLocation, actorSystem) }.answers { assemblyCommandService }
             every { assemblyCommandService.submitAndWait(setupCommand, defaultTimeout) }.answers { CompletableFuture.completedFuture(CommandResponse.Completed(Id.apply())) }
@@ -287,7 +280,6 @@ class RichComponentTest {
             val message = "error-occurred"
             val invalidSubmitResponse = CommandResponse.Error(Id.apply(), message)
 
-            mockkStatic(CommandServiceFactory::class)
             every { locationServiceUtil.jResolveAkkaLocation(prefix, componentType) }.answers { CompletableFuture.completedFuture(assemblyLocation) }
             every { CommandServiceFactory.jMake(assemblyLocation, actorSystem) }.answers { assemblyCommandService }
             every { assemblyCommandService.submitAndWait(setupCommand, timeout) }.answers { CompletableFuture.completedFuture(invalidSubmitResponse) }
@@ -302,7 +294,6 @@ class RichComponentTest {
             val message = "error-occurred"
             val invalidSubmitResponse = CommandResponse.Error(Id.apply(), message)
 
-            mockkStatic(CommandServiceFactory::class)
             every { locationServiceUtil.jResolveAkkaLocation(prefix, componentType) }.answers { CompletableFuture.completedFuture(assemblyLocation) }
             every { CommandServiceFactory.jMake(assemblyLocation, actorSystem) }.answers { assemblyCommandService }
             every { assemblyCommandService.submitAndWait(setupCommand, timeout) }.answers { CompletableFuture.completedFuture(invalidSubmitResponse) }
@@ -318,7 +309,6 @@ class RichComponentTest {
             val stateNames = setOf(stateName)
             val currentStateSubscription: Subscription = mockk()
 
-            mockkStatic(CommandServiceFactory::class)
             every { locationServiceUtil.jResolveAkkaLocation(prefix, componentType) }.answers { CompletableFuture.completedFuture(assemblyLocation) }
             every { CommandServiceFactory.jMake(assemblyLocation, actorSystem) }.answers { assemblyCommandService }
             every { assemblyCommandService.subscribeCurrentState(stateNames, any()) }.answers { currentStateSubscription }
@@ -417,10 +407,13 @@ class RichComponentTest {
         private val hcdRef: ActorRef<ComponentMessage> = mockk()
         private val hcdCommandService: ICommandService = mockk()
 
+        @BeforeAll
+        fun beforeAll() {
+            mockkStatic(CommandServiceFactory::class)
+        }
 
         @Test
         fun `validate should resolve commandService for given hcd and call validate method on it | ESW-121, ESW-245 `() = runBlocking {
-            mockkStatic(CommandServiceFactory::class)
             every { locationServiceUtil.jResolveAkkaLocation(prefix, componentType) }.answers { CompletableFuture.completedFuture(hcdLocation) }
             every { CommandServiceFactory.jMake(hcdLocation, actorSystem) }.answers { hcdCommandService }
             every { hcdCommandService.validate(setupCommand) }.answers { CompletableFuture.completedFuture(CommandResponse.Accepted(Id.apply())) }
@@ -432,7 +425,6 @@ class RichComponentTest {
 
         @Test
         fun `oneway should resolve commandService for given hcd and call oneway method on it | ESW-121, ESW-245 `() = runBlocking {
-            mockkStatic(CommandServiceFactory::class)
             every { locationServiceUtil.jResolveAkkaLocation(prefix, componentType) }.answers { CompletableFuture.completedFuture(hcdLocation) }
             every { CommandServiceFactory.jMake(hcdLocation, actorSystem) }.answers { hcdCommandService }
             every { hcdCommandService.oneway(setupCommand) }.answers { CompletableFuture.completedFuture(CommandResponse.Accepted(Id.apply())) }
@@ -444,7 +436,6 @@ class RichComponentTest {
 
         @Test
         fun `submit should resolve commandService for given hcd and call submit method on it | ESW-121, ESW-245 `() = runBlocking {
-            mockkStatic(CommandServiceFactory::class)
             every { locationServiceUtil.jResolveAkkaLocation(prefix, componentType) }.answers { CompletableFuture.completedFuture(hcdLocation) }
             every { CommandServiceFactory.jMake(hcdLocation, actorSystem) }.answers { hcdCommandService }
             every { hcdCommandService.submit(setupCommand) }.answers { CompletableFuture.completedFuture(CommandResponse.Completed(Id.apply())) }
@@ -459,7 +450,6 @@ class RichComponentTest {
             val message = "error-occurred"
             val invalidSubmitResponse = CommandResponse.Error(Id.apply(), message)
 
-            mockkStatic(CommandServiceFactory::class)
             every { locationServiceUtil.jResolveAkkaLocation(prefix, componentType) }.answers { CompletableFuture.completedFuture(hcdLocation) }
             every { CommandServiceFactory.jMake(hcdLocation, actorSystem) }.answers { hcdCommandService }
             every { hcdCommandService.submit(setupCommand) }.answers { CompletableFuture.completedFuture(invalidSubmitResponse) }
@@ -474,7 +464,6 @@ class RichComponentTest {
             val message = "error-occurred"
             val invalidSubmitResponse = CommandResponse.Error(Id.apply(), message)
 
-            mockkStatic(CommandServiceFactory::class)
             every { locationServiceUtil.jResolveAkkaLocation(prefix, componentType) }.answers { CompletableFuture.completedFuture(hcdLocation) }
             every { CommandServiceFactory.jMake(hcdLocation, actorSystem) }.answers { hcdCommandService }
             every { hcdCommandService.submit(setupCommand) }.answers { CompletableFuture.completedFuture(invalidSubmitResponse) }
@@ -488,7 +477,6 @@ class RichComponentTest {
         fun `query should resolve commandService for given hcd and call query method on it | ESW-121, ESW-245 `() = runBlocking {
             val commandRunId: Id = mockk()
 
-            mockkStatic(CommandServiceFactory::class)
             every { locationServiceUtil.jResolveAkkaLocation(prefix, componentType) }.answers { CompletableFuture.completedFuture(hcdLocation) }
             every { CommandServiceFactory.jMake(hcdLocation, actorSystem) }.answers { hcdCommandService }
             every { hcdCommandService.query(commandRunId) }.answers { CompletableFuture.completedFuture(CommandResponse.Completed(Id.apply())) }
@@ -504,7 +492,6 @@ class RichComponentTest {
             val message = "error-occurred"
             val invalidSubmitResponse = CommandResponse.Error(Id.apply(), message)
 
-            mockkStatic(CommandServiceFactory::class)
             every { locationServiceUtil.jResolveAkkaLocation(prefix, componentType) }.answers { CompletableFuture.completedFuture(hcdLocation) }
             every { CommandServiceFactory.jMake(hcdLocation, actorSystem) }.answers { hcdCommandService }
             every { hcdCommandService.query(commandRunId) }.answers { CompletableFuture.completedFuture(invalidSubmitResponse) }
@@ -520,7 +507,6 @@ class RichComponentTest {
             val message = "error-occurred"
             val invalidSubmitResponse = CommandResponse.Error(Id.apply(), message)
 
-            mockkStatic(CommandServiceFactory::class)
             every { locationServiceUtil.jResolveAkkaLocation(prefix, componentType) }.answers { CompletableFuture.completedFuture(hcdLocation) }
             every { CommandServiceFactory.jMake(hcdLocation, actorSystem) }.answers { hcdCommandService }
             every { hcdCommandService.query(commandRunId) }.answers { CompletableFuture.completedFuture(invalidSubmitResponse) }
@@ -533,7 +519,6 @@ class RichComponentTest {
         @Test
         fun `queryFinal should resolve commandService for given hcd and call queryFinal method on it | ESW-121, ESW-245 `() = runBlocking {
             val commandRunId: Id = mockk()
-            mockkStatic(CommandServiceFactory::class)
             every { locationServiceUtil.jResolveAkkaLocation(prefix, componentType) }.answers { CompletableFuture.completedFuture(hcdLocation) }
             every { CommandServiceFactory.jMake(hcdLocation, actorSystem) }.answers { hcdCommandService }
             every { hcdCommandService.queryFinal(commandRunId, timeout) }.answers { CompletableFuture.completedFuture(CommandResponse.Completed(Id.apply())) }
@@ -546,7 +531,6 @@ class RichComponentTest {
         @Test
         fun `queryFinal should resolve commandService for given hcd and call queryFinal method on it with defaultTimeout if timeout is not provided | ESW-121, ESW-245 `() = runBlocking {
             val commandRunId: Id = mockk()
-            mockkStatic(CommandServiceFactory::class)
             every { locationServiceUtil.jResolveAkkaLocation(prefix, componentType) }.answers { CompletableFuture.completedFuture(hcdLocation) }
             every { CommandServiceFactory.jMake(hcdLocation, actorSystem) }.answers { hcdCommandService }
             every { hcdCommandService.queryFinal(commandRunId, defaultTimeout) }.answers { CompletableFuture.completedFuture(CommandResponse.Completed(Id.apply())) }
@@ -562,7 +546,6 @@ class RichComponentTest {
             val message = "error-occurred"
             val invalidSubmitResponse = CommandResponse.Error(Id.apply(), message)
 
-            mockkStatic(CommandServiceFactory::class)
             every { locationServiceUtil.jResolveAkkaLocation(prefix, componentType) }.answers { CompletableFuture.completedFuture(hcdLocation) }
             every { CommandServiceFactory.jMake(hcdLocation, actorSystem) }.answers { hcdCommandService }
             every { hcdCommandService.queryFinal(commandRunId, timeout) }.answers { CompletableFuture.completedFuture(invalidSubmitResponse) }
@@ -578,7 +561,6 @@ class RichComponentTest {
             val message = "error-occurred"
             val invalidSubmitResponse = CommandResponse.Error(Id.apply(), message)
 
-            mockkStatic(CommandServiceFactory::class)
             every { locationServiceUtil.jResolveAkkaLocation(prefix, componentType) }.answers { CompletableFuture.completedFuture(hcdLocation) }
             every { CommandServiceFactory.jMake(hcdLocation, actorSystem) }.answers { hcdCommandService }
             every { hcdCommandService.queryFinal(commandRunId, timeout) }.answers { CompletableFuture.completedFuture(invalidSubmitResponse) }
@@ -590,7 +572,6 @@ class RichComponentTest {
 
         @Test
         fun `submitAndWait should resolve commandService for given hcd and call submitAndWait method on it | ESW-121, ESW-245 `() = runBlocking {
-            mockkStatic(CommandServiceFactory::class)
             every { locationServiceUtil.jResolveAkkaLocation(prefix, componentType) }.answers { CompletableFuture.completedFuture(hcdLocation) }
             every { CommandServiceFactory.jMake(hcdLocation, actorSystem) }.answers { hcdCommandService }
             every { hcdCommandService.submitAndWait(setupCommand, timeout) }.answers { CompletableFuture.completedFuture(CommandResponse.Completed(Id.apply())) }
@@ -602,7 +583,6 @@ class RichComponentTest {
 
         @Test
         fun `submitAndWait should resolve commandService for given hcd and call submitAndWait method on it with defaultTimeout if timeout is not provided | ESW-121, ESW-245 `() = runBlocking {
-            mockkStatic(CommandServiceFactory::class)
             every { locationServiceUtil.jResolveAkkaLocation(prefix, componentType) }.answers { CompletableFuture.completedFuture(hcdLocation) }
             every { CommandServiceFactory.jMake(hcdLocation, actorSystem) }.answers { hcdCommandService }
             every { hcdCommandService.submitAndWait(setupCommand, defaultTimeout) }.answers { CompletableFuture.completedFuture(CommandResponse.Completed(Id.apply())) }
@@ -617,7 +597,6 @@ class RichComponentTest {
             val message = "error-occurred"
             val invalidSubmitResponse = CommandResponse.Error(Id.apply(), message)
 
-            mockkStatic(CommandServiceFactory::class)
             every { locationServiceUtil.jResolveAkkaLocation(prefix, componentType) }.answers { CompletableFuture.completedFuture(hcdLocation) }
             every { CommandServiceFactory.jMake(hcdLocation, actorSystem) }.answers { hcdCommandService }
             every { hcdCommandService.submitAndWait(setupCommand, timeout) }.answers { CompletableFuture.completedFuture(invalidSubmitResponse) }
@@ -632,7 +611,6 @@ class RichComponentTest {
             val message = "error-occurred"
             val invalidSubmitResponse = CommandResponse.Error(Id.apply(), message)
 
-            mockkStatic(CommandServiceFactory::class)
             every { locationServiceUtil.jResolveAkkaLocation(prefix, componentType) }.answers { CompletableFuture.completedFuture(hcdLocation) }
             every { CommandServiceFactory.jMake(hcdLocation, actorSystem) }.answers { hcdCommandService }
             every { hcdCommandService.submitAndWait(setupCommand, timeout) }.answers { CompletableFuture.completedFuture(invalidSubmitResponse) }
@@ -648,7 +626,6 @@ class RichComponentTest {
             val stateNames = setOf(stateName)
             val currentStateSubscription: Subscription = mockk()
 
-            mockkStatic(CommandServiceFactory::class)
             every { locationServiceUtil.jResolveAkkaLocation(prefix, componentType) }.answers { CompletableFuture.completedFuture(hcdLocation) }
             every { CommandServiceFactory.jMake(hcdLocation, actorSystem) }.answers { hcdCommandService }
             every { hcdCommandService.subscribeCurrentState(stateNames, any()) }.answers { currentStateSubscription }
