@@ -39,6 +39,7 @@ object Csw {
   val `csw-commons`                   = Org %% "csw-commons" % Version
   val `csw-network-utils`             = Org %% "csw-network-utils" % Version
   val `csw-location-client`           = Org %% "csw-location-client" % Version
+  val `csw-location-server`           = Org %% "csw-location-server" % Version
   val `csw-command-client`            = Org %% "csw-command-client" % Version
   val `csw-event-client`              = Org %% "csw-event-client" % Version
   val `csw-time-scheduler`            = Org %% "csw-time-scheduler" % Version

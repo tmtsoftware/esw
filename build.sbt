@@ -106,6 +106,15 @@ lazy val `esw-ocs-app` = project
     `esw-test-reporter` % Test
   )
 
+lazy val agent = project
+  .enablePlugins(EswBuildInfo, DeployApp, MaybeCoverage)
+  .settings(
+    libraryDependencies ++= Dependencies.Agent.value
+  )
+  .dependsOn(
+    `esw-test-reporter` % Test
+  )
+
 lazy val `esw-http-core` = project
   .in(file("esw-http-core"))
   .enablePlugins(PublishBintray, MaybeCoverage, EswBuildInfo)

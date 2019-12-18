@@ -51,6 +51,19 @@ object Dependencies {
     )
   )
 
+  val Agent: Def.Initialize[Seq[ModuleID]] = Def.setting(
+    Seq(
+      Libs.`case-app`,
+      Csw.`csw-location-server`,
+      Csw.`csw-location-client`,
+      Akka.`akka-actor-typed`,
+      Akka.`akka-stream-typed`,
+      Libs.scalatest                  % Test,
+      Libs.`mockito-scala`            % Test,
+      Akka.`akka-actor-testkit-typed` % Test
+    )
+  )
+
   val EswHttpCore: Def.Initialize[Seq[ModuleID]] = Def.setting(
     Seq(
       Csw.`csw-commons`,
