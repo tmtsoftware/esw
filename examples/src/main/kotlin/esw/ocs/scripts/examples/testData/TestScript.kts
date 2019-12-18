@@ -5,6 +5,8 @@ import csw.alarm.api.javadsl.JAlarmSeverity.Major
 import csw.alarm.models.Key.AlarmKey
 import csw.params.events.Event
 import csw.prefix.javadsl.JSubsystem
+import csw.prefix.javadsl.JSubsystem.NFIRAOS
+import csw.prefix.models.Prefix
 import esw.ocs.dsl.core.script
 import esw.ocs.dsl.highlevel.LoopDsl.StopWhen.stopWhen
 import esw.ocs.dsl.params.doubleKey
@@ -87,7 +89,7 @@ script {
     }
 
     onSetup("set-alarm-severity") {
-        val alarmKey = AlarmKey(JSubsystem.NFIRAOS(), "trombone", "tromboneAxisHighLimitAlarm")
+        val alarmKey = AlarmKey(Prefix.apply(NFIRAOS(), "trombone"), "tromboneAxisHighLimitAlarm")
         setSeverity(alarmKey, Major())
         delay(500)
     }

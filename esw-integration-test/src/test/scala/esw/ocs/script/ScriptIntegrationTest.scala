@@ -149,12 +149,12 @@ class ScriptIntegrationTest extends EswTestKit(EventServer, AlarmServer, ConfigS
       actualOnlineEvent.eventKey should ===(onlineKey)
     }
 
-    "be able to set severity of sequencer alarms and refresh it | ESW-125, CSW-81" in {
+    "be able to set severity of sequencer alarms and refresh it | ESW-125, CSW-81, CSW-83" in {
       val config            = ConfigFactory.parseResources("alarm_key.conf")
       val alarmAdminService = new AlarmServiceFactory().makeAdminApi(locationService)
       alarmAdminService.initAlarms(config, reset = true).futureValue
 
-      val alarmKey = AlarmKey(NFIRAOS, "trombone", "tromboneAxisHighLimitAlarm")
+      val alarmKey = AlarmKey(Prefix(NFIRAOS, "trombone"), "tromboneAxisHighLimitAlarm")
       val command  = Setup(Prefix("NFIRAOS.test"), CommandName("set-alarm-severity"), None)
       val sequence = Sequence(command)
 

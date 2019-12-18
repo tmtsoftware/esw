@@ -5,6 +5,7 @@ import csw.alarm.api.javadsl.IAlarmService
 import csw.alarm.api.javadsl.JAlarmSeverity.Major
 import csw.alarm.models.Key.AlarmKey
 import csw.prefix.javadsl.JSubsystem.TCS
+import csw.prefix.models.Prefix
 import io.kotlintest.eventually
 import io.mockk.clearMocks
 import io.mockk.every
@@ -26,9 +27,9 @@ class AlarmServiceDslTest : AlarmServiceDsl {
 
     @Test
     fun `AlarmServiceDsl should set severity of alarms and refresh it | ESW-125`() {
-        val alarmKey1 = AlarmKey(TCS(), "filter_assembly1", "temperature1")
-        val alarmKey2 = AlarmKey(TCS(), "filter_assembly2", "temperature2")
-        val alarmKey3 = AlarmKey(TCS(), "filter_assembly3", "temperature3")
+        val alarmKey1 = AlarmKey(Prefix.apply(TCS(), "filter_assembly1"), "temperature1")
+        val alarmKey2 = AlarmKey(Prefix.apply(TCS(), "filter_assembly2"), "temperature2")
+        val alarmKey3 = AlarmKey(Prefix.apply(TCS(), "filter_assembly3"), "temperature3")
 
         val severity = Major()
 

@@ -19,6 +19,7 @@ import csw.params.commands.CommandResponse.{Accepted, Invalid, Started}
 import csw.params.commands.{CommandName, CommandResponse, Sequence, Setup}
 import csw.params.core.models.{Id, ObsId}
 import csw.params.events.{Event, EventKey, EventName, SystemEvent}
+import csw.prefix.models.Subsystem.IRIS
 import csw.prefix.models.{Prefix, Subsystem}
 import esw.gateway.api.codecs.GatewayCodecs
 import esw.gateway.api.protocol.PostRequest._
@@ -239,12 +240,10 @@ class PostRouteTest extends BaseTestSuite with ScalatestRouteTest with GatewayCo
   }
 
   "Set Alarm Severity" must {
-    "return Done on success | ESW-193, ESW-216, ESW-233" in {
-      val componentName    = "testComponent"
+    "return Done on success | ESW-193, ESW-216, ESW-233, CSW-83" in {
       val alarmName        = "testAlarmName"
-      val subsystemName    = Subsystem.IRIS
       val majorSeverity    = AlarmSeverity.Major
-      val alarmKey         = AlarmKey(subsystemName, componentName, alarmName)
+      val alarmKey         = AlarmKey(Prefix(IRIS, "test_component"), alarmName)
       val setAlarmSeverity = SetAlarmSeverity(alarmKey, majorSeverity)
 
       when(alarmService.setSeverity(alarmKey, majorSeverity)).thenReturn(Future.successful(Done))
@@ -254,12 +253,10 @@ class PostRouteTest extends BaseTestSuite with ScalatestRouteTest with GatewayCo
       }
     }
 
-    "return SetAlarmSeverityFailure on key not found or invalid key | ESW-193, ESW-216, ESW-233" in {
-      val componentName    = "testComponent"
+    "return SetAlarmSeverityFailure on key not found or invalid key | ESW-193, ESW-216, ESW-233, CSW-83" in {
       val alarmName        = "testAlarmName"
-      val subsystemName    = Subsystem.IRIS
       val majorSeverity    = AlarmSeverity.Major
-      val alarmKey         = AlarmKey(subsystemName, componentName, alarmName)
+      val alarmKey         = AlarmKey(Prefix(IRIS, "test_component"), alarmName)
       val setAlarmSeverity = SetAlarmSeverity(alarmKey, majorSeverity)
 
       when(alarmService.setSeverity(alarmKey, majorSeverity)).thenReturn(Future.failed(new KeyNotFoundException("")))
