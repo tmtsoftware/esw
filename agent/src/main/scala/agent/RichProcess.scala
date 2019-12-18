@@ -30,8 +30,8 @@ object RichProcess {
         .map(ProcessTextLine(_, prefix, err))
 
     private def source(prefix: Prefix): Source[ProcessTextLine, Future[IOResult]] = {
-      val s1 = convertToSource(process.getInputStream, err = false, prefix)
-      val s2 = convertToSource(process.getErrorStream, err = true, prefix)
+      val s1 = convertToSource(process.getInputStream _, err = false, prefix)
+      val s2 = convertToSource(process.getErrorStream _, err = true, prefix)
       s1 merge s2
     }
 
