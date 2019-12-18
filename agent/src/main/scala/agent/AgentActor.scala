@@ -1,23 +1,22 @@
 package agent
 
-import java.io.InputStream
+import java.nio.file.Paths
 
-import akka.Done
 import akka.actor.typed.scaladsl.Behaviors
 import akka.actor.typed.{ActorSystem, Behavior}
-import akka.stream.scaladsl.{Framing, Keep, Source, StreamConverters}
-import akka.util.ByteString
-import csw.prefix.models.Subsystem
-
-import scala.concurrent.Future
+import csw.prefix.models.Prefix
+import RichProcess._
+import scala.util.control.NonFatal
 
 sealed trait AgentCommand {
   val strings: List[String]
+  val prefix: Prefix
 }
 
-case class SpawnSequenceComponent(subsystem: Subsystem, name: String) extends AgentCommand {
-  private val executablePath = "/Users/dollygyanchandani/Projects/tmt/esw/target/universal/stage/bin/esw-ocs-app"
-  override val strings       = List(executablePath, "seqcomp", "-s", subsystem.toString, "-n", name)
+case class SpawnSequenceComponent(prefix: Prefix) extends AgentCommand {
+  private val executablePath: String =
+    Paths.get("target/universal/stage/bin/esw-ocs-app").toAbsolutePath.toString
+  override val strings = List(executablePath, "seqcomp", "-s", prefix.subsystem.toString, "-n", prefix.componentName)
 }
 
 object AgentActor {
@@ -28,19 +27,15 @@ object AgentActor {
     Behaviors.same
   }
 
-  private def printStreams(inputStreams: (() => InputStream)*)(implicit system: ActorSystem[_]): Future[Done] =
-    inputStreams
-      .foldLeft(Source.empty[ByteString])((source, inputStream) =>
-        source.mergeMat(StreamConverters.fromInputStream(inputStream))(Keep.left)
-      )
-      .via(Framing.delimiter(ByteString("\n"), 256, allowTruncation = true))
-      .map(_.utf8String)
-      .runForeach(println)
-
   private def runCommand(agentCommand: AgentCommand)(implicit system: ActorSystem[_]): Unit = {
-    val processBuilder = new ProcessBuilder(agentCommand.strings: _*)
-    val process        = processBuilder.start()
-    println("PID=" + process.pid())
-    printStreams(process.getInputStream _, process.getErrorStream _)
+    try {
+      val processBuilder = new ProcessBuilder(agentCommand.strings: _*)
+      val process        = processBuilder.start()
+      println("PID=" + process.pid())
+      process.attachToConsole(agentCommand.prefix)
+    }
+    catch {
+      case NonFatal(err) => err.printStackTrace()
+    }
   }
 }
