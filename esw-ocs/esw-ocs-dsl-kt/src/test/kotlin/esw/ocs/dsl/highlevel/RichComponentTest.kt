@@ -314,7 +314,8 @@ class RichComponentTest {
 
         @Test
         fun `subscribeCurrentState should resolve commandService for given assembly and call subscribeCurrentState method on it | ESW-121, ESW-245 `() = runBlocking {
-            val stateNames: Set<StateName> = mockk()
+            val stateName = mockk<StateName>()
+            val stateNames = setOf(stateName)
             val currentStateSubscription: Subscription = mockk()
 
             mockkStatic(CommandServiceFactory::class)
@@ -322,7 +323,7 @@ class RichComponentTest {
             every { CommandServiceFactory.jMake(assemblyLocation, actorSystem) }.answers { assemblyCommandService }
             every { assemblyCommandService.subscribeCurrentState(stateNames, any()) }.answers { currentStateSubscription }
 
-            assembly.subscribeCurrentState(stateNames) {}
+            assembly.subscribeCurrentState(stateName) {}
 
             verify { assemblyCommandService.subscribeCurrentState(stateNames, any()) }
         }
@@ -643,7 +644,8 @@ class RichComponentTest {
 
         @Test
         fun `subscribeCurrentState should resolve commandService for given hcd and call subscribeCurrentState method on it | ESW-121, ESW-245 `() = runBlocking {
-            val stateNames: Set<StateName> = mockk()
+            val stateName = mockk<StateName>()
+            val stateNames = setOf(stateName)
             val currentStateSubscription: Subscription = mockk()
 
             mockkStatic(CommandServiceFactory::class)
@@ -651,7 +653,7 @@ class RichComponentTest {
             every { CommandServiceFactory.jMake(hcdLocation, actorSystem) }.answers { hcdCommandService }
             every { hcdCommandService.subscribeCurrentState(stateNames, any()) }.answers { currentStateSubscription }
 
-            hcd.subscribeCurrentState(stateNames) {}
+            hcd.subscribeCurrentState(stateName) {}
 
             verify { hcdCommandService.subscribeCurrentState(stateNames, any()) }
         }

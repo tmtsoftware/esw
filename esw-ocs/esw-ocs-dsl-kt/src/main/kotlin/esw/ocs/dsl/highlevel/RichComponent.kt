@@ -20,10 +20,8 @@ import csw.prefix.models.Prefix
 import csw.time.core.models.UTCTime
 import esw.ocs.dsl.SuspendableCallback
 import esw.ocs.dsl.SuspendableConsumer
-import esw.ocs.dsl.highlevel.models.CommandError
-import esw.ocs.dsl.isFailed
 import esw.ocs.dsl.jdk.SuspendToJavaConverter
-import esw.ocs.dsl.jdk.toJava
+import esw.ocs.dsl.onFailedTerminate
 import esw.ocs.dsl.script.utils.LockUnlockUtil
 import esw.ocs.impl.internal.LocationServiceUtil
 import kotlinx.coroutines.CoroutineScope
@@ -46,34 +44,20 @@ class RichComponent(
     suspend fun validate(command: ControlCommand): ValidateResponse = commandService().validate(command).await()
     suspend fun oneway(command: ControlCommand): OnewayResponse = commandService().oneway(command).await()
 
-    suspend fun submit(command: ControlCommand, resumeOnError: Boolean = false): SubmitResponse {
-        val submitResponse: SubmitResponse = commandService().submit(command).await()
-        if (!resumeOnError && submitResponse.isFailed) throw CommandError(submitResponse)
-        return submitResponse
-    }
+    suspend fun submit(command: ControlCommand, resumeOnError: Boolean = false): SubmitResponse =
+            throwIfNegative(resumeOnError) { commandService().submit(command).await() }
 
-    suspend fun query(commandRunId: Id, resumeOnError: Boolean = false): SubmitResponse {
-        val submitResponse: SubmitResponse = commandService().query(commandRunId).await()
-        if (!resumeOnError && submitResponse.isFailed) throw CommandError(submitResponse)
-        return submitResponse
-    }
+    suspend fun query(commandRunId: Id, resumeOnError: Boolean = false): SubmitResponse =
+            throwIfNegative(resumeOnError) { commandService().query(commandRunId).await() }
 
-    suspend fun queryFinal(commandRunId: Id, timeout: Duration = defaultTimeout, resumeOnError: Boolean = false): SubmitResponse {
-        val akkaTimeout = Timeout(timeout.toLongNanoseconds(), TimeUnit.NANOSECONDS)
-        val submitResponse: SubmitResponse = commandService().queryFinal(commandRunId, akkaTimeout).await()
-        if (!resumeOnError && submitResponse.isFailed) throw CommandError(submitResponse)
-        return submitResponse
-    }
+    suspend fun queryFinal(commandRunId: Id, timeout: Duration = defaultTimeout, resumeOnError: Boolean = false): SubmitResponse =
+            throwIfNegative(resumeOnError) { commandService().queryFinal(commandRunId, timeout.toTimeout()).await() }
 
-    suspend fun submitAndWait(command: ControlCommand, timeout: Duration = defaultTimeout, resumeOnError: Boolean = false): SubmitResponse {
-        val akkaTimeout = Timeout(timeout.toLongNanoseconds(), TimeUnit.NANOSECONDS)
-        val submitResponse: SubmitResponse = commandService().submitAndWait(command, akkaTimeout).await()
-        if (!resumeOnError && submitResponse.isFailed) throw CommandError(submitResponse)
-        return submitResponse
-    }
+    suspend fun submitAndWait(command: ControlCommand, timeout: Duration = defaultTimeout, resumeOnError: Boolean = false): SubmitResponse =
+            throwIfNegative(resumeOnError) { commandService().submitAndWait(command, timeout.toTimeout()).await() }
 
-    suspend fun subscribeCurrentState(stateNames: Set<StateName>, callback: SuspendableConsumer<CurrentState>): Subscription =
-            commandService().subscribeCurrentState(stateNames) { callback.toJava(it) }
+    suspend fun subscribeCurrentState(vararg stateNames: StateName, callback: SuspendableConsumer<CurrentState>): Subscription =
+            commandService().subscribeCurrentState(stateNames.toSet()) { callback.toJava(it) }
 
     suspend fun diagnosticMode(startTime: UTCTime, hint: String): Unit = componentRef().tell(DiagnosticDataMessage.DiagnosticMode(startTime, hint))
     suspend fun operationsMode(): Unit = componentRef().tell(DiagnosticDataMessage.`OperationsMode$`.`MODULE$`)
@@ -94,6 +78,12 @@ class RichComponent(
             ).await()
 
     suspend fun unlock(): LockingResponse = lockUnlockUtil.unlock(componentRef()).await()
+
+    private suspend fun throwIfNegative(resumeOnError: Boolean = false, block: suspend () -> SubmitResponse): SubmitResponse =
+            if (!resumeOnError) block().onFailedTerminate()
+            else block()
+
+    private fun Duration.toTimeout(): Timeout = Timeout(toLongNanoseconds(), TimeUnit.NANOSECONDS)
 
     private suspend fun commandService(): ICommandService = CommandServiceFactory.jMake(locationServiceUtil.jResolveAkkaLocation(prefix, componentType).await(), actorSystem)
     private suspend fun componentRef(): ActorRef<ComponentMessage> = locationServiceUtil.jResolveComponentRef(prefix, componentType).await()
