@@ -43,7 +43,7 @@ private[core] case class SequencerData(
   def queryFinal(runId: Id, replyTo: ActorRef[SubmitResponse]): SequencerData =
     if (isSequenceRunning && this.runId.get == runId) queryFinal(replyTo)
     else {
-      replyTo ! Error(runId, s"No sequence with $runId is loaded in the sequencer")
+      replyTo ! Invalid(runId, IdNotAvailableIssue(s"Sequencer is not running any sequence with runId $runId"))
       this
     }
 

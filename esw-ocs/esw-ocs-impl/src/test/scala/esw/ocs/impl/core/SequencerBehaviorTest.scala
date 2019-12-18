@@ -8,6 +8,7 @@ import csw.location.models.AkkaLocation
 import csw.logging.client.commons.LogAdminUtil
 import csw.logging.models.Level.{DEBUG, INFO}
 import csw.logging.models.LogMetadata
+import csw.params.commands.CommandIssue.IdNotAvailableIssue
 import csw.params.commands.CommandResponse._
 import csw.params.commands.{CommandName, Sequence, Setup}
 import csw.params.core.models.Id
@@ -101,23 +102,25 @@ class SequencerBehaviorTest extends ScalaTestWithActorTestKit with BaseTestSuite
   }
 
   "QueryFinal" must {
-    "return error response when sequencer is Idle and hasn't executed any sequence | ESW-221" in {
+    "return Invalid response when sequencer is Idle and hasn't executed any sequence | ESW-221" in {
       val sequencerSetup = SequencerTestSetup.idle(sequence)
       import sequencerSetup._
 
       val seqResProbe = createTestProbe[SubmitResponse]
       sequencerActor ! QueryFinal(Id(), seqResProbe.ref)
-      seqResProbe.expectMessageType[Error]
+      seqResProbe.expectMessageType[Invalid]
     }
 
-    "return error response when sequencerId is invalid | ESW-221" in {
+    "return Invalid response when sequencerId is invalid | ESW-221" in {
       val sequencerSetup = SequencerTestSetup.loaded(sequence)
       import sequencerSetup._
 
       val seqResProbe = createTestProbe[SubmitResponse]
       val invalidId   = Id("invalid")
       sequencerActor ! QueryFinal(invalidId, seqResProbe.ref)
-      seqResProbe.expectMessage(Error(invalidId, s"No sequence with $invalidId is loaded in the sequencer"))
+      seqResProbe.expectMessage(
+        Invalid(invalidId, IdNotAvailableIssue(s"Sequencer is not running any sequence with runId $invalidId"))
+      )
     }
 
     "return Sequence result with Completed when sequencer is in loaded state | ESW-145, ESW-154, ESW-221" in {

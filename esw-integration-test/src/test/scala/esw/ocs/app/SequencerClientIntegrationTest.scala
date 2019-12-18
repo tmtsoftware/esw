@@ -84,7 +84,7 @@ class SequencerClientIntegrationTest extends EswTestKit(EventServer) {
       Invalid(invalidId, UnsupportedCommandInStateIssue(Unhandled(Offline.entryName, "StartSequence").msg))
     ocsSequencer.startSequence().futureValue should ===(invalidStartResponse)
 
-    ocsSequencer.queryFinal(invalidId).futureValue shouldBe a[Error]
+    ocsSequencer.queryFinal(invalidId).futureValue shouldBe a[Invalid]
   }
 
   "Load, Add commands and Start sequence - ensures sequence doesn't start on loading | ESW-222, ESW-101" in {
