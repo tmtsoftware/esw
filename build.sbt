@@ -109,7 +109,7 @@ lazy val `esw-ocs-app` = project
   )
 
 lazy val agent = project
-  .enablePlugins(EswBuildInfo, DeployApp, MaybeCoverage)
+  .enablePlugins(EswBuildInfo, DeployApp)
   .settings(
     libraryDependencies ++= Dependencies.Agent.value
   )
