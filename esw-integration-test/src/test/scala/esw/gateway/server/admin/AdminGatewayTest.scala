@@ -96,8 +96,8 @@ class AdminGatewayTest extends EswTestKit(Gateway) with GatewayCodecs {
     containerRef ! GetComponents(probe.ref)
     val components = probe.expectMessageType[Components].components
 
-    laserComponent = components.find(x => x.info.name.equals("Laser")).get
-    galilComponent = components.find(x => x.info.name.equals("Galil")).get
+    laserComponent = components.find(x => x.info.prefix.componentName.equals("laser")).get
+    galilComponent = components.find(x => x.info.prefix.componentName.equals("galil")).get
   }
 
   override protected def afterEach(): Unit = logBuffer.clear()
@@ -106,7 +106,7 @@ class AdminGatewayTest extends EswTestKit(Gateway) with GatewayCodecs {
 
   "AdminApi" must {
 
-    "get the current component log meta data | ESW-254, CSW-78" in {
+    "get the current component log meta data | ESW-254, CSW-78, CSW-81" in {
       val logMetadata1 = adminClient.getLogMetadata(motionControllerConnection.componentId).futureValue
 
       val config     = ConfigFactory.load().getConfig("csw-logging")
@@ -133,7 +133,7 @@ class AdminGatewayTest extends EswTestKit(Gateway) with GatewayCodecs {
       loggingSystem.setAkkaLevel(akkaLevel)
     }
 
-    "set log level of the component dynamically through http end point | ESW-254" in {
+    "set log level of the component dynamically through http end point | ESW-254, CSW-81" in {
       laserComponent.supervisor ! Oneway(Setup(prefix, startLoggingCmd, None), probe.ref)
       Thread.sleep(500)
 
@@ -181,7 +181,7 @@ class AdminGatewayTest extends EswTestKit(Gateway) with GatewayCodecs {
       }
     }
 
-    "return appropriate error when component is not resolved for akka connection | ESW-254" in {
+    "return appropriate error when component is not resolved for akka connection | ESW-254, CSW-81" in {
       val serviceError = intercept[ServiceError] {
         Await.result(adminClient.getLogMetadata(ComponentId(Prefix(Subsystem.TCS, "abc"), ComponentType.HCD)), 5.seconds)
       }
@@ -191,7 +191,7 @@ class AdminGatewayTest extends EswTestKit(Gateway) with GatewayCodecs {
       )
     }
 
-    "return appropriate exception when logging level is incorrect | ESW-254" in {
+    "return appropriate exception when logging level is incorrect | ESW-254, CSW-81" in {
       val str = """{"SetLogLevel":{"componentId":{"prefix":"tcs.Laser","componentType":"assembly"},"level":"INVALID"}}"""
       val request = RequestBuilding
         .Post(

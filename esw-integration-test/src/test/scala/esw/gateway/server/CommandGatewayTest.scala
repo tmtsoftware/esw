@@ -30,7 +30,7 @@ class CommandGatewayTest extends EswTestKit(EventServer, Gateway) with GatewayCo
   "CommandApi" must {
 
     val prefix = Prefix("esw.test")
-    "handle validate, oneway, submit, subscribe current state and queryFinal commands | ESW-223, ESW-100, ESW-91, ESW-216, ESW-86" in {
+    "handle validate, oneway, submit, subscribe current state and queryFinal commands | ESW-223, ESW-100, ESW-91, ESW-216, ESW-86, CSW-81" in {
       val clientFactory = new ClientFactory(gatewayPostClient, gatewayWsClient)
 
       val eventService = new EventServiceFactory().make(HttpLocationServiceFactory.makeLocalClient)
@@ -75,7 +75,7 @@ class CommandGatewayTest extends EswTestKit(EventServer, Gateway) with GatewayCo
       commandService.queryFinal(submitResponse.runId).futureValue should ===(Completed(submitResponse.runId))
     }
 
-    "handle large websocket requests" in {
+    "handle large websocket requests | CSW-81" in {
       val clientFactory = new ClientFactory(gatewayPostClient, gatewayWsClient)
 
       val componentType = Assembly

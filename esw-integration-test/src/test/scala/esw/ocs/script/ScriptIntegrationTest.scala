@@ -77,7 +77,7 @@ class ScriptIntegrationTest extends EswTestKit(EventServer, AlarmServer, ConfigS
   }
 
   "Sequencer Script" must {
-    "be able to send sequence to other Sequencer by resolving location through TestScript | ESW-88, ESW-145, ESW-190, ESW-195, ESW-119, ESW-251" in {
+    "be able to send sequence to other Sequencer by resolving location through TestScript | ESW-88, ESW-145, ESW-190, ESW-195, ESW-119, ESW-251, CSW-81" in {
       val command  = Setup(Prefix("esw.test"), CommandName("command-4"), None)
       val sequence = Sequence(Seq(command))
 
@@ -98,7 +98,7 @@ class ScriptIntegrationTest extends EswTestKit(EventServer, AlarmServer, ConfigS
       withIds(tcsSequencer.getSequence, step.id).futureValue.get should ===(expectedStepList)
     }
 
-    "be able to forward diagnostic mode to downstream components | ESW-118" in {
+    "be able to forward diagnostic mode to downstream components | ESW-118, CSW-81" in {
       val eventKey = EventKey(Prefix("tcs.filter.wheel"), EventName("diagnostic-data"))
 
       val testProbe    = TestProbe[Event]
@@ -123,7 +123,7 @@ class ScriptIntegrationTest extends EswTestKit(EventServer, AlarmServer, ConfigS
       actualOpEvent.paramSet.head shouldBe operationsModeParam
     }
 
-    "be able to forward GoOnline/GoOffline message to downstream components | ESW-236" in {
+    "be able to forward GoOnline/GoOffline message to downstream components | ESW-236, CSW-81" in {
       val onlineKey  = EventKey(Prefix("tcs.filter.wheel"), EventName("online"))
       val offlineKey = EventKey(Prefix("tcs.filter.wheel"), EventName("offline"))
 
@@ -149,7 +149,7 @@ class ScriptIntegrationTest extends EswTestKit(EventServer, AlarmServer, ConfigS
       actualOnlineEvent.eventKey should ===(onlineKey)
     }
 
-    "be able to set severity of sequencer alarms and refresh it ESW-125" in {
+    "be able to set severity of sequencer alarms and refresh it | ESW-125, CSW-81" in {
       val config            = ConfigFactory.parseResources("alarm_key.conf")
       val alarmAdminService = new AlarmServiceFactory().makeAdminApi(locationService)
       alarmAdminService.initAlarms(config, reset = true).futureValue
@@ -165,7 +165,7 @@ class ScriptIntegrationTest extends EswTestKit(EventServer, AlarmServer, ConfigS
       alarmAdminService.getCurrentSeverity(alarmKey).futureValue should ===(AlarmSeverity.Major)
     }
 
-    "be able to get a published event | ESW-120" in {
+    "be able to get a published event | ESW-120, CSW-81" in {
       val eventService = new EventServiceFactory().make(HttpLocationServiceFactory.makeLocalClient)
       val publishF     = eventService.defaultPublisher.publish(SystemEvent(Prefix("esw.test"), EventName("get.event")))
       publishF.futureValue
@@ -181,7 +181,7 @@ class ScriptIntegrationTest extends EswTestKit(EventServer, AlarmServer, ConfigS
       getPublishedEvent.isInvalid should ===(false)
     }
 
-    "be able to subscribe a event key | ESW-120, CSW-80" in {
+    "be able to subscribe a event key | ESW-120, CSW-80, CSW-81" in {
       val eventService = new EventServiceFactory().make(HttpLocationServiceFactory.makeLocalClient)
 
       val command  = Setup(Prefix("esw.test"), CommandName("on-event"), None)
@@ -200,7 +200,7 @@ class ScriptIntegrationTest extends EswTestKit(EventServer, AlarmServer, ConfigS
       getPublishedEvent.isInvalid should ===(false)
     }
 
-    "be able to send abortSequence to downstream sequencers and call abortHandler | ESW-137, ESW-155" in {
+    "be able to send abortSequence to downstream sequencers and call abortHandler | ESW-137, ESW-155, CSW-81" in {
       val eventKey     = EventKey(Prefix("tcs.test"), EventName("abort.success"))
       val testProbe    = TestProbe[Event]
       val subscription = eventSubscriber.subscribeActorRef(Set(eventKey), testProbe.ref)
@@ -233,7 +233,7 @@ class ScriptIntegrationTest extends EswTestKit(EventServer, AlarmServer, ConfigS
       response.futureValue shouldBe a[Completed]
     }
 
-    "be able to send stop to downstream sequencers and call stopHandler | ESW-138, ESW-156" in {
+    "be able to send stop to downstream sequencers and call stopHandler | ESW-138, ESW-156, CSW-81" in {
       val eventKey = EventKey(Prefix("tcs.test"), EventName("stop.success"))
 
       val testProbe    = TestProbe[Event]
@@ -268,7 +268,7 @@ class ScriptIntegrationTest extends EswTestKit(EventServer, AlarmServer, ConfigS
       eventually(ocsSequencer.getSequence.futureValue.get.isInFlight shouldBe false)
     }
 
-    "be able to send commands to downstream assembly | ESW-121" in {
+    "be able to send commands to downstream assembly | ESW-121, CSW-81" in {
       val eventKey = EventKey(Prefix("tcs.filter.wheel"), EventName("setup-command-from-script"))
 
       val command  = Setup(Prefix("IRIS.test"), CommandName("command-for-assembly"), None)
@@ -285,7 +285,7 @@ class ScriptIntegrationTest extends EswTestKit(EventServer, AlarmServer, ConfigS
       actualSetupEvent.eventKey should ===(eventKey)
     }
 
-    "be able to schedule tasks from now | ESW-122" in {
+    "be able to schedule tasks from now | ESW-122, CSW-81" in {
       val eventKey = EventKey(Prefix("esw.schedule.once"), EventName("offset"))
 
       val command  = Setup(Prefix("IRIS.test"), CommandName("schedule-once-from-now"), None)
@@ -306,7 +306,7 @@ class ScriptIntegrationTest extends EswTestKit(EventServer, AlarmServer, ConfigS
       }
     }
 
-    "be able to schedule periodically tasks from now | ESW-122" in {
+    "be able to schedule periodically tasks from now | ESW-122, CSW-81" in {
       val eventKey = EventKey(Prefix("esw.schedule.periodically"), EventName("offset"))
 
       val command  = Setup(Prefix("IRIS.test"), CommandName("schedule-periodically-from-now"), None)
@@ -333,7 +333,7 @@ class ScriptIntegrationTest extends EswTestKit(EventServer, AlarmServer, ConfigS
       }
     }
 
-    "be able to check existence of a config file and fetch config | ESW-123" in {
+    "be able to check existence of a config file and fetch config | ESW-123, CSW-81" in {
       val factory = mock[TokenFactory]
       when(factory.getToken).thenReturn("valid")
 
@@ -365,7 +365,7 @@ class ScriptIntegrationTest extends EswTestKit(EventServer, AlarmServer, ConfigS
       configTestKit.deleteServerFiles()
     }
 
-    "be able to handle unexpected exception and finish the sequence | ESW-241" in {
+    "be able to handle unexpected exception and finish the sequence | ESW-241, CSW-81" in {
       val command1 = Setup(Prefix("esw.test"), CommandName("check-exception-1"), None)
       val command2 = Setup(Prefix("esw.test"), CommandName("check-exception-2"), None)
       val sequence = Sequence(Seq(command1, command2))
@@ -375,7 +375,7 @@ class ScriptIntegrationTest extends EswTestKit(EventServer, AlarmServer, ConfigS
       response.asInstanceOf[Error].message should ===("java.lang.RuntimeException: boom")
     }
 
-    "have handle to raw csw services | ESW-235" in {
+    "have handle to raw csw services | ESW-235, CSW-81" in {
       // This loads script CswServicesScript.kts, which touches all the csw services.
       // Success of script loading asserts that all services are available.
       // If handle of any service is removed from CswServices then CswServicesScript.kts will not compile.

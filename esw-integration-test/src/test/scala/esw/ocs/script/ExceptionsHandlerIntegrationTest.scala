@@ -50,7 +50,7 @@ class ExceptionsHandlerIntegrationTest extends EswTestKit(EventServer) {
     )
 
     forAll(idleStateTestCases) { (msg, failureMessage) =>
-      s"invoke exception handler when $failureMessage | ESW-139" in {
+      s"invoke exception handler when $failureMessage | ESW-139, CSW-81" in {
         val sequencer = spawnSequencerRef(ocsSubsystem, ocsObservingMode)
 
         val eventKey = EventKey(prefix, EventName(failureMessage))
@@ -70,7 +70,7 @@ class ExceptionsHandlerIntegrationTest extends EswTestKit(EventServer) {
     )
 
     forAll(inProgressStateTestCases) { (msg, failureMessage) =>
-      s"invoke exception handler when $failureMessage | ESW-139" in {
+      s"invoke exception handler when $failureMessage | ESW-139, CSW-81" in {
         val sequencerRef = spawnSequencerRef(ocsSubsystem, ocsObservingMode)
         val sequencer    = new SequencerActorProxy(sequencerRef)
 
@@ -93,7 +93,7 @@ class ExceptionsHandlerIntegrationTest extends EswTestKit(EventServer) {
 
   "Script2" must {
 
-    "invoke exception handlers when exception is thrown from handler and must fail the command with message of given exception | ESW-139" in {
+    "invoke exception handlers when exception is thrown from handler and must fail the command with message of given exception | ESW-139, CSW-81" in {
       val sequencerRef = spawnSequencerRef(ocsSubsystem, ocsObservingMode)
       val sequencer    = new SequencerActorProxy(sequencerRef)
 
@@ -120,7 +120,7 @@ class ExceptionsHandlerIntegrationTest extends EswTestKit(EventServer) {
       sequencer.submitAndWait(sequence1).futureValue shouldBe a[Completed]
     }
 
-    "invoke exception handler when handle-goOnline-failed | ESW-139" in {
+    "invoke exception handler when handle-goOnline-failed | ESW-139, CSW-81" in {
       val globalExHandlerEventMessage = "handle-goOnline-failed"
       val eventKey                    = EventKey(prefix, EventName(globalExHandlerEventMessage))
       val testProbe                   = createProbeFor(eventKey)
@@ -134,7 +134,7 @@ class ExceptionsHandlerIntegrationTest extends EswTestKit(EventServer) {
       assertMessage(testProbe, globalExHandlerEventMessage)
     }
 
-    "call global exception handler if there is an exception in command handler even after retrying | ESW-249, ESW-139" in {
+    "call global exception handler if there is an exception in command handler even after retrying | ESW-249, ESW-139, CSW-81" in {
       val globalExHandlerEventMessage   = "command-failed"
       val globalExHandlerEventKey       = EventKey(prefix, EventName(globalExHandlerEventMessage))
       val globalExHandlerEventTestProbe = createProbeFor(globalExHandlerEventKey)
@@ -156,7 +156,7 @@ class ExceptionsHandlerIntegrationTest extends EswTestKit(EventServer) {
       assertMessage(globalExHandlerEventTestProbe, globalExHandlerEventMessage)
     }
 
-    "not fail the command on negative submit response if resumeOnError=false | ESW-249, ESW-139" in {
+    "not fail the command on negative submit response if resumeOnError=false | ESW-249, ESW-139, CSW-81" in {
       val negativeSubmitResEventMessage   = "negative-response-error"
       val negativeSubmitResEventKey       = EventKey(prefix, EventName(negativeSubmitResEventMessage))
       val negativeSubmitResEventTestProbe = createProbeFor(negativeSubmitResEventKey)
