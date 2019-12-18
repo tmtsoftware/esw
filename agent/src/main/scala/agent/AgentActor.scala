@@ -41,6 +41,6 @@ object AgentActor {
     val processBuilder = new ProcessBuilder(agentCommand.strings: _*)
     val process        = processBuilder.start()
     println("PID=" + process.pid())
-    printStreams(process.getInputStream, process.getErrorStream)
+    printStreams(process.getInputStream _, process.getErrorStream _)
   }
 }

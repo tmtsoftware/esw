@@ -8,6 +8,7 @@ lazy val aggregateProjects: Seq[ProjectReference] =
     `esw-http-core`,
     `esw-gateway`,
     `esw-integration-test`,
+    agent,
     examples
   )
 
@@ -17,6 +18,7 @@ lazy val unidocExclusions: Seq[ProjectReference] = Seq(
   `esw-ocs-api`.js,
   `esw-gateway-api`.js,
   `esw-ocs-handler`,
+  agent,
   examples
 )
 
