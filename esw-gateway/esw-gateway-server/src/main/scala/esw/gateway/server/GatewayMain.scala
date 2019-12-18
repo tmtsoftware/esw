@@ -3,9 +3,11 @@ package esw.gateway.server
 import caseapp.RemainingArgs
 import esw.gateway.server.ServerCommand.StartCommand
 import esw.http.core.commons.EswCommandApp
+import kamon.Kamon
 
 // $COVERAGE-OFF$
 object GatewayMain extends EswCommandApp[ServerCommand] {
+  Kamon.init()
   override def appName: String    = getClass.getSimpleName.dropRight(1) // remove $ from class name
   override def appVersion: String = BuildInfo.version
   override def progName: String   = BuildInfo.name

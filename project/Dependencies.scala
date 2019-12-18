@@ -148,6 +148,10 @@ object Dependencies {
   val EswGatewayServer: Def.Initialize[Seq[ModuleID]] = Def.setting(
     Seq(
       Libs.`msocket-impl-jvm`,
+      Kamon.`kamon-akka-http`,
+      Kamon.`kamon-bundle`,
+      Kamon.`kamon-apm-reporter`,
+      Kamon.`kamon-prometheus`,
       Csw.`csw-admin-impl`
     )
   )

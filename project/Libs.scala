@@ -21,6 +21,13 @@ object Libs {
   val `jupiter-interface`  = "net.aichler" % "jupiter-interface" % "0.8.3"
 }
 
+object Kamon {
+  val `kamon-akka-http`    = "io.kamon" %% "kamon-akka-http"    % "2.0.1"
+  val `kamon-bundle`       = "io.kamon" %% "kamon-bundle"       % "2.0.4"
+  val `kamon-apm-reporter` = "io.kamon" %% "kamon-apm-reporter" % "2.0.0"
+  val `kamon-prometheus`   = "io.kamon" %% "kamon-prometheus"   % "2.0.0"
+}
+
 object Csw {
   private val Org     = "com.github.tmtsoftware.csw"
   private val Version = "4bc0014" //change this to 0.1-SNAPSHOT to test with local csw changes (after publishLocal)
