@@ -13,7 +13,6 @@ import esw.gateway.api.{AlarmApi, EventApi, LoggingApi}
 import esw.gateway.server.utils.Resolver
 import esw.ocs.api.protocol.SequencerPostRequest
 import esw.ocs.handler.SequencerPostHandler
-import kamon.instrumentation.akka.http.TracingDirectives
 import msocket.api.MessageHandler
 import msocket.impl.post.ServerHttpCodecs
 
@@ -25,22 +24,17 @@ class PostHandlerImpl(
     adminApi: AdminService
 ) extends MessageHandler[PostRequest, Route]
     with GatewayCodecs
-    with ServerHttpCodecs
-    with TracingDirectives {
+    with ServerHttpCodecs {
 
   override def handle(request: PostRequest): Route = request match {
-    case ComponentCommand(componentId, command) =>
-      operationName(command.getClass.getSimpleName) { onComponentCommand(componentId, command) }
-    case SequencerCommand(componentId, command) =>
-      operationName(command.getClass.getSimpleName) { onSequencerCommand(componentId, command) }
-    case PublishEvent(event) => operationName("publish-event") { complete(eventApi.publish(event)) }
-    case GetEvent(eventKeys) => operationName("get-event") { complete(eventApi.get(eventKeys)) }
-    case SetAlarmSeverity(alarmKey, severity) =>
-      operationName("set-alarm-severity") { complete(alarmApi.setSeverity(alarmKey, severity)) }
-    case Log(prefix, level, message, map) => operationName("log") { complete(loggingApi.log(prefix, level, message, map)) }
-    case SetLogLevel(componentId, logLevel) =>
-      operationName("set-log-level") { complete(adminApi.setLogLevel(componentId, logLevel)) }
-    case GetLogMetadata(componentId) => operationName("get-log-metadata") { complete(adminApi.getLogMetadata(componentId)) }
+    case ComponentCommand(componentId, command) => onComponentCommand(componentId, command)
+    case SequencerCommand(componentId, command) => onSequencerCommand(componentId, command)
+    case PublishEvent(event)                    => complete(eventApi.publish(event))
+    case GetEvent(eventKeys)                    => complete(eventApi.get(eventKeys))
+    case SetAlarmSeverity(alarmKey, severity)   => complete(alarmApi.setSeverity(alarmKey, severity))
+    case Log(prefix, level, message, map)       => complete(loggingApi.log(prefix, level, message, map))
+    case SetLogLevel(componentId, logLevel)     => complete(adminApi.setLogLevel(componentId, logLevel))
+    case GetLogMetadata(componentId)            => complete(adminApi.getLogMetadata(componentId))
   }
 
   private def onComponentCommand(componentId: ComponentId, command: CommandServiceHttpMessage): Route =

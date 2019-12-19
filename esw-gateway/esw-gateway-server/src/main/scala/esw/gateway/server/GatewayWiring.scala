@@ -10,6 +10,7 @@ import esw.gateway.api.codecs.GatewayCodecs
 import esw.gateway.api.protocol.{PostRequest, WebsocketRequest}
 import esw.gateway.api.{AlarmApi, EventApi, LoggingApi}
 import esw.gateway.impl._
+import esw.gateway.server.handlers.PostHandlerWithRichMetrics.PostHandlerWithRichMetrics
 import esw.gateway.server.handlers.{PostHandlerImpl, WebsocketHandlerImpl}
 import esw.gateway.server.utils.Resolver
 import esw.http.core.wiring.{HttpService, ServerWiring}
@@ -32,7 +33,8 @@ class GatewayWiring(_port: Option[Int]) extends GatewayCodecs {
   lazy val adminApi: AdminService = new AdminServiceImpl(locationService)
 
   lazy val postHandler: MessageHandler[PostRequest, Route] =
-    new PostHandlerImpl(alarmApi, resolver, eventApi, loggingApi, adminApi)
+    new PostHandlerImpl(alarmApi, resolver, eventApi, loggingApi, adminApi).withMetrics()
+
   def websocketHandlerFactory(encoding: Encoding[_]): MessageHandler[WebsocketRequest, Source[Message, NotUsed]] =
     new WebsocketHandlerImpl(resolver, eventApi, encoding)
 

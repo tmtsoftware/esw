@@ -5,7 +5,7 @@ Content-Type: application/json
 {
   "ComponentCommand": {
     "componentId": {
-      "name": "test",
+      "prefix": "esw.test",
       "componentType": "assembly"
     },
     "command": {
@@ -153,10 +153,11 @@ Content-Type: application/json
 {
   "SetAlarmSeverity": {
     "alarmKey": {
-      "subsystem": "NFIRAOS",
-      "component": "SampleHcd",
+      "prefix": "NFIRAOS.SampleHcd",
       "name": "counterTooHighAlarm"
     },
     "severity": "Major"
   }
 }
+
+###
