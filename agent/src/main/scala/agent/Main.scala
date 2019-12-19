@@ -29,7 +29,8 @@ object Main extends App {
   implicit val scheduler: Scheduler = actorSystem.scheduler
   implicit val ec: ExecutionContext = actorSystem.executionContext
 
-  val agentRefF: Future[ActorRef[AgentCommand]] = actorSystem ? (Spawn(AgentActor.behavior, "agent-actor", Props.empty, _))
+  private val actor                             = new AgentActor(locationService)
+  val agentRefF: Future[ActorRef[AgentCommand]] = actorSystem ? (Spawn(actor.behavior, "agent-actor", Props.empty, _))
 
   val regResultF = agentRefF.flatMap { ref =>
     locationService.register(
@@ -46,5 +47,6 @@ object Main extends App {
   // todo: Register self to location server
   // todo: merge location-agent
 
-  Await.result(agentRefF, 5.seconds) ! SpawnSequenceComponent(Prefix(Subsystem.ESW, "primary"))
+  private val agentRef: ActorRef[AgentCommand] = Await.result(agentRefF, 5.seconds)
+  agentRef ? SpawnSequenceComponent(Prefix(Subsystem.ESW, "primary"))
 }
