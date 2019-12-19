@@ -1,6 +1,7 @@
 package agent
 
 import java.io.InputStream
+
 import akka.actor.typed.ActorSystem
 import akka.stream.IOResult
 import akka.stream.scaladsl.{Framing, Source, StreamConverters}
@@ -10,14 +11,15 @@ import csw.prefix.models.Prefix
 import scala.concurrent.Future
 import scala.util.Failure
 
-object RichProcess {
+object RichProcessExt {
   case class ProcessTextLine(text: String, prefix: Prefix, err: Boolean = false) {
     def print(): Unit = {
       val pFunction: (Any => Unit) = if (err) Console.err.println else println
       pFunction(s"[${prefix.value}] $text")
     }
   }
-  implicit class ProcessOutput(process: Process) {
+
+  implicit class RichProcess(process: Process) {
     private def convertToSource(
         inputStream: () => InputStream,
         err: Boolean,
