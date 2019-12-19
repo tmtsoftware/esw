@@ -14,7 +14,7 @@ import csw.prefix.models.{Prefix, Subsystem}
 
 import scala.concurrent.duration.DurationInt
 import scala.concurrent.{Await, ExecutionContext, Future}
-import scala.util.Failure
+import scala.util.{Failure, Success}
 
 // todo: this module should not depend on location-server (which is an app), extract http-wiring in another module and depend on that
 // todo: convert to case-app
@@ -39,9 +39,8 @@ object Main extends App {
 
   // fixme: This should make sure all default tasks are spawned before onFailure is triggered
   regResultF.onComplete {
-    case Failure(exception) =>
-      exception.printStackTrace()
-      actorSystem.terminate()
+    case Failure(exception) => actorSystem.terminate(); exception.printStackTrace()
+    case Success(_)         =>
   }
 
   // todo: Register self to location server
