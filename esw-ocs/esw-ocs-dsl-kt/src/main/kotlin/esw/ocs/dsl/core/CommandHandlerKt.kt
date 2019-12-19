@@ -3,8 +3,8 @@ package esw.ocs.dsl.core
 import csw.params.commands.SequenceCommand
 import esw.ocs.dsl.SuspendableConsumer
 import esw.ocs.dsl.highlevel.models.ScriptError
-import esw.ocs.dsl.toScriptError
 import esw.ocs.dsl.script.CommandHandler
+import esw.ocs.dsl.toScriptError
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.future.asCompletableFuture
@@ -28,22 +28,27 @@ class CommandHandlerKt<T : SequenceCommand>(
     private var onError: (suspend CommandHandlerScope.(ScriptError) -> Unit)? = null
     private var delayInMillis: Long = 0
 
-    override fun execute(sequenceCommand: T): CompletionStage<Void> =
-            scope.launch {
-                suspend fun go(): Unit =
-                        try {
-                            block(sequenceCommand)
-                        } catch (e: Exception) {
-                            onError?.let { it(commandHandlerScope, e.toScriptError()) }
-                            if (retryCount > 0) {
-                                retryCount -= 1
-                                delay(delayInMillis)
-                                go()
-                            } else throw e
-                        }
+    override fun execute(sequenceCommand: T): CompletionStage<Void> {
+        val originalCount = retryCount
 
-                go()
-            }.asCompletableFuture().thenAccept { }
+        return scope.launch {
+            suspend fun go(): Unit =
+                    try {
+                        block(sequenceCommand)
+                    } catch (e: Exception) {
+                        onError?.let { it(commandHandlerScope, e.toScriptError()) }
+                        if (retryCount > 0) {
+                            retryCount -= 1
+                            delay(delayInMillis)
+                            go()
+                        } else throw e
+                    } finally {
+                        retryCount = originalCount // this is to set back the original retry count.
+                    }
+
+            go()
+        }.asCompletableFuture().thenAccept { }
+    }
 
     fun onError(block: suspend CommandHandlerScope.(ScriptError) -> Unit): CommandHandlerKt<T> {
         onError = block

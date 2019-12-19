@@ -45,16 +45,16 @@ class RichComponent(
     suspend fun oneway(command: ControlCommand): OnewayResponse = commandService().oneway(command).await()
 
     suspend fun submit(command: ControlCommand, resumeOnError: Boolean = false): SubmitResponse =
-            throwIfNegative(resumeOnError) { commandService().submit(command).await() }
+            actionOnResponse(resumeOnError) { commandService().submit(command).await() }
 
     suspend fun query(commandRunId: Id, resumeOnError: Boolean = false): SubmitResponse =
-            throwIfNegative(resumeOnError) { commandService().query(commandRunId).await() }
+            actionOnResponse(resumeOnError) { commandService().query(commandRunId).await() }
 
     suspend fun queryFinal(commandRunId: Id, timeout: Duration = defaultTimeout, resumeOnError: Boolean = false): SubmitResponse =
-            throwIfNegative(resumeOnError) { commandService().queryFinal(commandRunId, timeout.toTimeout()).await() }
+            actionOnResponse(resumeOnError) { commandService().queryFinal(commandRunId, timeout.toTimeout()).await() }
 
     suspend fun submitAndWait(command: ControlCommand, timeout: Duration = defaultTimeout, resumeOnError: Boolean = false): SubmitResponse =
-            throwIfNegative(resumeOnError) { commandService().submitAndWait(command, timeout.toTimeout()).await() }
+            actionOnResponse(resumeOnError) { commandService().submitAndWait(command, timeout.toTimeout()).await() }
 
     suspend fun subscribeCurrentState(vararg stateNames: StateName, callback: SuspendableConsumer<CurrentState>): Subscription =
             commandService().subscribeCurrentState(stateNames.toSet()) { callback.toJava(it) }
@@ -79,7 +79,7 @@ class RichComponent(
 
     suspend fun unlock(): LockingResponse = lockUnlockUtil.unlock(componentRef()).await()
 
-    private suspend fun throwIfNegative(resumeOnError: Boolean = false, block: suspend () -> SubmitResponse): SubmitResponse =
+    private suspend fun actionOnResponse(resumeOnError: Boolean = false, block: suspend () -> SubmitResponse): SubmitResponse =
             if (!resumeOnError) block().onFailedTerminate()
             else block()
 
