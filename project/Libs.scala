@@ -22,10 +22,11 @@ object Libs {
 }
 
 object Kamon {
-  val `kamon-akka-http`    = "io.kamon" %% "kamon-akka-http"    % "2.0.1"
-  val `kamon-bundle`       = "io.kamon" %% "kamon-bundle"       % "2.0.4"
-  val `kamon-apm-reporter` = "io.kamon" %% "kamon-apm-reporter" % "2.0.0"
-  val `kamon-prometheus`   = "io.kamon" %% "kamon-prometheus"   % "2.0.0"
+  val `kamon-akka`         = "io.kamon" %% "kamon-akka"         % "2.0.1"
+  val `kamon-akka-http`    = "io.kamon" %% "kamon-akka-http"    % "2.0.3"
+  val `kamon-bundle`       = "io.kamon" %% "kamon-bundle"       % "2.0.5"
+  val `kamon-apm-reporter` = "io.kamon" %% "kamon-apm-reporter" % "2.0.2"
+  val `kamon-prometheus`   = "io.kamon" %% "kamon-prometheus"   % "2.0.1"
 }
 
 object Csw {

@@ -149,6 +149,7 @@ object Dependencies {
     Seq(
       Libs.`msocket-impl-jvm`,
       Kamon.`kamon-akka-http`,
+      Kamon.`kamon-akka`,
       Kamon.`kamon-bundle`,
       Kamon.`kamon-apm-reporter`,
       Kamon.`kamon-prometheus`,
