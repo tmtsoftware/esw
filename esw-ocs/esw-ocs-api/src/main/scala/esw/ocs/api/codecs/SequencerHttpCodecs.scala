@@ -11,6 +11,8 @@ import msocket.api
 import msocket.api.ErrorProtocol
 import msocket.api.models.ServiceError
 
+object SequencerHttpCodecs extends SequencerHttpCodecs
+
 trait SequencerHttpCodecs extends OcsCodecs {
   import msocket.api.codecs.BasicCodecs._
   implicit def sequencerPostRequestCodec[T <: SequencerPostRequest]: Codec[T] =

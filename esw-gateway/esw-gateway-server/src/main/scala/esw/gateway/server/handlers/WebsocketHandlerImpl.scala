@@ -7,19 +7,17 @@ import csw.command.api.messages.CommandServiceWebsocketMessage
 import csw.command.client.handlers.CommandServiceWebsocketHandlers
 import csw.location.models.ComponentId
 import esw.gateway.api.EventApi
-import esw.gateway.api.codecs.GatewayCodecs
+import esw.gateway.api.codecs.GatewayCodecs._
 import esw.gateway.api.protocol.WebsocketRequest
 import esw.gateway.api.protocol.WebsocketRequest.{ComponentCommand, SequencerCommand, Subscribe, SubscribeWithPattern}
 import esw.gateway.server.utils.Resolver
 import esw.ocs.api.protocol.SequencerWebsocketRequest
 import esw.ocs.handler.SequencerWebsocketHandler
-import msocket.api.{Encoding, MessageHandler}
-import msocket.impl.ws.WebsocketStreamExtensions
+import msocket.api.Encoding
+import msocket.impl.ws.WebsocketHandler
 
-class WebsocketHandlerImpl(resolver: Resolver, eventApi: EventApi, val encoding: Encoding[_])
-    extends MessageHandler[WebsocketRequest, Source[Message, NotUsed]]
-    with GatewayCodecs
-    with WebsocketStreamExtensions {
+class WebsocketHandlerImpl(resolver: Resolver, eventApi: EventApi, encoding: Encoding[_])
+    extends WebsocketHandler[WebsocketRequest](encoding) {
 
   override def handle(request: WebsocketRequest): Source[Message, NotUsed] = request match {
     case ComponentCommand(componentId, command)                 => onComponentCommand(componentId, command)
