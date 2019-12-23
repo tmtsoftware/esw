@@ -9,7 +9,6 @@ import akka.actor.typed.scaladsl.adapter.TypedActorSystemOps
 import akka.util.Timeout
 import csw.location.api.extensions.ActorExtension.RichActor
 import csw.location.api.scaladsl.LocationService
-import csw.location.client.ActorSystemFactory
 import csw.location.client.scaladsl.HttpLocationServiceFactory
 import csw.location.impl.internal.{ServerWiring, Settings}
 import csw.location.models.Connection.AkkaConnection
@@ -20,22 +19,20 @@ import scala.concurrent.duration.DurationInt
 import scala.concurrent.{Await, Future}
 import scala.util.Try
 
-// todo: this module should not depend on location-server (which is an app), extract http-wiring in another module and depend on that
 // todo: convert to case-app
 // todo: Add support for default actions e.g. redis
 // todo: merge location-agent
 object Main extends App {
 
-  //todo: remove creation of this actor system, reuse cluster system
-  implicit lazy val actorSystem: ActorSystem[SpawnProtocol.Command] = ActorSystemFactory.remote(SpawnProtocol(), "esw-system")
-  implicit val timeout: Timeout                                     = Timeout(10.seconds)
-  implicit val scheduler: Scheduler                                 = actorSystem.scheduler
+  val wiring                                                   = new ServerWiring(Settings("agent"))
+  implicit val actorSystem: ActorSystem[SpawnProtocol.Command] = wiring.actorSystem
+  implicit val timeout: Timeout                                = Timeout(10.seconds)
+  implicit val scheduler: Scheduler                            = wiring.actorSystem.scheduler
   import actorSystem.executionContext
 
   private val coordinatedShutdown = CoordinatedShutdown(actorSystem.toClassic)
   val agentConnection             = AkkaConnection(ComponentId(Prefix(Subsystem.ESW, "Agent"), ComponentType.Machine))
 
-  val wiring          = new ServerWiring(Settings("agent"))
   val locationBinding = Await.result(wiring.locationHttpService.start(), timeout.duration)
   coordinatedShutdown.addTask(CoordinatedShutdown.PhaseServiceUnbind, "unbind-services") { () =>
     locationService
