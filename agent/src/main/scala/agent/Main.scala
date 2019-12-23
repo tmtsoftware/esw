@@ -1,5 +1,6 @@
 package agent
 
+import utils.ProcessOutput
 import agent.AgentCliCommand.StartCommand
 import akka.Done
 import akka.actor.CoordinatedShutdown
@@ -25,6 +26,8 @@ import scala.util.Try
 // todo: Add support for default actions e.g. redis
 // todo: merge location-agent
 // todo: print error and kill app if CLusterSeeds is not defined
+// todo: options: clusterPort, auth, devMode
+//  devmode kills all processes before dying
 object Main extends CommandApp[AgentCliCommand] {
   override def appName: String    = getClass.getSimpleName.dropRight(1) // remove $ from class name
   override def appVersion: String = BuildInfo.version
@@ -53,15 +56,18 @@ object Main extends CommandApp[AgentCliCommand] {
         .flatten
     }
 
+    val processOutput = new ProcessOutput
     // spawn agent actor and register to location server
-    val actor = new AgentActor(locationService)
+    val actor = new AgentActor(locationService, processOutput)
     val agentRef: ActorRef[AgentCommand] =
       Await.result(actorSystem ? (Spawn(actor.behavior, "agent-actor", Props.empty, _)), timeout.duration)
 
     Await.result(locationService.register(AkkaRegistration(agentConnection, agentRef.toURI)), timeout.duration)
 
     // Test messages
-    val response: Future[Response] = agentRef ? SpawnSequenceComponent(Prefix(Subsystem.ESW, "primary"))
-    println("Response=" + Await.result(response, 10.seconds))
+    val response: Future[Response]  = agentRef ? SpawnSequenceComponent(Prefix(Subsystem.ESW, "primary"))
+    val response2: Future[Response] = agentRef ? SpawnSequenceComponent(Prefix(Subsystem.ESW, "secondary"))
+    println("primary Response=" + Await.result(response, 10.seconds))
+    println("secondary Response=" + Await.result(response2, 10.seconds))
   }
 }

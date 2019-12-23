@@ -2,7 +2,7 @@ package agent
 
 import java.nio.file.Paths
 
-import agent.RichProcessExt._
+import utils.ProcessOutput
 import akka.actor.typed.scaladsl.Behaviors
 import akka.actor.typed.{ActorRef, ActorSystem, Behavior}
 import csw.location.api.scaladsl.LocationService
@@ -35,15 +35,15 @@ object SpawnSequenceComponent {
 //todo: imp: log everything
 //todo: consider killing the process if it does not register in given time
 
-class AgentActor(locationService: LocationService) {
+class AgentActor(locationService: LocationService, outChannel: ProcessOutput) {
 
   def behavior: Behavior[AgentCommand] = Behaviors.receive { (ctx, command) =>
     import ctx.{executionContext, system}
 
-    runCommand(command)(system)
+    runCommand(command, outChannel)(system)
     command match {
       case SpawnSequenceComponent(replyTo, prefix) =>
-        val akkaLocF = locationService.resolve(AkkaConnection(ComponentId(prefix, ComponentType.SequenceComponent)), 10.seconds)
+        val akkaLocF = locationService.resolve(AkkaConnection(ComponentId(prefix, ComponentType.SequenceComponent)), 5.seconds)
         akkaLocF.onComplete {
           case Success(Some(_)) => replyTo ! Started
           case Success(None)    => replyTo ! Error("could not get a response from spawned process")
@@ -53,12 +53,12 @@ class AgentActor(locationService: LocationService) {
     Behaviors.same
   }
 
-  private def runCommand(agentCommand: AgentCommand)(implicit system: ActorSystem[_]): Unit = {
+  private def runCommand(agentCommand: AgentCommand, output: ProcessOutput)(implicit system: ActorSystem[_]): Unit = {
     try {
       val processBuilder = new ProcessBuilder(agentCommand.strings: _*)
       val process        = processBuilder.start()
       println("PID=" + process.pid())
-      process.attachToConsole(agentCommand.prefix)
+      output.attachProcess(process, agentCommand.prefix)
     }
     catch {
       case NonFatal(err) => err.printStackTrace()
