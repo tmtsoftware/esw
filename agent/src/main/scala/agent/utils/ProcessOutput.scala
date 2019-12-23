@@ -1,8 +1,8 @@
-package utils
+package agent.utils
 
 import java.io.InputStream
 
-import utils.ProcessOutput.ProcessTextLine
+import agent.utils.ProcessOutput.ProcessTextLine
 import akka.actor.typed.ActorSystem
 import akka.stream.scaladsl.{Framing, Source, StreamConverters}
 import akka.stream.typed.scaladsl.ActorSource
@@ -54,9 +54,9 @@ class ProcessOutput(implicit actorSystem: ActorSystem[_]) {
       .map(ProcessTextLine(_, prefix, err))
 
   private def createSource(process: Process, prefix: Prefix): Source[ProcessTextLine, Future[IOResult]] = {
-    val s1 = convertToSource(process.getInputStream _, err = false, prefix)
-    val s2 = convertToSource(process.getErrorStream _, err = true, prefix)
-    s1 merge s2
+    val outSource = convertToSource(process.getInputStream _, err = false, prefix)
+    val errSource = convertToSource(process.getErrorStream _, err = true, prefix)
+    outSource merge errSource
   }
 
   /**

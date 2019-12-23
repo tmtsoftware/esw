@@ -1,46 +1,26 @@
 package agent
 
-import java.nio.file.Paths
-
-import utils.ProcessOutput
+import agent.AgentCommand.SpawnSequenceComponent
+import agent.Response.{Error, Started}
+import agent.utils.ProcessOutput
+import akka.actor.typed.Behavior
 import akka.actor.typed.scaladsl.Behaviors
-import akka.actor.typed.{ActorRef, ActorSystem, Behavior}
 import csw.location.api.scaladsl.LocationService
 import csw.location.models.Connection.AkkaConnection
 import csw.location.models.{ComponentId, ComponentType}
-import csw.prefix.models.Prefix
 
 import scala.concurrent.duration.DurationInt
 import scala.util.control.NonFatal
 import scala.util.{Failure, Success}
 
-sealed trait AgentCommand {
-  val strings: List[String]
-  val prefix: Prefix
-}
-
-sealed trait Response
-case object Started           extends Response
-case class Error(msg: String) extends Response
-
-case class SpawnSequenceComponent(replyTo: ActorRef[Response], prefix: Prefix) extends AgentCommand {
-  private val executablePath: String = Paths.get("target/universal/stage/bin/esw-ocs-app").toAbsolutePath.toString
-  override val strings               = List(executablePath, "seqcomp", "-s", prefix.subsystem.toString, "-n", prefix.componentName)
-}
-
-object SpawnSequenceComponent {
-  def apply(prefix: Prefix)(replyTo: ActorRef[Response]): SpawnSequenceComponent = new SpawnSequenceComponent(replyTo, prefix)
-}
-
 //todo: imp: log everything
 //todo: consider killing the process if it does not register in given time
-
 class AgentActor(locationService: LocationService, outChannel: ProcessOutput) {
 
   def behavior: Behavior[AgentCommand] = Behaviors.receive { (ctx, command) =>
-    import ctx.{executionContext, system}
+    import ctx.executionContext
 
-    runCommand(command, outChannel)(system)
+    runCommand(command, outChannel)
     command match {
       case SpawnSequenceComponent(replyTo, prefix) =>
         val akkaLocF = locationService.resolve(AkkaConnection(ComponentId(prefix, ComponentType.SequenceComponent)), 5.seconds)
@@ -53,7 +33,7 @@ class AgentActor(locationService: LocationService, outChannel: ProcessOutput) {
     Behaviors.same
   }
 
-  private def runCommand(agentCommand: AgentCommand, output: ProcessOutput)(implicit system: ActorSystem[_]): Unit = {
+  private def runCommand(agentCommand: AgentCommand, output: ProcessOutput): Unit = {
     try {
       val processBuilder = new ProcessBuilder(agentCommand.strings: _*)
       val process        = processBuilder.start()

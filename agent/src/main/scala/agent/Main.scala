@@ -1,7 +1,8 @@
 package agent
 
-import utils.ProcessOutput
 import agent.AgentCliCommand.StartCommand
+import agent.AgentCommand.SpawnSequenceComponent
+import agent.utils.ProcessOutput
 import akka.Done
 import akka.actor.CoordinatedShutdown
 import akka.actor.typed.SpawnProtocol.Spawn
@@ -26,7 +27,7 @@ import scala.util.Try
 // todo: Add support for default actions e.g. redis
 // todo: merge location-agent
 // todo: print error and kill app if CLusterSeeds is not defined
-// todo: options: clusterPort, auth, devMode
+// todo: options: clusterPort, auth, interface, devMode
 //  devmode kills all processes before dying
 object Main extends CommandApp[AgentCliCommand] {
   override def appName: String    = getClass.getSimpleName.dropRight(1) // remove $ from class name
@@ -34,7 +35,8 @@ object Main extends CommandApp[AgentCliCommand] {
   override def progName: String   = BuildInfo.name
 
   override def run(command: AgentCliCommand, remainingArgs: RemainingArgs): Unit = command match {
-    case StartCommand(clusterPortMaybe) => onStart(clusterPortMaybe)
+    case StartCommand(clusterPortMaybe, interface, unsecured, devMode) =>
+      onStart(clusterPortMaybe)
   }
 
   private def onStart(clusterPortMaybe: Option[Int]): Unit = {
