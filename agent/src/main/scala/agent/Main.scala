@@ -58,8 +58,7 @@ object Main extends CommandApp[AgentCliCommand] {
     val agentRef: ActorRef[AgentCommand] =
       Await.result(actorSystem ? (Spawn(actor.behavior, "agent-actor", Props.empty, _)), timeout.duration)
 
-    val regResult =
-      Await.result(locationService.register(AkkaRegistration(agentConnection, agentRef.toURI)), timeout.duration)
+    Await.result(locationService.register(AkkaRegistration(agentConnection, agentRef.toURI)), timeout.duration)
 
     // Test messages
     val response: Future[Response] = agentRef ? SpawnSequenceComponent(Prefix(Subsystem.ESW, "primary"))

@@ -2,17 +2,17 @@ package agent
 
 import java.nio.file.Paths
 
+import agent.RichProcessExt._
 import akka.actor.typed.scaladsl.Behaviors
 import akka.actor.typed.{ActorRef, ActorSystem, Behavior}
-import csw.prefix.models.Prefix
-import RichProcessExt._
 import csw.location.api.scaladsl.LocationService
+import csw.location.models.Connection.AkkaConnection
 import csw.location.models.{ComponentId, ComponentType}
-import csw.location.models.Connection.{AkkaConnection, HttpConnection}
+import csw.prefix.models.Prefix
 
 import scala.concurrent.duration.DurationInt
-import scala.util.{Failure, Success}
 import scala.util.control.NonFatal
+import scala.util.{Failure, Success}
 
 sealed trait AgentCommand {
   val strings: List[String]
@@ -38,8 +38,7 @@ object SpawnSequenceComponent {
 class AgentActor(locationService: LocationService) {
 
   def behavior: Behavior[AgentCommand] = Behaviors.receive { (ctx, command) =>
-    import ctx.system
-    import ctx.executionContext
+    import ctx.{executionContext, system}
 
     runCommand(command)(system)
     command match {
