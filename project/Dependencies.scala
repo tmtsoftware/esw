@@ -54,7 +54,7 @@ object Dependencies {
   val Agent: Def.Initialize[Seq[ModuleID]] = Def.setting(
     Seq(
       Libs.`case-app`,
-      Csw.`csw-location-server`,
+      Csw.`csw-location-impl`,
       Csw.`csw-location-client`,
       Akka.`akka-actor-typed`,
       Akka.`akka-stream-typed`,

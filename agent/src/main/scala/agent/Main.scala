@@ -11,9 +11,9 @@ import csw.location.api.extensions.ActorExtension.RichActor
 import csw.location.api.scaladsl.LocationService
 import csw.location.client.ActorSystemFactory
 import csw.location.client.scaladsl.HttpLocationServiceFactory
+import csw.location.impl.internal.{ServerWiring, Settings}
 import csw.location.models.Connection.AkkaConnection
 import csw.location.models.{AkkaRegistration, ComponentId, ComponentType}
-import csw.location.server.internal.ServerWiring
 import csw.prefix.models.{Prefix, Subsystem}
 
 import scala.concurrent.duration.DurationInt
@@ -35,7 +35,7 @@ object Main extends App {
   private val coordinatedShutdown = CoordinatedShutdown(actorSystem.toClassic)
   val agentConnection             = AkkaConnection(ComponentId(Prefix(Subsystem.ESW, "Agent"), ComponentType.Machine))
 
-  val wiring          = ServerWiring.make(Some(3552))
+  val wiring          = new ServerWiring(Settings("agent"))
   val locationBinding = Await.result(wiring.locationHttpService.start(), timeout.duration)
   coordinatedShutdown.addTask(CoordinatedShutdown.PhaseServiceUnbind, "unbind-services") { () =>
     locationService
