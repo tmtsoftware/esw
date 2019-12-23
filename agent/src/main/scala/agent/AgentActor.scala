@@ -18,8 +18,6 @@ sealed trait AgentCommand {
   val strings: List[String]
   val prefix: Prefix
 }
-//todo: imp: log everything
-//todo: consider killing the process if it does not register in given time
 
 sealed trait Response
 case object Started           extends Response
@@ -34,6 +32,9 @@ object SpawnSequenceComponent {
   def apply(prefix: Prefix)(replyTo: ActorRef[Response]): SpawnSequenceComponent = new SpawnSequenceComponent(replyTo, prefix)
 }
 
+//todo: imp: log everything
+//todo: consider killing the process if it does not register in given time
+
 class AgentActor(locationService: LocationService) {
 
   def behavior: Behavior[AgentCommand] = Behaviors.receive { (ctx, command) =>
@@ -44,8 +45,7 @@ class AgentActor(locationService: LocationService) {
     command match {
       case SpawnSequenceComponent(replyTo, prefix) =>
         val akkaLocF = locationService.resolve(AkkaConnection(ComponentId(prefix, ComponentType.SequenceComponent)), 10.seconds)
-        val httpLocF = locationService.resolve(HttpConnection(ComponentId(prefix, ComponentType.SequenceComponent)), 10.seconds)
-        akkaLocF.flatMap(_ => httpLocF).onComplete {
+        akkaLocF.onComplete {
           case Success(Some(_)) => replyTo ! Started
           case Success(None)    => replyTo ! Error("could not get a response from spawned process")
           case Failure(_)       => replyTo ! Error("error while waiting for seq comp to get registered")
