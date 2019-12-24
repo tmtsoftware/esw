@@ -9,7 +9,7 @@ sealed trait AgentCommand {
   val strings: List[String]
   val prefix: Prefix
 }
-
+// todo: fix absolute path issue
 object AgentCommand {
   case class SpawnSequenceComponent(replyTo: ActorRef[Response], prefix: Prefix) extends AgentCommand {
     private val executablePath: String = Paths.get("target/universal/stage/bin/esw-ocs-app").toAbsolutePath.toString
