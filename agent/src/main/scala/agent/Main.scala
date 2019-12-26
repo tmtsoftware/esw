@@ -19,6 +19,8 @@ import csw.location.impl.commons.ClusterAwareSettings
 import csw.location.impl.internal.{ServerWiring, Settings}
 import csw.location.models.Connection.AkkaConnection
 import csw.location.models.{AkkaRegistration, ComponentId, ComponentType}
+import csw.logging.api.scaladsl.Logger
+import csw.network.utils.Networks
 import csw.prefix.models.{Prefix, Subsystem}
 
 import scala.concurrent.duration.DurationInt
@@ -29,8 +31,7 @@ import scala.util.Try
 // todo: merge location-agent
 // todo: options: clusterPort, auth, interface, devMode
 // todo: devmode kills all processes before dying
-// todo: integrate logging
-// todo : try moving this module to csw by merging with location-server
+// todo: try moving this module to csw by merging with location-server
 
 object Main extends CommandApp[AgentCliCommand] {
   override def appName: String    = getClass.getSimpleName.dropRight(1) // remove $ from class name
@@ -48,15 +49,17 @@ object Main extends CommandApp[AgentCliCommand] {
         "[ERROR] CLUSTER_SEEDS setting is not specified either as env variable or system property. Please check online documentation for this set-up."
       )
     else {
-      val wiring                                                   = new ServerWiring(Settings("agent").withClusterPort(clusterPortMaybe))
+      val wiring = new ServerWiring(Settings("agent").withClusterPort(clusterPortMaybe))
+
       implicit val actorSystem: ActorSystem[SpawnProtocol.Command] = wiring.actorSystem
-      implicit val timeout: Timeout                                = Timeout(10.seconds)
-      implicit val scheduler: Scheduler                            = wiring.actorSystem.scheduler
+      wiring.actorRuntime.startLogging(progName, Networks().hostname, appVersion)
       import actorSystem.executionContext
 
-      val coordinatedShutdown              = CoordinatedShutdown(actorSystem.toClassic)
-      val agentConnection                  = AkkaConnection(ComponentId(Prefix(Subsystem.ESW, "Agent"), ComponentType.Machine))
-      val locationService: LocationService = HttpLocationServiceFactory.makeLocalClient
+      implicit val timeout: Timeout     = Timeout(10.seconds)
+      implicit val scheduler: Scheduler = wiring.actorSystem.scheduler
+      val coordinatedShutdown           = CoordinatedShutdown(actorSystem.toClassic)
+      val agentConnection               = AkkaConnection(ComponentId(Prefix(Subsystem.ESW, "Agent"), ComponentType.Machine))
+      val locationService               = HttpLocationServiceFactory.makeLocalClient
 
       val locationBinding = Await.result(wiring.locationHttpService.start(), timeout.duration)
       coordinatedShutdown.addTask(CoordinatedShutdown.PhaseServiceUnbind, "unbind-services") { () =>

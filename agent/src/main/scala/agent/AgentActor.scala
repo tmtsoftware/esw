@@ -8,6 +8,7 @@ import akka.actor.typed.scaladsl.Behaviors
 import csw.location.api.scaladsl.LocationService
 import csw.location.models.Connection.AkkaConnection
 import csw.location.models.{ComponentId, ComponentType}
+import csw.logging.api.scaladsl.Logger
 
 import scala.concurrent.duration.DurationInt
 import scala.util.control.NonFatal
@@ -17,8 +18,11 @@ import scala.util.{Failure, Success}
 //todo: consider killing the process if it does not register in given time
 class AgentActor(locationService: LocationService, outChannel: ProcessOutput) {
 
+  private val log: Logger = AgentLogger.getLogger
+
   def behavior: Behavior[AgentCommand] = Behaviors.receive { (ctx, command) =>
     import ctx.executionContext
+    log.info(s"Received command: $command")
 
     runCommand(command, outChannel)
     command match {
@@ -37,7 +41,7 @@ class AgentActor(locationService: LocationService, outChannel: ProcessOutput) {
     try {
       val processBuilder = new ProcessBuilder(agentCommand.strings: _*)
       val process        = processBuilder.start()
-      println("PID=" + process.pid())
+      log.debug("PID = " + process.pid())
       output.attachProcess(process, agentCommand.prefix)
     }
     catch {
