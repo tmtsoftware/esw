@@ -79,5 +79,7 @@ object Main extends CommandApp[AgentCliCommand] {
       val response2: Future[Response] = agentRef ? SpawnSequenceComponent(Prefix(Subsystem.ESW, "secondary"))
       println("primary Response=" + Await.result(response, 10.seconds))
       println("secondary Response=" + Await.result(response2, 10.seconds))
+//      val killedResponse: Future[Response] = agentRef ? KillAllProcesses
+//      println("Killed All processes:" + Await.result(killedResponse, 10.seconds))
     }
 }
