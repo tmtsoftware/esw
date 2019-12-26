@@ -13,13 +13,11 @@ import akka.util.Timeout
 import caseapp.core.RemainingArgs
 import caseapp.core.app.CommandApp
 import csw.location.api.extensions.ActorExtension.RichActor
-import csw.location.api.scaladsl.LocationService
 import csw.location.client.scaladsl.HttpLocationServiceFactory
 import csw.location.impl.commons.ClusterAwareSettings
 import csw.location.impl.internal.{ServerWiring, Settings}
 import csw.location.models.Connection.AkkaConnection
 import csw.location.models.{AkkaRegistration, ComponentId, ComponentType}
-import csw.logging.api.scaladsl.Logger
 import csw.network.utils.Networks
 import csw.prefix.models.{Prefix, Subsystem}
 
