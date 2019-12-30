@@ -1,6 +1,5 @@
 package agent
 
-import agent.AgentActor.AgentState
 import agent.AgentCliCommand.StartCommand
 import agent.AgentCommand.SpawnCommand.SpawnSequenceComponent
 import akka.actor.typed.scaladsl.AskPattern.Askable
