@@ -3,6 +3,6 @@ package agent
 sealed trait Response
 
 object Response {
-  case object Done              extends Response
-  case class Error(msg: String) extends Response
+  case object Spawned            extends Response
+  case class Failed(msg: String) extends Response
 }

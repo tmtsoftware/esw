@@ -68,6 +68,7 @@ class ProcessOutput(implicit actorSystem: ActorSystem[_]) {
     createSource(process, prefix).runForeach(channelActor ! _)
   }
 }
+
 object ProcessOutput {
   private case class ProcessTextLine(text: String, prefix: Prefix, err: Boolean = false) {
     def print(): Unit = {

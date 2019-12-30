@@ -1,29 +1,23 @@
 package agent
 
+import agent.AgentActor.AgentState
 import agent.AgentCliCommand.StartCommand
-import agent.AgentCommand.SpawnSequenceComponent
+import agent.AgentCommand.SpawnCommand.SpawnSequenceComponent
 import agent.utils.ProcessOutput
-import akka.Done
-import akka.actor.CoordinatedShutdown
 import akka.actor.typed.SpawnProtocol.Spawn
 import akka.actor.typed._
 import akka.actor.typed.scaladsl.AskPattern.Askable
-import akka.actor.typed.scaladsl.adapter.TypedActorSystemOps
 import akka.util.Timeout
 import caseapp.core.RemainingArgs
 import caseapp.core.app.CommandApp
 import csw.location.api.extensions.ActorExtension.RichActor
 import csw.location.client.scaladsl.HttpLocationServiceFactory
-import csw.location.impl.commons.ClusterAwareSettings
-import csw.location.impl.internal.{ServerWiring, Settings}
 import csw.location.models.Connection.AkkaConnection
 import csw.location.models.{AkkaRegistration, ComponentId, ComponentType}
-import csw.network.utils.Networks
 import csw.prefix.models.{Prefix, Subsystem}
 
 import scala.concurrent.duration.DurationInt
 import scala.concurrent.{Await, Future}
-import scala.util.Try
 
 // todo: Add support for default actions e.g. redis
 // todo: merge location-agent
@@ -41,45 +35,25 @@ object Main extends CommandApp[AgentCliCommand] {
       onStart(clusterPortMaybe)
   }
 
-  private def onStart(clusterPortMaybe: Option[Int]): Unit =
-    if (ClusterAwareSettings.seedNodes.isEmpty)
-      Console.err.println(
-        "[ERROR] CLUSTER_SEEDS setting is not specified either as env variable or system property. Please check online documentation for this set-up."
-      )
-    else {
-      val wiring = new ServerWiring(Settings("agent").withClusterPort(clusterPortMaybe))
+  private def onStart(clusterPortMaybe: Option[Int]): Unit = {
 
-      implicit val actorSystem: ActorSystem[SpawnProtocol.Command] = wiring.actorSystem
-      wiring.actorRuntime.startLogging(progName, Networks().hostname, appVersion)
-      import actorSystem.executionContext
+    val wiring = new AgentWiring
+    import wiring._
 
-      implicit val timeout: Timeout     = Timeout(10.seconds)
-      implicit val scheduler: Scheduler = wiring.actorSystem.scheduler
-      val coordinatedShutdown           = CoordinatedShutdown(actorSystem.toClassic)
-      val agentConnection               = AkkaConnection(ComponentId(Prefix(Subsystem.ESW, "Agent"), ComponentType.Machine))
-      val locationService               = HttpLocationServiceFactory.makeLocalClient
+    wiring.actorRuntime.startLogging(progName, appVersion)
 
-      val locationBinding = Await.result(wiring.locationHttpService.start(), timeout.duration)
-      coordinatedShutdown.addTask(CoordinatedShutdown.PhaseServiceUnbind, "unbind-services") { () =>
-        locationService
-          .unregister(agentConnection)
-          .transform(_ => Try(locationBinding.terminate(timeout.duration).map(_ => Done)))
-          .flatten
-      }
+    implicit val timeout: Timeout = Timeout(10.seconds)
 
-      val processOutput = new ProcessOutput
-      val actor         = new AgentActor(locationService, processOutput)
-      val agentRef: ActorRef[AgentCommand] =
-        Await.result(actorSystem ? (Spawn(actor.behavior, "agent-actor", Props.empty, _)), timeout.duration)
+    //fixme: fix the hardcoded AgentName
+    val agentConnection = AkkaConnection(ComponentId(Prefix(Subsystem.ESW, "Agent"), ComponentType.Machine))
+    Await.result(locationService.register(AkkaRegistration(agentConnection, agentRef.toURI)), timeout.duration)
 
-      Await.result(locationService.register(AkkaRegistration(agentConnection, agentRef.toURI)), timeout.duration)
-
-      // Test messages
-      val response: Future[Response]  = agentRef ? SpawnSequenceComponent(Prefix(Subsystem.ESW, "primary"))
-      val response2: Future[Response] = agentRef ? SpawnSequenceComponent(Prefix(Subsystem.ESW, "secondary"))
-      println("primary Response=" + Await.result(response, 10.seconds))
-      println("secondary Response=" + Await.result(response2, 10.seconds))
+    // Test messages
+    val response: Future[Response]  = agentRef ? SpawnSequenceComponent(Prefix(Subsystem.ESW, "primary"))
+    val response2: Future[Response] = agentRef ? SpawnSequenceComponent(Prefix(Subsystem.ESW, "secondary"))
+    println("primary Response=" + Await.result(response, 10.seconds))
+    println("secondary Response=" + Await.result(response2, 10.seconds))
 //      val killedResponse: Future[Response] = agentRef ? KillAllProcesses
 //      println("Killed All processes:" + Await.result(killedResponse, 10.seconds))
-    }
+  }
 }
