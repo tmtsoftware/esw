@@ -26,31 +26,33 @@ class AgentActor(locationService: LocationService, processOutput: ProcessOutput)
   def behavior(state: AgentState): Behavior[AgentCommand] = Behaviors.receive { (ctx, command) =>
     command match {
       case command @ SpawnSequenceComponent(replyTo, prefix) =>
-        debug(s"spawning sequence component for prefix: $prefix")
+        debug(s"spawning sequence component", map = Map("prefix" -> prefix))
         runCommand(command, processOutput) match {
           case Left(err) =>
-            error(s"could not run command $command")
             replyTo ! err
-            Behaviors.same
           case Right(pid) =>
             val akkaLocF =
               locationService.resolve(AkkaConnection(ComponentId(prefix, ComponentType.SequenceComponent)), 5.seconds)
-            behavior(state.withNewProcess(pid))
             ctx.pipeToSelf(akkaLocF) {
               case Failure(_)       => ProcessRegistrationFailed(pid, replyTo)
               case Success(None)    => ProcessRegistrationFailed(pid, replyTo)
               case Success(Some(_)) => ProcessRegistered(pid, replyTo)
             }
-            Behaviors.same
+
         }
+        Behaviors.same
 
       case ProcessRegistered(pid, replyTo) =>
-        debug("spawned process is registered with location service")
+        debug("spawned process is registered with location service", Map("pid" -> pid))
         replyTo ! Spawned
         behavior(state.finishRegistration(pid))
 
       case ProcessRegistrationFailed(pid, replyTo) =>
-        error("could not get registration confirmation from spawned process within given time. killing the process")
+        error(
+          "could not get registration confirmation from spawned process within given time. " +
+            "killing the process",
+          Map("pid" -> pid)
+        )
         replyTo ! Failed("could not get registration confirmation from spawned process within given time")
         killProcess(pid)
         behavior(state.failRegistration(pid))
@@ -71,16 +73,18 @@ class AgentActor(locationService: LocationService, processOutput: ProcessOutput)
       .getOrElse(false)
   }
 
-  private def runCommand(agentCommand: SpawnCommand, output: ProcessOutput): Either[Failed, Long] = {
+  private def runCommand(spawnCommand: SpawnCommand, output: ProcessOutput): Either[Failed, Long] = {
     Try {
-      val processBuilder = new ProcessBuilder(agentCommand.strings: _*)
-      debug(s"starting command - ${processBuilder.command()}")
+      val processBuilder = new ProcessBuilder(spawnCommand.strings: _*)
+      debug(s"starting command", Map("command" -> processBuilder.command()))
       val process = processBuilder.start()
-      output.attachProcess(process, agentCommand.prefix)
-      debug(s"process id ${process.pid()} spawned")
+      output.attachProcess(process, spawnCommand.prefix)
+      debug(s"new process spawned", Map("pid" -> process.pid()))
       process.pid()
     }.toEither.left.map {
-      case NonFatal(err) => Failed(err.getStackTrace.mkString("\n"))
+      case NonFatal(err) =>
+        error("command failed to run", map = Map("command" -> spawnCommand), ex = err)
+        Failed(err.getMessage)
     }
   }
 }
