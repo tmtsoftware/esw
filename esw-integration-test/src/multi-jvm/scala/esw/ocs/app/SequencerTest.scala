@@ -7,7 +7,7 @@ import csw.location.helpers.{LSNodeSpec, TwoMembersAndSeed}
 import csw.location.models.ComponentType.SequenceComponent
 import csw.location.models.Connection.{AkkaConnection, HttpConnection}
 import csw.location.models.{AkkaLocation, ComponentId, ComponentType}
-import csw.location.impl.http.MultiNodeHTTPLocationService
+import csw.location.server.http.MultiNodeHTTPLocationService
 import csw.params.commands.CommandResponse.Started
 import csw.params.commands.{CommandName, Sequence, Setup}
 import csw.params.events.{Event, EventKey, SystemEvent}
