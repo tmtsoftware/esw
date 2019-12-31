@@ -53,8 +53,6 @@ object Main extends CommandApp[AgentCliCommand] {
 
       Await.result(wiring.locationService.register(AkkaRegistration(agentConnection, wiring.agentRef.toURI)), timeout.duration)
 
-      wiring.actorRuntime.coordinatedShutdown.addJvmShutdownHook()
-
       // Test messages
       val response: Future[Response]  = wiring.agentRef ? SpawnSequenceComponent(Prefix(Subsystem.ESW, "primary"))
       val response2: Future[Response] = wiring.agentRef ? SpawnSequenceComponent(Prefix(Subsystem.ESW, "secondary"))
