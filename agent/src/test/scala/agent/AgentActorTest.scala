@@ -6,6 +6,7 @@ import agent.AgentActor.AgentState
 import agent.AgentCommand.SpawnCommand
 import agent.AgentCommand.SpawnCommand.SpawnSequenceComponent
 import agent.Response.{Failed, Spawned}
+import agent.utils.ProcessExecutor
 import akka.actor.testkit.typed.scaladsl.{ScalaTestWithActorTestKit, TestProbe}
 import akka.actor.typed.Scheduler
 import csw.location.api.exceptions.OtherLocationIsRegistered

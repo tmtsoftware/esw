@@ -1,17 +1,17 @@
 package agent
 
 import agent.AgentActor.AgentState
-import agent.utils.{ActorRuntime, ProcessOutput}
+import agent.utils.{ActorRuntime, ProcessExecutor, ProcessOutput}
 import akka.actor.typed.SpawnProtocol.Spawn
-import akka.actor.typed.{ActorRef, ActorSystem, Props, Scheduler, SpawnProtocol}
+import akka.actor.typed.scaladsl.AskPattern.Askable
+import akka.actor.typed._
+import akka.util.Timeout
 import csw.location.api.scaladsl.LocationService
 import csw.location.client.ActorSystemFactory
 import csw.location.client.scaladsl.HttpLocationServiceFactory
-import akka.actor.typed.scaladsl.AskPattern.Askable
-import akka.util.Timeout
 
-import scala.concurrent.duration.DurationLong
 import scala.concurrent.Await
+import scala.concurrent.duration.DurationLong
 
 class AgentWiring {
   implicit val timeout: Timeout = Timeout(10.seconds)

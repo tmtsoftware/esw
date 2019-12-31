@@ -16,14 +16,14 @@ class ProcessOutputTest extends WordSpecLike with Matchers with Eventually {
     override def writeErr(value: String): Unit = data = data.appended((value, true))
   }
 
-  "attachProcess" must {
+  "attachToProcess" must {
     "attach the output of given process with output of current process | ESW-237" in {
       implicit val actorSystem: ActorSystem[_] = ActorSystem(Behaviors.empty, "test-system")
       val fakeConsoleWriter                    = new FakeConsoleWriter()
       val processOutput                        = new ProcessOutput(fakeConsoleWriter)
       val processName                          = "testprocess"
       val process                              = runCommand
-      processOutput.attachProcess(process, processName)
+      processOutput.attachToProcess(process, processName)
 
       implicit val patienceConfig: PatienceConfig = PatienceConfig(Span(3, Seconds), Span(500, Millis))
 

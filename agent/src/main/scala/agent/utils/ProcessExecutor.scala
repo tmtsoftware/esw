@@ -1,8 +1,8 @@
-package agent
+package agent.utils
 
 import agent.AgentCommand.SpawnCommand
+import agent.AgentLogger
 import agent.Response.Failed
-import agent.utils.ProcessOutput
 
 import scala.util.Try
 import scala.util.control.NonFatal
@@ -16,7 +16,7 @@ class ProcessExecutor(output: ProcessOutput) {
       val processBuilder = new ProcessBuilder(spawnCommand.strings: _*)
       debug(s"starting command", Map("command" -> processBuilder.command()))
       val process = processBuilder.start()
-      output.attachProcess(process, spawnCommand.prefix.value)
+      output.attachToProcess(process, spawnCommand.prefix.value)
       debug(s"new process spawned", Map("pid" -> process.pid()))
       process.pid()
     }.toEither.left.map {

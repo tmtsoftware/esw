@@ -4,6 +4,7 @@ import agent.AgentActor.AgentState
 import agent.AgentCommand.SpawnCommand.SpawnSequenceComponent
 import agent.AgentCommand.{KillAllProcesses, ProcessRegistered, ProcessRegistrationFailed}
 import agent.Response.{Failed, Spawned}
+import agent.utils.ProcessExecutor
 import akka.actor.typed.Behavior
 import akka.actor.typed.scaladsl.Behaviors
 import csw.location.api.scaladsl.LocationService

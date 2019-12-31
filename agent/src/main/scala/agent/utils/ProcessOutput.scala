@@ -68,7 +68,7 @@ class ProcessOutput(writer: ConsoleWriter = new ConsoleWriter())(implicit actorS
    * @param process process of which output needs to be attached
    * @param processName This is required to distinguish the output on console
    */
-  def attachProcess(process: Process, processName: String): Unit =
+  def attachToProcess(process: Process, processName: String): Unit =
     createSource(process, processName).runForeach(channelActor ! _)
 }
 
