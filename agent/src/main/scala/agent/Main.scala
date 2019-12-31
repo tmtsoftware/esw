@@ -2,7 +2,7 @@ package agent
 
 import agent.AgentCliCommand.StartCommand
 import agent.AgentCommand.SpawnCommand.SpawnSequenceComponent
-import akka.actor.CoordinatedShutdown.{ActorSystemTerminateReason, UnknownReason}
+import akka.actor.CoordinatedShutdown.UnknownReason
 import akka.actor.typed.scaladsl.AskPattern.Askable
 import akka.util.Timeout
 import caseapp.core.RemainingArgs

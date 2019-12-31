@@ -8,7 +8,6 @@ import akka.stream.scaladsl.{Framing, Source, StreamConverters}
 import akka.stream.typed.scaladsl.ActorSource
 import akka.stream.{IOResult, OverflowStrategy}
 import akka.util.ByteString
-import csw.prefix.models.Prefix
 
 import scala.concurrent.Future
 import scala.util.Failure
