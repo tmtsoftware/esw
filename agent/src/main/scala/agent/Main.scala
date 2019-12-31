@@ -33,27 +33,37 @@ object Main extends CommandApp[AgentCliCommand] {
   private def onStart(machineName: String): Unit = {
     val wiring      = new AgentWiring
     val log: Logger = AgentLogger.getLogger
+    val agentConnection = AkkaConnection(
+      ComponentId(Prefix(Subsystem.ESW, "Agent"), ComponentType.Machine)
+    )
 
     try {
+      wiring.actorRuntime.coordinatedShutdown.addJvmShutdownHook(() => {
+        log.warn("agent is shutting down. attempting to unregister agent")
+        Await.result(wiring.locationService.unregister(agentConnection), 2.seconds)
+        log.info("agent unregistered due to coordinatedShutdown")
+      })
+
       import wiring.scheduler
       wiring.actorRuntime.startLogging(progName, appVersion)
 
       implicit val timeout: Timeout = Timeout(10.seconds)
 
       //fixme: fix the hardcoded AgentName
-      val agentConnection = AkkaConnection(ComponentId(Prefix(Subsystem.ESW, "Agent"), ComponentType.Machine))
+
       Await.result(wiring.locationService.register(AkkaRegistration(agentConnection, wiring.agentRef.toURI)), timeout.duration)
+
+      wiring.actorRuntime.coordinatedShutdown.addJvmShutdownHook()
 
       // Test messages
       val response: Future[Response]  = wiring.agentRef ? SpawnSequenceComponent(Prefix(Subsystem.ESW, "primary"))
       val response2: Future[Response] = wiring.agentRef ? SpawnSequenceComponent(Prefix(Subsystem.ESW, "secondary"))
-      println("primary Response=" + Await.result(response, 10.seconds))
-      println("secondary Response=" + Await.result(response2, 10.seconds))
+      log.info("primary Response=" + Await.result(response, 10.seconds))
+      log.info("secondary Response=" + Await.result(response2, 10.seconds))
     }
     catch {
       case NonFatal(ex) =>
         log.error("agent-app crashed", Map("machine-name" -> machineName), ex)
-        ex.printStackTrace()
         //shutdown is required so that actor system shuts down gracefully and jvm process can exit
         wiring.actorRuntime.shutdown(UnknownReason)
         exit(1)
