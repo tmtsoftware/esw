@@ -18,7 +18,7 @@ import scala.util.control.NonFatal
 import scala.util.{Failure, Success, Try}
 
 //todo: test - spawned processes should run in background even if agent process dies
-class AgentActor(locationService: LocationService, processOutput: ProcessOutput) {
+class AgentActor(locationService: LocationService, processOutput: ProcessOutput, processExecutor: ProcessExecutor) {
 
   private val log = AgentLogger.getLogger
   import log._
@@ -27,7 +27,7 @@ class AgentActor(locationService: LocationService, processOutput: ProcessOutput)
     command match {
       case command @ SpawnSequenceComponent(replyTo, prefix) =>
         debug(s"spawning sequence component", map = Map("prefix" -> prefix))
-        runCommand(command, processOutput) match {
+        processExecutor.runCommand(command, processOutput) match {
           case Left(err) => replyTo ! err
           case Right(pid) =>
             val akkaLocF = locationService.resolve(AkkaConnection(ComponentId(prefix, SequenceComponent)), 5.seconds)
@@ -47,8 +47,7 @@ class AgentActor(locationService: LocationService, processOutput: ProcessOutput)
 
       case ProcessRegistrationFailed(pid, replyTo) =>
         error(
-          "could not get registration confirmation from spawned process within given time. " +
-            "killing the process",
+          "could not get registration confirmation from spawned process within given time. killing the process",
           Map("pid" -> pid)
         )
         replyTo ! Failed("could not get registration confirmation from spawned process within given time")
@@ -57,34 +56,17 @@ class AgentActor(locationService: LocationService, processOutput: ProcessOutput)
 
       case KillAllProcesses =>
         debug("killing all processes")
-        (state.registeredProcesses ++ state.registeringProcesses)
-          .foreach(killProcess)
+        (state.registeredProcesses ++ state.registeringProcesses).foreach(killProcess)
         behavior(AgentState.empty)
     }
   }
 
-  private def killProcess(pid: Long): Boolean = {
+  private def killProcess(pid: Long): Boolean =
     ProcessHandle
       .of(pid)
       .map(p => p.destroyForcibly())
       .asScala
       .getOrElse(false)
-  }
-
-  private def runCommand(spawnCommand: SpawnCommand, output: ProcessOutput): Either[Failed, Long] = {
-    Try {
-      val processBuilder = new ProcessBuilder(spawnCommand.strings: _*)
-      debug(s"starting command", Map("command" -> processBuilder.command()))
-      val process = processBuilder.start()
-      output.attachProcess(process, spawnCommand.prefix.value)
-      debug(s"new process spawned", Map("pid" -> process.pid()))
-      process.pid()
-    }.toEither.left.map {
-      case NonFatal(err) =>
-        error("command failed to run", map = Map("command" -> spawnCommand), ex = err)
-        Failed(err.getMessage)
-    }
-  }
 }
 
 object AgentActor {
@@ -101,4 +83,23 @@ object AgentActor {
   object AgentState {
     val empty: AgentState = AgentState(Set.empty, Set.empty)
   }
+}
+
+class ProcessExecutor {
+  private val log = AgentLogger.getLogger
+  import log._
+
+  def runCommand(spawnCommand: SpawnCommand, output: ProcessOutput): Either[Failed, Long] =
+    Try {
+      val processBuilder = new ProcessBuilder(spawnCommand.strings: _*)
+      debug(s"starting command", Map("command" -> processBuilder.command()))
+      val process = processBuilder.start()
+      output.attachProcess(process, spawnCommand.prefix.value)
+      debug(s"new process spawned", Map("pid" -> process.pid()))
+      process.pid()
+    }.toEither.left.map {
+      case NonFatal(err) =>
+        error("command failed to run", map = Map("command" -> spawnCommand), ex = err)
+        Failed(err.getMessage)
+    }
 }

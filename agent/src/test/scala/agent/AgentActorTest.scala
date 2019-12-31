@@ -3,6 +3,7 @@ package agent
 import java.net.URI
 
 import agent.AgentActor.AgentState
+import agent.AgentCommand.SpawnCommand
 import agent.AgentCommand.SpawnCommand.SpawnSequenceComponent
 import agent.Response.{Failed, Spawned}
 import agent.utils.ProcessOutput
@@ -27,11 +28,12 @@ class AgentActorTest extends ScalaTestWithActorTestKit with WordSpecLike with Mo
 
   private val locationService       = mock[LocationService]
   private val processOutput         = mock[ProcessOutput]
+  private val processExecutor       = mock[ProcessExecutor]
   implicit val scheduler: Scheduler = system.scheduler
 
   "SpawnSequenceComponent" must {
     "spawn a new sequence component" in {
-      val agentActorRef = spawn(new AgentActor(locationService, processOutput).behavior(AgentState.empty))
+      val agentActorRef = spawn(new AgentActor(locationService, processOutput, processExecutor).behavior(AgentState.empty))
       val prefix        = Prefix("tcs.tcs_darknight")
       val seqCompConn   = AkkaConnection(ComponentId(prefix, SequenceComponent))
       val seqCompLoc    = AkkaLocation(seqCompConn, new URI("some"))
@@ -39,13 +41,14 @@ class AgentActorTest extends ScalaTestWithActorTestKit with WordSpecLike with Mo
 
       when(locationService.resolve(argEq(seqCompConn), any[FiniteDuration])).thenReturn(Future.successful(Some(seqCompLoc)))
       doNothing().when(processOutput).attachProcess(any[Process], any[String])
+      when(processExecutor.runCommand(any[SpawnCommand], argEq(processOutput))).thenReturn(Right(1234))
 
       agentActorRef ! SpawnSequenceComponent(probe.ref, prefix)
       probe.expectMessage(Spawned)
     }
 
     "not spawn a component if it fails to register the component" in {
-      val agentActorRef = spawn(new AgentActor(locationService, processOutput).behavior(AgentState.empty))
+      val agentActorRef = spawn(new AgentActor(locationService, processOutput, processExecutor).behavior(AgentState.empty))
       val prefix        = Prefix("tcs.tcs_darknight")
       val seqCompConn   = AkkaConnection(ComponentId(prefix, SequenceComponent))
       val probe         = TestProbe[Response]()
@@ -53,6 +56,7 @@ class AgentActorTest extends ScalaTestWithActorTestKit with WordSpecLike with Mo
 
       when(locationService.resolve(argEq(seqCompConn), any[FiniteDuration])).thenReturn(locationF)
       doNothing().when(processOutput).attachProcess(any[Process], any[String])
+      when(processExecutor.runCommand(any[SpawnCommand], argEq(processOutput))).thenReturn(Right(1234))
 
       agentActorRef ! SpawnSequenceComponent(probe.ref, prefix)
       probe.expectMessageType[Failed]

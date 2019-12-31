@@ -21,7 +21,8 @@ class AgentWiring {
   implicit lazy val scheduler: Scheduler                            = actorSystem.scheduler
   lazy val locationService: LocationService                         = HttpLocationServiceFactory.makeLocalClient
   lazy val processOutput                                            = new ProcessOutput
-  lazy val actor                                                    = new AgentActor(locationService, processOutput)
+  lazy val processExecutor                                          = new ProcessExecutor
+  lazy val agentActor                                               = new AgentActor(locationService, processOutput, processExecutor)
   lazy val agentRef: ActorRef[AgentCommand] =
-    Await.result(actorSystem ? (Spawn(actor.behavior(AgentState.empty), "agent-actor", Props.empty, _)), timeout.duration)
+    Await.result(actorSystem ? (Spawn(agentActor.behavior(AgentState.empty), "agent-actor", Props.empty, _)), timeout.duration)
 }
