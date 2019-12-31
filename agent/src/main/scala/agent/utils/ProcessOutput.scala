@@ -2,7 +2,7 @@ package agent.utils
 
 import java.io.InputStream
 
-import agent.utils.ProcessOutput.{ConsoleWriter, ProcessTextLine, Writer}
+import agent.utils.ProcessOutput.{ConsoleWriter, ProcessTextLine}
 import akka.actor.typed.ActorSystem
 import akka.stream.scaladsl.{Framing, Source, StreamConverters}
 import akka.stream.typed.scaladsl.ActorSource
@@ -18,7 +18,7 @@ import scala.util.Failure
  * processes outputs at runtime; all printing to to console concurrently. To ensure better
  * readability of console, it writes one line at a time atomically.
  */
-class ProcessOutput(writer: Writer = ConsoleWriter)(implicit actorSystem: ActorSystem[_]) {
+class ProcessOutput(writer: ConsoleWriter = new ConsoleWriter())(implicit actorSystem: ActorSystem[_]) {
   import actorSystem.executionContext
 
   //since this is lazy, the stream is only run
@@ -33,7 +33,12 @@ class ProcessOutput(writer: Writer = ConsoleWriter)(implicit actorSystem: ActorS
       )
       .preMaterialize()
     source
-      .runForeach(writer.write)
+      .runForeach {
+        case ProcessTextLine(text, processName, false) =>
+          writer.write(s"[$processName] $text")
+        case ProcessTextLine(text, processName, true) =>
+          writer.writeErr(s"[$processName] $text")
+      }
       .onComplete {
         case Failure(exception) => exception.printStackTrace()
         case _                  => //this stream has a hot source and will not finish
@@ -69,15 +74,9 @@ class ProcessOutput(writer: Writer = ConsoleWriter)(implicit actorSystem: ActorS
 
 object ProcessOutput {
 
-  private[agent] trait Writer {
-    def write(processTextLine: ProcessTextLine): Unit
-  }
-
-  private[agent] object ConsoleWriter extends Writer {
-    def write(processTextLine: ProcessTextLine): Unit = {
-      val pFunction: (Any => Unit) = if (processTextLine.err) Console.err.println else println
-      pFunction(s"[${processTextLine.processName}] ${processTextLine.text}")
-    }
+  private[agent] class ConsoleWriter {
+    def write(value: String): Unit    = println(value)
+    def writeErr(value: String): Unit = Console.err.println(value)
   }
 
   private[agent] case class ProcessTextLine(
