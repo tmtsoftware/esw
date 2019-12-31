@@ -78,7 +78,7 @@ class AgentActor(locationService: LocationService, processOutput: ProcessOutput)
       val processBuilder = new ProcessBuilder(spawnCommand.strings: _*)
       debug(s"starting command", Map("command" -> processBuilder.command()))
       val process = processBuilder.start()
-      output.attachProcess(process, spawnCommand.prefix)
+      output.attachProcess(process, spawnCommand.prefix.value)
       debug(s"new process spawned", Map("pid" -> process.pid()))
       process.pid()
     }.toEither.left.map {

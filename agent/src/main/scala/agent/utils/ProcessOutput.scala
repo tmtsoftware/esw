@@ -2,7 +2,7 @@ package agent.utils
 
 import java.io.InputStream
 
-import agent.utils.ProcessOutput.ProcessTextLine
+import agent.utils.ProcessOutput.{ConsoleWriter, ProcessTextLine, Writer}
 import akka.actor.typed.ActorSystem
 import akka.stream.scaladsl.{Framing, Source, StreamConverters}
 import akka.stream.typed.scaladsl.ActorSource
@@ -19,7 +19,7 @@ import scala.util.Failure
  * processes outputs at runtime; all printing to to console concurrently. To ensure better
  * readability of console, it writes one line at a time atomically.
  */
-class ProcessOutput(implicit actorSystem: ActorSystem[_]) {
+class ProcessOutput(writer: Writer = ConsoleWriter)(implicit actorSystem: ActorSystem[_]) {
   import actorSystem.executionContext
 
   //since this is lazy, the stream is only run
@@ -34,7 +34,7 @@ class ProcessOutput(implicit actorSystem: ActorSystem[_]) {
       )
       .preMaterialize()
     source
-      .runForeach(_.print())
+      .runForeach(writer.write)
       .onComplete {
         case Failure(exception) => exception.printStackTrace()
         case _                  => //this stream has a hot source and will not finish
@@ -45,35 +45,45 @@ class ProcessOutput(implicit actorSystem: ActorSystem[_]) {
   private def convertToSource(
       inputStream: () => InputStream,
       err: Boolean,
-      prefix: Prefix
+      processName: String
   ): Source[ProcessTextLine, Future[IOResult]] =
     StreamConverters
       .fromInputStream(inputStream)
       .via(Framing.delimiter(ByteString("\n"), 1024, allowTruncation = true))
       .map(_.utf8String)
-      .map(ProcessTextLine(_, prefix, err))
+      .map(ProcessTextLine(_, processName, err))
 
-  private def createSource(process: Process, prefix: Prefix): Source[ProcessTextLine, Future[IOResult]] = {
-    val outSource = convertToSource(process.getInputStream _, err = false, prefix)
-    val errSource = convertToSource(process.getErrorStream _, err = true, prefix)
+  private def createSource(process: Process, processName: String): Source[ProcessTextLine, Future[IOResult]] = {
+    val outSource = convertToSource(process.getInputStream _, err = false, processName)
+    val errSource = convertToSource(process.getErrorStream _, err = true, processName)
     outSource merge errSource
   }
 
   /**
    * Attach stdout and stderr of given process to current process.
    * @param process process of which output needs to be attached
-   * @param prefix prefix of the component. This is required to distinguish the output on console
+   * @param processName This is required to distinguish the output on console
    */
-  def attachProcess(process: Process, prefix: Prefix): Unit = {
-    createSource(process, prefix).runForeach(channelActor ! _)
-  }
+  def attachProcess(process: Process, processName: String): Unit =
+    createSource(process, processName).runForeach(channelActor ! _)
 }
 
 object ProcessOutput {
-  private case class ProcessTextLine(text: String, prefix: Prefix, err: Boolean = false) {
-    def print(): Unit = {
-      val pFunction: (Any => Unit) = if (err) Console.err.println else println
-      pFunction(s"[${prefix.value}] $text")
+
+  private[agent] trait Writer {
+    def write(processTextLine: ProcessTextLine): Unit
+  }
+
+  private[agent] object ConsoleWriter extends Writer {
+    def write(processTextLine: ProcessTextLine): Unit = {
+      val pFunction: (Any => Unit) = if (processTextLine.err) Console.err.println else println
+      pFunction(s"[${processTextLine.processName}] ${processTextLine.text}")
     }
   }
+
+  private[agent] case class ProcessTextLine(
+      text: String,
+      processName: String,
+      err: Boolean = false
+  )
 }
