@@ -39,8 +39,7 @@ class ProcessOutputTest extends WordSpecLike with Matchers with Eventually {
 
   private def runCommand: Process = {
     val filePath = getClass.getResource("/test-executable.sh").getPath
-    println(filePath)
-    val args = List(filePath)
+    val args     = List(filePath)
     val processBuilder = new ProcessBuilder(args: _*)
       .redirectInput(ProcessBuilder.Redirect.INHERIT)
 

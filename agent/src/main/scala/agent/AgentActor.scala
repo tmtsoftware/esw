@@ -2,9 +2,8 @@ package agent
 
 import agent.AgentActor.AgentState
 import agent.AgentCommand.SpawnCommand.SpawnSequenceComponent
-import agent.AgentCommand.{KillAllProcesses, ProcessRegistered, ProcessRegistrationFailed, SpawnCommand}
+import agent.AgentCommand.{KillAllProcesses, ProcessRegistered, ProcessRegistrationFailed}
 import agent.Response.{Failed, Spawned}
-import agent.utils.ProcessOutput
 import akka.actor.typed.Behavior
 import akka.actor.typed.scaladsl.Behaviors
 import csw.location.api.scaladsl.LocationService
@@ -14,11 +13,10 @@ import csw.location.models.Connection.AkkaConnection
 
 import scala.compat.java8.OptionConverters.RichOptionalGeneric
 import scala.concurrent.duration.DurationInt
-import scala.util.control.NonFatal
-import scala.util.{Failure, Success, Try}
+import scala.util.{Failure, Success}
 
 //todo: test - spawned processes should run in background even if agent process dies
-class AgentActor(locationService: LocationService, processOutput: ProcessOutput, processExecutor: ProcessExecutor) {
+class AgentActor(locationService: LocationService, processExecutor: ProcessExecutor) {
 
   private val log = AgentLogger.getLogger
   import log._
@@ -27,7 +25,7 @@ class AgentActor(locationService: LocationService, processOutput: ProcessOutput,
     command match {
       case command @ SpawnSequenceComponent(replyTo, prefix) =>
         debug(s"spawning sequence component", map = Map("prefix" -> prefix))
-        processExecutor.runCommand(command, processOutput) match {
+        processExecutor.runCommand(command) match {
           case Left(err) => replyTo ! err
           case Right(pid) =>
             val akkaLocF = locationService.resolve(AkkaConnection(ComponentId(prefix, SequenceComponent)), 5.seconds)
@@ -83,23 +81,4 @@ object AgentActor {
   object AgentState {
     val empty: AgentState = AgentState(Set.empty, Set.empty)
   }
-}
-
-class ProcessExecutor {
-  private val log = AgentLogger.getLogger
-  import log._
-
-  def runCommand(spawnCommand: SpawnCommand, output: ProcessOutput): Either[Failed, Long] =
-    Try {
-      val processBuilder = new ProcessBuilder(spawnCommand.strings: _*)
-      debug(s"starting command", Map("command" -> processBuilder.command()))
-      val process = processBuilder.start()
-      output.attachProcess(process, spawnCommand.prefix.value)
-      debug(s"new process spawned", Map("pid" -> process.pid()))
-      process.pid()
-    }.toEither.left.map {
-      case NonFatal(err) =>
-        error("command failed to run", map = Map("command" -> spawnCommand), ex = err)
-        Failed(err.getMessage)
-    }
 }
