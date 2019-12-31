@@ -4,10 +4,11 @@ import java.net.URI
 
 import agent.AgentActor.AgentState
 import agent.AgentCommand.SpawnCommand.SpawnSequenceComponent
-import agent.Response.Spawned
+import agent.Response.{Failed, Spawned}
 import agent.utils.ProcessOutput
 import akka.actor.testkit.typed.scaladsl.{ScalaTestWithActorTestKit, TestProbe}
 import akka.actor.typed.Scheduler
+import csw.location.api.exceptions.OtherLocationIsRegistered
 import csw.location.api.scaladsl.LocationService
 import csw.location.models.ComponentType.SequenceComponent
 import csw.location.models.Connection.AkkaConnection
@@ -41,6 +42,20 @@ class AgentActorTest extends ScalaTestWithActorTestKit with WordSpecLike with Mo
 
       agentActorRef ! SpawnSequenceComponent(probe.ref, prefix)
       probe.expectMessage(Spawned)
+    }
+
+    "not spawn a component if it fails to register the component" in {
+      val agentActorRef = spawn(new AgentActor(locationService, processOutput).behavior(AgentState.empty))
+      val prefix        = Prefix("tcs.tcs_darknight")
+      val seqCompConn   = AkkaConnection(ComponentId(prefix, SequenceComponent))
+      val probe         = TestProbe[Response]()
+      val locationF     = Future.failed(OtherLocationIsRegistered("error"))
+
+      when(locationService.resolve(argEq(seqCompConn), any[FiniteDuration])).thenReturn(locationF)
+      doNothing().when(processOutput).attachProcess(any[Process], any[String])
+
+      agentActorRef ! SpawnSequenceComponent(probe.ref, prefix)
+      probe.expectMessageType[Failed]
     }
   }
 

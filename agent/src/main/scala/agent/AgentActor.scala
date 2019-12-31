@@ -1,16 +1,16 @@
 package agent
 
 import agent.AgentActor.AgentState
-import agent.AgentCommand.{KillAllProcesses, ProcessRegistered, ProcessRegistrationFailed, SpawnCommand}
 import agent.AgentCommand.SpawnCommand.SpawnSequenceComponent
+import agent.AgentCommand.{KillAllProcesses, ProcessRegistered, ProcessRegistrationFailed, SpawnCommand}
 import agent.Response.{Failed, Spawned}
 import agent.utils.ProcessOutput
 import akka.actor.typed.Behavior
 import akka.actor.typed.scaladsl.Behaviors
 import csw.location.api.scaladsl.LocationService
+import csw.location.models.ComponentId
+import csw.location.models.ComponentType.SequenceComponent
 import csw.location.models.Connection.AkkaConnection
-import csw.location.models.{ComponentId, ComponentType}
-import csw.logging.api.scaladsl.Logger
 
 import scala.compat.java8.OptionConverters.RichOptionalGeneric
 import scala.concurrent.duration.DurationInt
@@ -20,7 +20,7 @@ import scala.util.{Failure, Success, Try}
 //todo: test - spawned processes should run in background even if agent process dies
 class AgentActor(locationService: LocationService, processOutput: ProcessOutput) {
 
-  private val log: Logger = AgentLogger.getLogger
+  private val log = AgentLogger.getLogger
   import log._
 
   def behavior(state: AgentState): Behavior[AgentCommand] = Behaviors.receive { (ctx, command) =>
@@ -28,11 +28,9 @@ class AgentActor(locationService: LocationService, processOutput: ProcessOutput)
       case command @ SpawnSequenceComponent(replyTo, prefix) =>
         debug(s"spawning sequence component", map = Map("prefix" -> prefix))
         runCommand(command, processOutput) match {
-          case Left(err) =>
-            replyTo ! err
+          case Left(err) => replyTo ! err
           case Right(pid) =>
-            val akkaLocF =
-              locationService.resolve(AkkaConnection(ComponentId(prefix, ComponentType.SequenceComponent)), 5.seconds)
+            val akkaLocF = locationService.resolve(AkkaConnection(ComponentId(prefix, SequenceComponent)), 5.seconds)
             ctx.pipeToSelf(akkaLocF) {
               case Failure(_)       => ProcessRegistrationFailed(pid, replyTo)
               case Success(None)    => ProcessRegistrationFailed(pid, replyTo)
