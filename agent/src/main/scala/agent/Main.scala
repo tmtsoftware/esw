@@ -16,7 +16,6 @@ import scala.concurrent.{Await, Future}
 
 // todo: Add support for default actions e.g. redis
 // todo: merge location-agent
-// todo: options: clusterPort, auth, interface, devMode
 // todo: devmode kills all processes before dying
 // todo: try moving this module to csw by merging with location-server
 object Main extends CommandApp[AgentCliCommand] {
@@ -25,11 +24,10 @@ object Main extends CommandApp[AgentCliCommand] {
   override def progName: String   = BuildInfo.name
 
   override def run(command: AgentCliCommand, remainingArgs: RemainingArgs): Unit = command match {
-    case StartCommand(clusterPortMaybe, interface, unsecured, devMode) =>
-      onStart(clusterPortMaybe)
+    case StartCommand(machineName) => onStart()
   }
 
-  private def onStart(clusterPortMaybe: Option[Int]): Unit = {
+  private def onStart(): Unit = {
 
     val wiring = new AgentWiring
     import wiring._
