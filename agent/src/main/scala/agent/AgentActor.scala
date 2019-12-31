@@ -12,9 +12,8 @@ import csw.location.models.ComponentId
 import csw.location.models.ComponentType.SequenceComponent
 import csw.location.models.Connection.AkkaConnection
 
-import scala.compat.java8.OptionConverters.RichOptionalGeneric
 import scala.concurrent.duration.DurationInt
-import scala.util.{Failure, Success}
+import scala.util.Success
 
 //todo: test - spawned processes should run in background even if agent process dies
 class AgentActor(locationService: LocationService, processExecutor: ProcessExecutor) {
@@ -31,9 +30,8 @@ class AgentActor(locationService: LocationService, processExecutor: ProcessExecu
           case Right(pid) =>
             val akkaLocF = locationService.resolve(AkkaConnection(ComponentId(prefix, SequenceComponent)), 5.seconds)
             ctx.pipeToSelf(akkaLocF) {
-              case Failure(_)       => ProcessRegistrationFailed(pid, replyTo)
-              case Success(None)    => ProcessRegistrationFailed(pid, replyTo)
               case Success(Some(_)) => ProcessRegistered(pid, replyTo)
+              case _                => ProcessRegistrationFailed(pid, replyTo)
             }
 
         }
@@ -50,22 +48,15 @@ class AgentActor(locationService: LocationService, processExecutor: ProcessExecu
           Map("pid" -> pid)
         )
         replyTo ! Failed("could not get registration confirmation from spawned process within given time")
-        killProcess(pid)
+        processExecutor.killProcess(pid)
         behavior(state.failRegistration(pid))
 
       case KillAllProcesses =>
         debug("killing all processes")
-        (state.registeredProcesses ++ state.registeringProcesses).foreach(killProcess)
+        (state.registeredProcesses ++ state.registeringProcesses).foreach(processExecutor.killProcess)
         behavior(AgentState.empty)
     }
   }
-
-  private def killProcess(pid: Long): Boolean =
-    ProcessHandle
-      .of(pid)
-      .map(p => p.destroyForcibly())
-      .asScala
-      .getOrElse(false)
 }
 
 object AgentActor {

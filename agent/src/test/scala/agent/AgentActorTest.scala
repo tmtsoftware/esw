@@ -9,7 +9,6 @@ import agent.Response.{Failed, Spawned}
 import agent.utils.ProcessExecutor
 import akka.actor.testkit.typed.scaladsl.{ScalaTestWithActorTestKit, TestProbe}
 import akka.actor.typed.Scheduler
-import csw.location.api.exceptions.OtherLocationIsRegistered
 import csw.location.api.scaladsl.LocationService
 import csw.location.models.ComponentType.SequenceComponent
 import csw.location.models.Connection.AkkaConnection
@@ -30,30 +29,47 @@ class AgentActorTest extends ScalaTestWithActorTestKit with WordSpecLike with Mo
   private val processExecutor       = mock[ProcessExecutor]
   implicit val scheduler: Scheduler = system.scheduler
 
+  private val prefix      = Prefix("tcs.tcs_darknight")
+  private val seqCompConn = AkkaConnection(ComponentId(prefix, SequenceComponent))
+  private val seqCompLoc  = Future.successful(Some(AkkaLocation(seqCompConn, new URI("some"))))
+
+  private def spawnAgentActor() = {
+    spawn(new AgentActor(locationService, processExecutor).behavior(AgentState.empty))
+  }
+
   "SpawnSequenceComponent" must {
+    // common mocks
+    when(processExecutor.killProcess(any[Long])).thenReturn(true)
+
     "spawn a new sequence component" in {
-      val agentActorRef = spawn(new AgentActor(locationService, processExecutor).behavior(AgentState.empty))
-      val prefix        = Prefix("tcs.tcs_darknight")
-      val seqCompConn   = AkkaConnection(ComponentId(prefix, SequenceComponent))
-      val seqCompLoc    = AkkaLocation(seqCompConn, new URI("some"))
+      val agentActorRef = spawnAgentActor()
       val probe         = TestProbe[Response]()
 
-      when(locationService.resolve(argEq(seqCompConn), any[FiniteDuration])).thenReturn(Future.successful(Some(seqCompLoc)))
+      when(locationService.resolve(argEq(seqCompConn), any[FiniteDuration])).thenReturn(seqCompLoc)
       when(processExecutor.runCommand(any[SpawnCommand])).thenReturn(Right(1234))
 
       agentActorRef ! SpawnSequenceComponent(probe.ref, prefix)
       probe.expectMessage(Spawned)
     }
 
-    "not spawn a component if it fails to register the component" in {
-      val agentActorRef = spawn(new AgentActor(locationService, processExecutor).behavior(AgentState.empty))
-      val prefix        = Prefix("tcs.tcs_darknight")
-      val seqCompConn   = AkkaConnection(ComponentId(prefix, SequenceComponent))
-      val probe         = TestProbe[Response]()
-      val locationF     = Future.failed(OtherLocationIsRegistered("error"))
+    "not spawn a component if it fails to register itself to location service" in {
+      val agentActorRef  = spawnAgentActor()
+      val probe          = TestProbe[Response]()
+      val failedLocation = Future.failed(new RuntimeException("error"))
 
-      when(locationService.resolve(argEq(seqCompConn), any[FiniteDuration])).thenReturn(locationF)
+      when(locationService.resolve(argEq(seqCompConn), any[FiniteDuration])).thenReturn(failedLocation)
       when(processExecutor.runCommand(any[SpawnCommand])).thenReturn(Right(1234))
+
+      agentActorRef ! SpawnSequenceComponent(probe.ref, prefix)
+      probe.expectMessageType[Failed]
+    }
+
+    "fail if component could not be spawned" in {
+      val agentActorRef = spawnAgentActor()
+      val probe         = TestProbe[Response]()
+
+      when(locationService.resolve(argEq(seqCompConn), any[FiniteDuration])).thenReturn(seqCompLoc)
+      when(processExecutor.runCommand(any[SpawnCommand])).thenReturn(Left(Failed("failure")))
 
       agentActorRef ! SpawnSequenceComponent(probe.ref, prefix)
       probe.expectMessageType[Failed]

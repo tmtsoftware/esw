@@ -4,6 +4,7 @@ import agent.AgentCommand.SpawnCommand
 import agent.AgentLogger
 import agent.Response.Failed
 
+import scala.compat.java8.OptionConverters.RichOptionalGeneric
 import scala.util.Try
 import scala.util.control.NonFatal
 
@@ -24,4 +25,11 @@ class ProcessExecutor(output: ProcessOutput) {
         error("command failed to run", map = Map("command" -> spawnCommand), ex = err)
         Failed(err.getMessage)
     }
+
+  def killProcess(pid: Long): Boolean =
+    ProcessHandle
+      .of(pid)
+      .map(p => p.destroyForcibly())
+      .asScala
+      .getOrElse(false)
 }
