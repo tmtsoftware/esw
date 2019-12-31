@@ -31,11 +31,9 @@ object Main extends CommandApp[AgentCliCommand] {
   }
 
   private def onStart(machineName: String): Unit = {
-    val wiring      = new AgentWiring
-    val log: Logger = AgentLogger.getLogger
-    val agentConnection = AkkaConnection(
-      ComponentId(Prefix(Subsystem.ESW, "Agent"), ComponentType.Machine)
-    )
+    val wiring          = new AgentWiring
+    val log: Logger     = AgentLogger.getLogger
+    val agentConnection = AkkaConnection(ComponentId(Prefix(Subsystem.ESW, machineName), ComponentType.Machine))
 
     try {
       wiring.actorRuntime.coordinatedShutdown.addJvmShutdownHook(() => {
@@ -46,18 +44,17 @@ object Main extends CommandApp[AgentCliCommand] {
 
       import wiring.scheduler
       wiring.actorRuntime.startLogging(progName, appVersion)
-
       implicit val timeout: Timeout = Timeout(10.seconds)
-
-      //fixme: fix the hardcoded AgentName
 
       Await.result(wiring.locationService.register(AkkaRegistration(agentConnection, wiring.agentRef.toURI)), timeout.duration)
 
       // Test messages
       val response: Future[Response]  = wiring.agentRef ? SpawnSequenceComponent(Prefix(Subsystem.ESW, "primary"))
       val response2: Future[Response] = wiring.agentRef ? SpawnSequenceComponent(Prefix(Subsystem.ESW, "secondary"))
-      log.info("primary Response=" + Await.result(response, 10.seconds))
-      log.info("secondary Response=" + Await.result(response2, 10.seconds))
+
+      // needs larger timeout since response is sent after successfully resolving the new component
+      println("primary Response=" + Await.result(response, 20.seconds))
+      println("secondary Response=" + Await.result(response2, 20.seconds))
     }
     catch {
       case NonFatal(ex) =>
