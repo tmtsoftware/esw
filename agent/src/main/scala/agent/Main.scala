@@ -8,6 +8,7 @@ import akka.util.Timeout
 import caseapp.core.RemainingArgs
 import caseapp.core.app.CommandApp
 import csw.location.api.extensions.ActorExtension.RichActor
+import csw.location.client.utils.LocationServerStatus
 import csw.location.models.Connection.AkkaConnection
 import csw.location.models.{AkkaRegistration, ComponentId, ComponentType}
 import csw.logging.api.scaladsl.Logger
@@ -37,13 +38,16 @@ object Main extends CommandApp[AgentCliCommand] {
 
     try {
       wiring.actorRuntime.coordinatedShutdown.addJvmShutdownHook(() => {
-        log.warn("agent is shutting down. attempting to unregister agent")
+        log.warn("agent is shutting down. unregistering agent")
         Await.result(wiring.locationService.unregister(agentConnection), 2.seconds)
         log.info("agent unregistered due to coordinatedShutdown")
       })
 
       import wiring.scheduler
       wiring.actorRuntime.startLogging(progName, appVersion)
+
+      LocationServerStatus.requireUpLocally(5.seconds)
+
       implicit val timeout: Timeout = Timeout(10.seconds)
 
       Await.result(wiring.locationService.register(AkkaRegistration(agentConnection, wiring.agentRef.toURI)), timeout.duration)

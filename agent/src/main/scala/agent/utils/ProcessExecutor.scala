@@ -1,20 +1,20 @@
 package agent.utils
 
 import agent.AgentCommand.SpawnCommand
-import agent.AgentLogger
+import agent.{AgentLogger, AgentSettings}
 import agent.Response.Failed
 
 import scala.compat.java8.OptionConverters.RichOptionalGeneric
 import scala.util.Try
 import scala.util.control.NonFatal
 
-class ProcessExecutor(output: ProcessOutput) {
+class ProcessExecutor(output: ProcessOutput, agentSettings: AgentSettings) {
   private val log = AgentLogger.getLogger
   import log._
 
   def runCommand(spawnCommand: SpawnCommand): Either[Failed, Long] =
     Try {
-      val processBuilder = new ProcessBuilder(spawnCommand.strings: _*)
+      val processBuilder = new ProcessBuilder(spawnCommand.strings(agentSettings.binariesPath): _*)
       debug(s"starting command", Map("command" -> processBuilder.command()))
       val process = processBuilder.start()
       output.attachToProcess(process, spawnCommand.prefix.value)

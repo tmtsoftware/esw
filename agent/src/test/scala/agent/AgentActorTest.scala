@@ -19,7 +19,7 @@ import org.mockito.Mockito.when
 import org.scalatest.MustMatchers.convertToStringMustWrapper
 import org.scalatest.WordSpecLike
 import org.scalatestplus.mockito.MockitoSugar
-
+import scala.concurrent.duration.DurationLong
 import scala.concurrent.Future
 import scala.concurrent.duration.FiniteDuration
 
@@ -27,6 +27,7 @@ class AgentActorTest extends ScalaTestWithActorTestKit with WordSpecLike with Mo
 
   private val locationService       = mock[LocationService]
   private val processExecutor       = mock[ProcessExecutor]
+  private val agentSettings         = AgentSettings("/tmp", 15.seconds)
   implicit val scheduler: Scheduler = system.scheduler
 
   private val prefix      = Prefix("tcs.tcs_darknight")
@@ -34,7 +35,7 @@ class AgentActorTest extends ScalaTestWithActorTestKit with WordSpecLike with Mo
   private val seqCompLoc  = Future.successful(Some(AkkaLocation(seqCompConn, new URI("some"))))
 
   private def spawnAgentActor() = {
-    spawn(new AgentActor(locationService, processExecutor).behavior(AgentState.empty))
+    spawn(new AgentActor(locationService, processExecutor, agentSettings).behavior(AgentState.empty))
   }
 
   "SpawnSequenceComponent" must {

@@ -12,11 +12,10 @@ import csw.location.models.ComponentId
 import csw.location.models.ComponentType.SequenceComponent
 import csw.location.models.Connection.AkkaConnection
 
-import scala.concurrent.duration.DurationInt
 import scala.util.Success
 
 //todo: test - spawned processes should run in background even if agent process dies
-class AgentActor(locationService: LocationService, processExecutor: ProcessExecutor) {
+class AgentActor(locationService: LocationService, processExecutor: ProcessExecutor, agentSettings: AgentSettings) {
 
   private val log = AgentLogger.getLogger
   import log._
@@ -28,7 +27,10 @@ class AgentActor(locationService: LocationService, processExecutor: ProcessExecu
         processExecutor.runCommand(command) match {
           case Left(err) => replyTo ! err
           case Right(pid) =>
-            val akkaLocF = locationService.resolve(AkkaConnection(ComponentId(prefix, SequenceComponent)), 5.seconds)
+            val akkaLocF = locationService.resolve(
+              AkkaConnection(ComponentId(prefix, SequenceComponent)),
+              agentSettings.durationToWaitForComponentRegistration
+            )
             ctx.pipeToSelf(akkaLocF) {
               case Success(Some(_)) => ProcessRegistered(pid, replyTo)
               case _                => ProcessRegistrationFailed(pid, replyTo)
