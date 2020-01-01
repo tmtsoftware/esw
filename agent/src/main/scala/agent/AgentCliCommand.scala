@@ -7,8 +7,8 @@ sealed trait AgentCliCommand
 object AgentCliCommand {
   @CommandName("start")
   final case class StartCommand(
-      @HelpMessage("name for machine component, ex: ocs1, tcs_primary etc")
-      @Short("n")
-      machineName: String
+      @HelpMessage("prefix of machine. tcs.primary_machine, ocs.machine1 etc")
+      @Short("p")
+      prefix: String
   ) extends AgentCliCommand
 }

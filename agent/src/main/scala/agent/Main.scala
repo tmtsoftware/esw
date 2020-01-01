@@ -11,30 +11,26 @@ import csw.location.api.extensions.ActorExtension.RichActor
 import csw.location.client.utils.LocationServerStatus
 import csw.location.models.Connection.AkkaConnection
 import csw.location.models.{AkkaRegistration, ComponentId, ComponentType}
-import csw.logging.api.scaladsl.Logger
 import csw.prefix.models.{Prefix, Subsystem}
 
 import scala.concurrent.duration.DurationInt
 import scala.concurrent.{Await, Future}
 import scala.util.control.NonFatal
 
-// todo: Add support for default actions e.g. redis
-// todo: merge location-agent
-// todo: devmode kills all processes before dying
-// todo: try moving this module to csw by merging with location-server
+//todo: write integration test
 object Main extends CommandApp[AgentCliCommand] {
   override def appName: String    = getClass.getSimpleName.dropRight(1) // remove $ from class name
   override def appVersion: String = BuildInfo.version
   override def progName: String   = BuildInfo.name
 
   override def run(command: AgentCliCommand, remainingArgs: RemainingArgs): Unit = command match {
-    case StartCommand(machineName) => onStart(machineName)
+    case StartCommand(prefix) => onStart(Prefix(prefix))
   }
 
-  private def onStart(machineName: String): Unit = {
-    val wiring          = new AgentWiring
-    val log: Logger     = AgentLogger.getLogger
-    val agentConnection = AkkaConnection(ComponentId(Prefix(Subsystem.ESW, machineName), ComponentType.Machine))
+  private def onStart(prefix: Prefix): Unit = {
+    val wiring = new AgentWiring(prefix)
+    import wiring.log
+    val agentConnection = AkkaConnection(ComponentId(prefix, ComponentType.Machine))
 
     try {
       wiring.actorRuntime.coordinatedShutdown.addJvmShutdownHook(() => {
@@ -62,7 +58,7 @@ object Main extends CommandApp[AgentCliCommand] {
     }
     catch {
       case NonFatal(ex) =>
-        log.error("agent-app crashed", Map("machine-name" -> machineName), ex)
+        log.error("agent-app crashed", Map("machine-name" -> prefix), ex)
         //shutdown is required so that actor system shuts down gracefully and jvm process can exit
         wiring.actorRuntime.shutdown(UnknownReason)
         exit(1)

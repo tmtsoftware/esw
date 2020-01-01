@@ -1,16 +1,16 @@
 package agent.utils
 
 import agent.AgentCommand.SpawnCommand
-import agent.{AgentLogger, AgentSettings}
+import agent.AgentSettings
 import agent.Response.Failed
+import csw.logging.api.scaladsl.Logger
 
 import scala.compat.java8.OptionConverters.RichOptionalGeneric
 import scala.util.Try
 import scala.util.control.NonFatal
 
-class ProcessExecutor(output: ProcessOutput, agentSettings: AgentSettings) {
-  private val log = AgentLogger.getLogger
-  import log._
+class ProcessExecutor(output: ProcessOutput, agentSettings: AgentSettings, logger: Logger) {
+  import logger._
 
   def runCommand(spawnCommand: SpawnCommand): Either[Failed, Long] =
     Try {

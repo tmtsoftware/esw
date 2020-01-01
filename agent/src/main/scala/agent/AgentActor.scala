@@ -11,14 +11,19 @@ import csw.location.api.scaladsl.LocationService
 import csw.location.models.ComponentId
 import csw.location.models.ComponentType.SequenceComponent
 import csw.location.models.Connection.AkkaConnection
+import csw.logging.api.scaladsl.Logger
 
 import scala.util.Success
 
 //todo: test - spawned processes should run in background even if agent process dies
-class AgentActor(locationService: LocationService, processExecutor: ProcessExecutor, agentSettings: AgentSettings) {
+class AgentActor(
+    locationService: LocationService,
+    processExecutor: ProcessExecutor,
+    agentSettings: AgentSettings,
+    logger: Logger
+) {
 
-  private val log = AgentLogger.getLogger
-  import log._
+  import logger._
 
   def behavior(state: AgentState): Behavior[AgentCommand] = Behaviors.receive { (ctx, command) =>
     command match {
