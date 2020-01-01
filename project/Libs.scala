@@ -4,7 +4,7 @@ import sbt._
 
 object Libs {
   private val SilencerVersion = "1.4.4"
-  private val MSocketVersion  = "d77d089"
+  private val MSocketVersion  = "61d8852"
 
   val `silencer-plugin` = "com.github.ghik" % "silencer-plugin" % SilencerVersion cross CrossVersion.full
   val `silencer-lib`    = "com.github.ghik" % "silencer-lib"    % SilencerVersion cross CrossVersion.full
@@ -23,7 +23,7 @@ object Libs {
 
 object Csw {
   private val Org     = "com.github.tmtsoftware.csw"
-  private val Version = "9fd41bc" //change this to 0.1-SNAPSHOT to test with local csw changes (after publishLocal)
+  private val Version = "6f6dcea" //change this to 0.1-SNAPSHOT to test with local csw changes (after publishLocal)
 
   val `csw-admin-api`                 = dep(Org %%% "csw-admin-api" % Version)
   val `csw-admin-impl`                = Org %% "csw-admin-impl" % Version
@@ -74,11 +74,11 @@ object AkkaHttp {
 }
 
 object Borer {
-  private val Version = "1.2.1"
-  private val Org     = "io.bullet"
+  private val Version = "bdc7423"
+  private val Org     = "com.github.sirthias.borer"
 
-  val `borer-core`        = Org %% "borer-core"        % Version
-  val `borer-derivation`  = Org %% "borer-derivation"  % Version
+  val `borer-core`        = dep(Org %%% "borer-core" % Version)
+  val `borer-derivation`  = dep(Org %%% "borer-derivation" % Version)
   val `borer-compat-akka` = Org %% "borer-compat-akka" % Version
 }
 
