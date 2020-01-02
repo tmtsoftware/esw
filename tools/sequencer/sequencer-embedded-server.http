@@ -1,0 +1,398 @@
+## sequencer embedded http server
+
+// #submit
+POST http://localhost:57236/post-endpoint
+Content-Type: application/json
+
+{
+  "Submit": {
+    "sequence": [
+      {
+        "Setup": {
+          "source": "esw.test",
+          "commandName": "command-2",
+          "maybeObsId": [
+            "obsId"
+          ],
+          "paramSet": []
+        }
+      }
+    ]
+  }
+}
+
+###
+// #submit
+
+// #re-submit
+POST http://localhost:57236/post-endpoint
+Content-Type: application/json
+
+{
+  "Submit": {
+    "sequence": [
+      {
+        "Setup": {
+          "source": "esw.test",
+          "commandName": "command-2",
+          "maybeObsId": [
+            "obsId"
+          ],
+          "paramSet": []
+        }
+      },
+      {
+        "Observe": {
+          "source": "esw.test",
+          "commandName": "command-1",
+          "maybeObsId": [
+            "obsId"
+          ],
+          "paramSet": []
+        }
+      }
+    ]
+  }
+}
+
+###
+// #re-submit
+
+// #malformed-submit
+POST http://localhost:57236/post-endpoint
+Content-Type: application/json
+
+{
+  "Submit": {
+    "sequence": [
+      {
+        "Setup": {
+          "source": "esw.test",
+          "commandName": "command-1",
+          "paramSet": []
+        }
+      }
+    ]
+  }
+}
+
+###
+// #malformed-submit
+
+// #query
+POST http://localhost:57236/post-endpoint
+Content-Type: application/json
+
+{
+  "Query": "6ed2bf72-d7a3-498f-85e4-b3719727d18c"
+}
+
+###
+// #query
+
+// #loadSequence
+POST http://localhost:57236/post-endpoint
+Content-Type: application/json
+
+{
+  "LoadSequence": {
+    "sequence": [
+      {
+        "Setup": {
+          "source": "esw.darknight",
+          "commandName": "command-2",
+          "maybeObsId": [
+            "obsId1"
+          ],
+          "paramSet": []
+        }
+      }
+    ]
+  }
+}
+
+###
+// #loadSequence
+// #startSequence
+POST http://localhost:57236/post-endpoint
+Content-Type: application/json
+
+{
+  "StartSequence": {}
+}
+
+###
+// #startSequence
+// #getSequence
+POST http://localhost:57236/post-endpoint
+Content-Type: application/json
+
+{
+  "GetSequence": {}
+}
+
+###
+// #getSequence
+// #add
+POST http://localhost:57236/post-endpoint
+Content-Type: application/json
+
+{
+  "Add": {
+    "commands": [
+      {
+        "Setup": {
+          "source": "esw.darknight",
+          "commandName": "command-1",
+          "maybeObsId": [
+            "obsId1"
+          ],
+          "paramSet": []
+        }
+      },
+      {
+        "Setup": {
+          "source": "esw.darknight",
+          "commandName": "command-2",
+          "maybeObsId": [
+            "obsId1"
+          ],
+          "paramSet": []
+        }
+      }
+    ]
+  }
+}
+
+###
+// #add
+// #prepend
+POST http://localhost:57236/post-endpoint
+Content-Type: application/json
+
+{
+  "Prepend": {
+    "commands": [
+      {
+        "Setup": {
+          "source": "esw.darknight",
+          "commandName": "command-3",
+          "maybeObsId": [
+            "obsId1"
+          ],
+          "paramSet": []
+        }
+      }
+    ]
+  }
+}
+
+###
+// #prepend
+// #replace
+POST http://localhost:57236/post-endpoint
+Content-Type: application/json
+
+{
+  "Replace": {
+    "id": "0b7a4271-7cea-46e2-b162-37118c1b1499",
+    "commands": [
+      {
+        "Setup": {
+          "source": "esw.darknight",
+          "commandName": "command-2",
+          "maybeObsId": [
+            "obsId1"
+          ],
+          "paramSet": []
+        }
+      }
+    ]
+  }
+}
+
+###
+// #replace
+// #insertAfter
+POST http://localhost:57236/post-endpoint
+Content-Type: application/json
+
+{
+  "InsertAfter": {
+    "id": "3496109d-8b00-4cf7-aa06-31a19702fea1",
+    "commands": [
+      {
+        "Setup": {
+          "source": "esw.darknight",
+          "commandName": "command-4",
+          "maybeObsId": [
+            "obsId1"
+          ],
+          "paramSet": []
+        }
+      }
+    ]
+  }
+}
+
+###
+// #insertAfter
+// #delete
+POST http://localhost:57236/post-endpoint
+Content-Type: application/json
+
+{
+  "Delete": {
+    "id": "dc731e1e-20af-4edd-b5b1-530ead12792e"
+  }
+}
+
+###
+// #delete
+// #addBreakpoint
+POST http://localhost:57236/post-endpoint
+Content-Type: application/json
+
+{
+  "AddBreakpoint": {
+    "id": "88b1b3ad-36ed-4be0-837c-0f93cb3a0e1f"
+  }
+}
+
+###
+// #addBreakpoint
+// #removeBreakpoint
+POST http://localhost:57236/post-endpoint
+Content-Type: application/json
+
+{
+  "RemoveBreakpoint": {
+    "id": "cf8962ae-b877-4413-9e48-f9b168793aa1"
+  }
+}
+
+###
+// #removeBreakpoint
+// #reset
+POST http://localhost:57236/post-endpoint
+Content-Type: application/json
+
+{
+  "Reset": {}
+}
+
+###
+// #reset
+// #pause
+POST http://localhost:57236/post-endpoint
+Content-Type: application/json
+
+{
+  "Pause": {}
+}
+
+###
+// #pause
+// #resume
+POST http://localhost:57236/post-endpoint
+Content-Type: application/json
+
+{
+  "Resume": {}
+}
+
+###
+// #resume
+// #getSequenceComponent
+POST http://localhost:57236/post-endpoint
+Content-Type: application/json
+
+{
+  "GetSequenceComponent": {}
+}
+
+###
+// #getSequenceComponent
+// #isAvailable
+POST http://localhost:57236/post-endpoint
+Content-Type: application/json
+
+{
+  "IsAvailable": {}
+}
+
+###
+// #isAvailable
+// #isOnline
+POST http://localhost:57236/post-endpoint
+Content-Type: application/json
+
+{
+  "IsOnline": {}
+}
+
+###
+// #isOnline
+// #goOnline
+POST http://localhost:57236/post-endpoint
+Content-Type: application/json
+
+{
+  "GoOnline": {}
+}
+
+###
+// #goOnline
+// #goOffline
+POST http://localhost:57236/post-endpoint
+Content-Type: application/json
+
+{
+  "GoOffline": {}
+}
+
+###
+// #goOffline
+// #abortSequence
+POST http://localhost:57236/post-endpoint
+Content-Type: application/json
+
+{
+  "AbortSequence": {}
+}
+
+###
+// #abortSequence
+// #stop
+POST http://localhost:57236/post-endpoint
+Content-Type: application/json
+
+{
+  "Stop": {}
+}
+
+###
+// #stop
+// #diagnosticMode
+POST http://localhost:57236/post-endpoint
+Content-Type: application/json
+
+{
+  "DiagnosticMode": {
+    "startTime": "2020-01-02T09:18:37.370396Z",
+    "hint": "hint1"
+  }
+}
+
+###
+// #diagnosticMode
+// #operationsMode
+POST http://localhost:57236/post-endpoint
+Content-Type: application/json
+
+{
+  "OperationsMode": {}
+}
+
+###
+// #operationsMode
