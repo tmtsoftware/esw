@@ -44,7 +44,7 @@ class AgentActorTest extends ScalaTestWithActorTestKit with WordSpecLike with Mo
     // common mocks
     when(processExecutor.killProcess(any[Long])).thenReturn(true)
 
-    "spawn a new sequence component" in {
+    "spawn a new sequence component | ESW-237" in {
       val agentActorRef = spawnAgentActor()
       val probe         = TestProbe[Response]()
 
@@ -55,7 +55,7 @@ class AgentActorTest extends ScalaTestWithActorTestKit with WordSpecLike with Mo
       probe.expectMessage(Spawned)
     }
 
-    "not spawn a component if it fails to register itself to location service" in {
+    "not spawn a component if it fails to register itself to location service | ESW-237" in {
       val agentActorRef  = spawnAgentActor()
       val probe          = TestProbe[Response]()
       val failedLocation = Future.failed(new RuntimeException("error"))
@@ -67,7 +67,7 @@ class AgentActorTest extends ScalaTestWithActorTestKit with WordSpecLike with Mo
       probe.expectMessageType[Failed]
     }
 
-    "fail if component could not be spawned" in {
+    "fail if component could not be spawned | ESW-237" in {
       val agentActorRef = spawnAgentActor()
       val probe         = TestProbe[Response]()
 

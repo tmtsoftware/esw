@@ -9,7 +9,7 @@ case class AgentSettings(
     durationToWaitForComponentRegistration: FiniteDuration
 ) {
   private val path = Paths.get(_binariesPath)
-  def binariesPath: Path =
+  val binariesPath: Path =
     if (path.isAbsolute) path
     else {
       //path relative to home dir
