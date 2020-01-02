@@ -1,12 +1,13 @@
-package agent
+package agent.app
 
 import java.net.URI
 
-import agent.AgentActor.AgentState
-import agent.AgentCommand.SpawnCommand
-import agent.AgentCommand.SpawnCommand.SpawnSequenceComponent
-import agent.Response.{Failed, Spawned}
-import agent.utils.ProcessExecutor
+import agent.api.AgentCommand.SpawnCommand
+import agent.api.AgentCommand.SpawnCommand.SpawnSequenceComponent
+import agent.api.Response
+import agent.api.Response.{Failed, Spawned}
+import agent.app.AgentActor.AgentState
+import agent.app.utils.ProcessExecutor
 import akka.actor.testkit.typed.scaladsl.{ScalaTestWithActorTestKit, TestProbe}
 import akka.actor.typed.Scheduler
 import csw.location.api.scaladsl.LocationService

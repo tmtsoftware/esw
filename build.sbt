@@ -136,6 +136,7 @@ lazy val `esw-integration-test` = project
     `esw-ocs-impl`,
     examples,
     `esw-ocs-app`,
+    agent,
     `esw-test-reporter` % Test
   )
 

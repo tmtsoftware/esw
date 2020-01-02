@@ -1,10 +1,14 @@
 package esw.ocs.testkit
 
+import java.nio.file.Paths
+
+import agent.app.Main
 import akka.actor
 import akka.actor.CoordinatedShutdown.UnknownReason
 import akka.actor.typed.{ActorRef, ActorSystem, SpawnProtocol}
 import akka.http.scaladsl.Http.ServerBinding
 import akka.util.Timeout
+import com.typesafe.config.ConfigFactory
 import csw.command.client.extensions.AkkaLocationExt.RichAkkaLocation
 import csw.command.client.messages.sequencer.SequencerMsg
 import csw.event.api.scaladsl.{EventPublisher, EventService, EventSubscriber}
@@ -23,7 +27,7 @@ import esw.ocs.api.protocol.ScriptError
 import esw.ocs.app.wiring.{SequenceComponentWiring, SequencerWiring}
 import esw.ocs.impl.messages.SequenceComponentMsg
 import esw.ocs.impl.{SequenceComponentImpl, SequencerActorProxy, SequencerApiFactory}
-import esw.ocs.testkit.Service.Gateway
+import esw.ocs.testkit.Service.{Gateway, MachineAgent}
 import msocket.api.Encoding.JsonText
 import msocket.impl.post.HttpPostTransport
 import msocket.impl.ws.WebsocketTransport
@@ -31,6 +35,7 @@ import msocket.impl.ws.WebsocketTransport
 import scala.collection.mutable
 import scala.concurrent.ExecutionContext
 import scala.concurrent.duration.DurationLong
+import scala.util.Random
 
 abstract class EswTestKit(services: Service*)
     extends ScalaTestFrameworkTestKit(Service.convertToCsw(services): _*)
@@ -42,12 +47,14 @@ abstract class EswTestKit(services: Service*)
   lazy val locationService: LocationService                    = frameworkTestKit.frameworkWiring.locationService
   lazy val untypedSystem: actor.ActorSystem                    = frameworkTestKit.frameworkWiring.actorRuntime.classicSystem
   lazy val gatewayPort: Int                                    = SocketUtils.getFreePort
+  lazy val agentPrefix: Prefix                                 = Prefix(s"esw.machine_${Random.nextInt().abs}")
   lazy val gatewayWiring: GatewayWiring                        = new GatewayWiring(Some(gatewayPort))
   private lazy val eventService: EventService                  = frameworkTestKit.frameworkWiring.eventServiceFactory.make(locationService)
   lazy val eventSubscriber: EventSubscriber                    = eventService.defaultSubscriber
   lazy val eventPublisher: EventPublisher                      = eventService.defaultPublisher
   var gatewayBinding: Option[ServerBinding]                    = None
   var gatewayLocation: Option[HttpLocation]                    = None
+  var agentLocation: Option[AkkaLocation]                      = None
 
   lazy val gatewayPostClient =
     new HttpPostTransport[PostRequest](s"http://${Networks().hostname}:$gatewayPort/post-endpoint", JsonText, () => None)
@@ -62,11 +69,13 @@ abstract class EswTestKit(services: Service*)
   override def beforeAll(): Unit = {
     super.beforeAll()
     if (services.contains(Gateway)) spawnGateway()
+    if (services.contains(MachineAgent)) spawnAgent()
   }
 
   override def afterAll(): Unit = {
     shutdownAllSequencers()
     shutdownGateway()
+    shutdownAgent()
     super.afterAll()
   }
 
@@ -77,6 +86,33 @@ abstract class EswTestKit(services: Service*)
   def shutdownAllSequencers(): Unit = {
     sequenceComponentLocations.foreach(x => new SequenceComponentImpl(x.uri.toActorRef.unsafeUpcast).unloadScript())
     clearAll()
+  }
+
+  def spawnAgent(): AkkaLocation = {
+    val resourcesDir = Paths.get(getClass.getResource("/esw-ocs-app").getPath).getParent
+    Main.onStart(
+      agentPrefix,
+      ConfigFactory.parseString(s"""
+        |agent {
+        |  binariesPath = "$resourcesDir"
+        |  durationToWaitForComponentRegistration = 15s
+        |}
+        |""".stripMargin)
+    )
+
+    agentLocation = Some(
+      locationService
+        .resolve(AkkaConnection(ComponentId(agentPrefix, ComponentType.Machine)), 15.seconds)
+        .futureValue
+        .getOrElse(throw new RuntimeException("could not verify agent registration"))
+    )
+
+    agentLocation.get
+  }
+
+  def shutdownAgent(): Unit = {
+    if (agentLocation.nonEmpty)
+      Main.wiring.actorRuntime.shutdown(UnknownReason)
   }
 
   def spawnGateway(): HttpLocation = {

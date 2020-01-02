@@ -1,8 +1,8 @@
-package agent.utils
+package agent.app.utils
 
-import agent.AgentCommand.SpawnCommand
-import agent.AgentSettings
-import agent.Response.Failed
+import agent.api.AgentCommand.SpawnCommand
+import agent.api.Response.Failed
+import agent.app.AgentSettings
 import csw.logging.api.scaladsl.Logger
 
 import scala.compat.java8.OptionConverters.RichOptionalGeneric

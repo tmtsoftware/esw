@@ -1,4 +1,4 @@
-package agent
+package agent.app
 
 import caseapp.{CommandName, HelpMessage, ExtraName => Short}
 

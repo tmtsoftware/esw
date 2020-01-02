@@ -1,8 +1,8 @@
-package agent.utils
+package agent.app.utils
 
 import java.io.InputStream
 
-import agent.utils.ProcessOutput.{ConsoleWriter, ProcessTextLine}
+import agent.app.utils.ProcessOutput.{ConsoleWriter, ProcessTextLine}
 import akka.actor.typed.ActorSystem
 import akka.stream.scaladsl.{Framing, Source, StreamConverters}
 import akka.stream.typed.scaladsl.ActorSource

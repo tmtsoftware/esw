@@ -1,6 +1,6 @@
-package agent
+package agent.api
 
-sealed trait Response
+sealed trait Response extends AgentAkkaSerializable
 
 object Response {
   case object Spawned            extends Response

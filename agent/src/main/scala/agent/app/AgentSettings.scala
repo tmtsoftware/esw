@@ -1,4 +1,4 @@
-package agent
+package agent.app
 
 import java.nio.file.{Path, Paths}
 

@@ -1,10 +1,11 @@
-package agent
+package agent.app
 
-import agent.AgentActor.AgentState
-import agent.AgentCommand.SpawnCommand.SpawnSequenceComponent
-import agent.AgentCommand.{KillAllProcesses, ProcessRegistered, ProcessRegistrationFailed}
-import agent.Response.{Failed, Spawned}
-import agent.utils.ProcessExecutor
+import agent.api.AgentCommand
+import agent.api.AgentCommand.SpawnCommand.SpawnSequenceComponent
+import agent.api.AgentCommand.{KillAllProcesses, ProcessRegistered, ProcessRegistrationFailed}
+import agent.api.Response.{Failed, Spawned}
+import agent.app.AgentActor.AgentState
+import agent.app.utils.ProcessExecutor
 import akka.actor.typed.Behavior
 import akka.actor.typed.scaladsl.Behaviors
 import csw.location.api.scaladsl.LocationService

@@ -1,11 +1,11 @@
-package agent
+package agent.api
 
 import java.nio.file.{Path, Paths}
 
 import akka.actor.typed.ActorRef
 import csw.prefix.models.Prefix
 
-sealed trait AgentCommand
+sealed trait AgentCommand extends AgentAkkaSerializable
 
 object AgentCommand {
   private[agent] case object KillAllProcesses                                                 extends AgentCommand

@@ -1,6 +1,6 @@
-package agent.utils
+package agent.app.utils
 
-import agent.utils.ProcessOutput.ConsoleWriter
+import agent.app.utils.ProcessOutput.ConsoleWriter
 import akka.actor.typed.ActorSystem
 import akka.actor.typed.scaladsl.Behaviors
 import org.scalatest.concurrent.Eventually
