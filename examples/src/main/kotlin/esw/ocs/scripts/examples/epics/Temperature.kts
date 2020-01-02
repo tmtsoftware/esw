@@ -33,7 +33,7 @@ FsmScript("INIT") {
      * temp > 40 or temp < 20   => ERROR
      * else                     => OK
      */
-    val temperatureFsm = Fsm("TEMP", "OK") {
+    val temperatureFsm = Fsm("TEMP", OK) {
         state(OK) {
             entry {
                 publishState(tempFsmEvent, OK)
