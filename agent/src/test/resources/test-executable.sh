@@ -1,3 +1,3 @@
-#!/usr/bin/env bash
+#!/bin/sh
 echo "stdout text"
 echo "stderr text" >&2

@@ -1,4 +1,4 @@
-#!/usr/bin/env bash -e
+#!/bin/sh -e
 echo "Executing fake esw-ocs-app"
 prefix="$3.$5"
 
