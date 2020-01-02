@@ -1,31 +1,35 @@
 ## sequencer embedded http server
 
 // #submit
-POST http://localhost:57236/post-endpoint
+POST http://localhost:57542/post-endpoint
 Content-Type: application/json
 
 {
-  "Submit": {
-    "sequence": [
-      {
-        "Setup": {
-          "source": "esw.test",
-          "commandName": "command-2",
-          "maybeObsId": [
-            "obsId"
-          ],
-          "paramSet": []
-        }
+  "Submit": [
+    {
+      "Setup": {
+        "source": "esw.test",
+        "commandName": "command-1",
+        "maybeObsId": [],
+        "paramSet": []
       }
-    ]
-  }
+    },
+    {
+      "Setup": {
+        "source": "esw.test",
+        "commandName": "command-2",
+        "maybeObsId": [],
+        "paramSet": []
+      }
+    }
+  ]
 }
 
 ###
 // #submit
 
 // #re-submit
-POST http://localhost:57236/post-endpoint
+POST http://localhost:57542/post-endpoint
 Content-Type: application/json
 
 {

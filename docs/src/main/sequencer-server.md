@@ -75,6 +75,47 @@ Query
 
 This endpoint allows to query for final response of sequence.
 
+QueryFinal (Websocket) 
+
+```.http request
+ws://localhost:57236/websocket-endpoint
+
+{
+  "QueryFinal": "6ed2bf72-d7a3-498f-85e4-b3719727d18c"
+}
+
+```
+
+Responses
+
+Started :
+
+````json
+{
+  "Started": {
+    "runId": "6ed2bf72-d7a3-498f-85e4-b3719727d18c"
+  }
+}
+````
+
+Completed:
+
+````json
+{
+  "Completed": {
+    "runId": "6ed2bf72-d7a3-498f-85e4-b3719727d18c"
+  }
+}
+````
+
+@@@ note
+
+One can use websocket plugin for [IntelliJ](https://plugins.jetbrains.com/plugin/7980-websocket-client/) or [chrome extension]
+(https://chrome.google.com/webstore/detail/simple-websocket-client/pfdhoblngboilpfeibdedpjgfnlcodoo?hl=en) for QueryFinal functionality
+
+@@@
+
+
 ### Sequencer editor APIs
 
 This exposes APIs to edit sequence, get status of sequence
@@ -308,3 +349,19 @@ OperationsMode
 200 OK
 :   @@snip [sequencer-embedded-server-response.http](../../../tools/sequencer/sequencer-embedded-server-response.http) { #operationsMode-response }
 
+@@@ note
+
+All the requests to sequencer server can result in `400 Bad Request` or `500 Internal Server error`
+
+@@@  
+
+## Source code for examples
+
+* @github[sequencer-embedded-server.http](../../../tools/sequencer/sequencer-embedded-server.http)
+
+@@@ note
+
+The `sequencer-embedded-server.http` has first class support to execute http requests directly from IDEs like `IntelliJ IDEA` provided sequencer
+is already running and all pre-requisites are met.
+
+@@@
