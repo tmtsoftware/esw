@@ -18,7 +18,7 @@ import esw.ocs.api.models.StepList
 import esw.ocs.api.protocol.SequencerPostRequest._
 import esw.ocs.api.protocol.SequencerWebsocketRequest.QueryFinal
 import esw.ocs.api.protocol.{SequencerPostRequest, _}
-import io.bullet.borer.Decoder
+import io.bullet.borer.{Decoder, Encoder}
 import msocket.api.Transport
 import org.mockito.ArgumentMatchers.{any, eq => argsEq}
 
@@ -39,70 +39,102 @@ class SequencerClientTest extends BaseTestSuite with SequencerHttpCodecs {
       val sequence = Sequence(command1)
       val stepList = StepList(sequence)
 
-      when(postClient.requestResponse[Option[StepList]](argsEq(GetSequence))(any[Decoder[Option[StepList]]]()))
-        .thenReturn(Future.successful(Some(stepList)))
+      when(
+        postClient.requestResponse[Option[StepList]](argsEq(GetSequence))(
+          any[Decoder[Option[StepList]]](),
+          any[Encoder[Option[StepList]]]()
+        )
+      ).thenReturn(Future.successful(Some(stepList)))
       sequencer.getSequence.futureValue.get should ===(stepList)
     }
 
     "call postClient with IsAvailable request | ESW-222" in {
-      when(postClient.requestResponse[Boolean](argsEq(IsAvailable))(any[Decoder[Boolean]]())).thenReturn(Future.successful(true))
+      when(postClient.requestResponse[Boolean](argsEq(IsAvailable))(any[Decoder[Boolean]](), any[Encoder[Boolean]]()))
+        .thenReturn(Future.successful(true))
       sequencer.isAvailable.futureValue should ===(true)
     }
 
     "call postClient with IsOnline request | ESW-222" in {
-      when(postClient.requestResponse[Boolean](argsEq(IsOnline))(any[Decoder[Boolean]]())).thenReturn(Future.successful(true))
+      when(postClient.requestResponse[Boolean](argsEq(IsOnline))(any[Decoder[Boolean]](), any[Encoder[Boolean]]()))
+        .thenReturn(Future.successful(true))
       sequencer.isOnline.futureValue should ===(true)
     }
 
     "call postClient with Add request | ESW-222" in {
-      when(postClient.requestResponse[OkOrUnhandledResponse](argsEq(Add(List.empty)))(any[Decoder[OkOrUnhandledResponse]]()))
-        .thenReturn(Future.successful(Ok))
+      when(
+        postClient.requestResponse[OkOrUnhandledResponse](argsEq(Add(List.empty)))(
+          any[Decoder[OkOrUnhandledResponse]](),
+          any[Encoder[OkOrUnhandledResponse]]()
+        )
+      ).thenReturn(Future.successful(Ok))
       sequencer.add(List.empty).futureValue should ===(Ok)
     }
 
     "call postClient with Prepend request | ESW-222" in {
-      when(postClient.requestResponse[OkOrUnhandledResponse](argsEq(Prepend(List.empty)))(any[Decoder[OkOrUnhandledResponse]]()))
-        .thenReturn(Future.successful(Ok))
+      when(
+        postClient.requestResponse[OkOrUnhandledResponse](argsEq(Prepend(List.empty)))(
+          any[Decoder[OkOrUnhandledResponse]](),
+          any[Encoder[OkOrUnhandledResponse]]()
+        )
+      ).thenReturn(Future.successful(Ok))
       sequencer.prepend(List.empty).futureValue should ===(Ok)
     }
 
     "call postClient with Replace request | ESW-222" in {
       val id = mock[Id]
-      when(postClient.requestResponse[GenericResponse](argsEq(Replace(id, List.empty)))(any[Decoder[GenericResponse]]()))
-        .thenReturn(Future.successful(Ok))
+      when(
+        postClient.requestResponse[GenericResponse](argsEq(Replace(id, List.empty)))(
+          any[Decoder[GenericResponse]](),
+          any[Encoder[GenericResponse]]()
+        )
+      ).thenReturn(Future.successful(Ok))
       sequencer.replace(id, List.empty).futureValue should ===(Ok)
     }
 
     "call postClient with InsertAfter request | ESW-222" in {
       val id = mock[Id]
-      when(postClient.requestResponse[GenericResponse](argsEq(InsertAfter(id, List.empty)))(any[Decoder[GenericResponse]]()))
-        .thenReturn(Future.successful(Ok))
+      when(
+        postClient.requestResponse[GenericResponse](argsEq(InsertAfter(id, List.empty)))(
+          any[Decoder[GenericResponse]](),
+          any[Encoder[GenericResponse]]()
+        )
+      ).thenReturn(Future.successful(Ok))
       sequencer.insertAfter(id, List.empty).futureValue should ===(Ok)
     }
 
     "call postClient with Delete request | ESW-222" in {
       val id = mock[Id]
-      when(postClient.requestResponse[GenericResponse](argsEq(Delete(id)))(any[Decoder[GenericResponse]]()))
-        .thenReturn(Future.successful(Ok))
+      when(
+        postClient
+          .requestResponse[GenericResponse](argsEq(Delete(id)))(any[Decoder[GenericResponse]](), any[Encoder[GenericResponse]]())
+      ).thenReturn(Future.successful(Ok))
       sequencer.delete(id).futureValue should ===(Ok)
     }
 
     "call postClient with Pause request | ESW-222" in {
-      when(postClient.requestResponse[PauseResponse](argsEq(Pause))(any[Decoder[PauseResponse]]()))
+      when(postClient.requestResponse[PauseResponse](argsEq(Pause))(any[Decoder[PauseResponse]](), any[Encoder[PauseResponse]]()))
         .thenReturn(Future.successful(Ok))
       sequencer.pause.futureValue should ===(Ok)
     }
 
     "call postClient with Resume request | ESW-222" in {
-      when(postClient.requestResponse[OkOrUnhandledResponse](argsEq(Resume))(any[Decoder[OkOrUnhandledResponse]]()))
-        .thenReturn(Future.successful(Ok))
+      when(
+        postClient.requestResponse[OkOrUnhandledResponse](argsEq(Resume))(
+          any[Decoder[OkOrUnhandledResponse]](),
+          any[Encoder[OkOrUnhandledResponse]]()
+        )
+      ).thenReturn(Future.successful(Ok))
       sequencer.resume.futureValue should ===(Ok)
     }
 
     "call postClient with AddBreakpoint request | ESW-222" in {
       val id = mock[Id]
-      when(postClient.requestResponse[GenericResponse](argsEq(AddBreakpoint(id)))(any[Decoder[GenericResponse]]()))
-        .thenReturn(Future.successful(Ok))
+      when(
+        postClient.requestResponse[GenericResponse](argsEq(AddBreakpoint(id)))(
+          any[Decoder[GenericResponse]](),
+          any[Encoder[GenericResponse]]()
+        )
+      ).thenReturn(Future.successful(Ok))
       sequencer.addBreakpoint(id).futureValue should ===(Ok)
     }
 
@@ -110,38 +142,59 @@ class SequencerClientTest extends BaseTestSuite with SequencerHttpCodecs {
       val id = mock[Id]
       when(
         postClient
-          .requestResponse[RemoveBreakpointResponse](argsEq(RemoveBreakpoint(id)))(any[Decoder[RemoveBreakpointResponse]]())
+          .requestResponse[RemoveBreakpointResponse](argsEq(RemoveBreakpoint(id)))(
+            any[Decoder[RemoveBreakpointResponse]](),
+            any[Encoder[RemoveBreakpointResponse]]()
+          )
       ).thenReturn(Future.successful(Ok))
       sequencer.removeBreakpoint(id).futureValue should ===(Ok)
     }
 
     "call postClient with Reset request | ESW-222" in {
-      when(postClient.requestResponse[OkOrUnhandledResponse](argsEq(Reset))(any[Decoder[OkOrUnhandledResponse]]()))
-        .thenReturn(Future.successful(Ok))
+      when(
+        postClient.requestResponse[OkOrUnhandledResponse](argsEq(Reset))(
+          any[Decoder[OkOrUnhandledResponse]](),
+          any[Encoder[OkOrUnhandledResponse]]()
+        )
+      ).thenReturn(Future.successful(Ok))
       sequencer.reset().futureValue should ===(Ok)
     }
 
     "call postClient with AbortSequence request | ESW-222" in {
-      when(postClient.requestResponse[OkOrUnhandledResponse](argsEq(AbortSequence))(any[Decoder[OkOrUnhandledResponse]]()))
-        .thenReturn(Future.successful(Ok))
+      when(
+        postClient.requestResponse[OkOrUnhandledResponse](argsEq(AbortSequence))(
+          any[Decoder[OkOrUnhandledResponse]](),
+          any[Encoder[OkOrUnhandledResponse]]()
+        )
+      ).thenReturn(Future.successful(Ok))
       sequencer.abortSequence().futureValue should ===(Ok)
     }
 
     "call postClient with Stop request | ESW-222" in {
-      when(postClient.requestResponse[OkOrUnhandledResponse](argsEq(Stop))(any[Decoder[OkOrUnhandledResponse]]()))
-        .thenReturn(Future.successful(Ok))
+      when(
+        postClient.requestResponse[OkOrUnhandledResponse](argsEq(Stop))(
+          any[Decoder[OkOrUnhandledResponse]](),
+          any[Encoder[OkOrUnhandledResponse]]()
+        )
+      ).thenReturn(Future.successful(Ok))
       sequencer.stop().futureValue should ===(Ok)
     }
 
     "call postClient with GoOffline request | ESW-222" in {
-      when(postClient.requestResponse[OkOrUnhandledResponse](argsEq(GoOffline))(any[Decoder[OkOrUnhandledResponse]]()))
-        .thenReturn(Future.successful(Ok))
+      when(
+        postClient.requestResponse[OkOrUnhandledResponse](argsEq(GoOffline))(
+          any[Decoder[OkOrUnhandledResponse]](),
+          any[Encoder[OkOrUnhandledResponse]]()
+        )
+      ).thenReturn(Future.successful(Ok))
       sequencer.goOffline().futureValue should ===(Ok)
     }
 
     "call postClient with GoOnline request | ESW-222" in {
-      when(postClient.requestResponse[GoOnlineResponse](argsEq(GoOnline))(any[Decoder[GoOnlineResponse]]()))
-        .thenReturn(Future.successful(Ok))
+      when(
+        postClient
+          .requestResponse[GoOnlineResponse](argsEq(GoOnline))(any[Decoder[GoOnlineResponse]](), any[Encoder[GoOnlineResponse]]())
+      ).thenReturn(Future.successful(Ok))
       sequencer.goOnline().futureValue should ===(Ok)
     }
 
@@ -149,15 +202,20 @@ class SequencerClientTest extends BaseTestSuite with SequencerHttpCodecs {
       val command1 = Setup(Prefix("esw.test"), CommandName("command-1"), None)
       val sequence = Sequence(command1)
       when(
-        postClient.requestResponse[OkOrUnhandledResponse](argsEq(LoadSequence(sequence)))(any[Decoder[OkOrUnhandledResponse]]())
+        postClient.requestResponse[OkOrUnhandledResponse](argsEq(LoadSequence(sequence)))(
+          any[Decoder[OkOrUnhandledResponse]](),
+          any[Encoder[OkOrUnhandledResponse]]()
+        )
       ).thenReturn(Future.successful(Ok))
       sequencer.loadSequence(sequence).futureValue should ===(Ok)
     }
 
     "call postClient with StartSequence request | ESW-222" in {
       val startedResponse = Started(Id("runId"))
-      when(postClient.requestResponse[SubmitResponse](argsEq(StartSequence))(any[Decoder[SubmitResponse]]()))
-        .thenReturn(Future.successful(startedResponse))
+      when(
+        postClient
+          .requestResponse[SubmitResponse](argsEq(StartSequence))(any[Decoder[SubmitResponse]](), any[Encoder[SubmitResponse]]())
+      ).thenReturn(Future.successful(startedResponse))
       sequencer.startSequence().futureValue should ===(startedResponse)
     }
 
@@ -168,7 +226,10 @@ class SequencerClientTest extends BaseTestSuite with SequencerHttpCodecs {
       val sequenceResponse = Started(sequenceId)
       when(
         postClient
-          .requestResponse[SubmitResponse](argsEq(Submit(sequence)))(any[Decoder[SubmitResponse]]())
+          .requestResponse[SubmitResponse](argsEq(Submit(sequence)))(
+            any[Decoder[SubmitResponse]](),
+            any[Encoder[SubmitResponse]]()
+          )
       ).thenReturn(Future.successful(sequenceResponse))
       sequencer.submit(sequence).futureValue should ===(sequenceResponse)
     }
@@ -183,13 +244,17 @@ class SequencerClientTest extends BaseTestSuite with SequencerHttpCodecs {
 
       when(
         postClient
-          .requestResponse[SubmitResponse](argsEq(Submit(sequence)))(any[Decoder[SubmitResponse]]())
+          .requestResponse[SubmitResponse](argsEq(Submit(sequence)))(
+            any[Decoder[SubmitResponse]](),
+            any[Encoder[SubmitResponse]]()
+          )
       ).thenReturn(Future.successful(startedResponse))
 
       when(
         websocketClient
           .requestResponse[SubmitResponse](argsEq(QueryFinal(sequenceId, timeout)), any[FiniteDuration]())(
-            any[Decoder[SubmitResponse]]()
+            any[Decoder[SubmitResponse]](),
+            any[Encoder[SubmitResponse]]()
           )
       ).thenReturn(Future.successful(completedResponse))
 
@@ -201,15 +266,20 @@ class SequencerClientTest extends BaseTestSuite with SequencerHttpCodecs {
       val hint      = "engineering"
       when(
         postClient.requestResponse[DiagnosticModeResponse](argsEq(DiagnosticMode(startTime, hint)))(
-          any[Decoder[DiagnosticModeResponse]]()
+          any[Decoder[DiagnosticModeResponse]](),
+          any[Encoder[DiagnosticModeResponse]]()
         )
       ).thenReturn(Future.successful(Ok))
       sequencer.diagnosticMode(startTime, hint).futureValue should ===(Ok)
     }
 
     "call postClient with OperationsMode request | ESW-143" in {
-      when(postClient.requestResponse[OperationsModeResponse](argsEq(OperationsMode))(any[Decoder[OperationsModeResponse]]()))
-        .thenReturn(Future.successful(Ok))
+      when(
+        postClient.requestResponse[OperationsModeResponse](argsEq(OperationsMode))(
+          any[Decoder[OperationsModeResponse]](),
+          any[Encoder[OperationsModeResponse]]()
+        )
+      ).thenReturn(Future.successful(Ok))
       sequencer.operationsMode().futureValue should ===(Ok)
     }
 
@@ -219,7 +289,10 @@ class SequencerClientTest extends BaseTestSuite with SequencerHttpCodecs {
       implicit val timeout: Timeout = Timeout(10.seconds)
       when(
         websocketClient
-          .requestResponse[SubmitResponse](argsEq(QueryFinal(id, timeout)), any[FiniteDuration]())(any[Decoder[SubmitResponse]]())
+          .requestResponse[SubmitResponse](argsEq(QueryFinal(id, timeout)), any[FiniteDuration]())(
+            any[Decoder[SubmitResponse]](),
+            any[Encoder[SubmitResponse]]()
+          )
       ).thenReturn(Future.successful(Completed(id)))
       sequencer.queryFinal(id).futureValue should ===(Completed(id))
     }
@@ -228,8 +301,10 @@ class SequencerClientTest extends BaseTestSuite with SequencerHttpCodecs {
       val sequenceComponentLocation =
         AkkaLocation(AkkaConnection(ComponentId(Prefix(ESW, "primary"), SequenceComponent)), new URI("mock-uri"))
 
-      when(postClient.requestResponse[AkkaLocation](argsEq(GetSequenceComponent))(any[Decoder[AkkaLocation]]()))
-        .thenReturn(Future.successful(sequenceComponentLocation))
+      when(
+        postClient
+          .requestResponse[AkkaLocation](argsEq(GetSequenceComponent))(any[Decoder[AkkaLocation]](), any[Encoder[AkkaLocation]]())
+      ).thenReturn(Future.successful(sequenceComponentLocation))
       sequencer.getSequenceComponent.futureValue should ===(sequenceComponentLocation)
     }
   }
