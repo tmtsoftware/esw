@@ -18,10 +18,10 @@ import csw.prefix.models.Subsystem.ESW
 import csw.time.core.models.UTCTime
 import esw.ocs.api.models.{Step, StepList}
 import esw.ocs.api.protocol._
-import esw.ocs.impl.script.ScriptApi
 import esw.ocs.impl.messages.SequencerMessages.{Pause, _}
 import esw.ocs.impl.messages.SequencerState.{Idle, InProgress}
 import esw.ocs.impl.messages.{SequenceComponentMsg, SequencerState}
+import esw.ocs.impl.script.ScriptApi
 import org.mockito.Mockito.{verify, when}
 import org.scalatest.concurrent.Eventually._
 import org.scalatest.{Assertion, Matchers}
@@ -29,7 +29,7 @@ import org.scalatestplus.mockito.MockitoSugar
 
 import scala.concurrent.duration.DurationLong
 import scala.concurrent.{ExecutionContext, Future, Promise}
-import scala.util.Success
+import scala.util.{Random, Success}
 
 class SequencerTestSetup(sequence: Sequence)(implicit system: ActorSystem[_]) {
   import Matchers._
@@ -46,7 +46,7 @@ class SequencerTestSetup(sequence: Sequence)(implicit system: ActorSystem[_]) {
     TestProbe[SequenceComponentMsg].ref.toURI
   )
   private def mockShutdownHttpService: () => Future[Done.type] = () => Future { Done }
-  val sequencerName                                            = s"SequencerActor${math.random()}"
+  val sequencerName                                            = s"SequencerActor${Random.between(0, Int.MaxValue)}"
   when(componentId.prefix).thenReturn(Prefix(ESW, sequencerName))
   private val sequencerBehavior =
     new SequencerBehavior(componentId, script, locationService, sequenceComponent, mockShutdownHttpService)
