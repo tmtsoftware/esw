@@ -74,7 +74,9 @@ object Dependencies {
 
   val AgentClient: Def.Initialize[Seq[ModuleID]] = Def.setting(
     Seq(
-      Csw.`csw-location-api`
+      Csw.`csw-location-api`,
+      Libs.`mockito-scala`            % Test,
+      Akka.`akka-actor-testkit-typed` % Test
     )
   )
 
