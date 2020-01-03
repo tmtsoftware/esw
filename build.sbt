@@ -8,7 +8,7 @@ lazy val aggregateProjects: Seq[ProjectReference] =
     `esw-http-core`,
     `esw-gateway`,
     `esw-integration-test`,
-    agent,
+    `esw-agent`,
     examples
   )
 
@@ -18,7 +18,7 @@ lazy val unidocExclusions: Seq[ProjectReference] = Seq(
   `esw-ocs-api`.js,
   `esw-gateway-api`.js,
   `esw-ocs-handler`,
-  agent,
+  `esw-agent`,
   examples
 )
 
@@ -108,12 +108,43 @@ lazy val `esw-ocs-app` = project
     `esw-test-reporter` % Test
   )
 
-lazy val agent = project
-  .enablePlugins(EswBuildInfo, DeployApp)
+lazy val `esw-agent` = project
+  .in(file("esw-agent"))
+  .aggregate(
+    `esw-agent-app`,
+    `esw-agent-api`,
+    `esw-agent-client`
+  )
+
+lazy val `esw-agent-app` = project
+  .in(file("esw-agent/esw-agent-app"))
+  .enablePlugins(EswBuildInfo, DeployApp, MaybeCoverage)
+  .dependsOn(`esw-agent-api`)
   .settings(
-    libraryDependencies ++= Dependencies.Agent.value
+    libraryDependencies ++= Dependencies.AgentApp.value
   )
   .dependsOn(
+    `esw-test-reporter` % Test
+  )
+
+lazy val `esw-agent-api` = project
+  .in(file("esw-agent/esw-agent-api"))
+  .enablePlugins(DeployApp, MaybeCoverage)
+  .settings(
+    libraryDependencies ++= Dependencies.AgentApi.value
+  )
+  .dependsOn(
+    `esw-test-reporter` % Test
+  )
+
+lazy val `esw-agent-client` = project
+  .in(file("esw-agent/esw-agent-client"))
+  .enablePlugins(DeployApp, MaybeCoverage)
+  .settings(
+    libraryDependencies ++= Dependencies.AgentClient.value
+  )
+  .dependsOn(
+    `esw-agent-api`,
     `esw-test-reporter` % Test
   )
 
@@ -136,7 +167,8 @@ lazy val `esw-integration-test` = project
     `esw-ocs-impl`,
     examples,
     `esw-ocs-app`,
-    agent,
+    `esw-agent-app`,
+    `esw-agent-client`,
     `esw-test-reporter` % Test
   )
 

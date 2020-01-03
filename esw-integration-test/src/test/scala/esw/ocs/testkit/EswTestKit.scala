@@ -2,7 +2,6 @@ package esw.ocs.testkit
 
 import java.nio.file.Paths
 
-import agent.app.Main
 import akka.actor
 import akka.actor.CoordinatedShutdown.UnknownReason
 import akka.actor.typed.{ActorRef, ActorSystem, SpawnProtocol}
@@ -19,6 +18,7 @@ import csw.location.models.{AkkaLocation, ComponentId, ComponentType, HttpLocati
 import csw.network.utils.{Networks, SocketUtils}
 import csw.prefix.models.{Prefix, Subsystem}
 import csw.testkit.scaladsl.ScalaTestFrameworkTestKit
+import esw.agent.app.Main
 import esw.gateway.api.codecs.GatewayCodecs
 import esw.gateway.api.protocol.{PostRequest, WebsocketRequest}
 import esw.gateway.server.GatewayWiring
