@@ -129,7 +129,7 @@ lazy val `esw-agent-app` = project
 
 lazy val `esw-agent-api` = project
   .in(file("esw-agent/esw-agent-api"))
-  .enablePlugins(DeployApp, MaybeCoverage)
+  .enablePlugins(DeployApp)
   .settings(
     libraryDependencies ++= Dependencies.AgentApi.value
   )

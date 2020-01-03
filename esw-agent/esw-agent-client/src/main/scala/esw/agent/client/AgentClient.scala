@@ -15,7 +15,7 @@ import esw.agent.api.{AgentCommand, Response}
 import scala.concurrent.Future
 import scala.concurrent.duration.DurationLong
 
-class AgentClient(agentRef: ActorRef[AgentCommand])(implicit scheduler: Scheduler) {
+class AgentClient private[agent] (agentRef: ActorRef[AgentCommand])(implicit scheduler: Scheduler) {
   implicit private val timeout: Timeout = Timeout(10.seconds)
 
   def spawnSequenceComponent(prefix: Prefix): Future[Response] =

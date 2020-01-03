@@ -2,25 +2,26 @@ package esw.agent.client
 
 import java.net.URI
 
-import akka.actor.{ActorSystem, typed}
-import akka.testkit.TestKit
+import akka.actor.testkit.typed.scaladsl.ScalaTestWithActorTestKit
+import akka.actor.typed.Scheduler
+import akka.actor.typed.scaladsl.Behaviors
 import csw.location.api.scaladsl.LocationService
-import csw.prefix.models.Prefix
-import org.scalatestplus.mockito.MockitoSugar
-import akka.actor.typed.scaladsl.adapter._
-import csw.location.models.{AkkaLocation, ComponentId}
 import csw.location.models.ComponentType.Machine
 import csw.location.models.Connection.AkkaConnection
-
-import scala.concurrent.duration.DurationLong
+import csw.location.models.{AkkaLocation, ComponentId}
+import csw.prefix.models.Prefix
+import esw.agent.api.AgentCommand
+import esw.agent.api.AgentCommand.SpawnCommand.SpawnSequenceComponent
+import esw.agent.api.Response.Spawned
 import org.mockito.Mockito.when
-import org.scalatest.concurrent.ScalaFutures.convertScalaFuture
 import org.scalatest.{BeforeAndAfterAll, Matchers, WordSpecLike}
+import org.scalatestplus.mockito.MockitoSugar
 
 import scala.concurrent.Future
+import scala.concurrent.duration.DurationLong
 
-class AgentClientTest extends TestKit(ActorSystem("test1")) with WordSpecLike with Matchers with BeforeAndAfterAll {
-  implicit val actorSystem: typed.ActorSystem[_] = system.toTyped
+class AgentClientTest extends ScalaTestWithActorTestKit with WordSpecLike with Matchers with BeforeAndAfterAll {
+
   "make" should {
     "resolve the given prefix and return a new instance of AgentClient  | ESW-237" in {
       val locationService: LocationService = MockitoSugar.mock[LocationService]
@@ -61,5 +62,19 @@ class AgentClientTest extends TestKit(ActorSystem("test1")) with WordSpecLike wi
     }
   }
 
-  override def afterAll(): Unit = shutdown()
+  "spawnSequenceComponent" should {
+    "send SpawnSequenceComponent message to agent and return a future with agent response" in {
+      val agentRef                = spawn(stubAgent)
+      implicit val sch: Scheduler = system.scheduler
+      val agentClient             = new AgentClient(agentRef)
+      val prefix                  = Prefix("esw.test2")
+      agentClient.spawnSequenceComponent(prefix).futureValue should ===(Spawned)
+    }
+  }
+
+  private def stubAgent: Behaviors.Receive[AgentCommand] = Behaviors.receiveMessagePartial[AgentCommand] {
+    case SpawnSequenceComponent(replyTo, _) =>
+      replyTo ! Spawned
+      Behaviors.same
+  }
 }
