@@ -256,7 +256,7 @@ class SequencerBehavior(
           Behaviors.same
 
         case Query(runId, replyTo) => data.query(runId, replyTo); Behaviors.same
-        // Behaviors.same is not used below, because new SequencerData (updated with subscribers) needs to passed to currentBehavior
+        // Behaviors.same is not used below, because new SequencerData (updated with subscribers) needs to be passed to currentBehavior
         case QueryFinal(runId, replyTo) => stateMachine(state)(data.queryFinal(runId, replyTo))
 
         case _ => Behaviors.unhandled

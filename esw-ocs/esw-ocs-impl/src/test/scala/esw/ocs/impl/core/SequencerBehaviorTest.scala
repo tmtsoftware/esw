@@ -794,7 +794,7 @@ class SequencerBehaviorTest extends ScalaTestWithActorTestKit with BaseTestSuite
   }
 
   "Update" must {
-    "update the given step with successful response" in {
+    "update the given step with successful response | ESW-241" in {
       val sequence       = Sequence(command1)
       val sequencerSetup = SequencerTestSetup.inProgress(sequence)
       import sequencerSetup._
@@ -807,7 +807,7 @@ class SequencerBehaviorTest extends ScalaTestWithActorTestKit with BaseTestSuite
       )
     }
 
-    "update the given step with error response" in {
+    "update the given step with error response | ESW-241" in {
       val sequence       = Sequence(command1)
       val sequencerSetup = SequencerTestSetup.inProgress(sequence)
       import sequencerSetup._

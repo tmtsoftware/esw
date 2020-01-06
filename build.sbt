@@ -119,20 +119,16 @@ lazy val `esw-agent` = project
 lazy val `esw-agent-app` = project
   .in(file("esw-agent/esw-agent-app"))
   .enablePlugins(EswBuildInfo, DeployApp, MaybeCoverage)
-  .dependsOn(`esw-agent-api`)
-  .settings(
-    libraryDependencies ++= Dependencies.AgentApp.value
-  )
+  .settings(libraryDependencies ++= Dependencies.AgentApp.value)
   .dependsOn(
+    `esw-agent-api`,
     `esw-test-reporter` % Test
   )
 
 lazy val `esw-agent-api` = project
   .in(file("esw-agent/esw-agent-api"))
   .enablePlugins(DeployApp)
-  .settings(
-    libraryDependencies ++= Dependencies.AgentApi.value
-  )
+  .settings(libraryDependencies ++= Dependencies.AgentApi.value)
   .dependsOn(
     `esw-test-reporter` % Test
   )
@@ -140,9 +136,7 @@ lazy val `esw-agent-api` = project
 lazy val `esw-agent-client` = project
   .in(file("esw-agent/esw-agent-client"))
   .enablePlugins(DeployApp, MaybeCoverage)
-  .settings(
-    libraryDependencies ++= Dependencies.AgentClient.value
-  )
+  .settings(libraryDependencies ++= Dependencies.AgentClient.value)
   .dependsOn(
     `esw-agent-api`,
     `esw-test-reporter` % Test
@@ -151,9 +145,7 @@ lazy val `esw-agent-client` = project
 lazy val `esw-http-core` = project
   .in(file("esw-http-core"))
   .enablePlugins(PublishBintray, MaybeCoverage, EswBuildInfo)
-  .settings(
-    libraryDependencies ++= Dependencies.EswHttpCore.value
-  )
+  .settings(libraryDependencies ++= Dependencies.EswHttpCore.value)
   .dependsOn(`esw-test-reporter` % Test)
 
 lazy val `esw-integration-test` = project
