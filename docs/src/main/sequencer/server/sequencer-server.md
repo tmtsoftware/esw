@@ -1,4 +1,4 @@
-# sequencer-http-server
+# Sequencer HTTP Server
 
 When sequencer is started on a machine, it also starts embedded http server on random free port. This embedded sequencer
 server is registered with location service so that it can be discovered and used to communicate with sequencer component.
