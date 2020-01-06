@@ -1,14 +1,14 @@
 # sequencer-http-server
 
-When sequencer is started on machine, it also starts embedded http server on random free port. This embedded sequencer
+When sequencer is started on a machine, it also starts embedded http server on random free port. This embedded sequencer
 server is registered with location service so that it can be discovered and used to communicate with sequencer component.
 sequencer-http-server exposes http endpoints of `SequencerCommandService` which enables to submit sequence to sequencer and query
-for response. It also exposes other endpoints (`SequencerApi`) which allows to edit sequence, pause/resume sequence, 
-sequencer lifecycle enpdoints etc. sequencer-http-server http interface is explained in detail in Routes section.
+for response. It also exposes other endpoints (`SequencerApi`) which allows editing sequence, pause/resume sequence, 
+sequencer lifecycle endpoints etc. sequencer-http-server http interface is explained in detail in Routes section.
 
 ## Prerequisite
 
-It requires csw-location-server running on machine. The csw-services.sh script does this for you. 
+It requires csw-location-server running on a machine. The csw-services.sh script does this for you. 
 This application will start a HTTP CSW Location Server on port 7654 which is required for all Location Service consumers who uses HTTP Location client. 
 All components (HCD's, Assemblies, Services, Sequencer, sequencer-http-server etc.) use a local HTTP Location client which 
 expects the Location Server running at localhost:7654. In a production environment, it is required that all machines running 
@@ -29,11 +29,11 @@ Please use appropriate id in respective APIs. e.g. - delete, addBreakpoint etc.
 @@@
 
 ### Sequencer command service
-This allows to submit sequence to sequencer and query for response
+This allows submitting sequence to sequencer and query for response
 
 #### Submit
 
-This endpoint allows to submit sequence to sequencer. Sequencer will start executing sequence. This api gives `SubmitResponse` future as response. 
+This endpoint allows submitting sequence to sequencer. Sequencer will start executing sequence. This api gives `SubmitResponse` future as response. 
 Submit won't wait for final response. It will give started response saying sequence is submitted successfully and started.
 
 Submit
@@ -60,7 +60,7 @@ Malformed request for submit
 
 #### Query
 
-This endpoint allows to query for sequence response. Query response can be intermediate reponse or final response. 
+This endpoint allows querying for sequence response. Query response can be intermediate response or final response. 
 
 Query
 :   @@snip [sequencer-embedded-server.http](../../../../../tools/sequencer/sequencer-embedded-server.http) { #query }
@@ -73,7 +73,7 @@ Query
 
 #### QueryFinal
 
-This endpoint allows to query for final response of sequence.
+This endpoint allows querying for final response of sequence.
 
 QueryFinal (Websocket) 
 
@@ -120,7 +120,7 @@ This exposes APIs to edit sequence, get status of sequence
 
 #### loadSequence
 
-This api loads sequence in sequencer. Sequencer will be in `Loaded` state. Sequencer will wait for StartSequence command to
+This api loads sequence in a sequencer. Sequencer will be in `Loaded` state. Sequencer will wait for StartSequence command to
 start execution.
 
 LoadSequence
@@ -131,7 +131,7 @@ LoadSequence
 
 #### startSequence
 
-This api starts loaded sequence in sequencer. This gives `Started` as response. Api returns `Unhandled Response` is sequence
+This api starts loaded sequence in a sequencer. This gives `Started` as response. Api returns `Unhandled Response` is sequence
 is not loaded. 
 
 StartSequence
@@ -142,7 +142,7 @@ StartSequence
 
 #### getSequence
 
-This api allows to get state of sequence submitted.
+This api allows getting state of sequence submitted.
 
 GetSequence
 :   @@snip [sequencer-embedded-server.http](../../../../../tools/sequencer/sequencer-embedded-server.http) { #getSequence }
@@ -152,7 +152,7 @@ GetSequence
 
 #### add
 
-This api allows to add more commands to running sequence. These commands will be added at the end of sequence.
+This api allows adding more commands to running sequence. These commands will be added at the end of sequence.
 
 Add
 :   @@snip [sequencer-embedded-server.http](../../../../../tools/sequencer/sequencer-embedded-server.http) { #add }
@@ -162,7 +162,7 @@ Add
 
 #### prepend
 
-This api allows to add more commands to running sequence. These commands will be prepended to all pending commands of sequence.
+This api allows adding more commands to running sequence. These commands will be prepended to all pending commands of sequence.
 
 Prepend
 :   @@snip [sequencer-embedded-server.http](../../../../../tools/sequencer/sequencer-embedded-server.http) { #prepend }
@@ -172,7 +172,7 @@ Prepend
 
 #### replace
 
-This api allows to replace command with given id with list of commands. This api will return error response if provided id
+This api allows replacing command with given id with list of commands. This api will return error response if provided id
 does not exist or command to be replaces is finished or in progress.
 
 Replace
@@ -183,7 +183,7 @@ Replace
 
 #### insertAfter
 
-This api allows to add more commands to sequence after command with provided run id. This api return error is provided id does not exist
+This api allows adding more commands to sequence after command with provided run id. This api return error is a provided id does not exist
 or sequence execution has gone ahead of provided id.
 
 InsertAfter
@@ -194,7 +194,7 @@ InsertAfter
 
 #### delete
 
-This api allows to delete command with provided id.
+This api allows deleting command with provided id.
 
 Delete
 :   @@snip [sequencer-embedded-server.http](../../../../../tools/sequencer/sequencer-embedded-server.http) { #delete }
@@ -204,7 +204,7 @@ Delete
 
 #### addBreakpoint
 
-This api allows to put breakpoint at command with provided id. Sequence execution will pause where breakpoint is applied.
+This api allows putting breakpoint at command with provided id. Sequence execution will pause where breakpoint is applied.
 
 AddBreakpoint
 :   @@snip [sequencer-embedded-server.http](../../../../../tools/sequencer/sequencer-embedded-server.http) { #addBreakpoint }
@@ -214,7 +214,7 @@ AddBreakpoint
 
 #### removeBreakpoint
 
-This api allows to remove breakpoint from command with provided id.
+This api allows removing breakpoint from command with provided id.
 
 RemoveBreakpoint
 :   @@snip [sequencer-embedded-server.http](../../../../../tools/sequencer/sequencer-embedded-server.http) { #removeBreakpoint }
@@ -234,7 +234,7 @@ Reset
 
 #### pause
 
-This api allows to pause sequence. Command which is currently in progress will execute but sequence execution will not proceed.
+This api allows pausing sequence. Command which is currently in progress will execute but sequence execution will not proceed.
 
 Pause
 :   @@snip [sequencer-embedded-server.http](../../../../../tools/sequencer/sequencer-embedded-server.http) { #pause }
@@ -244,7 +244,7 @@ Pause
 
 #### resume
 
-This api allows to resume sequence from paused point.
+This api allows resuming sequence from paused point.
 
 Resume
 :   @@snip [sequencer-embedded-server.http](../../../../../tools/sequencer/sequencer-embedded-server.http) { #resume }
@@ -254,7 +254,7 @@ Resume
 
 #### getSequenceComponent
 
-This api allows to get location of sequence component where sequencer is running.
+This api allows getting location of sequence component where sequencer is running.
 
 GetSequenceComponent
 :   @@snip [sequencer-embedded-server.http](../../../../../tools/sequencer/sequencer-embedded-server.http) { #getSequenceComponent }
@@ -264,7 +264,7 @@ GetSequenceComponent
 
 #### isAvailable
 
-This api allows to check whether sequencer is executing any sequence. It return true if any sequence is in execution else false.
+This api allows checking whether sequencer is executing any sequence. It return true if any sequence is in execution else false.
 
 IsAvailable
 :   @@snip [sequencer-embedded-server.http](../../../../../tools/sequencer/sequencer-embedded-server.http) { #isAvailable }
@@ -278,7 +278,7 @@ This exposes endpoints for sequencer lifecycle APIs e.g - goOffline, diagnostic 
 
 #### isOnline
 
-This api allows to check whether sequencer is online.
+This api allows checking whether sequencer is online.
 
 IsOnline
 :   @@snip [sequencer-embedded-server.http](../../../../../tools/sequencer/sequencer-embedded-server.http) { #isOnline }
@@ -288,7 +288,7 @@ IsOnline
 
 #### abortSequence
 
-This api allows to abort sequence by removing all pending commands and also executes abort handler written in sequencer script.
+This api allows aborting sequence by removing all pending commands and executes abort handler written in sequencer script.
 
 AbortSequence
 :   @@snip [sequencer-embedded-server.http](../../../../../tools/sequencer/sequencer-embedded-server.http) { #abortSequence }
@@ -298,7 +298,7 @@ AbortSequence
 
 #### stop
 
-This api allows to stop sequence by removing all pending commands and also executes stop handler written in sequencer script.
+This api allows stopping sequence by removing all pending commands and executes stop handler written in sequencer script.
 
 Stop
 :   @@snip [sequencer-embedded-server.http](../../../../../tools/sequencer/sequencer-embedded-server.http) { #stop }
@@ -308,7 +308,7 @@ Stop
 
 #### goOnline
 
-This api allows to set sequencer in online mode.
+This api allows setting sequencer in an online mode.
 
 GoOnline
 :   @@snip [sequencer-embedded-server.http](../../../../../tools/sequencer/sequencer-embedded-server.http) { #goOnline }
@@ -318,7 +318,7 @@ GoOnline
 
 #### goOffline
 
-This api allows to set sequencer in offline mode.
+This api allows setting sequencer in an offline mode.
 
 GoOffline
 :   @@snip [sequencer-embedded-server.http](../../../../../tools/sequencer/sequencer-embedded-server.http) { #goOffline }
@@ -329,7 +329,7 @@ GoOffline
 
 #### diagnosticMode
 
-This api executes diagnostic handler from script
+This api executes a diagnostic handler from script
 
 DiagnosticMode
 :   @@snip [sequencer-embedded-server.http](../../../../../tools/sequencer/sequencer-embedded-server.http) { #diagnosticMode }

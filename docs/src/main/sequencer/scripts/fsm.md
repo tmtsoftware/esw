@@ -6,7 +6,7 @@ reactive to any published events or commands.
 ## Basic functionality
 ### Create FSM
 
-To create instance of FSM, a helper method `Fsm` is provided as shown in example. This method takes following parameters:
+To create an instance of FSM, a helper method `Fsm` is provided as shown in example. This method takes following parameters:
 
 1. `name` of FSM for logging
 2. `initial state` of the FSM
@@ -19,13 +19,13 @@ Kotlin
 
 For creating fsm, the third parameter is a block which is the place to define all the states. A method named `state` needs to be called
 with parameters `name` of the state and the `block` of actions to be performed when transitioned to that state.
-When multiple states with same name are added, the last defined state will considered and others will be discarded.
+When multiple states with same name are added, the last defined state will consider and others will be discarded.
 
 Kotlin
 :   @@snip [fsm.kts](../../../../../examples/src/main/kotlin/esw/ocs/scripts/examples/paradox/fsm.kts) { #define-state }
 
 @@@ note
-State names are **case insensitive**.
+State names are **case-insensitive**.
 @@@
 
 ### State transition
