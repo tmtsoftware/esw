@@ -29,9 +29,7 @@ Content-Length: 174
   "Invalid": {
     "runId": "IdNotAvailable",
     "issue": {
-      "UnsupportedCommandInStateIssue": {
-        "reason": "Sequencer can not accept 'SubmitSequenceInternal' message in 'InProgress' state"
-      }
+      "UnsupportedCommandInStateIssue": "Sequencer can not accept 'SubmitSequenceInternal' message in 'InProgress' state"
     }
   }
 }
@@ -61,9 +59,7 @@ Content-Type: application/json
 Content-Length: 60
 
 {
-  "Started": {
-    "runId": "6ed2bf72-d7a3-498f-85e4-b3719727d18c"
-  }
+  "Started": "16c7e800-4bd7-4390-acf2-868efbbb0819"
 }
 
 ###
@@ -79,7 +75,7 @@ Content-Length: 62
 
 {
   "Completed": {
-    "runId": "6ed2bf72-d7a3-498f-85e4-b3719727d18c"
+    "runId": "16c7e800-4bd7-4390-acf2-868efbbb0819"
   }
 }
 
@@ -111,9 +107,7 @@ Content-Type: application/json
 Content-Length: 60
 
 {
-  "Started": {
-    "runId": "537520b9-6de8-4d73-88c7-d44c31181d00"
-  }
+  "Started": "16c7e800-4bd7-4390-acf2-868efbbb0819"
 }
 
 ###
@@ -128,27 +122,38 @@ Content-Type: application/json
 Content-Length: 216
 
 [
-  {
-    "steps": [
-      {
-        "id": "8d8bc85f-bcdd-4eda-8960-d29b5e64d03f",
-        "command": {
-          "Setup": {
-            "source": "esw.darknight",
-            "commandName": "command-1",
-            "maybeObsId": [
-              "obsId1"
-            ],
-            "paramSet": []
-          }
-        },
-        "status": {
-          "Success": {}
-        },
-        "hasBreakpoint": false
-      }
-    ]
-  }
+  [
+    {
+      "id": "5995b121-b10c-4cd6-ae3a-97bd31456c1b",
+      "command": {
+        "Setup": {
+          "source": "esw.test",
+          "commandName": "command-1",
+          "maybeObsId": [],
+          "paramSet": []
+        }
+      },
+      "status": {
+        "Success": {}
+      },
+      "hasBreakpoint": false
+    },
+    {
+      "id": "606b366d-17d1-4c78-8902-7a25f37ac8c8",
+      "command": {
+        "Setup": {
+          "source": "esw.test",
+          "commandName": "command-2",
+          "maybeObsId": [],
+          "paramSet": []
+        }
+      },
+      "status": {
+        "Success": {}
+      },
+      "hasBreakpoint": false
+    }
+  ]
 ]
 
 ###
@@ -330,7 +335,7 @@ Content-Length: 191
       "componentType": "sequence_component",
       "connectionType": "akka"
     },
-    "uri": "akka://esw-system@10.131.20.138:50483/user/esw.primary#-718513434"
+    "uri": "akka://esw-system@10.131.20.138:58492/user/esw.primary#-1731655948"
   }
 }
 
