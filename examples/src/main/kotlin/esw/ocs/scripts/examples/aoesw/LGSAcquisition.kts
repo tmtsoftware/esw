@@ -130,7 +130,7 @@ script {
         when (response) {
             is Completed -> {
                 val guideStarLockedThreshold = 5 // number of consecutive loops without an offset to consider stable
-                var timesGuideStarLocked: Int = 0
+                var timesGuideStarLocked = 0
                 val maxAttempts = 20 // maximum number of loops on this guide star before rejecting
                 var attempts = 0
 
