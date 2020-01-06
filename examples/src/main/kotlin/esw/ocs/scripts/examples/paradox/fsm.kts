@@ -26,24 +26,31 @@ script {
 
 
     //#event-var
+    //**  System Var **//
     val tempKey = intKey("temperature")
     val systemVar = SystemVar(0, "esw.temperature.temp", tempKey)
 
     systemVar.bind(irisFsm) // binds the FSM and event variable
 
+    //**  Observe Var **//
     val coordKey = coordKey("co-ordinates")
     val observeVar = ObserveVar(JEqCoord.make(0, 0), "iris.observe.coord", coordKey)
+    observeVar.get() // returns the value of the parameter from the latest event
 
     observeVar.bind(irisFsm) // binds the FSM and event variable
+
+    observeVar.set(JEqCoord.make(1, 1)) // publishes the given value on event key
     //#event-var
 
     var params = Params(mutableSetOf())
 
     //#command-flag
     val flag = CommandFlag()
+    flag.value() // way to extract the current params value
+
     flag.bind(irisFsm) // bind the FSM and command flag
 
-    flag.set(params) //refreshes the bound FSMs with the new params.
+    flag.set(params) // refreshes the bound FSMs with the new params
     //#command-flag
 
     val exampleFsm = Fsm(name = "example-fsm", initState = "INIT") {
@@ -58,13 +65,13 @@ script {
 
         state("BECOME-STATE") {
 
+            entry {
+
+            }
+
             //#on
             on(condition) {
                 // executes this when condition is true
-            }
-
-            on {
-                // executes this every time
             }
             //#on
 
@@ -85,8 +92,7 @@ script {
             //#state-transition
 
             //#complete-fsm
-            // will complete the Fsm
-            completeFsm()
+            completeFsm()   // will complete the Fsm
             // anything after this will not be executed
             //#complete-fsm
         }
