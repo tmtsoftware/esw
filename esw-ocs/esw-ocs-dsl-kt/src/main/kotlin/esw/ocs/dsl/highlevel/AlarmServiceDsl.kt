@@ -19,7 +19,7 @@ interface AlarmServiceDsl : LoopDsl {
         if (map.size == 1) startSetSeverity()
     }
 
-    private fun startSetSeverity() = bgLoop(_alarmRefreshDuration) {
+    private fun startSetSeverity() = loopAsync(_alarmRefreshDuration) {
         map.keys.forEach { key -> alarmService.setSeverity(key, map[key]) }
     }
 }

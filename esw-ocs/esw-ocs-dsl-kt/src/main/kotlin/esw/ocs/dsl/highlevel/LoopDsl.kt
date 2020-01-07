@@ -40,7 +40,7 @@ interface LoopDsl {
      * @return job that you can await by using `join` method, calling `join` will block execution until loop finishes
      * Note: loop uses default loopInterval of `50 millis`
      **/
-    fun bgLoop(block: suspend StopWhen.() -> Unit): Job = coroutineScope.launch { loop(loopInterval, block) }
+    fun loopAsync(block: suspend StopWhen.() -> Unit): Job = coroutineScope.launch { loop(loopInterval, block) }
 
     /**
      * Runs a loop asynchronously in the background
@@ -49,7 +49,7 @@ interface LoopDsl {
      * @return job that you can await by using `join` method, calling `join` will block execution until loop finishes
      * Note: minInterval should be greater than `50 millis` otherwise default interval of 50 millis will be considered
      */
-    fun bgLoop(minInterval: Duration, block: suspend StopWhen.() -> Unit): Job =
+    fun loopAsync(minInterval: Duration, block: suspend StopWhen.() -> Unit): Job =
             coroutineScope.launch { loop(minInterval, block) }
 
     // ========== INTERNAL ===========
@@ -71,7 +71,7 @@ interface LoopDsl {
     }
 
     object StopWhen {
-        // to be used within loop/bgLoop and breaks the loop if condition is true
+        // to be used within loop/loopAsync and breaks the loop if condition is true
         suspend fun stopWhen(condition: Boolean): Unit = coroutineScope {
             suspendCancellableCoroutine<Unit> {
                 if (condition) it.cancel() else it.resumeWith(Result.success(Unit))

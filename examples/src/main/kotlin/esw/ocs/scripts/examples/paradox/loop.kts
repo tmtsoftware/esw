@@ -23,23 +23,23 @@ script {
         motorPosition += degrees
     }
 
-    //#bgLoop-default-interval
+    //#loopAsync-default-interval
     // start background loop which publishes current temperature of motor every 50 milliseconds (default loop interval)
-    bgLoop {
+    loopAsync {
         val currentTemp = getCurrentTemp()
         publishEvent(temperatureEvent.add(temperatureKey.set(currentTemp)))
         stopWhen(stopPublishingTemperature)
     }
-    //#bgLoop-default-interval
+    //#loopAsync-default-interval
 
-    //#bgLoop-custom-interval
+    //#loopAsync-custom-interval
     // start background loop which publishes current temperature of motor every 100 milliseconds
-    bgLoop(100.milliseconds) {
+    loopAsync(100.milliseconds) {
         val currentTemp = getCurrentTemp()
         publishEvent(temperatureEvent.add(temperatureKey.set(currentTemp)))
         stopWhen(stopPublishingTemperature)
     }
-    //#bgLoop-custom-interval
+    //#loopAsync-custom-interval
 
     onSetup("init-motor") {
         //#waitFor

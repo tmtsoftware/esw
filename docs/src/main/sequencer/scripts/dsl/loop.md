@@ -4,7 +4,7 @@ Script supports following multiple variations of loop Dsl to satisfy different u
 
 1. loop
 1. waitFor
-1. bgLoop
+1. loopAsync
 
 ## loop
 
@@ -50,32 +50,32 @@ Kotlin
 :   @@snip [loop.kts](../../../../../../examples/src/main/kotlin/esw/ocs/scripts/examples/paradox/loop.kts) { #waitFor }
 
 
-## bgLoop
+## loopAsync
 
 **With default loop interval**
 
-`bgLoop` DSL allows you to start loop asynchronously in the background which means rest of the code written after `bgLoop` will be executed concurrently. 
-`bgLoop` will be terminated when `stopWhen` condition written inside loop becomes true.
+`loopAsync` DSL allows you to start loop asynchronously in the background which means rest of the code written after `loopAsync` will be executed concurrently. 
+`loopAsync` will be terminated when `stopWhen` condition written inside loop becomes true.
 
 You can use this DSL when you want to iteratively perform some actions in the background.
-bgLoop without providing any minimum interval uses default interval of `50 milliseconds`.
+loopAsync without providing any minimum interval uses default interval of `50 milliseconds`.
 
-Following example demonstrate the usage of `bgLoop` dsl without providing custom loop interval.
+Following example demonstrate the usage of `loopAsync` dsl without providing custom loop interval.
 In the loop body, current temperature is published every `50 milliseconds`. 
-BgLoop will be terminated when `stopPublishingTemperature` flag becomes true and this is set to true in `onStop` handler.
+LoopAsync will be terminated when `stopPublishingTemperature` flag becomes true and this is set to true in `onStop` handler.
 
 Kotlin
-:   @@snip [loop.kts](../../../../../../examples/src/main/kotlin/esw/ocs/scripts/examples/paradox/loop.kts) { #bgLoop-default-interval }  
+:   @@snip [loop.kts](../../../../../../examples/src/main/kotlin/esw/ocs/scripts/examples/paradox/loop.kts) { #loopAsync-default-interval }  
 
 **With custom loop interval**
 
-`bgLoop` DSL allows you to provide minimum loop interval and start loop asynchronously. 
-Every iteration of bgLoop will at least wait for minimum provided interval before executing next iteration.
+`loopAsync` DSL allows you to provide minimum loop interval and start loop asynchronously. 
+Every iteration of loopAsync will at least wait for minimum provided interval before executing next iteration.
 
-Following example demonstrate the usage of `bgLoop` dsl by providing custom loop interval.
+Following example demonstrate the usage of `loopAsync` dsl by providing custom loop interval.
 
 Kotlin
-:   @@snip [loop.kts](../../../../../../examples/src/main/kotlin/esw/ocs/scripts/examples/paradox/loop.kts) { #bgLoop-custom-interval }
+:   @@snip [loop.kts](../../../../../../examples/src/main/kotlin/esw/ocs/scripts/examples/paradox/loop.kts) { #loopAsync-custom-interval }
 
 ### Source code for examples
 * @github[Loop Examples](/examples/src/main/kotlin/esw/ocs/scripts/examples/paradox/loop.kts)
