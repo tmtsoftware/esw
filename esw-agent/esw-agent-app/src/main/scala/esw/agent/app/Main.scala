@@ -16,6 +16,7 @@ import scala.concurrent.{Await, duration}
 import scala.language.implicitConversions
 import scala.util.control.NonFatal
 
+// $COVERAGE-OFF$
 object Main extends CommandApp[AgentCliCommand] {
   override def appName: String    = getClass.getSimpleName.dropRight(1) // remove $ from class name
   override def appVersion: String = BuildInfo.version
@@ -54,3 +55,4 @@ object Main extends CommandApp[AgentCliCommand] {
 
   private implicit def asFiniteDuration(d: Duration): FiniteDuration = duration.Duration.fromNanos(d.toNanos)
 }
+// $COVERAGE-ON$
