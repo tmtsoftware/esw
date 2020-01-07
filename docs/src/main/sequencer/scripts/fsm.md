@@ -14,7 +14,7 @@ To create an instance of FSM, a helper method `Fsm` is provided as shown in exam
 3. `block` having states of the FSM
 
 Kotlin
-:   @@snip [fsm.kts](../../../../../examples/src/main/kotlin/esw/ocs/scripts/examples/paradox/fsm.kts) { #create-fsm }  
+:   @@snip [Fsm.kts](../../../../../examples/src/main/kotlin/esw/ocs/scripts/examples/paradox/Fsm.kts) { #create-fsm }  
 
 ### Define state
 
@@ -27,7 +27,7 @@ State names are **case-insensitive**.
 @@@
 
 Kotlin
-:   @@snip [fsm.kts](../../../../../examples/src/main/kotlin/esw/ocs/scripts/examples/paradox/fsm.kts) { #define-state }
+:   @@snip [Fsm.kts](../../../../../examples/src/main/kotlin/esw/ocs/scripts/examples/paradox/Fsm.kts) { #define-state }
 
 ### State transition
 
@@ -35,7 +35,7 @@ To transit between states, `become` method needs to be called with name of next 
 and start executing next state. `InvalidStateException` will be thrown if provided state is not defined.
 
 Kotlin
-:   @@snip [fsm.kts](../../../../../examples/src/main/kotlin/esw/ocs/scripts/examples/paradox/fsm.kts) { #state-transition }
+:   @@snip [Fsm.kts](../../../../../examples/src/main/kotlin/esw/ocs/scripts/examples/paradox/Fsm.kts) { #state-transition }
 
 State transition should ideally be the **last call in state** or should be **done with proper control flow** so that become is **not called multiple times**.
 
@@ -45,23 +45,23 @@ State transition should ideally be the **last call in state** or should be **don
 the end of the state.    
 
 Kotlin
-:   @@snip [fsm.kts](../../../../../examples/src/main/kotlin/esw/ocs/scripts/examples/paradox/fsm.kts) { #complete-fsm }
+:   @@snip [Fsm.kts](../../../../../examples/src/main/kotlin/esw/ocs/scripts/examples/paradox/Fsm.kts) { #complete-fsm }
 
 ### Helper constructs 
 1. `entry` : executes the given `block` only when state transition happens from a different state
 
     Kotlin
-    :   @@snip [fsm.kts](../../../../../examples/src/main/kotlin/esw/ocs/scripts/examples/paradox/fsm.kts) { #entry }
+    :   @@snip [Fsm.kts](../../../../../examples/src/main/kotlin/esw/ocs/scripts/examples/paradox/Fsm.kts) { #entry }
 
 2. `on` : executes the given `block` if given `condition` is **true**
 
     Kotlin
-    :   @@snip [fsm.kts](../../../../../examples/src/main/kotlin/esw/ocs/scripts/examples/paradox/fsm.kts) { #on } 
+    :   @@snip [Fsm.kts](../../../../../examples/src/main/kotlin/esw/ocs/scripts/examples/paradox/Fsm.kts) { #on } 
 
 3. `after` : executes the given `block` after the given `duration` 
 
     Kotlin
-    :   @@snip [fsm.kts](../../../../../examples/src/main/kotlin/esw/ocs/scripts/examples/paradox/fsm.kts) { #after }
+    :   @@snip [Fsm.kts](../../../../../examples/src/main/kotlin/esw/ocs/scripts/examples/paradox/Fsm.kts) { #after }
 
 ## Start FSM
 
@@ -69,7 +69,7 @@ After creating instance of FSM, it needs to be explicitly started by calling `st
  state of fsm which is provided while creating instance of it.
 
 Kotlin
-:   @@snip [fsm.kts](../../../../../examples/src/main/kotlin/esw/ocs/scripts/examples/paradox/fsm.kts) { #start-fsm }
+:   @@snip [Fsm.kts](../../../../../examples/src/main/kotlin/esw/ocs/scripts/examples/paradox/Fsm.kts) { #start-fsm }
 
 ## Wait for completion
 
@@ -77,7 +77,7 @@ As FSM has ability to be complete itself, `await` can be called to wait for its 
  till the FSM is marked complete.
 
 Kotlin
-:   @@snip [fsm.kts](../../../../../examples/src/main/kotlin/esw/ocs/scripts/examples/paradox/fsm.kts) { #await } 
+:   @@snip [Fsm.kts](../../../../../examples/src/main/kotlin/esw/ocs/scripts/examples/paradox/Fsm.kts) { #await } 
 
 ## Reactive FSM
 
@@ -100,7 +100,7 @@ FSM can be bind to multiple event vars and vise versa. Following examples shows 
  and methods like `get` and `set`. `set` will publish the event with modified parameter. 
 
 Kotlin
-:   @@snip [fsm.kts](../../../../../examples/src/main/kotlin/esw/ocs/scripts/examples/paradox/fsm.kts) { #event-var }
+:   @@snip [Fsm.kts](../../../../../examples/src/main/kotlin/esw/ocs/scripts/examples/paradox/Fsm.kts) { #event-var }
 
 ### CommandFlag
 
@@ -112,7 +112,7 @@ Example shows how to create `CommandFlag`, bind FSM to it and methods `get` and 
  params in command flag. 
 
 Kotlin
-:   @@snip [fsm.kts](../../../../../examples/src/main/kotlin/esw/ocs/scripts/examples/paradox/fsm.kts) { #command-flag } 
+:   @@snip [Fsm.kts](../../../../../examples/src/main/kotlin/esw/ocs/scripts/examples/paradox/Fsm.kts) { #command-flag } 
 
 ## Example FSM
 
@@ -129,7 +129,7 @@ Logic of state change is:
 |  else       |  OK     |
     
 Kotlin
-:   @@snip [fsm.kts](../../../../../examples/src/main/kotlin/esw/ocs/scripts/examples/paradox/FsmExample.kts) { #example-fsm }
+:   @@snip [Fsm.kts](../../../../../examples/src/main/kotlin/esw/ocs/scripts/examples/paradox/FsmExample.kts) { #example-fsm }
 
 Key things (which are marked with `// [[ * ]]`) in above example code are :
  
