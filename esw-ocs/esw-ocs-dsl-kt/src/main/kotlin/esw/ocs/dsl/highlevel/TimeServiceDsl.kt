@@ -35,12 +35,12 @@ interface TimeServiceDsl : SuspendToJavaConverter {
     /**
      * Schedules task once at duration after current utc time.
      *
-     * @param durationFromNow time duration after which task will be scheduled (utc time)
+     * @param delayFromNow delay after which task will be scheduled as a Duration
      * @param task the task to be scheduled for execution
      * @return a handle to cancel the execution of the task if it hasn't been executed already
      */
-    fun scheduleOnceFromNow(durationFromNow: Duration, task: SuspendableCallback): Cancellable =
-            scheduleOnce(utcTimeAfter(durationFromNow), task)
+    fun scheduleOnceFromNow(delayFromNow: Duration, task: SuspendableCallback): Cancellable =
+            scheduleOnce(utcTimeAfter(delayFromNow), task)
 
     /**
      * Schedules a task to execute periodically at the given interval. The task is executed once at the given start time followed by execution of task at each interval.
@@ -60,13 +60,13 @@ interface TimeServiceDsl : SuspendToJavaConverter {
      * Schedules a task to execute periodically at the given interval. The task is executed once at duration after current utc time
      * followed by execution of task at each interval.
      *
-     * @param durationFromNow time duration after which task will be scheduled (utc time)
+     * @param delayFromNow delay after which the first task will be scheduled as a Duration
      * @param interval the time interval between the execution of tasks
      * @param task the task to execute after each interval
      * @return a handle to cancel the execution of further tasks
      */
-    fun schedulePeriodicallyFromNow(durationFromNow: Duration, interval: Duration, task: SuspendableCallback): Cancellable =
-            schedulePeriodically(utcTimeAfter(durationFromNow), interval, task)
+    fun schedulePeriodicallyFromNow(delayFromNow: Duration, interval: Duration, task: SuspendableCallback): Cancellable =
+            schedulePeriodically(utcTimeAfter(delayFromNow), interval, task)
 
     /**
      * Utility to calculate current utc time

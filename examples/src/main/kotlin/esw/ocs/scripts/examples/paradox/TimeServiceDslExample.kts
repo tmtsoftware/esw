@@ -11,7 +11,7 @@ script {
 
     //Usage inside handlers - schedule tasks while handling setup/observe commands
     onSetup("schedule-once-from-now") {
-        scheduleOnceFromNow(durationFromNow = 5.seconds) {
+        scheduleOnceFromNow(delayFromNow = 5.seconds) {
             publishEvent(SystemEvent("lgsf", "publish.success"))
         }
     }
@@ -29,7 +29,7 @@ script {
     }
 
     onSetup("schedule-periodically-from-now") {
-        schedulePeriodicallyFromNow(durationFromNow = 5.seconds, interval = 1.seconds) {
+        schedulePeriodicallyFromNow(delayFromNow = 5.seconds, interval = 1.seconds) {
             publishEvent(SystemEvent("lgsf", "publish.success"))
         }
     }
@@ -50,7 +50,7 @@ script {
         val taiTime = taiTimeAfter(1.hours)
         // #tai-time-after
 
-        schedulePeriodicallyFromNow(durationFromNow = 5.seconds, interval = 1.seconds) {
+        schedulePeriodicallyFromNow(delayFromNow = 5.seconds, interval = 1.seconds) {
             publishEvent(SystemEvent("lgsf", "publish.success"))
         }
     }
