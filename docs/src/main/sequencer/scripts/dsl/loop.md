@@ -76,3 +76,6 @@ Following example demonstrate the usage of `bgLoop` dsl by providing custom loop
 
 Kotlin
 :   @@snip [loop.kts](../../../../../../examples/src/main/kotlin/esw/ocs/scripts/examples/paradox/loop.kts) { #bgLoop-custom-interval }
+
+### Source code for examples
+* @github[Loop Examples](/examples/src/main/kotlin/esw/ocs/scripts/examples/paradox/loop.kts)
