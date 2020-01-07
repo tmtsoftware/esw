@@ -1,6 +1,11 @@
-package esw.ocs.scripts.examples.dsl
+package esw.ocs.scripts.examples.paradox
 
+import csw.time.core.models.UTCTime
 import esw.ocs.dsl.core.script
+import java.time.Instant
+import java.time.ZoneId
+import kotlin.time.Duration
+import kotlin.time.hours
 import kotlin.time.seconds
 
 // ESW-122 TimeServiceDsl usage in script
@@ -31,20 +36,49 @@ script {
         }
     }
 
+    onSetup("util-methods") {
+        // #utc-time-now
+        val currentUtcTime = utcTimeNow()
+        // #utc-time-now
+        // #tai-time-now
+        val currentTaiTime = taiTimeNow()
+        // #tai-time-now
+
+        // #utc-time-after
+        val utcTime = utcTimeAfter(1.hours)
+        // #utc-time-after
+
+        // #tai-time-after
+        val taiTime = taiTimeAfter(1.hours)
+        // #tai-time-after
+
+        schedulePeriodicallyFromNow(durationFromNow = 5.seconds, interval = 1.seconds) {
+            publishEvent(SystemEvent("lgsf", "publish.success"))
+        }
+    }
+
     //Usage at top level
+    // #schedule-once
     scheduleOnce(taiTimeNow()) {
         publishEvent(SystemEvent("lgsf", "publish.success"))
     }
+    // #schedule-once
 
-    scheduleOnce(taiTimeNow()) {
+    // #schedule-once-from-now
+    scheduleOnceFromNow(1.hours) {
         publishEvent(SystemEvent("lgsf", "publish.success"))
     }
+    // #schedule-once-from-now
 
+    // #schedule-periodically
     schedulePeriodically(utcTimeNow(), 5.seconds) {
         publishEvent(SystemEvent("lgsf", "publish.success"))
     }
+    // #schedule-periodically
 
-    schedulePeriodicallyFromNow(5.seconds, 1.seconds) {
+    // #schedule-periodically-from-now
+    schedulePeriodicallyFromNow(1.hours, 10.seconds) {
         publishEvent(SystemEvent("lgsf", "publish.success"))
     }
+    // #schedule-periodically-from-now
 }
