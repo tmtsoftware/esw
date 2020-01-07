@@ -15,7 +15,7 @@ import kotlin.time.toJavaDuration
 
 /**
  * Kotlin Dsl for scheduling periodic/non-periodic tasks at a specified time and/or interval.
- * This Dsl provides simplified APIs over csw time service dsl and some utility methods for scripts.
+ * This Dsl provides simplified APIs over csw time service dsl, and some utility methods for scripts.
  * It supports scheduling on both [[csw.time.core.models.UTCTime]] and [[csw.time.core.models.TAITime]].
  * Each API returns a [[Cancellable]] which allows users to cancel the execution of tasks.
  */
