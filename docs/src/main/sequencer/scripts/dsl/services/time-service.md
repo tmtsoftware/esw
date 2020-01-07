@@ -62,7 +62,7 @@ Kotlin
 
 ## schedulePeriodicallyFromNow
 
-This API allows to schedules a task to execute periodically at the given interval. This API takes time duration after which task will
+This API allows to schedule a task to execute periodically at the given interval. This API takes time duration after which task will
 be scheduled once followed by execution of task at each interval. Following example shows scheduling task after 1 hour from current utc time
 and then executing it periodically at 10 seconds interval. This returns a handle to cancel the execution of further tasks.
 

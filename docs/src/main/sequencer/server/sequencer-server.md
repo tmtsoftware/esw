@@ -3,15 +3,15 @@
 When sequencer is started on a machine, it also starts embedded http server on random free port. This embedded sequencer
 server is registered with location service so that it can be discovered and used to communicate with sequencer component.
 sequencer-http-server exposes http endpoints of `SequencerCommandService` which enables to submit sequence to sequencer and query
-for response. It also exposes other endpoints (`SequencerApi`) which allows editing sequence, pause/resume sequence, 
-sequencer lifecycle endpoints etc. sequencer-http-server http interface is explained in detail in Routes section.
+for response. It also exposes other endpoints (`SequencerApi`) which allows editing sequence, pause/resume sequence, sequencer lifecycle endpoints
+etc. sequencer-http-server http interface is explained in detail in Routes section.
 
 ## Prerequisite
 
 It requires csw-location-server running on a machine. The csw-services.sh script does this for you. 
-This application will start a HTTP CSW Location Server on port 7654 which is required for all Location Service consumers who uses HTTP Location client. 
-All components (HCD's, Assemblies, Services, Sequencer, sequencer-http-server etc.) use a local HTTP Location client which 
-expects the Location Server running at localhost:7654. In a production environment, it is required that all machines running 
+This application will start HTTP CSW Location Server on port 7654 which is required for all Location Service consumers who use HTTP Location client. 
+All components (HCD's, Assemblies, Services, Sequencer, sequencer-http-server etc.) use a local HTTP Location client which
+expects the Location Server running at localhost:7654. In a production environment, it is required that all machines running
 components should have the HTTP Location Server running locally.
 
 ## Starting sequencer-http-server
