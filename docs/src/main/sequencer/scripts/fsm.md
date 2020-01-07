@@ -129,7 +129,7 @@ Logic of state change is:
 |  else       |  OK     |
     
 Kotlin
-:   @@snip [fsm.kts](../../../../../examples/src/main/kotlin/esw/ocs/scripts/examples/paradox/exampleFsm.kts) { #example-fsm }
+:   @@snip [fsm.kts](../../../../../examples/src/main/kotlin/esw/ocs/scripts/examples/paradox/FsmExample.kts) { #example-fsm }
 
 Key things (which are marked with `// [[ * ]]`) in above example code are :
  

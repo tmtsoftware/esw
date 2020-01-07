@@ -33,7 +33,7 @@ fun SubmitResponse.onFailedTerminate(): SubmitResponse {
 }
 
 // =========== SubmitResponse - unsafe extensions ===========
-val SubmitResponse.completed: SubmitResponse
+val SubmitResponse.completed: Completed
     get() = if (this is Completed) this else throw CommandError(this)
 
 val SubmitResponse.result: Result

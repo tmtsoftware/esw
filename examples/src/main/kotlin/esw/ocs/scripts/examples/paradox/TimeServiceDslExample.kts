@@ -1,10 +1,8 @@
+@file:Suppress("UNUSED_VARIABLE")
+
 package esw.ocs.scripts.examples.paradox
 
-import csw.time.core.models.UTCTime
 import esw.ocs.dsl.core.script
-import java.time.Instant
-import java.time.ZoneId
-import kotlin.time.Duration
 import kotlin.time.hours
 import kotlin.time.seconds
 

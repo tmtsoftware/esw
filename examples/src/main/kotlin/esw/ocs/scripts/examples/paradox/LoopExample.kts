@@ -34,7 +34,7 @@ script {
 
     //#loopAsync-custom-interval
     // start background loop which publishes current temperature of motor every 100 milliseconds
-    loopAsync(100.milliseconds) {
+    loopAsync(minInterval = 100.milliseconds) {
         val currentTemp = getCurrentTemp()
         publishEvent(temperatureEvent.add(temperatureKey.set(currentTemp)))
         stopWhen(stopPublishingTemperature)
@@ -68,7 +68,7 @@ script {
         //#loop-custom-interval
         // move motor by 20 degrees in every iteration after a loop interval of 100 millis (custom loop interval used here)
         // stop loop when current motor position matches expected motor position and continue with the execution of rest of the handler
-        loop(100.milliseconds) {
+        loop(minInterval = 100.milliseconds) {
             moveMotor(20)
             stopWhen(motorPosition == expectedMotorPosition)
         }

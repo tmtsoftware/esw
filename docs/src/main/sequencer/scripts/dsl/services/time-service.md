@@ -1,4 +1,4 @@
-# Time Service Dsl
+# Time Service
 
 Time Service Dsl is dsl wrapper over time service module provided by csw. This dsl exposes following APIs to script writers to
 schedule tasks at given time. It also exposes utility methods for getting specified utc time or tai time and calculate offset. 
