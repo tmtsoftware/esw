@@ -56,7 +56,6 @@ object Dependencies {
       Libs.`case-app`,
       Csw.`csw-location-client`,
       Akka.`akka-actor-typed`,
-      Akka.`akka-stream-typed`,
       Libs.scalatest                  % Test,
       Libs.`mockito-scala`            % Test,
       Akka.`akka-actor-testkit-typed` % Test

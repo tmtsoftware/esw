@@ -16,7 +16,6 @@ import esw.agent.app.utils.ProcessExecutor
 
 import scala.util.Success
 
-//todo: test - spawned processes should run in background even if agent process dies
 class AgentActor(
     locationService: LocationService,
     processExecutor: ProcessExecutor,
@@ -85,5 +84,4 @@ object AgentActor {
   object AgentState {
     val empty: AgentState = AgentState(Set.empty, Set.empty)
   }
-
 }
