@@ -18,7 +18,7 @@ import esw.agent.app.utils.{ActorRuntime, ProcessExecutor, ProcessOutput}
 
 import scala.concurrent.duration.DurationLong
 import scala.concurrent.{Await, Future}
-
+// $COVERAGE-OFF$
 class AgentWiring(prefix: Prefix, agentSettings: AgentSettings) {
   lazy val log: Logger = {
     actorRuntime.startLogging(BuildInfo.name, BuildInfo.version)
@@ -49,3 +49,4 @@ class AgentWiring(prefix: Prefix, agentSettings: AgentSettings) {
   lazy val agentRef: ActorRef[AgentCommand] =
     Await.result(typedSystem ? (Spawn(agentActor.behavior(AgentState.empty), "agent-actor", Props.empty, _)), timeout.duration)
 }
+// $COVERAGE-ON$

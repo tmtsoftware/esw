@@ -4,7 +4,6 @@ import akka.actor.CoordinatedShutdown
 import akka.actor.CoordinatedShutdown.Reason
 import akka.actor.typed.scaladsl.adapter.TypedActorSystemOps
 import akka.actor.typed.{ActorSystem, SpawnProtocol}
-import akka.stream.Materializer
 import akka.{Done, actor}
 import csw.location.client.ActorSystemFactory
 import csw.logging.client.scaladsl.LoggingSystemFactory
@@ -19,7 +18,6 @@ class ActorRuntime {
   implicit val typedSystem: ActorSystem[SpawnProtocol.Command] = ActorSystemFactory.remote(SpawnProtocol(), "agent-app")
   implicit val untypedSystem: actor.ActorSystem                = typedSystem.toClassic
   implicit val ec: ExecutionContext                            = typedSystem.executionContext
-  implicit val mat: Materializer                               = Materializer(typedSystem)
   val coordinatedShutdown: CoordinatedShutdown                 = CoordinatedShutdown(untypedSystem)
 
   def withShutdownHook[T](f: => T): ActorRuntime = {
