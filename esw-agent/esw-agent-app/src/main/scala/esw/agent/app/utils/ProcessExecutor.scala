@@ -1,28 +1,29 @@
 package esw.agent.app.utils
 
-import esw.agent.api.AgentCommand.SpawnCommand
-import esw.agent.api.Response.Failed
 import csw.logging.api.scaladsl.Logger
+import csw.prefix.models.Prefix
+import esw.agent.api.Response.Failed
 import esw.agent.app.AgentSettings
 
 import scala.compat.java8.OptionConverters.RichOptionalGeneric
 import scala.util.Try
 import scala.util.control.NonFatal
 
+// $COVERAGE-OFF$
 class ProcessExecutor(output: ProcessOutput, agentSettings: AgentSettings, logger: Logger) {
   import logger._
 
-  def runCommand(spawnCommand: SpawnCommand): Either[Failed, Long] =
+  def runCommand(strings: List[String], prefix: Prefix): Either[Failed, Long] =
     Try {
-      val processBuilder = new ProcessBuilder(spawnCommand.strings(agentSettings.binariesPath): _*)
+      val processBuilder = new ProcessBuilder(strings: _*)
       debug(s"starting command", Map("command" -> processBuilder.command()))
       val process = processBuilder.start()
-      output.attachToProcess(process, spawnCommand.prefix.value)
+      output.attachToProcess(process, prefix.value)
       debug(s"new process spawned", Map("pid" -> process.pid()))
       process.pid()
     }.toEither.left.map {
       case NonFatal(err) =>
-        error("command failed to run", map = Map("command" -> spawnCommand), ex = err)
+        error("command failed to run", map = Map("command" -> strings, "prefix" -> prefix.value), ex = err)
         Failed(err.getMessage)
     }
 
@@ -33,3 +34,4 @@ class ProcessExecutor(output: ProcessOutput, agentSettings: AgentSettings, logge
       .asScala
       .getOrElse(false)
 }
+// $COVERAGE-ON$

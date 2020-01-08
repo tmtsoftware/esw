@@ -4,12 +4,13 @@ import akka.actor.ExtendedActorSystem
 import akka.actor.typed.ActorSystem
 import akka.actor.typed.scaladsl.adapter._
 import akka.serialization.Serializer
-import esw.agent.api.{AgentCommand, Response}
 import esw.agent.api.codecs.AgentCodecs
+import esw.agent.api.{AgentCommand, Response}
 import io.bullet.borer.{Cbor, Decoder}
 
 import scala.reflect.ClassTag
 
+// $COVERAGE-OFF$
 class AgentAkkaSerializer(_actorSystem: ExtendedActorSystem) extends AgentCodecs with Serializer {
 
   override def identifier: Int = 26726
@@ -41,3 +42,4 @@ class AgentAkkaSerializer(_actorSystem: ExtendedActorSystem) extends AgentCodecs
     }
   }
 }
+// $COVERAGE-ON$

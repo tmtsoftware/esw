@@ -58,6 +58,7 @@ object Dependencies {
       Akka.`akka-actor-typed`,
       Libs.scalatest                  % Test,
       Libs.`mockito-scala`            % Test,
+      Libs.`mockito-scala-scalatest`  % Test,
       Akka.`akka-actor-testkit-typed` % Test
     )
   )
@@ -67,6 +68,7 @@ object Dependencies {
       Borer.`borer-core`.value,
       Borer.`borer-derivation`.value,
       Csw.`csw-prefix`.value,
+      Csw.`csw-location-api`,
       Akka.`akka-actor-typed`
     )
   )
