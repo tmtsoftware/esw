@@ -89,7 +89,7 @@ script {
     }
 
     onSetup("set-alarm-severity") {
-        val alarmKey = AlarmKey(Prefix.apply(NFIRAOS(), "trombone"), "tromboneAxisHighLimitAlarm")
+        val alarmKey = AlarmKey(Prefix(NFIRAOS(), "trombone"), "tromboneAxisHighLimitAlarm")
         setSeverity(alarmKey, Major())
         delay(500)
     }
