@@ -1,20 +1,14 @@
 package esw.ocs.dsl.epics
 
-import csw.event.api.scaladsl.SubscriptionModes
 import csw.params.core.generics.Key
 import csw.params.events.Event
-import csw.params.events.EventKey
 import csw.params.events.ObserveEvent
 import csw.params.events.SystemEvent
 import esw.ocs.dsl.highlevel.EventServiceDsl
-import esw.ocs.dsl.highlevel.EventSubscription
+import esw.ocs.dsl.highlevel.models.EventSubscription
 import esw.ocs.dsl.params.first
 import esw.ocs.dsl.params.invoke
-import esw.ocs.dsl.params.set
-import kotlinx.coroutines.future.future
-import java.util.concurrent.CompletableFuture
 import kotlin.time.Duration
-import kotlin.time.toJavaDuration
 
 class EventVariable<T> constructor(
         initial: Event,
@@ -53,18 +47,13 @@ class EventVariable<T> constructor(
 
     private suspend fun startSubscription(): EventSubscription = if (duration != null) polling(duration) else subscribe()
 
-    private suspend fun polling(duration: Duration): EventSubscription {
-        val callback: (Event) -> CompletableFuture<Unit> = { eventService.coroutineScope.future { if (it != latestEvent) refresh(it) } }
+    private suspend fun polling(duration: Duration): EventSubscription =
+            eventService.onEvent(eventKey, duration = duration) {
+                if (it != latestEvent) refresh(it)
+            }
 
-        val subscription = eventService
-                .defaultSubscriber
-                .subscribeAsync(setOf(EventKey.apply(eventKey)), callback, duration.toJavaDuration(), SubscriptionModes.jRateAdapterMode())
-
-        return EventSubscription { subscription.unsubscribe() }
-    }
 
     private suspend fun subscribe(): EventSubscription = eventService.onEvent(eventKey) { refresh(it) }
-
 
     private suspend fun refresh(event: Event) {
         if (!event.isInvalid) {

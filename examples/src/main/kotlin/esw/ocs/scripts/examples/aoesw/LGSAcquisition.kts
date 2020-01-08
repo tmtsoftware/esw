@@ -82,7 +82,7 @@ script {
     }
 
     suspend fun offsetTcs(xoffset: Float, yoffset: Float, probeNum: Int, obsId: String?) {
-        val tcsSequencer = Sequencer("tcs", "darknight")
+        val tcsSequencer = Sequencer("tcs", "darknight", 10.seconds)
         tcsSequencer.submitAndWait(
                 sequenceOf(
                         Setup(aosq.prefix, "offset", obsId)
@@ -124,13 +124,13 @@ script {
         val startExposureCommand = Setup(aosq.prefix, "exposure", command.obsId)
                 .add(oiwfsExposureModeKey.set(*probeExpModes))
 
-        val assembly = Assembly(oiwfsDetectorAssembly.name)
+        val assembly = Assembly(oiwfsDetectorAssembly.name, 10.seconds)
         val response = assembly.submitAndWait(startExposureCommand, 10.seconds)
 
         when (response) {
             is Completed -> {
                 val guideStarLockedThreshold = 5 // number of consecutive loops without an offset to consider stable
-                var timesGuideStarLocked: Int = 0
+                var timesGuideStarLocked = 0
                 val maxAttempts = 20 // maximum number of loops on this guide star before rejecting
                 var attempts = 0
 

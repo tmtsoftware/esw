@@ -6,8 +6,8 @@ import csw.event.api.exceptions.{EventServerNotAvailable, PublishFailure}
 import csw.event.api.scaladsl.SubscriptionModes.RateLimiterMode
 import csw.event.api.scaladsl.{EventPublisher, EventService, EventSubscriber, EventSubscription}
 import csw.event.client.internal.commons.EventSubscriberUtil
-import csw.params.core.models.Subsystem
 import csw.params.events.{Event, EventKey}
+import csw.prefix.models.Subsystem
 import esw.gateway.api.EventApi
 import esw.gateway.api.protocol._
 import esw.gateway.impl.SourceExtensions.RichSource

@@ -2,8 +2,8 @@ package esw.gateway.api.clients
 
 import akka.Done
 import akka.stream.scaladsl.Source
-import csw.params.core.models.Subsystem
 import csw.params.events.{Event, EventKey}
+import csw.prefix.models.Subsystem
 import esw.gateway.api.EventApi
 import esw.gateway.api.codecs.GatewayCodecs
 import esw.gateway.api.protocol.PostRequest.{GetEvent, PublishEvent}

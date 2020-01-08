@@ -6,13 +6,13 @@ import com.typesafe.config.ConfigFactory
 import csw.command.client.messages.sequencer.SequencerMsg
 import csw.params.commands.{CommandName, Sequence, Setup}
 import csw.params.core.generics.KeyType.StringKey
-import csw.params.core.models.Prefix
-import csw.params.core.models.Subsystem.ESW
 import csw.params.events.EventKey
-import csw.testkit.scaladsl.CSWService.EventServer
+import csw.prefix.models.Prefix
+import csw.prefix.models.Subsystem.ESW
 import esw.ocs.api.SequencerApi
 import esw.ocs.impl.SequencerActorProxy
 import esw.ocs.testkit.EswTestKit
+import esw.ocs.testkit.Service.EventServer
 
 class LockUnlockIntegrationTest extends EswTestKit(EventServer) {
   private var ocsSequencerRef: ActorRef[SequencerMsg] = _
@@ -20,7 +20,7 @@ class LockUnlockIntegrationTest extends EswTestKit(EventServer) {
 
   override def beforeAll(): Unit = {
     super.beforeAll()
-    frameworkTestKit.spawnStandalone(ConfigFactory.load("standalone.conf"))
+    frameworkTestKit.spawnStandalone(ConfigFactory.load("standaloneAssembly.conf"))
   }
 
   override def beforeEach(): Unit = {

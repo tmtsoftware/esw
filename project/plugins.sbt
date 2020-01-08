@@ -2,7 +2,7 @@ addSbtPlugin("com.timushev.sbt"   % "sbt-updates"              % "0.5.0")
 addSbtPlugin("net.virtual-void"   % "sbt-dependency-graph"     % "0.10.0-RC1")
 addSbtPlugin("io.spray"           % "sbt-revolver"             % "0.9.1")
 addSbtPlugin("org.scoverage"      % "sbt-scoverage"            % "1.6.1")
-addSbtPlugin("com.typesafe.sbt"   % "sbt-native-packager"      % "1.5.1")
+addSbtPlugin("com.typesafe.sbt"   % "sbt-native-packager"      % "1.5.2")
 addSbtPlugin("com.eed3si9n"       % "sbt-buildinfo"            % "0.9.0")
 addSbtPlugin("org.foundweekends"  % "sbt-bintray"              % "0.5.5")
 addSbtPlugin("org.scalameta"      % "sbt-scalafmt"             % "2.2.1")
@@ -15,7 +15,7 @@ resolvers += "Jenkins repo" at "https://repo.jenkins-ci.org/public/"
 addSbtPlugin("ohnosequences" % "sbt-github-release" % "0.7.0")
 
 resolvers += Resolver.bintrayRepo("twtmt", "sbt-plugins")
-addSbtPlugin("com.github.tmtsoftware" % "sbt-docs"      % "0.1.2")
+addSbtPlugin("com.github.tmtsoftware" % "sbt-docs"      % "0.1.3-RC1")
 addSbtPlugin("com.github.tmtsoftware" % "kotlin-plugin" % "2.0.1-RC1")
 
 resolvers += Resolver.jcenterRepo

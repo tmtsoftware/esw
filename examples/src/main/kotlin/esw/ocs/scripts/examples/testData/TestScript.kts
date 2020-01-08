@@ -4,14 +4,16 @@ import com.typesafe.config.ConfigFactory
 import csw.alarm.api.javadsl.JAlarmSeverity.Major
 import csw.alarm.models.Key.AlarmKey
 import csw.params.events.Event
-import csw.params.javadsl.JSubsystem.NFIRAOS
+import csw.prefix.javadsl.JSubsystem.NFIRAOS
 import esw.ocs.dsl.core.script
+import esw.ocs.dsl.highlevel.Prefix
+import esw.ocs.dsl.params.longKey
 import kotlinx.coroutines.delay
 import kotlin.time.seconds
 
 script {
-    val lgsfSequencer = Sequencer("lgsf", "darknight")
-    val testAssembly = Assembly("esw.test")
+    val lgsfSequencer = Sequencer("lgsf", "darknight", 10.seconds)
+    val testAssembly = Assembly("esw.test", 10.seconds)
 
     // ESW-134: Reuse code by ability to import logic from one script into another
     loadScripts(InitialCommandHandler)
@@ -50,7 +52,7 @@ script {
 
     onSetup("on-event") {
         onEvent("esw.test.get.event") {
-            val successEvent = SystemEvent("esw.test", "onEvent.success")
+            val successEvent = SystemEvent("esw.test", "onevent.success")
             if (!it.isInvalid) publishEvent(successEvent)
         }
     }
@@ -65,7 +67,7 @@ script {
         val sequence = sequenceOf(setupCommand)
 
         // ESW-88, ESW-145, ESW-195
-        val tcsSequencer = Sequencer("tcs", "darknight")
+        val tcsSequencer = Sequencer("tcs", "darknight", 10.seconds)
         tcsSequencer.submitAndWait(sequence, 10.seconds)
     }
 
@@ -81,18 +83,40 @@ script {
     }
 
     onSetup("set-alarm-severity") {
-        val alarmKey = AlarmKey(NFIRAOS(), "trombone", "tromboneAxisHighLimitAlarm")
+        val alarmKey = AlarmKey(Prefix(NFIRAOS(), "trombone"), "tromboneAxisHighLimitAlarm")
         setSeverity(alarmKey, Major())
         delay(500)
     }
 
     onSetup("command-lgsf") {
         // NOT update command response to avoid a sequencer to finish immediately
-        // so that other Add, Append command gets time
+        // so that others Add, Append command gets time
         val setupCommand = Setup("lgsf.test", "command-lgsf")
         val sequence = sequenceOf(setupCommand)
 
         lgsfSequencer.submitAndWait(sequence, 10.seconds)
+    }
+
+    onSetup("schedule-once-from-now") {
+        val currentTime = utcTimeNow()
+        scheduleOnceFromNow(1.seconds) {
+            val param = longKey("offset").set(currentTime.offsetFromNow().absoluteValue.toLongMilliseconds())
+            publishEvent(SystemEvent("esw.schedule.once", "offset", param))
+        }
+    }
+
+    onSetup("schedule-periodically-from-now") {
+        val currentTime = utcTimeNow()
+        var counter = 0
+        val a = schedulePeriodicallyFromNow(1.seconds, 1.seconds) {
+            val param = longKey("offset").set(currentTime.offsetFromNow().absoluteValue.toLongMilliseconds())
+            publishEvent(SystemEvent("esw.schedule.periodically", "offset", param))
+            counter += 1
+        }
+        loop {
+            stopWhen(counter > 1)
+        }
+        a.cancel()
     }
 
     onDiagnosticMode { startTime, hint ->

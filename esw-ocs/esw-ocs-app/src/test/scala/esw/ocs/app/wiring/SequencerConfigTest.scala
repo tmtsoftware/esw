@@ -1,11 +1,18 @@
 package esw.ocs.app.wiring
 
+import java.util.concurrent.CompletionStage
+
+import akka.Done
 import com.typesafe.config.{Config, ConfigFactory}
-import csw.params.core.models.Subsystem.ESW
-import csw.params.core.models.{Prefix, Subsystem}
+import csw.params.commands.SequenceCommand
+import csw.prefix.models.Subsystem.ESW
+import csw.prefix.models.{Prefix, Subsystem}
+import csw.time.core.models.UTCTime
 import esw.http.core.BaseTestSuite
-import esw.ocs.dsl.script.exceptions.ScriptLoadingException.ScriptConfigurationMissingException
-import esw.ocs.dsl.script.{CswServices, ScriptDsl, StrandEc}
+import esw.ocs.impl.script.ScriptLoadingException.ScriptConfigurationMissingException
+import esw.ocs.impl.script.{ScriptApi, ScriptContext}
+
+import scala.concurrent.Future
 
 class SequencerConfigTest extends BaseTestSuite {
   private val config: Config = ConfigFactory.load()
@@ -33,4 +40,14 @@ class SequencerConfigTest extends BaseTestSuite {
   }
 }
 
-class ValidTestScript(csw: CswServices) extends ScriptDsl(csw, StrandEc())
+class ValidTestScript(ctx: ScriptContext) extends ScriptApi {
+  override def execute(command: SequenceCommand): Future[Unit]                       = ???
+  override def executeGoOnline(): Future[Done]                                       = ???
+  override def executeGoOffline(): Future[Done]                                      = ???
+  override def executeShutdown(): Future[Done]                                       = ???
+  override def executeAbort(): Future[Done]                                          = ???
+  override def executeStop(): Future[Done]                                           = ???
+  override def executeDiagnosticMode(startTime: UTCTime, hint: String): Future[Done] = ???
+  override def executeOperationsMode(): Future[Done]                                 = ???
+  override def executeExceptionHandlers(ex: Throwable): CompletionStage[Void]        = ???
+}

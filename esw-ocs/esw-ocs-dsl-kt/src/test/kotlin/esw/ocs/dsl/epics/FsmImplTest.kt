@@ -1,14 +1,13 @@
 package esw.ocs.dsl.epics
 
 import csw.params.core.generics.Parameter
-import csw.params.core.models.Prefix
 import csw.params.events.EventName
 import csw.params.events.SystemEvent
 import csw.params.javadsl.JKeyType
-import csw.params.javadsl.JSubsystem
+import csw.prefix.javadsl.JSubsystem
 import esw.ocs.dsl.highlevel.CswHighLevelDslApi
+import esw.ocs.dsl.highlevel.Prefix
 import esw.ocs.dsl.params.Params
-import esw.ocs.dsl.params.set
 import esw.ocs.dsl.script.StrandEc
 import io.kotlintest.eventually
 import io.kotlintest.shouldBe
@@ -179,7 +178,7 @@ class FsmImplTest {
 
         flag shouldBe false
         delay(100)
-        eventually(30.jMilliseconds) { flag shouldBe true }
+        eventually(60.jMilliseconds) { flag shouldBe true }
     }
 
     @Test

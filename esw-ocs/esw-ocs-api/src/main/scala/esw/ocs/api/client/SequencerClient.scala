@@ -2,6 +2,7 @@ package esw.ocs.api.client
 
 import akka.util.Timeout
 import csw.command.api.utils.SequencerCommandServiceExtension
+import csw.location.models.AkkaLocation
 import csw.params.commands.CommandResponse.SubmitResponse
 import csw.params.commands.{Sequence, SequenceCommand}
 import csw.params.core.models.Id
@@ -92,4 +93,6 @@ class SequencerClient(
 
   override def operationsMode(): Future[OperationsModeResponse] =
     postClient.requestResponse[OperationsModeResponse](OperationsMode)
+
+  override def getSequenceComponent: Future[AkkaLocation] = postClient.requestResponse[AkkaLocation](GetSequenceComponent)
 }

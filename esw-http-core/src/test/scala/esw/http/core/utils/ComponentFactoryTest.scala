@@ -4,9 +4,9 @@ import java.net.URI
 
 import akka.actor.typed.{ActorSystem, SpawnProtocol}
 import csw.location.api.scaladsl.LocationService
-import csw.location.models.{AkkaLocation, ComponentId, ComponentType}
 import csw.location.models.Connection.AkkaConnection
-import csw.params.core.models.{Prefix, Subsystem}
+import csw.location.models.{AkkaLocation, ComponentId, ComponentType}
+import csw.prefix.models.{Prefix, Subsystem}
 import esw.http.core.BaseTestSuite
 import esw.http.core.wiring.ActorRuntime
 import org.mockito.Mockito.{verify, when}

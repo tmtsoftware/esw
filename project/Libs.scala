@@ -3,32 +3,35 @@ import sbt.Def.{setting => dep}
 import sbt._
 
 object Libs {
-  private val SilencerVersion = "1.4.4"
-  private val MSocketVersion  = "5d44eef"
+  private val SilencerVersion     = "1.4.4"
+  private val MSocketVersion      = "e657c0d"
+  private val mockitoScalaVersion = "1.10.2"
 
   val `silencer-plugin` = "com.github.ghik" % "silencer-plugin" % SilencerVersion cross CrossVersion.full
   val `silencer-lib`    = "com.github.ghik" % "silencer-lib"    % SilencerVersion cross CrossVersion.full
 
-  val `case-app`           = "com.github.alexarchambault" %% "case-app" % "2.0.0-M9"
-  val enumeratum           = dep("com.beachape" %%% "enumeratum" % "1.5.13") //MIT License
-  val `mockito-scala`      = "org.mockito" %% "mockito-scala" % "1.7.1" // MIT License
-  val `scala-async`        = "org.scala-lang.modules" %% "scala-async" % "0.10.0" //BSD 3-clause "New" or "Revised" License
-  val scalatest            = "org.scalatest" %% "scalatest" % "3.1.0" //Apache License 2.0
-  val `scala-java8-compat` = "org.scala-lang.modules" %% "scala-java8-compat" % "0.9.0" //BSD 3-clause "New" or "Revised" License
-  val `msocket-api`        = dep("com.github.tmtsoftware.msocket" %%% "msocket-api" % MSocketVersion)
-  val `msocket-impl-jvm`   = "com.github.tmtsoftware.msocket" %% "msocket-impl-jvm" % MSocketVersion
-  val `caffeine`           = "com.github.ben-manes.caffeine" % "caffeine" % "2.8.0"
-  val `jupiter-interface`  = "net.aichler" % "jupiter-interface" % "0.8.3"
+  val `case-app`                = "com.github.alexarchambault" %% "case-app" % "2.0.0-M9"
+  val enumeratum                = dep("com.beachape" %%% "enumeratum" % "1.5.14") //MIT License
+  val `mockito-scala`           = "org.mockito" %% "mockito-scala" % mockitoScalaVersion // MIT License
+  val `mockito-scala-scalatest` = "org.mockito" %% "mockito-scala-scalatest" % mockitoScalaVersion // MIT License
+  val `scala-async`             = "org.scala-lang.modules" %% "scala-async" % "0.10.0" //BSD 3-clause "New" or "Revised" License
+  val scalatest                 = "org.scalatest" %% "scalatest" % "3.0.8" //Apache License 2.0
+  val `scala-java8-compat`      = "org.scala-lang.modules" %% "scala-java8-compat" % "0.9.0" //BSD 3-clause "New" or "Revised" License
+  val `msocket-api`             = dep("com.github.tmtsoftware.msocket" %%% "msocket-api" % MSocketVersion)
+  val `msocket-impl-jvm`        = "com.github.tmtsoftware.msocket" %% "msocket-impl-jvm" % MSocketVersion
+  val `caffeine`                = "com.github.ben-manes.caffeine" % "caffeine" % "2.8.0"
+  val `jupiter-interface`       = "net.aichler" % "jupiter-interface" % "0.8.3"
 }
 
 object Csw {
   private val Org     = "com.github.tmtsoftware.csw"
-  private val Version = "b304892" //change this to 0.1-SNAPSHOT to test with local csw changes (after publishLocal)
+  private val Version = "e755f32" //change this to 0.1.0-SNAPSHOT to test with local csw changes (after publishLocal)
 
   val `csw-admin-api`                 = dep(Org %%% "csw-admin-api" % Version)
   val `csw-admin-impl`                = Org %% "csw-admin-impl" % Version
   val `csw-alarm-api`                 = Org %% "csw-alarm-api" % Version
   val `csw-command-api`               = dep(Org %%% "csw-command-api" % Version)
+  val `csw-prefix`                    = dep(Org %%% "csw-prefix" % Version)
   val `csw-location-models`           = dep(Org %%% "csw-location-models" % Version)
   val `csw-logging-models`            = dep(Org %%% "csw-logging-models" % Version)
   val `csw-location-api`              = Org %% "csw-location-api" % Version
@@ -39,6 +42,7 @@ object Csw {
   val `csw-commons`                   = Org %% "csw-commons" % Version
   val `csw-network-utils`             = Org %% "csw-network-utils" % Version
   val `csw-location-client`           = Org %% "csw-location-client" % Version
+  val `csw-location-server`           = Org %% "csw-location-server" % Version
   val `csw-command-client`            = Org %% "csw-command-client" % Version
   val `csw-event-client`              = Org %% "csw-event-client" % Version
   val `csw-time-scheduler`            = Org %% "csw-time-scheduler" % Version
@@ -73,11 +77,11 @@ object AkkaHttp {
 }
 
 object Borer {
-  private val Version = "1.2.1"
-  private val Org     = "io.bullet"
+  private val Version = "bdc7423"
+  private val Org     = "com.github.sirthias.borer"
 
-  val `borer-core`        = Org %% "borer-core"        % Version
-  val `borer-derivation`  = Org %% "borer-derivation"  % Version
+  val `borer-core`        = dep(Org %%% "borer-core" % Version)
+  val `borer-derivation`  = dep(Org %%% "borer-derivation" % Version)
   val `borer-compat-akka` = Org %% "borer-compat-akka" % Version
 }
 

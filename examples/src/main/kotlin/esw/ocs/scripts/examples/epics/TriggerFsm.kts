@@ -2,6 +2,7 @@ package esw.ocs.scripts.examples.epics
 
 import esw.ocs.dsl.core.FsmScript
 import esw.ocs.dsl.params.booleanKey
+import kotlin.time.seconds
 
 FsmScript("INIT") {
     val triggerFlag = SystemVar(false, "tcs.triggerflag", booleanKey("flag"))
@@ -51,6 +52,6 @@ FsmScript("INIT") {
         //do some actions to stop
 
         //send stop command to downstream sequencer
-        Sequencer("lgsf", "darknight").stop()
+        Sequencer("lgsf", "darknight", 10.seconds).stop()
     }
 }

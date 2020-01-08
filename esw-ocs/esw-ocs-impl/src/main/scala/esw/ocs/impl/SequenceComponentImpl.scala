@@ -4,7 +4,7 @@ import akka.Done
 import akka.actor.typed.scaladsl.AskPattern._
 import akka.actor.typed.{ActorRef, ActorSystem}
 import akka.util.Timeout
-import csw.params.core.models.Subsystem
+import csw.prefix.models.Subsystem
 import esw.ocs.api.SequenceComponentApi
 import esw.ocs.api.protocol.{GetStatusResponse, ScriptResponse}
 import esw.ocs.impl.messages.SequenceComponentMsg

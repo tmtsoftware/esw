@@ -20,7 +20,7 @@ class DatabaseServiceDslTest : DatabaseServiceDsl {
     private val passwordHolder = "password-holder"
 
     @Test
-    fun `makeDsl should be able to call databaseServiceFactory#makeDsl(dbName)`() = runBlocking {
+    fun `makeDsl should be able to call databaseServiceFactory#makeDsl(dbName) | ESW-124`() = runBlocking {
 
         every { databaseServiceFactory.jMakeDsl(locationService, dbName) }.answers { CompletableFuture.completedFuture(dslContext) }
 
@@ -29,7 +29,7 @@ class DatabaseServiceDslTest : DatabaseServiceDsl {
     }
 
     @Test
-    fun `makeDsl should be able to call databaseServiceFactory#makeDsl(dbName, usernameHolder, passwordHolder)`() = runBlocking {
+    fun `makeDsl should be able to call databaseServiceFactory#makeDsl(dbName, usernameHolder, passwordHolder) | ESW-124`() = runBlocking {
 
         every { databaseServiceFactory.jMakeDsl(locationService, dbName, usernameHolder, passwordHolder) }.answers { CompletableFuture.completedFuture(dslContext) }
 

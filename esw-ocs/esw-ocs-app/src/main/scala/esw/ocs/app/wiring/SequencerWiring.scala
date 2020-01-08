@@ -9,9 +9,6 @@ import akka.util.Timeout
 import com.typesafe.config.{Config, ConfigFactory}
 import csw.alarm.api.javadsl.IAlarmService
 import csw.command.client.messages.sequencer.SequencerMsg
-import csw.config.api.javadsl.IConfigClientService
-import csw.config.client.javadsl.JConfigClientFactory
-import csw.database.DatabaseServiceFactory
 import csw.event.client.internal.commons.javawrappers.JEventService
 import csw.location.api.extensions.ActorExtension.RichActor
 import csw.location.api.javadsl.ILocationService
@@ -23,23 +20,21 @@ import csw.logging.api.javadsl.ILogger
 import csw.logging.api.scaladsl.Logger
 import csw.logging.client.scaladsl.LoggerFactory
 import csw.network.utils.SocketUtils
-import csw.params.core.models.Subsystem
+import csw.prefix.models.Subsystem
 import esw.http.core.wiring.{ActorRuntime, CswWiring, HttpService, Settings}
 import esw.ocs.api.codecs.SequencerHttpCodecs
 import esw.ocs.api.protocol.ScriptError
-import esw.ocs.dsl.script.utils.{LockUnlockUtil, ScriptLoader}
-import esw.ocs.dsl.script.{CswServices, ScriptDsl}
-import esw.ocs.dsl.sequence_manager.LocationServiceUtil
 import esw.ocs.handler.{SequencerPostHandler, SequencerWebsocketHandler}
 import esw.ocs.impl.core._
-import esw.ocs.impl.internal.{SequencerServer, Timeouts}
-import esw.ocs.impl.messages.SequenceComponentMsg
+import esw.ocs.impl.script.{ScriptApi, ScriptContext, ScriptLoader}
+import esw.ocs.impl.internal._
 import esw.ocs.impl.messages.SequencerMessages.Shutdown
 import esw.ocs.impl.syntax.FutureSyntax.FutureOps
 import esw.ocs.impl.{SequencerActorProxy, SequencerActorProxyFactory}
+import msocket.api.Encoding
+import msocket.impl.RouteFactory
 import msocket.impl.post.PostRouteFactory
 import msocket.impl.ws.WebsocketRouteFactory
-import msocket.impl.{Encoding, RouteFactory}
 
 import scala.async.Async.{async, await}
 import scala.util.control.NonFatal
@@ -47,7 +42,7 @@ import scala.util.control.NonFatal
 private[ocs] class SequencerWiring(
     val subsystem: Subsystem,
     val observingMode: String,
-    sequenceComponent: ActorRef[SequenceComponentMsg]
+    sequenceComponentLocation: AkkaLocation
 ) extends SequencerHttpCodecs {
   private lazy val config: Config  = ConfigFactory.load()
   private lazy val sequencerConfig = SequencerConfig.from(config, subsystem, observingMode)
@@ -62,47 +57,37 @@ private[ocs] class SequencerWiring(
 
   implicit lazy val actorRuntime: ActorRuntime = cswWiring.actorRuntime
 
-  lazy val sequencerRef: ActorRef[SequencerMsg] = (typedSystem ? { x: ActorRef[ActorRef[SequencerMsg]] =>
+  lazy val sequencerRef: ActorRef[SequencerMsg] = (actorSystem ? { x: ActorRef[ActorRef[SequencerMsg]] =>
     Spawn(sequencerBehavior.setup, prefix.value, Props.empty, x)
   }).block
 
   //Pass lambda to break circular dependency shown below.
   //SequencerRef -> Script -> cswServices -> SequencerOperator -> SequencerRef
-  private lazy val sequenceOperatorFactory = () => new SequenceOperatorImpl(sequencerRef)
+  private lazy val sequenceOperatorFactory = () => new SequenceOperator(sequencerRef)
   private lazy val componentId             = ComponentId(prefix, ComponentType.Sequencer)
-  private lazy val script: ScriptDsl       = ScriptLoader.loadKotlinScript(scriptClass, cswServices)
+  private lazy val script: ScriptApi       = ScriptLoader.loadKotlinScript(scriptClass, scriptContext)
 
-  lazy private val locationServiceUtil   = new LocationServiceUtil(locationService)
-  lazy private val sequencerProxyFactory = new SequencerActorProxyFactory(locationServiceUtil)
+  private lazy val locationServiceUtil        = new LocationServiceUtil(locationService)
+  private lazy val sequencerProxyFactory      = new SequencerActorProxyFactory(locationServiceUtil)
+  lazy val jLocationService: ILocationService = JHttpLocationServiceFactory.makeLocalClient(actorSystem)
 
-  lazy private val lockUnlockUtil = new LockUnlockUtil(locationServiceUtil)(actorSystem)
+  lazy val jEventService: JEventService         = new JEventService(eventService)
+  private lazy val jAlarmService: IAlarmService = alarmServiceFactory.jMakeClientApi(jLocationService, actorSystem)
 
-  lazy val jLocationService: ILocationService         = JHttpLocationServiceFactory.makeLocalClient(actorSystem)
-  lazy val jConfigClientService: IConfigClientService = JConfigClientFactory.clientApi(actorSystem, jLocationService)
-  lazy val jEventService: JEventService               = new JEventService(eventService)
-
-  private lazy val jAlarmService: IAlarmService = alarmServiceFactory.jMakeClientApi(jLocationService, typedSystem)
-
-  private lazy val loggerFactory    = new LoggerFactory(prefix.value)
-  private lazy val jLoggerFactory   = loggerFactory.asJava
+  private lazy val loggerFactory    = new LoggerFactory(prefix)
   private lazy val logger: Logger   = loggerFactory.getLogger
+  private lazy val jLoggerFactory   = loggerFactory.asJava
   private lazy val jLogger: ILogger = ScriptLoader.withScript(scriptClass)(jLoggerFactory.getLogger)
 
-  private lazy val databaseServiceFactory = new DatabaseServiceFactory(actorSystem)
-
-  lazy val cswServices = new CswServices(
+  lazy val scriptContext = new ScriptContext(
     prefix,
-    sequenceOperatorFactory,
     jLogger,
-    typedSystem,
-    jLocationService,
+    sequenceOperatorFactory,
+    actorSystem,
     jEventService,
-    timeServiceSchedulerFactory,
-    sequencerProxyFactory.jMake,
-    databaseServiceFactory,
-    lockUnlockUtil,
-    jConfigClientService,
-    jAlarmService
+    jAlarmService,
+    sequencerProxyFactory,
+    config
   )
 
   private lazy val sequencerApi                              = new SequencerActorProxy(sequencerRef)
@@ -126,7 +111,7 @@ private[ocs] class SequencerWiring(
     }
 
   lazy val sequencerBehavior =
-    new SequencerBehavior(componentId, script, locationService, sequenceComponent, shutdownHttpService)(typedSystem)
+    new SequencerBehavior(componentId, script, locationService, sequenceComponentLocation, shutdownHttpService)(actorSystem)
 
   lazy val sequencerServer: SequencerServer = new SequencerServer {
     override def start(): Either[ScriptError, AkkaLocation] = {
@@ -136,7 +121,7 @@ private[ocs] class SequencerWiring(
         httpService.registeredLazyBinding.block
 
         val registration = AkkaRegistration(AkkaConnection(componentId), sequencerRef.toURI)
-        new LocationServiceUtil(locationService).register(registration).block
+        locationServiceUtil.register(registration).block
       }
       catch {
         case NonFatal(e) => Left(ScriptError(e.getMessage))

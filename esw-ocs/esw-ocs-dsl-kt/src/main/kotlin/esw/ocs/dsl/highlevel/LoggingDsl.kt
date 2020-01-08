@@ -6,24 +6,24 @@ interface LoggingDsl {
 
     val logger: ILogger
 
-    fun trace(message: String, map: Map<String, Any> = emptyMap()) =
-            logger.trace(message, map)
+    fun trace(message: String, extraInfo: Map<String, Any> = emptyMap()) =
+            logger.trace(message, extraInfo)
 
-    fun debug(message: String, map: Map<String, Any> = emptyMap()) =
-            logger.debug(message, map)
+    fun debug(message: String, extraInfo: Map<String, Any> = emptyMap()) =
+            logger.debug(message, extraInfo)
 
-    fun info(message: String, map: Map<String, Any> = emptyMap()) =
-            logger.info(message, map)
+    fun info(message: String, extraInfo: Map<String, Any> = emptyMap()) =
+            logger.info(message, extraInfo)
 
-    fun warn(message: String, map: Map<String, Any> = emptyMap(), ex: Throwable? = null) =
-            ex?.let { logger.warn(message, map, ex) }
-                    ?: logger.warn(message, map)
+    fun warn(message: String, cause: Throwable? = null, extraInfo: Map<String, Any> = emptyMap()) =
+            cause?.let { logger.warn(message, extraInfo, cause) }
+                    ?: logger.warn(message, extraInfo)
 
-    fun error(message: String, map: Map<String, Any> = emptyMap(), ex: Throwable? = null) =
-            ex?.let { logger.error(message, map, ex) }
-                    ?: logger.error(message, map)
+    fun error(message: String, cause: Throwable? = null, extraInfo: Map<String, Any> = emptyMap()) =
+            cause?.let { logger.error(message, extraInfo, cause) }
+                    ?: logger.error(message, extraInfo)
 
-    fun fatal(message: String, map: Map<String, Any> = emptyMap(), ex: Throwable? = null) =
-            ex?.let { logger.fatal(message, map, ex) }
-                    ?: logger.fatal(message, map)
+    fun fatal(message: String, cause: Throwable? = null, extraInfo: Map<String, Any> = emptyMap()) =
+            cause?.let { logger.fatal(message, extraInfo, cause) }
+                    ?: logger.fatal(message, extraInfo)
 }

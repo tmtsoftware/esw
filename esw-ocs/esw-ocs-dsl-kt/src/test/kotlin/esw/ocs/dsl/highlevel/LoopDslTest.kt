@@ -1,6 +1,5 @@
 package esw.ocs.dsl.highlevel
 
-import esw.ocs.dsl.highlevel.LoopDsl
 import io.kotlintest.matchers.numerics.shouldBeLessThan
 import io.kotlintest.matchers.shouldBeInRange
 import io.kotlintest.shouldBe
@@ -69,11 +68,11 @@ class LoopDslTest : LoopDsl {
     }
 
     @Test
-    fun `bgLoop should run in the background till condition becomes true when interval is default | ESW-89`() = runBlocking {
+    fun `loopAsync should run in the background till condition becomes true when interval is default | ESW-89`() = runBlocking {
         val counter = AtomicInteger(0)
 
         val loopTime = measureTimeMillis {
-            val loopResult = bgLoop {
+            val loopResult = loopAsync {
                 counter.getAndUpdate { it + 1 }
                 stopWhen(counter.get() == 5)
             }
@@ -89,11 +88,11 @@ class LoopDslTest : LoopDsl {
     }
 
     @Test
-    fun `bgLoop should run in the background till condition becomes true when interval is custom | ESW-89`() = runBlocking {
+    fun `loopAsync should run in the background till condition becomes true when interval is custom | ESW-89`() = runBlocking {
         val counter = AtomicInteger(0)
 
         val loopTime = measureTimeMillis {
-            val loopResult = bgLoop(300.milliseconds) {
+            val loopResult = loopAsync(300.milliseconds) {
                 counter.getAndUpdate { it + 1 }
                 stopWhen(counter.get() == 3)
             }

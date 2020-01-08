@@ -29,7 +29,7 @@ class TimeServiceDslTest : TimeServiceDsl {
     private val duration: Duration = 10.seconds
     private val jDuration = duration.toJavaDuration()
 
-    override val timeServiceScheduler: TimeServiceScheduler = scheduler
+    override val timeService: TimeServiceScheduler = scheduler
     override val coroutineScope: CoroutineScope = CoroutineScope(EmptyCoroutineContext)
 
     private fun assertWithin(expected: Duration, result: Duration, tolerance: Duration) {
@@ -46,6 +46,13 @@ class TimeServiceDslTest : TimeServiceDsl {
     }
 
     @Test
+    fun `TimeServiceDsl should scheduleOnceFromNow should delegate to timeServiceScheduler#scheduleOnce | ESW-122`() = runBlocking{
+        every { scheduler.scheduleOnce(any(), any<Runnable>()) }.answers { cancellable }
+        scheduleOnceFromNow(1.seconds, mockk()) shouldBe cancellable
+        verify { scheduler.scheduleOnce(any(), any<Runnable>()) }
+    }
+
+    @Test
     fun `schedulePeriodically should delegate to timeServiceScheduler#schedulePeriodically | ESW-122`()= runBlocking{
         every {
             scheduler.schedulePeriodically(startTime, jDuration, any<Runnable>())
@@ -53,6 +60,16 @@ class TimeServiceDslTest : TimeServiceDsl {
 
         schedulePeriodically(startTime, duration, mockk()) shouldBe cancellable
         verify { scheduler.schedulePeriodically(startTime, jDuration, any<Runnable>()) }
+    }
+
+    @Test
+    fun `schedulePeriodicallyFromNow should delegate to timeServiceScheduler#schedulePeriodically | ESW-122`()= runBlocking{
+        every {
+            scheduler.schedulePeriodically(any(), jDuration, any<Runnable>())
+        }.answers { cancellable }
+
+        schedulePeriodicallyFromNow(1.seconds, duration, mockk()) shouldBe cancellable
+        verify { scheduler.schedulePeriodically(any(), jDuration, any<Runnable>()) }
     }
 
     @Test

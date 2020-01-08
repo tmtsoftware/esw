@@ -8,6 +8,7 @@ lazy val aggregateProjects: Seq[ProjectReference] =
     `esw-http-core`,
     `esw-gateway`,
     `esw-integration-test`,
+    `esw-agent`,
     examples
   )
 
@@ -17,6 +18,7 @@ lazy val unidocExclusions: Seq[ProjectReference] = Seq(
   `esw-ocs-api`.js,
   `esw-gateway-api`.js,
   `esw-ocs-handler`,
+  `esw-agent`,
   examples
 )
 
@@ -69,10 +71,29 @@ lazy val `esw-ocs-impl` = project
     libraryDependencies ++= Dependencies.OcsImpl.value
   )
   .dependsOn(
-    `esw-ocs-api`.jvm % "compile->compile;test->test",
-    `esw-ocs-dsl`,
+    `esw-ocs-api`.jvm   % "compile->compile;test->test",
     `esw-test-reporter` % Test
   )
+
+lazy val `esw-ocs-dsl` = project
+  .in(file("esw-ocs/esw-ocs-dsl"))
+  .settings(libraryDependencies ++= Dependencies.OcsDsl.value)
+  .dependsOn(
+    `esw-ocs-api`.jvm % "compile->compile;test->test",
+    `esw-ocs-impl`,
+    `esw-test-reporter` % Test
+  )
+
+lazy val `esw-ocs-dsl-kt` = project
+  .in(file("esw-ocs/esw-ocs-dsl-kt"))
+  .enablePlugins(KotlinPlugin)
+  .settings(
+    fork in Test := true, // fixme: temp fix to run test sequentially, otherwise LoopTest fails because of timings
+    kotlinVersion := "1.3.61",
+    kotlincOptions ++= Seq("-Xuse-experimental=kotlin.time.ExperimentalTime", "-jvm-target", "1.8")
+  )
+  .settings(libraryDependencies ++= Dependencies.OcsDslKt.value)
+  .dependsOn(`esw-ocs-dsl`)
 
 lazy val `esw-ocs-app` = project
   .in(file("esw-ocs/esw-ocs-app"))
@@ -87,12 +108,44 @@ lazy val `esw-ocs-app` = project
     `esw-test-reporter` % Test
   )
 
+lazy val `esw-agent` = project
+  .in(file("esw-agent"))
+  .aggregate(
+    `esw-agent-app`,
+    `esw-agent-api`,
+    `esw-agent-client`
+  )
+
+lazy val `esw-agent-app` = project
+  .in(file("esw-agent/esw-agent-app"))
+  .enablePlugins(EswBuildInfo, DeployApp, MaybeCoverage)
+  .settings(libraryDependencies ++= Dependencies.AgentApp.value)
+  .dependsOn(
+    `esw-agent-api`,
+    `esw-test-reporter` % Test
+  )
+
+lazy val `esw-agent-api` = project
+  .in(file("esw-agent/esw-agent-api"))
+  .enablePlugins(DeployApp)
+  .settings(libraryDependencies ++= Dependencies.AgentApi.value)
+  .dependsOn(
+    `esw-test-reporter` % Test
+  )
+
+lazy val `esw-agent-client` = project
+  .in(file("esw-agent/esw-agent-client"))
+  .enablePlugins(DeployApp, MaybeCoverage)
+  .settings(libraryDependencies ++= Dependencies.AgentClient.value)
+  .dependsOn(
+    `esw-agent-api`,
+    `esw-test-reporter` % Test
+  )
+
 lazy val `esw-http-core` = project
   .in(file("esw-http-core"))
   .enablePlugins(PublishBintray, MaybeCoverage, EswBuildInfo)
-  .settings(
-    libraryDependencies ++= Dependencies.EswHttpCore.value
-  )
+  .settings(libraryDependencies ++= Dependencies.EswHttpCore.value)
   .dependsOn(`esw-test-reporter` % Test)
 
 lazy val `esw-integration-test` = project
@@ -106,24 +159,10 @@ lazy val `esw-integration-test` = project
     `esw-ocs-impl`,
     examples,
     `esw-ocs-app`,
+    `esw-agent-app`,
+    `esw-agent-client`,
     `esw-test-reporter` % Test
   )
-
-lazy val `esw-ocs-dsl` = project
-  .in(file("esw-ocs/esw-ocs-dsl"))
-  .settings(libraryDependencies ++= Dependencies.OcsDsl.value)
-  .dependsOn(`esw-ocs-api`.jvm % "compile->compile;test->test", `esw-test-reporter` % Test)
-
-lazy val `esw-ocs-dsl-kt` = project
-  .in(file("esw-ocs/esw-ocs-dsl-kt"))
-  .enablePlugins(KotlinPlugin)
-  .settings(
-    fork in Test := true, // fixme: temp fix to run test sequentially, otherwise LoopTest fails because of timings
-    kotlinVersion := "1.3.61",
-    kotlincOptions ++= Seq("-Xuse-experimental=kotlin.time.ExperimentalTime", "-jvm-target", "1.8")
-  )
-  .settings(libraryDependencies ++= Dependencies.OcsDslKt.value)
-  .dependsOn(`esw-ocs-dsl`)
 
 lazy val `esw-gateway` = project
   .aggregate(

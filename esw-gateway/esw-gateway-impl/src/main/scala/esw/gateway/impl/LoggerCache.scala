@@ -3,13 +3,14 @@ package esw.gateway.impl
 import com.github.benmanes.caffeine.cache.{Caffeine, LoadingCache}
 import csw.logging.api.scaladsl.Logger
 import csw.logging.client.scaladsl.LoggerFactory
+import csw.prefix.models.Prefix
 
 class LoggerCache {
-  private val loggerCache: LoadingCache[String, Logger] = Caffeine
+  private val loggerCache: LoadingCache[Prefix, Logger] = Caffeine
     .newBuilder()
     .maximumSize(2048)
-    .build(key => new LoggerFactory(key.toLowerCase).getLogger)
+    .build(key => new LoggerFactory(key).getLogger)
 
   // loggerCache.get will enter LoggerFactory against key if not present
-  def get(componentName: String): Logger = loggerCache.get(componentName)
+  def get(prefix: Prefix): Logger = loggerCache.get(prefix)
 }

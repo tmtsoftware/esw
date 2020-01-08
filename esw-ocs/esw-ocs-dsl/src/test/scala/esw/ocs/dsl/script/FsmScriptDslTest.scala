@@ -7,24 +7,25 @@ import csw.params.commands.SequenceCommand
 import csw.time.core.models.UTCTime
 import esw.ocs.api.BaseTestSuite
 import esw.ocs.dsl.params.Params
+import esw.ocs.impl.core.SequenceOperator
 
 import scala.concurrent.Future
 
 class FsmScriptDslTest extends BaseTestSuite {
-  private val strandEc      = StrandEc()
-  private val cswServices   = mock[CswServices]
-  private val STARTED_STATE = "STARTED"
-  private val params        = Params()
+  private val strandEc           = StrandEc()
+  private val seqOperatorFactory = () => mock[SequenceOperator]
+  private val STARTED_STATE      = "STARTED"
+  private val params             = Params()
 
   override protected def afterAll(): Unit = strandEc.shutdown()
 
   "become" must {
-    "call transition method defined on FsmScriptState and update its internal state" in {
+    "call transition method defined on FsmScriptState and update its internal state | ESW-252" in {
       val initialState = mock[FsmScriptState]
       val updatedState = mock[FsmScriptState]
       when(initialState.transition(STARTED_STATE, params)).thenReturn(updatedState)
 
-      val scriptDsl = new FsmScriptDsl(cswServices, strandEc, initialState)
+      val scriptDsl = new FsmScriptDsl(seqOperatorFactory, strandEc, initialState)
       scriptDsl.become(STARTED_STATE, params)
 
       verify(initialState).transition(STARTED_STATE, params)
@@ -39,7 +40,7 @@ class FsmScriptDslTest extends BaseTestSuite {
       val handler      = (_: Params) => mock[ScriptDsl]
       when(initialState.add(STARTED_STATE, handler)).thenReturn(updatedState)
 
-      val scriptDsl = new FsmScriptDsl(cswServices, strandEc, initialState)
+      val scriptDsl = new FsmScriptDsl(seqOperatorFactory, strandEc, initialState)
       scriptDsl.add(STARTED_STATE, handler)
 
       verify(initialState).add(STARTED_STATE, handler)
@@ -72,7 +73,7 @@ class FsmScriptDslTest extends BaseTestSuite {
       when(script.executeOperationsMode()).thenReturn(futureDone)
       when(script.executeExceptionHandlers(ex)).thenReturn(completionStageVoid)
 
-      val scriptDsl = new FsmScriptDsl(cswServices, strandEc, state)
+      val scriptDsl = new FsmScriptDsl(seqOperatorFactory, strandEc, state)
 
       scriptDsl.execute(sequenceCommand) should ===(futureUnit)
       verify(script).execute(sequenceCommand)

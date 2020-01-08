@@ -2,7 +2,7 @@ package esw.ocs.impl.messages
 
 import akka.Done
 import akka.actor.typed.ActorRef
-import csw.params.core.models.Subsystem
+import csw.prefix.models.Subsystem
 import esw.ocs.api.codecs.OcsAkkaSerializable
 import esw.ocs.api.protocol.{GetStatusResponse, ScriptResponse}
 

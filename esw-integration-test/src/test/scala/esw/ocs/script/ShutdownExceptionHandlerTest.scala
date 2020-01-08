@@ -1,13 +1,13 @@
 package esw.ocs.script
 
 import akka.actor.testkit.typed.scaladsl.TestProbe
-import csw.params.core.models.Prefix
-import csw.params.core.models.Subsystem.TCS
 import csw.params.events.{Event, EventKey, EventName, SystemEvent}
-import csw.testkit.scaladsl.CSWService.EventServer
+import csw.prefix.models.Prefix
+import csw.prefix.models.Subsystem.TCS
 import esw.ocs.api.protocol.Ok
 import esw.ocs.impl.messages.SequencerMessages.Shutdown
 import esw.ocs.testkit.EswTestKit
+import esw.ocs.testkit.Service.EventServer
 
 class ShutdownExceptionHandlerTest extends EswTestKit(EventServer) {
 
@@ -32,10 +32,11 @@ class ShutdownExceptionHandlerTest extends EswTestKit(EventServer) {
     val shutdownProbe = TestProbe[Ok.type]
     sequencer ! Shutdown(shutdownProbe.ref)
 
+    eventually { shutdownProbe.expectMessage(Ok) }
     eventually {
       val event = assertionProbe.expectMessageType[SystemEvent]
+      event.isInvalid shouldBe false
       event.eventName.name shouldBe reason
-      shutdownProbe.expectMessage(Ok)
     }
   }
 }

@@ -2,22 +2,24 @@ package esw.ocs.impl.core
 
 import akka.Done
 import akka.actor.testkit.typed.scaladsl.{ScalaTestWithActorTestKit, TestProbe}
-import akka.actor.typed.ActorRef
 import csw.command.client.messages.sequencer.SequencerMsg.QueryFinal
 import csw.command.client.messages.{GetComponentLogMetadata, SetComponentLogLevel}
+import csw.location.models.AkkaLocation
 import csw.logging.client.commons.LogAdminUtil
 import csw.logging.models.Level.{DEBUG, INFO}
 import csw.logging.models.LogMetadata
+import csw.params.commands.CommandIssue.IdNotAvailableIssue
 import csw.params.commands.CommandResponse._
 import csw.params.commands.{CommandName, Sequence, Setup}
-import csw.params.core.models.{Id, Prefix}
+import csw.params.core.models.Id
+import csw.prefix.models.Prefix
+import csw.prefix.models.Subsystem.ESW
 import csw.time.core.models.UTCTime
 import esw.ocs.api.BaseTestSuite
 import esw.ocs.api.models.StepStatus.{Finished, InFlight, Pending}
 import esw.ocs.api.models.{Step, StepList}
 import esw.ocs.api.protocol.EditorError.{CannotOperateOnAnInFlightOrFinishedStep, IdDoesNotExist}
 import esw.ocs.api.protocol._
-import esw.ocs.impl.messages.SequenceComponentMsg
 import esw.ocs.impl.messages.SequencerMessages._
 import esw.ocs.impl.messages.SequencerState.{Idle, InProgress, Loaded, Offline}
 import org.scalatest.prop.TableDrivenPropertyChecks._
@@ -100,23 +102,25 @@ class SequencerBehaviorTest extends ScalaTestWithActorTestKit with BaseTestSuite
   }
 
   "QueryFinal" must {
-    "return error response when sequencer is Idle and hasn't executed any sequence | ESW-221" in {
+    "return Invalid response when sequencer is Idle and hasn't executed any sequence | ESW-221" in {
       val sequencerSetup = SequencerTestSetup.idle(sequence)
       import sequencerSetup._
 
       val seqResProbe = createTestProbe[SubmitResponse]
       sequencerActor ! QueryFinal(Id(), seqResProbe.ref)
-      seqResProbe.expectMessageType[Error]
+      seqResProbe.expectMessageType[Invalid]
     }
 
-    "return error response when sequencerId is invalid | ESW-221" in {
+    "return Invalid response when sequencerId is invalid | ESW-221" in {
       val sequencerSetup = SequencerTestSetup.loaded(sequence)
       import sequencerSetup._
 
       val seqResProbe = createTestProbe[SubmitResponse]
       val invalidId   = Id("invalid")
       sequencerActor ! QueryFinal(invalidId, seqResProbe.ref)
-      seqResProbe.expectMessage(Error(invalidId, s"No sequence with $invalidId is loaded in the sequencer"))
+      seqResProbe.expectMessage(
+        Invalid(invalidId, IdNotAvailableIssue(s"Sequencer is not running any sequence with runId $invalidId"))
+      )
     }
 
     "return Sequence result with Completed when sequencer is in loaded state | ESW-145, ESW-154, ESW-221" in {
@@ -616,6 +620,16 @@ class SequencerBehaviorTest extends ScalaTestWithActorTestKit with BaseTestSuite
 
       stopAndAssertResponse(Ok, InProgress)
     }
+
+    "stop given inProgress sequence when it is paused | ESW-138" in {
+      val sequencerSetup = SequencerTestSetup.inProgressWithFirstCommandComplete(sequence)
+      import sequencerSetup._
+
+      pauseAndAssertResponse(Ok)
+      assertEngineCanExecuteNext(isReadyToExecuteNext = false)
+
+      stopAndAssertResponse(Ok, InProgress)
+    }
   }
 
   "GoOnline" must {
@@ -780,7 +794,7 @@ class SequencerBehaviorTest extends ScalaTestWithActorTestKit with BaseTestSuite
   }
 
   "Update" must {
-    "update the given step with successful response" in {
+    "update the given step with successful response | ESW-241" in {
       val sequence       = Sequence(command1)
       val sequencerSetup = SequencerTestSetup.inProgress(sequence)
       import sequencerSetup._
@@ -793,7 +807,7 @@ class SequencerBehaviorTest extends ScalaTestWithActorTestKit with BaseTestSuite
       )
     }
 
-    "update the given step with error response" in {
+    "update the given step with error response | ESW-241" in {
       val sequence       = Sequence(command1)
       val sequencerSetup = SequencerTestSetup.inProgress(sequence)
       import sequencerSetup._
@@ -830,27 +844,27 @@ class SequencerBehaviorTest extends ScalaTestWithActorTestKit with BaseTestSuite
   }
 
   "LogControlMessages" must {
-    "set and get log level for component name | ESW-183" in {
+    "set and get log level for component name | ESW-183, ESW-127" in {
       val sequencerSetup = SequencerTestSetup.inProgress(sequence)
       import sequencerSetup._
       val logMetadataProbe = TestProbe[LogMetadata]
 
-      sequencerActor ! GetComponentLogMetadata(sequencerName, logMetadataProbe.ref)
+      sequencerActor ! GetComponentLogMetadata(logMetadataProbe.ref)
 
       val logMetadata1 = logMetadataProbe.expectMessageType[LogMetadata]
 
       logMetadata1.componentLevel shouldBe INFO
-      val initialMetadata = LogAdminUtil.getLogMetadata(sequencerName)
+      val initialMetadata = LogAdminUtil.getLogMetadata(Prefix(ESW, sequencerName))
       initialMetadata.componentLevel shouldBe INFO
 
-      sequencerActor ! SetComponentLogLevel(sequencerName, DEBUG)
-      sequencerActor ! GetComponentLogMetadata(sequencerName, logMetadataProbe.ref)
+      sequencerActor ! SetComponentLogLevel(DEBUG)
+      sequencerActor ! GetComponentLogMetadata(logMetadataProbe.ref)
 
       val logMetadata2 = logMetadataProbe.expectMessageType[LogMetadata]
       logMetadata2.componentLevel shouldBe DEBUG
 
       // this verifies that log metadata is updated in LogAdminUtil
-      val finalMetadata = LogAdminUtil.getLogMetadata(sequencerName)
+      val finalMetadata = LogAdminUtil.getLogMetadata(Prefix(ESW, sequencerName))
       finalMetadata.componentLevel shouldBe DEBUG
     }
   }
@@ -868,7 +882,7 @@ class SequencerBehaviorTest extends ScalaTestWithActorTestKit with BaseTestSuite
     forAll(testCases) { (stateName, testSetup) =>
       s"get sequence component name in $stateName state | ESW-255" in {
         import testSetup._
-        val sequenceComponentRef = TestProbe[ActorRef[SequenceComponentMsg]]
+        val sequenceComponentRef = TestProbe[AkkaLocation]
 
         sequencerActor ! GetSequenceComponent(sequenceComponentRef.ref)
 

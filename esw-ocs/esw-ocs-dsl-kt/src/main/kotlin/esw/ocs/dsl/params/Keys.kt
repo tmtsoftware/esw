@@ -63,8 +63,8 @@ fun floatMatrixKey(name: String): Key<MatrixData<Float>> = FloatMatrixKey().make
 fun doubleMatrixKey(name: String): Key<MatrixData<Double>> = DoubleMatrixKey().make(name)
 
 /** ============= Helpers =========== **/
-fun <T> arrayData(elms: Array<T>): ArrayData<T> = ArrayData.fromJavaArray(elms)
+fun <T> arrayData(elms: Array<T>): ArrayData<T> = ArrayData.fromArray(elms)
 
-inline fun <reified T> matrixData(elms: Array<Array<T>>): MatrixData<T> = MatrixData.fromJavaArrays(T::class.java, elms)
+inline fun <reified T> matrixData(elms: Array<Array<T>>): MatrixData<T> = MatrixData.fromArrays(elms)
 
 fun choicesOf(vararg choices: String): Choices = Choices.from(choices.toSet())

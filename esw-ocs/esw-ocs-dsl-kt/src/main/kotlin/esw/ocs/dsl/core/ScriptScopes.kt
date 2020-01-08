@@ -6,7 +6,7 @@ import csw.params.commands.Setup
 import csw.time.core.models.UTCTime
 import esw.ocs.dsl.ScriptDslMarker
 import esw.ocs.dsl.highlevel.CswHighLevelDslApi
-import esw.ocs.dsl.highlevel.ScriptError
+import esw.ocs.dsl.highlevel.models.ScriptError
 import esw.ocs.dsl.params.Params
 import kotlinx.coroutines.CoroutineScope
 

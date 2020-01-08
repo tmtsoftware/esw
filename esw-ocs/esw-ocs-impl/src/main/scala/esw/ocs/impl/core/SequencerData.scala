@@ -12,7 +12,6 @@ import esw.ocs.api.models.{Step, StepList, StepStatus}
 import esw.ocs.api.protocol._
 import esw.ocs.impl.messages.SequencerMessages.GoIdle
 import esw.ocs.impl.messages.SequencerState
-import esw.ocs.impl.messages.SequencerState.{InProgress, Loaded}
 
 private[core] case class SequencerData(
     stepList: Option[StepList],
@@ -23,6 +22,9 @@ private[core] case class SequencerData(
     actorSystem: ActorSystem[_],
     sequenceResponseSubscribers: Set[ActorRef[SubmitResponse]]
 ) {
+
+  def isSequenceLoaded: Boolean = stepList.isDefined
+  private def isSequenceRunning = runId.isDefined
 
   def createStepList(sequence: Sequence): SequencerData =
     copy(stepList = Some(StepList(sequence)))
@@ -36,19 +38,17 @@ private[core] case class SequencerData(
 
   def processSequence(): SequencerData =
     sendNextPendingStepIfAvailable()
-      .notifyReadyToExecuteNextSubscriber(InProgress)
+      .notifyReadyToExecuteNextSubscriber()
 
   def queryFinal(runId: Id, replyTo: ActorRef[SubmitResponse]): SequencerData =
-    if (this.runId.isDefined && this.runId.get == runId) {
-      queryFinal(replyTo)
-    }
+    if (isSequenceRunning && this.runId.get == runId) queryFinal(replyTo)
     else {
-      replyTo ! Error(runId, s"No sequence with $runId is loaded in the sequencer")
+      replyTo ! Invalid(runId, IdNotAvailableIssue(s"Sequencer is not running any sequence with runId $runId"))
       this
     }
 
   def queryFinal(replyTo: ActorRef[SubmitResponse]): SequencerData = {
-    if (runId.isDefined && stepList.get.isFinished) {
+    if (isSequenceRunning && stepList.get.isFinished) {
       replyTo ! getSequencerResponse
       this
     }
@@ -68,8 +68,8 @@ private[core] case class SequencerData(
     copy(stepRefSubscriber = Some(replyTo))
       .sendNextPendingStepIfAvailable()
 
-  def readyToExecuteNext(replyTo: ActorRef[Ok.type], state: SequencerState[SequencerMsg]): SequencerData =
-    if (stepList.exists(_.isRunningButNotInFlight) && (state == InProgress)) {
+  def readyToExecuteNext(replyTo: ActorRef[Ok.type]): SequencerData =
+    if (stepList.exists(_.isRunningButNotInFlight) && isSequenceRunning) {
       replyTo ! Ok
       copy(readyToExecuteSubscriber = None)
     }
@@ -77,41 +77,34 @@ private[core] case class SequencerData(
 
   def updateStepListResult[T >: Ok.type](
       replyTo: ActorRef[T],
-      state: SequencerState[SequencerMsg],
       stepListResult: Option[Either[T, StepList]]
   ): SequencerData =
     stepListResult
       .map {
         case Left(error)     => replyTo ! error; this
-        case Right(stepList) => updateStepList(replyTo, state, Some(stepList))
+        case Right(stepList) => updateStepList(replyTo, Some(stepList))
       }
       .getOrElse(this) // This will never happen as this method gets called from inProgress data
 
   def updateStepList[T >: Ok.type](
       replyTo: ActorRef[T],
-      state: SequencerState[SequencerMsg],
       stepList: Option[StepList]
   ): SequencerData = {
     replyTo ! Ok
     val updatedData = copy(stepList)
-    if (state == Loaded) updatedData
+    if (runId.isEmpty) updatedData
     else
       updatedData
         .checkForSequenceCompletion()
-        .notifyReadyToExecuteNextSubscriber(state)
+        .notifyReadyToExecuteNextSubscriber()
         .sendNextPendingStepIfAvailable()
   }
 
   private def changeStepStatus(state: SequencerState[SequencerMsg], newStatus: StepStatus) = {
-    val newStepList = stepList.map { stepList =>
-      stepList.copy(steps = stepList.steps.map {
-        case step if step.isInFlight => step.withStatus(newStatus)
-        case x                       => x
-      })
-    }
+    val newStepList = stepList.map(stepList => stepList.copy(steps = stepList.steps.map(_.withStatus(newStatus))))
     copy(stepList = newStepList)
       .checkForSequenceCompletion()
-      .notifyReadyToExecuteNextSubscriber(state)
+      .notifyReadyToExecuteNextSubscriber()
   }
 
   def stepSuccess(state: SequencerState[SequencerMsg]): SequencerData =
@@ -157,8 +150,8 @@ private[core] case class SequencerData(
     }
     else this
 
-  private def notifyReadyToExecuteNextSubscriber(state: SequencerState[SequencerMsg]): SequencerData =
-    readyToExecuteSubscriber.map(replyTo => readyToExecuteNext(replyTo, state)).getOrElse(this)
+  private def notifyReadyToExecuteNextSubscriber(): SequencerData =
+    readyToExecuteSubscriber.map(replyTo => readyToExecuteNext(replyTo)).getOrElse(this)
 }
 
 private[core] object SequencerData {

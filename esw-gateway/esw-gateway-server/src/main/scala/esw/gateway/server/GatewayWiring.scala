@@ -1,9 +1,6 @@
 package esw.gateway.server
 
-import akka.NotUsed
-import akka.http.scaladsl.model.ws.Message
 import akka.http.scaladsl.server.Route
-import akka.stream.scaladsl.Source
 import csw.admin.api.AdminService
 import csw.admin.impl.AdminServiceImpl
 import esw.gateway.api.codecs.GatewayCodecs
@@ -13,10 +10,10 @@ import esw.gateway.impl._
 import esw.gateway.server.handlers.{PostHandlerImpl, WebsocketHandlerImpl}
 import esw.gateway.server.utils.Resolver
 import esw.http.core.wiring.{HttpService, ServerWiring}
-import msocket.api.MessageHandler
+import msocket.api.Encoding
+import msocket.impl.RouteFactory
 import msocket.impl.post.PostRouteFactory
 import msocket.impl.ws.WebsocketRouteFactory
-import msocket.impl.{Encoding, RouteFactory}
 
 class GatewayWiring(_port: Option[Int]) extends GatewayCodecs {
   lazy val wiring = new ServerWiring(_port)
@@ -31,9 +28,8 @@ class GatewayWiring(_port: Option[Int]) extends GatewayCodecs {
   lazy val loggingApi: LoggingApi = new LoggingImpl(new LoggerCache)
   lazy val adminApi: AdminService = new AdminServiceImpl(locationService)
 
-  lazy val postHandler: MessageHandler[PostRequest, Route] =
-    new PostHandlerImpl(alarmApi, resolver, eventApi, loggingApi, adminApi)
-  def websocketHandlerFactory(encoding: Encoding[_]): MessageHandler[WebsocketRequest, Source[Message, NotUsed]] =
+  lazy val postHandler: PostHandlerImpl = new PostHandlerImpl(alarmApi, resolver, eventApi, loggingApi, adminApi)
+  def websocketHandlerFactory(encoding: Encoding[_]): WebsocketHandlerImpl =
     new WebsocketHandlerImpl(resolver, eventApi, encoding)
 
   lazy val routes: Route = RouteFactory.combine(

@@ -2,13 +2,12 @@ package esw.ocs.app.wiring
 
 import akka.actor.typed.SpawnProtocol.Spawn
 import akka.actor.typed.scaladsl.AskPattern._
-import akka.actor.typed.scaladsl.Behaviors
 import akka.actor.typed.{ActorRef, Props}
 import akka.util.Timeout
 import csw.location.models.AkkaLocation
 import csw.logging.api.scaladsl.Logger
 import csw.logging.client.scaladsl.LoggerFactory
-import csw.params.core.models.Subsystem
+import csw.prefix.models.{Prefix, Subsystem}
 import esw.http.core.wiring.{ActorRuntime, CswWiring}
 import esw.ocs.api.protocol.ScriptError
 import esw.ocs.impl.core.SequenceComponentBehavior
@@ -33,17 +32,15 @@ private[ocs] class SequenceComponentWiring(
 
   implicit lazy val timeout: Timeout = Timeouts.DefaultTimeout
 
-  def sequenceComponentFactory(sequenceComponentName: String): Future[ActorRef[SequenceComponentMsg]] = {
-    val loggerFactory                   = new LoggerFactory(sequenceComponentName)
+  def sequenceComponentFactory(sequenceComponentPrefix: Prefix): Future[ActorRef[SequenceComponentMsg]] = {
+    val loggerFactory                   = new LoggerFactory(sequenceComponentPrefix)
     val sequenceComponentLogger: Logger = loggerFactory.getLogger
 
-    sequenceComponentLogger.info(s"Starting sequence component with name: $sequenceComponentName")
+    sequenceComponentLogger.info(s"Starting sequence component with name: $sequenceComponentPrefix")
     typedSystem ? { x =>
       Spawn(
-        Behaviors.setup[SequenceComponentMsg] { ctx =>
-          SequenceComponentBehavior.behavior(ctx.self, sequenceComponentLogger, sequencerServerFactory)
-        },
-        sequenceComponentName,
+        SequenceComponentBehavior.behavior(sequenceComponentPrefix, sequenceComponentLogger, sequencerServerFactory),
+        sequenceComponentPrefix.value,
         Props.empty,
         x
       )

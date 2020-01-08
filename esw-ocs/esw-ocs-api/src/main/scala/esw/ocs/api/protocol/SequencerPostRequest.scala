@@ -22,6 +22,7 @@ object SequencerPostRequest {
   case object Reset                                               extends SequencerPostRequest
   case object Pause                                               extends SequencerPostRequest
   case object Resume                                              extends SequencerPostRequest
+  case object GetSequenceComponent                                extends SequencerPostRequest
 
   case object IsAvailable   extends SequencerPostRequest
   case object IsOnline      extends SequencerPostRequest

@@ -4,7 +4,6 @@ import csw.params.events.SystemEvent
 import esw.ocs.dsl.core.FsmScript
 import esw.ocs.dsl.params.Params
 import esw.ocs.dsl.params.intKey
-import esw.ocs.dsl.params.set
 import esw.ocs.dsl.params.stringKey
 
 FsmScript("INIT") {

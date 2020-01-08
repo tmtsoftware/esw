@@ -5,12 +5,12 @@ import csw.params.commands.CommandResponse.Started
 import csw.params.commands.{CommandName, Observe, Sequence, Setup}
 import csw.params.core.generics.KeyType
 import csw.params.core.generics.KeyType.{IntKey, LongKey, StringKey}
-import csw.params.core.models.Prefix
-import csw.params.core.models.Subsystem.ESW
 import csw.params.events.{Event, EventKey}
-import csw.testkit.scaladsl.CSWService.EventServer
+import csw.prefix.models.Prefix
+import csw.prefix.models.Subsystem.ESW
 import esw.ocs.api.SequencerApi
 import esw.ocs.testkit.EswTestKit
+import esw.ocs.testkit.Service.EventServer
 
 import scala.concurrent.Await
 import scala.concurrent.duration.DurationInt
@@ -56,8 +56,6 @@ class FsmIntegrationTest extends EswTestKit(EventServer) {
 
       fsmSequencer.submit(Sequence(temp_45, temp_30, temp_55, waitCmd))
 
-      println(fsmSequencer.getSequence.futureValue)
-
       tempFsmStateProbe.expectMessage("ERROR")
       tempFsmStateProbe.expectMessage("OK")
       tempFsmStateProbe.expectMessage("FINISHED")
@@ -102,7 +100,7 @@ class FsmIntegrationTest extends EswTestKit(EventServer) {
       fsmSequencer.stop().awaitResult
     }
 
-    "be able to bind to event variables with polling time" in {
+    "be able to bind to event variables with polling time | ESW-142, ESW-256" in {
 
       val fsmSequencer: SequencerApi = spawnSequencerProxy(ESW, "moonnight")
       val command1                   = Setup(Prefix("esw.test"), CommandName("start-fsm"), None)

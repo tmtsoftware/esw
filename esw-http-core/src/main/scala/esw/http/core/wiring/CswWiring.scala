@@ -42,7 +42,7 @@ class CswWiring() {
   lazy val alarmService: AlarmService               = alarmServiceFactory.makeClientApi(locationService)
 
   lazy val componentFactory            = new ComponentFactory(locationService, ICommandServiceFactory.default)
-  lazy val timeServiceSchedulerFactory = new TimeServiceSchedulerFactory()(typedSystem.scheduler)
+  lazy val timeServiceSchedulerFactory = new TimeServiceSchedulerFactory()(actorSystem.scheduler)
 
   lazy val redisClient: RedisClient = {
     val client = RedisClient.create()
