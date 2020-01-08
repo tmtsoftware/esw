@@ -58,7 +58,6 @@ object Dependencies {
       Akka.`akka-actor-typed`,
       Libs.scalatest                  % Test,
       Libs.`mockito-scala`            % Test,
-      Libs.`mockito-scala-scalatest`  % Test,
       Akka.`akka-actor-testkit-typed` % Test
     )
   )

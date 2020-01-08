@@ -8,7 +8,7 @@ import csw.logging.api.scaladsl.Logger
 import esw.agent.api.AgentCommand._
 import esw.agent.api.{AgentCommand, Response}
 import esw.agent.app.AgentActor.AgentState
-import esw.agent.app.ProcessActor.{ProcessActorMessage, SpawnProcess}
+import esw.agent.app.ProcessActor.{ProcessActorMessage, SpawnComponent}
 import esw.agent.app.utils.ProcessExecutor
 
 class AgentActor(
@@ -25,25 +25,16 @@ class AgentActor(
       //already spawning
       case command: SpawnCommand if state.children.contains(command.componentId) =>
         val message = "spawning of component is already in progress"
-        warn(message, Map("prefix" -> command.prefix))
+        warn(message, Map("prefix" -> command.componentId.prefix))
         command.replyTo ! Response.Failed(message)
         Behaviors.same
       //happy path
       case command: SpawnCommand =>
-        val childActor = new ProcessActor(
-          locationService,
-          processExecutor,
-          agentSettings,
-          logger,
-          command.componentId,
-          command.connectionType,
-          command.replyTo,
-          command.strings(agentSettings.binariesPath)
-        )
-        val child = ctx.spawn(childActor.init, command.prefix.value)
-        ctx.watchWith(child, Finished(command))
-        child ! SpawnProcess
-        behavior(state.add(command.componentId, child))
+        val childActor      = new ProcessActor(locationService, processExecutor, agentSettings, logger, command)
+        val processActorRef = ctx.spawn(childActor.behaviour, command.componentId.prefix.value)
+        ctx.watchWith(processActorRef, Finished(command))
+        processActorRef ! SpawnComponent
+        behavior(state.add(command.componentId, processActorRef))
       //work done by child actor and child actor died
       case Finished(spawnCommand) =>
         behavior(state.remove(spawnCommand.componentId))

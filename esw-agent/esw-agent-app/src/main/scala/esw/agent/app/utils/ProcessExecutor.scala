@@ -13,9 +13,9 @@ import scala.util.control.NonFatal
 class ProcessExecutor(output: ProcessOutput, agentSettings: AgentSettings, logger: Logger) {
   import logger._
 
-  def runCommand(strings: List[String], prefix: Prefix): Either[Failed, Long] =
+  def runCommand(command: List[String], prefix: Prefix): Either[Failed, Long] =
     Try {
-      val processBuilder = new ProcessBuilder(strings: _*)
+      val processBuilder = new ProcessBuilder(command: _*)
       debug(s"starting command", Map("command" -> processBuilder.command()))
       val process = processBuilder.start()
       output.attachToProcess(process, prefix.value)
@@ -23,7 +23,7 @@ class ProcessExecutor(output: ProcessOutput, agentSettings: AgentSettings, logge
       process.pid()
     }.toEither.left.map {
       case NonFatal(err) =>
-        error("command failed to run", map = Map("command" -> strings, "prefix" -> prefix.value), ex = err)
+        error("command failed to run", map = Map("command" -> command, "prefix" -> prefix.value), ex = err)
         Failed(err.getMessage)
     }
 
