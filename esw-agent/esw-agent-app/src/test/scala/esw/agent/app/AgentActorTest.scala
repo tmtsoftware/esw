@@ -17,14 +17,13 @@ import esw.agent.app.AgentActor.AgentState
 import esw.agent.app.utils.ProcessExecutor
 import org.mockito.ArgumentMatchers.{any, eq => argEq}
 import org.mockito.MockitoSugar
-import org.mockito.scalatest.ResetMocksAfterEachTest
 import org.scalatest.MustMatchers.convertToStringMustWrapper
-import org.scalatest.WordSpecLike
+import org.scalatest.{BeforeAndAfterEach, WordSpecLike}
 
 import scala.concurrent.duration.{DurationLong, FiniteDuration}
 import scala.concurrent.{Future, Promise}
 
-class AgentActorTest extends ScalaTestWithActorTestKit with WordSpecLike with MockitoSugar with ResetMocksAfterEachTest {
+class AgentActorTest extends ScalaTestWithActorTestKit with WordSpecLike with MockitoSugar with BeforeAndAfterEach {
 
   private val locationService       = mock[LocationService]
   private val processExecutor       = mock[ProcessExecutor]
@@ -36,6 +35,11 @@ class AgentActorTest extends ScalaTestWithActorTestKit with WordSpecLike with Mo
   private val seqCompConn                   = AkkaConnection(ComponentId(prefix, SequenceComponent))
   private val seqCompLocation: AkkaLocation = AkkaLocation(seqCompConn, new URI("some"))
   private val seqCompLoc                    = Future.successful(Some(seqCompLocation))
+
+  override def beforeEach(): Unit = {
+    super.beforeEach()
+    reset(locationService, processExecutor, logger)
+  }
 
   // common mocks
   when(processExecutor.killProcess(any[Long])).thenReturn(true)
