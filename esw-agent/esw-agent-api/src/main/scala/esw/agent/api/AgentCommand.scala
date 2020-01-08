@@ -13,7 +13,6 @@ sealed trait AgentCommand extends AgentAkkaSerializable
 object AgentCommand {
   sealed trait SpawnCommand extends AgentCommand {
     def strings(binariesPath: Path): List[String]
-    val prefix: Prefix
     val replyTo: ActorRef[Response]
     val componentId: ComponentId
     val connectionType: ConnectionType
