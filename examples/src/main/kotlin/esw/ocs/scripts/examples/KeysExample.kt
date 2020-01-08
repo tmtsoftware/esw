@@ -3,7 +3,7 @@ package esw.ocs.scripts.examples
 import csw.params.events.EventName
 import csw.params.events.SystemEvent
 import csw.params.javadsl.JUnits
-import csw.prefix.models.Prefix
+import esw.ocs.dsl.highlevel.Prefix
 import esw.ocs.dsl.params.*
 
 // =================================================
@@ -29,7 +29,7 @@ fun main() {
     val matrixParam1 = longMatrixKey("longMatrix").set(longMatrixData1, longMatrixData2, units = JUnits.lightyear())
 
     val systemEvent =
-        SystemEvent(Prefix.apply("esw.event"), EventName("move")).add(longParam)
+        SystemEvent(Prefix("esw.event"), EventName("move")).add(longParam)
             .madd(longParam, arrayParam, matrixParam)
 
     println(longParam)

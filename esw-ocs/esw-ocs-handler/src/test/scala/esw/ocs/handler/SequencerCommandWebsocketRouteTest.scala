@@ -49,7 +49,7 @@ class SequencerCommandWebsocketRouteTest
       when(sequencer.queryFinal(id)).thenReturn(Future.successful(completedResponse))
 
       WS("/websocket-endpoint", wsClient.flow) ~> route ~> check {
-        wsClient.sendMessage(JsonText.strictMessage(QueryFinal(id, timeout)))
+        wsClient.sendMessage(JsonText.strictMessage(QueryFinal(id, timeout): SequencerWebsocketRequest))
         isWebSocketUpgrade shouldBe true
 
         val response = decodeMessage[SubmitResponse](wsClient)
