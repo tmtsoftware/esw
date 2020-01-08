@@ -8,7 +8,6 @@ import csw.prefix.models.Prefix
 sealed trait AgentCommand extends AgentAkkaSerializable
 
 object AgentCommand {
-  private[agent] case object KillAllProcesses                                                 extends AgentCommand
   private[agent] case class ProcessRegistered(pid: Long, replyTo: ActorRef[Response])         extends AgentCommand
   private[agent] case class ProcessRegistrationFailed(pid: Long, replyTo: ActorRef[Response]) extends AgentCommand
 

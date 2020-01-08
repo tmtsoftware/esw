@@ -1,9 +1,9 @@
 package esw.agent
 
-import esw.agent.api.Response.Spawned
 import akka.util.Timeout
 import csw.location.api.codec.LocationServiceCodecs
 import csw.prefix.models.Prefix
+import esw.agent.api.Response.Spawned
 import esw.agent.client.AgentClient
 import esw.ocs.testkit.EswTestKit
 import esw.ocs.testkit.Service.MachineAgent

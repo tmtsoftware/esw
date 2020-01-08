@@ -1,20 +1,22 @@
 package esw.agent.app
 
-import esw.agent.api.AgentCommand.SpawnCommand.SpawnSequenceComponent
-import esw.agent.api.AgentCommand.{KillAllProcesses, ProcessRegistered, ProcessRegistrationFailed}
-import esw.agent.api.Response.{Failed, Spawned}
-import AgentActor.AgentState
 import akka.actor.typed.Behavior
 import akka.actor.typed.scaladsl.Behaviors
 import csw.location.api.scaladsl.LocationService
-import csw.location.models.ComponentId
 import csw.location.models.ComponentType.SequenceComponent
 import csw.location.models.Connection.AkkaConnection
+import csw.location.models.{ComponentId, Location, TypedConnection}
 import csw.logging.api.scaladsl.Logger
 import esw.agent.api.AgentCommand
+import esw.agent.api.AgentCommand.SpawnCommand.SpawnSequenceComponent
+import esw.agent.api.AgentCommand.{ProcessRegistered, ProcessRegistrationFailed}
+import esw.agent.api.Response.{Failed, Spawned}
+import esw.agent.app.AgentActor.AgentState
 import esw.agent.app.utils.ProcessExecutor
 
-import scala.util.Success
+import scala.concurrent.duration.{DurationLong, FiniteDuration}
+import scala.concurrent.{ExecutionContext, Future}
+import scala.util.{Failure, Success}
 
 class AgentActor(
     locationService: LocationService,
@@ -25,23 +27,41 @@ class AgentActor(
 
   import logger._
 
+  private def isRegistered[T <: Location](
+      typedConnection: TypedConnection[T],
+      timeout: FiniteDuration = agentSettings.durationToWaitForComponentRegistration
+  )(implicit executionContext: ExecutionContext): Future[Boolean] =
+    locationService.resolve(typedConnection, timeout).map(_.nonEmpty)
+
   def behavior(state: AgentState): Behavior[AgentCommand] = Behaviors.receive { (ctx, command) =>
     command match {
       case command @ SpawnSequenceComponent(replyTo, prefix) =>
-        debug(s"spawning sequence component", map = Map("prefix" -> prefix))
-        processExecutor.runCommand(command) match {
-          case Left(err) => replyTo ! err
-          case Right(pid) =>
-            val akkaLocF = locationService.resolve(
-              AkkaConnection(ComponentId(prefix, SequenceComponent)),
-              agentSettings.durationToWaitForComponentRegistration
-            )
-            ctx.pipeToSelf(akkaLocF) {
-              case Success(Some(_)) => ProcessRegistered(pid, replyTo)
-              case _                => ProcessRegistrationFailed(pid, replyTo)
-            }
+        import ctx.executionContext
+        val connection = AkkaConnection(ComponentId(prefix, SequenceComponent))
+        isRegistered(connection, 1.second)
+          .onComplete {
+            //registration already found. maybe component is already running on another machine
+            case Success(true) =>
+              val errorMessage = "can not spawn component when it is already registered"
+              warn(errorMessage, Map("prefix" -> prefix))
+              replyTo ! Failed(errorMessage)
+            //registration not found. ready to launch component
+            case Success(false) =>
+              debug(s"spawning sequence component", map = Map("prefix" -> prefix))
+              processExecutor.runCommand(command) match {
+                case Left(err) => replyTo ! err
+                case Right(pid) =>
+                  ctx.pipeToSelf(isRegistered(connection)) {
+                    case Success(true) => ProcessRegistered(pid, replyTo)
+                    case _             => ProcessRegistrationFailed(pid, replyTo)
+                  }
 
-        }
+              }
+            case Failure(exception) =>
+              val errorMessage = "error occurred while resolving a component with location service"
+              error(errorMessage, Map("prefix" -> prefix), exception)
+              replyTo ! Failed(errorMessage)
+          }
         Behaviors.same
 
       case ProcessRegistered(pid, replyTo) =>
@@ -50,18 +70,11 @@ class AgentActor(
         behavior(state.finishRegistration(pid))
 
       case ProcessRegistrationFailed(pid, replyTo) =>
-        error(
-          "could not get registration confirmation from spawned process within given time. killing the process",
-          Map("pid" -> pid)
-        )
-        replyTo ! Failed("could not get registration confirmation from spawned process within given time")
+        val errorMessage = "could not get registration confirmation from spawned process within given time"
+        error(errorMessage, Map("pid" -> pid))
+        replyTo ! Failed(errorMessage)
         processExecutor.killProcess(pid)
         behavior(state.failRegistration(pid))
-
-      case KillAllProcesses =>
-        debug("killing all processes")
-        (state.registeredProcesses ++ state.registeringProcesses).foreach(processExecutor.killProcess)
-        behavior(AgentState.empty)
     }
   }
 }

@@ -2,10 +2,6 @@ package esw.agent.app
 
 import java.net.URI
 
-import esw.agent.api.AgentCommand.SpawnCommand
-import esw.agent.api.AgentCommand.SpawnCommand.SpawnSequenceComponent
-import esw.agent.api.Response.{Failed, Spawned}
-import AgentActor.AgentState
 import akka.actor.testkit.typed.scaladsl.{ScalaTestWithActorTestKit, TestProbe}
 import akka.actor.typed.Scheduler
 import csw.location.api.scaladsl.LocationService
@@ -14,7 +10,11 @@ import csw.location.models.Connection.AkkaConnection
 import csw.location.models.{AkkaLocation, ComponentId}
 import csw.logging.api.scaladsl.Logger
 import csw.prefix.models.Prefix
+import esw.agent.api.AgentCommand.SpawnCommand
+import esw.agent.api.AgentCommand.SpawnCommand.SpawnSequenceComponent
 import esw.agent.api.Response
+import esw.agent.api.Response.{Failed, Spawned}
+import esw.agent.app.AgentActor.AgentState
 import esw.agent.app.utils.ProcessExecutor
 import org.mockito.ArgumentMatchers.{any, eq => argEq}
 import org.mockito.Mockito.when
@@ -49,20 +49,32 @@ class AgentActorTest extends ScalaTestWithActorTestKit with WordSpecLike with Mo
       val agentActorRef = spawnAgentActor()
       val probe         = TestProbe[Response]()
 
-      when(locationService.resolve(argEq(seqCompConn), any[FiniteDuration])).thenReturn(seqCompLoc)
+      when(locationService.resolve(argEq(seqCompConn), any[FiniteDuration]))
+        .thenReturn(Future.successful(None), seqCompLoc)
       when(processExecutor.runCommand(any[SpawnCommand])).thenReturn(Right(1234))
 
       agentActorRef ! SpawnSequenceComponent(probe.ref, prefix)
       probe.expectMessage(Spawned)
     }
 
-    "not spawn a component if it fails to register itself to location service | ESW-237" in {
-      val agentActorRef  = spawnAgentActor()
-      val probe          = TestProbe[Response]()
-      val failedLocation = Future.failed(new RuntimeException("error"))
+    "not spawn a component if it is already registered with location servicce | ESW-237" in {
+      val agentActorRef = spawnAgentActor()
+      val probe         = TestProbe[Response]()
 
-      when(locationService.resolve(argEq(seqCompConn), any[FiniteDuration])).thenReturn(failedLocation)
-      when(processExecutor.runCommand(any[SpawnCommand])).thenReturn(Right(1234))
+      when(locationService.resolve(argEq(seqCompConn), any[FiniteDuration]))
+        .thenReturn(seqCompLoc)
+
+      agentActorRef ! SpawnSequenceComponent(probe.ref, prefix)
+      probe.expectMessageType[Failed]
+    }
+
+    "not spawn a component if it fails to register itself to location service | ESW-237" in {
+      val agentActorRef = spawnAgentActor()
+      val probe         = TestProbe[Response]()
+      val noLocation    = Future.successful(None)
+
+      when(locationService.resolve(argEq(seqCompConn), any[FiniteDuration]))
+        .thenReturn(Future.successful(None), noLocation)
 
       agentActorRef ! SpawnSequenceComponent(probe.ref, prefix)
       probe.expectMessageType[Failed]
@@ -72,8 +84,20 @@ class AgentActorTest extends ScalaTestWithActorTestKit with WordSpecLike with Mo
       val agentActorRef = spawnAgentActor()
       val probe         = TestProbe[Response]()
 
-      when(locationService.resolve(argEq(seqCompConn), any[FiniteDuration])).thenReturn(seqCompLoc)
+      when(locationService.resolve(argEq(seqCompConn), any[FiniteDuration]))
+        .thenReturn(Future.successful(None), seqCompLoc)
       when(processExecutor.runCommand(any[SpawnCommand])).thenReturn(Left(Failed("failure")))
+
+      agentActorRef ! SpawnSequenceComponent(probe.ref, prefix)
+      probe.expectMessageType[Failed]
+    }
+
+    "fail when location service call fails" in {
+      val agentActorRef = spawnAgentActor()
+      val probe         = TestProbe[Response]()
+
+      when(locationService.resolve(argEq(seqCompConn), any[FiniteDuration]))
+        .thenReturn(Future.failed(new RuntimeException("call failed")))
 
       agentActorRef ! SpawnSequenceComponent(probe.ref, prefix)
       probe.expectMessageType[Failed]
