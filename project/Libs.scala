@@ -11,7 +11,7 @@ object Libs {
   val `silencer-lib`    = "com.github.ghik" % "silencer-lib"    % SilencerVersion cross CrossVersion.full
 
   val `case-app`                = "com.github.alexarchambault" %% "case-app" % "2.0.0-M9"
-  val enumeratum                = dep("com.beachape" %%% "enumeratum" % "1.5.14") //MIT License
+  val enumeratum                = dep("com.beachape" %%% "enumeratum" % "1.5.15") //MIT License
   val `mockito-scala`           = "org.mockito" %% "mockito-scala" % mockitoScalaVersion // MIT License
   val `mockito-scala-scalatest` = "org.mockito" %% "mockito-scala-scalatest" % mockitoScalaVersion // MIT License
   val `scala-async`             = "org.scala-lang.modules" %% "scala-async" % "0.10.0" //BSD 3-clause "New" or "Revised" License
