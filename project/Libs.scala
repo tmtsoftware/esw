@@ -5,7 +5,7 @@ import sbt._
 object Libs {
   private val SilencerVersion     = "1.4.4"
   private val MSocketVersion      = "e657c0d"
-  private val mockitoScalaVersion = "1.10.2"
+  private val mockitoScalaVersion = "1.10.3"
 
   val `silencer-plugin` = "com.github.ghik" % "silencer-plugin" % SilencerVersion cross CrossVersion.full
   val `silencer-lib`    = "com.github.ghik" % "silencer-lib"    % SilencerVersion cross CrossVersion.full
