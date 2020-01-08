@@ -1,11 +1,11 @@
 package esw.agent.app
 
+import akka.actor.typed.Behavior
 import akka.actor.typed.scaladsl.Behaviors
-import akka.actor.typed.{ActorRef, Behavior}
 import csw.location.api.scaladsl.LocationService
 import csw.location.models._
 import csw.logging.api.scaladsl.Logger
-import esw.agent.api.Response
+import esw.agent.api.AgentCommand.SpawnCommand
 import esw.agent.api.Response.{Failed, Spawned}
 import esw.agent.app.ProcessActor._
 import esw.agent.app.utils.ProcessExecutor
@@ -19,86 +19,73 @@ class ProcessActor[T <: Location](
     processExecutor: ProcessExecutor,
     agentSettings: AgentSettings,
     logger: Logger,
-    componentId: ComponentId,
-    connectionType: ConnectionType,
-    replyTo: ActorRef[Response],
-    strings: List[String]
+    command: SpawnCommand
 ) {
+  import command._
   import componentId._
   import logger._
 
-  private def isRegistered(
+  private def isComponentRegistered(
       timeout: FiniteDuration = agentSettings.durationToWaitForComponentRegistration
   )(implicit executionContext: ExecutionContext): Future[Boolean] =
     locationService
       .resolve(Connection.from(ConnectionInfo(prefix, componentType, connectionType)).of[T], timeout)
       .map(_.nonEmpty)
 
-  def init: Behavior[ProcessActorMessage] =
+  def behaviour: Behavior[ProcessActorMessage] =
     Behaviors.setup[ProcessActorMessage](ctx => {
       import ctx.executionContext
       Behaviors.receiveMessagePartial[ProcessActorMessage] {
-        case SpawnProcess =>
-          ctx.pipeToSelf(isRegistered(0.seconds)) {
+        case SpawnComponent =>
+          ctx.pipeToSelf(isComponentRegistered(0.seconds)) {
             case Success(true)  => AlreadyRegistered
-            case Success(false) => NotRegistered
+            case Success(false) => RunCommand
             case Failure(exception) =>
-              val errorMessage = "error occurred while resolving a component with location service"
-              error(errorMessage, Map("prefix" -> prefix), exception)
-              GenericError(errorMessage)
+              LocationServiceError(exception)
           }
-          checkingRegistration
-      }
-    })
-
-  private def checkingRegistration =
-    Behaviors.setup[ProcessActorMessage] { ctx =>
-      import ctx.executionContext
-      Behaviors.receiveMessagePartial[ProcessActorMessage] {
+          Behaviors.same
         case AlreadyRegistered =>
           val errorMessage = "can not spawn component when it is already registered"
           warn(errorMessage, Map("prefix" -> prefix))
           replyTo ! Failed(errorMessage)
           Behaviors.stopped
-        case NotRegistered =>
+        case RunCommand =>
           debug(s"spawning sequence component", map = Map("prefix" -> prefix))
-          processExecutor.runCommand(strings, prefix) match {
+          processExecutor.runCommand(command.strings(agentSettings.binariesPath), prefix) match {
             case Right(pid) =>
-              ctx.pipeToSelf(isRegistered()) {
-                case Success(true) => RegistrationSuccess
-                case _             => RegistrationFailed
+              ctx.pipeToSelf(isComponentRegistered()) {
+                case Success(true) => RegistrationSuccess(pid)
+                case _             => RegistrationFailed(pid)
               }
-              waitingForRegistration(pid)
+              Behaviors.same
             case Left(err) =>
               replyTo ! err
               Behaviors.stopped
           }
-        case GenericError(message) =>
+        case LocationServiceError(exception) =>
+          val message = "error occurred while resolving a component with location service"
           replyTo ! Failed(message)
+          error(message, Map("prefix" -> prefix), exception)
+          Behaviors.stopped
+        case RegistrationSuccess(pid) =>
+          debug("spawned process is registered with location service", Map("pid" -> pid, "prefix" -> prefix))
+          replyTo ! Spawned
+          Behaviors.stopped
+        case RegistrationFailed(pid) =>
+          val errorMessage = "could not get registration confirmation from spawned process within given time"
+          error(errorMessage, Map("pid" -> pid, "prefix" -> prefix))
+          replyTo ! Failed(errorMessage)
+          processExecutor.killProcess(pid)
           Behaviors.stopped
       }
-    }
-
-  private def waitingForRegistration(pid: Long) =
-    Behaviors.receiveMessagePartial[ProcessActorMessage] {
-      case RegistrationSuccess =>
-        debug("spawned process is registered with location service", Map("pid" -> pid, "prefix" -> prefix))
-        replyTo ! Spawned
-        Behaviors.stopped
-      case RegistrationFailed =>
-        val errorMessage = "could not get registration confirmation from spawned process within given time"
-        error(errorMessage, Map("pid" -> pid, "prefix" -> prefix))
-        replyTo ! Failed(errorMessage)
-        processExecutor.killProcess(pid)
-        Behaviors.stopped
-    }
+    })
 }
 object ProcessActor {
   sealed trait ProcessActorMessage
-  case object SpawnProcess                 extends ProcessActorMessage
-  case object AlreadyRegistered            extends ProcessActorMessage
-  case object NotRegistered                extends ProcessActorMessage
-  case object RegistrationSuccess          extends ProcessActorMessage
-  case object RegistrationFailed           extends ProcessActorMessage
-  case class GenericError(message: String) extends ProcessActorMessage
+  case object SpawnComponent                                    extends ProcessActorMessage
+  private case object AlreadyRegistered                         extends ProcessActorMessage
+  private case object RunCommand                                extends ProcessActorMessage
+  private case class RegistrationSuccess(pid: Long)             extends ProcessActorMessage
+  private case class RegistrationFailed(pid: Long)              extends ProcessActorMessage
+  private case class LocationServiceError(exception: Throwable) extends ProcessActorMessage
 }
