@@ -9,8 +9,8 @@ import csw.params.events.EventKey
 import csw.params.events.EventName
 import csw.params.events.SystemEvent
 import csw.prefix.javadsl.JSubsystem
-import csw.prefix.models.Prefix
 import esw.ocs.dsl.highlevel.EventServiceDsl
+import esw.ocs.dsl.highlevel.Prefix
 import esw.ocs.dsl.highlevel.models.EventSubscription
 import esw.ocs.dsl.params.booleanKey
 import esw.ocs.dsl.params.intKey
