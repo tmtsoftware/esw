@@ -32,12 +32,25 @@ script {
         // #lock-component
 
         // #submit-and-wait-component
-        galilAssembly.submitAndWait(command)
+        galilAssembly.submitAndWait(command, timeout = 20.seconds)
         // #submit-and-wait-component
 
+        // #query-component
         // #submit-component
-        galilAssembly.submit(command, resumeOnError = true)
+        val response = galilAssembly.submit(command, resumeOnError = true)
         // #submit-component
+
+        galilAssembly.query(response.runId())
+        // #query-component
+
+        // #query-final-component
+        // #submit-component
+        val startedResponse = galilAssembly.submit(command)
+        galilAssembly.queryFinal(startedResponse.runId())
+        // #submit-component
+
+        galilAssembly.query(response.runId())
+        // #query-final-component
 
         // #subscribe-current-state-component
         galilAssembly.subscribeCurrentState(StateName("stateName1")) { currentState ->
@@ -111,32 +124,34 @@ script {
     }
     // #submit-component-error-resume
 
+    // #diagnostic-mode-component
     onDiagnosticMode { startTime, hint ->
         // do some actions to go to diagnostic mode based on hint
-        // #diagnostic-mode-component
         galilAssembly.diagnosticMode(startTime, hint)
-        // #diagnostic-mode-component
     }
+    // #diagnostic-mode-component
 
+    // #operations-mode-component
     onOperationsMode {
         // do some actions to go to operations mode
-        // #operations-mode-component
         galilAssembly.operationsMode()
-        // #operations-mode-component
     }
+    // #operations-mode-component
 
+    // #goOffline-component
     onGoOffline {
         // do some actions to go offline
-        // #goOffline-component
-        galilAssembly.goOffline()
-        // #goOffline-component
-    }
 
+        galilAssembly.goOffline()
+
+    }
+    // #goOffline-component
+
+    // #goOnline-component
     onGoOnline {
         // do some actions to go online
-        // #goOnline-component
         galilAssembly.goOnline()
-        // #goOnline-component
     }
+    // #goOnline-component
 }
 

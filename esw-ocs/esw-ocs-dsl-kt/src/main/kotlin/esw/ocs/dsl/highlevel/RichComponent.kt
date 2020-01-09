@@ -108,7 +108,7 @@ class RichComponent(
             actionOnResponse(resumeOnError) { commandService().submitAndWait(command, timeout.toTimeout()).await() }
 
     /**
-     * Subscribe to the current state of a component corresponding to the [[csw.location.models.AkkaLocation]] of the component
+     * Subscribe to the current state of a component
      *
      * @param stateNames subscribe to only those states which have any of the provided value for name
      * @param callback the action to be applied on the CurrentState element received as a result of subscription
@@ -126,7 +126,7 @@ class RichComponent(
     suspend fun diagnosticMode(startTime: UTCTime, hint: String): Unit = componentRef().tell(DiagnosticDataMessage.DiagnosticMode(startTime, hint))
 
     /**
-     * Send component into a operations mode
+     * Send component into an operations mode
      */
     suspend fun operationsMode(): Unit = componentRef().tell(DiagnosticDataMessage.`OperationsMode$`.`MODULE$`)
 
