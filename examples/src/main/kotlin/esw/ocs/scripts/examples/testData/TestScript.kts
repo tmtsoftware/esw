@@ -4,8 +4,8 @@ import com.typesafe.config.ConfigFactory
 import csw.alarm.api.javadsl.JAlarmSeverity.Major
 import csw.alarm.models.Key.AlarmKey
 import csw.params.events.Event
-import csw.prefix.javadsl.JSubsystem.NFIRAOS
 import esw.ocs.dsl.core.script
+import esw.ocs.dsl.highlevel.NFIRAOS
 import esw.ocs.dsl.highlevel.Prefix
 import esw.ocs.dsl.params.longKey
 import kotlinx.coroutines.delay
@@ -19,7 +19,7 @@ script {
     loadScripts(InitialCommandHandler)
 
     onSetup("command-1") {
-        // To avoid sequencer to finish immediately so that other Add, Append command gets time
+        // To avoid a sequencer to finish immediately so that others Add, Append command gets time
         delay(200)
     }
 
@@ -83,7 +83,7 @@ script {
     }
 
     onSetup("set-alarm-severity") {
-        val alarmKey = AlarmKey(Prefix(NFIRAOS(), "trombone"), "tromboneAxisHighLimitAlarm")
+        val alarmKey = AlarmKey(Prefix(NFIRAOS, "trombone"), "tromboneAxisHighLimitAlarm")
         setSeverity(alarmKey, Major())
         delay(500)
     }

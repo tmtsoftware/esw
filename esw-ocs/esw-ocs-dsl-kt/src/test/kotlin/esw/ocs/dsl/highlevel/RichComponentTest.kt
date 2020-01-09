@@ -19,7 +19,6 @@ import csw.params.commands.Setup
 import csw.params.core.models.Id
 import csw.params.core.models.ObsId
 import csw.params.core.states.StateName
-import csw.prefix.javadsl.JSubsystem.ESW
 import csw.time.core.models.UTCTime
 import esw.ocs.dsl.highlevel.models.CommandError
 import esw.ocs.dsl.script.utils.LockUnlockUtil
@@ -50,7 +49,7 @@ class RichComponentTest {
     private val hint = "test-hint"
     private val startTime: UTCTime = UTCTime.now()
 
-    private val source = Prefix(ESW(), "test")
+    private val source = Prefix(ESW, "test")
     private val setupCommand = Setup(source, CommandName("move"), Optional.of(ObsId("testObsId")))
 
     private val leaseDuration: Duration = 10.seconds
@@ -70,7 +69,7 @@ class RichComponentTest {
     inner class Assembly {
         private val componentName = "sampleAssembly"
         private val componentType = JComponentType.Assembly()
-        private val prefix = Prefix(ESW(), componentName)
+        private val prefix = Prefix(ESW, componentName)
         private val assembly: RichComponent =
                 RichComponent(
                         prefix,
@@ -390,7 +389,7 @@ class RichComponentTest {
     inner class HCD {
         private val hcdName: String = "sampleHcd"
         private val componentType: ComponentType = JComponentType.HCD()
-        private val prefix = Prefix(ESW(), hcdName)
+        private val prefix = Prefix(ESW, hcdName)
         private val hcd: RichComponent =
                 RichComponent(
                         prefix,

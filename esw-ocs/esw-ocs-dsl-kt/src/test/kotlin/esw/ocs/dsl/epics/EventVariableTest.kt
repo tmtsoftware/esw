@@ -8,9 +8,9 @@ import csw.event.api.scaladsl.SubscriptionModes
 import csw.params.events.EventKey
 import csw.params.events.EventName
 import csw.params.events.SystemEvent
-import csw.prefix.javadsl.JSubsystem
 import esw.ocs.dsl.highlevel.EventServiceDsl
 import esw.ocs.dsl.highlevel.Prefix
+import esw.ocs.dsl.highlevel.TCS
 import esw.ocs.dsl.highlevel.models.EventSubscription
 import esw.ocs.dsl.params.booleanKey
 import esw.ocs.dsl.params.intKey
@@ -26,7 +26,7 @@ import kotlin.time.toJavaDuration
 class EventVariableTest {
     @Test
     fun `set should update local value and publish new event | ESW-132, ESW-142`() = runBlocking {
-        val prefix = Prefix(JSubsystem.TCS(), "test")
+        val prefix = Prefix(TCS, "test")
         val eventName = EventName("testEvent")
         val systemEvent = SystemEvent(prefix, eventName)
         val booleanKey = booleanKey("testKey")
@@ -48,7 +48,7 @@ class EventVariableTest {
 
         val intKey = intKey("testKey")
         val intValue = 10
-        val systemEvent = SystemEvent(Prefix(JSubsystem.TCS(), "test"), EventName("testEvent")).add(intKey.set(intValue))
+        val systemEvent = SystemEvent(Prefix(TCS, "test"), EventName("testEvent")).add(intKey.set(intValue))
 
         val eventVariable: EventVariable<Int> = EventVariable(systemEvent, intKey, eventService = eventServiceDsl)
 
@@ -67,7 +67,7 @@ class EventVariableTest {
 
         val intKey = intKey("testKey")
         val intValue = 10
-        val systemEvent = SystemEvent(Prefix(JSubsystem.TCS(), "test"), EventName("testEvent")).add(intKey.set(intValue))
+        val systemEvent = SystemEvent(Prefix(TCS, "test"), EventName("testEvent")).add(intKey.set(intValue))
         val eventKey = systemEvent.eventKey().key()
 
         every { refreshable1.addFsmSubscription(any()) } just runs
@@ -113,7 +113,7 @@ class EventVariableTest {
 
         val intKey = intKey("testKey")
         val intValue = 10
-        val systemEvent = SystemEvent(Prefix(JSubsystem.TCS(), "test"), EventName("testEvent")).add(intKey.set(intValue))
+        val systemEvent = SystemEvent(Prefix(TCS, "test"), EventName("testEvent")).add(intKey.set(intValue))
 
         val eventKey = setOf(EventKey.apply(systemEvent.eventKey().key()))
         val duration = 100.milliseconds
