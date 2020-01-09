@@ -20,9 +20,7 @@ class AgentAkkaSerializer(_actorSystem: ExtendedActorSystem) extends AgentCodecs
   override def toBinary(o: AnyRef): Array[Byte] = o match {
     case x: AgentCommand => Cbor.encode(x).toByteArray
     case x: Response     => Cbor.encode(x).toByteArray
-    case _ =>
-      val ex = new RuntimeException(s"does not support encoding of $o")
-      throw ex
+    case _               => throw new RuntimeException(s"does not support encoding of $o")
   }
 
   override def includeManifest: Boolean = true
@@ -33,13 +31,11 @@ class AgentAkkaSerializer(_actorSystem: ExtendedActorSystem) extends AgentCodecs
       if (clazz.isAssignableFrom(manifest.get)) Some(Cbor.decode(bytes).to[T].value)
       else None
     }
+
     {
       fromBinary[AgentCommand] orElse
       fromBinary[Response]
-    }.getOrElse {
-      val ex = new RuntimeException(s"does not support decoding of ${manifest.get}")
-      throw ex
-    }
+    }.getOrElse(throw new RuntimeException(s"does not support decoding of ${manifest.get}"))
   }
 }
 // $COVERAGE-ON$

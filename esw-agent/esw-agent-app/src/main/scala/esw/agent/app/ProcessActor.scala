@@ -33,15 +33,14 @@ class ProcessActor[T <: Location](
       .map(_.nonEmpty)
 
   def behaviour: Behavior[ProcessActorMessage] =
-    Behaviors.setup[ProcessActorMessage](ctx => {
+    Behaviors.setup[ProcessActorMessage] { ctx =>
       import ctx.executionContext
       Behaviors.receiveMessagePartial[ProcessActorMessage] {
         case SpawnComponent =>
           ctx.pipeToSelf(isComponentRegistered(0.seconds)) {
-            case Success(true)  => AlreadyRegistered
-            case Success(false) => RunCommand
-            case Failure(exception) =>
-              LocationServiceError(exception)
+            case Success(true)      => AlreadyRegistered
+            case Success(false)     => RunCommand
+            case Failure(exception) => LocationServiceError(exception)
           }
           Behaviors.same
         case AlreadyRegistered =>
@@ -78,7 +77,7 @@ class ProcessActor[T <: Location](
           processExecutor.killProcess(pid)
           Behaviors.stopped
       }
-    })
+    }
 }
 object ProcessActor {
   sealed trait ProcessActorMessage

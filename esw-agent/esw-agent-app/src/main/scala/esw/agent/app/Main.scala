@@ -1,8 +1,5 @@
 package esw.agent.app
 
-import java.time.Duration
-
-import AgentCliCommand.StartCommand
 import akka.actor.CoordinatedShutdown.UnknownReason
 import akka.util.Timeout
 import caseapp.core.RemainingArgs
@@ -10,10 +7,10 @@ import caseapp.core.app.CommandApp
 import com.typesafe.config.{Config, ConfigFactory}
 import csw.location.client.utils.LocationServerStatus
 import csw.prefix.models.Prefix
+import esw.agent.app.AgentCliCommand.StartCommand
 
-import scala.concurrent.duration.{DurationLong, FiniteDuration}
-import scala.concurrent.{Await, duration}
-import scala.language.implicitConversions
+import scala.concurrent.Await
+import scala.concurrent.duration.DurationLong
 import scala.util.control.NonFatal
 
 // $COVERAGE-OFF$
@@ -29,13 +26,8 @@ object Main extends CommandApp[AgentCliCommand] {
   var wiring: AgentWiring = _
 
   def onStart(prefix: Prefix, config: Config): Unit = {
-    val agentConfig = config.getConfig("agent")
-    val agentSettings: AgentSettings = {
-      AgentSettings(
-        agentConfig.getString("binariesPath"),
-        agentConfig.getDuration("durationToWaitForComponentRegistration")
-      )
-    }
+    val agentSettings: AgentSettings = AgentSettings.from(config.getConfig("agent"))
+
     wiring = new AgentWiring(prefix, agentSettings)
     wiring.log.debug("starting machine agent", Map("prefix" -> prefix))
     try {
@@ -52,7 +44,5 @@ object Main extends CommandApp[AgentCliCommand] {
         exit(1)
     }
   }
-
-  private implicit def asFiniteDuration(d: Duration): FiniteDuration = duration.Duration.fromNanos(d.toNanos)
 }
 // $COVERAGE-ON$

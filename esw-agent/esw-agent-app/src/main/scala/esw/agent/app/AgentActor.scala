@@ -36,8 +36,7 @@ class AgentActor(
         processActorRef ! SpawnComponent
         behavior(state.add(command.componentId, processActorRef))
       //work done by child actor and child actor died
-      case Finished(spawnCommand) =>
-        behavior(state.remove(spawnCommand.componentId))
+      case Finished(spawnCommand) => behavior(state.remove(spawnCommand.componentId))
     }
   }
 }

@@ -25,9 +25,8 @@ class ActorRuntime {
     this
   }
 
-  def startLogging(name: String, version: String): Unit = {
+  def startLogging(name: String, version: String): Unit =
     LoggingSystemFactory.start(name, version, Networks().hostname, typedSystem)
-  }
 
   def shutdown(reason: Reason): Future[Done] = coordinatedShutdown.run(reason)
 }
