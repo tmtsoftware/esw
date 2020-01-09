@@ -12,7 +12,7 @@ sealed trait AgentCommand extends AgentAkkaSerializable
 
 object AgentCommand {
   sealed trait SpawnCommand extends AgentCommand {
-    def strings(binariesPath: Path): List[String]
+    def commandStrings(binariesPath: Path): List[String]
     val replyTo: ActorRef[Response]
     val componentId: ComponentId
     val connectionType: ConnectionType
@@ -28,7 +28,7 @@ object AgentCommand {
 
       override val connectionType: ConnectionType = AkkaType
 
-      override def strings(binariesPath: Path): List[String] = {
+      override def commandStrings(binariesPath: Path): List[String] = {
         val executablePath = Paths.get(binariesPath.toString, binaryName).toString
         List(executablePath, "seqcomp", "-s", prefix.subsystem.toString, "-n", prefix.componentName)
       }

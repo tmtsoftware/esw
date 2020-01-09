@@ -1,6 +1,5 @@
 package esw.agent.client
 
-import esw.agent.api.AgentCommand.SpawnCommand.SpawnSequenceComponent
 import akka.actor.typed.scaladsl.AskPattern.Askable
 import akka.actor.typed.{ActorRef, ActorSystem, Scheduler}
 import akka.util.Timeout
@@ -10,6 +9,7 @@ import csw.location.models.ComponentId
 import csw.location.models.ComponentType.Machine
 import csw.location.models.Connection.AkkaConnection
 import csw.prefix.models.Prefix
+import esw.agent.api.AgentCommand.SpawnCommand.SpawnSequenceComponent
 import esw.agent.api.{AgentCommand, Response}
 
 import scala.concurrent.Future

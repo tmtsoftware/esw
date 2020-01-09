@@ -32,7 +32,7 @@ class ProcessActor[T <: Location](
       .resolve(Connection.from(ConnectionInfo(prefix, componentType, connectionType)).of[T], timeout)
       .map(_.nonEmpty)
 
-  def behaviour: Behavior[ProcessActorMessage] =
+  def init: Behavior[ProcessActorMessage] =
     Behaviors.setup[ProcessActorMessage] { ctx =>
       import ctx.executionContext
       Behaviors.receiveMessagePartial[ProcessActorMessage] {
@@ -42,7 +42,14 @@ class ProcessActor[T <: Location](
             case Success(false)     => RunCommand
             case Failure(exception) => LocationServiceError(exception)
           }
-          Behaviors.same
+          checkingRegistration
+      }
+    }
+
+  def checkingRegistration: Behavior[ProcessActorMessage] =
+    Behaviors.setup[ProcessActorMessage](ctx => {
+      import ctx.executionContext
+      Behaviors.receiveMessagePartial[ProcessActorMessage] {
         case AlreadyRegistered =>
           val errorMessage = "can not spawn component when it is already registered"
           warn(errorMessage, Map("prefix" -> prefix))
@@ -50,13 +57,13 @@ class ProcessActor[T <: Location](
           Behaviors.stopped
         case RunCommand =>
           debug(s"spawning sequence component", map = Map("prefix" -> prefix))
-          processExecutor.runCommand(command.strings(agentSettings.binariesPath), prefix) match {
+          processExecutor.runCommand(command.commandStrings(agentSettings.binariesPath), prefix) match {
             case Right(pid) =>
               ctx.pipeToSelf(isComponentRegistered()) {
-                case Success(true) => RegistrationSuccess(pid)
-                case _             => RegistrationFailed(pid)
+                case Success(true) => RegistrationSuccess
+                case _             => RegistrationFailed
               }
-              Behaviors.same
+              waitingForComponentRegistration(pid)
             case Left(err) =>
               replyTo ! err
               Behaviors.stopped
@@ -66,17 +73,21 @@ class ProcessActor[T <: Location](
           replyTo ! Failed(message)
           error(message, Map("prefix" -> prefix), exception)
           Behaviors.stopped
-        case RegistrationSuccess(pid) =>
-          debug("spawned process is registered with location service", Map("pid" -> pid, "prefix" -> prefix))
-          replyTo ! Spawned
-          Behaviors.stopped
-        case RegistrationFailed(pid) =>
-          val errorMessage = "could not get registration confirmation from spawned process within given time"
-          error(errorMessage, Map("pid" -> pid, "prefix" -> prefix))
-          replyTo ! Failed(errorMessage)
-          processExecutor.killProcess(pid)
-          Behaviors.stopped
       }
+    })
+
+  def waitingForComponentRegistration(pid: Long): Behavior[ProcessActorMessage] =
+    Behaviors.receiveMessagePartial[ProcessActorMessage] {
+      case RegistrationSuccess =>
+        debug("spawned process is registered with location service", Map("pid" -> pid, "prefix" -> prefix))
+        replyTo ! Spawned
+        Behaviors.stopped
+      case RegistrationFailed =>
+        val errorMessage = "could not get registration confirmation from spawned process within given time"
+        error(errorMessage, Map("pid" -> pid, "prefix" -> prefix))
+        replyTo ! Failed(errorMessage)
+        processExecutor.killProcess(pid)
+        Behaviors.stopped
     }
 }
 object ProcessActor {
@@ -84,7 +95,7 @@ object ProcessActor {
   case object SpawnComponent                                    extends ProcessActorMessage
   private case object AlreadyRegistered                         extends ProcessActorMessage
   private case object RunCommand                                extends ProcessActorMessage
-  private case class RegistrationSuccess(pid: Long)             extends ProcessActorMessage
-  private case class RegistrationFailed(pid: Long)              extends ProcessActorMessage
+  private case object RegistrationSuccess                       extends ProcessActorMessage
+  private case object RegistrationFailed                        extends ProcessActorMessage
   private case class LocationServiceError(exception: Throwable) extends ProcessActorMessage
 }
