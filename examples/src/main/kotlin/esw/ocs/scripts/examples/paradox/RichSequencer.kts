@@ -1,5 +1,8 @@
+@file:Suppress("UNUSED_VARIABLE")
+
 package esw.ocs.scripts.examples.paradox
 
+import csw.params.commands.CommandResponse.SubmitResponse
 import csw.params.commands.Sequence
 import esw.ocs.dsl.core.script
 import kotlin.time.seconds
@@ -17,13 +20,13 @@ script {
         // #submit
         val setupHcdCommand = Setup("tcs", "setup-hcd")
         val setupAssemblyCommand = Setup("tcs", "setup-assembly")
-        val sequence = Sequence.create(listOf(setupHcdCommand, setupAssemblyCommand))
-        val submitResponse = tcsSequencer.submit(sequence)
-        val finalResponse = tcsSequencer.queryFinal(submitResponse.runId())
+        val sequence: Sequence = sequenceOf(setupHcdCommand, setupAssemblyCommand)
+        val submitResponse: SubmitResponse = tcsSequencer.submit(sequence)
+        val finalResponse: SubmitResponse = tcsSequencer.queryFinal(submitResponse.runId())
         // #submit
 
         // #submitAndWait
-        val sequenceResponse = tcsSequencer.submitAndWait(sequence)
+        val sequenceResponse: SubmitResponse = tcsSequencer.submitAndWait(sequence)
         // #submitAndWait
 
 

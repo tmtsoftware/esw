@@ -18,3 +18,5 @@ It returns `null` if file is not available in configuration service.
 Kotlin
 :   @@snip [ConfigServiceDslExample.kts](../../../../../../../examples/src/main/kotlin/esw/ocs/scripts/examples/paradox/ConfigServiceDslExample.kts) { #get-config }
 
+### Source code for examples
+* @github[Config Service Examples](/examples/src/main/kotlin/esw/ocs/scripts/examples/paradox/ConfigServiceDslExample.kts)
