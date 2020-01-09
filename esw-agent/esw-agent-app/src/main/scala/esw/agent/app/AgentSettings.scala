@@ -5,7 +5,6 @@ import java.nio.file.{Path, Paths}
 import com.typesafe.config.Config
 
 import scala.concurrent.duration.{DurationLong, FiniteDuration}
-import scala.language.implicitConversions
 
 case class AgentSettings(
     private val _binariesPath: String,
