@@ -18,7 +18,7 @@ object AgentCommand {
     val connectionType: ConnectionType
   }
 
-  case class Finished(spawnCommand: SpawnCommand) extends AgentCommand
+  case class Finished(componentId: ComponentId) extends AgentCommand
 
   object SpawnCommand {
     case class SpawnSequenceComponent(replyTo: ActorRef[Response], prefix: Prefix) extends SpawnCommand {

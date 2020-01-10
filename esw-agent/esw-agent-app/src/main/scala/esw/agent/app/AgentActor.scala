@@ -32,11 +32,11 @@ class AgentActor(
       case command: SpawnCommand =>
         val processActor    = new ProcessActor(locationService, processExecutor, agentSettings, logger, command)
         val processActorRef = ctx.spawn(processActor.init, command.componentId.prefix.value)
-        ctx.watchWith(processActorRef, Finished(command))
+        ctx.watchWith(processActorRef, Finished(command.componentId))
         processActorRef ! SpawnComponent
         behavior(state.add(command.componentId, processActorRef))
       //work done by child actor and child actor died
-      case Finished(spawnCommand) => behavior(state.remove(spawnCommand.componentId))
+      case Finished(componentId) => behavior(state.remove(componentId))
     }
   }
 }
