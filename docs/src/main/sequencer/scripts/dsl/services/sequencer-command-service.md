@@ -99,4 +99,23 @@ Kotlin
 
 ## Diagnostic and operations mode
 
+### Diagnostic mode
+
+The diagnostic data mode command is accepted by Sequencers in all states and `DiagnosticModeResponse` is sent. If the sequencer has defined
+its @ref:[diagnostic mode handlers](../handlers.md#diagnostic-mode-handlers), they will be called. If the handlers execute successfully,
+an `Ok` response is sent else `DiagnosticHookFailed` response is sent.
+
+Kotlin
+: @@snip [SequencerCommandServiceDslExample.kts](../../../../../../../examples/src/main/kotlin/esw/ocs/scripts/examples/paradox/SequencerCommandServiceDslExample.kts) { #diagnosticMode }  
+
+### Operations mode
+
+Operations mode is accepted by Sequencers in all states and `OperationsModeResponse` is sent. If the sequencer has defined
+its @ref:[operations mode handlers](../handlers.md#operations-mode-handlers), they will be called. If the handlers execute successfully,
+an `Ok` response is sent else `OperationsHookFailed` response is sent.
+
+Kotlin
+: @@snip [SequencerCommandServiceDslExample.kts](../../../../../../../examples/src/main/kotlin/esw/ocs/scripts/examples/paradox/SequencerCommandServiceDslExample.kts) { #operationsMode }  
+
+
 ## Aborting and Stopping Sequence

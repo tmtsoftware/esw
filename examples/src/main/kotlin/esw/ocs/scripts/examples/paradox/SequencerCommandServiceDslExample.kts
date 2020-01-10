@@ -68,6 +68,23 @@ script {
 
         }
         // #goOffline
+
+
+        // #diagnosticMode
+        val diagnosticModeResponse: DiagnosticModeResponse = tcsSequencer.diagnosticMode(utcTimeNow(), "engineering")
+        when (diagnosticModeResponse) {
+            is `Ok$` -> println("Tcs Sequencer has gone in diagnostic mode")
+            is `DiagnosticHookFailed$` -> println("Diagnostic hook failed with")
+        }
+        // #diagnosticMode
+
+        // #operationsMode
+        val operationsModeResponse: OperationsModeResponse = tcsSequencer.operationsMode()
+        when (operationsModeResponse) {
+            is `Ok$` -> println("Tcs Sequencer has gone in operations mode")
+            is `OperationsHookFailed$` -> println("Operations hook failed with")
+        }
+        // #operationsMode
     }
 
 }

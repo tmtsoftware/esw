@@ -8,8 +8,8 @@
 
 ## Shutdown Handler
 
-## diagnosticHandlers
+## Diagnostic Mode Handlers
 
-## operations handlers
+## Operations Mode Handlers
 
 ## exceptionHandlers
