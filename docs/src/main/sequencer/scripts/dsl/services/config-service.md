@@ -1,6 +1,8 @@
 # Config Service
 
-Config Service Dsl is a wrapper over config service module provided by csw. 
+Config Service Dsl is a wrapper over config service module provided by csw.
+You can refer a detailed documentation of Config Service provided by csw @extref[here](csw:services/config).
+
 This dsl provides APIs to check if file exists in configuration service and retrieve its contents.
 
 ## existsConfig

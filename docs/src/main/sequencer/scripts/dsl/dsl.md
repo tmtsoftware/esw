@@ -4,6 +4,7 @@
 
 @@@ index
 * [Config Service](services/config-service.md)
+* [Logging Service](services/logging-service.md)
 * [Time Service](services/time-service.md)
 * [Command Service](services/command-service.md)
 * [Sequencer Command Service](services/sequencer-command-service.md)
