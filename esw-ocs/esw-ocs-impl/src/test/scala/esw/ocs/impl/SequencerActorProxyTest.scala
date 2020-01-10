@@ -44,7 +44,7 @@ class SequencerActorProxyTest extends ScalaTestWithActorTestKit with BaseTestSui
   private val stopResponse             = Unhandled(Loaded.entryName, "Stop")
   private val deleteResponse           = IdDoesNotExist(Id())
   private val addBreakpointResponse    = Unhandled(Idle.entryName, "AddBreakpoint")
-  private val goOnlineResponse         = GoOnlineHookFailed
+  private val goOnlineResponse         = GoOnlineHookFailed()
   private val goOfflineResponse        = Unhandled(Offline.entryName, "Offline")
   private val loadSequenceResponse     = Ok
   private val startSequenceResponse    = SubmitResult(Started(Id("runId1")))

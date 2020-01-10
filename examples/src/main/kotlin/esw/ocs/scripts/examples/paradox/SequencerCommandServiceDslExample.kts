@@ -50,7 +50,7 @@ script {
         when (response) {
             is `Ok$` -> println("Tcs Sequencer is now online")
             is Unhandled -> println("Sequencer cannot go online from state: ${response.state()}")
-            is `GoOnlineHookFailed$` ->
+            is GoOnlineHookFailed ->
                 // retry going online
                 tcsSequencer.goOnline()
 
@@ -60,9 +60,9 @@ script {
         // #goOffline
         val offlineResponse: GoOfflineResponse = tcsSequencer.goOffline()
         when (offlineResponse) {
-            is `Ok$` -> println("Tcs Sequencer has gone offline ")
+            is Ok -> println("Tcs Sequencer has gone offline ")
             is Unhandled -> println("Sequencer cannot go offline from state: ${offlineResponse.state()}")
-            is `GoOfflineHookFailed$` ->
+            is GoOfflineHookFailed ->
                 // retry going offline
                 tcsSequencer.goOffline()
 
@@ -74,7 +74,7 @@ script {
         val diagnosticModeResponse: DiagnosticModeResponse = tcsSequencer.diagnosticMode(utcTimeNow(), "engineering")
         when (diagnosticModeResponse) {
             is `Ok$` -> println("Tcs Sequencer has gone in diagnostic mode")
-            is `DiagnosticHookFailed$` -> println("Diagnostic hook failed with")
+            is DiagnosticHookFailed -> println("Diagnostic hook failed with")
         }
         // #diagnosticMode
 
@@ -82,7 +82,7 @@ script {
         val operationsModeResponse: OperationsModeResponse = tcsSequencer.operationsMode()
         when (operationsModeResponse) {
             is `Ok$` -> println("Tcs Sequencer has gone in operations mode")
-            is `OperationsHookFailed$` -> println("Operations hook failed with")
+            is OperationsHookFailed -> println("Operations hook failed with")
         }
         // #operationsMode
     }

@@ -2,7 +2,6 @@ package esw.ocs.dsl.highlevel
 
 import csw.params.commands.*
 import csw.params.core.models.ObsId
-import csw.prefix.models.Prefix
 import esw.ocs.dsl.nullable
 import java.util.*
 
