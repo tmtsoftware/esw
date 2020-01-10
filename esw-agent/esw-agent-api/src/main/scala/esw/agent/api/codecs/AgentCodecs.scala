@@ -5,7 +5,6 @@ import akka.actor.typed.{ActorRef, ActorSystem}
 import akka.serialization.{Serialization, SerializationExtension}
 import csw.location.models.codecs.LocationCodecs
 import csw.prefix.codecs.CommonCodecs
-import esw.agent.api.AgentCommand.SpawnCommand
 import esw.agent.api.{AgentCommand, Response}
 import io.bullet.borer.Codec
 import io.bullet.borer.derivation.MapBasedCodecs.deriveAllCodecs
@@ -22,7 +21,6 @@ trait AgentCodecs extends CommonCodecs with LocationCodecs {
       }
     )
 
-  implicit lazy val spawnCommandCodec: Codec[SpawnCommand] = deriveAllCodecs
   implicit lazy val agentCommandCodec: Codec[AgentCommand] = deriveAllCodecs
   implicit lazy val agentResponseCodec: Codec[Response]    = deriveAllCodecs
 }
