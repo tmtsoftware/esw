@@ -5,9 +5,7 @@ package esw.ocs.scripts.examples.paradox
 import csw.params.commands.CommandResponse.SubmitResponse
 import csw.params.commands.Sequence
 import csw.params.commands.SequenceCommand
-import esw.ocs.api.protocol.Unhandled
-import esw.ocs.api.protocol.`GoOnlineHookFailed$`
-import esw.ocs.api.protocol.`Ok$`
+import esw.ocs.api.protocol.*
 import esw.ocs.dsl.core.script
 import kotlin.time.seconds
 
@@ -48,7 +46,7 @@ script {
         // #submitAndWaitWithTimeout
 
         // #goOnline
-        val response = tcsSequencer.goOnline()
+        val response: GoOnlineResponse = tcsSequencer.goOnline()
         when (response) {
             is `Ok$` -> println("Tcs Sequencer is now online")
             is Unhandled -> println("Sequencer cannot go online from state: ${response.state()}")
@@ -58,6 +56,18 @@ script {
 
         }
         // #goOnline
+
+        // #goOffline
+        val offlineResponse: GoOfflineResponse = tcsSequencer.goOffline()
+        when (offlineResponse) {
+            is `Ok$` -> println("Tcs Sequencer has gone offline ")
+            is Unhandled -> println("Sequencer cannot go offline from state: ${offlineResponse.state()}")
+            is `GoOfflineHookFailed$` ->
+                // retry going offline
+                tcsSequencer.goOffline()
+
+        }
+        // #goOffline
     }
 
 }

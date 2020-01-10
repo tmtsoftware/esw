@@ -68,25 +68,34 @@ Kotlin
 
 ## Going online/offline
 
+### Go online
+
 This dsl is used to send online/offline commands to other sequencers.
-The Sequencer can go in online state only if it has been sent to offline state before. If this command is received in any other
+The Sequencer can go online only if it is currently in offline state. If this command is received in any other
 state apart from offline, an `Unhandled` response will be sent.
-If the Sequencer is in Offline state, and it receives the `goOnline` command, the `goOnline` handlers of the receiving sequencer
+
+If the Sequencer is in Offline state, and it receives the `goOnline` command, the @ref:[goOnline handlers](../handlers.md#online-and-offline-handlers) of the receiving sequencer
 will be called. In case the handlers fail, a `GoOnlineHookFailed` response would be sent, resulting the sequencer remains in the previous state.
-Else an `Ok` message is sent, and the sequencer goes to online(idle) state. 
+Else an `Ok` message is sent, and the sequencer goes in online(idle) state. 
 
 Kotlin
 : @@snip [SequencerCommandServiceDslExample.kts](../../../../../../../examples/src/main/kotlin/esw/ocs/scripts/examples/paradox/SequencerCommandServiceDslExample.kts) { #goOnline }  
 
-Go offline command is received in 2 states only. 
-1. If the sequencer is Idle, which means it is not processing any sequence currently
-2. If the sequencer is Loaded with a sequence
+### Go offline
+
+Go offline command is received in 2 states only.
+ 
+* If the sequencer is Idle, which means it is not processing any sequence currently
+* If the sequencer is Loaded with a sequence
 
 If this command is sent in any other state apart from these, an `Unhandled` response will be sent. 
-If the Sequencer is in idle/loaded state, and it receives the `goOffline` command, the `goOffline` handlers of the receiving sequencer
-will be called. In case the handlers fail, a `GoOfflineHookFailed` response would be sent, resulting the sequencer remains in the previous state.
+If the Sequencer is in idle/loaded state, and it receives the `goOffline` command, the @ref:[goOffline handlers](../handlers.md#online-and-offline-handlers)
+of the receiving sequencer will be called.
+In case the handlers fail, a `GoOfflineHookFailed` response would be sent, resulting the sequencer remains in the previous state.
 Else an `Ok` message is sent, and the sequencer goes to offline state. 
 
+Kotlin
+: @@snip [SequencerCommandServiceDslExample.kts](../../../../../../../examples/src/main/kotlin/esw/ocs/scripts/examples/paradox/SequencerCommandServiceDslExample.kts) { #goOffline }  
 
 ## Diagnostic and operations mode
 
