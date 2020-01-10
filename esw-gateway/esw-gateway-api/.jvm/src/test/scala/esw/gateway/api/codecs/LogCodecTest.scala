@@ -14,7 +14,7 @@ class LogCodecTest extends WordSpec with Matchers with GatewayCodecs {
       val json =
         """
           |{
-          |  "Log": {
+          |     "_type": "Log",
           |    "prefix": "esw.app1",
           |    "level": "debug",
           |    "message": "all good",
@@ -30,7 +30,6 @@ class LogCodecTest extends WordSpec with Matchers with GatewayCodecs {
           |        "new2" : null
           |      }
           |    }
-          |  }
           |}
           |""".stripMargin
 

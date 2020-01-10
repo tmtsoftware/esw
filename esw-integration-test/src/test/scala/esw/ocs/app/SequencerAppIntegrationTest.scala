@@ -5,7 +5,7 @@ import akka.actor.testkit.typed.scaladsl.TestProbe
 import akka.actor.typed.ActorRef
 import akka.actor.typed.scaladsl.AskPattern._
 import akka.util.Timeout
-import csw.command.client.internal.SequencerCommandServiceImpl
+import csw.command.client.SequencerCommandServiceImpl
 import csw.location.api.extensions.URIExtension.RichURI
 import csw.location.models.Connection.AkkaConnection
 import csw.location.models.{AkkaLocation, ComponentId, ComponentType}

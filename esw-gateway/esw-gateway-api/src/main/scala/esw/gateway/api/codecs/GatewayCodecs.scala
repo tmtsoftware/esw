@@ -9,7 +9,8 @@ import csw.params.events.EventKey
 import esw.gateway.api.protocol._
 import esw.ocs.api.codecs.SequencerHttpCodecs
 import io.bullet.borer.Dom.MapElem
-import io.bullet.borer.derivation.CompactMapBasedCodecs._
+import io.bullet.borer.derivation.MapBasedCodecs.deriveAllCodecs
+import io.bullet.borer.derivation.CompactMapBasedCodecs.deriveCodec
 import io.bullet.borer.{Codec, Decoder, Encoder}
 import msocket.api.ErrorProtocol
 

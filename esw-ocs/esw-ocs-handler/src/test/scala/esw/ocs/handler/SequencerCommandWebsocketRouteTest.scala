@@ -16,7 +16,7 @@ import msocket.api.Encoding
 import msocket.api.Encoding.JsonText
 import msocket.impl.CborByteString
 import msocket.impl.post.ClientHttpCodecs
-import msocket.impl.ws.EncodingExtensions.EncodingForMessage
+import msocket.impl.ws.WebsocketExtensions.WebsocketEncoding
 import msocket.impl.ws.WebsocketRouteFactory
 
 import scala.concurrent.Future
