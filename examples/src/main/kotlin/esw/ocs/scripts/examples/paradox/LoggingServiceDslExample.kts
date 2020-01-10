@@ -50,4 +50,16 @@ script {
     error(message = "logging at error level", cause = highTempRaisedEx,
             extraInfo = mapOf("key1" to "value1", "key2" to "value2"))
     //#error
+
+    //#fatal
+    fatal(message = "logging at fatal level")
+
+    fatal(message = "logging at fatal level", cause = highTempRaisedEx)
+
+    fatal(message = "logging at fatal level",
+            extraInfo = mapOf("key1" to "value1", "key2" to "value2"))
+
+    fatal(message = "logging at fatal level", cause = highTempRaisedEx,
+            extraInfo = mapOf("key1" to "value1", "key2" to "value2"))
+    //#fatal
 }
