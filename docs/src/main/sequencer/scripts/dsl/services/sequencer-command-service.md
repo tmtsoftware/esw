@@ -119,3 +119,26 @@ Kotlin
 
 
 ## Aborting and Stopping Sequence
+
+### Aborting
+
+This command is accepted only if the Sequencer is in `InProgress` state, which means it is executing a sequence currently. 
+If this command is sent in any other state, an `Unhandled` response is returned. In all other cases, an `Ok` response is sent.
+
+On receiving this command in `InProgress` state, the Sequencer will execute the @ref:[abort sequence handlers](../handlers.md#abort-sequence-handlers)
+and on completion of execution of handlers (whether successful or failed), the Sequencer will discard all the `pending` steps
+and return an `Ok` response.  
+
+Note that, abort sequence does not abruptly terminate the in-flight step(s) which are already under execution. It will discard only the
+pending steps, and the sequence is finished gracefully after the inflight step(s) are finished.
+
+Kotlin
+: @@snip [SequencerCommandServiceDslExample.kts](../../../../../../../examples/src/main/kotlin/esw/ocs/scripts/examples/paradox/SequencerCommandServiceDslExample.kts) { #abortSequence }  
+
+### Stopping
+
+Stopping sequence is very similar to aborting, only difference is that instead of abort handlers, the @ref:[stop handlers](../handlers.md#stop-handlers)
+are called. Script writers are expected to save state of sequencer-script in the Stop handlers.
+
+Kotlin
+: @@snip [SequencerCommandServiceDslExample.kts](../../../../../../../examples/src/main/kotlin/esw/ocs/scripts/examples/paradox/SequencerCommandServiceDslExample.kts) { #stopSequence }  

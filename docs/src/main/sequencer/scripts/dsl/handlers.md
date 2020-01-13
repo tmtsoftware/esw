@@ -2,9 +2,9 @@
 
 ## Online and Offline Handlers
 
-## Abort Sequence Handler
+## Abort Sequence Handlers
 
-## Stop Handler
+## Stop Handlers
 
 ## Shutdown Handler
 

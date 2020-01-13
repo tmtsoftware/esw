@@ -76,9 +76,9 @@ object SequencerMessages {
 
   // engine & internal
   final private[esw] case class PullNext(replyTo: ActorRef[PullNextResponse]) extends IdleMessage with InProgressMessage
-  // this is internal message and replyTo is not used anywhere
+  // this is an internal message and replyTo is not used anywhere
   final private[esw] case class StepSuccess(replyTo: ActorRef[OkOrUnhandledResponse]) extends InProgressMessage
-  // this is internal message and replyTo is not used anywhere
+  // this is an internal message and replyTo is not used anywhere
   final private[esw] case class StepFailure(reason: String, replyTo: ActorRef[OkOrUnhandledResponse]) extends InProgressMessage
 
   final private[esw] case class GoIdle(replyTo: ActorRef[OkOrUnhandledResponse])                extends InProgressMessage

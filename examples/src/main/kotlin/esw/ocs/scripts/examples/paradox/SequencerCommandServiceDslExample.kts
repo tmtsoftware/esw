@@ -60,6 +60,14 @@ script {
         // #operationsMode
         val operationsModeResponse: OperationsModeResponse = tcsSequencer.operationsMode()
         // #operationsMode
+
+        // #abortSequence
+        val abortResponse: OkOrUnhandledResponse = tcsSequencer.abortSequence()
+        // #abortSequence
+
+        // #stopSequence
+        val stopResponse: OkOrUnhandledResponse = tcsSequencer.stop()
+        // #stopSequence
     }
 
 }
