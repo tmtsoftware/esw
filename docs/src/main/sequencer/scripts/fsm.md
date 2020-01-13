@@ -119,7 +119,7 @@ Kotlin
 ## Example FSM
 
 In the below example, `temparatureFsm` demonstrates how to define and use FSM in the scripts. The event variable is declared 
-with event key `esw.temperature.temp` for param `temperature` and `temparatureFsm` is bind to it. The job of the `temparatureFsm` 
+with event key `esw.temperature.temp` for param `temperature` and `temperatureFsm` is bind to it. The job of the `temperatureFsm` 
 is to decide the `state` based on the `temperature` and publish it on event key `esw.temperatureFsm` with param key `state`. 
 
 Logic of state change is: 
