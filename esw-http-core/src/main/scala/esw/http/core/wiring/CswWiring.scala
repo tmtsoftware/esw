@@ -16,7 +16,7 @@ import csw.location.api.scaladsl.LocationService
 import csw.location.client.ActorSystemFactory
 import csw.location.client.scaladsl.HttpLocationServiceFactory
 import csw.time.scheduler.TimeServiceSchedulerFactory
-import esw.http.core.utils.{ComponentFactory, ICommandServiceFactory}
+import esw.http.core.utils.ComponentFactory
 import io.lettuce.core.RedisClient
 
 import scala.concurrent.{ExecutionContext, Future}
@@ -41,7 +41,7 @@ class CswWiring() {
   lazy val alarmServiceFactory: AlarmServiceFactory = new AlarmServiceFactory(redisClient)
   lazy val alarmService: AlarmService               = alarmServiceFactory.makeClientApi(locationService)
 
-  lazy val componentFactory            = new ComponentFactory(locationService, ICommandServiceFactory.default)
+  lazy val componentFactory            = new ComponentFactory(locationService)
   lazy val timeServiceSchedulerFactory = new TimeServiceSchedulerFactory()(actorSystem.scheduler)
 
   lazy val redisClient: RedisClient = {

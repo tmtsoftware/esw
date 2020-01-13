@@ -64,7 +64,7 @@ class PostRouteTest extends BaseTestSuite with ScalatestRouteTest with GatewayCo
       val componentId                = ComponentId(destination, componentType)
       val submitRequest: PostRequest = ComponentCommand(componentId, Submit(command))
 
-      when(resolver.resolveComponent(componentId)).thenReturn(Future.successful(commandService))
+      when(resolver.commandService(componentId)).thenReturn(Future.successful(commandService))
       when(commandService.submit(command)).thenReturn(Future.successful(Started(runId)))
 
       post(submitRequest) ~> route ~> check {
@@ -79,7 +79,7 @@ class PostRouteTest extends BaseTestSuite with ScalatestRouteTest with GatewayCo
       val componentId                  = ComponentId(destination, componentType)
       val validateRequest: PostRequest = ComponentCommand(componentId, Validate(command))
 
-      when(resolver.resolveComponent(componentId)).thenReturn(Future.successful(commandService))
+      when(resolver.commandService(componentId)).thenReturn(Future.successful(commandService))
       when(commandService.validate(command)).thenReturn(Future.successful(Accepted(runId)))
 
       post(validateRequest) ~> route ~> check {
@@ -94,7 +94,7 @@ class PostRouteTest extends BaseTestSuite with ScalatestRouteTest with GatewayCo
       val componentId                = ComponentId(destination, componentType)
       val onewayRequest: PostRequest = ComponentCommand(componentId, Oneway(command))
 
-      when(resolver.resolveComponent(componentId)).thenReturn(Future.successful(commandService))
+      when(resolver.commandService(componentId)).thenReturn(Future.successful(commandService))
       when(commandService.oneway(command)).thenReturn(Future.successful(Accepted(runId)))
 
       Post("/post-endpoint", onewayRequest) ~> route ~> check {
@@ -109,7 +109,7 @@ class PostRouteTest extends BaseTestSuite with ScalatestRouteTest with GatewayCo
       val submitRequest: PostRequest = ComponentCommand(componentId, Submit(command))
 
       val message = "component does not exist"
-      when(resolver.resolveComponent(componentId)).thenReturn(Future.failed(InvalidComponent(message)))
+      when(resolver.commandService(componentId)).thenReturn(Future.failed(InvalidComponent(message)))
 
       post(submitRequest) ~> route ~> check {
         status shouldEqual StatusCodes.InternalServerError
@@ -125,7 +125,7 @@ class PostRouteTest extends BaseTestSuite with ScalatestRouteTest with GatewayCo
       val submitRequest: PostRequest = SequencerCommand(componentId, SequencerPostRequest.Submit(sequence))
       val submitResponse             = Started(Id("123"))
 
-      when(resolver.resolveSequencer(componentId)).thenReturn(Future.successful(sequencer))
+      when(resolver.sequencerCommandService(componentId)).thenReturn(Future.successful(sequencer))
       when(sequencer.submit(sequence)).thenReturn(Future.successful(submitResponse))
 
       post(submitRequest) ~> route ~> check {
@@ -139,7 +139,7 @@ class PostRouteTest extends BaseTestSuite with ScalatestRouteTest with GatewayCo
       val queryRequest: PostRequest = SequencerCommand(componentId, SequencerPostRequest.Query(runId))
       val queryResponse             = Invalid(runId, IdNotAvailableIssue(s"Sequencer is not running any sequence with runId $runId"))
 
-      when(resolver.resolveSequencer(componentId)).thenReturn(Future.successful(sequencer))
+      when(resolver.sequencerCommandService(componentId)).thenReturn(Future.successful(sequencer))
       when(sequencer.query(runId)).thenReturn(Future.successful(queryResponse))
 
       post(queryRequest) ~> route ~> check {
@@ -151,7 +151,7 @@ class PostRouteTest extends BaseTestSuite with ScalatestRouteTest with GatewayCo
       val componentId                  = ComponentId(destination, Sequencer)
       val goOnlineRequest: PostRequest = SequencerCommand(componentId, SequencerPostRequest.GoOnline)
 
-      when(resolver.resolveSequencer(componentId)).thenReturn(Future.successful(sequencer))
+      when(resolver.sequencerCommandService(componentId)).thenReturn(Future.successful(sequencer))
       when(sequencer.goOnline()).thenReturn(Future.successful(Ok))
 
       post(goOnlineRequest) ~> route ~> check {

@@ -66,7 +66,7 @@ class WebsocketRouteTest extends BaseTestSuite with ScalatestRouteTest with Gate
       val componentId                  = ComponentId(destination, componentType)
       val queryFinal: WebsocketRequest = ComponentCommand(componentId, QueryFinal(runId, 100.hours))
 
-      when(resolver.resolveComponent(componentId)).thenReturn(Future.successful(commandService))
+      when(resolver.commandService(componentId)).thenReturn(Future.successful(commandService))
       when(commandService.queryFinal(runId)(100.hours)).thenReturn(Future.successful(Completed(runId)))
 
       WS("/websocket-endpoint", wsClient.flow) ~> route ~> check {
@@ -85,7 +85,7 @@ class WebsocketRouteTest extends BaseTestSuite with ScalatestRouteTest with Gate
 
       val errmsg = s"No component is registered with id $componentId "
 
-      when(resolver.resolveComponent(componentId)).thenReturn(Future.failed(InvalidComponent(errmsg)))
+      when(resolver.commandService(componentId)).thenReturn(Future.failed(InvalidComponent(errmsg)))
 
       WS("/websocket-endpoint", wsClient.flow) ~> route ~> check {
         wsClient.sendMessage(JsonText.strictMessage(queryFinal))
@@ -106,7 +106,7 @@ class WebsocketRouteTest extends BaseTestSuite with ScalatestRouteTest with Gate
         SequencerCommand(componentId, SequencerWebsocketRequest.QueryFinal(sequenceId, timeout))
       val queryFinalResponse = Completed(sequenceId)
 
-      when(resolver.resolveSequencer(componentId)).thenReturn(Future.successful(sequencer))
+      when(resolver.sequencerCommandService(componentId)).thenReturn(Future.successful(sequencer))
       when(sequencer.queryFinal(sequenceId)).thenReturn(Future.successful(queryFinalResponse))
 
       WS("/websocket-endpoint", wsClient.flow) ~> route ~> check {
@@ -130,7 +130,7 @@ class WebsocketRouteTest extends BaseTestSuite with ScalatestRouteTest with Gate
       val currentStateSubscription = mock[Subscription]
       val currentStateStream       = Source(List(currentState1, currentState2)).mapMaterializedValue(_ => currentStateSubscription)
 
-      when(resolver.resolveComponent(componentId)).thenReturn(Future.successful(commandService))
+      when(resolver.commandService(componentId)).thenReturn(Future.successful(commandService))
       when(commandService.subscribeCurrentState(stateNames)).thenReturn(currentStateStream)
 
       def response: CurrentState = decodeMessage[CurrentState](wsClient)
