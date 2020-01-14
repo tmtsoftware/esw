@@ -1,45 +1,34 @@
 package esw.gateway.server
 
-import akka.actor.CoordinatedShutdown.UnknownReason
+import csw.location.models.ComponentType.Sequencer
+import csw.location.models.Connection.AkkaConnection
 import csw.location.models.{ComponentId, ComponentType}
 import csw.params.commands.CommandResponse.{Completed, Started}
 import csw.params.commands.{CommandName, Sequence, Setup}
-import csw.params.core.models.Subsystem.ESW
-import csw.params.core.models.{ObsId, Prefix}
+import csw.params.core.models.ObsId
+import csw.prefix.models.Prefix
+import csw.prefix.models.Subsystem.ESW
 import esw.gateway.api.clients.ClientFactory
 import esw.gateway.api.codecs.GatewayCodecs
-import esw.gateway.api.protocol.{PostRequest, WebsocketRequest}
+import esw.gateway.server.utils.Resolver
+import esw.ocs.api.client.SequencerClient
+import esw.ocs.impl.SequencerActorProxy
 import esw.ocs.testkit.EswTestKit
-import msocket.api.Transport
-import msocket.impl.Encoding.JsonText
-import msocket.impl.post.HttpPostTransport
-import msocket.impl.ws.WebsocketTransport
+import esw.ocs.testkit.Service.{EventServer, Gateway}
 
-class SequencerGatewayTest extends EswTestKit with GatewayCodecs {
-  private val port: Int                    = 6490
-  private val subsystem                    = ESW
-  private val observingMode                = "moonnight"
-  private val gatewayWiring: GatewayWiring = new GatewayWiring(Some(port))
+class SequencerGatewayTest extends EswTestKit(Gateway, EventServer) with GatewayCodecs {
+  private val subsystem     = ESW
+  private val observingMode = "moonnight"
 
   override def beforeAll(): Unit = {
     super.beforeAll()
-    gatewayWiring.httpService.registeredLazyBinding.futureValue
     spawnSequencerRef(subsystem, observingMode)
-  }
-
-  override def afterAll(): Unit = {
-    gatewayWiring.httpService.shutdown(UnknownReason).futureValue
-    super.afterAll()
   }
 
   "SequencerApi" must {
 
     "handle submit, queryFinal commands | ESW-250" in {
-      val postClient: Transport[PostRequest] =
-        new HttpPostTransport(s"http://localhost:$port/post-endpoint", JsonText, () => None)
-      val websocketClient: Transport[WebsocketRequest] =
-        new WebsocketTransport(s"ws://localhost:$port/websocket-endpoint", JsonText)
-      val clientFactory = new ClientFactory(postClient, websocketClient)
+      val clientFactory = new ClientFactory(gatewayPostClient, gatewayWsClient)
 
       val sequence    = Sequence(Setup(Prefix("esw.test"), CommandName("command-2"), Some(ObsId("obsId"))))
       val componentId = ComponentId(Prefix(s"$subsystem.$observingMode"), ComponentType.Sequencer)
@@ -52,6 +41,21 @@ class SequencerGatewayTest extends EswTestKit with GatewayCodecs {
 
       //queryFinal
       sequencer.queryFinal(submitResponse.runId).futureValue should ===(Completed(submitResponse.runId))
+    }
+  }
+
+  "resolver" must {
+    "resolve http location if akka location is not present for sequencer | ESW-258" in {
+      val resolver    = new Resolver(locationService)
+      val componentId = ComponentId(Prefix(subsystem, observingMode), Sequencer)
+
+      // if resolved location is akka, sequencer factory creates actor proxy
+      resolver.sequencerCommandService(componentId).futureValue.isInstanceOf[SequencerActorProxy] shouldBe true
+
+      locationService.unregister(AkkaConnection(componentId)).futureValue
+
+      // if resolved location is http, sequencer factory creates http client
+      resolver.sequencerCommandService(componentId).futureValue.isInstanceOf[SequencerClient] shouldBe true
     }
   }
 }

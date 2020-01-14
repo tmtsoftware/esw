@@ -12,9 +12,11 @@ import esw.ocs.api.protocol.SequencerWebsocketRequest
 import esw.ocs.api.protocol.SequencerWebsocketRequest.QueryFinal
 import esw.ocs.api.{BaseTestSuite, SequencerApi}
 import io.bullet.borer.Decoder
-import msocket.impl.Encoding
-import msocket.impl.Encoding.{CborBinary, JsonText}
+import msocket.api.Encoding
+import msocket.api.Encoding.JsonText
+import msocket.impl.CborByteString
 import msocket.impl.post.ClientHttpCodecs
+import msocket.impl.ws.WebsocketExtensions.WebsocketEncoding
 import msocket.impl.ws.WebsocketRouteFactory
 
 import scala.concurrent.Future
@@ -47,7 +49,7 @@ class SequencerCommandWebsocketRouteTest
       when(sequencer.queryFinal(id)).thenReturn(Future.successful(completedResponse))
 
       WS("/websocket-endpoint", wsClient.flow) ~> route ~> check {
-        wsClient.sendMessage(JsonText.strictMessage(QueryFinal(id, timeout)))
+        wsClient.sendMessage(JsonText.strictMessage(QueryFinal(id, timeout): SequencerWebsocketRequest))
         isWebSocketUpgrade shouldBe true
 
         val response = decodeMessage[SubmitResponse](wsClient)
@@ -60,7 +62,7 @@ class SequencerCommandWebsocketRouteTest
   private def decodeMessage[T](wsClient: WSProbe)(implicit decoder: Decoder[T]): T = {
     wsClient.expectMessage() match {
       case TextMessage.Strict(text)   => JsonText.decode[T](text)
-      case BinaryMessage.Strict(data) => CborBinary.decode[T](data)
+      case BinaryMessage.Strict(data) => CborByteString.decode[T](data)
       case _                          => throw new RuntimeException("The expected message is not Strict")
     }
   }

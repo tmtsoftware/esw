@@ -10,7 +10,7 @@ import esw.ocs.api.SequencerApi
 import esw.ocs.api.client.SequencerClient
 import esw.ocs.api.codecs.SequencerHttpCodecs
 import esw.ocs.api.protocol.{SequencerPostRequest, SequencerWebsocketRequest}
-import msocket.impl.Encoding.JsonText
+import msocket.api.Encoding.JsonText
 import msocket.impl.post.HttpPostTransport
 import msocket.impl.ws.WebsocketTransport
 

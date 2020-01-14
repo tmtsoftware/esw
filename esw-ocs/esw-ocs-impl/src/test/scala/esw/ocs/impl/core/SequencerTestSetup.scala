@@ -5,20 +5,23 @@ import akka.actor.testkit.typed.scaladsl.TestProbe
 import akka.actor.typed.{ActorRef, ActorSystem}
 import csw.command.client.messages.sequencer.SequencerMsg
 import csw.command.client.messages.sequencer.SequencerMsg.SubmitSequence
+import csw.location.api.extensions.ActorExtension._
 import csw.location.api.scaladsl.LocationService
+import csw.location.models.ComponentType.SequenceComponent
 import csw.location.models.Connection.AkkaConnection
 import csw.location.models.{AkkaLocation, ComponentId}
 import csw.params.commands.CommandResponse.{Completed, Started, SubmitResponse}
 import csw.params.commands.{Sequence, SequenceCommand}
-import csw.params.core.models.Subsystem.ESW
-import csw.params.core.models.{Id, Prefix}
+import csw.params.core.models.Id
+import csw.prefix.models.Prefix
+import csw.prefix.models.Subsystem.ESW
 import csw.time.core.models.UTCTime
 import esw.ocs.api.models.{Step, StepList}
 import esw.ocs.api.protocol._
-import esw.ocs.dsl.script.ScriptDsl
 import esw.ocs.impl.messages.SequencerMessages.{Pause, _}
-import esw.ocs.impl.messages.{SequenceComponentMsg, SequencerState}
 import esw.ocs.impl.messages.SequencerState.{Idle, InProgress}
+import esw.ocs.impl.messages.{SequenceComponentMsg, SequencerState}
+import esw.ocs.impl.script.ScriptApi
 import org.mockito.Mockito.{verify, when}
 import org.scalatest.concurrent.Eventually._
 import org.scalatest.{Assertion, Matchers}
@@ -26,9 +29,7 @@ import org.scalatestplus.mockito.MockitoSugar
 
 import scala.concurrent.duration.DurationLong
 import scala.concurrent.{ExecutionContext, Future, Promise}
-import scala.util.Success
-import csw.location.api.extensions.ActorExtension._
-import csw.location.models.ComponentType.SequenceComponent
+import scala.util.{Random, Success}
 
 class SequencerTestSetup(sequence: Sequence)(implicit system: ActorSystem[_]) {
   import Matchers._
@@ -38,17 +39,18 @@ class SequencerTestSetup(sequence: Sequence)(implicit system: ActorSystem[_]) {
   implicit val ec: ExecutionContext                   = system.executionContext
 
   private val componentId     = mock[ComponentId]
-  private val script          = mock[ScriptDsl]
+  private val script          = mock[ScriptApi]
   private val locationService = mock[LocationService]
   private val sequenceComponent: AkkaLocation = AkkaLocation(
     AkkaConnection(ComponentId(Prefix(ESW, "primary"), SequenceComponent)),
     TestProbe[SequenceComponentMsg].ref.toURI
   )
   private def mockShutdownHttpService: () => Future[Done.type] = () => Future { Done }
+  val sequencerName                                            = s"SequencerActor${Random.between(0, Int.MaxValue)}"
+  when(componentId.prefix).thenReturn(Prefix(ESW, sequencerName))
   private val sequencerBehavior =
     new SequencerBehavior(componentId, script, locationService, sequenceComponent, mockShutdownHttpService)
 
-  val sequencerName                          = s"SequencerActor${math.random()}"
   val sequencerActor: ActorRef[SequencerMsg] = system.systemActorOf(sequencerBehavior.setup, sequencerName)
 
   private def deadletter = system.deadLetters
@@ -175,7 +177,7 @@ class SequencerTestSetup(sequence: Sequence)(implicit system: ActorSystem[_]) {
     expectedState match {
       case Idle                            => stepList shouldNot be(None)
       case InProgress                      => stepList shouldNot be(None)
-      case x: SequencerState[SequencerMsg] => assert(false, s"$x is not valid state after AbortSequence")
+      case x: SequencerState[SequencerMsg] => assert(false, s"$x is not valid state after Stop")
     }
     eventually(verify(script).executeStop())
     probe

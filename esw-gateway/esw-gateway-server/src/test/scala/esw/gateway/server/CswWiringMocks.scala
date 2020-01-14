@@ -8,6 +8,7 @@ import csw.command.api.scaladsl.CommandService
 import csw.event.api.scaladsl.{EventPublisher, EventService, EventSubscriber}
 import csw.event.client.internal.commons.EventSubscriberUtil
 import csw.logging.api.scaladsl.Logger
+import csw.prefix.models.Prefix
 import esw.gateway.impl.LoggerCache
 import esw.gateway.server.utils.Resolver
 import esw.http.core.wiring.CswWiring
@@ -23,7 +24,7 @@ class CswWiringMocks() {
 //  val actorRuntime: ActorRuntime = new ActorRuntime(system)
   val logger: Logger           = mock[Logger]
   val loggerCache: LoggerCache = mock[LoggerCache]
-  when(loggerCache.get(any[String])).thenReturn(logger)
+  when(loggerCache.get(any[Prefix])).thenReturn(logger)
 
   //command service mocks
   val resolver: Resolver             = mock[Resolver]

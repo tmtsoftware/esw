@@ -1,49 +1,30 @@
 package esw.gateway.server
 
 import akka.Done
-import akka.actor.CoordinatedShutdown.UnknownReason
 import com.typesafe.config.ConfigFactory
 import csw.alarm.models.AlarmSeverity
 import csw.alarm.models.Key.AlarmKey
-import csw.params.core.models.Subsystem
-import csw.testkit.scaladsl.CSWService.AlarmServer
+import csw.prefix.models.Prefix
+import csw.prefix.models.Subsystem.NFIRAOS
 import esw.gateway.api.clients.AlarmClient
 import esw.gateway.api.codecs.GatewayCodecs
-import esw.gateway.api.protocol.PostRequest
 import esw.ocs.testkit.EswTestKit
-import msocket.impl.Encoding.JsonText
-import msocket.impl.post.HttpPostTransport
+import esw.ocs.testkit.Service.{AlarmServer, Gateway}
 
-class AlarmGatewayTest extends EswTestKit(AlarmServer) with GatewayCodecs {
+class AlarmGatewayTest extends EswTestKit(AlarmServer, Gateway) with GatewayCodecs {
   import frameworkTestKit.frameworkWiring.alarmServiceFactory
 
-  private val port: Int                    = 6490
-  private val gatewayWiring: GatewayWiring = new GatewayWiring(Some(port))
-
-  override def beforeAll(): Unit = {
-    super.beforeAll()
-    gatewayWiring.httpService.registeredLazyBinding.futureValue
-  }
-
-  override def afterAll(): Unit = {
-    gatewayWiring.httpService.shutdown(UnknownReason).futureValue
-    super.afterAll()
-  }
-
   "AlarmApi" must {
-    "set alarm severity of a given alarm | ESW-216, ESW-86, ESW-193, ESW-233" in {
-      val alarmClient =
-        new AlarmClient(new HttpPostTransport[PostRequest](s"http://localhost:$port/post-endpoint", JsonText, () => None))
+    "set alarm severity of a given alarm | ESW-216, ESW-86, ESW-193, ESW-233, CSW-83" in {
+      val alarmClient = new AlarmClient(gatewayPostClient)
 
       val config            = ConfigFactory.parseResources("alarm_key.conf")
       val alarmAdminService = alarmServiceFactory.makeAdminApi(locationService)
       alarmAdminService.initAlarms(config, reset = true).futureValue
 
-      val componentName = "trombone"
       val alarmName     = "tromboneAxisHighLimitAlarm"
-      val subsystemName = Subsystem.NFIRAOS
       val majorSeverity = AlarmSeverity.Major
-      val alarmKey      = AlarmKey(subsystemName, componentName, alarmName)
+      val alarmKey      = AlarmKey(Prefix(NFIRAOS, "trombone"), alarmName)
 
       alarmClient.setSeverity(alarmKey, majorSeverity).futureValue should ===(Done)
     }

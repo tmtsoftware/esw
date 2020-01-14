@@ -3,16 +3,13 @@ package esw.ocs.handler
 import akka.http.scaladsl.server.Directives.complete
 import akka.http.scaladsl.server.Route
 import esw.ocs.api.SequencerApi
-import esw.ocs.api.codecs.SequencerHttpCodecs
+import esw.ocs.api.codecs.SequencerHttpCodecs._
 import esw.ocs.api.protocol.SequencerPostRequest
 import esw.ocs.api.protocol.SequencerPostRequest._
-import msocket.api.MessageHandler
-import msocket.impl.post.ServerHttpCodecs
+import msocket.impl.post.{HttpPostHandler, ServerHttpCodecs}
 
-class SequencerPostHandler(sequencerApi: SequencerApi)
-    extends MessageHandler[SequencerPostRequest, Route]
-    with SequencerHttpCodecs
-    with ServerHttpCodecs {
+class SequencerPostHandler(sequencerApi: SequencerApi) extends HttpPostHandler[SequencerPostRequest] with ServerHttpCodecs {
+
   import sequencerApi._
 
   override def handle(request: SequencerPostRequest): Route = request match {

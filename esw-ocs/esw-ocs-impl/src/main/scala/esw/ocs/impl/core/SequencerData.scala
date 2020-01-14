@@ -43,7 +43,7 @@ private[core] case class SequencerData(
   def queryFinal(runId: Id, replyTo: ActorRef[SubmitResponse]): SequencerData =
     if (isSequenceRunning && this.runId.get == runId) queryFinal(replyTo)
     else {
-      replyTo ! Error(runId, s"No sequence with $runId is loaded in the sequencer")
+      replyTo ! Invalid(runId, IdNotAvailableIssue(s"Sequencer is not running any sequence with runId $runId"))
       this
     }
 
@@ -101,12 +101,7 @@ private[core] case class SequencerData(
   }
 
   private def changeStepStatus(state: SequencerState[SequencerMsg], newStatus: StepStatus) = {
-    val newStepList = stepList.map { stepList =>
-      stepList.copy(steps = stepList.steps.map {
-        case step if step.isInFlight => step.withStatus(newStatus)
-        case x                       => x
-      })
-    }
+    val newStepList = stepList.map(stepList => stepList.copy(steps = stepList.steps.map(_.withStatus(newStatus))))
     copy(stepList = newStepList)
       .checkForSequenceCompletion()
       .notifyReadyToExecuteNextSubscriber()

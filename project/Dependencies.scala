@@ -29,6 +29,8 @@ object Dependencies {
   val OcsImpl: Def.Initialize[Seq[ModuleID]] = Def.setting(
     Seq(
       Csw.`csw-command-client`,
+      Csw.`csw-event-client`,
+      Csw.`csw-alarm-client`,
       Akka.`akka-actor-typed`,
       Akka.`akka-stream-typed`,
       Libs.`scala-async`,
@@ -44,6 +46,35 @@ object Dependencies {
     Seq(
       Libs.`msocket-impl-jvm`,
       Libs.scalatest                  % Test,
+      Libs.`mockito-scala`            % Test,
+      Akka.`akka-actor-testkit-typed` % Test
+    )
+  )
+
+  val AgentApp: Def.Initialize[Seq[ModuleID]] = Def.setting(
+    Seq(
+      Libs.`case-app`,
+      Csw.`csw-location-client`,
+      Akka.`akka-actor-typed`,
+      Libs.scalatest                  % Test,
+      Libs.`mockito-scala`            % Test,
+      Akka.`akka-actor-testkit-typed` % Test
+    )
+  )
+
+  val AgentApi: Def.Initialize[Seq[ModuleID]] = Def.setting(
+    Seq(
+      Borer.`borer-core`.value,
+      Borer.`borer-derivation`.value,
+      Csw.`csw-prefix`.value,
+      Csw.`csw-location-api`,
+      Akka.`akka-actor-typed`
+    )
+  )
+
+  val AgentClient: Def.Initialize[Seq[ModuleID]] = Def.setting(
+    Seq(
+      Csw.`csw-location-api`,
       Libs.`mockito-scala`            % Test,
       Akka.`akka-actor-testkit-typed` % Test
     )
@@ -79,7 +110,6 @@ object Dependencies {
       Akka.`akka-actor-testkit-typed`     % Test,
       Libs.`scala-java8-compat`           % Test,
       Csw.`csw-testkit`                   % Test,
-      Csw.`csw-admin-server`              % Test,
       Csw.`csw-logging-models`.value      % Test,
       Libs.scalatest                      % Test,
       Csw.`csw-location-server-tests`     % Test,

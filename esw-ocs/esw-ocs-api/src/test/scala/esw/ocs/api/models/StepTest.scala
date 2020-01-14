@@ -1,7 +1,7 @@
 package esw.ocs.api.models
 
 import csw.params.commands.{CommandName, Setup}
-import csw.params.core.models.Prefix
+import csw.prefix.models.Prefix
 import esw.ocs.api.models.StepStatus.{Finished, _}
 import esw.ocs.api.protocol.EditorError.CannotOperateOnAnInFlightOrFinishedStep
 import esw.ocs.api.{BaseTestSuite, models}

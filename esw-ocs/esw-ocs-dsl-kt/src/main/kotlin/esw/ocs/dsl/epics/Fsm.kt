@@ -23,7 +23,7 @@ interface FsmScope : CswHighLevelDslApi {
 interface FsmStateScope : CswHighLevelDslApi {
     suspend fun become(state: String, params: Params = Params(setOf()))
     suspend fun completeFsm()
-    suspend fun on(condition: Boolean = true, body: suspend () -> Unit)
+    suspend fun on(condition: Boolean, body: suspend () -> Unit)
     suspend fun after(duration: Duration, body: suspend () -> Unit)
     suspend fun entry(body: suspend () -> Unit)
 }

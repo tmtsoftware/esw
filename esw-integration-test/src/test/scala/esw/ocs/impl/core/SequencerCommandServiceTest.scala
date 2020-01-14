@@ -1,10 +1,10 @@
 package esw.ocs.impl.core
 
-import csw.command.client.internal.SequencerCommandServiceImpl
+import csw.command.client.SequencerCommandServiceImpl
 import csw.params.commands.CommandResponse.Completed
 import csw.params.commands.{CommandName, Sequence, Setup}
-import csw.params.core.models.Prefix
-import csw.params.core.models.Subsystem.ESW
+import csw.prefix.models.Prefix
+import csw.prefix.models.Subsystem.ESW
 import esw.ocs.testkit.EswTestKit
 
 class SequencerCommandServiceTest extends EswTestKit {

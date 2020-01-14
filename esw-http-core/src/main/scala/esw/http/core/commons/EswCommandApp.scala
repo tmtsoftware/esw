@@ -7,8 +7,7 @@ import caseapp.core.help.CommandsHelp
 import csw.logging.api.scaladsl.Logger
 
 // $COVERAGE-OFF$
-abstract class EswCommandApp[T](implicit commandParser: CommandParser[T], commandsMessages: CommandsHelp[T])
-    extends CommandApp[T] {
+abstract class EswCommandApp[T: CommandParser: CommandsHelp] extends CommandApp[T] {
 
   override def helpAsked(): Nothing = {
     help()
@@ -22,7 +21,7 @@ abstract class EswCommandApp[T](implicit commandParser: CommandParser[T], comman
     exit(255)
   }
 
-  def logAndThrowError(log: Logger, msg: String) = {
+  def logAndThrowError(log: Logger, msg: String): Nothing = {
     log.error(msg)
     colored(Console.RED, msg)
     throw new RuntimeException(msg)

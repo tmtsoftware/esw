@@ -6,24 +6,17 @@ import csw.admin.api.AdminService
 import csw.command.api.messages.CommandServiceHttpMessage
 import csw.command.client.handlers.CommandServiceHttpHandlers
 import csw.location.models.ComponentId
-import esw.gateway.api.codecs.GatewayCodecs
+import esw.gateway.api.codecs.GatewayCodecs._
 import esw.gateway.api.protocol.PostRequest
 import esw.gateway.api.protocol.PostRequest._
 import esw.gateway.api.{AlarmApi, EventApi, LoggingApi}
 import esw.gateway.server.utils.Resolver
 import esw.ocs.api.protocol.SequencerPostRequest
 import esw.ocs.handler.SequencerPostHandler
-import msocket.api.MessageHandler
-import msocket.impl.post.ServerHttpCodecs
+import msocket.impl.post.{HttpPostHandler, ServerHttpCodecs}
 
-class PostHandlerImpl(
-    alarmApi: AlarmApi,
-    resolver: Resolver,
-    eventApi: EventApi,
-    loggingApi: LoggingApi,
-    adminApi: AdminService
-) extends MessageHandler[PostRequest, Route]
-    with GatewayCodecs
+class PostHandlerImpl(alarmApi: AlarmApi, resolver: Resolver, eventApi: EventApi, loggingApi: LoggingApi, adminApi: AdminService)
+    extends HttpPostHandler[PostRequest]
     with ServerHttpCodecs {
 
   override def handle(request: PostRequest): Route = request match {
@@ -32,18 +25,18 @@ class PostHandlerImpl(
     case PublishEvent(event)                    => complete(eventApi.publish(event))
     case GetEvent(eventKeys)                    => complete(eventApi.get(eventKeys))
     case SetAlarmSeverity(alarmKey, severity)   => complete(alarmApi.setSeverity(alarmKey, severity))
-    case Log(appName, level, message, map)      => complete(loggingApi.log(appName, level, message, map))
+    case Log(prefix, level, message, map)       => complete(loggingApi.log(prefix, level, message, map))
     case SetLogLevel(componentId, logLevel)     => complete(adminApi.setLogLevel(componentId, logLevel))
     case GetLogMetadata(componentId)            => complete(adminApi.getLogMetadata(componentId))
   }
 
   private def onComponentCommand(componentId: ComponentId, command: CommandServiceHttpMessage): Route =
-    onSuccess(resolver.resolveComponent(componentId)) { commandService =>
+    onSuccess(resolver.commandService(componentId)) { commandService =>
       new CommandServiceHttpHandlers(commandService).handle(command)
     }
 
   private def onSequencerCommand(componentId: ComponentId, command: SequencerPostRequest): Route =
-    onSuccess(resolver.resolveSequencer(componentId)) { sequencerApi =>
+    onSuccess(resolver.sequencerCommandService(componentId)) { sequencerApi =>
       new SequencerPostHandler(sequencerApi).handle(command)
     }
 }

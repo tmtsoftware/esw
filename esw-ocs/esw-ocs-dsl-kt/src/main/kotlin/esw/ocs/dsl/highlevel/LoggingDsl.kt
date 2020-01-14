@@ -6,24 +6,63 @@ interface LoggingDsl {
 
     val logger: ILogger
 
-    fun trace(message: String, map: Map<String, Any> = emptyMap()) =
-            logger.trace(message, map)
+    /**
+     * Writes trace level log message.
+     *
+     * @param message the message to be logged
+     * @param extraInfo key-value pairs to be logged along with message
+     */
+    fun trace(message: String, extraInfo: Map<String, Any> = emptyMap()) =
+            logger.trace(message, extraInfo)
 
-    fun debug(message: String, map: Map<String, Any> = emptyMap()) =
-            logger.debug(message, map)
+    /**
+     * Writes debug level log message.
+     *
+     * @param message the message to be logged
+     * @param extraInfo key-value pairs to be logged along with message
+     */
+    fun debug(message: String, extraInfo: Map<String, Any> = emptyMap()) =
+            logger.debug(message, extraInfo)
 
-    fun info(message: String, map: Map<String, Any> = emptyMap()) =
-            logger.info(message, map)
+    /**
+     * Writes info level log message.
+     *
+     * @param message the message to be logged
+     * @param extraInfo key-value pairs to be logged along with message
+     */
+    fun info(message: String, extraInfo: Map<String, Any> = emptyMap()) =
+            logger.info(message, extraInfo)
 
-    fun warn(message: String, map: Map<String, Any> = emptyMap(), ex: Throwable? = null) =
-            ex?.let { logger.warn(message, map, ex) }
-                    ?: logger.warn(message, map)
+    /**
+     * Writes warn level log message.
+     *
+     * @param message the message to be logged
+     * @param cause optional exception to be logged together with its stack trace
+     * @param extraInfo key-value pairs to be logged along with message
+     */
+    fun warn(message: String, cause: Throwable? = null, extraInfo: Map<String, Any> = emptyMap()) =
+            cause?.let { logger.warn(message, extraInfo, cause) }
+                    ?: logger.warn(message, extraInfo)
 
-    fun error(message: String, map: Map<String, Any> = emptyMap(), ex: Throwable? = null) =
-            ex?.let { logger.error(message, map, ex) }
-                    ?: logger.error(message, map)
+    /**
+     * Writes error level log message.
+     *
+     * @param message the message to be logged
+     * @param cause optional exception to be logged together with its stack trace
+     * @param extraInfo key-value pairs to be logged along with message
+     */
+    fun error(message: String, cause: Throwable? = null, extraInfo: Map<String, Any> = emptyMap()) =
+            cause?.let { logger.error(message, extraInfo, cause) }
+                    ?: logger.error(message, extraInfo)
 
-    fun fatal(message: String, map: Map<String, Any> = emptyMap(), ex: Throwable? = null) =
-            ex?.let { logger.fatal(message, map, ex) }
-                    ?: logger.fatal(message, map)
+    /**
+     * Writes fatal level log message.
+     *
+     * @param message the message to be logged
+     * @param cause optional exception to be logged together with its stack trace
+     * @param extraInfo key-value pairs to be logged along with message
+     */
+    fun fatal(message: String, cause: Throwable? = null, extraInfo: Map<String, Any> = emptyMap()) =
+            cause?.let { logger.fatal(message, extraInfo, cause) }
+                    ?: logger.fatal(message, extraInfo)
 }

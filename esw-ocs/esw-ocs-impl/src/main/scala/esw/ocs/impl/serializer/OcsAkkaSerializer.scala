@@ -7,6 +7,8 @@ import akka.serialization.Serializer
 import csw.command.client.messages.sequencer.SequencerMsg
 import csw.logging.api.scaladsl.Logger
 import csw.logging.client.scaladsl.LoggerFactory
+import csw.prefix.models.Prefix
+import csw.prefix.models.Subsystem.ESW
 import esw.ocs.api.codecs.OcsCodecs
 import esw.ocs.api.models.StepList
 import esw.ocs.api.protocol.{EswSequencerResponse, GetStatusResponse, ScriptResponse}
@@ -21,7 +23,7 @@ class OcsAkkaSerializer(_actorSystem: ExtendedActorSystem) extends OcsCodecs wit
   override implicit def actorSystem: ActorSystem[_] = _actorSystem.toTyped
 
   override def identifier: Int = 29926
-  private val logger: Logger   = new LoggerFactory("Sequencer-codec").getLogger
+  private val logger: Logger   = new LoggerFactory(Prefix(ESW, "sequencer_codec")).getLogger
 
   override def toBinary(o: AnyRef): Array[Byte] = o match {
     case x: EswSequencerMessage          => Cbor.encode(x).toByteArray

@@ -19,6 +19,8 @@ internal class CommandHandlerKtTest {
     private val exceptionHandler = CoroutineExceptionHandler { _, _ -> } // to swallow all the test exceptions
     private fun scope() = CoroutineScope(EmptyCoroutineContext + exceptionHandler)
 
+    private val commandHandlerScope = mockk<CommandHandlerScope>()
+
     @Nested
     inner class OnError {
         @Test
@@ -29,7 +31,7 @@ internal class CommandHandlerKtTest {
             val sequenceCommand = mockk<Setup>()
 
             val commandHandlerKt: CommandHandlerKt<Setup> =
-                    CommandHandlerKt<Setup>(scope()) {
+                    CommandHandlerKt<Setup>(scope(), commandHandlerScope) {
                         commandHandlerCounter++
                         throw RuntimeException("exception")
                     }.onError { errorHandlerCounter++ }
@@ -48,8 +50,7 @@ internal class CommandHandlerKtTest {
             val sequenceCommand = mockk<Setup>()
 
             val commandHandlerKt: CommandHandlerKt<Setup> =
-                    CommandHandlerKt<Setup>(scope()) {
-                        println(commandHandlerCounter)
+                    CommandHandlerKt<Setup>(scope(), commandHandlerScope) {
                         commandHandlerCounter += 1
                     }.onError { errorHandlerCounter++ }
 
@@ -70,7 +71,7 @@ internal class CommandHandlerKtTest {
             val sequenceCommand = mockk<Setup>()
 
             val commandHandlerKt: CommandHandlerKt<Setup> =
-                    CommandHandlerKt<Setup>(scope()) {
+                    CommandHandlerKt<Setup>(scope(), commandHandlerScope) {
                         commandHandlerCounter++
                         if (commandHandlerCounter < 2) throw RuntimeException("exception")
                     }.onError { errorHandlerCounter++ }
@@ -89,7 +90,7 @@ internal class CommandHandlerKtTest {
 
             val sequenceCommand = mockk<Setup>()
 
-            val commandHandlerKt: CommandHandlerKt<Setup> = CommandHandlerKt<Setup>(scope()) {
+            val commandHandlerKt: CommandHandlerKt<Setup> = CommandHandlerKt<Setup>(scope(), commandHandlerScope) {
                 commandHandlerCounter++
                 throw RuntimeException("exception")
             }.onError { errorHandlerCounter++ }
@@ -110,7 +111,7 @@ internal class CommandHandlerKtTest {
             val sequenceCommand = mockk<Setup>()
 
             val commandHandlerKt: CommandHandlerKt<Setup> =
-                    CommandHandlerKt<Setup>(scope()) {
+                    CommandHandlerKt<Setup>(scope(), commandHandlerScope) {
                         commandHandlerCounter++
                         if (commandHandlerCounter < 2) throw RuntimeException("exception")
                     }.onError { errorHandlerCounter++ }

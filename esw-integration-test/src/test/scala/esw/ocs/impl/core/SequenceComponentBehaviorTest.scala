@@ -4,14 +4,12 @@ import akka.Done
 import akka.actor.testkit.typed.scaladsl.TestProbe
 import akka.actor.typed.SpawnProtocol.Spawn
 import akka.actor.typed.scaladsl.AskPattern._
-import akka.actor.typed.scaladsl.Behaviors
 import akka.actor.typed.{ActorRef, Props}
-import csw.location.api.extensions.ActorExtension._
 import csw.location.models.Connection.AkkaConnection
 import csw.location.models.{AkkaLocation, ComponentId, ComponentType, Location}
 import csw.logging.client.scaladsl.LoggerFactory
-import csw.params.core.models.Subsystem.{ESW, IRIS, TCS}
-import csw.params.core.models.{Prefix, Subsystem}
+import csw.prefix.models.Subsystem.{ESW, IRIS, TCS}
+import csw.prefix.models.{Prefix, Subsystem}
 import esw.ocs.api.protocol.{GetStatusResponse, ScriptError, ScriptResponse}
 import esw.ocs.app.wiring.SequencerWiring
 import esw.ocs.impl.messages.SequenceComponentMsg
@@ -22,18 +20,13 @@ import scala.concurrent.duration.DurationLong
 
 class SequenceComponentBehaviorTest extends EswTestKit {
   private val ocsSequenceComponentName = "ESW.ESW_1"
-  private val factory                  = new LoggerFactory("SequenceComponentTest")
+  private val factory                  = new LoggerFactory(Prefix("csw.SequenceComponentTest"))
 
   private def spawnSequenceComponent() = {
     (system ? { x: ActorRef[ActorRef[SequenceComponentMsg]] =>
       Spawn(
-        Behaviors.setup[SequenceComponentMsg] { ctx =>
-          val location = AkkaLocation(
-            AkkaConnection(ComponentId(Prefix(ocsSequenceComponentName), ComponentType.SequenceComponent)),
-            ctx.self.toURI
-          )
-          SequenceComponentBehavior.behavior(location, factory.getLogger, sequencerWiring(_, _, _).sequencerServer)
-        },
+        SequenceComponentBehavior
+          .behavior(Prefix(ocsSequenceComponentName), factory.getLogger, sequencerWiring(_, _, _).sequencerServer),
         ocsSequenceComponentName,
         Props.empty,
         x
@@ -134,7 +127,10 @@ class SequenceComponentBehaviorTest extends EswTestKit {
 
       //Assert if script loaded and returns AkkaLocation of sequencer
       sequenceComponentRef ! LoadScript(subsystem, observingMode, loadScriptResponseProbe.ref)
-      loadScriptResponseProbe.expectMessageType[ScriptResponse]
+      val message = loadScriptResponseProbe.receiveMessage
+      message shouldBe a[ScriptResponse]
+      message.response.isRight shouldBe true
+      val initialLocation = message.response.rightValue
 
       //Restart sequencer and assert if it returns new AkkaLocation of sequencer
       sequenceComponentRef ! Restart(restartResponseProbe.ref)
@@ -143,6 +139,7 @@ class SequenceComponentBehaviorTest extends EswTestKit {
       restartLocationResponse.connection shouldEqual AkkaConnection(
         ComponentId(prefix, ComponentType.Sequencer)
       )
+      restartLocationResponse should not equal initialLocation
     }
 
     "restart should fail if sequencer is in idle state | ESW-141" in {

@@ -7,9 +7,8 @@ import csw.location.api.extensions.URIExtension.RichURI
 import csw.location.api.scaladsl.LocationService
 import csw.location.models.Connection.AkkaConnection
 import csw.location.models.{AkkaLocation, AkkaRegistration, ComponentId, ComponentType}
-import csw.params.core.models.{Prefix, Subsystem}
+import csw.prefix.models.{Prefix, Subsystem}
 import esw.ocs.api.protocol.ScriptError
-import esw.ocs.dsl.sequence_manager.LocationServiceUtil
 import esw.ocs.impl.messages.SequenceComponentMsg
 import esw.ocs.impl.messages.SequenceComponentMsg.Stop
 
@@ -21,7 +20,7 @@ class SequenceComponentRegistration(
     subsystem: Subsystem,
     name: Option[String],
     _locationService: LocationService,
-    sequenceComponentFactory: String => Future[ActorRef[SequenceComponentMsg]]
+    sequenceComponentFactory: Prefix => Future[ActorRef[SequenceComponentMsg]]
 )(
     implicit override val actorSystem: ActorSystem[SpawnProtocol.Command]
 ) extends LocationServiceUtil(_locationService) {
@@ -52,7 +51,7 @@ class SequenceComponentRegistration(
       case (s, Some(n)) => Prefix(s, n)
       case (s, None)    => Prefix(s, s"${s}_${Random.between(1, 100)}")
     }
-    sequenceComponentFactory(sequenceComponentPrefix.value).map { actorRef =>
+    sequenceComponentFactory(sequenceComponentPrefix).map { actorRef =>
       AkkaRegistration(AkkaConnection(ComponentId(sequenceComponentPrefix, ComponentType.SequenceComponent)), actorRef.toURI)
     }
   }

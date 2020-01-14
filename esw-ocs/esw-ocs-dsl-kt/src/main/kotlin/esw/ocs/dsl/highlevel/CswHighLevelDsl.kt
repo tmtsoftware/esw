@@ -1,34 +1,28 @@
 package esw.ocs.dsl.highlevel
 
-import akka.actor.typed.ActorSystem
-import csw.alarm.api.javadsl.IAlarmService
-import csw.config.api.javadsl.IConfigClientService
-import csw.database.DatabaseServiceFactory
-import csw.event.api.javadsl.IEventPublisher
-import csw.event.api.javadsl.IEventSubscriber
-import csw.location.api.javadsl.ILocationService
 import csw.location.api.javadsl.JComponentType
 import csw.location.models.ComponentType
-import csw.logging.api.javadsl.ILogger
-import csw.params.core.models.Prefix
-import csw.params.core.models.Subsystem
-import csw.time.scheduler.api.TimeServiceScheduler
+import csw.prefix.models.Subsystem
 import esw.ocs.dsl.epics.CommandFlag
 import esw.ocs.dsl.epics.Fsm
 import esw.ocs.dsl.epics.FsmImpl
 import esw.ocs.dsl.epics.FsmScope
-import esw.ocs.dsl.script.CswServices
+import esw.ocs.dsl.lowlevel.CswServices
 import esw.ocs.dsl.script.StrandEc
+import esw.ocs.dsl.script.utils.LockUnlockUtil
 import esw.ocs.dsl.script.utils.SubsystemFactory
-import esw.ocs.dsl.sequence_manager.LocationServiceUtil
+import esw.ocs.impl.internal.LocationServiceUtil
+import esw.ocs.impl.script.ScriptContext
 import kotlinx.coroutines.CoroutineScope
+import kotlin.time.Duration
+import kotlin.time.toKotlinDuration
 
-interface CswHighLevelDslApi : EventServiceDsl, TimeServiceDsl, CommandServiceDsl,
+interface CswHighLevelDslApi : CswServices, EventServiceDsl, TimeServiceDsl, CommandServiceDsl,
         ConfigServiceDsl, AlarmServiceDsl, LoopDsl, LoggingDsl, DatabaseServiceDsl {
 
-    fun Assembly(name: String): RichComponent
-    fun Hcd(name: String): RichComponent
-    fun Sequencer(subsystem: String, observingMode: String): RichSequencer
+    fun Assembly(prefix: String, defaultTimeout: Duration): RichComponent
+    fun Hcd(prefix: String, defaultTimeout: Duration): RichComponent
+    fun Sequencer(subsystem: String, observingMode: String, defaultTimeout: Duration): RichSequencer
 
     suspend fun Fsm(name: String, initState: String, block: suspend FsmScope.() -> Unit): Fsm
     fun commandFlag(): CommandFlag
@@ -36,33 +30,26 @@ interface CswHighLevelDslApi : EventServiceDsl, TimeServiceDsl, CommandServiceDs
     fun finishWithError(message: String = ""): Nothing = throw RuntimeException(message)
 }
 
-abstract class CswHighLevelDsl(private val cswServices: CswServices) : CswHighLevelDslApi {
+abstract class CswHighLevelDsl(private val cswServices: CswServices, private val scriptContext: ScriptContext) : CswHighLevelDslApi, CswServices by cswServices {
     abstract val strandEc: StrandEc
     abstract override val coroutineScope: CoroutineScope
 
-    val prefix: Prefix = cswServices.prefix()
-    final override val system: ActorSystem<*> = cswServices.actorSystem()
-    final override val locationService: ILocationService = cswServices.locationService()
-    final override val configClient: IConfigClientService = cswServices.configClientService()
-    final override val logger: ILogger = cswServices.jLogger()
-    final override val databaseServiceFactory: DatabaseServiceFactory = cswServices.databaseServiceFactory()
-    final override val alarmService: IAlarmService = cswServices.alarmService()
+    private val locationServiceUtil: LocationServiceUtil by lazy { LocationServiceUtil(locationService.asScala(), actorSystem) }
+    private val lockUnlockUtil: LockUnlockUtil by lazy { LockUnlockUtil(scriptContext.prefix(), actorSystem) }
 
-    final override val defaultPublisher: IEventPublisher by lazy { cswServices.eventService().defaultPublisher() }
-    final override val defaultSubscriber: IEventSubscriber by lazy { cswServices.eventService().defaultSubscriber() }
-    final override val timeServiceScheduler: TimeServiceScheduler by lazy { cswServices.timeServiceSchedulerFactory().make(strandEc.ec()) }
+    private val alarmConfig = scriptContext.config().getConfig("csw-alarm")
+    override val _alarmRefreshDuration: Duration = alarmConfig.getDuration("refresh-interval").toKotlinDuration()
 
-    private val locationServiceUtil = LocationServiceUtil(cswServices.locationService().asScala(), system)
     /******** Command Service helpers ********/
-    private fun richComponent(prefix: String, componentType: ComponentType): RichComponent =
-            RichComponent(Prefix.apply(prefix), componentType, this.prefix, cswServices.lockUnlockUtil(), locationServiceUtil, system, coroutineScope)
+    private fun richComponent(prefix: String, componentType: ComponentType, defaultTimeout: Duration): RichComponent =
+            RichComponent(Prefix(prefix), componentType, lockUnlockUtil, locationServiceUtil, actorSystem, defaultTimeout, coroutineScope)
 
-    private fun richSequencer(subsystem: Subsystem, observingMode: String): RichSequencer =
-            RichSequencer(subsystem, observingMode, cswServices.sequencerApiFactory(), coroutineScope)
+    private fun richSequencer(subsystem: Subsystem, observingMode: String, defaultTimeout: Duration): RichSequencer =
+            RichSequencer(subsystem, observingMode, scriptContext.sequencerApiFactory(), defaultTimeout, coroutineScope)
 
-    override fun Assembly(name: String): RichComponent = richComponent(name, JComponentType.Assembly())
-    override fun Hcd(name: String): RichComponent = richComponent(name, JComponentType.HCD())
-    override fun Sequencer(subsystem: String, observingMode: String): RichSequencer = richSequencer(SubsystemFactory.make(subsystem), observingMode)
+    override fun Assembly(prefix: String, defaultTimeout: Duration): RichComponent = richComponent(prefix, JComponentType.Assembly(), defaultTimeout)
+    override fun Hcd(prefix: String, defaultTimeout: Duration): RichComponent = richComponent(prefix, JComponentType.HCD(), defaultTimeout)
+    override fun Sequencer(subsystem: String, observingMode: String, defaultTimeout: Duration): RichSequencer = richSequencer(SubsystemFactory.make(subsystem), observingMode, defaultTimeout)
 
     /************* Fsm helpers **********/
     override suspend fun Fsm(name: String, initState: String, block: suspend FsmScope.() -> Unit): Fsm =

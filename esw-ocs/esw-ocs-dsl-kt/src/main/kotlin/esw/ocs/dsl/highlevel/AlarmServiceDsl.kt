@@ -3,23 +3,29 @@ package esw.ocs.dsl.highlevel
 import csw.alarm.api.javadsl.IAlarmService
 import csw.alarm.models.AlarmSeverity
 import csw.alarm.models.Key.AlarmKey
-import kotlin.time.seconds
+import kotlin.time.Duration
 
 interface AlarmServiceDsl : LoopDsl {
     val alarmService: IAlarmService
+    val _alarmRefreshDuration: Duration
 
     companion object {
         private val map: HashMap<AlarmKey, AlarmSeverity> = HashMap()
     }
 
-    // sets the provided [AlarmSeverity] against provided [AlarmKey] and keeps refreshing the same every 5 seconds
+    /**
+     * Sets alarm severity against provided alarm key and keeps refreshing it after every `csw-alarm.refresh-interval` which by default is 3 seconds
+     *
+     * @param alarmKey unique alarm in alarm store e.g nfiraos.trombone.tromboneaxislowlimitalarm
+     * @param severity severity to be set for the alarm e.g. Okay, Warning, Major, Critical, etc
+     *
+     */
     fun setSeverity(alarmKey: AlarmKey, severity: AlarmSeverity) {
-        if (map.size == 0) startSetSeverity()
-        map[alarmKey] = severity
+        map += alarmKey to severity
+        if (map.size == 1) startSetSeverity()
     }
 
-    // fixme: why 5.seconds?
-    private fun startSetSeverity() = bgLoop(5.seconds) {
+    private fun startSetSeverity() = loopAsync(_alarmRefreshDuration) {
         map.keys.forEach { key -> alarmService.setSeverity(key, map[key]) }
     }
 }
