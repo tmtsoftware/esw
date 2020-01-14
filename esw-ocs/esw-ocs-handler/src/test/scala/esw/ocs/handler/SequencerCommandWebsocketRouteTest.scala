@@ -16,7 +16,7 @@ import msocket.api.Encoding
 import msocket.api.Encoding.JsonText
 import msocket.impl.CborByteString
 import msocket.impl.post.ClientHttpCodecs
-import msocket.impl.ws.EncodingExtensions.EncodingForMessage
+import msocket.impl.ws.WebsocketExtensions.WebsocketEncoding
 import msocket.impl.ws.WebsocketRouteFactory
 
 import scala.concurrent.Future
@@ -49,7 +49,7 @@ class SequencerCommandWebsocketRouteTest
       when(sequencer.queryFinal(id)).thenReturn(Future.successful(completedResponse))
 
       WS("/websocket-endpoint", wsClient.flow) ~> route ~> check {
-        wsClient.sendMessage(JsonText.strictMessage(QueryFinal(id, timeout)))
+        wsClient.sendMessage(JsonText.strictMessage(QueryFinal(id, timeout): SequencerWebsocketRequest))
         isWebSocketUpgrade shouldBe true
 
         val response = decodeMessage[SubmitResponse](wsClient)

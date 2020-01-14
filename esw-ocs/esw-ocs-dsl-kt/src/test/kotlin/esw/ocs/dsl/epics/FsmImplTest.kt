@@ -4,9 +4,9 @@ import csw.params.core.generics.Parameter
 import csw.params.events.EventName
 import csw.params.events.SystemEvent
 import csw.params.javadsl.JKeyType
-import csw.prefix.javadsl.JSubsystem
-import csw.prefix.models.Prefix
 import esw.ocs.dsl.highlevel.CswHighLevelDslApi
+import esw.ocs.dsl.highlevel.Prefix
+import esw.ocs.dsl.highlevel.TCS
 import esw.ocs.dsl.params.Params
 import esw.ocs.dsl.script.StrandEc
 import io.kotlintest.eventually
@@ -31,7 +31,7 @@ class FsmImplTest {
         println("Exception thrown in script with a message: ${exception.message}, invoking exception handler " + exception)
     }
     private val coroutineScope = CoroutineScope(job + exceptionHandler + dispatcher)
-    val cswHighLevelDslApi: CswHighLevelDslApi = mockk()
+    private val cswHighLevelDslApi: CswHighLevelDslApi = mockk()
 
     private val init = "INIT"
     private val inProgress = "INPROGRESS"
@@ -97,7 +97,7 @@ class FsmImplTest {
     @Test
     fun `become should be able to pass parameters to next state | ESW-252`() = runBlocking {
         val parameter: Parameter<Int> = JKeyType.IntKey().make("encoder").set(1)
-        val event = SystemEvent(Prefix(JSubsystem.TCS(), "test"), EventName("trigger.INIT.state")).add(parameter)
+        val event = SystemEvent(Prefix(TCS, "test"), EventName("trigger.INIT.state")).add(parameter)
         val expectedParamsInProgressState = Params(event.jParamSet())
 
         fsm.state(inProgress) { params ->

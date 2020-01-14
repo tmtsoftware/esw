@@ -101,12 +101,7 @@ private[core] case class SequencerData(
   }
 
   private def changeStepStatus(state: SequencerState[SequencerMsg], newStatus: StepStatus) = {
-    val newStepList = stepList.map { stepList =>
-      stepList.copy(steps = stepList.steps.map {
-        case step if step.isInFlight => step.withStatus(newStatus)
-        case x                       => x
-      })
-    }
+    val newStepList = stepList.map(stepList => stepList.copy(steps = stepList.steps.map(_.withStatus(newStatus))))
     copy(stepList = newStepList)
       .checkForSequenceCompletion()
       .notifyReadyToExecuteNextSubscriber()

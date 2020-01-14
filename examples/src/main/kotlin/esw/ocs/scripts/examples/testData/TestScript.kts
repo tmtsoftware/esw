@@ -4,16 +4,10 @@ import com.typesafe.config.ConfigFactory
 import csw.alarm.api.javadsl.JAlarmSeverity.Major
 import csw.alarm.models.Key.AlarmKey
 import csw.params.events.Event
-import csw.prefix.javadsl.JSubsystem
-import csw.prefix.javadsl.JSubsystem.NFIRAOS
-import csw.prefix.models.Prefix
 import esw.ocs.dsl.core.script
-import esw.ocs.dsl.highlevel.LoopDsl.StopWhen.stopWhen
-import esw.ocs.dsl.params.doubleKey
-import esw.ocs.dsl.params.intKey
+import esw.ocs.dsl.highlevel.NFIRAOS
+import esw.ocs.dsl.highlevel.Prefix
 import esw.ocs.dsl.params.longKey
-import esw.ocs.dsl.params.stringKey
-import kotlinx.coroutines.cancel
 import kotlinx.coroutines.delay
 import kotlin.time.seconds
 
@@ -25,7 +19,7 @@ script {
     loadScripts(InitialCommandHandler)
 
     onSetup("command-1") {
-        // To avoid sequencer to finish immediately so that other Add, Append command gets time
+        // To avoid a sequencer to finish immediately so that others Add, Append command gets time
         delay(200)
     }
 
@@ -89,14 +83,14 @@ script {
     }
 
     onSetup("set-alarm-severity") {
-        val alarmKey = AlarmKey(Prefix.apply(NFIRAOS(), "trombone"), "tromboneAxisHighLimitAlarm")
+        val alarmKey = AlarmKey(Prefix(NFIRAOS, "trombone"), "tromboneAxisHighLimitAlarm")
         setSeverity(alarmKey, Major())
         delay(500)
     }
 
     onSetup("command-lgsf") {
         // NOT update command response to avoid a sequencer to finish immediately
-        // so that other Add, Append command gets time
+        // so that others Add, Append command gets time
         val setupCommand = Setup("lgsf.test", "command-lgsf")
         val sequence = sequenceOf(setupCommand)
 
@@ -105,20 +99,20 @@ script {
 
     onSetup("schedule-once-from-now") {
         val currentTime = utcTimeNow()
-        scheduleOnceFromNow(1.seconds, {
+        scheduleOnceFromNow(1.seconds) {
             val param = longKey("offset").set(currentTime.offsetFromNow().absoluteValue.toLongMilliseconds())
             publishEvent(SystemEvent("esw.schedule.once", "offset", param))
-        })
+        }
     }
 
     onSetup("schedule-periodically-from-now") {
         val currentTime = utcTimeNow()
         var counter = 0
-        val a = schedulePeriodicallyFromNow(1.seconds, 1.seconds, {
+        val a = schedulePeriodicallyFromNow(1.seconds, 1.seconds) {
             val param = longKey("offset").set(currentTime.offsetFromNow().absoluteValue.toLongMilliseconds())
             publishEvent(SystemEvent("esw.schedule.periodically", "offset", param))
             counter += 1
-        })
+        }
         loop {
             stopWhen(counter > 1)
         }

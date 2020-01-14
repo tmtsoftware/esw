@@ -29,7 +29,7 @@ class UtilsTest {
             aggregatedResult shouldBe listOf(42, 42, 42, 42, 42)
         }
 
-        // the individual operation takes 100ms and we are running such 5 operations
+        // the individual operation takes 100ms, and we are running such 5 operations
         // because these are running concurrently, total time taken is less than 250ms and not 500ms
         timeTaken shouldBeLessThan 250
     }
@@ -51,7 +51,7 @@ class UtilsTest {
             listOf(r1, r2, r3, r4, r5) shouldBe listOf(42, 42, 42, 42, 42)
         }
 
-        // the individual operation takes 100ms and we are running such 5 operations
+        // the individual operation takes 100ms, and we are running such 5 operations
         // because these are running concurrently, total time taken is less than 250ms and not 500ms
         timeTaken shouldBeGreaterThan 500
     }

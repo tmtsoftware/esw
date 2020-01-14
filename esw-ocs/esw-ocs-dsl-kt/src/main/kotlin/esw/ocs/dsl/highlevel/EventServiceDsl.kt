@@ -8,7 +8,6 @@ import csw.event.api.scaladsl.SubscriptionModes
 import csw.params.core.generics.Key
 import csw.params.core.generics.Parameter
 import csw.params.events.*
-import csw.prefix.models.Prefix
 import esw.ocs.dsl.SuspendableConsumer
 import esw.ocs.dsl.SuspendableSupplier
 import esw.ocs.dsl.epics.EventVariable
@@ -25,14 +24,14 @@ interface EventServiceDsl {
     val eventPublisher: IEventPublisher
     val eventSubscriber: IEventSubscriber
 
-    fun EventKey(prefix: String, eventName: String): EventKey = EventKey(Prefix.apply(prefix), EventName(eventName))
+    fun EventKey(prefix: String, eventName: String): EventKey = EventKey(Prefix(prefix), EventName(eventName))
     fun EventKey(eventKeyStr: String): EventKey = EventKey.apply(eventKeyStr)
 
     fun SystemEvent(sourcePrefix: String, eventName: String, vararg parameters: Parameter<*>): SystemEvent =
-            SystemEvent(Prefix.apply(sourcePrefix), EventName(eventName)).jMadd(parameters.toSet())
+            SystemEvent(Prefix(sourcePrefix), EventName(eventName)).jMadd(parameters.toSet())
 
     fun ObserveEvent(sourcePrefix: String, eventName: String, vararg parameters: Parameter<*>): ObserveEvent =
-            ObserveEvent(Prefix.apply(sourcePrefix), EventName(eventName)).jMadd(parameters.toSet())
+            ObserveEvent(Prefix(sourcePrefix), EventName(eventName)).jMadd(parameters.toSet())
 
     suspend fun publishEvent(event: Event): Done = eventPublisher.publish(event).await()
 

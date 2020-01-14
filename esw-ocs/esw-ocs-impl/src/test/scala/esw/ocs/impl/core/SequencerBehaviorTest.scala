@@ -647,7 +647,7 @@ class SequencerBehaviorTest extends ScalaTestWithActorTestKit with BaseTestSuite
       val sequencerSetup = SequencerTestSetup.offline(sequence)
       import sequencerSetup._
 
-      goOnlineAndAssertResponse(GoOnlineHookFailed, Future.failed(new RuntimeException("GoOnline Hook Failed")))
+      goOnlineAndAssertResponse(GoOnlineHookFailed(), Future.failed(new RuntimeException("GoOnline Hook Failed")))
       assertSequencerState(Offline)
     }
   }
@@ -674,7 +674,7 @@ class SequencerBehaviorTest extends ScalaTestWithActorTestKit with BaseTestSuite
       val sequencerSetup = SequencerTestSetup.idle(sequence)
       import sequencerSetup._
 
-      goOfflineAndAssertResponse(GoOfflineHookFailed, Future.failed(new RuntimeException("GoOffline Hook Failed")))
+      goOfflineAndAssertResponse(GoOfflineHookFailed(), Future.failed(new RuntimeException("GoOffline Hook Failed")))
       assertSequencerState(Idle)
     }
   }
@@ -794,7 +794,7 @@ class SequencerBehaviorTest extends ScalaTestWithActorTestKit with BaseTestSuite
   }
 
   "Update" must {
-    "update the given step with successful response" in {
+    "update the given step with successful response | ESW-241" in {
       val sequence       = Sequence(command1)
       val sequencerSetup = SequencerTestSetup.inProgress(sequence)
       import sequencerSetup._
@@ -807,7 +807,7 @@ class SequencerBehaviorTest extends ScalaTestWithActorTestKit with BaseTestSuite
       )
     }
 
-    "update the given step with error response" in {
+    "update the given step with error response | ESW-241" in {
       val sequence       = Sequence(command1)
       val sequencerSetup = SequencerTestSetup.inProgress(sequence)
       import sequencerSetup._

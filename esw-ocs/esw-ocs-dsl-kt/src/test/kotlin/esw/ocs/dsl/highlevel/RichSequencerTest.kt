@@ -4,7 +4,7 @@ import akka.util.Timeout
 import csw.params.commands.CommandResponse
 import csw.params.commands.Sequence
 import csw.params.core.models.Id
-import csw.prefix.javadsl.JSubsystem
+
 import csw.prefix.models.Subsystem
 import csw.time.core.models.UTCTime
 import esw.ocs.api.SequencerApi
@@ -33,7 +33,7 @@ class RichSequencerTest {
     private val hint = "test-hint"
     private val startTime: UTCTime = UTCTime.now()
 
-    private val subsystem: Subsystem = JSubsystem.TCS()
+    private val subsystem: Subsystem = TCS
     private val observingMode: String = "darknight"
     private val sequence: Sequence = mockk()
 

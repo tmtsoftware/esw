@@ -23,11 +23,8 @@ class CommandFlagTest : CommandServiceDsl {
                 .kMadd(intKey("encoder").set(1))
 
         val commandFlag = CommandFlag()
-
         commandFlag.value() shouldBe Params(setOf())
-
         commandFlag.set(setup.params)
-
         commandFlag.value() shouldBe setup.params
     }
 

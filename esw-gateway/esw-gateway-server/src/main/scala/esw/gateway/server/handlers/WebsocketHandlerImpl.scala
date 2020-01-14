@@ -28,11 +28,11 @@ class WebsocketHandlerImpl(resolver: Resolver, eventApi: EventApi, encoding: Enc
 
   private def onComponentCommand(componentId: ComponentId, command: CommandServiceWebsocketMessage): Source[Message, NotUsed] =
     Source
-      .future(resolver.resolveComponent(componentId))
+      .future(resolver.commandService(componentId))
       .flatMapConcat(commandService => new CommandServiceWebsocketHandlers(commandService, encoding).handle(command))
 
   private def onSequencerCommand(componentId: ComponentId, command: SequencerWebsocketRequest): Source[Message, NotUsed] =
     Source
-      .future(resolver.resolveSequencer(componentId))
+      .future(resolver.sequencerCommandService(componentId))
       .flatMapConcat(sequencerApi => new SequencerWebsocketHandler(sequencerApi, encoding).handle(command))
 }

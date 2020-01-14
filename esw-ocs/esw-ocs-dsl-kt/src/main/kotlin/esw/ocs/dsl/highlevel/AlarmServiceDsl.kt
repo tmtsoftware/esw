@@ -13,13 +13,19 @@ interface AlarmServiceDsl : LoopDsl {
         private val map: HashMap<AlarmKey, AlarmSeverity> = HashMap()
     }
 
-    // sets the provided [AlarmSeverity] against provided [AlarmKey] and keeps refreshing the same every 5 seconds
+    /**
+     * Sets alarm severity against provided alarm key and keeps refreshing it after every `csw-alarm.refresh-interval` which by default is 3 seconds
+     *
+     * @param alarmKey unique alarm in alarm store e.g nfiraos.trombone.tromboneaxislowlimitalarm
+     * @param severity severity to be set for the alarm e.g. Okay, Warning, Major, Critical, etc
+     *
+     */
     fun setSeverity(alarmKey: AlarmKey, severity: AlarmSeverity) {
         map += alarmKey to severity
         if (map.size == 1) startSetSeverity()
     }
 
-    private fun startSetSeverity() = bgLoop(_alarmRefreshDuration) {
+    private fun startSetSeverity() = loopAsync(_alarmRefreshDuration) {
         map.keys.forEach { key -> alarmService.setSeverity(key, map[key]) }
     }
 }

@@ -2,6 +2,7 @@ package esw.gateway.api.codecs
 
 import csw.logging.models.Level
 import csw.prefix.models.Prefix
+import esw.gateway.api.protocol.PostRequest
 import esw.gateway.api.protocol.PostRequest.Log
 import io.bullet.borer.Json
 import org.scalatest.{Matchers, WordSpec}
@@ -13,7 +14,7 @@ class LogCodecTest extends WordSpec with Matchers with GatewayCodecs {
       val json =
         """
           |{
-          |  "Log": {
+          |     "_type": "Log",
           |    "prefix": "esw.app1",
           |    "level": "debug",
           |    "message": "all good",
@@ -29,11 +30,10 @@ class LogCodecTest extends WordSpec with Matchers with GatewayCodecs {
           |        "new2" : null
           |      }
           |    }
-          |  }
           |}
           |""".stripMargin
 
-      val actualLog = Json.decode(json.getBytes).to[Log].value
+      val actualLog = Json.decode(json.getBytes).to[PostRequest].value
 
       val expectedLog = Log(
         Prefix("esw.app1"),
@@ -86,8 +86,8 @@ class LogCodecTest extends WordSpec with Matchers with GatewayCodecs {
           )
         )
       )
-      val encodedLog = Json.encode(logWithNulls).toUtf8String.getBytes
-      val actualLog  = Json.decode(encodedLog).to[Log].value
+      val encodedLog = Json.encode(logWithNulls: PostRequest).toUtf8String.getBytes
+      val actualLog  = Json.decode(encodedLog).to[PostRequest].value
       actualLog should ===(logWithoutNulls)
     }
   }

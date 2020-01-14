@@ -9,6 +9,7 @@ sealed trait Service {
     case ConfigServer   => Some(CSWService.ConfigServer)
     case EventServer    => Some(CSWService.EventServer)
     case AlarmServer    => Some(CSWService.AlarmServer)
+    case MachineAgent   => None
     case Gateway        => None
   }
 }
@@ -20,4 +21,5 @@ object Service {
   case object EventServer    extends Service
   case object AlarmServer    extends Service
   case object Gateway        extends Service
+  case object MachineAgent   extends Service
 }

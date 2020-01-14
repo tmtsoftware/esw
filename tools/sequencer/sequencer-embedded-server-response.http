@@ -1,0 +1,468 @@
+## sequencer embedded http server
+
+// #submit-response
+
+HTTP/1.1 200 OK
+Server: akka-http/10.1.11
+Date: Thu, 02 Jan 2020 06:36:10 GMT
+Content-Type: application/json
+Content-Length: 60
+
+{
+  "Started": {
+    "runId": "eee70d8c-8edb-4858-8994-5fe0357d3a90"
+  }
+}
+
+###
+// #submit-response
+
+// #re-submit-response
+
+HTTP/1.1 200 OK
+Server: akka-http/10.1.11
+Date: Thu, 02 Jan 2020 06:44:23 GMT
+Content-Type: application/json
+Content-Length: 174
+
+{
+  "Invalid": {
+    "runId": "IdNotAvailable",
+    "issue": {
+      "UnsupportedCommandInStateIssue": "Sequencer can not accept 'SubmitSequenceInternal' message in 'InProgress' state"
+    }
+  }
+}
+
+###
+// #re-submit-response
+
+// #malformed-submit-response
+HTTP/1.1 400 Bad Request
+Server: akka-http/10.1.11
+Date: Thu, 02 Jan 2020 06:48:15 GMT
+Content-Type: text/plain; charset=UTF-8
+Content-Length: 122
+
+The request content was malformed:
+Cannot decode `Setup` instance due to missing map key "maybeObsId" (input position 164)
+
+###
+// #malformed-submit-response
+
+// #query-response-started
+
+HTTP/1.1 200 OK
+Server: akka-http/10.1.11
+Date: Thu, 02 Jan 2020 07:12:34 GMT
+Content-Type: application/json
+Content-Length: 60
+
+{
+  "Started": "16c7e800-4bd7-4390-acf2-868efbbb0819"
+}
+
+###
+// #query-response-started
+
+// #query-response-completed
+
+HTTP/1.1 200 OK
+Server: akka-http/10.1.11
+Date: Thu, 02 Jan 2020 07:13:21 GMT
+Content-Type: application/json
+Content-Length: 62
+
+{
+  "Completed": {
+    "runId": "16c7e800-4bd7-4390-acf2-868efbbb0819"
+  }
+}
+
+
+###
+// #query-response-completed
+
+// #loadSequence-response
+
+HTTP/1.1 200 OK
+Server: akka-http/10.1.11
+Date: Thu, 02 Jan 2020 09:22:58 GMT
+Content-Type: application/json
+Content-Length: 9
+
+{
+  "Ok": {}
+}
+
+###
+// #loadSequence-response
+
+// #startSequence-response
+
+HTTP/1.1 200 OK
+Server: akka-http/10.1.11
+Date: Thu, 02 Jan 2020 09:23:28 GMT
+Content-Type: application/json
+Content-Length: 60
+
+{
+  "Started": "16c7e800-4bd7-4390-acf2-868efbbb0819"
+}
+
+###
+// #startSequence-response
+
+// #getSequence-response
+
+HTTP/1.1 200 OK
+Server: akka-http/10.1.11
+Date: Thu, 02 Jan 2020 09:23:49 GMT
+Content-Type: application/json
+Content-Length: 216
+
+[
+  [
+    {
+      "id": "5995b121-b10c-4cd6-ae3a-97bd31456c1b",
+      "command": {
+        "Setup": {
+          "source": "esw.test",
+          "commandName": "command-1",
+          "maybeObsId": [],
+          "paramSet": []
+        }
+      },
+      "status": {
+        "Success": {}
+      },
+      "hasBreakpoint": false
+    },
+    {
+      "id": "606b366d-17d1-4c78-8902-7a25f37ac8c8",
+      "command": {
+        "Setup": {
+          "source": "esw.test",
+          "commandName": "command-2",
+          "maybeObsId": [],
+          "paramSet": []
+        }
+      },
+      "status": {
+        "Success": {}
+      },
+      "hasBreakpoint": false
+    }
+  ]
+]
+
+###
+
+// #getSequence-response
+
+// #add-response
+
+HTTP/1.1 200 OK
+Server: akka-http/10.1.11
+Date: Thu, 02 Jan 2020 09:24:50 GMT
+Content-Type: application/json
+Content-Length: 9
+
+{
+  "Ok": {}
+}
+
+###
+
+// #add-response
+
+// #prepend-response
+
+HTTP/1.1 200 OK
+Server: akka-http/10.1.11
+Date: Thu, 02 Jan 2020 09:25:23 GMT
+Content-Type: application/json
+Content-Length: 9
+
+{
+  "Ok": {}
+}
+
+###
+
+// #prepend-response
+
+// #replace-response
+
+HTTP/1.1 200 OK
+Server: akka-http/10.1.11
+Date: Thu, 02 Jan 2020 09:25:23 GMT
+Content-Type: application/json
+Content-Length: 9
+
+{
+  "Ok": {}
+}
+
+###
+
+// #replace-response
+
+// #insertAfter-response
+
+HTTP/1.1 200 OK
+Server: akka-http/10.1.11
+Date: Thu, 02 Jan 2020 09:25:23 GMT
+Content-Type: application/json
+Content-Length: 9
+
+{
+  "Ok": {}
+}
+
+###
+
+// #insertAfter-response
+
+// #delete-response
+
+HTTP/1.1 200 OK
+Server: akka-http/10.1.11
+Date: Thu, 02 Jan 2020 09:25:23 GMT
+Content-Type: application/json
+Content-Length: 9
+
+{
+  "Ok": {}
+}
+
+###
+
+// #delete-response
+
+// #addBreakpoint-response
+
+HTTP/1.1 200 OK
+Server: akka-http/10.1.11
+Date: Thu, 02 Jan 2020 09:25:23 GMT
+Content-Type: application/json
+Content-Length: 9
+
+{
+  "Ok": {}
+}
+
+###
+
+// #addBreakpoint-response
+
+// #removeBreakpoint-response
+
+HTTP/1.1 200 OK
+Server: akka-http/10.1.11
+Date: Thu, 02 Jan 2020 09:25:23 GMT
+Content-Type: application/json
+Content-Length: 9
+
+{
+  "Ok": {}
+}
+
+###
+
+// #removeBreakpoint-response
+
+// #reset-response
+
+HTTP/1.1 200 OK
+Server: akka-http/10.1.11
+Date: Thu, 02 Jan 2020 09:25:23 GMT
+Content-Type: application/json
+Content-Length: 9
+
+{
+  "Ok": {}
+}
+
+###
+
+// #reset-response
+
+// #pause-response
+
+HTTP/1.1 200 OK
+Server: akka-http/10.1.11
+Date: Thu, 02 Jan 2020 09:25:23 GMT
+Content-Type: application/json
+Content-Length: 9
+
+{
+  "Ok": {}
+}
+
+###
+
+// #pause-response
+
+// #resume-response
+
+HTTP/1.1 200 OK
+Server: akka-http/10.1.11
+Date: Thu, 02 Jan 2020 09:25:23 GMT
+Content-Type: application/json
+Content-Length: 9
+
+{
+  "Ok": {}
+}
+
+###
+
+// #resume-response
+
+// #getSequenceComponent-response
+
+HTTP/1.1 200 OK
+Server: akka-http/10.1.11
+Date: Thu, 02 Jan 2020 09:29:29 GMT
+Content-Type: application/json
+Content-Length: 191
+
+{
+  "AkkaLocation": {
+    "connection": {
+      "prefix": "esw.primary",
+      "componentType": "sequence_component",
+      "connectionType": "akka"
+    },
+    "uri": "akka://esw-system@10.131.20.138:58492/user/esw.primary#-1731655948"
+  }
+}
+
+###
+
+// #getSequenceComponent-response
+
+// #isAvailable-response
+
+HTTP/1.1 200 OK
+Server: akka-http/10.1.11
+Date: Thu, 02 Jan 2020 09:30:01 GMT
+Content-Type: application/json
+Content-Length: 5
+
+false
+
+###
+
+// #isAvailable-response
+
+// #isOnline-response
+
+HTTP/1.1 200 OK
+Server: akka-http/10.1.11
+Date: Thu, 02 Jan 2020 09:30:23 GMT
+Content-Type: application/json
+Content-Length: 4
+
+true
+
+###
+
+// #isOnline-response
+
+// #goOnline-response
+
+HTTP/1.1 200 OK
+Server: akka-http/10.1.11
+Date: Thu, 02 Jan 2020 10:17:21 GMT
+Content-Type: application/json
+Content-Length: 9
+
+{
+  "Ok": {}
+}
+
+###
+
+// #goOnline-response
+
+// #goOffline-response
+
+HTTP/1.1 200 OK
+Server: akka-http/10.1.11
+Date: Thu, 02 Jan 2020 10:16:57 GMT
+Content-Type: application/json
+Content-Length: 9
+
+{
+  "Ok": {}
+}
+
+###
+
+// #goOffline-response
+
+// #abortSequence-response
+
+HTTP/1.1 200 OK
+Server: akka-http/10.1.11
+Date: Thu, 02 Jan 2020 10:13:31 GMT
+Content-Type: application/json
+Content-Length: 9
+
+{
+  "Ok": {}
+}
+
+###
+
+// #abortSequence-response
+
+// #stop-response
+
+HTTP/1.1 200 OK
+Server: akka-http/10.1.11
+Date: Thu, 02 Jan 2020 10:06:29 GMT
+Content-Type: application/json
+Content-Length: 9
+
+{
+  "Ok": {}
+}
+
+###
+
+// #stop-response
+
+// #diagnosticMode-response
+
+HTTP/1.1 200 OK
+Server: akka-http/10.1.11
+Date: Thu, 02 Jan 2020 10:06:29 GMT
+Content-Type: application/json
+Content-Length: 9
+
+{
+  "Ok": {}
+}
+
+###
+
+// #diagnosticMode-response
+
+// #operationsMode-response
+
+HTTP/1.1 200 OK
+Server: akka-http/10.1.11
+Date: Thu, 02 Jan 2020 10:06:29 GMT
+Content-Type: application/json
+Content-Length: 9
+
+{
+  "Ok": {}
+}
+
+###
+
+// #operationsMode-response

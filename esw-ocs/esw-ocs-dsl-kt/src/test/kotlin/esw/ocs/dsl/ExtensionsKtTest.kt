@@ -21,7 +21,6 @@ class ExtensionsKtTest {
     private val started = Started(id)
     private val completed = Completed(id)
 
-
     @Test
     fun `isFailed should return true if submit response is negative and false for other | ESW-249`() {
         error.isFailed shouldBe true
@@ -107,7 +106,7 @@ class ExtensionsKtTest {
     }
 
     @Test
-    fun `onFailedTerminate should throw exception for negative responses`() = runBlocking {
+    fun `onFailedTerminate should throw exception for negative responses`() = runBlocking<Unit> {
         shouldThrow<CommandError> { error.onFailedTerminate() }
         shouldThrow<CommandError> { locked.onFailedTerminate() }
         shouldThrow<CommandError> { cancelled.onFailedTerminate() }
@@ -121,13 +120,13 @@ class ExtensionsKtTest {
     }
 
     @Test
-    fun `completed should throw exception if called on any other submit response than completed`() = runBlocking {
+    fun `completed should throw exception if called on any other submit response than completed`() = runBlocking<Unit> {
         shouldNotThrow<CommandError> { completed.completed }
         shouldThrow<CommandError> { started.completed }
     }
 
     @Test
-    fun `result should return result from Completed response if called on Completed response and throw for others`() = runBlocking {
+    fun `result should return result from Completed response if called on Completed response and throw for others`() = runBlocking<Unit> {
         val result = Result()
         Completed(id, result).result shouldBe result
         shouldThrow<CommandError> { started.completed }

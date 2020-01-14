@@ -2,7 +2,6 @@ package esw.ocs.dsl.highlevel
 
 import csw.location.api.javadsl.JComponentType
 import csw.location.models.ComponentType
-import csw.prefix.models.Prefix
 import csw.prefix.models.Subsystem
 import esw.ocs.dsl.epics.CommandFlag
 import esw.ocs.dsl.epics.Fsm
@@ -43,7 +42,7 @@ abstract class CswHighLevelDsl(private val cswServices: CswServices, private val
 
     /******** Command Service helpers ********/
     private fun richComponent(prefix: String, componentType: ComponentType, defaultTimeout: Duration): RichComponent =
-            RichComponent(Prefix.apply(prefix), componentType, lockUnlockUtil, locationServiceUtil, actorSystem, defaultTimeout, coroutineScope)
+            RichComponent(Prefix(prefix), componentType, lockUnlockUtil, locationServiceUtil, actorSystem, defaultTimeout, coroutineScope)
 
     private fun richSequencer(subsystem: Subsystem, observingMode: String, defaultTimeout: Duration): RichSequencer =
             RichSequencer(subsystem, observingMode, scriptContext.sequencerApiFactory(), defaultTimeout, coroutineScope)

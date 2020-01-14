@@ -6,10 +6,9 @@ import com.typesafe.config.Config
 import csw.location.api.javadsl.ILocationService
 import csw.location.api.javadsl.JComponentType
 import csw.location.api.scaladsl.LocationService
-import csw.prefix.models.Prefix
-import esw.ocs.impl.script.ScriptContext
 import esw.ocs.dsl.lowlevel.CswServices
 import esw.ocs.dsl.script.StrandEc
+import esw.ocs.impl.script.ScriptContext
 import io.kotlintest.shouldBe
 import io.mockk.every
 import io.mockk.mockk
@@ -56,7 +55,7 @@ class CswHighLevelDslTest {
             val sampleAssembly = Assembly("TCS.sampleAssembly", defaultTimeoutDuration)
 
             sampleAssembly.componentType shouldBe JComponentType.Assembly()
-            sampleAssembly.prefix shouldBe Prefix.apply("TCS.sampleAssembly")
+            sampleAssembly.prefix shouldBe Prefix("TCS.sampleAssembly")
         }
 
         @Test
@@ -64,7 +63,7 @@ class CswHighLevelDslTest {
             val sampleHcd = Hcd("TCS.sampleHcd", defaultTimeoutDuration)
 
             sampleHcd.componentType shouldBe JComponentType.HCD()
-            sampleHcd.prefix shouldBe Prefix.apply("TCS.sampleHcd")
+            sampleHcd.prefix shouldBe Prefix("TCS.sampleHcd")
         }
     }
 }
