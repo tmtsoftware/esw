@@ -102,7 +102,7 @@ Kotlin
 ### Diagnostic mode
 
 The diagnostic data mode command is accepted by Sequencers in all states and `DiagnosticModeResponse` is sent. If the sequencer has defined
-its @ref:[diagnostic mode handlers](../handlers.md#diagnostic-mode-handlers), they will be called. If the handlers execute successfully,
+its @ref:[diagnostic mode handlers](../handlers.md#diagnostic-mode-handler), they will be called. If the handlers execute successfully,
 an `Ok` response is sent else `DiagnosticHookFailed` response is sent.
 
 Kotlin
@@ -111,7 +111,7 @@ Kotlin
 ### Operations mode
 
 Operations mode is accepted by Sequencers in all states and `OperationsModeResponse` is sent. If the sequencer has defined
-its @ref:[operations mode handlers](../handlers.md#operations-mode-handlers), they will be called. If the handlers execute successfully,
+its @ref:[operations mode handlers](../handlers.md#operations-mode-handler), they will be called. If the handlers execute successfully,
 an `Ok` response is sent else `OperationsHookFailed` response is sent.
 
 Kotlin
@@ -125,7 +125,7 @@ Kotlin
 This command is accepted only if the Sequencer is in `InProgress` state, which means it is executing a sequence currently. 
 If this command is sent in any other state, an `Unhandled` response is returned. In all other cases, an `Ok` response is sent.
 
-On receiving this command in `InProgress` state, the Sequencer will execute the @ref:[abort sequence handlers](../handlers.md#abort-sequence-handlers)
+On receiving this command in `InProgress` state, the Sequencer will execute the @ref:[abort sequence handlers](../handlers.md#abort-sequence-handler)
 and on completion of execution of handlers (whether successful or failed), the Sequencer will discard all the `pending` steps
 and return an `Ok` response.  
 
@@ -137,7 +137,7 @@ Kotlin
 
 ### Stopping
 
-Stopping sequence is very similar to aborting, only difference is that instead of abort handlers, the @ref:[stop handlers](../handlers.md#stop-handlers)
+Stopping sequence is very similar to aborting, only difference is that instead of abort handlers, the @ref:[stop handlers](../handlers.md#stop-handler)
 are called. Script writers are expected to save state of sequencer-script in the Stop handlers.
 
 Kotlin
