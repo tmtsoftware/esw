@@ -148,4 +148,4 @@ Till point `[[ 4 ]]`, it's all about **defining the blue-print** and **initialis
 - `[[ 7 ]]`: Waits for completion of the FSM. In example, the script execution will be blocked till line `[[ 4 ]]` is executed which will mark the FSM complete. The script will 
 continue execution after FSM is marked complete.
 
-Example code also demos the use of the [helper constructs]( #helper-constructs ) like `entry`, `on`.
+Example code also demos the use of the @ref:[helper constructs](#helper-constructs) like `entry`, `on`.

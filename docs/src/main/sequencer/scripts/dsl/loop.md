@@ -78,4 +78,4 @@ Kotlin
 :   @@snip [LoopExample.kts](../../../../../../examples/src/main/kotlin/esw/ocs/scripts/examples/paradox/LoopExample.kts) { #loopAsync-custom-interval }
 
 ### Source code for examples
-* @github[Loop Examples](/examples/src/main/kotlin/esw/ocs/scripts/examples/paradox/LoopExample.kts)
+* [Loop Examples]($github.base_url$/examples/src/main/kotlin/esw/ocs/scripts/examples/paradox/LoopExample.kts)

@@ -355,7 +355,7 @@ All the requests to sequencer server can result in `400 Bad Request` or `500 Int
 
 ## Source code for examples
 
-* @github[sequencer-embedded-server.http](../../../../../tools/sequencer/sequencer-embedded-server.http)
+* [sequencer-embedded-server.http]($github.base_url$/tools/sequencer/sequencer-embedded-server.http)
 
 @@@ note
 

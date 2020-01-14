@@ -10,4 +10,4 @@ Kotlin
 : @@snip [Misc.kts](../../../../../../examples/src/main/kotlin/esw/ocs/scripts/examples/paradox/MiscExample.kts) { #par }  
 
 ### Source code for examples
-* @github[Misc Examples](/examples/src/main/kotlin/esw/ocs/scripts/examples/paradox/MiscExample.kts)
+* [Misc Examples]($github.base_url$/examples/src/main/kotlin/esw/ocs/scripts/examples/paradox/MiscExample.kts)

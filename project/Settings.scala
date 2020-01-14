@@ -15,8 +15,8 @@ object Settings {
       ";set every enableFatalWarnings := true; scalafmtCheck; test:compile; multi-jvm:compile; set every enableFatalWarnings := false;"
     ) ++
     addCommandAlias(
-      "openSite",
-      "docs/Paradox/paradoxBrowse"
+      "validateSite",
+      ";makeSite; docs/Paradox/paradoxValidateLinks;"
     )
   }
 }

@@ -71,4 +71,4 @@ Kotlin
 
 # Source code for above examples
 
-* @github[Time Service Example Script](../../../../../../../examples/src/main/kotlin/esw/ocs/scripts/examples/paradox/TimeServiceDslExample.kts)
+* [Time Service Example Script]($github.base_url$/examples/src/main/kotlin/esw/ocs/scripts/examples/paradox/TimeServiceDslExample.kts)
