@@ -3,6 +3,7 @@
 @@ toc { .main depth=1 }
 
 @@@ index
+* [Script Handlers](handlers.md)
 * [Config Service](services/config-service.md)
 * [Logging Service](services/logging-service.md)
 * [Time Service](services/time-service.md)
