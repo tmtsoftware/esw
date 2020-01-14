@@ -19,7 +19,7 @@ on some other location, the sequencer is resolved each time on receiving a comma
 
 ### Creating Sequence
 
-A @scaladoc[Sequence](csw/params/commands/Sequence) is a list of @scaladoc[SequenceCommand](csw/params/commands/SequenceCommand) which could
+A `Sequence` is a list of `SequenceCommand` which could
 be one of `Setup`, `Observe` or `Wait`. To create a Sequence, `sequenceOf` dsl could be used as shown below.
 
 Kotlin
