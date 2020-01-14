@@ -3,6 +3,7 @@ package esw.ocs.dsl.highlevel
 import csw.alarm.api.javadsl.IAlarmService
 import csw.alarm.models.AlarmSeverity
 import csw.alarm.models.Key.AlarmKey
+import kotlinx.coroutines.awaitAll
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.future.asDeferred
 import kotlinx.coroutines.future.await
@@ -36,6 +37,6 @@ interface AlarmServiceDsl : LoopDsl {
     }
 
     private fun startSetSeverity() = loopAsync(_alarmRefreshDuration) {
-        keyToSeverityMap.map { (key, severity) -> alarmService.setSeverity(key, severity).asDeferred() }
+        keyToSeverityMap.map { (key, severity) -> alarmService.setSeverity(key, severity).asDeferred() }.awaitAll()
     }
 }
