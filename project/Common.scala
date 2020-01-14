@@ -1,4 +1,5 @@
 import Libs.{`silencer-lib`, `silencer-plugin`}
+import com.typesafe.sbt.site.SitePlugin.autoImport.siteDirectory
 import org.scalafmt.sbt.ScalafmtPlugin.autoImport.scalafmtOnCompile
 import org.tmt.sbt.docs.DocKeys._
 import sbt.Keys._
@@ -79,6 +80,6 @@ object Common extends AutoPlugin {
     isSnapshot := !sys.props.get("prod.publish").contains("true"),
     cancelable in Global := true, // allow ongoing test(or any task) to cancel with ctrl + c and still remain inside sbt
     scalafmtOnCompile := true,
-    unidocGenjavadocVersion := "0.13"
+    unidocGenjavadocVersion := "0.15"
   )
 }

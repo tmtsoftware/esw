@@ -13,6 +13,10 @@ object Settings {
     addCommandAlias(
       "compileAll",
       ";set every enableFatalWarnings := true; scalafmtCheck; test:compile; multi-jvm:compile; set every enableFatalWarnings := false;"
+    ) ++
+    addCommandAlias(
+      "openSite",
+      "docs/Paradox/paradoxBrowse"
     )
   }
 }
