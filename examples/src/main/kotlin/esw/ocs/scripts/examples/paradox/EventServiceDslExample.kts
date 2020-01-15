@@ -19,21 +19,23 @@ script {
         val parameters = intKey("temperature").set(0)
 
         //#system-event
-        val temperatureEvent: SystemEvent = SystemEvent("esw.temperature", "temp", parameters)
+        val systemEvent: SystemEvent = SystemEvent("esw.temperature", "temp", parameters)
         //#system-event
 
         //#observe-event
-        val completionEvent: ObserveEvent = ObserveEvent("ocs.motor", "position", parameters)
+        val observeEvent: ObserveEvent = ObserveEvent("ocs.motor", "position", parameters)
         //#observe-event
 
+        val event = systemEvent
+
         //#publish
-        publishEvent(temperatureEvent)
+        publishEvent(event)
         //#publish
 
         //#publish-async
         publishEvent(10.seconds) {
             // event generator which returns event to publish after the given interval
-            temperatureEvent
+            event
         }
         //#publish-async
 

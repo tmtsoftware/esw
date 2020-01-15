@@ -19,12 +19,14 @@ Kotlin
  
 ## onEvent
 
-DSL to subscribe to events getting published on the given `event keys`. Executes the given callback whenever any event is published on any of the provided keys.
+DSL to subscribe to events getting published on the given `event keys`. This DSL takes a `callback` which operates on an event, that block will be invoked whenever an
+event is published on any of the provided event keys.
 
 Kotlin
 :   @@snip [EventServiceDslExample.kts](../../../../../../../examples/src/main/kotlin/esw/ocs/scripts/examples/paradox/EventServiceDslExample.kts) { #subscribe }
 
-This DSL have the ability to limit the number of events by providing the `duration` (after which the latest event will be given).
+This DSL have the ability to limit the number of events by providing the `duration` after which the `callback` will be invoked with the latest event. If no event is 
+published within the duration then the last published event will be used to execute the callback. 
 
 Kotlin
 :   @@snip [EventServiceDslExample.kts](../../../../../../../examples/src/main/kotlin/esw/ocs/scripts/examples/paradox/EventServiceDslExample.kts) { #subscribe-async } 
