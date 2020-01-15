@@ -11,11 +11,11 @@ import kotlin.time.seconds
 script {
 
     // #assembly
-    val galilAssembly = Assembly("tcs.galil", 10.seconds)
+    val galilAssembly = Assembly("tcs.galil", defaultTimeout = 10.seconds)
     // #assembly
 
     // #hcd
-    val filterWheelHcd = Hcd("tcs.filter.wheel.hcd", 10.seconds)
+    val filterWheelHcd = Hcd("tcs.filter.wheel.hcd", defaultTimeout = 10.seconds)
     // #hcd
 
     onSetup("setup-filter-assembly") { command ->
@@ -32,6 +32,10 @@ script {
                 }
         )
         // #lock-component
+
+        // #unlock-component
+        galilAssembly.unlock()
+        // #unlock-component
 
         // #submit-and-wait-component
         galilAssembly.submitAndWait(command, timeout = 20.seconds)
