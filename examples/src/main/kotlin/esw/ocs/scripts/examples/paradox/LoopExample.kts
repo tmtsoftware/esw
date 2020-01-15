@@ -1,3 +1,5 @@
+@file:Suppress("UNUSED_VARIABLE")
+
 package esw.ocs.scripts.examples.paradox
 
 import esw.ocs.dsl.core.script

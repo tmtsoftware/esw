@@ -3,27 +3,49 @@
 package esw.ocs.scripts.examples.paradox
 
 import esw.ocs.dsl.core.script
+import esw.ocs.dsl.params.invoke
+import esw.ocs.dsl.params.utcTimeKey
 import kotlin.time.hours
 import kotlin.time.seconds
 
 // ESW-122 TimeServiceDsl usage in script
 script {
 
+    // #schedule-once
+    val scheduleTimeKey = utcTimeKey("scheduledTime")
+    val schedulePrefix = "esw.test"
+    val galilAssembly = Assembly("tcs.galil", defaultTimeout = 10.seconds)
+
     //Usage inside handlers - schedule tasks while handling setup/observe commands
+    onObserve("schedule-once") {command ->
+        val scheduledTime = command(scheduleTimeKey)
+        val probeCommand = Setup(schedulePrefix, "scheduledOffset", command.obsId)
+
+        scheduleOnce(scheduledTime.head()) {
+            galilAssembly.submit(probeCommand)
+        }
+    }
+    // #schedule-once
+
+
+    // #schedule-periodically
+    val offsetTimeKey = utcTimeKey("offsetTime")
+    val offsetPrefix = "esw.offset"
+    val assemblyForOffset = Assembly("tcs.galil", defaultTimeout = 10.seconds)
+
+    onSetup("schedule-periodically") {command ->
+        val scheduledTime = command(offsetTimeKey)
+        val probeCommand = Setup(schedulePrefix, "scheduledOffset", command.obsId)
+
+        schedulePeriodically(scheduledTime.head(), interval = 5.seconds) {
+            assemblyForOffset.submit(probeCommand)
+        }
+    }
+    // #schedule-periodically
+
+
     onSetup("schedule-once-from-now") {
         scheduleOnceFromNow(delayFromNow = 5.seconds) {
-            publishEvent(SystemEvent("lgsf", "publish.success"))
-        }
-    }
-
-    onObserve("schedule-once") {
-        scheduleOnce(startTime = taiTimeNow()) {
-            publishEvent(SystemEvent("lgsf", "publish.success"))
-        }
-    }
-
-    onSetup("schedule-periodically") {
-        schedulePeriodically(startTime = utcTimeNow(), interval = 1.seconds) {
             publishEvent(SystemEvent("lgsf", "publish.success"))
         }
     }
@@ -56,11 +78,9 @@ script {
     }
 
     //Usage at top level
-    // #schedule-once
     scheduleOnce(taiTimeNow()) {
         publishEvent(SystemEvent("lgsf", "publish.success"))
     }
-    // #schedule-once
 
     // #schedule-once-from-now
     scheduleOnceFromNow(1.hours) {
@@ -68,11 +88,9 @@ script {
     }
     // #schedule-once-from-now
 
-    // #schedule-periodically
     schedulePeriodically(utcTimeNow(), 5.seconds) {
         publishEvent(SystemEvent("lgsf", "publish.success"))
     }
-    // #schedule-periodically
 
     // #schedule-periodically-from-now
     schedulePeriodicallyFromNow(1.hours, 10.seconds) {

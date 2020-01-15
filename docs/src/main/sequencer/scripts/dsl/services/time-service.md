@@ -37,7 +37,10 @@ Kotlin
 
 ## scheduleOnce
 
-This API allows to schedule non periodic task in script at specified utc time or tai time. This a handle to cancel the execution of the task if it hasn't been executed already
+This API allows scheduling non periodic task in script at specified utc time or tai time. This returns a handle to cancel the execution of the task if it hasn't been executed already.
+
+Following example shows onObserve handler of sequencer is extracting schedule time from received observe command.
+It is creating probe command which is then submitted to downstream galil assembly at scheduled time.
 
 Kotlin
 :   @@snip [TimeServiceDslExample.kts](../../../../../../../examples/src/main/kotlin/esw/ocs/scripts/examples/paradox/TimeServiceDslExample.kts) { #schedule-once }
@@ -46,7 +49,7 @@ Kotlin
 
 This API allows to schedule non periodic task in script after specified duration. This API takes time duration after which task will
 be scheduled. scheduleOnceFromNow internally creates instance of utc time considering specified in duration. Following example shows
-scheduling task after 1 hour from current utc time. This a handle to cancel the execution of the task if it hasn't been executed already.
+scheduling task after 1 hour from current utc time. This returns a handle to cancel the execution of the task if it hasn't been executed already.
 
 Kotlin
 :   @@snip [TimeServiceDslExample.kts](../../../../../../../examples/src/main/kotlin/esw/ocs/scripts/examples/paradox/TimeServiceDslExample.kts) { #schedule-once-from-now }
