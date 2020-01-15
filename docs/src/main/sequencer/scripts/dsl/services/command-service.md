@@ -11,8 +11,8 @@ assembly. For example send commands or lifecycle methods e.g. goOnline, goOfflin
 which will be used in commands like submitAndWait, queryFinal etc.
 
 This dsl takes following parameters:
-* `prefix` - Prefix of assembly
-* `defaultTimeout` - if dsl like submitAndWait, queryFinal etc does not explicitly provide timeout then this Default timeout is used.
+* `prefix`: Prefix of assembly
+* `defaultTimeout`: if dsl like submitAndWait, queryFinal etc does not explicitly provide timeout then this Default timeout is used.
 
 Kotlin
 :   @@snip [CommandServiceDslExample.kts](../../../../../../../examples/src/main/kotlin/esw/ocs/scripts/examples/paradox/CommandServiceDslExample.kts) { #assembly }
@@ -129,9 +129,9 @@ shows sequencer sending `goOffline` command to downstream galil assembly when it
 Kotlin
 :   @@snip [CommandServiceDslExample.kts](../../../../../../../examples/src/main/kotlin/esw/ocs/scripts/examples/paradox/CommandServiceDslExample.kts) { #goOffline-component }
 
-### Operations mode and Diagnostic mode
+## Operations mode and Diagnostic mode
 
-## operationsMode
+### operationsMode
 
 This dsl allows to send assembly/hcd into operations mode. `operationsMode` can be called from anywhere in script. Following example
 shows sequencer sending `operationsMode` command to downstream galil assembly when it receives `operationsMode` command. 
@@ -139,7 +139,7 @@ shows sequencer sending `operationsMode` command to downstream galil assembly wh
 Kotlin
 :   @@snip [CommandServiceDslExample.kts](../../../../../../../examples/src/main/kotlin/esw/ocs/scripts/examples/paradox/CommandServiceDslExample.kts) { #operations-mode-component }
 
-## diagnosticMode
+### diagnosticMode
 
 This dsl allows to send assembly/hcd into diagnostic data mode based on a hint at the specified startTime. `diagnosticMode` can be called from anywhere in script. Following example 
 shows sequencer sending `diagnosticMode` command to downstream galil assembly when it receives `diagnosticMode` command. 
@@ -147,9 +147,9 @@ shows sequencer sending `diagnosticMode` command to downstream galil assembly wh
 Kotlin
 :   @@snip [CommandServiceDslExample.kts](../../../../../../../examples/src/main/kotlin/esw/ocs/scripts/examples/paradox/CommandServiceDslExample.kts) { #diagnostic-mode-component }
 
-### Locking and unlocking
+## Locking and unlocking
 
-# lock
+### lock
 
 This dsl allows locking assembly/hcd from sequencer script for specified duration. When you lock assembly/hcd, sequencer sending lock command
 is treated as source. This dsl returns `LockingResponse` which can be `LockAcquired` in the successful scenario or `AcquiringLockFailed` in case of failure.
@@ -158,7 +158,7 @@ This dsl also provides callbacks for `onLockAboutToExpire` and, `onLockExpired` 
 Kotlin
 :   @@snip [CommandServiceDslExample.kts](../../../../../../../examples/src/main/kotlin/esw/ocs/scripts/examples/paradox/CommandServiceDslExample.kts) { #lock-component }
 
-# unlock
+### unlock
 
 This dsl allows unlocking assembly/hcd from sequencer script for specified duration. When you unlock assembly/hcd, sequencer sending lock command
 is treated as source. This dsl returns `LockingResponse` which can be `LockReleased` or `LockAlreadyReleased` in the successful scenario or `ReleasingLockFailed` 
@@ -167,5 +167,5 @@ in case of failure.
 Kotlin
 :   @@snip [CommandServiceDslExample.kts](../../../../../../../examples/src/main/kotlin/esw/ocs/scripts/examples/paradox/CommandServiceDslExample.kts) { #unlock-component }
 
-### Source code for examples
+## Source code for examples
 * [Command Service Examples]($github.base_url$/examples/src/main/kotlin/esw/ocs/scripts/examples/paradox/CommandServiceDslExample.kts)
