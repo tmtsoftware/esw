@@ -1,12 +1,12 @@
 package esw.ocs.scripts.examples.testData
 
 import com.typesafe.config.ConfigFactory
-import csw.alarm.api.javadsl.JAlarmSeverity.Major
 import csw.alarm.models.Key.AlarmKey
 import csw.params.events.Event
 import esw.ocs.dsl.core.script
-import esw.ocs.dsl.highlevel.NFIRAOS
-import esw.ocs.dsl.highlevel.Prefix
+import esw.ocs.dsl.highlevel.models.Major
+import esw.ocs.dsl.highlevel.models.NFIRAOS
+import esw.ocs.dsl.highlevel.models.Prefix
 import esw.ocs.dsl.params.longKey
 import kotlinx.coroutines.delay
 import kotlin.time.seconds
@@ -84,7 +84,7 @@ script {
 
     onSetup("set-alarm-severity") {
         val alarmKey = AlarmKey(Prefix(NFIRAOS, "trombone"), "tromboneAxisHighLimitAlarm")
-        setSeverity(alarmKey, Major())
+        setSeverity(alarmKey, Major)
         delay(500)
     }
 

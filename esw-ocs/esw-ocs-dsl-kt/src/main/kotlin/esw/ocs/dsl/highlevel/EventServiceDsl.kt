@@ -12,6 +12,7 @@ import esw.ocs.dsl.SuspendableConsumer
 import esw.ocs.dsl.SuspendableSupplier
 import esw.ocs.dsl.epics.EventVariable
 import esw.ocs.dsl.highlevel.models.EventSubscription
+import esw.ocs.dsl.highlevel.models.Prefix
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.future.await
 import kotlinx.coroutines.future.future

@@ -5,8 +5,8 @@ import csw.params.events.EventName
 import csw.params.events.SystemEvent
 import csw.params.javadsl.JKeyType
 import esw.ocs.dsl.highlevel.CswHighLevelDslApi
-import esw.ocs.dsl.highlevel.Prefix
-import esw.ocs.dsl.highlevel.TCS
+import esw.ocs.dsl.highlevel.models.Prefix
+import esw.ocs.dsl.highlevel.models.TCS
 import esw.ocs.dsl.params.Params
 import esw.ocs.dsl.script.StrandEc
 import io.kotlintest.eventually

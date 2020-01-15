@@ -7,6 +7,7 @@ import esw.ocs.dsl.epics.CommandFlag
 import esw.ocs.dsl.epics.Fsm
 import esw.ocs.dsl.epics.FsmImpl
 import esw.ocs.dsl.epics.FsmScope
+import esw.ocs.dsl.highlevel.models.Prefix
 import esw.ocs.dsl.lowlevel.CswServices
 import esw.ocs.dsl.script.StrandEc
 import esw.ocs.dsl.script.utils.LockUnlockUtil

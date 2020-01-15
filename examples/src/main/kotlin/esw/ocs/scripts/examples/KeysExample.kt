@@ -3,7 +3,7 @@ package esw.ocs.scripts.examples
 import csw.params.events.EventName
 import csw.params.events.SystemEvent
 import csw.params.javadsl.JUnits
-import esw.ocs.dsl.highlevel.Prefix
+import esw.ocs.dsl.highlevel.models.Prefix
 import esw.ocs.dsl.params.*
 
 // =================================================
