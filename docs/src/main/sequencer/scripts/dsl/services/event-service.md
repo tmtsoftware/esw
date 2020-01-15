@@ -77,4 +77,4 @@ Kotlin
 
 
 ## Source code for examples
-* [Event Service Examples](https://github.com/tmtsoftware/esw/examples/src/main/kotlin/esw/ocs/scripts/examples/paradox/EventServiceDslExample.kts)
+* [Event Service Examples]($github.base_url$/examples/src/main/kotlin/esw/ocs/scripts/examples/paradox/EventServiceDslExample.kts)
