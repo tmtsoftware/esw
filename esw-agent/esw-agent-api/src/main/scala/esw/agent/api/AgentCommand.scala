@@ -18,9 +18,15 @@ object AgentCommand {
     val connectionType: ConnectionType
   }
 
-  case class Finished(componentId: ComponentId) extends AgentCommand
+  private[agent] case class Finished(componentId: ComponentId) extends AgentCommand
+
+  case class KillComponent(replyTo: ActorRef[Response], componentId: ComponentId) extends AgentCommand
 
   object SpawnCommand {
+
+    def unapply(cmd: SpawnCommand): Option[(ActorRef[Response], ComponentId)] =
+      Some((cmd.replyTo, cmd.componentId))
+
     case class SpawnSequenceComponent(replyTo: ActorRef[Response], prefix: Prefix) extends SpawnCommand {
       private val binaryName = "esw-ocs-app"
 
@@ -32,10 +38,6 @@ object AgentCommand {
         val executablePath = Paths.get(binariesPath.toString, binaryName).toString
         List(executablePath, "seqcomp", "-s", prefix.subsystem.toString, "-n", prefix.componentName)
       }
-    }
-
-    object SpawnSequenceComponent {
-      def apply(prefix: Prefix)(replyTo: ActorRef[Response]): SpawnSequenceComponent = new SpawnSequenceComponent(replyTo, prefix)
     }
   }
 }

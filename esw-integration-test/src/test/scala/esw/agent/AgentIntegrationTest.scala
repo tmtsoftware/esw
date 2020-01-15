@@ -2,8 +2,10 @@ package esw.agent
 
 import akka.util.Timeout
 import csw.location.api.codec.LocationServiceCodecs
+import csw.location.models.ComponentId
+import csw.location.models.ComponentType.SequenceComponent
 import csw.prefix.models.Prefix
-import esw.agent.api.Response.Spawned
+import esw.agent.api.Response.{Failed, Ok}
 import esw.agent.client.AgentClient
 import esw.ocs.testkit.EswTestKit
 import esw.ocs.testkit.Service.MachineAgent
@@ -22,11 +24,31 @@ class AgentIntegrationTest extends EswTestKit(MachineAgent) with BeforeAndAfterA
       agentLocation should not be empty
     }
 
-    "accept SpawnSequenceComponent message and spawn a new sequence component | ESW-237" in {
+    "return OK and spawn a new sequence component for a SpawnSequenceComponent message | ESW-237" in {
       val agentClient   = Await.result(AgentClient.make(agentPrefix, locationService), 7.seconds)
       val seqCompPrefix = Prefix(s"esw.test_${Random.nextInt.abs}")
       val response      = Await.result(agentClient.spawnSequenceComponent(seqCompPrefix), askTimeout.duration)
-      response should ===(Spawned)
+      response should ===(Ok)
+    }
+
+    "return Ok and kill a running component for a KillComponent message | ESW-237" in {
+      val agentClient   = Await.result(AgentClient.make(agentPrefix, locationService), 7.seconds)
+      val seqCompPrefix = Prefix(s"esw.test_${Random.nextInt.abs}")
+      val spawnResponse = Await.result(agentClient.spawnSequenceComponent(seqCompPrefix), askTimeout.duration)
+      spawnResponse should ===(Ok)
+      val killResponse =
+        Await.result(agentClient.killComponent(ComponentId(seqCompPrefix, SequenceComponent)), askTimeout.duration)
+      killResponse should ===(Ok)
+    }
+
+    "return Failed('Aborted') to original sender when someone kills a process while it is spawning | ESW-237" in {
+      val agentClient    = Await.result(AgentClient.make(agentPrefix, locationService), 7.seconds)
+      val seqCompPrefix  = Prefix(s"esw.test_${Random.nextInt.abs}")
+      val spawnResponseF = agentClient.spawnSequenceComponent(seqCompPrefix)
+      val killResponse =
+        Await.result(agentClient.killComponent(ComponentId(seqCompPrefix, SequenceComponent)), askTimeout.duration)
+      killResponse should ===(Ok)
+      Await.result(spawnResponseF, askTimeout.duration) should ===(Failed("Aborted"))
     }
   }
 

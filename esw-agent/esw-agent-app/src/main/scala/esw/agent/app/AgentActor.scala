@@ -6,6 +6,7 @@ import csw.location.api.scaladsl.LocationService
 import csw.location.models.ComponentId
 import csw.logging.api.scaladsl.Logger
 import esw.agent.api.AgentCommand._
+import esw.agent.api.Response.Failed
 import esw.agent.api.{AgentCommand, Response}
 import esw.agent.app.AgentActor.AgentState
 import esw.agent.app.ProcessActor.{ProcessActorMessage, SpawnComponent}
@@ -22,11 +23,11 @@ class AgentActor(
 
   def behavior(state: AgentState): Behaviors.Receive[AgentCommand] = Behaviors.receive[AgentCommand] { (ctx, command) =>
     command match {
-      //already spawning
-      case command: SpawnCommand if state.children.contains(command.componentId) =>
-        val message = "spawning of component is already in progress"
-        warn(message, Map("prefix" -> command.componentId.prefix))
-        command.replyTo ! Response.Failed(message)
+      //already spawning or registered
+      case SpawnCommand(replyTo, componentId) if state.components.contains(componentId) =>
+        val message = "given component is already in process"
+        warn(message, Map("prefix" -> componentId.prefix))
+        replyTo ! Response.Failed(message)
         Behaviors.same
       //happy path
       case command: SpawnCommand =>
@@ -35,7 +36,17 @@ class AgentActor(
         ctx.watchWith(processActorRef, Finished(command.componentId))
         processActorRef ! SpawnComponent
         behavior(state.add(command.componentId, processActorRef))
-      //work done by child actor and child actor died
+      case KillComponent(replyTo, componentId) =>
+        state.components.get(componentId) match {
+          case Some(processActor) =>
+            processActor ! ProcessActor.Die(replyTo)
+          case None =>
+            val message = "given component id is not running on this agent"
+            error(message, Map("prefix" -> componentId.prefix))
+            replyTo ! Failed(message)
+        }
+        Behaviors.same
+      //process has exited and child actor died
       case Finished(componentId) => behavior(state.remove(componentId))
     }
   }
@@ -43,10 +54,10 @@ class AgentActor(
 
 object AgentActor {
 
-  case class AgentState(children: Map[ComponentId, ActorRef[ProcessActorMessage]]) {
+  case class AgentState(components: Map[ComponentId, ActorRef[ProcessActorMessage]]) {
     def add(componentId: ComponentId, actorRef: ActorRef[ProcessActorMessage]): AgentState =
-      copy(children = children + (componentId -> actorRef))
-    def remove(componentId: ComponentId): AgentState = copy(children = children - componentId)
+      copy(components = components + (componentId -> actorRef))
+    def remove(componentId: ComponentId): AgentState = copy(components = components - componentId)
   }
 
   object AgentState {

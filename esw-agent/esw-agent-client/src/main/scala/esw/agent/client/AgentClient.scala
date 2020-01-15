@@ -9,6 +9,7 @@ import csw.location.models.ComponentId
 import csw.location.models.ComponentType.Machine
 import csw.location.models.Connection.AkkaConnection
 import csw.prefix.models.Prefix
+import esw.agent.api.AgentCommand.KillComponent
 import esw.agent.api.AgentCommand.SpawnCommand.SpawnSequenceComponent
 import esw.agent.api.{AgentCommand, Response}
 
@@ -19,7 +20,10 @@ class AgentClient private[agent] (agentRef: ActorRef[AgentCommand])(implicit sch
   implicit private val timeout: Timeout = Timeout(10.seconds)
 
   def spawnSequenceComponent(prefix: Prefix): Future[Response] =
-    agentRef ? SpawnSequenceComponent(prefix)
+    agentRef ? (SpawnSequenceComponent(_, prefix))
+
+  def killComponent(componentId: ComponentId): Future[Response] =
+    agentRef ? (KillComponent(_, componentId))
 }
 object AgentClient {
   def make(prefix: Prefix, locationService: LocationService)(implicit actorSystem: ActorSystem[_]): Future[AgentClient] = {

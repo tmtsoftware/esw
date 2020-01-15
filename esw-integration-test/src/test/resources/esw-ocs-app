@@ -7,3 +7,5 @@ curl -sS -X POST \
   -H 'Accept: */*' \
   -H 'Content-Type: application/json' \
   -d "{\"_type\":\"Register\",\"registration\":{\"_type\":\"AkkaRegistration\",\"connection\":{\"prefix\":\"${prefix}\",\"componentType\":\"sequence_component\",\"connectionType\":\"akka\"},\"actorRefURI\":\"akka://agent-app@10.131.124.163:61380/user/agent-actor#1379701792\"}}"
+
+sleep 5
