@@ -22,8 +22,8 @@ import org.scalatest.MustMatchers.convertToStringMustWrapper
 import org.scalatest.{BeforeAndAfterEach, WordSpecLike}
 
 import scala.concurrent.ExecutionContext.Implicits.global
-import scala.concurrent.{Future, Promise}
 import scala.concurrent.duration.{DurationLong, FiniteDuration}
+import scala.concurrent.{Future, Promise}
 
 class AgentActorTest extends ScalaTestWithActorTestKit with WordSpecLike with MockitoSugar with BeforeAndAfterEach {
 
@@ -32,7 +32,7 @@ class AgentActorTest extends ScalaTestWithActorTestKit with WordSpecLike with Mo
   private val processHandle   = mock[ProcessHandle]
   private val logger          = mock[Logger]
 
-  private val agentSettings         = AgentSettings("/tmp", 15.seconds)
+  private val agentSettings         = AgentSettings("/tmp", 15.seconds, 2.seconds)
   implicit val scheduler: Scheduler = system.scheduler
 
   private val prefix                        = Prefix("tcs.tcs_darknight")
@@ -120,7 +120,7 @@ class AgentActorTest extends ScalaTestWithActorTestKit with WordSpecLike with Mo
       probe.expectMessage(Failed("failure"))
     }
 
-    "reply 'Failed' when the process is spawned but failed to register itself | ESW-237" in {
+    "reply 'Failed' and kill process, when the process is spawned but failed to register itself | ESW-237" in {
       val agentActorRef = spawnAgentActor()
       val probe         = TestProbe[Response]()
 
@@ -153,9 +153,11 @@ class AgentActorTest extends ScalaTestWithActorTestKit with WordSpecLike with Mo
 
   "KillComponent" must {
 
-    "reply 'Ok' and kill the running component when component is registered | ESW-237" in {
+    "reply 'Ok' and kill the running component when component gracefully is registered | ESW-237" in {
       ???
     }
+
+    "reply 'Ok' and kill the running component forcefully if it does not gracefully in given time" in { ??? }
 
     "reply 'Ok' and kill the running component when component is waiting registration confirmation | ESW-237" in {
       ???
@@ -164,6 +166,8 @@ class AgentActorTest extends ScalaTestWithActorTestKit with WordSpecLike with Mo
     "reply 'Ok' and cancel spawning of an already scheduled component when registration is being checked | ESW-237" in {
       ???
     }
+
+    "reply 'Ok' and when process is already stopping" in { ??? }
 
     "reply 'Failed' when given component is not running on agent | ESW-237" in {
       ???

@@ -1,7 +1,7 @@
 package esw.agent.app
 
-import akka.actor.typed.{ActorRef, Behavior}
 import akka.actor.typed.scaladsl.Behaviors
+import akka.actor.typed.{ActorRef, Behavior}
 import csw.location.api.scaladsl.LocationService
 import csw.location.models._
 import csw.logging.api.scaladsl.Logger
@@ -26,7 +26,8 @@ class ProcessActor[T <: Location](
   import command._
   import componentId._
   import logger._
-  private val aborted = Failed("Aborted")
+  private val aborted         = Failed("Aborted")
+  private val gracefulTimeout = agentSettings.durationToWaitForGracefulProcessTermination
 
   private def isComponentRegistered(
       timeout: FiniteDuration = agentSettings.durationToWaitForComponentRegistration
@@ -95,48 +96,69 @@ class ProcessActor[T <: Location](
     })
 
   def waitingForComponentRegistration(processHandle: ProcessHandle): Behavior[ProcessActorMessage] =
-    Behaviors.receiveMessagePartial[ProcessActorMessage] {
-      case RegistrationSuccess =>
-        debug("spawned process is registered with location service", Map("pid" -> processHandle.pid, "prefix" -> prefix))
-        replyTo ! Ok
-        registered(processHandle)
+    Behaviors.setup[ProcessActorMessage](ctx => {
+      Behaviors.receiveMessagePartial[ProcessActorMessage] {
+        case RegistrationSuccess =>
+          debug("spawned process is registered with location service", Map("pid" -> processHandle.pid, "prefix" -> prefix))
+          replyTo ! Ok
+          registered(processHandle)
 
-      case RegistrationFailed =>
-        val errorMessage = "could not get registration confirmation from spawned process within given time"
-        error(errorMessage, Map("pid" -> processHandle.pid, "prefix" -> prefix))
-        replyTo ! Failed(errorMessage)
-        processHandle.destroyForcibly()
-        Behaviors.stopped
+        case RegistrationFailed =>
+          val errorMessage = "could not get registration confirmation from spawned process within given time"
+          error(errorMessage, Map("pid" -> processHandle.pid, "prefix" -> prefix))
+          replyTo ! Failed(errorMessage)
+          ctx.self ! StopGracefully
+          stopping(processHandle, None)
 
-      case ProcessExited(exitCode) =>
-        val errorMessage = "process died before registration confirmation"
-        replyTo ! Failed(errorMessage)
-        error(errorMessage, Map("pid" -> processHandle.pid, "prefix" -> prefix, "exitCode" -> exitCode))
-        Behaviors.stopped
+        case ProcessExited(exitCode) =>
+          val errorMessage = "process died before registration confirmation"
+          replyTo ! Failed(errorMessage)
+          error(errorMessage, Map("pid" -> processHandle.pid, "prefix" -> prefix, "exitCode" -> exitCode))
+          Behaviors.stopped
 
-      case Die(dieRef) =>
-        warn("Killing process via Die message", Map("pid" -> processHandle.pid, "prefix" -> prefix))
-        processHandle.destroyForcibly()
-        dieRef ! Ok
-        replyTo ! aborted
-        Behaviors.stopped
+        case Die(dieRef) =>
+          warn("Killing process via Die message", Map("pid" -> processHandle.pid, "prefix" -> prefix))
+          replyTo ! aborted
+          ctx.self ! StopGracefully
+          stopping(processHandle, Some(dieRef))
+      }
+    })
+
+  def registered(processHandle: ProcessHandle): Behavior[ProcessActorMessage] =
+    Behaviors.setup { ctx =>
+      Behaviors.receiveMessagePartial[ProcessActorMessage] {
+        case ProcessExited(exitCode) =>
+          val message                                         = "error occurred while running command"
+          val logFunction: (String, Map[String, Any]) => Unit = if (exitCode == 0) info(_, _) else warn(_, _)
+          logFunction(message, Map("pid" -> processHandle.pid, "prefix" -> prefix, "exitCode" -> exitCode))
+          Behaviors.stopped
+
+        case Die(dieRef) =>
+          warn("Killing process via Die message", Map("pid" -> processHandle.pid, "prefix" -> prefix))
+          ctx.self ! StopGracefully
+          stopping(processHandle, Some(dieRef))
+      }
     }
 
-  def registered(processHandle: ProcessHandle): Behavior[ProcessActorMessage] = {
-    Behaviors.receiveMessagePartial[ProcessActorMessage] {
-      case ProcessExited(exitCode) =>
-        val message                                         = "error occurred while running command"
-        val logFunction: (String, Map[String, Any]) => Unit = if (exitCode == 0) info(_, _) else warn(_, _)
-        logFunction(message, Map("pid" -> processHandle.pid, "prefix" -> prefix, "exitCode" -> exitCode))
-        Behaviors.stopped
-
-      case Die(dieRef) =>
-        warn("Killing process via Die message", Map("pid" -> processHandle.pid, "prefix" -> prefix))
-        processHandle.destroyForcibly()
-        dieRef ! Ok
-        Behaviors.stopped
+  def stopping(processHandle: ProcessHandle, subscriber: Option[ActorRef[Ok.type]]): Behavior[ProcessActorMessage] =
+    Behaviors.withTimers { timeScheduler =>
+      Behaviors.receiveMessagePartial[ProcessActorMessage] {
+        case Die(dieRef) =>
+          dieRef ! Ok
+          Behaviors.same
+        case ProcessExited(_) =>
+          subscriber.foreach(_ ! Ok)
+          Behaviors.stopped
+        case StopGracefully =>
+          processHandle.destroy()
+          timeScheduler.startSingleTimer(StopForcefully, gracefulTimeout)
+          Behaviors.same
+        case StopForcefully =>
+          processHandle.destroyForcibly()
+          subscriber.foreach(_ ! Ok)
+          Behaviors.stopped
+      }
     }
-  }
 }
 
 object ProcessActor {
@@ -147,6 +169,8 @@ object ProcessActor {
   private case object RunCommand                                extends ProcessActorMessage
   private case object RegistrationSuccess                       extends ProcessActorMessage
   private case object RegistrationFailed                        extends ProcessActorMessage
+  private case object StopGracefully                            extends ProcessActorMessage
+  private case object StopForcefully                            extends ProcessActorMessage
   private case class ProcessExited(exitCode: Long)              extends ProcessActorMessage
   private case class LocationServiceError(exception: Throwable) extends ProcessActorMessage
 }

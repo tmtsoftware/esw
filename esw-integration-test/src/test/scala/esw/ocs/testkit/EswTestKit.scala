@@ -96,6 +96,7 @@ abstract class EswTestKit(services: Service*)
         |agent {
         |  binariesPath = "$resourcesDir"
         |  durationToWaitForComponentRegistration = 15s
+        |  durationToWaitForGracefulProcessTermination = 2s
         |}
         |""".stripMargin)
     )
