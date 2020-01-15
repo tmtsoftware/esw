@@ -1,6 +1,7 @@
 # Command Service
 
 Command service dsl is kotlin wrapper over csw command service module provided for sending commands to assemblies or hcds via scripts.
+You can refer a detailed documentation of command Service provided by csw @extref[here](csw:commons/command.html#commandservice).
 This dsl exposes following APIs:
 
 ## Assembly
@@ -100,13 +101,17 @@ please refer @ref:[Error handling in script](../error-handling.md)
 ### SubscribeCurrentState
 
 This dsl allows subscribing to current states of assembly/hcd. Script writer can provide state names to subscribe. If not provided
-all current states are subscribed. This dsl takes callback, callback provides handle to subscribed state and script writer can write logic in 
+all current states are subscribed. This dsl takes callback, callback provides handle to subscribed state and script writer can write logic in
 callback which will be executed for all subscribed states.
 
 Kotlin
 :   @@snip [CommandServiceDslExample.kts](../../../../../../../examples/src/main/kotlin/esw/ocs/scripts/examples/paradox/CommandServiceDslExample.kts) { #subscribe-current-state-component }
 
 ## Going online/offline mode
+
+This is kotlin wrapper for sending assembly/hcd in online and offline mode. When assembly/hcd receives this command respective handlers are called. The detailed documentation
+of online/offline handlers for assembly/hcd can be found @extref[here](csw:framework/handling-lifecycle.html#component-online-and-offline)
+
 
 ### goOnline
 
@@ -161,3 +166,6 @@ in case of failure.
 
 Kotlin
 :   @@snip [CommandServiceDslExample.kts](../../../../../../../examples/src/main/kotlin/esw/ocs/scripts/examples/paradox/CommandServiceDslExample.kts) { #unlock-component }
+
+### Source code for examples
+* [Command Service Examples]($github.base_url$/examples/src/main/kotlin/esw/ocs/scripts/examples/paradox/CommandServiceDslExample.kts)
