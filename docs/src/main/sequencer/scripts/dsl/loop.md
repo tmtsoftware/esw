@@ -1,4 +1,4 @@
-# Loop
+# Loops
 
 Script supports following multiple variations of loop Dsl to satisfy different use cases: 
 
