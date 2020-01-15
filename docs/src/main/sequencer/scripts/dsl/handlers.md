@@ -4,7 +4,7 @@
 
 ### onSetup
 
-This handler is used to handle a `Setup` command sent to this sequencer.
+This handler is used to handle a @extref[Setup](csw:csw/params/commands/Setup.html) command sent to this sequencer.
 The handler takes two parameters:
 
 1. **command name** which is matched against the sequence command sent, if the command name matches, corresponding block provided
@@ -19,7 +19,7 @@ In the block provided to this handler, all the csw services (event, alarm, time 
 
 ### onObserve
 
-This handler is used to handle an `Observe` command sent to this sequencer.
+This handler is used to handle an @extref[Observe](csw:csw/params/commands/Observe.html) command sent to this sequencer.
 The handler takes two parameters:
 
 1. **command name** which is matched against the sequence command sent, if the command name matches, corresponding block provided

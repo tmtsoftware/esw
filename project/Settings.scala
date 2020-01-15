@@ -19,4 +19,10 @@ object Settings {
       ";makeSite; docs/Paradox/paradoxValidateLinks;"
     )
   }
+
+  // export CSW_VERSION env variable which is compatible with esw
+  def cswVersion: String = (sys.env ++ sys.props).get("CSW_VERSION") match {
+    case Some(v) => v
+    case None    => "0.1.0-SNAPSHOT"
+  }
 }
