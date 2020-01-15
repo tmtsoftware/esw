@@ -40,7 +40,11 @@ script {
     val motorResolutionKey = stringKey("motor-resolution")
 
     //#exists-config
-    val bootConfExist: Boolean = existsConfig("/wfos/boot.conf")
+    val commandsFile = "/wfos/commands.conf"
+    val commandsConfigExist: Boolean = existsConfig(commandsFile)
+
+    // terminate script if required configuration file does not exist
+    if (!commandsConfigExist) finishWithError("Configuration file [$commandsFile] not found in configuration service")
     //#exists-config
 
     //#get-config
