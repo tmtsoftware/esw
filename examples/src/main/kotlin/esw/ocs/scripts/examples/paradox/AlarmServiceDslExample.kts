@@ -45,7 +45,7 @@ script {
             }
 
             on(temperatureVar.get() < 40) {
-                become("OK")
+                become(OK)
             }
         }
     }
