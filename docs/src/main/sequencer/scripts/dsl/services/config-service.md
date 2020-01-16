@@ -1,6 +1,6 @@
 # Config Service
 
-Config Service DSL is a wrapper over Config Service module provided by csw.
+Config Service DSL is a wrapper over Config Service module provided by CSW.
 You can refer a detailed documentation of Config Service provided by CSW @extref[here](csw:services/config).
 
 This DSL provides APIs to check if file exists in Configuration Service and retrieve its contents.

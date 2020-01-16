@@ -1,6 +1,6 @@
 # Time Service
 
-Time Service DSL is DSL wrapper over Time Service module provided by csw. This DSL exposes following APIs to script writers to
+Time Service DSL is DSL wrapper over Time Service module provided by CSW. This DSL exposes following APIs to script writers to
 schedule tasks at given time. It also exposes utility methods for getting specified utc time or tai time and calculate offset. 
 
 ## utcTimeNow

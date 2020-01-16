@@ -1,6 +1,6 @@
 # Alarm Service
 
-Alarm Service DSL is a wrapper over Alarm Service module provided by csw.
+Alarm Service DSL is a wrapper over Alarm Service module provided by CSW.
 You can refer a detailed documentation of Alarm Service provided by CSW @extref[here](csw:services/alarm).
 
 This DSL provides an API to set the severity of alarm.
