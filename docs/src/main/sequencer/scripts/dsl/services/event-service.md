@@ -1,7 +1,7 @@
 # Event Service
 
-Event service dsl is kotlin wrapper over csw event service. This DSL have the ability of publishing, subscribing to events and holds some helper methods.
-You can refer a detailed documentation of Event Service provided by csw @extref[here](csw:services/event).
+Event Service DSL is kotlin wrapper over CSW Event Service. This DSL have the ability of publishing, subscribing to events and holds some helper methods.
+You can refer a detailed documentation of Event Service provided by CSW @extref[here](csw:services/event).
 
 This DSL exposes following APIs:
 

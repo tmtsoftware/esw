@@ -25,7 +25,7 @@ script {
 
     //#set-severity
     /**
-     * temp > 20 || temp < 40   => Severity.Okay
+     * temp > 20 && temp < 40   => Severity.Okay
      * else                     => Severity.Major
      */
     val temperatureFsm = Fsm("TEMP", OK) {

@@ -4,5 +4,5 @@
 
 @@@ index
 * [FSM](fsm.md)
-* [High Level DSL](dsl/dsl.md) Collection of high level DSL's for writing sequencer scripts
+* [High Level DSL](dsl/dsl.md) Collection of high level DSL's for writing Sequencer scripts
 @@@

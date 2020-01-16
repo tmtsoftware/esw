@@ -1,14 +1,14 @@
 # Alarm Service
 
-Alarm Service Dsl is a wrapper over alarm service module provided by csw.
-You can refer a detailed documentation of Alarm Service provided by csw @extref[here](csw:services/alarm).
+Alarm Service DSL is a wrapper over Alarm Service module provided by csw.
+You can refer a detailed documentation of Alarm Service provided by CSW @extref[here](csw:services/alarm).
 
-This dsl provides an API to set the severity of alarm.
+This DSL provides an API to set the severity of alarm.
 
 ## setSeverity
 
 This API sets alarm severity for alarm key to provided value and keeps refreshing it in the background with the interval of config value `csw-alarm.refresh-interval`.
-Default value for `csw-alarm.refresh-interval` config is _3 seconds_ which is configured in downstream csw alarm modules `reference.conf` file.
+Default value for `csw-alarm.refresh-interval` config is _3 seconds_ which is configured in downstream CSW alarm modules `reference.conf` file.
 
 `setSeverity` API requires user to provide `AlarmKey` and `AlarmSeverity`.
 

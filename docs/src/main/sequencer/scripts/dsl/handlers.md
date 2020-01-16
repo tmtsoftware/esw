@@ -14,7 +14,7 @@ is executed
 Kotlin
 : @@snip [HandlersExample.kts](../../../../../../examples/src/main/kotlin/esw/ocs/scripts/examples/paradox/HandlersExample.kts) { #onSetup }
 
-In the block provided to this handler, all the csw services (event, alarm, time service, etc) and control dsl (loop, par etc) are accessible.
+In the block provided to this handler, all the CSW services (Event, Alarm, Time Service, etc) and control DSL (loop, par etc) are accessible.
 
 
 ### onObserve
@@ -35,7 +35,7 @@ Kotlin
 ### onGoOnline
 
 On receiving the `goOnline` command, the onGoOnline handlers, if defined, will be called. Only if the handlers execute successfully,
-will the sequencer become online. Hence, error handling for the block passed to onGoOnline needs to be taken care of by the script writer.
+will the Sequencer become online. Hence, error handling for the block passed to onGoOnline needs to be taken care of by the script writer.
 
 Kotlin
 : @@snip [HandlersExample.kts](../../../../../../examples/src/main/kotlin/esw/ocs/scripts/examples/paradox/HandlersExample.kts) { #onGoOnline }
@@ -44,8 +44,8 @@ Kotlin
 ### onGoOffline
 
 On receiving the `goOffline` command, the onGoOffline handlers, if defined, will be called. Only if the handlers execute successfully,
-will the sequencer become offline. Hence, error handling for the block passed to onGoOffline needs to be taken care of by the script writer.
-Offline handlers could be written to clear the sequencer state before going offline.
+will the Sequencer become offline. Hence, error handling for the block passed to onGoOffline needs to be taken care of by the script writer.
+Offline handlers could be written to clear the Sequencer state before going offline.
 
 Kotlin
 : @@snip [HandlersExample.kts](../../../../../../examples/src/main/kotlin/esw/ocs/scripts/examples/paradox/HandlersExample.kts) { #onGoOffline }

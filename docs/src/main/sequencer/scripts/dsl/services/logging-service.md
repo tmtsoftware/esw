@@ -1,9 +1,9 @@
 # Logging Service
 
-Logging Service DSL is a wrapper over logging service module provided by csw. 
-You can refer a detailed documentation of Logging Service provided by csw @extref[here](csw:services/logging).
+Logging Service DSL is a wrapper over Logging Service module provided by csw. 
+You can refer a detailed documentation of Logging Service provided by CSW @extref[here](csw:services/logging).
 
-This dsl exposes following APIs to script writers for logging at different levels:
+This DSL exposes following APIs to script writers for logging at different levels:
 
 ## trace
 

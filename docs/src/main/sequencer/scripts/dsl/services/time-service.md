@@ -1,6 +1,6 @@
 # Time Service
 
-Time Service Dsl is dsl wrapper over time service module provided by csw. This dsl exposes following APIs to script writers to
+Time Service DSL is DSL wrapper over Time Service module provided by csw. This DSL exposes following APIs to script writers to
 schedule tasks at given time. It also exposes utility methods for getting specified utc time or tai time and calculate offset. 
 
 ## utcTimeNow
@@ -39,8 +39,8 @@ Kotlin
 
 This API allows scheduling non periodic task in script at specified utc time or tai time. This returns a handle to cancel the execution of the task if it hasn't been executed already.
 
-Following example shows onObserve handler of sequencer is extracting schedule time from received observe command.
-It is creating probe command which is then submitted to downstream galil assembly at scheduled time.
+Following example shows onObserve handler of Sequencer is extracting schedule time from received observe command.
+It is creating probe command which is then submitted to downstream galil Assembly at scheduled time.
 
 Kotlin
 :   @@snip [TimeServiceDslExample.kts](../../../../../../../examples/src/main/kotlin/esw/ocs/scripts/examples/paradox/TimeServiceDslExample.kts) { #schedule-once }
