@@ -62,19 +62,13 @@ object Dependencies {
     )
   )
 
-  val AgentApi: Def.Initialize[Seq[ModuleID]] = Def.setting(
+  val AgentClient: Def.Initialize[Seq[ModuleID]] = Def.setting(
     Seq(
       Borer.`borer-core`.value,
       Borer.`borer-derivation`.value,
       Csw.`csw-prefix`.value,
       Csw.`csw-location-api`,
-      Akka.`akka-actor-typed`
-    )
-  )
-
-  val AgentClient: Def.Initialize[Seq[ModuleID]] = Def.setting(
-    Seq(
-      Csw.`csw-location-api`,
+      Akka.`akka-actor-typed`,
       Libs.`mockito-scala`            % Test,
       Akka.`akka-actor-testkit-typed` % Test
     )

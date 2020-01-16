@@ -21,9 +21,8 @@ class ProcessExecutor(output: ProcessOutput, agentSettings: AgentSettings, logge
       process
     }.toEither.left.map {
       case NonFatal(err) =>
-        error("command failed to run", map = Map("command" -> command, "prefix" -> prefix.value), ex = err)
-        err.getMessage
         error("command failed to run", map = Map("command" -> command, "prefix" -> prefix.toString.toLowerCase), ex = err)
+        err.getMessage
     }
 }
 // $COVERAGE-ON$

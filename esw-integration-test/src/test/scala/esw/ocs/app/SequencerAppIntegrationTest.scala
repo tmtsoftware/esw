@@ -11,8 +11,8 @@ import csw.location.models.Connection.AkkaConnection
 import csw.location.models.{AkkaLocation, ComponentId, ComponentType}
 import csw.params.commands.CommandResponse.Completed
 import csw.params.commands.{CommandName, Sequence, Setup}
-import csw.prefix.models.{Prefix, Subsystem}
 import csw.prefix.models.Subsystem.{CSW, ESW}
+import csw.prefix.models.{Prefix, Subsystem}
 import esw.ocs.api.protocol.{ScriptError, ScriptResponse}
 import esw.ocs.impl.messages.SequenceComponentMsg
 import esw.ocs.impl.messages.SequenceComponentMsg.{LoadScript, UnloadScript}
