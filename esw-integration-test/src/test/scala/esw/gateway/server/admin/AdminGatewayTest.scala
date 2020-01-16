@@ -163,8 +163,8 @@ class AdminGatewayTest extends EswTestKit(Gateway) with GatewayCodecs {
       Thread.sleep(100)
 
       val groupByAfterFilter       = logBuffer.groupBy(json => json.getString("@componentName"))
-      val laserCompLogsAfterFilter = groupByAfterFilter(laserConnection.prefix.componentName)
-      val galilCompLogsAfterFilter = groupByAfterFilter(galilConnection.prefix.componentName)
+      val laserCompLogsAfterFilter = groupByAfterFilter(laserConnection.prefix.componentName.toLowerCase)
+      val galilCompLogsAfterFilter = groupByAfterFilter(galilConnection.prefix.componentName.toLowerCase)
 
       laserCompLogsAfterFilter.exists(log => log.getString("@severity").toLowerCase.equalsIgnoreCase("error")) shouldBe true
       laserCompLogsAfterFilter.foreach { log =>
