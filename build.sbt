@@ -216,9 +216,6 @@ lazy val docs = project
     paradoxRoots := List(
       "index.html",
       "sequencer/scripts/dsl/error-handling.html"
-    ),
-    paradoxProperties in Paradox ++= Map(
-      "extref.csw.base_url" -> s"https://tmtsoftware.github.io/csw/${Settings.cswVersion}/api/scala/%s"
     )
   )
 
