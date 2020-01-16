@@ -98,10 +98,14 @@ Kotlin
 : @@snip [HandlersExample.kts](../../../../../../examples/src/main/kotlin/esw/ocs/scripts/examples/paradox/HandlersExample.kts) { #operationsMode }
 
 
-## errorHandlers
+## Error Handlers
 
-### Error while executing script
-Script execution breaks and goes into error handler by following ways:
+### Handling global errors
+
+Script DSL provides `onGlobalError` handler where script writer can write logic like cleaning up of resources. This will be executed
+before terminating sequence with failure.
+
+Script execution can fail and go in error handler by following ways:
 
 1. Handlers fail with exception.
 2. Command Service and Sequencer Command Service APIs return negative `SubmitResponse` which is by default considered as error.
@@ -112,4 +116,18 @@ and sequence is terminated with failure.
 
 Kotlin
 
-: @@snip [HandlersExample.kts](../../../../../../examples/src/main/kotlin/esw/ocs/scripts/examples/paradox/HandlersExample.kts) { #onGoOffline }
+: @@snip [HandlersExample.kts](../../../../../../examples/src/main/kotlin/esw/ocs/scripts/examples/paradox/HandlersExample.kts) { #onGlobalError }
+
+### Handling errors at command level
+
+If script writer wants to handle errors at command level, `onError` construct can be used. In this case, `onError` is called first, followed by `onGlobalError`
+handler. This will also result in terminating sequence with failure. Following example shows command level error handler along with global
+error handler. `onError` construct is available to handle failure of `onSetup` and `onObserve` command handler. Following example shows submit
+to assembly return negative `SubmitResponse` triggers error handling mechanism. 
+
+Kotlin
+:   @@snip [CommandServiceDslExample.kts](../../../../../../examples/src/main/kotlin/esw/ocs/scripts/examples/paradox/CommandServiceDslExample.kts) { #submit-component-on-error }
+
+If you don't want to fail sequence in case of Command Service APIs while interacting with downstream Assembly/HCD (`submit`, `query` etc.)
+or Sequencer Command Service APIs while interacting with downstream Sequencer (`submit`, `query` etc.) then **resumeOnError** flag can be used. For details of
+**resumeOnError**, please refer @ref:[Error handling](./services/command-service.md#error-handling) 

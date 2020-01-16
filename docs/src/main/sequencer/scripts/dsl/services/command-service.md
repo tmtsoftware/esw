@@ -24,8 +24,8 @@ send commands to Assembly or lifecycle methods e.g. goOnline, goOffline, lock HC
 like submitAndWait, queryFinal etc.
 
 This DSL takes following parameters:
-* `prefix` - Prefix of assembly
-* `defaultTimeout` - if DSL like submitAndWait, queryFinal etc does not explicitly provide timeout then this Default timeout is used.
+* `prefix`: - Prefix of assembly
+* `defaultTimeout`: - if DSL like submitAndWait, queryFinal etc does not explicitly provide timeout then this Default timeout is used.
 
 Kotlin
 :   @@snip [CommandServiceDslExample.kts](../../../../../../../examples/src/main/kotlin/esw/ocs/scripts/examples/paradox/CommandServiceDslExample.kts) { #hcd }
@@ -94,8 +94,8 @@ Kotlin
 @@@ note
 submit, submitAndWait, query and queryFinal always return positive response. In case of negative response (considered as error by default), 
 script execution flow breaks, error handling mechanism kicks in and sequence is terminated with failure. **resumeOnError**
-allows to change this default behaviour and custom logic in script can decide flow. For details of error handling in script,
-please refer @ref:[Error handling in script](../error-handling.md)
+allows to change this default behaviour and custom logic in script can decide flow. For general guidelines of error handling in script,
+please refer @ref:[Error handling in script](../handlers.md#error-handlers)
 @@@
 
 ### SubscribeCurrentState
