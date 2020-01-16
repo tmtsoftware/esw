@@ -61,4 +61,18 @@ Kotlin
 
 ## Operations Mode Handler
 
-## exceptionHandlers
+## errorHandlers
+
+### Error while executing script
+Script execution breaks and goes into error handler by following ways:
+
+1. Handlers fail with exception.
+2. Command Service and Sequencer Command Service APIs return negative `SubmitResponse` which is by default considered as error.
+
+In both of above cases, error cause is logged by a framework and `onGlobalError` handler written in script is called. If `onGlobalError`
+handler is not provided by script then only logging of error cause is done. After calling global error handler, script execution flow breaks
+and sequence is terminated with failure.
+
+Kotlin
+
+: @@snip [HandlersExample.kts](../../../../../../examples/src/main/kotlin/esw/ocs/scripts/examples/paradox/HandlersExample.kts) { #onGoOffline }
