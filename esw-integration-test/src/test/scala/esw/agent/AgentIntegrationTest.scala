@@ -5,9 +5,10 @@ import csw.location.api.codec.LocationServiceCodecs
 import csw.location.models.ComponentId
 import csw.location.models.ComponentType.SequenceComponent
 import csw.prefix.models.Prefix
-import esw.agent.api.Response.{Failed, Ok}
+import esw.agent.api.{Failed, Spawned}
 import esw.agent.client.AgentClient
 import esw.ocs.testkit.EswTestKit
+import esw.agent.api.Killed._
 import esw.ocs.testkit.Service.MachineAgent
 import org.scalatest.BeforeAndAfterAll
 
@@ -24,21 +25,21 @@ class AgentIntegrationTest extends EswTestKit(MachineAgent) with BeforeAndAfterA
       agentLocation should not be empty
     }
 
-    "return OK and spawn a new sequence component for a SpawnSequenceComponent message | ESW-237" in {
+    "return Spawned and spawn a new sequence component for a SpawnSequenceComponent message | ESW-237" in {
       val agentClient   = Await.result(AgentClient.make(agentPrefix, locationService), 7.seconds)
       val seqCompPrefix = Prefix(s"esw.test_${Random.nextInt.abs}")
       val response      = Await.result(agentClient.spawnSequenceComponent(seqCompPrefix), askTimeout.duration)
-      response should ===(Ok)
+      response should ===(Spawned)
     }
 
-    "return Ok and kill a running component for a KillComponent message | ESW-237" in {
+    "return killedGracefully and kill a registered component for a KillComponent message | ESW-237" in {
       val agentClient   = Await.result(AgentClient.make(agentPrefix, locationService), 7.seconds)
       val seqCompPrefix = Prefix(s"esw.test_${Random.nextInt.abs}")
       val spawnResponse = Await.result(agentClient.spawnSequenceComponent(seqCompPrefix), askTimeout.duration)
-      spawnResponse should ===(Ok)
+      spawnResponse should ===(Spawned)
       val killResponse =
         Await.result(agentClient.killComponent(ComponentId(seqCompPrefix, SequenceComponent)), askTimeout.duration)
-      killResponse should ===(Ok)
+      killResponse should ===(killedGracefully)
     }
 
     "return Failed('Aborted') to original sender when someone kills a process while it is spawning | ESW-237" in {
@@ -47,7 +48,7 @@ class AgentIntegrationTest extends EswTestKit(MachineAgent) with BeforeAndAfterA
       val spawnResponseF = agentClient.spawnSequenceComponent(seqCompPrefix)
       val killResponse =
         Await.result(agentClient.killComponent(ComponentId(seqCompPrefix, SequenceComponent)), askTimeout.duration)
-      killResponse should ===(Ok)
+      killResponse should ===(killedGracefully)
       Await.result(spawnResponseF, askTimeout.duration) should ===(Failed("Aborted"))
     }
   }

@@ -10,9 +10,8 @@ import csw.location.models.ComponentType.Machine
 import csw.location.models.Connection.AkkaConnection
 import csw.location.models.{AkkaLocation, ComponentId}
 import csw.prefix.models.Prefix
-import esw.agent.api.AgentCommand
 import esw.agent.api.AgentCommand.SpawnCommand.SpawnSequenceComponent
-import esw.agent.api.Response.Ok
+import esw.agent.api.{AgentCommand, Spawned}
 import org.mockito.Mockito.when
 import org.scalatest.{BeforeAndAfterAll, Matchers, WordSpecLike}
 import org.scalatestplus.mockito.MockitoSugar
@@ -68,13 +67,13 @@ class AgentClientTest extends ScalaTestWithActorTestKit with WordSpecLike with M
       implicit val sch: Scheduler = system.scheduler
       val agentClient             = new AgentClient(agentRef)
       val prefix                  = Prefix("esw.test2")
-      agentClient.spawnSequenceComponent(prefix).futureValue should ===(Ok)
+      agentClient.spawnSequenceComponent(prefix).futureValue should ===(Spawned)
     }
   }
 
   private def stubAgent: Behaviors.Receive[AgentCommand] = Behaviors.receiveMessagePartial[AgentCommand] {
     case SpawnSequenceComponent(replyTo, _) =>
-      replyTo ! Ok
+      replyTo ! Spawned
       Behaviors.same
   }
 }

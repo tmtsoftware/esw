@@ -13,21 +13,21 @@ sealed trait AgentCommand extends AgentAkkaSerializable
 object AgentCommand {
   sealed trait SpawnCommand extends AgentCommand {
     def commandStrings(binariesPath: Path): List[String]
-    val replyTo: ActorRef[Response]
+    val replyTo: ActorRef[SpawnResponse]
     val componentId: ComponentId
     val connectionType: ConnectionType
   }
 
   private[agent] case class Finished(componentId: ComponentId) extends AgentCommand
 
-  case class KillComponent(replyTo: ActorRef[Response], componentId: ComponentId) extends AgentCommand
+  case class KillComponent(replyTo: ActorRef[KillResponse], componentId: ComponentId) extends AgentCommand
 
   object SpawnCommand {
 
-    def unapply(cmd: SpawnCommand): Option[(ActorRef[Response], ComponentId)] =
+    def unapply(cmd: SpawnCommand): Option[(ActorRef[SpawnResponse], ComponentId)] =
       Some((cmd.replyTo, cmd.componentId))
 
-    case class SpawnSequenceComponent(replyTo: ActorRef[Response], prefix: Prefix) extends SpawnCommand {
+    case class SpawnSequenceComponent(replyTo: ActorRef[SpawnResponse], prefix: Prefix) extends SpawnCommand {
       private val binaryName = "esw-ocs-app"
 
       override val componentId: ComponentId = ComponentId(prefix, SequenceComponent)

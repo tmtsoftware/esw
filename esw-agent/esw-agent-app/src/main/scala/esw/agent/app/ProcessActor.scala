@@ -6,8 +6,8 @@ import csw.location.api.scaladsl.LocationService
 import csw.location.models._
 import csw.logging.api.scaladsl.Logger
 import esw.agent.api.AgentCommand.SpawnCommand
-import esw.agent.api.Response
-import esw.agent.api.Response.{Failed, Ok}
+import esw.agent.api.Killed._
+import esw.agent.api.{Failed, KillResponse, Spawned}
 import esw.agent.app.ProcessActor._
 import esw.agent.app.utils.ProcessExecutor
 
@@ -55,7 +55,7 @@ class ProcessActor[T <: Location](
       import ctx.executionContext
       Behaviors.receiveMessagePartial[ProcessActorMessage] {
         case AlreadyRegistered =>
-          val errorMessage = "can not spawn component when it is already registered"
+          val errorMessage = "can not spawn component when it is already registered in location service"
           warn(errorMessage, Map("prefix" -> prefix))
           replyTo ! Failed(errorMessage)
           Behaviors.stopped
@@ -63,19 +63,19 @@ class ProcessActor[T <: Location](
         case RunCommand =>
           debug(s"spawning sequence component", map = Map("prefix" -> prefix))
           processExecutor.runCommand(command.commandStrings(agentSettings.binariesPath), prefix) match {
-            case Right(processHandle) =>
-              processHandle.onExit().asScala.onComplete {
+            case Right(process) =>
+              process.onExit().asScala.onComplete {
                 case Failure(exception) =>
-                  error("error occurred while running command", Map("pid" -> processHandle.pid, "prefix" -> prefix), exception)
-                  ctx.self ! ProcessExited(-1)
-                case Success(processHandle) =>
-                  ctx.self ! ProcessExited(processHandle.pid())
+                  error("error occurred while running command", Map("pid" -> process.pid, "prefix" -> prefix), exception)
+                  ctx.self ! ProcessExited(process.exitValue())
+                case Success(process) =>
+                  ctx.self ! ProcessExited(process.exitValue())
               }
               ctx.pipeToSelf(isComponentRegistered()) {
                 case Success(true) => RegistrationSuccess
                 case _             => RegistrationFailed
               }
-              waitingForComponentRegistration(processHandle)
+              waitingForComponentRegistration(process)
             case Left(err) =>
               replyTo ! Failed(err)
               Behaviors.stopped
@@ -89,73 +89,75 @@ class ProcessActor[T <: Location](
 
         case Die(dieRef) =>
           warn("Killing process actor via Die message. Process was not started yet", Map("prefix" -> prefix))
-          dieRef ! Ok
+          dieRef ! killedGracefully
           replyTo ! aborted
           Behaviors.stopped
       }
     })
 
-  def waitingForComponentRegistration(processHandle: ProcessHandle): Behavior[ProcessActorMessage] =
+  def waitingForComponentRegistration(process: Process): Behavior[ProcessActorMessage] =
     Behaviors.setup[ProcessActorMessage](ctx => {
       Behaviors.receiveMessagePartial[ProcessActorMessage] {
         case RegistrationSuccess =>
-          debug("spawned process is registered with location service", Map("pid" -> processHandle.pid, "prefix" -> prefix))
-          replyTo ! Ok
-          registered(processHandle)
+          debug(
+            "spawned process is successfully registered with location service",
+            Map("pid" -> process.pid, "prefix" -> prefix)
+          )
+          replyTo ! Spawned
+          registered(process)
 
         case RegistrationFailed =>
           val errorMessage = "could not get registration confirmation from spawned process within given time"
-          error(errorMessage, Map("pid" -> processHandle.pid, "prefix" -> prefix))
+          error(errorMessage, Map("pid" -> process.pid, "prefix" -> prefix))
           replyTo ! Failed(errorMessage)
           ctx.self ! StopGracefully
-          stopping(processHandle, None)
+          stopping(process, Set.empty)
 
         case ProcessExited(exitCode) =>
           val errorMessage = "process died before registration confirmation"
           replyTo ! Failed(errorMessage)
-          error(errorMessage, Map("pid" -> processHandle.pid, "prefix" -> prefix, "exitCode" -> exitCode))
+          error(errorMessage, Map("pid" -> process.pid, "prefix" -> prefix, "exitCode" -> exitCode))
           Behaviors.stopped
 
         case Die(dieRef) =>
-          warn("Killing process via Die message", Map("pid" -> processHandle.pid, "prefix" -> prefix))
+          warn("Killing process via Die message", Map("pid" -> process.pid, "prefix" -> prefix))
           replyTo ! aborted
           ctx.self ! StopGracefully
-          stopping(processHandle, Some(dieRef))
+          stopping(process, Set(dieRef))
       }
     })
 
-  def registered(processHandle: ProcessHandle): Behavior[ProcessActorMessage] =
+  def registered(process: Process): Behavior[ProcessActorMessage] =
     Behaviors.setup { ctx =>
       Behaviors.receiveMessagePartial[ProcessActorMessage] {
         case ProcessExited(exitCode) =>
-          val message                                         = "error occurred while running command"
+          val message                                         = "process exited"
           val logFunction: (String, Map[String, Any]) => Unit = if (exitCode == 0) info(_, _) else warn(_, _)
-          logFunction(message, Map("pid" -> processHandle.pid, "prefix" -> prefix, "exitCode" -> exitCode))
+          logFunction(message, Map("pid" -> process.pid, "prefix" -> prefix, "exitCode" -> exitCode))
           Behaviors.stopped
 
         case Die(dieRef) =>
-          warn("Killing process via Die message", Map("pid" -> processHandle.pid, "prefix" -> prefix))
+          warn("attempting to kill process gracefully", Map("pid" -> process.pid, "prefix" -> prefix))
           ctx.self ! StopGracefully
-          stopping(processHandle, Some(dieRef))
+          stopping(process, Set(dieRef))
       }
     }
 
-  def stopping(processHandle: ProcessHandle, subscriber: Option[ActorRef[Ok.type]]): Behavior[ProcessActorMessage] =
+  def stopping(process: Process, deathSubscribers: Set[ActorRef[KillResponse]]): Behavior[ProcessActorMessage] =
     Behaviors.withTimers { timeScheduler =>
       Behaviors.receiveMessagePartial[ProcessActorMessage] {
         case Die(dieRef) =>
-          dieRef ! Ok
-          Behaviors.same
-        case ProcessExited(_) =>
-          subscriber.foreach(_ ! Ok)
+          stopping(process, deathSubscribers + dieRef)
+        case ProcessExited(exitCode) =>
+          deathSubscribers.foreach(_ ! (if (exitCode == 0 || exitCode == 143) killedGracefully else killedForcefully))
           Behaviors.stopped
         case StopGracefully =>
-          processHandle.destroy()
+          process.destroy()
           timeScheduler.startSingleTimer(StopForcefully, gracefulTimeout)
           Behaviors.same
         case StopForcefully =>
-          processHandle.destroyForcibly()
-          subscriber.foreach(_ ! Ok)
+          process.destroyForcibly()
+          deathSubscribers.foreach(_ ! killedForcefully)
           Behaviors.stopped
       }
     }
@@ -164,7 +166,7 @@ class ProcessActor[T <: Location](
 object ProcessActor {
   sealed trait ProcessActorMessage
   case object SpawnComponent                                    extends ProcessActorMessage
-  case class Die(replyTo: ActorRef[Response])                   extends ProcessActorMessage
+  case class Die(replyTo: ActorRef[KillResponse])               extends ProcessActorMessage
   private case object AlreadyRegistered                         extends ProcessActorMessage
   private case object RunCommand                                extends ProcessActorMessage
   private case object RegistrationSuccess                       extends ProcessActorMessage

@@ -11,7 +11,7 @@ import csw.location.models.Connection.AkkaConnection
 import csw.prefix.models.Prefix
 import esw.agent.api.AgentCommand.KillComponent
 import esw.agent.api.AgentCommand.SpawnCommand.SpawnSequenceComponent
-import esw.agent.api.{AgentCommand, Response}
+import esw.agent.api.{AgentCommand, KillResponse, SpawnResponse}
 
 import scala.concurrent.Future
 import scala.concurrent.duration.DurationLong
@@ -19,10 +19,10 @@ import scala.concurrent.duration.DurationLong
 class AgentClient private[agent] (agentRef: ActorRef[AgentCommand])(implicit scheduler: Scheduler) {
   implicit private val timeout: Timeout = Timeout(10.seconds)
 
-  def spawnSequenceComponent(prefix: Prefix): Future[Response] =
+  def spawnSequenceComponent(prefix: Prefix): Future[SpawnResponse] =
     agentRef ? (SpawnSequenceComponent(_, prefix))
 
-  def killComponent(componentId: ComponentId): Future[Response] =
+  def killComponent(componentId: ComponentId): Future[KillResponse] =
     agentRef ? (KillComponent(_, componentId))
 }
 object AgentClient {

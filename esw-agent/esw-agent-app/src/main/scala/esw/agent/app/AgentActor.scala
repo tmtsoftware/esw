@@ -6,8 +6,7 @@ import csw.location.api.scaladsl.LocationService
 import csw.location.models.ComponentId
 import csw.logging.api.scaladsl.Logger
 import esw.agent.api.AgentCommand._
-import esw.agent.api.Response.Failed
-import esw.agent.api.{AgentCommand, Response}
+import esw.agent.api.{AgentCommand, Failed}
 import esw.agent.app.AgentActor.AgentState
 import esw.agent.app.ProcessActor.{ProcessActorMessage, SpawnComponent}
 import esw.agent.app.utils.ProcessExecutor
@@ -27,7 +26,7 @@ class AgentActor(
       case SpawnCommand(replyTo, componentId) if state.components.contains(componentId) =>
         val message = "given component is already in process"
         warn(message, Map("prefix" -> componentId.prefix))
-        replyTo ! Response.Failed(message)
+        replyTo ! Failed(message)
         Behaviors.same
       //happy path
       case command: SpawnCommand =>

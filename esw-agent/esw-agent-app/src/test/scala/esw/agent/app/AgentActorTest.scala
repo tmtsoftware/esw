@@ -11,9 +11,10 @@ import csw.location.models.Connection.AkkaConnection
 import csw.location.models.{AkkaLocation, ComponentId}
 import csw.logging.api.scaladsl.Logger
 import csw.prefix.models.Prefix
+import esw.agent.api.AgentCommand.KillComponent
 import esw.agent.api.AgentCommand.SpawnCommand.SpawnSequenceComponent
-import esw.agent.api.Response
-import esw.agent.api.Response.{Failed, Ok}
+import esw.agent.api.Killed._
+import esw.agent.api._
 import esw.agent.app.AgentActor.AgentState
 import esw.agent.app.utils.ProcessExecutor
 import org.mockito.ArgumentMatchers.{any, eq => argEq}
@@ -24,15 +25,16 @@ import org.scalatest.{BeforeAndAfterEach, WordSpecLike}
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.duration.{DurationLong, FiniteDuration}
 import scala.concurrent.{Future, Promise}
+import scala.util.Random
 
 class AgentActorTest extends ScalaTestWithActorTestKit with WordSpecLike with MockitoSugar with BeforeAndAfterEach {
 
   private val locationService = mock[LocationService]
   private val processExecutor = mock[ProcessExecutor]
-  private val processHandle   = mock[ProcessHandle]
+  private val process         = mock[Process]
   private val logger          = mock[Logger]
 
-  private val agentSettings         = AgentSettings("/tmp", 15.seconds, 2.seconds)
+  private val agentSettings         = AgentSettings("/tmp", 15.seconds, 3.seconds)
   implicit val scheduler: Scheduler = system.scheduler
 
   private val prefix                        = Prefix("tcs.tcs_darknight")
@@ -42,34 +44,35 @@ class AgentActorTest extends ScalaTestWithActorTestKit with WordSpecLike with Mo
 
   override def beforeEach(): Unit = {
     super.beforeEach()
-    reset(locationService, processExecutor, processHandle, logger)
+    reset(locationService, processExecutor, process, logger)
   }
 
-  private def mockSuccessfulProcessHandle(dieAfter: FiniteDuration = 5.seconds) = {
-    when(processHandle.pid()).thenReturn(1234)
-    val future = new CompletableFuture[ProcessHandle]()
-    scheduler.scheduleOnce(dieAfter, () => future.complete(processHandle))
-    when(processHandle.onExit()).thenReturn(future)
+  private def mockSuccessfulProcess(dieAfter: FiniteDuration = 2.seconds, exitCode: Int = 0) = {
+    when(process.pid()).thenReturn(Random.nextInt(1000).abs)
+    when(process.exitValue()).thenReturn(exitCode)
+    val future = new CompletableFuture[Process]()
+    scheduler.scheduleOnce(dieAfter, () => future.complete(process))
+    when(process.onExit()).thenReturn(future)
   }
 
   "SpawnSequenceComponent" must {
 
-    "reply 'Ok' and spawn a new sequence component process | ESW-237" in {
+    "reply 'Spawned' and spawn a new sequence component process | ESW-237" in {
       val agentActorRef = spawnAgentActor()
-      val probe         = TestProbe[Response]()
+      val probe         = TestProbe[SpawnResponse]()
 
       when(locationService.resolve(argEq(seqCompConn), any[FiniteDuration]))
         .thenReturn(Future.successful(None), seqCompLoc)
-      mockSuccessfulProcessHandle()
-      when(processExecutor.runCommand(any[List[String]], any[Prefix])).thenReturn(Right(processHandle))
+      mockSuccessfulProcess()
+      when(processExecutor.runCommand(any[List[String]], any[Prefix])).thenReturn(Right(process))
 
       agentActorRef ! SpawnSequenceComponent(probe.ref, prefix)
-      probe.expectMessage(Ok)
+      probe.expectMessage(Spawned)
     }
 
     "reply 'Failed' and not spawn new process when call to location service fails" in {
       val agentActorRef = spawnAgentActor()
-      val probe         = TestProbe[Response]()
+      val probe         = TestProbe[SpawnResponse]()
 
       when(locationService.resolve(argEq(seqCompConn), any[FiniteDuration]))
         .thenReturn(Future.failed(new RuntimeException("call failed")))
@@ -80,37 +83,37 @@ class AgentActorTest extends ScalaTestWithActorTestKit with WordSpecLike with Mo
 
     "reply 'Failed' and not spawn new process when it is already registered with location service | ESW-237" in {
       val agentActorRef = spawnAgentActor()
-      val probe         = TestProbe[Response]()
+      val probe         = TestProbe[SpawnResponse]()
 
       when(locationService.resolve(argEq(seqCompConn), any[FiniteDuration]))
         .thenReturn(seqCompLoc)
 
       agentActorRef ! SpawnSequenceComponent(probe.ref, prefix)
-      probe.expectMessage(Failed("can not spawn component when it is already registered"))
+      probe.expectMessage(Failed("can not spawn component when it is already registered in location service"))
     }
 
     "reply 'Failed' and not spawn new process when it is already spawned on the agent | ESW-237" in {
       val agentActorRef = spawnAgentActor()
-      val probe1        = TestProbe[Response]()
-      val probe2        = TestProbe[Response]()
+      val probe1        = TestProbe[SpawnResponse]()
+      val probe2        = TestProbe[SpawnResponse]()
 
       when(locationService.resolve(argEq(seqCompConn), any[FiniteDuration]))
         .thenReturn(Future.successful(None), seqCompLoc)
 
-      mockSuccessfulProcessHandle()
+      mockSuccessfulProcess()
 
-      when(processExecutor.runCommand(any[List[String]], any[Prefix])).thenReturn(Right(processHandle))
+      when(processExecutor.runCommand(any[List[String]], any[Prefix])).thenReturn(Right(process))
 
       agentActorRef ! SpawnSequenceComponent(probe1.ref, prefix)
       agentActorRef ! SpawnSequenceComponent(probe2.ref, prefix)
 
-      probe1.expectMessage(Ok)
+      probe1.expectMessage(Spawned)
       probe2.expectMessage(Failed("given component is already in process"))
     }
 
     "reply 'Failed' when process fails to spawn | ESW-237" in {
       val agentActorRef = spawnAgentActor()
-      val probe         = TestProbe[Response]()
+      val probe         = TestProbe[SpawnResponse]()
 
       when(locationService.resolve(argEq(seqCompConn), any[FiniteDuration]))
         .thenReturn(Future.successful(None), seqCompLoc)
@@ -122,12 +125,12 @@ class AgentActorTest extends ScalaTestWithActorTestKit with WordSpecLike with Mo
 
     "reply 'Failed' and kill process, when the process is spawned but failed to register itself | ESW-237" in {
       val agentActorRef = spawnAgentActor()
-      val probe         = TestProbe[Response]()
+      val probe         = TestProbe[SpawnResponse]()
 
       when(locationService.resolve(argEq(seqCompConn), any[FiniteDuration]))
         .thenReturn(Future.successful(None))
-      mockSuccessfulProcessHandle()
-      when(processExecutor.runCommand(any[List[String]], any[Prefix])).thenReturn(Right(processHandle))
+      mockSuccessfulProcess()
+      when(processExecutor.runCommand(any[List[String]], any[Prefix])).thenReturn(Right(process))
 
       agentActorRef ! SpawnSequenceComponent(probe.ref, prefix)
       probe.expectMessage(Failed("could not get registration confirmation from spawned process within given time"))
@@ -135,46 +138,94 @@ class AgentActorTest extends ScalaTestWithActorTestKit with WordSpecLike with Mo
 
     "reply 'Failed' when the process is spawned but exits before registration | ESW-237" in {
       val agentActorRef = spawnAgentActor()
-      val probe         = TestProbe[Response]()
+      val probe         = TestProbe[SpawnResponse]()
 
       when(locationService.resolve(argEq(seqCompConn), any[FiniteDuration]))
         .thenReturn(delayedFuture(None, 6.seconds))
-      mockSuccessfulProcessHandle(1.seconds)
-      when(processExecutor.runCommand(any[List[String]], any[Prefix])).thenReturn(Right(processHandle))
+      mockSuccessfulProcess(1.seconds)
+      when(processExecutor.runCommand(any[List[String]], any[Prefix])).thenReturn(Right(process))
 
       agentActorRef ! SpawnSequenceComponent(probe.ref, prefix)
       probe.expectMessage(10.seconds, Failed("process died before registration confirmation"))
     }
 
     "reply 'Failed' when spawning is aborted by another message | ESW-237" in {
-      ???
+      val agentActorRef = spawnAgentActor()
+      val probe1        = TestProbe[SpawnResponse]()
+      val probe2        = TestProbe[KillResponse]()
+      when(locationService.resolve(argEq(seqCompConn), any[FiniteDuration]))
+        .thenReturn(Future.successful(None), delayedFuture(Some(seqCompLocation), 5.seconds))
+      agentActorRef ! SpawnSequenceComponent(probe1.ref, prefix)
+      agentActorRef ! KillComponent(probe2.ref, ComponentId(prefix, SequenceComponent))
+      probe1.expectMessage(Failed("Aborted"))
+      probe2.expectMessage(killedGracefully)
     }
   }
 
   "KillComponent" must {
 
-    "reply 'Ok' and kill the running component when component gracefully is registered | ESW-237" in {
+    "reply 'killedGracefully' after stopping a registered component gracefully | ESW-237" in {
+      val agentActorRef = spawnAgentActor()
+      val probe1        = TestProbe[SpawnResponse]()
+      val probe2        = TestProbe[KillResponse]()
+      when(locationService.resolve(argEq(seqCompConn), any[FiniteDuration]))
+        .thenReturn(Future.successful(None), seqCompLoc)
+      mockSuccessfulProcess(dieAfter = 2.seconds)
+      when(processExecutor.runCommand(any[List[String]], any[Prefix])).thenReturn(Right(process))
+
+      //start a component
+      agentActorRef ! SpawnSequenceComponent(probe1.ref, prefix)
+      //wait it it is registered
+      probe1.expectMessage(Spawned)
+
+      //stop the component
+      agentActorRef ! KillComponent(probe2.ref, ComponentId(prefix, SequenceComponent))
+      //ensure it is stopped
+      probe2.expectMessage(10.seconds, killedGracefully)
+    }
+
+    "reply 'killedForcefully' after stopping a registered component forcefully when it does not gracefully in given time | ESW-237" in {
+      val agentActorRef = spawnAgentActor(agentSettings.copy(durationToWaitForGracefulProcessTermination = 2.second))
+      val probe1        = TestProbe[SpawnResponse]()
+      val probe2        = TestProbe[KillResponse]()
+      when(locationService.resolve(argEq(seqCompConn), any[FiniteDuration]))
+        .thenReturn(Future.successful(None), seqCompLoc)
+      mockSuccessfulProcess(5.seconds)
+      when(processExecutor.runCommand(any[List[String]], any[Prefix])).thenReturn(Right(process))
+
+      //start a component
+      agentActorRef ! SpawnSequenceComponent(probe1.ref, prefix)
+      //wait it it is registered
+      probe1.expectMessage(Spawned)
+
+      //stop the component
+      agentActorRef ! KillComponent(probe2.ref, ComponentId(prefix, SequenceComponent))
+      //ensure it is stopped
+      probe2.expectMessage(killedForcefully)
+    }
+
+    "reply 'killedGracefully' after killing a running component when component is waiting registration confirmation | ESW-237" ignore {
       ???
     }
 
-    "reply 'Ok' and kill the running component forcefully if it does not gracefully in given time" in { ??? }
-
-    "reply 'Ok' and kill the running component when component is waiting registration confirmation | ESW-237" in {
+    "reply 'killedForcefully' after killing a running component when component is waiting registration confirmation | ESW-237" ignore {
       ???
     }
 
-    "reply 'Ok' and cancel spawning of an already scheduled component when registration is being checked | ESW-237" in {
+    "reply 'killedGracefully' and cancel spawning of an already scheduled component when registration is being checked | ESW-237" ignore {
       ???
     }
 
-    "reply 'Ok' and when process is already stopping" in { ??? }
+    "reply 'killedGracefully' after process termination, when process is already stopping by another message" ignore { ??? }
 
-    "reply 'Failed' when given component is not running on agent | ESW-237" in {
+    "reply 'killedForcefully' after process termination, when process is already stopping by another message" ignore { ??? }
+
+    "reply 'Failed' when given component is not running on agent | ESW-237" ignore {
       ???
     }
   }
 
-  private def spawnAgentActor() = {
+  private def spawnAgentActor(agentSettings: AgentSettings = agentSettings) = {
     spawn(new AgentActor(locationService, processExecutor, agentSettings, logger).behavior(AgentState.empty))
   }
 

@@ -2,7 +2,14 @@ package esw.agent.api
 
 sealed trait Response extends AgentAkkaSerializable
 
-object Response {
-  case object Ok                 extends Response
-  case class Failed(msg: String) extends Response
+sealed trait SpawnResponse extends Response
+sealed trait KillResponse  extends Response
+
+case object Spawned                    extends SpawnResponse
+case class Killed(forcefully: Boolean) extends KillResponse
+case class Failed(msg: String)         extends SpawnResponse with KillResponse
+
+object Killed {
+  val killedGracefully: Killed = Killed(false)
+  val killedForcefully: Killed = Killed(true)
 }
