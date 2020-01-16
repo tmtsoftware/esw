@@ -154,10 +154,10 @@ class AgentActorTest extends ScalaTestWithActorTestKit with WordSpecLike with Mo
       val probe1        = TestProbe[SpawnResponse]()
       val probe2        = TestProbe[KillResponse]()
       when(locationService.resolve(argEq(seqCompConn), any[FiniteDuration]))
-        .thenReturn(Future.successful(None), delayedFuture(Some(seqCompLocation), 5.seconds))
+        .thenReturn(Future.successful(None), delayedFuture(Some(seqCompLocation), 1.minute))
       agentActorRef ! SpawnSequenceComponent(probe1.ref, prefix)
       agentActorRef ! KillComponent(probe2.ref, ComponentId(prefix, SequenceComponent))
-      probe1.expectMessage(Failed("Aborted"))
+      probe1.expectMessage(10.seconds, Failed("Aborted"))
       probe2.expectMessage(killedGracefully)
     }
   }
@@ -204,16 +204,62 @@ class AgentActorTest extends ScalaTestWithActorTestKit with WordSpecLike with Mo
       probe2.expectMessage(killedForcefully)
     }
 
-    "reply 'killedGracefully' after killing a running component when component is waiting registration confirmation | ESW-276" ignore {
-      ???
+    "reply 'killedGracefully' after killing a running component when component is waiting registration confirmation | ESW-276" in {
+      val agentActorRef = spawnAgentActor()
+      val probe1        = TestProbe[SpawnResponse]()
+      val probe2        = TestProbe[KillResponse]()
+      when(locationService.resolve(argEq(seqCompConn), any[FiniteDuration]))
+        .thenReturn(Future.successful(None), delayedFuture(Some(seqCompLocation), 1.hour)) //this will actor remains in waiting state
+      mockSuccessfulProcess(dieAfter = 3.seconds)
+      when(processExecutor.runCommand(any[List[String]], any[Prefix])).thenReturn(Right(process))
+
+      //start a component
+      agentActorRef ! SpawnSequenceComponent(probe1.ref, prefix)
+      //it should not be registered
+      probe1.expectNoMessage(2.seconds)
+
+      //stop the component
+      agentActorRef ! KillComponent(probe2.ref, ComponentId(prefix, SequenceComponent))
+      //ensure it is stopped gracefully
+      probe2.expectMessage(10.seconds, killedGracefully)
     }
 
-    "reply 'killedForcefully' after killing a running component when component is waiting registration confirmation | ESW-276" ignore {
-      ???
+    "reply 'killedForcefully' after killing a running component when component is waiting registration confirmation | ESW-276" in {
+      val agentActorRef = spawnAgentActor()
+      val probe1        = TestProbe[SpawnResponse]()
+      val probe2        = TestProbe[KillResponse]()
+      when(locationService.resolve(argEq(seqCompConn), any[FiniteDuration]))
+        .thenReturn(Future.successful(None), delayedFuture(Some(seqCompLocation), 1.hour)) //this will actor remains in waiting state
+      mockSuccessfulProcess(dieAfter = 20.seconds)
+      when(processExecutor.runCommand(any[List[String]], any[Prefix])).thenReturn(Right(process))
+
+      //start a component
+      agentActorRef ! SpawnSequenceComponent(probe1.ref, prefix)
+      //it should not be registered
+      probe1.expectNoMessage(5.seconds)
+
+      //stop the component
+      agentActorRef ! KillComponent(probe2.ref, ComponentId(prefix, SequenceComponent))
+      //ensure it is stopped gracefully
+      probe2.expectMessage(10.seconds, killedForcefully)
     }
 
-    "reply 'killedGracefully' and cancel spawning of an already scheduled component when registration is being checked | ESW-276" ignore {
-      ???
+    "reply 'killedGracefully' and cancel spawning of an already scheduled component when registration is being checked | ESW-276" in {
+      val agentActorRef = spawnAgentActor()
+      val probe1        = TestProbe[SpawnResponse]()
+      val probe2        = TestProbe[KillResponse]()
+      when(locationService.resolve(argEq(seqCompConn), any[FiniteDuration]))
+        .thenReturn(delayedFuture(None, 1.hour)) //this will actor remains in checking state
+
+      //start a component
+      agentActorRef ! SpawnSequenceComponent(probe1.ref, prefix)
+      //it should not be registered
+      probe1.expectNoMessage(5.seconds)
+
+      //stop the component
+      agentActorRef ! KillComponent(probe2.ref, ComponentId(prefix, SequenceComponent))
+      //ensure it is stopped gracefully
+      probe2.expectMessage(10.seconds, killedGracefully)
     }
 
     "reply 'killedGracefully' after process termination, when process is already stopping by another message | ESW-276" ignore {
@@ -224,8 +270,15 @@ class AgentActorTest extends ScalaTestWithActorTestKit with WordSpecLike with Mo
       ???
     }
 
-    "reply 'Failed' when given component is not running on agent | ESW-276" ignore {
-      ???
+    "reply 'Failed' when given component is not running on agent | ESW-276" in {
+      val agentActorRef = spawnAgentActor()
+      val probe         = TestProbe[KillResponse]()
+
+      //try to stop the component
+      agentActorRef ! KillComponent(probe.ref, ComponentId(Prefix("ESW.invalid"), SequenceComponent))
+
+      //verify that response is Failure
+      probe.expectMessage(Failed("given component id is not running on this agent"))
     }
   }
 

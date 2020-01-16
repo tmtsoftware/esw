@@ -131,9 +131,8 @@ class ProcessActor[T <: Location](
     Behaviors.setup { ctx =>
       Behaviors.receiveMessagePartial[ProcessActorMessage] {
         case ProcessExited(exitCode) =>
-          val message                                         = "process exited"
-          val logFunction: (String, Map[String, Any]) => Unit = if (exitCode == 0) info(_, _) else warn(_, _)
-          logFunction(message, Map("pid" -> process.pid, "prefix" -> prefix, "exitCode" -> exitCode))
+          val message = "process exited"
+          info(message, Map("pid" -> process.pid, "prefix" -> prefix, "exitCode" -> exitCode))
           Behaviors.stopped
 
         case Die(dieRef) =>
