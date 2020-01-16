@@ -185,7 +185,7 @@ class SequencerBehavior(
 
   private def shutdown(data: SequencerData, replyTo: ActorRef[Ok.type]): Behavior[SequencerMsg] = {
 
-    // run both the futures in parallel and wait for both to complete
+    // run the futures in parallel and wait for all of them to complete
     // once all finished, send ShutdownComplete self message irrespective of any failures
     val f1 = locationService.unregister(AkkaConnection(componentId))
     val f2 = script.executeShutdown()

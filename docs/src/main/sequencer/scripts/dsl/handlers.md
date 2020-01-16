@@ -1,5 +1,9 @@
 # Script Handlers
 
+All the handlers which could be defined in various scopes are described below. 
+Note that, in all the below described handlers, error-handling for the block passed to handlers, needs to be taken care by the
+Script writers.
+
 ## Command Handlers
 
 ### onSetup
@@ -9,7 +13,7 @@ The handler takes two parameters:
 
 1. **command name** which is matched against the sequence command sent, if the command name matches, corresponding block provided
 is executed
-2. **block** of code which contains logic to act on the sequence command.
+2. **block** of code which contains logic to act on the Setup command.
 
 Kotlin
 : @@snip [HandlersExample.kts](../../../../../../examples/src/main/kotlin/esw/ocs/scripts/examples/paradox/HandlersExample.kts) { #onSetup }
@@ -24,7 +28,7 @@ The handler takes two parameters:
 
 1. **command name** which is matched against the sequence command sent, if the command name matches, corresponding block provided
 is executed
-2. **block** of code which contains logic to act on the sequence command.
+2. **block** of code which contains logic to act on the Observe command.
 
 Kotlin
 : @@snip [HandlersExample.kts](../../../../../../examples/src/main/kotlin/esw/ocs/scripts/examples/paradox/HandlersExample.kts) { #onObserve }
@@ -35,7 +39,7 @@ Kotlin
 ### onGoOnline
 
 On receiving the `goOnline` command, the onGoOnline handlers, if defined, will be called. Only if the handlers execute successfully,
-will the Sequencer become online. Hence, error handling for the block passed to onGoOnline needs to be taken care of by the script writer.
+will the sequencer become online. Hence, error handling for the block passed to onGoOnline needs to be taken care of.
 
 Kotlin
 : @@snip [HandlersExample.kts](../../../../../../examples/src/main/kotlin/esw/ocs/scripts/examples/paradox/HandlersExample.kts) { #onGoOnline }
@@ -44,22 +48,55 @@ Kotlin
 ### onGoOffline
 
 On receiving the `goOffline` command, the onGoOffline handlers, if defined, will be called. Only if the handlers execute successfully,
-will the Sequencer become offline. Hence, error handling for the block passed to onGoOffline needs to be taken care of by the script writer.
-Offline handlers could be written to clear the Sequencer state before going offline.
+will the sequencer become offline. Hence, error handling for the block passed to onGoOffline needs to be taken care of.
+Offline handlers could be written to clear the sequencer state before going offline.
 
 Kotlin
 : @@snip [HandlersExample.kts](../../../../../../examples/src/main/kotlin/esw/ocs/scripts/examples/paradox/HandlersExample.kts) { #onGoOffline }
 
 
 ## Abort Sequence Handler
+Abort handler could be used to perform any cleanup tasks that need to be done before the current
+sequence is aborted. Note that, even if the handlers fail, the sequence will be aborted.
+
+Kotlin
+: @@snip [HandlersExample.kts](../../../../../../examples/src/main/kotlin/esw/ocs/scripts/examples/paradox/HandlersExample.kts) { #abort }
+
 
 ## Stop Handler
+This handler is provided to clear/save the sequencer state before stopping.
+Note that, even if the handlers fail, the sequence will be stopped.
+
+Kotlin
+: @@snip [HandlersExample.kts](../../../../../../examples/src/main/kotlin/esw/ocs/scripts/examples/paradox/HandlersExample.kts) { #stop }
 
 ## Shutdown Handler
+This handler will be called just before the sequencer is shutdown.
+Note that, even if the handlers fail, the sequencer will be shutdown.
+
+Kotlin
+: @@snip [HandlersExample.kts](../../../../../../examples/src/main/kotlin/esw/ocs/scripts/examples/paradox/HandlersExample.kts) { #shutdown }
 
 ## Diagnostic Mode Handler
+This handler can be used to perform actions that need to be done when the sequencer goes in the diagnostic mode.
+The handler gets access to two parameters:
+
+* **startTime:** UTC time at which the diagnostic mode actions should take effect
+* **hint:** represents supported diagnostic data mode by the Sequencer
+
+Sequencer can choose to publish any diagnostic data in this handler based on the hint received, and/or send diagnostic command to downstream components.
+
+Kotlin
+: @@snip [HandlersExample.kts](../../../../../../examples/src/main/kotlin/esw/ocs/scripts/examples/paradox/HandlersExample.kts) { #diagnosticMode }
 
 ## Operations Mode Handler
+This handler can be used to perform actions that need to be done when the sequencer goes in the operations mode.
+Script writers can use this handler to stop all the publishing being done by the [diagnostic mode handler](#diagnostic-mode-handler),
+and/or send operations mode command to downstream components.
+
+Kotlin
+: @@snip [HandlersExample.kts](../../../../../../examples/src/main/kotlin/esw/ocs/scripts/examples/paradox/HandlersExample.kts) { #operationsMode }
+
 
 ## errorHandlers
 

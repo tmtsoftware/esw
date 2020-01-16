@@ -2,14 +2,19 @@
 
 package esw.ocs.scripts.examples.paradox
 
+import csw.params.events.SystemEvent
+import csw.time.scheduler.api.Cancellable
 import esw.ocs.dsl.core.script
 import esw.ocs.dsl.par
 import esw.ocs.dsl.params.invoke
-import esw.ocs.dsl.params.set
 import esw.ocs.dsl.params.stringKey
+import kotlin.time.milliseconds
 import kotlin.time.seconds
 
 script {
+
+    var diagnosticEventCancellable: Cancellable? = null
+    val assembly = Assembly("filter.wheel", 5.seconds)
 
     // #onSetup
     onSetup("command1") {
@@ -33,7 +38,6 @@ script {
     // #onGoOnline
     onGoOnline {
         // send command to downstream components
-        val assembly = Assembly("filter.wheel", 5.seconds)
         assembly.goOnline()
     }
     // #onGoOnline
@@ -41,10 +45,51 @@ script {
     // #onGoOffline
     onGoOffline {
         // send command to downstream components
-        val assembly = Assembly("filter.wheel", 5.seconds)
         assembly.goOffline()
     }
     // #onGoOffline
+
+    // #abort
+    onAbortSequence {
+        // cleanup steps to be done before aborting will go here
+    }
+    // #abort
+
+    // #stop
+    onStop {
+        // steps for clearing sequencer-state before stopping will go here
+    }
+    // #stop
+
+    // #shutdown
+    onShutdown {
+        // cleanup steps to be done before shutdown will go here
+    }
+    // #shutdown
+
+
+    // #diagnosticMode
+    onDiagnosticMode { startTime, hint ->
+        // start publishing diagnostic data on a supported hint (for e.g. engineering)
+        when (hint) {
+            "engineering" -> {
+                val diagnosticEvent: SystemEvent = SystemEvent("esw.esw_darknight", "diagnostic")
+                diagnosticEventCancellable = schedulePeriodically(startTime, 50.milliseconds) {
+                    publishEvent(diagnosticEvent)
+                }
+            }
+        }
+    }
+    // #diagnosticMode
+
+    // #operationsMode
+    onOperationsMode {
+        // cancel all publishing events done from diagnostic mode
+        diagnosticEventCancellable?.cancel()
+        // send operations command to downstream
+        assembly.operationsMode()
+    }
+    // #operationsMode
 
     // #onGlobalError
     // Scenario-1 handler fails
@@ -59,11 +104,11 @@ script {
     onSetup("command-2") { command ->
         val assembly = Assembly("filter.wheel", 5.seconds)
 
-        //Submit commnad to assembly return negative response. (error by default) onGlobalError handler is called.
+        //Submit command to assembly return negative response. (error by default) onGlobalError handler is called.
         assembly.submit(command)
     }
 
-    onGlobalError {error ->
+    onGlobalError { error ->
         val errorReason = stringKey("reason").set(error.reason)
         val observationEndEvent = ObserveEvent("esw.observation.end", "error", errorReason)
         publishEvent(observationEndEvent)
