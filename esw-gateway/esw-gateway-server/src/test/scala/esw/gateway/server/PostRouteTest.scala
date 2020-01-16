@@ -29,8 +29,7 @@ import esw.gateway.impl._
 import esw.gateway.server.handlers.PostHandlerImpl
 import esw.http.core.BaseTestSuite
 import esw.ocs.api.protocol.{Ok, OkOrUnhandledResponse, SequencerPostRequest}
-import msocket.api.Encoding
-import msocket.api.Encoding.JsonText
+import msocket.api.ContentType
 import msocket.api.models.{GenericError, ServiceError}
 import msocket.impl.post.{ClientHttpCodecs, PostRouteFactory}
 import org.mockito.ArgumentMatchers.{any, eq => argsEq}
@@ -41,7 +40,7 @@ import scala.concurrent.Future
 
 class PostRouteTest extends BaseTestSuite with ScalatestRouteTest with GatewayCodecs with ClientHttpCodecs {
 
-  override def encoding: Encoding[_] = JsonText
+  override def clientContentType: ContentType = ContentType.Json
 
   private val cswCtxMocks = new CswWiringMocks()
   import cswCtxMocks._

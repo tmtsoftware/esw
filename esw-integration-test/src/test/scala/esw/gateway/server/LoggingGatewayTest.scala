@@ -57,7 +57,7 @@ class LoggingGatewayTest extends EswTestKit(Gateway) with GatewayCodecs {
       val log: JsObject = logBuffer.head
       log.getString("@componentName") shouldBe componentName
       log.getString("@subsystem") shouldBe ESW.name
-      log.getString("@prefix") shouldBe prefix.value
+      log.getString("@prefix") shouldBe prefix.toString.toLowerCase
       log.getString("@severity") shouldBe "FATAL"
       log.getString("message") shouldBe "test-message"
     }

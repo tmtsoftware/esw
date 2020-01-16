@@ -31,7 +31,7 @@ import esw.ocs.impl.internal._
 import esw.ocs.impl.messages.SequencerMessages.Shutdown
 import esw.ocs.impl.syntax.FutureSyntax.FutureOps
 import esw.ocs.impl.{SequencerActorProxy, SequencerActorProxyFactory}
-import msocket.api.Encoding
+import msocket.api.ContentType
 import msocket.impl.RouteFactory
 import msocket.impl.post.PostRouteFactory
 import msocket.impl.ws.WebsocketRouteFactory
@@ -58,7 +58,7 @@ private[ocs] class SequencerWiring(
   implicit lazy val actorRuntime: ActorRuntime = cswWiring.actorRuntime
 
   lazy val sequencerRef: ActorRef[SequencerMsg] = (actorSystem ? { x: ActorRef[ActorRef[SequencerMsg]] =>
-    Spawn(sequencerBehavior.setup, prefix.value, Props.empty, x)
+    Spawn(sequencerBehavior.setup, prefix.toString.toLowerCase, Props.empty, x)
   }).block
 
   //Pass lambda to break circular dependency shown below.
@@ -90,9 +90,9 @@ private[ocs] class SequencerWiring(
     config
   )
 
-  private lazy val sequencerApi                              = new SequencerActorProxy(sequencerRef)
-  private lazy val postHandler                               = new SequencerPostHandler(sequencerApi)
-  private def websocketHandlerFactory(encoding: Encoding[_]) = new SequencerWebsocketHandler(sequencerApi, encoding)
+  private lazy val sequencerApi                                 = new SequencerActorProxy(sequencerRef)
+  private lazy val postHandler                                  = new SequencerPostHandler(sequencerApi)
+  private def websocketHandlerFactory(contentType: ContentType) = new SequencerWebsocketHandler(sequencerApi, contentType)
 
   lazy val routes: Route = RouteFactory.combine(
     new PostRouteFactory("post-endpoint", postHandler),

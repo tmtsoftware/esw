@@ -18,12 +18,12 @@ class ProcessExecutor(output: ProcessOutput, agentSettings: AgentSettings, logge
       val processBuilder = new ProcessBuilder(command: _*)
       debug(s"starting command", Map("command" -> processBuilder.command()))
       val process = processBuilder.start()
-      output.attachToProcess(process, prefix.value)
+      output.attachToProcess(process, prefix.toString.toLowerCase)
       debug(s"new process spawned", Map("pid" -> process.pid()))
       process.pid()
     }.toEither.left.map {
       case NonFatal(err) =>
-        error("command failed to run", map = Map("command" -> command, "prefix" -> prefix.value), ex = err)
+        error("command failed to run", map = Map("command" -> command, "prefix" -> prefix.toString.toLowerCase), ex = err)
         Failed(err.getMessage)
     }
 

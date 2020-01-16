@@ -28,7 +28,7 @@ import esw.ocs.app.wiring.{SequenceComponentWiring, SequencerWiring}
 import esw.ocs.impl.messages.SequenceComponentMsg
 import esw.ocs.impl.{SequenceComponentImpl, SequencerActorProxy, SequencerApiFactory}
 import esw.ocs.testkit.Service.{Gateway, MachineAgent}
-import msocket.api.Encoding.JsonText
+import msocket.api.ContentType
 import msocket.impl.post.HttpPostTransport
 import msocket.impl.ws.WebsocketTransport
 
@@ -57,10 +57,10 @@ abstract class EswTestKit(services: Service*)
   var agentLocation: Option[AkkaLocation]                      = None
 
   lazy val gatewayPostClient =
-    new HttpPostTransport[PostRequest](s"http://${Networks().hostname}:$gatewayPort/post-endpoint", JsonText, () => None)
+    new HttpPostTransport[PostRequest](s"http://${Networks().hostname}:$gatewayPort/post-endpoint", ContentType.Json, () => None)
 
   lazy val gatewayWsClient =
-    new WebsocketTransport[WebsocketRequest](s"ws://${Networks().hostname}:$gatewayPort/websocket-endpoint", JsonText)
+    new WebsocketTransport[WebsocketRequest](s"ws://${Networks().hostname}:$gatewayPort/websocket-endpoint", ContentType.Json)
 
   private val sequenceComponentLocations: mutable.Buffer[AkkaLocation] = mutable.Buffer.empty
 

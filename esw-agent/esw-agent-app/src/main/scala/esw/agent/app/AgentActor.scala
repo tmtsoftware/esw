@@ -31,7 +31,7 @@ class AgentActor(
       //happy path
       case command: SpawnCommand =>
         val processActor    = new ProcessActor(locationService, processExecutor, agentSettings, logger, command)
-        val processActorRef = ctx.spawn(processActor.init, command.componentId.prefix.value)
+        val processActorRef = ctx.spawn(processActor.init, command.componentId.prefix.toString.toLowerCase)
         ctx.watchWith(processActorRef, Finished(command.componentId))
         processActorRef ! SpawnComponent
         behavior(state.add(command.componentId, processActorRef))

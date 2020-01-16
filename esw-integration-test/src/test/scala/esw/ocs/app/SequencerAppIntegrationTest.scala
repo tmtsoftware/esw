@@ -77,7 +77,7 @@ class SequencerAppIntegrationTest extends EswTestKit {
       val sequenceComponentLocation = locationService.list(ComponentType.SequenceComponent).futureValue.head
 
       //assert that componentName and prefix contain subsystem provided
-      sequenceComponentLocation.prefix.value.contains("esw.esw_") shouldEqual true
+      sequenceComponentLocation.prefix.toString.toLowerCase.contains("esw.esw_") shouldEqual true
     }
 
     "start sequence component concurrently and register with automatically generated random uniqueIDs if prefix is not provided| ESW-144, CSW-80" in {
@@ -98,7 +98,7 @@ class SequencerAppIntegrationTest extends EswTestKit {
       sequenceComponentLocations.foreach { location =>
         {
           //assert that componentName and prefix contain subsystem provided
-          location.prefix.value.contains("esw.esw_") shouldEqual true
+          location.prefix.toString.toLowerCase.contains("esw.esw_") shouldEqual true
         }
       }
     }
@@ -173,7 +173,7 @@ class SequencerAppIntegrationTest extends EswTestKit {
       val sequenceComponentLocation = locationService.list(ComponentType.SequenceComponent).futureValue.head
 
       //assert that componentName and prefix contain subsystem provided
-      sequenceComponentLocation.prefix.value.contains("esw.esw_") shouldEqual true
+      sequenceComponentLocation.prefix.toString.toLowerCase.contains("esw.esw_") shouldEqual true
 
       // verify that sequencer is started and able to process sequence command
       resolveSequencerLocation(Prefix(ESW, observingMode))
