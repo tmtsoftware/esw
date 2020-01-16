@@ -105,17 +105,17 @@ class LocationServiceUtilTest extends ScalaTestWithActorTestKit with BaseTestSui
     "return a location which matches a given component name and type | ESW-215" in {
       val testUri = new URI("test-uri")
       val tcsLocation =
-        AkkaLocation(AkkaConnection(ComponentId(Prefix(TCS, "obsMode1"), Sequencer)), testUri)
+        AkkaLocation(AkkaConnection(ComponentId(Prefix(TCS, "obsmode1"), Sequencer)), testUri)
       val ocsLocations = List(
-        AkkaLocation(AkkaConnection(ComponentId(Prefix(ESW, "OCS_1"), SequenceComponent)), testUri),
-        AkkaLocation(AkkaConnection(ComponentId(Prefix(TCS, "TCS_1"), SequenceComponent)), testUri)
+        AkkaLocation(AkkaConnection(ComponentId(Prefix(ESW, "ocs_1"), SequenceComponent)), testUri),
+        AkkaLocation(AkkaConnection(ComponentId(Prefix(TCS, "tcs_1"), SequenceComponent)), testUri)
       )
       when(locationService.list).thenReturn(Future.successful(tcsLocation :: ocsLocations))
       when(locationService.list(Sequencer)).thenReturn(Future.successful(List(tcsLocation)))
 
       val locationServiceDsl = new LocationServiceUtil(locationService)
       val actualLocations =
-        locationServiceDsl.resolveByComponentNameAndType("obsMode1", Sequencer).futureValue
+        locationServiceDsl.resolveByComponentNameAndType("obsmode1", Sequencer).futureValue
       actualLocations.get should ===(tcsLocation)
     }
 
