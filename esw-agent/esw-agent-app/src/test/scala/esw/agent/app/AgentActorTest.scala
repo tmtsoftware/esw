@@ -149,7 +149,7 @@ class AgentActorTest extends ScalaTestWithActorTestKit with WordSpecLike with Mo
       probe.expectMessage(10.seconds, Failed("process died before registration confirmation"))
     }
 
-    "reply 'Failed' when spawning is aborted by another message | ESW-237" in {
+    "reply 'Failed' when spawning is aborted by another message | ESW-237, ESW-276" in {
       val agentActorRef = spawnAgentActor()
       val probe1        = TestProbe[SpawnResponse]()
       val probe2        = TestProbe[KillResponse]()
@@ -164,7 +164,7 @@ class AgentActorTest extends ScalaTestWithActorTestKit with WordSpecLike with Mo
 
   "KillComponent" must {
 
-    "reply 'killedGracefully' after stopping a registered component gracefully | ESW-237" in {
+    "reply 'killedGracefully' after stopping a registered component gracefully | ESW-276" in {
       val agentActorRef = spawnAgentActor()
       val probe1        = TestProbe[SpawnResponse]()
       val probe2        = TestProbe[KillResponse]()
@@ -184,7 +184,7 @@ class AgentActorTest extends ScalaTestWithActorTestKit with WordSpecLike with Mo
       probe2.expectMessage(10.seconds, killedGracefully)
     }
 
-    "reply 'killedForcefully' after stopping a registered component forcefully when it does not gracefully in given time | ESW-237" in {
+    "reply 'killedForcefully' after stopping a registered component forcefully when it does not gracefully in given time | ESW-276" in {
       val agentActorRef = spawnAgentActor(agentSettings.copy(durationToWaitForGracefulProcessTermination = 2.second))
       val probe1        = TestProbe[SpawnResponse]()
       val probe2        = TestProbe[KillResponse]()
@@ -204,23 +204,27 @@ class AgentActorTest extends ScalaTestWithActorTestKit with WordSpecLike with Mo
       probe2.expectMessage(killedForcefully)
     }
 
-    "reply 'killedGracefully' after killing a running component when component is waiting registration confirmation | ESW-237" ignore {
+    "reply 'killedGracefully' after killing a running component when component is waiting registration confirmation | ESW-276" ignore {
       ???
     }
 
-    "reply 'killedForcefully' after killing a running component when component is waiting registration confirmation | ESW-237" ignore {
+    "reply 'killedForcefully' after killing a running component when component is waiting registration confirmation | ESW-276" ignore {
       ???
     }
 
-    "reply 'killedGracefully' and cancel spawning of an already scheduled component when registration is being checked | ESW-237" ignore {
+    "reply 'killedGracefully' and cancel spawning of an already scheduled component when registration is being checked | ESW-276" ignore {
       ???
     }
 
-    "reply 'killedGracefully' after process termination, when process is already stopping by another message" ignore { ??? }
+    "reply 'killedGracefully' after process termination, when process is already stopping by another message | ESW-276" ignore {
+      ???
+    }
 
-    "reply 'killedForcefully' after process termination, when process is already stopping by another message" ignore { ??? }
+    "reply 'killedForcefully' after process termination, when process is already stopping by another message | ESW-276" ignore {
+      ???
+    }
 
-    "reply 'Failed' when given component is not running on agent | ESW-237" ignore {
+    "reply 'Failed' when given component is not running on agent | ESW-276" ignore {
       ???
     }
   }

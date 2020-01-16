@@ -4,12 +4,10 @@ import java.io.InputStream
 
 import esw.agent.app.utils.ProcessOutput.ConsoleWriter
 
-import scala.concurrent.ExecutionContext.Implicits.global
-import scala.concurrent.Future
+import scala.concurrent.{ExecutionContext, Future, blocking}
 import scala.io.Source
 
-class ProcessOutput(writer: ConsoleWriter = new ConsoleWriter()) {
-
+class ProcessOutput(writer: ConsoleWriter = new ConsoleWriter())(implicit ec: ExecutionContext) {
   def attachToProcess(process: Process, processName: String): Unit = {
     def writeStream(stream: InputStream, writeStr: String => Unit): Unit =
       Source
@@ -17,9 +15,11 @@ class ProcessOutput(writer: ConsoleWriter = new ConsoleWriter()) {
         .getLines()
         .foreach(str => writeStr(s"[$processName] $str"))
 
-    Future {
-      writeStream(process.getInputStream, writer.write)
-      writeStream(process.getErrorStream, writer.writeErr)
+    blocking {
+      Future {
+        writeStream(process.getInputStream, writer.write)
+        writeStream(process.getErrorStream, writer.writeErr)
+      }
     }
   }
 }

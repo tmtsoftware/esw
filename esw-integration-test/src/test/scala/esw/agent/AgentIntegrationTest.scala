@@ -32,7 +32,7 @@ class AgentIntegrationTest extends EswTestKit(MachineAgent) with BeforeAndAfterA
       response should ===(Spawned)
     }
 
-    "return killedGracefully and kill a registered component for a KillComponent message | ESW-237" in {
+    "return killedGracefully and kill a registered component for a KillComponent message | ESW-276" in {
       val agentClient   = Await.result(AgentClient.make(agentPrefix, locationService), 7.seconds)
       val seqCompPrefix = Prefix(s"esw.test_${Random.nextInt.abs}")
       val spawnResponse = Await.result(agentClient.spawnSequenceComponent(seqCompPrefix), askTimeout.duration)
@@ -42,7 +42,7 @@ class AgentIntegrationTest extends EswTestKit(MachineAgent) with BeforeAndAfterA
       killResponse should ===(killedGracefully)
     }
 
-    "return Failed('Aborted') to original sender when someone kills a process while it is spawning | ESW-237" in {
+    "return Failed('Aborted') to original sender when someone kills a process while it is spawning | ESW-237, ESW-237" in {
       val agentClient    = Await.result(AgentClient.make(agentPrefix, locationService), 7.seconds)
       val seqCompPrefix  = Prefix(s"esw.test_${Random.nextInt.abs}")
       val spawnResponseF = agentClient.spawnSequenceComponent(seqCompPrefix)

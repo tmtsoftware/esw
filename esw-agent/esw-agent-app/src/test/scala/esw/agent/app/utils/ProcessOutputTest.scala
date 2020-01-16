@@ -4,6 +4,7 @@ import esw.agent.app.utils.ProcessOutput.ConsoleWriter
 import org.scalatest.concurrent.Eventually
 import org.scalatest.time.{Millis, Seconds, Span}
 import org.scalatest.{Matchers, WordSpecLike}
+import scala.concurrent.ExecutionContext.Implicits.global
 
 class ProcessOutputTest extends WordSpecLike with Matchers with Eventually {
 
