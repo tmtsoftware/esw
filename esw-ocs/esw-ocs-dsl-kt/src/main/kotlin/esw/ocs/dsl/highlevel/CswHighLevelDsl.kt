@@ -18,8 +18,8 @@ import kotlinx.coroutines.CoroutineScope
 import kotlin.time.Duration
 import kotlin.time.toKotlinDuration
 
-interface CswHighLevelDslApi : CswServices, EventServiceDsl, TimeServiceDsl, CommandServiceDsl,
-        ConfigServiceDsl, AlarmServiceDsl, LoopDsl, LoggingDsl, DatabaseServiceDsl {
+interface CswHighLevelDslApi : CswServices, LocationServiceDsl, ConfigServiceDsl, EventServiceDsl, LoggingDsl, CommandServiceDsl,
+        AlarmServiceDsl, TimeServiceDsl, DatabaseServiceDsl, LoopDsl {
 
     fun Assembly(prefix: String, defaultTimeout: Duration): RichComponent
     fun Hcd(prefix: String, defaultTimeout: Duration): RichComponent
