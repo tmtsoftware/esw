@@ -10,6 +10,7 @@ import csw.location.models.ComponentType.Machine
 import csw.location.models.Connection.AkkaConnection
 import csw.prefix.models.Prefix
 import esw.agent.api.AgentCommand.KillComponent
+import esw.agent.api.AgentCommand.SpawnManuallyRegistered.SpawnRedis
 import esw.agent.api.AgentCommand.SpawnSelfRegistered.SpawnSequenceComponent
 import esw.agent.api.{AgentCommand, KillResponse, SpawnResponse}
 
@@ -21,6 +22,9 @@ class AgentClient private[agent] (agentRef: ActorRef[AgentCommand])(implicit sch
 
   def spawnSequenceComponent(prefix: Prefix): Future[SpawnResponse] =
     agentRef ? (SpawnSequenceComponent(_, prefix))
+
+  def spawnRedis(prefix: Prefix, port: Int, redisArguments: List[String]): Future[SpawnResponse] =
+    agentRef ? (SpawnRedis(_, prefix, port, redisArguments))
 
   def killComponent(componentId: ComponentId): Future[KillResponse] =
     agentRef ? (KillComponent(_, componentId))

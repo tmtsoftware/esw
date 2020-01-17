@@ -32,6 +32,13 @@ class AgentIntegrationTest extends EswTestKit(MachineAgent) with BeforeAndAfterA
       response should ===(Spawned)
     }
 
+    "return Spawned after spawning a new redis component for a SpawnRedis message | ESW-237" in {
+      val agentClient = Await.result(AgentClient.make(agentPrefix, locationService), 7.seconds)
+      val prefix      = Prefix(s"esw.event_server")
+      val response    = Await.result(agentClient.spawnRedis(prefix, 6379, List.empty), askTimeout.duration)
+      response should ===(Spawned)
+    }
+
     "return killedGracefully after killing a registered component for a KillComponent message | ESW-276" in {
       val agentClient   = Await.result(AgentClient.make(agentPrefix, locationService), 7.seconds)
       val seqCompPrefix = Prefix(s"esw.test_${Random.nextInt.abs}")

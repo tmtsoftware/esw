@@ -4,8 +4,9 @@ import java.nio.file.{Path, Paths}
 
 import akka.actor.typed.ActorRef
 import csw.location.models.ComponentType.SequenceComponent
+import csw.location.models.Connection.TcpConnection
 import csw.location.models.ConnectionType.AkkaType
-import csw.location.models.{ComponentId, ConnectionType, Registration}
+import csw.location.models._
 import csw.prefix.models.Prefix
 import esw.agent.api.AgentCommand.{SpawnManuallyRegistered, SpawnSelfRegistered}
 
@@ -55,6 +56,19 @@ object AgentCommand {
   object SpawnManuallyRegistered {
     def unapply(arg: SpawnManuallyRegistered): Option[(ActorRef[SpawnResponse], Registration)] =
       Some((arg.replyTo, arg.registration))
+
+    case class SpawnRedis(replyTo: ActorRef[SpawnResponse], prefix: Prefix, port: Int, redisArguments: List[String])
+        extends SpawnManuallyRegistered {
+
+      override val registration: Registration = TcpRegistration(TcpConnection(ComponentId(prefix, ComponentType.Service)), port)
+
+      private val binaryName = "redis-server"
+
+      override def commandStrings(binariesPath: Path): List[String] = {
+        val executablePath = Paths.get(binariesPath.toString, binaryName).toString
+        executablePath :: redisArguments
+      }
+    }
   }
 
   private[agent] case class ProcessExited(componentId: ComponentId) extends AgentCommand
