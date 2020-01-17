@@ -8,19 +8,20 @@ import scala.concurrent.{ExecutionContext, Future, blocking}
 import scala.io.Source
 
 class ProcessOutput(writer: ConsoleWriter = new ConsoleWriter())(implicit ec: ExecutionContext) {
-  def attachToProcess(process: Process, processName: String): Unit = {
-    def writeStream(stream: InputStream, writeStr: String => Unit): Unit =
-      Source
-        .fromInputStream(stream)
-        .getLines()
-        .foreach(str => writeStr(s"[$processName] $str"))
 
-    blocking {
-      Future {
-        writeStream(process.getInputStream, writer.write)
-        writeStream(process.getErrorStream, writer.writeErr)
+  private def writeStream(stream: InputStream, processName: String, writeStr: String => Unit): Unit =
+    Future {
+      blocking {
+        Source
+          .fromInputStream(stream)
+          .getLines()
+          .foreach(str => writeStr(s"[$processName] $str"))
       }
     }
+
+  def attachToProcess(process: Process, processName: String): Unit = {
+    writeStream(process.getInputStream, processName, writer.write)
+    writeStream(process.getErrorStream, processName, writer.writeErr)
   }
 }
 

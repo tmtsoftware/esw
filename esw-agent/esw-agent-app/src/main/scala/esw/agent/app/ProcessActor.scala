@@ -62,13 +62,7 @@ class ProcessActor[T <: Location](
           debug(s"spawning sequence component", map = Map("prefix" -> prefix))
           processExecutor.runCommand(command.commandStrings(agentSettings.binariesPath), prefix) match {
             case Right(process) =>
-              process.onExit().asScala.onComplete {
-                case Failure(exception) =>
-                  error("error occurred while running command", Map("pid" -> process.pid, "prefix" -> prefix), exception)
-                  ctx.self ! ProcessExited(process.exitValue())
-                case Success(process) =>
-                  ctx.self ! ProcessExited(process.exitValue())
-              }
+              process.onExit().asScala.onComplete(_ => ctx.self ! ProcessExited(process.exitValue()))
               ctx.pipeToSelf(isComponentRegistered(agentSettings.durationToWaitForComponentRegistration)) {
                 case Success(true) => RegistrationSuccess
                 case _             => RegistrationFailed

@@ -1,5 +1,7 @@
 package esw.agent.app.utils
 
+import java.util.concurrent.atomic.AtomicReference
+
 import esw.agent.app.utils.ProcessOutput.ConsoleWriter
 import org.scalatest.concurrent.Eventually
 import org.scalatest.time.{Millis, Seconds, Span}
@@ -10,10 +12,10 @@ import scala.concurrent.ExecutionContext.Implicits.global
 class ProcessOutputTest extends WordSpecLike with Matchers with Eventually {
 
   private class FakeConsoleWriter extends ConsoleWriter {
-    var data: List[(String, Boolean)] = List.empty
+    val data: AtomicReference[List[(String, Boolean)]] = new AtomicReference[List[(String, Boolean)]](List.empty)
 
-    override def write(value: String): Unit    = data = data.appended((value, false))
-    override def writeErr(value: String): Unit = data = data.appended((value, true))
+    override def write(value: String): Unit    = data.getAndUpdate(_.appended((value, false)))
+    override def writeErr(value: String): Unit = data.getAndUpdate(_.appended((value, true)))
   }
 
   "attachToProcess" must {
@@ -27,7 +29,7 @@ class ProcessOutputTest extends WordSpecLike with Matchers with Eventually {
       implicit val patienceConfig: PatienceConfig = PatienceConfig(Span(3, Seconds), Span(500, Millis))
 
       eventually {
-        fakeConsoleWriter.data should contain allElementsOf
+        fakeConsoleWriter.data.get should contain allElementsOf
         Seq(
           (s"[$processName] stdout text", false),
           (s"[$processName] stderr text", true)
