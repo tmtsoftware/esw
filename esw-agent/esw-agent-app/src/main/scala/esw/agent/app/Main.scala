@@ -26,7 +26,7 @@ object Main extends CommandApp[AgentCliCommand] {
   var wiring: AgentWiring = _
 
   def onStart(prefix: Prefix, config: Config): Unit = {
-    val agentSettings: AgentSettings = AgentSettings.from(config.getConfig("agent"))
+    val agentSettings: AgentSettings = AgentSettings.from(config)
 
     wiring = new AgentWiring(prefix, agentSettings)
     wiring.log.debug("starting machine agent", Map("prefix" -> prefix))
