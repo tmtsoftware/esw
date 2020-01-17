@@ -262,12 +262,52 @@ class AgentActorTest extends ScalaTestWithActorTestKit with WordSpecLike with Mo
       probe2.expectMessage(10.seconds, killedGracefully)
     }
 
-    "reply 'killedGracefully' after process termination, when process is already stopping by another message | ESW-276" ignore {
-      ???
+    "reply 'killedGracefully' after process termination, when process is already stopping by another message | ESW-276" in {
+      val agentActorRef = spawnAgentActor(agentSettings.copy(durationToWaitForGracefulProcessTermination = 7.seconds))
+      val spawnProbe    = TestProbe[SpawnResponse]()
+      val firstKiller   = TestProbe[KillResponse]()
+      val secondKiller  = TestProbe[KillResponse]()
+      when(locationService.resolve(argEq(seqCompConn), any[FiniteDuration]))
+        .thenReturn(Future.successful(None), seqCompLoc)
+      mockSuccessfulProcess(dieAfter = 5.seconds)
+      when(processExecutor.runCommand(any[List[String]], any[Prefix])).thenReturn(Right(process))
+
+      //start a component
+      agentActorRef ! SpawnSequenceComponent(spawnProbe.ref, prefix)
+      spawnProbe.expectMessage(Spawned)
+
+      //stop the component
+      agentActorRef ! KillComponent(firstKiller.ref, ComponentId(prefix, SequenceComponent))
+      //stop the component again
+      agentActorRef ! KillComponent(secondKiller.ref, ComponentId(prefix, SequenceComponent))
+
+      //ensure it is stopped gracefully
+      firstKiller.expectMessage(6.seconds, killedGracefully)
+      secondKiller.expectMessage(killedGracefully)
     }
 
-    "reply 'killedForcefully' after process termination, when process is already stopping by another message | ESW-276" ignore {
-      ???
+    "reply 'killedForcefully' after process termination, when process is already stopping by another message | ESW-276" in {
+      val agentActorRef = spawnAgentActor()
+      val spawnProbe    = TestProbe[SpawnResponse]()
+      val firstKiller   = TestProbe[KillResponse]()
+      val secondKiller  = TestProbe[KillResponse]()
+      when(locationService.resolve(argEq(seqCompConn), any[FiniteDuration]))
+        .thenReturn(Future.successful(None), seqCompLoc)
+      mockSuccessfulProcess(dieAfter = 5.seconds)
+      when(processExecutor.runCommand(any[List[String]], any[Prefix])).thenReturn(Right(process))
+
+      //start a component
+      agentActorRef ! SpawnSequenceComponent(spawnProbe.ref, prefix)
+      spawnProbe.expectMessage(Spawned)
+
+      //stop the component
+      agentActorRef ! KillComponent(firstKiller.ref, ComponentId(prefix, SequenceComponent))
+      //stop the component again
+      agentActorRef ! KillComponent(secondKiller.ref, ComponentId(prefix, SequenceComponent))
+
+      //ensure it is stopped forcefully
+      firstKiller.expectMessage(4.seconds, killedForcefully)
+      secondKiller.expectMessage(killedForcefully)
     }
 
     "reply 'Failed' when given component is not running on agent | ESW-276" in {
