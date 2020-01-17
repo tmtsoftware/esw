@@ -8,8 +8,8 @@ import csw.logging.api.scaladsl.Logger
 import esw.agent.api.AgentCommand._
 import esw.agent.api.{AgentCommand, Failed}
 import esw.agent.app.AgentActor.AgentState
-import esw.agent.app.ProcessActor.{ProcessActorMessage, SpawnComponent}
-import esw.agent.app.utils.ProcessExecutor
+import esw.agent.app.process.ProcessActorMessage.{Die, SpawnComponent}
+import esw.agent.app.process.{ManuallyRegisteredProcessActor, ProcessActorMessage, ProcessExecutor, SelfRegisteringProcessActor}
 
 class AgentActor(
     locationService: LocationService,
@@ -20,46 +20,49 @@ class AgentActor(
 
   import logger._
 
-  def behavior(state: AgentState): Behaviors.Receive[AgentCommand] = Behaviors.receive[AgentCommand] { (ctx, command) =>
-    command match {
-      //already spawning or registered
-      case SpawnCommand(replyTo, componentId) if state.components.contains(componentId) =>
-        val message = "given component is already in process"
-        warn(message, Map("prefix" -> componentId.prefix))
-        replyTo ! Failed(message)
-        Behaviors.same
-      //happy path
-      case command: SpawnCommand =>
-        val processActor    = new ProcessActor(locationService, processExecutor, agentSettings, logger, command)
-        val processActorRef = ctx.spawn(processActor.init, command.componentId.prefix.toString)
-        ctx.watchWith(processActorRef, Finished(command.componentId))
-        processActorRef ! SpawnComponent
-        behavior(state.add(command.componentId, processActorRef))
-      case KillComponent(replyTo, componentId) =>
-        state.components.get(componentId) match {
-          case Some(processActor) =>
-            processActor ! ProcessActor.Die(replyTo)
-          case None =>
-            val message = "given component id is not running on this agent"
-            error(message, Map("prefix" -> componentId.prefix))
-            replyTo ! Failed(message)
-        }
-        Behaviors.same
-      //process has exited and child actor died
-      case Finished(componentId) => behavior(state.remove(componentId))
-    }
+  private[agent] def behavior(state: AgentState): Behaviors.Receive[AgentCommand] = Behaviors.receive[AgentCommand] {
+    (ctx, command) =>
+      command match {
+        //already spawning or registered
+        case SpawnCommand(replyTo, componentId, _) if state.components.contains(componentId) =>
+          val message = "given component is already in process"
+          warn(message, Map("prefix" -> componentId.prefix))
+          replyTo ! Failed(message)
+          Behaviors.same
+        //happy path for self registered apps
+        case command @ SpawnCommand(_, componentId, selfRegistered) =>
+          val initBehaviour =
+            if (selfRegistered)
+              new SelfRegisteringProcessActor(locationService, processExecutor, agentSettings, logger, command).init
+            else new ManuallyRegisteredProcessActor(locationService, processExecutor, agentSettings, logger, command).init
+          val processActorRef = ctx.spawn(initBehaviour, componentId.prefix.toString.toLowerCase)
+          ctx.watchWith(processActorRef, Finished(componentId))
+          processActorRef ! SpawnComponent
+          behavior(state.add(componentId, processActorRef))
+        case KillComponent(replyTo, componentId) =>
+          state.components.get(componentId) match {
+            case Some(processActor) =>
+              processActor ! Die(replyTo)
+            case None =>
+              val message = "given component id is not running on this agent"
+              error(message, Map("prefix" -> componentId.prefix))
+              replyTo ! Failed(message)
+          }
+          Behaviors.same
+        //process has exited and child actor died
+        case Finished(componentId) => behavior(state.remove(componentId))
+      }
   }
 }
 
 object AgentActor {
-
-  case class AgentState(components: Map[ComponentId, ActorRef[ProcessActorMessage]]) {
+  private[agent] case class AgentState(components: Map[ComponentId, ActorRef[ProcessActorMessage]]) {
     def add(componentId: ComponentId, actorRef: ActorRef[ProcessActorMessage]): AgentState =
       copy(components = components + (componentId -> actorRef))
     def remove(componentId: ComponentId): AgentState = copy(components = components - componentId)
   }
 
-  object AgentState {
+  private[agent] object AgentState {
     val empty: AgentState = AgentState(Map.empty)
   }
 }

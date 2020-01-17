@@ -1,4 +1,4 @@
-package esw.agent.app
+package esw.agent.app.process
 
 import akka.actor.typed.scaladsl.Behaviors
 import akka.actor.typed.{ActorRef, Behavior}
@@ -8,15 +8,15 @@ import csw.logging.api.scaladsl.Logger
 import esw.agent.api.AgentCommand.SpawnCommand
 import esw.agent.api.Killed._
 import esw.agent.api.{Failed, KillResponse, Spawned}
-import esw.agent.app.ProcessActor._
-import esw.agent.app.utils.ProcessExecutor
+import esw.agent.app.AgentSettings
+import esw.agent.app.process.ProcessActorMessage._
 
 import scala.concurrent.duration.{DurationLong, FiniteDuration}
 import scala.concurrent.{ExecutionContext, Future}
 import scala.jdk.FutureConverters.CompletionStageOps
 import scala.util.{Failure, Success}
 
-class ProcessActor[T <: Location](
+class SelfRegisteringProcessActor[T <: Location](
     locationService: LocationService,
     processExecutor: ProcessExecutor,
     agentSettings: AgentSettings,
@@ -151,20 +151,4 @@ class ProcessActor[T <: Location](
           Behaviors.stopped
       }
     }
-}
-
-object ProcessActor {
-  sealed trait ProcessActorMessage
-  case object SpawnComponent                       extends ProcessActorMessage
-  case class Die(replyTo: ActorRef[KillResponse])  extends ProcessActorMessage
-  private case object AlreadyRegistered            extends ProcessActorMessage
-  private case object RunCommand                   extends ProcessActorMessage
-  private case object RegistrationSuccess          extends ProcessActorMessage
-  private case object RegistrationFailed           extends ProcessActorMessage
-  private case object StopGracefully               extends ProcessActorMessage
-  private case object StopForcefully               extends ProcessActorMessage
-  private case class ProcessExited(exitCode: Long) extends ProcessActorMessage
-  private case class LocationServiceError(exception: Throwable) extends ProcessActorMessage {
-    val message = "error occurred while resolving a component with location service"
-  }
 }

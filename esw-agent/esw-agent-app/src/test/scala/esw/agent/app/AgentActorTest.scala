@@ -16,7 +16,7 @@ import esw.agent.api.AgentCommand.SpawnCommand.SpawnSequenceComponent
 import esw.agent.api.Killed._
 import esw.agent.api._
 import esw.agent.app.AgentActor.AgentState
-import esw.agent.app.utils.ProcessExecutor
+import esw.agent.app.process.ProcessExecutor
 import org.mockito.ArgumentMatchers.{any, eq => argEq}
 import org.mockito.MockitoSugar
 import org.scalatest.MustMatchers.convertToStringMustWrapper

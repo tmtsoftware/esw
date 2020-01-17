@@ -1,8 +1,8 @@
-package esw.agent.app.utils
+package esw.agent.app.process
 
 import java.io.InputStream
 
-import esw.agent.app.utils.ProcessOutput.ConsoleWriter
+import esw.agent.app.process.ProcessOutput.ConsoleWriter
 
 import scala.concurrent.{ExecutionContext, Future, blocking}
 import scala.io.Source

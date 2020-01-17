@@ -1,4 +1,4 @@
-package esw.agent.app.utils
+package esw.agent.app.process
 
 import csw.logging.api.scaladsl.Logger
 import csw.prefix.models.Prefix

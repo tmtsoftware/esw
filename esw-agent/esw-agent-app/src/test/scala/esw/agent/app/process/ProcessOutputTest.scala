@@ -1,8 +1,8 @@
-package esw.agent.app.utils
+package esw.agent.app.process
 
 import java.util.concurrent.atomic.AtomicReference
 
-import esw.agent.app.utils.ProcessOutput.ConsoleWriter
+import esw.agent.app.process.ProcessOutput.ConsoleWriter
 import org.scalatest.concurrent.Eventually
 import org.scalatest.time.{Millis, Seconds, Span}
 import org.scalatest.{Matchers, WordSpecLike}

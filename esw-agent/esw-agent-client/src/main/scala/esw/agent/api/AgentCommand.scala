@@ -16,6 +16,7 @@ object AgentCommand {
     val replyTo: ActorRef[SpawnResponse]
     val componentId: ComponentId
     val connectionType: ConnectionType
+    val selfRegistered: Boolean
   }
 
   private[agent] case class Finished(componentId: ComponentId) extends AgentCommand
@@ -24,8 +25,8 @@ object AgentCommand {
 
   object SpawnCommand {
 
-    def unapply(cmd: SpawnCommand): Option[(ActorRef[SpawnResponse], ComponentId)] =
-      Some((cmd.replyTo, cmd.componentId))
+    def unapply(cmd: SpawnCommand): Option[(ActorRef[SpawnResponse], ComponentId, Boolean)] =
+      Some((cmd.replyTo, cmd.componentId, cmd.selfRegistered))
 
     case class SpawnSequenceComponent(replyTo: ActorRef[SpawnResponse], prefix: Prefix) extends SpawnCommand {
       private val binaryName = "esw-ocs-app"
@@ -33,6 +34,8 @@ object AgentCommand {
       override val componentId: ComponentId = ComponentId(prefix, SequenceComponent)
 
       override val connectionType: ConnectionType = AkkaType
+
+      override val selfRegistered: Boolean = true
 
       override def commandStrings(binariesPath: Path): List[String] = {
         val executablePath = Paths.get(binariesPath.toString, binaryName).toString
