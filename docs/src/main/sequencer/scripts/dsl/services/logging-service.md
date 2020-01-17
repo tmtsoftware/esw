@@ -77,3 +77,6 @@ Kotlin
 
 Kotlin
 :   @@snip [LoggingServiceDslExample.kts](../../../../../../../examples/src/main/kotlin/esw/ocs/scripts/examples/paradox/LoggingServiceDslExample.kts) { #fatal }
+
+### Source code for examples
+* [Logging Service Examples]($github.base_url$/examples/src/main/kotlin/esw/ocs/scripts/examples/paradox/LoggingServiceDslExample.kts)
