@@ -5,7 +5,7 @@ import akka.actor.typed.{ActorRef, Behavior}
 import csw.location.api.scaladsl.LocationService
 import csw.location.models._
 import csw.logging.api.scaladsl.Logger
-import esw.agent.api.AgentCommand.SpawnCommand
+import esw.agent.api.AgentCommand.SpawnSelfRegistered
 import esw.agent.api.Killed._
 import esw.agent.api.{Failed, KillResponse, Spawned}
 import esw.agent.app.AgentSettings
@@ -21,7 +21,7 @@ class SelfRegisteringProcessActor[T <: Location](
     processExecutor: ProcessExecutor,
     agentSettings: AgentSettings,
     logger: Logger,
-    command: SpawnCommand
+    command: SpawnSelfRegistered
 ) {
   import command._
   import componentId._

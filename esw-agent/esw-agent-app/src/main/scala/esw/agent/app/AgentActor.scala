@@ -6,7 +6,7 @@ import csw.location.api.scaladsl.LocationService
 import csw.location.models.ComponentId
 import csw.logging.api.scaladsl.Logger
 import esw.agent.api.AgentCommand._
-import esw.agent.api.{AgentCommand, Failed}
+import esw.agent.api.{AgentCommand, Failed, SpawnCommand}
 import esw.agent.app.AgentActor.AgentState
 import esw.agent.app.process.ProcessActorMessage.{Die, SpawnComponent}
 import esw.agent.app.process.{ManuallyRegisteredProcessActor, ProcessActorMessage, ProcessExecutor, SelfRegisteringProcessActor}
@@ -24,19 +24,21 @@ class AgentActor(
     (ctx, command) =>
       command match {
         //already spawning or registered
-        case SpawnCommand(replyTo, componentId, _) if state.components.contains(componentId) =>
+        case SpawnCommand(replyTo, componentId) if state.components.contains(componentId) =>
           val message = "given component is already in process"
           warn(message, Map("prefix" -> componentId.prefix))
           replyTo ! Failed(message)
           Behaviors.same
         //happy path for self registered apps
-        case command @ SpawnCommand(_, componentId, selfRegistered) =>
-          val initBehaviour =
-            if (selfRegistered)
-              new SelfRegisteringProcessActor(locationService, processExecutor, agentSettings, logger, command).init
-            else new ManuallyRegisteredProcessActor(locationService, processExecutor, agentSettings, logger, command).init
+        case command @ SpawnCommand(_, componentId) =>
+          val initBehaviour = command match {
+            case cmd: SpawnManuallyRegistered =>
+              new ManuallyRegisteredProcessActor(locationService, processExecutor, agentSettings, logger, cmd).init
+            case cmd: SpawnSelfRegistered =>
+              new SelfRegisteringProcessActor(locationService, processExecutor, agentSettings, logger, cmd).init
+          }
           val processActorRef = ctx.spawn(initBehaviour, componentId.prefix.toString.toLowerCase)
-          ctx.watchWith(processActorRef, Finished(componentId))
+          ctx.watchWith(processActorRef, ProcessExited(componentId))
           processActorRef ! SpawnComponent
           behavior(state.add(componentId, processActorRef))
         case KillComponent(replyTo, componentId) =>
@@ -50,7 +52,7 @@ class AgentActor(
           }
           Behaviors.same
         //process has exited and child actor died
-        case Finished(componentId) => behavior(state.remove(componentId))
+        case ProcessExited(componentId) => behavior(state.remove(componentId))
       }
   }
 }

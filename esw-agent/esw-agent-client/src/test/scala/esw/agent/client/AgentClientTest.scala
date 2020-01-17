@@ -11,7 +11,7 @@ import csw.location.models.Connection.AkkaConnection
 import csw.location.models.{AkkaLocation, ComponentId}
 import csw.prefix.models.Prefix
 import esw.agent.api.AgentCommand.KillComponent
-import esw.agent.api.AgentCommand.SpawnCommand.SpawnSequenceComponent
+import esw.agent.api.AgentCommand.SpawnSelfRegistered.SpawnSequenceComponent
 import esw.agent.api.Killed._
 import esw.agent.api.{AgentCommand, Spawned}
 import org.mockito.Mockito.when

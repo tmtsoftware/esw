@@ -12,7 +12,7 @@ import csw.location.models.{AkkaLocation, ComponentId}
 import csw.logging.api.scaladsl.Logger
 import csw.prefix.models.Prefix
 import esw.agent.api.AgentCommand.KillComponent
-import esw.agent.api.AgentCommand.SpawnCommand.SpawnSequenceComponent
+import esw.agent.api.AgentCommand.SpawnSelfRegistered.SpawnSequenceComponent
 import esw.agent.api.Killed._
 import esw.agent.api._
 import esw.agent.app.AgentActor.AgentState

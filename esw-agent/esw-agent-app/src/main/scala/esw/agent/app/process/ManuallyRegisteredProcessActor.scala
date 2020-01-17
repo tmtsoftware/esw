@@ -1,11 +1,12 @@
 package esw.agent.app.process
 
+import akka.Done
 import akka.actor.typed.scaladsl.Behaviors
 import akka.actor.typed.{ActorRef, Behavior}
-import csw.location.api.scaladsl.LocationService
+import csw.location.api.scaladsl.{LocationService, RegistrationResult}
 import csw.location.models._
 import csw.logging.api.scaladsl.Logger
-import esw.agent.api.AgentCommand.SpawnCommand
+import esw.agent.api.AgentCommand.SpawnManuallyRegistered
 import esw.agent.api.Killed._
 import esw.agent.api.{Failed, KillResponse, Spawned}
 import esw.agent.app.AgentSettings
@@ -21,18 +22,23 @@ class ManuallyRegisteredProcessActor[T <: Location](
     processExecutor: ProcessExecutor,
     agentSettings: AgentSettings,
     logger: Logger,
-    command: SpawnCommand
+    command: SpawnManuallyRegistered
 ) {
   import command._
-  import componentId._
   import logger._
   private val aborted         = Failed("Aborted")
   private val gracefulTimeout = agentSettings.durationToWaitForGracefulProcessTermination
+  private val prefix          = registration.connection.componentId.prefix
 
   private def isComponentRegistered(timeout: FiniteDuration)(implicit executionContext: ExecutionContext): Future[Boolean] =
     locationService
-      .resolve(Connection.from(ConnectionInfo(prefix, componentType, connectionType)).of[T], timeout)
+      .resolve(registration.connection.of[T], timeout)
       .map(_.nonEmpty)
+
+  private def registerComponent(): Future[RegistrationResult] =
+    locationService.register(registration)
+
+  private def unregisterComponent(): Future[Done] = locationService.unregister(registration.connection)
 
   def init: Behavior[ProcessActorMessage] =
     Behaviors.setup[ProcessActorMessage] { ctx =>
@@ -54,7 +60,7 @@ class ManuallyRegisteredProcessActor[T <: Location](
       Behaviors.receiveMessagePartial[ProcessActorMessage] {
         case AlreadyRegistered =>
           val errorMessage = "can not spawn component when it is already registered in location service"
-          warn(errorMessage, Map("prefix" -> prefix))
+          warn(errorMessage, Map("prefix" -> registration.connection.componentId.prefix))
           replyTo ! Failed(errorMessage)
           Behaviors.stopped
 
@@ -63,9 +69,9 @@ class ManuallyRegisteredProcessActor[T <: Location](
           processExecutor.runCommand(command.commandStrings(agentSettings.binariesPath), prefix) match {
             case Right(process) =>
               process.onExit().asScala.onComplete(_ => ctx.self ! ProcessExited(process.exitValue()))
-              ctx.pipeToSelf(isComponentRegistered(agentSettings.durationToWaitForComponentRegistration)) {
-                case Success(true) => RegistrationSuccess
-                case _             => RegistrationFailed
+              ctx.pipeToSelf(registerComponent()) {
+                case Success(registrationResult) => RegistrationSuccess
+                case _                           => RegistrationFailed
               }
               waitingForComponentRegistration(process)
             case Left(err) =>
@@ -98,14 +104,14 @@ class ManuallyRegisteredProcessActor[T <: Location](
           registered(process)
 
         case RegistrationFailed =>
-          val errorMessage = "could not get registration confirmation from spawned process"
+          val errorMessage = "could not register spawned process"
           error(errorMessage, Map("pid" -> process.pid, "prefix" -> prefix))
           replyTo ! Failed(errorMessage)
           ctx.self ! StopGracefully
           stopping(process, Set.empty)
 
         case ProcessExited(exitCode) =>
-          val errorMessage = "process died before registration confirmation"
+          val errorMessage = "process died before registration completion"
           replyTo ! Failed(errorMessage)
           error(errorMessage, Map("pid" -> process.pid, "prefix" -> prefix, "exitCode" -> exitCode))
           Behaviors.stopped
@@ -143,6 +149,7 @@ class ManuallyRegisteredProcessActor[T <: Location](
           Behaviors.stopped
         case StopGracefully =>
           process.destroy()
+          unregisterComponent()
           timeScheduler.startSingleTimer(StopForcefully, gracefulTimeout)
           Behaviors.same
         case StopForcefully =>

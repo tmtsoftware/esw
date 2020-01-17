@@ -5,37 +5,41 @@ import java.nio.file.{Path, Paths}
 import akka.actor.typed.ActorRef
 import csw.location.models.ComponentType.SequenceComponent
 import csw.location.models.ConnectionType.AkkaType
-import csw.location.models.{ComponentId, ConnectionType}
+import csw.location.models.{ComponentId, ConnectionType, Registration}
 import csw.prefix.models.Prefix
+import esw.agent.api.AgentCommand.{SpawnManuallyRegistered, SpawnSelfRegistered}
 
 sealed trait AgentCommand extends AgentAkkaSerializable
 
+sealed trait SpawnCommand extends AgentCommand {
+  def commandStrings(binariesPath: Path): List[String]
+  val replyTo: ActorRef[SpawnResponse]
+}
+
+object SpawnCommand {
+  def unapply(arg: SpawnCommand): Option[(ActorRef[SpawnResponse], ComponentId)] = arg match {
+    case cmd: SpawnSelfRegistered     => Some((cmd.replyTo, cmd.componentId))
+    case cmd: SpawnManuallyRegistered => Some((cmd.replyTo, cmd.registration.connection.componentId))
+  }
+}
+
 object AgentCommand {
-  sealed trait SpawnCommand extends AgentCommand {
-    def commandStrings(binariesPath: Path): List[String]
-    val replyTo: ActorRef[SpawnResponse]
+  sealed trait SpawnSelfRegistered extends SpawnCommand {
     val componentId: ComponentId
     val connectionType: ConnectionType
-    val selfRegistered: Boolean
   }
 
-  private[agent] case class Finished(componentId: ComponentId) extends AgentCommand
+  object SpawnSelfRegistered {
 
-  case class KillComponent(replyTo: ActorRef[KillResponse], componentId: ComponentId) extends AgentCommand
+    def unapply(cmd: SpawnSelfRegistered): Option[(ActorRef[SpawnResponse], ComponentId)] =
+      Some((cmd.replyTo, cmd.componentId))
 
-  object SpawnCommand {
-
-    def unapply(cmd: SpawnCommand): Option[(ActorRef[SpawnResponse], ComponentId, Boolean)] =
-      Some((cmd.replyTo, cmd.componentId, cmd.selfRegistered))
-
-    case class SpawnSequenceComponent(replyTo: ActorRef[SpawnResponse], prefix: Prefix) extends SpawnCommand {
+    case class SpawnSequenceComponent(replyTo: ActorRef[SpawnResponse], prefix: Prefix) extends SpawnSelfRegistered {
       private val binaryName = "esw-ocs-app"
 
       override val componentId: ComponentId = ComponentId(prefix, SequenceComponent)
 
       override val connectionType: ConnectionType = AkkaType
-
-      override val selfRegistered: Boolean = true
 
       override def commandStrings(binariesPath: Path): List[String] = {
         val executablePath = Paths.get(binariesPath.toString, binaryName).toString
@@ -43,4 +47,18 @@ object AgentCommand {
       }
     }
   }
+
+  sealed trait SpawnManuallyRegistered extends SpawnCommand {
+    val registration: Registration
+  }
+
+  object SpawnManuallyRegistered {
+    def unapply(arg: SpawnManuallyRegistered): Option[(ActorRef[SpawnResponse], Registration)] =
+      Some((arg.replyTo, arg.registration))
+  }
+
+  private[agent] case class ProcessExited(componentId: ComponentId) extends AgentCommand
+
+  case class KillComponent(replyTo: ActorRef[KillResponse], componentId: ComponentId) extends AgentCommand
+
 }

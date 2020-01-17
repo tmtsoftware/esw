@@ -10,7 +10,7 @@ import csw.location.models.ComponentType.Machine
 import csw.location.models.Connection.AkkaConnection
 import csw.prefix.models.Prefix
 import esw.agent.api.AgentCommand.KillComponent
-import esw.agent.api.AgentCommand.SpawnCommand.SpawnSequenceComponent
+import esw.agent.api.AgentCommand.SpawnSelfRegistered.SpawnSequenceComponent
 import esw.agent.api.{AgentCommand, KillResponse, SpawnResponse}
 
 import scala.concurrent.Future
