@@ -133,16 +133,16 @@ class AgentActorTest extends ScalaTestWithActorTestKit with WordSpecLike with Mo
       when(processExecutor.runCommand(any[List[String]], any[Prefix])).thenReturn(Right(process))
 
       agentActorRef ! SpawnSequenceComponent(probe.ref, prefix)
-      probe.expectMessage(Failed("could not get registration confirmation from spawned process within given time"))
+      probe.expectMessage(Failed("could not get registration confirmation from spawned process"))
     }
 
-    "reply 'Failed' when the process is spawned but exits before registration | ESW-237" ignore {
-      val agentActorRef = spawnAgentActor()
+    s"reply 'Failed' when the process is spawned but exits before registration | ESW-237" in {
+      val agentActorRef = spawnAgentActor(agentSettings.copy(durationToWaitForComponentRegistration = 3.seconds))
       val probe         = TestProbe[SpawnResponse]()
 
       when(locationService.resolve(argEq(seqCompConn), any[FiniteDuration]))
-        .thenReturn(delayedFuture(None, 6.seconds))
-      mockSuccessfulProcess(1.seconds)
+        .thenReturn(Future.successful(None), delayedFuture(None, 15.seconds))
+      mockSuccessfulProcess(dieAfter = 2.seconds)
       when(processExecutor.runCommand(any[List[String]], any[Prefix])).thenReturn(Right(process))
 
       agentActorRef ! SpawnSequenceComponent(probe.ref, prefix)

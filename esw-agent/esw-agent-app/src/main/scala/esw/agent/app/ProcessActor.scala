@@ -29,9 +29,7 @@ class ProcessActor[T <: Location](
   private val aborted         = Failed("Aborted")
   private val gracefulTimeout = agentSettings.durationToWaitForGracefulProcessTermination
 
-  private def isComponentRegistered(
-      timeout: FiniteDuration = agentSettings.durationToWaitForComponentRegistration
-  )(implicit executionContext: ExecutionContext): Future[Boolean] =
+  private def isComponentRegistered(timeout: FiniteDuration)(implicit executionContext: ExecutionContext): Future[Boolean] =
     locationService
       .resolve(Connection.from(ConnectionInfo(prefix, componentType, connectionType)).of[T], timeout)
       .map(_.nonEmpty)
@@ -71,7 +69,7 @@ class ProcessActor[T <: Location](
                 case Success(process) =>
                   ctx.self ! ProcessExited(process.exitValue())
               }
-              ctx.pipeToSelf(isComponentRegistered()) {
+              ctx.pipeToSelf(isComponentRegistered(agentSettings.durationToWaitForComponentRegistration)) {
                 case Success(true) => RegistrationSuccess
                 case _             => RegistrationFailed
               }
@@ -81,10 +79,9 @@ class ProcessActor[T <: Location](
               Behaviors.stopped
           }
 
-        case LocationServiceError(exception) =>
-          val message = "error occurred while resolving a component with location service"
-          replyTo ! Failed(message)
-          error(message, Map("prefix" -> prefix), exception)
+        case e @ LocationServiceError(exception) =>
+          replyTo ! Failed(e.message)
+          error(e.message, Map("prefix" -> prefix), exception)
           Behaviors.stopped
 
         case Die(dieRef) =>
@@ -107,7 +104,7 @@ class ProcessActor[T <: Location](
           registered(process)
 
         case RegistrationFailed =>
-          val errorMessage = "could not get registration confirmation from spawned process within given time"
+          val errorMessage = "could not get registration confirmation from spawned process"
           error(errorMessage, Map("pid" -> process.pid, "prefix" -> prefix))
           replyTo ! Failed(errorMessage)
           ctx.self ! StopGracefully
@@ -164,14 +161,16 @@ class ProcessActor[T <: Location](
 
 object ProcessActor {
   sealed trait ProcessActorMessage
-  case object SpawnComponent                                    extends ProcessActorMessage
-  case class Die(replyTo: ActorRef[KillResponse])               extends ProcessActorMessage
-  private case object AlreadyRegistered                         extends ProcessActorMessage
-  private case object RunCommand                                extends ProcessActorMessage
-  private case object RegistrationSuccess                       extends ProcessActorMessage
-  private case object RegistrationFailed                        extends ProcessActorMessage
-  private case object StopGracefully                            extends ProcessActorMessage
-  private case object StopForcefully                            extends ProcessActorMessage
-  private case class ProcessExited(exitCode: Long)              extends ProcessActorMessage
-  private case class LocationServiceError(exception: Throwable) extends ProcessActorMessage
+  case object SpawnComponent                       extends ProcessActorMessage
+  case class Die(replyTo: ActorRef[KillResponse])  extends ProcessActorMessage
+  private case object AlreadyRegistered            extends ProcessActorMessage
+  private case object RunCommand                   extends ProcessActorMessage
+  private case object RegistrationSuccess          extends ProcessActorMessage
+  private case object RegistrationFailed           extends ProcessActorMessage
+  private case object StopGracefully               extends ProcessActorMessage
+  private case object StopForcefully               extends ProcessActorMessage
+  private case class ProcessExited(exitCode: Long) extends ProcessActorMessage
+  private case class LocationServiceError(exception: Throwable) extends ProcessActorMessage {
+    val message = "error occurred while resolving a component with location service"
+  }
 }
