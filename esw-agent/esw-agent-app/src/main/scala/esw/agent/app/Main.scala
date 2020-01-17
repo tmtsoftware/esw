@@ -4,7 +4,7 @@ import akka.actor.CoordinatedShutdown.UnknownReason
 import akka.util.Timeout
 import caseapp.core.RemainingArgs
 import caseapp.core.app.CommandApp
-import com.typesafe.config.{Config, ConfigFactory}
+import com.typesafe.config.ConfigFactory
 import csw.location.client.utils.LocationServerStatus
 import csw.prefix.models.Prefix
 import esw.agent.app.AgentCliCommand.StartCommand
@@ -20,14 +20,12 @@ object Main extends CommandApp[AgentCliCommand] {
   override def progName: String   = BuildInfo.name
 
   override def run(command: AgentCliCommand, remainingArgs: RemainingArgs): Unit = command match {
-    case StartCommand(prefix) => onStart(Prefix(prefix), ConfigFactory.load())
+    case StartCommand(prefix) => onStart(Prefix(prefix), AgentSettings.from(ConfigFactory.load()))
   }
 
   var wiring: AgentWiring = _
 
-  def onStart(prefix: Prefix, config: Config): Unit = {
-    val agentSettings: AgentSettings = AgentSettings.from(config)
-
+  def onStart(prefix: Prefix, agentSettings: AgentSettings): Unit = {
     wiring = new AgentWiring(prefix, agentSettings)
     wiring.log.debug("starting machine agent", Map("prefix" -> prefix))
     try {

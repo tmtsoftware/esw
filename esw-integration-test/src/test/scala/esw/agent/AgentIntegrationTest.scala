@@ -25,14 +25,14 @@ class AgentIntegrationTest extends EswTestKit(MachineAgent) with BeforeAndAfterA
       agentLocation should not be empty
     }
 
-    "return Spawned and spawn a new sequence component for a SpawnSequenceComponent message | ESW-237" in {
+    "return Spawned after spawning a new sequence component for a SpawnSequenceComponent message | ESW-237" in {
       val agentClient   = Await.result(AgentClient.make(agentPrefix, locationService), 7.seconds)
       val seqCompPrefix = Prefix(s"esw.test_${Random.nextInt.abs}")
       val response      = Await.result(agentClient.spawnSequenceComponent(seqCompPrefix), askTimeout.duration)
       response should ===(Spawned)
     }
 
-    "return killedGracefully and kill a registered component for a KillComponent message | ESW-276" in {
+    "return killedGracefully after killing a registered component for a KillComponent message | ESW-276" in {
       val agentClient   = Await.result(AgentClient.make(agentPrefix, locationService), 7.seconds)
       val seqCompPrefix = Prefix(s"esw.test_${Random.nextInt.abs}")
       val spawnResponse = Await.result(agentClient.spawnSequenceComponent(seqCompPrefix), askTimeout.duration)
@@ -40,6 +40,16 @@ class AgentIntegrationTest extends EswTestKit(MachineAgent) with BeforeAndAfterA
       val killResponse =
         Await.result(agentClient.killComponent(ComponentId(seqCompPrefix, SequenceComponent)), askTimeout.duration)
       killResponse should ===(killedGracefully)
+    }
+
+    "return killedForcefully after killing a registered component for a killComponent message | ESW-276" in {
+      val agentClient   = Await.result(AgentClient.make(agentPrefix, locationService), 7.seconds)
+      val seqCompPrefix = Prefix(s"esw.test_${Random.nextInt.abs}_delay_exit")
+      val spawnResponse = Await.result(agentClient.spawnSequenceComponent(seqCompPrefix), askTimeout.duration)
+      spawnResponse should ===(Spawned)
+      val killResponse =
+        Await.result(agentClient.killComponent(ComponentId(seqCompPrefix, SequenceComponent)), askTimeout.duration)
+      killResponse should ===(killedForcefully)
     }
 
     "return Failed('Aborted') to original sender when someone kills a process while it is spawning | ESW-237, ESW-237" in {
