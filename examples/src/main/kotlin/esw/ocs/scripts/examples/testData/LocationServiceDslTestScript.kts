@@ -31,6 +31,7 @@ script {
 
         val registrationResult = register(httpRegistration)
         publishLocationResponse(registrationResult.javaClass.simpleName)
+        waitFor { receivedLocationUpdated }
     }
 
     onSetup("resolve") {
@@ -40,12 +41,11 @@ script {
 
     onSetup("list-by-prefix") {
         val locations = listLocationsBy(prefix)
-        if (locations.all { it.prefix() == prefix })
+        if (locations.all { it.prefix() == prefix }) // publish only if all the locations prefix matches with a prefix used for listing
             publishLocationResponse("Found = ${locations.size} Locations")
     }
 
     onSetup("unregister") {
-        waitFor { receivedLocationUpdated }
         unregister(httpConnection)
         publishLocationResponse("Unregistered")
     }

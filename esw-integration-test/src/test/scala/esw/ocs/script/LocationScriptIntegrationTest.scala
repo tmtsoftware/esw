@@ -1,5 +1,6 @@
 package esw.ocs.script
 
+import akka.actor.testkit.typed.scaladsl.TestProbe
 import csw.location.api.scaladsl.RegistrationResult
 import csw.location.models.{HttpLocation, LocationRemoved, LocationUpdated}
 import csw.params.commands.{CommandName, Sequence, Setup}
@@ -11,7 +12,6 @@ import esw.ocs.api.SequencerApi
 import esw.ocs.testkit.EswTestKit
 import esw.ocs.testkit.Service.EventServer
 
-import scala.collection.mutable
 import scala.reflect.ClassTag
 
 class LocationScriptIntegrationTest extends EswTestKit(EventServer) {
@@ -21,34 +21,30 @@ class LocationScriptIntegrationTest extends EswTestKit(EventServer) {
     val locationKey              = StringKey.make("locationResponse")
     val locationResponseEventKey = EventKey("iris.motor.location_response")
 
-    val actualResponses = mutable.Set.empty[String]
+    val probe = TestProbe[String]
 
     eventSubscriber
       .subscribeCallback(
         Set(locationResponseEventKey),
-        event => { actualResponses.add(event.paramType(locationKey).head) }
+        event => { probe.ref ! event.paramType(locationKey).head }
       )
 
-    val prefix        = Prefix("iris.motor")
-    val registerCmd   = Setup(prefix, CommandName("track-and-register"), None)
-    val resolveCmd    = Setup(prefix, CommandName("resolve"), None)
-    val listCmd       = Setup(prefix, CommandName("list-by-prefix"), None)
-    val unregisterCmd = Setup(prefix, CommandName("unregister"), None)
+    val prefix              = Prefix("iris.motor")
+    val trackAndRegisterCmd = Setup(prefix, CommandName("track-and-register"), None)
+    val resolveCmd          = Setup(prefix, CommandName("resolve"), None)
+    val listCmd             = Setup(prefix, CommandName("list-by-prefix"), None)
+    val unregisterCmd       = Setup(prefix, CommandName("unregister"), None)
 
-    val sequence = Sequence(registerCmd, resolveCmd, listCmd, unregisterCmd)
+    val sequence = Sequence(trackAndRegisterCmd, resolveCmd, listCmd, unregisterCmd)
 
     sequencer.submit(sequence)
 
-    eventually(
-      actualResponses shouldBe Set(
-        className[RegistrationResult],
-        className[LocationUpdated],
-        className[HttpLocation],
-        "Found = 1 Locations",
-        "Unregistered",
-        className[LocationRemoved]
-      )
-    )
+    probe.expectMessage(className[RegistrationResult])
+    probe.expectMessage(className[LocationUpdated])
+    probe.expectMessage(className[HttpLocation])
+    probe.expectMessage("Found = 1 Locations")
+    probe.expectMessage("Unregistered")
+    probe.expectMessage(className[LocationRemoved])
   }
 
   private def className[T: ClassTag] = scala.reflect.classTag[T].runtimeClass.getSimpleName
