@@ -92,20 +92,30 @@ script {
     // #operationsMode
 
     // #onGlobalError
-    // Scenario-1 handler fails
+    // Scenario-1 onObserve handler fails
     onObserve("trigger-filter-wheel") { command ->
         val triggerStartEvent = ObserveEvent("esw.command", "trigger.start", command(stringKey(name = "triggerTime")))
         // publishEvent fails with EventServerNotAvailable which fails onObserve handler
         // onGlobalError handler is called
+        // Sequence is terminated with failure.
         publishEvent(triggerStartEvent)
     }
 
-    // Scenario-2 submit returns negative SubmitResponse
+    // Scenario-2 onSetup handler fails - submit returns negative SubmitResponse
     onSetup("command-2") { command ->
-        val assembly = Assembly("filter.wheel", 5.seconds)
+        val assembly1 = Assembly("filter.wheel", 5.seconds)
 
         //Submit command to assembly return negative response. (error by default) onGlobalError handler is called.
-        assembly.submit(command)
+        // Sequence is terminated with failure.
+        assembly1.submit(command)
+    }
+
+    // Scenario-3
+    onDiagnosticMode {startTime, hint ->
+        //publishEvent fails with EventServerNotAvailable
+        //onDiagnosticMode handler fails
+        //onGlobalError is called. Sequence execution continues.
+        publishEvent(ObserveEvent("esw.diagnostic.mode", hint))
     }
 
     onGlobalError { error ->

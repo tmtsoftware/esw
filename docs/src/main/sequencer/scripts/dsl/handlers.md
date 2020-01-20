@@ -100,29 +100,36 @@ Kotlin
 
 ## Error Handlers
 
-### Handling global errors
+Script can error out in following scenarios:
 
-Script DSL provides `onGlobalError` handler where script writer can write logic like cleaning up of resources. This will be executed
-before terminating sequence with failure.
+1. **Script Initialization Error** : When construction of script throws exception then script initialization fails. In this scenario,
+framework will log error cause. Sequencer will not start in this failure. One need to fix error and then load script again.
 
-Script execution can fail and go in error handler by following ways:
+2. **Command Handlers Failure** : While executing sequence @ref[Command Handlers](#command-handlers) e.g. `onSetup` , `onObserve` can fail because of two reasons: 
+    1. handler throws exception or 2. `Command Service` or `Sequencer Command Service` used to interact with downstream `Assembly/HCD/Sequencer`
+    returns negative `SubmitResponse`. Negative `SubmitResponse` is by default considered as error. In this case of failure, sequence is terminated
+    with failure. 
+    
+3. **Handlers Failure** : This failure occurs when any of handlers other than Command Handlers fail (e.g. `OnGoOnline`, `onDiagnosticMode` etc.). In
+this scenario, framework will log error cause. Sequence execution will continue.  
 
-1. Handlers fail with exception.
-2. Command Service and Sequencer Command Service APIs return negative `SubmitResponse` which is by default considered as error.
+Script DSL provides following constructs to handle failure while executing script: 
+1. **onGlobalError** : This construct is provided for script writer. Logic in `onGlobalError` will be executed in case of all **Handlers Failure** including
+**Command Handlers Failure**. If `onGlobalError` handler is not provided by script then only logging of error cause is done by the framework.
 
-In both of above cases, error cause is logged by a framework and `onGlobalError` handler written in script is called. If `onGlobalError`
-handler is not provided by script then only logging of error cause is done. After calling global error handler, script execution flow breaks
-and sequence is terminated with failure.
+Following example shows usage of `onGloablError`
 
 Kotlin
 
 : @@snip [HandlersExample.kts](../../../../../../examples/src/main/kotlin/esw/ocs/scripts/examples/paradox/HandlersExample.kts) { #onGlobalError }
 
-### Handling errors at command level
 
-If script writer wants to handle errors at command level, `onError` construct can be used. In this case, `onError` is called first, followed by `onGlobalError`
-handler. This will also result in terminating sequence with failure. Following example shows command level error handler along with global
-error handler. `onError` construct is available to handle failure of `onSetup` and `onObserve` command handler. Following example shows submit
+2. **onError** : This construct is specifically provided for **Command Handlers Failure**. `onError` block can be written specifically for each `onSetup` and
+`onObserve` handler. In case of failure, `onError` will be called first followed by `onGlobalError` and sequence will be terminated with failure. By default
+negative `SubmitResponse` is considered as error.
+
+Following example shows command level error handler along with global
+error handler. `onError` construct is available to handle failure of `onSetup` and `onObserve` command handler. In this example, submit
 to assembly return negative `SubmitResponse` triggers error handling mechanism. 
 
 Kotlin
