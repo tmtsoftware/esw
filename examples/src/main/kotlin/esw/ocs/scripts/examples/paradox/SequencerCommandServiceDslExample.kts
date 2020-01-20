@@ -19,8 +19,8 @@ script {
         // #creating-sequencer
 
         // #creating-sequence
-        val hcdCommand: SequenceCommand = Setup("tcs", "setup-tcs-hcd")
-        val assemblyCommand: SequenceCommand = Setup("tcs", "setup-tcs-assembly")
+        val hcdCommand: SequenceCommand = Setup("TCS", "setup-tcs-hcd")
+        val assemblyCommand: SequenceCommand = Setup("TCS", "setup-tcs-assembly")
         val sequence: Sequence = sequenceOf(hcdCommand, assemblyCommand)
         // #creating-sequence
 

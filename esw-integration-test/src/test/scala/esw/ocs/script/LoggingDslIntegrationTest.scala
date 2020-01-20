@@ -35,7 +35,7 @@ class LoggingDslIntegrationTest extends EswTestKit(EventServer) {
   }
 
   "Script" must {
-    "be able to log message | ESW-127" in {
+    "be able to log message | ESW-127, ESW-279" in {
       val command  = Setup(Prefix("TCS.test"), CommandName("log-command"), None)
       val sequence = Sequence(command)
 
@@ -44,7 +44,7 @@ class LoggingDslIntegrationTest extends EswTestKit(EventServer) {
 
       val log: JsObject = logBuffer.head
       log.getString("@componentName") shouldBe "moonnight"
-      log.getString("@subsystem") shouldBe "esw"
+      log.getString("@subsystem") shouldBe "ESW"
       log.getString("@severity") shouldBe "FATAL"
       log.getString("class") shouldBe "esw.ocs.scripts.examples.testData.TestScript2"
       log.getString("message") shouldBe "log-message"

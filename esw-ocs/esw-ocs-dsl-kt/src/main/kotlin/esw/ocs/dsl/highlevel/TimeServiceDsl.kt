@@ -23,7 +23,7 @@ interface TimeServiceDsl : SuspendToJavaConverter {
     val timeService: TimeServiceScheduler
 
     /**
-     * Schedules task once at specified time.
+     * Schedules task once at specified time. Callbacks like task are thread safe as they are executed on single threaded coroutine scope dispatcher.
      *
      * @param startTime the time at which the task should start its execution
      * @param task the task to be scheduled for execution
@@ -33,7 +33,7 @@ interface TimeServiceDsl : SuspendToJavaConverter {
             timeService.scheduleOnce(startTime, Runnable { task.toJava() })
 
     /**
-     * Schedules task once at duration after current utc time.
+     * Schedules task once at duration after current utc time. Callbacks like task are thread safe as they are executed on single threaded coroutine scope dispatcher.
      *
      * @param delayFromNow delay after which task will be scheduled as a Duration
      * @param task the task to be scheduled for execution
@@ -44,6 +44,7 @@ interface TimeServiceDsl : SuspendToJavaConverter {
 
     /**
      * Schedules a task to execute periodically at the given interval. The task is executed once at the given start time followed by execution of task at each interval.
+     * Callbacks like task are thread safe as they are executed on single threaded coroutine scope dispatcher.
      *
      * @param startTime first time at which task is to be executed
      * @param interval the time interval between the execution of tasks
@@ -58,7 +59,7 @@ interface TimeServiceDsl : SuspendToJavaConverter {
 
     /**
      * Schedules a task to execute periodically at the given interval. The task is executed once at duration after current utc time
-     * followed by execution of task at each interval.
+     * followed by execution of task at each interval. Callbacks like task are thread safe as they are executed on single threaded coroutine scope dispatcher.
      *
      * @param delayFromNow delay after which the first task will be scheduled as a Duration
      * @param interval the time interval between the execution of tasks

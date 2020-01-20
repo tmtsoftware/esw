@@ -14,7 +14,7 @@ import csw.logging.client.scaladsl.LoggerFactory
 import csw.prefix.models.Prefix
 import esw.agent.api.AgentCommand
 import esw.agent.app.AgentActor.AgentState
-import esw.agent.app.utils.{ActorRuntime, ProcessExecutor, ProcessOutput}
+import esw.agent.app.process.{ProcessExecutor, ProcessOutput}
 
 import scala.concurrent.duration.DurationLong
 import scala.concurrent.{Await, Future}
@@ -35,8 +35,7 @@ class AgentWiring(prefix: Prefix, agentSettings: AgentSettings) {
     }
 
   import actorRuntime.typedSystem
-  implicit lazy val scheduler: Scheduler = typedSystem.scheduler
-
+  implicit lazy val scheduler: Scheduler    = typedSystem.scheduler
   lazy val locationService: LocationService = HttpLocationServiceFactory.makeLocalClient
   lazy val processOutput                    = new ProcessOutput
   lazy val processExecutor                  = new ProcessExecutor(processOutput, agentSettings, log)

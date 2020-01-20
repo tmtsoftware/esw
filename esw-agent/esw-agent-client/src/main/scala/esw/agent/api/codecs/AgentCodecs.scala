@@ -9,6 +9,7 @@ import esw.agent.api.{AgentCommand, Response}
 import io.bullet.borer.Codec
 import io.bullet.borer.derivation.MapBasedCodecs.deriveAllCodecs
 
+// $COVERAGE-OFF$
 trait AgentCodecs extends CommonCodecs with LocationCodecs {
   implicit def actorSystem: ActorSystem[_]
 
@@ -24,3 +25,4 @@ trait AgentCodecs extends CommonCodecs with LocationCodecs {
   implicit lazy val agentCommandCodec: Codec[AgentCommand] = deriveAllCodecs
   implicit lazy val agentResponseCodec: Codec[Response]    = deriveAllCodecs
 }
+// $COVERAGE-ON$

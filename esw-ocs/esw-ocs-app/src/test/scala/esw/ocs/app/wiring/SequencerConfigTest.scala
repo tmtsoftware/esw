@@ -5,7 +5,7 @@ import java.util.concurrent.CompletionStage
 import akka.Done
 import com.typesafe.config.{Config, ConfigFactory}
 import csw.params.commands.SequenceCommand
-import csw.prefix.models.Subsystem.ESW
+import csw.prefix.models.Subsystem.NSCU
 import csw.prefix.models.{Prefix, Subsystem}
 import csw.time.core.models.UTCTime
 import esw.http.core.BaseTestSuite
@@ -18,13 +18,13 @@ class SequencerConfigTest extends BaseTestSuite {
   private val config: Config = ConfigFactory.load()
 
   "from" must {
-    "create SequencerConfig based on subsystem and observingMode | ESW-103" in {
-      val subsystem        = Subsystem.ESW
+    "create SequencerConfig based on subsystem and observingMode | ESW-103, ESW-279" in {
+      val subsystem        = NSCU
       val observingMode    = "darknight"
       val sequencerConfigs = SequencerConfig.from(config, subsystem, observingMode)
 
       sequencerConfigs.prefix.componentName should ===("darknight")
-      sequencerConfigs.prefix should ===(Prefix(ESW, "darknight"))
+      sequencerConfigs.prefix should ===(Prefix(NSCU, "darknight"))
       sequencerConfigs.scriptClass should ===(classOf[ValidTestScript].getCanonicalName)
     }
 

@@ -1,17 +1,28 @@
-package esw.agent.app.utils
+package esw.agent.app.process
 
-import esw.agent.app.utils.ProcessOutput.ConsoleWriter
+import java.util.concurrent.atomic.AtomicReference
+
+import akka.actor.typed.ActorSystem
+import akka.actor.typed.scaladsl.Behaviors
+import esw.agent.app.process.ProcessOutput.ConsoleWriter
 import org.scalatest.concurrent.Eventually
 import org.scalatest.time.{Millis, Seconds, Span}
-import org.scalatest.{Matchers, WordSpecLike}
+import org.scalatest.{BeforeAndAfterAll, Matchers, WordSpecLike}
 
-class ProcessOutputTest extends WordSpecLike with Matchers with Eventually {
+class ProcessOutputTest extends WordSpecLike with Matchers with Eventually with BeforeAndAfterAll {
 
   private class FakeConsoleWriter extends ConsoleWriter {
-    var data: List[(String, Boolean)] = List.empty
+    val data: AtomicReference[List[(String, Boolean)]] = new AtomicReference[List[(String, Boolean)]](List.empty)
 
-    override def write(value: String): Unit    = data = data.appended((value, false))
-    override def writeErr(value: String): Unit = data = data.appended((value, true))
+    override def write(value: String): Unit    = data.getAndUpdate(_.appended((value, false)))
+    override def writeErr(value: String): Unit = data.getAndUpdate(_.appended((value, true)))
+  }
+
+  private implicit val actorSystem: ActorSystem[_] = ActorSystem(Behaviors.empty, "test")
+
+  override def afterAll(): Unit = {
+    super.afterAll()
+    actorSystem.terminate()
   }
 
   "attachToProcess" must {
@@ -25,7 +36,7 @@ class ProcessOutputTest extends WordSpecLike with Matchers with Eventually {
       implicit val patienceConfig: PatienceConfig = PatienceConfig(Span(3, Seconds), Span(500, Millis))
 
       eventually {
-        fakeConsoleWriter.data should contain allElementsOf
+        fakeConsoleWriter.data.get should contain allElementsOf
         Seq(
           (s"[$processName] stdout text", false),
           (s"[$processName] stderr text", true)

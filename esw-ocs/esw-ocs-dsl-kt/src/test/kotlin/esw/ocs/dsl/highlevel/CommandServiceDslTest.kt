@@ -4,6 +4,8 @@ import csw.params.commands.CommandName
 import csw.params.commands.Observe
 import csw.params.commands.Setup
 import csw.params.core.models.ObsId
+import esw.ocs.dsl.highlevel.models.ESW
+import esw.ocs.dsl.highlevel.models.Prefix
 import io.kotlintest.shouldBe
 import kotlinx.coroutines.runBlocking
 import org.junit.jupiter.api.Test

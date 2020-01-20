@@ -1,19 +1,19 @@
 package esw.ocs.scripts.examples.testData
 
 import com.typesafe.config.ConfigFactory
-import csw.alarm.api.javadsl.JAlarmSeverity.Major
 import csw.alarm.models.Key.AlarmKey
 import csw.params.events.Event
 import esw.ocs.dsl.core.script
-import esw.ocs.dsl.highlevel.NFIRAOS
-import esw.ocs.dsl.highlevel.Prefix
+import esw.ocs.dsl.highlevel.models.Major
+import esw.ocs.dsl.highlevel.models.NFIRAOS
+import esw.ocs.dsl.highlevel.models.Prefix
 import esw.ocs.dsl.params.longKey
 import kotlinx.coroutines.delay
 import kotlin.time.seconds
 
 script {
-    val lgsfSequencer = Sequencer("lgsf", "darknight", 10.seconds)
-    val testAssembly = Assembly("esw.test", 10.seconds)
+    val lgsfSequencer = Sequencer("LGSF", "darknight", 10.seconds)
+    val testAssembly = Assembly("ESW.test", 10.seconds)
 
     // ESW-134: Reuse code by ability to import logic from one script into another
     loadScripts(InitialCommandHandler)
@@ -28,7 +28,7 @@ script {
 
     onSetup("check-config") {
         if (existsConfig("/tmt/test/wfos.conf"))
-            publishEvent(SystemEvent("wfos.test", "check-config.success"))
+            publishEvent(SystemEvent("WFOS.test", "check-config.success"))
     }
 
     onSetup("get-config-data") {
@@ -36,7 +36,7 @@ script {
         val configData = getConfig("/tmt/test/wfos.conf")
         configData?.let {
             if (it == ConfigFactory.parseString(configValue))
-                publishEvent(SystemEvent("wfos.test", "get-config.success"))
+                publishEvent(SystemEvent("WFOS.test", "get-config.success"))
         }
     }
 
@@ -45,14 +45,14 @@ script {
 
     onSetup("get-event") {
         // ESW-88
-        val event: Event = getEvent("esw.test.get.event").first()
-        val successEvent = SystemEvent("esw.test", "get.success")
+        val event: Event = getEvent("ESW.test.get.event").first()
+        val successEvent = SystemEvent("ESW.test", "get.success")
         if (!event.isInvalid) publishEvent(successEvent)
     }
 
     onSetup("on-event") {
-        onEvent("esw.test.get.event") {
-            val successEvent = SystemEvent("esw.test", "onevent.success")
+        onEvent("ESW.test.get.event") {
+            val successEvent = SystemEvent("ESW.test", "onevent.success")
             if (!it.isInvalid) publishEvent(successEvent)
         }
     }
@@ -63,11 +63,11 @@ script {
 
     onSetup("command-4") {
         // try sending concrete sequence
-        val setupCommand = Setup("esw.test", "command-3")
+        val setupCommand = Setup("ESW.test", "command-3")
         val sequence = sequenceOf(setupCommand)
 
         // ESW-88, ESW-145, ESW-195
-        val tcsSequencer = Sequencer("tcs", "darknight", 10.seconds)
+        val tcsSequencer = Sequencer("TCS", "darknight", 10.seconds)
         tcsSequencer.submitAndWait(sequence, 10.seconds)
     }
 
@@ -84,14 +84,14 @@ script {
 
     onSetup("set-alarm-severity") {
         val alarmKey = AlarmKey(Prefix(NFIRAOS, "trombone"), "tromboneAxisHighLimitAlarm")
-        setSeverity(alarmKey, Major())
+        setSeverity(alarmKey, Major)
         delay(500)
     }
 
     onSetup("command-lgsf") {
         // NOT update command response to avoid a sequencer to finish immediately
         // so that others Add, Append command gets time
-        val setupCommand = Setup("lgsf.test", "command-lgsf")
+        val setupCommand = Setup("LGSF.test", "command-lgsf")
         val sequence = sequenceOf(setupCommand)
 
         lgsfSequencer.submitAndWait(sequence, 10.seconds)
@@ -101,7 +101,7 @@ script {
         val currentTime = utcTimeNow()
         scheduleOnceFromNow(1.seconds) {
             val param = longKey("offset").set(currentTime.offsetFromNow().absoluteValue.toLongMilliseconds())
-            publishEvent(SystemEvent("esw.schedule.once", "offset", param))
+            publishEvent(SystemEvent("ESW.schedule.once", "offset", param))
         }
     }
 
@@ -110,7 +110,7 @@ script {
         var counter = 0
         val a = schedulePeriodicallyFromNow(1.seconds, 1.seconds) {
             val param = longKey("offset").set(currentTime.offsetFromNow().absoluteValue.toLongMilliseconds())
-            publishEvent(SystemEvent("esw.schedule.periodically", "offset", param))
+            publishEvent(SystemEvent("ESW.schedule.periodically", "offset", param))
             counter += 1
         }
         loop {

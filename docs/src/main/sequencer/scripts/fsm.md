@@ -1,7 +1,7 @@
 # FSM
 
 Scripts have ability to define and run Finite State Machine(FSM). FSM can transition between defined states and can be made 
-reactive to events and commands.
+reactive to Event and Command.
 
 ## Define FSM
 
@@ -81,28 +81,50 @@ Kotlin
 
 ## Reactive FSM
 
-FSM can be made to react to changes in event and command parameters with help of `Event variables` and `Command flags`.
+FSM can be made to react to changes in Event and Command parameters with help of `Event variables` and `Command flags`.
 
 **`bind`ing FSM to reactive variable is necessary** to achieve the reactive behavior of FSM. 
  
 ### Event variable
 
-Event variables are the way to make fsm react to events. Event variable can be tied to only one parameter key in an event.
-To make FSM react to event variable, we need to create a `EventVariable` for a specific parameter key of an event and bind the fsm to it.
+Event variables are the way to make fsm react to events. Event variable can be tied to only one Parameter Key in an event.
+To make FSM react to Event variable, we need to create a `EventVariable` for a specific Parameter Key of an Event and **bind the FSM** to it.
+FSM can be bind to multiple Event variables and vise versa.
 
-Whenever any event is published on the key of given event, all the FSMs bound to that variable will be re-evaluated.
-Event variables use EventService underneath, which makes it possible to share data between multiple sequencers. 
+Event variables use Event Service underneath, which makes it possible to share data between multiple sequencers.
+Whenever any event is published on the key of given event, all the FSMs bound to that variable will be re-evaluated. 
 
 Event variables are of 2 types:
 
-1. `SystemVar` - for System events
-2. `ObserveVar` - for Observe events
+1. `SystemVar` - are based on SystemEvent 
+2. `ObserveVar` - are based on ObserveEvent
 
-FSM can be bind to multiple event vars and vise versa. Following examples shows how to create event variables, bind FSM to it
- and methods like `get` and `set`. `set` will publish the event with modified parameter. 
+Event variable has capability to behave one of two ways
+ - Subscribe to the Events getting published
+ - Poll for a new event after every certain interval
+
+#### Subscribe
+
+Event variable subscribes to the given Event key and refresh the FSMs whenever an event is published. This will refresh the FSMs as soon as Event
+is published.
+
+Following examples shows how to create Event variables with subscribing behavior, `bind` FSM to it and methods like `get` and `set`. 
+`set` will publish the event with modified parameter.
 
 Kotlin
 :   @@snip [Fsm.kts](../../../../../examples/src/main/kotlin/esw/ocs/scripts/examples/paradox/Fsm.kts) { #event-var }
+
+#### Poll
+
+Polling behavior is for situations when it's **not necessary to refresh FSM on every Event**, can be done periodically after a certain duration.
+Event variable polls to get the latest Event with given duration and if a new Event is published, it will refresh the FSMs.
+Polling behavior can be used when the publisher is too fast and there is no need respond so quickly to it.
+
+For creating Event variable with polling behavior, it needs an extra argument which is the `duration` to poll with, the example code demos it. 
+Other methods like `get`, `set` and `bind` are same as shown [Subscribe](#subscribe) examples above.
+
+Kotlin
+:   @@snip [Fsm.kts](../../../../../examples/src/main/kotlin/esw/ocs/scripts/examples/paradox/Fsm.kts) { #polling }
 
 ### CommandFlag
 
@@ -110,7 +132,7 @@ Command flag acts as bridge which can used to pass `Parameters` to FSM from outs
 the all the FSMs with provided params which are bound to that flag. It is possible to bind one FSM to multiple command flags and vise versa.
 Command flag is limited to scope of a single script. It does not have any remote impact.
 
-Example shows how to create `CommandFlag`, bind FSM to it and methods `get` and `set` which are provided to retrieve or set the value of
+Example shows how to create `CommandFlag`, `bind` FSM to it and methods `get` and `set` which are provided to retrieve or set the value of
  params in command flag. 
 
 Kotlin
@@ -132,6 +154,8 @@ Logic of state change is:
     
 Kotlin
 :   @@snip [Fsm.kts](../../../../../examples/src/main/kotlin/esw/ocs/scripts/examples/paradox/FsmExample.kts) { #example-fsm }
+
+* Full example code is available [here]($github.base_url$/examples/src/main/kotlin/esw/ocs/scripts/examples/paradox/FsmExample.kts).
 
 Key things in above example code are :
  

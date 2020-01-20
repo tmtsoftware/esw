@@ -29,8 +29,7 @@ import esw.gateway.impl._
 import esw.gateway.server.handlers.PostHandlerImpl
 import esw.http.core.BaseTestSuite
 import esw.ocs.api.protocol.{Ok, OkOrUnhandledResponse, SequencerPostRequest}
-import msocket.api.Encoding
-import msocket.api.Encoding.JsonText
+import msocket.api.ContentType
 import msocket.api.models.{GenericError, ServiceError}
 import msocket.impl.post.{ClientHttpCodecs, PostRouteFactory}
 import org.mockito.ArgumentMatchers.{any, eq => argsEq}
@@ -41,7 +40,7 @@ import scala.concurrent.Future
 
 class PostRouteTest extends BaseTestSuite with ScalatestRouteTest with GatewayCodecs with ClientHttpCodecs {
 
-  override def encoding: Encoding[_] = JsonText
+  override def clientContentType: ContentType = ContentType.Json
 
   private val cswCtxMocks = new CswWiringMocks()
   import cswCtxMocks._
@@ -321,9 +320,9 @@ class PostRouteTest extends BaseTestSuite with ScalatestRouteTest with GatewayCo
       }
     }
 
-    "return generic error when component is not resolved | ESW-254" in {
+    "return generic error when component is not resolved | ESW-254, ESW-279" in {
       val componentId = ComponentId(Prefix(Subsystem.ESW, "test1"), ComponentType.Assembly)
-      val error       = GenericError("UnresolvedAkkaLocationException", "Could not resolve esw.test1 to a valid Akka location")
+      val error       = GenericError("UnresolvedAkkaLocationException", "Could not resolve ESW.test1 to a valid Akka location")
 
       when(adminService.getLogMetadata(componentId))
         .thenReturn(Future.failed(new UnresolvedAkkaLocationException(componentId.prefix)))
@@ -346,9 +345,9 @@ class PostRouteTest extends BaseTestSuite with ScalatestRouteTest with GatewayCo
       }
     }
 
-    "return generic error when component is not resolved | ESW-254" in {
+    "return generic error when component is not resolved | ESW-254, ESW-279" in {
       val componentId = ComponentId(Prefix(Subsystem.ESW, "test1"), ComponentType.Assembly)
-      val error       = GenericError("UnresolvedAkkaLocationException", "Could not resolve esw.test1 to a valid Akka location")
+      val error       = GenericError("UnresolvedAkkaLocationException", "Could not resolve ESW.test1 to a valid Akka location")
 
       when(adminService.setLogLevel(componentId, Level.FATAL))
         .thenReturn(Future.failed(new UnresolvedAkkaLocationException(componentId.prefix)))

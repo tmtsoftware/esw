@@ -12,28 +12,28 @@ script {
 
     onSetup("error-handling") { command ->
 
-        val hcd = Hcd("esw.testHcd", 10.seconds)
+        val hcd = Hcd("ESW.testHcd", 10.seconds)
         hcd.submitAndWait(command)
 
     }.onError {
 
-        val errorEvent = SystemEvent("tcs.filter.wheel", "onError-event")
+        val errorEvent = SystemEvent("TCS.filter.wheel", "onError-event")
         publishEvent(errorEvent)
 
     }.retry(2)
 
     onSetup("negative-submit-response") { command ->
 
-        val hcd: RichComponent = Hcd("esw.testHcd", 10.seconds)
+        val hcd: RichComponent = Hcd("ESW.testHcd", 10.seconds)
         val submitResponse: SubmitResponse = hcd.submitAndWait(command, resumeOnError = true)
 
         submitResponse.onFailed {
-            val negativeResponseEvent = SystemEvent("tcs.filter.wheel", "negative-response-error")
+            val negativeResponseEvent = SystemEvent("TCS.filter.wheel", "negative-response-error")
             publishEvent(negativeResponseEvent)
         }
 
     }.onError {
-        val errorEvent = SystemEvent("tcs.filter.wheel", "onError-event")
+        val errorEvent = SystemEvent("TCS.filter.wheel", "onError-event")
         publishEvent(errorEvent)
     }
 

@@ -2,11 +2,11 @@ package esw.ocs.scripts.examples
 
 import csw.params.events.EventName
 import csw.params.events.ObserveEvent
-import esw.ocs.dsl.highlevel.Prefix
+import esw.ocs.dsl.highlevel.models.Prefix
 
 object SharedConstants {
     object prefixes {
-        val counter = Prefix("esw.counter")
+        val counter = Prefix("ESW.counter")
     }
 
     object events {

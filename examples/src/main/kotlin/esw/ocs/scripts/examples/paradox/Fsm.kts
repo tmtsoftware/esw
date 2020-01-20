@@ -13,6 +13,7 @@ import esw.ocs.dsl.params.Params
 import esw.ocs.dsl.params.coordKey
 import esw.ocs.dsl.params.intKey
 import kotlin.time.milliseconds
+import kotlin.time.seconds
 
 script {
 
@@ -40,13 +41,21 @@ script {
 
     //**  Observe Var **//
     val coordKey: Key<Coord> = coordKey("co-ordinates")
-    val observeVar: EventVariable<Coord> = ObserveVar(JEqCoord.make(0, 0), "iris.observe.coord", coordKey)
+    val observeVar: EventVariable<Coord> = ObserveVar(JEqCoord.make(0, 0), "IRIS.observe.coord", coordKey)
     observeVar.get() // returns the value of the parameter from the latest event
 
     observeVar.bind(irisFsm) // binds the FSM and event variable
 
     observeVar.set(JEqCoord.make(1, 1)) // publishes the given value on event key
     //#event-var
+
+    //#polling
+    // SystemVar with polling duration of 2 seconds
+    val pollingSysVar: EventVariable<Int> = SystemVar(0, "esw.temperature.temp", tempKey, 2.seconds)
+
+    // ObserveVar with polling duration of 2 seconds
+    val pollingObsVar: EventVariable<Coord> = ObserveVar(JEqCoord.make(0, 0), "iris.observe.coord", coordKey, 2.seconds)
+    //#polling
 
     var params = Params(mutableSetOf())
 

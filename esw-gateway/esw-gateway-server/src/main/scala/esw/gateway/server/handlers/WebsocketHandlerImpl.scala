@@ -13,11 +13,11 @@ import esw.gateway.api.protocol.WebsocketRequest.{ComponentCommand, SequencerCom
 import esw.gateway.server.utils.Resolver
 import esw.ocs.api.protocol.SequencerWebsocketRequest
 import esw.ocs.handler.SequencerWebsocketHandler
-import msocket.api.Encoding
+import msocket.api.ContentType
 import msocket.impl.ws.WebsocketHandler
 
-class WebsocketHandlerImpl(resolver: Resolver, eventApi: EventApi, encoding: Encoding[_])
-    extends WebsocketHandler[WebsocketRequest](encoding) {
+class WebsocketHandlerImpl(resolver: Resolver, eventApi: EventApi, contentType: ContentType)
+    extends WebsocketHandler[WebsocketRequest](contentType) {
 
   override def handle(request: WebsocketRequest): Source[Message, NotUsed] = request match {
     case ComponentCommand(componentId, command)                 => onComponentCommand(componentId, command)
@@ -29,10 +29,10 @@ class WebsocketHandlerImpl(resolver: Resolver, eventApi: EventApi, encoding: Enc
   private def onComponentCommand(componentId: ComponentId, command: CommandServiceWebsocketMessage): Source[Message, NotUsed] =
     Source
       .future(resolver.commandService(componentId))
-      .flatMapConcat(commandService => new CommandServiceWebsocketHandlers(commandService, encoding).handle(command))
+      .flatMapConcat(commandService => new CommandServiceWebsocketHandlers(commandService, contentType).handle(command))
 
   private def onSequencerCommand(componentId: ComponentId, command: SequencerWebsocketRequest): Source[Message, NotUsed] =
     Source
       .future(resolver.sequencerCommandService(componentId))
-      .flatMapConcat(sequencerApi => new SequencerWebsocketHandler(sequencerApi, encoding).handle(command))
+      .flatMapConcat(sequencerApi => new SequencerWebsocketHandler(sequencerApi, contentType).handle(command))
 }

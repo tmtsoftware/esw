@@ -1,4 +1,4 @@
-package esw.agent.app.utils
+package esw.agent.app
 
 import akka.actor.CoordinatedShutdown
 import akka.actor.CoordinatedShutdown.Reason

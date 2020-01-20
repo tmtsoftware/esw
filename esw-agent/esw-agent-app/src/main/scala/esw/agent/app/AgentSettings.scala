@@ -6,9 +6,10 @@ import com.typesafe.config.Config
 
 import scala.concurrent.duration.{DurationLong, FiniteDuration}
 
-case class AgentSettings(
+case class AgentSettings private[agent] (
     private val _binariesPath: String,
-    durationToWaitForComponentRegistration: FiniteDuration
+    durationToWaitForComponentRegistration: FiniteDuration,
+    durationToWaitForGracefulProcessTermination: FiniteDuration
 ) {
   private val path = Paths.get(_binariesPath)
 
@@ -21,8 +22,12 @@ case class AgentSettings(
 }
 
 object AgentSettings {
-  def from(agentConfig: Config): AgentSettings = AgentSettings(
-    agentConfig.getString("binariesPath"),
-    agentConfig.getDuration("durationToWaitForComponentRegistration").toNanos.nanos
-  )
+  def from(config: Config): AgentSettings = {
+    val agentConfig = config.getConfig("agent")
+    AgentSettings(
+      agentConfig.getString("binariesPath"),
+      agentConfig.getDuration("durationToWaitForComponentRegistration").toSeconds.seconds,
+      agentConfig.getDuration("durationToWaitForGracefulProcessTermination").toSeconds.seconds
+    )
+  }
 }

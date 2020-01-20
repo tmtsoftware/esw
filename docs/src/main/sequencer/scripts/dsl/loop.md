@@ -1,6 +1,6 @@
-# Loop
+# Loops
 
-Script supports following multiple variations of loop Dsl to satisfy different use cases: 
+Script supports following multiple variations of loop DSL to satisfy different use cases: 
 
 1. loop
 1. waitFor
@@ -16,7 +16,7 @@ You can use this DSL when you want to iteratively perform some actions until cer
 loop without providing any minimum interval uses default interval of `50 milliseconds`.
 Default `loopInterval`is used to reduce cpu contention. 
 
-Following example demonstrate the usage of `loop` dsl without providing custom loop interval.
+Following example demonstrate the usage of `loop` DSL without providing custom loop interval.
 In the loop body, motor is being moved by 10 degrees in every iteration of the loop. 
 Loop will be terminated when motor's current position reaches to expected position which is `100 degrees` in this case.
  
@@ -28,7 +28,7 @@ Kotlin
 `loop` DSL allows you to provide minimum loop interval and starts loop synchronously. 
 Every iteration of loop will at least wait for minimum provided interval before executing next iteration.
 
-Following example demonstrate the usage of `loop` dsl by providing custom loop interval.
+Following example demonstrate the usage of `loop` DSL by providing custom loop interval.
 
 Kotlin
 :   @@snip [LoopExample.kts](../../../../../../examples/src/main/kotlin/esw/ocs/scripts/examples/paradox/LoopExample.kts) { #loop-custom-interval }  
@@ -60,7 +60,7 @@ Kotlin
 You can use this DSL when you want to iteratively perform some actions in the background.
 loopAsync without providing any minimum interval uses default interval of `50 milliseconds`.
 
-Following example demonstrate the usage of `loopAsync` dsl without providing custom loop interval.
+Following example demonstrate the usage of `loopAsync` DSL without providing custom loop interval.
 In the loop body, current temperature is published every `50 milliseconds`. 
 LoopAsync will be terminated when `stopPublishingTemperature` flag becomes true and this is set to true in `onStop` handler.
 
@@ -72,7 +72,7 @@ Kotlin
 `loopAsync` DSL allows you to provide minimum loop interval and start loop asynchronously. 
 Every iteration of loopAsync will at least wait for minimum provided interval before executing next iteration.
 
-Following example demonstrate the usage of `loopAsync` dsl by providing custom loop interval.
+Following example demonstrate the usage of `loopAsync` DSL by providing custom loop interval.
 
 Kotlin
 :   @@snip [LoopExample.kts](../../../../../../examples/src/main/kotlin/esw/ocs/scripts/examples/paradox/LoopExample.kts) { #loopAsync-custom-interval }

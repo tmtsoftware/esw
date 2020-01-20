@@ -4,26 +4,26 @@ import sbt._
 
 object Libs {
   private val SilencerVersion = "1.4.4"
-  private val MSocketVersion  = "ec9f4e2"
+  private val MSocketVersion  = "a2e4ec0"
 
   val `silencer-plugin` = "com.github.ghik" % "silencer-plugin" % SilencerVersion cross CrossVersion.full
   val `silencer-lib`    = "com.github.ghik" % "silencer-lib"    % SilencerVersion cross CrossVersion.full
 
   val `case-app`           = "com.github.alexarchambault" %% "case-app" % "2.0.0-M9"
-  val enumeratum           = dep("com.beachape" %%% "enumeratum" % "1.5.14") //MIT License
+  val enumeratum           = dep("com.beachape" %%% "enumeratum" % "1.5.15") //MIT License
   val `mockito-scala`      = "org.mockito" %% "mockito-scala" % "1.7.1" // MIT License
   val `scala-async`        = "org.scala-lang.modules" %% "scala-async" % "0.10.0" //BSD 3-clause "New" or "Revised" License
   val scalatest            = "org.scalatest" %% "scalatest" % "3.0.8" //Apache License 2.0
   val `scala-java8-compat` = "org.scala-lang.modules" %% "scala-java8-compat" % "0.9.0" //BSD 3-clause "New" or "Revised" License
   val `msocket-api`        = dep("com.github.tmtsoftware.msocket" %%% "msocket-api" % MSocketVersion)
   val `msocket-impl-jvm`   = "com.github.tmtsoftware.msocket" %% "msocket-impl-jvm" % MSocketVersion
-  val `caffeine`           = "com.github.ben-manes.caffeine" % "caffeine" % "2.8.0"
+  val `caffeine`           = "com.github.ben-manes.caffeine" % "caffeine" % "2.8.1"
   val `jupiter-interface`  = "net.aichler" % "jupiter-interface" % "0.8.3"
 }
 
 object Csw {
   private val Org     = "com.github.tmtsoftware.csw"
-  private val Version = "29dfd9d" //change this to 0.1.0-SNAPSHOT to test with local csw changes (after publishLocal)
+  private val Version = "1026689" //change this to 0.1.0-SNAPSHOT to test with local csw changes (after publishLocal)
 
   val `csw-admin-api`                 = dep(Org %%% "csw-admin-api" % Version)
   val `csw-admin-impl`                = Org %% "csw-admin-impl" % Version
@@ -85,7 +85,7 @@ object Borer {
 
 object Kotlin {
   val `stdlib-jdk8`     = "org.jetbrains.kotlin"  % "kotlin-stdlib-jdk8"      % "1.3.61"
-  val `coroutines-jdk8` = "org.jetbrains.kotlinx" % "kotlinx-coroutines-jdk8" % "1.3.2"
+  val `coroutines-jdk8` = "org.jetbrains.kotlinx" % "kotlinx-coroutines-jdk8" % "1.3.3"
   val kotlintest        = "io.kotlintest"         % "kotlintest-core"         % "3.4.2"
   val mockk             = "io.mockk"              % "mockk"                   % "1.9.3"
 }

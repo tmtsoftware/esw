@@ -1,11 +1,9 @@
-package esw.agent.app.utils
+package esw.agent.app.process
 
 import csw.logging.api.scaladsl.Logger
 import csw.prefix.models.Prefix
-import esw.agent.api.Response.Failed
 import esw.agent.app.AgentSettings
 
-import scala.compat.java8.OptionConverters.RichOptionalGeneric
 import scala.util.Try
 import scala.util.control.NonFatal
 
@@ -13,25 +11,18 @@ import scala.util.control.NonFatal
 class ProcessExecutor(output: ProcessOutput, agentSettings: AgentSettings, logger: Logger) {
   import logger._
 
-  def runCommand(command: List[String], prefix: Prefix): Either[Failed, Long] =
+  def runCommand(command: List[String], prefix: Prefix): Either[String, Process] =
     Try {
       val processBuilder = new ProcessBuilder(command: _*)
       debug(s"starting command", Map("command" -> processBuilder.command()))
       val process = processBuilder.start()
-      output.attachToProcess(process, prefix.value)
+      output.attachToProcess(process, prefix.toString)
       debug(s"new process spawned", Map("pid" -> process.pid()))
-      process.pid()
+      process
     }.toEither.left.map {
       case NonFatal(err) =>
-        error("command failed to run", map = Map("command" -> command, "prefix" -> prefix.value), ex = err)
-        Failed(err.getMessage)
+        error("command failed to run", map = Map("command" -> command, "prefix" -> prefix.toString), ex = err)
+        err.getMessage
     }
-
-  def killProcess(pid: Long): Boolean =
-    ProcessHandle
-      .of(pid)
-      .map(p => p.destroyForcibly())
-      .asScala
-      .getOrElse(false)
 }
 // $COVERAGE-ON$

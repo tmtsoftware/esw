@@ -9,8 +9,10 @@ import csw.location.models.ComponentId
 import csw.location.models.ComponentType.Machine
 import csw.location.models.Connection.AkkaConnection
 import csw.prefix.models.Prefix
-import esw.agent.api.AgentCommand.SpawnCommand.SpawnSequenceComponent
-import esw.agent.api.{AgentCommand, Response}
+import esw.agent.api.AgentCommand.KillComponent
+import esw.agent.api.AgentCommand.SpawnManuallyRegistered.SpawnRedis
+import esw.agent.api.AgentCommand.SpawnSelfRegistered.SpawnSequenceComponent
+import esw.agent.api.{AgentCommand, KillResponse, SpawnResponse}
 
 import scala.concurrent.Future
 import scala.concurrent.duration.DurationLong
@@ -18,8 +20,14 @@ import scala.concurrent.duration.DurationLong
 class AgentClient private[agent] (agentRef: ActorRef[AgentCommand])(implicit scheduler: Scheduler) {
   implicit private val timeout: Timeout = Timeout(10.seconds)
 
-  def spawnSequenceComponent(prefix: Prefix): Future[Response] =
-    agentRef ? SpawnSequenceComponent(prefix)
+  def spawnSequenceComponent(prefix: Prefix): Future[SpawnResponse] =
+    agentRef ? (SpawnSequenceComponent(_, prefix))
+
+  def spawnRedis(prefix: Prefix, port: Int, redisArguments: List[String]): Future[SpawnResponse] =
+    agentRef ? (SpawnRedis(_, prefix, port, redisArguments))
+
+  def killComponent(componentId: ComponentId): Future[KillResponse] =
+    agentRef ? (KillComponent(_, componentId))
 }
 object AgentClient {
   def make(prefix: Prefix, locationService: LocationService)(implicit actorSystem: ActorSystem[_]): Future[AgentClient] = {

@@ -6,13 +6,15 @@ import akka.actor.testkit.typed.scaladsl.ScalaTestWithActorTestKit
 import akka.actor.typed.Scheduler
 import akka.actor.typed.scaladsl.Behaviors
 import csw.location.api.scaladsl.LocationService
-import csw.location.models.ComponentType.Machine
+import csw.location.models.ComponentType.{Machine, SequenceComponent}
 import csw.location.models.Connection.AkkaConnection
 import csw.location.models.{AkkaLocation, ComponentId}
 import csw.prefix.models.Prefix
-import esw.agent.api.AgentCommand
-import esw.agent.api.AgentCommand.SpawnCommand.SpawnSequenceComponent
-import esw.agent.api.Response.Spawned
+import esw.agent.api.AgentCommand.KillComponent
+import esw.agent.api.AgentCommand.SpawnManuallyRegistered.SpawnRedis
+import esw.agent.api.AgentCommand.SpawnSelfRegistered.SpawnSequenceComponent
+import esw.agent.api.Killed._
+import esw.agent.api.{AgentCommand, Spawned}
 import org.mockito.Mockito.when
 import org.scalatest.{BeforeAndAfterAll, Matchers, WordSpecLike}
 import org.scalatestplus.mockito.MockitoSugar
@@ -72,9 +74,35 @@ class AgentClientTest extends ScalaTestWithActorTestKit with WordSpecLike with M
     }
   }
 
+  "spawnRedis" should {
+    "send SpawnRedis message to agent and return a future with agent response" in {
+      val agentRef                = spawn(stubAgent)
+      implicit val sch: Scheduler = system.scheduler
+      val agentClient             = new AgentClient(agentRef)
+      val prefix                  = Prefix("esw.test3")
+      agentClient.spawnRedis(prefix, 6379, List("--port", "6379")).futureValue should ===(Spawned)
+    }
+  }
+
+  "killComponent" should {
+    "send KillComponent message to agent and return a future with agent response" in {
+      val agentRef                = spawn(stubAgent)
+      implicit val sch: Scheduler = system.scheduler
+      val agentClient             = new AgentClient(agentRef)
+      val prefix                  = ComponentId(Prefix("esw.test3"), SequenceComponent)
+      agentClient.killComponent(prefix).futureValue should ===(killedGracefully)
+    }
+  }
+
   private def stubAgent: Behaviors.Receive[AgentCommand] = Behaviors.receiveMessagePartial[AgentCommand] {
     case SpawnSequenceComponent(replyTo, _) =>
       replyTo ! Spawned
+      Behaviors.same
+    case SpawnRedis(replyTo, _, _, _) =>
+      replyTo ! Spawned
+      Behaviors.same
+    case KillComponent(replyTo, _) =>
+      replyTo ! killedGracefully
       Behaviors.same
   }
 }

@@ -8,11 +8,11 @@ import kotlin.time.seconds
 
 script {
 
-    val pollingVar = SystemVar(0, "tcs.polling.test", intKey("counter"), 400.milliseconds)
+    val pollingVar = SystemVar(0, "TCS.polling.test", intKey("counter"), 400.milliseconds)
 
     val fsm = Fsm("pollingTest", "INIT") {
         state("INIT") {
-            val event = SystemEvent("tcs.polling", "test")
+            val event = SystemEvent("TCS.polling", "test")
             publishEvent(event)
         }
     }
@@ -47,7 +47,7 @@ script {
     onSetup("multi-node") { command ->
         val sequence = sequenceOf(command)
 
-        val tcs = Sequencer("tcs", "moonnight", 10.seconds)
+        val tcs = Sequencer("TCS", "moonnight", 10.seconds)
         tcs.submitAndWait(sequence, 10.seconds)
     }
 

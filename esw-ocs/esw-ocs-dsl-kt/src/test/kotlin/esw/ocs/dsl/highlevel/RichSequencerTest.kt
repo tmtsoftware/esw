@@ -10,6 +10,7 @@ import csw.time.core.models.UTCTime
 import esw.ocs.api.SequencerApi
 import esw.ocs.api.protocol.`Ok$`
 import esw.ocs.dsl.highlevel.models.CommandError
+import esw.ocs.dsl.highlevel.models.TCS
 import esw.ocs.impl.SequencerActorProxyFactory
 import io.kotlintest.shouldNotThrow
 import io.kotlintest.shouldThrow
