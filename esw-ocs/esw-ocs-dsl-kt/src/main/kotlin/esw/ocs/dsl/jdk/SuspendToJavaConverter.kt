@@ -10,8 +10,8 @@ import java.util.concurrent.CompletionStage
 interface SuspendToJavaConverter {
     val coroutineScope: CoroutineScope
 
-    fun SuspendableCallback.toJava(): CompletionStage<Void> =
-            coroutineScope.launch { this@toJava() }.asCompletableFuture().thenAccept { }
+    fun SuspendableCallback.toJava(_coroutineScope: CoroutineScope = coroutineScope): CompletionStage<Void> =
+            _coroutineScope.launch { this@toJava() }.asCompletableFuture().thenAccept { }
 
     fun <T> (SuspendableConsumer<T>).toJava(value: T): CompletionStage<Void> {
         val curriedBlock: suspend (CoroutineScope) -> Unit = { a: CoroutineScope -> this(a, value) }

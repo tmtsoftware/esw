@@ -19,13 +19,13 @@ class ShutdownExceptionHandlerTest extends EswTestKit(EventServer) {
     super.afterAll()
   }
 
-  "invoke exception handler when handle-shutdown-failed" ignore {
-    val reason         = "handle-shutdown-failed"
-    val eventKey       = EventKey(Prefix("tcs.filter.wheel"), EventName(reason))
-    val assertionProbe = TestProbe[Event]
-    val subscription   = eventSubscriber.subscribeActorRef(Set(eventKey), assertionProbe.ref)
+  "should not invoke exception handler when handle-shutdown-failed" in {
+    val reason            = "handle-shutdown-failed"
+    val eventKey          = EventKey(Prefix("tcs.filter.wheel"), EventName(reason))
+    val subscriptionProbe = TestProbe[Event]
+    val subscription      = eventSubscriber.subscribeActorRef(Set(eventKey), subscriptionProbe.ref)
     subscription.ready().futureValue
-    assertionProbe.expectMessageType[SystemEvent] // discard msg
+    subscriptionProbe.expectMessageType[SystemEvent] // discard msg
 
     val sequencer = spawnSequencerRef(tcsSubsystem, tcsObservingMode)
 
@@ -34,9 +34,9 @@ class ShutdownExceptionHandlerTest extends EswTestKit(EventServer) {
 
     eventually { shutdownProbe.expectMessage(Ok) }
     eventually {
-      val event = assertionProbe.expectMessageType[SystemEvent]
-      event.isInvalid shouldBe false
-      event.eventName.name shouldBe reason
+      // exception in shutdown handler will not call onGlobalError
+      // So subscription probe won't receive msg
+      subscriptionProbe.expectNoMessage()
     }
   }
 }
