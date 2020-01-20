@@ -77,7 +77,7 @@ script {
 
         //#observe-var
         val angleKey = intKey("current-angle")
-        val observeVar: EventVariable<Int> = ObserveVar(0, "tcs.filter.wheel", angleKey)
+        val observeVar: EventVariable<Int> = ObserveVar(0, "TCS.filter.wheel", angleKey)
         //#observe-var
 
     }

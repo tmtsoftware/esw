@@ -6,7 +6,7 @@ import esw.ocs.dsl.highlevel.models.Prefix
 
 object SharedConstants {
     object prefixes {
-        val counter = Prefix("esw.counter")
+        val counter = Prefix("ESW.counter")
     }
 
     object events {

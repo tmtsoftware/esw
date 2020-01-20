@@ -40,7 +40,7 @@ script {
 
     //**  Observe Var **//
     val coordKey: Key<Coord> = coordKey("co-ordinates")
-    val observeVar: EventVariable<Coord> = ObserveVar(JEqCoord.make(0, 0), "iris.observe.coord", coordKey)
+    val observeVar: EventVariable<Coord> = ObserveVar(JEqCoord.make(0, 0), "IRIS.observe.coord", coordKey)
     observeVar.get() // returns the value of the parameter from the latest event
 
     observeVar.bind(irisFsm) // binds the FSM and event variable

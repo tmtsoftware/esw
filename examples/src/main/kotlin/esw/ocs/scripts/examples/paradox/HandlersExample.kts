@@ -22,8 +22,8 @@ script {
         val assembly1 = Assembly("filter.wheel", 5.seconds)
         val assembly2 = Assembly("wfos.red.detector", 5.seconds)
         par(
-                { assembly1.submit(Setup("tcs.darknight", "command-1")) },
-                { assembly2.submit(Setup("tcs.darknight", "command-1")) }
+                { assembly1.submit(Setup("TCS.darknight", "command-1")) },
+                { assembly2.submit(Setup("TCS.darknight", "command-1")) }
         )
     }
     // #onSetup

@@ -7,13 +7,13 @@ import kotlin.time.seconds
 val OperationsAndDiagModeHandlers = reusableScript {
     onDiagnosticMode { startTime, hint ->
         // do some actions to go to diagnostic mode based on hint
-        val tcsSequencer = Sequencer("tcs", "moonnight", 10.seconds)
+        val tcsSequencer = Sequencer("TCS", "moonnight", 10.seconds)
         tcsSequencer.diagnosticMode(startTime, hint)
     }
 
     onOperationsMode {
         // do some actions to go to operations mode
-        val tcsSequencer = Sequencer("tcs", "moonnight", 10.seconds)
+        val tcsSequencer = Sequencer("TCS", "moonnight", 10.seconds)
         tcsSequencer.operationsMode()
     }
 }

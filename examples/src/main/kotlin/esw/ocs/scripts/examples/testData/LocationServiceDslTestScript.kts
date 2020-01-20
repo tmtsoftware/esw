@@ -9,7 +9,7 @@ import esw.ocs.dsl.highlevel.models.Prefix
 import esw.ocs.dsl.params.stringKey
 
 script {
-    val prefix = Prefix("iris.motor")
+    val prefix = Prefix("IRIS.motor")
     val componentId = ComponentId(prefix, JComponentType.Service())
     val httpConnection = HttpConnection(componentId)
     val httpRegistration = HttpRegistration(httpConnection, 8080, "/")

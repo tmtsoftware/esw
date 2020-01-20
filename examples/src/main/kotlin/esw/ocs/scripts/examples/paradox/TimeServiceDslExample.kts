@@ -14,7 +14,7 @@ script {
     // #schedule-once
     val scheduleTimeKey = utcTimeKey("scheduledTime")
     val schedulePrefix = "esw.test"
-    val galilAssembly = Assembly("tcs.galil", defaultTimeout = 10.seconds)
+    val galilAssembly = Assembly("TCS.galil", defaultTimeout = 10.seconds)
 
     //Usage inside handlers - schedule tasks while handling setup/observe commands
     onObserve("schedule-once") {command ->
@@ -31,7 +31,7 @@ script {
     // #schedule-periodically
     val offsetTimeKey = utcTimeKey("offsetTime")
     val offsetPrefix = "esw.offset"
-    val assemblyForOffset = Assembly("tcs.galil", defaultTimeout = 10.seconds)
+    val assemblyForOffset = Assembly("TCS.galil", defaultTimeout = 10.seconds)
 
     onSetup("schedule-periodically") {command ->
         val scheduledTime = command(offsetTimeKey)
@@ -46,13 +46,13 @@ script {
 
     onSetup("schedule-once-from-now") {
         scheduleOnceFromNow(delayFromNow = 5.seconds) {
-            publishEvent(SystemEvent("lgsf", "publish.success"))
+            publishEvent(SystemEvent("LGSF", "publish.success"))
         }
     }
 
     onSetup("schedule-periodically-from-now") {
         schedulePeriodicallyFromNow(delayFromNow = 5.seconds, interval = 1.seconds) {
-            publishEvent(SystemEvent("lgsf", "publish.success"))
+            publishEvent(SystemEvent("LGSF", "publish.success"))
         }
     }
 
@@ -73,28 +73,28 @@ script {
         // #tai-time-after
 
         schedulePeriodicallyFromNow(delayFromNow = 5.seconds, interval = 1.seconds) {
-            publishEvent(SystemEvent("lgsf", "publish.success"))
+            publishEvent(SystemEvent("LGSF", "publish.success"))
         }
     }
 
     //Usage at top level
     scheduleOnce(taiTimeNow()) {
-        publishEvent(SystemEvent("lgsf", "publish.success"))
+        publishEvent(SystemEvent("LGSF", "publish.success"))
     }
 
     // #schedule-once-from-now
     scheduleOnceFromNow(1.hours) {
-        publishEvent(SystemEvent("lgsf", "publish.success"))
+        publishEvent(SystemEvent("LGSF", "publish.success"))
     }
     // #schedule-once-from-now
 
     schedulePeriodically(utcTimeNow(), 5.seconds) {
-        publishEvent(SystemEvent("lgsf", "publish.success"))
+        publishEvent(SystemEvent("LGSF", "publish.success"))
     }
 
     // #schedule-periodically-from-now
     schedulePeriodicallyFromNow(1.hours, 10.seconds) {
-        publishEvent(SystemEvent("lgsf", "publish.success"))
+        publishEvent(SystemEvent("LGSF", "publish.success"))
     }
     // #schedule-periodically-from-now
 }

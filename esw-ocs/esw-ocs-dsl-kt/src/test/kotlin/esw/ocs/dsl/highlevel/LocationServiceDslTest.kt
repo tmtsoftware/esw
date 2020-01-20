@@ -29,7 +29,7 @@ class LocationServiceDslTest : LocationServiceDsl {
     override val locationService: ILocationService = mockk()
     override val coroutineScope: CoroutineScope = CoroutineScope(EmptyCoroutineContext)
 
-    private val prefix = Prefix("iris.motor")
+    private val prefix = Prefix("IRIS.motor")
     private val componentId = ComponentId(prefix, JComponentType.Service())
     private val httpConnection = HttpConnection(componentId)
     private val httpRegistration = HttpRegistration(httpConnection, 8080, "/")

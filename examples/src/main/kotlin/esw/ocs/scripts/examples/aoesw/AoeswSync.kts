@@ -8,7 +8,7 @@ import esw.ocs.dsl.params.taiTimeKey
 import kotlin.time.seconds
 
 script {
-    val prefix = "aoesw.aosq"
+    val prefix = "AOESW.aosq"
     val aoeswOffsetTime = taiTimeKey(name = "scheduledTime")
     val aoeswOffsetXKey = floatKey("x")
     val aoeswOffsetYKey = floatKey("y")
