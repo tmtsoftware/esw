@@ -647,7 +647,7 @@ class SequencerBehaviorTest extends ScalaTestWithActorTestKit with BaseTestSuite
       val sequencerSetup = SequencerTestSetup.offline(sequence)
       import sequencerSetup._
 
-      goOnlineAndAssertResponse(GoOnlineHookFailed, Future.failed(new RuntimeException("GoOnline Hook Failed")))
+      goOnlineAndAssertResponse(GoOnlineHookFailed(), Future.failed(new RuntimeException("GoOnline Hook Failed")))
       assertSequencerState(Offline)
     }
   }
@@ -674,7 +674,7 @@ class SequencerBehaviorTest extends ScalaTestWithActorTestKit with BaseTestSuite
       val sequencerSetup = SequencerTestSetup.idle(sequence)
       import sequencerSetup._
 
-      goOfflineAndAssertResponse(GoOfflineHookFailed, Future.failed(new RuntimeException("GoOffline Hook Failed")))
+      goOfflineAndAssertResponse(GoOfflineHookFailed(), Future.failed(new RuntimeException("GoOffline Hook Failed")))
       assertSequencerState(Idle)
     }
   }

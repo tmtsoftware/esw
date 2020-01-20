@@ -4,9 +4,8 @@ import java.net.URI
 
 import akka.actor.typed.{ActorSystem, SpawnProtocol}
 import csw.location.api.scaladsl.LocationService
-import csw.location.models.Connection.AkkaConnection
-import csw.location.models.{AkkaLocation, ComponentId, ComponentType}
-import csw.prefix.models.{Prefix, Subsystem}
+import csw.location.models.Connection.{AkkaConnection, HttpConnection}
+import csw.location.models.{AkkaLocation, ComponentId, HttpLocation}
 import esw.http.core.BaseTestSuite
 import esw.http.core.wiring.ActorRuntime
 import org.mockito.Mockito.{verify, when}
@@ -15,54 +14,51 @@ import scala.concurrent.duration.DurationInt
 import scala.concurrent.{Await, Future}
 
 class ComponentFactoryTest extends BaseTestSuite {
-  val actorSystem: ActorSystem[SpawnProtocol.Command] = ActorSystem(SpawnProtocol(), "test")
-  val actorRuntime                                    = new ActorRuntime(actorSystem)
+  private val actorSystem: ActorSystem[SpawnProtocol.Command] = ActorSystem(SpawnProtocol(), "test")
+  private val actorRuntime                                    = new ActorRuntime(actorSystem)
   import actorRuntime._
+
+  private val locationService       = mock[LocationService]
+  private val akkaComponentId       = mock[ComponentId]
+  private val httpComponentId       = mock[ComponentId]
+  private val akkaConnection        = AkkaConnection(akkaComponentId)
+  private val httpConnection        = HttpConnection(httpComponentId)
+  private val commandServiceFactory = mock[ICommandServiceFactory]
+
+  private val akkaLocation = AkkaLocation(akkaConnection, new URI("actor-path"))
+  private val httpLocation = HttpLocation(httpConnection, new URI("actor-path"))
+
+  when(locationService.resolve(akkaConnection, 5.seconds)).thenReturn(Future.successful(Some(akkaLocation)))
+
+  when(locationService.resolve(AkkaConnection(httpComponentId), 5.seconds)).thenReturn(Future.successful(None))
+  when(locationService.resolve(httpConnection, 5.seconds)).thenReturn(Future.successful(Some(httpLocation)))
 
   override protected def afterAll(): Unit = {
     actorSystem.terminate
     Await.result(actorSystem.whenTerminated, 10.seconds)
-    super.afterAll()
   }
 
-  "ComponentFactory" must {
-    "resolve components using location service | ESW-91" in {
-      val locationService       = mock[LocationService]
-      val componentName         = "testComponent"
-      val componentType         = mock[ComponentType]
-      val prefix                = Prefix(Subsystem.ESW, componentName)
-      val componentId           = ComponentId(prefix, componentType)
-      val connection            = AkkaConnection(componentId)
-      val commandServiceFactory = mock[ICommandServiceFactory]
-
-      val location         = AkkaLocation(connection, new URI("actor-path"))
-      val expectedLocation = Future.successful(Some(location))
-
-      when(locationService.resolve(connection, 5.seconds)).thenReturn(expectedLocation)
-
+  "resolveLocation" must {
+    "resolve akka components using location service | ESW-91" in {
       val componentFactory = new ComponentFactory(locationService, commandServiceFactory)
-      componentFactory.resolve(componentId) { actualLocation =>
-        actualLocation shouldBe location
-      }
+      componentFactory
+        .resolveLocation(akkaComponentId)(_ shouldBe akkaLocation)
+        .futureValue
     }
 
-    "make command service for assembly | ESW-91" in {
-      val locationService       = mock[LocationService]
-      val commandServiceFactory = mock[ICommandServiceFactory]
-      val componentFactory      = new ComponentFactory(locationService, commandServiceFactory)
-      val componentName         = "testComponent"
-      val prefix                = Prefix(Subsystem.ESW, componentName)
-      val componentType         = ComponentType.Assembly
-      val componentId           = ComponentId(prefix, componentType)
-      val connection            = AkkaConnection(componentId)
+    "fallback to http location when akka component not registered | ESW-91, ESW-258" in {
+      val componentFactory = new ComponentFactory(locationService, commandServiceFactory)
+      componentFactory
+        .resolveLocation(httpComponentId)(_ shouldBe httpLocation)
+        .futureValue
+    }
+  }
 
-      val location         = AkkaLocation(connection, new URI("actor-path"))
-      val expectedLocation = Future.successful(Some(location))
-
-      when(locationService.resolve(connection, 5.seconds)).thenReturn(expectedLocation)
-
-      componentFactory.commandService(componentId)
-      eventually(verify(commandServiceFactory).make(location))
+  "commandService" must {
+    "make instance of command service | ESW-91" in {
+      val componentFactory = new ComponentFactory(locationService, commandServiceFactory)
+      componentFactory.commandService(akkaComponentId)
+      eventually(verify(commandServiceFactory).make(akkaLocation))
     }
   }
 }

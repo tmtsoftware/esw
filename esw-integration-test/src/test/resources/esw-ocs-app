@@ -6,4 +6,18 @@ curl -sS -X POST \
   http://localhost:7654/post-endpoint \
   -H 'Accept: */*' \
   -H 'Content-Type: application/json' \
-  -d "{\"Register\":{\"AkkaRegistration\":{\"connection\":{\"prefix\":\"${prefix}\",\"componentType\":\"sequence_component\",\"connectionType\":\"akka\"},\"actorRefURI\":\"akka://agent-app@10.131.124.163:61380/user/agent-actor#1379701792\"}}}"
+  -d "{\"_type\":\"Register\",\"registration\":{\"_type\":\"AkkaRegistration\",\"connection\":{\"prefix\":\"${prefix}\",\"componentType\":\"sequencecomponent\",\"connectionType\":\"akka\"},\"actorRefURI\":\"akka://agent-app@10.131.124.163:61380/user/agent-actor#1379701792\"}}"
+
+function control_c {
+    echo -en "exiting fake esw-ocs-app ..."
+    sleep 5
+}
+
+regex=".*delay_exit"
+
+if [[ $5 =~ $regex ]]; then
+    trap control_c SIGINT
+    trap control_c SIGTERM
+fi
+
+sleep 3

@@ -6,6 +6,7 @@ import com.typesafe.config.Config
 import csw.location.api.javadsl.ILocationService
 import csw.location.api.javadsl.JComponentType
 import csw.location.api.scaladsl.LocationService
+import esw.ocs.dsl.highlevel.models.Prefix
 import esw.ocs.dsl.lowlevel.CswServices
 import esw.ocs.dsl.script.StrandEc
 import esw.ocs.impl.script.ScriptContext

@@ -1,3 +1,5 @@
+@file:Suppress("UNUSED_VARIABLE")
+
 package esw.ocs.scripts.examples.paradox
 
 import csw.params.commands.CommandResponse
@@ -9,11 +11,11 @@ import kotlin.time.seconds
 script {
 
     // #assembly
-    val galilAssembly = Assembly("tcs.galil", 10.seconds)
+    val galilAssembly = Assembly("TCS.galil", defaultTimeout = 10.seconds)
     // #assembly
 
     // #hcd
-    val filterWheelHcd = Hcd("tcs.filter.wheel.hcd", 10.seconds)
+    val filterWheelHcd = Hcd("TCS.filter.wheel.hcd", defaultTimeout = 10.seconds)
     // #hcd
 
     onSetup("setup-filter-assembly") { command ->
@@ -22,14 +24,18 @@ script {
                 leaseDuration = 20.seconds,
                 onLockAboutToExpire = {
                     // do something when lock is about to expire
-                    publishEvent(SystemEvent("esw.test", "tcs.lock.about.to.expire"))
+                    publishEvent(SystemEvent("ESW.test", "TCS.lock.about.to.expire"))
                 },
                 onLockExpired = {
                     // do something when lock expired
-                    publishEvent(SystemEvent("esw.test", "tcs.lock.expired"))
+                    publishEvent(SystemEvent("ESW.test", "TCS.lock.expired"))
                 }
         )
         // #lock-component
+
+        // #unlock-component
+        galilAssembly.unlock()
+        // #unlock-component
 
         // #submit-and-wait-component
         galilAssembly.submitAndWait(command, timeout = 20.seconds)

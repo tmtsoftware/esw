@@ -7,6 +7,7 @@ import esw.ocs.dsl.epics.CommandFlag
 import esw.ocs.dsl.epics.Fsm
 import esw.ocs.dsl.epics.FsmImpl
 import esw.ocs.dsl.epics.FsmScope
+import esw.ocs.dsl.highlevel.models.Prefix
 import esw.ocs.dsl.lowlevel.CswServices
 import esw.ocs.dsl.script.StrandEc
 import esw.ocs.dsl.script.utils.LockUnlockUtil
@@ -17,8 +18,8 @@ import kotlinx.coroutines.CoroutineScope
 import kotlin.time.Duration
 import kotlin.time.toKotlinDuration
 
-interface CswHighLevelDslApi : CswServices, EventServiceDsl, TimeServiceDsl, CommandServiceDsl,
-        ConfigServiceDsl, AlarmServiceDsl, LoopDsl, LoggingDsl, DatabaseServiceDsl {
+interface CswHighLevelDslApi : CswServices, LocationServiceDsl, ConfigServiceDsl, EventServiceDsl, LoggingDsl, CommandServiceDsl,
+        AlarmServiceDsl, TimeServiceDsl, DatabaseServiceDsl, LoopDsl {
 
     fun Assembly(prefix: String, defaultTimeout: Duration): RichComponent
     fun Hcd(prefix: String, defaultTimeout: Duration): RichComponent

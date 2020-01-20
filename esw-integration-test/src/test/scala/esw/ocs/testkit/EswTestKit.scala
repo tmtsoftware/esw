@@ -1,13 +1,12 @@
 package esw.ocs.testkit
 
-import java.nio.file.Paths
+import java.nio.file.{Path, Paths}
 
 import akka.actor
 import akka.actor.CoordinatedShutdown.UnknownReason
 import akka.actor.typed.{ActorRef, ActorSystem, SpawnProtocol}
 import akka.http.scaladsl.Http.ServerBinding
 import akka.util.Timeout
-import com.typesafe.config.ConfigFactory
 import csw.command.client.extensions.AkkaLocationExt.RichAkkaLocation
 import csw.command.client.messages.sequencer.SequencerMsg
 import csw.event.api.scaladsl.{EventPublisher, EventService, EventSubscriber}
@@ -18,7 +17,7 @@ import csw.location.models.{AkkaLocation, ComponentId, ComponentType, HttpLocati
 import csw.network.utils.{Networks, SocketUtils}
 import csw.prefix.models.{Prefix, Subsystem}
 import csw.testkit.scaladsl.ScalaTestFrameworkTestKit
-import esw.agent.app.Main
+import esw.agent.app.{AgentSettings, Main}
 import esw.gateway.api.codecs.GatewayCodecs
 import esw.gateway.api.protocol.{PostRequest, WebsocketRequest}
 import esw.gateway.server.GatewayWiring
@@ -28,7 +27,7 @@ import esw.ocs.app.wiring.{SequenceComponentWiring, SequencerWiring}
 import esw.ocs.impl.messages.SequenceComponentMsg
 import esw.ocs.impl.{SequenceComponentImpl, SequencerActorProxy, SequencerApiFactory}
 import esw.ocs.testkit.Service.{Gateway, MachineAgent}
-import msocket.api.Encoding.JsonText
+import msocket.api.ContentType
 import msocket.impl.post.HttpPostTransport
 import msocket.impl.ws.WebsocketTransport
 
@@ -57,19 +56,26 @@ abstract class EswTestKit(services: Service*)
   var agentLocation: Option[AkkaLocation]                      = None
 
   lazy val gatewayPostClient =
-    new HttpPostTransport[PostRequest](s"http://${Networks().hostname}:$gatewayPort/post-endpoint", JsonText, () => None)
+    new HttpPostTransport[PostRequest](s"http://${Networks().hostname}:$gatewayPort/post-endpoint", ContentType.Json, () => None)
 
   lazy val gatewayWsClient =
-    new WebsocketTransport[WebsocketRequest](s"ws://${Networks().hostname}:$gatewayPort/websocket-endpoint", JsonText)
+    new WebsocketTransport[WebsocketRequest](s"ws://${Networks().hostname}:$gatewayPort/websocket-endpoint", ContentType.Json)
 
   private val sequenceComponentLocations: mutable.Buffer[AkkaLocation] = mutable.Buffer.empty
 
   override implicit def patienceConfig: PatienceConfig = PatienceConfig(10.seconds)
 
+  lazy val resourcesDirPath: Path = Paths.get(getClass.getResource("/").getPath)
+  lazy val agentSettings: AgentSettings = AgentSettings(
+    resourcesDirPath.toString,
+    durationToWaitForComponentRegistration = 5.seconds,
+    durationToWaitForGracefulProcessTermination = 2.seconds
+  )
+
   override def beforeAll(): Unit = {
     super.beforeAll()
     if (services.contains(Gateway)) spawnGateway()
-    if (services.contains(MachineAgent)) spawnAgent()
+    if (services.contains(MachineAgent)) spawnAgent(agentSettings)
   }
 
   override def afterAll(): Unit = {
@@ -79,26 +85,16 @@ abstract class EswTestKit(services: Service*)
     super.afterAll()
   }
 
-  def clearAll(): Unit = {
+  def clearAll(): Unit =
     sequenceComponentLocations.clear()
-  }
 
   def shutdownAllSequencers(): Unit = {
     sequenceComponentLocations.foreach(x => new SequenceComponentImpl(x.uri.toActorRef.unsafeUpcast).unloadScript())
     clearAll()
   }
 
-  def spawnAgent(): AkkaLocation = {
-    val resourcesDir = Paths.get(getClass.getResource("/esw-ocs-app").getPath).getParent
-    Main.onStart(
-      agentPrefix,
-      ConfigFactory.parseString(s"""
-        |agent {
-        |  binariesPath = "$resourcesDir"
-        |  durationToWaitForComponentRegistration = 15s
-        |}
-        |""".stripMargin)
-    )
+  def spawnAgent(agentSettings: AgentSettings): AkkaLocation = {
+    Main.onStart(agentPrefix, agentSettings)
 
     agentLocation = Some(
       locationService

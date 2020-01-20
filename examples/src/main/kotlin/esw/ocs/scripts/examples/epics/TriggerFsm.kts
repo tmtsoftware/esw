@@ -5,7 +5,7 @@ import esw.ocs.dsl.params.booleanKey
 import kotlin.time.seconds
 
 FsmScript("INIT") {
-    val triggerFlag = SystemVar(false, "tcs.triggerflag", booleanKey("flag"))
+    val triggerFlag = SystemVar(false, "TCS.triggerflag", booleanKey("flag"))
 
     val triggerFsm = Fsm("triggerfsm", "Init") {
         state("Init") {
@@ -35,7 +35,7 @@ FsmScript("INIT") {
             triggerFsm.start()
 
             //Change triggerFlagKey which will trigger Fsm
-            val systemEvent = SystemEvent("tcs", "triggerflag", booleanKey("flag").set(true))
+            val systemEvent = SystemEvent("TCS", "triggerflag", booleanKey("flag").set(true))
             println("********** ${systemEvent.eventName()}")
             publishEvent(systemEvent)
 
@@ -52,6 +52,6 @@ FsmScript("INIT") {
         //do some actions to stop
 
         //send stop command to downstream sequencer
-        Sequencer("lgsf", "darknight", 10.seconds).stop()
+        Sequencer("LGSF", "darknight", 10.seconds).stop()
     }
 }

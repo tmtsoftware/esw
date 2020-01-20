@@ -24,7 +24,7 @@ sealed trait SequencerSubmitResponse extends EswSequencerResponse {
   }
 }
 
-case object Ok
+sealed trait Ok
     extends OkOrUnhandledResponse
     with GenericResponse
     with PauseResponse
@@ -33,6 +33,8 @@ case object Ok
     with GoOfflineResponse
     with DiagnosticModeResponse
     with OperationsModeResponse
+
+case object Ok extends Ok
 
 final case class PullNextResult(step: Step)                   extends PullNextResponse
 final case class SubmitResult(submitResponse: SubmitResponse) extends SequencerSubmitResponse
@@ -56,25 +58,19 @@ object Unhandled {
   }
 }
 
-trait SingletonError {
-  def msg: String
-}
+case class GoOnlineHookFailed(
+    msg: String = "Sequencer could not go online because online handlers failed to execute successfully"
+) extends GoOnlineResponse
 
-case object GoOnlineHookFailed extends GoOnlineResponse with SingletonError {
-  val msg = "Sequencer could not go online because online handlers failed to execute successfully"
-}
+case class GoOfflineHookFailed(
+    msg: String = "Sequencer could not go offline because offline handlers failed to execute successfully"
+) extends GoOfflineResponse
 
-case object GoOfflineHookFailed extends GoOfflineResponse with SingletonError {
-  val msg = "Sequencer could not go online because offline handlers failed to execute successfully"
-}
+case class DiagnosticHookFailed(msg: String = "Sequencer failed to execute diagnostic mode handlers")
+    extends DiagnosticModeResponse
 
-case object DiagnosticHookFailed extends DiagnosticModeResponse with SingletonError {
-  val msg = "Sequencer failed to execute diagnostic mode handlers."
-}
-
-case object OperationsHookFailed extends OperationsModeResponse with SingletonError {
-  val msg = "Sequencer failed to execute operations mode handlers."
-}
+case class OperationsHookFailed(msg: String = "Sequencer failed to execute operations mode handlers")
+    extends OperationsModeResponse
 
 sealed trait EditorError extends GenericResponse
 

@@ -10,7 +10,7 @@ import kotlin.time.milliseconds
 import kotlin.time.seconds
 
 object aosq {
-    val prefix = "aoesw.aosq"
+    val prefix = "AOESW.aosq"
 }
 
 object oiwfsDetectorAssembly {
@@ -18,7 +18,7 @@ object oiwfsDetectorAssembly {
 }
 
 object rtcAssembly {
-    val prefix = "nfiraos.rtc"
+    val prefix = "NFIRAOS.rtc"
 }
 
 script {
@@ -82,7 +82,7 @@ script {
     }
 
     suspend fun offsetTcs(xoffset: Float, yoffset: Float, probeNum: Int, obsId: String?) {
-        val tcsSequencer = Sequencer("tcs", "darknight", 10.seconds)
+        val tcsSequencer = Sequencer("TCS", "darknight", 10.seconds)
         tcsSequencer.submitAndWait(
                 sequenceOf(
                         Setup(aosq.prefix, "offset", obsId)

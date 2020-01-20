@@ -4,6 +4,9 @@ import kotlinx.coroutines.*
 import kotlin.time.Duration
 import kotlin.time.milliseconds
 
+/**
+ * Provide DSLs for writing condition based custom synchronous and asynchronous loops
+ */
 interface LoopDsl {
     companion object {
         private val loopInterval: Duration = 50.milliseconds

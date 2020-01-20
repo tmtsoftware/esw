@@ -11,9 +11,9 @@ script {
 
     //#par
     val prefix = "ocs.primary"
-    val hcd1 = Hcd("iris.filter.wheel1", 10.minutes)
-    val hcd2 = Hcd("iris.filter.wheel2", 10.minutes)
-    val hcd3 = Hcd("iris.filter.wheel3", 10.minutes)
+    val hcd1 = Hcd("IRIS.filter.wheel1", 10.minutes)
+    val hcd2 = Hcd("IRIS.filter.wheel2", 10.minutes)
+    val hcd3 = Hcd("IRIS.filter.wheel3", 10.minutes)
 
     onSetup("setup-iris-hcds") {
         // send 3 setup commands to 3 HCD's in parallel

@@ -141,7 +141,7 @@ class SequencerBehavior(
 
   private def goingOnline(data: SequencerData): Behavior[SequencerMsg] = receive(GoingOnline, data) {
     case GoOnlineSuccess(replyTo) => replyTo ! Ok; idle(data)
-    case GoOnlineFailed(replyTo)  => replyTo ! GoOnlineHookFailed; offline(data)
+    case GoOnlineFailed(replyTo)  => replyTo ! GoOnlineHookFailed(); offline(data)
   }
 
   private def goOffline(replyTo: ActorRef[GoOfflineResponse], data: SequencerData): Behavior[SequencerMsg] = {
@@ -156,7 +156,7 @@ class SequencerBehavior(
     case GoOfflineSuccess(replyTo) => replyTo ! Ok; offline(data.copy(stepList = None))
     case GoOfflineFailed(replyTo) =>
       val currentBehavior: SequencerData => Behavior[SequencerMsg] = if (data.isSequenceLoaded) loaded else idle
-      replyTo ! GoOfflineHookFailed; currentBehavior(data)
+      replyTo ! GoOfflineHookFailed(); currentBehavior(data)
   }
 
   private def abortSequence(data: SequencerData, replyTo: ActorRef[OkOrUnhandledResponse]): Behavior[SequencerMsg] = {
@@ -185,7 +185,7 @@ class SequencerBehavior(
 
   private def shutdown(data: SequencerData, replyTo: ActorRef[Ok.type]): Behavior[SequencerMsg] = {
 
-    // run both the futures in parallel and wait for both to complete
+    // run the futures in parallel and wait for all of them to complete
     // once all finished, send ShutdownComplete self message irrespective of any failures
     val f1 = locationService.unregister(AkkaConnection(componentId))
     val f2 = script.executeShutdown()
@@ -209,7 +209,7 @@ class SequencerBehavior(
   ): Behavior[SequencerMsg] = {
     script.executeDiagnosticMode(startTime, hint).onComplete {
       case Success(_) => replyTo ! Ok
-      case _          => replyTo ! DiagnosticHookFailed
+      case _          => replyTo ! DiagnosticHookFailed()
     }
     Behaviors.same
   }
@@ -217,7 +217,7 @@ class SequencerBehavior(
   private def goToOperationsMode(replyTo: ActorRef[OperationsModeResponse]): Behavior[SequencerMsg] = {
     script.executeOperationsMode().onComplete {
       case Success(_) => replyTo ! Ok
-      case _          => replyTo ! OperationsHookFailed
+      case _          => replyTo ! OperationsHookFailed()
     }
     Behaviors.same
   }

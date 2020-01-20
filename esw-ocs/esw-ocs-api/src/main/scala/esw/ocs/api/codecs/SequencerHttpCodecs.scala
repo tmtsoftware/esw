@@ -2,7 +2,7 @@ package esw.ocs.api.codecs
 
 import esw.ocs.api.protocol.{SequencerPostRequest, SequencerWebsocketRequest}
 import io.bullet.borer.Codec
-import io.bullet.borer.derivation.CompactMapBasedCodecs._
+import io.bullet.borer.derivation.MapBasedCodecs.deriveAllCodecs
 import msocket.api
 import msocket.api.ErrorProtocol
 import msocket.api.models.ServiceError

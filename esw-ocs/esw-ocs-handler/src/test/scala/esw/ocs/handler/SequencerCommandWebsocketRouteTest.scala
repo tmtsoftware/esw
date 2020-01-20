@@ -12,11 +12,11 @@ import esw.ocs.api.protocol.SequencerWebsocketRequest
 import esw.ocs.api.protocol.SequencerWebsocketRequest.QueryFinal
 import esw.ocs.api.{BaseTestSuite, SequencerApi}
 import io.bullet.borer.Decoder
-import msocket.api.Encoding
-import msocket.api.Encoding.JsonText
+import msocket.api.ContentEncoding.JsonText
+import msocket.api.ContentType
 import msocket.impl.CborByteString
 import msocket.impl.post.ClientHttpCodecs
-import msocket.impl.ws.EncodingExtensions.EncodingForMessage
+import msocket.impl.ws.WebsocketExtensions.WebsocketEncoding
 import msocket.impl.ws.WebsocketRouteFactory
 
 import scala.concurrent.Future
@@ -28,11 +28,11 @@ class SequencerCommandWebsocketRouteTest
     with SequencerHttpCodecs
     with ClientHttpCodecs {
 
-  override def encoding: Encoding[_] = JsonText
+  override def clientContentType: ContentType = ContentType.Json
 
   private val sequencer: SequencerApi = mock[SequencerApi]
 
-  private def websocketHandlerFactory(encoding: Encoding[_]) = new SequencerWebsocketHandler(sequencer, encoding)
+  private def websocketHandlerFactory(contentType: ContentType) = new SequencerWebsocketHandler(sequencer, contentType)
 
   private implicit val actorSystem: ActorSystem[SpawnProtocol.Command] = ActorSystem(SpawnProtocol(), "test-system")
 
@@ -49,7 +49,7 @@ class SequencerCommandWebsocketRouteTest
       when(sequencer.queryFinal(id)).thenReturn(Future.successful(completedResponse))
 
       WS("/websocket-endpoint", wsClient.flow) ~> route ~> check {
-        wsClient.sendMessage(JsonText.strictMessage(QueryFinal(id, timeout): SequencerWebsocketRequest))
+        wsClient.sendMessage(ContentType.Json.strictMessage(QueryFinal(id, timeout): SequencerWebsocketRequest))
         isWebSocketUpgrade shouldBe true
 
         val response = decodeMessage[SubmitResponse](wsClient)

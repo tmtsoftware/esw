@@ -9,9 +9,9 @@ import csw.params.events.EventKey
 import csw.params.events.EventName
 import csw.params.events.SystemEvent
 import esw.ocs.dsl.highlevel.EventServiceDsl
-import esw.ocs.dsl.highlevel.Prefix
-import esw.ocs.dsl.highlevel.TCS
 import esw.ocs.dsl.highlevel.models.EventSubscription
+import esw.ocs.dsl.highlevel.models.Prefix
+import esw.ocs.dsl.highlevel.models.TCS
 import esw.ocs.dsl.params.booleanKey
 import esw.ocs.dsl.params.intKey
 import io.kotlintest.shouldBe

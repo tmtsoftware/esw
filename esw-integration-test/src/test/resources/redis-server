@@ -1,0 +1,14 @@
+#!/bin/sh -e
+echo "Executing fake redis-server"
+
+function control_c {
+    echo -en "exiting fake redis-server ..."
+    sleep 5
+}
+
+if [[ $1 == "delay_exit" ]]; then
+    trap control_c SIGINT
+    trap control_c SIGTERM
+fi
+
+sleep 3

@@ -96,8 +96,8 @@ class AdminGatewayTest extends EswTestKit(Gateway) with GatewayCodecs {
     containerRef ! GetComponents(probe.ref)
     val components = probe.expectMessageType[Components].components
 
-    laserComponent = components.find(x => x.info.prefix.componentName.equals("laser")).get
-    galilComponent = components.find(x => x.info.prefix.componentName.equals("galil")).get
+    laserComponent = components.find(x => x.info.prefix.componentName.equals("Laser")).get
+    galilComponent = components.find(x => x.info.prefix.componentName.equals("Galil")).get
   }
 
   override protected def afterEach(): Unit = logBuffer.clear()
@@ -133,7 +133,7 @@ class AdminGatewayTest extends EswTestKit(Gateway) with GatewayCodecs {
       loggingSystem.setAkkaLevel(akkaLevel)
     }
 
-    "set log level of the component dynamically through http end point | ESW-254, CSW-81" in {
+    "set log level of the component dynamically through http end point | ESW-254, CSW-81, ESW-279" in {
       laserComponent.supervisor ! Oneway(Setup(prefix, startLoggingCmd, None), probe.ref)
       Thread.sleep(500)
 
@@ -181,18 +181,18 @@ class AdminGatewayTest extends EswTestKit(Gateway) with GatewayCodecs {
       }
     }
 
-    "return appropriate error when component is not resolved for akka connection | ESW-254, CSW-81" in {
+    "return appropriate error when component is not resolved for akka connection | ESW-254, CSW-81, ESW-279" in {
       val serviceError = intercept[ServiceError] {
         Await.result(adminClient.getLogMetadata(ComponentId(Prefix(Subsystem.TCS, "abc"), ComponentType.HCD)), 5.seconds)
       }
 
       serviceError.generic_error should ===(
-        GenericError("UnresolvedAkkaLocationException", "Could not resolve tcs.abc to a valid Akka location")
+        GenericError("UnresolvedAkkaLocationException", "Could not resolve TCS.abc to a valid Akka location")
       )
     }
 
-    "return appropriate exception when logging level is incorrect | ESW-254, CSW-81" in {
-      val str = """{"SetLogLevel":{"componentId":{"prefix":"tcs.Laser","componentType":"assembly"},"level":"INVALID"}}"""
+    "return appropriate exception when logging level is incorrect | ESW-254, CSW-81, ESW-279" in {
+      val str = """{"SetLogLevel":{"componentId":{"prefix":"TCS.Laser","componentType":"assembly"},"level":"INVALID"}}"""
       val request = RequestBuilding
         .Post(
           s"http://${Networks().hostname}:$gatewayPort/post-endpoint",

@@ -1,3 +1,5 @@
+@file:Suppress("UNUSED_VARIABLE")
+
 package esw.ocs.scripts.examples.paradox
 
 import esw.ocs.dsl.core.script
@@ -6,7 +8,7 @@ import kotlin.time.milliseconds
 
 script {
     var stopPublishingTemperature = false
-    val temperatureEvent = ObserveEvent("iris.motor", "temperature")
+    val temperatureEvent = ObserveEvent("IRIS.motor", "temperature")
     val temperatureKey = longKey("temperature")
     var motorUp = false
     var motorPosition = 0

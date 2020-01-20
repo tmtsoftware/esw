@@ -23,16 +23,16 @@ script {
     val temperatureVar = SystemVar(0, "esw.temperature.temp", tempKey)
 
     val temperatureFsm = Fsm("TEMP", OK) {
-        var fsmVariable = 10                    // [[ 01 ]]
+        var fsmVariable = 10                    // [[ 1 ]]
 
         state(OK) {
-            // [[ 02 ]]
+            // [[ 2 ]]
 
             entry {
                 publishState(tempFsmEvent, OK)
             }
             on(temperatureVar.get() == 30L) {
-                become(FINISHED)             // [[ 03 ]]
+                become(FINISHED)             // [[ 3 ]]
             }
             on(temperatureVar.get() > 40) {
                 become(ERROR)
@@ -49,18 +49,18 @@ script {
         }
 
         state(FINISHED) {
-            completeFsm()                   // [[ 04 ]]
+            completeFsm()                   // [[ 4 ]]
         }
     }
 
-    temperatureVar.bind(temperatureFsm)     // [[ 05 ]]
+    temperatureVar.bind(temperatureFsm)     // [[ 5 ]]
 
     onSetup("command-1") {
-        temperatureFsm.start()              // [[ 06 ]]
+        temperatureFsm.start()              // [[ 6 ]]
     }
 
     onSetup("command-2") {
-        temperatureFsm.await()              // [[ 07 ]]
+        temperatureFsm.await()              // [[ 7 ]]
     }
 
     //#example-fsm

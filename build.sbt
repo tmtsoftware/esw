@@ -112,7 +112,6 @@ lazy val `esw-agent` = project
   .in(file("esw-agent"))
   .aggregate(
     `esw-agent-app`,
-    `esw-agent-api`,
     `esw-agent-client`
   )
 
@@ -121,15 +120,7 @@ lazy val `esw-agent-app` = project
   .enablePlugins(EswBuildInfo, DeployApp, MaybeCoverage)
   .settings(libraryDependencies ++= Dependencies.AgentApp.value)
   .dependsOn(
-    `esw-agent-api`,
-    `esw-test-reporter` % Test
-  )
-
-lazy val `esw-agent-api` = project
-  .in(file("esw-agent/esw-agent-api"))
-  .enablePlugins(DeployApp)
-  .settings(libraryDependencies ++= Dependencies.AgentApi.value)
-  .dependsOn(
+    `esw-agent-client`,
     `esw-test-reporter` % Test
   )
 
@@ -138,7 +129,6 @@ lazy val `esw-agent-client` = project
   .enablePlugins(DeployApp, MaybeCoverage)
   .settings(libraryDependencies ++= Dependencies.AgentClient.value)
   .dependsOn(
-    `esw-agent-api`,
     `esw-test-reporter` % Test
   )
 
@@ -210,7 +200,8 @@ lazy val `esw-test-reporter` = project
   .settings(libraryDependencies += Libs.scalatest)
 
 /* ================= Paradox Docs ============== */
-lazy val docs = project.enablePlugins(NoPublish, ParadoxMaterialSitePlugin)
+lazy val docs = project
+  .enablePlugins(NoPublish, ParadoxMaterialSitePlugin)
 
 lazy val examples = project
   .in(file("examples"))

@@ -28,12 +28,19 @@ sealed class BaseScript(wiring: ScriptWiring) : CswHighLevelDsl(wiring.cswServic
     internal open val scriptDsl: ScriptDsl by lazy { ScriptDsl(wiring.scriptContext.sequenceOperatorFactory(), strandEc) }
 
     private val exceptionHandler = CoroutineExceptionHandler { _, exception ->
-        warn("Exception thrown in script with a message: ${exception.message}, invoking exception handler", cause = exception)
+        error("Exception thrown in script with a message: ${exception.message}, invoking exception handler", cause = exception)
         exception.printStackTrace()
         scriptDsl.executeExceptionHandlers(exception)
     }
 
+    private val shutdownExceptionHandler = CoroutineExceptionHandler { _, exception ->
+        error("Shutting down: Exception thrown in script with a message: ${exception.message}, invoking exception handler", cause = exception)
+        exception.printStackTrace()
+    }
+
     override val coroutineScope: CoroutineScope = wiring.scope + exceptionHandler
+
+    private val shutdownHandlerCoroutineScope = wiring.scope + shutdownExceptionHandler
 
     fun onGoOnline(block: suspend HandlerScope.() -> Unit) =
             scriptDsl.onGoOnline { block.toCoroutineScope().toJava() }
@@ -45,7 +52,7 @@ sealed class BaseScript(wiring: ScriptWiring) : CswHighLevelDsl(wiring.cswServic
             scriptDsl.onAbortSequence { block.toCoroutineScope().toJava() }
 
     fun onShutdown(block: suspend HandlerScope.() -> Unit) =
-            scriptDsl.onShutdown { block.toCoroutineScope().toJava() }
+            scriptDsl.onShutdown { block.toCoroutineScope().toJava(shutdownHandlerCoroutineScope) }
 
     fun onDiagnosticMode(block: suspend HandlerScope.(UTCTime, String) -> Unit) =
             scriptDsl.onDiagnosticMode { x: UTCTime, y: String ->

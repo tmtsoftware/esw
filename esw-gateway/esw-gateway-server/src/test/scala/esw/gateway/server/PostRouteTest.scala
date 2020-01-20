@@ -29,8 +29,7 @@ import esw.gateway.impl._
 import esw.gateway.server.handlers.PostHandlerImpl
 import esw.http.core.BaseTestSuite
 import esw.ocs.api.protocol.{Ok, OkOrUnhandledResponse, SequencerPostRequest}
-import msocket.api.Encoding
-import msocket.api.Encoding.JsonText
+import msocket.api.ContentType
 import msocket.api.models.{GenericError, ServiceError}
 import msocket.impl.post.{ClientHttpCodecs, PostRouteFactory}
 import org.mockito.ArgumentMatchers.{any, eq => argsEq}
@@ -41,7 +40,7 @@ import scala.concurrent.Future
 
 class PostRouteTest extends BaseTestSuite with ScalatestRouteTest with GatewayCodecs with ClientHttpCodecs {
 
-  override def encoding: Encoding[_] = JsonText
+  override def clientContentType: ContentType = ContentType.Json
 
   private val cswCtxMocks = new CswWiringMocks()
   import cswCtxMocks._
@@ -64,7 +63,7 @@ class PostRouteTest extends BaseTestSuite with ScalatestRouteTest with GatewayCo
       val componentId                = ComponentId(destination, componentType)
       val submitRequest: PostRequest = ComponentCommand(componentId, Submit(command))
 
-      when(resolver.resolveComponent(componentId)).thenReturn(Future.successful(commandService))
+      when(resolver.commandService(componentId)).thenReturn(Future.successful(commandService))
       when(commandService.submit(command)).thenReturn(Future.successful(Started(runId)))
 
       post(submitRequest) ~> route ~> check {
@@ -79,7 +78,7 @@ class PostRouteTest extends BaseTestSuite with ScalatestRouteTest with GatewayCo
       val componentId                  = ComponentId(destination, componentType)
       val validateRequest: PostRequest = ComponentCommand(componentId, Validate(command))
 
-      when(resolver.resolveComponent(componentId)).thenReturn(Future.successful(commandService))
+      when(resolver.commandService(componentId)).thenReturn(Future.successful(commandService))
       when(commandService.validate(command)).thenReturn(Future.successful(Accepted(runId)))
 
       post(validateRequest) ~> route ~> check {
@@ -94,7 +93,7 @@ class PostRouteTest extends BaseTestSuite with ScalatestRouteTest with GatewayCo
       val componentId                = ComponentId(destination, componentType)
       val onewayRequest: PostRequest = ComponentCommand(componentId, Oneway(command))
 
-      when(resolver.resolveComponent(componentId)).thenReturn(Future.successful(commandService))
+      when(resolver.commandService(componentId)).thenReturn(Future.successful(commandService))
       when(commandService.oneway(command)).thenReturn(Future.successful(Accepted(runId)))
 
       Post("/post-endpoint", onewayRequest) ~> route ~> check {
@@ -109,7 +108,7 @@ class PostRouteTest extends BaseTestSuite with ScalatestRouteTest with GatewayCo
       val submitRequest: PostRequest = ComponentCommand(componentId, Submit(command))
 
       val message = "component does not exist"
-      when(resolver.resolveComponent(componentId)).thenReturn(Future.failed(InvalidComponent(message)))
+      when(resolver.commandService(componentId)).thenReturn(Future.failed(InvalidComponent(message)))
 
       post(submitRequest) ~> route ~> check {
         status shouldEqual StatusCodes.InternalServerError
@@ -125,7 +124,7 @@ class PostRouteTest extends BaseTestSuite with ScalatestRouteTest with GatewayCo
       val submitRequest: PostRequest = SequencerCommand(componentId, SequencerPostRequest.Submit(sequence))
       val submitResponse             = Started(Id("123"))
 
-      when(resolver.resolveSequencer(componentId)).thenReturn(Future.successful(sequencer))
+      when(resolver.sequencerCommandService(componentId)).thenReturn(Future.successful(sequencer))
       when(sequencer.submit(sequence)).thenReturn(Future.successful(submitResponse))
 
       post(submitRequest) ~> route ~> check {
@@ -139,7 +138,7 @@ class PostRouteTest extends BaseTestSuite with ScalatestRouteTest with GatewayCo
       val queryRequest: PostRequest = SequencerCommand(componentId, SequencerPostRequest.Query(runId))
       val queryResponse             = Invalid(runId, IdNotAvailableIssue(s"Sequencer is not running any sequence with runId $runId"))
 
-      when(resolver.resolveSequencer(componentId)).thenReturn(Future.successful(sequencer))
+      when(resolver.sequencerCommandService(componentId)).thenReturn(Future.successful(sequencer))
       when(sequencer.query(runId)).thenReturn(Future.successful(queryResponse))
 
       post(queryRequest) ~> route ~> check {
@@ -151,7 +150,7 @@ class PostRouteTest extends BaseTestSuite with ScalatestRouteTest with GatewayCo
       val componentId                  = ComponentId(destination, Sequencer)
       val goOnlineRequest: PostRequest = SequencerCommand(componentId, SequencerPostRequest.GoOnline)
 
-      when(resolver.resolveSequencer(componentId)).thenReturn(Future.successful(sequencer))
+      when(resolver.sequencerCommandService(componentId)).thenReturn(Future.successful(sequencer))
       when(sequencer.goOnline()).thenReturn(Future.successful(Ok))
 
       post(goOnlineRequest) ~> route ~> check {
@@ -321,9 +320,9 @@ class PostRouteTest extends BaseTestSuite with ScalatestRouteTest with GatewayCo
       }
     }
 
-    "return generic error when component is not resolved | ESW-254" in {
+    "return generic error when component is not resolved | ESW-254, ESW-279" in {
       val componentId = ComponentId(Prefix(Subsystem.ESW, "test1"), ComponentType.Assembly)
-      val error       = GenericError("UnresolvedAkkaLocationException", "Could not resolve esw.test1 to a valid Akka location")
+      val error       = GenericError("UnresolvedAkkaLocationException", "Could not resolve ESW.test1 to a valid Akka location")
 
       when(adminService.getLogMetadata(componentId))
         .thenReturn(Future.failed(new UnresolvedAkkaLocationException(componentId.prefix)))
@@ -346,9 +345,9 @@ class PostRouteTest extends BaseTestSuite with ScalatestRouteTest with GatewayCo
       }
     }
 
-    "return generic error when component is not resolved | ESW-254" in {
+    "return generic error when component is not resolved | ESW-254, ESW-279" in {
       val componentId = ComponentId(Prefix(Subsystem.ESW, "test1"), ComponentType.Assembly)
-      val error       = GenericError("UnresolvedAkkaLocationException", "Could not resolve esw.test1 to a valid Akka location")
+      val error       = GenericError("UnresolvedAkkaLocationException", "Could not resolve ESW.test1 to a valid Akka location")
 
       when(adminService.setLogLevel(componentId, Level.FATAL))
         .thenReturn(Future.failed(new UnresolvedAkkaLocationException(componentId.prefix)))

@@ -1,6 +1,6 @@
 package esw.ocs.impl.core
 
-import csw.command.client.internal.SequencerCommandServiceImpl
+import csw.command.client.SequencerCommandServiceImpl
 import csw.params.commands.CommandResponse.Completed
 import csw.params.commands.{CommandName, Sequence, Setup}
 import csw.prefix.models.Prefix

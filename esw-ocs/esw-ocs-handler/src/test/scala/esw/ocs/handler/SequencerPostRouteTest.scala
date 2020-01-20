@@ -15,8 +15,7 @@ import esw.ocs.api.protocol.EditorError.{CannotOperateOnAnInFlightOrFinishedStep
 import esw.ocs.api.protocol.SequencerPostRequest._
 import esw.ocs.api.protocol._
 import esw.ocs.api.{BaseTestSuite, SequencerApi}
-import msocket.api.Encoding
-import msocket.api.Encoding.JsonText
+import msocket.api.ContentType
 import msocket.impl.post.{ClientHttpCodecs, PostRouteFactory}
 
 import scala.concurrent.Future
@@ -27,7 +26,7 @@ class SequencerPostRouteTest extends BaseTestSuite with ScalatestRouteTest with 
   private val postHandler             = new SequencerPostHandler(sequencer)
   lazy val route: Route               = new PostRouteFactory[SequencerPostRequest]("post-endpoint", postHandler).make()
 
-  override def encoding: Encoding[_] = JsonText
+  override def clientContentType: ContentType = ContentType.Json
 
   override def afterEach(): Unit = {
     reset(sequencer)
@@ -140,11 +139,11 @@ class SequencerPostRouteTest extends BaseTestSuite with ScalatestRouteTest with 
     }
 
     "return GoOnlineHookFailed for GoOnline request | ESW-222" in {
-      when(sequencer.goOnline()).thenReturn(Future.successful(GoOnlineHookFailed))
+      when(sequencer.goOnline()).thenReturn(Future.successful(GoOnlineHookFailed()))
 
       Post("/post-endpoint", GoOnline.narrow) ~> route ~> check {
         verify(sequencer).goOnline()
-        responseAs[GoOnlineResponse] should ===(GoOnlineHookFailed)
+        responseAs[GoOnlineResponse] should ===(GoOnlineHookFailed())
       }
     }
 

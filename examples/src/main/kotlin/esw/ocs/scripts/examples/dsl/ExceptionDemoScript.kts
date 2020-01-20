@@ -11,13 +11,13 @@ script {
     //  throws EventServerNotAvailable exception
     //  1. returns ScriptError with the message of the exception
     //  2. script initialisation fails
-    publishEvent(SystemEvent("tcs", "test.event"))
+    publishEvent(SystemEvent("TCS", "test.event"))
 
 
     scheduleOnce(utcTimeNow()) {
         //  throws EventServerNotAvailable exception
         //  1. which will call exception handler
-        publishEvent(SystemEvent("tcs", "test.event"))
+        publishEvent(SystemEvent("TCS", "test.event"))
     }
 
     onGlobalError { error ->
@@ -36,7 +36,7 @@ script {
         // throws EventServerNotAvailable exception
         // 1. which will call exception handler
         // 2. mark the command as Error.
-        publishEvent(SystemEvent("tcs", "test.event"))
+        publishEvent(SystemEvent("TCS", "test.event"))
     }
 
 
@@ -44,7 +44,7 @@ script {
         scheduleOnce(utcTimeNow()) {
             // throws EventServerNotAvailable exception
             // 1. which will call exception handler
-            publishEvent(SystemEvent("tcs", "test.event"))
+            publishEvent(SystemEvent("TCS", "test.event"))
         }
 
         // more APIs like scheduleOnce are  "schedulePeriodically, publishAsync, OnEvent"
