@@ -29,7 +29,7 @@ class AgentActor(
           warn(message, Map("prefix" -> componentId.prefix))
           replyTo ! Failed(message)
           Behaviors.same
-        //happy path for self registered apps
+        //happy path
         case command @ SpawnCommand(_, componentId) =>
           val initBehaviour =
             new ProcessActor(locationService, processExecutor, agentSettings, logger, command).init
