@@ -19,7 +19,7 @@ class ShutdownExceptionHandlerTest extends EswTestKit(EventServer) {
     super.afterAll()
   }
 
-  "invoke exception handler when handle-shutdown-failed" in {
+  "invoke exception handler when handle-shutdown-failed" ignore {
     val reason         = "handle-shutdown-failed"
     val eventKey       = EventKey(Prefix("tcs.filter.wheel"), EventName(reason))
     val assertionProbe = TestProbe[Event]
