@@ -122,10 +122,10 @@ class LocationServiceDslTest : LocationServiceDsl {
     @Test
     fun `listLocationsBy prefix should call underlying listByPrefix method from LocationService | ESW-277`() = runBlocking {
         val mockedLocations: List<Location> = List(10) { httpLocation }
-        every { locationService.listByPrefix(prefix) } answers { completedFuture(mockedLocations) }
+        every { locationService.listByPrefix(prefix.toString()) } answers { completedFuture(mockedLocations) }
 
         listLocationsBy(prefix) shouldBe mockedLocations
-        verify { locationService.listByPrefix(prefix) }
+        verify { locationService.listByPrefix(prefix.toString()) }
     }
 
     @Test

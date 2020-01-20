@@ -58,7 +58,7 @@ private[ocs] class SequencerWiring(
   implicit lazy val actorRuntime: ActorRuntime = cswWiring.actorRuntime
 
   lazy val sequencerRef: ActorRef[SequencerMsg] = (actorSystem ? { x: ActorRef[ActorRef[SequencerMsg]] =>
-    Spawn(sequencerBehavior.setup, prefix.toString.toLowerCase, Props.empty, x)
+    Spawn(sequencerBehavior.setup, prefix.toString, Props.empty, x)
   }).block
 
   //Pass lambda to break circular dependency shown below.

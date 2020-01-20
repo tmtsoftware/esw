@@ -36,7 +36,7 @@ interface LocationServiceDsl : SuspendToJavaConverter {
     suspend fun listLocationsBy(compType: ComponentType): List<Location> = locationService.list(compType).await().toList()
     suspend fun listLocationsBy(connectionType: ConnectionType): List<Location> = locationService.list(connectionType).await().toList()
     suspend fun listLocationsBy(hostname: String): List<Location> = locationService.list(hostname).await().toList()
-    suspend fun listLocationsBy(prefix: Prefix): List<Location> = locationService.listByPrefix(prefix).await().toList()
+    suspend fun listLocationsBy(prefix: Prefix): List<Location> = locationService.listByPrefix(prefix.toString()).await().toList()
 
     fun onLocationTrackingEvent(connection: Connection, callback: SuspendableConsumer<TrackingEvent>): Subscription =
             locationService.subscribe(connection) { callback.toJava(it) }

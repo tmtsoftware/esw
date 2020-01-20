@@ -14,7 +14,7 @@ script {
     val httpConnection = HttpConnection(componentId)
     val httpRegistration = HttpRegistration(httpConnection, 8080, "/")
 
-    val locationEvent = SystemEvent(prefix.value(), "location_response")
+    val locationEvent = SystemEvent(prefix.toString(), "location_response")
     val key = stringKey("locationResponse")
 
     var receivedLocationUpdated = false

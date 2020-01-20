@@ -143,7 +143,7 @@ interface EventServiceDsl {
      */
     suspend fun <T> SystemVar(initial: T, eventKeyStr: String, key: Key<T>, duration: Duration? = null): EventVariable<T> {
         val eventKey = EventKey(eventKeyStr)
-        val systemEvent = SystemEvent(eventKey.source().value(), eventKey.eventName().name(), key.set(initial))
+        val systemEvent = SystemEvent(eventKey.source().toString(), eventKey.eventName().name(), key.set(initial))
         return EventVariable(systemEvent, key, duration, this)
     }
 
@@ -163,7 +163,7 @@ interface EventServiceDsl {
      */
     suspend fun <T> ObserveVar(initial: T, eventKeyStr: String, key: Key<T>, duration: Duration? = null): EventVariable<T> {
         val eventKey = EventKey(eventKeyStr)
-        val observeEvent = ObserveEvent(eventKey.source().value(), eventKey.eventName().name(), key.set(initial))
+        val observeEvent = ObserveEvent(eventKey.source().toString(), eventKey.eventName().name(), key.set(initial))
         return EventVariable(observeEvent, key, duration, this)
     }
 

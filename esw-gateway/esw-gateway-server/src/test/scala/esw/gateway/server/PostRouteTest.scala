@@ -320,9 +320,9 @@ class PostRouteTest extends BaseTestSuite with ScalatestRouteTest with GatewayCo
       }
     }
 
-    "return generic error when component is not resolved | ESW-254" in {
+    "return generic error when component is not resolved | ESW-254, ESW-279" in {
       val componentId = ComponentId(Prefix(Subsystem.ESW, "test1"), ComponentType.Assembly)
-      val error       = GenericError("UnresolvedAkkaLocationException", "Could not resolve esw.test1 to a valid Akka location")
+      val error       = GenericError("UnresolvedAkkaLocationException", "Could not resolve ESW.test1 to a valid Akka location")
 
       when(adminService.getLogMetadata(componentId))
         .thenReturn(Future.failed(new UnresolvedAkkaLocationException(componentId.prefix)))
@@ -345,9 +345,9 @@ class PostRouteTest extends BaseTestSuite with ScalatestRouteTest with GatewayCo
       }
     }
 
-    "return generic error when component is not resolved | ESW-254" in {
+    "return generic error when component is not resolved | ESW-254, ESW-279" in {
       val componentId = ComponentId(Prefix(Subsystem.ESW, "test1"), ComponentType.Assembly)
-      val error       = GenericError("UnresolvedAkkaLocationException", "Could not resolve esw.test1 to a valid Akka location")
+      val error       = GenericError("UnresolvedAkkaLocationException", "Could not resolve ESW.test1 to a valid Akka location")
 
       when(adminService.setLogLevel(componentId, Level.FATAL))
         .thenReturn(Future.failed(new UnresolvedAkkaLocationException(componentId.prefix)))

@@ -40,7 +40,7 @@ private[ocs] class SequenceComponentWiring(
     typedSystem ? { x =>
       Spawn(
         SequenceComponentBehavior.behavior(sequenceComponentPrefix, sequenceComponentLogger, sequencerServerFactory),
-        sequenceComponentPrefix.toString.toLowerCase,
+        sequenceComponentPrefix.toString,
         Props.empty,
         x
       )
