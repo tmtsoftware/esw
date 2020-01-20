@@ -106,7 +106,9 @@ Script can error out in following scenarios:
 framework will log error cause. Sequencer will not start in this failure. One need to fix error and then load script again.
 
 2. **Command Handlers Failure** : While executing sequence @ref[Command Handlers](#command-handlers) e.g. `onSetup` , `onObserve` can fail because of two reasons: 
-    1. handler throws exception or 2. `Command Service` or `Sequencer Command Service` used to interact with downstream `Assembly/HCD/Sequencer`
+    
+    1. handler throws exception or 
+    2. `Command Service` or `Sequencer Command Service` used to interact with downstream `Assembly/HCD/Sequencer`
     returns negative `SubmitResponse`. Negative `SubmitResponse` is by default considered as error. In this case of failure, sequence is terminated
     with failure. 
     
@@ -115,7 +117,7 @@ this scenario, framework will log error cause. Sequence execution will continue.
 
 Script DSL provides following constructs to handle failure while executing script: 
 1. **onGlobalError** : This construct is provided for script writer. Logic in `onGlobalError` will be executed in case of all **Handlers Failure** including
-**Command Handlers Failure**. If `onGlobalError` handler is not provided by script then only logging of error cause is done by the framework.
+**Command Handlers Failure** except [Shutdown Handler](#shutdown-handler). If `onGlobalError` handler is not provided by script then only logging of error cause is done by the framework.
 
 Following example shows usage of `onGloablError`
 
@@ -138,3 +140,8 @@ Kotlin
 If you don't want to fail sequence in case of Command Service APIs while interacting with downstream Assembly/HCD (`submit`, `query` etc.)
 or Sequencer Command Service APIs while interacting with downstream Sequencer (`submit`, `query` etc.) then **resumeOnError** flag can be used. For details of
 **resumeOnError**, please refer @ref:[Error handling](./services/command-service.md#error-handling) 
+
+@@@ note
+Error in all handlers **except Shutdown Handler** will execute error handler provided by script. If error handler is not provided, framework will
+log error cause. 
+@@@
