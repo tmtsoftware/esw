@@ -133,7 +133,7 @@ interface EventServiceDsl {
      *
      * [[esw.ocs.dsl.epics.EventVariable]] behaves differently depending on the presence of `duration` parameter while creating its instance.
      * - When provided with `duration`, it will **poll** at an interval of given `duration` to refresh its own value
-     * - Otherwise it will subscribe to the given event key and will refresh its own value whenever events are published
+     * - Otherwise it will **subscribe** to the given event key and will refresh its own value whenever events are published
      *
      * @param initial value to set to the parameter key of the event
      * @param eventKeyStr string representation of event key
@@ -153,7 +153,7 @@ interface EventServiceDsl {
      *
      * [[esw.ocs.dsl.epics.EventVariable]] behaves differently depending on the presence of `duration` parameter while creating its instance.
      * - When provided with `duration`, it will **poll** at an interval of given `duration` to refresh its own value
-     * - Otherwise it will subscribe to the given event key and will refresh its own value whenever events are published
+     * - Otherwise it will **subscribe** to the given event key and will refresh its own value whenever events are published
      *
      * @param initial value to set to the parameter key of the event
      * @param eventKeyStr string representation of event key
