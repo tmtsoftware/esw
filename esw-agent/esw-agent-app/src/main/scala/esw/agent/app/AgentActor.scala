@@ -9,7 +9,7 @@ import esw.agent.api.AgentCommand._
 import esw.agent.api.{AgentCommand, Failed, SpawnCommand}
 import esw.agent.app.AgentActor.AgentState
 import esw.agent.app.process.ProcessActorMessage.{Die, SpawnComponent}
-import esw.agent.app.process.{ManuallyRegisteredProcessActor, ProcessActorMessage, ProcessExecutor, SelfRegisteringProcessActor}
+import esw.agent.app.process.{ProcessActor, ProcessActorMessage, ProcessExecutor}
 
 class AgentActor(
     locationService: LocationService,
@@ -31,12 +31,8 @@ class AgentActor(
           Behaviors.same
         //happy path for self registered apps
         case command @ SpawnCommand(_, componentId) =>
-          val initBehaviour = command match {
-            case cmd: SpawnManuallyRegistered =>
-              new ManuallyRegisteredProcessActor(locationService, processExecutor, agentSettings, logger, cmd).init
-            case cmd: SpawnSelfRegistered =>
-              new SelfRegisteringProcessActor(locationService, processExecutor, agentSettings, logger, cmd).init
-          }
+          val initBehaviour =
+            new ProcessActor(locationService, processExecutor, agentSettings, logger, command).init
           val processActorRef = ctx.spawn(initBehaviour, componentId.prefix.toString.toLowerCase)
           ctx.watchWith(processActorRef, ProcessExited(componentId))
           processActorRef ! SpawnComponent

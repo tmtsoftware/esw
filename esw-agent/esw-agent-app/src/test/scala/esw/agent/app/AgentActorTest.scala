@@ -20,6 +20,7 @@ import esw.agent.app.AgentActor.AgentState
 import esw.agent.app.process.ProcessExecutor
 import org.mockito.ArgumentMatchers.{any, eq => argEq}
 import org.mockito.MockitoSugar
+import org.mockito.verification.VerificationMode
 import org.scalatest.MustMatchers.convertToStringMustWrapper
 import org.scalatest.{BeforeAndAfterEach, WordSpecLike}
 
@@ -134,7 +135,7 @@ class AgentActorTest extends ScalaTestWithActorTestKit with WordSpecLike with Mo
       mockSuccessfulProcess()
 
       agentActorRef ! SpawnSequenceComponent(probe.ref, prefix)
-      probe.expectMessage(Failed("could not get registration confirmation from spawned process"))
+      probe.expectMessage(Failed("registration encountered an issue or timed out"))
     }
 
     "reply 'Failed' when the process is spawned but exits before registration | ESW-237" in {
@@ -147,7 +148,7 @@ class AgentActorTest extends ScalaTestWithActorTestKit with WordSpecLike with Mo
       mockSuccessfulProcess(dieAfter = 2.seconds)
 
       agentActorRef ! SpawnSequenceComponent(probe.ref, prefix)
-      probe.expectMessage(10.seconds, Failed("process died before registration confirmation"))
+      probe.expectMessage(10.seconds, Failed("process died before registration"))
     }
 
     "reply 'Failed' when spawning is aborted by another message | ESW-237, ESW-276" in {
@@ -189,9 +190,12 @@ class AgentActorTest extends ScalaTestWithActorTestKit with WordSpecLike with Mo
 
       agentActorRef ! spawnRedis(probe.ref)
       probe.expectMessage(Spawned)
+
+      //ensure component is registered
+      verify(locationService).register(redisRegistration)
     }
 
-    "reply 'Failed' and not spawn new process when call to location service fails" in {
+    "reply 'Failed' and not spawn new process when `resolve` call to location service fails" in {
       val agentActorRef = spawnAgentActor()
       val probe         = TestProbe[SpawnResponse]()
 
@@ -200,6 +204,9 @@ class AgentActorTest extends ScalaTestWithActorTestKit with WordSpecLike with Mo
 
       agentActorRef ! spawnRedis(probe.ref)
       probe.expectMessage(Failed("error occurred while resolving a component with location service"))
+
+      //ensure component is NOT registered
+      verify(locationService, never).register(redisRegistration)
     }
 
     "reply 'Failed' and not spawn new process when it is already registered with location service | ESW-237" in {
@@ -211,6 +218,9 @@ class AgentActorTest extends ScalaTestWithActorTestKit with WordSpecLike with Mo
 
       agentActorRef ! spawnRedis(probe.ref)
       probe.expectMessage(Failed("can not spawn component when it is already registered in location service"))
+
+      //ensure component is NOT registered
+      verify(locationService, never).register(redisRegistration)
     }
 
     "reply 'Failed' and not spawn new process when it is already spawned on the agent | ESW-237" in {
@@ -225,7 +235,14 @@ class AgentActorTest extends ScalaTestWithActorTestKit with WordSpecLike with Mo
       agentActorRef ! spawnRedis(probe2.ref)
 
       probe1.expectMessage(Spawned)
+
+      //ensure register is registered once
+      verify(locationService).register(redisRegistration)
+
       probe2.expectMessage(Failed("given component is already in process"))
+
+      //ensure register is NOT registered again
+      verifyNoMoreInteractions(locationService.register(redisRegistration))
     }
 
     "reply 'Failed' when process fails to spawn | ESW-237" in {
@@ -238,6 +255,9 @@ class AgentActorTest extends ScalaTestWithActorTestKit with WordSpecLike with Mo
 
       agentActorRef ! spawnRedis(probe.ref)
       probe.expectMessage(Failed("failure"))
+
+      //ensure register is NOT registered
+      verify(locationService, never).register(redisRegistration)
     }
 
     "reply 'Failed' and kill process, when the process is spawned but failed to register | ESW-237" in {
@@ -253,32 +273,42 @@ class AgentActorTest extends ScalaTestWithActorTestKit with WordSpecLike with Mo
       mockSuccessfulProcess()
 
       agentActorRef ! spawnRedis(probe.ref)
-      probe.expectMessage(Failed("could not register spawned process"))
+      probe.expectMessage(Failed("registration encountered an issue or timed out"))
+
+      //ensure component is registered
+      verify(locationService).register(redisRegistration)
     }
 
-    "reply 'Failed' when the process is spawned but exits before registration | ESW-237" in {
-      val agentActorRef = spawnAgentActor(agentSettings.copy(durationToWaitForComponentRegistration = 3.seconds))
+    "Unregister when process is spawned but exits before registration and registration is later succeeded | ESW-237" in {
+      val agentActorRef = spawnAgentActor(agentSettings.copy(durationToWaitForComponentRegistration = 4.seconds))
       val probe         = TestProbe[SpawnResponse]()
 
-      mockLocationServiceForRedis(registrationDuration = 15.seconds)
-      mockSuccessfulProcess(dieAfter = 2.seconds)
+      mockLocationServiceForRedis(registrationDuration = 2.seconds)
+      mockSuccessfulProcess(dieAfter = 500.millis)
 
       agentActorRef ! spawnRedis(probe.ref)
-      probe.expectMessage(10.seconds, Failed("process died before registration completion"))
+      probe.expectMessage(3.seconds, Failed("process died before registration"))
+
+      //ensure component is registered
+      verify(locationService).register(redisRegistration)
+
+      //ensure component is unregistered later
+      verify(locationService).unregister(redisConn)
     }
 
     "reply 'Failed' when spawning is aborted by another message | ESW-237, ESW-276" in {
       val agentActorRef = spawnAgentActor()
-      val probe1        = TestProbe[SpawnResponse]()
-      val probe2        = TestProbe[KillResponse]()
+      val spawner       = TestProbe[SpawnResponse]()
+      val killer        = TestProbe[KillResponse]()
 
-      mockLocationServiceForRedis(1.minute)
-      mockSuccessfulProcess(10.seconds)
+      mockSuccessfulProcess(dieAfter = 10.seconds)
+      mockLocationServiceForRedis(registrationDuration = 1.minute)
 
-      agentActorRef ! spawnRedis(probe1.ref)
-      agentActorRef ! KillComponent(probe2.ref, ComponentId(prefix, Service))
-      probe1.expectMessage(3.seconds, Failed("Aborted"))
-      probe2.expectMessage(killedGracefully)
+      agentActorRef ! spawnRedis(spawner.ref)
+      agentActorRef ! KillComponent(killer.ref, ComponentId(prefix, Service))
+
+      spawner.expectMessage(3.seconds, Failed("Aborted"))
+      killer.expectMessage(killedGracefully)
     }
   }
 
@@ -349,7 +379,7 @@ class AgentActorTest extends ScalaTestWithActorTestKit with WordSpecLike with Mo
     }
 
     "reply 'killedForcefully' after killing a running component when component is waiting registration confirmation | ESW-276" in {
-      val agentActorRef = spawnAgentActor()
+      val agentActorRef = spawnAgentActor(agentSettings.copy(durationToWaitForGracefulProcessTermination = 2.seconds))
       val probe1        = TestProbe[SpawnResponse]()
       val probe2        = TestProbe[KillResponse]()
       when(locationService.resolve(argEq(seqCompConn), any[FiniteDuration]))
@@ -360,7 +390,7 @@ class AgentActorTest extends ScalaTestWithActorTestKit with WordSpecLike with Mo
       //start a component
       agentActorRef ! SpawnSequenceComponent(probe1.ref, prefix)
       //it should not be registered
-      probe1.expectNoMessage(5.seconds)
+      probe1.expectNoMessage(1.seconds)
 
       //stop the component
       agentActorRef ! KillComponent(probe2.ref, ComponentId(prefix, SequenceComponent))
@@ -378,7 +408,7 @@ class AgentActorTest extends ScalaTestWithActorTestKit with WordSpecLike with Mo
       //start a component
       agentActorRef ! SpawnSequenceComponent(probe1.ref, prefix)
       //it should not be registered
-      probe1.expectNoMessage(5.seconds)
+      probe1.expectNoMessage(1.seconds)
 
       //stop the component
       agentActorRef ! KillComponent(probe2.ref, ComponentId(prefix, SequenceComponent))
@@ -394,7 +424,7 @@ class AgentActorTest extends ScalaTestWithActorTestKit with WordSpecLike with Mo
       when(locationService.resolve(argEq(seqCompConn), any[FiniteDuration]))
         .thenReturn(Future.successful(None), seqCompLocationF)
 
-      mockSuccessfulProcess(dieAfter = 5.seconds)
+      mockSuccessfulProcess(dieAfter = 2.seconds)
 
       //start a component
       agentActorRef ! SpawnSequenceComponent(spawnProbe.ref, prefix)
@@ -480,6 +510,9 @@ class AgentActorTest extends ScalaTestWithActorTestKit with WordSpecLike with Mo
       agentActorRef ! KillComponent(probe2.ref, ComponentId(prefix, Service))
       //ensure it is stopped
       probe2.expectMessage(10.seconds, killedGracefully)
+
+      //ensure component was unregistered
+      verify(locationService).unregister(redisConn)
     }
 
     "reply 'killedForcefully' after stopping a registered component forcefully when it does not gracefully in given time | ESW-276" in {
@@ -499,6 +532,9 @@ class AgentActorTest extends ScalaTestWithActorTestKit with WordSpecLike with Mo
       agentActorRef ! KillComponent(probe2.ref, ComponentId(prefix, Service))
       //ensure it is stopped
       probe2.expectMessage(killedForcefully)
+
+      //ensure component was unregistered
+      verify(locationService).unregister(redisConn)
     }
 
     "reply 'killedGracefully' after killing a running component when component is waiting registration completion | ESW-276" in {
@@ -519,6 +555,9 @@ class AgentActorTest extends ScalaTestWithActorTestKit with WordSpecLike with Mo
       agentActorRef ! KillComponent(probe2.ref, ComponentId(prefix, Service))
       //ensure it is stopped gracefully
       probe2.expectMessage(10.seconds, killedGracefully)
+
+      //ensure component was unregistered
+      verify(locationService).unregister(redisConn)
     }
 
     "reply 'killedForcefully' after killing a running component when component is waiting registration confirmation | ESW-276" in {
@@ -533,21 +572,25 @@ class AgentActorTest extends ScalaTestWithActorTestKit with WordSpecLike with Mo
       //start a component
       agentActorRef ! spawnRedis(probe1.ref)
       //it should not be registered
-      probe1.expectNoMessage(5.seconds)
+      probe1.expectNoMessage(1.seconds)
 
       //stop the component
       agentActorRef ! KillComponent(probe2.ref, ComponentId(prefix, Service))
-      //ensure it is stopped gracefully
+
+      //ensure it is stopped forcefully
       probe2.expectMessage(10.seconds, killedForcefully)
+
+      //ensure component was unregistered
+      verify(locationService).unregister(redisConn)
     }
 
-    "reply 'killedGracefully' and cancel spawning of an already scheduled component when registration is being performed | ESW-276" in {
+    "Flaky - reply 'killedGracefully', unregister the component and kill the component when registration is being performed | ESW-276" in {
       val agentActorRef = spawnAgentActor()
       val probe1        = TestProbe[SpawnResponse]()
       val probe2        = TestProbe[KillResponse]()
 
-      mockLocationServiceForRedis(1.hour) //this will actor remains in registering state
-      mockSuccessfulProcess(4.seconds)
+      mockLocationServiceForRedis(1.hour) //this will ensure actor remains in registering state
+      mockSuccessfulProcess(2.seconds)
 
       //start a component
       agentActorRef ! spawnRedis(probe1.ref)
@@ -557,16 +600,19 @@ class AgentActorTest extends ScalaTestWithActorTestKit with WordSpecLike with Mo
       agentActorRef ! KillComponent(probe2.ref, ComponentId(prefix, Service))
       //ensure it is stopped gracefully
       probe2.expectMessage(10.seconds, killedGracefully)
+
+      //ensure component was unregistered
+      verify(locationService).unregister(redisConn)
     }
 
     "reply 'killedGracefully' after process termination, when process is already stopping by another message | ESW-276" in {
-      val agentActorRef = spawnAgentActor(agentSettings.copy(durationToWaitForGracefulProcessTermination = 7.seconds))
+      val agentActorRef = spawnAgentActor(agentSettings.copy(durationToWaitForGracefulProcessTermination = 4.seconds))
       val spawnProbe    = TestProbe[SpawnResponse]()
       val firstKiller   = TestProbe[KillResponse]()
       val secondKiller  = TestProbe[KillResponse]()
 
       mockLocationServiceForRedis()
-      mockSuccessfulProcess(dieAfter = 5.seconds)
+      mockSuccessfulProcess(dieAfter = 2.seconds)
 
       //start a component
       agentActorRef ! spawnRedis(spawnProbe.ref)
@@ -578,8 +624,11 @@ class AgentActorTest extends ScalaTestWithActorTestKit with WordSpecLike with Mo
       agentActorRef ! KillComponent(secondKiller.ref, ComponentId(prefix, Service))
 
       //ensure it is stopped gracefully
-      firstKiller.expectMessage(6.seconds, killedGracefully)
+      firstKiller.expectMessage(3.seconds, killedGracefully)
       secondKiller.expectMessage(killedGracefully)
+
+      //ensure component was unregistered
+      verify(locationService).unregister(redisConn)
     }
 
     "reply 'killedForcefully' after process termination, when process is already stopping by another message | ESW-276" in {
@@ -603,6 +652,9 @@ class AgentActorTest extends ScalaTestWithActorTestKit with WordSpecLike with Mo
       //ensure it is stopped forcefully
       firstKiller.expectMessage(4.seconds, killedForcefully)
       secondKiller.expectMessage(killedForcefully)
+
+      //ensure component was unregistered
+      verify(locationService).unregister(redisConn)
     }
 
     "reply 'Failed' when given component is not running on agent | ESW-276" in {
@@ -614,6 +666,9 @@ class AgentActorTest extends ScalaTestWithActorTestKit with WordSpecLike with Mo
 
       //verify that response is Failure
       probe.expectMessage(Failed("given component id is not running on this agent"))
+
+      //ensure component was NOT unregistered
+      verify(locationService, never).unregister(redisConn)
     }
   }
 

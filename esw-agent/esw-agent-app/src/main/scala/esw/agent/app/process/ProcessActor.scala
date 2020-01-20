@@ -6,9 +6,9 @@ import akka.actor.typed.{ActorRef, Behavior}
 import csw.location.api.scaladsl.{LocationService, RegistrationResult}
 import csw.location.models._
 import csw.logging.api.scaladsl.Logger
-import esw.agent.api.AgentCommand.SpawnManuallyRegistered
+import esw.agent.api.AgentCommand.{SpawnManuallyRegistered, SpawnSelfRegistered}
 import esw.agent.api.Killed._
-import esw.agent.api.{Failed, KillResponse, Spawned}
+import esw.agent.api.{Failed, KillResponse, SpawnCommand, Spawned}
 import esw.agent.app.AgentSettings
 import esw.agent.app.process.ProcessActorMessage._
 
@@ -17,28 +17,40 @@ import scala.concurrent.{ExecutionContext, Future}
 import scala.jdk.FutureConverters.CompletionStageOps
 import scala.util.{Failure, Success}
 
-class ManuallyRegisteredProcessActor[T <: Location](
+class ProcessActor(
     locationService: LocationService,
     processExecutor: ProcessExecutor,
     agentSettings: AgentSettings,
     logger: Logger,
-    command: SpawnManuallyRegistered
+    command: SpawnCommand
 ) {
   import command._
   import logger._
+  private val (prefix, componentType, connectionType, autoRegistered) = command match {
+    case cmd: SpawnSelfRegistered => (cmd.componentId.prefix, cmd.componentId.componentType, cmd.connectionType, true)
+    case cmd: SpawnManuallyRegistered =>
+      (
+        cmd.registration.connection.prefix,
+        cmd.registration.connection.connectionInfo.componentType,
+        cmd.registration.connection.connectionType,
+        false
+      )
+  }
+
   private val aborted         = Failed("Aborted")
   private val gracefulTimeout = agentSettings.durationToWaitForGracefulProcessTermination
-  private val prefix          = registration.connection.componentId.prefix
 
   private def isComponentRegistered(timeout: FiniteDuration)(implicit executionContext: ExecutionContext): Future[Boolean] =
     locationService
-      .resolve(registration.connection.of[T], timeout)
+      .resolve(Connection.from(ConnectionInfo(prefix, componentType, connectionType)).of[Location], timeout)
       .map(_.nonEmpty)
 
-  private def registerComponent(): Future[RegistrationResult] =
-    locationService.register(registration)
+  private def registerComponent(): Future[RegistrationResult] = {
+    locationService.register(command.asInstanceOf[SpawnManuallyRegistered].registration)
+  }
 
-  private def unregisterComponent(): Future[Done] = locationService.unregister(registration.connection)
+  private def unregisterComponent(): Future[Done] =
+    locationService.unregister(command.asInstanceOf[SpawnManuallyRegistered].registration.connection)
 
   def init: Behavior[ProcessActorMessage] =
     Behaviors.setup[ProcessActorMessage] { ctx =>
@@ -60,7 +72,7 @@ class ManuallyRegisteredProcessActor[T <: Location](
       Behaviors.receiveMessagePartial[ProcessActorMessage] {
         case AlreadyRegistered =>
           val errorMessage = "can not spawn component when it is already registered in location service"
-          warn(errorMessage, Map("prefix" -> registration.connection.componentId.prefix))
+          warn(errorMessage, Map("prefix" -> prefix))
           replyTo ! Failed(errorMessage)
           Behaviors.stopped
 
@@ -69,11 +81,15 @@ class ManuallyRegisteredProcessActor[T <: Location](
           processExecutor.runCommand(command.commandStrings(agentSettings.binariesPath), prefix) match {
             case Right(process) =>
               process.onExit().asScala.onComplete(_ => ctx.self ! ProcessExited(process.exitValue()))
-              ctx.pipeToSelf(registerComponent()) {
-                case Success(registrationResult) => RegistrationSuccess
-                case _                           => RegistrationFailed
+              val future =
+                if (autoRegistered) isComponentRegistered(agentSettings.durationToWaitForComponentRegistration)
+                else registerComponent().map(_ => true)
+              ctx.pipeToSelf(future) {
+                case Success(true)  => RegistrationSuccess
+                case Success(false) => RegistrationFailed
+                case _              => RegistrationFailed
               }
-              waitingForComponentRegistration(process)
+              waitingForComponentRegistration(process, processExited = false)
             case Left(err) =>
               replyTo ! Failed(err)
               Behaviors.stopped
@@ -92,7 +108,7 @@ class ManuallyRegisteredProcessActor[T <: Location](
       }
     })
 
-  def waitingForComponentRegistration(process: Process): Behavior[ProcessActorMessage] =
+  def waitingForComponentRegistration(process: Process, processExited: Boolean): Behavior[ProcessActorMessage] =
     Behaviors.setup[ProcessActorMessage](ctx => {
       Behaviors.receiveMessagePartial[ProcessActorMessage] {
         case RegistrationSuccess =>
@@ -104,16 +120,17 @@ class ManuallyRegisteredProcessActor[T <: Location](
           registered(process)
 
         case RegistrationFailed =>
-          val errorMessage = "could not register spawned process"
+          val errorMessage = "registration encountered an issue or timed out"
           error(errorMessage, Map("pid" -> process.pid, "prefix" -> prefix))
           replyTo ! Failed(errorMessage)
           ctx.self ! StopGracefully
           stopping(process, Set.empty)
 
         case ProcessExited(exitCode) =>
-          val errorMessage = "process died before registration completion"
+          val errorMessage = "process died before registration"
           replyTo ! Failed(errorMessage)
           error(errorMessage, Map("pid" -> process.pid, "prefix" -> prefix, "exitCode" -> exitCode))
+          if (!autoRegistered) unregisterComponent()
           Behaviors.stopped
 
         case Die(dieRef) =>
@@ -149,7 +166,7 @@ class ManuallyRegisteredProcessActor[T <: Location](
           Behaviors.stopped
         case StopGracefully =>
           process.destroy()
-          unregisterComponent()
+          if (!autoRegistered) unregisterComponent()
           timeScheduler.startSingleTimer(StopForcefully, gracefulTimeout)
           Behaviors.same
         case StopForcefully =>
