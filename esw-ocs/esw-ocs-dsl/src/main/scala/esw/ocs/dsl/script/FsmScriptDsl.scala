@@ -1,5 +1,7 @@
 package esw.ocs.dsl.script
 
+import java.util.concurrent.CompletionStage
+
 import akka.Done
 import csw.params.commands.SequenceCommand
 import csw.time.core.models.UTCTime

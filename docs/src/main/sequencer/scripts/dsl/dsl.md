@@ -13,6 +13,5 @@
 * [Sequencer Command Service](services/sequencer-command-service.md)
 * [Script Handlers](handlers.md)
 * [Loop](loop.md)
-* [Contained FSM](contained-fsm.md)
 * [Misc](misc.md)
 @@@

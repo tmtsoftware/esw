@@ -64,7 +64,7 @@ Kotlin
 ### SystemVar
 
 Helper DSL to create `EventVariable` corresponding to `SystemEvent`. This DSL needs the `initial value` of the parameter, `event key` and `parameter key`.
- More details about SystemVar are provided in @ref[FSM documentation](./../contained-fsm.md#reactive-fsm)
+ More details about SystemVar are provided in @ref[FSM documentation](./../../fsm.md#reactive-fsm)
 
 Kotlin
 :   @@snip [EventServiceDslExample.kts](../../../../../../../examples/src/main/kotlin/esw/ocs/scripts/examples/paradox/EventServiceDslExample.kts) { #system-var }
@@ -72,7 +72,7 @@ Kotlin
 ### ObserveVar
 
 Helper DSL to create `EventVariable` corresponding to `ObserveEvent`. This DSL needs the `initial value` of the parameter, `event key` and `parameter key`.
-More details about ObserveVar are provided in @ref[FSM documentation](./../contained-fsm.md#reactive-fsm)
+More details about ObserveVar are provided in @ref[FSM documentation](./../../fsm.md#reactive-fsm)
 
 Kotlin
 :   @@snip [EventServiceDslExample.kts](../../../../../../../examples/src/main/kotlin/esw/ocs/scripts/examples/paradox/EventServiceDslExample.kts) { #observe-var }
