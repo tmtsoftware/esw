@@ -1,7 +1,5 @@
 package esw.ocs.dsl.script
 
-import java.util.concurrent.CompletableFuture
-
 import akka.Done
 import csw.params.commands.SequenceCommand
 import csw.time.core.models.UTCTime
@@ -77,8 +75,6 @@ class FsmScriptDslTest extends BaseTestSuite {
       val ex                     = mock[Throwable]
       val shutdownTask: Runnable = () => ()
 
-      val completionStageVoid: CompletableFuture[Void] = CompletableFuture.completedFuture(null)
-
       when(state.currentScript).thenReturn(script)
       when(script.execute(sequenceCommand)).thenReturn(futureUnit)
       when(script.executeGoOnline()).thenReturn(futureDone)
@@ -89,7 +85,7 @@ class FsmScriptDslTest extends BaseTestSuite {
       when(script.executeStop()).thenReturn(futureDone)
       when(script.executeDiagnosticMode(utcTime, hint)).thenReturn(futureDone)
       when(script.executeOperationsMode()).thenReturn(futureDone)
-      when(script.executeExceptionHandlers(ex)).thenReturn(completionStageVoid)
+      when(script.executeExceptionHandlers(ex)).thenReturn(futureDone)
 
       val scriptDsl = new FsmScriptDsl(seqOperatorFactory, strandEc, shutdownTask, state)
 

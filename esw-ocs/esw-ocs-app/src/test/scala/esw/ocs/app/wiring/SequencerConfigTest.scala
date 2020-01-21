@@ -1,7 +1,5 @@
 package esw.ocs.app.wiring
 
-import java.util.concurrent.CompletionStage
-
 import akka.Done
 import com.typesafe.config.{Config, ConfigFactory}
 import csw.params.commands.SequenceCommand
@@ -49,6 +47,6 @@ class ValidTestScript(ctx: ScriptContext) extends ScriptApi {
   override def executeStop(): Future[Done]                                           = ???
   override def executeDiagnosticMode(startTime: UTCTime, hint: String): Future[Done] = ???
   override def executeOperationsMode(): Future[Done]                                 = ???
-  override def executeExceptionHandlers(ex: Throwable): CompletionStage[Void]        = ???
+  override def executeExceptionHandlers(ex: Throwable): Future[Done]                 = ???
   override def shutdownScript(): Unit                                                = ???
 }

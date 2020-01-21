@@ -59,8 +59,8 @@ private[esw] class ScriptDsl(sequenceOperatorFactory: () => SequenceOperator, st
 
   override def execute(command: SequenceCommand): Future[Unit] = commandHandler(command).toScala.map(_ => ())
 
-  private def executeHandler[T](f: FunctionHandlers[T, CompletionStage[Void]], arg: T): Future[Unit] =
-    Future.sequence(f.execute(arg).map(_.toScala)).map(_ => ())
+  private def executeHandler[T](f: FunctionHandlers[T, CompletionStage[Void]], arg: T): Future[Done] =
+    Future.sequence(f.execute(arg).map(_.toScala)).map(_ => Done)
 
   override def executeGoOnline(): Future[Done] =
     executeHandler(onlineHandlers, ()).map { _ =>
@@ -70,7 +70,7 @@ private[esw] class ScriptDsl(sequenceOperatorFactory: () => SequenceOperator, st
 
   override def executeGoOffline(): Future[Done] = {
     isOnline = false
-    executeHandler(offlineHandlers, ()).map(_ => Done)
+    executeHandler(offlineHandlers, ())
   }
 
   override def executeShutdown(): Future[Done] = {
@@ -80,17 +80,16 @@ private[esw] class ScriptDsl(sequenceOperatorFactory: () => SequenceOperator, st
     }
   }
 
-  override def executeAbort(): Future[Done] = executeHandler(abortHandlers, ()).map(_ => Done)
+  override def executeAbort(): Future[Done] = executeHandler(abortHandlers, ())
 
-  override def executeStop(): Future[Done] = executeHandler(stopHandlers, ()).map(_ => Done)
+  override def executeStop(): Future[Done] = executeHandler(stopHandlers, ())
 
   override def executeDiagnosticMode(startTime: UTCTime, hint: String): Future[Done] =
     Future.sequence(diagnosticHandlers.execute((startTime, hint)).map(_.toScala)).map(_ => Done)
 
-  override def executeOperationsMode(): Future[Done] = executeHandler(operationsHandlers, ()).map(_ => Done)
+  override def executeOperationsMode(): Future[Done] = executeHandler(operationsHandlers, ())
 
-  override def executeExceptionHandlers(ex: Throwable): CompletionStage[Void] =
-    executeHandler(exceptionHandlers, ex).toJava.thenAccept(_ => ())
+  override def executeExceptionHandlers(ex: Throwable): Future[Done] = executeHandler(exceptionHandlers, ex)
 
   override final def shutdownScript(): Unit = shutdownTask.run()
 

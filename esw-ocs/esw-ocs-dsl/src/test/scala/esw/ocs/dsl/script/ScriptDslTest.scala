@@ -113,7 +113,7 @@ class ScriptDslTest extends BaseTestSuite {
       }
 
       val exception = new RuntimeException("testing exception handlers")
-      script.executeExceptionHandlers(exception).toCompletableFuture.get()
+      script.executeExceptionHandlers(exception).awaitResult
 
       receivedPrefix.value shouldBe exception
     }

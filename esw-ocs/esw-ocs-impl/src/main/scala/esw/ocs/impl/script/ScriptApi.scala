@@ -1,7 +1,5 @@
 package esw.ocs.impl.script
 
-import java.util.concurrent.CompletionStage
-
 import akka.Done
 import csw.params.commands.SequenceCommand
 import csw.time.core.models.UTCTime
@@ -17,6 +15,6 @@ trait ScriptApi {
   def executeStop(): Future[Done]
   def executeDiagnosticMode(startTime: UTCTime, hint: String): Future[Done]
   def executeOperationsMode(): Future[Done]
-  def executeExceptionHandlers(ex: Throwable): CompletionStage[Void]
+  def executeExceptionHandlers(ex: Throwable): Future[Done]
   def shutdownScript(): Unit
 }

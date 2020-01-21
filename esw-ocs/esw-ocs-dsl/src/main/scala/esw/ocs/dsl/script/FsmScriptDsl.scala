@@ -54,8 +54,8 @@ private[esw] class FsmScriptDsl(
   override def executeOperationsMode(): Future[Done] =
     scriptState.currentScript.executeOperationsMode().flatMap(_ => super.executeOperationsMode())
 
-  override def executeExceptionHandlers(ex: Throwable): CompletionStage[Void] =
-    scriptState.currentScript.executeExceptionHandlers(ex).thenAccept(_ => super.executeExceptionHandlers(ex))
+  override def executeExceptionHandlers(ex: Throwable): Future[Done] =
+    scriptState.currentScript.executeExceptionHandlers(ex).flatMap(_ => super.executeExceptionHandlers(ex))
 
   // for testing purpose
   private[script] def getState = scriptState
