@@ -36,15 +36,13 @@ Once you add this configuration in `iris.conf` file, next step is to include thi
 include "iris.conf"
 ```
 
-
-@@@ note 
+@@@ note
 
 **IRIS** - name of the Sequencer/Script Subsystem provided while starting Sequencer App
 
 **darknight** - observing mode provided while starting Sequencer App 
 
 @@@
-
 
 Logging Service DSL exposes following APIs to script writers for logging at different levels:
 
@@ -78,5 +76,6 @@ Kotlin
 Kotlin
 :   @@snip [LoggingServiceDslExample.kts](../../../../../../../examples/src/main/kotlin/esw/ocs/scripts/examples/paradox/LoggingServiceDslExample.kts) { #fatal }
 
-### Source code for examples
+## Source code for examples
+
 * [Logging Service Examples]($github.base_url$/examples/src/main/kotlin/esw/ocs/scripts/examples/paradox/LoggingServiceDslExample.kts)

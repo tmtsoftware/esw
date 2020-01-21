@@ -35,6 +35,6 @@ Refer [this](https://github.com/lightbend/config) guide for complete usage of `C
 Kotlin
 :   @@snip [ConfigServiceDslExample.kts](../../../../../../../examples/src/main/kotlin/esw/ocs/scripts/examples/paradox/ConfigServiceDslExample.kts) { #motor-commands }
 
+## Source code for examples
 
-### Source code for examples
 * [Config Service Examples]($github.base_url$/examples/src/main/kotlin/esw/ocs/scripts/examples/paradox/ConfigServiceDslExample.kts)

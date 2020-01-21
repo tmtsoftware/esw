@@ -11,6 +11,7 @@ assembly. For example send commands or lifecycle methods e.g. goOnline, goOfflin
 which will be used in commands like submitAndWait, queryFinal etc.
 
 This DSL takes following parameters:
+
 * `prefix`: Prefix of assembly
 * `defaultTimeout`: if DSL like submitAndWait, queryFinal etc does not explicitly provide timeout then this Default timeout is used.
 
@@ -24,6 +25,7 @@ send commands to Assembly or lifecycle methods e.g. goOnline, goOffline, lock HC
 like submitAndWait, queryFinal etc.
 
 This DSL takes following parameters:
+
 * `prefix`: - Prefix of assembly
 * `defaultTimeout`: - if DSL like submitAndWait, queryFinal etc does not explicitly provide timeout then this Default timeout is used.
 
@@ -37,6 +39,7 @@ Following DSL can be used to interact with both **Assembly and HCD** resolved us
 @@@
 
 ## Command Service Dsl
+
 ### Submit
 
 This DSL allows to submit a command to Assembly/HCD and return after first phase. If it returns Started then final response can
@@ -46,6 +49,7 @@ Kotlin
 :   @@snip [CommandServiceDslExample.kts](../../../../../../../examples/src/main/kotlin/esw/ocs/scripts/examples/paradox/CommandServiceDslExample.kts) { #submit-component }
 
 #### Error handling
+
 submit always returns positive submit response. In case of negative submit response, onError handler (if written) is called and then
 onGlobalError handler is called. Script execution flow breaks in case of negative submit response and sequence is terminated with failure. 
 Following example shows scenario where script execution flow breaks when submit return negative response, in this case onError handler will be executed followed by
@@ -112,11 +116,10 @@ Kotlin
 This is kotlin wrapper for sending Assembly/HCD in online and offline mode. When Assembly/HCD receives this command respective handlers are called. The detailed documentation
 of online/offline handlers for Assembly/HCD can be found @extref[here](csw:framework/handling-lifecycle.html#component-online-and-offline)
 
-
 ### goOnline
 
 This DSL allows sending Assembly/HCD into online mode. `goOnline` can be called from anywhere in script. Following example
-shows Sequencer sending `goOnline` command to downstream galil Assembly when it receives `goOnline` command. 
+shows Sequencer sending `goOnline` command to downstream galil Assembly when it receives `goOnline` command.
 
 Kotlin
 :   @@snip [CommandServiceDslExample.kts](../../../../../../../examples/src/main/kotlin/esw/ocs/scripts/examples/paradox/CommandServiceDslExample.kts) { #goOnline-component }
@@ -124,7 +127,7 @@ Kotlin
 ### goOffline
 
 This DSL allows to send Assembly/HCD into offline mode. `goOffline` can be called from anywhere in script. Following example
-shows Sequencer sending `goOffline` command to downstream galil Assembly when it receives `goOffline` command. 
+shows Sequencer sending `goOffline` command to downstream galil Assembly when it receives `goOffline` command.
 
 Kotlin
 :   @@snip [CommandServiceDslExample.kts](../../../../../../../examples/src/main/kotlin/esw/ocs/scripts/examples/paradox/CommandServiceDslExample.kts) { #goOffline-component }
@@ -134,15 +137,15 @@ Kotlin
 ### operationsMode
 
 This DSL allows to send Assembly/HCD into operations mode. `operationsMode` can be called from anywhere in script. Following example
-shows Sequencer sending `operationsMode` command to downstream galil Assembly when it receives `operationsMode` command. 
+shows Sequencer sending `operationsMode` command to downstream galil Assembly when it receives `operationsMode` command.
 
 Kotlin
 :   @@snip [CommandServiceDslExample.kts](../../../../../../../examples/src/main/kotlin/esw/ocs/scripts/examples/paradox/CommandServiceDslExample.kts) { #operations-mode-component }
 
 ### diagnosticMode
 
-This DSL allows to send Assembly/HCD into diagnostic data mode based on a hint at the specified startTime. `diagnosticMode` can be called from anywhere in script. Following example 
-shows Sequencer sending `diagnosticMode` command to downstream galil Assembly when it receives `diagnosticMode` command. 
+This DSL allows to send Assembly/HCD into diagnostic data mode based on a hint at the specified startTime. `diagnosticMode` can be called from anywhere in script. Following example
+shows Sequencer sending `diagnosticMode` command to downstream galil Assembly when it receives `diagnosticMode` command.
 
 Kotlin
 :   @@snip [CommandServiceDslExample.kts](../../../../../../../examples/src/main/kotlin/esw/ocs/scripts/examples/paradox/CommandServiceDslExample.kts) { #diagnostic-mode-component }
@@ -161,11 +164,12 @@ Kotlin
 ### unlock
 
 This DSL allows unlocking Assembly/HCD from Sequencer script for specified duration. When you unlock Assembly/HCD, Sequencer sending lock command
-is treated as source. This DSL returns `LockingResponse` which can be `LockReleased` or `LockAlreadyReleased` in the successful scenario or `ReleasingLockFailed` 
+is treated as source. This DSL returns `LockingResponse` which can be `LockReleased` or `LockAlreadyReleased` in the successful scenario or `ReleasingLockFailed`
 in case of failure.
 
 Kotlin
 :   @@snip [CommandServiceDslExample.kts](../../../../../../../examples/src/main/kotlin/esw/ocs/scripts/examples/paradox/CommandServiceDslExample.kts) { #unlock-component }
 
 ## Source code for examples
+
 * [Command Service Examples]($github.base_url$/examples/src/main/kotlin/esw/ocs/scripts/examples/paradox/CommandServiceDslExample.kts)

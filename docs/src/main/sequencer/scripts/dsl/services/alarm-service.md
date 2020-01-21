@@ -12,7 +12,7 @@ Default value for `csw-alarm.refresh-interval` config is _3 seconds_ which is co
 
 `setSeverity` API requires user to provide `AlarmKey` and `AlarmSeverity`.
 
-**AlarmKey**
+### AlarmKey
 
 `AlarmKey` represents unique alarm in the given subsystem and component e.g. `nfiraos.trombone.tromboneaxislowlimitalarm`
 
@@ -21,9 +21,9 @@ Following example demonstrate creation of `AlarmKey`
 Kotlin
 :   @@snip [AlarmServiceDslExample.kts](../../../../../../../examples/src/main/kotlin/esw/ocs/scripts/examples/paradox/AlarmServiceDslExample.kts) { #alarm-key }
 
-**AlarmSeverity**
+### AlarmSeverity
 
-Supported `AlarmSeverity` are: 
+Supported `AlarmSeverity` are:
 
 1. Okay
 1. Warning
@@ -37,11 +37,12 @@ In this example, temperature @ref[Fsm](../../fsm.md) is created and based on the
 
 | State |       Temperature      | Severity |
 |:-----:|:----------------------:|:--------:|
-| OK    | Temp > 20 && temp < 40 | Okay     | 
-| ERROR | Temp < 20 or temp > 40 | Major    | 
+| OK    | Temp > 20 && temp < 40 | Okay     |
+| ERROR | Temp < 20 or temp > 40 | Major    |
 
 Kotlin
 :   @@snip [AlarmServiceDslExample.kts](../../../../../../../examples/src/main/kotlin/esw/ocs/scripts/examples/paradox/AlarmServiceDslExample.kts) { #set-severity }
 
-### Source code for examples
+## Source code for examples
+
 * [Alarm Service Examples]($github.base_url$/examples/src/main/kotlin/esw/ocs/scripts/examples/paradox/AlarmServiceDslExample.kts)

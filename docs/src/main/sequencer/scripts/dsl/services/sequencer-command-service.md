@@ -54,7 +54,7 @@ Kotlin
 
 The `submitAndWait` DSL is a combination of `submit` and `queryFinal`. If you are not interested in initial/intermediate response
 but only in final response of the Sequence, you can use this dsl. It submits the sequence and waits for the final response
-if the sequence was successfully `Started`. It will wait till the `defaultTimeout` specified at the time of creation of the 
+if the sequence was successfully `Started`. It will wait till the `defaultTimeout` specified at the time of creation of the
 `Sequencer` instance.
 
 Kotlin
@@ -64,7 +64,6 @@ If you want to increase/decrease the default timeout, you can use the other vari
 
 Kotlin
 : @@snip [SequencerCommandServiceDslExample.kts](../../../../../../../examples/src/main/kotlin/esw/ocs/scripts/examples/paradox/SequencerCommandServiceDslExample.kts) { #submitAndWaitWithTimeout }  
-
 
 ## Going online/offline
 
@@ -76,7 +75,7 @@ state apart from offline, an `Unhandled` response will be sent.
 
 If the Sequencer is in Offline state, and it receives the `goOnline` command, the @ref:[goOnline handlers](../handlers.md#online-and-offline-handlers) of the receiving sequencer
 will be called. In case the handlers fail, a `GoOnlineHookFailed` response would be sent, resulting the Sequencer remains in the previous state.
-Else an `Ok` message is sent, and the Sequencer goes in online(idle) state. 
+Else an `Ok` message is sent, and the Sequencer goes in online(idle) state.
 
 Kotlin
 : @@snip [SequencerCommandServiceDslExample.kts](../../../../../../../examples/src/main/kotlin/esw/ocs/scripts/examples/paradox/SequencerCommandServiceDslExample.kts) { #goOnline }  
@@ -84,15 +83,15 @@ Kotlin
 ### Go offline
 
 Go offline command is received in 2 states only.
- 
+
 * If the Sequencer is Idle, which means it is not processing any sequence currently
 * If the Sequencer is Loaded with a sequence
 
-If this command is sent in any other state apart from these, an `Unhandled` response will be sent. 
+If this command is sent in any other state apart from these, an `Unhandled` response will be sent.
 If the Sequencer is in idle/loaded state, and it receives the `goOffline` command, the @ref:[goOffline handlers](../handlers.md#online-and-offline-handlers)
 of the receiving Sequencer will be called.
 In case the handlers fail, a `GoOfflineHookFailed` response would be sent, resulting the Sequencer remains in the previous state.
-Else an `Ok` message is sent, and the Sequencer goes to offline state. 
+Else an `Ok` message is sent, and the Sequencer goes to offline state.
 
 Kotlin
 : @@snip [SequencerCommandServiceDslExample.kts](../../../../../../../examples/src/main/kotlin/esw/ocs/scripts/examples/paradox/SequencerCommandServiceDslExample.kts) { #goOffline }  
@@ -117,12 +116,11 @@ an `Ok` response is sent else `OperationsHookFailed` response is sent.
 Kotlin
 : @@snip [SequencerCommandServiceDslExample.kts](../../../../../../../examples/src/main/kotlin/esw/ocs/scripts/examples/paradox/SequencerCommandServiceDslExample.kts) { #operationsMode }  
 
-
 ## Aborting and Stopping Sequence
 
 ### Aborting
 
-This command is accepted only if the Sequencer is in `InProgress` state, which means it is executing a sequence currently. 
+This command is accepted only if the Sequencer is in `InProgress` state, which means it is executing a sequence currently.
 If this command is sent in any other state, an `Unhandled` response is returned. In all other cases, an `Ok` response is sent.
 
 On receiving this command in `InProgress` state, the Sequencer will execute the @ref:[abort sequence handlers](../handlers.md#abort-sequence-handler)

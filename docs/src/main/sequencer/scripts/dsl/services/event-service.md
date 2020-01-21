@@ -16,7 +16,7 @@ This DSL can also publish events periodically when provided with `duration` and 
 
 Kotlin
 :   @@snip [EventServiceDslExample.kts](../../../../../../../examples/src/main/kotlin/esw/ocs/scripts/examples/paradox/EventServiceDslExample.kts) { #publish-async }
- 
+
 ## onEvent
 
 DSL to subscribe to events getting published on the given `event keys`. This DSL takes a `callback` which operates on an event, that block will be invoked whenever an
@@ -25,11 +25,11 @@ event is published on any of the provided event keys.
 Kotlin
 :   @@snip [EventServiceDslExample.kts](../../../../../../../examples/src/main/kotlin/esw/ocs/scripts/examples/paradox/EventServiceDslExample.kts) { #subscribe }
 
-This DSL have the ability to limit the number of events by providing the `duration` after which the `callback` will be invoked with the latest event. If no event is 
-published within the duration then the last published event will be used to execute the callback. 
+This DSL have the ability to limit the number of events by providing the `duration` after which the `callback` will be invoked with the latest event. If no event is
+published within the duration then the last published event will be used to execute the callback.
 
 Kotlin
-:   @@snip [EventServiceDslExample.kts](../../../../../../../examples/src/main/kotlin/esw/ocs/scripts/examples/paradox/EventServiceDslExample.kts) { #subscribe-async } 
+:   @@snip [EventServiceDslExample.kts](../../../../../../../examples/src/main/kotlin/esw/ocs/scripts/examples/paradox/EventServiceDslExample.kts) { #subscribe-async }
 
 ## getEvent
 
@@ -63,7 +63,7 @@ Kotlin
 
 ### SystemVar
 
-Helper DSL to create `EventVariable` corresponding to `SystemEvent`. This DSL needs the `initial value` of the parameter, `event key` and `parameter key`. 
+Helper DSL to create `EventVariable` corresponding to `SystemEvent`. This DSL needs the `initial value` of the parameter, `event key` and `parameter key`.
  More details about SystemVar are provided in @ref[FSM documentation](./../../fsm.md#reactive-fsm)
 
 Kotlin
@@ -77,6 +77,6 @@ More details about ObserveVar are provided in @ref[FSM documentation](./../../fs
 Kotlin
 :   @@snip [EventServiceDslExample.kts](../../../../../../../examples/src/main/kotlin/esw/ocs/scripts/examples/paradox/EventServiceDslExample.kts) { #observe-var }
 
-
 ## Source code for examples
+
 * [Event Service Examples]($github.base_url$/examples/src/main/kotlin/esw/ocs/scripts/examples/paradox/EventServiceDslExample.kts)

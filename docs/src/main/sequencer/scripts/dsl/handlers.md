@@ -20,7 +20,6 @@ Kotlin
 
 In the block provided to this handler, all the CSW services (Event, Alarm, Time Service, etc) and control DSL (loop, par etc) are accessible.
 
-
 ### onObserve
 
 This handler is used to handle an @extref[Observe](csw_scaladoc:csw/params/commands/Observe.html) command sent to this sequencer.
@@ -33,7 +32,6 @@ is executed
 Kotlin
 : @@snip [HandlersExample.kts](../../../../../../examples/src/main/kotlin/esw/ocs/scripts/examples/paradox/HandlersExample.kts) { #onObserve }
 
-
 ## Online and Offline Handlers
 
 ### onGoOnline
@@ -44,7 +42,6 @@ will the sequencer become online. Hence, error handling for the block passed to 
 Kotlin
 : @@snip [HandlersExample.kts](../../../../../../examples/src/main/kotlin/esw/ocs/scripts/examples/paradox/HandlersExample.kts) { #onGoOnline }
 
-
 ### onGoOffline
 
 On receiving the `goOffline` command, the onGoOffline handlers, if defined, will be called. Only if the handlers execute successfully,
@@ -54,16 +51,16 @@ Offline handlers could be written to clear the sequencer state before going offl
 Kotlin
 : @@snip [HandlersExample.kts](../../../../../../examples/src/main/kotlin/esw/ocs/scripts/examples/paradox/HandlersExample.kts) { #onGoOffline }
 
-
 ## Abort Sequence Handler
+
 Abort handler could be used to perform any cleanup tasks that need to be done before the current
 sequence is aborted. Note that, even if the handlers fail, the sequence will be aborted.
 
 Kotlin
 : @@snip [HandlersExample.kts](../../../../../../examples/src/main/kotlin/esw/ocs/scripts/examples/paradox/HandlersExample.kts) { #abort }
 
-
 ## Stop Handler
+
 This handler is provided to clear/save the sequencer state before stopping.
 Note that, even if the handlers fail, the sequence will be stopped.
 
@@ -71,6 +68,7 @@ Kotlin
 : @@snip [HandlersExample.kts](../../../../../../examples/src/main/kotlin/esw/ocs/scripts/examples/paradox/HandlersExample.kts) { #stop }
 
 ## Shutdown Handler
+
 This handler will be called just before the sequencer is shutdown.
 Note that, even if the handlers fail, the sequencer will be shutdown.
 
@@ -78,6 +76,7 @@ Kotlin
 : @@snip [HandlersExample.kts](../../../../../../examples/src/main/kotlin/esw/ocs/scripts/examples/paradox/HandlersExample.kts) { #shutdown }
 
 ## Diagnostic Mode Handler
+
 This handler can be used to perform actions that need to be done when the sequencer goes in the diagnostic mode.
 The handler gets access to two parameters:
 
@@ -90,13 +89,13 @@ Kotlin
 : @@snip [HandlersExample.kts](../../../../../../examples/src/main/kotlin/esw/ocs/scripts/examples/paradox/HandlersExample.kts) { #diagnosticMode }
 
 ## Operations Mode Handler
+
 This handler can be used to perform actions that need to be done when the sequencer goes in the operations mode.
 Script writers can use this handler to stop all the publishing being done by the @ref:[diagnostic mode handler](#diagnostic-mode-handler),
 and/or send operations mode command to downstream components.
 
 Kotlin
 : @@snip [HandlersExample.kts](../../../../../../examples/src/main/kotlin/esw/ocs/scripts/examples/paradox/HandlersExample.kts) { #operationsMode }
-
 
 ## Error Handlers
 
@@ -105,17 +104,18 @@ Script can error out in following scenarios:
 1. **Script Initialization Error** : When construction of script throws exception then script initialization fails. In this scenario,
 framework will log error cause. Sequencer will not start in this failure. One need to fix error and then load script again.
 
-2. **Command Handlers Failure** : While executing sequence @ref:[Command Handlers](#command-handlers) e.g. `onSetup` , `onObserve` can fail because of two reasons: 
-    
-    1. handler throws exception or 
+2. **Command Handlers Failure** : While executing sequence @ref:[Command Handlers](#command-handlers) e.g. `onSetup` , `onObserve` can fail because of two reasons:
+
+    1. handler throws exception or
     2. `Command Service` or `Sequencer Command Service` used to interact with downstream `Assembly/HCD/Sequencer`
     returns negative `SubmitResponse`. Negative `SubmitResponse` is by default considered as error. In this case of failure, sequence is terminated
-    with failure. 
-    
+    with failure.
+
 3. **Handlers Failure** : This failure occurs when any of handlers other than Command Handlers fail (e.g. `OnGoOnline`, `onDiagnosticMode` etc.). In
 this scenario, framework will log error cause. Sequence execution will continue.  
 
-Script DSL provides following constructs to handle failure while executing script: 
+Script DSL provides following constructs to handle failure while executing script:
+
 1. **onGlobalError** : This construct is provided for script writer. Logic in `onGlobalError` will be executed in case of all **Handlers Failure** including
 **Command Handlers Failure** except @ref:[Shutdown Handler](#shutdown-handler). If `onGlobalError` handler is not provided by script then only logging of error cause is done by the framework.
 
@@ -123,7 +123,6 @@ Following example shows usage of `onGloablError`
 
 Kotlin
 : @@snip [HandlersExample.kts](../../../../../../examples/src/main/kotlin/esw/ocs/scripts/examples/paradox/HandlersExample.kts) { #onGlobalError }
-
 
 2. **onError** : This construct is specifically provided for **Command Handlers Failure**. `onError` block can be written specifically for each `onSetup` and
 `onObserve` handler. In case of failure, `onError` will be called first followed by `onGlobalError` and sequence will be terminated with failure. By default
@@ -138,9 +137,9 @@ Kotlin
 
 If you don't want to fail sequence in case of Command Service APIs while interacting with downstream Assembly/HCD (`submit`, `query` etc.)
 or Sequencer Command Service APIs while interacting with downstream Sequencer (`submit`, `query` etc.) then **resumeOnError** flag can be used. For details of
-**resumeOnError**, please refer @ref:[Error handling](./services/command-service.md#error-handling) 
+**resumeOnError**, please refer @ref:[Error handling](./services/command-service.md#error-handling)
 
 @@@ note
 Error in all handlers **except Shutdown Handler** will execute error handler provided by script. If error handler is not provided, framework will
-log error cause. 
+log error cause.
 @@@
