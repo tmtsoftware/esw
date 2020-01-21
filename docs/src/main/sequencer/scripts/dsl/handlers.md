@@ -91,7 +91,7 @@ Kotlin
 
 ## Operations Mode Handler
 This handler can be used to perform actions that need to be done when the sequencer goes in the operations mode.
-Script writers can use this handler to stop all the publishing being done by the [diagnostic mode handler](#diagnostic-mode-handler),
+Script writers can use this handler to stop all the publishing being done by the @ref:[diagnostic mode handler](#diagnostic-mode-handler),
 and/or send operations mode command to downstream components.
 
 Kotlin
@@ -105,7 +105,7 @@ Script can error out in following scenarios:
 1. **Script Initialization Error** : When construction of script throws exception then script initialization fails. In this scenario,
 framework will log error cause. Sequencer will not start in this failure. One need to fix error and then load script again.
 
-2. **Command Handlers Failure** : While executing sequence @ref[Command Handlers](#command-handlers) e.g. `onSetup` , `onObserve` can fail because of two reasons: 
+2. **Command Handlers Failure** : While executing sequence @ref:[Command Handlers](#command-handlers) e.g. `onSetup` , `onObserve` can fail because of two reasons: 
     
     1. handler throws exception or 
     2. `Command Service` or `Sequencer Command Service` used to interact with downstream `Assembly/HCD/Sequencer`
@@ -117,7 +117,7 @@ this scenario, framework will log error cause. Sequence execution will continue.
 
 Script DSL provides following constructs to handle failure while executing script: 
 1. **onGlobalError** : This construct is provided for script writer. Logic in `onGlobalError` will be executed in case of all **Handlers Failure** including
-**Command Handlers Failure** except @ref[Shutdown Handler](#shutdown-handler). If `onGlobalError` handler is not provided by script then only logging of error cause is done by the framework.
+**Command Handlers Failure** except @ref:[Shutdown Handler](#shutdown-handler). If `onGlobalError` handler is not provided by script then only logging of error cause is done by the framework.
 
 Following example shows usage of `onGloablError`
 
