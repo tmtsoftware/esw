@@ -188,9 +188,14 @@ class SequencerBehavior(
     // run the futures in parallel and wait for all of them to complete
     // once all finished, send ShutdownComplete self message irrespective of any failures
     val f1 = locationService.unregister(AkkaConnection(componentId))
-    val f2 = script.executeShutdown()
+    val f2 = script.executeShutdown() // execute shutdown handlers of script
     val f3 = shutdownHttpService()
-    f1.onComplete(_ => f2.onComplete(_ => f3.onComplete(_ => data.self ! ShutdownComplete(replyTo))))
+    f1.onComplete(_ =>
+      f2.onComplete { _ =>
+        script.shutdownScript() // to clean up the script. For eg. to stop StrandEc.
+        f3.onComplete(_ => data.self ! ShutdownComplete(replyTo))
+      }
+    )
 
     shuttingDown(data)
   }

@@ -14,7 +14,6 @@ class ScriptWiring(val scriptContext: ScriptContext) {
     val scope: CoroutineScope by lazy { CoroutineScope(supervisorJob + dispatcher) }
     val cswServices: CswServices by lazy { CswServices.create(scriptContext, strandEc) }
 
-    //todo: this is not being called from anywhere
     fun shutdown() {
         supervisorJob.cancel()
         dispatcher.close()

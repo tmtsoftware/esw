@@ -50,4 +50,5 @@ class ValidTestScript(ctx: ScriptContext) extends ScriptApi {
   override def executeDiagnosticMode(startTime: UTCTime, hint: String): Future[Done] = ???
   override def executeOperationsMode(): Future[Done]                                 = ???
   override def executeExceptionHandlers(ex: Throwable): CompletionStage[Void]        = ???
+  override def shutdownScript(): Unit                                                = ???
 }

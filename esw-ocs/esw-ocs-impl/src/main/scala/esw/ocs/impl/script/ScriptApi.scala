@@ -18,4 +18,5 @@ trait ScriptApi {
   def executeDiagnosticMode(startTime: UTCTime, hint: String): Future[Done]
   def executeOperationsMode(): Future[Done]
   def executeExceptionHandlers(ex: Throwable): CompletionStage[Void]
+  def shutdownScript(): Unit
 }

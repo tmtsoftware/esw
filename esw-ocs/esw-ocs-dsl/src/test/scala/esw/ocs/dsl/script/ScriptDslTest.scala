@@ -13,7 +13,8 @@ import scala.concurrent.duration.DurationDouble
 class ScriptDslTest extends BaseTestSuite {
   override implicit def patienceConfig: PatienceConfig = PatienceConfig(20.seconds)
 
-  private val strandEc = StrandEc()
+  private val strandEc     = StrandEc()
+  private val shutdownTask = () => ()
 
   override protected def afterAll(): Unit = strandEc.shutdown()
 
@@ -23,7 +24,7 @@ class ScriptDslTest extends BaseTestSuite {
 
       // todo : extract a beforeEach
       val seqOperatorFactory = () => mock[SequenceOperator]
-      val script: ScriptDsl = new ScriptDsl(seqOperatorFactory, strandEc) {
+      val script: ScriptDsl = new ScriptDsl(seqOperatorFactory, strandEc, shutdownTask) {
 
         onSetupCommand("iris") { cmd =>
           receivedPrefix = Some(cmd.source)
@@ -42,7 +43,7 @@ class ScriptDslTest extends BaseTestSuite {
       var receivedPrefix: Option[Prefix] = None
 
       val seqOperatorFactory = () => mock[SequenceOperator]
-      val script: ScriptDsl = new ScriptDsl(seqOperatorFactory, strandEc) {
+      val script: ScriptDsl = new ScriptDsl(seqOperatorFactory, strandEc, shutdownTask) {
 
         onObserveCommand("iris") { cmd =>
           receivedPrefix = Some(cmd.source)
@@ -61,7 +62,7 @@ class ScriptDslTest extends BaseTestSuite {
       val orderOfShutdownCalled = ArrayBuffer.empty[Int]
 
       val seqOperatorFactory = () => mock[SequenceOperator]
-      val script: ScriptDsl = new ScriptDsl(seqOperatorFactory, strandEc) {
+      val script: ScriptDsl = new ScriptDsl(seqOperatorFactory, strandEc, shutdownTask) {
 
         onShutdown {
           orderOfShutdownCalled += 1
@@ -82,7 +83,7 @@ class ScriptDslTest extends BaseTestSuite {
       val orderOfAbortCalled = ArrayBuffer.empty[Int]
 
       val seqOperatorFactory = () => mock[SequenceOperator]
-      val script: ScriptDsl = new ScriptDsl(seqOperatorFactory, strandEc) {
+      val script: ScriptDsl = new ScriptDsl(seqOperatorFactory, strandEc, shutdownTask) {
 
         onAbortSequence {
           orderOfAbortCalled += 1
@@ -103,7 +104,7 @@ class ScriptDslTest extends BaseTestSuite {
       var receivedPrefix: Option[Throwable] = None
 
       val seqOperatorFactory = () => mock[SequenceOperator]
-      val script: ScriptDsl = new ScriptDsl(seqOperatorFactory, strandEc) {
+      val script: ScriptDsl = new ScriptDsl(seqOperatorFactory, strandEc, shutdownTask) {
 
         onException { ex =>
           receivedPrefix = Some(ex)
@@ -115,6 +116,20 @@ class ScriptDslTest extends BaseTestSuite {
       script.executeExceptionHandlers(exception).toCompletableFuture.get()
 
       receivedPrefix.value shouldBe exception
+    }
+
+    "shutdownScript" must {
+      "execute the shutdown task" in {
+        val seqOperatorFactory = () => mock[SequenceOperator]
+        var taskCalled         = false
+        val shutdownTask = () => {
+          taskCalled = true
+        }
+        val script: ScriptDsl = new ScriptDsl(seqOperatorFactory, strandEc, shutdownTask)
+        script.shutdownScript()
+
+        taskCalled shouldBe true
+      }
     }
   }
 }

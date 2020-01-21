@@ -11,13 +11,14 @@ import esw.ocs.impl.core.SequenceOperator
 import scala.concurrent.Future
 
 private[esw] class FsmScriptDsl(
-    private val sequenceOperatorFactory: () => SequenceOperator,
-    private val strandEc: StrandEc,
-    private val initialState: FsmScriptState
-) extends ScriptDsl(sequenceOperatorFactory, strandEc) {
+    sequenceOperatorFactory: () => SequenceOperator,
+    strandEc: StrandEc,
+    shutdownTask: () => Unit,
+    initialState: FsmScriptState
+) extends ScriptDsl(sequenceOperatorFactory, strandEc, shutdownTask) {
 
-  def this(sequenceOperatorFactory: () => SequenceOperator, strandEc: StrandEc) =
-    this(sequenceOperatorFactory, strandEc, FsmScriptState.init())
+  def this(sequenceOperatorFactory: () => SequenceOperator, strandEc: StrandEc, shutdownTask: () => Unit) =
+    this(sequenceOperatorFactory, strandEc, shutdownTask, FsmScriptState.init())
 
   private var scriptState = initialState
 

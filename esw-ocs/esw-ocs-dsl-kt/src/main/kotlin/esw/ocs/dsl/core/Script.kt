@@ -20,12 +20,19 @@ import kotlinx.coroutines.*
 import kotlinx.coroutines.future.asCompletableFuture
 import kotlinx.coroutines.future.await
 import kotlinx.coroutines.future.future
+import scala.Function0
+import scala.runtime.BoxedUnit
 import kotlin.coroutines.CoroutineContext
 
 sealed class BaseScript(wiring: ScriptWiring) : CswHighLevelDsl(wiring.cswServices, wiring.scriptContext), HandlerScope {
     override val actorSystem: ActorSystem<SpawnProtocol.Command> = wiring.scriptContext.actorSystem()
 
-    internal open val scriptDsl: ScriptDsl by lazy { ScriptDsl(wiring.scriptContext.sequenceOperatorFactory(), strandEc) }
+    internal open val scriptDsl: ScriptDsl by lazy { ScriptDsl(wiring.scriptContext.sequenceOperatorFactory(), strandEc, shutdownTask) }
+
+    protected val shutdownTask: Function0<BoxedUnit> = Function0 {
+        wiring.shutdown()
+        BoxedUnit.UNIT
+    }
 
     private val exceptionHandler = CoroutineExceptionHandler { _, exception ->
         error("Exception thrown in script with a message: ${exception.message}, invoking exception handler", cause = exception)
@@ -122,7 +129,7 @@ class FsmScript(private val wiring: ScriptWiring) : BaseScript(wiring), FsmScrip
     override val coroutineContext: CoroutineContext = coroutineScope.coroutineContext
     override val scriptDsl: ScriptDsl by lazy { fsmScriptDsl }
 
-    internal val fsmScriptDsl: FsmScriptDsl by lazy { FsmScriptDsl(wiring.scriptContext.sequenceOperatorFactory(), strandEc) }
+    internal val fsmScriptDsl: FsmScriptDsl by lazy { FsmScriptDsl(wiring.scriptContext.sequenceOperatorFactory(), strandEc, shutdownTask) }
 
     inner class FsmScriptStateDsl : Script(wiring), FsmScriptStateScope {
         override val coroutineContext: CoroutineContext = this@FsmScript.coroutineScope.coroutineContext

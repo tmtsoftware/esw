@@ -23,9 +23,10 @@ class FsmScriptDslTest extends BaseTestSuite {
     "call transition method defined on FsmScriptState and update its internal state | ESW-252" in {
       val initialState = mock[FsmScriptState]
       val updatedState = mock[FsmScriptState]
+      val shutdownTask = () => ()
       when(initialState.transition(STARTED_STATE, params)).thenReturn(updatedState)
 
-      val scriptDsl = new FsmScriptDsl(seqOperatorFactory, strandEc, initialState)
+      val scriptDsl = new FsmScriptDsl(seqOperatorFactory, strandEc, shutdownTask, initialState)
       scriptDsl.become(STARTED_STATE, params)
 
       verify(initialState).transition(STARTED_STATE, params)
@@ -38,13 +39,29 @@ class FsmScriptDslTest extends BaseTestSuite {
       val initialState = mock[FsmScriptState]
       val updatedState = mock[FsmScriptState]
       val handler      = (_: Params) => mock[ScriptDsl]
+      val shutdownTask = () => ()
       when(initialState.add(STARTED_STATE, handler)).thenReturn(updatedState)
 
-      val scriptDsl = new FsmScriptDsl(seqOperatorFactory, strandEc, initialState)
+      val scriptDsl = new FsmScriptDsl(seqOperatorFactory, strandEc, shutdownTask, initialState)
       scriptDsl.add(STARTED_STATE, handler)
 
       verify(initialState).add(STARTED_STATE, handler)
       scriptDsl.getState should ===(updatedState)
+    }
+  }
+
+  "shutdownScript" must {
+    "execute the given shutdown task" in {
+      val initialState = mock[FsmScriptState]
+
+      var taskCalled = false
+      val shutdownTask = () => {
+        taskCalled = true
+      }
+      val scriptDsl = new FsmScriptDsl(seqOperatorFactory, strandEc, shutdownTask, initialState)
+
+      scriptDsl.shutdownScript()
+      taskCalled shouldBe true
     }
   }
 
@@ -58,6 +75,7 @@ class FsmScriptDslTest extends BaseTestSuite {
       val utcTime         = UTCTime.now()
       val hint            = "datum"
       val ex              = mock[Throwable]
+      val shutdownTask    = () => ()
 
       val completionStageVoid: CompletableFuture[Void] = CompletableFuture.completedFuture(null)
 
@@ -73,7 +91,7 @@ class FsmScriptDslTest extends BaseTestSuite {
       when(script.executeOperationsMode()).thenReturn(futureDone)
       when(script.executeExceptionHandlers(ex)).thenReturn(completionStageVoid)
 
-      val scriptDsl = new FsmScriptDsl(seqOperatorFactory, strandEc, state)
+      val scriptDsl = new FsmScriptDsl(seqOperatorFactory, strandEc, shutdownTask, state)
 
       scriptDsl.execute(sequenceCommand) should ===(futureUnit)
       verify(script).execute(sequenceCommand)
