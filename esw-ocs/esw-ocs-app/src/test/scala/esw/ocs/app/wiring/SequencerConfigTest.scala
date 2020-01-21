@@ -3,7 +3,7 @@ package esw.ocs.app.wiring
 import akka.Done
 import com.typesafe.config.{Config, ConfigFactory}
 import csw.params.commands.SequenceCommand
-import csw.prefix.models.Subsystem.NSCU
+import csw.prefix.models.Subsystem.{NSCU, TCS}
 import csw.prefix.models.{Prefix, Subsystem}
 import csw.time.core.models.UTCTime
 import esw.http.core.BaseTestSuite
@@ -24,6 +24,30 @@ class SequencerConfigTest extends BaseTestSuite {
       sequencerConfigs.prefix.componentName should ===("darknight")
       sequencerConfigs.prefix should ===(Prefix(NSCU, "darknight"))
       sequencerConfigs.scriptClass should ===(classOf[ValidTestScript].getCanonicalName)
+    }
+
+    "create SequencerConfig based on case-sensitive subsystem and observingMode | ESW-103, ESW-279" in {
+      val subsystem        = TCS
+      val observingMode    = "DarkNight"
+      val sequencerConfigs = SequencerConfig.from(config, subsystem, observingMode)
+
+      sequencerConfigs.prefix.componentName should ===("DarkNight")
+      sequencerConfigs.prefix should ===(Prefix(TCS, "DarkNight"))
+      sequencerConfigs.scriptClass should ===(classOf[ValidTestScript].getCanonicalName)
+
+      val lowerCaseObservingMode = "darknight"
+      val exception = intercept[ScriptConfigurationMissingException] {
+        SequencerConfig.from(config, subsystem, lowerCaseObservingMode)
+      }
+
+      exception.getMessage should ===(s"Script configuration missing for [${subsystem.name}] with [$lowerCaseObservingMode]")
+
+      val upperCaseObservingMode = "DARKNIGHT"
+      val exception2 = intercept[ScriptConfigurationMissingException] {
+        SequencerConfig.from(config, subsystem, upperCaseObservingMode)
+      }
+
+      exception2.getMessage should ===(s"Script configuration missing for [${subsystem.name}] with [$upperCaseObservingMode]")
     }
 
     "throw ScriptConfigurationMissingException if script config is not provided for given subsystem and observingMode | ESW-103" in {
