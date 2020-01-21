@@ -21,9 +21,9 @@ class FsmScriptDslTest extends BaseTestSuite {
 
   "become" must {
     "call transition method defined on FsmScriptState and update its internal state | ESW-252" in {
-      val initialState = mock[FsmScriptState]
-      val updatedState = mock[FsmScriptState]
-      val shutdownTask = () => ()
+      val initialState           = mock[FsmScriptState]
+      val updatedState           = mock[FsmScriptState]
+      val shutdownTask: Runnable = () => ()
       when(initialState.transition(STARTED_STATE, params)).thenReturn(updatedState)
 
       val scriptDsl = new FsmScriptDsl(seqOperatorFactory, strandEc, shutdownTask, initialState)
@@ -36,10 +36,10 @@ class FsmScriptDslTest extends BaseTestSuite {
 
   "add" must {
     "call add method defined on FsmScriptState and update its internal state" in {
-      val initialState = mock[FsmScriptState]
-      val updatedState = mock[FsmScriptState]
-      val handler      = (_: Params) => mock[ScriptDsl]
-      val shutdownTask = () => ()
+      val initialState           = mock[FsmScriptState]
+      val updatedState           = mock[FsmScriptState]
+      val handler                = (_: Params) => mock[ScriptDsl]
+      val shutdownTask: Runnable = () => ()
       when(initialState.add(STARTED_STATE, handler)).thenReturn(updatedState)
 
       val scriptDsl = new FsmScriptDsl(seqOperatorFactory, strandEc, shutdownTask, initialState)
@@ -55,7 +55,7 @@ class FsmScriptDslTest extends BaseTestSuite {
       val initialState = mock[FsmScriptState]
 
       var taskCalled = false
-      val shutdownTask = () => {
+      val shutdownTask: Runnable = () => {
         taskCalled = true
       }
       val scriptDsl = new FsmScriptDsl(seqOperatorFactory, strandEc, shutdownTask, initialState)
@@ -67,15 +67,15 @@ class FsmScriptDslTest extends BaseTestSuite {
 
   "execute" must {
     "delegate call to appropriate execute method defined on current script present in script state" in {
-      val state           = mock[FsmScriptState]
-      val script          = mock[ScriptDsl]
-      val sequenceCommand = mock[SequenceCommand]
-      val futureUnit      = mock[Future[Unit]]
-      val futureDone      = Future.successful(Done)
-      val utcTime         = UTCTime.now()
-      val hint            = "datum"
-      val ex              = mock[Throwable]
-      val shutdownTask    = () => ()
+      val state                  = mock[FsmScriptState]
+      val script                 = mock[ScriptDsl]
+      val sequenceCommand        = mock[SequenceCommand]
+      val futureUnit             = mock[Future[Unit]]
+      val futureDone             = Future.successful(Done)
+      val utcTime                = UTCTime.now()
+      val hint                   = "datum"
+      val ex                     = mock[Throwable]
+      val shutdownTask: Runnable = () => ()
 
       val completionStageVoid: CompletableFuture[Void] = CompletableFuture.completedFuture(null)
 

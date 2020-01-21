@@ -18,7 +18,7 @@ import scala.compat.java8.FutureConverters.{CompletionStageOps, FutureOps}
 import scala.concurrent.{ExecutionContext, Future}
 import scala.reflect.ClassTag
 
-private[esw] class ScriptDsl(sequenceOperatorFactory: () => SequenceOperator, strandEc: StrandEc, shutdownTask: () => Unit)
+private[esw] class ScriptDsl(sequenceOperatorFactory: () => SequenceOperator, strandEc: StrandEc, shutdownTask: Runnable)
     extends ScriptApi {
   protected implicit lazy val toEc: ExecutionContext = strandEc.ec
 
@@ -75,7 +75,7 @@ private[esw] class ScriptDsl(sequenceOperatorFactory: () => SequenceOperator, st
 
   override def executeShutdown(): Future[Done] = {
     executeHandler(shutdownHandlers, ()).map { _ =>
-      shutdownTask()
+      shutdownTask.run()
       Done
     }
   }
@@ -92,7 +92,7 @@ private[esw] class ScriptDsl(sequenceOperatorFactory: () => SequenceOperator, st
   override def executeExceptionHandlers(ex: Throwable): CompletionStage[Void] =
     executeHandler(exceptionHandlers, ex).toJava.thenAccept(_ => ())
 
-  override final def shutdownScript(): Unit = shutdownTask()
+  override final def shutdownScript(): Unit = shutdownTask.run()
 
   protected final def nextIf(f: SequenceCommand => Boolean): CompletionStage[Optional[SequenceCommand]] =
     async {

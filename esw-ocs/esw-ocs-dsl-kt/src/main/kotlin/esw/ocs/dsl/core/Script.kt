@@ -20,8 +20,6 @@ import kotlinx.coroutines.*
 import kotlinx.coroutines.future.asCompletableFuture
 import kotlinx.coroutines.future.await
 import kotlinx.coroutines.future.future
-import scala.Function0
-import scala.runtime.BoxedUnit
 import kotlin.coroutines.CoroutineContext
 
 sealed class BaseScript(wiring: ScriptWiring) : CswHighLevelDsl(wiring.cswServices, wiring.scriptContext), HandlerScope {
@@ -29,10 +27,7 @@ sealed class BaseScript(wiring: ScriptWiring) : CswHighLevelDsl(wiring.cswServic
 
     internal open val scriptDsl: ScriptDsl by lazy { ScriptDsl(wiring.scriptContext.sequenceOperatorFactory(), strandEc, shutdownTask) }
 
-    protected val shutdownTask: Function0<BoxedUnit> = Function0 {
-        wiring.shutdown()
-        BoxedUnit.UNIT
-    }
+    protected val shutdownTask = Runnable { wiring.shutdown() }
 
     private val exceptionHandler = CoroutineExceptionHandler { _, exception ->
         error("Exception thrown in script with a message: ${exception.message}, invoking exception handler", cause = exception)
@@ -41,7 +36,7 @@ sealed class BaseScript(wiring: ScriptWiring) : CswHighLevelDsl(wiring.cswServic
     }
 
     private val shutdownExceptionHandler = CoroutineExceptionHandler { _, exception ->
-        error("Shutting down: Exception thrown in script with a message: ${exception.message}, invoking exception handler", cause = exception)
+        error("Shutting down: Exception thrown in script with a message: ${exception.message}", cause = exception)
         exception.printStackTrace()
     }
 

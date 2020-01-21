@@ -13,8 +13,8 @@ import scala.concurrent.duration.DurationDouble
 class ScriptDslTest extends BaseTestSuite {
   override implicit def patienceConfig: PatienceConfig = PatienceConfig(20.seconds)
 
-  private val strandEc     = StrandEc()
-  private val shutdownTask = () => ()
+  private val strandEc               = StrandEc()
+  private val shutdownTask: Runnable = () => ()
 
   override protected def afterAll(): Unit = strandEc.shutdown()
 
@@ -122,7 +122,7 @@ class ScriptDslTest extends BaseTestSuite {
       "execute the shutdown task" in {
         val seqOperatorFactory = () => mock[SequenceOperator]
         var taskCalled         = false
-        val shutdownTask = () => {
+        val shutdownTask: Runnable = () => {
           taskCalled = true
         }
         val script: ScriptDsl = new ScriptDsl(seqOperatorFactory, strandEc, shutdownTask)

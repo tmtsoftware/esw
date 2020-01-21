@@ -13,11 +13,11 @@ import scala.concurrent.Future
 private[esw] class FsmScriptDsl(
     sequenceOperatorFactory: () => SequenceOperator,
     strandEc: StrandEc,
-    shutdownTask: () => Unit,
+    shutdownTask: Runnable,
     initialState: FsmScriptState
 ) extends ScriptDsl(sequenceOperatorFactory, strandEc, shutdownTask) {
 
-  def this(sequenceOperatorFactory: () => SequenceOperator, strandEc: StrandEc, shutdownTask: () => Unit) =
+  def this(sequenceOperatorFactory: () => SequenceOperator, strandEc: StrandEc, shutdownTask: Runnable) =
     this(sequenceOperatorFactory, strandEc, shutdownTask, FsmScriptState.init())
 
   private var scriptState = initialState
