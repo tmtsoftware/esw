@@ -33,7 +33,7 @@ Supported `AlarmSeverity` are:
 1. Critical
 
 Following example demonstrate the usage of `setSeverity` API.
-In this example, temperature @ref[Fsm](../../fsm.md) is created and based on the state of fsm, severity is set accordingly.
+In this example, temperature @ref[Fsm](../contained-fsm.md) is created and based on the state of fsm, severity is set accordingly.
 
 | State |       Temperature      | Severity |
 |:-----:|:----------------------:|:--------:|

@@ -1,6 +1,9 @@
 package esw.ocs.scripts.examples.testData
 
+import esw.ocs.dsl.core.reusableScript
 import esw.ocs.dsl.core.script
+
+reusableScript {  }
 
 script {
 

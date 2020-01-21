@@ -202,6 +202,15 @@ lazy val `esw-test-reporter` = project
 /* ================= Paradox Docs ============== */
 lazy val docs = project
   .enablePlugins(NoPublish, ParadoxMaterialSitePlugin)
+  .settings(
+    paradoxRoots := List(
+      "index.html",
+      "sequencer/scripts/dsl/dsl.html",
+      "sequencer/scripts/fsm-script.html",
+      "sequencer/scripts/reusable-script.html",
+      "sequencer/scripts/script.html"
+    )
+  )
 
 lazy val examples = project
   .in(file("examples"))
