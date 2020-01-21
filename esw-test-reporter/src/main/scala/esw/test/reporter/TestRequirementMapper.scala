@@ -57,8 +57,8 @@ object TestRequirementMapper {
     val testAndReqMapped = storyResults.map { storyResult =>
       val correspondingReq = requirements
         .find(_.story == storyResult.story) // find the Requirements of given story
-        .map(_.number)            // take out the Requirement number
-        .filter(!_.isEmpty)       // remove if Requirement number is empty
+        .map(_.number)                      // take out the Requirement number
+        .filter(!_.isEmpty)                 // remove if Requirement number is empty
         .getOrElse(Requirement.EMPTY)
 
       TestRequirementMapped(storyResult.story, correspondingReq, storyResult.test, storyResult.status)
