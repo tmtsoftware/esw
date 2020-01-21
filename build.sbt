@@ -12,7 +12,7 @@ lazy val aggregateProjects: Seq[ProjectReference] =
     examples
   )
 
-lazy val githubReleases: Seq[ProjectReference] = Seq(`esw-ocs-app`)
+lazy val githubReleases: Seq[ProjectReference] = Seq(`esw-ocs-app`, `esw-gateway-server`)
 lazy val unidocExclusions: Seq[ProjectReference] = Seq(
   `esw-integration-test`,
   `esw-ocs-api`.js,
@@ -183,7 +183,7 @@ lazy val `esw-gateway-impl` = project
 
 lazy val `esw-gateway-server` = project
   .in(file("esw-gateway/esw-gateway-server"))
-  .enablePlugins(EswBuildInfo, MaybeCoverage)
+  .enablePlugins(EswBuildInfo, DeployApp, MaybeCoverage)
   .settings(
     libraryDependencies ++= Dependencies.EswGatewayServer.value
   )

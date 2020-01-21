@@ -122,7 +122,6 @@ Script DSL provides following constructs to handle failure while executing scrip
 Following example shows usage of `onGloablError`
 
 Kotlin
-
 : @@snip [HandlersExample.kts](../../../../../../examples/src/main/kotlin/esw/ocs/scripts/examples/paradox/HandlersExample.kts) { #onGlobalError }
 
 

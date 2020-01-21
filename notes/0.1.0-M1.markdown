@@ -18,5 +18,4 @@ browser.
 
 ### Documentation
 
-Paradox documentation can be found at:
-https://tmtsoftware.github.io/esw/
+Paradox documentation can be found here: https://tmtsoftware.github.io/esw/
