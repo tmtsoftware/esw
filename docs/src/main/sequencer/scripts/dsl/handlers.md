@@ -117,7 +117,7 @@ this scenario, framework will log error cause. Sequence execution will continue.
 
 Script DSL provides following constructs to handle failure while executing script: 
 1. **onGlobalError** : This construct is provided for script writer. Logic in `onGlobalError` will be executed in case of all **Handlers Failure** including
-**Command Handlers Failure** except [Shutdown Handler](#shutdown-handler). If `onGlobalError` handler is not provided by script then only logging of error cause is done by the framework.
+**Command Handlers Failure** except @ref[Shutdown Handler](#shutdown-handler). If `onGlobalError` handler is not provided by script then only logging of error cause is done by the framework.
 
 Following example shows usage of `onGloablError`
 
