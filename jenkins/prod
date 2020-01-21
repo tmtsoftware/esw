@@ -79,13 +79,7 @@ pipeline {
             }
         }
 
-        stage('Bintray Publish - Kotlin') {
-            steps {
-                sh "./gradlew publish"
-            }
-        }
-
-        stage('Bintray Publish - Scala') {
+        stage('Bintray Publish') {
             steps {
                 sh "sbt -Dprod.publish=true -DenableCoverage=false publish"
             }
