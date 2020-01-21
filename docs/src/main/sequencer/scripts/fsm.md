@@ -121,7 +121,7 @@ Event variable polls to get the latest Event with given duration and if a new Ev
 Polling behavior can be used when the publisher is too fast and there is no need respond so quickly to it.
 
 For creating Event variable with polling behavior, it needs an extra argument which is the `duration` to poll with, the example code demos it. 
-Other methods like `get`, `set` and `bind` are same as shown [Subscribe](#subscribe) examples above.
+Other methods like `get`, `set` and `bind` are same as shown @ref:[Subscribe](#subscribe) examples above.
 
 Kotlin
 :   @@snip [Fsm.kts](../../../../../examples/src/main/kotlin/esw/ocs/scripts/examples/paradox/Fsm.kts) { #polling }
