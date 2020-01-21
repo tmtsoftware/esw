@@ -2,6 +2,10 @@ package esw.test.reporter
 
 case class Requirement(story: String, number: String)
 
+object Requirement {
+  val EMPTY = "None"
+}
+
 case class StoryResult(story: String, test: String, status: String) {
   def format(separator: Char): String = s"$story $separator $test $separator $status"
 }

@@ -45,7 +45,7 @@ class TestReporter extends Reporter {
     val content = s"""
       |<html>
       | <body>
-      |   <a href=".$reportFile">$reportFile</a>
+      |   <a href=".$reportFile" download>$reportFile</a>
       | </body>
       |</html>
       |""".stripMargin
