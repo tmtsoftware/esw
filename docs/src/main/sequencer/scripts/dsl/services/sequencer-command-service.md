@@ -19,7 +19,7 @@ on some other location, the Sequencer is resolved each time on receiving a comma
 
 ### Creating Sequence
 
-A @extref[Sequence](csw:csw/params/commands/Sequence.html) is a list of @extref[SequenceCommand](csw:csw/params/commands/SequenceCommand.html) which could
+A @extref[Sequence](csw_scaladoc:csw/params/commands/Sequence.html) is a list of @extref[SequenceCommand](csw_scaladoc:csw/params/commands/SequenceCommand.html) which could
 be one of `Setup`, `Observe` or `Wait`. To create a Sequence, `sequenceOf` DSL could be used as shown below.
 
 Kotlin
