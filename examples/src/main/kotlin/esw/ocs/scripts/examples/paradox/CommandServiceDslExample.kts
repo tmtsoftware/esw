@@ -42,9 +42,7 @@ script {
         // #submit-and-wait-component
 
         // #query-component
-        // #submit-component
         val response = galilAssembly.submit(command, resumeOnError = true)
-        // #submit-component
 
         galilAssembly.query(response.runId())
         // #query-component
@@ -52,10 +50,8 @@ script {
         // #query-final-component
         // #submit-component
         val startedResponse = galilAssembly.submit(command)
-        galilAssembly.queryFinal(startedResponse.runId())
         // #submit-component
-
-        galilAssembly.query(response.runId())
+        galilAssembly.queryFinal(startedResponse.runId())
         // #query-final-component
 
         // #subscribe-current-state-component
@@ -93,7 +89,6 @@ script {
                 info("command completed with response: $completedResponse")
             }
             is CommandResponse.Completed -> info("command with ${positiveSubmitResponse.runId()} is completed")
-            else -> finishWithError("Error starting WFS exposures: $positiveSubmitResponse")
         }
 
     }.onError { err ->
