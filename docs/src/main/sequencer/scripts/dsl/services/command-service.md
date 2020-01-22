@@ -173,7 +173,7 @@ Kotlin
 
 ### unlock
 
-This DSL command unlocks an Assembly/HCD from a Sequencer script for sthe pecified duration.  Only the Sequencer who locked the Assembly/HCD 
+This DSL command unlocks an Assembly/HCD from a Sequencer script for the specified duration. Only the Sequencer who locked the Assembly/HCD 
 can unlock it. This DSL returns a `LockingResponse` which can be `LockReleased` or `LockAlreadyReleased` in the successful scenario or `ReleasingLockFailed`
 in case of failure.
 

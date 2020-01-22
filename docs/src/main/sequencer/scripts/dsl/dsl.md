@@ -4,6 +4,7 @@
 
 @@@ index
 
+* [Location Service](services/location-service.md)
 * [Config Service](services/config-service.md)
 * [Command Service](services/command-service.md)
 * [Event Service](services/event-service.md)
