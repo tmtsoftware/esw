@@ -270,6 +270,19 @@ class FsmImplTest {
     }
 
     @Test
+    fun `await should start and wait for completion of fsm if not started previously | ESW-142`() = runBlocking {
+        var started = false
+        fsm.state(init) {
+            started = true
+            completeFsm()
+        }
+        eventually(timeout) { started shouldBe false }
+
+        fsm.await()
+        eventually(timeout) { started shouldBe true }
+    }
+
+    @Test
     fun `should complete Fsm if an exception is thrown in any state`() = runBlocking {
         fsm.state(inProgress) { throw RuntimeException("Boom!") }
         fsm.start()

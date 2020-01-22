@@ -65,10 +65,14 @@ class FsmImpl(
 
     override suspend fun start() = become(initialState)
 
-    override suspend fun await() = fsmJob.join()
+    override suspend fun await() {
+        if (currentState == null) start()
+        fsmJob.join()
+    }
 
     override suspend fun completeFsm() {
         fsmJob.cancel()
+        resetState()
         fsmSubscriptions.forEach { it.cancel() }
         fsmJob.join()
     }
@@ -96,5 +100,10 @@ class FsmImpl(
         if (!currentState.equals(previousState, true)) {
             body()
         }
+    }
+
+    private fun resetState() {
+        currentState = null
+        previousState = null
     }
 }
