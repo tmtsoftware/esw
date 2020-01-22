@@ -37,9 +37,9 @@ object SequencerApp extends EswCommandApp[SequencerAppCommand] {
     val wiring = new SequenceComponentWiring(command.seqCompSubsystem, command.name, new SequencerWiring(_, _, _).sequencerServer)
     import wiring.actorRuntime._
     try {
-      if (enableLogging) startLogging(typedSystem.name)
       // irrespective of which command received, Sequence Component needs to be started
       val sequenceCompLocation = report(wiring.start())
+      if (enableLogging) startLogging(sequenceCompLocation.prefix.toString())
       command match {
         case _: SequenceComponent => // sequence component is already started
         case Sequencer(seqCompSubsystem, _, seqSubsystem, mode) =>
