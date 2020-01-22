@@ -4,6 +4,7 @@
 
 - [Sequencer State Transition](sequencer/state-transition.md)
 - [Sequencer Script](sequencer/scripts/scripts.md)
+- [Applications](apps/apps.md)
 @@@
 
 Executive Software (ESW) is a reimplementation/refactoring of the prototype ESW code [here](https://github.com/tmtsoftware/esw-prototype) 
