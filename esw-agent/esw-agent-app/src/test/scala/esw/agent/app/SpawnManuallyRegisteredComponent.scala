@@ -165,8 +165,10 @@ class SpawnManuallyRegisteredComponent
       //ensure component is registered
       verify(locationService).register(redisRegistration)
 
-      //ensure component is unregistered later
-      verify(locationService).unregister(redisConn)
+      eventually {
+        //ensure component is unregistered later
+        verify(locationService).unregister(redisConn)
+      }
     }
 
     "reply 'Failed' when spawning is aborted by another message | ESW-237, ESW-276" in {
