@@ -58,14 +58,14 @@ sequence command handler, or the entire script.
 In this way, such error handling does not need to be repeated throughout the script for each command sent.
 
 To add an error handler to a sequence command handler, extend the command handler block with a `.onError` block.  The `SubmitResponse` error is captured
-in a `ScriptError` type and passed into the block.  This type contains a `reason` String explaining what went wrong.  If this block does not exist, 
-the global error handler will be called.  See the page on @ref:[Script Handlers](../handlers.md) for more information.  After this block is called, the
+in a `ScriptError` type and passed into the block.  This type contains a `reason` String explaining what went wrong. If this block does not exist, 
+the global error handler will be called.  Refer to section for @ref:[error handlers](../handlers.md#error-handlers) for more information.  After this block is called, the
 command, and the sequence, terminate with an Error status.
 
 Because of this mechanism, a `submit` (and other Command Service API calls) always returns a positive `SubmitResponse`.  
 For `submit`, the two possible responses are `Started` and `Completed`.  
 They can be handled using the `.onStarted` and `.onCompleted` methods, respectively.  These methods allow you to specify a block of code to be
-called in each of those cases.  Alternatively, a Kotlin `when` can be used to perform pattern matching on the result.  An example of both are 
+called in each of those cases.  Alternatively, a Kotlin `when` can be used to perform pattern matching on the result. An example of both are 
 shown below, along with an example of an `onError` handler for the sequence command handler.
 
 Kotlin

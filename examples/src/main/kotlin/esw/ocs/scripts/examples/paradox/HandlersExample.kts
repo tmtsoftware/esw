@@ -105,16 +105,16 @@ script {
     onSetup("command-2") { command ->
         val assembly1 = Assembly("filter.wheel", 5.seconds)
 
-        //Submit command to assembly return negative response. (error by default) onGlobalError handler is called.
+        // Submit command to assembly return negative response. (error by default) onGlobalError handler is called.
         // Sequence is terminated with failure.
         assembly1.submit(command)
     }
 
     // Scenario-3
     onDiagnosticMode {startTime, hint ->
-        //publishEvent fails with EventServerNotAvailable
-        //onDiagnosticMode handler fails
-        //onGlobalError is called. Sequence execution continues.
+        // publishEvent fails with EventServerNotAvailable
+        // onDiagnosticMode handler fails
+        // onGlobalError is called. Sequence execution continues.
         publishEvent(ObserveEvent("esw.diagnostic.mode", hint))
     }
 

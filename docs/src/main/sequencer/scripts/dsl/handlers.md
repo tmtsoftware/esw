@@ -102,9 +102,9 @@ Kotlin
 Script can error out in following scenarios:
 
 1. **Script Initialization Error** : When construction of script throws exception then script initialization fails. In this scenario,
-framework will log error cause. Sequencer will not start in this failure. One need to fix error and then load script again.
+framework will log error cause. Sequencer will not start in this failure. One needs to fix the error and then load script again.
 
-2. **Command Handlers Failure** : While executing sequence @ref:[Command Handlers](#command-handlers) e.g. `onSetup` , `onObserve` can fail because of two reasons:
+2. **Command Handlers Failure** : While executing sequence, @ref:[Command Handlers](#command-handlers) e.g. `onSetup` , `onObserve` can fail because of two reasons:
 
     1. handler throws exception or
     2. `Command Service` or `Sequencer Command Service` used to interact with downstream `Assembly/HCD/Sequencer`
