@@ -8,7 +8,7 @@ addSbtPlugin("org.foundweekends"     % "sbt-bintray"              % "0.5.5")
 addSbtPlugin("org.scalameta"         % "sbt-scalafmt"             % "2.3.0")
 addSbtPlugin("com.dwijnand"          % "sbt-dynver"               % "4.0.0")
 addSbtPlugin("org.portable-scala"    % "sbt-scalajs-crossproject" % "0.6.1")
-addSbtPlugin("org.scala-js"          % "sbt-scalajs"              % "0.6.31")
+addSbtPlugin("org.scala-js"          % "sbt-scalajs"              % "0.6.32")
 addSbtPlugin("com.typesafe.sbt"      % "sbt-multi-jvm"            % "0.4.0")
 addSbtPlugin("com.lightbend.paradox" % "sbt-paradox"              % "0.6.8")
 
