@@ -43,19 +43,4 @@ class SequencerGatewayTest extends EswTestKit(Gateway, EventServer) with Gateway
       sequencer.queryFinal(submitResponse.runId).futureValue should ===(Completed(submitResponse.runId))
     }
   }
-
-  "resolver" must {
-    "resolve http location if akka location is not present for sequencer | ESW-258" in {
-      val resolver    = new Resolver(locationService)
-      val componentId = ComponentId(Prefix(subsystem, observingMode), Sequencer)
-
-      // if resolved location is akka, sequencer factory creates actor proxy
-      resolver.sequencerCommandService(componentId).futureValue.isInstanceOf[SequencerActorProxy] shouldBe true
-
-      locationService.unregister(AkkaConnection(componentId)).futureValue
-
-      // if resolved location is http, sequencer factory creates http client
-      resolver.sequencerCommandService(componentId).futureValue.isInstanceOf[SequencerClient] shouldBe true
-    }
-  }
 }
