@@ -47,7 +47,7 @@ interface EventServiceDsl {
      *
      * @param sourcePrefix of the component which publishes this event
      * @param eventName represents the name of the event
-     * @param parameters
+     * @param parameters to be added in the event
      * @return an instance of [[csw.params.events.SystemEvent]]
      */
     fun SystemEvent(sourcePrefix: String, eventName: String, vararg parameters: Parameter<*>): SystemEvent =
@@ -106,13 +106,14 @@ interface EventServiceDsl {
      * Throws [[csw.event.api.exceptions.EventServerNotAvailable]] when event server is not available.
      *
      * @param eventKeys collection of strings representing [[csw.params.events.EventKey]]
+     * @param duration which determines the frequency with which events are received
      * @param callback to be executed whenever event is published on provided keys
      * @return handle of [[esw.ocs.dsl.highlevel.models.EventSubscription]] which can be used to cancel the subscription
      */
-    suspend fun onEvent(vararg eventKeys: String, duration: Duration, block: SuspendableConsumer<Event>): EventSubscription {
-        val callback = { event: Event -> coroutineScope.future { block(event) } }
+    suspend fun onEvent(vararg eventKeys: String, duration: Duration, callback: SuspendableConsumer<Event>): EventSubscription {
+        val cb = { event: Event -> coroutineScope.future { callback(event) } }
         val subscription = eventSubscriber
-                .subscribeAsync(eventKeys.toEventKeys(), callback, duration.toJavaDuration(), SubscriptionModes.jRateAdapterMode())
+                .subscribeAsync(eventKeys.toEventKeys(), cb, duration.toJavaDuration(), SubscriptionModes.jRateAdapterMode())
         subscription.ready().await()
         return EventSubscription { subscription.unsubscribe().await() }
     }
