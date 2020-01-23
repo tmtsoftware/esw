@@ -35,7 +35,7 @@ class SequencerTest(ignore: Int, mode: String)
   private val eventTestKit     = EventTestKit()
 
   private val ocsSubsystem        = ESW
-  private val ocsSequencerObsMode = "moonnight"
+  private val ocsSequencerObsMode = "MoonNight"
   private val tcsSubsystem        = TCS
   private val tcsSequencerObsMode = "moonnight"
   private val command1            = Setup(Prefix("esw.test"), CommandName("multi-node"), None)
