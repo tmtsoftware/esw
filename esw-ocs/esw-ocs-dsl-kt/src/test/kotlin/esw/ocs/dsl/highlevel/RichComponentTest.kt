@@ -10,7 +10,7 @@ import csw.command.client.messages.DiagnosticDataMessage
 import csw.command.client.messages.RunningMessage
 import csw.command.client.models.framework.LockingResponse
 import csw.command.client.models.framework.ToComponentLifecycleMessage
-import csw.location.api.javadsl.JComponentType
+import esw.ocs.dsl.highlevel.models.*
 import csw.location.models.AkkaLocation
 import csw.location.models.ComponentType
 import csw.params.commands.CommandName
@@ -70,7 +70,7 @@ class RichComponentTest {
     @Nested
     inner class Assembly {
         private val componentName = "sampleAssembly"
-        private val componentType = JComponentType.Assembly()
+        private val componentType = Assembly
         private val prefix = Prefix(ESW, componentName)
         private val assembly: RichComponent =
                 RichComponent(
@@ -390,7 +390,7 @@ class RichComponentTest {
     @Nested
     inner class HCD {
         private val hcdName: String = "sampleHcd"
-        private val componentType: ComponentType = JComponentType.HCD()
+        private val componentType: ComponentType = HCD
         private val prefix = Prefix(ESW, hcdName)
         private val hcd: RichComponent =
                 RichComponent(

@@ -1,12 +1,13 @@
 package esw.ocs.dsl.highlevel
 
-import csw.location.api.javadsl.JComponentType
 import csw.location.models.ComponentType
 import csw.prefix.models.Subsystem
 import esw.ocs.dsl.epics.CommandFlag
 import esw.ocs.dsl.epics.Fsm
 import esw.ocs.dsl.epics.FsmImpl
 import esw.ocs.dsl.epics.FsmScope
+import esw.ocs.dsl.highlevel.models.HCD
+import esw.ocs.dsl.highlevel.models.Assembly
 import esw.ocs.dsl.highlevel.models.Prefix
 import esw.ocs.dsl.lowlevel.CswServices
 import esw.ocs.dsl.script.StrandEc
@@ -48,8 +49,8 @@ abstract class CswHighLevelDsl(private val cswServices: CswServices, private val
     private fun richSequencer(subsystem: Subsystem, observingMode: String, defaultTimeout: Duration): RichSequencer =
             RichSequencer(subsystem, observingMode, scriptContext.sequencerApiFactory(), defaultTimeout, coroutineScope)
 
-    override fun Assembly(prefix: String, defaultTimeout: Duration): RichComponent = richComponent(prefix, JComponentType.Assembly(), defaultTimeout)
-    override fun Hcd(prefix: String, defaultTimeout: Duration): RichComponent = richComponent(prefix, JComponentType.HCD(), defaultTimeout)
+    override fun Assembly(prefix: String, defaultTimeout: Duration): RichComponent = richComponent(prefix, Assembly, defaultTimeout)
+    override fun Hcd(prefix: String, defaultTimeout: Duration): RichComponent = richComponent(prefix, HCD, defaultTimeout)
     override fun Sequencer(subsystem: String, observingMode: String, defaultTimeout: Duration): RichSequencer = richSequencer(SubsystemFactory.make(subsystem), observingMode, defaultTimeout)
 
     /************* Fsm helpers **********/

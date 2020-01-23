@@ -1,23 +1,19 @@
-@file:Suppress("UNUSED_VARIABLE")
+@file:Suppress("unused")
 
 package esw.ocs.scripts.examples.paradox
 
-import csw.location.api.javadsl.JComponentType
-import csw.location.api.javadsl.JConnectionType
 import csw.location.models.*
 import csw.location.models.Connection.AkkaConnection
 import csw.location.models.Connection.HttpConnection
 import csw.prefix.models.Prefix
 import esw.ocs.dsl.core.script
-import esw.ocs.dsl.highlevel.models.Prefix
-import esw.ocs.dsl.highlevel.models.RegistrationResult
+import esw.ocs.dsl.highlevel.models.*
 import esw.ocs.dsl.params.*
 import kotlin.time.minutes
 
 script {
     val prefix = Prefix("IRIS.filter.wheel")
-    val componentType = JComponentType.Service()
-    val componentId = ComponentId(prefix, componentType)
+    val componentId = ComponentId(prefix, Service)
     val httpConnection = HttpConnection(componentId)
 
     val msgKey = stringKey("ui-event")
@@ -43,7 +39,7 @@ script {
     onSetup("stop-service") { cmd ->
         //#unregister
         val sourcePrefix: Prefix = cmd.source()
-        val componentId = ComponentId(sourcePrefix, JComponentType.Service())
+        val componentId = ComponentId(sourcePrefix, Service)
 
         unregister(HttpConnection(componentId))
         //#unregister
@@ -52,7 +48,7 @@ script {
     onSetup("find") { cmd ->
         //#find-location
         val prefix: Prefix = cmd.source()
-        val assemblyConnection = AkkaConnection(ComponentId(prefix, JComponentType.Assembly()))
+        val assemblyConnection = AkkaConnection(ComponentId(prefix, Assembly))
 
         val location: AkkaLocation? = findLocation(assemblyConnection)
 
@@ -64,7 +60,7 @@ script {
     onSetup("resolve") { cmd ->
         //#resolve-location
         val prefix: Prefix = cmd.source()
-        val assemblyConnection = AkkaConnection(ComponentId(prefix, JComponentType.Assembly()))
+        val assemblyConnection = AkkaConnection(ComponentId(prefix, Assembly))
 
         val location: AkkaLocation? = resolveLocation(assemblyConnection)
 
@@ -85,10 +81,10 @@ script {
     //#list-locations-by-comp-type
     onSetup("offline-assemblies") {
         // list all Assembly components
-        val assemblyLocations: List<Location> = listLocationsBy(JComponentType.Assembly())
+        val assemblyLocations: List<Location> = listLocationsBy(Assembly)
 
         // create Assemblies from locations and send offline command to each one of them
-        val assemblies = assemblyLocations.map { Assembly(it.prefix().toString(), 10.minutes) }
+        val assemblies = assemblyLocations.map { Assembly(it.prefixStr, 10.minutes) }
         assemblies.forEach { it.goOffline() }
     }
     //#list-locations-by-comp-type
@@ -99,19 +95,19 @@ script {
         val leaseDuration = 20.minutes
 
         // list all akka components
-        val akkaLocations: List<Location> = listLocationsBy(JConnectionType.AkkaType())
+        val akkaLocations: List<Location> = listLocationsBy(AkkaType)
 
         // filter HCD's and Assemblies and send Lock command
         akkaLocations.forEach { location ->
-            val compId: ComponentId = location.connection().componentId()
-            val compType: ComponentType = compId.componentType()
-            val prefix = location.prefix().toString()
+            val compId: ComponentId = location.connection.componentId
+            val compType: ComponentType = compId.componentType
+            val prefix = location.prefixStr
 
             // create Assembly or Hcd instance based on component type and send Lock command
             when (compType) {
-                JComponentType.Assembly() -> Assembly(prefix, timeout).lock(leaseDuration)
+                Assembly -> Assembly(prefix, timeout).lock(leaseDuration)
 
-                JComponentType.HCD() -> Hcd(prefix, timeout).lock(leaseDuration)
+                HCD -> Hcd(prefix, timeout).lock(leaseDuration)
 
                 else -> warn("Unable to lock component $compId, Invalid component type $compType")
             }
@@ -123,7 +119,7 @@ script {
         //#list-locations-by-hostname
         // list all the components running on IRIS machine
         val irisMachineHostname = "10.1.1.1"
-        val irisMachineLocations: List<Location> = listLocationsBy("10.1.1.1")
+        val irisMachineLocations: List<Location> = listLocationsBy(irisMachineHostname)
 
         sendUIEvent("IRIS machine running components: [$irisMachineLocations]")
         //#list-locations-by-hostname
@@ -134,10 +130,10 @@ script {
 
         // log Assembly and HCD location
         irisComponents.forEach {
-            when (it.connection().componentId().componentType()) {
-                JComponentType.Assembly() -> info("$irisPrefix is registered as Assembly with location: $it")
+            when (it.connection.componentId.componentType) {
+                Assembly -> info("$irisPrefix is registered as Assembly with location: $it")
 
-                JComponentType.HCD() -> info("$irisPrefix is registered as HCD with location: $it")
+                HCD -> info("$irisPrefix is registered as HCD with location: $it")
 
                 else -> error("Invalid location: $it found for $irisPrefix")
             }
@@ -148,7 +144,7 @@ script {
     //#on-location-tracking-event
     onObserve("monitor-iris-sequencer") {
         val irisPrefix = Prefix("IRIS.darknight")
-        val irisComponent = ComponentId(irisPrefix, JComponentType.Sequencer())
+        val irisComponent = ComponentId(irisPrefix, Sequencer)
         val irisSequencerConnection = AkkaConnection(irisComponent)
 
         // send UI events on iris sequencers location change

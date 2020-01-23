@@ -6,6 +6,7 @@ import csw.alarm.api.javadsl.JAlarmSeverity
 import csw.alarm.models.AlarmSeverity
 import csw.alarm.models.FullAlarmSeverity
 
+/* ******** Helpers to create AlarmSeverity ******** */
 val Okay: AlarmSeverity = JAlarmSeverity.Okay()
 val Warning: AlarmSeverity = JAlarmSeverity.Warning()
 val Major: AlarmSeverity = JAlarmSeverity.Major()

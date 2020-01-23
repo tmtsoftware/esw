@@ -20,7 +20,7 @@ Kotlin
 
 ## unregister
 
-This DSL un-registers provided `Connection` from Location Service 
+This DSL un-registers provided `Connection` from Location Service
 
 @extref[Connection](csw_scaladoc:csw/location/models/Connection) can be one of:
 
@@ -33,14 +33,14 @@ Kotlin
 
 ## findLocation
 
-This DSL look up for provided `Connection` in Location Service and returns corresponding `Location` or `null` if not found. 
+This DSL look up for provided `Connection` in Location Service and returns corresponding `Location` or `null` if not found.
 
 Kotlin
 :   @@snip [LocationServiceDslExample.kts](../../../../../../../examples/src/main/kotlin/esw/ocs/scripts/examples/paradox/LocationServiceDslExample.kts) { #find-location }
 
 ## resolveLocation
 
-This DSL keeps looking for provided `Connection` in Location Service for the provided/default duration and returns corresponding `Location` or `null` if not found after duration exhausts. 
+This DSL keeps looking for provided `Connection` in Location Service for the provided/default duration and returns corresponding `Location` or `null` if not found after duration exhausts.
 
 Kotlin
 :   @@snip [LocationServiceDslExample.kts](../../../../../../../examples/src/main/kotlin/esw/ocs/scripts/examples/paradox/LocationServiceDslExample.kts) { #resolve-location }
@@ -56,7 +56,7 @@ Kotlin
 
 Following various APIs are provided for listing locations with filtering criteria:
 
-### @extref[ComponentType](csw_scaladoc:csw/location/api/javadsl/JComponentType$)
+### @extref[ComponentType](csw_scaladoc:csw/location/models/ComponentType)
 
 Filters locations based on provided `ComponentType`, for example, HCD, Assembly, Sequencer etc.
 
@@ -65,7 +65,7 @@ Following example demonstrate a use case where script sends Offline command to a
 Kotlin
 :   @@snip [LocationServiceDslExample.kts](../../../../../../../examples/src/main/kotlin/esw/ocs/scripts/examples/paradox/LocationServiceDslExample.kts) { #list-locations-by-comp-type }
 
-### @extref[ConnectionType](csw_scaladoc:csw/location/api/javadsl/JConnectionType$)
+### @extref[ConnectionType](csw_scaladoc:csw/location/models/ConnectionType)
 
 Filters locations based on provided `ConnectionType`, for example, AkkaType, HttpType, TcpType etc.
 
@@ -73,16 +73,26 @@ Following example demonstrate a use case where script locks all the components i
 
 Kotlin
 :   @@snip [LocationServiceDslExample.kts](../../../../../../../examples/src/main/kotlin/esw/ocs/scripts/examples/paradox/LocationServiceDslExample.kts) { #list-locations-by-connection-type }
-        
+
+@@@ note
+
+Following import is required for creating `ConnectionType` and `ComponentType`
+
+```kotlin
+import esw.ocs.dsl.highlevel.models.*
+```
+
+@@@
+
 ### Hostname
 
 Filters locations based on provided hostname.
- 
+
 In the following example, we are listing all the components running on `IRIS` (hostname: **10.1.1.1**) machine
 
 Kotlin
 :   @@snip [LocationServiceDslExample.kts](../../../../../../../examples/src/main/kotlin/esw/ocs/scripts/examples/paradox/LocationServiceDslExample.kts) { #list-locations-by-hostname }
-            
+
 ### Prefix
 
 Filters locations based on provided Prefix.

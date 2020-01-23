@@ -4,7 +4,7 @@ import akka.actor.typed.ActorSystem
 import akka.actor.typed.SpawnProtocol
 import com.typesafe.config.Config
 import csw.location.api.javadsl.ILocationService
-import csw.location.api.javadsl.JComponentType
+import esw.ocs.dsl.highlevel.models.*
 import csw.location.api.scaladsl.LocationService
 import esw.ocs.dsl.highlevel.models.Prefix
 import esw.ocs.dsl.lowlevel.CswServices
@@ -55,7 +55,7 @@ class CswHighLevelDslTest {
         fun `Assembly should resolve the RichComponent with given name and assembly component type | ESW-245`() = runBlocking {
             val sampleAssembly = Assembly("TCS.sampleAssembly", defaultTimeoutDuration)
 
-            sampleAssembly.componentType shouldBe JComponentType.Assembly()
+            sampleAssembly.componentType shouldBe Assembly
             sampleAssembly.prefix shouldBe Prefix("TCS.sampleAssembly")
         }
 
@@ -63,7 +63,7 @@ class CswHighLevelDslTest {
         fun `HCD should resolve the RichComponent with given name and hcd component type | ESW-245`() = runBlocking {
             val sampleHcd = Hcd("TCS.sampleHcd", defaultTimeoutDuration)
 
-            sampleHcd.componentType shouldBe JComponentType.HCD()
+            sampleHcd.componentType shouldBe HCD
             sampleHcd.prefix shouldBe Prefix("TCS.sampleHcd")
         }
     }

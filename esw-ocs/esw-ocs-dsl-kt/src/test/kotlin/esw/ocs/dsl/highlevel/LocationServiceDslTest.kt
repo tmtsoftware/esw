@@ -3,8 +3,7 @@ package esw.ocs.dsl.highlevel
 import akka.Done
 import csw.location.api.javadsl.ILocationService
 import csw.location.api.javadsl.IRegistrationResult
-import csw.location.api.javadsl.JComponentType
-import csw.location.api.javadsl.JConnectionType
+import esw.ocs.dsl.highlevel.models.*
 import csw.location.models.*
 import csw.location.models.Connection.HttpConnection
 import esw.ocs.dsl.highlevel.models.Prefix
@@ -30,7 +29,7 @@ class LocationServiceDslTest : LocationServiceDsl {
     override val coroutineScope: CoroutineScope = CoroutineScope(EmptyCoroutineContext)
 
     private val prefix = Prefix("IRIS.motor")
-    private val componentId = ComponentId(prefix, JComponentType.Service())
+    private val componentId = ComponentId(prefix, Service)
     private val httpConnection = HttpConnection(componentId)
     private val httpRegistration = HttpRegistration(httpConnection, 8080, "/")
     private val registrationResult: IRegistrationResult = mockk()
@@ -91,7 +90,7 @@ class LocationServiceDslTest : LocationServiceDsl {
 
     @Test
     fun `listLocationsBy component type should call underlying list(componentType) method from LocationService | ESW-277`() = runBlocking {
-        val componentType = JComponentType.HCD()
+        val componentType = HCD
         val mockedLocations: List<Location> = List(10) { httpLocation }
         every { locationService.list(componentType) } answers { completedFuture(mockedLocations) }
 
@@ -101,7 +100,7 @@ class LocationServiceDslTest : LocationServiceDsl {
 
     @Test
     fun `listLocationsBy connection type should call underlying list(connectionType) method from LocationService | ESW-277`() = runBlocking {
-        val connectionType = JConnectionType.HttpType()
+        val connectionType = HttpType
         val mockedLocations: List<Location> = List(10) { httpLocation }
         every { locationService.list(connectionType) } answers { completedFuture(mockedLocations) }
 

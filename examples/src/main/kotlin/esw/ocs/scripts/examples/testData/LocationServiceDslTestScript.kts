@@ -1,6 +1,6 @@
 package esw.ocs.scripts.examples.testData
 
-import csw.location.api.javadsl.JComponentType
+import esw.ocs.dsl.highlevel.models.*
 import csw.location.models.ComponentId
 import csw.location.models.Connection.HttpConnection
 import csw.location.models.HttpRegistration
@@ -10,7 +10,7 @@ import esw.ocs.dsl.params.stringKey
 
 script {
     val prefix = Prefix("IRIS.motor")
-    val componentId = ComponentId(prefix, JComponentType.Service())
+    val componentId = ComponentId(prefix, Service)
     val httpConnection = HttpConnection(componentId)
     val httpRegistration = HttpRegistration(httpConnection, 8080, "/")
 
