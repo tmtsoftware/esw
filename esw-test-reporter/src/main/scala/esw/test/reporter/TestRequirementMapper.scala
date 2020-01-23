@@ -76,6 +76,7 @@ object TestRequirementMapper {
                        |<html>
                        | <body>
                        |   <a href="./$testResultFile" download>$testResultFile</a>
+                       |   <br>
                        |   <a href="./${outputFile.getName}" download>${outputFile.getName}</a>
                        | </body>
                        |</html>
