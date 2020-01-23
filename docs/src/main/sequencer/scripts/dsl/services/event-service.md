@@ -50,7 +50,8 @@ DSL to publish the given `Event`.
 Kotlin
 :   @@snip [EventServiceDslExample.kts](../../../../../../../examples/src/main/kotlin/esw/ocs/scripts/examples/paradox/EventServiceDslExample.kts) { #publish } 
 
-This DSL can also publish events periodically when provided with the optional `duration` and an `event generator` function.
+This DSL can also publish events periodically when provided with the optional `duration` and an `event generator` function. 
+In the below example, an Event with temperature Key will get published every 10 seconds, with current temperature value given by *getTemperature* method.
 
 Kotlin
 :   @@snip [EventServiceDslExample.kts](../../../../../../../examples/src/main/kotlin/esw/ocs/scripts/examples/paradox/EventServiceDslExample.kts) { #publish-async }

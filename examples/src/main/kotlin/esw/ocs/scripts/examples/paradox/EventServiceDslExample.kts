@@ -33,14 +33,6 @@ script {
         publishEvent(systemEvent)
         //#publish
 
-        //#publish-async
-        publishEvent(10.seconds) {
-            // event generator which returns event to publish after the given interval
-            systemEvent
-        }
-        //#publish-async
-
-
         //#subscribe
         //#get-event
         val tempEventKey = "esw.temperature.temp"
@@ -58,6 +50,15 @@ script {
             println(event.eventKey())
         }
         //#subscribe-async
+
+        fun getTemperature(): Int = TODO()
+
+        //#publish-async
+        publishEvent(10.seconds) {
+            val temperatureKey = intKey("temperature").set(getTemperature())
+            SystemEvent("esw.temperature", "temp", temperatureKey)
+        }
+        //#publish-async
 
         //#get-event
         val events: Set<Event> = getEvent(tempEventKey, stateEventKey)
