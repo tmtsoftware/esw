@@ -2,9 +2,9 @@
 
 ## par
 
-This utility is provided to support running multiple tasks in parallel. Call to `par` returns when all the submitted task completes.
+This utility is provided to support running multiple tasks in parallel. A call to `par` returns when all the submitted tasks complete.
 
-Following example demonstrate a use case of sending commands in parallel to multiple HCD's.
+The following example demonstrates sending commands in parallel to multiple HCD's.
 
 Kotlin
 : @@snip [Misc.kts](../../../../../../examples/src/main/kotlin/esw/ocs/scripts/examples/paradox/MiscExample.kts) { #par }  
