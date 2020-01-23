@@ -7,23 +7,22 @@ import esw.ocs.dsl.params.longKey
 import kotlin.time.milliseconds
 
 script {
+    //#loopAsync-default-interval
     var stopPublishingTemperature = false
     val temperatureEvent = ObserveEvent("IRIS.motor", "temperature")
     val temperatureKey = longKey("temperature")
-    var motorUp = false
-    var motorPosition = 0
 
     fun getCurrentTemp(): Long = TODO()
 
-    fun initializeMotor() {
-        // motor initialization logic
-        motorUp = true
-    }
+    //#loopAsync-default-interval
 
-    fun moveMotor(degrees: Int) {
-        // move motor logic
-        motorPosition += degrees
-    }
+    //#loop-default-interval
+    var motorPosition = 0
+    //#loop-default-interval
+
+    //#waitFor
+    var motorUp = false
+    //#waitFor
 
     //#loopAsync-default-interval
     // start background loop which publishes current temperature of motor every 50 milliseconds (default loop interval)
@@ -43,21 +42,33 @@ script {
     }
     //#loopAsync-custom-interval
 
+
+    //#waitFor
+
+    fun initializeMotor() {
+        // some motor initialization logic goes here
+        motorUp = true
+    }
     onSetup("init-motor") {
-        //#waitFor
         // start initializing motor and this method will set motorUp flag to true once initialization is successful
         initializeMotor()
         // pauses the init-motor command handlers execution until motor becomes up
         waitFor { motorUp }
-        //#waitFor
 
         // rest of the handler implementation (here you can safely assume that motor is up)
     }
+    //#waitFor
 
+    //#loop-default-interval
+    fun moveMotor(degrees: Int) {
+        // move motor logic
+        motorPosition += degrees
+    }
+    //#loop-custom-interval
     onSetup("move-motor") {
 
-        //#loop-default-interval
         val expectedMotorPosition = 100
+        //#loop-custom-interval
 
         // move motor by 10 degrees in each iteration, default loop interval is 50 millis
         // stop loop when current motor position matches expected motor position and continue with the execution of rest of the handler
@@ -74,11 +85,16 @@ script {
             moveMotor(20)
             stopWhen(motorPosition == expectedMotorPosition)
         }
-        //#loop-custom-interval
+    // #loop-default-interval
     }
+    //#loop-default-interval
+    //#loop-custom-interval
+
+    //#loopAsync-default-interval
 
     onStop {
         stopPublishingTemperature = true
     }
+    //#loopAsync-default-interval
 
 }
