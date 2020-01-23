@@ -48,37 +48,7 @@ the final response can be obtained with the `queryFinal` api.
 Kotlin
 :   @@snip [CommandServiceDslExample.kts](../../../../../../../examples/src/main/kotlin/esw/ocs/scripts/examples/paradox/CommandServiceDslExample.kts) { #submit-component }
 
-#### Error handling
-
-In many cases, any errors encountered in a script would likely cause the command (and therefore, sequence) to fail.  Most of the time,
-not much can be done other than capture and report the error that occurred.  It is possible some remediation can be performed, but 
-it is likely the sequence would need to run again.  For this reason, we have simplified the error handling of commands such that
-errors from the Command Service DSL calls are recasted as exceptions, which can then be caught by error handlers global to the 
-sequence command handler, or the entire script.
-In this way, such error handling does not need to be repeated throughout the script for each command sent.
-
-To add an error handler to a sequence command handler, extend the command handler block with a `.onError` block.  The `SubmitResponse` error is captured
-in a `ScriptError` type and passed into the block.  This type contains a `reason` String explaining what went wrong. If this block does not exist, 
-the global error handler will be called.  Refer to section for @ref:[error handlers](../handlers.md#error-handlers) for more information.  After this block is called, the
-command, and the sequence, terminate with an Error status.
-
-Because of this mechanism, a `submit` (and other Command Service API calls) always returns a positive `SubmitResponse`.  
-For `submit`, the two possible responses are `Started` and `Completed`.  
-They can be handled using the `.onStarted` and `.onCompleted` methods, respectively.  These methods allow you to specify a block of code to be
-called in each of those cases.  Alternatively, a Kotlin `when` can be used to perform pattern matching on the result. An example of both are 
-shown below, along with an example of an `onError` handler for the sequence command handler.
-
-Kotlin
-:   @@snip [CommandServiceDslExample.kts](../../../../../../../examples/src/main/kotlin/esw/ocs/scripts/examples/paradox/CommandServiceDslExample.kts) { #submit-component-on-error }
-
-If you desire to handle errors manually on a per-command basis, the `resumeOnError` flag can be used. If this flag is set to true,
-then script execution continues, and action is taken based on custom logic
-in script by using an `.onFailed` method. You can still choose to terminate sequence using the `onFailedTerminate` utility.
-This will cause similar behavior as when flag is not set by calling the `onError` or `onGlobalError` blocks and terminating the sequence,
-if the `SubmitResponse` is some kind of error.
-
-Kotlin
-:   @@snip [CommandServiceDslExample.kts](../../../../../../../examples/src/main/kotlin/esw/ocs/scripts/examples/paradox/CommandServiceDslExample.kts) { #submit-component-error-resume }
+Please refer to @ref:[submit response extension utilities](submit-response-extensions.md) for using helper methods on `SubmitResponse`.
 
 ### SubmitAndWait
 

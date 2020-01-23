@@ -1,7 +1,8 @@
-@file:Suppress("UNUSED_VARIABLE")
+@file:Suppress("UNUSED_VARIABLE", "DIVISION_BY_ZERO")
 
 package esw.ocs.scripts.examples.paradox
 
+import csw.params.commands.CommandResponse.*
 import csw.params.events.SystemEvent
 import csw.time.scheduler.api.Cancellable
 import esw.ocs.dsl.core.script
@@ -111,7 +112,7 @@ script {
     }
 
     // Scenario-3
-    onDiagnosticMode {startTime, hint ->
+    onDiagnosticMode { startTime, hint ->
         // publishEvent fails with EventServerNotAvailable
         // onDiagnosticMode handler fails
         // onGlobalError is called. Sequence execution continues.
@@ -125,5 +126,24 @@ script {
     }
     // #onGlobalError
 
+
+    // #onError-for-exception
+    onSetup("submit-error-handling") { command ->
+        // some logic that results into a Runtime exception
+        val result: Int = 1 / 0
+    }.onError { err ->
+        error(err.reason)
+    }
+    // #onError-for-exception
+
+    // #onError-for-negative-response
+    onSetup("submit-error-handling") { command ->
+        val positiveSubmitResponse: SubmitResponse = assembly.submit(command)
+
+    }.onError { err ->
+        // onError is called when submit command to the assembly fails with a negative response (error, invalid etc)
+        error(err.reason)
+    }
+    // #onError-for-negative-response
 
 }

@@ -12,6 +12,7 @@
 * [Alarm Service](services/alarm-service.md)
 * [Time Service](services/time-service.md)
 * [Sequencer Command Service](services/sequencer-command-service.md)
+* [Submit Response Extensions](services/submit-response-extensions.md)
 * [Script Handlers](handlers.md)
 * [Loop](loop.md)
 * [Misc](misc.md)

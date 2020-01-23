@@ -99,6 +99,15 @@ Kotlin
 
 ## Error Handlers
 
+In many cases, any errors encountered in a script would likely cause the command (and therefore, sequence) to fail.  Most of the time,
+not much can be done other than capture and report the error that occurred.  It is possible to perform some remediation, but 
+it is likely the sequence would need to run again.
+
+For this reason, we have simplified the error handling of commands such that
+any DSL APIs that essentially return a negative (for e.g. Error or Cancelled) `SubmitResponse` are recasted as exceptions, which can then be caught 
+by error handlers that are global to the sequence command handler, or the entire script.
+In this way, such error handling does not need to be repeated throughout the script for each command sent.
+
 Script can error out in following scenarios:
 
 1. **Script Initialization Error** : When construction of script throws exception then script initialization fails. In this scenario,
@@ -124,20 +133,20 @@ Following example shows usage of `onGloablError`
 Kotlin
 : @@snip [HandlersExample.kts](../../../../../../examples/src/main/kotlin/esw/ocs/scripts/examples/paradox/HandlersExample.kts) { #onGlobalError }
 
-2. **onError** : This construct is specifically provided for **Command Handlers Failure**. `onError` block can be written specifically for each `onSetup` and
-`onObserve` handler. In case of failure, `onError` will be called first followed by `onGlobalError` and sequence will be terminated with failure. By default
-negative `SubmitResponse` is considered as error.
-
-Following example shows command level error handler along with global
-error handler. `onError` construct is available to handle failure of `onSetup` and `onObserve` command handler. In this example, submit
-to assembly return negative `SubmitResponse` triggers error handling mechanism. 
+2. **onError** : This construct is specifically provided for **Command Handlers Failure**.
+`onError` block can be written specifically for each `onSetup` and `onObserve` handler. 
+The `SubmitResponse` error is captured in a `ScriptError` type and passed into `onError` the block.
+This type contains a `reason` String explaining what went wrong. 
+In case of failure, `onError` will be called first followed by `onGlobalError` and sequence will be terminated with failure. 
+After the error handling blocks are called, the command and hence the sequence, terminate with an Error status.
 
 Kotlin
-:   @@snip [CommandServiceDslExample.kts](../../../../../../examples/src/main/kotlin/esw/ocs/scripts/examples/paradox/CommandServiceDslExample.kts) { #submit-component-on-error }
+: @@snip [HandlersExample.kts](../../../../../../examples/src/main/kotlin/esw/ocs/scripts/examples/paradox/HandlersExample.kts) { #onError-for-exception }
 
-If you don't want to fail sequence in case of Command Service APIs while interacting with downstream Assembly/HCD (`submit`, `query` etc.)
-or Sequencer Command Service APIs while interacting with downstream Sequencer (`submit`, `query` etc.) then **resumeOnError** flag can be used. For details of
-**resumeOnError**, please refer @ref:[Error handling](./services/command-service.md#error-handling)
+By default, negative `SubmitResponse` is considered as error.
+
+Kotlin
+: @@snip [HandlersExample.kts](../../../../../../examples/src/main/kotlin/esw/ocs/scripts/examples/paradox/HandlersExample.kts) { #onError-for-negative-response }
 
 @@@ note
 Error in all handlers **except Shutdown Handler** will execute error handler provided by script. If error handler is not provided, framework will
