@@ -1,21 +1,15 @@
 ## ESW - TMT Executive Software v0.1.0-M1
 
-This is release v0.1.0-M1 of the TMT Executive Software.
+This is the first release v0.1.0-M1 of the TMT Executive Software.
 
-See [CHANGELOG.md](../CHANGELOG.md) for details of all releases.
+See [CHANGELOG.md](CHANGELOG.md) for details of all releases.
 
 ### Features
 Three main components are delivered as part of ESW:
-
-* Sequencer: This allows users to create a Sequencer component. Both top-level Sequencer (OCS)
-and subsystem Sequencers can be created. Sequencer-scripts is also delivered as part of this,
-which allows users to write custom script for each sequencer in a Kotlin based domain specific language. 
-
-* Sequence Component: The Sequence Component is used to spawn and shutdown sequencers dynamically.
-
-* ESW Gateway: This is provided to give access to all CSW and ESW services and components from the
-browser.
+* Sequencer
+* Sequence Component
+* ESW Gateway
 
 ### Documentation
 
-Paradox documentation can be found here: https://tmtsoftware.github.io/esw/
+Paradox documentation can be found here: https://tmtsoftware.github.io/esw/0.1.0-M1/
