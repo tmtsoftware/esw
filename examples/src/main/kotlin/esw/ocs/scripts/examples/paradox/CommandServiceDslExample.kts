@@ -6,6 +6,7 @@ import csw.params.commands.CommandResponse
 import csw.params.core.states.StateName
 import esw.ocs.dsl.*
 import esw.ocs.dsl.core.script
+import esw.ocs.dsl.params.intKey
 import kotlin.time.seconds
 
 script {
@@ -38,18 +39,22 @@ script {
         // #unlock-component
 
         // #submit-and-wait-component
-        galilAssembly.submitAndWait(command, timeout = 20.seconds)
+        // #submit-component
+        val parameters = intKey("target").set(100)
+        val galilCommand = Setup("ESW.iris_darkNight", "moveWheel", command.obsId).add(parameters)
+        // #submit-component
+        galilAssembly.submitAndWait(galilCommand, timeout = 20.seconds)
         // #submit-and-wait-component
 
         // #query-component
-        val response = galilAssembly.submit(command, resumeOnError = true)
+        val response = galilAssembly.submit(galilCommand, resumeOnError = true)
 
         galilAssembly.query(response.runId())
         // #query-component
 
         // #query-final-component
         // #submit-component
-        val startedResponse = galilAssembly.submit(command)
+        val startedResponse = galilAssembly.submit(galilCommand)
         // #submit-component
         galilAssembly.queryFinal(startedResponse.runId())
         // #query-final-component
@@ -70,7 +75,9 @@ script {
          * then current execution flow breaks and onError command handler gets invoked
          * Hence, only Started (in case of long-running command) or Completed (in case of short running command) response is returned
          */
-        val positiveSubmitResponse: CommandResponse.SubmitResponse = galilAssembly.submit(command)
+        val parameters = intKey("target").set(100)
+        val galilCommand = Setup("ESW.iris_darkNight", "moveWheel", command.obsId).add(parameters)
+        val positiveSubmitResponse: CommandResponse.SubmitResponse = galilAssembly.submit(galilCommand)
 
         //  First approach - using custom dsl (this is an alternative to kotlin pattern match using when)
         positiveSubmitResponse
@@ -104,7 +111,9 @@ script {
          * then current execution flow will continue because resumeOnError = true
          * Here, all the possible SubmitResponses are expected to be returned
          */
-        val submitResponse: CommandResponse.SubmitResponse = galilAssembly.submit(command, resumeOnError = true)
+        val parameters = intKey("target").set(100)
+        val galilCommand = Setup("ESW.iris_darkNight", "moveWheel", command.obsId).add(parameters)
+        val submitResponse: CommandResponse.SubmitResponse = galilAssembly.submit(galilCommand, resumeOnError = true)
 
         //  First approach - using custom dsl (this is an alternative to kotlin pattern match using when)
         submitResponse
