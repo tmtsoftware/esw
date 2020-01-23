@@ -18,15 +18,15 @@ script {
 
         //#system-event
         //#observe-event
-        val parameters = intKey("temperature").set(0)
+        val parameters = intKey("stepNumber").set(1)
         //#observe-event
         //#publish
-        val systemEvent: SystemEvent = SystemEvent("esw.temperature", "temp", parameters)
+        val systemEvent: SystemEvent = SystemEvent("ESW.iris_darkNight", "stepInfo", parameters)
         //#publish
         //#system-event
 
         //#observe-event
-        val observeEvent: ObserveEvent = ObserveEvent("ocs.master", "observationStarted")
+        val observeEvent: ObserveEvent = ObserveEvent("ESW.iris_darkNight", "observationStarted")
         //#observe-event
 
         //#publish
@@ -35,8 +35,8 @@ script {
 
         //#subscribe
         //#get-event
-        val tempEventKey = "esw.temperature.temp"
-        val stateEventKey = "esw.temperature.state"
+        val tempEventKey = "IRIS.env.temperature.temp"
+        val stateEventKey = "IRIS.env.temperature.state"
         //#get-event
         onEvent(tempEventKey, stateEventKey) { event ->
             // logic to execute on every event
@@ -56,7 +56,7 @@ script {
         //#publish-async
         publishEvent(10.seconds) {
             val temperatureKey = intKey("temperature").set(getTemperature())
-            SystemEvent("esw.temperature", "temp", temperatureKey)
+            SystemEvent("ESW.iris_darkNight", "temperature", temperatureKey)
         }
         //#publish-async
 
@@ -66,15 +66,15 @@ script {
 
         //#event-key
         // full event key string
-        val tempKey: EventKey = EventKey("esw.temperature.temp")
+        val tempKey: EventKey = EventKey("ESW.temperature.temp")
 
         // prefix and event name strings
-        val tempKey1: EventKey = EventKey("esw.temperature", "temp")
+        val tempKey1: EventKey = EventKey("ESW.temperature", "temp")
         //#event-key
 
         //#system-var
         val locKey = intKey("current-location")
-        val systemVar: EventVariable<Int> = SystemVar(0, "ocs.motor.position", locKey)
+        val systemVar: EventVariable<Int> = SystemVar(0, "IRIS.ifs.motor.position", locKey)
         //#system-var
 
         //#observe-var
