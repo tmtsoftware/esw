@@ -27,7 +27,7 @@ This will generate Requirement-Story-Test mapping in a Google sheet.
 
 ##  How to update the Story-Requirement file for Jenkins builds?
 
- 1. follow step 1 and 2 from the [How to generate reports Manually?](#how-to-generate-reports-manually?) 
+ 1. Follow step 2 from the [How to generate reports Manually?](#how-to-generate-reports-manually?) 
  2. Copy the data of CSV file into a file `./tools/RTM/storyRequirementMapping.csv` in ESW repo.
  3. Commit the changed file and push the commit to github. This will trigger the jenkins build and
 data will be generated.
