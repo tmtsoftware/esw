@@ -16,26 +16,27 @@ script {
     onSetup("publish-event") {
 
 
+        //#system-event
+        //#observe-event
         val parameters = intKey("temperature").set(0)
-
-        //#system-event
+        //#observe-event
+        //#publish
         val systemEvent: SystemEvent = SystemEvent("esw.temperature", "temp", parameters)
+        //#publish
         //#system-event
 
         //#observe-event
-        val observeEvent: ObserveEvent = ObserveEvent("ocs.motor", "position", parameters)
+        val observeEvent: ObserveEvent = ObserveEvent("ocs.master", "observationStarted")
         //#observe-event
-
-        val event = systemEvent
 
         //#publish
-        publishEvent(event)
+        publishEvent(systemEvent)
         //#publish
 
         //#publish-async
         publishEvent(10.seconds) {
             // event generator which returns event to publish after the given interval
-            event
+            systemEvent
         }
         //#publish-async
 
@@ -76,8 +77,8 @@ script {
         //#system-var
 
         //#observe-var
-        val angleKey = intKey("current-angle")
-        val observeVar: EventVariable<Int> = ObserveVar(0, "TCS.filter.wheel", angleKey)
+        val readNumberKey = intKey("readNumber")
+        val observeVar: EventVariable<Int> = ObserveVar(0, "IRIS.ifs.detector.readCompleted", readNumberKey)
         //#observe-var
 
     }
