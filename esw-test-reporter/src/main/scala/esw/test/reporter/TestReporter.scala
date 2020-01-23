@@ -35,33 +35,15 @@ class TestReporter extends Reporter {
       .map(x => StoryResult(x.strip(), testName.strip(), testStatus))
   }
 
-  private val parentPath = "./target/testStoryMapping"
+  private val parentPath = "./target/RTM"
   private val reportFile = "/testStoryMapping.txt"
-  private val indexPath  = "/index.html"
-
-  private def createIndexFile(): Unit = {
-    val writer = new FileWriter(parentPath + indexPath)
-
-    val content = s"""
-      |<html>
-      | <body>
-      |   <a href=".$reportFile" download>$reportFile</a>
-      | </body>
-      |</html>
-      |""".stripMargin
-
-    writer.write(content)
-    writer.close()
-  }
 
   private def generateReport(): Unit = {
     Files.createDirectories(new File(parentPath).toPath)
-    createIndexFile()
     val file = new FileWriter(parentPath + reportFile, true)
 
     // write to file
     results.foreach(x => file.append(x.format(Separators.PIPE) + Separators.NEWLINE))
     file.close()
   }
-
 }

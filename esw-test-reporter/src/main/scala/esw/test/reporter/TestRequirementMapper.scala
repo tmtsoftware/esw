@@ -22,7 +22,8 @@ object TestRequirementMapper {
     }
 
     // read test-story mapping
-    println("[INFO] Reading test-story mapping file - " + new File(testResultsFile).toPath.toAbsolutePath)
+    val testResultsPath = new File(testResultsFile).toPath.toAbsolutePath
+    println("[INFO] Reading test-story mapping file - " + testResultsPath)
     val testResults = Files.readAllLines(new File(testResultsFile).toPath)
     val storyResults = testResults.asScala.toList.map { line =>
       val (story, test, status) = line.split(PIPE).toList match {
@@ -64,9 +65,32 @@ object TestRequirementMapper {
       TestRequirementMapped(storyResult.story, correspondingReq, storyResult.test, storyResult.status)
     }
 
+    val outputFile = new File(outputPath)
+    val indexPath  = "/index.html"
+
+    def createIndexFile(): Unit = {
+      val writer         = new FileWriter(outputFile.getParent + indexPath)
+      val testResultFile = testResultsPath.getFileName
+
+      val content = s"""
+                       |<html>
+                       | <body>
+                       |   <a href="./$testResultFile" download>$testResultFile</a>
+                       |   <a href="./${outputFile.getName}" download>${outputFile.getName}</a>
+                       | </body>
+                       |</html>
+                       |""".stripMargin
+
+      writer.write(content)
+      writer.close()
+    }
+
+    // create index.html file
+    createIndexFile()
+
     // write to file
     println("[INFO] Writing results to - " + outputPath)
-    Files.createDirectories(new File(outputPath).toPath.getParent)
+    Files.createDirectories(outputFile.getParentFile.toPath)
     val writer = new FileWriter(outputPath)
     testAndReqMapped.map(result => result.format(PIPE) + NEWLINE).foreach(writer.write)
     writer.close()

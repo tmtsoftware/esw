@@ -28,6 +28,7 @@ pipeline {
             steps {
                 sh "sbt -DenableCoverage=true -DgenerateStoryReport=true test:test"
                 sh "sbt -DenableCoverage=true esw-ocs-dsl-kt/test" // fixme: test reporter does not work
+                sh "sbt -DenableCoverage=true esw-test-reporter/run ../target/RTM/testStoryMapping.txt ../tools/RTM/storyRequirementMapping.csv ../target/RTM/testRequirementsMapping.txt"
             }
             post {
                 always {
@@ -46,9 +47,9 @@ pipeline {
                     publishHTML(target: [
                             alwaysLinkToLastBuild: false,
                             keepAll              : true,
-                            reportDir            : './target/testStoryMapping/',
+                            reportDir            : './target/RTM/',
                             reportFiles          : 'index.html',
-                            reportName           : "Test story mapping"
+                            reportName           : "Test-Story-Requirement mapping"
                     ])
                 }
             }
