@@ -9,7 +9,6 @@ import csw.location.models.Connection.AkkaConnection
 import csw.location.models.Connection.HttpConnection
 import csw.prefix.models.Prefix
 import esw.ocs.dsl.core.script
-import esw.ocs.dsl.highlevel.RichComponent
 import esw.ocs.dsl.highlevel.models.Prefix
 import esw.ocs.dsl.highlevel.models.RegistrationResult
 import esw.ocs.dsl.params.*
@@ -21,7 +20,6 @@ script {
     val componentId = ComponentId(prefix, componentType)
     val httpConnection = HttpConnection(componentId)
 
-
     val msgKey = stringKey("ui-event")
     suspend fun sendUIEvent(msg: String) = publishEvent(ObserveEvent("ESW.ui", "ui-event", msgKey.set(msg)))
 
@@ -31,7 +29,8 @@ script {
 
         //#register
         // register HTTP service running at port 8080 and routes are served from /routes endpoint
-        val registrationResult: RegistrationResult = register(HttpRegistration(httpConnection, port, "/routes"))
+        val registrationResult: RegistrationResult =
+                register(HttpRegistration(httpConnection, port, "/routes"))
 
         // location which is registered with Location Service
         val location: Location = registrationResult.location
@@ -44,7 +43,9 @@ script {
     onSetup("stop-service") { cmd ->
         //#unregister
         val sourcePrefix: Prefix = cmd.source()
-        unregister(HttpConnection(ComponentId(sourcePrefix, JComponentType.Service())))
+        val componentId = ComponentId(sourcePrefix, JComponentType.Service())
+
+        unregister(HttpConnection(componentId))
         //#unregister
     }
 
@@ -87,7 +88,7 @@ script {
         val assemblyLocations: List<Location> = listLocationsBy(JComponentType.Assembly())
 
         // create Assemblies from locations and send offline command to each one of them
-        val assemblies: List<RichComponent> = assemblyLocations.map { Assembly(it.prefix().toString(), 10.minutes) }
+        val assemblies = assemblyLocations.map { Assembly(it.prefix().toString(), 10.minutes) }
         assemblies.forEach { it.goOffline() }
     }
     //#list-locations-by-comp-type
@@ -106,25 +107,58 @@ script {
             val compType: ComponentType = compId.componentType()
             val prefix = location.prefix().toString()
 
+            // create Assembly or Hcd instance based on component type and send Lock command
             when (compType) {
                 JComponentType.Assembly() -> Assembly(prefix, timeout).lock(leaseDuration)
+
                 JComponentType.HCD() -> Hcd(prefix, timeout).lock(leaseDuration)
+
                 else -> warn("Unable to lock component $compId, Invalid component type $compType")
             }
         }
     }
     //#list-locations-by-connection-type
 
+    onSetup("prefix-hostname") {
+        //#list-locations-by-hostname
+        // list all the components running on IRIS machine
+        val irisMachineHostname = "10.1.1.1"
+        val irisMachineLocations: List<Location> = listLocationsBy("10.1.1.1")
+
+        sendUIEvent("IRIS machine running components: [$irisMachineLocations]")
+        //#list-locations-by-hostname
+
+        //#list-locations-by-prefix
+        val irisPrefix = Prefix("IRIS.filter.wheel")
+        val irisComponents: List<Location> = listLocationsBy(irisPrefix)
+
+        // log Assembly and HCD location
+        irisComponents.forEach {
+            when (it.connection().componentId().componentType()) {
+                JComponentType.Assembly() -> info("$irisPrefix is registered as Assembly with location: $it")
+
+                JComponentType.HCD() -> info("$irisPrefix is registered as HCD with location: $it")
+
+                else -> error("Invalid location: $it found for $irisPrefix")
+            }
+        }
+        //#list-locations-by-prefix
+    }
+
     //#on-location-tracking-event
     onObserve("monitor-iris-sequencer") {
-        val irisComponent = ComponentId(Prefix("IRIS.darknight"), JComponentType.Sequencer())
+        val irisPrefix = Prefix("IRIS.darknight")
+        val irisComponent = ComponentId(irisPrefix, JComponentType.Sequencer())
         val irisSequencerConnection = AkkaConnection(irisComponent)
 
         // send UI events on iris sequencers location change
         onLocationTrackingEvent(irisSequencerConnection) {
             when (it) {
-                is LocationUpdated -> sendUIEvent("[INFO] Location updated ${it.location()}")
-                is LocationRemoved -> sendUIEvent("[ERROR] Location removed for connection: ${it.connection()}")
+                is LocationUpdated ->
+                    sendUIEvent("[INFO] Location updated ${it.location()}")
+
+                is LocationRemoved ->
+                    sendUIEvent("[ERROR] Location removed for connection: ${it.connection()}")
             }
         }
     }

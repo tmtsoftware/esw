@@ -33,14 +33,14 @@ Kotlin
 
 ## findLocation
 
-This DSL look up for provided Connection in Location Service and returns corresponding `Location` or `null` if not found. 
+This DSL look up for provided `Connection` in Location Service and returns corresponding `Location` or `null` if not found. 
 
 Kotlin
 :   @@snip [LocationServiceDslExample.kts](../../../../../../../examples/src/main/kotlin/esw/ocs/scripts/examples/paradox/LocationServiceDslExample.kts) { #find-location }
 
 ## resolveLocation
 
-This DSL keeps looking for provided Connection in Location Service for the provided/default duration and returns corresponding `Location` or `null` if not found after duration exhausts. 
+This DSL keeps looking for provided `Connection` in Location Service for the provided/default duration and returns corresponding `Location` or `null` if not found after duration exhausts. 
 
 Kotlin
 :   @@snip [LocationServiceDslExample.kts](../../../../../../../examples/src/main/kotlin/esw/ocs/scripts/examples/paradox/LocationServiceDslExample.kts) { #resolve-location }
@@ -54,31 +54,43 @@ Kotlin
 
 ## listLocationsBy
 
-Following various APIs are provided for listing locations with some filtering criteria:
+Following various APIs are provided for listing locations with filtering criteria:
 
-### @extref[ComponentType](csw_scaladoc:csw/location/api/javadsl/JComponentType)
+### @extref[ComponentType](csw_scaladoc:csw/location/api/javadsl/JComponentType$)
 
-Filters locations based on provided ComponentType, for example, HCD, Assembly, Sequencer etc.
-Following example demonstrate a use case where one wants to bring all Assemblies to offline state
+Filters locations based on provided `ComponentType`, for example, HCD, Assembly, Sequencer etc.
+
+Following example demonstrate a use case where script sends Offline command to all the Assemblies.
 
 Kotlin
 :   @@snip [LocationServiceDslExample.kts](../../../../../../../examples/src/main/kotlin/esw/ocs/scripts/examples/paradox/LocationServiceDslExample.kts) { #list-locations-by-comp-type }
 
-### @extref[ConnectionType](csw_scaladoc:csw/location/api/javadsl/JConnectionType)
+### @extref[ConnectionType](csw_scaladoc:csw/location/api/javadsl/JConnectionType$)
 
-Filters locations based on provided ConnectionType, for example, AkkaType, HttpType, TcpType etc.
-Following example demonstrate a use case where one wants to lock all components i.e. Assemblies and HCD's.
+Filters locations based on provided `ConnectionType`, for example, AkkaType, HttpType, TcpType etc.
+
+Following example demonstrate a use case where script locks all the components i.e. Assemblies and HCD's.
 
 Kotlin
 :   @@snip [LocationServiceDslExample.kts](../../../../../../../examples/src/main/kotlin/esw/ocs/scripts/examples/paradox/LocationServiceDslExample.kts) { #list-locations-by-connection-type }
         
 ### Hostname
 
-Filters locations based on provided hostname, for example, 10.1.1.1
-    
+Filters locations based on provided hostname.
+ 
+In the following example, we are listing all the components running on `IRIS` (hostname: **10.1.1.1**) machine
+
+Kotlin
+:   @@snip [LocationServiceDslExample.kts](../../../../../../../examples/src/main/kotlin/esw/ocs/scripts/examples/paradox/LocationServiceDslExample.kts) { #list-locations-by-hostname }
+            
 ### Prefix
 
-Filters locations based on provided Prefix, for example, IRIS.filter.wheel where IRIS is subsystem and "filter.wheel" is a component name.
+Filters locations based on provided Prefix.
+
+In the following example, we are listing all the componenst registered using Prefix: `IRIS.filter.wheel` where `IRIS` is a Subsystem and `filter.wheel` is a component name
+
+Kotlin
+:   @@snip [LocationServiceDslExample.kts](../../../../../../../examples/src/main/kotlin/esw/ocs/scripts/examples/paradox/LocationServiceDslExample.kts) { #list-locations-by-prefix }
 
 ## onLocationTrackingEvent
 
@@ -92,6 +104,13 @@ This DSL allows you to add a callback on every location changed event which is r
 
 Kotlin
 :   @@snip [LocationServiceDslExample.kts](../../../../../../../examples/src/main/kotlin/esw/ocs/scripts/examples/paradox/LocationServiceDslExample.kts) { #on-location-tracking-event }
+
+@@@ note
+
+`sendUIEvent` used in above examples is just for demonstration purpose and is not part of DSL.
+`sendUIEvent` publish `SystemEvent` with provided message.
+
+@@@
 
 ## Source code for examples
 
