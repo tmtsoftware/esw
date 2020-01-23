@@ -12,6 +12,7 @@ import esw.ocs.dsl.epics.Fsm
 import esw.ocs.dsl.params.Params
 import esw.ocs.dsl.params.coordKey
 import esw.ocs.dsl.params.intKey
+import esw.ocs.dsl.params.params
 import kotlin.time.milliseconds
 import kotlin.time.seconds
 
@@ -61,11 +62,13 @@ script {
 
     //#command-flag
     val flag = CommandFlag()
-    flag.value() // way to extract the current params value
-
     flag.bind(irisFsm) // bind the FSM and command flag
 
-    flag.set(params) // refreshes the bound FSMs with the new params
+    onSetup("setup-command") { command ->
+        flag.set(command.params) // will set params and refreshes the bound FSMs with the new params
+    }
+
+    flag.value() // way to extract the current params value in FSM
     //#command-flag
 
     val exampleFsm = Fsm(name = "example-fsm", initState = "INIT") {
@@ -79,16 +82,6 @@ script {
         //#define-state
 
         state("BECOME-STATE") {
-
-            entry {
-
-            }
-
-            //#on
-            on(condition) {
-                // executes this when condition is true
-            }
-            //#on
 
             //#entry
             entry {
@@ -111,5 +104,22 @@ script {
             // anything after this will not be executed
             //#complete-fsm
         }
+
+        val temparature = systemVar
+
+        //#state-transition-on-re-evaluation
+        state("LOW") {
+            //#on
+            on(temparature.get() < 20) {
+                // do something but state transition does not happen
+            }
+
+            on(temparature.get() >= 20) {
+                // do something and transit state
+                become("HIGH")
+            }
+            //#on
+        }
+        //#state-transition-on-re-evaluation
     }
 }
