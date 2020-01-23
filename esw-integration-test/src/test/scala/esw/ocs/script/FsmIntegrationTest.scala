@@ -102,7 +102,7 @@ class FsmIntegrationTest extends EswTestKit(EventServer) {
 
     "be able to bind to event variables with polling time | ESW-142, ESW-256" in {
 
-      val fsmSequencer: SequencerApi = spawnSequencerProxy(ESW, "moonnight")
+      val fsmSequencer: SequencerApi = spawnSequencerProxy(ESW, "MoonNight")
       val command1                   = Setup(Prefix("esw.test"), CommandName("start-fsm"), None)
       val probe                      = TestProbe[Event]
 

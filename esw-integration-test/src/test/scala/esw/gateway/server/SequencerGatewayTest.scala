@@ -18,7 +18,7 @@ import esw.ocs.testkit.Service.{EventServer, Gateway}
 
 class SequencerGatewayTest extends EswTestKit(Gateway, EventServer) with GatewayCodecs {
   private val subsystem     = ESW
-  private val observingMode = "moonnight"
+  private val observingMode = "MoonNight"
 
   override def beforeAll(): Unit = {
     super.beforeAll()

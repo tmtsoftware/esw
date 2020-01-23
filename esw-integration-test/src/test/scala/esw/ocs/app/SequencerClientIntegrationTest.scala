@@ -27,7 +27,7 @@ import scala.concurrent.Future
 
 class SequencerClientIntegrationTest extends EswTestKit(EventServer) {
   private val subsystem     = ESW
-  private val observingMode = "moonnight"
+  private val observingMode = "MoonNight"
 
   private val command1 = Setup(Prefix("esw.test"), CommandName("command-1"), None)
   private val command2 = Setup(Prefix("esw.test"), CommandName("command-2"), None)
