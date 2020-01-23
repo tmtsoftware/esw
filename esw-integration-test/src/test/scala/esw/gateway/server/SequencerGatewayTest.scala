@@ -1,7 +1,5 @@
 package esw.gateway.server
 
-import csw.location.models.ComponentType.Sequencer
-import csw.location.models.Connection.AkkaConnection
 import csw.location.models.{ComponentId, ComponentType}
 import csw.params.commands.CommandResponse.{Completed, Started}
 import csw.params.commands.{CommandName, Sequence, Setup}
@@ -10,9 +8,6 @@ import csw.prefix.models.Prefix
 import csw.prefix.models.Subsystem.ESW
 import esw.gateway.api.clients.ClientFactory
 import esw.gateway.api.codecs.GatewayCodecs
-import esw.gateway.server.utils.Resolver
-import esw.ocs.api.client.SequencerClient
-import esw.ocs.impl.SequencerActorProxy
 import esw.ocs.testkit.EswTestKit
 import esw.ocs.testkit.Service.{EventServer, Gateway}
 
