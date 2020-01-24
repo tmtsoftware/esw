@@ -8,26 +8,15 @@ Finite State Machine (FSM) (still in development).
 
 
 @@@ index
-- [Script Handlers](dsl/handlers.md)
-- [Looping](dsl/loop.md)
-- [Other DSL](dsl/misc.md)
-* [Finite State Machines](fsm.md)
-* [Location Service](dsl/services/location-service.md)
-* [Config Service](dsl/services/config-service.md)
-* [Assembly/HCD Command Service](dsl/services/command-service.md)
-* [Sequencer Command Service](dsl/services/sequencer-command-service.md)
-* [Submit Response Extensions](dsl/services/submit-response-extensions.md)
-* [Event Service](dsl/services/event-service.md)
-* [Logging Service](dsl/services/logging-service.md)
-* [Alarm Service](dsl/services/alarm-service.md)
-* [Time Service](dsl/services/time-service.md)
+* [Script DSL Constructs](dsl/script-constructs.md) DSLs for defining script and basic constructs
+* [CSW Services DSLs](dsl/csw-services.md) Collection of high level DSLs for writing Sequencer scripts
 @@@
 
 * Script DSL Constructs
-    * @ref[Script Handlers](dsl/handlers.md)
-    * @ref[Looping](dsl/loop.md)
-    * @ref[Other DSL](dsl/misc.md)
-    * @ref[Finite State Machines](fsm.md)
+    * @ref[Script Handlers](dsl/constructs/handlers.md)
+    * @ref[Looping](dsl/constructs/loop.md)
+    * @ref[Other DSL](dsl/constructs/misc.md)
+    * @ref[Finite State Machines](dsl/constructs/fsm.md)
 * CSW Services DSL
     * @ref[Location Service](dsl/services/location-service.md)
     * @ref[Config Service](dsl/services/config-service.md)

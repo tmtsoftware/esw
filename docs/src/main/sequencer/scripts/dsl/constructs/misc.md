@@ -7,7 +7,7 @@ This utility is provided to support running multiple tasks in parallel. A call t
 The following example demonstrates sending commands in parallel to multiple HCD's.
 
 Kotlin
-: @@snip [Misc.kts](../../../../../../examples/src/main/kotlin/esw/ocs/scripts/examples/paradox/MiscExample.kts) { #par }  
+: @@snip [Misc.kts](../../../../../../../examples/src/main/kotlin/esw/ocs/scripts/examples/paradox/MiscExample.kts) { #par }  
 
 ## Source code for examples
 

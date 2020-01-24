@@ -1,3 +1,4 @@
+
 # Event Service
 
 The Event Service DSL is a Kotlin wrapper for the CSW Event Service. This DSL has the ability of publishing, getting, and subscribing to events,
@@ -29,7 +30,7 @@ Kotlin
 
 Helper DSL to create an `EventVariable` corresponding to a parameter of a `SystemEvent`. This DSL needs the initial 
 value of the parameter, the name of the `EventKey`, and the `ParameterKey` of the connected parameter.
- More details about `SystemVar`s are provided in the @ref[FSM documentation](./../../fsm.md#reactive-fsm)
+ More details about `SystemVar`s are provided in the @ref[FSM documentation](../constructs/fsm.md#reactive-fsm)
 
 Kotlin
 :   @@snip [EventServiceDslExample.kts](../../../../../../../examples/src/main/kotlin/esw/ocs/scripts/examples/paradox/EventServiceDslExample.kts) { #system-var }
@@ -38,7 +39,7 @@ Kotlin
 
 Helper DSL to create an `EventVariable` corresponding to a parameter of an `ObserveEvent`. This DSL needs the initial 
 value of the parameter, the name of the `EventKey` and the `ParameterKey` of the connected parameter.
-More details about `ObserveVar`s are provided in the @ref[FSM documentation](./../../fsm.md#reactive-fsm)
+More details about `ObserveVar`s are provided in the @ref[FSM documentation](../constructs/fsm.md#reactive-fsm)
 
 Kotlin
 :   @@snip [EventServiceDslExample.kts](../../../../../../../examples/src/main/kotlin/esw/ocs/scripts/examples/paradox/EventServiceDslExample.kts) { #observe-var }

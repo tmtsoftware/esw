@@ -84,7 +84,7 @@ sequence command handler, or global to the entire script. In this way, such erro
 
 To add an error handler to a command handler, extend the command handler block with a `.onError` block.  The `SubmitResponse` error is captured
 in a `ScriptError` type and passed into the block.  This type contains a `reason` String explaining what went wrong.  If the command handler does not have
-an `onError` block, the global error handler will be called.  See the page on @ref:[Script Handlers](../handlers.md) for more information.
+an `onError` block, the global error handler will be called.  See the page on @ref:[Script Handlers](../constructs/handlers.md) for more information.
 After this block is called, the command sending the sequence terminates with an Error status.
 
 Because of this mechanism, a `submit` (and other Command Service API calls) always returns a positive `SubmitResponse`.  For 

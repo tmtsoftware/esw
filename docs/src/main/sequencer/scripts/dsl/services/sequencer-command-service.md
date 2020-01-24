@@ -68,7 +68,7 @@ is an `Invalid` response with an `IdNotAvailableIssue`.
 Please refer to @ref:[SubmitResponse extension utilities](submit-response-extensions.md) for using helper methods on `SubmitResponse`.
 
 By default, any negative `SubmitResponse`  (for e.g. `Invalid` or `Error`) is treated as a Script error.
-Refer to @ref:[error handling](../handlers.md#error-handlers) section for more details.
+Refer to @ref:[error handling](../constructs/handlers.md#error-handlers) section for more details.
 Alternatively, if you do not want to escalate a negative `SubmitResponse`, you can use `submit` Api with `resumeOnError` flag.
 
 Kotlin
@@ -112,7 +112,7 @@ This DSL method is used to send online/offline commands to other sequencers.
 The Sequencer can go online only if it is currently in the offline state. If this command is received in any other
 state apart from offline, an `Unhandled` response will be sent.
 
-If the Sequencer is in the Offline state, and it receives the `goOnline` command, the @ref:[goOnline handlers](../handlers.md#online-and-offline-handlers) of the receiving Sequencer
+If the Sequencer is in the Offline state, and it receives the `goOnline` command, the @ref:[goOnline handlers](../constructs/handlers.md#online-and-offline-handlers) of the receiving Sequencer
 will be called. In case the handlers fail, a `GoOnlineHookFailed` response would be sent, and the Sequencer remains in the previous state.
 Otherwise, an `Ok` response is returned, and the Sequencer goes in online(idle) state.
 
@@ -127,7 +127,7 @@ Go offline command is received in 2 states only.
 * If the Sequencer is Loaded with a sequence
 
 If this command is sent in any other state apart from these, an `Unhandled` response will be sent.
-If the Sequencer is in idle/loaded state, and it receives the `goOffline` command, the @ref:[goOffline handlers](../handlers.md#online-and-offline-handlers)
+If the Sequencer is in idle/loaded state, and it receives the `goOffline` command, the @ref:[goOffline handlers](../constructs/handlers.md#online-and-offline-handlers)
 of the receiving Sequencer will be called.
 In case the handlers fail, a `GoOfflineHookFailed` response would be sent, resulting the Sequencer remains in the previous state.
 Otherwise an `Ok` message is sent, and the Sequencer goes to offline state.
@@ -140,7 +140,7 @@ Kotlin
 ### Diagnostic Mode
 
 The `diagnosticMode` command can be sent to Sequencers in all states and a `DiagnosticModeResponse` is returned. If the Sequencer script has defined
-the @ref:[diagnostic mode handlers](../handlers.md#diagnostic-mode-handler), they will be called. If the handlers execute successfully,
+the @ref:[diagnostic mode handlers](../constructs/handlers.md#diagnostic-mode-handler), they will be called. If the handlers execute successfully,
 an `Ok` response is sent; otherwise, the `DiagnosticHookFailed` response is sent.
 
 Kotlin
@@ -149,7 +149,7 @@ Kotlin
 ### Operations Mode
 
 The `operationsMode` command returns a Sequencer in a diagnostic data mode to normal operation. `operationsMode` is accepted by Sequencers in all states 
-and an `OperationsModeResponse` is returned to the sender. If the Sequencer has defined its @ref:[operations mode handlers](../handlers.md#operations-mode-handler), 
+and an `OperationsModeResponse` is returned to the sender. If the Sequencer has defined its @ref:[operations mode handlers](../constructs/handlers.md#operations-mode-handler), 
 they will be called. If the handlers execute successfully, an `Ok` response is sent; otherwise, the `OperationsHookFailed` response is sent.
 
 Kotlin
@@ -166,7 +166,7 @@ If this command is sent in any other state, an `Unhandled` response is returned.
 
 ### Aborting a Sequence
 
-On receiving the abort command in the `InProgress` state, the Sequencer will execute the @ref:[abort sequence handlers](../handlers.md#abort-sequence-handler)
+On receiving the abort command in the `InProgress` state, the Sequencer will execute the @ref:[abort sequence handlers](../constructs/handlers.md#abort-sequence-handler)
 and on completion of execution of handlers (whether successful or failed), the Sequencer will discard all the `pending` steps
 and return an `Ok` response.  
 
@@ -179,7 +179,7 @@ Kotlin
 
 ### Stopping a Sequence
 
-Stopping a Sequence is very similar to aborting. The only difference is that instead of abort handlers, the @ref:[stop handlers](../handlers.md#stop-handler)
+Stopping a Sequence is very similar to aborting. The only difference is that instead of abort handlers, the @ref:[stop handlers](../constructs/handlers.md#stop-handler)
 are called.
 
 Kotlin
