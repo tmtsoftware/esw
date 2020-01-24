@@ -21,12 +21,12 @@ script {
         val parameters = intKey("stepNumber").set(1)
         //#observe-event
         //#publish
-        val systemEvent: SystemEvent = SystemEvent("ESW.iris_darkNight", "stepInfo", parameters)
+        val systemEvent: SystemEvent = SystemEvent("ESW.IRIS_darkNight", "stepInfo", parameters)
         //#publish
         //#system-event
 
         //#observe-event
-        val observeEvent: ObserveEvent = ObserveEvent("ESW.iris_darkNight", "observationStarted")
+        val observeEvent: ObserveEvent = ObserveEvent("ESW.IRIS_darkNight", "observationStarted")
         //#observe-event
 
         //#publish
@@ -56,7 +56,7 @@ script {
         //#publish-async
         publishEvent(10.seconds) {
             val temperatureKey = intKey("temperature").set(getTemperature())
-            SystemEvent("ESW.iris_darkNight", "temperature", temperatureKey)
+            SystemEvent("ESW.IRIS_darkNight", "temperature", temperatureKey)
         }
         //#publish-async
 
