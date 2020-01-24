@@ -56,6 +56,15 @@ other actions and periodically check for the completion of the `Sequence`.
 Note that if the `runId` is not present in the Sequencer or has been removed from the CRM, the response returned 
 is an `Invalid` response with an `IdNotAvailableIssue`. 
 
+Please refer to @ref:[SubmitResponse extension utilities](submit-response-extensions.md) for using helper methods on `SubmitResponse`.
+
+By default, any negative `SubmitResponse`  (for e.g. `Invalid` or `Error`) is treated as a Script Error.
+Refer to @ref:[error handling](../handlers.md#error-handlers) section for more details.
+Alternatively, if you do not want to escalate negative `SubmitResponse`, you can use `submit` Api with `resumeOnError` flag.
+
+Kotlin
+: @@snip [SequencerCommandServiceDslExample.kts](../../../../../../../examples/src/main/kotlin/esw/ocs/scripts/examples/paradox/SequencerCommandServiceDslExample.kts) { #resumeOnError }  
+
 #### QueryFinal
 
 While `query` returns immediately, `queryFinal` will wait for the final response of the `Sequence` for the `defaultTimeout`

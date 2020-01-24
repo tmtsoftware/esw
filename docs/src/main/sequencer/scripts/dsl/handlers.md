@@ -2,7 +2,7 @@
 
 All the handlers which could be defined in various scopes are described below. 
 Note that, in all the below described handlers, error-handling for the block passed to handlers, needs to be taken care by the
-Script writers.
+Script writers. For mode details, refer to @ref:[error handling](#error-handlers) section below.
 
 ## Command Handlers
 

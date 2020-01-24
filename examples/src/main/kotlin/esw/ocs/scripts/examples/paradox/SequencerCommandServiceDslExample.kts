@@ -30,6 +30,10 @@ script {
         val queryResponse: SubmitResponse = wfos.query(submitResponse.runId())
         // #submitAndQuery
 
+        // #resumeOnError
+        val response: SubmitResponse = tcsSequencer.submit(sequence, resumeOnError = true)
+        // #resumeOnError
+
         // #queryFinal
         val finalResponse: SubmitResponse = wfos.queryFinal(submitResponse.runId())
         // #queryFinal
@@ -47,7 +51,7 @@ script {
         // #submitAndWaitWithTimeout
 
         // #goOnline
-        val response: GoOnlineResponse = wfos.goOnline()
+        val onlineResponse: GoOnlineResponse = wfos.goOnline()
         // #goOnline
 
         // #goOffline
