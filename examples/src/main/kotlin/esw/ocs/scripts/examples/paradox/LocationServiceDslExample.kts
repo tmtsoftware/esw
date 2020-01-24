@@ -1,4 +1,4 @@
-@file:Suppress("unused")
+@file:Suppress("UNUSED_VARIABLE")
 
 package esw.ocs.scripts.examples.paradox
 
@@ -12,9 +12,6 @@ import esw.ocs.dsl.params.*
 import kotlin.time.minutes
 
 script {
-    val prefix = Prefix("IRIS.filter.wheel")
-    val componentId = ComponentId(prefix, Service)
-    val httpConnection = HttpConnection(componentId)
 
     val msgKey = stringKey("ui-event")
     suspend fun sendUIEvent(msg: String) = publishEvent(ObserveEvent("ESW.ui", "ui-event", msgKey.set(msg)))
@@ -22,6 +19,8 @@ script {
     onSetup("spawn-service") { cmd ->
         val portKey = intKey("port")
         val port = cmd.params(portKey).first
+        val prefix = Prefix("IRIS.filter.wheel")
+        val httpConnection = HttpConnection(ComponentId(prefix, Service))
 
         //#register
         // register HTTP service running at port 8080 and routes are served from /routes endpoint
@@ -84,7 +83,7 @@ script {
         val assemblyLocations: List<Location> = listLocationsBy(Assembly)
 
         // create Assemblies from locations and send offline command to each one of them
-        val assemblies = assemblyLocations.map { Assembly(it.prefixStr, 10.minutes) }
+        val assemblies = assemblyLocations.map { Assembly(it.prefix, 10.minutes) }
         assemblies.forEach { it.goOffline() }
     }
     //#list-locations-by-comp-type
@@ -101,7 +100,7 @@ script {
         akkaLocations.forEach { location ->
             val compId: ComponentId = location.connection.componentId
             val compType: ComponentType = compId.componentType
-            val prefix = location.prefixStr
+            val prefix = location.prefix
 
             // create Assembly or Hcd instance based on component type and send Lock command
             when (compType) {

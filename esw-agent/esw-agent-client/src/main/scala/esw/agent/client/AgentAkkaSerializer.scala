@@ -1,4 +1,4 @@
-package esw.agent.app
+package esw.agent.client
 
 import akka.actor.ExtendedActorSystem
 import akka.actor.typed.ActorSystem

@@ -4,14 +4,15 @@
 
 Steps to generate the Requirement-Test mapping:
 1. Generate the Test-Story mapping:
-    - Start the sbt shell by command `sbt -DenableCoverage=true`.
+    - Start the sbt shell by command `sbt -DenableCoverage=true` and run `clean`.
     - Run the tests
     - Test-Story mapping will generated in file `./target/RTM/testStoryMapping.txt`
     
 2. Generate the Story-Requirement mapping from JIRA:
     - Go to the *story-requirement mapping filter* in Jira - https://tmt-project.atlassian.net/issues/?filter=17406
     - Export a Google sheet by using the option shown in the image
-    - Remove the First row from the sheet.
+        ![screenshot](./filter.png)
+    - Remove the first row from the sheet which containing the headings of the columns.
     - Export the sheet into a CSV file (`File -> Download -> Comma-Separated values`).
 
 3. Call the TestRequirementMapper from the sbt shell by executing command

@@ -4,7 +4,7 @@ The handling of sequence execution is done by defining "handlers" in the script.
 described below.  There are handlers that can be created to process Setup commands, Observe commands, aborting and stopping a sequence,
 putting the Sequencer in Online and Offline modes, putting the Sequencer in Diagnostic mode and back to Operations mode, 
 a global error handler to catch all uncaught exceptions, and a shutdown handler to shut down the Sequencer.
-Each of these handlers are described below, with a section on how to handle exceptions after that.
+Each of these handlers are described below, with a section on [how to handle exceptions](#error-handlers) after that.
 
 ## Command Handlers
 

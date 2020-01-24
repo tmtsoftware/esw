@@ -3,6 +3,7 @@
 package esw.ocs.scripts.examples.paradox
 
 import esw.ocs.dsl.core.script
+import esw.ocs.dsl.highlevel.models.TCS
 import esw.ocs.dsl.params.invoke
 import esw.ocs.dsl.params.utcTimeKey
 import kotlin.time.hours
@@ -14,7 +15,7 @@ script {
     // #schedule-once
     val scheduleTimeKey = utcTimeKey("scheduledTime")
     val schedulePrefix = "esw.test"
-    val galilAssembly = Assembly("TCS.galil", defaultTimeout = 10.seconds)
+    val galilAssembly = Assembly(TCS, "galil", defaultTimeout = 10.seconds)
 
     //Usage inside handlers - schedule tasks while handling setup/observe commands
     onObserve("schedule-once") {command ->
@@ -31,7 +32,7 @@ script {
     // #schedule-periodically
     val offsetTimeKey = utcTimeKey("offsetTime")
     val offsetPrefix = "esw.offset"
-    val assemblyForOffset = Assembly("TCS.galil", defaultTimeout = 10.seconds)
+    val assemblyForOffset = Assembly(TCS, "galil", defaultTimeout = 10.seconds)
 
     onSetup("schedule-periodically") {command ->
         val scheduledTime = command(offsetTimeKey)

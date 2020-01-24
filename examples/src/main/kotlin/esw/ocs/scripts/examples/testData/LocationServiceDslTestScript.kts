@@ -5,7 +5,7 @@ import csw.location.models.ComponentId
 import csw.location.models.Connection.HttpConnection
 import csw.location.models.HttpRegistration
 import esw.ocs.dsl.core.script
-import esw.ocs.dsl.highlevel.models.Prefix
+import csw.prefix.models.Prefix
 import esw.ocs.dsl.params.stringKey
 
 script {

@@ -6,17 +6,18 @@ import csw.params.commands.CommandResponse
 import csw.params.core.states.StateName
 import esw.ocs.dsl.*
 import esw.ocs.dsl.core.script
+import esw.ocs.dsl.highlevel.models.TCS
 import esw.ocs.dsl.params.intKey
 import kotlin.time.seconds
 
 script {
 
     // #assembly
-    val galilAssembly = Assembly("TCS.galil", defaultTimeout = 10.seconds)
+    val galilAssembly = Assembly(TCS, "galil", defaultTimeout = 10.seconds)
     // #assembly
 
     // #hcd
-    val filterWheelHcd = Hcd("TCS.filter.wheel.hcd", defaultTimeout = 10.seconds)
+    val filterWheelHcd = Hcd(TCS, "filter.wheel.hcd", defaultTimeout = 10.seconds)
     // #hcd
 
     onSetup("setup-filter-assembly") { command ->
@@ -47,16 +48,15 @@ script {
         // #submit-and-wait-component
 
         // #query-component
-        val response = galilAssembly.submit(galilCommand, resumeOnError = true)
-
-        galilAssembly.query(response.runId())
+        val response = galilAssembly.submit(command)
+        val queryResponse = galilAssembly.query(response.runId())
         // #query-component
 
         // #query-final-component
         // #submit-component
         val startedResponse = galilAssembly.submit(galilCommand)
         // #submit-component
-        galilAssembly.queryFinal(startedResponse.runId())
+        val finalResponse = galilAssembly.queryFinal(startedResponse.runId())
         // #query-final-component
 
         // #subscribe-current-state-component
@@ -98,6 +98,14 @@ script {
             is CommandResponse.Completed -> info("command with ${positiveSubmitResponse.runId()} is completed")
         }
 
+        // Third approach - use the isStarted value
+        if (positiveSubmitResponse.isStarted) {
+            val completedResponse = galilAssembly.queryFinal(positiveSubmitResponse.runId())
+            info("command completed with result: ${completedResponse.result}")
+        } else {
+            info("command with ${positiveSubmitResponse.runId()} is completed with result: ${positiveSubmitResponse.result}")
+        }
+
     }.onError { err ->
         // onError is called when submit command to galil assembly fails
         error(err.reason)
@@ -125,7 +133,7 @@ script {
                     info("command with ${completed.runId()} is completed with result: ${completed.result}")
                 }
                 .onFailed { negativeResponse ->
-                    error("command with ${negativeResponse.runId()} is failed with result: ${negativeResponse}")
+                    error("command with ${negativeResponse.runId()} is failed with result: $negativeResponse")
 
                 }
 

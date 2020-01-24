@@ -3,8 +3,8 @@ package esw.ocs.dsl.highlevel
 import akka.Done.done
 import csw.alarm.api.javadsl.IAlarmService
 import csw.alarm.models.Key.AlarmKey
+import csw.prefix.models.Prefix
 import esw.ocs.dsl.highlevel.models.Major
-import esw.ocs.dsl.highlevel.models.Prefix
 import esw.ocs.dsl.highlevel.models.TCS
 import io.kotlintest.eventually
 import io.mockk.clearMocks

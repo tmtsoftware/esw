@@ -1,11 +1,13 @@
-@file:Suppress("UNUSED_VARIABLE", "DIVISION_BY_ZERO")
+@file:Suppress("UNUSED_VARIABLE", "DIVISION_BY_ZERO", "UNUSED_ANONYMOUS_PARAMETER")
 
 package esw.ocs.scripts.examples.paradox
 
-import csw.params.commands.CommandResponse.*
+import csw.params.commands.CommandResponse.SubmitResponse
 import csw.params.events.SystemEvent
 import csw.time.scheduler.api.Cancellable
 import esw.ocs.dsl.core.script
+import esw.ocs.dsl.highlevel.models.IRIS
+import esw.ocs.dsl.highlevel.models.WFOS
 import esw.ocs.dsl.par
 import esw.ocs.dsl.params.invoke
 import esw.ocs.dsl.params.stringKey
@@ -15,20 +17,19 @@ import kotlin.time.seconds
 script {
 
     var diagnosticEventCancellable: Cancellable? = null
-    val assembly = Assembly("filter.wheel", 5.seconds)
+    val assembly = Assembly(IRIS, "filter.wheel", 5.seconds)
 
     // #onSetup
     onSetup("command1") {
         // split command and send to downstream
-        val assembly1 = Assembly("filter.wheel", 5.seconds)
-        val assembly2 = Assembly("wfos.red.detector", 5.seconds)
+        val assembly1 = Assembly(IRIS, "filter.wheel", 5.seconds)
+        val assembly2 = Assembly(WFOS, "red.detector", 5.seconds)
         par(
                 { assembly1.submit(Setup("TCS.darknight", "command-1")) },
                 { assembly2.submit(Setup("TCS.darknight", "command-1")) }
         )
     }
     // #onSetup
-
 
     // #onObserve
     onObserve("command2") {
@@ -68,7 +69,6 @@ script {
     }
     // #shutdown
 
-
     // #diagnosticMode
     onDiagnosticMode { startTime, hint ->
         // start publishing diagnostic data on a supported hint (for e.g. engineering)
@@ -104,7 +104,7 @@ script {
 
     // Scenario-2 onSetup handler fails - submit returns negative SubmitResponse
     onSetup("command-2") { command ->
-        val assembly1 = Assembly("filter.wheel", 5.seconds)
+        val assembly1 = Assembly(IRIS, "filter.wheel", 5.seconds)
 
         // Submit command to assembly return negative response. (error by default) onGlobalError handler is called.
         // Sequence is terminated with failure.
@@ -125,7 +125,6 @@ script {
         publishEvent(observationEndEvent)
     }
     // #onGlobalError
-
 
     // #onError-for-exception
     onSetup("submit-error-handling") { command ->

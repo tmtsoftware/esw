@@ -1,6 +1,7 @@
 package esw.ocs.scripts.examples.testData
 
 import esw.ocs.dsl.core.script
+import esw.ocs.dsl.highlevel.models.ESW
 import esw.ocs.dsl.params.stringKey
 import kotlin.time.seconds
 
@@ -34,7 +35,7 @@ script {
 
 
     onSetup("multi-node") { command ->
-        val assembly = Assembly("ESW.SampleAssembly", 10.seconds)
+        val assembly = Assembly(ESW, "SampleAssembly", 10.seconds)
         assembly.submit(command)
     }
 }

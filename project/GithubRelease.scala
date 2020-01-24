@@ -14,6 +14,7 @@ import scala.collection.JavaConverters._
 object GithubRelease extends AutoPlugin {
   val coverageReportZipKey = taskKey[File]("Creates a distributable zip file containing the coverage report.")
   val testReportsKey       = taskKey[(File, File)]("Creates test reports in html and zip format.")
+  val rtmZipKey       = taskKey[File]("Creates a distributable zip file containing Requirement-Test report .")
 
   val aggregateFilter = ScopeFilter(inAggregates(ThisProject), inConfigurations(librarymanagement.Configurations.Compile))
 
@@ -26,8 +27,16 @@ object GithubRelease extends AutoPlugin {
     // this creates scoverage report zip file and required for GithubRelease task, it assumes that scoverage-report is already generated
     // and is available inside target folder (if it is not present, empty zip will be created)
     coverageReportZipKey := coverageReportZipTask.value,
-    testReportsKey := testReportsTask.value
+    testReportsKey := testReportsTask.value,
+    rtmZipKey := requirementTestMappingZipTask.value
   )
+
+  private def requirementTestMappingZipTask = Def.task {
+    lazy val rtmZip = new File(target.value / "ghrelease", "requirement-test-mapping.zip")
+    // filter out the index.html
+    IO.zip(Path.allSubpaths(new File(target.value, "RTM")).filterNot { x => x._2.endsWith("html") }, rtmZip)
+    rtmZip
+  }
 
   private def coverageReportZipTask = Def.task {
     lazy val coverageReportZip = new File(target.value / "ghrelease", "scoverage-report.zip")
@@ -108,6 +117,7 @@ object GithubRelease extends AutoPlugin {
       Seq(
         stageAndZipTask(projects).value,
         coverageReportZipKey.value,
+        rtmZipKey.value,
         testReportZip,
         testReportHtml
       )
