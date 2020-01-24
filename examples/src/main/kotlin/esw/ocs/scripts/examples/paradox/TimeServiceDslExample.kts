@@ -18,7 +18,7 @@ script {
     val galilAssembly = Assembly(TCS, "galil", defaultTimeout = 10.seconds)
 
     //Usage inside handlers - schedule tasks while handling setup/observe commands
-    onObserve("schedule-once") {command ->
+    onSetup("schedule-once") { command ->
         val scheduledTime = command(scheduleTimeKey)
         val probeCommand = Setup(schedulePrefix, "scheduledOffset", command.obsId)
 

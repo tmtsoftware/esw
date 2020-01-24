@@ -1,74 +1,105 @@
-# Time Service
+# Time Service Access in Scripts
 
-Time Service DSL is DSL wrapper over Time Service module provided by CSW. This DSL exposes following APIs to script writers to
-schedule tasks at given time. It also exposes utility methods for getting specified utc time or tai time and calculate offset.
+The time and scheduling functionality of the CSW Time Service are available to script writers. Time Service DSL provides access to the 
+Time Service module provided by CSW. This DSL exposes the following API calls to script writers to access time and schedule tasks.
 
-## utcTimeNow
+### Time Access
 
-This utility provides current utc time.
+Time Service provides access to both TAI and UTC time that is synchronized at the telescope site with time on all the other computers
+and also with absolute time provided by a GPS system.
+
+Time access calls are made available to all scripts. Access to some time functionality requires the import of kotlin.time packages. 
+
+### Access UTC Time with utcTimeNow
+
+The `utcTimeNow` Time Service utility returns the current UTC time. The time value returned is a CSW `UTCTime` type, which is an absolute time value.
 
 Kotlin
 :   @@snip [TimeServiceDslExample.kts](../../../../../../../examples/src/main/kotlin/esw/ocs/scripts/examples/paradox/TimeServiceDslExample.kts) { #utc-time-now }
 
-## taiTimeNow
+### Access TAI Time with taiTimeNow
 
-This utility provides current utc time.
+The `taiTimeNow` Time Service utility returns the current TAI time. The time value returned is a CSW `TAITime` type, which is an absolute time value.
 
 Kotlin
 :   @@snip [TimeServiceDslExample.kts](../../../../../../../examples/src/main/kotlin/esw/ocs/scripts/examples/paradox/TimeServiceDslExample.kts) { #tai-time-now }
 
-## utcTimeAfter
+### Access UTC time in the Future with utcTimeAfter
 
-This utility provides utc time after provided duration. Following example shows how to get utc time after 1 hour
+The `utcTimeAfter` Time Service utility provides an absolute UTC time some amount of time from now in the future. The value
+provided is a duration such as 1.hour. The returned value is an absolute `UTCTime` type. The following example shows provides UTC time 1 hour from now.
 
 Kotlin
 :   @@snip [TimeServiceDslExample.kts](../../../../../../../examples/src/main/kotlin/esw/ocs/scripts/examples/paradox/TimeServiceDslExample.kts) { #utc-time-after }
 
-## taiTimeAfter
+### Access TAI Time in the Future with taiTimeAfter
 
-This utility provides tai time after provided duration. Following example shows how to get tai time after 1 hour
+The `taiTimeAfter` Time Service utility provides an absolute TAI time some amount of time from now in the future. The value
+provided is a duration. The returned value is an absolute `TAITime` type. The following example shows provides TAI time 1 hour from now.
 
 Kotlin
 :   @@snip [TimeServiceDslExample.kts](../../../../../../../examples/src/main/kotlin/esw/ocs/scripts/examples/paradox/TimeServiceDslExample.kts) { #tai-time-after }
 
-## scheduleOnce
+### Scheduling with Time Service
 
-This API allows scheduling non periodic task in script at specified utc time or tai time. This returns a handle to cancel the execution of the task if it hasn't been executed already.
-Task is a callback which will be executed in thread safe way.
+The Time Service DSL provides script access to the CSW scheduling library allowing scripts to schedule one off and periodic tasks.
+Access to the Time Service scheduling functionality is provided in the script writing environment with no extra imports.
 
-Following example shows onObserve handler of Sequencer is extracting schedule time from received observe command.
-It is creating probe command which is then submitted to downstream galil Assembly at scheduled time.
+### Using scheduleOnce
+
+The `scheduleOnce` Time Service DSL allows scheduling a task in a script once at the specified absolute UTC or TAI time. The function schedules the task and 
+returns a handle that can be used to cancel the execution of the task if it has not yet executed. 
+The task is a callback which will be executed in thread safe way.
+
+The following example shows an onSetup handler of a script extracting a scheduled time from a Setup command and then uses
+ the scheduleOnce to send a motion command to a Galil Assembly at the scheduled time.
 
 Kotlin
 :   @@snip [TimeServiceDslExample.kts](../../../../../../../examples/src/main/kotlin/esw/ocs/scripts/examples/paradox/TimeServiceDslExample.kts) { #schedule-once }
 
-## scheduleOnceFromNow
+### Using scheduleOnceFromNow
 
-This API allows scheduling non periodic task in script after specified duration. Task is a callback which will be executed in thread safe way.
-This API takes time duration after which task will be scheduled. scheduleOnceFromNow internally creates instance of utc time considering specified in duration.
-Following example shows scheduling task after 1 hour from current utc time. This returns a handle to cancel the execution of the task if it hasn't
-been executed already.
+Often, it is necessary to schedule a task in the future some amount of time from now.
+The `scheduleOnceFromNow` API allows scheduling non periodic task in script after a specified duration. The task is a callback which will be 
+executed in thread safe way. This API takes a time duration type after which task will be scheduled.
+
+The following example shows the scheduling of a task after 1 hour from now. The function takes a duration and returns a handle 
+which can be used to cancel the execution of the task if it has not yet executed.
 
 Kotlin
 :   @@snip [TimeServiceDslExample.kts](../../../../../../../examples/src/main/kotlin/esw/ocs/scripts/examples/paradox/TimeServiceDslExample.kts) { #schedule-once-from-now }
 
-## schedulePeriodically
+### Using schedulePeriodically
 
-This API allows to schedule a task to execute periodically at the given interval. Task is a callback which will be executed in thread safe way.
-The task is executed once at the given start time followed by execution of task at each interval. This returns a handle to cancel the execution of further tasks.
+The `schedulePeriodically` API allows scheduling a task to execute periodically at a given interval starting at a provided absolute start time. 
+The provided task is a callback, which will be executed in thread safe way.
+
+Initially, the task is executed once at the given start time followed by periodic execution of the task at the requested period. 
+This function returns a handle that can be used to cancel the execution of further tasks.
+
+The following example shows the scheduling of a task in an `onSetup` handler that starts running at the time provided in a parameter and
+then runs every 5 seconds until stopped. 
 
 Kotlin
 :   @@snip [TimeServiceDslExample.kts](../../../../../../../examples/src/main/kotlin/esw/ocs/scripts/examples/paradox/TimeServiceDslExample.kts) { #schedule-periodically }
 
-## schedulePeriodicallyFromNow
+### Using schedulePeriodicallyFromNow
 
-This API allows to schedule a task to execute periodically at the given interval. Task is a callback which will be executed in thread safe way.
-This API takes time duration after which task will be scheduled once followed by execution of task at each interval.
-Following example shows scheduling task after 1 hour from current utc time and then executing it periodically at 10 seconds interval.
-This returns a handle to cancel the execution of further tasks.
+The `schedulePeriodicallyFromNow` API is like `schedulePeriodically` but takes a duration as the start time rather than an absolute time. 
+Initially, the task is executed once at the duration time from the current time. This execution is followed by periodic execution of the task at the requested period. 
+The task is a callback which will be executed in thread safe way. This function returns a handle that can be used to cancel the execution of further tasks.
+
+The following example shows scheduling the publishing of an event after 1 hour from now and then publishes an event periodically with a 10 second period
+until cancelled. 
 
 Kotlin
 :   @@snip [TimeServiceDslExample.kts](../../../../../../../examples/src/main/kotlin/esw/ocs/scripts/examples/paradox/TimeServiceDslExample.kts) { #schedule-periodically-from-now }
+
+@@@ note { title="Limits of Scheduling" }
+
+The script environment for scheduling tasks should not be relied upon for very short periods or low jitter applications.  
+
+@@@
 
 ## Source code for above examples
 
