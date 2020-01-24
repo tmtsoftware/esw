@@ -16,23 +16,26 @@ import kotlin.time.seconds
 
 script {
 
+    // #diagnosticMode
     var diagnosticEventCancellable: Cancellable? = null
+
+    // #diagnosticMode
     val assembly = Assembly(IRIS, "filter.wheel", 5.seconds)
 
     // #onSetup
-    onSetup("command1") {
+    onSetup("setupInstrument") {
         // split command and send to downstream
         val assembly1 = Assembly(IRIS, "filter.wheel", 5.seconds)
         val assembly2 = Assembly(WFOS, "red.detector", 5.seconds)
         par(
-                { assembly1.submit(Setup("TCS.darknight", "command-1")) },
-                { assembly2.submit(Setup("TCS.darknight", "command-1")) }
+                { assembly1.submit(Setup("TCS.darknight", "move")) },
+                { assembly2.submit(Setup("TCS.darknight", "initialize")) }
         )
     }
     // #onSetup
 
     // #onObserve
-    onObserve("command2") {
+    onObserve("startExposure") {
         // do something
     }
     // #onObserve
@@ -74,7 +77,7 @@ script {
         // start publishing diagnostic data on a supported hint (for e.g. engineering)
         when (hint) {
             "engineering" -> {
-                val diagnosticEvent: SystemEvent = SystemEvent("esw.esw_darknight", "diagnostic")
+                val diagnosticEvent: SystemEvent = SystemEvent("ESW.ESW_darknight", "diagnostic")
                 diagnosticEventCancellable = schedulePeriodically(startTime, 50.milliseconds) {
                     publishEvent(diagnosticEvent)
                 }
