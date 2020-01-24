@@ -16,6 +16,7 @@ import esw.ocs.impl.internal.LocationServiceUtil
 import esw.ocs.impl.script.ScriptContext
 import kotlinx.coroutines.CoroutineScope
 import kotlin.time.Duration
+import kotlin.time.hours
 import kotlin.time.toKotlinDuration
 
 interface CswHighLevelDslApi : CswServices, LocationServiceDsl, ConfigServiceDsl, EventServiceDsl, LoggingDsl, CommandServiceDsl,
@@ -29,7 +30,7 @@ interface CswHighLevelDslApi : CswServices, LocationServiceDsl, ConfigServiceDsl
     fun Hcd(subsystem: Subsystem, compName: String, defaultTimeout: Duration): RichComponent =
             Hcd(Prefix(subsystem, compName), defaultTimeout)
 
-    fun Sequencer(subsystem: Subsystem, observingMode: String, defaultTimeout: Duration): RichSequencer
+    fun Sequencer(subsystem: Subsystem, observingMode: String, defaultTimeout: Duration = 10.hours): RichSequencer
 
     suspend fun Fsm(name: String, initState: String, block: suspend FsmScope.() -> Unit): Fsm
     fun commandFlag(): CommandFlag
