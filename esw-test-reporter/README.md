@@ -4,7 +4,7 @@
 
 Steps to generate the Requirement-Test mapping:
 1. Generate the Test-Story mapping:
-    - Start the sbt shell by command `sbt -DenableCoverage=true`.
+    - Start the sbt shell by command `sbt -DenableCoverage=true` and run `clean`.
     - Run the tests
     - Test-Story mapping will generated in file `./target/RTM/testStoryMapping.txt`
     
