@@ -29,3 +29,8 @@ val ComponentId.componentType: ComponentType get() = componentType()
 val Location.connection: Connection get() = connection()
 val Location.prefix: Prefix get() = prefix()
 val Location.prefixStr: String get() = prefix.toString()
+
+// ============================================
+fun Prefix(value: String): Prefix = Prefix.apply(value)
+
+data class RegistrationResult(val location: Location, val unregister: () -> Unit)
