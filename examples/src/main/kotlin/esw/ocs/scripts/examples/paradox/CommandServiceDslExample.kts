@@ -47,16 +47,15 @@ script {
         // #submit-and-wait-component
 
         // #query-component
-        val response = galilAssembly.submit(galilCommand, resumeOnError = true)
-
-        galilAssembly.query(response.runId())
+        val response = galilAssembly.submit(command)
+        val queryResponse = galilAssembly.query(response.runId())
         // #query-component
 
         // #query-final-component
         // #submit-component
         val startedResponse = galilAssembly.submit(galilCommand)
         // #submit-component
-        galilAssembly.queryFinal(startedResponse.runId())
+        val finalResponse = galilAssembly.queryFinal(startedResponse.runId())
         // #query-final-component
 
         // #subscribe-current-state-component
@@ -96,6 +95,14 @@ script {
                 info("command completed with response: $completedResponse")
             }
             is CommandResponse.Completed -> info("command with ${positiveSubmitResponse.runId()} is completed")
+        }
+
+        // Third approach - use the isStarted value
+        if (positiveSubmitResponse.isStarted) {
+            val completedResponse = galilAssembly.queryFinal(positiveSubmitResponse.runId())
+            info("command completed with result: ${completedResponse.result}")
+        } else {
+            info("command with ${positiveSubmitResponse.runId()} is completed with result: ${positiveSubmitResponse.result}")
         }
 
     }.onError { err ->
