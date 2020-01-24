@@ -79,9 +79,9 @@ script {
         //#loop-default-interval
 
         //#loop-custom-interval
-        // move motor by 20 degrees in every iteration after a loop interval of 100 millis (custom loop interval used here)
+        // move motor by 20 degrees in every iteration after a loop interval of 500 millis (custom loop interval used here)
         // stop loop when current motor position matches expected motor position and continue with the execution of rest of the handler
-        loop(minInterval = 100.milliseconds) {
+        loop(minInterval = 500.milliseconds) {
             moveMotor(20)
             stopWhen(motorPosition == expectedMotorPosition)
         }
