@@ -1,4 +1,4 @@
-# FSM
+# Finite State Machines
 
 Scripts have ability to define and run Finite State Machine(FSM). FSM can transition between defined states and can be made 
 reactive to Event and Command.
