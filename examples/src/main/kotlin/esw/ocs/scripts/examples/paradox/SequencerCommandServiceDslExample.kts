@@ -8,6 +8,7 @@ import csw.params.commands.SequenceCommand
 import esw.ocs.api.protocol.*
 import esw.ocs.dsl.core.script
 import esw.ocs.dsl.highlevel.models.WFOS
+import kotlin.time.minutes
 import kotlin.time.seconds
 
 script {
@@ -16,8 +17,14 @@ script {
 
         // #creating-sequencer
         // create a sequencer entity
-        val wfos = Sequencer(WFOS, "wfos_darknight", 5.seconds)
+        val wfos = Sequencer(WFOS, "wfos_darknight")
         // #creating-sequencer
+
+        // #creating-sequencer-timeout
+        // create a sequencer entity with a timeout
+        val wfos2 = Sequencer(WFOS, "wfos_darknight", 5.minutes)
+        // #creating-sequencer-timeout
+
 
         // #creating-sequence
         val wfosCommand1: SequenceCommand = Setup("ESW.wfos_darknight", "wfosCommand1")

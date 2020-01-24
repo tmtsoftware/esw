@@ -10,12 +10,21 @@ First a Sequencer instance is needed. To create a Sequencer instance, the follow
 
 * `subsystem`: Subsystem of the Sequencer to be resolved and sent commands (for eg. TCS, IRIS)
 * `observingMode`: observing mode of the Sequencer to be resolved and send commands to (for eg. wfos_imaging, wfos_spec)
-* `defaultTimeout`: max timeout to wait for completion of Sequences sent with `sumbitAndWait` or `queryFinal`
+* `defaultTimeout`: optional max timeout to wait for completion of Sequences sent with `sumbitAndWait` or `queryFinal`.  The default
+value for this option is set to 10 hours since it will be common that the handling of Sequences can take a long time, and 
+we don't want unexpected timeouts to occur in production.  For development, it might make sense to set this to some smaller value.
+This can always be overridden in the specific `submitAndWait` and `queryFinal` calls, when appropriate (see below).
 
 Here is an example:
 
 Kotlin
 : @@snip [SequencerCommandServiceDslExample.kts](../../../../../../../examples/src/main/kotlin/esw/ocs/scripts/examples/paradox/SequencerCommandServiceDslExample.kts) { #creating-sequencer }
+
+and here is one showing the setting of the default timeout:
+
+Kotlin
+: @@snip [SequencerCommandServiceDslExample.kts](../../../../../../../examples/src/main/kotlin/esw/ocs/scripts/examples/paradox/SequencerCommandServiceDslExample.kts) { #creating-sequencer-timeout }
+
 
 @@@ note { title="Resolving a Component with Location Service" }
 Since all the components in the TMT architecture are dynamic in nature, which implies they can be shutdown and spawned dynamically
