@@ -1,34 +1,34 @@
 # Logging Service
 
-Logging Service DSL is a wrapper over Logging Service module provided by CSW. 
-You can refer a detailed documentation of Logging Service provided by CSW @extref[here](csw:services/logging).
+The Logging Service DSL is a wrapper for the Logging Service module provided by CSW. 
+You can refer to the detailed documentation of Logging Service provided by CSW @extref[here](csw:services/logging).
 
-CSW documentation explains all the supported logging related configurations for example, default log level, component specific log levels, log appender etc.
+The CSW documentation explains all the supported logging related configurations for example, default log level, component specific log levels, log appender etc.
 It also explains how to override default values.
 
-All the Sequencer scripts are expected to be kept inside [sequencer-scripts](https://github.com/tmtsoftware/sequencer-scripts) repo under Subsystem specific directories.
+All Sequencer scripts are expected to be kept inside the [sequencer-scripts](https://github.com/tmtsoftware/sequencer-scripts) repo under Subsystem specific directories.
 Read more about adding new scripts and script specific configuration files [here](https://github.com/tmtsoftware/sequencer-scripts).
 
 ## Changing Sequencer Log Level
 
-Let's say you are writing IRIS darknight (`IrisDarknight.kts`) script. You place this script in `scripts/iris` directory in [sequencer-scripts](https://github.com/tmtsoftware/sequencer-scripts) repo.
+Let's say you are writing an IRIS sript for the "darknight" observing mode (`IrisDarknight.kts`). You place this script in `scripts/iris` directory in [sequencer-scripts](https://github.com/tmtsoftware/sequencer-scripts) repo.
 In the same directory, you can create your Subsystem specific configuration file, in this case `iris.conf` file.
 
-Add following snippets in `iris.conf` file to change IRIS darknight scripts default log level to **debug** :
+Add following snippets in `iris.conf` file to change the default log level for the IRIS darknight script to **debug** :
 
 ```hocon
 # iris.conf
 
 csw-logging {
   component-log-levels {
-    iris.darknight = debug
+    IRIS.darknight = debug
   }
 }
 
 ```
 
 Once you add this configuration in `iris.conf` file, next step is to include this configuration file in `application.conf` file present at 
-`scripts/application.conf` location in [sequencer-scripts](https://github.com/tmtsoftware/sequencer-scripts) repo as shown in below snippet:
+`scripts/application.conf` location in the [sequencer-scripts](https://github.com/tmtsoftware/sequencer-scripts) repo as shown in below snippet:
 
 ```hocon
 # application.conf
@@ -40,7 +40,7 @@ include "iris.conf"
 
 **IRIS** - name of the Sequencer/Script Subsystem provided while starting Sequencer App
 
-**darknight** - observing mode provided while starting Sequencer App 
+**darknight** - observing mode provided while starting Sequencer App or loaded into Sequence Component
 
 @@@
 
