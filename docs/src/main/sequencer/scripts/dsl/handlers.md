@@ -1,8 +1,10 @@
 # Script Handlers
 
-All the handlers which could be defined in various scopes are described below. 
-Note that, in all the below described handlers, error-handling for the block passed to handlers, needs to be taken care by the
-Script writers.
+The handling of sequence execution is done by defining "handlers" in the script.  This is done by using special handler functions,
+described below.  There are handlers that can be created to process Setup commands, Observe commands, aborting and stopping a sequence,
+putting the Sequencer in Online and Offline modes, putting the Sequencer in Diagnostic mode and back to Operations mode, 
+a global error handler to catch all uncaught exceptions, and a shutdown handler to shut down the Sequencer.
+Each of these handlers are described below, with a section on how to handle exceptions after that.
 
 ## Command Handlers
 
@@ -11,7 +13,7 @@ Script writers.
 This handler is used to handle a @extref[Setup](csw_scaladoc:csw/params/commands/Setup.html) command sent to this sequencer.
 The handler takes two parameters:
 
-1. **command name** which is matched against the sequence command sent, if the command name matches, corresponding block provided
+1. **command name** which is matched against the sequence command sent. If the command name matches, corresponding block provided
 is executed
 2. **block** of code which contains logic to act on the Setup command.
 
