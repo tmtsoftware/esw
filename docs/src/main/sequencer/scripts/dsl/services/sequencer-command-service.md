@@ -28,8 +28,8 @@ command is sent.
 
 ### Creating a Sequence
 Unlike Assemblies and HCDs, Sequencers send Sequences to other Sequencers.  A `Sequence` is a 
-list of SequenceCommand type instances, each of which can be one of the `Setup`, `Observe` or `Wait` types. 
-To create a Sequence, create individual SequenceCommand objects and then create a `Sequence` with the  `sequenceOf` DSL method as shown below.
+list of `SequenceCommand` type instances, each of which can be one of the `Setup`, `Observe` or `Wait` types. 
+To create a Sequence, create individual `SequenceCommand` objects and then create a `Sequence` with the `sequenceOf` DSL method as shown below.
 
 Kotlin
 : @@snip [SequencerCommandServiceDslExample.kts](../../../../../../../examples/src/main/kotlin/esw/ocs/scripts/examples/paradox/SequencerCommandServiceDslExample.kts) { #creating-sequence }  
@@ -43,13 +43,13 @@ The API for Sequence is @extref[here](csw_scaladoc:csw/params/commands/Sequence.
 
 In order to send a `Sequence` to another Sequencer, you can use the `submit` or `submitAndWait` DSL method as shown in examples below. The
 `submit` DSL method sends the Sequence and returns `Started` if the `Sequence` is started or `Invalid` if there is a reason it cannot be started.
-The `query` and `queryFinal` DSL is provided to check the response of a `submit`ted sequence.
+The `query` and `queryFinal` DSL is provided to check the response of a submitted sequence.
 
 Kotlin
 : @@snip [SequencerCommandServiceDslExample.kts](../../../../../../../examples/src/main/kotlin/esw/ocs/scripts/examples/paradox/SequencerCommandServiceDslExample.kts) { #submitAndQuery }  
 
 The `query` DSL method allows checking on the state of the `Sequence`. `query` returns the current response immediately, which could be either a final 
-response (eg. `Completed`) or the `Started` response. If runId of the submitted `Sequence` can be obtained from the `SubmitResponse` returned by `submit`.
+response (eg. `Completed`) or the `Started` response. The `runId` of the submitted `Sequence` can be obtained from the `SubmitResponse` returned by `submit`.
 `query` is useful in the case where polling of the command is needed or the script needs to take 
 other actions and periodically check for the completion of the `Sequence`.    
 
@@ -58,9 +58,9 @@ is an `Invalid` response with an `IdNotAvailableIssue`.
 
 Please refer to @ref:[SubmitResponse extension utilities](submit-response-extensions.md) for using helper methods on `SubmitResponse`.
 
-By default, any negative `SubmitResponse`  (for e.g. `Invalid` or `Error`) is treated as a Script Error.
+By default, any negative `SubmitResponse`  (for e.g. `Invalid` or `Error`) is treated as a Script error.
 Refer to @ref:[error handling](../handlers.md#error-handlers) section for more details.
-Alternatively, if you do not want to escalate negative `SubmitResponse`, you can use `submit` Api with `resumeOnError` flag.
+Alternatively, if you do not want to escalate a negative `SubmitResponse`, you can use `submit` Api with `resumeOnError` flag.
 
 Kotlin
 : @@snip [SequencerCommandServiceDslExample.kts](../../../../../../../examples/src/main/kotlin/esw/ocs/scripts/examples/paradox/SequencerCommandServiceDslExample.kts) { #resumeOnError }  
