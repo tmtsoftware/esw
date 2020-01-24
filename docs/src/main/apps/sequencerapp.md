@@ -62,3 +62,19 @@ Example below will spawn a sequence component `IRIS-primary` and a sequencer `IR
 ```
 esw-ocs-app sequencer -s iris -n primary -m darknight
 ```
+
+### Setting the default log level
+
+The default log level for any component is specified in the `application.conf` file of the component.  In this case,
+the Sequence Component is shared code among all Sequencers.  Therefore, to specify a log level for your Sequencer, 
+use the java -D option to override configuration values at runtime.  For log level, the format is:
+
+```
+-Dcsw-logging.component-log-levels.<Subsystem>.<observingMode>=<LEVEL>
+```
+
+For example, using the example above:
+
+```
+esw-ocs-app sequencer -s iris -n primary -m darknight -Dcsw-logging.component-log-levels.IRIS.darknight=TRACE
+```
