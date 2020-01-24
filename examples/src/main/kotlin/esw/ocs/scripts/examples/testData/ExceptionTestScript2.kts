@@ -3,6 +3,7 @@ package esw.ocs.scripts.examples.testData
 import csw.params.commands.CommandResponse.SubmitResponse
 import esw.ocs.dsl.core.script
 import esw.ocs.dsl.highlevel.RichComponent
+import esw.ocs.dsl.highlevel.models.ESW
 import esw.ocs.dsl.onFailed
 import kotlin.time.seconds
 
@@ -12,7 +13,7 @@ script {
 
     onSetup("error-handling") { command ->
 
-        val hcd = Hcd("ESW.testHcd", 10.seconds)
+        val hcd = Hcd(ESW, "testHcd", 10.seconds)
         hcd.submitAndWait(command)
 
     }.onError {
@@ -24,7 +25,7 @@ script {
 
     onSetup("negative-submit-response") { command ->
 
-        val hcd: RichComponent = Hcd("ESW.testHcd", 10.seconds)
+        val hcd: RichComponent = Hcd(ESW, "testHcd", 10.seconds)
         val submitResponse: SubmitResponse = hcd.submitAndWait(command, resumeOnError = true)
 
         submitResponse.onFailed {
@@ -36,7 +37,6 @@ script {
         val errorEvent = SystemEvent("TCS.filter.wheel", "onError-event")
         publishEvent(errorEvent)
     }
-
 
     onGoOffline {}
 

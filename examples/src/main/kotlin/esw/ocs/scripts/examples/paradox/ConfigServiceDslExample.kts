@@ -3,7 +3,9 @@
 package esw.ocs.scripts.examples.paradox
 
 import com.typesafe.config.Config
+import csw.prefix.models.Prefix
 import esw.ocs.dsl.core.script
+import esw.ocs.dsl.highlevel.models.WFOS
 import esw.ocs.dsl.params.longKey
 import esw.ocs.dsl.params.stringKey
 import kotlin.time.minutes
@@ -34,7 +36,8 @@ data class MotorCommands(val setMotorSpeed: Long, val setStepMotorResolution: St
 
 script {
     val longTimeout = 10.minutes
-    val motorPrefix = "wfos.motor"
+    val motorPrefix = Prefix(WFOS, "motor")
+    val motorPrefixStr = motorPrefix.toString()
     val motorHcd = Hcd(motorPrefix, longTimeout)
     val motorSpeedKey = longKey("motor-speed")
     val motorResolutionKey = stringKey("motor-resolution")
@@ -59,14 +62,14 @@ script {
     // on receiving `set-motor-speed` command, send `set-speed` command to downstream motor hcd
     onSetup("set-motor-speed") {
         val motorSpeedParam = motorSpeedKey.set(motorCommands.setMotorSpeed)
-        val setSpeedCommand = Setup(motorPrefix, "set-speed").add(motorSpeedParam)
+        val setSpeedCommand = Setup(motorPrefixStr, "set-speed").add(motorSpeedParam)
         motorHcd.submit(setSpeedCommand)
     }
 
     // on receiving `set-step-motor-resolution` command, send `set-resolution` command to downstream motor hcd
     onSetup("set-step-motor-resolution") {
         val setResolutionParam = motorResolutionKey.set(motorCommands.setStepMotorResolution)
-        val setResolutionCommand = Setup(motorPrefix, "set-resolution").add(setResolutionParam)
+        val setResolutionCommand = Setup(motorPrefixStr, "set-resolution").add(setResolutionParam)
         motorHcd.submit(setResolutionCommand)
     }
     //#get-config

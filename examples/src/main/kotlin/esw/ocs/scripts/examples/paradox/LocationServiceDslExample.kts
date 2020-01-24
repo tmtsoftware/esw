@@ -83,7 +83,7 @@ script {
         val assemblyLocations: List<Location> = listLocationsBy(Assembly)
 
         // create Assemblies from locations and send offline command to each one of them
-        val assemblies = assemblyLocations.map { Assembly(it.prefixStr, 10.minutes) }
+        val assemblies = assemblyLocations.map { Assembly(it.prefix, 10.minutes) }
         assemblies.forEach { it.goOffline() }
     }
     //#list-locations-by-comp-type
@@ -100,7 +100,7 @@ script {
         akkaLocations.forEach { location ->
             val compId: ComponentId = location.connection.componentId
             val compType: ComponentType = compId.componentType
-            val prefix = location.prefixStr
+            val prefix = location.prefix
 
             // create Assembly or Hcd instance based on component type and send Lock command
             when (compType) {

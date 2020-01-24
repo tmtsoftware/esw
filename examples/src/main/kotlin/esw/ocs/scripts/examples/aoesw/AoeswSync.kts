@@ -2,6 +2,7 @@ package esw.ocs.scripts.examples.aoesw
 
 import csw.params.commands.CommandResponse
 import esw.ocs.dsl.core.script
+import esw.ocs.dsl.highlevel.models.ESW
 import esw.ocs.dsl.params.floatKey
 import esw.ocs.dsl.params.invoke
 import esw.ocs.dsl.params.taiTimeKey
@@ -27,7 +28,7 @@ script {
             .madd(probeOffsetXParam, probeOffsetYParam)
 
         scheduleOnce(scheduledTime(0)) {
-            val probeAssembly = Assembly("probeAssembly", 10.seconds)
+            val probeAssembly = Assembly(ESW, "probeAssembly", 10.seconds)
             val response = probeAssembly.submitAndWait(probeCommand, 10.seconds)
             if(response is CommandResponse.Error){
                 finishWithError(response.message())

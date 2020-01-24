@@ -5,6 +5,7 @@ import csw.params.core.models.Choice
 import csw.params.events.SystemEvent
 import esw.ocs.dsl.core.script
 import esw.ocs.dsl.highlevel.models.TCS
+import esw.ocs.dsl.highlevel.models.WFOS
 import esw.ocs.dsl.params.*
 import kotlin.math.sqrt
 import kotlin.time.milliseconds
@@ -125,7 +126,7 @@ script {
         val startExposureCommand = Setup(aosq.prefix, "exposure", command.obsId)
                 .add(oiwfsExposureModeKey.set(*probeExpModes))
 
-        val assembly = Assembly(oiwfsDetectorAssembly.name, 10.seconds)
+        val assembly = Assembly(WFOS, oiwfsDetectorAssembly.name, 10.seconds)
         val response = assembly.submitAndWait(startExposureCommand, 10.seconds)
 
         when (response) {

@@ -2,13 +2,14 @@ package esw.ocs.scripts.examples.epics.sample
 
 import csw.params.core.generics.Parameter
 import esw.ocs.dsl.core.FsmScript
+import esw.ocs.dsl.highlevel.models.ESW
 import esw.ocs.dsl.params.*
 import kotlinx.coroutines.delay
 import kotlin.time.seconds
 
 FsmScript("INIT") {
 
-    val testAssembly = Assembly("ESW.test", 10.seconds)
+    val testAssembly = Assembly(ESW, "test", 10.seconds)
     val eventVar = SystemVar(true, "TCS.trigger", booleanKey("flag"))
     val flag = commandFlag()
 

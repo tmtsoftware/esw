@@ -22,7 +22,7 @@ import csw.params.core.states.StateName
 import csw.time.core.models.UTCTime
 import esw.ocs.dsl.highlevel.models.CommandError
 import esw.ocs.dsl.highlevel.models.ESW
-import esw.ocs.dsl.highlevel.models.Prefix
+import csw.prefix.models.Prefix
 import esw.ocs.dsl.script.utils.LockUnlockUtil
 import esw.ocs.impl.internal.LocationServiceUtil
 import io.kotlintest.shouldNotThrow

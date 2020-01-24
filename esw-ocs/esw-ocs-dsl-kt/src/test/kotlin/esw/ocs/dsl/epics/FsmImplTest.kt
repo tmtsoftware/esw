@@ -4,8 +4,8 @@ import csw.params.core.generics.Parameter
 import csw.params.events.EventName
 import csw.params.events.SystemEvent
 import csw.params.javadsl.JKeyType
+import csw.prefix.models.Prefix
 import esw.ocs.dsl.highlevel.CswHighLevelDslApi
-import esw.ocs.dsl.highlevel.models.Prefix
 import esw.ocs.dsl.highlevel.models.TCS
 import esw.ocs.dsl.params.Params
 import esw.ocs.dsl.script.StrandEc

@@ -6,7 +6,7 @@ import csw.location.api.javadsl.IRegistrationResult
 import esw.ocs.dsl.highlevel.models.*
 import csw.location.models.*
 import csw.location.models.Connection.HttpConnection
-import esw.ocs.dsl.highlevel.models.Prefix
+import csw.prefix.models.Prefix
 import esw.ocs.dsl.highlevel.models.RegistrationResult
 import io.kotlintest.shouldBe
 import io.mockk.clearAllMocks

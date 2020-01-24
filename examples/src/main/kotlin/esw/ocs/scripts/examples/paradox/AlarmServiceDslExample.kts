@@ -3,11 +3,11 @@
 package esw.ocs.scripts.examples.paradox
 
 import csw.alarm.models.Key.AlarmKey
+import csw.prefix.models.Prefix
 import esw.ocs.dsl.core.script
 import esw.ocs.dsl.highlevel.models.Major
 import esw.ocs.dsl.highlevel.models.NFIRAOS
 import esw.ocs.dsl.highlevel.models.Okay
-import esw.ocs.dsl.highlevel.models.Prefix
 import esw.ocs.dsl.params.longKey
 
 script {

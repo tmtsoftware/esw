@@ -5,10 +5,11 @@ package esw.ocs.scripts.examples.paradox
 import csw.params.commands.CommandResponse.*
 import esw.ocs.dsl.*
 import esw.ocs.dsl.core.script
+import esw.ocs.dsl.highlevel.models.IRIS
 import kotlin.time.seconds
 
 script {
-    val assembly = Assembly("filter.wheel", 5.seconds)
+    val assembly = Assembly(IRIS, "filter.wheel", 5.seconds)
 
     onSetup("submit-error-handling") { command ->
         // #extensions

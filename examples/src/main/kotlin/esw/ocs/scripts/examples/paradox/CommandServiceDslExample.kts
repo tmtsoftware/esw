@@ -6,17 +6,18 @@ import csw.params.commands.CommandResponse
 import csw.params.core.states.StateName
 import esw.ocs.dsl.*
 import esw.ocs.dsl.core.script
+import esw.ocs.dsl.highlevel.models.TCS
 import esw.ocs.dsl.params.intKey
 import kotlin.time.seconds
 
 script {
 
     // #assembly
-    val galilAssembly = Assembly("TCS.galil", defaultTimeout = 10.seconds)
+    val galilAssembly = Assembly(TCS, "galil", defaultTimeout = 10.seconds)
     // #assembly
 
     // #hcd
-    val filterWheelHcd = Hcd("TCS.filter.wheel.hcd", defaultTimeout = 10.seconds)
+    val filterWheelHcd = Hcd(TCS, "filter.wheel.hcd", defaultTimeout = 10.seconds)
     // #hcd
 
     onSetup("setup-filter-assembly") { command ->
@@ -132,7 +133,7 @@ script {
                     info("command with ${completed.runId()} is completed with result: ${completed.result}")
                 }
                 .onFailed { negativeResponse ->
-                    error("command with ${negativeResponse.runId()} is failed with result: ${negativeResponse}")
+                    error("command with ${negativeResponse.runId()} is failed with result: $negativeResponse")
 
                 }
 

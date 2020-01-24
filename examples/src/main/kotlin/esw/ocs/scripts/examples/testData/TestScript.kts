@@ -3,6 +3,7 @@ package esw.ocs.scripts.examples.testData
 import com.typesafe.config.ConfigFactory
 import csw.alarm.models.Key.AlarmKey
 import csw.params.events.Event
+import csw.prefix.models.Prefix
 import esw.ocs.dsl.core.script
 import esw.ocs.dsl.highlevel.models.*
 import esw.ocs.dsl.params.longKey
@@ -11,7 +12,7 @@ import kotlin.time.seconds
 
 script {
     val lgsfSequencer = Sequencer(LGSF, "darknight", 10.seconds)
-    val testAssembly = Assembly("ESW.test", 10.seconds)
+    val testAssembly = Assembly(ESW, "test", 10.seconds)
 
     // ESW-134: Reuse code by ability to import logic from one script into another
     loadScripts(InitialCommandHandler)
