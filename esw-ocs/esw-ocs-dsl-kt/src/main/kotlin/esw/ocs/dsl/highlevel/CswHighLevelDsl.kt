@@ -17,17 +17,18 @@ import esw.ocs.impl.script.ScriptContext
 import kotlinx.coroutines.CoroutineScope
 import kotlin.time.Duration
 import kotlin.time.hours
+import kotlin.time.seconds
 import kotlin.time.toKotlinDuration
 
 interface CswHighLevelDslApi : CswServices, LocationServiceDsl, ConfigServiceDsl, EventServiceDsl, LoggingDsl, CommandServiceDsl,
         AlarmServiceDsl, TimeServiceDsl, DatabaseServiceDsl, LoopDsl {
 
-    fun Assembly(prefix: Prefix, defaultTimeout: Duration): RichComponent
-    fun Assembly(subsystem: Subsystem, compName: String, defaultTimeout: Duration): RichComponent =
+    fun Assembly(prefix: Prefix, defaultTimeout: Duration = 10.seconds): RichComponent
+    fun Assembly(subsystem: Subsystem, compName: String, defaultTimeout: Duration = 10.seconds): RichComponent =
             Assembly(Prefix(subsystem, compName), defaultTimeout)
 
-    fun Hcd(prefix: Prefix, defaultTimeout: Duration): RichComponent
-    fun Hcd(subsystem: Subsystem, compName: String, defaultTimeout: Duration): RichComponent =
+    fun Hcd(prefix: Prefix, defaultTimeout: Duration = 10.seconds): RichComponent
+    fun Hcd(subsystem: Subsystem, compName: String, defaultTimeout: Duration = 10.seconds): RichComponent =
             Hcd(Prefix(subsystem, compName), defaultTimeout)
 
     fun Sequencer(subsystem: Subsystem, observingMode: String, defaultTimeout: Duration = 10.hours): RichSequencer

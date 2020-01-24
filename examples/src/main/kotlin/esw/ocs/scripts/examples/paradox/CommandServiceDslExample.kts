@@ -6,18 +6,22 @@ import csw.params.commands.CommandResponse
 import csw.params.core.states.StateName
 import esw.ocs.dsl.*
 import esw.ocs.dsl.core.script
-import esw.ocs.dsl.highlevel.models.TCS
+import esw.ocs.dsl.highlevel.models.WFOS
 import esw.ocs.dsl.params.intKey
 import kotlin.time.seconds
 
 script {
 
     // #assembly
-    val galilAssembly = Assembly(TCS, "galil", defaultTimeout = 10.seconds)
+    val galilAssembly = Assembly(WFOS, "FilterWheel")
+
+    val galilAssembly2 = Assembly(WFOS, "FilterWheel", defaultTimeout = 20.seconds)
     // #assembly
 
     // #hcd
-    val filterWheelHcd = Hcd(TCS, "filter.wheel.hcd", defaultTimeout = 10.seconds)
+    val filterWheelHcd = Hcd(WFOS, "GalilHcd1")
+
+    val filterWheelHcd2 = Hcd(WFOS, "GalilHcd1", defaultTimeout = 20.seconds)
     // #hcd
 
     onSetup("setup-filter-assembly") { command ->

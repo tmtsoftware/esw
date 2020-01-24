@@ -15,7 +15,7 @@ script {
     // #schedule-once
     val scheduleTimeKey = utcTimeKey("scheduledTime")
     val schedulePrefix = "esw.test"
-    val galilAssembly = Assembly(TCS, "galil", defaultTimeout = 10.seconds)
+    val galilAssembly = Assembly(TCS, "galil")
 
     //Usage inside handlers - schedule tasks while handling setup/observe commands
     onSetup("schedule-once") { command ->
@@ -32,7 +32,7 @@ script {
     // #schedule-periodically
     val offsetTimeKey = utcTimeKey("offsetTime")
     val offsetPrefix = "esw.offset"
-    val assemblyForOffset = Assembly(TCS, "galil", defaultTimeout = 10.seconds)
+    val assemblyForOffset = Assembly(TCS, "galil")
 
     onSetup("schedule-periodically") {command ->
         val scheduledTime = command(offsetTimeKey)
