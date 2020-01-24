@@ -1,4 +1,4 @@
-@file:Suppress("unused")
+@file:Suppress("UNUSED_VARIABLE")
 
 package esw.ocs.scripts.examples.paradox
 
@@ -12,9 +12,6 @@ import esw.ocs.dsl.params.*
 import kotlin.time.minutes
 
 script {
-    val prefix = Prefix("IRIS.filter.wheel")
-    val componentId = ComponentId(prefix, Service)
-    val httpConnection = HttpConnection(componentId)
 
     val msgKey = stringKey("ui-event")
     suspend fun sendUIEvent(msg: String) = publishEvent(ObserveEvent("ESW.ui", "ui-event", msgKey.set(msg)))
@@ -22,6 +19,8 @@ script {
     onSetup("spawn-service") { cmd ->
         val portKey = intKey("port")
         val port = cmd.params(portKey).first
+        val prefix = Prefix("IRIS.filter.wheel")
+        val httpConnection = HttpConnection(ComponentId(prefix, Service))
 
         //#register
         // register HTTP service running at port 8080 and routes are served from /routes endpoint

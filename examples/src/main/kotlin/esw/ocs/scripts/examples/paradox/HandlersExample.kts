@@ -1,4 +1,4 @@
-@file:Suppress("UNUSED_VARIABLE", "DIVISION_BY_ZERO")
+@file:Suppress("UNUSED_VARIABLE", "DIVISION_BY_ZERO", "UNUSED_ANONYMOUS_PARAMETER")
 
 package esw.ocs.scripts.examples.paradox
 
@@ -28,7 +28,6 @@ script {
         )
     }
     // #onSetup
-
 
     // #onObserve
     onObserve("command2") {
@@ -67,7 +66,6 @@ script {
         // cleanup steps to be done before shutdown will go here
     }
     // #shutdown
-
 
     // #diagnosticMode
     onDiagnosticMode { startTime, hint ->
@@ -125,7 +123,6 @@ script {
         publishEvent(observationEndEvent)
     }
     // #onGlobalError
-
 
     // #onError-for-exception
     onSetup("submit-error-handling") { command ->

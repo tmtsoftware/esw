@@ -1,6 +1,7 @@
 package esw.ocs.scripts.examples.testData
 
 import esw.ocs.dsl.core.script
+import esw.ocs.dsl.highlevel.models.TCS
 import esw.ocs.dsl.params.intKey
 import kotlinx.coroutines.delay
 import kotlin.time.milliseconds
@@ -47,7 +48,7 @@ script {
     onSetup("multi-node") { command ->
         val sequence = sequenceOf(command)
 
-        val tcs = Sequencer("TCS", "moonnight", 10.seconds)
+        val tcs = Sequencer(TCS, "moonnight", 10.seconds)
         tcs.submitAndWait(sequence, 10.seconds)
     }
 

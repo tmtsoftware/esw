@@ -6,13 +6,12 @@ import esw.ocs.dsl.epics.CommandFlag
 import esw.ocs.dsl.epics.Fsm
 import esw.ocs.dsl.epics.FsmImpl
 import esw.ocs.dsl.epics.FsmScope
-import esw.ocs.dsl.highlevel.models.HCD
 import esw.ocs.dsl.highlevel.models.Assembly
+import esw.ocs.dsl.highlevel.models.HCD
 import esw.ocs.dsl.highlevel.models.Prefix
 import esw.ocs.dsl.lowlevel.CswServices
 import esw.ocs.dsl.script.StrandEc
 import esw.ocs.dsl.script.utils.LockUnlockUtil
-import esw.ocs.dsl.script.utils.SubsystemFactory
 import esw.ocs.impl.internal.LocationServiceUtil
 import esw.ocs.impl.script.ScriptContext
 import kotlinx.coroutines.CoroutineScope
@@ -24,7 +23,7 @@ interface CswHighLevelDslApi : CswServices, LocationServiceDsl, ConfigServiceDsl
 
     fun Assembly(prefix: String, defaultTimeout: Duration): RichComponent
     fun Hcd(prefix: String, defaultTimeout: Duration): RichComponent
-    fun Sequencer(subsystem: String, observingMode: String, defaultTimeout: Duration): RichSequencer
+    fun Sequencer(subsystem: Subsystem, observingMode: String, defaultTimeout: Duration): RichSequencer
 
     suspend fun Fsm(name: String, initState: String, block: suspend FsmScope.() -> Unit): Fsm
     fun commandFlag(): CommandFlag
@@ -51,7 +50,7 @@ abstract class CswHighLevelDsl(private val cswServices: CswServices, private val
 
     override fun Assembly(prefix: String, defaultTimeout: Duration): RichComponent = richComponent(prefix, Assembly, defaultTimeout)
     override fun Hcd(prefix: String, defaultTimeout: Duration): RichComponent = richComponent(prefix, HCD, defaultTimeout)
-    override fun Sequencer(subsystem: String, observingMode: String, defaultTimeout: Duration): RichSequencer = richSequencer(SubsystemFactory.make(subsystem), observingMode, defaultTimeout)
+    override fun Sequencer(subsystem: Subsystem, observingMode: String, defaultTimeout: Duration): RichSequencer = richSequencer(subsystem, observingMode, defaultTimeout)
 
     /************* Fsm helpers **********/
     override suspend fun Fsm(name: String, initState: String, block: suspend FsmScope.() -> Unit): Fsm =
