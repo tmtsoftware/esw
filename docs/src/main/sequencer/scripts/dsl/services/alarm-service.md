@@ -1,29 +1,29 @@
 # Alarm Service
 
-Alarm Service DSL is a wrapper over Alarm Service module provided by CSW.
-You can refer a detailed documentation of Alarm Service provided by CSW @extref[here](csw:services/alarm).
+The Alarm Service DSL is a wrapper for the Alarm Service module provided by CSW.
+You can refer to detailed documentation of the Alarm Service provided by CSW @extref[here](csw:services/alarm).
 
 This DSL provides an API to set the severity of alarm.
 
 ## setSeverity
 
-This API sets alarm severity for alarm key to provided value and keeps refreshing it in the background with the interval of config value `csw-alarm.refresh-interval`.
+This API sets alarm severity for an `AlarmKey` to the provided level and keeps refreshing it in the background with the interval of config value `csw-alarm.refresh-interval`.
 Default value for `csw-alarm.refresh-interval` config is _3 seconds_ which is configured in downstream CSW alarm modules `reference.conf` file.
 
-`setSeverity` API requires user to provide `AlarmKey` and `AlarmSeverity`.
+The `setSeverity` API requires user to provide `AlarmKey` and `AlarmSeverity`.
 
 ### AlarmKey
 
 `AlarmKey` represents unique alarm in the given subsystem and component e.g. `nfiraos.trombone.tromboneaxislowlimitalarm`
 
-Following example demonstrate creation of `AlarmKey`
+The following example demonstrates the creation of an `AlarmKey`
 
 Kotlin
 :   @@snip [AlarmServiceDslExample.kts](../../../../../../../examples/src/main/kotlin/esw/ocs/scripts/examples/paradox/AlarmServiceDslExample.kts) { #alarm-key }
 
 ### AlarmSeverity
 
-Supported `AlarmSeverity` are:
+The supported `AlarmSeverity` levels are:
 
 1. Okay
 1. Warning
@@ -32,13 +32,13 @@ Supported `AlarmSeverity` are:
 1. Disconnected
 1. Critical
 
-Following example demonstrate the usage of `setSeverity` API.
-In this example, temperature @ref[Fsm](../../fsm.md) is created and based on the state of fsm, severity is set accordingly.
+The following example demonstrates the usage of the `setSeverity` API.
+In this example, a temperature @ref[FSM](../../fsm.md) is created, and based on the state of the FSM, the severity is set accordingly.
 
 | State |       Temperature      | Severity |
 |:-----:|:----------------------:|:--------:|
-| OK    | Temp > 20 && temp < 40 | Okay     |
-| ERROR | Temp < 20 or temp > 40 | Major    |
+| OK    | Temperature less than or equal to 40 | Okay     |
+| ERROR | Temperature is greater than 40 | Major    |
 
 Kotlin
 :   @@snip [AlarmServiceDslExample.kts](../../../../../../../examples/src/main/kotlin/esw/ocs/scripts/examples/paradox/AlarmServiceDslExample.kts) { #set-severity }

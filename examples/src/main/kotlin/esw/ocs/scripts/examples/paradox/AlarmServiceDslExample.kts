@@ -25,8 +25,8 @@ script {
 
     //#set-severity
     /**
-     * temp > 20 && temp < 40   => Severity.Okay
-     * else                     => Severity.Major
+     * temp <= 40   => Severity.Okay
+     * else        => Severity.Major
      */
     val temperatureFsm = Fsm("TEMP", OK) {
         state(OK) {
@@ -44,7 +44,7 @@ script {
                 setSeverity(tromboneTemperatureAlarm, Major)
             }
 
-            on(temperatureVar.get() < 40) {
+            on(temperatureVar.get() <= 40) {
                 become(OK)
             }
         }
