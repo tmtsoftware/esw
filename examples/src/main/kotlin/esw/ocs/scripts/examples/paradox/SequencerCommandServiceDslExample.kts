@@ -31,7 +31,7 @@ script {
         // #submitAndQuery
 
         // #resumeOnError
-        val response: SubmitResponse = tcsSequencer.submit(sequence, resumeOnError = true)
+        val response: SubmitResponse = wfos.submit(sequence, resumeOnError = true)
         // #resumeOnError
 
         // #queryFinal
