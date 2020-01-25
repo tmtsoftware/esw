@@ -8,7 +8,7 @@ Time Service module provided by CSW. This DSL exposes the following API calls to
 Time Service provides access to both TAI and UTC time that is synchronized at the telescope site with time on all the other computers
 and also with absolute time provided by a GPS system.
 
-Time access calls are made available to all scripts. Access to some time functionality requires the import of kotlin.time packages. 
+Time access calls are made available to all scripts. Access to some time functionality requires the import of `kotlin.time` packages. 
 
 ### Access UTC Time with utcTimeNow
 
@@ -27,7 +27,7 @@ Kotlin
 ### Access UTC time in the Future with utcTimeAfter
 
 The `utcTimeAfter` Time Service utility provides an absolute UTC time some amount of time from now in the future. The value
-provided is a duration such as 1.hour. The returned value is an absolute `UTCTime` type. The following example shows provides UTC time 1 hour from now.
+provided is a duration such as "1 hour". The returned value is an absolute `UTCTime` type. The following example shows provides UTC time 1 hour from now.
 
 Kotlin
 :   @@snip [TimeServiceDslExample.kts](../../../../../../../examples/src/main/kotlin/esw/ocs/scripts/examples/paradox/TimeServiceDslExample.kts) { #utc-time-after }
@@ -42,7 +42,7 @@ Kotlin
 
 ### Scheduling with Time Service
 
-The Time Service DSL provides script access to the CSW scheduling library allowing scripts to schedule one off and periodic tasks.
+The Time Service DSL provides script access to the CSW scheduling library allowing scripts to schedule one-off and periodic tasks.
 Access to the Time Service scheduling functionality is provided in the script writing environment with no extra imports.
 
 ### Using scheduleOnce
@@ -61,7 +61,7 @@ Kotlin
 
 Often, it is necessary to schedule a task in the future some amount of time from now.
 The `scheduleOnceFromNow` API allows scheduling non periodic task in script after a specified duration. The task is a callback which will be 
-executed in thread safe way. This API takes a time duration type after which task will be scheduled.
+executed in thread-safe way. This API takes a time `Duration` type after which task will be scheduled.
 
 The following example shows the scheduling of a task after 1 hour from now. The function takes a duration and returns a handle 
 which can be used to cancel the execution of the task if it has not yet executed.
@@ -72,7 +72,7 @@ Kotlin
 ### Using schedulePeriodically
 
 The `schedulePeriodically` API allows scheduling a task to execute periodically at a given interval starting at a provided absolute start time. 
-The provided task is a callback, which will be executed in thread safe way.
+The provided task is a callback, which will be executed in thread-safe way.
 
 Initially, the task is executed once at the given start time followed by periodic execution of the task at the requested period. 
 This function returns a handle that can be used to cancel the execution of further tasks.
@@ -86,10 +86,10 @@ Kotlin
 ### Using schedulePeriodicallyFromNow
 
 The `schedulePeriodicallyFromNow` API is like `schedulePeriodically` but takes a duration as the start time rather than an absolute time. 
-Initially, the task is executed once at the duration time from the current time. This execution is followed by periodic execution of the task at the requested period. 
-The task is a callback which will be executed in thread safe way. This function returns a handle that can be used to cancel the execution of further tasks.
+Initially, the task is executed once after a delay from the current time specified by the duration time. This execution is followed by periodic execution of the task at the requested period. 
+The task is a callback which will be executed in thread-safe way. This function returns a handle that can be used to cancel the execution of further tasks.
 
-The following example shows scheduling the publishing of an event after 1 hour from now and then publishes an event periodically with a 10 second period
+The following example shows scheduling the publishing of an Event after 1 hour from now and then publishes an Event periodically with a 10 second period
 until cancelled. 
 
 Kotlin
