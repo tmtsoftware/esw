@@ -19,6 +19,8 @@ The handler takes two parameters:
 is executed
 2. **block** of code which contains logic to act on the Setup command.
 
+In this `onSetup` example, commands are sent in parallel to each of the WFOS filter wheels. 
+
 Kotlin
 : @@snip [HandlersExample.kts](../../../../../../examples/src/main/kotlin/esw/ocs/scripts/examples/paradox/HandlersExample.kts) { #onSetup }
 
@@ -32,6 +34,9 @@ The handler takes two parameters:
 1. **command name** which is matched against the sequence command sent, if the command name matches, corresponding block provided
 is executed
 2. **block** of code which contains logic to act on the Observe command.
+
+The following example imagines a WFOS Sequencer receiving an `Observe` that contains an exposureTime parameter. 
+The exposureTime is extracted into a `Setup` that is sent to the detector Assembly to start the exposure.
 
 Kotlin
 : @@snip [HandlersExample.kts](../../../../../../examples/src/main/kotlin/esw/ocs/scripts/examples/paradox/HandlersExample.kts) { #onObserve }

@@ -3,15 +3,16 @@
 package esw.ocs.scripts.examples.paradox
 
 import csw.params.commands.CommandResponse.SubmitResponse
-import csw.params.events.SystemEvent
 import csw.time.scheduler.api.Cancellable
 import esw.ocs.dsl.core.script
 import esw.ocs.dsl.highlevel.models.IRIS
 import esw.ocs.dsl.highlevel.models.WFOS
 import esw.ocs.dsl.par
+import esw.ocs.dsl.params.floatKey
 import esw.ocs.dsl.params.invoke
 import esw.ocs.dsl.params.stringKey
 import kotlin.time.milliseconds
+import kotlin.time.minutes
 import kotlin.time.seconds
 
 script {
@@ -23,20 +24,27 @@ script {
     val assembly = Assembly(IRIS, "filter.wheel", 5.seconds)
 
     // #onSetup
-    onSetup("setupInstrument") {
+    onSetup("setupInstrument") {command ->
         // split command and send to downstream
-        val assembly1 = Assembly(IRIS, "filter.wheel", 5.seconds)
-        val assembly2 = Assembly(WFOS, "red.detector", 5.seconds)
+        val assembly1 = Assembly(WFOS, "filter.blueWheel", 5.seconds)
+        val assembly2 = Assembly(WFOS, "filter.redWheel", 5.seconds)
         par(
-                { assembly1.submit(Setup("TCS.darknight", "move")) },
-                { assembly2.submit(Setup("TCS.darknight", "initialize")) }
+                { assembly1.submit(Setup("WFOS.wfos_darknight", "move")) },
+                { assembly2.submit(Setup("WFOS.wfos_darknight", "move")) }
         )
     }
     // #onSetup
 
+
     // #onObserve
-    onObserve("startExposure") {
-        // do something
+    // A detector assembly is defined with a long timeout of 60 minutes
+    val detectorAssembly = Assembly(WFOS, "detectorAssembly", 60.minutes)
+    val exposureKey = floatKey("exposureTime")
+
+    onObserve("startExposure") { observe ->
+        // Extract the input exposure time and send a startObserve command to the detector Assembly
+        val expsosureTime = observe(exposureKey).head()
+        detectorAssembly.submitAndWait(Setup("WFOS.sequencer", "startObserve", observe.obsId).add(observe(exposureKey)))
     }
     // #onObserve
 
@@ -77,7 +85,7 @@ script {
         // start publishing diagnostic data on a supported hint (for e.g. engineering)
         when (hint) {
             "engineering" -> {
-                val diagnosticEvent: SystemEvent = SystemEvent("ESW.ESW_darknight", "diagnostic")
+                val diagnosticEvent = SystemEvent("ESW.ESW_darknight", "diagnostic")
                 diagnosticEventCancellable = schedulePeriodically(startTime, 50.milliseconds) {
                     publishEvent(diagnosticEvent)
                 }
