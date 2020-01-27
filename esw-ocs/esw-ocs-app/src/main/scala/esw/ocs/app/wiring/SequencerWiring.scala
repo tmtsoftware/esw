@@ -44,11 +44,20 @@ private[ocs] class SequencerWiring(
     val observingMode: String,
     sequenceComponentLocation: AkkaLocation
 ) extends SequencerHttpCodecs {
-  private lazy val config: Config  = ConfigFactory.load()
+  private lazy val config: Config = ConfigFactory
+    .parseResources(s"${subsystem.name}/${subsystem.name}.conf".toLowerCase())
+    .withFallback(ConfigFactory.load())
+
+  println("******* Config Scripts ******")
+  println(config.getConfig("scripts"))
+  println("********** csw-logging ************")
+  println(config.getConfig("csw-logging"))
+
   private lazy val sequencerConfig = SequencerConfig.from(config, subsystem, observingMode)
   import sequencerConfig._
 
-  lazy val actorSystem: ActorSystem[SpawnProtocol.Command] = ActorSystemFactory.remote(SpawnProtocol(), "sequencer-system")
+  lazy val actorSystem: ActorSystem[SpawnProtocol.Command] =
+    ActorSystemFactory.remote(SpawnProtocol(), "sequencer-system", config)
 
   implicit lazy val timeout: Timeout = Timeouts.DefaultTimeout
   lazy val cswWiring: CswWiring      = CswWiring.make(actorSystem)
