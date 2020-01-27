@@ -375,12 +375,5 @@ class ScriptIntegrationTest extends EswTestKit(EventServer, AlarmServer, ConfigS
       response.asInstanceOf[Error].message should ===("java.lang.RuntimeException: boom")
     }
 
-    "have handle to raw csw services | ESW-235, CSW-81" in {
-      // This loads script CswServicesScript.kts, which touches all the csw services.
-      // Success of script loading asserts that all services are available.
-      // If handle of any service is removed from CswServices then CswServicesScript.kts will not compile.
-      val result = spawnSequencer(ESW, "cswServices")
-      result.isRight shouldBe true
-    }
   }
 }

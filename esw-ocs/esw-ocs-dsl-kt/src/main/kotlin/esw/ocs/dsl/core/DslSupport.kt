@@ -7,12 +7,12 @@ import esw.ocs.dsl.script.exceptions.ScriptInitialisationFailedException
 import esw.ocs.impl.script.ScriptContext
 import kotlinx.coroutines.runBlocking
 
-fun script(block: suspend ScriptScope.(csw: CswServices) -> Unit): ScriptResult =
+fun script(block: suspend ScriptScope.() -> Unit): ScriptResult =
         ScriptResult {
             val wiring = ScriptWiring(it)
             Script(wiring).apply {
                 try {
-                    runBlocking { block(wiring.cswServices) }
+                    runBlocking { block() }
                 } catch (ex: Exception) {
                     error("Script initialisation failed with message : " + ex.message)
                     throw ScriptInitialisationFailedException(ex.message)
@@ -20,16 +20,16 @@ fun script(block: suspend ScriptScope.(csw: CswServices) -> Unit): ScriptResult 
             }.scriptDsl
         }
 
-fun reusableScript(block: Script.(csw: CswServices) -> Unit): ReusableScriptResult =
-        ReusableScriptResult { Script(it).apply { block(it.cswServices) } }
+fun reusableScript(block: Script.() -> Unit): ReusableScriptResult =
+        ReusableScriptResult { Script(it).apply { block() } }
 
-fun FsmScript(initState: String, block: suspend FsmScriptScope.(csw: CswServices) -> Unit): ScriptResult =
+fun FsmScript(initState: String, block: suspend FsmScriptScope.() -> Unit): ScriptResult =
         ScriptResult {
             val wiring = ScriptWiring(it)
             FsmScript(wiring).apply {
                 try {
                     runBlocking {
-                        block(wiring.cswServices)
+                        block()
                         become(initState)
                     }
                 } catch (ex: Exception) {
