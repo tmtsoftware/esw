@@ -6,7 +6,7 @@ but there are also handlers for specific reasons including: aborting and stoppin
 putting the Sequencer in Online and Offline modes, and putting the Sequencer into a Diagnostic mode and back to Operations mode. 
 There is also a global error handler to catch all uncaught exceptions, and a shutdown handler to perform cleanup befores the 
 Sequencer shut down and exits.
-Each of these handlers are described below, with a section on [how to handle exceptions](#error-handlers) after that.
+Each of these handlers are described below, with a section on @ref:[how to handle exceptions](#error-handlers) after that.
 
 ## Command Handlers
 
