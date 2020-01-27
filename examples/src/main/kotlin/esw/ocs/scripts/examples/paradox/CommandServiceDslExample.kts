@@ -46,7 +46,7 @@ script {
         // #submit-and-wait-component
         // #submit-component
         val parameters = intKey("target").set(100)
-        val galilCommand = Setup("ESW.iris_darkNight", "moveWheel", command.obsId).add(parameters)
+        val galilCommand = Setup("ESW.IRIS_darkNight", "moveWheel", command.obsId).add(parameters)
         // #submit-component
         galilAssembly.submitAndWait(galilCommand, timeout = 20.seconds)
         // #submit-and-wait-component
@@ -80,7 +80,7 @@ script {
          * Hence, only Started (in case of long-running command) or Completed (in case of short running command) response is returned
          */
         val parameters = intKey("target").set(100)
-        val galilCommand = Setup("ESW.iris_darkNight", "moveWheel", command.obsId).add(parameters)
+        val galilCommand = Setup("ESW.IRIS_darkNight", "moveWheel", command.obsId).add(parameters)
         val positiveSubmitResponse: CommandResponse.SubmitResponse = galilAssembly.submit(galilCommand)
 
         //  First approach - using custom dsl (this is an alternative to kotlin pattern match using when)

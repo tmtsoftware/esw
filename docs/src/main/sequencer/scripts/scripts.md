@@ -22,6 +22,7 @@ Finite State Machine (FSM) (still in development).
     * @ref[Config Service](dsl/services/config-service.md)
     * @ref[Assembly/HCD Command Service](dsl/services/command-service.md)
     * @ref[Sequencer Command Service](dsl/services/sequencer-command-service.md)
+    * @ref[Working with Params](dsl/services/params.md)
     * @ref[Submit Response Extensions](dsl/services/submit-response-extensions.md)
     * @ref[Event Service](dsl/services/event-service.md)
     * @ref[Logging Service](dsl/services/logging-service.md)
