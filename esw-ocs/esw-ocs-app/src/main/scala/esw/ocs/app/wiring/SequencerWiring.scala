@@ -111,7 +111,9 @@ private[ocs] class SequencerWiring(
     }
 
   lazy val sequencerBehavior =
-    new SequencerBehavior(componentId, script, locationService, sequenceComponentLocation, shutdownHttpService)(actorSystem)
+    new SequencerBehavior(componentId, script, locationService, sequenceComponentLocation, logger, shutdownHttpService)(
+      actorSystem
+    )
 
   lazy val sequencerServer: SequencerServer = new SequencerServer {
     override def start(): Either[ScriptError, AkkaLocation] = {

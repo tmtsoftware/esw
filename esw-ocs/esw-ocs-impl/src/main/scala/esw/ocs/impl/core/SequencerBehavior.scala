@@ -11,6 +11,7 @@ import csw.command.client.messages.{GetComponentLogMetadata, LogControlMessage, 
 import csw.location.api.scaladsl.LocationService
 import csw.location.models.Connection.AkkaConnection
 import csw.location.models.{AkkaLocation, ComponentId}
+import csw.logging.api.scaladsl.Logger
 import csw.logging.client.commons.LogAdminUtil
 import csw.params.commands.Sequence
 import csw.time.core.models.UTCTime
@@ -31,10 +32,12 @@ class SequencerBehavior(
     script: ScriptApi,
     locationService: LocationService,
     sequenceComponentLocation: AkkaLocation,
+    logger: Logger,
     shutdownHttpService: () => Future[Done]
 )(implicit val actorSystem: ActorSystem[_])
     extends OcsCodecs {
   import actorSystem.executionContext
+  import logger._
 
   private def stateMachine(state: SequencerState[_]): SequencerData => Behavior[SequencerMsg] = state match {
     case Idle             => idle
@@ -244,6 +247,7 @@ class SequencerBehavior(
   )(stateHandler: StateMessage => Behavior[SequencerMsg]): Behavior[SequencerMsg] =
     Behaviors.receive { (ctx, msg) =>
       implicit val timeout: Timeout = Timeouts.LongTimeout
+      debug(s"[SequencerBehavior] State: $state, Received Message: $msg")
 
       msg match {
         case msg: CommonMessage     => handleCommonMessage(msg, state, data)

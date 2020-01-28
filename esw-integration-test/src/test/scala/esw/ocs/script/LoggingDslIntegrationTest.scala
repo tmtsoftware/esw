@@ -42,7 +42,7 @@ class LoggingDslIntegrationTest extends EswTestKit(EventServer) {
       ocsSequencer.submitAndWait(sequence).futureValue shouldBe a[Completed]
       Thread.sleep(500)
 
-      val log: JsObject = logBuffer.head
+      val log: JsObject = logBuffer(2)
       log.getString("@componentName") shouldBe "MoonNight"
       log.getString("@prefix") shouldBe "ESW.MoonNight"
       log.getString("@subsystem") shouldBe "ESW"

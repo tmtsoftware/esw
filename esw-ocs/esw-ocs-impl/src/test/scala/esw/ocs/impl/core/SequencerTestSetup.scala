@@ -10,6 +10,7 @@ import csw.location.api.scaladsl.LocationService
 import csw.location.models.ComponentType.SequenceComponent
 import csw.location.models.Connection.AkkaConnection
 import csw.location.models.{AkkaLocation, ComponentId}
+import csw.logging.api.scaladsl.Logger
 import csw.params.commands.CommandResponse.{Completed, Started, SubmitResponse}
 import csw.params.commands.{Sequence, SequenceCommand}
 import csw.params.core.models.Id
@@ -41,6 +42,7 @@ class SequencerTestSetup(sequence: Sequence)(implicit system: ActorSystem[_]) {
   private val componentId     = mock[ComponentId]
   private val script          = mock[ScriptApi]
   private val locationService = mock[LocationService]
+  private val logger          = mock[Logger]
   private val sequenceComponent: AkkaLocation = AkkaLocation(
     AkkaConnection(ComponentId(Prefix(ESW, "primary"), SequenceComponent)),
     TestProbe[SequenceComponentMsg].ref.toURI
@@ -49,11 +51,11 @@ class SequencerTestSetup(sequence: Sequence)(implicit system: ActorSystem[_]) {
   val sequencerName                                            = s"SequencerActor${Random.between(0, Int.MaxValue)}"
   when(componentId.prefix).thenReturn(Prefix(ESW, sequencerName))
   private val sequencerBehavior =
-    new SequencerBehavior(componentId, script, locationService, sequenceComponent, mockShutdownHttpService)
+    new SequencerBehavior(componentId, script, locationService, sequenceComponent, logger, mockShutdownHttpService)
 
   val sequencerActor: ActorRef[SequencerMsg] = system.systemActorOf(sequencerBehavior.setup, sequencerName)
 
-  private def deadletter = system.deadLetters
+  private def deadLetter = system.deadLetters
 
   private val completionPromise = Promise[SubmitResponse]()
 
@@ -316,16 +318,16 @@ class SequencerTestSetup(sequence: Sequence)(implicit system: ActorSystem[_]) {
   }
 
   def finishStepWithSuccess(): Unit =
-    sequencerActor ! StepSuccess(deadletter)
+    sequencerActor ! StepSuccess(deadLetter)
 
   def finishStepWithError(message: String): Unit =
-    sequencerActor ! StepFailure(message, deadletter)
+    sequencerActor ! StepFailure(message, deadLetter)
 
   // this is to simulate engine pull and executing steps
   private def pullAllSteps(sequencer: ActorRef[SequencerMsg]): Unit = {
     (1 to sequence.commands.size).foreach(_ => {
       pullNextCommand()
-      sequencer ! StepSuccess(deadletter)
+      sequencer ! StepSuccess(deadLetter)
     })
   }
 

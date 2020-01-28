@@ -17,11 +17,6 @@ script {
     // ESW-134: Reuse code by ability to import logic from one script into another
     loadScripts(InitialCommandHandler)
 
-    onSetup("command-1") {
-        // To avoid a sequencer to finish immediately so that others Add, Append command gets time
-        delay(200)
-    }
-
     onSetup("command-2") {
     }
 
