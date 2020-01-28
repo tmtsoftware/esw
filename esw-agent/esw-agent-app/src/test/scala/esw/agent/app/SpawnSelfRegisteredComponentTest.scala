@@ -28,7 +28,11 @@ import scala.concurrent.{Future, Promise}
 import scala.util.Random
 
 //todo: fix test names
-class SpawnSelfRegisteredComponent extends ScalaTestWithActorTestKit with WordSpecLike with MockitoSugar with BeforeAndAfterEach {
+class SpawnSelfRegisteredComponentTest
+    extends ScalaTestWithActorTestKit
+    with WordSpecLike
+    with MockitoSugar
+    with BeforeAndAfterEach {
 
   private val locationService = mock[LocationService]
   private val processExecutor = mock[ProcessExecutor]

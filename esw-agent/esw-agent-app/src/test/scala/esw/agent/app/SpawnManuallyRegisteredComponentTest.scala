@@ -28,7 +28,7 @@ import scala.concurrent.{Future, Promise}
 import scala.util.Random
 
 //todo: fix test names
-class SpawnManuallyRegisteredComponent
+class SpawnManuallyRegisteredComponentTest
     extends ScalaTestWithActorTestKit
     with WordSpecLike
     with MockitoSugar

@@ -37,7 +37,8 @@ class ProcessActor(
       )
   }
 
-  private val aborted         = Failed("Aborted")
+  private val aborted = Failed("Aborted")
+
   private val gracefulTimeout = agentSettings.durationToWaitForGracefulProcessTermination
 
   private def isComponentRegistered(timeout: FiniteDuration)(implicit executionContext: ExecutionContext): Future[Boolean] =
@@ -124,7 +125,7 @@ class ProcessActor(
           error(errorMessage, Map("pid" -> process.pid, "prefix" -> prefix))
           replyTo ! Failed(errorMessage)
           ctx.self ! StopGracefully
-          stopping(process, Set.empty)
+          stopping(process, None)
 
         case ProcessExited(exitCode) =>
           val errorMessage = "process died before registration"
@@ -133,11 +134,11 @@ class ProcessActor(
           if (!autoRegistered) unregisterComponent()
           Behaviors.stopped
 
-        case Die(dieRef) =>
+        case Die(deathSubscriber) =>
           warn("Killing process via Die message", Map("pid" -> process.pid, "prefix" -> prefix))
           replyTo ! aborted
           ctx.self ! StopGracefully
-          stopping(process, Set(dieRef))
+          stopping(process, Some(deathSubscriber))
       }
     })
 
@@ -149,20 +150,22 @@ class ProcessActor(
           info(message, Map("pid" -> process.pid, "prefix" -> prefix, "exitCode" -> exitCode))
           Behaviors.stopped
 
-        case Die(dieRef) =>
+        case Die(deathSubscriber) =>
           warn("attempting to kill process gracefully", Map("pid" -> process.pid, "prefix" -> prefix))
           ctx.self ! StopGracefully
-          stopping(process, Set(dieRef))
+          stopping(process, Some(deathSubscriber))
       }
     }
 
-  def stopping(process: Process, deathSubscribers: Set[ActorRef[KillResponse]]): Behavior[ProcessActorMessage] =
+  def stopping(process: Process, deathSubscriber: Option[ActorRef[KillResponse]]): Behavior[ProcessActorMessage] =
     Behaviors.withTimers { timeScheduler =>
       Behaviors.receiveMessagePartial[ProcessActorMessage] {
         case Die(dieRef) =>
-          stopping(process, deathSubscribers + dieRef)
+          debug("stop message arrived when component was already stopping", Map("pid" -> process.pid, "prefix" -> prefix))
+          dieRef ! Failed("process is already stopping")
+          Behaviors.same
         case ProcessExited(exitCode) =>
-          deathSubscribers.foreach(_ ! (if (exitCode == 0 || exitCode == 143) killedGracefully else killedForcefully))
+          deathSubscriber.foreach(_ ! (if (exitCode == 0 || exitCode == 143) killedGracefully else killedForcefully))
           Behaviors.stopped
         case StopGracefully =>
           process.destroy()
@@ -171,7 +174,7 @@ class ProcessActor(
           Behaviors.same
         case StopForcefully =>
           process.destroyForcibly()
-          deathSubscribers.foreach(_ ! killedForcefully)
+          deathSubscriber.foreach(_ ! killedForcefully)
           Behaviors.stopped
       }
     }

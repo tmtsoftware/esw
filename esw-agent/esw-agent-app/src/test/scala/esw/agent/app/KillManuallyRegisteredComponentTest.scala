@@ -5,14 +5,14 @@ import java.util.concurrent.CompletableFuture
 
 import akka.actor.testkit.typed.scaladsl.{ScalaTestWithActorTestKit, TestProbe}
 import akka.actor.typed.Scheduler
-import csw.location.api.scaladsl.LocationService
-import csw.location.models.ComponentType.SequenceComponent
-import csw.location.models.Connection.AkkaConnection
-import csw.location.models.{AkkaLocation, ComponentId}
+import csw.location.api.scaladsl.{LocationService, RegistrationResult}
+import csw.location.models.ComponentType.Service
+import csw.location.models.Connection.TcpConnection
+import csw.location.models.{ComponentId, TcpLocation, TcpRegistration}
 import csw.logging.api.scaladsl.Logger
 import csw.prefix.models.Prefix
 import esw.agent.api.AgentCommand.KillComponent
-import esw.agent.api.AgentCommand.SpawnSelfRegistered.SpawnSequenceComponent
+import esw.agent.api.AgentCommand.SpawnManuallyRegistered.SpawnRedis
 import esw.agent.api.Killed._
 import esw.agent.api._
 import esw.agent.app.AgentActor.AgentState
@@ -28,53 +28,63 @@ import scala.concurrent.{Future, Promise}
 import scala.util.Random
 
 //todo: fix test names
-class KillSelfRegisteredComponent extends ScalaTestWithActorTestKit with WordSpecLike with MockitoSugar with BeforeAndAfterEach {
+class KillManuallyRegisteredComponentTest
+    extends ScalaTestWithActorTestKit
+    with WordSpecLike
+    with MockitoSugar
+    with BeforeAndAfterEach {
 
-  private val locationService               = mock[LocationService]
-  private val processExecutor               = mock[ProcessExecutor]
-  private val process                       = mock[Process]
-  private val logger                        = mock[Logger]
-  private val agentSettings                 = AgentSettings("/tmp", 15.seconds, 3.seconds)
-  implicit val scheduler: Scheduler         = system.scheduler
-  private val prefix                        = Prefix("csw.component")
-  private val componentId: ComponentId      = ComponentId(prefix, SequenceComponent)
-  private val seqCompConn                   = AkkaConnection(componentId)
-  private val seqCompLocation: AkkaLocation = AkkaLocation(seqCompConn, new URI("some"))
-  private val seqCompLocationF              = Future.successful(Some(seqCompLocation))
+  private val locationService = mock[LocationService]
+  private val processExecutor = mock[ProcessExecutor]
+  private val process         = mock[Process]
+  private val logger          = mock[Logger]
 
-  "Kill (self registered) Component" must {
+  private val agentSettings         = AgentSettings("/tmp", 15.seconds, 3.seconds)
+  implicit val scheduler: Scheduler = system.scheduler
+
+  private val prefix                   = Prefix("csw.component")
+  private val componentId: ComponentId = ComponentId(prefix, Service)
+  private val redisConn                = TcpConnection(componentId)
+  private val redisLocation            = TcpLocation(redisConn, new URI("some"))
+  private val redisRegistration        = TcpRegistration(redisConn, 100)
+  private val redisRegistrationResult  = RegistrationResult.from(redisLocation, con => locationService.unregister(con))
+  private val spawnRedis               = SpawnRedis(_, prefix, 100, List.empty)
+
+  "Kill (manually registered) Component" must {
 
     "reply 'killedGracefully' after stopping a registered component gracefully | ESW-276" in {
       val agentActorRef = spawnAgentActor()
-      val spawner       = TestProbe[SpawnResponse]()
-      val killer        = TestProbe[KillResponse]()
-      when(locationService.resolve(argEq(seqCompConn), any[FiniteDuration]))
-        .thenReturn(Future.successful(None), seqCompLocationF)
+      val probe1        = TestProbe[SpawnResponse]()
+      val probe2        = TestProbe[KillResponse]()
+
+      mockLocationServiceForRedis()
 
       mockSuccessfulProcess(dieAfter = 2.seconds)
 
       //start a component
-      agentActorRef ! SpawnSequenceComponent(spawner.ref, prefix)
+      agentActorRef ! spawnRedis(probe1.ref)
       //wait it it is registered
-      spawner.expectMessage(Spawned)
+      probe1.expectMessage(Spawned)
 
       //stop the component
-      agentActorRef ! KillComponent(killer.ref, componentId)
+      agentActorRef ! KillComponent(probe2.ref, componentId)
       //ensure it is stopped
-      killer.expectMessage(10.seconds, killedGracefully)
+      probe2.expectMessage(10.seconds, killedGracefully)
+
+      //ensure component was unregistered
+      verify(locationService).unregister(redisConn)
     }
 
     "reply 'killedForcefully' after stopping a registered component forcefully when it does not gracefully in given time | ESW-276" in {
       val agentActorRef = spawnAgentActor(agentSettings.copy(durationToWaitForGracefulProcessTermination = 2.second))
       val probe1        = TestProbe[SpawnResponse]()
       val probe2        = TestProbe[KillResponse]()
-      when(locationService.resolve(argEq(seqCompConn), any[FiniteDuration]))
-        .thenReturn(Future.successful(None), seqCompLocationF)
 
+      mockLocationServiceForRedis()
       mockSuccessfulProcess(5.seconds)
 
       //start a component
-      agentActorRef ! SpawnSequenceComponent(probe1.ref, prefix)
+      agentActorRef ! spawnRedis(probe1.ref)
       //wait it it is registered
       probe1.expectMessage(Spawned)
 
@@ -82,19 +92,22 @@ class KillSelfRegisteredComponent extends ScalaTestWithActorTestKit with WordSpe
       agentActorRef ! KillComponent(probe2.ref, componentId)
       //ensure it is stopped
       probe2.expectMessage(killedForcefully)
+
+      //ensure component was unregistered
+      verify(locationService).unregister(redisConn)
     }
 
-    "reply 'killedGracefully' after killing a running component when component is waiting registration confirmation | ESW-276" in {
+    "reply 'killedGracefully' after killing a running component when component is waiting registration completion | ESW-276" in {
       val agentActorRef = spawnAgentActor()
       val probe1        = TestProbe[SpawnResponse]()
       val probe2        = TestProbe[KillResponse]()
-      when(locationService.resolve(argEq(seqCompConn), any[FiniteDuration]))
-        .thenReturn(Future.successful(None), delayedFuture(Some(seqCompLocation), 1.hour)) //this will actor remains in waiting state
+
+      mockLocationServiceForRedis(1.hour)
 
       mockSuccessfulProcess(dieAfter = 3.seconds)
 
       //start a component
-      agentActorRef ! SpawnSequenceComponent(probe1.ref, prefix)
+      agentActorRef ! spawnRedis(probe1.ref)
       //it should not be registered
       probe1.expectNoMessage(2.seconds)
 
@@ -102,58 +115,67 @@ class KillSelfRegisteredComponent extends ScalaTestWithActorTestKit with WordSpe
       agentActorRef ! KillComponent(probe2.ref, componentId)
       //ensure it is stopped gracefully
       probe2.expectMessage(10.seconds, killedGracefully)
+
+      //ensure component was unregistered
+      verify(locationService).unregister(redisConn)
     }
 
     "reply 'killedForcefully' after killing a running component when component is waiting registration confirmation | ESW-276" in {
-      val agentActorRef = spawnAgentActor(agentSettings.copy(durationToWaitForGracefulProcessTermination = 2.seconds))
+      val agentActorRef = spawnAgentActor()
       val probe1        = TestProbe[SpawnResponse]()
       val probe2        = TestProbe[KillResponse]()
-      when(locationService.resolve(argEq(seqCompConn), any[FiniteDuration]))
-        .thenReturn(Future.successful(None), delayedFuture(Some(seqCompLocation), 1.hour)) //this will actor remains in waiting state
+
+      mockLocationServiceForRedis(1.hour)
 
       mockSuccessfulProcess(dieAfter = 20.seconds)
 
       //start a component
-      agentActorRef ! SpawnSequenceComponent(probe1.ref, prefix)
+      agentActorRef ! spawnRedis(probe1.ref)
       //it should not be registered
       probe1.expectNoMessage(1.seconds)
 
       //stop the component
       agentActorRef ! KillComponent(probe2.ref, componentId)
-      //ensure it is stopped gracefully
+
+      //ensure it is stopped forcefully
       probe2.expectMessage(10.seconds, killedForcefully)
+
+      //ensure component was unregistered
+      verify(locationService).unregister(redisConn)
     }
 
-    "reply 'killedGracefully' and cancel spawning of an already scheduled component when registration is being checked | ESW-276" in {
+    "reply 'killedGracefully', unregister the component and kill the component when registration is being performed | ESW-276" in {
       val agentActorRef = spawnAgentActor()
       val probe1        = TestProbe[SpawnResponse]()
       val probe2        = TestProbe[KillResponse]()
-      when(locationService.resolve(argEq(seqCompConn), any[FiniteDuration]))
-        .thenReturn(delayedFuture(None, 1.hour)) //this will actor remains in checking state
+
+      mockLocationServiceForRedis(1.hour) //this will ensure actor remains in registering state
+      mockSuccessfulProcess(2.seconds)
 
       //start a component
-      agentActorRef ! SpawnSequenceComponent(probe1.ref, prefix)
-      //it should not be registered
+      agentActorRef ! spawnRedis(probe1.ref)
       probe1.expectNoMessage(1.seconds)
 
       //stop the component
       agentActorRef ! KillComponent(probe2.ref, componentId)
       //ensure it is stopped gracefully
       probe2.expectMessage(10.seconds, killedGracefully)
+
+      //ensure component was unregistered
+      verify(locationService).unregister(redisConn)
     }
 
-    "reply 'killedGracefully' after process termination, when process is already stopping by another message | ESW-276" in {
-      val agentActorRef = spawnAgentActor(agentSettings.copy(durationToWaitForGracefulProcessTermination = 7.seconds))
+    "reply 'Failed' when process is already stopping by another message | ESW-276" in {
+      val agentActorRef = spawnAgentActor(agentSettings.copy(durationToWaitForGracefulProcessTermination = 4.seconds))
       val spawnProbe    = TestProbe[SpawnResponse]()
       val firstKiller   = TestProbe[KillResponse]()
       val secondKiller  = TestProbe[KillResponse]()
-      when(locationService.resolve(argEq(seqCompConn), any[FiniteDuration]))
-        .thenReturn(Future.successful(None), seqCompLocationF)
 
+      mockLocationServiceForRedis()
       mockSuccessfulProcess(dieAfter = 2.seconds)
 
       //start a component
-      agentActorRef ! SpawnSequenceComponent(spawnProbe.ref, prefix)
+      agentActorRef ! spawnRedis(spawnProbe.ref)
       spawnProbe.expectMessage(Spawned)
 
       //stop the component
@@ -162,32 +184,11 @@ class KillSelfRegisteredComponent extends ScalaTestWithActorTestKit with WordSpe
       agentActorRef ! KillComponent(secondKiller.ref, componentId)
 
       //ensure it is stopped gracefully
-      firstKiller.expectMessage(6.seconds, killedGracefully)
-      secondKiller.expectMessage(killedGracefully)
-    }
+      firstKiller.expectMessage(3.seconds, killedGracefully)
+      secondKiller.expectMessage(Failed("process is already stopping"))
 
-    "reply 'killedForcefully' after process termination, when process is already stopping by another message | ESW-276" in {
-      val agentActorRef = spawnAgentActor()
-      val spawnProbe    = TestProbe[SpawnResponse]()
-      val firstKiller   = TestProbe[KillResponse]()
-      val secondKiller  = TestProbe[KillResponse]()
-      when(locationService.resolve(argEq(seqCompConn), any[FiniteDuration]))
-        .thenReturn(Future.successful(None), seqCompLocationF)
-
-      mockSuccessfulProcess(dieAfter = 5.seconds)
-
-      //start a component
-      agentActorRef ! SpawnSequenceComponent(spawnProbe.ref, prefix)
-      spawnProbe.expectMessage(Spawned)
-
-      //stop the component
-      agentActorRef ! KillComponent(firstKiller.ref, componentId)
-      //stop the component again
-      agentActorRef ! KillComponent(secondKiller.ref, componentId)
-
-      //ensure it is stopped forcefully
-      firstKiller.expectMessage(4.seconds, killedForcefully)
-      secondKiller.expectMessage(killedForcefully)
+      //ensure component was unregistered
+      verify(locationService).unregister(redisConn)
     }
 
     "reply 'Failed' when given component is not running on agent | ESW-276" in {
@@ -195,10 +196,13 @@ class KillSelfRegisteredComponent extends ScalaTestWithActorTestKit with WordSpe
       val probe         = TestProbe[KillResponse]()
 
       //try to stop the component
-      agentActorRef ! KillComponent(probe.ref, ComponentId(Prefix("ESW.invalid"), SequenceComponent))
+      agentActorRef ! KillComponent(probe.ref, ComponentId(Prefix("ESW.invalid"), Service))
 
       //verify that response is Failure
       probe.expectMessage(Failed("given component id is not running on this agent"))
+
+      //ensure component was NOT unregistered
+      verify(locationService, never).unregister(redisConn)
     }
   }
 
@@ -214,6 +218,13 @@ class KillSelfRegisteredComponent extends ScalaTestWithActorTestKit with WordSpe
     scheduler.scheduleOnce(dieAfter, () => future.complete(process))
     when(process.onExit()).thenReturn(future)
     when(processExecutor.runCommand(any[List[String]], any[Prefix])).thenReturn(Right(process))
+  }
+
+  private def mockLocationServiceForRedis(registrationDuration: FiniteDuration = 0.seconds) = {
+    when(locationService.resolve(argEq(redisConn), any[FiniteDuration]))
+      .thenReturn(Future.successful(None))
+    when(locationService.register(redisRegistration))
+      .thenReturn(delayedFuture(redisRegistrationResult, registrationDuration))
   }
 
   private def spawnAgentActor(agentSettings: AgentSettings = agentSettings) = {
