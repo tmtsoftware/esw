@@ -3,6 +3,8 @@ package esw.ocs.scripts.examples.paradox
 import csw.alarm.models.AlarmSeverity
 import csw.alarm.models.Key
 import csw.prefix.models.Prefix
+import esw.ocs.dsl.core.FsmScript
+import esw.ocs.dsl.core.reusableScript
 //#script
 import esw.ocs.dsl.core.script
 //#script
@@ -24,7 +26,7 @@ script {
 
 //#script-example
 script {
-    info("DarkNight script loaded")
+    info("Loading DarkNight script")
 
     val tromboneTemperatureAlarm =
             Key.AlarmKey(Prefix(NFIRAOS, "trombone"), "tromboneMotorTemperatureAlarm")
@@ -56,3 +58,37 @@ script {
 
 }
 //#script-example
+
+//#reusable-script-example
+val startObservationScript = reusableScript {
+    onObserve("start-observation") {
+        info("opening the primary shutter to start observation")
+
+        val openingStatusKey = stringKey("status").set("open")
+        publishEvent(ObserveEvent("IRIS.primary_shutter", "current-status", openingStatusKey))
+
+        openPrimaryShutter()
+    }
+
+}
+//#reusable-script-example
+
+//#load-script
+script {
+
+    loadScripts(startObservationScript)
+
+}
+//#load-script
+
+//#load-script-fsm
+
+FsmScript("INIT") {
+
+    state("INIT") { params ->
+
+        loadScripts(startObservationScript)
+
+    }
+}
+//#load-script-fsm

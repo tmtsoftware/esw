@@ -19,13 +19,13 @@ Kotlin
 The *block* have 2 types of statements.
 
 - Script Handlers: Will be executed when a command to execute a particular handler is received.
-- Top-level statements: Will be executed while loading this script
+- Top-level statements (initialisation logic) : Will be executed while loading (initialising) this script,  
 
 @ref:[Script Handlers](handlers.md) are defined to process Command Sequences or to perform actions like Going online or offline, starting Diagnostic mode etc.
 Documentation of handlers can be found @ref:[here](handlers.md). Handlers will be executed whenever there is need to execute Sequence or to perform any action
 on Sequencer.
 
-Everything except Script Handlers are considered as top-level statements and will be executed while loading the script.
+Everything except Script Handlers are considered as top-level statements and will be executed while loading (initialising) the script.
 This is the place to declare the Script specific variables and tasks to be executed at initialisation of the Script.
 
 Kotlin
@@ -33,9 +33,41 @@ Kotlin
 
 The example mainly demos:
 
-- top-level statements like declaring Script specific variable (*tromboneTemperatureAlarm*) and use of @ref:[Script Constructs](../script-constructs.md) (*loopAsync*).
-- Using script handlers like *onSetup*, *onObserve*.
+- Top-level statements like declaring Script specific variable (*tromboneTemperatureAlarm*), use of @ref:[Script Constructs](../script-constructs.md) (*loopAsync*) and
+use of @ref:[Csw Services](../script-constructs.md) (*info* - @ref:[Logging Service](../services/logging-service.md),
+*setSeverity* - Alarm Service@ref:[Alarm Service](../services/alarm-service.md))
+- Defining @ref:[Script Handlers](handlers.md) like *onSetup*, *onObserve* using @ref:[Csw Services](../script-constructs.md).
 
 ## Finite State Machine Script (FSM Script)
 
 ## Reusable Script
+
+Reusable Scripts make it possible to write the common logic which needs to shared across multiple scripts. This can be used to build small building blocks for building
+Sequencer Scripts.
+ 
+They are same as the ![Regular Script](#regular-script) except they cannot be directly loaded into a Sequence Component, and can only be loaded into
+other Sequencer Scripts.
+
+The common logic mainly consists of Script handlers and the top-level statements(initialisation logic). The top-level statements will be executed while
+loading the script. Script handlers will be added to the corresponding handlers of the script loading it.
+
+Following code declares a Reusable Script with Observe Command Handler.
+
+Kotlin
+:   @@snip [define-script.kts](../../../../../../../examples/src/main/kotlin/esw/ocs/scripts/examples/paradox/DefineScriptExample.kts) { #reusable-script-example }
+
+### Loading in Regular Script
+
+To use Reusable Scripts, the Regular script needs to call function called `loadScript` with the instance of Reusable Script. Calling *loadScript* will initialise
+the Reusable Script and then combine handlers of both scripts.
+
+Kotlin
+:   @@snip [define-script.kts](../../../../../../../examples/src/main/kotlin/esw/ocs/scripts/examples/paradox/DefineScriptExample.kts) { #load-script }
+
+### Loading in FSM Script
+
+A Reusable Script cannot be directly imported at top-level of FSM script. It can only be imported in a particular State of the FSM script.
+Loaded script is limited to that particular State. Below example loading script into a State.
+
+Kotlin
+:   @@snip [define-script.kts](../../../../../../../examples/src/main/kotlin/esw/ocs/scripts/examples/paradox/DefineScriptExample.kts) { #load-script-fsm }
