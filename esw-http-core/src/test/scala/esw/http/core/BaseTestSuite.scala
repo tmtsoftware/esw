@@ -1,9 +1,9 @@
 package esw.http.core
 
+import org.mockito.MockitoSugar
 import org.scalactic.TypeCheckedTripleEquals
 import org.scalatest._
 import org.scalatest.concurrent.{Eventually, ScalaFutures}
-import org.scalatestplus.mockito.MockitoSugar
 
 trait BaseTestSuite
     extends WordSpec

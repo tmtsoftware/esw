@@ -8,7 +8,6 @@ import csw.location.models.Connection.{AkkaConnection, HttpConnection}
 import csw.location.models.{AkkaLocation, ComponentId, HttpLocation}
 import esw.http.core.BaseTestSuite
 import esw.http.core.wiring.ActorRuntime
-import org.mockito.Mockito.{verify, when}
 
 import scala.concurrent.duration.DurationInt
 import scala.concurrent.{Await, Future}

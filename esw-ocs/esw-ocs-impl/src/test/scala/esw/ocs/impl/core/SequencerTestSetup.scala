@@ -19,14 +19,12 @@ import csw.prefix.models.Subsystem.ESW
 import csw.time.core.models.UTCTime
 import esw.ocs.api.models.{Step, StepList}
 import esw.ocs.api.protocol._
-import esw.ocs.impl.messages.SequencerMessages.{Pause, _}
+import esw.ocs.impl.messages.SequencerMessages._
 import esw.ocs.impl.messages.SequencerState.{Idle, InProgress}
 import esw.ocs.impl.messages.{SequenceComponentMsg, SequencerState}
 import esw.ocs.impl.script.ScriptApi
-import org.mockito.Mockito.{verify, when}
 import org.scalatest.concurrent.Eventually._
 import org.scalatest.{Assertion, Matchers}
-import org.scalatestplus.mockito.MockitoSugar
 
 import scala.concurrent.duration.DurationLong
 import scala.concurrent.{ExecutionContext, Future, Promise}
@@ -34,7 +32,7 @@ import scala.util.{Random, Success}
 
 class SequencerTestSetup(sequence: Sequence)(implicit system: ActorSystem[_]) {
   import Matchers._
-  import MockitoSugar._
+  import org.mockito.MockitoSugar._
 
   implicit private val patienceConfig: PatienceConfig = PatienceConfig(5.seconds)
   implicit val ec: ExecutionContext                   = system.executionContext

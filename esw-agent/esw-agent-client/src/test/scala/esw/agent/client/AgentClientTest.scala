@@ -16,8 +16,8 @@ import esw.agent.api.AgentCommand.SpawnSelfRegistered.SpawnSequenceComponent
 import esw.agent.api.Killed._
 import esw.agent.api.{AgentCommand, Spawned}
 import org.mockito.Mockito.when
+import org.mockito.MockitoSugar
 import org.scalatest.{BeforeAndAfterAll, Matchers, WordSpecLike}
-import org.scalatestplus.mockito.MockitoSugar
 
 import scala.concurrent.Future
 import scala.concurrent.duration.DurationLong
