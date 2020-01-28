@@ -137,6 +137,18 @@ object Dependencies {
     )
   )
 
+  val SequencerScripting: Def.Initialize[Seq[ModuleID]] = Def.setting(
+    Seq(
+      Kotlin.`kotlin-scripting-common`,
+      Kotlin.`kotlin-reflect`,
+      Kotlin.`kotlin-scripting-jvm`,
+      Kotlin.`kotlin-scripting-jvm-host-embeddable`,
+      Kotlin.`kotlin-scripting-compiler-impl-embeddable`,
+      Kotlin.kotlintest        % Test,
+      Libs.`jupiter-interface` % Test
+    )
+  )
+
   val EswGatewayApi: Def.Initialize[Seq[ModuleID]] = Def.setting(
     Seq(
       Libs.`msocket-api`.value,

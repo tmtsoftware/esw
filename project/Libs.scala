@@ -84,7 +84,15 @@ object Borer {
 }
 
 object Kotlin {
-  val `stdlib-jdk8`     = "org.jetbrains.kotlin"  % "kotlin-stdlib-jdk8"      % "1.3.61"
+  private val version = "1.3.61"
+
+  val `stdlib-jdk8`                               = "org.jetbrains.kotlin" % "kotlin-stdlib-jdk8"                        % version
+  val `kotlin-scripting-common`                   = "org.jetbrains.kotlin" % "kotlin-scripting-common"                   % version
+  val `kotlin-reflect`                            = "org.jetbrains.kotlin" % "kotlin-reflect"                            % version
+  val `kotlin-scripting-jvm`                      = "org.jetbrains.kotlin" % "kotlin-scripting-jvm"                      % version
+  val `kotlin-scripting-jvm-host-embeddable`      = "org.jetbrains.kotlin" % "kotlin-scripting-jvm-host-embeddable"      % version
+  val `kotlin-scripting-compiler-impl-embeddable` = "org.jetbrains.kotlin" % "kotlin-scripting-compiler-impl-embeddable" % version
+
   val `coroutines-jdk8` = "org.jetbrains.kotlinx" % "kotlinx-coroutines-jdk8" % "1.3.3"
   val kotlintest        = "io.kotlintest"         % "kotlintest-core"         % "3.4.2"
   val mockk             = "io.mockk"              % "mockk"                   % "1.9.3"

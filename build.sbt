@@ -95,6 +95,16 @@ lazy val `esw-ocs-dsl-kt` = project
   .settings(libraryDependencies ++= Dependencies.OcsDslKt.value)
   .dependsOn(`esw-ocs-dsl`)
 
+lazy val `sequencer-scripting` = project
+  .in(file("sequencer-scripting"))
+  .enablePlugins(KotlinPlugin)
+  .settings(
+    kotlinVersion := "1.3.61",
+    kotlincOptions ++= Seq("-Xuse-experimental=kotlin.time.ExperimentalTime", "-jvm-target", "1.8")
+  )
+  .settings(libraryDependencies ++= Dependencies.SequencerScripting.value)
+  .dependsOn(`esw-ocs-dsl-kt`, `esw-ocs-dsl`)
+
 lazy val `esw-ocs-app` = project
   .in(file("esw-ocs/esw-ocs-app"))
   .enablePlugins(EswBuildInfo, DeployApp, MaybeCoverage)
