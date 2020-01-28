@@ -33,12 +33,11 @@ import msocket.api.ContentType
 import msocket.api.models.{GenericError, ServiceError}
 import msocket.impl.post.{ClientHttpCodecs, PostRouteFactory}
 import org.mockito.ArgumentMatchers.{any, eq => argsEq}
-import org.mockito.Mockito.when
-import org.mockito.MockitoSugar._
+import org.mockito.MockitoSugar
 
 import scala.concurrent.Future
 
-class PostRouteTest extends BaseTestSuite with ScalatestRouteTest with GatewayCodecs with ClientHttpCodecs {
+class PostRouteTest extends BaseTestSuite with ScalatestRouteTest with GatewayCodecs with ClientHttpCodecs with MockitoSugar {
 
   override def clientContentType: ContentType = ContentType.Json
 

@@ -19,18 +19,20 @@ import esw.agent.app.AgentActor.AgentState
 import esw.agent.app.process.ProcessExecutor
 import org.mockito.ArgumentMatchers.{any, eq => argEq}
 import org.mockito.MockitoSugar
-import org.scalatest.MustMatchers.convertToStringMustWrapper
-import org.scalatest.{BeforeAndAfterEach, WordSpecLike}
+import org.scalatest.matchers
+import matchers.must.Matchers.convertToStringMustWrapper
+import org.scalatest.BeforeAndAfterEach
 
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.duration.{DurationLong, FiniteDuration}
 import scala.concurrent.{Future, Promise}
 import scala.util.Random
+import org.scalatest.wordspec.AnyWordSpecLike
 
 //todo: fix test names
 class KillSelfRegisteredComponentTest
     extends ScalaTestWithActorTestKit
-    with WordSpecLike
+    with AnyWordSpecLike
     with MockitoSugar
     with BeforeAndAfterEach {
 

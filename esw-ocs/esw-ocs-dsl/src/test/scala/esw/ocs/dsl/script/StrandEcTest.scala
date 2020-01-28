@@ -1,8 +1,9 @@
 package esw.ocs.dsl.script
 
-import org.scalatest.{Matchers, WordSpec}
+import org.scalatest.matchers.should.Matchers
+import org.scalatest.wordspec.AnyWordSpec
 
-class StrandEcTest extends WordSpec with Matchers {
+class StrandEcTest extends AnyWordSpec with Matchers {
   "shutdown" must {
     "stop executor service" in {
       val strandEc = StrandEc()

@@ -1,8 +1,10 @@
 package esw.ocs.app
 
-import org.scalatest.{EitherValues, Matchers, WordSpec}
+import org.scalatest.EitherValues
+import org.scalatest.matchers.should.Matchers
+import org.scalatest.wordspec.AnyWordSpec
 
-class SequencerAppCommandTest extends WordSpec with EitherValues with Matchers {
+class SequencerAppCommandTest extends AnyWordSpec with EitherValues with Matchers {
 
   "subsystemParser" must {
     "return error if invalid subsystem is provided | ESW-102, ESW-136" in {

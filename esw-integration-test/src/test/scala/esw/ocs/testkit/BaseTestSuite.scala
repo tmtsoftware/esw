@@ -8,9 +8,11 @@ import org.scalatest.time.SpanSugar.convertFloatToGrainOfTime
 
 import scala.concurrent.duration.Duration
 import scala.concurrent.{Await, Future}
+import org.scalatest.matchers.should.Matchers
+import org.scalatest.wordspec.AnyWordSpecLike
 
 trait BaseTestSuite
-    extends WordSpecLike
+    extends AnyWordSpecLike
     with Matchers
     with BeforeAndAfterAll
     with BeforeAndAfterEach

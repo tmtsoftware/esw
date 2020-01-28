@@ -7,9 +7,11 @@ import org.scalatest.concurrent.{Eventually, ScalaFutures}
 
 import scala.concurrent.duration.{Duration, DurationDouble}
 import scala.concurrent.{Await, Future}
+import org.scalatest.matchers.should.Matchers
+import org.scalatest.wordspec.AnyWordSpecLike
 
 trait BaseTestSuite
-    extends WordSpecLike
+    extends AnyWordSpecLike
     with Matchers
     with BeforeAndAfterAll
     with BeforeAndAfterEach

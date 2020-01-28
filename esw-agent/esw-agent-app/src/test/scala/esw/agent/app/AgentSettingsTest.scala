@@ -3,11 +3,12 @@ package esw.agent.app
 import java.nio.file.Paths
 
 import com.typesafe.config.ConfigFactory
-import org.scalatest.{Matchers, WordSpecLike}
 
 import scala.concurrent.duration.DurationLong
+import org.scalatest.matchers.should.Matchers
+import org.scalatest.wordspec.AnyWordSpecLike
 
-class AgentSettingsTest extends WordSpecLike with Matchers {
+class AgentSettingsTest extends AnyWordSpecLike with Matchers {
 
   "from" must {
     "create new AgentSettings from config object | ESW-237" in {

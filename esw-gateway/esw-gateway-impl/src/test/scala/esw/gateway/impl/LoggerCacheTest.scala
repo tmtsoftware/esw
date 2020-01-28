@@ -1,9 +1,10 @@
 package esw.gateway.impl
 
 import csw.prefix.models.Prefix
-import org.scalatest.{Matchers, WordSpecLike}
+import org.scalatest.matchers.should.Matchers
+import org.scalatest.wordspec.AnyWordSpecLike
 
-class LoggerCacheTest extends WordSpecLike with Matchers {
+class LoggerCacheTest extends AnyWordSpecLike with Matchers {
   "get" must {
     "return the same instance of logger for same names | ESW-200, CSW-63, CSW-78" in {
       val loggerCache = new LoggerCache

@@ -32,7 +32,6 @@ import msocket.api.{ContentType, Subscription}
 import msocket.impl.CborByteString
 import msocket.impl.post.ClientHttpCodecs
 import msocket.impl.ws.WebsocketRouteFactory
-import org.mockito.Mockito.when
 import msocket.impl.ws.WebsocketExtensions.WebsocketEncoding
 
 import scala.concurrent.Future

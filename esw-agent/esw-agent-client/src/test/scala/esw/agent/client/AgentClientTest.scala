@@ -17,12 +17,14 @@ import esw.agent.api.Killed._
 import esw.agent.api.{AgentCommand, Spawned}
 import org.mockito.Mockito.when
 import org.mockito.MockitoSugar
-import org.scalatest.{BeforeAndAfterAll, Matchers, WordSpecLike}
+import org.scalatest.BeforeAndAfterAll
 
 import scala.concurrent.Future
 import scala.concurrent.duration.DurationLong
+import org.scalatest.matchers.should.Matchers
+import org.scalatest.wordspec.AnyWordSpecLike
 
-class AgentClientTest extends ScalaTestWithActorTestKit with WordSpecLike with Matchers with BeforeAndAfterAll {
+class AgentClientTest extends ScalaTestWithActorTestKit with AnyWordSpecLike with Matchers with BeforeAndAfterAll {
 
   "make" should {
     "resolve the given prefix and return a new instance of AgentClient  | ESW-237" in {

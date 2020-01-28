@@ -5,9 +5,10 @@ import csw.prefix.models.Prefix
 import esw.gateway.api.protocol.PostRequest
 import esw.gateway.api.protocol.PostRequest.Log
 import io.bullet.borer.Json
-import org.scalatest.{Matchers, WordSpec}
+import org.scalatest.matchers.should.Matchers
+import org.scalatest.wordspec.AnyWordSpec
 
-class LogCodecTest extends WordSpec with Matchers with GatewayCodecs {
+class LogCodecTest extends AnyWordSpec with Matchers with GatewayCodecs {
 
   "LogCodec" must {
     "decode json with nested metadata and filter null values" in {

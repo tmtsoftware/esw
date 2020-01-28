@@ -39,7 +39,7 @@ class ThreadSafetyTest extends EswTestKit(EventServer) {
 
       threadSafeSequencer.submit(Sequence(List(incrementCommand, getCounterCommand)))
 
-      counterProbe.expectMessage(300_000)
+      counterProbe.expectMessage(300000)
     }
   }
 }

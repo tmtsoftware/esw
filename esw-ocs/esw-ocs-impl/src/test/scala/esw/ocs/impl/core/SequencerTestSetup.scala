@@ -24,11 +24,12 @@ import esw.ocs.impl.messages.SequencerState.{Idle, InProgress}
 import esw.ocs.impl.messages.{SequenceComponentMsg, SequencerState}
 import esw.ocs.impl.script.ScriptApi
 import org.scalatest.concurrent.Eventually._
-import org.scalatest.{Assertion, Matchers}
+import org.scalatest.Assertion
 
 import scala.concurrent.duration.DurationLong
 import scala.concurrent.{ExecutionContext, Future, Promise}
 import scala.util.{Random, Success}
+import org.scalatest.matchers.should.Matchers
 
 class SequencerTestSetup(sequence: Sequence)(implicit system: ActorSystem[_]) {
   import Matchers._
