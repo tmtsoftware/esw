@@ -17,3 +17,9 @@ creating a new command with the new set of params.
 
 Kotlin
 : @@snip [Params.kts](../../../../../../../examples/src/main/kotlin/esw/ocs/scripts/examples/paradox/ParamsExample.kts) { #adding-params }  
+
+## Extracting values from a parameter
+
+Kotlin
+: @@snip [Params.kts](../../../../../../../examples/src/main/kotlin/esw/ocs/scripts/examples/paradox/ParamsExample.kts) { #getting-values }  
+

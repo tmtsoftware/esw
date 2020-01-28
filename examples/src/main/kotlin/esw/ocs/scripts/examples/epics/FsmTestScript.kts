@@ -2,9 +2,7 @@ package esw.ocs.scripts.examples.epics
 
 import csw.params.events.SystemEvent
 import esw.ocs.dsl.core.FsmScript
-import esw.ocs.dsl.params.Params
-import esw.ocs.dsl.params.intKey
-import esw.ocs.dsl.params.stringKey
+import esw.ocs.dsl.params.*
 
 FsmScript("INIT") {
     // temperature Fsm states
@@ -20,11 +18,11 @@ FsmScript("INIT") {
 
     val temperatureFsm = Fsm("TEMP", "OK") {
         state(OK) {
-            become(WAITING, Params(fsmEvent(20).jParamSet()))
+            become(WAITING, fsmEvent(20).params)
         }
 
         state(WAITING) { params ->
-            val systemEvent = SystemEvent("esw.FsmTestScript", "WAITING").jMadd(params.jParamSet())
+            val systemEvent = SystemEvent("esw.FsmTestScript", "WAITING").kMadd(params)
             publishState(systemEvent, WAITING)
             completeFsm()
         }
@@ -34,13 +32,13 @@ FsmScript("INIT") {
         onSetup("command-1") { command ->
             temperatureFsm.start()
             temperatureFsm.await()
-            become(STARTED, Params(command.jParamSet()))
+            become(STARTED, command.params)
         }
     }
 
     state(STARTED) { params ->
         onSetup("command-2") {
-            val systemEvent = SystemEvent("esw.FsmTestScript", "STARTED").jMadd(params.jParamSet())
+            val systemEvent = SystemEvent("esw.FsmTestScript", "STARTED").kMadd(params)
             publishState(systemEvent, STARTED)
         }
     }
