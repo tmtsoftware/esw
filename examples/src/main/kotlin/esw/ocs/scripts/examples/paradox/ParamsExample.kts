@@ -37,26 +37,36 @@ script {
         // #creating-params
 
         //#getting-values
-        // extracting param from Params instance
+        // extracting a param from Params instance
         val params: Params = setupCommand.params
         val temperatureParameter: Parameter<Int>? = params.kGet(temperatureKey)
 
-        // extracting param directly from the command
+        // extracting a param directly from the command
         val temperatureParameter2: Parameter<Int>? = setupCommand.kGet(temperatureKey)
 
         info("Temperature: ${temperatureParameter?.values()}")
         //#getting-values
 
         //#remove
+        // remove param from params by key
         val updatedParams: Params = params.remove(temperatureKey)
+
+        // remove param from params
+        val updatedParams2: Params = params.remove(temperatureParameter)
+
+        // remove param from command by key
+        val updatedCommand: Setup = setupCommand.remove(temperatureKey)
+
+        // remove param from command
+        val updatedCommand2: Setup = setupCommand.remove(temperatureParameter)
         //#remove
 
     }
 
     // #adding-params
     onSetup("setup-wfos") { command ->
-        val params: Params = command.params.kMadd(intKey("temperature").set(10))
-        val assemblyCommand: Setup = Setup("ESW.iris_darkNight", "move").kMadd(params)
+        val params: Params = command.params.madd(intKey("temperature").set(10))
+        val assemblyCommand: Setup = Setup("ESW.iris_darkNight", "move").madd(params)
         galilAssembly.submit(assemblyCommand)
     }
     // #adding-params

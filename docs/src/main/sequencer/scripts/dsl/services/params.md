@@ -23,3 +23,10 @@ Kotlin
 Kotlin
 : @@snip [Params.kts](../../../../../../../examples/src/main/kotlin/esw/ocs/scripts/examples/paradox/ParamsExample.kts) { #getting-values }  
 
+## Removing a parameter
+
+A parameter could be removed from `Params` instance or from `Command` directly. Below example demonstrates both the dsl methods.
+
+Kotlin
+: @@snip [Params.kts](../../../../../../../examples/src/main/kotlin/esw/ocs/scripts/examples/paradox/ParamsExample.kts) { #remove }  
+

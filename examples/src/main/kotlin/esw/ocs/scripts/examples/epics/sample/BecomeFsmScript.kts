@@ -31,7 +31,7 @@ FsmScript("INIT") {
 
             if (parameter.first == 1) {
                 val k1 = intKey("trigger")
-                become("WAITING", params.kMadd(k1.set(22)))
+                become("WAITING", params.madd(k1.set(22)))
             }
 
             become("DONE")
@@ -54,7 +54,7 @@ FsmScript("INIT") {
     state("INIT") {
         onSetup("command-1") { command ->
             testAssembly.submit(command)
-            become("DATUMING", command.params.kMadd(intKey("encoder").set(30)))
+            become("DATUMING", command.params.madd(intKey("encoder").set(30)))
         }
 
         onSetup("command-2") {

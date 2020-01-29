@@ -3,7 +3,6 @@ package esw.ocs.dsl.epics
 import esw.ocs.dsl.highlevel.CommandServiceDsl
 import esw.ocs.dsl.params.Params
 import esw.ocs.dsl.params.intKey
-import esw.ocs.dsl.params.kMadd
 import esw.ocs.dsl.params.params
 import io.kotlintest.eventually
 import io.kotlintest.shouldBe
@@ -19,8 +18,7 @@ class CommandFlagTest : CommandServiceDsl {
 
     @Test
     fun `set should update commandFlag value | ESW-252`() = runBlocking {
-        val setup = Setup("TCS.test", "command-1", "obsId")
-                .kMadd(intKey("encoder").set(1))
+        val setup = Setup("TCS.test", "command-1", "obsId").madd(intKey("encoder").set(1))
 
         val commandFlag = CommandFlag()
         commandFlag.value() shouldBe Params(setOf())
