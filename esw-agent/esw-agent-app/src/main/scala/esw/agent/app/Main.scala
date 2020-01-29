@@ -1,7 +1,6 @@
 package esw.agent.app
 
 import akka.actor.CoordinatedShutdown.UnknownReason
-import akka.util.Timeout
 import caseapp.core.RemainingArgs
 import caseapp.core.app.CommandApp
 import com.typesafe.config.ConfigFactory
@@ -27,18 +26,18 @@ object Main extends CommandApp[AgentCliCommand] {
 
   def onStart(prefix: Prefix, agentSettings: AgentSettings): Unit = {
     wiring = new AgentWiring(prefix, agentSettings)
+    wiring.actorRuntime.startLogging(BuildInfo.name, BuildInfo.version)
     wiring.log.debug("starting machine agent", Map("prefix" -> prefix))
     try {
       LocationServerStatus.requireUpLocally(5.seconds)
-      implicit val timeout: Timeout = Timeout(10.seconds)
-      Await.result(wiring.lazyAgentRegistration, timeout.duration)
+      Await.result(wiring.lazyAgentRegistration, wiring.timeout.duration)
       wiring.log.info("agent started")
     }
     catch {
       case NonFatal(ex) =>
         wiring.log.error("agent-app crashed", Map("machine-name" -> prefix), ex)
         //shutdown is required so that actor system shuts down gracefully and jvm process can exit
-        wiring.actorRuntime.shutdown(UnknownReason)
+        Await.result(wiring.actorRuntime.shutdown(UnknownReason), wiring.timeout.duration)
         exit(1)
     }
   }

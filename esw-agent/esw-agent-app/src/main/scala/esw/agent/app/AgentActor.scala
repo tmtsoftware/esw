@@ -24,7 +24,7 @@ class AgentActor(
     (ctx, command) =>
       command match {
         //already spawning or registered
-        case SpawnCommand(replyTo, componentId) if state.components.contains(componentId) =>
+        case SpawnCommand(replyTo, componentId) if state.exist(componentId) =>
           val message = "given component is already in process"
           warn(message, Map("prefix" -> componentId.prefix))
           replyTo ! Failed(message)
@@ -58,6 +58,7 @@ object AgentActor {
     def add(componentId: ComponentId, actorRef: ActorRef[ProcessActorMessage]): AgentState =
       copy(components = components + (componentId -> actorRef))
     def remove(componentId: ComponentId): AgentState = copy(components = components - componentId)
+    def exist(componentId: ComponentId): Boolean     = components.contains(componentId)
   }
 
   private[agent] object AgentState {

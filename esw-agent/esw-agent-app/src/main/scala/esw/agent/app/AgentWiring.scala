@@ -20,10 +20,8 @@ import scala.concurrent.duration.DurationLong
 import scala.concurrent.{Await, Future}
 // $COVERAGE-OFF$
 class AgentWiring(prefix: Prefix, agentSettings: AgentSettings) {
-  lazy val log: Logger = {
-    actorRuntime.startLogging(BuildInfo.name, BuildInfo.version)
-    new LoggerFactory(prefix).getLogger
-  }
+  implicit val timeout: Timeout = Timeout(10.seconds)
+  lazy val log: Logger          = new LoggerFactory(prefix).getLogger
 
   private val agentConnection: AkkaConnection = AkkaConnection(ComponentId(prefix, ComponentType.Machine))
 
@@ -41,7 +39,6 @@ class AgentWiring(prefix: Prefix, agentSettings: AgentSettings) {
   lazy val processExecutor                  = new ProcessExecutor(processOutput, agentSettings, log)
   lazy val agentActor                       = new AgentActor(locationService, processExecutor, agentSettings, log)
 
-  implicit private val timeout: Timeout = Timeout(10.seconds)
   lazy val lazyAgentRegistration: Future[RegistrationResult] =
     locationService.register(AkkaRegistration(agentConnection, agentRef.toURI))
 
