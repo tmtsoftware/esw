@@ -18,7 +18,7 @@ import scala.compat.java8.FutureConverters.{CompletionStageOps, FutureOps}
 import scala.concurrent.{ExecutionContext, Future}
 
 private[esw] class ScriptDsl(sequenceOperatorFactory: () => SequenceOperator, strandEc: StrandEc, shutdownTask: Runnable)
-    extends ScriptApi {
+  extends ScriptApi {
   protected implicit lazy val toEc: ExecutionContext = strandEc.ec
 
   var isOnline = true
@@ -36,16 +36,16 @@ private[esw] class ScriptDsl(sequenceOperatorFactory: () => SequenceOperator, st
   private val exceptionHandlers: FunctionHandlers[Throwable, CompletionStage[Void]]          = new FunctionHandlers
 
   def merge(that: ScriptDsl): ScriptDsl = {
-    setupCommandHandler ++ that.setupCommandHandler
-    observerCommandHandler ++ that.observerCommandHandler
-    onlineHandlers ++ that.onlineHandlers
-    offlineHandlers ++ that.offlineHandlers
-    shutdownHandlers ++ that.shutdownHandlers
-    abortHandlers ++ that.abortHandlers
-    stopHandlers ++ that.stopHandlers
-    diagnosticHandlers ++ that.diagnosticHandlers
-    operationsHandlers ++ that.operationsHandlers
-    exceptionHandlers ++ that.exceptionHandlers
+    this.setupCommandHandler ++ that.setupCommandHandler
+    this.observerCommandHandler ++ that.observerCommandHandler
+    this.onlineHandlers ++ that.onlineHandlers
+    this.offlineHandlers ++ that.offlineHandlers
+    this.shutdownHandlers ++ that.shutdownHandlers
+    this.abortHandlers ++ that.abortHandlers
+    this.stopHandlers ++ that.stopHandlers
+    this.diagnosticHandlers ++ that.diagnosticHandlers
+    this.operationsHandlers ++ that.operationsHandlers
+    this.exceptionHandlers ++ that.exceptionHandlers
     this
   }
 
@@ -112,7 +112,7 @@ private[esw] class ScriptDsl(sequenceOperatorFactory: () => SequenceOperator, st
       }
     }.toJava
 
-  protected final def onSetupCommand(name: String)(handler: CommandHandler[Setup]): Unit = 
+  protected final def onSetupCommand(name: String)(handler: CommandHandler[Setup]): Unit =
     setupCommandHandler.add(CommandName(name), handler.execute)
 
   protected final def onObserveCommand(name: String)(handler: CommandHandler[Observe]): Unit =
