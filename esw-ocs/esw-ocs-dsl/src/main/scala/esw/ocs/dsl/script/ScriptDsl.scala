@@ -5,7 +5,7 @@ import java.util.concurrent.{CompletableFuture, CompletionStage}
 import java.util.function.Supplier
 
 import akka.Done
-import csw.params.commands.{Observe, SequenceCommand, Setup}
+import csw.params.commands.{CommandName, Observe, SequenceCommand, Setup}
 import csw.time.core.models.UTCTime
 import esw.ocs.api.protocol.PullNextResult
 import esw.ocs.dsl.script.exceptions.UnhandledCommandException
@@ -16,7 +16,6 @@ import esw.ocs.impl.script.ScriptApi
 import scala.async.Async.{async, await}
 import scala.compat.java8.FutureConverters.{CompletionStageOps, FutureOps}
 import scala.concurrent.{ExecutionContext, Future}
-import scala.reflect.ClassTag
 
 private[esw] class ScriptDsl(sequenceOperatorFactory: () => SequenceOperator, strandEc: StrandEc, shutdownTask: Runnable)
     extends ScriptApi {
@@ -24,7 +23,8 @@ private[esw] class ScriptDsl(sequenceOperatorFactory: () => SequenceOperator, st
 
   var isOnline = true
 
-  private val commandHandlerBuilder: FunctionBuilder[SequenceCommand, CompletionStage[Void]] = new FunctionBuilder
+  private val setupCommandHandler    = new FunctionBuilder[CommandName, Setup, CompletionStage[Void]]
+  private val observerCommandHandler = new FunctionBuilder[CommandName, Observe, CompletionStage[Void]]
 
   private val onlineHandlers: FunctionHandlers[Unit, CompletionStage[Void]]                  = new FunctionHandlers
   private val offlineHandlers: FunctionHandlers[Unit, CompletionStage[Void]]                 = new FunctionHandlers
@@ -36,7 +36,8 @@ private[esw] class ScriptDsl(sequenceOperatorFactory: () => SequenceOperator, st
   private val exceptionHandlers: FunctionHandlers[Throwable, CompletionStage[Void]]          = new FunctionHandlers
 
   def merge(that: ScriptDsl): ScriptDsl = {
-    commandHandlerBuilder ++ that.commandHandlerBuilder
+    setupCommandHandler ++ that.setupCommandHandler
+    observerCommandHandler ++ that.observerCommandHandler
     onlineHandlers ++ that.onlineHandlers
     offlineHandlers ++ that.offlineHandlers
     shutdownHandlers ++ that.shutdownHandlers
@@ -48,16 +49,20 @@ private[esw] class ScriptDsl(sequenceOperatorFactory: () => SequenceOperator, st
     this
   }
 
-  private def handle[T <: SequenceCommand: ClassTag](name: String)(handler: T => CompletionStage[Void]): Unit =
-    commandHandlerBuilder.addHandler[T](handler)(_.commandName.name == name)
+  private val defaultCommandHandler: (SequenceCommand) => CompletionStage[Void] = { input =>
+    // fixme: should script writer have ability to add this default handler, like handleUnknownCommand
+    CompletableFuture.failedFuture(new UnhandledCommandException(input))
+  }
 
-  private lazy val commandHandler: SequenceCommand => CompletionStage[Void] =
-    commandHandlerBuilder.build { input =>
-      // fixme: should script writer have ability to add this default handler, like handleUnknownCommand
-      CompletableFuture.failedFuture(new UnhandledCommandException(input))
+  override def execute(command: SequenceCommand): Future[Unit] = {
+    val result: CompletionStage[Void] = command match {
+      case s: Setup if setupCommandHandler.contains(s.commandName)      => setupCommandHandler.execute(s.commandName)(s)
+      case o: Observe if observerCommandHandler.contains(o.commandName) => observerCommandHandler.execute(o.commandName)(o)
+      case command                                                      => defaultCommandHandler(command)
     }
 
-  override def execute(command: SequenceCommand): Future[Unit] = commandHandler(command).toScala.map(_ => ())
+    result.toScala.map(_ => ())
+  }
 
   private def executeHandler[T](f: FunctionHandlers[T, CompletionStage[Void]], arg: T): Future[Done] =
     Future.sequence(f.execute(arg).map(_.toScala)).map(_ => Done)
@@ -107,11 +112,11 @@ private[esw] class ScriptDsl(sequenceOperatorFactory: () => SequenceOperator, st
       }
     }.toJava
 
-  protected final def onSetupCommand(name: String)(handler: CommandHandler[Setup]): Unit =
-    handle[Setup](name)(handler.execute)
+  protected final def onSetupCommand(name: String)(handler: CommandHandler[Setup]): Unit = 
+    setupCommandHandler.add(CommandName(name), handler.execute)
 
   protected final def onObserveCommand(name: String)(handler: CommandHandler[Observe]): Unit =
-    handle[Observe](name)(handler.execute)
+    observerCommandHandler.add(CommandName(name), handler.execute)
 
   protected final def onGoOnline(handler: Supplier[CompletionStage[Void]]): Unit      = onlineHandlers.add(_ => handler.get())
   protected final def onAbortSequence(handler: Supplier[CompletionStage[Void]]): Unit = abortHandlers.add(_ => handler.get())

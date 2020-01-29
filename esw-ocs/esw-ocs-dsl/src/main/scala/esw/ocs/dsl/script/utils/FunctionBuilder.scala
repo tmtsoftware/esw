@@ -1,21 +1,19 @@
 package esw.ocs.dsl.script.utils
 
 import scala.collection.mutable
-import scala.reflect.ClassTag
 
-private[esw] class FunctionBuilder[I, O] {
+// fixme : rename FunctionBuilder
+private[esw] class FunctionBuilder[K, I, O] {
 
-  private val handlers: mutable.Buffer[PartialFunction[I, O]] = mutable.Buffer.empty
+  private val handlers: mutable.Map[K, I => O] = mutable.Map.empty
 
-  private def combinedHandler: PartialFunction[I, O] = handlers.foldLeft(PartialFunction.empty[I, O])(_ orElse _)
+  def add(key: K, handler: I => O): Unit = handlers += ((key, handler))
 
-  def addHandler[T <: I: ClassTag](handler: T => O)(iff: T => Boolean): Unit = handlers += {
-    case input: T if iff(input) => handler(input)
-  }
+  def contains(key: K): Boolean = handlers.contains(key)
 
-  def build(default: I => O): I => O = input => combinedHandler.lift(input).getOrElse(default(input))
+  def execute(key: K)(input: I): O = handlers(key)(input)
 
-  def ++(that: FunctionBuilder[I, O]): FunctionBuilder[I, O] = {
+  def ++(that: FunctionBuilder[K, I, O]): FunctionBuilder[K, I, O] = {
     this.handlers ++= that.handlers
     this
   }
