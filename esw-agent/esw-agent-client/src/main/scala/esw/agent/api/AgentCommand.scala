@@ -75,4 +75,7 @@ object AgentCommand {
 
   case class KillComponent(replyTo: ActorRef[KillResponse], componentId: ComponentId) extends AgentCommand
 
+  case class GetComponentStatus(replyTo: ActorRef[ComponentStatus], componentId: ComponentId) extends AgentCommand
+
+  case class GetAgentStatus(replyTo: ActorRef[AgentStatus]) extends AgentCommand
 }

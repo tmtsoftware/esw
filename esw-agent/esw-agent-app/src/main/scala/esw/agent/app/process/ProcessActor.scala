@@ -7,6 +7,7 @@ import csw.location.api.scaladsl.{LocationService, RegistrationResult}
 import csw.location.api.models._
 import csw.logging.api.scaladsl.Logger
 import esw.agent.api.AgentCommand.{SpawnManuallyRegistered, SpawnSelfRegistered}
+import esw.agent.api.ComponentStatus.{Initializing, Running, Stopping}
 import esw.agent.api.Killed._
 import esw.agent.api.{Failed, KillResponse, SpawnCommand, Spawned}
 import esw.agent.app.AgentSettings
@@ -27,7 +28,8 @@ class ProcessActor(
   import command._
   import logger._
   private val (prefix, componentType, connectionType, autoRegistered) = command match {
-    case cmd: SpawnSelfRegistered => (cmd.componentId.prefix, cmd.componentId.componentType, cmd.connectionType, true)
+    case cmd: SpawnSelfRegistered =>
+      (cmd.componentId.prefix, cmd.componentId.componentType, cmd.connectionType, true)
     case cmd: SpawnManuallyRegistered =>
       (
         cmd.registration.connection.prefix,
@@ -64,6 +66,9 @@ class ProcessActor(
             case Failure(exception) => LocationServiceError(exception)
           }
           checkingRegistration
+        case GetStatus(replyTo) =>
+          replyTo ! Initializing
+          Behaviors.same
       }
     }
 
@@ -106,6 +111,9 @@ class ProcessActor(
           dieRef ! killedGracefully
           replyTo ! aborted
           Behaviors.stopped
+        case GetStatus(replyTo) =>
+          replyTo ! Initializing
+          Behaviors.same
       }
     })
 
@@ -139,6 +147,9 @@ class ProcessActor(
           replyTo ! aborted
           ctx.self ! StopGracefully
           stopping(process, Some(deathSubscriber))
+        case GetStatus(replyTo) =>
+          replyTo ! Initializing
+          Behaviors.same
       }
     })
 
@@ -154,6 +165,9 @@ class ProcessActor(
           warn("attempting to kill process gracefully", Map("pid" -> process.pid, "prefix" -> prefix))
           ctx.self ! StopGracefully
           stopping(process, Some(deathSubscriber))
+        case GetStatus(replyTo) =>
+          replyTo ! Running
+          Behaviors.same
       }
     }
 
@@ -176,6 +190,9 @@ class ProcessActor(
           process.destroyForcibly()
           deathSubscriber.foreach(_ ! killedForcefully)
           Behaviors.stopped
+        case GetStatus(replyTo) =>
+          replyTo ! Stopping
+          Behaviors.same
       }
     }
 }

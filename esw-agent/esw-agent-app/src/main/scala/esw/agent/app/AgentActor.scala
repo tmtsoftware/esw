@@ -1,15 +1,21 @@
 package esw.agent.app
 
-import akka.actor.typed.ActorRef
+import akka.actor.typed.scaladsl.AskPattern.Askable
 import akka.actor.typed.scaladsl.Behaviors
+import akka.actor.typed.{ActorRef, Scheduler}
+import akka.util.Timeout
 import csw.location.api.scaladsl.LocationService
 import csw.location.api.models.ComponentId
 import csw.logging.api.scaladsl.Logger
 import esw.agent.api.AgentCommand._
-import esw.agent.api.{AgentCommand, Failed, SpawnCommand}
+import esw.agent.api.ComponentStatus.NotAvailable
+import esw.agent.api.{AgentCommand, AgentStatus, Failed, SpawnCommand}
 import esw.agent.app.AgentActor.AgentState
-import esw.agent.app.process.ProcessActorMessage.{Die, SpawnComponent}
+import esw.agent.app.process.ProcessActorMessage.{Die, GetStatus, SpawnComponent}
 import esw.agent.app.process.{ProcessActor, ProcessActorMessage, ProcessExecutor}
+
+import scala.concurrent.Future
+import scala.concurrent.duration.DurationLong
 
 class AgentActor(
     locationService: LocationService,
@@ -29,6 +35,7 @@ class AgentActor(
           warn(message, Map("prefix" -> componentId.prefix))
           replyTo ! Failed(message)
           Behaviors.same
+
         //happy path
         case command @ SpawnCommand(_, componentId) =>
           val initBehaviour =
@@ -37,6 +44,7 @@ class AgentActor(
           ctx.watchWith(processActorRef, ProcessExited(componentId))
           processActorRef ! SpawnComponent
           behavior(state.add(componentId, processActorRef))
+
         case KillComponent(replyTo, componentId) =>
           state.components.get(componentId) match {
             case Some(processActor) =>
@@ -47,6 +55,24 @@ class AgentActor(
               replyTo ! Failed(message)
           }
           Behaviors.same
+
+        case GetComponentStatus(replyTo, componentId) =>
+          state.components.get(componentId) match {
+            case Some(childRef) => childRef ! GetStatus(replyTo)
+            case None           => replyTo ! NotAvailable
+          }
+          Behaviors.same
+
+        case GetAgentStatus(replyTo) =>
+          import ctx.executionContext
+          implicit val sch: Scheduler   = ctx.system.scheduler
+          implicit val timeout: Timeout = Timeout(1.second)
+          val futures = state.components.map {
+            case (id, ref) => (ref ? GetStatus).map(status => (id, status))
+          }.toList
+          Future.sequence(futures).map(_.toMap).map(replyTo ! AgentStatus(_))
+          Behaviors.same
+
         //process has exited and child actor died
         case ProcessExited(componentId) => behavior(state.remove(componentId))
       }
