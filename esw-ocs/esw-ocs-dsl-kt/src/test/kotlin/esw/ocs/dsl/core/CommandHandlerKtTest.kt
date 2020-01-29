@@ -73,14 +73,23 @@ internal class CommandHandlerKtTest {
             val commandHandlerKt: CommandHandlerKt<Setup> =
                     CommandHandlerKt<Setup>(scope(), commandHandlerScope) {
                         commandHandlerCounter++
-                        if (commandHandlerCounter < 2) throw RuntimeException("exception")
+                        if (commandHandlerCounter < 3) throw RuntimeException("exception")
                     }.onError { errorHandlerCounter++ }
             commandHandlerKt.retry(2)
 
             shouldNotThrow<RuntimeException> { commandHandlerKt.execute(sequenceCommand).await() }
 
-            commandHandlerCounter shouldBe 2
-            errorHandlerCounter shouldBe 1
+            commandHandlerCounter shouldBe 3
+            errorHandlerCounter shouldBe 2
+
+            // Assert that the original retry count is used for executing successive commands
+            errorHandlerCounter = 0
+            commandHandlerCounter = 0
+
+            shouldNotThrow<RuntimeException> { commandHandlerKt.execute(sequenceCommand).await() }
+
+            commandHandlerCounter shouldBe 3
+            errorHandlerCounter shouldBe 2
         }
 
         @Test

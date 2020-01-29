@@ -29,7 +29,7 @@ class CommandHandlerKt<T : SequenceCommand>(
     private var delayInMillis: Long = 0
 
     override fun execute(sequenceCommand: T): CompletionStage<Void> {
-        val originalCount = retryCount
+        var localRetryCount = retryCount
 
         return scope.launch {
             suspend fun go(): Unit =
@@ -37,13 +37,11 @@ class CommandHandlerKt<T : SequenceCommand>(
                         block(sequenceCommand)
                     } catch (e: Exception) {
                         onError?.let { it(commandHandlerScope, e.toScriptError()) }
-                        if (retryCount > 0) {
-                            retryCount -= 1
+                        if (localRetryCount > 0) {
+                            localRetryCount -= 1
                             delay(delayInMillis)
                             go()
                         } else throw e
-                    } finally {
-                        retryCount = originalCount // this is to set back the original retry count.
                     }
 
             go()

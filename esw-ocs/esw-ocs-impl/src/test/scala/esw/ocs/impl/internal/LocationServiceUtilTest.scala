@@ -165,7 +165,7 @@ class LocationServiceUtilTest extends ScalaTestWithActorTestKit with BaseTestSui
       actualLocations should ===(tcsLocation)
     }
 
-    "return a RuntimeException when no matching packageId and observing mode is found | ESW-119" in {
+    "return a RuntimeException when no matching subsystem and observing mode is found | ESW-119" in {
       when(locationService.resolve(AkkaConnection(ComponentId(Prefix(TCS, "obsMode1"), Sequencer)), Timeouts.DefaultTimeout))
         .thenReturn(Future.successful(None))
 
