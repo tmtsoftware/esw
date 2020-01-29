@@ -156,4 +156,24 @@ script {
     }
     // #onError-for-negative-response
 
+    // #retry
+    onSetup("submit-error-handling") { command ->
+        val assembly1 = Assembly(IRIS, "filter.wheel", 5.seconds)
+
+        // Submit command to assembly return negative response. - error by default
+        assembly1.submit(command)
+    }.onError { err ->
+        error(err.reason)
+    }.retry(2)
+    // #retry
+
+    // #retry-with-interval
+    onSetup("submit-error-handling") { command ->
+        val assembly1 = Assembly(IRIS, "filter.wheel", 5.seconds)
+
+        // Submit command to assembly return negative response. - error by default
+        assembly1.submit(command)
+    }.retry(2, 10.seconds)
+    // #retry-with-interval
+
 }

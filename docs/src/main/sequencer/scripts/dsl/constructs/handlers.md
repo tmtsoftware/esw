@@ -133,8 +133,10 @@ this scenario, framework will log the error cause. Sequence execution will conti
 
 The Script DSL provides following constructs to handle failures while executing script:
 
-1. **onGlobalError** : This construct is provided for the script writer. Logic in the `onGlobalError` will be executed for all **Handler Failures** including
-**Command Handler Failures** except the @ref:[Shutdown Handler](#shutdown-handler). If the `onGlobalError` handler is not provided by script, 
+### Global Error Handler
+
+**onGlobalError** : This construct is provided for the script writer. Logic in the `onGlobalError` will be executed for all **Handler Failures** including
+**Command Handler Failures** except the @ref:[Shutdown Handler](#shutdown-handler). If the `onGlobalError` handler is not provided by script,
 then only the logging of error cause is done by the framework.
 
 Following example shows usage of `onGloablError`
@@ -142,7 +144,14 @@ Following example shows usage of `onGloablError`
 Kotlin
 : @@snip [HandlersExample.kts](../../../../../../../examples/src/main/kotlin/esw/ocs/scripts/examples/paradox/HandlersExample.kts) { #onGlobalError }
 
-2. **onError** : This construct is specifically provided for **Command Handler Failures**.
+@@@ note
+Error in all handlers **except the Shutdown Handler** will execute the global error handler provided by script. If an error handler is not provided, the framework will
+log the error cause.
+@@@
+
+### Error handling at command handler level 
+
+**onError** : This construct is specifically provided for **Command Handler Failures**.
 An `onError` block can be written specifically for each `onSetup` and `onObserve` handler. 
 The `SubmitResponse` error is captured in a `ScriptError` type and passed to `onError` the block.
 This type contains a `reason` String explaining what went wrong. 
@@ -157,7 +166,19 @@ By default, a negative `SubmitResponse` is considered as error.
 Kotlin
 : @@snip [HandlersExample.kts](../../../../../../../examples/src/main/kotlin/esw/ocs/scripts/examples/paradox/HandlersExample.kts) { #onError-for-negative-response }
 
-@@@ note
-Error in all handlers **except the Shutdown Handler** will execute the error handler provided by script. If an error handler is not provided, the framework will
-log the error cause.
-@@@
+**retry**: This construct is specifically provided for **Command Handler Failures**.
+A `retry` block can be written specifically for each `onSetup` and `onObserve` handler. 
+A `retry` block expects a `retryCount` and optional parameter `interval` which specifies an interval after which `onSetup` or `onObserve` will be retried
+in case of failure. `retry` block can be used along with `onError` or it can be used independently. If `retry` is combined with `onError` then command
+handler failure will call `onError` before each retry attempt. If command handler still fails after all retry attempts then `onError` block is called followed by
+`onGlobalError` and sequence will be terminated with failure. After the error handling blocks are called, the command and hence the sequence, terminate with an Error status.
+
+Following example shows `retry` construct used along with `onError`.
+
+Kotlin
+: @@snip [HandlersExample.kts](../../../../../../../examples/src/main/kotlin/esw/ocs/scripts/examples/paradox/HandlersExample.kts) { #retry }
+
+Following example shows `retry` with interval used independently (without having `onError` block).
+
+Kotlin
+: @@snip [HandlersExample.kts](../../../../../../../examples/src/main/kotlin/esw/ocs/scripts/examples/paradox/HandlersExample.kts) { #retry }
