@@ -23,13 +23,13 @@ import esw.ocs.impl.messages.SequencerMessages._
 import esw.ocs.impl.messages.SequencerState.{Idle, InProgress}
 import esw.ocs.impl.messages.{SequenceComponentMsg, SequencerState}
 import esw.ocs.impl.script.ScriptApi
-import org.scalatest.concurrent.Eventually._
 import org.scalatest.Assertion
+import org.scalatest.concurrent.Eventually._
+import org.scalatest.matchers.should.Matchers
 
 import scala.concurrent.duration.DurationLong
 import scala.concurrent.{ExecutionContext, Future, Promise}
 import scala.util.{Random, Success}
-import org.scalatest.matchers.should.Matchers
 
 class SequencerTestSetup(sequence: Sequence)(implicit system: ActorSystem[_]) {
   import Matchers._
@@ -150,7 +150,7 @@ class SequencerTestSetup(sequence: Sequence)(implicit system: ActorSystem[_]) {
       case InProgress                      => stepList.get.nextPending shouldBe None
       case x: SequencerState[SequencerMsg] => assert(false, s"$x is not valid state after AbortSequence")
     }
-    eventually(verify(script).executeAbort())
+    verify(script, timeout(1000)).executeAbort()
     probe
   }
 
@@ -180,7 +180,7 @@ class SequencerTestSetup(sequence: Sequence)(implicit system: ActorSystem[_]) {
       case InProgress                      => stepList shouldNot be(None)
       case x: SequencerState[SequencerMsg] => assert(false, s"$x is not valid state after Stop")
     }
-    eventually(verify(script).executeStop())
+    verify(script, timeout(1000)).executeStop()
     probe
   }
 
@@ -247,7 +247,7 @@ class SequencerTestSetup(sequence: Sequence)(implicit system: ActorSystem[_]) {
     val probe = TestProbe[DiagnosticModeResponse]
     sequencerActor ! DiagnosticMode(startTime, hint, probe.ref)
 
-    eventually(verify(script).executeDiagnosticMode(startTime, hint))
+    verify(script, timeout(1000)).executeDiagnosticMode(startTime, hint)
     probe.expectMessage(response)
   }
 
@@ -260,7 +260,7 @@ class SequencerTestSetup(sequence: Sequence)(implicit system: ActorSystem[_]) {
     val probe = TestProbe[OperationsModeResponse]
     sequencerActor ! OperationsMode(probe.ref)
 
-    eventually(verify(script).executeOperationsMode())
+    verify(script, timeout(1000)).executeOperationsMode()
     probe.expectMessage(response)
   }
 
