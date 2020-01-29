@@ -18,7 +18,7 @@ import scala.compat.java8.FutureConverters.{CompletionStageOps, FutureOps}
 import scala.concurrent.{ExecutionContext, Future}
 
 private[esw] class ScriptDsl(sequenceOperatorFactory: () => SequenceOperator, strandEc: StrandEc, shutdownTask: Runnable)
-  extends ScriptApi {
+    extends ScriptApi {
   protected implicit lazy val toEc: ExecutionContext = strandEc.ec
 
   var isOnline = true
