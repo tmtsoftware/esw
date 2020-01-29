@@ -71,7 +71,7 @@ FsmScript("INIT") {
         }
 
         onObserve("observe-command-2") {
-            if (params.kExists(intKey("encoder"))) {
+            if (params.exists(intKey("encoder"))) {
                 become("FINISHED")
             }
         }

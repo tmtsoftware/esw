@@ -30,3 +30,8 @@ A parameter could be removed from `Params` instance or from `Command` directly. 
 Kotlin
 : @@snip [Params.kts](../../../../../../../examples/src/main/kotlin/esw/ocs/scripts/examples/paradox/ParamsExample.kts) { #remove }  
 
+## Checking if a parameter exists
+
+Kotlin
+: @@snip [Params.kts](../../../../../../../examples/src/main/kotlin/esw/ocs/scripts/examples/paradox/ParamsExample.kts) { #exists }
+

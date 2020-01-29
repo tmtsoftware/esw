@@ -61,6 +61,14 @@ script {
         val updatedCommand2: Setup = setupCommand.remove(temperatureParameter)
         //#remove
 
+        //#exists
+        // check if parameter with specified key exists in Params
+        val temperatureKeyExists: Boolean = params.exists(temperatureKey)
+
+        // check if parameter with specified key exists directly from command
+        val temperatureKeyExists2: Boolean = setupCommand.exists(temperatureKey)
+        //#exists
+
     }
 
     // #adding-params

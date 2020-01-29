@@ -17,8 +17,6 @@ operator fun <T> Parameter<T>.invoke(index: Int): T = value(index)
 
 fun <S> ParameterSetType<*>.kFind(parameter: Parameter<S>): Parameter<S>? = jFind(parameter).nullable()
 
-fun <S> ParameterSetType<*>.kExists(key: Key<S>): Boolean = exists(key)
-
 fun <S> ParameterSetType<*>.kGet(key: Key<S>): Parameter<S>? = jGet(key).nullable()
 fun <S> ParameterSetType<*>.kGet(keyName: String, keyType: KeyType<S>): Parameter<S>? = jGet(keyName, keyType).nullable()
 operator fun <S> ParameterSetType<*>.invoke(key: Key<S>): Parameter<S> = apply(key)
