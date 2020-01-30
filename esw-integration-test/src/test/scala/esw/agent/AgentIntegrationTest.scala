@@ -3,10 +3,11 @@ package esw.agent
 import akka.util.Timeout
 import csw.location.api.codec.LocationServiceCodecs
 import csw.location.api.models.ComponentId
-import csw.location.api.models.ComponentType.SequenceComponent
+import csw.location.api.models.ComponentType.{SequenceComponent, Service}
 import csw.prefix.models.Prefix
+import esw.agent.api.ComponentStatus.Running
 import esw.agent.api.Killed._
-import esw.agent.api.{Failed, Spawned}
+import esw.agent.api.{AgentStatus, Failed, Spawned}
 import esw.agent.client.AgentClient
 import esw.ocs.testkit.EswTestKit
 import esw.ocs.testkit.Service.MachineAgent
@@ -67,6 +68,27 @@ class AgentIntegrationTest extends EswTestKit(MachineAgent) with BeforeAndAfterA
         Await.result(agentClient.killComponent(ComponentId(seqCompPrefix, SequenceComponent)), askTimeout.duration)
       killResponse should ===(killedGracefully)
       Await.result(spawnResponseF, askTimeout.duration) should ===(Failed("Aborted"))
+    }
+
+    "return status of components available on agent for a GetAgentStatus message | ESW-286" in {
+      val agentClient = Await.result(AgentClient.make(agentPrefix, locationService), 7.seconds)
+
+      val seqCompPrefix        = Prefix(s"esw.test_${Random.nextInt.abs}_delay_exit")
+      val seqCompSpawnResponse = Await.result(agentClient.spawnSequenceComponent(seqCompPrefix), askTimeout.duration)
+      seqCompSpawnResponse should ===(Spawned)
+      val seqComponentId = ComponentId(seqCompPrefix, SequenceComponent)
+      val seqCompStatus  = Await.result(agentClient.getComponentStatus(seqComponentId), 500.millis)
+      seqCompStatus should ===(Running)
+
+      val redisPrefix        = Prefix(s"esw.test_${Random.nextInt.abs}_delay_exit")
+      val redisSpawnResponse = Await.result(agentClient.spawnRedis(redisPrefix, 100, List.empty), askTimeout.duration)
+      redisSpawnResponse should ===(Spawned)
+      val redisCompId     = ComponentId(redisPrefix, Service)
+      val redisCompStatus = Await.result(agentClient.getComponentStatus(redisCompId), 500.millis)
+      redisCompStatus should ===(Running)
+
+      val agentStatus = Await.result(agentClient.getAgentStatus, 500.millis)
+      agentStatus should ===(AgentStatus(Map(seqComponentId -> Running, redisCompId -> Running)))
     }
   }
 
