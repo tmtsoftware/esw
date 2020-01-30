@@ -2,9 +2,9 @@
 
 package esw.ocs.scripts.examples.paradox
 
-import csw.location.models.*
-import csw.location.models.Connection.AkkaConnection
-import csw.location.models.Connection.HttpConnection
+import csw.location.api.models.*
+import csw.location.api.models.Connection.AkkaConnection
+import csw.location.api.models.Connection.HttpConnection
 import csw.prefix.models.Prefix
 import esw.ocs.dsl.core.script
 import esw.ocs.dsl.highlevel.models.*

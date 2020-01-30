@@ -5,8 +5,8 @@ import java.net.URI
 import akka.Done
 import akka.actor.testkit.typed.scaladsl.ScalaTestWithActorTestKit
 import akka.actor.typed.scaladsl.Behaviors
-import csw.location.models.Connection.AkkaConnection
-import csw.location.models.{AkkaLocation, ComponentId, ComponentType}
+import csw.location.api.models.Connection.AkkaConnection
+import csw.location.api.models.{AkkaLocation, ComponentId, ComponentType}
 import csw.prefix.models.{Prefix, Subsystem}
 import esw.ocs.api.BaseTestSuite
 import esw.ocs.api.protocol.{GetStatusResponse, ScriptError, ScriptResponse}

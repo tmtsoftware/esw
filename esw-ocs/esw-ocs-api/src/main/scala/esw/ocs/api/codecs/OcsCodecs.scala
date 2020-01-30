@@ -1,6 +1,6 @@
 package esw.ocs.api.codecs
 
-import csw.location.models.codecs.LocationCodecs
+import csw.location.api.codec.LocationCodecs
 import csw.params.core.formats.ParamCodecs
 import esw.ocs.api.models.{Step, StepList, StepStatus}
 import esw.ocs.api.protocol._

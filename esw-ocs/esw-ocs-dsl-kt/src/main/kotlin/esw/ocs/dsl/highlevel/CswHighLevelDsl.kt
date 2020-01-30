@@ -1,6 +1,6 @@
 package esw.ocs.dsl.highlevel
 
-import csw.location.models.ComponentType
+import csw.location.api.models.ComponentType
 import csw.prefix.models.Prefix
 import csw.prefix.models.Subsystem
 import esw.ocs.dsl.epics.CommandFlag

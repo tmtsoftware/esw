@@ -3,7 +3,7 @@ package esw.gateway.api.clients
 import akka.actor.typed.ActorSystem
 import csw.command.api.client.CommandServiceClient
 import csw.command.api.scaladsl.CommandService
-import csw.location.models.ComponentId
+import csw.location.api.models.ComponentId
 import esw.gateway.api.protocol.{PostRequest, WebsocketRequest}
 import esw.ocs.api.SequencerApi
 import esw.ocs.api.client.SequencerClient

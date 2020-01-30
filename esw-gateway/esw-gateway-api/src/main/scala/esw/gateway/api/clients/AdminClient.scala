@@ -1,7 +1,7 @@
 package esw.gateway.api.clients
 
 import csw.admin.api.AdminService
-import csw.location.models.ComponentId
+import csw.location.api.models.ComponentId
 import csw.logging.models.codecs.LoggingCodecs
 import csw.logging.models.{Level, LogMetadata}
 import esw.gateway.api.protocol.PostRequest

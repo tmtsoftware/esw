@@ -2,7 +2,7 @@ package esw.ocs.impl.messages
 
 import akka.actor.typed.ActorRef
 import csw.command.client.messages.sequencer.SequencerMsg
-import csw.location.models.AkkaLocation
+import csw.location.api.models.AkkaLocation
 import csw.params.commands.{Sequence, SequenceCommand}
 import csw.params.core.models.Id
 import csw.time.core.models.UTCTime

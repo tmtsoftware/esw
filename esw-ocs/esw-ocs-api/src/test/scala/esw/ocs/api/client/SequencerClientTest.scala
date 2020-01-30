@@ -3,9 +3,9 @@ package esw.ocs.api.client
 import java.net.URI
 
 import akka.util.Timeout
-import csw.location.models.ComponentType.SequenceComponent
-import csw.location.models.Connection.AkkaConnection
-import csw.location.models.{AkkaLocation, ComponentId}
+import csw.location.api.models.ComponentType.SequenceComponent
+import csw.location.api.models.Connection.AkkaConnection
+import csw.location.api.models.{AkkaLocation, ComponentId}
 import csw.params.commands.CommandResponse.{Completed, Started, SubmitResponse}
 import csw.params.commands.{CommandName, Sequence, Setup}
 import csw.params.core.models.Id

@@ -4,7 +4,7 @@ import akka.Done
 import akka.actor.typed.scaladsl.Behaviors
 import akka.actor.typed.{ActorRef, Behavior}
 import csw.location.api.scaladsl.{LocationService, RegistrationResult}
-import csw.location.models._
+import csw.location.api.models._
 import csw.logging.api.scaladsl.Logger
 import esw.agent.api.AgentCommand.{SpawnManuallyRegistered, SpawnSelfRegistered}
 import esw.agent.api.Killed._

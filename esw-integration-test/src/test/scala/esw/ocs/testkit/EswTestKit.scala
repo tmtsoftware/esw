@@ -12,8 +12,8 @@ import csw.command.client.messages.sequencer.SequencerMsg
 import csw.event.api.scaladsl.{EventPublisher, EventService, EventSubscriber}
 import csw.location.api.extensions.URIExtension._
 import csw.location.api.scaladsl.LocationService
-import csw.location.models.Connection.{AkkaConnection, HttpConnection}
-import csw.location.models.{AkkaLocation, ComponentId, ComponentType, HttpLocation}
+import csw.location.api.models.Connection.{AkkaConnection, HttpConnection}
+import csw.location.api.models.{AkkaLocation, ComponentId, ComponentType, HttpLocation}
 import csw.network.utils.{Networks, SocketUtils}
 import csw.prefix.models.{Prefix, Subsystem}
 import csw.testkit.scaladsl.ScalaTestFrameworkTestKit

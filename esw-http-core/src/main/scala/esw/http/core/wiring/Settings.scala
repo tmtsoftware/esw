@@ -1,8 +1,8 @@
 package esw.http.core.wiring
 
 import com.typesafe.config.Config
-import csw.location.models.Connection.HttpConnection
-import csw.location.models.{ComponentId, ComponentType}
+import csw.location.api.models.Connection.HttpConnection
+import csw.location.api.models.{ComponentId, ComponentType}
 import csw.prefix.models.Prefix
 
 class Settings(_port: Option[Int], _prefix: Option[Prefix], _config: Config, componentType: ComponentType) {

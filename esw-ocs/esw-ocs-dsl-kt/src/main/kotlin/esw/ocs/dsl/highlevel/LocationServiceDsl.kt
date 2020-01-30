@@ -2,7 +2,7 @@ package esw.ocs.dsl.highlevel
 
 import csw.location.api.javadsl.ILocationService
 import csw.location.api.javadsl.IRegistrationResult
-import csw.location.models.*
+import csw.location.api.models.*
 import csw.prefix.models.Prefix
 import esw.ocs.dsl.SuspendableConsumer
 import esw.ocs.dsl.highlevel.models.RegistrationResult

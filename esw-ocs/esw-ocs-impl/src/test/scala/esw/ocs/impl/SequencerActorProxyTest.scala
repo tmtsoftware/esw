@@ -5,9 +5,9 @@ import akka.actor.typed.scaladsl.Behaviors
 import csw.command.client.messages.sequencer.SequencerMsg
 import csw.command.client.messages.sequencer.SequencerMsg.QueryFinal
 import csw.location.api.extensions.ActorExtension._
-import csw.location.models.ComponentType.SequenceComponent
-import csw.location.models.Connection.AkkaConnection
-import csw.location.models.{AkkaLocation, ComponentId}
+import csw.location.api.models.ComponentType.SequenceComponent
+import csw.location.api.models.Connection.AkkaConnection
+import csw.location.api.models.{AkkaLocation, ComponentId}
 import csw.params.commands.CommandResponse.{Completed, Started}
 import csw.params.commands.{CommandName, Sequence, Setup}
 import csw.params.core.models.Id

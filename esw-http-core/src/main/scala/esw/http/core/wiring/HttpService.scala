@@ -9,8 +9,8 @@ import akka.http.scaladsl.Http
 import akka.http.scaladsl.Http.ServerBinding
 import akka.http.scaladsl.server.Route
 import csw.location.api.scaladsl.{LocationService, RegistrationResult}
-import csw.location.models.Connection.HttpConnection
-import csw.location.models.HttpRegistration
+import csw.location.api.models.Connection.HttpConnection
+import csw.location.api.models.HttpRegistration
 import csw.logging.api.scaladsl.Logger
 import csw.network.utils.{Networks, SocketUtils}
 import esw.http.core.commons.CoordinatedShutdownReasons.FailureReason

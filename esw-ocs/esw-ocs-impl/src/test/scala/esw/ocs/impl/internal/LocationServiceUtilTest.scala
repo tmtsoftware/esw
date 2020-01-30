@@ -11,9 +11,9 @@ import akka.actor.typed.scaladsl.Behaviors
 import akka.actor.typed.scaladsl.adapter.TypedActorSystemOps
 import csw.location.api.exceptions.OtherLocationIsRegistered
 import csw.location.api.scaladsl.{LocationService, RegistrationResult}
-import csw.location.models.ComponentType._
-import csw.location.models.Connection.AkkaConnection
-import csw.location.models.{AkkaLocation, AkkaRegistration, ComponentId}
+import csw.location.api.models.ComponentType._
+import csw.location.api.models.Connection.AkkaConnection
+import csw.location.api.models.{AkkaLocation, AkkaRegistration, ComponentId}
 import csw.prefix.models.{Prefix, Subsystem}
 import csw.prefix.models.Subsystem.{ESW, IRIS, TCS}
 import esw.ocs.api.BaseTestSuite

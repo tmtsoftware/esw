@@ -4,9 +4,9 @@ import akka.actor.testkit.typed.scaladsl.TestProbe
 import com.typesafe.config.ConfigFactory
 import csw.location.api.extensions.ActorExtension._
 import csw.location.helpers.{LSNodeSpec, TwoMembersAndSeed}
-import csw.location.models.ComponentType.SequenceComponent
-import csw.location.models.Connection.{AkkaConnection, HttpConnection}
-import csw.location.models.{AkkaLocation, ComponentId, ComponentType}
+import csw.location.api.models.ComponentType.SequenceComponent
+import csw.location.api.models.Connection.{AkkaConnection, HttpConnection}
+import csw.location.api.models.{AkkaLocation, ComponentId, ComponentType}
 import csw.location.server.http.MultiNodeHTTPLocationService
 import csw.params.commands.CommandResponse.Started
 import csw.params.commands.{CommandName, Sequence, Setup}

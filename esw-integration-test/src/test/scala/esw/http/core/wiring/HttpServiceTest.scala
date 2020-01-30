@@ -7,7 +7,7 @@ import akka.http.scaladsl.model.{ContentTypes, HttpEntity}
 import akka.http.scaladsl.server.Directives.{complete, get, path}
 import akka.http.scaladsl.server.Route
 import csw.location.api.exceptions.OtherLocationIsRegistered
-import csw.location.models.HttpRegistration
+import csw.location.api.models.HttpRegistration
 import csw.network.utils.{Networks, SocketUtils}
 import esw.ocs.testkit.EswTestKit
 

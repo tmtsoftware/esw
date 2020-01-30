@@ -3,10 +3,10 @@ package esw.agent.api
 import java.nio.file.{Path, Paths}
 
 import akka.actor.typed.ActorRef
-import csw.location.models.ComponentType.SequenceComponent
-import csw.location.models.Connection.TcpConnection
-import csw.location.models.ConnectionType.AkkaType
-import csw.location.models._
+import csw.location.api.models.ComponentType.SequenceComponent
+import csw.location.api.models.Connection.TcpConnection
+import csw.location.api.models.ConnectionType.AkkaType
+import csw.location.api.models._
 import csw.prefix.models.Prefix
 import esw.agent.api.AgentCommand.{SpawnManuallyRegistered, SpawnSelfRegistered}
 

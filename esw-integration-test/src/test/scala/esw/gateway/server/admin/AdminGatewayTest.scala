@@ -15,9 +15,9 @@ import csw.command.client.messages.ContainerCommonMessage.GetComponents
 import csw.command.client.messages.ContainerMessage
 import csw.command.client.models.framework.{Component, Components, ContainerLifecycleState}
 import csw.location.client.ActorSystemFactory
-import csw.location.models.ComponentType.{Assembly, HCD}
-import csw.location.models.Connection.AkkaConnection
-import csw.location.models.{ComponentId, ComponentType}
+import csw.location.api.models.ComponentType.{Assembly, HCD}
+import csw.location.api.models.Connection.AkkaConnection
+import csw.location.api.models.{ComponentId, ComponentType}
 import csw.logging.client.internal.JsonExtensions._
 import csw.logging.client.internal._
 import csw.logging.client.scaladsl.LoggingSystemFactory

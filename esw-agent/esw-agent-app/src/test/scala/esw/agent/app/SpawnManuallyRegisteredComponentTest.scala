@@ -6,9 +6,9 @@ import java.util.concurrent.CompletableFuture
 import akka.actor.testkit.typed.scaladsl.{ScalaTestWithActorTestKit, TestProbe}
 import akka.actor.typed.Scheduler
 import csw.location.api.scaladsl.{LocationService, RegistrationResult}
-import csw.location.models.ComponentType.Service
-import csw.location.models.Connection.TcpConnection
-import csw.location.models.{ComponentId, TcpLocation, TcpRegistration}
+import csw.location.api.models.ComponentType.Service
+import csw.location.api.models.Connection.TcpConnection
+import csw.location.api.models.{ComponentId, TcpLocation, TcpRegistration}
 import csw.logging.api.scaladsl.Logger
 import csw.prefix.models.Prefix
 import esw.agent.api.AgentCommand.KillComponent

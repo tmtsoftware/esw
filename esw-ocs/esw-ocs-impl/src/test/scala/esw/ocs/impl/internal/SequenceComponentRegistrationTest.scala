@@ -10,9 +10,9 @@ import akka.actor.typed.scaladsl.adapter.TypedActorSystemOps
 import akka.actor.typed.{ActorRef, ActorSystem, SpawnProtocol}
 import csw.location.api.exceptions.{OtherLocationIsRegistered, RegistrationFailed}
 import csw.location.api.scaladsl.{LocationService, RegistrationResult}
-import csw.location.models.ComponentType.SequenceComponent
-import csw.location.models.Connection.AkkaConnection
-import csw.location.models.{AkkaLocation, AkkaRegistration, ComponentId, ComponentType}
+import csw.location.api.models.ComponentType.SequenceComponent
+import csw.location.api.models.Connection.AkkaConnection
+import csw.location.api.models.{AkkaLocation, AkkaRegistration, ComponentId, ComponentType}
 import csw.prefix.models.{Prefix, Subsystem}
 import esw.ocs.api.BaseTestSuite
 import esw.ocs.api.protocol.ScriptError

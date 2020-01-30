@@ -3,7 +3,7 @@ package esw.agent.api.codecs
 import akka.actor.typed.scaladsl.adapter._
 import akka.actor.typed.{ActorRef, ActorSystem}
 import akka.serialization.{Serialization, SerializationExtension}
-import csw.location.models.codecs.LocationCodecs
+import csw.location.api.codec.LocationCodecs
 import csw.prefix.codecs.CommonCodecs
 import esw.agent.api.{AgentCommand, Response}
 import io.bullet.borer.Codec

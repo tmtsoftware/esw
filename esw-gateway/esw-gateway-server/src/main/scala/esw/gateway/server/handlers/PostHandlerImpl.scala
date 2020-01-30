@@ -5,7 +5,7 @@ import akka.http.scaladsl.server.Route
 import csw.admin.api.AdminService
 import csw.command.api.messages.CommandServiceHttpMessage
 import csw.command.client.handlers.CommandServiceHttpHandlers
-import csw.location.models.ComponentId
+import csw.location.api.models.ComponentId
 import esw.gateway.api.codecs.GatewayCodecs._
 import esw.gateway.api.protocol.PostRequest
 import esw.gateway.api.protocol.PostRequest._

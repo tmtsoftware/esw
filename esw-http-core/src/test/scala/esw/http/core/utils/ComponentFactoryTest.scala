@@ -4,8 +4,8 @@ import java.net.URI
 
 import akka.actor.typed.{ActorSystem, SpawnProtocol}
 import csw.location.api.scaladsl.LocationService
-import csw.location.models.Connection.{AkkaConnection, HttpConnection}
-import csw.location.models.{AkkaLocation, ComponentId, HttpLocation}
+import csw.location.api.models.Connection.{AkkaConnection, HttpConnection}
+import csw.location.api.models.{AkkaLocation, ComponentId, HttpLocation}
 import esw.http.core.BaseTestSuite
 import esw.http.core.wiring.ActorRuntime
 

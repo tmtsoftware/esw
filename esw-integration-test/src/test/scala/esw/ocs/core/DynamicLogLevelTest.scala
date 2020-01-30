@@ -1,6 +1,6 @@
 package esw.ocs.core
 
-import csw.location.models.AkkaLocation
+import csw.location.api.models.AkkaLocation
 import csw.logging.client.scaladsl.LoggingSystemFactory
 import csw.logging.models.Level.{ERROR, FATAL, TRACE}
 import csw.logging.models.LogMetadata

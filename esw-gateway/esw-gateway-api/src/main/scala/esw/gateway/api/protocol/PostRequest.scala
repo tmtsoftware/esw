@@ -3,7 +3,7 @@ package esw.gateway.api.protocol
 import csw.alarm.models.AlarmSeverity
 import csw.alarm.models.Key.AlarmKey
 import csw.command.api.messages.CommandServiceHttpMessage
-import csw.location.models.ComponentId
+import csw.location.api.models.ComponentId
 import csw.logging.models.Level
 import csw.params.events.{Event, EventKey}
 import csw.prefix.models.Prefix

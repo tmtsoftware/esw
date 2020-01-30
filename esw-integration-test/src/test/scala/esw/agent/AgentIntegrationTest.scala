@@ -2,8 +2,8 @@ package esw.agent
 
 import akka.util.Timeout
 import csw.location.api.codec.LocationServiceCodecs
-import csw.location.models.ComponentId
-import csw.location.models.ComponentType.SequenceComponent
+import csw.location.api.models.ComponentId
+import csw.location.api.models.ComponentType.SequenceComponent
 import csw.prefix.models.Prefix
 import esw.agent.api.Killed._
 import esw.agent.api.{Failed, Spawned}

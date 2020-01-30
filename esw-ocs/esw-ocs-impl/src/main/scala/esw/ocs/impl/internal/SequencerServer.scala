@@ -1,7 +1,7 @@
 package esw.ocs.impl.internal
 
 import akka.Done
-import csw.location.models.AkkaLocation
+import csw.location.api.models.AkkaLocation
 import csw.prefix.models.Subsystem
 import esw.ocs.api.protocol.ScriptError
 

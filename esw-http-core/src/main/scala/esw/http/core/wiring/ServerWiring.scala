@@ -2,7 +2,7 @@ package esw.http.core.wiring
 
 import com.typesafe.config.ConfigFactory
 import csw.aas.http.SecurityDirectives
-import csw.location.models.ComponentType
+import csw.location.api.models.ComponentType
 import csw.logging.api.scaladsl.Logger
 import csw.logging.client.scaladsl.LoggerFactory
 import csw.prefix.models.Prefix

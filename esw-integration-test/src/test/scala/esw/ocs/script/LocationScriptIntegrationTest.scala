@@ -2,7 +2,7 @@ package esw.ocs.script
 
 import akka.actor.testkit.typed.scaladsl.TestProbe
 import csw.location.api.scaladsl.RegistrationResult
-import csw.location.models.{HttpLocation, LocationRemoved, LocationUpdated}
+import csw.location.api.models.{HttpLocation, LocationRemoved, LocationUpdated}
 import csw.params.commands.{CommandName, Sequence, Setup}
 import csw.params.core.generics.KeyType.StringKey
 import csw.params.events.EventKey

@@ -3,7 +3,7 @@ package esw.agent.app
 import akka.actor.typed.ActorRef
 import akka.actor.typed.scaladsl.Behaviors
 import csw.location.api.scaladsl.LocationService
-import csw.location.models.ComponentId
+import csw.location.api.models.ComponentId
 import csw.logging.api.scaladsl.Logger
 import esw.agent.api.AgentCommand._
 import esw.agent.api.{AgentCommand, Failed, SpawnCommand}

@@ -5,7 +5,7 @@ import akka.http.scaladsl.model.Uri
 import akka.http.scaladsl.model.Uri.Path
 import akka.util.Timeout
 import csw.command.client.extensions.AkkaLocationExt.RichAkkaLocation
-import csw.location.models.{AkkaLocation, HttpLocation, Location, TcpLocation}
+import csw.location.api.models.{AkkaLocation, HttpLocation, Location, TcpLocation}
 import esw.ocs.api.SequencerApi
 import esw.ocs.api.client.SequencerClient
 import esw.ocs.api.codecs.SequencerHttpCodecs

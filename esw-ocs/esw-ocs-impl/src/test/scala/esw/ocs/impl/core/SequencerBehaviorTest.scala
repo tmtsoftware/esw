@@ -4,7 +4,7 @@ import akka.Done
 import akka.actor.testkit.typed.scaladsl.{ScalaTestWithActorTestKit, TestProbe}
 import csw.command.client.messages.sequencer.SequencerMsg.QueryFinal
 import csw.command.client.messages.{GetComponentLogMetadata, SetComponentLogLevel}
-import csw.location.models.AkkaLocation
+import csw.location.api.models.AkkaLocation
 import csw.logging.client.commons.LogAdminUtil
 import csw.logging.models.Level.{DEBUG, INFO}
 import csw.logging.models.LogMetadata

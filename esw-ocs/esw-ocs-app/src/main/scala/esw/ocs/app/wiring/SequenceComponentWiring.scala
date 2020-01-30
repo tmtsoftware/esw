@@ -4,7 +4,7 @@ import akka.actor.typed.SpawnProtocol.Spawn
 import akka.actor.typed.scaladsl.AskPattern._
 import akka.actor.typed.{ActorRef, Props}
 import akka.util.Timeout
-import csw.location.models.AkkaLocation
+import csw.location.api.models.AkkaLocation
 import csw.logging.api.scaladsl.Logger
 import csw.logging.client.scaladsl.LoggerFactory
 import csw.prefix.models.{Prefix, Subsystem}

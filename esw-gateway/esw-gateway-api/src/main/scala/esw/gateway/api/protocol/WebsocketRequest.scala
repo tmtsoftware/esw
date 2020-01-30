@@ -1,7 +1,7 @@
 package esw.gateway.api.protocol
 
 import csw.command.api.messages.CommandServiceWebsocketMessage
-import csw.location.models.ComponentId
+import csw.location.api.models.ComponentId
 import csw.params.events.EventKey
 import csw.prefix.models.Subsystem
 import esw.ocs.api.protocol.SequencerWebsocketRequest

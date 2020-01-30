@@ -5,8 +5,8 @@ import akka.stream.scaladsl.Sink
 import com.typesafe.config.ConfigFactory
 import csw.event.client.EventServiceFactory
 import csw.location.client.scaladsl.HttpLocationServiceFactory
-import csw.location.models.ComponentId
-import csw.location.models.ComponentType.Assembly
+import csw.location.api.models.ComponentId
+import csw.location.api.models.ComponentType.Assembly
 import csw.params.commands.CommandResponse.{Accepted, Completed, Started}
 import csw.params.commands.{CommandName, Setup}
 import csw.params.core.models.ObsId

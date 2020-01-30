@@ -14,8 +14,8 @@ import csw.location.api.extensions.ActorExtension.RichActor
 import csw.location.api.javadsl.ILocationService
 import csw.location.client.ActorSystemFactory
 import csw.location.client.javadsl.JHttpLocationServiceFactory
-import csw.location.models.Connection.AkkaConnection
-import csw.location.models.{AkkaLocation, AkkaRegistration, ComponentId, ComponentType}
+import csw.location.api.models.Connection.AkkaConnection
+import csw.location.api.models.{AkkaLocation, AkkaRegistration, ComponentId, ComponentType}
 import csw.logging.api.javadsl.ILogger
 import csw.logging.api.scaladsl.Logger
 import csw.logging.client.scaladsl.LoggerFactory

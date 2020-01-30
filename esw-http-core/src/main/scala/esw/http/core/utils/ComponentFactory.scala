@@ -3,8 +3,8 @@ package esw.http.core.utils
 import akka.actor.typed.ActorSystem
 import csw.command.api.scaladsl.CommandService
 import csw.location.api.scaladsl.LocationService
-import csw.location.models.Connection.{AkkaConnection, HttpConnection}
-import csw.location.models.{ComponentId, Location}
+import csw.location.api.models.Connection.{AkkaConnection, HttpConnection}
+import csw.location.api.models.{ComponentId, Location}
 
 import scala.concurrent.Future
 import scala.concurrent.duration.DurationLong

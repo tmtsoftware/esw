@@ -4,9 +4,9 @@ import akka.Done
 import akka.actor.typed.scaladsl.{ActorContext, Behaviors}
 import akka.actor.typed.{ActorRef, Behavior}
 import csw.location.api.extensions.ActorExtension._
-import csw.location.models.ComponentType.SequenceComponent
-import csw.location.models.Connection.AkkaConnection
-import csw.location.models.{AkkaLocation, ComponentId}
+import csw.location.api.models.ComponentType.SequenceComponent
+import csw.location.api.models.Connection.AkkaConnection
+import csw.location.api.models.{AkkaLocation, ComponentId}
 import csw.logging.api.scaladsl.Logger
 import csw.prefix.models.{Prefix, Subsystem}
 import esw.ocs.api.protocol.{GetStatusResponse, ScriptError, ScriptResponse}

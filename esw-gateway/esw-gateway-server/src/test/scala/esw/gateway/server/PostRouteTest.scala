@@ -10,8 +10,8 @@ import csw.alarm.models.AlarmSeverity
 import csw.alarm.models.Key.AlarmKey
 import csw.command.api.messages.CommandServiceHttpMessage.{Oneway, Submit, Validate}
 import csw.event.api.exceptions.{EventServerNotAvailable, PublishFailure}
-import csw.location.models.ComponentType.{Assembly, Sequencer}
-import csw.location.models.{ComponentId, ComponentType}
+import csw.location.api.models.ComponentType.{Assembly, Sequencer}
+import csw.location.api.models.{ComponentId, ComponentType}
 import csw.logging.macros.SourceFactory
 import csw.logging.models.{AnyId, Level, LogMetadata}
 import csw.params.commands.CommandIssue.IdNotAvailableIssue

@@ -10,8 +10,8 @@ import akka.util.Timeout
 import csw.command.api.messages.CommandServiceWebsocketMessage.{QueryFinal, SubscribeCurrentState}
 import csw.event.api.scaladsl.EventSubscription
 import csw.event.api.scaladsl.SubscriptionModes.RateLimiterMode
-import csw.location.models.ComponentId
-import csw.location.models.ComponentType.{Assembly, Sequencer}
+import csw.location.api.models.ComponentId
+import csw.location.api.models.ComponentType.{Assembly, Sequencer}
 import csw.params.commands.CommandResponse.{Completed, SubmitResponse}
 import csw.params.core.models.Id
 import csw.params.core.states.{CurrentState, StateName}

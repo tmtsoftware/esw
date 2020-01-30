@@ -4,7 +4,7 @@ package esw.ocs.dsl.highlevel.models
 
 import csw.location.api.javadsl.JComponentType
 import csw.location.api.javadsl.JConnectionType
-import csw.location.models.*
+import csw.location.api.models.*
 import csw.prefix.models.Prefix
 
 /* ******** Helpers to create ComponentType ******** */

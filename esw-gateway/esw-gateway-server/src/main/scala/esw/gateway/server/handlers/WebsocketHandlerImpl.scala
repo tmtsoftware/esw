@@ -5,7 +5,7 @@ import akka.http.scaladsl.model.ws.Message
 import akka.stream.scaladsl.Source
 import csw.command.api.messages.CommandServiceWebsocketMessage
 import csw.command.client.handlers.CommandServiceWebsocketHandlers
-import csw.location.models.ComponentId
+import csw.location.api.models.ComponentId
 import esw.gateway.api.EventApi
 import esw.gateway.api.codecs.GatewayCodecs._
 import esw.gateway.api.protocol.WebsocketRequest

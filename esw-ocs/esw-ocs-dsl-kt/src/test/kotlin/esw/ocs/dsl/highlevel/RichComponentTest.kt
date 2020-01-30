@@ -11,8 +11,8 @@ import csw.command.client.messages.RunningMessage
 import csw.command.client.models.framework.LockingResponse
 import csw.command.client.models.framework.ToComponentLifecycleMessage
 import esw.ocs.dsl.highlevel.models.*
-import csw.location.models.AkkaLocation
-import csw.location.models.ComponentType
+import csw.location.api.models.AkkaLocation
+import csw.location.api.models.ComponentType
 import csw.params.commands.CommandName
 import csw.params.commands.CommandResponse
 import csw.params.commands.Setup

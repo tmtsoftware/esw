@@ -8,10 +8,10 @@ import akka.actor.typed.{ActorRef, ActorSystem}
 import csw.command.client.extensions.AkkaLocationExt.RichAkkaLocation
 import csw.command.client.messages.ComponentMessage
 import csw.location.api.scaladsl.{LocationService, RegistrationResult}
-import csw.location.models.ComponentType.Sequencer
-import csw.location.models.Connection.AkkaConnection
-import csw.location.models.ConnectionType.AkkaType
-import csw.location.models._
+import csw.location.api.models.ComponentType.Sequencer
+import csw.location.api.models.Connection.AkkaConnection
+import csw.location.api.models.ConnectionType.AkkaType
+import csw.location.api.models._
 import csw.prefix.models.{Prefix, Subsystem}
 import esw.ocs.api.protocol.ScriptError
 

@@ -5,7 +5,7 @@ import akka.actor.typed.scaladsl.AskPattern._
 import caseapp.RemainingArgs
 import csw.location.api.extensions.URIExtension.RichURI
 import csw.location.client.utils.LocationServerStatus
-import csw.location.models.AkkaLocation
+import csw.location.api.models.AkkaLocation
 import csw.logging.api.scaladsl.Logger
 import csw.logging.client.scaladsl.GenericLoggerFactory
 import csw.prefix.models.Subsystem

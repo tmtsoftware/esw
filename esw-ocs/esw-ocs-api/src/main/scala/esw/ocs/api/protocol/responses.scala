@@ -1,6 +1,6 @@
 package esw.ocs.api.protocol
 
-import csw.location.models.AkkaLocation
+import csw.location.api.models.AkkaLocation
 import esw.ocs.api.codecs.OcsAkkaSerializable
 
 final case class ScriptResponse(response: Either[ScriptError, AkkaLocation]) extends OcsAkkaSerializable

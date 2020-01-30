@@ -6,9 +6,9 @@ import akka.actor.testkit.typed.scaladsl.ScalaTestWithActorTestKit
 import akka.actor.typed.Scheduler
 import akka.actor.typed.scaladsl.Behaviors
 import csw.location.api.scaladsl.LocationService
-import csw.location.models.ComponentType.{Machine, SequenceComponent}
-import csw.location.models.Connection.AkkaConnection
-import csw.location.models.{AkkaLocation, ComponentId}
+import csw.location.api.models.ComponentType.{Machine, SequenceComponent}
+import csw.location.api.models.Connection.AkkaConnection
+import csw.location.api.models.{AkkaLocation, ComponentId}
 import csw.prefix.models.Prefix
 import esw.agent.api.AgentCommand.KillComponent
 import esw.agent.api.AgentCommand.SpawnManuallyRegistered.SpawnRedis

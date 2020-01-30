@@ -5,9 +5,9 @@ import akka.actor.typed.{ActorRef, ActorSystem, Scheduler}
 import akka.util.Timeout
 import csw.location.api.extensions.URIExtension.RichURI
 import csw.location.api.scaladsl.LocationService
-import csw.location.models.ComponentId
-import csw.location.models.ComponentType.Machine
-import csw.location.models.Connection.AkkaConnection
+import csw.location.api.models.ComponentId
+import csw.location.api.models.ComponentType.Machine
+import csw.location.api.models.Connection.AkkaConnection
 import csw.prefix.models.Prefix
 import esw.agent.api.AgentCommand.KillComponent
 import esw.agent.api.AgentCommand.SpawnManuallyRegistered.SpawnRedis

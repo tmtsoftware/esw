@@ -1,9 +1,9 @@
 package esw.ocs.scripts.examples.testData
 
 import esw.ocs.dsl.highlevel.models.*
-import csw.location.models.ComponentId
-import csw.location.models.Connection.HttpConnection
-import csw.location.models.HttpRegistration
+import csw.location.api.models.ComponentId
+import csw.location.api.models.Connection.HttpConnection
+import csw.location.api.models.HttpRegistration
 import esw.ocs.dsl.core.script
 import csw.prefix.models.Prefix
 import esw.ocs.dsl.params.stringKey

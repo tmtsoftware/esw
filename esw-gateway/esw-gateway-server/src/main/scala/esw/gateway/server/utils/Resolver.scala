@@ -3,7 +3,7 @@ package esw.gateway.server.utils
 import akka.actor.typed.ActorSystem
 import csw.command.api.scaladsl.CommandService
 import csw.location.api.scaladsl.LocationService
-import csw.location.models.ComponentId
+import csw.location.api.models.ComponentId
 import esw.gateway.api.protocol.InvalidComponent
 import esw.http.core.utils.{ComponentFactory, ComponentNotFoundException}
 import esw.ocs.api.SequencerApi

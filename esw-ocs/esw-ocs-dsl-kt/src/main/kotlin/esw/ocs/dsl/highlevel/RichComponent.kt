@@ -10,7 +10,7 @@ import csw.command.client.messages.DiagnosticDataMessage
 import csw.command.client.messages.RunningMessage
 import csw.command.client.models.framework.LockingResponse
 import csw.command.client.models.framework.ToComponentLifecycleMessage
-import csw.location.models.ComponentType
+import csw.location.api.models.ComponentType
 import csw.params.commands.CommandResponse.*
 import csw.params.commands.ControlCommand
 import csw.params.core.models.Id

@@ -1,6 +1,6 @@
 package esw.gateway.server
 
-import csw.location.models.{ComponentId, ComponentType}
+import csw.location.api.models.{ComponentId, ComponentType}
 import csw.params.commands.CommandResponse.{Completed, Started}
 import csw.params.commands.{CommandName, Sequence, Setup}
 import csw.params.core.models.ObsId

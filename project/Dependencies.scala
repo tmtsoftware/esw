@@ -6,7 +6,7 @@ object Dependencies {
     Seq(
       Csw.`csw-params`.value,
       Csw.`csw-command-api`.value,
-      Csw.`csw-location-models`.value,
+      Csw.`csw-location-api`,
       Csw.`csw-database`,
       Libs.`scala-java8-compat`,
       Libs.`msocket-api`.value,
