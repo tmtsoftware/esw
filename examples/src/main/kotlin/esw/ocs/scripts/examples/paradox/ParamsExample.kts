@@ -16,11 +16,13 @@ script {
 
     onSetup("setup-wfos") {
         // #creating-params
+        //#getting-param
         //#getting-values
         val temperatureKey: Key<Int> = intKey("temperature")
 
-        //#getting-values
+        //#getting-param
         val temperatureParam: Parameter<Int> = temperatureKey.set(1, 2, 3)
+        //#getting-values
 
         // with values as Array
         val encoderKey: Key<Int> = intKey("encoder")
@@ -36,7 +38,7 @@ script {
         val setupCommand: Setup = Setup("ESW.iris_darkNight", "move").madd(temperatureParam, encoderParam)
         // #creating-params
 
-        //#getting-values
+        //#getting-param
         // extracting a param from Params instance
         val params: Params = setupCommand.params
         val temperatureParameter: Parameter<Int>? = params.kGet(temperatureKey)
@@ -45,6 +47,12 @@ script {
         val temperatureParameter2: Parameter<Int>? = setupCommand.kGet(temperatureKey)
 
         info("Temperature: ${temperatureParameter?.values()}")
+        //#getting-param
+
+
+        //#getting-values
+        // extracting a value from param
+        info("Temperature: ${temperatureParam.kGet(1)}")
         //#getting-values
 
         //#remove
