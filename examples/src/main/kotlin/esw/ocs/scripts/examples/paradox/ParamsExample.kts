@@ -70,7 +70,7 @@ script {
         //#getting-values
 
         // extracting values from parameter
-        val temperatureValues: Array<Int> = temperatureParam.values()
+        val temperatureValues: List<Int> = temperatureParam.values
 
         // extracting first value from parameter
         val firstValue: Int = temperatureParam.first
