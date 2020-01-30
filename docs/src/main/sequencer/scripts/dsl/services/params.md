@@ -23,10 +23,16 @@ Kotlin
 Kotlin
 : @@snip [Params.kts](../../../../../../../examples/src/main/kotlin/esw/ocs/scripts/examples/paradox/ParamsExample.kts) { #getting-param }  
 
-In order to extract a specific value from items of a Paramter, you can use the following dsl which returns the value of the paramter at a given index
+In order to extract a specific value from items of a Parameter, you can use the following dsl which returns the value of the parameter at a given index.
 
 Kotlin
 : @@snip [Params.kts](../../../../../../../examples/src/main/kotlin/esw/ocs/scripts/examples/paradox/ParamsExample.kts) { #getting-values }  
+
+@@@note
+Note that the shorthand alternatives shown with `// alternative` comment in above examples, do not return `optional` values
+unlike their corresponding full version. Which means, in absence of the specified key/index, an error will occur.
+@@@
+
 
 ## Removing a parameter
 
