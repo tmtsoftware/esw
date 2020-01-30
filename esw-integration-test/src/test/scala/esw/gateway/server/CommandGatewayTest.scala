@@ -15,6 +15,7 @@ import csw.params.events.{Event, EventKey, EventName, SystemEvent}
 import csw.prefix.models.Prefix
 import esw.gateway.api.clients.ClientFactory
 import esw.gateway.api.codecs.GatewayCodecs
+import esw.gateway.server.testdata.SampleAssemblyHandlers._
 import esw.ocs.testkit.EswTestKit
 import esw.ocs.testkit.Service.{EventServer, Gateway}
 
@@ -36,10 +37,9 @@ class CommandGatewayTest extends EswTestKit(EventServer, Gateway) with GatewayCo
       val eventService = new EventServiceFactory().make(HttpLocationServiceFactory.makeLocalClient)
       val eventKey     = EventKey(Prefix("tcs.filter.wheel"), EventName("setup-command-from-script"))
 
-      val componentType      = Assembly
       val command            = Setup(prefix, CommandName("c1"), Some(ObsId("obsId")))
       val longRunningCommand = Setup(prefix, CommandName("long-running"), Some(ObsId("obsId")))
-      val componentId        = ComponentId(prefix, componentType)
+      val componentId        = ComponentId(prefix, Assembly)
       val stateNames         = Set(StateName("stateName1"), StateName("stateName2"))
       val currentState1      = CurrentState(Prefix("esw.a.b"), StateName("stateName1"))
       val currentState2      = CurrentState(Prefix("esw.a.b"), StateName("stateName2"))
@@ -73,6 +73,28 @@ class CommandGatewayTest extends EswTestKit(EventServer, Gateway) with GatewayCo
 
       //queryFinal
       commandService.queryFinal(submitResponse.runId).futureValue should ===(Completed(submitResponse.runId))
+    }
+
+    "handle submitAndWait command | ESW-223, ESW-100, ESW-91, ESW-216, ESW-86, CSW-81" in {
+      val clientFactory = new ClientFactory(gatewayPostClient, gatewayWsClient)
+      val eventService  = new EventServiceFactory().make(HttpLocationServiceFactory.makeLocalClient)
+
+      val longRunningCommand = Setup(prefix, CommandName("long-running"), Some(ObsId("obsId")))
+      val componentId        = ComponentId(prefix, Assembly)
+
+      val commandService = clientFactory.component(componentId)
+
+      //submit-setup-command-subscription
+      val testProbe    = TestProbe[Event]
+      val subscription = eventService.defaultSubscriber.subscribeActorRef(Set(eventKey), testProbe.ref)
+      subscription.ready().futureValue
+      testProbe.expectMessageType[SystemEvent]
+
+      //submit the setup command
+      val submitResponseF = commandService.submitAndWait(longRunningCommand)
+      extractResponse(testProbe.expectMessageType[SystemEvent]) should ===("Started")
+      submitResponseF.futureValue shouldBe a[Completed]
+      extractResponse(testProbe.expectMessageType[SystemEvent]) should ===("Completed")
     }
 
     "handle large websocket requests | CSW-81" in {

@@ -8,14 +8,24 @@ import csw.location.api.models.TrackingEvent
 import csw.logging.api.scaladsl.Logger
 import csw.params.commands.CommandResponse.{Accepted, Completed, Started}
 import csw.params.commands.{CommandResponse, ControlCommand}
+import csw.params.core.generics.Key
 import csw.params.core.generics.KeyType.StringKey
 import csw.params.core.models.Id
 import csw.params.core.states.{CurrentState, StateName}
-import csw.params.events.{EventName, SystemEvent}
+import csw.params.events.{EventKey, EventName, SystemEvent}
 import csw.prefix.models.Prefix
 import csw.time.core.models.UTCTime
 
-import scala.concurrent.Future
+import scala.concurrent.duration.DurationLong
+import scala.concurrent.{Await, Future}
+
+object SampleAssemblyHandlers {
+  val submitResponseKey: Key[String] = StringKey.make("submitResponse")
+  val baseResponseEvent: SystemEvent = SystemEvent(Prefix("tcs.response"), EventName("submit-response"))
+  val eventKey: EventKey             = baseResponseEvent.eventKey
+
+  def extractResponse(event: SystemEvent): String = event.paramType(SampleAssemblyHandlers.submitResponseKey).head
+}
 
 class SampleAssemblyHandlers(ctx: ActorContext[TopLevelActorMessage], cswCtx: CswContext) extends ComponentHandlers(ctx, cswCtx) {
   import cswCtx._
@@ -39,7 +49,13 @@ class SampleAssemblyHandlers(ctx: ActorContext[TopLevelActorMessage], cswCtx: Cs
 
     controlCommand.commandName.name match {
       case "long-running" =>
-        commandResponseManager.updateCommand(Completed(runId))
+        // complete long-running command after 100 millis
+        timeServiceScheduler.scheduleOnce(UTCTime.after(100.millis)) {
+          publishSubmitResponse("Completed")
+          commandResponseManager.updateCommand(Completed(runId))
+        }
+
+        publishSubmitResponse("Started")
         Started(runId)
       case _ => Completed(runId)
     }
@@ -79,5 +95,16 @@ class SampleAssemblyHandlers(ctx: ActorContext[TopLevelActorMessage], cswCtx: Cs
     val operationsModeParam = StringKey.make("mode").set("operations")
     val event               = SystemEvent(Prefix("tcs.filter.wheel"), EventName("diagnostic-data")).add(operationsModeParam)
     eventService.defaultPublisher.publish(event)
+  }
+
+  private def publishSubmitResponse(responseStr: String) = {
+    import SampleAssemblyHandlers._
+
+    Await.result(
+      eventService.defaultPublisher.publish(
+        baseResponseEvent.add(submitResponseKey.set(responseStr))
+      ),
+      5.seconds
+    )
   }
 }

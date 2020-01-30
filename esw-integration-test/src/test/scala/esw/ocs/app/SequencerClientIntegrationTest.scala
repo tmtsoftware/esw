@@ -107,7 +107,7 @@ class SequencerClientIntegrationTest extends EswTestKit(EventServer) {
       Step(command2, Success, hasBreakpoint = false)
     )
     eventually(
-      compareStepList(ocsSequencer.getSequence.futureValue, (Some(StepList(expectedFinishedSteps))))
+      compareStepList(ocsSequencer.getSequence.futureValue, Some(StepList(expectedFinishedSteps)))
     )
   }
 
@@ -308,7 +308,7 @@ class SequencerClientIntegrationTest extends EswTestKit(EventServer) {
     //assert that getSequenceComponent returns sequenceComponentLocation where sequencer is running
     sequencer.getSequenceComponent.futureValue should ===(sequenceComponentLocation)
 
-    //cleaunp
+    //clean-up
     sequenceComponentImpl.unloadScript()
   }
 
