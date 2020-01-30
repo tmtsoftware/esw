@@ -47,11 +47,10 @@ def sendNotification(String buildStatus = 'STARTED') {
     buildStatus = buildStatus ?: 'SUCCESS'
 
     def colorCode = '#FF0000'
-    def subject = "${buildStatus}: Job '${env.JOB_NAME} [${env.BUILD_NUMBER}]'"
+    def subject = "${buildStatus}: Job '${env.JOB_NAME}' [${env.BUILD_NUMBER}]'"
     def summary = "${subject} (${env.BUILD_URL})"
-    def details = '${JELLY_SCRIPT,template="html"}'
 
-    // Override default values based on build status
+    // override default values based on build status
     if (buildStatus == 'STARTED') {
         color = 'YELLOW'
         colorCode = '#FFFF00'
@@ -61,12 +60,6 @@ def sendNotification(String buildStatus = 'STARTED') {
     } else {
         color = 'RED'
         colorCode = '#FF0000'
-        emailext(
-                subject: subject,
-                body: details,
-                to: "tmt-csw@thoughtworks.com"
-        )
     }
-
-    slackSend(channel: "#csw-build", color: colorCode, message: summary)
+    slackSend(channel: "#esw-build", color: colorCode, message: summary)
 }
