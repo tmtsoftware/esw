@@ -73,7 +73,7 @@ class ProcessActor(
     }
 
   def checkingRegistration: Behavior[ProcessActorMessage] =
-    Behaviors.setup[ProcessActorMessage](ctx => {
+    Behaviors.setup[ProcessActorMessage] { ctx =>
       import ctx.executionContext
       Behaviors.receiveMessagePartial[ProcessActorMessage] {
         case AlreadyRegistered =>
@@ -115,10 +115,10 @@ class ProcessActor(
           replyTo ! Initializing
           Behaviors.same
       }
-    })
+    }
 
   def waitingForComponentRegistration(process: Process, processExited: Boolean): Behavior[ProcessActorMessage] =
-    Behaviors.setup[ProcessActorMessage](ctx => {
+    Behaviors.setup[ProcessActorMessage] { ctx =>
       Behaviors.receiveMessagePartial[ProcessActorMessage] {
         case RegistrationSuccess =>
           debug(
@@ -151,7 +151,7 @@ class ProcessActor(
           replyTo ! Initializing
           Behaviors.same
       }
-    })
+    }
 
   def registered(process: Process): Behavior[ProcessActorMessage] =
     Behaviors.setup { ctx =>
@@ -179,6 +179,7 @@ class ProcessActor(
           dieRef ! Failed("process is already stopping")
           Behaviors.same
         case ProcessExited(exitCode) =>
+          timeScheduler.cancel(StopForcefully)
           deathSubscriber.foreach(_ ! (if (exitCode == 0 || exitCode == 143) killedGracefully else killedForcefully))
           Behaviors.stopped
         case StopGracefully =>

@@ -2,13 +2,12 @@ package esw.agent.app.process
 
 import csw.logging.api.scaladsl.Logger
 import csw.prefix.models.Prefix
-import esw.agent.app.AgentSettings
 
 import scala.util.Try
 import scala.util.control.NonFatal
 
 // $COVERAGE-OFF$
-class ProcessExecutor(output: ProcessOutput, agentSettings: AgentSettings, logger: Logger) {
+class ProcessExecutor(output: ProcessOutput, logger: Logger) {
   import logger._
 
   def runCommand(command: List[String], prefix: Prefix): Either[String, Process] =

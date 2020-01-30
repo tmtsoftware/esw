@@ -36,7 +36,7 @@ class AgentWiring(prefix: Prefix, agentSettings: AgentSettings) {
   implicit lazy val scheduler: Scheduler    = typedSystem.scheduler
   lazy val locationService: LocationService = HttpLocationServiceFactory.makeLocalClient
   lazy val processOutput                    = new ProcessOutput
-  lazy val processExecutor                  = new ProcessExecutor(processOutput, agentSettings, log)
+  lazy val processExecutor                  = new ProcessExecutor(processOutput, log)
   lazy val agentActor                       = new AgentActor(locationService, processExecutor, agentSettings, log)
 
   lazy val lazyAgentRegistration: Future[RegistrationResult] =
