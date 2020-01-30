@@ -40,6 +40,54 @@ use of @ref:[Csw Services](../script-constructs.md) ( *info* - @ref:[Logging Ser
 
 ## Finite State Machine Script (FSM Script)
 
+FSM script is a way of writing Sequencer Script as @link:[Finite State Machines (FSM)](https://en.wikipedia.org/wiki/Finite-state_machine), where execution of
+Script Handler is dependent on the Current State of the Sequencer Script.   
+
+To define FSM Script a function `FSMScript` needs to be called with the *initial state* to start script with, and the block containing Script.
+
+The Script block can be divided into multiple scopes. 
+
+- Default scope - top-level scope of the Script 
+- State scope - scope of a specific state.
+
+The below code shows how to declare FSM Script and States.
+
+Kotlin
+:   @@snip [define-script.kts](../../../../../../../examples/src/main/kotlin/esw/ocs/scripts/examples/paradox/DefineScriptExample.kts) { #fsm-script }
+
+Initialisation of the Script takes place by executing the top-level statements, and then executing the *initial state*. The top-level scope is the place
+to declare variables which can be used in Script. 
+
+All @ref:[Script Handlers](handlers.md) except the Command handlers can be tied both scopes,
+where @ref:[Command Handlers](handlers.md#command-handlers) can only be tied to State scope.
+
+To execute any action, corresponding handlers in current State scope will be executed first and then handlers in Default scope will be executed.
+In case of a Command Sequence, if the current state does not handle Command which is being executed, the Sequence will be completed with Error with reason
+`UnhandledCommandException`.
+
+For state transition, `become` needs to called from the current state with *next state*. It will start evaluating the next state, and will execute further actions on the
+next state. If the *next state* is not defined in Script, then an exception will be thrown saying *No state declaration found for state*.
+It is also possible to pass Params from current state to the next state by passing them as last argument to the *become* function. The passed Params will be available as a
+function parameter while defining State.
+
+In below example, `[[ 1 ]]` shows use of `become` to change state. where `[[ 2 ]]` shows how to pass Params while changing state. Consuming *params* in state is shown in
+the ON state.
+
+Kotlin
+:   @@snip [define-script.kts](../../../../../../../examples/src/main/kotlin/esw/ocs/scripts/examples/paradox/DefineScriptExample.kts) { #fsm-script-become }
+
+The State scope can have top-level statements and Script handlers. The State's top-level statements will be executed when state transition happens. So invoking *become*
+will initialise the next state which includes calling the top-level statements. The State top-level can be used to declare variables for State scope which will last till
+state transition. After that, state will be cleared and next time it will be initialised again to default values. 
+
+Kotlin
+:   @@snip [define-script.kts](../../../../../../../examples/src/main/kotlin/esw/ocs/scripts/examples/paradox/DefineScriptExample.kts) { #fsm-script-state }
+
+In the example, `initialPos` and `moved` demos declaring State scoped variables. Whenever state transition happens to some other state and back to SETTING-UP state,
+these variables will be reinitialised to its default values described in code.
+ 
+*State transition to self will not reinitialise variables*.      
+
 ## Reusable Script
 
 Reusable Scripts make it possible to write the common logic which needs to shared across multiple scripts. This can be used to build small building blocks for building

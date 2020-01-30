@@ -13,10 +13,12 @@ Finite State Machine (FSM) (still in development).
 @@@
 
 * Script DSL Constructs
+    * @ref[Defining Script](dsl/constructs/define-script.md)
     * @ref[Script Handlers](dsl/constructs/handlers.md)
     * @ref[Looping](dsl/constructs/loop.md)
-    * @ref[Other DSL](dsl/constructs/misc.md)
     * @ref[Finite State Machines](dsl/constructs/fsm.md)
+    * @ref[Other](dsl/constructs/misc.md)
+
 * CSW Services DSL
     * @ref[Location Service](dsl/services/location-service.md)
     * @ref[Config Service](dsl/services/config-service.md)

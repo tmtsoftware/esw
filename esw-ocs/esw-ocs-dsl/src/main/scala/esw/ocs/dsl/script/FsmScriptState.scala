@@ -19,7 +19,7 @@ private[esw] case class FsmScriptState(
     copy(stateHandlers = stateHandlers + (state -> script))
 
   private def getScript(state: String) =
-    stateHandlers.getOrElse(state, throw new RuntimeException(s"No command handlers found for state: $state"))
+    stateHandlers.getOrElse(state, throw new RuntimeException(s"No state declaration found for state: $state"))
 }
 
 object FsmScriptState {

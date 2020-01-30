@@ -22,7 +22,7 @@ private[esw] class FsmScriptDsl(
 
   def become(nextState: String, params: Params): Unit = {
     scriptState = scriptState.transition(nextState, params)
-    scriptState.currentScript
+    scriptState.currentScript // to trigger the evaluation of currentScript which is declared lazy.
   }
 
   def add(state: String, script: Params => ScriptDsl): Unit =
