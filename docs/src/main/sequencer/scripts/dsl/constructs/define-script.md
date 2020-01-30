@@ -45,7 +45,7 @@ use of @ref:[Csw Services](../script-constructs.md) ( *info* - @ref:[Logging Ser
 Reusable Scripts make it possible to write the common logic which needs to shared across multiple scripts. This can be used to build small building blocks for building
 Sequencer Scripts.
  
-They are same as the [Regular Script](#regular-script) except they cannot be directly loaded into a Sequence Component, and can only be loaded into
+They are same as the @ref:[Regular Script](#regular-script) except they cannot be directly loaded into a Sequence Component, and can only be loaded into
 other Sequencer Scripts.
 
 The common logic mainly consists of Script handlers and the top-level statements(initialisation logic). The top-level statements will be executed while
