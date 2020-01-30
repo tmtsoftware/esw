@@ -181,4 +181,4 @@ Kotlin
 Following example shows `retry` with interval used independently (without having `onError` block).
 
 Kotlin
-: @@snip [HandlersExample.kts](../../../../../../../examples/src/main/kotlin/esw/ocs/scripts/examples/paradox/HandlersExample.kts) { #retry }
+: @@snip [HandlersExample.kts](../../../../../../../examples/src/main/kotlin/esw/ocs/scripts/examples/paradox/HandlersExample.kts) { #retry-with-interval }
