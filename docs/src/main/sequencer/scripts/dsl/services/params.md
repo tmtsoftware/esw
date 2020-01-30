@@ -18,19 +18,35 @@ creating a new command with the new set of params.
 Kotlin
 : @@snip [Params.kts](../../../../../../../examples/src/main/kotlin/esw/ocs/scripts/examples/paradox/ParamsExample.kts) { #adding-params }  
 
-## Extracting values from a parameter
+## Extracting a parameter from Params/Command/Event
+
+### Extracting parameter
+
+Finding a parameter from Params/Command/Event.
 
 Kotlin
-: @@snip [Params.kts](../../../../../../../examples/src/main/kotlin/esw/ocs/scripts/examples/paradox/ParamsExample.kts) { #getting-param }  
+: @@snip [Params.kts](../../../../../../../examples/src/main/kotlin/esw/ocs/scripts/examples/paradox/ParamsExample.kts) { #find }  
 
-In order to extract a specific value from items of a Parameter, you can use the following dsl which returns the value of the parameter at a given index.
+### Extracting parameter by key
+
+Kotlin
+: @@snip [Params.kts](../../../../../../../examples/src/main/kotlin/esw/ocs/scripts/examples/paradox/ParamsExample.kts) { #getting-param-by-key }  
+
+### Extracting parameter by keyName and KeyType
+
+Kotlin
+: @@snip [Params.kts](../../../../../../../examples/src/main/kotlin/esw/ocs/scripts/examples/paradox/ParamsExample.kts) { #getting-param-by-keyName-keyType }  
+
+## Extracting values from a parameter
+
+Example below shows accessing values of a parameter, or accessing a specific value of a parameter.
 
 Kotlin
 : @@snip [Params.kts](../../../../../../../examples/src/main/kotlin/esw/ocs/scripts/examples/paradox/ParamsExample.kts) { #getting-values }  
 
 @@@note
 Note that the shorthand alternatives shown with `// alternative` comment in above examples, do not return `optional` values
-unlike their corresponding full version. Which means, in absence of the specified key/index, an error will occur.
+unlike their corresponding full version. Which means, with shorthand dsl, an error will occur in absence of the specified key/index.
 @@@
 
 

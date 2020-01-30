@@ -4,8 +4,10 @@ package esw.ocs.scripts.examples.paradox
 
 import csw.params.commands.Setup
 import csw.params.core.generics.Key
+import csw.params.core.generics.KeyType
 import csw.params.core.generics.Parameter
 import csw.params.events.SystemEvent
+import csw.params.javadsl.JKeyType
 import csw.params.javadsl.JUnits.watt
 import esw.ocs.dsl.core.script
 import esw.ocs.dsl.highlevel.models.WFOS
@@ -16,12 +18,9 @@ script {
     val galilAssembly = Assembly(WFOS, "FilterWheel")
 
     onSetup("setup-wfos") {
-        // #creating-params
-        //#getting-param
+        //#creating-params
         //#getting-values
         val temperatureKey: Key<Int> = intKey("temperature")
-
-        //#getting-param
         val temperatureParam: Parameter<Int> = temperatureKey.set(1, 2, 3)
         //#getting-values
 
@@ -43,7 +42,12 @@ script {
         val setupCommand2: Setup = Setup("ESW.iris_darkNight", "move").madd(temperatureParam, encoderParam)
         // #creating-params
 
-        //#getting-param
+        //#find
+        val maybeParam: Parameter<Int>? = setupCommand.params.kFind(temperatureParam)
+        val maybeParam2: Parameter<Int>? = setupCommand.kFind(temperatureParam)
+        //#find
+
+        //#getting-param-by-key
         // extracting a param from Params instance
         val params: Params = setupCommand.params
         val temperatureParameter: Parameter<Int>? = params.kGet(temperatureKey)
@@ -52,13 +56,26 @@ script {
         // extracting a param directly from the command or event
         val temperatureParameter3: Parameter<Int>? = setupCommand.kGet(temperatureKey)
         val temperatureParameter4: Parameter<Int> = setupCommand(temperatureKey) // alternative
+        //#getting-param-by-key
 
-        info("Temperature: ${temperatureParameter?.values()}")
-        //#getting-param
+
+        //#getting-param-by-keyName-keyType
+        val keyName = "temperature"
+        val keyType: KeyType<Int> = JKeyType.IntKey()
+        val setupParams: Params = setupCommand.params
+        val param: Parameter<Int>? = params.kGet(keyName, keyType)
+        //#getting-param-by-keyName-keyType
 
 
         //#getting-values
-        // extracting a value from param
+
+        // extracting values from parameter
+        val temperatureValues: Array<Int> = temperatureParam.values()
+
+        // extracting first value from parameter
+        val firstValue: Int = temperatureParam.first
+
+        // extracting value of the parameter at a given index
         val temperatureValue: Int? = temperatureParam.kGet(1)
         val temperatureValue2: Int = temperatureParam(1) //alternative
         //#getting-values
