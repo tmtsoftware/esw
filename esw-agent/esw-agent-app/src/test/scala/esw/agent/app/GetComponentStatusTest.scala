@@ -6,9 +6,9 @@ import java.util.concurrent.CompletableFuture
 import akka.actor.testkit.typed.scaladsl.{ScalaTestWithActorTestKit, TestProbe}
 import akka.actor.typed.Scheduler
 import csw.location.api.scaladsl.{LocationService, RegistrationResult}
-import csw.location.models.ComponentType.{SequenceComponent, Service}
-import csw.location.models.Connection.{AkkaConnection, TcpConnection}
-import csw.location.models._
+import csw.location.api.models.ComponentType.{SequenceComponent, Service}
+import csw.location.api.models.Connection.{AkkaConnection, TcpConnection}
+import csw.location.api.models._
 import csw.logging.api.scaladsl.Logger
 import csw.prefix.models.Prefix
 import esw.agent.api.AgentCommand.SpawnManuallyRegistered.SpawnRedis
@@ -20,15 +20,16 @@ import esw.agent.app.AgentActor.AgentState
 import esw.agent.app.process.ProcessExecutor
 import org.mockito.ArgumentMatchers.any
 import org.mockito.MockitoSugar
-import org.scalatest.MustMatchers.convertToStringMustWrapper
-import org.scalatest.{BeforeAndAfterEach, WordSpecLike}
+import org.scalatest.BeforeAndAfterEach
+import org.scalatest.matchers.must.Matchers.convertToStringMustWrapper
+import org.scalatest.wordspec.AnyWordSpecLike
 
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.duration.{DurationLong, FiniteDuration}
 import scala.concurrent.{Future, Promise}
 import scala.util.Random
 
-class GetComponentStatusTest extends ScalaTestWithActorTestKit with WordSpecLike with MockitoSugar with BeforeAndAfterEach {
+class GetComponentStatusTest extends ScalaTestWithActorTestKit with AnyWordSpecLike with MockitoSugar with BeforeAndAfterEach {
 
   private val locationService = mock[LocationService]
   private val processExecutor = mock[ProcessExecutor]

@@ -1,6 +1,6 @@
 package esw.agent.api
 
-import csw.location.models.ComponentId
+import csw.location.api.models.ComponentId
 
 sealed trait Response extends AgentAkkaSerializable
 
