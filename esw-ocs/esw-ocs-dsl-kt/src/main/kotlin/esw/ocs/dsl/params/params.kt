@@ -24,6 +24,6 @@ operator fun <S> ParameterSetType<*>.invoke(key: Key<S>): Parameter<S> = apply(k
 // following extensions will only work on concrete supertypes of ParameterSetType, for example, ObserveEvent/Setup command
 // but not on paramType present in base types like Event/Command
 
-fun <T : ParameterSetType<T>> T.madd(params: Params): T = jMadd(params.params())
+fun <T : ParameterSetType<T>> T.add(params: Params): T = jMadd(params.params())
 
 val <T : ParameterSetType<T>> T.params: Params get() = Params(this.jParamSet())

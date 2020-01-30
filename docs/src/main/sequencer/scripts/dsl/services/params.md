@@ -11,13 +11,6 @@ Example below shows different ways of creating parameters and adding them to a c
 Kotlin
 : @@snip [Params.kts](../../../../../../../examples/src/main/kotlin/esw/ocs/scripts/examples/paradox/ParamsExample.kts) { #creating-params }  
 
-
-Below examples demonstrates extracting params from received command, adding an additional parameter and
-creating a new command with the new set of params.
-
-Kotlin
-: @@snip [Params.kts](../../../../../../../examples/src/main/kotlin/esw/ocs/scripts/examples/paradox/ParamsExample.kts) { #adding-params }  
-
 ## Extracting a parameter from Params/Command/Event
 
 ### Extracting parameter

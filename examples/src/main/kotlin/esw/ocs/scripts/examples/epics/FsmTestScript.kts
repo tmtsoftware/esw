@@ -22,7 +22,7 @@ FsmScript("INIT") {
         }
 
         state(WAITING) { params ->
-            val systemEvent = SystemEvent("esw.FsmTestScript", "WAITING").madd(params)
+            val systemEvent = SystemEvent("esw.FsmTestScript", "WAITING").add(params)
             publishState(systemEvent, WAITING)
             completeFsm()
         }
@@ -38,7 +38,7 @@ FsmScript("INIT") {
 
     state(STARTED) { params ->
         onSetup("command-2") {
-            val systemEvent = SystemEvent("esw.FsmTestScript", "STARTED").madd(params)
+            val systemEvent = SystemEvent("esw.FsmTestScript", "STARTED").add(params)
             publishState(systemEvent, STARTED)
         }
     }

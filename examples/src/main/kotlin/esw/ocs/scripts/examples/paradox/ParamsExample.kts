@@ -17,7 +17,7 @@ script {
 
     val galilAssembly = Assembly(WFOS, "FilterWheel")
 
-    onSetup("setup-wfos") {
+    onSetup("setup-wfos") { command ->
         //#creating-params
         //#getting-values
         val temperatureKey: Key<Int> = intKey("temperature")
@@ -40,18 +40,22 @@ script {
 
         // adding multiple params
         val setupCommand2: Setup = Setup("ESW.iris_darkNight", "move").madd(temperatureParam, encoderParam)
+
+        // adding params of one command to other
+        val paramsFromIncomingCommand: Params = command.params
+        val commandForDownstream: Setup = Setup("ESW.iris_darkNight", "move").add(paramsFromIncomingCommand)
         // #creating-params
 
         //#find
-        val maybeParam: Parameter<Int>? = setupCommand.params.kFind(temperatureParam)
+        val params: Params = setupCommand.params
+        val maybeParam: Parameter<Int>? = params.kFind(temperatureParam)
         val maybeParam2: Parameter<Int>? = setupCommand.kFind(temperatureParam)
         //#find
 
         //#getting-param-by-key
         // extracting a param from Params instance
-        val params: Params = setupCommand.params
-        val temperatureParameter: Parameter<Int>? = params.kGet(temperatureKey)
-        val temperatureParameter2: Parameter<Int> = params(temperatureKey) // alternative
+        val temperatureParameter: Parameter<Int>? = setupCommand.params.kGet(temperatureKey)
+        val temperatureParameter2: Parameter<Int> = (setupCommand.params)(temperatureKey) // alternative
 
         // extracting a param directly from the command or event
         val temperatureParameter3: Parameter<Int>? = setupCommand.kGet(temperatureKey)
@@ -62,8 +66,7 @@ script {
         //#getting-param-by-keyName-keyType
         val keyName = "temperature"
         val keyType: KeyType<Int> = JKeyType.IntKey()
-        val setupParams: Params = setupCommand.params
-        val param: Parameter<Int>? = params.kGet(keyName, keyType)
+        val param: Parameter<Int>? = setupCommand.params.kGet(keyName, keyType)
         //#getting-param-by-keyName-keyType
 
 
@@ -82,10 +85,10 @@ script {
 
         //#remove
         // remove param from params by key
-        val updatedParams: Params = params.remove(temperatureKey)
+        val updatedParams: Params = setupCommand.params.remove(temperatureKey)
 
         // remove param from params
-        val updatedParams2: Params = params.remove(temperatureParameter)
+        val updatedParams2: Params = setupCommand.params.remove(temperatureParameter)
 
         // remove param from command by key
         val updatedCommand: Setup = setupCommand.remove(temperatureKey)
@@ -96,20 +99,11 @@ script {
 
         //#exists
         // check if parameter with specified key exists in Params
-        val temperatureKeyExists: Boolean = params.exists(temperatureKey)
+        val temperatureKeyExists: Boolean = setupCommand.params.exists(temperatureKey)
 
         // check if parameter with specified key exists directly from command
         val temperatureKeyExists2: Boolean = setupCommand.exists(temperatureKey)
         //#exists
 
     }
-
-    // #adding-params
-    onSetup("setup-wfos") { command ->
-        val params: Params = command.params.madd(intKey("temperature").set(10))
-        val assemblyCommand: Setup = Setup("ESW.iris_darkNight", "move").madd(params)
-        galilAssembly.submit(assemblyCommand)
-    }
-    // #adding-params
-
 }
