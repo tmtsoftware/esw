@@ -14,6 +14,8 @@ object AutoMultiJvm extends AutoPlugin {
       assemblyMergeStrategy in assembly in MultiJvm := {
         case "application.conf"                     => MergeStrategy.concat
         case x if x.contains("versions.properties") => MergeStrategy.discard
+        case x if x.contains("schema")              => MergeStrategy.last
+        case x if x.contains("main.kotlin_module")  => MergeStrategy.concat
         case x =>
           val oldStrategy = (assemblyMergeStrategy in assembly in MultiJvm).value
           oldStrategy(x)
