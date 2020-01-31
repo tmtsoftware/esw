@@ -8,7 +8,9 @@ import csw.prefix.models.Prefix
 //#fsm-script
 import esw.ocs.dsl.core.FsmScript
 //#fsm-script
+//#reusable-script-example
 import esw.ocs.dsl.core.reusableScript
+//#reusable-script-example
 //#script
 import esw.ocs.dsl.core.script
 //#script
@@ -81,11 +83,11 @@ FsmScript("INIT") {
     }
 
 }
-
-fun turnOffLight(): Unit = TODO()
-fun turnOnLight(): Unit = TODO()
-
 //#fsm-script
+
+fun turnOnLight(): Unit = TODO()
+fun turnOffLight(): Unit = TODO()
+
 
 FsmScript("OFF") {
 
@@ -138,6 +140,7 @@ FsmScript("OFF") {
 
 
 //#reusable-script-example
+
 val startObservationScript = reusableScript {
     onObserve("start-observation") {
         info("opening the primary shutter to start observation")
@@ -159,14 +162,14 @@ script {
 }
 //#load-script
 
-//#load-script-fsm
 
 FsmScript("INIT") {
 
+    //#load-script-fsm
     state("INIT") { params ->
 
         loadScripts(startObservationScript)
 
     }
+    //#load-script-fsm
 }
-//#load-script-fsm

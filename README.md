@@ -1,6 +1,6 @@
 TMT Executive Software (ESW)
 =========================
-[[Build Status](http://ec2-35-154-215-191.ap-south-1.compute.amazonaws.com:8080/job/esw-dev/badge/icon)](http://ec2-35-154-215-191.ap-south-1.compute.amazonaws.com:8080/job/esw-dev/)
+[![Build Status](http://ec2-35-154-215-191.ap-south-1.compute.amazonaws.com:8080/job/esw-dev/badge/icon)](http://ec2-35-154-215-191.ap-south-1.compute.amazonaws.com:8080/job/esw-dev/)
 
 Executive Software (ESW) is a reimplementation/refactoring of the prototype ESW code [here](https://github.com/tmtsoftware/esw-prototype) 
 developed during the ESW design phase with changes to make the code and public APIs
