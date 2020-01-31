@@ -37,43 +37,48 @@ script {
             on(currentTemp == 30L) {
                 become(FINISHED)                                 // [[ 3 ]]
             }
-            on(currentTemp > 40) {
-                become(ERROR)
+            on(currentTemp > expectedTemp) {
+                become(ERROR, commandFlag().value())             // [[ 4 ]]
             }
             on(currentTemp <= expectedTemp) {
-                info("temperataure is below expected threshold",
+                info("temperature is below expected threshold",
                         mapOf("exepected" to expectedTemp, "current" to currentTemp)
                 )
             }
         }
 
-        state(ERROR) {
+        state(ERROR) { params ->
+            val expectedTemp = params.get(intKey("expected-temperature")).get().first
+
             entry {
+                info("temperature is above expected threshold",
+                        mapOf("exepected" to expectedTemp)
+                )
                 publishState(tempFsmEvent, ERROR)
             }
-            on(temperatureVar.get() < 40) {
+            on(temperatureVar.get() < expectedTemp) {
                 become(OK)
             }
         }
 
         state(FINISHED) {
-            completeFsm()                                        // [[ 4 ]]
+            completeFsm()                                        // [[ 5 ]]
         }
     }
 
     temperatureVar.bind(temperatureFsm)
-    commandFlag.bind(temperatureFsm)                             // [[ 5 ]]
+    commandFlag.bind(temperatureFsm)                             // [[ 6 ]]
 
     onSetup("command-1") {
-        temperatureFsm.start()                                   // [[ 6 ]]
+        temperatureFsm.start()                                   // [[ 7 ]]
     }
 
     onSetup("command-2") { command ->
-        commandFlag.set(command.params)                          // [[ 7 ]]
+        commandFlag.set(command.params)                          // [[ 8 ]]
     }
 
     onSetup("command-3") {
-        temperatureFsm.await()                                   // [[ 8 ]]
+        temperatureFsm.await()                                   // [[ 9 ]]
     }
 
     //#example-fsm

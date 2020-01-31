@@ -32,8 +32,8 @@ Kotlin
 
 ### State transition
 
-To transit between states, `become` method needs to be called with name of next `state`. This will **change the state** of the fsm to the given state
-and **start executing next state**. `InvalidStateException` will be thrown if provided state is not defined.
+To transit between states, `become` method needs to be called with name of *next state*. This will **change the state of the fsm to next state
+and start executing it**. `InvalidStateException` will be thrown if provided state is not defined.
 
 Kotlin
 :   @@snip [Fsm.kts](../../../../../../../examples/src/main/kotlin/esw/ocs/scripts/examples/paradox/Fsm.kts) { #state-transition }
@@ -42,6 +42,9 @@ Kotlin
 @@@ warning {title='Caution'}
 State transition should ideally be the **last call in state** or should be **done with proper control flow** so that become is **not called multiple times**.
 @@@
+
+Along with changing state, it is also possible to *Params* from current state to another. Params can be given to *become* as last argument, which will injected in the
+next state as a parameter.
 
 In a case where **state transition does not happen** while executing a state, the **FSM will stay in the same state** and re-evaluating FSM after that will execute
 the same state until any state transition happens. The @ref:[reactive variables](#reactive-fsm) plays an important role in this as they are the way to
@@ -198,14 +201,15 @@ Statements written here will be executed only once when the FSM starts.
 - `[[ 2 ]]`: The scope of the state. Statements written here will be executed on every evaluation of the state. So variables declared here will be reinitialized
 whenever state is re-evaluated. In the above case, the *expectedTemp* and *currentTemp* will be initialized every time the OK state is evaluated.
 - `[[ 3 ]]`: State transitions from `OK` state to `FINISHED`.
-- `[[ 4 ]]`: Marks the FSM complete. Re-evaluation or state transitions cannot happen after this is executed.
+- `[[ 4 ]]`: State transitions from `OK` state to `ERROR` with *Params*. ERROR state shows how to consume Params in a state.
+- `[[ 5 ]]`: Marks the FSM complete. Re-evaluation or state transitions cannot happen after this is executed.
 
-Till point `[[ 4 ]]`, it's all about **defining the blue-print** and **initialising state of FSM** which includes executing statements at `[[ 1 ]]`.
+Till point `[[ 5 ]]`, it's all about **defining the blue-print** and **initialising state of FSM** which includes executing statements at `[[ 1 ]]`.
 
-- `[[ 5 ]]`: Shows the binding `temperatureFsm` to `temperatureVar` and `commandFlag`. After this point, FSM will re-evaluate whenever events are published on `temperatureVar`.
-- `[[ 6 ]]`: Starts **evaluating the initial state** of the FSM
-- `[[ 7 ]]`: Sets the Params of the Command in the Command flag
-- `[[ 8 ]]`: Waits for completion of the FSM. In example, the script execution will be blocked till line `[[ 4 ]]` is executed which will mark the FSM complete. The script will
+- `[[ 6 ]]`: Shows the binding `temperatureFsm` to `temperatureVar` and `commandFlag`. After this point, FSM will re-evaluate whenever events are published on `temperatureVar`.
+- `[[ 7 ]]`: Starts **evaluating the initial state** of the FSM
+- `[[ 8 ]]`: Sets the Params of the Command in the Command flag
+- `[[ 9 ]]`: Waits for completion of the FSM. In example, the script execution will be blocked till line `[[ 4 ]]` is executed which will mark the FSM complete. The script will
 continue execution after FSM is marked complete.
 
 Example code also demos the use of the @ref:[helper constructs](#helper-constructs) like `entry`, `on`.
