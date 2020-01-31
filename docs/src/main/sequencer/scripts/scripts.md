@@ -30,6 +30,7 @@ Finite State Machine (FSM) (still in development).
     * @ref[Logging Service](dsl/services/logging-service.md)
     * @ref[Alarm Service](dsl/services/alarm-service.md)
     * @ref[Time Service](dsl/services/time-service.md)
+    * @ref[Database Service](dsl/services/database-service.md)
 
 
 @@@ note

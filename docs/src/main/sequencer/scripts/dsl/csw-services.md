@@ -12,6 +12,7 @@
 * @ref:[Logging Service](services/logging-service.md)
 * @ref:[Alarm Service](services/alarm-service.md)
 * @ref:[Time Service](services/time-service.md)
+* @ref:[Database Service](services/database-service.md)
 * @ref:[Submit Response Extensions](services/submit-response-extensions.md)
 * @ref[Working with Params](services/params.md)
 @@@
