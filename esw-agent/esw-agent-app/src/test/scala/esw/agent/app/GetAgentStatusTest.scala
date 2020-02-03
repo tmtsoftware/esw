@@ -2,13 +2,13 @@ package esw.agent.app
 
 import akka.actor.testkit.typed.scaladsl.{ScalaTestWithActorTestKit, TestProbe}
 import akka.actor.typed.Scheduler
-import csw.location.api.scaladsl.LocationService
 import csw.location.api.models.ComponentType.SequenceComponent
 import csw.location.api.models._
+import csw.location.api.scaladsl.LocationService
 import csw.logging.api.scaladsl.Logger
 import csw.prefix.models.Prefix
 import esw.agent.api.AgentCommand.GetAgentStatus
-import esw.agent.api.AgentCommand.SpawnSelfRegistered.SpawnSequenceComponent
+import esw.agent.api.AgentCommand.SpawnCommand.SpawnSelfRegistered.SpawnSequenceComponent
 import esw.agent.api.ComponentStatus.Initializing
 import esw.agent.api._
 import esw.agent.app.AgentActor.AgentState

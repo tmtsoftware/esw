@@ -9,9 +9,9 @@ import csw.location.api.models.ComponentId
 import csw.location.api.models.ComponentType.Machine
 import csw.location.api.models.Connection.AkkaConnection
 import csw.prefix.models.Prefix
+import esw.agent.api.AgentCommand.SpawnCommand.SpawnManuallyRegistered.SpawnRedis
+import esw.agent.api.AgentCommand.SpawnCommand.SpawnSelfRegistered.SpawnSequenceComponent
 import esw.agent.api.AgentCommand.{GetAgentStatus, GetComponentStatus, KillComponent}
-import esw.agent.api.AgentCommand.SpawnManuallyRegistered.SpawnRedis
-import esw.agent.api.AgentCommand.SpawnSelfRegistered.SpawnSequenceComponent
 import esw.agent.api.{AgentCommand, AgentStatus, ComponentStatus, KillResponse, SpawnResponse}
 
 import scala.concurrent.Future

@@ -10,12 +10,11 @@ import csw.location.api.models.Connection.AkkaConnection
 import csw.location.api.models.{AkkaLocation, ComponentId}
 import csw.location.api.scaladsl.LocationService
 import csw.prefix.models.Prefix
-import esw.agent.api.AgentCommand.SpawnManuallyRegistered.SpawnRedis
-import esw.agent.api.AgentCommand.SpawnSelfRegistered.SpawnSequenceComponent
+import esw.agent.api.AgentCommand.SpawnCommand.SpawnManuallyRegistered.SpawnRedis
+import esw.agent.api.AgentCommand.SpawnCommand.SpawnSelfRegistered.SpawnSequenceComponent
 import esw.agent.api.AgentCommand.{GetAgentStatus, GetComponentStatus, KillComponent}
 import esw.agent.api.ComponentStatus.{Running, Stopping}
-import esw.agent.api.Killed._
-import esw.agent.api.{AgentCommand, AgentStatus, Spawned}
+import esw.agent.api.{AgentCommand, AgentStatus, Killed, Spawned}
 import org.mockito.Mockito.when
 import org.mockito.MockitoSugar
 import org.scalatest.BeforeAndAfterAll
@@ -93,7 +92,7 @@ class AgentClientTest extends ScalaTestWithActorTestKit with AnyWordSpecLike wit
       implicit val sch: Scheduler = system.scheduler
       val agentClient             = new AgentClient(agentRef)
       val componentId             = ComponentId(Prefix("esw.test3"), SequenceComponent)
-      agentClient.killComponent(componentId).futureValue should ===(killedGracefully)
+      agentClient.killComponent(componentId).futureValue should ===(Killed.gracefully)
     }
   }
 
@@ -125,7 +124,7 @@ class AgentClientTest extends ScalaTestWithActorTestKit with AnyWordSpecLike wit
       replyTo ! Spawned
       Behaviors.same
     case KillComponent(replyTo, _) =>
-      replyTo ! killedGracefully
+      replyTo ! Killed.gracefully
       Behaviors.same
     case GetComponentStatus(replyTo, _) =>
       replyTo ! Running

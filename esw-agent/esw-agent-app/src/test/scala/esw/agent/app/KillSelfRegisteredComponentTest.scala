@@ -5,29 +5,27 @@ import java.util.concurrent.CompletableFuture
 
 import akka.actor.testkit.typed.scaladsl.{ScalaTestWithActorTestKit, TestProbe}
 import akka.actor.typed.Scheduler
-import csw.location.api.scaladsl.LocationService
 import csw.location.api.models.ComponentType.SequenceComponent
 import csw.location.api.models.Connection.AkkaConnection
 import csw.location.api.models.{AkkaLocation, ComponentId}
+import csw.location.api.scaladsl.LocationService
 import csw.logging.api.scaladsl.Logger
 import csw.prefix.models.Prefix
 import esw.agent.api.AgentCommand.KillComponent
-import esw.agent.api.AgentCommand.SpawnSelfRegistered.SpawnSequenceComponent
-import esw.agent.api.Killed._
+import esw.agent.api.AgentCommand.SpawnCommand.SpawnSelfRegistered.SpawnSequenceComponent
 import esw.agent.api._
 import esw.agent.app.AgentActor.AgentState
 import esw.agent.app.process.ProcessExecutor
 import org.mockito.ArgumentMatchers.{any, eq => argEq}
 import org.mockito.MockitoSugar
-import org.scalatest.matchers
-import matchers.must.Matchers.convertToStringMustWrapper
 import org.scalatest.BeforeAndAfterEach
+import org.scalatest.matchers.must.Matchers.convertToStringMustWrapper
+import org.scalatest.wordspec.AnyWordSpecLike
 
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.duration.{DurationLong, FiniteDuration}
 import scala.concurrent.{Future, Promise}
 import scala.util.Random
-import org.scalatest.wordspec.AnyWordSpecLike
 
 //todo: fix test names
 class KillSelfRegisteredComponentTest
@@ -67,7 +65,7 @@ class KillSelfRegisteredComponentTest
       //stop the component
       agentActorRef ! KillComponent(killer.ref, componentId)
       //ensure it is stopped
-      killer.expectMessage(10.seconds, killedGracefully)
+      killer.expectMessage(10.seconds, Killed.gracefully)
     }
 
     "reply 'killedForcefully' after stopping a registered component forcefully when it does not gracefully in given time | ESW-276" in {
@@ -87,7 +85,7 @@ class KillSelfRegisteredComponentTest
       //stop the component
       agentActorRef ! KillComponent(probe2.ref, componentId)
       //ensure it is stopped
-      probe2.expectMessage(killedForcefully)
+      probe2.expectMessage(Killed.forcefully)
     }
 
     "reply 'killedGracefully' after killing a running component when component is waiting registration confirmation | ESW-276" in {
@@ -107,7 +105,7 @@ class KillSelfRegisteredComponentTest
       //stop the component
       agentActorRef ! KillComponent(probe2.ref, componentId)
       //ensure it is stopped gracefully
-      probe2.expectMessage(10.seconds, killedGracefully)
+      probe2.expectMessage(10.seconds, Killed.gracefully)
     }
 
     "reply 'killedForcefully' after killing a running component when component is waiting registration confirmation | ESW-276" in {
@@ -127,7 +125,7 @@ class KillSelfRegisteredComponentTest
       //stop the component
       agentActorRef ! KillComponent(probe2.ref, componentId)
       //ensure it is stopped gracefully
-      probe2.expectMessage(10.seconds, killedForcefully)
+      probe2.expectMessage(10.seconds, Killed.forcefully)
     }
 
     "reply 'killedGracefully' and cancel spawning of an already scheduled component when registration is being checked | ESW-276" in {
@@ -145,7 +143,7 @@ class KillSelfRegisteredComponentTest
       //stop the component
       agentActorRef ! KillComponent(probe2.ref, componentId)
       //ensure it is stopped gracefully
-      probe2.expectMessage(10.seconds, killedGracefully)
+      probe2.expectMessage(10.seconds, Killed.gracefully)
     }
 
     "reply 'killedGracefully' after process termination, when process is already stopping by another message | ESW-276" in {
@@ -168,7 +166,7 @@ class KillSelfRegisteredComponentTest
       agentActorRef ! KillComponent(secondKiller.ref, componentId)
 
       //ensure it is stopped gracefully
-      firstKiller.expectMessage(6.seconds, killedGracefully)
+      firstKiller.expectMessage(6.seconds, Killed.gracefully)
       secondKiller.expectMessage(Failed("process is already stopping"))
     }
 

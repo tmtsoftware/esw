@@ -6,8 +6,7 @@ import csw.location.api.models.ComponentId
 import csw.location.api.models.ComponentType.{SequenceComponent, Service}
 import csw.prefix.models.Prefix
 import esw.agent.api.ComponentStatus.Running
-import esw.agent.api.Killed._
-import esw.agent.api.{AgentStatus, Failed, Spawned}
+import esw.agent.api.{AgentStatus, Failed, Killed, Spawned}
 import esw.agent.client.AgentClient
 import esw.ocs.testkit.EswTestKit
 import esw.ocs.testkit.Service.MachineAgent
@@ -47,7 +46,7 @@ class AgentIntegrationTest extends EswTestKit(MachineAgent) with BeforeAndAfterA
       spawnResponse should ===(Spawned)
       val killResponse =
         Await.result(agentClient.killComponent(ComponentId(seqCompPrefix, SequenceComponent)), askTimeout.duration)
-      killResponse should ===(killedGracefully)
+      killResponse should ===(Killed.gracefully)
     }
 
     "return killedForcefully after killing a registered component for a killComponent message | ESW-276" in {
@@ -57,7 +56,7 @@ class AgentIntegrationTest extends EswTestKit(MachineAgent) with BeforeAndAfterA
       spawnResponse should ===(Spawned)
       val killResponse =
         Await.result(agentClient.killComponent(ComponentId(seqCompPrefix, SequenceComponent)), askTimeout.duration)
-      killResponse should ===(killedForcefully)
+      killResponse should ===(Killed.forcefully)
     }
 
     "return Failed('Aborted') to original sender when someone kills a process while it is spawning | ESW-237, ESW-237" in {
@@ -66,7 +65,7 @@ class AgentIntegrationTest extends EswTestKit(MachineAgent) with BeforeAndAfterA
       val spawnResponseF = agentClient.spawnSequenceComponent(seqCompPrefix)
       val killResponse =
         Await.result(agentClient.killComponent(ComponentId(seqCompPrefix, SequenceComponent)), askTimeout.duration)
-      killResponse should ===(killedGracefully)
+      killResponse should ===(Killed.gracefully)
       Await.result(spawnResponseF, askTimeout.duration) should ===(Failed("Aborted"))
     }
 

@@ -12,8 +12,8 @@ case class Killed(forcefully: Boolean) extends KillResponse
 case class Failed(msg: String)         extends SpawnResponse with KillResponse
 
 object Killed {
-  val killedGracefully: Killed = Killed(false)
-  val killedForcefully: Killed = Killed(true)
+  val gracefully: Killed = Killed(false)
+  val forcefully: Killed = Killed(true)
 }
 
 sealed trait ComponentStatus extends Response

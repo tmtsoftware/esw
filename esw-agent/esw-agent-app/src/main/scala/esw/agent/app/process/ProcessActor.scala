@@ -3,13 +3,13 @@ package esw.agent.app.process
 import akka.Done
 import akka.actor.typed.scaladsl.Behaviors
 import akka.actor.typed.{ActorRef, Behavior}
-import csw.location.api.scaladsl.{LocationService, RegistrationResult}
 import csw.location.api.models._
+import csw.location.api.scaladsl.{LocationService, RegistrationResult}
 import csw.logging.api.scaladsl.Logger
-import esw.agent.api.AgentCommand.{SpawnManuallyRegistered, SpawnSelfRegistered}
+import esw.agent.api.AgentCommand.SpawnCommand
+import esw.agent.api.AgentCommand.SpawnCommand.{SpawnManuallyRegistered, SpawnSelfRegistered}
 import esw.agent.api.ComponentStatus.{Initializing, Running, Stopping}
-import esw.agent.api.Killed._
-import esw.agent.api.{Failed, KillResponse, SpawnCommand, Spawned}
+import esw.agent.api.{Failed, KillResponse, Killed, Spawned}
 import esw.agent.app.AgentSettings
 import esw.agent.app.process.ProcessActorMessage._
 
@@ -108,7 +108,7 @@ class ProcessActor(
 
         case Die(dieRef) =>
           warn("Killing process actor via Die message. Process was not started yet", Map("prefix" -> prefix))
-          dieRef ! killedGracefully
+          dieRef ! Killed.gracefully
           replyTo ! aborted
           Behaviors.stopped
         case GetStatus(replyTo) =>
@@ -180,7 +180,7 @@ class ProcessActor(
           Behaviors.same
         case ProcessExited(exitCode) =>
           timeScheduler.cancel(StopForcefully)
-          deathSubscriber.foreach(_ ! (if (exitCode == 0 || exitCode == 143) killedGracefully else killedForcefully))
+          deathSubscriber.foreach(_ ! (if (exitCode == 0 || exitCode == 143) Killed.gracefully else Killed.forcefully))
           Behaviors.stopped
         case StopGracefully =>
           process.destroy()
@@ -189,7 +189,7 @@ class ProcessActor(
           Behaviors.same
         case StopForcefully =>
           process.destroyForcibly()
-          deathSubscriber.foreach(_ ! killedForcefully)
+          deathSubscriber.foreach(_ ! Killed.forcefully)
           Behaviors.stopped
         case GetStatus(replyTo) =>
           replyTo ! Stopping

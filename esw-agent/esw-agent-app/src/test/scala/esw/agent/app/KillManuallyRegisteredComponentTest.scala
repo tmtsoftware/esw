@@ -5,29 +5,27 @@ import java.util.concurrent.CompletableFuture
 
 import akka.actor.testkit.typed.scaladsl.{ScalaTestWithActorTestKit, TestProbe}
 import akka.actor.typed.Scheduler
-import csw.location.api.scaladsl.{LocationService, RegistrationResult}
 import csw.location.api.models.ComponentType.Service
 import csw.location.api.models.Connection.TcpConnection
 import csw.location.api.models.{ComponentId, TcpLocation, TcpRegistration}
+import csw.location.api.scaladsl.{LocationService, RegistrationResult}
 import csw.logging.api.scaladsl.Logger
 import csw.prefix.models.Prefix
 import esw.agent.api.AgentCommand.KillComponent
-import esw.agent.api.AgentCommand.SpawnManuallyRegistered.SpawnRedis
-import esw.agent.api.Killed._
+import esw.agent.api.AgentCommand.SpawnCommand.SpawnManuallyRegistered.SpawnRedis
 import esw.agent.api._
 import esw.agent.app.AgentActor.AgentState
 import esw.agent.app.process.ProcessExecutor
 import org.mockito.ArgumentMatchers.{any, eq => argEq}
 import org.mockito.MockitoSugar
 import org.scalatest.BeforeAndAfterEach
+import org.scalatest.matchers.must.Matchers.convertToStringMustWrapper
+import org.scalatest.wordspec.AnyWordSpecLike
 
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.duration.{DurationLong, FiniteDuration}
 import scala.concurrent.{Future, Promise}
 import scala.util.Random
-import org.scalatest.matchers
-import matchers.must.Matchers.convertToStringMustWrapper
-import org.scalatest.wordspec.AnyWordSpecLike
 
 //todo: fix test names
 class KillManuallyRegisteredComponentTest
@@ -71,7 +69,7 @@ class KillManuallyRegisteredComponentTest
       //stop the component
       agentActorRef ! KillComponent(probe2.ref, componentId)
       //ensure it is stopped
-      probe2.expectMessage(10.seconds, killedGracefully)
+      probe2.expectMessage(10.seconds, Killed.gracefully)
 
       //ensure component was unregistered
       verify(locationService).unregister(redisConn)
@@ -93,7 +91,7 @@ class KillManuallyRegisteredComponentTest
       //stop the component
       agentActorRef ! KillComponent(probe2.ref, componentId)
       //ensure it is stopped
-      probe2.expectMessage(killedForcefully)
+      probe2.expectMessage(Killed.forcefully)
 
       //ensure component was unregistered
       verify(locationService).unregister(redisConn)
@@ -116,7 +114,7 @@ class KillManuallyRegisteredComponentTest
       //stop the component
       agentActorRef ! KillComponent(probe2.ref, componentId)
       //ensure it is stopped gracefully
-      probe2.expectMessage(10.seconds, killedGracefully)
+      probe2.expectMessage(10.seconds, Killed.gracefully)
 
       //ensure component was unregistered
       verify(locationService).unregister(redisConn)
@@ -140,7 +138,7 @@ class KillManuallyRegisteredComponentTest
       agentActorRef ! KillComponent(probe2.ref, componentId)
 
       //ensure it is stopped forcefully
-      probe2.expectMessage(10.seconds, killedForcefully)
+      probe2.expectMessage(10.seconds, Killed.forcefully)
 
       //ensure component was unregistered
       verify(locationService).unregister(redisConn)
@@ -161,7 +159,7 @@ class KillManuallyRegisteredComponentTest
       //stop the component
       agentActorRef ! KillComponent(probe2.ref, componentId)
       //ensure it is stopped gracefully
-      probe2.expectMessage(10.seconds, killedGracefully)
+      probe2.expectMessage(10.seconds, Killed.gracefully)
 
       //ensure component was unregistered
       verify(locationService).unregister(redisConn)
@@ -186,7 +184,7 @@ class KillManuallyRegisteredComponentTest
       agentActorRef ! KillComponent(secondKiller.ref, componentId)
 
       //ensure it is stopped gracefully
-      firstKiller.expectMessage(3.seconds, killedGracefully)
+      firstKiller.expectMessage(3.seconds, Killed.gracefully)
       secondKiller.expectMessage(Failed("process is already stopping"))
 
       //ensure component was unregistered

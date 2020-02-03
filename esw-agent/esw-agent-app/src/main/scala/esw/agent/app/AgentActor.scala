@@ -4,12 +4,12 @@ import akka.actor.typed.scaladsl.AskPattern.Askable
 import akka.actor.typed.scaladsl.Behaviors
 import akka.actor.typed.{ActorRef, Scheduler}
 import akka.util.Timeout
-import csw.location.api.scaladsl.LocationService
 import csw.location.api.models.ComponentId
+import csw.location.api.scaladsl.LocationService
 import csw.logging.api.scaladsl.Logger
 import esw.agent.api.AgentCommand._
 import esw.agent.api.ComponentStatus.NotAvailable
-import esw.agent.api.{AgentCommand, AgentStatus, Failed, SpawnCommand}
+import esw.agent.api.{AgentCommand, AgentStatus, Failed}
 import esw.agent.app.AgentActor.AgentState
 import esw.agent.app.process.ProcessActorMessage.{Die, GetStatus, SpawnComponent}
 import esw.agent.app.process.{ProcessActor, ProcessActorMessage, ProcessExecutor}
