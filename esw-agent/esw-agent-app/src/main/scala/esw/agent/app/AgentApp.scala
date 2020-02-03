@@ -1,5 +1,6 @@
 package esw.agent.app
 
+import akka.actor.CoordinatedShutdown
 import akka.actor.CoordinatedShutdown.UnknownReason
 import caseapp.core.RemainingArgs
 import caseapp.core.app.CommandApp
@@ -13,7 +14,7 @@ import scala.concurrent.duration.DurationLong
 import scala.util.control.NonFatal
 
 // $COVERAGE-OFF$
-object Main extends CommandApp[AgentCliCommand] {
+object AgentApp extends CommandApp[AgentCliCommand] {
   override def appName: String    = getClass.getSimpleName.dropRight(1) // remove $ from class name
   override def appVersion: String = BuildInfo.version
   override def progName: String   = BuildInfo.name
@@ -25,15 +26,23 @@ object Main extends CommandApp[AgentCliCommand] {
   private[esw] def start(prefix: Prefix, agentSettings: AgentSettings): AgentWiring = {
     val wiring = new AgentWiring(prefix, agentSettings)
     import wiring._
-    actorRuntime.startLogging(BuildInfo.name, BuildInfo.version)
-    log.debug("starting machine agent", Map("prefix" -> prefix))
     try {
+      actorRuntime.startLogging(BuildInfo.name, BuildInfo.version)
       LocationServerStatus.requireUpLocally(5.seconds)
+      log.debug("starting machine agent", Map("prefix" -> prefix))
       Await.result(lazyAgentRegistration, timeout.duration)
+
+      actorRuntime.coordinatedShutdown
+        .addTask(CoordinatedShutdown.PhaseBeforeServiceUnbind, "unregister-agent") { () =>
+          log.warn("agent is shutting down. unregistering agent")
+          locationService.unregister(agentConnection)
+        }
+
       log.info("agent started")
     }
     catch {
       case NonFatal(ex) =>
+        ex.printStackTrace()
         log.error("agent-app crashed", Map("machine-name" -> prefix), ex)
         //shutdown is required so that actor system shuts down gracefully and jvm process can exit
         Await.result(actorRuntime.shutdown(UnknownReason), timeout.duration)

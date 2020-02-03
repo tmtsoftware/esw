@@ -20,11 +20,6 @@ class ActorRuntime {
   implicit val ec: ExecutionContext                            = typedSystem.executionContext
   val coordinatedShutdown: CoordinatedShutdown                 = CoordinatedShutdown(untypedSystem)
 
-  def withShutdownHook[T](f: => T): ActorRuntime = {
-    coordinatedShutdown.addJvmShutdownHook(f)
-    this
-  }
-
   def startLogging(name: String, version: String): Unit =
     LoggingSystemFactory.start(name, version, Networks().hostname, typedSystem)
 

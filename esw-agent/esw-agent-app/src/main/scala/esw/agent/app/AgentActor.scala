@@ -38,8 +38,7 @@ class AgentActor(
 
         //happy path
         case command @ SpawnCommand(_, componentId) =>
-          val initBehaviour =
-            new ProcessActor(locationService, processExecutor, agentSettings, logger, command).init
+          val initBehaviour   = new ProcessActor(locationService, processExecutor, agentSettings, logger, command).init
           val processActorRef = ctx.spawn(initBehaviour, componentId.prefix.toString.toLowerCase)
           ctx.watchWith(processActorRef, ProcessExited(componentId))
           processActorRef ! SpawnComponent
@@ -47,8 +46,7 @@ class AgentActor(
 
         case KillComponent(replyTo, componentId) =>
           state.components.get(componentId) match {
-            case Some(processActor) =>
-              processActor ! Die(replyTo)
+            case Some(processActor) => processActor ! Die(replyTo)
             case None =>
               val message = "given component id is not running on this agent"
               error(message, Map("prefix" -> componentId.prefix))
@@ -67,10 +65,11 @@ class AgentActor(
           import ctx.executionContext
           implicit val sch: Scheduler   = ctx.system.scheduler
           implicit val timeout: Timeout = Timeout(1.second)
-          val futures = state.components.map {
+
+          val statusF = Future.traverse(state.components.toList) {
             case (id, ref) => (ref ? GetStatus).map(status => (id, status))
-          }.toList
-          Future.sequence(futures).map(_.toMap).map(replyTo ! AgentStatus(_))
+          }
+          statusF.foreach(m => replyTo ! AgentStatus(m.toMap))
           Behaviors.same
 
         //process has exited and child actor died

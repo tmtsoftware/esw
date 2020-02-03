@@ -17,7 +17,7 @@ import csw.location.api.scaladsl.LocationService
 import csw.network.utils.{Networks, SocketUtils}
 import csw.prefix.models.{Prefix, Subsystem}
 import csw.testkit.scaladsl.ScalaTestFrameworkTestKit
-import esw.agent.app.{AgentSettings, AgentWiring, Main}
+import esw.agent.app.{AgentSettings, AgentWiring, AgentApp}
 import esw.gateway.api.codecs.GatewayCodecs
 import esw.gateway.api.protocol.{PostRequest, WebsocketRequest}
 import esw.gateway.server.GatewayWiring
@@ -95,7 +95,7 @@ abstract class EswTestKit(services: Service*)
   }
 
   def spawnAgent(agentSettings: AgentSettings): Unit = {
-    agentWiring = Some(Main.start(agentPrefix, agentSettings))
+    agentWiring = Some(AgentApp.start(agentPrefix, agentSettings))
   }
 
   def shutdownAgent(): Unit = agentWiring.foreach(_.actorRuntime.shutdown(UnknownReason))

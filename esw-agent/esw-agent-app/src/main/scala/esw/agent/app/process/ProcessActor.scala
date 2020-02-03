@@ -48,9 +48,8 @@ class ProcessActor(
       .resolve(Connection.from(ConnectionInfo(prefix, componentType, connectionType)).of[Location], timeout)
       .map(_.nonEmpty)
 
-  private def registerComponent(): Future[RegistrationResult] = {
+  private def registerComponent(): Future[RegistrationResult] =
     locationService.register(command.asInstanceOf[SpawnManuallyRegistered].registration)
-  }
 
   private def unregisterComponent(): Future[Done] =
     locationService.unregister(command.asInstanceOf[SpawnManuallyRegistered].registration.connection)
@@ -66,6 +65,7 @@ class ProcessActor(
             case Failure(exception) => LocationServiceError(exception)
           }
           checkingRegistration
+
         case GetStatus(replyTo) =>
           replyTo ! Initializing
           Behaviors.same
@@ -91,9 +91,8 @@ class ProcessActor(
                 if (autoRegistered) isComponentRegistered(agentSettings.durationToWaitForComponentRegistration)
                 else registerComponent().map(_ => true)
               ctx.pipeToSelf(future) {
-                case Success(true)  => RegistrationSuccess
-                case Success(false) => RegistrationFailed
-                case _              => RegistrationFailed
+                case Success(true) => RegistrationSuccess
+                case _             => RegistrationFailed
               }
               waitingForComponentRegistration(process, processExited = false)
             case Left(err) =>
@@ -111,6 +110,7 @@ class ProcessActor(
           dieRef ! Killed.gracefully
           replyTo ! aborted
           Behaviors.stopped
+
         case GetStatus(replyTo) =>
           replyTo ! Initializing
           Behaviors.same
@@ -147,6 +147,7 @@ class ProcessActor(
           replyTo ! aborted
           ctx.self ! StopGracefully
           stopping(process, Some(deathSubscriber))
+
         case GetStatus(replyTo) =>
           replyTo ! Initializing
           Behaviors.same
@@ -165,6 +166,7 @@ class ProcessActor(
           warn("attempting to kill process gracefully", Map("pid" -> process.pid, "prefix" -> prefix))
           ctx.self ! StopGracefully
           stopping(process, Some(deathSubscriber))
+
         case GetStatus(replyTo) =>
           replyTo ! Running
           Behaviors.same
@@ -178,19 +180,23 @@ class ProcessActor(
           debug("stop message arrived when component was already stopping", Map("pid" -> process.pid, "prefix" -> prefix))
           dieRef ! Failed("process is already stopping")
           Behaviors.same
+
         case ProcessExited(exitCode) =>
           timeScheduler.cancel(StopForcefully)
           deathSubscriber.foreach(_ ! (if (exitCode == 0 || exitCode == 143) Killed.gracefully else Killed.forcefully))
           Behaviors.stopped
+
         case StopGracefully =>
           process.destroy()
           if (!autoRegistered) unregisterComponent()
           timeScheduler.startSingleTimer(StopForcefully, gracefulTimeout)
           Behaviors.same
+
         case StopForcefully =>
           process.destroyForcibly()
           deathSubscriber.foreach(_ ! Killed.forcefully)
           Behaviors.stopped
+
         case GetStatus(replyTo) =>
           replyTo ! Stopping
           Behaviors.same
