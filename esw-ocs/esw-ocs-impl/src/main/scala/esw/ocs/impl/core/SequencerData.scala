@@ -24,7 +24,6 @@ private[core] case class SequencerData(
 ) {
 
   def isSequenceLoaded: Boolean = stepList.isDefined
-  private def isSequenceRunning = runId.isDefined
 
   def createStepList(sequence: Sequence): SequencerData =
     copy(stepList = Some(StepList(sequence)))
@@ -41,25 +40,17 @@ private[core] case class SequencerData(
       .notifyReadyToExecuteNextSubscriber()
 
   def queryFinal(runId: Id, replyTo: ActorRef[SubmitResponse]): SequencerData =
-    if (isSequenceRunning && this.runId.get == runId) queryFinal(replyTo)
-    else {
-      replyTo ! Invalid(runId, IdNotAvailableIssue(s"Sequencer is not running any sequence with runId $runId"))
-      this
+    this.runId match {
+      case Some(`runId`) if stepList.get.isFinished => replyTo ! getSequencerResponse; this
+      case Some(`runId`)                            => copy(sequenceResponseSubscribers = sequenceResponseSubscribers + replyTo)
+      case _                                        => sendInvalidResponse(runId, replyTo)
     }
-
-  def queryFinal(replyTo: ActorRef[SubmitResponse]): SequencerData = {
-    if (isSequenceRunning && stepList.get.isFinished) {
-      replyTo ! getSequencerResponse
-      this
-    }
-    else copy(sequenceResponseSubscribers = sequenceResponseSubscribers + replyTo)
-  }
 
   def query(runId: Id, replyTo: ActorRef[SubmitResponse]): SequencerData = {
     this.runId match {
       case Some(`runId`) if stepList.get.isFinished => replyTo ! getSequencerResponse
       case Some(`runId`)                            => replyTo ! Started(runId)
-      case _                                        => replyTo ! Invalid(runId, IdNotAvailableIssue(s"Sequencer is not running any sequence with runId $runId"))
+      case _                                        => sendInvalidResponse(runId, replyTo)
     }
     this
   }
@@ -69,7 +60,7 @@ private[core] case class SequencerData(
       .sendNextPendingStepIfAvailable()
 
   def readyToExecuteNext(replyTo: ActorRef[Ok.type]): SequencerData =
-    if (stepList.exists(_.isRunningButNotInFlight) && isSequenceRunning) {
+    if (stepList.exists(_.isRunningButNotInFlight) && runId.isDefined) {
       replyTo ! Ok
       copy(readyToExecuteSubscriber = None)
     }
@@ -98,6 +89,11 @@ private[core] case class SequencerData(
         .checkForSequenceCompletion()
         .notifyReadyToExecuteNextSubscriber()
         .sendNextPendingStepIfAvailable()
+  }
+
+  private def sendInvalidResponse(runId: Id, replyTo: ActorRef[SubmitResponse]): SequencerData = {
+    replyTo ! Invalid(runId, IdNotAvailableIssue(s"Sequencer is not running any sequence with runId $runId"))
+    this
   }
 
   private def changeStepStatus(state: SequencerState[SequencerMsg], newStatus: StepStatus) = {
