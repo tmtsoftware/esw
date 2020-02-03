@@ -58,7 +58,7 @@ object AgentCommand {
 
         override def commandStrings(binariesPath: Path): List[String] = {
           val executablePath = Paths.get(binariesPath.toString, binaryName).toString
-          executablePath :: redisArguments
+          (executablePath :: redisArguments) ++ List("--port", s"$port")
         }
       }
     }
