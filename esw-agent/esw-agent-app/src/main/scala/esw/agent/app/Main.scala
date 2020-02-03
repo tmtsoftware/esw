@@ -19,27 +19,27 @@ object Main extends CommandApp[AgentCliCommand] {
   override def progName: String   = BuildInfo.name
 
   override def run(command: AgentCliCommand, remainingArgs: RemainingArgs): Unit = command match {
-    case StartCommand(prefix) => onStart(Prefix(prefix), AgentSettings.from(ConfigFactory.load()))
+    case StartCommand(prefix) => start(Prefix(prefix), AgentSettings.from(ConfigFactory.load()))
   }
 
-  var wiring: AgentWiring = _
-
-  def onStart(prefix: Prefix, agentSettings: AgentSettings): Unit = {
-    wiring = new AgentWiring(prefix, agentSettings)
-    wiring.actorRuntime.startLogging(BuildInfo.name, BuildInfo.version)
-    wiring.log.debug("starting machine agent", Map("prefix" -> prefix))
+  private[esw] def start(prefix: Prefix, agentSettings: AgentSettings): AgentWiring = {
+    val wiring = new AgentWiring(prefix, agentSettings)
+    import wiring._
+    actorRuntime.startLogging(BuildInfo.name, BuildInfo.version)
+    log.debug("starting machine agent", Map("prefix" -> prefix))
     try {
       LocationServerStatus.requireUpLocally(5.seconds)
-      Await.result(wiring.lazyAgentRegistration, wiring.timeout.duration)
-      wiring.log.info("agent started")
+      Await.result(lazyAgentRegistration, timeout.duration)
+      log.info("agent started")
     }
     catch {
       case NonFatal(ex) =>
-        wiring.log.error("agent-app crashed", Map("machine-name" -> prefix), ex)
+        log.error("agent-app crashed", Map("machine-name" -> prefix), ex)
         //shutdown is required so that actor system shuts down gracefully and jvm process can exit
-        Await.result(wiring.actorRuntime.shutdown(UnknownReason), wiring.timeout.duration)
+        Await.result(actorRuntime.shutdown(UnknownReason), timeout.duration)
         exit(1)
     }
+    wiring
   }
 }
 // $COVERAGE-ON$

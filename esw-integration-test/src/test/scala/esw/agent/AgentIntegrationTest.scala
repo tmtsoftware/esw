@@ -3,7 +3,8 @@ package esw.agent
 import akka.util.Timeout
 import csw.location.api.codec.LocationServiceCodecs
 import csw.location.api.models.ComponentId
-import csw.location.api.models.ComponentType.{SequenceComponent, Service}
+import csw.location.api.models.ComponentType.{Machine, SequenceComponent, Service}
+import csw.location.api.models.Connection.AkkaConnection
 import csw.prefix.models.Prefix
 import esw.agent.api.ComponentStatus.Running
 import esw.agent.api.{AgentStatus, Failed, Killed, Spawned}
@@ -21,7 +22,7 @@ class AgentIntegrationTest extends EswTestKit(MachineAgent) with BeforeAndAfterA
 
   "Agent" must {
     "start and register itself with location service | ESW-237" in {
-      //this asserts agent has started and registered in location service
+      val agentLocation = locationService.resolve(AkkaConnection(ComponentId(agentPrefix, Machine)), 5.seconds).futureValue
       agentLocation should not be empty
     }
 

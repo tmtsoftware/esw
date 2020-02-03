@@ -11,13 +11,13 @@ import csw.command.client.extensions.AkkaLocationExt.RichAkkaLocation
 import csw.command.client.messages.sequencer.SequencerMsg
 import csw.event.api.scaladsl.{EventPublisher, EventService, EventSubscriber}
 import csw.location.api.extensions.URIExtension._
-import csw.location.api.scaladsl.LocationService
 import csw.location.api.models.Connection.{AkkaConnection, HttpConnection}
 import csw.location.api.models.{AkkaLocation, ComponentId, ComponentType, HttpLocation}
+import csw.location.api.scaladsl.LocationService
 import csw.network.utils.{Networks, SocketUtils}
 import csw.prefix.models.{Prefix, Subsystem}
 import csw.testkit.scaladsl.ScalaTestFrameworkTestKit
-import esw.agent.app.{AgentSettings, Main}
+import esw.agent.app.{AgentSettings, AgentWiring, Main}
 import esw.gateway.api.codecs.GatewayCodecs
 import esw.gateway.api.protocol.{PostRequest, WebsocketRequest}
 import esw.gateway.server.GatewayWiring
@@ -45,32 +45,33 @@ abstract class EswTestKit(services: Service*)
   implicit lazy val askTimeout: Timeout                        = Timeout(10.seconds)
   lazy val locationService: LocationService                    = frameworkTestKit.frameworkWiring.locationService
   lazy val untypedSystem: actor.ActorSystem                    = frameworkTestKit.frameworkWiring.actorRuntime.classicSystem
-  lazy val gatewayPort: Int                                    = SocketUtils.getFreePort
-  lazy val agentPrefix: Prefix                                 = Prefix(s"esw.machine_${Random.nextInt().abs}")
-  lazy val gatewayWiring: GatewayWiring                        = new GatewayWiring(Some(gatewayPort))
   private lazy val eventService: EventService                  = frameworkTestKit.frameworkWiring.eventServiceFactory.make(locationService)
   lazy val eventSubscriber: EventSubscriber                    = eventService.defaultSubscriber
   lazy val eventPublisher: EventPublisher                      = eventService.defaultPublisher
-  var gatewayBinding: Option[ServerBinding]                    = None
-  var gatewayLocation: Option[HttpLocation]                    = None
-  var agentLocation: Option[AkkaLocation]                      = None
 
+  // gateway
+  lazy val gatewayPort: Int                 = SocketUtils.getFreePort
+  lazy val gatewayWiring: GatewayWiring     = new GatewayWiring(Some(gatewayPort))
+  var gatewayBinding: Option[ServerBinding] = None
+  var gatewayLocation: Option[HttpLocation] = None
   lazy val gatewayPostClient =
     new HttpPostTransport[PostRequest](s"http://${Networks().hostname}:$gatewayPort/post-endpoint", ContentType.Json, () => None)
-
   lazy val gatewayWsClient =
     new WebsocketTransport[WebsocketRequest](s"ws://${Networks().hostname}:$gatewayPort/websocket-endpoint", ContentType.Json)
 
   private val sequenceComponentLocations: mutable.Buffer[AkkaLocation] = mutable.Buffer.empty
 
-  override implicit def patienceConfig: PatienceConfig = PatienceConfig(10.seconds)
-
+  // agent
   lazy val resourcesDirPath: Path = Paths.get(getClass.getResource("/").getPath)
   lazy val agentSettings: AgentSettings = AgentSettings(
     resourcesDirPath.toString,
     durationToWaitForComponentRegistration = 5.seconds,
     durationToWaitForGracefulProcessTermination = 2.seconds
   )
+  lazy val agentPrefix: Prefix                 = Prefix(s"esw.machine_${Random.nextInt().abs}")
+  private var agentWiring: Option[AgentWiring] = None
+
+  override implicit def patienceConfig: PatienceConfig = PatienceConfig(10.seconds)
 
   override def beforeAll(): Unit = {
     super.beforeAll()
@@ -93,23 +94,11 @@ abstract class EswTestKit(services: Service*)
     clearAll()
   }
 
-  def spawnAgent(agentSettings: AgentSettings): AkkaLocation = {
-    Main.onStart(agentPrefix, agentSettings)
-
-    agentLocation = Some(
-      locationService
-        .resolve(AkkaConnection(ComponentId(agentPrefix, ComponentType.Machine)), 15.seconds)
-        .futureValue
-        .getOrElse(throw new RuntimeException("could not verify agent registration"))
-    )
-
-    agentLocation.get
+  def spawnAgent(agentSettings: AgentSettings): Unit = {
+    agentWiring = Some(Main.start(agentPrefix, agentSettings))
   }
 
-  def shutdownAgent(): Unit = {
-    if (agentLocation.nonEmpty)
-      Main.wiring.actorRuntime.shutdown(UnknownReason)
-  }
+  def shutdownAgent(): Unit = agentWiring.foreach(_.actorRuntime.shutdown(UnknownReason))
 
   def spawnGateway(): HttpLocation = {
     val (binding, registration) = gatewayWiring.httpService.registeredLazyBinding.futureValue
