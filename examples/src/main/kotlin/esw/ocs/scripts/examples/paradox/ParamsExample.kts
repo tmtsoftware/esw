@@ -6,9 +6,14 @@ import csw.params.commands.Setup
 import csw.params.core.generics.Key
 import csw.params.core.generics.KeyType
 import csw.params.core.generics.Parameter
+import csw.params.core.models.ArrayData
+import csw.params.core.models.Choice
+import csw.params.core.models.MatrixData
+import csw.params.core.models.Struct
 import csw.params.events.SystemEvent
 import csw.params.javadsl.JKeyType
 import csw.params.javadsl.JUnits.watt
+import csw.time.core.models.UTCTime
 import esw.ocs.dsl.core.script
 import esw.ocs.dsl.highlevel.models.WFOS
 import esw.ocs.dsl.params.*
@@ -16,6 +21,45 @@ import esw.ocs.dsl.params.*
 script {
 
     val galilAssembly = Assembly(WFOS, "FilterWheel")
+
+    onSetup("move") { command ->
+        //#keys
+        // Primitive keys
+        val encoderKey: Key<Int> = intKey("encoder")
+        val flagKey: Key<Boolean> = booleanKey("flag")
+        val eventTimeKey: Key<UTCTime> = utcTimeKey("event-time")
+
+        // Arrays
+        val arrayKey: Key<ArrayData<Int>> = intArrayKey("arrayKey")
+        val elms: Array<Int> = arrayOf(1, 2, 3, 4)
+        val values1: ArrayData<Int> = arrayData(elms)
+        val values2: ArrayData<Int> = arrayData(5, 6, 7, 8)
+        val arrayParam: Parameter<ArrayData<Int>> = arrayKey.set(values1, values2)
+
+        // Matrix
+        val matrixKey: Key<MatrixData<Int>> = intMatrixKey("matrixKey")
+        val arr1: Array<Int> = arrayOf(1, 2, 3, 4)
+        val arr2: Array<Int> = arrayOf(5, 6, 7, 8)
+        val elms1: Array<Array<Int>> = arrayOf(arr1, arr2)
+        val data1: MatrixData<Int> = matrixData(elms1)
+        val data2: MatrixData<Int> = matrixData(arr1, arr2)
+        val matrixParameter: Parameter<MatrixData<Int>> = matrixKey.set(data1, data2)
+
+        // Domain specific types
+        val choiceKey: Key<Choice> = choiceKey("choice", choicesOf("A", "B", "C"))
+        val choiceParam: Parameter<Choice> = choiceKey.set(Choice("A"), Choice("C"))
+
+        // Struct
+        val intParam: Parameter<Int> = encoderKey.set(1, 2, 3)
+        val paramSet: Set<Parameter<*>> = setOf(intParam, choiceParam)
+        val complexKey: Key<Struct> = structKey("complexKey")
+        val struct1: Struct = struct(paramSet)
+        val struct2: Struct = struct(command.params)
+        val struct3: Struct = struct(intParam, arrayParam)
+        val structParam: Parameter<Struct> = complexKey.set(struct1, struct2, struct3)
+        //#keys
+
+    }
 
     onSetup("setup-wfos") { command ->
         //#creating-params

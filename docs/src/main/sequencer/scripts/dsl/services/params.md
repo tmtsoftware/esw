@@ -4,6 +4,52 @@ A Kotlin Dsl has been provided for creating Parameters to store values like prim
 This Dsl is built over abstractions like `Parameter`, `KeyType` etc offered by CSW.
 Refer to the @extref[CSW doc](csw:params/keys-parameters) for more information about this. 
 
+## Keys
+
+Following table lists all the key types, and their corresponding kotlin dsl provided.
+
+| KeyType             | Kotlin Dsl                  |
+| :-----------------: |:--------------------------: |
+| Boolean             | booleanKey                  |
+| Character           | charKey                     |
+| Byte                | byteKey                     |
+| Short               | shortKey                    |
+| Long                | longKey                     |
+| Int                 | intKey                      |
+| Float               | floatKey                    |
+| Double              | doubleKey                   |
+| String              | stringKey                   |
+| UtcTime             | utcTimeKey                  |
+| TaiTime             | taiTimeKey                  |
+| ByteArray           | byteArrayKey                |
+| ShortArray          | shortArrayKey               |
+| LongArray           | longArrayKey                |
+| IntArray            | intArrayKey                 |
+| FloatArray          | floatArrayKey               |
+| DoubleArray         | doubleArrayKey              |
+| ByteMatrix          | byteMatrixKey               |
+| ShortMatrix         | shortMatrixKey              |
+| LongMatrix          | longMatrixKey               |
+| IntMatrix           | intMatrixKey                |
+| FloatMatrix         | floatMatrixKey              |
+| DoubleMatrix        | doubleMatrixKey             |
+| Choice              | choiceKey                   |
+| Struct              | structKey                   |
+| RaDec               | raDecKey                    |
+| EqCoord             | eqCoordKey                  |
+| SolarSystemCoord    | solarSystemCoordKey         |
+| MinorPlanetCoord    | minorPlanetCoordKey         |
+| CometCoord          | cometCoordKey               |
+| AltAzCoord          | altAzCoordKey               |
+| Coord  (*)          | coordKey                    |
+
+Example below shows usages of Dsl for different types of keys. Some other helper Dsl like `struct`, `choicesOf`, `arrayData`, `matrixData` etc
+have also been provided for ease of access. Usage of this helper Dsl is also shown in the below example.
+
+Kotlin
+: @@snip [Params.kts](../../../../../../../examples/src/main/kotlin/esw/ocs/scripts/examples/paradox/ParamsExample.kts) { #keys }  
+
+
 ## Creating Parameters
 
 Example below shows different ways of creating parameters and adding them to a command.

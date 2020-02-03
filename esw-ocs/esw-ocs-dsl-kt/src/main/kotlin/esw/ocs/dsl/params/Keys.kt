@@ -19,7 +19,7 @@ fun <T> Key<T>.set(vararg elm: T, units: Units = JUnits.NoUnits()): Parameter<T>
 fun choiceKey(name: String, choices: Choices): Key<Choice> = ChoiceKey().make(name, choices)
 
 fun choiceKey(name: String, vararg choices: Choice): Key<Choice> =
-    ChoiceKey().make(name, Choices.fromChoices(choices.toSet()))
+        ChoiceKey().make(name, Choices.fromChoices(choices.toSet()))
 
 fun raDecKey(name: String): Key<RaDec> = RaDecKey().make(name)
 fun eqCoordKey(name: String): Key<Coords.EqCoord> = EqCoordKey().make(name)
@@ -54,6 +54,7 @@ fun floatArrayKey(name: String): Key<ArrayData<Float>> = FloatArrayKey().make(na
 fun doubleArrayKey(name: String): Key<ArrayData<Double>> = DoubleArrayKey().make(name)
 
 /** ============= Matrix Keys =========== **/
+
 fun byteMatrixKey(name: String): Key<MatrixData<Byte>> = ByteMatrixKey().make(name)
 
 fun shortMatrixKey(name: String): Key<MatrixData<Short>> = ShortMatrixKey().make(name)
@@ -63,8 +64,15 @@ fun floatMatrixKey(name: String): Key<MatrixData<Float>> = FloatMatrixKey().make
 fun doubleMatrixKey(name: String): Key<MatrixData<Double>> = DoubleMatrixKey().make(name)
 
 /** ============= Helpers =========== **/
-fun <T> arrayData(elms: Array<T>): ArrayData<T> = ArrayData.fromArray(elms)
+
+inline fun <reified T> arrayData(elms: Array<T>): ArrayData<T> = ArrayData.fromArray(elms)
+
+inline fun <reified T> arrayData(first: T, vararg rest: T): ArrayData<T> = ArrayData.fromArrays(first, *rest)
 
 inline fun <reified T> matrixData(elms: Array<Array<T>>): MatrixData<T> = MatrixData.fromArrays(elms)
+inline fun <reified T> matrixData(first: Array<T>, vararg rest: Array<T>): MatrixData<T> = MatrixData.fromArrays(first, *rest)
+fun struct(vararg params: Parameter<*>): Struct = JStruct.create(*params)
+fun struct(paramSet: Set<Parameter<*>>): Struct = JStruct.create(paramSet)
+fun struct(params: Params): Struct = JStruct.create(params.params())
 
 fun choicesOf(vararg choices: String): Choices = Choices.from(choices.toSet())
