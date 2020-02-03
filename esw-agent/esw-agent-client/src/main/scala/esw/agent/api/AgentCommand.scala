@@ -30,10 +30,6 @@ object AgentCommand {
     }
 
     object SpawnSelfRegistered {
-
-      def unapply(cmd: SpawnSelfRegistered): Option[(ActorRef[SpawnResponse], ComponentId)] =
-        Some((cmd.replyTo, cmd.componentId))
-
       case class SpawnSequenceComponent(replyTo: ActorRef[SpawnResponse], prefix: Prefix) extends SpawnSelfRegistered {
         private val binaryName = "esw-ocs-app"
 
@@ -53,9 +49,6 @@ object AgentCommand {
     }
 
     object SpawnManuallyRegistered {
-      def unapply(arg: SpawnManuallyRegistered): Option[(ActorRef[SpawnResponse], Registration)] =
-        Some((arg.replyTo, arg.registration))
-
       case class SpawnRedis(replyTo: ActorRef[SpawnResponse], prefix: Prefix, port: Int, redisArguments: List[String])
           extends SpawnManuallyRegistered {
 
