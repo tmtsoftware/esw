@@ -11,7 +11,7 @@ object Libs {
 
   val `case-app`           = "com.github.alexarchambault" %% "case-app" % "2.0.0-M9"
   val enumeratum           = dep("com.beachape" %%% "enumeratum" % "1.5.15") //MIT License
-  val `mockito-scala`      = "org.mockito" %% "mockito-scala" % "1.11.0" // MIT License
+  val `mockito-scala`      = "org.mockito" %% "mockito-scala" % "1.11.2" // MIT License
   val `scala-async`        = "org.scala-lang.modules" %% "scala-async" % "0.10.0" //BSD 3-clause "New" or "Revised" License
   val scalatest            = "org.scalatest" %% "scalatest" % "3.1.0" //Apache License 2.0
   val `scala-java8-compat` = "org.scala-lang.modules" %% "scala-java8-compat" % "0.9.0" //BSD 3-clause "New" or "Revised" License
