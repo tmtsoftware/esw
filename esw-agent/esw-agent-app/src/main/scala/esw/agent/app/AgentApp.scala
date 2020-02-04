@@ -1,7 +1,6 @@
 package esw.agent.app
 
-import akka.actor.CoordinatedShutdown
-import akka.actor.CoordinatedShutdown.UnknownReason
+import akka.actor.CoordinatedShutdown.{PhaseBeforeServiceUnbind, UnknownReason}
 import caseapp.core.RemainingArgs
 import caseapp.core.app.CommandApp
 import com.typesafe.config.ConfigFactory
@@ -33,7 +32,7 @@ object AgentApp extends CommandApp[AgentCliCommand] {
       Await.result(lazyAgentRegistration, timeout.duration)
 
       actorRuntime.coordinatedShutdown
-        .addTask(CoordinatedShutdown.PhaseBeforeServiceUnbind, "unregister-agent") { () =>
+        .addTask(PhaseBeforeServiceUnbind, "unregister-agent") { () =>
           log.warn("agent is shutting down. unregistering agent")
           locationService.unregister(agentConnection)
         }
