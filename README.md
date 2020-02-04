@@ -14,6 +14,6 @@ Pre-Release History
 
 | Date | Tag | Source | Download |
 |-----|-----|-----|-----|
-| 2020-01-22 | v0.1.0-M1 | [esw-0.1.0-M1](https://github.com/tmtsoftware/esw/tree/v0.1.0-M1) | Apps: [zip](https://github.com/tmtsoftware/esw/releases/download/v0.1.0-M1/esw-apps-0.1.0-M1.zip), Source: [tar.gz](https://github.com/tmtsoftware/esw/archive/v0.1.0-M1.tar.gz), [zip](https://github.com/tmtsoftware/esw/archive/v0.1.0-M1.zip) |
+| 2020-02-04 | v0.1.0-RC1 | [esw-0.1.0-RC1](https://github.com/tmtsoftware/esw/tree/v0.1.0-RC1) | Apps: [zip](https://github.com/tmtsoftware/esw/releases/download/v0.1.0-RC1/esw-apps-0.1.0-RC1.zip), Source: [tar.gz](https://github.com/tmtsoftware/esw/archive/v0.1.0-RC1.tar.gz), [zip](https://github.com/tmtsoftware/esw/archive/v0.1.0-RC1.zip) |
 
 Example code can be found in the [documentation](https://tmtsoftware.github.io/esw/) and in the [examples](examples) subproject.
