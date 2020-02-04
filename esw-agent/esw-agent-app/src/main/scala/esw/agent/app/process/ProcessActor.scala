@@ -29,16 +29,9 @@ class ProcessActor(
 ) {
   import command._
   import logger._
-  private val (prefix, componentType, connectionType, autoRegistered) = command match {
-    case cmd: SpawnSelfRegistered =>
-      (cmd.componentId.prefix, cmd.componentId.componentType, cmd.connectionType, true)
-    case cmd: SpawnManuallyRegistered =>
-      (
-        cmd.registration.connection.prefix,
-        cmd.registration.connection.connectionInfo.componentType,
-        cmd.registration.connection.connectionType,
-        false
-      )
+  private val (prefix, connection, autoRegistered) = command match {
+    case cmd: SpawnSelfRegistered     => (cmd.componentId.prefix, cmd.connection, true)
+    case cmd: SpawnManuallyRegistered => (cmd.registration.connection.prefix, cmd.registration.connection, false)
   }
 
   private val aborted = Failed("Aborted")
@@ -46,15 +39,15 @@ class ProcessActor(
   private val gracefulTimeout = agentSettings.durationToWaitForGracefulProcessTermination
 
   private def isComponentRegistered(timeout: FiniteDuration)(implicit executionContext: ExecutionContext): Future[Boolean] =
-    locationService
-      .resolve(Connection.from(ConnectionInfo(prefix, componentType, connectionType)).of[Location], timeout)
-      .map(_.nonEmpty)
+    locationService.resolve(connection.of[Location], timeout).map(_.nonEmpty)
 
   private def registerComponent(): Future[RegistrationResult] =
-    locationService.register(command.asInstanceOf[SpawnManuallyRegistered].registration)
+    command match {
+      case cmd: SpawnManuallyRegistered => locationService.register(cmd.registration)
+      case _: SpawnSelfRegistered       => throw new RuntimeException("Registering SelfRegistered component is not allowed")
+    }
 
-  private def unregisterComponent(): Future[Done] =
-    locationService.unregister(command.asInstanceOf[SpawnManuallyRegistered].registration.connection)
+  private def unregisterComponent(): Future[Done] = locationService.unregister(connection)
 
   def init: Behavior[ProcessActorMessage] =
     Behaviors.setup[ProcessActorMessage] { ctx =>
@@ -148,7 +141,7 @@ class ProcessActor(
           val errorMessage = "process died before registration"
           replyTo ! Failed(errorMessage)
           error(errorMessage, Map("pid" -> process.pid, "prefix" -> prefix, "exitCode" -> exitCode))
-          if (!autoRegistered) unregisterComponent()
+          unregisterComponent()
           Behaviors.stopped
 
         case Die(deathSubscriber) =>
@@ -167,8 +160,11 @@ class ProcessActor(
     Behaviors.setup { ctx =>
       Behaviors.receiveMessagePartial[ProcessActorMessage] {
         case ProcessExited(exitCode) =>
-          val message = "process exited"
-          info(message, Map("pid" -> process.pid, "prefix" -> prefix, "exitCode" -> exitCode))
+          info(
+            s"process exited, unregistering connection $connection",
+            Map("pid" -> process.pid, "prefix" -> prefix, "exitCode" -> exitCode)
+          )
+          unregisterComponent()
           Behaviors.stopped
 
         case Die(deathSubscriber) =>
@@ -197,7 +193,7 @@ class ProcessActor(
 
         case StopGracefully =>
           process.destroy()
-          if (!autoRegistered) unregisterComponent()
+          unregisterComponent()
           timeScheduler.startSingleTimer(StopForcefully, gracefulTimeout)
           Behaviors.same
 

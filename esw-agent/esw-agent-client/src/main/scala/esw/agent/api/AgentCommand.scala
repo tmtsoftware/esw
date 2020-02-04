@@ -27,6 +27,8 @@ object AgentCommand {
     sealed trait SpawnSelfRegistered extends SpawnCommand {
       val componentId: ComponentId
       val connectionType: ConnectionType
+
+      def connection: Connection = Connection.from(ConnectionInfo(componentId.prefix, componentId.componentType, connectionType))
     }
 
     object SpawnSelfRegistered {
