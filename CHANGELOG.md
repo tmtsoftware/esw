@@ -11,4 +11,4 @@ All notable changes to this project will be documented in this file.
 
 ## [ESW v0.1.0-RC1] - 2020-02-04
 This is the first release of the TMT Executive Software for project stakeholders. 
-See [here](https://tmtsoftware.github.io/esw/0.1.0-M1/) for a detailed documentation of this version of the ESW software.
+See [here](https://tmtsoftware.github.io/esw/0.1.0-RC1/) for a detailed documentation of this version of the ESW software.

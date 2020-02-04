@@ -80,11 +80,11 @@ pipeline {
             }
         }
 
-        stage('Bintray Publish') {
-            steps {
-                sh "sbt -Dprod.publish=true -DenableCoverage=false publish"
-            }
-        }
+//        stage('Bintray Publish') {
+//            steps {
+//                sh "sbt -Dprod.publish=true -DenableCoverage=false publish"
+//            }
+//        }
     }
     post {
         always {
