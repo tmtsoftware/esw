@@ -1,6 +1,8 @@
 package esw.agent.app.process
 
 import akka.Done
+import akka.actor.CoordinatedShutdown
+import akka.actor.CoordinatedShutdown.PhaseBeforeServiceUnbind
 import akka.actor.typed.scaladsl.Behaviors
 import akka.actor.typed.{ActorRef, Behavior}
 import csw.location.api.models._
@@ -87,10 +89,17 @@ class ProcessActor(
           processExecutor.runCommand(command.commandStrings(agentSettings.binariesPath), prefix) match {
             case Right(process) =>
               process.onExit().asScala.onComplete(_ => ctx.self ! ProcessExited(process.exitValue()))
-              val future =
+              val isRegistered =
                 if (autoRegistered) isComponentRegistered(agentSettings.durationToWaitForComponentRegistration)
-                else registerComponent().map(_ => true)
-              ctx.pipeToSelf(future) {
+                else
+                  registerComponent().map { registrationResult =>
+                    CoordinatedShutdown(ctx.system)
+                      .addTask(PhaseBeforeServiceUnbind, s"unregister-${prefix.componentName}") { () =>
+                        registrationResult.unregister()
+                      }
+                    true
+                  }
+              ctx.pipeToSelf(isRegistered) {
                 case Success(true) => RegistrationSuccess
                 case _             => RegistrationFailed
               }
