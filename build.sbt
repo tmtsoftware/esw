@@ -9,6 +9,7 @@ lazy val aggregateProjects: Seq[ProjectReference] =
     `esw-gateway`,
     `esw-integration-test`,
     `esw-agent`,
+    `esw-contract`,
     examples
   )
 
@@ -198,6 +199,10 @@ lazy val `esw-gateway-server` = project
 lazy val `esw-test-reporter` = project
   .in(file("esw-test-reporter"))
   .settings(libraryDependencies += Libs.scalatest)
+
+lazy val `esw-contract` = project
+  .in(file("esw-contract"))
+  .settings(libraryDependencies ++= Dependencies.EswContract.value)
 
 /* ================= Paradox Docs ============== */
 lazy val docs = project
