@@ -205,6 +205,9 @@ lazy val `esw-test-reporter` = project
 lazy val `esw-contract` = project
   .in(file("esw-contract"))
   .settings(libraryDependencies ++= Dependencies.EswContract.value)
+  .dependsOn(
+    `esw-ocs-api`.jvm
+  )
 
 /* ================= Paradox Docs ============== */
 lazy val docs = project
