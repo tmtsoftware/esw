@@ -39,7 +39,7 @@ pipeline {
                             allowMissing         : true,
                             alwaysLinkToLastBuild: false,
                             keepAll              : true,
-                            reportDir            : './target/scala-2.12/scoverage-report',
+                            reportDir            : './target/scala-2.13/scoverage-report',
                             reportFiles          : 'index.html',
                             reportName           : "Scoverage Report"
                     ])
@@ -51,6 +51,7 @@ pipeline {
                             reportFiles          : 'index.html',
                             reportName           : "Test-Story-Requirement mapping"
                     ])
+                    sh "rm -rf esw-gateway-api/.js/target esw-ocs-api/.js/target"
                 }
             }
         }
