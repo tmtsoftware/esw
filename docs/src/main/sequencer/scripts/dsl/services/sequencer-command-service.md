@@ -46,7 +46,7 @@ Kotlin
 This example `Sequence` consists of two steps. The Sequencer sends the two step `Sequence` to the destination Sequencer and waits for it to complete, which means
 both of the two commands/steps are executed and completed.  All `Sequence` steps must complete successfully for the `Sequence` to complete successfully. 
   
-The API for Sequence is @extref[here](csw_scaladoc:csw/params/commands/Sequence.html). The API for SequenceCommand is @extref[here](csw_scaladoc:csw/params/commands/SequenceCommand.html)
+The API for Sequence is @extref[here](csw_javadoc:csw/params/commands/Sequence.html). The API for SequenceCommand is @extref[here](csw_scaladoc:csw/params/commands/SequenceCommand.html)
 
 #### Submit a Sequence to a Sequencer
 

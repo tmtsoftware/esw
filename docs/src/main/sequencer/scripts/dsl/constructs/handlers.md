@@ -12,7 +12,7 @@ Each of these handlers are described below, with a section on @ref:[how to handl
 
 ### onSetup
 
-This handler is used to handle a @extref[Setup](csw_scaladoc:csw/params/commands/Setup.html) command sent to this Sequencer.
+This handler is used to handle a @extref[Setup](csw_javadoc:csw/params/commands/Setup.html) command sent to this Sequencer.
 The handler takes two parameters:
 
 1. **command name** which is matched against the sequence command sent. If the command name matches, corresponding block provided
@@ -28,7 +28,7 @@ In the block provided to this handler, all the CSW services (Event, Alarm, Time 
 
 ### onObserve
 
-This handler is used to handle an @extref[Observe](csw_scaladoc:csw/params/commands/Observe.html) command sent to this Sequencer.
+This handler is used to handle an @extref[Observe](csw_javadoc:csw/params/commands/Observe.html) command sent to this Sequencer.
 The handler takes two parameters:
 
 1. **command name** which is matched against the sequence command sent, if the command name matches, corresponding block provided
