@@ -175,6 +175,7 @@ object Dependencies {
   val EswContract: Def.Initialize[Seq[ModuleID]] = Def.setting(
     Seq(
       Csw.`csw-contract`,
+      Csw.`csw-params`.value,
       Libs.scalatest % Test
     )
   )
