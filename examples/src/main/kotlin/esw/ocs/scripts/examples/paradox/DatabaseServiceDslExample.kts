@@ -5,17 +5,34 @@ package esw.ocs.scripts.examples.paradox
 import csw.database.javadsl.JooqHelper
 import esw.ocs.dsl.core.script
 import kotlinx.coroutines.future.await
-
-class Data(val counter: Int)
+import org.jooq.impl.DSL.field
+import org.jooq.impl.DSL.name
 
 script {
 
-    val diagnostic_database = makeDatabaseService("diagnostic_data")
+    //#dsl-jooq-helper
+    val readDslContext = makeDatabaseService(dbName = "IRIS_db")
 
-    onDiagnosticMode { startTime, hint ->
-        val query = diagnostic_database
-                .resultQuery("SELECT datuming_data FROM filter_wheel_data")
+    onSetup("setup-iris") {
+        val query = readDslContext
+                .resultQuery("SELECT filter_key FROM filter_table")
 
-        val list = JooqHelper.fetchAsync(query, String::class.java).await()
+        //await to get result of query to achieve sequential flow of execution
+        val filterKeys = JooqHelper.fetchAsync(query, String::class.java).await()
+
+        // do something with filter keys
+    }
+    //#dsl-jooq-helper
+
+    //#dsl-context-with-write-access
+    val context = makeDatabaseService("IRIS_db", "db_write_username", "db_write_password")
+    //#dsl-context-with-write-access
+
+    onObserve("command-1") {
+        val result = context
+                .select(field("event_name"))
+                .from(name("table_1")).fetch()
+
+        // do something with result
     }
 }
