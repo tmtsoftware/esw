@@ -12,7 +12,7 @@ import csw.params.core.models.MatrixData
 import csw.params.core.models.Struct
 import csw.params.events.SystemEvent
 import csw.params.javadsl.JKeyType
-import csw.params.javadsl.JUnits.watt
+import csw.params.javadsl.JUnits
 import csw.time.core.models.UTCTime
 import esw.ocs.dsl.core.script
 import esw.ocs.dsl.highlevel.models.WFOS
@@ -76,7 +76,7 @@ script {
         // with units
         val powerKey: Key<Double> = doubleKey("power")
         val values: Array<Double> = arrayOf(1.1, 2.2, 3.3)
-        val powerParam: Parameter<Double> = powerKey.set(values, watt())
+        val powerParam: Parameter<Double> = powerKey.set(values, JUnits.watt)
 
         // adding a param to command or event
         val setupCommand: Setup = Setup("ESW.iris_darkNight", "move").add(temperatureParam)

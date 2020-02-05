@@ -13,7 +13,7 @@ import csw.time.core.models.UTCTime
 val <T> Key<T>.keyName: String? get() = keyName()
 val <T> Key<T>.keyType: KeyType<T> get() = keyType()
 val <T> Key<T>.units: Units get() = units()
-fun <T> Key<T>.set(vararg elm: T, units: Units = JUnits.NoUnits()): Parameter<T> = set(elm, units)
+fun <T> Key<T>.set(vararg elm: T, units: Units = JUnits.NoUnits): Parameter<T> = set(elm, units)
 
 /** ============= Misc Keys =========== **/
 fun choiceKey(name: String, choices: Choices): Key<Choice> = ChoiceKey().make(name, choices)

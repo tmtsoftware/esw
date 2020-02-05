@@ -8,17 +8,17 @@ import csw.location.api.models.*
 import csw.prefix.models.Prefix
 
 /* ******** Helpers to create ComponentType ******** */
-val Container: ComponentType = JComponentType.Container()
-val HCD: ComponentType = JComponentType.HCD()
-val Assembly: ComponentType = JComponentType.Assembly()
-val Sequencer: ComponentType = JComponentType.Sequencer()
-val SequenceComponent: ComponentType = JComponentType.SequenceComponent()
-val Service: ComponentType = JComponentType.Service()
+val Container: ComponentType = JComponentType.Container
+val HCD: ComponentType = JComponentType.HCD
+val Assembly: ComponentType = JComponentType.Assembly
+val Sequencer: ComponentType = JComponentType.Sequencer
+val SequenceComponent: ComponentType = JComponentType.SequenceComponent
+val Service: ComponentType = JComponentType.Service
 
 /* ******** Helpers to create ConnectionType ******** */
-val AkkaType: ConnectionType = JConnectionType.AkkaType()
-val TcpType: ConnectionType = JConnectionType.TcpType()
-val HttpType: ConnectionType = JConnectionType.HttpType()
+val AkkaType: ConnectionType = JConnectionType.AkkaType
+val TcpType: ConnectionType = JConnectionType.TcpType
+val HttpType: ConnectionType = JConnectionType.HttpType
 
 /* ******** Helpers to access values from models ******** */
 val Connection.connectionType: ConnectionType get() = connectionType()
