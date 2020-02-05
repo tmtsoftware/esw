@@ -9,6 +9,14 @@ TMT Observatory.
 
 See [here](https://tmtsoftware.github.io/esw/) for a detailed description of the ESW software.
 
+
+## Version compatibility
+-----------------------------------------------
+
+| esw | csw |
+|--------|------|
+| v0.1.0-RC1 | v1.1.0-RC1 |
+
 Pre-Release History
 ----------------------
 
