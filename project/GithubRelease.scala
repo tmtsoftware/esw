@@ -14,7 +14,7 @@ import scala.collection.JavaConverters._
 object GithubRelease extends AutoPlugin {
   val coverageReportZipKey = taskKey[File]("Creates a distributable zip file containing the coverage report.")
   val testReportsKey       = taskKey[(File, File)]("Creates test reports in html and zip format.")
-  val rtmZipKey       = taskKey[File]("Creates a distributable zip file containing Requirement-Test report .")
+  val rtmZipKey            = taskKey[File]("Creates a distributable zip file containing Requirement-Test report.")
 
   val aggregateFilter = ScopeFilter(inAggregates(ThisProject), inConfigurations(librarymanagement.Configurations.Compile))
 
@@ -34,7 +34,7 @@ object GithubRelease extends AutoPlugin {
   private def requirementTestMappingZipTask = Def.task {
     lazy val rtmZip = new File(target.value / "ghrelease", "requirement-test-mapping.zip")
     // filter out the index.html
-    IO.zip(Path.allSubpaths(new File(target.value, "RTM")).filterNot { x => x._2.endsWith("html") }, rtmZip)
+    IO.zip(Path.allSubpaths(new File(target.value, "RTM")).filterNot(_._2.endsWith("html")), rtmZip)
     rtmZip
   }
 
@@ -49,7 +49,14 @@ object GithubRelease extends AutoPlugin {
 
     lazy val testReportZip = target.value / "ghrelease" / "test-reports.zip"
     val testReportHtml     = target.value / "ghrelease" / "test-reports.html"
-    val xmlFiles           = target.all(aggregateFilter).value.flatMap(targetPath => Path.allSubpaths(targetPath / "test-reports"))
+    val xmlFiles =
+      target
+        .all(aggregateFilter)
+        .value
+        .flatMap { targetPath =>
+          // allSubpaths includes base path which causes issues while merging, hence excluding it here
+          Path.allSubpaths(targetPath / "test-reports").filterNot(_._1.getPath.endsWith("target/test-reports"))
+        }
 
     // 1. include all xml files in single zip
     IO.zip(xmlFiles, testReportZip)
@@ -78,7 +85,7 @@ object GithubRelease extends AutoPlugin {
   }
 
   private def junitViewerCmd(inputPath: String, outputPath: String) = {
-    val commandWithArgs = List("junit-viewer", s"--results=$inputPath", s"--save=$outputPath")
+    val commandWithArgs = List("junit-viewer", s"--results=$inputPath", s"--save=$outputPath", "--minify=false")
     new ProcessBuilder(commandWithArgs.asJava).inheritIO.start.waitFor
   }
 
