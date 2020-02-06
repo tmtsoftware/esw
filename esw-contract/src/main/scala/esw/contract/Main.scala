@@ -1,6 +1,6 @@
 package esw.contract
 
-import csw.contract.generator.{FilesGenerator, Services}
+import csw.contract.generator.FilesGenerator
 import esw.contract.data.EswData
 
 

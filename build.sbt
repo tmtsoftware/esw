@@ -35,7 +35,7 @@ lazy val esw = (project in file("."))
   .settings(DocSettings.docExclusions(unidocExclusions))
   .settings(GithubRelease.githubReleases(githubReleases))
   .settings(
-    generateDocs := ContractPlugin.generate(`esw-contract`).value
+    generateContract := ContractPlugin.generate(`esw-contract`).value
   )
 lazy val `esw-ocs` = project
   .in(file("esw-ocs"))
@@ -206,7 +206,8 @@ lazy val `esw-contract` = project
   .in(file("esw-contract"))
   .settings(libraryDependencies ++= Dependencies.EswContract.value)
   .dependsOn(
-    `esw-ocs-api`.jvm
+    `esw-ocs-api`.jvm,
+    `esw-gateway-api`.jvm
   )
 
 /* ================= Paradox Docs ============== */
