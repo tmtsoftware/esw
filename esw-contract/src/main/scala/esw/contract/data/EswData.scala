@@ -8,7 +8,7 @@ object EswData {
   val services: Services = Services(
     Map(
       "sequencer-service" -> SequencerContract.service,
-      "gateway-service" -> GatewayContract.service
+      "gateway-service"   -> GatewayContract.service
     )
   )
 }
