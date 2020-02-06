@@ -4,7 +4,8 @@ The Database Service DSL is a wrapper for the Database Service module provided b
 You can refer to detailed documentation of the Database Service provided by CSW @extref[here](csw:services/database).
 
 This DSL provides APIs to create the connection to database. It uses Jooq library underneath for crating database connections
-and query. 
+and query. APIs for creating database connection expose `DSLContext`. All the database related functionality is available using Java APIs
+exposed on `DSLContext`.
 
 @@@ note
 `Jooq` is a Java library that provides a higher level API for accessing data i.e. DDL support, DML support, fetch,
