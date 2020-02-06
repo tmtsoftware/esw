@@ -28,13 +28,15 @@ val MaybeCoverage: Plugins = if (enableCoverage) Coverage else Plugins.empty
 
 lazy val esw = (project in file("."))
   .aggregate(aggregateProjects: _*)
-  .enablePlugins(NoPublish, UnidocSitePlugin, GithubPublishPlugin, GitBranchPrompt, GithubRelease)
+  .enablePlugins(NoPublish, UnidocSitePlugin, GithubPublishPlugin, GitBranchPrompt, GithubRelease, ContractPlugin)
   .disablePlugins(BintrayPlugin)
   .settings(DocSettings.makeSiteMappings(docs))
   .settings(Settings.addAliases())
   .settings(DocSettings.docExclusions(unidocExclusions))
   .settings(GithubRelease.githubReleases(githubReleases))
-
+  .settings(
+    generateContract := ContractPlugin.generate(`esw-contract`).value
+  )
 lazy val `esw-ocs` = project
   .in(file("esw-ocs"))
   .aggregate(
@@ -204,7 +206,8 @@ lazy val `esw-contract` = project
   .in(file("esw-contract"))
   .settings(libraryDependencies ++= Dependencies.EswContract.value)
   .dependsOn(
-    `esw-ocs-api`.jvm
+    `esw-ocs-api`.jvm,
+    `esw-gateway-api`.jvm
   )
 
 /* ================= Paradox Docs ============== */

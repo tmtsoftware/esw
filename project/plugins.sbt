@@ -18,8 +18,7 @@ addSbtPlugin("ohnosequences" % "sbt-github-release" % "0.7.0")
 resolvers += Resolver.bintrayRepo("twtmt", "sbt-plugins")
 addSbtPlugin("com.github.tmtsoftware" % "kotlin-plugin" % "2.0.1-RC1")
 
-resolvers += Resolver.defaultLocal
-addSbtPlugin("com.github.tmtsoftware" % "sbt-docs"      % "0.1.3-RC2")
+addSbtPlugin("com.github.tmtsoftware" % "sbt-docs"      % "0.1.3")
 
 resolvers += Resolver.jcenterRepo
 addSbtPlugin("net.aichler" % "sbt-jupiter-interface" % "0.8.3")
