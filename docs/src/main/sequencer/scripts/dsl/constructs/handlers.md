@@ -166,19 +166,19 @@ By default, a negative `SubmitResponse` is considered as error.
 Kotlin
 : @@snip [HandlersExample.kts](../../../../../../../examples/src/main/kotlin/esw/ocs/scripts/examples/paradox/HandlersExample.kts) { #onError-for-negative-response }
 
-**retry**: This construct is specifically provided for **Command Handler Failures**.
-A `retry` block can be written specifically for each `onSetup` and `onObserve` handler. 
+**retry**: This construct can be attached to an `onSetup` or `onObserve` handler to automatically retry
+ the handler code in the case of **Command Handler Failures**.
 A `retry` block expects a `retryCount` and optional parameter `interval` which specifies an interval after which `onSetup` or `onObserve` will be retried
-in case of failure. `retry` block can be used along with `onError` or it can be used independently. If `retry` is combined with `onError` then command
-handler failure will call `onError` before each retry attempt. If command handler still fails after all retry attempts then `onError` block is called followed by
-`onGlobalError` and sequence will be terminated with failure. After the error handling blocks are called, the command and hence the sequence, terminate with an Error status.
+in case of failure. The `retry` block can be used along with `onError` or it can be used independently. If `retry` is combined with `onError`, the `onError` block 
+will be called before each retry attempt. If the command handler still fails after all retry attempts, the command fails with an Error status.  Then the 
+`onGlobalError` block will be executed (if provided), and the sequence will be terminated with a failure as well (see @ref:[Global Error Handler](#global-error-handler).
 
-Following example shows `retry` construct used along with `onError`.
+The following example shows the `retry` construct used along with `onError`.
 
 Kotlin
 : @@snip [HandlersExample.kts](../../../../../../../examples/src/main/kotlin/esw/ocs/scripts/examples/paradox/HandlersExample.kts) { #retry }
 
-Following example shows `retry` with interval used independently (without having `onError` block).
+The following example shows `retry` with an interval specified and used without an `onError` block.
 
 Kotlin
 : @@snip [HandlersExample.kts](../../../../../../../examples/src/main/kotlin/esw/ocs/scripts/examples/paradox/HandlersExample.kts) { #retry-with-interval }
