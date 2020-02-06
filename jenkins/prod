@@ -51,7 +51,7 @@ pipeline {
                             reportFiles          : 'index.html',
                             reportName           : "Test-Story-Requirement mapping"
                     ])
-                    sh "rm -rf esw-gateway-api/.js/target esw-ocs-api/.js/target"
+                    sh "rm -rf esw-gateway/esw-gateway-api/.js/target esw-ocs/esw-ocs-api/.js/target"
                 }
             }
         }
