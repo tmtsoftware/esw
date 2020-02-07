@@ -1,13 +1,19 @@
 # Sequencer Scripts
 
-All logic in a Sequencer is implemented in Sequencer scripts.  Scripts are written in Kotlin using a TMT developed
-Domain Specific Language (DSL) to facilitate development.  This section describes the DSL in detail. 
+All logic in a Sequencer is implemented in Sequencer Scripts.  Scripts are written in a TMT developed
+Domain Specific Language (DSL) to facilitate development based on the Kotlin programming language.
+This section describes the DSL in detail.
+
+Scripts can be written in two styles: procedure-oriented and state-oriented.   
 
 As an alternate to procedural style scripting, a framework DSL has been provided to allow scripting using a 
 Finite State Machine (FSM) (still in development).  
 
+@@ toc { depth=2 }
+
 
 @@@ index
+* [Script Styles](./script-styles.md) Styles of Sequencer Scripts
 * [Script DSL Constructs](dsl/script-constructs.md) DSLs for defining script and basic constructs
 * [CSW Services DSLs](dsl/csw-services.md) Collection of high level DSLs for writing Sequencer scripts
 @@@

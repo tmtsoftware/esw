@@ -31,4 +31,4 @@ sequencer, or from a user through the admin dashboard. In this state, only a few
 from any other state. 
 
 
-![sequencer-state-transition](state-transition.png)
+![sequencer-state-transition](../../images/ocs/state-transition.png)
