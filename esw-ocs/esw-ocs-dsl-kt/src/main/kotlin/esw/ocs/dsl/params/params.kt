@@ -27,5 +27,3 @@ operator fun <S> ParameterSetType<*>.invoke(key: Key<S>): Parameter<S> = apply(k
 fun <T : ParameterSetType<T>> T.add(params: Params): T = jMadd(params.params())
 
 val <T : ParameterSetType<T>> T.params: Params get() = Params(this.jParamSet())
-
-fun <T : Key<T>> T.kSet(values: Array<T>): Parameter<T> = set(*values)

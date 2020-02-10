@@ -76,3 +76,5 @@ fun struct(paramSet: Set<Parameter<*>>): Struct = JStruct.create(paramSet)
 fun struct(params: Params): Struct = JStruct.create(params.params())
 
 fun choicesOf(vararg choices: String): Choices = Choices.from(choices.toSet())
+
+fun <T> Key<T>.kSet(values: Array<T>): Parameter<T> = set(*values)
