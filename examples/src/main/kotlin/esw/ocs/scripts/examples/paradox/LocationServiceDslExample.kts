@@ -61,7 +61,7 @@ script {
         val prefix: Prefix = cmd.source()
         val assemblyConnection = AkkaConnection(ComponentId(prefix, Assembly))
 
-        val location: AkkaLocation? = resolveLocation(assemblyConnection)
+        val location: AkkaLocation? = resolveLocation(assemblyConnection, 10.seconds)
 
         // send a successful event to UI if assembly location is found
         location?.let { sendUIEvent("Resolved assembly location: $it") }
