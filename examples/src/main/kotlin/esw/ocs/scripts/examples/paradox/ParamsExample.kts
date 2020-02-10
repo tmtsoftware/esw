@@ -71,7 +71,7 @@ script {
         // with values as Array
         val encoderKey: Key<Int> = intKey("encoder")
         val encoderValues: Array<Int> = arrayOf(1, 2, 3)
-        val encoderParam: Parameter<Int> = encoderKey.set(*encoderValues)
+        val encoderParam: Parameter<Int> = encoderKey.kSet(encoderValues)
 
         // with units
         val powerKey: Key<Double> = doubleKey("power")
