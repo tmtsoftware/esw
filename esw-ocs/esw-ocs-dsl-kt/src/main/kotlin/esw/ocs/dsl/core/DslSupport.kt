@@ -13,7 +13,7 @@ fun script(block: suspend ScriptScope.() -> Unit): ScriptResult =
                 try {
                     runBlocking {
                         block()
-                        startHeartbeat()
+                        startHealthCheck()
                     }
                 } catch (ex: Exception) {
                     error("Script initialisation failed with message : " + ex.message)

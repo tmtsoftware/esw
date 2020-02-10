@@ -8,7 +8,7 @@ import csw.logging.api.javadsl.ILogger
 import csw.prefix.models.Prefix
 import esw.ocs.dsl.script.ScriptDsl
 import esw.ocs.dsl.script.exceptions.ScriptInitialisationFailedException
-import esw.ocs.impl.{HeartbeatActorProxy, SequencerActorProxyFactory}
+import esw.ocs.impl.{HealthCheckActorProxy, SequencerActorProxyFactory}
 import esw.ocs.impl.core.SequenceOperator
 import esw.ocs.impl.script.ScriptLoadingException.{InvalidScriptException, ScriptNotFound}
 import esw.ocs.impl.script.{ScriptApi, ScriptContext, ScriptLoader}
@@ -27,7 +27,7 @@ class ScriptLoaderTest extends BaseTestSuite {
   private val sequencerClientFactory  = mock[SequencerActorProxyFactory]
   private val prefix                  = mock[Prefix]
   private val config                  = mock[Config]
-  private val heartbeatActorProxy     = mock[HeartbeatActorProxy]
+  private val heartbeatActorProxy     = mock[HealthCheckActorProxy]
 
   when(config.getConfig("csw-alarm")).thenReturn(config)
   when(config.getDuration("refresh-interval")).thenReturn(2.seconds.toJava)

@@ -118,11 +118,11 @@ open class Script(private val wiring: ScriptWiring) : BaseScript(wiring), Script
         this.invoke(commandHandlerScope, value)
     }
 
-    fun startHeartbeat() {
-        wiring.heartbeatActorProxy.startHeartbeat()
-        loopAsync(wiring.heartbeatActorProxy.heartbeatInterval().toKotlinDuration()) {
-            logger.debug("StrandEc heartbeat to pacify notification")
-            wiring.heartbeatActorProxy.pacifyNotification()
+    fun startHealthCheck() {
+        wiring.healthCheckActorProxy.startHealthCheck()
+        loopAsync(wiring.healthCheckActorProxy.heartbeatInterval().toKotlinDuration()) {
+            logger.debug("[HealthCheckActor] send heartbeat for StrandEC")
+            wiring.healthCheckActorProxy.sendHeartbeat()
         }
     }
 }

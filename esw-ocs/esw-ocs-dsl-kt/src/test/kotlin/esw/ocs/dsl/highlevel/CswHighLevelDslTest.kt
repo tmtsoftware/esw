@@ -11,7 +11,6 @@ import esw.ocs.dsl.highlevel.models.Prefix
 import esw.ocs.dsl.highlevel.models.TCS
 import esw.ocs.dsl.lowlevel.CswServices
 import esw.ocs.dsl.script.StrandEc
-import esw.ocs.impl.HeartbeatActorProxy
 import esw.ocs.impl.script.ScriptContext
 import io.kotlintest.shouldBe
 import io.mockk.every
