@@ -91,6 +91,23 @@ ESW OCS also includes a Sequence Manager service that acts as the front-end to t
 Sequence Manager receives Sequences from the SOSS or other tools, manages observatory resources, and starts, initializes, 
 and stops Sequencers as needed for each received Sequence.
 
+The following summarizes the responsibilities of OCS.
+
+- Accept and execute Sequences submitted from SOSS in all operations modes.
+- Manage the process of executing a single Sequence or multiple concurrent Sequences
+including starting any needed Sequencers.
+- Ensure that the resources needed for a Sequence are available allowing the Sequence to
+execute.
+- Provide a reusable Sequence Component that executes Scripts and processes Sequences
+from SOSS.
+- Provide a Script programming environment that provides access to appropriate CSW Services
+and has the level of control needed to execute acquisition, observing workflows, and some
+engineering sequences.
+- Allow an external user interface program to monitor and control the progress of an executing
+Sequence.
+- Define information needed for Observatory metrics. (Shared effort between OCS, ACQ,
+HCMS).
+
 ### ESW Phase 1 Development
 
 Planning for ESW led to the conclusion that the best approach was to split the ESW work into two phases. 
@@ -102,6 +119,7 @@ The following are the Phase 1 priorities:
 
 * Sequencer/script design and integration with services
 * UI integration of browser environment with CSW and early tool choices
+* Define and implement Observe Events and Observe command
 
 Three main components are delivered as part of ESW Phase 1:
 
