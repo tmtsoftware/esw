@@ -4,7 +4,7 @@ import sbt._
 
 object Libs {
   private val SilencerVersion = "1.4.4"
-  private val MSocketVersion  = "0.1.0-RC1"
+  private val MSocketVersion  = "3c0220b9"
 
   val `silencer-plugin` = "com.github.ghik" % "silencer-plugin" % SilencerVersion cross CrossVersion.full
   val `silencer-lib`    = "com.github.ghik" % "silencer-lib"    % SilencerVersion cross CrossVersion.full
@@ -16,14 +16,14 @@ object Libs {
   val scalatest            = "org.scalatest" %% "scalatest" % "3.1.0" //Apache License 2.0
   val `scala-java8-compat` = "org.scala-lang.modules" %% "scala-java8-compat" % "0.9.0" //BSD 3-clause "New" or "Revised" License
   val `msocket-api`        = dep("com.github.tmtsoftware.msocket" %%% "msocket-api" % MSocketVersion)
-  val `msocket-impl-jvm`   = "com.github.tmtsoftware.msocket" %% "msocket-impl-jvm" % MSocketVersion
+  val `msocket-impl-jvm`   = "com.github.tmtsoftware.msocket" %% "msocket-impl" % MSocketVersion
   val `caffeine`           = "com.github.ben-manes.caffeine" % "caffeine" % "2.8.1"
   val `jupiter-interface`  = "net.aichler" % "jupiter-interface" % "0.8.3"
 }
 
 object Csw {
   private val Org     = "com.github.tmtsoftware.csw"
-  private val Version = "75a4f6a" //change this to 0.1.0-SNAPSHOT to test with local csw changes (after publishLocal)
+  private val Version = "0e04a25" //change this to 0.1.0-SNAPSHOT to test with local csw changes (after publishLocal)
 
   val `csw-admin-api`                 = dep(Org %%% "csw-admin-api" % Version)
   val `csw-admin-impl`                = Org %% "csw-admin-impl" % Version
