@@ -21,6 +21,7 @@ import kotlinx.coroutines.future.asCompletableFuture
 import kotlinx.coroutines.future.await
 import kotlinx.coroutines.future.future
 import kotlin.coroutines.CoroutineContext
+import kotlin.time.toKotlinDuration
 
 sealed class BaseScript(wiring: ScriptWiring) : CswHighLevelDsl(wiring.cswServices, wiring.scriptContext), HandlerScope {
     override val actorSystem: ActorSystem<SpawnProtocol.Command> = wiring.scriptContext.actorSystem()
@@ -115,6 +116,14 @@ open class Script(private val wiring: ScriptWiring) : BaseScript(wiring), Script
             override val coroutineContext: CoroutineContext = _scope.coroutineContext
         }
         this.invoke(commandHandlerScope, value)
+    }
+
+    fun startHeartbeat() {
+        wiring.heartbeatActorProxy.startHeartbeat()
+        loopAsync(wiring.heartbeatActorProxy.heartbeatInterval().toKotlinDuration()) {
+            logger.debug("StrandEc heartbeat to pacify notification")
+            wiring.heartbeatActorProxy.pacifyNotification()
+        }
     }
 }
 

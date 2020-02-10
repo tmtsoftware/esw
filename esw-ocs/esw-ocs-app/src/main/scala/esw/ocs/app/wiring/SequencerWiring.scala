@@ -12,10 +12,10 @@ import csw.command.client.messages.sequencer.SequencerMsg
 import csw.event.client.internal.commons.javawrappers.JEventService
 import csw.location.api.extensions.ActorExtension.RichActor
 import csw.location.api.javadsl.ILocationService
-import csw.location.client.ActorSystemFactory
-import csw.location.client.javadsl.JHttpLocationServiceFactory
 import csw.location.api.models.Connection.AkkaConnection
 import csw.location.api.models.{AkkaLocation, AkkaRegistration, ComponentId, ComponentType}
+import csw.location.client.ActorSystemFactory
+import csw.location.client.javadsl.JHttpLocationServiceFactory
 import csw.logging.api.javadsl.ILogger
 import csw.logging.api.scaladsl.Logger
 import csw.logging.client.scaladsl.LoggerFactory
@@ -26,17 +26,20 @@ import esw.ocs.api.codecs.SequencerHttpCodecs
 import esw.ocs.api.protocol.ScriptError
 import esw.ocs.handler.{SequencerPostHandler, SequencerWebsocketHandler}
 import esw.ocs.impl.core._
-import esw.ocs.impl.script.{ScriptApi, ScriptContext, ScriptLoader}
 import esw.ocs.impl.internal._
+import esw.ocs.impl.messages.HeartbeatActorMsg
 import esw.ocs.impl.messages.SequencerMessages.Shutdown
+import esw.ocs.impl.script.{ScriptApi, ScriptContext, ScriptLoader}
 import esw.ocs.impl.syntax.FutureSyntax.FutureOps
-import esw.ocs.impl.{SequencerActorProxy, SequencerActorProxyFactory}
+import esw.ocs.impl.{HeartbeatActorProxy, SequencerActorProxy, SequencerActorProxyFactory}
 import msocket.api.ContentType
 import msocket.impl.RouteFactory
 import msocket.impl.post.PostRouteFactory
 import msocket.impl.ws.WebsocketRouteFactory
 
 import scala.async.Async.{async, await}
+import scala.concurrent.Await
+import scala.concurrent.duration.DurationInt
 import scala.util.control.NonFatal
 
 private[ocs] class SequencerWiring(
@@ -78,8 +81,14 @@ private[ocs] class SequencerWiring(
   private lazy val logger: Logger   = loggerFactory.getLogger
   private lazy val jLoggerFactory   = loggerFactory.asJava
   private lazy val jLogger: ILogger = ScriptLoader.withScript(scriptClass)(jLoggerFactory.getLogger)
+  private lazy val heartbeatActor   = new HeartbeatActor(logger, heartbeatInterval)
+  private lazy val heartbeatActorRef: ActorRef[HeartbeatActorMsg] =
+    Await.result(actorSystem ? (Spawn(heartbeatActor.init, "heartbeat-actor", Props.empty, _)), 5.seconds)
+
+  private lazy val heartbeatActorProxy = new HeartbeatActorProxy(heartbeatActorRef, heartbeatInterval)
 
   lazy val scriptContext = new ScriptContext(
+    heartbeatActorProxy,
     prefix,
     jLogger,
     sequenceOperatorFactory,

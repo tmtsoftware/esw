@@ -1,7 +1,6 @@
 package esw.ocs.dsl.core
 
 import esw.ocs.dsl.internal.ScriptWiring
-import esw.ocs.dsl.lowlevel.CswServices
 import esw.ocs.dsl.script.ScriptDsl
 import esw.ocs.dsl.script.exceptions.ScriptInitialisationFailedException
 import esw.ocs.impl.script.ScriptContext
@@ -12,7 +11,10 @@ fun script(block: suspend ScriptScope.() -> Unit): ScriptResult =
             val wiring = ScriptWiring(it)
             Script(wiring).apply {
                 try {
-                    runBlocking { block() }
+                    runBlocking {
+                        block()
+                        startHeartbeat()
+                    }
                 } catch (ex: Exception) {
                     error("Script initialisation failed with message : " + ex.message)
                     throw ScriptInitialisationFailedException(ex.message)
