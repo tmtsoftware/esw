@@ -79,15 +79,15 @@ script {
         val powerParam: Parameter<Double> = powerKey.set(values, JUnits.watt)
 
         // adding a param to command or event
-        val setupCommand: Setup = Setup("ESW.iris_darkNight", "move").add(temperatureParam)
-        val systemEvent: SystemEvent = SystemEvent("ESW.iris_darkNight", "movement").add(temperatureParam)
+        val setupCommand: Setup = Setup("ESW.IRIS_darkNight", "move").add(temperatureParam)
+        val systemEvent: SystemEvent = SystemEvent("ESW.IRIS_darkNight", "movement").add(temperatureParam)
 
         // adding multiple params
-        val setupCommand2: Setup = Setup("ESW.iris_darkNight", "move").madd(temperatureParam, encoderParam)
+        val setupCommand2: Setup = Setup("ESW.IRIS_darkNight", "move").madd(temperatureParam, encoderParam)
 
         // adding params of one command to other
         val paramsFromIncomingCommand: Params = command.params
-        val commandForDownstream: Setup = Setup("ESW.iris_darkNight", "move").add(paramsFromIncomingCommand)
+        val commandForDownstream: Setup = Setup("ESW.IRIS_darkNight", "move").add(paramsFromIncomingCommand)
         // #creating-params
 
         //#find
