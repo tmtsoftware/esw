@@ -14,6 +14,7 @@ val <T> Key<T>.keyName: String? get() = keyName()
 val <T> Key<T>.keyType: KeyType<T> get() = keyType()
 val <T> Key<T>.units: Units get() = units()
 fun <T> Key<T>.set(vararg elm: T, units: Units = JUnits.NoUnits): Parameter<T> = set(elm, units)
+fun <T> Key<T>.set(values: Array<T>): Parameter<T> = set(*values)
 
 /** ============= Misc Keys =========== **/
 fun choiceKey(name: String, choices: Choices): Key<Choice> = ChoiceKey().make(name, choices)
@@ -76,5 +77,3 @@ fun struct(paramSet: Set<Parameter<*>>): Struct = JStruct.create(paramSet)
 fun struct(params: Params): Struct = JStruct.create(params.params())
 
 fun choicesOf(vararg choices: String): Choices = Choices.from(choices.toSet())
-
-fun <T> Key<T>.kSet(values: Array<T>): Parameter<T> = set(*values)
