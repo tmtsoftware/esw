@@ -1,14 +1,15 @@
 # Params
 
-A Kotlin Dsl has been provided for creating Parameters to store values like primitive types, collection types or domain specific types.
-This Dsl is built over abstractions like `Parameter`, `KeyType` etc offered by CSW.
+A DSL has been provided for creating Parameters to store values like primitive types, collection types or domain specific types,
+to be used for `ParameterSets` in Events and Commands.
+This DSL is built over abstractions like `Parameter`, `KeyType`, etc. offered by CSW.
 Refer to the @extref[CSW doc](csw:params/keys-parameters) for more information about this. 
 
 ## Keys
 
-Following table lists all the key types, and their corresponding kotlin dsl provided.
+Following table lists all the key types, and their corresponding DSL provided.
 
-| KeyType             | Kotlin Dsl                  |
+| KeyType             | DSL                  |
 | :-----------------: |:--------------------------: |
 | Boolean             | booleanKey                  |
 | Character           | charKey                     |
@@ -43,8 +44,8 @@ Following table lists all the key types, and their corresponding kotlin dsl prov
 | AltAzCoord          | altAzCoordKey               |
 | Coord  (*)          | coordKey                    |
 
-Example below shows usages of Dsl for different types of keys. Some other helper Dsl like `struct`, `choicesOf`, `arrayData`, `matrixData` etc
-have also been provided for ease of access. Usage of this helper Dsl is also shown in the below example.
+The example below shows usages of the DSL for different types of keys. Some other DSL helpers like `struct`, `choicesOf`, `arrayData`, `matrixData`, etc.
+have also been provided for ease of access. Usage of these helper DSLs is also shown in the example below.
 
 Kotlin
 : @@snip [Params.kts](../../../../../../../examples/src/main/kotlin/esw/ocs/scripts/examples/paradox/ParamsExample.kts) { #keys }  
@@ -52,7 +53,7 @@ Kotlin
 
 ## Creating Parameters
 
-Example below shows different ways of creating parameters and adding them to a command.
+The example below shows different ways of creating parameters and adding them to a command.
 
 Kotlin
 : @@snip [Params.kts](../../../../../../../examples/src/main/kotlin/esw/ocs/scripts/examples/paradox/ParamsExample.kts) { #creating-params }  
@@ -78,20 +79,20 @@ Kotlin
 
 ## Extracting values from a parameter
 
-Example below shows accessing values of a parameter, or accessing a specific value of a parameter.
+The example below shows the accessing of values of a parameter, or accessing a specific value of a parameter.
 
 Kotlin
 : @@snip [Params.kts](../../../../../../../examples/src/main/kotlin/esw/ocs/scripts/examples/paradox/ParamsExample.kts) { #getting-values }  
 
 @@@note
 Note that the shorthand alternatives shown with `// alternative` comment in above examples, do not return `optional` values
-unlike their corresponding full version. Which means, with shorthand dsl, an error will occur in absence of the specified key/index.
+unlike their corresponding full version. This means, with shorthand DSL, an error will occur in the absence of the specified key/index.
 @@@
 
 
 ## Removing a parameter
 
-A parameter could be removed from `Params` instance or from `Command` directly. Below example demonstrates both the dsl methods.
+A parameter could be removed from a `Params` instance or from a `Command` directly. The example below demonstrates both of these DSL methods.
 
 Kotlin
 : @@snip [Params.kts](../../../../../../../examples/src/main/kotlin/esw/ocs/scripts/examples/paradox/ParamsExample.kts) { #remove }  
