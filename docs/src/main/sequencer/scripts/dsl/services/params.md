@@ -1,13 +1,13 @@
-# Params
+# Parameters
 
 A DSL has been provided for creating Parameters to store values like primitive types, collection types or domain specific types,
 to be used for `ParameterSets` in Events and Commands.
 This DSL is built over abstractions like `Parameter`, `KeyType`, etc. offered by CSW.
-Refer to the @extref[CSW doc](csw:params/keys-parameters) for more information about this. 
+Refer to the @extref[CSW docs](csw:params/keys-parameters) for more information about this. 
 
 ## Keys
 
-Following table lists all the key types, and their corresponding DSL provided.
+Following table lists all the key types, and their corresponding DSL.
 
 | KeyType             | DSL                  |
 | :-----------------: |:--------------------------: |
@@ -62,24 +62,28 @@ Kotlin
 
 ### Extracting parameter
 
-Finding a parameter from Params/Command/Event.
+You can extract a parameter from Params/Command/Event using another parameter with the same key name and key type (values of the parameter passed in are ignored).
 
 Kotlin
 : @@snip [Params.kts](../../../../../../../examples/src/main/kotlin/esw/ocs/scripts/examples/paradox/ParamsExample.kts) { #find }  
 
 ### Extracting parameter by key
 
+Yuo can also use a `Key`:
+
 Kotlin
 : @@snip [Params.kts](../../../../../../../examples/src/main/kotlin/esw/ocs/scripts/examples/paradox/ParamsExample.kts) { #getting-param-by-key }  
 
 ### Extracting parameter by keyName and KeyType
+
+Or, you cam use the key name and type:
 
 Kotlin
 : @@snip [Params.kts](../../../../../../../examples/src/main/kotlin/esw/ocs/scripts/examples/paradox/ParamsExample.kts) { #getting-param-by-keyName-keyType }  
 
 ## Extracting values from a parameter
 
-The example below shows the accessing of values of a parameter, or accessing a specific value of a parameter.
+The example below shows the accessing a `List` of values or a specific value of a parameter.
 
 Kotlin
 : @@snip [Params.kts](../../../../../../../examples/src/main/kotlin/esw/ocs/scripts/examples/paradox/ParamsExample.kts) { #getting-values }  
