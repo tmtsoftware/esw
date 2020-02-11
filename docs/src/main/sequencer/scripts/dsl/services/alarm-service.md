@@ -3,7 +3,7 @@
 The Alarm Service DSL is a wrapper for the Alarm Service module provided by CSW.
 You can refer to detailed documentation of the Alarm Service provided by CSW @extref[here](csw:services/alarm).
 
-This DSL provides an API to set the severity of alarm.
+This DSL provides an API to set the severity of an alarm. This is the the component API for CSW Alarm Service.
 
 ## setSeverity
 
@@ -28,9 +28,8 @@ The supported `AlarmSeverity` levels are:
 1. Okay
 1. Warning
 1. Major
-1. Indeterminate
-1. Disconnected
 1. Critical
+1. Indeterminate
 
 The following example demonstrates the usage of the `setSeverity` API.
 In this example, a temperature @ref[FSM](../constructs/fsm.md) is created, and based on the state of the FSM, the severity is set accordingly.

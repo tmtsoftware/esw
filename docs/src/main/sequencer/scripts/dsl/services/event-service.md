@@ -9,8 +9,7 @@ You can refer to the detailed documentation of Event Service provided by CSW @ex
 
 These methods can be used to create Systerm and Observe Events.  Additionally, a System or Observe "Event Variable" can be created
 that can be tied to the first value of a parameter of an Event, similar to the way local variables are tied to "process variables" in the EPICS State Notation
-Language (see [EPICS Sequencer Documentation](https://www-csr.bessy.de/control/SoftDist/sequencer/Introduction.html#overview) 
-for more information).
+Language.
 
 ### SystemEvent
 

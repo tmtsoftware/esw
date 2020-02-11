@@ -4,7 +4,7 @@ All logic in a Sequencer is implemented in Sequencer Scripts.  Scripts are writt
 Domain Specific Language (DSL) to facilitate development based on the Kotlin programming language.
 This section describes the DSL in detail.
 
-Scripts can be written in two styles: procedure-oriented and state-oriented.   
+Scripts can be written in two styles: procedure-oriented and state machine-oriented.   
 
 As an alternate to procedural style scripting, a framework DSL has been provided to allow scripting using a 
 Finite State Machine (FSM) (still in development).  
@@ -18,27 +18,6 @@ Finite State Machine (FSM) (still in development).
 * [CSW Services DSLs](dsl/csw-services.md) Collection of high level DSLs for writing Sequencer scripts
 @@@
 
-* Script DSL Constructs
-    * @ref[Defining Script](dsl/constructs/define-script.md)
-    * @ref[Script Handlers](dsl/constructs/handlers.md)
-    * @ref[Looping](dsl/constructs/loop.md)
-    * @ref[Finite State Machines](dsl/constructs/fsm.md)
-    * @ref[Other](dsl/constructs/misc.md)
-
-* CSW Services DSL
-    * @ref[Location Service](dsl/services/location-service.md)
-    * @ref[Config Service](dsl/services/config-service.md)
-    * @ref[Assembly/HCD Command Service](dsl/services/command-service.md)
-    * @ref[Sequencer Command Service](dsl/services/sequencer-command-service.md)
-    * @ref[Working with Params](dsl/services/params.md)
-    * @ref[Submit Response Extensions](dsl/services/submit-response-extensions.md)
-    * @ref[Event Service](dsl/services/event-service.md)
-    * @ref[Logging Service](dsl/services/logging-service.md)
-    * @ref[Alarm Service](dsl/services/alarm-service.md)
-    * @ref[Time Service](dsl/services/time-service.md)
-    * @ref[Database Service](dsl/services/database-service.md)
-
-
 @@@ note
 
 All the examples shown in each individual section assume that you have following import in place in `script`
@@ -49,17 +28,24 @@ import esw.ocs.dsl.highlevel.models.*
 
 @@@
 
-A decision has been made to implement Scripts using a Domain Specific Language (DSL) written in Scala instead of true scripts in a more dynamic scripting language (however, we still refer to them as Scripts). This is for several reasons:
- Scripts can be developed in an IDE, with full syntax checking and auto-completion support.
- Unit tests can easily be written using widely used testing frameworks.
- Scripts can be compiled, with compile-time error checking.
- Build tools can be used for bundle scripts into Sequencer applications.
- Code from other Scripts can be accessed and used more easily.
- Seamless integration with Common Software and Sequencer Framework.
- Scala features type safety (enhancing compile time error checking) and functional
-programming (if desired).
- One less "glue" service layer implementation needed and one less new technology
-added.
-The most important feature of "scripting" languages that we wanted to retain is the ability to quickly modify and reload a script without recompiling and deploying software. Another important feature is interactivity. Scripting languages are usually based around a "shell" that allows interactive usage. A Sequence Component or Sequencer can be "logged into" and the user is presented with an interactive shell that accepts commands. These two scripting language features help make the Sequencer and Script a reasonable "script language".
-All Scripts used for all TMT subsystems will be stored in a single script repository like any configuration-controlled software. This will make it easier to maintain, share, and access scripts from other projects and shared locations for the Sequencer at run-time.
-Since all scripts for Sequencers will be available for use by any Sequencer, they will be stored in a Github repository with a front-end service called Script Service, providing easier collaboration (i.e. sharing of code) and maintaining a version history of each Script. After analysis, the Configuration Service, designed to obtain single Configuration Files, will not be used because of the expected sharing and inclusion of one script in another. To obtain the set of Scripts to be used in Sequencers, a simple git pull is used.
+A decision has been made to implement Scripts using a Domain Specific Language (DSL) written in Kotlin instead of true scripts in a more dynamic scripting 
+language (however, we still refer to them as Scripts). This is for several reasons:
+
+* Scripts can be developed in an IDE, with full syntax checking and auto-completion support.
+* Unit tests can easily be written using widely used testing frameworks.
+* Scripts can be compiled, with compile-time error checking.
+* Build tools can be used for bundle scripts into Sequencer applications.
+* Code from other Scripts can be accessed and used more easily.
+* Seamless integration with Common Software and Sequencer Framework.
+* Scala features type safety (enhancing compile time error checking) and functional programming (if desired).
+* One less "glue" service layer implementation needed and one less new technology added.
+
+The most important feature of "scripting" languages that we wanted to retain is the ability to quickly modify and reload a script without 
+recompiling and deploying software. Another important feature is interactivity. Scripting languages are usually based around a "shell" 
+that allows interactive usage. This is provided with the `csw-shell` companion project [here](https://github.com/tmtsoftware/csw-shell)
+
+At the ESW FDR, we planned using Scala for the scripting DSL. While this did work, the extra syntax of using Future's was cumbersome
+for the scripting use case, and Kotlin provided the coroutine environment that provided the asynchronous feature of futures,
+but with a much clearer syntax.
+
+The scripting capability is in progress and we look forward to comments and suggestions from users of Release 1.

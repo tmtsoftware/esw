@@ -20,7 +20,7 @@ Kotlin
 
 ## unregister
 
-This DSL un-registers provided `Connection` from Location Service
+This DSL un-registers the provided `Connection` from Location Service
 
 @extref[Connection](csw_scaladoc:csw/location/models/Connection) can be one of:
 
@@ -75,7 +75,7 @@ The following example demonstrates a use case where the script locks all of the 
 Kotlin
 :   @@snip [LocationServiceDslExample.kts](../../../../../../../examples/src/main/kotlin/esw/ocs/scripts/examples/paradox/LocationServiceDslExample.kts) { #list-locations-by-connection-type }
 
-@@@ note
+@@@ note { title="Required import for Location Service APIs"}
 
 The following import is required for using `ConnectionType` and `ComponentType`:
 
@@ -87,7 +87,7 @@ import esw.ocs.dsl.highlevel.models.*
 
 ### Hostname
 
-Filters locations based on provided hostname.
+Filters locations based on the provided hostname.
 
 In the following example, all of the components running on `IRIS` (hostname: **10.1.1.1**) machine are listed.
 
@@ -96,7 +96,7 @@ Kotlin
 
 ### Prefix
 
-Filters locations based on provided Prefix.
+Filters locations based on the provided Prefix.
 
 In the following example, all of the components registered using the Prefix: `IRIS.filter.wheel` are listed, where `IRIS` is a Subsystem and `filter.wheel` is a component name
 
