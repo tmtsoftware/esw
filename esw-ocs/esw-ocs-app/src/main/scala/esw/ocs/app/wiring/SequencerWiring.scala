@@ -83,7 +83,7 @@ private[ocs] class SequencerWiring(
   private lazy val jLogger: ILogger = ScriptLoader.withScript(scriptClass)(jLoggerFactory.getLogger)
   private lazy val heartbeatActor   = new HealthCheckActor(logger, heartbeatInterval)
   private lazy val heartbeatActorRef: ActorRef[HealthCheckMsg] =
-    Await.result(actorSystem ? (Spawn(heartbeatActor.init, "heartbeat-actor", Props.empty, _)), 5.seconds)
+    Await.result(actorSystem ? (Spawn(heartbeatActor.behavior(), "heartbeat-actor", Props.empty, _)), 5.seconds)
 
   private lazy val heartbeatActorProxy = new HealthCheckActorProxy(heartbeatActorRef, heartbeatInterval)
 

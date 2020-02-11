@@ -7,5 +7,5 @@ import esw.ocs.impl.messages.HealthCheckMsg
 import esw.ocs.impl.messages.HealthCheckMsg._
 
 class HealthCheckActorProxy(actorRef: ActorRef[HealthCheckMsg], val heartbeatInterval: Duration) {
-  def sendHeartbeat(): Unit    = actorRef ! SendHeartbeat
+  def sendHeartbeat(): Unit = actorRef ! SendHeartbeat
 }

@@ -16,7 +16,7 @@ class HealthCheckActor(log: Logger, heartbeatInterval: Duration) {
   val jitter: FiniteDuration                      = 10.millis
   val intervalToRaiseNotification: FiniteDuration = heartbeatInterval.toScala + jitter
 
-  def started(shouldRaiseNotification: Boolean): Behavior[HealthCheckMsg] = Behaviors.setup { ctx =>
+  def behavior(): Behavior[HealthCheckMsg] = Behaviors.setup { ctx =>
     ctx.setReceiveTimeout(intervalToRaiseNotification, HeartbeatMissed)
     Behaviors.receiveMessagePartial[HealthCheckMsg] {
       case HeartbeatMissed =>

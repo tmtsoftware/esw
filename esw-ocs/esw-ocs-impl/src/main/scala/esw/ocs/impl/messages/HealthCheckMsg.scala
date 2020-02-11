@@ -6,5 +6,5 @@ sealed trait HealthCheckMsg extends OcsAkkaSerializable
 
 object HealthCheckMsg {
   case object HeartbeatMissed extends HealthCheckMsg
-  case object SendHeartbeat     extends HealthCheckMsg
+  case object SendHeartbeat   extends HealthCheckMsg
 }
