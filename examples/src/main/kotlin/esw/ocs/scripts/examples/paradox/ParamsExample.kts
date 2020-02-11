@@ -57,6 +57,9 @@ script {
         val struct2: Struct = struct(command.params)
         val struct3: Struct = struct(intParam, arrayParam)
         val structParam: Parameter<Struct> = complexKey.set(struct1, struct2, struct3)
+
+        // with units
+        val temperatureInKelvinKey: Key<Int> = intKey("encoder", JUnits.kelvin)
         //#keys
 
     }
@@ -74,9 +77,9 @@ script {
         val encoderParam: Parameter<Int> = encoderKey.set(encoderValues)
 
         // with units
-        val powerKey: Key<Double> = doubleKey("power", JUnits.watt)
+        val powerKey: Key<Double> = doubleKey("power")
         val values: Array<Double> = arrayOf(1.1, 2.2, 3.3)
-        val powerParam: Parameter<Double> = powerKey.set(values)
+        val powerParam: Parameter<Double> = powerKey.set(values).withUnits(JUnits.watt)
 
         // adding a param to command or event
         val setupCommand: Setup = Setup("ESW.IRIS_darkNight", "move").add(temperatureParam)
