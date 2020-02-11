@@ -74,9 +74,9 @@ script {
         val encoderParam: Parameter<Int> = encoderKey.set(encoderValues)
 
         // with units
-        val powerKey: Key<Double> = doubleKey("power")
+        val powerKey: Key<Double> = doubleKey("power", JUnits.watt)
         val values: Array<Double> = arrayOf(1.1, 2.2, 3.3)
-        val powerParam: Parameter<Double> = powerKey.set(values, JUnits.watt)
+        val powerParam: Parameter<Double> = powerKey.set(values)
 
         // adding a param to command or event
         val setupCommand: Setup = Setup("ESW.IRIS_darkNight", "move").add(temperatureParam)

@@ -26,7 +26,7 @@ class EventGatewayTest extends EswTestKit(EventServer, Gateway) with GatewayCode
   private val paramSet: Set[Parameter[_]] = Set(
     byteKey.set(100, 100, 100, 100, 100, 100, 100, 100, 100, 100, 100, 100, 100, 100, 100, 100, 100, 100, 100, 100)
   )
-  val largeData: Parameter[Struct] = structKey.set((1 to 10000).map(_ => Struct(paramSet)): _*)
+  val largeData: Parameter[Struct] = structKey.set((1 to 10000).map(_ => Struct(paramSet)).toArray)
 
   private val prefix        = Prefix("tcs.test.gateway")
   private val name1         = EventName("event1")
