@@ -46,7 +46,7 @@ class LoggingGatewayTest extends EswTestKit(Gateway) with GatewayCodecs {
   }
 
   "LoggingApi" must {
-    "should generate log statement with given app prefix, severity level and message | ESW-200, CSW-63, CSW-78, ESW-279" in {
+    "generate log statement with given app prefix, severity level and message | ESW-200, CSW-63, CSW-78, ESW-279" in {
       val loggingClient = new LoggingClient(gatewayPostClient)
 
       val componentName = "test_app"

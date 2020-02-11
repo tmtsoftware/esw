@@ -35,7 +35,7 @@ The example mainly demos:
 - Top-level statements like declaring Script specific variable ( *tromboneTemperatureAlarm* ) , use of @ref:[Script Constructs](../script-constructs.md) ( *loopAsync* ) and
 use of @ref:[Csw Services](../csw-services.md) ( *info* - @ref:[Logging Service](../services/logging-service.md),
 *setSeverity* - @ref:[Alarm Service](../services/alarm-service.md))
-- Defining @ref:[Script Handlers](handlers.md) like *onSetup* , *onObserve* using @ref:[Csw Services](../script-constructs.md).
+- Defining @ref:[Script Handlers](handlers.md) like *onSetup* , *onObserve*
 
 ## Finite State Machine Script (FSM Script)
 
