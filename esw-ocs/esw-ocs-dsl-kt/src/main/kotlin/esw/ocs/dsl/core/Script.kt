@@ -119,7 +119,6 @@ open class Script(private val wiring: ScriptWiring) : BaseScript(wiring), Script
     }
 
     fun startHealthCheck() {
-        wiring.healthCheckActorProxy.startHealthCheck()
         loopAsync(wiring.healthCheckActorProxy.heartbeatInterval().toKotlinDuration()) {
             logger.debug("[HealthCheckActor] send heartbeat for StrandEC")
             wiring.healthCheckActorProxy.sendHeartbeat()

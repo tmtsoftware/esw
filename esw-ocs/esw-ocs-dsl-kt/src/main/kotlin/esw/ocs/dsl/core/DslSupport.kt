@@ -12,8 +12,8 @@ fun script(block: suspend ScriptScope.() -> Unit): ScriptResult =
             Script(wiring).apply {
                 try {
                     runBlocking {
-                        block()
                         startHealthCheck()
+                        block()
                     }
                 } catch (ex: Exception) {
                     error("Script initialisation failed with message : " + ex.message)
