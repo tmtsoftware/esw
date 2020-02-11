@@ -19,6 +19,7 @@ interface CommandServiceDsl {
      * @param obsId an optional parameter represents a unique observation id
      * @return an instance of Setup command
      */
+    // todo: can the prefix be defaulted by the prefix of the sequencer? or a prefix dsl property can be provided?
     fun Setup(sourcePrefix: String, commandName: String, obsId: String? = null): Setup =
             Setup(Prefix(sourcePrefix), CommandName(commandName), obsId.toOptionalObsId())
 

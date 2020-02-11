@@ -139,7 +139,7 @@ The Script DSL provides following constructs to handle failures while executing 
 **Command Handler Failures** except the @ref:[Shutdown Handler](#shutdown-handler). If the `onGlobalError` handler is not provided by script,
 then only the logging of error cause is done by the framework.
 
-Following example shows usage of `onGloablError`
+Following example shows usage of `onGlobalError`
 
 Kotlin
 : @@snip [HandlersExample.kts](../../../../../../../examples/src/main/kotlin/esw/ocs/scripts/examples/paradox/HandlersExample.kts) { #onGlobalError }
