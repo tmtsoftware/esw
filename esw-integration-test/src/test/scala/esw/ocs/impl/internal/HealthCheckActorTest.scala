@@ -71,7 +71,7 @@ class HealthCheckActorTest extends BaseTestSuite {
   }
 
   "HealthCheckActor" must {
-    "receive [Heartbeat] and [HeartbeatMissed]" in {
+    "receive [Heartbeat] and [HeartbeatMissed] | ESW-290" in {
       val heartbeatInterval            = Duration.ofSeconds(3)
       val actorRef                     = spawnHealthCheckActor(heartbeatInterval)
       val intervalToExpectNotification = heartbeatInterval.toScala
