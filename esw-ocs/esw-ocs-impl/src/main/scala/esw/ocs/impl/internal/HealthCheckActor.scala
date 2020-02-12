@@ -23,7 +23,7 @@ class HealthCheckActor(log: Logger, heartbeatInterval: Duration) {
         log.error("StrandEc is taking more time than expected")
         Behaviors.same
       case Heartbeat =>
-        log.debug("StrandEc heartbeat received")
+        log.info("StrandEc heartbeat received")
         Behaviors.same
     }
   }
