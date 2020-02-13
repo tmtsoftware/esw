@@ -113,6 +113,7 @@ private[ocs] class SequencerWiring(
 
   private val shutdownHttpService = () =>
     async {
+      logger.debug("Shutting down Sequencer http service")
       val (serverBinding, registrationResult) = await(httpService.registeredLazyBinding)
       val eventualTerminated                  = serverBinding.terminate(Timeouts.DefaultTimeout)
       val eventualDone                        = registrationResult.unregister()
@@ -127,14 +128,19 @@ private[ocs] class SequencerWiring(
   lazy val sequencerServer: SequencerServer = new SequencerServer {
     override def start(): Either[ScriptError, AkkaLocation] = {
       try {
+        logger.info(s"Starting sequencer for subsystem: $subsystem with observing mode: $observingMode")
         new Engine(script).start(sequenceOperatorFactory())
 
         httpService.registeredLazyBinding.block
 
         val registration = AkkaRegistration(AkkaConnection(componentId), sequencerRef.toURI)
-        locationServiceUtil.register(registration).block
+        val loc          = locationServiceUtil.register(registration).block
+        logger.info(s"Successfully started Sequencer for subsystem: $subsystem with observing mode: $observingMode")
+        loc
       }
       catch {
+        // This error will be logged in SequenceComponent.Do not log it here,
+        // because exception caused while initialising will fail the instance creation of logger.
         case NonFatal(e) => Left(ScriptError(e.getMessage))
       }
     }

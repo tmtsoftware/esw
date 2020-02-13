@@ -95,8 +95,12 @@ class SequencerBehavior(
   // On successful execution of handlers, state will change to Idle.
   private def goOnline(replyTo: ActorRef[GoOnlineResponse], data: SequencerData): Behavior[SequencerMsg] = {
     script.executeGoOnline().onComplete {
-      case Success(_) => data.self ! GoOnlineSuccess(replyTo)
-      case Failure(_) => data.self ! GoOnlineFailed(replyTo)
+      case Success(_) =>
+        debug("Successfully executed GoOnline script handlers")
+        data.self ! GoOnlineSuccess(replyTo)
+      case Failure(e) =>
+        error(s"Failed while executing GoOnline script handlers with error : ${e.getMessage}")
+        data.self ! GoOnlineFailed(replyTo)
     }
     goingOnline(data)
   }
@@ -111,8 +115,12 @@ class SequencerBehavior(
   // On successful execution of handlers, state will change to Offline, otherwise to the previous state
   private def goOffline(replyTo: ActorRef[GoOfflineResponse], data: SequencerData): Behavior[SequencerMsg] = {
     script.executeGoOffline().onComplete {
-      case Success(_) => data.self ! GoOfflineSuccess(replyTo)
-      case Failure(_) => data.self ! GoOfflineFailed(replyTo)
+      case Success(_) =>
+        debug("Successfully executed GoOffline script handlers")
+        data.self ! GoOfflineSuccess(replyTo)
+      case Failure(e) =>
+        error(s"Failed while executing GoOffline script handlers with error : ${e.getMessage}")
+        data.self ! GoOfflineFailed(replyTo)
     }
     goingOffline(data)
   }
@@ -160,7 +168,6 @@ class SequencerBehavior(
   // 3. shutdowns the Sequencers HTTP server.
   // 4. Changes state to intermediate state ShuttingDown.
   // On completion of the first 3 tasks, the actor system will be terminated and Sequencer actor will be stopped.
-
   private def shutdown(data: SequencerData, replyTo: ActorRef[Ok.type]): Behavior[SequencerMsg] = {
 
     // run the futures in parallel and wait for all of them to complete
@@ -193,8 +200,12 @@ class SequencerBehavior(
       replyTo: ActorRef[DiagnosticModeResponse]
   ): Behavior[SequencerMsg] = {
     script.executeDiagnosticMode(startTime, hint).onComplete {
-      case Success(_) => replyTo ! Ok
-      case _          => replyTo ! DiagnosticHookFailed()
+      case Success(_) =>
+        debug("Successfully executed diagnostic mode script handlers")
+        replyTo ! Ok
+      case Failure(e) =>
+        error(s"Failed while executing diagnostic mode script handlers with error : ${e.getMessage}")
+        replyTo ! DiagnosticHookFailed()
     }
     Behaviors.same
   }
@@ -203,8 +214,12 @@ class SequencerBehavior(
   // This will execute the Operations mode handlers of the script.
   private def goToOperationsMode(replyTo: ActorRef[OperationsModeResponse]): Behavior[SequencerMsg] = {
     script.executeOperationsMode().onComplete {
-      case Success(_) => replyTo ! Ok
-      case _          => replyTo ! OperationsHookFailed()
+      case Success(_) =>
+        debug("Successfully executed operations mode script handlers")
+        replyTo ! Ok
+      case Failure(e) =>
+        error(s"Failed while executing operations mode script handlers with error : ${e.getMessage}")
+        replyTo ! OperationsHookFailed()
     }
     Behaviors.same
   }
@@ -278,7 +293,7 @@ class SequencerBehavior(
   )(stateHandler: StateMessage => Behavior[SequencerMsg]): Behavior[SequencerMsg] =
     Behaviors.receive { (ctx, msg) =>
       implicit val timeout: Timeout = Timeouts.LongTimeout
-      debug(s"[SequencerBehavior] State: $state, Received Message: $msg")
+      debug(s"Sequencer in State: $state, received Message: $msg")
 
       msg match {
         // ********* ESW Sequencer Messages *******

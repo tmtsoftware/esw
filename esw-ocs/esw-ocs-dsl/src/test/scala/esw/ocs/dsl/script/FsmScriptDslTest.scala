@@ -1,6 +1,7 @@
 package esw.ocs.dsl.script
 
 import akka.Done
+import csw.logging.api.javadsl.ILogger
 import csw.params.commands.SequenceCommand
 import csw.time.core.models.UTCTime
 import esw.ocs.api.BaseTestSuite
@@ -14,6 +15,7 @@ class FsmScriptDslTest extends BaseTestSuite {
   private val seqOperatorFactory = () => mock[SequenceOperator]
   private val STARTED_STATE      = "STARTED"
   private val params             = Params()
+  private val logger             = mock[ILogger]
 
   override protected def afterAll(): Unit = strandEc.shutdown()
 
@@ -24,7 +26,7 @@ class FsmScriptDslTest extends BaseTestSuite {
       val shutdownTask: Runnable = () => ()
       when(initialState.transition(STARTED_STATE, params)).thenReturn(updatedState)
 
-      val scriptDsl = new FsmScriptDsl(seqOperatorFactory, strandEc, shutdownTask, initialState)
+      val scriptDsl = new FsmScriptDsl(seqOperatorFactory, logger, strandEc, shutdownTask, initialState)
       scriptDsl.become(STARTED_STATE, params)
 
       verify(initialState).transition(STARTED_STATE, params)
@@ -40,7 +42,7 @@ class FsmScriptDslTest extends BaseTestSuite {
       val shutdownTask: Runnable = () => ()
       when(initialState.add(STARTED_STATE, handler)).thenReturn(updatedState)
 
-      val scriptDsl = new FsmScriptDsl(seqOperatorFactory, strandEc, shutdownTask, initialState)
+      val scriptDsl = new FsmScriptDsl(seqOperatorFactory, logger, strandEc, shutdownTask, initialState)
       scriptDsl.add(STARTED_STATE, handler)
 
       verify(initialState).add(STARTED_STATE, handler)
@@ -56,7 +58,7 @@ class FsmScriptDslTest extends BaseTestSuite {
       val shutdownTask: Runnable = () => {
         taskCalled = true
       }
-      val scriptDsl = new FsmScriptDsl(seqOperatorFactory, strandEc, shutdownTask, initialState)
+      val scriptDsl = new FsmScriptDsl(seqOperatorFactory, logger, strandEc, shutdownTask, initialState)
 
       scriptDsl.shutdownScript()
       taskCalled shouldBe true
@@ -87,7 +89,7 @@ class FsmScriptDslTest extends BaseTestSuite {
       when(script.executeOperationsMode()).thenReturn(futureDone)
       when(script.executeExceptionHandlers(ex)).thenReturn(futureDone)
 
-      val scriptDsl = new FsmScriptDsl(seqOperatorFactory, strandEc, shutdownTask, state)
+      val scriptDsl = new FsmScriptDsl(seqOperatorFactory, logger, strandEc, shutdownTask, state)
 
       scriptDsl.execute(sequenceCommand) should ===(futureUnit)
       verify(script).execute(sequenceCommand)

@@ -1,5 +1,6 @@
 package esw.ocs.dsl.epics
 
+import csw.logging.api.javadsl.ILogger
 import csw.params.core.generics.Parameter
 import csw.params.events.EventName
 import csw.params.events.SystemEvent
@@ -14,6 +15,7 @@ import io.kotlintest.shouldBe
 import io.kotlintest.shouldThrow
 import io.mockk.coEvery
 import io.mockk.coVerify
+import io.mockk.every
 import io.mockk.mockk
 import kotlinx.coroutines.*
 import org.junit.jupiter.api.BeforeEach
@@ -31,9 +33,11 @@ class FsmImplTest {
         println("Exception thrown in script with a message: ${exception.message}, invoking exception handler " + exception)
     }
     private val coroutineScope = CoroutineScope(job + exceptionHandler + dispatcher)
+    private val logger = mockk<ILogger>()
     private val cswHighLevelDslApi: CswHighLevelDslApi = mockk()
 
-    private val init = "INIT"
+    private
+    val init = "INIT"
     private val inProgress = "INPROGRESS"
     private val invalid = "INVALIDSTATE"
     private val testMachineName = "test-state-machine"
@@ -47,6 +51,8 @@ class FsmImplTest {
 
     @BeforeEach
     fun beforeEach() {
+        every { cswHighLevelDslApi.debug(any()) }.returns(Unit)
+
         fsm = FsmImpl(testMachineName, init, coroutineScope, cswHighLevelDslApi)
         fsm.state(init, initState)
 

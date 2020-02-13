@@ -26,9 +26,8 @@ import kotlin.time.toKotlinDuration
 sealed class BaseScript(wiring: ScriptWiring) : CswHighLevelDsl(wiring.cswServices, wiring.scriptContext), HandlerScope {
     override val actorSystem: ActorSystem<SpawnProtocol.Command> = wiring.scriptContext.actorSystem()
 
-    internal open val scriptDsl: ScriptDsl by lazy { ScriptDsl(wiring.scriptContext.sequenceOperatorFactory(), strandEc, shutdownTask) }
-
     protected val shutdownTask = Runnable { wiring.shutdown() }
+    internal open val scriptDsl: ScriptDsl by lazy { ScriptDsl(wiring.scriptContext.sequenceOperatorFactory(), logger, strandEc, shutdownTask) }
 
     private val exceptionHandler = CoroutineExceptionHandler { _, exception ->
         error("Exception thrown in script with a message: [$exception], invoking exception handler")
@@ -107,7 +106,8 @@ open class Script(private val wiring: ScriptWiring) : BaseScript(wiring), Script
                 this.scriptDsl.merge(it(wiring).scriptDsl)
             }
 
-    override fun become(nextState: String, params: Params): Unit = throw RuntimeException("Become can not be called outside Fsm scripts")
+    override fun become(nextState: String, params: Params): Unit =
+            warn("`become` method should not be called from regular script, calling it will do nothing")
 
     private fun <T> (suspend CommandHandlerScope.(T) -> Unit).toCoroutineScope(): suspend (CoroutineScope, T) -> Unit = { _scope, value ->
         val commandHandlerScope = object : CommandHandlerScope by this@Script {
@@ -130,7 +130,7 @@ class FsmScript(private val wiring: ScriptWiring) : BaseScript(wiring), FsmScrip
     override val coroutineContext: CoroutineContext = coroutineScope.coroutineContext
     override val scriptDsl: ScriptDsl by lazy { fsmScriptDsl }
 
-    internal val fsmScriptDsl: FsmScriptDsl by lazy { FsmScriptDsl(wiring.scriptContext.sequenceOperatorFactory(), strandEc, shutdownTask) }
+    internal val fsmScriptDsl: FsmScriptDsl by lazy { FsmScriptDsl(wiring.scriptContext.sequenceOperatorFactory(), logger, strandEc, shutdownTask) }
 
     inner class FsmScriptStateDsl : Script(wiring), FsmScriptStateScope {
         override val coroutineContext: CoroutineContext = this@FsmScript.coroutineScope.coroutineContext
