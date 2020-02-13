@@ -1,13 +1,15 @@
 # Sequencer Lifecycle
 
 The Sequencer lifecycle is implemented as a Finite State Machine. At any given time a Sequencer is in exactly
-one of those states. It supports a set of commands/messages, and on receiving those commands, it
-takes an action and transitions in some other state. 
+one of those states. The state of the Sequencer is tied to whether or not it has received a Sequence and whether
+or not the Sequence has started executing. Sequencer supports a set of commands/messages, and on receiving those commands, it
+takes an action and transitions to other states. 
 
 Following are the states supported by the Sequencer:
 
-* **Idle/Online:** This is the default state of the Sequencer. A Sequencer is idle when it is starts up. It has a Script but there's Sequence under execution.
-A Sequencer can come to idle state from the following situations:
+* **Idle/Online:** This is the default state of the Sequencer. A Sequencer is idle when it is starts up. It has a Script since it
+has been loaded by the Sequence Component, but there's no Sequence under execution.
+A Sequencer can come to the idle state from the following situations:
 
     * when the Sequencer starts up for the first time with a Script loaded
     * when the Sequencer has finished execution of a Sequence
@@ -32,3 +34,23 @@ from any other state.
 
 
 ![sequencer-state-transition](../../images/ocs/state-transition.png)
+
+# Sequence Component Lifecycle
+
+The Sequence Component also has a lifecycle, but it is simpler than the Sequencer lifecycle. The following
+figure shows the Sequence Component has two states: Idle and Running.
+
+* **Idle:** This is the default state of a Sequence Component when it is started. It is ready for the loading
+of a Script that will create a Sequencer.  The `LoadScript` loads a script and creates the Sequencer. If successful, the Sequence
+Component transitions to the Running state. While in the Idle state, the Sequence Component responds to the `GetStatus` message
+and ignores the `UnloadScript` message without error.
+
+* **Running:** Once a Sequence Component has successfully loaded a Script, it is in the Running state. The new
+Sequencer will be available to process Sequences until it receives an `UnloadScript` message and transitions back
+to the Idle state. While in Running state, the Sequence Component can also receive a `Restart` message, which causes
+the shutdown and unloading of the Script followed immediately by the loading of the script. This has the effect of
+initializing the script. The `LoadScript` message is ignored without error while in the Running state. The Sequence
+Component responds successfully to the `GetStatus` message.
+
+
+![sequencecomp-lifecycle](../../images/ocs/OCS-SeqCompLifecycle.png)
