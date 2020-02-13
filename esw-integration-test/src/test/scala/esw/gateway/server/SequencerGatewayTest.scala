@@ -13,7 +13,7 @@ import esw.ocs.testkit.Service.{EventServer, Gateway}
 
 class SequencerGatewayTest extends EswTestKit(Gateway, EventServer) with GatewayCodecs {
   private val subsystem     = ESW
-  private val observingMode = "MoonNight"
+  private val observingMode = "MoonNight" // TestScript2.kts
 
   override def beforeAll(): Unit = {
     super.beforeAll()
@@ -37,6 +37,7 @@ class SequencerGatewayTest extends EswTestKit(Gateway, EventServer) with Gateway
       //queryFinal
       sequencer.queryFinal(submitResponse.runId).futureValue should ===(Completed(submitResponse.runId))
     }
+
     "handle submit, queryFinal commands with error | ESW-250" in {
       val clientFactory = new ClientFactory(gatewayPostClient, gatewayWsClient)
 

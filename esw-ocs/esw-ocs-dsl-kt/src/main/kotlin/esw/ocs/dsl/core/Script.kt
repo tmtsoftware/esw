@@ -31,14 +31,12 @@ sealed class BaseScript(wiring: ScriptWiring) : CswHighLevelDsl(wiring.cswServic
     protected val shutdownTask = Runnable { wiring.shutdown() }
 
     private val exceptionHandler = CoroutineExceptionHandler { _, exception ->
-        error("Exception thrown in script with a message: ${exception.message}, invoking exception handler", cause = exception)
-        exception.printStackTrace()
+        error("Exception thrown in script with a message: [$exception], invoking exception handler")
         scriptDsl.executeExceptionHandlers(exception)
     }
 
     private val shutdownExceptionHandler = CoroutineExceptionHandler { _, exception ->
-        error("Shutting down: Exception thrown in script with a message: ${exception.message}", cause = exception)
-        exception.printStackTrace()
+        error("Shutting down: Exception thrown in script with a message: [$exception]")
     }
 
     override val coroutineScope: CoroutineScope = wiring.scope + exceptionHandler
