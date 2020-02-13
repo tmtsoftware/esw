@@ -26,7 +26,6 @@ script {
 
     //#dsl-context-with-write-access
     val context = makeDatabaseService("IRIS_db", "db_write_username", "db_write_password")
-    //#dsl-context-with-write-access
 
     onObserve("command-1") {
         val result = context
@@ -35,4 +34,5 @@ script {
 
         // do something with result
     }
+    //#dsl-context-with-write-access
 }
