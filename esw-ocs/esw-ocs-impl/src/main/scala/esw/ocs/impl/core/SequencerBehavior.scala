@@ -64,6 +64,7 @@ class SequencerBehavior(
   private def idle(data: SequencerData): Behavior[SequencerMsg] = receive(Idle, data) {
     case LoadSequence(sequence, replyTo)           => load(sequence, replyTo, data)
     case SubmitSequenceInternal(sequence, replyTo) => submitSequence(sequence, data, replyTo)
+    case GoOnline(replyTo)                         => replyTo ! Ok; Behaviors.same
     case GoOffline(replyTo)                        => goOffline(replyTo, data)
     case PullNext(replyTo)                         => idle(data.pullNextStep(replyTo)) // registers a subscriber for Step
   }
@@ -88,7 +89,8 @@ class SequencerBehavior(
   }
 
   private def offline(data: SequencerData): Behavior[SequencerMsg] = receive(Offline, data) {
-    case GoOnline(replyTo) => goOnline(replyTo, data)
+    case GoOnline(replyTo)  => goOnline(replyTo, data)
+    case GoOffline(replyTo) => replyTo ! Ok; Behaviors.same
   }
 
   // Starts executing GoOnline handlers of script and changes state to intermediate state GoingOnline

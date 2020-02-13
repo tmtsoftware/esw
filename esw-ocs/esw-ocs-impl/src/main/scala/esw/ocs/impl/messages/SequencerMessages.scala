@@ -55,8 +55,11 @@ object SequencerMessages {
   case class OperationsMode(replyTo: ActorRef[OperationsModeResponse]) extends DiagnosticDataMessage
 
   // lifecycle msgs
-  final case class GoOnline(replyTo: ActorRef[GoOnlineResponse])   extends OfflineMessage
-  final case class GoOffline(replyTo: ActorRef[GoOfflineResponse]) extends IdleMessage with SequenceLoadedMessage
+  final case class GoOnline(replyTo: ActorRef[GoOnlineResponse]) extends IdleMessage with OfflineMessage
+  final case class GoOffline(replyTo: ActorRef[GoOfflineResponse])
+      extends IdleMessage
+      with SequenceLoadedMessage
+      with OfflineMessage
 
   // editor msgs
   final case class Add(commands: List[SequenceCommand], replyTo: ActorRef[OkOrUnhandledResponse])           extends EditorAction

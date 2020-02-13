@@ -903,7 +903,6 @@ class SequencerBehaviorTest extends ScalaTestWithActorTestKit with BaseTestSuite
       AbortSequenceComplete,
       Stop, //ESW-156
       StopComplete,
-      GoOnline,
       GoOnlineSuccess,
       GoOnlineFailed,
       StepSuccess,
