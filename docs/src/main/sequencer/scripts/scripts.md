@@ -4,10 +4,10 @@ All logic in a Sequencer is implemented in Sequencer Scripts.  Scripts are writt
 Domain Specific Language (DSL) to facilitate development based on the Kotlin programming language.
 This section describes the DSL in detail.
 
-Scripts can be written in two styles: procedure-oriented and state machine-oriented.   
+Scripts can be written in two styles: handler-oriented and state machine-oriented.   
 
-As an alternate to procedural style scripting, a framework DSL has been provided to allow scripting using a 
-Finite State Machine (FSM) (still in development).  
+As an alternate to the hendler or procedural scripting style, a DSL has been provided to allow scripting using a 
+Finite State Machine (FSM) model.
 
 @@ toc { depth=2 }
 

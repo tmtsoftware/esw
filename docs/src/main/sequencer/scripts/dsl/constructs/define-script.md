@@ -2,8 +2,8 @@
  
 There are 3 variations of Sequencer Scripts. These variations are based the way the Script gets executed. The variations are:
 
-- Handler Oriented Script
-- State Machine Oriented Script (FSM Script)
+- Handler-Oriented Script
+- State Machine-Oriented Script (FSM Script)
 - Reusable Script
 
 ## Handler-Oriented Script

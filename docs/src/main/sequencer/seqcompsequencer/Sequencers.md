@@ -24,7 +24,7 @@ shown below:
 
 The subsystem indicates the subsystem defining the observing mode. 
 The `name` portion will generally be indicated by a selection in the observation planning tool. There are no restrictions on
-this name, but shorter is better. 
+this name, but shorter is better and the subsystem should be capitalized to conform with other subsystem uses. 
 
 ### Registering Sequencers in Location Service
 
@@ -37,8 +37,8 @@ started. The following table shows scenarios that may happen when the Sequence M
 
 | Sequence<br>Component Name | packageId | Observing Mode| Registered Location | Description|
 |:--------------------------:|:---------:|:-------------:|:-------------------:|:-----------|
-| esw.esw_77 | iris | iris_ifsonly |iris@iris_ifsonly | An IRIS instrument Sequencer running the IRIS script for the iris_ifsonly observing mode using the esw.esw_77 Sequence Component. |
-| esw.primary | esw |  iris_ifsonly | esw@iris_ifsonly | An ESW Sequencer running the ESW script for the iris_ifsonly observing mode using the esw.primary Sequence Component. |
+| ESW.ESW_77 | IRIS | IRIS_ifsonly |IRIS@IRIS_ifsonly | An IRIS instrument Sequencer running the IRIS script for the IRIS_ifsonly observing mode using the ESW.ESW_77 Sequence Component. |
+| ESW.primary | ESW |  IRIS_ifsonly | ESW@IRIS_ifsonly | An ESW Sequencer running the ESW script for the IRIS_ifsonly observing mode using the ESW.primary Sequence Component. |
 
 As shown above, the observing mode is the instrument name and an instrument-specific label related to observing mode features. Each instrument 
 includes its scripts inside its specific package. The packageId and observing mode are used to lookup the correct script in the script repository. 
@@ -46,7 +46,7 @@ Once the Sequencer script is loaded in a Sequence Component, the Sequencer API e
 Location of the Sequence Component allowing the Sequence Manager or other client to determine which Sequence Component is executing
 the observing mode script for a specific packageId.
 
-The figure below shows the Sequence Component ESW_77 loading the IRIS instrument script for the iris_ifsonly observing mode.
+The figure below shows the Sequence Component ESW_77 loading the IRIS instrument script for the IRIS_ifsonly observing mode.
 
 ![SequenceCompNaming](../../images/ocs/OCS-SeqCompSeqNaming.png)
 

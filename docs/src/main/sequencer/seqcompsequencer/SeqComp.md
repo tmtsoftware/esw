@@ -14,8 +14,10 @@ The following table describes the registration of a Sequence Component in the Lo
 
 | Subsystem | Name | Registered Location |
 |:---------:|:----:|:-------------------:|
-| esw | (none) | esw.esw_77 |
-| ese | primary |  esw.primary |
+| ESW | (none) | ESW.ESW_77 |
+| ESW | primary |  ESW.primary |
+
+Note that CSW always capitalizes a subsystem when it is displayed. Arguments can be entered as lowercase.
 
 The Sequence Component provides framework code to support the loading and unloading of Scripts and a few other 
 useful capabilities.
