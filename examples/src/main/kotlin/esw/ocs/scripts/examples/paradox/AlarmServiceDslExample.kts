@@ -16,7 +16,7 @@ script {
     val ERROR = "ERROR"
 
     val tempKey = longKey("temperature")
-    val temperatureVar = SystemVar(0, "esw.temperature.temp", tempKey)
+    val temperatureVar = EventVariable(0, "esw.temperature.temp", tempKey)
 
     //#alarm-key
     val tromboneTemperatureAlarm =

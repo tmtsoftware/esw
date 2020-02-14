@@ -21,7 +21,7 @@ script {
     val ERROR = "ERROR"
     val FINISHED = "FINISHED"
 
-    val temperatureVar = SystemVar(0, "esw.temperature.temp", tempKey)
+    val temperatureVar = EventVariable(0, "esw.temperature.temp", tempKey)
     val commandFlag = CommandFlag()
 
     val temperatureFsm = Fsm("TEMP", OK) {

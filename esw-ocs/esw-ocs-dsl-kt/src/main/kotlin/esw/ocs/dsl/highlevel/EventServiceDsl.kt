@@ -142,30 +142,16 @@ interface EventServiceDsl {
      * @param duration represents the interval of polling.
      * @return instance of [[esw.ocs.dsl.epics.EventVariable]]
      */
-    suspend fun <T> SystemVar(initial: T, eventKeyStr: String, key: Key<T>, duration: Duration? = null): EventVariable<T> {
+    suspend fun <T> EventVariable(initial: T, eventKeyStr: String, key: Key<T>, duration: Duration? = null): EventVariable<T> {
         val eventKey = EventKey(eventKeyStr)
-        val systemEvent = SystemEvent(eventKey.source().toString(), eventKey.eventName().name(), key.set(initial))
-        return EventVariable(systemEvent, key, duration, this)
-    }
 
-    /**
-     * Method to create an instance of [[esw.ocs.dsl.epics.EventVariable]] tied to the particular param `key` of an [[csw.params.events.ObserveEvent]]
-     * being published on specific `event key`.
-     *
-     * [[esw.ocs.dsl.epics.EventVariable]] behaves differently depending on the presence of `duration` parameter while creating its instance.
-     * - When provided with `duration`, it will **poll** at an interval of given `duration` to refresh its own value
-     * - Otherwise it will **subscribe** to the given event key and will refresh its own value whenever events are published
-     *
-     * @param initial value to set to the parameter key of the event
-     * @param eventKeyStr string representation of event key
-     * @param key represents parameter key of the event to tie [[esw.ocs.dsl.epics.EventVariable]] to
-     * @param duration represents the interval of polling.
-     * @return instance of [[esw.ocs.dsl.epics.EventVariable]]
-     */
-    suspend fun <T> ObserveVar(initial: T, eventKeyStr: String, key: Key<T>, duration: Duration? = null): EventVariable<T> {
-        val eventKey = EventKey(eventKeyStr)
-        val observeEvent = ObserveEvent(eventKey.source().toString(), eventKey.eventName().name(), key.set(initial))
-        return EventVariable(observeEvent, key, duration, this)
+        val initialEvent = getEvent(eventKeyStr).first().let {
+            if (it.isInvalid) SystemEvent(eventKey.source().toString(), eventKey.eventName().name())
+            else it
+        }
+
+        initialEvent.paramType().add(key.set(initial))
+        return EventVariable(initialEvent, key, duration, this)
     }
 
     private fun (Array<out String>).toEventKeys(): Set<EventKey> = map { EventKey.apply(it) }.toSet()

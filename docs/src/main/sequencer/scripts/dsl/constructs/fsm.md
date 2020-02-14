@@ -123,11 +123,6 @@ FSM can be bind to multiple Event variables and vise versa.
 Event Variables use the CSW Event Service underneath. This could be used to share data between multiple sequencers.
 Whenever any event is published on the key of given event, all the FSMs bound to that variable will be re-evaluated.
 
-Event Variables are of 2 types:
-
-1. `SystemVar` - are based on SystemEvent
-2. `ObserveVar` - are based on ObserveEvent
-
 Event variable takes 4 arguments: 
 - the initial value to set in Event parameter against the given parameter Key
 - the event key to tie the Event variable to
@@ -143,7 +138,7 @@ Event Variable has the ability to behave in one of two ways:
 
 Event Variable subscribes to the given Event key and re-evaluates the FSMs current state each time an event is published.
 
-The following example shows how to create Event Variables with the subscribing behavior, `bind` FSM to it and methods like `get` and `set`.
+The following example shows how to create Event Variables with the subscribing behavior, `bind` FSM to it and methods like `get`, `first` and `set`.
 `set` will publish the event with modified parameter.
 
 Kotlin

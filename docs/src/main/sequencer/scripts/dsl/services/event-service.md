@@ -25,23 +25,14 @@ Helper DSL to create an `ObserveEvent` from the provided `prefix`, `event name` 
 Kotlin
 :   @@snip [EventServiceDslExample.kts](../../../../../../../examples/src/main/kotlin/esw/ocs/scripts/examples/paradox/EventServiceDslExample.kts) { #observe-event }
 
-### SystemVar
+### EventVariable
 
-Helper DSL to create an `EventVariable` corresponding to a parameter of a `SystemEvent`. This DSL needs the initial 
-value of the parameter, the name of the `EventKey`, and the `ParameterKey` of the connected parameter.
+Helper DSL to create an `EventVariable`. This DSL needs the initial value of the parameter, the name of the `EventKey`,
+and the `ParameterKey` of the connected parameter.
  More details about `SystemVar`s are provided in the @ref[FSM documentation](../constructs/fsm.md#reactive-fsm)
 
 Kotlin
 :   @@snip [EventServiceDslExample.kts](../../../../../../../examples/src/main/kotlin/esw/ocs/scripts/examples/paradox/EventServiceDslExample.kts) { #system-var }
-
-### ObserveVar
-
-Helper DSL to create an `EventVariable` corresponding to a parameter of an `ObserveEvent`. This DSL needs the initial 
-value of the parameter, the name of the `EventKey` and the `ParameterKey` of the connected parameter.
-More details about `ObserveVar`s are provided in the @ref[FSM documentation](../constructs/fsm.md#reactive-fsm)
-
-Kotlin
-:   @@snip [EventServiceDslExample.kts](../../../../../../../examples/src/main/kotlin/esw/ocs/scripts/examples/paradox/EventServiceDslExample.kts) { #observe-var }
 
 ## publishEvent
 

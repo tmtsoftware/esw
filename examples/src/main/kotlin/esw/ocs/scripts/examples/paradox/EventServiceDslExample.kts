@@ -72,15 +72,10 @@ script {
         val tempKey1: EventKey = EventKey("ESW.temperature", "temp")
         //#event-key
 
-        //#system-var
+        //#event-var
         val locKey = intKey("current-location")
-        val systemVar: EventVariable<Int> = SystemVar(0, "IRIS.ifs.motor.position", locKey)
-        //#system-var
-
-        //#observe-var
-        val readNumberKey = intKey("readNumber")
-        val observeVar: EventVariable<Int> = ObserveVar(0, "IRIS.ifs.detector.readCompleted", readNumberKey)
-        //#observe-var
+        val systemVar: EventVariable<Int> = EventVariable(0, "IRIS.ifs.motor.position", locKey)
+        //#event-var
 
     }
 

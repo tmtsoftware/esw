@@ -34,28 +34,22 @@ script {
 
 
     //#event-var
-    //**  System Var **//
+    //#polling
     val tempKey: Key<Int> = intKey("temperature")
-    val systemVar: EventVariable<Int> = SystemVar(0, "esw.temperature.temp", tempKey)
+    //#polling
+    val eventVariable: EventVariable<Int> = EventVariable(0, "esw.temperature.temp", tempKey)
 
-    systemVar.bind(irisFsm) // binds the FSM and event variable
+    eventVariable.bind(irisFsm) // binds the FSM and event variable
 
-    //**  Observe Var **//
-    val coordKey: Key<Coord> = coordKey("co-ordinates")
-    val observeVar: EventVariable<Coord> = ObserveVar(JEqCoord.make(0, 0), "IRIS.observe.coord", coordKey)
-    observeVar.first() // returns the value of the parameter from the latest event
+    eventVariable.getParam() // to get the current values of the parameter
 
-    observeVar.bind(irisFsm) // binds the FSM and event variable
+    eventVariable.first() // to get the first value from the values of the parameter
 
-    observeVar.setParam(JEqCoord.make(1, 1)) // publishes the given value on event key
+    eventVariable.setParam(10) // publishes the given value on event key
     //#event-var
 
     //#polling
-    // SystemVar with polling duration of 2 seconds
-    val pollingSysVar: EventVariable<Int> = SystemVar(0, "esw.temperature.temp", tempKey, 2.seconds)
-
-    // ObserveVar with polling duration of 2 seconds
-    val pollingObsVar: EventVariable<Coord> = ObserveVar(JEqCoord.make(0, 0), "iris.observe.coord", coordKey, 2.seconds)
+    val pollingSysVar: EventVariable<Int> = EventVariable(0, "esw.temperature.temp", tempKey, 2.seconds)
     //#polling
 
     var params = Params(mutableSetOf())
@@ -105,7 +99,7 @@ script {
             //#complete-fsm
         }
 
-        val temparature = systemVar
+        val temparature = eventVariable
 
         //#state-transition-on-re-evaluation
         state("LOW") {
