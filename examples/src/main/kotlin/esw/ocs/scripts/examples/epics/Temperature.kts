@@ -39,11 +39,11 @@ FsmScript("INIT") {
                 publishState(tempFsmEvent, OK)
             }
 
-            on(temperatureVar.get() == 30L) {
+            on(temperatureVar.first() == 30L) {
                 completeFsm()
             }
 
-            on(temperatureVar.get() > 40) {
+            on(temperatureVar.first() > 40) {
                 become(ERROR)
             }
         }
@@ -53,7 +53,7 @@ FsmScript("INIT") {
                 publishState(tempFsmEvent, ERROR)
             }
 
-            on(temperatureVar.get() < 40) {
+            on(temperatureVar.first() < 40) {
                 become("OK")
             }
         }

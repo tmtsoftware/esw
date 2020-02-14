@@ -1,6 +1,7 @@
 package esw.ocs.dsl.epics
 
 import csw.params.core.generics.Key
+import csw.params.core.generics.Parameter
 import csw.params.events.Event
 import csw.params.events.ObserveEvent
 import csw.params.events.SystemEvent
@@ -31,7 +32,17 @@ class EventVariable<T> constructor(
         return fsmSubscription
     }
 
-    suspend fun set(value: T) {
+    fun getEvent() = latestEvent
+
+    suspend fun setEvent(event: Event) = eventService.publishEvent(event)
+
+    fun getParam(): Parameter<T> = (latestEvent.paramType())(key)
+
+    // extract first value from a parameter against provided key from param set
+    // if not present, throw an exception
+    fun first(): T = getParam().first
+
+    suspend fun setParam(value: T) {
         val param = key.set(value)
         val oldEvent = latestEvent
         when (oldEvent) {
@@ -41,9 +52,6 @@ class EventVariable<T> constructor(
         eventService.publishEvent(latestEvent)
     }
 
-    // extract first value from a parameter against provided key from param set
-    // if not present, throw an exception
-    fun get(): T = (latestEvent.paramType())(key).first
 
     private suspend fun startSubscription(): EventSubscription = if (duration != null) polling(duration) else subscribe()
 
@@ -51,7 +59,6 @@ class EventVariable<T> constructor(
             eventService.onEvent(eventKey, duration = duration) {
                 if (it != latestEvent) refresh(it)
             }
-
 
     private suspend fun subscribe(): EventSubscription = eventService.onEvent(eventKey) { refresh(it) }
 

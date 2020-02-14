@@ -28,7 +28,7 @@ script {
         var fsmVariable = 10                                     // [[ 1 ]]
 
         state(OK) {
-            val currentTemp = temperatureVar.get()        // [[ 2 ]]
+            val currentTemp = temperatureVar.first()        // [[ 2 ]]
             val expectedTemp = commandFlag.value().get(intKey("expected-temperature")).get().first
 
             entry {
@@ -56,7 +56,7 @@ script {
                 )
                 publishState(tempFsmEvent, ERROR)
             }
-            on(temperatureVar.get() < expectedTemp) {
+            on(temperatureVar.first() < expectedTemp) {
                 become(OK)
             }
         }

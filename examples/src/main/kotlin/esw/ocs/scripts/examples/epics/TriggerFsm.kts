@@ -15,7 +15,7 @@ FsmScript("INIT") {
         }
 
         state("WAITING") {
-            on(triggerFlag.get()) {
+            on(triggerFlag.first()) {
                 become("Done")
             }
         }

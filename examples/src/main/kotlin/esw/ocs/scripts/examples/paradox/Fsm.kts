@@ -43,11 +43,11 @@ script {
     //**  Observe Var **//
     val coordKey: Key<Coord> = coordKey("co-ordinates")
     val observeVar: EventVariable<Coord> = ObserveVar(JEqCoord.make(0, 0), "IRIS.observe.coord", coordKey)
-    observeVar.get() // returns the value of the parameter from the latest event
+    observeVar.first() // returns the value of the parameter from the latest event
 
     observeVar.bind(irisFsm) // binds the FSM and event variable
 
-    observeVar.set(JEqCoord.make(1, 1)) // publishes the given value on event key
+    observeVar.setParam(JEqCoord.make(1, 1)) // publishes the given value on event key
     //#event-var
 
     //#polling
@@ -110,11 +110,11 @@ script {
         //#state-transition-on-re-evaluation
         state("LOW") {
             //#on
-            on(temparature.get() < 20) {
+            on(temparature.first() < 20) {
                 // do something but state transition does not happen
             }
 
-            on(temparature.get() >= 20) {
+            on(temparature.first() >= 20) {
                 // do something and transit state
                 become("HIGH")
             }

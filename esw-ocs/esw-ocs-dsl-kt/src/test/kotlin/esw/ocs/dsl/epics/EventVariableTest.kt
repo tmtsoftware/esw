@@ -36,10 +36,10 @@ class EventVariableTest {
         coEvery { eventServiceDsl.publishEvent(any()) }.returns(done)
 
         val eventVariable: EventVariable<Boolean> = EventVariable(systemEvent, booleanKey, eventService = eventServiceDsl)
-        eventVariable.set(true)
+        eventVariable.setParam(true)
 
         coVerify { eventServiceDsl.publishEvent(any()) }
-        eventVariable.get() shouldBe true
+        eventVariable.first() shouldBe true
     }
 
     @Test
@@ -52,7 +52,7 @@ class EventVariableTest {
 
         val eventVariable: EventVariable<Int> = EventVariable(systemEvent, intKey, eventService = eventServiceDsl)
 
-        eventVariable.get() shouldBe intValue
+        eventVariable.first() shouldBe intValue
     }
 
 

@@ -34,7 +34,7 @@ script {
                 setSeverity(tromboneTemperatureAlarm, Okay)
             }
 
-            on(temperatureVar.get() > 40) {
+            on(temperatureVar.first() > 40) {
                 become(ERROR)
             }
         }
@@ -44,7 +44,7 @@ script {
                 setSeverity(tromboneTemperatureAlarm, Major)
             }
 
-            on(temperatureVar.get() <= 40) {
+            on(temperatureVar.first() <= 40) {
                 become(OK)
             }
         }
