@@ -49,6 +49,7 @@ class CswHighLevelDslTest {
     inner class Script : CswHighLevelDsl(cswServices, scriptContext) {
         override val strandEc: StrandEc = mockk()
         override val coroutineScope: CoroutineScope = mockk()
+        override val isOnline: Boolean get() = true
         override val actorSystem: ActorSystem<SpawnProtocol.Command> = system
 
         private val defaultTimeoutDuration: Duration = 5.seconds
