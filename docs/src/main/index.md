@@ -26,7 +26,7 @@ and uses the Technical Architecture provided by the Common Software (CSW) subsys
 The ESW subsystems provide the core functionality needed to enable the TMT operations modes including: PI-Directed observing, 
 Pre-planned Service Queue, and conditions-based queue scheduled observing. The ESW enables operation of all TMT 
 subsystems from user interfaces or other programs. Sequencing is the term used to describe the operations the 
-software system must do to control the telescope subsystems and the instruments in the specific order needed to 
+software system must do to coordinate control of the telescope subsystems and the instruments in the specific order needed to 
 collect science data. The Observatory Control System (OCS) subsystem of ESW is the central engine that 
 provides the sequencing functionality. The Sequencing System consists of one or more Sequence Components 
 that are configured with Scripts to form Sequencers.
@@ -35,10 +35,10 @@ that are configured with Scripts to form Sequencers.
 
 In this figure, a science-oriented description of an astronomical observation, as produced by a user interface program 
 (such as an instrument acquisition user interface), planning tool, or database record is used as the input for sequencing. 
-This input as a Sequence is passed to and accepted by the OCS, which creates and passes the observation description to the 
+This input, as a Sequence, is passed to and accepted by the OCS, which creates and passes the observation description to the 
 Sequence Components of the OCS.
 The Sequence Components and lower level control system software manipulate the hardware subsystems 
-to generate science frames (made up of a data frame and metadata). The science frames use the bulk data 
+to generate science frames (made up of data frames and metadata). The science frames use the bulk data 
 distribution functionality of the DMS and ESW.VIZ subsystem to distribute the science frames to dataset 
 consumers (data processing or visualization, for instance). 
  
@@ -55,21 +55,21 @@ Visualization System (VIZ) package. VIZ also includes any infrastructure needed 
 science images and wavefront sensor images as needed for acquisition such as image distribution and a platform for data 
 processing.
 
-Completing the observing workflow is support and scripts that implement observing and the acquisition process. 
-Acquisition integrates most every system of OSW and the telescope. The Acquisition System (ACQ) package is a 
-user focused package that implements the acquisition process for the instruments and the observing sequences including 
-known engineering observations. Acquisition-focused user interface tools are included in the ACQ as necessary based on 
+Completing the observing workflow are support and scripts that implement observing and the acquisition process. 
+Acquisition integrates almost every system of OSW, the telescope, and instrumentation. The Acquisition System (ACQ) package is a 
+user focused package that implements the acquisition process for the observing sequences including 
+known engineering observations. Acquisition-focused user interface tools will be included in ACQ as necessary based on 
 how the observing workflows develop over the next few years.
 
 ### Observatory Control System (OCS)
-In the TMT Software System OCS provides the interface between the planning and scheduling software implemented by the 
-OSW Science Operations Support Subsystem (SOSS) and the sequencing software as implemented by the ESW OCS and 
-other control system subsystems. Planning information created during Phase 2 and contained in the Observing Database, 
+In the TMT Software System, OCS provides the sequencing software to carry out the observations planned and scheduled via
+software implemented by the Science Operations Support Subsystem (SOSS).  
+Planning information created during Phase 2 and contained in the Observing Database, 
 a part of SOSS, is used to generate the Observing Block and the Sequence, which is passed to the ESW OCS for execution. 
 All observation types: science, calibration, and engineering are executed through the ESW.OCS infrastructure. 
 This is necessary to have a full understanding of how the telescope
 and instruments are used for time accounting purposes. It is also expected that most if not all 
-observations will be described using the SOSS planning tools.
+observations, including calibration and engineering, will be described using the SOSS planning tools.
 
 ESW.OCS provides the Sequence Component, which is one of the OMOA architecture components (along with HCD, Assembly, 
 Container, and Application). The Sequence Component is programmable by running a “script” that can vary based on the 
@@ -81,13 +81,14 @@ as sending commands to other components.
 The Sequencer Component contains the environment for executing scripts called the Engine. It provides the “service glue” 
 that allows the script code to use the CSW Services to send commands and subscribe to and react to event data.
 
-For most observations (i.e. science, calibration, engineering) a master OCS Sequencer exists that controls other 
-subsystem Sequencers (such as TCS and IRIS) that control Assemblies in the OMOA hierarchy as shown in the following figure. 
+For most observations (i.e. science, calibration, engineering), a master OCS Sequencer is used to control other 
+subsystem Sequencers (such as TCS and IRIS), which in turn control subsystem Assemblies and HCDS in the OMOA hierarchy,
+as shown in the following figure. 
 The scripts for science, acquisition, and some engineering purposes used by the OCS master sequencer are a product of ESW.ACQ.
 
 ![OCS3](./images/ocs/OCS3.png)
 
-ESW OCS also includes a Sequence Manager service that acts as the front-end to the OCS sequencing system. The 
+OCS also includes a Sequence Manager application that acts as the front-end to the OCS sequencing system. The 
 Sequence Manager receives Sequences from the SOSS or other tools, manages observatory resources, and starts, initializes, 
 and stops Sequencers as needed for each received Sequence.
 
@@ -96,35 +97,37 @@ The following summarizes the responsibilities of OCS.
 - Accept and execute Sequences submitted from SOSS in all operations modes.
 - Manage the process of executing a single Sequence or multiple concurrent Sequences
 including starting any needed Sequencers.
-- Ensure that the resources needed for a Sequence are available allowing the Sequence to
+- Ensure that the resources needed for a Sequence are available before allowing the Sequence to
 execute.
 - Provide a reusable Sequence Component that executes Scripts and processes Sequences
 from SOSS.
 - Provide a Script programming environment that provides access to appropriate CSW Services
-and has the level of control needed to execute acquisition, observing workflows, and some
+and has the level of control needed to execute acquisition, observing workflows, calibrations, and some
 engineering sequences.
 - Allow an external user interface program to monitor and control the progress of an executing
-Sequence.
-- Define information needed for Observatory metrics. (Shared effort between OCS, ACQ,
+Sequence, and provide such tools.
+- Define information needed for Observatory metrics (shared effort between OCS, ACQ,
 HCMS).
 
 ### ESW Phase 1 Development
 
 Planning for ESW led to the conclusion that the best approach was to split the ESW work into two phases. 
 Resource limitations were one factor, but it is also necessary to focus initially on providing the decisions and 
-parts of ESW on which other TMT subsystems depend. Once these features are available, OSW future development 
+parts of ESW on which other TMT subsystems depend as soon as possible, so that those subsystems can continue with 
+their design work. Once these features are available, OSW future development 
 is largely decoupled from other subsystems, and the other subsystems have what they need to plan and develop 
 independently of OSW. The plan is to have an ESW Phase 2 final design in the future. 
+
 The following are the Phase 1 priorities:
 
 * Sequencer/script design and integration with services
-* UI integration of browser environment with CSW and early tool choices
-* Define and implement Observe Events and Observe command
+* Integration of the browser UI environment with CSW and early tool choices for UI development
+* Define and implement Observe Events and the Observe command
 
 Three main components are delivered as part of ESW Phase 1:
 
 * **Sequencer:** This allows users to create a `Sequencer` component. Both top-level Sequencer (OCS)
-and subsystem Sequencers can be created. This allows subsystem experts to write custom scripts
+and subsystem Sequencers can be created using the same framework. This allows subsystem experts to write custom scripts
 for each sequencer in a Kotlin-based domain specific language (DSL). All sequencer scripts will be written
 in the [Sequencer Scripts Repository](https://github.com/tmtsoftware/sequencer-scripts).
 * **Sequence Component:** The Sequence Component is used to spawn and shutdown sequencers dynamically.
@@ -133,7 +136,7 @@ browser-based user interfaces.
 
 @@@ note {title="What is in ESW Phase 1 Release 1?" }
 
-The first development phase of ESW has focused on the Sequence Component, Sequencer, and Scripts. The
+The first development phase of ESW Phase 1 has focused on the Sequence Component, Sequencer, and Scripts. The
 goal is to get feedback to guide further development in these areas. Additionally, the ESW Gateway is 
 provided for testing. The Gateway provides CSW services focused on the needs of user interfaces.
 
@@ -143,6 +146,6 @@ Future development phases will focus on Sequence Manager, Observing Events and u
 
 @@@ note
 Executive Software (ESW) is a reimplementation/refactoring of the prototype ESW code [here](https://github.com/tmtsoftware/esw-prototype) 
-developed during the ESW design phase with changes to make the code and public APIs
-more robust and resilient and to improve its usability and performance for use at the TMT Observatory.
+developed during the ESW design phase, with changes to make the code and public APIs
+more robust and resilient, and to improve its usability and performance for use at the TMT Observatory.
 @@@
