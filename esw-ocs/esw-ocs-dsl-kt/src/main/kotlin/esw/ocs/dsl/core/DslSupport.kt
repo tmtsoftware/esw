@@ -22,7 +22,7 @@ fun script(block: suspend ScriptScope.() -> Unit): ScriptResult =
             }.scriptDsl
         }
 
-fun reusableScript(block: Script.() -> Unit): ReusableScriptResult =
+fun reusableScript(block: ScriptScope.() -> Unit): ReusableScriptResult =
         ReusableScriptResult { Script(it).apply { block() } }
 
 fun FsmScript(initState: String, block: suspend FsmScriptScope.() -> Unit): ScriptResult =

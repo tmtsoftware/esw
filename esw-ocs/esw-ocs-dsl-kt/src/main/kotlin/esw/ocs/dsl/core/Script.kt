@@ -25,9 +25,9 @@ import kotlin.time.toKotlinDuration
 
 sealed class BaseScript(wiring: ScriptWiring) : CswHighLevelDsl(wiring.cswServices, wiring.scriptContext), HandlerScope {
     override val actorSystem: ActorSystem<SpawnProtocol.Command> = wiring.scriptContext.actorSystem()
-
     protected val shutdownTask = Runnable { wiring.shutdown() }
     internal open val scriptDsl: ScriptDsl by lazy { ScriptDsl(wiring.scriptContext.sequenceOperatorFactory(), logger, strandEc, shutdownTask) }
+    override val isOnline: Boolean get() = scriptDsl.isOnline
 
     private val exceptionHandler = CoroutineExceptionHandler { _, exception ->
         error("Exception thrown in script with a message: [$exception], invoking exception handler")

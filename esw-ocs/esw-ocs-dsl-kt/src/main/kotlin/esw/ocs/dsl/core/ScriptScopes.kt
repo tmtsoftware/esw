@@ -35,6 +35,9 @@ interface NextIfDsl {
     suspend fun nextIf(predicate: (SequenceCommand) -> Boolean): SequenceCommand?
 }
 
+// ************************ Scopes ************************
+
+//--------------------------------------- Handlers ---------------------------//
 @ScriptDslMarker
 interface HandlerScope : CswHighLevelDslApi, BecomeDsl, CoroutineScope
 
