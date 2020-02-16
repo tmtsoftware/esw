@@ -39,7 +39,7 @@ their state and perform checks as needed to properly handle commands.  Code can 
 code will be run when the script is loaded.  This can be used to, for example, set up subscriptions to Events which can be
 manually associated with internal state variables or other actions.
 
-More information on handlers is available [here](./dsl/constructs/handlers.md).
+More information on handlers is available @ref:[here](./dsl/constructs/handlers.md).
 
 ### State Machine-Oriented Scripts
 
@@ -77,7 +77,7 @@ FsmScript("OFF") {
 In this script, thw states called *ON* and *OFF* are defined. The initial state is *OFF*. In the *ON* state, the script can
 process the *turn-off* command. It executes the `turnOffLife` function and switches to the ON state using the `become` keyword.
 
-More information about state machine-oriented scripts is [here](./dsl/constructs/fsm.md).  
+More information about state machine-oriented scripts is @ref:[here](./dsl/constructs/fsm.md).  
 
 
 ### Mixing the Two Styles

@@ -92,7 +92,7 @@ In the example, `initialPos` and `moved` demonstrate declaring State scoped vari
 to some other state and the goes back to the `SETTING-UP` state, these variables will be reinitialized to their default 
 values as defined in code.  *A transition to self will not reinitialize variables*.      
 
-## Reusable Script
+## Reusable Scripts
 
 Reusable Scripts make it possible to write any **common logic that can shared across multiple scripts**. This can be 
 used to create small building blocks for constructing Sequencer Scripts (although this does cause dependencies that 

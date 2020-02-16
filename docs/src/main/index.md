@@ -63,9 +63,9 @@ how the observing workflows develop over the next few years.
 
 ### Observatory Control System (OCS)
 In the TMT Software System, OCS provides the sequencing software to carry out the observations planned and scheduled via
-software implemented by the Science Operations Support Subsystem (SOSS).  
-Planning information created during Phase 2 and contained in the Observing Database, 
-a part of SOSS, is used to generate the Observing Block and the Sequence, which is passed to the ESW OCS for execution. 
+software implemented by the Science Operations Support Subsystem (SOSS). Planning information created during 
+Phase 2 and contained in the Observing Database, a part of SOSS, is used to generate 
+the Observing Block and the Sequence, which is passed to the ESW OCS for execution. 
 All observation types: science, calibration, and engineering are executed through the ESW.OCS infrastructure. 
 This is necessary to have a full understanding of how the telescope
 and instruments are used for time accounting purposes. It is also expected that most if not all 

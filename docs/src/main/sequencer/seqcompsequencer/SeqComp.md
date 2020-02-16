@@ -1,7 +1,5 @@
 # Sequence Component
 
-**********
-
 The Sequence Component is a standalone application that can load scripts and become a Sequencer.
 The Sequence Component application and its arguments are described @ref[here](../../apps/sequencerapp.md).
 
