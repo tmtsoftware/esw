@@ -38,10 +38,14 @@ A Sequencer must be started specifying the subsystem for the Sequencer and the o
 Like Sequence Components, Sequencers register themselves in the Location Service based on arguments used when they are 
 started. The following table shows scenarios that may happen when the Sequence Manager starts Sequencers for an observing mode.
 
+<!-- Comment: span tag in Registered Location is to fix broken link error.
+Use of @ sign makes it appear like an email, hence validateSite fails without span tag.
+-->
+
 | Sequence<br>Component Name | Sequencer Subsystem | Observing Mode| Registered Location | Description|
 |:--------------------------:|:---------:|:-------------:|:-------------------:|:-----------|
-| ESW.ESW_77 | IRIS | IRIS_ifsonly |IRIS@IRIS_ifsonly | An IRIS instrument Sequencer running the IRIS script for the IRIS_ifsonly observing mode using the ESW.ESW_77 Sequence Component. |
-| ESW.primary | ESW |  IRIS_ifsonly | ESW@IRIS_ifsonly | An ESW Sequencer running the ESW script for the IRIS_ifsonly observing mode using the ESW.primary Sequence Component. |
+| ESW.ESW_77 | IRIS | IRIS_ifsonly |IRIS<span>@</span>IRIS_ifsonly | An IRIS instrument Sequencer running the IRIS script for the IRIS_ifsonly observing mode using the ESW.ESW_77 Sequence Component. |
+| ESW.primary | ESW |  IRIS_ifsonly | ESW<span>@</span>IRIS_ifsonly | An ESW Sequencer running the ESW script for the IRIS_ifsonly observing mode using the ESW.primary Sequence Component. |
 
 As shown above, the observing mode is the instrument name and an instrument-specific label related to observing mode features. Each instrument 
 includes its scripts inside its specific package. The subsystem and observing mode are used to lookup the correct script in the script repository. 
