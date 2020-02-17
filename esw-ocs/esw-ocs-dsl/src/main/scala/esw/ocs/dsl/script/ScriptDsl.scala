@@ -80,10 +80,11 @@ private[esw] class ScriptDsl(
       Done
     }
 
-  override def executeGoOffline(): Future[Done] = {
-    isOnline = false
-    executeHandler(offlineHandlers, ())
-  }
+  override def executeGoOffline(): Future[Done] =
+    executeHandler(offlineHandlers, ()).map { _ =>
+      isOnline = false
+      Done
+    }
 
   override def executeShutdown(): Future[Done] = {
     executeHandler(shutdownHandlers, ()).map { _ =>
