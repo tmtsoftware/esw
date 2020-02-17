@@ -5,7 +5,7 @@ A Sequencer is a Sequence Component configured with a specific Script. The Scrip
 (or set of common observing modes) in mind. Which observing modes a Script can support is up to the developer, but the intention is that a Script can be 
 developed independently of other Scripts to refine behavior specific to an observing mode, without affecting any other observing modes.
 Behavior that is common to more than one observing mode can be defined in Scripts that can be shared and "imported" into other scripts 
-(see @ref:[ResuableScripts](../scripts/dsl/constructs/define-script.md#reusable-scripts)).
+(see @ref:[ReusableScripts](../scripts/dsl/constructs/define-script.md#reusable-scripts)).
 
 Since the Script defines the behavior of the Sequencer, one can be written to support a simulation mode or a standalone mode, 
 such that development and testing can be performed with a Sequencer handling real Sequences, but only simulating its actions.
