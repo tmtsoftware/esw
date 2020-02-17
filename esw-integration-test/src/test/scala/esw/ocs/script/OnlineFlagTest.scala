@@ -21,7 +21,7 @@ class OnlineFlagTest extends EswTestKit(EventServer) {
     ocsSequencer = new SequencerActorProxy(ocsSequencerRef)
   }
 
-  "isOnline flag should be toggled on/off depending on whether the sequencer is online/offline" in {
+  "isOnline flag should be toggled on/off depending on whether the sequencer is online/offline | ESW-287" in {
     val prefix        = Prefix("tcs.filter.wheel")
     val eventKey      = EventKey(prefix, EventName("online-flag"))
     val onlineFlagKey = BooleanKey.make("online-flag")

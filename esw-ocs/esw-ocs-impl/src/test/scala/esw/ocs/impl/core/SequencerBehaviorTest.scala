@@ -234,7 +234,8 @@ class SequencerBehaviorTest extends ScalaTestWithActorTestKit with BaseTestSuite
       pullAllStepsAndAssertSequenceIsFinished()
       assertSequencerState(Idle)
 
-      goOfflineAndAssertResponse(Ok, Future.successful(Done))
+      when(script.executeGoOffline()).thenReturn(Future.successful(Done))
+      goOfflineAndAssertResponse(Ok)
       assertSequencerState(Offline)
 
       goOnlineAndAssertResponse(Ok, Future.successful(Done))
@@ -638,7 +639,22 @@ class SequencerBehaviorTest extends ScalaTestWithActorTestKit with BaseTestSuite
       import sequencerSetup._
 
       goOnlineAndAssertResponse(Ok, Future.successful(Done))
+      verify(script).executeGoOnline()
       assertSequencerState(Idle)
+      // try loading a sequence to ensure sequencer is online
+      loadSequenceAndAssertResponse(Ok)
+    }
+
+    "remain in Idle state when sequencer is already Idle without calling handlers | ESW-287" in {
+      val sequencerSetup = SequencerTestSetup.idle(sequence)
+      import sequencerSetup._
+
+      goOnlineAndAssertResponse(Ok, Future.successful(Done))
+      assertSequencerState(Idle)
+
+      // verify handlers are not called
+      verify(script, never).executeGoOnline()
+
       // try loading a sequence to ensure sequencer is online
       loadSequenceAndAssertResponse(Ok)
     }
@@ -648,6 +664,7 @@ class SequencerBehaviorTest extends ScalaTestWithActorTestKit with BaseTestSuite
       import sequencerSetup._
 
       goOnlineAndAssertResponse(GoOnlineHookFailed(), Future.failed(new RuntimeException("GoOnline Hook Failed")))
+      verify(script).executeGoOnline()
       assertSequencerState(Offline)
     }
   }
@@ -657,24 +674,39 @@ class SequencerBehaviorTest extends ScalaTestWithActorTestKit with BaseTestSuite
       val sequencerSetup = SequencerTestSetup.idle(sequence)
       import sequencerSetup._
 
-      goOfflineAndAssertResponse(Ok, Future.successful(Done))
+      when(script.executeGoOffline()).thenReturn(Future.successful(Done))
+      goOfflineAndAssertResponse(Ok)
+      verify(script).executeGoOffline()
       assertSequencerState(Offline)
+    }
+
+    "remain in Offline state when sequencer is already Offline without calling handlers | ESW-287" in {
+      val sequencerSetup = SequencerTestSetup.offline(sequence)
+      import sequencerSetup._
+
+      goOfflineAndAssertResponse(Ok)
+      assertSequencerState(Offline)
+
+      // verify handlers are not only called again
+      verify(script, times(1)).executeGoOffline()
     }
 
     "clear history of the last executed sequence | ESW-194" in {
       val (_, sequencerSetup) = SequencerTestSetup.finished(sequence)
       import sequencerSetup._
 
-      goOfflineAndAssertResponse(Ok, Future.successful(Done))
-
+      when(script.executeGoOffline()).thenReturn(Future.successful(Done))
+      goOfflineAndAssertResponse(Ok)
       assertCurrentSequence(None)
     }
 
-    "not go to Offline state even if the offline handlers fail | ESW-194" in {
+    "not go to Offline state if the offline handlers fail | ESW-194" in {
       val sequencerSetup = SequencerTestSetup.idle(sequence)
       import sequencerSetup._
 
-      goOfflineAndAssertResponse(GoOfflineHookFailed(), Future.failed(new RuntimeException("GoOffline Hook Failed")))
+      when(script.executeGoOffline()).thenReturn(Future.failed(new RuntimeException("GoOffline Hook Failed")))
+      goOfflineAndAssertResponse(GoOfflineHookFailed())
+      verify(script).executeGoOffline()
       assertSequencerState(Idle)
     }
   }
