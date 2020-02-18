@@ -180,7 +180,7 @@ class SequencerClientTest extends BaseTestSuite with SequencerHttpCodecs {
       sequencer.stop().futureValue should ===(Ok)
     }
 
-    "call postClient with GoOffline request | ESW-222" in {
+    "call postClient with GoOffline request | ESW-222, ESW-101" in {
       when(
         postClient.requestResponse[OkOrUnhandledResponse](argsEq(GoOffline))(
           any[Decoder[OkOrUnhandledResponse]](),
@@ -190,7 +190,7 @@ class SequencerClientTest extends BaseTestSuite with SequencerHttpCodecs {
       sequencer.goOffline().futureValue should ===(Ok)
     }
 
-    "call postClient with GoOnline request | ESW-222" in {
+    "call postClient with GoOnline request | ESW-222, ESW-101" in {
       when(
         postClient
           .requestResponse[GoOnlineResponse](argsEq(GoOnline))(any[Decoder[GoOnlineResponse]](), any[Encoder[GoOnlineResponse]]())
@@ -198,7 +198,7 @@ class SequencerClientTest extends BaseTestSuite with SequencerHttpCodecs {
       sequencer.goOnline().futureValue should ===(Ok)
     }
 
-    "call postClient with LoadSequence request | ESW-222" in {
+    "call postClient with LoadSequence request | ESW-222, ESW-101" in {
       val command1 = Setup(Prefix("esw.test"), CommandName("command-1"), None)
       val sequence = Sequence(command1)
       when(
@@ -210,7 +210,7 @@ class SequencerClientTest extends BaseTestSuite with SequencerHttpCodecs {
       sequencer.loadSequence(sequence).futureValue should ===(Ok)
     }
 
-    "call postClient with StartSequence request | ESW-222" in {
+    "call postClient with StartSequence request | ESW-222, ESW-101" in {
       val startedResponse = Started(Id("runId"))
       when(
         postClient
@@ -219,7 +219,7 @@ class SequencerClientTest extends BaseTestSuite with SequencerHttpCodecs {
       sequencer.startSequence().futureValue should ===(startedResponse)
     }
 
-    "call postClient with SubmitSequence request | ESW-222" in {
+    "call postClient with SubmitSequence request | ESW-222, ESW-101" in {
       val command1         = Setup(Prefix("esw.test"), CommandName("command-1"), None)
       val sequence         = Sequence(command1)
       val sequenceId       = Id()
@@ -234,7 +234,7 @@ class SequencerClientTest extends BaseTestSuite with SequencerHttpCodecs {
       sequencer.submit(sequence).futureValue should ===(sequenceResponse)
     }
 
-    "call postClient with SubmitAndWait request | ESW-222" in {
+    "call postClient with SubmitAndWait request | ESW-222, ESW-101" in {
       val command1                  = Setup(Prefix("esw.test"), CommandName("command-1"), None)
       val sequence                  = Sequence(command1)
       val sequenceId                = Id()
@@ -261,7 +261,7 @@ class SequencerClientTest extends BaseTestSuite with SequencerHttpCodecs {
       sequencer.submitAndWait(sequence).futureValue should ===(completedResponse)
     }
 
-    "call postClient with DiagnosticMode request | ESW-143" in {
+    "call postClient with DiagnosticMode request | ESW-143, ESW-101" in {
       val startTime = UTCTime.now()
       val hint      = "engineering"
       when(
@@ -273,7 +273,7 @@ class SequencerClientTest extends BaseTestSuite with SequencerHttpCodecs {
       sequencer.diagnosticMode(startTime, hint).futureValue should ===(Ok)
     }
 
-    "call postClient with OperationsMode request | ESW-143" in {
+    "call postClient with OperationsMode request | ESW-143, ESW-101" in {
       when(
         postClient.requestResponse[OperationsModeResponse](argsEq(OperationsMode))(
           any[Decoder[OperationsModeResponse]](),
@@ -283,7 +283,7 @@ class SequencerClientTest extends BaseTestSuite with SequencerHttpCodecs {
       sequencer.operationsMode().futureValue should ===(Ok)
     }
 
-    "call websocket with QueryFinal request | ESW-222" in {
+    "call websocket with QueryFinal request | ESW-222, ESW-101" in {
       val id = mock[Id]
 
       implicit val timeout: Timeout = Timeout(10.seconds)

@@ -20,10 +20,13 @@ class HealthCheckActor(log: Logger, heartbeatInterval: Duration) {
     ctx.setReceiveTimeout(intervalToRaiseNotification, HeartbeatMissed)
     Behaviors.receiveMessagePartial[HealthCheckMsg] {
       case HeartbeatMissed =>
-        log.error("StrandEc is taking more time than expected")
+        log.error(
+          "[StrandEC Heartbeat Delayed] - Scheduled sending of heartbeat was delayed. " +
+            "The reason can be thread starvation, e.g. by running blocking tasks in sequencer script, CPU overload, or GC."
+        )
         Behaviors.same
       case Heartbeat =>
-        log.info("StrandEc heartbeat received")
+        log.info("[StrandEC Heartbeat Received]")
         Behaviors.same
     }
   }
