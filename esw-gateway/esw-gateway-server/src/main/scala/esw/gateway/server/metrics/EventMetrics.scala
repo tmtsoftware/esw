@@ -16,14 +16,14 @@ object EventMetrics {
       labelNames = "api"
     )
 
-  private lazy val subscribeGuage =
+  private lazy val subscribeGauge =
     gauge(
       metricName = "gateway_event_service_active_subscribers_total",
       help = "Total active event subscribers",
       labelNames = "api"
     )
 
-  private lazy val patternSubscribeGuage =
+  private lazy val patternSubscribeGauge =
     gauge(
       metricName = "gateway_event_service_active_pattern_subscribers_total",
       help = "Total active pattern event subscribers",
@@ -34,11 +34,11 @@ object EventMetrics {
 
   def incEventCounter(label: String): Unit = eventCounter.labels(label).inc()
 
-  def incSubscriberGuage(): Unit = subscribeGuage.labels(subscribeEventLabel).inc()
-  def decSubscriberGuage(): Unit = subscribeGuage.labels(subscribeEventLabel).dec()
+  def incSubscriberGauge(): Unit = subscribeGauge.labels(subscribeEventLabel).inc()
+  def decSubscriberGauge(): Unit = subscribeGauge.labels(subscribeEventLabel).dec()
 
-  def incPatternSubscriberGuage(subsystem: Subsystem, pattern: String): Unit =
-    patternSubscribeGuage.labels(subscribeEventLabel, subsystem.name, pattern).inc()
-  def decPatternSubscriberGuage(subsystem: Subsystem, pattern: String): Unit =
-    patternSubscribeGuage.labels(subscribeEventLabel, subsystem.name, pattern).dec()
+  def incPatternSubscriberGauge(subsystem: Subsystem, pattern: String): Unit =
+    patternSubscribeGauge.labels(subscribeEventLabel, subsystem.name, pattern).inc()
+  def decPatternSubscriberGauge(subsystem: Subsystem, pattern: String): Unit =
+    patternSubscribeGauge.labels(subscribeEventLabel, subsystem.name, pattern).dec()
 }

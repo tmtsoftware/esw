@@ -19,28 +19,27 @@ class WebsocketHandlerMetrics(wsHandler: WebsocketHandler[WebsocketRequest], con
 
   override def handle(request: WebsocketRequest): Source[Message, NotUsed] = {
     lazy val response = wsHandler.handle(request)
+
+    def onTermination(task: => Unit) = response.watchTermination() {
+      case (mat, completion) =>
+        completion.onComplete(_ => task)
+        mat
+    }
+
     request match {
       case WebsocketRequest.ComponentCommand(_, command) =>
-        incCommandCounter(command)
-        response
+        incCommandGauge(command)
+        onTermination(decCommandGauge(command))
 
       case _: WebsocketRequest.SequencerCommand => response
 
       case _: WebsocketRequest.Subscribe =>
-        incSubscriberGuage()
-        response.watchTermination() {
-          case (mat, completion) =>
-            completion.onComplete(_ => decSubscriberGuage())
-            mat
-        }
+        incSubscriberGauge()
+        onTermination(decSubscriberGauge())
 
       case WebsocketRequest.SubscribeWithPattern(subsystem, _, pattern) =>
-        incPatternSubscriberGuage(subsystem, pattern)
-        response.watchTermination() {
-          case (mat, completion) =>
-            completion.onComplete(_ => decPatternSubscriberGuage(subsystem, pattern))
-            mat
-        }
+        incPatternSubscriberGauge(subsystem, pattern)
+        onTermination(decPatternSubscriberGauge(subsystem, pattern))
     }
   }
 }

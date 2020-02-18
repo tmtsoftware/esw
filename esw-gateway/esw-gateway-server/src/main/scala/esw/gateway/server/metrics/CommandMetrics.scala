@@ -2,20 +2,35 @@ package esw.gateway.server.metrics
 
 import csw.command.api.messages.{CommandServiceHttpMessage, CommandServiceWebsocketMessage}
 import csw.command.api.messages.CommandServiceHttpMessage.{Oneway, Query, Submit, Validate}
+import csw.command.api.messages.CommandServiceWebsocketMessage.{QueryFinal, SubscribeCurrentState}
 import esw.gateway.server.metrics.Metrics._
 
 object CommandMetrics {
-  private val validateLabel       = "validate"
-  private val submitLabel         = "submit"
-  private val onewayLabel         = "oneway"
-  private val queryLabel          = "query"
-  private val queryFinalLabel     = "query_final"
-  private val subscribeStateLabel = "subscribe_current_state"
+  private val validateLabel     = "validate"
+  private val submitLabel       = "submit"
+  private val onewayLabel       = "oneway"
+  private val queryLabel        = "query"
+  private val queryFinalLabel   = "query_final"
+  private val currentStateLabel = "subscribe_current_state"
 
   private lazy val commandCounter =
     counter(
       metricName = "gateway_command_service_requests_total",
-      help = "Total command service requests through gateway",
+      help = "Total command service requests passing through gateway",
+      labelNames = "api"
+    )
+
+  private lazy val currentStateGauge =
+    gauge(
+      metricName = "gateway_command_service_active_current_state_subscribers_total",
+      help = "Total active current state subscribers",
+      labelNames = "api"
+    )
+
+  private lazy val queryFinalGauge =
+    gauge(
+      metricName = "gateway_command_service_active_query_final_requests_total",
+      help = "Total active query final requests in progress",
       labelNames = "api"
     )
 
@@ -29,9 +44,21 @@ object CommandMetrics {
       case _: Query    => inc(queryLabel)
     }
 
-  def incCommandCounter(command: CommandServiceWebsocketMessage): Unit =
+  def incCommandGauge(command: CommandServiceWebsocketMessage): Unit =
     command match {
-      case _: CommandServiceWebsocketMessage.QueryFinal            => inc(queryFinalLabel)
-      case _: CommandServiceWebsocketMessage.SubscribeCurrentState => inc(subscribeStateLabel)
+      case _: QueryFinal            => incQueryFinalGauge()
+      case _: SubscribeCurrentState => incCurrentStateGauge()
     }
+
+  def decCommandGauge(command: CommandServiceWebsocketMessage): Unit =
+    command match {
+      case _: QueryFinal            => decQueryFinalGauge()
+      case _: SubscribeCurrentState => decCurrentStateGauge()
+    }
+
+  private def incCurrentStateGauge(): Unit = currentStateGauge.labels(currentStateLabel).inc()
+  private def decCurrentStateGauge(): Unit = currentStateGauge.labels(currentStateLabel).dec()
+
+  private def incQueryFinalGauge(): Unit = queryFinalGauge.labels(queryFinalLabel).inc()
+  private def decQueryFinalGauge(): Unit = queryFinalGauge.labels(queryFinalLabel).dec()
 }
