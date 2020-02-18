@@ -3,14 +3,11 @@
 package esw.ocs.scripts.examples.paradox
 
 import csw.params.core.generics.Key
-import csw.params.core.models.Coords.Coord
-import csw.params.core.models.JEqCoord
 import esw.ocs.dsl.core.script
 import esw.ocs.dsl.epics.CommandFlag
-import esw.ocs.dsl.epics.EventVariable
 import esw.ocs.dsl.epics.Fsm
+import esw.ocs.dsl.epics.ParamVariable
 import esw.ocs.dsl.params.Params
-import esw.ocs.dsl.params.coordKey
 import esw.ocs.dsl.params.intKey
 import esw.ocs.dsl.params.params
 import kotlin.time.milliseconds
@@ -37,19 +34,19 @@ script {
     //#polling
     val tempKey: Key<Int> = intKey("temperature")
     //#polling
-    val eventVariable: EventVariable<Int> = EventVariable(0, "esw.temperature.temp", tempKey)
+    val paramVariable: ParamVariable<Int> = ParamVariable(0, "esw.temperature.temp", tempKey)
 
-    eventVariable.bind(irisFsm) // binds the FSM and event variable
+    paramVariable.bind(irisFsm) // binds the FSM and event variable
 
-    eventVariable.getParam() // to get the current values of the parameter
+    paramVariable.getParam() // to get the current values of the parameter
 
-    eventVariable.first() // to get the first value from the values of the parameter
+    paramVariable.first() // to get the first value from the values of the parameter
 
-    eventVariable.setParam(10) // publishes the given value on event key
+    paramVariable.setParam(10) // publishes the given value on event key
     //#event-var
 
     //#polling
-    val pollingSysVar: EventVariable<Int> = EventVariable(0, "esw.temperature.temp", tempKey, 2.seconds)
+    val pollingParamVar: ParamVariable<Int> = ParamVariable(0, "esw.temperature.temp", tempKey, 2.seconds)
     //#polling
 
     var params = Params(mutableSetOf())
@@ -99,7 +96,7 @@ script {
             //#complete-fsm
         }
 
-        val temparature = eventVariable
+        val temparature = paramVariable
 
         //#state-transition-on-re-evaluation
         state("LOW") {

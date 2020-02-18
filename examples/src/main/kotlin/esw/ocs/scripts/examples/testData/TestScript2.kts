@@ -9,7 +9,7 @@ import kotlin.time.seconds
 
 script {
 
-    val pollingVar = EventVariable(0, "TCS.polling.test", intKey("counter"), 400.milliseconds)
+    val pollingVar = ParamVariable(0, "TCS.polling.test", intKey("counter"), 400.milliseconds)
 
     val fsm = Fsm("pollingTest", "INIT") {
         state("INIT") {

@@ -11,6 +11,8 @@ import csw.params.events.*
 import esw.ocs.dsl.SuspendableConsumer
 import esw.ocs.dsl.SuspendableSupplier
 import esw.ocs.dsl.epics.EventVariable
+import esw.ocs.dsl.epics.EventVariableImpl
+import esw.ocs.dsl.epics.ParamVariable
 import esw.ocs.dsl.highlevel.models.EventSubscription
 import esw.ocs.dsl.highlevel.models.Prefix
 import kotlinx.coroutines.CoroutineScope
@@ -129,30 +131,36 @@ interface EventServiceDsl {
             eventSubscriber.get(eventKeys.toEventKeys()).await().toSet()
 
     /**
-     * Method to create an instance of [[esw.ocs.dsl.epics.EventVariable]] tied to the particular param `key` of an [[csw.params.events.SystemEvent]]
+     * Method to create an instance of [[esw.ocs.dsl.epics.ParamVariable]] tied to the particular param `key` of an [[csw.params.events.Event]]
      * being published on specific `event key`.
      *
-     * [[esw.ocs.dsl.epics.EventVariable]] behaves differently depending on the presence of `duration` parameter while creating its instance.
+     * [[esw.ocs.dsl.epics.ParamVariable]] is [[esw.ocs.dsl.epics.EventVariable]] with methods to get and set a specific parameter in the [[csw.params.events.Event]]
+     * It behaves differently depending on the presence of `duration` parameter while creating its instance.
      * - When provided with `duration`, it will **poll** at an interval of given `duration` to refresh its own value
      * - Otherwise it will **subscribe** to the given event key and will refresh its own value whenever events are published
      *
      * @param initial value to set to the parameter key of the event
      * @param eventKeyStr string representation of event key
-     * @param key represents parameter key of the event to tie [[esw.ocs.dsl.epics.EventVariable]] to
+     * @param key represents parameter key of the event to tie [[esw.ocs.dsl.epics.ParamVariable]] to
      * @param duration represents the interval of polling.
-     * @return instance of [[esw.ocs.dsl.epics.EventVariable]]
+     * @return instance of [[esw.ocs.dsl.epics.ParamVariable]]
      */
-    suspend fun <T> EventVariable(initial: T, eventKeyStr: String, key: Key<T>, duration: Duration? = null): EventVariable<T> {
-        val eventKey = EventKey(eventKeyStr)
+    suspend fun <T> ParamVariable(initial: T, eventKeyStr: String, key: Key<T>, duration: Duration? = null): ParamVariable<T> =
+            EventVariableImpl.createParamVariable(initial, key, eventKeyStr, this, duration)
 
-        val initialEvent = getEvent(eventKeyStr).first().let {
-            if (it.isInvalid) SystemEvent(eventKey.source().toString(), eventKey.eventName().name())
-            else it
-        }
-
-        initialEvent.paramType().add(key.set(initial))
-        return EventVariable(initialEvent, key, duration, this)
-    }
+    /**
+     * Method to create an instance of [[esw.ocs.dsl.epics.EventVariable]] tied to an [[csw.params.events.Event]] being published on specified `event key`.
+     *
+     * [[esw.ocs.dsl.epics.EventVariable]] behaves differently depending on the presence of `duration` parameter while creating its instance.
+     * - When provided with `duration`, it will **poll** at an interval of given `duration` to refresh its own value
+     * - Otherwise it will **subscribe** to the given event key and will refresh its own value whenever events are published
+     *
+     * @param eventKeyStr string representation of event key
+     * @param duration represents the interval of polling.
+     * @ return instance of [[esw.ocs.dsl.epics.EventVariable]]
+     */
+    suspend fun EventVariable(eventKeyStr: String, duration: Duration? = null): EventVariable =
+            EventVariableImpl.createEventVariable(eventKeyStr, this, duration)
 
     private fun (Array<out String>).toEventKeys(): Set<EventKey> = map { EventKey.apply(it) }.toSet()
 }

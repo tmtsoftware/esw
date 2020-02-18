@@ -24,7 +24,7 @@ FsmScript("INIT") {
     val tempKey = longKey("temperature")
     val stateKey = stringKey("state")
 
-    val temperatureVar = EventVariable(0, "esw.temperature.temp", tempKey)
+    val temperatureVar = ParamVariable(0, "esw.temperature.temp", tempKey)
 
     suspend fun publishState(baseEvent: SystemEvent, state: String) = publishEvent(baseEvent.add(stateKey.set(state)))
 

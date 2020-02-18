@@ -10,7 +10,7 @@ import kotlin.time.seconds
 FsmScript("INIT") {
 
     val testAssembly = Assembly(ESW, "test", 10.seconds)
-    val eventVar = EventVariable(true, "TCS.trigger", booleanKey("flag"))
+    val paramVariable = ParamVariable(true, "TCS.trigger", booleanKey("flag"))
     val flag = commandFlag()
 
     val fsm = Fsm("Trigger Fsm", "START") {
@@ -48,7 +48,7 @@ FsmScript("INIT") {
         }
     }
 
-    eventVar.bind(fsm)
+    paramVariable.bind(fsm)
     flag.bind(fsm)
 
     state("INIT") {
