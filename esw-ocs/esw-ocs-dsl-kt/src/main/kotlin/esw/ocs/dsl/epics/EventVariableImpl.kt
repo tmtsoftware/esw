@@ -21,7 +21,7 @@ interface EventVariable {
 interface ParamVariable<T> : EventVariable {
     fun first(): T
     fun getParam(): Parameter<T>
-    suspend fun setParam(value: T): Done
+    suspend fun setParam(vararg value: T): Done
 }
 
 class EventVariableImpl<T> private constructor(
@@ -56,8 +56,8 @@ class EventVariableImpl<T> private constructor(
 
     // This is method is supposed to be used only from ParamVariable, so it can be safely
     // assumed that Key will be present while calling it.
-    override suspend fun setParam(value: T): Done {
-        val param: Parameter<T> = key?.set(value) ?: throwKeyNotGiven()
+    override suspend fun setParam(vararg value: T): Done {
+        val param: Parameter<T> = key?.set(*value) ?: throwKeyNotGiven()
         return eventService.publishEvent(latestEvent.add(param))
     }
 

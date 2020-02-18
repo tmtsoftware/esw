@@ -54,7 +54,7 @@ script {
 
     paramVariable.getParam() // to get the current values of the parameter
     paramVariable.first() // to get the first value from the values of the parameter
-    paramVariable.setParam(10) // publishes the given value on event key
+    paramVariable.setParam(10, 11) // publishes the given values on event key
 
     paramVariable.getEvent() // to get the latest Event
     //#param-var
