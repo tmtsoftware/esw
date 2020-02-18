@@ -24,10 +24,10 @@ import java.util.concurrent.CompletableFuture
 import kotlin.time.milliseconds
 import kotlin.time.toJavaDuration
 
-class EventVariableImplTest {
+class ParamVariableTest {
     @Test
-    fun `createEventVariable should create instance of EventVariable which will be tied to Event | ESW-291`() = TestSetup().run {
-        val eventVariable: EventVariable = EventVariableImpl.createEventVariable(eventKeyStr, eventServiceDsl)
+    fun `getEvent should return the latest event | ESW-291`() = TestSetup().run {
+        val eventVariable = EventVariable(systemEvent, eventServiceDsl)
 
         val event = eventVariable.getEvent()
         event.eventName() shouldBe eventName
@@ -35,34 +35,22 @@ class EventVariableImplTest {
     }
 
     @Test
-    fun `createParamVariable should create instance of ParamVariable with given Key and initial value | ESW-291`() = TestSetup().run {
-        val intValue = 5
-
-        val eventVariable: EventVariable = EventVariableImpl.createParamVariable(intValue, intKey, eventKeyStr, eventServiceDsl)
-
-        val event = eventVariable.getEvent()
-        event.eventName() shouldBe eventName
-        event.source() shouldBe prefix
-        event.paramType().get(intKey).get().first shouldBe 5
-    }
-
-    @Test
-    fun `getParam should return the values of given Key from Parameters of Event | ESW-132, ESW-142`() = runBlocking {
+    fun `getParam should return the values of given Key from Parameters of Event | ESW-132, ESW-142, ESW-291`() = runBlocking {
         TestSetup().run {
             val intValue = 6
 
-            val eventVariableImpl = EventVariableImpl.createParamVariable(intValue, intKey, eventKeyStr, eventServiceDsl)
+            val eventVariableImpl = ParamVariable(systemEvent.add(intKey.set(intValue)), intKey, eventServiceDsl)
 
             eventVariableImpl.getParam() shouldBe intKey.set(intValue)
         }
     }
 
     @Test
-    fun `first should return first value of given Key from Parameter of the Event | ESW-132, ESW-142`() = runBlocking {
+    fun `first should return first value of given Key from Parameter of the Event | ESW-132, ESW-142, ESW-291`() = runBlocking {
         TestSetup().run {
             val intValue = 10
 
-            val eventVariableImpl = EventVariableImpl.createParamVariable(intValue, intKey, eventKeyStr, eventServiceDsl)
+            val eventVariableImpl = ParamVariable(systemEvent.add(intKey.set(intValue)), intKey, eventServiceDsl)
 
             eventVariableImpl.first() shouldBe intValue
         }
@@ -72,8 +60,9 @@ class EventVariableImplTest {
     fun `setParam should publish new event with the new value of the parameter | ESW-132, ESW-142`() = runBlocking {
         TestSetup().run {
             coEvery { eventServiceDsl.publishEvent(any()) }.returns(Done.done())
-            val paramVariable =
-                    EventVariableImpl.createParamVariable(0, intKey, eventKeyStr, eventServiceDsl)
+
+            val intValue = 5
+            val paramVariable = ParamVariable(systemEvent.add(intKey.set(intValue)), intKey, eventServiceDsl)
 
             val newValue = 100
             paramVariable.setParam(newValue)
@@ -101,7 +90,7 @@ class EventVariableImplTest {
             coEvery { eventSubscription.cancel() } just runs
 
             val intValue = 10
-            val paramVariable = EventVariableImpl.createParamVariable(intValue, intKey, eventKeyStr, eventServiceDsl)
+            val paramVariable = ParamVariable(systemEvent.add(intKey.set(intValue)), intKey, eventServiceDsl)
 
             val fsmSubscription1 = paramVariable.bind(refreshable1)
             val fsmSubscription2 = paramVariable.bind(refreshable2)
@@ -152,7 +141,7 @@ class EventVariableImplTest {
         every { eventSubscription.unsubscribe() }.returns(doneF)
 
         val eventVariableImpl =
-                EventVariableImpl.createParamVariable(intValue, intKey, eventKeyStr, eventServiceDsl, duration)
+                ParamVariable(systemEvent.add(intKey.set(intValue)), intKey, eventServiceDsl, duration)
         val fsmSubscription = eventVariableImpl.bind(refreshable)
 
         coVerify { refreshable.addFsmSubscription(any()) }
@@ -166,6 +155,8 @@ class EventVariableImplTest {
         val eventName = EventName("testEvent")
         val prefix = Prefix(TCS, "test")
         val intKey = intKey("testIntKey")
+
+        val systemEvent = SystemEvent(prefix, eventName)
         val eventKeyStr = EventKey(prefix, eventName).key()
 
         val eventServiceDsl = mockk<EventServiceDsl>()

@@ -10,8 +10,8 @@ import csw.params.core.generics.Parameter
 import csw.params.events.*
 import esw.ocs.dsl.SuspendableConsumer
 import esw.ocs.dsl.SuspendableSupplier
+import esw.ocs.dsl.add
 import esw.ocs.dsl.epics.EventVariable
-import esw.ocs.dsl.epics.EventVariableImpl
 import esw.ocs.dsl.epics.ParamVariable
 import esw.ocs.dsl.highlevel.models.EventSubscription
 import esw.ocs.dsl.highlevel.models.Prefix
@@ -146,8 +146,10 @@ interface EventServiceDsl {
      * @param duration represents the interval of polling.
      * @return instance of [[esw.ocs.dsl.epics.ParamVariable]]
      */
-    suspend fun <T> ParamVariable(initial: T, eventKeyStr: String, key: Key<T>, duration: Duration? = null): ParamVariable<T> =
-            EventVariableImpl.createParamVariable(initial, key, eventKeyStr, this, duration)
+    suspend fun <T> ParamVariable(initial: T, eventKeyStr: String, key: Key<T>, duration: Duration? = null): ParamVariable<T> {
+        val initialEvent = createInitialEvent(eventKeyStr)
+        return ParamVariable(initialEvent.add(key.set(initial)), key, this, duration)
+    }
 
     /**
      * Method to create an instance of [[esw.ocs.dsl.epics.EventVariable]] tied to an [[csw.params.events.Event]] being published on specified `event key`.
@@ -160,8 +162,15 @@ interface EventServiceDsl {
      * @param duration represents the interval of polling.
      * @ return instance of [[esw.ocs.dsl.epics.EventVariable]]
      */
-    suspend fun EventVariable(eventKeyStr: String, duration: Duration? = null): EventVariable =
-            EventVariableImpl.createEventVariable(eventKeyStr, this, duration)
+    suspend fun EventVariable(eventKeyStr: String, duration: Duration? = null): EventVariable {
+        val initialEvent = createInitialEvent(eventKeyStr)
+        return EventVariable(initialEvent, this, duration)
+    }
 
     private fun (Array<out String>).toEventKeys(): Set<EventKey> = map { EventKey.apply(it) }.toSet()
+
+    private fun createInitialEvent(eventKeyStr: String): Event {
+        val eventKey = EventKey.apply(eventKeyStr)
+        return SystemEvent(eventKey.source(), eventKey.eventName())
+    }
 }
