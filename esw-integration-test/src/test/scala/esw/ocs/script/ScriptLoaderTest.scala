@@ -1,5 +1,7 @@
 package esw.ocs.script
 
+import java.time.Duration
+
 import akka.actor.typed.{ActorSystem, SpawnProtocol}
 import com.typesafe.config.Config
 import csw.alarm.api.javadsl.IAlarmService
@@ -8,10 +10,10 @@ import csw.logging.api.javadsl.ILogger
 import csw.prefix.models.Prefix
 import esw.ocs.dsl.script.ScriptDsl
 import esw.ocs.dsl.script.exceptions.ScriptInitialisationFailedException
+import esw.ocs.impl.SequencerActorProxyFactory
 import esw.ocs.impl.core.SequenceOperator
 import esw.ocs.impl.script.ScriptLoadingException.{InvalidScriptException, ScriptNotFound}
 import esw.ocs.impl.script.{ScriptApi, ScriptContext, ScriptLoader}
-import esw.ocs.impl.{HealthCheckActorProxy, SequencerActorProxyFactory}
 import esw.ocs.testkit.BaseTestSuite
 
 import scala.concurrent.duration.DurationInt
@@ -27,14 +29,13 @@ class ScriptLoaderTest extends BaseTestSuite {
   private val sequencerClientFactory  = mock[SequencerActorProxyFactory]
   private val prefix                  = mock[Prefix]
   private val config                  = mock[Config]
-  private val heartbeatActorProxy     = mock[HealthCheckActorProxy]
+  private val heartbeatInterval       = Duration.ofSeconds(3)
 
   when(config.getConfig("csw-alarm")).thenReturn(config)
   when(config.getDuration("refresh-interval")).thenReturn(2.seconds.toJava)
-  when(heartbeatActorProxy.heartbeatInterval).thenReturn(1.millis.toJava)
 
   val scriptContext = new ScriptContext(
-    heartbeatActorProxy,
+    heartbeatInterval,
     prefix,
     logger,
     sequenceOperatorFactory,
@@ -50,16 +51,6 @@ class ScriptLoaderTest extends BaseTestSuite {
     "load script class if subsystem and observingMode is provided | ESW-102, ESW-136" in {
       val loader: ScriptApi =
         ScriptLoader.loadKotlinScript("esw.ocs.scripts.examples.testData.scriptLoader.ValidTestScript", scriptContext)
-      loader shouldBe a[ScriptDsl]
-    }
-
-    "load script class and ensure script is sending heartbeat | ESW-290" in {
-      val loader: ScriptApi =
-        ScriptLoader.loadKotlinScript("esw.ocs.scripts.examples.testData.scriptLoader.ValidTestScript", scriptContext)
-      //delay to ensure heartbeat is sent
-      Thread.sleep(10)
-      verify(heartbeatActorProxy, atLeastOnce).sendHeartbeat()
-      verify(logger, atLeastOnce).debug("[HealthCheckActor] send heartbeat for StrandEC")
       loader shouldBe a[ScriptDsl]
     }
 

@@ -1,16 +1,18 @@
 package esw.ocs.impl.script
 
+import java.time.Duration
+
 import akka.actor.typed.{ActorSystem, SpawnProtocol}
 import com.typesafe.config.Config
 import csw.alarm.api.javadsl.IAlarmService
 import csw.event.api.javadsl.IEventService
 import csw.logging.api.javadsl.ILogger
 import csw.prefix.models.Prefix
-import esw.ocs.impl.{HealthCheckActorProxy, SequencerActorProxyFactory}
+import esw.ocs.impl.SequencerActorProxyFactory
 import esw.ocs.impl.core.SequenceOperator
 
 class ScriptContext(
-    val healthCheckActorProxy: HealthCheckActorProxy,
+    val heartbeatInterval: Duration,
     val prefix: Prefix,
     val jLogger: ILogger,
     val sequenceOperatorFactory: () => SequenceOperator,

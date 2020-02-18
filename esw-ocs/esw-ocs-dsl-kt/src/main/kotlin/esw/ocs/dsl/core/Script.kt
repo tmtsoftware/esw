@@ -17,10 +17,13 @@ import esw.ocs.dsl.script.StrandEc
 import esw.ocs.dsl.script.exceptions.ScriptInitialisationFailedException
 import esw.ocs.dsl.toScriptError
 import kotlinx.coroutines.*
+import kotlinx.coroutines.channels.*
 import kotlinx.coroutines.future.asCompletableFuture
 import kotlinx.coroutines.future.await
 import kotlinx.coroutines.future.future
 import kotlin.coroutines.CoroutineContext
+import kotlin.time.milliseconds
+import kotlin.time.seconds
 import kotlin.time.toKotlinDuration
 
 sealed class BaseScript(wiring: ScriptWiring) : CswHighLevelDsl(wiring.cswServices, wiring.scriptContext), HandlerScope {
@@ -118,9 +121,15 @@ open class Script(private val wiring: ScriptWiring) : BaseScript(wiring), Script
     }
 
     fun startHealthCheck() {
-        loopAsync(wiring.healthCheckActorProxy.heartbeatInterval().toKotlinDuration()) {
-            logger.debug("[HealthCheckActor] send heartbeat for StrandEC")
-            wiring.healthCheckActorProxy.sendHeartbeat()
+        val heartbeatInterval = wiring.heartbeatInterval.toKotlinDuration()
+        val channel = ticker(heartbeatInterval.toLongMilliseconds(), 0, coroutineContext)
+
+        GlobalScope.launch {
+            loop(heartbeatInterval.plus(10.milliseconds)) {
+                channel.poll()?.let { info("[StrandEC Heartbeat Received]") }
+                        ?: error("[StrandEC Heartbeat Delayed] - Scheduled sending of heartbeat was delayed. " +
+                                "The reason can be thread starvation, e.g. by running blocking tasks in sequencer script, CPU overload, or GC.")
+            }
         }
     }
 }

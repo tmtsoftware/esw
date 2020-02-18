@@ -12,18 +12,14 @@ import csw.prefix.models.Subsystem.ESW
 import esw.ocs.api.codecs.OcsCodecs
 import esw.ocs.api.models.StepList
 import esw.ocs.api.protocol.{EswSequencerResponse, GetStatusResponse, ScriptResponse}
-import esw.ocs.impl.codecs.{HeartbeatMsgCodecs, OcsMsgCodecs}
+import esw.ocs.impl.codecs.OcsMsgCodecs
 import esw.ocs.impl.messages.SequencerMessages._
-import esw.ocs.impl.messages.{HealthCheckMsg, SequenceComponentMsg, SequencerState}
+import esw.ocs.impl.messages.{SequenceComponentMsg, SequencerState}
 import io.bullet.borer.{Cbor, Decoder}
 
 import scala.reflect.ClassTag
 
-class OcsAkkaSerializer(_actorSystem: ExtendedActorSystem)
-    extends OcsCodecs
-    with OcsMsgCodecs
-    with HeartbeatMsgCodecs
-    with Serializer {
+class OcsAkkaSerializer(_actorSystem: ExtendedActorSystem) extends OcsCodecs with OcsMsgCodecs with Serializer {
   override implicit def actorSystem: ActorSystem[_] = _actorSystem.toTyped
 
   override def identifier: Int = 29926
@@ -37,7 +33,6 @@ class OcsAkkaSerializer(_actorSystem: ExtendedActorSystem)
     case x: SequenceComponentMsg         => Cbor.encode(x).toByteArray
     case x: ScriptResponse               => Cbor.encode(x).toByteArray
     case x: GetStatusResponse            => Cbor.encode(x).toByteArray
-    case x: HealthCheckMsg               => Cbor.encode(x).toByteArray
     case _ =>
       val ex = new RuntimeException(s"does not support encoding of $o")
       logger.error(ex.getMessage, ex = ex)
@@ -59,8 +54,7 @@ class OcsAkkaSerializer(_actorSystem: ExtendedActorSystem)
       fromBinary[StepList] orElse
       fromBinary[SequenceComponentMsg] orElse
       fromBinary[ScriptResponse] orElse
-      fromBinary[GetStatusResponse] orElse
-      fromBinary[HealthCheckMsg]
+      fromBinary[GetStatusResponse]
     }.getOrElse {
       val ex = new RuntimeException(s"does not support decoding of ${manifest.get}")
       logger.error(ex.getMessage, ex = ex)
