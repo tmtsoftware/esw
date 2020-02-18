@@ -9,7 +9,6 @@ script {
     val onlineFlagKey = booleanKey("online-flag")
 
     loopAsync(100.milliseconds) {
-        println("isOnline:"+isOnline)
         publishEvent(SystemEvent("TCS.filter.wheel", "online-flag", onlineFlagKey.set(isOnline)))
     }
 

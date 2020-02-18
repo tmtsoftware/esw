@@ -8,7 +8,7 @@
 * [Script Handlers](constructs/handlers.md)
 * [Looping](constructs/loop.md)
 * [Finite State Machines](constructs/fsm.md)
-* [Other DSL](constructs/misc.md)
+* [Other DSL](constructs/other-dsl.md)
 
 <!-- if any thing is added in this list make sure it is added in ../scripts.md in Script Construct heading -->
 @@@

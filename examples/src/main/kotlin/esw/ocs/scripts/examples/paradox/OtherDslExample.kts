@@ -6,6 +6,8 @@ import csw.params.commands.CommandResponse.SubmitResponse
 import esw.ocs.dsl.core.script
 import esw.ocs.dsl.highlevel.models.IRIS
 import esw.ocs.dsl.par
+import esw.ocs.dsl.params.booleanKey
+import kotlin.time.milliseconds
 import kotlin.time.minutes
 
 script {
@@ -26,5 +28,17 @@ script {
                 )
     }
     //#par
+
+    //#isOnline
+    onDiagnosticMode { time, hint ->
+        loopAsync(100.milliseconds) {
+            if (isOnline)
+                publishEvent(SystemEvent("TCS.filter.wheel", "online-diag-data"))
+            else
+                publishEvent(SystemEvent("TCS.filter.wheel", "offline-diag-data"))
+        }
+
+    }
+    //#isOnline
 
 }
