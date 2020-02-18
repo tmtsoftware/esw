@@ -156,23 +156,23 @@ class SequencerActorProxyTest extends ScalaTestWithActorTestKit with BaseTestSui
 
   // commandApi
 
-  "loadSequence | ESW-101" in {
+  "loadSequence | ESW-222" in {
     sequencer.loadSequence(sequence).futureValue should ===(Ok)
   }
 
-  "startSequence | ESW-101" in {
+  "startSequence | ESW-222" in {
     sequencer.startSequence().futureValue should ===(startSequenceResponse.toSubmitResponse())
   }
 
-  "submit | ESW-101" in {
+  "submit | ESW-222" in {
     sequencer.submit(sequence).futureValue should ===(submitSequenceResponse.toSubmitResponse())
   }
 
-  "submitAndWait | ESW-101" in {
+  "submitAndWait | ESW-222" in {
     sequencer.submitAndWait(sequence).futureValue should ===(queryFinalResponse)
   }
 
-  "queryFinal | ESW-101" in {
+  "queryFinal | ESW-222" in {
     sequencer.queryFinal(sequenceId).futureValue should ===(queryFinalResponse)
   }
 
