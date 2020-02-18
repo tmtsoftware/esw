@@ -3,20 +3,15 @@ GET http://localhost:8090/websocket-endpoint
 Content-Type: application/json
 
 {
-  "ComponentCommand": {
-    "componentId": {
-      "name": "test",
-      "componentType": "assembly"
-    },
-    "command": {
-      "QueryFinal": {
-        "runId": "123",
-        "timeout": [
-          100,
-          "HOURS"
-        ]
-      }
-    }
+  "_type": "ComponentCommand",
+  "componentId": {
+    "prefix": "CSW.ncc.trombone",
+    "componentType": "hcd"
+  },
+  "command": {
+    "_type": "QueryFinal",
+    "runId": "382aec51-928d-4a8d-8f16-8880c3f35d31",
+    "timeoutInSeconds": 100
   }
 }
 
@@ -44,13 +39,23 @@ GET http://localhost:8090/websocket-endpoint
 Content-Type: application/json
 
 {
-  "Subscribe": {
-    "eventKeys": [
-      {
-        "source": "wfos.blue.filter",
-        "eventName": "filter_wheel"
-      }
-    ],
-    "maxFrequency": 2
-  }
+  "_type": "Subscribe",
+  "eventKeys": [
+    {
+      "source": "CSW.ncc.trombone",
+      "eventName": "offline1"
+    }
+  ],
+  "maxFrequency": 10
+}
+
+### subscribe-pattern
+GET http://localhost:8090/websocket-endpoint
+Content-Type: application/json
+
+{
+  "_type": "SubscribeWithPattern",
+  "subsystem": "CSW",
+  "maxFrequency": 10,
+  "pattern": "[a-b]*"
 }
