@@ -8,6 +8,7 @@ import esw.gateway.api.protocol.{PostRequest, WebsocketRequest}
 import esw.gateway.api.{AlarmApi, EventApi, LoggingApi}
 import esw.gateway.impl._
 import esw.gateway.server.handlers.{PostHandlerImpl, WebsocketHandlerImpl}
+import esw.gateway.server.metrics.{GatewayMetrics, GatewayMetricsImpl, Metrics}
 import esw.gateway.server.utils.Resolver
 import esw.http.core.wiring.{HttpService, ServerWiring}
 import msocket.api.ContentType
@@ -27,14 +28,17 @@ class GatewayWiring(_port: Option[Int]) extends GatewayCodecs {
   lazy val eventApi: EventApi     = new EventImpl(eventService, eventSubscriberUtil)
   lazy val loggingApi: LoggingApi = new LoggingImpl(new LoggerCache)
   lazy val adminApi: AdminService = new AdminServiceImpl(locationService)
+  lazy val gatewayMetrics: GatewayMetrics = new GatewayMetricsImpl()
 
-  lazy val postHandler: PostHandlerImpl = new PostHandlerImpl(alarmApi, resolver, eventApi, loggingApi, adminApi)
+  lazy val postHandler: PostHandlerImpl = new PostHandlerImpl(alarmApi, resolver, eventApi, loggingApi, adminApi, gatewayMetrics)
   def websocketHandlerFactory(contentType: ContentType): WebsocketHandlerImpl =
-    new WebsocketHandlerImpl(resolver, eventApi, contentType)
+    new WebsocketHandlerImpl(resolver, eventApi, contentType, gatewayMetrics)
+
 
   lazy val routes: Route = RouteFactory.combine(
     new PostRouteFactory[PostRequest]("post-endpoint", postHandler),
-    new WebsocketRouteFactory[WebsocketRequest]("websocket-endpoint", websocketHandlerFactory)
+    new WebsocketRouteFactory[WebsocketRequest]("websocket-endpoint", websocketHandlerFactory),
+    () => Metrics.metricsEndpoint.routes
   )
 
   lazy val httpService = new HttpService(logger, locationService, routes, settings, actorRuntime)

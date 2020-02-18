@@ -36,6 +36,7 @@ object Common extends AutoPlugin {
     // ================================
     resolvers += "jitpack" at "https://jitpack.io",
     resolvers += "bintray" at "https://jcenter.bintray.com",
+    resolvers += Resolver.bintrayRepo("lonelyplanet", "maven"),
     resolvers += Resolver.mavenLocal, // required to resolve kotlin `examples` deps published locally
     autoCompilerPlugins := true,
     enableFatalWarnings := false,

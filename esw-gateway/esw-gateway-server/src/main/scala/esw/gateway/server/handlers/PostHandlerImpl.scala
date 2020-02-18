@@ -10,16 +10,25 @@ import esw.gateway.api.codecs.GatewayCodecs._
 import esw.gateway.api.protocol.PostRequest
 import esw.gateway.api.protocol.PostRequest._
 import esw.gateway.api.{AlarmApi, EventApi, LoggingApi}
+import esw.gateway.server.metrics.GatewayMetrics
 import esw.gateway.server.utils.Resolver
 import esw.ocs.api.protocol.SequencerPostRequest
 import esw.ocs.handler.SequencerPostHandler
 import msocket.impl.post.{HttpPostHandler, ServerHttpCodecs}
 
-class PostHandlerImpl(alarmApi: AlarmApi, resolver: Resolver, eventApi: EventApi, loggingApi: LoggingApi, adminApi: AdminService)
-    extends HttpPostHandler[PostRequest]
+class PostHandlerImpl(
+    alarmApi: AlarmApi,
+    resolver: Resolver,
+    eventApi: EventApi,
+    loggingApi: LoggingApi,
+    adminApi: AdminService,
+    metrics: GatewayMetrics = GatewayMetrics.NoOp
+) extends HttpPostHandler[PostRequest]
     with ServerHttpCodecs {
 
-  override def handle(request: PostRequest): Route = request match {
+  import metrics._
+
+  override def handle(request: PostRequest): Route = withMetrics(request) match {
     case ComponentCommand(componentId, command) => onComponentCommand(componentId, command)
     case SequencerCommand(componentId, command) => onSequencerCommand(componentId, command)
     case PublishEvent(event)                    => complete(eventApi.publish(event))
