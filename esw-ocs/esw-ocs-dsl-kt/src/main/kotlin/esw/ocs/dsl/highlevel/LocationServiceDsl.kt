@@ -73,12 +73,12 @@ interface LocationServiceDsl : SuspendToJavaConverter {
     /**
      * Lists all the registered locations matching against provided hostname
      */
-    suspend fun listLocationsBy(hostname: String): List<Location> = locationService.list(hostname).await().toList()
+    suspend fun listLocationsByHostname(hostname: String): List<Location> = locationService.list(hostname).await().toList()
 
     /**
-     * Lists all the registered locations matching against provided prefix
+     * Lists all the registered locations that start with the provided prefix string
      */
-    suspend fun listLocationsBy(prefix: Prefix): List<Location> = locationService.listByPrefix(prefix.toString()).await().toList()
+    suspend fun listLocationsBy(prefixStartsWith: String): List<Location> = locationService.listByPrefix(prefixStartsWith).await().toList()
 
     /**
      * Subscribe to the connection and executes a callback on every location changed event

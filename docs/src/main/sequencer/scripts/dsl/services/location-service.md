@@ -98,9 +98,10 @@ Kotlin
 
 ### Prefix
 
-Filters locations based on the provided Prefix.
+Filters locations based on the provided prefix string.  As with the CSW Location Service, the method filters for all 
+locations with prefixes that start with the provided string.
 
-In the following example, all of the components registered using the Prefix: `IRIS.filter.wheel` are listed, where `IRIS` is a Subsystem and `filter.wheel` is a component name
+In the following example, it receives a list of all of the components registered with prefixes that start with: `IRIS.filter.`
 
 Kotlin
 :   @@snip [LocationServiceDslExample.kts](../../../../../../../examples/src/main/kotlin/esw/ocs/scripts/examples/paradox/LocationServiceDslExample.kts) { #list-locations-by-prefix }

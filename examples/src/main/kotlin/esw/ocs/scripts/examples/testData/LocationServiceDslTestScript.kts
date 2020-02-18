@@ -40,7 +40,7 @@ script {
     }
 
     onSetup("list-by-prefix") {
-        val locations = listLocationsBy(prefix)
+        val locations = listLocationsBy(prefix.toString())
         if (locations.all { it.prefix() == prefix }) // publish only if all the locations prefix matches with a prefix used for listing
             publishLocationResponse("Found = ${locations.size} Locations")
     }
