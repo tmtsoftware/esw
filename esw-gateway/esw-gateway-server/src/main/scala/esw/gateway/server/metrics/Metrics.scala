@@ -1,16 +1,14 @@
 package esw.gateway.server.metrics
 
+import akka.http.scaladsl.server.Route
 import com.lonelyplanet.prometheus.PrometheusResponseTimeRecorder
 import com.lonelyplanet.prometheus.api.MetricsEndpoint
-import com.lonelyplanet.prometheus.directives.ResponseTimeRecordingDirectives
 import io.prometheus.client.{CollectorRegistry, Counter, Gauge}
 
 object Metrics {
-  private val prometheusRegistry: CollectorRegistry                          = PrometheusResponseTimeRecorder.DefaultRegistry
-  private val prometheusResponseTimeRecorder: PrometheusResponseTimeRecorder = PrometheusResponseTimeRecorder.Default
-  private val responseTimeDirectives                                         = ResponseTimeRecordingDirectives(prometheusResponseTimeRecorder)
+  private val prometheusRegistry: CollectorRegistry = PrometheusResponseTimeRecorder.DefaultRegistry
 
-  val metricsEndpoint: MetricsEndpoint = new MetricsEndpoint(prometheusRegistry)
+  val metricsRoute: Route = new MetricsEndpoint(prometheusRegistry).routes
 
   def counter(metricName: String, help: String, labelNames: String*): Counter =
     Counter
@@ -20,7 +18,7 @@ object Metrics {
       .labelNames(labelNames: _*)
       .register(prometheusRegistry)
 
-  def guage(metricName: String, help: String, labelNames: String*): Gauge =
+  def gauge(metricName: String, help: String, labelNames: String*): Gauge =
     Gauge
       .build()
       .name(metricName)

@@ -136,14 +136,13 @@ POST http://localhost:8090/post-endpoint
 Content-Type: application/json
 
 {
-  "GetEvent": {
-    "eventKeys": [
-      {
-        "source": "wfos.blue.filter",
-        "eventName": "filter_wheel"
-      }
-    ]
-  }
+  "_type": "GetEvent",
+  "eventKeys": [
+    {
+      "source": "wfos.blue.filter",
+      "eventName": "filter_wheel"
+    }
+  ]
 }
 
 ### setSeverity

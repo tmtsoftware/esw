@@ -17,14 +17,14 @@ object EventMetrics {
     )
 
   private lazy val subscribeGuage =
-    guage(
+    gauge(
       metricName = "gateway_event_service_active_subscribers_total",
       help = "Total active event subscribers",
       labelNames = "api"
     )
 
   private lazy val patternSubscribeGuage =
-    guage(
+    gauge(
       metricName = "gateway_event_service_active_pattern_subscribers_total",
       help = "Total active pattern event subscribers",
       labelNames = "api",
