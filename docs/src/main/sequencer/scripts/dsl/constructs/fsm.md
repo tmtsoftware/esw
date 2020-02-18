@@ -56,7 +56,7 @@ Kotlin
 
 In the example above, the FSM is in LOW state. If the temperature is below 20, then there won't be any state transition which will keep the FSM in same LOW state.
 Change in temperature after that will re-evaluate the "LOW" state again and if the temperature is greater than or equal to 20 then current state will change to HIGH.
-In the example `temperature` is an @ref:[event variable](#event-variables) which enables the re-evaluation of current state on changes in temperature value.
+In the example `temperature` is an @ref:[event based variable](#event-based-variables) which enables re-evaluation of current state on changes in temperature value.
 
 ### Complete FSM
 
@@ -109,50 +109,72 @@ Calling `await` before calling `start` will start the FSM internally and then wa
 
 ## Reactive FSM
 
-Reactive FSM means that changes of state can be tied to changes in Events as well as to Commands.
-A FSM can be made to react to changes in Event and Command parameters with help of `Event variables` and `Command flags`.
+Reactive FSM means that changes of state can be tied to changes in Events as well as Commands.
+A FSM can be made to react to changes in Event and Command parameters with help of `Event based variables` and `Command flags`.
+It is necessary to _bind_ FSM to the reactive variables to achieve the reactive behavior.
 
-**`bind`ing FSM to reactive variable is necessary** to achieve the reactive behavior of FSM.
+### Event based variables
 
-### Event Variables
+Event based variables are the way to make an FSM react to CSW Events. Event based variables can be used to share data between multiple
+sequencers using Events. Whenever any Event is published on the given EventKey, all the FSMs bound to variables of that EventKey
+will be re-evaluated.
+ 
+These variables are of 2 types based on what they tie to.
 
-Event Variables are the way to make an FSM react to CSW Events. An Event Variable can be tied to only one Parameter Key in an event.
-To make the FSM react to Event variable, we need to create an `EventVariable` for a specific Parameter Key of an Event and **bind the FSM** to it.
-FSM can be bind to multiple Event variables and vise versa.
+1. EventVariable
+2. ParamVariable
 
-Event Variables use the CSW Event Service underneath. This could be used to share data between multiple sequencers.
-Whenever any event is published on the key of given event, all the FSMs bound to that variable will be re-evaluated.
+#### EventVariable
+ It will be tied to entire Event which will be published on given EventKey. 
+Code example shows creating instance of EventVariable and *getEvent* method which returns the latest event. EventVariable needs 2 parameters:
+- *event key* to tie the variable to
+- *duration* (optional) of the polling (Significance of duration parameter is explained @ref:[below](#poll).)
 
-Event variable takes 4 arguments: 
-- the initial value to set in Event parameter against the given parameter Key
-- the event key to tie the Event variable to
-- the param Key whose value to read from Event parameters
-- the duration (optional) of the polling (Significance of duration parameter is explained @ref:[below](#poll).)
+Kotlin
+:   @@snip [Fsm.kts](../../../../../../../examples/src/main/kotlin/esw/ocs/scripts/examples/paradox/Fsm.kts) { #event-var }
 
-Event Variable has the ability to behave in one of two ways:
+#### ParamVariable
+It will be tied to specific Parameter Key of Event which will be published on given EventKey
+Code example shows creating instance of ParamVariable and other helper methods. ParamVariable takes 4 parameters:
+- *initial* value to set in Event parameters against the given parameter Key
+- *event key* to tie the variable to
+- *param Key* whose value to read from Event parameters
+- *duration* (optional) of the polling (Significance of duration parameter is explained @ref:[below](#poll).)
+
+Kotlin
+:   @@snip [Fsm.kts](../../../../../../../examples/src/main/kotlin/esw/ocs/scripts/examples/paradox/Fsm.kts) { #param-var }
+
+
+To make the FSM react to Event based variables, we need to create an instance of the above event based variables and **bind the FSM** to it.
+
+FSM can be bind to multiple variables and vise versa.
+
+Kotlin
+:   @@snip [Fsm.kts](../../../../../../../examples/src/main/kotlin/esw/ocs/scripts/examples/paradox/Fsm.kts) { #binding }
+
+
+Event based variables have the **ability to behave in one of two ways**:
 
 - Subscribe to the Events getting published
 - Poll for a new event with a specified period
 
 #### Subscribe to an Event
 
-Event Variable subscribes to the given Event key and re-evaluates the FSMs current state each time an event is published.
+In this behavior, Variable subscribes to the given Event key and re-evaluates the FSMs current state each time an event is published.
 
-The following example shows how to create Event Variables with the subscribing behavior, `bind` FSM to it and methods like `get`, `first` and `set`.
-`set` will publish the event with modified parameter.
+The following example shows how to create Event Variables with the subscribing behavior and `bind` FSM to it.
 
 Kotlin
-:   @@snip [Fsm.kts](../../../../../../../examples/src/main/kotlin/esw/ocs/scripts/examples/paradox/Fsm.kts) { #event-var }
+:   @@snip [Fsm.kts](../../../../../../../examples/src/main/kotlin/esw/ocs/scripts/examples/paradox/Fsm.kts) { #subscribing }
 
 #### Poll
 
 Polling behavior is for situations when it's **not necessary to re-evaluate FSM state on every Event** and can be done periodically.
-An Event Variable can poll to get the latest Event value with given period and if a new Event is published, it will re-evaluate the FSMs current state.
+The Variable can poll to get the latest Event with given period and if a new Event is published, it will re-evaluate the FSMs current state.
 Polling behavior can be used when the publisher is too fast and there is no need respond so quickly to it.
 
-To create an Event Variable with polling behavior, it needs an extra argument which is the `duration` to poll with. The example code demos
-this feature.
-Other methods like `get`, `set` and `bind` are same as shown @ref:[Subscribe](#subscribe-to-an-event) examples above.
+To create Variables with polling behavior, it needs an extra argument which is the `duration` to poll with. The example code demos
+this feature. *bind*ing part is same as in previous example. 
 
 Kotlin
 :   @@snip [Fsm.kts](../../../../../../../examples/src/main/kotlin/esw/ocs/scripts/examples/paradox/Fsm.kts) { #polling }

@@ -7,6 +7,7 @@ import csw.params.events.EventKey
 import csw.params.events.ObserveEvent
 import csw.params.events.SystemEvent
 import esw.ocs.dsl.core.script
+import esw.ocs.dsl.epics.EventVariable
 import esw.ocs.dsl.epics.ParamVariable
 import esw.ocs.dsl.params.intKey
 import kotlin.time.seconds
@@ -73,9 +74,13 @@ script {
         //#event-key
 
         //#event-var
-        val locKey = intKey("current-location")
-        val systemVar: ParamVariable<Int> = ParamVariable(0, "IRIS.ifs.motor.position", locKey)
+        val eventVariable: EventVariable = EventVariable("ESW.temperature.temp")
         //#event-var
+
+        //#param-var
+        val locKey = intKey("current-location")
+        val paramVariable: ParamVariable<Int> = ParamVariable(0, "IRIS.ifs.motor.position", locKey)
+        //#param-var
 
     }
 

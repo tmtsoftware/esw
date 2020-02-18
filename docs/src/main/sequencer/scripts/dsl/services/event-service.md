@@ -27,12 +27,19 @@ Kotlin
 
 ### EventVariable
 
-Helper DSL to create an `EventVariable`. This DSL needs the initial value of the parameter, the name of the `EventKey`,
-and the `ParameterKey` of the connected parameter.
- More details about `SystemVar`s are provided in the @ref[FSM documentation](../constructs/fsm.md#reactive-fsm)
+Helper DSL to create an `EventVariable`. The dsl takes `event key` to subscribe to and `duration` (optional).
+More details about `EventVariable`s are provided in the @ref[FSM documentation](../constructs/fsm.md#event-based-variables)
 
 Kotlin
-:   @@snip [EventServiceDslExample.kts](../../../../../../../examples/src/main/kotlin/esw/ocs/scripts/examples/paradox/EventServiceDslExample.kts) { #system-var }
+:   @@snip [EventServiceDslExample.kts](../../../../../../../examples/src/main/kotlin/esw/ocs/scripts/examples/paradox/EventServiceDslExample.kts) { #event-var }
+
+### ParamVariable
+
+Helper DSL to create an `ParamVariable`. This DSL needs the `initial` value of the parameter, the `event key`, the `parameter Key` to tie to and `duration` (optional).
+More details about `ParamVariable`s are provided in the @ref[FSM documentation](../constructs/fsm.md#event-based-variables)
+ 
+Kotlin
+:   @@snip [EventServiceDslExample.kts](../../../../../../../examples/src/main/kotlin/esw/ocs/scripts/examples/paradox/EventServiceDslExample.kts) { #param-var }
 
 ## publishEvent
 

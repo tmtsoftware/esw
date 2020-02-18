@@ -5,6 +5,7 @@ package esw.ocs.scripts.examples.paradox
 import csw.params.core.generics.Key
 import esw.ocs.dsl.core.script
 import esw.ocs.dsl.epics.CommandFlag
+import esw.ocs.dsl.epics.EventVariable
 import esw.ocs.dsl.epics.Fsm
 import esw.ocs.dsl.epics.ParamVariable
 import esw.ocs.dsl.params.Params
@@ -29,24 +30,55 @@ script {
     irisFsm.await()
     //#await
 
-
+    //#subscribing
+    // ------------ EventVariable ---------------
     //#event-var
+    val eventVariable: EventVariable = EventVariable("ESW.IRIS_darkNight.temperature")
+    //#subscribing
+
+    eventVariable.getEvent() // to get the latest Event
+    //#event-var
+
+
+    //#subscribing
+    eventVariable.bind(irisFsm)
+
+    // ------------ ParamVariable ---------------
     //#polling
     val tempKey: Key<Int> = intKey("temperature")
     //#polling
-    val paramVariable: ParamVariable<Int> = ParamVariable(0, "esw.temperature.temp", tempKey)
 
-    paramVariable.bind(irisFsm) // binds the FSM and event variable
+    //#param-var
+    val paramVariable: ParamVariable<Int> = ParamVariable(0, "ESW.temperature.temp", tempKey)
+    //#subscribing
 
     paramVariable.getParam() // to get the current values of the parameter
-
     paramVariable.first() // to get the first value from the values of the parameter
-
     paramVariable.setParam(10) // publishes the given value on event key
-    //#event-var
+
+    paramVariable.getEvent() // to get the latest Event
+    //#param-var
+
+    val eventBasedVariable = paramVariable
+    //#binding
+    eventBasedVariable.bind(irisFsm)
+    //#binding
+
+    //#subscribing
+    paramVariable.bind(irisFsm) // binds the FSM and event variable
+    //#subscribing
 
     //#polling
-    val pollingParamVar: ParamVariable<Int> = ParamVariable(0, "esw.temperature.temp", tempKey, 2.seconds)
+
+    // ------------ ParamVariable ---------------
+    val pollingParamVar: ParamVariable<Int> =
+            ParamVariable(0, "ESW.temperature.temp", tempKey, 2.seconds)
+
+    pollingParamVar.bind(irisFsm)
+
+    // ------------ EventVariable ---------------
+    val pollingEventVar = EventVariable("ESW.IRIS_darkNight.temperature", 2.seconds)
+    pollingEventVar.bind(irisFsm)
     //#polling
 
     var params = Params(mutableSetOf())

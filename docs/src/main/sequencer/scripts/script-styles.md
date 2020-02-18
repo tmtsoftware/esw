@@ -74,7 +74,7 @@ FsmScript("OFF") {
 }
 
 ```
-In this script, thw states called *ON* and *OFF* are defined. The initial state is *OFF*. In the *ON* state, the script can
+In this script, the states called *ON* and *OFF* are defined. The initial state is *OFF*. In the *ON* state, the script can
 process the *turn-off* command. It executes the `turnOffLife` function and switches to the ON state using the `become` keyword.
 
 More information about state machine-oriented scripts is @ref:[here](./dsl/constructs/fsm.md).  

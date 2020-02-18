@@ -135,6 +135,7 @@ interface EventServiceDsl {
      * being published on specific `event key`.
      *
      * [[esw.ocs.dsl.epics.ParamVariable]] is [[esw.ocs.dsl.epics.EventVariable]] with methods to get and set a specific parameter in the [[csw.params.events.Event]]
+     *
      * It behaves differently depending on the presence of `duration` parameter while creating its instance.
      * - When provided with `duration`, it will **poll** at an interval of given `duration` to refresh its own value
      * - Otherwise it will **subscribe** to the given event key and will refresh its own value whenever events are published
