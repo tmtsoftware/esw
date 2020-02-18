@@ -3,6 +3,7 @@
 package esw.ocs.scripts.examples.paradox
 
 import csw.params.commands.CommandResponse.SubmitResponse
+import csw.params.commands.Setup
 import esw.ocs.dsl.core.script
 import esw.ocs.dsl.highlevel.models.IRIS
 import esw.ocs.dsl.par
@@ -40,5 +41,9 @@ script {
 
     }
     //#isOnline
+
+    //#prefix
+    val downstreamCommand: Setup = Setup(prefix, "move")
+    //#prefix
 
 }

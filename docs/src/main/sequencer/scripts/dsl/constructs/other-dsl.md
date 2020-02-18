@@ -17,7 +17,12 @@ This dsl is accessible in all the scopes.
 Kotlin
 : @@snip [OtherDslExample.kts](../../../../../../../examples/src/main/kotlin/esw/ocs/scripts/examples/paradox/OtherDslExample.kts) { #isOnline }  
 
+## prefix
 
+Prefix of the current sequencer is made available in all scopes by this dsl.
+ 
+Kotlin
+: @@snip [OtherDslExample.kts](../../../../../../../examples/src/main/kotlin/esw/ocs/scripts/examples/paradox/OtherDslExample.kts) { #prefix }  
 
 ## Source code for examples
 

@@ -28,6 +28,7 @@ sealed class BaseScript(wiring: ScriptWiring) : CswHighLevelDsl(wiring.cswServic
     protected val shutdownTask = Runnable { wiring.shutdown() }
     internal open val scriptDsl: ScriptDsl by lazy { ScriptDsl(wiring.scriptContext.sequenceOperatorFactory(), logger, strandEc, shutdownTask) }
     override val isOnline: Boolean get() = scriptDsl.isOnline
+    override val prefix: String = wiring.scriptContext.prefix().toString()
 
     private val exceptionHandler = CoroutineExceptionHandler { _, exception ->
         error("Exception thrown in script with a message: [$exception], invoking exception handler")
