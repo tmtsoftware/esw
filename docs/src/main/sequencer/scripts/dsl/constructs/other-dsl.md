@@ -26,4 +26,4 @@ Kotlin
 
 ## Source code for examples
 
-* [OtherDsl Examples]($github.base_url$/examples/src/main/kotlin/esw/ocs/scripts/examples/paradox/MiscExample.kts)
+* [OtherDsl Examples]($github.base_url$/examples/src/main/kotlin/esw/ocs/scripts/examples/paradox/OtherDslExample.kts)
