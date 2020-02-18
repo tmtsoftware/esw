@@ -75,6 +75,9 @@ class HealthCheckActorTest extends BaseTestSuite {
       val heartbeatInterval            = Duration.ofSeconds(3)
       val actorRef                     = spawnHealthCheckActor(heartbeatInterval)
       val intervalToExpectNotification = heartbeatInterval.toScala
+      val heartbeatReceivedLog         = "[StrandEC Heartbeat Received]"
+      val heartbeatMissedLog = "[StrandEC Heartbeat Delayed] - Scheduled sending of heartbeat was delayed. " +
+        "The reason can be thread starvation, e.g. by running blocking tasks in sequencer script, CPU overload, or GC."
 
       //send heartbeat
       actorRef ! Heartbeat
@@ -83,15 +86,15 @@ class HealthCheckActorTest extends BaseTestSuite {
       Thread.sleep(intervalToExpectNotification.toMillis)
       val logs: mutable.Seq[String] = logBuffer.map(log => log.getString("message"))
       // assert heartbeat received log
-      logs.contains("StrandEc heartbeat received") shouldBe true
+      logs.contains(heartbeatReceivedLog) shouldBe true
       // assert heartbeat missed log not received
-      logs.contains("StrandEc is taking more time than expected") shouldBe false
+      logs.contains(heartbeatMissedLog) shouldBe false
 
       //sleep for heartbeat-interval
       Thread.sleep(intervalToExpectNotification.toMillis)
       val nextLogs: mutable.Seq[String] = logBuffer.map(log => log.getString("message"))
       //assert heartbeat missed log is received
-      nextLogs.contains("StrandEc is taking more time than expected") shouldBe true
+      nextLogs.contains(heartbeatMissedLog) shouldBe true
     }
   }
 }
