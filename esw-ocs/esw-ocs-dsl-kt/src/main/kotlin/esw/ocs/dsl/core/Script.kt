@@ -122,13 +122,17 @@ open class Script(private val wiring: ScriptWiring) : BaseScript(wiring), Script
 
     fun startHealthCheck() {
         val heartbeatInterval = wiring.heartbeatInterval.toKotlinDuration()
-        val channel = ticker(heartbeatInterval.toLongMilliseconds(), 0, coroutineContext)
+        loopAsync(heartbeatInterval) {
+            wiring.heartbeatChannel.send(Unit)
+        }
 
-        GlobalScope.launch {
-            loop(heartbeatInterval.plus(10.milliseconds)) {
-                channel.poll()?.let { info("[StrandEC Heartbeat Received]") }
-                        ?: error("[StrandEC Heartbeat Delayed] - Scheduled sending of heartbeat was delayed. " +
-                                "The reason can be thread starvation, e.g. by running blocking tasks in sequencer script, CPU overload, or GC.")
+        launch {
+            withContext(Dispatchers.Default) {
+                loop(heartbeatInterval.plus(10.milliseconds)) {
+                    wiring.heartbeatChannel.poll()?.let { trace("[StrandEC Heartbeat Received]") }
+                            ?: error("[StrandEC Heartbeat Delayed] - Scheduled sending of heartbeat was delayed. " +
+                                    "The reason can be thread starvation, e.g. by running blocking tasks in sequencer script, CPU overload, or GC.")
+                }
             }
         }
     }
