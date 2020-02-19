@@ -81,7 +81,7 @@ class WebsocketHandlerMetricsTest extends BaseTestSuite {
       (
         SubscribeWithPattern(CSW, pattern = "move.*"),
         patternSubscribeGaugeMetricName,
-        Map("api" -> "subscribe_pattern_event", "subsystem" -> "CSW", "pattern" -> "move.*")
+        Map("api" -> "pattern_subscribe_event", "subsystem" -> "CSW", "pattern" -> "move.*")
       )
     ).foreach {
       case (wsRequest, metricName, labels) =>

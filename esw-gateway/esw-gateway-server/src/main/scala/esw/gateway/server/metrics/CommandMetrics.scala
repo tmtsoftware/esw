@@ -37,7 +37,7 @@ object CommandMetrics {
       labelNames = "api"
     )
 
-  private def inc(label: String) = commandCounter.labels(label).inc()
+  private def inc(label: String): Unit = commandCounter.labels(label).inc()
 
   def incCommandCounter(command: CommandServiceHttpMessage): Unit =
     command match {
