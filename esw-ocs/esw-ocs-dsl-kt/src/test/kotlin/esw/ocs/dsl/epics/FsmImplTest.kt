@@ -76,7 +76,7 @@ class FsmImplTest {
     }
 
     @Test
-    fun `become should transition state to given state and evaluate it | ESW-142, ESW-252`() = runBlocking {
+    fun `become should transition state to given state and evaluate it | ESW-142`() = runBlocking {
         var inProgressFlag = false
         fsm.state(inProgress) { inProgressFlag = true }
 
@@ -88,14 +88,14 @@ class FsmImplTest {
     }
 
     @Test
-    fun `become should throw exception if invalid state is given | ESW-142, ESW-252`() = runBlocking<Unit> {
+    fun `become should throw exception if invalid state is given | ESW-142`() = runBlocking<Unit> {
         shouldThrow<InvalidStateException> {
             fsm.become("INVALIDSTATE")
         }
     }
 
     @Test
-    fun `become should treat stateNames case insensitively | ESW-142, ESW-252`() = runBlocking {
+    fun `become should treat stateNames case insensitively | ESW-142`() = runBlocking {
         fsm.become(init.toLowerCase())
         checkInitFlag()
     }
