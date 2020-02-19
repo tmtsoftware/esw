@@ -14,7 +14,7 @@ object Libs {
   val `mockito-scala`      = "org.mockito" %% "mockito-scala" % "1.11.0" // MIT License
   val `scala-async`        = "org.scala-lang.modules" %% "scala-async" % "0.10.0" //BSD 3-clause "New" or "Revised" License
   val scalatest            = "org.scalatest" %% "scalatest" % "3.1.0" //Apache License 2.0
-  val `scala-java8-compat` = "org.scala-lang.modules" %% "scala-java8-compat" % "0.9.0" //BSD 3-clause "New" or "Revised" License
+  val `scala-java8-compat` = "org.scala-lang.modules" %% "scala-java8-compat" % "0.9.1" //BSD 3-clause "New" or "Revised" License
   val `msocket-api`        = dep("com.github.tmtsoftware.msocket" %%% "msocket-api" % MSocketVersion)
   val `msocket-impl-jvm`   = "com.github.tmtsoftware.msocket" %% "msocket-impl" % MSocketVersion
   val `caffeine`           = "com.github.ben-manes.caffeine" % "caffeine" % "2.8.1"
