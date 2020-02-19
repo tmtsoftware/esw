@@ -9,23 +9,26 @@ object EventMetrics {
   val subscribeEventLabel        = "subscribe_event"
   val subscribePatternEventLabel = "subscribe_pattern_event"
 
+  private[metrics] val eventCounterMetricName = "gateway_event_service_requests_total"
   private lazy val eventCounter =
     counter(
-      metricName = "gateway_event_service_requests_total",
+      metricName = eventCounterMetricName,
       help = "Total event service requests passing through gateway",
       labelNames = "api"
     )
 
+  private val subscribeGaugeMetricName = "gateway_event_service_active_subscribers_total"
   private lazy val subscribeGauge =
     gauge(
-      metricName = "gateway_event_service_active_subscribers_total",
+      metricName = subscribeGaugeMetricName,
       help = "Total active event subscribers",
       labelNames = "api"
     )
 
+  private val patternSubscribeGaugeMetricName = "gateway_event_service_active_pattern_subscribers_total"
   private lazy val patternSubscribeGauge =
     gauge(
-      metricName = "gateway_event_service_active_pattern_subscribers_total",
+      metricName = patternSubscribeGaugeMetricName,
       help = "Total active pattern event subscribers",
       labelNames = "api",
       "subsystem",

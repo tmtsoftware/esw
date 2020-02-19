@@ -13,23 +13,26 @@ object CommandMetrics {
   private val queryFinalLabel   = "query_final"
   private val currentStateLabel = "subscribe_current_state"
 
+  private[metrics] val commandCounterMetricName = "gateway_command_service_requests_total"
   private lazy val commandCounter =
     counter(
-      metricName = "gateway_command_service_requests_total",
+      metricName = commandCounterMetricName,
       help = "Total command service requests passing through gateway",
       labelNames = "api"
     )
 
+  private[metrics] val currentStateGaugeMetricName = "gateway_command_service_active_current_state_subscribers_total"
   private lazy val currentStateGauge =
     gauge(
-      metricName = "gateway_command_service_active_current_state_subscribers_total",
+      metricName = currentStateGaugeMetricName,
       help = "Total active current state subscribers",
       labelNames = "api"
     )
 
+  private[metrics] val queryFinalGaugeMetricName = "gateway_command_service_active_query_final_requests_total"
   private lazy val queryFinalGauge =
     gauge(
-      metricName = "gateway_command_service_active_query_final_requests_total",
+      metricName = queryFinalGaugeMetricName,
       help = "Total active query final requests in progress",
       labelNames = "api"
     )

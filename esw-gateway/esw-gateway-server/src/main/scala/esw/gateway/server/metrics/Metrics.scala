@@ -6,7 +6,7 @@ import com.lonelyplanet.prometheus.api.MetricsEndpoint
 import io.prometheus.client.{CollectorRegistry, Counter, Gauge}
 
 object Metrics {
-  private val prometheusRegistry: CollectorRegistry = PrometheusResponseTimeRecorder.DefaultRegistry
+  private[metrics] val prometheusRegistry: CollectorRegistry = PrometheusResponseTimeRecorder.DefaultRegistry
 
   val metricsRoute: Route = new MetricsEndpoint(prometheusRegistry).routes
 
