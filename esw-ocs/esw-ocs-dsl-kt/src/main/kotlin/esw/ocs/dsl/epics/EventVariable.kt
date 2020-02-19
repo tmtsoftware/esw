@@ -10,6 +10,7 @@ import esw.ocs.dsl.highlevel.EventServiceDsl
 import esw.ocs.dsl.highlevel.models.EventSubscription
 import esw.ocs.dsl.params.first
 import esw.ocs.dsl.params.invoke
+import esw.ocs.dsl.params.values
 import kotlin.time.Duration
 
 open class EventVariable protected constructor(
@@ -74,6 +75,8 @@ class ParamVariable<T> private constructor(
     // extract first value from a parameter against provided key from param set
     // if not present, throw an exception
     fun first(): T = getParam().first
+    // extract the values of a parameter as a list
+    fun values(): List<T> = getParam().values
 
     suspend fun setParam(vararg value: T): Done = eventService.publishEvent(getEvent().add(key.set(*value)))
 
