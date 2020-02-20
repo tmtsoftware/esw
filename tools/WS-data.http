@@ -1,61 +1,28 @@
+### @formatter:off
+############### Command Service #############
 ### queryFinal
 GET http://localhost:8090/websocket-endpoint
 Content-Type: application/json
 
-{
-  "_type": "ComponentCommand",
-  "componentId": {
-    "prefix": "CSW.ncc.trombone",
-    "componentType": "hcd"
-  },
-  "command": {
-    "_type": "QueryFinal",
-    "runId": "382aec51-928d-4a8d-8f16-8880c3f35d31",
-    "timeoutInSeconds": 100
-  }
-}
+{"_type": "ComponentCommand", "componentId": {"prefix": "CSW.ncc.trombone", "componentType": "hcd"}, "command": {"_type": "QueryFinal", "runId": "382aec51-928d-4a8d-8f16-8880c3f35d31", "timeoutInSeconds": 100}}
 
 ### subscribeCurrentState
 GET http://localhost:8090/websocket-endpoint
 Content-Type: application/json
 
-{
-  "ComponentCommand": {
-    "componentId": {
-      "name": "test",
-      "componentType": "assembly"
-    },
-    "command": {
-      "SubscribeCurrentState": [
-        "stateName1",
-        "stateName2"
-      ]
-    }
-  }
-}
+{"_type": "ComponentCommand", "componentId": {"prefix": "CSW.ncc.trombone", "componentType": "hcd"}, "command": {"_type": "SubscribeCurrentState", "names": ["temp"]}}
 
+############### Event Service #############
 ### subscribe
 GET http://localhost:8090/websocket-endpoint
 Content-Type: application/json
 
-{
-  "_type": "Subscribe",
-  "eventKeys": [
-    {
-      "source": "CSW.ncc.trombone",
-      "eventName": "offline1"
-    }
-  ],
-  "maxFrequency": 10
-}
+{"_type": "Subscribe", "eventKeys": [{"source": "CSW.ncc.trombone", "eventName": "offline"}], "maxFrequency": 10}
 
 ### subscribe-pattern
 GET http://localhost:8090/websocket-endpoint
 Content-Type: application/json
 
-{
-  "_type": "SubscribeWithPattern",
-  "subsystem": "CSW",
-  "maxFrequency": 10,
-  "pattern": "[a-b]*"
-}
+{"_type": "SubscribeWithPattern", "subsystem": "CSW", "maxFrequency": 10, "pattern": "[a-z]*"}
+
+### @formatter:on

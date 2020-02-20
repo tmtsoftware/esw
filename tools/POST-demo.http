@@ -1,27 +1,4 @@
-### submit
-POST http://localhost:8090/post-endpoint
-Content-Type: application/json
-
-{
-  "_type": "ComponentCommand",
-  "componentId": {
-    "prefix": "CSW.ncc.trombone",
-    "componentType": "hcd"
-  },
-  "command": {
-    "_type": "Submit",
-    "controlCommand": {
-      "_type": "Observe",
-      "source": "CSW.ncc.trombone",
-      "commandName": "move",
-      "maybeObsId": [
-        "obs001"
-      ],
-      "paramSet": []
-    }
-  }
-}
-
+############### Command Service #############
 ### validate
 POST http://localhost:8090/post-endpoint
 Content-Type: application/json
@@ -46,6 +23,54 @@ Content-Type: application/json
   }
 }
 
+### submit immediate
+POST http://localhost:8090/post-endpoint
+Content-Type: application/json
+
+{
+  "_type": "ComponentCommand",
+  "componentId": {
+    "prefix": "CSW.ncc.trombone",
+    "componentType": "hcd"
+  },
+  "command": {
+    "_type": "Submit",
+    "controlCommand": {
+      "_type": "Observe",
+      "source": "CSW.ncc.trombone",
+      "commandName": "immediate",
+      "maybeObsId": [
+        "obs001"
+      ],
+      "paramSet": []
+    }
+  }
+}
+
+### submit
+POST http://localhost:8090/post-endpoint
+Content-Type: application/json
+
+{
+  "_type": "ComponentCommand",
+  "componentId": {
+    "prefix": "CSW.ncc.trombone",
+    "componentType": "hcd"
+  },
+  "command": {
+    "_type": "Submit",
+    "controlCommand": {
+      "_type": "Observe",
+      "source": "CSW.ncc.trombone",
+      "commandName": "long",
+      "maybeObsId": [
+        "obs001"
+      ],
+      "paramSet": []
+    }
+  }
+}
+
 ### oneway
 POST http://localhost:8090/post-endpoint
 Content-Type: application/json
@@ -61,7 +86,7 @@ Content-Type: application/json
     "controlCommand": {
       "_type": "Observe",
       "source": "CSW.ncc.trombone",
-      "commandName": "move",
+      "commandName": "temp",
       "maybeObsId": [
         "obs001"
       ],
@@ -70,6 +95,23 @@ Content-Type: application/json
   }
 }
 
+### oneway
+POST http://localhost:8090/post-endpoint
+Content-Type: application/json
+
+{
+  "_type": "ComponentCommand",
+  "componentId": {
+    "prefix": "CSW.ncc.trombone",
+    "componentType": "hcd"
+  },
+  "command": {
+    "_type": "Query",
+    "runId": "e4641028-a048-46f4-bb40-69bc89a699e0"
+  }
+}
+
+############### Event Service #############
 ### publish
 POST http://localhost:8090/post-endpoint
 Content-Type: application/json
@@ -100,6 +142,7 @@ Content-Type: application/json
   ]
 }
 
+############### Alarm Service #############
 ### setSeverity
 POST http://localhost:8090/post-endpoint
 Content-Type: application/json
@@ -112,3 +155,5 @@ Content-Type: application/json
   },
   "severity": "okay"
 }
+
+###
