@@ -45,7 +45,6 @@ import scala.jdk.DurationConverters.ScalaDurationOps
 2. Oneway then Subscribe current state
 
 ***********************************************************/
-
 object Main extends App {
 
   private val wiring = new FrameworkWiring()

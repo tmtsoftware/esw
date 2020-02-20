@@ -10,11 +10,10 @@ import csw.params.core.models.Id
 import csw.params.events.EventKey
 import csw.prefix.models.Subsystem.CSW
 import esw.gateway.api.protocol.WebsocketRequest
-import esw.gateway.api.protocol.WebsocketRequest.{Subscribe, SubscribeWithPattern}
+import esw.gateway.api.protocol.WebsocketRequest.{ComponentCommand, SequencerCommand, Subscribe, SubscribeWithPattern}
 import esw.gateway.server.handlers.WebsocketHandlerImpl
-import esw.gateway.server.metrics.CommandMetrics._
-import esw.gateway.server.metrics.EventMetrics._
 import esw.http.core.BaseTestSuite
+import esw.ocs.api.protocol.SequencerWebsocketRequest
 import msocket.api.ContentType
 import org.scalatest.prop.TableDrivenPropertyChecks._
 
@@ -35,9 +34,9 @@ class WebsocketHandlerMetricsTest extends BaseTestSuite {
   private def getGaugeValue(name: String, labels: Map[String, String]): Double =
     Metrics.prometheusRegistry.getSampleValue(name, labels.keys.toArray, labels.values.toArray)
 
-  private def runGaugeTest(wsRequest: WebsocketRequest, metricName: String, labels: Map[String, String]) = {
+  private def runGaugeTest(wsRequest: WebsocketRequest, label: String) = {
     when(mockedWsHandler.handle(wsRequest)).thenReturn(stream)
-    def gaugeValue = getGaugeValue(metricName, labels)
+    def gaugeValue = getGaugeValue(Metrics.websocketGaugeMetricName, Map("msg" -> label))
 
     gaugeValue shouldBe 0
     // start 10 ws streams
@@ -54,40 +53,22 @@ class WebsocketHandlerMetricsTest extends BaseTestSuite {
     gaugeValue shouldBe 0
   }
 
-  "Command Service Metrics" must {
+  "Websocket Metrics" must {
     val componentId = mock[ComponentId]
     val id          = mock[Id]
+    val eventKey    = mock[EventKey]
 
     Table(
-      ("CommandServiceWebsocketMessage", "MetricName", "Labels"),
-      (QueryFinal(id, timeout), queryFinalGaugeMetricName, Map("api"   -> "query_final")),
-      (SubscribeCurrentState(), currentStateGaugeMetricName, Map("api" -> "subscribe_current_state"))
+      ("WebsocketRequest", "Labels"),
+      (ComponentCommand(componentId, QueryFinal(id, timeout)), "ComponentCommand_QueryFinal"),
+      (ComponentCommand(componentId, SubscribeCurrentState()), "ComponentCommand_SubscribeCurrentState"),
+      (Subscribe(Set(eventKey)), "Subscribe"),
+      (SubscribeWithPattern(CSW, pattern = "move.*"), "SubscribeWithPattern"),
+      (SequencerCommand(componentId, SequencerWebsocketRequest.QueryFinal(id, timeout)), "SequencerCommand_QueryFinal")
     ).foreach {
-      case (msg, metricName, labels) =>
-        val apiName = msg.getClass.getSimpleName
-        s"increment $apiName gauge on every $apiName request and decrement it on completion | ESW-197" in {
-          val wsRequest = WebsocketRequest.ComponentCommand(componentId, msg)
-          runGaugeTest(wsRequest, metricName, labels)
-        }
-    }
-  }
-
-  "Event Service Metrics" must {
-    val eventKey = mock[EventKey]
-
-    Table(
-      ("WebsocketRequest", "MetricName", "Labels"),
-      (Subscribe(Set(eventKey)), subscribeGaugeMetricName, Map("api" -> "subscribe_event")),
-      (
-        SubscribeWithPattern(CSW, pattern = "move.*"),
-        patternSubscribeGaugeMetricName,
-        Map("api" -> "pattern_subscribe_event", "subsystem" -> "CSW", "pattern" -> "move.*")
-      )
-    ).foreach {
-      case (wsRequest, metricName, labels) =>
-        val apiName = wsRequest.getClass.getSimpleName
-        s"increment $apiName gauge on every $apiName request and decrement it on completion | ESW-197" in {
-          runGaugeTest(wsRequest, metricName, labels)
+      case (request, label) =>
+        s"increment websocket gauge on every $label request and decrement it on completion | ESW-197" in {
+          runGaugeTest(request, label)
         }
     }
   }
