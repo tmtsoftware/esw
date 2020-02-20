@@ -30,7 +30,3 @@ Refer RELEASING.md in `sequencer-scripts` repository.
 Refer RELEASING.md in `csw-shell` repository.
 
 #### Note - `VERSION` tag is version number with 'v' as prefix. For eg. `v0.0.0`
-
-### More detailed instructions
-
-https://docs.google.com/document/d/1tK9W6NClJOB0wq3bFVEzdrYynCxES6BnPdSLNtyGMXo/edit?usp=sharing
