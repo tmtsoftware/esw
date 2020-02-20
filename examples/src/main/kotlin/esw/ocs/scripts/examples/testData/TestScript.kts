@@ -39,7 +39,7 @@ script {
 
     onSetup("get-event") {
         // ESW-88
-        val event: Event = getEvent("ESW.test.get.event").first()
+        val event: Event = getEvent("ESW.test.get.event")
         val successEvent = SystemEvent("ESW.test", "get.success")
         if (!event.isInvalid) publishEvent(successEvent)
     }

@@ -58,6 +58,19 @@ interface TimeServiceDsl : SuspendToJavaConverter {
                     Runnable { task.toJava() })
 
     /**
+     * Schedules a task to execute periodically at the given interval. The task is executed immediately and then after every provided duration.
+     * Callbacks like task are thread safe as they are executed on single threaded coroutine scope dispatcher.
+     *
+     * @param interval the time interval between the execution of tasks
+     * @param task the task to execute after each interval
+     * @return a handle to cancel the execution of further tasks
+     */
+    fun schedulePeriodically(interval: Duration, task: SuspendableCallback): Cancellable =
+            timeService.schedulePeriodically(
+                    interval.toJavaDuration(),
+                    Runnable { task.toJava() })
+
+    /**
      * Schedules a task to execute periodically at the given interval. The task is executed once at duration after current utc time
      * followed by execution of task at each interval. Callbacks like task are thread safe as they are executed on single threaded coroutine scope dispatcher.
      *

@@ -25,22 +25,6 @@ Helper DSL to create an `ObserveEvent` from the provided `prefix`, `event name` 
 Kotlin
 :   @@snip [EventServiceDslExample.kts](../../../../../../../examples/src/main/kotlin/esw/ocs/scripts/examples/paradox/EventServiceDslExample.kts) { #observe-event }
 
-### EventVariable
-
-Helper DSL to create an `EventVariable`. The dsl takes `event key` to subscribe to and `duration` (optional).
-More details about `EventVariable`s are provided in the @ref[FSM documentation](../constructs/fsm.md#event-based-variables)
-
-Kotlin
-:   @@snip [EventServiceDslExample.kts](../../../../../../../examples/src/main/kotlin/esw/ocs/scripts/examples/paradox/EventServiceDslExample.kts) { #event-var }
-
-### ParamVariable
-
-Helper DSL to create an `ParamVariable`. This DSL needs the `initial` value of the parameter, the `event key`, the `parameter Key` to tie to and `duration` (optional).
-More details about `ParamVariable`s are provided in the @ref[FSM documentation](../constructs/fsm.md#event-based-variables)
- 
-Kotlin
-:   @@snip [EventServiceDslExample.kts](../../../../../../../examples/src/main/kotlin/esw/ocs/scripts/examples/paradox/EventServiceDslExample.kts) { #param-var }
-
 ## publishEvent
 
 DSL to publish the given `Event`.

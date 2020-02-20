@@ -1,12 +1,11 @@
 package esw.ocs.dsl.highlevel
 
 import csw.location.api.models.ComponentType
+import csw.params.core.generics.Key
+import csw.params.events.EventKey
 import csw.prefix.models.Prefix
 import csw.prefix.models.Subsystem
-import esw.ocs.dsl.epics.CommandFlag
-import esw.ocs.dsl.epics.Fsm
-import esw.ocs.dsl.epics.FsmImpl
-import esw.ocs.dsl.epics.FsmScope
+import esw.ocs.dsl.epics.*
 import esw.ocs.dsl.highlevel.models.Assembly
 import esw.ocs.dsl.highlevel.models.HCD
 import esw.ocs.dsl.lowlevel.CswServices
@@ -37,6 +36,39 @@ interface CswHighLevelDslApi : CswServices, LocationServiceDsl, ConfigServiceDsl
 
     suspend fun Fsm(name: String, initState: String, block: suspend FsmScope.() -> Unit): Fsm
     fun commandFlag(): CommandFlag
+
+    /**
+     * Method to create an instance of [[esw.ocs.dsl.epics.ParamVariable]] tied to the particular param `key` of an [[csw.params.events.Event]]
+     * being published on specific `event key`.
+     *
+     * [[esw.ocs.dsl.epics.ParamVariable]] is [[esw.ocs.dsl.epics.EventVariable]] with methods to get and set a specific parameter in the [[csw.params.events.Event]]
+     *
+     * It behaves differently depending on the presence of `duration` parameter while creating its instance.
+     * - When provided with `duration`, it will **poll** at an interval of given `duration` to refresh its own value
+     * - Otherwise it will **subscribe** to the given event key and will refresh its own value whenever events are published
+     *
+     * @param initial value to set to the parameter key of the event
+     * @param eventKeyStr string representation of event key
+     * @param key represents parameter key of the event to tie [[esw.ocs.dsl.epics.ParamVariable]] to
+     * @param duration represents the interval of polling.
+     * @return instance of [[esw.ocs.dsl.epics.ParamVariable]]
+     */
+    suspend fun <T> ParamVariable(initial: T, eventKeyStr: String, key: Key<T>, duration: Duration? = null): ParamVariable<T> =
+            ParamVariable.make(initial, key, EventKey.apply(eventKeyStr), this, duration)
+
+    /**
+     * Method to create an instance of [[esw.ocs.dsl.epics.EventVariable]] tied to an [[csw.params.events.Event]] being published on specified `event key`.
+     *
+     * [[esw.ocs.dsl.epics.EventVariable]] behaves differently depending on the presence of `duration` parameter while creating its instance.
+     * - When provided with `duration`, it will **poll** at an interval of given `duration` to refresh its own value
+     * - Otherwise it will **subscribe** to the given event key and will refresh its own value whenever events are published
+     *
+     * @param eventKeyStr string representation of event key
+     * @param duration represents the interval of polling.
+     * @ return instance of [[esw.ocs.dsl.epics.EventVariable]]
+     */
+    suspend fun EventVariable(eventKeyStr: String, duration: Duration? = null): EventVariable =
+            EventVariable.make(EventKey.apply(eventKeyStr), this, duration)
 
     fun finishWithError(message: String = ""): Nothing = throw RuntimeException(message)
 }

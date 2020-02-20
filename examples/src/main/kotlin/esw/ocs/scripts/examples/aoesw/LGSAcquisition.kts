@@ -97,7 +97,7 @@ script {
     }
 
     onSetup("enableOiwfsTtf") { command ->
-        val ttfProbeNum = when (val event = getEvent(oiwfsStateEvent.key()).first()) {
+        val ttfProbeNum = when (val event = getEvent(oiwfsStateEvent.key())) {
             is SystemEvent -> event(oiwfsStateEnableKey).values.indexOf(Choice("TTF"))
             else -> -1
         }
