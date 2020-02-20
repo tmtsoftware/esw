@@ -24,6 +24,7 @@ FsmScript("INIT") {
         }
 
         state(WAITING) {
+            // check command flag for observe param key
             on(commandFlag.value().exists(intKey("observe"))) {
                 val systemEvent = SystemEvent("esw.CommandFlagFsmTestScript", "OBSERVE").add(commandFlag.value())
                 publishState(systemEvent, WAITING)
@@ -40,6 +41,8 @@ FsmScript("INIT") {
         }
 
         onObserve("observe-command-2") { command ->
+            // extract observe command params and set commandFlag
+            // setting command flag will refresh temperature fsm
             commandFlag.set(command.params)
         }
     }
