@@ -100,6 +100,32 @@ class FsmIntegrationTest extends EswTestKit(EventServer) {
       fsmSequencer.stop().awaitResult
     }
 
+    "command flag should trigger FSM bind to it | ESW-246, ESW-251, ESW-252, ESW-142" in {
+      val observeFsmKey = IntKey.make("observe")
+      val fsmStateProbe = TestProbe[Int]
+
+      eventSubscriber
+        .subscribeCallback(
+          Set(EventKey("esw.CommandFlagFsmTestScript.OBSERVE")),
+          event => {
+            val param = event.paramType.get(observeFsmKey).flatMap(_.get(0))
+            param.foreach(fsmStateProbe.ref ! _)
+          }
+        )
+
+      val fsmSequencer: SequencerApi = spawnSequencerProxy(ESW, "commandFlagFsm")
+      val command1                   = Observe(Prefix("esw.test"), CommandName("observe-command-1"), None)
+      val command2                   = Observe(Prefix("esw.test"), CommandName("observe-command-2"), None).madd(observeFsmKey.set(100))
+
+      Await.result(fsmSequencer.submitAndWait(Sequence(command1, command2)), 10.seconds)
+
+      eventually {
+        fsmStateProbe.expectMessage(100)
+      }
+
+      fsmSequencer.stop().awaitResult
+    }
+
     "be able to bind to event variables with polling time | ESW-142, ESW-256" in {
 
       val fsmSequencer: SequencerApi = spawnSequencerProxy(ESW, "MoonNight")
