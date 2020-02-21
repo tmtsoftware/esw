@@ -31,7 +31,7 @@ script {
     //#par
 
     //#isOnline
-    onDiagnosticMode { time, hint ->
+    onDiagnosticMode { _, _ ->
         loopAsync(100.milliseconds) {
             if (isOnline)
                 publishEvent(SystemEvent("TCS.filter.wheel", "online-diag-data"))

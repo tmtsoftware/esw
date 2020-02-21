@@ -124,7 +124,7 @@ script {
         val probeExpModes =
                 (0..2).map { if (it == ttfProbeNum) Choice("CONTINUOUS") else Choice("NOOP") }.toTypedArray()
         val startExposureCommand = Setup(aosq.prefix, "exposure", command.obsId)
-                .add(oiwfsExposureModeKey.set(probeExpModes))
+                .add(oiwfsExposureModeKey.setAll(probeExpModes))
 
         val assembly = Assembly(WFOS, oiwfsDetectorAssembly.name, 10.seconds)
         val response = assembly.submitAndWait(startExposureCommand, 10.seconds)
