@@ -3,7 +3,7 @@ import sbt.Def.{setting => dep}
 import sbt._
 
 object Libs {
-  private val SilencerVersion = "1.4.4"
+  private val SilencerVersion = "1.6.0"
   private val MSocketVersion  = "cb1e6d9"
 
   val `silencer-plugin` = "com.github.ghik" % "silencer-plugin" % SilencerVersion cross CrossVersion.full
