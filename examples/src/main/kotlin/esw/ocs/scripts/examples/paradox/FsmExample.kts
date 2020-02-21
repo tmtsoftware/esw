@@ -25,11 +25,15 @@ script {
     val commandFlag = CommandFlag()
 
     val temperatureFsm = Fsm("TEMP", OK) {
-        var fsmVariable = 10                                     // [[ 1 ]]
+        val defaultExpectedTemperature = 40                                     // [[ 1 ]]
 
         state(OK) {
             val currentTemp = temperatureVar.first()        // [[ 2 ]]
-            val expectedTemp = commandFlag.value().get(intKey("expected-temperature")).get().first
+            val expectedTempParameter = commandFlag.value().get(intKey("expected-temperature"))
+            val expectedTemp = if (expectedTempParameter.isDefined)
+                expectedTempParameter.get().first
+            else
+                defaultExpectedTemperature
 
             entry {
                 publishState(tempFsmEvent, OK)
@@ -69,15 +73,15 @@ script {
     temperatureVar.bind(temperatureFsm)
     commandFlag.bind(temperatureFsm)                             // [[ 6 ]]
 
-    onSetup("command-1") {
+    onSetup("startFSM") {
         temperatureFsm.start()                                   // [[ 7 ]]
     }
 
-    onSetup("command-2") { command ->
+    onSetup("changeExpectedTemperature") { command ->
         commandFlag.set(command.params)                          // [[ 8 ]]
     }
 
-    onSetup("command-3") {
+    onSetup("waitForFSM") {
         temperatureFsm.await()                                   // [[ 9 ]]
     }
 
