@@ -15,7 +15,15 @@ See [here](https://tmtsoftware.github.io/esw/) for a detailed description of the
 
 | esw | csw |
 |--------|------|
+| v0.1.0 | v2.0.0 |
 | v0.1.0-RC1 | v2.0.0-RC1 |
+
+Public Release History
+----------------------
+
+| Date | Tag | Source | Download |
+|-----|-----|--------|-----|-----|
+| 2020-02-21 | v0.1.0 | [esw-0.1.0](https://github.com/tmtsoftware/esw/tree/v0.1.0) | Apps: [zip](https://github.com/tmtsoftware/esw/releases/download/v0.1.0/esw-apps-0.1.0.zip), Source: [tar.gz](https://github.com/tmtsoftware/esw/archive/v0.1.0.tar.gz), [zip](https://github.com/tmtsoftware/esw/archive/v0.1.0.zip) |
 
 Pre-Release History
 ----------------------
