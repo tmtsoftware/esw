@@ -71,14 +71,14 @@ Kotlin
 
 ### Using schedulePeriodically
 
-The `schedulePeriodically` API allows scheduling a task to execute periodically at a given interval starting at a provided absolute start time. 
-The provided task is a callback, which will be executed in thread-safe way.
+The `schedulePeriodically` API allows scheduling a task to execute periodically at a given interval. It is also possible to provide the start time otherwise the task will be 
+executed immediately. The provided task is a callback, which will be executed in thread-safe way.
 
-Initially, the task is executed once at the given start time followed by periodic execution of the task at the requested period. 
+Initially, the task is executed once immediately / on start time and then followed by periodic execution of the task at the requested period. 
 This function returns a handle that can be used to cancel the execution of further tasks.
 
-The following example shows the scheduling of a task in an `onSetup` handler that starts running at the time provided in a parameter and
-then runs every 5 seconds until stopped. 
+The following examples show the scheduling of a task in `onSetup` handlers. The second usage demos using time provided in a parameter as start time. Tasks run
+every 5 seconds after *start time* until stopped.
 
 Kotlin
 :   @@snip [TimeServiceDslExample.kts](../../../../../../../examples/src/main/kotlin/esw/ocs/scripts/examples/paradox/TimeServiceDslExample.kts) { #schedule-periodically }

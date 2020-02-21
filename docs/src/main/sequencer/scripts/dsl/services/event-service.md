@@ -54,7 +54,8 @@ Kotlin
 
 ## getEvent
 
-DSL to get the latest Event published on each of the given `EventKey` names.
+DSL to get the latest Event published on each of the given `EventKey` names. There are two variations. One is for getting the latest event for single key, the other
+variation is to get the latest events against multiple keys.
 
 Kotlin
 :   @@snip [EventServiceDslExample.kts](../../../../../../../examples/src/main/kotlin/esw/ocs/scripts/examples/paradox/EventServiceDslExample.kts) { #get-event }

@@ -62,7 +62,9 @@ script {
         //#publish-async
 
         //#get-event
-        val events: Set<Event> = getEvent(tempEventKey, stateEventKey)
+        val event = getEvent(tempEventKey) // for single event key
+
+        val events: Set<Event> = getEvent(tempEventKey, stateEventKey) // for single event key
         //#get-event
 
         //#event-key
