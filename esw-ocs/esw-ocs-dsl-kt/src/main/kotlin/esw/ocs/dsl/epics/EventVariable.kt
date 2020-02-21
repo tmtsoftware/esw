@@ -82,7 +82,7 @@ class ParamVariable<T> private constructor(
     // extract the values of a parameter as a list
     fun values(): List<T> = getParam().values
 
-    suspend fun setParam(vararg value: T): Done = cswApi.publishEvent(getEvent().add(key.setAll(*value)))
+    suspend fun setParam(vararg value: T): Done = cswApi.publishEvent(getEvent().add(key.setAll(value)))
 
     companion object {
         suspend fun <T> make(initial: T, key: Key<T>, eventKey: EventKey, cswApi: CswHighLevelDslApi, duration: Duration? = null): ParamVariable<T> {
