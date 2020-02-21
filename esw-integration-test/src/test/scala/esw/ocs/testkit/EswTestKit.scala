@@ -17,7 +17,7 @@ import csw.location.api.scaladsl.LocationService
 import csw.network.utils.{Networks, SocketUtils}
 import csw.prefix.models.{Prefix, Subsystem}
 import csw.testkit.scaladsl.ScalaTestFrameworkTestKit
-import esw.agent.app.{AgentSettings, AgentWiring, AgentApp}
+import esw.agent.app.{AgentApp, AgentSettings, AgentWiring}
 import esw.gateway.api.codecs.GatewayCodecs
 import esw.gateway.api.protocol.{PostRequest, WebsocketRequest}
 import esw.gateway.server.GatewayWiring

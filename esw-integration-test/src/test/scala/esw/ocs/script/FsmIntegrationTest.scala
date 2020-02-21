@@ -126,13 +126,32 @@ class FsmIntegrationTest extends EswTestKit(EventServer) {
       fsmSequencer.stop().awaitResult
     }
 
-    "be able to bind to event variables with polling time | ESW-142, ESW-256" in {
-
-      val fsmSequencer: SequencerApi = spawnSequencerProxy(ESW, "MoonNight")
-      val command1                   = Setup(Prefix("esw.test"), CommandName("start-fsm"), None)
+    "be able to bind to param variables with polling time | ESW-142, ESW-256, ESW-291" in {
+      val subsystem                  = ESW
+      val observingMode              = "MoonNight"
+      val fsmSequencer: SequencerApi = spawnSequencerProxy(subsystem, observingMode)
+      val command1                   = Setup(Prefix("esw.test"), CommandName("start-param-fsm"), None)
       val probe                      = TestProbe[Event]
 
-      eventSubscriber.subscribeActorRef(Set(EventKey("tcs.polling.test")), probe.ref)
+      eventSubscriber.subscribeActorRef(Set(EventKey("tcs.polling.param-var-test")), probe.ref)
+
+      fsmSequencer.submit(Sequence(command1)).futureValue shouldBe a[Started]
+
+      // this is to wait to publish 5 event, which asserts that INIT state is called 5 times. 1st time at 0 millies and
+      // and then next 4 at interval of 400 millis
+      Thread.sleep(1800)
+      probe.receiveMessages(4)
+    }
+
+    "be able to bind to event variables with polling time | ESW-142, ESW-256, ESW-291" in {
+      val subsystem     = ESW
+      val observingMode = "EventVar"
+
+      val fsmSequencer: SequencerApi = spawnSequencerProxy(subsystem, observingMode)
+      val command1                   = Setup(Prefix("esw.test"), CommandName("start-event-fsm"), None)
+      val probe                      = TestProbe[Event]
+
+      eventSubscriber.subscribeActorRef(Set(EventKey("tcs.polling.event-var-test")), probe.ref)
 
       fsmSequencer.submit(Sequence(command1)).futureValue shouldBe a[Started]
 
