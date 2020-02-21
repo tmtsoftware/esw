@@ -23,14 +23,14 @@ class ParamVariableTest {
             coEvery { cswHighLevelDsl.publishEvent(any()) }.returns(Done.done())
 
             val intValue = 3
-            val eventVariableImpl = ParamVariable.make(intValue, intKey, eventKey, cswHighLevelDsl)
+            val paramVariable = ParamVariable.make(intValue, intKey, eventKey, cswHighLevelDsl)
 
             coEvery { cswHighLevelDsl.getEvent(eventKeyStr) }
             val eventSlot: CapturingSlot<Event> = slot()
             coVerify { cswHighLevelDsl.publishEvent(capture(eventSlot)) }
             eventSlot.captured.paramType().get(intKey).get().first shouldBe intValue
 
-            eventVariableImpl.first() shouldBe intValue
+            paramVariable.first() shouldBe intValue
         }
     }
 
@@ -39,10 +39,10 @@ class ParamVariableTest {
         TestSetup().run {
             coEvery { cswHighLevelDsl.getEvent(eventKeyStr) }.returns(systemEvent)
             coEvery { cswHighLevelDsl.publishEvent(any()) }.returns(Done.done())
-            val intValue = 6
+            val initialValue = 6
 
-            val eventVariableImpl = ParamVariable.make(intValue, intKey, eventKey, cswHighLevelDsl)
-            eventVariableImpl.getParam() shouldBe intKey.set(intValue)
+            val paramVariable = ParamVariable.make(initialValue, intKey, eventKey, cswHighLevelDsl)
+            paramVariable.getParam() shouldBe intKey.set(initialValue)
         }
     }
 
@@ -52,11 +52,11 @@ class ParamVariableTest {
             coEvery { cswHighLevelDsl.getEvent(eventKeyStr) }.returns(systemEvent)
             coEvery { cswHighLevelDsl.publishEvent(any()) }.returns(Done.done())
 
-            val intValue = 10
+            val initialValue = 10
 
-            val eventVariableImpl = ParamVariable.make(intValue, intKey, eventKey, cswHighLevelDsl)
+            val paramVariable = ParamVariable.make(initialValue, intKey, eventKey, cswHighLevelDsl)
 
-            eventVariableImpl.first() shouldBe intValue
+            paramVariable.first() shouldBe initialValue
         }
     }
 
@@ -66,13 +66,13 @@ class ParamVariableTest {
             coEvery { cswHighLevelDsl.getEvent(eventKeyStr) }.returns(systemEvent)
             coEvery { cswHighLevelDsl.publishEvent(any()) }.returns(Done.done())
 
-            val intValue = 5
-            val paramVariable = ParamVariable.make(intValue, intKey, eventKey, cswHighLevelDsl)
+            val initialValue = 5
+            val paramVariable = ParamVariable.make(initialValue, intKey, eventKey, cswHighLevelDsl)
 
             coEvery { cswHighLevelDsl.getEvent(eventKeyStr) }
             val eventSlot: CapturingSlot<Event> = slot()
             coVerify { cswHighLevelDsl.publishEvent(capture(eventSlot)) }
-            eventSlot.captured.paramType().get(intKey).get().first shouldBe intValue
+            eventSlot.captured.paramType().get(intKey).get().first shouldBe initialValue
 
             val newValue = 100
             paramVariable.setParam(newValue)
