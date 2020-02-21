@@ -9,9 +9,9 @@ import esw.ocs.dsl.params.*
 
 script {
     //#example-fsm
-    val tempKey = longKey("temperature")
-    val stateKey = stringKey("state")
 
+    // method to publish the state of the FSM
+    val stateKey = stringKey("state")
     val tempFsmEvent = SystemEvent("esw.temperatureFsm", "state")
     suspend fun publishState(baseEvent: SystemEvent, state: String) =
             publishEvent(baseEvent.add(stateKey.set(state)))
@@ -21,69 +21,85 @@ script {
     val ERROR = "ERROR"
     val FINISHED = "FINISHED"
 
+    // Event-based variable for current temperature
+    val tempKey = longKey("temperature")
     val temperatureVar = ParamVariable(0, "esw.temperature.temp", tempKey)
-    val commandFlag = CommandFlag()
 
+    // CommandFlag, and method to get expected temperature from it
+    val commandFlag = CommandFlag()
+    fun getTemperatureLimit(defaultTemperatureLimit: Int): Int {
+        val tempLimitParameter = commandFlag.value().get(intKey("temperatureLimit"))
+        return if (tempLimitParameter.isDefined)
+            tempLimitParameter.get().first
+        else
+            defaultTemperatureLimit
+    }
+
+    // key for parameter passed to Error state from Ok state
+    val deltaKey = longKey("delta")
+
+    // FSM definition
     val temperatureFsm = Fsm("TEMP", OK) {
-        val defaultExpectedTemperature = 40                                     // [[ 1 ]]
+        val initialTemperatureLimit = 40                         // [[ 1 ]]
 
         state(OK) {
-            val currentTemp = temperatureVar.first()        // [[ 2 ]]
-            val expectedTempParameter = commandFlag.value().get(intKey("expected-temperature"))
-            val expectedTemp = if (expectedTempParameter.isDefined)
-                expectedTempParameter.get().first
-            else
-                defaultExpectedTemperature
+            val currentTemp = temperatureVar.first()             // [[ 2 ]]
+            val tempLimit = getTemperatureLimit(initialTemperatureLimit)
 
             entry {
-                publishState(tempFsmEvent, OK)
+                publishState(tempFsmEvent, OK)                   // [[ 3 ]]
             }
             on(currentTemp == 30L) {
-                become(FINISHED)                                 // [[ 3 ]]
+                become(FINISHED)                                 // [[ 4 ]]
             }
-            on(currentTemp > expectedTemp) {
-                become(ERROR, commandFlag().value())             // [[ 4 ]]
+            on(currentTemp > tempLimit) {
+                val deltaParam = deltaKey.set(currentTemp - tempLimit)
+                become(ERROR, Params(setOf(deltaParam)))         // [[ 5 ]]
             }
-            on(currentTemp <= expectedTemp) {
+            on(currentTemp <= tempLimit) {
                 info("temperature is below expected threshold",
-                        mapOf("exepected" to expectedTemp, "current" to currentTemp)
+                        mapOf("limit" to tempLimit, "current" to currentTemp)
                 )
             }
         }
 
         state(ERROR) { params ->
-            val expectedTemp = params.get(intKey("expected-temperature")).get().first
+            val tempLimit = getTemperatureLimit(initialTemperatureLimit)
 
             entry {
                 info("temperature is above expected threshold",
-                        mapOf("exepected" to expectedTemp)
+                        mapOf("limit" to tempLimit, "delta" to params(deltaKey).first)
                 )
                 publishState(tempFsmEvent, ERROR)
             }
-            on(temperatureVar.first() < expectedTemp) {
+            on(temperatureVar.first() < tempLimit) {
                 become(OK)
             }
         }
 
         state(FINISHED) {
-            completeFsm()                                        // [[ 5 ]]
+            completeFsm()                                        // [[ 6 ]]
         }
     }
 
+    // bind reactives to FSM
     temperatureVar.bind(temperatureFsm)
-    commandFlag.bind(temperatureFsm)                             // [[ 6 ]]
+    commandFlag.bind(temperatureFsm)                             // [[ 7 ]]
 
+    // Command handlers
     onSetup("startFSM") {
-        temperatureFsm.start()                                   // [[ 7 ]]
+        temperatureFsm.start()                                   // [[ 8 ]]
     }
 
-    onSetup("changeExpectedTemperature") { command ->
-        commandFlag.set(command.params)                          // [[ 8 ]]
+    onSetup("changeTemperatureLimit") { command ->
+        commandFlag.set(command.params)                          // [[ 9 ]]
     }
 
     onSetup("waitForFSM") {
-        temperatureFsm.await()                                   // [[ 9 ]]
+        temperatureFsm.await()                                   // [[ 10 ]]
+        info("FSM is no longer running.")
     }
 
     //#example-fsm
+
 }

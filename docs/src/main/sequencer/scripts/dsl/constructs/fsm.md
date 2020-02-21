@@ -112,6 +112,7 @@ Calling `await` before calling `start` will start the FSM internally and then wa
 
 Reactive FSM means that changes of state can be tied to changes in Events as well as Commands.
 An FSM can be made to react to changes in Event and Command parameters with the help of `Event based variables` and `Command flags`.
+This reaction is called "re-evaluation", which causes the code for the current state to be executed again.
 It is necessary to _bind_ an FSM to reactive variables to achieve the reactive behavior.
 
 ### Event-based variables
@@ -178,19 +179,23 @@ If it is preferable to have the FSM re-evaluated at a constant periodic rate reg
 polling behavior can be used by specifying the `duration` parameter when creating the Event-based variable. 
 This can be useful when the publisher is too fast and there is no need respond so quickly to it.
 
-The example code demos this feature. The *bind*ing part is same as in previous example. 
+The example code demonstrates this feature. The binding part is same as in previous example. 
 
 Kotlin
 :   @@snip [Fsm.kts](../../../../../../../examples/src/main/kotlin/esw/ocs/scripts/examples/paradox/Fsm.kts) { #polling }
 
 ### CommandFlag
 
-Command Flag acts as bridge that can be used to pass `Parameters` to an FSM from outside. Setting the parameters in a Command Flag will re-evaluate
-all the FSMs with the params that are bound to that flag. It is possible to bind one FSM to multiple Command Flags and vice versa.
-A Command Flag is limited to the scope of a single script. It does not have any remote impact.
+Command Flag acts as bridge that can be used to pass `Parameters` to an FSM from outside (i.e via a Command Handler). 
+A Command Flag can be defined in a scope accessible by a Command Handler and a FSM, and then be bound to the FSM.
+This causes the FSM to re-evaluate whenever the value of the Command Flag changes, which occurs when the `set` method
+is called in the Command Flag (which can be placed in a Command Handler, see @ref[example below](#example-fsm)).
 
-The following example shows how to create a `CommandFlag`, `bind` an FSM to it, and use the methods `get` and `set`, which are provided to retrieve or set the value of
-parameters in the Command Flag.
+A Command Flag can be bound to multiple FSMs, and multiple Command Flags can be bound
+to a single FSM.  A Command Flag is limited to the scope of a single script. It does not have any effect on external scripts.
+
+The following example shows how to create a `CommandFlag`, `bind` an FSM to it, and use the methods `get` and `set` to 
+retrieve and set the value of parameters in the Command Flag.
 
 Kotlin
 :   @@snip [Fsm.kts](../../../../../../../examples/src/main/kotlin/esw/ocs/scripts/examples/paradox/Fsm.kts) { #command-flag }
@@ -203,17 +208,18 @@ Doing it after completion of FSM does not do anything.
 
 ## Example FSM
 
-In the below example, `temparatureFsm` demonstrates how to define and use FSM in the scripts. The Event Variable is declared
+In the below example, `temparatureFsm` demonstrates how to define and use FSM in the scripts. The Event-based variable is declared
 with the Event key `esw.temperature.temp` and parameter `temperature`, and the `temperatureFsm` is bound to it. The job 
 of the `temperatureFsm` is to decide the `state` based on the `temperature` and publish it on the EventKey `esw.temperatureFsm` 
-with the ParamKey `state`.
+with the ParamKey `state`.  The state is determined by comparing the "current temperature" (obtained from a ParamVariable) 
+with the "temperatureLimit", which defaults to 40, but can be updated using the Setup command "changeTemperatureLimit".
 
-Logic of state change is:
+THe logic of state change is:
 
 | condition |state |
 | :---: | :---: |
 |  temp == 30 |  FINISH |
-|  temp > expectedTemp  |  ERROR  |
+|  temp > tempLimit  |  ERROR  |
 |  else       |  OK     |
 
 Kotlin
@@ -226,17 +232,16 @@ Key things in above example code are :
 - `[[ 1 ]]`: Shows **top-level scope of the FSM which can used to declare variables** in FSM's scope and statements which should be executed while starting the FSM.
 Statements written here will be executed only once when the FSM starts.
 - `[[ 2 ]]`: The scope of the state. Statements written here will be executed on every evaluation of the state. So variables declared here will be reinitialized
-whenever state is re-evaluated. In the above case, the *expectedTemp* and *currentTemp* will be initialized every time the OK state is evaluated.
-- `[[ 3 ]]`: State transitions from `OK` state to `FINISHED`.
-- `[[ 4 ]]`: State transitions from `OK` state to `ERROR` with *Params*. ERROR state shows how to consume Params in a state.
-- `[[ 5 ]]`: Marks the FSM complete. Re-evaluation or state transitions cannot happen after this is executed.
-
-Till point `[[ 5 ]]`, it's all about **defining the blue-print** and **initialising state of FSM** which includes executing statements at `[[ 1 ]]`.
-
-- `[[ 6 ]]`: Shows the binding `temperatureFsm` to `temperatureVar` and `commandFlag`. After this point, FSM will re-evaluate whenever events are published on `temperatureVar`.
-- `[[ 7 ]]`: Starts **evaluating the initial state** of the FSM
-- `[[ 8 ]]`: Sets the Params of the Command in the Command flag
-- `[[ 9 ]]`: Waits for completion of the FSM. In example, the script execution will be blocked till line `[[ 4 ]]` is executed which will mark the FSM complete. The script will
-continue execution after FSM is marked complete.
+whenever state is re-evaluated. In the above case, *tempLimit* and *currentTemp* will be initialized every time the OK state is evaluated.
+- `[[ 3 ]]`: The code in the entry block is only executed when first transitioning to this state.   Therefore, state will not be published repeatedly.
+- `[[ 4 ]]`: State transitions from `OK` state to `FINISHED`.
+- `[[ 5 ]]`: State transitions from `OK` state to `ERROR` with a *Params* set containing the delta temperature. The ERROR state shows how to consume Params in a state.
+- `[[ 6 ]]`: Marks the FSM complete. Re-evaluation or state transitions cannot happen after this is executed.
+- `[[ 7 ]]`: Shows the binding `temperatureFsm` to `temperatureVar` and `commandFlag`. After this point, a running FSM will re-evaluate whenever events are published on `temperatureVar`.
+- `[[ 8 ]]`: Starts **evaluating the initial state** of the FSM.  Until this is called the code in the `Fsm` block only specifies the FSM functionality.  However, 
+note that the initialization code in the top-level scope of the FSM is executed (item `[[ 1 ]]`) on construction.
+- `[[ 9 ]]`: Updates the Params of the `CommandFlag`. In our example, we are using those params to specify the temperature limit.
+- `[[ 10 ]]`: Waits for completion of the FSM. In our example, the script execution will be blocked until the `completeFsm` method 
+is called in `[[ 6 ]]`, which occurs when switching to the FINISHED state. Any code after the `await` call will execute after the FSM is completed.
 
 Example code also demos the use of the @ref:[helper constructs](#fsm-helper-constructs) like `entry`, `on`.

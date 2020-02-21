@@ -81,8 +81,6 @@ script {
     pollingEventVar.bind(irisFsm)
     //#polling
 
-    var params = Params(mutableSetOf())
-
     //#command-flag
     val flag = CommandFlag()
     flag.bind(irisFsm) // bind the FSM and command flag
@@ -91,7 +89,7 @@ script {
         flag.set(command.params) // will set params and refreshes the bound FSMs with the new params
     }
 
-    flag.value() // way to extract the current params value in FSM
+    val params = flag.value() // extract the current params value in FSM
     //#command-flag
 
     val exampleFsm = Fsm(name = "example-fsm", initState = "INIT") {
