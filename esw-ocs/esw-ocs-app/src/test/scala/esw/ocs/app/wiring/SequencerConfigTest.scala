@@ -29,6 +29,7 @@ class SequencerConfigTest extends BaseTestSuite {
       sequencerConfigs.prefix should ===(Prefix(NSCU, "darknight"))
       sequencerConfigs.scriptClass should ===(classOf[ValidTestScript].getCanonicalName)
       sequencerConfigs.heartbeatInterval should ===(Duration.ofSeconds(3))
+      sequencerConfigs.enableThreadMonitoring should ===(true)
     }
 
     "create SequencerConfig based on case-sensitive subsystem and observingMode | ESW-103, ESW-279" in {

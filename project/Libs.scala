@@ -21,6 +21,8 @@ object Libs {
   val `jupiter-interface`  = "net.aichler" % "jupiter-interface" % "0.8.3"
 
   val `prometheus-akka-http` = "com.lonelyplanet" %% "prometheus-akka-http" % "0.5.0"
+
+  val blockhound             = "io.projectreactor.tools" % "blockhound"            % "1.0.2.RELEASE"
 }
 
 object Csw {

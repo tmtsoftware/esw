@@ -25,6 +25,7 @@ import esw.http.core.wiring.{ActorRuntime, CswWiring, HttpService, Settings}
 import esw.ocs.api.codecs.SequencerHttpCodecs
 import esw.ocs.api.protocol.ScriptError
 import esw.ocs.handler.{SequencerPostHandler, SequencerWebsocketHandler}
+import esw.ocs.impl.blockhound.BlockHoundWiring
 import esw.ocs.impl.core._
 import esw.ocs.impl.internal._
 import esw.ocs.impl.messages.SequencerMessages.Shutdown
@@ -128,6 +129,10 @@ private[ocs] class SequencerWiring(
         val registration = AkkaRegistration(AkkaConnection(componentId), sequencerRef.toURI)
         val loc          = locationServiceUtil.register(registration).block
         logger.info(s"Successfully started Sequencer for subsystem: $subsystem with observing mode: $observingMode")
+        if (enableThreadMonitoring) {
+          logger.info(s"Thread Monitoring enabled for ${BlockHoundWiring.integrations}")
+          BlockHoundWiring.install()
+        }
         loc
       }
       catch {
