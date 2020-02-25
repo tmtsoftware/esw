@@ -3,7 +3,7 @@
 Scripts have ability to define, include, and run @link:[Finite State Machine (FSM)](https://en.wikipedia.org/wiki/Finite-state_machine). 
 A FSM can transition between defined states and can be made reactive to Events and Commands.
 
-## Define a FSM
+## Define an FSM
 
 ### Create the FSM
 
@@ -73,18 +73,18 @@ The following are some useful FSM constructs.
 
 1. `entry` : executes the given `block` only when **state transition happens from a different state**
 
-    Kotlin
-    :   @@snip [Fsm.kts](../../../../../../../examples/src/main/kotlin/esw/ocs/scripts/examples/paradox/Fsm.kts) { #entry }
+Kotlin
+:   @@snip [Fsm.kts](../../../../../../../examples/src/main/kotlin/esw/ocs/scripts/examples/paradox/Fsm.kts) { #entry }
 
 2. `on` : executes the given `block` if the given `condition` evaluates to **true**. This construct should be used for conditional execution of a task.
 
-    Kotlin
-    :   @@snip [Fsm.kts](../../../../../../../examples/src/main/kotlin/esw/ocs/scripts/examples/paradox/Fsm.kts) { #on }
+Kotlin
+:   @@snip [Fsm.kts](../../../../../../../examples/src/main/kotlin/esw/ocs/scripts/examples/paradox/Fsm.kts) { #on }
 
 3. `after` : executes the given `block` after the given `duration`
 
-    Kotlin
-    :   @@snip [Fsm.kts](../../../../../../../examples/src/main/kotlin/esw/ocs/scripts/examples/paradox/Fsm.kts) { #after }
+Kotlin
+:   @@snip [Fsm.kts](../../../../../../../examples/src/main/kotlin/esw/ocs/scripts/examples/paradox/Fsm.kts) { #after }
 
 ## Start FSM
 
@@ -125,7 +125,7 @@ There are two types of Event-based variables.
 
 #### EventVariable
 An `EventVariable` will be tied to an Event published on the given EventKey. 
-The example below shows creating an instance of an EventVariable and the *getEvent* method which returns the latest event. 
+The example below shows creating an instance of an EventVariable and the *getEvent* method which returns the latest event.
 
 An EventVariable needs 2 parameters:
 
@@ -142,7 +142,7 @@ The example below shows creating an instance of a ParamVariable and the usage of
 A ParamVariable takes 4 parameters:
 
 - *initial*: initial value for the Parameter. The value of the parameter in the Event is updated when the ParamVariable is created.
-- *event key*:  specifies the Event with the linked Parameter
+- *event key*: specifies the Event with the linked Parameter
 - *param Key*: specifies which Parameter to tie the variable to
 - *duration*: (optional) polling period for updating the value of the Parameter (Significance of duration parameter is explained @ref:[below](#poll).)
 
