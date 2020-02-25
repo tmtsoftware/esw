@@ -32,7 +32,7 @@ open class EventVariable protected constructor(
         return fsmSubscription
     }
 
-    suspend fun getEvent(): Event = cswApi.getEvent(eventKey)
+    fun getEvent(): Event = latestEvent
 
     private suspend fun startSubscription(): EventSubscription = if (duration != null) polling(duration) else subscribe()
 
@@ -73,14 +73,14 @@ class ParamVariable<T> private constructor(
         duration: Duration? = null
 ) : EventVariable(initial, cswApi, duration) {
 
-    suspend fun getParam(): Parameter<T> = (getEvent().paramType()).invoke(key)
+    fun getParam(): Parameter<T> = (getEvent().paramType()).invoke(key)
 
     // extract first value from a parameter against provided key from param set
     // if not present, throw an exception
-    suspend fun first(): T = getParam().first
+    fun first(): T = getParam().first
 
     // extract the values of a parameter as a list
-    suspend fun values(): List<T> = getParam().values
+    fun values(): List<T> = getParam().values
 
     suspend fun setParam(vararg value: T): Done = cswApi.publishEvent(getEvent().add(key.setAll(value)))
 
