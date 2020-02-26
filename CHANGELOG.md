@@ -9,9 +9,9 @@ Here is the repository for ESW: [esw](https://github.com/tmtsoftware/esw).
 
 All notable changes to this project will be documented in this file.
 
-## [ESW v0.1.0] - 2020-02-21
-This is the first release of the TMT Executive Software for project stakeholders. 
-See [here](https://tmtsoftware.github.io/esw/0.1.0/) for a detailed documentation of this version of the ESW software.
+## [ESW v0.1.0-RC2] - 2020-02-26
+This is the second release of the TMT Executive Software for project stakeholders. 
+See [here](https://tmtsoftware.github.io/esw/0.1.0-RC2/) for a detailed documentation of this version of the ESW software.
 
 ## [ESW v0.1.0-RC1] - 2020-02-06
 This is the first release of the TMT Executive Software for project stakeholders. 

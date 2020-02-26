@@ -137,8 +137,8 @@ class FsmIntegrationTest extends EswTestKit(EventServer) {
 
       fsmSequencer.submit(Sequence(command1)).futureValue shouldBe a[Started]
 
-      // this is to wait to publish 5 event, which asserts that INIT state is called 5 times. 1st time at 0 millies and
-      // and then next 4 at interval of 400 millis
+      // this is to wait to publish 5 events, which asserts that INIT state is called 5 times. 1st time at 0 millies and
+      // then next 4 at an interval of 400 millis
       Thread.sleep(1800)
       probe.receiveMessages(4)
     }
@@ -155,8 +155,8 @@ class FsmIntegrationTest extends EswTestKit(EventServer) {
 
       fsmSequencer.submit(Sequence(command1)).futureValue shouldBe a[Started]
 
-      // this is to wait to publish 5 event, which asserts that INIT state is called 5 times. 1st time at 0 millies and
-      // and then next 4 at interval of 400 millis
+      // this is to wait to publish 5 events, which asserts that INIT state is called 5 times. 1st time at 0 millies and
+      // then next 4 at an interval of 400 millis
       Thread.sleep(1800)
       probe.receiveMessages(4)
     }

@@ -36,6 +36,7 @@ object Dependencies {
       Libs.`scala-async`,
       Libs.enumeratum.value,
       Libs.`msocket-impl-jvm`,
+      Libs.blockhound,
       Libs.scalatest                  % Test,
       Akka.`akka-actor-testkit-typed` % Test,
       Libs.`mockito-scala`            % Test

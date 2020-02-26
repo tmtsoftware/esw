@@ -20,10 +20,10 @@ fun choiceKey(name: String, units: Units, choices: Choices): Key<Choice> = Choic
 
 fun choiceKey(name: String, choices: Choices): Key<Choice> = ChoiceKey().make(name, choices)
 
-fun choiceKey(name: String, units: Units = JUnits.NoUnits, vararg choices: Choice): Key<Choice> =
-        ChoiceKey().make(name, units, Choices.fromChoices(choices.toSet()))
+fun choiceKey(name: String, units: Units, vararg choices: Choice): Key<Choice> =
+        choiceKey(name, units, Choices.fromChoices(choices.toSet()))
 
-fun choiceKey(name: String, vararg choices: Choice): Key<Choice> = ChoiceKey().make(name, Choices.fromChoices(choices.toSet()))
+fun choiceKey(name: String, vararg choices: Choice): Key<Choice> = choiceKey(name, Choices.fromChoices(choices.toSet()))
 
 fun raDecKey(name: String, units: Units = JUnits.NoUnits): Key<RaDec> = RaDecKey().make(name, units)
 fun eqCoordKey(name: String, units: Units = JUnits.NoUnits): Key<Coords.EqCoord> = EqCoordKey().make(name, units)
