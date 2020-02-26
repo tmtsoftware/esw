@@ -1,0 +1,15 @@
+## ESW - TMT Executive Software v0.1.0-RC2
+
+This is the second release v0.1.0-RC2 of the TMT Executive Software.
+
+See [CHANGELOG.md](CHANGELOG.md) for details of all releases.
+
+### Features
+Three main components are delivered as part of ESW:
+* Sequencer
+* Sequence Component
+* ESW Gateway
+
+### Documentation
+
+Paradox documentation can be found here: https://tmtsoftware.github.io/esw/0.1.0-RC2/

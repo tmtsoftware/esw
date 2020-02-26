@@ -4,7 +4,7 @@ import sbt._
 
 object Libs {
   private val SilencerVersion = "1.4.4"
-  private val MSocketVersion  = "cb1e6d9"
+  private val MSocketVersion  = "0.1.0-RC2"
 
   val `silencer-plugin` = "com.github.ghik" % "silencer-plugin" % SilencerVersion cross CrossVersion.full
   val `silencer-lib`    = "com.github.ghik" % "silencer-lib"    % SilencerVersion cross CrossVersion.full
@@ -22,12 +22,12 @@ object Libs {
 
   val `prometheus-akka-http` = "com.lonelyplanet" %% "prometheus-akka-http" % "0.5.0"
 
-  val blockhound             = "io.projectreactor.tools" % "blockhound"            % "1.0.2.RELEASE"
+  val blockhound = "io.projectreactor.tools" % "blockhound" % "1.0.2.RELEASE"
 }
 
 object Csw {
   private val Org     = "com.github.tmtsoftware.csw"
-  private val Version = "dfa7c43" //change this to 0.1.0-SNAPSHOT to test with local csw changes (after publishLocal)
+  private val Version = "2.0.0-RC2" //change this to 0.1.0-SNAPSHOT to test with local csw changes (after publishLocal)
 
   val `csw-admin-api`             = dep(Org %%% "csw-admin-api" % Version)
   val `csw-admin-impl`            = Org %% "csw-admin-impl" % Version
