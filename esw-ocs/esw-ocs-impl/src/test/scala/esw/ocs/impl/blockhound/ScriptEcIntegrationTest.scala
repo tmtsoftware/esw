@@ -21,7 +21,7 @@ class ScriptEcIntegrationTest extends BaseTestSuite {
   "ScriptEcIntegration" must {
     "detect blocking calls for script thread | ESW-290" in {
       val testScriptThread                 = "test-script-thread-1"
-      var assertString: ListBuffer[String] = ListBuffer.empty
+      val assertString: ListBuffer[String] = ListBuffer.empty
       val blockingCallback: String => Unit = (msg: String) => { assertString += msg }
       val scriptEcIntegration              = new TestScriptEcIntegration(testScriptThread, blockingCallback)
       scriptEcIntegration.isInstanceOf[BlockHoundIntegration] shouldBe (true)
