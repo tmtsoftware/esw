@@ -6,6 +6,7 @@ import esw.ocs.api.BaseTestSuite
 import reactor.blockhound.BlockHound
 import reactor.blockhound.integration.BlockHoundIntegration
 
+import scala.collection.mutable.ListBuffer
 import scala.concurrent.duration.DurationInt
 import scala.concurrent.{Await, ExecutionContext, Future}
 
@@ -19,10 +20,10 @@ class TestScriptEcIntegration(threadName: String, blockingCallback: String => Un
 class ScriptEcIntegrationTest extends BaseTestSuite {
   "ScriptEcIntegration" must {
     "detect blocking calls for script thread | ESW-290" in {
-      val testScriptThread    = "test-script-thread-1"
-      var assertString        = ""
-      val blockingCallback    = (msg: String) => { assertString = msg }
-      val scriptEcIntegration = new TestScriptEcIntegration(testScriptThread, blockingCallback)
+      val testScriptThread                 = "test-script-thread-1"
+      var assertString: ListBuffer[String] = ListBuffer.empty
+      val blockingCallback: String => Unit = (msg: String) => { assertString += msg }
+      val scriptEcIntegration              = new TestScriptEcIntegration(testScriptThread, blockingCallback)
       scriptEcIntegration.isInstanceOf[BlockHoundIntegration] shouldBe (true)
 
       val testEc: ExecutionContext =
@@ -32,7 +33,7 @@ class ScriptEcIntegrationTest extends BaseTestSuite {
 
       Await.result(Future { Thread.sleep(1000) }(testEc), 10.seconds)
 
-      assertString shouldBe ("java.lang.Thread.sleep")
+      assertString.contains("java.lang.Thread.sleep") shouldBe (true)
     }
 
     "ignore blocking println calls for script thread | ESW-290" in {
