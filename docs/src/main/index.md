@@ -6,6 +6,7 @@
 
 - [SequenceComponents](sequencer/seqcompsequencer/index.md)
 - [Scripting](sequencer/scripts/scripts.md)
+- [ESW Service Contract](commons/contracts.md)
 - [Applications](apps/apps.md)
 
 @@@
