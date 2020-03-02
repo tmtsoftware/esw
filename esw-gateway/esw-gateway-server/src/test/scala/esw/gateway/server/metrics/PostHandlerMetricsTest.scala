@@ -1,57 +1,77 @@
 package esw.gateway.server.metrics
 
-import akka.http.scaladsl.server.Route
-import csw.command.api.messages.CommandServiceHttpMessage.{Oneway, Query, Submit, Validate}
+import akka.http.scaladsl.marshalling.ToEntityMarshaller
+import akka.http.scaladsl.model.HttpRequest
+import akka.http.scaladsl.testkit.ScalatestRouteTest
+import com.lonelyplanet.prometheus.PrometheusResponseTimeRecorder
+import csw.command.api.messages.CommandServiceHttpMessage.Submit
 import csw.location.api.models.ComponentId
-import csw.params.commands.Setup
-import csw.params.core.models.Id
-import csw.params.events.{Event, EventKey}
+import csw.location.api.models.ComponentType.Assembly
+import csw.params.commands.{CommandName, Setup}
+import csw.params.core.models.ObsId
+import csw.params.events.{EventKey, EventName}
+import csw.prefix.models.Prefix
+import esw.gateway.api.codecs.GatewayCodecs
 import esw.gateway.api.protocol.PostRequest
-import esw.gateway.api.protocol.PostRequest.{ComponentCommand, GetEvent, PublishEvent, SequencerCommand}
+import esw.gateway.api.protocol.PostRequest.{ComponentCommand, GetEvent, SequencerCommand, createLabel}
+import esw.gateway.server.CswWiringMocks
 import esw.gateway.server.handlers.PostHandlerImpl
 import esw.http.core.BaseTestSuite
-import esw.ocs.api.protocol.SequencerPostRequest.Stop
-import org.scalatest.prop.TableDrivenPropertyChecks._
+import esw.ocs.api.protocol.SequencerPostRequest.Pause
+import msocket.api.ContentType
+import msocket.impl.post.{ClientHttpCodecs, PostRouteFactory}
+import org.mockito.MockitoSugar
+import org.scalatest.prop.Tables.Table
 
-class PostHandlerMetricsTest extends BaseTestSuite {
-  private val mockedPostHandler  = mock[PostHandlerImpl]
-  private val mockedRoute        = mock[Route]
-  private val postHandlerMetrics = new PostHandlerMetrics(mockedPostHandler)
+class PostHandlerMetricsTest
+    extends BaseTestSuite
+    with ScalatestRouteTest
+    with GatewayCodecs
+    with ClientHttpCodecs
+    with MockitoSugar {
 
-  private def getCounterValue(name: String, labels: Map[String, String]): Double =
-    Metrics.prometheusRegistry.getSampleValue(name, labels.keys.toArray, labels.values.toArray)
+  override def clientContentType: ContentType = ContentType.Json
 
-  private def runCounterTest(postRequest: PostRequest, metricName: String, labelValue: String): Unit = {
-    when(mockedPostHandler.handle(postRequest)).thenReturn(mockedRoute)
-    def counterValue = getCounterValue(metricName, Map("msg" -> labelValue))
+  private val cswCtxMocks = new CswWiringMocks()
 
-    counterValue shouldBe 0
-    (1 to 10).foreach(_ => postHandlerMetrics.handle(postRequest) shouldBe mockedRoute)
-    counterValue shouldBe 10
+  import cswCtxMocks._
+
+  private val postHandlerImpl = new PostHandlerImpl(alarmApi, resolver, eventApi, loggingApi, adminService)
+  private val postRoute       = new PostRouteFactory[PostRequest]("post-endpoint", postHandlerImpl).make(true)
+  private val prefix          = Prefix("esw.test")
+
+  private val defaultRegistry = PrometheusResponseTimeRecorder.DefaultRegistry
+  private val command         = Setup(prefix, CommandName("c1"), Some(ObsId("obsId")))
+  private val componentId     = ComponentId(prefix, Assembly)
+  private val eventKey        = EventKey(prefix, EventName("event"))
+
+  private def post[E: ToEntityMarshaller](entity: E): HttpRequest = Post("/post-endpoint", entity)
+
+  def labels(msg: String, commandMsg: String = "", sequencerMsg: String = "") =
+    Map("msg" -> msg, "hostname" -> "example.com", "command_msg" -> commandMsg, "sequencer_msg" -> sequencerMsg)
+
+  Table(
+    ("PostRequest", "Labels"),
+    (ComponentCommand(componentId, Submit(command)), labels("ComponentCommand", commandMsg = "Submit")),
+    (SequencerCommand(componentId, Pause), labels("SequencerCommand", sequencerMsg = "Pause")),
+    (GetEvent(Set(eventKey)), labels("GetEvent"))
+  ).foreach {
+    case (request, labels) =>
+      s"increment http counter on every ${createLabel(request)} request | ESW-197" in {
+        runCounterTest(request, labels)
+      }
   }
 
-  "Http Metrics" must {
-    val command     = mock[Setup]
-    val componentId = mock[ComponentId]
-    val id          = mock[Id]
-    val eventKey    = mock[EventKey]
-    val event       = mock[Event]
+  private def getCounterValue(labels: Map[String, String]): Double =
+    defaultRegistry.getSampleValue("http_requests_total", labels.keys.toArray, labels.values.toArray)
 
-    Table(
-      ("PostRequest", "Label"),
-      (ComponentCommand(componentId, Validate(command)), "ComponentCommand_Validate"),
-      (ComponentCommand(componentId, Submit(command)), "ComponentCommand_Submit"),
-      (ComponentCommand(componentId, Oneway(command)), "ComponentCommand_Oneway"),
-      (ComponentCommand(componentId, Query(id)), "ComponentCommand_Query"),
-      (GetEvent(Set(eventKey)), "GetEvent"),
-      (PublishEvent(event), "PublishEvent"),
-      (SequencerCommand(componentId, Stop), "SequencerCommand_Stop")
-    ).foreach {
-      case (request, label) =>
-        s"increment http counter on every $label request | ESW-197" in {
-          runCounterTest(request, Metrics.httpCounterMetricName, label)
-        }
-    }
+  private def runCounterTest(postRequest: PostRequest, labels: Map[String, String]): Unit = {
+
+    def counterValue = getCounterValue(labels)
+
+    counterValue shouldBe 0
+    (1 to 10).foreach(_ => post(postRequest) ~> postRoute)
+    counterValue shouldBe 10
   }
 
 }
