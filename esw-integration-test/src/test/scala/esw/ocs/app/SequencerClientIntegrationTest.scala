@@ -154,7 +154,7 @@ class SequencerClientIntegrationTest extends EswTestKit(EventServer) {
         StepList(
           List(
             Step(command1, Success, hasBreakpoint = false),
-            Step(command2, Failure("java.lang.RuntimeException: " + failCommandName), hasBreakpoint = false),
+            Step(command2, Failure(failCommandName), hasBreakpoint = false),
             Step(command3, Pending, hasBreakpoint = false)
           )
         )

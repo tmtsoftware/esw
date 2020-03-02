@@ -52,7 +52,7 @@ class SequencerGatewayTest extends EswTestKit(Gateway, EventServer) with Gateway
 
       //queryFinal
       sequencer.queryFinal(submitResponse.runId).futureValue should ===(
-        Error(submitResponse.runId, "java.lang.RuntimeException: fail-command")
+        Error(submitResponse.runId, "fail-command")
       )
     }
   }

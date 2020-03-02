@@ -372,7 +372,7 @@ class ScriptIntegrationTest extends EswTestKit(EventServer, AlarmServer, ConfigS
 
       val response = ocsSequencer.submitAndWait(sequence).futureValue
       response shouldBe an[Error]
-      response.asInstanceOf[Error].message should ===("java.lang.RuntimeException: boom")
+      response.asInstanceOf[Error].message should ===("boom")
     }
 
   }
