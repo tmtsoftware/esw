@@ -23,12 +23,7 @@ import msocket.impl.post.{ClientHttpCodecs, PostRouteFactory}
 import org.mockito.MockitoSugar
 import org.scalatest.prop.Tables.Table
 
-class PostHandlerMetricsTest
-    extends BaseTestSuite
-    with ScalatestRouteTest
-    with GatewayCodecs
-    with ClientHttpCodecs
-    with MockitoSugar {
+class PostMetricsTest extends BaseTestSuite with ScalatestRouteTest with GatewayCodecs with ClientHttpCodecs with MockitoSugar {
 
   override def clientContentType: ContentType = ContentType.Json
 
