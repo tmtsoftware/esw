@@ -34,7 +34,7 @@ class WebsocketMetricsTest extends BaseTestSuite with ScalatestRouteTest with Ga
   import cswCtxMocks._
 
   implicit val typedSystem: ActorSystem[_]             = system.toTyped
-  implicit override val patienceConfig: PatienceConfig = PatienceConfig(10.seconds)
+  implicit override val patienceConfig: PatienceConfig = PatienceConfig(5.seconds)
 
   private val eventApi         = new EventImpl(eventService, eventSubscriberUtil)
   private val websocketHandler = new WebsocketHandlerImpl(resolver, eventApi, _)
@@ -53,18 +53,19 @@ class WebsocketMetricsTest extends BaseTestSuite with ScalatestRouteTest with Ga
   private def labels(msg: String, commandMsg: String = "", sequencerMsg: String = "") =
     Map("msg" -> msg, "hostname" -> "example.com", "command_msg" -> commandMsg, "sequencer_msg" -> sequencerMsg)
 
-  private def gaugeValue: Double =
+  private def commandGaugeValue: Double =
     getGaugeValue(labels(msg = "ComponentCommand", commandMsg = "QueryFinal"))
 
-  private def runWsGaugeTest[Res](req: WebsocketRequest, res: Res)(withMock: Promise[Res] => Unit) = {
+  private def sequencerGaugeValue: Double =
+    getGaugeValue(labels(msg = "SequencerCommand", sequencerMsg = "QueryFinal"))
+
+  private def runWsGaugeTest[Res](req: WebsocketRequest, res: Res, gaugeValue: => Double)(withMock: Promise[Res] => Unit) = {
     val wsClient = WSProbe()
     val p        = Promise[Res]
     withMock(p)
 
     WS("/websocket-endpoint", wsClient.flow) ~> wsRoute ~> check {
       gaugeValue shouldBe 0
-
-
       wsClient.sendMessage(ContentType.Json.strictMessage(req))
       Try(wsClient.inProbe.requestNext(1.millis))
       eventually(gaugeValue shouldBe 1)
@@ -79,7 +80,7 @@ class WebsocketMetricsTest extends BaseTestSuite with ScalatestRouteTest with Ga
 
     val queryFinal: WebsocketRequest = ComponentCommand(componentId, QueryFinal(runId, timeout))
 
-    runWsGaugeTest(queryFinal, Completed(runId)) { p =>
+    runWsGaugeTest(queryFinal, Completed(runId), commandGaugeValue) { p =>
       when(commandService.queryFinal(runId)(timeout)).thenReturn(p.future)
     }
   }
@@ -88,7 +89,7 @@ class WebsocketMetricsTest extends BaseTestSuite with ScalatestRouteTest with Ga
     val seqQueryFinal: WebsocketRequest =
       SequencerCommand(componentId, SequencerWebsocketRequest.QueryFinal(runId, timeout))
 
-    runWsGaugeTest(seqQueryFinal, Completed(runId)) { p =>
+    runWsGaugeTest(seqQueryFinal, Completed(runId), sequencerGaugeValue) { p =>
       when(sequencer.queryFinal(runId)(timeout)).thenReturn(p.future)
     }
   }
