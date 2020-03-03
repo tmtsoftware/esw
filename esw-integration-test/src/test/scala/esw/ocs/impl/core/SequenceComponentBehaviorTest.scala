@@ -38,7 +38,7 @@ class SequenceComponentBehaviorTest extends EswTestKit {
     new SequencerWiring(subsystem, observingMode, sequenceComponentLocation)
 
   "SequenceComponentBehavior" must {
-    "load/unload script and get appropriate status | ESW-103" in {
+    "load/unload script and get appropriate status | ESW-103, ESW-255" in {
       val sequenceComponentRef: ActorRef[SequenceComponentMsg] = spawnSequenceComponent()
 
       val loadScriptResponseProbe = TestProbe[ScriptResponse]
