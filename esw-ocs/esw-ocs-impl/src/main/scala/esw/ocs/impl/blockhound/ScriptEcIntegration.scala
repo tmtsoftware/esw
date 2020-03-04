@@ -10,6 +10,8 @@ class ScriptEcIntegration(scriptThreadName: String) extends BlockHoundIntegratio
         p.or(it => it.getName.equals(scriptThreadName))
       })
       .allowBlockingCallsInside("java.io.PrintStream", "println")
+      .allowBlockingCallsInside("csw.event.client.internal.redis.RedisPublisher", "publishInitializationEvent")
+      .allowBlockingCallsInside("csw.params.core.models.Id$", "apply")
       .blockingMethodCallback(method => new Exception(method.toString).printStackTrace())
   }
 

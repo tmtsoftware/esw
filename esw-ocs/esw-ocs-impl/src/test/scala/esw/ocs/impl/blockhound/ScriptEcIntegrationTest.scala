@@ -2,6 +2,7 @@ package esw.ocs.impl.blockhound
 
 import java.util.concurrent.Executors
 
+import csw.params.core.models.Id
 import esw.ocs.api.BaseTestSuite
 import reactor.blockhound.BlockHound
 import reactor.blockhound.integration.BlockHoundIntegration
@@ -36,7 +37,7 @@ class ScriptEcIntegrationTest extends BaseTestSuite {
       assertString.contains("java.lang.Thread.sleep") shouldBe (true)
     }
 
-    "ignore blocking println calls for script thread | ESW-290" in {
+    "ignore allowed blocking println calls for script thread | ESW-290" in {
       val testScriptThread    = "test-script-thread-2"
       var assertString        = ""
       val blockingCallback    = (msg: String) => { assertString = msg }
@@ -48,7 +49,13 @@ class ScriptEcIntegrationTest extends BaseTestSuite {
       BlockHoundWiring.addIntegration(scriptEcIntegration)
       BlockHoundWiring.install()
 
-      Await.result(Future { println("hello world") }(testEc), 10.seconds)
+      // Some calls are intended to blocking so ScriptEcIntegration allows these specific calls
+      Await.result(Future {
+        // println is internally blocking
+        println("hello world")
+        // Id() creates random UUID which is blocking
+        Id()
+      }(testEc), 10.seconds)
 
       assertString shouldBe ("")
     }
