@@ -14,10 +14,10 @@ import csw.command.client.messages.CommandMessage.Oneway
 import csw.command.client.messages.ContainerCommonMessage.GetComponents
 import csw.command.client.messages.ContainerMessage
 import csw.command.client.models.framework.{Component, Components, ContainerLifecycleState}
-import csw.location.client.ActorSystemFactory
 import csw.location.api.models.ComponentType.{Assembly, HCD}
 import csw.location.api.models.Connection.AkkaConnection
 import csw.location.api.models.{ComponentId, ComponentType}
+import csw.location.client.ActorSystemFactory
 import csw.logging.client.internal.JsonExtensions._
 import csw.logging.client.internal._
 import csw.logging.client.scaladsl.LoggingSystemFactory
@@ -61,6 +61,7 @@ class AdminGatewayTest extends EswTestKit(Gateway) with GatewayCodecs {
   private var laserComponent: Component                                = _
   private var galilComponent: Component                                = _
   private var loggingSystem: LoggingSystem                             = _
+  private var adminClient: AdminClient                                 = _
 
   override def beforeAll(): Unit = {
     super.beforeAll()
@@ -74,6 +75,7 @@ class AdminGatewayTest extends EswTestKit(Gateway) with GatewayCodecs {
     // this will start container on random port and join seed and form a cluster
     val containerRef = startContainerAndWaitForRunning()
     extractComponentsFromContainer(containerRef)
+    adminClient = new AdminClient(gatewayPostClient)
   }
 
   override def afterAll(): Unit = {
@@ -101,8 +103,6 @@ class AdminGatewayTest extends EswTestKit(Gateway) with GatewayCodecs {
   }
 
   override protected def afterEach(): Unit = logBuffer.clear()
-
-  val adminClient = new AdminClient(gatewayPostClient)
 
   "AdminApi" must {
 
