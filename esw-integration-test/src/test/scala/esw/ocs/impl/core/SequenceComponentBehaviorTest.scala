@@ -99,6 +99,22 @@ class SequenceComponentBehaviorTest extends EswTestKit {
       )
     }
 
+    "load script and give ScriptError if exception on initialization | ESW-243" in {
+      val sequenceComponentRef: ActorRef[SequenceComponentMsg] = spawnSequenceComponent()
+
+      val loadScriptResponseProbe = TestProbe[ScriptResponse]
+      val subsystem               = ESW
+      val observingMode           = "initException"
+      val prefix                  = Prefix(s"$subsystem.$observingMode")
+
+      //LoadScript
+      sequenceComponentRef ! LoadScript(subsystem, observingMode, loadScriptResponseProbe.ref)
+
+      loadScriptResponseProbe.receiveMessage.response.leftValue shouldBe ScriptError(
+        "Script initialization failed with : initialisation failed"
+      )
+    }
+
     "unload script and return Done if sequence component is not running any sequencer | ESW-103" in {
       val sequenceComponentRef: ActorRef[SequenceComponentMsg] = spawnSequenceComponent()
 
