@@ -12,7 +12,7 @@ import csw.params.core.models.ObsId
 import csw.params.events.{EventKey, EventName}
 import csw.prefix.models.Prefix
 import esw.gateway.api.codecs.GatewayCodecs
-import esw.gateway.api.protocol.{PostRequest, WebsocketRequest}
+import esw.gateway.api.protocol.PostRequest
 import esw.gateway.api.protocol.PostRequest.{ComponentCommand, GetEvent, SequencerCommand, createLabel}
 import esw.gateway.server.CswWiringMocks
 import esw.gateway.server.handlers.PostHandlerImpl
@@ -42,29 +42,27 @@ class PostMetricsTest extends BaseTestSuite with ScalatestRouteTest with Gateway
 
   private def post[E: ToEntityMarshaller](entity: E): HttpRequest = Post("/post-endpoint", entity)
 
-  def labels(
+  private val labelNames = List(
+    "msg",
+    "hostname",
+    "app_name",
+    "command_msg",
+    "sequencer_msg"
+  )
+
+  def labelValues(
       msg: String,
+      hostName: String = "unknown",
+      appName: String = "unknown",
       commandMsg: String = "",
-      sequencerMsg: String = "",
-      eventKeys: Set[EventKey] = Set.empty,
-      subsystem: String = "",
-      pattern: String = ""
-  ) =
-    Map(
-      "msg"                   -> msg,
-      "hostname"              -> "example.com",
-      "command_msg"           -> commandMsg,
-      "sequencer_msg"         -> sequencerMsg,
-      "subscribed_event_keys" -> WebsocketRequest.createLabel(eventKeys),
-      "subscribed_pattern"    -> pattern,
-      "subsystem"             -> subsystem
-    )
+      sequencerMsg: String = ""
+  ): List[String] = List(msg, hostName, appName, commandMsg, sequencerMsg)
 
   Table(
     ("PostRequest", "Labels"),
-    (ComponentCommand(componentId, Submit(command)), labels("ComponentCommand", commandMsg = "Submit")),
-    (SequencerCommand(componentId, Pause), labels("SequencerCommand", sequencerMsg = "Pause")),
-    (GetEvent(Set(eventKey)), labels("GetEvent"))
+    (ComponentCommand(componentId, Submit(command)), labelValues("ComponentCommand", commandMsg = "Submit")),
+    (SequencerCommand(componentId, Pause), labelValues("SequencerCommand", sequencerMsg = "Pause")),
+    (GetEvent(Set(eventKey)), labelValues("GetEvent"))
   ).foreach {
     case (request, labels) =>
       s"increment http counter on every ${createLabel(request)} request | ESW-197" in {
@@ -72,16 +70,16 @@ class PostMetricsTest extends BaseTestSuite with ScalatestRouteTest with Gateway
       }
   }
 
-  private def getCounterValue(labels: Map[String, String]): Double =
-    defaultRegistry.getSampleValue("http_requests_total", labels.keys.toArray, labels.values.toArray)
+  private def getCounterValue(labelValues: List[String]): Double =
+    defaultRegistry.getSampleValue("http_requests_total", labelNames.toArray, labelValues.toArray)
 
-  private def runCounterTest(postRequest: PostRequest, labels: Map[String, String]): Unit = {
+  private def runCounterTest(postRequest: PostRequest, labels: List[String]): Unit = {
 
     def counterValue = getCounterValue(labels)
 
     counterValue shouldBe 0
-    (1 to 10).foreach(_ => post(postRequest) ~> postRoute)
-    counterValue shouldBe 10
+    (1 to 1).foreach(_ => post(postRequest) ~> postRoute)
+    counterValue shouldBe 1
   }
 
 }
