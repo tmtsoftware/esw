@@ -24,7 +24,9 @@ object PostRequest {
 
   private val commandMsgLabelName   = "command_msg"
   private val sequencerMsgLabelName = "sequencer_msg"
-  implicit val postRequestLabelled: Labelled[PostRequest] = Labelled.make(List(commandMsgLabelName, sequencerMsgLabelName)) {
+  private val labelNames            = List(commandMsgLabelName, sequencerMsgLabelName)
+
+  implicit val postRequestLabelled: Labelled[PostRequest] = Labelled.make(labelNames) {
     case ComponentCommand(_, command) => Map(commandMsgLabelName   -> createLabel(command))
     case SequencerCommand(_, command) => Map(sequencerMsgLabelName -> createLabel(command))
   }

@@ -12,7 +12,7 @@ import csw.params.core.models.ObsId
 import csw.params.events.{EventKey, EventName}
 import csw.prefix.models.Prefix
 import esw.gateway.api.codecs.GatewayCodecs
-import esw.gateway.api.protocol.PostRequest
+import esw.gateway.api.protocol.{PostRequest, WebsocketRequest}
 import esw.gateway.api.protocol.PostRequest.{ComponentCommand, GetEvent, SequencerCommand, createLabel}
 import esw.gateway.server.CswWiringMocks
 import esw.gateway.server.handlers.PostHandlerImpl
@@ -42,8 +42,23 @@ class PostMetricsTest extends BaseTestSuite with ScalatestRouteTest with Gateway
 
   private def post[E: ToEntityMarshaller](entity: E): HttpRequest = Post("/post-endpoint", entity)
 
-  def labels(msg: String, commandMsg: String = "", sequencerMsg: String = "") =
-    Map("msg" -> msg, "hostname" -> "example.com", "command_msg" -> commandMsg, "sequencer_msg" -> sequencerMsg)
+  def labels(
+      msg: String,
+      commandMsg: String = "",
+      sequencerMsg: String = "",
+      eventKeys: Set[EventKey] = Set.empty,
+      subsystem: String = "",
+      pattern: String = ""
+  ) =
+    Map(
+      "msg"                   -> msg,
+      "hostname"              -> "example.com",
+      "command_msg"           -> commandMsg,
+      "sequencer_msg"         -> sequencerMsg,
+      "subscribed_event_keys" -> WebsocketRequest.createLabel(eventKeys),
+      "subscribed_pattern"    -> pattern,
+      "subsystem"             -> subsystem
+    )
 
   Table(
     ("PostRequest", "Labels"),
