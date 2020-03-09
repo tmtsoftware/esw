@@ -2,25 +2,33 @@ package esw.gateway.server.metrics
 
 import akka.actor.typed.ActorSystem
 import akka.actor.typed.scaladsl.adapter.ClassicActorSystemOps
+import akka.http.scaladsl.model.ws.{BinaryMessage, TextMessage}
 import akka.http.scaladsl.testkit.{ScalatestRouteTest, WSProbe}
+import akka.stream.testkit.scaladsl.TestSource
 import akka.util.Timeout
 import com.lonelyplanet.prometheus.PrometheusResponseTimeRecorder
 import csw.command.api.messages.CommandServiceWebsocketMessage.QueryFinal
+import csw.event.api.scaladsl.EventSubscription
+import csw.event.api.scaladsl.SubscriptionModes.RateLimiterMode
 import csw.location.api.models.ComponentId
 import csw.location.api.models.ComponentType.{Assembly, Sequencer}
 import csw.params.commands.CommandResponse.Completed
 import csw.params.core.models.Id
+import csw.params.events.{Event, EventKey, EventName, ObserveEvent}
 import csw.prefix.models.Prefix
 import csw.prefix.models.Subsystem.TCS
 import esw.gateway.api.codecs.GatewayCodecs
-import esw.gateway.api.protocol.WebsocketRequest.{ComponentCommand, SequencerCommand}
+import esw.gateway.api.protocol.WebsocketRequest.{ComponentCommand, SequencerCommand, Subscribe}
 import esw.gateway.api.protocol._
 import esw.gateway.impl.EventImpl
 import esw.gateway.server.CswWiringMocks
 import esw.gateway.server.handlers.WebsocketHandlerImpl
 import esw.http.core.BaseTestSuite
 import esw.ocs.api.protocol.SequencerWebsocketRequest
+import io.bullet.borer.Decoder
+import msocket.api.ContentEncoding.JsonText
 import msocket.api.ContentType
+import msocket.impl.CborByteString
 import msocket.impl.post.ClientHttpCodecs
 import msocket.impl.ws.WebsocketExtensions.WebsocketEncoding
 import msocket.impl.ws.WebsocketRouteFactory
@@ -86,14 +94,6 @@ class WebsocketMetricsTest extends BaseTestSuite with ScalatestRouteTest with Ga
       subsystem
     )
 
-  private val queryFinalLabelNames        = labels(msg = "ComponentCommand", commandMsg = "QueryFinal")
-  private def commandGaugeValue: Double   = getGaugeValue(queryFinalLabelNames)
-  private def commandCounterValue: Double = getCounterValue(queryFinalLabelNames)
-
-  private val seqQueryFinalLabelNames       = labels(msg = "SequencerCommand", sequencerMsg = "QueryFinal")
-  private def sequencerGaugeValue: Double   = getGaugeValue(seqQueryFinalLabelNames)
-  private def sequencerCounterValue: Double = getCounterValue(seqQueryFinalLabelNames)
-
   private def runWsGaugeTest[Res](
       req: WebsocketRequest,
       res: Res,
@@ -114,11 +114,15 @@ class WebsocketMetricsTest extends BaseTestSuite with ScalatestRouteTest with Ga
       p.complete(Try(res))
       wsClient.expectMessage()
       getCounterValue shouldBe expCounterValue
-      getGaugeValue shouldBe 0
+      eventually(getGaugeValue shouldBe 0)
     }
   }
 
   "increment websocket gauge on every Command QueryFinal request and decrement it on completion | ESW-197" in {
+    val queryFinalLabelNames        = labels(msg = "ComponentCommand", commandMsg = "QueryFinal")
+    def commandGaugeValue: Double   = getGaugeValue(queryFinalLabelNames)
+    def commandCounterValue: Double = getCounterValue(queryFinalLabelNames)
+
     when(resolver.commandService(componentId)).thenReturn(Future.successful(commandService))
 
     val queryFinal: WebsocketRequest = ComponentCommand(componentId, QueryFinal(runId, timeout))
@@ -129,6 +133,10 @@ class WebsocketMetricsTest extends BaseTestSuite with ScalatestRouteTest with Ga
   }
 
   "increment websocket gauge on every Sequencer QueryFinal request and decrement it on completion | ESW-197" in {
+    val seqQueryFinalLabelNames       = labels(msg = "SequencerCommand", sequencerMsg = "QueryFinal")
+    def sequencerGaugeValue: Double   = getGaugeValue(seqQueryFinalLabelNames)
+    def sequencerCounterValue: Double = getCounterValue(seqQueryFinalLabelNames)
+
     val sequenceId                = Id()
     val componentId               = ComponentId(Prefix("IRIS.filter.wheel"), Sequencer)
     implicit val timeout: Timeout = Timeout(10.seconds)
@@ -145,33 +153,47 @@ class WebsocketMetricsTest extends BaseTestSuite with ScalatestRouteTest with Ga
     }
   }
 
-//  "Subscribe Events" must {
-//    "return set of events successfully | ESW-93, ESW-216" in {
-//      val wsClient = WSProbe()
-//
-//      val eventKey                                   = EventKey("tcs.event.key1")
-//      val eventSubscriptionRequest: WebsocketRequest = Subscribe(Set(eventKey), None)
-//
-//      val event1: Event = ObserveEvent(Prefix("tcs.test"), EventName("event.key1"))
-//      val event2: Event = ObserveEvent(Prefix("tcs.test"), EventName("event.key2"))
-//
-//      val eventSubscription: EventSubscription = new EventSubscription {
-//        override def unsubscribe(): Future[Done] = Future.successful(Done)
-//
-//        override def ready(): Future[Done] = Future.successful(Done)
-//      }
-//
-//      val eventStream = Source(List(event1, event2)).mapMaterializedValue(_ => eventSubscription)
-//
-//      when(eventSubscriber.subscribe(Set(eventKey))).thenReturn(eventStream)
-//
-//      WS("/websocket-endpoint", wsClient.flow) ~> route ~> check {
-//        wsClient.sendMessage(ContentType.Json.strictMessage(eventSubscriptionRequest))
-//        isWebSocketUpgrade shouldBe true
-//        response shouldEqual event1
-//        response shouldEqual event2
-//      }
-//    }
-//
-//  }
+  "increment websocket gauge on every Subscribe request and counter per message passing through ws, decrement gauge on completion | ESW-197" in {
+    val eventKey                                   = EventKey("tcs.event.key")
+    val subscribeLabelNames                        = labels(msg = "Subscribe", subscribedEventKeys = WebsocketRequest.createLabel(Set(eventKey)))
+    def subscribeGaugeValue: Double                = getGaugeValue(subscribeLabelNames)
+    def subscribeCounterValue: Double              = getCounterValue(subscribeLabelNames)
+    val wsClient                                   = WSProbe()
+    val eventSubscriptionRequest: WebsocketRequest = Subscribe(Set(eventKey), Some(10))
+
+    val (probe, rawStream) = TestSource.probe[Event].preMaterialize()
+    val eventStream        = rawStream.mapMaterializedValue(_ => mock[EventSubscription])
+    when(eventSubscriber.subscribe(Set(eventKey), 100.millis, RateLimiterMode)).thenReturn(eventStream)
+
+    WS("/websocket-endpoint", wsClient.flow) ~> wsRoute ~> check {
+      subscribeGaugeValue shouldBe 0
+      wsClient.sendMessage(ContentType.Json.strictMessage(eventSubscriptionRequest))
+      isWebSocketUpgrade shouldBe true
+
+      publishEvents(10)
+      subscribeGaugeValue shouldBe 1
+      subscribeCounterValue shouldBe 10
+
+      probe.sendComplete()
+      wsClient.expectCompletion()
+      subscribeGaugeValue shouldBe 0
+      subscribeCounterValue shouldBe 10
+    }
+
+    def publishEvents(count: Int): Unit = {
+      val event: Event = ObserveEvent(Prefix("tcs.test"), EventName("event.key1"))
+      (1 to count).foreach { _ =>
+        probe.sendNext(event)
+        decodeMessage[Event](wsClient) shouldEqual event
+      }
+    }
+  }
+
+  private def decodeMessage[T](wsClient: WSProbe)(implicit decoder: Decoder[T]): T = {
+    wsClient.expectMessage() match {
+      case TextMessage.Strict(text)   => JsonText.decode[T](text)
+      case BinaryMessage.Strict(data) => CborByteString.decode[T](data)
+      case _                          => throw new RuntimeException("The expected message is not Strict")
+    }
+  }
 }
