@@ -13,12 +13,12 @@ curl -X POST \
   "event": {
     "_type": "ObserveEvent",
     "eventId": "1a745d6b-30b6-4503-a09e-e3bdbb680795",
-    "source": "CSW.filter.wheel2",
-    "eventName": "offline",
+    "source": "CSW.ncc.trombone",
+    "eventName": "offline4",
     "eventTime": "2020-02-18T05:57:09.754352Z",
     "paramSet": []
   }
 }'
 
-sleep 0.5
+sleep 0.2
 done
