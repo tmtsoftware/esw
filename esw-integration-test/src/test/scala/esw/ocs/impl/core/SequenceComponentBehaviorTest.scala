@@ -105,7 +105,6 @@ class SequenceComponentBehaviorTest extends EswTestKit {
       val loadScriptResponseProbe = TestProbe[ScriptResponse]
       val subsystem               = ESW
       val observingMode           = "initException"
-      val prefix                  = Prefix(s"$subsystem.$observingMode")
 
       //LoadScript
       sequenceComponentRef ! LoadScript(subsystem, observingMode, loadScriptResponseProbe.ref)
