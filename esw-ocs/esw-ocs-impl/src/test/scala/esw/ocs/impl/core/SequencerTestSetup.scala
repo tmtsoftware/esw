@@ -301,6 +301,7 @@ class SequencerTestSetup(sequence: Sequence)(implicit system: ActorSystem[_]) {
 
     if (finished) completionPromise.complete(Success(Completed(Id())))
 
+    assertSequencerState(Idle)
     finished should ===(true)
   }
 
