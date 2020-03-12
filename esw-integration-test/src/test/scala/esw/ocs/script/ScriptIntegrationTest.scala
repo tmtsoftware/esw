@@ -101,10 +101,7 @@ class ScriptIntegrationTest extends EswTestKit(EventServer, AlarmServer, ConfigS
     "be able to forward diagnostic mode to downstream components | ESW-118, CSW-81" in {
       val eventKey = EventKey(Prefix("tcs.filter.wheel"), EventName("diagnostic-data"))
 
-      val testProbe    = TestProbe[Event]
-      val subscription = eventSubscriber.subscribeActorRef(Set(eventKey), testProbe.ref)
-      subscription.ready().futureValue
-      testProbe.expectMessageType[SystemEvent] // discard invalid event
+      val testProbe = createTestProbe(Set(eventKey))
 
       //diagnosticMode
       val diagnosticModeParam: Parameter[_] = StringKey.make("mode").set("diagnostic")
@@ -127,14 +124,7 @@ class ScriptIntegrationTest extends EswTestKit(EventServer, AlarmServer, ConfigS
       val onlineKey  = EventKey(Prefix("tcs.filter.wheel"), EventName("online"))
       val offlineKey = EventKey(Prefix("tcs.filter.wheel"), EventName("offline"))
 
-      val testProbe          = TestProbe[Event]
-      val onlineSubscription = eventSubscriber.subscribeActorRef(Set(onlineKey), testProbe.ref)
-      onlineSubscription.ready().futureValue
-      testProbe.expectMessageType[SystemEvent] // discard invalid event
-
-      val offlineSubscription = eventSubscriber.subscribeActorRef(Set(offlineKey), testProbe.ref)
-      offlineSubscription.ready().futureValue
-      testProbe.expectMessageType[SystemEvent] // discard invalid event
+      val testProbe = createTestProbe(Set(onlineKey, offlineKey))
 
       //goOffline
       ocsSequencer.goOffline().futureValue should ===(Ok)
@@ -201,11 +191,8 @@ class ScriptIntegrationTest extends EswTestKit(EventServer, AlarmServer, ConfigS
     }
 
     "be able to send abortSequence to downstream sequencers and call abortHandler | ESW-137, ESW-155, CSW-81" in {
-      val eventKey     = EventKey(Prefix("tcs.test"), EventName("abort.success"))
-      val testProbe    = TestProbe[Event]
-      val subscription = eventSubscriber.subscribeActorRef(Set(eventKey), testProbe.ref)
-      subscription.ready().futureValue
-      testProbe.expectMessageType[SystemEvent] // discard invalid event
+      val eventKey  = EventKey(Prefix("tcs.test"), EventName("abort.success"))
+      val testProbe = createTestProbe(Set(eventKey))
 
       // Submit sequence to OCS as AbortSequence is accepted only in InProgress State
       val command1 = Setup(Prefix("LGSF.test"), CommandName("command-lgsf"), None)
@@ -236,10 +223,7 @@ class ScriptIntegrationTest extends EswTestKit(EventServer, AlarmServer, ConfigS
     "be able to send stop to downstream sequencers and call stopHandler | ESW-138, ESW-156, CSW-81" in {
       val eventKey = EventKey(Prefix("tcs.test"), EventName("stop.success"))
 
-      val testProbe    = TestProbe[Event]
-      val subscription = eventSubscriber.subscribeActorRef(Set(eventKey), testProbe.ref)
-      subscription.ready().futureValue
-      testProbe.expectMessageType[SystemEvent] // discard invalid event
+      val testProbe = createTestProbe(Set(eventKey))
 
       // Submit sequence to OCS as Stop is accepted only in InProgress State
       val command1 = Setup(Prefix("LGSF.test"), CommandName("command-lgsf"), None)
@@ -278,51 +262,29 @@ class ScriptIntegrationTest extends EswTestKit(EventServer, AlarmServer, ConfigS
       val command  = Setup(Prefix("IRIS.test"), CommandName("command-for-assembly"), None)
       val sequence = Sequence(Seq(command))
 
-      //probe for submit response of testAssembly(in testScript)
-      val testProbe1    = TestProbe[Event]
-      val subscription1 = eventSubscriber.subscribeActorRef(Set(eventKey), testProbe1.ref)
-      subscription1.ready().futureValue
-      testProbe1.expectMessageType[SystemEvent] // discard invalid event
-
-      //probe for query response of testAssembly(in testScript)
-      val testProbe2    = TestProbe[Event]
-      val subscription2 = eventSubscriber.subscribeActorRef(Set(startedEventKey), testProbe2.ref)
-      subscription2.ready().futureValue
-      testProbe2.expectMessageType[SystemEvent] // discard invalid event
-
-      //probe for queryFinal response of testAssembly(in testScript)
-      val testProbe3    = TestProbe[Event]
-      val subscription3 = eventSubscriber.subscribeActorRef(Set(completedEventKey), testProbe3.ref)
-      subscription3.ready().futureValue
-      testProbe3.expectMessageType[SystemEvent] // discard invalid event
-
-      //probe for subscribeCurrentState response for stateName1 of testAssembly(in testScript)
-      val testProbe4    = TestProbe[Event]
-      val subscription4 = eventSubscriber.subscribeActorRef(Set(currentState1EventKey), testProbe4.ref)
-      subscription4.ready().futureValue
-      testProbe4.expectMessageType[SystemEvent] // discard invalid event
-
-      //probe for subscribeCurrentState response for stateName2 of testAssembly(in testScript)
-      val testProbe5    = TestProbe[Event]
-      val subscription5 = eventSubscriber.subscribeActorRef(Set(currentState2EventKey), testProbe5.ref)
-      subscription5.ready().futureValue
-      testProbe5.expectMessageType[SystemEvent] // discard invalid event
+      val testProbe =
+        createTestProbe(Set(eventKey, startedEventKey, completedEventKey, currentState1EventKey, currentState2EventKey))
 
       ocsSequencer.submitAndWait(sequence).futureValue shouldBe a[Completed]
 
-      val actualSetupEvent: SystemEvent = testProbe1.expectMessageType[SystemEvent]
+      //assert probe for submit response of testAssembly(in testScript)
+      val actualSetupEvent: SystemEvent = testProbe.expectMessageType[SystemEvent]
       actualSetupEvent.eventKey should ===(eventKey)
 
-      val startedEvent = testProbe2.expectMessageType[SystemEvent]
+      //assert probe for query response of testAssembly(in testScript)
+      val startedEvent = testProbe.expectMessageType[SystemEvent]
       startedEvent.eventKey should ===(startedEventKey)
 
-      val completedEvent = testProbe3.expectMessageType[SystemEvent]
+      //assert probe for queryFinal response of testAssembly(in testScript)
+      val completedEvent = testProbe.expectMessageType[SystemEvent]
       completedEvent.eventKey should ===(completedEventKey)
 
-      val currentState1Event = testProbe4.expectMessageType[SystemEvent]
+      //assert probe for subscribeCurrentState response for stateName1 of testAssembly(in testScript)
+      val currentState1Event = testProbe.expectMessageType[SystemEvent]
       currentState1Event.eventKey should ===(currentState1EventKey)
 
-      val currentState2Event = testProbe5.expectMessageType[SystemEvent]
+      //assert probe for subscribeCurrentState response for stateName2 of testAssembly(in testScript)
+      val currentState2Event = testProbe.expectMessageType[SystemEvent]
       currentState2Event.eventKey should ===(currentState2EventKey)
     }
 
@@ -332,10 +294,7 @@ class ScriptIntegrationTest extends EswTestKit(EventServer, AlarmServer, ConfigS
       val command  = Setup(Prefix("IRIS.test"), CommandName("schedule-once-from-now"), None)
       val sequence = Sequence(Seq(command))
 
-      val testProbe    = TestProbe[Event]
-      val subscription = eventSubscriber.subscribeActorRef(Set(eventKey), testProbe.ref)
-      subscription.ready().futureValue
-      testProbe.expectMessageType[SystemEvent] // discard invalid event
+      val testProbe = createTestProbe(Set(eventKey))
 
       ocsSequencer.submitAndWait(sequence).futureValue shouldBe a[Completed]
 
@@ -353,10 +312,7 @@ class ScriptIntegrationTest extends EswTestKit(EventServer, AlarmServer, ConfigS
       val command  = Setup(Prefix("IRIS.test"), CommandName("schedule-periodically-from-now"), None)
       val sequence = Sequence(Seq(command))
 
-      val testProbe    = TestProbe[Event]
-      val subscription = eventSubscriber.subscribeActorRef(Set(eventKey), testProbe.ref)
-      subscription.ready().futureValue
-      testProbe.expectMessageType[SystemEvent] // discard invalid event
+      val testProbe = createTestProbe(Set(eventKey))
 
       ocsSequencer.submitAndWait(sequence).futureValue shouldBe a[Completed]
 
@@ -416,5 +372,13 @@ class ScriptIntegrationTest extends EswTestKit(EventServer, AlarmServer, ConfigS
       response.asInstanceOf[Error].message should ===("boom")
     }
 
+  }
+
+  def createTestProbe(eventKeys: Set[EventKey]): TestProbe[Event] = {
+    val testProbe    = TestProbe[Event]
+    val subscription = eventSubscriber.subscribeActorRef(eventKeys, testProbe.ref)
+    subscription.ready().futureValue
+    eventKeys.foreach(_ => testProbe.expectMessageType[SystemEvent]) // discard invalid event
+    testProbe
   }
 }
