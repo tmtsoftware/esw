@@ -269,20 +269,61 @@ class ScriptIntegrationTest extends EswTestKit(EventServer, AlarmServer, ConfigS
     }
 
     "be able to send commands to downstream assembly | ESW-121, CSW-81" in {
-      val eventKey = EventKey(Prefix("tcs.filter.wheel"), EventName("setup-command-from-script"))
+      val eventKey              = EventKey(Prefix("tcs.filter.wheel"), EventName("setup-command-from-script"))
+      val startedEventKey       = EventKey(Prefix("tcs.filter.wheel"), EventName("query-started-command-from-script"))
+      val completedEventKey     = EventKey(Prefix("tcs.filter.wheel"), EventName("query-completed-command-from-script"))
+      val currentState1EventKey = EventKey(Prefix("tcs.filter.wheel"), EventName("publish-stateName1"))
+      val currentState2EventKey = EventKey(Prefix("tcs.filter.wheel"), EventName("publish-stateName2"))
 
       val command  = Setup(Prefix("IRIS.test"), CommandName("command-for-assembly"), None)
       val sequence = Sequence(Seq(command))
 
-      val testProbe    = TestProbe[Event]
-      val subscription = eventSubscriber.subscribeActorRef(Set(eventKey), testProbe.ref)
-      subscription.ready().futureValue
-      testProbe.expectMessageType[SystemEvent] // discard invalid event
+      //probe for submit response of testAssembly(in testScript)
+      val testProbe1    = TestProbe[Event]
+      val subscription1 = eventSubscriber.subscribeActorRef(Set(eventKey), testProbe1.ref)
+      subscription1.ready().futureValue
+      testProbe1.expectMessageType[SystemEvent] // discard invalid event
+
+      //probe for query response of testAssembly(in testScript)
+      val testProbe2    = TestProbe[Event]
+      val subscription2 = eventSubscriber.subscribeActorRef(Set(startedEventKey), testProbe2.ref)
+      subscription2.ready().futureValue
+      testProbe2.expectMessageType[SystemEvent] // discard invalid event
+
+      //probe for queryFinal response of testAssembly(in testScript)
+      val testProbe3    = TestProbe[Event]
+      val subscription3 = eventSubscriber.subscribeActorRef(Set(completedEventKey), testProbe3.ref)
+      subscription3.ready().futureValue
+      testProbe3.expectMessageType[SystemEvent] // discard invalid event
+
+      //probe for subscribeCurrentState response for stateName1 of testAssembly(in testScript)
+      val testProbe4    = TestProbe[Event]
+      val subscription4 = eventSubscriber.subscribeActorRef(Set(currentState1EventKey), testProbe4.ref)
+      subscription4.ready().futureValue
+      testProbe4.expectMessageType[SystemEvent] // discard invalid event
+
+      //probe for subscribeCurrentState response for stateName2 of testAssembly(in testScript)
+      val testProbe5    = TestProbe[Event]
+      val subscription5 = eventSubscriber.subscribeActorRef(Set(currentState2EventKey), testProbe5.ref)
+      subscription5.ready().futureValue
+      testProbe5.expectMessageType[SystemEvent] // discard invalid event
 
       ocsSequencer.submitAndWait(sequence).futureValue shouldBe a[Completed]
 
-      val actualSetupEvent: SystemEvent = testProbe.expectMessageType[SystemEvent]
+      val actualSetupEvent: SystemEvent = testProbe1.expectMessageType[SystemEvent]
       actualSetupEvent.eventKey should ===(eventKey)
+
+      val startedEvent = testProbe2.expectMessageType[SystemEvent]
+      startedEvent.eventKey should ===(startedEventKey)
+
+      val completedEvent = testProbe3.expectMessageType[SystemEvent]
+      completedEvent.eventKey should ===(completedEventKey)
+
+      val currentState1Event = testProbe4.expectMessageType[SystemEvent]
+      currentState1Event.eventKey should ===(currentState1EventKey)
+
+      val currentState2Event = testProbe5.expectMessageType[SystemEvent]
+      currentState2Event.eventKey should ===(currentState2EventKey)
     }
 
     "be able to schedule tasks from now | ESW-122, CSW-81" in {
