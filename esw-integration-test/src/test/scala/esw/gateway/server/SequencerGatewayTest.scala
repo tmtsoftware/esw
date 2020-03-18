@@ -22,7 +22,8 @@ class SequencerGatewayTest extends EswTestKit(Gateway, EventServer) with Gateway
 
   "SequencerApi" must {
 
-    "handle submit, queryFinal commands | ESW-250" in {
+    "handle submit, queryFinal commands | ESW-250, ESW-98" in {
+      // gatewayPostClient and gatewayWsClient requires gateway location which is resolved using Location Service in EswTestKit
       val clientFactory = new ClientFactory(gatewayPostClient, gatewayWsClient)
 
       val sequence    = Sequence(Setup(Prefix("esw.test"), CommandName("command-2"), Some(ObsId("obsId"))))

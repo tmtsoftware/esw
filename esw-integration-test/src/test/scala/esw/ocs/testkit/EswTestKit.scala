@@ -57,14 +57,15 @@ abstract class EswTestKit(services: Service*)
   lazy val gatewayWiring: GatewayWiring     = new GatewayWiring(Some(gatewayPort))
   var gatewayBinding: Option[ServerBinding] = None
   var gatewayLocation: Option[HttpLocation] = None
+  // ESW-98
   private lazy val gatewayPrefix = Prefix(
     ConfigFactory
       .load()
       .getConfig("http-server")
       .getString("prefix")
   )
-  lazy val gatewayPostClient = gatewayHTTPClient(gatewayPrefix)
-  lazy val gatewayWsClient   = gatewayWebSocketClient(gatewayPrefix)
+  lazy val gatewayPostClient: HttpPostTransport[PostRequest]     = gatewayHTTPClient(gatewayPrefix)
+  lazy val gatewayWsClient: WebsocketTransport[WebsocketRequest] = gatewayWebSocketClient(gatewayPrefix)
 
   private val sequenceComponentLocations: mutable.Buffer[AkkaLocation] = mutable.Buffer.empty
 
@@ -144,6 +145,7 @@ abstract class EswTestKit(services: Service*)
     }
   }
 
+  // ESW-98
   private def gatewayHTTPClient(prefix: Prefix) = {
     val httpLocation = resolveHTTPLocation(prefix, ComponentType.Service)
     val httpUri      = Uri(httpLocation.uri.toString).withPath(Path("/post-endpoint")).toString()
