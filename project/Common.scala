@@ -63,7 +63,7 @@ object Common extends AutoPlugin {
   private val reporterOptions: Seq[String] =
     // "-oDF" - show full stack traces and test case durations
     // -C - to generate CSV story and test mapping
-    if (storyReport) Seq("-oDF", "-C", "esw.test.reporter.TestReporter") else Seq("-oDF")
+    if (storyReport) Seq("-oDF", "-C", "tmt.test.reporter.TestReporter") else Seq("-oDF")
 
   override lazy val projectSettings: Seq[Setting[_]] = Seq(
     testOptions in Test ++= Seq(
