@@ -39,16 +39,18 @@ class SequencerBehaviorTest extends ScalaTestWithActorTestKit with BaseTestSuite
   private val maxWaitForExpectNoMessage = 200.millis
 
   "LoadSequence" must {
-    "load the given sequence in idle state | ESW-145" in {
+    "load the given sequence in idle state | ESW-145, ESW-141" in {
       val sequencerSetup = SequencerTestSetup.idle(sequence)
       import sequencerSetup._
       loadSequenceAndAssertResponse(Ok)
+      assertSequencerState(Loaded)
     }
 
-    "load the given sequence in loaded state | ESW-145" in {
+    "load the given sequence in loaded state | ESW-145, ESW-141" in {
       val sequencerSetup = SequencerTestSetup.loaded(sequence)
       import sequencerSetup._
       loadSequenceAndAssertResponse(Ok)
+      assertSequencerState(Loaded)
     }
   }
 

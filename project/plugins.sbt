@@ -16,10 +16,8 @@ resolvers += "Jenkins repo" at "https://repo.jenkins-ci.org/public/"
 addSbtPlugin("ohnosequences" % "sbt-github-release" % "0.7.0")
 
 resolvers += Resolver.bintrayRepo("twtmt", "sbt-plugins")
-addSbtPlugin("com.github.tmtsoftware" % "sbt-docs"      % "0.1.3")
+addSbtPlugin("com.github.tmtsoftware" % "sbt-docs"      % "0.1.4")
 addSbtPlugin("com.github.tmtsoftware" % "kotlin-plugin" % "2.0.1-RC1")
-
-addSbtPlugin("com.github.tmtsoftware" % "sbt-docs"      % "0.1.3")
 
 resolvers += Resolver.jcenterRepo
 addSbtPlugin("net.aichler" % "sbt-jupiter-interface" % "0.8.3")

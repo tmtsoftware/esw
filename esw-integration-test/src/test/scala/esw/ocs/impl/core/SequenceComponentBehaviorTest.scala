@@ -38,7 +38,7 @@ class SequenceComponentBehaviorTest extends EswTestKit {
     new SequencerWiring(subsystem, observingMode, sequenceComponentLocation)
 
   "SequenceComponentBehavior" must {
-    "load/unload script and get appropriate status | ESW-103" in {
+    "load/unload script and get appropriate status | ESW-103, ESW-255" in {
       val sequenceComponentRef: ActorRef[SequenceComponentMsg] = spawnSequenceComponent()
 
       val loadScriptResponseProbe = TestProbe[ScriptResponse]
@@ -96,6 +96,21 @@ class SequenceComponentBehaviorTest extends EswTestKit {
       sequenceComponentRef ! LoadScript(TCS, "darknight", loadScriptResponseProbe.ref)
       loadScriptResponseProbe.receiveMessage.response.leftValue shouldBe ScriptError(
         "Loading script failed: Sequencer already running"
+      )
+    }
+
+    "load script and give ScriptError if exception on initialization | ESW-243" in {
+      val sequenceComponentRef: ActorRef[SequenceComponentMsg] = spawnSequenceComponent()
+
+      val loadScriptResponseProbe = TestProbe[ScriptResponse]
+      val subsystem               = ESW
+      val observingMode           = "initException"
+
+      //LoadScript
+      sequenceComponentRef ! LoadScript(subsystem, observingMode, loadScriptResponseProbe.ref)
+
+      loadScriptResponseProbe.receiveMessage.response.leftValue shouldBe ScriptError(
+        "Script initialization failed with : initialisation failed"
       )
     }
 

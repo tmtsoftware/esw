@@ -9,16 +9,18 @@ import csw.event.api.scaladsl.{EventPublisher, EventService, EventSubscriber}
 import csw.event.client.internal.commons.EventSubscriberUtil
 import csw.logging.api.scaladsl.Logger
 import csw.prefix.models.Prefix
-import esw.gateway.impl.LoggerCache
+import esw.gateway.api.{AlarmApi, EventApi, LoggingApi}
+import esw.gateway.impl.{AlarmImpl, EventImpl, LoggerCache, LoggingImpl}
 import esw.gateway.server.utils.Resolver
 import esw.http.core.wiring.CswWiring
 import esw.ocs.api.SequencerApi
 import org.mockito.ArgumentMatchers.any
 import org.mockito.MockitoSugar._
 
+import scala.concurrent.ExecutionContext
 import scala.concurrent.duration.FiniteDuration
 
-class CswWiringMocks() {
+class CswWiringMocks(implicit ec: ExecutionContext) {
 
   val cswWiring: CswWiring = mock[CswWiring]
 //  val actorRuntime: ActorRuntime = new ActorRuntime(system)
@@ -45,6 +47,10 @@ class CswWiringMocks() {
   when(cswWiring.alarmService).thenReturn(alarmService)
   when(eventService.defaultPublisher).thenReturn(eventPublisher)
   when(eventService.defaultSubscriber).thenReturn(eventSubscriber)
+
+  val alarmApi: AlarmApi     = new AlarmImpl(alarmService)
+  val eventApi: EventApi     = new EventImpl(eventService, eventSubscriberUtil)
+  val loggingApi: LoggingApi = new LoggingImpl(loggerCache)
 }
 
 class RateLimiterStub[A](delay: FiniteDuration) extends GraphStage[FlowShape[A, A]] {
