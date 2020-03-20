@@ -39,6 +39,7 @@ object Dependencies {
       Libs.blockhound,
       Libs.scalatest                  % Test,
       Akka.`akka-actor-testkit-typed` % Test,
+      Libs.`tmt-test-reporter` % Test,
       Libs.`mockito-scala`            % Test
     )
   )
@@ -48,6 +49,7 @@ object Dependencies {
       Libs.`msocket-impl-jvm`,
       Libs.scalatest                  % Test,
       Libs.`mockito-scala`            % Test,
+      Libs.`tmt-test-reporter` % Test,
       Akka.`akka-actor-testkit-typed` % Test
     )
   )
@@ -60,6 +62,7 @@ object Dependencies {
       Akka.`akka-stream`,
       Libs.scalatest                  % Test,
       Libs.`mockito-scala`            % Test,
+      Libs.`tmt-test-reporter` % Test,
       Akka.`akka-actor-testkit-typed` % Test
     )
   )
@@ -72,6 +75,7 @@ object Dependencies {
       Csw.`csw-location-api`,
       Akka.`akka-actor-typed`,
       Libs.`mockito-scala`            % Test,
+      Libs.`tmt-test-reporter` % Test,
       Akka.`akka-actor-testkit-typed` % Test
     )
   )
@@ -95,6 +99,7 @@ object Dependencies {
       Libs.scalatest                  % Test,
       Csw.`csw-testkit`               % Test,
       Libs.`mockito-scala`            % Test,
+      Libs.`tmt-test-reporter` % Test,
       Akka.`akka-actor-testkit-typed` % Test,
       AkkaHttp.`akka-http-testkit`    % Test,
       Akka.`akka-stream-testkit`      % Test
@@ -108,6 +113,7 @@ object Dependencies {
       Csw.`csw-testkit`               % Test,
       Csw.`csw-logging-models`.value  % Test,
       Libs.scalatest                  % Test,
+      Libs.`tmt-test-reporter` % Test,
       Csw.`csw-location-server-tests` % Test,
       Csw.`csw-integration-multi-jvm` % Test,
       Akka.`akka-multi-node-testkit`  % Test
@@ -124,6 +130,7 @@ object Dependencies {
       Csw.`csw-alarm-client`,
       Csw.`csw-config-client`,
       Libs.`mockito-scala`            % Test,
+      Libs.`tmt-test-reporter` % Test,
       Akka.`akka-actor-testkit-typed` % Test
     )
   )
@@ -153,7 +160,8 @@ object Dependencies {
     Seq(
       Csw.`csw-event-client`,
       Libs.`caffeine`,
-      Csw.`csw-location-api`
+      Csw.`csw-location-api`,
+      Libs.`tmt-test-reporter` % Test
     )
   )
 
@@ -161,7 +169,8 @@ object Dependencies {
     Seq(
       Libs.`msocket-impl-jvm`,
       Csw.`csw-admin-impl`,
-      Libs.`prometheus-akka-http`
+      Libs.`prometheus-akka-http`,
+      Libs.`tmt-test-reporter` % Test
     )
   )
 
@@ -178,6 +187,7 @@ object Dependencies {
     Seq(
       Csw.`csw-contract`,
       Csw.`csw-params`.value,
+      Libs.`tmt-test-reporter` % Test,
       Libs.scalatest % Test
     )
   )

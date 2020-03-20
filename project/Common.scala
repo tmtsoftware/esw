@@ -65,7 +65,7 @@ object Common extends AutoPlugin {
     // -C - to generate CSV story and test mapping
     if (storyReport)
       Seq(
-        Tests.Argument(TestFrameworks.ScalaTest, "-oDF", "-C", "esw.test.reporter.TestReporter"),
+        Tests.Argument(TestFrameworks.ScalaTest, "-oDF", "-C", "tmt.test.reporter.TestReporter"),
         Tests.Argument(TestFrameworks.JUnit)
       )
     else Seq(Tests.Argument("-oDF"))

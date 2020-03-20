@@ -51,7 +51,8 @@ lazy val `esw-ocs` = project
 lazy val `esw-ocs-api` = crossProject(JSPlatform, JVMPlatform)
   .crossType(CrossType.Pure)
   .in(file("esw-ocs/esw-ocs-api"))
-  .jvmConfigure(_.enablePlugins(MaybeCoverage, PublishBintray).dependsOn(`esw-test-reporter` % Test))
+  .jvmConfigure(_.enablePlugins(MaybeCoverage, PublishBintray)
+    settings(libraryDependencies += (Libs.`tmt-test-reporter` % Test)))
   //  the following setting is required by IntelliJ which could not handle cross-compiled Akka types
   .jsSettings(SettingKey[Boolean]("ide-skip-project") := true)
   .settings(fork := false)
@@ -74,8 +75,7 @@ lazy val `esw-ocs-impl` = project
     libraryDependencies ++= Dependencies.OcsImpl.value
   )
   .dependsOn(
-    `esw-ocs-api`.jvm   % "compile->compile;test->test",
-    `esw-test-reporter` % Test
+    `esw-ocs-api`.jvm   % "compile->compile;test->test"
   )
 
 lazy val `esw-ocs-dsl` = project
@@ -83,8 +83,7 @@ lazy val `esw-ocs-dsl` = project
   .settings(libraryDependencies ++= Dependencies.OcsDsl.value)
   .dependsOn(
     `esw-ocs-api`.jvm % "compile->compile;test->test",
-    `esw-ocs-impl`,
-    `esw-test-reporter` % Test
+    `esw-ocs-impl`
   )
 
 lazy val `esw-ocs-dsl-kt` = project
@@ -96,7 +95,7 @@ lazy val `esw-ocs-dsl-kt` = project
     kotlincOptions ++= Seq("-Xuse-experimental=kotlin.time.ExperimentalTime", "-jvm-target", "1.8")
   )
   .settings(libraryDependencies ++= Dependencies.OcsDslKt.value)
-  .dependsOn(`esw-ocs-dsl`, `esw-test-reporter` % Test)
+  .dependsOn(`esw-ocs-dsl`)
 
 lazy val `esw-ocs-app` = project
   .in(file("esw-ocs/esw-ocs-app"))
@@ -107,8 +106,7 @@ lazy val `esw-ocs-app` = project
   .dependsOn(
     `esw-ocs-handler`,
     `esw-ocs-impl`      % "compile->compile;test->test",
-    `esw-http-core`     % "compile->compile;test->test",
-    `esw-test-reporter` % Test
+    `esw-http-core`     % "compile->compile;test->test"
   )
 
 lazy val `esw-agent` = project
@@ -123,23 +121,18 @@ lazy val `esw-agent-app` = project
   .enablePlugins(EswBuildInfo, DeployApp, MaybeCoverage)
   .settings(libraryDependencies ++= Dependencies.AgentApp.value)
   .dependsOn(
-    `esw-agent-client`,
-    `esw-test-reporter` % Test
+    `esw-agent-client`
   )
 
 lazy val `esw-agent-client` = project
   .in(file("esw-agent/esw-agent-client"))
   .enablePlugins(DeployApp, MaybeCoverage)
   .settings(libraryDependencies ++= Dependencies.AgentClient.value)
-  .dependsOn(
-    `esw-test-reporter` % Test
-  )
 
 lazy val `esw-http-core` = project
   .in(file("esw-http-core"))
   .enablePlugins(PublishBintray, MaybeCoverage, EswBuildInfo)
   .settings(libraryDependencies ++= Dependencies.EswHttpCore.value)
-  .dependsOn(`esw-test-reporter` % Test)
 
 lazy val `esw-integration-test` = project
   .in(file("esw-integration-test"))
@@ -153,8 +146,7 @@ lazy val `esw-integration-test` = project
     examples,
     `esw-ocs-app`,
     `esw-agent-app`,
-    `esw-agent-client`,
-    `esw-test-reporter` % Test
+    `esw-agent-client`
   )
 
 lazy val `esw-gateway` = project
@@ -168,7 +160,7 @@ lazy val `esw-gateway` = project
 lazy val `esw-gateway-api` = crossProject(JSPlatform, JVMPlatform)
   .crossType(CrossType.Pure)
   .in(file("esw-gateway/esw-gateway-api"))
-  .jvmConfigure(_.dependsOn(`esw-test-reporter` % Test))
+  .jvmConfigure(_.settings(libraryDependencies += (Libs.`tmt-test-reporter` % Test)))
   //  the following setting is required by IntelliJ which could not handle cross-compiled Akka types
   .jsSettings(SettingKey[Boolean]("ide-skip-project") := true)
   .settings(fork := false)
@@ -182,7 +174,7 @@ lazy val `esw-gateway-impl` = project
   .settings(
     libraryDependencies ++= Dependencies.EswGatewayImpl.value
   )
-  .dependsOn(`esw-gateway-api`.jvm, `esw-test-reporter` % Test)
+  .dependsOn(`esw-gateway-api`.jvm)
 
 lazy val `esw-gateway-server` = project
   .in(file("esw-gateway/esw-gateway-server"))
@@ -195,15 +187,6 @@ lazy val `esw-gateway-server` = project
     `esw-ocs-handler`,
     `esw-ocs-impl`,
     `esw-http-core`     % "compile->compile;test->test",
-    `esw-test-reporter` % Test
-  )
-
-lazy val `esw-test-reporter` = project
-  .in(file("esw-test-reporter"))
-  .settings(
-    libraryDependencies += Libs.scalatest,
-    libraryDependencies += Libs.`jupiter-interface`,
-    libraryDependencies += "io.kotlintest" % "kotlintest-core" % "3.4.2"
   )
 
 lazy val `esw-contract` = project
@@ -211,8 +194,7 @@ lazy val `esw-contract` = project
   .settings(libraryDependencies ++= Dependencies.EswContract.value)
   .dependsOn(
     `esw-ocs-api`.jvm,
-    `esw-gateway-api`.jvm,
-    `esw-test-reporter` % Test
+    `esw-gateway-api`.jvm
   )
 
 /* ================= Paradox Docs ============== */
