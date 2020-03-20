@@ -96,7 +96,7 @@ private[ocs] class SequencerWiring(
   private lazy val postHandler                                  = new SequencerPostHandler(sequencerApi)
   private def websocketHandlerFactory(contentType: ContentType) = new SequencerWebsocketHandler(sequencerApi, contentType)
 
-  lazy val routes: Route = RouteFactory.combine(
+  lazy val routes: Route = RouteFactory.combine(metricsEnabled = false)(
     new PostRouteFactory("post-endpoint", postHandler),
     new WebsocketRouteFactory("websocket-endpoint", websocketHandlerFactory)
   )

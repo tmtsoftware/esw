@@ -64,8 +64,8 @@ abstract class EswTestKit(services: Service*)
       .getConfig("http-server")
       .getString("prefix")
   )
-  lazy val gatewayPostClient: HttpPostTransport[PostRequest]     = gatewayHTTPClient(gatewayPrefix)
-  lazy val gatewayWsClient: WebsocketTransport[WebsocketRequest] = gatewayWebSocketClient(gatewayPrefix)
+  lazy val gatewayPostClient = gatewayHTTPClient(gatewayPrefix)
+  lazy val gatewayWsClient   = gatewayWebSocketClient(gatewayPrefix)
 
   private val sequenceComponentLocations: mutable.Buffer[AkkaLocation] = mutable.Buffer.empty
 

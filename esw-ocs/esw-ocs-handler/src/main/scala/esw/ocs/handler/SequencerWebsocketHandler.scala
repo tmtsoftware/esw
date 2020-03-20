@@ -14,6 +14,6 @@ class SequencerWebsocketHandler(sequencerApi: SequencerApi, contentType: Content
     extends WebsocketHandler[SequencerWebsocketRequest](contentType) {
 
   override def handle(request: SequencerWebsocketRequest): Source[Message, NotUsed] = request match {
-    case QueryFinal(sequenceId, timeout) => futureAsStream(sequencerApi.queryFinal(sequenceId)(timeout))
+    case QueryFinal(sequenceId, timeout) => stream(sequencerApi.queryFinal(sequenceId)(timeout))
   }
 }

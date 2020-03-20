@@ -24,8 +24,6 @@ import csw.prefix.models.{Prefix, Subsystem}
 import esw.gateway.api.codecs.GatewayCodecs
 import esw.gateway.api.protocol.PostRequest._
 import esw.gateway.api.protocol._
-import esw.gateway.api.{AlarmApi, EventApi, LoggingApi}
-import esw.gateway.impl._
 import esw.gateway.server.handlers.PostHandlerImpl
 import esw.http.core.BaseTestSuite
 import esw.ocs.api.protocol.{Ok, OkOrUnhandledResponse, SequencerPostRequest}
@@ -44,13 +42,10 @@ class PostRouteTest extends BaseTestSuite with ScalatestRouteTest with GatewayCo
   private val cswCtxMocks = new CswWiringMocks()
   import cswCtxMocks._
 
-  private val alarmApi: AlarmApi     = new AlarmImpl(alarmService)
-  private val eventApi: EventApi     = new EventImpl(eventService, eventSubscriberUtil)
-  private val loggingApi: LoggingApi = new LoggingImpl(loggerCache)
-  private val postHandlerImpl        = new PostHandlerImpl(alarmApi, resolver, eventApi, loggingApi, adminService)
-  private val route                  = new PostRouteFactory("post-endpoint", postHandlerImpl).make()
-  private val source                 = Prefix("esw.test")
-  private val destination            = Prefix("tcs.test")
+  private val postHandlerImpl = new PostHandlerImpl(alarmApi, resolver, eventApi, loggingApi, adminService)
+  private val route           = new PostRouteFactory("post-endpoint", postHandlerImpl).make()
+  private val source          = Prefix("esw.test")
+  private val destination     = Prefix("tcs.test")
 
   private def post[E: ToEntityMarshaller](entity: E): HttpRequest = Post("/post-endpoint", entity)
 
