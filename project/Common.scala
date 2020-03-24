@@ -59,16 +59,19 @@ object Common extends AutoPlugin {
     licenses := Seq(("Apache-2.0", url("http://www.apache.org/licenses/LICENSE-2.0")))
   )
 
-  private val storyReport: Boolean         = sys.props.get("generateStoryReport").contains("true")
-  private val reporterOptions: Seq[String] =
+  private val storyReport: Boolean                 = sys.props.get("generateStoryReport").contains("true")
+  private val reporterOptions: Seq[Tests.Argument] =
     // "-oDF" - show full stack traces and test case durations
     // -C - to generate CSV story and test mapping
-    if (storyReport) Seq("-oDF", "-C", "tmt.test.reporter.TestReporter") else Seq("-oDF")
+    if (storyReport)
+      Seq(
+        Tests.Argument(TestFrameworks.ScalaTest, "-oDF", "-C", "tmt.test.reporter.TestReporter"),
+        Tests.Argument(TestFrameworks.JUnit)
+      )
+    else Seq(Tests.Argument("-oDF"))
 
   override lazy val projectSettings: Seq[Setting[_]] = Seq(
-    testOptions in Test ++= Seq(
-      Tests.Argument(reporterOptions: _*)
-    ),
+    testOptions in Test ++= reporterOptions,
     publishArtifact in (Test, packageBin) := true,
     version := {
       sys.props.get("prod.publish") match {
