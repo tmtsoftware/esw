@@ -13,7 +13,7 @@ Spawns a new Sequence Component with provided `subsytem` and `name`.
 Note that with this command, only sequence component is spawned, not a sequencer.
 A separate `loadScript` command needs to be sent to the sequence component to spawn a sequencer inside it.
 
-See @ref:[sequencer](#sequencer-sequencer-) command to spawn a sequence component and a sequencer in single command.
+See @ref:[sequencer](#sequencer-sequencer-) command to spawn a sequence component, and a sequencer in single command.
 
 Options accepted by this command are described below:
 
@@ -44,7 +44,7 @@ Spawns two things:
 `subsytem` of sequencer (`-i` option) if specified or else `subsystem` of sequence component (`-s` option) 
 
 
-Options accepted by this  command are described below:
+Options accepted by this command are described below:
 
  * `-s` : subsystem of the sequence component, for e.g. `tcs`, `iris` etc
  * `-n`, `--name` : optional name for sequence component, for e.g. `primary`, `backup` etc

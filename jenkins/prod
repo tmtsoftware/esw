@@ -80,12 +80,6 @@ pipeline {
                 sh "sbt -Dprod.publish=true clean ghpagesPushSite"
             }
         }
-
-//        stage('Bintray Publish') {
-//            steps {
-//                sh "sbt -Dprod.publish=true -DenableCoverage=false publish"
-//            }
-//        }
     }
     post {
         always {

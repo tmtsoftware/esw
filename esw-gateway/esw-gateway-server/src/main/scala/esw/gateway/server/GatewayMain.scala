@@ -12,11 +12,11 @@ object GatewayMain extends EswCommandApp[ServerCommand] {
 
   override def run(command: ServerCommand, args: RemainingArgs): Unit =
     command match {
-      case StartCommand(port) => start(port, startLogging = true)
+      case StartCommand(port, metricsEnabled) => start(port, metricsEnabled, startLogging = true)
     }
 
-  def start(port: Option[Int], startLogging: Boolean): Unit =
-    start(new GatewayWiring(port), startLogging)
+  def start(port: Option[Int], metricsEnabled: Boolean, startLogging: Boolean): Unit =
+    start(new GatewayWiring(port, metricsEnabled), startLogging)
 
   private[esw] def start(gatewayWiring: GatewayWiring, startLogging: Boolean): Unit = {
     import gatewayWiring._

@@ -97,7 +97,7 @@ script {
     }
 
     onSetup("enableOiwfsTtf") { command ->
-        val ttfProbeNum = when (val event = getEvent(oiwfsStateEvent.key()).first()) {
+        val ttfProbeNum = when (val event = getEvent(oiwfsStateEvent.key())) {
             is SystemEvent -> event(oiwfsStateEnableKey).values.indexOf(Choice("TTF"))
             else -> -1
         }
@@ -124,7 +124,7 @@ script {
         val probeExpModes =
                 (0..2).map { if (it == ttfProbeNum) Choice("CONTINUOUS") else Choice("NOOP") }.toTypedArray()
         val startExposureCommand = Setup(aosq.prefix, "exposure", command.obsId)
-                .add(oiwfsExposureModeKey.set(*probeExpModes))
+                .add(oiwfsExposureModeKey.setAll(probeExpModes))
 
         val assembly = Assembly(WFOS, oiwfsDetectorAssembly.name, 10.seconds)
         val response = assembly.submitAndWait(startExposureCommand, 10.seconds)

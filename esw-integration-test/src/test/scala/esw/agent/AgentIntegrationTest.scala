@@ -4,7 +4,7 @@ import akka.util.Timeout
 import csw.location.api.codec.LocationServiceCodecs
 import csw.location.api.models.ComponentId
 import csw.location.api.models.ComponentType.{Machine, SequenceComponent, Service}
-import csw.location.api.models.Connection.AkkaConnection
+import csw.location.api.models.Connection.{AkkaConnection, TcpConnection}
 import csw.prefix.models.Prefix
 import esw.agent.api.ComponentStatus.Running
 import esw.agent.api.{AgentStatus, Failed, Killed, Spawned}
@@ -31,6 +31,10 @@ class AgentIntegrationTest extends EswTestKit(MachineAgent) with BeforeAndAfterA
       val seqCompPrefix = Prefix(s"esw.test_${Random.nextInt.abs}")
       val response      = Await.result(agentClient.spawnSequenceComponent(seqCompPrefix), askTimeout.duration)
       response should ===(Spawned)
+      // Verify registration in location service
+      locationService
+        .resolve(AkkaConnection(ComponentId(seqCompPrefix, SequenceComponent)), 5.seconds)
+        .futureValue should not be empty
     }
 
     "return Spawned after spawning a new redis component for a SpawnRedis message | ESW-237" in {
@@ -38,6 +42,8 @@ class AgentIntegrationTest extends EswTestKit(MachineAgent) with BeforeAndAfterA
       val prefix      = Prefix(s"esw.event_server")
       val response    = Await.result(agentClient.spawnRedis(prefix, 6379, List.empty), askTimeout.duration)
       response should ===(Spawned)
+      // Verify registration in location service
+      locationService.resolve(TcpConnection(ComponentId(prefix, Service)), 5.seconds).futureValue should not be empty
     }
 
     "return killedGracefully after killing a registered component for a KillComponent message | ESW-276" in {
@@ -48,6 +54,10 @@ class AgentIntegrationTest extends EswTestKit(MachineAgent) with BeforeAndAfterA
       val killResponse =
         Await.result(agentClient.killComponent(ComponentId(seqCompPrefix, SequenceComponent)), askTimeout.duration)
       killResponse should ===(Killed.gracefully)
+      // Verify not registered in location service
+      locationService
+        .resolve(AkkaConnection(ComponentId(seqCompPrefix, SequenceComponent)), 5.seconds)
+        .futureValue shouldEqual None
     }
 
     "return killedForcefully after killing a registered component for a killComponent message | ESW-276" in {
@@ -58,6 +68,10 @@ class AgentIntegrationTest extends EswTestKit(MachineAgent) with BeforeAndAfterA
       val killResponse =
         Await.result(agentClient.killComponent(ComponentId(seqCompPrefix, SequenceComponent)), askTimeout.duration)
       killResponse should ===(Killed.forcefully)
+      // Verify not registered in location service
+      locationService
+        .resolve(AkkaConnection(ComponentId(seqCompPrefix, SequenceComponent)), 5.seconds)
+        .futureValue shouldEqual None
     }
 
     "return Failed('Aborted') to original sender when someone kills a process while it is spawning | ESW-237, ESW-237" in {
@@ -68,6 +82,10 @@ class AgentIntegrationTest extends EswTestKit(MachineAgent) with BeforeAndAfterA
         Await.result(agentClient.killComponent(ComponentId(seqCompPrefix, SequenceComponent)), askTimeout.duration)
       killResponse should ===(Killed.gracefully)
       Await.result(spawnResponseF, askTimeout.duration) should ===(Failed("Aborted"))
+      // Verify not registered in location service
+      locationService
+        .resolve(AkkaConnection(ComponentId(seqCompPrefix, SequenceComponent)), 5.seconds)
+        .futureValue shouldEqual None
     }
 
     "return status of components available on agent for a GetAgentStatus message | ESW-286" in {

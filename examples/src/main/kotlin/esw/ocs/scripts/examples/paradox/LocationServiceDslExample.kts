@@ -10,6 +10,7 @@ import esw.ocs.dsl.core.script
 import esw.ocs.dsl.highlevel.models.*
 import esw.ocs.dsl.params.*
 import kotlin.time.minutes
+import kotlin.time.seconds
 
 script {
 
@@ -118,23 +119,23 @@ script {
         //#list-locations-by-hostname
         // list all the components running on IRIS machine
         val irisMachineHostname = "10.1.1.1"
-        val irisMachineLocations: List<Location> = listLocationsBy(irisMachineHostname)
+        val irisMachineLocations: List<Location> = listLocationsByHostname(irisMachineHostname)
 
         sendUIEvent("IRIS machine running components: [$irisMachineLocations]")
         //#list-locations-by-hostname
 
         //#list-locations-by-prefix
-        val irisPrefix = Prefix("IRIS.filter.wheel")
-        val irisComponents: List<Location> = listLocationsBy(irisPrefix)
+        val irisPrefixString ="IRIS.filter."
+        val irisComponents: List<Location> = listLocationsBy(irisPrefixString)
 
         // log Assembly and HCD location
         irisComponents.forEach {
             when (it.connection.componentId.componentType) {
-                Assembly -> info("$irisPrefix is registered as Assembly with location: $it")
+                Assembly -> info("Assembly starting with $irisPrefixString is registered with location: $it")
 
-                HCD -> info("$irisPrefix is registered as HCD with location: $it")
+                HCD -> info("HCD starting with $irisPrefixString is registered with location: $it")
 
-                else -> error("Invalid location: $it found for $irisPrefix")
+                else -> error("Invalid location: $it found for $irisPrefixString")
             }
         }
         //#list-locations-by-prefix

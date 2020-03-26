@@ -96,7 +96,7 @@ lazy val `esw-ocs-dsl-kt` = project
     kotlincOptions ++= Seq("-Xuse-experimental=kotlin.time.ExperimentalTime", "-jvm-target", "1.8")
   )
   .settings(libraryDependencies ++= Dependencies.OcsDslKt.value)
-  .dependsOn(`esw-ocs-dsl`)
+  .dependsOn(`esw-ocs-dsl`, `esw-test-reporter` % Test)
 
 lazy val `esw-ocs-app` = project
   .in(file("esw-ocs/esw-ocs-app"))
@@ -200,7 +200,11 @@ lazy val `esw-gateway-server` = project
 
 lazy val `esw-test-reporter` = project
   .in(file("esw-test-reporter"))
-  .settings(libraryDependencies += Libs.scalatest)
+  .settings(
+    libraryDependencies += Libs.scalatest,
+    libraryDependencies += Libs.`jupiter-interface`,
+    libraryDependencies += "io.kotlintest" % "kotlintest-core" % "3.4.2"
+  )
 
 lazy val `esw-contract` = project
   .in(file("esw-contract"))

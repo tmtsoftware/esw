@@ -34,7 +34,7 @@ object SequenceComponentBehavior {
       replyTo ! ScriptResponse(registrationResult)
       registrationResult match {
         case Right(location) =>
-          log.info(s"Successfully started sequencer with sequencer id :$subsystem in observation mode: $observingMode")
+          log.info(s"Successfully started sequencer for subsystem :$subsystem in observation mode: $observingMode")
           running(subsystem, observingMode, sequencerServer, location)
         case Left(scriptError) =>
           log.error(s"Failed to start sequencer: ${scriptError.msg}")

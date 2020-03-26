@@ -56,6 +56,7 @@ class FsmImpl(
         if (states.keys.any { it.equals(state, true) }) {
             previousState = currentState
             currentState = state
+            debug("[FSM] : $name - changing state to : $currentState")
             this.params = params
             coroutineScope.launch(fsmJob) {
                 states[currentState?.toUpperCase()]?.invoke(this@FsmImpl, params)
@@ -75,6 +76,7 @@ class FsmImpl(
         resetState()
         fsmSubscriptions.forEach { it.cancel() }
         fsmJob.join()
+        debug("[FSM]: $name completed")
     }
 
     override suspend fun refresh() {

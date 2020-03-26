@@ -36,6 +36,7 @@ object Dependencies {
       Libs.`scala-async`,
       Libs.enumeratum.value,
       Libs.`msocket-impl-jvm`,
+      Libs.blockhound,
       Libs.scalatest                  % Test,
       Akka.`akka-actor-testkit-typed` % Test,
       Libs.`mockito-scala`            % Test
@@ -102,14 +103,14 @@ object Dependencies {
 
   val IntegrationTest = Def.setting(
     Seq(
-      Akka.`akka-actor-testkit-typed`     % Test,
-      Libs.`scala-java8-compat`           % Test,
-      Csw.`csw-testkit`                   % Test,
-      Csw.`csw-logging-models`.value      % Test,
-      Libs.scalatest                      % Test,
-      Csw.`csw-location-server-tests`     % Test,
-      Csw.`csw-location-server-multi-jvm` % Test,
-      Akka.`akka-multi-node-testkit`      % Test
+      Akka.`akka-actor-testkit-typed` % Test,
+      Libs.`scala-java8-compat`       % Test,
+      Csw.`csw-testkit`               % Test,
+      Csw.`csw-logging-models`.value  % Test,
+      Libs.scalatest                  % Test,
+      Csw.`csw-location-server-tests` % Test,
+      Csw.`csw-integration-multi-jvm` % Test,
+      Akka.`akka-multi-node-testkit`  % Test
     )
   )
 
@@ -159,7 +160,8 @@ object Dependencies {
   val EswGatewayServer: Def.Initialize[Seq[ModuleID]] = Def.setting(
     Seq(
       Libs.`msocket-impl-jvm`,
-      Csw.`csw-admin-impl`
+      Csw.`csw-admin-impl`,
+      Libs.`prometheus-akka-http`
     )
   )
 

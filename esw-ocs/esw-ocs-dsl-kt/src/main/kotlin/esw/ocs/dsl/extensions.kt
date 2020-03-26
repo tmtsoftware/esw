@@ -2,6 +2,10 @@ package esw.ocs.dsl
 
 import csw.params.commands.CommandResponse.*
 import csw.params.commands.Result
+import csw.params.core.generics.Parameter
+import csw.params.events.Event
+import csw.params.events.ObserveEvent
+import csw.params.events.SystemEvent
 import esw.ocs.dsl.highlevel.models.CommandError
 import esw.ocs.dsl.highlevel.models.OtherError
 import esw.ocs.dsl.highlevel.models.ScriptError
@@ -47,3 +51,12 @@ internal fun Throwable.toScriptError(): ScriptError = when (this) {
     is CommandError -> this
     else -> OtherError(this.message ?: "Unknown error", this)
 }
+
+// ================ Event ====================================
+
+fun <T> Event.add(parameter: Parameter<T>): Event =
+        when (val old = this) {
+            is SystemEvent -> old.add(parameter)
+            is ObserveEvent -> old.add(parameter)
+            else -> old // this will not be matched
+        }

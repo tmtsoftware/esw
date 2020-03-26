@@ -20,7 +20,7 @@ Kotlin
 
 ## unregister
 
-This DSL un-registers provided `Connection` from Location Service
+This DSL un-registers the provided `Connection` from Location Service
 
 @extref[Connection](csw_scaladoc:csw/location/models/Connection) can be one of:
 
@@ -59,7 +59,8 @@ The following various APIs are provided for listing locations with filtering cri
 
 ### @extref[ComponentType](csw_scaladoc:csw/location/models/ComponentType)
 
-Filters locations based on provided `ComponentType` (HCD, Assembly, Sequencer, etc.)
+Filters locations based on provided `ComponentType`.  A DSL is provided to specify the type, which can be one of:
+`HCD`, `Assembly`, `Sequencer`, `SequenceComponent`, `Container`, `Service`
 
 The following example demonstrates a use case where the script sends an Offline command to all of the Assemblies currently registered.
 
@@ -68,14 +69,15 @@ Kotlin
 
 ### @extref[ConnectionType](csw_scaladoc:csw/location/models/ConnectionType)
 
-Filters locations based on provided `ConnectionType` (AkkaType, HttpType, TcpTyp,e etc.)
+Filters locations based on provided `ConnectionType`. A DSL is provided to speficy the type, which can be one of:
+`AkkaType`, `HttpType`, `TcpType`.
 
-The following example demonstrates a use case where the script locks all of the components i.e. Assemblies and HCD's.
+The following example demonstrates a use case where the script locks all of the Akka Type components i.e. Assemblies and HCD's.
 
 Kotlin
 :   @@snip [LocationServiceDslExample.kts](../../../../../../../examples/src/main/kotlin/esw/ocs/scripts/examples/paradox/LocationServiceDslExample.kts) { #list-locations-by-connection-type }
 
-@@@ note
+@@@ note { title="Required import for Location Service APIs"}
 
 The following import is required for using `ConnectionType` and `ComponentType`:
 
@@ -87,7 +89,7 @@ import esw.ocs.dsl.highlevel.models.*
 
 ### Hostname
 
-Filters locations based on provided hostname.
+Filters locations based on the provided hostname (or IP address).
 
 In the following example, all of the components running on `IRIS` (hostname: **10.1.1.1**) machine are listed.
 
@@ -96,9 +98,10 @@ Kotlin
 
 ### Prefix
 
-Filters locations based on provided Prefix.
+Filters locations based on the provided prefix string.  As with the CSW Location Service, the method filters for all 
+locations with prefixes that start with the provided string.
 
-In the following example, all of the components registered using the Prefix: `IRIS.filter.wheel` are listed, where `IRIS` is a Subsystem and `filter.wheel` is a component name
+In the following example, it receives a list of all of the components registered with prefixes that start with: `IRIS.filter.`
 
 Kotlin
 :   @@snip [LocationServiceDslExample.kts](../../../../../../../examples/src/main/kotlin/esw/ocs/scripts/examples/paradox/LocationServiceDslExample.kts) { #list-locations-by-prefix }

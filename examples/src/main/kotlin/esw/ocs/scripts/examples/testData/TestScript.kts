@@ -2,12 +2,15 @@ package esw.ocs.scripts.examples.testData
 
 import com.typesafe.config.ConfigFactory
 import csw.alarm.models.Key.AlarmKey
+import csw.params.commands.CommandResponse
+import csw.params.core.states.StateName
 import csw.params.events.Event
 import csw.prefix.models.Prefix
 import esw.ocs.dsl.core.script
 import esw.ocs.dsl.highlevel.models.*
 import esw.ocs.dsl.params.longKey
 import kotlinx.coroutines.delay
+import kotlin.time.milliseconds
 import kotlin.time.seconds
 
 script {
@@ -18,6 +21,19 @@ script {
     loadScripts(InitialCommandHandler)
 
     onSetup("command-2") {
+    }
+
+    onSetup("command-3") {
+    }
+
+    onSetup("command-4") {
+        // try sending concrete sequence
+        val setupCommand = Setup("ESW.test", "command-3")
+        val sequence = sequenceOf(setupCommand)
+
+        // ESW-88, ESW-145, ESW-195
+        val tcsSequencer = Sequencer(TCS, "darknight", 10.seconds)
+        tcsSequencer.submitAndWait(sequence, 10.seconds)
     }
 
     onSetup("check-config") {
@@ -34,12 +50,9 @@ script {
         }
     }
 
-    onSetup("command-3") {
-    }
-
     onSetup("get-event") {
         // ESW-88
-        val event: Event = getEvent("ESW.test.get.event").first()
+        val event: Event = getEvent("ESW.test.get.event")
         val successEvent = SystemEvent("ESW.test", "get.success")
         if (!event.isInvalid) publishEvent(successEvent)
     }
@@ -52,17 +65,21 @@ script {
     }
 
     onSetup("command-for-assembly") { command ->
-        testAssembly.submit(command)
-    }
+        val submitResponse = testAssembly.submit(Setup(command.source().toString(), "long-running"))
 
-    onSetup("command-4") {
-        // try sending concrete sequence
-        val setupCommand = Setup("ESW.test", "command-3")
-        val sequence = sequenceOf(setupCommand)
+        when (testAssembly.query(submitResponse.runId())) {
+            is CommandResponse.Started -> publishEvent(SystemEvent("tcs.filter.wheel", "query-started-command-from-script"))
+        }
 
-        // ESW-88, ESW-145, ESW-195
-        val tcsSequencer = Sequencer(TCS, "darknight", 10.seconds)
-        tcsSequencer.submitAndWait(sequence, 10.seconds)
+        when (testAssembly.queryFinal(submitResponse.runId(), 100.milliseconds)) {
+            is CommandResponse.Completed -> publishEvent(SystemEvent("tcs.filter.wheel", "query-completed-command-from-script"))
+        }
+
+        testAssembly.subscribeCurrentState(StateName("stateName1"), StateName("stateName2")) { currentState ->
+            publishEvent(SystemEvent("tcs.filter.wheel", "publish-${currentState.stateName().name()}"))
+        }
+
+        testAssembly.oneway(command)
     }
 
     onSetup("test-sequencer-hierarchy") {

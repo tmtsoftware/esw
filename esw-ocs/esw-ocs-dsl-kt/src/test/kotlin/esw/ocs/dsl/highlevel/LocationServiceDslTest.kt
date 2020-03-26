@@ -114,7 +114,7 @@ class LocationServiceDslTest : LocationServiceDsl {
         val mockedLocations: List<Location> = List(10) { httpLocation }
         every { locationService.list(hostname) } answers { completedFuture(mockedLocations) }
 
-        listLocationsBy(hostname) shouldBe mockedLocations
+        listLocationsByHostname(hostname) shouldBe mockedLocations
         verify { locationService.list(hostname) }
     }
 
@@ -123,7 +123,7 @@ class LocationServiceDslTest : LocationServiceDsl {
         val mockedLocations: List<Location> = List(10) { httpLocation }
         every { locationService.listByPrefix(prefix.toString()) } answers { completedFuture(mockedLocations) }
 
-        listLocationsBy(prefix) shouldBe mockedLocations
+        listLocationsBy(prefix.toString()) shouldBe mockedLocations
         verify { locationService.listByPrefix(prefix.toString()) }
     }
 

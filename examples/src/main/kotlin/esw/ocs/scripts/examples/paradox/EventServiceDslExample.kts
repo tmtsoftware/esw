@@ -8,6 +8,7 @@ import csw.params.events.ObserveEvent
 import csw.params.events.SystemEvent
 import esw.ocs.dsl.core.script
 import esw.ocs.dsl.epics.EventVariable
+import esw.ocs.dsl.epics.ParamVariable
 import esw.ocs.dsl.params.intKey
 import kotlin.time.seconds
 
@@ -61,7 +62,9 @@ script {
         //#publish-async
 
         //#get-event
-        val events: Set<Event> = getEvent(tempEventKey, stateEventKey)
+        val event = getEvent(tempEventKey) // for single event key
+
+        val events: Set<Event> = getEvent(tempEventKey, stateEventKey) // for single event key
         //#get-event
 
         //#event-key
@@ -72,15 +75,14 @@ script {
         val tempKey1: EventKey = EventKey("ESW.temperature", "temp")
         //#event-key
 
-        //#system-var
-        val locKey = intKey("current-location")
-        val systemVar: EventVariable<Int> = SystemVar(0, "IRIS.ifs.motor.position", locKey)
-        //#system-var
+        //#event-var
+        val eventVariable: EventVariable = EventVariable("ESW.temperature.temp")
+        //#event-var
 
-        //#observe-var
-        val readNumberKey = intKey("readNumber")
-        val observeVar: EventVariable<Int> = ObserveVar(0, "IRIS.ifs.detector.readCompleted", readNumberKey)
-        //#observe-var
+        //#param-var
+        val locKey = intKey("current-location")
+        val paramVariable: ParamVariable<Int> = ParamVariable(0, "IRIS.ifs.motor.position", locKey)
+        //#param-var
 
     }
 

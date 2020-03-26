@@ -27,6 +27,8 @@ import scala.concurrent.Future
 import scala.reflect.ClassTag
 import scala.util.{Failure, Success}
 
+// The Sequencer Behavior's state transition is documented in Paradox Docs under topic State-transition
+// Path to doc - $esw-paradox-site-link$/sequencer/state-transition.html
 class SequencerBehavior(
     componentId: ComponentId,
     script: ScriptApi,
@@ -39,6 +41,7 @@ class SequencerBehavior(
   import actorSystem.executionContext
   import logger._
 
+  // Mapping of Sequencer state against corresponding state's behavior
   private def stateMachine(state: SequencerState[_]): SequencerData => Behavior[SequencerMsg] = state match {
     case Idle             => idle
     case Loaded           => loaded
@@ -51,20 +54,23 @@ class SequencerBehavior(
     case Stopping         => stopping
   }
 
+  // Starting point of the Sequencer
   def setup: Behavior[SequencerMsg] = Behaviors.setup { ctx =>
     idle(SequencerData.initial(ctx.self))
   }
 
-  //BEHAVIORS
+  // ******************* Sequencer Behaviors **************
+
   private def idle(data: SequencerData): Behavior[SequencerMsg] = receive(Idle, data) {
     case LoadSequence(sequence, replyTo)           => load(sequence, replyTo, data)
     case SubmitSequenceInternal(sequence, replyTo) => submitSequence(sequence, data, replyTo)
+    case GoOnline(replyTo)                         => replyTo ! Ok; Behaviors.same
     case GoOffline(replyTo)                        => goOffline(replyTo, data)
-    case PullNext(replyTo)                         => idle(data.pullNextStep(replyTo))
+    case PullNext(replyTo)                         => idle(data.pullNextStep(replyTo)) // registers a subscriber for Step
   }
 
   private def loaded(data: SequencerData): Behavior[SequencerMsg] = receive(Loaded, data) {
-    case msg: EditorAction               => handleEditorAction(msg, data, Loaded)
+    case msg: EditorAction               => handleEditorAction(msg, data, currentState = Loaded)
     case GoOffline(replyTo)              => goOffline(replyTo, data)
     case StartSequence(replyTo)          => inProgress(data.startSequence(replyTo))
     case LoadSequence(sequence, replyTo) => load(sequence, replyTo, data)
@@ -73,71 +79,30 @@ class SequencerBehavior(
   private def inProgress(data: SequencerData): Behavior[SequencerMsg] = receive(InProgress, data) {
     case AbortSequence(replyTo) => abortSequence(data, replyTo)
     case Stop(replyTo)          => stop(data, replyTo)
-    case msg: EditorAction      => handleEditorAction(msg, data, InProgress)
+    case msg: EditorAction      => handleEditorAction(msg, data, currentState = InProgress)
     case Pause(replyTo)         => inProgress(data.updateStepListResult(replyTo, data.stepList.map(_.pause)))
     case Resume(replyTo)        => inProgress(data.updateStepList(replyTo, data.stepList.map(_.resume)))
     case PullNext(replyTo)      => inProgress(data.pullNextStep(replyTo))
     case StepSuccess(_)         => inProgress(data.stepSuccess(InProgress))
     case StepFailure(reason, _) => inProgress(data.stepFailure(reason, InProgress))
-    case _: GoIdle              => idle(data)
+    case _: GoIdle              => idle(data) // this is received on sequence completion
   }
 
   private def offline(data: SequencerData): Behavior[SequencerMsg] = receive(Offline, data) {
-    case GoOnline(replyTo) => goOnline(replyTo, data)
+    case GoOnline(replyTo)  => goOnline(replyTo, data)
+    case GoOffline(replyTo) => replyTo ! Ok; Behaviors.same
   }
 
-  private def handleCommonMessage[T <: SequencerMsg](
-      message: CommonMessage,
-      state: SequencerState[T],
-      data: SequencerData
-  ): Behavior[SequencerMsg] = message match {
-    case Shutdown(replyTo)                        => shutdown(data, replyTo)
-    case GetSequence(replyTo)                     => replyTo ! data.stepList; Behaviors.same
-    case GetSequencerState(replyTo)               => replyTo ! state; Behaviors.same
-    case DiagnosticMode(startTime, hint, replyTo) => goToDiagnosticMode(startTime, hint, replyTo)
-    case OperationsMode(replyTo)                  => goToOperationsMode(replyTo)
-    case GetSequenceComponent(replyTo)            => replyTo ! sequenceComponentLocation; Behaviors.same
-    case ReadyToExecuteNext(replyTo)              => stateMachine(state)(data.readyToExecuteNext(replyTo))
-    case MaybeNext(replyTo) =>
-      if (state == InProgress) replyTo ! data.stepList.flatMap(_.nextExecutable)
-      else replyTo ! None
-      Behaviors.same
-  }
-
-  // handles all the sequence editor messages. These messages are supported only in Loaded and InProgress state,
-  // nextBehavior represents the state (Loaded/InProgress) where it gets called from.
-  private def handleEditorAction(
-      editorAction: EditorAction,
-      data: SequencerData,
-      state: SequencerState[SequencerMsg]
-  ): Behavior[SequencerMsg] = {
-    import data._
-    val currentBehavior = stateMachine(state)
-    editorAction match {
-      case Add(commands, replyTo)            => currentBehavior(updateStepList(replyTo, stepList.map(_.append(commands))))
-      case Prepend(commands, replyTo)        => currentBehavior(updateStepList(replyTo, stepList.map(_.prepend(commands))))
-      case Delete(id, replyTo)               => currentBehavior(updateStepListResult(replyTo, stepList.map(_.delete(id))))
-      case Reset(replyTo) if state == Loaded => idle(updateStepList(replyTo, stepList = None))
-      case Reset(replyTo)                    => currentBehavior(updateStepList(replyTo, stepList.map(_.discardPending)))
-      case Replace(id, commands, replyTo) =>
-        currentBehavior(updateStepListResult(replyTo, stepList.map(_.replace(id, commands))))
-      case InsertAfter(id, commands, replyTo) =>
-        currentBehavior(updateStepListResult(replyTo, stepList.map(_.insertAfter(id, commands))))
-      case AddBreakpoint(id, replyTo) => currentBehavior(updateStepListResult(replyTo, stepList.map(_.addBreakpoint(id))))
-      case RemoveBreakpoint(id, replyTo) =>
-        currentBehavior(updateStepListResult(replyTo, stepList.map(_.removeBreakpoint(id))))
-    }
-  }
-
-  private def handleLogMessages(msg: LogControlMessage): Unit = msg match {
-    case GetComponentLogMetadata(replyTo) => replyTo ! LogAdminUtil.getLogMetadata(componentId.prefix)
-    case SetComponentLogLevel(logLevel)   => LogAdminUtil.setComponentLogLevel(componentId.prefix, logLevel)
-  }
-
+  // Starts executing GoOnline handlers of script and changes state to intermediate state GoingOnline
+  // On successful execution of handlers, state will change to Idle.
   private def goOnline(replyTo: ActorRef[GoOnlineResponse], data: SequencerData): Behavior[SequencerMsg] = {
     script.executeGoOnline().onComplete {
-      case Success(_) => data.self ! GoOnlineSuccess(replyTo)
-      case Failure(_) => data.self ! GoOnlineFailed(replyTo)
+      case Success(_) =>
+        debug("Successfully executed GoOnline script handlers")
+        data.self ! GoOnlineSuccess(replyTo)
+      case Failure(e) =>
+        error(s"Failed while executing GoOnline script handlers with error : ${e.getMessage}")
+        data.self ! GoOnlineFailed(replyTo)
     }
     goingOnline(data)
   }
@@ -147,10 +112,17 @@ class SequencerBehavior(
     case GoOnlineFailed(replyTo)  => replyTo ! GoOnlineHookFailed(); offline(data)
   }
 
+  // This can only be received in Idle or InProgress state.
+  // Starts executing the goOffline handlers and changes state to intermediate state GoingOffline
+  // On successful execution of handlers, state will change to Offline, otherwise to the previous state
   private def goOffline(replyTo: ActorRef[GoOfflineResponse], data: SequencerData): Behavior[SequencerMsg] = {
     script.executeGoOffline().onComplete {
-      case Success(_) => data.self ! GoOfflineSuccess(replyTo)
-      case Failure(_) => data.self ! GoOfflineFailed(replyTo)
+      case Success(_) =>
+        debug("Successfully executed GoOffline script handlers")
+        data.self ! GoOfflineSuccess(replyTo)
+      case Failure(e) =>
+        error(s"Failed while executing GoOffline script handlers with error : ${e.getMessage}")
+        data.self ! GoOfflineFailed(replyTo)
     }
     goingOffline(data)
   }
@@ -162,6 +134,9 @@ class SequencerBehavior(
       replyTo ! GoOfflineHookFailed(); currentBehavior(data)
   }
 
+  // Only called from InProgress state. Method starts executing abort handlers and changes state to
+  // intermediate state AbortingSequence. On completion of handlers, pending steps will be discarded and
+  // state will change to InProgress.
   private def abortSequence(data: SequencerData, replyTo: ActorRef[OkOrUnhandledResponse]): Behavior[SequencerMsg] = {
     script.executeAbort().onComplete(_ => data.self ! AbortSequenceComplete(replyTo))
     abortingSequence(data)
@@ -174,6 +149,9 @@ class SequencerBehavior(
       inProgress(updateStepList(replyTo, maybeStepList))
   }
 
+  // Only called from InProgress state. Method starts executing stop handlers and changes state to
+  // intermediate state Stopping. On completion of handlers, pending steps will be discarded and
+  // state will change to InProgress
   private def stop(data: SequencerData, replyTo: ActorRef[OkOrUnhandledResponse]): Behavior[SequencerMsg] = {
     script.executeStop().onComplete(_ => data.self ! StopComplete(replyTo))
     stopping(data)
@@ -186,6 +164,12 @@ class SequencerBehavior(
       inProgress(updateStepList(replyTo, maybeStepList))
   }
 
+  // This is a common message and can be received in any state. This will do the following things
+  // 1. unregister from location service.
+  // 2. execute shutdown handlers of script.
+  // 3. shutdowns the Sequencers HTTP server.
+  // 4. Changes state to intermediate state ShuttingDown.
+  // On completion of the first 3 tasks, the actor system will be terminated and Sequencer actor will be stopped.
   private def shutdown(data: SequencerData, replyTo: ActorRef[Ok.type]): Behavior[SequencerMsg] = {
 
     // run the futures in parallel and wait for all of them to complete
@@ -210,22 +194,34 @@ class SequencerBehavior(
       Behaviors.stopped
   }
 
+  // This is a common message and can be received in any state.
+  // This will execute the Diagnostic mode handlers of the script.
   private def goToDiagnosticMode(
       startTime: UTCTime,
       hint: String,
       replyTo: ActorRef[DiagnosticModeResponse]
   ): Behavior[SequencerMsg] = {
     script.executeDiagnosticMode(startTime, hint).onComplete {
-      case Success(_) => replyTo ! Ok
-      case _          => replyTo ! DiagnosticHookFailed()
+      case Success(_) =>
+        debug("Successfully executed diagnostic mode script handlers")
+        replyTo ! Ok
+      case Failure(e) =>
+        error(s"Failed while executing diagnostic mode script handlers with error : ${e.getMessage}")
+        replyTo ! DiagnosticHookFailed()
     }
     Behaviors.same
   }
 
+  // This is a common message and can be received in any state.
+  // This will execute the Operations mode handlers of the script.
   private def goToOperationsMode(replyTo: ActorRef[OperationsModeResponse]): Behavior[SequencerMsg] = {
     script.executeOperationsMode().onComplete {
-      case Success(_) => replyTo ! Ok
-      case _          => replyTo ! OperationsHookFailed()
+      case Success(_) =>
+        debug("Successfully executed operations mode script handlers")
+        replyTo ! Ok
+      case Failure(e) =>
+        error(s"Failed while executing operations mode script handlers with error : ${e.getMessage}")
+        replyTo ! OperationsHookFailed()
     }
     Behaviors.same
   }
@@ -235,27 +231,80 @@ class SequencerBehavior(
     loaded(data.createStepList(sequence))
   }
 
+  // Loads and starts the sequence execution. Changes Sequencer state to InProgress.
   private def submitSequence(
       sequence: Sequence,
       data: SequencerData,
       replyTo: ActorRef[SequencerSubmitResponse]
   ): Behavior[SequencerMsg] = inProgress(data.createStepList(sequence).startSequence(replyTo))
 
+  private def handleCommonMessage[T <: SequencerMsg](
+      message: CommonMessage,
+      state: SequencerState[T],
+      data: SequencerData
+  ): Behavior[SequencerMsg] = message match {
+    case Shutdown(replyTo)                        => shutdown(data, replyTo)
+    case GetSequence(replyTo)                     => replyTo ! data.stepList; Behaviors.same
+    case GetSequencerState(replyTo)               => replyTo ! state; Behaviors.same
+    case DiagnosticMode(startTime, hint, replyTo) => goToDiagnosticMode(startTime, hint, replyTo)
+    case OperationsMode(replyTo)                  => goToOperationsMode(replyTo)
+    case GetSequenceComponent(replyTo)            => replyTo ! sequenceComponentLocation; Behaviors.same
+    case ReadyToExecuteNext(replyTo)              => stateMachine(state)(data.readyToExecuteNext(replyTo))
+    case MaybeNext(replyTo) =>
+      if (state == InProgress) replyTo ! data.stepList.flatMap(_.nextExecutable)
+      else replyTo ! None
+      Behaviors.same
+  }
+
+  // handles all the sequence editor messages. These messages are supported only in Loaded and InProgress state,
+  // State remains the same only except the Reset message in Loaded state, where it changes to Idle.
+  private def handleEditorAction(
+      editorAction: EditorAction,
+      data: SequencerData,
+      currentState: SequencerState[SequencerMsg]
+  ): Behavior[SequencerMsg] = {
+    import data._
+    val currentBehavior = stateMachine(currentState)
+    editorAction match {
+      case Add(commands, replyTo)                   => currentBehavior(updateStepList(replyTo, stepList.map(_.append(commands))))
+      case Prepend(commands, replyTo)               => currentBehavior(updateStepList(replyTo, stepList.map(_.prepend(commands))))
+      case Delete(id, replyTo)                      => currentBehavior(updateStepListResult(replyTo, stepList.map(_.delete(id))))
+      case Reset(replyTo) if currentState == Loaded => idle(updateStepList(replyTo, stepList = None))
+      case Reset(replyTo)                           => currentBehavior(updateStepList(replyTo, stepList.map(_.discardPending)))
+      case Replace(id, commands, replyTo) =>
+        currentBehavior(updateStepListResult(replyTo, stepList.map(_.replace(id, commands))))
+      case InsertAfter(id, commands, replyTo) =>
+        currentBehavior(updateStepListResult(replyTo, stepList.map(_.insertAfter(id, commands))))
+      case AddBreakpoint(id, replyTo) => currentBehavior(updateStepListResult(replyTo, stepList.map(_.addBreakpoint(id))))
+      case RemoveBreakpoint(id, replyTo) =>
+        currentBehavior(updateStepListResult(replyTo, stepList.map(_.removeBreakpoint(id))))
+    }
+  }
+
+  private def handleLogMessages(msg: LogControlMessage): Unit = msg match {
+    case GetComponentLogMetadata(replyTo) => replyTo ! LogAdminUtil.getLogMetadata(componentId.prefix)
+    case SetComponentLogLevel(logLevel)   => LogAdminUtil.setComponentLogLevel(componentId.prefix, logLevel)
+  }
+
+  // Helper Function which returns a Behavior for a particular Sequencer state when given message handler for that particular state.
+  // Returns a State handler which is combination of handlers of - Common message + CSW messages + State specific messages
+  // (handler taken as parameter). All other messages will be treated as Unhandled.
   private def receive[StateMessage <: SequencerMsg: ClassTag](
       state: SequencerState[StateMessage],
       data: SequencerData
   )(stateHandler: StateMessage => Behavior[SequencerMsg]): Behavior[SequencerMsg] =
     Behaviors.receive { (ctx, msg) =>
       implicit val timeout: Timeout = Timeouts.LongTimeout
-      debug(s"[SequencerBehavior] State: $state, Received Message: $msg")
+      debug(s"Sequencer in State: $state, received Message: $msg")
 
       msg match {
-        case msg: CommonMessage     => handleCommonMessage(msg, state, data)
-        case msg: LogControlMessage => handleLogMessages(msg); Behaviors.same
-        case msg: StateMessage      => stateHandler(msg)
+        // ********* ESW Sequencer Messages *******
+        case msg: CommonMessage => handleCommonMessage(msg, state, data)
+        case msg: StateMessage  => stateHandler(msg)
         case msg: UnhandleableSequencerMessage =>
           msg.replyTo ! Unhandled(state.entryName, msg.getClass.getSimpleName); Behaviors.same
 
+        // ********* CSW Sequencer Messages *******
         // SubmitSequence is a CSW SequencerMsg, to be able to handle it only in Idle State, a corresponding Internal message is created
         // and handled in Idle State. If this message is received in any other state, and Unhandled response is returned which is
         // then adapted to a SubmitResponse
@@ -263,6 +312,8 @@ class SequencerBehavior(
           val submitResponse: Future[SequencerSubmitResponse] = ctx.self ? (SubmitSequenceInternal(sequence, _))
           submitResponse.foreach(res => replyTo ! res.toSubmitResponse())
           Behaviors.same
+
+        case msg: LogControlMessage => handleLogMessages(msg); Behaviors.same
 
         case Query(runId, replyTo) => data.query(runId, replyTo); Behaviors.same
         // Behaviors.same is not used below, because new SequencerData (updated with subscribers) needs to be passed to currentBehavior

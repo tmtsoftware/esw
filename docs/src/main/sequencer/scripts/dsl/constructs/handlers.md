@@ -139,7 +139,7 @@ The Script DSL provides following constructs to handle failures while executing 
 **Command Handler Failures** except the @ref:[Shutdown Handler](#shutdown-handler). If the `onGlobalError` handler is not provided by script,
 then only the logging of error cause is done by the framework.
 
-Following example shows usage of `onGloablError`
+Following example shows usage of `onGlobalError`
 
 Kotlin
 : @@snip [HandlersExample.kts](../../../../../../../examples/src/main/kotlin/esw/ocs/scripts/examples/paradox/HandlersExample.kts) { #onGlobalError }
@@ -153,15 +153,15 @@ log the error cause.
 
 **onError** : This construct is specifically provided for **Command Handler Failures**.
 An `onError` block can be written specifically for each `onSetup` and `onObserve` handler. 
-The `SubmitResponse` error is captured in a `ScriptError` type and passed to `onError` the block.
+The `SubmitResponse` error is captured in a `ScriptError` type and passed to the `onError` block.
 This type contains a `reason` String explaining what went wrong. 
-In case of failure, `onError` will be called first followed by `onGlobalError` and sequence will be terminated with failure. 
-After the error handling blocks are called, the command and hence the sequence, terminate with an Error status.
+In case of failure, `onError` will be called first followed by `onGlobalError` and the sequence will be terminated with failure. 
+After the error handling blocks are called, the command and sequence, terminate with an Error status.
 
 Kotlin
 : @@snip [HandlersExample.kts](../../../../../../../examples/src/main/kotlin/esw/ocs/scripts/examples/paradox/HandlersExample.kts) { #onError-for-exception }
 
-By default, a negative `SubmitResponse` is considered as error.
+By default, a negative `SubmitResponse` is considered an error.
 
 Kotlin
 : @@snip [HandlersExample.kts](../../../../../../../examples/src/main/kotlin/esw/ocs/scripts/examples/paradox/HandlersExample.kts) { #onError-for-negative-response }

@@ -25,21 +25,19 @@ import esw.http.core.wiring.{ActorRuntime, CswWiring, HttpService, Settings}
 import esw.ocs.api.codecs.SequencerHttpCodecs
 import esw.ocs.api.protocol.ScriptError
 import esw.ocs.handler.{SequencerPostHandler, SequencerWebsocketHandler}
+import esw.ocs.impl.blockhound.BlockHoundWiring
 import esw.ocs.impl.core._
 import esw.ocs.impl.internal._
-import esw.ocs.impl.messages.HealthCheckMsg
 import esw.ocs.impl.messages.SequencerMessages.Shutdown
 import esw.ocs.impl.script.{ScriptApi, ScriptContext, ScriptLoader}
 import esw.ocs.impl.syntax.FutureSyntax.FutureOps
-import esw.ocs.impl.{HealthCheckActorProxy, SequencerActorProxy, SequencerActorProxyFactory}
+import esw.ocs.impl.{SequencerActorProxy, SequencerActorProxyFactory}
 import msocket.api.ContentType
 import msocket.impl.RouteFactory
 import msocket.impl.post.PostRouteFactory
 import msocket.impl.ws.WebsocketRouteFactory
 
 import scala.async.Async.{async, await}
-import scala.concurrent.Await
-import scala.concurrent.duration.DurationInt
 import scala.util.control.NonFatal
 
 private[ocs] class SequencerWiring(
@@ -81,14 +79,9 @@ private[ocs] class SequencerWiring(
   private lazy val logger: Logger   = loggerFactory.getLogger
   private lazy val jLoggerFactory   = loggerFactory.asJava
   private lazy val jLogger: ILogger = ScriptLoader.withScript(scriptClass)(jLoggerFactory.getLogger)
-  private lazy val heartbeatActor   = new HealthCheckActor(logger, heartbeatInterval)
-  private lazy val heartbeatActorRef: ActorRef[HealthCheckMsg] =
-    Await.result(actorSystem ? (Spawn(heartbeatActor.init, "heartbeat-actor", Props.empty, _)), 5.seconds)
-
-  private lazy val heartbeatActorProxy = new HealthCheckActorProxy(heartbeatActorRef, heartbeatInterval)
 
   lazy val scriptContext = new ScriptContext(
-    heartbeatActorProxy,
+    heartbeatInterval,
     prefix,
     jLogger,
     sequenceOperatorFactory,
@@ -103,7 +96,7 @@ private[ocs] class SequencerWiring(
   private lazy val postHandler                                  = new SequencerPostHandler(sequencerApi)
   private def websocketHandlerFactory(contentType: ContentType) = new SequencerWebsocketHandler(sequencerApi, contentType)
 
-  lazy val routes: Route = RouteFactory.combine(
+  lazy val routes: Route = RouteFactory.combine(metricsEnabled = false)(
     new PostRouteFactory("post-endpoint", postHandler),
     new WebsocketRouteFactory("websocket-endpoint", websocketHandlerFactory)
   )
@@ -113,6 +106,7 @@ private[ocs] class SequencerWiring(
 
   private val shutdownHttpService = () =>
     async {
+      logger.debug("Shutting down Sequencer http service")
       val (serverBinding, registrationResult) = await(httpService.registeredLazyBinding)
       val eventualTerminated                  = serverBinding.terminate(Timeouts.DefaultTimeout)
       val eventualDone                        = registrationResult.unregister()
@@ -127,14 +121,23 @@ private[ocs] class SequencerWiring(
   lazy val sequencerServer: SequencerServer = new SequencerServer {
     override def start(): Either[ScriptError, AkkaLocation] = {
       try {
+        logger.info(s"Starting sequencer for subsystem: $subsystem with observing mode: $observingMode")
         new Engine(script).start(sequenceOperatorFactory())
 
         httpService.registeredLazyBinding.block
 
         val registration = AkkaRegistration(AkkaConnection(componentId), sequencerRef.toURI)
-        locationServiceUtil.register(registration).block
+        val loc          = locationServiceUtil.register(registration).block
+        logger.info(s"Successfully started Sequencer for subsystem: $subsystem with observing mode: $observingMode")
+        if (enableThreadMonitoring) {
+          logger.info(s"Thread Monitoring enabled for ${BlockHoundWiring.integrations}")
+          BlockHoundWiring.install()
+        }
+        loc
       }
       catch {
+        // This error will be logged in SequenceComponent.Do not log it here,
+        // because exception caused while initialising will fail the instance creation of logger.
         case NonFatal(e) => Left(ScriptError(e.getMessage))
       }
     }

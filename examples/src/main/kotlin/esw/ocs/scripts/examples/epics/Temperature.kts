@@ -24,7 +24,7 @@ FsmScript("INIT") {
     val tempKey = longKey("temperature")
     val stateKey = stringKey("state")
 
-    val temperatureVar = SystemVar(0, "esw.temperature.temp", tempKey)
+    val temperatureVar = ParamVariable(0, "esw.temperature.temp", tempKey)
 
     suspend fun publishState(baseEvent: SystemEvent, state: String) = publishEvent(baseEvent.add(stateKey.set(state)))
 
@@ -39,11 +39,11 @@ FsmScript("INIT") {
                 publishState(tempFsmEvent, OK)
             }
 
-            on(temperatureVar.get() == 30L) {
+            on(temperatureVar.first() == 30L) {
                 completeFsm()
             }
 
-            on(temperatureVar.get() > 40) {
+            on(temperatureVar.first() > 40) {
                 become(ERROR)
             }
         }
@@ -53,7 +53,7 @@ FsmScript("INIT") {
                 publishState(tempFsmEvent, ERROR)
             }
 
-            on(temperatureVar.get() < 40) {
+            on(temperatureVar.first() < 40) {
                 become("OK")
             }
         }

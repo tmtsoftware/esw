@@ -19,7 +19,7 @@ class FsmIntegrationTest extends EswTestKit(EventServer) {
 
   "Fsm" must {
 
-    "start child Fsm and accept commands | ESW-246, ESW-251" in {
+    "start child Fsm and accept commands | ESW-246, ESW-251, ESW-142" in {
       val mainFsmKey = EventKey("esw.commandFsm.state")
       val tempFsmKey = EventKey("esw.temperatureFsm.state")
       val stateKey   = StringKey.make("state")
@@ -66,7 +66,7 @@ class FsmIntegrationTest extends EswTestKit(EventServer) {
       mainFsmStateProbe.expectMessage("MAIN:STOP")
     }
 
-    "pass parameters to next state via become | ESW-246, ESW-251" in {
+    "pass parameters to next state via become | ESW-246, ESW-251, ESW-252, ESW-142" in {
       val temperatureFsmKey = IntKey.make("temperatureFsm")
       val commandKey        = KeyType.IntKey.make("command")
       val fsmStateProbe     = TestProbe[Int]
@@ -100,18 +100,63 @@ class FsmIntegrationTest extends EswTestKit(EventServer) {
       fsmSequencer.stop().awaitResult
     }
 
-    "be able to bind to event variables with polling time | ESW-142, ESW-256" in {
+    "command flag should trigger FSM bind to it | ESW-246, ESW-251, ESW-252, ESW-142" in {
+      val observeFsmKey = IntKey.make("observe")
+      val fsmStateProbe = TestProbe[Int]
 
-      val fsmSequencer: SequencerApi = spawnSequencerProxy(ESW, "MoonNight")
-      val command1                   = Setup(Prefix("esw.test"), CommandName("start-fsm"), None)
+      eventSubscriber
+        .subscribeCallback(
+          Set(EventKey("esw.CommandFlagFsmTestScript.OBSERVE")),
+          event => {
+            val param = event.paramType.get(observeFsmKey).flatMap(_.get(0))
+            param.foreach(fsmStateProbe.ref ! _)
+          }
+        )
+
+      val fsmSequencer: SequencerApi = spawnSequencerProxy(ESW, "commandFlagFsm")
+      val command1                   = Observe(Prefix("esw.test"), CommandName("observe-command-1"), None)
+      val command2                   = Observe(Prefix("esw.test"), CommandName("observe-command-2"), None).madd(observeFsmKey.set(100))
+
+      Await.result(fsmSequencer.submitAndWait(Sequence(command1, command2)), 10.seconds)
+
+      eventually {
+        fsmStateProbe.expectMessage(100)
+      }
+
+      fsmSequencer.stop().awaitResult
+    }
+
+    "be able to bind to param variables with polling time | ESW-142, ESW-256, ESW-291" in {
+      val subsystem                  = ESW
+      val observingMode              = "MoonNight"
+      val fsmSequencer: SequencerApi = spawnSequencerProxy(subsystem, observingMode)
+      val command1                   = Setup(Prefix("esw.test"), CommandName("start-param-fsm"), None)
       val probe                      = TestProbe[Event]
 
-      eventSubscriber.subscribeActorRef(Set(EventKey("tcs.polling.test")), probe.ref)
+      eventSubscriber.subscribeActorRef(Set(EventKey("tcs.polling.param-var-test")), probe.ref)
 
       fsmSequencer.submit(Sequence(command1)).futureValue shouldBe a[Started]
 
-      // this is to wait to publish 5 event, which asserts that INIT state is called 5 times. 1st time at 0 millies and
-      // and then next 4 at interval of 400 millis
+      // this is to wait to publish 5 events, which asserts that INIT state is called 5 times. 1st time at 0 millies and
+      // then next 4 at an interval of 400 millis
+      Thread.sleep(1800)
+      probe.receiveMessages(4)
+    }
+
+    "be able to bind to event variables with polling time | ESW-142, ESW-256, ESW-291" in {
+      val subsystem     = ESW
+      val observingMode = "EventVar"
+
+      val fsmSequencer: SequencerApi = spawnSequencerProxy(subsystem, observingMode)
+      val command1                   = Setup(Prefix("esw.test"), CommandName("start-event-fsm"), None)
+      val probe                      = TestProbe[Event]
+
+      eventSubscriber.subscribeActorRef(Set(EventKey("tcs.polling.event-var-test")), probe.ref)
+
+      fsmSequencer.submit(Sequence(command1)).futureValue shouldBe a[Started]
+
+      // this is to wait to publish 5 events, which asserts that INIT state is called 5 times. 1st time at 0 millies and
+      // then next 4 at an interval of 400 millis
       Thread.sleep(1800)
       probe.receiveMessages(4)
     }

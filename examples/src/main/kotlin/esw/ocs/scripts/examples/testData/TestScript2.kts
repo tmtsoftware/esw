@@ -9,15 +9,15 @@ import kotlin.time.seconds
 
 script {
 
-    val pollingVar = SystemVar(0, "TCS.polling.test", intKey("counter"), 400.milliseconds)
-
-    val fsm = Fsm("pollingTest", "INIT") {
+    val pollingVar = ParamVariable(0, "TCS.polling.param-var-test", intKey("counter"), 400.milliseconds)
+    val paramVarFsm = Fsm("param-pollingTest", "INIT") {
         state("INIT") {
-            val event = SystemEvent("TCS.polling", "test")
+            val event = SystemEvent("TCS.polling", "param-var-test")
             publishEvent(event)
         }
     }
-    pollingVar.bind(fsm)
+
+    pollingVar.bind(paramVarFsm)
 
     onSetup("command-1") {
         // To avoid sequencer to finish immediately so that other Add, Append command gets time
@@ -56,8 +56,8 @@ script {
         fatal("log-message")
     }
 
-    onSetup("start-fsm") {
-        fsm.start()
+    onSetup("start-param-fsm") {
+        paramVarFsm.start()
     }
 
     // ESW-134: Reuse code by ability to import logic from one script into another

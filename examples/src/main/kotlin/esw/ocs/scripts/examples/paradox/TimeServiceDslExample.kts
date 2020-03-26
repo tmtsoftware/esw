@@ -34,10 +34,19 @@ script {
     val offsetPrefix = "esw.offset"
     val assemblyForOffset = Assembly(TCS, "galil")
 
-    onSetup("schedule-periodically") {command ->
+    onSetup("schedule-periodically") { command ->
+        val probeCommand = Setup(schedulePrefix, "scheduledOffset", command.obsId)
+
+        schedulePeriodically(interval = 5.seconds) {
+            assemblyForOffset.submit(probeCommand)
+        }
+    }
+
+    onSetup("schedule-periodically-with-start-time") { command ->
         val scheduledTime = command(offsetTimeKey)
         val probeCommand = Setup(schedulePrefix, "scheduledOffset", command.obsId)
 
+        // *** schedule with start time ***
         schedulePeriodically(scheduledTime.head(), interval = 5.seconds) {
             assemblyForOffset.submit(probeCommand)
         }

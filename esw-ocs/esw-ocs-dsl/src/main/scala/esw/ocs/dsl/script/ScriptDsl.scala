@@ -5,6 +5,7 @@ import java.util.concurrent.{CompletableFuture, CompletionStage}
 import java.util.function.Supplier
 
 import akka.Done
+import csw.logging.api.javadsl.ILogger
 import csw.params.commands.{CommandName, Observe, SequenceCommand, Setup}
 import csw.time.core.models.UTCTime
 import esw.ocs.api.protocol.PullNextResult
@@ -17,8 +18,12 @@ import scala.async.Async.{async, await}
 import scala.compat.java8.FutureConverters.{CompletionStageOps, FutureOps}
 import scala.concurrent.{ExecutionContext, Future}
 
-private[esw] class ScriptDsl(sequenceOperatorFactory: () => SequenceOperator, strandEc: StrandEc, shutdownTask: Runnable)
-    extends ScriptApi {
+private[esw] class ScriptDsl(
+    sequenceOperatorFactory: () => SequenceOperator,
+    logger: ILogger,
+    strandEc: StrandEc,
+    shutdownTask: Runnable
+) extends ScriptApi {
   protected implicit lazy val toEc: ExecutionContext = strandEc.ec
 
   var isOnline = true
@@ -50,6 +55,8 @@ private[esw] class ScriptDsl(sequenceOperatorFactory: () => SequenceOperator, st
   }
 
   private val defaultCommandHandler: (SequenceCommand) => CompletionStage[Void] = { input =>
+    logger.error(s"Command with: ${input.commandName} is handled by the loaded sequencer script")
+
     // fixme: should script writer have ability to add this default handler, like handleUnknownCommand
     CompletableFuture.failedFuture(new UnhandledCommandException(input))
   }
@@ -73,10 +80,11 @@ private[esw] class ScriptDsl(sequenceOperatorFactory: () => SequenceOperator, st
       Done
     }
 
-  override def executeGoOffline(): Future[Done] = {
-    isOnline = false
-    executeHandler(offlineHandlers, ())
-  }
+  override def executeGoOffline(): Future[Done] =
+    executeHandler(offlineHandlers, ()).map { _ =>
+      isOnline = false
+      Done
+    }
 
   override def executeShutdown(): Future[Done] = {
     executeHandler(shutdownHandlers, ()).map { _ =>

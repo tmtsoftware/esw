@@ -6,7 +6,7 @@ import esw.ocs.dsl.params.booleanKey
 import kotlin.time.seconds
 
 FsmScript("INIT") {
-    val triggerFlag = SystemVar(false, "TCS.triggerflag", booleanKey("flag"))
+    val triggerFlag = ParamVariable(false, "TCS.triggerflag", booleanKey("flag"))
 
     val triggerFsm = Fsm("triggerfsm", "Init") {
         state("Init") {
@@ -15,7 +15,7 @@ FsmScript("INIT") {
         }
 
         state("WAITING") {
-            on(triggerFlag.get()) {
+            on(triggerFlag.first()) {
                 become("Done")
             }
         }

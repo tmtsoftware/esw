@@ -16,7 +16,7 @@ script {
     val ERROR = "ERROR"
 
     val tempKey = longKey("temperature")
-    val temperatureVar = SystemVar(0, "esw.temperature.temp", tempKey)
+    val temperatureVar = ParamVariable(0, "esw.temperature.temp", tempKey)
 
     //#alarm-key
     val tromboneTemperatureAlarm =
@@ -34,7 +34,7 @@ script {
                 setSeverity(tromboneTemperatureAlarm, Okay)
             }
 
-            on(temperatureVar.get() > 40) {
+            on(temperatureVar.first() > 40) {
                 become(ERROR)
             }
         }
@@ -44,7 +44,7 @@ script {
                 setSeverity(tromboneTemperatureAlarm, Major)
             }
 
-            on(temperatureVar.get() <= 40) {
+            on(temperatureVar.first() <= 40) {
                 become(OK)
             }
         }

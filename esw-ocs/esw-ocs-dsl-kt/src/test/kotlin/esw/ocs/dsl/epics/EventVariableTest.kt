@@ -1,137 +1,134 @@
 package esw.ocs.dsl.epics
 
 import akka.Done
-import csw.event.api.javadsl.IEventPublisher
-import csw.event.api.javadsl.IEventSubscriber
-import csw.event.api.javadsl.IEventSubscription
-import csw.event.api.scaladsl.SubscriptionModes
+import csw.params.events.Event
 import csw.params.events.EventKey
 import csw.params.events.EventName
 import csw.params.events.SystemEvent
 import csw.prefix.models.Prefix
-import esw.ocs.dsl.highlevel.EventServiceDsl
+import csw.time.scheduler.api.Cancellable
+import esw.ocs.dsl.SuspendableCallback
+import esw.ocs.dsl.highlevel.CswHighLevelDslApi
 import esw.ocs.dsl.highlevel.models.EventSubscription
 import esw.ocs.dsl.highlevel.models.TCS
-import esw.ocs.dsl.params.booleanKey
-import esw.ocs.dsl.params.intKey
 import io.kotlintest.shouldBe
 import io.mockk.*
-import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.runBlocking
 import org.junit.jupiter.api.Test
-import java.util.concurrent.CompletableFuture
 import kotlin.time.milliseconds
-import kotlin.time.toJavaDuration
 
 class EventVariableTest {
+
     @Test
-    fun `set should update local value and publish new event | ESW-132, ESW-142`() = runBlocking {
-        val prefix = Prefix(TCS, "test")
-        val eventName = EventName("testEvent")
-        val systemEvent = SystemEvent(prefix, eventName)
-        val booleanKey = booleanKey("testKey")
-        val done = Done.done()
+    fun `make should create EventVariable by getting event from event service`() = runBlocking {
+        TestSetup().run {
+            coEvery { cswHighLevelDsl.getEvent(eventKeyStr) }.returns(systemEvent)
+            val eventVariable = EventVariable.make(eventKey, cswHighLevelDsl)
 
-        val eventServiceDsl = mockk<EventServiceDsl>()
-        coEvery { eventServiceDsl.publishEvent(any()) }.returns(done)
-
-        val eventVariable: EventVariable<Boolean> = EventVariable(systemEvent, booleanKey, eventService = eventServiceDsl)
-        eventVariable.set(true)
-
-        coVerify { eventServiceDsl.publishEvent(any()) }
-        eventVariable.get() shouldBe true
+            coVerify { cswHighLevelDsl.getEvent(eventKeyStr) }
+            val event = eventVariable.getEvent()
+            event.eventName() shouldBe eventName
+            event.source() shouldBe prefix
+        }
     }
 
     @Test
-    fun `get should return the specific key from parameters of latest event | ESW-132, ESW-142`() = runBlocking {
-        val eventServiceDsl = mockk<EventServiceDsl>()
+    fun `getEvent should return the latest event | ESW-291`() = runBlocking {
+        TestSetup().run {
+            coEvery { cswHighLevelDsl.getEvent(eventKeyStr) }.returns(systemEvent)
+            val eventVariable = EventVariable.make(eventKey, cswHighLevelDsl)
 
-        val intKey = intKey("testKey")
-        val intValue = 10
-        val systemEvent = SystemEvent(Prefix(TCS, "test"), EventName("testEvent")).add(intKey.set(intValue))
-
-        val eventVariable: EventVariable<Int> = EventVariable(systemEvent, intKey, eventService = eventServiceDsl)
-
-        eventVariable.get() shouldBe intValue
+            val event = eventVariable.getEvent()
+            event.eventName() shouldBe eventName
+            event.source() shouldBe prefix
+        }
     }
-
 
     // Scenario: bind(fsm1) => bind(fsm2) => cancel1() => cancel2() => bind(fsm3)
     @Test
     fun `bind should start subscription and add subscription entry in Fsm | ESW-132, ESW-142`() = runBlocking {
-        val eventServiceDsl = mockk<EventServiceDsl>()
-        val refreshable1 = mockk<Refreshable>()
-        val refreshable2 = mockk<Refreshable>()
-        val refreshable3 = mockk<Refreshable>()
-        val eventSubscription = mockk<EventSubscription>()
+        TestSetup().run {
+            val refreshable1 = mockk<Refreshable>()
+            val refreshable2 = mockk<Refreshable>()
+            val refreshable3 = mockk<Refreshable>()
+            val eventSubscription = mockk<EventSubscription>()
 
-        val intKey = intKey("testKey")
-        val intValue = 10
-        val systemEvent = SystemEvent(Prefix(TCS, "test"), EventName("testEvent")).add(intKey.set(intValue))
-        val eventKey = systemEvent.eventKey().key()
+            every { refreshable1.addFsmSubscription(any()) } just runs
+            every { refreshable2.addFsmSubscription(any()) } just runs
+            every { refreshable3.addFsmSubscription(any()) } just runs
 
-        every { refreshable1.addFsmSubscription(any()) } just runs
-        every { refreshable2.addFsmSubscription(any()) } just runs
-        every { refreshable3.addFsmSubscription(any()) } just runs
+            coEvery { cswHighLevelDsl.getEvent(eventKeyStr) }.returns(systemEvent)
+            coEvery { cswHighLevelDsl.publishEvent(any()) }.returns(Done.done())
+            coEvery { cswHighLevelDsl.onEvent(eventKeyStr, callback = any()) }.returns(eventSubscription)
+            coEvery { eventSubscription.cancel() } just runs
 
-        coEvery { eventServiceDsl.onEvent(eventKey, callback = any()) }.returns(eventSubscription)
-        coEvery { eventSubscription.cancel() } just runs
+            val paramVariable = EventVariable.make(eventKey, cswHighLevelDsl)
 
-        val eventVariable: EventVariable<Int> = EventVariable(systemEvent, intKey, eventService = eventServiceDsl)
+            val fsmSubscription1 = paramVariable.bind(refreshable1)
+            val fsmSubscription2 = paramVariable.bind(refreshable2)
 
-        val fsmSubscription1 = eventVariable.bind(refreshable1)
-        val fsmSubscription2 = eventVariable.bind(refreshable2)
+            coVerify { refreshable1.addFsmSubscription(any()) }
+            coVerify { refreshable2.addFsmSubscription(any()) }
+            coVerify { cswHighLevelDsl.onEvent(eventKeyStr, callback = any()) }
 
-        coVerify { refreshable1.addFsmSubscription(any()) }
-        coVerify { refreshable2.addFsmSubscription(any()) }
-        coVerify { eventServiceDsl.onEvent(eventKey, callback = any()) }
+            fsmSubscription1.cancel()
+            coVerify(exactly = 0) { eventSubscription.cancel() }
 
-        fsmSubscription1.cancel()
-        coVerify(exactly = 0) { eventSubscription.cancel() }
+            fsmSubscription2.cancel()
+            coVerify { eventSubscription.cancel() }
 
-        fsmSubscription2.cancel()
-        coVerify { eventSubscription.cancel() }
-
-        eventVariable.bind(refreshable3)
-        coVerify { refreshable3.addFsmSubscription(any()) }
-        coVerify { eventServiceDsl.onEvent(eventKey, callback = any()) }
+            paramVariable.bind(refreshable3)
+            coVerify { refreshable3.addFsmSubscription(any()) }
+            coVerify { cswHighLevelDsl.onEvent(eventKeyStr, callback = any()) }
+        }
     }
 
     @Test
     fun `bind with duration should start polling the event key and refresh Fsm on changes | ESW-142, ESW-256`() = runBlocking {
-        val subscriber = mockk<IEventSubscriber>()
-        val publisher = mockk<IEventPublisher>()
-        val eventServiceDsl = object : EventServiceDsl {
-            override val coroutineScope: CoroutineScope = this@runBlocking
-            override val eventPublisher: IEventPublisher = publisher
-            override val eventSubscriber: IEventSubscriber = subscriber
-        }
-
-        val refreshable = mockk<Refreshable>()
-        val eventSubscription = mockk<IEventSubscription>()
-        val doneF = CompletableFuture.completedFuture(Done.getInstance())
-
-        val intKey = intKey("testKey")
-        val intValue = 10
-        val systemEvent = SystemEvent(Prefix(TCS, "test"), EventName("testEvent")).add(intKey.set(intValue))
-
-        val eventKey = setOf(EventKey.apply(systemEvent.eventKey().key()))
+        val systemEvent: Event = SystemEvent(Prefix(TCS, "test"), EventName("testEvent"))
+        val eventKey = systemEvent.eventKey()
+        val eventKeyStr = eventKey.key()
         val duration = 100.milliseconds
 
-        every { refreshable.addFsmSubscription(any()) } just runs
-        every { subscriber.subscribeAsync(any(), any(), any(), any()) }.answers { eventSubscription }
+        val refreshable = mockk<Refreshable>()
+        val cancellable = mockk<Cancellable>()
+        val cswApi = mockk<CswHighLevelDslApi>()
 
-        every { eventSubscription.ready() }.returns(doneF)
-        every { eventSubscription.unsubscribe() }.returns(doneF)
+        every { cancellable.cancel() }.returns(true)
+        coEvery { cswApi.getEvent(eventKeyStr) }.returns(systemEvent)
+        coEvery { cswApi.publishEvent(any()) }.returns(Done.getInstance())
+        coEvery { cswApi.schedulePeriodically(duration, any()) }.returns(cancellable)
 
-        val eventVariable = EventVariable(systemEvent, intKey, duration, eventServiceDsl)
-        val fsmSubscription = eventVariable.bind(refreshable)
+        val fsmSubscriptionSlot = slot<FsmSubscription>()
+        every { refreshable.addFsmSubscription(capture(fsmSubscriptionSlot)) } just runs
 
+        val eventVariableImpl = EventVariable.make(eventKey, cswApi, duration)
+        val fsmSubscription = eventVariableImpl.bind(refreshable)
+
+        coVerify { cswApi.getEvent(eventKeyStr) }
+        // verifies FsmSubscription is added in refreshable when binding
         coVerify { refreshable.addFsmSubscription(any()) }
-        coVerify { subscriber.subscribeAsync(eq(eventKey), any(), eq(duration.toJavaDuration()), eq(SubscriptionModes.jRateAdapterMode())) }
 
+        // asserts the time service is dsl is called, and the lambda passed to it calls getEvent internally
+        val lambdaSlot = slot<SuspendableCallback>()
+        coVerify { cswApi.schedulePeriodically(duration, capture(lambdaSlot)) }
+        lambdaSlot.captured.invoke(this)
+        coVerify(exactly = 2) { cswApi.getEvent(eventKeyStr) }
+
+        // verifies the cancelling the FsmSubscription calls "cancel" of Cancellable returned by schedulePeriodically.
         fsmSubscription.cancel()
-        verify { eventSubscription.unsubscribe() }
-
+        verify { cancellable.cancel() }
     }
+
+    private inner class TestSetup {
+        val eventName = EventName("testEvent")
+        val prefix = Prefix(TCS, "test")
+
+        val systemEvent = SystemEvent(prefix, eventName)
+        val eventKey = EventKey(prefix, eventName)
+        val eventKeyStr = eventKey.key()
+
+        val cswHighLevelDsl = mockk<CswHighLevelDslApi>()
+    }
+
 }

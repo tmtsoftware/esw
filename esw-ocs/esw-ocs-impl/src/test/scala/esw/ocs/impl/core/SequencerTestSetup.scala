@@ -23,6 +23,7 @@ import esw.ocs.impl.messages.SequencerMessages._
 import esw.ocs.impl.messages.SequencerState.{Idle, InProgress}
 import esw.ocs.impl.messages.{SequenceComponentMsg, SequencerState}
 import esw.ocs.impl.script.ScriptApi
+import org.mockito.MockitoSugar
 import org.scalatest.Assertion
 import org.scalatest.concurrent.Eventually._
 import org.scalatest.matchers.should.Matchers
@@ -39,7 +40,7 @@ class SequencerTestSetup(sequence: Sequence)(implicit system: ActorSystem[_]) {
   implicit val ec: ExecutionContext                   = system.executionContext
 
   private val componentId     = mock[ComponentId]
-  private val script          = mock[ScriptApi]
+  val script: ScriptApi       = mock[ScriptApi]
   private val locationService = mock[LocationService]
   private val logger          = mock[Logger]
   private val sequenceComponent: AkkaLocation = AkkaLocation(
@@ -220,9 +221,7 @@ class SequencerTestSetup(sequence: Sequence)(implicit system: ActorSystem[_]) {
     probe.expectMessage(response)
   }
 
-  def goOfflineAndAssertResponse(response: GoOfflineResponse, handlerMockResponse: Future[Done]): GoOfflineResponse = {
-    when(script.executeGoOffline()).thenReturn(handlerMockResponse)
-
+  def goOfflineAndAssertResponse(response: GoOfflineResponse): GoOfflineResponse = {
     val probe = TestProbe[GoOfflineResponse]
     sequencerActor ! GoOffline(probe.ref)
     probe.expectMessage(response)
@@ -302,6 +301,7 @@ class SequencerTestSetup(sequence: Sequence)(implicit system: ActorSystem[_]) {
 
     if (finished) completionPromise.complete(Success(Completed(Id())))
 
+    assertSequencerState(Idle)
     finished should ===(true)
   }
 
@@ -373,7 +373,8 @@ object SequencerTestSetup {
 
   def offline(sequence: Sequence)(implicit system: ActorSystem[_]): SequencerTestSetup = {
     val testSetup = new SequencerTestSetup(sequence)
-    testSetup.goOfflineAndAssertResponse(Ok, Future.successful(Done))
+    MockitoSugar.when(testSetup.script.executeGoOffline()).thenReturn(Future.successful(Done))
+    testSetup.goOfflineAndAssertResponse(Ok)
     testSetup
   }
 

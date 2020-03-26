@@ -1,6 +1,7 @@
 package esw.ocs.dsl.script
 
 import akka.Done
+import csw.logging.api.javadsl.ILogger
 import csw.params.commands.SequenceCommand
 import csw.time.core.models.UTCTime
 import esw.ocs.dsl.params.Params
@@ -10,13 +11,14 @@ import scala.concurrent.Future
 
 private[esw] class FsmScriptDsl(
     sequenceOperatorFactory: () => SequenceOperator,
+    logger: ILogger,
     strandEc: StrandEc,
     shutdownTask: Runnable,
     initialState: FsmScriptState
-) extends ScriptDsl(sequenceOperatorFactory, strandEc, shutdownTask) {
+) extends ScriptDsl(sequenceOperatorFactory, logger, strandEc, shutdownTask) {
 
-  def this(sequenceOperatorFactory: () => SequenceOperator, strandEc: StrandEc, shutdownTask: Runnable) =
-    this(sequenceOperatorFactory, strandEc, shutdownTask, FsmScriptState.init())
+  def this(sequenceOperatorFactory: () => SequenceOperator, logger: ILogger, strandEc: StrandEc, shutdownTask: Runnable) =
+    this(sequenceOperatorFactory, logger, strandEc, shutdownTask, FsmScriptState.init())
 
   private var scriptState = initialState
 

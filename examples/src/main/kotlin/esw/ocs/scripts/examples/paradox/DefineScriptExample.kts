@@ -4,6 +4,7 @@ package esw.ocs.scripts.examples.paradox
 
 import csw.alarm.models.AlarmSeverity
 import csw.alarm.models.Key
+import csw.params.events.SystemEvent
 import csw.prefix.models.Prefix
 //#fsm-script
 import esw.ocs.dsl.core.FsmScript
@@ -13,11 +14,11 @@ import esw.ocs.dsl.core.reusableScript
 //#reusable-script-example
 //#script
 import esw.ocs.dsl.core.script
+import esw.ocs.dsl.highlevel.models.Major
 //#script
 import esw.ocs.dsl.highlevel.models.NFIRAOS
-import esw.ocs.dsl.params.intKey
-import esw.ocs.dsl.params.params
-import esw.ocs.dsl.params.stringKey
+import esw.ocs.dsl.highlevel.models.Okay
+import esw.ocs.dsl.params.*
 import kotlin.time.seconds
 
 fun moveMotor(angle: Int): Unit = TODO()
@@ -35,11 +36,24 @@ script {
 script {
     info("Loading DarkNight script")
 
+    var tromboneTemperature = 0.0
+    onEvent("nfiraos.tromboneAssembly.temperature") { event ->
+        when (event) {
+            is SystemEvent -> {
+                tromboneTemperature = event(doubleKey("temperatureInCelsius")).first
+            }
+        }
+    }
+
     val tromboneTemperatureAlarm =
             Key.AlarmKey(Prefix(NFIRAOS, "trombone"), "tromboneMotorTemperatureAlarm")
 
     loopAsync(1.seconds) {
-        setSeverity(tromboneTemperatureAlarm, getSeverity())
+        if (tromboneTemperature > 10.0) {
+            setSeverity(tromboneTemperatureAlarm, Major)
+        } else  {
+            setSeverity(tromboneTemperatureAlarm, Okay)
+        }
     }
 
     onSetup("basic-setup") { command ->

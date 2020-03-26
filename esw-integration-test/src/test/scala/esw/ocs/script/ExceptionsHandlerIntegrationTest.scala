@@ -82,7 +82,7 @@ class ExceptionsHandlerIntegrationTest extends EswTestKit(EventServer) {
         val longRunningSetupSequence = Sequence(longRunningSetupCommand, command1)
 
         sequencer.submit(longRunningSetupSequence)
-        // Pause sequence so it will remain in InProgress state and then other inProgressState msgs can be processed
+        // Pause sequence, so it will remain in InProgress state and then other inProgressState msgs can be processed
         sequencer.pause
         sequencerRef ! msg
 
@@ -120,6 +120,7 @@ class ExceptionsHandlerIntegrationTest extends EswTestKit(EventServer) {
       sequencer.submitAndWait(sequence1).futureValue shouldBe a[Completed]
     }
 
+    //    ********* Test case of Offline state *************
     "invoke exception handler when handle-goOnline-failed | ESW-139, CSW-81" in {
       val globalExHandlerEventMessage = "handle-goOnline-failed"
       val eventKey                    = EventKey(prefix, EventName(globalExHandlerEventMessage))

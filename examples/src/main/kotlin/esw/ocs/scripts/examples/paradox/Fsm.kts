@@ -3,14 +3,12 @@
 package esw.ocs.scripts.examples.paradox
 
 import csw.params.core.generics.Key
-import csw.params.core.models.Coords.Coord
-import csw.params.core.models.JEqCoord
 import esw.ocs.dsl.core.script
 import esw.ocs.dsl.epics.CommandFlag
 import esw.ocs.dsl.epics.EventVariable
 import esw.ocs.dsl.epics.Fsm
+import esw.ocs.dsl.epics.ParamVariable
 import esw.ocs.dsl.params.Params
-import esw.ocs.dsl.params.coordKey
 import esw.ocs.dsl.params.intKey
 import esw.ocs.dsl.params.params
 import kotlin.time.milliseconds
@@ -32,33 +30,56 @@ script {
     irisFsm.await()
     //#await
 
-
+    //#subscribing
+    // ------------ EventVariable ---------------
     //#event-var
-    //**  System Var **//
+    val eventVariable: EventVariable = EventVariable("ESW.IRIS_darkNight.temperature")
+    //#subscribing
+
+    eventVariable.getEvent() // to get the latest Event
+    //#event-var
+
+
+    //#subscribing
+    eventVariable.bind(irisFsm)
+
+    // ------------ ParamVariable ---------------
+    //#polling
     val tempKey: Key<Int> = intKey("temperature")
-    val systemVar: EventVariable<Int> = SystemVar(0, "esw.temperature.temp", tempKey)
-
-    systemVar.bind(irisFsm) // binds the FSM and event variable
-
-    //**  Observe Var **//
-    val coordKey: Key<Coord> = coordKey("co-ordinates")
-    val observeVar: EventVariable<Coord> = ObserveVar(JEqCoord.make(0, 0), "IRIS.observe.coord", coordKey)
-    observeVar.get() // returns the value of the parameter from the latest event
-
-    observeVar.bind(irisFsm) // binds the FSM and event variable
-
-    observeVar.set(JEqCoord.make(1, 1)) // publishes the given value on event key
-    //#event-var
-
-    //#polling
-    // SystemVar with polling duration of 2 seconds
-    val pollingSysVar: EventVariable<Int> = SystemVar(0, "esw.temperature.temp", tempKey, 2.seconds)
-
-    // ObserveVar with polling duration of 2 seconds
-    val pollingObsVar: EventVariable<Coord> = ObserveVar(JEqCoord.make(0, 0), "iris.observe.coord", coordKey, 2.seconds)
     //#polling
 
-    var params = Params(mutableSetOf())
+    //#param-var
+    val paramVariable: ParamVariable<Int> = ParamVariable(0, "ESW.temperature.temp", tempKey)
+    //#subscribing
+
+    paramVariable.getParam() // to get the current values of the parameter
+    paramVariable.first() // to get the first value from the values of the parameter
+    paramVariable.setParam(10, 11) // publishes the given values on event key
+
+    paramVariable.getEvent() // to get the latest Event
+    //#param-var
+
+    val eventBasedVariable = paramVariable
+    //#binding
+    eventBasedVariable.bind(irisFsm)
+    //#binding
+
+    //#subscribing
+    paramVariable.bind(irisFsm) // binds the FSM and event variable
+    //#subscribing
+
+    //#polling
+
+    // ------------ ParamVariable ---------------
+    val pollingParamVar: ParamVariable<Int> =
+            ParamVariable(0, "ESW.temperature.temp", tempKey, 2.seconds)
+
+    pollingParamVar.bind(irisFsm)
+
+    // ------------ EventVariable ---------------
+    val pollingEventVar = EventVariable("ESW.IRIS_darkNight.temperature", 2.seconds)
+    pollingEventVar.bind(irisFsm)
+    //#polling
 
     //#command-flag
     val flag = CommandFlag()
@@ -68,7 +89,7 @@ script {
         flag.set(command.params) // will set params and refreshes the bound FSMs with the new params
     }
 
-    flag.value() // way to extract the current params value in FSM
+    val params = flag.value() // extract the current params value in FSM
     //#command-flag
 
     val exampleFsm = Fsm(name = "example-fsm", initState = "INIT") {
@@ -105,16 +126,16 @@ script {
             //#complete-fsm
         }
 
-        val temparature = systemVar
+        val temparature = paramVariable
 
         //#state-transition-on-re-evaluation
         state("LOW") {
             //#on
-            on(temparature.get() < 20) {
+            on(temparature.first() < 20) {
                 // do something but state transition does not happen
             }
 
-            on(temparature.get() >= 20) {
+            on(temparature.first() >= 20) {
                 // do something and transit state
                 become("HIGH")
             }

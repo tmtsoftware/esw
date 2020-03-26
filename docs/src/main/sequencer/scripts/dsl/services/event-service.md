@@ -9,8 +9,7 @@ You can refer to the detailed documentation of Event Service provided by CSW @ex
 
 These methods can be used to create Systerm and Observe Events.  Additionally, a System or Observe "Event Variable" can be created
 that can be tied to the first value of a parameter of an Event, similar to the way local variables are tied to "process variables" in the EPICS State Notation
-Language (see [EPICS Sequencer Documentation](https://www-csr.bessy.de/control/SoftDist/sequencer/Introduction.html#overview) 
-for more information).
+Language.
 
 ### SystemEvent
 
@@ -25,24 +24,6 @@ Helper DSL to create an `ObserveEvent` from the provided `prefix`, `event name` 
 
 Kotlin
 :   @@snip [EventServiceDslExample.kts](../../../../../../../examples/src/main/kotlin/esw/ocs/scripts/examples/paradox/EventServiceDslExample.kts) { #observe-event }
-
-### SystemVar
-
-Helper DSL to create an `EventVariable` corresponding to a parameter of a `SystemEvent`. This DSL needs the initial 
-value of the parameter, the name of the `EventKey`, and the `ParameterKey` of the connected parameter.
- More details about `SystemVar`s are provided in the @ref[FSM documentation](../constructs/fsm.md#reactive-fsm)
-
-Kotlin
-:   @@snip [EventServiceDslExample.kts](../../../../../../../examples/src/main/kotlin/esw/ocs/scripts/examples/paradox/EventServiceDslExample.kts) { #system-var }
-
-### ObserveVar
-
-Helper DSL to create an `EventVariable` corresponding to a parameter of an `ObserveEvent`. This DSL needs the initial 
-value of the parameter, the name of the `EventKey` and the `ParameterKey` of the connected parameter.
-More details about `ObserveVar`s are provided in the @ref[FSM documentation](../constructs/fsm.md#reactive-fsm)
-
-Kotlin
-:   @@snip [EventServiceDslExample.kts](../../../../../../../examples/src/main/kotlin/esw/ocs/scripts/examples/paradox/EventServiceDslExample.kts) { #observe-var }
 
 ## publishEvent
 
@@ -73,7 +54,8 @@ Kotlin
 
 ## getEvent
 
-DSL to get the latest Event published on each of the given `EventKey` names.
+DSL to get the latest Event published on each of the given `EventKey` names. There are two variations. One is for getting the latest event for single key, the other
+variation is to get the latest events against multiple keys.
 
 Kotlin
 :   @@snip [EventServiceDslExample.kts](../../../../../../../examples/src/main/kotlin/esw/ocs/scripts/examples/paradox/EventServiceDslExample.kts) { #get-event }
