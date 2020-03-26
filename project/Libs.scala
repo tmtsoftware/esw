@@ -23,7 +23,7 @@ object Libs {
 
   val `prometheus-akka-http` = "com.lonelyplanet" %% "prometheus-akka-http" % "0.5.0"
 
-  val blockhound = "io.projectreactor.tools" % "blockhound" % "1.0.2.RELEASE"
+  val blockhound = "io.projectreactor.tools" % "blockhound" % "1.0.3.RELEASE"
 }
 
 object Csw {
