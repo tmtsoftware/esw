@@ -35,7 +35,7 @@ abstract class EswCommandApp[T: CommandParser: CommandsHelp] extends CommandApp[
   private def colored(color: String, msg: String): Unit = println(s"$color$msg${Console.RESET}")
 
   private def help(): Unit = {
-    print(beforeCommandMessages.copy(optionsDesc = s"[command] [command-options]").help)
+    print(beforeCommandMessages.withOptionsDesc(s"[command] [command-options]").help)
     println(s"Available commands: ${commands.mkString(", ")}\n")
     println(s"Type  $progName command --help  for help on an individual command")
   }
