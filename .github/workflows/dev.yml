@@ -1,0 +1,87 @@
+name: dev
+
+on:
+  push:
+    branches: [master]
+
+jobs:
+  buid:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v1
+      - uses: olafurpg/setup-scala@v5
+        with:
+          java-version: adopt@1.11
+
+      - name: Cache ~/.cache
+        uses: actions/cache@v1
+        with:
+          path: ~/.cache
+          key: ${{ runner.os }}-coursier-${{ hashFiles('project/Libs.scala') }}
+          restore-keys: |
+            ${{ runner.os }}-coursier-
+
+      - name: Cache ~/.sbt
+        uses: actions/cache@v1
+        with:
+          path: ~/.sbt
+          key: ${{ runner.os }}-sbt-${{ hashFiles('project/build.properties') }}
+          restore-keys: |
+            ${{ runner.os }}-sbt-
+
+      - name: Build
+        run: |
+          sbt scalafmtCheck
+          sbt clean makeSite
+          sbt ';set every Seq(enableFatalWarnings := true, scalafmtOnCompile := false); test:compile; multi-jvm:compile;'
+
+      - name: Tests
+        run: |
+          sbt -DenableCoverage=true -DgenerateStoryReport=true test:test
+          sbt -DenableCoverage=true esw-ocs-dsl-kt/test
+
+      - name: Coverage Report
+        run: |
+          sbt -DenableCoverage=true coverageReport
+          sbt coverageAggregate
+
+      - name: RTM
+        run: |
+          ./scripts/coursier launch -r jitpack -r https://jcenter.bintray.com com.github.tmtsoftware:rtm_2.13:47b635b289 -M tmt.test.reporter.TestRequirementMapper -- target/RTM/testStoryMapping.txt tools/RTM/storyRequirementMapping.csv target/RTM/testRequirementsMapping.txt
+
+      - name: Upload Coverage Report
+        uses: actions/upload-artifact@v1
+        with:
+          name: Coverage Report
+          path: target/scala-2.13/scoverage-report
+
+      - name: Upload RTM
+        uses: actions/upload-artifact@v1
+        with:
+          name: RTM
+          path: target/RTM
+
+      - name: Multi-Jvm Tests
+        run: sbt esw-integration-test/multi-jvm:test
+
+      - name: Build Status
+        if: always()
+        id: build_status
+        run: |
+          if [[ ${{job.status}} == Success ]]
+          then
+          echo ::set-output name=status_icon::'white_check_mark'
+          echo ::set-output name=build_status::'SUCCESS'
+          else
+          echo ::set-output name=status_icon::'x'
+          echo ::set-output name=build_status::'FAILURE'
+          fi
+
+      - name: Notify slack
+        if: always()
+        env:
+          SLACK_BOT_TOKEN: ${{ secrets.SLACK_BOT_TOKEN }}
+        uses: pullreminders/slack-action@master
+        with:
+          args: '{\"channel\":\"#esw-build\",\"text\":\":${{ steps.build_status.outputs.status_icon }}: ${{ steps.build_status.outputs.build_status }}: Job ${{ github.event.repository.name }}:${{github.workflow}} \n https://github.com/${{github.repository}}/actions/runs/${{github.run_id}}\"}'
