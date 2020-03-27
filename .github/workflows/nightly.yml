@@ -2,11 +2,11 @@ name: nightly
 
 on:
   schedule:
-    - cron: '30 7 * * *' # run at 1:00 AM IST
+    - cron: '30 19 * * *' # run at 1:00 AM IST
 
 jobs:
   paradox:
-    runs-on: self-hosted
+    runs-on: [ubuntu-latest]
 
     steps:
       - uses: actions/checkout@v2
