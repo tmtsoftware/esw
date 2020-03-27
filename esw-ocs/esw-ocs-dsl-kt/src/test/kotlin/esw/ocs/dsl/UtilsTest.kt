@@ -1,6 +1,6 @@
 package esw.ocs.dsl
 
-import io.kotlintest.matchers.numerics.shouldBeGreaterThan
+import io.kotlintest.matchers.numerics.shouldBeGreaterThanOrEqual
 import io.kotlintest.matchers.numerics.shouldBeLessThan
 import io.kotlintest.shouldBe
 import kotlinx.coroutines.delay
@@ -52,7 +52,7 @@ class UtilsTest {
         }
 
         // the individual operation takes 100ms, and we are running such 5 operations
-        // because these are running concurrently, total time taken is less than 250ms and not 500ms
-        timeTaken shouldBeGreaterThan 500
+        // because these are running sequentially, total time taken should be equal to or greater than 500ms
+        timeTaken shouldBeGreaterThanOrEqual 500
     }
 }

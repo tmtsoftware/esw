@@ -27,7 +27,6 @@ import scala.concurrent.duration.{DurationLong, FiniteDuration}
 import scala.concurrent.{Future, Promise}
 import scala.util.Random
 
-//todo: fix test names
 class SpawnManuallyRegisteredComponentTest
     extends ScalaTestWithActorTestKit
     with AnyWordSpecLike
