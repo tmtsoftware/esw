@@ -37,9 +37,7 @@ jobs:
           sbt ';set every Seq(enableFatalWarnings := true, scalafmtOnCompile := false); test:compile; multi-jvm:compile;'
 
       - name: Tests
-        run: |
-          sbt -DenableCoverage=true -DgenerateStoryReport=true test:test
-          sbt -DenableCoverage=true esw-ocs-dsl-kt/test
+        run: sbt -DenableCoverage=true -DgenerateStoryReport=true test:test
 
       - name: Coverage Report
         run: |
