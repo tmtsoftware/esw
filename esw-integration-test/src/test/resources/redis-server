@@ -1,7 +1,8 @@
-#!/bin/sh -e
+#!/usr/bin/env bash
+
 echo "Executing fake redis-server"
 
-function control_c {
+function control_c() {
     echo -en "exiting fake redis-server ..."
     sleep 5
 }
