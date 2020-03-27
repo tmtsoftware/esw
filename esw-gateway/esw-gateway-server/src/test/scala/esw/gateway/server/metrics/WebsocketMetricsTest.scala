@@ -176,7 +176,7 @@ class WebsocketMetricsTest extends BaseTestSuite with ScalatestRouteTest with Ga
 
       probe.sendComplete()
       wsClient.expectCompletion()
-      subscribeGaugeValue shouldBe 0
+      eventually(subscribeGaugeValue shouldBe 0)
       subscribeCounterValue shouldBe 10
     }
 

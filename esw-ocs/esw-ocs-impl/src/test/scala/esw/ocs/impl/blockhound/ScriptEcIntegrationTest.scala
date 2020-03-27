@@ -25,7 +25,7 @@ class ScriptEcIntegrationTest extends BaseTestSuite {
       val assertString: ListBuffer[String] = ListBuffer.empty
       val blockingCallback: String => Unit = (msg: String) => { assertString += msg }
       val scriptEcIntegration              = new TestScriptEcIntegration(testScriptThread, blockingCallback)
-      scriptEcIntegration.isInstanceOf[BlockHoundIntegration] shouldBe (true)
+      scriptEcIntegration.isInstanceOf[BlockHoundIntegration] shouldBe true
 
       val testEc: ExecutionContext =
         ExecutionContext.fromExecutorService(Executors.newSingleThreadExecutor((r: Runnable) => new Thread(r, testScriptThread)))
@@ -34,7 +34,7 @@ class ScriptEcIntegrationTest extends BaseTestSuite {
 
       Await.result(Future { Thread.sleep(1000) }(testEc), 10.seconds)
 
-      assertString.contains("java.lang.Thread.sleep") shouldBe (true)
+      assertString.contains("java.lang.Thread.sleep") shouldBe true
     }
 
     "ignore allowed blocking println calls for script thread | ESW-290" in {
@@ -42,7 +42,7 @@ class ScriptEcIntegrationTest extends BaseTestSuite {
       var assertString        = ""
       val blockingCallback    = (msg: String) => { assertString = msg }
       val scriptEcIntegration = new TestScriptEcIntegration(testScriptThread, blockingCallback)
-      scriptEcIntegration.isInstanceOf[BlockHoundIntegration] shouldBe (true)
+      scriptEcIntegration.isInstanceOf[BlockHoundIntegration] shouldBe true
 
       val testEc: ExecutionContext =
         ExecutionContext.fromExecutorService(Executors.newSingleThreadExecutor((r: Runnable) => new Thread(r, testScriptThread)))
@@ -57,7 +57,7 @@ class ScriptEcIntegrationTest extends BaseTestSuite {
         Id()
       }(testEc), 10.seconds)
 
-      assertString shouldBe ("")
+      assertString shouldBe ""
     }
   }
 }
