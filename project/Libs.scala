@@ -4,14 +4,14 @@ import sbt._
 
 object Libs {
   private val SilencerVersion = "1.6.0"
-  private val MSocketVersion  = "6fc1306"
+  private val MSocketVersion  = "7de6e57"
 
   val `silencer-plugin` = "com.github.ghik" % "silencer-plugin" % SilencerVersion cross CrossVersion.full
   val `silencer-lib`    = "com.github.ghik" % "silencer-lib"    % SilencerVersion cross CrossVersion.full
 
   val `case-app`           = "com.github.alexarchambault" %% "case-app" % "2.0.0-M16"
   val enumeratum           = dep("com.beachape" %%% "enumeratum" % "1.5.15") //MIT License
-  val `mockito-scala`      = "org.mockito" %% "mockito-scala" % "1.13.0" // MIT License
+  val `mockito-scala`      = "org.mockito" %% "mockito-scala" % "1.13.1" // MIT License
   val `scala-async`        = "org.scala-lang.modules" %% "scala-async" % "0.10.0" //BSD 3-clause "New" or "Revised" License
   val scalatest            = "org.scalatest" %% "scalatest" % "3.1.1" //Apache License 2.0
   val `scala-java8-compat` = "org.scala-lang.modules" %% "scala-java8-compat" % "0.9.1" //BSD 3-clause "New" or "Revised" License
@@ -23,12 +23,12 @@ object Libs {
 
   val `prometheus-akka-http` = "com.lonelyplanet" %% "prometheus-akka-http" % "0.5.0"
 
-  val blockhound = "io.projectreactor.tools" % "blockhound" % "1.0.2.RELEASE"
+  val blockhound = "io.projectreactor.tools" % "blockhound" % "1.0.3.RELEASE"
 }
 
 object Csw {
   private val Org     = "com.github.tmtsoftware.csw"
-  private val Version = "7b41cb2" //change this to 0.1.0-SNAPSHOT to test with local csw changes (after publishLocal)
+  private val Version = "4572144" //change this to 0.1.0-SNAPSHOT to test with local csw changes (after publishLocal)
 
   val `csw-admin-api`             = dep(Org %%% "csw-admin-api" % Version)
   val `csw-admin-impl`            = Org %% "csw-admin-impl" % Version
@@ -81,7 +81,7 @@ object AkkaHttp {
 }
 
 object Borer {
-  private val Version = "1.4.0"
+  private val Version = "1.5.0"
   private val Org     = "io.bullet"
 
   val `borer-core`        = dep(Org %%% "borer-core" % Version)
