@@ -1,13 +1,12 @@
-name: dev
+name: release
 
 on:
-  pull_request:
-    branches: [master]
   push:
-    branches: [master]
+    tags:
+      - "v*"
 
 jobs:
-  build:
+  release:
     runs-on: ubuntu-latest
 
     steps:
@@ -16,27 +15,18 @@ jobs:
         with:
           java-version: adopt@1.11
 
-      - name: Cache ~/.cache
-        uses: actions/cache@v1
+      - uses: actions/setup-node@v1
         with:
-          path: ~/.cache
-          key: ${{ runner.os }}-coursier-${{ hashFiles('project/Libs.scala') }}
-          restore-keys: |
-            ${{ runner.os }}-coursier-
+          node-version: "13.x"
+          registry-url: "https://registry.npmjs.org"
 
-      - name: Cache ~/.sbt
-        uses: actions/cache@v1
-        with:
-          path: ~/.sbt
-          key: ${{ runner.os }}-sbt-${{ hashFiles('project/build.properties') }}
-          restore-keys: |
-            ${{ runner.os }}-sbt-
+      - run: npm install -g junit-merge
+      - run: npm install -g junit-viewer
 
       - name: Build
         run: |
-          sbt scalafmtCheck
-          sbt clean makeSite
-          sbt ';set every Seq(enableFatalWarnings := true, scalafmtOnCompile := false); test:compile; multi-jvm:compile;'
+          sbt test:compile multi-jvm:compile
+          sbt makeSite
 
       - name: Tests
         run: sbt -DenableCoverage=true -DgenerateStoryReport=true test:test
@@ -45,7 +35,7 @@ jobs:
         run: |
           sbt -DenableCoverage=true coverageReport
           sbt coverageAggregate
-
+      
       - name: RTM
         run: |
           ./scripts/coursier launch -r jitpack -r https://jcenter.bintray.com com.github.tmtsoftware:rtm_2.13:47b635b289 -M tmt.test.reporter.TestRequirementMapper -- target/RTM/testStoryMapping.txt tools/RTM/storyRequirementMapping.csv target/RTM/testRequirementsMapping.txt
@@ -55,15 +45,35 @@ jobs:
         with:
           name: Coverage Report
           path: target/scala-2.13/scoverage-report
-
+      
       - name: Upload RTM
         uses: actions/upload-artifact@v1
         with:
           name: RTM
           path: target/RTM
 
+      - name: Delete js targets
+        continue-on-error: true
+        run: find . -type d -regex ".*js/target.*" | xargs rm -rf
+
       - name: Multi-Jvm Tests
         run: sbt esw-integration-test/multi-jvm:test
+
+      - name: Github Release
+        run: sbt -Dprod.publish=true githubRelease
+        env:
+          GITHUB_TOKEN: ${{ secrets.RELEASE_TOKEN }}
+
+      - name: Docs Publish
+        run: |
+          echo 'echo $RELEASE_TOKEN' > /tmp/.git-askpass
+          chmod +x /tmp/.git-askpass
+          git config --global user.email "actions@github.com"
+          git config --global user.name "Github Action"
+          sbt -Dprod.publish=true clean ghpagesPushSite
+        env:
+          RELEASE_TOKEN: ${{ secrets.RELEASE_TOKEN }}
+          GIT_ASKPASS: /tmp/.git-askpass
 
       - name: Build Status
         if: always()
@@ -80,9 +90,8 @@ jobs:
 
       - name: Notify slack
         if: always()
-        continue-on-error: true
         env:
           SLACK_BOT_TOKEN: ${{ secrets.SLACK_BOT_TOKEN }}
         uses: pullreminders/slack-action@master
         with:
-          args: '{\"channel\":\"#esw-build\", \"attachments\": [ { \"title\":\"${{ steps.status.outputs.title }}\", \"text\": \"[ ${{ github.event.repository.name }} ] : [ ${{ github.workflow }} ] : [ ${{ github.ref }} ] \n https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}\", \"color\": \"${{ steps.status.outputs.color }}\" } ]}'
+          args: '{\"channel\":\"#esw-prod-release\", \"attachments\": [ { \"title\":\"${{ steps.status.outputs.title }}\", \"text\": \"[ ${{ github.event.repository.name }} ] : [ ${{ github.workflow }} ] : [ ${{ github.ref }} ] \n https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}\", \"color\": \"${{ steps.status.outputs.color }}\" } ]}'

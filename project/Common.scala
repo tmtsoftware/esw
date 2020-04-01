@@ -30,7 +30,7 @@ object Common extends AutoPlugin {
       ScmInfo(url(EswKeys.homepageValue), "git@github.com:tmtsoftware/esw.git")
     ),
     // ======== sbt-docs Settings =========
-    docsRepo := "git@github.com:tmtsoftware/tmtsoftware.github.io.git",
+    docsRepo := "https://github.com/tmtsoftware/tmtsoftware.github.io.git",
     docsParentDir := EswKeys.projectName,
     gitCurrentRepo := "https://github.com/tmtsoftware/esw",
     // ================================
