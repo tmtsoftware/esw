@@ -2,7 +2,7 @@
 
 ## Prerequisites (This is configured in `release.yml`)
 
-* Make sure git authentication works on jenkins agent by running cmd: `ssh -vT git@github.com`
+* Git authentication works by running cmd: `ssh -vT git@github.com`
 * Node is installed
 * npm module `junit-merge` is installed (for merging multiple xml test reports into one)
 * npm module `junit-viewer` is installed (for generating html test report from merged xml)
@@ -26,7 +26,8 @@ Refer RELEASING.md in `csw` repository.
 1. Exclude projects from `build.sbt` which you do not want to release
 1. Update `msocket` and `csw` version in `Lib.scala`  
 1. Run `release.sh $VERSION$` script by providing version number argument (This triggers release workflow)
-    **Note:** `PROD=true` environment varibale needs to be set before running `release.sh`
+    
+    **Note:** `PROD=true` environment variable needs to be set before running `release.sh`
 
 ### Release sequencer-scripts
 
