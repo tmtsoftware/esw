@@ -17,13 +17,11 @@ import esw.ocs.dsl.script.StrandEc
 import esw.ocs.dsl.script.exceptions.ScriptInitialisationFailedException
 import esw.ocs.dsl.toScriptError
 import kotlinx.coroutines.*
-import kotlinx.coroutines.channels.*
 import kotlinx.coroutines.future.asCompletableFuture
 import kotlinx.coroutines.future.await
 import kotlinx.coroutines.future.future
 import kotlin.coroutines.CoroutineContext
 import kotlin.time.milliseconds
-import kotlin.time.seconds
 import kotlin.time.toKotlinDuration
 
 sealed class BaseScript(wiring: ScriptWiring) : CswHighLevelDsl(wiring.cswServices, wiring.scriptContext), HandlerScope {

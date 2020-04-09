@@ -29,6 +29,7 @@ import esw.ocs.api.protocol.ScriptError
 import esw.ocs.app.wiring.{SequenceComponentWiring, SequencerWiring}
 import esw.ocs.impl.messages.SequenceComponentMsg
 import esw.ocs.impl.{SequenceComponentImpl, SequencerActorProxy, SequencerApiFactory}
+import esw.ocs.simulation.SimulationSequencerWiring
 import esw.ocs.testkit.Service.{Gateway, MachineAgent}
 import msocket.api.ContentType
 import msocket.impl.post.HttpPostTransport
@@ -195,4 +196,25 @@ abstract class EswTestKit(services: Service*)
   def resolveSequenceComponent(prefix: Prefix): ActorRef[SequenceComponentMsg] =
     resolveSequenceComponentLocation(prefix).uri.toActorRef
       .unsafeUpcast[SequenceComponentMsg]
+
+  def spawnSequenceComponentInSimulation(subsystem: Subsystem, name: Option[String]): Either[ScriptError, AkkaLocation] = {
+    val wiring = new SequenceComponentWiring(subsystem, name, new SimulationSequencerWiring(_, _, _).sequencerServer)
+    wiring.start().map { seqCompLocation =>
+      sequenceComponentLocations += seqCompLocation
+      seqCompLocation
+    }
+  }
+
+  def spawnSequencerInSimulation(subsystem: Subsystem, observingMode: String): Either[ScriptError, AkkaLocation] = {
+    val sc = spawnSequenceComponentInSimulation(subsystem, None)
+
+    val locationE = sc.flatMap { seqCompLocation =>
+      new SequenceComponentImpl(seqCompLocation.uri.toActorRef.unsafeUpcast[SequenceComponentMsg])
+        .loadScript(subsystem, observingMode)
+        .futureValue
+        .response
+    }
+    locationE.left.foreach(println) // this is to print the exception in case script loading fails
+    locationE
+  }
 }
