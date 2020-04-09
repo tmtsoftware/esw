@@ -38,7 +38,7 @@ class SequencerBehavior(
     shutdownHttpService: () => Future[Done]
 )(implicit val actorSystem: ActorSystem[_])
     extends OcsCodecs {
-  import actorSystem.executionContext
+  import actorSystem.executionContext // todo: this ec should not be used to schedule inside a behavior. ctx.executionContext should be Used.
   import logger._
 
   // Mapping of Sequencer state against corresponding state's behavior
