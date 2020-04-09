@@ -202,4 +202,11 @@ object Dependencies {
       Libs.scalatest           % Test
     )
   )
+
+  val EswSm: Def.Initialize[Seq[ModuleID]] = Def.setting(
+    Seq(
+      Csw.`csw-location-api`,
+      Akka.`akka-actor-typed`
+    )
+  )
 }
