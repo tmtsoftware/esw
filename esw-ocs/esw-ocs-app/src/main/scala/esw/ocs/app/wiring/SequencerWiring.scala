@@ -45,8 +45,8 @@ private[ocs] class SequencerWiring(
     val observingMode: String,
     sequenceComponentLocation: AkkaLocation
 ) extends SequencerHttpCodecs {
-  private lazy val config: Config  = ConfigFactory.load()
-  private lazy val sequencerConfig = SequencerConfig.from(config, subsystem, observingMode)
+  private[ocs] lazy val config: Config  = ConfigFactory.load()
+  private[ocs] lazy val sequencerConfig = SequencerConfig.from(config, subsystem, observingMode)
   import sequencerConfig._
 
   lazy val actorSystem: ActorSystem[SpawnProtocol.Command] = ActorSystemFactory.remote(SpawnProtocol(), "sequencer-system")
@@ -66,7 +66,7 @@ private[ocs] class SequencerWiring(
   //SequencerRef -> Script -> cswServices -> SequencerOperator -> SequencerRef
   private lazy val sequenceOperatorFactory = () => new SequenceOperator(sequencerRef)
   private lazy val componentId             = ComponentId(prefix, ComponentType.Sequencer)
-  private lazy val script: ScriptApi       = ScriptLoader.loadKotlinScript(scriptClass, scriptContext)
+  private[ocs] lazy val script: ScriptApi  = ScriptLoader.loadKotlinScript(scriptClass, scriptContext)
 
   private lazy val locationServiceUtil        = new LocationServiceUtil(locationService)
   private lazy val sequencerProxyFactory      = new SequencerActorProxyFactory(locationServiceUtil)

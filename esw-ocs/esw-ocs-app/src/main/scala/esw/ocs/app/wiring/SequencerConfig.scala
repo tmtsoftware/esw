@@ -6,14 +6,14 @@ import com.typesafe.config.{Config, ConfigException}
 import csw.prefix.models.{Prefix, Subsystem}
 import esw.ocs.impl.script.ScriptLoadingException.ScriptConfigurationMissingException
 
-private[app] final case class SequencerConfig(
+private[ocs] final case class SequencerConfig(
     prefix: Prefix,
     scriptClass: String,
     heartbeatInterval: Duration,
     enableThreadMonitoring: Boolean
 )
 
-private[app] object SequencerConfig {
+private[ocs] object SequencerConfig {
   def from(config: Config, subsystem: Subsystem, observingMode: String): SequencerConfig = {
     val scriptConfig =
       try {
