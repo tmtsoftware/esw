@@ -4,7 +4,7 @@ import akka.actor.typed.ActorSystem
 import akka.util.Timeout
 import csw.location.api.extensions.URIExtension.RichURI
 import csw.location.api.models.AkkaLocation
-import csw.location.api.models.ComponentType.SequenceComponent
+import csw.location.api.models.ComponentType.{Machine, SequenceComponent}
 import csw.prefix.models.Subsystem.ESW
 import csw.prefix.models.{Prefix, Subsystem}
 import esw.agent.api.{Failed, Spawned}
@@ -18,8 +18,7 @@ import scala.async.Async._
 import scala.concurrent.Future
 import scala.util.Random
 
-class SequenceComponentUtil(locationService: LocationServiceUtil, agentClient: AgentClient)(implicit actorSystem: ActorSystem[_],
-                                                                                            timeout: Timeout) {
+class SequenceComponentUtil(locationService: LocationServiceUtil)(implicit actorSystem: ActorSystem[_], timeout: Timeout) {
   import actorSystem.executionContext
 
   def getAvailableSequenceComponent(subsystem: Subsystem): Future[Option[SequenceComponentApi]] = {
@@ -39,21 +38,29 @@ class SequenceComponentUtil(locationService: LocationServiceUtil, agentClient: A
     }
   }
 
+  def getAgent: Future[AgentClient] = {
+    locationService
+      .listBy(ESW, Machine)
+      .flatMap(locations => AgentClient.make(locations.head.prefix, locationService.locationService))
+  }
+
   def spawnSequenceComponentFor(subsystem: Subsystem): Future[Option[SequenceComponentApi]] = {
     val sequenceComponentPrefix = Prefix(subsystem, s"${subsystem}_${Random.between(1, 100)}")
-    agentClient
-      .spawnSequenceComponent(sequenceComponentPrefix)
-      .flatMap {
+    for {
+      agentClient   <- getAgent
+      spawnResponse <- agentClient.spawnSequenceComponent(sequenceComponentPrefix)
+    } yield {
+      await(spawnResponse match {
         case Spawned =>
-          val future = locationService
+          locationService
             .resolveAkkaLocation(sequenceComponentPrefix, SequenceComponent)
             .map(location => {
               val seqCompRef = location.uri.toActorRef.unsafeUpcast[SequenceComponentMsg]
               Some(new SequenceComponentImpl(seqCompRef))
             })
-          future
         case Failed(_) => Future.successful(None)
-      }
+      })
+    }
   }
 
   private def getIdleSequenceComponentFor(subsystem: Subsystem): Future[Option[SequenceComponentApi]] = {
