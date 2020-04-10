@@ -18,9 +18,10 @@ import scala.async.Async.{async, await}
 import scala.concurrent.duration.DurationInt
 import scala.concurrent.{ExecutionContext, Future}
 
-class SequencerUtil(locationServiceUtil: LocationServiceUtil)(implicit actorSystem: ActorSystem[_], timeout: Timeout) {
+class SequencerUtil(locationServiceUtil: LocationServiceUtil, sequenceComponentUtil: SequenceComponentUtil)(
+    implicit actorSystem: ActorSystem[_],
+    timeout: Timeout) {
   implicit val ec: ExecutionContext = actorSystem.executionContext
-  val sequenceComponentUtil         = new SequenceComponentUtil(locationServiceUtil)
 
   def startSequencers(
       observingMode: ObservingMode,
