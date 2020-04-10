@@ -3,7 +3,7 @@ package esw.sm.messages
 import akka.Done
 import akka.actor.typed.ActorRef
 import csw.location.api.models.HttpLocation
-import csw.prefix.models.Prefix
+import esw.ocs.api.protocol.ScriptError
 import esw.sm.models.ObservingMode
 
 trait SequenceManagerMsg
@@ -19,9 +19,10 @@ sealed trait ConfigureResponse
 object ConfigureResponse {
   case class Success(location: HttpLocation) extends ConfigureResponse
 
-  sealed trait Failure                               extends ConfigureResponse
-  case object AlreadyRunningObservingMode            extends Failure
-  case object ConflictingResourcesWithRunningObsMode extends Failure
-  case class ConfigurationFailure(msg: String)       extends Failure
+  sealed trait Failure                                           extends ConfigureResponse
+  case object AlreadyRunningObservingMode                        extends Failure
+  case object ConflictingResourcesWithRunningObsMode             extends Failure
+  case class ConfigurationFailure(msg: String)                   extends Failure
+  case class FailedToStartSequencers(reasons: List[ScriptError]) extends Failure
 
 }
