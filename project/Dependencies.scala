@@ -185,15 +185,6 @@ object Dependencies {
     )
   )
 
-  val EswSM: Def.Initialize[Seq[ModuleID]] = Def.setting(
-    Seq(
-      Libs.`case-app`,
-      Akka.`akka-actor-typed`,
-      Akka.`akka-stream-typed`,
-      Libs.scalatest % Test
-    )
-  )
-
   val EswContract: Def.Initialize[Seq[ModuleID]] = Def.setting(
     Seq(
       Csw.`csw-contract`,
