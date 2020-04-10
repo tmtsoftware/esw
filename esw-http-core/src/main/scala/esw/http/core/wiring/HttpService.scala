@@ -7,10 +7,12 @@ import akka.actor.CoordinatedShutdown
 import akka.actor.CoordinatedShutdown.Reason
 import akka.http.scaladsl.Http
 import akka.http.scaladsl.Http.ServerBinding
-import akka.http.scaladsl.server.Route
-import csw.location.api.scaladsl.{LocationService, RegistrationResult}
+import akka.http.scaladsl.server.Directives.handleRejections
+import akka.http.scaladsl.server.{RejectionHandler, Route}
+import ch.megard.akka.http.cors.scaladsl.CorsDirectives._
 import csw.location.api.models.Connection.HttpConnection
 import csw.location.api.models.HttpRegistration
+import csw.location.api.scaladsl.{LocationService, RegistrationResult}
 import csw.logging.api.scaladsl.Logger
 import csw.network.utils.{Networks, SocketUtils}
 import esw.http.core.commons.CoordinatedShutdownReasons.FailureReason
@@ -19,7 +21,6 @@ import scala.async.Async._
 import scala.concurrent.Future
 import scala.concurrent.duration.DurationLong
 import scala.util.control.NonFatal
-import ch.megard.akka.http.cors.scaladsl.CorsDirectives._
 
 /**
  * Initialises HTTP Server at given port and register with location service
@@ -65,8 +66,15 @@ class HttpService(
     httpTerminatedF.flatMap(_ => actorRuntime.shutdown(reason))
   }
 
-  private def applicationRoute: Route = cors() {
-    route
+  private def applicationRoute: Route = {
+    val rejectionHandler = corsRejectionHandler.withFallback(RejectionHandler.default)
+    handleRejections(rejectionHandler) {
+      cors() {
+        handleRejections(rejectionHandler) {
+          route
+        }
+      }
+    }
   }
 
   private def bind() = {

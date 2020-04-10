@@ -1,0 +1,24 @@
+#### CORS request with curl and http client
+#You will get below two CORS headers when you provide 'Origin' header and -i/--include or -v/--verbose option in curl
+#and Origin: http://localhost:3000 without / at end in Intellij http client
+#Access-Control-Allow-Origin: http://localhost:3000
+#Access-Control-Allow-Credentials: true
+#curl -H "Origin: http://localhost:3000" -H "Content-Type: application/json" -d '{"_type": "ListEntries"}' --include  -X POST http://localhost:7654/post-endpoint
+POST http://localhost:7654/post-endpoint
+Origin: http://localhost:3000
+Content-Type: application/json
+
+{
+  "_type": "ListEntries"
+}
+
+#### Preflight Options request with curl and http client
+# curl -H "Origin: http://localhost:3000" -H "Access-Control-Request-Method: POST" -H "Access-Control-Request-Headers: X-Requested-With" -X OPTIONS -i http://localhost:7654
+OPTIONS http://localhost:7654
+Origin: http://localhost:3000
+Access-Control-Request-Method: POST
+Access-Control-Request-Headers: X-Requested-With
+
+###
+
+
