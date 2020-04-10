@@ -1,20 +1,24 @@
 package esw.ocs.simulation
 
+import akka.actor.testkit.typed.scaladsl.TestProbe
 import csw.params.commands.CommandResponse.Completed
 import csw.params.commands.{CommandName, Sequence, Setup}
+import csw.params.core.generics.KeyType.StringKey
+import csw.params.events.{Event, EventKey, SystemEvent}
 import csw.prefix.models.Prefix
-import csw.prefix.models.Subsystem.ESW
-import esw.ocs.api.protocol.Ok
+import csw.prefix.models.Subsystem.{ESW, TCS}
 import esw.ocs.testkit.EswTestKit
+import esw.ocs.testkit.Service.EventServer
 
-class SequencerSimulationTest extends EswTestKit {
+class SequencerSimulationTest extends EswTestKit(EventServer) {
 
   override def beforeAll(): Unit = {
     super.beforeAll()
+    spawnSequencer(TCS, "moonnight")
     spawnSequencerInSimulation(ESW, "moonnight")
   }
 
-  "Sequencer in simulation" in {
+  "Sequencer in simulation | ESW-149" in {
     val sequencer = sequencerClient(ESW, "moonnight")
 
     val command1 = Setup(Prefix("esw.test"), CommandName("command-1"), None)
@@ -22,6 +26,35 @@ class SequencerSimulationTest extends EswTestKit {
     val sequence = Sequence(command1, command2)
 
     sequencer.submitAndWait(sequence).futureValue shouldBe a[Completed]
-    sequencer.goOffline().futureValue should ===(Ok)
+  }
+
+  "submit sequence from a top level sequencer to sequencer in simulation | ESW-149" in {
+    //creating client for TCS.moonnight(Top level) sequencer
+    val tcsSequencer = sequencerClient(TCS, "moonnight")
+
+    val command1 = Setup(Prefix("esw.test"), CommandName("command-1"), None)
+    val command2 = Setup(Prefix("esw.test"), CommandName("command-2"), None)
+    val sequence = Sequence(command1, command2)
+
+    val eventKey = EventKey("ESW.moonnight.submitAndWait")
+    //create testprobe subscription for submitResponse(res of submitAndWait command to the simulation sequencer in testscript3) event
+    val testProbeForSimulation = createTestProbe(Set(eventKey))
+
+    //submitting sequence to the top level sequencer(TCS.moonnight)
+    tcsSequencer.submitAndWait(sequence).futureValue shouldBe a[Completed]
+
+    //actual event published from the testscript3 command-1 handler
+    val event = testProbeForSimulation.expectMessageType[SystemEvent]
+
+    val expectedSubmitResponseParam = StringKey.make("response").set("Completed")
+    event.paramSet.head shouldBe expectedSubmitResponseParam
+  }
+
+  def createTestProbe(eventKeys: Set[EventKey]): TestProbe[Event] = {
+    val testProbe    = TestProbe[Event]
+    val subscription = eventSubscriber.subscribeActorRef(eventKeys, testProbe.ref)
+    subscription.ready().futureValue
+    eventKeys.foreach(_ => testProbe.expectMessageType[SystemEvent]) // discard invalid event
+    testProbe
   }
 }
