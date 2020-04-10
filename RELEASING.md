@@ -26,7 +26,7 @@ Refer RELEASING.md in `csw` repository.
 1. Exclude projects from `build.sbt` which you do not want to release
 1. Update `msocket` and `csw` version in `Lib.scala`  
 1. Run `release.sh $VERSION$` script by providing version number argument (This triggers release workflow)
-    
+
     **Note:** `PROD=true` environment variable needs to be set before running `release.sh`
 
 ### Release sequencer-scripts

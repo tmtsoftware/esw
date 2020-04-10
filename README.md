@@ -1,5 +1,5 @@
-TMT Executive Software (ESW)
-=========================
+# TMT Executive Software (ESW)
+
 ![dev](https://github.com/tmtsoftware/esw/workflows/dev/badge.svg)
 ![nightly](https://github.com/tmtsoftware/esw/workflows/nightly/badge.svg)
 
@@ -10,9 +10,7 @@ TMT Observatory.
 
 See [here](https://tmtsoftware.github.io/esw/) for a detailed description of the ESW software.
 
-
 ## Version compatibility
------------------------------------------------
 
 | esw | csw |
 |--------|------|
@@ -21,16 +19,13 @@ See [here](https://tmtsoftware.github.io/esw/) for a detailed description of the
 | v0.1.0-RC2 | v2.0.0-RC2 |
 | v0.1.0-RC1 | v2.0.0-RC1 |
 
+## Public Release History
 
-Public Release History
-----------------------
 | Date | Tag | Source | Download |
 |-----|-----|-----|-----|
 | 2020-03-19 | v0.1.0 | [esw-0.1.0](https://github.com/tmtsoftware/esw/tree/v0.1.0) | Apps: [zip](https://github.com/tmtsoftware/esw/releases/download/v0.1.0/esw-apps-0.1.0.zip), Source: [tar.gz](https://github.com/tmtsoftware/esw/archive/v0.1.0.tar.gz), [zip](https://github.com/tmtsoftware/esw/archive/v0.1.0.zip) |
 
-
-Pre-Release History
-----------------------
+## Pre-Release History
 
 | Date | Tag | Source | Download |
 |-----|-----|-----|-----|

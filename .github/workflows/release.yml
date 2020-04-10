@@ -1,16 +1,17 @@
 name: release
 
 on:
-  release:
-    types: [created]
+  push:
+    tags:
+      - "v*"
 
 jobs:
   release:
     runs-on: ubuntu-latest
 
     steps:
-      - uses: actions/checkout@v1
-      - uses: olafurpg/setup-scala@v5
+      - uses: actions/checkout@v2
+      - uses: olafurpg/setup-scala@v7
         with:
           java-version: adopt@1.11
 
@@ -34,7 +35,7 @@ jobs:
         run: |
           sbt -DenableCoverage=true coverageReport
           sbt coverageAggregate
-      
+
       - name: RTM
         run: |
           ./scripts/coursier launch -r jitpack -r https://jcenter.bintray.com com.github.tmtsoftware:rtm_2.13:47b635b289 -M tmt.test.reporter.TestRequirementMapper -- target/RTM/testStoryMapping.txt tools/RTM/storyRequirementMapping.csv target/RTM/testRequirementsMapping.txt
@@ -44,7 +45,7 @@ jobs:
         with:
           name: Coverage Report
           path: target/scala-2.13/scoverage-report
-      
+
       - name: Upload RTM
         uses: actions/upload-artifact@v1
         with:
