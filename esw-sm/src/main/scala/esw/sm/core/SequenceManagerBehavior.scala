@@ -3,17 +3,15 @@ package esw.sm.core
 import akka.actor.typed.scaladsl.Behaviors
 import akka.actor.typed.{ActorRef, ActorSystem, Behavior}
 import akka.util.Timeout
-import csw.location.api.extensions.URIExtension.RichURI
-import csw.location.api.models.{AkkaLocation, ComponentId}
-import csw.location.api.models.ComponentType.{SequenceComponent, Sequencer}
+import csw.location.api.models.ComponentType.Sequencer
 import csw.location.api.models.Connection.HttpConnection
-import csw.prefix.models.{Prefix, Subsystem}
+import csw.location.api.models.{AkkaLocation, ComponentId}
 import csw.prefix.models.Subsystem.ESW
+import csw.prefix.models.{Prefix, Subsystem}
 import esw.ocs.api.SequenceComponentApi
 import esw.ocs.api.protocol.ScriptResponse
+import esw.ocs.impl.SequencerApiFactory
 import esw.ocs.impl.internal.LocationServiceUtil
-import esw.ocs.impl.messages.SequenceComponentMsg
-import esw.ocs.impl.{SequenceComponentImpl, SequencerApiFactory}
 import esw.sm.messages.{ConfigureResponse, SequenceManagerMsg}
 import esw.sm.models.ObservingMode
 
