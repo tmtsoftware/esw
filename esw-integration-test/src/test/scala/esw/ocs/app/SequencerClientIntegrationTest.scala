@@ -2,7 +2,6 @@ package esw.ocs.app
 
 import akka.actor.testkit.typed.scaladsl.TestProbe
 import csw.event.client.EventServiceFactory
-import csw.location.api.extensions.URIExtension._
 import csw.location.client.scaladsl.HttpLocationServiceFactory
 import csw.params.commands.CommandIssue.UnsupportedCommandInStateIssue
 import csw.params.commands.CommandResponse.{Completed, Error, Invalid, Started, SubmitResponse}
@@ -297,7 +296,7 @@ class SequencerClientIntegrationTest extends EswTestKit(EventServer) {
   "GetSequenceComponent | ESW-255" in {
     //start sequence component
     val sequenceComponentLocation = spawnSequenceComponent(ESW, Some("primary")).toOption.get
-    val sequenceComponentImpl     = new SequenceComponentImpl(sequenceComponentLocation.uri.toActorRef.unsafeUpcast)
+    val sequenceComponentImpl     = new SequenceComponentImpl(sequenceComponentLocation)
 
     //start sequencer
     val observingMode = "darknight"

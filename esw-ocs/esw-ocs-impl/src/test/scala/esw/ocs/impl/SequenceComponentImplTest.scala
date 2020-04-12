@@ -5,8 +5,11 @@ import java.net.URI
 import akka.Done
 import akka.actor.testkit.typed.scaladsl.ScalaTestWithActorTestKit
 import akka.actor.typed.scaladsl.Behaviors
+import csw.location.api.extensions.ActorExtension.RichActor
+import csw.location.api.models.ComponentType.SequenceComponent
 import csw.location.api.models.Connection.AkkaConnection
 import csw.location.api.models.{AkkaLocation, ComponentId, ComponentType}
+import csw.prefix.models.Subsystem.ESW
 import csw.prefix.models.{Prefix, Subsystem}
 import esw.ocs.api.BaseTestSuite
 import esw.ocs.api.protocol.{GetStatusResponse, ScriptError, ScriptResponse}
@@ -35,8 +38,12 @@ class SequenceComponentImplTest extends ScalaTestWithActorTestKit with BaseTestS
   }
 
   private val sequenceComponent = spawn(mockedBehavior)
+  private val sequenceComponentLocation = AkkaLocation(
+    AkkaConnection(ComponentId(Prefix(ESW, "primary"), SequenceComponent)),
+    sequenceComponent.toURI
+  )
 
-  private val sequenceComponentClient = new SequenceComponentImpl(sequenceComponent)
+  private val sequenceComponentClient = new SequenceComponentImpl(sequenceComponentLocation)
 
   "LoadScript | ESW-103" in {
     sequenceComponentClient.loadScript(Subsystem.ESW, "darknight").futureValue should ===(loadScriptResponse)

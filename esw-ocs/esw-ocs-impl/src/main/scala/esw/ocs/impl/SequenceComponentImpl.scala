@@ -1,9 +1,11 @@
 package esw.ocs.impl
 
 import akka.Done
+import akka.actor.typed.ActorSystem
 import akka.actor.typed.scaladsl.AskPattern._
-import akka.actor.typed.{ActorRef, ActorSystem}
 import akka.util.Timeout
+import csw.location.api.extensions.URIExtension.RichURI
+import csw.location.api.models.AkkaLocation
 import csw.prefix.models.Subsystem
 import esw.ocs.api.SequenceComponentApi
 import esw.ocs.api.protocol.{GetStatusResponse, ScriptResponse}
@@ -12,11 +14,13 @@ import esw.ocs.impl.messages.SequenceComponentMsg.{GetStatus, LoadScript, Restar
 
 import scala.concurrent.Future
 
-// fixme: can this take AkkaLocation similar to other wrappers like CommandService?
-class SequenceComponentImpl(sequenceComponentRef: ActorRef[SequenceComponentMsg])(
+class SequenceComponentImpl(sequenceComponentLocation: AkkaLocation)(
     implicit actorSystem: ActorSystem[_],
     timeout: Timeout
 ) extends SequenceComponentApi {
+
+  private val sequenceComponentRef = sequenceComponentLocation.uri.toActorRef.unsafeUpcast[SequenceComponentMsg]
+
   override def loadScript(subsystem: Subsystem, observingMode: String): Future[ScriptResponse] =
     sequenceComponentRef ? (LoadScript(subsystem, observingMode, _))
 

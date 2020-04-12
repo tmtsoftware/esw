@@ -99,7 +99,7 @@ abstract class EswTestKit(services: Service*)
     sequenceComponentLocations.clear()
 
   def shutdownAllSequencers(): Unit = {
-    sequenceComponentLocations.foreach(x => new SequenceComponentImpl(x.uri.toActorRef.unsafeUpcast).unloadScript())
+    sequenceComponentLocations.foreach(new SequenceComponentImpl(_).unloadScript())
     clearAll()
   }
 
@@ -129,7 +129,7 @@ abstract class EswTestKit(services: Service*)
   def spawnSequencer(subsystem: Subsystem, observingMode: String): Either[ScriptError, AkkaLocation] = {
     val sequenceComponent = spawnSequenceComponent(subsystem, None)
     val locationE = sequenceComponent.flatMap { seqCompLocation =>
-      new SequenceComponentImpl(seqCompLocation.uri.toActorRef.unsafeUpcast[SequenceComponentMsg])
+      new SequenceComponentImpl(seqCompLocation)
         .loadScript(subsystem, observingMode)
         .futureValue
         .response
@@ -209,7 +209,7 @@ abstract class EswTestKit(services: Service*)
     val sc = spawnSequenceComponentInSimulation(subsystem, None)
 
     val locationE = sc.flatMap { seqCompLocation =>
-      new SequenceComponentImpl(seqCompLocation.uri.toActorRef.unsafeUpcast[SequenceComponentMsg])
+      new SequenceComponentImpl(seqCompLocation)
         .loadScript(subsystem, observingMode)
         .futureValue
         .response
