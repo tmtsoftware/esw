@@ -13,7 +13,6 @@ import esw.ocs.api.protocol.ScriptResponse
 import esw.ocs.impl.SequencerApiFactory
 import esw.ocs.impl.internal.LocationServiceUtil
 import esw.sm.messages.{ConfigureResponse, SequenceManagerMsg}
-import esw.sm.models.ObservingMode
 
 import scala.concurrent.Future
 import scala.concurrent.duration.DurationDouble
@@ -23,11 +22,11 @@ class SequenceManagerBehavior(locationService: LocationServiceUtil)(implicit val
   implicit val timeout: Timeout = 10.seconds
 
   def beh(): Behavior[SequenceManagerMsg] = Behaviors.receiveMessage { msg =>
-    def configure(obsMode: ObservingMode, replyTo: ActorRef[ConfigureResponse]) = {
+    def configure(obsMode: String, replyTo: ActorRef[ConfigureResponse]) = {
       val configuredOcsSeqsF = locationService.listBy(ESW, Sequencer) // filter master Seqs from all OCS Seqs
 
       configuredOcsSeqsF.map { x =>
-        val mayBeOcsMaster = x.find(getObsMode(_) == obsMode)
+        val mayBeOcsMaster = x.find(_.prefix.componentName == obsMode)
 
         mayBeOcsMaster match {
           case Some(value) => ocsAlreadyExists(value)
@@ -37,16 +36,18 @@ class SequenceManagerBehavior(locationService: LocationServiceUtil)(implicit val
 
       def ocsAlreadyExists(akkaLocation: AkkaLocation): Unit =
         SequencerApiFactory.make(akkaLocation).isAvailable.map {
-          case true  => replyTo ! ConfigureResponse.Success(akkaLocation.prefix)
-          case false => replyTo ! ConfigureResponse.AlreadyRunningObservingMode
+          case true => replyTo ! ConfigureResponse.Success(akkaLocation.prefix)
+          case false =>
+            replyTo ! ConfigureResponse.ConfigurationFailure(
+              s"Error: ${akkaLocation.prefix} is already executing another sequence")
         }
 
-      def checkResources(obsMode: ObservingMode, replyTo: ActorRef[ConfigureResponse]): Future[Boolean] = {
+      def checkResources(obsMode: String, replyTo: ActorRef[ConfigureResponse]): Future[Boolean] = {
         val requiredResources = extractResources(obsMode)
         val configuredResourcesF: Future[List[Resources]] =
           configuredOcsSeqsF.map(l => l.map(x => extractResources(getObsMode(x))))
 
-        val isResourceConflictF = configuredResourcesF.map(r => r.exists(_.isConflicting(requiredResources)))
+        val isResourceConflictF = configuredResourcesF.map(r => r.exists(_.conflictsWith(requiredResources)))
 
         isResourceConflictF.map {
           case true  => replyTo ! ConfigureResponse.ConflictingResourcesWithRunningObsMode
@@ -55,7 +56,7 @@ class SequenceManagerBehavior(locationService: LocationServiceUtil)(implicit val
         // check for conflicts
       }
 
-      def startSequencers(observingMode: ObservingMode, replyTo: ActorRef[ConfigureResponse]): Future[List[ScriptResponse]] = {
+      def startSequencers(observingMode: String, replyTo: ActorRef[ConfigureResponse]): Future[List[ScriptResponse]] = {
         val requiredSequencers: Sequencers = ???
         val value =
           requiredSequencers.subsystems.map(s => getAvailableSequenceComponent(s).flatMap(_.loadScript(s, observingMode.mode)))
@@ -63,7 +64,7 @@ class SequenceManagerBehavior(locationService: LocationServiceUtil)(implicit val
         failedSequencerResponsesF.map {
           case Nil =>
             locationService.locationService
-              .resolve(HttpConnection(ComponentId(Prefix(ESW, observingMode.mode), Sequencer)), 5.seconds)
+              .resolve(HttpConnection(ComponentId(Prefix(ESW, observingMode), Sequencer)), 5.seconds)
               .map {
                 case Some(value) => replyTo.tell(ConfigureResponse.Success(value))
                 case None        => replyTo ! ConfigureResponse.ConfigurationFailure("Could not find ESW Master in location service")
@@ -85,9 +86,9 @@ class SequenceManagerBehavior(locationService: LocationServiceUtil)(implicit val
         ???
       }
 
-      def getObsMode(akkaLocation: AkkaLocation): ObservingMode = ObservingMode(akkaLocation.prefix.componentName)
+      def getObsMode(akkaLocation: AkkaLocation): String = akkaLocation.prefix.componentName
 
-      def extractResources(observingMode: ObservingMode): Resources = ???
+      def extractResources(observingMode: String): Resources = ???
     }
 
     msg match {
