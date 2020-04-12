@@ -1,13 +1,13 @@
 package esw.sm.utils
 
-import akka.actor.typed.ActorSystem
+import akka.actor.typed.{ActorRef, ActorSystem}
 import akka.util.Timeout
 import csw.location.api.extensions.URIExtension.RichURI
 import csw.location.api.models.AkkaLocation
 import csw.location.api.models.ComponentType.{Machine, SequenceComponent}
 import csw.prefix.models.Subsystem.ESW
 import csw.prefix.models.{Prefix, Subsystem}
-import esw.agent.api.{Failed, Spawned}
+import esw.agent.api.Spawned
 import esw.agent.client.AgentClient
 import esw.ocs.api.SequenceComponentApi
 import esw.ocs.impl.SequenceComponentImpl
@@ -17,11 +17,14 @@ import esw.ocs.impl.messages.SequenceComponentMsg
 import scala.async.Async._
 import scala.concurrent.Future
 import scala.util.Random
+import scala.util.control.NonFatal
 
-class SequenceComponentUtil(locationService: LocationServiceUtil)(implicit actorSystem: ActorSystem[_], timeout: Timeout) {
+case class Error(msg: String)
+
+class SequenceComponentUtil(locationServiceUtil: LocationServiceUtil)(implicit actorSystem: ActorSystem[_], timeout: Timeout) {
   import actorSystem.executionContext
 
-  def getAvailableSequenceComponent(subsystem: Subsystem): Future[Option[SequenceComponentApi]] = {
+  def getAvailableSequenceComponent(subsystem: Subsystem): Future[Either[Error, SequenceComponentApi]] = {
     val maybeSeqCompApiF: Future[Option[SequenceComponentApi]] = subsystem match {
       case ESW => getIdleSequenceComponentFor(ESW)
       case other: Subsystem =>
@@ -33,60 +36,54 @@ class SequenceComponentUtil(locationService: LocationServiceUtil)(implicit actor
 
     }
     maybeSeqCompApiF.flatMap {
-      case Some(seqCompApi) => Future.successful(Some(seqCompApi))
-      case None             => spawnSequenceComponentFor(subsystem)
+      case Some(value) => Future.successful(Right(value))
+      case None =>
+        try {
+          async(
+            Right(await(spawnSequenceComponentFor(subsystem)))
+          )
+        } catch {
+          case NonFatal(e) => Future.successful(Left(Error(e.getMessage)))
+        }
     }
   }
 
   def getAgent: Future[AgentClient] = {
-    locationService
+    locationServiceUtil
       .listBy(ESW, Machine)
-      .flatMap(locations => AgentClient.make(locations.head.prefix, locationService.locationService))
+      .flatMap(locations => AgentClient.make(locations.head.prefix, locationServiceUtil.locationService))
   }
 
-  def spawnSequenceComponentFor(subsystem: Subsystem): Future[Option[SequenceComponentApi]] = {
+  def spawnSequenceComponentFor(subsystem: Subsystem): Future[SequenceComponentApi] = {
     val sequenceComponentPrefix = Prefix(subsystem, s"${subsystem}_${Random.between(1, 100)}")
     for {
-      agentClient   <- getAgent
-      spawnResponse <- agentClient.spawnSequenceComponent(sequenceComponentPrefix)
+      agentClient     <- getAgent
+      Spawned         <- agentClient.spawnSequenceComponent(sequenceComponentPrefix)
+      seqCompLocation <- locationServiceUtil.resolveAkkaLocation(sequenceComponentPrefix, SequenceComponent)
     } yield {
-      await(spawnResponse match {
-        case Spawned =>
-          locationService
-            .resolveAkkaLocation(sequenceComponentPrefix, SequenceComponent)
-            .map(location => {
-              val seqCompRef = location.uri.toActorRef.unsafeUpcast[SequenceComponentMsg]
-              Some(new SequenceComponentImpl(seqCompRef))
-            })
-        case Failed(_) => Future.successful(None)
-      })
+      new SequenceComponentImpl(toSequenceComponentRef(seqCompLocation))
     }
   }
 
-  private def getIdleSequenceComponentFor(subsystem: Subsystem): Future[Option[SequenceComponentApi]] = {
-    locationService
-      .listBy(subsystem, SequenceComponent)
-      .flatMap(locations => getIdleSequenceComponentFrom(locations))
-      .map {
-        case Some(value) =>
-          val sequenceComponentApi: SequenceComponentApi =
-            new SequenceComponentImpl(value.uri.toActorRef.unsafeUpcast[SequenceComponentMsg])
-          Some(sequenceComponentApi)
-        case None => None
-      }
+  private def toSequenceComponentRef(location: AkkaLocation): ActorRef[SequenceComponentMsg] = {
+    location.uri.toActorRef.unsafeUpcast[SequenceComponentMsg]
   }
 
-  private def getIdleSequenceComponentFrom(locations: List[AkkaLocation]): Future[Option[AkkaLocation]] = async {
-    locations
-      .map(location => {
-        if (await(isIdle(location))) Some(location) else None
-      })
-      .head
+  private def getIdleSequenceComponentFor(subsystem: Subsystem): Future[Option[SequenceComponentApi]] = {
+    for {
+      seqCompLocations          <- locationServiceUtil.listBy(subsystem, SequenceComponent)
+      availableSeqCompLocations <- getAvailableSequenceComponentFrom(seqCompLocations)
+      maybeSeqCompLocation      = availableSeqCompLocations.headOption
+    } yield {
+      maybeSeqCompLocation.map(seqCompLocation => new SequenceComponentImpl(toSequenceComponentRef(seqCompLocation)))
+    }
   }
+
+  private def getAvailableSequenceComponentFrom(locations: List[AkkaLocation]): Future[List[AkkaLocation]] =
+    async(locations.filter(location => await(isIdle(location))))
 
   private def isIdle(sequenceComponentLocation: AkkaLocation): Future[Boolean] = {
-    val sequenceComponentImpl = new SequenceComponentImpl(
-      sequenceComponentLocation.uri.toActorRef.unsafeUpcast[SequenceComponentMsg])
+    val sequenceComponentImpl = new SequenceComponentImpl(toSequenceComponentRef(sequenceComponentLocation))
     sequenceComponentImpl.status.map(statusResponse => statusResponse.response.isDefined)
   }
 }
