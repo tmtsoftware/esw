@@ -1,8 +1,7 @@
 package esw.sm.utils
 
-import akka.actor.typed.{ActorRef, ActorSystem}
+import akka.actor.typed.ActorSystem
 import akka.util.Timeout
-import csw.location.api.extensions.URIExtension.RichURI
 import csw.location.api.models.AkkaLocation
 import csw.location.api.models.ComponentType.SequenceComponent
 import csw.prefix.models.Subsystem
@@ -10,7 +9,7 @@ import csw.prefix.models.Subsystem.ESW
 import esw.ocs.api.SequenceComponentApi
 import esw.ocs.impl.SequenceComponentImpl
 import esw.ocs.impl.internal.LocationServiceUtil
-import esw.ocs.impl.messages.SequenceComponentMsg
+import esw.sm.utils.RichAkkaLocation._
 
 import scala.async.Async._
 import scala.concurrent.Future
@@ -46,17 +45,13 @@ class SequenceComponentUtil(locationServiceUtil: LocationServiceUtil, agentUtil:
     }
   }
 
-  private def toSequenceComponentRef(location: AkkaLocation): ActorRef[SequenceComponentMsg] = {
-    location.uri.toActorRef.unsafeUpcast[SequenceComponentMsg]
-  }
-
   private def getIdleSequenceComponentFor(subsystem: Subsystem): Future[Option[SequenceComponentApi]] = {
     for {
       seqCompLocations          <- locationServiceUtil.listBy(subsystem, SequenceComponent)
       availableSeqCompLocations <- getAvailableSequenceComponentFrom(seqCompLocations)
       maybeSeqCompLocation      = availableSeqCompLocations.headOption
     } yield {
-      maybeSeqCompLocation.map(seqCompLocation => new SequenceComponentImpl(toSequenceComponentRef(seqCompLocation)))
+      maybeSeqCompLocation.map(seqCompLocation => new SequenceComponentImpl(seqCompLocation.toSequenceComponentRef))
     }
   }
 
@@ -64,7 +59,7 @@ class SequenceComponentUtil(locationServiceUtil: LocationServiceUtil, agentUtil:
     async(locations.filter(location => await(isIdle(location))))
 
   private def isIdle(sequenceComponentLocation: AkkaLocation): Future[Boolean] = {
-    val sequenceComponentImpl = new SequenceComponentImpl(toSequenceComponentRef(sequenceComponentLocation))
+    val sequenceComponentImpl = new SequenceComponentImpl(sequenceComponentLocation.toSequenceComponentRef)
     sequenceComponentImpl.status.map(statusResponse => statusResponse.response.isDefined)
   }
 }
