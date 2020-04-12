@@ -12,7 +12,6 @@ import esw.ocs.impl.internal.LocationServiceUtil
 import esw.sm.core.Sequencers
 import esw.sm.messages.ConfigureResponse
 import esw.sm.messages.ConfigureResponse.{ConfigurationFailure, FailedToStartSequencers, Success}
-import esw.sm.models.ObservingMode
 
 import scala.async.Async.{async, await}
 import scala.concurrent.duration.DurationInt
@@ -24,13 +23,13 @@ class SequencerUtil(locationServiceUtil: LocationServiceUtil, sequenceComponentU
   implicit val ec: ExecutionContext = actorSystem.executionContext
 
   def startSequencers(
-      observingMode: ObservingMode,
+      observingMode: String,
       requiredSequencers: Sequencers
   )(implicit ec: ExecutionContext): Future[ConfigureResponse] = async {
     val spawnSequencerResponsesF = Future.traverse(requiredSequencers.subsystems) { s =>
       sequenceComponentUtil
         .getAvailableSequenceComponent(s)
-        .flatMap(_.loadScript(s, observingMode.mode)) // spawn the sequencer on available SequenceComponent
+        .flatMap(_.loadScript(s, observingMode)) // spawn the sequencer on available SequenceComponent
     }
     val failureReasons = getFailedResponses(await(spawnSequencerResponsesF))
 
@@ -39,15 +38,15 @@ class SequencerUtil(locationServiceUtil: LocationServiceUtil, sequenceComponentU
         // resolve master Sequencer and return failure if it is not found in Location service
         await(resolveMasterSequencer(observingMode))
           .map(Success)
-          .getOrElse(ConfigurationFailure("Could not find ESW Master Sequencer in location service"))
+          .getOrElse(ConfigurationFailure(s"Error: ESW.${observingMode} configuration failed"))
 
       case failedScriptResponses => FailedToStartSequencers(failedScriptResponses)
     }
   }
 
-  private def resolveMasterSequencer(observingMode: ObservingMode): Future[Option[HttpLocation]] =
+  private def resolveMasterSequencer(observingMode: String): Future[Option[HttpLocation]] =
     locationServiceUtil.locationService
-      .resolve(HttpConnection(ComponentId(Prefix(ESW, observingMode.mode), Sequencer)), 5.seconds)
+      .resolve(HttpConnection(ComponentId(Prefix(ESW, observingMode), Sequencer)), 5.seconds)
 
   private def getFailedResponses(responses: List[ScriptResponse]): List[ScriptError] =
     for {
