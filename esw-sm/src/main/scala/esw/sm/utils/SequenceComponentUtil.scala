@@ -4,11 +4,9 @@ import akka.actor.typed.{ActorRef, ActorSystem}
 import akka.util.Timeout
 import csw.location.api.extensions.URIExtension.RichURI
 import csw.location.api.models.AkkaLocation
-import csw.location.api.models.ComponentType.{Machine, SequenceComponent}
+import csw.location.api.models.ComponentType.SequenceComponent
+import csw.prefix.models.Subsystem
 import csw.prefix.models.Subsystem.ESW
-import csw.prefix.models.{Prefix, Subsystem}
-import esw.agent.api.Spawned
-import esw.agent.client.AgentClient
 import esw.ocs.api.SequenceComponentApi
 import esw.ocs.impl.SequenceComponentImpl
 import esw.ocs.impl.internal.LocationServiceUtil
@@ -16,12 +14,12 @@ import esw.ocs.impl.messages.SequenceComponentMsg
 
 import scala.async.Async._
 import scala.concurrent.Future
-import scala.util.Random
 import scala.util.control.NonFatal
 
 case class Error(msg: String)
 
-class SequenceComponentUtil(locationServiceUtil: LocationServiceUtil)(implicit actorSystem: ActorSystem[_], timeout: Timeout) {
+class SequenceComponentUtil(locationServiceUtil: LocationServiceUtil, agentUtil: AgentUtil)(implicit actorSystem: ActorSystem[_],
+                                                                                            timeout: Timeout) {
   import actorSystem.executionContext
 
   def getAvailableSequenceComponent(subsystem: Subsystem): Future[Either[Error, SequenceComponentApi]] = {
@@ -40,28 +38,11 @@ class SequenceComponentUtil(locationServiceUtil: LocationServiceUtil)(implicit a
       case None =>
         try {
           async(
-            Right(await(spawnSequenceComponentFor(subsystem)))
+            Right(await(agentUtil.spawnSequenceComponentFor(subsystem)))
           )
         } catch {
           case NonFatal(e) => Future.successful(Left(Error(e.getMessage)))
         }
-    }
-  }
-
-  def getAgent: Future[AgentClient] = {
-    locationServiceUtil
-      .listBy(ESW, Machine)
-      .flatMap(locations => AgentClient.make(locations.head.prefix, locationServiceUtil.locationService))
-  }
-
-  def spawnSequenceComponentFor(subsystem: Subsystem): Future[SequenceComponentApi] = {
-    val sequenceComponentPrefix = Prefix(subsystem, s"${subsystem}_${Random.between(1, 100)}")
-    for {
-      agentClient     <- getAgent
-      Spawned         <- agentClient.spawnSequenceComponent(sequenceComponentPrefix)
-      seqCompLocation <- locationServiceUtil.resolveAkkaLocation(sequenceComponentPrefix, SequenceComponent)
-    } yield {
-      new SequenceComponentImpl(toSequenceComponentRef(seqCompLocation))
     }
   }
 
