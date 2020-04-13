@@ -22,16 +22,17 @@ import csw.logging.client.scaladsl.LoggerFactory
 import csw.network.utils.SocketUtils
 import csw.prefix.models.Subsystem
 import esw.http.core.wiring.{ActorRuntime, CswWiring, HttpService, Settings}
+import esw.ocs.api.actor.client.SequencerImpl
 import esw.ocs.api.codecs.SequencerHttpCodecs
 import esw.ocs.api.protocol.ScriptError
 import esw.ocs.handler.{SequencerPostHandler, SequencerWebsocketHandler}
 import esw.ocs.impl.blockhound.BlockHoundWiring
 import esw.ocs.impl.core._
 import esw.ocs.impl.internal._
-import esw.ocs.impl.messages.SequencerMessages.Shutdown
+import esw.ocs.api.actor.messages.SequencerMessages.Shutdown
 import esw.ocs.impl.script.{ScriptApi, ScriptContext, ScriptLoader}
 import esw.ocs.impl.syntax.FutureSyntax.FutureOps
-import esw.ocs.impl.{SequencerActorProxy, SequencerActorProxyFactory}
+import esw.ocs.impl.SequencerImplFactory
 import msocket.api.ContentType
 import msocket.impl.RouteFactory
 import msocket.impl.post.PostRouteFactory
@@ -69,7 +70,7 @@ private[ocs] class SequencerWiring(
   private[ocs] lazy val script: ScriptApi  = ScriptLoader.loadKotlinScript(scriptClass, scriptContext)
 
   private lazy val locationServiceUtil        = new LocationServiceUtil(locationService)
-  private lazy val sequencerProxyFactory      = new SequencerActorProxyFactory(locationServiceUtil)
+  private lazy val sequencerImplFactory       = new SequencerImplFactory(locationServiceUtil)
   lazy val jLocationService: ILocationService = JHttpLocationServiceFactory.makeLocalClient(actorSystem)
 
   lazy val jEventService: JEventService         = new JEventService(eventService)
@@ -88,11 +89,11 @@ private[ocs] class SequencerWiring(
     actorSystem,
     jEventService,
     jAlarmService,
-    sequencerProxyFactory,
+    sequencerImplFactory,
     config
   )
 
-  private lazy val sequencerApi                                 = new SequencerActorProxy(sequencerRef)
+  private lazy val sequencerApi                                 = new SequencerImpl(sequencerRef)
   private lazy val postHandler                                  = new SequencerPostHandler(sequencerApi)
   private def websocketHandlerFactory(contentType: ContentType) = new SequencerWebsocketHandler(sequencerApi, contentType)
 

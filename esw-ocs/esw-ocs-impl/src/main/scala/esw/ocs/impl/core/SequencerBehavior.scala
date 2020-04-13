@@ -19,9 +19,9 @@ import esw.ocs.api.codecs.OcsCodecs
 import esw.ocs.api.protocol._
 import esw.ocs.impl.script.ScriptApi
 import esw.ocs.impl.internal.Timeouts
-import esw.ocs.impl.messages.SequencerMessages._
-import esw.ocs.impl.messages.SequencerState
-import esw.ocs.impl.messages.SequencerState._
+import esw.ocs.api.actor.messages.SequencerMessages._
+import esw.ocs.api.actor.messages.SequencerState
+import esw.ocs.api.actor.messages.SequencerState._
 
 import scala.concurrent.Future
 import scala.reflect.ClassTag

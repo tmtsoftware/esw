@@ -7,7 +7,7 @@ import csw.location.api.models.ComponentId
 import esw.gateway.api.protocol.InvalidComponent
 import esw.http.core.utils.{ComponentFactory, ComponentNotFoundException}
 import esw.ocs.api.SequencerApi
-import esw.ocs.impl.SequencerApiFactory
+import esw.ocs.api.actor.client.SequencerApiFactory
 
 import scala.concurrent.Future
 

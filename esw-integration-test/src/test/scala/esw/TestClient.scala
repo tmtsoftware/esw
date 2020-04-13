@@ -10,9 +10,9 @@ import csw.location.client.scaladsl.HttpLocationServiceFactory
 import csw.params.commands.{CommandName, Sequence, Setup}
 import csw.prefix.models.Prefix
 import csw.prefix.models.Subsystem.IRIS
-import esw.ocs.impl.SequencerActorProxy
+import esw.ocs.api.actor.client.SequencerImpl
 import esw.ocs.impl.internal.LocationServiceUtil
-import esw.ocs.impl.messages.SequencerMessages.{EswSequencerMessage, Shutdown}
+import esw.ocs.api.actor.messages.SequencerMessages.{EswSequencerMessage, Shutdown}
 
 import scala.concurrent.Await
 import scala.concurrent.duration._
@@ -38,7 +38,7 @@ object TestClient extends App {
   private val cmd3 = Setup(Prefix("esw.a.a"), CommandName("command-3"), None)
 
   import csw.command.client.extensions.AkkaLocationExt._
-  private val sequencer = new SequencerActorProxy(location.sequencerRef)
+  private val sequencer = new SequencerImpl(location.sequencerRef)
 
   sequencer.submitAndWait(Sequence(cmd1, cmd2, cmd3)).onComplete { _ =>
     Thread.sleep(2000)

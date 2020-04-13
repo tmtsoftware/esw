@@ -23,10 +23,10 @@ import csw.prefix.models.Subsystem.{ESW, LGSF, NFIRAOS, TCS}
 import csw.testkit.ConfigTestKit
 import csw.time.core.models.UTCTime
 import esw.ocs.api.SequencerApi
+import esw.ocs.api.actor.client.SequencerImpl
 import esw.ocs.api.models.StepStatus.Finished.Success
 import esw.ocs.api.models.{Step, StepList}
 import esw.ocs.api.protocol._
-import esw.ocs.impl.SequencerActorProxy
 import esw.ocs.testkit.EswTestKit
 import esw.ocs.testkit.Service._
 
@@ -59,9 +59,9 @@ class ScriptIntegrationTest extends EswTestKit(EventServer, AlarmServer, ConfigS
     val tcsSequencerRef  = spawnSequencerRef(tcsSubsystem, tcsObservingMode)
     val lgsfSequencerRef = spawnSequencerRef(lgsfSubsystem, lgsfObservingMode) //start LGSF sequencer as OCS send commands to LGSF downstream sequencer
     val ocsSequencerRef  = spawnSequencerRef(ocsSubsystem, ocsObservingMode)
-    ocsSequencer = new SequencerActorProxy(ocsSequencerRef)
-    tcsSequencer = new SequencerActorProxy(tcsSequencerRef)
-    lgsfSequencer = new SequencerActorProxy(lgsfSequencerRef)
+    ocsSequencer = new SequencerImpl(ocsSequencerRef)
+    tcsSequencer = new SequencerImpl(tcsSequencerRef)
+    lgsfSequencer = new SequencerImpl(lgsfSequencerRef)
   }
 
   override def afterEach(): Unit = shutdownAllSequencers()

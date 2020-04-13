@@ -5,7 +5,7 @@ import csw.params.commands.{CommandName, Sequence, Setup}
 import csw.prefix.models.Prefix
 import csw.prefix.models.Subsystem.ESW
 import esw.ocs.api.protocol.{OkOrUnhandledResponse, SequencerSubmitResponse, SubmitResult, Unhandled}
-import esw.ocs.impl.messages.SequencerMessages.{LoadSequence, SubmitSequenceInternal}
+import esw.ocs.api.actor.messages.SequencerMessages.{LoadSequence, SubmitSequenceInternal}
 import esw.ocs.testkit.EswTestKit
 
 class SequencerBehaviorIntegrationTest extends EswTestKit {

@@ -1,4 +1,4 @@
-package esw.ocs.impl
+package esw.ocs.api.actor.client
 
 import akka.actor.typed.ActorSystem
 import akka.http.scaladsl.model.Uri
@@ -22,7 +22,7 @@ object SequencerApiFactory extends SequencerHttpCodecs {
     implicit val timeout: Timeout = Timeout(5.seconds)
     componentLocation match {
       case _: TcpLocation             => throw new RuntimeException("Only AkkaLocation and HttpLocation can be used to access sequencer")
-      case akkaLocation: AkkaLocation => new SequencerActorProxy(akkaLocation.sequencerRef)
+      case akkaLocation: AkkaLocation => new SequencerImpl(akkaLocation.sequencerRef)
       case httpLocation: HttpLocation => httpClient(httpLocation)
     }
   }

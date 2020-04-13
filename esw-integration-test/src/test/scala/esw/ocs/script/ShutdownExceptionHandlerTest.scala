@@ -5,7 +5,7 @@ import csw.params.events.{Event, EventKey, EventName, SystemEvent}
 import csw.prefix.models.Prefix
 import csw.prefix.models.Subsystem.TCS
 import esw.ocs.api.protocol.Ok
-import esw.ocs.impl.messages.SequencerMessages.Shutdown
+import esw.ocs.api.actor.messages.SequencerMessages.Shutdown
 import esw.ocs.testkit.EswTestKit
 import esw.ocs.testkit.Service.EventServer
 

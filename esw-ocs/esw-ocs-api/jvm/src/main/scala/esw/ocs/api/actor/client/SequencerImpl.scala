@@ -1,4 +1,4 @@
-package esw.ocs.impl
+package esw.ocs.api.actor.client
 
 import akka.actor.typed.scaladsl.AskPattern._
 import akka.actor.typed.{ActorRef, ActorSystem}
@@ -12,16 +12,15 @@ import csw.params.commands.{Sequence, SequenceCommand}
 import csw.params.core.models.Id
 import csw.time.core.models.UTCTime
 import esw.ocs.api.SequencerApi
+import esw.ocs.api.actor.messages.SequencerMessages._
+import esw.ocs.api.actor.messages.SequencerState
+import esw.ocs.api.actor.messages.SequencerState.{Idle, Offline}
 import esw.ocs.api.models.StepList
 import esw.ocs.api.protocol._
-import esw.ocs.impl.messages.SequencerMessages._
-import esw.ocs.impl.messages.SequencerState
-import esw.ocs.impl.messages.SequencerState.{Idle, Offline}
 
 import scala.concurrent.{ExecutionContext, Future}
 
-class SequencerActorProxy(sequencer: ActorRef[SequencerMsg])(implicit system: ActorSystem[_], timeout: Timeout)
-    extends SequencerApi {
+class SequencerImpl(sequencer: ActorRef[SequencerMsg])(implicit system: ActorSystem[_], timeout: Timeout) extends SequencerApi {
   private implicit val ec: ExecutionContext = system.executionContext
 
   private val extensions = new SequencerCommandServiceExtension(this)

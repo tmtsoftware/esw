@@ -13,8 +13,9 @@ import esw.ocs.api.codecs.OcsCodecs
 import esw.ocs.api.models.StepList
 import esw.ocs.api.protocol.{EswSequencerResponse, GetStatusResponse, ScriptResponse}
 import esw.ocs.impl.codecs.OcsMsgCodecs
-import esw.ocs.impl.messages.SequencerMessages._
-import esw.ocs.impl.messages.{SequenceComponentMsg, SequencerState}
+import esw.ocs.api.actor.messages.SequencerMessages._
+import esw.ocs.api.actor.messages.SequencerState
+import esw.ocs.impl.messages.SequenceComponentMsg
 import io.bullet.borer.{Cbor, Decoder}
 
 import scala.reflect.ClassTag
