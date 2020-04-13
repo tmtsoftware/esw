@@ -12,7 +12,7 @@ import esw.ocs.impl.internal.LocationServiceUtil
 import scala.compat.java8.FutureConverters.FutureOps
 import scala.concurrent.Future
 
-class SequencerActorProxyFactory(locationServiceUtil: LocationServiceUtil)(implicit timeout: Timeout) {
+class SequencerImplFactory(locationServiceUtil: LocationServiceUtil)(implicit timeout: Timeout) {
 
   import locationServiceUtil.actorSystem
   import actorSystem.executionContext

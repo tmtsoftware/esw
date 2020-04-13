@@ -11,7 +11,7 @@ import esw.ocs.dsl.highlevel.models.CommandError
 import esw.ocs.dsl.isFailed
 import esw.ocs.dsl.jdk.SuspendToJavaConverter
 import esw.ocs.dsl.jdk.toJava
-import esw.ocs.impl.SequencerActorProxyFactory
+import esw.ocs.impl.SequencerImplFactory
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.future.await
 import java.util.concurrent.TimeUnit
@@ -20,7 +20,7 @@ import kotlin.time.Duration
 class RichSequencer(
         internal val subsystem: Subsystem,
         private val observingMode: String,
-        private val sequencerApiFactory: SequencerActorProxyFactory,
+        private val sequencerApiFactory: SequencerImplFactory,
         private val defaultTimeout: Duration,
         override val coroutineScope: CoroutineScope
 ) : SuspendToJavaConverter {

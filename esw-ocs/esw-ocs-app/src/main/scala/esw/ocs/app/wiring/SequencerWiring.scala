@@ -32,7 +32,7 @@ import esw.ocs.impl.internal._
 import esw.ocs.api.actor.messages.SequencerMessages.Shutdown
 import esw.ocs.impl.script.{ScriptApi, ScriptContext, ScriptLoader}
 import esw.ocs.impl.syntax.FutureSyntax.FutureOps
-import esw.ocs.impl.SequencerActorProxyFactory
+import esw.ocs.impl.SequencerImplFactory
 import msocket.api.ContentType
 import msocket.impl.RouteFactory
 import msocket.impl.post.PostRouteFactory
@@ -70,7 +70,7 @@ private[ocs] class SequencerWiring(
   private[ocs] lazy val script: ScriptApi  = ScriptLoader.loadKotlinScript(scriptClass, scriptContext)
 
   private lazy val locationServiceUtil        = new LocationServiceUtil(locationService)
-  private lazy val sequencerProxyFactory      = new SequencerActorProxyFactory(locationServiceUtil)
+  private lazy val sequencerImplFactory       = new SequencerImplFactory(locationServiceUtil)
   lazy val jLocationService: ILocationService = JHttpLocationServiceFactory.makeLocalClient(actorSystem)
 
   lazy val jEventService: JEventService         = new JEventService(eventService)
@@ -89,7 +89,7 @@ private[ocs] class SequencerWiring(
     actorSystem,
     jEventService,
     jAlarmService,
-    sequencerProxyFactory,
+    sequencerImplFactory,
     config
   )
 
@@ -112,7 +112,7 @@ private[ocs] class SequencerWiring(
       val eventualTerminated                  = serverBinding.terminate(Timeouts.DefaultTimeout)
       val eventualDone                        = registrationResult.unregister()
       await(eventualTerminated.flatMap(_ => eventualDone))
-    }
+  }
 
   lazy val sequencerBehavior =
     new SequencerBehavior(componentId, script, locationService, sequenceComponentLocation, logger, shutdownHttpService)(
@@ -135,8 +135,7 @@ private[ocs] class SequencerWiring(
           BlockHoundWiring.install()
         }
         loc
-      }
-      catch {
+      } catch {
         // This error will be logged in SequenceComponent.Do not log it here,
         // because exception caused while initialising will fail the instance creation of logger.
         case NonFatal(e) => Left(ScriptError(e.getMessage))

@@ -11,7 +11,7 @@ import esw.ocs.api.SequencerApi
 import esw.ocs.api.protocol.`Ok$`
 import esw.ocs.dsl.highlevel.models.CommandError
 import esw.ocs.dsl.highlevel.models.TCS
-import esw.ocs.impl.SequencerActorProxyFactory
+import esw.ocs.impl.SequencerImplFactory
 import io.kotlintest.shouldNotThrow
 import io.kotlintest.shouldThrow
 import io.mockk.every
@@ -38,7 +38,7 @@ class RichSequencerTest {
     private val observingMode: String = "darknight"
     private val sequence: Sequence = mockk()
 
-    private val sequencerApiFactory: SequencerActorProxyFactory = mockk()
+    private val sequencerApiFactory: SequencerImplFactory = mockk()
 
     private val timeoutDuration: Duration = 10.seconds
     private val timeout = Timeout(timeoutDuration.toLongNanoseconds(), TimeUnit.NANOSECONDS)
