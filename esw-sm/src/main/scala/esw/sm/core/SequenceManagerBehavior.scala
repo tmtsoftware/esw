@@ -4,16 +4,16 @@ import akka.actor.typed.scaladsl.Behaviors
 import akka.actor.typed.{ActorRef, ActorSystem, Behavior}
 import akka.util.Timeout
 import csw.location.api.models.ComponentType.Sequencer
-import csw.location.api.models.Connection.HttpConnection
-import csw.location.api.models.{AkkaLocation, ComponentId}
+import csw.location.api.models.{AkkaLocation, HttpLocation}
 import csw.prefix.models.Subsystem.ESW
-import csw.prefix.models.{Prefix, Subsystem}
-import esw.ocs.api.SequenceComponentApi
-import esw.ocs.api.protocol.ScriptResponse
 import esw.ocs.impl.SequencerApiFactory
 import esw.ocs.impl.internal.LocationServiceUtil
+import esw.sm.messages.ConfigureResponse._
+import esw.sm.messages.SequenceManagerMsg._
 import esw.sm.messages.{ConfigureResponse, SequenceManagerMsg}
+import esw.sm.utils.{AgentUtil, SequenceComponentUtil, SequencerUtil}
 
+import scala.async.Async.{async, await}
 import scala.concurrent.Future
 import scala.concurrent.duration.DurationDouble
 
@@ -21,81 +21,60 @@ class SequenceManagerBehavior(locationService: LocationServiceUtil)(implicit val
   import actorSystem.executionContext
   implicit val timeout: Timeout = 10.seconds
 
-  def beh(): Behavior[SequenceManagerMsg] = Behaviors.receiveMessage { msg =>
-    def configure(obsMode: String, replyTo: ActorRef[ConfigureResponse]) = {
-      val configuredOcsSeqsF = locationService.listBy(ESW, Sequencer) // filter master Seqs from all OCS Seqs
+  private val sequenceComponentUtil = new SequenceComponentUtil(locationService, new AgentUtil(locationService))
+  private val sequencerUtil         = new SequencerUtil(locationService, sequenceComponentUtil)
 
-      configuredOcsSeqsF.map { x =>
-        val mayBeOcsMaster = x.find(_.prefix.componentName == obsMode)
+  def beh(): Behavior[SequenceManagerMsg] = Behaviors.setup { ctx =>
+    idle() // initial behavior
+  }
 
-        mayBeOcsMaster match {
-          case Some(value) => ocsAlreadyExists(value)
-          case None        => checkResources(obsMode, replyTo)
-        }
-      }
-
-      def ocsAlreadyExists(akkaLocation: AkkaLocation): Unit =
-        SequencerApiFactory.make(akkaLocation).isAvailable.map {
-          case true => replyTo ! ConfigureResponse.Success(akkaLocation.prefix)
-          case false =>
-            replyTo ! ConfigureResponse.ConfigurationFailure(
-              s"Error: ${akkaLocation.prefix} is already executing another sequence")
-        }
-
-      def checkResources(obsMode: String, replyTo: ActorRef[ConfigureResponse]): Future[Boolean] = {
-        val requiredResources = extractResources(obsMode)
-        val configuredResourcesF: Future[List[Resources]] =
-          configuredOcsSeqsF.map(l => l.map(x => extractResources(getObsMode(x))))
-
-        val isResourceConflictF = configuredResourcesF.map(r => r.exists(_.conflictsWith(requiredResources)))
-
-        isResourceConflictF.map {
-          case true  => replyTo ! ConfigureResponse.ConflictingResourcesWithRunningObsMode
-          case false => startSequencers(obsMode)
-        }
-        // check for conflicts
-      }
-
-      def startSequencers(observingMode: String, replyTo: ActorRef[ConfigureResponse]): Future[List[ScriptResponse]] = {
-        val requiredSequencers: Sequencers = ???
-        val value =
-          requiredSequencers.subsystems.map(s => getAvailableSequenceComponent(s).flatMap(_.loadScript(s, observingMode.mode)))
-        val failedSequencerResponsesF = Future.sequence(value).map(_.filter(_.response.isLeft))
-        failedSequencerResponsesF.map {
-          case Nil =>
-            locationService.locationService
-              .resolve(HttpConnection(ComponentId(Prefix(ESW, observingMode), Sequencer)), 5.seconds)
-              .map {
-                case Some(value) => replyTo.tell(ConfigureResponse.Success(value))
-                case None        => replyTo ! ConfigureResponse.ConfigurationFailure("Could not find ESW Master in location service")
-              }
-          case failedScriptResponses: List[ScriptResponse] =>
-            replyTo ! ConfigureResponse.ConfigurationFailure(failedScriptResponses.map(_.response.left))
-        }
-      }
-
-      def getAvailableSequenceComponent(subsystem: Subsystem): Future[SequenceComponentApi] = {
-//        locationService
-//          .listBy(subsystem, SequenceComponent)
-//          .map(locations =>
-//            locations.flatMap(location => {
-//              val impl = new SequenceComponentImpl(location.uri.toActorRef.unsafeUpcast[SequenceComponentMsg])
-//              impl.status.map(_.response.isEmpty)
-//
-//            }))
-        ???
-      }
-
-      def getObsMode(akkaLocation: AkkaLocation): String = akkaLocation.prefix.componentName
-
-      def extractResources(observingMode: String): Resources = ???
-    }
-
+  def idle(): Behavior[SequenceManagerMsg] = Behaviors.receive { (ctx, msg) =>
     msg match {
-      case SequenceManagerMsg.Cleanup(observingMode, replyTo)   => Behaviors.same
-      case SequenceManagerMsg.Configure(observingMode, replyTo) => configure(observingMode, replyTo); ???;
-      case SequenceManagerMsg.GetRunningObsModes(replyTo)       => Behaviors.same
-      case _                                                    => Behaviors.same
+      case Configure(observingMode, replyTo) => configure(observingMode, ctx.self); configuring(replyTo);
+      case GetRunningObsModes(replyTo)       => getRunningObsModes.map(replyTo ! _); Behaviors.same
+      case Cleanup(observingMode, replyTo)   => Behaviors.same
+      case _                                 => Behaviors.same
     }
   }
+
+  def configuring(replyTo: ActorRef[ConfigureResponse]): Behavior[SequenceManagerMsg] = Behaviors.receiveMessage {
+    case ConfigurationCompleted(res) => replyTo ! res; idle()
+    case GetRunningObsModes(replyTo) => getRunningObsModes.map(replyTo ! _); Behaviors.same
+    case _                           => Behaviors.unhandled
+  }
+
+  def configure(obsMode: String, self: ActorRef[SequenceManagerMsg]): Future[Unit] =
+    async {
+      val configuredObsModes                   = await(getRunningObsModes) // filter master Seqs from all OCS Seqs
+      val mayBeOcsMaster: Option[HttpLocation] = await(sequencerUtil.resolveMasterSequencer(obsMode))
+
+      val response: ConfigureResponse = mayBeOcsMaster match {
+        case Some(location) => await(useOcsMaster(location))
+        case None           => await(configureResources(obsMode, configuredObsModes))
+      }
+
+      self ! ConfigurationCompleted(response)
+    }
+
+  def useOcsMaster(location: HttpLocation): Future[ConfigureResponse] = async {
+    if (await(isOcsAvailable(location))) Success(location)
+    else ConfigurationFailure(s"Error: ${location.prefix} is already executing another sequence")
+  }
+
+  def configureResources(obsMode: String, configuredObsModes: Set[String]): Future[ConfigureResponse] = async {
+    val requiredResources: Resources        = extractResources(obsMode)
+    val configuredResources: Set[Resources] = configuredObsModes.map(extractResources)
+    val areResourcesConflicting             = configuredResources.exists(_.conflictsWith(requiredResources))
+
+    if (areResourcesConflicting) ConflictingResourcesWithRunningObsMode
+    else await(sequencerUtil.startSequencers(obsMode, extractSequencers(obsMode)))
+  }
+
+  def isOcsAvailable(httpLocation: HttpLocation): Future[Boolean] = SequencerApiFactory.make(httpLocation).isAvailable
+  def getRunningObsModes: Future[Set[String]]                     = locationService.listBy(ESW, Sequencer).map(_.map(getObsMode).toSet)
+  def getObsMode(akkaLocation: AkkaLocation): String              = akkaLocation.prefix.componentName
+
+  def extractSequencers(observingMode: String): Sequencers = ???
+  def extractResources(observingMode: String): Resources   = ???
+
 }

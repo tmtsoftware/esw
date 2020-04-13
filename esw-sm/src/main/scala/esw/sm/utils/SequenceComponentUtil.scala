@@ -13,15 +13,16 @@ import esw.sm.utils.RichAkkaLocation._
 
 import scala.async.Async._
 import scala.concurrent.Future
-import scala.util.control.NonFatal
 
-case class Error(msg: String)
-
-class SequenceComponentUtil(locationServiceUtil: LocationServiceUtil, agentUtil: AgentUtil)(implicit actorSystem: ActorSystem[_],
-                                                                                            timeout: Timeout) {
+class SequenceComponentUtil(locationServiceUtil: LocationServiceUtil, agentUtil: AgentUtil)(
+    implicit actorSystem: ActorSystem[_],
+    timeout: Timeout
+) {
   import actorSystem.executionContext
 
-  def getAvailableSequenceComponent(subsystem: Subsystem): Future[Either[Error, SequenceComponentApi]] = {
+  def getAvailableSequenceComponent(
+      subsystem: Subsystem
+  ): Future[Either[SequencerError, SequenceComponentApi]] = {
     val maybeSeqCompApiF: Future[Option[SequenceComponentApi]] = subsystem match {
       case ESW => getIdleSequenceComponentFor(ESW)
       case other: Subsystem =>
@@ -30,21 +31,20 @@ class SequenceComponentUtil(locationServiceUtil: LocationServiceUtil, agentUtil:
           case Some(_) => eventualMaybeApi
           case None    => getIdleSequenceComponentFor(ESW)
         }
-
     }
+
+    // spawn SeqComp if not able to find already spawned one
     maybeSeqCompApiF.flatMap {
       case Some(value) => Future.successful(Right(value))
       case None =>
-        try {
-          async(
-            Right(await(agentUtil.spawnSequenceComponentFor(subsystem)))
-          )
-        } catch {
-          case NonFatal(e) => Future.successful(Left(Error(e.getMessage)))
-        }
+        agentUtil
+          .spawnSequenceComponentFor(subsystem)
+          .map(Right.apply)
+          .recover(e => Left(SequencerError(e.getMessage)))
     }
   }
 
+  // todo: can this cause race condition?
   private def getIdleSequenceComponentFor(subsystem: Subsystem): Future[Option[SequenceComponentApi]] = {
     for {
       seqCompLocations          <- locationServiceUtil.listBy(subsystem, SequenceComponent)
@@ -56,7 +56,7 @@ class SequenceComponentUtil(locationServiceUtil: LocationServiceUtil, agentUtil:
   }
 
   private def getAvailableSequenceComponentFrom(locations: List[AkkaLocation]): Future[List[AkkaLocation]] =
-    async(locations.filter(location => await(isIdle(location))))
+    async(locations.filter(location => await(isIdle(location)))) // todo: Not working
 
   private def isIdle(sequenceComponentLocation: AkkaLocation): Future[Boolean] = {
     val sequenceComponentImpl = new SequenceComponentImpl(sequenceComponentLocation.toSequenceComponentRef)
