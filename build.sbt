@@ -49,7 +49,7 @@ lazy val `esw-ocs` = project
   )
 
 lazy val `esw-ocs-api` = crossProject(JSPlatform, JVMPlatform)
-  .crossType(CrossType.Pure)
+  .crossType(CrossType.Full)
   .in(file("esw-ocs/esw-ocs-api"))
   .jvmConfigure(_.enablePlugins(MaybeCoverage, PublishBintray)
     settings(libraryDependencies += (Libs.`tmt-test-reporter` % Test)))
