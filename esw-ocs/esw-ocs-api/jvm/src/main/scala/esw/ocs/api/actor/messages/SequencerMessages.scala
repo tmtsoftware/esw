@@ -1,4 +1,4 @@
-package esw.ocs.impl.messages
+package esw.ocs.api.actor.messages
 
 import akka.actor.typed.ActorRef
 import csw.command.client.messages.sequencer.SequencerMsg

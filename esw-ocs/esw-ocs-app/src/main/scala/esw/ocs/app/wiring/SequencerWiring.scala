@@ -22,16 +22,17 @@ import csw.logging.client.scaladsl.LoggerFactory
 import csw.network.utils.SocketUtils
 import csw.prefix.models.Subsystem
 import esw.http.core.wiring.{ActorRuntime, CswWiring, HttpService, Settings}
+import esw.ocs.api.actor.client.SequencerImpl
 import esw.ocs.api.codecs.SequencerHttpCodecs
 import esw.ocs.api.protocol.ScriptError
 import esw.ocs.handler.{SequencerPostHandler, SequencerWebsocketHandler}
 import esw.ocs.impl.blockhound.BlockHoundWiring
 import esw.ocs.impl.core._
 import esw.ocs.impl.internal._
-import esw.ocs.impl.messages.SequencerMessages.Shutdown
+import esw.ocs.api.actor.messages.SequencerMessages.Shutdown
 import esw.ocs.impl.script.{ScriptApi, ScriptContext, ScriptLoader}
 import esw.ocs.impl.syntax.FutureSyntax.FutureOps
-import esw.ocs.impl.{SequencerActorProxy, SequencerActorProxyFactory}
+import esw.ocs.impl.SequencerActorProxyFactory
 import msocket.api.ContentType
 import msocket.impl.RouteFactory
 import msocket.impl.post.PostRouteFactory
@@ -92,7 +93,7 @@ private[ocs] class SequencerWiring(
     config
   )
 
-  private lazy val sequencerApi                                 = new SequencerActorProxy(sequencerRef)
+  private lazy val sequencerApi                                 = new SequencerImpl(sequencerRef)
   private lazy val postHandler                                  = new SequencerPostHandler(sequencerApi)
   private def websocketHandlerFactory(contentType: ContentType) = new SequencerWebsocketHandler(sequencerApi, contentType)
 

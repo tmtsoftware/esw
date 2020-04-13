@@ -10,7 +10,7 @@ import csw.params.commands.{CommandName, Sequence, Setup}
 import csw.prefix.models.Prefix
 import csw.prefix.models.Subsystem.ESW
 import esw.ocs.api.SequencerApi
-import esw.ocs.impl.SequencerActorProxy
+import esw.ocs.api.actor.client.SequencerImpl
 import esw.ocs.testkit.EswTestKit
 import play.api.libs.json.{JsObject, Json}
 
@@ -47,7 +47,7 @@ class HealthCheckIntegrationTest extends EswTestKit {
   override def beforeEach(): Unit = {
     super.beforeEach()
     val ocsSequencerRef = spawnSequencerRef(ocsSubsystem, ocsObservingMode)
-    ocsSequencer = new SequencerActorProxy(ocsSequencerRef)
+    ocsSequencer = new SequencerImpl(ocsSequencerRef)
     logBuffer.clear()
   }
 

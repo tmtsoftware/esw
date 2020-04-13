@@ -11,7 +11,7 @@ import csw.prefix.models.Prefix
 import csw.prefix.models.Subsystem.ESW
 import esw.gateway.server.TestAppender
 import esw.ocs.api.SequencerApi
-import esw.ocs.impl.SequencerActorProxy
+import esw.ocs.api.actor.client.SequencerImpl
 import esw.ocs.testkit.EswTestKit
 import esw.ocs.testkit.Service.EventServer
 import play.api.libs.json.{JsObject, Json}
@@ -29,7 +29,7 @@ class LoggingDslIntegrationTest extends EswTestKit(EventServer) {
   override def beforeAll(): Unit = {
     super.beforeAll()
     ocsRef = spawnSequencerRef(ESW, "MoonNight")
-    ocsSequencer = new SequencerActorProxy(ocsRef)
+    ocsSequencer = new SequencerImpl(ocsRef)
     loggingSystem = LoggingSystemFactory.start("LoggingDslIntegrationTest", "", "", system)
     loggingSystem.setAppenders(List(testAppender))
   }

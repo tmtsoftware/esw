@@ -9,7 +9,7 @@ import esw.ocs.api.BaseTestSuite
 import esw.ocs.api.models.StepStatus.Finished
 import esw.ocs.api.models.{Step, StepStatus}
 import esw.ocs.api.protocol.{Ok, PullNextResult}
-import esw.ocs.impl.messages.SequencerMessages._
+import esw.ocs.api.actor.messages.SequencerMessages._
 
 class SequenceOperatorTest extends ScalaTestWithActorTestKit with BaseTestSuite {
 

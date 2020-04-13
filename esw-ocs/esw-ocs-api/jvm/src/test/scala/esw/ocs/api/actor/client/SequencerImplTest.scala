@@ -1,10 +1,11 @@
-package esw.ocs.impl
+package esw.ocs.api.actor.client
 
-import akka.actor.testkit.typed.scaladsl.{ScalaTestWithActorTestKit, TestProbe}
+import java.net.URI
+
+import akka.actor.testkit.typed.scaladsl.ScalaTestWithActorTestKit
 import akka.actor.typed.scaladsl.Behaviors
 import csw.command.client.messages.sequencer.SequencerMsg
 import csw.command.client.messages.sequencer.SequencerMsg.QueryFinal
-import csw.location.api.extensions.ActorExtension._
 import csw.location.api.models.ComponentType.SequenceComponent
 import csw.location.api.models.Connection.AkkaConnection
 import csw.location.api.models.{AkkaLocation, ComponentId}
@@ -15,14 +16,13 @@ import csw.prefix.models.Prefix
 import csw.prefix.models.Subsystem.ESW
 import csw.time.core.models.UTCTime
 import esw.ocs.api.BaseTestSuite
+import esw.ocs.api.actor.messages.SequencerMessages._
+import esw.ocs.api.actor.messages.SequencerState.{Idle, Loaded, Offline}
 import esw.ocs.api.models.StepList
 import esw.ocs.api.protocol.EditorError.{CannotOperateOnAnInFlightOrFinishedStep, IdDoesNotExist}
 import esw.ocs.api.protocol.{GoOnlineHookFailed, Ok, SubmitResult, Unhandled}
-import esw.ocs.impl.messages.SequenceComponentMsg
-import esw.ocs.impl.messages.SequencerMessages._
-import esw.ocs.impl.messages.SequencerState.{Idle, Loaded, Offline}
 
-class SequencerActorProxyTest extends ScalaTestWithActorTestKit with BaseTestSuite {
+class SequencerImplTest extends ScalaTestWithActorTestKit with BaseTestSuite {
   private val command             = Setup(Prefix("esw.test"), CommandName("command-1"), None)
   private val getSequenceResponse = Some(StepList(Sequence(command)))
   private val stepId              = getSequenceResponse.get.steps.head.id
@@ -55,7 +55,7 @@ class SequencerActorProxyTest extends ScalaTestWithActorTestKit with BaseTestSui
   private val getSequenceComponentResponse =
     AkkaLocation(
       AkkaConnection(ComponentId(Prefix(ESW, "primary"), SequenceComponent)),
-      TestProbe[SequenceComponentMsg].ref.toURI
+      new URI("some-uri")
     )
 
   private val mockedBehavior: Behaviors.Receive[SequencerMsg] =
@@ -92,7 +92,7 @@ class SequencerActorProxyTest extends ScalaTestWithActorTestKit with BaseTestSui
     }
 
   private val sequencerRef = spawn(mockedBehavior)
-  private val sequencer    = new SequencerActorProxy(sequencerRef)
+  private val sequencer    = new SequencerImpl(sequencerRef)
 
   "getSequence | ESW-222" in {
     sequencer.getSequence.futureValue should ===(getSequenceResponse)

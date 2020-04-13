@@ -6,7 +6,7 @@ import akka.util.Timeout
 import esw.ocs.api.models.Step
 import esw.ocs.api.protocol.{OkOrUnhandledResponse, PullNextResponse}
 import esw.ocs.impl.internal.Timeouts
-import esw.ocs.impl.messages.SequencerMessages._
+import esw.ocs.api.actor.messages.SequencerMessages._
 
 import scala.concurrent.Future
 
