@@ -209,3 +209,8 @@ lazy val examples = project
     kotlincOptions ++= Seq("-Xuse-experimental=kotlin.time.ExperimentalTime", "-jvm-target", "1.8")
   )
   .dependsOn(`esw-ocs-dsl-kt`)
+
+lazy val `esw-sm` = project
+  .in(file("esw-sm"))
+  .settings(libraryDependencies ++= Dependencies.EswSm.value)
+  .dependsOn(`esw-ocs-api`.jvm, `esw-ocs-impl`, `esw-agent-client`)
