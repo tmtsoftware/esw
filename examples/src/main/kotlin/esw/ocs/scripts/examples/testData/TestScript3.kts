@@ -23,6 +23,10 @@ script {
 
     onSetup("command-2") {}
 
+    onNewSequence {
+        println("in the new sequence handler")
+    }
+
     onDiagnosticMode { _, _ ->
         // do some actions to go to diagnostic mode based on hint
         val diagnosticModeParam = stringKey("mode").set("diagnostic")

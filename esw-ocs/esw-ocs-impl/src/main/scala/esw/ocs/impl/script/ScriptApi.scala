@@ -12,6 +12,7 @@ trait ScriptApi {
   def executeGoOffline(): Future[Done]
   def executeShutdown(): Future[Done]
   def executeAbort(): Future[Done]
+  def executeNewSequenceHandler(): Future[Done]
   def executeStop(): Future[Done]
   def executeDiagnosticMode(startTime: UTCTime, hint: String): Future[Done]
   def executeOperationsMode(): Future[Done]

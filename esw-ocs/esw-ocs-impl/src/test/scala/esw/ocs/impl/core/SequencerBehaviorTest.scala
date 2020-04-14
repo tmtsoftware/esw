@@ -68,28 +68,37 @@ class SequencerBehaviorTest extends ScalaTestWithActorTestKit with BaseTestSuite
   }
 
   "SubmitSequence" must {
-    "load and start executing a sequence | ESW-145, ESW-154, ESW-221" in {
+    "load and start executing a sequence | ESW-145, ESW-154, ESW-221, ESW-303" in {
       val sequencerSetup = SequencerTestSetup.idle(sequence)
       import sequencerSetup._
 
+      when { script.executeNewSequenceHandler() }.thenAnswer { Future.successful(Done) }
+
       val probe = createTestProbe[SequencerSubmitResponse]
       sequencerActor ! SubmitSequenceInternal(sequence, probe.ref)
+
       pullAllStepsAndAssertSequenceIsFinished()
       val sequenceResult = probe.expectMessageType[SubmitResult]
       sequenceResult.submitResponse shouldBe a[Started]
+
+      verify(script).executeNewSequenceHandler()
     }
 
-    "return Ok even if the processing of sequence fails | ESW-145, ESW-154, ESW-221" in {
+    "return Ok even if the processing of sequence fails | ESW-145, ESW-154, ESW-221, ESW-303" in {
       val sequence1      = Sequence(command1)
       val sequencerSetup = SequencerTestSetup.idle(sequence1)
       import sequencerSetup._
 
+      when { script.executeNewSequenceHandler() }.thenAnswer { Future.successful(Done) }
+
       val client = createTestProbe[SequencerSubmitResponse]
       sequencerActor ! SubmitSequenceInternal(sequence1, client.ref)
+
       val sequenceResult = client.expectMessageType[SubmitResult]
       sequenceResult.submitResponse shouldBe a[Started]
       val startedResponse = sequenceResult.toSubmitResponse()
 
+      verify(script).executeNewSequenceHandler()
       assertSequencerState(InProgress)
 
       startPullNext()

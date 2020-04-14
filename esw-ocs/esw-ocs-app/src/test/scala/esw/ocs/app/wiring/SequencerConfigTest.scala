@@ -88,4 +88,5 @@ class ValidTestScript(ctx: ScriptContext) extends ScriptApi {
   override def executeOperationsMode(): Future[Done]                                 = ???
   override def executeExceptionHandlers(ex: Throwable): Future[Done]                 = ???
   override def shutdownScript(): Unit                                                = ???
+  override def executeNewSequenceHandler(): Future[Done]                             = ???
 }

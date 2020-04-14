@@ -44,6 +44,9 @@ sealed class BaseScript(wiring: ScriptWiring) : CswHighLevelDsl(wiring.cswServic
 
     private val shutdownHandlerCoroutineScope = wiring.scope + shutdownExceptionHandler
 
+    fun onNewSequence(block: suspend HandlerScope.() -> Unit) =
+            scriptDsl.onNewSequence { block.toCoroutineScope().toJava() }
+
     fun onGoOnline(block: suspend HandlerScope.() -> Unit) =
             scriptDsl.onGoOnline { block.toCoroutineScope().toJava() }
 
