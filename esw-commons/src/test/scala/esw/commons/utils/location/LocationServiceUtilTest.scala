@@ -2,21 +2,30 @@ package esw.commons.utils.location
 
 import java.net.URI
 
+import akka.Done
+import akka.actor.CoordinatedShutdown
+import akka.actor.CoordinatedShutdown.UnknownReason
 import akka.actor.testkit.typed.scaladsl.ScalaTestWithActorTestKit
+import akka.actor.typed.ActorSystem
+import akka.actor.typed.scaladsl.Behaviors
+import akka.actor.typed.scaladsl.adapter.TypedActorSystemOps
+import csw.location.api.exceptions.OtherLocationIsRegistered
 import csw.location.api.models.ComponentType._
 import csw.location.api.models.Connection.AkkaConnection
 import csw.location.api.models.{AkkaLocation, AkkaRegistration, ComponentId}
-import csw.location.api.scaladsl.LocationService
+import csw.location.api.scaladsl.{LocationService, RegistrationResult}
 import csw.prefix.models.Subsystem.{ESW, IRIS, TCS}
 import csw.prefix.models.{Prefix, Subsystem}
 import esw.commons.{BaseTestSuite, Timeouts}
+import org.mockito.ArgumentMatchers.any
 
-import scala.concurrent.Future
 import scala.concurrent.duration.DurationDouble
+import scala.concurrent.{ExecutionContext, Future}
 
 class LocationServiceUtilTest extends ScalaTestWithActorTestKit with BaseTestSuite {
 
-  private val locationService = mock[LocationService]
+  private val locationService       = mock[LocationService]
+  implicit val ec: ExecutionContext = system.executionContext
 
   private val prefix         = Prefix("tcs.home.datum")
   private val uri            = new URI("uri")
@@ -24,36 +33,37 @@ class LocationServiceUtilTest extends ScalaTestWithActorTestKit with BaseTestSui
   private val registration   = AkkaRegistration(akkaConnection, uri)
   private val akkaLocation   = AkkaLocation(akkaConnection, uri)
 
-  // Todo :  write this test for SequencerWiring.
-//  "register" must {
-//    "return successful RegistrationResult | ESW-214" in {
-//      implicit val system: ActorSystem[_] = ActorSystem(Behaviors.empty, "test")
-//      val coordinatedShutdown             = CoordinatedShutdown(system.toClassic)
-//      val registrationResult              = mock[RegistrationResult]
-//      when(registrationResult.location).thenReturn(akkaLocation)
-//      when(registrationResult.unregister()).thenReturn(Future.successful(Done))
-//      when(locationService.register(registration)).thenReturn(Future(registrationResult))
-//
-//      val locationServiceDsl = new LocationServiceUtil(locationService)
-//
-//      locationServiceDsl.register(registration).rightValue should ===(akkaLocation)
-//      coordinatedShutdown.run(UnknownReason).futureValue
-//      verify(registrationResult).unregister()
-//    }
-//
-//    "map location service registration failure to RegistrationError | ESW-214" in {
-//      implicit val system: ActorSystem[_] = ActorSystem(Behaviors.empty, "test")
-//      val errorMsg                        = "error message"
-//      when(locationService.register(registration)).thenReturn(Future.failed(OtherLocationIsRegistered(errorMsg)))
-//
-//      val locationServiceDsl = new LocationServiceUtil(locationService)
-//
-//      locationServiceDsl.register(registration).leftValue should ===(
-//        ScriptError(errorMsg)
-//      )
-//      system.terminate()
-//    }
-//  }
+  "register" must {
+    "return successful RegistrationResult | ESW-214" in {
+      implicit val system: ActorSystem[_] = ActorSystem(Behaviors.empty, "test")
+      val coordinatedShutdown             = CoordinatedShutdown(system.toClassic)
+      val registrationResult              = mock[RegistrationResult]
+      when(registrationResult.location).thenReturn(akkaLocation)
+      when(registrationResult.unregister()).thenReturn(Future.successful(Done))
+      when(locationService.register(registration)).thenReturn(Future(registrationResult))
+
+      val locationServiceDsl = new LocationServiceUtil(locationService)
+
+      locationServiceDsl.register(registration, any()).rightValue should ===(akkaLocation)
+      coordinatedShutdown.run(UnknownReason).futureValue
+      verify(registrationResult).unregister()
+    }
+
+    "map location service registration failure using the given failure mapper function | ESW-214" in {
+      implicit val system: ActorSystem[_] = ActorSystem(Behaviors.empty, "test")
+      val errorMsg                        = "error message"
+      when(locationService.register(registration)).thenReturn(Future.failed(OtherLocationIsRegistered(errorMsg)))
+
+      val locationServiceDsl = new LocationServiceUtil(locationService)
+
+      val onFailure: PartialFunction[Throwable, Future[Either[Int, AkkaLocation]]] = {
+        case e: Throwable => Future.successful(Left(5))
+      }
+
+      locationServiceDsl.register(registration, onFailure).leftValue shouldBe 5
+      system.terminate()
+    }
+  }
 
   "listBySubsystem" must {
     "list all locations which match given componentType and subsystem | ESW-144, ESW-215" in {
