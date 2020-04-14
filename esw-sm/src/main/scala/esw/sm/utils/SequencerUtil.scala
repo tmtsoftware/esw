@@ -2,13 +2,11 @@ package esw.sm.utils
 
 import akka.Done
 import akka.actor.typed.ActorSystem
-import akka.util.Timeout
 import csw.location.api.models.ComponentType.Sequencer
 import csw.location.api.models.Connection.HttpConnection
 import csw.location.api.models.{ComponentId, HttpLocation}
 import csw.prefix.models.Subsystem.ESW
 import csw.prefix.models.{Prefix, Subsystem}
-import esw.ocs.api.SequenceComponentApi
 import esw.ocs.impl.internal.LocationServiceUtil
 import esw.sm.core.Sequencers
 import esw.sm.messages.ConfigureResponse
@@ -21,8 +19,8 @@ import scala.concurrent.{ExecutionContext, Future}
 case class SequencerError(msg: String)
 
 class SequencerUtil(locationServiceUtil: LocationServiceUtil, sequenceComponentUtil: SequenceComponentUtil)(
-    implicit actorSystem: ActorSystem[_],
-    timeout: Timeout
+    implicit actorSystem: ActorSystem[_]
+//    timeout: Timeout
 ) {
   implicit val ec: ExecutionContext = actorSystem.executionContext
 

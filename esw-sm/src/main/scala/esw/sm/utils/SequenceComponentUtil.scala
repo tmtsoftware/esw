@@ -10,7 +10,6 @@ import esw.ocs.api.SequenceComponentApi
 import esw.ocs.impl.SequenceComponentImpl
 import esw.ocs.impl.internal.LocationServiceUtil
 
-import scala.async.Async._
 import scala.concurrent.Future
 
 class SequenceComponentUtil(locationServiceUtil: LocationServiceUtil, agentUtil: AgentUtil)(
@@ -60,8 +59,8 @@ class SequenceComponentUtil(locationServiceUtil: LocationServiceUtil, agentUtil:
     ???
   }
 
-  private def isIdle(sequenceComponentLocation: AkkaLocation): Future[Boolean] = {
+  /*private def isIdle(sequenceComponentLocation: AkkaLocation): Future[Boolean] = {
     val sequenceComponentImpl = new SequenceComponentImpl(sequenceComponentLocation)
     sequenceComponentImpl.status.map(statusResponse => statusResponse.response.isDefined)
-  }
+  }*/
 }

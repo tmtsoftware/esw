@@ -27,7 +27,7 @@ class AgentUtil(locationServiceUtil: LocationServiceUtil)(implicit actorSystem: 
     val sequenceComponentPrefix = Prefix(subsystem, s"${subsystem}_${Random.between(1, 100)}")
     for {
       agentClient     <- getAgent
-      Spawned         <- agentClient.spawnSequenceComponent(sequenceComponentPrefix)
+      _: Spawned.type <- agentClient.spawnSequenceComponent(sequenceComponentPrefix)
       seqCompLocation <- locationServiceUtil.resolveAkkaLocation(sequenceComponentPrefix, SequenceComponent)
     } yield {
       new SequenceComponentImpl(seqCompLocation)
