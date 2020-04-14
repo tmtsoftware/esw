@@ -8,7 +8,7 @@ import csw.prefix.models.Subsystem
 import csw.prefix.models.Subsystem.ESW
 import esw.commons.utils.location.LocationServiceUtil
 import esw.ocs.api.SequenceComponentApi
-import esw.ocs.impl.SequenceComponentImpl
+import esw.ocs.api.actor.client.SequenceComponentImpl
 
 import scala.concurrent.Future
 

@@ -10,10 +10,10 @@ import csw.location.api.models.{AkkaLocation, ComponentId, ComponentType, Locati
 import csw.logging.client.scaladsl.LoggerFactory
 import csw.prefix.models.Subsystem.{ESW, IRIS, TCS}
 import csw.prefix.models.{Prefix, Subsystem}
+import esw.ocs.api.actor.messages.SequenceComponentMsg
 import esw.ocs.api.protocol.{GetStatusResponse, ScriptError, ScriptResponse}
 import esw.ocs.app.wiring.SequencerWiring
-import esw.ocs.impl.messages.SequenceComponentMsg
-import esw.ocs.impl.messages.SequenceComponentMsg._
+import esw.ocs.api.actor.messages.SequenceComponentMsg._
 import esw.ocs.testkit.EswTestKit
 
 import scala.concurrent.duration.DurationLong

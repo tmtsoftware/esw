@@ -1,4 +1,4 @@
-package esw.ocs.impl.messages
+package esw.ocs.api.actor.messages
 
 import akka.Done
 import akka.actor.typed.ActorRef

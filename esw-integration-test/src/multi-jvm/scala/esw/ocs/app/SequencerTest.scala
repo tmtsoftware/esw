@@ -15,8 +15,8 @@ import csw.prefix.models.Subsystem.{ESW, TCS}
 import csw.prefix.models.{Prefix, Subsystem}
 import csw.testkit.{EventTestKit, FrameworkTestKit}
 import esw.ocs.api.actor.client.SequencerApiFactory
+import esw.ocs.api.actor.messages.SequenceComponentMsg
 import esw.ocs.app.wiring.SequencerWiring
-import esw.ocs.impl.messages.SequenceComponentMsg
 import org.scalatest.concurrent.ScalaFutures.convertScalaFuture
 
 import scala.concurrent.duration.DurationInt

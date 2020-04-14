@@ -25,11 +25,10 @@ import esw.gateway.api.codecs.GatewayCodecs
 import esw.gateway.api.protocol.{PostRequest, WebsocketRequest}
 import esw.gateway.server.GatewayWiring
 import esw.ocs.api.SequencerApi
-import esw.ocs.api.actor.client.{SequencerApiFactory, SequencerImpl}
+import esw.ocs.api.actor.client.{SequenceComponentImpl, SequencerApiFactory, SequencerImpl}
+import esw.ocs.api.actor.messages.SequenceComponentMsg
 import esw.ocs.api.protocol.ScriptError
 import esw.ocs.app.wiring.{SequenceComponentWiring, SequencerWiring}
-import esw.ocs.impl.messages.SequenceComponentMsg
-import esw.ocs.impl.SequenceComponentImpl
 import esw.ocs.simulation.SimulationSequencerWiring
 import esw.ocs.testkit.Service.{Gateway, MachineAgent}
 import msocket.api.ContentType

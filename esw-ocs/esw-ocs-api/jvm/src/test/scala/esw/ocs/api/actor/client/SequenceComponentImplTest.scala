@@ -1,4 +1,4 @@
-package esw.ocs.impl
+package esw.ocs.api.actor.client
 
 import java.net.URI
 
@@ -12,9 +12,9 @@ import csw.location.api.models.{AkkaLocation, ComponentId, ComponentType}
 import csw.prefix.models.Subsystem.ESW
 import csw.prefix.models.{Prefix, Subsystem}
 import esw.ocs.api.BaseTestSuite
+import esw.ocs.api.actor.messages.SequenceComponentMsg
+import esw.ocs.api.actor.messages.SequenceComponentMsg.{GetStatus, LoadScript, Restart, Stop, UnloadScript}
 import esw.ocs.api.protocol.{GetStatusResponse, ScriptError, ScriptResponse}
-import esw.ocs.impl.messages.SequenceComponentMsg
-import esw.ocs.impl.messages.SequenceComponentMsg._
 
 import scala.concurrent.ExecutionContext
 
