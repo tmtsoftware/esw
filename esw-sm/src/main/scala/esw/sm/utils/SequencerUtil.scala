@@ -20,7 +20,6 @@ case class SequencerError(msg: String)
 
 class SequencerUtil(locationServiceUtil: LocationServiceUtil, sequenceComponentUtil: SequenceComponentUtil)(
     implicit actorSystem: ActorSystem[_]
-//    timeout: Timeout
 ) {
   implicit val ec: ExecutionContext = actorSystem.executionContext
 
@@ -42,17 +41,19 @@ class SequencerUtil(locationServiceUtil: LocationServiceUtil, sequenceComponentU
   }
 
   // spawn the sequencer on available SequenceComponent
-  private def startSequencer(subSystem: Subsystem, observingMode: String): Future[Either[SequencerError, Done]] = {
-    //fixme: line 51 compilation
-//    for {
-//      mayBeSeqComp                     <- sequenceComponentUtil.getAvailableSequenceComponent(subSystem)
-//      seqCompApi: SequenceComponentApi = mayBeSeqComp
-//      res                              <- seqCompApi.loadScript(subSystem, observingMode)
-//    } yield res.response match {
-//      case Left(value) => Left(SequencerError(value.msg))
-//      case _           => Right(Done)
-//    }
-    ???
+  private def startSequencer(subSystem: Subsystem, observingMode: String): Future[Either[SequencerError, Done.type]] = {
+    sequenceComponentUtil
+      .getAvailableSequenceComponent(subSystem)
+      .flatMap {
+        case Left(value) => Future.successful(Left(value))
+        case Right(value) =>
+          value
+            .loadScript(subSystem, observingMode)
+            .map(_.response match {
+              case Left(value) => Left(SequencerError(value.msg))
+              case Right(_)    => Right(Done)
+            })
+      }
   }
 
   def resolveMasterSequencer(observingMode: String): Future[Option[HttpLocation]] =

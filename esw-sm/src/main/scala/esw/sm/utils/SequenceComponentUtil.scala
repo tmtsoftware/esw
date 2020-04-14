@@ -42,25 +42,19 @@ class SequenceComponentUtil(locationServiceUtil: LocationServiceUtil, agentUtil:
     }
   }
 
-  // todo: can this cause race condition?
   private def getIdleSequenceComponentFor(subsystem: Subsystem): Future[Option[SequenceComponentApi]] = {
-    for {
-      seqCompLocations          <- locationServiceUtil.listBy(subsystem, SequenceComponent)
-      availableSeqCompLocations <- getAvailableSequenceComponentFrom(seqCompLocations)
-      maybeSeqCompLocation      = availableSeqCompLocations.headOption
-    } yield {
-      maybeSeqCompLocation.map(seqCompLocation => new SequenceComponentImpl(seqCompLocation))
-    }
+    locationServiceUtil
+      .listBy(subsystem, SequenceComponent)
+      .flatMap(Future.traverse(_) { location =>
+        isIdle(location).collect {
+          case true => location
+        }
+      })
+      .map(locations => locations.headOption.map(new SequenceComponentImpl(_)))
   }
 
-  private def getAvailableSequenceComponentFrom(locations: List[AkkaLocation]): Future[List[AkkaLocation]] = {
-//    fixme:
-//    async(locations.filter(location => await(isIdle(location))))
-    ???
-  }
-
-  /*private def isIdle(sequenceComponentLocation: AkkaLocation): Future[Boolean] = {
+  private def isIdle(sequenceComponentLocation: AkkaLocation): Future[Boolean] = {
     val sequenceComponentImpl = new SequenceComponentImpl(sequenceComponentLocation)
     sequenceComponentImpl.status.map(statusResponse => statusResponse.response.isDefined)
-  }*/
+  }
 }
