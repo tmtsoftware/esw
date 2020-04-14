@@ -10,7 +10,6 @@ import esw.agent.client.AgentClient
 import esw.ocs.api.SequenceComponentApi
 import esw.ocs.impl.SequenceComponentImpl
 import esw.ocs.impl.internal.LocationServiceUtil
-import esw.sm.utils.RichAkkaLocation._
 
 import scala.concurrent.Future
 import scala.util.Random
@@ -31,7 +30,7 @@ class AgentUtil(locationServiceUtil: LocationServiceUtil)(implicit actorSystem: 
       Spawned         <- agentClient.spawnSequenceComponent(sequenceComponentPrefix)
       seqCompLocation <- locationServiceUtil.resolveAkkaLocation(sequenceComponentPrefix, SequenceComponent)
     } yield {
-      new SequenceComponentImpl(seqCompLocation.toSequenceComponentRef)
+      new SequenceComponentImpl(seqCompLocation)
     }
   }
 }

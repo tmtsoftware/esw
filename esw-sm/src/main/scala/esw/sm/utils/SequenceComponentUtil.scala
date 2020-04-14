@@ -9,7 +9,6 @@ import csw.prefix.models.Subsystem.ESW
 import esw.ocs.api.SequenceComponentApi
 import esw.ocs.impl.SequenceComponentImpl
 import esw.ocs.impl.internal.LocationServiceUtil
-import esw.sm.utils.RichAkkaLocation._
 
 import scala.async.Async._
 import scala.concurrent.Future
@@ -51,7 +50,7 @@ class SequenceComponentUtil(locationServiceUtil: LocationServiceUtil, agentUtil:
       availableSeqCompLocations <- getAvailableSequenceComponentFrom(seqCompLocations)
       maybeSeqCompLocation      = availableSeqCompLocations.headOption
     } yield {
-      maybeSeqCompLocation.map(seqCompLocation => new SequenceComponentImpl(seqCompLocation.toSequenceComponentRef))
+      maybeSeqCompLocation.map(seqCompLocation => new SequenceComponentImpl(seqCompLocation))
     }
   }
 
@@ -59,7 +58,7 @@ class SequenceComponentUtil(locationServiceUtil: LocationServiceUtil, agentUtil:
     async(locations.filter(location => await(isIdle(location)))) // todo: Not working
 
   private def isIdle(sequenceComponentLocation: AkkaLocation): Future[Boolean] = {
-    val sequenceComponentImpl = new SequenceComponentImpl(sequenceComponentLocation.toSequenceComponentRef)
+    val sequenceComponentImpl = new SequenceComponentImpl(sequenceComponentLocation)
     sequenceComponentImpl.status.map(statusResponse => statusResponse.response.isDefined)
   }
 }
