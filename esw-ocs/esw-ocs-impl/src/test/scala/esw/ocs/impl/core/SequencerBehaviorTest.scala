@@ -55,9 +55,11 @@ class SequencerBehaviorTest extends ScalaTestWithActorTestKit with BaseTestSuite
   }
 
   "StartSequence" must {
-    "start executing a sequence when sequencer is loaded | ESW-145, ESW-154" in {
+    "start executing a sequence when sequencer is loaded | ESW-145, ESW-154, ESW-303" in {
       val sequencerSetup = SequencerTestSetup.loaded(sequence)
       import sequencerSetup._
+
+      when { script.executeNewSequenceHandler() }.thenAnswer { Future.successful(Done) }
 
       val probe = createTestProbe[SequencerSubmitResponse]
       sequencerActor ! StartSequence(probe.ref)
@@ -134,9 +136,11 @@ class SequencerBehaviorTest extends ScalaTestWithActorTestKit with BaseTestSuite
       )
     }
 
-    "return Sequence result with Completed when sequencer is in loaded state | ESW-145, ESW-154, ESW-221" in {
+    "return Sequence result with Completed when sequencer is in loaded state | ESW-145, ESW-154, ESW-221, ESW-303" in {
       val sequencerSetup = SequencerTestSetup.loaded(sequence)
       import sequencerSetup._
+
+      when { script.executeNewSequenceHandler() }.thenAnswer { Future.successful(Done) }
 
       val startSeqProbe = createTestProbe[SequencerSubmitResponse]
       sequencerActor ! StartSequence(startSeqProbe.ref)
@@ -152,10 +156,12 @@ class SequencerBehaviorTest extends ScalaTestWithActorTestKit with BaseTestSuite
       seqResProbe.expectMessage(Completed(startedResponse.runId))
     }
 
-    "return Sequence result with Completed when sequencer is inProgress state | ESW-145, ESW-154, ESW-221" in {
+    "return Sequence result with Completed when sequencer is inProgress state | ESW-145, ESW-154, ESW-221, ESW-303" in {
       val sequence1      = Sequence(command1)
       val sequencerSetup = SequencerTestSetup.loaded(sequence1)
       import sequencerSetup._
+
+      when { script.executeNewSequenceHandler() }.thenAnswer { Future.successful(Done) }
 
       val startSeqProbe = createTestProbe[SequencerSubmitResponse]
       sequencerActor ! StartSequence(startSeqProbe.ref)
@@ -750,9 +756,11 @@ class SequencerBehaviorTest extends ScalaTestWithActorTestKit with BaseTestSuite
       probe.expectMessage(Ok)
     }
 
-    "wait till a sequence is started" in {
+    "wait till a sequence is started | ESW-303" in {
       val sequencerSetup = SequencerTestSetup.loaded(sequence)
       import sequencerSetup._
+
+      when { script.executeNewSequenceHandler() }.thenAnswer { Future.successful(Done) }
 
       val probe = TestProbe[Ok.type]
       sequencerActor ! ReadyToExecuteNext(probe.ref)
