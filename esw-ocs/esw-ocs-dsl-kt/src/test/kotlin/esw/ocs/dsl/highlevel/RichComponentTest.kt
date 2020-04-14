@@ -23,8 +23,8 @@ import csw.time.core.models.UTCTime
 import esw.ocs.dsl.highlevel.models.CommandError
 import esw.ocs.dsl.highlevel.models.ESW
 import csw.prefix.models.Prefix
+import esw.commons.utils.location.LocationServiceUtil
 import esw.ocs.dsl.script.utils.LockUnlockUtil
-import esw.ocs.impl.internal.LocationServiceUtil
 import io.kotlintest.shouldNotThrow
 import io.kotlintest.shouldThrow
 import io.mockk.every

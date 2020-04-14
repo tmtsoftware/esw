@@ -8,6 +8,7 @@ import csw.location.api.scaladsl.LocationService
 import csw.location.api.models.Connection.AkkaConnection
 import csw.location.api.models.{AkkaLocation, AkkaRegistration, ComponentId, ComponentType}
 import csw.prefix.models.{Prefix, Subsystem}
+import esw.commons.utils.location.LocationServiceUtil
 import esw.ocs.api.protocol.ScriptError
 import esw.ocs.impl.messages.SequenceComponentMsg
 import esw.ocs.impl.messages.SequenceComponentMsg.Stop

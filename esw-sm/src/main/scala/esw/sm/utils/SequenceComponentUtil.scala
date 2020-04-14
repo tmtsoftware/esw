@@ -6,9 +6,9 @@ import csw.location.api.models.AkkaLocation
 import csw.location.api.models.ComponentType.SequenceComponent
 import csw.prefix.models.Subsystem
 import csw.prefix.models.Subsystem.ESW
+import esw.commons.utils.location.LocationServiceUtil
 import esw.ocs.api.SequenceComponentApi
 import esw.ocs.impl.SequenceComponentImpl
-import esw.ocs.impl.internal.LocationServiceUtil
 
 import scala.concurrent.Future
 

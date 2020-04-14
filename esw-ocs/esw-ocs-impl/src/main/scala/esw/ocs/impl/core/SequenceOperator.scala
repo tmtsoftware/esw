@@ -3,9 +3,9 @@ package esw.ocs.impl.core
 import akka.actor.typed.scaladsl.AskPattern._
 import akka.actor.typed.{ActorRef, ActorSystem}
 import akka.util.Timeout
+import esw.commons.Timeouts
 import esw.ocs.api.models.Step
 import esw.ocs.api.protocol.{OkOrUnhandledResponse, PullNextResponse}
-import esw.ocs.impl.internal.Timeouts
 import esw.ocs.api.actor.messages.SequencerMessages._
 
 import scala.concurrent.Future

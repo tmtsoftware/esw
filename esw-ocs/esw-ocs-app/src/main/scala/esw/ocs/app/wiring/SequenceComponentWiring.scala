@@ -8,10 +8,11 @@ import csw.location.api.models.AkkaLocation
 import csw.logging.api.scaladsl.Logger
 import csw.logging.client.scaladsl.LoggerFactory
 import csw.prefix.models.{Prefix, Subsystem}
+import esw.commons.Timeouts
 import esw.http.core.wiring.{ActorRuntime, CswWiring}
 import esw.ocs.api.protocol.ScriptError
 import esw.ocs.impl.core.SequenceComponentBehavior
-import esw.ocs.impl.internal.{SequenceComponentRegistration, SequencerServerFactory, Timeouts}
+import esw.ocs.impl.internal.{SequenceComponentRegistration, SequencerServerFactory}
 import esw.ocs.impl.messages.SequenceComponentMsg
 import esw.ocs.impl.syntax.FutureSyntax.FutureOps
 

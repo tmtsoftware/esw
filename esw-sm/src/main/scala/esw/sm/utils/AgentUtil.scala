@@ -7,9 +7,9 @@ import csw.prefix.models.Subsystem.ESW
 import csw.prefix.models.{Prefix, Subsystem}
 import esw.agent.api.Spawned
 import esw.agent.client.AgentClient
+import esw.commons.utils.location.LocationServiceUtil
 import esw.ocs.api.SequenceComponentApi
 import esw.ocs.impl.SequenceComponentImpl
-import esw.ocs.impl.internal.LocationServiceUtil
 
 import scala.concurrent.Future
 import scala.util.Random

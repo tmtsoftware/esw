@@ -7,7 +7,7 @@ import csw.location.api.models.Connection.HttpConnection
 import csw.location.api.models.{ComponentId, HttpLocation}
 import csw.prefix.models.Subsystem.ESW
 import csw.prefix.models.{Prefix, Subsystem}
-import esw.ocs.impl.internal.LocationServiceUtil
+import esw.commons.utils.location.LocationServiceUtil
 import esw.sm.core.Sequencers
 import esw.sm.messages.ConfigureResponse
 import esw.sm.messages.ConfigureResponse.{ConfigurationFailure, FailedToStartSequencers, Success}

@@ -5,13 +5,13 @@ import csw.params.core.generics.Key
 import csw.params.events.EventKey
 import csw.prefix.models.Prefix
 import csw.prefix.models.Subsystem
+import esw.commons.utils.location.LocationServiceUtil
 import esw.ocs.dsl.epics.*
 import esw.ocs.dsl.highlevel.models.Assembly
 import esw.ocs.dsl.highlevel.models.HCD
 import esw.ocs.dsl.lowlevel.CswServices
 import esw.ocs.dsl.script.StrandEc
 import esw.ocs.dsl.script.utils.LockUnlockUtil
-import esw.ocs.impl.internal.LocationServiceUtil
 import esw.ocs.impl.script.ScriptContext
 import kotlinx.coroutines.CoroutineScope
 import kotlin.time.Duration

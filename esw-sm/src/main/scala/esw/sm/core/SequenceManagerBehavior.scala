@@ -6,8 +6,8 @@ import akka.util.Timeout
 import csw.location.api.models.ComponentType.Sequencer
 import csw.location.api.models.{AkkaLocation, HttpLocation}
 import csw.prefix.models.Subsystem.ESW
+import esw.commons.utils.location.LocationServiceUtil
 import esw.ocs.api.actor.client.SequencerApiFactory
-import esw.ocs.impl.internal.LocationServiceUtil
 import esw.sm.messages.ConfigureResponse._
 import esw.sm.messages.SequenceManagerMsg._
 import esw.sm.messages.{ConfigureResponse, SequenceManagerMsg}
