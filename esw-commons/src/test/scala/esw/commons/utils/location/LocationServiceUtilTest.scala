@@ -17,7 +17,6 @@ import csw.location.api.scaladsl.{LocationService, RegistrationResult}
 import csw.prefix.models.Subsystem.{ESW, IRIS, TCS}
 import csw.prefix.models.{Prefix, Subsystem}
 import esw.commons.{BaseTestSuite, Timeouts}
-import org.mockito.ArgumentMatchers.any
 
 import scala.concurrent.duration.DurationDouble
 import scala.concurrent.{ExecutionContext, Future}
@@ -43,8 +42,9 @@ class LocationServiceUtilTest extends ScalaTestWithActorTestKit with BaseTestSui
       when(locationService.register(registration)).thenReturn(Future(registrationResult))
 
       val locationServiceDsl = new LocationServiceUtil(locationService)
+      val onFailure          = mock[PartialFunction[Throwable, Future[Either[Int, AkkaLocation]]]]
 
-      locationServiceDsl.register(registration, any()).rightValue should ===(akkaLocation)
+      locationServiceDsl.register(registration, onFailure).rightValue should ===(akkaLocation)
       coordinatedShutdown.run(UnknownReason).futureValue
       verify(registrationResult).unregister()
     }

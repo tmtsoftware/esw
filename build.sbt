@@ -147,7 +147,8 @@ lazy val `esw-integration-test` = project
     examples,
     `esw-ocs-app`,
     `esw-agent-app`,
-    `esw-agent-client`
+    `esw-agent-client`,
+    `esw-commons` % "test->test"
   )
 
 lazy val `esw-gateway` = project
