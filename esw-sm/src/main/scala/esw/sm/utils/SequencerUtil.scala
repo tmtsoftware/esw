@@ -44,15 +44,18 @@ class SequencerUtil(locationServiceUtil: LocationServiceUtil, sequenceComponentU
   }
 
   // spawn the sequencer on available SequenceComponent
-  private def startSequencer(subSystem: Subsystem, observingMode: String): Future[Either[SequencerError, Done]] =
-    for {
-      mayBeSeqComp                     <- sequenceComponentUtil.getAvailableSequenceComponent(subSystem)
-      seqCompApi: SequenceComponentApi = mayBeSeqComp
-      res                              <- seqCompApi.loadScript(subSystem, observingMode)
-    } yield res.response match {
-      case Left(value) => Left(SequencerError(value.msg))
-      case _           => Right(Done)
-    }
+  private def startSequencer(subSystem: Subsystem, observingMode: String): Future[Either[SequencerError, Done]] = {
+    //fixme: line 51 compilation
+//    for {
+//      mayBeSeqComp                     <- sequenceComponentUtil.getAvailableSequenceComponent(subSystem)
+//      seqCompApi: SequenceComponentApi = mayBeSeqComp
+//      res                              <- seqCompApi.loadScript(subSystem, observingMode)
+//    } yield res.response match {
+//      case Left(value) => Left(SequencerError(value.msg))
+//      case _           => Right(Done)
+//    }
+    ???
+  }
 
   def resolveMasterSequencer(observingMode: String): Future[Option[HttpLocation]] =
     locationServiceUtil.locationService

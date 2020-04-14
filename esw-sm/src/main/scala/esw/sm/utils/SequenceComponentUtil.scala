@@ -54,8 +54,11 @@ class SequenceComponentUtil(locationServiceUtil: LocationServiceUtil, agentUtil:
     }
   }
 
-  private def getAvailableSequenceComponentFrom(locations: List[AkkaLocation]): Future[List[AkkaLocation]] =
-    async(locations.filter(location => await(isIdle(location)))) // todo: Not working
+  private def getAvailableSequenceComponentFrom(locations: List[AkkaLocation]): Future[List[AkkaLocation]] = {
+//    fixme:
+//    async(locations.filter(location => await(isIdle(location))))
+    ???
+  }
 
   private def isIdle(sequenceComponentLocation: AkkaLocation): Future[Boolean] = {
     val sequenceComponentImpl = new SequenceComponentImpl(sequenceComponentLocation)
