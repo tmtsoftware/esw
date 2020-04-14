@@ -21,7 +21,7 @@ object Dependencies {
       AkkaHttp.`akka-http`,
       Libs.`msocket-impl-jvm`,
       Libs.`tmt-test-reporter`        % Test,
-      Akka.`akka-actor-testkit-typed` % Test,
+      Akka.`akka-actor-testkit-typed` % Test
     )
   )
 
@@ -198,6 +198,17 @@ object Dependencies {
     Seq(
       Csw.`csw-location-api`,
       Akka.`akka-actor-typed`
+    )
+  )
+
+  val EswCommons: Def.Initialize[Seq[ModuleID]] = Def.setting(
+    Seq(
+      Csw.`csw-location-api`          % Provided,
+      Csw.`csw-command-client`        % Provided,
+      Csw.`csw-command-client`        % Provided,
+      Akka.`akka-actor-testkit-typed` % Test,
+      Libs.`mockito-scala`            % Test,
+      Libs.scalatest                  % Test
     )
   )
 }

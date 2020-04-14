@@ -75,7 +75,8 @@ lazy val `esw-ocs-impl` = project
     libraryDependencies ++= Dependencies.OcsImpl.value
   )
   .dependsOn(
-    `esw-ocs-api`.jvm   % "compile->compile;test->test"
+    `esw-commons`,
+    `esw-ocs-api`.jvm % "compile->compile;test->test"
   )
 
 lazy val `esw-ocs-dsl` = project
@@ -213,4 +214,8 @@ lazy val examples = project
 lazy val `esw-sm` = project
   .in(file("esw-sm"))
   .settings(libraryDependencies ++= Dependencies.EswSm.value)
-  .dependsOn(`esw-ocs-api`.jvm, `esw-ocs-impl`, `esw-agent-client`)
+  .dependsOn(`esw-ocs-api`.jvm, `esw-ocs-impl`, `esw-commons`, `esw-agent-client`)
+
+lazy val `esw-commons` = project
+  .in(file("esw-commons"))
+  .settings(libraryDependencies ++= Dependencies.EswCommons.value)

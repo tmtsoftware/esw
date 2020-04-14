@@ -1,6 +1,6 @@
 package esw.ocs.impl.syntax
 
-import esw.ocs.impl.internal.Timeouts
+import esw.commons.Timeouts
 
 import scala.concurrent.{Await, Future}
 

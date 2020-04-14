@@ -1,4 +1,4 @@
-package esw.ocs.impl.internal
+package esw.commons.utils.location
 
 import java.util.concurrent.CompletionStage
 
@@ -7,18 +7,17 @@ import akka.actor.typed.scaladsl.adapter.TypedActorSystemOps
 import akka.actor.typed.{ActorRef, ActorSystem}
 import csw.command.client.extensions.AkkaLocationExt.RichAkkaLocation
 import csw.command.client.messages.ComponentMessage
-import csw.location.api.scaladsl.{LocationService, RegistrationResult}
 import csw.location.api.models.ComponentType.Sequencer
 import csw.location.api.models.Connection.AkkaConnection
 import csw.location.api.models.ConnectionType.AkkaType
 import csw.location.api.models._
+import csw.location.api.scaladsl.{LocationService, RegistrationResult}
 import csw.prefix.models.{Prefix, Subsystem}
-import esw.ocs.api.protocol.ScriptError
+import esw.commons.Timeouts
 
 import scala.compat.java8.FutureConverters.FutureOps
 import scala.concurrent.duration.FiniteDuration
 import scala.concurrent.{ExecutionContext, Future}
-import scala.util.control.NonFatal
 
 private[esw] class LocationServiceUtil(val locationService: LocationService)(
     implicit val actorSystem: ActorSystem[_]
@@ -45,11 +44,6 @@ private[esw] class LocationServiceUtil(val locationService: LocationService)(
         Right(result.location.asInstanceOf[AkkaLocation])
       }
       .recoverWith(onFailure)
-
-  def register(akkaRegistration: AkkaRegistration): Future[Either[ScriptError, AkkaLocation]] =
-    register(akkaRegistration, onFailure = {
-      case NonFatal(e) => Future.successful(Left(ScriptError(e.getMessage)))
-    })
 
   def listBy(subsystem: Subsystem, componentType: ComponentType): Future[List[AkkaLocation]] =
     locationService

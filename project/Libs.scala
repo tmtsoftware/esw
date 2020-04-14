@@ -63,7 +63,6 @@ object Akka {
   val `akka-stream-typed` = "com.typesafe.akka" %% "akka-stream-typed" % Version
   val `akka-stream`       = "com.typesafe.akka" %% "akka-stream" % Version
 
-  val `akka-testkit`             = "com.typesafe.akka" %% "akka-testkit"             % Version
   val `akka-actor-testkit-typed` = "com.typesafe.akka" %% "akka-actor-testkit-typed" % Version
   val `akka-stream-testkit`      = "com.typesafe.akka" %% "akka-stream-testkit"      % Version
   val `akka-multi-node-testkit`  = "com.typesafe.akka" %% "akka-multi-node-testkit"  % Version

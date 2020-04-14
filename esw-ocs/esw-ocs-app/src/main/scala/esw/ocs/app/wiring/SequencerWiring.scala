@@ -21,24 +21,27 @@ import csw.logging.api.scaladsl.Logger
 import csw.logging.client.scaladsl.LoggerFactory
 import csw.network.utils.SocketUtils
 import csw.prefix.models.Subsystem
+import esw.commons.Timeouts
+import esw.commons.utils.location.LocationServiceUtil
 import esw.http.core.wiring.{ActorRuntime, CswWiring, HttpService, Settings}
 import esw.ocs.api.actor.client.SequencerImpl
+import esw.ocs.api.actor.messages.SequencerMessages.Shutdown
 import esw.ocs.api.codecs.SequencerHttpCodecs
 import esw.ocs.api.protocol.ScriptError
 import esw.ocs.handler.{SequencerPostHandler, SequencerWebsocketHandler}
+import esw.ocs.impl.SequencerImplFactory
 import esw.ocs.impl.blockhound.BlockHoundWiring
 import esw.ocs.impl.core._
 import esw.ocs.impl.internal._
-import esw.ocs.api.actor.messages.SequencerMessages.Shutdown
 import esw.ocs.impl.script.{ScriptApi, ScriptContext, ScriptLoader}
 import esw.ocs.impl.syntax.FutureSyntax.FutureOps
-import esw.ocs.impl.SequencerImplFactory
 import msocket.api.ContentType
 import msocket.impl.RouteFactory
 import msocket.impl.post.PostRouteFactory
 import msocket.impl.ws.WebsocketRouteFactory
 
 import scala.async.Async.{async, await}
+import scala.concurrent.Future
 import scala.util.control.NonFatal
 
 private[ocs] class SequencerWiring(
@@ -128,7 +131,9 @@ private[ocs] class SequencerWiring(
         httpService.registeredLazyBinding.block
 
         val registration = AkkaRegistration(AkkaConnection(componentId), sequencerRef.toURI)
-        val loc          = locationServiceUtil.register(registration).block
+        val loc = locationServiceUtil
+          .register(registration, { case NonFatal(e) => Future.successful(Left(ScriptError(e.getMessage))) })
+          .block
         logger.info(s"Successfully started Sequencer for subsystem: $subsystem with observing mode: $observingMode")
         if (enableThreadMonitoring) {
           logger.info(s"Thread Monitoring enabled for ${BlockHoundWiring.integrations}")

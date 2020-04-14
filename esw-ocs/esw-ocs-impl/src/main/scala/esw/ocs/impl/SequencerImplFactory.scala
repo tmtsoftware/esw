@@ -5,9 +5,9 @@ import java.util.concurrent.CompletionStage
 import akka.util.Timeout
 import csw.command.client.extensions.AkkaLocationExt.RichAkkaLocation
 import csw.prefix.models.Subsystem
+import esw.commons.utils.location.LocationServiceUtil
 import esw.ocs.api.SequencerApi
 import esw.ocs.api.actor.client.SequencerImpl
-import esw.ocs.impl.internal.LocationServiceUtil
 
 import scala.compat.java8.FutureConverters.FutureOps
 import scala.concurrent.Future

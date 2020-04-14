@@ -15,10 +15,10 @@ import csw.logging.api.scaladsl.Logger
 import csw.logging.client.commons.LogAdminUtil
 import csw.params.commands.Sequence
 import csw.time.core.models.UTCTime
+import esw.commons.Timeouts
 import esw.ocs.api.codecs.OcsCodecs
 import esw.ocs.api.protocol._
 import esw.ocs.impl.script.ScriptApi
-import esw.ocs.impl.internal.Timeouts
 import esw.ocs.api.actor.messages.SequencerMessages._
 import esw.ocs.api.actor.messages.SequencerState
 import esw.ocs.api.actor.messages.SequencerState._
