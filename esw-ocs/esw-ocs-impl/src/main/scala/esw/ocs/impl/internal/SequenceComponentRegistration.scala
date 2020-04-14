@@ -4,9 +4,9 @@ import akka.actor.typed.{ActorRef, ActorSystem, SpawnProtocol}
 import csw.location.api.exceptions.OtherLocationIsRegistered
 import csw.location.api.extensions.ActorExtension.RichActor
 import csw.location.api.extensions.URIExtension.RichURI
-import csw.location.api.scaladsl.LocationService
 import csw.location.api.models.Connection.AkkaConnection
 import csw.location.api.models.{AkkaLocation, AkkaRegistration, ComponentId, ComponentType}
+import csw.location.api.scaladsl.LocationService
 import csw.prefix.models.{Prefix, Subsystem}
 import esw.commons.utils.location.LocationServiceUtil
 import esw.ocs.api.actor.messages.SequenceComponentMsg
