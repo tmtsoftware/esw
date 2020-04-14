@@ -21,6 +21,7 @@ import csw.network.utils.SocketUtils
 import csw.prefix.models.{Prefix, Subsystem}
 import csw.testkit.scaladsl.ScalaTestFrameworkTestKit
 import esw.agent.app.{AgentApp, AgentSettings, AgentWiring}
+import esw.commons.BaseTestSuite
 import esw.gateway.api.codecs.GatewayCodecs
 import esw.gateway.api.protocol.{PostRequest, WebsocketRequest}
 import esw.gateway.server.GatewayWiring

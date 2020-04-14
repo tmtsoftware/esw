@@ -8,13 +8,13 @@ import csw.alarm.api.javadsl.IAlarmService
 import csw.event.api.javadsl.IEventService
 import csw.logging.api.javadsl.ILogger
 import csw.prefix.models.Prefix
+import esw.commons.BaseTestSuite
 import esw.ocs.dsl.script.ScriptDsl
 import esw.ocs.dsl.script.exceptions.ScriptInitialisationFailedException
 import esw.ocs.impl.SequencerImplFactory
 import esw.ocs.impl.core.SequenceOperator
 import esw.ocs.impl.script.ScriptLoadingException.{InvalidScriptException, ScriptNotFound}
 import esw.ocs.impl.script.{ScriptApi, ScriptContext, ScriptLoader}
-import esw.ocs.testkit.BaseTestSuite
 
 import scala.concurrent.duration.DurationInt
 import scala.jdk.DurationConverters.ScalaDurationOps
