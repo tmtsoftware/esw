@@ -9,10 +9,10 @@ import csw.location.api.models.Connection.AkkaConnection
 import csw.location.api.models.{AkkaLocation, ComponentId}
 import csw.logging.api.scaladsl.Logger
 import csw.prefix.models.{Prefix, Subsystem}
+import esw.ocs.api.actor.messages.SequenceComponentMsg
+import esw.ocs.api.actor.messages.SequenceComponentMsg._
 import esw.ocs.api.protocol.{GetStatusResponse, ScriptError, ScriptResponse}
 import esw.ocs.impl.internal.{SequencerServer, SequencerServerFactory}
-import esw.ocs.impl.messages.SequenceComponentMsg
-import esw.ocs.impl.messages.SequenceComponentMsg._
 
 object SequenceComponentBehavior {
 

@@ -11,11 +11,11 @@ import csw.logging.client.scaladsl.GenericLoggerFactory
 import csw.prefix.models.Subsystem
 import esw.http.core.commons.CoordinatedShutdownReasons.FailureReason
 import esw.http.core.commons.EswCommandApp
+import esw.ocs.api.actor.messages.SequenceComponentMsg
 import esw.ocs.api.protocol.{ScriptError, ScriptResponse}
 import esw.ocs.app.SequencerAppCommand._
 import esw.ocs.app.wiring.{SequenceComponentWiring, SequencerWiring}
-import esw.ocs.impl.messages.SequenceComponentMsg
-import esw.ocs.impl.messages.SequenceComponentMsg.LoadScript
+import esw.ocs.api.actor.messages.SequenceComponentMsg.LoadScript
 import esw.ocs.impl.syntax.FutureSyntax.FutureOps
 
 import scala.concurrent.Future

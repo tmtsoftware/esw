@@ -1,4 +1,4 @@
-package esw.ocs.impl
+package esw.ocs.api.actor.client
 
 import akka.Done
 import akka.actor.typed.ActorSystem
@@ -8,9 +8,9 @@ import csw.location.api.extensions.URIExtension.RichURI
 import csw.location.api.models.AkkaLocation
 import csw.prefix.models.Subsystem
 import esw.ocs.api.SequenceComponentApi
+import esw.ocs.api.actor.messages.SequenceComponentMsg
+import esw.ocs.api.actor.messages.SequenceComponentMsg.{GetStatus, LoadScript, Restart, UnloadScript}
 import esw.ocs.api.protocol.{GetStatusResponse, ScriptResponse}
-import esw.ocs.impl.messages.SequenceComponentMsg
-import esw.ocs.impl.messages.SequenceComponentMsg.{GetStatus, LoadScript, Restart, UnloadScript}
 
 import scala.concurrent.Future
 

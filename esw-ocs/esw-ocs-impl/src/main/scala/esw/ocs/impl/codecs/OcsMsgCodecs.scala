@@ -4,8 +4,7 @@ import csw.command.client.cbor.MessageCodecs
 import csw.command.client.messages.sequencer.SequencerMsg
 import csw.prefix.codecs.CommonCodecs
 import esw.ocs.api.actor.messages.SequencerMessages._
-import esw.ocs.api.actor.messages.SequencerState
-import esw.ocs.impl.messages.SequenceComponentMsg
+import esw.ocs.api.actor.messages.{SequenceComponentMsg, SequencerState}
 import io.bullet.borer.Codec
 import io.bullet.borer.derivation.MapBasedCodecs.deriveAllCodecs
 
