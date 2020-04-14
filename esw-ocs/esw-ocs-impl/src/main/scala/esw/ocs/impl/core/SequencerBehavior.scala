@@ -8,20 +8,20 @@ import akka.util.Timeout
 import csw.command.client.messages.sequencer.SequencerMsg
 import csw.command.client.messages.sequencer.SequencerMsg.{Query, QueryFinal, SubmitSequence}
 import csw.command.client.messages.{GetComponentLogMetadata, LogControlMessage, SetComponentLogLevel}
-import csw.location.api.scaladsl.LocationService
 import csw.location.api.models.Connection.AkkaConnection
 import csw.location.api.models.{AkkaLocation, ComponentId}
+import csw.location.api.scaladsl.LocationService
 import csw.logging.api.scaladsl.Logger
 import csw.logging.client.commons.LogAdminUtil
 import csw.params.commands.Sequence
 import csw.time.core.models.UTCTime
-import esw.ocs.api.codecs.OcsCodecs
-import esw.ocs.api.protocol._
-import esw.ocs.impl.script.ScriptApi
-import esw.ocs.impl.internal.Timeouts
 import esw.ocs.api.actor.messages.SequencerMessages._
 import esw.ocs.api.actor.messages.SequencerState
 import esw.ocs.api.actor.messages.SequencerState._
+import esw.ocs.api.codecs.OcsCodecs
+import esw.ocs.api.protocol._
+import esw.ocs.impl.internal.Timeouts
+import esw.ocs.impl.script.ScriptApi
 
 import scala.concurrent.Future
 import scala.reflect.ClassTag
@@ -38,7 +38,7 @@ class SequencerBehavior(
     shutdownHttpService: () => Future[Done]
 )(implicit val actorSystem: ActorSystem[_])
     extends OcsCodecs {
-  import actorSystem.executionContext // todo: this ec should not be used to schedule inside a behavior. ctx.executionContext should be Used.
+  import actorSystem.executionContext
   import logger._
 
   // Mapping of Sequencer state against corresponding state's behavior
@@ -52,6 +52,7 @@ class SequencerBehavior(
     case ShuttingDown     => shuttingDown
     case AbortingSequence => abortingSequence
     case Stopping         => stopping
+    case Submitting       => submitting
   }
 
   // Starting point of the Sequencer
@@ -236,7 +237,19 @@ class SequencerBehavior(
       sequence: Sequence,
       data: SequencerData,
       replyTo: ActorRef[SequencerSubmitResponse]
-  ): Behavior[SequencerMsg] = inProgress(data.createStepList(sequence).startSequence(replyTo))
+  ): Behavior[SequencerMsg] = {
+    script.executeNewSequenceHandler().onComplete {
+      case Success(_) => data.self ! SubmitSuccessful(sequence, replyTo)
+      case Failure(_) => data.self ! SubmitFailed(replyTo)
+    }
+    submitting(data)
+  }
+
+  private def submitting(data: SequencerData): Behavior[SequencerMsg] =
+    receive[SubmitMessage](Submitting, data) {
+      case SubmitSuccessful(sequence, replyTo) => inProgress(data.createStepList(sequence).startSequence(replyTo))
+      case SubmitFailed(replyTo)               => replyTo ! NewSequenceHookFailed(); idle(data)
+    }
 
   private def handleCommonMessage[T <: SequencerMsg](
       message: CommonMessage,

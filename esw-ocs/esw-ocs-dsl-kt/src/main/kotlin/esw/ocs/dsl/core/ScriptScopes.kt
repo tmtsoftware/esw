@@ -18,6 +18,7 @@ interface CommonHandlers : CswHighLevelDslApi {
     fun onDiagnosticMode(block: suspend HandlerScope.(UTCTime, String) -> Unit)
     fun onOperationsMode(block: suspend HandlerScope.() -> Unit)
     fun onStop(block: suspend HandlerScope.() -> Unit)
+    fun onNewSequence(block: suspend HandlerScope.() -> Unit)
 }
 
 interface ScriptHandlers {

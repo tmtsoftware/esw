@@ -68,6 +68,9 @@ class SequencerTestSetup(sequence: Sequence)(implicit system: ActorSystem[_]) {
 
   def loadAndStartSequenceThenAssertInProgress(): Assertion = {
     val probe = TestProbe[SequencerSubmitResponse]
+
+    when { script.executeNewSequenceHandler() }.thenAnswer(Future.successful(Done))
+
     sequencerActor ! SubmitSequenceInternal(sequence, probe.ref)
 
     val p: TestProbe[Option[StepList]] = TestProbe[Option[StepList]]
@@ -344,6 +347,8 @@ class SequencerTestSetup(sequence: Sequence)(implicit system: ActorSystem[_]) {
 
 object SequencerTestSetup {
 
+  import org.mockito.MockitoSugar.when
+
   def idle(sequence: Sequence)(implicit system: ActorSystem[_]): SequencerTestSetup = {
     val testSetup = new SequencerTestSetup(sequence)
     testSetup
@@ -380,10 +385,14 @@ object SequencerTestSetup {
   }
 
   def finished(sequence: Sequence)(implicit system: ActorSystem[_]): (Started, SequencerTestSetup) = {
-    val sequencerSetup = new SequencerTestSetup(sequence)
+    val sequencerSetup = idle(sequence)
     import sequencerSetup._
+
+    when { script.executeNewSequenceHandler() }.thenAnswer(Future.successful(Done))
+
     val probe = TestProbe[SubmitResponse]
     sequencerActor ! SubmitSequence(sequence, probe.ref)
+    Thread.sleep(100)
     pullAllStepsAndAssertSequenceIsFinished()
     val startedResponse = probe.expectMessageType[Started]
     (startedResponse, sequencerSetup)

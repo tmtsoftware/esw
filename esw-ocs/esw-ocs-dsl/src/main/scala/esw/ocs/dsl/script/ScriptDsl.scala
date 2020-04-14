@@ -39,6 +39,7 @@ private[esw] class ScriptDsl(
   private val diagnosticHandlers: FunctionHandlers[(UTCTime, String), CompletionStage[Void]] = new FunctionHandlers
   private val operationsHandlers: FunctionHandlers[Unit, CompletionStage[Void]]              = new FunctionHandlers
   private val exceptionHandlers: FunctionHandlers[Throwable, CompletionStage[Void]]          = new FunctionHandlers
+  private val newSequenceHandlers: FunctionHandlers[Unit, CompletionStage[Void]]             = new FunctionHandlers
 
   def merge(that: ScriptDsl): ScriptDsl = {
     this.setupCommandHandler ++ that.setupCommandHandler
@@ -93,6 +94,8 @@ private[esw] class ScriptDsl(
     }
   }
 
+  override def executeNewSequenceHandler(): Future[Done] = executeHandler(newSequenceHandlers, ())
+
   override def executeAbort(): Future[Done] = executeHandler(abortHandlers, ())
 
   override def executeStop(): Future[Done] = executeHandler(stopHandlers, ())
@@ -127,6 +130,7 @@ private[esw] class ScriptDsl(
     observerCommandHandler.add(CommandName(name), handler.execute)
 
   protected final def onGoOnline(handler: Supplier[CompletionStage[Void]]): Unit      = onlineHandlers.add(_ => handler.get())
+  protected final def onNewSequence(handler: Supplier[CompletionStage[Void]]): Unit   = newSequenceHandlers.add(_ => handler.get())
   protected final def onAbortSequence(handler: Supplier[CompletionStage[Void]]): Unit = abortHandlers.add(_ => handler.get())
   protected final def onStop(handler: Supplier[CompletionStage[Void]]): Unit          = stopHandlers.add(_ => handler.get())
   protected final def onShutdown(handler: Supplier[CompletionStage[Void]]): Unit      = shutdownHandlers.add(_ => handler.get())

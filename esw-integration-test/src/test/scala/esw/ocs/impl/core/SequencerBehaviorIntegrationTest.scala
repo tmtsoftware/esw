@@ -21,6 +21,7 @@ class SequencerBehaviorIntegrationTest extends EswTestKit {
       val ocsSequencer              = spawnSequencerRef(ocsSubsystem, ocsObservingMode)
 
       ocsSequencer ! SubmitSequenceInternal(sequence, submitResponseProbe.ref)
+      Thread.sleep(100)
       ocsSequencer ! LoadSequence(sequence, loadSequenceResponseProbe.ref)
 
       // response received by irisSequencer

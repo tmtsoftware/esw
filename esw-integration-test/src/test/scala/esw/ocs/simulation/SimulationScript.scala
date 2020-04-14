@@ -12,6 +12,8 @@ object SimulationScript extends ScriptApi {
 
   override def execute(command: SequenceCommand): Future[Unit] = Future.successful(())
 
+  override def executeNewSequenceHandler(): Future[Done] = done
+
   override def executeGoOnline(): Future[Done] = done
 
   override def executeGoOffline(): Future[Done] = done
