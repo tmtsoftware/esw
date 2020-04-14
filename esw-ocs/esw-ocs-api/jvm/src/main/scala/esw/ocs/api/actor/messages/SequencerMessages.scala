@@ -31,6 +31,7 @@ object SequencerMessages {
   sealed trait AbortSequenceMessage  extends UnhandleableSequencerMessage
   sealed trait StopMessage           extends UnhandleableSequencerMessage
   sealed trait SubmitMessage         extends UnhandleableSequencerMessage
+  sealed trait StartingMessage       extends UnhandleableSequencerMessage
   sealed trait EditorAction          extends SequenceLoadedMessage with InProgressMessage
 
   // startup msgs
@@ -95,5 +96,7 @@ object SequencerMessages {
   final private[esw] case class StopComplete(replyTo: ActorRef[OkOrUnhandledResponse])          extends StopMessage
   final private[esw] case class SubmitSuccessful(sequence: Sequence, replyTo: ActorRef[SequencerSubmitResponse])
       extends SubmitMessage
-  final private[esw] case class SubmitFailed(replyTo: ActorRef[SequencerSubmitResponse]) extends SubmitMessage
+  final private[esw] case class SubmitFailed(replyTo: ActorRef[SequencerSubmitResponse])       extends SubmitMessage
+  final private[esw] case class StartingSuccessful(replyTo: ActorRef[SequencerSubmitResponse]) extends StartingMessage
+  final private[esw] case class StartingFailed(replyTo: ActorRef[SequencerSubmitResponse])     extends StartingMessage
 }

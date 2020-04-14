@@ -53,6 +53,7 @@ class SequencerBehavior(
     case AbortingSequence => abortingSequence
     case Stopping         => stopping
     case Submitting       => submitting
+    case Starting         => startingSequence
   }
 
   // Starting point of the Sequencer
@@ -71,7 +72,7 @@ class SequencerBehavior(
   private def loaded(data: SequencerData): Behavior[SequencerMsg] = receive(Loaded, data) {
     case msg: EditorAction               => handleEditorAction(msg, data, currentState = Loaded)
     case GoOffline(replyTo)              => goOffline(replyTo, data)
-    case StartSequence(replyTo)          => inProgress(data.startSequence(replyTo))
+    case StartSequence(replyTo)          => startSequence(data, replyTo)
     case LoadSequence(sequence, replyTo) => load(sequence, replyTo, data)
   }
 
@@ -247,6 +248,23 @@ class SequencerBehavior(
     receive[SubmitMessage](Submitting, data) {
       case SubmitSuccessful(sequence, replyTo) => inProgress(data.createStepList(sequence).startSequence(replyTo))
       case SubmitFailed(replyTo)               => replyTo ! NewSequenceHookFailed(); idle(data)
+    }
+
+  private def startSequence(
+      data: SequencerData,
+      replyTo: ActorRef[SequencerSubmitResponse]
+  ): Behavior[SequencerMsg] = {
+    script.executeNewSequenceHandler().onComplete {
+      case Success(_) => data.self ! StartingSuccessful(replyTo)
+      case Failure(_) => data.self ! StartingFailed(replyTo)
+    }
+    startingSequence(data)
+  }
+
+  private def startingSequence(data: SequencerData): Behavior[SequencerMsg] =
+    receive[StartingMessage](Starting, data) {
+      case StartingSuccessful(replyTo) => inProgress(data.startSequence(replyTo))
+      case StartingFailed(replyTo)     => replyTo ! NewSequenceHookFailed(); loaded(data)
     }
 
   private def handleCommonMessage[T <: SequencerMsg](

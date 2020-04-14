@@ -22,4 +22,5 @@ object SequencerState extends Enum[SequencerState[SequencerMsg]] {
   case object AbortingSequence extends SequencerState[AbortSequenceMessage]
   case object Stopping         extends SequencerState[StopMessage]
   case object Submitting       extends SequencerState[SubmitMessage]
+  case object Starting         extends SequencerState[StartingMessage]
 }
