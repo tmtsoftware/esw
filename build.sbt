@@ -215,7 +215,7 @@ lazy val examples = project
 lazy val `esw-sm` = project
   .in(file("esw-sm"))
   .settings(libraryDependencies ++= Dependencies.EswSm.value)
-  .dependsOn(`esw-ocs-api`.jvm, `esw-ocs-impl`, `esw-commons`, `esw-agent-client`)
+  .dependsOn(`esw-ocs-api`.jvm, `esw-commons`, `esw-agent-client`)
 
 lazy val `esw-commons` = project
   .in(file("esw-commons"))

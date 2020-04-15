@@ -115,7 +115,10 @@ class KillSelfRegisteredComponentTest
       val probe2        = TestProbe[KillResponse]()
       //this will actor remains in waiting state
       when(locationService.resolve(argEq(seqCompConn), any[FiniteDuration]))
-        .thenReturn(Future.successful(None), delayedFuture(Some(seqCompLocation), 1.hour))
+        .thenReturn(
+          Future.successful(None),
+          delayedFuture(Some(seqCompLocation), 1.hour)
+        ) //this will actor remains in waiting state
 
       mockSuccessfulProcess(dieAfter = 20.seconds)
 
