@@ -32,7 +32,7 @@ useful capabilities.
 | Restart | Unloads and reloads a script causing initialization of state. |
 | GetStatus | Returns the Location of the Sequence Component's loaded Sequencer |
 
-For more details on the messages handled by the Sequence Component see [here]($github.base_url$/esw-ocs/esw-ocs-impl/src/main/scala/esw/ocs/impl/messages/SequenceComponentMsg.scala)
+For more details on the messages handled by the Sequence Component see [here]($github.base_url$/esw-ocs/esw-ocs-api/jvm/src/main/scala/esw/ocs/api/actor/messages/SequenceComponentMsg.scala)
 
 
 ## Sequence Component Technical Design
