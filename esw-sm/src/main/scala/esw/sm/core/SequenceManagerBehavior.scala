@@ -46,7 +46,7 @@ class SequenceManagerBehavior(locationService: LocationServiceUtil)(implicit val
   def configure(obsMode: String, self: ActorRef[SequenceManagerMsg]): Future[Unit] =
     async {
       val configuredObsModes                   = await(getRunningObsModes) // filter master Seqs from all OCS Seqs
-      val mayBeOcsMaster: Option[HttpLocation] = await(sequencerUtil.resolveMasterSequencer(obsMode))
+      val mayBeOcsMaster: Option[HttpLocation] = await(sequencerUtil.resolveMasterSequencerOf(obsMode))
 
       val response: ConfigureResponse = mayBeOcsMaster match {
         case Some(location) => await(useOcsMaster(location))

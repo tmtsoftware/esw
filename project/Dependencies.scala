@@ -197,7 +197,9 @@ object Dependencies {
   val EswSm: Def.Initialize[Seq[ModuleID]] = Def.setting(
     Seq(
       Csw.`csw-location-api`,
-      Akka.`akka-actor-typed`
+      Akka.`akka-actor-typed`,
+      Libs.`mockito-scala` % Test,
+      Libs.scalatest       % Test
     )
   )
 

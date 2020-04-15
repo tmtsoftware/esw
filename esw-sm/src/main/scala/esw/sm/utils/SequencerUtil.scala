@@ -27,16 +27,18 @@ class SequencerUtil(locationServiceUtil: LocationServiceUtil, sequenceComponentU
       implicit ec: ExecutionContext
   ): Future[ConfigureResponse] = async {
     val spawnSequencerResponsesF = Future.traverse(requiredSequencers.subsystems)(s => startSequencer(s, observingMode))
-    val failureReasons           = filterFailures(await(spawnSequencerResponsesF))
+    val failureReasons           = getFailureReasons(await(spawnSequencerResponsesF))
 
     failureReasons match {
       case Nil =>
         // resolve master Sequencer and return location or failure if location is not found
-        await(resolveMasterSequencer(observingMode))
+        await(resolveMasterSequencerOf(observingMode))
           .map(Success)
           .getOrElse(ConfigurationFailure(s"Error: ESW.${observingMode} configuration failed"))
 
-      case failedScriptResponses => FailedToStartSequencers(failedScriptResponses.map(_.msg))
+      case failedScriptResponses =>
+        //todo : stop the spawned Sequencers
+        FailedToStartSequencers(failedScriptResponses.map(_.msg).toSet)
     }
   }
 
@@ -45,22 +47,22 @@ class SequencerUtil(locationServiceUtil: LocationServiceUtil, sequenceComponentU
     sequenceComponentUtil
       .getAvailableSequenceComponent(subSystem)
       .flatMap {
-        case Left(value) => Future.successful(Left(value))
-        case Right(value) =>
-          value
+        case Left(e) => Future.successful(Left(e))
+        case Right(seqCompApi) =>
+          seqCompApi
             .loadScript(subSystem, observingMode)
             .map(_.response match {
-              case Left(value) => Left(SequencerError(value.msg))
-              case Right(_)    => Right(Done)
+              case Left(e)  => Left(SequencerError(e.msg))
+              case Right(_) => Right(Done)
             })
       }
   }
 
-  def resolveMasterSequencer(observingMode: String): Future[Option[HttpLocation]] =
+  def resolveMasterSequencerOf(observingMode: String): Future[Option[HttpLocation]] =
     locationServiceUtil.locationService
       .resolve(HttpConnection(ComponentId(Prefix(ESW, observingMode), Sequencer)), 5.seconds)
 
-  private def filterFailures(responses: List[Either[SequencerError, Done]]): List[SequencerError] =
+  private def getFailureReasons(responses: List[Either[SequencerError, Done]]): List[SequencerError] =
     for {
       failedRes <- responses if failedRes.isLeft
       reason    <- failedRes.left.toOption

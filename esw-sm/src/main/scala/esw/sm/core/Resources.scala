@@ -9,3 +9,6 @@ case class Resources(resources: List[String]) {
 }
 
 case class Sequencers(subsystems: List[Subsystem])
+object Sequencers {
+  def apply(subsystems: Subsystem*): Sequencers = new Sequencers(subsystems.toList)
+}
