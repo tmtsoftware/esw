@@ -45,9 +45,7 @@ final case class StepList private[models] (steps: List[Step]) extends OcsAkkaSer
   }
 
   def insertAfter(id: Id, commands: List[SequenceCommand]): Either[EditorError, StepList] =
-    ifExists[EditorError](id) { _ =>
-      insertStepsAfter(id, toSteps(commands)).map(updatedSteps => copy(updatedSteps))
-    }
+    ifExists[EditorError](id) { _ => insertStepsAfter(id, toSteps(commands)).map(updatedSteps => copy(updatedSteps)) }
 
   def discardPending: StepList = copy(steps.filterNot(_.isPending))
 

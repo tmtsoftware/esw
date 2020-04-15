@@ -92,8 +92,9 @@ class KillSelfRegisteredComponentTest
       val agentActorRef = spawnAgentActor()
       val probe1        = TestProbe[SpawnResponse]()
       val probe2        = TestProbe[KillResponse]()
+      //this will actor remains in waiting state
       when(locationService.resolve(argEq(seqCompConn), any[FiniteDuration]))
-        .thenReturn(Future.successful(None), delayedFuture(Some(seqCompLocation), 1.hour)) //this will actor remains in waiting state
+        .thenReturn(Future.successful(None), delayedFuture(Some(seqCompLocation), 1.hour))
 
       mockSuccessfulProcess(dieAfter = 3.seconds)
 
@@ -112,6 +113,7 @@ class KillSelfRegisteredComponentTest
       val agentActorRef = spawnAgentActor(agentSettings.copy(durationToWaitForGracefulProcessTermination = 2.seconds))
       val probe1        = TestProbe[SpawnResponse]()
       val probe2        = TestProbe[KillResponse]()
+      //this will actor remains in waiting state
       when(locationService.resolve(argEq(seqCompConn), any[FiniteDuration]))
         .thenReturn(Future.successful(None), delayedFuture(Some(seqCompLocation), 1.hour)) //this will actor remains in waiting state
 

@@ -55,9 +55,7 @@ class SequencerBehavior(
   }
 
   // Starting point of the Sequencer
-  def setup: Behavior[SequencerMsg] = Behaviors.setup { ctx =>
-    idle(SequencerData.initial(ctx.self))
-  }
+  def setup: Behavior[SequencerMsg] = Behaviors.setup { ctx => idle(SequencerData.initial(ctx.self)) }
 
   // ******************* Sequencer Behaviors **************
 
