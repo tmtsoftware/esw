@@ -1,10 +1,24 @@
 package esw.ocs.scripts.examples.testData
 
 import esw.ocs.dsl.core.script
+import esw.ocs.dsl.params.stringKey
 import kotlinx.coroutines.delay
 import kotlin.time.seconds
 
 script {
+
+    onNewSequence {
+        val newSequenceHandlerParam = stringKey("onNewSequence").set("Started")
+        val event = SystemEvent("LGSF.darknight", "NewSequenceHandler", newSequenceHandlerParam)
+        publishEvent(event)
+        delay(500)
+    }
+
+    onSetup("command-1") {
+        val newSequenceParam = stringKey("sequence-command-1").set("Started")
+        val event = SystemEvent("LGSF.darknight", "NewSequence", newSequenceParam)
+        publishEvent(event)
+    }
 
     onSetup("command-lgsf") {
         // NOT update command response To avoid sequencer to
