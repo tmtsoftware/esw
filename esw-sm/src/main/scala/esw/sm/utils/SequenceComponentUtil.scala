@@ -6,9 +6,11 @@ import csw.location.api.models.AkkaLocation
 import csw.location.api.models.ComponentType.SequenceComponent
 import csw.prefix.models.Subsystem
 import csw.prefix.models.Subsystem.ESW
+import esw.commons.utils.FutureUtils
 import esw.commons.utils.location.LocationServiceUtil
 import esw.ocs.api.SequenceComponentApi
 import esw.ocs.api.actor.client.SequenceComponentImpl
+import scala.async.Async._
 
 import scala.concurrent.Future
 
@@ -45,16 +47,17 @@ class SequenceComponentUtil(locationServiceUtil: LocationServiceUtil, agentUtil:
   private def getIdleSequenceComponentFor(subsystem: Subsystem): Future[Option[SequenceComponentApi]] = {
     locationServiceUtil
       .listBy(subsystem, SequenceComponent)
-      .flatMap(Future.traverse(_) { location =>
-        isIdle(location).collect {
-          case true => location
-        }
-      })
-      .map(locations => locations.headOption.map(new SequenceComponentImpl(_)))
+      .flatMap { locations =>
+        FutureUtils
+          .firstCompletedOf(locations.map(idleSequenceComponent))(_.isDefined)
+          .map(_.flatten)
+      }
+
   }
 
-  private def isIdle(sequenceComponentLocation: AkkaLocation): Future[Boolean] = {
-    val sequenceComponentImpl = new SequenceComponentImpl(sequenceComponentLocation)
-    sequenceComponentImpl.status.map(statusResponse => statusResponse.response.isDefined)
+  private def idleSequenceComponent(sequenceComponentLocation: AkkaLocation): Future[Option[SequenceComponentApi]] = async {
+    val sequenceComponentApi = new SequenceComponentImpl(sequenceComponentLocation)
+    val status               = await(sequenceComponentApi.status)
+    status.response.map(_ => sequenceComponentApi)
   }
 }
