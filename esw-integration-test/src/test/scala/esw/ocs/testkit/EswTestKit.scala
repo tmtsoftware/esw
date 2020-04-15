@@ -4,6 +4,7 @@ import java.nio.file.{Paths, Path => NIOPath}
 
 import akka.actor
 import akka.actor.CoordinatedShutdown.UnknownReason
+import akka.actor.testkit.typed.scaladsl.TestProbe
 import akka.actor.typed.{ActorRef, ActorSystem, SpawnProtocol}
 import akka.http.scaladsl.Http.ServerBinding
 import akka.http.scaladsl.model.Uri
@@ -18,6 +19,7 @@ import csw.location.api.models.Connection.{AkkaConnection, HttpConnection}
 import csw.location.api.models.{AkkaLocation, ComponentId, ComponentType, HttpLocation}
 import csw.location.api.scaladsl.LocationService
 import csw.network.utils.SocketUtils
+import csw.params.events.{Event, EventKey, SystemEvent}
 import csw.prefix.models.{Prefix, Subsystem}
 import csw.testkit.scaladsl.ScalaTestFrameworkTestKit
 import esw.agent.app.{AgentApp, AgentSettings, AgentWiring}
@@ -217,5 +219,13 @@ abstract class EswTestKit(services: Service*)
     }
     locationE.left.foreach(println) // this is to print the exception in case script loading fails
     locationE
+  }
+
+  def createTestProbe(eventKeys: Set[EventKey]): TestProbe[Event] = {
+    val testProbe    = TestProbe[Event]
+    val subscription = eventSubscriber.subscribeActorRef(eventKeys, testProbe.ref)
+    subscription.ready().futureValue
+    eventKeys.foreach(_ => testProbe.expectMessageType[SystemEvent]) // discard invalid event
+    testProbe
   }
 }

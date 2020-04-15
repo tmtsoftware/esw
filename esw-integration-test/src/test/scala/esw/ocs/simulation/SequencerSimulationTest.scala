@@ -1,10 +1,9 @@
 package esw.ocs.simulation
 
-import akka.actor.testkit.typed.scaladsl.TestProbe
 import csw.params.commands.CommandResponse.Completed
 import csw.params.commands.{CommandName, Sequence, Setup}
 import csw.params.core.generics.KeyType.StringKey
-import csw.params.events.{Event, EventKey, SystemEvent}
+import csw.params.events.{EventKey, SystemEvent}
 import csw.prefix.models.Prefix
 import csw.prefix.models.Subsystem.{ESW, TCS}
 import esw.ocs.testkit.EswTestKit
@@ -48,13 +47,5 @@ class SequencerSimulationTest extends EswTestKit(EventServer) {
 
     val expectedSubmitResponseParam = StringKey.make("response").set("Completed")
     event.paramSet.head shouldBe expectedSubmitResponseParam
-  }
-
-  def createTestProbe(eventKeys: Set[EventKey]): TestProbe[Event] = {
-    val testProbe    = TestProbe[Event]
-    val subscription = eventSubscriber.subscribeActorRef(eventKeys, testProbe.ref)
-    subscription.ready().futureValue
-    eventKeys.foreach(_ => testProbe.expectMessageType[SystemEvent]) // discard invalid event
-    testProbe
   }
 }
