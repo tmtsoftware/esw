@@ -82,6 +82,7 @@ class ExceptionsHandlerIntegrationTest extends EswTestKit(EventServer) {
         val longRunningSetupSequence = Sequence(longRunningSetupCommand, command1)
 
         sequencer.submit(longRunningSetupSequence)
+        Thread.sleep(500)
         // Pause sequence, so it will remain in InProgress state and then other inProgressState msgs can be processed
         sequencer.pause
         sequencerRef ! msg

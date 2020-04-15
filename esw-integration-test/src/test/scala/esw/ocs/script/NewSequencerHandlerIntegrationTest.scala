@@ -18,7 +18,7 @@ class NewSequencerHandlerIntegrationTest extends EswTestKit(EventServer) {
   }
 
   "Sequencer" must {
-    "run the new Sequencer handler before starting the new Sequence" in {
+    "run the new Sequencer handler before starting the new Sequence | ESW-303" in {
       val sequencer = sequencerClient(LGSF, obsMode)
       val command   = Setup(Prefix("esw.test"), CommandName("command-1"), None)
       val sequence  = Sequence(Seq(command))
