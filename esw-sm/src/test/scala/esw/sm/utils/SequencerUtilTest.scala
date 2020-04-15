@@ -3,6 +3,7 @@ package esw.sm.utils
 import java.net.URI
 
 import akka.actor.typed.{ActorSystem, SpawnProtocol}
+import akka.util.Timeout
 import csw.location.api.models.ComponentType.Sequencer
 import csw.location.api.models.Connection.{AkkaConnection, HttpConnection}
 import csw.location.api.models.{AkkaLocation, ComponentId, HttpLocation}
@@ -11,7 +12,8 @@ import csw.prefix.models.Prefix
 import csw.prefix.models.Subsystem.{ESW, TCS}
 import esw.commons.BaseTestSuite
 import esw.commons.utils.location.LocationServiceUtil
-import esw.ocs.api.actor.client.SequenceComponentImpl
+import esw.ocs.api.SequencerApi
+import esw.ocs.api.actor.client.{SequenceComponentImpl, SequencerApiFactory}
 import esw.ocs.api.protocol.{ScriptError, ScriptResponse}
 import esw.sm.core.Sequencers
 import esw.sm.messages.ConfigureResponse.{FailedToStartSequencers, Success}
@@ -22,6 +24,7 @@ import scala.concurrent.{ExecutionContext, Future}
 class SequencerUtilTest extends BaseTestSuite {
   implicit val system: ActorSystem[SpawnProtocol.Command] = ActorSystem(SpawnProtocol(), "testSystem")
   implicit val ec: ExecutionContext                       = system.executionContext
+  implicit val timeout: Timeout                           = 5.seconds
 
   "resolveMasterSequencerFor" must {
     "return the master sequencer for the given obsMode" in {
