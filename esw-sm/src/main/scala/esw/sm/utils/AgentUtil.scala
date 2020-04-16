@@ -17,11 +17,10 @@ import scala.util.Random
 class AgentUtil(locationServiceUtil: LocationServiceUtil)(implicit actorSystem: ActorSystem[_], timeout: Timeout) {
   import actorSystem.executionContext
 
-  private[sm] def getAgent: Future[AgentClient] = {
+  private[sm] def getAgent: Future[AgentClient] =
     locationServiceUtil
       .listBy(ESW, Machine)
       .flatMap(locations => AgentClient.make(locations.head.prefix, locationServiceUtil.locationService))
-  }
 
   def spawnSequenceComponentFor(subsystem: Subsystem): Future[Either[SequencerError, SequenceComponentApi]] = {
     val sequenceComponentPrefix = Prefix(subsystem, s"${subsystem}_${Random.between(1, 100)}")
@@ -33,8 +32,6 @@ class AgentUtil(locationServiceUtil: LocationServiceUtil)(implicit actorSystem: 
             .map(location => Right(new SequenceComponentImpl(location)))
         case Failed(msg) => Future.successful(Left(SequencerError(msg)))
       })
-      .recover(ex => {
-        Left(SequencerError(ex.getMessage))
-      })
+      .recover(ex => Left(SequencerError(ex.getMessage)))
   }
 }

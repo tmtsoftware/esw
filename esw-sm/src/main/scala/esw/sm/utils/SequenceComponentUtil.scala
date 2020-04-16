@@ -20,9 +20,7 @@ class SequenceComponentUtil(locationServiceUtil: LocationServiceUtil, agentUtil:
 ) {
   import actorSystem.executionContext
 
-  def getAvailableSequenceComponent(
-      subsystem: Subsystem
-  ): Future[Either[SequencerError, SequenceComponentApi]] = {
+  def getAvailableSequenceComponent(subsystem: Subsystem): Future[Either[SequencerError, SequenceComponentApi]] = {
     val maybeSeqCompApiF: Future[Option[SequenceComponentApi]] = subsystem match {
       case ESW => getIdleSequenceComponentFor(ESW)
       case other: Subsystem =>
@@ -36,9 +34,7 @@ class SequenceComponentUtil(locationServiceUtil: LocationServiceUtil, agentUtil:
     // spawn SeqComp if not able to find already spawned one
     maybeSeqCompApiF.flatMap {
       case Some(value) => Future.successful(Right(value))
-      case None =>
-        agentUtil
-          .spawnSequenceComponentFor(subsystem)
+      case None        => agentUtil.spawnSequenceComponentFor(subsystem)
     }
   }
 
