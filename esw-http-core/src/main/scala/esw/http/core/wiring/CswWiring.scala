@@ -13,7 +13,6 @@ import csw.event.client.EventServiceFactory
 import csw.event.client.internal.commons.EventSubscriberUtil
 import csw.event.client.models.EventStores.RedisStore
 import csw.location.api.scaladsl.LocationService
-import csw.location.client.ActorSystemFactory
 import csw.location.client.scaladsl.HttpLocationServiceFactory
 import csw.time.scheduler.TimeServiceSchedulerFactory
 import esw.http.core.utils.ComponentFactory
