@@ -50,7 +50,8 @@ class SequenceManagerBehavior(locationService: LocationServiceUtil)(implicit val
 
       val response: ConfigureResponse = mayBeOcsMaster match {
         case Some(location) => await(useOcsMaster(location))
-        case None           => await(configureResources(obsMode, configuredObsModes))
+        // todo : check all needed sequencer are idle. also handle case of partial start up
+        case None => await(configureResources(obsMode, configuredObsModes))
       }
 
       self ! ConfigurationCompleted(response)

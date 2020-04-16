@@ -12,8 +12,7 @@ import csw.prefix.models.Prefix
 import csw.prefix.models.Subsystem.{ESW, TCS}
 import esw.commons.BaseTestSuite
 import esw.commons.utils.location.LocationServiceUtil
-import esw.ocs.api.SequencerApi
-import esw.ocs.api.actor.client.{SequenceComponentImpl, SequencerApiFactory}
+import esw.ocs.api.actor.client.SequenceComponentImpl
 import esw.ocs.api.protocol.{ScriptError, ScriptResponse}
 import esw.sm.core.Sequencers
 import esw.sm.messages.ConfigureResponse.{FailedToStartSequencers, Success}
@@ -27,20 +26,19 @@ class SequencerUtilTest extends BaseTestSuite {
   implicit val timeout: Timeout                           = 5.seconds
 
   "resolveMasterSequencerFor" must {
-    "return the master sequencer for the given obsMode" in {
+    "return the master sequencer for the given obsMode  | ESW-178" in {
       val obsMode = "clearSky"
       val setup   = new TestSetup(obsMode)
       import setup._
 
       sequencerUtil.resolveMasterSequencerOf(obsMode).awaitResult shouldBe Some(masterSeqLocation)
 
-      verify(locationService).resolve(masterSeqConnection, 5.seconds)
-      verify(locationServiceUtil).locationService
+      verifyMasterSequencerIsResolved()
     }
   }
 
   "startSequencers" must {
-    "start all the given sequencers" in {
+    "start all the given sequencers | ESW-178" in {
       val obsMode = "darkNight"
       val setup   = new TestSetup(obsMode)
       import setup._
@@ -48,8 +46,7 @@ class SequencerUtilTest extends BaseTestSuite {
       // returns success with master sequencer location after starting all the sequencers
       sequencerUtil.startSequencers(obsMode, Sequencers(ESW, TCS)).awaitResult shouldBe Success(masterSeqLocation)
 
-      verify(locationService).resolve(masterSeqConnection, 5.seconds)
-      verify(locationServiceUtil).locationService
+      verifyMasterSequencerIsResolved()
 
       verify(sequenceComponentUtil).getAvailableSequenceComponent(ESW)
       verify(sequenceComponentUtil).getAvailableSequenceComponent(TCS)
@@ -57,7 +54,7 @@ class SequencerUtilTest extends BaseTestSuite {
       verify(tcsSeqComp).loadScript(TCS, obsMode)
     }
 
-    "return all the errors caused while starting the sequencers" in {
+    "return all the errors caused while starting the sequencers  | ESW-178" in {
       val obsMode = "moonNight"
       val setup   = new TestSetup(obsMode)
       import setup._
@@ -79,6 +76,7 @@ class SequencerUtilTest extends BaseTestSuite {
 
       verify(sequenceComponentUtil).getAvailableSequenceComponent(ESW)
       verify(sequenceComponentUtil).getAvailableSequenceComponent(TCS)
+      verify(tcsSeqComp).loadScript(TCS, obsMode)
     }
   }
 

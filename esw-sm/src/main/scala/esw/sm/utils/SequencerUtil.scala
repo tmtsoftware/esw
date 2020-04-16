@@ -28,7 +28,7 @@ class SequencerUtil(locationServiceUtil: LocationServiceUtil, sequenceComponentU
 
   def resolveMasterSequencerOf(observingMode: String): Future[Option[HttpLocation]] =
     locationServiceUtil.locationService
-      .resolve(HttpConnection(ComponentId(Prefix(ESW, observingMode), Sequencer)), 5.seconds)
+      .resolve(HttpConnection(ComponentId(Prefix(ESW, observingMode), Sequencer)), 5.seconds) // todo: remove hard coded timeout
 
   def startSequencers(observingMode: String, requiredSequencers: Sequencers)(
       implicit ec: ExecutionContext
@@ -44,7 +44,8 @@ class SequencerUtil(locationServiceUtil: LocationServiceUtil, sequenceComponentU
           .getOrElse(ConfigurationFailure(s"Error: ESW.${observingMode} configuration failed"))
 
       case failedScriptResponses =>
-        await(shutdownSequencers(collectRights(spawnSequencerResponses))) // clean up spawned sequencers on failure
+        // todo : discuss this clean up step
+//        await(shutdownSequencers(collectRights(spawnSequencerResponses))) // clean up spawned sequencers on failure
         FailedToStartSequencers(failedScriptResponses.map(_.msg).toSet)
     }
   }
@@ -54,7 +55,7 @@ class SequencerUtil(locationServiceUtil: LocationServiceUtil, sequenceComponentU
     sequenceComponentUtil
       .getAvailableSequenceComponent(subSystem)
       .flatMap {
-        case Left(e) => Future.successful(Left(e))
+        case Left(e) => Future.successful(Left(e)) // Todo : should there be a retry
         case Right(seqCompApi) =>
           seqCompApi
             .loadScript(subSystem, observingMode)
