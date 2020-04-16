@@ -5,14 +5,20 @@ import java.util.concurrent.{Executors, ScheduledExecutorService}
 import esw.commons.BaseTestSuite
 
 import scala.concurrent.duration.{DurationLong, FiniteDuration}
-import scala.concurrent.{Future, Promise}
+import scala.concurrent.{ExecutionContext, Future, Promise}
 import scala.util.Try
 
 class FutureUtilsTest extends BaseTestSuite {
-  "firstCompletedOf" must {
-    import scala.concurrent.ExecutionContext.Implicits.global
-    implicit val executorService: ScheduledExecutorService = Executors.newScheduledThreadPool(10)
 
+  implicit val executorService: ScheduledExecutorService = Executors.newScheduledThreadPool(4)
+  implicit val ec: ExecutionContext                      = ExecutionContext.fromExecutorService(executorService)
+
+  override def afterAll(): Unit = {
+    super.afterAll()
+    executorService.shutdown()
+  }
+
+  "firstCompletedOf" must {
     "return first completed Future based on predicate" in {
       val future1 = TestSetup.future(delay = 1.millis, value = 1)
       val future2 = TestSetup.future(delay = 100.millis, value = 2)
