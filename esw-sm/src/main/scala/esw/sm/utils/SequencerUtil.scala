@@ -6,13 +6,13 @@ import csw.location.api.models.Connection.HttpConnection
 import csw.location.api.models.{AkkaLocation, ComponentId, HttpLocation}
 import csw.prefix.models.Subsystem.ESW
 import csw.prefix.models.{Prefix, Subsystem}
+import esw.commons.Timeouts
 import esw.commons.utils.location.LocationServiceUtil
 import esw.sm.core.Sequencers
 import esw.sm.messages.ConfigureResponse
 import esw.sm.messages.ConfigureResponse.{ConfigurationFailure, FailedToStartSequencers, Success}
 
 import scala.async.Async.{async, await}
-import scala.concurrent.duration.DurationInt
 import scala.concurrent.{ExecutionContext, Future}
 
 case class SequencerError(msg: String)
@@ -24,7 +24,7 @@ class SequencerUtil(locationServiceUtil: LocationServiceUtil, sequenceComponentU
 
   def resolveMasterSequencerOf(observingMode: String): Future[Option[HttpLocation]] =
     locationServiceUtil.locationService
-      .resolve(HttpConnection(ComponentId(Prefix(ESW, observingMode), Sequencer)), 5.seconds) // todo: remove hard coded timeout
+      .resolve(HttpConnection(ComponentId(Prefix(ESW, observingMode), Sequencer)), Timeouts.DefaultTimeout)
 
   def startSequencers(observingMode: String, requiredSequencers: Sequencers)(
       implicit ec: ExecutionContext

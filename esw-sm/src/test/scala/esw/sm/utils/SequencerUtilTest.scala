@@ -10,14 +10,14 @@ import csw.location.api.models.{AkkaLocation, ComponentId, HttpLocation}
 import csw.location.api.scaladsl.LocationService
 import csw.prefix.models.Prefix
 import csw.prefix.models.Subsystem.{ESW, TCS}
-import esw.commons.BaseTestSuite
 import esw.commons.utils.location.LocationServiceUtil
+import esw.commons.{BaseTestSuite, Timeouts}
 import esw.ocs.api.actor.client.SequenceComponentImpl
 import esw.ocs.api.protocol.{ScriptError, ScriptResponse}
 import esw.sm.core.Sequencers
 import esw.sm.messages.ConfigureResponse.{FailedToStartSequencers, Success}
 
-import scala.concurrent.duration.DurationInt
+import scala.concurrent.duration.{DurationInt, FiniteDuration}
 import scala.concurrent.{ExecutionContext, Future}
 
 class SequencerUtilTest extends BaseTestSuite {
@@ -101,10 +101,11 @@ class SequencerUtilTest extends BaseTestSuite {
     val masterSeqLocation: HttpLocation     = HttpLocation(masterSeqConnection, URI.create(""))
 
     when(locationServiceUtil.locationService).thenReturn(locationService)
-    when(locationService.resolve(masterSeqConnection, 5.seconds)).thenReturn(Future.successful(Some(masterSeqLocation)))
+    when(locationService.resolve(masterSeqConnection, Timeouts.DefaultTimeout))
+      .thenReturn(Future.successful(Some(masterSeqLocation)))
 
     def verifyMasterSequencerIsResolved(): Unit = {
-      verify(locationService).resolve(masterSeqConnection, 5.seconds)
+      verify(locationService).resolve(masterSeqConnection, Timeouts.DefaultTimeout)
       verify(locationServiceUtil).locationService
     }
   }
