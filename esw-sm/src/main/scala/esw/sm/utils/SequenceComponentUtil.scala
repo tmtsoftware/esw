@@ -39,8 +39,6 @@ class SequenceComponentUtil(locationServiceUtil: LocationServiceUtil, agentUtil:
       case None =>
         agentUtil
           .spawnSequenceComponentFor(subsystem)
-          .map(Right(_))
-          .recover(e => Left(SequencerError(e.getMessage)))
     }
   }
 

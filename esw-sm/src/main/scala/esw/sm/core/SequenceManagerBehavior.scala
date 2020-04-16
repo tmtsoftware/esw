@@ -6,6 +6,7 @@ import akka.util.Timeout
 import csw.location.api.models.ComponentType.Sequencer
 import csw.location.api.models.{AkkaLocation, HttpLocation}
 import csw.prefix.models.Subsystem.ESW
+import esw.commons.Timeouts
 import esw.commons.utils.location.LocationServiceUtil
 import esw.ocs.api.actor.client.SequencerApiFactory
 import esw.sm.messages.ConfigureResponse._
@@ -15,11 +16,10 @@ import esw.sm.utils.{AgentUtil, SequenceComponentUtil, SequencerUtil}
 
 import scala.async.Async.{async, await}
 import scala.concurrent.Future
-import scala.concurrent.duration.DurationDouble
 
 class SequenceManagerBehavior(locationService: LocationServiceUtil)(implicit val actorSystem: ActorSystem[_]) {
   import actorSystem.executionContext
-  implicit val timeout: Timeout = 10.seconds
+  implicit val timeout: Timeout = Timeouts.DefaultTimeout
 
   private val sequenceComponentUtil = new SequenceComponentUtil(locationService, new AgentUtil(locationService))
   private val sequencerUtil         = new SequencerUtil(locationService, sequenceComponentUtil)
