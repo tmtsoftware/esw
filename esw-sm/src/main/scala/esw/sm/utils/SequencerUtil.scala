@@ -1,15 +1,12 @@
 package esw.sm.utils
 
-import akka.Done
 import akka.actor.typed.ActorSystem
-import akka.util.Timeout
 import csw.location.api.models.ComponentType.Sequencer
 import csw.location.api.models.Connection.HttpConnection
 import csw.location.api.models.{AkkaLocation, ComponentId, HttpLocation}
 import csw.prefix.models.Subsystem.ESW
 import csw.prefix.models.{Prefix, Subsystem}
 import esw.commons.utils.location.LocationServiceUtil
-import esw.ocs.api.actor.client.{SequenceComponentImpl, SequencerApiFactory}
 import esw.sm.core.Sequencers
 import esw.sm.messages.ConfigureResponse
 import esw.sm.messages.ConfigureResponse.{ConfigurationFailure, FailedToStartSequencers, Success}
@@ -21,8 +18,7 @@ import scala.concurrent.{ExecutionContext, Future}
 case class SequencerError(msg: String)
 
 class SequencerUtil(locationServiceUtil: LocationServiceUtil, sequenceComponentUtil: SequenceComponentUtil)(
-    implicit actorSystem: ActorSystem[_],
-    timeout: Timeout
+    implicit actorSystem: ActorSystem[_]
 ) {
   implicit val ec: ExecutionContext = actorSystem.executionContext
 
@@ -66,16 +62,7 @@ class SequencerUtil(locationServiceUtil: LocationServiceUtil, sequenceComponentU
       }
   }
 
-  private def shutdownSequencers(sequencers: List[AkkaLocation]): Future[Done] =
-    Future.traverse(sequencers)(shutdownSequencer).map(_ => Done)
-
-  private def shutdownSequencer(loc: AkkaLocation): Future[Done] =
-    // get sequencer component from Sequencer and unload it.
-    SequencerApiFactory.make(loc).getSequenceComponent.flatMap(new SequenceComponentImpl(_).unloadScript())
-
   private def collectLefts(responses: List[Either[SequencerError, AkkaLocation]]): List[SequencerError] =
     responses.collect { case Left(reasons) => reasons }
 
-  private def collectRights(responses: List[Either[SequencerError, AkkaLocation]]): List[AkkaLocation] =
-    responses.collect { case Right(location) => location }
 }

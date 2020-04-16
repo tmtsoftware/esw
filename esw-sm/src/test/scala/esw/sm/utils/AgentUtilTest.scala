@@ -41,8 +41,6 @@ class AgentUtilTest extends BaseTestSuite {
     "return SequencerError if agent fails to spawn sequence component" in {
       val setup = new TestSetup()
       import setup._
-      val sequenceComponentLocation =
-        AkkaLocation(AkkaConnection(ComponentId(Prefix(ESW, "primary"), SequenceComponent)), new URI("some-uri"))
 
       when(agentClient.spawnSequenceComponent(any[Prefix]))
         .thenReturn(Future.successful(Failed("failed to spawn sequence component")))
