@@ -28,7 +28,7 @@ class HttpServiceTest extends EswTestKit {
     "start the http server and register with location service | ESW-86" in {
       val _servicePort = 4005
 
-      val wiring = new ServerWiring(Some(_servicePort))
+      val wiring = ServerWiring.make(Some(_servicePort))
       import wiring._
       import wiring.cswWiring.actorRuntime
 
@@ -45,7 +45,7 @@ class HttpServiceTest extends EswTestKit {
 
     "not register with location service if server binding fails | ESW-86" in {
       val _servicePort = 4452 // Location Service runs on this port
-      val wiring       = new ServerWiring(Some(_servicePort))
+      val wiring       = ServerWiring.make(Some(_servicePort))
       import wiring._
       import wiring.cswWiring.actorRuntime
 
@@ -53,11 +53,12 @@ class HttpServiceTest extends EswTestKit {
 
       a[BindException] shouldBe thrownBy(Await.result(httpService.registeredLazyBinding, 5.seconds))
       Await.result(locationService.find(settings.httpConnection), 5.seconds) shouldBe None
+      Await.result(actorRuntime.shutdown(UnknownReason), 5.seconds)
     }
 
     "not start server if registration with location service fails | ESW-86" in {
       val _servicePort = 4007
-      val wiring       = new ServerWiring(Some(_servicePort))
+      val wiring       = ServerWiring.make(Some(_servicePort))
       import wiring._
       import wiring.cswWiring.actorRuntime
 

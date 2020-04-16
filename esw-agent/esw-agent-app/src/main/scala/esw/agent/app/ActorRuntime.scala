@@ -5,7 +5,6 @@ import akka.actor.CoordinatedShutdown.Reason
 import akka.actor.typed.scaladsl.adapter.TypedActorSystemOps
 import akka.actor.typed.{ActorSystem, SpawnProtocol}
 import akka.{Done, actor}
-import csw.location.client.ActorSystemFactory
 import csw.logging.client.scaladsl.LoggingSystemFactory
 import csw.network.utils.Networks
 
@@ -14,8 +13,8 @@ import scala.concurrent.{ExecutionContext, Future}
 /**
  * A convenient class wrapping actor system and providing handles for execution context, materializer and clean up of actor system
  */
-class ActorRuntime {
-  implicit val typedSystem: ActorSystem[SpawnProtocol.Command] = ActorSystemFactory.remote(SpawnProtocol(), "agent-app")
+class ActorRuntime(_typedSystem: ActorSystem[SpawnProtocol.Command]) {
+  implicit val typedSystem: ActorSystem[SpawnProtocol.Command] = _typedSystem
   implicit val untypedSystem: actor.ActorSystem                = typedSystem.toClassic
   implicit val ec: ExecutionContext                            = typedSystem.executionContext
   val coordinatedShutdown: CoordinatedShutdown                 = CoordinatedShutdown(untypedSystem)

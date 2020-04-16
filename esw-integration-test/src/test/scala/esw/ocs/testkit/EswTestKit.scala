@@ -58,7 +58,7 @@ abstract class EswTestKit(services: Service*)
 
   // gateway
   lazy val gatewayPort: Int                 = SocketUtils.getFreePort
-  lazy val gatewayWiring: GatewayWiring     = new GatewayWiring(Some(gatewayPort))
+  lazy val gatewayWiring: GatewayWiring     = GatewayWiring.make(Some(gatewayPort), system)
   var gatewayBinding: Option[ServerBinding] = None
   var gatewayLocation: Option[HttpLocation] = None
   // ESW-98
@@ -68,8 +68,8 @@ abstract class EswTestKit(services: Service*)
       .getConfig("http-server")
       .getString("prefix")
   )
-  lazy val gatewayPostClient = gatewayHTTPClient(gatewayPrefix)
-  lazy val gatewayWsClient   = gatewayWebSocketClient(gatewayPrefix)
+  lazy val gatewayPostClient: HttpPostTransport[PostRequest]     = gatewayHTTPClient(gatewayPrefix)
+  lazy val gatewayWsClient: WebsocketTransport[WebsocketRequest] = gatewayWebSocketClient(gatewayPrefix)
 
   private val sequenceComponentLocations: mutable.Buffer[AkkaLocation] = mutable.Buffer.empty
 
@@ -107,7 +107,9 @@ abstract class EswTestKit(services: Service*)
   }
 
   def spawnAgent(agentSettings: AgentSettings): Unit = {
-    agentWiring = Some(AgentApp.start(agentPrefix, agentSettings))
+    val wiring = AgentWiring.make(agentPrefix, agentSettings, system)
+    agentWiring = Some(wiring)
+    AgentApp.start(agentPrefix, wiring)
   }
 
   def shutdownAgent(): Unit = agentWiring.foreach(_.actorRuntime.shutdown(UnknownReason))
@@ -142,7 +144,7 @@ abstract class EswTestKit(services: Service*)
   }
 
   def spawnSequenceComponent(subsystem: Subsystem, name: Option[String]): Either[ScriptError, AkkaLocation] = {
-    val wiring = new SequenceComponentWiring(subsystem, name, new SequencerWiring(_, _, _).sequencerServer)
+    val wiring = SequenceComponentWiring.make(subsystem, name, new SequencerWiring(_, _, _).sequencerServer, system)
     wiring.start().map { seqCompLocation =>
       sequenceComponentLocations += seqCompLocation
       seqCompLocation
@@ -201,7 +203,7 @@ abstract class EswTestKit(services: Service*)
       .unsafeUpcast[SequenceComponentMsg]
 
   def spawnSequenceComponentInSimulation(subsystem: Subsystem, name: Option[String]): Either[ScriptError, AkkaLocation] = {
-    val wiring = new SequenceComponentWiring(subsystem, name, new SimulationSequencerWiring(_, _, _).sequencerServer)
+    val wiring = SequenceComponentWiring.make(subsystem, name, new SimulationSequencerWiring(_, _, _).sequencerServer, system)
     wiring.start().map { seqCompLocation =>
       sequenceComponentLocations += seqCompLocation
       seqCompLocation

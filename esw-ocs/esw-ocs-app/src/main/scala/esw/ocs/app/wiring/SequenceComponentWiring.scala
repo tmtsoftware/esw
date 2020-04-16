@@ -2,9 +2,10 @@ package esw.ocs.app.wiring
 
 import akka.actor.typed.SpawnProtocol.Spawn
 import akka.actor.typed.scaladsl.AskPattern._
-import akka.actor.typed.{ActorRef, Props}
+import akka.actor.typed.{ActorRef, ActorSystem, Props, SpawnProtocol}
 import akka.util.Timeout
 import csw.location.api.models.AkkaLocation
+import csw.location.client.ActorSystemFactory
 import csw.logging.api.scaladsl.Logger
 import csw.logging.client.scaladsl.LoggerFactory
 import csw.prefix.models.{Prefix, Subsystem}
@@ -25,8 +26,10 @@ private[ocs] class SequenceComponentWiring(
     sequencerServerFactory: SequencerServerFactory
 ) {
   private val registrationRetryCount = 10
+  private[wiring] lazy val actorSystem: ActorSystem[SpawnProtocol.Command] =
+    ActorSystemFactory.remote(SpawnProtocol(), "sequence-component-system")
 
-  lazy val cswWiring = new CswWiring()
+  lazy val cswWiring = new CswWiring(actorSystem)
   import cswWiring._
   import cswWiring.actorRuntime._
   lazy val actorRuntime: ActorRuntime = cswWiring.actorRuntime
@@ -38,12 +41,12 @@ private[ocs] class SequenceComponentWiring(
     val sequenceComponentLogger: Logger = loggerFactory.getLogger
 
     sequenceComponentLogger.info(s"Starting sequence component with name: $sequenceComponentPrefix")
-    typedSystem ? { x =>
+    typedSystem ? { replyTo =>
       Spawn(
         SequenceComponentBehavior.behavior(sequenceComponentPrefix, sequenceComponentLogger, sequencerServerFactory),
         sequenceComponentPrefix.toString,
         Props.empty,
-        x
+        replyTo
       )
     }
   }
@@ -54,5 +57,15 @@ private[ocs] class SequenceComponentWiring(
   def start(): Either[ScriptError, AkkaLocation] =
     sequenceComponentRegistration.registerSequenceComponent(registrationRetryCount).block
 
+}
+private[ocs] object SequenceComponentWiring {
+  def make(
+      subsystem: Subsystem,
+      name: Option[String],
+      sequencerServerFactory: SequencerServerFactory,
+      _actorSystem: ActorSystem[SpawnProtocol.Command]
+  ): SequenceComponentWiring = new SequenceComponentWiring(subsystem, name, sequencerServerFactory) {
+    override private[wiring] lazy val actorSystem = _actorSystem
+  }
 }
 // $COVERAGE-ON$

@@ -8,12 +8,12 @@ import akka.actor.typed.{ActorRef, Props}
 import csw.location.api.models.Connection.AkkaConnection
 import csw.location.api.models.{AkkaLocation, ComponentId, ComponentType, Location}
 import csw.logging.client.scaladsl.LoggerFactory
+import csw.prefix.models.Prefix
 import csw.prefix.models.Subsystem.{ESW, IRIS, TCS}
-import csw.prefix.models.{Prefix, Subsystem}
 import esw.ocs.api.actor.messages.SequenceComponentMsg
+import esw.ocs.api.actor.messages.SequenceComponentMsg._
 import esw.ocs.api.protocol.{GetStatusResponse, ScriptError, ScriptResponse}
 import esw.ocs.app.wiring.SequencerWiring
-import esw.ocs.api.actor.messages.SequenceComponentMsg._
 import esw.ocs.testkit.EswTestKit
 
 import scala.concurrent.duration.DurationLong
@@ -23,19 +23,16 @@ class SequenceComponentBehaviorTest extends EswTestKit {
   private val factory                  = new LoggerFactory(Prefix("csw.SequenceComponentTest"))
 
   private def spawnSequenceComponent() = {
-    (system ? { x: ActorRef[ActorRef[SequenceComponentMsg]] =>
+    (system ? { replyTo: ActorRef[ActorRef[SequenceComponentMsg]] =>
       Spawn(
         SequenceComponentBehavior
-          .behavior(Prefix(ocsSequenceComponentName), factory.getLogger, sequencerWiring(_, _, _).sequencerServer),
+          .behavior(Prefix(ocsSequenceComponentName), factory.getLogger, new SequencerWiring(_, _, _).sequencerServer),
         ocsSequenceComponentName,
         Props.empty,
-        x
+        replyTo
       )
     }).futureValue
   }
-
-  def sequencerWiring(subsystem: Subsystem, observingMode: String, sequenceComponentLocation: AkkaLocation) =
-    new SequencerWiring(subsystem, observingMode, sequenceComponentLocation)
 
   "SequenceComponentBehavior" must {
     "load/unload script and get appropriate status | ESW-103, ESW-255" in {

@@ -22,8 +22,12 @@ object AgentApp extends CommandApp[AgentCliCommand] {
     case StartCommand(prefix) => start(Prefix(prefix), AgentSettings.from(ConfigFactory.load()))
   }
 
-  private[esw] def start(prefix: Prefix, agentSettings: AgentSettings): AgentWiring = {
+  private[esw] def start(prefix: Prefix, agentSettings: AgentSettings): Unit = {
     val wiring = new AgentWiring(prefix, agentSettings)
+    start(prefix, wiring)
+  }
+
+  private[esw] def start(prefix: Prefix, wiring: AgentWiring): Unit = {
     import wiring._
     try {
       actorRuntime.startLogging(BuildInfo.name, BuildInfo.version)
@@ -47,7 +51,6 @@ object AgentApp extends CommandApp[AgentCliCommand] {
         Await.result(actorRuntime.shutdown(UnknownReason), timeout.duration)
         exit(1)
     }
-    wiring
   }
 }
 // $COVERAGE-ON$

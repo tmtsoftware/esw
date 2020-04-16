@@ -6,7 +6,7 @@ import akka.actor.typed.scaladsl.AskPattern._
 import akka.actor.typed.{ActorRef, ActorSystem, Props, SpawnProtocol}
 import akka.http.scaladsl.server.Route
 import akka.util.Timeout
-import com.typesafe.config.{Config, ConfigFactory}
+import com.typesafe.config.Config
 import csw.alarm.api.javadsl.IAlarmService
 import csw.command.client.messages.sequencer.SequencerMsg
 import csw.event.client.internal.commons.javawrappers.JEventService
@@ -49,14 +49,14 @@ private[ocs] class SequencerWiring(
     val observingMode: String,
     sequenceComponentLocation: AkkaLocation
 ) extends SequencerHttpCodecs {
-  private[ocs] lazy val config: Config  = ConfigFactory.load()
+  lazy val actorSystem: ActorSystem[SpawnProtocol.Command] = ActorSystemFactory.remote(SpawnProtocol(), "sequencer-system")
+
+  private[ocs] lazy val config: Config  = actorSystem.settings.config
   private[ocs] lazy val sequencerConfig = SequencerConfig.from(config, subsystem, observingMode)
   import sequencerConfig._
 
-  lazy val actorSystem: ActorSystem[SpawnProtocol.Command] = ActorSystemFactory.remote(SpawnProtocol(), "sequencer-system")
-
   implicit lazy val timeout: Timeout = Timeouts.DefaultTimeout
-  lazy val cswWiring: CswWiring      = CswWiring.make(actorSystem)
+  lazy val cswWiring: CswWiring      = new CswWiring(actorSystem)
   import cswWiring._
   import cswWiring.actorRuntime._
 
@@ -150,5 +150,4 @@ private[ocs] class SequencerWiring(
 
     override def shutDown(): Done = (sequencerRef ? Shutdown).map(_ => Done).block
   }
-
 }

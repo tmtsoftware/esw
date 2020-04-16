@@ -21,7 +21,7 @@ class HTTPServiceCORSTest extends EswTestKit {
     }
   }
 
-  lazy val wiring = new ServerWiring(Some(gatewayPort))
+  lazy val wiring = ServerWiring.make(Some(gatewayPort))
   import wiring._
   lazy val httpService = new HttpService(logger, locationService, route, settings, cswWiring.actorRuntime)
 

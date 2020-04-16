@@ -1,8 +1,10 @@
 package esw.gateway.server
 
+import akka.actor.typed.{ActorSystem, SpawnProtocol}
 import akka.http.scaladsl.server.Route
 import csw.admin.api.AdminService
 import csw.admin.impl.AdminServiceImpl
+import csw.location.client.ActorSystemFactory
 import esw.gateway.api.codecs.GatewayCodecs
 import esw.gateway.api.protocol.{PostRequest, WebsocketRequest}
 import esw.gateway.api.{AlarmApi, EventApi, LoggingApi}
@@ -16,7 +18,10 @@ import msocket.impl.post.{HttpPostHandler, PostRouteFactory}
 import msocket.impl.ws.{WebsocketHandler, WebsocketRouteFactory}
 
 class GatewayWiring(_port: Option[Int], metricsEnabled: Boolean = false) extends GatewayCodecs {
-  lazy val wiring = new ServerWiring(_port)
+  private[server] lazy val actorSystem: ActorSystem[SpawnProtocol.Command] =
+    ActorSystemFactory.remote(SpawnProtocol(), "gateway-system")
+
+  lazy val wiring = new ServerWiring(_port, actorSystem = actorSystem)
   import wiring._
   import cswWiring._
   import cswWiring.actorRuntime.{ec, typedSystem}
@@ -39,4 +44,11 @@ class GatewayWiring(_port: Option[Int], metricsEnabled: Boolean = false) extends
   )
 
   lazy val httpService = new HttpService(logger, locationService, routes, settings, actorRuntime)
+}
+
+object GatewayWiring {
+  private[esw] def make(_port: Option[Int], _actorSystem: ActorSystem[SpawnProtocol.Command]): GatewayWiring =
+    new GatewayWiring(_port) {
+      override lazy val actorSystem: ActorSystem[SpawnProtocol.Command] = _actorSystem
+    }
 }
