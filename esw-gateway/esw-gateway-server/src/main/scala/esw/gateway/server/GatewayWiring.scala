@@ -2,8 +2,10 @@ package esw.gateway.server
 
 import akka.actor.typed.{ActorSystem, SpawnProtocol}
 import akka.http.scaladsl.server.Route
+import com.typesafe.config.ConfigFactory
 import csw.admin.api.AdminService
 import csw.admin.impl.AdminServiceImpl
+import csw.command.client.auth.CommandRoles
 import csw.location.client.ActorSystemFactory
 import esw.gateway.api.codecs.GatewayCodecs
 import esw.gateway.api.protocol.{PostRequest, WebsocketRequest}
@@ -33,7 +35,10 @@ class GatewayWiring(_port: Option[Int], metricsEnabled: Boolean = false) extends
   lazy val loggingApi: LoggingApi = new LoggingImpl(new LoggerCache)
   lazy val adminApi: AdminService = new AdminServiceImpl(locationService)
 
-  lazy val postHandler: HttpPostHandler[PostRequest] = new PostHandlerImpl(alarmApi, resolver, eventApi, loggingApi, adminApi)
+  private lazy val commandRoles = CommandRoles.from(ConfigFactory.parseResources("role-command-mapping.conf"))
+
+  lazy val postHandler: HttpPostHandler[PostRequest] =
+    new PostHandlerImpl(alarmApi, resolver, eventApi, loggingApi, adminApi, securityDirectives, commandRoles)
 
   def websocketHandlerFactory(contentType: ContentType): WebsocketHandler[WebsocketRequest] =
     new WebsocketHandlerImpl(resolver, eventApi, contentType)

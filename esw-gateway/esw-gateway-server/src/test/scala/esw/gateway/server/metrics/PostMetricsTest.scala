@@ -4,7 +4,9 @@ import akka.http.scaladsl.marshalling.ToEntityMarshaller
 import akka.http.scaladsl.model.HttpRequest
 import akka.http.scaladsl.testkit.ScalatestRouteTest
 import com.lonelyplanet.prometheus.PrometheusResponseTimeRecorder
+import csw.aas.http.SecurityDirectives
 import csw.command.api.messages.CommandServiceHttpMessage.Submit
+import csw.command.client.auth.CommandRoles
 import csw.location.api.models.ComponentId
 import csw.location.api.models.ComponentType.Assembly
 import csw.params.commands.{CommandName, Setup}
@@ -30,10 +32,13 @@ class PostMetricsTest extends BaseTestSuite with ScalatestRouteTest with Gateway
   private val cswCtxMocks = new CswWiringMocks()
 
   import cswCtxMocks._
+  private val securityDirectives = SecurityDirectives()
+  private val commandRoles       = CommandRoles.empty
 
-  private val postHandlerImpl = new PostHandlerImpl(alarmApi, resolver, eventApi, loggingApi, adminService)
-  private val postRoute       = new PostRouteFactory[PostRequest]("post-endpoint", postHandlerImpl).make(true)
-  private val prefix          = Prefix("esw.test")
+  private val postHandlerImpl =
+    new PostHandlerImpl(alarmApi, resolver, eventApi, loggingApi, adminService, securityDirectives, commandRoles)
+  private val postRoute = new PostRouteFactory[PostRequest]("post-endpoint", postHandlerImpl).make(true)
+  private val prefix    = Prefix("esw.test")
 
   private val defaultRegistry = PrometheusResponseTimeRecorder.DefaultRegistry
   private val command         = Setup(prefix, CommandName("c1"), Some(ObsId("obsId")))
