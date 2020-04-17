@@ -3,11 +3,13 @@ package esw.sm.utils
 import akka.actor.typed.ActorSystem
 import csw.location.api.models.ComponentType.Sequencer
 import csw.location.api.models.Connection.HttpConnection
-import csw.location.api.models.{AkkaLocation, ComponentId, HttpLocation}
+import csw.location.api.models.{AkkaLocation, ComponentId, HttpLocation, Location}
 import csw.prefix.models.Subsystem.ESW
 import csw.prefix.models.{Prefix, Subsystem}
 import esw.commons.Timeouts
 import esw.commons.utils.location.LocationServiceUtil
+import esw.ocs.api.SequencerApi
+import esw.ocs.api.actor.client.SequencerApiFactory
 import esw.sm.core.Sequencers
 import esw.sm.messages.ConfigureResponse
 import esw.sm.messages.ConfigureResponse.{ConfigurationFailure, FailedToStartSequencers, Success}
@@ -37,13 +39,28 @@ class SequencerUtil(locationServiceUtil: LocationServiceUtil, sequenceComponentU
         // resolve master Sequencer and return LOCATION or FAILURE if location is not found
         await(resolveMasterSequencerOf(observingMode))
           .map(Success)
-          .getOrElse(ConfigurationFailure(s"Error: ESW.${observingMode} configuration failed"))
+          .getOrElse(ConfigurationFailure(s"Error: ESW.$observingMode configuration failed"))
 
       case failedScriptResponses =>
         // todo : discuss this clean up step
-//        await(shutdownSequencers(collectRights(spawnSequencerResponses))) // clean up spawned sequencers on failure
+        // await(shutdownSequencers(collectRights(spawnSequencerResponses))) // clean up spawned sequencers on failure
         FailedToStartSequencers(failedScriptResponses.map(_.msg).toSet)
     }
+  }
+
+  def areSequencersIdle(sequencers: Sequencers, obsMode: String): Future[Boolean] = {
+    Future
+      .traverse(sequencers.subsystems)(resolveSequencers(obsMode, _))
+      .map(statusList => !statusList.contains(false))
+  }
+
+  // Created in order to mock the behavior of sequencer API availability for unit test
+  private[sm] def createSequencer(location: Location): SequencerApi = SequencerApiFactory.make(location)
+
+  private def resolveSequencers(obsMode: String, subsystem: Subsystem) = {
+    locationServiceUtil
+      .resolveSequencer(subsystem, obsMode, Timeouts.DefaultTimeout)
+      .flatMap(location => createSequencer(location).isAvailable)
   }
 
   // spawn the sequencer on available SequenceComponent

@@ -8,7 +8,6 @@ import csw.location.api.models.{AkkaLocation, HttpLocation}
 import csw.prefix.models.Subsystem.ESW
 import esw.commons.Timeouts
 import esw.commons.utils.location.LocationServiceUtil
-import esw.ocs.api.actor.client.SequencerApiFactory
 import esw.sm.messages.ConfigureResponse._
 import esw.sm.messages.SequenceManagerMsg._
 import esw.sm.messages.{ConfigureResponse, SequenceManagerMsg}
@@ -24,7 +23,7 @@ class SequenceManagerBehavior(locationService: LocationServiceUtil)(implicit val
   private val sequenceComponentUtil = new SequenceComponentUtil(locationService, new AgentUtil(locationService))
   private val sequencerUtil         = new SequencerUtil(locationService, sequenceComponentUtil)
 
-  def beh(): Behavior[SequenceManagerMsg] = Behaviors.setup { ctx =>
+  def behavior(): Behavior[SequenceManagerMsg] = Behaviors.setup { _ =>
     idle() // initial behavior
   }
 
@@ -49,7 +48,7 @@ class SequenceManagerBehavior(locationService: LocationServiceUtil)(implicit val
       val mayBeOcsMaster: Option[HttpLocation] = await(sequencerUtil.resolveMasterSequencerOf(obsMode))
 
       val response: ConfigureResponse = mayBeOcsMaster match {
-        case Some(location) => await(useOcsMaster(location))
+        case Some(location) => await(useOcsMaster(location, obsMode))
         // todo : check all needed sequencer are idle. also handle case of partial start up
         case None => await(configureResources(obsMode, configuredObsModes))
       }
@@ -57,8 +56,8 @@ class SequenceManagerBehavior(locationService: LocationServiceUtil)(implicit val
       self ! ConfigurationCompleted(response)
     }
 
-  def useOcsMaster(location: HttpLocation): Future[ConfigureResponse] = async {
-    if (await(isOcsAvailable(location))) Success(location)
+  def useOcsMaster(location: HttpLocation, obsMode: String): Future[ConfigureResponse] = async {
+    if (await(sequencerUtil.areSequencersIdle(extractSequencers(obsMode), obsMode))) Success(location)
     else ConfigurationFailure(s"Error: ${location.prefix} is already executing another sequence")
   }
 
@@ -71,11 +70,10 @@ class SequenceManagerBehavior(locationService: LocationServiceUtil)(implicit val
     else await(sequencerUtil.startSequencers(obsMode, extractSequencers(obsMode)))
   }
 
-  def isOcsAvailable(httpLocation: HttpLocation): Future[Boolean] = SequencerApiFactory.make(httpLocation).isAvailable
-  def getRunningObsModes: Future[Set[String]]                     = locationService.listBy(ESW, Sequencer).map(_.map(getObsMode).toSet)
-  def getObsMode(akkaLocation: AkkaLocation): String              = akkaLocation.prefix.componentName
+  def getRunningObsModes: Future[Set[String]]        = locationService.listBy(ESW, Sequencer).map(_.map(getObsMode).toSet)
+  def getObsMode(akkaLocation: AkkaLocation): String = akkaLocation.prefix.componentName
 
-  def extractSequencers(observingMode: String): Sequencers = ???
-  def extractResources(observingMode: String): Resources   = ???
+  def extractSequencers(obsMode: String): Sequencers = ???
+  def extractResources(obsMode: String): Resources   = ???
 
 }
