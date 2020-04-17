@@ -17,6 +17,8 @@ import esw.ocs.api.protocol.SequencerPostRequest
 import esw.ocs.handler.SequencerPostHandler
 import msocket.impl.post.{HttpPostHandler, ServerHttpCodecs}
 
+import scala.concurrent.Future
+
 class PostHandlerImpl(
     alarmApi: AlarmApi,
     resolver: Resolver,
@@ -24,7 +26,7 @@ class PostHandlerImpl(
     loggingApi: LoggingApi,
     adminApi: AdminService,
     securityDirectives: SecurityDirectives,
-    commandRoles: CommandRoles
+    commandRoles: Future[CommandRoles]
 ) extends HttpPostHandler[PostRequest]
     with ServerHttpCodecs {
 
@@ -40,8 +42,8 @@ class PostHandlerImpl(
   }
 
   private def onComponentCommand(componentId: ComponentId, command: CommandServiceHttpMessage): Route =
-    onSuccess(resolver.commandService(componentId)) { commandService =>
-      new CommandServiceHttpHandlers(commandService, securityDirectives, Some(componentId.prefix), commandRoles).handle(command)
+    onSuccess(resolver.commandService(componentId) zip commandRoles) { (commandService, roles) =>
+      new CommandServiceHttpHandlers(commandService, securityDirectives, Some(componentId.prefix), roles).handle(command)
     }
 
   private def onSequencerCommand(componentId: ComponentId, command: SequencerPostRequest): Route =

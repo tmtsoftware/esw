@@ -25,6 +25,8 @@ import msocket.impl.post.{ClientHttpCodecs, PostRouteFactory}
 import org.mockito.MockitoSugar
 import org.scalatest.prop.Tables.Table
 
+import scala.concurrent.Future
+
 class PostMetricsTest extends BaseTestSuite with ScalatestRouteTest with GatewayCodecs with ClientHttpCodecs with MockitoSugar {
 
   override def clientContentType: ContentType = ContentType.Json
@@ -33,7 +35,7 @@ class PostMetricsTest extends BaseTestSuite with ScalatestRouteTest with Gateway
 
   import cswCtxMocks._
   private val securityDirectives = SecurityDirectives()
-  private val commandRoles       = CommandRoles.empty
+  private val commandRoles       = Future.successful(CommandRoles.empty)
 
   private val postHandlerImpl =
     new PostHandlerImpl(alarmApi, resolver, eventApi, loggingApi, adminService, securityDirectives, commandRoles)

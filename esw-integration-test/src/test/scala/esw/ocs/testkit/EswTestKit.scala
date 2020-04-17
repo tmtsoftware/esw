@@ -58,7 +58,8 @@ abstract class EswTestKit(services: Service*)
 
   // gateway
   lazy val gatewayPort: Int                 = SocketUtils.getFreePort
-  lazy val gatewayWiring: GatewayWiring     = GatewayWiring.make(Some(gatewayPort), system)
+  private val commandRolesPath: NIOPath     = Paths.get(getClass.getResource("/commandRoles.conf").getPath)
+  lazy val gatewayWiring: GatewayWiring     = GatewayWiring.make(Some(gatewayPort), local = true, commandRolesPath, system)
   var gatewayBinding: Option[ServerBinding] = None
   var gatewayLocation: Option[HttpLocation] = None
   // ESW-98

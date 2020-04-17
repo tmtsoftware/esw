@@ -1,5 +1,7 @@
 package esw.gateway.server
 
+import java.nio.file.Paths
+
 import akka.actor.CoordinatedShutdown.UnknownReason
 import csw.network.utils.Networks
 import esw.ocs.testkit.EswTestKit
@@ -13,7 +15,7 @@ class GatewayServiceTest extends EswTestKit {
     "start the gateway server and register with location service | ESW-98" in {
       val _servicePort = 4005
 
-      val wiring = new GatewayWiring(Some(_servicePort))
+      val wiring = new GatewayWiring(Some(_servicePort), true, Paths.get(getClass.getResource("/commandRoles.conf").getPath))
       import wiring.wiring._
       import wiring.wiring.cswWiring.actorRuntime
 
