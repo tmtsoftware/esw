@@ -11,17 +11,18 @@ import esw.commons.utils.location.LocationServiceUtil
 import esw.sm.messages.ConfigureResponse._
 import esw.sm.messages.SequenceManagerMsg._
 import esw.sm.messages.{ConfigureResponse, SequenceManagerMsg}
-import esw.sm.utils.{AgentUtil, SequenceComponentUtil, SequencerUtil}
+import esw.sm.utils.SequencerUtil
 
 import scala.async.Async.{async, await}
 import scala.concurrent.Future
 
-class SequenceManagerBehavior(locationService: LocationServiceUtil)(implicit val actorSystem: ActorSystem[_]) {
+class SequenceManagerBehavior(
+    config: Map[String, ObsModeConfig],
+    locationServiceUtil: LocationServiceUtil,
+    sequencerUtil: SequencerUtil
+)(implicit val actorSystem: ActorSystem[_]) {
   import actorSystem.executionContext
   implicit val timeout: Timeout = Timeouts.DefaultTimeout
-
-  private val sequenceComponentUtil = new SequenceComponentUtil(locationService, new AgentUtil(locationService))
-  private val sequencerUtil         = new SequencerUtil(locationService, sequenceComponentUtil)
 
   def behavior(): Behavior[SequenceManagerMsg] = Behaviors.setup { _ =>
     idle() // initial behavior
@@ -70,10 +71,9 @@ class SequenceManagerBehavior(locationService: LocationServiceUtil)(implicit val
     else await(sequencerUtil.startSequencers(obsMode, extractSequencers(obsMode)))
   }
 
-  def getRunningObsModes: Future[Set[String]]        = locationService.listBy(ESW, Sequencer).map(_.map(getObsMode).toSet)
+  def getRunningObsModes: Future[Set[String]]        = locationServiceUtil.listBy(ESW, Sequencer).map(_.map(getObsMode).toSet)
   def getObsMode(akkaLocation: AkkaLocation): String = akkaLocation.prefix.componentName
 
-  def extractSequencers(obsMode: String): Sequencers = ???
-  def extractResources(obsMode: String): Resources   = ???
-
+  def extractSequencers(obsMode: String): Sequencers = config(obsMode).sequencers
+  def extractResources(obsMode: String): Resources   = config(obsMode).resources
 }

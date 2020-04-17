@@ -28,9 +28,7 @@ class SequencerUtil(locationServiceUtil: LocationServiceUtil, sequenceComponentU
     locationServiceUtil.locationService
       .resolve(HttpConnection(ComponentId(Prefix(ESW, observingMode), Sequencer)), Timeouts.DefaultTimeout)
 
-  def startSequencers(observingMode: String, requiredSequencers: Sequencers)(
-      implicit ec: ExecutionContext
-  ): Future[ConfigureResponse] = async {
+  def startSequencers(observingMode: String, requiredSequencers: Sequencers): Future[ConfigureResponse] = async {
     val spawnSequencerResponses: List[Either[SequencerError, AkkaLocation]] =
       await(Future.traverse(requiredSequencers.subsystems)(startSequencer(_, observingMode)))
 
