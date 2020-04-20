@@ -1,5 +1,6 @@
 package esw.sm.utils
 
+import akka.Done
 import akka.actor.typed.ActorSystem
 import csw.location.api.models.ComponentType.Sequencer
 import csw.location.api.models.Connection.HttpConnection
@@ -52,13 +53,22 @@ class SequencerUtil(locationServiceUtil: LocationServiceUtil, sequenceComponentU
       .map(statusList => !statusList.contains(false))
   }
 
+  def stopSequencers(sequencers: Sequencers, obsMode: String): Future[Done] =
+    Future
+      .traverse(sequencers.subsystems)(locationServiceUtil.resolveSequencer(_, obsMode).flatMap(stopSequencer))
+      .map(_ => Done)
+
+  private def stopSequencer(loc: AkkaLocation): Future[Done] =
+    // get sequencer component from Sequencer and unload it.
+    createSequencerClient(loc).getSequenceComponent.flatMap(sequenceComponentUtil.unloadScript)
+
   // Created in order to mock the behavior of sequencer API availability for unit test
-  private[sm] def createSequencer(location: Location): SequencerApi = SequencerApiFactory.make(location)
+  private[sm] def createSequencerClient(location: Location): SequencerApi = SequencerApiFactory.make(location)
 
   private def resolveSequencers(obsMode: String, subsystem: Subsystem) = {
     locationServiceUtil
       .resolveSequencer(subsystem, obsMode, Timeouts.DefaultTimeout)
-      .flatMap(location => createSequencer(location).isAvailable)
+      .flatMap(location => createSequencerClient(location).isAvailable)
   }
 
   // spawn the sequencer on available SequenceComponent

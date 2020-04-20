@@ -1,5 +1,6 @@
 package esw.sm.utils
 
+import akka.Done
 import akka.actor.typed.ActorSystem
 import akka.util.Timeout
 import csw.location.api.models.AkkaLocation
@@ -10,8 +11,8 @@ import esw.commons.utils.FutureUtils
 import esw.commons.utils.location.LocationServiceUtil
 import esw.ocs.api.SequenceComponentApi
 import esw.ocs.api.actor.client.SequenceComponentImpl
-import scala.async.Async._
 
+import scala.async.Async._
 import scala.concurrent.Future
 
 class SequenceComponentUtil(locationServiceUtil: LocationServiceUtil, agentUtil: AgentUtil)(
@@ -37,6 +38,8 @@ class SequenceComponentUtil(locationServiceUtil: LocationServiceUtil, agentUtil:
       case None        => agentUtil.spawnSequenceComponentFor(subsystem)
     }
   }
+
+  def unloadScript(loc: AkkaLocation): Future[Done] = new SequenceComponentImpl(loc).unloadScript()
 
   private def getIdleSequenceComponentFor(subsystem: Subsystem): Future[Option[SequenceComponentApi]] = {
     locationServiceUtil

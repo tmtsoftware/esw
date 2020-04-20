@@ -134,7 +134,7 @@ class SequencerUtilTest extends BaseTestSuite {
     val tcsLocation: AkkaLocation = AkkaLocation(AkkaConnection(ComponentId(Prefix(TCS, obsMode), Sequencer)), URI.create(""))
 
     val sequencerUtil: SequencerUtil = new SequencerUtil(locationServiceUtil, sequenceComponentUtil) {
-      override def createSequencer(location: Location): SequencerApi =
+      override def createSequencerClient(location: Location): SequencerApi =
         if (location.prefix.subsystem == ESW) eswSequencerApi else tcsSequencerApi
     }
 

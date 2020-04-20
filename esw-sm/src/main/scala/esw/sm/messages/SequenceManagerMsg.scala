@@ -12,6 +12,7 @@ object SequenceManagerMsg {
   case class GetRunningObsModes(replyTo: ActorRef[Set[String]])               extends SequenceManagerMsg
 
   private[sm] case class ConfigurationCompleted(res: ConfigureResponse) extends SequenceManagerMsg
+  private[sm] case object CleanupCompleted                              extends SequenceManagerMsg
 }
 
 sealed trait ConfigureResponse

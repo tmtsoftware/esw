@@ -72,7 +72,8 @@ object SequenceComponentBehavior {
 
         msg match {
           case UnloadScript(replyTo) =>
-            unload(); replyTo ! Done
+            unload()
+            replyTo ! Done
             idle
           case Restart(replyTo) =>
             unload()

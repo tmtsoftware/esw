@@ -1,5 +1,6 @@
 package esw.sm.core
 
+import akka.Done
 import akka.actor.typed.scaladsl.Behaviors
 import akka.actor.typed.{ActorRef, ActorSystem, Behavior}
 import akka.util.Timeout
@@ -24,9 +25,7 @@ class SequenceManagerBehavior(
   import actorSystem.executionContext
   implicit val timeout: Timeout = Timeouts.DefaultTimeout
 
-  def behavior(): Behavior[SequenceManagerMsg] = Behaviors.setup { _ =>
-    idle() // initial behavior
-  }
+  def behavior(): Behavior[SequenceManagerMsg] = Behaviors.setup(_ => idle())
 
   def idle(): Behavior[SequenceManagerMsg] = Behaviors.receive { (ctx, msg) =>
     msg match {
@@ -37,16 +36,24 @@ class SequenceManagerBehavior(
     }
   }
 
-  def configuring(replyTo: ActorRef[ConfigureResponse]): Behavior[SequenceManagerMsg] = Behaviors.receiveMessage {
-    case ConfigurationCompleted(res) => replyTo ! res; idle()
-    case GetRunningObsModes(replyTo) => getRunningObsModes.map(replyTo ! _); Behaviors.same
-    case _                           => Behaviors.unhandled
+  def cleaningUp(replyTo: ActorRef[Done]): Behavior[SequenceManagerMsg] = receive[CleanupCompleted.type] { _ =>
+    replyTo ! Done
+    idle()
   }
 
-  def configure(obsMode: String, self: ActorRef[SequenceManagerMsg]): Future[Unit] =
+  def cleanup(obsMode: String, self: ActorRef[SequenceManagerMsg]): Unit =
+    sequencerUtil
+      .stopSequencers(extractSequencers(obsMode), obsMode)
+      .onComplete(_ => self ! CleanupCompleted) // ignore clean up failure
+
+  def configuring(replyTo: ActorRef[ConfigureResponse]): Behavior[SequenceManagerMsg] = receive[ConfigurationCompleted] { msg =>
+    replyTo ! msg.res
+    idle()
+  }
+
+  def configure(obsMode: String, self: ActorRef[SequenceManagerMsg]): Unit =
     async {
       val mayBeOcsMaster: Option[HttpLocation] = await(sequencerUtil.resolveMasterSequencerOf(obsMode))
-
       val response: ConfigureResponse = mayBeOcsMaster match {
         case Some(location) => await(useOcsMaster(location, obsMode))
         // todo : check all needed sequencer are idle. also handle case of partial start up
@@ -75,4 +82,11 @@ class SequenceManagerBehavior(
 
   def extractSequencers(obsMode: String): Sequencers = config(obsMode).sequencers
   def extractResources(obsMode: String): Resources   = config(obsMode).resources
+
+  def receive[T <: SequenceManagerMsg](handler: T => Behavior[SequenceManagerMsg]): Behavior[SequenceManagerMsg] =
+    Behaviors.receiveMessage {
+      case GetRunningObsModes(replyTo) => getRunningObsModes.map(replyTo ! _); Behaviors.same // common msg
+      case msg: T                      => handler(msg)
+      case _                           => Behaviors.unhandled
+    }
 }
