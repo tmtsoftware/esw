@@ -45,13 +45,12 @@ class SequenceManagerBehavior(
 
   def configure(obsMode: String, self: ActorRef[SequenceManagerMsg]): Future[Unit] =
     async {
-      val configuredObsModes                   = await(getRunningObsModes) // filter master Seqs from all OCS Seqs
       val mayBeOcsMaster: Option[HttpLocation] = await(sequencerUtil.resolveMasterSequencerOf(obsMode))
 
       val response: ConfigureResponse = mayBeOcsMaster match {
         case Some(location) => await(useOcsMaster(location, obsMode))
         // todo : check all needed sequencer are idle. also handle case of partial start up
-        case None => await(configureResources(obsMode, configuredObsModes))
+        case None => await(configureResources(obsMode, configuredObsModes = await(getRunningObsModes)))
       }
 
       self ! ConfigurationCompleted(response)
