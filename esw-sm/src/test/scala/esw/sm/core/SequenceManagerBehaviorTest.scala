@@ -40,7 +40,7 @@ class SequenceManagerBehaviorTest extends ScalaTestWithActorTestKit with BaseTes
   }
 
   "configure" must {
-    "start sequence hierarchy and return master sequencer" in {
+    "start sequence hierarchy and return master sequencer | ESW-178" in {
       val httpLocation = HttpLocation(HttpConnection(ComponentId(Prefix(ESW, DARKNIGHT), Sequencer)), new URI("uri"))
       when(locationServiceUtil.listBy(ESW, Sequencer)).thenReturn(Future.successful(List.empty))
       when(sequencerUtil.startSequencers(DARKNIGHT, darknightSequencers)).thenReturn(Future.successful(Success(httpLocation)))
@@ -55,7 +55,7 @@ class SequenceManagerBehaviorTest extends ScalaTestWithActorTestKit with BaseTes
       verify(sequencerUtil).startSequencers(DARKNIGHT, darknightSequencers)
     }
 
-    "return resource conflict error when required resources are already in use" in {
+    "return resource conflict error when required resources are already in use | ESW-178" in {
       val akkaLocation = AkkaLocation(AkkaConnection(ComponentId(Prefix(ESW, CLEARSKIES), Sequencer)), new URI("uri"))
       when(locationServiceUtil.listBy(ESW, Sequencer)).thenReturn(Future.successful(List(akkaLocation)))
       when(sequencerUtil.resolveMasterSequencerOf(DARKNIGHT)).thenReturn(Future.successful(None))
@@ -69,7 +69,7 @@ class SequenceManagerBehaviorTest extends ScalaTestWithActorTestKit with BaseTes
       verify(sequencerUtil, times(0)).startSequencers(DARKNIGHT, darknightSequencers)
     }
 
-    "return location of already spawned Sequencer Hierarchy if all the sequencers are Idle" in {
+    "return location of already spawned Sequencer Hierarchy if all the sequencers are Idle | ESW-178" in {
       val masterLoc = HttpLocation(HttpConnection(ComponentId(Prefix(ESW, CLEARSKIES), Sequencer)), new URI("uri"))
 
       when(sequencerUtil.resolveMasterSequencerOf(CLEARSKIES)).thenReturn(Future.successful(Some(masterLoc)))
@@ -84,7 +84,7 @@ class SequenceManagerBehaviorTest extends ScalaTestWithActorTestKit with BaseTes
       verify(sequencerUtil).areSequencersIdle(clearskiesSequencers, CLEARSKIES)
     }
 
-    "return ConfigurationFailure if sequencer hierarchy already spawned and the any of the sequencer is not Idle" in {
+    "return ConfigurationFailure if sequencer hierarchy already spawned and the any of the sequencer is not Idle | ESW-178" in {
       val masterLoc = HttpLocation(HttpConnection(ComponentId(Prefix(ESW, DARKNIGHT), Sequencer)), new URI("uri"))
 
       when(sequencerUtil.resolveMasterSequencerOf(DARKNIGHT)).thenReturn(Future.successful(Some(masterLoc)))
