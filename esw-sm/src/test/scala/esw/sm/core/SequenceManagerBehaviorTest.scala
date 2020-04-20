@@ -5,13 +5,13 @@ import java.net.URI
 import akka.actor.testkit.typed.scaladsl.ScalaTestWithActorTestKit
 import akka.actor.typed.ActorRef
 import csw.location.api.models.ComponentType._
-import csw.location.api.models.Connection.HttpConnection
-import csw.location.api.models.{ComponentId, HttpLocation}
+import csw.location.api.models.Connection.{AkkaConnection, HttpConnection}
+import csw.location.api.models.{AkkaLocation, ComponentId, HttpLocation}
 import csw.prefix.models.Prefix
 import csw.prefix.models.Subsystem.{ESW, TCS}
 import esw.commons.BaseTestSuite
 import esw.commons.utils.location.LocationServiceUtil
-import esw.sm.messages.ConfigureResponse.Success
+import esw.sm.messages.ConfigureResponse.{ConflictingResourcesWithRunningObsMode, Success}
 import esw.sm.messages.SequenceManagerMsg.Configure
 import esw.sm.messages.{ConfigureResponse, SequenceManagerMsg}
 import esw.sm.utils.SequencerUtil
@@ -26,13 +26,18 @@ class SequenceManagerBehaviorTest extends ScalaTestWithActorTestKit with BaseTes
   private val clearskiesSequencers: Sequencers = Sequencers(TCS)
   private val config = Map(
     DARKNIGHT  -> ObsModeConfig(Resources("r1", "r2"), darknightSequencers),
-    CLEARSKIES -> ObsModeConfig(Resources("r3", "r4"), clearskiesSequencers)
+    CLEARSKIES -> ObsModeConfig(Resources("r2", "r3"), clearskiesSequencers)
   )
   private val locationServiceUtil: LocationServiceUtil = mock[LocationServiceUtil]
   private val sequencerUtil: SequencerUtil             = mock[SequencerUtil]
   private val sequenceManagerBehavior                  = new SequenceManagerBehavior(config, locationServiceUtil, sequencerUtil)
 
   private val smRef: ActorRef[SequenceManagerMsg] = system.systemActorOf(sequenceManagerBehavior.behavior(), "test_actor")
+
+  override protected def beforeEach(): Unit = {
+    reset(locationServiceUtil)
+    reset(sequencerUtil)
+  }
 
   "configure" must {
     "start sequence hierarchy and return master sequencer" in {
@@ -45,9 +50,23 @@ class SequenceManagerBehaviorTest extends ScalaTestWithActorTestKit with BaseTes
       smRef ! Configure("darknight", probe.ref)
 
       probe.expectMessage(Success(httpLocation))
+      verify(sequencerUtil).resolveMasterSequencerOf(DARKNIGHT)
       verify(locationServiceUtil).listBy(ESW, Sequencer)
       verify(sequencerUtil).startSequencers(DARKNIGHT, darknightSequencers)
+    }
+
+    "return resource conflict error when required resources are already in use" in {
+      val akkaLocation = AkkaLocation(AkkaConnection(ComponentId(Prefix(ESW, CLEARSKIES), Sequencer)), new URI("uri"))
+      when(locationServiceUtil.listBy(ESW, Sequencer)).thenReturn(Future.successful(List(akkaLocation)))
+      when(sequencerUtil.resolveMasterSequencerOf(DARKNIGHT)).thenReturn(Future.successful(None))
+      val probe = createTestProbe[ConfigureResponse]
+
+      smRef ! Configure("darknight", probe.ref)
+
+      probe.expectMessage(ConflictingResourcesWithRunningObsMode)
       verify(sequencerUtil).resolveMasterSequencerOf(DARKNIGHT)
+      verify(locationServiceUtil).listBy(ESW, Sequencer)
+      verify(sequencerUtil, times(0)).startSequencers(DARKNIGHT, darknightSequencers)
     }
   }
 
