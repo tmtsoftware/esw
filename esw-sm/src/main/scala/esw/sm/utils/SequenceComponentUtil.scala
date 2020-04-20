@@ -31,7 +31,7 @@ class SequenceComponentUtil(locationServiceUtil: LocationServiceUtil, agentUtil:
         }
     }
 
-    // spawn SeqComp if not able to find already spawned one
+    // spawn SeqComp if not able to find available sequence component of subsystem or ESW
     maybeSeqCompApiF.flatMap {
       case Some(value) => Future.successful(Right(value))
       case None        => agentUtil.spawnSequenceComponentFor(subsystem)
@@ -42,14 +42,14 @@ class SequenceComponentUtil(locationServiceUtil: LocationServiceUtil, agentUtil:
     locationServiceUtil
       .listBy(subsystem, SequenceComponent)
       .flatMap { locations =>
+        // check if these seq comp locations are idle and return first idle sequence component found
         FutureUtils
           .firstCompletedOf(locations.map(idleSequenceComponent))(_.isDefined)
           .map(_.flatten)
       }
-
   }
 
-  private def idleSequenceComponent(sequenceComponentLocation: AkkaLocation): Future[Option[SequenceComponentApi]] = async {
+  private[sm] def idleSequenceComponent(sequenceComponentLocation: AkkaLocation): Future[Option[SequenceComponentApi]] = async {
     val sequenceComponentApi = new SequenceComponentImpl(sequenceComponentLocation)
     val status               = await(sequenceComponentApi.status)
     status.response.map(_ => sequenceComponentApi)

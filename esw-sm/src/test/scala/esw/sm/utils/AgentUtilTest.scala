@@ -23,8 +23,13 @@ class AgentUtilTest extends BaseTestSuite {
   implicit val actorSystem: ActorSystem[SpawnProtocol.Command] = ActorSystem(SpawnProtocol(), "test-system")
   implicit val timeout: Timeout                                = 1.hour
 
+  override def afterAll(): Unit = {
+    super.afterAll()
+    actorSystem.terminate()
+  }
+
   "spawnSequenceComponentFor" must {
-    "return SequenceComponentApi after spawning sequence component" in {
+    "return SequenceComponentApi after spawning sequence component | ESW-178" in {
       val setup = new TestSetup()
       import setup._
 
@@ -38,7 +43,7 @@ class AgentUtilTest extends BaseTestSuite {
       verify(locationServiceUtil).resolveAkkaLocation(any[Prefix], argEq(SequenceComponent))
     }
 
-    "return SequencerError if agent fails to spawn sequence component" in {
+    "return SequencerError if agent fails to spawn sequence component | ESW-178" in {
       val setup = new TestSetup()
       import setup._
 
@@ -50,7 +55,7 @@ class AgentUtilTest extends BaseTestSuite {
       verify(agentClient).spawnSequenceComponent(any[Prefix])
     }
 
-    "return SequencerError if location service call to resolve spawned sequence component throws exception" in {
+    "return SequencerError if location service call to resolve spawned sequence component throws exception | ESW-178" in {
       val setup = new TestSetup()
       import setup._
 
@@ -67,7 +72,7 @@ class AgentUtilTest extends BaseTestSuite {
       verify(locationServiceUtil).resolveAkkaLocation(any[Prefix], argEq(SequenceComponent))
     }
 
-    "return SequencerError if getAgent fails" in {
+    "return SequencerError if getAgent fails | ESW-178" in {
       val locationServiceUtil: LocationServiceUtil = mock[LocationServiceUtil]
 
       val agentUtil: AgentUtil = new AgentUtil(locationServiceUtil) {

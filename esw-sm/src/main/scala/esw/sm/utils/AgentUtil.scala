@@ -32,6 +32,9 @@ class AgentUtil(locationServiceUtil: LocationServiceUtil)(implicit actorSystem: 
             .map(location => Right(new SequenceComponentImpl(location)))
         case Failed(msg) => Future.successful(Left(SequencerError(msg)))
       })
-      .recover(ex => Left(SequencerError(ex.getMessage)))
+      .recover(ex =>
+        // Exception from getAgent call and locationServiceUtil resolveAkkaLocation are captured in Left
+        Left(SequencerError(ex.getMessage))
+      )
   }
 }

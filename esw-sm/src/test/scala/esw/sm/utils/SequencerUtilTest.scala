@@ -26,6 +26,11 @@ class SequencerUtilTest extends BaseTestSuite {
   implicit val ec: ExecutionContext                       = system.executionContext
   implicit val timeout: Timeout                           = 5.seconds
 
+  override def afterAll(): Unit = {
+    super.afterAll()
+    system.terminate()
+  }
+
   "resolveMasterSequencerFor" must {
     "return the master sequencer for the given obsMode  | ESW-178" in {
       val obsMode = "clearSky"
