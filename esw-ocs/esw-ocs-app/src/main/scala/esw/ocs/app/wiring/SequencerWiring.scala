@@ -24,17 +24,16 @@ import csw.prefix.models.Subsystem
 import esw.commons.Timeouts
 import esw.commons.utils.location.LocationServiceUtil
 import esw.http.core.wiring.{ActorRuntime, CswWiring, HttpService, Settings}
-import esw.ocs.api.actor.client.SequencerImpl
+import esw.ocs.api.actor.client.{SequencerApiFactory, SequencerImpl}
 import esw.ocs.api.actor.messages.SequencerMessages.Shutdown
 import esw.ocs.api.codecs.SequencerHttpCodecs
 import esw.ocs.api.protocol.ScriptError
 import esw.ocs.handler.{SequencerPostHandler, SequencerWebsocketHandler}
-import esw.ocs.impl.SequencerImplFactory
 import esw.ocs.impl.blockhound.BlockHoundWiring
 import esw.ocs.impl.core._
 import esw.ocs.impl.internal._
 import esw.ocs.impl.script.{ScriptApi, ScriptContext, ScriptLoader}
-import esw.ocs.impl.syntax.FutureSyntax.FutureOps
+import esw.ocs.impl.syntax.FutureSyntax.FutureUtil
 import msocket.api.ContentType
 import msocket.impl.RouteFactory
 import msocket.impl.post.PostRouteFactory
@@ -42,6 +41,7 @@ import msocket.impl.ws.WebsocketRouteFactory
 
 import scala.async.Async.{async, await}
 import scala.concurrent.Future
+import scala.jdk.FutureConverters.FutureOps
 import scala.util.control.NonFatal
 
 private[ocs] class SequencerWiring(
@@ -73,7 +73,6 @@ private[ocs] class SequencerWiring(
   private[ocs] lazy val script: ScriptApi  = ScriptLoader.loadKotlinScript(scriptClass, scriptContext)
 
   private lazy val locationServiceUtil        = new LocationServiceUtil(locationService)
-  private lazy val sequencerImplFactory       = new SequencerImplFactory(locationServiceUtil)
   lazy val jLocationService: ILocationService = JHttpLocationServiceFactory.makeLocalClient(actorSystem)
 
   lazy val jEventService: JEventService         = new JEventService(eventService)
@@ -83,6 +82,9 @@ private[ocs] class SequencerWiring(
   private lazy val logger: Logger   = loggerFactory.getLogger
   private lazy val jLoggerFactory   = loggerFactory.asJava
   private lazy val jLogger: ILogger = ScriptLoader.withScript(scriptClass)(jLoggerFactory.getLogger)
+
+  private lazy val sequencerImplFactory = (_subsystem: Subsystem, _obsMode: String) =>
+    locationServiceUtil.resolveSequencer(_subsystem, _obsMode).map(SequencerApiFactory.make).asJava
 
   lazy val scriptContext = new ScriptContext(
     heartbeatInterval,

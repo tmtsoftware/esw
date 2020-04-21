@@ -16,7 +16,7 @@ import esw.ocs.api.protocol.{ScriptError, ScriptResponse}
 import esw.ocs.app.SequencerAppCommand._
 import esw.ocs.app.wiring.{SequenceComponentWiring, SequencerWiring}
 import esw.ocs.api.actor.messages.SequenceComponentMsg.LoadScript
-import esw.ocs.impl.syntax.FutureSyntax.FutureOps
+import esw.ocs.impl.syntax.FutureSyntax.FutureUtil
 
 import scala.concurrent.Future
 import scala.util.control.NonFatal

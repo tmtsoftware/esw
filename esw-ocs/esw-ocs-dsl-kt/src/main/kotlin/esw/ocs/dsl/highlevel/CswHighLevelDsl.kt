@@ -88,7 +88,7 @@ abstract class CswHighLevelDsl(private val cswServices: CswServices, private val
             RichComponent(prefix, componentType, lockUnlockUtil, locationServiceUtil, actorSystem, defaultTimeout, coroutineScope)
 
     private fun richSequencer(subsystem: Subsystem, observingMode: String, defaultTimeout: Duration): RichSequencer =
-            RichSequencer(subsystem, observingMode, scriptContext.sequencerApiFactory(), defaultTimeout, coroutineScope)
+            RichSequencer(subsystem, observingMode, { s, o -> scriptContext.sequencerApiFactory().apply(s, o) }, defaultTimeout, coroutineScope)
 
     override fun Assembly(prefix: Prefix, defaultTimeout: Duration): RichComponent = richComponent(prefix, Assembly, defaultTimeout)
     override fun Hcd(prefix: Prefix, defaultTimeout: Duration): RichComponent = richComponent(prefix, HCD, defaultTimeout)

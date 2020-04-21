@@ -16,6 +16,7 @@ import esw.sm.utils.SequencerUtil
 
 import scala.async.Async.{async, await}
 import scala.concurrent.Future
+import scala.reflect.ClassTag
 
 class SequenceManagerBehavior(
     config: Map[String, ObsModeConfig],
@@ -27,6 +28,7 @@ class SequenceManagerBehavior(
 
   def behavior(): Behavior[SequenceManagerMsg] = Behaviors.setup(_ => idle())
 
+  // todo : try and use the receive method
   def idle(): Behavior[SequenceManagerMsg] = Behaviors.receive { (ctx, msg) =>
     msg match {
       case Configure(observingMode, replyTo) => configure(observingMode, ctx.self); configuring(replyTo);
@@ -83,7 +85,7 @@ class SequenceManagerBehavior(
   def extractSequencers(obsMode: String): Sequencers = config(obsMode).sequencers
   def extractResources(obsMode: String): Resources   = config(obsMode).resources
 
-  def receive[T <: SequenceManagerMsg](handler: T => Behavior[SequenceManagerMsg]): Behavior[SequenceManagerMsg] =
+  def receive[T <: SequenceManagerMsg: ClassTag](handler: T => Behavior[SequenceManagerMsg]): Behavior[SequenceManagerMsg] =
     Behaviors.receiveMessage {
       case GetRunningObsModes(replyTo) => getRunningObsModes.map(replyTo ! _); Behaviors.same // common msg
       case msg: T                      => handler(msg)

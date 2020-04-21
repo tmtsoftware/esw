@@ -15,7 +15,7 @@ import esw.ocs.api.actor.messages.SequenceComponentMsg
 import esw.ocs.api.protocol.ScriptError
 import esw.ocs.impl.core.SequenceComponentBehavior
 import esw.ocs.impl.internal.{SequenceComponentRegistration, SequencerServerFactory}
-import esw.ocs.impl.syntax.FutureSyntax.FutureOps
+import esw.ocs.impl.syntax.FutureSyntax.FutureUtil
 
 import scala.concurrent.Future
 
