@@ -2,9 +2,10 @@ package esw.sm.utils
 
 import java.net.URI
 
+import akka.Done
 import akka.actor.typed.{ActorSystem, SpawnProtocol}
 import akka.util.Timeout
-import csw.location.api.models.ComponentType.Sequencer
+import csw.location.api.models.ComponentType.{SequenceComponent, Sequencer}
 import csw.location.api.models.Connection.{AkkaConnection, HttpConnection}
 import csw.location.api.models.{AkkaLocation, ComponentId, HttpLocation, Location}
 import csw.location.api.scaladsl.LocationService
@@ -118,6 +119,34 @@ class SequencerUtilTest extends BaseTestSuite {
       verify(eswSequencerApi).isAvailable
       verify(tcsSequencerApi).isAvailable
     }
+  }
+
+  "stopSequencers" must {
+    "stop all the given sequencers" in {
+      val obsMode = "moonNight"
+      val setup   = new TestSetup(obsMode)
+      import setup._
+
+      val eswSeqCompLoc = AkkaLocation(AkkaConnection(ComponentId(Prefix(ESW, obsMode), SequenceComponent)), URI.create(""))
+      val tcsSeqCompLoc = AkkaLocation(AkkaConnection(ComponentId(Prefix(TCS, obsMode), SequenceComponent)), URI.create(""))
+
+      when(locationServiceUtil.resolveSequencer(ESW, obsMode, Timeouts.DefaultTimeout)).thenReturn(Future.successful(eswLocation))
+      when(locationServiceUtil.resolveSequencer(TCS, obsMode, Timeouts.DefaultTimeout)).thenReturn(Future.successful(tcsLocation))
+      when(eswSequencerApi.getSequenceComponent).thenReturn(Future.successful(eswSeqCompLoc))
+      when(tcsSequencerApi.getSequenceComponent).thenReturn(Future.successful(tcsSeqCompLoc))
+      when(sequenceComponentUtil.unloadScript(eswSeqCompLoc)).thenReturn(Future.successful(Done))
+      when(sequenceComponentUtil.unloadScript(tcsSeqCompLoc)).thenReturn(Future.successful(Done))
+
+      sequencerUtil.stopSequencers(Sequencers(ESW, TCS), obsMode).awaitResult shouldBe Done
+
+      verify(eswSequencerApi).getSequenceComponent
+      verify(tcsSequencerApi).getSequenceComponent
+
+      verify(sequenceComponentUtil).unloadScript(eswSeqCompLoc)
+      verify(sequenceComponentUtil).unloadScript(tcsSeqCompLoc)
+
+    }
+
   }
 
   class TestSetup(val obsMode: String) {

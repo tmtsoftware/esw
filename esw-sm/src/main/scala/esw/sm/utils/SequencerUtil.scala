@@ -54,6 +54,7 @@ class SequencerUtil(locationServiceUtil: LocationServiceUtil, sequenceComponentU
   }
 
   def stopSequencers(sequencers: Sequencers, obsMode: String): Future[Done] =
+    // todo: handle if sequencer previously is not running.
     Future
       .traverse(sequencers.subsystems)(locationServiceUtil.resolveSequencer(_, obsMode).flatMap(stopSequencer))
       .map(_ => Done)

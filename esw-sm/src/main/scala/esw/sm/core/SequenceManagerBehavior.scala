@@ -33,8 +33,8 @@ class SequenceManagerBehavior(
     msg match {
       case Configure(observingMode, replyTo) => configure(observingMode, ctx.self); configuring(replyTo);
       case GetRunningObsModes(replyTo)       => getRunningObsModes.map(replyTo ! _); Behaviors.same
-      case Cleanup(observingMode, replyTo)   => Behaviors.same
-      case _                                 => Behaviors.same
+      case Cleanup(observingMode, replyTo)   => cleanup(observingMode, ctx.self); cleaningUp(replyTo);
+      case _                                 => Behaviors.unhandled
     }
   }
 

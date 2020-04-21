@@ -2,6 +2,7 @@ package esw.sm.core
 
 import java.net.URI
 
+import akka.Done
 import akka.actor.testkit.typed.scaladsl.ScalaTestWithActorTestKit
 import akka.actor.typed.ActorRef
 import csw.location.api.models.ComponentType._
@@ -12,7 +13,7 @@ import csw.prefix.models.Subsystem.{ESW, TCS}
 import esw.commons.BaseTestSuite
 import esw.commons.utils.location.LocationServiceUtil
 import esw.sm.messages.ConfigureResponse.{ConfigurationFailure, ConflictingResourcesWithRunningObsMode, Success}
-import esw.sm.messages.SequenceManagerMsg.Configure
+import esw.sm.messages.SequenceManagerMsg.{Cleanup, Configure}
 import esw.sm.messages.{ConfigureResponse, SequenceManagerMsg}
 import esw.sm.utils.SequencerUtil
 
@@ -39,7 +40,8 @@ class SequenceManagerBehaviorTest extends ScalaTestWithActorTestKit with BaseTes
     reset(locationServiceUtil, sequencerUtil)
   }
 
-  "configure" must {
+  "Configure" must {
+    //todo : test state transition of the SM Behavior
     "start sequence hierarchy and return master sequencer | ESW-178" in {
       val httpLocation = HttpLocation(HttpConnection(ComponentId(Prefix(ESW, DARKNIGHT), Sequencer)), new URI("uri"))
       when(locationServiceUtil.listBy(ESW, Sequencer)).thenReturn(Future.successful(List.empty))
@@ -98,6 +100,18 @@ class SequenceManagerBehaviorTest extends ScalaTestWithActorTestKit with BaseTes
 
       verify(sequencerUtil).resolveMasterSequencerOf(DARKNIGHT)
       verify(sequencerUtil).areSequencersIdle(darknightSequencers, DARKNIGHT)
+    }
+  }
+
+  "Cleanup" must {
+    "stop all the sequencers of the given observation mode" in {
+      when(sequencerUtil.stopSequencers(darknightSequencers, DARKNIGHT)).thenReturn(Future.successful(Done))
+
+      val probe = createTestProbe[Done]
+      smRef ! Cleanup(DARKNIGHT, probe.ref)
+
+      probe.expectMessage(Done)
+      verify(sequencerUtil).stopSequencers(darknightSequencers, DARKNIGHT)
     }
   }
 }
