@@ -104,7 +104,7 @@ class SequenceManagerBehaviorTest extends ScalaTestWithActorTestKit with BaseTes
   }
 
   "Cleanup" must {
-    "stop all the sequencers of the given observation mode" in {
+    "stop all the sequencers of the given observation mode | ESW-166" in {
       when(sequencerUtil.stopSequencers(darknightSequencers, DARKNIGHT)).thenReturn(Future.successful(Done))
 
       val probe = createTestProbe[Done]

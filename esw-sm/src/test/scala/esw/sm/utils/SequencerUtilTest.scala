@@ -92,8 +92,8 @@ class SequencerUtilTest extends BaseTestSuite {
       val obsMode = "moonNight"
       val setup   = new TestSetup(obsMode)
       import setup._
-      when(locationServiceUtil.resolveSequencer(ESW, obsMode, Timeouts.DefaultTimeout)).thenReturn(Future.successful(eswLocation))
-      when(locationServiceUtil.resolveSequencer(TCS, obsMode, Timeouts.DefaultTimeout)).thenReturn(Future.successful(tcsLocation))
+      when(locationServiceUtil.resolveSequencer(ESW, obsMode)).thenReturn(Future.successful(eswLocation))
+      when(locationServiceUtil.resolveSequencer(TCS, obsMode)).thenReturn(Future.successful(tcsLocation))
       when(eswSequencerApi.isAvailable).thenReturn(Future.successful(true))
       when(tcsSequencerApi.isAvailable).thenReturn(Future.successful(true))
 
@@ -122,7 +122,7 @@ class SequencerUtilTest extends BaseTestSuite {
   }
 
   "stopSequencers" must {
-    "stop all the given sequencers" in {
+    "stop all the given sequencers and return Done | ESW-166" in {
       val obsMode = "moonNight"
       val setup   = new TestSetup(obsMode)
       import setup._
@@ -130,8 +130,8 @@ class SequencerUtilTest extends BaseTestSuite {
       val eswSeqCompLoc = AkkaLocation(AkkaConnection(ComponentId(Prefix(ESW, obsMode), SequenceComponent)), URI.create(""))
       val tcsSeqCompLoc = AkkaLocation(AkkaConnection(ComponentId(Prefix(TCS, obsMode), SequenceComponent)), URI.create(""))
 
-      when(locationServiceUtil.resolveSequencer(ESW, obsMode, Timeouts.DefaultTimeout)).thenReturn(Future.successful(eswLocation))
-      when(locationServiceUtil.resolveSequencer(TCS, obsMode, Timeouts.DefaultTimeout)).thenReturn(Future.successful(tcsLocation))
+      when(locationServiceUtil.resolveSequencer(ESW, obsMode)).thenReturn(Future.successful(eswLocation))
+      when(locationServiceUtil.resolveSequencer(TCS, obsMode)).thenReturn(Future.successful(tcsLocation))
       when(eswSequencerApi.getSequenceComponent).thenReturn(Future.successful(eswSeqCompLoc))
       when(tcsSequencerApi.getSequenceComponent).thenReturn(Future.successful(tcsSeqCompLoc))
       when(sequenceComponentUtil.unloadScript(eswSeqCompLoc)).thenReturn(Future.successful(Done))
@@ -141,10 +141,22 @@ class SequencerUtilTest extends BaseTestSuite {
 
       verify(eswSequencerApi).getSequenceComponent
       verify(tcsSequencerApi).getSequenceComponent
-
       verify(sequenceComponentUtil).unloadScript(eswSeqCompLoc)
       verify(sequenceComponentUtil).unloadScript(tcsSeqCompLoc)
+    }
 
+    "return Done even sequencer is not running | ESW-166" in {
+      val obsMode = "moonNight"
+      val setup   = new TestSetup(obsMode)
+      import setup._
+
+      when(locationServiceUtil.resolveSequencer(ESW, obsMode))
+        .thenReturn(Future.failed(new RuntimeException)) // mimic the exception thrown from LocationServiceUtil.resolveSequencer
+
+      sequencerUtil.stopSequencers(Sequencers(ESW), obsMode).awaitResult shouldBe Done
+
+      verify(locationServiceUtil).resolveSequencer(ESW, obsMode)
+      verify(eswSequencerApi, times(0)).getSequenceComponent
     }
 
   }

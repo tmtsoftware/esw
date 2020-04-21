@@ -54,9 +54,13 @@ class SequencerUtil(locationServiceUtil: LocationServiceUtil, sequenceComponentU
   }
 
   def stopSequencers(sequencers: Sequencers, obsMode: String): Future[Done] =
-    // todo: handle if sequencer previously is not running.
     Future
-      .traverse(sequencers.subsystems)(locationServiceUtil.resolveSequencer(_, obsMode).flatMap(stopSequencer))
+      .traverse(sequencers.subsystems) { s =>
+        locationServiceUtil
+          .resolveSequencer(s, obsMode)
+          .flatMap(stopSequencer)
+          .recover { case _: RuntimeException => Done } // to cover case when sequencer is to shutdown not available.
+      }
       .map(_ => Done)
 
   private def stopSequencer(loc: AkkaLocation): Future[Done] =
