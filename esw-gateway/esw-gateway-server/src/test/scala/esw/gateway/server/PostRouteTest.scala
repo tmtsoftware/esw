@@ -44,7 +44,7 @@ class PostRouteTest extends BaseTestSuite with ScalatestRouteTest with GatewayCo
   private val cswCtxMocks = new CswWiringMocks()
   import cswCtxMocks._
 
-  private val securityDirectives = SecurityDirectives()
+  private val securityDirectives = SecurityDirectives.authDisabled(system.settings.config)
   private val commandRoles       = Future.successful(CommandRoles.empty)
 
   private val postHandlerImpl =

@@ -48,6 +48,6 @@ class PostHandlerImpl(
 
   private def onSequencerCommand(componentId: ComponentId, command: SequencerPostRequest): Route =
     onSuccess(resolver.sequencerCommandService(componentId)) { sequencerApi =>
-      new SequencerPostHandler(sequencerApi).handle(command)
+      new SequencerPostHandler(sequencerApi, securityDirectives, Some(componentId.prefix)).handle(command)
     }
 }

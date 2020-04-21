@@ -3,6 +3,7 @@ package esw.ocs.handler
 import akka.http.scaladsl.model.StatusCodes
 import akka.http.scaladsl.server.Route
 import akka.http.scaladsl.testkit.ScalatestRouteTest
+import csw.aas.http.SecurityDirectives
 import csw.params.commands.CommandIssue.IdNotAvailableIssue
 import csw.params.commands.CommandResponse._
 import csw.params.commands.{CommandName, Sequence, Setup}
@@ -22,9 +23,10 @@ import scala.concurrent.Future
 
 class SequencerPostRouteTest extends BaseTestSuite with ScalatestRouteTest with SequencerHttpCodecs with ClientHttpCodecs {
 
-  private val sequencer: SequencerApi = mock[SequencerApi]
-  private val postHandler             = new SequencerPostHandler(sequencer)
-  lazy val route: Route               = new PostRouteFactory[SequencerPostRequest]("post-endpoint", postHandler).make()
+  private val sequencer: SequencerApi                = mock[SequencerApi]
+  private val securityDirectives: SecurityDirectives = SecurityDirectives.authDisabled(system.settings.config)
+  private val postHandler                            = new SequencerPostHandler(sequencer, securityDirectives)
+  lazy val route: Route                              = new PostRouteFactory[SequencerPostRequest]("post-endpoint", postHandler).make()
 
   override def clientContentType: ContentType = ContentType.Json
 

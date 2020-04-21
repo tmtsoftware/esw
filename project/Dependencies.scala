@@ -27,6 +27,7 @@ object Dependencies {
 
   val OcsHandler: Def.Initialize[Seq[ModuleID]] = Def.setting(
     Seq(
+      Csw.`csw-aas-http`,
       AkkaHttp.`akka-http`,
       Libs.`msocket-impl-jvm`,
       Libs.scalatest               % Test,

@@ -33,7 +33,7 @@ class GatewayWiring(_port: Option[Int], local: Boolean, commandRoleConfigPath: P
   import cswWiring._
   import cswWiring.actorRuntime.{ec, typedSystem}
 
-  private val resolver = new Resolver(locationService)(actorSystem)
+  private[esw] val resolver = new Resolver(locationService)(actorSystem)
 
   lazy val alarmApi: AlarmApi     = new AlarmImpl(alarmService)
   lazy val eventApi: EventApi     = new EventImpl(eventService, eventSubscriberUtil)

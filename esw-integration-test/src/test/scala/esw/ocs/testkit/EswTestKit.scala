@@ -161,6 +161,14 @@ abstract class EswTestKit(services: Service*)
     httpClient
   }
 
+  private[esw] def gatewayHTTPClientWithToken(tokenFactory: () => Option[String]) = {
+    val httpLocation = resolveHTTPLocation(gatewayPrefix, ComponentType.Service)
+    val httpUri      = Uri(httpLocation.uri.toString).withPath(Path("/post-endpoint")).toString()
+    val httpClient =
+      new HttpPostTransport[PostRequest](httpUri, ContentType.Json, tokenFactory)
+    httpClient
+  }
+
   private def gatewayWebSocketClient(prefix: Prefix) = {
     val httpLocation = resolveHTTPLocation(prefix, ComponentType.Service)
     val webSocketUri = Uri(httpLocation.uri.toString).withScheme("ws").withPath(Path("/websocket-endpoint")).toString()
