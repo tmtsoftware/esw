@@ -2,11 +2,12 @@ package esw.ocs.app
 
 import java.nio.file.{Paths, Path => NIOPATH}
 
+import akka.actor.CoordinatedShutdown.UnknownReason
 import csw.aas.core.commons.AASConnection
 import csw.command.api.scaladsl.CommandService
 import csw.location.api.models.ComponentType.Assembly
 import csw.location.api.models.{ComponentId, HttpRegistration}
-import csw.network.utils.SocketUtils
+import csw.network.utils.{Networks, SocketUtils}
 import csw.params.commands.CommandResponse.Started
 import csw.params.commands.{CommandName, Setup}
 import csw.params.core.models.{Id, ObsId}
@@ -26,63 +27,68 @@ import scala.concurrent.{Await, Future}
 
 class GatewayAuthTest extends EswTestKit {
 
-  private val gatewayUser         = "gateway-user"
-  private val gatewayUserPassword = "gateway-user"
-
-  private val timeout: FiniteDuration = 20.seconds
-  private val serverTimeout: FiniteDuration  = 5.minutes
-
-  private val keycloakPort = SocketUtils.getFreePort
-
+  private val gatewayUser                   = "gateway-user"
+  private val gatewayUserPassword           = "gateway-user"
+  private val serverTimeout: FiniteDuration = 3.minutes
+  private val keycloakPort                  = SocketUtils.getFreePort
   private val tokenFactory: () => Option[String] =
     () =>
       Some(
         BearerToken
           .fromServer(
-            host = "localhost",
+            host = Networks().hostname,
             port = keycloakPort,
             username = gatewayUser,
             password = gatewayUserPassword,
-            realm = "TMT",
+            realm = "TMT-test",
             client = "esw-gateway-client"
           )
           .token
       )
-
-  val mockResolver: Resolver         = mock[Resolver]
-  val commandService: CommandService = mock[CommandService]
-  val prefix                         = Prefix("TCS.test")
-  val componentId                    = ComponentId(prefix, Assembly)
-  val runId                          = Id("1234")
-  val longRunningCommand             = Setup(prefix, CommandName("long-running"), Some(ObsId("obsId")))
-
   private var keycloakStopHandle: StopHandle = _
+
+  private val mockResolver: Resolver         = mock[Resolver]
+  private val commandService: CommandService = mock[CommandService]
+  private val prefix                         = Prefix("IRIS.filter.wheel")
+  private val componentId                    = ComponentId(prefix, Assembly)
+  private val runId                          = Id("1234")
+  private val startExposureCommand           = Setup(prefix, CommandName("startExposure"), Some(ObsId("obsId")))
+  private var gatewayWiring: GatewayWiring   = _
 
   override def beforeAll(): Unit = {
     super.beforeAll()
     keycloakStopHandle = startKeycloak()
-    startGateway()
+    gatewayWiring = startGateway()
     when(mockResolver.commandService(componentId)).thenReturn(Future.successful(commandService))
-    when(commandService.submit(longRunningCommand)).thenReturn(Future.successful(Started(runId)))
+    when(commandService.submit(startExposureCommand)).thenReturn(Future.successful(Started(runId)))
   }
 
   override def afterAll(): Unit = {
     keycloakStopHandle.stop()
+    gatewayWiring.httpService.shutdown(UnknownReason).futureValue
     super.afterAll()
   }
   "Gateway" must {
     "return 401 response for protected route without token" in {
-      val clientFactory      = new ClientFactory(gatewayPostClient, gatewayWsClient)
-      val commandService     = clientFactory.component(componentId)
-      val longRunningCommand = Setup(prefix, CommandName("long-running"), Some(ObsId("obsId")))
+      val clientFactory  = new ClientFactory(gatewayPostClient, gatewayWsClient)
+      val commandService = clientFactory.component(componentId)
 
-      val httpError = intercept[HttpError](Await.result(commandService.submit(longRunningCommand), timeout))
+      val httpError = intercept[HttpError](Await.result(commandService.submit(startExposureCommand), defaultTimeout))
       httpError.statusCode shouldBe 401
     }
+    "return 200 response for protected route with token with required role" in {
+      val gatewayPostClientWithAuth = gatewayHTTPClientWithToken(tokenFactory)
+      val clientFactory             = new ClientFactory(gatewayPostClientWithAuth, gatewayWsClient)
+      val commandService            = clientFactory.component(componentId)
+
+      val submitResponse = Await.result(commandService.submit(startExposureCommand), 10.minutes)
+      submitResponse shouldBe a[Started]
+    }
+
   }
 
   private def startKeycloak(): StopHandle = {
-    val tcsUserRole = "TCS-user"
+    val irisUserRole = "IRIS-user"
 
     val `esw-gateway-server` = Client(
       "esw-gateway-server",
@@ -93,33 +99,35 @@ class GatewayAuthTest extends EswTestKit {
       Client("esw-gateway-client", "public", passwordGrantEnabled = true, authorizationEnabled = false)
 
     val keycloakData = KeycloakData(
+      AdminUser("admin", "admin"),
       realms = Set(
         Realm(
-          "TMT",
+          "TMT-test",
           clients = Set(`esw-gateway-server`, `esw-gateway-client`),
           users = Set(
             ApplicationUser(
               gatewayUser,
               gatewayUserPassword,
-              realmRoles = Set(tcsUserRole)
+              realmRoles = Set(irisUserRole)
             )
           ),
-          realmRoles = Set(tcsUserRole)
+          realmRoles = Set(irisUserRole)
         )
       )
     )
     val embeddedKeycloak =
       new EmbeddedKeycloak(keycloakData, KeycloakSettings(port = keycloakPort, printProcessLogs = false))
     val stopHandle = Await.result(embeddedKeycloak.startServer(), serverTimeout)
-    Await.result(locationService.register(HttpRegistration(AASConnection.value, keycloakPort, "auth")), timeout)
+    Await.result(locationService.register(HttpRegistration(AASConnection.value, keycloakPort, "auth")), defaultTimeout)
     stopHandle
   }
 
-  private def startGateway() = {
+  private def startGateway(): GatewayWiring = {
     val commandRolesPath = Paths.get(getClass.getResource("/commandRoles.conf").getPath)
-    val serverWiring =
+    val gatewayWiring =
       TestGatewayWiring.make(Some(SocketUtils.getFreePort), local = true, commandRolesPath, mockResolver)
-    Await.result(serverWiring.httpService.registeredLazyBinding, serverTimeout)
+    Await.result(gatewayWiring.httpService.registeredLazyBinding, defaultTimeout)
+    gatewayWiring
   }
 
 }

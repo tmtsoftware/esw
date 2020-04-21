@@ -1,9 +1,9 @@
 
 ####Generate and save token (BearerToken.fromServer in LocationAuthTestWithKeycloak )
-POST http://192.168.43.48:8081/auth/realms/loc-test/protocol/openid-connect/token
+POST http://192.168.43.48:8081/auth/realms/TMT-test/protocol/openid-connect/token
 Content-Type: application/x-www-form-urlencoded
 
-client_id=admin-cli&grant_type=password&username=user3&password=user3
+client_id=esw-gateway-client&grant_type=password&username=gateway-user&password=gateway-user
 
 
 > {% client.global.set("access_token", response.body.access_token); %}
@@ -17,17 +17,17 @@ Authorization: Bearer {{access_token}}
 {
   "_type": "ComponentCommand",
   "componentId": {
-    "prefix": "APS.trombonehcd",
+    "prefix": "IRIS.filter.wheel",
     "componentType": "hcd"
   },
   "command": {
-    "_type": "Validate",
+    "_type": "Submit",
     "controlCommand": {
       "_type": "Setup",
       "source": "CSW.ncc.trombone",
-      "commandName": "otherCommand",
+      "commandName": "startExposure",
       "maybeObsId": [
-        "obs001"
+        "obsId"
       ],
       "paramSet": []
     }
