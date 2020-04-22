@@ -16,6 +16,7 @@ import csw.location.api.models.{AkkaLocation, AkkaRegistration, ComponentId}
 import csw.location.api.scaladsl.{LocationService, RegistrationResult}
 import csw.prefix.models.Subsystem.{ESW, IRIS, TCS}
 import csw.prefix.models.{Prefix, Subsystem}
+import esw.commons.utils.location.EswLocationError.ResolveLocationFailed
 import esw.commons.{BaseTestSuite, Timeouts}
 
 import scala.concurrent.duration.DurationDouble
@@ -81,7 +82,7 @@ class LocationServiceUtilTest extends ScalaTestWithActorTestKit with BaseTestSui
       when(locationService.list(SequenceComponent)).thenReturn(Future.successful(sequenceComponentLocations))
       val locationServiceDsl = new LocationServiceUtil(locationService)
 
-      val actualLocations = locationServiceDsl.listBy(TCS, SequenceComponent).futureValue
+      val actualLocations = locationServiceDsl.listBy(TCS, SequenceComponent).rightValue
 
       actualLocations should ===(tcsLocations)
     }
@@ -97,7 +98,7 @@ class LocationServiceUtilTest extends ScalaTestWithActorTestKit with BaseTestSui
       when(locationService.list(SequenceComponent)).thenReturn(Future.successful(sequenceComponentLocations))
       val locationServiceDsl = new LocationServiceUtil(locationService)
 
-      val actualLocations = locationServiceDsl.listBy(Subsystem.NFIRAOS, SequenceComponent).futureValue
+      val actualLocations = locationServiceDsl.listBy(Subsystem.NFIRAOS, SequenceComponent).rightValue
 
       actualLocations should ===(List.empty)
     }
@@ -117,8 +118,8 @@ class LocationServiceUtilTest extends ScalaTestWithActorTestKit with BaseTestSui
 
       val locationServiceDsl = new LocationServiceUtil(locationService)
       val actualLocations =
-        locationServiceDsl.resolveByComponentNameAndType("obsmode1", Sequencer).futureValue
-      actualLocations.get should ===(tcsLocation)
+        locationServiceDsl.resolveByComponentNameAndType("obsmode1", Sequencer).rightValue
+      actualLocations should ===(tcsLocation)
     }
 
     "return an IllegalArgumentException when no matching component name and type is found | ESW-215" in {
@@ -144,7 +145,12 @@ class LocationServiceUtilTest extends ScalaTestWithActorTestKit with BaseTestSui
       val locationServiceDsl = new LocationServiceUtil(locationService)
       val actualLocations =
         locationServiceDsl.resolveByComponentNameAndType("obsMode", Sequencer).awaitResult
-      actualLocations should ===(None)
+
+      actualLocations.leftValue should ===(
+        ResolveLocationFailed(
+          s"Could not find location matching ComponentName: obsMode, componentType: $Sequencer"
+        )
+      )
     }
   }
 
@@ -163,7 +169,7 @@ class LocationServiceUtilTest extends ScalaTestWithActorTestKit with BaseTestSui
 
       val locationServiceDsl = new LocationServiceUtil(locationService)
       val actualLocations =
-        locationServiceDsl.resolveSequencer(TCS, "obsMode1").futureValue
+        locationServiceDsl.resolveSequencer(TCS, "obsMode1").rightValue
       actualLocations should ===(tcsLocation)
     }
 

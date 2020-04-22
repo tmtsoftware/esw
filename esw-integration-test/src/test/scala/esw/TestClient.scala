@@ -29,7 +29,8 @@ object TestClient extends App {
 
   val location = Await.result(
     new LocationServiceUtil(_locationService)
-      .resolveSequencer(IRIS, "darknight"),
+      .resolveSequencer(IRIS, "darknight")
+      .map(_.getOrElse(throw new RuntimeException(s"Could not find any sequencer with name: ${IRIS.name}.darknight"))),
     5.seconds
   )
 

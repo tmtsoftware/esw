@@ -84,8 +84,15 @@ private[ocs] class SequencerWiring(
   private lazy val jLoggerFactory   = loggerFactory.asJava
   private lazy val jLogger: ILogger = ScriptLoader.withScript(scriptClass)(jLoggerFactory.getLogger)
 
+  // todo: error should extend exception and same should be carries when converted to java
   private lazy val sequencerImplFactory = (_subsystem: Subsystem, _obsMode: String) =>
-    locationServiceUtil.resolveSequencer(_subsystem, _obsMode).map(SequencerApiFactory.make).asJava
+    locationServiceUtil
+      .resolveSequencer(_subsystem, _obsMode)
+      .map {
+        case Left(error)     => throw new RuntimeException(error.msg)
+        case Right(location) => SequencerApiFactory.make(location)
+      }
+      .asJava
 
   lazy val scriptContext = new ScriptContext(
     heartbeatInterval,
