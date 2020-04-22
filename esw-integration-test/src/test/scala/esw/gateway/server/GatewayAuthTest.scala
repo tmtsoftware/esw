@@ -33,34 +33,25 @@ class GatewayAuthTest extends EswTestKit {
   private val serverTimeout: FiniteDuration   = 3.minutes
   private val keycloakPort                    = SocketUtils.getFreePort
   private val validTokenFactory: () => Option[String] =
-    () =>
-      Some(
-        BearerToken
-          .fromServer(
-            host = Networks().hostname,
-            port = keycloakPort,
-            username = gatewayUser1WithRequiredRole,
-            password = gatewayUser1Password,
-            realm = "TMT-test",
-            client = "esw-gateway-client"
-          )
-          .token
-      )
-
+    getToken(gatewayUser1WithRequiredRole,gatewayUser1Password)
   private val invalidTokenFactory: () => Option[String] =
+    getToken(gatewayUser2WithoutRequiredRole, gatewayUser2Password)
+
+  private def getToken(tokenUserName: String, tokenPassword : String) = {
     () =>
       Some(
         BearerToken
           .fromServer(
             host = Networks().hostname,
             port = keycloakPort,
-            username = gatewayUser2WithoutRequiredRole,
-            password = gatewayUser2Password,
+            username = tokenUserName,
+            password = tokenPassword,
             realm = "TMT-test",
             client = "esw-gateway-client"
           )
           .token
       )
+  }
 
   private var keycloakStopHandle: StopHandle = _
 
