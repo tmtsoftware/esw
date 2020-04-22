@@ -33,24 +33,23 @@ class GatewayAuthTest extends EswTestKit {
   private val serverTimeout: FiniteDuration   = 3.minutes
   private val keycloakPort                    = SocketUtils.getFreePort
   private val validTokenFactory: () => Option[String] =
-    getToken(gatewayUser1WithRequiredRole,gatewayUser1Password)
+    getToken(gatewayUser1WithRequiredRole, gatewayUser1Password)
   private val invalidTokenFactory: () => Option[String] =
     getToken(gatewayUser2WithoutRequiredRole, gatewayUser2Password)
 
-  private def getToken(tokenUserName: String, tokenPassword : String) = {
-    () =>
-      Some(
-        BearerToken
-          .fromServer(
-            host = Networks().hostname,
-            port = keycloakPort,
-            username = tokenUserName,
-            password = tokenPassword,
-            realm = "TMT-test",
-            client = "esw-gateway-client"
-          )
-          .token
-      )
+  private def getToken(tokenUserName: String, tokenPassword: String) = { () =>
+    Some(
+      BearerToken
+        .fromServer(
+          host = Networks().hostname,
+          port = keycloakPort,
+          username = tokenUserName,
+          password = tokenPassword,
+          realm = "TMT-test",
+          client = "esw-gateway-client"
+        )
+        .token
+    )
   }
 
   private var keycloakStopHandle: StopHandle = _
@@ -139,22 +138,11 @@ class GatewayAuthTest extends EswTestKit {
 
   private def startGateway(): GatewayWiring = {
     val commandRolesPath = Paths.get(getClass.getResource("/commandRoles.conf").getPath)
-    val gatewayWiring =
-      TestGatewayWiring.make(Some(SocketUtils.getFreePort), local = true, commandRolesPath, mockResolver)
+    val gatewayWiring = new GatewayWiring(Some(SocketUtils.getFreePort), local = true, commandRolesPath) {
+      override val resolver: Resolver = mockResolver
+    }
     Await.result(gatewayWiring.httpService.registeredLazyBinding, defaultTimeout)
     gatewayWiring
   }
 
-}
-
-object TestGatewayWiring {
-  private[esw] def make(
-      _port: Option[Int],
-      local: Boolean,
-      commandRoleConfigPath: NIOPATH,
-      _resolver: Resolver
-  ): GatewayWiring =
-    new GatewayWiring(_port, local, commandRoleConfigPath) {
-      override val resolver: Resolver = _resolver
-    }
 }
