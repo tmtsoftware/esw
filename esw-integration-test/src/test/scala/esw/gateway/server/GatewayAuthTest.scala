@@ -26,24 +26,42 @@ import scala.concurrent.{Await, Future}
 
 class GatewayAuthTest extends EswTestKit {
 
-  private val gatewayUser                   = "gateway-user"
-  private val gatewayUserPassword           = "gateway-user"
-  private val serverTimeout: FiniteDuration = 3.minutes
-  private val keycloakPort                  = SocketUtils.getFreePort
-  private val tokenFactory: () => Option[String] =
+  private val gatewayUser1WithRequiredRole    = "gateway-user1"
+  private val gatewayUser1Password            = "gateway-user1"
+  private val gatewayUser2WithoutRequiredRole = "gateway-user2"
+  private val gatewayUser2Password            = "gateway-user2"
+  private val serverTimeout: FiniteDuration   = 3.minutes
+  private val keycloakPort                    = SocketUtils.getFreePort
+  private val validTokenFactory: () => Option[String] =
     () =>
       Some(
         BearerToken
           .fromServer(
             host = Networks().hostname,
             port = keycloakPort,
-            username = gatewayUser,
-            password = gatewayUserPassword,
+            username = gatewayUser1WithRequiredRole,
+            password = gatewayUser1Password,
             realm = "TMT-test",
             client = "esw-gateway-client"
           )
           .token
       )
+
+  private val invalidTokenFactory: () => Option[String] =
+    () =>
+      Some(
+        BearerToken
+          .fromServer(
+            host = Networks().hostname,
+            port = keycloakPort,
+            username = gatewayUser2WithoutRequiredRole,
+            password = gatewayUser2Password,
+            realm = "TMT-test",
+            client = "esw-gateway-client"
+          )
+          .token
+      )
+
   private var keycloakStopHandle: StopHandle = _
 
   private val mockResolver: Resolver             = mock[Resolver]
@@ -69,16 +87,17 @@ class GatewayAuthTest extends EswTestKit {
   }
 
   "Gateway" must {
-    "return 401 response for protected route without token | ESW-95" in {
-      val clientFactory  = new ClientFactory(gatewayPostClient, gatewayWsClient)
-      val commandService = clientFactory.component(componentId)
+    "return 403 response for protected route without required role | ESW-95" in {
+      val gatewayPostClientWithAuth = gatewayHTTPClient(invalidTokenFactory)
+      val clientFactory             = new ClientFactory(gatewayPostClientWithAuth, gatewayWsClient)
+      val commandService            = clientFactory.component(componentId)
 
       val httpError = intercept[HttpError](Await.result(commandService.submit(startExposureCommand), defaultTimeout))
-      httpError.statusCode shouldBe 401
+      httpError.statusCode shouldBe 403
     }
 
-    "return 200 response for protected route with token with required role | ESW-95" in {
-      val gatewayPostClientWithAuth = gatewayHTTPClient(tokenFactory)
+    "return 200 response for protected route with required role | ESW-95" in {
+      val gatewayPostClientWithAuth = gatewayHTTPClient(validTokenFactory)
       val clientFactory             = new ClientFactory(gatewayPostClientWithAuth, gatewayWsClient)
       val commandService            = clientFactory.component(componentId)
 
@@ -107,9 +126,13 @@ class GatewayAuthTest extends EswTestKit {
           clients = Set(`esw-gateway-server`, `esw-gateway-client`),
           users = Set(
             ApplicationUser(
-              gatewayUser,
-              gatewayUserPassword,
+              gatewayUser1WithRequiredRole,
+              gatewayUser1Password,
               realmRoles = Set(irisUserRole)
+            ),
+            ApplicationUser(
+              gatewayUser2WithoutRequiredRole,
+              gatewayUser2Password
             )
           ),
           realmRoles = Set(irisUserRole)
