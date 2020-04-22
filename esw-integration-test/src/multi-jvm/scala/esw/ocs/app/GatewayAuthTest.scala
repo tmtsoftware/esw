@@ -53,19 +53,19 @@ class GatewayAuthTest extends EswTestKit {
   private val componentId                    = ComponentId(prefix, Assembly)
   private val runId                          = Id("1234")
   private val startExposureCommand           = Setup(prefix, CommandName("startExposure"), Some(ObsId("obsId")))
-  private var gatewayWiring: GatewayWiring   = _
+  private var gatewayServerWiring: GatewayWiring   = _
 
   override def beforeAll(): Unit = {
     super.beforeAll()
     keycloakStopHandle = startKeycloak()
-    gatewayWiring = startGateway()
+    gatewayServerWiring = startGateway()
     when(mockResolver.commandService(componentId)).thenReturn(Future.successful(commandService))
     when(commandService.submit(startExposureCommand)).thenReturn(Future.successful(Started(runId)))
   }
 
   override def afterAll(): Unit = {
     keycloakStopHandle.stop()
-    gatewayWiring.httpService.shutdown(UnknownReason).futureValue
+    gatewayServerWiring.httpService.shutdown(UnknownReason).futureValue
     super.afterAll()
   }
   "Gateway" must {

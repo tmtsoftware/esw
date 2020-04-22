@@ -2,10 +2,8 @@ package esw.ocs.handler
 
 import akka.http.scaladsl.server.Directives.complete
 import akka.http.scaladsl.server.Route
-import csw.aas.http.AuthorizationPolicy.CustomPolicy
 import csw.aas.http.SecurityDirectives
-import csw.command.client.auth.Roles
-import csw.prefix.models.{Prefix, Subsystem}
+import csw.prefix.models.Prefix
 import esw.ocs.api.SequencerApi
 import esw.ocs.api.codecs.SequencerHttpCodecs._
 import esw.ocs.api.protocol.SequencerPostRequest
