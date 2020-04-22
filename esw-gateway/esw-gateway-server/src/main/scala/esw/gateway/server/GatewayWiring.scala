@@ -40,11 +40,11 @@ class GatewayWiring(_port: Option[Int], local: Boolean, commandRoleConfigPath: P
   lazy val loggingApi: LoggingApi = new LoggingImpl(new LoggerCache)
   lazy val adminApi: AdminService = new AdminServiceImpl(locationService)
 
-  private lazy val configClient       = ConfigClientFactory.clientApi(actorSystem, locationService)
-  private lazy val configUtils        = new ConfigUtils(configClient)
-  private lazy val commandRolesConfig = configUtils.getConfig(commandRoleConfigPath, local)
-  private lazy val commandRoles       = commandRolesConfig.map(CommandRoles.from)
-  private lazy val securityDirectives = SecurityDirectives(actorSystem.settings.config, cswWiring.locationService)
+  private lazy val configClient            = ConfigClientFactory.clientApi(actorSystem, locationService)
+  private lazy val configUtils             = new ConfigUtils(configClient)
+  private lazy val commandRolesConfig      = configUtils.getConfig(commandRoleConfigPath, local)
+  private lazy val commandRoles            = commandRolesConfig.map(CommandRoles.from)
+  private[esw] lazy val securityDirectives = SecurityDirectives(actorSystem.settings.config, cswWiring.locationService)
 
   lazy val postHandler: HttpPostHandler[PostRequest] =
     new PostHandlerImpl(alarmApi, resolver, eventApi, loggingApi, adminApi, securityDirectives, commandRoles)
@@ -65,9 +65,11 @@ object GatewayWiring {
       _port: Option[Int],
       local: Boolean,
       commandRoleConfigPath: Path,
-      _actorSystem: ActorSystem[SpawnProtocol.Command]
+      _actorSystem: ActorSystem[SpawnProtocol.Command],
+      _securityDirectives: SecurityDirectives
   ): GatewayWiring =
     new GatewayWiring(_port, local, commandRoleConfigPath) {
       override lazy val actorSystem: ActorSystem[SpawnProtocol.Command] = _actorSystem
+      override private[esw] lazy val securityDirectives                 = _securityDirectives
     }
 }
