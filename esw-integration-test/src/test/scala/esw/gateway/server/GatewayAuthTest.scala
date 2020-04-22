@@ -1,6 +1,6 @@
 package esw.gateway.server
 
-import java.nio.file.{Paths, Path => NIOPATH}
+import java.nio.file.Paths
 
 import akka.actor.CoordinatedShutdown.UnknownReason
 import csw.aas.core.commons.AASConnection
