@@ -10,11 +10,11 @@ class SubsystemUserRolePolicyTest extends AnyFunSuite with Matchers {
 
   test("should grant access if subsystem user role present in token | ESW-95") {
     val token = AccessToken(realm_access = Access(Set("TCS-user")))
-    SubsystemUserRolePolicy.hasAccess(token, Subsystem.TCS) shouldBe true
+    SubsystemUserRolePolicy(Subsystem.TCS).predicate(token) shouldBe true
   }
 
   test("should not grant access if subsystem user role not present in token | ESW-95") {
-    val accessToken = AccessToken(realm_access = Access(Set("APS-user")))
-    SubsystemUserRolePolicy.hasAccess(accessToken, Subsystem.TCS) shouldBe false
+    val token = AccessToken(realm_access = Access(Set("APS-user")))
+    SubsystemUserRolePolicy(Subsystem.TCS).predicate(token) shouldBe false
   }
 }
