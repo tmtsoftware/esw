@@ -161,6 +161,7 @@ abstract class EswTestKit(services: Service*)
     httpClient
   }
 
+  // ESW-95
   private[esw] def gatewayHTTPClientWithToken(tokenFactory: () => Option[String]) = {
     val httpLocation = resolveHTTPLocation(gatewayPrefix, ComponentType.Service)
     val httpUri      = Uri(httpLocation.uri.toString).withPath(Path("/post-endpoint")).toString()

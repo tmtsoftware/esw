@@ -69,14 +69,14 @@ class GatewayAuthTest extends EswTestKit {
     super.afterAll()
   }
   "Gateway" must {
-    "return 401 response for protected route without token" in {
+    "return 401 response for protected route without token | ESW-95" in {
       val clientFactory  = new ClientFactory(gatewayPostClient, gatewayWsClient)
       val commandService = clientFactory.component(componentId)
 
       val httpError = intercept[HttpError](Await.result(commandService.submit(startExposureCommand), defaultTimeout))
       httpError.statusCode shouldBe 401
     }
-    "return 200 response for protected route with token with required role" in {
+    "return 200 response for protected route with token with required role | ESW-95" in {
       val gatewayPostClientWithAuth = gatewayHTTPClientWithToken(tokenFactory)
       val clientFactory             = new ClientFactory(gatewayPostClientWithAuth, gatewayWsClient)
       val commandService            = clientFactory.component(componentId)
