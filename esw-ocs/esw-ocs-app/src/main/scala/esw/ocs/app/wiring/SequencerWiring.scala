@@ -125,7 +125,7 @@ private[ocs] class SequencerWiring(
       val eventualTerminated                  = serverBinding.terminate(Timeouts.DefaultTimeout)
       val eventualDone                        = registrationResult.unregister()
       await(eventualTerminated.flatMap(_ => eventualDone))
-  }
+    }
 
   lazy val sequencerBehavior =
     new SequencerBehavior(componentId, script, locationService, sequenceComponentLocation, logger, shutdownHttpService)(
@@ -150,7 +150,8 @@ private[ocs] class SequencerWiring(
           BlockHoundWiring.install()
         }
         loc
-      } catch {
+      }
+      catch {
         // This error will be logged in SequenceComponent.Do not log it here,
         // because exception caused while initialising will fail the instance creation of logger.
         case NonFatal(e) => Left(ScriptError(e.getMessage))

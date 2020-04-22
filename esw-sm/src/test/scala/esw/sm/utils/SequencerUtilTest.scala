@@ -11,6 +11,7 @@ import csw.location.api.models.{AkkaLocation, ComponentId, HttpLocation, Locatio
 import csw.location.api.scaladsl.LocationService
 import csw.prefix.models.Prefix
 import csw.prefix.models.Subsystem.{ESW, TCS}
+import esw.commons.utils.location.EswLocationError.ResolveLocationFailed
 import esw.commons.utils.location.LocationServiceUtil
 import esw.commons.{BaseTestSuite, Timeouts}
 import esw.ocs.api.SequencerApi
@@ -18,6 +19,7 @@ import esw.ocs.api.actor.client.SequenceComponentImpl
 import esw.ocs.api.protocol.{ScriptError, ScriptResponse}
 import esw.sm.core.Sequencers
 import esw.sm.messages.ConfigureResponse.{FailedToStartSequencers, Success}
+import esw.sm.utils.SequenceManagerError.{SequencerNotIdle, SpawnSequenceComponentFailed}
 
 import scala.concurrent.duration.DurationInt
 import scala.concurrent.{ExecutionContext, Future}
@@ -66,10 +68,10 @@ class SequencerUtilTest extends BaseTestSuite {
       val setup   = new TestSetup(obsMode)
       import setup._
 
-      // unable to find / start sequence component error
-      val seqCompErrorMsg = "could not find SeqComp for ESW"
+      // unable to start sequence component error
+      val seqCompErrorMsg = "could not spawn SeqComp for ESW"
       when(sequenceComponentUtil.getAvailableSequenceComponent(ESW))
-        .thenReturn(Future.successful(Left(SequencerError(seqCompErrorMsg))))
+        .thenReturn(Future.successful(Left(SpawnSequenceComponentFailed(seqCompErrorMsg))))
 
       // unable to loadScript script error
       val scriptErrorMsg = s"script initialisation failed for TCS $obsMode"
@@ -88,34 +90,36 @@ class SequencerUtilTest extends BaseTestSuite {
   }
 
   "areSequencersIdle" must {
-    "return true if all given sequencers are idle | ESW-178" in {
+    "return Done if all given sequencers are idle | ESW-178" in {
       val obsMode = "moonNight"
       val setup   = new TestSetup(obsMode)
       import setup._
-      when(locationServiceUtil.resolveSequencer(ESW, obsMode)).thenReturn(Future.successful(eswLocation))
-      when(locationServiceUtil.resolveSequencer(TCS, obsMode)).thenReturn(Future.successful(tcsLocation))
+      when(locationServiceUtil.resolveSequencer(ESW, obsMode)).thenReturn(Future.successful(Right(eswLocation)))
+      when(locationServiceUtil.resolveSequencer(TCS, obsMode)).thenReturn(Future.successful(Right(tcsLocation)))
       when(eswSequencerApi.isAvailable).thenReturn(Future.successful(true))
       when(tcsSequencerApi.isAvailable).thenReturn(Future.successful(true))
 
-      val eventualBoolean = sequencerUtil.areSequencersIdle(Sequencers(ESW, TCS), obsMode)
+      val eventualBoolean = sequencerUtil.checkForSequencersAvailability(Sequencers(ESW, TCS), obsMode)
 
-      eventualBoolean.awaitResult shouldBe true
+      eventualBoolean.rightValue shouldBe Done
       verify(eswSequencerApi).isAvailable
       verify(tcsSequencerApi).isAvailable
     }
 
-    "return false if one or more of given sequencers are busy | ESW-178" in {
+    "return Error if one or more of given sequencers are busy | ESW-178" in {
       val obsMode = "moonNight"
       val setup   = new TestSetup(obsMode)
       import setup._
-      when(locationServiceUtil.resolveSequencer(ESW, obsMode, Timeouts.DefaultTimeout)).thenReturn(Future.successful(eswLocation))
-      when(locationServiceUtil.resolveSequencer(TCS, obsMode, Timeouts.DefaultTimeout)).thenReturn(Future.successful(tcsLocation))
+      when(locationServiceUtil.resolveSequencer(ESW, obsMode, Timeouts.DefaultTimeout))
+        .thenReturn(Future.successful(Right(eswLocation)))
+      when(locationServiceUtil.resolveSequencer(TCS, obsMode, Timeouts.DefaultTimeout))
+        .thenReturn(Future.successful(Right(tcsLocation)))
       when(eswSequencerApi.isAvailable).thenReturn(Future.successful(true))
       when(tcsSequencerApi.isAvailable).thenReturn(Future.successful(false))
 
-      val eventualBoolean = sequencerUtil.areSequencersIdle(Sequencers(ESW, TCS), obsMode)
+      val eventualBoolean = sequencerUtil.checkForSequencersAvailability(Sequencers(ESW, TCS), obsMode)
 
-      eventualBoolean.awaitResult shouldBe false
+      eventualBoolean.leftValue shouldBe SequencerNotIdle(obsMode)
       verify(eswSequencerApi).isAvailable
       verify(tcsSequencerApi).isAvailable
     }
@@ -130,14 +134,14 @@ class SequencerUtilTest extends BaseTestSuite {
       val eswSeqCompLoc = AkkaLocation(AkkaConnection(ComponentId(Prefix(ESW, obsMode), SequenceComponent)), URI.create(""))
       val tcsSeqCompLoc = AkkaLocation(AkkaConnection(ComponentId(Prefix(TCS, obsMode), SequenceComponent)), URI.create(""))
 
-      when(locationServiceUtil.resolveSequencer(ESW, obsMode)).thenReturn(Future.successful(eswLocation))
-      when(locationServiceUtil.resolveSequencer(TCS, obsMode)).thenReturn(Future.successful(tcsLocation))
+      when(locationServiceUtil.resolveSequencer(ESW, obsMode)).thenReturn(Future.successful(Right(eswLocation)))
+      when(locationServiceUtil.resolveSequencer(TCS, obsMode)).thenReturn(Future.successful(Right(tcsLocation)))
       when(eswSequencerApi.getSequenceComponent).thenReturn(Future.successful(eswSeqCompLoc))
       when(tcsSequencerApi.getSequenceComponent).thenReturn(Future.successful(tcsSeqCompLoc))
       when(sequenceComponentUtil.unloadScript(eswSeqCompLoc)).thenReturn(Future.successful(Done))
       when(sequenceComponentUtil.unloadScript(tcsSeqCompLoc)).thenReturn(Future.successful(Done))
 
-      sequencerUtil.stopSequencers(Sequencers(ESW, TCS), obsMode).awaitResult shouldBe Done
+      sequencerUtil.stopSequencers(Sequencers(ESW, TCS), obsMode).rightValue shouldBe Done
 
       verify(eswSequencerApi).getSequenceComponent
       verify(tcsSequencerApi).getSequenceComponent
@@ -145,15 +149,17 @@ class SequencerUtilTest extends BaseTestSuite {
       verify(sequenceComponentUtil).unloadScript(tcsSeqCompLoc)
     }
 
-    "return Done even sequencer is not running | ESW-166" in {
+    "return Done even sequencer is not running | ESW-166" ignore {
       val obsMode = "moonNight"
       val setup   = new TestSetup(obsMode)
       import setup._
 
       when(locationServiceUtil.resolveSequencer(ESW, obsMode))
-        .thenReturn(Future.failed(new RuntimeException)) // mimic the exception thrown from LocationServiceUtil.resolveSequencer
+        .thenReturn(
+          Future.successful(Left(ResolveLocationFailed("location service error")))
+        ) // mimic the exception thrown from LocationServiceUtil.resolveSequencer
 
-      sequencerUtil.stopSequencers(Sequencers(ESW), obsMode).awaitResult shouldBe Done
+      sequencerUtil.stopSequencers(Sequencers(ESW), obsMode).rightValue shouldBe Done
 
       verify(locationServiceUtil).resolveSequencer(ESW, obsMode)
       verify(eswSequencerApi, times(0)).getSequenceComponent

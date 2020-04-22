@@ -8,11 +8,13 @@ import csw.location.api.models.ComponentType.Sequencer
 import csw.location.api.models.{AkkaLocation, HttpLocation}
 import csw.prefix.models.Subsystem.ESW
 import esw.commons.Timeouts
+import esw.commons.utils.FutureEitherUtils.FutureEither
+import esw.commons.utils.location.EswLocationError.RegistrationListingFailed
 import esw.commons.utils.location.LocationServiceUtil
 import esw.sm.messages.ConfigureResponse._
 import esw.sm.messages.SequenceManagerMsg._
-import esw.sm.messages.{ConfigureResponse, SequenceManagerMsg}
-import esw.sm.utils.SequencerUtil
+import esw.sm.messages.{CleanupResponse, ConfigureResponse, GetRunningObsModesResponse, SequenceManagerMsg}
+import esw.sm.utils.{SequencerError, SequencerUtil}
 
 import scala.async.Async.{async, await}
 import scala.concurrent.Future
@@ -26,48 +28,65 @@ class SequenceManagerBehavior(
   import actorSystem.executionContext
   implicit val timeout: Timeout = Timeouts.DefaultTimeout
 
-  def behavior(): Behavior[SequenceManagerMsg] = Behaviors.setup(_ => idle())
+  def behavior(): Behavior[SequenceManagerMsg] =
+    Behaviors.setup(_ => idle() // initial behavior
+    )
 
-  // todo : try and use the receive method
+  //todo: try to use common receive method
   def idle(): Behavior[SequenceManagerMsg] = Behaviors.receive { (ctx, msg) =>
     msg match {
       case Configure(observingMode, replyTo) => configure(observingMode, ctx.self); configuring(replyTo);
-      case GetRunningObsModes(replyTo)       => getRunningObsModes.map(replyTo ! _); Behaviors.same
-      case Cleanup(observingMode, replyTo)   => cleanup(observingMode, ctx.self); cleaningUp(replyTo);
-      case _                                 => Behaviors.unhandled
+      case GetRunningObsModes(replyTo) =>
+        getRunningObsModes.map {
+          case Left(value)  => replyTo ! GetRunningObsModesResponse.Failed(value.msg)
+          case Right(value) => replyTo ! GetRunningObsModesResponse.Success(value)
+        }; Behaviors.same
+      case Cleanup(observingMode, replyTo) => cleanup(observingMode, replyTo);
+      case _                               => Behaviors.unhandled
     }
   }
 
-  def cleaningUp(replyTo: ActorRef[Done]): Behavior[SequenceManagerMsg] = receive[CleanupCompleted.type] { _ =>
-    replyTo ! Done
-    idle()
-  }
+  def cleanup(obsMode: String, replyTo: ActorRef[CleanupResponse]): Behavior[SequenceManagerMsg] =
+    receive[CleanupCompleted.type] { _ =>
+      sequencerUtil
+        .stopSequencers(extractSequencers(obsMode), obsMode)
+        .map {
+          case Left(error) => replyTo ! CleanupResponse.Failed(error.msg)
+          case Right(_)    => replyTo ! CleanupResponse.Success
+        }
+      idle()
+    }
 
-  def cleanup(obsMode: String, self: ActorRef[SequenceManagerMsg]): Unit =
-    sequencerUtil
-      .stopSequencers(extractSequencers(obsMode), obsMode)
-      .onComplete(_ => self ! CleanupCompleted) // ignore clean up failure
+  def configuring(replyTo: ActorRef[ConfigureResponse]): Behavior[SequenceManagerMsg] =
+    receive[ConfigurationResponseInternal] { msg =>
+      replyTo ! msg.res
+      idle()
+    }
 
-  def configuring(replyTo: ActorRef[ConfigureResponse]): Behavior[SequenceManagerMsg] = receive[ConfigurationCompleted] { msg =>
-    replyTo ! msg.res
-    idle()
-  }
-
-  def configure(obsMode: String, self: ActorRef[SequenceManagerMsg]): Unit =
+  def configure(obsMode: String, self: ActorRef[SequenceManagerMsg]): Future[Unit] =
     async {
       val mayBeOcsMaster: Option[HttpLocation] = await(sequencerUtil.resolveMasterSequencerOf(obsMode))
+
       val response: ConfigureResponse = mayBeOcsMaster match {
         case Some(location) => await(useOcsMaster(location, obsMode))
         // todo : check all needed sequencer are idle. also handle case of partial start up
-        case None => await(configureResources(obsMode, configuredObsModes = await(getRunningObsModes)))
+        case None =>
+          await(getRunningObsModes.flatMap {
+            case Left(error)               => Future.successful(ConfigurationFailure(error.msg))
+            case Right(configuredObsModes) => configureResources(obsMode, configuredObsModes)
+          })
       }
 
-      self ! ConfigurationCompleted(response)
+      self ! ConfigurationResponseInternal(response)
     }
 
   def useOcsMaster(location: HttpLocation, obsMode: String): Future[ConfigureResponse] = async {
-    if (await(sequencerUtil.areSequencersIdle(extractSequencers(obsMode), obsMode))) Success(location)
-    else ConfigurationFailure(s"Error: ${location.prefix} is already executing another sequence")
+    val sequencerIdleResponse: Either[SequencerError, Done.type] =
+      await(sequencerUtil.checkForSequencersAvailability(extractSequencers(obsMode), obsMode))
+    sequencerIdleResponse match {
+      case Left(error) => ConfigurationFailure(error.msg)
+      case Right(_)    => ConfigureResponse.Success(location)
+    }
   }
 
   def configureResources(obsMode: String, configuredObsModes: Set[String]): Future[ConfigureResponse] = async {
@@ -79,7 +98,9 @@ class SequenceManagerBehavior(
     else await(sequencerUtil.startSequencers(obsMode, extractSequencers(obsMode)))
   }
 
-  def getRunningObsModes: Future[Set[String]]        = locationServiceUtil.listBy(ESW, Sequencer).map(_.map(getObsMode).toSet)
+  def getRunningObsModes: Future[Either[RegistrationListingFailed, Set[String]]] =
+    locationServiceUtil.listBy(ESW, Sequencer).right(_.map(getObsMode).toSet)
+
   def getObsMode(akkaLocation: AkkaLocation): String = akkaLocation.prefix.componentName
 
   def extractSequencers(obsMode: String): Sequencers = config(obsMode).sequencers
@@ -87,8 +108,12 @@ class SequenceManagerBehavior(
 
   def receive[T <: SequenceManagerMsg: ClassTag](handler: T => Behavior[SequenceManagerMsg]): Behavior[SequenceManagerMsg] =
     Behaviors.receiveMessage {
-      case GetRunningObsModes(replyTo) => getRunningObsModes.map(replyTo ! _); Behaviors.same // common msg
-      case msg: T                      => handler(msg)
-      case _                           => Behaviors.unhandled
+      case GetRunningObsModes(replyTo) =>
+        getRunningObsModes.map {
+          case Left(value)  => replyTo ! GetRunningObsModesResponse.Failed(value.msg)
+          case Right(value) => replyTo ! GetRunningObsModesResponse.Success(value)
+        }; Behaviors.same // common msg
+      case msg: T => handler(msg)
+      case _      => Behaviors.unhandled
     }
 }
