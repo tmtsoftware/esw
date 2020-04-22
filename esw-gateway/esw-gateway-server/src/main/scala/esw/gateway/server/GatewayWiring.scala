@@ -1,9 +1,15 @@
 package esw.gateway.server
 
+import java.nio.file.Path
+
 import akka.actor.typed.{ActorSystem, SpawnProtocol}
 import akka.http.scaladsl.server.Route
+import csw.aas.http.SecurityDirectives
 import csw.admin.api.AdminService
 import csw.admin.impl.AdminServiceImpl
+import csw.command.client.auth.CommandRoles
+import csw.config.client.commons.ConfigUtils
+import csw.config.client.scaladsl.ConfigClientFactory
 import csw.location.client.ActorSystemFactory
 import esw.gateway.api.codecs.GatewayCodecs
 import esw.gateway.api.protocol.{PostRequest, WebsocketRequest}
@@ -17,7 +23,8 @@ import msocket.impl.RouteFactory
 import msocket.impl.post.{HttpPostHandler, PostRouteFactory}
 import msocket.impl.ws.{WebsocketHandler, WebsocketRouteFactory}
 
-class GatewayWiring(_port: Option[Int], metricsEnabled: Boolean = false) extends GatewayCodecs {
+class GatewayWiring(_port: Option[Int], local: Boolean, commandRoleConfigPath: Path, metricsEnabled: Boolean = false)
+    extends GatewayCodecs {
   private[server] lazy val actorSystem: ActorSystem[SpawnProtocol.Command] =
     ActorSystemFactory.remote(SpawnProtocol(), "gateway-system")
 
@@ -26,14 +33,21 @@ class GatewayWiring(_port: Option[Int], metricsEnabled: Boolean = false) extends
   import cswWiring._
   import cswWiring.actorRuntime.{ec, typedSystem}
 
-  private val resolver = new Resolver(locationService)(actorSystem)
+  private[esw] val resolver = new Resolver(locationService)(actorSystem)
 
   lazy val alarmApi: AlarmApi     = new AlarmImpl(alarmService)
   lazy val eventApi: EventApi     = new EventImpl(eventService, eventSubscriberUtil)
   lazy val loggingApi: LoggingApi = new LoggingImpl(new LoggerCache)
   lazy val adminApi: AdminService = new AdminServiceImpl(locationService)
 
-  lazy val postHandler: HttpPostHandler[PostRequest] = new PostHandlerImpl(alarmApi, resolver, eventApi, loggingApi, adminApi)
+  private lazy val configClient            = ConfigClientFactory.clientApi(actorSystem, locationService)
+  private lazy val configUtils             = new ConfigUtils(configClient)
+  private lazy val commandRolesConfig      = configUtils.getConfig(commandRoleConfigPath, local)
+  private lazy val commandRoles            = commandRolesConfig.map(CommandRoles.from)
+  private[esw] lazy val securityDirectives = SecurityDirectives(actorSystem.settings.config, cswWiring.locationService)
+
+  lazy val postHandler: HttpPostHandler[PostRequest] =
+    new PostHandlerImpl(alarmApi, resolver, eventApi, loggingApi, adminApi, securityDirectives, commandRoles)
 
   def websocketHandlerFactory(contentType: ContentType): WebsocketHandler[WebsocketRequest] =
     new WebsocketHandlerImpl(resolver, eventApi, contentType)
@@ -47,8 +61,15 @@ class GatewayWiring(_port: Option[Int], metricsEnabled: Boolean = false) extends
 }
 
 object GatewayWiring {
-  private[esw] def make(_port: Option[Int], _actorSystem: ActorSystem[SpawnProtocol.Command]): GatewayWiring =
-    new GatewayWiring(_port) {
+  private[esw] def make(
+      _port: Option[Int],
+      local: Boolean,
+      commandRoleConfigPath: Path,
+      _actorSystem: ActorSystem[SpawnProtocol.Command],
+      _securityDirectives: SecurityDirectives
+  ): GatewayWiring =
+    new GatewayWiring(_port, local, commandRoleConfigPath) {
       override lazy val actorSystem: ActorSystem[SpawnProtocol.Command] = _actorSystem
+      override private[esw] lazy val securityDirectives                 = _securityDirectives
     }
 }

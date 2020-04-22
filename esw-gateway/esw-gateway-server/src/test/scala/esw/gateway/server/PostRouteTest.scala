@@ -4,11 +4,13 @@ import akka.Done
 import akka.http.scaladsl.marshalling.ToEntityMarshaller
 import akka.http.scaladsl.model.{HttpRequest, StatusCodes}
 import akka.http.scaladsl.testkit.ScalatestRouteTest
+import csw.aas.http.SecurityDirectives
 import csw.admin.api.UnresolvedAkkaLocationException
 import csw.alarm.api.exceptions.KeyNotFoundException
 import csw.alarm.models.AlarmSeverity
 import csw.alarm.models.Key.AlarmKey
 import csw.command.api.messages.CommandServiceHttpMessage.{Oneway, Submit, Validate}
+import csw.command.client.auth.CommandRoles
 import csw.event.api.exceptions.{EventServerNotAvailable, PublishFailure}
 import csw.location.api.models.ComponentType.{Assembly, Sequencer}
 import csw.location.api.models.{ComponentId, ComponentType}
@@ -42,10 +44,14 @@ class PostRouteTest extends BaseTestSuite with ScalatestRouteTest with GatewayCo
   private val cswCtxMocks = new CswWiringMocks()
   import cswCtxMocks._
 
-  private val postHandlerImpl = new PostHandlerImpl(alarmApi, resolver, eventApi, loggingApi, adminService)
-  private val route           = new PostRouteFactory("post-endpoint", postHandlerImpl).make()
-  private val source          = Prefix("esw.test")
-  private val destination     = Prefix("tcs.test")
+  private val securityDirectives = SecurityDirectives.authDisabled(system.settings.config)
+  private val commandRoles       = Future.successful(CommandRoles.empty)
+
+  private val postHandlerImpl =
+    new PostHandlerImpl(alarmApi, resolver, eventApi, loggingApi, adminService, securityDirectives, commandRoles)
+  private val route       = new PostRouteFactory("post-endpoint", postHandlerImpl).make()
+  private val source      = Prefix("esw.test")
+  private val destination = Prefix("tcs.test")
 
   private def post[E: ToEntityMarshaller](entity: E): HttpRequest = Post("/post-endpoint", entity)
 

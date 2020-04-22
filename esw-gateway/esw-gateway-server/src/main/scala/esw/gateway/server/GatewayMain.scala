@@ -1,5 +1,7 @@
 package esw.gateway.server
 
+import java.nio.file.Path
+
 import caseapp.RemainingArgs
 import esw.gateway.server.ServerCommand.StartCommand
 import esw.http.core.commons.EswCommandApp
@@ -12,11 +14,18 @@ object GatewayMain extends EswCommandApp[ServerCommand] {
 
   override def run(command: ServerCommand, args: RemainingArgs): Unit =
     command match {
-      case StartCommand(port, metricsEnabled) => start(port, metricsEnabled, startLogging = true)
+      case StartCommand(port, local, commandRoleConfigPath, metricsEnabled) =>
+        start(port, local, commandRoleConfigPath, metricsEnabled, startLogging = true)
     }
 
-  def start(port: Option[Int], metricsEnabled: Boolean, startLogging: Boolean): Unit =
-    start(new GatewayWiring(port, metricsEnabled), startLogging)
+  def start(
+      port: Option[Int],
+      local: Boolean,
+      commandRoleConfigPath: Path,
+      metricsEnabled: Boolean,
+      startLogging: Boolean
+  ): Unit =
+    start(new GatewayWiring(port, local, commandRoleConfigPath, metricsEnabled), startLogging)
 
   private[esw] def start(gatewayWiring: GatewayWiring, startLogging: Boolean): Unit = {
     import gatewayWiring._

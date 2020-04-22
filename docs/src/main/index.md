@@ -8,6 +8,8 @@
 - [Scripting](sequencer/scripts/scripts.md)
 - [ESW Service Contract](commons/contracts.md)
 - [Applications](apps/apps.md)
+- [ESW Gateway](eswgateway/esw-gaterway.md)
+
 
 @@@
 

@@ -11,6 +11,7 @@ import akka.http.scaladsl.model.Uri
 import akka.http.scaladsl.model.Uri.Path
 import akka.util.Timeout
 import com.typesafe.config.ConfigFactory
+import csw.aas.http.SecurityDirectives
 import csw.command.client.extensions.AkkaLocationExt.RichAkkaLocation
 import csw.command.client.messages.sequencer.SequencerMsg
 import csw.event.api.scaladsl.{EventPublisher, EventService, EventSubscriber}
@@ -57,8 +58,11 @@ abstract class EswTestKit(services: Service*)
   lazy val eventPublisher: EventPublisher                      = eventService.defaultPublisher
 
   // gateway
-  lazy val gatewayPort: Int                 = SocketUtils.getFreePort
-  lazy val gatewayWiring: GatewayWiring     = GatewayWiring.make(Some(gatewayPort), system)
+  lazy val gatewayPort: Int                          = SocketUtils.getFreePort
+  private val commandRolesPath: NIOPath              = Paths.get(getClass.getResource("/commandRoles.conf").getPath)
+  private val securityDirectives: SecurityDirectives = SecurityDirectives.authDisabled(system.settings.config)
+  lazy val gatewayWiring: GatewayWiring =
+    GatewayWiring.make(Some(gatewayPort), local = true, commandRolesPath, system, securityDirectives)
   var gatewayBinding: Option[ServerBinding] = None
   var gatewayLocation: Option[HttpLocation] = None
   // ESW-98
@@ -68,7 +72,7 @@ abstract class EswTestKit(services: Service*)
       .getConfig("http-server")
       .getString("prefix")
   )
-  lazy val gatewayPostClient: HttpPostTransport[PostRequest]     = gatewayHTTPClient(gatewayPrefix)
+  lazy val gatewayPostClient: HttpPostTransport[PostRequest]     = gatewayHTTPClient()
   lazy val gatewayWsClient: WebsocketTransport[WebsocketRequest] = gatewayWebSocketClient(gatewayPrefix)
 
   private val sequenceComponentLocations: mutable.Buffer[AkkaLocation] = mutable.Buffer.empty
@@ -151,12 +155,12 @@ abstract class EswTestKit(services: Service*)
     }
   }
 
-  // ESW-98
-  private def gatewayHTTPClient(prefix: Prefix) = {
-    val httpLocation = resolveHTTPLocation(prefix, ComponentType.Service)
+  // ESW-98, ESW-95
+  private[esw] def gatewayHTTPClient(tokenFactory: () => Option[String] = () => None) = {
+    val httpLocation = resolveHTTPLocation(gatewayPrefix, ComponentType.Service)
     val httpUri      = Uri(httpLocation.uri.toString).withPath(Path("/post-endpoint")).toString()
     val httpClient =
-      new HttpPostTransport[PostRequest](httpUri, ContentType.Json, () => None)
+      new HttpPostTransport[PostRequest](httpUri, ContentType.Json, tokenFactory)
     httpClient
   }
 

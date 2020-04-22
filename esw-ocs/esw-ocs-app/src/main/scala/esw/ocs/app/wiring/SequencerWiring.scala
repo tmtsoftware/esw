@@ -7,6 +7,7 @@ import akka.actor.typed.{ActorRef, ActorSystem, Props, SpawnProtocol}
 import akka.http.scaladsl.server.Route
 import akka.util.Timeout
 import com.typesafe.config.Config
+import csw.aas.http.SecurityDirectives
 import csw.alarm.api.javadsl.IAlarmService
 import csw.command.client.messages.sequencer.SequencerMsg
 import csw.event.client.internal.commons.javawrappers.JEventService
@@ -99,7 +100,8 @@ private[ocs] class SequencerWiring(
   )
 
   private lazy val sequencerApi                                 = new SequencerImpl(sequencerRef)
-  private lazy val postHandler                                  = new SequencerPostHandler(sequencerApi)
+  private lazy val securityDirectives                           = SecurityDirectives.authDisabled(config)
+  private lazy val postHandler                                  = new SequencerPostHandler(sequencerApi, securityDirectives)
   private def websocketHandlerFactory(contentType: ContentType) = new SequencerWebsocketHandler(sequencerApi, contentType)
 
   lazy val routes: Route = RouteFactory.combine(metricsEnabled = false)(

@@ -2,8 +2,10 @@ package esw.gateway.server.handlers
 
 import akka.http.scaladsl.server.Directives._
 import akka.http.scaladsl.server.Route
+import csw.aas.http.SecurityDirectives
 import csw.admin.api.AdminService
 import csw.command.api.messages.CommandServiceHttpMessage
+import csw.command.client.auth.CommandRoles
 import csw.command.client.handlers.CommandServiceHttpHandlers
 import csw.location.api.models.ComponentId
 import esw.gateway.api.codecs.GatewayCodecs._
@@ -15,8 +17,17 @@ import esw.ocs.api.protocol.SequencerPostRequest
 import esw.ocs.handler.SequencerPostHandler
 import msocket.impl.post.{HttpPostHandler, ServerHttpCodecs}
 
-class PostHandlerImpl(alarmApi: AlarmApi, resolver: Resolver, eventApi: EventApi, loggingApi: LoggingApi, adminApi: AdminService)
-    extends HttpPostHandler[PostRequest]
+import scala.concurrent.Future
+
+class PostHandlerImpl(
+    alarmApi: AlarmApi,
+    resolver: Resolver,
+    eventApi: EventApi,
+    loggingApi: LoggingApi,
+    adminApi: AdminService,
+    securityDirectives: SecurityDirectives,
+    commandRoles: Future[CommandRoles]
+) extends HttpPostHandler[PostRequest]
     with ServerHttpCodecs {
 
   override def handle(request: PostRequest): Route = request match {
@@ -31,12 +42,12 @@ class PostHandlerImpl(alarmApi: AlarmApi, resolver: Resolver, eventApi: EventApi
   }
 
   private def onComponentCommand(componentId: ComponentId, command: CommandServiceHttpMessage): Route =
-    onSuccess(resolver.commandService(componentId)) { commandService =>
-      new CommandServiceHttpHandlers(commandService).handle(command)
+    onSuccess(resolver.commandService(componentId) zip commandRoles) { (commandService, roles) =>
+      new CommandServiceHttpHandlers(commandService, securityDirectives, Some(componentId.prefix), roles).handle(command)
     }
 
   private def onSequencerCommand(componentId: ComponentId, command: SequencerPostRequest): Route =
     onSuccess(resolver.sequencerCommandService(componentId)) { sequencerApi =>
-      new SequencerPostHandler(sequencerApi).handle(command)
+      new SequencerPostHandler(sequencerApi, securityDirectives, Some(componentId.prefix)).handle(command)
     }
 }

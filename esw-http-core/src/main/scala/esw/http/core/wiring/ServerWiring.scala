@@ -1,7 +1,6 @@
 package esw.http.core.wiring
 
 import akka.actor.typed.{ActorSystem, SpawnProtocol}
-import csw.aas.http.SecurityDirectives
 import csw.location.api.models.ComponentType
 import csw.location.client.ActorSystemFactory
 import csw.logging.api.scaladsl.Logger
@@ -15,8 +14,6 @@ class ServerWiring(_port: Option[Int], prefix: Option[Prefix] = None, actorSyste
   private lazy val loggerFactory = new LoggerFactory(settings.httpConnection.prefix)
   lazy val logger: Logger        = loggerFactory.getLogger
   lazy val cswWiring             = new CswWiring(actorSystem)
-  lazy val securityDirectives: SecurityDirectives =
-    SecurityDirectives(config, cswWiring.locationService)(cswWiring.actorRuntime.ec)
 }
 
 object ServerWiring {

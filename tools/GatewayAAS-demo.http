@@ -1,0 +1,87 @@
+
+####Generate and save token (BearerToken.fromServer in LocationAuthTestWithKeycloak )
+POST http://192.168.43.48:8081/auth/realms/TMT-test/protocol/openid-connect/token
+Content-Type: application/x-www-form-urlencoded
+
+client_id=esw-gateway-client&grant_type=password&username=gateway-user&password=gateway-user
+
+
+> {% client.global.set("access_token", response.body.access_token); %}
+
+####
+### validate
+POST http://localhost:8090/post-endpoint
+Content-Type: application/json
+Authorization: Bearer {{access_token}}
+
+{
+  "_type": "ComponentCommand",
+  "componentId": {
+    "prefix": "IRIS.filter.wheel",
+    "componentType": "hcd"
+  },
+  "command": {
+    "_type": "Submit",
+    "controlCommand": {
+      "_type": "Setup",
+      "source": "CSW.ncc.trombone",
+      "commandName": "startExposure",
+      "maybeObsId": [
+        "obsId"
+      ],
+      "paramSet": []
+    }
+  }
+}
+
+### submit
+POST http://localhost:8090/post-endpoint
+Content-Type: application/json
+Authorization: Bearer {{access_token}}
+
+{
+  "_type": "ComponentCommand",
+  "componentId": {
+    "prefix": "IRIS.trombonehcd",
+    "componentType": "hcd"
+  },
+  "command": {
+    "_type": "Submit",
+    "controlCommand": {
+      "_type": "Setup",
+      "source": "CSW.ncc.trombone",
+      "commandName": "startExposure",
+      "maybeObsId": [
+        "obs001"
+      ],
+      "paramSet": []
+    }
+  }
+}
+
+#### curl -H "Origin: http://localhost:3000" -H "Content-Type: application/json" -d '{"_type": "ListEntries"}' --include  -X POST http://localhost:7654/post-endpoint
+GET http://localhost:9003/api
+Origin: http://localhost:3000
+Content-Type: application/json
+
+
+###
+
+POST http://localhost:7654/post-endpoint
+Content-Type: application/json
+
+{
+  "_type" : "Register",
+  "registration" : {
+    "_type" : "HttpRegistration",
+    "connection" : {
+      "prefix" : "CSW.AAS",
+      "componentType" : "service",
+      "connectionType" : "http"
+    },
+    "port" : 8081,
+    "path" : "auth"
+  }
+}
+
+###

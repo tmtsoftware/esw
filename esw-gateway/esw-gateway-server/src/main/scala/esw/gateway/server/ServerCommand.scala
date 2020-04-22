@@ -1,5 +1,7 @@
 package esw.gateway.server
 
+import java.nio.file.Path
+
 import caseapp._
 
 sealed trait ServerCommand
@@ -13,6 +15,14 @@ object ServerCommand {
           "If a value is not provided, it will be picked up from configuration"
       )
       port: Option[Int],
+      @ExtraName("l")
+      @HelpMessage("use command role mapping file from local file system else fetch it from config service")
+      local: Boolean = false,
+      @ExtraName("c")
+      @HelpMessage(
+        "specifies command role mapping file path which gets fetched from config service or local file system based on --local option"
+      )
+      commandRoleConfigPath: Path,
       @ExtraName("m")
       @HelpMessage("Enable gateway metrics")
       metrics: Boolean = false
