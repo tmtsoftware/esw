@@ -70,7 +70,8 @@ private[esw] class LocationServiceUtil(val locationService: LocationService)(
         case None =>
           Left(
             ResolveLocationFailed(
-              s"Could not find location matching ComponentName: $componentName, componentType: $componentType")
+              s"Could not find location matching ComponentName: $componentName, componentType: $componentType"
+            )
           )
       }
       .recover {
@@ -118,19 +119,12 @@ private[esw] class LocationServiceUtil(val locationService: LocationService)(
       }
   }
 
-  // todo: error should extend exception and same should be carries when converted to java
   // Added this to be accessed by kotlin
   def jResolveComponentRef(prefix: Prefix, componentType: ComponentType): CompletionStage[ActorRef[ComponentMessage]] = {
-    resolveComponentRef(prefix, componentType).map {
-      case Left(error)     => throw new RuntimeException(s"Resolve Akka Location failed with ${error.msg}")
-      case Right(actorRef) => actorRef
-    }.toJava
+    resolveComponentRef(prefix, componentType).toJava
   }
 
   def jResolveAkkaLocation(prefix: Prefix, componentType: ComponentType): CompletionStage[AkkaLocation] =
-    resolveAkkaLocation(prefix, componentType).map {
-      case Left(error)         => throw new RuntimeException(s"Resolve Akka Location failed with ${error.msg}")
-      case Right(akkaLocation) => akkaLocation
-    }.toJava
+    resolveAkkaLocation(prefix, componentType).toJava
 
 }

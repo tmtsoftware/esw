@@ -5,6 +5,7 @@ import akka.actor.typed.{ActorSystem, Scheduler, SpawnProtocol}
 import akka.stream.Materializer
 import akka.util.Timeout
 import csw.location.api.extensions.URIExtension.RichURI
+import csw.location.api.models.AkkaLocation
 import csw.location.client.ActorSystemFactory
 import csw.location.client.scaladsl.HttpLocationServiceFactory
 import csw.params.commands.{CommandName, Sequence, Setup}
@@ -13,6 +14,7 @@ import csw.prefix.models.Subsystem.IRIS
 import esw.commons.utils.location.LocationServiceUtil
 import esw.ocs.api.actor.client.SequencerImpl
 import esw.ocs.api.actor.messages.SequencerMessages.{EswSequencerMessage, Shutdown}
+import org.scalatest.concurrent.ScalaFutures.convertScalaFuture
 
 import scala.concurrent.Await
 import scala.concurrent.duration._
@@ -27,12 +29,11 @@ object TestClient extends App {
 
   implicit val sched: Scheduler = system.scheduler
 
-  val location = Await.result(
-    new LocationServiceUtil(_locationService)
-      .resolveSequencer(IRIS, "darknight")
-      .map(_.getOrElse(throw new RuntimeException(s"Could not find any sequencer with name: ${IRIS.name}.darknight"))),
-    5.seconds
-  )
+  private val location: AkkaLocation = new LocationServiceUtil(_locationService)
+    .resolveSequencer(IRIS, "darknight")
+    .futureValue
+    .toOption
+    .get
 
   private val cmd1 = Setup(Prefix("esw.a.a"), CommandName("command-1"), None)
   private val cmd2 = Setup(Prefix("esw.a.a"), CommandName("command-2"), None)

@@ -1,6 +1,6 @@
 package esw.commons.utils.location
 
-sealed trait EswLocationError {
+sealed trait EswLocationError extends Throwable {
   def msg: String
 }
 

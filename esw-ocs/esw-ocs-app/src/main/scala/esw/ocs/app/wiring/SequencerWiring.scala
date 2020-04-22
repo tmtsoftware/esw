@@ -14,7 +14,7 @@ import csw.event.client.internal.commons.javawrappers.JEventService
 import csw.location.api.extensions.ActorExtension.RichActor
 import csw.location.api.javadsl.ILocationService
 import csw.location.api.models.Connection.AkkaConnection
-import csw.location.api.models.{AkkaLocation, AkkaRegistration, ComponentId, ComponentType}
+import csw.location.api.models._
 import csw.location.client.ActorSystemFactory
 import csw.location.client.javadsl.JHttpLocationServiceFactory
 import csw.logging.api.javadsl.ILogger
@@ -23,8 +23,10 @@ import csw.logging.client.scaladsl.LoggerFactory
 import csw.network.utils.SocketUtils
 import csw.prefix.models.Subsystem
 import esw.commons.Timeouts
+import esw.commons.utils.FutureEitherUtils.FutureEither
 import esw.commons.utils.location.LocationServiceUtil
 import esw.http.core.wiring.{ActorRuntime, CswWiring, HttpService, Settings}
+import esw.ocs.api.SequencerApi
 import esw.ocs.api.actor.client.{SequencerApiFactory, SequencerImpl}
 import esw.ocs.api.actor.messages.SequencerMessages.Shutdown
 import esw.ocs.api.codecs.SequencerHttpCodecs
@@ -42,7 +44,6 @@ import msocket.impl.ws.WebsocketRouteFactory
 
 import scala.async.Async.{async, await}
 import scala.concurrent.Future
-import scala.jdk.FutureConverters.FutureOps
 import scala.util.control.NonFatal
 
 private[ocs] class SequencerWiring(
@@ -84,15 +85,13 @@ private[ocs] class SequencerWiring(
   private lazy val jLoggerFactory   = loggerFactory.asJava
   private lazy val jLogger: ILogger = ScriptLoader.withScript(scriptClass)(jLoggerFactory.getLogger)
 
-  // todo: error should extend exception and same should be carries when converted to java
-  private lazy val sequencerImplFactory = (_subsystem: Subsystem, _obsMode: String) =>
+  private val sequencerApiFactory: Location => SequencerApi = SequencerApiFactory.make _
+
+  private lazy val sequencerImplFactory = (_subsystem: Subsystem, _obsMode: String) => {
     locationServiceUtil
       .resolveSequencer(_subsystem, _obsMode)
-      .map {
-        case Left(error)     => throw new RuntimeException(error.msg)
-        case Right(location) => SequencerApiFactory.make(location)
-      }
-      .asJava
+      .toJava(sequencerApiFactory)
+  }
 
   lazy val scriptContext = new ScriptContext(
     heartbeatInterval,
@@ -126,7 +125,7 @@ private[ocs] class SequencerWiring(
       val eventualTerminated                  = serverBinding.terminate(Timeouts.DefaultTimeout)
       val eventualDone                        = registrationResult.unregister()
       await(eventualTerminated.flatMap(_ => eventualDone))
-    }
+  }
 
   lazy val sequencerBehavior =
     new SequencerBehavior(componentId, script, locationService, sequenceComponentLocation, logger, shutdownHttpService)(
@@ -151,8 +150,7 @@ private[ocs] class SequencerWiring(
           BlockHoundWiring.install()
         }
         loc
-      }
-      catch {
+      } catch {
         // This error will be logged in SequenceComponent.Do not log it here,
         // because exception caused while initialising will fail the instance creation of logger.
         case NonFatal(e) => Left(ScriptError(e.getMessage))
