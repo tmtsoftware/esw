@@ -14,7 +14,7 @@ import csw.event.client.internal.commons.javawrappers.JEventService
 import csw.location.api.extensions.ActorExtension.RichActor
 import csw.location.api.javadsl.ILocationService
 import csw.location.api.models.Connection.AkkaConnection
-import csw.location.api.models.{AkkaLocation, AkkaRegistration, ComponentId, ComponentType}
+import csw.location.api.models._
 import csw.location.client.ActorSystemFactory
 import csw.location.client.javadsl.JHttpLocationServiceFactory
 import csw.logging.api.javadsl.ILogger
@@ -23,8 +23,10 @@ import csw.logging.client.scaladsl.LoggerFactory
 import csw.network.utils.SocketUtils
 import csw.prefix.models.Subsystem
 import esw.commons.Timeouts
+import esw.commons.utils.FutureEitherUtils.FutureEither
 import esw.commons.utils.location.LocationServiceUtil
 import esw.http.core.wiring.{ActorRuntime, CswWiring, HttpService, Settings}
+import esw.ocs.api.SequencerApi
 import esw.ocs.api.actor.client.{SequencerApiFactory, SequencerImpl}
 import esw.ocs.api.actor.messages.SequencerMessages.Shutdown
 import esw.ocs.api.codecs.SequencerHttpCodecs
@@ -42,7 +44,6 @@ import msocket.impl.ws.WebsocketRouteFactory
 
 import scala.async.Async.{async, await}
 import scala.concurrent.Future
-import scala.jdk.FutureConverters.FutureOps
 import scala.util.control.NonFatal
 
 private[ocs] class SequencerWiring(
@@ -84,8 +85,13 @@ private[ocs] class SequencerWiring(
   private lazy val jLoggerFactory   = loggerFactory.asJava
   private lazy val jLogger: ILogger = ScriptLoader.withScript(scriptClass)(jLoggerFactory.getLogger)
 
-  private lazy val sequencerImplFactory = (_subsystem: Subsystem, _obsMode: String) =>
-    locationServiceUtil.resolveSequencer(_subsystem, _obsMode).map(SequencerApiFactory.make).asJava
+  private val sequencerApiFactory: Location => SequencerApi = SequencerApiFactory.make _
+
+  private lazy val sequencerImplFactory = (_subsystem: Subsystem, _obsMode: String) => {
+    locationServiceUtil
+      .resolveSequencer(_subsystem, _obsMode)
+      .toJava(sequencerApiFactory)
+  }
 
   lazy val scriptContext = new ScriptContext(
     heartbeatInterval,

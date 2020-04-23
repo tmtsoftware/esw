@@ -7,13 +7,15 @@ import akka.actor.typed.scaladsl.adapter.TypedActorSystemOps
 import akka.actor.typed.{ActorRef, ActorSystem}
 import csw.command.client.extensions.AkkaLocationExt.RichAkkaLocation
 import csw.command.client.messages.ComponentMessage
+import csw.location.api.exceptions.{RegistrationListingFailed => CswRegistrationListingFailed}
 import csw.location.api.models.ComponentType.Sequencer
 import csw.location.api.models.Connection.AkkaConnection
-import csw.location.api.models.ConnectionType.AkkaType
 import csw.location.api.models._
 import csw.location.api.scaladsl.{LocationService, RegistrationResult}
 import csw.prefix.models.{Prefix, Subsystem}
 import esw.commons.Timeouts
+import esw.commons.utils.FutureEitherUtils._
+import esw.commons.utils.location.EswLocationError.{RegistrationListingFailed, ResolveLocationFailed}
 
 import scala.compat.java8.FutureConverters.FutureOps
 import scala.concurrent.duration.FiniteDuration
@@ -45,55 +47,82 @@ private[esw] class LocationServiceUtil(val locationService: LocationService)(
       }
       .recoverWith(onFailure)
 
-  def listBy(subsystem: Subsystem, componentType: ComponentType): Future[List[AkkaLocation]] =
+  def listBy(subsystem: Subsystem, componentType: ComponentType): Future[Either[RegistrationListingFailed, List[AkkaLocation]]] =
     locationService
       .list(componentType)
       .map(_.collect {
         case akkaLocation: AkkaLocation if akkaLocation.prefix.subsystem == subsystem => akkaLocation
       })
+      .map(Right(_))
+      .recover {
+        case _: CswRegistrationListingFailed => Left(RegistrationListingFailed(s"$componentType"))
+      }
 
-  def resolveByComponentNameAndType(componentName: String, componentType: ComponentType): Future[Option[Location]] =
-    locationService.list(componentType).map(_.find(_.connection.componentId.prefix.componentName == componentName))
+  def resolveByComponentNameAndType(
+      componentName: String,
+      componentType: ComponentType
+  ): Future[Either[EswLocationError, Location]] =
+    locationService
+      .list(componentType)
+      .map(_.find(_.connection.componentId.prefix.componentName == componentName))
+      .map {
+        case Some(location) => Right(location)
+        case None =>
+          Left(
+            ResolveLocationFailed(
+              s"Could not find location matching ComponentName: $componentName, componentType: $componentType"
+            )
+          )
+      }
+      .recover {
+        case _: CswRegistrationListingFailed => Left(RegistrationListingFailed(s"$componentName and $componentType"))
+      }
 
-  def resolveComponentRef(prefix: Prefix, componentType: ComponentType): Future[ActorRef[ComponentMessage]] = {
-    val connection = AkkaConnection(ComponentId(prefix, componentType))
-    locationService.resolve(connection, Timeouts.DefaultTimeout).map {
-      case Some(location: AkkaLocation) => location.componentRef
-      case Some(location) =>
-        throw new RuntimeException(
-          s"Incorrect connection type of the component. Expected $AkkaType, found ${location.connection.connectionType}"
-        )
-      case None => throw new IllegalArgumentException(s"Could not find any component with name: $prefix")
-    }
-  }
+  def resolveComponentRef(
+      prefix: Prefix,
+      componentType: ComponentType
+  ): Future[Either[EswLocationError, ActorRef[ComponentMessage]]] =
+    resolveAkkaLocation(prefix, componentType).right(_.componentRef)
 
   private[esw] def resolveSequencer(
       subsystem: Subsystem,
       observingMode: String,
       timeout: FiniteDuration = Timeouts.DefaultTimeout
-  ) =
+  ): Future[Either[EswLocationError, AkkaLocation]] = {
+    val componentId = ComponentId(Prefix(subsystem, observingMode), Sequencer)
     locationService
-      .resolve(AkkaConnection(ComponentId(Prefix(subsystem, observingMode), Sequencer)), timeout)
+      .resolve(AkkaConnection(componentId), timeout)
       .map {
-        case Some(value) => value
-        case None        => throw new RuntimeException(s"Could not find any sequencer with name: ${subsystem.name}.$observingMode")
+        case Some(location) => Right(location)
+        case None =>
+          Left(
+            ResolveLocationFailed(
+              s"Could not find location matching subsystem: $subsystem, ObservingMode: $observingMode, ComponentType: $Sequencer"
+            )
+          )
       }
+      .recover {
+        case _: CswRegistrationListingFailed => Left(RegistrationListingFailed(s"$componentId "))
+      }
+  }
 
-  def resolveAkkaLocation(prefix: Prefix, componentType: ComponentType): Future[AkkaLocation] = {
+  def resolveAkkaLocation(prefix: Prefix, componentType: ComponentType): Future[Either[EswLocationError, AkkaLocation]] = {
     val connection = AkkaConnection(ComponentId(prefix, componentType))
-    locationService.resolve(connection, Timeouts.DefaultTimeout).map {
-      case Some(location: AkkaLocation) => location
-      case Some(location) =>
-        throw new RuntimeException(
-          s"Incorrect connection type of the component. Expected $AkkaType, found ${location.connection.connectionType}"
-        )
-      case None => throw new IllegalArgumentException(s"Could not find any component with name: $prefix")
-    }
+    locationService
+      .resolve(connection, Timeouts.DefaultTimeout)
+      .map {
+        case Some(location) => Right(location)
+        case None           => Left(ResolveLocationFailed(s"Could not find location matching $prefix"))
+      }
+      .recover {
+        case _: CswRegistrationListingFailed => Left(RegistrationListingFailed(s"$connection"))
+      }
   }
 
   // Added this to be accessed by kotlin
-  def jResolveComponentRef(prefix: Prefix, componentType: ComponentType): CompletionStage[ActorRef[ComponentMessage]] =
+  def jResolveComponentRef(prefix: Prefix, componentType: ComponentType): CompletionStage[ActorRef[ComponentMessage]] = {
     resolveComponentRef(prefix, componentType).toJava
+  }
 
   def jResolveAkkaLocation(prefix: Prefix, componentType: ComponentType): CompletionStage[AkkaLocation] =
     resolveAkkaLocation(prefix, componentType).toJava

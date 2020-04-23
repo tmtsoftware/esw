@@ -21,7 +21,7 @@ class SequenceComponentUtil(locationServiceUtil: LocationServiceUtil, agentUtil:
 ) {
   import actorSystem.executionContext
 
-  def getAvailableSequenceComponent(subsystem: Subsystem): Future[Either[SequencerError, SequenceComponentApi]] = {
+  def getAvailableSequenceComponent(subsystem: Subsystem): Future[Either[AgentError, SequenceComponentApi]] = {
     val maybeSeqCompApiF: Future[Option[SequenceComponentApi]] = subsystem match {
       case ESW => getIdleSequenceComponentFor(ESW)
       case other: Subsystem =>
@@ -41,16 +41,17 @@ class SequenceComponentUtil(locationServiceUtil: LocationServiceUtil, agentUtil:
 
   def unloadScript(loc: AkkaLocation): Future[Done] = new SequenceComponentImpl(loc).unloadScript()
 
-  private def getIdleSequenceComponentFor(subsystem: Subsystem): Future[Option[SequenceComponentApi]] = {
+  private def getIdleSequenceComponentFor(subsystem: Subsystem): Future[Option[SequenceComponentApi]] =
     locationServiceUtil
       .listBy(subsystem, SequenceComponent)
-      .flatMap { locations =>
-        // check if these seq comp locations are idle and return first idle sequence component found
-        FutureUtils
-          .firstCompletedOf(locations.map(idleSequenceComponent))(_.isDefined)
-          .map(_.flatten)
+      .flatMap {
+        case Left(_) => Future.successful(None) // intentionally ignoring Left as
+        // in this case domain won't decide action based on what is error hence converting it to optionality
+        case Right(locations) =>
+          FutureUtils
+            .firstCompletedOf(locations.map(idleSequenceComponent))(_.isDefined)
+            .map(_.flatten)
       }
-  }
 
   private[sm] def idleSequenceComponent(sequenceComponentLocation: AkkaLocation): Future[Option[SequenceComponentApi]] = async {
     val sequenceComponentApi = new SequenceComponentImpl(sequenceComponentLocation)
