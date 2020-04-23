@@ -8,7 +8,7 @@ import csw.location.api.models.ComponentType.Sequencer
 import csw.location.api.models.{AkkaLocation, HttpLocation}
 import csw.prefix.models.Subsystem.ESW
 import esw.commons.Timeouts
-import esw.commons.utils.FutureEitherUtils.FutureEither
+import esw.commons.extensions.FutureEitherExt.FutureEitherOps
 import esw.commons.utils.location.EswLocationError.RegistrationListingFailed
 import esw.commons.utils.location.LocationServiceUtil
 import esw.sm.messages.ConfigureResponse._
@@ -99,7 +99,7 @@ class SequenceManagerBehavior(
   }
 
   def getRunningObsModes: Future[Either[RegistrationListingFailed, Set[String]]] =
-    locationServiceUtil.listAkkaLocationsBy(ESW, Sequencer).right(_.map(getObsMode).toSet)
+    locationServiceUtil.listAkkaLocationsBy(ESW, Sequencer).mapRight(_.map(getObsMode).toSet)
 
   def getObsMode(akkaLocation: AkkaLocation): String = akkaLocation.prefix.componentName
 

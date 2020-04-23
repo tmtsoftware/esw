@@ -14,7 +14,7 @@ import csw.location.api.models._
 import csw.location.api.scaladsl.{LocationService, RegistrationResult}
 import csw.prefix.models.{Prefix, Subsystem}
 import esw.commons.Timeouts
-import esw.commons.utils.FutureEitherUtils._
+import esw.commons.extensions.FutureEitherExt._
 import esw.commons.utils.location.EswLocationError.{RegistrationListingFailed, ResolveLocationFailed}
 
 import scala.concurrent.duration.FiniteDuration
@@ -100,7 +100,7 @@ private[esw] class LocationServiceUtil(val locationService: LocationService)(
       prefix: Prefix,
       componentType: ComponentType
   ): Future[Either[EswLocationError, ActorRef[ComponentMessage]]] =
-    resolve(AkkaConnection(ComponentId(prefix, componentType))).right(_.componentRef)
+    resolve(AkkaConnection(ComponentId(prefix, componentType))).mapRight(_.componentRef)
 
   private[esw] def resolveSequencer(
       subsystem: Subsystem,

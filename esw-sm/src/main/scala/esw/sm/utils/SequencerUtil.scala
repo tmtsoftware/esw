@@ -8,7 +8,7 @@ import csw.location.api.models.{AkkaLocation, ComponentId, HttpLocation, Locatio
 import csw.prefix.models.Subsystem.ESW
 import csw.prefix.models.{Prefix, Subsystem}
 import esw.commons.Timeouts
-import esw.commons.utils.FutureEitherUtils.FutureEither
+import esw.commons.extensions.FutureEitherExt.FutureEitherOps
 import esw.commons.utils.location.{EswLocationError, LocationServiceUtil}
 import esw.ocs.api.SequencerApi
 import esw.ocs.api.actor.client.SequencerApiFactory
@@ -26,50 +26,46 @@ class SequencerUtil(locationServiceUtil: LocationServiceUtil, sequenceComponentU
   implicit val ec: ExecutionContext = actorSystem.executionContext
   var retryCount: Int               = 3
 
+  private def masterSequencerConnection(obsMode: String) = HttpConnection(ComponentId(Prefix(ESW, obsMode), Sequencer))
+
   def resolveMasterSequencerOf(observingMode: String): Future[Option[HttpLocation]] =
-    locationServiceUtil.locationService
-      .resolve(HttpConnection(ComponentId(Prefix(ESW, observingMode), Sequencer)), Timeouts.DefaultTimeout)
+    locationServiceUtil.locationService.resolve(masterSequencerConnection(observingMode), Timeouts.DefaultTimeout)
 
   def startSequencers(observingMode: String, requiredSequencers: Sequencers): Future[ConfigureResponse] = async {
     val spawnSequencerResponses: List[Either[SequencerError, AkkaLocation]] =
       await(Future.traverse(requiredSequencers.subsystems)(startSequencer(_, observingMode)))
 
-    collectLefts(spawnSequencerResponses) match {
-      case Nil =>
+    flip(spawnSequencerResponses) match {
+      case Left(failedScriptResponses) =>
+        // todo : discuss this clean up step
+        // await(shutdownSequencers(collectRights(spawnSequencerResponses))) // clean up spawned sequencers on failure
+        FailedToStartSequencers(failedScriptResponses.map(_.msg).toSet)
+
+      case Right(_) =>
         // resolve master Sequencer and return LOCATION or FAILURE if location is not found
         await(resolveMasterSequencerOf(observingMode))
           .map(Success)
           .getOrElse(ConfigurationFailure(s"Error: ESW.$observingMode configuration failed"))
-
-      case failedScriptResponses =>
-        // todo : discuss this clean up step
-        // await(shutdownSequencers(collectRights(spawnSequencerResponses))) // clean up spawned sequencers on failure
-        FailedToStartSequencers(failedScriptResponses.map(_.msg).toSet)
     }
   }
 
   //fixme: replace Done with success type
-  def checkForSequencersAvailability(sequencers: Sequencers, obsMode: String): Future[Either[SequencerError, Done.type]] = async {
-    val resolvedSequencers: List[Either[EswLocationError, Boolean]] = await(
-      Future
-        .traverse(sequencers.subsystems)(resolveSequencers(obsMode, _))
-    )
+  def checkForSequencersAvailability(sequencers: Sequencers, obsMode: String): Future[Either[SequencerError, Done]] = async {
+    val resolvedSequencers: List[Either[EswLocationError, Boolean]] =
+      await(Future.traverse(sequencers.subsystems)(resolveSequencers(obsMode, _)))
 
-    collectLefts(resolvedSequencers) match {
-      case Nil =>
-        if (collectRights(resolvedSequencers).contains(false))
-          Left(SequencerNotIdle(obsMode))
-        else
-          Right(Done)
-      case _ => Left(LocationServiceError("Failed to check availability of sequencers"))
+    flip(resolvedSequencers) match {
+      case Right(bools) if bools.contains(false) => Left(SequencerNotIdle(obsMode))
+      case Right(_)                              => Right(Done)
+      case Left(_)                               => Left(LocationServiceError("Failed to check availability of sequencers"))
     }
   }
 
-  def stopSequencers(sequencers: Sequencers, obsMode: String): Future[Either[EswLocationError, Done.type]] =
+  def stopSequencers(sequencers: Sequencers, obsMode: String): Future[Either[EswLocationError, Done]] =
     Future
-      .traverse(sequencers.subsystems) { s =>
+      .traverse(sequencers.subsystems) { subsystem =>
         locationServiceUtil
-          .resolveSequencer(s, obsMode)
+          .resolveSequencer(subsystem, obsMode)
           .flatMap {
             case Left(error)     => throw error
             case Right(location) => stopSequencer(location)
@@ -80,18 +76,17 @@ class SequencerUtil(locationServiceUtil: LocationServiceUtil, sequenceComponentU
         case error: EswLocationError => Left(error)
       }
 
+  // get sequence component from Sequencer and unload it.
   private def stopSequencer(loc: AkkaLocation): Future[Done] =
-    // get sequencer component from Sequencer and unload it.
     createSequencerClient(loc).getSequenceComponent.flatMap(sequenceComponentUtil.unloadScript)
 
   // Created in order to mock the behavior of sequencer API availability for unit test
   private[sm] def createSequencerClient(location: Location): SequencerApi = SequencerApiFactory.make(location)
 
-  private def resolveSequencers(obsMode: String, subsystem: Subsystem): Future[Either[EswLocationError, Boolean]] = {
+  private def resolveSequencers(obsMode: String, subsystem: Subsystem): Future[Either[EswLocationError, Boolean]] =
     locationServiceUtil
       .resolveSequencer(subsystem, obsMode, Timeouts.DefaultTimeout)
-      .flatRight(location => createSequencerClient(location).isAvailable.map(Right(_)))
-  }
+      .flatMapRight(location => createSequencerClient(location).isAvailable)
 
   // spawn the sequencer on available SequenceComponent
   private def startSequencer(
@@ -107,17 +102,14 @@ class SequencerUtil(locationServiceUtil: LocationServiceUtil, sequenceComponentU
         case Right(seqCompApi) =>
           seqCompApi
             .loadScript(subSystem, observingMode)
-            .map(_.response match {
-              case Left(e)    => Left(SequenceManagerError.LoadScriptError(e.msg))
-              case Right(loc) => Right(loc)
-            })
+            .map(_.response.left.map(e => SequenceManagerError.LoadScriptError(e.msg)))
       }
   }
 
-  private def collectLefts[L, R](responses: List[Either[L, R]]): List[L] =
-    responses.collect { case Left(reasons) => reasons }
-
-  private def collectRights[L, R](responses: List[Either[L, R]]): List[R] =
-    responses.collect { case Right(values) => values }
+  def flip[L, R](eithers: List[Either[L, R]]): Either[List[L], List[R]] =
+    eithers.partition(_.isLeft) match {
+      case (Nil, success) => Right(for (Right(i) <- success) yield i)
+      case (errs, _)      => Left(for (Left(s)   <- errs) yield s)
+    }
 
 }
