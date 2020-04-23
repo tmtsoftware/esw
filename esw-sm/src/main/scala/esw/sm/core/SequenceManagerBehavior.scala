@@ -81,7 +81,7 @@ class SequenceManagerBehavior(
     }
 
   def useOcsMaster(location: HttpLocation, obsMode: String): Future[ConfigureResponse] = async {
-    val sequencerIdleResponse: Either[SequencerError, Done.type] =
+    val sequencerIdleResponse: Either[SequencerError, Done] =
       await(sequencerUtil.checkForSequencersAvailability(extractSequencers(obsMode), obsMode))
     sequencerIdleResponse match {
       case Left(error) => ConfigurationFailure(error.msg)
