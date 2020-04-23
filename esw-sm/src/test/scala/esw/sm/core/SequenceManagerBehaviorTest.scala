@@ -11,6 +11,7 @@ import csw.location.api.models.{AkkaLocation, ComponentId, HttpLocation}
 import csw.prefix.models.Prefix
 import csw.prefix.models.Subsystem.{ESW, TCS}
 import esw.commons.BaseTestSuite
+import esw.commons.utils.location.EswLocationError.RegistrationListingFailed
 import esw.commons.utils.location.LocationServiceUtil
 import esw.sm.messages.ConfigureResponse.{ConfigurationFailure, ConflictingResourcesWithRunningObsMode, Success}
 import esw.sm.messages.SequenceManagerMsg.{Cleanup, Configure}
@@ -56,6 +57,20 @@ class SequenceManagerBehaviorTest extends ScalaTestWithActorTestKit with BaseTes
       verify(sequencerUtil).resolveMasterSequencerOf(DARKNIGHT)
       verify(locationServiceUtil).listAkkaLocationsBy(ESW, Sequencer)
       verify(sequencerUtil).startSequencers(DARKNIGHT, darknightSequencers)
+    }
+
+    "return ConfigurationFailure if location service fails to return running observation mode | ESW-178" in {
+      when(sequencerUtil.resolveMasterSequencerOf(DARKNIGHT)).thenReturn(Future.successful(None))
+      when(locationServiceUtil.listAkkaLocationsBy(ESW, Sequencer))
+        .thenReturn(Future.successful(Left(RegistrationListingFailed("Sequencer"))))
+
+      val probe = createTestProbe[ConfigureResponse]
+      smRef ! Configure(DARKNIGHT, probe.ref)
+
+      probe.expectMessage(ConfigurationFailure("Sequencer"))
+
+      verify(sequencerUtil).resolveMasterSequencerOf(DARKNIGHT)
+      verify(locationServiceUtil).listAkkaLocationsBy(ESW, Sequencer)
     }
 
     "return resource conflict error when required resources are already in use | ESW-178" in {
