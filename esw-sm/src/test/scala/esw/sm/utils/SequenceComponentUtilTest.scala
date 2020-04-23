@@ -49,30 +49,30 @@ class SequenceComponentUtilTest extends BaseTestSuite {
 
   "getAvailableSequenceComponent" must {
     "return available sequence component for given subsystem | ESW-178" in {
-      when(locationServiceUtil.listBy(IRIS, SequenceComponent))
+      when(locationServiceUtil.listAkkaLocationsBy(IRIS, SequenceComponent))
         .thenReturn(Future.successful(Right(List(mockAkkaLocation("IRIS.primary"), mockAkkaLocation("IRIS.secondary")))))
 
       sequenceComponentUtil.getAvailableSequenceComponent(IRIS).rightValue shouldBe a[SequenceComponentApi]
 
-      verify(locationServiceUtil).listBy(IRIS, SequenceComponent)
+      verify(locationServiceUtil).listAkkaLocationsBy(IRIS, SequenceComponent)
       verify(agentUtil, never).spawnSequenceComponentFor(IRIS)
     }
 
     "return available ESW sequence component when specific subsystem sequence component is not available | ESW-178" in {
 
-      when(locationServiceUtil.listBy(TCS, SequenceComponent))
+      when(locationServiceUtil.listAkkaLocationsBy(TCS, SequenceComponent))
         .thenReturn(Future.successful(Right(List(mockAkkaLocation("TCS.primary"), mockAkkaLocation("TCS.secondary")))))
-      when(locationServiceUtil.listBy(ESW, SequenceComponent))
+      when(locationServiceUtil.listAkkaLocationsBy(ESW, SequenceComponent))
         .thenReturn(Future.successful(Right(List(mockAkkaLocation("ESW.primary")))))
 
       sequenceComponentUtil.getAvailableSequenceComponent(TCS).rightValue shouldBe a[SequenceComponentApi]
 
       // verify call for looking tcs sequence components
-      verify(locationServiceUtil).listBy(TCS, SequenceComponent)
+      verify(locationServiceUtil).listAkkaLocationsBy(TCS, SequenceComponent)
 
       // verify call for looking esw sequence components as tcs sequence components are not idle/available
       // stub for idleSequenceComponent(tcs) returns None to mimic tcs sequence components NOT idle situation
-      verify(locationServiceUtil).listBy(ESW, SequenceComponent)
+      verify(locationServiceUtil).listAkkaLocationsBy(ESW, SequenceComponent)
       verify(agentUtil, never).spawnSequenceComponentFor(TCS)
     }
 
@@ -85,9 +85,9 @@ class SequenceComponentUtilTest extends BaseTestSuite {
         }
       }
 
-      when(locationServiceUtil.listBy(TCS, SequenceComponent))
+      when(locationServiceUtil.listAkkaLocationsBy(TCS, SequenceComponent))
         .thenReturn(Future.successful(Right(List(mockAkkaLocation("TCS.primary"), mockAkkaLocation("TCS.secondary")))))
-      when(locationServiceUtil.listBy(ESW, SequenceComponent))
+      when(locationServiceUtil.listAkkaLocationsBy(ESW, SequenceComponent))
         .thenReturn(Future.successful(Right(List(mockAkkaLocation("ESW.primary")))))
 
       when(agentUtil.spawnSequenceComponentFor(TCS)).thenReturn(Future.successful(Right(mock[SequenceComponentApi])))
@@ -95,9 +95,9 @@ class SequenceComponentUtilTest extends BaseTestSuite {
       sequenceComponentUtil.getAvailableSequenceComponent(TCS).rightValue shouldBe a[SequenceComponentApi]
 
       // verify call for looking tcs sequence components
-      verify(locationServiceUtil).listBy(TCS, SequenceComponent)
+      verify(locationServiceUtil).listAkkaLocationsBy(TCS, SequenceComponent)
       // verify call for looking esw sequence components as tcs sequence components are not idle/available
-      verify(locationServiceUtil).listBy(ESW, SequenceComponent)
+      verify(locationServiceUtil).listAkkaLocationsBy(ESW, SequenceComponent)
       verify(agentUtil, times(1)).spawnSequenceComponentFor(TCS)
     }
 
@@ -110,9 +110,9 @@ class SequenceComponentUtilTest extends BaseTestSuite {
         }
       }
 
-      when(locationServiceUtil.listBy(TCS, SequenceComponent))
+      when(locationServiceUtil.listAkkaLocationsBy(TCS, SequenceComponent))
         .thenReturn(Future.successful(Right(List(mockAkkaLocation("TCS.primary"), mockAkkaLocation("TCS.secondary")))))
-      when(locationServiceUtil.listBy(ESW, SequenceComponent))
+      when(locationServiceUtil.listAkkaLocationsBy(ESW, SequenceComponent))
         .thenReturn(Future.successful(Right(List(mockAkkaLocation("ESW.primary")))))
       when(agentUtil.spawnSequenceComponentFor(TCS))
         .thenReturn(Future.successful(Left(SpawnSequenceComponentFailed("Error in spawning sequence component"))))
@@ -122,9 +122,9 @@ class SequenceComponentUtilTest extends BaseTestSuite {
       )
 
       // verify call for looking tcs sequence components
-      verify(locationServiceUtil).listBy(TCS, SequenceComponent)
+      verify(locationServiceUtil).listAkkaLocationsBy(TCS, SequenceComponent)
       // verify call for looking esw sequence components as tcs sequence components are not idle/available
-      verify(locationServiceUtil).listBy(ESW, SequenceComponent)
+      verify(locationServiceUtil).listAkkaLocationsBy(ESW, SequenceComponent)
       verify(agentUtil, times(1)).spawnSequenceComponentFor(TCS)
     }
   }

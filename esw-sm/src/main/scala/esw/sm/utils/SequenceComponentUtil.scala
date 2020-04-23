@@ -43,7 +43,7 @@ class SequenceComponentUtil(locationServiceUtil: LocationServiceUtil, agentUtil:
 
   private def getIdleSequenceComponentFor(subsystem: Subsystem): Future[Option[SequenceComponentApi]] =
     locationServiceUtil
-      .listBy(subsystem, SequenceComponent)
+      .listAkkaLocationsBy(subsystem, SequenceComponent)
       .flatMap {
         case Left(_) => Future.successful(None) // intentionally ignoring Left as
         // in this case domain won't decide action based on what is error hence converting it to optionality

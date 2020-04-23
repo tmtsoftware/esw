@@ -45,7 +45,7 @@ class SequenceManagerBehaviorTest extends ScalaTestWithActorTestKit with BaseTes
     //todo : test state transition of the SM Behavior
     "start sequence hierarchy and return master sequencer | ESW-178" in {
       val httpLocation = HttpLocation(HttpConnection(ComponentId(Prefix(ESW, DARKNIGHT), Sequencer)), new URI("uri"))
-      when(locationServiceUtil.listBy(ESW, Sequencer)).thenReturn(Future.successful(Right(List.empty)))
+      when(locationServiceUtil.listAkkaLocationsBy(ESW, Sequencer)).thenReturn(Future.successful(Right(List.empty)))
       when(sequencerUtil.startSequencers(DARKNIGHT, darknightSequencers)).thenReturn(Future.successful(Success(httpLocation)))
       when(sequencerUtil.resolveMasterSequencerOf(DARKNIGHT)).thenReturn(Future.successful(None))
       val probe = createTestProbe[ConfigureResponse]
@@ -54,13 +54,13 @@ class SequenceManagerBehaviorTest extends ScalaTestWithActorTestKit with BaseTes
 
       probe.expectMessage(Success(httpLocation))
       verify(sequencerUtil).resolveMasterSequencerOf(DARKNIGHT)
-      verify(locationServiceUtil).listBy(ESW, Sequencer)
+      verify(locationServiceUtil).listAkkaLocationsBy(ESW, Sequencer)
       verify(sequencerUtil).startSequencers(DARKNIGHT, darknightSequencers)
     }
 
     "return resource conflict error when required resources are already in use | ESW-178" in {
       val akkaLocation = AkkaLocation(AkkaConnection(ComponentId(Prefix(ESW, CLEARSKIES), Sequencer)), new URI("uri"))
-      when(locationServiceUtil.listBy(ESW, Sequencer)).thenReturn(Future.successful(Right(List(akkaLocation))))
+      when(locationServiceUtil.listAkkaLocationsBy(ESW, Sequencer)).thenReturn(Future.successful(Right(List(akkaLocation))))
       when(sequencerUtil.resolveMasterSequencerOf(DARKNIGHT)).thenReturn(Future.successful(None))
       val probe = createTestProbe[ConfigureResponse]
 
@@ -68,7 +68,7 @@ class SequenceManagerBehaviorTest extends ScalaTestWithActorTestKit with BaseTes
 
       probe.expectMessage(ConflictingResourcesWithRunningObsMode)
       verify(sequencerUtil).resolveMasterSequencerOf(DARKNIGHT)
-      verify(locationServiceUtil).listBy(ESW, Sequencer)
+      verify(locationServiceUtil).listAkkaLocationsBy(ESW, Sequencer)
       verify(sequencerUtil, times(0)).startSequencers(DARKNIGHT, darknightSequencers)
     }
 

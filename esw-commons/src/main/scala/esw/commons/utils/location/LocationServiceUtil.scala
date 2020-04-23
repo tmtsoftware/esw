@@ -17,7 +17,6 @@ import esw.commons.Timeouts
 import esw.commons.utils.FutureEitherUtils._
 import esw.commons.utils.location.EswLocationError.{RegistrationListingFailed, ResolveLocationFailed}
 
-import scala.compat.java8.FutureConverters.FutureOps
 import scala.concurrent.duration.FiniteDuration
 import scala.concurrent.{ExecutionContext, Future}
 
@@ -47,7 +46,10 @@ private[esw] class LocationServiceUtil(val locationService: LocationService)(
       }
       .recoverWith(onFailure)
 
-  def listBy(subsystem: Subsystem, componentType: ComponentType): Future[Either[RegistrationListingFailed, List[AkkaLocation]]] =
+  def listAkkaLocationsBy(
+      subsystem: Subsystem,
+      componentType: ComponentType
+  ): Future[Either[RegistrationListingFailed, List[AkkaLocation]]] =
     locationService
       .list(componentType)
       .map(_.collect {
@@ -55,7 +57,8 @@ private[esw] class LocationServiceUtil(val locationService: LocationService)(
       })
       .map(Right(_))
       .recover {
-        case _: CswRegistrationListingFailed => Left(RegistrationListingFailed(s"$componentType"))
+        case _: CswRegistrationListingFailed =>
+          Left(RegistrationListingFailed(s"Subsystem: $subsystem, ComponentType: $componentType"))
       }
 
   def resolveByComponentNameAndType(
@@ -78,53 +81,39 @@ private[esw] class LocationServiceUtil(val locationService: LocationService)(
         case _: CswRegistrationListingFailed => Left(RegistrationListingFailed(s"$componentName and $componentType"))
       }
 
-  def resolveComponentRef(
-      prefix: Prefix,
-      componentType: ComponentType
-  ): Future[Either[EswLocationError, ActorRef[ComponentMessage]]] =
-    resolveAkkaLocation(prefix, componentType).right(_.componentRef)
-
-  private[esw] def resolveSequencer(
-      subsystem: Subsystem,
-      observingMode: String,
+  def resolve[L <: Location](
+      connection: TypedConnection[L],
       timeout: FiniteDuration = Timeouts.DefaultTimeout
-  ): Future[Either[EswLocationError, AkkaLocation]] = {
-    val componentId = ComponentId(Prefix(subsystem, observingMode), Sequencer)
+  ): Future[Either[EswLocationError, L]] = {
     locationService
-      .resolve(AkkaConnection(componentId), timeout)
+      .resolve(connection, timeout)
       .map {
         case Some(location) => Right(location)
-        case None =>
-          Left(
-            ResolveLocationFailed(
-              s"Could not find location matching subsystem: $subsystem, ObservingMode: $observingMode, ComponentType: $Sequencer"
-            )
-          )
-      }
-      .recover {
-        case _: CswRegistrationListingFailed => Left(RegistrationListingFailed(s"$componentId "))
-      }
-  }
-
-  def resolveAkkaLocation(prefix: Prefix, componentType: ComponentType): Future[Either[EswLocationError, AkkaLocation]] = {
-    val connection = AkkaConnection(ComponentId(prefix, componentType))
-    locationService
-      .resolve(connection, Timeouts.DefaultTimeout)
-      .map {
-        case Some(location) => Right(location)
-        case None           => Left(ResolveLocationFailed(s"Could not find location matching $prefix"))
+        case None           => Left(ResolveLocationFailed(s"Could not resolve location matching connection: $connection"))
       }
       .recover {
         case _: CswRegistrationListingFailed => Left(RegistrationListingFailed(s"$connection"))
       }
   }
 
+  def resolveComponentRef(
+      prefix: Prefix,
+      componentType: ComponentType
+  ): Future[Either[EswLocationError, ActorRef[ComponentMessage]]] =
+    resolve(AkkaConnection(ComponentId(prefix, componentType))).right(_.componentRef)
+
+  private[esw] def resolveSequencer(
+      subsystem: Subsystem,
+      observingMode: String,
+      timeout: FiniteDuration = Timeouts.DefaultTimeout
+  ): Future[Either[EswLocationError, AkkaLocation]] =
+    resolve(AkkaConnection(ComponentId(Prefix(subsystem, observingMode), Sequencer)), timeout)
+
   // Added this to be accessed by kotlin
-  def jResolveComponentRef(prefix: Prefix, componentType: ComponentType): CompletionStage[ActorRef[ComponentMessage]] = {
+  def jResolveComponentRef(prefix: Prefix, componentType: ComponentType): CompletionStage[ActorRef[ComponentMessage]] =
     resolveComponentRef(prefix, componentType).toJava
-  }
 
   def jResolveAkkaLocation(prefix: Prefix, componentType: ComponentType): CompletionStage[AkkaLocation] =
-    resolveAkkaLocation(prefix, componentType).toJava
+    resolve(AkkaConnection(ComponentId(prefix, componentType))).toJava
 
 }

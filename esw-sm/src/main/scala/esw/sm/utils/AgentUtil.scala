@@ -2,7 +2,9 @@ package esw.sm.utils
 
 import akka.actor.typed.ActorSystem
 import akka.util.Timeout
+import csw.location.api.models.ComponentId
 import csw.location.api.models.ComponentType.{Machine, SequenceComponent}
+import csw.location.api.models.Connection.AkkaConnection
 import csw.prefix.models.Subsystem.ESW
 import csw.prefix.models.{Prefix, Subsystem}
 import esw.agent.api.{Failed, Spawned}
@@ -23,7 +25,7 @@ class AgentUtil(locationServiceUtil: LocationServiceUtil)(implicit actorSystem: 
 
   private[sm] def getAgent: Future[Either[EswLocationError, AgentClient]] =
     locationServiceUtil
-      .listBy(ESW, Machine)
+      .listAkkaLocationsBy(ESW, Machine)
       .flatRight(locations => AgentClient.make(locations.head.prefix, locationServiceUtil.locationService).map(Right(_)))
       .recover {
         // This covers case where AgentClient make can throw RuntimeException
@@ -42,7 +44,7 @@ class AgentUtil(locationServiceUtil: LocationServiceUtil)(implicit actorSystem: 
             .flatMap {
               case Spawned =>
                 locationServiceUtil
-                  .resolveAkkaLocation(sequenceComponentPrefix, SequenceComponent)
+                  .resolve(AkkaConnection(ComponentId(sequenceComponentPrefix, SequenceComponent)))
                   .map {
                     case Left(error)     => Left(SequenceManagerError.LocationServiceError(error.msg))
                     case Right(location) => Right(new SequenceComponentImpl(location))

@@ -99,7 +99,7 @@ class SequenceManagerBehavior(
   }
 
   def getRunningObsModes: Future[Either[RegistrationListingFailed, Set[String]]] =
-    locationServiceUtil.listBy(ESW, Sequencer).right(_.map(getObsMode).toSet)
+    locationServiceUtil.listAkkaLocationsBy(ESW, Sequencer).right(_.map(getObsMode).toSet)
 
   def getObsMode(akkaLocation: AkkaLocation): String = akkaLocation.prefix.componentName
 
