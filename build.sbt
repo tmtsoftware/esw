@@ -10,7 +10,9 @@ lazy val aggregateProjects: Seq[ProjectReference] =
     `esw-integration-test`,
     `esw-agent`,
     `esw-contract`,
-    examples
+    examples,
+    `esw-commons`,
+    `esw-sm`
   )
 
 lazy val githubReleases: Seq[ProjectReference] = Seq(`esw-ocs-app`, `esw-gateway-server`)
@@ -51,8 +53,10 @@ lazy val `esw-ocs` = project
 lazy val `esw-ocs-api` = crossProject(JSPlatform, JVMPlatform)
   .crossType(CrossType.Full)
   .in(file("esw-ocs/esw-ocs-api"))
-  .jvmConfigure(_.enablePlugins(MaybeCoverage, PublishBintray)
-    settings(libraryDependencies ++= Dependencies.OcsApiJvm.value))
+  .jvmConfigure(
+    _.enablePlugins(MaybeCoverage, PublishBintray)
+      settings (libraryDependencies ++= Dependencies.OcsApiJvm.value)
+  )
   //  the following setting is required by IntelliJ which could not handle cross-compiled Akka types
   .jsSettings(SettingKey[Boolean]("ide-skip-project") := true)
   .settings(fork := false)
@@ -106,8 +110,8 @@ lazy val `esw-ocs-app` = project
   )
   .dependsOn(
     `esw-ocs-handler`,
-    `esw-ocs-impl`      % "compile->compile;test->test",
-    `esw-http-core`     % "compile->compile;test->test"
+    `esw-ocs-impl`  % "compile->compile;test->test",
+    `esw-http-core` % "compile->compile;test->test"
   )
 
 lazy val `esw-agent` = project
@@ -188,7 +192,7 @@ lazy val `esw-gateway-server` = project
     `esw-gateway-impl`,
     `esw-ocs-handler`,
     `esw-ocs-impl`,
-    `esw-http-core`     % "compile->compile;test->test",
+    `esw-http-core` % "compile->compile;test->test"
   )
 
 lazy val `esw-contract` = project
@@ -215,10 +219,7 @@ lazy val examples = project
 lazy val `esw-sm` = project
   .in(file("esw-sm"))
   .settings(libraryDependencies ++= Dependencies.EswSm.value)
-  .dependsOn(
-    `esw-ocs-api`.jvm,
-    `esw-agent-client`,
-    `esw-commons` % "compile->compile;test->test")
+  .dependsOn(`esw-ocs-api`.jvm, `esw-agent-client`, `esw-commons` % "compile->compile;test->test")
 
 lazy val `esw-commons` = project
   .in(file("esw-commons"))
