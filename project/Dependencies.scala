@@ -199,8 +199,9 @@ object Dependencies {
     Seq(
       Csw.`csw-location-api`,
       Akka.`akka-actor-typed`,
-      Libs.`mockito-scala` % Test,
-      Libs.scalatest       % Test
+      Libs.`mockito-scala`     % Test,
+      Libs.scalatest           % Test,
+      Libs.`tmt-test-reporter` % Test
     )
   )
 
@@ -211,7 +212,8 @@ object Dependencies {
       Csw.`csw-command-client`        % Provided,
       Akka.`akka-actor-testkit-typed` % Test,
       Libs.`mockito-scala`            % Test,
-      Libs.scalatest                  % Test
+      Libs.scalatest                  % Test,
+      Libs.`tmt-test-reporter`        % Test
     )
   )
 }
