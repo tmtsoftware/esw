@@ -101,7 +101,7 @@ class SequenceComponentUtilTest extends BaseTestSuite {
       verify(agentUtil, times(1)).spawnSequenceComponentFor(TCS)
     }
 
-    "return error spawning sequence component fails | ESW-178" in {
+    "return SpawnSequenceComponentFailed if spawning sequence component fails | ESW-178" in {
       val sequenceComponentUtil: SequenceComponentUtil = new SequenceComponentUtil(locationServiceUtil, agentUtil) {
         override private[sm] def idleSequenceComponent(
             sequenceComponentLocation: AkkaLocation
