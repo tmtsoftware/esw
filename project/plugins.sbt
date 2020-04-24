@@ -10,7 +10,7 @@ addSbtPlugin("com.dwijnand"          % "sbt-dynver"               % "4.0.0")
 addSbtPlugin("org.portable-scala"    % "sbt-scalajs-crossproject" % "1.0.0")
 addSbtPlugin("org.scala-js"          % "sbt-scalajs"              % "1.0.1")
 addSbtPlugin("com.typesafe.sbt"      % "sbt-multi-jvm"            % "0.4.0")
-addSbtPlugin("com.lightbend.paradox" % "sbt-paradox"              % "0.7.0")
+addSbtPlugin("com.lightbend.paradox" % "sbt-paradox"              % "0.8.0")
 
 resolvers += "Jenkins repo" at "https://repo.jenkins-ci.org/public/"
 addSbtPlugin("ohnosequences" % "sbt-github-release" % "0.7.0")
