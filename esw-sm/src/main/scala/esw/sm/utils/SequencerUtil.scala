@@ -48,10 +48,7 @@ class SequencerUtil(locationServiceUtil: LocationServiceUtil, sequenceComponentU
 
       case Right(_) =>
         // resolve master Sequencer and return LOCATION or FAILURE if location is not found
-        await(resolveMasterSequencerOf(observingMode)) match {
-          case Left(error)                    => ConfigurationFailure(error.msg)
-          case Right(masterSequencerLocation) => Success(masterSequencerLocation)
-        }
+        await(resolveMasterSequencerOf(observingMode).mapToAdt(Success, err => ConfigurationFailure(err.msg)))
     }
   }
 

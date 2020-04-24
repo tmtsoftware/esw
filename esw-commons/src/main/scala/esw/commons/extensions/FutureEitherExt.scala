@@ -25,12 +25,17 @@ object FutureEitherExt {
         case Right(r) => f(r)
       }
 
-    def toJava(implicit executor: ExecutionContext): CompletionStage[R] = toJava(onSuccess = identity)
+    def mapToAdt[S, R1 <: S, L1 <: S](rmap: R => R1, lmap: L => L1)(implicit ec: ExecutionContext): Future[S] =
+      flatMapToAdt(r => Future.successful(rmap(r)), lmap)
 
+    def flatMapToAdt[S, R1 <: S, L1 <: S](rmap: R => Future[R1], lmap: L => L1)(implicit ec: ExecutionContext): Future[S] =
+      futureEither.flatMap {
+        case Right(r) => rmap(r)
+        case Left(l)  => Future.successful(lmap(l))
+      }
+
+    def toJava(implicit executor: ExecutionContext): CompletionStage[R] = toJava(onSuccess = identity)
     def toJava[S](onSuccess: R => S)(implicit executor: ExecutionContext): CompletionStage[S] =
-      futureEither.map {
-        case Left(error)  => throw error
-        case Right(value) => onSuccess(value)
-      }.toJava
+      mapToAdt(onSuccess, throw _).toJava
   }
 }

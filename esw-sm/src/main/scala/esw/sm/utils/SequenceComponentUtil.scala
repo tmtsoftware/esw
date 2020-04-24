@@ -7,6 +7,7 @@ import csw.location.api.models.AkkaLocation
 import csw.location.api.models.ComponentType.SequenceComponent
 import csw.prefix.models.Subsystem
 import csw.prefix.models.Subsystem.ESW
+import esw.commons.extensions.FutureEitherExt.FutureEitherOps
 import esw.commons.utils.FutureUtils
 import esw.commons.utils.location.LocationServiceUtil
 import esw.ocs.api.SequenceComponentApi
@@ -39,11 +40,8 @@ class SequenceComponentUtil(locationServiceUtil: LocationServiceUtil, agentUtil:
   private def getIdleSequenceComponentFor(subsystem: Subsystem): Future[Option[SequenceComponentApi]] =
     locationServiceUtil
       .listAkkaLocationsBy(subsystem, SequenceComponent)
-      .flatMap {
-        // intentionally ignoring Left as in this case domain won't decide action based on what is error hence converting it to optionality
-        case Left(_)          => Future.successful(None)
-        case Right(locations) => raceForIdleSequenceComponents(locations)
-      }
+      .flatMapToAdt(raceForIdleSequenceComponents, _ => None)
+  // intentionally ignoring Left as in this case domain won't decide action based on what is error hence converting it to optionality
 
   private def raceForIdleSequenceComponents(locations: List[AkkaLocation]) =
     FutureUtils
