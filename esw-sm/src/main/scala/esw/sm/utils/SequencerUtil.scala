@@ -9,6 +9,7 @@ import csw.prefix.models.Subsystem.ESW
 import csw.prefix.models.{Prefix, Subsystem}
 import esw.commons.Timeouts
 import esw.commons.extensions.FutureEitherExt.FutureEitherOps
+import esw.commons.utils.location.EswLocationError.{RegistrationListingFailed, ResolveLocationFailed}
 import esw.commons.utils.location.{EswLocationError, LocationServiceUtil}
 import esw.ocs.api.SequencerApi
 import esw.ocs.api.actor.client.SequencerApiFactory
@@ -65,20 +66,30 @@ class SequencerUtil(locationServiceUtil: LocationServiceUtil, sequenceComponentU
     }
   }
 
-  def stopSequencers(sequencers: Sequencers, obsMode: String): Future[Either[EswLocationError, Done]] =
+  def stopSequencers(sequencers: Sequencers, obsMode: String): Future[Either[RegistrationListingFailed, Done.type]] = {
     Future
       .traverse(sequencers.subsystems) { subsystem =>
         locationServiceUtil
           .resolveSequencer(subsystem, obsMode)
-          .flatMap {
-            case Left(error)     => throw error
-            case Right(location) => stopSequencer(location)
+          .map {
+            case Left(error)     => Left(error)
+            case Right(location) => Right(stopSequencer(location))
           }
       }
+      .flatMap(statusList => {
+        Future
+          .traverse(statusList.map {
+            case Left(RegistrationListingFailed(msg)) => throw RegistrationListingFailed(msg)
+            case Left(ResolveLocationFailed(_))       => Future.successful(Done)
+            case Right(value)                         => value.map(_ => Done)
+          })(x => x)
+
+      })
       .map(_ => Right(Done))
       .recover {
-        case error: EswLocationError => Left(error)
+        case RegistrationListingFailed(msg) => Left(RegistrationListingFailed(msg))
       }
+  }
 
   // get sequence component from Sequencer and unload it.
   private def stopSequencer(loc: AkkaLocation): Future[Done] =

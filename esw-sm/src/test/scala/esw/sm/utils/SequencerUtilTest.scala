@@ -10,7 +10,7 @@ import csw.location.api.models.Connection.{AkkaConnection, HttpConnection}
 import csw.location.api.models.{AkkaLocation, ComponentId, HttpLocation, Location}
 import csw.prefix.models.Prefix
 import csw.prefix.models.Subsystem.{ESW, TCS}
-import esw.commons.utils.location.EswLocationError.ResolveLocationFailed
+import esw.commons.utils.location.EswLocationError.{RegistrationListingFailed, ResolveLocationFailed}
 import esw.commons.utils.location.LocationServiceUtil
 import esw.commons.{BaseTestSuite, Timeouts}
 import esw.ocs.api.SequencerApi
@@ -155,7 +155,7 @@ class SequencerUtilTest extends BaseTestSuite {
       verify(sequenceComponentUtil).unloadScript(tcsSeqCompLoc)
     }
 
-    "return Done even sequencer is not running | ESW-166" ignore {
+    "return Done even sequencer is not running | ESW-166" in {
       val obsMode = "moonNight"
       val setup   = new TestSetup(obsMode)
       import setup._
@@ -169,6 +169,26 @@ class SequencerUtilTest extends BaseTestSuite {
 
       verify(locationServiceUtil).resolveSequencer(ESW, obsMode)
       verify(eswSequencerApi, times(0)).getSequenceComponent
+    }
+
+    "return RegistrationListingFailed when location service returns RegistrationListingFailed error | ESW-166" in {
+      val obsMode = "moonNight"
+      val setup   = new TestSetup(obsMode)
+      import setup._
+      val tcsSeqCompLoc = AkkaLocation(AkkaConnection(ComponentId(Prefix(TCS, obsMode), SequenceComponent)), URI.create(""))
+
+      when(locationServiceUtil.resolveSequencer(ESW, obsMode))
+        .thenReturn(Future.successful(Left(RegistrationListingFailed("Error"))))
+      when(locationServiceUtil.resolveSequencer(TCS, obsMode))
+        .thenReturn(Future.successful(Right(tcsLocation)))
+      when(tcsSequencerApi.getSequenceComponent).thenReturn(Future.successful(tcsSeqCompLoc))
+      when(sequenceComponentUtil.unloadScript(tcsSeqCompLoc)).thenReturn(Future.successful(Done))
+
+      sequencerUtil.stopSequencers(Sequencers(ESW, TCS), obsMode).leftValue shouldBe RegistrationListingFailed("Error")
+
+      verify(locationServiceUtil).resolveSequencer(ESW, obsMode)
+      verify(locationServiceUtil).resolveSequencer(TCS, obsMode)
+      verify(tcsSequencerApi).getSequenceComponent
     }
 
   }
