@@ -7,7 +7,7 @@ import scala.concurrent.{ExecutionContext, Future}
 import scala.util.control.NonFatal
 
 object FutureEitherExt {
-  implicit class FutureEitherOps[+L <: Throwable, R](futureEither: Future[Either[L, R]]) {
+  implicit class FutureEitherOps[+L <: Throwable, R](private val futureEither: Future[Either[L, R]]) extends AnyVal {
     def mapRight[S](f: R => S)(implicit executor: ExecutionContext): Future[Either[L, S]] = futureEither.map(_.map(f))
 
     def mapLeft[S](f: L => S)(implicit executor: ExecutionContext): Future[Either[S, R]] = futureEither.map(_.left.map(f))

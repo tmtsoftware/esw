@@ -9,6 +9,7 @@ import csw.prefix.models.Subsystem.ESW
 import csw.prefix.models.{Prefix, Subsystem}
 import esw.commons.Timeouts
 import esw.commons.extensions.FutureEitherExt.FutureEitherOps
+import esw.commons.extensions.ListEitherExt.ListEitherOps
 import esw.commons.utils.location.EswLocationError.{RegistrationListingFailed, ResolveLocationFailed}
 import esw.commons.utils.location.{EswLocationError, LocationServiceUtil}
 import esw.ocs.api.SequencerApi
@@ -36,10 +37,10 @@ class SequencerUtil(locationServiceUtil: LocationServiceUtil, sequenceComponentU
     locationServiceUtil.resolve(masterSequencerConnection(observingMode), Timeouts.DefaultTimeout)
 
   def startSequencers(observingMode: String, requiredSequencers: Sequencers): Future[ConfigureResponse] = async {
-    val spawnSequencerResponses: List[Either[SequencerError, AkkaLocation]] =
-      await(Future.traverse(requiredSequencers.subsystems)(startSequencer(_, observingMode, retryCount)))
+    val spawnSequencerResponses: Either[List[SequencerError], List[AkkaLocation]] =
+      await(Future.traverse(requiredSequencers.subsystems)(startSequencer(_, observingMode, retryCount))).sequence
 
-    flip(spawnSequencerResponses) match {
+    spawnSequencerResponses match {
       case Left(failedScriptResponses) =>
         // todo : discuss this clean up step
         // await(shutdownSequencers(collectRights(spawnSequencerResponses))) // clean up spawned sequencers on failure
@@ -56,17 +57,17 @@ class SequencerUtil(locationServiceUtil: LocationServiceUtil, sequenceComponentU
 
   //fixme: replace Done with success type
   def checkForSequencersAvailability(sequencers: Sequencers, obsMode: String): Future[Either[SequencerError, Done]] = async {
-    val resolvedSequencers: List[Either[EswLocationError, Boolean]] =
-      await(Future.traverse(sequencers.subsystems)(resolveSequencers(obsMode, _)))
+    val resolvedSequencers: Either[List[EswLocationError], List[Boolean]] =
+      await(Future.traverse(sequencers.subsystems)(resolveSequencers(obsMode, _))).sequence
 
-    flip(resolvedSequencers) match {
+    resolvedSequencers match {
       case Right(bools) if bools.contains(false) => Left(SequencerNotIdle(obsMode))
       case Right(_)                              => Right(Done)
       case Left(_)                               => Left(LocationServiceError("Failed to check availability of sequencers"))
     }
   }
 
-  def stopSequencers(sequencers: Sequencers, obsMode: String): Future[Either[RegistrationListingFailed, Done.type]] = {
+  def stopSequencers(sequencers: Sequencers, obsMode: String): Future[Either[RegistrationListingFailed, Done]] = {
     Future
       .traverse(sequencers.subsystems) { subsystem =>
         locationServiceUtil
@@ -120,11 +121,4 @@ class SequencerUtil(locationServiceUtil: LocationServiceUtil, sequenceComponentU
             .map(_.response.left.map(e => SequenceManagerError.LoadScriptError(e.msg)))
       }
   }
-
-  def flip[L, R](eithers: List[Either[L, R]]): Either[List[L], List[R]] =
-    eithers.partition(_.isLeft) match {
-      case (Nil, success) => Right(for (Right(i) <- success) yield i)
-      case (errs, _)      => Left(for (Left(s)   <- errs) yield s)
-    }
-
 }
