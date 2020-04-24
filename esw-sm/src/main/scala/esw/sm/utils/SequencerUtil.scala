@@ -24,16 +24,19 @@ class SequencerUtil(locationServiceUtil: LocationServiceUtil, sequenceComponentU
     implicit actorSystem: ActorSystem[_]
 ) {
   implicit val ec: ExecutionContext = actorSystem.executionContext
-  var retryCount: Int               = 3
 
-  private def masterSequencerConnection(obsMode: String) = HttpConnection(ComponentId(Prefix(ESW, obsMode), Sequencer))
+  //todo: Should we get it from conf
+  private val retryCount: Int = 3
 
-  def resolveMasterSequencerOf(observingMode: String): Future[Option[HttpLocation]] =
-    locationServiceUtil.locationService.resolve(masterSequencerConnection(observingMode), Timeouts.DefaultTimeout)
+  private def masterSequencerConnection(obsMode: String): HttpConnection =
+    HttpConnection(ComponentId(Prefix(ESW, obsMode), Sequencer))
+
+  def resolveMasterSequencerOf(observingMode: String): Future[Either[EswLocationError, HttpLocation]] =
+    locationServiceUtil.resolve(masterSequencerConnection(observingMode), Timeouts.DefaultTimeout)
 
   def startSequencers(observingMode: String, requiredSequencers: Sequencers): Future[ConfigureResponse] = async {
     val spawnSequencerResponses: List[Either[SequencerError, AkkaLocation]] =
-      await(Future.traverse(requiredSequencers.subsystems)(startSequencer(_, observingMode)))
+      await(Future.traverse(requiredSequencers.subsystems)(startSequencer(_, observingMode, retryCount)))
 
     flip(spawnSequencerResponses) match {
       case Left(failedScriptResponses) =>
@@ -43,9 +46,10 @@ class SequencerUtil(locationServiceUtil: LocationServiceUtil, sequenceComponentU
 
       case Right(_) =>
         // resolve master Sequencer and return LOCATION or FAILURE if location is not found
-        await(resolveMasterSequencerOf(observingMode))
-          .map(Success)
-          .getOrElse(ConfigurationFailure(s"Error: ESW.$observingMode configuration failed"))
+        await(resolveMasterSequencerOf(observingMode)) match {
+          case Left(error)                    => ConfigurationFailure(error.msg)
+          case Right(masterSequencerLocation) => Success(masterSequencerLocation)
+        }
     }
   }
 
@@ -92,7 +96,7 @@ class SequencerUtil(locationServiceUtil: LocationServiceUtil, sequenceComponentU
   private def startSequencer(
       subSystem: Subsystem,
       observingMode: String,
-      retryCount: Int = 0
+      retryCount: Int
   ): Future[Either[SequencerError, AkkaLocation]] = {
     sequenceComponentUtil
       .getAvailableSequenceComponent(subSystem)

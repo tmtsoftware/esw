@@ -10,7 +10,7 @@ import csw.prefix.models.Subsystem.ESW
 import esw.commons.Timeouts
 import esw.commons.extensions.FutureEitherExt.FutureEitherOps
 import esw.commons.utils.location.EswLocationError.RegistrationListingFailed
-import esw.commons.utils.location.LocationServiceUtil
+import esw.commons.utils.location.{EswLocationError, LocationServiceUtil}
 import esw.sm.messages.ConfigureResponse._
 import esw.sm.messages.SequenceManagerMsg._
 import esw.sm.messages.{CleanupResponse, ConfigureResponse, GetRunningObsModesResponse, SequenceManagerMsg}
@@ -65,14 +65,19 @@ class SequenceManagerBehavior(
 
   def configure(obsMode: String, self: ActorRef[SequenceManagerMsg]): Future[Unit] =
     async {
-      val mayBeOcsMaster: Option[HttpLocation] = await(sequencerUtil.resolveMasterSequencerOf(obsMode))
+      // check if master sequencer is already up
+      val mayBeOcsMaster: Either[EswLocationError, HttpLocation] = await(sequencerUtil.resolveMasterSequencerOf(obsMode))
 
       val response: ConfigureResponse = mayBeOcsMaster match {
-        case Some(location) => await(useOcsMaster(location, obsMode))
-        // todo : check all needed sequencer are idle. also handle case of partial start up
-        case None =>
+        case Right(location) =>
+          // check if all sequencers are idle for obsMode
+          await(useOcsMaster(location, obsMode))
+        // todo: handle case of partial start up
+
+        // configure resources
+        case Left(_) =>
           await(getRunningObsModes.flatMap {
-            case Left(error)               => Future.successful(ConfigurationFailure(error.msg))
+            case Left(error)               => Future.successful(ConfigurationFailure(error.msg)) // can't check conflict --> error
             case Right(configuredObsModes) => configureResources(obsMode, configuredObsModes)
           })
       }

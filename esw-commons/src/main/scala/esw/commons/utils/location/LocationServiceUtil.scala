@@ -7,7 +7,6 @@ import akka.actor.typed.scaladsl.adapter.TypedActorSystemOps
 import akka.actor.typed.{ActorRef, ActorSystem}
 import csw.command.client.extensions.AkkaLocationExt.RichAkkaLocation
 import csw.command.client.messages.ComponentMessage
-import csw.location.api.exceptions.{RegistrationListingFailed => CswRegistrationListingFailed}
 import csw.location.api.models.ComponentType.Sequencer
 import csw.location.api.models.Connection.AkkaConnection
 import csw.location.api.models._
@@ -24,6 +23,12 @@ private[esw] class LocationServiceUtil(val locationService: LocationService)(
     implicit val actorSystem: ActorSystem[_]
 ) {
   implicit val ec: ExecutionContext = actorSystem.executionContext
+
+  private def list(componentType: ComponentType): Future[Either[RegistrationListingFailed, List[Location]]] =
+    locationService
+      .list(componentType)
+      .map(Right(_))
+      .mapError(e => RegistrationListingFailed(s"Location Service Error: ${e.getMessage}"))
 
   private def addCoordinatedShutdownTask(
       coordinatedShutdown: CoordinatedShutdown,
@@ -50,51 +55,38 @@ private[esw] class LocationServiceUtil(val locationService: LocationService)(
       subsystem: Subsystem,
       componentType: ComponentType
   ): Future[Either[RegistrationListingFailed, List[AkkaLocation]]] =
-    locationService
-      .list(componentType)
-      .map(_.collect {
+    list(componentType)
+      .mapRight(_.collect {
         case akkaLocation: AkkaLocation if akkaLocation.prefix.subsystem == subsystem => akkaLocation
       })
-      .map(Right(_))
-      .recover {
-        case _: CswRegistrationListingFailed =>
-          Left(RegistrationListingFailed(s"Subsystem: $subsystem, ComponentType: $componentType"))
-      }
 
   def resolveByComponentNameAndType(
       componentName: String,
       componentType: ComponentType
   ): Future[Either[EswLocationError, Location]] =
-    locationService
-      .list(componentType)
-      .map(_.find(_.connection.componentId.prefix.componentName == componentName))
+    list(componentType)
+      .mapRight(_.find(_.connection.componentId.prefix.componentName == componentName))
       .map {
-        case Some(location) => Right(location)
-        case None =>
-          Left(
+        case Left(error) => Left(error)
+        case Right(maybeLocation) =>
+          maybeLocation.toRight(
             ResolveLocationFailed(
               s"Could not find location matching ComponentName: $componentName, componentType: $componentType"
             )
           )
       }
-      .recover {
-        case _: CswRegistrationListingFailed => Left(RegistrationListingFailed(s"$componentName and $componentType"))
-      }
 
   def resolve[L <: Location](
       connection: TypedConnection[L],
       timeout: FiniteDuration = Timeouts.DefaultTimeout
-  ): Future[Either[EswLocationError, L]] = {
+  ): Future[Either[EswLocationError, L]] =
     locationService
       .resolve(connection, timeout)
       .map {
         case Some(location) => Right(location)
         case None           => Left(ResolveLocationFailed(s"Could not resolve location matching connection: $connection"))
       }
-      .recover {
-        case _: CswRegistrationListingFailed => Left(RegistrationListingFailed(s"$connection"))
-      }
-  }
+      .mapError(e => RegistrationListingFailed(s"Location Service Error: ${e.getMessage}"))
 
   def resolveComponentRef(
       prefix: Prefix,

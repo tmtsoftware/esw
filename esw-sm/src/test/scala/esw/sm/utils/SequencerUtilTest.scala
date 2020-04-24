@@ -8,7 +8,6 @@ import akka.util.Timeout
 import csw.location.api.models.ComponentType.{SequenceComponent, Sequencer}
 import csw.location.api.models.Connection.{AkkaConnection, HttpConnection}
 import csw.location.api.models.{AkkaLocation, ComponentId, HttpLocation, Location}
-import csw.location.api.scaladsl.LocationService
 import csw.prefix.models.Prefix
 import csw.prefix.models.Subsystem.{ESW, TCS}
 import esw.commons.utils.location.EswLocationError.ResolveLocationFailed
@@ -40,7 +39,7 @@ class SequencerUtilTest extends BaseTestSuite {
       val setup   = new TestSetup(obsMode)
       import setup._
 
-      sequencerUtil.resolveMasterSequencerOf(obsMode).awaitResult shouldBe Some(masterSeqLocation)
+      sequencerUtil.resolveMasterSequencerOf(obsMode).rightValue shouldBe masterSeqLocation
 
       verifyMasterSequencerIsResolved()
     }
@@ -83,9 +82,16 @@ class SequencerUtilTest extends BaseTestSuite {
         .awaitResult
         .shouldBe(FailedToStartSequencers(Set(seqCompErrorMsg, scriptErrorMsg)))
 
-      verify(sequenceComponentUtil).getAvailableSequenceComponent(ESW)
+      // getAvailableSequenceComponent for ESW returns SpawnSequenceComponentFailed so retry 3 times make total invocations 4
+      // below verify validates 4 invocations
+      verify(sequenceComponentUtil, times(4)).getAvailableSequenceComponent(ESW)
+
+      // getAvailableSequenceComponent for ESW returns ScriptError so no retry
+      // below verify validates 1 invocations
       verify(sequenceComponentUtil).getAvailableSequenceComponent(TCS)
+
       verify(tcsSeqComp).loadScript(TCS, obsMode)
+      verify(eswSeqComp, never).loadScript(ESW, obsMode)
     }
   }
 
@@ -171,7 +177,6 @@ class SequencerUtilTest extends BaseTestSuite {
 
     val eswSeqComp: SequenceComponentImpl            = mock[SequenceComponentImpl]
     val tcsSeqComp: SequenceComponentImpl            = mock[SequenceComponentImpl]
-    val locationService: LocationService             = mock[LocationService]
     val locationServiceUtil: LocationServiceUtil     = mock[LocationServiceUtil]
     val sequenceComponentUtil: SequenceComponentUtil = mock[SequenceComponentUtil]
     val eswSequencerApi: SequencerApi                = mock[SequencerApi]
@@ -193,13 +198,11 @@ class SequencerUtilTest extends BaseTestSuite {
     val masterSeqConnection: HttpConnection = HttpConnection(ComponentId(Prefix(ESW, obsMode), Sequencer))
     val masterSeqLocation: HttpLocation     = HttpLocation(masterSeqConnection, URI.create(""))
 
-    when(locationServiceUtil.locationService).thenReturn(locationService)
-    when(locationService.resolve(masterSeqConnection, Timeouts.DefaultTimeout))
-      .thenReturn(Future.successful(Some(masterSeqLocation)))
+    when(locationServiceUtil.resolve(masterSeqConnection, Timeouts.DefaultTimeout))
+      .thenReturn(Future.successful(Right(masterSeqLocation)))
 
     def verifyMasterSequencerIsResolved(): Unit = {
-      verify(locationService).resolve(masterSeqConnection, Timeouts.DefaultTimeout)
-      verify(locationServiceUtil).locationService
+      verify(locationServiceUtil).resolve(masterSeqConnection, Timeouts.DefaultTimeout)
     }
   }
 }

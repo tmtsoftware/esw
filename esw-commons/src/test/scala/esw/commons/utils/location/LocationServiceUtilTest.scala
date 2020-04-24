@@ -35,6 +35,9 @@ class LocationServiceUtilTest extends ScalaTestWithActorTestKit with BaseTestSui
   private val registration   = AkkaRegistration(akkaConnection, uri)
   private val akkaLocation   = AkkaLocation(akkaConnection, uri)
 
+  private val cswRegistrationListingFailed: CswRegistrationListingFailed = CswRegistrationListingFailed()
+  private val cswLocationServiceErrorMsg: String                         = cswRegistrationListingFailed.getMessage
+
   "register" must {
     "return successful RegistrationResult | ESW-214" in {
       implicit val system: ActorSystem[_] = ActorSystem(Behaviors.empty, "test")
@@ -106,12 +109,21 @@ class LocationServiceUtilTest extends ScalaTestWithActorTestKit with BaseTestSui
     }
 
     "return a RegistrationListingFailed when location service call throws exception  | ESW-144, ESW-215" in {
-      when(locationService.list(SequenceComponent)).thenReturn(Future.failed(CswRegistrationListingFailed()))
+      when(locationService.list(SequenceComponent)).thenReturn(Future.failed(cswRegistrationListingFailed))
       val locationServiceDsl = new LocationServiceUtil(locationService)
 
       val error = locationServiceDsl.listAkkaLocationsBy(subsystem, SequenceComponent).leftValue
 
-      error shouldBe RegistrationListingFailed(s"Subsystem: $subsystem, ComponentType: $SequenceComponent")
+      error shouldBe RegistrationListingFailed(s"Location Service Error: $cswLocationServiceErrorMsg")
+    }
+
+    "return a RegistrationListingFailed when location service call throws any non fatal exception  | ESW-144, ESW-215" in {
+      when(locationService.list(SequenceComponent)).thenReturn(Future.failed(new RuntimeException("Unknown error")))
+      val locationServiceDsl = new LocationServiceUtil(locationService)
+
+      val error = locationServiceDsl.listAkkaLocationsBy(subsystem, SequenceComponent).leftValue
+
+      error shouldBe RegistrationListingFailed(s"Location Service Error: Unknown error")
     }
   }
 
@@ -165,13 +177,13 @@ class LocationServiceUtilTest extends ScalaTestWithActorTestKit with BaseTestSui
     }
 
     "return an RegistrationListingFailed when location service throws exception | ESW-215" in {
-      when(locationService.list(Sequencer)).thenReturn(Future.failed(CswRegistrationListingFailed()))
+      when(locationService.list(Sequencer)).thenReturn(Future.failed(cswRegistrationListingFailed))
 
       val locationServiceDsl = new LocationServiceUtil(locationService)
       val error =
         locationServiceDsl.resolveByComponentNameAndType(observingMode, Sequencer).leftValue
 
-      error should ===(RegistrationListingFailed(s"$observingMode and $Sequencer"))
+      error shouldBe RegistrationListingFailed(s"Location Service Error: $cswLocationServiceErrorMsg")
     }
   }
 
@@ -199,11 +211,11 @@ class LocationServiceUtilTest extends ScalaTestWithActorTestKit with BaseTestSui
 
     "return a RegistrationListingFailed when location service call throws exception | ESW-119" in {
       when(locationService.resolve(akkaConnection, 200.millis))
-        .thenReturn(Future.failed(CswRegistrationListingFailed()))
+        .thenReturn(Future.failed(cswRegistrationListingFailed))
 
       val locationServiceUtil = new LocationServiceUtil(locationService)
       locationServiceUtil.resolveSequencer(subsystem, observingMode, 200.millis).leftValue shouldBe
-      (RegistrationListingFailed(s"$akkaConnection"))
+      (RegistrationListingFailed(s"Location Service Error: ${cswLocationServiceErrorMsg}"))
     }
   }
 
@@ -229,11 +241,11 @@ class LocationServiceUtilTest extends ScalaTestWithActorTestKit with BaseTestSui
 
     "return a RegistrationListingFailed when location service call throws exception | ESW-119" in {
       when(locationService.resolve(akkaConnection, 200.millis))
-        .thenReturn(Future.failed(CswRegistrationListingFailed()))
+        .thenReturn(Future.failed(cswRegistrationListingFailed))
 
       val locationServiceUtil = new LocationServiceUtil(locationService)
       locationServiceUtil.resolveSequencer(subsystem, observingMode, 200.millis).leftValue shouldBe
-      (RegistrationListingFailed(s"$akkaConnection"))
+      (RegistrationListingFailed(s"Location Service Error: $cswLocationServiceErrorMsg"))
     }
   }
 }

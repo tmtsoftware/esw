@@ -11,6 +11,7 @@ import csw.location.api.models.{AkkaLocation, ComponentId, HttpLocation}
 import csw.prefix.models.Prefix
 import csw.prefix.models.Subsystem.{ESW, TCS}
 import esw.commons.BaseTestSuite
+import esw.commons.utils.location.EswLocationError.ResolveLocationFailed
 import esw.commons.utils.location.EswLocationError.RegistrationListingFailed
 import esw.commons.utils.location.LocationServiceUtil
 import esw.sm.messages.ConfigureResponse.{ConfigurationFailure, ConflictingResourcesWithRunningObsMode, Success}
@@ -48,7 +49,7 @@ class SequenceManagerBehaviorTest extends ScalaTestWithActorTestKit with BaseTes
       val httpLocation = HttpLocation(HttpConnection(ComponentId(Prefix(ESW, DARKNIGHT), Sequencer)), new URI("uri"))
       when(locationServiceUtil.listAkkaLocationsBy(ESW, Sequencer)).thenReturn(Future.successful(Right(List.empty)))
       when(sequencerUtil.startSequencers(DARKNIGHT, darknightSequencers)).thenReturn(Future.successful(Success(httpLocation)))
-      when(sequencerUtil.resolveMasterSequencerOf(DARKNIGHT)).thenReturn(Future.successful(None))
+      when(sequencerUtil.resolveMasterSequencerOf(DARKNIGHT)).thenReturn(Future.successful(Left(ResolveLocationFailed("error"))))
       val probe = createTestProbe[ConfigureResponse]
 
       smRef ! Configure(DARKNIGHT, probe.ref)
@@ -60,7 +61,7 @@ class SequenceManagerBehaviorTest extends ScalaTestWithActorTestKit with BaseTes
     }
 
     "return ConfigurationFailure if location service fails to return running observation mode | ESW-178" in {
-      when(sequencerUtil.resolveMasterSequencerOf(DARKNIGHT)).thenReturn(Future.successful(None))
+      when(sequencerUtil.resolveMasterSequencerOf(DARKNIGHT)).thenReturn(Future.successful(Left(ResolveLocationFailed("error"))))
       when(locationServiceUtil.listAkkaLocationsBy(ESW, Sequencer))
         .thenReturn(Future.successful(Left(RegistrationListingFailed("Sequencer"))))
 
@@ -76,7 +77,7 @@ class SequenceManagerBehaviorTest extends ScalaTestWithActorTestKit with BaseTes
     "return ConflictingResourcesWithRunningObsMode when required resources are already in use | ESW-178" in {
       val akkaLocation = AkkaLocation(AkkaConnection(ComponentId(Prefix(ESW, CLEARSKIES), Sequencer)), new URI("uri"))
       when(locationServiceUtil.listAkkaLocationsBy(ESW, Sequencer)).thenReturn(Future.successful(Right(List(akkaLocation))))
-      when(sequencerUtil.resolveMasterSequencerOf(DARKNIGHT)).thenReturn(Future.successful(None))
+      when(sequencerUtil.resolveMasterSequencerOf(DARKNIGHT)).thenReturn(Future.successful(Left(ResolveLocationFailed("error"))))
       val probe = createTestProbe[ConfigureResponse]
 
       smRef ! Configure("darknight", probe.ref)
@@ -90,7 +91,7 @@ class SequenceManagerBehaviorTest extends ScalaTestWithActorTestKit with BaseTes
     "return location of already spawned Sequencer Hierarchy if all the sequencers are Idle | ESW-178" in {
       val masterLoc = HttpLocation(HttpConnection(ComponentId(Prefix(ESW, CLEARSKIES), Sequencer)), new URI("uri"))
 
-      when(sequencerUtil.resolveMasterSequencerOf(CLEARSKIES)).thenReturn(Future.successful(Some(masterLoc)))
+      when(sequencerUtil.resolveMasterSequencerOf(CLEARSKIES)).thenReturn(Future.successful(Right(masterLoc)))
       when(sequencerUtil.checkForSequencersAvailability(clearskiesSequencers, CLEARSKIES))
         .thenReturn(Future.successful(Right(Done)))
 
@@ -106,7 +107,7 @@ class SequenceManagerBehaviorTest extends ScalaTestWithActorTestKit with BaseTes
     "return ConfigurationFailure if sequencer hierarchy already spawned and the any of the sequencer is not Idle | ESW-178" in {
       val masterLoc = HttpLocation(HttpConnection(ComponentId(Prefix(ESW, DARKNIGHT), Sequencer)), new URI("uri"))
 
-      when(sequencerUtil.resolveMasterSequencerOf(DARKNIGHT)).thenReturn(Future.successful(Some(masterLoc)))
+      when(sequencerUtil.resolveMasterSequencerOf(DARKNIGHT)).thenReturn(Future.successful(Right(masterLoc)))
       when(sequencerUtil.checkForSequencersAvailability(darknightSequencers, DARKNIGHT))
         .thenReturn(Future.successful(Left(SequencerNotIdle(DARKNIGHT)))) // mimics that one or more sequencers are not Idle)
 
