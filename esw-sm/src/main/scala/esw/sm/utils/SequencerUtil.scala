@@ -12,7 +12,7 @@ import esw.commons.extensions.FutureEitherExt.FutureEitherOps
 import esw.commons.extensions.ListEitherExt.ListEitherOps
 import esw.commons.utils.location.EswLocationError.{RegistrationListingFailed, ResolveLocationFailed}
 import esw.commons.utils.location.{EswLocationError, LocationServiceUtil}
-import esw.ocs.api.SequencerApi
+import esw.ocs.api.{SequenceComponentApi, SequencerApi}
 import esw.ocs.api.actor.client.SequencerApiFactory
 import esw.sm.core.Sequencers
 import esw.sm.messages.ConfigureResponse
@@ -25,7 +25,7 @@ import scala.concurrent.{ExecutionContext, Future}
 class SequencerUtil(locationServiceUtil: LocationServiceUtil, sequenceComponentUtil: SequenceComponentUtil)(
     implicit actorSystem: ActorSystem[_]
 ) {
-  implicit val ec: ExecutionContext = actorSystem.executionContext
+  implicit private val ec: ExecutionContext = actorSystem.executionContext
 
   //todo: Should we get it from conf
   private val retryCount: Int = 3
@@ -58,7 +58,7 @@ class SequencerUtil(locationServiceUtil: LocationServiceUtil, sequenceComponentU
   //fixme: replace Done with success type
   def checkForSequencersAvailability(sequencers: Sequencers, obsMode: String): Future[Either[SequencerError, Done]] = async {
     val resolvedSequencers: Either[List[EswLocationError], List[Boolean]] =
-      await(Future.traverse(sequencers.subsystems)(resolveSequencers(obsMode, _))).sequence
+      await(Future.traverse(sequencers.subsystems)(resolveAndCheckAvailability(obsMode, _))).sequence
 
     resolvedSequencers match {
       case Right(bools) if bools.contains(false) => Left(SequencerNotIdle(obsMode))
@@ -67,30 +67,20 @@ class SequencerUtil(locationServiceUtil: LocationServiceUtil, sequenceComponentU
     }
   }
 
-  def stopSequencers(sequencers: Sequencers, obsMode: String): Future[Either[RegistrationListingFailed, Done]] = {
+  def stopSequencers(sequencers: Sequencers, obsMode: String): Future[Either[RegistrationListingFailed, Done]] =
     Future
       .traverse(sequencers.subsystems) { subsystem =>
-        locationServiceUtil
-          .resolveSequencer(subsystem, obsMode)
-          .map {
-            case Left(error)     => Left(error)
-            case Right(location) => Right(stopSequencer(location))
+        resolveSequencer(obsMode, subsystem)
+          .flatMap {
+            case Left(listingFailed @ RegistrationListingFailed(_)) => throw listingFailed
+            case Left(ResolveLocationFailed(_))                     => Future.successful(Done)
+            case Right(location)                                    => stopSequencer(location)
           }
       }
-      .flatMap(statusList => {
-        Future
-          .traverse(statusList.map {
-            case Left(RegistrationListingFailed(msg)) => throw RegistrationListingFailed(msg)
-            case Left(ResolveLocationFailed(_))       => Future.successful(Done)
-            case Right(value)                         => value.map(_ => Done)
-          })(x => x)
-
-      })
       .map(_ => Right(Done))
       .recover {
-        case RegistrationListingFailed(msg) => Left(RegistrationListingFailed(msg))
+        case listingFailed: RegistrationListingFailed => Left(listingFailed)
       }
-  }
 
   // get sequence component from Sequencer and unload it.
   private def stopSequencer(loc: AkkaLocation): Future[Done] =
@@ -98,11 +88,13 @@ class SequencerUtil(locationServiceUtil: LocationServiceUtil, sequenceComponentU
 
   // Created in order to mock the behavior of sequencer API availability for unit test
   private[sm] def createSequencerClient(location: Location): SequencerApi = SequencerApiFactory.make(location)
+  private def resolveSequencer(obsMode: String, subsystem: Subsystem)     = locationServiceUtil.resolveSequencer(subsystem, obsMode)
+  private def isSequencerAvailable(seqLoc: AkkaLocation)                  = createSequencerClient(seqLoc).isAvailable
+  private def resolveAndCheckAvailability(obsMode: String, subsystem: Subsystem): Future[Either[EswLocationError, Boolean]] =
+    resolveSequencer(obsMode, subsystem).flatMapRight(isSequencerAvailable)
 
-  private def resolveSequencers(obsMode: String, subsystem: Subsystem): Future[Either[EswLocationError, Boolean]] =
-    locationServiceUtil
-      .resolveSequencer(subsystem, obsMode, Timeouts.DefaultTimeout)
-      .flatMapRight(location => createSequencerClient(location).isAvailable)
+  private def loadScript(subSystem: Subsystem, observingMode: String, seqCompApi: SequenceComponentApi) =
+    seqCompApi.loadScript(subSystem, observingMode).map(_.response.left.map(e => SequenceManagerError.LoadScriptError(e.msg)))
 
   // spawn the sequencer on available SequenceComponent
   private def startSequencer(
@@ -113,12 +105,9 @@ class SequencerUtil(locationServiceUtil: LocationServiceUtil, sequenceComponentU
     sequenceComponentUtil
       .getAvailableSequenceComponent(subSystem)
       .flatMap {
+        case Right(seqCompApi)         => loadScript(subSystem, observingMode, seqCompApi)
         case Left(_) if retryCount > 0 => startSequencer(subSystem, observingMode, retryCount - 1)
         case Left(e)                   => Future.successful(Left(e))
-        case Right(seqCompApi) =>
-          seqCompApi
-            .loadScript(subSystem, observingMode)
-            .map(_.response.left.map(e => SequenceManagerError.LoadScriptError(e.msg)))
       }
   }
 }
