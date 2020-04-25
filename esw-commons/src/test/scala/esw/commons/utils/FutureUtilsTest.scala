@@ -1,7 +1,7 @@
 package esw.commons.utils
 
-import java.util.concurrent.{Executors, ScheduledExecutorService}
-
+import akka.actor.typed.ActorSystem
+import akka.actor.typed.scaladsl.Behaviors
 import esw.commons.BaseTestSuite
 
 import scala.concurrent.duration.{DurationLong, FiniteDuration}
@@ -10,22 +10,23 @@ import scala.util.Try
 
 class FutureUtilsTest extends BaseTestSuite {
 
-  implicit val executorService: ScheduledExecutorService = Executors.newScheduledThreadPool(4)
-  implicit val ec: ExecutionContext                      = ExecutionContext.fromExecutorService(executorService)
+  implicit val system: ActorSystem[_] = ActorSystem(Behaviors.empty, "future-test")
+
+  implicit val ec: ExecutionContext = system.executionContext
 
   override def afterAll(): Unit = {
-    super.afterAll()
-    executorService.shutdown()
+    system.terminate()
+    system.whenTerminated.awaitResult
   }
 
   "firstCompletedOf" must {
     "return first completed Future based on predicate" in {
       val future1 = TestSetup.future(delay = 1.millis, value = 1)
       val future2 = TestSetup.future(delay = 100.millis, value = 2)
-      val future3 = TestSetup.future(delay = 10.millis, value = 3)
-      val future4 = TestSetup.future(delay = 10.millis, value = throw new RuntimeException("failed"))
+      val future3 = TestSetup.future(delay = 50.millis, value = 3)
+      val future4 = TestSetup.future(delay = 1.millis, value = throw new RuntimeException("failed"))
 
-      val result = FutureUtils.firstCompletedOf(List(future1, future2, future3, future4))(_ > 1).awaitResult
+      val result = FutureUtils.firstCompletedOf(List(future1, future2, future3, future4))(_ == 3).awaitResult
 
       result shouldBe Some(3)
     }
@@ -40,24 +41,21 @@ class FutureUtilsTest extends BaseTestSuite {
       result shouldBe None
     }
 
-    "return failed future if none of futures matches predicate and future is failed" in {
+    "return none when predicate did not match and some of the futures failed" in {
       val future1 = TestSetup.future(delay = 1.millis, value = 1)
       val future2 = TestSetup.future(delay = 30.millis, value = 2)
       val future3 = TestSetup.future(delay = 10.millis, value = throw new RuntimeException("failed"))
 
-      val exception =
-        intercept[RuntimeException](FutureUtils.firstCompletedOf(List(future1, future2, future3))(_ > 3).awaitResult)
-
-      exception.getMessage shouldBe "failed"
+      val result = FutureUtils.firstCompletedOf(List(future1, future2, future3))(_ > 3).awaitResult
+      result shouldBe None
     }
   }
 
   object TestSetup {
-    def future[T](delay: FiniteDuration, value: => T)(
-        implicit executorService: ScheduledExecutorService
-    ): Future[T] = {
+    private val scheduler = system.scheduler
+    def future[T](delay: FiniteDuration, value: => T): Future[T] = {
       val p = Promise[T]()
-      executorService.schedule(() => p.tryComplete(Try(value)), delay.length, delay.unit)
+      scheduler.scheduleOnce(delay, () => p.tryComplete(Try(value)))
       p.future
     }
   }

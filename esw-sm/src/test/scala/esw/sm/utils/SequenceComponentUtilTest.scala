@@ -21,6 +21,8 @@ class SequenceComponentUtilTest extends BaseTestSuite {
   implicit val actorSystem: ActorSystem[SpawnProtocol.Command] = ActorSystem(SpawnProtocol(), "test-system")
   implicit val timeout: Timeout                                = 1.hour
 
+  override implicit val patienceConfig: PatienceConfig = PatienceConfig(5.seconds, 10.millis)
+
   val locationServiceUtil: LocationServiceUtil = mock[LocationServiceUtil]
   val agentUtil: AgentUtil                     = mock[AgentUtil]
 
