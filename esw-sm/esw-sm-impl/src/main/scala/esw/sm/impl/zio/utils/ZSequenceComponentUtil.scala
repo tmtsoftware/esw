@@ -13,8 +13,6 @@ import esw.sm.api.models.AgentError
 import esw.zio.commons.{ZIOUtils, ZLocationService}
 import zio.{IO, Task, ZIO}
 
-import scala.concurrent.Future
-
 class ZSequenceComponentUtil(ZLocationService: ZLocationService, ZAgent: ZAgentUtil)(
     implicit actorSystem: ActorSystem[_],
     timeout: Timeout
@@ -26,7 +24,7 @@ class ZSequenceComponentUtil(ZLocationService: ZLocationService, ZAgent: ZAgentU
         fallback.catchAll(_ => ZAgent.spawnSequenceComponentFor(subsystem))
       }
 
-  def unloadScript(loc: AkkaLocation): Future[Done] = new SequenceComponentImpl(loc).unloadScript()
+  def unloadScript(loc: AkkaLocation): Task[Done] = ZIO.fromFuture(_ => new SequenceComponentImpl(loc).unloadScript())
 
   private def getIdleSequenceComponentFor(subsystem: Subsystem): IO[Unit, SequenceComponentApi] =
     ZLocationService
