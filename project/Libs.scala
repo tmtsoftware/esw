@@ -23,7 +23,10 @@ object Libs {
 
   val `prometheus-akka-http` = "com.lonelyplanet" %% "prometheus-akka-http" % "0.5.0"
 
-  val blockhound = "io.projectreactor.tools" % "blockhound" % "1.0.3.RELEASE"
+  val blockhound    = "io.projectreactor.tools" % "blockhound"   % "1.0.3.RELEASE"
+  val zio           = "dev.zio"                 %% "zio"         % "1.0.0-RC18-2"
+  val `zio-streams` = "dev.zio"                 %% "zio-streams" % "1.0.0-RC18-2"
+
 }
 
 object Csw {
