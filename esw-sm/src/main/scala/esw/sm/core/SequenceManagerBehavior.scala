@@ -33,7 +33,7 @@ class SequenceManagerBehavior(
     )
 
   //todo: try to use common receive method
-  def idle(): Behavior[SequenceManagerMsg] = Behaviors.receive { (ctx, msg) =>
+  private def idle(): Behavior[SequenceManagerMsg] = Behaviors.receive { (ctx, msg) =>
     msg match {
       case Configure(observingMode, replyTo) => configure(observingMode, ctx.self); configuring(replyTo);
       case GetRunningObsModes(replyTo) =>
@@ -41,29 +41,26 @@ class SequenceManagerBehavior(
           case Left(value)  => replyTo ! GetRunningObsModesResponse.Failed(value.msg)
           case Right(value) => replyTo ! GetRunningObsModesResponse.Success(value)
         }; Behaviors.same
-      case Cleanup(observingMode, replyTo) => cleanup(observingMode, replyTo);
+      case Cleanup(observingMode, replyTo) => cleanup(observingMode, replyTo); Behaviors.same;
       case _                               => Behaviors.unhandled
     }
   }
 
-  def cleanup(obsMode: String, replyTo: ActorRef[CleanupResponse]): Behavior[SequenceManagerMsg] =
-    receive[CleanupCompleted.type] { _ =>
-      sequencerUtil
-        .stopSequencers(extractSequencers(obsMode), obsMode)
-        .map {
-          case Left(error) => replyTo ! CleanupResponse.Failed(error.msg)
-          case Right(_)    => replyTo ! CleanupResponse.Success
-        }
-      idle()
-    }
+  private def cleanup(obsMode: String, replyTo: ActorRef[CleanupResponse]): Future[Unit] =
+    sequencerUtil
+      .stopSequencers(extractSequencers(obsMode), obsMode)
+      .map {
+        case Left(error) => replyTo ! CleanupResponse.Failed(error.msg)
+        case Right(_)    => replyTo ! CleanupResponse.Success
+      }
 
-  def configuring(replyTo: ActorRef[ConfigureResponse]): Behavior[SequenceManagerMsg] =
+  private def configuring(replyTo: ActorRef[ConfigureResponse]): Behavior[SequenceManagerMsg] =
     receive[ConfigurationResponseInternal] { msg =>
       replyTo ! msg.res
       idle()
     }
 
-  def configure(obsMode: String, self: ActorRef[SequenceManagerMsg]): Future[Unit] =
+  private def configure(obsMode: String, self: ActorRef[SequenceManagerMsg]): Future[Unit] =
     async {
       // check if master sequencer is already up
       val mayBeOcsMaster: Either[EswLocationError, HttpLocation] = await(sequencerUtil.resolveMasterSequencerOf(obsMode))
@@ -85,7 +82,7 @@ class SequenceManagerBehavior(
       self ! ConfigurationResponseInternal(response)
     }
 
-  def useOcsMaster(location: HttpLocation, obsMode: String): Future[ConfigureResponse] = async {
+  private def useOcsMaster(location: HttpLocation, obsMode: String): Future[ConfigureResponse] = async {
     val sequencerIdleResponse: Either[SequencerError, Done] =
       await(sequencerUtil.checkForSequencersAvailability(extractSequencers(obsMode), obsMode))
     sequencerIdleResponse match {
@@ -94,7 +91,7 @@ class SequenceManagerBehavior(
     }
   }
 
-  def configureResources(obsMode: String, configuredObsModes: Set[String]): Future[ConfigureResponse] = async {
+  private def configureResources(obsMode: String, configuredObsModes: Set[String]): Future[ConfigureResponse] = async {
     val requiredResources: Resources        = extractResources(obsMode)
     val configuredResources: Set[Resources] = configuredObsModes.map(extractResources)
     val areResourcesConflicting             = configuredResources.exists(_.conflictsWith(requiredResources))
@@ -103,15 +100,17 @@ class SequenceManagerBehavior(
     else await(sequencerUtil.startSequencers(obsMode, extractSequencers(obsMode)))
   }
 
-  def getRunningObsModes: Future[Either[RegistrationListingFailed, Set[String]]] =
+  private def getRunningObsModes: Future[Either[RegistrationListingFailed, Set[String]]] =
     locationServiceUtil.listAkkaLocationsBy(ESW, Sequencer).mapRight(_.map(getObsMode).toSet)
 
-  def getObsMode(akkaLocation: AkkaLocation): String = akkaLocation.prefix.componentName
+  private def getObsMode(akkaLocation: AkkaLocation): String = akkaLocation.prefix.componentName
 
-  def extractSequencers(obsMode: String): Sequencers = config(obsMode).sequencers
-  def extractResources(obsMode: String): Resources   = config(obsMode).resources
+  private def extractSequencers(obsMode: String): Sequencers = config(obsMode).sequencers
+  private def extractResources(obsMode: String): Resources   = config(obsMode).resources
 
-  def receive[T <: SequenceManagerMsg: ClassTag](handler: T => Behavior[SequenceManagerMsg]): Behavior[SequenceManagerMsg] =
+  private def receive[T <: SequenceManagerMsg: ClassTag](
+      handler: T => Behavior[SequenceManagerMsg]
+  ): Behavior[SequenceManagerMsg] =
     Behaviors.receiveMessage {
       case GetRunningObsModes(replyTo) =>
         getRunningObsModes.map {

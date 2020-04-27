@@ -122,13 +122,25 @@ class SequenceManagerBehaviorTest extends ScalaTestWithActorTestKit with BaseTes
   }
 
   "Cleanup" must {
-    "stop all the sequencers of the given observation mode | ESW-166" ignore {
+    "stop all the sequencers of the given observation mode | ESW-166" in {
       when(sequencerUtil.stopSequencers(darknightSequencers, DARKNIGHT)).thenReturn(Future.successful(Right(Done)))
 
       val probe = createTestProbe[CleanupResponse]
       smRef ! Cleanup(DARKNIGHT, probe.ref)
 
       probe.expectMessage(CleanupResponse.Success)
+      verify(sequencerUtil).stopSequencers(darknightSequencers, DARKNIGHT)
+    }
+
+    "return fail if there is failure while stopping sequencers | ESW-166" in {
+      val failureMsg = "location service error"
+      when(sequencerUtil.stopSequencers(darknightSequencers, DARKNIGHT))
+        .thenReturn(Future.successful(Left(RegistrationListingFailed(failureMsg))))
+
+      val probe = createTestProbe[CleanupResponse]
+      smRef ! Cleanup(DARKNIGHT, probe.ref)
+
+      probe.expectMessage(CleanupResponse.Failed(failureMsg))
       verify(sequencerUtil).stopSequencers(darknightSequencers, DARKNIGHT)
     }
   }
