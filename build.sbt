@@ -217,9 +217,30 @@ lazy val examples = project
   .dependsOn(`esw-ocs-dsl-kt`)
 
 lazy val `esw-sm` = project
-  .in(file("esw-sm"))
-  .settings(libraryDependencies ++= Dependencies.EswSm.value)
-  .dependsOn(`esw-ocs-api`.jvm, `esw-agent-client`, `esw-commons` % "compile->compile;test->test")
+  .aggregate(
+    `esw-sm-api`.js,
+    `esw-sm-api`.jvm,
+    `esw-sm-impl`
+  )
+
+lazy val `esw-sm-api` = crossProject(JSPlatform, JVMPlatform)
+  .crossType(CrossType.Full)
+  .in(file("esw-sm/esw-sm-api"))
+  .jvmConfigure(
+    _.enablePlugins(MaybeCoverage, PublishBintray)
+      settings (libraryDependencies ++= Dependencies.SmApiJvm.value)
+  )
+  //  the following setting is required by IntelliJ which could not handle cross-compiled Akka types
+  .jsSettings(SettingKey[Boolean]("ide-skip-project") := true)
+  .settings(fork := false)
+  .settings(
+    libraryDependencies ++= Dependencies.EswSmApi.value
+  )
+
+lazy val `esw-sm-impl` = project
+  .in(file("esw-sm/esw-sm-impl"))
+  .settings(libraryDependencies ++= Dependencies.EswSmImpl.value)
+  .dependsOn(`esw-sm-api`.jvm, `esw-ocs-api`.jvm, `esw-agent-client`, `esw-commons` % "compile->compile;test->test")
 
 lazy val `esw-commons` = project
   .in(file("esw-commons"))

@@ -195,7 +195,7 @@ object Dependencies {
     )
   )
 
-  val EswSm: Def.Initialize[Seq[ModuleID]] = Def.setting(
+  val EswSmImpl: Def.Initialize[Seq[ModuleID]] = Def.setting(
     Seq(
       Csw.`csw-location-api`,
       Akka.`akka-actor-typed`,
@@ -205,11 +205,27 @@ object Dependencies {
     )
   )
 
+  val EswSmApi: Def.Initialize[Seq[ModuleID]] = Def.setting(
+    Seq(
+      Csw.`csw-location-api`,
+      Libs.`mockito-scala` % Test,
+      Libs.scalatest       % Test
+    )
+  )
+
+  val SmApiJvm: Def.Initialize[Seq[ModuleID]] = Def.setting(
+    Seq(
+      Akka.`akka-actor-typed`,
+      Libs.`tmt-test-reporter`        % Test,
+      Akka.`akka-actor-testkit-typed` % Test
+    )
+  )
+
   val EswCommons: Def.Initialize[Seq[ModuleID]] = Def.setting(
     Seq(
-      Csw.`csw-location-api`   % Provided,
-      Csw.`csw-command-client` % Provided,
-      Akka.`akka-stream-typed` % Provided,
+      Csw.`csw-location-api`          % Provided,
+      Csw.`csw-command-client`        % Provided,
+      Akka.`akka-stream-typed`        % Provided,
       Akka.`akka-actor-testkit-typed` % Test,
       Libs.`mockito-scala`            % Test,
       Libs.scalatest                  % Test,
