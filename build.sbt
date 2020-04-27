@@ -22,6 +22,7 @@ lazy val unidocExclusions: Seq[ProjectReference] = Seq(
   `esw-gateway-api`.js,
   `esw-ocs-handler`,
   `esw-agent`,
+  `esw-sm-api`.js,
   examples
 )
 
