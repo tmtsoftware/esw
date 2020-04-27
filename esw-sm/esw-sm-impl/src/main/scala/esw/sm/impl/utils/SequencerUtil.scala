@@ -98,7 +98,7 @@ class SequencerUtil(locationServiceUtil: LocationServiceUtil, sequenceComponentU
       subSystem: Subsystem,
       observingMode: String,
       retryCount: Int
-  ): Future[Either[SequencerError, AkkaLocation]] = {
+  ): Future[Either[SequencerError, AkkaLocation]] =
     sequenceComponentUtil
       .getAvailableSequenceComponent(subSystem)
       .flatMap {
@@ -106,5 +106,4 @@ class SequencerUtil(locationServiceUtil: LocationServiceUtil, sequenceComponentU
         case Left(_) if retryCount > 0 => startSequencer(subSystem, observingMode, retryCount - 1)
         case Left(e)                   => Future.successful(Left(e))
       }
-  }
 }

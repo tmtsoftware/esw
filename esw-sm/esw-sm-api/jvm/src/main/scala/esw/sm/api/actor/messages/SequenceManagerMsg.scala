@@ -3,7 +3,7 @@ package esw.sm.api.actor.messages
 import akka.actor.typed.ActorRef
 import csw.location.api.models.HttpLocation
 
-trait SequenceManagerMsg
+sealed trait SequenceManagerMsg
 
 object SequenceManagerMsg {
   case class Configure(obsMode: String, replyTo: ActorRef[ConfigureResponse])  extends SequenceManagerMsg

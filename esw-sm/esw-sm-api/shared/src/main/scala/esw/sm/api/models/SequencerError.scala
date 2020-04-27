@@ -1,10 +1,10 @@
 package esw.sm.api.models
 
-sealed trait SequencerError {
+sealed trait SequencerError extends Throwable {
   def msg: String
 }
 
-trait AgentError extends SequencerError
+sealed trait AgentError extends SequencerError
 
 object SequenceManagerError {
   case class LocationServiceError(msg: String)         extends AgentError

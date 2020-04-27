@@ -36,7 +36,7 @@ class SequenceManagerBehaviorTest extends ScalaTestWithActorTestKit with BaseTes
   private val sequencerUtil: SequencerUtil             = mock[SequencerUtil]
   private val sequenceManagerBehavior                  = new SequenceManagerBehavior(config, locationServiceUtil, sequencerUtil)
 
-  private val smRef: ActorRef[SequenceManagerMsg] = system.systemActorOf(sequenceManagerBehavior.behavior(), "test_actor")
+  private val smRef: ActorRef[SequenceManagerMsg] = system.systemActorOf(sequenceManagerBehavior.init(), "test_actor")
 
   override protected def afterEach(): Unit = {
     super.afterEach()
