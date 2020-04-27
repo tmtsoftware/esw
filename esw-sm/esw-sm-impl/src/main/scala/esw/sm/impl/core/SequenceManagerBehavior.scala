@@ -28,7 +28,7 @@ class SequenceManagerBehavior(
   import actorSystem.executionContext
   implicit val timeout: Timeout = Timeouts.DefaultTimeout
 
-  def init(): Behavior[SequenceManagerMsg] = Behaviors.setup(_ => idle())
+  def init(): Behavior[SequenceManagerMsg] = idle()
 
   //todo: try to use common receive method
   private def idle(): Behavior[SequenceManagerMsg] = Behaviors.receive { (ctx, msg) =>
