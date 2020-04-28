@@ -9,5 +9,6 @@ object SequenceManagerMsg {
   case class Cleanup(obsMode: String, replyTo: ActorRef[CleanupResponse])      extends SequenceManagerMsg
   case class GetRunningObsModes(replyTo: ActorRef[GetRunningObsModesResponse]) extends SequenceManagerMsg
 
-  private[sm] case class ConfigurationResponseInternal(res: ConfigureResponse) extends SequenceManagerMsg
+  private[sm] case class Configuring(res: ConfigureResponse) extends SequenceManagerMsg
+  private[sm] case class CleaningUp(res: CleanupResponse)    extends SequenceManagerMsg
 }

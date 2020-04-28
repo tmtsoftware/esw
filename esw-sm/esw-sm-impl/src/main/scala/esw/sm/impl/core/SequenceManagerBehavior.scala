@@ -11,7 +11,7 @@ import esw.commons.extensions.FutureEitherExt.FutureEitherOps
 import esw.commons.utils.location.EswLocationError.RegistrationListingFailed
 import esw.commons.utils.location.{EswLocationError, LocationServiceUtil}
 import esw.sm.api.actor.messages.ConfigureResponse.{ConfigurationFailure, ConflictingResourcesWithRunningObsMode}
-import esw.sm.api.actor.messages.SequenceManagerMsg.{Cleanup, ConfigurationResponseInternal, Configure, GetRunningObsModes}
+import esw.sm.api.actor.messages.SequenceManagerMsg._
 import esw.sm.api.actor.messages.{CleanupResponse, ConfigureResponse, GetRunningObsModesResponse, SequenceManagerMsg}
 import esw.sm.api.models.{ObsModeConfig, Resources, Sequencers}
 import esw.sm.impl.utils.SequencerUtil
@@ -35,21 +35,31 @@ class SequenceManagerBehavior(
     msg match {
       case Configure(observingMode, replyTo) => configure(observingMode, ctx.self); configuring(replyTo);
       case GetRunningObsModes(replyTo)       => replyRunningObsMode(replyTo); Behaviors.same
-      case Cleanup(observingMode, replyTo)   => cleanup(observingMode, replyTo); Behaviors.same;
+      case Cleanup(observingMode, replyTo)   => cleanup(observingMode, ctx.self); cleaningUp(replyTo);
       case _                                 => Behaviors.unhandled
     }
   }
 
-  private def cleanup(obsMode: String, replyTo: ActorRef[CleanupResponse]): Future[Unit] =
-    sequencerUtil
-      .stopSequencers(extractSequencers(obsMode), obsMode)
-      .map {
-        case Left(error) => replyTo ! CleanupResponse.Failed(error.msg)
-        case Right(_)    => replyTo ! CleanupResponse.Success
-      }
+  private def cleanup(obsMode: String, self: ActorRef[SequenceManagerMsg]): Future[Unit] = async {
+    val response = await(
+      sequencerUtil
+        .stopSequencers(extractSequencers(obsMode), obsMode)
+        .map {
+          case Left(error) => CleanupResponse.Failed(error.msg)
+          case Right(_)    => CleanupResponse.Success
+        }
+    )
+
+    self ! CleaningUp(response)
+  }
+
+  private def cleaningUp(replyTo: ActorRef[CleanupResponse]): Behavior[SequenceManagerMsg] = receive[CleaningUp] { msg =>
+    replyTo ! msg.res
+    idle()
+  }
 
   private def configuring(replyTo: ActorRef[ConfigureResponse]): Behavior[SequenceManagerMsg] =
-    receive[ConfigurationResponseInternal] { msg =>
+    receive[Configuring] { msg =>
       replyTo ! msg.res
       idle()
     }
@@ -73,7 +83,7 @@ class SequenceManagerBehavior(
           })
       }
 
-      self ! ConfigurationResponseInternal(response)
+      self ! Configuring(response)
     }
 
   private def useOcsMaster(location: HttpLocation, obsMode: String): Future[ConfigureResponse] =
