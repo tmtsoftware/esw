@@ -38,6 +38,11 @@ class LocationServiceUtilTest extends ScalaTestWithActorTestKit with BaseTestSui
   private val cswRegistrationListingFailed: CswRegistrationListingFailed = CswRegistrationListingFailed()
   private val cswLocationServiceErrorMsg: String                         = cswRegistrationListingFailed.getMessage
 
+  override protected def beforeEach(): Unit = {
+    super.beforeEach()
+    reset(locationService)
+  }
+
   "register" must {
     "return successful RegistrationResult | ESW-214" in {
       implicit val system: ActorSystem[_] = ActorSystem(Behaviors.empty, "test")
