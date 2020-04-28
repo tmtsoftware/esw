@@ -198,6 +198,7 @@ object Dependencies {
   val EswSmImpl: Def.Initialize[Seq[ModuleID]] = Def.setting(
     Seq(
       Csw.`csw-location-api`,
+      Csw.`csw-config-client`,
       Akka.`akka-actor-typed`,
       Libs.`mockito-scala`     % Test,
       Libs.scalatest           % Test,
@@ -207,6 +208,8 @@ object Dependencies {
 
   val EswSmApi: Def.Initialize[Seq[ModuleID]] = Def.setting(
     Seq(
+      Borer.`borer-core`.value,
+      Borer.`borer-derivation`.value,
       Csw.`csw-location-api`,
       Libs.`mockito-scala` % Test,
       Libs.scalatest       % Test
