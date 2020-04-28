@@ -18,4 +18,4 @@ object Sequencers {
 
 case class ObsModeConfig(resources: Resources, sequencers: Sequencers)
 
-case class SequenceManagerConfig(config: Map[String, ObsModeConfig])
+case class SequenceManagerConfig(obsModes: Map[String, ObsModeConfig])

@@ -2,27 +2,22 @@ package esw.sm.impl.core
 
 import java.nio.file.Path
 
-import akka.actor.typed.ActorSystem
 import com.typesafe.config.{Config, ConfigRenderOptions}
 import csw.config.client.commons.ConfigUtils
 import esw.sm.api.codecs.SequenceManagerCodecs
 import esw.sm.api.models.SequenceManagerConfig
 import io.bullet.borer._
 
-import scala.concurrent.Future
+import scala.concurrent.{ExecutionContext, Future}
 
-class SequenceManagerConfigParser(configUtils: ConfigUtils)(implicit val actorSystem: ActorSystem[_])
-    extends SequenceManagerCodecs {
-  import actorSystem.executionContext
+class SequenceManagerConfigParser(configUtils: ConfigUtils)(implicit ec: ExecutionContext) extends SequenceManagerCodecs {
+  private val ObsModesKey = "obsModes"
 
-  private val OBSERVATION_MODES = "obsModes"
-
-  def read(isLocal: Boolean, configFilePath: Option[Path], defaultConfig: Option[Config]): Future[SequenceManagerConfig] = {
-    configUtils.getConfig(isLocal, configFilePath, defaultConfig).map(config => parseConfig(config))
-  }
+  def read(configFilePath: Path, isLocal: Boolean): Future[SequenceManagerConfig] =
+    configUtils.getConfig(configFilePath, isLocal).map(parseConfig)
 
   private def parseConfig(config: Config): SequenceManagerConfig = {
-    val str = config.getConfig(OBSERVATION_MODES).root().render(ConfigRenderOptions.concise())
+    val str = config.getConfig(ObsModesKey).root().render(ConfigRenderOptions.concise())
 
     Json.decode(str.getBytes).to[SequenceManagerConfig].value
   }

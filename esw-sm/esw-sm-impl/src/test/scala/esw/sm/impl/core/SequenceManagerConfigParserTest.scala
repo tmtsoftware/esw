@@ -9,10 +9,11 @@ import csw.prefix.models.Subsystem._
 import esw.commons.BaseTestSuite
 import esw.sm.api.models.{ObsModeConfig, Resources, SequenceManagerConfig, Sequencers}
 
-import scala.concurrent.Future
+import scala.concurrent.{ExecutionContext, Future}
 
 class SequenceManagerConfigParserTest extends BaseTestSuite {
-  implicit val actorSystem: ActorSystem[SpawnProtocol.Command] = ActorSystem(SpawnProtocol(), "test-system")
+  private val actorSystem                   = ActorSystem(SpawnProtocol(), "test-system")
+  implicit private val ec: ExecutionContext = actorSystem.executionContext
 
   "read" must {
     "read config from local file" in {
@@ -22,9 +23,9 @@ class SequenceManagerConfigParserTest extends BaseTestSuite {
       val darknightSequencers: Sequencers = Sequencers(IRIS, ESW, TCS, AOESW)
       val calSequencers: Sequencers       = Sequencers(IRIS, ESW, AOESW)
       val testConfig                      = ConfigFactory.parseResources("testConfig.conf")
-      when(configUtils.getConfig(true, Some(path), None)).thenReturn(Future.successful(testConfig))
+      when(configUtils.getConfig(inputFilePath = path, isLocal = true)).thenReturn(Future.successful(testConfig))
 
-      val config = sequenceManagerConfigParser.read(isLocal = true, configFilePath = Some(path), defaultConfig = None)
+      val config = sequenceManagerConfigParser.read(configFilePath = path, isLocal = true)
 
       val expectedConfig = SequenceManagerConfig(
         Map(
