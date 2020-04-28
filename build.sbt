@@ -245,4 +245,5 @@ lazy val `esw-sm-impl` = project
 
 lazy val `esw-commons` = project
   .in(file("esw-commons"))
+  .dependsOn(`esw-ocs-api`.jvm % Provided)
   .settings(libraryDependencies ++= Dependencies.EswCommons.value)

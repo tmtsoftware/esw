@@ -71,7 +71,7 @@ class SequencerUtil(locationServiceUtil: LocationServiceUtil, sequenceComponentU
           .flatMap {
             case Left(listingFailed @ RegistrationListingFailed(_)) => throw listingFailed
             case Left(ResolveLocationFailed(_))                     => Future.successful(Done)
-            case Right(location)                                    => stopSequencer(location)
+            case Right(sequencerApi)                                => stopSequencer(sequencerApi)
           }
       }
       .map(_ => Right(Done))
@@ -80,15 +80,14 @@ class SequencerUtil(locationServiceUtil: LocationServiceUtil, sequenceComponentU
       }
 
   // get sequence component from Sequencer and unload it.
-  private def stopSequencer(loc: AkkaLocation): Future[Done] =
-    createSequencerClient(loc).getSequenceComponent.flatMap(sequenceComponentUtil.unloadScript)
+  private def stopSequencer(seq: SequencerApi): Future[Done] =
+    seq.getSequenceComponent.flatMap(sequenceComponentUtil.unloadScript)
 
   // Created in order to mock the behavior of sequencer API availability for unit test
   private[sm] def createSequencerClient(location: Location): SequencerApi = SequencerApiFactory.make(location)
   private def resolveSequencer(obsMode: String, subsystem: Subsystem)     = locationServiceUtil.resolveSequencer(subsystem, obsMode)
-  private def isSequencerAvailable(seqLoc: AkkaLocation)                  = createSequencerClient(seqLoc).isAvailable
   private def resolveAndCheckAvailability(obsMode: String, subsystem: Subsystem): Future[Either[EswLocationError, Boolean]] =
-    resolveSequencer(obsMode, subsystem).flatMapRight(isSequencerAvailable)
+    resolveSequencer(obsMode, subsystem).flatMapRight(_.isAvailable)
 
   private def loadScript(subSystem: Subsystem, observingMode: String, seqCompApi: SequenceComponentApi) =
     seqCompApi.loadScript(subSystem, observingMode).map(_.response.left.map(e => SequenceManagerError.LoadScriptError(e.msg)))

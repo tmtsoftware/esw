@@ -206,7 +206,7 @@ class LocationServiceUtilTest extends ScalaTestWithActorTestKit with BaseTestSui
 
       val locationServiceUtil = new LocationServiceUtil(locationService)
       locationServiceUtil.resolveSequencer(subsystem, observingMode, 200.millis).leftValue shouldBe
-      (ResolveLocationFailed(s"Could not resolve location matching connection: $akkaConnection"))
+      ResolveLocationFailed(s"Could not resolve location matching connection: $akkaConnection")
     }
 
     "return a RegistrationListingFailed when location service call throws exception | ESW-119" in {
@@ -215,7 +215,7 @@ class LocationServiceUtilTest extends ScalaTestWithActorTestKit with BaseTestSui
 
       val locationServiceUtil = new LocationServiceUtil(locationService)
       locationServiceUtil.resolveSequencer(subsystem, observingMode, 200.millis).leftValue shouldBe
-      (RegistrationListingFailed(s"Location Service Error: ${cswLocationServiceErrorMsg}"))
+      RegistrationListingFailed(s"Location Service Error: ${cswLocationServiceErrorMsg}")
     }
   }
 
@@ -225,9 +225,10 @@ class LocationServiceUtilTest extends ScalaTestWithActorTestKit with BaseTestSui
         .thenReturn(Future.successful(Some(akkaLocation)))
 
       val locationServiceDsl = new LocationServiceUtil(locationService)
-      val actualLocations =
-        locationServiceDsl.resolveSequencer(subsystem, observingMode).rightValue
-      actualLocations should ===(akkaLocation)
+      locationServiceDsl.resolveSequencer(subsystem, observingMode).rightValue
+
+      // how to test that sequencer Api factor is called? This test is not complete.
+      verify(locationService).resolve(akkaConnection, Timeouts.DefaultTimeout)
     }
 
     "return a ResolveLocationFailed when no matching subsystem and observing mode is found | ESW-119" in {
@@ -236,7 +237,7 @@ class LocationServiceUtilTest extends ScalaTestWithActorTestKit with BaseTestSui
 
       val locationServiceUtil = new LocationServiceUtil(locationService)
       locationServiceUtil.resolveSequencer(subsystem, observingMode, 200.millis).leftValue shouldBe
-      (ResolveLocationFailed(s"Could not resolve location matching connection: $akkaConnection"))
+      ResolveLocationFailed(s"Could not resolve location matching connection: $akkaConnection")
     }
 
     "return a RegistrationListingFailed when location service call throws exception | ESW-119" in {
@@ -245,7 +246,7 @@ class LocationServiceUtilTest extends ScalaTestWithActorTestKit with BaseTestSui
 
       val locationServiceUtil = new LocationServiceUtil(locationService)
       locationServiceUtil.resolveSequencer(subsystem, observingMode, 200.millis).leftValue shouldBe
-      (RegistrationListingFailed(s"Location Service Error: $cswLocationServiceErrorMsg"))
+      RegistrationListingFailed(s"Location Service Error: $cswLocationServiceErrorMsg")
     }
   }
 }

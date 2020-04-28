@@ -15,6 +15,8 @@ import csw.prefix.models.{Prefix, Subsystem}
 import esw.commons.Timeouts
 import esw.commons.extensions.FutureEitherExt._
 import esw.commons.utils.location.EswLocationError.{RegistrationListingFailed, ResolveLocationFailed}
+import esw.ocs.api.SequencerApi
+import esw.ocs.api.actor.client.SequencerApiFactory
 
 import scala.concurrent.duration.FiniteDuration
 import scala.concurrent.{ExecutionContext, Future}
@@ -98,8 +100,9 @@ private[esw] class LocationServiceUtil(val locationService: LocationService)(
       subsystem: Subsystem,
       observingMode: String,
       timeout: FiniteDuration = Timeouts.DefaultTimeout
-  ): Future[Either[EswLocationError, AkkaLocation]] =
+  ): Future[Either[EswLocationError, SequencerApi]] =
     resolve(AkkaConnection(ComponentId(Prefix(subsystem, observingMode), Sequencer)), timeout)
+      .mapRight(SequencerApiFactory.make)
 
   // Added this to be accessed by kotlin
   def jResolveComponentRef(prefix: Prefix, componentType: ComponentType): CompletionStage[ActorRef[ComponentMessage]] =

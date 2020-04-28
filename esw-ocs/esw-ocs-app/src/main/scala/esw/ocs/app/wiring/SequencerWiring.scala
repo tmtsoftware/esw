@@ -26,8 +26,7 @@ import esw.commons.Timeouts
 import esw.commons.extensions.FutureEitherExt.FutureEitherOps
 import esw.commons.utils.location.LocationServiceUtil
 import esw.http.core.wiring.{ActorRuntime, CswWiring, HttpService, Settings}
-import esw.ocs.api.SequencerApi
-import esw.ocs.api.actor.client.{SequencerApiFactory, SequencerImpl}
+import esw.ocs.api.actor.client.SequencerImpl
 import esw.ocs.api.actor.messages.SequencerMessages.Shutdown
 import esw.ocs.api.codecs.SequencerHttpCodecs
 import esw.ocs.api.protocol.ScriptError
@@ -85,13 +84,8 @@ private[ocs] class SequencerWiring(
   private lazy val jLoggerFactory   = loggerFactory.asJava
   private lazy val jLogger: ILogger = ScriptLoader.withScript(scriptClass)(jLoggerFactory.getLogger)
 
-  private val sequencerApiFactory: Location => SequencerApi = SequencerApiFactory.make _
-
-  private lazy val sequencerImplFactory = (_subsystem: Subsystem, _obsMode: String) => {
-    locationServiceUtil
-      .resolveSequencer(_subsystem, _obsMode)
-      .toJava(sequencerApiFactory)
-  }
+  private lazy val sequencerImplFactory = (_subsystem: Subsystem, _obsMode: String) =>
+    locationServiceUtil.resolveSequencer(_subsystem, _obsMode).toJava
 
   lazy val scriptContext = new ScriptContext(
     heartbeatInterval,
