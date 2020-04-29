@@ -2,7 +2,6 @@ package esw.ocs.testkit
 
 import java.nio.file.{Paths, Path => NIOPath}
 
-import akka.actor
 import akka.actor.CoordinatedShutdown.UnknownReason
 import akka.actor.testkit.typed.scaladsl.TestProbe
 import akka.actor.typed.{ActorRef, ActorSystem, SpawnProtocol}
@@ -52,7 +51,6 @@ abstract class EswTestKit(services: Service*)
   implicit lazy val ec: ExecutionContext                       = frameworkTestKit.frameworkWiring.actorRuntime.ec
   implicit lazy val askTimeout: Timeout                        = Timeout(10.seconds)
   lazy val locationService: LocationService                    = frameworkTestKit.frameworkWiring.locationService
-  lazy val untypedSystem: actor.ActorSystem                    = frameworkTestKit.frameworkWiring.actorRuntime.classicSystem
   private lazy val eventService: EventService                  = frameworkTestKit.frameworkWiring.eventServiceFactory.make(locationService)
   lazy val eventSubscriber: EventSubscriber                    = eventService.defaultSubscriber
   lazy val eventPublisher: EventPublisher                      = eventService.defaultPublisher
