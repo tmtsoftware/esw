@@ -23,6 +23,7 @@ import csw.time.core.models.UTCTime
 import esw.ocs.dsl.highlevel.models.CommandError
 import esw.ocs.dsl.highlevel.models.ESW
 import csw.prefix.models.Prefix
+import esw.commons.utils.location.ComponentFactory
 import esw.commons.utils.location.LocationServiceUtil
 import esw.ocs.dsl.script.utils.LockUnlockUtil
 import io.kotlintest.shouldNotThrow
@@ -59,6 +60,7 @@ class RichComponentTest {
 
     private val lockUnlockUtil: LockUnlockUtil = mockk()
     private val locationServiceUtil: LocationServiceUtil = mockk()
+    private val componentFactory: ComponentFactory = mockk()
     private val actorSystem: ActorSystem<*> = mockk()
 
     private val timeoutDuration: Duration = 5.seconds
@@ -78,6 +80,7 @@ class RichComponentTest {
                         componentType,
                         lockUnlockUtil,
                         locationServiceUtil,
+                        componentFactory,
                         actorSystem,
                         defaultTimeoutDuration,
                         coroutineScope
@@ -322,7 +325,7 @@ class RichComponentTest {
         fun `diagnosticMode should resolve actorRef for given assembly and send DiagnosticMode message to it | ESW-118, ESW-245 `() = runBlocking {
             val diagnosticMessage = DiagnosticDataMessage.DiagnosticMode(startTime, hint)
 
-            every { locationServiceUtil.jResolveComponentRef(prefix, componentType) }.answers { CompletableFuture.completedFuture(assemblyRef) }
+            every { componentFactory.jResolveComponentRef(prefix, componentType) }.answers { CompletableFuture.completedFuture(assemblyRef) }
             every { assemblyRef.tell(diagnosticMessage) }.answers { Unit }
 
             assembly.diagnosticMode(startTime, hint)
@@ -334,7 +337,7 @@ class RichComponentTest {
         fun `operationsMode should resolve actorRef for given assembly and send OperationsMode message to it | ESW-118, ESW-245 `() = runBlocking {
             val operationsModeMessage = DiagnosticDataMessage.`OperationsMode$`.`MODULE$`
 
-            every { locationServiceUtil.jResolveComponentRef(prefix, componentType) }.answers { CompletableFuture.completedFuture(assemblyRef) }
+            every { componentFactory.jResolveComponentRef(prefix, componentType) }.answers { CompletableFuture.completedFuture(assemblyRef) }
             every { assemblyRef.tell(operationsModeMessage) }.answers { Unit }
 
             assembly.operationsMode()
@@ -346,7 +349,7 @@ class RichComponentTest {
         fun `goOnline should resolve actorRef for given assembly and send GoOnline message to it | ESW-236, ESW-245 `() = runBlocking {
             val goOnlineMessage = RunningMessage.Lifecycle(ToComponentLifecycleMessage.`GoOnline$`.`MODULE$`)
 
-            every { locationServiceUtil.jResolveComponentRef(prefix, componentType) }.answers { CompletableFuture.completedFuture(assemblyRef) }
+            every { componentFactory.jResolveComponentRef(prefix, componentType) }.answers { CompletableFuture.completedFuture(assemblyRef) }
             every { assemblyRef.tell(goOnlineMessage) }.answers { Unit }
 
             assembly.goOnline()
@@ -358,7 +361,7 @@ class RichComponentTest {
         fun `goOffline should resolve actorRef for given assembly and send GoOffline message to it | ESW-236, ESW-245 `() = runBlocking {
             val goOfflineMessage = RunningMessage.Lifecycle(ToComponentLifecycleMessage.`GoOffline$`.`MODULE$`)
 
-            every { locationServiceUtil.jResolveComponentRef(prefix, componentType) }.answers { CompletableFuture.completedFuture(assemblyRef) }
+            every { componentFactory.jResolveComponentRef(prefix, componentType) }.answers { CompletableFuture.completedFuture(assemblyRef) }
             every { assemblyRef.tell(goOfflineMessage) }.answers { Unit }
 
             assembly.goOffline()
@@ -368,7 +371,7 @@ class RichComponentTest {
 
         @Test
         fun `lock should resolve actorRef for given assembly and send Lock message to it | ESW-126, ESW-245 `() = runBlocking {
-            every { locationServiceUtil.jResolveComponentRef(prefix, componentType) }.answers { CompletableFuture.completedFuture(assemblyRef) }
+            every { componentFactory.jResolveComponentRef(prefix, componentType) }.answers { CompletableFuture.completedFuture(assemblyRef) }
             every { lockUnlockUtil.lock(assemblyRef, jLeaseDuration, any(), any()) }.answers { CompletableFuture.completedFuture(LockingResponse.`LockAcquired$`.`MODULE$`) }
 
             assembly.lock(leaseDuration, {}, {})
@@ -378,7 +381,7 @@ class RichComponentTest {
 
         @Test
         fun `unlock should resolve actorRef for given assembly and send Unlock message to it | ESW-126, ESW-245 `() = runBlocking {
-            every { locationServiceUtil.jResolveComponentRef(prefix, componentType) }.answers { CompletableFuture.completedFuture(assemblyRef) }
+            every { componentFactory.jResolveComponentRef(prefix, componentType) }.answers { CompletableFuture.completedFuture(assemblyRef) }
             every { lockUnlockUtil.unlock(assemblyRef) }.answers { CompletableFuture.completedFuture(LockingResponse.`LockReleased$`.`MODULE$`) }
 
             assembly.unlock()
@@ -398,6 +401,7 @@ class RichComponentTest {
                         componentType,
                         lockUnlockUtil,
                         locationServiceUtil,
+                        componentFactory,
                         actorSystem,
                         defaultTimeoutDuration,
                         coroutineScope
@@ -639,7 +643,7 @@ class RichComponentTest {
         fun `diagnosticMode should resolve actorRef for given hcd and send DiagnosticMode message to it | ESW-118, ESW-245 `() = runBlocking {
             val diagnosticMessage = DiagnosticDataMessage.DiagnosticMode(startTime, hint)
 
-            every { locationServiceUtil.jResolveComponentRef(prefix, componentType) }.answers { CompletableFuture.completedFuture(hcdRef) }
+            every { componentFactory.jResolveComponentRef(prefix, componentType) }.answers { CompletableFuture.completedFuture(hcdRef) }
             every { hcdRef.tell(diagnosticMessage) }.answers { Unit }
 
             hcd.diagnosticMode(startTime, hint)
@@ -651,7 +655,7 @@ class RichComponentTest {
         fun `operationsMode should resolve actorRef for given hcd and send OperationsMode message to it | ESW-118, ESW-245 `() = runBlocking {
             val operationsModeMessage = DiagnosticDataMessage.`OperationsMode$`.`MODULE$`
 
-            every { locationServiceUtil.jResolveComponentRef(prefix, componentType) }.answers { CompletableFuture.completedFuture(hcdRef) }
+            every { componentFactory.jResolveComponentRef(prefix, componentType) }.answers { CompletableFuture.completedFuture(hcdRef) }
             every { hcdRef.tell(operationsModeMessage) }.answers { Unit }
 
             hcd.operationsMode()
@@ -663,7 +667,7 @@ class RichComponentTest {
         fun `goOnline should resolve actorRef for given hcd and send GoOnline message to it | ESW-236, ESW-245 `() = runBlocking {
             val goOnlineMessage = RunningMessage.Lifecycle(ToComponentLifecycleMessage.`GoOnline$`.`MODULE$`)
 
-            every { locationServiceUtil.jResolveComponentRef(prefix, componentType) }.answers { CompletableFuture.completedFuture(hcdRef) }
+            every { componentFactory.jResolveComponentRef(prefix, componentType) }.answers { CompletableFuture.completedFuture(hcdRef) }
             every { hcdRef.tell(goOnlineMessage) }.answers { Unit }
 
             hcd.goOnline()
@@ -675,7 +679,7 @@ class RichComponentTest {
         fun `goOffline should resolve actorRef for given hcd and send GoOffline message to it | ESW-236, ESW-245 `() = runBlocking {
             val goOfflineMessage = RunningMessage.Lifecycle(ToComponentLifecycleMessage.`GoOffline$`.`MODULE$`)
 
-            every { locationServiceUtil.jResolveComponentRef(prefix, componentType) }.answers { CompletableFuture.completedFuture(hcdRef) }
+            every { componentFactory.jResolveComponentRef(prefix, componentType) }.answers { CompletableFuture.completedFuture(hcdRef) }
             every { hcdRef.tell(goOfflineMessage) }.answers { Unit }
 
             hcd.goOffline()
@@ -685,7 +689,7 @@ class RichComponentTest {
 
         @Test
         fun `lock should resolve actorRef for given hcd and send Lock message to it | ESW-126, ESW-245 `() = runBlocking {
-            every { locationServiceUtil.jResolveComponentRef(prefix, componentType) }.answers { CompletableFuture.completedFuture(hcdRef) }
+            every { componentFactory.jResolveComponentRef(prefix, componentType) }.answers { CompletableFuture.completedFuture(hcdRef) }
             every { lockUnlockUtil.lock(hcdRef, jLeaseDuration, any(), any()) }.answers { CompletableFuture.completedFuture(LockingResponse.`LockAcquired$`.`MODULE$`) }
 
             hcd.lock(leaseDuration)
@@ -695,7 +699,7 @@ class RichComponentTest {
 
         @Test
         fun `unlock should resolve actorRef for given hcd and send Unlock message to it | ESW-126, ESW-245 `() = runBlocking {
-            every { locationServiceUtil.jResolveComponentRef(prefix, componentType) }.answers { CompletableFuture.completedFuture(hcdRef) }
+            every { componentFactory.jResolveComponentRef(prefix, componentType) }.answers { CompletableFuture.completedFuture(hcdRef) }
             every { lockUnlockUtil.unlock(hcdRef) }.answers { CompletableFuture.completedFuture(LockingResponse.`LockReleased$`.`MODULE$`) }
 
             hcd.unlock()

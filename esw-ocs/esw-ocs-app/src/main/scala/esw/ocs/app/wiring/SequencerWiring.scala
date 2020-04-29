@@ -24,7 +24,7 @@ import csw.network.utils.SocketUtils
 import csw.prefix.models.Subsystem
 import esw.commons.Timeouts
 import esw.commons.extensions.FutureEitherExt.FutureEitherOps
-import esw.commons.utils.location.LocationServiceUtil
+import esw.commons.utils.location.{ComponentFactory, LocationServiceUtil}
 import esw.http.core.wiring.{ActorRuntime, CswWiring, HttpService, Settings}
 import esw.ocs.api.actor.client.SequencerImpl
 import esw.ocs.api.actor.messages.SequencerMessages.Shutdown
@@ -74,6 +74,7 @@ private[ocs] class SequencerWiring(
   private[ocs] lazy val script: ScriptApi  = ScriptLoader.loadKotlinScript(scriptClass, scriptContext)
 
   private lazy val locationServiceUtil        = new LocationServiceUtil(locationService)
+  private lazy val componentFactory           = new ComponentFactory(locationServiceUtil)
   lazy val jLocationService: ILocationService = JHttpLocationServiceFactory.makeLocalClient(actorSystem)
 
   lazy val jEventService: JEventService         = new JEventService(eventService)
@@ -85,7 +86,7 @@ private[ocs] class SequencerWiring(
   private lazy val jLogger: ILogger = ScriptLoader.withScript(scriptClass)(jLoggerFactory.getLogger)
 
   private lazy val sequencerImplFactory = (_subsystem: Subsystem, _obsMode: String) =>
-    locationServiceUtil.resolveSequencer(_subsystem, _obsMode).toJava
+    componentFactory.resolveSequencer(_subsystem, _obsMode).toJava
 
   lazy val scriptContext = new ScriptContext(
     heartbeatInterval,

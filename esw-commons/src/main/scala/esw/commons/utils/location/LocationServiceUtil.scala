@@ -3,11 +3,8 @@ package esw.commons.utils.location
 import java.util.concurrent.CompletionStage
 
 import akka.actor.CoordinatedShutdown
+import akka.actor.typed.ActorSystem
 import akka.actor.typed.scaladsl.adapter.TypedActorSystemOps
-import akka.actor.typed.{ActorRef, ActorSystem}
-import csw.command.client.extensions.AkkaLocationExt.RichAkkaLocation
-import csw.command.client.messages.ComponentMessage
-import csw.location.api.models.ComponentType.Sequencer
 import csw.location.api.models.Connection.AkkaConnection
 import csw.location.api.models._
 import csw.location.api.scaladsl.{LocationService, RegistrationResult}
@@ -15,8 +12,6 @@ import csw.prefix.models.{Prefix, Subsystem}
 import esw.commons.Timeouts
 import esw.commons.extensions.FutureEitherExt._
 import esw.commons.utils.location.EswLocationError.{RegistrationListingFailed, ResolveLocationFailed}
-import esw.ocs.api.SequencerApi
-import esw.ocs.api.actor.client.SequencerApiFactory
 
 import scala.concurrent.duration.FiniteDuration
 import scala.concurrent.{ExecutionContext, Future}
@@ -89,24 +84,6 @@ private[esw] class LocationServiceUtil(val locationService: LocationService)(
         case None           => Left(ResolveLocationFailed(s"Could not resolve location matching connection: $connection"))
       }
       .mapError(e => RegistrationListingFailed(s"Location Service Error: ${e.getMessage}"))
-
-  def resolveComponentRef(
-      prefix: Prefix,
-      componentType: ComponentType
-  ): Future[Either[EswLocationError, ActorRef[ComponentMessage]]] =
-    resolve(AkkaConnection(ComponentId(prefix, componentType))).mapRight(_.componentRef)
-
-  private[esw] def resolveSequencer(
-      subsystem: Subsystem,
-      observingMode: String,
-      timeout: FiniteDuration = Timeouts.DefaultTimeout
-  ): Future[Either[EswLocationError, SequencerApi]] =
-    resolve(AkkaConnection(ComponentId(Prefix(subsystem, observingMode), Sequencer)), timeout)
-      .mapRight(SequencerApiFactory.make)
-
-  // Added this to be accessed by kotlin
-  def jResolveComponentRef(prefix: Prefix, componentType: ComponentType): CompletionStage[ActorRef[ComponentMessage]] =
-    resolveComponentRef(prefix, componentType).toJava
 
   def jResolveAkkaLocation(prefix: Prefix, componentType: ComponentType): CompletionStage[AkkaLocation] =
     resolve(AkkaConnection(ComponentId(prefix, componentType))).toJava

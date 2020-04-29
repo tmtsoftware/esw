@@ -10,7 +10,7 @@ import csw.location.client.scaladsl.HttpLocationServiceFactory
 import csw.params.commands.{CommandName, Sequence, Setup}
 import csw.prefix.models.Prefix
 import csw.prefix.models.Subsystem.IRIS
-import esw.commons.utils.location.LocationServiceUtil
+import esw.commons.utils.location.{ComponentFactory, LocationServiceUtil}
 import esw.ocs.api.SequencerApi
 import esw.ocs.api.actor.messages.SequenceComponentMsg
 import esw.ocs.api.actor.messages.SequenceComponentMsg.UnloadScript
@@ -29,7 +29,10 @@ object TestClient extends App {
 
   implicit val sched: Scheduler = system.scheduler
 
-  private val sequencer: SequencerApi = new LocationServiceUtil(_locationService)
+  private val locationServiceUtil = new LocationServiceUtil(_locationService)
+  private val componentFactory    = new ComponentFactory(locationServiceUtil)
+
+  private val sequencer: SequencerApi = componentFactory
     .resolveSequencer(IRIS, "darknight")
     .futureValue
     .toOption

@@ -18,6 +18,7 @@ import csw.params.core.states.CurrentState
 import csw.params.core.states.StateName
 import csw.prefix.models.Prefix
 import csw.time.core.models.UTCTime
+import esw.commons.utils.location.ComponentFactory
 import esw.commons.utils.location.LocationServiceUtil
 import esw.ocs.dsl.SuspendableCallback
 import esw.ocs.dsl.SuspendableConsumer
@@ -36,6 +37,7 @@ class RichComponent(
         val componentType: ComponentType,
         private val lockUnlockUtil: LockUnlockUtil,
         private val locationServiceUtil: LocationServiceUtil,
+        private val componentFactory: ComponentFactory,
         private val actorSystem: ActorSystem<*>,
         private val defaultTimeout: Duration,
         override val coroutineScope: CoroutineScope
@@ -175,5 +177,5 @@ class RichComponent(
     private fun Duration.toTimeout(): Timeout = Timeout(toLongNanoseconds(), TimeUnit.NANOSECONDS)
 
     private suspend fun commandService(): ICommandService = CommandServiceFactory.jMake(locationServiceUtil.jResolveAkkaLocation(prefix, componentType).await(), actorSystem)
-    private suspend fun componentRef(): ActorRef<ComponentMessage> = locationServiceUtil.jResolveComponentRef(prefix, componentType).await()
+    private suspend fun componentRef(): ActorRef<ComponentMessage> = componentFactory.jResolveComponentRef(prefix, componentType).await()
 }

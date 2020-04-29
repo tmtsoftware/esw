@@ -11,7 +11,7 @@ import esw.commons.Timeouts
 import esw.commons.extensions.FutureEitherExt.FutureEitherOps
 import esw.commons.extensions.ListEitherExt.ListEitherOps
 import esw.commons.utils.location.EswLocationError.{RegistrationListingFailed, ResolveLocationFailed}
-import esw.commons.utils.location.{EswLocationError, LocationServiceUtil}
+import esw.commons.utils.location.{ComponentFactory, EswLocationError, LocationServiceUtil}
 import esw.ocs.api.actor.client.SequencerApiFactory
 import esw.ocs.api.{SequenceComponentApi, SequencerApi}
 import esw.sm.api.actor.messages.ConfigureResponse
@@ -22,7 +22,11 @@ import esw.sm.api.models.{SequenceManagerError, SequencerError, Sequencers}
 import scala.async.Async.{async, await}
 import scala.concurrent.{ExecutionContext, Future}
 
-class SequencerUtil(locationServiceUtil: LocationServiceUtil, sequenceComponentUtil: SequenceComponentUtil)(
+class SequencerUtil(
+    componentFactory: ComponentFactory,
+    locationServiceUtil: LocationServiceUtil,
+    sequenceComponentUtil: SequenceComponentUtil
+)(
     implicit actorSystem: ActorSystem[_]
 ) {
   implicit private val ec: ExecutionContext = actorSystem.executionContext
@@ -85,7 +89,7 @@ class SequencerUtil(locationServiceUtil: LocationServiceUtil, sequenceComponentU
 
   // Created in order to mock the behavior of sequencer API availability for unit test
   private[sm] def createSequencerClient(location: Location): SequencerApi = SequencerApiFactory.make(location)
-  private def resolveSequencer(obsMode: String, subsystem: Subsystem)     = locationServiceUtil.resolveSequencer(subsystem, obsMode)
+  private def resolveSequencer(obsMode: String, subsystem: Subsystem)     = componentFactory.resolveSequencer(subsystem, obsMode)
   private def resolveAndCheckAvailability(obsMode: String, subsystem: Subsystem): Future[Either[EswLocationError, Boolean]] =
     resolveSequencer(obsMode, subsystem).flatMapRight(_.isAvailable)
 
