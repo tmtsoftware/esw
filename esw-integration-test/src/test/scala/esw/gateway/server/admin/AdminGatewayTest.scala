@@ -2,7 +2,6 @@ package esw.gateway.server.admin
 
 import java.net.InetAddress
 
-import akka.actor
 import akka.actor.testkit.typed.TestKitSettings
 import akka.actor.testkit.typed.scaladsl.TestProbe
 import akka.actor.typed.{ActorRef, ActorSystem, SpawnProtocol}
@@ -198,8 +197,7 @@ class AdminGatewayTest extends EswTestKit(Gateway) with GatewayCodecs {
           s"http://${Networks().hostname}:$gatewayPort/post-endpoint",
           entity = HttpEntity(ContentTypes.`application/json`, str)
         )
-      implicit val sys: actor.ActorSystem = gatewayWiring.wiring.cswWiring.actorRuntime.untypedSystem
-      val response                        = Await.result(Http().singleRequest(request), 5.seconds)
+      val response = Await.result(Http().singleRequest(request), 5.seconds)
       response.status should ===(StatusCodes.BadRequest)
     }
   }

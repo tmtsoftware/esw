@@ -37,7 +37,7 @@ class HTTPServiceCORSTest extends EswTestKit {
 
       val response =
         Await.result(
-          Http(system).singleRequest(
+          Http().singleRequest(
             HttpRequest(
               method = HttpMethods.GET,
               uri = Uri(s"http://localhost:${gatewayPort}/hello"),
@@ -54,7 +54,7 @@ class HTTPServiceCORSTest extends EswTestKit {
 
       val response =
         Await.result(
-          Http(system).singleRequest(
+          Http().singleRequest(
             HttpRequest(
               method = HttpMethods.GET,
               uri = Uri(s"http://localhost:${gatewayPort}/invalidPath"),
