@@ -6,13 +6,12 @@ import akka.Done
 import akka.actor.CoordinatedShutdown
 import akka.actor.CoordinatedShutdown.UnknownReason
 import akka.actor.testkit.typed.scaladsl.{ScalaTestWithActorTestKit, TestProbe}
-import akka.actor.typed.scaladsl.adapter.TypedActorSystemOps
 import akka.actor.typed.{ActorRef, ActorSystem, SpawnProtocol}
 import csw.location.api.exceptions.{OtherLocationIsRegistered, RegistrationFailed}
-import csw.location.api.scaladsl.{LocationService, RegistrationResult}
 import csw.location.api.models.ComponentType.SequenceComponent
 import csw.location.api.models.Connection.AkkaConnection
 import csw.location.api.models.{AkkaLocation, AkkaRegistration, ComponentId, ComponentType}
+import csw.location.api.scaladsl.{LocationService, RegistrationResult}
 import csw.prefix.models.{Prefix, Subsystem}
 import esw.ocs.api.BaseTestSuite
 import esw.ocs.api.actor.messages.SequenceComponentMsg
@@ -37,7 +36,7 @@ class SequenceComponentRegistrationTest extends ScalaTestWithActorTestKit with B
     "return successful RegistrationResult | ESW-144" in {
       implicit val system: ActorSystem[SpawnProtocol.Command] = ActorSystem(SpawnProtocol(), "test")
       implicit val ec: ExecutionContext                       = system.executionContext
-      val coordinatedShutdown                                 = CoordinatedShutdown(system.toClassic)
+      val coordinatedShutdown                                 = CoordinatedShutdown(system)
       val locationService                                     = mock[LocationService]
 
       when(registrationResult.location).thenReturn(akkaLocation)
@@ -68,7 +67,7 @@ class SequenceComponentRegistrationTest extends ScalaTestWithActorTestKit with B
 
     "map location service registration failure to RegistrationError | ESW-144" in {
       implicit val system: ActorSystem[SpawnProtocol.Command] = ActorSystem(SpawnProtocol(), "test")
-      val coordinatedShutdown                                 = CoordinatedShutdown(system.toClassic)
+      val coordinatedShutdown                                 = CoordinatedShutdown(system)
       val errorMsg                                            = "error message"
       val locationService                                     = mock[LocationService]
 
@@ -108,7 +107,7 @@ class SequenceComponentRegistrationTest extends ScalaTestWithActorTestKit with B
     "return successful RegistrationResult | ESW-144" in {
       implicit val system: ActorSystem[SpawnProtocol.Command] = ActorSystem(SpawnProtocol(), "test")
       implicit val ec: ExecutionContext                       = system.executionContext
-      val coordinatedShutdown                                 = CoordinatedShutdown(system.toClassic)
+      val coordinatedShutdown                                 = CoordinatedShutdown(system)
       val retryCount                                          = 2
 
       when(locationService.register(any[AkkaRegistration])).thenReturn(Future(registrationResult))
@@ -138,7 +137,7 @@ class SequenceComponentRegistrationTest extends ScalaTestWithActorTestKit with B
 
     "retry if OtherLocationIsRegistered | ESW-144" in {
       implicit val system: ActorSystem[SpawnProtocol.Command] = ActorSystem(SpawnProtocol(), "test")
-      val coordinatedShutdown                                 = CoordinatedShutdown(system.toClassic)
+      val coordinatedShutdown                                 = CoordinatedShutdown(system)
       val locationService                                     = mock[LocationService]
 
       val errorMsg           = "error message"

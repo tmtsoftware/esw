@@ -21,7 +21,7 @@ class ActorRuntime(_typedSystem: ActorSystem[SpawnProtocol.Command]) {
   implicit val untypedSystem: actor.ActorSystem                = _typedSystem.toClassic
   implicit val ec: ExecutionContext                            = typedSystem.executionContext
   implicit val mat: Materializer                               = Materializer(typedSystem)
-  val coordinatedShutdown: CoordinatedShutdown                 = CoordinatedShutdown(untypedSystem)
+  val coordinatedShutdown: CoordinatedShutdown                 = CoordinatedShutdown(typedSystem)
 
   def startLogging(name: String, version: String = BuildInfo.version): LoggingSystem =
     LoggingSystemFactory.start(name, version, Networks().hostname, typedSystem)

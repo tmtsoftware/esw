@@ -8,7 +8,6 @@ import akka.actor.CoordinatedShutdown.UnknownReason
 import akka.actor.testkit.typed.scaladsl.ScalaTestWithActorTestKit
 import akka.actor.typed.ActorSystem
 import akka.actor.typed.scaladsl.Behaviors
-import akka.actor.typed.scaladsl.adapter.TypedActorSystemOps
 import csw.location.api.exceptions.{OtherLocationIsRegistered, RegistrationListingFailed => CswRegistrationListingFailed}
 import csw.location.api.models.ComponentType._
 import csw.location.api.models.Connection.AkkaConnection
@@ -46,7 +45,7 @@ class LocationServiceUtilTest extends ScalaTestWithActorTestKit with BaseTestSui
   "register" must {
     "return successful RegistrationResult | ESW-214" in {
       implicit val system: ActorSystem[_] = ActorSystem(Behaviors.empty, "test")
-      val coordinatedShutdown             = CoordinatedShutdown(system.toClassic)
+      val coordinatedShutdown             = CoordinatedShutdown(system)
       val registrationResult              = mock[RegistrationResult]
       when(registrationResult.location).thenReturn(akkaLocation)
       when(registrationResult.unregister()).thenReturn(Future.successful(Done))

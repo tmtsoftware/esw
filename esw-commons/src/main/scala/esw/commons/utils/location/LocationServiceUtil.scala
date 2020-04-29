@@ -3,7 +3,6 @@ package esw.commons.utils.location
 import java.util.concurrent.CompletionStage
 
 import akka.actor.CoordinatedShutdown
-import akka.actor.typed.scaladsl.adapter.TypedActorSystemOps
 import akka.actor.typed.{ActorRef, ActorSystem}
 import csw.command.client.extensions.AkkaLocationExt.RichAkkaLocation
 import csw.command.client.messages.ComponentMessage
@@ -48,7 +47,7 @@ private[esw] class LocationServiceUtil(val locationService: LocationService)(
     locationService
       .register(akkaRegistration)
       .map { result =>
-        addCoordinatedShutdownTask(CoordinatedShutdown(actorSystem.toClassic), result)
+        addCoordinatedShutdownTask(CoordinatedShutdown(actorSystem), result)
         Right(result.location.asInstanceOf[AkkaLocation])
       }
       .recoverWith(onFailure)
