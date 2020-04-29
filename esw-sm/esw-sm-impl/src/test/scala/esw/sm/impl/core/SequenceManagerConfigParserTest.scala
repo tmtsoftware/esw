@@ -24,7 +24,7 @@ class SequenceManagerConfigParserTest extends BaseTestSuite {
       val darknightSequencers: Sequencers = Sequencers(IRIS, ESW, TCS, AOESW)
       val calSequencers: Sequencers       = Sequencers(IRIS, ESW, AOESW)
       val testConfig                      = ConfigFactory.parseResources("testConfig.conf")
-      when(configUtils.getConfig(isLocal = true, Some(path), None)).thenReturn(Future.successful(testConfig))
+      when(configUtils.getConfig(inputFilePath = path, isLocal = true)).thenReturn(Future.successful(testConfig))
 
       val config = sequenceManagerConfigParser.read(configFilePath = path, isLocal = true)
 
@@ -42,7 +42,7 @@ class SequenceManagerConfigParserTest extends BaseTestSuite {
       val path                        = Paths.get("missingTestConfig.conf")
       val sequenceManagerConfigParser = new SequenceManagerConfigParser(configUtils)
       val testConfig                  = ConfigFactory.parseResources("missingTestConfig.conf")
-      when(configUtils.getConfig(isLocal = true, Some(path), None)).thenReturn(Future.successful(testConfig))
+      when(configUtils.getConfig(inputFilePath = path, isLocal = true)).thenReturn(Future.successful(testConfig))
 
       intercept[ConfigException.Missing](
         sequenceManagerConfigParser.read(isLocal = true, configFilePath = path).awaitResult
@@ -54,7 +54,7 @@ class SequenceManagerConfigParserTest extends BaseTestSuite {
       val path                        = Paths.get("invalidTestConfig.conf")
       val sequenceManagerConfigParser = new SequenceManagerConfigParser(configUtils)
       val testConfig                  = ConfigFactory.parseResources("invalidTestConfig.conf")
-      when(configUtils.getConfig(isLocal = true, Some(path), None)).thenReturn(Future.successful(testConfig))
+      when(configUtils.getConfig(inputFilePath = path, isLocal = true)).thenReturn(Future.successful(testConfig))
 
       intercept[InvalidInputData[Any]](
         sequenceManagerConfigParser.read(isLocal = true, configFilePath = path).awaitResult
@@ -66,7 +66,7 @@ class SequenceManagerConfigParserTest extends BaseTestSuite {
       val path                        = Paths.get("testConfig.conf")
       val sequenceManagerConfigParser = new SequenceManagerConfigParser(configUtils)
       val expectedException           = new RuntimeException("Failed to read config")
-      when(configUtils.getConfig(isLocal = true, Some(path), None)).thenReturn(Future.failed(expectedException))
+      when(configUtils.getConfig(inputFilePath = path, isLocal = true)).thenReturn(Future.failed(expectedException))
 
       val exception = intercept[RuntimeException](
         sequenceManagerConfigParser.read(isLocal = true, configFilePath = path).awaitResult
