@@ -10,6 +10,8 @@ import esw.commons.Timeouts
 import esw.commons.extensions.FutureEitherExt.FutureEitherOps
 import esw.commons.utils.location.EswLocationError.RegistrationListingFailed
 import esw.commons.utils.location.{EswLocationError, LocationServiceUtil}
+import esw.sm.api.SequenceManagerState
+import esw.sm.api.SequenceManagerState.{CleaningInProcess, ConfigurationInProcess, Idle}
 import esw.sm.api.actor.messages.ConfigureResponse.{ConfigurationFailure, ConflictingResourcesWithRunningObsMode}
 import esw.sm.api.actor.messages.SequenceManagerMsg._
 import esw.sm.api.actor.messages.{CleanupResponse, ConfigureResponse, GetRunningObsModesResponse, SequenceManagerMsg}
@@ -36,6 +38,7 @@ class SequenceManagerBehavior(
       case Configure(observingMode, replyTo) => configure(observingMode, ctx.self); configuring(replyTo);
       case GetRunningObsModes(replyTo)       => replyRunningObsMode(replyTo); Behaviors.same
       case Cleanup(observingMode, replyTo)   => cleanup(observingMode, ctx.self); cleaningUp(replyTo);
+      case GetSequenceManagerState(replyTo)  => replyTo ! Idle; Behaviors.same
       case _                                 => Behaviors.unhandled
     }
   }
@@ -50,19 +53,20 @@ class SequenceManagerBehavior(
         }
     )
 
-    self ! CleaningUp(response)
+    self ! CleanupDone(response)
   }
 
-  private def cleaningUp(replyTo: ActorRef[CleanupResponse]): Behavior[SequenceManagerMsg] = receive[CleaningUp] { msg =>
-    replyTo ! msg.res
-    idle()
-  }
-
-  private def configuring(replyTo: ActorRef[ConfigureResponse]): Behavior[SequenceManagerMsg] =
-    receive[Configuring] { msg =>
+  private def cleaningUp(replyTo: ActorRef[CleanupResponse]): Behavior[SequenceManagerMsg] =
+    receive[CleanupDone]({ msg =>
       replyTo ! msg.res
       idle()
-    }
+    }, CleaningInProcess)
+
+  private def configuring(replyTo: ActorRef[ConfigureResponse]): Behavior[SequenceManagerMsg] =
+    receive[ConfigurationDone]({ msg =>
+      replyTo ! msg.res
+      idle()
+    }, ConfigurationInProcess)
 
   private def configure(obsMode: String, self: ActorRef[SequenceManagerMsg]): Future[Unit] =
     async {
@@ -83,7 +87,7 @@ class SequenceManagerBehavior(
           })
       }
 
-      self ! Configuring(response)
+      self ! ConfigurationDone(response)
     }
 
   private def useOcsMaster(location: HttpLocation, obsMode: String): Future[ConfigureResponse] =
@@ -115,11 +119,13 @@ class SequenceManagerBehavior(
     }
 
   private def receive[T <: SequenceManagerMsg: ClassTag](
-      handler: T => Behavior[SequenceManagerMsg]
+      handler: T => Behavior[SequenceManagerMsg],
+      state: SequenceManagerState
   ): Behavior[SequenceManagerMsg] =
     Behaviors.receiveMessage {
-      case GetRunningObsModes(replyTo) => replyRunningObsMode(replyTo); Behaviors.same // common msg
-      case msg: T                      => handler(msg)
-      case _                           => Behaviors.unhandled
+      case GetRunningObsModes(replyTo)      => replyRunningObsMode(replyTo); Behaviors.same // common msg
+      case GetSequenceManagerState(replyTo) => replyTo ! state; Behaviors.same
+      case msg: T                           => handler(msg)
+      case _                                => Behaviors.unhandled
     }
 }
