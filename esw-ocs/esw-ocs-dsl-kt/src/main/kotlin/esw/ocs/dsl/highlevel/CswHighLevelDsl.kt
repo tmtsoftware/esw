@@ -11,6 +11,7 @@ import esw.ocs.dsl.highlevel.models.Assembly
 import esw.ocs.dsl.highlevel.models.HCD
 import esw.ocs.dsl.lowlevel.CswServices
 import esw.ocs.dsl.script.StrandEc
+import esw.ocs.dsl.script.utils.CommandUtil
 import esw.ocs.dsl.script.utils.LockUnlockUtil
 import esw.ocs.impl.script.ScriptContext
 import kotlinx.coroutines.CoroutineScope
@@ -78,6 +79,7 @@ abstract class CswHighLevelDsl(private val cswServices: CswServices, private val
     abstract override val coroutineScope: CoroutineScope
 
     private val locationServiceUtil: LocationServiceUtil by lazy { LocationServiceUtil(locationService.asScala(), actorSystem) }
+    private val commandUtil: CommandUtil by lazy { CommandUtil(locationServiceUtil, actorSystem) }
     private val lockUnlockUtil: LockUnlockUtil by lazy { LockUnlockUtil(scriptContext.prefix(), actorSystem) }
 
     private val alarmConfig = scriptContext.config().getConfig("csw-alarm")
@@ -85,7 +87,7 @@ abstract class CswHighLevelDsl(private val cswServices: CswServices, private val
 
     /******** Command Service helpers ********/
     private fun richComponent(prefix: Prefix, componentType: ComponentType, defaultTimeout: Duration): RichComponent =
-            RichComponent(prefix, componentType, lockUnlockUtil, locationServiceUtil, actorSystem, defaultTimeout, coroutineScope)
+            RichComponent(prefix, componentType, lockUnlockUtil, commandUtil, actorSystem, defaultTimeout, coroutineScope)
 
     private fun richSequencer(subsystem: Subsystem, observingMode: String, defaultTimeout: Duration): RichSequencer =
             RichSequencer(subsystem, observingMode, { s, o -> scriptContext.sequencerApiFactory().apply(s, o) }, defaultTimeout, coroutineScope)

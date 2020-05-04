@@ -229,9 +229,8 @@ class LocationServiceUtilTest extends ScalaTestWithActorTestKit with BaseTestSui
         .thenReturn(Future.successful(Some(akkaLocation)))
 
       val locationServiceDsl = new LocationServiceUtil(locationService)
-      locationServiceDsl.resolveSequencer(subsystem, observingMode).rightValue
+      locationServiceDsl.resolveSequencer(subsystem, observingMode).rightValue shouldBe akkaLocation
 
-      // how to test that sequencer Api factor is called? This test is not complete.
       verify(locationService).resolve(akkaConnection, Timeouts.DefaultTimeout)
     }
 
