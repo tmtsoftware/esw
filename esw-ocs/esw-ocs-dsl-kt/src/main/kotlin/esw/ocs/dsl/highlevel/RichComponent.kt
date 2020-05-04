@@ -23,6 +23,7 @@ import esw.ocs.dsl.SuspendableCallback
 import esw.ocs.dsl.SuspendableConsumer
 import esw.ocs.dsl.jdk.SuspendToJavaConverter
 import esw.ocs.dsl.onFailedTerminate
+import esw.ocs.dsl.script.utils.CommandUtil
 import esw.ocs.dsl.script.utils.LockUnlockUtil
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.future.await
@@ -35,7 +36,7 @@ class RichComponent(
         val prefix: Prefix,
         val componentType: ComponentType,
         private val lockUnlockUtil: LockUnlockUtil,
-        private val locationServiceUtil: LocationServiceUtil,
+        private val commandUtil: CommandUtil,
         private val actorSystem: ActorSystem<*>,
         private val defaultTimeout: Duration,
         override val coroutineScope: CoroutineScope
@@ -174,6 +175,6 @@ class RichComponent(
 
     private fun Duration.toTimeout(): Timeout = Timeout(toLongNanoseconds(), TimeUnit.NANOSECONDS)
 
-    private suspend fun commandService(): ICommandService = CommandServiceFactory.jMake(locationServiceUtil.jResolveAkkaLocation(prefix, componentType).await(), actorSystem)
-    private suspend fun componentRef(): ActorRef<ComponentMessage> = locationServiceUtil.jResolveComponentRef(prefix, componentType).await()
+    private suspend fun commandService(): ICommandService = CommandServiceFactory.jMake(commandUtil.jResolveAkkaLocation(prefix, componentType).await(), actorSystem)
+    private suspend fun componentRef(): ActorRef<ComponentMessage> = commandUtil.jResolveComponentRef(prefix, componentType).await()
 }

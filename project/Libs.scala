@@ -10,14 +10,14 @@ object Libs {
   val `silencer-lib`    = "com.github.ghik" % "silencer-lib"    % SilencerVersion cross CrossVersion.full
 
   val `case-app`           = "com.github.alexarchambault" %% "case-app" % "2.0.0-M16"
-  val enumeratum           = dep("com.beachape" %%% "enumeratum" % "1.5.15") //MIT License
-  val `mockito-scala`      = "org.mockito" %% "mockito-scala" % "1.13.11" // MIT License
+  val enumeratum           = dep("com.beachape" %%% "enumeratum" % "1.6.0") //MIT License
+  val `mockito-scala`      = "org.mockito" %% "mockito-scala" % "1.13.4" // MIT License
   val `scala-async`        = "org.scala-lang.modules" %% "scala-async" % "0.10.0" //BSD 3-clause "New" or "Revised" License
   val scalatest            = "org.scalatest" %% "scalatest" % "3.1.1" //Apache License 2.0
   val `scala-java8-compat` = "org.scala-lang.modules" %% "scala-java8-compat" % "0.9.1" //BSD 3-clause "New" or "Revised" License
   val `msocket-api`        = dep("com.github.tmtsoftware.msocket" %%% "msocket-api" % MSocketVersion)
   val `msocket-impl-jvm`   = "com.github.tmtsoftware.msocket" %% "msocket-impl" % MSocketVersion
-  val `caffeine`           = "com.github.ben-manes.caffeine" % "caffeine" % "2.8.1"
+  val `caffeine`           = "com.github.ben-manes.caffeine" % "caffeine" % "2.8.2"
   val `jupiter-interface`  = "net.aichler" % "jupiter-interface" % "0.8.3"
   val `tmt-test-reporter`  = "com.github.tmtsoftware" %% "rtm" % "47b635b289"
 

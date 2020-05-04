@@ -3,7 +3,7 @@ package esw.sm.impl.core
 import java.net.URI
 
 import akka.Done
-import akka.actor.testkit.typed.scaladsl.ScalaTestWithActorTestKit
+import akka.actor.testkit.typed.scaladsl.{ScalaTestWithActorTestKit, TestProbe}
 import akka.actor.typed.ActorRef
 import csw.location.api.models.ComponentType._
 import csw.location.api.models.Connection.{AkkaConnection, HttpConnection}
@@ -13,14 +13,16 @@ import csw.prefix.models.Subsystem.{ESW, TCS}
 import esw.commons.BaseTestSuite
 import esw.commons.utils.location.EswLocationError.{RegistrationListingFailed, ResolveLocationFailed}
 import esw.commons.utils.location.LocationServiceUtil
+import esw.sm.api.SequenceManagerState
+import esw.sm.api.SequenceManagerState.{CleaningInProcess, ConfigurationInProcess, Idle}
 import esw.sm.api.actor.messages.ConfigureResponse.{ConfigurationFailure, ConflictingResourcesWithRunningObsMode, Success}
-import esw.sm.api.actor.messages.SequenceManagerMsg.{Cleanup, Configure}
+import esw.sm.api.actor.messages.SequenceManagerMsg.{Cleanup, Configure, GetSequenceManagerState}
 import esw.sm.api.actor.messages.{CleanupResponse, ConfigureResponse, SequenceManagerMsg}
 import esw.sm.api.models.SequenceManagerError.SequencerNotIdle
 import esw.sm.api.models.{ObsModeConfig, Resources, Sequencers}
 import esw.sm.impl.utils.SequencerUtil
-
 import scala.concurrent.Future
+import scala.concurrent.duration.DurationLong
 
 class SequenceManagerBehaviorTest extends ScalaTestWithActorTestKit with BaseTestSuite {
 
@@ -44,7 +46,27 @@ class SequenceManagerBehaviorTest extends ScalaTestWithActorTestKit with BaseTes
   }
 
   "Configure" must {
-    //todo : test state transition of the SM Behavior
+
+    "transition sequence manager to ConfigurationInProcess state | ESW-178" in {
+      val httpLocation = HttpLocation(HttpConnection(ComponentId(Prefix(ESW, DARKNIGHT), Sequencer)), new URI("uri"))
+      when(locationServiceUtil.listAkkaLocationsBy(ESW, Sequencer)).thenReturn(future(1.seconds, Right(List.empty)))
+      when(sequencerUtil.startSequencers(DARKNIGHT, darknightSequencers)).thenReturn(Future.successful(Success(httpLocation)))
+      when(sequencerUtil.resolveMasterSequencerOf(DARKNIGHT)).thenReturn(Future.successful(Left(ResolveLocationFailed("error"))))
+      val configureProbe = createTestProbe[ConfigureResponse]
+
+      smRef ! Configure(DARKNIGHT, configureProbe.ref)
+
+      val stateProbe = TestProbe[SequenceManagerState]
+      eventually {
+        smRef ! GetSequenceManagerState(stateProbe.ref)
+        stateProbe.expectMessage(ConfigurationInProcess)
+      }
+      eventually {
+        smRef ! GetSequenceManagerState(stateProbe.ref)
+        stateProbe.expectMessage(Idle)
+      }
+    }
+
     "start sequence hierarchy and return master sequencer | ESW-178" in {
       val httpLocation = HttpLocation(HttpConnection(ComponentId(Prefix(ESW, DARKNIGHT), Sequencer)), new URI("uri"))
       when(locationServiceUtil.listAkkaLocationsBy(ESW, Sequencer)).thenReturn(Future.successful(Right(List.empty)))
@@ -122,6 +144,24 @@ class SequenceManagerBehaviorTest extends ScalaTestWithActorTestKit with BaseTes
   }
 
   "Cleanup" must {
+
+    "transition sequence manager to CleaningInProcess state | ESW-166" in {
+      when(sequencerUtil.stopSequencers(darknightSequencers, DARKNIGHT)).thenReturn(future(1.seconds, Right(Done)))
+
+      val cleanupProbe = createTestProbe[CleanupResponse]
+      smRef ! Cleanup(DARKNIGHT, cleanupProbe.ref)
+
+      val stateProbe = TestProbe[SequenceManagerState]
+      eventually {
+        smRef ! GetSequenceManagerState(stateProbe.ref)
+        stateProbe.expectMessage(CleaningInProcess)
+      }
+      eventually {
+        smRef ! GetSequenceManagerState(stateProbe.ref)
+        stateProbe.expectMessage(Idle)
+      }
+    }
+
     "stop all the sequencers of the given observation mode | ESW-166" in {
       when(sequencerUtil.stopSequencers(darknightSequencers, DARKNIGHT)).thenReturn(Future.successful(Right(Done)))
 

@@ -226,8 +226,7 @@ object Dependencies {
 
   val EswCommons: Def.Initialize[Seq[ModuleID]] = Def.setting(
     Seq(
-      Csw.`csw-location-api`          % Provided,
-      Csw.`csw-command-client`        % Provided,
+      Csw.`csw-location-api`,
       Akka.`akka-stream-typed`        % Provided,
       Akka.`akka-actor-testkit-typed` % Test,
       Libs.`mockito-scala`            % Test,

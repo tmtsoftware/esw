@@ -85,7 +85,8 @@ class SequencerUtil(locationServiceUtil: LocationServiceUtil, sequenceComponentU
 
   // Created in order to mock the behavior of sequencer API availability for unit test
   private[sm] def createSequencerClient(location: Location): SequencerApi = SequencerApiFactory.make(location)
-  private def resolveSequencer(obsMode: String, subsystem: Subsystem)     = locationServiceUtil.resolveSequencer(subsystem, obsMode)
+  private def resolveSequencer(obsMode: String, subsystem: Subsystem) =
+    locationServiceUtil.resolveSequencer(subsystem, obsMode).mapRight(createSequencerClient)
   private def resolveAndCheckAvailability(obsMode: String, subsystem: Subsystem): Future[Either[EswLocationError, Boolean]] =
     resolveSequencer(obsMode, subsystem).flatMapRight(_.isAvailable)
 
