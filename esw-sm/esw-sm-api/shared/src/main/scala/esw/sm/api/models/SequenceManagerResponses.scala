@@ -1,8 +1,9 @@
-package esw.sm.api.actor.messages
+package esw.sm.api.models
 
 import csw.location.api.models.HttpLocation
+import esw.sm.api.codecs.SmAkkaSerializable
 
-sealed trait ConfigureResponse
+sealed trait ConfigureResponse extends SmAkkaSerializable
 
 object ConfigureResponse {
   case class Success(sequencerLocation: HttpLocation) extends ConfigureResponse
@@ -13,14 +14,14 @@ object ConfigureResponse {
   case class ConfigurationFailure(msg: String)             extends Failure
 }
 
-sealed trait GetRunningObsModesResponse
+sealed trait GetRunningObsModesResponse extends SmAkkaSerializable
 
 object GetRunningObsModesResponse {
   case class Success(runningObsModes: Set[String]) extends GetRunningObsModesResponse
   case class Failed(msg: String)                   extends GetRunningObsModesResponse
 }
 
-sealed trait CleanupResponse
+sealed trait CleanupResponse extends SmAkkaSerializable
 
 object CleanupResponse {
   case object Success            extends CleanupResponse

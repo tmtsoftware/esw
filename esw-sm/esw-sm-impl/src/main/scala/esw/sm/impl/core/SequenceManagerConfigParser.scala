@@ -17,8 +17,8 @@ class SequenceManagerConfigParser(configUtils: ConfigUtils)(implicit ec: Executi
     configUtils.getConfig(configFilePath, isLocal).map(parseConfig)
 
   private def parseConfig(config: Config): SequenceManagerConfig = {
-    val str = config.getConfig(ObsModesKey).root().render(ConfigRenderOptions.concise())
+    val configStr = config.getConfig(ObsModesKey).root().render(ConfigRenderOptions.concise())
 
-    Json.decode(str.getBytes).to[SequenceManagerConfig].value
+    Json.decode(configStr.getBytes).to[SequenceManagerConfig].value
   }
 }

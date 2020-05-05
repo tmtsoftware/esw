@@ -16,7 +16,7 @@ import esw.commons.{BaseTestSuite, Timeouts}
 import esw.ocs.api.SequencerApi
 import esw.ocs.api.actor.client.SequenceComponentImpl
 import esw.ocs.api.protocol.{ScriptError, ScriptResponse}
-import esw.sm.api.actor.messages.ConfigureResponse.{FailedToStartSequencers, Success}
+import esw.sm.api.models.ConfigureResponse.{FailedToStartSequencers, Success}
 import esw.sm.api.models.SequenceManagerError.{SequencerNotIdle, SpawnSequenceComponentFailed}
 import esw.sm.api.models.Sequencers
 

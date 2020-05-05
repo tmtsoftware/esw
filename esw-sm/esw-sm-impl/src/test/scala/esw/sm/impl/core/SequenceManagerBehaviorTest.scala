@@ -15,12 +15,13 @@ import esw.commons.utils.location.EswLocationError.{RegistrationListingFailed, R
 import esw.commons.utils.location.LocationServiceUtil
 import esw.sm.api.SequenceManagerState
 import esw.sm.api.SequenceManagerState.{CleaningInProcess, ConfigurationInProcess, Idle}
-import esw.sm.api.actor.messages.ConfigureResponse.{ConfigurationFailure, ConflictingResourcesWithRunningObsMode, Success}
+import esw.sm.api.models.ConfigureResponse.{ConfigurationFailure, ConflictingResourcesWithRunningObsMode, Success}
 import esw.sm.api.actor.messages.SequenceManagerMsg.{Cleanup, Configure, GetSequenceManagerState}
-import esw.sm.api.actor.messages.{CleanupResponse, ConfigureResponse, SequenceManagerMsg}
+import esw.sm.api.actor.messages.SequenceManagerMsg
 import esw.sm.api.models.SequenceManagerError.SequencerNotIdle
-import esw.sm.api.models.{ObsModeConfig, Resources, Sequencers}
+import esw.sm.api.models.{CleanupResponse, ConfigureResponse, ObsModeConfig, Resources, Sequencers}
 import esw.sm.impl.utils.SequencerUtil
+
 import scala.concurrent.Future
 import scala.concurrent.duration.DurationLong
 
