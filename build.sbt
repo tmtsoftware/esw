@@ -228,7 +228,7 @@ lazy val `esw-sm-api` = crossProject(JSPlatform, JVMPlatform)
   .crossType(CrossType.Full)
   .in(file("esw-sm/esw-sm-api"))
   .jvmConfigure(
-    _.enablePlugins(PublishBintray)
+    _.enablePlugins(MaybeCoverage, PublishBintray)
       settings (libraryDependencies ++= Dependencies.SmApiJvm.value)
   )
   //  the following setting is required by IntelliJ which could not handle cross-compiled Akka types
@@ -240,6 +240,7 @@ lazy val `esw-sm-api` = crossProject(JSPlatform, JVMPlatform)
 
 lazy val `esw-sm-impl` = project
   .in(file("esw-sm/esw-sm-impl"))
+  .enablePlugins(MaybeCoverage, PublishBintray)
   .settings(libraryDependencies ++= Dependencies.EswSmImpl.value)
   .dependsOn(`esw-sm-api`.jvm, `esw-ocs-api`.jvm, `esw-agent-client`, `esw-commons` % "compile->compile;test->test")
 
