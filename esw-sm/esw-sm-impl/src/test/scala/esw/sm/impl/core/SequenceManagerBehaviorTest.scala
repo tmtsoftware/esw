@@ -57,15 +57,8 @@ class SequenceManagerBehaviorTest extends ScalaTestWithActorTestKit with BaseTes
 
       smRef ! Configure(DARKNIGHT, configureProbe.ref)
 
-      val stateProbe = TestProbe[SequenceManagerState]
-      eventually {
-        smRef ! GetSequenceManagerState(stateProbe.ref)
-        stateProbe.expectMessage(ConfigurationInProcess)
-      }
-      eventually {
-        smRef ! GetSequenceManagerState(stateProbe.ref)
-        stateProbe.expectMessage(Idle)
-      }
+      assertState(ConfigurationInProcess)
+      assertState(Idle)
     }
 
     "start sequence hierarchy and return master sequencer | ESW-178" in {
@@ -152,15 +145,8 @@ class SequenceManagerBehaviorTest extends ScalaTestWithActorTestKit with BaseTes
       val cleanupProbe = createTestProbe[CleanupResponse]
       smRef ! Cleanup(DARKNIGHT, cleanupProbe.ref)
 
-      val stateProbe = TestProbe[SequenceManagerState]
-      eventually {
-        smRef ! GetSequenceManagerState(stateProbe.ref)
-        stateProbe.expectMessage(CleaningInProcess)
-      }
-      eventually {
-        smRef ! GetSequenceManagerState(stateProbe.ref)
-        stateProbe.expectMessage(Idle)
-      }
+      assertState(CleaningInProcess)
+      assertState(Idle)
     }
 
     "stop all the sequencers of the given observation mode | ESW-166" in {
@@ -183,6 +169,14 @@ class SequenceManagerBehaviorTest extends ScalaTestWithActorTestKit with BaseTes
 
       probe.expectMessage(CleanupResponse.Failed(failureMsg))
       verify(sequencerUtil).stopSequencers(darknightSequencers, DARKNIGHT)
+    }
+  }
+
+  private def assertState(state: SequenceManagerState) = {
+    val stateProbe = TestProbe[SequenceManagerState]
+    eventually {
+      smRef ! GetSequenceManagerState(stateProbe.ref)
+      stateProbe.expectMessage(state)
     }
   }
 }
