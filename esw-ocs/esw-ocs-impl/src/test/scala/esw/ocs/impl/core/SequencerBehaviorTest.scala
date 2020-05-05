@@ -55,7 +55,7 @@ class SequencerBehaviorTest extends ScalaTestWithActorTestKit with BaseTestSuite
   }
 
   "StartSequence" must {
-    "start executing a sequence when sequencer is loaded | ESW-145, ESW-154, ESW-303" in {
+    "start executing a sequence when sequencer is loaded after successful completion of new sequence handler| ESW-145, ESW-154, ESW-303" in {
       val sequencerSetup = SequencerTestSetup.loaded(sequence)
       import sequencerSetup._
 
@@ -66,11 +66,28 @@ class SequencerBehaviorTest extends ScalaTestWithActorTestKit with BaseTestSuite
       pullAllStepsAndAssertSequenceIsFinished()
       val sequenceResult = probe.expectMessageType[SubmitResult]
       sequenceResult.submitResponse shouldBe a[Started]
+
+      verify(script).executeNewSequenceHandler()
+    }
+
+    "not start executing a sequence when sequencer is loaded and new sequence handler failed| ESW-303" in {
+      val sequencerSetup = SequencerTestSetup.loaded(sequence)
+      import sequencerSetup._
+
+      when { script.executeNewSequenceHandler() }.thenAnswer { Future.failed(new RuntimeException) }
+
+      val probe = createTestProbe[SequencerSubmitResponse]
+      sequencerActor ! StartSequence(probe.ref)
+      assertSequenceNotStarted()
+      val res = probe.expectMessageType[SequencerSubmitResponse]
+      res should ===(NewSequenceHookFailed())
+
+      verify(script).executeNewSequenceHandler()
     }
   }
 
   "SubmitSequence" must {
-    "load and start executing a sequence | ESW-145, ESW-154, ESW-221, ESW-303" in {
+    "load and start executing a sequence after successful completion of new sequence handler| ESW-145, ESW-154, ESW-221, ESW-303" in {
       val sequencerSetup = SequencerTestSetup.idle(sequence)
       import sequencerSetup._
 
@@ -82,6 +99,21 @@ class SequencerBehaviorTest extends ScalaTestWithActorTestKit with BaseTestSuite
       pullAllStepsAndAssertSequenceIsFinished()
       val sequenceResult = probe.expectMessageType[SubmitResult]
       sequenceResult.submitResponse shouldBe a[Started]
+
+      verify(script).executeNewSequenceHandler()
+    }
+
+    "not load and start executing a sequence if new sequence handler fails| ESW-303" in {
+      val sequencerSetup = SequencerTestSetup.idle(sequence)
+      import sequencerSetup._
+
+      when { script.executeNewSequenceHandler() }.thenAnswer { Future.failed(new RuntimeException) }
+
+      val probe = createTestProbe[SequencerSubmitResponse]
+      sequencerActor ! SubmitSequenceInternal(sequence, probe.ref)
+
+      assertSequenceNotStartedAndLoaded()
+      probe.expectMessageType[NewSequenceHookFailed]
 
       verify(script).executeNewSequenceHandler()
     }
