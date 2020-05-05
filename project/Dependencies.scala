@@ -224,6 +224,16 @@ object Dependencies {
     )
   )
 
+  val EswSmApp: Def.Initialize[Seq[ModuleID]] = Def.setting(
+    Seq(
+      Libs.`msocket-impl-jvm`,
+      Libs.scalatest                  % Test,
+      Libs.`mockito-scala`            % Test,
+      Libs.`tmt-test-reporter`        % Test,
+      Akka.`akka-actor-testkit-typed` % Test
+    )
+  )
+
   val EswCommons: Def.Initialize[Seq[ModuleID]] = Def.setting(
     Seq(
       Csw.`csw-location-api`,

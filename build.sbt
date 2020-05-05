@@ -15,7 +15,7 @@ lazy val aggregateProjects: Seq[ProjectReference] =
     `esw-sm`
   )
 
-lazy val githubReleases: Seq[ProjectReference] = Seq(`esw-ocs-app`, `esw-gateway-server`)
+lazy val githubReleases: Seq[ProjectReference] = Seq(`esw-ocs-app`, `esw-gateway-server`, `esw-sm-app`)
 lazy val unidocExclusions: Seq[ProjectReference] = Seq(
   `esw-integration-test`,
   `esw-ocs-api`.js,
@@ -221,7 +221,8 @@ lazy val `esw-sm` = project
   .aggregate(
     `esw-sm-api`.js,
     `esw-sm-api`.jvm,
-    `esw-sm-impl`
+    `esw-sm-impl`,
+    `esw-sm-app`
   )
 
 lazy val `esw-sm-api` = crossProject(JSPlatform, JVMPlatform)
@@ -243,6 +244,17 @@ lazy val `esw-sm-impl` = project
   .enablePlugins(MaybeCoverage, PublishBintray)
   .settings(libraryDependencies ++= Dependencies.EswSmImpl.value)
   .dependsOn(`esw-sm-api`.jvm, `esw-ocs-api`.jvm, `esw-agent-client`, `esw-commons` % "compile->compile;test->test")
+
+lazy val `esw-sm-app` = project
+  .in(file("esw-sm/esw-sm-app"))
+  .enablePlugins(EswBuildInfo, DeployApp)
+  .settings(
+    libraryDependencies ++= Dependencies.EswSmApp.value
+  )
+  .dependsOn(
+    `esw-sm-impl`   % "compile->compile;test->test",
+    `esw-http-core` % "compile->compile;test->test"
+  )
 
 lazy val `esw-commons` = project
   .in(file("esw-commons"))

@@ -35,7 +35,7 @@ import esw.ocs.impl.blockhound.BlockHoundWiring
 import esw.ocs.impl.core._
 import esw.ocs.impl.internal._
 import esw.ocs.impl.script.{ScriptApi, ScriptContext, ScriptLoader}
-import esw.ocs.impl.syntax.FutureSyntax.FutureUtil
+import esw.commons.utils.FutureUtils._
 import msocket.api.ContentType
 import msocket.impl.RouteFactory
 import msocket.impl.post.PostRouteFactory
