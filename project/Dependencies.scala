@@ -226,7 +226,6 @@ object Dependencies {
 
   val EswSmApp: Def.Initialize[Seq[ModuleID]] = Def.setting(
     Seq(
-      Libs.`msocket-impl-jvm`,
       Libs.scalatest                  % Test,
       Libs.`mockito-scala`            % Test,
       Libs.`tmt-test-reporter`        % Test,

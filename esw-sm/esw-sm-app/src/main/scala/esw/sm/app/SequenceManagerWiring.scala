@@ -8,7 +8,6 @@ import akka.actor.typed.{ActorRef, ActorSystem, Props, SpawnProtocol}
 import akka.util.Timeout
 import csw.location.client.ActorSystemFactory
 import esw.commons.Timeouts
-import esw.commons.utils.FutureUtils._
 import esw.commons.utils.location.LocationServiceUtil
 import esw.http.core.wiring.CswWiring
 import esw.sm.api.actor.client.SequenceManagerImpl
@@ -37,9 +36,12 @@ class SequenceManagerWiring {
   lazy val sequenceManagerBehavior =
     new SequenceManagerBehavior(config, locationServiceUtil, sequencerUtil)(actorSystem)
 
-  lazy val sequenceManagerRef: ActorRef[SequenceManagerMsg] = (actorSystem ? { x: ActorRef[ActorRef[SequenceManagerMsg]] =>
-    Spawn(sequenceManagerBehavior.init(), "sequence-manager", Props.empty, x)
-  }).block
+  lazy val sequenceManagerRef: ActorRef[SequenceManagerMsg] = Await.result(
+    actorSystem ? { x: ActorRef[ActorRef[SequenceManagerMsg]] =>
+      Spawn(sequenceManagerBehavior.init(), "sequence-manager", Props.empty, x)
+    },
+    Timeouts.DefaultTimeout
+  )
 
   def start: SequenceManagerImpl = new SequenceManagerImpl(sequenceManagerRef)
 }
