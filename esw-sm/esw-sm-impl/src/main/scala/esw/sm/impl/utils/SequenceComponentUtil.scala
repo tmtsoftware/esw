@@ -52,6 +52,7 @@ class SequenceComponentUtil(locationServiceUtil: LocationServiceUtil, agentUtil:
   private[sm] def idleSequenceComponent(sequenceComponentLocation: AkkaLocation): Future[Option[SequenceComponentApi]] = async {
     val sequenceComponentApi = new SequenceComponentImpl(sequenceComponentLocation)
     val status               = await(sequenceComponentApi.status)
-    status.response.map(_ => sequenceComponentApi)
+    val isBusyRunningSequencer = status.response.isDefined
+    if (isBusyRunningSequencer) None else Some(sequenceComponentApi)
   }
 }

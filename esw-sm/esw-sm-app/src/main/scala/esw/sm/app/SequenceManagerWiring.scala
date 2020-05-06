@@ -1,6 +1,6 @@
 package esw.sm.app
 
-import java.nio.file.Paths
+import java.nio.file.{Path, Paths}
 
 import akka.actor.typed.SpawnProtocol.Spawn
 import akka.actor.typed.scaladsl.AskPattern._
@@ -17,7 +17,7 @@ import esw.sm.impl.utils.{AgentUtil, SequenceComponentUtil, SequencerUtil}
 
 import scala.concurrent.Await
 
-class SequenceManagerWiring {
+class SequenceManagerWiring(configPath: Path) {
   private lazy val actorSystem: ActorSystem[SpawnProtocol.Command] =
     ActorSystemFactory.remote(SpawnProtocol(), "sequencer-manager-system")
   private lazy val cswWiring: CswWiring      = new CswWiring(actorSystem)
@@ -30,7 +30,7 @@ class SequenceManagerWiring {
   private val sequenceComponentUtil            = new SequenceComponentUtil(locationServiceUtil, agentUtil)
   private val sequencerUtil                    = new SequencerUtil(locationServiceUtil, sequenceComponentUtil)
   private lazy val sequenceManagerConfigParser = new SequenceManagerConfigParser(configUtils)
-  private lazy val eventualConfig              = sequenceManagerConfigParser.read(Paths.get("testConfig.conf"), isLocal = true)
+  private lazy val eventualConfig              = sequenceManagerConfigParser.read(configPath, isLocal = true)
   private lazy val config                      = Await.result(eventualConfig, Timeouts.DefaultTimeout).obsModes
 
   lazy val sequenceManagerBehavior =
