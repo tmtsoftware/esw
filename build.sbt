@@ -153,6 +153,7 @@ lazy val `esw-integration-test` = project
     `esw-ocs-app`,
     `esw-agent-app`,
     `esw-agent-client`,
+    `esw-sm-app`,
     `esw-commons` % "test->test"
   )
 
@@ -252,8 +253,8 @@ lazy val `esw-sm-app` = project
     libraryDependencies ++= Dependencies.EswSmApp.value
   )
   .dependsOn(
-    `esw-sm-impl`   % "compile->compile;test->test",
-    `esw-http-core` % "compile->compile;test->test"
+    `esw-sm-impl`,
+    `esw-http-core`
   )
 
 lazy val `esw-commons` = project

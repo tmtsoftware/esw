@@ -4,21 +4,21 @@ import akka.actor.typed.ActorRef
 import akka.actor.typed.scaladsl.AskPattern._
 import caseapp.RemainingArgs
 import csw.location.api.extensions.URIExtension.RichURI
-import csw.location.client.utils.LocationServerStatus
 import csw.location.api.models.AkkaLocation
+import csw.location.client.utils.LocationServerStatus
 import csw.logging.api.scaladsl.Logger
 import csw.logging.client.scaladsl.GenericLoggerFactory
 import csw.prefix.models.Subsystem
+import esw.commons.Timeouts
 import esw.http.core.commons.CoordinatedShutdownReasons.FailureReason
 import esw.http.core.commons.EswCommandApp
 import esw.ocs.api.actor.messages.SequenceComponentMsg
+import esw.ocs.api.actor.messages.SequenceComponentMsg.LoadScript
 import esw.ocs.api.protocol.{ScriptError, ScriptResponse}
 import esw.ocs.app.SequencerAppCommand._
 import esw.ocs.app.wiring.{SequenceComponentWiring, SequencerWiring}
-import esw.ocs.api.actor.messages.SequenceComponentMsg.LoadScript
-import esw.commons.utils.FutureUtils._
 
-import scala.concurrent.Future
+import scala.concurrent.{Await, Future}
 import scala.util.control.NonFatal
 
 object SequencerApp extends EswCommandApp[SequencerAppCommand] {
@@ -48,7 +48,7 @@ object SequencerApp extends EswCommandApp[SequencerAppCommand] {
     }
     catch {
       case NonFatal(e) =>
-        shutdown(FailureReason(e)).block
+        Await.result(shutdown(FailureReason(e)), Timeouts.DefaultTimeout)
         throw e
     }
   }
@@ -63,7 +63,8 @@ object SequencerApp extends EswCommandApp[SequencerAppCommand] {
     import actorRuntime._
     val actorRef: ActorRef[SequenceComponentMsg] = sequenceComponentLocation.uri.toActorRef.unsafeUpcast[SequenceComponentMsg]
     val response: Future[ScriptResponse]         = actorRef ? (LoadScript(subsystem, mode, _))
-    response.map(_.response).block
+
+    Await.result(response.map(_.response), Timeouts.DefaultTimeout)
   }
 
   private def report(appResult: Either[ScriptError, AkkaLocation]) = appResult match {
