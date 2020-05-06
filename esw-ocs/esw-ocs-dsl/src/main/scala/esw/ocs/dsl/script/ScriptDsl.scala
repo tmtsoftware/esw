@@ -109,8 +109,9 @@ private[esw] class ScriptDsl(
 
   override final def shutdownScript(): Unit = shutdownTask.run()
 
-  protected final def nextIf(f: SequenceCommand => Boolean): CompletionStage[Optional[SequenceCommand]] =
-    async {
+  protected final def nextIf(f: SequenceCommand => Boolean): CompletionStage[Optional[SequenceCommand]] = {
+    // todo : inline the variable whenever the async nullary warning issue is fixed
+    val future: Future[Optional[SequenceCommand]] = async {
       val operator  = sequenceOperatorFactory()
       val mayBeNext = await(operator.maybeNext)
       mayBeNext match {
@@ -121,7 +122,9 @@ private[esw] class ScriptDsl(
           }
         case _ => Optional.empty[SequenceCommand]
       }
-    }.toJava
+    }
+    future.toJava
+  }
 
   protected final def onSetupCommand(name: String)(handler: CommandHandler[Setup]): Unit =
     setupCommandHandler.add(CommandName(name), handler.execute)

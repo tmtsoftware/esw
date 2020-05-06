@@ -1,4 +1,3 @@
-import Libs.{`silencer-lib`, `silencer-plugin`}
 import com.typesafe.sbt.site.SitePlugin.autoImport.siteDirectory
 import org.scalafmt.sbt.ScalafmtPlugin.autoImport.scalafmtOnCompile
 import org.tmt.sbt.docs.DocKeys._
@@ -12,8 +11,7 @@ object Common extends AutoPlugin {
 
   // enable these values to be accessible to get and set in sbt console
   object autoImport {
-    val suppressAnnotatedWarnings: SettingKey[Boolean] = settingKey[Boolean]("enable annotation based suppression of warnings")
-    val enableFatalWarnings: SettingKey[Boolean]       = settingKey[Boolean]("enable fatal warnings")
+    val enableFatalWarnings: SettingKey[Boolean] = settingKey[Boolean]("enable fatal warnings")
   }
 
   override def trigger = allRequirements
@@ -40,7 +38,6 @@ object Common extends AutoPlugin {
     resolvers += Resolver.mavenLocal, // required to resolve kotlin `examples` deps published locally
     autoCompilerPlugins := true,
     enableFatalWarnings := false,
-    suppressAnnotatedWarnings := true,
     scalacOptions ++= Seq(
       "-encoding",
       "UTF-8",
@@ -50,12 +47,9 @@ object Common extends AutoPlugin {
       if (enableFatalWarnings.value) "-Xfatal-warnings" else "",
       "-Xlint:_,-missing-interpolator",
       "-Ywarn-dead-code"
-//      if (suppressAnnotatedWarnings.value) s"-P:silencer:sourceRoots=${baseDirectory.value.getCanonicalPath}" else ""
       //      "-Xfuture"
       //      "-Xprint:typer"
     ),
-    libraryDependencies ++= Seq(`silencer-lib`),
-    libraryDependencies ++= (if (suppressAnnotatedWarnings.value) Seq(compilerPlugin(`silencer-plugin`)) else Seq.empty),
     licenses := Seq(("Apache-2.0", url("http://www.apache.org/licenses/LICENSE-2.0")))
   )
 

@@ -112,7 +112,7 @@ private[ocs] class SequencerWiring(
   private lazy val settings    = new Settings(Some(SocketUtils.getFreePort), Some(prefix), config, ComponentType.Sequencer)
   private lazy val httpService = new HttpService(logger, locationService, routes, settings, actorRuntime)
 
-  private val shutdownHttpService = () =>
+  private val shutdownHttpService: () => Future[Done] = () =>
     async {
       logger.debug("Shutting down Sequencer http service")
       val (serverBinding, registrationResult) = await(httpService.registeredLazyBinding)
