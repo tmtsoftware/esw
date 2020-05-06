@@ -1,6 +1,6 @@
 package esw.sm.app
 
-import java.nio.file.{Path, Paths}
+import java.nio.file.Path
 
 import akka.actor.typed.SpawnProtocol.Spawn
 import akka.actor.typed.scaladsl.AskPattern._

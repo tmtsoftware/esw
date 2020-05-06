@@ -45,7 +45,8 @@ object SequencerApp extends EswCommandApp[SequencerAppCommand] {
         case Sequencer(seqCompSubsystem, _, seqSubsystem, mode) =>
           report(loadAndStartSequencer(seqSubsystem.getOrElse(seqCompSubsystem), mode, sequenceCompLocation, wiring))
       }
-    } catch {
+    }
+    catch {
       case NonFatal(e) =>
         Await.result(shutdown(FailureReason(e)), Timeouts.DefaultTimeout)
         throw e
