@@ -30,6 +30,8 @@ class TestAppender(callback: Any => Unit) extends LogAppenderBuilder {
 }
 
 class LoggingGatewayTest extends EswTestKit(Gateway) with GatewayCodecs {
+  import gatewayTestKit.{gatewayPostClient, gatewayWiring}
+
   private val logBuffer: mutable.Buffer[JsObject] = mutable.Buffer.empty[JsObject]
   private val testAppender = new TestAppender(x => {
     logBuffer += Json.parse(x.toString).as[JsObject]

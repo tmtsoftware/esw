@@ -23,6 +23,7 @@ import scala.concurrent.Future
 
 class CommandGatewayTest extends EswTestKit(EventServer, Gateway) with GatewayCodecs {
 
+  import gatewayTestKit.{gatewayPostClient, gatewayWsClient}
   override def beforeAll(): Unit = {
     super.beforeAll()
     frameworkTestKit.spawnStandalone(ConfigFactory.load("standaloneAssembly.conf"))
