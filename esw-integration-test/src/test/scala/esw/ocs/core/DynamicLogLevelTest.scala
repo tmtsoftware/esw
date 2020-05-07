@@ -17,7 +17,7 @@ class DynamicLogLevelTest extends EswTestKit(Gateway) with LoggingCodecs with Ga
   override def beforeAll(): Unit = {
     super.beforeAll()
     LoggingSystemFactory.start("logging", "version", "localhost", actorSystem)
-    sequencerLocation = spawnSequencer(ESW, "darknight").rightValue
+    sequencerLocation = spawnSequencer(ESW, "darknight")
   }
 
   "get/set log level for sequencer dynamically using gateway | ESW-183" in {
