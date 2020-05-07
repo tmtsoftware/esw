@@ -11,8 +11,6 @@ import com.typesafe.config.ConfigFactory
 import csw.aas.http.SecurityDirectives
 import csw.location.api.models.{ComponentType, HttpLocation}
 import csw.location.api.scaladsl.LocationService
-import csw.location.client.ActorSystemFactory
-import csw.location.client.scaladsl.HttpLocationServiceFactory
 import csw.network.utils.SocketUtils
 import csw.prefix.models.Prefix
 import esw.gateway.api.codecs.GatewayCodecs
@@ -77,11 +75,4 @@ class GatewayTestKit(val locationService: LocationService)(implicit system: Acto
     if (gatewayBinding.nonEmpty)
       gatewayWiring.httpService.shutdown(UnknownReason).futureValue
 
-}
-
-object GatewayTestKit {
-  def apply(
-      system: ActorSystem[SpawnProtocol.Command] = ActorSystemFactory.remote(SpawnProtocol(), "gateway-testkit")
-  ): GatewayTestKit =
-    new GatewayTestKit(HttpLocationServiceFactory.makeLocalClient(system))(system)
 }
