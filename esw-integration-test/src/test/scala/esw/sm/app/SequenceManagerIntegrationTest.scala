@@ -29,7 +29,7 @@ class SequenceManagerIntegrationTest extends EswTestKit {
     val sequenceManager: SequenceManagerApi = wiring.start
 
     // Configure for observing mode
-    val configureResponse = Await.result(sequenceManager.configure(obsMode), 10.seconds)
+    val configureResponse = sequenceManager.configure(obsMode).futureValue
 
     // assert for Successful Configuration
     configureResponse shouldBe a[ConfigureResponse.Success]
@@ -56,13 +56,13 @@ class SequenceManagerIntegrationTest extends EswTestKit {
     val sequenceManager: SequenceManagerApi = wiring.start
 
     // Configure for observing mode
-    val configureResponse = Await.result(sequenceManager.configure(obsMode), 10.seconds)
+    val configureResponse = sequenceManager.configure(obsMode).futureValue
 
     // assert for Successful Configuration
     configureResponse shouldBe a[ConfigureResponse.Success]
 
     // Cleanup for observing mode
-    val cleanupResponse = Await.result(sequenceManager.cleanup(obsMode), 10.seconds)
+    val cleanupResponse = sequenceManager.cleanup(obsMode).futureValue
 
     // assert for Successful Cleanup
     cleanupResponse shouldBe CleanupResponse.Success
