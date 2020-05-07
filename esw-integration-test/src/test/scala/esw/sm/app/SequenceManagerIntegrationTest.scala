@@ -10,8 +10,7 @@ import esw.ocs.testkit.EswTestKit
 import esw.sm.api.SequenceManagerApi
 import esw.sm.api.models.{CleanupResponse, ConfigureResponse}
 
-import scala.concurrent.Await
-import scala.concurrent.duration.DurationInt
+import scala.concurrent.Future
 
 class SequenceManagerIntegrationTest extends EswTestKit {
 
@@ -68,9 +67,20 @@ class SequenceManagerIntegrationTest extends EswTestKit {
     cleanupResponse shouldBe CleanupResponse.Success
 
     // ESW-166 (verify all sequencers are stopped for the observing mode)
-    intercept[Exception](resolveSequencerLocation(Prefix(ESW, obsMode)))
-    intercept[Exception](resolveSequencerLocation(Prefix(IRIS, obsMode)))
-    intercept[Exception](resolveSequencerLocation(Prefix(AOESW, obsMode)))
+    val eswEventualLocation = Future {
+      resolveSequencerLocation(Prefix(ESW, obsMode))
+    }
+    val irisEventualLocation = Future {
+      resolveSequencerLocation(Prefix(IRIS, obsMode))
+    }
+    val aoeswEventualLocation = Future {
+      resolveSequencerLocation(Prefix(AOESW, obsMode))
+    }
+    Future
+      .traverse(List(eswEventualLocation, irisEventualLocation, aoeswEventualLocation)) { x =>
+        Future.successful(intercept[Exception](x.awaitResult))
+      }
+      .awaitResult
   }
 
   object TestSetup {
