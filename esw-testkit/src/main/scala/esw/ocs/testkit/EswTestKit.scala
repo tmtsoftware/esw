@@ -23,7 +23,6 @@ import csw.params.events.{Event, EventKey, SystemEvent}
 import csw.prefix.models.{Prefix, Subsystem}
 import csw.testkit.scaladsl.ScalaTestFrameworkTestKit
 import esw.agent.app.{AgentApp, AgentSettings, AgentWiring}
-import esw.commons.BaseTestSuite
 import esw.gateway.api.codecs.GatewayCodecs
 import esw.gateway.api.protocol.{PostRequest, WebsocketRequest}
 import esw.gateway.server.GatewayWiring
@@ -32,8 +31,9 @@ import esw.ocs.api.actor.client.{SequenceComponentImpl, SequencerApiFactory, Seq
 import esw.ocs.api.actor.messages.SequenceComponentMsg
 import esw.ocs.api.protocol.ScriptError
 import esw.ocs.app.wiring.{SequenceComponentWiring, SequencerWiring}
-import esw.ocs.simulation.SimulationSequencerWiring
-import esw.ocs.testkit.Service.{Gateway, MachineAgent}
+import esw.ocs.testkit.simulation.SimulationSequencerWiring
+import Service.{Gateway, MachineAgent}
+import esw.ocs.testkit.utils.BaseTestSuite
 import msocket.api.ContentType
 import msocket.impl.post.HttpPostTransport
 import msocket.impl.ws.WebsocketTransport

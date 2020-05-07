@@ -1,4 +1,4 @@
-package esw.ocs.simulation
+package esw.ocs.testkit.simulation
 
 import akka.Done
 import csw.params.commands.SequenceCommand

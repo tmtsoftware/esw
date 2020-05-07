@@ -12,7 +12,8 @@ lazy val aggregateProjects: Seq[ProjectReference] =
     `esw-contract`,
     examples,
     `esw-commons`,
-    `esw-sm`
+    `esw-sm`,
+    `esw-testkit`
   )
 
 lazy val githubReleases: Seq[ProjectReference] = Seq(`esw-ocs-app`, `esw-gateway-server`, `esw-sm-app`)
@@ -154,6 +155,7 @@ lazy val `esw-integration-test` = project
     `esw-agent-app`,
     `esw-agent-client`,
     `esw-sm-app`,
+    `esw-testkit`,
     `esw-commons` % "test->test"
   )
 
@@ -260,3 +262,14 @@ lazy val `esw-sm-app` = project
 lazy val `esw-commons` = project
   .in(file("esw-commons"))
   .settings(libraryDependencies ++= Dependencies.EswCommons.value)
+
+lazy val `esw-testkit` = project
+  .in(file("esw-testkit"))
+  .settings(
+    libraryDependencies ++= Dependencies.EswTestkit.value
+  )
+  .dependsOn(
+    `esw-gateway-server`,
+    `esw-ocs-app`,
+    `esw-agent-app`
+  )

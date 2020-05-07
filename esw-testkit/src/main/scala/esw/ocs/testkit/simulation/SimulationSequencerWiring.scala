@@ -1,4 +1,4 @@
-package esw.ocs.simulation
+package esw.ocs.testkit.simulation
 
 import csw.location.api.models.AkkaLocation
 import csw.prefix.models.{Prefix, Subsystem}
@@ -17,7 +17,7 @@ class SimulationSequencerWiring(
   override private[ocs] lazy val sequencerConfig =
     SequencerConfig(
       Prefix(s"$subsystem.$observingMode"),
-      "esw.ocs.simulation.simulationScript",
+      "esw.ocs.testkit.simulation.simulationScript",
       heartbeatInterval,
       enableThreadMonitoring
     )
