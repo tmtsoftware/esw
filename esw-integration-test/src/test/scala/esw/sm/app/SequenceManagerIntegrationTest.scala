@@ -78,9 +78,9 @@ class SequenceManagerIntegrationTest extends EswTestKit {
     }
     Future
       .traverse(List(eswEventualLocation, irisEventualLocation, aoeswEventualLocation)) { x =>
-        Future.successful(intercept[Exception](x.awaitResult))
+        Future.successful(intercept[Exception](x.futureValue))
       }
-      .awaitResult
+      .futureValue
   }
 
   object TestSetup {

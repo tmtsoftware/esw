@@ -30,7 +30,7 @@ class LoggingDslIntegrationTest extends EswTestKit(EventServer) {
     super.beforeAll()
     ocsRef = spawnSequencerRef(ESW, "MoonNight")
     ocsSequencer = new SequencerImpl(ocsRef)
-    loggingSystem = LoggingSystemFactory.start("LoggingDslIntegrationTest", "", "", system)
+    loggingSystem = LoggingSystemFactory.start("LoggingDslIntegrationTest", "", "", actorSystem)
     loggingSystem.setAppenders(List(testAppender))
   }
 

@@ -17,7 +17,7 @@ class GatewayServiceTest extends EswTestKit {
       val _servicePort = 4005
 
       val wiring = new GatewayWiring(Some(_servicePort), true, Paths.get(getClass.getResource("/commandRoles.conf").getPath)) {
-        override private[esw] lazy val securityDirectives = SecurityDirectives.authDisabled(system.settings.config)
+        override private[esw] lazy val securityDirectives = SecurityDirectives.authDisabled(actorSystem.settings.config)
       }
       import wiring.wiring._
       import wiring.wiring.cswWiring.actorRuntime
