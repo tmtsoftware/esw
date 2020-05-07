@@ -1,25 +1,19 @@
 package esw.ocs.testkit
 
 import csw.testkit.scaladsl.CSWService
-import esw.ocs.testkit.Service._
 
-sealed trait Service {
-  private def toCswService: Option[CSWService] = this match {
-    case LocationServer => Some(CSWService.LocationServer)
-    case ConfigServer   => Some(CSWService.ConfigServer)
-    case EventServer    => Some(CSWService.EventServer)
-    case AlarmServer    => Some(CSWService.AlarmServer)
-    case MachineAgent   => None
-    case Gateway        => None
-  }
-}
+sealed trait Service
+
 object Service {
-  def convertToCsw(services: Seq[Service]): Seq[CSWService] = services.flatMap(_.toCswService)
+  def convertToCsw(services: Seq[Service]): Seq[CSWService] = services.collect { case w: WrappedCSWService => w.cswService }
 
-  case object LocationServer extends Service
-  case object ConfigServer   extends Service
-  case object EventServer    extends Service
-  case object AlarmServer    extends Service
-  case object Gateway        extends Service
-  case object MachineAgent   extends Service
+  sealed trait ESWService                                      extends Service
+  abstract class WrappedCSWService(val cswService: CSWService) extends Service
+
+  case object LocationServer extends WrappedCSWService(CSWService.LocationServer)
+  case object ConfigServer   extends WrappedCSWService(CSWService.ConfigServer)
+  case object EventServer    extends WrappedCSWService(CSWService.EventServer)
+  case object AlarmServer    extends WrappedCSWService(CSWService.AlarmServer)
+  case object Gateway        extends ESWService
+  case object MachineAgent   extends ESWService
 }

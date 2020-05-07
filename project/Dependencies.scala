@@ -246,7 +246,8 @@ object Dependencies {
       Akka.`akka-actor-testkit-typed`,
       Libs.`scala-java8-compat`,
       Csw.`csw-testkit`,
-      Libs.scalatest
+      Libs.scalatest,
+      Libs.`tmt-test-reporter` % Test
     )
   )
 }
