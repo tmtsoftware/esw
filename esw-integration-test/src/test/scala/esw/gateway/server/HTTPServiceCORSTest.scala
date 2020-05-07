@@ -13,6 +13,7 @@ import scala.concurrent.duration.DurationInt
 
 class HTTPServiceCORSTest extends EswTestKit {
 
+  import gatewayTestKit.gatewayPort
   lazy val route: Route = {
     pathPrefix("hello") {
       get {

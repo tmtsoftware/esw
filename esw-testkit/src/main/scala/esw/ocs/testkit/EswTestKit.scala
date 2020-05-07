@@ -5,73 +5,45 @@ import java.nio.file.{Paths, Path => NIOPath}
 import akka.actor.CoordinatedShutdown.UnknownReason
 import akka.actor.testkit.typed.scaladsl.TestProbe
 import akka.actor.typed.{ActorRef, ActorSystem, SpawnProtocol}
-import akka.http.scaladsl.Http.ServerBinding
-import akka.http.scaladsl.model.Uri
-import akka.http.scaladsl.model.Uri.Path
 import akka.util.Timeout
-import com.typesafe.config.ConfigFactory
-import csw.aas.http.SecurityDirectives
 import csw.command.client.extensions.AkkaLocationExt.RichAkkaLocation
 import csw.command.client.messages.sequencer.SequencerMsg
 import csw.event.api.scaladsl.{EventPublisher, EventService, EventSubscriber}
 import csw.location.api.extensions.URIExtension._
-import csw.location.api.models.Connection.{AkkaConnection, HttpConnection}
-import csw.location.api.models.{AkkaLocation, ComponentId, ComponentType, HttpLocation}
+import csw.location.api.models.Connection.AkkaConnection
+import csw.location.api.models.{AkkaLocation, ComponentId, ComponentType}
 import csw.location.api.scaladsl.LocationService
-import csw.network.utils.SocketUtils
 import csw.params.events.{Event, EventKey, SystemEvent}
 import csw.prefix.models.{Prefix, Subsystem}
 import csw.testkit.scaladsl.ScalaTestFrameworkTestKit
 import esw.agent.app.{AgentApp, AgentSettings, AgentWiring}
-import esw.gateway.api.codecs.GatewayCodecs
-import esw.gateway.api.protocol.{PostRequest, WebsocketRequest}
-import esw.gateway.server.GatewayWiring
 import esw.ocs.api.SequencerApi
 import esw.ocs.api.actor.client.{SequenceComponentImpl, SequencerApiFactory, SequencerImpl}
 import esw.ocs.api.actor.messages.SequenceComponentMsg
 import esw.ocs.api.protocol.ScriptError
 import esw.ocs.app.wiring.{SequenceComponentWiring, SequencerWiring}
+import esw.ocs.testkit.Service.{Gateway, MachineAgent}
 import esw.ocs.testkit.simulation.SimulationSequencerWiring
-import Service.{Gateway, MachineAgent}
-import esw.ocs.testkit.utils.BaseTestSuite
-import msocket.api.ContentType
-import msocket.impl.post.HttpPostTransport
-import msocket.impl.ws.WebsocketTransport
 
 import scala.collection.mutable
 import scala.concurrent.ExecutionContext
 import scala.concurrent.duration.DurationLong
 import scala.util.Random
 
-abstract class EswTestKit(services: Service*)
+abstract class EswTestKit(val gatewayTestKit: GatewayTestKit, services: Service*)
     extends ScalaTestFrameworkTestKit(Service.convertToCsw(services): _*)
-    with BaseTestSuite
-    with GatewayCodecs {
+    with LocationUtils {
+
+  def this(services: Service*) = this(GatewayTestKit(), services: _*)
+
   implicit lazy val system: ActorSystem[SpawnProtocol.Command] = frameworkTestKit.actorSystem
   implicit lazy val ec: ExecutionContext                       = frameworkTestKit.frameworkWiring.actorRuntime.ec
   implicit lazy val askTimeout: Timeout                        = Timeout(10.seconds)
-  lazy val locationService: LocationService                    = frameworkTestKit.frameworkWiring.locationService
   private lazy val eventService: EventService                  = frameworkTestKit.frameworkWiring.eventServiceFactory.make(locationService)
   lazy val eventSubscriber: EventSubscriber                    = eventService.defaultSubscriber
   lazy val eventPublisher: EventPublisher                      = eventService.defaultPublisher
 
-  // gateway
-  lazy val gatewayPort: Int                          = SocketUtils.getFreePort
-  private val commandRolesPath: NIOPath              = Paths.get(getClass.getResource("/commandRoles.conf").getPath)
-  private val securityDirectives: SecurityDirectives = SecurityDirectives.authDisabled(system.settings.config)
-  lazy val gatewayWiring: GatewayWiring =
-    GatewayWiring.make(Some(gatewayPort), local = true, commandRolesPath, system, securityDirectives)
-  var gatewayBinding: Option[ServerBinding] = None
-  var gatewayLocation: Option[HttpLocation] = None
-  // ESW-98
-  private lazy val gatewayPrefix = Prefix(
-    ConfigFactory
-      .load()
-      .getConfig("http-server")
-      .getString("prefix")
-  )
-  lazy val gatewayPostClient: HttpPostTransport[PostRequest]     = gatewayHTTPClient()
-  lazy val gatewayWsClient: WebsocketTransport[WebsocketRequest] = gatewayWebSocketClient(gatewayPrefix)
+  def locationService: LocationService = frameworkTestKit.frameworkWiring.locationService
 
   private val sequenceComponentLocations: mutable.Buffer[AkkaLocation] = mutable.Buffer.empty
 
@@ -89,13 +61,13 @@ abstract class EswTestKit(services: Service*)
 
   override def beforeAll(): Unit = {
     super.beforeAll()
-    if (services.contains(Gateway)) spawnGateway()
+    if (services.contains(Gateway)) gatewayTestKit.spawnGateway()
     if (services.contains(MachineAgent)) spawnAgent(agentSettings)
   }
 
   override def afterAll(): Unit = {
     shutdownAllSequencers()
-    shutdownGateway()
+    gatewayTestKit.shutdownGateway()
     shutdownAgent()
     super.afterAll()
   }
@@ -115,17 +87,6 @@ abstract class EswTestKit(services: Service*)
   }
 
   def shutdownAgent(): Unit = agentWiring.foreach(_.actorRuntime.shutdown(UnknownReason))
-
-  def spawnGateway(): HttpLocation = {
-    val (binding, registration) = gatewayWiring.httpService.registeredLazyBinding.futureValue
-    gatewayBinding = Some(binding)
-    gatewayLocation = Some(registration.location.asInstanceOf[HttpLocation])
-    gatewayLocation.get
-  }
-
-  private def shutdownGateway(): Unit =
-    if (gatewayBinding.nonEmpty)
-      gatewayWiring.httpService.shutdown(UnknownReason).futureValue
 
   def spawnSequencerRef(subsystem: Subsystem, observingMode: String): ActorRef[SequencerMsg] =
     spawnSequencer(subsystem, observingMode).rightValue.sequencerRef
@@ -153,23 +114,6 @@ abstract class EswTestKit(services: Service*)
     }
   }
 
-  // ESW-98, ESW-95
-  private[esw] def gatewayHTTPClient(tokenFactory: () => Option[String] = () => None) = {
-    val httpLocation = resolveHTTPLocation(gatewayPrefix, ComponentType.Service)
-    val httpUri      = Uri(httpLocation.uri.toString).withPath(Path("/post-endpoint")).toString()
-    val httpClient =
-      new HttpPostTransport[PostRequest](httpUri, ContentType.Json, tokenFactory)
-    httpClient
-  }
-
-  private def gatewayWebSocketClient(prefix: Prefix) = {
-    val httpLocation = resolveHTTPLocation(prefix, ComponentType.Service)
-    val webSocketUri = Uri(httpLocation.uri.toString).withScheme("ws").withPath(Path("/websocket-endpoint")).toString()
-    val webSocketClient =
-      new WebsocketTransport[WebsocketRequest](webSocketUri, ContentType.Json)
-    webSocketClient
-  }
-
   def sequencerClient(subsystem: Subsystem, observingMode: String): SequencerApi = {
     val httpLocation = resolveHTTPLocation(Prefix(subsystem, observingMode), ComponentType.Sequencer)
     SequencerApiFactory.make(httpLocation)
@@ -191,12 +135,6 @@ abstract class EswTestKit(services: Service*)
   private def resolveAkkaLocation(prefix: Prefix, componentType: ComponentType) =
     locationService
       .resolve(AkkaConnection(ComponentId(prefix, componentType)), 5.seconds)
-      .futureValue
-      .value
-
-  def resolveHTTPLocation(prefix: Prefix, componentType: ComponentType): HttpLocation =
-    locationService
-      .resolve(HttpConnection(ComponentId(prefix, componentType)), 5.seconds)
       .futureValue
       .value
 

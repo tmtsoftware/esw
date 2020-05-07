@@ -13,6 +13,7 @@ import esw.ocs.testkit.Service.{AlarmServer, Gateway}
 
 class AlarmGatewayTest extends EswTestKit(AlarmServer, Gateway) with GatewayCodecs {
   import frameworkTestKit.frameworkWiring.alarmServiceFactory
+  import gatewayTestKit.gatewayPostClient
 
   "AlarmApi" must {
     "set alarm severity of a given alarm | ESW-216, ESW-86, ESW-193, ESW-233, CSW-83" in {

@@ -12,6 +12,7 @@ import esw.ocs.testkit.EswTestKit
 import esw.ocs.testkit.Service.Gateway
 
 class DynamicLogLevelTest extends EswTestKit(Gateway) with LoggingCodecs with GatewayCodecs {
+  import gatewayTestKit.gatewayPostClient
 
   private var sequencerLocation: AkkaLocation = _
 
