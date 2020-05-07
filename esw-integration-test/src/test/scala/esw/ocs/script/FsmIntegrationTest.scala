@@ -8,9 +8,9 @@ import csw.params.core.generics.KeyType.{IntKey, LongKey, StringKey}
 import csw.params.events.{Event, EventKey}
 import csw.prefix.models.Prefix
 import csw.prefix.models.Subsystem.ESW
+import csw.testkit.scaladsl.CSWService.EventServer
 import esw.ocs.api.SequencerApi
 import esw.ocs.testkit.EswTestKit
-import esw.ocs.testkit.Service.EventServer
 
 import scala.concurrent.Await
 import scala.concurrent.duration.DurationInt

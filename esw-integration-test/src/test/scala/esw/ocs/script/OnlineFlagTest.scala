@@ -4,11 +4,11 @@ import csw.params.core.generics.KeyType.BooleanKey
 import csw.params.events.{EventKey, EventName}
 import csw.prefix.models.Prefix
 import csw.prefix.models.Subsystem.ESW
+import csw.testkit.scaladsl.CSWService.EventServer
 import esw.ocs.api.SequencerApi
 import esw.ocs.api.actor.client.SequencerImpl
 import esw.ocs.api.protocol.Ok
 import esw.ocs.testkit.EswTestKit
-import esw.ocs.testkit.Service.EventServer
 
 class OnlineFlagTest extends EswTestKit(EventServer) {
 

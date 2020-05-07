@@ -8,7 +8,7 @@ import csw.prefix.models.Prefix
 import csw.prefix.models.Subsystem.ESW
 import esw.ocs.api.SequencerApi
 import esw.ocs.testkit.EswTestKit
-import esw.ocs.testkit.Service.EventServer
+import csw.testkit.scaladsl.CSWService.EventServer
 
 class ThreadSafetyTest extends EswTestKit(EventServer) {
 
