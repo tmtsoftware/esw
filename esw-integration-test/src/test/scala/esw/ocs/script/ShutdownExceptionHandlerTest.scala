@@ -4,10 +4,10 @@ import akka.actor.testkit.typed.scaladsl.TestProbe
 import csw.params.events.{Event, EventKey, EventName, SystemEvent}
 import csw.prefix.models.Prefix
 import csw.prefix.models.Subsystem.TCS
+import csw.testkit.scaladsl.CSWService.EventServer
 import esw.ocs.api.actor.messages.SequencerMessages.Shutdown
 import esw.ocs.api.protocol.Ok
 import esw.ocs.testkit.EswTestKit
-import esw.ocs.testkit.Service.EventServer
 
 class ShutdownExceptionHandlerTest extends EswTestKit(EventServer) {
 

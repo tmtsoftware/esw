@@ -11,6 +11,7 @@ import csw.params.core.models.Id
 import csw.params.events.{Event, EventKey, EventName, SystemEvent}
 import csw.prefix.models.Prefix
 import csw.prefix.models.Subsystem.{ESW, TCS}
+import csw.testkit.scaladsl.CSWService.EventServer
 import csw.time.core.models.UTCTime
 import esw.ocs.api.SequencerApi
 import esw.ocs.api.actor.client.SequenceComponentImpl
@@ -20,7 +21,6 @@ import esw.ocs.api.models.StepStatus.Pending
 import esw.ocs.api.models.{Step, StepList}
 import esw.ocs.api.protocol._
 import esw.ocs.testkit.EswTestKit
-import esw.ocs.testkit.Service.EventServer
 
 import scala.concurrent.Future
 

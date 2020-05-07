@@ -14,7 +14,7 @@ import esw.ocs.api.actor.client.SequencerImpl
 import esw.ocs.api.protocol._
 import esw.ocs.api.actor.messages.SequencerMessages._
 import esw.ocs.testkit.EswTestKit
-import esw.ocs.testkit.Service.EventServer
+import csw.testkit.scaladsl.CSWService.EventServer
 import org.scalatest.prop.TableDrivenPropertyChecks._
 import org.scalatest.prop.TableFor2
 

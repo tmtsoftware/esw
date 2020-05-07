@@ -7,11 +7,12 @@ import csw.params.core.generics.{KeyType, Parameter}
 import csw.params.core.models._
 import csw.params.events.{Event, EventKey, EventName, SystemEvent}
 import csw.prefix.models.{Prefix, Subsystem}
+import csw.testkit.scaladsl.CSWService.EventServer
 import esw.gateway.api.clients.EventClient
 import esw.gateway.api.codecs.GatewayCodecs
 import esw.gateway.api.protocol.GatewayException
 import esw.ocs.testkit.EswTestKit
-import esw.ocs.testkit.Service.{EventServer, Gateway}
+import esw.ocs.testkit.Service.Gateway
 
 class EventGatewayTest extends EswTestKit(EventServer, Gateway) with GatewayCodecs {
 
