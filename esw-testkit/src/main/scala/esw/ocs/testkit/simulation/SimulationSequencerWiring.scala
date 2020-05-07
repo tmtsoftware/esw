@@ -8,7 +8,8 @@ import esw.ocs.impl.script.ScriptApi
 class SimulationSequencerWiring(
     override val subsystem: Subsystem,
     override val observingMode: String,
-    sequenceComponentLocation: AkkaLocation
+    sequenceComponentLocation: AkkaLocation,
+    simulationScript: SimulationScript = SimulationScript
 ) extends SequencerWiring(subsystem, observingMode, sequenceComponentLocation) {
 
   private val heartbeatInterval      = config.getDuration("esw.heartbeat-interval")
@@ -17,10 +18,10 @@ class SimulationSequencerWiring(
   override private[ocs] lazy val sequencerConfig =
     SequencerConfig(
       Prefix(s"$subsystem.$observingMode"),
-      "esw.ocs.testkit.simulation.simulationScript",
+      simulationScript.getClass.getName,
       heartbeatInterval,
       enableThreadMonitoring
     )
 
-  override private[ocs] lazy val script: ScriptApi = SimulationScript
+  override private[ocs] lazy val script: ScriptApi = simulationScript
 }

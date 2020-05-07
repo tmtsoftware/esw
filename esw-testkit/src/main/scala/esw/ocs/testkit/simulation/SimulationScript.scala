@@ -7,7 +7,9 @@ import esw.ocs.impl.script.ScriptApi
 
 import scala.concurrent.Future
 
-object SimulationScript extends ScriptApi {
+object SimulationScript extends SimulationScript
+
+trait SimulationScript extends ScriptApi {
   private val done: Future[Done] = Future.successful(Done)
 
   override def execute(command: SequenceCommand): Future[Unit] = Future.successful(())
