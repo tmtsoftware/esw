@@ -31,7 +31,7 @@ class SequenceManagerConfigParserTest extends BaseTestSuite {
       val expectedConfig = SequenceManagerConfig(
         Map(
           "IRIS_Darknight" -> ObsModeConfig(Resources("IRIS", "TCS", "NFIRAOS"), darknightSequencers),
-          "IRIS_cal"       -> ObsModeConfig(Resources("IRIS", "NCSU", "NFIRAOS"), calSequencers)
+          "IRIS_Cal"       -> ObsModeConfig(Resources("IRIS", "NCSU", "NFIRAOS"), calSequencers)
         )
       )
       config.awaitResult shouldBe expectedConfig
@@ -66,6 +66,8 @@ class SequenceManagerConfigParserTest extends BaseTestSuite {
       val path                        = Paths.get("testConfig.conf")
       val sequenceManagerConfigParser = new SequenceManagerConfigParser(configUtils)
       val expectedException           = new RuntimeException("Failed to read config")
+
+      // config server getConfig fails with exception
       when(configUtils.getConfig(inputFilePath = path, isLocal = true)).thenReturn(Future.failed(expectedException))
 
       val exception = intercept[RuntimeException](

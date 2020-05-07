@@ -10,9 +10,12 @@ import io.bullet.borer._
 
 import scala.concurrent.{ExecutionContext, Future}
 
+// Reads config file for all observing modes and parse it into SequenceManagerConfig
+//(Map observing mode to Resources and Sequencers)
 class SequenceManagerConfigParser(configUtils: ConfigUtils)(implicit ec: ExecutionContext) extends SequenceManagerCodecs {
   private val ObsModesKey = "obsModes"
 
+  // Reads config file using csw config server
   def read(configFilePath: Path, isLocal: Boolean): Future[SequenceManagerConfig] =
     configUtils.getConfig(configFilePath, isLocal).map(parseConfig)
 

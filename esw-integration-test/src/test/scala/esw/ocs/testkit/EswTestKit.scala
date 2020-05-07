@@ -194,7 +194,7 @@ abstract class EswTestKit(services: Service*)
       .futureValue
       .value
 
-  private def resolveHTTPLocation(prefix: Prefix, componentType: ComponentType) =
+  def resolveHTTPLocation(prefix: Prefix, componentType: ComponentType): HttpLocation =
     locationService
       .resolve(HttpConnection(ComponentId(prefix, componentType)), 5.seconds)
       .futureValue
