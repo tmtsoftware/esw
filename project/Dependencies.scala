@@ -119,9 +119,6 @@ object Dependencies {
 
   val IntegrationTest = Def.setting(
     Seq(
-      Akka.`akka-actor-testkit-typed` % Test,
-      Libs.`scala-java8-compat`       % Test,
-      Csw.`csw-testkit`               % Test,
       Csw.`csw-logging-models`.value  % Test,
       Libs.scalatest                  % Test,
       Libs.`tmt-test-reporter`        % Test,
@@ -249,12 +246,7 @@ object Dependencies {
       Akka.`akka-actor-testkit-typed`,
       Libs.`scala-java8-compat`,
       Csw.`csw-testkit`,
-      Csw.`csw-logging-models`.value,
-      Libs.scalatest,
-      Libs.`tmt-test-reporter`,
-      Csw.`csw-location-server-tests`,
-      Csw.`csw-integration-multi-jvm`,
-      Akka.`akka-multi-node-testkit`
+      Libs.scalatest
     )
   )
 }
