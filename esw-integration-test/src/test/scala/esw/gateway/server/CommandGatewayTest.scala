@@ -4,9 +4,9 @@ import akka.actor.testkit.typed.scaladsl.TestProbe
 import akka.stream.scaladsl.Sink
 import com.typesafe.config.ConfigFactory
 import csw.event.client.EventServiceFactory
-import csw.location.client.scaladsl.HttpLocationServiceFactory
 import csw.location.api.models.ComponentId
 import csw.location.api.models.ComponentType.Assembly
+import csw.location.client.scaladsl.HttpLocationServiceFactory
 import csw.params.commands.CommandResponse.{Accepted, Completed, Started}
 import csw.params.commands.{CommandName, Setup}
 import csw.params.core.models.ObsId
@@ -23,7 +23,6 @@ import scala.concurrent.Future
 
 class CommandGatewayTest extends EswTestKit(EventServer, Gateway) with GatewayCodecs {
 
-  import gatewayTestKit.{gatewayPostClient, gatewayWsClient}
   override def beforeAll(): Unit = {
     super.beforeAll()
     frameworkTestKit.spawnStandalone(ConfigFactory.load("standaloneAssembly.conf"))
