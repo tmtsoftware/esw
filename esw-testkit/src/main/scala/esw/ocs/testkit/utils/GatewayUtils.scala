@@ -1,40 +1,26 @@
-package esw.ocs.testkit
+package esw.ocs.testkit.utils
 
 import java.nio.file.Paths
 
 import akka.actor.CoordinatedShutdown.UnknownReason
-import akka.actor.typed.{ActorSystem, SpawnProtocol}
 import akka.http.scaladsl.Http.ServerBinding
 import akka.http.scaladsl.model.Uri
 import akka.http.scaladsl.model.Uri.Path
 import com.typesafe.config.ConfigFactory
 import csw.aas.http.SecurityDirectives
 import csw.location.api.models.{ComponentType, HttpLocation}
-import csw.location.api.scaladsl.LocationService
 import csw.network.utils.SocketUtils
 import csw.prefix.models.Prefix
 import esw.gateway.api.codecs.GatewayCodecs
 import esw.gateway.api.protocol.{PostRequest, WebsocketRequest}
 import esw.gateway.server.GatewayWiring
-import esw.ocs.testkit.utils.BaseTestSuite
 import msocket.api.ContentType
 import msocket.impl.post.HttpPostTransport
 import msocket.impl.ws.WebsocketTransport
 
-import scala.concurrent.ExecutionContext
-
-class GatewayTestKit(val locationService: LocationService)(implicit system: ActorSystem[SpawnProtocol.Command])
-    extends LocationUtils
-    with BaseTestSuite
-    with GatewayCodecs {
-
-  implicit val ec: ExecutionContext = system.executionContext
-  // gateway
-  lazy val gatewayPort: Int                          = SocketUtils.getFreePort
-  private val commandRolesPath                       = Paths.get(getClass.getResource("/commandRoles.conf").getPath)
-  private val securityDirectives: SecurityDirectives = SecurityDirectives.authDisabled(system.settings.config)
-  lazy val gatewayWiring: GatewayWiring =
-    GatewayWiring.make(Some(gatewayPort), local = true, commandRolesPath, system, securityDirectives)
+trait GatewayUtils extends LocationUtils with BaseTestSuite with GatewayCodecs {
+  private val commandRolesPath                      = Paths.get(getClass.getResource("/commandRoles.conf").getPath)
+  private val directives                            = SecurityDirectives.authDisabled(actorSystem.settings.config)
   private var gatewayBinding: Option[ServerBinding] = None
   private var gatewayLocation: Option[HttpLocation] = None
   // ESW-98
@@ -44,6 +30,10 @@ class GatewayTestKit(val locationService: LocationService)(implicit system: Acto
       .getConfig("http-server")
       .getString("prefix")
   )
+
+  lazy val gatewayPort: Int = SocketUtils.getFreePort
+  lazy val gatewayWiring: GatewayWiring =
+    GatewayWiring.make(Some(gatewayPort), local = true, commandRolesPath, actorSystem, directives)
   lazy val gatewayPostClient: HttpPostTransport[PostRequest]     = gatewayHTTPClient()
   lazy val gatewayWsClient: WebsocketTransport[WebsocketRequest] = gatewayWebSocketClient(gatewayPrefix)
 

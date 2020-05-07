@@ -15,8 +15,6 @@ import esw.ocs.testkit.Service.{EventServer, Gateway}
 
 class EventGatewayTest extends EswTestKit(EventServer, Gateway) with GatewayCodecs {
 
-  import gatewayTestKit.{gatewayPostClient, gatewayWsClient}
-
   //Event
   private val a1: Array[Int] = Array(1, 2, 3, 4, 5)
   private val a2: Array[Int] = Array(10, 20, 30, 40, 50)

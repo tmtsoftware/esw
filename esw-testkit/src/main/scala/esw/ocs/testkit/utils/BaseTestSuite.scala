@@ -1,5 +1,6 @@
 package esw.ocs.testkit.utils
 
+import akka.util.Timeout
 import org.mockito.MockitoSugar
 import org.scalactic.TypeCheckedTripleEquals
 import org.scalatest._
@@ -21,7 +22,8 @@ trait BaseTestSuite
     with MockitoSugar
     with TypeCheckedTripleEquals
     with Eventually {
-  val defaultTimeout: Duration = 10.seconds
+  val defaultTimeout: Duration          = 10.seconds
+  implicit lazy val askTimeout: Timeout = Timeout(10.seconds)
 
   override implicit def patienceConfig: PatienceConfig = PatienceConfig(defaultTimeout, 50.millis)
 

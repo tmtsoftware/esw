@@ -27,8 +27,6 @@ import scala.concurrent.{Await, Future}
 
 class GatewayAuthTest extends EswTestKit {
 
-  import gatewayTestKit.{gatewayHTTPClient, gatewayWsClient}
-
   private val gatewayUser1WithRequiredRole    = "gateway-user1"
   private val gatewayUser1Password            = "gateway-user1"
   private val gatewayUser2WithoutRequiredRole = "gateway-user2"
