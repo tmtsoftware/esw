@@ -72,9 +72,10 @@ class EventGatewayTest extends EswTestKit(EventServer, Gateway) with GatewayCode
     "subscribe events returns an EmptyEventKeys error on sending no event keys in subscription| ESW-93, ESW-216, ESW-86" in {
       val eventClient: EventClient = new EventClient(gatewayPostClient, gatewayWsClient)
 
-      intercept[GatewayException] {
-        eventClient.subscribe(Set.empty, None).runForeach(_ => ()).awaitResult
+      val exception = intercept[Exception] {
+        eventClient.subscribe(Set.empty, None).runForeach(_ => ()).futureValue
       }
+      exception.getCause shouldBe a[GatewayException]
     }
 
     "support pubsub of large events" in {

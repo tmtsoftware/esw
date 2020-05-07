@@ -130,7 +130,7 @@ class ExceptionsHandlerIntegrationTest extends EswTestKit(EventServer) {
       val sequencerRef = spawnSequencerRef(tcsSubsystem, tcsObservingMode)
       val sequencer    = new SequencerImpl(sequencerRef)
 
-      sequencer.goOffline().awaitResult
+      sequencer.goOffline().futureValue
       sequencer.goOnline()
 
       assertMessage(testProbe, globalExHandlerEventMessage)

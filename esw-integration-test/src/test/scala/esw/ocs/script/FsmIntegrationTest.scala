@@ -61,7 +61,7 @@ class FsmIntegrationTest extends EswTestKit(EventServer) {
       tempFsmStateProbe.expectMessage("FINISHED")
       mainFsmStateProbe.expectMessage("TERMINATE")
 
-      fsmSequencer.stop().awaitResult
+      fsmSequencer.stop().futureValue
       mainFsmStateProbe.expectMessage("Fsm:TERMINATE:STOP")
       mainFsmStateProbe.expectMessage("MAIN:STOP")
     }
@@ -97,7 +97,7 @@ class FsmIntegrationTest extends EswTestKit(EventServer) {
         fsmStateProbe.expectMessage(10)
       }
 
-      fsmSequencer.stop().awaitResult
+      fsmSequencer.stop().futureValue
     }
 
     "command flag should trigger FSM bind to it | ESW-246, ESW-251, ESW-252, ESW-142" in {
@@ -123,7 +123,7 @@ class FsmIntegrationTest extends EswTestKit(EventServer) {
         fsmStateProbe.expectMessage(100)
       }
 
-      fsmSequencer.stop().awaitResult
+      fsmSequencer.stop().futureValue
     }
 
     "be able to bind to param variables with polling time | ESW-142, ESW-256, ESW-291" in {
