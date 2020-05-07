@@ -295,7 +295,7 @@ class SequencerClientIntegrationTest extends EswTestKit(EventServer) {
 
   "GetSequenceComponent | ESW-255" in {
     //start sequence component
-    val sequenceComponentLocation = spawnSequenceComponent(ESW, Some("primary")).rightValue
+    val sequenceComponentLocation = spawnSequenceComponent(ESW, Some("primary"))
     val sequenceComponentImpl     = new SequenceComponentImpl(sequenceComponentLocation)
 
     //start sequencer
