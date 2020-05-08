@@ -4,7 +4,7 @@ import java.nio.file.Paths
 
 import csw.location.api.models.ComponentType.Sequencer
 import csw.prefix.models.Prefix
-import csw.prefix.models.Subsystem.{AOESW, ESW, IRIS, TCS}
+import csw.prefix.models.Subsystem._
 import esw.ocs.api.actor.client.SequenceComponentImpl
 import esw.ocs.app.SequencerApp
 import esw.ocs.testkit.EswTestKit
@@ -59,8 +59,15 @@ class SequenceManagerIntegrationTest extends EswTestKit {
     )
   }
 
-  "configure should return error in case of conflicting resource | ESW-169" in {
-    TestSetup.setupSeqComponent(Prefix(ESW, "primary"), Prefix(IRIS, "primary"), Prefix(AOESW, "primary"), Prefix(TCS, "primary"))
+  "configure should run multiple sequencers efficiently | ESW-168, ESW-169" in {
+    TestSetup.setupSeqComponent(
+      Prefix(ESW, "primary"),
+      Prefix(ESW, "secondary"),
+      Prefix(IRIS, "primary"),
+      Prefix(AOESW, "primary"),
+      Prefix(WFOS, "primary"),
+      Prefix(TCS, "primary")
+    )
     val sequenceManager = TestSetup.startSequenceManager()
 
     // Configure for "IRIS_Cal" observing mode should be successful as the resources are available
@@ -68,13 +75,17 @@ class SequenceManagerIntegrationTest extends EswTestKit {
       .configure("IRIS_Cal")
       .futureValue shouldBe a[ConfigureResponse.Success]
 
+    // *************** Avoid conflicting sequence execution | ESW-169 ********************
     // Configure for "IRIS_Darknight" observing mode should return error because resource IRIS and NFIRAOS are busy
     sequenceManager
       .configure("IRIS_Darknight")
       .futureValue shouldBe ConfigureResponse.ConflictingResourcesWithRunningObsMode
 
-    // cleaunp
-    sequenceManager.cleanup("IRIS_Cal")
+    // *************** Should run observation concurrently if no conflict in resources | ESW-168 ********************
+    // Configure for "WFOS_Cal" observing mode should be successful as the resources are available
+    sequenceManager
+      .configure("WFOS_Cal")
+      .futureValue shouldBe a[ConfigureResponse.Success]
   }
 
   object TestSetup {
