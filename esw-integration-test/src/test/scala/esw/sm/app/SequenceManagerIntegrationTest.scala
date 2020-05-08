@@ -16,14 +16,9 @@ class SequenceManagerIntegrationTest extends EswTestKit {
   override def afterEach(): Unit = locationService.unregisterAll()
 
   "configure and cleanup for provided observation mode | ESW-162, ESW-166" in {
-    // Setup Sequence components for ESW, IRIS, AOESW
     TestSetup.setupSeqComponent(ESW, IRIS, AOESW)
-
+    val sequenceManager = TestSetup.startSequenceManager()
     val obsMode: String = "IRIS_Cal"
-    val configFilePath  = Paths.get(ClassLoader.getSystemResource("sequence_manager.conf").toURI)
-    val wiring          = new SequenceManagerWiring(configFilePath)
-
-    val sequenceManager: SequenceManagerApi = wiring.start
 
     // ************ Configure for observing mode ************************
     val configureResponse = sequenceManager.configure(obsMode).futureValue
@@ -54,14 +49,8 @@ class SequenceManagerIntegrationTest extends EswTestKit {
   }
 
   "configure should return error in case of conflicting resource | ESW-169" in {
-    // Setup Sequence components for ESW, IRIS, AOESW and TCS
     TestSetup.setupSeqComponent(ESW, IRIS, AOESW, TCS)
-
-    val configFilePath = Paths.get(ClassLoader.getSystemResource("sequence_manager.conf").toURI)
-    val wiring         = new SequenceManagerWiring(configFilePath)
-
-    // Start Sequence Manager
-    val sequenceManager: SequenceManagerApi = wiring.start
+    val sequenceManager = TestSetup.startSequenceManager()
 
     // Configure for "IRIS_Cal" observing mode should be successful as the resources are available
     sequenceManager.configure("IRIS_Cal").futureValue shouldBe a[ConfigureResponse.Success]
@@ -87,6 +76,13 @@ class SequenceManagerIntegrationTest extends EswTestKit {
         if (isSeqCompAvailable) seqCompStatus.response shouldBe None // assert sequence components are available
         else seqCompStatus.response.isDefined shouldBe true          // assert sequence components are busy
       })
+    }
+
+    def startSequenceManager(): SequenceManagerApi = {
+      val configFilePath  = Paths.get(ClassLoader.getSystemResource("sequence_manager.conf").toURI)
+      val wiring          = new SequenceManagerWiring(configFilePath)
+      val sequenceManager = wiring.start
+      sequenceManager
     }
   }
 }
