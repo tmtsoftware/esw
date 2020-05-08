@@ -7,57 +7,58 @@ object Libs {
 
   val `case-app`           = "com.github.alexarchambault" %% "case-app" % "2.0.0-M16"
   val enumeratum           = dep("com.beachape" %%% "enumeratum" % "1.6.0") //MIT License
-  val `mockito-scala`      = "org.mockito" %% "mockito-scala" % "1.13.4" // MIT License
-  val `scala-async`        = "org.scala-lang.modules" %% "scala-async" % "0.10.0" //BSD 3-clause "New" or "Revised" License
-  val scalatest            = "org.scalatest" %% "scalatest" % "3.1.1" //Apache License 2.0
-  val `scala-java8-compat` = "org.scala-lang.modules" %% "scala-java8-compat" % "0.9.1" //BSD 3-clause "New" or "Revised" License
+  val `mockito-scala`      = "org.mockito"                    %% "mockito-scala"      % "1.13.4" // MIT License
+  val `scala-async`        = "org.scala-lang.modules"         %% "scala-async"        % "0.10.0" //BSD 3-clause "New" or "Revised" License
+  val scalatest            = "org.scalatest"                  %% "scalatest"          % "3.1.1"  //Apache License 2.0
+  val `scala-java8-compat` = "org.scala-lang.modules"         %% "scala-java8-compat" % "0.9.1"  //BSD 3-clause "New" or "Revised" License
   val `msocket-api`        = dep("com.github.tmtsoftware.msocket" %%% "msocket-api" % MSocketVersion)
-  val `msocket-impl-jvm`   = "com.github.tmtsoftware.msocket" %% "msocket-impl" % MSocketVersion
-  val `caffeine`           = "com.github.ben-manes.caffeine" % "caffeine" % "2.8.2"
-  val `jupiter-interface`  = "net.aichler" % "jupiter-interface" % "0.8.3"
-  val `tmt-test-reporter`  = "com.github.tmtsoftware" %% "rtm" % "47b635b289"
+  val `msocket-impl-jvm`   = "com.github.tmtsoftware.msocket" %% "msocket-impl"       % MSocketVersion
+  val `caffeine`           = "com.github.ben-manes.caffeine"   % "caffeine"           % "2.8.2"
+  val `jupiter-interface`  = "net.aichler"                     % "jupiter-interface"  % "0.8.3"
+  val `tmt-test-reporter`  = "com.github.tmtsoftware"         %% "rtm"                % "47b635b289"
 
   val `prometheus-akka-http` = "com.lonelyplanet" %% "prometheus-akka-http" % "0.5.0"
 
-  val blockhound = "io.projectreactor.tools" % "blockhound" % "1.0.3.RELEASE"
+  val blockhound          = "io.projectreactor.tools"                   % "blockhound"        % "1.0.3.RELEASE"
+  val `embedded-keycloak` = "com.github.tmtsoftware.embedded-keycloak" %% "embedded-keycloak" % "9374d69"
 }
 
 object Csw {
   private val Org     = "com.github.tmtsoftware.csw"
   private val Version = "38f55f9" //change this to 0.1.0-SNAPSHOT to test with local csw changes (after publishLocal)
 
-  val `csw-aas-http`              = Org %% "csw-aas-http" % Version
+  val `csw-aas-http`              = Org %% "csw-aas-http"        % Version
   val `csw-admin-api`             = dep(Org %%% "csw-admin-api" % Version)
-  val `csw-admin-impl`            = Org %% "csw-admin-impl" % Version
-  val `csw-admin-server`          = Org %% "csw-admin-server" % Version
-  val `csw-alarm-api`             = Org %% "csw-alarm-api" % Version
-  val `csw-alarm-client`          = Org %% "csw-alarm-client" % Version
+  val `csw-admin-impl`            = Org %% "csw-admin-impl"      % Version
+  val `csw-admin-server`          = Org %% "csw-admin-server"    % Version
+  val `csw-alarm-api`             = Org %% "csw-alarm-api"       % Version
+  val `csw-alarm-client`          = Org %% "csw-alarm-client"    % Version
   val `csw-command-api`           = dep(Org %%% "csw-command-api" % Version)
-  val `csw-command-client`        = Org %% "csw-command-client" % Version
-  val `csw-commons`               = Org %% "csw-commons" % Version
-  val `csw-config-client`         = Org %% "csw-config-client" % Version
-  val `csw-contract`              = Org %% "csw-contract" % Version
-  val `csw-database`              = Org %% "csw-database" % Version
-  val `csw-event-api`             = Org %% "csw-event-api" % Version
-  val `csw-event-client`          = Org %% "csw-event-client" % Version
-  val `csw-integration-multi-jvm` = Org %% "integration" % Version classifier "multi-jvm"
+  val `csw-command-client`        = Org %% "csw-command-client"  % Version
+  val `csw-commons`               = Org %% "csw-commons"         % Version
+  val `csw-config-client`         = Org %% "csw-config-client"   % Version
+  val `csw-contract`              = Org %% "csw-contract"        % Version
+  val `csw-database`              = Org %% "csw-database"        % Version
+  val `csw-event-api`             = Org %% "csw-event-api"       % Version
+  val `csw-event-client`          = Org %% "csw-event-client"    % Version
+  val `csw-integration-multi-jvm` = Org %% "integration"         % Version classifier "multi-jvm"
   val `csw-logging-models`        = dep(Org %%% "csw-logging-models" % Version)
-  val `csw-location-api`          = Org %% "csw-location-api" % Version
+  val `csw-location-api`          = Org %% "csw-location-api"    % Version
   val `csw-location-client`       = Org %% "csw-location-client" % Version
   val `csw-location-server`       = Org %% "csw-location-server" % Version
   val `csw-location-server-tests` = Org %% "csw-location-server" % Version classifier "tests"
-  val `csw-network-utils`         = Org %% "csw-network-utils" % Version
+  val `csw-network-utils`         = Org %% "csw-network-utils"   % Version
   val `csw-params`                = dep(Org %%% "csw-params" % Version)
   val `csw-prefix`                = dep(Org %%% "csw-prefix" % Version)
-  val `csw-testkit`               = Org %% "csw-testkit" % Version
-  val `csw-time-scheduler`        = Org %% "csw-time-scheduler" % Version
+  val `csw-testkit`               = Org %% "csw-testkit"         % Version
+  val `csw-time-scheduler`        = Org %% "csw-time-scheduler"  % Version
 }
 
 object Akka {
   private val Version     = "2.6.4"
-  val `akka-actor-typed`  = "com.typesafe.akka" %% "akka-actor-typed" % Version
+  val `akka-actor-typed`  = "com.typesafe.akka" %% "akka-actor-typed"  % Version
   val `akka-stream-typed` = "com.typesafe.akka" %% "akka-stream-typed" % Version
-  val `akka-stream`       = "com.typesafe.akka" %% "akka-stream" % Version
+  val `akka-stream`       = "com.typesafe.akka" %% "akka-stream"       % Version
 
   val `akka-actor-testkit-typed` = "com.typesafe.akka" %% "akka-actor-testkit-typed" % Version
   val `akka-stream-testkit`      = "com.typesafe.akka" %% "akka-stream-testkit"      % Version

@@ -248,7 +248,8 @@ object Dependencies {
       Akka.`akka-actor-testkit-typed`,
       Csw.`csw-testkit`,
       Libs.scalatest,
-      Libs.`tmt-test-reporter` % Test
+      Libs.`tmt-test-reporter` % Test,
+      Libs.`embedded-keycloak`
     )
   )
 }
