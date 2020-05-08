@@ -19,8 +19,8 @@ import msocket.impl.post.HttpPostTransport
 import msocket.impl.ws.WebsocketTransport
 
 trait GatewayUtils extends LocationUtils with BaseTestSuite with GatewayCodecs {
-  private val commandRolesPath                      = Paths.get(getClass.getResource("/commandRoles.conf").getPath)
-  private val directives                            = SecurityDirectives.authDisabled(actorSystem.settings.config)
+  private lazy val commandRolesPath                      = Paths.get(getClass.getResource("/commandRoles.conf").getPath)
+  private lazy val directives                            = SecurityDirectives.authDisabled(actorSystem.settings.config)
   private var gatewayBinding: Option[ServerBinding] = None
   private var gatewayLocation: Option[HttpLocation] = None
   // ESW-98
