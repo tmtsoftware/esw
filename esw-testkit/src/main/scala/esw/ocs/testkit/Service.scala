@@ -6,9 +6,9 @@ import scala.language.implicitConversions
 sealed trait Service
 
 object Service {
-  def convertToCsw(services: Seq[Service]): Seq[CSWService] = services.collect {
-    case WrappedCSWService(cswService) => cswService
-  }
+  def convertToCsw(services: Seq[Service]): Seq[CSWService] =
+    services.collect { case WrappedCSWService(cswService) => cswService }
+
   implicit def toEswService(cswService: CSWService): WrappedCSWService = WrappedCSWService(cswService)
 
   case class WrappedCSWService(cswService: CSWService) extends Service

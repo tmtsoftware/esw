@@ -26,7 +26,8 @@ class AgentUtil(locationServiceUtil: LocationServiceUtil)(implicit actorSystem: 
   private[sm] def getAgent: Future[Either[EswLocationError, AgentClient]] =
     locationServiceUtil
       .listAkkaLocationsBy(ESW, Machine)
-      .flatMapRight(locations => AgentClient.make(locations.head.prefix, locationServiceUtil.locationService)) // fixme: unsafe head.prefix?
+      // fixme: unsafe head.prefix?
+      .flatMapRight(locations => AgentClient.make(locations.head.prefix, locationServiceUtil.locationService))
       .mapError(_ => ResolveLocationFailed(s"Could not find agent matching $ESW"))
 
   def spawnSequenceComponentFor(subsystem: Subsystem): Future[Either[AgentError, SequenceComponentApi]] = {

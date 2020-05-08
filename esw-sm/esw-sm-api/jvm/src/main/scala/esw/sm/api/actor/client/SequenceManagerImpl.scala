@@ -11,8 +11,8 @@ import esw.sm.api.models.{CleanupResponse, ConfigureResponse, GetRunningObsModes
 import scala.concurrent.Future
 
 //fixme: replace smRef with akkaLocation once location service registration story is played
-class SequenceManagerImpl(smRef: ActorRef[SequenceManagerMsg])(
-    implicit actorSystem: ActorSystem[_],
+class SequenceManagerImpl(smRef: ActorRef[SequenceManagerMsg])(implicit
+    actorSystem: ActorSystem[_],
     timeout: Timeout
 ) extends SequenceManagerApi {
 

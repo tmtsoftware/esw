@@ -14,8 +14,8 @@ import esw.ocs.api.protocol.{GetStatusResponse, ScriptResponse}
 
 import scala.concurrent.Future
 
-class SequenceComponentImpl(sequenceComponentLocation: AkkaLocation)(
-    implicit actorSystem: ActorSystem[_],
+class SequenceComponentImpl(sequenceComponentLocation: AkkaLocation)(implicit
+    actorSystem: ActorSystem[_],
     timeout: Timeout
 ) extends SequenceComponentApi {
 

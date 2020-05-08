@@ -63,8 +63,9 @@ private[ocs] object SequenceComponentWiring {
       name: Option[String],
       sequencerServerFactory: SequencerServerFactory,
       _actorSystem: ActorSystem[SpawnProtocol.Command]
-  ): SequenceComponentWiring = new SequenceComponentWiring(subsystem, name, sequencerServerFactory) {
-    override private[wiring] lazy val actorSystem = _actorSystem
-  }
+  ): SequenceComponentWiring =
+    new SequenceComponentWiring(subsystem, name, sequencerServerFactory) {
+      override private[wiring] lazy val actorSystem = _actorSystem
+    }
 }
 // $COVERAGE-ON$

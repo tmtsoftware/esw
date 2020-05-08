@@ -62,9 +62,12 @@ private[ocs] class SequencerWiring(
 
   implicit lazy val actorRuntime: ActorRuntime = cswWiring.actorRuntime
 
-  lazy val sequencerRef: ActorRef[SequencerMsg] = Await.result(actorSystem ? { x: ActorRef[ActorRef[SequencerMsg]] =>
-    Spawn(sequencerBehavior.setup, prefix.toString, Props.empty, x)
-  }, Timeouts.DefaultTimeout)
+  lazy val sequencerRef: ActorRef[SequencerMsg] = Await.result(
+    actorSystem ? { x: ActorRef[ActorRef[SequencerMsg]] =>
+      Spawn(sequencerBehavior.setup, prefix.toString, Props.empty, x)
+    },
+    Timeouts.DefaultTimeout
+  )
 
   //Pass lambda to break circular dependency shown below.
   //SequencerRef -> Script -> cswServices -> SequencerOperator -> SequencerRef
@@ -136,9 +139,12 @@ private[ocs] class SequencerWiring(
         val registration = AkkaRegistration(AkkaConnection(componentId), sequencerRef.toURI)
         val loc = Await.result(
           locationServiceUtil
-            .register(registration, {
-              case NonFatal(e) => Future.successful(Left(ScriptError(e.getMessage)))
-            }),
+            .register(
+              registration,
+              {
+                case NonFatal(e) => Future.successful(Left(ScriptError(e.getMessage)))
+              }
+            ),
           Timeouts.DefaultTimeout
         )
 

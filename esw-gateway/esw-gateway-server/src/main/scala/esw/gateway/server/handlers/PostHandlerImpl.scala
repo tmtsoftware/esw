@@ -30,16 +30,17 @@ class PostHandlerImpl(
 ) extends HttpPostHandler[PostRequest]
     with ServerHttpCodecs {
 
-  override def handle(request: PostRequest): Route = request match {
-    case ComponentCommand(componentId, command) => onComponentCommand(componentId, command)
-    case SequencerCommand(componentId, command) => onSequencerCommand(componentId, command)
-    case PublishEvent(event)                    => complete(eventApi.publish(event))
-    case GetEvent(eventKeys)                    => complete(eventApi.get(eventKeys))
-    case SetAlarmSeverity(alarmKey, severity)   => complete(alarmApi.setSeverity(alarmKey, severity))
-    case Log(prefix, level, message, map)       => complete(loggingApi.log(prefix, level, message, map))
-    case SetLogLevel(componentId, logLevel)     => complete(adminApi.setLogLevel(componentId, logLevel))
-    case GetLogMetadata(componentId)            => complete(adminApi.getLogMetadata(componentId))
-  }
+  override def handle(request: PostRequest): Route =
+    request match {
+      case ComponentCommand(componentId, command) => onComponentCommand(componentId, command)
+      case SequencerCommand(componentId, command) => onSequencerCommand(componentId, command)
+      case PublishEvent(event)                    => complete(eventApi.publish(event))
+      case GetEvent(eventKeys)                    => complete(eventApi.get(eventKeys))
+      case SetAlarmSeverity(alarmKey, severity)   => complete(alarmApi.setSeverity(alarmKey, severity))
+      case Log(prefix, level, message, map)       => complete(loggingApi.log(prefix, level, message, map))
+      case SetLogLevel(componentId, logLevel)     => complete(adminApi.setLogLevel(componentId, logLevel))
+      case GetLogMetadata(componentId)            => complete(adminApi.getLogMetadata(componentId))
+    }
 
   private def onComponentCommand(componentId: ComponentId, command: CommandServiceHttpMessage): Route =
     onSuccess(resolver.commandService(componentId) zip commandRoles) { (commandService, roles) =>

@@ -32,10 +32,13 @@ class LockUnlockIntegrationTest extends EswTestKit(EventServer) {
     "support locking components | ESW-126" in {
       val probe = TestProbe[String]
       eventSubscriber
-        .subscribeCallback(Set(lockingEventKey), event => {
-          val param = event.paramType.get(lockingStringKey).flatMap(_.get(0))
-          param.foreach(probe.ref ! _)
-        })
+        .subscribeCallback(
+          Set(lockingEventKey),
+          event => {
+            val param = event.paramType.get(lockingStringKey).flatMap(_.get(0))
+            param.foreach(probe.ref ! _)
+          }
+        )
 
       val lockCommand = Setup(Prefix("TCS.test"), CommandName("lock-assembly"), None)
       ocsSequencer.submitAndWait(Sequence(lockCommand))

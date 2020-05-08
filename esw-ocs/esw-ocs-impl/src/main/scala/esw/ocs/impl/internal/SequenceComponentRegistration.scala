@@ -22,16 +22,17 @@ class SequenceComponentRegistration(
     name: Option[String],
     _locationService: LocationService,
     sequenceComponentFactory: Prefix => Future[ActorRef[SequenceComponentMsg]]
-)(
-    implicit override val actorSystem: ActorSystem[SpawnProtocol.Command]
+)(implicit
+    override val actorSystem: ActorSystem[SpawnProtocol.Command]
 ) extends LocationServiceUtil(_locationService) {
 
-  def registerSequenceComponent(retryCount: Int): Future[Either[ScriptError, AkkaLocation]] = name match {
-    case Some(_) =>
-      // Don't retry if subsystem and name is provided
-      registerWithRetry(retryCount = 0)
-    case None => registerWithRetry(retryCount)
-  }
+  def registerSequenceComponent(retryCount: Int): Future[Either[ScriptError, AkkaLocation]] =
+    name match {
+      case Some(_) =>
+        // Don't retry if subsystem and name is provided
+        registerWithRetry(retryCount = 0)
+      case None => registerWithRetry(retryCount)
+    }
 
   private def registerWithRetry(retryCount: Int): Future[Either[ScriptError, AkkaLocation]] =
     registration().flatMap { akkaRegistration =>

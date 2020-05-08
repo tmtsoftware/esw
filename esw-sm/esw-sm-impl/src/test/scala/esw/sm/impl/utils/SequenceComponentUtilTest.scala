@@ -29,10 +29,11 @@ class SequenceComponentUtilTest extends BaseTestSuite {
   val sequenceComponentUtil: SequenceComponentUtil = new SequenceComponentUtil(locationServiceUtil, agentUtil) {
     override private[sm] def idleSequenceComponent(
         sequenceComponentLocation: AkkaLocation
-    ): Future[Option[SequenceComponentApi]] = sequenceComponentLocation.prefix.subsystem match {
-      case TCS => Future.successful(None)
-      case _   => Future.successful(Some(mock[SequenceComponentApi]))
-    }
+    ): Future[Option[SequenceComponentApi]] =
+      sequenceComponentLocation.prefix.subsystem match {
+        case TCS => Future.successful(None)
+        case _   => Future.successful(Some(mock[SequenceComponentApi]))
+      }
 
   }
 
@@ -82,9 +83,10 @@ class SequenceComponentUtilTest extends BaseTestSuite {
       val sequenceComponentUtil: SequenceComponentUtil = new SequenceComponentUtil(locationServiceUtil, agentUtil) {
         override private[sm] def idleSequenceComponent(
             sequenceComponentLocation: AkkaLocation
-        ): Future[Option[SequenceComponentApi]] = sequenceComponentLocation.prefix.subsystem match {
-          case _ => Future.successful(None) // stub this mimic no sequence component is idle
-        }
+        ): Future[Option[SequenceComponentApi]] =
+          sequenceComponentLocation.prefix.subsystem match {
+            case _ => Future.successful(None) // stub this mimic no sequence component is idle
+          }
       }
 
       when(locationServiceUtil.listAkkaLocationsBy(TCS, SequenceComponent))
@@ -107,9 +109,10 @@ class SequenceComponentUtilTest extends BaseTestSuite {
       val sequenceComponentUtil: SequenceComponentUtil = new SequenceComponentUtil(locationServiceUtil, agentUtil) {
         override private[sm] def idleSequenceComponent(
             sequenceComponentLocation: AkkaLocation
-        ): Future[Option[SequenceComponentApi]] = sequenceComponentLocation.prefix.subsystem match {
-          case _ => Future.successful(None) // stub this mimic no sequence component is idle
-        }
+        ): Future[Option[SequenceComponentApi]] =
+          sequenceComponentLocation.prefix.subsystem match {
+            case _ => Future.successful(None) // stub this mimic no sequence component is idle
+          }
       }
 
       when(locationServiceUtil.listAkkaLocationsBy(TCS, SequenceComponent))

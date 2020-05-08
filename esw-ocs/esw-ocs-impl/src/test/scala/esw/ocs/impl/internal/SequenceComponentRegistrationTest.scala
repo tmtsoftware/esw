@@ -25,8 +25,8 @@ class SequenceComponentRegistrationTest extends ScalaTestWithActorTestKit with B
   private val subsystem = Subsystem.TCS
   private val uri       = new URI("uri")
 
-  private def registerSequenceComponent(locationService: LocationService, name: Option[String], retryCount: Int)(
-      implicit actorSystem: ActorSystem[SpawnProtocol.Command]
+  private def registerSequenceComponent(locationService: LocationService, name: Option[String], retryCount: Int)(implicit
+      actorSystem: ActorSystem[SpawnProtocol.Command]
   ) = {
     val sequenceComponentProbe: TestProbe[SequenceComponentMsg]          = TestProbe[SequenceComponentMsg]()
     val seqCompFactory: Prefix => Future[ActorRef[SequenceComponentMsg]] = _ => Future.successful(sequenceComponentProbe.ref)

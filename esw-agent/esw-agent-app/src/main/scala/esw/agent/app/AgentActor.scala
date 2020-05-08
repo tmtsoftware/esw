@@ -26,8 +26,8 @@ class AgentActor(
 
   import logger._
 
-  private[agent] def behavior(state: AgentState): Behaviors.Receive[AgentCommand] = Behaviors.receive[AgentCommand] {
-    (ctx, command) =>
+  private[agent] def behavior(state: AgentState): Behaviors.Receive[AgentCommand] =
+    Behaviors.receive[AgentCommand] { (ctx, command) =>
       command match {
         //already spawning or registered
         case SpawnCommand(replyTo, componentId) if state.exist(componentId) =>
@@ -75,7 +75,7 @@ class AgentActor(
         //process has exited and child actor died
         case ProcessExited(componentId) => behavior(state.remove(componentId))
       }
-  }
+    }
 }
 
 object AgentActor {

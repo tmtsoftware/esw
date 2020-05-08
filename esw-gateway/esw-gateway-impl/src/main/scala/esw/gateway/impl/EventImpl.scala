@@ -21,32 +21,24 @@ class EventImpl(eventService: EventService, eventSubscriberUtil: EventSubscriber
   lazy val subscriber: EventSubscriber = eventService.defaultSubscriber
   lazy val publisher: EventPublisher   = eventService.defaultPublisher
 
-  override def publish(event: Event): Future[Done] = publisher.publish(event).recover {
-    case PublishFailure(_, _) => throw new EventServerUnavailable
-  }
+  override def publish(event: Event): Future[Done] =
+    publisher.publish(event).recover { case PublishFailure(_, _) => throw new EventServerUnavailable }
 
   override def get(eventKeys: Set[EventKey]): Future[Set[Event]] = {
-    if (eventKeys.nonEmpty) {
-      subscriber.get(eventKeys).recover {
-        case EventServerNotAvailable(_) => throw new EventServerUnavailable
-      }
-    }
-    else {
-      Future.failed(new EmptyEventKeys)
-    }
+    if (eventKeys.nonEmpty)
+      subscriber.get(eventKeys).recover { case EventServerNotAvailable(_) => throw new EventServerUnavailable }
+    else Future.failed(new EmptyEventKeys)
   }
 
   def subscribe(eventKeys: Set[EventKey], maxFrequency: Option[Int]): Source[Event, Subscription] = {
-    val stream = if (eventKeys.nonEmpty) {
-      maxFrequency match {
-        case Some(x) if x <= 0 => Source.failed(InvalidMaxFrequency())
-        case Some(frequency)   => subscriber.subscribe(eventKeys, Utils.maxFrequencyToDuration(frequency), RateLimiterMode)
-        case None              => subscriber.subscribe(eventKeys).withSubscription()
-      }
-    }
-    else {
-      Source.failed(new EmptyEventKeys)
-    }
+    val stream =
+      if (eventKeys.nonEmpty)
+        maxFrequency match {
+          case Some(x) if x <= 0 => Source.failed(InvalidMaxFrequency())
+          case Some(frequency)   => subscriber.subscribe(eventKeys, Utils.maxFrequencyToDuration(frequency), RateLimiterMode)
+          case None              => subscriber.subscribe(eventKeys).withSubscription()
+        }
+      else Source.failed(new EmptyEventKeys)
 
     stream.withSubscription()
   }

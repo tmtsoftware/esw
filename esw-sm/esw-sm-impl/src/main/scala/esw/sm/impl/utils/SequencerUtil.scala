@@ -20,8 +20,8 @@ import esw.sm.api.models.{ConfigureResponse, SequenceManagerError, SequencerErro
 import scala.async.Async.{async, await}
 import scala.concurrent.{ExecutionContext, Future}
 
-class SequencerUtil(locationServiceUtil: LocationServiceUtil, sequenceComponentUtil: SequenceComponentUtil)(
-    implicit actorSystem: ActorSystem[_]
+class SequencerUtil(locationServiceUtil: LocationServiceUtil, sequenceComponentUtil: SequenceComponentUtil)(implicit
+    actorSystem: ActorSystem[_]
 ) {
   implicit private val ec: ExecutionContext = actorSystem.executionContext
 
@@ -34,21 +34,22 @@ class SequencerUtil(locationServiceUtil: LocationServiceUtil, sequenceComponentU
   def resolveMasterSequencerOf(observingMode: String): Future[Either[EswLocationError, HttpLocation]] =
     locationServiceUtil.resolve(masterSequencerConnection(observingMode), Timeouts.DefaultTimeout)
 
-  def startSequencers(observingMode: String, requiredSequencers: Sequencers): Future[ConfigureResponse] = async {
-    val spawnSequencerResponses: Either[List[SequencerError], List[AkkaLocation]] =
-      await(Future.traverse(requiredSequencers.subsystems)(startSequencer(_, observingMode, retryCount))).sequence
+  def startSequencers(observingMode: String, requiredSequencers: Sequencers): Future[ConfigureResponse] =
+    async {
+      val spawnSequencerResponses: Either[List[SequencerError], List[AkkaLocation]] =
+        await(Future.traverse(requiredSequencers.subsystems)(startSequencer(_, observingMode, retryCount))).sequence
 
-    spawnSequencerResponses match {
-      case Left(failedScriptResponses) =>
-        // todo : discuss this clean up step
-        // await(shutdownSequencers(collectRights(spawnSequencerResponses))) // clean up spawned sequencers on failure
-        FailedToStartSequencers(failedScriptResponses.map(_.msg).toSet)
+      spawnSequencerResponses match {
+        case Left(failedScriptResponses) =>
+          // todo : discuss this clean up step
+          // await(shutdownSequencers(collectRights(spawnSequencerResponses))) // clean up spawned sequencers on failure
+          FailedToStartSequencers(failedScriptResponses.map(_.msg).toSet)
 
-      case Right(_) =>
-        // resolve master Sequencer and return LOCATION or FAILURE if location is not found
-        await(resolveMasterSequencerOf(observingMode).mapToAdt(Success, err => ConfigurationFailure(err.msg)))
+        case Right(_) =>
+          // resolve master Sequencer and return LOCATION or FAILURE if location is not found
+          await(resolveMasterSequencerOf(observingMode).mapToAdt(Success, err => ConfigurationFailure(err.msg)))
+      }
     }
-  }
 
   def stopSequencers(sequencers: Sequencers, obsMode: String): Future[Either[RegistrationListingFailed, Done]] =
     Future

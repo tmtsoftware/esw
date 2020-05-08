@@ -50,12 +50,15 @@ class ScriptEcIntegrationTest extends BaseTestSuite {
       BlockHoundWiring.install()
 
       // Some calls are intended to blocking so ScriptEcIntegration allows these specific calls
-      Await.result(Future {
-        // println is internally blocking
-        println("hello world")
-        // Id() creates random UUID which is blocking
-        Id()
-      }(testEc), 10.seconds)
+      Await.result(
+        Future {
+          // println is internally blocking
+          println("hello world")
+          // Id() creates random UUID which is blocking
+          Id()
+        }(testEc),
+        10.seconds
+      )
 
       assertString shouldBe ""
     }

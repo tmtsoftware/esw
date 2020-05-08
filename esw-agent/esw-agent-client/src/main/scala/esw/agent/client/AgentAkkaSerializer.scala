@@ -17,11 +17,12 @@ class AgentAkkaSerializer(_actorSystem: ExtendedActorSystem) extends AgentCodecs
 
   override implicit def actorSystem: ActorSystem[_] = _actorSystem.toTyped
 
-  override def toBinary(o: AnyRef): Array[Byte] = o match {
-    case x: AgentCommand => Cbor.encode(x).toByteArray
-    case x: Response     => Cbor.encode(x).toByteArray
-    case _               => throw new RuntimeException(s"does not support encoding of $o")
-  }
+  override def toBinary(o: AnyRef): Array[Byte] =
+    o match {
+      case x: AgentCommand => Cbor.encode(x).toByteArray
+      case x: Response     => Cbor.encode(x).toByteArray
+      case _               => throw new RuntimeException(s"does not support encoding of $o")
+    }
 
   override def includeManifest: Boolean = true
 

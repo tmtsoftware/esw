@@ -5,7 +5,8 @@ import csw.command.client.auth.Roles
 import csw.prefix.models.Subsystem
 
 object SubsystemUserRolePolicy {
-  def apply(subsystem: Subsystem): CustomPolicy = CustomPolicy { token =>
-    Roles(token.realm_access.roles).containsUserRole(subsystem)
-  }
+  def apply(subsystem: Subsystem): CustomPolicy =
+    CustomPolicy { token =>
+      Roles(token.realm_access.roles).containsUserRole(subsystem)
+    }
 }

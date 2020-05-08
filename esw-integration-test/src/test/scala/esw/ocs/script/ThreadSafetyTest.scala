@@ -27,10 +27,13 @@ class ThreadSafetyTest extends EswTestKit(EventServer) {
       val counterProbe = TestProbe[Int]
 
       eventSubscriber
-        .subscribeCallback(Set(counter), event => {
-          val param = event.paramType.get(counterKey).flatMap(_.get(0))
-          param.foreach(counterProbe.ref ! _)
-        })
+        .subscribeCallback(
+          Set(counter),
+          event => {
+            val param = event.paramType.get(counterKey).flatMap(_.get(0))
+            param.foreach(counterProbe.ref ! _)
+          }
+        )
 
       val threadSafeSequencer: SequencerApi = spawnSequencerProxy(ESW, "threadSafe")
 

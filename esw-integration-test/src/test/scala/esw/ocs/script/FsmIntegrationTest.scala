@@ -28,16 +28,22 @@ class FsmIntegrationTest extends EswTestKit(EventServer) {
       val tempFsmStateProbe = TestProbe[String]
 
       eventSubscriber
-        .subscribeCallback(Set(mainFsmKey), event => {
-          val param = event.paramType.get(stateKey).flatMap(_.get(0))
-          param.foreach(mainFsmStateProbe.ref ! _)
-        })
+        .subscribeCallback(
+          Set(mainFsmKey),
+          event => {
+            val param = event.paramType.get(stateKey).flatMap(_.get(0))
+            param.foreach(mainFsmStateProbe.ref ! _)
+          }
+        )
 
       eventSubscriber
-        .subscribeCallback(Set(tempFsmKey), event => {
-          val param = event.paramType.get(stateKey).flatMap(_.get(0))
-          param.foreach(tempFsmStateProbe.ref ! _)
-        })
+        .subscribeCallback(
+          Set(tempFsmKey),
+          event => {
+            val param = event.paramType.get(stateKey).flatMap(_.get(0))
+            param.foreach(tempFsmStateProbe.ref ! _)
+          }
+        )
 
       val fsmSequencer: SequencerApi = spawnSequencerProxy(ESW, "fsm")
 
@@ -81,10 +87,13 @@ class FsmIntegrationTest extends EswTestKit(EventServer) {
         )
 
       eventSubscriber
-        .subscribeCallback(Set(EventKey("esw.FsmTestScript.STARTED")), event => {
-          val param = event.paramType.get(commandKey).flatMap(_.get(0))
-          param.foreach(fsmStateProbe.ref ! _)
-        })
+        .subscribeCallback(
+          Set(EventKey("esw.FsmTestScript.STARTED")),
+          event => {
+            val param = event.paramType.get(commandKey).flatMap(_.get(0))
+            param.foreach(fsmStateProbe.ref ! _)
+          }
+        )
 
       val fsmSequencer: SequencerApi = spawnSequencerProxy(ESW, "becomeFsm")
       val command1                   = Setup(Prefix("esw.test"), CommandName("command-1"), None).madd(commandKey.set(10))

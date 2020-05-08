@@ -67,14 +67,15 @@ object SequencerApp extends EswCommandApp[SequencerAppCommand] {
     Await.result(response.map(_.response), Timeouts.DefaultTimeout)
   }
 
-  private def report(appResult: Either[ScriptError, AkkaLocation]) = appResult match {
-    case Left(err) => logAndThrowError(log, s"Failed to start with error: $err")
-    case Right(location) =>
-      logInfo(
-        log,
-        s"Successfully started and registered ${location.connection.componentId.componentType} with Location: [$location]"
-      )
-      location
-  }
+  private def report(appResult: Either[ScriptError, AkkaLocation]) =
+    appResult match {
+      case Left(err) => logAndThrowError(log, s"Failed to start with error: $err")
+      case Right(location) =>
+        logInfo(
+          log,
+          s"Successfully started and registered ${location.connection.componentId.componentType} with Location: [$location]"
+        )
+        location
+    }
 
 }

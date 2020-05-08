@@ -25,19 +25,20 @@ class OcsAkkaSerializer(_actorSystem: ExtendedActorSystem) extends OcsCodecs wit
   override def identifier: Int = 29926
   private val logger: Logger   = new LoggerFactory(Prefix(ESW, "sequencer_codec")).getLogger
 
-  override def toBinary(o: AnyRef): Array[Byte] = o match {
-    case x: EswSequencerMessage          => Cbor.encode(x).toByteArray
-    case x: EswSequencerResponse         => Cbor.encode(x).toByteArray
-    case x: StepList                     => Cbor.encode(x).toByteArray
-    case x: SequencerState[SequencerMsg] => Cbor.encode(x).toByteArray
-    case x: SequenceComponentMsg         => Cbor.encode(x).toByteArray
-    case x: ScriptResponse               => Cbor.encode(x).toByteArray
-    case x: GetStatusResponse            => Cbor.encode(x).toByteArray
-    case _ =>
-      val ex = new RuntimeException(s"does not support encoding of $o")
-      logger.error(ex.getMessage, ex = ex)
-      throw ex
-  }
+  override def toBinary(o: AnyRef): Array[Byte] =
+    o match {
+      case x: EswSequencerMessage          => Cbor.encode(x).toByteArray
+      case x: EswSequencerResponse         => Cbor.encode(x).toByteArray
+      case x: StepList                     => Cbor.encode(x).toByteArray
+      case x: SequencerState[SequencerMsg] => Cbor.encode(x).toByteArray
+      case x: SequenceComponentMsg         => Cbor.encode(x).toByteArray
+      case x: ScriptResponse               => Cbor.encode(x).toByteArray
+      case x: GetStatusResponse            => Cbor.encode(x).toByteArray
+      case _ =>
+        val ex = new RuntimeException(s"does not support encoding of $o")
+        logger.error(ex.getMessage, ex = ex)
+        throw ex
+    }
 
   override def includeManifest: Boolean = true
 

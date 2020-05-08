@@ -18,9 +18,10 @@ object AgentApp extends CommandApp[AgentCliCommand] {
   override def appVersion: String = BuildInfo.version
   override def progName: String   = BuildInfo.name
 
-  override def run(command: AgentCliCommand, remainingArgs: RemainingArgs): Unit = command match {
-    case StartCommand(prefix) => start(Prefix(prefix), AgentSettings.from(ConfigFactory.load()))
-  }
+  override def run(command: AgentCliCommand, remainingArgs: RemainingArgs): Unit =
+    command match {
+      case StartCommand(prefix) => start(Prefix(prefix), AgentSettings.from(ConfigFactory.load()))
+    }
 
   private[esw] def start(prefix: Prefix, agentSettings: AgentSettings): Unit = {
     val wiring = new AgentWiring(prefix, agentSettings)

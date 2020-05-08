@@ -18,11 +18,12 @@ sealed trait DiagnosticModeResponse   extends EswSequencerResponse
 sealed trait OperationsModeResponse   extends EswSequencerResponse
 
 sealed trait SequencerSubmitResponse extends EswSequencerResponse {
-  def toSubmitResponse(runId: Id = Id("IdNotAvailable")): SubmitResponse = this match {
-    case SubmitResult(submitResponse) => submitResponse
-    case unhandled: Unhandled         => Invalid(runId, UnsupportedCommandInStateIssue(unhandled.msg))
-    case NewSequenceHookFailed(msg)   => Error(runId, msg)
-  }
+  def toSubmitResponse(runId: Id = Id("IdNotAvailable")): SubmitResponse =
+    this match {
+      case SubmitResult(submitResponse) => submitResponse
+      case unhandled: Unhandled         => Invalid(runId, UnsupportedCommandInStateIssue(unhandled.msg))
+      case NewSequenceHookFailed(msg)   => Error(runId, msg)
+    }
 }
 
 sealed trait Ok
