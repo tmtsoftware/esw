@@ -7,12 +7,13 @@ import akka.actor.typed.scaladsl.Behaviors
 import csw.location.api.models.Connection.HttpConnection
 import csw.location.api.models.{ComponentId, ComponentType, HttpLocation}
 import csw.prefix.models.Prefix
-import esw.sm.api.BaseTestSuite
 import esw.sm.api.SequenceManagerState.Idle
 import esw.sm.api.actor.messages.SequenceManagerMsg
 import esw.sm.api.models.{CleanupResponse, ConfigureResponse, GetRunningObsModesResponse}
+import org.scalactic.TypeCheckedTripleEquals
+import org.scalatest.wordspec.AnyWordSpecLike
 
-class SequenceManagerImplTest extends ScalaTestWithActorTestKit with BaseTestSuite {
+class SequenceManagerImplTest extends ScalaTestWithActorTestKit with AnyWordSpecLike with TypeCheckedTripleEquals {
   private val masterSequencerLocation =
     HttpLocation(HttpConnection(ComponentId(Prefix("esw.primary"), ComponentType.Sequencer)), URI.create("uri"))
   private val configureResponse          = ConfigureResponse.Success(masterSequencerLocation)

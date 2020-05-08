@@ -1,9 +1,11 @@
 package esw.sm.api.models
 
 import csw.prefix.models.Subsystem.{ESW, NFIRAOS, TCS}
-import esw.sm.api.BaseTestSuite
+import org.scalactic.TypeCheckedTripleEquals
+import org.scalatest.matchers.should.Matchers
+import org.scalatest.wordspec.AnyWordSpecLike
 
-class SequenceManagerConfigTest extends BaseTestSuite {
+class SequenceManagerConfigTest extends AnyWordSpecLike with Matchers with TypeCheckedTripleEquals {
   "Resources needed for observing mode" must {
     "create from strings" in {
       val resources = Resources("IRIS", "WFOS")

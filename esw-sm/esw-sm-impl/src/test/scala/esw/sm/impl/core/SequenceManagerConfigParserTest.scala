@@ -10,7 +10,7 @@ import esw.commons.BaseTestSuite
 import esw.sm.api.models.{ObsModeConfig, Resources, SequenceManagerConfig, Sequencers}
 import io.bullet.borer.Borer.Error.InvalidInputData
 
-import scala.concurrent.{ExecutionContext, Future}
+import scala.concurrent.{Await, ExecutionContext, Future}
 
 class SequenceManagerConfigParserTest extends BaseTestSuite {
   private val actorSystem                   = ActorSystem(SpawnProtocol(), "test-system")
@@ -34,7 +34,7 @@ class SequenceManagerConfigParserTest extends BaseTestSuite {
           "IRIS_Cal"       -> ObsModeConfig(Resources("IRIS", "NCSU", "NFIRAOS"), calSequencers)
         )
       )
-      config.awaitResult shouldBe expectedConfig
+      config.futureValue shouldBe expectedConfig
     }
 
     "throw exception if config file has missing obsMode key | ESW-162" in {
@@ -76,5 +76,9 @@ class SequenceManagerConfigParserTest extends BaseTestSuite {
 
       exception shouldBe expectedException
     }
+  }
+
+  implicit class FutureOps[T](f: Future[T]) {
+    def awaitResult: T = Await.result(f, defaultTimeout)
   }
 }

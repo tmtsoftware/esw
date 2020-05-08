@@ -52,7 +52,7 @@ class SequencerUtilTest extends BaseTestSuite {
       import setup._
 
       // returns success with master sequencer location after starting all the sequencers
-      sequencerUtil.startSequencers(obsMode, Sequencers(ESW, TCS)).awaitResult shouldBe Success(masterSeqLocation)
+      sequencerUtil.startSequencers(obsMode, Sequencers(ESW, TCS)).futureValue shouldBe Success(masterSeqLocation)
 
       verifyMasterSequencerIsResolved()
 
@@ -79,7 +79,7 @@ class SequencerUtilTest extends BaseTestSuite {
 
       sequencerUtil
         .startSequencers(obsMode, Sequencers(ESW, TCS))
-        .awaitResult
+        .futureValue
         .shouldBe(FailedToStartSequencers(Set(seqCompErrorMsg, scriptErrorMsg)))
 
       // getAvailableSequenceComponent for ESW returns SpawnSequenceComponentFailed so retry 3 times make total invocations 4
