@@ -51,17 +51,19 @@ class SequenceComponentUtilTest extends BaseTestSuite {
   }
 
   "getAvailableSequenceComponent" must {
-    "return available sequence component for given subsystem | ESW-178" in {
+    "return available sequence component for given subsystem | ESW-164" in {
       when(locationServiceUtil.listAkkaLocationsBy(IRIS, SequenceComponent))
         .thenReturn(Future.successful(Right(List(mockAkkaLocation("IRIS.primary"), mockAkkaLocation("IRIS.secondary")))))
 
       sequenceComponentUtil.getAvailableSequenceComponent(IRIS).rightValue shouldBe a[SequenceComponentApi]
 
+      // verify call for looking iris sequence components
       verify(locationServiceUtil).listAkkaLocationsBy(IRIS, SequenceComponent)
+      // verify that agent.spawnSequenceComponentFor call is NOT made
       verify(agentUtil, never).spawnSequenceComponentFor(IRIS)
     }
 
-    "return available ESW sequence component when specific subsystem sequence component is not available | ESW-178" in {
+    "return available ESW sequence component when specific subsystem sequence component is not available | ESW-164" in {
 
       when(locationServiceUtil.listAkkaLocationsBy(TCS, SequenceComponent))
         .thenReturn(Future.successful(Right(List(mockAkkaLocation("TCS.primary"), mockAkkaLocation("TCS.secondary")))))
@@ -76,10 +78,13 @@ class SequenceComponentUtilTest extends BaseTestSuite {
       // verify call for looking esw sequence components as tcs sequence components are not idle/available
       // stub for idleSequenceComponent(tcs) returns None to mimic tcs sequence components NOT idle situation
       verify(locationServiceUtil).listAkkaLocationsBy(ESW, SequenceComponent)
+
+      // esw seq comp is available so no need to spawn seq comp using agent.
+      // verify agent.spawnSequenceComponentFor call is NOT made
       verify(agentUtil, never).spawnSequenceComponentFor(TCS)
     }
 
-    "spawn new sequence component when subsystem and esw both sequence components are not available | ESW-178" in {
+    "spawn new sequence component when subsystem and esw both sequence components are not available | ESW-164" in {
       val sequenceComponentUtil: SequenceComponentUtil = new SequenceComponentUtil(locationServiceUtil, agentUtil) {
         override private[sm] def idleSequenceComponent(
             sequenceComponentLocation: AkkaLocation
@@ -102,10 +107,11 @@ class SequenceComponentUtilTest extends BaseTestSuite {
       verify(locationServiceUtil).listAkkaLocationsBy(TCS, SequenceComponent)
       // verify call for looking esw sequence components as tcs sequence components are not idle/available
       verify(locationServiceUtil).listAkkaLocationsBy(ESW, SequenceComponent)
+      // verify agent.spawnSequenceComponentFor call for tcs
       verify(agentUtil, times(1)).spawnSequenceComponentFor(TCS)
     }
 
-    "return SpawnSequenceComponentFailed if spawning sequence component fails | ESW-178" in {
+    "return SpawnSequenceComponentFailed if spawning sequence component fails | ESW-164" in {
       val sequenceComponentUtil: SequenceComponentUtil = new SequenceComponentUtil(locationServiceUtil, agentUtil) {
         override private[sm] def idleSequenceComponent(
             sequenceComponentLocation: AkkaLocation
