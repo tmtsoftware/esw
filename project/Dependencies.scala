@@ -244,7 +244,6 @@ object Dependencies {
   val EswTestkit = Def.setting(
     Seq(
       Akka.`akka-actor-testkit-typed`,
-      Libs.`scala-java8-compat`,
       Csw.`csw-testkit`,
       Libs.scalatest,
       Libs.`tmt-test-reporter` % Test

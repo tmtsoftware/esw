@@ -18,4 +18,3 @@ trait BaseTestSuite
     with MockitoSugar
     with TypeCheckedTripleEquals
     with Eventually
-    with FutureEitherExt
