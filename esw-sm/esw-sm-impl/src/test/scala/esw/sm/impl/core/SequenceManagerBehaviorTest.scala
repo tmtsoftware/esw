@@ -84,7 +84,7 @@ class SequenceManagerBehaviorTest extends ScalaTestWithActorTestKit with BaseTes
       verify(locationServiceUtil).listAkkaLocationsBy(ESW, Sequencer)
     }
 
-    "return ConflictingResourcesWithRunningObsMode when required resources are already in use | ESW-178" in {
+    "return ConflictingResourcesWithRunningObsMode when required resources are already in use | ESW-169" in {
       val akkaLocation = AkkaLocation(AkkaConnection(ComponentId(Prefix(ESW, CLEARSKIES), Sequencer)), new URI("uri"))
       when(locationServiceUtil.listAkkaLocationsBy(ESW, Sequencer)).thenReturn(Future.successful(Right(List(akkaLocation))))
       val probe = createTestProbe[ConfigureResponse]
