@@ -16,9 +16,8 @@ import csw.prefix.models.Prefix
 import esw.gateway.api.codecs.GatewayCodecs
 import esw.gateway.api.protocol.PostRequest
 import esw.gateway.api.protocol.PostRequest.{ComponentCommand, GetEvent, SequencerCommand, createLabel}
-import esw.gateway.server.CswWiringMocks
 import esw.gateway.server.handlers.PostHandlerImpl
-import esw.http.core.BaseTestSuite
+import esw.gateway.server.{BaseTestSuite, CswWiringMocks}
 import esw.ocs.api.protocol.SequencerPostRequest.Pause
 import msocket.api.ContentType
 import msocket.impl.post.{ClientHttpCodecs, PostRouteFactory}

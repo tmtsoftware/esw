@@ -100,6 +100,7 @@ object Dependencies {
       Csw.`csw-alarm-client`,
       Akka.`akka-actor-typed`,
       Csw.`csw-command-client`,
+      AkkaHttp.`akka-http`,
       AkkaHttp.`akka-http-cors`,
       Csw.`csw-event-client`,
       Csw.`csw-params`.value,
@@ -107,13 +108,9 @@ object Dependencies {
       Csw.`csw-time-scheduler`,
       Libs.`case-app`,
       Libs.`scala-async`,
-      Libs.scalatest                  % Test,
-      Csw.`csw-testkit`               % Test,
-      Libs.`mockito-scala`            % Test,
-      Libs.`tmt-test-reporter`        % Test,
-      Akka.`akka-actor-testkit-typed` % Test,
-      AkkaHttp.`akka-http-testkit`    % Test,
-      Akka.`akka-stream-testkit`      % Test
+      Libs.scalatest           % Test,
+      Libs.`mockito-scala`     % Test,
+      Libs.`tmt-test-reporter` % Test
     )
   )
 
@@ -179,7 +176,12 @@ object Dependencies {
       Libs.`msocket-impl-jvm`,
       Csw.`csw-admin-impl`,
       Libs.`prometheus-akka-http`,
-      Libs.`tmt-test-reporter` % Test
+      Libs.`tmt-test-reporter`        % Test,
+      Libs.`mockito-scala`            % Test,
+      Libs.scalatest                  % Test,
+      Akka.`akka-actor-testkit-typed` % Test,
+      AkkaHttp.`akka-http-testkit`    % Test,
+      Akka.`akka-stream-testkit`      % Test
     )
   )
 

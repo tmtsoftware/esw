@@ -195,7 +195,7 @@ lazy val `esw-gateway-server` = project
     `esw-gateway-impl`,
     `esw-ocs-handler`,
     `esw-ocs-impl`,
-    `esw-http-core` % "compile->compile;test->test"
+    `esw-http-core`
   )
 
 lazy val `esw-contract` = project

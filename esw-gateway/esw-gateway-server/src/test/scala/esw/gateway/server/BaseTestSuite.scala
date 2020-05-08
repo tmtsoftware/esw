@@ -1,4 +1,4 @@
-package esw.http.core
+package esw.gateway.server
 
 import org.mockito.MockitoSugar
 import org.scalactic.TypeCheckedTripleEquals

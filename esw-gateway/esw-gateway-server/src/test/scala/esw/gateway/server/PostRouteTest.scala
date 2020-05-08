@@ -27,7 +27,6 @@ import esw.gateway.api.codecs.GatewayCodecs
 import esw.gateway.api.protocol.PostRequest._
 import esw.gateway.api.protocol._
 import esw.gateway.server.handlers.PostHandlerImpl
-import esw.http.core.BaseTestSuite
 import esw.ocs.api.protocol.{Ok, OkOrUnhandledResponse, SequencerPostRequest}
 import msocket.api.ContentType
 import msocket.api.models.{GenericError, ServiceError}

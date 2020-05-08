@@ -24,7 +24,6 @@ import esw.gateway.api.protocol.WebsocketRequest.{ComponentCommand, SequencerCom
 import esw.gateway.api.protocol._
 import esw.gateway.impl.EventImpl
 import esw.gateway.server.handlers.WebsocketHandlerImpl
-import esw.http.core.BaseTestSuite
 import esw.ocs.api.protocol.SequencerWebsocketRequest
 import io.bullet.borer.Decoder
 import msocket.api.ContentEncoding.JsonText
