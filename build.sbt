@@ -112,8 +112,8 @@ lazy val `esw-ocs-app` = project
   )
   .dependsOn(
     `esw-ocs-handler`,
-    `esw-ocs-impl`  % "compile->compile;test->test",
-    `esw-http-core` % "compile->compile;test->test"
+    `esw-http-core`,
+    `esw-ocs-impl` % "compile->compile;test->test"
   )
 
 lazy val `esw-agent` = project
