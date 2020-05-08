@@ -3,7 +3,7 @@ package esw.ocs.impl.blockhound
 import java.util.concurrent.Executors
 
 import csw.params.core.models.Id
-import esw.ocs.api.BaseTestSuite
+import esw.commons.BaseTestSuite
 import reactor.blockhound.BlockHound
 import reactor.blockhound.integration.BlockHoundIntegration
 

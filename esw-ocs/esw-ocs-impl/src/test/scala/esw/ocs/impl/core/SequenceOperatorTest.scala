@@ -5,7 +5,7 @@ import akka.actor.typed.scaladsl.Behaviors
 import csw.command.client.messages.sequencer.SequencerMsg
 import csw.params.commands.{CommandName, Setup}
 import csw.prefix.models.Prefix
-import esw.ocs.api.BaseTestSuite
+import esw.commons.BaseTestSuite
 import esw.ocs.api.models.StepStatus.Finished
 import esw.ocs.api.models.{Step, StepStatus}
 import esw.ocs.api.protocol.{Ok, PullNextResult}

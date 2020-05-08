@@ -5,7 +5,7 @@ import akka.actor.{ActorSystem, CoordinatedShutdown}
 import akka.stream.Materializer
 import csw.params.commands.SequenceCommand
 import csw.params.core.models.Id
-import esw.ocs.api.BaseTestSuite
+import esw.commons.BaseTestSuite
 import esw.ocs.api.models.Step
 import esw.ocs.api.protocol.{Ok, PullNextResult}
 import esw.ocs.impl.script.ScriptApi

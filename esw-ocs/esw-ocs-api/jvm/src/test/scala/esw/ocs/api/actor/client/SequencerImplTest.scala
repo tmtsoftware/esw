@@ -15,14 +15,14 @@ import csw.params.core.models.Id
 import csw.prefix.models.Prefix
 import csw.prefix.models.Subsystem.ESW
 import csw.time.core.models.UTCTime
-import esw.ocs.api.BaseTestSuite
 import esw.ocs.api.actor.messages.SequencerMessages._
 import esw.ocs.api.actor.messages.SequencerState.{Idle, Loaded, Offline}
 import esw.ocs.api.models.StepList
 import esw.ocs.api.protocol.EditorError.{CannotOperateOnAnInFlightOrFinishedStep, IdDoesNotExist}
 import esw.ocs.api.protocol.{GoOnlineHookFailed, Ok, SubmitResult, Unhandled}
+import org.scalatest.wordspec.AnyWordSpecLike
 
-class SequencerImplTest extends ScalaTestWithActorTestKit with BaseTestSuite {
+class SequencerImplTest extends ScalaTestWithActorTestKit with AnyWordSpecLike {
   private val command             = Setup(Prefix("esw.test"), CommandName("command-1"), None)
   private val getSequenceResponse = Some(StepList(Sequence(command)))
   private val stepId              = getSequenceResponse.get.steps.head.id

@@ -13,20 +13,20 @@ import csw.params.commands.{CommandName, Setup}
 import csw.params.core.models.ObsId
 import csw.params.events.{EventKey, EventName}
 import csw.prefix.models.Prefix
+import esw.commons.BaseTestSuite
 import esw.gateway.api.codecs.GatewayCodecs
 import esw.gateway.api.protocol.PostRequest
 import esw.gateway.api.protocol.PostRequest.{ComponentCommand, GetEvent, SequencerCommand, createLabel}
+import esw.gateway.server.CswWiringMocks
 import esw.gateway.server.handlers.PostHandlerImpl
-import esw.gateway.server.{BaseTestSuite, CswWiringMocks}
 import esw.ocs.api.protocol.SequencerPostRequest.Pause
 import msocket.api.ContentType
 import msocket.impl.post.{ClientHttpCodecs, PostRouteFactory}
-import org.mockito.MockitoSugar
 import org.scalatest.prop.Tables.Table
 
 import scala.concurrent.Future
 
-class PostMetricsTest extends BaseTestSuite with ScalatestRouteTest with GatewayCodecs with ClientHttpCodecs with MockitoSugar {
+class PostMetricsTest extends BaseTestSuite with ScalatestRouteTest with GatewayCodecs with ClientHttpCodecs {
 
   override def clientContentType: ContentType = ContentType.Json
 
