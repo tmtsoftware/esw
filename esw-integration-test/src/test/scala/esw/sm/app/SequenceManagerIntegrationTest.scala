@@ -3,7 +3,7 @@ package esw.sm.app
 import java.nio.file.Paths
 
 import csw.location.api.models.ComponentType.Sequencer
-import csw.prefix.models.Subsystem.{AOESW, ESW, IRIS}
+import csw.prefix.models.Subsystem.{AOESW, ESW, IRIS, TCS}
 import csw.prefix.models.{Prefix, Subsystem}
 import esw.ocs.api.actor.client.SequenceComponentImpl
 import esw.ocs.app.SequencerApp
@@ -51,6 +51,23 @@ class SequenceManagerIntegrationTest extends EswTestKit {
 
     // ESW-166 verify all sequencers are stopped for the observing mode and seq comps are available
     TestSetup.assertSeqCompAvailability(isSeqCompAvailable = true, ESW, IRIS, AOESW)
+  }
+
+  "configure should return error in case of conflicting resource | ESW-169" in {
+    // Setup Sequence components for ESW, IRIS, AOESW and TCS
+    TestSetup.setupSeqComponent(ESW, IRIS, AOESW, TCS)
+
+    val configFilePath = Paths.get(ClassLoader.getSystemResource("sequence_manager.conf").toURI)
+    val wiring         = new SequenceManagerWiring(configFilePath)
+
+    // Start Sequence Manager
+    val sequenceManager: SequenceManagerApi = wiring.start
+
+    // Configure for "IRIS_Cal" observing mode should be successful as the resources are available
+    sequenceManager.configure("IRIS_Cal").futureValue shouldBe a[ConfigureResponse.Success]
+
+    // Configure for "IRIS_Darknight" observing mode should return error because resource IRIS and NFIRAOS are busy
+    sequenceManager.configure("IRIS_Darknight").futureValue shouldBe ConfigureResponse.ConflictingResourcesWithRunningObsMode
   }
 
   object TestSetup {
