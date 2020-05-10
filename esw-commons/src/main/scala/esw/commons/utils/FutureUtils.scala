@@ -17,5 +17,4 @@ object FutureUtils {
       .withAttributes(ActorAttributes.supervisionStrategy { case NonFatal(_) => Supervision.Resume })
       .filter(predicate)
       .runWith(Sink.headOption)
-
 }

@@ -40,7 +40,6 @@ import scala.concurrent.Await
 import scala.concurrent.duration.DurationDouble
 
 class AdminGatewayTest extends EswTestKit(Gateway) with GatewayCodecs {
-
   protected val logBuffer: mutable.Buffer[JsObject] = mutable.Buffer.empty[JsObject]
   protected val testAppender                        = new TestAppender(x => logBuffer += Json.parse(x.toString).as[JsObject])
 

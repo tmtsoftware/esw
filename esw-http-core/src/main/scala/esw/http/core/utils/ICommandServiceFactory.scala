@@ -10,8 +10,9 @@ trait ICommandServiceFactory {
 }
 
 object ICommandServiceFactory {
-  def default: ICommandServiceFactory = new ICommandServiceFactory {
-    override def make(componentLocation: Location)(implicit actorSystem: ActorSystem[_]): CommandService =
-      CommandServiceFactory.make(componentLocation)
-  }
+  def default: ICommandServiceFactory =
+    new ICommandServiceFactory {
+      override def make(componentLocation: Location)(implicit actorSystem: ActorSystem[_]): CommandService =
+        CommandServiceFactory.make(componentLocation)
+    }
 }

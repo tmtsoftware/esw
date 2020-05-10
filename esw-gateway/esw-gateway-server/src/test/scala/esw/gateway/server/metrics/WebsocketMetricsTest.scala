@@ -17,13 +17,13 @@ import csw.params.core.models.Id
 import csw.params.events.{Event, EventKey, EventName, ObserveEvent}
 import csw.prefix.models.Prefix
 import csw.prefix.models.Subsystem.TCS
+import esw.commons.BaseTestSuite
 import esw.gateway.api.codecs.GatewayCodecs
 import esw.gateway.api.protocol.WebsocketRequest.{ComponentCommand, SequencerCommand, Subscribe}
 import esw.gateway.api.protocol._
 import esw.gateway.impl.EventImpl
 import esw.gateway.server.CswWiringMocks
 import esw.gateway.server.handlers.WebsocketHandlerImpl
-import esw.http.core.BaseTestSuite
 import esw.ocs.api.protocol.SequencerWebsocketRequest
 import io.bullet.borer.Decoder
 import msocket.api.ContentEncoding.JsonText

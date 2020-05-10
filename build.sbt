@@ -12,10 +12,11 @@ lazy val aggregateProjects: Seq[ProjectReference] =
     `esw-contract`,
     examples,
     `esw-commons`,
-    `esw-sm`
+    `esw-sm`,
+    `esw-testkit`
   )
 
-lazy val githubReleases: Seq[ProjectReference] = Seq(`esw-ocs-app`, `esw-gateway-server`)
+lazy val githubReleases: Seq[ProjectReference] = Seq(`esw-ocs-app`, `esw-gateway-server`, `esw-sm-app`)
 lazy val unidocExclusions: Seq[ProjectReference] = Seq(
   `esw-integration-test`,
   `esw-ocs-api`.js,
@@ -71,7 +72,10 @@ lazy val `esw-ocs-handler` = project
   .settings(
     libraryDependencies ++= Dependencies.OcsHandler.value
   )
-  .dependsOn(`esw-ocs-api`.jvm % "compile->compile;test->test")
+  .dependsOn(
+    `esw-ocs-api`.jvm,
+    `esw-commons` % "test->test"
+  )
 
 lazy val `esw-ocs-impl` = project
   .in(file("esw-ocs/esw-ocs-impl"))
@@ -80,16 +84,17 @@ lazy val `esw-ocs-impl` = project
     libraryDependencies ++= Dependencies.OcsImpl.value
   )
   .dependsOn(
-    `esw-commons`,
-    `esw-ocs-api`.jvm % "compile->compile;test->test"
+    `esw-ocs-api`.jvm,
+    `esw-commons` % "compile->compile;test->test"
   )
 
 lazy val `esw-ocs-dsl` = project
   .in(file("esw-ocs/esw-ocs-dsl"))
   .settings(libraryDependencies ++= Dependencies.OcsDsl.value)
   .dependsOn(
-    `esw-ocs-api`.jvm % "compile->compile;test->test",
-    `esw-ocs-impl`
+    `esw-ocs-api`.jvm,
+    `esw-ocs-impl`,
+    `esw-commons` % "test->test"
   )
 
 lazy val `esw-ocs-dsl-kt` = project
@@ -111,8 +116,9 @@ lazy val `esw-ocs-app` = project
   )
   .dependsOn(
     `esw-ocs-handler`,
-    `esw-ocs-impl`  % "compile->compile;test->test",
-    `esw-http-core` % "compile->compile;test->test"
+    `esw-http-core`,
+    `esw-ocs-impl`,
+    `esw-commons` % "test->test"
   )
 
 lazy val `esw-agent` = project
@@ -153,7 +159,8 @@ lazy val `esw-integration-test` = project
     `esw-ocs-app`,
     `esw-agent-app`,
     `esw-agent-client`,
-    `esw-commons` % "test->test"
+    `esw-sm-app`,
+    `esw-testkit`
   )
 
 lazy val `esw-gateway` = project
@@ -193,7 +200,8 @@ lazy val `esw-gateway-server` = project
     `esw-gateway-impl`,
     `esw-ocs-handler`,
     `esw-ocs-impl`,
-    `esw-http-core` % "compile->compile;test->test"
+    `esw-http-core`,
+    `esw-commons` % "test->test"
   )
 
 lazy val `esw-contract` = project
@@ -221,7 +229,8 @@ lazy val `esw-sm` = project
   .aggregate(
     `esw-sm-api`.js,
     `esw-sm-api`.jvm,
-    `esw-sm-impl`
+    `esw-sm-impl`,
+    `esw-sm-app`
   )
 
 lazy val `esw-sm-api` = crossProject(JSPlatform, JVMPlatform)
@@ -240,9 +249,32 @@ lazy val `esw-sm-api` = crossProject(JSPlatform, JVMPlatform)
 
 lazy val `esw-sm-impl` = project
   .in(file("esw-sm/esw-sm-impl"))
+  .enablePlugins(MaybeCoverage, PublishBintray)
   .settings(libraryDependencies ++= Dependencies.EswSmImpl.value)
   .dependsOn(`esw-sm-api`.jvm, `esw-ocs-api`.jvm, `esw-agent-client`, `esw-commons` % "compile->compile;test->test")
+
+lazy val `esw-sm-app` = project
+  .in(file("esw-sm/esw-sm-app"))
+  .enablePlugins(EswBuildInfo, DeployApp)
+  .settings(
+    libraryDependencies ++= Dependencies.EswSmApp.value
+  )
+  .dependsOn(
+    `esw-sm-impl`,
+    `esw-http-core`
+  )
 
 lazy val `esw-commons` = project
   .in(file("esw-commons"))
   .settings(libraryDependencies ++= Dependencies.EswCommons.value)
+
+lazy val `esw-testkit` = project
+  .in(file("esw-testkit"))
+  .settings(
+    libraryDependencies ++= Dependencies.EswTestkit.value
+  )
+  .dependsOn(
+    `esw-gateway-server`,
+    `esw-ocs-app`,
+    `esw-agent-app`
+  )

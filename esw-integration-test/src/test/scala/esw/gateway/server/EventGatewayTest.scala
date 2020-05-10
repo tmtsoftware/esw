@@ -7,11 +7,12 @@ import csw.params.core.generics.{KeyType, Parameter}
 import csw.params.core.models._
 import csw.params.events.{Event, EventKey, EventName, SystemEvent}
 import csw.prefix.models.{Prefix, Subsystem}
+import csw.testkit.scaladsl.CSWService.EventServer
 import esw.gateway.api.clients.EventClient
 import esw.gateway.api.codecs.GatewayCodecs
 import esw.gateway.api.protocol.GatewayException
 import esw.ocs.testkit.EswTestKit
-import esw.ocs.testkit.Service.{EventServer, Gateway}
+import esw.ocs.testkit.Service.Gateway
 
 class EventGatewayTest extends EswTestKit(EventServer, Gateway) with GatewayCodecs {
 
@@ -70,9 +71,10 @@ class EventGatewayTest extends EswTestKit(EventServer, Gateway) with GatewayCode
     "subscribe events returns an EmptyEventKeys error on sending no event keys in subscription| ESW-93, ESW-216, ESW-86" in {
       val eventClient: EventClient = new EventClient(gatewayPostClient, gatewayWsClient)
 
-      intercept[GatewayException] {
-        eventClient.subscribe(Set.empty, None).runForeach(_ => ()).awaitResult
+      val exception = intercept[Exception] {
+        eventClient.subscribe(Set.empty, None).runForeach(_ => ()).futureValue
       }
+      exception.getCause shouldBe a[GatewayException]
     }
 
     "support pubsub of large events" in {

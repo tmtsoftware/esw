@@ -16,8 +16,8 @@ import esw.commons.{BaseTestSuite, Timeouts}
 import esw.ocs.api.SequencerApi
 import esw.ocs.api.actor.client.SequenceComponentImpl
 import esw.ocs.api.protocol.{ScriptError, ScriptResponse}
-import esw.sm.api.actor.messages.ConfigureResponse.{FailedToStartSequencers, Success}
-import esw.sm.api.models.SequenceManagerError.{SequencerNotIdle, SpawnSequenceComponentFailed}
+import esw.sm.api.models.ConfigureResponse.{FailedToStartSequencers, Success}
+import esw.sm.api.models.SequenceManagerError.SpawnSequenceComponentFailed
 import esw.sm.api.models.Sequencers
 
 import scala.concurrent.duration.DurationInt
@@ -52,7 +52,7 @@ class SequencerUtilTest extends BaseTestSuite {
       import setup._
 
       // returns success with master sequencer location after starting all the sequencers
-      sequencerUtil.startSequencers(obsMode, Sequencers(ESW, TCS)).awaitResult shouldBe Success(masterSeqLocation)
+      sequencerUtil.startSequencers(obsMode, Sequencers(ESW, TCS)).futureValue shouldBe Success(masterSeqLocation)
 
       verifyMasterSequencerIsResolved()
 
@@ -79,7 +79,7 @@ class SequencerUtilTest extends BaseTestSuite {
 
       sequencerUtil
         .startSequencers(obsMode, Sequencers(ESW, TCS))
-        .awaitResult
+        .futureValue
         .shouldBe(FailedToStartSequencers(Set(seqCompErrorMsg, scriptErrorMsg)))
 
       // getAvailableSequenceComponent for ESW returns SpawnSequenceComponentFailed so retry 3 times make total invocations 4
@@ -92,42 +92,6 @@ class SequencerUtilTest extends BaseTestSuite {
 
       verify(tcsSeqComp).loadScript(TCS, obsMode)
       verify(eswSeqComp, never).loadScript(ESW, obsMode)
-    }
-  }
-
-  "areSequencersIdle" must {
-    "return Done if all given sequencers are idle | ESW-178" in {
-      val obsMode = "moonNight"
-      val setup   = new TestSetup(obsMode)
-      import setup._
-      when(locationServiceUtil.resolveSequencer(ESW, obsMode)).thenReturn(Future.successful(Right(eswLocation)))
-      when(locationServiceUtil.resolveSequencer(TCS, obsMode)).thenReturn(Future.successful(Right(tcsLocation)))
-      when(eswSequencerApi.isAvailable).thenReturn(Future.successful(true))
-      when(tcsSequencerApi.isAvailable).thenReturn(Future.successful(true))
-
-      val eventualBoolean = sequencerUtil.checkForSequencersAvailability(Sequencers(ESW, TCS), obsMode)
-
-      eventualBoolean.rightValue shouldBe Done
-      verify(eswSequencerApi).isAvailable
-      verify(tcsSequencerApi).isAvailable
-    }
-
-    "return Error if one or more of given sequencers are busy | ESW-178" in {
-      val obsMode = "moonNight"
-      val setup   = new TestSetup(obsMode)
-      import setup._
-      when(locationServiceUtil.resolveSequencer(ESW, obsMode, Timeouts.DefaultTimeout))
-        .thenReturn(Future.successful(Right(eswLocation)))
-      when(locationServiceUtil.resolveSequencer(TCS, obsMode, Timeouts.DefaultTimeout))
-        .thenReturn(Future.successful(Right(tcsLocation)))
-      when(eswSequencerApi.isAvailable).thenReturn(Future.successful(true))
-      when(tcsSequencerApi.isAvailable).thenReturn(Future.successful(false))
-
-      val eventualBoolean = sequencerUtil.checkForSequencersAvailability(Sequencers(ESW, TCS), obsMode)
-
-      eventualBoolean.leftValue shouldBe SequencerNotIdle(obsMode)
-      verify(eswSequencerApi).isAvailable
-      verify(tcsSequencerApi).isAvailable
     }
   }
 

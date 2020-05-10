@@ -1,6 +1,5 @@
 package esw.gateway.api.codecs
 
-import com.github.ghik.silencer.silent
 import csw.alarm.models.Key.AlarmKey
 import csw.command.api.codecs.CommandServiceCodecs
 import csw.location.api.codec.LocationCodecs
@@ -14,14 +13,16 @@ import io.bullet.borer.derivation.MapBasedCodecs.deriveAllCodecs
 import io.bullet.borer.{Codec, Decoder, Encoder}
 import msocket.api.ErrorProtocol
 
+import scala.annotation.nowarn
+
 object GatewayCodecs extends GatewayCodecs
 trait GatewayCodecs extends CommandServiceCodecs with LocationCodecs with LoggingCodecs with SequencerHttpCodecs {
 
   implicit lazy val gatewayExceptionCodecValue: Codec[GatewayException] = deriveAllCodecs
 
   implicit lazy val postRequestValue: Codec[PostRequest] = {
-    @silent implicit lazy val metadataEnc: Encoder[Map[String, Any]] = Encoder[MapElem].contramap(ElementConverter.fromMap)
-    @silent implicit lazy val metadataDec: Decoder[Map[String, Any]] = Decoder[MapElem].map(ElementConverter.toMap)
+    @nowarn implicit lazy val metadataEnc: Encoder[Map[String, Any]] = Encoder[MapElem].contramap(ElementConverter.fromMap)
+    @nowarn implicit lazy val metadataDec: Decoder[Map[String, Any]] = Decoder[MapElem].map(ElementConverter.toMap)
     deriveAllCodecs
   }
 

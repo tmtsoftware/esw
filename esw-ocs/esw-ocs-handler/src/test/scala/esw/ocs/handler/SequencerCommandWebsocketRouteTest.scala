@@ -10,7 +10,7 @@ import csw.params.core.models.Id
 import esw.ocs.api.codecs.SequencerHttpCodecs
 import esw.ocs.api.protocol.SequencerWebsocketRequest
 import esw.ocs.api.protocol.SequencerWebsocketRequest.QueryFinal
-import esw.ocs.api.{BaseTestSuite, SequencerApi}
+import esw.ocs.api.SequencerApi
 import io.bullet.borer.Decoder
 import msocket.api.ContentEncoding.JsonText
 import msocket.api.ContentType
@@ -21,6 +21,7 @@ import msocket.impl.ws.WebsocketRouteFactory
 
 import scala.concurrent.Future
 import scala.concurrent.duration.DurationLong
+import esw.commons.BaseTestSuite
 
 class SequencerCommandWebsocketRouteTest
     extends BaseTestSuite

@@ -1,7 +1,7 @@
 package esw.ocs.dsl.script
 
 import csw.params.core.generics.{KeyType, Parameter}
-import esw.ocs.api.BaseTestSuite
+import esw.commons.BaseTestSuite
 import esw.ocs.dsl.params.Params
 
 class FsmScriptStateTest extends BaseTestSuite {

@@ -31,7 +31,7 @@ class AgentUtilTest extends BaseTestSuite {
   }
 
   "spawnSequenceComponentFor" must {
-    "return SequenceComponentApi after spawning sequence component | ESW-178" in {
+    "return SequenceComponentApi after spawning sequence component | ESW-164" in {
       val setup = new TestSetup()
       import setup._
 
@@ -45,7 +45,7 @@ class AgentUtilTest extends BaseTestSuite {
       verify(locationServiceUtil).resolve(any[AkkaConnection], argEq(Timeouts.DefaultTimeout))
     }
 
-    "return SpawnSequenceComponentFailed if agent fails to spawn sequence component | ESW-178" in {
+    "return SpawnSequenceComponentFailed if agent fails to spawn sequence component | ESW-164" in {
       val setup = new TestSetup()
       import setup._
 
@@ -59,7 +59,7 @@ class AgentUtilTest extends BaseTestSuite {
       verify(agentClient).spawnSequenceComponent(any[Prefix])
     }
 
-    "return LocationServiceError if location service call to resolve spawned sequence returns error | ESW-178" in {
+    "return LocationServiceError if location service call to resolve spawned sequence returns error | ESW-164" in {
       val setup = new TestSetup()
       import setup._
 
@@ -74,7 +74,7 @@ class AgentUtilTest extends BaseTestSuite {
       verify(locationServiceUtil).resolve(any[AkkaConnection], argEq(Timeouts.DefaultTimeout))
     }
 
-    "return LocationServiceError if getAgent fails | ESW-178" in {
+    "return LocationServiceError if getAgent fails | ESW-164" in {
       val locationServiceUtil: LocationServiceUtil = mock[LocationServiceUtil]
 
       val agentUtil: AgentUtil = new AgentUtil(locationServiceUtil) {

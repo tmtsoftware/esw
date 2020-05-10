@@ -1,14 +1,15 @@
-package esw.ocs.api
+package esw.ocs.testkit.utils
 
+import akka.util.Timeout
 import org.mockito.MockitoSugar
 import org.scalactic.TypeCheckedTripleEquals
 import org.scalatest._
 import org.scalatest.concurrent.{Eventually, ScalaFutures}
-
-import scala.concurrent.duration.{Duration, DurationDouble}
-import scala.concurrent.{Await, Future}
 import org.scalatest.matchers.should.Matchers
 import org.scalatest.wordspec.AnyWordSpecLike
+
+import scala.concurrent.Future
+import scala.concurrent.duration.{Duration, DurationDouble}
 
 trait BaseTestSuite
     extends AnyWordSpecLike
@@ -21,11 +22,10 @@ trait BaseTestSuite
     with MockitoSugar
     with TypeCheckedTripleEquals
     with Eventually {
-  val defaultTimeout: Duration = 10.seconds
+  val defaultTimeout: Duration          = 10.seconds
+  implicit lazy val askTimeout: Timeout = Timeout(10.seconds)
 
-  implicit class FutureOps[T](f: Future[T]) {
-    def awaitResult: T = Await.result(f, defaultTimeout)
-  }
+  override implicit def patienceConfig: PatienceConfig = PatienceConfig(defaultTimeout, 50.millis)
 
   implicit class EitherOps[L, R](either: Either[L, R]) {
     def rightValue: R = either.toOption.get

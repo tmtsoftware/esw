@@ -14,16 +14,14 @@ import esw.commons.utils.location.EswLocationError.{RegistrationListingFailed, R
 import esw.commons.utils.location.{EswLocationError, LocationServiceUtil}
 import esw.ocs.api.actor.client.SequencerApiFactory
 import esw.ocs.api.{SequenceComponentApi, SequencerApi}
-import esw.sm.api.actor.messages.ConfigureResponse
-import esw.sm.api.actor.messages.ConfigureResponse.{ConfigurationFailure, FailedToStartSequencers, Success}
-import esw.sm.api.models.SequenceManagerError.{LocationServiceError, SequencerNotIdle}
-import esw.sm.api.models.{SequenceManagerError, SequencerError, Sequencers}
+import esw.sm.api.models.ConfigureResponse.{ConfigurationFailure, FailedToStartSequencers, Success}
+import esw.sm.api.models.{ConfigureResponse, SequenceManagerError, SequencerError, Sequencers}
 
 import scala.async.Async.{async, await}
 import scala.concurrent.{ExecutionContext, Future}
 
-class SequencerUtil(locationServiceUtil: LocationServiceUtil, sequenceComponentUtil: SequenceComponentUtil)(
-    implicit actorSystem: ActorSystem[_]
+class SequencerUtil(locationServiceUtil: LocationServiceUtil, sequenceComponentUtil: SequenceComponentUtil)(implicit
+    actorSystem: ActorSystem[_]
 ) {
   implicit private val ec: ExecutionContext = actorSystem.executionContext
 
@@ -36,33 +34,22 @@ class SequencerUtil(locationServiceUtil: LocationServiceUtil, sequenceComponentU
   def resolveMasterSequencerOf(observingMode: String): Future[Either[EswLocationError, HttpLocation]] =
     locationServiceUtil.resolve(masterSequencerConnection(observingMode), Timeouts.DefaultTimeout)
 
-  def startSequencers(observingMode: String, requiredSequencers: Sequencers): Future[ConfigureResponse] = async {
-    val spawnSequencerResponses: Either[List[SequencerError], List[AkkaLocation]] =
-      await(Future.traverse(requiredSequencers.subsystems)(startSequencer(_, observingMode, retryCount))).sequence
+  def startSequencers(observingMode: String, requiredSequencers: Sequencers): Future[ConfigureResponse] =
+    async {
+      val spawnSequencerResponses: Either[List[SequencerError], List[AkkaLocation]] =
+        await(Future.traverse(requiredSequencers.subsystems)(startSequencer(_, observingMode, retryCount))).sequence
 
-    spawnSequencerResponses match {
-      case Left(failedScriptResponses) =>
-        // todo : discuss this clean up step
-        // await(shutdownSequencers(collectRights(spawnSequencerResponses))) // clean up spawned sequencers on failure
-        FailedToStartSequencers(failedScriptResponses.map(_.msg).toSet)
+      spawnSequencerResponses match {
+        case Left(failedScriptResponses) =>
+          // todo : discuss this clean up step
+          // await(shutdownSequencers(collectRights(spawnSequencerResponses))) // clean up spawned sequencers on failure
+          FailedToStartSequencers(failedScriptResponses.map(_.msg).toSet)
 
-      case Right(_) =>
-        // resolve master Sequencer and return LOCATION or FAILURE if location is not found
-        await(resolveMasterSequencerOf(observingMode).mapToAdt(Success, err => ConfigurationFailure(err.msg)))
+        case Right(_) =>
+          // resolve master Sequencer and return LOCATION or FAILURE if location is not found
+          await(resolveMasterSequencerOf(observingMode).mapToAdt(Success, err => ConfigurationFailure(err.msg)))
+      }
     }
-  }
-
-  //fixme: replace Done with success type
-  def checkForSequencersAvailability(sequencers: Sequencers, obsMode: String): Future[Either[SequencerError, Done]] = async {
-    val resolvedSequencers: Either[List[EswLocationError], List[Boolean]] =
-      await(Future.traverse(sequencers.subsystems)(resolveAndCheckAvailability(obsMode, _))).sequence
-
-    resolvedSequencers match {
-      case Right(bools) if bools.contains(false) => Left(SequencerNotIdle(obsMode))
-      case Right(_)                              => Right(Done)
-      case Left(_)                               => Left(LocationServiceError("Failed to check availability of sequencers"))
-    }
-  }
 
   def stopSequencers(sequencers: Sequencers, obsMode: String): Future[Either[RegistrationListingFailed, Done]] =
     Future
@@ -87,8 +74,6 @@ class SequencerUtil(locationServiceUtil: LocationServiceUtil, sequenceComponentU
   private[sm] def createSequencerClient(location: Location): SequencerApi = SequencerApiFactory.make(location)
   private def resolveSequencer(obsMode: String, subsystem: Subsystem) =
     locationServiceUtil.resolveSequencer(subsystem, obsMode).mapRight(createSequencerClient)
-  private def resolveAndCheckAvailability(obsMode: String, subsystem: Subsystem): Future[Either[EswLocationError, Boolean]] =
-    resolveSequencer(obsMode, subsystem).flatMapRight(_.isAvailable)
 
   private def loadScript(subSystem: Subsystem, observingMode: String, seqCompApi: SequenceComponentApi) =
     seqCompApi.loadScript(subSystem, observingMode).map(_.response.left.map(e => SequenceManagerError.LoadScriptError(e.msg)))

@@ -14,8 +14,8 @@ import esw.commons.utils.location.EswLocationError.{RegistrationListingFailed, R
 import scala.concurrent.duration.FiniteDuration
 import scala.concurrent.{ExecutionContext, Future}
 
-private[esw] class LocationServiceUtil(val locationService: LocationService)(
-    implicit val actorSystem: ActorSystem[_]
+private[esw] class LocationServiceUtil(val locationService: LocationService)(implicit
+    val actorSystem: ActorSystem[_]
 ) {
   implicit val ec: ExecutionContext = actorSystem.executionContext
 

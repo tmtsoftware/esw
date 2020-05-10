@@ -1,4 +1,4 @@
-package esw
+package esw.demo
 
 import akka.actor.typed.scaladsl.AskPattern.Askable
 import akka.actor.typed.{ActorSystem, Scheduler, SpawnProtocol}

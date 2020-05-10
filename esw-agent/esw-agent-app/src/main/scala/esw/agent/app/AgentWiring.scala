@@ -48,9 +48,10 @@ object AgentWiring {
       prefix: Prefix,
       agentSettings: AgentSettings,
       _actorSystem: ActorSystem[SpawnProtocol.Command]
-  ): AgentWiring = new AgentWiring(prefix, agentSettings) {
-    override lazy val actorSystem: ActorSystem[SpawnProtocol.Command] = _actorSystem
-  }
+  ): AgentWiring =
+    new AgentWiring(prefix, agentSettings) {
+      override lazy val actorSystem: ActorSystem[SpawnProtocol.Command] = _actorSystem
+    }
 }
 
 // $COVERAGE-ON$

@@ -19,12 +19,13 @@ import msocket.impl.ws.WebsocketHandler
 class WebsocketHandlerImpl(resolver: Resolver, eventApi: EventApi, contentType: ContentType)
     extends WebsocketHandler[WebsocketRequest](contentType) {
 
-  override def handle(request: WebsocketRequest): Source[Message, NotUsed] = request match {
-    case ComponentCommand(componentId, command)                 => onComponentCommand(componentId, command)
-    case SequencerCommand(componentId, command)                 => onSequencerCommand(componentId, command)
-    case Subscribe(eventKeys, maxFrequency)                     => stream(eventApi.subscribe(eventKeys, maxFrequency))
-    case SubscribeWithPattern(subsystem, maxFrequency, pattern) => stream(eventApi.pSubscribe(subsystem, maxFrequency, pattern))
-  }
+  override def handle(request: WebsocketRequest): Source[Message, NotUsed] =
+    request match {
+      case ComponentCommand(componentId, command)                 => onComponentCommand(componentId, command)
+      case SequencerCommand(componentId, command)                 => onSequencerCommand(componentId, command)
+      case Subscribe(eventKeys, maxFrequency)                     => stream(eventApi.subscribe(eventKeys, maxFrequency))
+      case SubscribeWithPattern(subsystem, maxFrequency, pattern) => stream(eventApi.pSubscribe(subsystem, maxFrequency, pattern))
+    }
 
   private def onComponentCommand(componentId: ComponentId, command: CommandServiceWebsocketMessage): Source[Message, NotUsed] =
     Source

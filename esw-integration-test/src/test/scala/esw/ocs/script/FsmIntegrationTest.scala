@@ -8,9 +8,9 @@ import csw.params.core.generics.KeyType.{IntKey, LongKey, StringKey}
 import csw.params.events.{Event, EventKey}
 import csw.prefix.models.Prefix
 import csw.prefix.models.Subsystem.ESW
+import csw.testkit.scaladsl.CSWService.EventServer
 import esw.ocs.api.SequencerApi
 import esw.ocs.testkit.EswTestKit
-import esw.ocs.testkit.Service.EventServer
 
 import scala.concurrent.Await
 import scala.concurrent.duration.DurationInt
@@ -28,16 +28,22 @@ class FsmIntegrationTest extends EswTestKit(EventServer) {
       val tempFsmStateProbe = TestProbe[String]
 
       eventSubscriber
-        .subscribeCallback(Set(mainFsmKey), event => {
-          val param = event.paramType.get(stateKey).flatMap(_.get(0))
-          param.foreach(mainFsmStateProbe.ref ! _)
-        })
+        .subscribeCallback(
+          Set(mainFsmKey),
+          event => {
+            val param = event.paramType.get(stateKey).flatMap(_.get(0))
+            param.foreach(mainFsmStateProbe.ref ! _)
+          }
+        )
 
       eventSubscriber
-        .subscribeCallback(Set(tempFsmKey), event => {
-          val param = event.paramType.get(stateKey).flatMap(_.get(0))
-          param.foreach(tempFsmStateProbe.ref ! _)
-        })
+        .subscribeCallback(
+          Set(tempFsmKey),
+          event => {
+            val param = event.paramType.get(stateKey).flatMap(_.get(0))
+            param.foreach(tempFsmStateProbe.ref ! _)
+          }
+        )
 
       val fsmSequencer: SequencerApi = spawnSequencerProxy(ESW, "fsm")
 
@@ -61,7 +67,7 @@ class FsmIntegrationTest extends EswTestKit(EventServer) {
       tempFsmStateProbe.expectMessage("FINISHED")
       mainFsmStateProbe.expectMessage("TERMINATE")
 
-      fsmSequencer.stop().awaitResult
+      fsmSequencer.stop().futureValue
       mainFsmStateProbe.expectMessage("Fsm:TERMINATE:STOP")
       mainFsmStateProbe.expectMessage("MAIN:STOP")
     }
@@ -81,10 +87,13 @@ class FsmIntegrationTest extends EswTestKit(EventServer) {
         )
 
       eventSubscriber
-        .subscribeCallback(Set(EventKey("esw.FsmTestScript.STARTED")), event => {
-          val param = event.paramType.get(commandKey).flatMap(_.get(0))
-          param.foreach(fsmStateProbe.ref ! _)
-        })
+        .subscribeCallback(
+          Set(EventKey("esw.FsmTestScript.STARTED")),
+          event => {
+            val param = event.paramType.get(commandKey).flatMap(_.get(0))
+            param.foreach(fsmStateProbe.ref ! _)
+          }
+        )
 
       val fsmSequencer: SequencerApi = spawnSequencerProxy(ESW, "becomeFsm")
       val command1                   = Setup(Prefix("esw.test"), CommandName("command-1"), None).madd(commandKey.set(10))
@@ -97,7 +106,7 @@ class FsmIntegrationTest extends EswTestKit(EventServer) {
         fsmStateProbe.expectMessage(10)
       }
 
-      fsmSequencer.stop().awaitResult
+      fsmSequencer.stop().futureValue
     }
 
     "command flag should trigger FSM bind to it | ESW-246, ESW-251, ESW-252, ESW-142" in {
@@ -123,7 +132,7 @@ class FsmIntegrationTest extends EswTestKit(EventServer) {
         fsmStateProbe.expectMessage(100)
       }
 
-      fsmSequencer.stop().awaitResult
+      fsmSequencer.stop().futureValue
     }
 
     "be able to bind to param variables with polling time | ESW-142, ESW-256, ESW-291" in {

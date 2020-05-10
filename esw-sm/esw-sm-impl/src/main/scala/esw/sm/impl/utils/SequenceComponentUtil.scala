@@ -17,8 +17,8 @@ import esw.sm.api.models.AgentError
 import scala.async.Async._
 import scala.concurrent.Future
 
-class SequenceComponentUtil(locationServiceUtil: LocationServiceUtil, agentUtil: AgentUtil)(
-    implicit actorSystem: ActorSystem[_],
+class SequenceComponentUtil(locationServiceUtil: LocationServiceUtil, agentUtil: AgentUtil)(implicit
+    actorSystem: ActorSystem[_],
     timeout: Timeout
 ) {
   import actorSystem.executionContext
@@ -49,9 +49,11 @@ class SequenceComponentUtil(locationServiceUtil: LocationServiceUtil, agentUtil:
       .firstCompletedOf(locations.map(idleSequenceComponent))(_.isDefined)
       .map(_.flatten)
 
-  private[sm] def idleSequenceComponent(sequenceComponentLocation: AkkaLocation): Future[Option[SequenceComponentApi]] = async {
-    val sequenceComponentApi = new SequenceComponentImpl(sequenceComponentLocation)
-    val status               = await(sequenceComponentApi.status)
-    status.response.map(_ => sequenceComponentApi)
-  }
+  private[sm] def idleSequenceComponent(sequenceComponentLocation: AkkaLocation): Future[Option[SequenceComponentApi]] =
+    async {
+      val sequenceComponentApi   = new SequenceComponentImpl(sequenceComponentLocation)
+      val status                 = await(sequenceComponentApi.status)
+      val isBusyRunningSequencer = status.response.isDefined
+      if (isBusyRunningSequencer) None else Some(sequenceComponentApi)
+    }
 }

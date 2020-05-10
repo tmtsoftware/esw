@@ -10,7 +10,7 @@ import csw.command.client.messages.SupervisorLockMessage.{Lock, Unlock}
 import csw.command.client.models.framework.LockingResponse
 import csw.prefix.models.Prefix
 import csw.prefix.models.Subsystem.ESW
-import esw.ocs.api.BaseTestSuite
+import esw.commons.BaseTestSuite
 
 import scala.concurrent.duration.FiniteDuration
 
@@ -18,7 +18,7 @@ class LockUnlockUtilTest extends BaseTestSuite {
 
   implicit val actorSystem: ActorSystem[SpawnProtocol.Command] = ActorSystem(SpawnProtocol(), "test")
 
-  override def afterAll() = actorSystem.terminate()
+  override def afterAll(): Unit = actorSystem.terminate()
 
   "Lock" must {
     val source        = Prefix(ESW, "sequencer")

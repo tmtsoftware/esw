@@ -10,7 +10,7 @@ import esw.commons.BaseTestSuite
 import esw.sm.api.models.{ObsModeConfig, Resources, SequenceManagerConfig, Sequencers}
 import io.bullet.borer.Borer.Error.InvalidInputData
 
-import scala.concurrent.{ExecutionContext, Future}
+import scala.concurrent.{Await, ExecutionContext, Future}
 
 class SequenceManagerConfigParserTest extends BaseTestSuite {
   private val actorSystem                   = ActorSystem(SpawnProtocol(), "test-system")
@@ -31,10 +31,10 @@ class SequenceManagerConfigParserTest extends BaseTestSuite {
       val expectedConfig = SequenceManagerConfig(
         Map(
           "IRIS_Darknight" -> ObsModeConfig(Resources("IRIS", "TCS", "NFIRAOS"), darknightSequencers),
-          "IRIS_cal"       -> ObsModeConfig(Resources("IRIS", "NCSU", "NFIRAOS"), calSequencers)
+          "IRIS_Cal"       -> ObsModeConfig(Resources("IRIS", "NCSU", "NFIRAOS"), calSequencers)
         )
       )
-      config.awaitResult shouldBe expectedConfig
+      config.futureValue shouldBe expectedConfig
     }
 
     "throw exception if config file has missing obsMode key | ESW-162" in {
@@ -66,6 +66,8 @@ class SequenceManagerConfigParserTest extends BaseTestSuite {
       val path                        = Paths.get("testConfig.conf")
       val sequenceManagerConfigParser = new SequenceManagerConfigParser(configUtils)
       val expectedException           = new RuntimeException("Failed to read config")
+
+      // config server getConfig fails with exception
       when(configUtils.getConfig(inputFilePath = path, isLocal = true)).thenReturn(Future.failed(expectedException))
 
       val exception = intercept[RuntimeException](
@@ -74,5 +76,9 @@ class SequenceManagerConfigParserTest extends BaseTestSuite {
 
       exception shouldBe expectedException
     }
+  }
+
+  implicit class FutureOps[T](f: Future[T]) {
+    def awaitResult: T = Await.result(f, defaultTimeout)
   }
 }

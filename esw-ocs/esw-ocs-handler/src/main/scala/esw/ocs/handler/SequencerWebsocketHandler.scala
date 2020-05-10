@@ -13,7 +13,8 @@ import msocket.impl.ws.WebsocketHandler
 class SequencerWebsocketHandler(sequencerApi: SequencerApi, contentType: ContentType)
     extends WebsocketHandler[SequencerWebsocketRequest](contentType) {
 
-  override def handle(request: SequencerWebsocketRequest): Source[Message, NotUsed] = request match {
-    case QueryFinal(sequenceId, timeout) => stream(sequencerApi.queryFinal(sequenceId)(timeout))
-  }
+  override def handle(request: SequencerWebsocketRequest): Source[Message, NotUsed] =
+    request match {
+      case QueryFinal(sequenceId, timeout) => stream(sequencerApi.queryFinal(sequenceId)(timeout))
+    }
 }

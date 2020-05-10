@@ -1,6 +1,5 @@
 package esw.agent
 
-import akka.util.Timeout
 import csw.location.api.codec.LocationServiceCodecs
 import csw.location.api.models.ComponentId
 import csw.location.api.models.ComponentType.{Machine, SequenceComponent, Service}
@@ -18,7 +17,6 @@ import scala.concurrent.duration.DurationLong
 import scala.util.Random
 
 class AgentIntegrationTest extends EswTestKit(MachineAgent) with BeforeAndAfterAll with LocationServiceCodecs {
-  override implicit lazy val askTimeout: Timeout = 5.seconds
 
   "Agent" must {
     "start and register itself with location service | ESW-237" in {

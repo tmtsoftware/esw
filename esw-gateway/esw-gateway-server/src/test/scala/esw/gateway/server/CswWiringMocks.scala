@@ -58,16 +58,23 @@ class RateLimiterStub[A](delay: FiniteDuration) extends GraphStage[FlowShape[A, 
   final val out   = Outlet.create[A]("DroppingThrottle.out")
   final val shape = FlowShape.of(in, out)
 
-  override def createLogic(inheritedAttributes: Attributes): GraphStageLogic = new GraphStageLogic(shape) {
+  override def createLogic(inheritedAttributes: Attributes): GraphStageLogic =
+    new GraphStageLogic(shape) {
 
-    setHandler(in, new InHandler {
-      override def onPush(): Unit = {
-        push(out, grab(in))
-      }
-    })
+      setHandler(
+        in,
+        new InHandler {
+          override def onPush(): Unit = {
+            push(out, grab(in))
+          }
+        }
+      )
 
-    setHandler(out, new OutHandler {
-      override def onPull(): Unit = pull(in)
-    })
-  }
+      setHandler(
+        out,
+        new OutHandler {
+          override def onPull(): Unit = pull(in)
+        }
+      )
+    }
 }

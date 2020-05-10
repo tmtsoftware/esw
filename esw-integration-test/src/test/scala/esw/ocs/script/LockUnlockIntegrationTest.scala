@@ -1,22 +1,18 @@
 package esw.ocs.script
 
 import akka.actor.testkit.typed.scaladsl.TestProbe
-import akka.actor.typed.ActorRef
 import com.typesafe.config.ConfigFactory
-import csw.command.client.messages.sequencer.SequencerMsg
 import csw.params.commands.{CommandName, Sequence, Setup}
 import csw.params.core.generics.KeyType.StringKey
 import csw.params.events.EventKey
 import csw.prefix.models.Prefix
 import csw.prefix.models.Subsystem.ESW
+import csw.testkit.scaladsl.CSWService.EventServer
 import esw.ocs.api.SequencerApi
-import esw.ocs.api.actor.client.SequencerImpl
 import esw.ocs.testkit.EswTestKit
-import esw.ocs.testkit.Service.EventServer
 
 class LockUnlockIntegrationTest extends EswTestKit(EventServer) {
-  private var ocsSequencerRef: ActorRef[SequencerMsg] = _
-  private var ocsSequencer: SequencerApi              = _
+  private var ocsSequencer: SequencerApi = _
 
   override def beforeAll(): Unit = {
     super.beforeAll()
@@ -24,8 +20,7 @@ class LockUnlockIntegrationTest extends EswTestKit(EventServer) {
   }
 
   override def beforeEach(): Unit = {
-    ocsSequencerRef = spawnSequencerRef(ESW, "lockUnlockScript")
-    ocsSequencer = new SequencerImpl(ocsSequencerRef)
+    ocsSequencer = spawnSequencerProxy(ESW, "lockUnlockScript")
   }
 
   override def afterEach(): Unit = shutdownAllSequencers()
@@ -37,10 +32,13 @@ class LockUnlockIntegrationTest extends EswTestKit(EventServer) {
     "support locking components | ESW-126" in {
       val probe = TestProbe[String]
       eventSubscriber
-        .subscribeCallback(Set(lockingEventKey), event => {
-          val param = event.paramType.get(lockingStringKey).flatMap(_.get(0))
-          param.foreach(probe.ref ! _)
-        })
+        .subscribeCallback(
+          Set(lockingEventKey),
+          event => {
+            val param = event.paramType.get(lockingStringKey).flatMap(_.get(0))
+            param.foreach(probe.ref ! _)
+          }
+        )
 
       val lockCommand = Setup(Prefix("TCS.test"), CommandName("lock-assembly"), None)
       ocsSequencer.submitAndWait(Sequence(lockCommand))

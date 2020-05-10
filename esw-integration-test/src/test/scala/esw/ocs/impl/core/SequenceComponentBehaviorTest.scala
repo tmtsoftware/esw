@@ -23,7 +23,7 @@ class SequenceComponentBehaviorTest extends EswTestKit {
   private val factory                  = new LoggerFactory(Prefix("csw.SequenceComponentTest"))
 
   private def spawnSequenceComponent() = {
-    (system ? { replyTo: ActorRef[ActorRef[SequenceComponentMsg]] =>
+    (actorSystem ? { replyTo: ActorRef[ActorRef[SequenceComponentMsg]] =>
       Spawn(
         SequenceComponentBehavior
           .behavior(Prefix(ocsSequenceComponentName), factory.getLogger, new SequencerWiring(_, _, _).sequencerServer),

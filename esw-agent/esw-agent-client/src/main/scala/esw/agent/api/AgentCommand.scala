@@ -19,10 +19,11 @@ object AgentCommand {
   }
 
   object SpawnCommand {
-    def unapply(arg: SpawnCommand): Option[(ActorRef[SpawnResponse], ComponentId)] = arg match {
-      case cmd: SpawnSelfRegistered     => Some((cmd.replyTo, cmd.componentId))
-      case cmd: SpawnManuallyRegistered => Some((cmd.replyTo, cmd.registration.connection.componentId))
-    }
+    def unapply(arg: SpawnCommand): Option[(ActorRef[SpawnResponse], ComponentId)] =
+      arg match {
+        case cmd: SpawnSelfRegistered     => Some((cmd.replyTo, cmd.componentId))
+        case cmd: SpawnManuallyRegistered => Some((cmd.replyTo, cmd.registration.connection.componentId))
+      }
 
     sealed trait SpawnSelfRegistered extends SpawnCommand {
       val componentId: ComponentId

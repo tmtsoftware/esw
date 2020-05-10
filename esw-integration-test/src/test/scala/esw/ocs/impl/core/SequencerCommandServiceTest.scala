@@ -10,7 +10,7 @@ import esw.ocs.testkit.EswTestKit
 class SequencerCommandServiceTest extends EswTestKit {
 
   "should submit and process sequence | ESW-190, ESW-148" in {
-    val sequencerLocation = spawnSequencer(ESW, "darknight").rightValue
+    val sequencerLocation = spawnSequencer(ESW, "darknight")
 
     val command1 = Setup(Prefix("esw.test"), CommandName("command-1"), None)
     val sequence = Sequence(command1)

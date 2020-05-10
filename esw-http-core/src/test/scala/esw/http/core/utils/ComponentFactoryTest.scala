@@ -3,16 +3,21 @@ package esw.http.core.utils
 import java.net.URI
 
 import akka.actor.typed.{ActorSystem, SpawnProtocol}
-import csw.location.api.scaladsl.LocationService
 import csw.location.api.models.Connection.{AkkaConnection, HttpConnection}
 import csw.location.api.models.{AkkaLocation, ComponentId, HttpLocation}
-import esw.http.core.BaseTestSuite
+import csw.location.api.scaladsl.LocationService
 import esw.http.core.wiring.ActorRuntime
+import org.mockito.MockitoSugar
+import org.scalatest.BeforeAndAfterAll
+import org.scalatest.concurrent.Eventually._
+import org.scalatest.concurrent.ScalaFutures._
+import org.scalatest.matchers.should.Matchers
+import org.scalatest.wordspec.AnyWordSpec
 
+import scala.concurrent.Future
 import scala.concurrent.duration.DurationInt
-import scala.concurrent.{Await, Future}
 
-class ComponentFactoryTest extends BaseTestSuite {
+class ComponentFactoryTest extends AnyWordSpec with MockitoSugar with Matchers with BeforeAndAfterAll {
   private val actorSystem: ActorSystem[SpawnProtocol.Command] = ActorSystem(SpawnProtocol(), "test")
   private val actorRuntime                                    = new ActorRuntime(actorSystem)
   import actorRuntime._
@@ -34,7 +39,7 @@ class ComponentFactoryTest extends BaseTestSuite {
 
   override protected def afterAll(): Unit = {
     actorSystem.terminate
-    Await.result(actorSystem.whenTerminated, 10.seconds)
+    actorSystem.whenTerminated.futureValue
   }
 
   "resolveLocation" must {

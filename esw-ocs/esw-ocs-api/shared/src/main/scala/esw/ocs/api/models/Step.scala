@@ -7,14 +7,16 @@ import esw.ocs.api.protocol.EditorError._
 
 case class Step private[ocs] (id: Id, command: SequenceCommand, status: StepStatus, hasBreakpoint: Boolean) {
   def isPending: Boolean = status == StepStatus.Pending
-  def isFailed: Boolean = status match {
-    case _: Finished.Failure => true
-    case _                   => false
-  }
-  def isFinished: Boolean = status match {
-    case _: Finished => true
-    case _           => false
-  }
+  def isFailed: Boolean =
+    status match {
+      case _: Finished.Failure => true
+      case _                   => false
+    }
+  def isFinished: Boolean =
+    status match {
+      case _: Finished => true
+      case _           => false
+    }
 
   def isInFlight: Boolean = status == StepStatus.InFlight
 

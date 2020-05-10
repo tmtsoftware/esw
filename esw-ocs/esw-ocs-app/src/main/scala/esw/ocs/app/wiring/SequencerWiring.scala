@@ -35,14 +35,13 @@ import esw.ocs.impl.blockhound.BlockHoundWiring
 import esw.ocs.impl.core._
 import esw.ocs.impl.internal._
 import esw.ocs.impl.script.{ScriptApi, ScriptContext, ScriptLoader}
-import esw.ocs.impl.syntax.FutureSyntax.FutureUtil
 import msocket.api.ContentType
 import msocket.impl.RouteFactory
 import msocket.impl.post.PostRouteFactory
 import msocket.impl.ws.WebsocketRouteFactory
 
 import scala.async.Async.{async, await}
-import scala.concurrent.Future
+import scala.concurrent.{Await, Future}
 import scala.util.control.NonFatal
 
 private[ocs] class SequencerWiring(
@@ -63,9 +62,12 @@ private[ocs] class SequencerWiring(
 
   implicit lazy val actorRuntime: ActorRuntime = cswWiring.actorRuntime
 
-  lazy val sequencerRef: ActorRef[SequencerMsg] = (actorSystem ? { x: ActorRef[ActorRef[SequencerMsg]] =>
-    Spawn(sequencerBehavior.setup, prefix.toString, Props.empty, x)
-  }).block
+  lazy val sequencerRef: ActorRef[SequencerMsg] = Await.result(
+    actorSystem ? { x: ActorRef[ActorRef[SequencerMsg]] =>
+      Spawn(sequencerBehavior.setup, prefix.toString, Props.empty, x)
+    },
+    Timeouts.DefaultTimeout
+  )
 
   //Pass lambda to break circular dependency shown below.
   //SequencerRef -> Script -> cswServices -> SequencerOperator -> SequencerRef
@@ -112,7 +114,7 @@ private[ocs] class SequencerWiring(
   private lazy val settings    = new Settings(Some(SocketUtils.getFreePort), Some(prefix), config, ComponentType.Sequencer)
   private lazy val httpService = new HttpService(logger, locationService, routes, settings, actorRuntime)
 
-  private val shutdownHttpService = () =>
+  private val shutdownHttpService: () => Future[Done] = () =>
     async {
       logger.debug("Shutting down Sequencer http service")
       val (serverBinding, registrationResult) = await(httpService.registeredLazyBinding)
@@ -132,12 +134,20 @@ private[ocs] class SequencerWiring(
         logger.info(s"Starting sequencer for subsystem: $subsystem with observing mode: $observingMode")
         new Engine(script).start(sequenceOperatorFactory())
 
-        httpService.registeredLazyBinding.block
+        Await.result(httpService.registeredLazyBinding, Timeouts.DefaultTimeout)
 
         val registration = AkkaRegistration(AkkaConnection(componentId), sequencerRef.toURI)
-        val loc = locationServiceUtil
-          .register(registration, { case NonFatal(e) => Future.successful(Left(ScriptError(e.getMessage))) })
-          .block
+        val loc = Await.result(
+          locationServiceUtil
+            .register(
+              registration,
+              {
+                case NonFatal(e) => Future.successful(Left(ScriptError(e.getMessage)))
+              }
+            ),
+          Timeouts.DefaultTimeout
+        )
+
         logger.info(s"Successfully started Sequencer for subsystem: $subsystem with observing mode: $observingMode")
         if (enableThreadMonitoring) {
           logger.info(s"Thread Monitoring enabled for ${BlockHoundWiring.integrations}")
@@ -152,6 +162,6 @@ private[ocs] class SequencerWiring(
       }
     }
 
-    override def shutDown(): Done = (sequencerRef ? Shutdown).map(_ => Done).block
+    override def shutDown(): Done = Await.result((sequencerRef ? Shutdown).map(_ => Done), Timeouts.DefaultTimeout)
   }
 }

@@ -12,13 +12,12 @@ import esw.ocs.testkit.EswTestKit
 import esw.ocs.testkit.Service.Gateway
 
 class DynamicLogLevelTest extends EswTestKit(Gateway) with LoggingCodecs with GatewayCodecs {
-
   private var sequencerLocation: AkkaLocation = _
 
   override def beforeAll(): Unit = {
     super.beforeAll()
-    LoggingSystemFactory.start("logging", "version", "localhost", system)
-    sequencerLocation = spawnSequencer(ESW, "darknight").rightValue
+    LoggingSystemFactory.start("logging", "version", "localhost", actorSystem)
+    sequencerLocation = spawnSequencer(ESW, "darknight")
   }
 
   "get/set log level for sequencer dynamically using gateway | ESW-183" in {

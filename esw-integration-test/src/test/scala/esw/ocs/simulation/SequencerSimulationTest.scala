@@ -7,7 +7,7 @@ import csw.params.events.{EventKey, SystemEvent}
 import csw.prefix.models.Prefix
 import csw.prefix.models.Subsystem.{ESW, TCS}
 import esw.ocs.testkit.EswTestKit
-import esw.ocs.testkit.Service.EventServer
+import csw.testkit.scaladsl.CSWService.EventServer
 
 class SequencerSimulationTest extends EswTestKit(EventServer) {
 

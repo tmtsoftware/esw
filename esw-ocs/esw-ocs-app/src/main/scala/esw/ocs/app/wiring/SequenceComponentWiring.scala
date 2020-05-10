@@ -15,9 +15,8 @@ import esw.ocs.api.actor.messages.SequenceComponentMsg
 import esw.ocs.api.protocol.ScriptError
 import esw.ocs.impl.core.SequenceComponentBehavior
 import esw.ocs.impl.internal.{SequenceComponentRegistration, SequencerServerFactory}
-import esw.ocs.impl.syntax.FutureSyntax.FutureUtil
 
-import scala.concurrent.Future
+import scala.concurrent.{Await, Future}
 
 // $COVERAGE-OFF$
 private[ocs] class SequenceComponentWiring(
@@ -55,7 +54,7 @@ private[ocs] class SequenceComponentWiring(
     new SequenceComponentRegistration(subsystem, name, locationService, sequenceComponentFactory)
 
   def start(): Either[ScriptError, AkkaLocation] =
-    sequenceComponentRegistration.registerSequenceComponent(registrationRetryCount).block
+    Await.result(sequenceComponentRegistration.registerSequenceComponent(registrationRetryCount), Timeouts.DefaultTimeout)
 
 }
 private[ocs] object SequenceComponentWiring {
@@ -64,8 +63,9 @@ private[ocs] object SequenceComponentWiring {
       name: Option[String],
       sequencerServerFactory: SequencerServerFactory,
       _actorSystem: ActorSystem[SpawnProtocol.Command]
-  ): SequenceComponentWiring = new SequenceComponentWiring(subsystem, name, sequencerServerFactory) {
-    override private[wiring] lazy val actorSystem = _actorSystem
-  }
+  ): SequenceComponentWiring =
+    new SequenceComponentWiring(subsystem, name, sequencerServerFactory) {
+      override private[wiring] lazy val actorSystem = _actorSystem
+    }
 }
 // $COVERAGE-ON$

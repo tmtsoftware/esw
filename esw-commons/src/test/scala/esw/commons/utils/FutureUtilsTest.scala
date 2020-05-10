@@ -15,7 +15,7 @@ class FutureUtilsTest extends BaseTestSuite {
 
   override def afterAll(): Unit = {
     system.terminate()
-    system.whenTerminated.awaitResult
+    system.whenTerminated.futureValue
   }
 
   "firstCompletedOf" must {
@@ -25,7 +25,7 @@ class FutureUtilsTest extends BaseTestSuite {
       val future3 = future(delay = 50.millis, value = 3)
       val future4 = future(delay = 1.millis, value = throw new RuntimeException("failed"))
 
-      val result = FutureUtils.firstCompletedOf(List(future1, future2, future3, future4))(_ == 3).awaitResult
+      val result = FutureUtils.firstCompletedOf(List(future1, future2, future3, future4))(_ == 3).futureValue
 
       result shouldBe Some(3)
     }
@@ -35,7 +35,7 @@ class FutureUtilsTest extends BaseTestSuite {
       val future2 = future(delay = 100.millis, value = 2)
       val future3 = future(delay = 10.millis, value = 3)
 
-      val result = FutureUtils.firstCompletedOf(List(future1, future2, future3))(_ > 3).awaitResult
+      val result = FutureUtils.firstCompletedOf(List(future1, future2, future3))(_ > 3).futureValue
 
       result shouldBe None
     }
@@ -45,7 +45,7 @@ class FutureUtilsTest extends BaseTestSuite {
       val future2 = future(delay = 30.millis, value = 2)
       val future3 = future(delay = 10.millis, value = throw new RuntimeException("failed"))
 
-      val result = FutureUtils.firstCompletedOf(List(future1, future2, future3))(_ > 3).awaitResult
+      val result = FutureUtils.firstCompletedOf(List(future1, future2, future3))(_ > 3).futureValue
       result shouldBe None
     }
   }

@@ -7,13 +7,13 @@ import esw.ocs.api.protocol.{PullNextResult, Unhandled}
 import esw.ocs.impl.script.ScriptApi
 
 import scala.async.Async._
-import scala.concurrent.Future
+import scala.concurrent.{ExecutionContext, Future}
 import scala.util.{Failure, Success}
 
 private[ocs] class Engine(script: ScriptApi) {
 
   def start(sequenceOperator: SequenceOperator)(implicit mat: Materializer): Future[Done] = {
-    Source.repeat(()).mapAsync(1)(_ => processStep(sequenceOperator)).runForeach(_ => ())
+    Source.repeat(()).mapAsync(1)(_ => processStep(sequenceOperator)(mat.executionContext)).runForeach(_ => ())
   }
 
   /*
@@ -27,9 +27,8 @@ private[ocs] class Engine(script: ScriptApi) {
        Post Step status updation, `readyToExecuteNext` future will be completed which will result into Getting back into the loop (started in `start`
        method using Source.repeat) and wait for the next Step.
    */
-  private def processStep(sequenceOperator: SequenceOperator)(implicit mat: Materializer): Future[Done] =
+  private def processStep(sequenceOperator: SequenceOperator)(implicit ec: ExecutionContext): Future[Done] =
     async {
-      import mat.executionContext
       val pullNextResponse = await(sequenceOperator.pullNext)
 
       pullNextResponse match {
@@ -45,5 +44,5 @@ private[ocs] class Engine(script: ScriptApi) {
 
       await(sequenceOperator.readyToExecuteNext)
       Done
-    }(mat.executionContext)
+    }
 }

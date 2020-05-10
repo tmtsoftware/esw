@@ -2,11 +2,14 @@ package esw.ocs.api.models
 
 import csw.params.commands.{CommandName, Setup}
 import csw.prefix.models.Prefix
+import esw.ocs.api.models
 import esw.ocs.api.models.StepStatus.{Finished, _}
 import esw.ocs.api.protocol.EditorError.CannotOperateOnAnInFlightOrFinishedStep
-import esw.ocs.api.{BaseTestSuite, models}
+import org.scalatest.EitherValues._
+import org.scalatest.matchers.should.Matchers
+import org.scalatest.wordspec.AnyWordSpecLike
 
-class StepTest extends BaseTestSuite {
+class StepTest extends AnyWordSpecLike with Matchers {
 
   "apply" must {
     "create new step from provided command" in {

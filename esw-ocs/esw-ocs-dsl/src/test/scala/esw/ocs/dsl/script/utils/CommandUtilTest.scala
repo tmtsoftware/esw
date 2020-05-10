@@ -1,7 +1,7 @@
 package esw.ocs.dsl.script.utils
 
 import java.util.concurrent.TimeUnit
-import esw.ocs.api.BaseTestSuite
+
 import akka.actor.testkit.typed.scaladsl.{ScalaTestWithActorTestKit, TestProbe}
 import csw.command.client.messages.ComponentMessage
 import csw.location.api.extensions.ActorExtension._
@@ -9,6 +9,7 @@ import csw.location.api.models.Connection.AkkaConnection
 import csw.location.api.models.{AkkaLocation, ComponentId, ComponentType}
 import csw.prefix.models.Prefix
 import csw.prefix.models.Subsystem.ESW
+import esw.commons.BaseTestSuite
 import esw.commons.utils.location.EswLocationError.ResolveLocationFailed
 import esw.commons.utils.location.LocationServiceUtil
 

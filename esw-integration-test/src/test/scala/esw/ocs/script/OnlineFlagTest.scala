@@ -4,11 +4,10 @@ import csw.params.core.generics.KeyType.BooleanKey
 import csw.params.events.{EventKey, EventName}
 import csw.prefix.models.Prefix
 import csw.prefix.models.Subsystem.ESW
+import csw.testkit.scaladsl.CSWService.EventServer
 import esw.ocs.api.SequencerApi
-import esw.ocs.api.actor.client.SequencerImpl
 import esw.ocs.api.protocol.Ok
 import esw.ocs.testkit.EswTestKit
-import esw.ocs.testkit.Service.EventServer
 
 class OnlineFlagTest extends EswTestKit(EventServer) {
 
@@ -17,8 +16,7 @@ class OnlineFlagTest extends EswTestKit(EventServer) {
   private var ocsSequencer: SequencerApi = _
 
   override def beforeEach(): Unit = {
-    val ocsSequencerRef = spawnSequencerRef(ocsSubsystem, ocsObservingMode)
-    ocsSequencer = new SequencerImpl(ocsSequencerRef)
+    ocsSequencer = spawnSequencerProxy(ocsSubsystem, ocsObservingMode)
   }
 
   "isOnline flag should be toggled on/off depending on whether the sequencer is online/offline | ESW-287" in {

@@ -1,4 +1,4 @@
-package esw.gateway.server.demo
+package esw.demo
 
 import akka.actor.typed.scaladsl.ActorContext
 import com.typesafe.config.ConfigFactory
@@ -50,7 +50,7 @@ object Main extends App {
   private val wiring = new FrameworkWiring()
   LoggingSystemFactory.forTestingOnly()(wiring.actorSystem)
 
-  Standalone.spawn(ConfigFactory.parseResources("hcd.conf"), wiring)
+  Standalone.spawn(ConfigFactory.parseResources("demoHcd.conf"), wiring)
 
 }
 

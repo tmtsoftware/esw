@@ -2,6 +2,7 @@ package esw.sm.api.actor.messages
 
 import akka.actor.typed.ActorRef
 import esw.sm.api.SequenceManagerState
+import esw.sm.api.models.{CleanupResponse, ConfigureResponse, GetRunningObsModesResponse}
 
 sealed trait SequenceManagerMsg
 

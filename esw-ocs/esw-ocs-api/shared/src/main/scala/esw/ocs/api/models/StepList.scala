@@ -34,29 +34,31 @@ final case class StepList private[models] (steps: List[Step]) extends OcsAkkaSer
   // fixme: should check if given commands have duplicateIds
   def append(commands: List[SequenceCommand]): StepList = copy(steps ::: toSteps(commands))
 
-  def delete(id: Id): Either[EditorError, StepList] = ifExists(id) { _ =>
-    steps
-      .foldLeft[Either[EditorError, List[Step]]](Right(List.empty)) {
-        case (acc, step) if step.id == id && step.isPending => acc
-        case (_, step) if step.id == id                     => Left(CannotOperateOnAnInFlightOrFinishedStep)
-        case (acc, step)                                    => acc.map(_ :+ step)
-      }
-      .map(steps => copy(steps))
-  }
+  def delete(id: Id): Either[EditorError, StepList] =
+    ifExists(id) { _ =>
+      steps
+        .foldLeft[Either[EditorError, List[Step]]](Right(List.empty)) {
+          case (acc, step) if step.id == id && step.isPending => acc
+          case (_, step) if step.id == id                     => Left(CannotOperateOnAnInFlightOrFinishedStep)
+          case (acc, step)                                    => acc.map(_ :+ step)
+        }
+        .map(steps => copy(steps))
+    }
 
   def insertAfter(id: Id, commands: List[SequenceCommand]): Either[EditorError, StepList] =
     ifExists[EditorError](id) { _ => insertStepsAfter(id, toSteps(commands)).map(updatedSteps => copy(updatedSteps)) }
 
   def discardPending: StepList = copy(steps.filterNot(_.isPending))
 
-  def addBreakpoint(id: Id): Either[EditorError, StepList] = ifExists(id) { _ =>
-    steps
-      .foldLeft[Either[EditorError, List[Step]]](Right(List.empty)) {
-        case (acc, step) if step.id == id => step.addBreakpoint().flatMap(step => acc.map(_ :+ step))
-        case (acc, step)                  => acc.map(_ :+ step)
-      }
-      .map(steps => copy(steps))
-  }
+  def addBreakpoint(id: Id): Either[EditorError, StepList] =
+    ifExists(id) { _ =>
+      steps
+        .foldLeft[Either[EditorError, List[Step]]](Right(List.empty)) {
+          case (acc, step) if step.id == id => step.addBreakpoint().flatMap(step => acc.map(_ :+ step))
+          case (acc, step)                  => acc.map(_ :+ step)
+        }
+        .map(steps => copy(steps))
+    }
 
   def removeBreakpoint(id: Id): Either[IdDoesNotExist, StepList] =
     ifExists(id)(_ => Right(updateAll(id, _.removeBreakpoint())))

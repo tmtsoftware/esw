@@ -4,20 +4,21 @@ import akka.actor.testkit.typed.scaladsl.TestProbe
 import akka.stream.scaladsl.Sink
 import com.typesafe.config.ConfigFactory
 import csw.event.client.EventServiceFactory
-import csw.location.client.scaladsl.HttpLocationServiceFactory
 import csw.location.api.models.ComponentId
 import csw.location.api.models.ComponentType.Assembly
+import csw.location.client.scaladsl.HttpLocationServiceFactory
 import csw.params.commands.CommandResponse.{Accepted, Completed, Started}
 import csw.params.commands.{CommandName, Setup}
 import csw.params.core.models.ObsId
 import csw.params.core.states.{CurrentState, StateName}
 import csw.params.events.{Event, EventKey, EventName, SystemEvent}
 import csw.prefix.models.Prefix
+import csw.testkit.scaladsl.CSWService.EventServer
 import esw.gateway.api.clients.ClientFactory
 import esw.gateway.api.codecs.GatewayCodecs
 import esw.gateway.server.testdata.SampleAssemblyHandlers._
 import esw.ocs.testkit.EswTestKit
-import esw.ocs.testkit.Service.{EventServer, Gateway}
+import esw.ocs.testkit.Service.Gateway
 
 import scala.concurrent.Future
 

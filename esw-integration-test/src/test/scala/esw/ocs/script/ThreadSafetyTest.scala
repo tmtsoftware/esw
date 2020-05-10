@@ -8,7 +8,7 @@ import csw.prefix.models.Prefix
 import csw.prefix.models.Subsystem.ESW
 import esw.ocs.api.SequencerApi
 import esw.ocs.testkit.EswTestKit
-import esw.ocs.testkit.Service.EventServer
+import csw.testkit.scaladsl.CSWService.EventServer
 
 class ThreadSafetyTest extends EswTestKit(EventServer) {
 
@@ -27,10 +27,13 @@ class ThreadSafetyTest extends EswTestKit(EventServer) {
       val counterProbe = TestProbe[Int]
 
       eventSubscriber
-        .subscribeCallback(Set(counter), event => {
-          val param = event.paramType.get(counterKey).flatMap(_.get(0))
-          param.foreach(counterProbe.ref ! _)
-        })
+        .subscribeCallback(
+          Set(counter),
+          event => {
+            val param = event.paramType.get(counterKey).flatMap(_.get(0))
+            param.foreach(counterProbe.ref ! _)
+          }
+        )
 
       val threadSafeSequencer: SequencerApi = spawnSequencerProxy(ESW, "threadSafe")
 

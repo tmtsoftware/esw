@@ -4,20 +4,15 @@ import akka.actor.testkit.typed.scaladsl.TestProbe
 import csw.params.events.{Event, EventKey, EventName, SystemEvent}
 import csw.prefix.models.Prefix
 import csw.prefix.models.Subsystem.TCS
-import esw.ocs.api.protocol.Ok
+import csw.testkit.scaladsl.CSWService.EventServer
 import esw.ocs.api.actor.messages.SequencerMessages.Shutdown
+import esw.ocs.api.protocol.Ok
 import esw.ocs.testkit.EswTestKit
-import esw.ocs.testkit.Service.EventServer
 
 class ShutdownExceptionHandlerTest extends EswTestKit(EventServer) {
 
   private val tcsSubsystem     = TCS
   private val tcsObservingMode = "exceptionscript3" // ExceptionTestScript3.kt
-
-  override def afterAll(): Unit = {
-    clearAll()
-    super.afterAll()
-  }
 
   "should not invoke exception handler when handle-shutdown-failed" in {
     val reason            = "handle-shutdown-failed"

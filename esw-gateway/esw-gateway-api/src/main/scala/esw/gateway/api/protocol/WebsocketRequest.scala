@@ -33,8 +33,8 @@ object WebsocketRequest {
 
   implicit val websocketRequestLabelled: Labelled[WebsocketRequest] =
     Labelled.make(labelNames) {
-      case ComponentCommand(_, command) => Map(commandMsgLabel          -> Labelled.createLabel(command))
-      case SequencerCommand(_, command) => Map(sequencerMsgLabel        -> Labelled.createLabel(command))
+      case ComponentCommand(_, command) => Map(commandMsgLabel -> Labelled.createLabel(command))
+      case SequencerCommand(_, command) => Map(sequencerMsgLabel -> Labelled.createLabel(command))
       case Subscribe(eventKeys, _)      => Map(subscribedEventKeysLabel -> eventKeys.map(_.key).mkString("_"))
       case SubscribeWithPattern(subsystem, _, pattern) =>
         Map(subsystemLabel -> subsystem.name, subscribedEventPatternLabel -> pattern)

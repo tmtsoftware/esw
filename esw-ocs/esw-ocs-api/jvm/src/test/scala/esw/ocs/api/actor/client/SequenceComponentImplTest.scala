@@ -11,14 +11,14 @@ import csw.location.api.models.Connection.AkkaConnection
 import csw.location.api.models.{AkkaLocation, ComponentId, ComponentType}
 import csw.prefix.models.Subsystem.ESW
 import csw.prefix.models.{Prefix, Subsystem}
-import esw.ocs.api.BaseTestSuite
 import esw.ocs.api.actor.messages.SequenceComponentMsg
 import esw.ocs.api.actor.messages.SequenceComponentMsg.{GetStatus, LoadScript, Restart, Stop, UnloadScript}
 import esw.ocs.api.protocol.{GetStatusResponse, ScriptError, ScriptResponse}
+import org.scalatest.wordspec.AnyWordSpecLike
 
 import scala.concurrent.ExecutionContext
 
-class SequenceComponentImplTest extends ScalaTestWithActorTestKit with BaseTestSuite {
+class SequenceComponentImplTest extends ScalaTestWithActorTestKit with AnyWordSpecLike {
   private val location =
     AkkaLocation(AkkaConnection(ComponentId(Prefix("esw.test"), ComponentType.Sequencer)), new URI("uri"))
   private val loadScriptResponse    = ScriptResponse(Right(location))

@@ -91,6 +91,25 @@ class SequencerTestSetup(sequence: Sequence)(implicit system: ActorSystem[_]) {
     eventually(assertSequenceIsFinished())
   }
 
+  def assertSequenceNotStarted(): Assertion = {
+    val p: TestProbe[Option[StepList]] = TestProbe[Option[StepList]]
+    sequencerActor ! GetSequence(p.ref)
+    eventually {
+      val stepList = p.expectMessageType[Option[StepList]]
+      stepList.get.steps.forall(s => s.isPending)
+      stepList.isDefined shouldBe true
+    }
+  }
+
+  def assertSequenceNotStartedAndLoaded(): Assertion = {
+    val p: TestProbe[Option[StepList]] = TestProbe[Option[StepList]]
+    sequencerActor ! GetSequence(p.ref)
+    eventually {
+      val stepList = p.expectMessageType[Option[StepList]]
+      stepList.isDefined shouldBe false
+    }
+  }
+
   def assertCurrentSequence(expected: Option[StepList]): Unit = {
     val probe = TestProbe[Option[StepList]]
     sequencerActor ! GetSequence(probe.ref)

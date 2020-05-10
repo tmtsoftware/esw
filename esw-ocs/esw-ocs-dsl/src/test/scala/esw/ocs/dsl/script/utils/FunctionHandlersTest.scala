@@ -1,6 +1,6 @@
 package esw.ocs.dsl.script.utils
 
-import esw.ocs.api.BaseTestSuite
+import esw.commons.BaseTestSuite
 
 import scala.collection.mutable.ArrayBuffer
 

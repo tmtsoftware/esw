@@ -2,9 +2,10 @@ package esw.ocs.api.models
 
 import csw.params.commands.{CommandName, Observe, Sequence, Setup}
 import csw.prefix.models.Prefix
-import esw.ocs.api.BaseTestSuite
+import org.scalatest.matchers.should.Matchers
+import org.scalatest.wordspec.AnyWordSpecLike
 
-class SequenceTest extends BaseTestSuite {
+class SequenceTest extends AnyWordSpecLike with Matchers {
 
   "apply" must {
     "create sequence from provided list of commands" in {

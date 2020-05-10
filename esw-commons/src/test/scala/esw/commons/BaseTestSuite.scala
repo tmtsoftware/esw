@@ -9,7 +9,7 @@ import org.scalatest.matchers.should.Matchers
 import org.scalatest.wordspec.AnyWordSpecLike
 
 import scala.concurrent.duration.{Duration, DurationDouble, FiniteDuration}
-import scala.concurrent.{Await, Future, Promise}
+import scala.concurrent.{Future, Promise}
 import scala.util.Try
 
 trait BaseTestSuite
@@ -24,10 +24,6 @@ trait BaseTestSuite
     with TypeCheckedTripleEquals
     with Eventually {
   val defaultTimeout: Duration = 10.seconds
-
-  implicit class FutureOps[T](f: Future[T]) {
-    def awaitResult: T = Await.result(f, defaultTimeout)
-  }
 
   implicit class EitherOps[L, R](either: Either[L, R]) {
     def rightValue: R = either.toOption.get

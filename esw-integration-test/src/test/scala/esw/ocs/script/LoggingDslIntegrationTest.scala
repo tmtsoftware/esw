@@ -9,11 +9,11 @@ import csw.params.commands.CommandResponse.Completed
 import csw.params.commands.{CommandName, Sequence, Setup}
 import csw.prefix.models.Prefix
 import csw.prefix.models.Subsystem.ESW
+import csw.testkit.scaladsl.CSWService.EventServer
 import esw.gateway.server.TestAppender
 import esw.ocs.api.SequencerApi
 import esw.ocs.api.actor.client.SequencerImpl
 import esw.ocs.testkit.EswTestKit
-import esw.ocs.testkit.Service.EventServer
 import play.api.libs.json.{JsObject, Json}
 
 import scala.collection.mutable
@@ -30,7 +30,7 @@ class LoggingDslIntegrationTest extends EswTestKit(EventServer) {
     super.beforeAll()
     ocsRef = spawnSequencerRef(ESW, "MoonNight")
     ocsSequencer = new SequencerImpl(ocsRef)
-    loggingSystem = LoggingSystemFactory.start("LoggingDslIntegrationTest", "", "", system)
+    loggingSystem = LoggingSystemFactory.start("LoggingDslIntegrationTest", "", "", actorSystem)
     loggingSystem.setAppenders(List(testAppender))
   }
 

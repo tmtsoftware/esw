@@ -5,7 +5,7 @@ import java.util.concurrent.CompletableFuture
 import csw.logging.api.javadsl.ILogger
 import csw.params.commands.{CommandName, Observe, Setup}
 import csw.prefix.models.Prefix
-import esw.ocs.api.BaseTestSuite
+import esw.commons.BaseTestSuite
 import esw.ocs.impl.core.SequenceOperator
 
 import scala.collection.mutable.ArrayBuffer
@@ -115,7 +115,7 @@ class ScriptDslTest extends BaseTestSuite {
       }
 
       val exception = new RuntimeException("testing exception handlers")
-      script.executeExceptionHandlers(exception).awaitResult
+      script.executeExceptionHandlers(exception).futureValue
 
       receivedPrefix.value shouldBe exception
     }
