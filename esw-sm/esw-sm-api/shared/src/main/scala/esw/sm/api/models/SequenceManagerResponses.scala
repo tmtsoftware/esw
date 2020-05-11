@@ -8,10 +8,10 @@ sealed trait ConfigureResponse extends SmAkkaSerializable
 object ConfigureResponse {
   case class Success(sequencerLocation: HttpLocation) extends ConfigureResponse
 
-  sealed trait Failure                                     extends ConfigureResponse
-  case object ConflictingResourcesWithRunningObsMode       extends Failure // todo : add conflicting obs mode
-  case class FailedToStartSequencers(reasons: Set[String]) extends Failure
-  case class ConfigurationFailure(msg: String)             extends Failure
+  sealed trait Failure                                                           extends ConfigureResponse
+  case class ConflictingResourcesWithRunningObsMode(runningObsMode: Set[String]) extends Failure
+  case class FailedToStartSequencers(reasons: Set[String])                       extends Failure
+  case class LocationServiceError(msg: String)                                   extends Failure
 }
 
 sealed trait GetRunningObsModesResponse extends SmAkkaSerializable

@@ -12,7 +12,7 @@ import esw.sm.api.SequenceManagerState
 import esw.sm.api.SequenceManagerState.{CleaningInProcess, ConfigurationInProcess, Idle}
 import esw.sm.api.actor.messages.SequenceManagerMsg
 import esw.sm.api.actor.messages.SequenceManagerMsg._
-import esw.sm.api.models.ConfigureResponse.{ConfigurationFailure, ConflictingResourcesWithRunningObsMode}
+import esw.sm.api.models.ConfigureResponse.{LocationServiceError, ConflictingResourcesWithRunningObsMode}
 import esw.sm.api.models._
 import esw.sm.impl.utils.SequencerUtil
 
@@ -30,8 +30,10 @@ class SequenceManagerBehavior(
   def idle(): Behavior[SequenceManagerMsg] =
     Behaviors.receive { (ctx, msg) =>
       msg match {
-        case Configure(observingMode, replyTo)     => configure(observingMode, ctx.self); configuring(replyTo);
-        case Cleanup(observingMode, replyTo)       => cleanup(observingMode, ctx.self); cleaningUp(replyTo);
+        case Configure(observingMode, replyTo) =>
+          configure(observingMode, ctx.self); configuring(replyTo);
+        case Cleanup(observingMode, replyTo) =>
+          cleanup(observingMode, ctx.self); cleaningUp(replyTo);
         case msg: CommonMessage                    => handleCommon(msg, Idle); Behaviors.same
         case _: CleanupDone | _: ConfigurationDone => Behaviors.unhandled
       }
@@ -51,7 +53,8 @@ class SequenceManagerBehavior(
 
   private def handleCommon(msg: CommonMessage, currentState: SequenceManagerState): Unit =
     msg match {
-      case GetRunningObsModes(replyTo)      => runningObsModesResponse.foreach(replyTo ! _)
+      case GetRunningObsModes(replyTo) =>
+        runningObsModesResponse.foreach(replyTo ! _)
       case GetSequenceManagerState(replyTo) => replyTo ! currentState
     }
 
@@ -68,7 +71,7 @@ class SequenceManagerBehavior(
     async {
       val runningObsModesF = getRunningObsModes.flatMapToAdt(
         configuredObsModes => configureResources(obsMode, configuredObsModes),
-        error => ConfigurationFailure(error.msg)
+        error => LocationServiceError(error.msg)
       )
 
       self ! ConfigurationDone(await(runningObsModesF))
@@ -76,21 +79,30 @@ class SequenceManagerBehavior(
 
   private def configureResources(obsMode: String, configuredObsModes: Set[String]): Future[ConfigureResponse] =
     async {
-      val requiredResources: Resources        = extractResources(obsMode)
-      val configuredResources: Set[Resources] = configuredObsModes.map(extractResources)
-      val areResourcesConflicting             = configuredResources.exists(_.conflictsWith(requiredResources))
+      val requiredResources: Resources = extractResources(obsMode)
+      val configuredResources: Set[Resources] =
+        configuredObsModes.map(extractResources)
+      val areResourcesConflicting =
+        configuredResources.exists(_.conflictsWith(requiredResources))
 
-      if (areResourcesConflicting) ConflictingResourcesWithRunningObsMode
-      else await(sequencerUtil.startSequencers(obsMode, extractSequencers(obsMode)))
+      if (areResourcesConflicting)
+        ConflictingResourcesWithRunningObsMode(configuredObsModes)
+      else
+        await(sequencerUtil.startSequencers(obsMode, extractSequencers(obsMode)))
     }
 
   private def getRunningObsModes: Future[Either[RegistrationListingFailed, Set[String]]] =
-    locationServiceUtil.listAkkaLocationsBy(ESW, Sequencer).mapRight(_.map(getObsMode).toSet)
+    locationServiceUtil
+      .listAkkaLocationsBy(ESW, Sequencer)
+      .mapRight(_.map(getObsMode).toSet)
 
-  private def getObsMode(akkaLocation: AkkaLocation): String = akkaLocation.prefix.componentName
+  private def getObsMode(akkaLocation: AkkaLocation): String =
+    akkaLocation.prefix.componentName
 
-  private def extractSequencers(obsMode: String): Sequencers = config(obsMode).sequencers
-  private def extractResources(obsMode: String): Resources   = config(obsMode).resources
+  private def extractSequencers(obsMode: String): Sequencers =
+    config(obsMode).sequencers
+  private def extractResources(obsMode: String): Resources =
+    config(obsMode).resources
 
   private def runningObsModesResponse =
     getRunningObsModes.mapToAdt(

@@ -15,7 +15,7 @@ import esw.commons.utils.location.EswLocationError.{RegistrationListingFailed, R
 import esw.commons.utils.location.{EswLocationError, LocationServiceUtil}
 import esw.ocs.api.actor.client.SequencerApiFactory
 import esw.ocs.api.{SequenceComponentApi, SequencerApi}
-import esw.sm.api.models.ConfigureResponse.{ConfigurationFailure, FailedToStartSequencers, Success}
+import esw.sm.api.models.ConfigureResponse.{LocationServiceError, FailedToStartSequencers, Success}
 import esw.sm.api.models.{ConfigureResponse, SequenceManagerError, SequencerError, Sequencers}
 
 import scala.async.Async.{async, await}
@@ -50,7 +50,7 @@ class SequencerUtil(locationServiceUtil: LocationServiceUtil, sequenceComponentU
           // resolve master Sequencer and return LOCATION or FAILURE if location is not found
           await(
             resolveMasterSequencerOf(observingMode)
-              .mapToAdt(Success, err => ConfigurationFailure(err.msg))
+              .mapToAdt(Success, err => LocationServiceError(err.msg))
           )
       }
     }
