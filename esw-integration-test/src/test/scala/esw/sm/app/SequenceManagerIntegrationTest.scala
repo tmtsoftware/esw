@@ -81,7 +81,7 @@ class SequenceManagerIntegrationTest extends EswTestKit {
     // Configure for "IRIS_Darknight" observing mode should return error because resource IRIS and NFIRAOS are busy
     sequenceManager
       .configure(IRIS_DARKNIGHT)
-      .futureValue shouldBe ConfigureResponse.ConflictingResourcesWithRunningObsMode
+      .futureValue shouldBe ConfigureResponse.ConflictingResourcesWithRunningObsMode(Set(IRIS_CAL))
 
     // *************** Should run observation concurrently if no conflict in resources | ESW-168 ********************
     // Configure for "WFOS_Cal" observing mode should be successful as the resources are available
