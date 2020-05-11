@@ -50,7 +50,7 @@ class SequenceManagerBehaviorTest extends ScalaTestWithActorTestKit with BaseTes
 
   "Configure" must {
 
-    "transition sequence manager to ConfigurationInProcess state | ESW-178" in {
+    "transition sequence manager to ConfigurationInProcess state | ESW-178, ESW-164" in {
       val httpLocation = HttpLocation(HttpConnection(ComponentId(Prefix(ESW, DARKNIGHT), Sequencer)), new URI("uri"))
       when(locationServiceUtil.listAkkaLocationsBy(ESW, Sequencer))
         .thenReturn(future(1.seconds, Right(List.empty)))
@@ -64,7 +64,7 @@ class SequenceManagerBehaviorTest extends ScalaTestWithActorTestKit with BaseTes
       assertState(Idle)
     }
 
-    "start sequence hierarchy and return master sequencer | ESW-178" in {
+    "start sequence hierarchy and return master sequencer | ESW-178, ESW-164" in {
       val httpLocation = HttpLocation(HttpConnection(ComponentId(Prefix(ESW, DARKNIGHT), Sequencer)), new URI("uri"))
       when(locationServiceUtil.listAkkaLocationsBy(ESW, Sequencer))
         .thenReturn(Future.successful(Right(List.empty)))
