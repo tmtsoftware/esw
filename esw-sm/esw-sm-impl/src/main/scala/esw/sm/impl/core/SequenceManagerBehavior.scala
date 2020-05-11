@@ -2,11 +2,9 @@ package esw.sm.impl.core
 
 import akka.actor.typed.scaladsl.Behaviors
 import akka.actor.typed.{ActorRef, ActorSystem, Behavior}
-import akka.util.Timeout
 import csw.location.api.models.AkkaLocation
 import csw.location.api.models.ComponentType.Sequencer
 import csw.prefix.models.Subsystem.ESW
-import esw.commons.Timeouts
 import esw.commons.extensions.FutureEitherExt.FutureEitherOps
 import esw.commons.utils.location.EswLocationError.RegistrationListingFailed
 import esw.commons.utils.location.LocationServiceUtil
@@ -28,9 +26,7 @@ class SequenceManagerBehavior(
     sequencerUtil: SequencerUtil
 )(implicit val actorSystem: ActorSystem[_]) {
   import actorSystem.executionContext
-  implicit val timeout: Timeout = Timeouts.DefaultTimeout
 
-  //todo: try to use common receive method
   def idle(): Behavior[SequenceManagerMsg] =
     Behaviors.receive { (ctx, msg) =>
       msg match {
@@ -40,15 +36,6 @@ class SequenceManagerBehavior(
         case GetSequenceManagerState(replyTo)      => replyTo ! Idle; Behaviors.same
         case _: CleanupDone | _: ConfigurationDone => Behaviors.unhandled
       }
-    }
-
-  private def cleanup(obsMode: String, self: ActorRef[SequenceManagerMsg]): Future[Unit] =
-    async {
-      val stopResponseF = sequencerUtil
-        .stopSequencers(extractSequencers(obsMode), obsMode)
-        .mapToAdt(_ => CleanupResponse.Success, error => CleanupResponse.Failed(error.msg))
-
-      self ! CleanupDone(await(stopResponseF))
     }
 
   private def cleaningUp(replyTo: ActorRef[CleanupResponse]): Behavior[SequenceManagerMsg] =
@@ -61,6 +48,21 @@ class SequenceManagerBehavior(
     receive[ConfigurationDone](ConfigurationInProcess) { msg =>
       replyTo ! msg.res
       idle()
+    }
+
+  private def handleCommon(msg: CommonMessage, currentState: SequenceManagerState) =
+    msg match {
+      case GetRunningObsModes(replyTo)      => replyRunningObsMode(replyTo)
+      case GetSequenceManagerState(replyTo) => replyTo ! currentState
+    }
+
+  private def cleanup(obsMode: String, self: ActorRef[SequenceManagerMsg]): Future[Unit] =
+    async {
+      val stopResponseF = sequencerUtil
+        .stopSequencers(extractSequencers(obsMode), obsMode)
+        .mapToAdt(_ => CleanupResponse.Success, error => CleanupResponse.Failed(error.msg))
+
+      self ! CleanupDone(await(stopResponseF))
     }
 
   private def configure(obsMode: String, self: ActorRef[SequenceManagerMsg]): Future[Unit] =
@@ -93,17 +95,16 @@ class SequenceManagerBehavior(
 
   private def replyRunningObsMode(replyTo: ActorRef[GetRunningObsModesResponse]) =
     getRunningObsModes.map {
-      case Left(value)  => replyTo ! GetRunningObsModesResponse.Failed(value.msg)
-      case Right(value) => replyTo ! GetRunningObsModesResponse.Success(value)
+      case Left(error)     => replyTo ! GetRunningObsModesResponse.Failed(error.msg)
+      case Right(obsModes) => replyTo ! GetRunningObsModesResponse.Success(obsModes)
     }
 
   private def receive[T <: SequenceManagerMsg: ClassTag](
       state: SequenceManagerState
   )(handler: T => Behavior[SequenceManagerMsg]): Behavior[SequenceManagerMsg] =
     Behaviors.receiveMessage {
-      case GetRunningObsModes(replyTo)      => replyRunningObsMode(replyTo); Behaviors.same // common msg
-      case GetSequenceManagerState(replyTo) => replyTo ! state; Behaviors.same
-      case msg: T                           => handler(msg)
-      case _                                => Behaviors.unhandled
+      case msg: CommonMessage => handleCommon(msg, state); Behaviors.same
+      case msg: T             => handler(msg)
+      case _                  => Behaviors.unhandled
     }
 }

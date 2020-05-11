@@ -9,8 +9,9 @@ sealed trait SequenceManagerMsg
 object SequenceManagerMsg {
   case class Configure(obsMode: String, replyTo: ActorRef[ConfigureResponse])  extends SequenceManagerMsg
   case class Cleanup(obsMode: String, replyTo: ActorRef[CleanupResponse])      extends SequenceManagerMsg
-  case class GetRunningObsModes(replyTo: ActorRef[GetRunningObsModesResponse]) extends SequenceManagerMsg
-  case class GetSequenceManagerState(replyTo: ActorRef[SequenceManagerState])  extends SequenceManagerMsg
+  sealed trait CommonMessage                                                   extends SequenceManagerMsg
+  case class GetRunningObsModes(replyTo: ActorRef[GetRunningObsModesResponse]) extends CommonMessage
+  case class GetSequenceManagerState(replyTo: ActorRef[SequenceManagerState])  extends CommonMessage
 
   private[sm] case class ConfigurationDone(res: ConfigureResponse) extends SequenceManagerMsg
   private[sm] case class CleanupDone(res: CleanupResponse)         extends SequenceManagerMsg
