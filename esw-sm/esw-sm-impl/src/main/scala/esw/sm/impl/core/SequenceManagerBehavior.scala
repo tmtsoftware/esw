@@ -31,9 +31,8 @@ class SequenceManagerBehavior(
     Behaviors.receive { (ctx, msg) =>
       msg match {
         case Configure(observingMode, replyTo)     => configure(observingMode, ctx.self); configuring(replyTo);
-        case GetRunningObsModes(replyTo)           => replyRunningObsMode(replyTo); Behaviors.same
         case Cleanup(observingMode, replyTo)       => cleanup(observingMode, ctx.self); cleaningUp(replyTo);
-        case GetSequenceManagerState(replyTo)      => replyTo ! Idle; Behaviors.same
+        case msg: CommonMessage                    => handleCommon(msg, Idle); Behaviors.same
         case _: CleanupDone | _: ConfigurationDone => Behaviors.unhandled
       }
     }
@@ -50,9 +49,9 @@ class SequenceManagerBehavior(
       idle()
     }
 
-  private def handleCommon(msg: CommonMessage, currentState: SequenceManagerState) =
+  private def handleCommon(msg: CommonMessage, currentState: SequenceManagerState): Unit =
     msg match {
-      case GetRunningObsModes(replyTo)      => replyRunningObsMode(replyTo)
+      case GetRunningObsModes(replyTo)      => runningObsModesResponse.foreach(replyTo ! _)
       case GetSequenceManagerState(replyTo) => replyTo ! currentState
     }
 
@@ -93,11 +92,11 @@ class SequenceManagerBehavior(
   private def extractSequencers(obsMode: String): Sequencers = config(obsMode).sequencers
   private def extractResources(obsMode: String): Resources   = config(obsMode).resources
 
-  private def replyRunningObsMode(replyTo: ActorRef[GetRunningObsModesResponse]) =
-    getRunningObsModes.map {
-      case Left(error)     => replyTo ! GetRunningObsModesResponse.Failed(error.msg)
-      case Right(obsModes) => replyTo ! GetRunningObsModesResponse.Success(obsModes)
-    }
+  private def runningObsModesResponse =
+    getRunningObsModes.mapToAdt(
+      obsModes => GetRunningObsModesResponse.Success(obsModes),
+      error => GetRunningObsModesResponse.Failed(error.msg)
+    )
 
   private def receive[T <: SequenceManagerMsg: ClassTag](
       state: SequenceManagerState
