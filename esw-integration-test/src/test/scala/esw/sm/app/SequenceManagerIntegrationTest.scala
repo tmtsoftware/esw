@@ -6,7 +6,6 @@ import csw.location.api.models.ComponentType.Sequencer
 import csw.prefix.models.Prefix
 import csw.prefix.models.Subsystem._
 import esw.ocs.api.actor.client.{SequenceComponentImpl, SequencerImpl}
-import esw.ocs.app.SequencerApp
 import esw.ocs.testkit.EswTestKit
 import esw.sm.api.SequenceManagerApi
 import esw.sm.api.models.{CleanupResponse, ConfigureResponse}
@@ -118,7 +117,7 @@ class SequenceManagerIntegrationTest extends EswTestKit {
     def setupSeqComponent(prefixes: Prefix*): Unit = {
       // Setup Sequence components for subsystems
       prefixes.foreach(prefix => {
-        SequencerApp.main(Array("seqcomp", "-s", prefix.subsystem.name, "-n", prefix.componentName))
+        spawnSequenceComponent(prefix.subsystem, Some(prefix.componentName))
       })
     }
 
