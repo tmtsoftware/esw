@@ -3,21 +3,19 @@ package esw.sm.impl.core
 import java.net.URI
 
 import akka.Done
-import akka.actor.testkit.typed.scaladsl.{ScalaTestWithActorTestKit, TestProbe}
+import akka.actor.testkit.typed.scaladsl.ScalaTestWithActorTestKit
 import akka.actor.typed.ActorRef
 import csw.location.api.models.ComponentType._
 import csw.location.api.models.Connection.{AkkaConnection, HttpConnection}
 import csw.location.api.models.{AkkaLocation, ComponentId, HttpLocation}
 import csw.prefix.models.Prefix
 import csw.prefix.models.Subsystem.{ESW, TCS}
-import esw.commons.BaseTestSuite
 import esw.commons.utils.location.EswLocationError.RegistrationListingFailed
 import esw.commons.utils.location.LocationServiceUtil
-import esw.sm.api.SequenceManagerState
-import esw.sm.api.SequenceManagerState.{CleaningInProcess, ConfigurationInProcess, Idle}
+import esw.commons.{BaseTestSuite, Timeouts}
 import esw.sm.api.actor.messages.SequenceManagerMsg
-import esw.sm.api.actor.messages.SequenceManagerMsg.{Cleanup, Configure, GetSequenceManagerState}
-import esw.sm.api.models.ConfigureResponse.{LocationServiceError, ConflictingResourcesWithRunningObsMode, Success}
+import esw.sm.api.actor.messages.SequenceManagerMsg.{Cleanup, Configure}
+import esw.sm.api.models.ConfigureResponse.{ConflictingResourcesWithRunningObsMode, LocationServiceError, Success}
 import esw.sm.api.models._
 import esw.sm.impl.utils.SequencerUtil
 
@@ -50,18 +48,26 @@ class SequenceManagerBehaviorTest extends ScalaTestWithActorTestKit with BaseTes
 
   "Configure" must {
 
-    "transition sequence manager to ConfigurationInProcess state | ESW-178, ESW-164" in {
+    "show that cleanup and configuration can not be done when ConfigurationInProgress | ESW-178" in {
       val httpLocation = HttpLocation(HttpConnection(ComponentId(Prefix(ESW, DARKNIGHT), Sequencer)), new URI("uri"))
       when(locationServiceUtil.listAkkaLocationsBy(ESW, Sequencer))
         .thenReturn(future(1.seconds, Right(List.empty)))
       when(sequencerUtil.startSequencers(DARKNIGHT, darknightSequencers))
         .thenReturn(Future.successful(Success(httpLocation)))
-      val configureProbe = createTestProbe[ConfigureResponse]
+      val configureProbe1 = createTestProbe[ConfigureResponse]
+      val configureProbe2 = createTestProbe[ConfigureResponse]
+      val cleanupProbe    = createTestProbe[CleanupResponse]
 
-      smRef ! Configure(DARKNIGHT, configureProbe.ref)
+      // parallel cleanup and configure
+      smRef ! Configure(DARKNIGHT, configureProbe1.ref)
+      smRef ! Cleanup(DARKNIGHT, cleanupProbe.ref)
+      smRef ! Configure(CLEARSKIES, configureProbe2.ref)
 
-      assertState(ConfigurationInProcess)
-      assertState(Idle)
+      // verify success
+      configureProbe1.expectMessage(Timeouts.DefaultTimeout, ConfigureResponse.Success(httpLocation))
+      // verify that configure and cleanup can not be while configuration is in progress
+      cleanupProbe.expectNoMessage
+      configureProbe2.expectNoMessage
     }
 
     "start sequence hierarchy and return master sequencer | ESW-178, ESW-164" in {
@@ -107,15 +113,25 @@ class SequenceManagerBehaviorTest extends ScalaTestWithActorTestKit with BaseTes
 
   "Cleanup" must {
 
-    "transition sequence manager to CleaningInProcess state | ESW-166" in {
+    "show that cleanup and configuration can not be done when CleanupInProgress | ESW-166" in {
       when(sequencerUtil.stopSequencers(darknightSequencers, DARKNIGHT))
         .thenReturn(future(1.seconds, Right(Done)))
 
-      val cleanupProbe = createTestProbe[CleanupResponse]
-      smRef ! Cleanup(DARKNIGHT, cleanupProbe.ref)
+      val cleanupProbe1  = createTestProbe[CleanupResponse]
+      val cleanupProbe2  = createTestProbe[CleanupResponse]
+      val configureProbe = createTestProbe[ConfigureResponse]
 
-      assertState(CleaningInProcess)
-      assertState(Idle)
+      // parallel cleanup and configure
+      smRef ! Cleanup(DARKNIGHT, cleanupProbe1.ref)
+      smRef ! Cleanup(CLEARSKIES, cleanupProbe2.ref)
+      smRef ! Configure(CLEARSKIES, configureProbe.ref)
+
+      // verify success
+      cleanupProbe1.expectMessage(CleanupResponse.Success)
+
+      // verify that configure and cleanup can not be while configuration is in progress
+      cleanupProbe2.expectNoMessage
+      configureProbe.expectNoMessage
     }
 
     "stop all the sequencers of the given observation mode | ESW-166" in {
@@ -139,14 +155,6 @@ class SequenceManagerBehaviorTest extends ScalaTestWithActorTestKit with BaseTes
 
       probe.expectMessage(CleanupResponse.Failed(failureMsg))
       verify(sequencerUtil).stopSequencers(darknightSequencers, DARKNIGHT)
-    }
-  }
-
-  private def assertState(state: SequenceManagerState) = {
-    val stateProbe = TestProbe[SequenceManagerState]
-    eventually {
-      smRef ! GetSequenceManagerState(stateProbe.ref)
-      stateProbe.expectMessage(state)
     }
   }
 }

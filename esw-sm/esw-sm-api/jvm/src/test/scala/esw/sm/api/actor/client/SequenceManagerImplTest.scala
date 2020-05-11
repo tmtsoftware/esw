@@ -7,7 +7,6 @@ import akka.actor.typed.scaladsl.Behaviors
 import csw.location.api.models.Connection.HttpConnection
 import csw.location.api.models.{ComponentId, ComponentType, HttpLocation}
 import csw.prefix.models.Prefix
-import esw.sm.api.SequenceManagerState.Idle
 import esw.sm.api.actor.messages.SequenceManagerMsg
 import esw.sm.api.models.{CleanupResponse, ConfigureResponse, GetRunningObsModesResponse}
 import org.scalactic.TypeCheckedTripleEquals
@@ -22,12 +21,11 @@ class SequenceManagerImplTest extends ScalaTestWithActorTestKit with AnyWordSpec
 
   private val mockedBehavior: Behaviors.Receive[SequenceManagerMsg] = Behaviors.receiveMessage[SequenceManagerMsg] { msg =>
     msg match {
-      case SequenceManagerMsg.Configure(_, replyTo)            => replyTo ! configureResponse
-      case SequenceManagerMsg.Cleanup(_, replyTo)              => replyTo ! cleanupResponse
-      case SequenceManagerMsg.GetRunningObsModes(replyTo)      => replyTo ! getRunningObsModesResponse
-      case SequenceManagerMsg.GetSequenceManagerState(replyTo) => replyTo ! Idle
-      case SequenceManagerMsg.CleanupDone(_)                   =>
-      case SequenceManagerMsg.ConfigurationDone(_)             =>
+      case SequenceManagerMsg.Configure(_, replyTo)       => replyTo ! configureResponse
+      case SequenceManagerMsg.Cleanup(_, replyTo)         => replyTo ! cleanupResponse
+      case SequenceManagerMsg.GetRunningObsModes(replyTo) => replyTo ! getRunningObsModesResponse
+      case SequenceManagerMsg.CleanupDone(_)              =>
+      case SequenceManagerMsg.ConfigurationDone(_)        =>
     }
     Behaviors.same
   }
