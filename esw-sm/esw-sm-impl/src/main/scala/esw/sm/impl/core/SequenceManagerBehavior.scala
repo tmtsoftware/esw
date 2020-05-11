@@ -30,61 +30,47 @@ class SequenceManagerBehavior(
   import actorSystem.executionContext
   implicit val timeout: Timeout = Timeouts.DefaultTimeout
 
-  def init(): Behavior[SequenceManagerMsg] = idle()
-
   //todo: try to use common receive method
-  private def idle(): Behavior[SequenceManagerMsg] =
+  def idle(): Behavior[SequenceManagerMsg] =
     Behaviors.receive { (ctx, msg) =>
       msg match {
-        case Configure(observingMode, replyTo) => configure(observingMode, ctx.self); configuring(replyTo);
-        case GetRunningObsModes(replyTo)       => replyRunningObsMode(replyTo); Behaviors.same
-        case Cleanup(observingMode, replyTo)   => cleanup(observingMode, ctx.self); cleaningUp(replyTo);
-        case GetSequenceManagerState(replyTo)  => replyTo ! Idle; Behaviors.same
-        case _                                 => Behaviors.unhandled
+        case Configure(observingMode, replyTo)     => configure(observingMode, ctx.self); configuring(replyTo);
+        case GetRunningObsModes(replyTo)           => replyRunningObsMode(replyTo); Behaviors.same
+        case Cleanup(observingMode, replyTo)       => cleanup(observingMode, ctx.self); cleaningUp(replyTo);
+        case GetSequenceManagerState(replyTo)      => replyTo ! Idle; Behaviors.same
+        case _: CleanupDone | _: ConfigurationDone => Behaviors.unhandled
       }
     }
 
   private def cleanup(obsMode: String, self: ActorRef[SequenceManagerMsg]): Future[Unit] =
     async {
-      val response = await(
-        sequencerUtil
-          .stopSequencers(extractSequencers(obsMode), obsMode)
-          .map {
-            case Left(error) => CleanupResponse.Failed(error.msg)
-            case Right(_)    => CleanupResponse.Success
-          }
-      )
+      val stopResponseF = sequencerUtil
+        .stopSequencers(extractSequencers(obsMode), obsMode)
+        .mapToAdt(_ => CleanupResponse.Success, error => CleanupResponse.Failed(error.msg))
 
-      self ! CleanupDone(response)
+      self ! CleanupDone(await(stopResponseF))
     }
 
   private def cleaningUp(replyTo: ActorRef[CleanupResponse]): Behavior[SequenceManagerMsg] =
-    receive[CleanupDone](
-      { msg =>
-        replyTo ! msg.res
-        idle()
-      },
-      CleaningInProcess
-    )
+    receive[CleanupDone](CleaningInProcess) { msg =>
+      replyTo ! msg.res
+      idle()
+    }
 
   private def configuring(replyTo: ActorRef[ConfigureResponse]): Behavior[SequenceManagerMsg] =
-    receive[ConfigurationDone](
-      { msg =>
-        replyTo ! msg.res
-        idle()
-      },
-      ConfigurationInProcess
-    )
+    receive[ConfigurationDone](ConfigurationInProcess) { msg =>
+      replyTo ! msg.res
+      idle()
+    }
 
   private def configure(obsMode: String, self: ActorRef[SequenceManagerMsg]): Future[Unit] =
     async {
-      val response = await(getRunningObsModes.flatMap {
-        case Left(error) =>
-          // getRunningObsModes error so can't check for conflicts. This results in ConfigurationFailure
-          Future.successful(ConfigurationFailure(error.msg))
-        case Right(configuredObsModes) => configureResources(obsMode, configuredObsModes)
-      })
-      self ! ConfigurationDone(response)
+      val runningObsModesF = getRunningObsModes.flatMapToAdt(
+        configuredObsModes => configureResources(obsMode, configuredObsModes),
+        error => ConfigurationFailure(error.msg)
+      )
+
+      self ! ConfigurationDone(await(runningObsModesF))
     }
 
   private def configureResources(obsMode: String, configuredObsModes: Set[String]): Future[ConfigureResponse] =
@@ -112,9 +98,8 @@ class SequenceManagerBehavior(
     }
 
   private def receive[T <: SequenceManagerMsg: ClassTag](
-      handler: T => Behavior[SequenceManagerMsg],
       state: SequenceManagerState
-  ): Behavior[SequenceManagerMsg] =
+  )(handler: T => Behavior[SequenceManagerMsg]): Behavior[SequenceManagerMsg] =
     Behaviors.receiveMessage {
       case GetRunningObsModes(replyTo)      => replyRunningObsMode(replyTo); Behaviors.same // common msg
       case GetSequenceManagerState(replyTo) => replyTo ! state; Behaviors.same
