@@ -9,16 +9,15 @@ import esw.commons.extensions.FutureEitherExt.FutureEitherOps
 import esw.commons.utils.location.EswLocationError.RegistrationListingFailed
 import esw.commons.utils.location.LocationServiceUtil
 import esw.sm.api.SequenceManagerState
-import esw.sm.api.SequenceManagerState.{CleaningInProcess, ConfigurationInProcess, Idle}
+import esw.sm.api.SequenceManagerState.Idle
 import esw.sm.api.actor.messages.SequenceManagerMsg
 import esw.sm.api.actor.messages.SequenceManagerMsg._
-import esw.sm.api.models.ConfigureResponse.{LocationServiceError, ConflictingResourcesWithRunningObsMode}
+import esw.sm.api.models.ConfigureResponse.{ConflictingResourcesWithRunningObsMode, LocationServiceError}
 import esw.sm.api.models._
 import esw.sm.impl.utils.SequencerUtil
 
 import scala.async.Async.{async, await}
 import scala.concurrent.Future
-import scala.reflect.ClassTag
 
 class SequenceManagerBehavior(
     config: Map[String, ObsModeConfig],
@@ -40,15 +39,17 @@ class SequenceManagerBehavior(
     }
 
   private def cleaningUp(replyTo: ActorRef[CleanupResponse]): Behavior[SequenceManagerMsg] =
-    receive[CleanupDone](CleaningInProcess) { msg =>
-      replyTo ! msg.res
-      idle()
+    Behaviors.receiveMessage[SequenceManagerMsg] {
+      case msg: CommonMessage                               => handleCommon(msg, SequenceManagerState.CleaningInProcess); Behaviors.same
+      case CleanupDone(res)                                 => replyTo ! res; idle()
+      case _: Configure | _: Cleanup | _: ConfigurationDone => Behaviors.unhandled
     }
 
-  private def configuring(replyTo: ActorRef[ConfigureResponse]): Behavior[SequenceManagerMsg] =
-    receive[ConfigurationDone](ConfigurationInProcess) { msg =>
-      replyTo ! msg.res
-      idle()
+  private def configuring(replyTo: ActorRef[ConfigureResponse]): Behaviors.Receive[SequenceManagerMsg] =
+    Behaviors.receiveMessage[SequenceManagerMsg] {
+      case msg: CommonMessage                         => handleCommon(msg, SequenceManagerState.ConfigurationInProcess); Behaviors.same
+      case ConfigurationDone(res)                     => replyTo ! res; idle()
+      case _: Configure | _: Cleanup | _: CleanupDone => Behaviors.unhandled
     }
 
   private def handleCommon(msg: CommonMessage, currentState: SequenceManagerState): Unit =
@@ -109,13 +110,4 @@ class SequenceManagerBehavior(
       obsModes => GetRunningObsModesResponse.Success(obsModes),
       error => GetRunningObsModesResponse.Failed(error.msg)
     )
-
-  private def receive[T <: SequenceManagerMsg: ClassTag](
-      state: SequenceManagerState
-  )(handler: T => Behavior[SequenceManagerMsg]): Behavior[SequenceManagerMsg] =
-    Behaviors.receiveMessage {
-      case msg: CommonMessage => handleCommon(msg, state); Behaviors.same
-      case msg: T             => handler(msg)
-      case _                  => Behaviors.unhandled
-    }
 }

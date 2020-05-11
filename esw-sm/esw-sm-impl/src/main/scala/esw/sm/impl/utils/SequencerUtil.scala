@@ -88,7 +88,7 @@ class SequencerUtil(locationServiceUtil: LocationServiceUtil, sequenceComponentU
       .loadScript(subSystem, observingMode)
       .map(_.response.left.map(e => SequenceManagerError.LoadScriptError(e.msg)))
 
-  // spawn the sequencer on available SequenceComponent
+  // start the sequencer on available SequenceComponent
   private def startSequencer(
       subSystem: Subsystem,
       observingMode: String,
