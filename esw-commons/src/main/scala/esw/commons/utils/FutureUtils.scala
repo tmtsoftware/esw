@@ -4,7 +4,7 @@ import akka.actor.typed.ActorSystem
 import akka.stream.scaladsl.{Sink, Source}
 import akka.stream.{ActorAttributes, Supervision}
 
-import scala.concurrent.Future
+import scala.concurrent.{ExecutionContext, Future}
 import scala.util.control.NonFatal
 
 object FutureUtils {
@@ -23,4 +23,12 @@ object FutureUtils {
         .runWith(Sink.headOption)
     }
   }
+
+  def sequential[A, B](l: Iterable[A])(fn: A => Future[B])(implicit ec: ExecutionContext): Future[List[B]] =
+    l.foldLeft(Future(List.empty[B])) { (previousFuture, next) =>
+      for {
+        previousResults <- previousFuture
+        next            <- fn(next)
+      } yield previousResults :+ next
+    }
 }

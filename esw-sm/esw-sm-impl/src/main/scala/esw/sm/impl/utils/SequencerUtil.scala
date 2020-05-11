@@ -10,6 +10,7 @@ import csw.prefix.models.{Prefix, Subsystem}
 import esw.commons.Timeouts
 import esw.commons.extensions.FutureEitherExt.FutureEitherOps
 import esw.commons.extensions.ListEitherExt.ListEitherOps
+import esw.commons.utils.FutureUtils
 import esw.commons.utils.location.EswLocationError.{RegistrationListingFailed, ResolveLocationFailed}
 import esw.commons.utils.location.{EswLocationError, LocationServiceUtil}
 import esw.ocs.api.actor.client.SequencerApiFactory
@@ -37,7 +38,7 @@ class SequencerUtil(locationServiceUtil: LocationServiceUtil, sequenceComponentU
   def startSequencers(observingMode: String, requiredSequencers: Sequencers): Future[ConfigureResponse] =
     async {
       val spawnSequencerResponses: Either[List[SequencerError], List[AkkaLocation]] =
-        await(Future.traverse(requiredSequencers.subsystems)(startSequencer(_, observingMode, retryCount))).sequence
+        await(FutureUtils.sequential(requiredSequencers.subsystems)(startSequencer(_, observingMode, retryCount))).sequence
 
       spawnSequencerResponses match {
         case Left(failedScriptResponses) =>
@@ -47,7 +48,10 @@ class SequencerUtil(locationServiceUtil: LocationServiceUtil, sequenceComponentU
 
         case Right(_) =>
           // resolve master Sequencer and return LOCATION or FAILURE if location is not found
-          await(resolveMasterSequencerOf(observingMode).mapToAdt(Success, err => ConfigurationFailure(err.msg)))
+          await(
+            resolveMasterSequencerOf(observingMode)
+              .mapToAdt(Success, err => ConfigurationFailure(err.msg))
+          )
       }
     }
 
@@ -56,9 +60,10 @@ class SequencerUtil(locationServiceUtil: LocationServiceUtil, sequenceComponentU
       .traverse(sequencers.subsystems) { subsystem =>
         resolveSequencer(obsMode, subsystem)
           .flatMap {
-            case Left(listingFailed @ RegistrationListingFailed(_)) => throw listingFailed
-            case Left(ResolveLocationFailed(_))                     => Future.successful(Done)
-            case Right(sequencerApi)                                => stopSequencer(sequencerApi)
+            case Left(listingFailed @ RegistrationListingFailed(_)) =>
+              throw listingFailed
+            case Left(ResolveLocationFailed(_)) => Future.successful(Done)
+            case Right(sequencerApi)            => stopSequencer(sequencerApi)
           }
       }
       .map(_ => Right(Done))
@@ -71,12 +76,17 @@ class SequencerUtil(locationServiceUtil: LocationServiceUtil, sequenceComponentU
     seq.getSequenceComponent.flatMap(sequenceComponentUtil.unloadScript)
 
   // Created in order to mock the behavior of sequencer API availability for unit test
-  private[sm] def createSequencerClient(location: Location): SequencerApi = SequencerApiFactory.make(location)
+  private[sm] def createSequencerClient(location: Location): SequencerApi =
+    SequencerApiFactory.make(location)
   private def resolveSequencer(obsMode: String, subsystem: Subsystem) =
-    locationServiceUtil.resolveSequencer(subsystem, obsMode).mapRight(createSequencerClient)
+    locationServiceUtil
+      .resolveSequencer(subsystem, obsMode)
+      .mapRight(createSequencerClient)
 
   private def loadScript(subSystem: Subsystem, observingMode: String, seqCompApi: SequenceComponentApi) =
-    seqCompApi.loadScript(subSystem, observingMode).map(_.response.left.map(e => SequenceManagerError.LoadScriptError(e.msg)))
+    seqCompApi
+      .loadScript(subSystem, observingMode)
+      .map(_.response.left.map(e => SequenceManagerError.LoadScriptError(e.msg)))
 
   // spawn the sequencer on available SequenceComponent
   private def startSequencer(
@@ -87,8 +97,10 @@ class SequencerUtil(locationServiceUtil: LocationServiceUtil, sequenceComponentU
     sequenceComponentUtil
       .getAvailableSequenceComponent(subSystem)
       .flatMap {
-        case Right(seqCompApi)         => loadScript(subSystem, observingMode, seqCompApi)
-        case Left(_) if retryCount > 0 => startSequencer(subSystem, observingMode, retryCount - 1)
-        case Left(e)                   => Future.successful(Left(e))
+        case Right(seqCompApi) =>
+          loadScript(subSystem, observingMode, seqCompApi)
+        case Left(_) if retryCount > 0 =>
+          startSequencer(subSystem, observingMode, retryCount - 1)
+        case Left(e) => Future.successful(Left(e))
       }
 }

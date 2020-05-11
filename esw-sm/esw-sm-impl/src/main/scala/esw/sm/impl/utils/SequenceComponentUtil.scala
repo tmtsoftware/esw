@@ -26,9 +26,10 @@ class SequenceComponentUtil(locationServiceUtil: LocationServiceUtil, agentUtil:
   def getAvailableSequenceComponent(subsystem: Subsystem): Future[Either[AgentError, SequenceComponentApi]] =
     getIdleSequenceComponentFor(subsystem)
       .flatMap {
-        case api @ Some(_)            => Future.successful(api)
-        case None if subsystem != ESW => getIdleSequenceComponentFor(ESW) // fallback
-        case None                     => Future.successful(None)
+        case api @ Some(_) => Future.successful(api)
+        case None if subsystem != ESW =>
+          getIdleSequenceComponentFor(ESW) // fallback
+        case None => Future.successful(None)
       }
       .flatMap {
         case Some(value) => Future.successful(Right(value))
@@ -36,7 +37,8 @@ class SequenceComponentUtil(locationServiceUtil: LocationServiceUtil, agentUtil:
         case None => agentUtil.spawnSequenceComponentFor(subsystem)
       }
 
-  def unloadScript(loc: AkkaLocation): Future[Done] = new SequenceComponentImpl(loc).unloadScript()
+  def unloadScript(loc: AkkaLocation): Future[Done] =
+    new SequenceComponentImpl(loc).unloadScript()
 
   private def getIdleSequenceComponentFor(subsystem: Subsystem): Future[Option[SequenceComponentApi]] =
     locationServiceUtil
@@ -51,7 +53,8 @@ class SequenceComponentUtil(locationServiceUtil: LocationServiceUtil, agentUtil:
 
   private[sm] def idleSequenceComponent(sequenceComponentLocation: AkkaLocation): Future[Option[SequenceComponentApi]] =
     async {
-      val sequenceComponentApi   = new SequenceComponentImpl(sequenceComponentLocation)
+      val sequenceComponentApi =
+        new SequenceComponentImpl(sequenceComponentLocation)
       val status                 = await(sequenceComponentApi.status)
       val isBusyRunningSequencer = status.response.isDefined
       if (isBusyRunningSequencer) None else Some(sequenceComponentApi)

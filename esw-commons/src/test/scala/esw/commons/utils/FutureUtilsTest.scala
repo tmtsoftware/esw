@@ -66,4 +66,41 @@ class FutureUtilsTest extends BaseTestSuite {
       result shouldBe None
     }
   }
+
+  "sequential" must {
+    "execute futures sequentially" in {
+      val list = List(1, 2, 3, 4, 5, 6)
+
+      val result = FutureUtils
+        .sequential(list) { value =>
+          Future.successful(value)
+        }
+
+      result.futureValue shouldBe list
+    }
+
+    "return Future of empty list if provided list is empty" in {
+      val list = List.empty[Int]
+
+      val result: Future[List[Int]] = FutureUtils
+        .sequential(list) { value =>
+          Future.successful(value)
+        }
+
+      result.futureValue shouldBe list
+    }
+
+    "return failed future if any of future fails" in {
+      val list = List(1, 2, 3)
+
+      val result: Future[List[Int]] = FutureUtils
+        .sequential(list) { value =>
+          if (value == 2) Future.failed(new RuntimeException("invalid value"))
+          else Future.successful(value)
+        }
+
+      val exception = intercept[RuntimeException](result.futureValue)
+      exception.getMessage shouldBe "The future returned an exception of type: java.lang.RuntimeException, with message: invalid value."
+    }
+  }
 }
