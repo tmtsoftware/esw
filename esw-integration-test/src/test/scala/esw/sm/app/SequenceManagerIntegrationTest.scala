@@ -86,6 +86,10 @@ class SequenceManagerIntegrationTest extends EswTestKit {
     sequenceManager
       .configure("WFOS_Cal")
       .futureValue shouldBe a[ConfigureResponse.Success]
+
+    // Test cleanup
+    sequenceManager.cleanup("IRIS_Cal").futureValue
+    sequenceManager.cleanup("WFOS_Cal").futureValue
   }
 
   object TestSetup {
