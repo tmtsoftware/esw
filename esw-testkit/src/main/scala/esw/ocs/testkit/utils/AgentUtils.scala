@@ -15,12 +15,12 @@ trait AgentUtils {
 
   private var agentWiring: Option[AgentWiring] = None
 
-  val agentSettings: AgentSettings = AgentSettings(
+  lazy val agentSettings: AgentSettings = AgentSettings(
     Paths.get(getClass.getResource("/").getPath).toString,
     durationToWaitForComponentRegistration = 5.seconds,
     durationToWaitForGracefulProcessTermination = 2.seconds
   )
-  val agentPrefix: Prefix = Prefix(s"esw.machine_${Random.nextInt().abs}")
+  lazy val agentPrefix: Prefix = Prefix(s"esw.machine_${Random.nextInt().abs}")
 
   def spawnAgent(agentSettings: AgentSettings): Unit = {
     val wiring = AgentWiring.make(agentPrefix, agentSettings, actorSystem)

@@ -17,28 +17,28 @@ trait KeycloakUtils extends BaseTestSuite {
   def locationService: LocationService
   implicit def actorSystem: ActorSystem[SpawnProtocol.Command]
 
-  val gatewayUser1WithRequiredRole    = "gateway-user1"
-  val gatewayUser1Password            = "gateway-user1"
-  val gatewayUser2WithoutRequiredRole = "gateway-user2"
-  val gatewayUser2Password            = "gateway-user2"
-  val serverTimeout: FiniteDuration   = 3.minutes
-  val keycloakPort: Int               = SocketUtils.getFreePort
-  val validTokenFactory: () => Option[String] =
+  lazy val gatewayUser1WithRequiredRole    = "gateway-user1"
+  lazy val gatewayUser1Password            = "gateway-user1"
+  lazy val gatewayUser2WithoutRequiredRole = "gateway-user2"
+  lazy val gatewayUser2Password            = "gateway-user2"
+  lazy val serverTimeout: FiniteDuration   = 3.minutes
+  lazy val keycloakPort: Int               = SocketUtils.getFreePort
+  lazy val validTokenFactory: () => Option[String] =
     getToken(gatewayUser1WithRequiredRole, gatewayUser1Password)
-  val invalidTokenFactory: () => Option[String] =
+  lazy val invalidTokenFactory: () => Option[String] =
     getToken(gatewayUser2WithoutRequiredRole, gatewayUser2Password)
 
-  val irisUserRole = "IRIS-user"
+  lazy val irisUserRole = "IRIS-user"
 
-  private val `esw-gateway-server`: Client = Client(
+  private lazy val `esw-gateway-server`: Client = Client(
     "esw-gateway-server",
     "bearer-only"
   )
 
-  private val `esw-gateway-client`: Client =
+  private lazy val `esw-gateway-client`: Client =
     Client("esw-gateway-client", "public", passwordGrantEnabled = true, authorizationEnabled = false)
 
-  private val users = Set(
+  private lazy val users = Set(
     ApplicationUser(
       gatewayUser1WithRequiredRole,
       gatewayUser1Password,
@@ -49,7 +49,7 @@ trait KeycloakUtils extends BaseTestSuite {
       gatewayUser2Password
     )
   )
-  private val defaultGatewayData: KeycloakData = KeycloakData(
+  private lazy val defaultGatewayData: KeycloakData = KeycloakData(
     AdminUser("admin", "admin"),
     realms = Set(
       Realm(
