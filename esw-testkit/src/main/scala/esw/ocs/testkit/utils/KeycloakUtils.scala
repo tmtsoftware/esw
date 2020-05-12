@@ -17,18 +17,19 @@ trait KeycloakUtils extends BaseTestSuite {
   def locationService: LocationService
   implicit def actorSystem: ActorSystem[SpawnProtocol.Command]
 
-  lazy val gatewayUser1WithRequiredRole    = "gateway-user1"
-  lazy val gatewayUser1Password            = "gateway-user1"
-  lazy val gatewayUser2WithoutRequiredRole = "gateway-user2"
-  lazy val gatewayUser2Password            = "gateway-user2"
-  lazy val serverTimeout: FiniteDuration   = 3.minutes
-  lazy val keycloakPort: Int               = SocketUtils.getFreePort
-  lazy val validTokenFactory: () => Option[String] =
-    getToken(gatewayUser1WithRequiredRole, gatewayUser1Password)
-  lazy val invalidTokenFactory: () => Option[String] =
-    getToken(gatewayUser2WithoutRequiredRole, gatewayUser2Password)
+  lazy val gatewayUser1                  = "gateway-user1"
+  lazy val gatewayUser1Password          = "gateway-user1"
+  lazy val gatewayUser2                  = "gateway-user2"
+  lazy val gatewayUser2Password          = "gateway-user2"
+  lazy val serverTimeout: FiniteDuration = 3.minutes
+  lazy val keycloakPort: Int             = SocketUtils.getFreePort
+  lazy val tokenWithRequiredRoles: () => Option[String] =
+    getToken(gatewayUser1, gatewayUser1Password)
+  lazy val tokenWithoutRequiredRoles: () => Option[String] =
+    getToken(gatewayUser2, gatewayUser2Password)
 
   lazy val irisUserRole = "IRIS-user"
+  lazy val irisEngRole  = "IRIS-eng"
 
   private lazy val `esw-gateway-server`: Client = Client(
     "esw-gateway-server",
@@ -38,16 +39,18 @@ trait KeycloakUtils extends BaseTestSuite {
   private lazy val `esw-gateway-client`: Client =
     Client("esw-gateway-client", "public", passwordGrantEnabled = true, authorizationEnabled = false)
 
+  private lazy val userWithIrisEngAndIrisUserRole = ApplicationUser(
+    gatewayUser1,
+    gatewayUser1Password,
+    realmRoles = Set(irisUserRole, irisEngRole)
+  )
+  private lazy val userWithoutAnyRole = ApplicationUser(
+    gatewayUser2,
+    gatewayUser2Password
+  )
   private lazy val users = Set(
-    ApplicationUser(
-      gatewayUser1WithRequiredRole,
-      gatewayUser1Password,
-      realmRoles = Set(irisUserRole)
-    ),
-    ApplicationUser(
-      gatewayUser2WithoutRequiredRole,
-      gatewayUser2Password
-    )
+    userWithIrisEngAndIrisUserRole,
+    userWithoutAnyRole
   )
   private lazy val defaultGatewayData: KeycloakData = KeycloakData(
     AdminUser("admin", "admin"),
@@ -56,7 +59,7 @@ trait KeycloakUtils extends BaseTestSuite {
         "TMT-test",
         clients = Set(`esw-gateway-server`, `esw-gateway-client`),
         users = users,
-        realmRoles = Set(irisUserRole)
+        realmRoles = Set(irisUserRole, irisEngRole)
       )
     )
   )

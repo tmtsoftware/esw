@@ -29,7 +29,8 @@ class GatewayAuthTest extends EswTestKit {
 
   private val mockCommandService: CommandService = mock[CommandService]
   private val componentIdCommandService          = ComponentId(Prefix("IRIS.filter.wheel"), Assembly)
-  private val startExposureCommand               = Setup(Prefix("CSW.ncc.trombone"), CommandName("startExposure"), Some(ObsId("obsId")))
+  private val engLevelCommand                    = Setup(Prefix("CSW.ncc.trombone"), CommandName("startExposure"), Some(ObsId("obsId")))
+  private val userLevelCommand                   = Setup(Prefix("CSW.ncc.trombone"), CommandName("setVoltage"), Some(ObsId("obsId")))
 
   private val mockSequencerCommandService = mock[SequencerApi]
   private val componentIdSequencer        = ComponentId(Prefix("IRIS.MoonNight"), ComponentType.Sequencer)
@@ -43,7 +44,8 @@ class GatewayAuthTest extends EswTestKit {
     gatewayServerWiring = startGateway()
 
     when(mockResolver.commandService(componentIdCommandService)).thenReturn(Future.successful(mockCommandService))
-    when(mockCommandService.submit(startExposureCommand)).thenReturn(Future.successful(Started(Id("1234"))))
+    when(mockCommandService.submit(engLevelCommand)).thenReturn(Future.successful(Started(Id("1234"))))
+    when(mockCommandService.submit(userLevelCommand)).thenReturn(Future.successful(Started(Id("4321"))))
 
     when(mockResolver.sequencerCommandService(componentIdSequencer)).thenReturn(Future.successful(mockSequencerCommandService))
     when(mockSequencerCommandService.submit(sequence)).thenReturn(Future.successful(Started(Id("5678"))))
@@ -57,26 +59,46 @@ class GatewayAuthTest extends EswTestKit {
 
   "Gateway" must {
 
-    "return 200 response for protected command route with required role | ESW-95" in {
-      val gatewayPostClientWithAuth = gatewayHTTPClient(validTokenFactory)
+    //    eng or above level role commands are commands present in commandRoles.conf
+    "return 200 response for eng or above level role command with required role | ESW-95" in {
+      val gatewayPostClientWithAuth = gatewayHTTPClient(tokenWithRequiredRoles)
       val clientFactory             = new ClientFactory(gatewayPostClientWithAuth, gatewayWsClient)
       val commandService            = clientFactory.component(componentIdCommandService)
 
-      val submitResponse = Await.result(commandService.submit(startExposureCommand), 10.minutes)
+      val submitResponse = Await.result(commandService.submit(engLevelCommand), 10.minutes)
+      submitResponse shouldBe a[Started]
+    }
+
+    //    user level role commands are commands NOT present in commandRoles.conf
+    "return 200 response for user level role command with required role | ESW-95" in {
+      val gatewayPostClientWithAuth = gatewayHTTPClient(tokenWithRequiredRoles)
+      val clientFactory             = new ClientFactory(gatewayPostClientWithAuth, gatewayWsClient)
+      val commandService            = clientFactory.component(componentIdCommandService)
+
+      val submitResponse = Await.result(commandService.submit(userLevelCommand), 10.minutes)
       submitResponse shouldBe a[Started]
     }
 
     "return 403 response for protected command route without required role | ESW-95" in {
-      val gatewayPostClientWithAuth = gatewayHTTPClient(invalidTokenFactory)
+      val gatewayPostClientWithAuth = gatewayHTTPClient(tokenWithoutRequiredRoles)
       val clientFactory             = new ClientFactory(gatewayPostClientWithAuth, gatewayWsClient)
       val commandService            = clientFactory.component(componentIdCommandService)
 
-      val httpError = intercept[HttpError](Await.result(commandService.submit(startExposureCommand), defaultTimeout))
+      val httpError = intercept[HttpError](Await.result(commandService.submit(engLevelCommand), defaultTimeout))
       httpError.statusCode shouldBe 403
     }
 
+    "return 401 response for protected command route with no token | ESW-95" in {
+      val gatewayPostClientWithAuth = gatewayHTTPClient(() => None)
+      val clientFactory             = new ClientFactory(gatewayPostClientWithAuth, gatewayWsClient)
+      val commandService            = clientFactory.component(componentIdCommandService)
+
+      val httpError = intercept[HttpError](Await.result(commandService.submit(engLevelCommand), defaultTimeout))
+      httpError.statusCode shouldBe 401
+    }
+
     "return 200 response for protected sequencer route with required role | ESW-95" in {
-      val gatewayPostClientWithAuth = gatewayHTTPClient(validTokenFactory)
+      val gatewayPostClientWithAuth = gatewayHTTPClient(tokenWithRequiredRoles)
       val clientFactory             = new ClientFactory(gatewayPostClientWithAuth, gatewayWsClient)
       val sequencer                 = clientFactory.sequencer(componentIdSequencer)
 
@@ -85,12 +107,21 @@ class GatewayAuthTest extends EswTestKit {
     }
 
     "return 403 response for protected sequencer route without required role | ESW-95" in {
-      val gatewayPostClientWithAuth = gatewayHTTPClient(invalidTokenFactory)
+      val gatewayPostClientWithAuth = gatewayHTTPClient(tokenWithoutRequiredRoles)
       val clientFactory             = new ClientFactory(gatewayPostClientWithAuth, gatewayWsClient)
       val sequencer                 = clientFactory.sequencer(componentIdSequencer)
 
       val httpError = intercept[HttpError](Await.result(sequencer.submit(sequence), defaultTimeout))
       httpError.statusCode shouldBe 403
+    }
+
+    "return 401 response for protected sequencer route without required role | ESW-95" in {
+      val gatewayPostClientWithAuth = gatewayHTTPClient(() => None)
+      val clientFactory             = new ClientFactory(gatewayPostClientWithAuth, gatewayWsClient)
+      val sequencer                 = clientFactory.sequencer(componentIdSequencer)
+
+      val httpError = intercept[HttpError](Await.result(sequencer.submit(sequence), defaultTimeout))
+      httpError.statusCode shouldBe 401
     }
   }
 
