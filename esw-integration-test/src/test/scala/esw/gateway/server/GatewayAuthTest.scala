@@ -115,7 +115,7 @@ class GatewayAuthTest extends EswTestKit {
       httpError.statusCode shouldBe 403
     }
 
-    "return 401 response for protected sequencer route without required role | ESW-95" in {
+    "return 401 response for protected sequencer route with no token | ESW-95" in {
       val gatewayPostClientWithAuth = gatewayHTTPClient(() => None)
       val clientFactory             = new ClientFactory(gatewayPostClientWithAuth, gatewayWsClient)
       val sequencer                 = clientFactory.sequencer(componentIdSequencer)
