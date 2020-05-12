@@ -26,8 +26,8 @@ class AgentUtilTest extends BaseTestSuite {
   implicit val timeout: Timeout                                = 1.hour
 
   override def afterAll(): Unit = {
-    super.afterAll()
     actorSystem.terminate()
+    actorSystem.whenTerminated.futureValue
   }
 
   "spawnSequenceComponentFor" must {
@@ -52,9 +52,8 @@ class AgentUtilTest extends BaseTestSuite {
       when(agentClient.spawnSequenceComponent(any[Prefix]))
         .thenReturn(Future.successful(Failed("failed to spawn sequence component")))
 
-      agentUtil.spawnSequenceComponentFor(ESW).leftValue shouldBe SpawnSequenceComponentFailed(
-        "failed to spawn sequence component"
-      )
+      agentUtil.spawnSequenceComponentFor(ESW).leftValue shouldBe
+      SpawnSequenceComponentFailed("failed to spawn sequence component")
 
       verify(agentClient).spawnSequenceComponent(any[Prefix])
     }
@@ -63,8 +62,7 @@ class AgentUtilTest extends BaseTestSuite {
       val setup = new TestSetup()
       import setup._
 
-      when(agentClient.spawnSequenceComponent(any[Prefix]))
-        .thenReturn(Future.successful(Spawned))
+      when(agentClient.spawnSequenceComponent(any[Prefix])).thenReturn(Future.successful(Spawned))
       when(locationServiceUtil.resolve(any[AkkaConnection], argEq(Timeouts.DefaultTimeout)))
         .thenReturn(Future.successful(Left(ResolveLocationFailed("Could not resolve sequence component"))))
 
@@ -88,8 +86,7 @@ class AgentUtilTest extends BaseTestSuite {
 
   class TestSetup() {
     val locationServiceUtil: LocationServiceUtil = mock[LocationServiceUtil]
-
-    val agentClient: AgentClient = mock[AgentClient]
+    val agentClient: AgentClient                 = mock[AgentClient]
 
     val agentUtil: AgentUtil = new AgentUtil(locationServiceUtil) {
       override private[sm] def getAgent: Future[Either[EswLocationError, AgentClient]] = Future.successful(Right(agentClient))

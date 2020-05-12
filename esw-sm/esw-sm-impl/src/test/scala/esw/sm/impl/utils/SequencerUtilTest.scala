@@ -29,8 +29,8 @@ class SequencerUtilTest extends BaseTestSuite {
   implicit val timeout: Timeout                           = 5.seconds
 
   override def afterAll(): Unit = {
-    super.afterAll()
     system.terminate()
+    system.whenTerminated.futureValue
   }
 
   "resolveMasterSequencerFor" must {
@@ -74,8 +74,7 @@ class SequencerUtilTest extends BaseTestSuite {
 
       // unable to loadScript script error
       val scriptErrorMsg = s"script initialisation failed for TCS $obsMode"
-      when(tcsSeqComp.loadScript(TCS, obsMode))
-        .thenReturn(Future.successful(ScriptResponse(Left(ScriptError(scriptErrorMsg)))))
+      when(tcsSeqComp.loadScript(TCS, obsMode)).thenReturn(Future.successful(ScriptResponse(Left(ScriptError(scriptErrorMsg)))))
 
       sequencerUtil
         .startSequencers(obsMode, Sequencers(ESW, TCS))
@@ -124,10 +123,9 @@ class SequencerUtilTest extends BaseTestSuite {
       val setup   = new TestSetup(obsMode)
       import setup._
 
+      // mimic the exception thrown from LocationServiceUtil.resolveSequencer
       when(locationServiceUtil.resolveSequencer(ESW, obsMode))
-        .thenReturn(
-          Future.successful(Left(ResolveLocationFailed("location service error")))
-        ) // mimic the exception thrown from LocationServiceUtil.resolveSequencer
+        .thenReturn(Future.successful(Left(ResolveLocationFailed("location service error"))))
 
       sequencerUtil.stopSequencers(Sequencers(ESW), obsMode).rightValue shouldBe Done
 
@@ -143,8 +141,7 @@ class SequencerUtilTest extends BaseTestSuite {
 
       when(locationServiceUtil.resolveSequencer(ESW, obsMode))
         .thenReturn(Future.successful(Left(RegistrationListingFailed("Error"))))
-      when(locationServiceUtil.resolveSequencer(TCS, obsMode))
-        .thenReturn(Future.successful(Right(tcsLocation)))
+      when(locationServiceUtil.resolveSequencer(TCS, obsMode)).thenReturn(Future.successful(Right(tcsLocation)))
       when(tcsSequencerApi.getSequenceComponent).thenReturn(Future.successful(tcsSeqCompLoc))
       when(sequenceComponentUtil.unloadScript(tcsSeqCompLoc)).thenReturn(Future.successful(Done))
 
@@ -154,7 +151,6 @@ class SequencerUtilTest extends BaseTestSuite {
       verify(locationServiceUtil).resolveSequencer(TCS, obsMode)
       verify(tcsSequencerApi).getSequenceComponent
     }
-
   }
 
   class TestSetup(val obsMode: String) {

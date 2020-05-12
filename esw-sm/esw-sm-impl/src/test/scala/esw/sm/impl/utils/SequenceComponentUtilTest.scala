@@ -40,14 +40,11 @@ class SequenceComponentUtilTest extends BaseTestSuite {
   def mockAkkaLocation(prefixStr: String): AkkaLocation =
     AkkaLocation(AkkaConnection(ComponentId(Prefix(prefixStr), SequenceComponent)), new URI("some-uri"))
 
-  override def beforeEach(): Unit = {
-    super.beforeEach()
-    reset(locationServiceUtil, agentUtil)
-  }
+  override def beforeEach(): Unit = reset(locationServiceUtil, agentUtil)
 
   override def afterAll(): Unit = {
-    super.afterAll()
     actorSystem.terminate()
+    actorSystem.whenTerminated.futureValue
   }
 
   "getAvailableSequenceComponent" must {

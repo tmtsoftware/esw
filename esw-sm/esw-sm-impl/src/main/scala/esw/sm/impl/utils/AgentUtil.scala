@@ -31,14 +31,11 @@ class AgentUtil(locationServiceUtil: LocationServiceUtil)(implicit actorSystem: 
       .mapError(_ => ResolveLocationFailed(s"Could not find agent matching $ESW"))
 
   def spawnSequenceComponentFor(subsystem: Subsystem): Future[Either[AgentError, SequenceComponentApi]] = {
-    val sequenceComponentPrefix =
-      Prefix(subsystem, s"${subsystem}_${Random.between(1, 100)}")
+    val sequenceComponentPrefix = Prefix(subsystem, s"${subsystem}_${Random.between(1, 100)}")
     getAgent
       .flatMap {
-        case Left(error) =>
-          futureLeft(SequenceManagerError.LocationServiceError(error.msg))
-        case Right(agentClient) =>
-          spawnSeqComp(agentClient, sequenceComponentPrefix)
+        case Left(error)        => futureLeft(SequenceManagerError.LocationServiceError(error.msg))
+        case Right(agentClient) => spawnSeqComp(agentClient, sequenceComponentPrefix)
       }
   }
 
@@ -46,9 +43,8 @@ class AgentUtil(locationServiceUtil: LocationServiceUtil)(implicit actorSystem: 
     agentClient
       .spawnSequenceComponent(seqCompPrefix)
       .flatMap {
-        case Spawned => resolveSeqComp(seqCompPrefix)
-        case Failed(msg) =>
-          futureLeft(SequenceManagerError.SpawnSequenceComponentFailed(msg))
+        case Spawned     => resolveSeqComp(seqCompPrefix)
+        case Failed(msg) => futureLeft(SequenceManagerError.SpawnSequenceComponentFailed(msg))
       }
 
   private def resolveSeqComp(seqCompPrefix: Prefix) =
