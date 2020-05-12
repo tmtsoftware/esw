@@ -128,7 +128,7 @@ class SequenceComponentBehaviorTest extends EswTestKit {
       unloadScriptResponseProbe.expectMessage(Done)
     }
 
-    "restart sequencer if sequence component is in running state | ESW-141" in {
+    "restart sequencer if sequence component is in running state (sequencer can be in any state) | ESW-141" in {
       val sequenceComponentRef: ActorRef[SequenceComponentMsg] = spawnSequenceComponent()
 
       val subsystem               = ESW
@@ -154,7 +154,7 @@ class SequenceComponentBehaviorTest extends EswTestKit {
       restartLocationResponse should not equal initialLocation
     }
 
-    "restart should fail if sequencer is in idle state | ESW-141" in {
+    "restart should fail if sequence component is in idle state | ESW-141" in {
       val sequenceComponentRef: ActorRef[SequenceComponentMsg] = spawnSequenceComponent()
 
       val restartResponseProbe = TestProbe[ScriptResponse]

@@ -16,12 +16,12 @@ import csw.prefix.models.Prefix
 import csw.prefix.models.Subsystem.ESW
 import csw.time.core.models.UTCTime
 import esw.commons.BaseTestSuite
+import esw.ocs.api.actor.messages.SequencerMessages._
+import esw.ocs.api.actor.messages.SequencerState.{Idle, InProgress, Loaded, Offline}
 import esw.ocs.api.models.StepStatus.{Finished, InFlight, Pending}
 import esw.ocs.api.models.{Step, StepList}
 import esw.ocs.api.protocol.EditorError.{CannotOperateOnAnInFlightOrFinishedStep, IdDoesNotExist}
 import esw.ocs.api.protocol._
-import esw.ocs.api.actor.messages.SequencerMessages._
-import esw.ocs.api.actor.messages.SequencerState.{Idle, InProgress, Loaded, Offline}
 import org.scalatest.prop.TableDrivenPropertyChecks._
 import org.scalatest.prop.TableFor2
 
@@ -43,14 +43,15 @@ class SequencerBehaviorTest extends ScalaTestWithActorTestKit with BaseTestSuite
       val sequencerSetup = SequencerTestSetup.idle(sequence)
       import sequencerSetup._
       loadSequenceAndAssertResponse(Ok)
-      assertSequencerState(Loaded)
+      assertSequencerState(Loaded) // ESW-141: state transitioned Idle -> Loaded
     }
 
     "load the given sequence in loaded state | ESW-145, ESW-141" in {
       val sequencerSetup = SequencerTestSetup.loaded(sequence)
       import sequencerSetup._
+
       loadSequenceAndAssertResponse(Ok)
-      assertSequencerState(Loaded)
+      assertSequencerState(Loaded) // ESW-141: state stays Loaded
     }
   }
 
@@ -1076,5 +1077,76 @@ class SequencerBehaviorTest extends ScalaTestWithActorTestKit with BaseTestSuite
       PullNext,
       StepSuccess
     )
+  }
+
+  "State Transition Test" must {
+    "Idle -> Loaded | ESW-141" in {
+      val sequencerSetup = SequencerTestSetup.idle(sequence)
+      import sequencerSetup._
+
+      loadSequenceAndAssertResponse(Ok)
+      assertSequencerState(Loaded)
+    }
+
+    "Idle -> InProgress | ESW-141" in {
+      val sequencerSetup = SequencerTestSetup.idle(sequence)
+      import sequencerSetup._
+
+      loadAndStartSequenceThenAssertInProgress()
+      assertSequencerState(InProgress) // transition to InProgress
+    }
+
+    "Idle -> Offline | ESW-141" in {
+      val sequencerSetup = SequencerTestSetup.idle(sequence)
+      import sequencerSetup._
+
+      when(script.executeGoOffline()).thenReturn(Future.successful(Done))
+      goOfflineAndAssertResponse(Ok)
+      assertSequencerState(Offline) // transition to offline
+    }
+
+    "Loaded -> InProgress | ESW-141" in {
+      val sequencerSetup = SequencerTestSetup.loaded(sequence)
+      import sequencerSetup._
+
+      //start executing sequence
+      when { script.executeNewSequenceHandler() }.thenAnswer { Future.successful(Done) }
+      val replyTo = TestProbe[SequencerSubmitResponse]()
+      sequencerActor ! StartSequence(replyTo.ref)
+      startPullNext()
+
+      assertSequencerState(InProgress) // transition to InProgress
+    }
+
+    "Loaded -> Idle | ESW-141" in {
+      val sequencerSetup = SequencerTestSetup.loaded(sequence)
+      import sequencerSetup._
+
+      val probe = TestProbe[OkOrUnhandledResponse]()
+      sequencerActor ! Reset(probe.ref)
+      probe.expectMessage(Ok)
+
+      assertSequencerState(Idle) // transition to Idle
+    }
+
+    "InProgress -> Idle | ESW-141" in {
+      val sequencerSetup = SequencerTestSetup.idle(sequence)
+      import sequencerSetup._
+
+      loadAndStartSequenceThenAssertInProgress()
+      assertSequencerState(InProgress) // Initial state InProgres
+
+      pullAllStepsAndAssertSequenceIsFinished()
+      assertSequencerState(Idle) // transition to Idle
+    }
+
+    "Offline -> Idle | ESW-141" in {
+      val sequencerSetup = SequencerTestSetup.offline(sequence)
+      import sequencerSetup._
+
+      goOnlineAndAssertResponse(Ok, Future.successful(Done))
+      assertSequencerState(Idle) // transition to Idle
+    }
+
   }
 }
