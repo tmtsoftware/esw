@@ -26,55 +26,38 @@ import scala.concurrent.duration.DurationLong
 
 class SequenceManagerBehaviorTest extends ScalaTestWithActorTestKit with BaseTestSuite {
 
-  val DARKNIGHT                                = "darknight"
-  val CLEARSKIES                               = "clearskies"
+  private val DARKNIGHT                        = "darknight"
+  private val CLEARSKIES                       = "clearskies"
   private val darknightSequencers: Sequencers  = Sequencers(ESW, TCS)
   private val clearskiesSequencers: Sequencers = Sequencers(ESW)
   private val config = Map(
     DARKNIGHT  -> ObsModeConfig(Resources("r1", "r2"), darknightSequencers),
     CLEARSKIES -> ObsModeConfig(Resources("r2", "r3"), clearskiesSequencers)
   )
-  private val locationServiceUtil: LocationServiceUtil =
-    mock[LocationServiceUtil]
-  private val sequencerUtil: SequencerUtil = mock[SequencerUtil]
-  private val sequenceManagerBehavior =
-    new SequenceManagerBehavior(config, locationServiceUtil, sequencerUtil)
+  private val locationServiceUtil: LocationServiceUtil = mock[LocationServiceUtil]
+  private val sequencerUtil: SequencerUtil             = mock[SequencerUtil]
+  private val sequenceManagerBehavior                  = new SequenceManagerBehavior(config, locationServiceUtil, sequencerUtil)
 
-  private val smRef: ActorRef[SequenceManagerMsg] =
-    system.systemActorOf(sequenceManagerBehavior.idle(), "test_actor")
+  private lazy val smRef: ActorRef[SequenceManagerMsg] = system.systemActorOf(sequenceManagerBehavior.idle(), "test_actor")
 
-  override protected def afterEach(): Unit = {
-    super.afterEach()
-    reset(locationServiceUtil, sequencerUtil)
-  }
+  override protected def afterEach(): Unit = reset(locationServiceUtil, sequencerUtil)
 
   "Configure" must {
 
-    "transition sequence manager to ConfigurationInProcess state | ESW-178, ESW-164" in {
-      val httpLocation = HttpLocation(HttpConnection(ComponentId(Prefix(ESW, DARKNIGHT), Sequencer)), new URI("uri"))
-      when(locationServiceUtil.listAkkaLocationsBy(ESW, Sequencer))
-        .thenReturn(future(1.seconds, Right(List.empty)))
-      when(sequencerUtil.startSequencers(DARKNIGHT, darknightSequencers))
-        .thenReturn(Future.successful(Success(httpLocation)))
+    "transition sm from IDLE -> ConfigurationInProcess -> Idle state and return location of master sequencer| ESW-178, ESW-164" in {
+      val httpLocation   = HttpLocation(HttpConnection(ComponentId(Prefix(ESW, DARKNIGHT), Sequencer)), new URI("uri"))
+      val configResponse = Success(httpLocation)
+      when(locationServiceUtil.listAkkaLocationsBy(ESW, Sequencer)).thenReturn(future(1.seconds, Right(List.empty)))
+      when(sequencerUtil.startSequencers(DARKNIGHT, darknightSequencers)).thenReturn(Future.successful(configResponse))
       val configureProbe = createTestProbe[ConfigureResponse]
 
+      // STATE TRANSITION: IDLE -> Configure() -> ConfigurationInProcess -> Idle
+      assertState(Idle)
       smRef ! Configure(DARKNIGHT, configureProbe.ref)
-
       assertState(ConfigurationInProcess)
       assertState(Idle)
-    }
 
-    "start sequence hierarchy and return master sequencer | ESW-178, ESW-164" in {
-      val httpLocation = HttpLocation(HttpConnection(ComponentId(Prefix(ESW, DARKNIGHT), Sequencer)), new URI("uri"))
-      when(locationServiceUtil.listAkkaLocationsBy(ESW, Sequencer))
-        .thenReturn(Future.successful(Right(List.empty)))
-      when(sequencerUtil.startSequencers(DARKNIGHT, darknightSequencers))
-        .thenReturn(Future.successful(Success(httpLocation)))
-      val probe = createTestProbe[ConfigureResponse]
-
-      smRef ! Configure(DARKNIGHT, probe.ref)
-
-      probe.expectMessage(Success(httpLocation))
+      configureProbe.expectMessage(configResponse)
       verify(locationServiceUtil).listAkkaLocationsBy(ESW, Sequencer)
       verify(sequencerUtil).startSequencers(DARKNIGHT, darknightSequencers)
     }
@@ -85,7 +68,6 @@ class SequenceManagerBehaviorTest extends ScalaTestWithActorTestKit with BaseTes
 
       val probe = createTestProbe[ConfigureResponse]
       smRef ! Configure(DARKNIGHT, probe.ref)
-
       probe.expectMessage(LocationServiceError("Sequencer"))
 
       verify(locationServiceUtil).listAkkaLocationsBy(ESW, Sequencer)
