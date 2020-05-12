@@ -22,13 +22,14 @@ commands and these roles.
 
 This type of role hierarchy is created in Keycloak as one time setup.
 As per this hierarchy there should be three roles present for each subsystem which are composed in specific order.
-* E.g. TCS-admin -> TCS-eng -> TCS-user. 
 
+* E.g. TCS-admin -> TCS-eng -> TCS-user. 
     * When you assign a user TCS-eng role, keycloak will automatically add TCS-user role to that user
     * When you assign a user TCS-admin role, keycloak will automatically add TCS-eng and TCS-user role to that user
 
 Also, there are three special roles. OSW-admin, OSW-eng and OSW-user which are composed of all respective subsystem
  level roles. 
+
 * E.g. When you assign a user OSW-eng role, keycloak will automatically add roles TCS-eng, APS-eng and so on to that
 user and these roles will automatically add their respective lower level roles TCS-user, APS-user and so on
  
@@ -46,7 +47,7 @@ IRIS.filter.wheel.stopExposure: [IRIS-user, APS-eng]
 
 We need to create a config containing role mapping entries like shown above and use it when starting esw-gateway server. 
 
-#### Examples:
+#### How to start Gateway
 
 Use command role mapping file from local file system
 ```
@@ -69,5 +70,6 @@ or
 ### Protection on Sequencer endpoints on Gateway.  
 
 On protected endpoints of sequencer commands in esw-gateway, {subsystem}-user role check is performed. 
+
 * Subsystem is obtained form componentId.prefix.subsystem
 * E.g. If current sequence to be executed is for esw.primary then user should have minimum ESW-user role.
