@@ -41,17 +41,9 @@ class SequencerUtil(locationServiceUtil: LocationServiceUtil, sequenceComponentU
         await(FutureUtils.sequential(requiredSequencers.subsystems)(startSequencer(_, observingMode, retryCount))).sequence
 
       spawnSequencerResponses match {
-        case Left(failedScriptResponses) =>
-          // todo : discuss this clean up step
-          // await(shutdownSequencers(collectRights(spawnSequencerResponses))) // clean up spawned sequencers on failure
-          FailedToStartSequencers(failedScriptResponses.map(_.msg).toSet)
-
-        case Right(_) =>
-          // resolve master Sequencer and return LOCATION or FAILURE if location is not found
-          await(
-            resolveMasterSequencerOf(observingMode)
-              .mapToAdt(Success, err => LocationServiceError(err.msg))
-          )
+        case Left(failedScriptResponses) => FailedToStartSequencers(failedScriptResponses.map(_.msg).toSet)
+        // resolve master Sequencer and return LOCATION or FAILURE if location is not found
+        case Right(_) => await(resolveMasterSequencerOf(observingMode).mapToAdt(Success, err => LocationServiceError(err.msg)))
       }
     }
 
@@ -60,24 +52,20 @@ class SequencerUtil(locationServiceUtil: LocationServiceUtil, sequenceComponentU
       .traverse(sequencers.subsystems) { subsystem =>
         resolveSequencer(obsMode, subsystem)
           .flatMap {
-            case Left(listingFailed @ RegistrationListingFailed(_)) =>
-              throw listingFailed
-            case Left(ResolveLocationFailed(_)) => Future.successful(Done)
-            case Right(sequencerApi)            => stopSequencer(sequencerApi)
+            case Left(listingFailed: RegistrationListingFailed) => throw listingFailed
+            case Left(ResolveLocationFailed(_))                 => Future.successful(Done)
+            case Right(sequencerApi)                            => stopSequencer(sequencerApi)
           }
       }
       .map(_ => Right(Done))
-      .recover {
-        case listingFailed: RegistrationListingFailed => Left(listingFailed)
-      }
+      .recover { case listingFailed: RegistrationListingFailed => Left(listingFailed) }
 
   // get sequence component from Sequencer and unload it.
-  private def stopSequencer(seq: SequencerApi): Future[Done] =
-    seq.getSequenceComponent.flatMap(sequenceComponentUtil.unloadScript)
+  private def stopSequencer(api: SequencerApi): Future[Done] =
+    api.getSequenceComponent.flatMap(sequenceComponentUtil.unloadScript)
 
   // Created in order to mock the behavior of sequencer API availability for unit test
-  private[sm] def createSequencerClient(location: Location): SequencerApi =
-    SequencerApiFactory.make(location)
+  private[sm] def createSequencerClient(location: Location): SequencerApi = SequencerApiFactory.make(location)
   private def resolveSequencer(obsMode: String, subsystem: Subsystem) =
     locationServiceUtil
       .resolveSequencer(subsystem, obsMode)
@@ -97,10 +85,8 @@ class SequencerUtil(locationServiceUtil: LocationServiceUtil, sequenceComponentU
     sequenceComponentUtil
       .getAvailableSequenceComponent(subSystem)
       .flatMap {
-        case Right(seqCompApi) =>
-          loadScript(subSystem, observingMode, seqCompApi)
-        case Left(_) if retryCount > 0 =>
-          startSequencer(subSystem, observingMode, retryCount - 1)
-        case Left(e) => Future.successful(Left(e))
+        case Right(seqCompApi)         => loadScript(subSystem, observingMode, seqCompApi)
+        case Left(_) if retryCount > 0 => startSequencer(subSystem, observingMode, retryCount - 1)
+        case Left(e)                   => Future.successful(Left(e))
       }
 }
