@@ -16,8 +16,8 @@ import csw.params.core.states.{CurrentState, StateName}
 import csw.prefix.models.Prefix
 import csw.time.core.models.UTCTime
 
-import scala.concurrent.Future
 import scala.concurrent.duration._
+import scala.concurrent.{Await, Future}
 import scala.jdk.DurationConverters.ScalaDurationOps
 
 /***********************************************
@@ -50,8 +50,7 @@ object Main extends App {
   private val wiring = new FrameworkWiring()
   LoggingSystemFactory.forTestingOnly()(wiring.actorSystem)
 
-  Standalone.spawn(ConfigFactory.parseResources("demoHcd.conf"), wiring)
-
+  Await.result(Standalone.spawn(ConfigFactory.parseResources("demoHcd.conf"), wiring), 20.seconds)
 }
 
 class HcdBehaviourFactory extends ComponentBehaviorFactory {
