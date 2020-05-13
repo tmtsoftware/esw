@@ -119,7 +119,6 @@ object Dependencies {
       Csw.`csw-logging-models`.value  % Test,
       Libs.scalatest                  % Test,
       Libs.`tmt-test-reporter`        % Test,
-      Csw.`csw-location-server-tests` % Test,
       Csw.`csw-integration-multi-jvm` % Test,
       Akka.`akka-multi-node-testkit`  % Test
     )
@@ -165,7 +164,7 @@ object Dependencies {
   val EswGatewayImpl: Def.Initialize[Seq[ModuleID]] = Def.setting(
     Seq(
       Csw.`csw-event-client`,
-      Libs.`caffeine`,
+      Libs.caffeine,
       Csw.`csw-location-api`,
       Libs.`tmt-test-reporter` % Test
     )

@@ -13,7 +13,7 @@ object Libs {
   val `scala-java8-compat` = "org.scala-lang.modules"         %% "scala-java8-compat" % "0.9.1"  //BSD 3-clause "New" or "Revised" License
   val `msocket-api`        = dep("com.github.tmtsoftware.msocket" %%% "msocket-api" % MSocketVersion)
   val `msocket-impl-jvm`   = "com.github.tmtsoftware.msocket" %% "msocket-impl"       % MSocketVersion
-  val `caffeine`           = "com.github.ben-manes.caffeine"   % "caffeine"           % "2.8.2"
+  val caffeine             = "com.github.ben-manes.caffeine"   % "caffeine"           % "2.8.2"
   val `jupiter-interface`  = "net.aichler"                     % "jupiter-interface"  % "0.8.3"
   val `tmt-test-reporter`  = "com.github.tmtsoftware"         %% "rtm"                % "47b635b289"
 
@@ -46,7 +46,6 @@ object Csw {
   val `csw-location-api`          = Org %% "csw-location-api"    % Version
   val `csw-location-client`       = Org %% "csw-location-client" % Version
   val `csw-location-server`       = Org %% "csw-location-server" % Version
-  val `csw-location-server-tests` = Org %% "csw-location-server" % Version classifier "tests"
   val `csw-network-utils`         = Org %% "csw-network-utils"   % Version
   val `csw-params`                = dep(Org %%% "csw-params" % Version)
   val `csw-prefix`                = dep(Org %%% "csw-prefix" % Version)

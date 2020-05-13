@@ -3,17 +3,16 @@ package esw.ocs.app
 import akka.actor.testkit.typed.scaladsl.TestProbe
 import com.typesafe.config.ConfigFactory
 import csw.location.api.extensions.ActorExtension._
-import csw.location.helpers.{LSNodeSpec, TwoMembersAndSeed}
 import csw.location.api.models.ComponentType.SequenceComponent
 import csw.location.api.models.Connection.{AkkaConnection, HttpConnection}
 import csw.location.api.models.{AkkaLocation, ComponentId, ComponentType}
-import csw.location.server.http.MultiNodeHTTPLocationService
+import csw.location.helpers.{LSNodeSpec, TwoMembersAndSeed}
 import csw.params.commands.CommandResponse.Started
 import csw.params.commands.{CommandName, Sequence, Setup}
 import csw.params.events.{Event, EventKey, SystemEvent}
 import csw.prefix.models.Subsystem.{ESW, TCS}
 import csw.prefix.models.{Prefix, Subsystem}
-import csw.testkit.{EventTestKit, FrameworkTestKit}
+import csw.testkit.FrameworkTestKit
 import esw.ocs.api.actor.client.SequencerApiFactory
 import esw.ocs.api.actor.messages.SequenceComponentMsg
 import esw.ocs.app.wiring.SequencerWiring
@@ -21,18 +20,16 @@ import org.scalatest.concurrent.ScalaFutures.convertScalaFuture
 
 import scala.concurrent.duration.DurationInt
 
-class SequencerTestMultiJvmNode1 extends SequencerTest(0, "http")
-class SequencerTestMultiJvmNode2 extends SequencerTest(0, "http")
-class SequencerTestMultiJvmNode3 extends SequencerTest(0, "http")
+class SequencerTestMultiJvmNode1 extends SequencerTest("http")
+class SequencerTestMultiJvmNode2 extends SequencerTest("http")
+class SequencerTestMultiJvmNode3 extends SequencerTest("http")
 
-class SequencerTest(ignore: Int, mode: String)
-    extends LSNodeSpec(config = new TwoMembersAndSeed, mode)
-    with MultiNodeHTTPLocationService {
+class SequencerTest(mode: String) extends LSNodeSpec(config = new TwoMembersAndSeed, mode) {
 
   import config._
 
   private val frameworkTestKit = FrameworkTestKit()
-  private val eventTestKit     = EventTestKit()
+  import frameworkTestKit._
 
   private val ocsSubsystem        = ESW
   private val ocsSequencerObsMode = "MoonNight"
@@ -45,6 +42,11 @@ class SequencerTest(ignore: Int, mode: String)
     AkkaConnection(ComponentId(Prefix(ESW, "primary"), SequenceComponent)),
     TestProbe[SequenceComponentMsg].ref.toURI
   )
+
+  override def beforeAll(): Unit = {
+    super.beforeAll()
+    runOn(seed) { locationTestKit.startLocationServer() }
+  }
 
   test("tcs sequencer should send sequence to downstream ocs sequencer which submits the command to sample assembly") {
     runOn(seed) {
@@ -92,7 +94,7 @@ class SequencerTest(ignore: Int, mode: String)
       enterBarrier("ocs-started")
       enterBarrier("tcs-started")
 
-      frameworkTestKit.spawnStandalone(ConfigFactory.load("standalone.conf"))
+      spawnStandalone(ConfigFactory.load("standalone.conf"))
       enterBarrier("assembly-started")
 
       enterBarrier("submit-sequence-to-ocs")
