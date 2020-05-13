@@ -4,8 +4,8 @@
 
 - Make sure you have all the CSW services up and running
 - Run `scripts/csw-services.sh start` command after cloning `csw` repo
-- Start sample HCD to test command service metrics by running `sbt esw-gateway-server/test:runMain esw.gateway.server.demo.Main`
-- Run `sbt esw-gateway-server/run start -m` (-m: enables metrics)
+- Start sample HCD to test command service metrics by running `sbt esw-integration-test/test:runMain esw.demo.Main`
+- Run `sbt esw-gateway-server/run start -m -c <path of command roles config>` (-m: enables metrics) (-c: enables auth roles)
     - This will start gateway on port `8090`
     - You can see a current snapshot of metrics at `http://localhost:8090/metrics`
 
@@ -27,9 +27,9 @@ This will start following two services:
     - This will display all the metrics in graphical view
     
 ## Generating Test Data
-- Run `scripts/getEvent.sh` script to send `GetEvent` http request/sec to Gateway
-- Run `scripts/publish.sh` script to send 5 `PublishEvent` http request/sec to Gateway
-- Run `scripts/submit.sh` script to send `Submit` Component Command http request/sec to sample HCD via Gateway
-- Run `scripts/validate.sh` script to send 5 `Validate` Component Command http request/sec to sample HCD via Gateway
+- Run `scripts/metrics/getEvent.sh` script to send `GetEvent` http request/sec to Gateway
+- Run `scripts/metrics/publish.sh` script to send 5 `PublishEvent` http request/sec to Gateway
+- Run `scripts/metrics/submit.sh` script to send `Submit` Component Command http request/sec to sample HCD via Gateway
+- Run `scripts/metrics/validate.sh` script to send 5 `Validate` Component Command http request/sec to sample HCD via Gateway
 
     
