@@ -15,7 +15,7 @@ object Libs {
   val `msocket-impl-jvm`   = "com.github.tmtsoftware.msocket" %% "msocket-impl"       % MSocketVersion
   val caffeine             = "com.github.ben-manes.caffeine"   % "caffeine"           % "2.8.2"
   val `jupiter-interface`  = "net.aichler"                     % "jupiter-interface"  % "0.8.3"
-  val `tmt-test-reporter`  = "com.github.tmtsoftware"         %% "rtm"                % "47b635b289"
+  val `tmt-test-reporter`  = "com.github.tmtsoftware"         %% "rtm"                % "78dd097b7a"
 
   val `prometheus-akka-http` = "com.lonelyplanet" %% "prometheus-akka-http" % "0.5.0"
 
