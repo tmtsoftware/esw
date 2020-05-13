@@ -18,7 +18,7 @@ commands and these roles.
 
 #### Role Hierarchy
 
-![Role Hierarchy](../images/eswgateway/role-hierarchy-keycloak.png)
+![Role Hierarchy](../images/eswgateway/role-hierarchy.png)
 
 This type of role hierarchy is created in Keycloak as one time setup.
 As per this hierarchy there should be three roles present for each subsystem which are composed in specific order.
