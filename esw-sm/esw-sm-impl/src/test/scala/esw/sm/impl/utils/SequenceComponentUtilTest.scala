@@ -18,15 +18,14 @@ import scala.concurrent.Future
 import scala.concurrent.duration.DurationInt
 
 class SequenceComponentUtilTest extends BaseTestSuite {
-  implicit val actorSystem: ActorSystem[SpawnProtocol.Command] = ActorSystem(SpawnProtocol(), "test-system")
-  implicit val timeout: Timeout                                = 1.hour
+  private implicit val actorSystem: ActorSystem[SpawnProtocol.Command] = ActorSystem(SpawnProtocol(), "test-system")
+  private implicit val timeout: Timeout                                = 1.hour
 
   override implicit val patienceConfig: PatienceConfig = PatienceConfig(5.seconds, 10.millis)
 
-  val locationServiceUtil: LocationServiceUtil = mock[LocationServiceUtil]
-  val agentUtil: AgentUtil                     = mock[AgentUtil]
-
-  val sequenceComponentUtil: SequenceComponentUtil = new SequenceComponentUtil(locationServiceUtil, agentUtil) {
+  private val locationServiceUtil = mock[LocationServiceUtil]
+  private val agentUtil           = mock[AgentUtil]
+  private val sequenceComponentUtil = new SequenceComponentUtil(locationServiceUtil, agentUtil) {
     override private[sm] def idleSequenceComponent(
         sequenceComponentLocation: AkkaLocation
     ): Future[Option[SequenceComponentApi]] =
@@ -37,8 +36,10 @@ class SequenceComponentUtilTest extends BaseTestSuite {
 
   }
 
-  def mockAkkaLocation(prefixStr: String): AkkaLocation =
+  private def mockAkkaLocation(prefixStr: String) =
     AkkaLocation(AkkaConnection(ComponentId(Prefix(prefixStr), SequenceComponent)), new URI("some-uri"))
+  private val tcsLocations = futureRight(List(mockAkkaLocation("TCS.primary"), mockAkkaLocation("TCS.secondary")))
+  private val eswLocations = futureRight(List(mockAkkaLocation("ESW.primary")))
 
   override def beforeEach(): Unit = reset(locationServiceUtil, agentUtil)
 
@@ -49,8 +50,8 @@ class SequenceComponentUtilTest extends BaseTestSuite {
 
   "getAvailableSequenceComponent" must {
     "return available sequence component for given subsystem | ESW-164" in {
-      when(locationServiceUtil.listAkkaLocationsBy(IRIS, SequenceComponent))
-        .thenReturn(Future.successful(Right(List(mockAkkaLocation("IRIS.primary"), mockAkkaLocation("IRIS.secondary")))))
+      val irisLocations = futureRight(List(mockAkkaLocation("IRIS.primary"), mockAkkaLocation("IRIS.secondary")))
+      when(locationServiceUtil.listAkkaLocationsBy(IRIS, SequenceComponent)).thenReturn(irisLocations)
 
       sequenceComponentUtil.getAvailableSequenceComponent(IRIS).rightValue shouldBe a[SequenceComponentApi]
 
@@ -61,11 +62,8 @@ class SequenceComponentUtilTest extends BaseTestSuite {
     }
 
     "return available ESW sequence component when specific subsystem sequence component is not available | ESW-164" in {
-
-      when(locationServiceUtil.listAkkaLocationsBy(TCS, SequenceComponent))
-        .thenReturn(Future.successful(Right(List(mockAkkaLocation("TCS.primary"), mockAkkaLocation("TCS.secondary")))))
-      when(locationServiceUtil.listAkkaLocationsBy(ESW, SequenceComponent))
-        .thenReturn(Future.successful(Right(List(mockAkkaLocation("ESW.primary")))))
+      when(locationServiceUtil.listAkkaLocationsBy(TCS, SequenceComponent)).thenReturn(tcsLocations)
+      when(locationServiceUtil.listAkkaLocationsBy(ESW, SequenceComponent)).thenReturn(eswLocations)
 
       sequenceComponentUtil.getAvailableSequenceComponent(TCS).rightValue shouldBe a[SequenceComponentApi]
 
@@ -91,14 +89,13 @@ class SequenceComponentUtilTest extends BaseTestSuite {
           }
       }
 
-      when(locationServiceUtil.listAkkaLocationsBy(TCS, SequenceComponent))
-        .thenReturn(Future.successful(Right(List(mockAkkaLocation("TCS.primary"), mockAkkaLocation("TCS.secondary")))))
-      when(locationServiceUtil.listAkkaLocationsBy(ESW, SequenceComponent))
-        .thenReturn(Future.successful(Right(List(mockAkkaLocation("ESW.primary")))))
+      when(locationServiceUtil.listAkkaLocationsBy(TCS, SequenceComponent)).thenReturn(tcsLocations)
+      when(locationServiceUtil.listAkkaLocationsBy(ESW, SequenceComponent)).thenReturn(eswLocations)
 
-      when(agentUtil.spawnSequenceComponentFor(TCS)).thenReturn(Future.successful(Right(mock[SequenceComponentApi])))
+      val sequenceComponentApi = mock[SequenceComponentApi]
+      when(agentUtil.spawnSequenceComponentFor(TCS)).thenReturn(futureRight(sequenceComponentApi))
 
-      sequenceComponentUtil.getAvailableSequenceComponent(TCS).rightValue shouldBe a[SequenceComponentApi]
+      sequenceComponentUtil.getAvailableSequenceComponent(TCS).rightValue should ===(sequenceComponentApi)
 
       // verify call for looking tcs sequence components
       verify(locationServiceUtil).listAkkaLocationsBy(TCS, SequenceComponent)
@@ -118,16 +115,13 @@ class SequenceComponentUtilTest extends BaseTestSuite {
           }
       }
 
-      when(locationServiceUtil.listAkkaLocationsBy(TCS, SequenceComponent))
-        .thenReturn(Future.successful(Right(List(mockAkkaLocation("TCS.primary"), mockAkkaLocation("TCS.secondary")))))
-      when(locationServiceUtil.listAkkaLocationsBy(ESW, SequenceComponent))
-        .thenReturn(Future.successful(Right(List(mockAkkaLocation("ESW.primary")))))
-      when(agentUtil.spawnSequenceComponentFor(TCS))
-        .thenReturn(Future.successful(Left(SpawnSequenceComponentFailed("Error in spawning sequence component"))))
+      val spawnFailed = SpawnSequenceComponentFailed("Error in spawning sequence component")
 
-      sequenceComponentUtil.getAvailableSequenceComponent(TCS).leftValue shouldBe SpawnSequenceComponentFailed(
-        "Error in spawning sequence component"
-      )
+      when(locationServiceUtil.listAkkaLocationsBy(TCS, SequenceComponent)).thenReturn(tcsLocations)
+      when(locationServiceUtil.listAkkaLocationsBy(ESW, SequenceComponent)).thenReturn(eswLocations)
+      when(agentUtil.spawnSequenceComponentFor(TCS)).thenReturn(futureLeft(spawnFailed))
+
+      sequenceComponentUtil.getAvailableSequenceComponent(TCS).leftValue should ===(spawnFailed)
 
       // verify call for looking tcs sequence components
       verify(locationServiceUtil).listAkkaLocationsBy(TCS, SequenceComponent)
@@ -136,4 +130,7 @@ class SequenceComponentUtilTest extends BaseTestSuite {
       verify(agentUtil, times(1)).spawnSequenceComponentFor(TCS)
     }
   }
+
+  private def futureRight[T](value: T) = Future.successful(Right(value))
+  private def futureLeft[T](value: T)  = Future.successful(Left(value))
 }
