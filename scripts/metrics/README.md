@@ -4,8 +4,8 @@
 
 - Make sure you have all the CSW services up and running
 - Run `scripts/csw-services.sh start` command after cloning `csw` repo
-- Start sample HCD to test command service metrics by running `sbt esw-integration-test/test:runMain esw.demo.Main`
-- Run `sbt esw-gateway-server/run start -m -c <path of command roles config>` (-m: enables metrics) (-c: enables auth roles)
+- Start sample HCD to test command service metrics by running `sbt "esw-integration-test/test:runMain esw.demo.Main"`
+- Run `sbt "esw-gateway-server/run start -m -c scripts/metrics/commandRoles.conf"` (-m: enables metrics) (-c: enables auth roles)
     - This will start gateway on port `8090`
     - You can see a current snapshot of metrics at `http://localhost:8090/metrics`
 
