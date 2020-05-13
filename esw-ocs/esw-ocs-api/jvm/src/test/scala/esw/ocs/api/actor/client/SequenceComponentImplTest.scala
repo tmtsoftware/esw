@@ -13,7 +13,8 @@ import csw.prefix.models.Subsystem.ESW
 import csw.prefix.models.{Prefix, Subsystem}
 import esw.ocs.api.actor.messages.SequenceComponentMsg
 import esw.ocs.api.actor.messages.SequenceComponentMsg._
-import esw.ocs.api.protocol.{GetStatusResponse, LoadScriptResponse}
+import esw.ocs.api.protocol.ScriptError.ScriptError
+import esw.ocs.api.protocol.{GetStatusResponse, LoadScriptResponse, RestartScriptResponse}
 import org.scalatest.wordspec.AnyWordSpecLike
 
 import scala.concurrent.ExecutionContext
@@ -22,7 +23,7 @@ class SequenceComponentImplTest extends ScalaTestWithActorTestKit with AnyWordSp
   private val location =
     AkkaLocation(AkkaConnection(ComponentId(Prefix("esw.test"), ComponentType.Sequencer)), new URI("uri"))
   private val loadScriptResponse    = LoadScriptResponse(Right(location))
-  private val restartResponse       = LoadScriptResponse(Left(LoadScriptError("Restart error")))
+  private val restartResponse       = RestartScriptResponse(Left(ScriptError("script loading failed")))
   private val getStatusResponse     = GetStatusResponse(Some(location))
   implicit val ec: ExecutionContext = system.executionContext
 

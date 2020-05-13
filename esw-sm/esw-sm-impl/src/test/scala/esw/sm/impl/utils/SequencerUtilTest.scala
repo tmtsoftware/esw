@@ -16,6 +16,7 @@ import esw.commons.{BaseTestSuite, Timeouts}
 import esw.ocs.api.SequencerApi
 import esw.ocs.api.actor.client.SequenceComponentImpl
 import esw.ocs.api.protocol.LoadScriptResponse
+import esw.ocs.api.protocol.ScriptError.ScriptError
 import esw.sm.api.models.ConfigureResponse.{FailedToStartSequencers, Success}
 import esw.sm.api.models.SequenceManagerError.SpawnSequenceComponentFailed
 import esw.sm.api.models.Sequencers
@@ -75,7 +76,7 @@ class SequencerUtilTest extends BaseTestSuite {
       // unable to loadScript script error
       val scriptErrorMsg = s"script initialisation failed for TCS $obsMode"
       when(tcsSeqComp.loadScript(TCS, obsMode))
-        .thenReturn(Future.successful(LoadScriptResponse(Left(LoadScriptError(scriptErrorMsg)))))
+        .thenReturn(Future.successful(LoadScriptResponse(Left(ScriptError(scriptErrorMsg)))))
 
       sequencerUtil
         .startSequencers(obsMode, Sequencers(ESW, TCS))

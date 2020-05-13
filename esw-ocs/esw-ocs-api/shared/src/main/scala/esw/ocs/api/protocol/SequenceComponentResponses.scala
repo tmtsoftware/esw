@@ -15,7 +15,7 @@ sealed trait LoadScriptError
 
 object ScriptError {
   case class LocationServiceError(msg: String) extends StartSequencerError
-  case class ScriptError(msg: String)          extends StartSequencerError
+  case class ScriptError(msg: String)          extends StartSequencerError // fixme: add error type for script config missing
 
   case object RestartNotAllowedInIdleState extends RestartScriptError
 
