@@ -2,6 +2,8 @@ package esw.ocs.impl.core
 
 import akka.Done
 import akka.actor.testkit.typed.scaladsl.{ScalaTestWithActorTestKit, TestProbe}
+import akka.actor.typed
+import akka.actor.typed.{ActorSystem, SpawnProtocol}
 import csw.command.client.messages.sequencer.SequencerMsg.QueryFinal
 import csw.command.client.messages.{GetComponentLogMetadata, SetComponentLogLevel}
 import csw.location.api.models.AkkaLocation
@@ -1149,7 +1151,8 @@ class SequencerBehaviorTest extends ScalaTestWithActorTestKit with BaseTestSuite
     }
 
     "Offline -> Shutdown | ESW-141" in {
-      val sequencerSetup = SequencerTestSetup.offline(sequence)
+      val actorSystem: ActorSystem[SpawnProtocol.Command] = ActorSystem(SpawnProtocol(), "test")
+      val sequencerSetup                                  = SequencerTestSetup.offline(sequence)(actorSystem)
       import sequencerSetup._
 
       val probe = TestProbe[Ok.type]
@@ -1159,7 +1162,8 @@ class SequencerBehaviorTest extends ScalaTestWithActorTestKit with BaseTestSuite
     }
 
     "Loaded -> Shutdown | ESW-141" in {
-      val sequencerSetup = SequencerTestSetup.loaded(sequence)
+      val actorSystem: ActorSystem[SpawnProtocol.Command] = ActorSystem(SpawnProtocol(), "test")
+      val sequencerSetup                                  = SequencerTestSetup.loaded(sequence)(actorSystem)
       import sequencerSetup._
 
       val probe = TestProbe[Ok.type]
@@ -1169,7 +1173,8 @@ class SequencerBehaviorTest extends ScalaTestWithActorTestKit with BaseTestSuite
     }
 
     "InProgress -> Shutdown | ESW-141" in {
-      val sequencerSetup = SequencerTestSetup.idle(sequence)
+      val actorSystem: ActorSystem[SpawnProtocol.Command] = ActorSystem(SpawnProtocol(), "test")
+      val sequencerSetup                                  = SequencerTestSetup.idle(sequence)(actorSystem)
       import sequencerSetup._
 
       loadAndStartSequenceThenAssertInProgress()
