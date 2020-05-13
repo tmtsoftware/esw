@@ -29,7 +29,8 @@ import esw.http.core.wiring.{ActorRuntime, CswWiring, HttpService, Settings}
 import esw.ocs.api.actor.client.{SequencerApiFactory, SequencerImpl}
 import esw.ocs.api.actor.messages.SequencerMessages.Shutdown
 import esw.ocs.api.codecs.SequencerHttpCodecs
-import esw.ocs.api.protocol.ScriptError
+import esw.ocs.api.protocol.ScriptError.{LocationServiceError, ScriptError}
+import esw.ocs.api.protocol.StartSequencerError
 import esw.ocs.handler.{SequencerPostHandler, SequencerWebsocketHandler}
 import esw.ocs.impl.blockhound.BlockHoundWiring
 import esw.ocs.impl.core._
@@ -129,7 +130,7 @@ private[ocs] class SequencerWiring(
     )
 
   lazy val sequencerServer: SequencerServer = new SequencerServer {
-    override def start(): Either[ScriptError, AkkaLocation] = {
+    override def start(): Either[StartSequencerError, AkkaLocation] = {
       try {
         logger.info(s"Starting sequencer for subsystem: $subsystem with observing mode: $observingMode")
         new Engine(script).start(sequenceOperatorFactory())
@@ -142,7 +143,7 @@ private[ocs] class SequencerWiring(
             .register(
               registration,
               {
-                case NonFatal(e) => Future.successful(Left(ScriptError(e.getMessage)))
+                case NonFatal(e) => Future.successful(Left(LocationServiceError(e.getMessage)))
               }
             ),
           Timeouts.DefaultTimeout

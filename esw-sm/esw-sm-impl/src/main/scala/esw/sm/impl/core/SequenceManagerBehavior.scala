@@ -12,7 +12,7 @@ import esw.sm.api.SequenceManagerState
 import esw.sm.api.SequenceManagerState.{CleaningInProcess, ConfigurationInProcess, Idle}
 import esw.sm.api.actor.messages.SequenceManagerMsg
 import esw.sm.api.actor.messages.SequenceManagerMsg._
-import esw.sm.api.models.ConfigureResponse.{LocationServiceError, ConflictingResourcesWithRunningObsMode}
+import esw.sm.api.models.ConfigureResponse.{ConflictingResourcesWithRunningObsMode, LocationServiceError}
 import esw.sm.api.models._
 import esw.sm.impl.utils.SequencerUtil
 

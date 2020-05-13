@@ -1,8 +1,8 @@
 package esw.ocs.impl.core
 
 import akka.Done
+import akka.actor.typed.Behavior
 import akka.actor.typed.scaladsl.{ActorContext, Behaviors}
-import akka.actor.typed.{ActorRef, Behavior}
 import csw.location.api.extensions.ActorExtension._
 import csw.location.api.models.ComponentType.SequenceComponent
 import csw.location.api.models.Connection.AkkaConnection
@@ -11,7 +11,8 @@ import csw.logging.api.scaladsl.Logger
 import csw.prefix.models.{Prefix, Subsystem}
 import esw.ocs.api.actor.messages.SequenceComponentMsg
 import esw.ocs.api.actor.messages.SequenceComponentMsg._
-import esw.ocs.api.protocol.{GetStatusResponse, ScriptError, ScriptResponse}
+import esw.ocs.api.protocol.ScriptError.{RestartNotAllowedInIdleState, SequenceComponentNotIdle}
+import esw.ocs.api.protocol.{GetStatusResponse, LoadScriptResponse, RestartScriptResponse, StartSequencerError}
 import esw.ocs.impl.internal.{SequencerServer, SequencerServerFactory}
 
 object SequenceComponentBehavior {
@@ -26,18 +27,18 @@ object SequenceComponentBehavior {
         ctx: ActorContext[SequenceComponentMsg],
         subsystem: Subsystem,
         observingMode: String,
-        replyTo: ActorRef[ScriptResponse]
+        sendReply: Either[StartSequencerError, AkkaLocation] => Unit
     ): Behavior[SequenceComponentMsg] = {
       val sequenceComponentLocation = AkkaLocation(AkkaConnection(ComponentId(prefix, SequenceComponent)), ctx.self.toURI)
       val sequencerServer           = sequencerServerFactory.make(subsystem, observingMode, sequenceComponentLocation)
       val registrationResult        = sequencerServer.start()
-      replyTo ! ScriptResponse(registrationResult)
+      sendReply(registrationResult)
       registrationResult match {
         case Right(location) =>
           log.info(s"Successfully started sequencer for subsystem :$subsystem in observation mode: $observingMode")
           running(subsystem, observingMode, sequencerServer, location)
-        case Left(scriptError) =>
-          log.error(s"Failed to start sequencer: ${scriptError.msg}")
+        case Left(startSequencerScriptError) =>
+          log.error(s"Failed to start sequencer: ${startSequencerScriptError.msg}")
           Behaviors.same
       }
     }
@@ -46,7 +47,7 @@ object SequenceComponentBehavior {
       log.debug(s"Sequence Component in lifecycle state :Idle, received message :[$msg]")
       msg match {
         case LoadScript(subsystem, observingMode, replyTo) =>
-          load(ctx, subsystem, observingMode, replyTo)
+          load(ctx, subsystem, observingMode, response => replyTo ! LoadScriptResponse(response))
         case GetStatus(replyTo) =>
           replyTo ! GetStatusResponse(None)
           Behaviors.same
@@ -54,7 +55,7 @@ object SequenceComponentBehavior {
           replyTo ! Done
           Behaviors.same
         case Restart(replyTo) =>
-          replyTo ! ScriptResponse(Left(ScriptError("Restart is not supported in idle state")))
+          replyTo ! RestartScriptResponse(Left(RestartNotAllowedInIdleState))
           Behaviors.same
 
         case Stop => Behaviors.stopped
@@ -77,12 +78,12 @@ object SequenceComponentBehavior {
             idle
           case Restart(replyTo) =>
             unload()
-            load(ctx, subsystem, observingMode, replyTo)
+            load(ctx, subsystem, observingMode, sendReply = response => replyTo ! RestartScriptResponse(response))
           case GetStatus(replyTo) =>
             replyTo ! GetStatusResponse(Some(location))
             Behaviors.same
           case LoadScript(_, _, replyTo) =>
-            replyTo ! ScriptResponse(Left(ScriptError("Loading script failed: Sequencer already running")))
+            replyTo ! LoadScriptResponse(Left(SequenceComponentNotIdle))
             Behaviors.same
           case Stop => Behaviors.same
         }

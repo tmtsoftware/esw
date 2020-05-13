@@ -14,7 +14,7 @@ import csw.params.commands.{CommandName, Sequence, Setup}
 import csw.prefix.models.Subsystem.{CSW, ESW}
 import csw.prefix.models.{Prefix, Subsystem}
 import esw.ocs.api.actor.messages.SequenceComponentMsg
-import esw.ocs.api.protocol.{ScriptError, ScriptResponse}
+import esw.ocs.api.protocol.{LoadScriptError, LoadScriptResponse}
 import esw.ocs.api.actor.messages.SequenceComponentMsg.{LoadScript, UnloadScript}
 import esw.ocs.testkit.EswTestKit
 
@@ -44,11 +44,11 @@ class SequencerAppIntegrationTest extends EswTestKit {
 
       // LoadScript
       val seqCompRef = sequenceCompLocation.uri.toActorRef.unsafeUpcast[SequenceComponentMsg]
-      val probe      = TestProbe[ScriptResponse]
+      val probe      = TestProbe[LoadScriptResponse]
       seqCompRef ! LoadScript(ESW, "darknight", probe.ref)
 
       // verify that loaded sequencer is started and able to process sequence command
-      val response          = probe.expectMessageType[ScriptResponse]
+      val response          = probe.expectMessageType[LoadScriptResponse]
       val sequencerLocation = response.response.rightValue
 
       //verify sequencerName has SequenceComponentName
@@ -119,17 +119,17 @@ class SequencerAppIntegrationTest extends EswTestKit {
       val timeout = Timeout(10.seconds)
       // LoadScript
       val seqCompRef: ActorRef[SequenceComponentMsg] = sequenceCompLocation.uri.toActorRef.unsafeUpcast[SequenceComponentMsg]
-      val loadScriptResponse: Future[ScriptResponse] =
-        seqCompRef.ask((ref: ActorRef[ScriptResponse]) => LoadScript(unexpectedSubsystem, observingMode, ref))(
+      val loadScriptResponse: Future[LoadScriptResponse] =
+        seqCompRef.ask((ref: ActorRef[LoadScriptResponse]) => LoadScript(unexpectedSubsystem, observingMode, ref))(
           timeout,
           schedulerFromActorSystem
         )
 
-      val response: Either[ScriptError, AkkaLocation] = loadScriptResponse.futureValue.response
+      val response: Either[LoadScriptError, AkkaLocation] = loadScriptResponse.futureValue.response
 
       response match {
         case Left(v) =>
-          v shouldEqual ScriptError(s"Script configuration missing for [${unexpectedSubsystem.name}] with [$observingMode]")
+          v shouldEqual LoadScriptError(s"Script configuration missing for [${unexpectedSubsystem.name}] with [$observingMode]")
         case Right(_) => throw new RuntimeException("test failed as this test expects ScriptError")
       }
     }

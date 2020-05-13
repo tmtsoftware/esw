@@ -12,7 +12,7 @@ import csw.prefix.models.Prefix
 import csw.prefix.models.Subsystem.{ESW, IRIS, TCS}
 import esw.ocs.api.actor.messages.SequenceComponentMsg
 import esw.ocs.api.actor.messages.SequenceComponentMsg._
-import esw.ocs.api.protocol.{GetStatusResponse, ScriptError, ScriptResponse}
+import esw.ocs.api.protocol.{GetStatusResponse, LoadScriptError, LoadScriptResponse}
 import esw.ocs.app.wiring.SequencerWiring
 import esw.ocs.testkit.EswTestKit
 
@@ -38,7 +38,7 @@ class SequenceComponentBehaviorTest extends EswTestKit {
     "load/unload script and get appropriate status | ESW-103, ESW-255" in {
       val sequenceComponentRef: ActorRef[SequenceComponentMsg] = spawnSequenceComponent()
 
-      val loadScriptResponseProbe = TestProbe[ScriptResponse]
+      val loadScriptResponseProbe = TestProbe[LoadScriptResponse]
       val getStatusProbe          = TestProbe[GetStatusResponse]
       val subsystem               = ESW
       val observingMode           = "darknight"
@@ -76,7 +76,7 @@ class SequenceComponentBehaviorTest extends EswTestKit {
     "load script and give ScriptError if sequencer is already running | ESW-103" in {
       val sequenceComponentRef: ActorRef[SequenceComponentMsg] = spawnSequenceComponent()
 
-      val loadScriptResponseProbe = TestProbe[ScriptResponse]
+      val loadScriptResponseProbe = TestProbe[LoadScriptResponse]
       val subsystem               = IRIS
       val observingMode           = "darknight"
       val prefix                  = Prefix(s"$subsystem.$observingMode")
@@ -91,7 +91,7 @@ class SequenceComponentBehaviorTest extends EswTestKit {
       )
 
       sequenceComponentRef ! LoadScript(TCS, "darknight", loadScriptResponseProbe.ref)
-      loadScriptResponseProbe.receiveMessage.response.leftValue shouldBe ScriptError(
+      loadScriptResponseProbe.receiveMessage.response.leftValue shouldBe LoadScriptError(
         "Loading script failed: Sequencer already running"
       )
     }
@@ -99,14 +99,14 @@ class SequenceComponentBehaviorTest extends EswTestKit {
     "load script and give ScriptError if exception on initialization | ESW-243" in {
       val sequenceComponentRef: ActorRef[SequenceComponentMsg] = spawnSequenceComponent()
 
-      val loadScriptResponseProbe = TestProbe[ScriptResponse]
+      val loadScriptResponseProbe = TestProbe[LoadScriptResponse]
       val subsystem               = ESW
       val observingMode           = "initException"
 
       //LoadScript
       sequenceComponentRef ! LoadScript(subsystem, observingMode, loadScriptResponseProbe.ref)
 
-      loadScriptResponseProbe.receiveMessage.response.leftValue shouldBe ScriptError(
+      loadScriptResponseProbe.receiveMessage.response.leftValue shouldBe LoadScriptError(
         "Script initialization failed with : initialisation failed"
       )
     }
@@ -134,13 +134,13 @@ class SequenceComponentBehaviorTest extends EswTestKit {
       val subsystem               = ESW
       val observingMode           = "darknight"
       val prefix                  = Prefix(s"$subsystem.$observingMode")
-      val loadScriptResponseProbe = TestProbe[ScriptResponse]
-      val restartResponseProbe    = TestProbe[ScriptResponse]
+      val loadScriptResponseProbe = TestProbe[LoadScriptResponse]
+      val restartResponseProbe    = TestProbe[LoadScriptResponse]
 
       //Assert if script loaded and returns AkkaLocation of sequencer
       sequenceComponentRef ! LoadScript(subsystem, observingMode, loadScriptResponseProbe.ref)
       val message = loadScriptResponseProbe.receiveMessage
-      message shouldBe a[ScriptResponse]
+      message shouldBe a[LoadScriptResponse]
       message.response.isRight shouldBe true
       val initialLocation = message.response.rightValue
 
@@ -157,9 +157,9 @@ class SequenceComponentBehaviorTest extends EswTestKit {
     "restart should fail if sequence component is in idle state | ESW-141" in {
       val sequenceComponentRef: ActorRef[SequenceComponentMsg] = spawnSequenceComponent()
 
-      val restartResponseProbe = TestProbe[ScriptResponse]
+      val restartResponseProbe = TestProbe[LoadScriptResponse]
       sequenceComponentRef ! Restart(restartResponseProbe.ref)
-      restartResponseProbe.expectMessage(ScriptResponse(Left(ScriptError("Restart is not supported in idle state"))))
+      restartResponseProbe.expectMessage(LoadScriptResponse(Left(LoadScriptError("Restart is not supported in idle state"))))
     }
   }
 }

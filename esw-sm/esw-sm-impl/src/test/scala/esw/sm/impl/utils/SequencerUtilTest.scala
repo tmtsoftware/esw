@@ -15,7 +15,7 @@ import esw.commons.utils.location.LocationServiceUtil
 import esw.commons.{BaseTestSuite, Timeouts}
 import esw.ocs.api.SequencerApi
 import esw.ocs.api.actor.client.SequenceComponentImpl
-import esw.ocs.api.protocol.{ScriptError, ScriptResponse}
+import esw.ocs.api.protocol.LoadScriptResponse
 import esw.sm.api.models.ConfigureResponse.{FailedToStartSequencers, Success}
 import esw.sm.api.models.SequenceManagerError.SpawnSequenceComponentFailed
 import esw.sm.api.models.Sequencers
@@ -74,7 +74,8 @@ class SequencerUtilTest extends BaseTestSuite {
 
       // unable to loadScript script error
       val scriptErrorMsg = s"script initialisation failed for TCS $obsMode"
-      when(tcsSeqComp.loadScript(TCS, obsMode)).thenReturn(Future.successful(ScriptResponse(Left(ScriptError(scriptErrorMsg)))))
+      when(tcsSeqComp.loadScript(TCS, obsMode))
+        .thenReturn(Future.successful(LoadScriptResponse(Left(LoadScriptError(scriptErrorMsg)))))
 
       sequencerUtil
         .startSequencers(obsMode, Sequencers(ESW, TCS))
@@ -176,8 +177,8 @@ class SequencerUtilTest extends BaseTestSuite {
 
     when(sequenceComponentUtil.getAvailableSequenceComponent(ESW)).thenReturn(Future.successful(Right(eswSeqComp)))
     when(sequenceComponentUtil.getAvailableSequenceComponent(TCS)).thenReturn(Future.successful(Right(tcsSeqComp)))
-    when(eswSeqComp.loadScript(ESW, obsMode)).thenReturn(Future.successful(ScriptResponse(Right(eswLocation))))
-    when(tcsSeqComp.loadScript(TCS, obsMode)).thenReturn(Future.successful(ScriptResponse(Right(tcsLocation))))
+    when(eswSeqComp.loadScript(ESW, obsMode)).thenReturn(Future.successful(LoadScriptResponse(Right(eswLocation))))
+    when(tcsSeqComp.loadScript(TCS, obsMode)).thenReturn(Future.successful(LoadScriptResponse(Right(tcsLocation))))
 
     val masterSeqConnection: HttpConnection = HttpConnection(ComponentId(Prefix(ESW, obsMode), Sequencer))
     val masterSeqLocation: HttpLocation     = HttpLocation(masterSeqConnection, URI.create(""))

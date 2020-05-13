@@ -12,7 +12,7 @@ import csw.prefix.models.{Prefix, Subsystem}
 import esw.commons.Timeouts
 import esw.http.core.wiring.{ActorRuntime, CswWiring}
 import esw.ocs.api.actor.messages.SequenceComponentMsg
-import esw.ocs.api.protocol.ScriptError
+import esw.ocs.api.protocol.ScriptError.LocationServiceError
 import esw.ocs.impl.core.SequenceComponentBehavior
 import esw.ocs.impl.internal.{SequenceComponentRegistration, SequencerServerFactory}
 
@@ -53,7 +53,7 @@ private[esw] class SequenceComponentWiring(
   private lazy val sequenceComponentRegistration =
     new SequenceComponentRegistration(subsystem, name, locationService, sequenceComponentFactory)
 
-  def start(): Either[ScriptError, AkkaLocation] =
+  def start(): Either[LocationServiceError, AkkaLocation] =
     Await.result(sequenceComponentRegistration.registerSequenceComponent(registrationRetryCount), Timeouts.DefaultTimeout)
 
 }

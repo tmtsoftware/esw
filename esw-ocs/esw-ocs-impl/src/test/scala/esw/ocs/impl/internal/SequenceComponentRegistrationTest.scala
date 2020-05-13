@@ -16,7 +16,6 @@ import csw.prefix.models.{Prefix, Subsystem}
 import esw.commons.BaseTestSuite
 import esw.ocs.api.actor.messages.SequenceComponentMsg
 import esw.ocs.api.actor.messages.SequenceComponentMsg.Stop
-import esw.ocs.api.protocol.ScriptError
 import org.mockito.ArgumentMatchers.any
 
 import scala.concurrent.{ExecutionContext, Future}
@@ -69,7 +68,7 @@ class SequenceComponentRegistrationTest extends ScalaTestWithActorTestKit with B
       when(registrationResult.location).thenReturn(akkaLocation)
       when(registrationResult.unregister()).thenReturn(Future.successful(Done))
 
-      registerSequenceComponent(locationService, name, retryCount)._1.leftValue should ===(ScriptError(errorMsg))
+      registerSequenceComponent(locationService, name, retryCount)._1.leftValue should ===(LoadScriptError(errorMsg))
 
       //assert that No retry attempt in case of subsystem and name are provided
       verify(locationService, times(1)).register(any[AkkaRegistration])
@@ -140,7 +139,7 @@ class SequenceComponentRegistrationTest extends ScalaTestWithActorTestKit with B
       when(registrationResult.location).thenReturn(akkaLocation)
       when(registrationResult.unregister()).thenReturn(Future.successful(Done))
 
-      registerSequenceComponent(locationService, None, retryCount)._1.leftValue should ===(ScriptError(errorMsg))
+      registerSequenceComponent(locationService, None, retryCount)._1.leftValue should ===(LoadScriptError(errorMsg))
       system.terminate()
       system.whenTerminated.futureValue
     }
@@ -161,7 +160,7 @@ class SequenceComponentRegistrationTest extends ScalaTestWithActorTestKit with B
       when(registrationResult.location).thenReturn(akkaLocation)
       when(registrationResult.unregister()).thenReturn(Future.successful(Done))
 
-      registerSequenceComponent(locationService, None, retryCount)._1.leftValue should ===(ScriptError(errorMsg))
+      registerSequenceComponent(locationService, None, retryCount)._1.leftValue should ===(LoadScriptError(errorMsg))
       system.terminate()
       system.whenTerminated.futureValue
     }

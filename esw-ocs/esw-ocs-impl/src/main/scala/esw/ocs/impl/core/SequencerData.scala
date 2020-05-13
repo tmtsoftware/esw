@@ -6,12 +6,12 @@ import csw.params.commands.CommandIssue.IdNotAvailableIssue
 import csw.params.commands.CommandResponse._
 import csw.params.commands.Sequence
 import csw.params.core.models.Id
+import esw.ocs.api.actor.messages.SequencerMessages.GoIdle
+import esw.ocs.api.actor.messages.SequencerState
 import esw.ocs.api.models.StepStatus.Finished.{Failure, Success}
 import esw.ocs.api.models.StepStatus.{Finished, InFlight}
 import esw.ocs.api.models.{Step, StepList, StepStatus}
 import esw.ocs.api.protocol._
-import esw.ocs.api.actor.messages.SequencerMessages.GoIdle
-import esw.ocs.api.actor.messages.SequencerState
 
 private[core] case class SequencerData(
     stepList: Option[StepList],

@@ -6,10 +6,10 @@ import akka.actor.typed.{ActorRef, ActorSystem}
 import csw.command.client.messages.sequencer.SequencerMsg
 import csw.command.client.messages.sequencer.SequencerMsg.SubmitSequence
 import csw.location.api.extensions.ActorExtension._
-import csw.location.api.scaladsl.LocationService
 import csw.location.api.models.ComponentType.SequenceComponent
 import csw.location.api.models.Connection.AkkaConnection
 import csw.location.api.models.{AkkaLocation, ComponentId}
+import csw.location.api.scaladsl.LocationService
 import csw.logging.api.scaladsl.Logger
 import csw.params.commands.CommandResponse.{Completed, Started, SubmitResponse}
 import csw.params.commands.{Sequence, SequenceCommand}
@@ -17,11 +17,11 @@ import csw.params.core.models.Id
 import csw.prefix.models.Prefix
 import csw.prefix.models.Subsystem.ESW
 import csw.time.core.models.UTCTime
+import esw.ocs.api.actor.messages.SequencerMessages._
+import esw.ocs.api.actor.messages.SequencerState.{Idle, InProgress}
+import esw.ocs.api.actor.messages.{SequenceComponentMsg, SequencerState}
 import esw.ocs.api.models.{Step, StepList}
 import esw.ocs.api.protocol._
-import esw.ocs.api.actor.messages.SequencerMessages._
-import esw.ocs.api.actor.messages.{SequenceComponentMsg, SequencerState}
-import esw.ocs.api.actor.messages.SequencerState.{Idle, InProgress}
 import esw.ocs.impl.script.ScriptApi
 import org.mockito.MockitoSugar
 import org.scalatest.Assertion

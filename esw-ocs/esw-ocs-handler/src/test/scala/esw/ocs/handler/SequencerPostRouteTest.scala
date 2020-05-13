@@ -10,15 +10,16 @@ import csw.params.commands.{CommandName, Sequence, Setup}
 import csw.params.core.models.Id
 import csw.prefix.models.Prefix
 import csw.time.core.models.UTCTime
+import esw.commons.BaseTestSuite
+import esw.ocs.api.SequencerApi
 import esw.ocs.api.codecs.SequencerHttpCodecs
 import esw.ocs.api.models.StepList
 import esw.ocs.api.protocol.EditorError.{CannotOperateOnAnInFlightOrFinishedStep, IdDoesNotExist}
 import esw.ocs.api.protocol.SequencerPostRequest._
 import esw.ocs.api.protocol._
-import esw.ocs.api.SequencerApi
 import msocket.api.ContentType
 import msocket.impl.post.{ClientHttpCodecs, PostRouteFactory}
-import esw.commons.BaseTestSuite
+
 import scala.concurrent.Future
 
 class SequencerPostRouteTest extends BaseTestSuite with ScalatestRouteTest with SequencerHttpCodecs with ClientHttpCodecs {

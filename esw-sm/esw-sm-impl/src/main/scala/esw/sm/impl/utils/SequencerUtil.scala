@@ -14,8 +14,9 @@ import esw.commons.utils.FutureUtils
 import esw.commons.utils.location.EswLocationError.{RegistrationListingFailed, ResolveLocationFailed}
 import esw.commons.utils.location.{EswLocationError, LocationServiceUtil}
 import esw.ocs.api.actor.client.SequencerApiFactory
+import esw.ocs.api.protocol.ScriptError.ScriptError
 import esw.ocs.api.{SequenceComponentApi, SequencerApi}
-import esw.sm.api.models.ConfigureResponse.{LocationServiceError, FailedToStartSequencers, Success}
+import esw.sm.api.models.ConfigureResponse.{FailedToStartSequencers, LocationServiceError, Success}
 import esw.sm.api.models.{ConfigureResponse, SequenceManagerError, SequencerError, Sequencers}
 
 import scala.async.Async.{async, await}
@@ -71,11 +72,6 @@ class SequencerUtil(locationServiceUtil: LocationServiceUtil, sequenceComponentU
       .resolveSequencer(subsystem, obsMode)
       .mapRight(createSequencerClient)
 
-  private def loadScript(subSystem: Subsystem, observingMode: String, seqCompApi: SequenceComponentApi) =
-    seqCompApi
-      .loadScript(subSystem, observingMode)
-      .map(_.response.left.map(e => SequenceManagerError.LoadScriptError(e.msg)))
-
   // spawn the sequencer on available SequenceComponent
   private def startSequencer(
       subSystem: Subsystem,
@@ -85,8 +81,26 @@ class SequencerUtil(locationServiceUtil: LocationServiceUtil, sequenceComponentU
     sequenceComponentUtil
       .getAvailableSequenceComponent(subSystem)
       .flatMap {
-        case Right(seqCompApi)         => loadScript(subSystem, observingMode, seqCompApi)
+        case Right(seqCompApi) =>
+          loadScript(subSystem, observingMode, seqCompApi, retryCount)
         case Left(_) if retryCount > 0 => startSequencer(subSystem, observingMode, retryCount - 1)
         case Left(e)                   => Future.successful(Left(e))
       }
+
+  private def loadScript(
+      subSystem: Subsystem,
+      observingMode: String,
+      seqCompApi: SequenceComponentApi,
+      retryCount: Int
+  ): Future[Either[SequencerError, AkkaLocation]] = {
+    seqCompApi
+      .loadScript(subSystem, observingMode)
+      .map(_.response.left.map(e => SequenceManagerError.LoadScriptError(e)))
+      .flatMap {
+        case Left(e) if e.error.isInstanceOf[ScriptError] => Future.successful(Left(e)) // do not retry if ScriptError
+        case Left(_) if retryCount > 0 =>
+          startSequencer(subSystem, observingMode, retryCount - 1) // retry if LocationServiceError or SequenceComponentNotIdle
+        case Right(akkaLocation) => Future.successful(Right(akkaLocation))
+      }
+  }
 }

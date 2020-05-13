@@ -12,8 +12,8 @@ import csw.location.api.models.{AkkaLocation, ComponentId, ComponentType}
 import csw.prefix.models.Subsystem.ESW
 import csw.prefix.models.{Prefix, Subsystem}
 import esw.ocs.api.actor.messages.SequenceComponentMsg
-import esw.ocs.api.actor.messages.SequenceComponentMsg.{GetStatus, LoadScript, Restart, Stop, UnloadScript}
-import esw.ocs.api.protocol.{GetStatusResponse, ScriptError, ScriptResponse}
+import esw.ocs.api.actor.messages.SequenceComponentMsg._
+import esw.ocs.api.protocol.{GetStatusResponse, LoadScriptResponse}
 import org.scalatest.wordspec.AnyWordSpecLike
 
 import scala.concurrent.ExecutionContext
@@ -21,8 +21,8 @@ import scala.concurrent.ExecutionContext
 class SequenceComponentImplTest extends ScalaTestWithActorTestKit with AnyWordSpecLike {
   private val location =
     AkkaLocation(AkkaConnection(ComponentId(Prefix("esw.test"), ComponentType.Sequencer)), new URI("uri"))
-  private val loadScriptResponse    = ScriptResponse(Right(location))
-  private val restartResponse       = ScriptResponse(Left(ScriptError("Restart error")))
+  private val loadScriptResponse    = LoadScriptResponse(Right(location))
+  private val restartResponse       = LoadScriptResponse(Left(LoadScriptError("Restart error")))
   private val getStatusResponse     = GetStatusResponse(Some(location))
   implicit val ec: ExecutionContext = system.executionContext
 
