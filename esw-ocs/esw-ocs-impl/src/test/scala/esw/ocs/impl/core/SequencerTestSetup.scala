@@ -48,7 +48,10 @@ class SequencerTestSetup(sequence: Sequence)(implicit system: ActorSystem[_]) {
     TestProbe[SequenceComponentMsg].ref.toURI
   )
   private def mockShutdownHttpService: () => Future[Done.type] = () => Future { Done }
-  val sequencerName                                            = s"SequencerActor${Random.between(0, Int.MaxValue)}"
+  when(locationService.unregister(AkkaConnection(componentId))).thenReturn(Future.successful(Done))
+  when(script.executeShutdown()).thenReturn(Future.successful(Done))
+
+  val sequencerName = s"SequencerActor${Random.between(0, Int.MaxValue)}"
   when(componentId.prefix).thenReturn(Prefix(ESW, sequencerName))
   private val sequencerBehavior =
     new SequencerBehavior(componentId, script, locationService, sequenceComponent, logger, mockShutdownHttpService)
@@ -171,7 +174,7 @@ class SequencerTestSetup(sequence: Sequence)(implicit system: ActorSystem[_]) {
     expectedState match {
       case Idle                            => stepList shouldBe None
       case InProgress                      => stepList.get.nextPending shouldBe None
-      case x: SequencerState[SequencerMsg] => assert(false, s"$x is not valid state after AbortSequence")
+      case x: SequencerState[SequencerMsg] => assert(condition = false, s"$x is not valid state after AbortSequence")
     }
     verify(script, timeout(1000)).executeAbort()
     probe
@@ -201,7 +204,7 @@ class SequencerTestSetup(sequence: Sequence)(implicit system: ActorSystem[_]) {
     expectedState match {
       case Idle                            => stepList shouldNot be(None)
       case InProgress                      => stepList shouldNot be(None)
-      case x: SequencerState[SequencerMsg] => assert(false, s"$x is not valid state after Stop")
+      case x: SequencerState[SequencerMsg] => assert(condition = false, s"$x is not valid state after Stop")
     }
     verify(script, timeout(1000)).executeStop()
     probe

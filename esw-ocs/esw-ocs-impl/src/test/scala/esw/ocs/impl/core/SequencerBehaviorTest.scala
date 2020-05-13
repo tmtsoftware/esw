@@ -720,7 +720,7 @@ class SequencerBehaviorTest extends ScalaTestWithActorTestKit with BaseTestSuite
   }
 
   "GoOffline" must {
-    "go to Offline state from Idle state | ESW-194" in {
+    "go to Offline state from Idle state | ESW-194, ESW-141" in {
       val sequencerSetup = SequencerTestSetup.idle(sequence)
       import sequencerSetup._
 
@@ -1096,8 +1096,8 @@ class SequencerBehaviorTest extends ScalaTestWithActorTestKit with BaseTestSuite
       assertSequencerState(InProgress) // transition to InProgress
     }
 
-    "Idle -> Offline | ESW-141" in {
-      val sequencerSetup = SequencerTestSetup.idle(sequence)
+    "Loaded -> Offline | ESW-141" in {
+      val sequencerSetup = SequencerTestSetup.loaded(sequence)
       import sequencerSetup._
 
       when(script.executeGoOffline()).thenReturn(Future.successful(Done))
@@ -1146,6 +1146,39 @@ class SequencerBehaviorTest extends ScalaTestWithActorTestKit with BaseTestSuite
 
       goOnlineAndAssertResponse(Ok, Future.successful(Done))
       assertSequencerState(Idle) // transition to Idle
+    }
+
+    "Offline -> Shutdown | ESW-141" in {
+      val sequencerSetup = SequencerTestSetup.offline(sequence)
+      import sequencerSetup._
+
+      val probe = TestProbe[Ok.type]
+      sequencerActor ! Shutdown(probe.ref)
+      probe.expectMessage(Ok)
+      probe.expectTerminated(sequencerActor)
+    }
+
+    "Loaded -> Shutdown | ESW-141" in {
+      val sequencerSetup = SequencerTestSetup.loaded(sequence)
+      import sequencerSetup._
+
+      val probe = TestProbe[Ok.type]
+      sequencerActor ! Shutdown(probe.ref)
+      probe.expectMessage(Ok)
+      probe.expectTerminated(sequencerActor)
+    }
+
+    "InProgress -> Shutdown | ESW-141" in {
+      val sequencerSetup = SequencerTestSetup.idle(sequence)
+      import sequencerSetup._
+
+      loadAndStartSequenceThenAssertInProgress()
+      assertSequencerState(InProgress) // Initial state InProgres
+
+      val probe = TestProbe[Ok.type]
+      sequencerActor ! Shutdown(probe.ref)
+      probe.expectMessage(Ok)
+      probe.expectTerminated(sequencerActor)
     }
 
   }
