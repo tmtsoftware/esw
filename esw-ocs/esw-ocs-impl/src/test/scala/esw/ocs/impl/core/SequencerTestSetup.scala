@@ -174,7 +174,7 @@ class SequencerTestSetup(sequence: Sequence)(implicit system: ActorSystem[_]) {
     expectedState match {
       case Idle                            => stepList shouldBe None
       case InProgress                      => stepList.get.nextPending shouldBe None
-      case x: SequencerState[SequencerMsg] => assert(condition = false, s"$x is not valid state after AbortSequence")
+      case x: SequencerState[SequencerMsg] => assert(false, s"$x is not valid state after AbortSequence")
     }
     verify(script, timeout(1000)).executeAbort()
     probe
@@ -204,7 +204,7 @@ class SequencerTestSetup(sequence: Sequence)(implicit system: ActorSystem[_]) {
     expectedState match {
       case Idle                            => stepList shouldNot be(None)
       case InProgress                      => stepList shouldNot be(None)
-      case x: SequencerState[SequencerMsg] => assert(condition = false, s"$x is not valid state after Stop")
+      case x: SequencerState[SequencerMsg] => assert(false, s"$x is not valid state after Stop")
     }
     verify(script, timeout(1000)).executeStop()
     probe
