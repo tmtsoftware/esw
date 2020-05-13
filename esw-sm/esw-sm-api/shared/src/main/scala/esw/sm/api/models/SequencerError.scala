@@ -12,12 +12,11 @@ object SequenceManagerError {
   case class LocationServiceError(msg: String)         extends AgentError
   case class SpawnSequenceComponentFailed(msg: String) extends AgentError
 
-  case class LoadScriptError(error: OcsLoadScriptError, msg: String = s"Error while loading script") extends SequencerError
+  case class LoadScriptError(error: OcsLoadScriptError) extends SequencerError {
+    override def msg: String = error.msg
+  }
 
   def toSmLoadScriptError(error: OcsLoadScriptError): LoadScriptError =
-    LoadScriptError(error, s"Error while loading script ${error}")
+    LoadScriptError(error)
 
-  case class SequencerNotIdle(obsMode: String) extends SequencerError {
-    override def msg: String = s"Sequencers for $obsMode are already executing another sequence"
-  }
 }

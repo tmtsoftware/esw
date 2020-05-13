@@ -11,7 +11,9 @@ sealed trait StartSequencerError extends RestartScriptError with LoadScriptError
   def msg: String
 }
 sealed trait RestartScriptError
-sealed trait LoadScriptError
+sealed trait LoadScriptError {
+  def msg: String
+}
 
 object ScriptError {
   case class LocationServiceError(msg: String) extends StartSequencerError
@@ -19,5 +21,7 @@ object ScriptError {
 
   case object RestartNotAllowedInIdleState extends RestartScriptError
 
-  case object SequenceComponentNotIdle extends LoadScriptError
+  case object SequenceComponentNotIdle extends LoadScriptError {
+    override def msg: String = "Sequence component is already loaded with sequencer script"
+  }
 }
