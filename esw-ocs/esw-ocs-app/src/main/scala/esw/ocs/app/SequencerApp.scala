@@ -33,7 +33,7 @@ object SequencerApp extends EswCommandApp[SequencerAppCommand] {
     run(command)
   }
 
-  def run(command: SequencerAppCommand, enableLogging: Boolean = true): Unit = {
+  def run(command: SequencerAppCommand, enableLogging: Boolean = true): SequenceComponentWiring = {
     val wiring = new SequenceComponentWiring(command.seqCompSubsystem, command.name, new SequencerWiring(_, _, _).sequencerServer)
     import wiring.actorRuntime._
     try {
@@ -51,6 +51,7 @@ object SequencerApp extends EswCommandApp[SequencerAppCommand] {
         Await.result(shutdown(FailureReason(e)), Timeouts.DefaultTimeout)
         throw e
     }
+    wiring
   }
 
   private def loadAndStartSequencer(

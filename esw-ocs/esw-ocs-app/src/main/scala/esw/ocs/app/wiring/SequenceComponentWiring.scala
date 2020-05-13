@@ -19,7 +19,7 @@ import esw.ocs.impl.internal.{SequenceComponentRegistration, SequencerServerFact
 import scala.concurrent.{Await, Future}
 
 // $COVERAGE-OFF$
-private[ocs] class SequenceComponentWiring(
+private[esw] class SequenceComponentWiring(
     subsystem: Subsystem,
     name: Option[String],
     sequencerServerFactory: SequencerServerFactory

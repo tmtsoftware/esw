@@ -2,22 +2,27 @@ package esw.sm.app
 
 import java.nio.file.Paths
 
+import akka.actor.CoordinatedShutdown
 import csw.location.api.models.ComponentType.Sequencer
 import csw.prefix.models.Prefix
 import csw.prefix.models.Subsystem._
 import esw.ocs.api.actor.client.{SequenceComponentImpl, SequencerImpl}
 import esw.ocs.app.SequencerApp
+import esw.ocs.app.SequencerAppCommand.SequenceComponent
+import esw.ocs.app.wiring.SequenceComponentWiring
 import esw.ocs.testkit.EswTestKit
 import esw.sm.api.SequenceManagerApi
 import esw.sm.api.models.{CleanupResponse, ConfigureResponse}
 
+import scala.collection.mutable.ArrayBuffer
+
 class SequenceManagerIntegrationTest extends EswTestKit {
-
-  override def beforeEach(): Unit = locationService.unregisterAll()
-
   private val WFOS_CAL       = "WFOS_Cal"
   private val IRIS_CAL       = "IRIS_Cal"
   private val IRIS_DARKNIGHT = "IRIS_Darknight"
+
+  override protected def beforeEach(): Unit = locationService.unregisterAll()
+  override protected def afterEach(): Unit  = TestSetup.cleanup()
 
   "configure and cleanup for provided observation mode | ESW-162, ESW-166, ESW-164" in {
     TestSetup.setupSeqComponent(Prefix(ESW, "primary"), Prefix(IRIS, "primary"), Prefix(AOESW, "primary"))
@@ -115,30 +120,31 @@ class SequenceManagerIntegrationTest extends EswTestKit {
   }
 
   object TestSetup {
-    def setupSeqComponent(prefixes: Prefix*): Unit = {
-      // Setup Sequence components for subsystems
-      prefixes.foreach(prefix => {
-        SequencerApp.main(Array("seqcomp", "-s", prefix.subsystem.name, "-n", prefix.componentName))
-      })
-    }
+    private val wirings = ArrayBuffer.empty[SequenceComponentWiring]
 
-    def assertSeqCompAvailability(isSeqCompAvailable: Boolean, prefixes: Prefix*): Unit = {
-      prefixes.foreach(prefix => {
-        val seqCompStatus =
-          new SequenceComponentImpl(resolveSequenceComponentLocation(prefix)).status.futureValue
-        if (isSeqCompAvailable)
-          seqCompStatus.response shouldBe None // assert sequence components are available
-        else
-          seqCompStatus.response.isDefined shouldBe true // assert sequence components are busy
-      })
-    }
+    // Setup Sequence components for subsystems
+    def setupSeqComponent(prefixes: Prefix*): Unit =
+      prefixes.foreach { prefix =>
+        wirings += SequencerApp.run(SequenceComponent(prefix.subsystem, Some(prefix.componentName)))
+      }
+
+    def assertSeqCompAvailability(isSeqCompAvailable: Boolean, prefixes: Prefix*): Unit =
+      prefixes.foreach { prefix =>
+        val seqCompStatus = new SequenceComponentImpl(resolveSequenceComponentLocation(prefix)).status.futureValue
+        if (isSeqCompAvailable) seqCompStatus.response shouldBe None // assert sequence components are available
+        else seqCompStatus.response.isDefined shouldBe true          // assert sequence components are busy
+      }
 
     def startSequenceManager(): SequenceManagerApi = {
-      val configFilePath =
-        Paths.get(ClassLoader.getSystemResource("sequence_manager.conf").toURI)
+      val configFilePath  = Paths.get(ClassLoader.getSystemResource("sequence_manager.conf").toURI)
       val wiring          = new SequenceManagerWiring(configFilePath)
       val sequenceManager = wiring.start
       sequenceManager
+    }
+
+    def cleanup(): Unit = {
+      wirings.foreach(_.cswWiring.actorRuntime.shutdown(CoordinatedShutdown.JvmExitReason).futureValue)
+      wirings.clear()
     }
   }
 }

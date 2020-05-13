@@ -96,10 +96,8 @@ class SequencerAppIntegrationTest extends EswTestKit {
       //assert if all 3 sequence components are registered
       locationService.list(ComponentType.SequenceComponent).futureValue.length shouldEqual 3
       sequenceComponentLocations.foreach { location =>
-        {
-          //assert that componentName and prefix contain subsystem provided
-          location.prefix.toString.contains("ESW.ESW_") shouldEqual true
-        }
+        //assert that componentName and prefix contain subsystem provided
+        location.prefix.toString.contains("ESW.ESW_") shouldEqual true
       }
     }
 
@@ -131,9 +129,7 @@ class SequencerAppIntegrationTest extends EswTestKit {
 
       response match {
         case Left(v) =>
-          v shouldEqual ScriptError(
-            s"Script configuration missing for [${unexpectedSubsystem.name}] with [$observingMode]"
-          )
+          v shouldEqual ScriptError(s"Script configuration missing for [${unexpectedSubsystem.name}] with [$observingMode]")
         case Right(_) => throw new RuntimeException("test failed as this test expects ScriptError")
       }
     }
@@ -189,7 +185,7 @@ class SequencerAppIntegrationTest extends EswTestKit {
         SequencerApp.main(Array("sequencer", "-s", subsystem, "-n", name, "-i", unexpectedSubsystem, "-m", observingMode))
       }
 
-      exception.getMessage shouldEqual s"Failed to start with error: ScriptError(Script configuration missing for [${unexpectedSubsystem}] with [$observingMode])"
+      exception.getMessage shouldEqual s"Failed to start with error: ScriptError(Script configuration missing for [$unexpectedSubsystem] with [$observingMode])"
     }
   }
 }
