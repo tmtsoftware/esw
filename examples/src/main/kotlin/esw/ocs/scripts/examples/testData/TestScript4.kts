@@ -16,7 +16,7 @@ script {
 
     onSetup("command-1") {
         val newSequenceParam = stringKey("sequence-command-1").set("Started")
-        val event = SystemEvent("LGSF.darknight", "NewSequence", newSequenceParam)
+        val event = SystemEvent("LGSF.darknight", "command1", newSequenceParam)
         publishEvent(event)
     }
 

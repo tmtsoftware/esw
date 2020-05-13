@@ -68,7 +68,7 @@ class SequencerBehaviorTest extends ScalaTestWithActorTestKit with BaseTestSuite
       val sequenceResult = probe.expectMessageType[SubmitResult]
       sequenceResult.submitResponse shouldBe a[Started]
 
-      verify(script).executeNewSequenceHandler()
+      verify(script).executeNewSequenceHandler() // ESW-303: varifies newSequenceHandler is called
     }
 
     "not start executing a sequence when sequencer is loaded and new sequence handler failed| ESW-303" in {
@@ -83,7 +83,7 @@ class SequencerBehaviorTest extends ScalaTestWithActorTestKit with BaseTestSuite
       val res = probe.expectMessageType[SequencerSubmitResponse]
       res should ===(NewSequenceHookFailed())
 
-      verify(script).executeNewSequenceHandler()
+      verify(script).executeNewSequenceHandler() // ESW-303: varifies newSequenceHandler is called
     }
   }
 
@@ -101,7 +101,7 @@ class SequencerBehaviorTest extends ScalaTestWithActorTestKit with BaseTestSuite
       val sequenceResult = probe.expectMessageType[SubmitResult]
       sequenceResult.submitResponse shouldBe a[Started]
 
-      verify(script).executeNewSequenceHandler()
+      verify(script).executeNewSequenceHandler() // ESW-303: varifies newSequenceHandler is called
     }
 
     "not load and start executing a sequence if new sequence handler fails| ESW-303" in {
@@ -116,7 +116,7 @@ class SequencerBehaviorTest extends ScalaTestWithActorTestKit with BaseTestSuite
       assertSequenceNotStartedAndLoaded()
       probe.expectMessageType[NewSequenceHookFailed]
 
-      verify(script).executeNewSequenceHandler()
+      verify(script).executeNewSequenceHandler() // ESW-303: varifies newSequenceHandler is called
     }
 
     "return Ok even if the processing of sequence fails | ESW-145, ESW-154, ESW-221, ESW-303" in {
@@ -133,17 +133,17 @@ class SequencerBehaviorTest extends ScalaTestWithActorTestKit with BaseTestSuite
       sequenceResult.submitResponse shouldBe a[Started]
       val startedResponse = sequenceResult.toSubmitResponse()
 
-      verify(script).executeNewSequenceHandler()
+      verify(script).executeNewSequenceHandler() // ESW-303: varifies newSequenceHandler is called
       assertSequencerState(InProgress)
 
       startPullNext()
-      val message = "Some error"
-      finishStepWithError(message)
+      val errorMessage = "Some error"
+      finishStepWithError(errorMessage)
       assertSequencerState(Idle)
 
       val qfProbe = createTestProbe[SubmitResponse]()
       sequencerActor ! QueryFinal(startedResponse.runId, qfProbe.ref)
-      qfProbe.expectMessage(Error(startedResponse.runId, message))
+      qfProbe.expectMessage(Error(startedResponse.runId, errorMessage))
     }
   }
 
@@ -423,7 +423,7 @@ class SequencerBehaviorTest extends ScalaTestWithActorTestKit with BaseTestSuite
 
       val expectedSequence = Some(StepList(expectedSteps))
 
-      val stepId1 = getSequence().get.steps(0).id
+      val stepId1 = getSequence().get.steps.head.id
 
       replaceAndAssertResponse(stepId1, List(command3, command4), Ok)
       assertCurrentSequence(expectedSequence)
@@ -585,7 +585,7 @@ class SequencerBehaviorTest extends ScalaTestWithActorTestKit with BaseTestSuite
       val stepListResult = getSequence()
       stepListResult.get.steps.forall(_.isInFlight) should ===(true)
 
-      val step1 = stepListResult.get.steps(0)
+      val step1 = stepListResult.get.steps.head
 
       val cmdsToInsert   = List(command3, command4)
       val insertResProbe = TestProbe[GenericResponse]()
