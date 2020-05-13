@@ -20,31 +20,31 @@ import scala.concurrent.Future
 import scala.util.Random
 
 class AgentUtil(locationServiceUtil: LocationServiceUtil)(implicit actorSystem: ActorSystem[_], timeout: Timeout) {
-
   import actorSystem.executionContext
-
-  private[sm] def getAgent: Future[Either[EswLocationError, AgentClient]] =
-    locationServiceUtil
-      .listAkkaLocationsBy(ESW, Machine)
-      // if locations.head.prefix throws exception, it is handled in mapError block
-      .flatMapRight(locations => AgentClient.make(locations.head.prefix, locationServiceUtil.locationService))
-      .mapError(_ => ResolveLocationFailed(s"Could not find agent matching $ESW"))
 
   def spawnSequenceComponentFor(subsystem: Subsystem): Future[Either[AgentError, SequenceComponentApi]] = {
     val sequenceComponentPrefix = Prefix(subsystem, s"${subsystem}_${Random.between(1, 100)}")
     getAgent
-      .flatMap {
-        case Left(error)        => futureLeft(SequenceManagerError.LocationServiceError(error.msg))
-        case Right(agentClient) => spawnSeqComp(agentClient, sequenceComponentPrefix)
-      }
+      .mapLeft(error => SequenceManagerError.LocationServiceError(error.msg))
+      .flatMapE(spawnSeqComp(_, sequenceComponentPrefix))
   }
+
+  private[utils] def getAgent: Future[Either[EswLocationError, AgentClient]] =
+    locationServiceUtil
+      .listAkkaLocationsBy(ESW, Machine)
+      // if locations.head.prefix throws exception, it is handled in mapError block
+      .flatMapRight(locations => makeAgent(locations.head.prefix))
+      .mapError(_ => ResolveLocationFailed(s"Could not find agent matching $ESW"))
+
+  private[utils] def makeAgent(prefix: Prefix): Future[AgentClient] =
+    AgentClient.make(prefix, locationServiceUtil.locationService)
 
   private def spawnSeqComp(agentClient: AgentClient, seqCompPrefix: Prefix) =
     agentClient
       .spawnSequenceComponent(seqCompPrefix)
       .flatMap {
         case Spawned     => resolveSeqComp(seqCompPrefix)
-        case Failed(msg) => futureLeft(SequenceManagerError.SpawnSequenceComponentFailed(msg))
+        case Failed(msg) => Future.successful(Left(SequenceManagerError.SpawnSequenceComponentFailed(msg)))
       }
 
   private def resolveSeqComp(seqCompPrefix: Prefix) =
@@ -52,6 +52,4 @@ class AgentUtil(locationServiceUtil: LocationServiceUtil)(implicit actorSystem: 
       .resolve(AkkaConnection(ComponentId(seqCompPrefix, SequenceComponent)))
       .mapRight(loc => new SequenceComponentImpl(loc))
       .mapLeft(e => SequenceManagerError.LocationServiceError(e.msg))
-
-  private def futureLeft[T](v: T) = Future.successful(Left(v))
 }
