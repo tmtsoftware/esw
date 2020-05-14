@@ -3,7 +3,7 @@
 ## Starting Gateway by enabling metrics
 
 - Make sure you have all the CSW services up and running
-- Run `scripts/csw-services.sh start` command after cloning `csw` repo
+- Run `scripts/csw-services.sh --version $csw_version start` command after cloning `csw` repo (use the version of csw used by esw.)
 - Start sample HCD to test command service metrics by running `sbt "esw-integration-test/test:runMain esw.demo.Main"`
 - Run `sbt "esw-gateway-server/run start -m -c scripts/metrics/commandRoles.conf"` (-m: enables metrics) (-c: enables auth roles)
     - This will start gateway on port `8090`
@@ -32,4 +32,10 @@ This will start following two services:
 - Run `scripts/metrics/submit.sh` script to send `Submit` Component Command http request/sec to sample HCD via Gateway
 - Run `scripts/metrics/validate.sh` script to send 5 `Validate` Component Command http request/sec to sample HCD via Gateway
 
-    
+## Notes
+
+Some of the scripts and files mentioned above need to be modified if running under Linux instead of MacOS:
+
+* `scripts/metrics/prometheus/prometheus.yml`: Replace host.docker.internal with your Linux host's IP address
+* `validate.sh` and `submit.sh` fail due to authorization issues. A modified version of `tools/GatewayAAS-demo.http` might be of use.
+ 
