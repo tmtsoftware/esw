@@ -121,9 +121,6 @@ class AgentUtilTest extends BaseTestSuite {
     }
   }
 
-  private def futureLeft[T](value: T)  = Future.successful(Left(value))
-  private def futureRight[T](value: T) = Future.successful(Right(value))
-
   class TestSetup() {
     val locationServiceUtil: LocationServiceUtil = mock[LocationServiceUtil]
     val agentClient: AgentClient                 = mock[AgentClient]

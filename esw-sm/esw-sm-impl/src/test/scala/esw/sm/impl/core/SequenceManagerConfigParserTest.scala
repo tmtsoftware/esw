@@ -34,7 +34,7 @@ class SequenceManagerConfigParserTest extends BaseTestSuite {
           "IRIS_Cal"       -> ObsModeConfig(Resources("IRIS", "NCSU", "NFIRAOS"), calSequencers)
         )
       )
-      config.futureValue shouldBe expectedConfig
+      config.futureValue should ===(expectedConfig)
     }
 
     "throw exception if config file has missing obsMode key | ESW-162" in {
@@ -74,7 +74,7 @@ class SequenceManagerConfigParserTest extends BaseTestSuite {
         sequenceManagerConfigParser.read(isLocal = true, configFilePath = path).awaitResult
       )
 
-      exception shouldBe expectedException
+      exception should ===(expectedException)
     }
   }
 

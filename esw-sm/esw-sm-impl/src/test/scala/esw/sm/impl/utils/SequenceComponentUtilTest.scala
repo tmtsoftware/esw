@@ -131,6 +131,4 @@ class SequenceComponentUtilTest extends BaseTestSuite {
     }
   }
 
-  private def futureRight[T](value: T) = Future.successful(Right(value))
-  private def futureLeft[T](value: T)  = Future.successful(Left(value))
 }

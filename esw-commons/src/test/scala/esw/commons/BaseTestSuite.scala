@@ -43,4 +43,6 @@ trait BaseTestSuite
     p.future
   }
 
+  def futureRight[T](value: T): Future[Right[Nothing, T]] = Future.successful(Right(value))
+  def futureLeft[T](value: T): Future[Left[T, Nothing]]   = Future.successful(Left(value))
 }
