@@ -127,7 +127,7 @@ class SequenceComponentUtilTest extends BaseTestSuite {
       verify(locationServiceUtil).listAkkaLocationsBy(TCS, SequenceComponent)
       // verify call for looking esw sequence components as tcs sequence components are not idle/available
       verify(locationServiceUtil).listAkkaLocationsBy(ESW, SequenceComponent)
-      verify(agentUtil, times(1)).spawnSequenceComponentFor(TCS)
+      verify(agentUtil).spawnSequenceComponentFor(TCS)
     }
   }
 

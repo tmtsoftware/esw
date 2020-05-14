@@ -28,8 +28,16 @@ class SequenceManagerIntegrationTest extends EswTestKit {
   override protected def afterEach(): Unit  = TestSetup.cleanup()
 
   "configure and cleanup for provided observation mode | ESW-162, ESW-166, ESW-164" in {
-    TestSetup.startSeqComps(Prefix(ESW, "primary"), Prefix(IRIS, "primary"), Prefix(AOESW, "primary"))
+    val eswSeqCompPrefix   = Prefix(ESW, "primary")
+    val irisSeqCompPrefix  = Prefix(IRIS, "primary")
+    val aoeswSeqCompPrefix = Prefix(AOESW, "primary")
+
+    TestSetup.startSequenceComponents(eswSeqCompPrefix, irisSeqCompPrefix, aoeswSeqCompPrefix)
     val sequenceManager = TestSetup.startSequenceManager()
+
+    val eswIrisCalPrefix   = Prefix(ESW, IRIS_CAL)
+    val irisCalPrefix      = Prefix(IRIS, IRIS_CAL)
+    val aoeswIrisCalPrefix = Prefix(AOESW, IRIS_CAL)
 
     // ************ Configure for observing mode ************************
     val configureResponse = sequenceManager.configure(IRIS_CAL).futureValue
@@ -37,45 +45,34 @@ class SequenceManagerIntegrationTest extends EswTestKit {
     // assert for Successful Configuration
     configureResponse shouldBe a[ConfigureResponse.Success]
 
-    val eswIrisCalPrefix   = Prefix(ESW, IRIS_CAL)
-    val irisCalPrefix      = Prefix(IRIS, IRIS_CAL)
-    val aoeswIrisCalPrefix = Prefix(AOESW, IRIS_CAL)
+    // ESW-162 verify configure response returns master sequencer http location
+    val masterSequencerLocation = resolveHTTPLocation(eswIrisCalPrefix, Sequencer)
+    configureResponse should ===(ConfigureResponse.Success(masterSequencerLocation))
 
     // ESW-162 (verify all appropriate Sequencers are started based on observing mode)
-    resolveSequencerLocation(eswIrisCalPrefix).connection shouldBe sequencerConnection(eswIrisCalPrefix)
-    resolveSequencerLocation(irisCalPrefix).connection shouldBe sequencerConnection(irisCalPrefix)
-    resolveSequencerLocation(aoeswIrisCalPrefix).connection shouldBe sequencerConnection(aoeswIrisCalPrefix)
+    resolveSequencerLocation(eswIrisCalPrefix).connection should ===(sequencerConnection(eswIrisCalPrefix))
+    resolveSequencerLocation(irisCalPrefix).connection should ===(sequencerConnection(irisCalPrefix))
+    resolveSequencerLocation(aoeswIrisCalPrefix).connection should ===(sequencerConnection(aoeswIrisCalPrefix))
 
     // ESW-164 assert that sequence components have loaded sequencer scripts
-    assertSeqCompAvailability(
-      isSeqCompAvailable = false,
-      Prefix(ESW, "primary"),
-      Prefix(IRIS, "primary"),
-      Prefix(AOESW, "primary")
-    )
-
-    // ESW-162 verify configure response returns master sequencer http location
-    val masterSequencerLocation =
-      resolveHTTPLocation(eswIrisCalPrefix, Sequencer)
-    configureResponse shouldBe ConfigureResponse.Success(masterSequencerLocation)
+    assertThatSeqCompIsLoadedWithScript(eswSeqCompPrefix)
+    assertThatSeqCompIsLoadedWithScript(irisSeqCompPrefix)
+    assertThatSeqCompIsLoadedWithScript(aoeswSeqCompPrefix)
 
     // *************** Cleanup for observing mode ********************
     val cleanupResponse = sequenceManager.cleanup(IRIS_CAL).futureValue
 
     // assert for Successful Cleanup
-    cleanupResponse shouldBe CleanupResponse.Success
+    cleanupResponse should ===(CleanupResponse.Success)
 
     // ESW-166 verify all sequencers are stopped for the observing mode and seq comps are available
-    assertSeqCompAvailability(
-      isSeqCompAvailable = true,
-      Prefix(ESW, "primary"),
-      Prefix(IRIS, "primary"),
-      Prefix(AOESW, "primary")
-    )
+    assertThatSeqCompIsAvailable(eswSeqCompPrefix)
+    assertThatSeqCompIsAvailable(irisSeqCompPrefix)
+    assertThatSeqCompIsAvailable(aoeswSeqCompPrefix)
   }
 
   "configure should run multiple sequencers efficiently | ESW-168, ESW-169" in {
-    TestSetup.startSeqComps(
+    TestSetup.startSequenceComponents(
       Prefix(ESW, "primary"),
       Prefix(ESW, "secondary"),
       Prefix(IRIS, "primary"),
@@ -90,7 +87,7 @@ class SequenceManagerIntegrationTest extends EswTestKit {
 
     // *************** Avoid conflicting sequence execution | ESW-169 ********************
     // Configure for "IRIS_Darknight" observing mode should return error because resource IRIS and NFIRAOS are busy
-    sequenceManager.configure(IRIS_DARKNIGHT).futureValue shouldBe ConflictingResourcesWithRunningObsMode(Set(IRIS_CAL))
+    sequenceManager.configure(IRIS_DARKNIGHT).futureValue should ===(ConflictingResourcesWithRunningObsMode(Set(IRIS_CAL)))
 
     // *************** Should run observation concurrently if no conflict in resources | ESW-168 ********************
     // Configure for "WFOS_Cal" observing mode should be successful as the resources are available
@@ -102,15 +99,16 @@ class SequenceManagerIntegrationTest extends EswTestKit {
   }
 
   "start sequencer on esw sequence component as fallback if subsystem sequence component is not available | ESW-164" in {
-    TestSetup.startSeqComps(Prefix(ESW, "primary"), Prefix(ESW, "secondary"), Prefix(IRIS, "primary"))
+    TestSetup.startSequenceComponents(Prefix(ESW, "primary"), Prefix(ESW, "secondary"), Prefix(IRIS, "primary"))
     val sequenceManager = TestSetup.startSequenceManager()
 
-    // ************ Configure for observing mode ************************
+    // ************ Configure for observing mode: sequencers required: [IRIS, ESW, AOESW] ************************
     sequenceManager.configure(IRIS_CAL).futureValue shouldBe a[ConfigureResponse.Success]
 
-    val seqCompRunningSequencer = new SequencerImpl(resolveSequencer(AOESW, IRIS_CAL)).getSequenceComponent.futureValue
+    val aoeswSequencer          = resolveSequencer(AOESW, IRIS_CAL)
+    val seqCompRunningSequencer = new SequencerImpl(aoeswSequencer).getSequenceComponent.futureValue
 
-    // ESW-164 verify TCS.IRIS_DARKNIGHT sequencer is running on ESW sequence component as fallback as TCS sequence component
+    // ESW-164 verify AOESW.IRIS_CAL sequencer is running on fallback ESW sequence component as AOESW sequence component
     // is not available
     seqCompRunningSequencer.prefix.subsystem shouldBe ESW
 
@@ -120,25 +118,28 @@ class SequenceManagerIntegrationTest extends EswTestKit {
 
   private def sequencerConnection(prefix: Prefix) = AkkaConnection(ComponentId(prefix, Sequencer))
 
-  private def assertSeqCompAvailability(isSeqCompAvailable: Boolean, prefixes: Prefix*): Unit =
-    prefixes.foreach { prefix =>
-      val seqCompStatus = new SequenceComponentImpl(resolveSequenceComponentLocation(prefix)).status.futureValue
-      if (isSeqCompAvailable) seqCompStatus.response shouldBe None // assert sequence components are available
-      else seqCompStatus.response.isDefined shouldBe true          // assert sequence components are busy
-    }
+  private def assertThatSeqCompIsAvailable(prefix: Prefix): Unit = assertSeqCompAvailability(isSeqCompAvailable = true, prefix)
+  private def assertThatSeqCompIsLoadedWithScript(prefix: Prefix): Unit =
+    assertSeqCompAvailability(isSeqCompAvailable = false, prefix)
+
+  private def assertSeqCompAvailability(isSeqCompAvailable: Boolean, prefix: Prefix): Unit = {
+    val seqCompStatus = new SequenceComponentImpl(resolveSequenceComponentLocation(prefix)).status.futureValue
+    if (isSeqCompAvailable) seqCompStatus.response shouldBe None // assert sequence component is available
+    else seqCompStatus.response.isDefined shouldBe true          // assert sequence components is busy
+  }
 
   object TestSetup {
     private val seqCompWirings    = ArrayBuffer.empty[SequenceComponentWiring]
     private val seqManagerWirings = ArrayBuffer.empty[SequenceManagerWiring]
 
     // Setup Sequence components for subsystems
-    def startSeqComps(prefixes: Prefix*): Unit =
+    def startSequenceComponents(prefixes: Prefix*): Unit =
       prefixes.foreach { prefix =>
         seqCompWirings += SequencerApp.run(SequenceComponent(prefix.subsystem, Some(prefix.componentName)))
       }
 
     def startSequenceManager(): SequenceManagerApi = {
-      val configFilePath = Paths.get(ClassLoader.getSystemResource("sequence_manager.conf").toURI)
+      val configFilePath = Paths.get(ClassLoader.getSystemResource("smResources.conf").toURI)
       val wiring         = new SequenceManagerWiring(configFilePath)
       seqManagerWirings += wiring
       wiring.sequenceManagerApi
