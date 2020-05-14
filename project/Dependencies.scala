@@ -10,8 +10,8 @@ object Dependencies {
       Csw.`csw-database`,
       Libs.`scala-java8-compat`,
       Libs.`msocket-api`.value,
-      Libs.scalatest       % Test,
-      Libs.`mockito-scala` % Test
+      Libs.`scalatest-cross`.value % Test,
+      Libs.`mockito-scala`         % Test
     )
   )
 
