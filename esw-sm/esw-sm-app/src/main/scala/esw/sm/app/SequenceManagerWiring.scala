@@ -41,7 +41,7 @@ class SequenceManagerWiring(configPath: Path) {
   private lazy val sequencerUtil         = new SequencerUtil(locationServiceUtil, sequenceComponentUtil)
 
   private lazy val config =
-    Await.result(new SequenceManagerConfigParser(configUtils).read(configPath, isLocal = true), Timeouts.DefaultTimeout).obsModes
+    Await.result(new SequenceManagerConfigParser(configUtils).read(configPath, isLocal = true), Timeouts.DefaultTimeout)
 
   private lazy val sequenceManagerBehavior = new SequenceManagerBehavior(config, locationServiceUtil, sequencerUtil)(actorSystem)
 

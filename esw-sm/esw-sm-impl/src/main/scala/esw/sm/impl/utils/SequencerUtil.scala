@@ -15,7 +15,8 @@ import esw.commons.utils.location.EswLocationError.{RegistrationListingFailed, R
 import esw.commons.utils.location.{EswLocationError, LocationServiceUtil}
 import esw.ocs.api.actor.client.SequencerApiFactory
 import esw.ocs.api.{SequenceComponentApi, SequencerApi}
-import esw.sm.api.models.ConfigureResponse.{LocationServiceError, FailedToStartSequencers, Success}
+import esw.sm.api.models.CommonFailure.LocationServiceError
+import esw.sm.api.models.ConfigureResponse.{FailedToStartSequencers, Success}
 import esw.sm.api.models.{ConfigureResponse, SequenceManagerError, SequencerError, Sequencers}
 
 import scala.async.Async.{async, await}

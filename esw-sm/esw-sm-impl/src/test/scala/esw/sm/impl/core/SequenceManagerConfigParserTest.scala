@@ -37,7 +37,7 @@ class SequenceManagerConfigParserTest extends BaseTestSuite {
       config.futureValue should ===(expectedConfig)
     }
 
-    "throw exception if config file has missing obsMode key | ESW-162" in {
+    "throw exception if config file has missing obsMode key at top level | ESW-162" in {
       val configUtils                 = mock[ConfigUtils]
       val path                        = Paths.get("missingTestConfig.conf")
       val sequenceManagerConfigParser = new SequenceManagerConfigParser(configUtils)
