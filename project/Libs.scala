@@ -3,13 +3,13 @@ import sbt.Def.{setting => dep}
 import sbt._
 
 object Libs {
-  private val MSocketVersion = "7de6e57"
+  private val MSocketVersion = "f833c17"
 
   val `case-app`           = "com.github.alexarchambault" %% "case-app" % "2.0.0-M16"
-  val enumeratum           = dep("com.beachape" %%% "enumeratum" % "1.6.0") //MIT License
+  val enumeratum           = dep("com.github.mushtaq.enumeratum" %%% "enumeratum" % "1.6.0") //MIT License
   val `mockito-scala`      = "org.mockito"                    %% "mockito-scala"      % "1.14.1" // MIT License
-  val `scala-async`        = "org.scala-lang.modules"         %% "scala-async"        % "0.10.0" //BSD 3-clause "New" or "Revised" License
-  val scalatest            = "org.scalatest"                  %% "scalatest"          % "3.1.2"  //Apache License 2.0
+  val `scala-async`        = "org.scala-lang.modules" %% "scala-async" % "0.10.0" //BSD 3-clause "New" or "Revised" License
+  val scalatest            = dep("org.scalatest" %%% "scalatest" % "3.1.2") //Apache License 2.0
   val `scala-java8-compat` = "org.scala-lang.modules"         %% "scala-java8-compat" % "0.9.1"  //BSD 3-clause "New" or "Revised" License
   val `msocket-api`        = dep("com.github.tmtsoftware.msocket" %%% "msocket-api" % MSocketVersion)
   val `msocket-impl-jvm`   = "com.github.tmtsoftware.msocket" %% "msocket-impl"       % MSocketVersion
@@ -25,7 +25,7 @@ object Libs {
 
 object Csw {
   private val Org     = "com.github.tmtsoftware.csw"
-  private val Version = "38f55f9" //change this to 0.1.0-SNAPSHOT to test with local csw changes (after publishLocal)
+  private val Version = "65c4199" // this to 0.1.0-SNAPSHOT to test with local csw changes (after publishLocal)
 
   val `csw-aas-http`              = Org %% "csw-aas-http"        % Version
   val `csw-admin-api`             = dep(Org %%% "csw-admin-api" % Version)
@@ -43,7 +43,7 @@ object Csw {
   val `csw-event-client`          = Org %% "csw-event-client"    % Version
   val `csw-integration-multi-jvm` = Org %% "integration"         % Version classifier "multi-jvm"
   val `csw-logging-models`        = dep(Org %%% "csw-logging-models" % Version)
-  val `csw-location-api`          = Org %% "csw-location-api"    % Version
+  val `csw-location-api`          = dep(Org %%% "csw-location-api" % Version)
   val `csw-location-client`       = Org %% "csw-location-client" % Version
   val `csw-location-server`       = Org %% "csw-location-server" % Version
   val `csw-network-utils`         = Org %% "csw-network-utils"   % Version

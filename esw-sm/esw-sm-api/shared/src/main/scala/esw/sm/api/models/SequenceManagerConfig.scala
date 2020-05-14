@@ -32,7 +32,7 @@ case class SequenceManagerConfig(obsModes: Map[String, ObsModeConfig]) {
   private def obsModeConfig(obsMode: String): Either[ConfigurationMissing, ObsModeConfig] = {
     obsModes.get(obsMode) match {
       case Some(obsModeConfig) => Right(obsModeConfig)
-      case None =>Left(ConfigurationMissing(obsMode))
+      case None                => Left(ConfigurationMissing(obsMode))
     }
   }
 }

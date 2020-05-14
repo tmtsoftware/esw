@@ -6,11 +6,11 @@ object Dependencies {
     Seq(
       Csw.`csw-params`.value,
       Csw.`csw-command-api`.value,
-      Csw.`csw-location-api`,
+      Csw.`csw-location-api`.value,
       Csw.`csw-database`,
       Libs.`scala-java8-compat`,
       Libs.`msocket-api`.value,
-      Libs.scalatest       % Test,
+      Libs.scalatest.value % Test,
       Libs.`mockito-scala` % Test
     )
   )
@@ -30,7 +30,7 @@ object Dependencies {
       Csw.`csw-aas-http`,
       AkkaHttp.`akka-http`,
       Libs.`msocket-impl-jvm`,
-      Libs.scalatest               % Test,
+      Libs.scalatest.value         % Test,
       AkkaHttp.`akka-http-testkit` % Test,
       Akka.`akka-stream-testkit`   % Test,
       Libs.`mockito-scala`         % Test
@@ -48,7 +48,7 @@ object Dependencies {
       Libs.enumeratum.value,
       Libs.`msocket-impl-jvm`,
       Libs.blockhound,
-      Libs.scalatest                  % Test,
+      Libs.scalatest.value            % Test,
       Akka.`akka-actor-testkit-typed` % Test,
       Libs.`tmt-test-reporter`        % Test,
       Libs.`mockito-scala`            % Test
@@ -58,7 +58,7 @@ object Dependencies {
   val OcsApp: Def.Initialize[Seq[ModuleID]] = Def.setting(
     Seq(
       Libs.`msocket-impl-jvm`,
-      Libs.scalatest                  % Test,
+      Libs.scalatest.value            % Test,
       Libs.`mockito-scala`            % Test,
       Libs.`tmt-test-reporter`        % Test,
       Akka.`akka-actor-testkit-typed` % Test
@@ -71,7 +71,7 @@ object Dependencies {
       Csw.`csw-location-client`,
       Akka.`akka-actor-typed`,
       Akka.`akka-stream`,
-      Libs.scalatest                  % Test,
+      Libs.scalatest.value            % Test,
       Libs.`mockito-scala`            % Test,
       Libs.`tmt-test-reporter`        % Test,
       Akka.`akka-actor-testkit-typed` % Test
@@ -83,7 +83,7 @@ object Dependencies {
       Borer.`borer-core`.value,
       Borer.`borer-derivation`.value,
       Csw.`csw-prefix`.value,
-      Csw.`csw-location-api`,
+      Csw.`csw-location-api`.value,
       Akka.`akka-actor-typed`,
       Libs.`mockito-scala`            % Test,
       Libs.`tmt-test-reporter`        % Test,
@@ -108,7 +108,7 @@ object Dependencies {
       Csw.`csw-time-scheduler`,
       Libs.`case-app`,
       Libs.`scala-async`,
-      Libs.scalatest           % Test,
+      Libs.scalatest.value     % Test,
       Libs.`mockito-scala`     % Test,
       Libs.`tmt-test-reporter` % Test
     )
@@ -117,7 +117,7 @@ object Dependencies {
   val IntegrationTest = Def.setting(
     Seq(
       Csw.`csw-logging-models`.value  % Test,
-      Libs.scalatest                  % Test,
+      Libs.scalatest.value            % Test,
       Libs.`tmt-test-reporter`        % Test,
       Csw.`csw-integration-multi-jvm` % Test,
       Akka.`akka-multi-node-testkit`  % Test
@@ -165,7 +165,7 @@ object Dependencies {
     Seq(
       Csw.`csw-event-client`,
       Libs.caffeine,
-      Csw.`csw-location-api`,
+      Csw.`csw-location-api`.value,
       Libs.`tmt-test-reporter` % Test
     )
   )
@@ -177,7 +177,7 @@ object Dependencies {
       Libs.`prometheus-akka-http`,
       Libs.`tmt-test-reporter`        % Test,
       Libs.`mockito-scala`            % Test,
-      Libs.scalatest                  % Test,
+      Libs.scalatest.value            % Test,
       Akka.`akka-actor-testkit-typed` % Test,
       AkkaHttp.`akka-http-testkit`    % Test,
       Akka.`akka-stream-testkit`      % Test
@@ -189,17 +189,17 @@ object Dependencies {
       Csw.`csw-contract`,
       Csw.`csw-params`.value,
       Libs.`tmt-test-reporter` % Test,
-      Libs.scalatest           % Test
+      Libs.scalatest.value     % Test
     )
   )
 
   val EswSmImpl: Def.Initialize[Seq[ModuleID]] = Def.setting(
     Seq(
-      Csw.`csw-location-api`,
+      Csw.`csw-location-api`.value,
       Csw.`csw-config-client`,
       Akka.`akka-actor-typed`,
       Libs.`mockito-scala`     % Test,
-      Libs.scalatest           % Test,
+      Libs.scalatest.value     % Test,
       Libs.`tmt-test-reporter` % Test
     )
   )
@@ -208,9 +208,9 @@ object Dependencies {
     Seq(
       Borer.`borer-core`.value,
       Borer.`borer-derivation`.value,
-      Csw.`csw-location-api`,
+      Csw.`csw-location-api`.value,
       Libs.`mockito-scala` % Test,
-      Libs.scalatest       % Test
+      Libs.scalatest.value % Test
     )
   )
 
@@ -224,7 +224,7 @@ object Dependencies {
 
   val EswSmApp: Def.Initialize[Seq[ModuleID]] = Def.setting(
     Seq(
-      Libs.scalatest                  % Test,
+      Libs.scalatest.value            % Test,
       Libs.`mockito-scala`            % Test,
       Libs.`tmt-test-reporter`        % Test,
       Akka.`akka-actor-testkit-typed` % Test
@@ -233,11 +233,11 @@ object Dependencies {
 
   val EswCommons: Def.Initialize[Seq[ModuleID]] = Def.setting(
     Seq(
-      Csw.`csw-location-api`,
+      Csw.`csw-location-api`.value,
       Akka.`akka-stream-typed`        % Provided,
       Akka.`akka-actor-testkit-typed` % Test,
       Libs.`mockito-scala`            % Test,
-      Libs.scalatest                  % Test,
+      Libs.scalatest.value            % Test,
       Libs.`tmt-test-reporter`        % Test
     )
   )
@@ -246,7 +246,7 @@ object Dependencies {
     Seq(
       Akka.`akka-actor-testkit-typed`,
       Csw.`csw-testkit`,
-      Libs.scalatest,
+      Libs.scalatest.value,
       Libs.`tmt-test-reporter` % Test,
       Libs.`embedded-keycloak`
     )

@@ -91,10 +91,8 @@ class SequenceManagerBehavior(
         case Left(_) => ConfigurationMissing(requestedObsMode)
         case Right(requiredResources) =>
           val configuredResources: Set[Resources] = runningObsModes.map(om => {
-            config.resources(om) match {
-              // ignoring failure of getResources as config should never be absent for running obsModes
-              case Right(resources) => resources
-            }
+            // get is safe here as config should never be absent for running obsModes
+            config.resources(om).toOption.get
           })
           if (configuredResources.exists(_.conflictsWith(requiredResources)))
             ConflictingResourcesWithRunningObsMode(runningObsModes)
