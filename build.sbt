@@ -26,7 +26,7 @@ lazy val unidocExclusions: Seq[ProjectReference] = Seq(
   `esw-sm-api`.js,
   examples
 )
-
+val jsTestArg              = testOptions in Test := Seq(Tests.Argument("-oDF"))
 val enableCoverage         = sys.props.get("enableCoverage").contains("true")
 val MaybeCoverage: Plugins = if (enableCoverage) Coverage else Plugins.empty
 
@@ -65,6 +65,7 @@ lazy val `esw-ocs-api` = crossProject(JSPlatform, JVMPlatform)
   .settings(
     libraryDependencies ++= Dependencies.OcsApi.value
   )
+  .jsSettings(jsTestArg)
 
 lazy val `esw-ocs-handler` = project
   .in(file("esw-ocs/esw-ocs-handler"))
@@ -182,6 +183,7 @@ lazy val `esw-gateway-api` = crossProject(JSPlatform, JVMPlatform)
     libraryDependencies ++= Dependencies.EswGatewayApi.value
   )
   .dependsOn(`esw-ocs-api`)
+  .jsSettings(jsTestArg)
 
 lazy val `esw-gateway-impl` = project
   .in(file("esw-gateway/esw-gateway-impl"))
@@ -246,6 +248,7 @@ lazy val `esw-sm-api` = crossProject(JSPlatform, JVMPlatform)
   .settings(
     libraryDependencies ++= Dependencies.EswSmApi.value
   )
+  .jsSettings(jsTestArg)
 
 lazy val `esw-sm-impl` = project
   .in(file("esw-sm/esw-sm-impl"))
