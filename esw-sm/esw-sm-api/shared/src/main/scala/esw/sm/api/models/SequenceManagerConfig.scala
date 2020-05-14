@@ -3,9 +3,7 @@ package esw.sm.api.models
 import csw.prefix.models.Subsystem
 
 case class Resources(resources: Set[String]) {
-  def conflictsWith(other: Resources): Boolean = {
-    this.resources.exists(r => other.resources.contains(r))
-  }
+  def conflictsWith(other: Resources): Boolean = this.resources.exists(other.resources.contains)
 }
 object Resources {
   def apply(resources: String*): Resources = new Resources(resources.toSet)

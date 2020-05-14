@@ -17,7 +17,7 @@ import esw.ocs.api.actor.client.SequencerApiFactory
 import esw.ocs.api.{SequenceComponentApi, SequencerApi}
 import esw.sm.api.models.CommonFailure.LocationServiceError
 import esw.sm.api.models.ConfigureResponse.{FailedToStartSequencers, Success}
-import esw.sm.api.models.{ConfigureResponse, SequenceManagerError, SequencerError, Sequencers}
+import esw.sm.api.models._
 
 import scala.async.Async.{async, await}
 import scala.concurrent.{ExecutionContext, Future}

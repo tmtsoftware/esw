@@ -72,13 +72,11 @@ class SequenceManagerBehavior(
 
   private def cleanup(obsMode: String, self: ActorRef[SequenceManagerMsg]): Future[Unit] =
     async {
-      val cleanupResponse = config.sequencers(obsMode) match {
-        case None => Future.successful(ConfigurationMissing(obsMode))
-        case Some(sequencers) =>
-          sequencerUtil
-            .stopSequencers(sequencers, obsMode)
-            .mapToAdt(_ => CleanupResponse.Success, error => LocationServiceError(error.msg))
-      }
+      val cleanupResponse =
+        config
+          .sequencers(obsMode)
+          .map(stopSequencers(_, obsMode))
+          .getOrElse(Future.successful(ConfigurationMissing(obsMode)))
 
       self ! CleanupResponseInternal(await(cleanupResponse))
     }
@@ -103,6 +101,11 @@ class SequenceManagerBehavior(
 
   private def startSequencers(requestedObsMode: String, sequencers: Sequencers) =
     sequencerUtil.startSequencers(requestedObsMode, sequencers)
+
+  private def stopSequencers(sequencers: Sequencers, obsMode: String) =
+    sequencerUtil
+      .stopSequencers(sequencers, obsMode)
+      .mapToAdt(_ => CleanupResponse.Success, error => LocationServiceError(error.msg))
 
   // get the component name of all the top level sequencers i.e. ESW sequencers
   private def getRunningObsModes: Future[Either[RegistrationListingFailed, Set[String]]] =
