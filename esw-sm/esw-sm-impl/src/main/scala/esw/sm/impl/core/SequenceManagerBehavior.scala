@@ -31,17 +31,17 @@ class SequenceManagerBehavior(
   def idle(): Behavior[SequenceManagerMsg] =
     Behaviors.receive { (ctx, msg) =>
       msg match {
-        case Configure(observingMode, replyTo)             => configure(observingMode, ctx.self); configuring(replyTo);
-        case Cleanup(observingMode, replyTo)               => cleanup(observingMode, ctx.self); cleaningUp(replyTo);
-        case msg: CommonMessage                            => handleCommon(msg, Idle); Behaviors.same
-        case _: CleanupInternal | _: ConfigurationInternal => Behaviors.unhandled
+        case Configure(observingMode, replyTo)                             => configure(observingMode, ctx.self); configuring(replyTo);
+        case Cleanup(observingMode, replyTo)                               => cleanup(observingMode, ctx.self); cleaningUp(replyTo);
+        case msg: CommonMessage                                            => handleCommon(msg, Idle); Behaviors.same
+        case _: CleanupResponseInternal | _: ConfigurationResponseInternal => Behaviors.unhandled
       }
     }
 
   // Clean up is in progress, waiting for CleanupDone message
   // Within this period, reject all the other messages except common messages
   private def cleaningUp(replyTo: ActorRef[CleanupResponse]): Behavior[SequenceManagerMsg] =
-    receive[CleanupInternal](CleaningInProcess) { msg =>
+    receive[CleanupResponseInternal](CleaningInProcess) { msg =>
       replyTo ! msg.res
       idle()
     }
@@ -49,7 +49,7 @@ class SequenceManagerBehavior(
   // Configuration is in progress, waiting for ConfigurationDone message
   // Within this period, reject all the other messages except common messages
   private def configuring(replyTo: ActorRef[ConfigureResponse]): Behavior[SequenceManagerMsg] =
-    receive[ConfigurationInternal](ConfigurationInProcess) { msg =>
+    receive[ConfigurationResponseInternal](ConfigurationInProcess) { msg =>
       replyTo ! msg.res
       idle()
     }
@@ -67,43 +67,42 @@ class SequenceManagerBehavior(
         error => LocationServiceError(error.msg)
       )
 
-      self ! ConfigurationInternal(await(runningObsModesF))
+      self ! ConfigurationResponseInternal(await(runningObsModesF))
     }
 
   private def cleanup(obsMode: String, self: ActorRef[SequenceManagerMsg]): Future[Unit] =
     async {
-      config.sequencers(obsMode) match {
-        case Left(_) =>
-          self ! CleanupInternal(ConfigurationMissing(obsMode))
-        case Right(sequencers) =>
-          val stopResponseF = sequencerUtil
+      val cleanupResponse = config.sequencers(obsMode) match {
+        case None => Future.successful(ConfigurationMissing(obsMode))
+        case Some(sequencers) =>
+          sequencerUtil
             .stopSequencers(sequencers, obsMode)
             .mapToAdt(_ => CleanupResponse.Success, error => LocationServiceError(error.msg))
-          self ! CleanupInternal(await(stopResponseF))
       }
+
+      self ! CleanupResponseInternal(await(cleanupResponse))
     }
 
   // start all the required sequencers associated with obs mode,
   // if requested resources does not conflict with existing running observations
   private def configureResources(requestedObsMode: String, runningObsModes: Set[String]): Future[ConfigureResponse] =
     async {
-      config.resources(requestedObsMode) match {
-        case Left(_) => ConfigurationMissing(requestedObsMode)
-        case Right(requiredResources) =>
-          val configuredResources: Set[Resources] = runningObsModes.map(om => {
-            // get is safe here as config should never be absent for running obsModes
-            config.resources(om).toOption.get
-          })
-          if (configuredResources.exists(_.conflictsWith(requiredResources)))
-            ConflictingResourcesWithRunningObsMode(runningObsModes)
-          else {
-            config.sequencers(requestedObsMode) match {
-              case Left(_)      => ConfigurationMissing(requestedObsMode)
-              case Right(value) => await(sequencerUtil.startSequencers(requestedObsMode, value))
-            }
-          }
+      config.obsModeConfig(requestedObsMode) match {
+        case Some(ObsModeConfig(resources, sequencers)) =>
+          if (resourcesConflict(resources, runningObsModes)) ConflictingResourcesWithRunningObsMode(runningObsModes)
+          else await(startSequencers(requestedObsMode, sequencers))
+        case None => ConfigurationMissing(requestedObsMode)
       }
     }
+
+  private def resourcesConflict(requiredResources: Resources, runningObsModes: Set[String]) = {
+    // ignoring failure of getResources as config should never be absent for running obsModes
+    val configuredResources = runningObsModes.map(config.resources(_).get)
+    configuredResources.exists(_.conflictsWith(requiredResources))
+  }
+
+  private def startSequencers(requestedObsMode: String, sequencers: Sequencers) =
+    sequencerUtil.startSequencers(requestedObsMode, sequencers)
 
   // get the component name of all the top level sequencers i.e. ESW sequencers
   private def getRunningObsModes: Future[Either[RegistrationListingFailed, Set[String]]] =

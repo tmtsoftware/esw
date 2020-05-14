@@ -26,8 +26,8 @@ class SequenceManagerImplTest extends ScalaTestWithActorTestKit with AnyWordSpec
       case SequenceManagerMsg.Cleanup(_, replyTo)              => replyTo ! cleanupResponse
       case SequenceManagerMsg.GetRunningObsModes(replyTo)      => replyTo ! getRunningObsModesResponse
       case SequenceManagerMsg.GetSequenceManagerState(replyTo) => replyTo ! Idle
-      case SequenceManagerMsg.CleanupInternal(_)               =>
-      case SequenceManagerMsg.ConfigurationInternal(_)         =>
+      case SequenceManagerMsg.CleanupResponseInternal(_)       =>
+      case SequenceManagerMsg.ConfigurationResponseInternal(_) =>
     }
     Behaviors.same
   }

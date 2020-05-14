@@ -13,6 +13,6 @@ object SequenceManagerMsg {
   case class GetRunningObsModes(replyTo: ActorRef[GetRunningObsModesResponse]) extends CommonMessage
   case class GetSequenceManagerState(replyTo: ActorRef[SequenceManagerState])  extends CommonMessage
 
-  private[sm] case class ConfigurationInternal(res: ConfigureResponse) extends SequenceManagerMsg
-  private[sm] case class CleanupInternal(res: CleanupResponse)         extends SequenceManagerMsg
+  private[sm] case class ConfigurationResponseInternal(res: ConfigureResponse) extends SequenceManagerMsg
+  private[sm] case class CleanupResponseInternal(res: CleanupResponse)         extends SequenceManagerMsg
 }
