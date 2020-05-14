@@ -6,10 +6,11 @@ import csw.command.client.messages.sequencer.SequencerMsg
 import csw.params.commands.{CommandName, Setup}
 import csw.prefix.models.Prefix
 import esw.commons.BaseTestSuite
+import esw.ocs.api.actor.messages.SequencerMessages._
 import esw.ocs.api.models.StepStatus.Finished
 import esw.ocs.api.models.{Step, StepStatus}
 import esw.ocs.api.protocol.{Ok, PullNextResult}
-import esw.ocs.api.actor.messages.SequencerMessages._
+import org.scalatest.time.SpanSugar.convertFloatToGrainOfTime
 
 class SequenceOperatorTest extends ScalaTestWithActorTestKit with BaseTestSuite {
 
@@ -34,6 +35,8 @@ class SequenceOperatorTest extends ScalaTestWithActorTestKit with BaseTestSuite 
 
   private val sequencer        = spawn(mockedBehavior)
   private val sequenceOperator = new SequenceOperator(sequencer)
+
+  override implicit def patienceConfig: PatienceConfig = PatienceConfig(10.seconds)
 
   "pullNext" in {
     sequenceOperator.pullNext.futureValue should ===(pullNextResponse)

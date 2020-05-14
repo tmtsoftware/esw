@@ -25,6 +25,8 @@ trait BaseTestSuite
     with Eventually {
   val defaultTimeout: Duration = 10.seconds
 
+  override implicit def patienceConfig: PatienceConfig = PatienceConfig(10.seconds)
+
   implicit class EitherOps[L, R](either: Either[L, R]) {
     def rightValue: R = either.toOption.get
     def leftValue: L  = either.left.value

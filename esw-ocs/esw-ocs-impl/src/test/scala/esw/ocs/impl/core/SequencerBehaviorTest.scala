@@ -39,6 +39,8 @@ class SequencerBehaviorTest extends ScalaTestWithActorTestKit with BaseTestSuite
 
   private val maxWaitForExpectNoMessage = 200.millis
 
+  override implicit def patienceConfig: PatienceConfig = PatienceConfig(10.seconds)
+
   "LoadSequence" must {
     "load the given sequence in idle state | ESW-145, ESW-141" in {
       val sequencerSetup = SequencerTestSetup.idle(sequence)

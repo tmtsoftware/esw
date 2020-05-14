@@ -37,6 +37,8 @@ class LocationServiceUtilTest extends ScalaTestWithActorTestKit with BaseTestSui
   private val cswRegistrationListingFailed: CswRegistrationListingFailed = CswRegistrationListingFailed()
   private val cswLocationServiceErrorMsg: String                         = cswRegistrationListingFailed.getMessage
 
+  override implicit def patienceConfig: PatienceConfig = PatienceConfig(10.seconds)
+
   override protected def beforeEach(): Unit = {
     super.beforeEach()
     reset(locationService)

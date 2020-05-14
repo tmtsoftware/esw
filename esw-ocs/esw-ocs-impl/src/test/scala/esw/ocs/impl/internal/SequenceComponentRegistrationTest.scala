@@ -18,12 +18,15 @@ import esw.ocs.api.actor.messages.SequenceComponentMsg
 import esw.ocs.api.actor.messages.SequenceComponentMsg.Stop
 import esw.ocs.api.protocol.ScriptError
 import org.mockito.ArgumentMatchers.any
+import org.scalatest.time.SpanSugar.convertFloatToGrainOfTime
 
 import scala.concurrent.{ExecutionContext, Future}
 
 class SequenceComponentRegistrationTest extends ScalaTestWithActorTestKit with BaseTestSuite {
   private val subsystem = Subsystem.TCS
   private val uri       = new URI("uri")
+
+  override implicit def patienceConfig: PatienceConfig = PatienceConfig(10.seconds)
 
   private def registerSequenceComponent(locationService: LocationService, name: Option[String], retryCount: Int)(implicit
       actorSystem: ActorSystem[SpawnProtocol.Command]

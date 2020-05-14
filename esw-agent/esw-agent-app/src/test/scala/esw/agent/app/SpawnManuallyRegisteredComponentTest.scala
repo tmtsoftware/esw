@@ -107,14 +107,10 @@ class SpawnManuallyRegisteredComponentTest
       agentActorRef ! spawnRedis(probe2.ref)
 
       probe1.expectMessage(Spawned)
-
-      //ensure register is registered once
-      verify(locationService).register(redisRegistration)
-
       probe2.expectMessage(Failed("given component is already in process"))
 
-      //ensure register is NOT registered again
-      verifyNoMoreInteractions(locationService.register(redisRegistration))
+      //ensure redis is registered once
+      verify(locationService).register(redisRegistration)
     }
 
     "reply 'Failed' when process fails to spawn | ESW-237" in {
@@ -215,9 +211,7 @@ class SpawnManuallyRegisteredComponentTest
   }
 
   private def mockLocationServiceForRedis(registrationDuration: FiniteDuration = 0.seconds) = {
-    when(locationService.resolve(argEq(redisConn), any[FiniteDuration]))
-      .thenReturn(Future.successful(None))
-    when(locationService.register(redisRegistration))
-      .thenReturn(delayedFuture(redisRegistrationResult, registrationDuration))
+    when(locationService.resolve(argEq(redisConn), any[FiniteDuration])).thenReturn(Future.successful(None))
+    when(locationService.register(redisRegistration)).thenReturn(delayedFuture(redisRegistrationResult, registrationDuration))
   }
 }

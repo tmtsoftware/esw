@@ -40,6 +40,8 @@ class SequenceManagerBehaviorTest extends ScalaTestWithActorTestKit with BaseTes
 
   private lazy val smRef: ActorRef[SequenceManagerMsg] = spawn(sequenceManagerBehavior.idle(), "test_actor")
 
+  override implicit def patienceConfig: PatienceConfig = PatienceConfig(10.seconds)
+
   override protected def afterEach(): Unit = reset(locationServiceUtil, sequencerUtil)
 
   "Configure" must {
