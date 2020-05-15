@@ -30,7 +30,7 @@ class LockUnlockIntegrationTest extends EswTestKit(EventServer) {
     val lockingEventKey  = EventKey("esw.ocs.lock_unlock.locking_response")
 
     "support locking components | ESW-126" in {
-      val probe = TestProbe[String]
+      val probe = TestProbe[String]()
       eventSubscriber
         .subscribeCallback(
           Set(lockingEventKey),

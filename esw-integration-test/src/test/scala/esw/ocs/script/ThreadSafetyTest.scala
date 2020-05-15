@@ -24,7 +24,7 @@ class ThreadSafetyTest extends EswTestKit(EventServer) {
       val counter    = EventKey("esw.counter.get-counter")
       val counterKey = IntKey.make("counter")
 
-      val counterProbe = TestProbe[Int]
+      val counterProbe = TestProbe[Int]()
 
       eventSubscriber
         .subscribeCallback(

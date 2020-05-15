@@ -65,7 +65,7 @@ class SequencerBehaviorTest extends ScalaTestWithActorTestKit with BaseTestSuite
 
       when { script.executeNewSequenceHandler() }.thenAnswer { Future.successful(Done) }
 
-      val probe = createTestProbe[SequencerSubmitResponse]
+      val probe = createTestProbe[SequencerSubmitResponse]()
       sequencerActor ! StartSequence(probe.ref)
       pullAllStepsAndAssertSequenceIsFinished()
       val sequenceResult = probe.expectMessageType[SubmitResult]
@@ -80,7 +80,7 @@ class SequencerBehaviorTest extends ScalaTestWithActorTestKit with BaseTestSuite
 
       when { script.executeNewSequenceHandler() }.thenAnswer { Future.failed(new RuntimeException) }
 
-      val probe = createTestProbe[SequencerSubmitResponse]
+      val probe = createTestProbe[SequencerSubmitResponse]()
       sequencerActor ! StartSequence(probe.ref)
       assertSequenceNotStarted()
       val res = probe.expectMessageType[SequencerSubmitResponse]
@@ -97,7 +97,7 @@ class SequencerBehaviorTest extends ScalaTestWithActorTestKit with BaseTestSuite
 
       when { script.executeNewSequenceHandler() }.thenAnswer { Future.successful(Done) }
 
-      val probe = createTestProbe[SequencerSubmitResponse]
+      val probe = createTestProbe[SequencerSubmitResponse]()
       sequencerActor ! SubmitSequenceInternal(sequence, probe.ref)
 
       pullAllStepsAndAssertSequenceIsFinished()
@@ -113,7 +113,7 @@ class SequencerBehaviorTest extends ScalaTestWithActorTestKit with BaseTestSuite
 
       when { script.executeNewSequenceHandler() }.thenAnswer { Future.failed(new RuntimeException) }
 
-      val probe = createTestProbe[SequencerSubmitResponse]
+      val probe = createTestProbe[SequencerSubmitResponse]()
       sequencerActor ! SubmitSequenceInternal(sequence, probe.ref)
 
       assertSequenceNotStartedAndLoaded()
@@ -129,7 +129,7 @@ class SequencerBehaviorTest extends ScalaTestWithActorTestKit with BaseTestSuite
 
       when { script.executeNewSequenceHandler() }.thenAnswer { Future.successful(Done) }
 
-      val client = createTestProbe[SequencerSubmitResponse]
+      val client = createTestProbe[SequencerSubmitResponse]()
       sequencerActor ! SubmitSequenceInternal(sequence1, client.ref)
 
       val sequenceResult = client.expectMessageType[SubmitResult]
@@ -155,7 +155,7 @@ class SequencerBehaviorTest extends ScalaTestWithActorTestKit with BaseTestSuite
       val sequencerSetup = SequencerTestSetup.idle(sequence)
       import sequencerSetup._
 
-      val seqResProbe = createTestProbe[SubmitResponse]
+      val seqResProbe = createTestProbe[SubmitResponse]()
       sequencerActor ! QueryFinal(Id(), seqResProbe.ref)
       seqResProbe.expectMessageType[Invalid]
     }
@@ -164,7 +164,7 @@ class SequencerBehaviorTest extends ScalaTestWithActorTestKit with BaseTestSuite
       val sequencerSetup = SequencerTestSetup.loaded(sequence)
       import sequencerSetup._
 
-      val seqResProbe = createTestProbe[SubmitResponse]
+      val seqResProbe = createTestProbe[SubmitResponse]()
       val invalidId   = Id("invalid")
       sequencerActor ! QueryFinal(invalidId, seqResProbe.ref)
       seqResProbe.expectMessage(
@@ -178,13 +178,13 @@ class SequencerBehaviorTest extends ScalaTestWithActorTestKit with BaseTestSuite
 
       when { script.executeNewSequenceHandler() }.thenAnswer { Future.successful(Done) }
 
-      val startSeqProbe = createTestProbe[SequencerSubmitResponse]
+      val startSeqProbe = createTestProbe[SequencerSubmitResponse]()
       sequencerActor ! StartSequence(startSeqProbe.ref)
       val sequenceResult  = startSeqProbe.expectMessageType[SequencerSubmitResponse]
       val startedResponse = sequenceResult.toSubmitResponse()
       startedResponse shouldBe a[Started]
 
-      val seqResProbe = createTestProbe[SubmitResponse]
+      val seqResProbe = createTestProbe[SubmitResponse]()
       sequencerActor ! QueryFinal(startedResponse.runId, seqResProbe.ref)
 
       pullAllStepsAndAssertSequenceIsFinished()
@@ -199,7 +199,7 @@ class SequencerBehaviorTest extends ScalaTestWithActorTestKit with BaseTestSuite
 
       when { script.executeNewSequenceHandler() }.thenAnswer { Future.successful(Done) }
 
-      val startSeqProbe = createTestProbe[SequencerSubmitResponse]
+      val startSeqProbe = createTestProbe[SequencerSubmitResponse]()
       sequencerActor ! StartSequence(startSeqProbe.ref)
       val sequenceResult  = startSeqProbe.expectMessageType[SubmitResult]
       val startedResponse = sequenceResult.submitResponse
@@ -208,7 +208,7 @@ class SequencerBehaviorTest extends ScalaTestWithActorTestKit with BaseTestSuite
       startPullNext()
       assertSequencerState(InProgress)
 
-      val seqResProbe = createTestProbe[SubmitResponse]
+      val seqResProbe = createTestProbe[SubmitResponse]()
       sequencerActor ! QueryFinal(startedResponse.runId, seqResProbe.ref)
       seqResProbe.expectNoMessage(maxWaitForExpectNoMessage)
 
@@ -221,7 +221,7 @@ class SequencerBehaviorTest extends ScalaTestWithActorTestKit with BaseTestSuite
     "return Sequence result with Completed when sequencer has finished executing a sequence | ESW-145, ESW-154, ESW-221" in {
       val (startedResponse, sequencerSetup) = SequencerTestSetup.finished(sequence)
       import sequencerSetup._
-      val seqResProbe = createTestProbe[SubmitResponse]
+      val seqResProbe = createTestProbe[SubmitResponse]()
       sequencerActor ! QueryFinal(startedResponse.runId, seqResProbe.ref)
 
       seqResProbe.expectMessage(Completed(startedResponse.runId))
@@ -301,7 +301,7 @@ class SequencerBehaviorTest extends ScalaTestWithActorTestKit with BaseTestSuite
       val sequencerSetup = SequencerTestSetup.loaded(sequence)
       import sequencerSetup._
 
-      val probe = createTestProbe[OkOrUnhandledResponse]
+      val probe = createTestProbe[OkOrUnhandledResponse]()
       sequencerActor ! Add(List(command3), probe.ref)
       probe.expectMessage(Ok)
 
@@ -313,7 +313,7 @@ class SequencerBehaviorTest extends ScalaTestWithActorTestKit with BaseTestSuite
       val sequencerSetup = SequencerTestSetup.inProgress(sequence)
       import sequencerSetup._
 
-      val probe = createTestProbe[OkOrUnhandledResponse]
+      val probe = createTestProbe[OkOrUnhandledResponse]()
       sequencerActor ! Add(List(command3), probe.ref)
       probe.expectMessage(Ok)
 
@@ -330,7 +330,7 @@ class SequencerBehaviorTest extends ScalaTestWithActorTestKit with BaseTestSuite
       val sequencerSetup = SequencerTestSetup.loaded(sequence)
       import sequencerSetup._
 
-      val probe = createTestProbe[OkOrUnhandledResponse]
+      val probe = createTestProbe[OkOrUnhandledResponse]()
       sequencerActor ! Prepend(List(command3), probe.ref)
       probe.expectMessage(Ok)
 
@@ -342,7 +342,7 @@ class SequencerBehaviorTest extends ScalaTestWithActorTestKit with BaseTestSuite
       val sequencerSetup = SequencerTestSetup.inProgress(sequence)
       import sequencerSetup._
 
-      val probe = createTestProbe[OkOrUnhandledResponse]
+      val probe = createTestProbe[OkOrUnhandledResponse]()
       sequencerActor ! Prepend(List(command3), probe.ref)
       probe.expectMessage(Ok)
 
@@ -770,7 +770,7 @@ class SequencerBehaviorTest extends ScalaTestWithActorTestKit with BaseTestSuite
       import sequencerSetup._
       loadAndStartSequenceThenAssertInProgress()
 
-      val probe = TestProbe[Ok.type]
+      val probe = TestProbe[Ok.type]()
       sequencerActor ! ReadyToExecuteNext(probe.ref)
       probe.expectMessage(Ok)
     }
@@ -782,7 +782,7 @@ class SequencerBehaviorTest extends ScalaTestWithActorTestKit with BaseTestSuite
 
       startPullNext()
 
-      val probe = TestProbe[Ok.type]
+      val probe = TestProbe[Ok.type]()
       sequencerActor ! ReadyToExecuteNext(probe.ref)
 
       probe.expectNoMessage(maxWaitForExpectNoMessage)
@@ -798,12 +798,12 @@ class SequencerBehaviorTest extends ScalaTestWithActorTestKit with BaseTestSuite
 
       when { script.executeNewSequenceHandler() }.thenAnswer { Future.successful(Done) }
 
-      val probe = TestProbe[Ok.type]
+      val probe = TestProbe[Ok.type]()
       sequencerActor ! ReadyToExecuteNext(probe.ref)
       probe.expectNoMessage(maxWaitForExpectNoMessage)
 
       // start the sequence and assert Ok is sent to the readyToExecuteNext subscriber as soon as a step is ready
-      sequencerActor ! StartSequence(createTestProbe[SequencerSubmitResponse].ref)
+      sequencerActor ! StartSequence(createTestProbe[SequencerSubmitResponse]().ref)
       probe.expectMessage(Ok)
     }
 
@@ -811,7 +811,7 @@ class SequencerBehaviorTest extends ScalaTestWithActorTestKit with BaseTestSuite
       val (_, sequencerSetup) = SequencerTestSetup.finished(sequence)
       import sequencerSetup._
 
-      val probe = TestProbe[Ok.type]
+      val probe = TestProbe[Ok.type]()
       sequencerActor ! ReadyToExecuteNext(probe.ref)
       probe.expectNoMessage(maxWaitForExpectNoMessage)
 
@@ -823,7 +823,7 @@ class SequencerBehaviorTest extends ScalaTestWithActorTestKit with BaseTestSuite
       val sequencerSetup = SequencerTestSetup.offline(sequence)
       import sequencerSetup._
 
-      val probe = TestProbe[Ok.type]
+      val probe = TestProbe[Ok.type]()
       sequencerActor ! ReadyToExecuteNext(probe.ref)
       probe.expectNoMessage(maxWaitForExpectNoMessage)
 
@@ -840,7 +840,7 @@ class SequencerBehaviorTest extends ScalaTestWithActorTestKit with BaseTestSuite
 
       pauseAndAssertResponse(Ok)
 
-      val probe = TestProbe[Ok.type]
+      val probe = TestProbe[Ok.type]()
       sequencerActor ! ReadyToExecuteNext(probe.ref)
       probe.expectNoMessage(maxWaitForExpectNoMessage)
       finishStepWithSuccess()
@@ -886,7 +886,7 @@ class SequencerBehaviorTest extends ScalaTestWithActorTestKit with BaseTestSuite
       val sequencerSetup = SequencerTestSetup.inProgress(sequence)
       import sequencerSetup._
 
-      val probe = TestProbe[OkOrUnhandledResponse]
+      val probe = TestProbe[OkOrUnhandledResponse]()
       sequencerActor ! StepSuccess(probe.ref)
 
       assertCurrentSequence(
@@ -900,7 +900,7 @@ class SequencerBehaviorTest extends ScalaTestWithActorTestKit with BaseTestSuite
       import sequencerSetup._
 
       val message = "some"
-      val probe   = TestProbe[OkOrUnhandledResponse]
+      val probe   = TestProbe[OkOrUnhandledResponse]()
       sequencerActor ! StepFailure(message, probe.ref)
 
       assertCurrentSequence(
@@ -934,7 +934,7 @@ class SequencerBehaviorTest extends ScalaTestWithActorTestKit with BaseTestSuite
     "set and get log level for component name | ESW-183, ESW-127" in {
       val sequencerSetup = SequencerTestSetup.inProgress(sequence)
       import sequencerSetup._
-      val logMetadataProbe = TestProbe[LogMetadata]
+      val logMetadataProbe = TestProbe[LogMetadata]()
 
       sequencerActor ! GetComponentLogMetadata(logMetadataProbe.ref)
 
@@ -969,7 +969,7 @@ class SequencerBehaviorTest extends ScalaTestWithActorTestKit with BaseTestSuite
     forAll(testCases) { (stateName, testSetup) =>
       s"get sequence component name in $stateName state | ESW-255" in {
         import testSetup._
-        val sequenceComponentRef = TestProbe[AkkaLocation]
+        val sequenceComponentRef = TestProbe[AkkaLocation]()
 
         sequencerActor ! GetSequenceComponent(sequenceComponentRef.ref)
 
@@ -1156,7 +1156,7 @@ class SequencerBehaviorTest extends ScalaTestWithActorTestKit with BaseTestSuite
       val sequencerSetup                                  = SequencerTestSetup.offline(sequence)(actorSystem)
       import sequencerSetup._
 
-      val probe = TestProbe[Ok.type]
+      val probe = TestProbe[Ok.type]()
       sequencerActor ! Shutdown(probe.ref)
       probe.expectMessage(Ok)
       probe.expectTerminated(sequencerActor)
@@ -1167,7 +1167,7 @@ class SequencerBehaviorTest extends ScalaTestWithActorTestKit with BaseTestSuite
       val sequencerSetup                                  = SequencerTestSetup.loaded(sequence)(actorSystem)
       import sequencerSetup._
 
-      val probe = TestProbe[Ok.type]
+      val probe = TestProbe[Ok.type]()
       sequencerActor ! Shutdown(probe.ref)
       probe.expectMessage(Ok)
       probe.expectTerminated(sequencerActor)
@@ -1181,7 +1181,7 @@ class SequencerBehaviorTest extends ScalaTestWithActorTestKit with BaseTestSuite
       loadAndStartSequenceThenAssertInProgress()
       assertSequencerState(InProgress) // Initial state InProgres
 
-      val probe = TestProbe[Ok.type]
+      val probe = TestProbe[Ok.type]()
       sequencerActor ! Shutdown(probe.ref)
       probe.expectMessage(Ok)
       probe.expectTerminated(sequencerActor)

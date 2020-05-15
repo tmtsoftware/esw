@@ -56,7 +56,7 @@ class CommandGatewayTest extends EswTestKit(EventServer, Gateway) with GatewayCo
       commandService.oneway(command).futureValue shouldBe an[Accepted]
 
       //submit-setup-command-subscription
-      val testProbe    = TestProbe[Event]
+      val testProbe    = TestProbe[Event]()
       val subscription = eventService.defaultSubscriber.subscribeActorRef(Set(eventKey), testProbe.ref)
       subscription.ready().futureValue
       testProbe.expectMessageType[SystemEvent] // discard invalid event
@@ -87,7 +87,7 @@ class CommandGatewayTest extends EswTestKit(EventServer, Gateway) with GatewayCo
       val commandService = clientFactory.component(componentId)
 
       //submit-setup-command-subscription
-      val testProbe    = TestProbe[Event]
+      val testProbe    = TestProbe[Event]()
       val subscription = eventService.defaultSubscriber.subscribeActorRef(Set(eventKey), testProbe.ref)
       subscription.ready().futureValue
       testProbe.expectMessageType[SystemEvent]

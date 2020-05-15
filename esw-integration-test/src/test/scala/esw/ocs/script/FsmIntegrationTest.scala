@@ -24,8 +24,8 @@ class FsmIntegrationTest extends EswTestKit(EventServer) {
       val tempFsmKey = EventKey("esw.temperatureFsm.state")
       val stateKey   = StringKey.make("state")
 
-      val mainFsmStateProbe = TestProbe[String]
-      val tempFsmStateProbe = TestProbe[String]
+      val mainFsmStateProbe = TestProbe[String]()
+      val tempFsmStateProbe = TestProbe[String]()
 
       eventSubscriber
         .subscribeCallback(
@@ -75,7 +75,7 @@ class FsmIntegrationTest extends EswTestKit(EventServer) {
     "pass parameters to next state via become | ESW-246, ESW-251, ESW-252, ESW-142" in {
       val temperatureFsmKey = IntKey.make("temperatureFsm")
       val commandKey        = KeyType.IntKey.make("command")
-      val fsmStateProbe     = TestProbe[Int]
+      val fsmStateProbe     = TestProbe[Int]()
 
       eventSubscriber
         .subscribeCallback(
@@ -111,7 +111,7 @@ class FsmIntegrationTest extends EswTestKit(EventServer) {
 
     "command flag should trigger FSM bind to it | ESW-246, ESW-251, ESW-252, ESW-142" in {
       val observeFsmKey = IntKey.make("observe")
-      val fsmStateProbe = TestProbe[Int]
+      val fsmStateProbe = TestProbe[Int]()
 
       eventSubscriber
         .subscribeCallback(
@@ -140,7 +140,7 @@ class FsmIntegrationTest extends EswTestKit(EventServer) {
       val observingMode              = "MoonNight"
       val fsmSequencer: SequencerApi = spawnSequencerProxy(subsystem, observingMode)
       val command1                   = Setup(Prefix("esw.test"), CommandName("start-param-fsm"), None)
-      val probe                      = TestProbe[Event]
+      val probe                      = TestProbe[Event]()
 
       eventSubscriber.subscribeActorRef(Set(EventKey("tcs.polling.param-var-test")), probe.ref)
 
@@ -158,7 +158,7 @@ class FsmIntegrationTest extends EswTestKit(EventServer) {
 
       val fsmSequencer: SequencerApi = spawnSequencerProxy(subsystem, observingMode)
       val command1                   = Setup(Prefix("esw.test"), CommandName("start-event-fsm"), None)
-      val probe                      = TestProbe[Event]
+      val probe                      = TestProbe[Event]()
 
       eventSubscriber.subscribeActorRef(Set(EventKey("tcs.polling.event-var-test")), probe.ref)
 

@@ -21,7 +21,7 @@ class LocationScriptIntegrationTest extends EswTestKit(EventServer) {
     val locationKey              = StringKey.make("locationResponse")
     val locationResponseEventKey = EventKey("iris.motor.location_response")
 
-    val probe = TestProbe[String]
+    val probe = TestProbe[String]()
 
     eventSubscriber
       .subscribeCallback(

@@ -15,8 +15,8 @@ class SequencerBehaviorIntegrationTest extends EswTestKit {
   "Sequencer" must {
     "not receive sequence when already processing a sequence | ESW-145" in {
       val command                   = Setup(Prefix("TCS.test"), CommandName("test-sequencer-hierarchy"), None)
-      val submitResponseProbe       = TestProbe[SequencerSubmitResponse]
-      val loadSequenceResponseProbe = TestProbe[OkOrUnhandledResponse]
+      val submitResponseProbe       = TestProbe[SequencerSubmitResponse]()
+      val loadSequenceResponseProbe = TestProbe[OkOrUnhandledResponse]()
       val sequence                  = Sequence(command)
       val ocsSequencer              = spawnSequencerRef(ocsSubsystem, ocsObservingMode)
 

@@ -20,7 +20,7 @@ class CommandUtilTest extends ScalaTestWithActorTestKit with BaseTestSuite {
   private val prefix              = Prefix(ESW, "trombone")
   private val componentType       = ComponentType.Assembly
   private val connection          = AkkaConnection(ComponentId(prefix, componentType))
-  private val testRef             = TestProbe[ComponentMessage].ref
+  private val testRef             = TestProbe[ComponentMessage]().ref
   private val location            = AkkaLocation(connection, testRef.toURI)
 
   override protected def beforeEach(): Unit = {

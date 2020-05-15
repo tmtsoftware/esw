@@ -101,7 +101,7 @@ class GetComponentStatusTest extends ScalaTestWithActorTestKit with AnyWordSpecL
     "reply 'Stopping' when process is stopping | ESW-286" in {
       val agentActorRef = spawnAgentActor()
       val spawner       = TestProbe[SpawnResponse]()
-      val killer        = TestProbe[KillResponse]
+      val killer        = TestProbe[KillResponse]()
       val probe         = TestProbe[ComponentStatus]()
 
       mockSuccessfulProcess(5.seconds)
@@ -176,7 +176,7 @@ class GetComponentStatusTest extends ScalaTestWithActorTestKit with AnyWordSpecL
     "reply 'Stopping' when process is stopping | ESW-286" in {
       val agentActorRef = spawnAgentActor()
       val spawner       = TestProbe[SpawnResponse]()
-      val killer        = TestProbe[KillResponse]
+      val killer        = TestProbe[KillResponse]()
       val probe         = TestProbe[ComponentStatus]()
 
       mockSuccessfulProcess(5.seconds)

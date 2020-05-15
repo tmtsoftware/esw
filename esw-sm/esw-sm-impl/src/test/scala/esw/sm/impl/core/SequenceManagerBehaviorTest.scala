@@ -59,7 +59,7 @@ class SequenceManagerBehaviorTest extends ScalaTestWithActorTestKit with BaseTes
       val configResponse = Success(httpLocation)
       when(locationServiceUtil.listAkkaLocationsBy(ESW, Sequencer)).thenReturn(future(1.seconds, Right(List.empty)))
       when(sequencerUtil.startSequencers(Darknight, darknightSequencers)).thenReturn(Future.successful(configResponse))
-      val configureProbe = createTestProbe[ConfigureResponse]
+      val configureProbe = createTestProbe[ConfigureResponse]()
 
       // STATE TRANSITION: Idle -> Configure() -> ConfigurationInProcess -> Idle
       assertState(Idle)
@@ -76,7 +76,7 @@ class SequenceManagerBehaviorTest extends ScalaTestWithActorTestKit with BaseTes
       when(locationServiceUtil.listAkkaLocationsBy(ESW, Sequencer))
         .thenReturn(Future.successful(Left(RegistrationListingFailed("Sequencer"))))
 
-      val probe = createTestProbe[ConfigureResponse]
+      val probe = createTestProbe[ConfigureResponse]()
       smRef ! Configure(Darknight, probe.ref)
 
       probe.expectMessage(LocationServiceError("Sequencer"))
@@ -87,7 +87,7 @@ class SequenceManagerBehaviorTest extends ScalaTestWithActorTestKit with BaseTes
       // this simulates that Clearskies observation is running
       val akkaLocation = AkkaLocation(AkkaConnection(ComponentId(Prefix(ESW, Clearskies), Sequencer)), new URI("uri"))
       when(locationServiceUtil.listAkkaLocationsBy(ESW, Sequencer)).thenReturn(Future.successful(Right(List(akkaLocation))))
-      val probe = createTestProbe[ConfigureResponse]
+      val probe = createTestProbe[ConfigureResponse]()
 
       // r2 is a conflicting resource between Darknight and Clearskies observations
       smRef ! Configure(Darknight, probe.ref)
@@ -100,7 +100,7 @@ class SequenceManagerBehaviorTest extends ScalaTestWithActorTestKit with BaseTes
     "return ConfigurationMissing error when config for given obsMode is missing | ESW-164" in {
       val akkaLocation = AkkaLocation(AkkaConnection(ComponentId(Prefix(ESW, RandomObsMode), Sequencer)), new URI("uri"))
       when(locationServiceUtil.listAkkaLocationsBy(ESW, Sequencer)).thenReturn(Future.successful(Right(List(akkaLocation))))
-      val probe = createTestProbe[ConfigureResponse]
+      val probe = createTestProbe[ConfigureResponse]()
 
       smRef ! Configure(RandomObsMode, probe.ref)
 
@@ -114,7 +114,7 @@ class SequenceManagerBehaviorTest extends ScalaTestWithActorTestKit with BaseTes
     "transition sm from Idle -> CleaningInProcess -> Idle state and stop all the sequencer for given obs mode | ESW-166" in {
       when(sequencerUtil.stopSequencers(darknightSequencers, Darknight)).thenReturn(future(1.seconds, Right(Done)))
 
-      val cleanupProbe = createTestProbe[CleanupResponse]
+      val cleanupProbe = createTestProbe[CleanupResponse]()
 
       assertState(Idle)
       smRef ! Cleanup(Darknight, cleanupProbe.ref)
@@ -130,7 +130,7 @@ class SequenceManagerBehaviorTest extends ScalaTestWithActorTestKit with BaseTes
       when(sequencerUtil.stopSequencers(darknightSequencers, Darknight))
         .thenReturn(Future.successful(Left(RegistrationListingFailed(failureMsg))))
 
-      val probe = createTestProbe[CleanupResponse]
+      val probe = createTestProbe[CleanupResponse]()
       smRef ! Cleanup(Darknight, probe.ref)
 
       probe.expectMessage(LocationServiceError(failureMsg))
@@ -138,7 +138,7 @@ class SequenceManagerBehaviorTest extends ScalaTestWithActorTestKit with BaseTes
     }
 
     "return ConfigurationMissing error when config for given obsMode is missing | ESW-166" in {
-      val probe = createTestProbe[CleanupResponse]
+      val probe = createTestProbe[CleanupResponse]()
       smRef ! Cleanup(RandomObsMode, probe.ref)
 
       probe.expectMessage(ConfigurationMissing(RandomObsMode))
@@ -146,7 +146,7 @@ class SequenceManagerBehaviorTest extends ScalaTestWithActorTestKit with BaseTes
   }
 
   private def assertState(state: SequenceManagerState) = {
-    val stateProbe = TestProbe[SequenceManagerState]
+    val stateProbe = TestProbe[SequenceManagerState]()
     eventually {
       smRef ! GetSequenceManagerState(stateProbe.ref)
       stateProbe.expectMessage(state)

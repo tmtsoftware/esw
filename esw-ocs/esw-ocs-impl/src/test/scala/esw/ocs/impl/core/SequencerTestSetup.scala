@@ -45,7 +45,7 @@ class SequencerTestSetup(sequence: Sequence)(implicit system: ActorSystem[_]) {
   private val logger          = mock[Logger]
   private val sequenceComponent: AkkaLocation = AkkaLocation(
     AkkaConnection(ComponentId(Prefix(ESW, "primary"), SequenceComponent)),
-    TestProbe[SequenceComponentMsg].ref.toURI
+    TestProbe[SequenceComponentMsg]().ref.toURI
   )
   private def mockShutdownHttpService: () => Future[Done.type] = () => Future { Done }
   when(locationService.unregister(AkkaConnection(componentId))).thenReturn(Future.successful(Done))
@@ -63,19 +63,19 @@ class SequencerTestSetup(sequence: Sequence)(implicit system: ActorSystem[_]) {
   private val completionPromise = Promise[SubmitResponse]()
 
   def loadSequenceAndAssertResponse(expected: OkOrUnhandledResponse): Unit = {
-    val probe = TestProbe[OkOrUnhandledResponse]
+    val probe = TestProbe[OkOrUnhandledResponse]()
     sequencerActor ! LoadSequence(sequence, probe.ref)
     probe.expectMessage(expected)
   }
 
   def loadAndStartSequenceThenAssertInProgress(): Assertion = {
-    val probe = TestProbe[SequencerSubmitResponse]
+    val probe = TestProbe[SequencerSubmitResponse]()
 
     when { script.executeNewSequenceHandler() }.thenAnswer(Future.successful(Done))
 
     sequencerActor ! SubmitSequenceInternal(sequence, probe.ref)
 
-    val p: TestProbe[Option[StepList]] = TestProbe[Option[StepList]]
+    val p: TestProbe[Option[StepList]] = TestProbe[Option[StepList]]()
     eventually {
       sequencerActor ! GetSequence(p.ref)
       val stepList = p.expectMessageType[Option[StepList]]
@@ -85,7 +85,7 @@ class SequencerTestSetup(sequence: Sequence)(implicit system: ActorSystem[_]) {
 
   def pullAllStepsAndAssertSequenceIsFinished(): Assertion = {
     eventually {
-      val probe = TestProbe[Option[StepList]]
+      val probe = TestProbe[Option[StepList]]()
       sequencerActor ! GetSequence(probe.ref)
       probe.expectMessageType[Option[StepList]]
     }
@@ -95,7 +95,7 @@ class SequencerTestSetup(sequence: Sequence)(implicit system: ActorSystem[_]) {
   }
 
   def assertSequenceNotStarted(): Assertion = {
-    val p: TestProbe[Option[StepList]] = TestProbe[Option[StepList]]
+    val p: TestProbe[Option[StepList]] = TestProbe[Option[StepList]]()
     sequencerActor ! GetSequence(p.ref)
     eventually {
       val stepList = p.expectMessageType[Option[StepList]]
@@ -105,7 +105,7 @@ class SequencerTestSetup(sequence: Sequence)(implicit system: ActorSystem[_]) {
   }
 
   def assertSequenceNotStartedAndLoaded(): Assertion = {
-    val p: TestProbe[Option[StepList]] = TestProbe[Option[StepList]]
+    val p: TestProbe[Option[StepList]] = TestProbe[Option[StepList]]()
     sequencerActor ! GetSequence(p.ref)
     eventually {
       val stepList = p.expectMessageType[Option[StepList]]
@@ -114,7 +114,7 @@ class SequencerTestSetup(sequence: Sequence)(implicit system: ActorSystem[_]) {
   }
 
   def assertCurrentSequence(expected: Option[StepList]): Unit = {
-    val probe = TestProbe[Option[StepList]]
+    val probe = TestProbe[Option[StepList]]()
     sequencerActor ! GetSequence(probe.ref)
     val message = probe.receiveMessage()
 
@@ -137,7 +137,7 @@ class SequencerTestSetup(sequence: Sequence)(implicit system: ActorSystem[_]) {
   def assertCurrentSequence(expected: StepList): Unit = assertCurrentSequence(Some(expected))
 
   def assertEngineCanExecuteNext(isReadyToExecuteNext: Boolean): Unit = {
-    val probe = TestProbe[Ok.type]
+    val probe = TestProbe[Ok.type]()
     sequencerActor ! ReadyToExecuteNext(probe.ref)
     if (isReadyToExecuteNext) {
       probe.expectMessage(Ok)
@@ -154,8 +154,8 @@ class SequencerTestSetup(sequence: Sequence)(implicit system: ActorSystem[_]) {
       response: OkOrUnhandledResponse,
       expectedState: SequencerState[SequencerMsg]
   ): TestProbe[OkOrUnhandledResponse] = {
-    val probe                          = TestProbe[OkOrUnhandledResponse]
-    val p: TestProbe[Option[StepList]] = TestProbe[Option[StepList]]
+    val probe                          = TestProbe[OkOrUnhandledResponse]()
+    val p: TestProbe[Option[StepList]] = TestProbe[Option[StepList]]()
 
     when(script.executeAbort()).thenReturn(Future.successful(Done))
     sequencerActor ! AbortSequence(probe.ref)
@@ -184,8 +184,8 @@ class SequencerTestSetup(sequence: Sequence)(implicit system: ActorSystem[_]) {
       response: OkOrUnhandledResponse,
       expectedState: SequencerState[SequencerMsg]
   ): TestProbe[OkOrUnhandledResponse] = {
-    val probe                          = TestProbe[OkOrUnhandledResponse]
-    val p: TestProbe[Option[StepList]] = TestProbe[Option[StepList]]
+    val probe                          = TestProbe[OkOrUnhandledResponse]()
+    val p: TestProbe[Option[StepList]] = TestProbe[Option[StepList]]()
 
     when(script.executeStop()).thenReturn(Future.successful(Done))
     sequencerActor ! Stop(probe.ref)
@@ -211,19 +211,19 @@ class SequencerTestSetup(sequence: Sequence)(implicit system: ActorSystem[_]) {
   }
 
   def pauseAndAssertResponse(response: PauseResponse): PauseResponse = {
-    val probe = TestProbe[PauseResponse]
+    val probe = TestProbe[PauseResponse]()
     sequencerActor ! Pause(probe.ref)
     probe.expectMessage(response)
   }
 
   def resumeAndAssertResponse(response: OkOrUnhandledResponse): OkOrUnhandledResponse = {
-    val probe = TestProbe[OkOrUnhandledResponse]
+    val probe = TestProbe[OkOrUnhandledResponse]()
     sequencerActor ! Resume(probe.ref)
     probe.expectMessage(response)
   }
 
   def resetAndAssertResponse(response: OkOrUnhandledResponse): OkOrUnhandledResponse = {
-    val probe = TestProbe[OkOrUnhandledResponse]
+    val probe = TestProbe[OkOrUnhandledResponse]()
     sequencerActor ! Reset(probe.ref)
     probe.expectMessage(response)
   }
@@ -247,7 +247,7 @@ class SequencerTestSetup(sequence: Sequence)(implicit system: ActorSystem[_]) {
   }
 
   def goOfflineAndAssertResponse(response: GoOfflineResponse): GoOfflineResponse = {
-    val probe = TestProbe[GoOfflineResponse]
+    val probe = TestProbe[GoOfflineResponse]()
     sequencerActor ! GoOffline(probe.ref)
     probe.expectMessage(response)
   }
@@ -255,7 +255,7 @@ class SequencerTestSetup(sequence: Sequence)(implicit system: ActorSystem[_]) {
   def goOnlineAndAssertResponse(response: GoOnlineResponse, handlerMockResponse: Future[Done]): GoOnlineResponse = {
     when(script.executeGoOnline()).thenReturn(handlerMockResponse)
 
-    val probe = TestProbe[GoOnlineResponse]
+    val probe = TestProbe[GoOnlineResponse]()
     sequencerActor ! GoOnline(probe.ref)
     probe.expectMessage(response)
   }
@@ -268,7 +268,7 @@ class SequencerTestSetup(sequence: Sequence)(implicit system: ActorSystem[_]) {
   ): DiagnosticModeResponse = {
     when(script.executeDiagnosticMode(startTime, hint)).thenReturn(handlerMockResponse)
 
-    val probe = TestProbe[DiagnosticModeResponse]
+    val probe = TestProbe[DiagnosticModeResponse]()
     sequencerActor ! DiagnosticMode(startTime, hint, probe.ref)
 
     verify(script, timeout(1000)).executeDiagnosticMode(startTime, hint)
@@ -281,7 +281,7 @@ class SequencerTestSetup(sequence: Sequence)(implicit system: ActorSystem[_]) {
   ): OperationsModeResponse = {
     when(script.executeOperationsMode()).thenReturn(handlerMockResponse)
 
-    val probe = TestProbe[OperationsModeResponse]
+    val probe = TestProbe[OperationsModeResponse]()
     sequencerActor ! OperationsMode(probe.ref)
 
     verify(script, timeout(1000)).executeOperationsMode()
@@ -289,13 +289,13 @@ class SequencerTestSetup(sequence: Sequence)(implicit system: ActorSystem[_]) {
   }
 
   def mayBeNextAndAssertResponse(response: Option[Step]): Option[Step] = {
-    val probe = TestProbe[Option[Step]]
+    val probe = TestProbe[Option[Step]]()
     sequencerActor ! MaybeNext(probe.ref)
     probe.expectMessageType[Option[Step]]
   }
 
   def assertSequencerState(response: SequencerState[SequencerMsg]): SequencerState[SequencerMsg] = {
-    val probe = TestProbe[SequencerState[SequencerMsg]]
+    val probe = TestProbe[SequencerState[SequencerMsg]]()
     eventually {
       sequencerActor ! GetSequencerState(probe.ref)
       probe.expectMessage(response)
@@ -306,7 +306,7 @@ class SequencerTestSetup(sequence: Sequence)(implicit system: ActorSystem[_]) {
       state: SequencerState[SequencerMsg],
       msg: ActorRef[T] => UnhandleableSequencerMessage
   ): Unit = {
-    val probe            = TestProbe[T]
+    val probe            = TestProbe[T]()
     val sequencerMessage = msg(probe.ref)
     sequencerActor ! sequencerMessage
     probe.expectMessage(Unhandled(state.entryName, sequencerMessage.getClass.getSimpleName))
@@ -319,7 +319,7 @@ class SequencerTestSetup(sequence: Sequence)(implicit system: ActorSystem[_]) {
     msgs.foreach(assertUnhandled(state, _))
 
   def assertSequenceIsFinished(): Assertion = {
-    val probe = TestProbe[Option[StepList]]
+    val probe = TestProbe[Option[StepList]]()
     sequencerActor ! GetSequence(probe.ref)
     val stepList = probe.expectMessageType[Option[StepList]]
     val finished = stepList.get.isFinished
@@ -331,13 +331,13 @@ class SequencerTestSetup(sequence: Sequence)(implicit system: ActorSystem[_]) {
   }
 
   def pullNextCommand(): PullNextResult = {
-    val probe = TestProbe[PullNextResponse]
+    val probe = TestProbe[PullNextResponse]()
     sequencerActor ! PullNext(probe.ref)
     probe.expectMessageType[PullNextResult]
   }
 
   def startPullNext(): Unit = {
-    val probe = TestProbe[PullNextResponse]
+    val probe = TestProbe[PullNextResponse]()
     sequencerActor ! PullNext(probe.ref)
   }
 
@@ -356,7 +356,7 @@ class SequencerTestSetup(sequence: Sequence)(implicit system: ActorSystem[_]) {
   }
 
   def getSequence(): Option[StepList] = {
-    val probe = TestProbe[Option[StepList]]
+    val probe = TestProbe[Option[StepList]]()
     sequencerActor ! GetSequence(probe.ref)
     probe.expectMessageType[Option[StepList]]
   }
@@ -411,7 +411,7 @@ object SequencerTestSetup {
 
     when { script.executeNewSequenceHandler() }.thenAnswer(Future.successful(Done))
 
-    val probe = TestProbe[SubmitResponse]
+    val probe = TestProbe[SubmitResponse]()
     sequencerActor ! SubmitSequence(sequence, probe.ref)
     Thread.sleep(100)
     pullAllStepsAndAssertSequenceIsFinished()

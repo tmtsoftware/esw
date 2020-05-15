@@ -52,7 +52,7 @@ class AdminGatewayTest extends EswTestKit(Gateway) with GatewayCodecs {
   private val laserConnection                                          = AkkaConnection(ComponentId(Prefix(Subsystem.TCS, "Laser"), Assembly))
   private val motionControllerConnection                               = AkkaConnection(ComponentId(Prefix(Subsystem.TCS, "Motion_Controller"), HCD))
   private val galilConnection                                          = AkkaConnection(ComponentId(Prefix(Subsystem.TCS, "Galil"), Assembly))
-  private val probe                                                    = TestProbe[OnewayResponse]
+  private val probe                                                    = TestProbe[OnewayResponse]()
   private val startLoggingCmd                                          = CommandName("StartLogging")
   private val prefix                                                   = Prefix("iris.command")
   private var containerActorSystem: ActorSystem[SpawnProtocol.Command] = _
@@ -86,13 +86,13 @@ class AdminGatewayTest extends EswTestKit(Gateway) with GatewayCodecs {
     val config       = ConfigFactory.load("laser_container.conf")
     val containerRef = spawnContainer(config)
 
-    val containerStateProbe = TestProbe[ContainerLifecycleState]
+    val containerStateProbe = TestProbe[ContainerLifecycleState]()
     assertThatContainerIsRunning(containerRef, containerStateProbe, 5.seconds)
     containerRef
   }
 
   def extractComponentsFromContainer(containerRef: ActorRef[ContainerMessage]): Unit = {
-    val probe = TestProbe[Components]
+    val probe = TestProbe[Components]()
     containerRef ! GetComponents(probe.ref)
     val components = probe.expectMessageType[Components].components
 

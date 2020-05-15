@@ -30,8 +30,8 @@ class LocationServiceUtilTest extends ScalaTestWithActorTestKit with BaseTestSui
   private val observingMode  = "darknight"
   private val prefix         = Prefix(subsystem, observingMode)
   private val uri            = new URI("uri")
+  private val registration   = mock[AkkaRegistration]
   private val akkaConnection = AkkaConnection(ComponentId(prefix, Sequencer))
-  private val registration   = AkkaRegistration(akkaConnection, uri)
   private val akkaLocation   = AkkaLocation(akkaConnection, uri)
 
   private val cswRegistrationListingFailed: CswRegistrationListingFailed = CswRegistrationListingFailed()

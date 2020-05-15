@@ -102,7 +102,7 @@ class WebsocketMetricsTest extends BaseTestSuite with ScalatestRouteTest with Ga
       expCounterValue: Double
   )(withMock: Promise[Res] => Unit) = {
     val wsClient = WSProbe()
-    val p        = Promise[Res]
+    val p        = Promise[Res]()
     withMock(p)
 
     WS("/websocket-endpoint", wsClient.flow) ~> wsRoute ~> check {

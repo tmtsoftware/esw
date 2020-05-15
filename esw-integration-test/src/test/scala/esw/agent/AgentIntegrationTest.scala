@@ -26,7 +26,7 @@ class AgentIntegrationTest extends EswTestKit(MachineAgent) with BeforeAndAfterA
 
     "return Spawned after spawning a new sequence component for a SpawnSequenceComponent message | ESW-237" in {
       val agentClient   = Await.result(AgentClient.make(agentPrefix, locationService), 7.seconds)
-      val seqCompPrefix = Prefix(s"esw.test_${Random.nextInt.abs}")
+      val seqCompPrefix = Prefix(s"esw.test_${Random.nextInt().abs}")
       val response      = Await.result(agentClient.spawnSequenceComponent(seqCompPrefix), askTimeout.duration)
       response should ===(Spawned)
       // Verify registration in location service
@@ -46,7 +46,7 @@ class AgentIntegrationTest extends EswTestKit(MachineAgent) with BeforeAndAfterA
 
     "return killedGracefully after killing a registered component for a KillComponent message | ESW-276" in {
       val agentClient   = Await.result(AgentClient.make(agentPrefix, locationService), 7.seconds)
-      val seqCompPrefix = Prefix(s"esw.test_${Random.nextInt.abs}")
+      val seqCompPrefix = Prefix(s"esw.test_${Random.nextInt().abs}")
       val spawnResponse = Await.result(agentClient.spawnSequenceComponent(seqCompPrefix), askTimeout.duration)
       spawnResponse should ===(Spawned)
       val killResponse =
@@ -60,7 +60,7 @@ class AgentIntegrationTest extends EswTestKit(MachineAgent) with BeforeAndAfterA
 
     "return killedForcefully after killing a registered component for a killComponent message | ESW-276" in {
       val agentClient   = Await.result(AgentClient.make(agentPrefix, locationService), 7.seconds)
-      val seqCompPrefix = Prefix(s"esw.test_${Random.nextInt.abs}_delay_exit")
+      val seqCompPrefix = Prefix(s"esw.test_${Random.nextInt().abs}_delay_exit")
       val spawnResponse = Await.result(agentClient.spawnSequenceComponent(seqCompPrefix), askTimeout.duration)
       spawnResponse should ===(Spawned)
       val killResponse =
@@ -74,7 +74,7 @@ class AgentIntegrationTest extends EswTestKit(MachineAgent) with BeforeAndAfterA
 
     "return Failed('Aborted') to original sender when someone kills a process while it is spawning | ESW-237, ESW-237" in {
       val agentClient    = Await.result(AgentClient.make(agentPrefix, locationService), 7.seconds)
-      val seqCompPrefix  = Prefix(s"esw.test_${Random.nextInt.abs}")
+      val seqCompPrefix  = Prefix(s"esw.test_${Random.nextInt().abs}")
       val spawnResponseF = agentClient.spawnSequenceComponent(seqCompPrefix)
       val killResponse =
         Await.result(agentClient.killComponent(ComponentId(seqCompPrefix, SequenceComponent)), askTimeout.duration)
@@ -89,14 +89,14 @@ class AgentIntegrationTest extends EswTestKit(MachineAgent) with BeforeAndAfterA
     "return status of components available on agent for a GetAgentStatus message | ESW-286" in {
       val agentClient = Await.result(AgentClient.make(agentPrefix, locationService), 7.seconds)
 
-      val seqCompPrefix        = Prefix(s"esw.test_${Random.nextInt.abs}_delay_exit")
+      val seqCompPrefix        = Prefix(s"esw.test_${Random.nextInt().abs}_delay_exit")
       val seqCompSpawnResponse = Await.result(agentClient.spawnSequenceComponent(seqCompPrefix), askTimeout.duration)
       seqCompSpawnResponse should ===(Spawned)
       val seqComponentId = ComponentId(seqCompPrefix, SequenceComponent)
       val seqCompStatus  = Await.result(agentClient.getComponentStatus(seqComponentId), 500.millis)
       seqCompStatus should ===(Running)
 
-      val redisPrefix        = Prefix(s"esw.test_${Random.nextInt.abs}_delay_exit")
+      val redisPrefix        = Prefix(s"esw.test_${Random.nextInt().abs}_delay_exit")
       val redisSpawnResponse = Await.result(agentClient.spawnRedis(redisPrefix, 100, List.empty), askTimeout.duration)
       redisSpawnResponse should ===(Spawned)
       val redisCompId     = ComponentId(redisPrefix, Service)

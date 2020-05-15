@@ -171,7 +171,7 @@ class SequencerClientIntegrationTest extends EswTestKit(EventServer) {
     //#################
 
     // creating subscriber for offline event
-    val testProbe                = TestProbe[Event]
+    val testProbe                = TestProbe[Event]()
     val offlineKey               = EventKey("tcs.test.offline")
     val offlineEventSubscription = eventSubscriber.subscribeActorRef(Set(offlineKey), testProbe.ref)
     offlineEventSubscription.ready().futureValue
@@ -271,7 +271,7 @@ class SequencerClientIntegrationTest extends EswTestKit(EventServer) {
     val eventService       = new EventServiceFactory().make(HttpLocationServiceFactory.makeLocalClient)
     val diagnosticEventKey = EventKey(Prefix("tcs.test"), EventName("diagnostic-data"))
 
-    val testProbe                   = TestProbe[Event]
+    val testProbe                   = TestProbe[Event]()
     val diagnosticEventSubscription = eventService.defaultSubscriber.subscribeActorRef(Set(diagnosticEventKey), testProbe.ref)
     diagnosticEventSubscription.ready().futureValue
     testProbe.expectMessageType[SystemEvent] // discard invalid event

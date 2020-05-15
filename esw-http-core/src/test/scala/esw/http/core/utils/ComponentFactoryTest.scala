@@ -38,7 +38,7 @@ class ComponentFactoryTest extends AnyWordSpec with MockitoSugar with Matchers w
   when(locationService.resolve(httpConnection, 5.seconds)).thenReturn(Future.successful(Some(httpLocation)))
 
   override protected def afterAll(): Unit = {
-    actorSystem.terminate
+    actorSystem.terminate()
     actorSystem.whenTerminated.futureValue
   }
 

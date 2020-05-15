@@ -42,11 +42,11 @@ class ExceptionsHandlerIntegrationTest extends EswTestKit(EventServer) {
 
     val idleStateTestCases: TableFor2[SequencerMsg, String] = Table.apply(
       ("sequencer msg", "failure msg"),
-      (SubmitSequence(setupSequence, TestProbe[SubmitResponse].ref), "handle-setup-failed"),
-      (SubmitSequence(observeSequence, TestProbe[SubmitResponse].ref), "handle-observe-failed"),
-      (GoOffline(TestProbe[GoOfflineResponse].ref), "handle-goOffline-failed"),
-      (OperationsMode(TestProbe[OperationsModeResponse].ref), "handle-operations-mode-failed"),
-      (DiagnosticMode(UTCTime.now(), "any", TestProbe[DiagnosticModeResponse].ref), "handle-diagnostic-mode-failed")
+      (SubmitSequence(setupSequence, TestProbe[SubmitResponse]().ref), "handle-setup-failed"),
+      (SubmitSequence(observeSequence, TestProbe[SubmitResponse]().ref), "handle-observe-failed"),
+      (GoOffline(TestProbe[GoOfflineResponse]().ref), "handle-goOffline-failed"),
+      (OperationsMode(TestProbe[OperationsModeResponse]().ref), "handle-operations-mode-failed"),
+      (DiagnosticMode(UTCTime.now(), "any", TestProbe[DiagnosticModeResponse]().ref), "handle-diagnostic-mode-failed")
     )
 
     forAll(idleStateTestCases) { (msg, failureMessage) =>
@@ -65,8 +65,8 @@ class ExceptionsHandlerIntegrationTest extends EswTestKit(EventServer) {
 //    ********* Test cases of InProgress state *************
     val inProgressStateTestCases: TableFor2[SequencerMsg, String] = Table.apply(
       ("sequencer msg", "failure msg"),
-      (Stop(TestProbe[OkOrUnhandledResponse].ref), "handle-stop-failed"),
-      (AbortSequence(TestProbe[OkOrUnhandledResponse].ref), "handle-abort-failed")
+      (Stop(TestProbe[OkOrUnhandledResponse]().ref), "handle-stop-failed"),
+      (AbortSequence(TestProbe[OkOrUnhandledResponse]().ref), "handle-abort-failed")
     )
 
     forAll(inProgressStateTestCases) { (msg, failureMessage) =>
@@ -179,7 +179,7 @@ class ExceptionsHandlerIntegrationTest extends EswTestKit(EventServer) {
   }
 
   private def createProbeFor(eventKey: EventKey): TestProbe[Event] = {
-    val testProbe    = TestProbe[Event]
+    val testProbe    = TestProbe[Event]()
     val subscription = eventSubscriber.subscribeActorRef(Set(eventKey), testProbe.ref)
     subscription.ready().futureValue
     testProbe.expectMessageType[SystemEvent] // discard msg

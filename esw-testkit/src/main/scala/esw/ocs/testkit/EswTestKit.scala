@@ -26,7 +26,7 @@ abstract class EswTestKit(services: Service*)
   }
 
   def createTestProbe(eventKeys: Set[EventKey]): TestProbe[Event] = {
-    val testProbe    = TestProbe[Event]
+    val testProbe    = TestProbe[Event]()
     val subscription = eventSubscriber.subscribeActorRef(eventKeys, testProbe.ref)
     subscription.ready().futureValue
     eventKeys.foreach(_ => testProbe.expectMessageType[SystemEvent]) // discard invalid event

@@ -40,7 +40,7 @@ class SequencerTest(mode: String) extends LSNodeSpec(config = new TwoMembersAndS
   private val sequence            = Sequence(command1, command2)
   private val sequenceComponentRef = AkkaLocation(
     AkkaConnection(ComponentId(Prefix(ESW, "primary"), SequenceComponent)),
-    TestProbe[SequenceComponentMsg].ref.toURI
+    TestProbe[SequenceComponentMsg]().ref.toURI
   )
 
   override def beforeAll(): Unit = {
@@ -60,7 +60,7 @@ class SequencerTest(mode: String) extends LSNodeSpec(config = new TwoMembersAndS
       enterBarrier("assembly-started")
 
       // creating subscriber for event which will be publish in onSubmit handler for sample assembly
-      val testProbe                 = TestProbe[Event]
+      val testProbe                 = TestProbe[Event]()
       val eventSubscriber           = ocsSequencerWiring.cswWiring.eventService.defaultSubscriber
       val multiJVMCommandEventKey   = EventKey("tcs.filter.wheel.setup-command-from-tcs-sequencer")
       val multiJVMEventSubscription = eventSubscriber.subscribeActorRef(Set(multiJVMCommandEventKey), testProbe.ref)
