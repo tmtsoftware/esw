@@ -15,14 +15,6 @@ import play.api.libs.json.{JsObject, Json}
 import scala.collection.mutable
 
 class TestAppender(callback: Any => Unit) extends LogAppenderBuilder {
-
-  /**
-   * A constructor for the TestAppender class.
-   *
-   * @param system    typed Actor System.
-   * @param stdHeaders the headers that are fixes for this service.
-   * @return the stdout appender.
-   */
   def apply(system: ActorSystem[_], stdHeaders: JsObject): StdOutAppender =
     new StdOutAppender(system, stdHeaders, callback)
 }
@@ -36,12 +28,9 @@ class LoggingGatewayTest extends EswTestKit with GatewayCodecs {
 
   override def beforeAll(): Unit = {
     super.beforeAll()
-    spawnGatewayWithLogging(List(testAppender))
-    logBuffer.clear()
-  }
-
-  override def afterAll(): Unit = {
-    super.afterAll()
+    val actorRuntime  = spawnGateway().wiring.cswWiring.actorRuntime
+    val loggingSystem = actorRuntime.startLogging("logging-gateway-test", "0.0.1")
+    loggingSystem.setAppenders(List(testAppender))
   }
 
   "LoggingApi" must {

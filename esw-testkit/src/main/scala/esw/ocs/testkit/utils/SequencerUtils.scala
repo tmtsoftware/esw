@@ -13,7 +13,7 @@ import esw.ocs.testkit.simulation.SimulationSequencerWiring
 
 import scala.collection.mutable
 
-trait SequencerUtils extends BaseTestSuite with LocationUtils {
+trait SequencerUtils extends LocationUtils {
 
   private val sequenceComponentLocations: mutable.Buffer[AkkaLocation] = mutable.Buffer.empty
 
