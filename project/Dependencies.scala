@@ -235,6 +235,7 @@ object Dependencies {
     Seq(
       Csw.`csw-location-api`.value,
       Akka.`akka-stream-typed`        % Provided,
+      Akka.`akka-remote`              % Test,
       Akka.`akka-actor-testkit-typed` % Test,
       Libs.`mockito-scala`            % Test,
       Libs.scalatest.value            % Test,

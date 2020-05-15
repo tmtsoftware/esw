@@ -5,13 +5,15 @@ import java.net.URI
 import akka.Done
 import akka.actor.CoordinatedShutdown
 import akka.actor.CoordinatedShutdown.UnknownReason
-import akka.actor.testkit.typed.scaladsl.ScalaTestWithActorTestKit
-import akka.actor.typed.ActorSystem
+import akka.actor.testkit.typed.scaladsl.{ScalaTestWithActorTestKit, TestProbe}
 import akka.actor.typed.scaladsl.Behaviors
+import akka.actor.typed.{ActorSystem, SpawnProtocol}
+import csw.location.api.AkkaRegistrationFactory
 import csw.location.api.exceptions.{OtherLocationIsRegistered, RegistrationListingFailed => CswRegistrationListingFailed}
+import csw.location.api.extensions.ActorExtension.RichActor
 import csw.location.api.models.ComponentType._
 import csw.location.api.models.Connection.AkkaConnection
-import csw.location.api.models.{AkkaLocation, AkkaRegistration, ComponentId}
+import csw.location.api.models.{AkkaLocation, ComponentId}
 import csw.location.api.scaladsl.{LocationService, RegistrationResult}
 import csw.prefix.models.Subsystem.{ESW, IRIS, TCS}
 import csw.prefix.models.{Prefix, Subsystem}
@@ -26,13 +28,16 @@ class LocationServiceUtilTest extends ScalaTestWithActorTestKit with BaseTestSui
   private val locationService       = mock[LocationService]
   implicit val ec: ExecutionContext = system.executionContext
 
+  // this only for creating TestProbe as the AkkaRegistration needs remote enabled actor Ref.
+  private val actorSystem: ActorSystem[SpawnProtocol.Command] = ActorSystem(SpawnProtocol(), "testSystem")
+
   private val subsystem      = TCS
   private val observingMode  = "darknight"
   private val prefix         = Prefix(subsystem, observingMode)
-  private val uri            = new URI("uri")
-  private val registration   = mock[AkkaRegistration]
+  private val uri            = TestProbe[Any]()(actorSystem).ref.toURI
   private val akkaConnection = AkkaConnection(ComponentId(prefix, Sequencer))
   private val akkaLocation   = AkkaLocation(akkaConnection, uri)
+  private val registration   = AkkaRegistrationFactory.make(akkaConnection, uri)
 
   private val cswRegistrationListingFailed: CswRegistrationListingFailed = CswRegistrationListingFailed()
   private val cswLocationServiceErrorMsg: String                         = cswRegistrationListingFailed.getMessage
@@ -42,6 +47,11 @@ class LocationServiceUtilTest extends ScalaTestWithActorTestKit with BaseTestSui
   override protected def beforeEach(): Unit = {
     super.beforeEach()
     reset(locationService)
+  }
+
+  protected override def afterAll(): Unit = {
+    super.afterAll()
+    actorSystem.terminate()
   }
 
   "register" must {

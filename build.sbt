@@ -82,7 +82,8 @@ lazy val `esw-ocs-impl` = project
   .in(file("esw-ocs/esw-ocs-impl"))
   .enablePlugins(MaybeCoverage, PublishBintray)
   .settings(
-    libraryDependencies ++= Dependencies.OcsImpl.value
+    libraryDependencies ++= Dependencies.OcsImpl.value,
+    fork in Test := true
   )
   .dependsOn(
     `esw-ocs-api`.jvm,
