@@ -98,7 +98,7 @@ class ExceptionsHandlerIntegrationTest extends EswTestKit(EventServer) {
       val sequencer = spawnSequencerProxy(ocsSubsystem, ocsObservingMode)
 
       val command  = Setup(Prefix("TCS.test"), CommandName("fail-setup"), None)
-      val sequence = Sequence(Seq(command))
+      val sequence = Sequence(command)
 
       val commandFailureMsg = "handle-setup-failed"
       val eventKey          = EventKey(prefix, EventName(commandFailureMsg))
@@ -115,7 +115,7 @@ class ExceptionsHandlerIntegrationTest extends EswTestKit(EventServer) {
 
       // assert that next sequence is accepted and executed properly
       val command1  = Setup(Prefix("TCS.test"), CommandName("successful-command"), None)
-      val sequence1 = Sequence(Seq(command1))
+      val sequence1 = Sequence(command1)
 
       sequencer.submitAndWait(sequence1).futureValue shouldBe a[Completed]
     }

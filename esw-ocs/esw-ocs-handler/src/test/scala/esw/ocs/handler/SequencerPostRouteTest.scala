@@ -40,7 +40,7 @@ class SequencerPostRouteTest extends BaseTestSuite with ScalatestRouteTest with 
 
   "SequencerRoutes" must {
     "return sequence for getSequence request | ESW-222" in {
-      val stepList = StepList(List.empty)
+      val stepList = mock[StepList]
       when(sequencer.getSequence).thenReturn(Future.successful(Some(stepList)))
 
       Post("/post-endpoint", GetSequence.narrow) ~> route ~> check {

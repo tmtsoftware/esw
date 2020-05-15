@@ -285,7 +285,7 @@ class PostRouteTest extends BaseTestSuite with ScalatestRouteTest with GatewayCo
           "city"            -> "LA"
         )
         verify(logger).fatal(argsEq("test-message"), argsEq(expectedMetadata), any[Throwable], any[AnyId])(
-          any[SourceFactory]
+          any[SourceFactory]()
         )
       }
     }
@@ -300,7 +300,7 @@ class PostRouteTest extends BaseTestSuite with ScalatestRouteTest with GatewayCo
       post(log) ~> route ~> check {
         responseAs[Done] shouldEqual Done
         verify(logger).fatal(argsEq("test-message"), argsEq(Map.empty), any[Throwable], any[AnyId])(
-          any[SourceFactory]
+          any[SourceFactory]()
         )
       }
     }

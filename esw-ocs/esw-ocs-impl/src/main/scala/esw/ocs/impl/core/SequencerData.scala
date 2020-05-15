@@ -96,18 +96,17 @@ private[core] case class SequencerData(
     this
   }
 
-  private def changeStepStatus(state: SequencerState[SequencerMsg], newStatus: StepStatus) = {
-    val newStepList = stepList.map(stepList => stepList.copy(steps = stepList.steps.map(_.withStatus(newStatus))))
+  private def changeStepStatus(newStatus: StepStatus) = {
+    val newStepList = stepList.map(stepList => StepList(stepList.steps.map(_.withStatus(newStatus))))
     copy(stepList = newStepList)
       .checkForSequenceCompletion()
       .notifyReadyToExecuteNextSubscriber()
   }
 
-  def stepSuccess(state: SequencerState[SequencerMsg]): SequencerData =
-    changeStepStatus(state, Success)
+  def stepSuccess(state: SequencerState[SequencerMsg]): SequencerData = changeStepStatus(Success)
 
   def stepFailure(message: String, state: SequencerState[SequencerMsg]): SequencerData =
-    changeStepStatus(state, Failure(message))
+    changeStepStatus(Failure(message))
 
   private def sendNextPendingStepIfAvailable(): SequencerData = {
     val maybeData = for {

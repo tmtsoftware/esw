@@ -17,7 +17,7 @@ class SequencerBehaviorIntegrationTest extends EswTestKit {
       val command                   = Setup(Prefix("TCS.test"), CommandName("test-sequencer-hierarchy"), None)
       val submitResponseProbe       = TestProbe[SequencerSubmitResponse]
       val loadSequenceResponseProbe = TestProbe[OkOrUnhandledResponse]
-      val sequence                  = Sequence(Seq(command))
+      val sequence                  = Sequence(command)
       val ocsSequencer              = spawnSequencerRef(ocsSubsystem, ocsObservingMode)
 
       ocsSequencer ! SubmitSequenceInternal(sequence, submitResponseProbe.ref)

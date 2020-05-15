@@ -1,6 +1,7 @@
 package esw.ocs.impl.internal
 
 import akka.actor.typed.{ActorRef, ActorSystem, SpawnProtocol}
+import csw.location.api.AkkaRegistrationFactory
 import csw.location.api.exceptions.OtherLocationIsRegistered
 import csw.location.api.extensions.ActorExtension.RichActor
 import csw.location.api.extensions.URIExtension.RichURI
@@ -54,7 +55,10 @@ class SequenceComponentRegistration(
       case (s, None)    => Prefix(s, s"${s}_${Random.between(1, 100)}")
     }
     sequenceComponentFactory(sequenceComponentPrefix).map { actorRef =>
-      AkkaRegistration(AkkaConnection(ComponentId(sequenceComponentPrefix, ComponentType.SequenceComponent)), actorRef.toURI)
+      AkkaRegistrationFactory.make(
+        AkkaConnection(ComponentId(sequenceComponentPrefix, ComponentType.SequenceComponent)),
+        actorRef.toURI
+      )
     }
   }
 }

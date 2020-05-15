@@ -76,7 +76,7 @@ class ScriptIntegrationTest extends EswTestKit(EventServer, AlarmServer, ConfigS
   "Sequencer Script" must {
     "be able to send sequence to other Sequencer by resolving location through TestScript | ESW-88, ESW-145, ESW-190, ESW-195, ESW-119, ESW-251, CSW-81" in {
       val command  = Setup(Prefix("esw.test"), CommandName("command-4"), None)
-      val sequence = Sequence(Seq(command))
+      val sequence = Sequence(command)
 
       tcsSequencer.getSequence.futureValue shouldBe None
 
@@ -158,7 +158,7 @@ class ScriptIntegrationTest extends EswTestKit(EventServer, AlarmServer, ConfigS
       publishF.futureValue
 
       val command  = Setup(Prefix("esw.test"), CommandName("get-event"), None)
-      val sequence = Sequence(Seq(command))
+      val sequence = Sequence(command)
 
       ocsSequencer.submitAndWait(sequence).futureValue shouldBe a[Completed]
 
@@ -172,7 +172,7 @@ class ScriptIntegrationTest extends EswTestKit(EventServer, AlarmServer, ConfigS
       val eventService = new EventServiceFactory().make(HttpLocationServiceFactory.makeLocalClient)
 
       val command  = Setup(Prefix("esw.test"), CommandName("on-event"), None)
-      val sequence = Sequence(Seq(command))
+      val sequence = Sequence(command)
 
       ocsSequencer.submitAndWait(sequence).futureValue shouldBe a[Completed]
 
@@ -195,7 +195,7 @@ class ScriptIntegrationTest extends EswTestKit(EventServer, AlarmServer, ConfigS
       val command1 = Setup(Prefix("LGSF.test"), CommandName("command-lgsf"), None)
       val command2 = Setup(Prefix("IRIS.test"), CommandName("command-1"), None)
       val command3 = Setup(Prefix("TCS.test"), CommandName("command-2"), None)
-      val sequence = Sequence(Seq(command1, command2, command3))
+      val sequence = Sequence(command1, command2, command3)
 
       val response = ocsSequencer.submitAndWait(sequence)
 
@@ -226,7 +226,7 @@ class ScriptIntegrationTest extends EswTestKit(EventServer, AlarmServer, ConfigS
       val command1 = Setup(Prefix("LGSF.test"), CommandName("command-lgsf"), None)
       val command2 = Setup(Prefix("IRIS.test"), CommandName("command-1"), None)
       val command3 = Setup(Prefix("TCS.test"), CommandName("command-2"), None)
-      val sequence = Sequence(Seq(command1, command2, command3))
+      val sequence = Sequence(command1, command2, command3)
 
       val response = ocsSequencer.submitAndWait(sequence)
 
@@ -257,7 +257,7 @@ class ScriptIntegrationTest extends EswTestKit(EventServer, AlarmServer, ConfigS
       val currentState2EventKey = EventKey(Prefix("tcs.filter.wheel"), EventName("publish-stateName2"))
 
       val command  = Setup(Prefix("IRIS.test"), CommandName("command-for-assembly"), None)
-      val sequence = Sequence(Seq(command))
+      val sequence = Sequence(command)
 
       val testProbe =
         createTestProbe(Set(eventKey, startedEventKey, completedEventKey, currentState1EventKey, currentState2EventKey))
@@ -289,7 +289,7 @@ class ScriptIntegrationTest extends EswTestKit(EventServer, AlarmServer, ConfigS
       val eventKey = EventKey(Prefix("esw.schedule.once"), EventName("offset"))
 
       val command  = Setup(Prefix("IRIS.test"), CommandName("schedule-once-from-now"), None)
-      val sequence = Sequence(Seq(command))
+      val sequence = Sequence(command)
 
       val testProbe = createTestProbe(Set(eventKey))
 
@@ -307,7 +307,7 @@ class ScriptIntegrationTest extends EswTestKit(EventServer, AlarmServer, ConfigS
       val eventKey = EventKey(Prefix("esw.schedule.periodically"), EventName("offset"))
 
       val command  = Setup(Prefix("IRIS.test"), CommandName("schedule-periodically-from-now"), None)
-      val sequence = Sequence(Seq(command))
+      val sequence = Sequence(command)
 
       val testProbe = createTestProbe(Set(eventKey))
 
@@ -342,7 +342,7 @@ class ScriptIntegrationTest extends EswTestKit(EventServer, AlarmServer, ConfigS
 
       val existConfigCommand = Setup(Prefix("WFOS.test"), CommandName("check-config"), None)
       val getConfigCommand   = Setup(Prefix("WFOS.test"), CommandName("get-config-data"), None)
-      val sequence           = Sequence(Seq(existConfigCommand, getConfigCommand))
+      val sequence           = Sequence(existConfigCommand, getConfigCommand)
 
       ocsSequencer.submitAndWait(sequence).futureValue shouldBe a[Completed]
 
@@ -362,7 +362,7 @@ class ScriptIntegrationTest extends EswTestKit(EventServer, AlarmServer, ConfigS
     "be able to handle unexpected exception and finish the sequence | ESW-241, CSW-81" in {
       val command1 = Setup(Prefix("esw.test"), CommandName("check-exception-1"), None)
       val command2 = Setup(Prefix("esw.test"), CommandName("check-exception-2"), None)
-      val sequence = Sequence(Seq(command1, command2))
+      val sequence = Sequence(command1, command2)
 
       val response = ocsSequencer.submitAndWait(sequence).futureValue
       response shouldBe an[Error]

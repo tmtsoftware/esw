@@ -11,6 +11,7 @@ import csw.aas.http.SecurityDirectives
 import csw.alarm.api.javadsl.IAlarmService
 import csw.command.client.messages.sequencer.SequencerMsg
 import csw.event.client.internal.commons.javawrappers.JEventService
+import csw.location.api.AkkaRegistrationFactory
 import csw.location.api.extensions.ActorExtension.RichActor
 import csw.location.api.javadsl.ILocationService
 import csw.location.api.models.Connection.AkkaConnection
@@ -136,7 +137,7 @@ private[ocs] class SequencerWiring(
 
         Await.result(httpService.registeredLazyBinding, Timeouts.DefaultTimeout)
 
-        val registration = AkkaRegistration(AkkaConnection(componentId), sequencerRef.toURI)
+        val registration = AkkaRegistrationFactory.make(AkkaConnection(componentId), sequencerRef.toURI)
         val loc = Await.result(
           locationServiceUtil
             .register(

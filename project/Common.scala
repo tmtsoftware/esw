@@ -19,39 +19,42 @@ object Common extends AutoPlugin {
   override def requires = JvmPlugin
 
   import autoImport._
-  override def globalSettings: Seq[Setting[_]] = Seq(
-    dependencyOverrides += AkkaHttp.`akka-http-spray-json`,
-    organization := "com.github.tmtsoftware.esw",
-    organizationName := "TMT Org",
-    scalaVersion := EswKeys.scalaVersion,
-    scmInfo := Some(
-      ScmInfo(url(EswKeys.homepageValue), "git@github.com:tmtsoftware/esw.git")
-    ),
-    // ======== sbt-docs Settings =========
-    docsRepo := "https://github.com/tmtsoftware/tmtsoftware.github.io.git",
-    docsParentDir := EswKeys.projectName,
-    gitCurrentRepo := "https://github.com/tmtsoftware/esw",
-    // ================================
-    resolvers += "jitpack" at "https://jitpack.io",
-    resolvers += "bintray" at "https://jcenter.bintray.com",
-    resolvers += Resolver.bintrayRepo("lonelyplanet", "maven"),
-    resolvers += Resolver.mavenLocal, // required to resolve kotlin `examples` deps published locally
-    autoCompilerPlugins := true,
-    enableFatalWarnings := false,
-    scalacOptions ++= Seq(
-      "-encoding",
-      "UTF-8",
-      "-feature",
-      "-unchecked",
-      "-deprecation",
-      if (enableFatalWarnings.value) "-Xfatal-warnings" else "",
-      "-Xlint:_,-missing-interpolator",
-      "-Ywarn-dead-code"
-      //      "-Xfuture"
-      //      "-Xprint:typer"
-    ),
-    licenses := Seq(("Apache-2.0", url("http://www.apache.org/licenses/LICENSE-2.0")))
-  )
+  override def globalSettings: Seq[Setting[_]] =
+    Seq(
+      dependencyOverrides += AkkaHttp.`akka-http-spray-json`,
+      organization := "com.github.tmtsoftware.esw",
+      organizationName := "TMT Org",
+      scalaVersion := EswKeys.scalaVersion,
+      scmInfo := Some(
+        ScmInfo(url(EswKeys.homepageValue), "git@github.com:tmtsoftware/esw.git")
+      ),
+      // ======== sbt-docs Settings =========
+      docsRepo := "https://github.com/tmtsoftware/tmtsoftware.github.io.git",
+      docsParentDir := EswKeys.projectName,
+      gitCurrentRepo := "https://github.com/tmtsoftware/esw",
+      // ================================
+      resolvers += "jitpack" at "https://jitpack.io",
+      resolvers += "bintray" at "https://jcenter.bintray.com",
+      resolvers += Resolver.bintrayRepo("lonelyplanet", "maven"),
+      resolvers += Resolver.mavenLocal, // required to resolve kotlin `examples` deps published locally
+      autoCompilerPlugins := true,
+      enableFatalWarnings := false,
+      scalacOptions ++= Seq(
+        "-encoding",
+        "UTF-8",
+        "-feature",
+        "-unchecked",
+        "-deprecation",
+        if (enableFatalWarnings.value) "-Xfatal-warnings" else "",
+        "-Xlint:_,-missing-interpolator",
+        "-Ywarn-dead-code",
+        "-Xsource:3",
+        "-Wconf:any:warning-verbose"
+        //      "-Xfuture"
+        //      "-Xprint:typer"
+      ),
+      licenses := Seq(("Apache-2.0", url("http://www.apache.org/licenses/LICENSE-2.0")))
+    )
 
   private val storyReport: Boolean                 = sys.props.get("generateStoryReport").contains("true")
   private val reporterOptions: Seq[Tests.Argument] =

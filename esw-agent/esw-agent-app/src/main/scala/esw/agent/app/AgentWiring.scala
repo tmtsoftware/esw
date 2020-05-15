@@ -4,9 +4,10 @@ import akka.actor.typed.SpawnProtocol.Spawn
 import akka.actor.typed._
 import akka.actor.typed.scaladsl.AskPattern.Askable
 import akka.util.Timeout
+import csw.location.api.AkkaRegistrationFactory
 import csw.location.api.extensions.ActorExtension.RichActor
 import csw.location.api.models.Connection.AkkaConnection
-import csw.location.api.models.{AkkaRegistration, ComponentId, ComponentType}
+import csw.location.api.models.{ComponentId, ComponentType}
 import csw.location.api.scaladsl.{LocationService, RegistrationResult}
 import csw.location.client.ActorSystemFactory
 import csw.location.client.scaladsl.HttpLocationServiceFactory
@@ -37,7 +38,7 @@ class AgentWiring(prefix: Prefix, agentSettings: AgentSettings) {
   lazy val agentActor                       = new AgentActor(locationService, processExecutor, agentSettings, log)
 
   lazy val lazyAgentRegistration: Future[RegistrationResult] =
-    locationService.register(AkkaRegistration(agentConnection, agentRef.toURI))
+    locationService.register(AkkaRegistrationFactory.make(agentConnection, agentRef.toURI))
 
   lazy val agentRef: ActorRef[AgentCommand] =
     Await.result(typedSystem ? (Spawn(agentActor.behavior(AgentState.empty), "agent-actor", Props.empty, _)), timeout.duration)

@@ -40,7 +40,7 @@ class ThreadSafetyTest extends EswTestKit(EventServer) {
       val incrementCommand  = Setup(Prefix("esw.counter"), CommandName("increment"), None)
       val getCounterCommand = Observe(Prefix("esw.counter"), CommandName("get-counter"), None)
 
-      threadSafeSequencer.submit(Sequence(List(incrementCommand, getCounterCommand)))
+      threadSafeSequencer.submit(Sequence(incrementCommand, getCounterCommand))
 
       counterProbe.expectMessage(300000)
     }

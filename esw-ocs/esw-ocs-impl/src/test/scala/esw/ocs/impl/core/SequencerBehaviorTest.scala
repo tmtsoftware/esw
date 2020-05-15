@@ -305,7 +305,7 @@ class SequencerBehaviorTest extends ScalaTestWithActorTestKit with BaseTestSuite
       sequencerActor ! Add(List(command3), probe.ref)
       probe.expectMessage(Ok)
 
-      val updatedSequence = sequence.copy(commands = Seq(command1, command2, command3))
+      val updatedSequence = Sequence(command1, command2, command3)
       assertCurrentSequence(StepList(updatedSequence))
     }
 
@@ -334,7 +334,7 @@ class SequencerBehaviorTest extends ScalaTestWithActorTestKit with BaseTestSuite
       sequencerActor ! Prepend(List(command3), probe.ref)
       probe.expectMessage(Ok)
 
-      val updatedSequence = sequence.copy(commands = Seq(command3, command1, command2))
+      val updatedSequence = Sequence(command3, command1, command2)
       assertCurrentSequence(StepList(updatedSequence))
     }
 

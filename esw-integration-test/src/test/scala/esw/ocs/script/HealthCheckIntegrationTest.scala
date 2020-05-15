@@ -71,7 +71,7 @@ class HealthCheckIntegrationTest extends EswTestKit {
     "receive heartbeat and receive heartbeat missed incase of blocking | ESW-290" in {
       val command1 = Setup(Prefix("esw.test"), CommandName("nonblocking-command"), None)
       val command2 = Setup(Prefix("esw.test"), CommandName("blocking-command"), None)
-      val sequence = Sequence(Seq(command1, command2))
+      val sequence = Sequence(command1, command2)
       Await.result(ocsSequencer.submitAndWait(sequence), 5.seconds)
 
       val logs: mutable.Seq[String] = logBuffer.map(log => log.getString("message"))

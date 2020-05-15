@@ -6,7 +6,7 @@ import esw.ocs.api.codecs.OcsAkkaSerializable
 import esw.ocs.api.protocol.EditorError
 import esw.ocs.api.protocol.EditorError._
 
-final case class StepList private[models] (steps: List[Step]) extends OcsAkkaSerializable {
+final case class StepList private[ocs] (steps: List[Step]) extends OcsAkkaSerializable {
   //query
   private[ocs] def isEmpty: Boolean    = steps.isEmpty
   def isFinished: Boolean              = !isEmpty && (steps.forall(_.isFinished) || steps.exists(_.isFailed))
