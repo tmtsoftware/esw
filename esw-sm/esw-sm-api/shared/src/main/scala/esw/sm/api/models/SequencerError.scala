@@ -1,6 +1,6 @@
 package esw.sm.api.models
 
-sealed trait SequencerError extends Throwable {
+sealed trait SequencerError extends Throwable with Product {
   def msg: String
 }
 

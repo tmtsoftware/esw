@@ -54,14 +54,14 @@ class SequenceManagerBehaviorTest extends ScalaTestWithActorTestKit with BaseTes
 
   "Configure" must {
 
-    "transition sm from IDLE -> ConfigurationInProcess -> Idle state and return location of master sequencer | ESW-178, ESW-164" in {
+    "transition sm from Idle -> ConfigurationInProcess -> Idle state and return location of master sequencer | ESW-178, ESW-164" in {
       val httpLocation   = HttpLocation(HttpConnection(ComponentId(Prefix(ESW, Darknight), Sequencer)), new URI("uri"))
       val configResponse = Success(httpLocation)
       when(locationServiceUtil.listAkkaLocationsBy(ESW, Sequencer)).thenReturn(future(1.seconds, Right(List.empty)))
       when(sequencerUtil.startSequencers(Darknight, darknightSequencers)).thenReturn(Future.successful(configResponse))
       val configureProbe = createTestProbe[ConfigureResponse]
 
-      // STATE TRANSITION: IDLE -> Configure() -> ConfigurationInProcess -> Idle
+      // STATE TRANSITION: Idle -> Configure() -> ConfigurationInProcess -> Idle
       assertState(Idle)
       smRef ! Configure(Darknight, configureProbe.ref)
       assertState(ConfigurationInProcess)
@@ -111,7 +111,7 @@ class SequenceManagerBehaviorTest extends ScalaTestWithActorTestKit with BaseTes
 
   "Cleanup" must {
 
-    "transition sm from IDLE -> CleaningInProcess -> Idle state and stop all the sequencer for given obs mode | ESW-166" in {
+    "transition sm from Idle -> CleaningInProcess -> Idle state and stop all the sequencer for given obs mode | ESW-166" in {
       when(sequencerUtil.stopSequencers(darknightSequencers, Darknight)).thenReturn(future(1.seconds, Right(Done)))
 
       val cleanupProbe = createTestProbe[CleanupResponse]
