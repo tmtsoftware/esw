@@ -46,6 +46,7 @@ class SequencerTest(mode: String) extends LSNodeSpec(config = new TwoMembersAndS
   override def beforeAll(): Unit = {
     super.beforeAll()
     runOn(seed) { locationTestKit.startLocationServer() }
+    enterBarrier("Before all")
   }
 
   test("tcs sequencer should send sequence to downstream ocs sequencer which submits the command to sample assembly") {
