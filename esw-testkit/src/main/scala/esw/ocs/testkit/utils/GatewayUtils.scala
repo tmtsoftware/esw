@@ -23,14 +23,13 @@ import msocket.impl.ws.WebsocketTransport
 
 trait GatewayUtils extends LocationUtils with BaseTestSuite with GatewayCodecs {
 
-  private lazy val commandRolesPath = Paths.get(getClass.getResource("/commandRoles.conf").getPath)
-  println(s"getClass ==============$getClass")
+  private lazy val commandRolesPath                 = Paths.get(getClass.getResource("/commandRoles.conf").getPath)
   private lazy val directives                       = SecurityDirectives.authDisabled(actorSystem.settings.config)
   private var gatewayBinding: Option[ServerBinding] = None
   private var gatewayLocation: Option[HttpLocation] = None
 
-  private var loggingSystem: LoggingSystem = null
-  private var gatewayWiring: GatewayWiring = null
+  private var loggingSystem: LoggingSystem = _
+  private var gatewayWiring: GatewayWiring = _
 
   // ESW-98
   private lazy val gatewayPrefix = Prefix(
