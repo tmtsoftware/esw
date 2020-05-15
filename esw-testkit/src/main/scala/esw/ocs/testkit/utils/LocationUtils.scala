@@ -8,13 +8,11 @@ import csw.location.api.models.{AkkaLocation, ComponentId, ComponentType, HttpLo
 import csw.location.api.scaladsl.LocationService
 import csw.prefix.models.{Prefix, Subsystem}
 import esw.ocs.api.actor.messages.SequenceComponentMsg
-import org.scalatest.OptionValues._
-import org.scalatest.concurrent.ScalaFutures._
 
 import scala.concurrent.duration.DurationDouble
 import scala.concurrent.{ExecutionContext, Future}
 
-trait LocationUtils {
+trait LocationUtils extends BaseTestSuite {
 
   def locationService: LocationService
   implicit def actorSystem: ActorSystem[SpawnProtocol.Command]

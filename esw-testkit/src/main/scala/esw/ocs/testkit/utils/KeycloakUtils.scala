@@ -17,16 +17,14 @@ trait KeycloakUtils extends BaseTestSuite {
   def locationService: LocationService
   implicit def actorSystem: ActorSystem[SpawnProtocol.Command]
 
-  lazy val gatewayUser1                  = "gateway-user1"
-  lazy val gatewayUser1Password          = "gateway-user1"
-  lazy val gatewayUser2                  = "gateway-user2"
-  lazy val gatewayUser2Password          = "gateway-user2"
-  lazy val serverTimeout: FiniteDuration = 3.minutes
-  lazy val keycloakPort: Int             = SocketUtils.getFreePort
-  lazy val tokenWithRequiredRoles: () => Option[String] =
-    getToken(gatewayUser1, gatewayUser1Password)
-  lazy val tokenWithoutRequiredRoles: () => Option[String] =
-    getToken(gatewayUser2, gatewayUser2Password)
+  lazy val gatewayUser1                                    = "gateway-user1"
+  lazy val gatewayUser1Password                            = "gateway-user1"
+  lazy val gatewayUser2                                    = "gateway-user2"
+  lazy val gatewayUser2Password                            = "gateway-user2"
+  lazy val serverTimeout: FiniteDuration                   = 3.minutes
+  lazy val keycloakPort: Int                               = SocketUtils.getFreePort
+  lazy val tokenWithRequiredRoles: () => Option[String]    = getToken(gatewayUser1, gatewayUser1Password)
+  lazy val tokenWithoutRequiredRoles: () => Option[String] = getToken(gatewayUser2, gatewayUser2Password)
 
   lazy val irisUserRole = "IRIS-user"
   lazy val irisEngRole  = "IRIS-eng"
