@@ -15,7 +15,7 @@ trait AgentUtils {
 
   private var agentWiring: Option[AgentWiring] = None
 
-  val agentConf: Config = ConfigFactory.parseString(
+  lazy val agentConf: Config = ConfigFactory.parseString(
     s"""
       |agent {
       |  binariesPath = "${Paths.get(getClass.getResource("/").getPath).toString}"
@@ -25,9 +25,9 @@ trait AgentUtils {
       |""".stripMargin
   )
 
-  val agentSettings: AgentSettings = AgentSettings.from(agentConf)
+  lazy val agentSettings: AgentSettings = AgentSettings.from(agentConf)
 
-  val agentPrefix: Prefix = Prefix(s"esw.machine_${Random.nextInt().abs}")
+  lazy val agentPrefix: Prefix = Prefix(s"esw.machine_${Random.nextInt().abs}")
 
   def spawnAgent(agentSettings: AgentSettings): Unit = {
     val wiring = AgentWiring.make(agentPrefix, agentSettings, actorSystem)
