@@ -4,14 +4,12 @@ import akka.Done
 import akka.actor.typed.ActorSystem
 import csw.logging.client.appenders.{LogAppenderBuilder, StdOutAppender}
 import csw.logging.client.internal.JsonExtensions.RichJsObject
-import csw.logging.client.internal.LoggingSystem
 import csw.logging.models.Level.FATAL
 import csw.prefix.models.Prefix
 import csw.prefix.models.Subsystem.ESW
 import esw.gateway.api.clients.LoggingClient
 import esw.gateway.api.codecs.GatewayCodecs
 import esw.ocs.testkit.EswTestKit
-import esw.ocs.testkit.Service.Gateway
 import play.api.libs.json.{JsObject, Json}
 
 import scala.collection.mutable
@@ -29,26 +27,21 @@ class TestAppender(callback: Any => Unit) extends LogAppenderBuilder {
     new StdOutAppender(system, stdHeaders, callback)
 }
 
-class LoggingGatewayTest extends EswTestKit(Gateway) with GatewayCodecs {
+class LoggingGatewayTest extends EswTestKit with GatewayCodecs {
 
   private val logBuffer: mutable.Buffer[JsObject] = mutable.Buffer.empty[JsObject]
   private val testAppender = new TestAppender(x => {
     logBuffer += Json.parse(x.toString).as[JsObject]
   })
 
-  var loggingSystem: LoggingSystem = _
-
   override def beforeAll(): Unit = {
     super.beforeAll()
-    import gatewayWiring.wiring.cswWiring.actorRuntime
-    loggingSystem = actorRuntime.startLogging("test", "0.0.1")
-    loggingSystem.setAppenders(List(testAppender))
+    spawnGatewayWithLogging(List(testAppender))
     logBuffer.clear()
   }
 
   override def afterAll(): Unit = {
     super.afterAll()
-    loggingSystem.stop
   }
 
   "LoggingApi" must {
