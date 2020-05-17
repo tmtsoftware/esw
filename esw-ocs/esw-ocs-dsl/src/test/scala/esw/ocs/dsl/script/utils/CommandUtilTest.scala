@@ -2,7 +2,8 @@ package esw.ocs.dsl.script.utils
 
 import java.util.concurrent.TimeUnit
 
-import akka.actor.testkit.typed.scaladsl.{ScalaTestWithActorTestKit, TestProbe}
+import akka.actor.testkit.typed.scaladsl.TestProbe
+import akka.actor.typed.{ActorSystem, SpawnProtocol}
 import csw.command.client.messages.ComponentMessage
 import csw.location.api.extensions.ActorExtension._
 import csw.location.api.models.Connection.AkkaConnection
@@ -15,7 +16,9 @@ import esw.commons.utils.location.LocationServiceUtil
 
 import scala.concurrent.{ExecutionException, Future}
 
-class CommandUtilTest extends ScalaTestWithActorTestKit with BaseTestSuite {
+class CommandUtilTest extends BaseTestSuite {
+  implicit val testSystem: ActorSystem[SpawnProtocol.Command] = ActorSystem(SpawnProtocol(), "testSystem")
+
   private val locationServiceUtil = mock[LocationServiceUtil]
   private val prefix              = Prefix(ESW, "trombone")
   private val componentType       = ComponentType.Assembly
