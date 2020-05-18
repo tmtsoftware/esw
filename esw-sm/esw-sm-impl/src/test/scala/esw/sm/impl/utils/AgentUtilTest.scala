@@ -7,6 +7,7 @@ import akka.util.Timeout
 import csw.location.api.models.ComponentType.{Machine, SequenceComponent}
 import csw.location.api.models.Connection.AkkaConnection
 import csw.location.api.models.{AkkaLocation, ComponentId}
+import csw.location.api.scaladsl.LocationService
 import csw.prefix.models.Prefix
 import csw.prefix.models.Subsystem.ESW
 import esw.agent.api.{Failed, Spawned}
@@ -84,7 +85,7 @@ class AgentUtilTest extends BaseTestSuite {
   }
 
   "getAgent" must {
-    "must return AgentClient associated to ESW machine | ESW-164" in {
+    "return AgentClient associated to ESW machine | ESW-164" in {
       val locationServiceUtil = mock[LocationServiceUtil]
       val agentClient         = mock[AgentClient]
       val location            = AkkaLocation(AkkaConnection(ComponentId(Prefix(ESW, "mock"), Machine)), new URI("mock"))
@@ -99,7 +100,7 @@ class AgentUtilTest extends BaseTestSuite {
       verify(locationServiceUtil).listAkkaLocationsBy(ESW, Machine)
     }
 
-    "must return ResolveLocationFailed when location service list call returns empty list | ESW-164" in {
+    "return ResolveLocationFailed when location service list call returns empty list | ESW-164" in {
       val locationServiceUtil = mock[LocationServiceUtil]
       when(locationServiceUtil.listAkkaLocationsBy(ESW, Machine)).thenReturn(futureRight(List.empty))
 
@@ -109,7 +110,7 @@ class AgentUtilTest extends BaseTestSuite {
       verify(locationServiceUtil).listAkkaLocationsBy(ESW, Machine)
     }
 
-    "must return ResolveLocationFailed when location service list call returns error | ESW-164" in {
+    "return ResolveLocationFailed when location service list call returns error | ESW-164" in {
       val locationServiceUtil = mock[LocationServiceUtil]
       val listingFailed       = RegistrationListingFailed("listing failed")
       when(locationServiceUtil.listAkkaLocationsBy(ESW, Machine)).thenReturn(futureLeft(listingFailed))
@@ -118,6 +119,23 @@ class AgentUtilTest extends BaseTestSuite {
       agentUtil.getAgent.leftValue should ===(listingFailed)
 
       verify(locationServiceUtil).listAkkaLocationsBy(ESW, Machine)
+    }
+  }
+
+  "makeAgent" must {
+    "create new instance of AgentClient | ESW-164" in {
+      val agentPrefix         = Prefix(ESW, "mock")
+      val locationServiceUtil = mock[LocationServiceUtil]
+      val locationService     = mock[LocationService]
+      val agentConnection     = AkkaConnection(ComponentId(agentPrefix, Machine))
+      val location            = AkkaLocation(agentConnection, new URI("mock"))
+      val mockedAgentLoc      = Future.successful(Some(location))
+
+      when(locationServiceUtil.locationService).thenReturn(locationService)
+      when(locationService.resolve(agentConnection, 5.seconds)).thenReturn(mockedAgentLoc)
+
+      val agentUtil = new AgentUtil(locationServiceUtil)
+      agentUtil.makeAgent(agentPrefix).futureValue shouldBe a[AgentClient]
     }
   }
 
