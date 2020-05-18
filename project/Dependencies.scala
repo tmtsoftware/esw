@@ -216,6 +216,7 @@ object Dependencies {
 
   val SmApiJvm: Def.Initialize[Seq[ModuleID]] = Def.setting(
     Seq(
+      Csw.`csw-command-client`,
       Akka.`akka-actor-typed`,
       Libs.`tmt-test-reporter`        % Test,
       Akka.`akka-actor-testkit-typed` % Test

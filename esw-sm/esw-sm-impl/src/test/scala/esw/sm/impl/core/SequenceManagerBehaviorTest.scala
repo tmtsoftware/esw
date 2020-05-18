@@ -3,8 +3,8 @@ package esw.sm.impl.core
 import java.net.URI
 
 import akka.Done
-import akka.actor.testkit.typed.scaladsl.{ScalaTestWithActorTestKit, TestProbe}
-import akka.actor.typed.ActorRef
+import akka.actor.testkit.typed.scaladsl.TestProbe
+import akka.actor.typed.{ActorRef, ActorSystem, SpawnProtocol}
 import csw.location.api.models.ComponentType._
 import csw.location.api.models.Connection.{AkkaConnection, HttpConnection}
 import csw.location.api.models.{AkkaLocation, ComponentId, HttpLocation}
@@ -25,7 +25,10 @@ import esw.sm.impl.utils.SequencerUtil
 import scala.concurrent.Future
 import scala.concurrent.duration.DurationLong
 
-class SequenceManagerBehaviorTest extends ScalaTestWithActorTestKit with BaseTestSuite {
+class SequenceManagerBehaviorTest extends BaseTestSuite {
+
+  private implicit lazy val actorSystem: ActorSystem[SpawnProtocol.Command] =
+    ActorSystem(SpawnProtocol(), "sequence-manager-system")
 
   private val Darknight                        = "darknight"
   private val Clearskies                       = "clearskies"
@@ -46,7 +49,7 @@ class SequenceManagerBehaviorTest extends ScalaTestWithActorTestKit with BaseTes
     sequencerUtil
   )
 
-  private lazy val smRef: ActorRef[SequenceManagerMsg] = spawn(sequenceManagerBehavior.idle(), "test_actor")
+  private lazy val smRef: ActorRef[SequenceManagerMsg] = actorSystem.systemActorOf(sequenceManagerBehavior.idle(), "test_actor")
 
   override implicit def patienceConfig: PatienceConfig = PatienceConfig(10.seconds)
 
@@ -59,7 +62,7 @@ class SequenceManagerBehaviorTest extends ScalaTestWithActorTestKit with BaseTes
       val configResponse = Success(httpLocation)
       when(locationServiceUtil.listAkkaLocationsBy(ESW, Sequencer)).thenReturn(future(1.seconds, Right(List.empty)))
       when(sequencerUtil.startSequencers(Darknight, darknightSequencers)).thenReturn(Future.successful(configResponse))
-      val configureProbe = createTestProbe[ConfigureResponse]()
+      val configureProbe = TestProbe[ConfigureResponse]()
 
       // STATE TRANSITION: Idle -> Configure() -> ConfigurationInProcess -> Idle
       assertState(Idle)
@@ -76,7 +79,7 @@ class SequenceManagerBehaviorTest extends ScalaTestWithActorTestKit with BaseTes
       when(locationServiceUtil.listAkkaLocationsBy(ESW, Sequencer))
         .thenReturn(Future.successful(Left(RegistrationListingFailed("Sequencer"))))
 
-      val probe = createTestProbe[ConfigureResponse]()
+      val probe = TestProbe[ConfigureResponse]()
       smRef ! Configure(Darknight, probe.ref)
 
       probe.expectMessage(LocationServiceError("Sequencer"))
@@ -87,7 +90,7 @@ class SequenceManagerBehaviorTest extends ScalaTestWithActorTestKit with BaseTes
       // this simulates that Clearskies observation is running
       val akkaLocation = AkkaLocation(AkkaConnection(ComponentId(Prefix(ESW, Clearskies), Sequencer)), new URI("uri"))
       when(locationServiceUtil.listAkkaLocationsBy(ESW, Sequencer)).thenReturn(Future.successful(Right(List(akkaLocation))))
-      val probe = createTestProbe[ConfigureResponse]()
+      val probe = TestProbe[ConfigureResponse]()
 
       // r2 is a conflicting resource between Darknight and Clearskies observations
       smRef ! Configure(Darknight, probe.ref)
@@ -100,7 +103,7 @@ class SequenceManagerBehaviorTest extends ScalaTestWithActorTestKit with BaseTes
     "return ConfigurationMissing error when config for given obsMode is missing | ESW-164" in {
       val akkaLocation = AkkaLocation(AkkaConnection(ComponentId(Prefix(ESW, RandomObsMode), Sequencer)), new URI("uri"))
       when(locationServiceUtil.listAkkaLocationsBy(ESW, Sequencer)).thenReturn(Future.successful(Right(List(akkaLocation))))
-      val probe = createTestProbe[ConfigureResponse]()
+      val probe = TestProbe[ConfigureResponse]()
 
       smRef ! Configure(RandomObsMode, probe.ref)
 
@@ -114,7 +117,7 @@ class SequenceManagerBehaviorTest extends ScalaTestWithActorTestKit with BaseTes
     "transition sm from Idle -> CleaningInProcess -> Idle state and stop all the sequencer for given obs mode | ESW-166" in {
       when(sequencerUtil.stopSequencers(darknightSequencers, Darknight)).thenReturn(future(1.seconds, Right(Done)))
 
-      val cleanupProbe = createTestProbe[CleanupResponse]()
+      val cleanupProbe = TestProbe[CleanupResponse]()
 
       assertState(Idle)
       smRef ! Cleanup(Darknight, cleanupProbe.ref)
@@ -130,7 +133,7 @@ class SequenceManagerBehaviorTest extends ScalaTestWithActorTestKit with BaseTes
       when(sequencerUtil.stopSequencers(darknightSequencers, Darknight))
         .thenReturn(Future.successful(Left(RegistrationListingFailed(failureMsg))))
 
-      val probe = createTestProbe[CleanupResponse]()
+      val probe = TestProbe[CleanupResponse]()
       smRef ! Cleanup(Darknight, probe.ref)
 
       probe.expectMessage(LocationServiceError(failureMsg))
@@ -138,7 +141,7 @@ class SequenceManagerBehaviorTest extends ScalaTestWithActorTestKit with BaseTes
     }
 
     "return ConfigurationMissing error when config for given obsMode is missing | ESW-166" in {
-      val probe = createTestProbe[CleanupResponse]()
+      val probe = TestProbe[CleanupResponse]()
       smRef ! Cleanup(RandomObsMode, probe.ref)
 
       probe.expectMessage(ConfigurationMissing(RandomObsMode))
