@@ -1,17 +1,18 @@
-package esw.gateway.server
+package esw.http.core.wiring
 
 import akka.http.scaladsl.Http
 import akka.http.scaladsl.model._
 import akka.http.scaladsl.model.headers.{HttpOrigin, Origin}
 import akka.http.scaladsl.server.Directives._
 import akka.http.scaladsl.server.Route
-import esw.http.core.wiring.{HttpService, ServerWiring}
+import csw.location.api.models.NetworkType
+import csw.network.utils.Networks
 import esw.ocs.testkit.EswTestKit
 
 import scala.concurrent.Await
 import scala.concurrent.duration.DurationInt
 
-class HTTPServiceCORSTest extends EswTestKit {
+class HTTPServiceCorsTest extends EswTestKit {
 
   lazy val route: Route = {
     pathPrefix("hello") {
@@ -20,12 +21,14 @@ class HTTPServiceCORSTest extends EswTestKit {
       }
     }
   }
+  private val hostname                                 = Networks(NetworkType.Public.envKey).hostname
+  implicit override val patienceConfig: PatienceConfig = PatienceConfig(10.seconds, 100.millis)
 
   lazy val wiring = ServerWiring.make(Some(gatewayPort))
   import wiring._
   lazy val httpService = new HttpService(logger, locationService, route, settings, cswWiring.actorRuntime)
 
-  lazy val requestOriginHeader = Origin(HttpOrigin("http://localhost:6000"))
+  lazy val requestOriginHeader = Origin(HttpOrigin(s"http://${hostname}:6000"))
 
   override def beforeAll(): Unit = {
     super.beforeAll()
@@ -40,14 +43,14 @@ class HTTPServiceCORSTest extends EswTestKit {
           Http().singleRequest(
             HttpRequest(
               method = HttpMethods.GET,
-              uri = Uri(s"http://localhost:${gatewayPort}/hello"),
+              uri = Uri(s"http://${hostname}:${gatewayPort}/hello"),
               headers = List(requestOriginHeader)
             )
           ),
           2.seconds
         )
       response.status shouldBe StatusCodes.OK
-      response.getHeader("Access-Control-Allow-Origin").get().value() shouldBe "http://localhost:6000"
+      response.getHeader("Access-Control-Allow-Origin").get().value() shouldBe s"http://${hostname}:6000"
       response.getHeader("Access-Control-Allow-Credentials").get().value() shouldBe "true"
     }
     "Set CORS Headers when requests from different Origin and HTTP 400 range status response is returned" in {
@@ -57,7 +60,7 @@ class HTTPServiceCORSTest extends EswTestKit {
           Http().singleRequest(
             HttpRequest(
               method = HttpMethods.GET,
-              uri = Uri(s"http://localhost:${gatewayPort}/invalidPath"),
+              uri = Uri(s"http://${hostname}:${gatewayPort}/invalidPath"),
               headers = List(requestOriginHeader)
             )
           ),
@@ -65,7 +68,7 @@ class HTTPServiceCORSTest extends EswTestKit {
         )
 
       response.status shouldBe StatusCodes.NotFound
-      response.getHeader("Access-Control-Allow-Origin").get().value() shouldBe "http://localhost:6000"
+      response.getHeader("Access-Control-Allow-Origin").get().value() shouldBe s"http://${hostname}:6000"
       response.getHeader("Access-Control-Allow-Credentials").get().value() shouldBe "true"
     }
   }
