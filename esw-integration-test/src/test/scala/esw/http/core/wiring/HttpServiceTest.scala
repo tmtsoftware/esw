@@ -24,7 +24,7 @@ class HttpServiceTest extends EswTestKit {
   implicit override val patienceConfig: PatienceConfig = PatienceConfig(10.seconds, 100.millis)
 
   "HttpService" must {
-    "start the http server and register with location service | ESW-86 | CSW-96" in {
+    "start the http server and register with location service | ESW-86, CSW-96" in {
       val _servicePort = 4005
       val wiring       = ServerWiring.make(Some(_servicePort))
       import wiring._
@@ -43,7 +43,7 @@ class HttpServiceTest extends EswTestKit {
       actorRuntime.shutdown(UnknownReason).futureValue
     }
 
-    "not register with location service if server binding fails | ESW-86 | CSW-96" in {
+    "not register with location service if server binding fails | ESW-86, CSW-96" in {
       val _servicePort = 4452 // Location Service runs on this port
       val wiring       = ServerWiring.make(Some(_servicePort))
       import wiring._
