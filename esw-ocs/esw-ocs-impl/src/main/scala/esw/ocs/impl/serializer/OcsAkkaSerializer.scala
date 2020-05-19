@@ -9,12 +9,12 @@ import csw.logging.api.scaladsl.Logger
 import csw.logging.client.scaladsl.LoggerFactory
 import csw.prefix.models.Prefix
 import csw.prefix.models.Subsystem.ESW
+import esw.ocs.api.actor.messages.SequencerMessages._
+import esw.ocs.api.actor.messages.{SequenceComponentMsg, SequencerState}
 import esw.ocs.api.codecs.OcsCodecs
 import esw.ocs.api.models.StepList
 import esw.ocs.api.protocol.{EswSequencerResponse, GetStatusResponse, ScriptResponse}
 import esw.ocs.impl.codecs.OcsMsgCodecs
-import esw.ocs.api.actor.messages.SequencerMessages._
-import esw.ocs.api.actor.messages.{SequenceComponentMsg, SequencerState}
 import io.bullet.borer.{Cbor, Decoder}
 
 import scala.reflect.ClassTag
@@ -27,7 +27,7 @@ class OcsAkkaSerializer(_actorSystem: ExtendedActorSystem) extends OcsCodecs wit
 
   override def toBinary(o: AnyRef): Array[Byte] =
     o match {
-      case x: EswSequencerMessage          => Cbor.encode(x).toByteArray
+      case x: EswSequencerRemoteMessage    => Cbor.encode(x).toByteArray
       case x: EswSequencerResponse         => Cbor.encode(x).toByteArray
       case x: StepList                     => Cbor.encode(x).toByteArray
       case x: SequencerState[SequencerMsg] => Cbor.encode(x).toByteArray
@@ -49,7 +49,7 @@ class OcsAkkaSerializer(_actorSystem: ExtendedActorSystem) extends OcsCodecs wit
       else None
     }
     {
-      fromBinary[EswSequencerMessage] orElse
+      fromBinary[EswSequencerRemoteMessage] orElse
       fromBinary[EswSequencerResponse] orElse
       fromBinary[SequencerState[SequencerMsg]] orElse
       fromBinary[StepList] orElse

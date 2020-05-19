@@ -12,12 +12,13 @@ import esw.ocs.api.protocol._
 
 object SequencerMessages {
 
-  sealed trait EswSequencerMessage extends SequencerMsg with OcsAkkaSerializable
-
+  sealed trait EswSequencerMessage       extends SequencerMsg
+  sealed trait EswSequencerRemoteMessage extends EswSequencerMessage with OcsAkkaSerializable
   // Messages which are handled in all states
   sealed trait CommonMessage       extends EswSequencerMessage
-  sealed trait ShuttingDownMessage extends EswSequencerMessage
-  sealed trait UnhandleableSequencerMessage extends EswSequencerMessage {
+  sealed trait CommonRemoteMessage extends CommonMessage with EswSequencerRemoteMessage
+  sealed trait ShuttingDownMessage extends EswSequencerRemoteMessage
+  sealed trait UnhandleableSequencerMessage extends EswSequencerRemoteMessage {
     def replyTo: ActorRef[Unhandled]
   }
 
@@ -43,15 +44,16 @@ object SequencerMessages {
   final case class SubmitSequenceInternal(sequence: Sequence, replyTo: ActorRef[SequencerSubmitResponse]) extends IdleMessage
 
   // common msgs
-  final case class Shutdown(replyTo: ActorRef[Ok.type])                               extends CommonMessage
-  final case class GetSequence(replyTo: ActorRef[Option[StepList]])                   extends CommonMessage
-  final case class GetSequencerState(replyTo: ActorRef[SequencerState[SequencerMsg]]) extends CommonMessage
-  final case class GetSequenceComponent(replyTo: ActorRef[AkkaLocation])              extends CommonMessage
-  final private[esw] case class ReadyToExecuteNext(replyTo: ActorRef[Ok.type])        extends CommonMessage
-  final private[esw] case class MaybeNext(replyTo: ActorRef[Option[Step]])            extends CommonMessage
+  final case class Shutdown(replyTo: ActorRef[Ok.type])                               extends CommonRemoteMessage
+  final case class GetSequence(replyTo: ActorRef[Option[StepList]])                   extends CommonRemoteMessage
+  final case class GetSequencerState(replyTo: ActorRef[SequencerState[SequencerMsg]]) extends CommonRemoteMessage
+  final case class GetSequenceComponent(replyTo: ActorRef[AkkaLocation])              extends CommonRemoteMessage
+
+  final private[esw] case class ReadyToExecuteNext(replyTo: ActorRef[Ok.type]) extends CommonMessage
+  final private[esw] case class MaybeNext(replyTo: ActorRef[Option[Step]])     extends CommonMessage
 
   // diagnostic data msgs
-  sealed trait DiagnosticDataMessage extends CommonMessage
+  sealed trait DiagnosticDataMessage extends CommonRemoteMessage
   case class DiagnosticMode(startTime: UTCTime, hint: String, replyTo: ActorRef[DiagnosticModeResponse])
       extends DiagnosticDataMessage
   case class OperationsMode(replyTo: ActorRef[OperationsModeResponse]) extends DiagnosticDataMessage
