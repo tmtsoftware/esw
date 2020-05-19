@@ -9,7 +9,6 @@ import csw.location.api.models.NetworkType
 import csw.network.utils.Networks
 import esw.ocs.testkit.EswTestKit
 
-import scala.concurrent.Await
 import scala.concurrent.duration.DurationInt
 
 class HTTPServiceCorsTest extends EswTestKit {
@@ -39,16 +38,15 @@ class HTTPServiceCorsTest extends EswTestKit {
     "Set CORS Headers when requests from different Origin and  HTTP 200 status response is returned" in {
 
       val response =
-        Await.result(
-          Http().singleRequest(
+        Http()
+          .singleRequest(
             HttpRequest(
               method = HttpMethods.GET,
               uri = Uri(s"http://${hostname}:${gatewayPort}/hello"),
               headers = List(requestOriginHeader)
             )
-          ),
-          2.seconds
-        )
+          )
+          .futureValue
       response.status shouldBe StatusCodes.OK
       response.getHeader("Access-Control-Allow-Origin").get().value() shouldBe s"http://${hostname}:6000"
       response.getHeader("Access-Control-Allow-Credentials").get().value() shouldBe "true"
@@ -56,16 +54,15 @@ class HTTPServiceCorsTest extends EswTestKit {
     "Set CORS Headers when requests from different Origin and HTTP 400 range status response is returned" in {
 
       val response =
-        Await.result(
-          Http().singleRequest(
+        Http()
+          .singleRequest(
             HttpRequest(
               method = HttpMethods.GET,
               uri = Uri(s"http://${hostname}:${gatewayPort}/invalidPath"),
               headers = List(requestOriginHeader)
             )
-          ),
-          2.seconds
-        )
+          )
+          .futureValue
 
       response.status shouldBe StatusCodes.NotFound
       response.getHeader("Access-Control-Allow-Origin").get().value() shouldBe s"http://${hostname}:6000"
