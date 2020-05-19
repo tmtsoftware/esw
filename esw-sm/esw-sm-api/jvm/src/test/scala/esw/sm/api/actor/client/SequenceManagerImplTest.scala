@@ -2,8 +2,9 @@ package esw.sm.api.actor.client
 
 import java.net.URI
 
-import akka.actor.testkit.typed.scaladsl.ScalaTestWithActorTestKit
 import akka.actor.typed.scaladsl.Behaviors
+import akka.actor.typed.{ActorSystem, SpawnProtocol}
+import akka.util.Timeout
 import csw.location.api.models.Connection.HttpConnection
 import csw.location.api.models.{ComponentId, ComponentType, HttpLocation}
 import csw.prefix.models.Prefix
@@ -11,9 +12,15 @@ import esw.sm.api.SequenceManagerState.Idle
 import esw.sm.api.actor.messages.SequenceManagerMsg
 import esw.sm.api.models.{CleanupResponse, ConfigureResponse, GetRunningObsModesResponse}
 import org.scalactic.TypeCheckedTripleEquals
+import org.scalatest.concurrent.ScalaFutures
+import org.scalatest.matchers.should.Matchers
 import org.scalatest.wordspec.AnyWordSpecLike
 
-class SequenceManagerImplTest extends ScalaTestWithActorTestKit with AnyWordSpecLike with TypeCheckedTripleEquals {
+import scala.concurrent.duration.DurationInt
+
+class SequenceManagerImplTest extends AnyWordSpecLike with TypeCheckedTripleEquals with ScalaFutures with Matchers {
+  private final implicit val system: ActorSystem[SpawnProtocol.Command] = ActorSystem(SpawnProtocol(), "SmAkkaSerializerTest")
+  private implicit val timeout: Timeout                                 = 10.seconds
   private val masterSequencerLocation =
     HttpLocation(HttpConnection(ComponentId(Prefix("esw.primary"), ComponentType.Sequencer)), URI.create("uri"))
   private val configureResponse          = ConfigureResponse.Success(masterSequencerLocation)
@@ -32,7 +39,7 @@ class SequenceManagerImplTest extends ScalaTestWithActorTestKit with AnyWordSpec
     Behaviors.same
   }
 
-  private val smRef           = spawn(mockedBehavior)
+  private val smRef           = system.systemActorOf(mockedBehavior, "sm")
   private val sequenceManager = new SequenceManagerImpl(smRef)
 
   "SequenceManagerImpl" must {
