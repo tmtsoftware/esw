@@ -1,7 +1,5 @@
 package esw.http.core.wiring
 
-import java.net.BindException
-
 import akka.Done
 import akka.actor.CoordinatedShutdown
 import akka.actor.CoordinatedShutdown.Reason
@@ -14,7 +12,7 @@ import csw.location.api.models.Connection.HttpConnection
 import csw.location.api.models.{HttpRegistration, NetworkType}
 import csw.location.api.scaladsl.{LocationService, RegistrationResult}
 import csw.logging.api.scaladsl.Logger
-import csw.network.utils.{Networks, SocketUtils}
+import csw.network.utils.Networks
 import esw.http.core.commons.CoordinatedShutdownReasons.FailureReason
 
 import scala.async.Async._
