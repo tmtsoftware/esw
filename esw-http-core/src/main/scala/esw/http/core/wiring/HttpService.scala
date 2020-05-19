@@ -1,7 +1,5 @@
 package esw.http.core.wiring
 
-import java.net.BindException
-
 import akka.Done
 import akka.actor.CoordinatedShutdown
 import akka.actor.CoordinatedShutdown.Reason
@@ -11,10 +9,10 @@ import akka.http.scaladsl.server.Directives.handleRejections
 import akka.http.scaladsl.server.{RejectionHandler, Route}
 import ch.megard.akka.http.cors.scaladsl.CorsDirectives._
 import csw.location.api.models.Connection.HttpConnection
-import csw.location.api.models.HttpRegistration
+import csw.location.api.models.{HttpRegistration, NetworkType}
 import csw.location.api.scaladsl.{LocationService, RegistrationResult}
 import csw.logging.api.scaladsl.Logger
-import csw.network.utils.{Networks, SocketUtils}
+import csw.network.utils.Networks
 import esw.http.core.commons.CoordinatedShutdownReasons.FailureReason
 
 import scala.async.Async._
@@ -79,21 +77,12 @@ class HttpService(
   }
 
   private def bind() = {
-    val _host = Networks().hostname
+    val _host = Networks(NetworkType.Public.envKey).hostname
     val _port = settings.port
-
-    /*
-      Explicitly check _host:_port is free as we register Networks().hostname with location service
-      But we bind server to all interfaces so that it can be accessible from any server via localhost
-      and it can happen that server gets bind to some of the interfaces and not to Networks().hostname
-     */
-    if (SocketUtils.isAddressInUse(_host, _port)) {
-      throw new BindException(s"Bind failed for TCP channel on endpoint [${_host}:${_port}]. Address already in use.")
-    }
 
     Http().bindAndHandle(
       handler = applicationRoute,
-      interface = "0.0.0.0",
+      interface = _host,
       port = _port
     )
   }
@@ -102,7 +91,8 @@ class HttpService(
     val registration = HttpRegistration(
       connection = connection,
       port = binding.localAddress.getPort,
-      path = ""
+      path = "",
+      NetworkType.Public
     )
 
     log.info(
