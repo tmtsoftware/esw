@@ -1,4 +1,4 @@
-package esw.ocs.impl.serializer
+package esw.ocs.api.actor
 
 import akka.actor.ExtendedActorSystem
 import akka.actor.typed.ActorSystem
@@ -14,7 +14,6 @@ import esw.ocs.api.actor.messages.{SequenceComponentMsg, SequencerState}
 import esw.ocs.api.codecs.OcsCodecs
 import esw.ocs.api.models.StepList
 import esw.ocs.api.protocol.{EswSequencerResponse, GetStatusResponse, ScriptResponse}
-import esw.ocs.impl.codecs.OcsMsgCodecs
 import io.bullet.borer.{Cbor, Decoder}
 
 import scala.reflect.ClassTag
