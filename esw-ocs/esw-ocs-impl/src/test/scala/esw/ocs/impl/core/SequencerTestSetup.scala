@@ -79,6 +79,7 @@ class SequencerTestSetup(sequence: Sequence)(implicit system: ActorSystem[_]) {
 
     val p: TestProbe[Option[StepList]] = TestProbe[Option[StepList]]()
     eventually {
+      probe.expectMessageType[SequencerSubmitResponse]
       sequencerActor ! GetSequence(p.ref)
       val stepList = p.expectMessageType[Option[StepList]]
       stepList.isDefined shouldBe true
