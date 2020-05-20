@@ -2,8 +2,9 @@ package esw.ocs.api.actor.client
 
 import java.net.URI
 
-import akka.actor.testkit.typed.scaladsl.ScalaTestWithActorTestKit
 import akka.actor.typed.scaladsl.Behaviors
+import akka.actor.typed.{ActorSystem, SpawnProtocol}
+import akka.util.Timeout
 import csw.command.client.messages.sequencer.SequencerMsg
 import csw.command.client.messages.sequencer.SequencerMsg.QueryFinal
 import csw.location.api.models.ComponentType.SequenceComponent
@@ -20,9 +21,17 @@ import esw.ocs.api.actor.messages.SequencerState.{Idle, Loaded, Offline}
 import esw.ocs.api.models.StepList
 import esw.ocs.api.protocol.EditorError.{CannotOperateOnAnInFlightOrFinishedStep, IdDoesNotExist}
 import esw.ocs.api.protocol.{GoOnlineHookFailed, Ok, SubmitResult, Unhandled}
+import org.scalactic.TypeCheckedTripleEquals
+import org.scalatest.concurrent.ScalaFutures
+import org.scalatest.matchers.should.Matchers
 import org.scalatest.wordspec.AnyWordSpecLike
 
-class SequencerImplTest extends ScalaTestWithActorTestKit with AnyWordSpecLike {
+import scala.concurrent.duration.DurationInt
+
+class SequencerImplTest extends AnyWordSpecLike with ScalaFutures with Matchers with TypeCheckedTripleEquals {
+  private implicit val actorSystem      = ActorSystem(SpawnProtocol(), "SequencerImplTest")
+  private implicit val timeout: Timeout = 10.seconds
+
   private val command             = Setup(Prefix("esw.test"), CommandName("command-1"), None)
   private val getSequenceResponse = Some(StepList(Sequence(command)))
   private val stepId              = getSequenceResponse.get.steps.head.id
@@ -91,7 +100,7 @@ class SequencerImplTest extends ScalaTestWithActorTestKit with AnyWordSpecLike {
       Behaviors.same
     }
 
-  private val sequencerRef = spawn(mockedBehavior)
+  private val sequencerRef = actorSystem.systemActorOf(mockedBehavior, "sequencer")
   private val sequencer    = new SequencerImpl(sequencerRef)
 
   "getSequence | ESW-222" in {
