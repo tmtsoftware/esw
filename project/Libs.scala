@@ -21,6 +21,8 @@ object Libs {
 
   val blockhound          = "io.projectreactor.tools"                   % "blockhound"        % "1.0.3.RELEASE"
   val `embedded-keycloak` = "com.github.tmtsoftware.embedded-keycloak" %% "embedded-keycloak" % "9374d69"
+
+  val `ammonite` = "com.lihaoyi" % "ammonite" % "2.1.4" cross CrossVersion.full
 }
 
 object Csw {
@@ -41,6 +43,7 @@ object Csw {
   val `csw-database`              = Org %% "csw-database"        % Version
   val `csw-event-api`             = Org %% "csw-event-api"       % Version
   val `csw-event-client`          = Org %% "csw-event-client"    % Version
+  val `csw-framework`             = Org %% "csw-framework"       % Version
   val `csw-integration-multi-jvm` = Org %% "integration"         % Version classifier "multi-jvm"
   val `csw-logging-models`        = dep(Org %%% "csw-logging-models" % Version)
   val `csw-location-api`          = dep(Org %%% "csw-location-api" % Version)

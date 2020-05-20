@@ -32,7 +32,3 @@ Refer RELEASING.md in `csw` repository.
 ### Release sequencer-scripts
 
 Refer RELEASING.md in `sequencer-scripts` repository.
-
-### Release csw-shell
-
-Refer RELEASING.md in `csw-shell` repository.

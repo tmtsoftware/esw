@@ -253,4 +253,11 @@ object Dependencies {
       Libs.`embedded-keycloak`
     )
   )
+
+  val EswShell = Def.setting(
+    Seq(
+      Csw.`csw-framework`,
+      Libs.`ammonite`
+    )
+  )
 }

@@ -13,7 +13,8 @@ lazy val aggregateProjects: Seq[ProjectReference] =
     examples,
     `esw-commons`,
     `esw-sm`,
-    `esw-testkit`
+    `esw-testkit`,
+    `esw-shell`
   )
 
 lazy val githubReleases: Seq[ProjectReference] = Seq(`esw-ocs-app`, `esw-gateway-server`, `esw-sm-app`)
@@ -24,7 +25,8 @@ lazy val unidocExclusions: Seq[ProjectReference] = Seq(
   `esw-ocs-handler`,
   `esw-agent`,
   `esw-sm-api`.js,
-  examples
+  examples,
+  `esw-shell`
 )
 val jsTestArg              = testOptions in Test := Seq(Tests.Argument("-oDF"))
 val enableCoverage         = sys.props.get("enableCoverage").contains("true")
@@ -282,3 +284,10 @@ lazy val `esw-testkit` = project
     `esw-ocs-app`,
     `esw-agent-app`
   )
+
+lazy val `esw-shell` = project
+  .in(file("esw-shell"))
+  .settings(
+    libraryDependencies ++= Dependencies.EswShell.value
+  )
+  .dependsOn(`esw-ocs-impl`)
