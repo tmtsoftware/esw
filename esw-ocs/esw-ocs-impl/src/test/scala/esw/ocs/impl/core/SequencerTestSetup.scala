@@ -75,6 +75,8 @@ class SequencerTestSetup(sequence: Sequence)(implicit system: ActorSystem[_]) {
 
     sequencerActor ! SubmitSequenceInternal(sequence, probe.ref)
 
+    probe.expectMessageType[SequencerSubmitResponse]
+
     val p: TestProbe[Option[StepList]] = TestProbe[Option[StepList]]()
     eventually {
       sequencerActor ! GetSequence(p.ref)
