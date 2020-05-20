@@ -1,19 +1,26 @@
 package esw.ocs.api.actor
 
+import java.net.URI
 import java.time.Instant
 
+import akka.Done
 import akka.actor.testkit.typed.scaladsl.TestProbe
 import akka.actor.typed.{ActorSystem, SpawnProtocol}
 import akka.serialization.SerializationExtension
 import csw.command.client.messages.sequencer.SequencerMsg
-import csw.location.api.models.AkkaLocation
+import csw.location.api.models.ComponentType.Sequencer
+import csw.location.api.models.Connection.AkkaConnection
+import csw.location.api.models.{AkkaLocation, ComponentId}
 import csw.params.commands.CommandResponse.Completed
 import csw.params.commands.{CommandName, Sequence, Setup}
 import csw.params.core.models.Id
 import csw.prefix.models.Prefix
+import csw.prefix.models.Subsystem.ESW
 import csw.time.core.models.UTCTime
+import esw.ocs.api.actor.messages.SequenceComponentMsg.{GetStatus, LoadScript, Restart, UnloadScript}
 import esw.ocs.api.actor.messages.SequencerMessages._
 import esw.ocs.api.actor.messages.SequencerState
+import esw.ocs.api.actor.messages.SequencerState._
 import esw.ocs.api.models.{Step, StepList}
 import esw.ocs.api.protocol.EditorError.IdDoesNotExist
 import esw.ocs.api.protocol.{DiagnosticModeResponse, SequencerSubmitResponse, _}
@@ -146,5 +153,67 @@ class OcsAkkaSerializerTest extends AnyWordSpecLike with Matchers with TypeCheck
 
     val bytes = serializer.toBinary(stepList)
     serializer.fromBinary(bytes, Some(stepList.getClass)) shouldEqual stepList
+  }
+
+  "should use ocs serializer for Response (de)serialization" in {
+    val akkaLocation = AkkaLocation(AkkaConnection(ComponentId(Prefix(ESW, "primary"), Sequencer)), URI.create("uri"))
+    val testData = Table(
+      "Sequencer Response models",
+      GetStatusResponse(Some(akkaLocation)),
+      GetStatusResponse(None),
+      ScriptResponse(Left(ScriptError("error"))),
+      ScriptResponse(Right(akkaLocation))
+    )
+
+    forAll(testData) { response =>
+      val serializer = serialization.findSerializerFor(response)
+      serializer.getClass shouldBe classOf[OcsAkkaSerializer]
+
+      val bytes = serializer.toBinary(response)
+      serializer.fromBinary(bytes, Some(response.getClass)) shouldEqual response
+    }
+  }
+
+  "should use ocs serializer for SequenceComponentMsg (de)serialization" in {
+    val testData = Table(
+      "SequenceComponentMsg models",
+      LoadScript(ESW, "IRIS_Darknight", TestProbe[ScriptResponse]().ref),
+      Restart(TestProbe[ScriptResponse]().ref),
+      UnloadScript(TestProbe[Done]().ref),
+      GetStatus(TestProbe[GetStatusResponse]().ref)
+    )
+
+    forAll(testData) { sequenceComponentMsg =>
+      val serializer = serialization.findSerializerFor(sequenceComponentMsg)
+      serializer.getClass shouldBe classOf[OcsAkkaSerializer]
+
+      val bytes = serializer.toBinary(sequenceComponentMsg)
+      serializer.fromBinary(bytes, Some(sequenceComponentMsg.getClass)) shouldEqual sequenceComponentMsg
+    }
+  }
+
+  "should use ocs serializer for SequencerState (de)serialization" in {
+    val testData = Table(
+      "SequencerState models",
+      Idle,
+      Loaded,
+      InProgress,
+      Offline,
+      GoingOnline,
+      GoingOffline,
+      ShuttingDown,
+      AbortingSequence,
+      Stopping,
+      Submitting,
+      Starting
+    )
+
+    forAll(testData) { sequencerState =>
+      val serializer = serialization.findSerializerFor(sequencerState)
+      serializer.getClass shouldBe classOf[OcsAkkaSerializer]
+
+      val bytes = serializer.toBinary(sequencerState)
+      serializer.fromBinary(bytes, Some(sequencerState.getClass)) shouldEqual sequencerState
+    }
   }
 }
