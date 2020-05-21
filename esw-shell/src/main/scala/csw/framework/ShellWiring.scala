@@ -19,7 +19,7 @@ class ShellWiring {
         locationService,
         eventServiceFactory,
         alarmServiceFactory,
-        // dummy component info, it is not used by csw-shell
+        // dummy component info, it is not used by esw-shell
         ComponentInfo(
           Prefix("csw.shell"),
           ComponentType.Service,

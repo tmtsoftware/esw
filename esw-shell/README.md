@@ -1,4 +1,4 @@
-# csw-shell
+# esw-shell
 
 This project contains an interactive shell and allows its users to gain access to all the major csw services via CLI 
 which then can be used to communicate with a HCD (Hardware Control Daemon) and an Assembly using 
@@ -31,9 +31,21 @@ from the root directory of the project
  
 ## Running esw-shell using Coursier
 
+Execute the following command to launch esw-shell.(`<version>` can be also be SHA)
 
+```
+cs launch --channel https://raw.githubusercontent.com/tmtsoftware/apps/master/apps.json esw-shell:<version>
+```
 
+You can add the TMT apps channel to your Coursier by below command.
+```
+cs install --add-channel https://raw.githubusercontent.com/tmtsoftware/apps/master/apps.json
+```
 
+After adding TMT apps channel you can simply launch any csw app by executing
+```
+cs launch <app name>:<version | SHA>
+```
 
 ## Usage of Command Service to interact with HCDs, Assemblies and Sequencers 
 
