@@ -114,7 +114,7 @@ lazy val `esw-ocs-dsl-kt` = project
 
 lazy val `esw-ocs-app` = project
   .in(file("esw-ocs/esw-ocs-app"))
-  .enablePlugins(EswBuildInfo, DeployApp, MaybeCoverage)
+  .enablePlugins(EswBuildInfo, MaybeCoverage)
   .settings(
     libraryDependencies ++= Dependencies.OcsApp.value
   )
@@ -134,7 +134,7 @@ lazy val `esw-agent` = project
 
 lazy val `esw-agent-app` = project
   .in(file("esw-agent/esw-agent-app"))
-  .enablePlugins(EswBuildInfo, DeployApp, MaybeCoverage)
+  .enablePlugins(EswBuildInfo, MaybeCoverage)
   .settings(libraryDependencies ++= Dependencies.AgentApp.value)
   .dependsOn(
     `esw-agent-client`
@@ -142,7 +142,7 @@ lazy val `esw-agent-app` = project
 
 lazy val `esw-agent-client` = project
   .in(file("esw-agent/esw-agent-client"))
-  .enablePlugins(DeployApp, MaybeCoverage)
+  .enablePlugins(MaybeCoverage)
   .settings(libraryDependencies ++= Dependencies.AgentClient.value)
 
 lazy val `esw-http-core` = project
@@ -197,7 +197,7 @@ lazy val `esw-gateway-impl` = project
 
 lazy val `esw-gateway-server` = project
   .in(file("esw-gateway/esw-gateway-server"))
-  .enablePlugins(EswBuildInfo, DeployApp, MaybeCoverage)
+  .enablePlugins(EswBuildInfo, MaybeCoverage)
   .settings(
     libraryDependencies ++= Dependencies.EswGatewayServer.value
   )
@@ -261,7 +261,7 @@ lazy val `esw-sm-impl` = project
 
 lazy val `esw-sm-app` = project
   .in(file("esw-sm/esw-sm-app"))
-  .enablePlugins(EswBuildInfo, DeployApp)
+  .enablePlugins(EswBuildInfo)
   .settings(
     libraryDependencies ++= Dependencies.EswSmApp.value
   )
@@ -289,6 +289,6 @@ lazy val `esw-shell` = project
   .in(file("esw-shell"))
   .settings(
     libraryDependencies ++= Dependencies.EswShell.value,
-    fork := false
+    fork := false // this is needed for the ammonite shell to run
   )
   .dependsOn(`esw-ocs-impl`)
