@@ -2,9 +2,8 @@ package esw.agent.client
 
 import java.net.URI
 
-import akka.actor.testkit.typed.scaladsl.ScalaTestWithActorTestKit
-import akka.actor.typed.Scheduler
 import akka.actor.typed.scaladsl.Behaviors
+import akka.actor.typed.{ActorSystem, Scheduler, SpawnProtocol}
 import csw.location.api.models.ComponentType.{Machine, SequenceComponent, Service}
 import csw.location.api.models.Connection.AkkaConnection
 import csw.location.api.models.{AkkaLocation, ComponentId}
@@ -15,18 +14,16 @@ import esw.agent.api.ComponentStatus.{Running, Stopping}
 import esw.agent.api.{AgentCommand, AgentStatus, Killed, Spawned}
 import org.mockito.MockitoSugar
 import org.scalatest.BeforeAndAfterAll
+import org.scalatest.concurrent.ScalaFutures.convertScalaFuture
 import org.scalatest.matchers.should.Matchers
 import org.scalatest.wordspec.AnyWordSpecLike
 
 import scala.concurrent.Future
 import scala.concurrent.duration.DurationLong
 
-class AgentClientTest
-    extends ScalaTestWithActorTestKit
-    with AnyWordSpecLike
-    with Matchers
-    with BeforeAndAfterAll
-    with MockitoSugar {
+class AgentClientTest extends AnyWordSpecLike with Matchers with BeforeAndAfterAll with MockitoSugar {
+
+  private implicit val system: ActorSystem[SpawnProtocol.Command] = ActorSystem(SpawnProtocol(), "location-service-system")
 
   "make" should {
     "resolve the given prefix and return a new instance of AgentClient  | ESW-237" in {
@@ -63,7 +60,7 @@ class AgentClientTest
 
   "spawnSequenceComponent" should {
     "send SpawnSequenceComponent message to agent and return a future with agent response" in {
-      val agentRef                = spawn(stubAgent)
+      val agentRef                = system.systemActorOf(stubAgent, "test-agent1")
       implicit val sch: Scheduler = system.scheduler
       val agentClient             = new AgentClient(agentRef)
       val prefix                  = Prefix("esw.test2")
@@ -73,7 +70,7 @@ class AgentClientTest
 
   "spawnRedis" should {
     "send SpawnRedis message to agent and return a future with agent response" in {
-      val agentRef                = spawn(stubAgent)
+      val agentRef                = system.systemActorOf(stubAgent, "test-agent2")
       implicit val sch: Scheduler = system.scheduler
       val agentClient             = new AgentClient(agentRef)
       val prefix                  = Prefix("esw.test3")
@@ -83,7 +80,7 @@ class AgentClientTest
 
   "killComponent" should {
     "send KillComponent message to agent and return a future with agent response" in {
-      val agentRef                = spawn(stubAgent)
+      val agentRef                = system.systemActorOf(stubAgent, "test-agent3")
       implicit val sch: Scheduler = system.scheduler
       val agentClient             = new AgentClient(agentRef)
       val componentId             = ComponentId(Prefix("esw.test3"), SequenceComponent)
@@ -93,7 +90,7 @@ class AgentClientTest
 
   "getComponentStatus" should {
     "send GetComponentStatus message to agent and return a future with agent response" in {
-      val agentRef                = spawn(stubAgent)
+      val agentRef                = system.systemActorOf(stubAgent, "test-agent4")
       implicit val sch: Scheduler = system.scheduler
       val agentClient             = new AgentClient(agentRef)
       val componentId             = ComponentId(Prefix("esw.test3"), SequenceComponent)
@@ -103,7 +100,7 @@ class AgentClientTest
 
   "getAgentStatus" should {
     "send GetAgentStatus message to agent and return a future with agent response" in {
-      val agentRef                = spawn(stubAgent)
+      val agentRef                = system.systemActorOf(stubAgent, "test-agent5")
       implicit val sch: Scheduler = system.scheduler
       val agentClient             = new AgentClient(agentRef)
       val componentId             = ComponentId(Prefix("esw.comp"), Service)

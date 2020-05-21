@@ -5,7 +5,7 @@ import java.net.URI
 import akka.Done
 import akka.actor.CoordinatedShutdown
 import akka.actor.CoordinatedShutdown.UnknownReason
-import akka.actor.testkit.typed.scaladsl.{ScalaTestWithActorTestKit, TestProbe}
+import akka.actor.testkit.typed.scaladsl.TestProbe
 import akka.actor.typed.{ActorRef, ActorSystem, SpawnProtocol}
 import csw.location.api.exceptions.{OtherLocationIsRegistered, RegistrationFailed}
 import csw.location.api.models.ComponentType.SequenceComponent
@@ -22,7 +22,7 @@ import org.scalatest.time.SpanSugar.convertFloatToGrainOfTime
 
 import scala.concurrent.{ExecutionContext, Future}
 
-class SequenceComponentRegistrationTest extends ScalaTestWithActorTestKit with BaseTestSuite {
+class SequenceComponentRegistrationTest extends BaseTestSuite {
   private val subsystem = Subsystem.TCS
   private val uri       = new URI("uri")
 

@@ -1,7 +1,7 @@
 package esw.agent.app
 
-import akka.actor.testkit.typed.scaladsl.{ScalaTestWithActorTestKit, TestProbe}
-import akka.actor.typed.Scheduler
+import akka.actor.testkit.typed.scaladsl.TestProbe
+import akka.actor.typed.{ActorSystem, Scheduler, SpawnProtocol}
 import csw.location.api.models.ComponentType.SequenceComponent
 import csw.location.api.models._
 import csw.location.api.scaladsl.LocationService
@@ -22,12 +22,13 @@ import org.scalatest.wordspec.AnyWordSpecLike
 import scala.concurrent.duration.{DurationLong, FiniteDuration}
 import scala.concurrent.{Future, Promise}
 
-class GetAgentStatusTest extends ScalaTestWithActorTestKit with AnyWordSpecLike with MockitoSugar with BeforeAndAfterEach {
+class GetAgentStatusTest extends AnyWordSpecLike with MockitoSugar with BeforeAndAfterEach {
 
-  private val locationService = mock[LocationService]
-  private val processExecutor = mock[ProcessExecutor]
-  private val process         = mock[Process]
-  private val logger          = mock[Logger]
+  private implicit val system: ActorSystem[SpawnProtocol.Command] = ActorSystem(SpawnProtocol(), "location-service-system")
+  private val locationService                                     = mock[LocationService]
+  private val processExecutor                                     = mock[ProcessExecutor]
+  private val process                                             = mock[Process]
+  private val logger                                              = mock[Logger]
 
   private val agentSettings         = AgentSettings("/tmp", 15.seconds, 3.seconds)
   implicit val scheduler: Scheduler = system.scheduler
@@ -66,12 +67,15 @@ class GetAgentStatusTest extends ScalaTestWithActorTestKit with AnyWordSpecLike 
   }
 
   private def spawnAgentActor(agentSettings: AgentSettings = agentSettings) = {
-    spawn(new AgentActor(locationService, processExecutor, agentSettings, logger).behavior(AgentState.empty))
+    system.systemActorOf(
+      new AgentActor(locationService, processExecutor, agentSettings, logger).behavior(AgentState.empty),
+      "test-actor"
+    )
   }
 
   private def delayedFuture[T](value: T, delay: FiniteDuration): Future[T] = {
     val promise = Promise[T]()
-    testKit.system.scheduler.scheduleOnce(delay, () => promise.success(value))(system.executionContext)
+    system.scheduler.scheduleOnce(delay, () => promise.success(value))(system.executionContext)
     promise.future
   }
 }

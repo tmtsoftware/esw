@@ -5,7 +5,7 @@ import java.net.URI
 import akka.Done
 import akka.actor.CoordinatedShutdown
 import akka.actor.CoordinatedShutdown.UnknownReason
-import akka.actor.testkit.typed.scaladsl.{ScalaTestWithActorTestKit, TestProbe}
+import akka.actor.testkit.typed.scaladsl.TestProbe
 import akka.actor.typed.scaladsl.Behaviors
 import akka.actor.typed.{ActorSystem, SpawnProtocol}
 import csw.location.api.AkkaRegistrationFactory
@@ -23,10 +23,11 @@ import esw.commons.{BaseTestSuite, Timeouts}
 import scala.concurrent.duration.DurationDouble
 import scala.concurrent.{ExecutionContext, Future}
 
-class LocationServiceUtilTest extends ScalaTestWithActorTestKit with BaseTestSuite {
+class LocationServiceUtilTest extends BaseTestSuite {
 
-  private val locationService       = mock[LocationService]
-  implicit val ec: ExecutionContext = system.executionContext
+  private implicit val system: ActorSystem[SpawnProtocol.Command] = ActorSystem(SpawnProtocol(), "location-service-system")
+  private val locationService                                     = mock[LocationService]
+  implicit val ec: ExecutionContext                               = system.executionContext
 
   // this only for creating TestProbe as the AkkaRegistration needs remote enabled actor Ref.
   private val actorSystem: ActorSystem[SpawnProtocol.Command] = ActorSystem(SpawnProtocol(), "testSystem")

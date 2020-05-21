@@ -3,8 +3,8 @@ package esw.agent.app
 import java.net.URI
 import java.util.concurrent.CompletableFuture
 
-import akka.actor.testkit.typed.scaladsl.{ScalaTestWithActorTestKit, TestProbe}
-import akka.actor.typed.Scheduler
+import akka.actor.testkit.typed.scaladsl.TestProbe
+import akka.actor.typed.{ActorSystem, Scheduler, SpawnProtocol}
 import csw.location.api.models.ComponentType.{SequenceComponent, Service}
 import csw.location.api.models.Connection.{AkkaConnection, TcpConnection}
 import csw.location.api.models._
@@ -29,12 +29,13 @@ import scala.concurrent.duration.{DurationLong, FiniteDuration}
 import scala.concurrent.{Future, Promise}
 import scala.util.Random
 
-class GetComponentStatusTest extends ScalaTestWithActorTestKit with AnyWordSpecLike with MockitoSugar with BeforeAndAfterEach {
+class GetComponentStatusTest extends AnyWordSpecLike with MockitoSugar with BeforeAndAfterEach {
 
-  private val locationService = mock[LocationService]
-  private val processExecutor = mock[ProcessExecutor]
-  private val process         = mock[Process]
-  private val logger          = mock[Logger]
+  private implicit val system: ActorSystem[SpawnProtocol.Command] = ActorSystem(SpawnProtocol(), "component-system")
+  private val locationService                                     = mock[LocationService]
+  private val processExecutor                                     = mock[ProcessExecutor]
+  private val process                                             = mock[Process]
+  private val logger                                              = mock[Logger]
 
   private val agentSettings         = AgentSettings("/tmp", 15.seconds, 3.seconds)
   implicit val scheduler: Scheduler = system.scheduler
@@ -52,14 +53,14 @@ class GetComponentStatusTest extends ScalaTestWithActorTestKit with AnyWordSpecL
     val spawnComponent = SpawnRedis(_, prefix, 6548, List.empty)
 
     "reply 'NotAvailable' when given component is not present on machine | ESW-286" in {
-      val agentActorRef = spawnAgentActor()
+      val agentActorRef = spawnAgentActor(name = "test-actor1")
       val probe         = TestProbe[ComponentStatus]()
       agentActorRef ! getStatus(probe.ref)
       probe.expectMessage(NotAvailable)
     }
 
     "reply 'Initializing' when registration is being checked for given component before spawning process | ESW-286" in {
-      val agentActorRef = spawnAgentActor()
+      val agentActorRef = spawnAgentActor(name = "test-actor2")
       val spawner       = TestProbe[SpawnResponse]()
       val probe         = TestProbe[ComponentStatus]()
 
@@ -72,7 +73,7 @@ class GetComponentStatusTest extends ScalaTestWithActorTestKit with AnyWordSpecL
     }
 
     "reply 'Initializing' when registration is being performed for given component after spawning process | ESW-286" in {
-      val agentActorRef = spawnAgentActor()
+      val agentActorRef = spawnAgentActor(name = "test-actor3")
       val spawner       = TestProbe[SpawnResponse]()
       val probe         = TestProbe[ComponentStatus]()
 
@@ -85,7 +86,7 @@ class GetComponentStatusTest extends ScalaTestWithActorTestKit with AnyWordSpecL
     }
 
     "reply 'Running' when process is running and registered | ESW-286" in {
-      val agentActorRef = spawnAgentActor()
+      val agentActorRef = spawnAgentActor(name = "test-actor4")
       val spawner       = TestProbe[SpawnResponse]()
       val probe         = TestProbe[ComponentStatus]()
 
@@ -99,7 +100,7 @@ class GetComponentStatusTest extends ScalaTestWithActorTestKit with AnyWordSpecL
     }
 
     "reply 'Stopping' when process is stopping | ESW-286" in {
-      val agentActorRef = spawnAgentActor()
+      val agentActorRef = spawnAgentActor(name = "test-actor5")
       val spawner       = TestProbe[SpawnResponse]()
       val killer        = TestProbe[KillResponse]()
       val probe         = TestProbe[ComponentStatus]()
@@ -127,14 +128,14 @@ class GetComponentStatusTest extends ScalaTestWithActorTestKit with AnyWordSpecL
     val spawnComponent = SpawnSequenceComponent(_, prefix)
 
     "reply 'NotAvailable' when given component is not present on machine | ESW-286" in {
-      val agentActorRef = spawnAgentActor()
+      val agentActorRef = spawnAgentActor(name = "test-actor6")
       val probe         = TestProbe[ComponentStatus]()
       agentActorRef ! getStatus(probe.ref)
       probe.expectMessage(NotAvailable)
     }
 
     "reply 'Initializing' when registration is being checked for given component before spawning process | ESW-286" in {
-      val agentActorRef = spawnAgentActor()
+      val agentActorRef = spawnAgentActor(name = "test-actor7")
       val spawner       = TestProbe[SpawnResponse]()
       val probe         = TestProbe[ComponentStatus]()
 
@@ -147,7 +148,7 @@ class GetComponentStatusTest extends ScalaTestWithActorTestKit with AnyWordSpecL
     }
 
     "reply 'Initializing' when registration is being validated for given component after spawning process | ESW-286" in {
-      val agentActorRef = spawnAgentActor()
+      val agentActorRef = spawnAgentActor(name = "test-actor8")
       val spawner       = TestProbe[SpawnResponse]()
       val probe         = TestProbe[ComponentStatus]()
 
@@ -160,7 +161,7 @@ class GetComponentStatusTest extends ScalaTestWithActorTestKit with AnyWordSpecL
     }
 
     "reply 'Running' when process is running and registered | ESW-286" in {
-      val agentActorRef = spawnAgentActor()
+      val agentActorRef = spawnAgentActor(name = "test-actor9")
       val spawner       = TestProbe[SpawnResponse]()
       val probe         = TestProbe[ComponentStatus]()
 
@@ -174,7 +175,7 @@ class GetComponentStatusTest extends ScalaTestWithActorTestKit with AnyWordSpecL
     }
 
     "reply 'Stopping' when process is stopping | ESW-286" in {
-      val agentActorRef = spawnAgentActor()
+      val agentActorRef = spawnAgentActor(name = "test-actor10")
       val spawner       = TestProbe[SpawnResponse]()
       val killer        = TestProbe[KillResponse]()
       val probe         = TestProbe[ComponentStatus]()
@@ -216,13 +217,13 @@ class GetComponentStatusTest extends ScalaTestWithActorTestKit with AnyWordSpecL
     when(processExecutor.runCommand(any[List[String]], any[Prefix])).thenReturn(Right(process))
   }
 
-  private def spawnAgentActor(agentSettings: AgentSettings = agentSettings) = {
-    spawn(new AgentActor(locationService, processExecutor, agentSettings, logger).behavior(AgentState.empty))
+  private def spawnAgentActor(agentSettings: AgentSettings = agentSettings, name: String) = {
+    system.systemActorOf(new AgentActor(locationService, processExecutor, agentSettings, logger).behavior(AgentState.empty), name)
   }
 
   private def delayedFuture[T](value: T, delay: FiniteDuration): Future[T] = {
     val promise = Promise[T]()
-    testKit.system.scheduler.scheduleOnce(delay, () => promise.success(value))(system.executionContext)
+    system.scheduler.scheduleOnce(delay, () => promise.success(value))(system.executionContext)
     promise.future
   }
 }

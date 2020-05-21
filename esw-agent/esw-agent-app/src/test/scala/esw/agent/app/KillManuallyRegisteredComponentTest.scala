@@ -3,8 +3,8 @@ package esw.agent.app
 import java.net.URI
 import java.util.concurrent.CompletableFuture
 
-import akka.actor.testkit.typed.scaladsl.{ScalaTestWithActorTestKit, TestProbe}
-import akka.actor.typed.Scheduler
+import akka.actor.testkit.typed.scaladsl.TestProbe
+import akka.actor.typed.{ActorSystem, Scheduler, SpawnProtocol}
 import csw.location.api.models.ComponentType.Service
 import csw.location.api.models.Connection.TcpConnection
 import csw.location.api.models.{ComponentId, TcpLocation, TcpRegistration}
@@ -28,16 +28,13 @@ import scala.concurrent.{Future, Promise}
 import scala.util.Random
 
 //todo: fix test names
-class KillManuallyRegisteredComponentTest
-    extends ScalaTestWithActorTestKit
-    with AnyWordSpecLike
-    with MockitoSugar
-    with BeforeAndAfterEach {
+class KillManuallyRegisteredComponentTest extends AnyWordSpecLike with MockitoSugar with BeforeAndAfterEach {
 
-  private val locationService = mock[LocationService]
-  private val processExecutor = mock[ProcessExecutor]
-  private val process         = mock[Process]
-  private val logger          = mock[Logger]
+  private implicit val system: ActorSystem[SpawnProtocol.Command] = ActorSystem(SpawnProtocol(), "component-system")
+  private val locationService                                     = mock[LocationService]
+  private val processExecutor                                     = mock[ProcessExecutor]
+  private val process                                             = mock[Process]
+  private val logger                                              = mock[Logger]
 
   private val agentSettings         = AgentSettings("/tmp", 15.seconds, 3.seconds)
   implicit val scheduler: Scheduler = system.scheduler
@@ -53,7 +50,7 @@ class KillManuallyRegisteredComponentTest
   "Kill (manually registered) Component" must {
 
     "reply 'killedGracefully' after stopping a registered component gracefully | ESW-276" in {
-      val agentActorRef = spawnAgentActor()
+      val agentActorRef = spawnAgentActor(name = "test-actor1")
       val probe1        = TestProbe[SpawnResponse]()
       val probe2        = TestProbe[KillResponse]()
 
@@ -76,9 +73,10 @@ class KillManuallyRegisteredComponentTest
     }
 
     "reply 'killedForcefully' after stopping a registered component forcefully when it does not gracefully in given time | ESW-276" in {
-      val agentActorRef = spawnAgentActor(agentSettings.copy(durationToWaitForGracefulProcessTermination = 2.second))
-      val probe1        = TestProbe[SpawnResponse]()
-      val probe2        = TestProbe[KillResponse]()
+      val agentActorRef =
+        spawnAgentActor(agentSettings.copy(durationToWaitForGracefulProcessTermination = 2.second), "test-actor2")
+      val probe1 = TestProbe[SpawnResponse]()
+      val probe2 = TestProbe[KillResponse]()
 
       mockLocationServiceForRedis()
       mockSuccessfulProcess(5.seconds)
@@ -98,7 +96,7 @@ class KillManuallyRegisteredComponentTest
     }
 
     "reply 'killedGracefully' after killing a running component when component is waiting registration completion | ESW-276" in {
-      val agentActorRef = spawnAgentActor()
+      val agentActorRef = spawnAgentActor(name = "test-actor3")
       val probe1        = TestProbe[SpawnResponse]()
       val probe2        = TestProbe[KillResponse]()
 
@@ -121,7 +119,7 @@ class KillManuallyRegisteredComponentTest
     }
 
     "reply 'killedForcefully' after killing a running component when component is waiting registration confirmation | ESW-276" in {
-      val agentActorRef = spawnAgentActor()
+      val agentActorRef = spawnAgentActor(name = "test-actor4")
       val probe1        = TestProbe[SpawnResponse]()
       val probe2        = TestProbe[KillResponse]()
 
@@ -145,7 +143,7 @@ class KillManuallyRegisteredComponentTest
     }
 
     "reply 'killedGracefully', unregister the component and kill the component when registration is being performed | ESW-276" in {
-      val agentActorRef = spawnAgentActor()
+      val agentActorRef = spawnAgentActor(name = "test-actor5")
       val probe1        = TestProbe[SpawnResponse]()
       val probe2        = TestProbe[KillResponse]()
 
@@ -166,10 +164,11 @@ class KillManuallyRegisteredComponentTest
     }
 
     "reply 'Failed' when process is already stopping by another message | ESW-276" in {
-      val agentActorRef = spawnAgentActor(agentSettings.copy(durationToWaitForGracefulProcessTermination = 4.seconds))
-      val spawnProbe    = TestProbe[SpawnResponse]()
-      val firstKiller   = TestProbe[KillResponse]()
-      val secondKiller  = TestProbe[KillResponse]()
+      val agentActorRef =
+        spawnAgentActor(agentSettings.copy(durationToWaitForGracefulProcessTermination = 4.seconds), "test-actor6")
+      val spawnProbe   = TestProbe[SpawnResponse]()
+      val firstKiller  = TestProbe[KillResponse]()
+      val secondKiller = TestProbe[KillResponse]()
 
       mockLocationServiceForRedis()
       mockSuccessfulProcess(dieAfter = 2.seconds)
@@ -192,7 +191,7 @@ class KillManuallyRegisteredComponentTest
     }
 
     "reply 'Failed' when given component is not running on agent | ESW-276" in {
-      val agentActorRef = spawnAgentActor()
+      val agentActorRef = spawnAgentActor(name = "test-actor7")
       val probe         = TestProbe[KillResponse]()
 
       //try to stop the component
@@ -227,13 +226,13 @@ class KillManuallyRegisteredComponentTest
       .thenReturn(delayedFuture(redisRegistrationResult, registrationDuration))
   }
 
-  private def spawnAgentActor(agentSettings: AgentSettings = agentSettings) = {
-    spawn(new AgentActor(locationService, processExecutor, agentSettings, logger).behavior(AgentState.empty))
+  private def spawnAgentActor(agentSettings: AgentSettings = agentSettings, name: String) = {
+    system.systemActorOf(new AgentActor(locationService, processExecutor, agentSettings, logger).behavior(AgentState.empty), name)
   }
 
   private def delayedFuture[T](value: T, delay: FiniteDuration): Future[T] = {
     val promise = Promise[T]()
-    testKit.system.scheduler.scheduleOnce(delay, () => promise.success(value))(system.executionContext)
+    system.scheduler.scheduleOnce(delay, () => promise.success(value))(system.executionContext)
     promise.future
   }
 }
