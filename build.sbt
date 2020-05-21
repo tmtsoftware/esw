@@ -288,6 +288,7 @@ lazy val `esw-testkit` = project
 lazy val `esw-shell` = project
   .in(file("esw-shell"))
   .settings(
-    libraryDependencies ++= Dependencies.EswShell.value
+    libraryDependencies ++= Dependencies.EswShell.value,
+    fork := false
   )
   .dependsOn(`esw-ocs-impl`)
