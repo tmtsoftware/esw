@@ -3,7 +3,7 @@ import sbt.Def.{setting => dep}
 import sbt._
 
 object Libs {
-  private val MSocketVersion = "f833c17"
+  private val MSocketVersion = "8abf7c1"
 
   val `case-app`           = "com.github.alexarchambault" %% "case-app" % "2.0.0-M16"
   val enumeratum           = dep("com.beachape" %%% "enumeratum" % "1.6.1") //MIT License
@@ -79,7 +79,7 @@ object AkkaHttp {
 }
 
 object Borer {
-  private val Version = "1.5.0"
+  private val Version = "1.6.0"
   private val Org     = "io.bullet"
 
   val `borer-core`        = dep(Org %%% "borer-core" % Version)
