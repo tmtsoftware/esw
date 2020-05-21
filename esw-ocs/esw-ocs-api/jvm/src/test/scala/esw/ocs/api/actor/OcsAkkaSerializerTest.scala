@@ -60,7 +60,7 @@ class OcsAkkaSerializerTest extends AnyWordSpecLike with Matchers with TypeCheck
     val diagnosticModeResponseRef   = TestProbe[DiagnosticModeResponse]().ref
     val id                          = Id("id")
     val setup                       = Setup(Prefix("esw.test"), CommandName("command"), None)
-    val sequence                    = Sequence(Seq(setup))
+    val sequence                    = Sequence(setup)
     val commands                    = List(setup)
     val startTime                   = UTCTime(Instant.ofEpochMilli(1000L))
 
@@ -145,7 +145,7 @@ class OcsAkkaSerializerTest extends AnyWordSpecLike with Matchers with TypeCheck
 
   "should use ocs serializer for StepList (de)serialization" in {
     val setup    = Setup(Prefix("esw.test"), CommandName("command"), None)
-    val sequence = Sequence(Seq(setup))
+    val sequence = Sequence(setup)
     val stepList = StepList(sequence)
 
     val serializer = serialization.findSerializerFor(stepList)
