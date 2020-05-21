@@ -1173,7 +1173,7 @@ class SequencerBehaviorTest extends BaseTestSuite {
       probe.expectTerminated(sequencerActor)
     }
 
-    "InProgress -> Shutdown | ESW-141" ignore {
+    "InProgress -> Shutdown | ESW-141" in {
       val sequencerSetup = SequencerTestSetup.idle(sequence)(actorSystem)
       import sequencerSetup._
 
