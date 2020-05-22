@@ -1,7 +1,8 @@
 package esw.ocs.impl.core
 
-import akka.actor.testkit.typed.scaladsl.{ScalaTestWithActorTestKit, TestProbe}
+import akka.actor.testkit.typed.scaladsl.TestProbe
 import akka.actor.typed.scaladsl.Behaviors
+import akka.actor.typed.{ActorSystem, SpawnProtocol}
 import csw.command.client.messages.sequencer.SequencerMsg
 import csw.params.commands.{CommandName, Setup}
 import csw.prefix.models.Prefix
@@ -12,9 +13,10 @@ import esw.ocs.api.models.{Step, StepStatus}
 import esw.ocs.api.protocol.{Ok, PullNextResult}
 import org.scalatest.time.SpanSugar.convertFloatToGrainOfTime
 
-class SequenceOperatorTest extends ScalaTestWithActorTestKit with BaseTestSuite {
+class SequenceOperatorTest extends BaseTestSuite {
 
-  private val command = Setup(Prefix("esw.test"), CommandName("command-1"), None)
+  private implicit val system: ActorSystem[SpawnProtocol.Command] = ActorSystem(SpawnProtocol(), "location-service-system")
+  private val command                                             = Setup(Prefix("esw.test"), CommandName("command-1"), None)
 
   private val pullNextResponse   = PullNextResult(Step(command))
   private val mayBeNextResponse  = Some(Step(command))
@@ -33,7 +35,7 @@ class SequenceOperatorTest extends ScalaTestWithActorTestKit with BaseTestSuite 
     Behaviors.same
   }
 
-  private val sequencer        = spawn(mockedBehavior)
+  private val sequencer        = system.systemActorOf(mockedBehavior, "sequencer-actor")
   private val sequenceOperator = new SequenceOperator(sequencer)
 
   override implicit def patienceConfig: PatienceConfig = PatienceConfig(10.seconds)
