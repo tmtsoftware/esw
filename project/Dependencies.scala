@@ -176,6 +176,7 @@ object Dependencies {
       Libs.`msocket-impl-jvm`,
       Csw.`csw-admin-impl`,
       Libs.`prometheus-akka-http`,
+      AkkaHttp.`akka-http-spray-json`,
       Libs.`tmt-test-reporter`        % Test,
       Libs.`mockito-scala`            % Test,
       Libs.scalatest.value            % Test,

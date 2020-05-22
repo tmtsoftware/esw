@@ -3,7 +3,7 @@ import sbt.Def.{setting => dep}
 import sbt._
 
 object Libs {
-  private val MSocketVersion = "8abf7c1"
+  private val MSocketVersion = "749078469e"
 
   val `case-app`           = "com.github.alexarchambault" %% "case-app" % "2.0.0-M16"
   val enumeratum           = dep("com.beachape" %%% "enumeratum" % "1.6.1") //MIT License
@@ -27,7 +27,7 @@ object Libs {
 
 object Csw {
   private val Org     = "com.github.tmtsoftware.csw"
-  private val Version = "6be5640" // Change this to 0.1.0-SNAPSHOT to test with local csw changes (after publishLocal)
+  private val Version = "90c7515ff9" // Change this to 0.1.0-SNAPSHOT to test with local csw changes (after publishLocal)
 
   val `csw-aas-http`              = Org %% "csw-aas-http"        % Version
   val `csw-admin-api`             = dep(Org %%% "csw-admin-api" % Version)
