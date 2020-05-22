@@ -6,7 +6,6 @@ import akka.http.scaladsl.model.ws.{BinaryMessage, TextMessage}
 import akka.http.scaladsl.testkit.{ScalatestRouteTest, WSProbe}
 import akka.stream.testkit.scaladsl.TestSource
 import akka.util.Timeout
-import com.lonelyplanet.prometheus.PrometheusResponseTimeRecorder
 import csw.command.api.messages.CommandServiceWebsocketMessage.QueryFinal
 import csw.event.api.scaladsl.EventSubscription
 import csw.event.api.scaladsl.SubscriptionModes.RateLimiterMode
@@ -26,6 +25,7 @@ import esw.gateway.server.CswWiringMocks
 import esw.gateway.server.handlers.WebsocketHandlerImpl
 import esw.ocs.api.protocol.SequencerWebsocketRequest
 import io.bullet.borer.Decoder
+import io.prometheus.client.CollectorRegistry
 import msocket.api.ContentEncoding.JsonText
 import msocket.api.ContentType
 import msocket.impl.CborByteString
@@ -52,7 +52,7 @@ class WebsocketMetricsTest extends BaseTestSuite with ScalatestRouteTest with Ga
   private val runId       = Id("123")
   private val componentId = ComponentId(Prefix(TCS, "test"), Assembly)
   private val timeout     = 10.minutes
-  private val registry    = PrometheusResponseTimeRecorder.DefaultRegistry
+  private val registry    = CollectorRegistry.defaultRegistry
 
   override def clientContentType: ContentType = ContentType.Json
 

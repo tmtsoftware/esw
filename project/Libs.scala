@@ -3,7 +3,7 @@ import sbt.Def.{setting => dep}
 import sbt._
 
 object Libs {
-  private val MSocketVersion = "749078469e"
+  private val MSocketVersion = "4a6a2aa"
 
   val `case-app`           = "com.github.alexarchambault" %% "case-app" % "2.0.0-M16"
   val enumeratum           = dep("com.beachape" %%% "enumeratum" % "1.6.1") //MIT License
@@ -17,8 +17,6 @@ object Libs {
   val `jupiter-interface`  = "net.aichler"                     % "jupiter-interface"  % "0.8.3"
   val `tmt-test-reporter`  = "com.github.tmtsoftware"         %% "rtm"                % "78dd097b7a"
 
-  val `prometheus-akka-http` = "com.lonelyplanet" %% "prometheus-akka-http" % "0.5.0"
-
   val blockhound          = "io.projectreactor.tools"                   % "blockhound"        % "1.0.3.RELEASE"
   val `embedded-keycloak` = "com.github.tmtsoftware.embedded-keycloak" %% "embedded-keycloak" % "9374d69"
 
@@ -27,7 +25,7 @@ object Libs {
 
 object Csw {
   private val Org     = "com.github.tmtsoftware.csw"
-  private val Version = "90c7515ff9" // Change this to 0.1.0-SNAPSHOT to test with local csw changes (after publishLocal)
+  private val Version = "c00d98d" // Change this to 0.1.0-SNAPSHOT to test with local csw changes (after publishLocal)
 
   val `csw-aas-http`              = Org %% "csw-aas-http"        % Version
   val `csw-admin-api`             = dep(Org %%% "csw-admin-api" % Version)
@@ -71,9 +69,8 @@ object Akka {
 object AkkaHttp {
   private val Version = "10.2.0-M1" //all akka is Apache License 2.0
 
-  val `akka-http`            = "com.typesafe.akka" %% "akka-http"            % Version
-  val `akka-http-testkit`    = "com.typesafe.akka" %% "akka-http-testkit"    % Version
-  val `akka-http-spray-json` = "com.typesafe.akka" %% "akka-http-spray-json" % Version
+  val `akka-http`         = "com.typesafe.akka" %% "akka-http"         % Version
+  val `akka-http-testkit` = "com.typesafe.akka" %% "akka-http-testkit" % Version
 
   val `akka-http-cors` = "ch.megard" %% "akka-http-cors" % "0.4.3"
 }
