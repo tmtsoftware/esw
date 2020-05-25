@@ -53,7 +53,7 @@ language (however, we still refer to them as Scripts). This is for several reaso
 
 The most important feature of "scripting" languages that we wanted to retain is the ability to quickly modify and reload a script without 
 recompiling and deploying software. Another important feature is interactivity. Scripting languages are usually based around a "shell" 
-that allows interactive usage. This is provided with the `esw-shell` companion project [here](https://github.com/tmtsoftware/esw/esw-shell)
+that allows interactive usage. This is provided with the `esw-shell` companion project [here](https://github.com/tmtsoftware/esw/tree/master/esw-shell)
 
 At the ESW FDR, we planned using Scala for the scripting DSL. While this did work, the extra syntax of using Future's was cumbersome
 for the scripting use case, and Kotlin provided the coroutine environment that provided the asynchronous feature of futures,
