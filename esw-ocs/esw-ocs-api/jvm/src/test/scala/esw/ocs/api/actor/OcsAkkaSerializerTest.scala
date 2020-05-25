@@ -17,6 +17,7 @@ import csw.params.core.models.Id
 import csw.prefix.models.Prefix
 import csw.prefix.models.Subsystem.ESW
 import csw.time.core.models.UTCTime
+import esw.ocs.api.BaseTestSuite
 import esw.ocs.api.actor.messages.SequenceComponentMsg.{GetStatus, LoadScript, Restart, UnloadScript}
 import esw.ocs.api.actor.messages.SequencerMessages._
 import esw.ocs.api.actor.messages.SequencerState
@@ -24,17 +25,13 @@ import esw.ocs.api.actor.messages.SequencerState._
 import esw.ocs.api.models.{Step, StepList}
 import esw.ocs.api.protocol.EditorError.IdDoesNotExist
 import esw.ocs.api.protocol.{DiagnosticModeResponse, SequencerSubmitResponse, _}
-import org.scalactic.TypeCheckedTripleEquals
-import org.scalatest.BeforeAndAfterAll
-import org.scalatest.matchers.should.Matchers
 import org.scalatest.prop.TableDrivenPropertyChecks.forAll
 import org.scalatest.prop.Tables.Table
-import org.scalatest.wordspec.AnyWordSpecLike
 
 import scala.concurrent.Await
 import scala.concurrent.duration.DurationLong
 
-class OcsAkkaSerializerTest extends AnyWordSpecLike with Matchers with TypeCheckedTripleEquals with BeforeAndAfterAll {
+class OcsAkkaSerializerTest extends BaseTestSuite {
   private final implicit val system: ActorSystem[SpawnProtocol.Command] = ActorSystem(SpawnProtocol(), "OcsAkkaSerializerTest")
   private final val serialization                                       = SerializationExtension(system)
 

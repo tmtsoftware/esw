@@ -16,21 +16,18 @@ import csw.params.core.models.Id
 import csw.prefix.models.Prefix
 import csw.prefix.models.Subsystem.ESW
 import csw.time.core.models.UTCTime
+import esw.ocs.api.BaseTestSuite
 import esw.ocs.api.actor.messages.SequencerMessages._
 import esw.ocs.api.actor.messages.SequencerState.{Idle, Loaded, Offline}
 import esw.ocs.api.models.StepList
 import esw.ocs.api.protocol.EditorError.{CannotOperateOnAnInFlightOrFinishedStep, IdDoesNotExist}
 import esw.ocs.api.protocol.{GoOnlineHookFailed, Ok, SubmitResult, Unhandled}
-import org.scalactic.TypeCheckedTripleEquals
-import org.scalatest.concurrent.ScalaFutures
-import org.scalatest.matchers.should.Matchers
-import org.scalatest.wordspec.AnyWordSpecLike
 
 import scala.concurrent.duration.DurationInt
 
-class SequencerImplTest extends AnyWordSpecLike with ScalaFutures with Matchers with TypeCheckedTripleEquals {
-  private implicit val actorSystem      = ActorSystem(SpawnProtocol(), "SequencerImplTest")
-  private implicit val timeout: Timeout = 10.seconds
+class SequencerImplTest extends BaseTestSuite {
+  private implicit val actorSystem: ActorSystem[SpawnProtocol.Command] = ActorSystem(SpawnProtocol(), "SequencerImplTest")
+  private implicit val timeout: Timeout                                = 10.seconds
 
   private val command             = Setup(Prefix("esw.test"), CommandName("command-1"), None)
   private val getSequenceResponse = Some(StepList(Sequence(command)))

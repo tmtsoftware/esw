@@ -12,6 +12,7 @@ import csw.params.core.models.Id
 import csw.prefix.models.Prefix
 import csw.prefix.models.Subsystem.ESW
 import csw.time.core.models.UTCTime
+import esw.ocs.api.BaseTestSuite
 import esw.ocs.api.codecs.SequencerHttpCodecs
 import esw.ocs.api.models.StepList
 import esw.ocs.api.protocol.SequencerPostRequest._
@@ -20,16 +21,12 @@ import esw.ocs.api.protocol.{SequencerPostRequest, _}
 import io.bullet.borer.{Decoder, Encoder}
 import msocket.api.Transport
 import org.mockito.ArgumentMatchers.{any, eq => argsEq}
-import org.mockito.MockitoSugar
-import org.scalatest.concurrent.ScalaFutures._
-import org.scalatest.matchers.should.Matchers
-import org.scalatest.wordspec.AnyWordSpecLike
 
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future
 import scala.concurrent.duration.{DurationLong, FiniteDuration}
 
-class SequencerClientTest extends AnyWordSpecLike with Matchers with MockitoSugar with SequencerHttpCodecs {
+class SequencerClientTest extends BaseTestSuite with SequencerHttpCodecs {
 
   private val postClient      = mock[Transport[SequencerPostRequest]]
   private val websocketClient = mock[Transport[SequencerWebsocketRequest]]
