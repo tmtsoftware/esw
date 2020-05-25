@@ -7,7 +7,6 @@ import csw.prefix.models.Prefix
 import esw.ocs.dsl.highlevel.models.Major
 import esw.ocs.dsl.highlevel.models.TCS
 import io.kotlintest.eventually
-import io.kotlintest.matchers.date.within
 import io.mockk.clearMocks
 import io.mockk.every
 import io.mockk.mockk
