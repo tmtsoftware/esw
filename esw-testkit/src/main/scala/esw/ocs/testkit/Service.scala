@@ -14,4 +14,5 @@ object Service {
   case class WrappedCSWService(cswService: CSWService) extends Service
   case object Gateway                                  extends Service
   case object MachineAgent                             extends Service
+  case object AAS                                      extends Service
 }

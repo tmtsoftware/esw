@@ -15,15 +15,13 @@ import esw.gateway.api.clients.ClientFactory
 import esw.gateway.server.utils.Resolver
 import esw.ocs.api.SequencerApi
 import esw.ocs.testkit.EswTestKit
+import esw.ocs.testkit.Service.AAS
 import msocket.impl.HttpError
-import org.tmt.embedded_keycloak.impl.StopHandle
 
 import scala.concurrent.duration.DurationLong
 import scala.concurrent.{Await, Future}
 
-class GatewayAuthTest extends EswTestKit {
-
-  private var keycloakStopHandle: StopHandle = _
+class GatewayAuthTest extends EswTestKit(AAS) {
 
   private val mockResolver: Resolver = mock[Resolver]
 
@@ -40,7 +38,6 @@ class GatewayAuthTest extends EswTestKit {
 
   override def beforeAll(): Unit = {
     super.beforeAll()
-    keycloakStopHandle = startKeycloak()
     gatewayServerWiring = startGateway()
 
     when(mockResolver.commandService(componentIdCommandService)).thenReturn(Future.successful(mockCommandService))
@@ -52,7 +49,6 @@ class GatewayAuthTest extends EswTestKit {
   }
 
   override def afterAll(): Unit = {
-    keycloakStopHandle.stop()
     gatewayServerWiring.httpService.shutdown(UnknownReason).futureValue
     super.afterAll()
   }

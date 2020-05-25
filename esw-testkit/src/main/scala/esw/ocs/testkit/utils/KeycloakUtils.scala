@@ -62,12 +62,19 @@ trait KeycloakUtils extends BaseTestSuite {
     )
   )
 
+  private var keycloakStopHandle: Option[StopHandle] = None
+
   def startKeycloak(keycloakData: KeycloakData = defaultGatewayData): StopHandle = {
     val embeddedKeycloak =
       new EmbeddedKeycloak(keycloakData, KeycloakSettings(port = keycloakPort, printProcessLogs = false))
     val stopHandle = Await.result(embeddedKeycloak.startServer()(actorSystem.executionContext), serverTimeout)
     Await.result(locationService.register(HttpRegistration(AASConnection.value, keycloakPort, "auth")), defaultTimeout)
+    keycloakStopHandle = Some(stopHandle)
     stopHandle
+  }
+
+  def stopKeycloak(): Unit = {
+    keycloakStopHandle.foreach(_.stop())
   }
 
   def getToken(tokenUserName: String, tokenPassword: String, client: String = "esw-gateway-client") = { () =>
