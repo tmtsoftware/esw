@@ -39,7 +39,9 @@ class HttpServiceTest extends EswTestKit {
       val location = registrationResult.location
       location.uri.getHost shouldBe hostname
       location.connection shouldBe settings.httpConnection
+      //should not bind to all but specific hostname IP
       SocketUtils.isAddressInUse(hostname, _servicePort) shouldBe true
+      SocketUtils.isAddressInUse("localhost", _servicePort) shouldBe false
       actorRuntime.shutdown(UnknownReason).futureValue
     }
 
