@@ -72,4 +72,14 @@ object GatewayWiring {
       override lazy val actorSystem: ActorSystem[SpawnProtocol.Command] = _actorSystem
       override private[esw] lazy val securityDirectives                 = _securityDirectives
     }
+
+  private[esw] def make(
+      _port: Option[Int],
+      local: Boolean,
+      commandRoleConfigPath: Path,
+      _actorSystem: ActorSystem[SpawnProtocol.Command]
+  ): GatewayWiring =
+    new GatewayWiring(_port, local, commandRoleConfigPath) {
+      override lazy val actorSystem: ActorSystem[SpawnProtocol.Command] = _actorSystem
+    }
 }

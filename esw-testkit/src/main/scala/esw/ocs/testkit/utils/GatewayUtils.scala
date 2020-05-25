@@ -50,8 +50,11 @@ trait GatewayUtils extends LocationUtils with GatewayCodecs {
     new WebsocketTransport[WebsocketRequest](webSocketUri, ContentType.Json)
   }
 
-  def spawnGateway(path: file.Path = commandRolesPath): GatewayWiring = {
-    val wiring = GatewayWiring.make(Some(gatewayPort), local = true, path, actorSystem, directives)
+  def spawnGateway(authEnabled: Boolean = false, path: file.Path = commandRolesPath): GatewayWiring = {
+    val wiring =
+      if (authEnabled) GatewayWiring.make(Some(gatewayPort), local = true, path, actorSystem)
+      else GatewayWiring.make(Some(gatewayPort), local = true, path, actorSystem, directives)
+
     gatewayWiring = Some(wiring)
     wiring.httpService.registeredLazyBinding.futureValue
     wiring
