@@ -28,6 +28,7 @@ class GatewayAuthTest extends EswTestKit(AAS) {
   private val mockCommandService: CommandService = mock[CommandService]
   private val componentIdCommandService          = ComponentId(Prefix("IRIS.filter.wheel"), Assembly)
   private val irisUserLevelCommand               = Setup(Prefix("CSW.ncc.trombone"), CommandName("startExposure"), Some(ObsId("obsId")))
+  private val irisCommandNotInConf               = Setup(Prefix("CSW.ncc.trombone"), CommandName("stopExposure"), Some(ObsId("obsId")))
   private val irisEngLevelCommand                = Setup(Prefix("CSW.ncc.trombone"), CommandName("setVoltage"), Some(ObsId("obsId")))
   private val irisAdminLevelCommand              = Setup(Prefix("CSW.ncc.trombone"), CommandName("upgradeFirmware"), Some(ObsId("obsId")))
 
@@ -45,6 +46,7 @@ class GatewayAuthTest extends EswTestKit(AAS) {
     when(mockCommandService.submit(irisUserLevelCommand)).thenReturn(Future.successful(Started(Id("4321"))))
     when(mockCommandService.submit(irisEngLevelCommand)).thenReturn(Future.successful(Started(Id("1234"))))
     when(mockCommandService.submit(irisAdminLevelCommand)).thenReturn(Future.successful(Started(Id("9876"))))
+    when(mockCommandService.submit(irisCommandNotInConf)).thenReturn(Future.successful(Started(Id("3453"))))
 
     when(mockResolver.sequencerCommandService(componentIdSequencer)).thenReturn(Future.successful(mockSequencerCommandService))
     when(mockSequencerCommandService.submit(sequence)).thenReturn(Future.successful(Started(Id("5678"))))
@@ -93,7 +95,7 @@ class GatewayAuthTest extends EswTestKit(AAS) {
       httpError.statusCode shouldBe 403
     }
 
-    "return 200 when IRIS Command has no IRIS role mentioned in conf and client has IRIS-User | ESW-95" ignore {
+    "return 200 when IRIS Command does not have any IRIS role mentioned in conf and client has IRIS-User | ESW-95" in {
       val gatewayPostClientWithAuth = gatewayHTTPClient(tokenWithIrisUserRole)
       val clientFactory             = new ClientFactory(gatewayPostClientWithAuth, gatewayWsClient)
       val commandService            = clientFactory.component(componentIdCommandService)
@@ -118,6 +120,24 @@ class GatewayAuthTest extends EswTestKit(AAS) {
 
       val submitResponse = Await.result(commandService.submit(irisUserLevelCommand), 10.minutes)
       submitResponse shouldBe a[Started]
+    }
+
+    "return 200 when IRIS Command not present in conf and client has IRIS-User | ESW-95" in {
+      val gatewayPostClientWithAuth = gatewayHTTPClient(tokenWithIrisUserRole)
+      val clientFactory             = new ClientFactory(gatewayPostClientWithAuth, gatewayWsClient)
+      val commandService            = clientFactory.component(componentIdCommandService)
+
+      val submitResponse = Await.result(commandService.submit(irisCommandNotInConf), 10.minutes)
+      submitResponse shouldBe a[Started]
+    }
+
+    "return 403 when IRIS Command not present in conf and client has TCS-User | ESW-95" in {
+      val gatewayPostClientWithAuth = gatewayHTTPClient(tokenWithTcsUserRole)
+      val clientFactory             = new ClientFactory(gatewayPostClientWithAuth, gatewayWsClient)
+      val commandService            = clientFactory.component(componentIdCommandService)
+
+      val httpError = intercept[HttpError](Await.result(commandService.submit(irisCommandNotInConf), defaultTimeout))
+      httpError.statusCode shouldBe 403
     }
 
     "return 401 response for protected command route with no token | ESW-95" in {
