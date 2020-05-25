@@ -69,6 +69,7 @@ class SequencerBehaviorTest extends BaseTestSuite {
 
       val probe = TestProbe[SequencerSubmitResponse]()
       sequencerActor ! StartSequence(probe.ref)
+      assertSequencerState(InProgress)
       pullAllStepsAndAssertSequenceIsFinished()
       val sequenceResult = probe.expectMessageType[SubmitResult]
       sequenceResult.submitResponse shouldBe a[Started]

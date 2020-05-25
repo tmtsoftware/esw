@@ -349,12 +349,11 @@ class SequencerTestSetup(sequence: Sequence)(implicit system: ActorSystem[_]) {
     sequencerActor ! StepFailure(message, deadLetter)
 
   // this is to simulate engine pull and executing steps
-  private def pullAllSteps(sequencer: ActorRef[SequencerMsg]): Unit = {
-    (1 to sequence.commands.size).foreach(_ => {
+  private def pullAllSteps(sequencer: ActorRef[SequencerMsg]): Unit =
+    (1 to sequence.commands.size).foreach { _ =>
       pullNextCommand()
       sequencer ! StepSuccess(deadLetter)
-    })
-  }
+    }
 
   def getSequence(): Option[StepList] = {
     val probe = TestProbe[Option[StepList]]()
@@ -362,9 +361,8 @@ class SequencerTestSetup(sequence: Sequence)(implicit system: ActorSystem[_]) {
     probe.expectMessageType[Option[StepList]]
   }
 
-  def assertForGettingSequenceComponent(replyTo: TestProbe[AkkaLocation]): Unit = {
+  def assertForGettingSequenceComponent(replyTo: TestProbe[AkkaLocation]): Unit =
     replyTo.expectMessage(sequenceComponent)
-  }
 }
 
 object SequencerTestSetup {
