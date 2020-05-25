@@ -9,7 +9,7 @@ import csw.location.api.scaladsl.LocationService
 import esw.http.core.wiring.ActorRuntime
 import org.mockito.MockitoSugar
 import org.scalatest.BeforeAndAfterAll
-import org.scalatest.concurrent.Eventually._
+import org.scalatest.concurrent.Eventually
 import org.scalatest.concurrent.ScalaFutures._
 import org.scalatest.matchers.should.Matchers
 import org.scalatest.wordspec.AnyWordSpec
@@ -17,7 +17,7 @@ import org.scalatest.wordspec.AnyWordSpec
 import scala.concurrent.Future
 import scala.concurrent.duration.DurationInt
 
-class ComponentFactoryTest extends AnyWordSpec with MockitoSugar with Matchers with BeforeAndAfterAll {
+class ComponentFactoryTest extends AnyWordSpec with MockitoSugar with Matchers with BeforeAndAfterAll with Eventually {
   private val actorSystem: ActorSystem[SpawnProtocol.Command] = ActorSystem(SpawnProtocol(), "test")
   private val actorRuntime                                    = new ActorRuntime(actorSystem)
   import actorRuntime._
@@ -36,6 +36,8 @@ class ComponentFactoryTest extends AnyWordSpec with MockitoSugar with Matchers w
 
   when(locationService.resolve(AkkaConnection(httpComponentId), 5.seconds)).thenReturn(Future.successful(None))
   when(locationService.resolve(httpConnection, 5.seconds)).thenReturn(Future.successful(Some(httpLocation)))
+
+  override implicit def patienceConfig: PatienceConfig = PatienceConfig(5.seconds)
 
   override protected def afterAll(): Unit = {
     actorSystem.terminate()
