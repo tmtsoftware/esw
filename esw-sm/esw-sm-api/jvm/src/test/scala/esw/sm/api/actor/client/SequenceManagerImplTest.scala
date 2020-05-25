@@ -5,9 +5,11 @@ import java.net.URI
 import akka.actor.typed.scaladsl.Behaviors
 import akka.actor.typed.{ActorSystem, SpawnProtocol}
 import akka.util.Timeout
-import csw.location.api.models.Connection.HttpConnection
-import csw.location.api.models.{ComponentId, ComponentType, HttpLocation}
+import csw.location.api.models.ComponentType.Service
+import csw.location.api.models.Connection.{AkkaConnection, HttpConnection}
+import csw.location.api.models.{AkkaLocation, ComponentId, ComponentType, HttpLocation}
 import csw.prefix.models.Prefix
+import csw.prefix.models.Subsystem.ESW
 import esw.sm.api.SequenceManagerState.Idle
 import esw.sm.api.actor.messages.SequenceManagerMsg
 import esw.sm.api.models.{CleanupResponse, ConfigureResponse, GetRunningObsModesResponse}
@@ -15,6 +17,7 @@ import org.scalactic.TypeCheckedTripleEquals
 import org.scalatest.concurrent.ScalaFutures
 import org.scalatest.matchers.should.Matchers
 import org.scalatest.wordspec.AnyWordSpecLike
+import csw.location.api.extensions.ActorExtension._
 
 import scala.concurrent.duration.DurationInt
 
@@ -40,7 +43,8 @@ class SequenceManagerImplTest extends AnyWordSpecLike with TypeCheckedTripleEqua
   }
 
   private val smRef           = system.systemActorOf(mockedBehavior, "sm")
-  private val sequenceManager = new SequenceManagerImpl(smRef)
+  private val location        = AkkaLocation(AkkaConnection(ComponentId(Prefix(ESW, "sequence_manager"), Service)), smRef.toURI)
+  private val sequenceManager = new SequenceManagerImpl(location)
 
   "SequenceManagerImpl" must {
     "configure" in {

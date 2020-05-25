@@ -14,6 +14,7 @@ import esw.ocs.app.SequencerAppCommand.SequenceComponent
 import esw.ocs.app.wiring.SequenceComponentWiring
 import esw.ocs.testkit.EswTestKit
 import esw.sm.api.SequenceManagerApi
+import esw.sm.api.actor.client.SequenceManagerImpl
 import esw.sm.api.models.ConfigureResponse.ConflictingResourcesWithRunningObsMode
 import esw.sm.api.models.{CleanupResponse, ConfigureResponse}
 import esw.sm.app.SequenceManagerAppCommand.StartCommand
@@ -35,6 +36,10 @@ class SequenceManagerIntegrationTest extends EswTestKit {
     val aoeswSeqCompPrefix = Prefix(AOESW, "primary")
 
     TestSetup.startSequenceComponents(eswSeqCompPrefix, irisSeqCompPrefix, aoeswSeqCompPrefix)
+
+    //ESW-172 resolve sequence manger fails
+    intercept[Exception](resolveAkkaLocation(sequenceManagerPrefix, Service))
+
     val sequenceManager = TestSetup.startSequenceManager()
 
     //ESW-172 verify sequence manager is registered with location service
@@ -152,7 +157,8 @@ class SequenceManagerIntegrationTest extends EswTestKit {
       val configFilePath = Paths.get(ClassLoader.getSystemResource("smResources.conf").toURI)
       val wiring         = SequenceManagerApp.run(StartCommand(configFilePath))
       seqManagerWirings += wiring
-      wiring.sequenceManagerApi
+      val smLocation = resolveAkkaLocation(sequenceManagerPrefix, Service)
+      new SequenceManagerImpl(smLocation)
     }
 
     def cleanup(): Unit = {

@@ -26,8 +26,6 @@ import csw.prefix.models.Subsystem.ESW
 import esw.commons.Timeouts
 import esw.commons.utils.location.LocationServiceUtil
 import esw.http.core.wiring.ActorRuntime
-import esw.sm.api.SequenceManagerApi
-import esw.sm.api.actor.client.SequenceManagerImpl
 import esw.sm.api.actor.messages.SequenceManagerMsg
 import esw.sm.api.models.SequenceManagerError.LocationServiceError
 import esw.sm.impl.core.{SequenceManagerBehavior, SequenceManagerConfigParser}
@@ -67,8 +65,6 @@ class SequenceManagerWiring(configPath: Path) {
     },
     Timeouts.DefaultTimeout
   )
-
-  lazy val sequenceManagerApi: SequenceManagerApi = new SequenceManagerImpl(sequenceManagerRef)
 
   def start(): Either[LocationServiceError, AkkaLocation] = {
     val registration = AkkaRegistrationFactory.make(AkkaConnection(ComponentId(prefix, Service)), sequenceManagerRef.toURI)
