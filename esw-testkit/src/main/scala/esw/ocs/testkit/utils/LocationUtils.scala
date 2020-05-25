@@ -35,7 +35,7 @@ trait LocationUtils extends BaseTestSuite {
   def resolveSequenceComponentLocation(prefix: Prefix): AkkaLocation =
     resolveAkkaLocation(prefix, ComponentType.SequenceComponent)
 
-  private def resolveAkkaLocation(prefix: Prefix, componentType: ComponentType) =
+  def resolveAkkaLocation(prefix: Prefix, componentType: ComponentType): AkkaLocation =
     locationService
       .resolve(AkkaConnection(ComponentId(prefix, componentType)), 5.seconds)
       .futureValue

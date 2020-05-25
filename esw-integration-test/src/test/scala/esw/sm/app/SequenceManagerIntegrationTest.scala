@@ -4,7 +4,7 @@ import java.nio.file.Paths
 
 import akka.actor.CoordinatedShutdown
 import csw.location.api.models.ComponentId
-import csw.location.api.models.ComponentType.Sequencer
+import csw.location.api.models.ComponentType.{Sequencer, Service}
 import csw.location.api.models.Connection.AkkaConnection
 import csw.prefix.models.Prefix
 import csw.prefix.models.Subsystem._
@@ -16,24 +16,29 @@ import esw.ocs.testkit.EswTestKit
 import esw.sm.api.SequenceManagerApi
 import esw.sm.api.models.ConfigureResponse.ConflictingResourcesWithRunningObsMode
 import esw.sm.api.models.{CleanupResponse, ConfigureResponse}
+import esw.sm.app.SequenceManagerAppCommand.StartCommand
 
 import scala.collection.mutable.ArrayBuffer
 
 class SequenceManagerIntegrationTest extends EswTestKit {
-  private val WFOS_CAL       = "WFOS_Cal"
-  private val IRIS_CAL       = "IRIS_Cal"
-  private val IRIS_DARKNIGHT = "IRIS_Darknight"
+  private val WFOS_CAL              = "WFOS_Cal"
+  private val IRIS_CAL              = "IRIS_Cal"
+  private val IRIS_DARKNIGHT        = "IRIS_Darknight"
+  private val sequenceManagerPrefix = Prefix(ESW, "sequence_manager")
 
   override protected def beforeEach(): Unit = locationService.unregisterAll()
   override protected def afterEach(): Unit  = TestSetup.cleanup()
 
-  "configure and cleanup for provided observation mode | ESW-162, ESW-166, ESW-164" in {
+  "configure and cleanup for provided observation mode | ESW-162, ESW-166, ESW-164, ESW-172" in {
     val eswSeqCompPrefix   = Prefix(ESW, "primary")
     val irisSeqCompPrefix  = Prefix(IRIS, "primary")
     val aoeswSeqCompPrefix = Prefix(AOESW, "primary")
 
     TestSetup.startSequenceComponents(eswSeqCompPrefix, irisSeqCompPrefix, aoeswSeqCompPrefix)
     val sequenceManager = TestSetup.startSequenceManager()
+
+    //ESW-172 verify sequence manager is registered with location service
+    resolveAkkaLocation(sequenceManagerPrefix, Service)
 
     val eswIrisCalPrefix   = Prefix(ESW, IRIS_CAL)
     val irisCalPrefix      = Prefix(IRIS, IRIS_CAL)
@@ -116,6 +121,11 @@ class SequenceManagerIntegrationTest extends EswTestKit {
     sequenceManager.cleanup(IRIS_CAL)
   }
 
+  "should throw exception if config file is missing | ESW-162" in {
+    val exception = intercept[RuntimeException](SequenceManagerApp.main(Array("start", "-p", "sm-config.conf")))
+    exception.getMessage shouldBe "File does not exist on local disk at path sm-config.conf"
+  }
+
   private def sequencerConnection(prefix: Prefix) = AkkaConnection(ComponentId(prefix, Sequencer))
 
   private def assertThatSeqCompIsAvailable(prefix: Prefix): Unit = assertSeqCompAvailability(isSeqCompAvailable = true, prefix)
@@ -140,7 +150,7 @@ class SequenceManagerIntegrationTest extends EswTestKit {
 
     def startSequenceManager(): SequenceManagerApi = {
       val configFilePath = Paths.get(ClassLoader.getSystemResource("smResources.conf").toURI)
-      val wiring         = new SequenceManagerWiring(configFilePath)
+      val wiring         = SequenceManagerApp.run(StartCommand(configFilePath))
       seqManagerWirings += wiring
       wiring.sequenceManagerApi
     }

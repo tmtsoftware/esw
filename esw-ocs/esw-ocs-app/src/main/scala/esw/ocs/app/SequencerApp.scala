@@ -6,8 +6,6 @@ import caseapp.RemainingArgs
 import csw.location.api.extensions.URIExtension.RichURI
 import csw.location.api.models.AkkaLocation
 import csw.location.client.utils.LocationServerStatus
-import csw.logging.api.scaladsl.Logger
-import csw.logging.client.scaladsl.GenericLoggerFactory
 import csw.prefix.models.Subsystem
 import esw.commons.Timeouts
 import esw.http.core.commons.CoordinatedShutdownReasons.FailureReason
@@ -25,8 +23,6 @@ object SequencerApp extends EswCommandApp[SequencerAppCommand] {
   override def appName: String    = getClass.getSimpleName.dropRight(1) // remove $ from class name
   override def appVersion: String = BuildInfo.version
   override def progName: String   = BuildInfo.name
-
-  lazy val log: Logger = GenericLoggerFactory.getLogger
 
   def run(command: SequencerAppCommand, args: RemainingArgs): Unit = {
     LocationServerStatus.requireUpLocally()
@@ -70,7 +66,9 @@ object SequencerApp extends EswCommandApp[SequencerAppCommand] {
 
   private def report(appResult: Either[ScriptError, AkkaLocation]) =
     appResult match {
-      case Left(err) => logAndThrowError(log, s"Failed to start with error: $err")
+      case Left(err) =>
+        val msg = s"Failed to start with error: $err"
+        logAndThrowError(log, msg, new RuntimeException(msg))
       case Right(location) =>
         logInfo(
           log,

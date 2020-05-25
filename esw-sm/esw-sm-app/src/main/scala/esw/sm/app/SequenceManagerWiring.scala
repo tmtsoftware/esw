@@ -11,29 +11,45 @@ import akka.util.Timeout
 import csw.config.api.scaladsl.ConfigClientService
 import csw.config.client.commons.ConfigUtils
 import csw.config.client.scaladsl.ConfigClientFactory
+import csw.location.api.AkkaRegistrationFactory
+import csw.location.api.extensions.ActorExtension._
+import csw.location.api.models.ComponentType.Service
+import csw.location.api.models.Connection.AkkaConnection
+import csw.location.api.models.{AkkaLocation, ComponentId}
 import csw.location.api.scaladsl.LocationService
 import csw.location.client.ActorSystemFactory
 import csw.location.client.scaladsl.HttpLocationServiceFactory
+import csw.logging.api.scaladsl.Logger
+import csw.logging.client.scaladsl.LoggerFactory
+import csw.prefix.models.Prefix
+import csw.prefix.models.Subsystem.ESW
 import esw.commons.Timeouts
 import esw.commons.utils.location.LocationServiceUtil
+import esw.http.core.wiring.ActorRuntime
 import esw.sm.api.SequenceManagerApi
 import esw.sm.api.actor.client.SequenceManagerImpl
 import esw.sm.api.actor.messages.SequenceManagerMsg
+import esw.sm.api.models.SequenceManagerError.LocationServiceError
 import esw.sm.impl.core.{SequenceManagerBehavior, SequenceManagerConfigParser}
 import esw.sm.impl.utils.{AgentUtil, SequenceComponentUtil, SequencerUtil}
 
-import scala.concurrent.{Await, ExecutionContext, Future}
+import scala.concurrent.{Await, Future}
+import scala.util.control.NonFatal
 
 class SequenceManagerWiring(configPath: Path) {
-  private implicit lazy val actorSystem: ActorSystem[SpawnProtocol.Command] =
+  private lazy val actorSystem: ActorSystem[SpawnProtocol.Command] =
     ActorSystemFactory.remote(SpawnProtocol(), "sequencer-manager")
-  private implicit lazy val ec: ExecutionContext = actorSystem.executionContext
-
+  lazy val actorRuntime = new ActorRuntime(actorSystem)
+  import actorRuntime._
   private lazy implicit val timeout: Timeout = Timeouts.DefaultTimeout
+
+  private val prefix = Prefix(ESW, "sequence_manager")
 
   private lazy val locationService: LocationService         = HttpLocationServiceFactory.makeLocalClient(actorSystem)
   private lazy val configClientService: ConfigClientService = ConfigClientFactory.clientApi(actorSystem, locationService)
   private lazy val configUtils: ConfigUtils                 = new ConfigUtils(configClientService)(actorSystem)
+  private lazy val loggerFactory                            = new LoggerFactory(prefix)
+  private lazy val logger: Logger                           = loggerFactory.getLogger
 
   private lazy val locationServiceUtil   = new LocationServiceUtil(locationService)
   private lazy val agentUtil             = new AgentUtil(locationServiceUtil)
@@ -53,6 +69,24 @@ class SequenceManagerWiring(configPath: Path) {
   )
 
   lazy val sequenceManagerApi: SequenceManagerApi = new SequenceManagerImpl(sequenceManagerRef)
+
+  def start(): Either[LocationServiceError, AkkaLocation] = {
+    val registration = AkkaRegistrationFactory.make(AkkaConnection(ComponentId(prefix, Service)), sequenceManagerRef.toURI)
+    val loc = Await.result(
+      locationServiceUtil
+        .register(
+          registration,
+          {
+            case NonFatal(e) => Future.successful(Left(LocationServiceError(e.getMessage)))
+          }
+        ),
+      Timeouts.DefaultTimeout
+    )
+
+    logger.info(s"Successfully started Sequence Manager for subsystem: $prefix")
+
+    loc
+  }
 
   def shutdown(reason: CoordinatedShutdown.Reason): Future[Done] = CoordinatedShutdown(actorSystem).run(reason)
 }
