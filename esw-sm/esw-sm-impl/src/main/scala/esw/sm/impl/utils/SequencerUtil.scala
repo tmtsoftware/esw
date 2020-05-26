@@ -62,6 +62,20 @@ class SequencerUtil(locationServiceUtil: LocationServiceUtil, sequenceComponentU
       .map(_ => Right(Done))
       .recover { case listingFailed: RegistrationListingFailed => Left(listingFailed) }
 
+  // spawn the sequencer on available SequenceComponent
+  def startSequencer(
+      subSystem: Subsystem,
+      observingMode: String,
+      retryCount: Int = retryCount
+  ): Future[Either[SequencerError, AkkaLocation]] =
+    sequenceComponentUtil
+      .getAvailableSequenceComponent(subSystem)
+      .flatMap {
+        case Right(seqCompApi)         => loadScript(subSystem, observingMode, seqCompApi)
+        case Left(_) if retryCount > 0 => startSequencer(subSystem, observingMode, retryCount - 1)
+        case Left(e)                   => Future.successful(Left(e))
+      }
+
   // get sequence component from Sequencer and unload it.
   private def stopSequencer(api: SequencerApi): Future[Done] =
     api.getSequenceComponent.flatMap(sequenceComponentUtil.unloadScript)
@@ -78,17 +92,4 @@ class SequencerUtil(locationServiceUtil: LocationServiceUtil, sequenceComponentU
       .loadScript(subSystem, observingMode)
       .map(_.response.left.map(e => SequenceManagerError.LoadScriptError(e.msg)))
 
-  // spawn the sequencer on available SequenceComponent
-  private def startSequencer(
-      subSystem: Subsystem,
-      observingMode: String,
-      retryCount: Int
-  ): Future[Either[SequencerError, AkkaLocation]] =
-    sequenceComponentUtil
-      .getAvailableSequenceComponent(subSystem)
-      .flatMap {
-        case Right(seqCompApi)         => loadScript(subSystem, observingMode, seqCompApi)
-        case Left(_) if retryCount > 0 => startSequencer(subSystem, observingMode, retryCount - 1)
-        case Left(e)                   => Future.successful(Left(e))
-      }
 }
