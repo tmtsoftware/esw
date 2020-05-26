@@ -16,6 +16,8 @@ import esw.commons.{BaseTestSuite, Timeouts}
 import esw.ocs.api.protocol.{ScriptError, ScriptResponse}
 import esw.ocs.api.{SequenceComponentApi, SequencerApi}
 import esw.sm.api.models.ConfigureResponse.{FailedToStartSequencers, Success}
+import esw.sm.api.models.SequenceManagerError.{LoadScriptError, SpawnSequenceComponentFailed}
+import esw.sm.api.models.Sequencers
 import esw.sm.api.models.SequenceManagerError.SpawnSequenceComponentFailed
 import esw.sm.impl.config.Sequencers
 
@@ -89,6 +91,61 @@ class SequencerUtilTest extends BaseTestSuite {
 
       verify(tcsSeqComp).loadScript(TCS, obsMode)
       verify(eswSeqComp, never).loadScript(ESW, obsMode)
+    }
+  }
+
+  "startSequencer" must {
+    "start given sequencer | ESW-176" in {
+      val obsMode = "darknight"
+      val setup   = new TestSetup(obsMode)
+      import setup._
+
+      sequencerUtil.startSequencer(ESW, obsMode).rightValue should ===(eswLocation)
+
+      verify(sequenceComponentUtil).getAvailableSequenceComponent(ESW)
+      verify(eswSeqComp).loadScript(ESW, obsMode)
+    }
+
+    "return error caused is spawn sequence component fails | ESW-176" in {
+      val obsMode = "moonNight"
+      val setup   = new TestSetup(obsMode)
+      import setup._
+
+      val sequenceComponentFailedError = SpawnSequenceComponentFailed("could not spawn SeqComp for ESW")
+      when(sequenceComponentUtil.getAvailableSequenceComponent(ESW)).thenReturn(futureLeft(sequenceComponentFailedError))
+
+      sequencerUtil.startSequencer(ESW, obsMode).leftValue should ===(sequenceComponentFailedError)
+
+      verify(sequenceComponentUtil, times(4)).getAvailableSequenceComponent(ESW)
+    }
+
+    "retry is spawn sequence component fails | ESW-176" in {
+      val obsMode = "moonNight"
+      val setup   = new TestSetup(obsMode)
+      import setup._
+
+      val sequenceComponentFailedError = SpawnSequenceComponentFailed("could not spawn SeqComp for ESW")
+      when(sequenceComponentUtil.getAvailableSequenceComponent(ESW))
+        .thenReturn(futureLeft(sequenceComponentFailedError), futureRight(eswSeqComp))
+
+      sequencerUtil.startSequencer(ESW, obsMode).rightValue should ===(eswLocation)
+
+      verify(sequenceComponentUtil, times(2)).getAvailableSequenceComponent(ESW)
+    }
+
+    "return error caused if loading script returns error | ESW-176" in {
+      val obsMode = "moonNight"
+      val setup   = new TestSetup(obsMode)
+      import setup._
+
+      // unable to loadScript script error
+      val scriptErrorMsg = s"script initialisation failed for TCS $obsMode"
+      val scriptError    = Future.successful(ScriptResponse(Left(ScriptError(scriptErrorMsg))))
+      when(tcsSeqComp.loadScript(TCS, obsMode)).thenReturn(scriptError)
+
+      sequencerUtil.startSequencer(TCS, obsMode).leftValue should ===(LoadScriptError(scriptErrorMsg))
+
+      verify(sequenceComponentUtil).getAvailableSequenceComponent(TCS)
     }
   }
 

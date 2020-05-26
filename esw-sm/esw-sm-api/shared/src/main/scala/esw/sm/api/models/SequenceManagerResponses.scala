@@ -28,9 +28,31 @@ object CleanupResponse {
   sealed trait Failure extends CleanupResponse
 }
 
+sealed trait StartSequencerResponse extends SmAkkaSerializable
+
+object StartSequencerResponse {
+  sealed trait Success                              extends StartSequencerResponse
+  case class Started(location: HttpLocation)        extends Success
+  case class AlreadyRunning(location: HttpLocation) extends Success
+
+  sealed trait Failure extends StartSequencerResponse
+}
+
 sealed trait CommonFailure extends ConfigureResponse.Failure with CleanupResponse.Failure
 
 object CommonFailure {
-  case class LocationServiceError(msg: String)     extends CommonFailure
+  case class LocationServiceError(msg: String)     extends AgentError with CommonFailure
   case class ConfigurationMissing(obsMode: String) extends CommonFailure
+}
+
+sealed trait SequencerError extends Throwable with Product with StartSequencerResponse.Failure {
+  def msg: String
+}
+
+sealed trait AgentError extends SequencerError
+
+object SequenceManagerError {
+  case class SpawnSequenceComponentFailed(msg: String) extends AgentError
+
+  case class LoadScriptError(msg: String) extends SequencerError
 }

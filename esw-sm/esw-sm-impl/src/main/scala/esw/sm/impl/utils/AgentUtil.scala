@@ -14,6 +14,7 @@ import esw.commons.utils.location.EswLocationError.ResolveLocationFailed
 import esw.commons.utils.location.{EswLocationError, LocationServiceUtil}
 import esw.ocs.api.SequenceComponentApi
 import esw.ocs.api.actor.client.SequenceComponentImpl
+import esw.sm.api.models.CommonFailure.LocationServiceError
 import esw.sm.api.models.{AgentError, SequenceManagerError}
 
 import scala.concurrent.Future
@@ -25,7 +26,7 @@ class AgentUtil(locationServiceUtil: LocationServiceUtil)(implicit actorSystem: 
   def spawnSequenceComponentFor(subsystem: Subsystem): Future[Either[AgentError, SequenceComponentApi]] = {
     val sequenceComponentPrefix = Prefix(subsystem, s"${subsystem}_${Random.between(1, 100)}")
     getAgent
-      .mapLeft(error => SequenceManagerError.LocationServiceError(error.msg))
+      .mapLeft(error => LocationServiceError(error.msg))
       .flatMapE(spawnSeqComp(_, sequenceComponentPrefix))
   }
 
@@ -51,5 +52,5 @@ class AgentUtil(locationServiceUtil: LocationServiceUtil)(implicit actorSystem: 
     locationServiceUtil
       .resolve(AkkaConnection(ComponentId(seqCompPrefix, SequenceComponent)))
       .mapRight(loc => new SequenceComponentImpl(loc))
-      .mapLeft(e => SequenceManagerError.LocationServiceError(e.msg))
+      .mapLeft(e => LocationServiceError(e.msg))
 }
