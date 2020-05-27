@@ -84,7 +84,6 @@ object Dependencies {
       Borer.`borer-derivation`.value,
       Csw.`csw-prefix`.value,
       Csw.`csw-location-api`.value,
-      Csw.`csw-commons`,
       Akka.`akka-actor-typed`,
       Libs.`mockito-scala`            % Test,
       Libs.`tmt-test-reporter`        % Test,
