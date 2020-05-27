@@ -1,4 +1,4 @@
-package esw.sm.api.models
+package esw.sm.impl.config
 
 import csw.prefix.models.Subsystem._
 import org.scalactic.TypeCheckedTripleEquals

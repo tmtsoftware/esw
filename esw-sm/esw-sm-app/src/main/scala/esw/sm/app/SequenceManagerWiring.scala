@@ -28,7 +28,8 @@ import esw.commons.utils.location.LocationServiceUtil
 import esw.http.core.wiring.ActorRuntime
 import esw.sm.api.actor.messages.SequenceManagerMsg
 import esw.sm.api.models.SequenceManagerError.LocationServiceError
-import esw.sm.impl.core.{SequenceManagerBehavior, SequenceManagerConfigParser}
+import esw.sm.impl.config.SequenceManagerConfigParser
+import esw.sm.impl.core.SequenceManagerBehavior
 import esw.sm.impl.utils.{AgentUtil, SequenceComponentUtil, SequencerUtil}
 
 import scala.concurrent.{Await, Future}

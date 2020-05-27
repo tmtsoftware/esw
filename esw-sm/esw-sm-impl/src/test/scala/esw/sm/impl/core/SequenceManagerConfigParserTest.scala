@@ -7,7 +7,7 @@ import com.typesafe.config.{ConfigException, ConfigFactory}
 import csw.config.client.commons.ConfigUtils
 import csw.prefix.models.Subsystem._
 import esw.commons.BaseTestSuite
-import esw.sm.api.models.{ObsModeConfig, Resources, SequenceManagerConfig, Sequencers}
+import esw.sm.impl.config.{ObsModeConfig, Resources, SequenceManagerConfig, SequenceManagerConfigParser, Sequencers}
 import io.bullet.borer.Borer.Error.InvalidInputData
 
 import scala.concurrent.{Await, ExecutionContext, Future}

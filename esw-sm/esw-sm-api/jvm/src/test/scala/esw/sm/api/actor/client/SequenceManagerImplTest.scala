@@ -5,6 +5,7 @@ import java.net.URI
 import akka.actor.typed.scaladsl.Behaviors
 import akka.actor.typed.{ActorSystem, SpawnProtocol}
 import akka.util.Timeout
+import csw.location.api.extensions.ActorExtension._
 import csw.location.api.models.ComponentType.Service
 import csw.location.api.models.Connection.{AkkaConnection, HttpConnection}
 import csw.location.api.models.{AkkaLocation, ComponentId, ComponentType, HttpLocation}
@@ -17,7 +18,6 @@ import org.scalactic.TypeCheckedTripleEquals
 import org.scalatest.concurrent.ScalaFutures
 import org.scalatest.matchers.should.Matchers
 import org.scalatest.wordspec.AnyWordSpecLike
-import csw.location.api.extensions.ActorExtension._
 
 import scala.concurrent.duration.DurationInt
 

@@ -20,6 +20,7 @@ import esw.sm.api.actor.messages.SequenceManagerMsg.{Cleanup, Configure, GetSequ
 import esw.sm.api.models.CommonFailure.{ConfigurationMissing, LocationServiceError}
 import esw.sm.api.models.ConfigureResponse.{ConflictingResourcesWithRunningObsMode, Success}
 import esw.sm.api.models._
+import esw.sm.impl.config.{ObsModeConfig, Resources, SequenceManagerConfig, Sequencers}
 import esw.sm.impl.utils.SequencerUtil
 
 import scala.concurrent.Future
