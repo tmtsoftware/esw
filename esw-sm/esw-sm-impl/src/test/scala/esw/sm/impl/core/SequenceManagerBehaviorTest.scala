@@ -14,7 +14,7 @@ import esw.commons.BaseTestSuite
 import esw.commons.utils.location.EswLocationError.RegistrationListingFailed
 import esw.commons.utils.location.LocationServiceUtil
 import esw.sm.api.SequenceManagerState
-import esw.sm.api.SequenceManagerState.{CleaningInProcess, ConfigurationInProcess, Idle}
+import esw.sm.api.SequenceManagerState.{CleaningUp, Configuring, Idle}
 import esw.sm.api.actor.messages.SequenceManagerMsg
 import esw.sm.api.actor.messages.SequenceManagerMsg.{Cleanup, Configure, GetSequenceManagerState}
 import esw.sm.api.models.CommonFailure.{ConfigurationMissing, LocationServiceError}
@@ -68,7 +68,7 @@ class SequenceManagerBehaviorTest extends BaseTestSuite {
       // STATE TRANSITION: Idle -> Configure() -> ConfigurationInProcess -> Idle
       assertState(Idle)
       smRef ! Configure(Darknight, configureProbe.ref)
-      assertState(ConfigurationInProcess)
+      assertState(Configuring)
       assertState(Idle)
 
       configureProbe.expectMessage(configResponse)
@@ -122,7 +122,7 @@ class SequenceManagerBehaviorTest extends BaseTestSuite {
 
       assertState(Idle)
       smRef ! Cleanup(Darknight, cleanupProbe.ref)
-      assertState(CleaningInProcess)
+      assertState(CleaningUp)
       assertState(Idle)
 
       cleanupProbe.expectMessage(CleanupResponse.Success)

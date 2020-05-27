@@ -37,13 +37,13 @@ class SequenceManagerIntegrationTest extends EswTestKit {
 
     TestSetup.startSequenceComponents(eswSeqCompPrefix, irisSeqCompPrefix, aoeswSeqCompPrefix)
 
-    //ESW-172 resolve sequence manger fails
+    //ESW-172 resolving sequence manager fails
     intercept[Exception](resolveAkkaLocation(sequenceManagerPrefix, Service))
 
     val sequenceManager = TestSetup.startSequenceManager()
 
     //ESW-172 verify sequence manager is registered with location service
-    resolveAkkaLocation(sequenceManagerPrefix, Service)
+    resolveAkkaLocation(sequenceManagerPrefix, Service).prefix shouldBe sequenceManagerPrefix
 
     val eswIrisCalPrefix   = Prefix(ESW, IRIS_CAL)
     val irisCalPrefix      = Prefix(IRIS, IRIS_CAL)
@@ -81,7 +81,7 @@ class SequenceManagerIntegrationTest extends EswTestKit {
     assertThatSeqCompIsAvailable(aoeswSeqCompPrefix)
   }
 
-  "configure should run multiple sequencers efficiently | ESW-168, ESW-169" in {
+  "configure should run multiple obs modes in parallel if resources are not conflicting | ESW-168, ESW-169" in {
     TestSetup.startSequenceComponents(
       Prefix(ESW, "primary"),
       Prefix(ESW, "secondary"),

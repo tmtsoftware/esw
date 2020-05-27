@@ -121,8 +121,8 @@ class SmAkkaSerializerTest extends AnyWordSpecLike with Matchers with TypeChecke
     val testData = Table(
       "Sequence Manager SequenceManagerState models",
       SequenceManagerState.Idle,
-      SequenceManagerState.CleaningInProcess,
-      SequenceManagerState.ConfigurationInProcess
+      SequenceManagerState.CleaningUp,
+      SequenceManagerState.Configuring
     )
 
     forAll(testData) { sequenceManagerState =>

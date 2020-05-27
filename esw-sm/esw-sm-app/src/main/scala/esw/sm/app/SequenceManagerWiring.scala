@@ -40,7 +40,7 @@ class SequenceManagerWiring(configPath: Path) {
     ActorSystemFactory.remote(SpawnProtocol(), "sequencer-manager")
   lazy val actorRuntime = new ActorRuntime(actorSystem)
   import actorRuntime._
-  private lazy implicit val timeout: Timeout = Timeouts.DefaultTimeout
+  private implicit val timeout: Timeout = Timeouts.DefaultTimeout
 
   private val prefix = Prefix(ESW, "sequence_manager")
 
@@ -61,9 +61,7 @@ class SequenceManagerWiring(configPath: Path) {
   private lazy val sequenceManagerBehavior = new SequenceManagerBehavior(config, locationServiceUtil, sequencerUtil)(actorSystem)
 
   private lazy val sequenceManagerRef: ActorRef[SequenceManagerMsg] = Await.result(
-    actorSystem ? { replyTo: ActorRef[ActorRef[SequenceManagerMsg]] =>
-      Spawn(sequenceManagerBehavior.idle(), "sequence-manager", Props.empty, replyTo)
-    },
+    actorSystem ? (Spawn(sequenceManagerBehavior.idle(), "sequence-manager", Props.empty, _)),
     Timeouts.DefaultTimeout
   )
 
@@ -81,7 +79,6 @@ class SequenceManagerWiring(configPath: Path) {
     )
 
     logger.info(s"Successfully started Sequence Manager for subsystem: $prefix")
-
     loc
   }
 
