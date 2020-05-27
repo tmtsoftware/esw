@@ -7,7 +7,7 @@ import csw.commons.CborAkkaSerializer
 import esw.sm.api.actor.codecs.SequenceManagerMsgCodecs
 import esw.sm.api.actor.messages.SequenceManagerRemoteMsg
 import esw.sm.api.codecs.SmAkkaSerializable
-import esw.sm.api.models.{CleanupResponse, ConfigureResponse, GetRunningObsModesResponse}
+import esw.sm.api.models.{CleanupResponse, ConfigureResponse, GetRunningObsModesResponse, StartSequencerResponse}
 
 class SmAkkaSerializer(_actorSystem: ExtendedActorSystem)
     extends CborAkkaSerializer[SmAkkaSerializable]
@@ -18,6 +18,7 @@ class SmAkkaSerializer(_actorSystem: ExtendedActorSystem)
 
   register[SequenceManagerRemoteMsg]
   register[CleanupResponse]
+  register[StartSequencerResponse]
   register[GetRunningObsModesResponse]
   register[ConfigureResponse]
   register[SequenceManagerState]

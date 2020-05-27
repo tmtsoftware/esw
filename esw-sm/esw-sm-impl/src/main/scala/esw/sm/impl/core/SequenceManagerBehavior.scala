@@ -11,8 +11,7 @@ import esw.commons.extensions.FutureEitherExt.FutureEitherOps
 import esw.commons.utils.location.EswLocationError.RegistrationListingFailed
 import esw.commons.utils.location.LocationServiceUtil
 import esw.sm.api.SequenceManagerState
-import esw.sm.api.SequenceManagerState.{CleaningInProcess, ConfigurationInProcess, Idle, SequencerStartInProcess}
-import esw.sm.api.SequenceManagerState.{CleaningUp, Configuring, Idle}
+import esw.sm.api.SequenceManagerState.{CleaningUp, Configuring, Idle, SequencerStartInProcess}
 import esw.sm.api.actor.messages.SequenceManagerMsg
 import esw.sm.api.actor.messages.SequenceManagerMsg._
 import esw.sm.api.models.CommonFailure.{ConfigurationMissing, LocationServiceError}
@@ -40,8 +39,9 @@ class SequenceManagerBehavior(
         case Cleanup(observingMode, replyTo)   => cleanup(observingMode, ctx.self); cleaningUp(replyTo)
         case StartSequencer(subsystem, observingMode, replyTo) =>
           startSequencer(subsystem, observingMode, ctx.self); startingSequencer(replyTo)
-        case msg: CommonMessage                                            => handleCommon(msg, Idle); Behaviors.same
-        case _: CleanupResponseInternal | _: ConfigurationResponseInternal => Behaviors.unhandled
+        case msg: CommonMessage => handleCommon(msg, Idle); Behaviors.same
+        case _: CleanupResponseInternal | _: ConfigurationResponseInternal | _: StartSequencerResponseInternal =>
+          Behaviors.unhandled
       }
     }
 
@@ -84,14 +84,16 @@ class SequenceManagerBehavior(
 
   private def startSequencerAndResolve(subsystem: Subsystem, obsMode: String): Future[StartSequencerResponse] = {
     sequencerUtil
-      .startSequencer(subsystem, obsMode)
-      .flatMap(_ =>
-        locationServiceUtil
-          .resolve(HttpConnection(ComponentId(Prefix(subsystem, obsMode), Sequencer)))
-          .map {
-            case Left(error)     => LocationServiceError(error.msg)
-            case Right(location) => Started(location)
-          }
+      .startSequencer(subsystem, obsMode, 3)
+      .flatMapToAdt(
+        location =>
+          locationServiceUtil
+            .resolve(HttpConnection(ComponentId(Prefix(subsystem, obsMode), Sequencer)))
+            .map {
+              case Left(error)     => LocationServiceError(error.msg)
+              case Right(location) => Started(location)
+            },
+        error => error
       )
   }
 
