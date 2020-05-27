@@ -86,12 +86,12 @@ class SequenceManagerBehavior(
     sequencerUtil
       .startSequencer(subsystem, obsMode, 3)
       .flatMapToAdt(
-        location =>
+        _ =>
           locationServiceUtil
             .resolve(HttpConnection(ComponentId(Prefix(subsystem, obsMode), Sequencer)))
             .map {
-              case Left(error)     => LocationServiceError(error.msg)
-              case Right(location) => Started(location)
+              case Left(error) => LocationServiceError(error.msg)
+              case Right(loc)  => Started(loc)
             },
         error => error
       )
@@ -129,15 +129,14 @@ class SequenceManagerBehavior(
   private def configureResources(requestedObsMode: String, runningObsModes: Set[String]): Future[ConfigureResponse] =
     async {
       config.obsModeConfig(requestedObsMode) match {
-        case Some(ObsModeConfig(resources, sequencers)) =>
-          if (checkResourceConflicts(resources, runningObsModes)) ConflictingResourcesWithRunningObsMode(runningObsModes)
-          else await(sequencerUtil.startSequencers(requestedObsMode, sequencers))
-
-        case None => ConfigurationMissing(requestedObsMode)
+        case Some(ObsModeConfig(resources, _)) if checkConflicts(resources, runningObsModes) =>
+          ConflictingResourcesWithRunningObsMode(runningObsModes)
+        case Some(ObsModeConfig(_, sequencers)) => await(sequencerUtil.startSequencers(requestedObsMode, sequencers))
+        case None                               => ConfigurationMissing(requestedObsMode)
       }
     }
 
-  private def checkResourceConflicts(requiredResources: Resources, runningObsModes: Set[String]) = {
+  private def checkConflicts(requiredResources: Resources, runningObsModes: Set[String]) = {
     // ignoring failure of getResources as config should never be absent for running obsModes
     val configuredResources = runningObsModes.map(config.resources(_).get)
     configuredResources.exists(_.conflictsWith(requiredResources))
