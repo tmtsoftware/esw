@@ -14,7 +14,7 @@ import esw.commons.BaseTestSuite
 import esw.commons.utils.location.EswLocationError.{RegistrationListingFailed, ResolveLocationFailed}
 import esw.commons.utils.location.LocationServiceUtil
 import esw.sm.api.SequenceManagerState
-import esw.sm.api.SequenceManagerState.{CleaningUp, Configuring, Idle, SequencerStartInProcess}
+import esw.sm.api.SequenceManagerState.{CleaningUp, Configuring, Idle, StartingSequencer}
 import esw.sm.api.actor.messages.SequenceManagerMsg
 import esw.sm.api.actor.messages.SequenceManagerMsg.{Cleanup, Configure, GetSequenceManagerState, StartSequencer}
 import esw.sm.api.models.CommonFailure.{ConfigurationMissing, LocationServiceError}
@@ -165,7 +165,7 @@ class SequenceManagerBehaviorTest extends BaseTestSuite {
 
       assertState(Idle)
       smRef ! StartSequencer(ESW, Darknight, startSequencerResponseProbe.ref)
-      assertState(SequencerStartInProcess)
+      assertState(StartingSequencer)
       startSequencerResponseProbe.expectMessage(StartSequencerResponse.Started(httpLocation))
       assertState(Idle)
 

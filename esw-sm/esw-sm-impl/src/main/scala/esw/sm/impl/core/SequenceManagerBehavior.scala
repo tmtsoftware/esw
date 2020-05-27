@@ -11,7 +11,7 @@ import esw.commons.extensions.FutureEitherExt.FutureEitherOps
 import esw.commons.utils.location.EswLocationError.RegistrationListingFailed
 import esw.commons.utils.location.LocationServiceUtil
 import esw.sm.api.SequenceManagerState
-import esw.sm.api.SequenceManagerState.{CleaningUp, Configuring, Idle, SequencerStartInProcess}
+import esw.sm.api.SequenceManagerState.{CleaningUp, Configuring, Idle, StartingSequencer}
 import esw.sm.api.actor.messages.SequenceManagerMsg
 import esw.sm.api.actor.messages.SequenceManagerMsg._
 import esw.sm.api.models.CommonFailure.{ConfigurationMissing, LocationServiceError}
@@ -64,7 +64,7 @@ class SequenceManagerBehavior(
   // Starting sequencer is in progress, waiting for StartSequencerResponseInternal message
   // Within this period, reject all the other messages except common messages
   private def startingSequencer(replyTo: ActorRef[StartSequencerResponse]): Behavior[SequenceManagerMsg] =
-    receive[StartSequencerResponseInternal](SequencerStartInProcess) { msg =>
+    receive[StartSequencerResponseInternal](StartingSequencer) { msg =>
       replyTo ! msg.res
       idle()
     }
