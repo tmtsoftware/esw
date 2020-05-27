@@ -11,14 +11,15 @@ import csw.location.api.models.{AkkaLocation, ComponentId, HttpLocation}
 import csw.prefix.models.Prefix
 import csw.prefix.models.Subsystem.{ESW, TCS}
 import esw.commons.BaseTestSuite
-import esw.commons.utils.location.EswLocationError.RegistrationListingFailed
+import esw.commons.utils.location.EswLocationError.{RegistrationListingFailed, ResolveLocationFailed}
 import esw.commons.utils.location.LocationServiceUtil
 import esw.sm.api.SequenceManagerState
-import esw.sm.api.SequenceManagerState.{CleaningUp, Configuring, Idle}
+import esw.sm.api.SequenceManagerState.{CleaningUp, Configuring, Idle, SequencerStartInProcess}
 import esw.sm.api.actor.messages.SequenceManagerMsg
-import esw.sm.api.actor.messages.SequenceManagerMsg.{Cleanup, Configure, GetSequenceManagerState}
+import esw.sm.api.actor.messages.SequenceManagerMsg.{Cleanup, Configure, GetSequenceManagerState, StartSequencer}
 import esw.sm.api.models.CommonFailure.{ConfigurationMissing, LocationServiceError}
 import esw.sm.api.models.ConfigureResponse.{ConflictingResourcesWithRunningObsMode, Success}
+import esw.sm.api.models.SequenceManagerError.LoadScriptError
 import esw.sm.api.models._
 import esw.sm.impl.config.{ObsModeConfig, Resources, SequenceManagerConfig, Sequencers}
 import esw.sm.impl.utils.SequencerUtil
@@ -54,7 +55,7 @@ class SequenceManagerBehaviorTest extends BaseTestSuite {
 
   override implicit def patienceConfig: PatienceConfig = PatienceConfig(10.seconds)
 
-  override protected def afterEach(): Unit = reset(locationServiceUtil, sequencerUtil)
+  override protected def beforeEach(): Unit = reset(locationServiceUtil, sequencerUtil)
 
   "Configure" must {
 
@@ -146,6 +147,65 @@ class SequenceManagerBehaviorTest extends BaseTestSuite {
       smRef ! Cleanup(RandomObsMode, probe.ref)
 
       probe.expectMessage(ConfigurationMissing(RandomObsMode))
+    }
+  }
+
+  "StartSequencer" must {
+    "transition sm from Idle -> Starting -> Idle state and start the sequencer for given obs mode | ESW-166" in {
+      val componentId    = ComponentId(Prefix(ESW, Darknight), Sequencer)
+      val httpConnection = HttpConnection(componentId)
+      val httpLocation   = HttpLocation(httpConnection, new URI("uri"))
+      val akkaLocation   = AkkaLocation(AkkaConnection(componentId), new URI("uri"))
+
+      when(sequencerUtil.startSequencer(ESW, Darknight, 3)).thenReturn(future(1.seconds, Right(akkaLocation)))
+      when(locationServiceUtil.resolve(httpConnection))
+        .thenReturn(futureLeft(ResolveLocationFailed("error")), futureRight(httpLocation))
+
+      val startSequencerResponseProbe = TestProbe[StartSequencerResponse]()
+
+      assertState(Idle)
+      smRef ! StartSequencer(ESW, Darknight, startSequencerResponseProbe.ref)
+      assertState(SequencerStartInProcess)
+      startSequencerResponseProbe.expectMessage(StartSequencerResponse.Started(httpLocation))
+      assertState(Idle)
+
+      verify(sequencerUtil).startSequencer(ESW, Darknight, 3)
+      verify(locationServiceUtil, times(2)).resolve(httpConnection)
+    }
+
+    "return AlreadyRunning if sequencer for given obs mode is already running | ESW-166" in {
+      val componentId    = ComponentId(Prefix(ESW, Darknight), Sequencer)
+      val httpConnection = HttpConnection(componentId)
+      val httpLocation   = HttpLocation(httpConnection, new URI("uri"))
+
+      when(locationServiceUtil.resolve(httpConnection))
+        .thenReturn(futureRight(httpLocation))
+
+      val startSequencerResponseProbe = TestProbe[StartSequencerResponse]()
+
+      smRef ! StartSequencer(ESW, Darknight, startSequencerResponseProbe.ref)
+
+      startSequencerResponseProbe.expectMessage(StartSequencerResponse.AlreadyRunning(httpLocation))
+      verify(sequencerUtil, never).startSequencer(ESW, Darknight, 3)
+      verify(locationServiceUtil).resolve(httpConnection)
+    }
+
+    "return Error if start sequencer returns error | ESW-166" in {
+      val componentId           = ComponentId(Prefix(ESW, Darknight), Sequencer)
+      val httpConnection        = HttpConnection(componentId)
+      val expectedErrorResponse = LoadScriptError("error")
+
+      when(locationServiceUtil.resolve(httpConnection))
+        .thenReturn(futureLeft(ResolveLocationFailed("error")))
+      when(sequencerUtil.startSequencer(ESW, Darknight, 3)).thenReturn(futureLeft(expectedErrorResponse))
+
+      val startSequencerResponseProbe = TestProbe[StartSequencerResponse]()
+
+      smRef ! StartSequencer(ESW, Darknight, startSequencerResponseProbe.ref)
+
+      startSequencerResponseProbe.expectMessage(expectedErrorResponse)
+      verify(sequencerUtil).startSequencer(ESW, Darknight, 3)
+      verify(locationServiceUtil).resolve(httpConnection)
     }
   }
 

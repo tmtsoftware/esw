@@ -17,8 +17,6 @@ import esw.ocs.api.protocol.{ScriptError, ScriptResponse}
 import esw.ocs.api.{SequenceComponentApi, SequencerApi}
 import esw.sm.api.models.ConfigureResponse.{FailedToStartSequencers, Success}
 import esw.sm.api.models.SequenceManagerError.{LoadScriptError, SpawnSequenceComponentFailed}
-import esw.sm.api.models.Sequencers
-import esw.sm.api.models.SequenceManagerError.SpawnSequenceComponentFailed
 import esw.sm.impl.config.Sequencers
 
 import scala.concurrent.duration.DurationInt
