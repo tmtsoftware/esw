@@ -1,7 +1,7 @@
 package esw.ocs.script
 
 import akka.actor.testkit.typed.scaladsl.TestProbe
-import csw.params.commands.CommandResponse.Started
+import csw.params.commands.CommandResponse.{Completed, Started}
 import csw.params.commands.{CommandName, Sequence, Setup}
 import csw.params.core.generics.KeyType.StringKey
 import csw.params.events.{Event, EventKey, SystemEvent}
@@ -9,9 +9,10 @@ import csw.prefix.models.Prefix
 import csw.prefix.models.Subsystem.LGSF
 import csw.testkit.scaladsl.CSWService.EventServer
 import esw.ocs.api.SequencerApi
+import esw.ocs.api.protocol.Ok
 import esw.ocs.testkit.EswTestKit
 
-class NewSequencerHandlerIntegrationTest extends EswTestKit(EventServer) {
+class NewSequenceHandlerIntegrationTest extends EswTestKit(EventServer) {
 
   private val obsMode  = "darknight"
   private val command  = Setup(Prefix("esw.test"), CommandName("command-1"), None)
@@ -35,6 +36,11 @@ class NewSequencerHandlerIntegrationTest extends EswTestKit(EventServer) {
     newSequenceHandlerInitializationProbe = createTestProbe(newSequenceHandlerEventKeys)
   }
 
+  override def afterEach(): Unit = {
+    super.afterEach()
+    sequencer.isAvailable.futureValue shouldBe true // to make sure after every test sequencer is in IDLE state
+  }
+
   "Sequencer" must {
     "run the new Sequencer handler before starting the new Sequence | ESW-303" in {
       val submitResponseF = sequencer.submit(sequence)
@@ -56,11 +62,14 @@ class NewSequencerHandlerIntegrationTest extends EswTestKit(EventServer) {
       //assert sequence has started
       sequenceInitializationEvent.paramSet.head shouldBe newSequenceEventParam
 
-      submitResponseF.futureValue shouldBe a[Started]
+      val submitRes = submitResponseF.futureValue
+      submitRes shouldBe a[Started]
+      sequencer.queryFinal(submitRes.runId).futureValue shouldBe Completed(submitRes.runId)
     }
 
     "not run the new Sequencer handler on loadSequence command | ESW-303" in {
-      sequencer.loadSequence(sequence)
+      val loadSeqResF = sequencer.loadSequence(sequence)
+      loadSeqResF.futureValue shouldBe Ok
 
       //assert sequence has not initialized
       commandHandlerEventProbe.expectNoMessage()
@@ -88,7 +97,9 @@ class NewSequencerHandlerIntegrationTest extends EswTestKit(EventServer) {
       //assert sequence has started
       sequenceInitializationEvent.paramSet.head shouldBe newSequenceEventParam
 
-      submitResponseF.futureValue shouldBe a[Started]
+      val submitRes = submitResponseF.futureValue
+      submitRes shouldBe a[Started]
+      sequencer.queryFinal(submitRes.runId).futureValue shouldBe Completed(submitRes.runId)
     }
   }
 }
