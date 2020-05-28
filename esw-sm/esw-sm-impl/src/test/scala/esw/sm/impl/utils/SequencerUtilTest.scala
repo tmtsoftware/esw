@@ -10,7 +10,7 @@ import csw.location.api.models.Connection.{AkkaConnection, HttpConnection}
 import csw.location.api.models.{AkkaLocation, ComponentId, HttpLocation, Location}
 import csw.prefix.models.Prefix
 import csw.prefix.models.Subsystem.{ESW, TCS}
-import esw.commons.utils.location.EswLocationError.{RegistrationListingFailed, ResolveLocationFailed}
+import esw.commons.utils.location.EswLocationError.{RegistrationListingFailed, LocationNotFound}
 import esw.commons.utils.location.LocationServiceUtil
 import esw.commons.{BaseTestSuite, Timeouts}
 import esw.ocs.api.protocol.{ScriptError, ScriptResponse}
@@ -177,7 +177,7 @@ class SequencerUtilTest extends BaseTestSuite {
       import setup._
 
       // mimic the exception thrown from LocationServiceUtil.resolveSequencer
-      val resolveFailed = futureLeft(ResolveLocationFailed("location service error"))
+      val resolveFailed = futureLeft(LocationNotFound("location service error"))
       when(locationServiceUtil.resolveSequencer(ESW, obsMode)).thenReturn(resolveFailed)
 
       sequencerUtil.stopSequencers(Sequencers(ESW), obsMode).rightValue should ===(Done)

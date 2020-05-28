@@ -5,6 +5,6 @@ sealed trait EswLocationError extends Throwable {
 }
 
 object EswLocationError {
-  case class ResolveLocationFailed(msg: String)     extends EswLocationError
+  case class LocationNotFound(msg: String)          extends EswLocationError
   case class RegistrationListingFailed(msg: String) extends EswLocationError
 }

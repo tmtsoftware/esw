@@ -17,7 +17,7 @@ import csw.location.api.models.{AkkaLocation, ComponentId}
 import csw.location.api.scaladsl.{LocationService, RegistrationResult}
 import csw.prefix.models.Subsystem.{ESW, IRIS, TCS}
 import csw.prefix.models.{Prefix, Subsystem}
-import esw.commons.utils.location.EswLocationError.{RegistrationListingFailed, ResolveLocationFailed}
+import esw.commons.utils.location.EswLocationError.{RegistrationListingFailed, LocationNotFound}
 import esw.commons.{BaseTestSuite, Timeouts}
 
 import scala.concurrent.duration.DurationDouble
@@ -162,7 +162,7 @@ class LocationServiceUtilTest extends BaseTestSuite {
       actualLocations should ===(tcsLocation)
     }
 
-    "return an ResolveLocationFailed when no matching component name and type is found | ESW-215" in {
+    "return an LocationNotFound when no matching component name and type is found | ESW-215" in {
       val testUri = new URI("test-uri")
       val tcsLocation =
         AkkaLocation(
@@ -187,7 +187,7 @@ class LocationServiceUtilTest extends BaseTestSuite {
         locationServiceDsl.resolveByComponentNameAndType("obsMode", Sequencer).leftValue
 
       error should ===(
-        ResolveLocationFailed(
+        LocationNotFound(
           s"Could not find location matching ComponentName: obsMode, componentType: $Sequencer"
         )
       )
@@ -217,13 +217,13 @@ class LocationServiceUtilTest extends BaseTestSuite {
       actualLocations should ===(akkaLocation)
     }
 
-    "return a ResolveLocationFailed when no matching connection is found | ESW-119" in {
+    "return a LocationNotFound when no matching connection is found | ESW-119" in {
       when(locationService.resolve(akkaConnection, 200.millis))
         .thenReturn(Future.successful(None))
 
       val locationServiceUtil = new LocationServiceUtil(locationService)
       locationServiceUtil.resolveSequencer(subsystem, observingMode, 200.millis).leftValue shouldBe
-      ResolveLocationFailed(s"Could not resolve location matching connection: $akkaConnection")
+      LocationNotFound(s"Could not resolve location matching connection: $akkaConnection")
     }
 
     "return a RegistrationListingFailed when location service call throws exception | ESW-119" in {
@@ -233,6 +233,39 @@ class LocationServiceUtilTest extends BaseTestSuite {
       val locationServiceUtil = new LocationServiceUtil(locationService)
       locationServiceUtil.resolveSequencer(subsystem, observingMode, 200.millis).leftValue shouldBe
       RegistrationListingFailed(s"Location Service Error: ${cswLocationServiceErrorMsg}")
+    }
+  }
+
+  "find" must {
+    "return a location which matches a given connection | ESW-176" in {
+      when(locationService.find(akkaConnection))
+        .thenReturn(Future.successful(Some(akkaLocation)))
+
+      val locationServiceDsl = new LocationServiceUtil(locationService)
+
+      val actualLocations =
+        locationServiceDsl.find(akkaConnection).rightValue
+
+      actualLocations should ===(akkaLocation)
+      verify(locationService).find(akkaConnection)
+    }
+
+    "return a RegistrationListingFailed when location service call throws exception | ESW-176" in {
+      when(locationService.find(akkaConnection))
+        .thenReturn(Future.failed(cswRegistrationListingFailed))
+
+      val locationServiceUtil = new LocationServiceUtil(locationService)
+      locationServiceUtil.find(akkaConnection).leftValue shouldBe
+      RegistrationListingFailed(s"Location Service Error: ${cswLocationServiceErrorMsg}")
+    }
+
+    "return a LocationNotFound when location find call returns None | ESW-176" in {
+      when(locationService.find(akkaConnection))
+        .thenReturn(Future.successful(None))
+
+      val locationServiceUtil = new LocationServiceUtil(locationService)
+      locationServiceUtil.find(akkaConnection).leftValue shouldBe
+      LocationNotFound(s"Could not find location matching connection: $akkaConnection")
     }
   }
 
@@ -247,13 +280,13 @@ class LocationServiceUtilTest extends BaseTestSuite {
       verify(locationService).resolve(akkaConnection, Timeouts.DefaultTimeout)
     }
 
-    "return a ResolveLocationFailed when no matching subsystem and observing mode is found | ESW-119" in {
+    "return a LocationNotFound when no matching subsystem and observing mode is found | ESW-119" in {
       when(locationService.resolve(akkaConnection, 200.millis))
         .thenReturn(Future.successful(None))
 
       val locationServiceUtil = new LocationServiceUtil(locationService)
       locationServiceUtil.resolveSequencer(subsystem, observingMode, 200.millis).leftValue shouldBe
-      ResolveLocationFailed(s"Could not resolve location matching connection: $akkaConnection")
+      LocationNotFound(s"Could not resolve location matching connection: $akkaConnection")
     }
 
     "return a RegistrationListingFailed when location service call throws exception | ESW-119" in {

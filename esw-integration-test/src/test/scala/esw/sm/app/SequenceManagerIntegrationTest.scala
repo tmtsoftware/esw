@@ -16,7 +16,8 @@ import esw.ocs.testkit.EswTestKit
 import esw.sm.api.SequenceManagerApi
 import esw.sm.api.actor.client.SequenceManagerImpl
 import esw.sm.api.models.ConfigureResponse.ConflictingResourcesWithRunningObsMode
-import esw.sm.api.models.{CleanupResponse, ConfigureResponse}
+import esw.sm.api.models.SequenceManagerError.LoadScriptError
+import esw.sm.api.models.{CleanupResponse, ConfigureResponse, StartSequencerResponse}
 import esw.sm.app.SequenceManagerAppCommand.StartCommand
 
 import scala.collection.mutable.ArrayBuffer
@@ -126,9 +127,40 @@ class SequenceManagerIntegrationTest extends EswTestKit {
     sequenceManager.cleanup(IRIS_CAL)
   }
 
-  "should throw exception if config file is missing | ESW-162" in {
+  "throw exception if config file is missing | ESW-162" in {
     val exception = intercept[RuntimeException](SequenceManagerApp.main(Array("start", "-p", "sm-config.conf")))
     exception.getMessage shouldBe "File does not exist on local disk at path sm-config.conf"
+  }
+
+  "start sequencer for given subsystem and observation mode | ESW-176" in {
+    TestSetup.startSequenceComponents(Prefix(ESW, "primary"))
+
+    val sequenceManager = TestSetup.startSequenceManager()
+
+    // verify that sequencer is not present
+    intercept[Exception](resolveHTTPLocation(Prefix(ESW, IRIS_DARKNIGHT), Sequencer))
+
+    val response = sequenceManager.startSequencer(ESW, IRIS_DARKNIGHT).futureValue
+
+    response shouldBe a[StartSequencerResponse.Started]
+
+    // verify that sequencer is started
+    resolveHTTPLocation(Prefix(ESW, IRIS_DARKNIGHT), Sequencer)
+  }
+
+  "should return loadscript error if configuration is missing for subsystem observation mode | ESW-176" in {
+    TestSetup.startSequenceComponents(Prefix(ESW, "primary"))
+
+    val sequenceManager = TestSetup.startSequenceManager()
+
+    // verify that sequencer is not present
+    intercept[Exception](resolveHTTPLocation(Prefix(ESW, "invalid_obs_mode"), Sequencer))
+
+    val response: StartSequencerResponse = sequenceManager.startSequencer(ESW, "invalid_obs_mode").futureValue
+
+    response shouldBe a[LoadScriptError]
+    val loadScriptError: LoadScriptError = response.asInstanceOf[LoadScriptError]
+    loadScriptError.msg should ===("Script configuration missing for [ESW] with [invalid_obs_mode]")
   }
 
   private def sequencerConnection(prefix: Prefix) = AkkaConnection(ComponentId(prefix, Sequencer))

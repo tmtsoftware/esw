@@ -11,7 +11,7 @@ import esw.commons.Timeouts
 import esw.commons.extensions.FutureEitherExt.FutureEitherOps
 import esw.commons.extensions.ListEitherExt.ListEitherOps
 import esw.commons.utils.FutureUtils
-import esw.commons.utils.location.EswLocationError.{RegistrationListingFailed, ResolveLocationFailed}
+import esw.commons.utils.location.EswLocationError.{RegistrationListingFailed, LocationNotFound}
 import esw.commons.utils.location.{EswLocationError, LocationServiceUtil}
 import esw.ocs.api.actor.client.SequencerApiFactory
 import esw.ocs.api.{SequenceComponentApi, SequencerApi}
@@ -55,7 +55,7 @@ class SequencerUtil(locationServiceUtil: LocationServiceUtil, sequenceComponentU
         resolveSequencer(obsMode, subsystem)
           .flatMap {
             case Left(listingFailed: RegistrationListingFailed) => throw listingFailed
-            case Left(ResolveLocationFailed(_))                 => Future.successful(Done)
+            case Left(LocationNotFound(_))                      => Future.successful(Done)
             case Right(sequencerApi)                            => stopSequencer(sequencerApi)
           }
       }

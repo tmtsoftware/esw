@@ -10,7 +10,7 @@ import csw.prefix.models.{Prefix, Subsystem}
 import esw.agent.api.{Failed, Spawned}
 import esw.agent.client.AgentClient
 import esw.commons.extensions.FutureEitherExt.FutureEitherOps
-import esw.commons.utils.location.EswLocationError.ResolveLocationFailed
+import esw.commons.utils.location.EswLocationError.LocationNotFound
 import esw.commons.utils.location.{EswLocationError, LocationServiceUtil}
 import esw.ocs.api.SequenceComponentApi
 import esw.ocs.api.actor.client.SequenceComponentImpl
@@ -35,7 +35,7 @@ class AgentUtil(locationServiceUtil: LocationServiceUtil)(implicit actorSystem: 
       .listAkkaLocationsBy(ESW, Machine)
       // if locations.head.prefix throws exception, it is handled in mapError block
       .flatMapRight(locations => makeAgent(locations.head.prefix))
-      .mapError(_ => ResolveLocationFailed(s"Could not find agent matching $ESW"))
+      .mapError(_ => LocationNotFound(s"Could not find agent matching $ESW"))
 
   private[utils] def makeAgent(prefix: Prefix): Future[AgentClient] =
     AgentClient.make(prefix, locationServiceUtil.locationService)

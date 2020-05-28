@@ -11,7 +11,7 @@ import csw.location.api.models.{AkkaLocation, ComponentId, ComponentType}
 import csw.prefix.models.Prefix
 import csw.prefix.models.Subsystem.ESW
 import esw.commons.BaseTestSuite
-import esw.commons.utils.location.EswLocationError.ResolveLocationFailed
+import esw.commons.utils.location.EswLocationError.LocationNotFound
 import esw.commons.utils.location.LocationServiceUtil
 
 import scala.concurrent.{ExecutionException, Future}
@@ -44,7 +44,7 @@ class CommandUtilTest extends BaseTestSuite {
 
     "throw exception if location service returns error" in {
       when(locationServiceUtil.resolve(connection))
-        .thenReturn(Future.successful(Left(ResolveLocationFailed("Error while resolving location"))))
+        .thenReturn(Future.successful(Left(LocationNotFound("Error while resolving location"))))
 
       val message = intercept[ExecutionException](
         commandUtil.jResolveAkkaLocation(prefix, componentType).toCompletableFuture.get(10, TimeUnit.SECONDS)
@@ -66,7 +66,7 @@ class CommandUtilTest extends BaseTestSuite {
 
     "throw exception if location service returns error" in {
       when(locationServiceUtil.resolve(connection))
-        .thenReturn(Future.successful(Left(ResolveLocationFailed("Error while resolving location"))))
+        .thenReturn(Future.successful(Left(LocationNotFound("Error while resolving location"))))
 
       val message = intercept[ExecutionException](
         commandUtil.jResolveComponentRef(prefix, componentType).toCompletableFuture.get(10, TimeUnit.SECONDS)

@@ -20,6 +20,7 @@ import esw.sm.api.models.StartSequencerResponse.{AlreadyRunning, Started}
 import esw.sm.api.models._
 import esw.sm.impl.config.{ObsModeConfig, Resources, SequenceManagerConfig, Sequencers}
 import esw.sm.impl.utils.SequencerUtil
+import scala.concurrent.duration.DurationInt
 
 import scala.async.Async.{async, await}
 import scala.concurrent.Future
@@ -73,14 +74,19 @@ class SequenceManagerBehavior(
       subsystem: Subsystem,
       obsMode: String,
       self: ActorRef[SequenceManagerMsg]
-  ): Future[Unit] =
+  ): Future[Unit] = {
+    // resolve is not needed here. Find should suffice
+    // no concurrent start sequencer or configure is allowed
     locationServiceUtil
-      .resolve(HttpConnection(ComponentId(Prefix(subsystem, obsMode), Sequencer)))
+      .find(
+        HttpConnection(ComponentId(Prefix(subsystem, obsMode), Sequencer))
+      )
       .flatMap {
         case Left(_)         => startSequencerAndResolve(subsystem, obsMode)
         case Right(location) => Future.successful(AlreadyRunning(location))
       }
       .map(r => self ! StartSequencerResponseInternal(r))
+  }
 
   private def startSequencerAndResolve(subsystem: Subsystem, obsMode: String): Future[StartSequencerResponse] = {
     sequencerUtil
@@ -88,7 +94,7 @@ class SequenceManagerBehavior(
       .flatMapToAdt(
         _ =>
           locationServiceUtil
-            .resolve(HttpConnection(ComponentId(Prefix(subsystem, obsMode), Sequencer)))
+            .resolve(HttpConnection(ComponentId(Prefix(subsystem, obsMode), Sequencer)), 5.second)
             .map {
               case Left(error) => LocationServiceError(error.msg)
               case Right(loc)  => Started(loc)

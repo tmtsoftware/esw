@@ -12,7 +12,7 @@ import csw.prefix.models.Prefix
 import csw.prefix.models.Subsystem.ESW
 import esw.agent.api.{Failed, Spawned}
 import esw.agent.client.AgentClient
-import esw.commons.utils.location.EswLocationError.{RegistrationListingFailed, ResolveLocationFailed}
+import esw.commons.utils.location.EswLocationError.{RegistrationListingFailed, LocationNotFound}
 import esw.commons.utils.location.{EswLocationError, LocationServiceUtil}
 import esw.commons.{BaseTestSuite, Timeouts}
 import esw.ocs.api.SequenceComponentApi
@@ -65,7 +65,7 @@ class AgentUtilTest extends BaseTestSuite {
 
       when(agentClient.spawnSequenceComponent(any[Prefix])).thenReturn(Future.successful(Spawned))
       when(locationServiceUtil.resolve(any[AkkaConnection], argEq(Timeouts.DefaultTimeout)))
-        .thenReturn(futureLeft(ResolveLocationFailed("Could not resolve sequence component")))
+        .thenReturn(futureLeft(LocationNotFound("Could not resolve sequence component")))
 
       agentUtil.spawnSequenceComponentFor(ESW).leftValue should ===(LocationServiceError("Could not resolve sequence component"))
 
@@ -78,7 +78,7 @@ class AgentUtilTest extends BaseTestSuite {
 
       val agentUtil: AgentUtil = new AgentUtil(locationServiceUtil) {
         override private[sm] def getAgent: Future[Either[EswLocationError, AgentClient]] =
-          futureLeft(ResolveLocationFailed("Error in agent"))
+          futureLeft(LocationNotFound("Error in agent"))
       }
 
       agentUtil.spawnSequenceComponentFor(ESW).leftValue should ===(LocationServiceError("Error in agent"))
@@ -106,7 +106,7 @@ class AgentUtilTest extends BaseTestSuite {
       when(locationServiceUtil.listAkkaLocationsBy(ESW, Machine)).thenReturn(futureRight(List.empty))
 
       val agentUtil = new AgentUtil(locationServiceUtil)
-      agentUtil.getAgent.leftValue shouldBe a[ResolveLocationFailed]
+      agentUtil.getAgent.leftValue shouldBe a[LocationNotFound]
 
       verify(locationServiceUtil).listAkkaLocationsBy(ESW, Machine)
     }

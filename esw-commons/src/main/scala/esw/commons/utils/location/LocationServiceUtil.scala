@@ -9,7 +9,7 @@ import csw.location.api.scaladsl.{LocationService, RegistrationResult}
 import csw.prefix.models.{Prefix, Subsystem}
 import esw.commons.Timeouts
 import esw.commons.extensions.FutureEitherExt._
-import esw.commons.utils.location.EswLocationError.{RegistrationListingFailed, ResolveLocationFailed}
+import esw.commons.utils.location.EswLocationError.{RegistrationListingFailed, LocationNotFound}
 
 import scala.concurrent.duration.FiniteDuration
 import scala.concurrent.{ExecutionContext, Future}
@@ -65,7 +65,7 @@ private[esw] class LocationServiceUtil(val locationService: LocationService)(imp
         case Left(error) => Left(error)
         case Right(maybeLocation) =>
           maybeLocation.toRight(
-            ResolveLocationFailed(
+            LocationNotFound(
               s"Could not find location matching ComponentName: $componentName, componentType: $componentType"
             )
           )
@@ -79,7 +79,18 @@ private[esw] class LocationServiceUtil(val locationService: LocationService)(imp
       .resolve(connection, timeout)
       .map {
         case Some(location) => Right(location)
-        case None           => Left(ResolveLocationFailed(s"Could not resolve location matching connection: $connection"))
+        case None           => Left(LocationNotFound(s"Could not resolve location matching connection: $connection"))
+      }
+      .mapError(e => RegistrationListingFailed(s"Location Service Error: ${e.getMessage}"))
+
+  def find[L <: Location](
+      connection: TypedConnection[L]
+  ): Future[Either[EswLocationError, L]] =
+    locationService
+      .find(connection)
+      .map {
+        case Some(location) => Right(location)
+        case None           => Left(LocationNotFound(s"Could not find location matching connection: $connection"))
       }
       .mapError(e => RegistrationListingFailed(s"Location Service Error: ${e.getMessage}"))
 
@@ -89,4 +100,5 @@ private[esw] class LocationServiceUtil(val locationService: LocationService)(imp
       timeout: FiniteDuration = Timeouts.DefaultTimeout
   ): Future[Either[EswLocationError, AkkaLocation]] =
     resolve(AkkaConnection(ComponentId(Prefix(subsystem, observingMode), Sequencer)), timeout)
+
 }
