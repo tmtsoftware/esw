@@ -33,6 +33,8 @@ class SequenceManagerBehavior(
 )(implicit val actorSystem: ActorSystem[_]) {
   import actorSystem.executionContext
 
+  private val sequencerStartRetries = config.sequencerStartRetries
+
   def idle(): Behavior[SequenceManagerMsg] =
     Behaviors.receive { (ctx, msg) =>
       msg match {
@@ -90,7 +92,7 @@ class SequenceManagerBehavior(
 
   private def startSequencerAndResolve(subsystem: Subsystem, obsMode: String): Future[StartSequencerResponse] = {
     sequencerUtil
-      .startSequencer(subsystem, obsMode, 3)
+      .startSequencer(subsystem, obsMode, sequencerStartRetries)
       .flatMapToAdt(
         _ =>
           locationServiceUtil
@@ -137,8 +139,9 @@ class SequenceManagerBehavior(
       config.obsModeConfig(requestedObsMode) match {
         case Some(ObsModeConfig(resources, _)) if checkConflicts(resources, runningObsModes) =>
           ConflictingResourcesWithRunningObsMode(runningObsModes)
-        case Some(ObsModeConfig(_, sequencers)) => await(sequencerUtil.startSequencers(requestedObsMode, sequencers))
-        case None                               => ConfigurationMissing(requestedObsMode)
+        case Some(ObsModeConfig(_, sequencers)) =>
+          await(sequencerUtil.startSequencers(requestedObsMode, sequencers, sequencerStartRetries))
+        case None => ConfigurationMissing(requestedObsMode)
       }
     }
 

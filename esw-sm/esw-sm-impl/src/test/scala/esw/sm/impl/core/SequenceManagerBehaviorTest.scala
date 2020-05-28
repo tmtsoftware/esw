@@ -41,7 +41,8 @@ class SequenceManagerBehaviorTest extends BaseTestSuite {
     Map(
       Darknight  -> ObsModeConfig(Resources("r1", "r2"), darknightSequencers),
       Clearskies -> ObsModeConfig(Resources("r2", "r3"), clearskiesSequencers)
-    )
+    ),
+    sequencerStartRetries = 3
   )
   private val locationServiceUtil: LocationServiceUtil = mock[LocationServiceUtil]
   private val sequencerUtil: SequencerUtil             = mock[SequencerUtil]
@@ -63,7 +64,7 @@ class SequenceManagerBehaviorTest extends BaseTestSuite {
       val httpLocation   = HttpLocation(HttpConnection(ComponentId(Prefix(ESW, Darknight), Sequencer)), new URI("uri"))
       val configResponse = Success(httpLocation)
       when(locationServiceUtil.listAkkaLocationsBy(ESW, Sequencer)).thenReturn(future(1.seconds, Right(List.empty)))
-      when(sequencerUtil.startSequencers(Darknight, darknightSequencers)).thenReturn(Future.successful(configResponse))
+      when(sequencerUtil.startSequencers(Darknight, darknightSequencers, 3)).thenReturn(Future.successful(configResponse))
       val configureProbe = TestProbe[ConfigureResponse]()
 
       // STATE TRANSITION: Idle -> Configure() -> ConfigurationInProcess -> Idle
@@ -74,7 +75,7 @@ class SequenceManagerBehaviorTest extends BaseTestSuite {
 
       configureProbe.expectMessage(configResponse)
       verify(locationServiceUtil).listAkkaLocationsBy(ESW, Sequencer)
-      verify(sequencerUtil).startSequencers(Darknight, darknightSequencers)
+      verify(sequencerUtil).startSequencers(Darknight, darknightSequencers, 3)
     }
 
     "return LocationServiceError if location service fails to return running observation mode | ESW-178" in {
@@ -99,7 +100,7 @@ class SequenceManagerBehaviorTest extends BaseTestSuite {
 
       probe.expectMessage(ConflictingResourcesWithRunningObsMode(Set(Clearskies)))
       verify(locationServiceUtil).listAkkaLocationsBy(ESW, Sequencer)
-      verify(sequencerUtil, times(0)).startSequencers(Darknight, darknightSequencers)
+      verify(sequencerUtil, times(0)).startSequencers(Darknight, darknightSequencers, 3)
     }
 
     "return ConfigurationMissing error when config for given obsMode is missing | ESW-164" in {

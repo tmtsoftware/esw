@@ -3,11 +3,11 @@ package esw.sm.impl.core
 import java.nio.file.Paths
 
 import akka.actor.typed.{ActorSystem, SpawnProtocol}
-import com.typesafe.config.{ConfigException, ConfigFactory}
+import com.typesafe.config.ConfigFactory
 import csw.config.client.commons.ConfigUtils
 import csw.prefix.models.Subsystem._
 import esw.commons.BaseTestSuite
-import esw.sm.impl.config.{ObsModeConfig, Resources, SequenceManagerConfig, SequenceManagerConfigParser, Sequencers}
+import esw.sm.impl.config._
 import io.bullet.borer.Borer.Error.InvalidInputData
 
 import scala.concurrent.{Await, ExecutionContext, Future}
@@ -32,21 +32,10 @@ class SequenceManagerConfigParserTest extends BaseTestSuite {
         Map(
           "IRIS_Darknight" -> ObsModeConfig(Resources("IRIS", "TCS", "NFIRAOS"), darknightSequencers),
           "IRIS_Cal"       -> ObsModeConfig(Resources("IRIS", "NCSU", "NFIRAOS"), calSequencers)
-        )
+        ),
+        sequencerStartRetries = 2
       )
       config.futureValue should ===(expectedConfig)
-    }
-
-    "throw exception if config file has missing obsMode key at top level | ESW-162" in {
-      val configUtils                 = mock[ConfigUtils]
-      val path                        = Paths.get("missingTestConfig.conf")
-      val sequenceManagerConfigParser = new SequenceManagerConfigParser(configUtils)
-      val testConfig                  = ConfigFactory.parseResources("missingTestConfig.conf")
-      when(configUtils.getConfig(inputFilePath = path, isLocal = true)).thenReturn(Future.successful(testConfig))
-
-      intercept[ConfigException.Missing](
-        sequenceManagerConfigParser.read(isLocal = true, configFilePath = path).awaitResult
-      )
     }
 
     "throw exception if config file has invalid config structure | ESW-162" in {
@@ -75,6 +64,27 @@ class SequenceManagerConfigParserTest extends BaseTestSuite {
       )
 
       exception should ===(expectedException)
+    }
+
+    "read sequencer start retires config from application.conf if not present in main config file | ESW-176" in {
+      val configUtils                     = mock[ConfigUtils]
+      val path                            = Paths.get("testConfigWithoutRetries.conf")
+      val sequenceManagerConfigParser     = new SequenceManagerConfigParser(configUtils)
+      val darknightSequencers: Sequencers = Sequencers(IRIS, ESW, TCS, AOESW)
+      val calSequencers: Sequencers       = Sequencers(IRIS, ESW, AOESW)
+      val testConfig                      = ConfigFactory.parseResources("testConfigWithoutRetries.conf")
+      when(configUtils.getConfig(inputFilePath = path, isLocal = true)).thenReturn(Future.successful(testConfig))
+
+      val config = sequenceManagerConfigParser.read(configFilePath = path, isLocal = true)
+
+      val expectedConfig = SequenceManagerConfig(
+        Map(
+          "IRIS_Darknight" -> ObsModeConfig(Resources("IRIS", "TCS", "NFIRAOS"), darknightSequencers),
+          "IRIS_Cal"       -> ObsModeConfig(Resources("IRIS", "NCSU", "NFIRAOS"), calSequencers)
+        ),
+        sequencerStartRetries = 3
+      )
+      config.futureValue should ===(expectedConfig)
     }
   }
 

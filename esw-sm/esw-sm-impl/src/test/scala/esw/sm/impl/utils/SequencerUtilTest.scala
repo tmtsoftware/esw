@@ -50,7 +50,7 @@ class SequencerUtilTest extends BaseTestSuite {
       import setup._
 
       // returns success with master sequencer location after starting all the sequencers
-      sequencerUtil.startSequencers(obsMode, Sequencers(ESW, TCS)).futureValue should ===(Success(masterSeqLocation))
+      sequencerUtil.startSequencers(obsMode, Sequencers(ESW, TCS), 3).futureValue should ===(Success(masterSeqLocation))
 
       verifyMasterSequencerIsResolved()
 
@@ -76,7 +76,7 @@ class SequencerUtilTest extends BaseTestSuite {
       when(tcsSeqComp.loadScript(TCS, obsMode)).thenReturn(scriptError)
 
       sequencerUtil
-        .startSequencers(obsMode, Sequencers(ESW, TCS))
+        .startSequencers(obsMode, Sequencers(ESW, TCS), 3)
         .futureValue should ===(FailedToStartSequencers(Set(seqCompErrorMsg, scriptErrorMsg)))
 
       // getAvailableSequenceComponent for ESW returns SpawnSequenceComponentFailed so retry 3 times make total invocations 4
@@ -98,7 +98,7 @@ class SequencerUtilTest extends BaseTestSuite {
       val setup   = new TestSetup(obsMode)
       import setup._
 
-      sequencerUtil.startSequencer(ESW, obsMode).rightValue should ===(eswLocation)
+      sequencerUtil.startSequencer(ESW, obsMode, 3).rightValue should ===(eswLocation)
 
       verify(sequenceComponentUtil).getAvailableSequenceComponent(ESW)
       verify(eswSeqComp).loadScript(ESW, obsMode)
@@ -112,7 +112,7 @@ class SequencerUtilTest extends BaseTestSuite {
       val sequenceComponentFailedError = SpawnSequenceComponentFailed("could not spawn SeqComp for ESW")
       when(sequenceComponentUtil.getAvailableSequenceComponent(ESW)).thenReturn(futureLeft(sequenceComponentFailedError))
 
-      sequencerUtil.startSequencer(ESW, obsMode).leftValue should ===(sequenceComponentFailedError)
+      sequencerUtil.startSequencer(ESW, obsMode, 3).leftValue should ===(sequenceComponentFailedError)
 
       verify(sequenceComponentUtil, times(4)).getAvailableSequenceComponent(ESW)
     }
@@ -126,7 +126,7 @@ class SequencerUtilTest extends BaseTestSuite {
       when(sequenceComponentUtil.getAvailableSequenceComponent(ESW))
         .thenReturn(futureLeft(sequenceComponentFailedError), futureRight(eswSeqComp))
 
-      sequencerUtil.startSequencer(ESW, obsMode).rightValue should ===(eswLocation)
+      sequencerUtil.startSequencer(ESW, obsMode, 3).rightValue should ===(eswLocation)
 
       verify(sequenceComponentUtil, times(2)).getAvailableSequenceComponent(ESW)
     }
@@ -141,7 +141,7 @@ class SequencerUtilTest extends BaseTestSuite {
       val scriptError    = Future.successful(ScriptResponse(Left(ScriptError(scriptErrorMsg))))
       when(tcsSeqComp.loadScript(TCS, obsMode)).thenReturn(scriptError)
 
-      sequencerUtil.startSequencer(TCS, obsMode).leftValue should ===(LoadScriptError(scriptErrorMsg))
+      sequencerUtil.startSequencer(TCS, obsMode, 3).leftValue should ===(LoadScriptError(scriptErrorMsg))
 
       verify(sequenceComponentUtil).getAvailableSequenceComponent(TCS)
     }

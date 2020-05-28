@@ -28,16 +28,13 @@ class SequencerUtil(locationServiceUtil: LocationServiceUtil, sequenceComponentU
 ) {
   implicit private val ec: ExecutionContext = actorSystem.executionContext
 
-  //todo: Should we get it from conf
-  private val retryCount: Int = 3
-
   private def masterSequencerConnection(obsMode: String): HttpConnection =
     HttpConnection(ComponentId(Prefix(ESW, obsMode), Sequencer))
 
   def resolveMasterSequencerOf(observingMode: String): Future[Either[EswLocationError, HttpLocation]] =
     locationServiceUtil.resolve(masterSequencerConnection(observingMode), Timeouts.DefaultTimeout)
 
-  def startSequencers(observingMode: String, requiredSequencers: Sequencers): Future[ConfigureResponse] =
+  def startSequencers(observingMode: String, requiredSequencers: Sequencers, retryCount: Int): Future[ConfigureResponse] =
     async {
       val spawnSequencerResponses: Either[List[SequencerError], List[AkkaLocation]] =
         await(FutureUtils.sequential(requiredSequencers.subsystems)(startSequencer(_, observingMode, retryCount))).sequence
@@ -66,7 +63,7 @@ class SequencerUtil(locationServiceUtil: LocationServiceUtil, sequenceComponentU
   def startSequencer(
       subSystem: Subsystem,
       observingMode: String,
-      retryCount: Int = retryCount
+      retryCount: Int
   ): Future[Either[SequencerError, AkkaLocation]] =
     sequenceComponentUtil
       .getAvailableSequenceComponent(subSystem)

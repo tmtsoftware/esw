@@ -2,7 +2,7 @@ package esw.sm.impl.config
 
 import java.nio.file.Path
 
-import com.typesafe.config.{Config, ConfigRenderOptions}
+import com.typesafe.config.{Config, ConfigFactory, ConfigRenderOptions}
 import csw.config.client.commons.ConfigUtils
 import io.bullet.borer._
 
@@ -13,14 +13,16 @@ import scala.concurrent.{ExecutionContext, Future}
 class SequenceManagerConfigParser(configUtils: ConfigUtils)(implicit ec: ExecutionContext) {
   import ConfigCodecs._
 
-  private val ObsModesKey = "obsModes"
+  private val ESW_SM                  = "esw-sm"
+  private val SEQUENCER_START_RETRIES = "sequencerStartRetries"
 
   // Reads config file using csw config server
   def read(configFilePath: Path, isLocal: Boolean): Future[SequenceManagerConfig] =
     configUtils.getConfig(configFilePath, isLocal).map(parseConfig)
 
   private def parseConfig(config: Config): SequenceManagerConfig = {
-    val configStr = config.getConfig(ObsModesKey).root().render(ConfigRenderOptions.concise())
+    val configWithRetries = config.withFallback(ConfigFactory.load().withOnlyPath(s"$ESW_SM.$SEQUENCER_START_RETRIES"))
+    val configStr         = configWithRetries.getConfig(ESW_SM).root().render(ConfigRenderOptions.concise())
 
     Json.decode(configStr.getBytes).to[SequenceManagerConfig].value
   }
