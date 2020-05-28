@@ -149,6 +149,15 @@ class GatewayAuthTest extends EswTestKit(AAS) {
       httpError.statusCode shouldBe 401
     }
 
+    "return 401 response for user command route with no token | ESW-95" in {
+      val gatewayPostClientWithAuth = gatewayHTTPClient(() => None)
+      val clientFactory             = new ClientFactory(gatewayPostClientWithAuth, gatewayWsClient)
+      val commandService            = clientFactory.component(componentIdCommandService)
+
+      val httpError = intercept[HttpError](Await.result(commandService.submit(irisUserLevelCommand), defaultTimeout))
+      httpError.statusCode shouldBe 401
+    }
+
     "return 200 as IRIS-user can execute any IRIS sequence | ESW-95" in {
       val gatewayPostClientWithAuth = gatewayHTTPClient(tokenWithIrisUserRole)
       val clientFactory             = new ClientFactory(gatewayPostClientWithAuth, gatewayWsClient)
