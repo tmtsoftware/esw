@@ -53,7 +53,7 @@ jobs:
 
       - name: RTM
         run: |
-          ./scripts/coursier launch --channel https://raw.githubusercontent.com/tmtsoftware/apps/master/apps.json rtm:47b635b289 -M tmt.test.reporter.TestRequirementMapper -- target/RTM/testStoryMapping.txt tools/RTM/storyRequirementMapping.csv target/RTM/testRequirementsMapping.txt
+          ./scripts/coursier launch --channel https://raw.githubusercontent.com/tmtsoftware/apps/master/apps.json rtm:47b635b289 -- target/RTM/testStoryMapping.txt tools/RTM/storyRequirementMapping.csv target/RTM/testRequirementsMapping.txt
 
       - name: Upload Coverage Report
         uses: actions/upload-artifact@v1
