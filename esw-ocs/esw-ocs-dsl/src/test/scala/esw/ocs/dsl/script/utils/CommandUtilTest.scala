@@ -49,7 +49,7 @@ class CommandUtilTest extends BaseTestSuite {
       val message = intercept[ExecutionException](
         commandUtil.jResolveAkkaLocation(prefix, componentType).toCompletableFuture.get(10, TimeUnit.SECONDS)
       ).getLocalizedMessage
-      "esw.commons.utils.location.EswLocationError$ResolveLocationFailed" shouldBe message
+      "esw.commons.utils.location.EswLocationError$LocationNotFound" shouldBe message
       verify(locationServiceUtil).resolve(connection)
     }
   }
@@ -71,7 +71,7 @@ class CommandUtilTest extends BaseTestSuite {
       val message = intercept[ExecutionException](
         commandUtil.jResolveComponentRef(prefix, componentType).toCompletableFuture.get(10, TimeUnit.SECONDS)
       ).getLocalizedMessage
-      "esw.commons.utils.location.EswLocationError$ResolveLocationFailed" shouldBe message
+      "esw.commons.utils.location.EswLocationError$LocationNotFound" shouldBe message
       verify(locationServiceUtil).resolve(connection)
     }
   }

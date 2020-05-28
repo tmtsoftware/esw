@@ -12,7 +12,7 @@ import csw.prefix.models.Prefix
 import csw.prefix.models.Subsystem.ESW
 import esw.agent.api.{Failed, Spawned}
 import esw.agent.client.AgentClient
-import esw.commons.utils.location.EswLocationError.{RegistrationListingFailed, LocationNotFound}
+import esw.commons.utils.location.EswLocationError.{LocationNotFound, RegistrationListingFailed}
 import esw.commons.utils.location.{EswLocationError, LocationServiceUtil}
 import esw.commons.{BaseTestSuite, Timeouts}
 import esw.ocs.api.SequenceComponentApi
@@ -101,7 +101,7 @@ class AgentUtilTest extends BaseTestSuite {
       verify(locationServiceUtil).listAkkaLocationsBy(ESW, Machine)
     }
 
-    "return ResolveLocationFailed when location service list call returns empty list | ESW-164" in {
+    "return LocationNotFound when location service list call returns empty list | ESW-164" in {
       val locationServiceUtil = mock[LocationServiceUtil]
       when(locationServiceUtil.listAkkaLocationsBy(ESW, Machine)).thenReturn(futureRight(List.empty))
 
@@ -111,7 +111,7 @@ class AgentUtilTest extends BaseTestSuite {
       verify(locationServiceUtil).listAkkaLocationsBy(ESW, Machine)
     }
 
-    "return ResolveLocationFailed when location service list call returns error | ESW-164" in {
+    "return LocationNotFound when location service list call returns error | ESW-164" in {
       val locationServiceUtil = mock[LocationServiceUtil]
       val listingFailed       = RegistrationListingFailed("listing failed")
       when(locationServiceUtil.listAkkaLocationsBy(ESW, Machine)).thenReturn(futureLeft(listingFailed))
