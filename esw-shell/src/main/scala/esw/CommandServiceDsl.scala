@@ -1,7 +1,8 @@
 package esw
 
+import _root_.shell.utils.Extensions.FutureExt
+import _root_.shell.utils.Timeouts
 import akka.actor.typed.{ActorSystem, SpawnProtocol}
-import akka.util.Timeout
 import csw.command.api.scaladsl.CommandService
 import csw.command.client.CommandServiceFactory
 import csw.command.client.extensions.AkkaLocationExt.RichAkkaLocation
@@ -13,22 +14,19 @@ import csw.prefix.models.{Prefix, Subsystem}
 import esw.commons.utils.location.{EswLocationError, LocationServiceUtil}
 import esw.ocs.api.SequencerApi
 import esw.ocs.api.actor.client.SequencerImpl
-import _root_.shell.utils.Timeouts
-import _root_.shell.utils.Extensions.FutureExt
 
 import scala.concurrent.Future
 
 class CommandServiceDsl(val shellWiring: ShellWiring) {
   implicit lazy val typedSystem: ActorSystem[SpawnProtocol.Command] = shellWiring.wiring.actorSystem
 
+  import Timeouts.defaultTimeout
   import typedSystem.executionContext
-
-  private implicit val implicitTimeout: Timeout = Timeouts.defaultTimeout
   private val locationUtil: LocationServiceUtil = new LocationServiceUtil(shellWiring.cswContext.locationService)
 
   def sequencerCommandService(subsystem: Subsystem, observingMode: String): SequencerApi =
     locationUtil
-      .resolveSequencer(subsystem, observingMode)
+      .resolveSequencer(subsystem, observingMode, Timeouts.defaultDuration)
       .map(e => new SequencerImpl(throwLeft(e).sequencerRef))
       .await()
 
@@ -40,7 +38,7 @@ class CommandServiceDsl(val shellWiring: ShellWiring) {
 
   def resolveAkkaLocation(prefix: String, componentType: ComponentType): Future[AkkaLocation] =
     locationUtil
-      .resolve(AkkaConnection(ComponentId(Prefix(prefix), HCD)))
+      .resolve(AkkaConnection(ComponentId(Prefix(prefix), componentType)), Timeouts.defaultDuration)
       .map(throwLeft)
 
   def throwLeft[T](e: Either[EswLocationError, T]): T =

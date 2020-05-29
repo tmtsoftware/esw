@@ -80,7 +80,7 @@ class SequencerUtil(locationServiceUtil: LocationServiceUtil, sequenceComponentU
   private[sm] def createSequencerClient(location: Location): SequencerApi = SequencerApiFactory.make(location)
   private def resolveSequencer(obsMode: String, subsystem: Subsystem) =
     locationServiceUtil
-      .resolveSequencer(subsystem, obsMode)
+      .resolveSequencer(subsystem, obsMode, Timeouts.DefaultTimeout)
       .mapRight(createSequencerClient)
 
   private def loadScript(subSystem: Subsystem, observingMode: String, seqCompApi: SequenceComponentApi) =

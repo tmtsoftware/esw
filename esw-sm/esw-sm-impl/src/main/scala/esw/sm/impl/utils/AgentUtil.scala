@@ -9,6 +9,7 @@ import csw.prefix.models.Subsystem.ESW
 import csw.prefix.models.{Prefix, Subsystem}
 import esw.agent.api.{Failed, Spawned}
 import esw.agent.client.AgentClient
+import esw.commons.Timeouts
 import esw.commons.extensions.FutureEitherExt.FutureEitherOps
 import esw.commons.utils.location.EswLocationError.LocationNotFound
 import esw.commons.utils.location.{EswLocationError, LocationServiceUtil}
@@ -50,7 +51,7 @@ class AgentUtil(locationServiceUtil: LocationServiceUtil)(implicit actorSystem: 
 
   private def resolveSeqComp(seqCompPrefix: Prefix) =
     locationServiceUtil
-      .resolve(AkkaConnection(ComponentId(seqCompPrefix, SequenceComponent)))
+      .resolve(AkkaConnection(ComponentId(seqCompPrefix, SequenceComponent)), Timeouts.DefaultTimeout)
       .mapRight(loc => new SequenceComponentImpl(loc))
       .mapLeft(e => LocationServiceError(e.msg))
 }

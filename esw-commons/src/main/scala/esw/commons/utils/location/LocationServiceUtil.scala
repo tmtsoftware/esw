@@ -7,9 +7,8 @@ import csw.location.api.models.Connection.AkkaConnection
 import csw.location.api.models._
 import csw.location.api.scaladsl.{LocationService, RegistrationResult}
 import csw.prefix.models.{Prefix, Subsystem}
-import esw.commons.Timeouts
 import esw.commons.extensions.FutureEitherExt._
-import esw.commons.utils.location.EswLocationError.{RegistrationListingFailed, LocationNotFound}
+import esw.commons.utils.location.EswLocationError.{LocationNotFound, RegistrationListingFailed}
 
 import scala.concurrent.duration.FiniteDuration
 import scala.concurrent.{ExecutionContext, Future}
@@ -73,10 +72,10 @@ private[esw] class LocationServiceUtil(val locationService: LocationService)(imp
 
   def resolve[L <: Location](
       connection: TypedConnection[L],
-      timeout: FiniteDuration = Timeouts.DefaultTimeout
+      within: FiniteDuration
   ): Future[Either[EswLocationError, L]] =
     locationService
-      .resolve(connection, timeout)
+      .resolve(connection, within)
       .map {
         case Some(location) => Right(location)
         case None           => Left(LocationNotFound(s"Could not resolve location matching connection: $connection"))
@@ -97,8 +96,8 @@ private[esw] class LocationServiceUtil(val locationService: LocationService)(imp
   private[esw] def resolveSequencer(
       subsystem: Subsystem,
       observingMode: String,
-      timeout: FiniteDuration = Timeouts.DefaultTimeout
+      within: FiniteDuration
   ): Future[Either[EswLocationError, AkkaLocation]] =
-    resolve(AkkaConnection(ComponentId(Prefix(subsystem, observingMode), Sequencer)), timeout)
+    resolve(AkkaConnection(ComponentId(Prefix(subsystem, observingMode), Sequencer)), within)
 
 }

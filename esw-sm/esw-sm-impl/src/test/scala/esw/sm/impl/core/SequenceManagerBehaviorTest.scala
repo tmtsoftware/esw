@@ -187,7 +187,6 @@ class SequenceManagerBehaviorTest extends BaseTestSuite {
       startSequencerResponseProbe.expectMessage(StartSequencerResponse.AlreadyRunning(componentId))
       verify(sequencerUtil, never).startSequencer(ESW, Darknight, 3)
       verify(locationServiceUtil).find(httpConnection)
-      verify(locationServiceUtil, never).resolve(httpConnection)
     }
 
     "return Error if start sequencer returns error | ESW-166" in {
@@ -206,7 +205,6 @@ class SequenceManagerBehaviorTest extends BaseTestSuite {
       startSequencerResponseProbe.expectMessage(expectedErrorResponse)
       verify(sequencerUtil).startSequencer(ESW, Darknight, 3)
       verify(locationServiceUtil).find(httpConnection)
-      verify(locationServiceUtil, never).resolve(httpConnection)
     }
   }
 
