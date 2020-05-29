@@ -3,7 +3,7 @@ import sbt.Def.{setting => dep}
 import sbt._
 
 object Libs {
-  private val MSocketVersion = "4a6a2aa"
+  private val MSocketVersion = "aad3e260a4"
 
   val `case-app`           = "com.github.alexarchambault" %% "case-app" % "2.0.0-M16"
   val enumeratum           = dep("com.beachape" %%% "enumeratum" % "1.6.1") //MIT License
