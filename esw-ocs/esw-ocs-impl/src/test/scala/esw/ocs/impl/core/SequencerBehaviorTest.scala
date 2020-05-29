@@ -1155,37 +1155,39 @@ class SequencerBehaviorTest extends BaseTestSuite {
     }
 
     "Offline -> Shutdown | ESW-141" in {
-      val sequencerSetup = SequencerTestSetup.offline(sequence)(actorSystem)
+      // actor system is needed as Shutdown message terminates the actorSystem of Sequencer
+      val system: ActorSystem[SpawnProtocol.Command] = ActorSystem(SpawnProtocol(), "test")
+      val sequencerSetup                             = SequencerTestSetup.offline(sequence)(system)
       import sequencerSetup._
 
-      val probe = TestProbe[Ok.type]()
+      val probe = TestProbe[Ok.type]()(system)
       sequencerActor ! Shutdown(probe.ref)
       probe.expectMessage(Ok)
       probe.expectTerminated(sequencerActor)
     }
 
     "Loaded -> Shutdown | ESW-141" in {
-      val sequencerSetup = SequencerTestSetup.loaded(sequence)(actorSystem)
+      // actor system is needed as Shutdown message terminates the actorSystem of Sequencer
+      val system: ActorSystem[SpawnProtocol.Command] = ActorSystem(SpawnProtocol(), "test")
+      val sequencerSetup                             = SequencerTestSetup.loaded(sequence)(system)
       import sequencerSetup._
 
-      val probe = TestProbe[Ok.type]()
+      val probe = TestProbe[Ok.type]()(system)
       sequencerActor ! Shutdown(probe.ref)
       probe.expectMessage(Ok)
       probe.expectTerminated(sequencerActor)
     }
 
     "InProgress -> Shutdown | ESW-141" in {
-      val sequencerSetup = SequencerTestSetup.idle(sequence)(actorSystem)
+      // actor system is needed as Shutdown message terminates the actorSystem of Sequencer
+      val system: ActorSystem[SpawnProtocol.Command] = ActorSystem(SpawnProtocol(), "test")
+      val sequencerSetup                             = SequencerTestSetup.inProgress(sequence)(system)
       import sequencerSetup._
 
-      loadAndStartSequenceThenAssertInProgress()
-      assertSequencerState(InProgress) // Initial state InProgres
-
-      val probe = TestProbe[Ok.type]()
+      val probe = TestProbe[Ok.type]()(system)
       sequencerActor ! Shutdown(probe.ref)
       probe.expectMessage(Ok)
       probe.expectTerminated(sequencerActor)
     }
-
   }
 }
