@@ -56,9 +56,9 @@ class SequenceManagerIntegrationTest extends EswTestKit {
     // assert for Successful Configuration
     configureResponse shouldBe a[ConfigureResponse.Success]
 
-    // ESW-162 verify configure response returns master sequencer http location
+    // ESW-162 verify configure response returns master sequencer ComponentId
     val masterSequencerLocation = resolveHTTPLocation(eswIrisCalPrefix, Sequencer)
-    configureResponse should ===(ConfigureResponse.Success(masterSequencerLocation))
+    configureResponse should ===(ConfigureResponse.Success(masterSequencerLocation.connection.componentId))
 
     // ESW-162 (verify all appropriate Sequencers are started based on observing mode)
     resolveSequencerLocation(eswIrisCalPrefix).connection should ===(sequencerConnection(eswIrisCalPrefix))
@@ -142,7 +142,8 @@ class SequenceManagerIntegrationTest extends EswTestKit {
 
     val response = sequenceManager.startSequencer(ESW, IRIS_DARKNIGHT).futureValue
 
-    response shouldBe a[StartSequencerResponse.Started]
+    // ESW-176 Verify that start sequencer return Started response with component id for master sequencer
+    response should ===(StartSequencerResponse.Started(ComponentId(Prefix(ESW, IRIS_DARKNIGHT), Sequencer)))
 
     // verify that sequencer is started
     resolveHTTPLocation(Prefix(ESW, IRIS_DARKNIGHT), Sequencer)

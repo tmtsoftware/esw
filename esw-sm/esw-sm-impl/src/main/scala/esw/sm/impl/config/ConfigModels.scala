@@ -6,7 +6,8 @@ import io.bullet.borer.Codec
 import io.bullet.borer.derivation.CompactMapBasedCodecs.deriveCodec
 
 case class Resources(resources: Set[String]) {
-  def conflictsWith(other: Resources): Boolean = this.resources.exists(other.resources.contains)
+  private def conflictsWith(other: Resources): Boolean  = this.resources.exists(other.resources.contains)
+  def conflictsWithAny(others: Set[Resources]): Boolean = others.exists(conflictsWith)
 }
 object Resources {
   def apply(resources: String*): Resources = new Resources(resources.toSet)

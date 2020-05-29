@@ -1,12 +1,12 @@
 package esw.sm.api.models
 
-import csw.location.api.models.HttpLocation
+import csw.location.api.models.ComponentId
 import esw.sm.api.codecs.SmAkkaSerializable
 
 sealed trait ConfigureResponse extends SmAkkaSerializable
 
 object ConfigureResponse {
-  case class Success(sequencerLocation: HttpLocation) extends ConfigureResponse
+  case class Success(masterSequencerComponentId: ComponentId) extends ConfigureResponse
 
   sealed trait Failure                                                           extends ConfigureResponse
   case class ConflictingResourcesWithRunningObsMode(runningObsMode: Set[String]) extends Failure
@@ -31,9 +31,9 @@ object CleanupResponse {
 sealed trait StartSequencerResponse extends SmAkkaSerializable
 
 object StartSequencerResponse {
-  sealed trait Success                              extends StartSequencerResponse
-  case class Started(location: HttpLocation)        extends Success
-  case class AlreadyRunning(location: HttpLocation) extends Success
+  sealed trait Success                                extends StartSequencerResponse
+  case class Started(componentId: ComponentId)        extends Success
+  case class AlreadyRunning(componentId: ComponentId) extends Success
 
   sealed trait Failure extends StartSequencerResponse
 }

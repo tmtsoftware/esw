@@ -1,13 +1,10 @@
 package esw.sm.api
 
-import java.net.URI
-
 import akka.actor.testkit.typed.scaladsl.TestProbe
 import akka.actor.typed.{ActorSystem, SpawnProtocol}
 import akka.serialization.SerializationExtension
+import csw.location.api.models.ComponentId
 import csw.location.api.models.ComponentType.Sequencer
-import csw.location.api.models.Connection.HttpConnection
-import csw.location.api.models.{ComponentId, HttpLocation}
 import csw.prefix.models.Prefix
 import csw.prefix.models.Subsystem.ESW
 import esw.sm.api.actor.messages.SequenceManagerMsg.{Cleanup, Configure, GetRunningObsModes, GetSequenceManagerState}
@@ -63,7 +60,7 @@ class SmAkkaSerializerTest extends AnyWordSpecLike with Matchers with TypeChecke
 
     val testData = Table(
       "Sequence Manager ConfigureResponse models",
-      ConfigureResponse.Success(HttpLocation(HttpConnection(ComponentId(Prefix(ESW, "primary"), Sequencer)), URI.create("uri"))),
+      ConfigureResponse.Success(ComponentId(Prefix(ESW, "primary"), Sequencer)),
       ConfigureResponse.FailedToStartSequencers(Set("Error1", "Error2")),
       ConfigureResponse.ConflictingResourcesWithRunningObsMode(Set(obsMode1, obsMode2)),
       LocationServiceError("error"),

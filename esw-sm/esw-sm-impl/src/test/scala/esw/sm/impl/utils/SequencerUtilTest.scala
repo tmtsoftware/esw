@@ -10,7 +10,7 @@ import csw.location.api.models.Connection.{AkkaConnection, HttpConnection}
 import csw.location.api.models.{AkkaLocation, ComponentId, HttpLocation, Location}
 import csw.prefix.models.Prefix
 import csw.prefix.models.Subsystem.{ESW, TCS}
-import esw.commons.utils.location.EswLocationError.{RegistrationListingFailed, LocationNotFound}
+import esw.commons.utils.location.EswLocationError.{LocationNotFound, RegistrationListingFailed}
 import esw.commons.utils.location.LocationServiceUtil
 import esw.commons.{BaseTestSuite, Timeouts}
 import esw.ocs.api.protocol.{ScriptError, ScriptResponse}
@@ -39,7 +39,8 @@ class SequencerUtilTest extends BaseTestSuite {
       import setup._
 
       sequencerUtil.resolveMasterSequencerOf(obsMode).rightValue should ===(masterSeqLocation)
-      verifyMasterSequencerIsResolved()
+
+      verify(locationServiceUtil).resolve(masterSeqConnection, Timeouts.DefaultTimeout)
     }
   }
 
@@ -50,9 +51,7 @@ class SequencerUtilTest extends BaseTestSuite {
       import setup._
 
       // returns success with master sequencer location after starting all the sequencers
-      sequencerUtil.startSequencers(obsMode, Sequencers(ESW, TCS), 3).futureValue should ===(Success(masterSeqLocation))
-
-      verifyMasterSequencerIsResolved()
+      sequencerUtil.startSequencers(obsMode, Sequencers(ESW, TCS), 3).futureValue should ===(Success(eswComponentId))
 
       verify(sequenceComponentUtil).getAvailableSequenceComponent(ESW)
       verify(sequenceComponentUtil).getAvailableSequenceComponent(TCS)
@@ -156,8 +155,8 @@ class SequencerUtilTest extends BaseTestSuite {
       val eswSeqCompLoc = AkkaLocation(AkkaConnection(ComponentId(Prefix(ESW, obsMode), SequenceComponent)), URI.create(""))
       val tcsSeqCompLoc = AkkaLocation(AkkaConnection(ComponentId(Prefix(TCS, obsMode), SequenceComponent)), URI.create(""))
 
-      when(locationServiceUtil.resolveSequencer(ESW, obsMode)).thenReturn(futureRight(eswLocation))
-      when(locationServiceUtil.resolveSequencer(TCS, obsMode)).thenReturn(futureRight(tcsLocation))
+      when(locationServiceUtil.resolveSequencer(ESW, obsMode, Timeouts.DefaultTimeout)).thenReturn(futureRight(eswLocation))
+      when(locationServiceUtil.resolveSequencer(TCS, obsMode, Timeouts.DefaultTimeout)).thenReturn(futureRight(tcsLocation))
       when(eswSequencerApi.getSequenceComponent).thenReturn(Future.successful(eswSeqCompLoc))
       when(tcsSequencerApi.getSequenceComponent).thenReturn(Future.successful(tcsSeqCompLoc))
       when(sequenceComponentUtil.unloadScript(eswSeqCompLoc)).thenReturn(Future.successful(Done))
@@ -178,11 +177,11 @@ class SequencerUtilTest extends BaseTestSuite {
 
       // mimic the exception thrown from LocationServiceUtil.resolveSequencer
       val resolveFailed = futureLeft(LocationNotFound("location service error"))
-      when(locationServiceUtil.resolveSequencer(ESW, obsMode)).thenReturn(resolveFailed)
+      when(locationServiceUtil.resolveSequencer(ESW, obsMode, Timeouts.DefaultTimeout)).thenReturn(resolveFailed)
 
       sequencerUtil.stopSequencers(Sequencers(ESW), obsMode).rightValue should ===(Done)
 
-      verify(locationServiceUtil).resolveSequencer(ESW, obsMode)
+      verify(locationServiceUtil).resolveSequencer(ESW, obsMode, Timeouts.DefaultTimeout)
       verify(eswSequencerApi, never).getSequenceComponent
     }
 
@@ -192,15 +191,16 @@ class SequencerUtilTest extends BaseTestSuite {
       import setup._
       val tcsSeqCompLoc = AkkaLocation(AkkaConnection(ComponentId(Prefix(TCS, obsMode), SequenceComponent)), URI.create(""))
 
-      when(locationServiceUtil.resolveSequencer(ESW, obsMode)).thenReturn(futureLeft(RegistrationListingFailed("Error")))
-      when(locationServiceUtil.resolveSequencer(TCS, obsMode)).thenReturn(futureRight(tcsLocation))
+      when(locationServiceUtil.resolveSequencer(ESW, obsMode, Timeouts.DefaultTimeout))
+        .thenReturn(futureLeft(RegistrationListingFailed("Error")))
+      when(locationServiceUtil.resolveSequencer(TCS, obsMode, Timeouts.DefaultTimeout)).thenReturn(futureRight(tcsLocation))
       when(tcsSequencerApi.getSequenceComponent).thenReturn(Future.successful(tcsSeqCompLoc))
       when(sequenceComponentUtil.unloadScript(tcsSeqCompLoc)).thenReturn(Future.successful(Done))
 
       sequencerUtil.stopSequencers(Sequencers(ESW, TCS), obsMode).leftValue should ===(RegistrationListingFailed("Error"))
 
-      verify(locationServiceUtil).resolveSequencer(ESW, obsMode)
-      verify(locationServiceUtil).resolveSequencer(TCS, obsMode)
+      verify(locationServiceUtil).resolveSequencer(ESW, obsMode, Timeouts.DefaultTimeout)
+      verify(locationServiceUtil).resolveSequencer(TCS, obsMode, Timeouts.DefaultTimeout)
       verify(tcsSequencerApi).getSequenceComponent
     }
   }
@@ -214,7 +214,9 @@ class SequencerUtilTest extends BaseTestSuite {
     val eswSequencerApi: SequencerApi                = mock[SequencerApi]
     val tcsSequencerApi: SequencerApi                = mock[SequencerApi]
 
-    val eswLocation: AkkaLocation = AkkaLocation(AkkaConnection(ComponentId(Prefix(ESW, obsMode), Sequencer)), URI.create(""))
+    val eswComponentId: ComponentId = ComponentId(Prefix(ESW, obsMode), Sequencer)
+
+    val eswLocation: AkkaLocation = AkkaLocation(AkkaConnection(eswComponentId), URI.create(""))
     val tcsLocation: AkkaLocation = AkkaLocation(AkkaConnection(ComponentId(Prefix(TCS, obsMode), Sequencer)), URI.create(""))
 
     val sequencerUtil: SequencerUtil = new SequencerUtil(locationServiceUtil, sequenceComponentUtil) {
@@ -235,9 +237,5 @@ class SequencerUtilTest extends BaseTestSuite {
     val masterSeqLocation: HttpLocation     = HttpLocation(masterSeqConnection, URI.create(""))
 
     when(locationServiceUtil.resolve(masterSeqConnection, Timeouts.DefaultTimeout)).thenReturn(futureRight(masterSeqLocation))
-
-    def verifyMasterSequencerIsResolved(): Unit = {
-      verify(locationServiceUtil).resolve(masterSeqConnection, Timeouts.DefaultTimeout)
-    }
   }
 }

@@ -17,8 +17,8 @@ import csw.location.api.models.{AkkaLocation, ComponentId}
 import csw.location.api.scaladsl.{LocationService, RegistrationResult}
 import csw.prefix.models.Subsystem.{ESW, IRIS, TCS}
 import csw.prefix.models.{Prefix, Subsystem}
-import esw.commons.utils.location.EswLocationError.{RegistrationListingFailed, LocationNotFound}
-import esw.commons.{BaseTestSuite, Timeouts}
+import esw.commons.BaseTestSuite
+import esw.commons.utils.location.EswLocationError.{LocationNotFound, RegistrationListingFailed}
 
 import scala.concurrent.duration.DurationDouble
 import scala.concurrent.{ExecutionContext, Future}
@@ -206,13 +206,13 @@ class LocationServiceUtilTest extends BaseTestSuite {
 
   "resolve" must {
     "return a location which matches a given connection | ESW-119" in {
-      when(locationService.resolve(akkaConnection, Timeouts.DefaultTimeout))
+      when(locationService.resolve(akkaConnection, 10.millis))
         .thenReturn(Future.successful(Some(akkaLocation)))
 
       val locationServiceDsl = new LocationServiceUtil(locationService)
 
       val actualLocations =
-        locationServiceDsl.resolve(akkaConnection).rightValue
+        locationServiceDsl.resolve(akkaConnection, 10.millis).rightValue
 
       actualLocations should ===(akkaLocation)
     }
@@ -271,13 +271,13 @@ class LocationServiceUtilTest extends BaseTestSuite {
 
   "resolveSequencer" must {
     "return a location which matches a given subsystem and observing mode | ESW-119" in {
-      when(locationService.resolve(akkaConnection, Timeouts.DefaultTimeout))
+      when(locationService.resolve(akkaConnection, within = 10.millis))
         .thenReturn(Future.successful(Some(akkaLocation)))
 
       val locationServiceDsl = new LocationServiceUtil(locationService)
-      locationServiceDsl.resolveSequencer(subsystem, observingMode).rightValue shouldBe akkaLocation
+      locationServiceDsl.resolveSequencer(subsystem, observingMode, within = 10.millis).rightValue shouldBe akkaLocation
 
-      verify(locationService).resolve(akkaConnection, Timeouts.DefaultTimeout)
+      verify(locationService).resolve(akkaConnection, 10.millis)
     }
 
     "return a LocationNotFound when no matching subsystem and observing mode is found | ESW-119" in {
