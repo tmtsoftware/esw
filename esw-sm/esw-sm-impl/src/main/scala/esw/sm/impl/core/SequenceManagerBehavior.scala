@@ -138,11 +138,11 @@ class SequenceManagerBehavior(
       }
     }
 
-  private def checkConflicts(requiredResources: Resources, runningObsModes: Set[String]) = {
-    // ignoring failure of getResources as config should never be absent for running obsModes
-    val configuredResources = runningObsModes.map(config.resources(_).get)
-    configuredResources.exists(_.conflictsWith(requiredResources))
-  }
+  // ignoring failure of getResources as config should never be absent for running obsModes
+  private def checkConflicts(requiredResources: Resources, runningObsModes: Set[String]) =
+    requiredResources.conflictsWithAny(runningObsModes.map(getResources))
+
+  private def getResources(obsMode: String): Resources = config.resources(obsMode).get
 
   private def stopSequencers(sequencers: Sequencers, obsMode: String) =
     sequencerUtil
