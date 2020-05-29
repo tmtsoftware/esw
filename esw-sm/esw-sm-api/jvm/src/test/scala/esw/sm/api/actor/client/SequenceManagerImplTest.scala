@@ -1,14 +1,12 @@
 package esw.sm.api.actor.client
 
-import java.net.URI
-
 import akka.actor.typed.scaladsl.Behaviors
 import akka.actor.typed.{ActorSystem, SpawnProtocol}
 import akka.util.Timeout
 import csw.location.api.extensions.ActorExtension._
 import csw.location.api.models.ComponentType.Service
-import csw.location.api.models.Connection.{AkkaConnection, HttpConnection}
-import csw.location.api.models.{AkkaLocation, ComponentId, ComponentType, HttpLocation}
+import csw.location.api.models.Connection.AkkaConnection
+import csw.location.api.models.{AkkaLocation, ComponentId, ComponentType}
 import csw.prefix.models.Prefix
 import csw.prefix.models.Subsystem.ESW
 import esw.sm.api.SequenceManagerState.Idle
@@ -24,12 +22,11 @@ import scala.concurrent.duration.DurationInt
 class SequenceManagerImplTest extends AnyWordSpecLike with TypeCheckedTripleEquals with ScalaFutures with Matchers {
   private final implicit val system: ActorSystem[SpawnProtocol.Command] = ActorSystem(SpawnProtocol(), "SmAkkaSerializerTest")
   private implicit val timeout: Timeout                                 = 10.seconds
-  private val masterSequencerLocation =
-    HttpLocation(HttpConnection(ComponentId(Prefix("esw.primary"), ComponentType.Sequencer)), URI.create("uri"))
-  private val configureResponse          = ConfigureResponse.Success(masterSequencerLocation)
-  private val cleanupResponse            = CleanupResponse.Success
-  private val getRunningObsModesResponse = GetRunningObsModesResponse.Success(Set("IRIS_Darknight", "WFOS_cal"))
-  private val startSequencerResponse     = StartSequencerResponse.Started(masterSequencerLocation)
+  private val sequencerComponentId: ComponentId                         = ComponentId(Prefix("esw.primary"), ComponentType.Sequencer)
+  private val configureResponse                                         = ConfigureResponse.Success(sequencerComponentId)
+  private val cleanupResponse                                           = CleanupResponse.Success
+  private val getRunningObsModesResponse                                = GetRunningObsModesResponse.Success(Set("IRIS_Darknight", "WFOS_cal"))
+  private val startSequencerResponse                                    = StartSequencerResponse.Started(sequencerComponentId)
 
   private val mockedBehavior: Behaviors.Receive[SequenceManagerMsg] = Behaviors.receiveMessage[SequenceManagerMsg] { msg =>
     msg match {

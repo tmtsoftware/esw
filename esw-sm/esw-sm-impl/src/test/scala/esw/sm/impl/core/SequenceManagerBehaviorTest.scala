@@ -11,7 +11,7 @@ import csw.location.api.models.{AkkaLocation, ComponentId, HttpLocation}
 import csw.prefix.models.Prefix
 import csw.prefix.models.Subsystem.{ESW, TCS}
 import esw.commons.BaseTestSuite
-import esw.commons.utils.location.EswLocationError.{RegistrationListingFailed, LocationNotFound}
+import esw.commons.utils.location.EswLocationError.{LocationNotFound, RegistrationListingFailed}
 import esw.commons.utils.location.LocationServiceUtil
 import esw.sm.api.SequenceManagerState
 import esw.sm.api.SequenceManagerState.{CleaningUp, Configuring, Idle, StartingSequencer}
@@ -61,8 +61,8 @@ class SequenceManagerBehaviorTest extends BaseTestSuite {
   "Configure" must {
 
     "transition sm from Idle -> ConfigurationInProcess -> Idle state and return location of master sequencer | ESW-178, ESW-164" in {
-      val httpLocation   = HttpLocation(HttpConnection(ComponentId(Prefix(ESW, Darknight), Sequencer)), new URI("uri"))
-      val configResponse = Success(httpLocation)
+      val componentId    = ComponentId(Prefix(ESW, Darknight), Sequencer)
+      val configResponse = Success(componentId)
       when(locationServiceUtil.listAkkaLocationsBy(ESW, Sequencer)).thenReturn(future(1.seconds, Right(List.empty)))
       when(sequencerUtil.startSequencers(Darknight, darknightSequencers, 3)).thenReturn(Future.successful(configResponse))
       val configureProbe = TestProbe[ConfigureResponse]()
@@ -155,24 +155,20 @@ class SequenceManagerBehaviorTest extends BaseTestSuite {
     "transition sm from Idle -> Starting -> Idle state and start the sequencer for given obs mode | ESW-166" in {
       val componentId    = ComponentId(Prefix(ESW, Darknight), Sequencer)
       val httpConnection = HttpConnection(componentId)
-      val httpLocation   = HttpLocation(httpConnection, new URI("uri"))
       val akkaLocation   = AkkaLocation(AkkaConnection(componentId), new URI("uri"))
 
       when(sequencerUtil.startSequencer(ESW, Darknight, 3)).thenReturn(future(1.seconds, Right(akkaLocation)))
       when(locationServiceUtil.find(httpConnection)).thenReturn(futureLeft(LocationNotFound("error")))
-      when(locationServiceUtil.resolve(httpConnection, 5.seconds))
-        .thenReturn(futureRight(httpLocation))
 
       val startSequencerResponseProbe = TestProbe[StartSequencerResponse]()
 
       assertState(Idle)
       smRef ! StartSequencer(ESW, Darknight, startSequencerResponseProbe.ref)
       assertState(StartingSequencer)
-      startSequencerResponseProbe.expectMessage(StartSequencerResponse.Started(httpLocation))
+      startSequencerResponseProbe.expectMessage(StartSequencerResponse.Started(componentId))
       assertState(Idle)
 
       verify(sequencerUtil).startSequencer(ESW, Darknight, 3)
-      verify(locationServiceUtil).resolve(httpConnection, 5.seconds)
       verify(locationServiceUtil).find(httpConnection)
     }
 
@@ -188,7 +184,7 @@ class SequenceManagerBehaviorTest extends BaseTestSuite {
 
       smRef ! StartSequencer(ESW, Darknight, startSequencerResponseProbe.ref)
 
-      startSequencerResponseProbe.expectMessage(StartSequencerResponse.AlreadyRunning(httpLocation))
+      startSequencerResponseProbe.expectMessage(StartSequencerResponse.AlreadyRunning(componentId))
       verify(sequencerUtil, never).startSequencer(ESW, Darknight, 3)
       verify(locationServiceUtil).find(httpConnection)
       verify(locationServiceUtil, never).resolve(httpConnection)

@@ -14,13 +14,12 @@ import esw.sm.api.SequenceManagerState
 import esw.sm.api.SequenceManagerState.{CleaningUp, Configuring, Idle, StartingSequencer}
 import esw.sm.api.actor.messages.SequenceManagerMsg
 import esw.sm.api.actor.messages.SequenceManagerMsg._
-import esw.sm.api.models.CommonFailure.{ConfigurationMissing, LocationServiceError}
+import esw.sm.api.models.CommonFailure.ConfigurationMissing
 import esw.sm.api.models.ConfigureResponse.ConflictingResourcesWithRunningObsMode
 import esw.sm.api.models.StartSequencerResponse.{AlreadyRunning, Started}
 import esw.sm.api.models._
 import esw.sm.impl.config.{ObsModeConfig, Resources, SequenceManagerConfig, Sequencers}
 import esw.sm.impl.utils.SequencerUtil
-import scala.concurrent.duration.DurationInt
 
 import scala.async.Async.{async, await}
 import scala.concurrent.Future
@@ -85,7 +84,7 @@ class SequenceManagerBehavior(
       )
       .flatMap {
         case Left(_)         => startSequencerAndResolve(subsystem, obsMode)
-        case Right(location) => Future.successful(AlreadyRunning(location))
+        case Right(location) => Future.successful(AlreadyRunning(location.connection.componentId))
       }
       .map(r => self ! StartSequencerResponseInternal(r))
   }
@@ -93,14 +92,8 @@ class SequenceManagerBehavior(
   private def startSequencerAndResolve(subsystem: Subsystem, obsMode: String): Future[StartSequencerResponse] = {
     sequencerUtil
       .startSequencer(subsystem, obsMode, sequencerStartRetries)
-      .flatMapToAdt(
-        _ =>
-          locationServiceUtil
-            .resolve(HttpConnection(ComponentId(Prefix(subsystem, obsMode), Sequencer)), 5.second)
-            .map {
-              case Left(error) => LocationServiceError(error.msg)
-              case Right(loc)  => Started(loc)
-            },
+      .mapToAdt(
+        akkaLocation => Started(akkaLocation.connection.componentId),
         error => error
       )
   }

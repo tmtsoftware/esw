@@ -11,11 +11,10 @@ import esw.commons.Timeouts
 import esw.commons.extensions.FutureEitherExt.FutureEitherOps
 import esw.commons.extensions.ListEitherExt.ListEitherOps
 import esw.commons.utils.FutureUtils
-import esw.commons.utils.location.EswLocationError.{RegistrationListingFailed, LocationNotFound}
+import esw.commons.utils.location.EswLocationError.{LocationNotFound, RegistrationListingFailed}
 import esw.commons.utils.location.{EswLocationError, LocationServiceUtil}
 import esw.ocs.api.actor.client.SequencerApiFactory
 import esw.ocs.api.{SequenceComponentApi, SequencerApi}
-import esw.sm.api.models.CommonFailure.LocationServiceError
 import esw.sm.api.models.ConfigureResponse.{FailedToStartSequencers, Success}
 import esw.sm.api.models.{ConfigureResponse, SequenceManagerError, SequencerError}
 import esw.sm.impl.config.Sequencers
@@ -41,8 +40,8 @@ class SequencerUtil(locationServiceUtil: LocationServiceUtil, sequenceComponentU
 
       spawnSequencerResponses match {
         case Left(failedScriptResponses) => FailedToStartSequencers(failedScriptResponses.map(_.msg).toSet)
-        // resolve master Sequencer and return LOCATION or FAILURE if location is not found
-        case Right(_) => await(resolveMasterSequencerOf(observingMode).mapToAdt(Success, err => LocationServiceError(err.msg)))
+        // return master sequencer componentId
+        case Right(_) => Success(ComponentId(Prefix(ESW, observingMode), Sequencer))
       }
     }
 
