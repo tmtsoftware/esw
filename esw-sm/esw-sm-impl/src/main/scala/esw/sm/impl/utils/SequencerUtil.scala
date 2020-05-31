@@ -27,21 +27,21 @@ class SequencerUtil(locationServiceUtil: LocationServiceUtil, sequenceComponentU
 ) {
   implicit private val ec: ExecutionContext = actorSystem.executionContext
 
-  private def masterSequencerConnection(obsMode: String): HttpConnection =
-    HttpConnection(ComponentId(Prefix(ESW, obsMode), Sequencer))
+  private def masterSequencerConnection(obsMode: String) = HttpConnection(ComponentId(Prefix(ESW, obsMode), Sequencer))
 
   def resolveMasterSequencerOf(observingMode: String): Future[Either[EswLocationError, HttpLocation]] =
     locationServiceUtil.resolve(masterSequencerConnection(observingMode), Timeouts.DefaultTimeout)
 
   def startSequencers(observingMode: String, requiredSequencers: Sequencers, retryCount: Int): Future[ConfigureResponse] =
     async {
-      val spawnSequencerResponses: Either[List[SequencerError], List[AkkaLocation]] =
+      def masterSequencerId = ComponentId(Prefix(ESW, observingMode), Sequencer)
+
+      val spawnSequencerResponses =
         await(FutureUtils.sequential(requiredSequencers.subsystems)(startSequencer(_, observingMode, retryCount))).sequence
 
       spawnSequencerResponses match {
         case Left(failedScriptResponses) => FailedToStartSequencers(failedScriptResponses.map(_.msg).toSet)
-        // return master sequencer componentId
-        case Right(_) => Success(ComponentId(Prefix(ESW, observingMode), Sequencer))
+        case Right(_)                    => Success(masterSequencerId)
       }
     }
 
@@ -72,9 +72,8 @@ class SequencerUtil(locationServiceUtil: LocationServiceUtil, sequenceComponentU
         case Left(e)                   => Future.successful(Left(e))
       }
 
-  // get sequence component from Sequencer and unload it.
-  private def stopSequencer(api: SequencerApi): Future[Done] =
-    api.getSequenceComponent.flatMap(sequenceComponentUtil.unloadScript)
+  // get sequence component from Sequencer and unload sequencer script
+  private def stopSequencer(api: SequencerApi) = api.getSequenceComponent.flatMap(sequenceComponentUtil.unloadScript)
 
   // Created in order to mock the behavior of sequencer API availability for unit test
   private[sm] def createSequencerClient(location: Location): SequencerApi = SequencerApiFactory.make(location)

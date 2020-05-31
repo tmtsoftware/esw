@@ -47,56 +47,41 @@ class SequenceManagerBehavior(
       }
     }
 
+  private def replyAndGoToIdle[T](replyTo: ActorRef[T], msg: T) = {
+    replyTo ! msg
+    idle()
+  }
+
   // Clean up is in progress, waiting for CleanupResponseInternal message
   // Within this period, reject all the other messages except common messages
   private def cleaningUp(replyTo: ActorRef[CleanupResponse]): Behavior[SequenceManagerMsg] =
-    receive[CleanupResponseInternal](CleaningUp) { msg =>
-      replyTo ! msg.res
-      idle()
-    }
+    receive[CleanupResponseInternal](CleaningUp)(msg => replyAndGoToIdle(replyTo, msg.res))
 
   // Configuration is in progress, waiting for ConfigurationResponseInternal message
   // Within this period, reject all the other messages except common messages
   private def configuring(replyTo: ActorRef[ConfigureResponse]): Behavior[SequenceManagerMsg] =
-    receive[ConfigurationResponseInternal](Configuring) { msg =>
-      replyTo ! msg.res
-      idle()
-    }
+    receive[ConfigurationResponseInternal](Configuring)(msg => replyAndGoToIdle(replyTo, msg.res))
 
   // Starting sequencer is in progress, waiting for StartSequencerResponseInternal message
   // Within this period, reject all the other messages except common messages
   private def startingSequencer(replyTo: ActorRef[StartSequencerResponse]): Behavior[SequenceManagerMsg] =
-    receive[StartSequencerResponseInternal](StartingSequencer) { msg =>
-      replyTo ! msg.res
-      idle()
-    }
+    receive[StartSequencerResponseInternal](StartingSequencer)(msg => replyAndGoToIdle(replyTo, msg.res))
 
-  private def startSequencer(
-      subsystem: Subsystem,
-      obsMode: String,
-      self: ActorRef[SequenceManagerMsg]
-  ): Future[Unit] = {
+  private def startSequencer(subsystem: Subsystem, obsMode: String, self: ActorRef[SequenceManagerMsg]): Future[Unit] =
     // resolve is not needed here. Find should suffice
     // no concurrent start sequencer or configure is allowed
     locationServiceUtil
-      .find(
-        HttpConnection(ComponentId(Prefix(subsystem, obsMode), Sequencer))
-      )
+      .find(HttpConnection(ComponentId(Prefix(subsystem, obsMode), Sequencer)))
       .flatMap {
         case Left(_)         => startSequencerAndResolve(subsystem, obsMode)
         case Right(location) => Future.successful(AlreadyRunning(location.connection.componentId))
       }
       .map(r => self ! StartSequencerResponseInternal(r))
-  }
 
-  private def startSequencerAndResolve(subsystem: Subsystem, obsMode: String): Future[StartSequencerResponse] = {
+  private def startSequencerAndResolve(subsystem: Subsystem, obsMode: String): Future[StartSequencerResponse] =
     sequencerUtil
       .startSequencer(subsystem, obsMode, sequencerStartRetries)
-      .mapToAdt(
-        akkaLocation => Started(akkaLocation.connection.componentId),
-        error => error
-      )
-  }
+      .mapToAdt(akkaLocation => Started(akkaLocation.connection.componentId), identity)
 
   private def handleCommon(msg: CommonMessage, currentState: SequenceManagerState): Unit =
     msg match {
