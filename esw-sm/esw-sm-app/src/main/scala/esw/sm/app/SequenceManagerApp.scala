@@ -20,13 +20,10 @@ object SequenceManagerApp extends EswCommandApp[SequenceManagerAppCommand] {
 
   def run(command: SequenceManagerAppCommand, startLogging: Boolean = true): SequenceManagerWiring =
     command match {
-      case StartCommand(configPath) => start(configPath, startLogging = true)
+      case StartCommand(configPath) => start(configPath, startLogging)
     }
 
-  def start(
-      configPath: Path,
-      startLogging: Boolean
-  ): SequenceManagerWiring = {
+  def start(configPath: Path, startLogging: Boolean): SequenceManagerWiring = {
     val sequenceManagerWiring = new SequenceManagerWiring(configPath)
     import sequenceManagerWiring._
     if (startLogging) actorRuntime.startLogging(progName, appVersion)

@@ -34,9 +34,8 @@ private[esw] class LocationServiceUtil(val locationService: LocationService)(imp
     )(() => registrationResult.unregister())
 
   private[esw] def register[E](
-      akkaRegistration: AkkaRegistration,
-      onFailure: PartialFunction[Throwable, Future[Either[E, AkkaLocation]]]
-  ): Future[Either[E, AkkaLocation]] =
+      akkaRegistration: AkkaRegistration
+  )(onFailure: PartialFunction[Throwable, Future[Either[E, AkkaLocation]]]): Future[Either[E, AkkaLocation]] =
     locationService
       .register(akkaRegistration)
       .map { result =>
@@ -82,9 +81,7 @@ private[esw] class LocationServiceUtil(val locationService: LocationService)(imp
       }
       .mapError(e => RegistrationListingFailed(s"Location Service Error: ${e.getMessage}"))
 
-  def find[L <: Location](
-      connection: TypedConnection[L]
-  ): Future[Either[EswLocationError, L]] =
+  def find[L <: Location](connection: TypedConnection[L]): Future[Either[EswLocationError, L]] =
     locationService
       .find(connection)
       .map {

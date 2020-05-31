@@ -139,13 +139,7 @@ private[ocs] class SequencerWiring(
 
         val registration = AkkaRegistrationFactory.make(AkkaConnection(componentId), sequencerRef.toURI)
         val loc = Await.result(
-          locationServiceUtil
-            .register(
-              registration,
-              {
-                case NonFatal(e) => Future.successful(Left(ScriptError(e.getMessage)))
-              }
-            ),
+          locationServiceUtil.register(registration) { case NonFatal(e) => Future.successful(Left(ScriptError(e.getMessage))) },
           Timeouts.DefaultTimeout
         )
 

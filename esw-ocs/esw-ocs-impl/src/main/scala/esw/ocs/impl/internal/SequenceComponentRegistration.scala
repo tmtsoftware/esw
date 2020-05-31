@@ -37,16 +37,13 @@ class SequenceComponentRegistration(
 
   private def registerWithRetry(retryCount: Int): Future[Either[ScriptError, AkkaLocation]] =
     registration().flatMap { akkaRegistration =>
-      register(
-        akkaRegistration,
-        onFailure = {
-          case OtherLocationIsRegistered(_) if retryCount > 0 =>
-            //kill actor ref if registration fails. Retry attempt will create new actor ref
-            akkaRegistration.actorRefURI.toActorRef.unsafeUpcast[SequenceComponentMsg] ! Stop
-            registerWithRetry(retryCount - 1)
-          case NonFatal(e) => Future.successful(Left(ScriptError(e.getMessage)))
-        }
-      )
+      register(akkaRegistration) {
+        case OtherLocationIsRegistered(_) if retryCount > 0 =>
+          //kill actor ref if registration fails. Retry attempt will create new actor ref
+          akkaRegistration.actorRefURI.toActorRef.unsafeUpcast[SequenceComponentMsg] ! Stop
+          registerWithRetry(retryCount - 1)
+        case NonFatal(e) => Future.successful(Left(ScriptError(e.getMessage)))
+      }
     }
 
   private def registration(): Future[AkkaRegistration] = {

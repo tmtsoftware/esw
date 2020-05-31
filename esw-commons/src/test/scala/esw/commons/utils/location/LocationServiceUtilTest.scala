@@ -67,7 +67,7 @@ class LocationServiceUtilTest extends BaseTestSuite {
       val locationServiceDsl = new LocationServiceUtil(locationService)
       val onFailure          = mock[PartialFunction[Throwable, Future[Either[Int, AkkaLocation]]]]
 
-      locationServiceDsl.register(registration, onFailure).rightValue should ===(akkaLocation)
+      locationServiceDsl.register(registration)(onFailure).rightValue should ===(akkaLocation)
       coordinatedShutdown.run(UnknownReason).futureValue
       verify(registrationResult).unregister()
     }
@@ -83,7 +83,7 @@ class LocationServiceUtilTest extends BaseTestSuite {
         case e: Throwable => Future.successful(Left(5))
       }
 
-      locationServiceDsl.register(registration, onFailure).leftValue shouldBe 5
+      locationServiceDsl.register(registration)(onFailure).leftValue shouldBe 5
       system.terminate()
     }
   }

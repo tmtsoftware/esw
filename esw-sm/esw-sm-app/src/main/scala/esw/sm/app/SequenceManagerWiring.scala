@@ -68,13 +68,9 @@ class SequenceManagerWiring(configPath: Path) {
   def start(): Either[LocationServiceError, AkkaLocation] = {
     val registration = AkkaRegistrationFactory.make(AkkaConnection(ComponentId(prefix, Service)), sequenceManagerRef.toURI)
     val loc = Await.result(
-      locationServiceUtil
-        .register(
-          registration,
-          {
-            case NonFatal(e) => Future.successful(Left(LocationServiceError(e.getMessage)))
-          }
-        ),
+      locationServiceUtil.register(registration) {
+        case NonFatal(e) => Future.successful(Left(LocationServiceError(e.getMessage)))
+      },
       Timeouts.DefaultTimeout
     )
 
