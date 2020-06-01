@@ -34,6 +34,7 @@ class KillSelfRegisteredComponentTest extends AnyWordSpecLike with MockitoSugar 
   private val locationService                                     = mock[LocationService]
   private val processExecutor                                     = mock[ProcessExecutor]
   private val process                                             = mock[Process]
+  private val processHandle                                       = mock[ProcessHandle]
   private val logger                                              = mock[Logger]
   private val agentSettings                                       = AgentSettings("/tmp", 15.seconds, 3.seconds)
   implicit val scheduler: Scheduler                               = system.scheduler
@@ -194,6 +195,7 @@ class KillSelfRegisteredComponentTest extends AnyWordSpecLike with MockitoSugar 
 
   private def mockSuccessfulProcess(dieAfter: FiniteDuration, exitCode: Int = 0) = {
     when(process.pid()).thenReturn(Random.nextInt(1000).abs)
+    when(process.toHandle).thenReturn(processHandle)
     when(process.exitValue()).thenReturn(exitCode)
     val future = new CompletableFuture[Process]()
     scheduler.scheduleOnce(dieAfter, () => future.complete(process))
