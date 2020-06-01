@@ -19,7 +19,7 @@ trait AgentUtils {
     s"""
       |agent {
       |  binariesPath = "${Paths.get(getClass.getResource("/").getPath).toString}"
-      |  durationToWaitForComponentRegistration = 5s
+      |  durationToWaitForComponentRegistration = 60s
       |  durationToWaitForGracefulProcessTermination = 2s
       |}
       |""".stripMargin

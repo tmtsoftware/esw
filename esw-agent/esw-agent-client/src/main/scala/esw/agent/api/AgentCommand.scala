@@ -8,6 +8,7 @@ import csw.location.api.models.Connection.TcpConnection
 import csw.location.api.models.ConnectionType.AkkaType
 import csw.location.api.models._
 import csw.prefix.models.Prefix
+import esw.agent.cs.cs
 
 sealed trait AgentCommand extends AgentAkkaSerializable
 
@@ -34,16 +35,12 @@ object AgentCommand {
 
     object SpawnSelfRegistered {
       case class SpawnSequenceComponent(replyTo: ActorRef[SpawnResponse], prefix: Prefix) extends SpawnSelfRegistered {
-        private val binaryName = "esw-ocs-app"
-
         override val componentId: ComponentId = ComponentId(prefix, SequenceComponent)
 
         override val connectionType: ConnectionType = AkkaType
 
-        override def commandStrings(binariesPath: Path): List[String] = {
-          val executablePath = Paths.get(binariesPath.toString, binaryName).toString
-          List(executablePath, "seqcomp", "-s", prefix.subsystem.toString, "-n", prefix.componentName)
-        }
+        override def commandStrings(binariesPath: Path): List[String] =
+          cs.ocsApp.launch("seqcomp", "-s", prefix.subsystem.toString, "-n", prefix.componentName)
       }
     }
 
