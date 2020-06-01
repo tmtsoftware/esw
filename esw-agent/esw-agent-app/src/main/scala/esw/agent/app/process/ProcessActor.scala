@@ -15,6 +15,7 @@ import esw.agent.api.{Failed, KillResponse, Killed, Spawned}
 import esw.agent.app.AgentSettings
 import esw.agent.app.process.ProcessActorMessage._
 
+import scala.compat.java8.StreamConverters.StreamHasToScala
 import scala.concurrent.duration.{DurationLong, FiniteDuration}
 import scala.concurrent.{ExecutionContext, Future}
 import scala.jdk.FutureConverters.CompletionStageOps
@@ -192,13 +193,13 @@ class ProcessActor(
           Behaviors.stopped
 
         case StopGracefully =>
-          process.destroy()
+          stopAll(process, stopForcefully = false)
           unregisterComponent()
           timeScheduler.startSingleTimer(StopForcefully, gracefulTimeout)
           Behaviors.same
 
         case StopForcefully =>
-          process.destroyForcibly()
+          stopAll(process, stopForcefully = true)
           deathSubscriber.foreach(_ ! Killed.forcefully)
           Behaviors.stopped
 
@@ -207,4 +208,17 @@ class ProcessActor(
           Behaviors.same
       }
     }
+
+  private def stopAll(process: Process, stopForcefully: Boolean): Unit = {
+    val forcefully: ProcessHandle => Unit = _.destroyForcibly()
+    val gracefully: ProcessHandle => Unit = _.destroy()
+
+    def killAll(f: ProcessHandle => Unit): Unit = {
+      process.descendants().toScala[List].foreach(f)
+      f(process.toHandle)
+    }
+
+    val killFunction = if (stopForcefully) forcefully else gracefully
+    killAll(killFunction)
+  }
 }
