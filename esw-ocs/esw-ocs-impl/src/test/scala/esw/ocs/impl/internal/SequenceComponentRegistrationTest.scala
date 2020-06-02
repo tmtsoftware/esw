@@ -14,9 +14,10 @@ import csw.location.api.models.{AkkaLocation, AkkaRegistration, ComponentId, Com
 import csw.location.api.scaladsl.{LocationService, RegistrationResult}
 import csw.prefix.models.{Prefix, Subsystem}
 import esw.commons.BaseTestSuite
+import esw.commons.utils.location.EswLocationError
+import esw.commons.utils.location.EswLocationError.RegistrationError
 import esw.ocs.api.actor.messages.SequenceComponentMsg
 import esw.ocs.api.actor.messages.SequenceComponentMsg.Stop
-import esw.ocs.api.protocol.ScriptError
 import org.mockito.ArgumentMatchers.any
 import org.scalatest.time.SpanSugar.convertFloatToGrainOfTime
 
@@ -30,7 +31,7 @@ class SequenceComponentRegistrationTest extends BaseTestSuite {
 
   private def registerSequenceComponent(locationService: LocationService, name: Option[String], retryCount: Int)(implicit
       actorSystem: ActorSystem[SpawnProtocol.Command]
-  ) = {
+  ): (Future[Either[RegistrationError, AkkaLocation]], TestProbe[SequenceComponentMsg]) = {
     val sequenceComponentProbe: TestProbe[SequenceComponentMsg]          = TestProbe[SequenceComponentMsg]()
     val seqCompFactory: Prefix => Future[ActorRef[SequenceComponentMsg]] = _ => Future.successful(sequenceComponentProbe.ref)
 
@@ -72,7 +73,9 @@ class SequenceComponentRegistrationTest extends BaseTestSuite {
       when(registrationResult.location).thenReturn(akkaLocation)
       when(registrationResult.unregister()).thenReturn(Future.successful(Done))
 
-      registerSequenceComponent(locationService, name, retryCount)._1.leftValue should ===(ScriptError(errorMsg))
+      registerSequenceComponent(locationService, name, retryCount)._1.leftValue should ===(
+        EswLocationError.OtherLocationIsRegistered(errorMsg)
+      )
 
       //assert that No retry attempt in case of subsystem and name are provided
       verify(locationService, times(1)).register(any[AkkaRegistration])
@@ -143,7 +146,11 @@ class SequenceComponentRegistrationTest extends BaseTestSuite {
       when(registrationResult.location).thenReturn(akkaLocation)
       when(registrationResult.unregister()).thenReturn(Future.successful(Done))
 
-      registerSequenceComponent(locationService, None, retryCount)._1.leftValue should ===(ScriptError(errorMsg))
+      registerSequenceComponent(locationService, None, retryCount)._1.leftValue should ===(
+        EswLocationError.RegistrationFailed(errorMsg)
+      )
+
+      verify(locationService).register(any[AkkaRegistration])
       system.terminate()
       system.whenTerminated.futureValue
     }
@@ -164,7 +171,13 @@ class SequenceComponentRegistrationTest extends BaseTestSuite {
       when(registrationResult.location).thenReturn(akkaLocation)
       when(registrationResult.unregister()).thenReturn(Future.successful(Done))
 
-      registerSequenceComponent(locationService, None, retryCount)._1.leftValue should ===(ScriptError(errorMsg))
+      registerSequenceComponent(locationService, None, retryCount)._1.leftValue should ===(
+        EswLocationError.OtherLocationIsRegistered(errorMsg)
+      )
+
+      // verify attempt for retries when error is OtherLocationIsRegistered
+      // verify that location service register call is made (retry count + 1 original call) times as error is OtherLocationIsRegistered
+      verify(locationService, times(retryCount + 1)).register(any[AkkaRegistration])
       system.terminate()
       system.whenTerminated.futureValue
     }

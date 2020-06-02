@@ -71,7 +71,7 @@ class SequencerUtilTest extends BaseTestSuite {
 
       // unable to loadScript script error
       val scriptErrorMsg = s"script initialisation failed for TCS $obsMode"
-      val scriptError    = Future.successful(ScriptResponse(Left(ScriptError(scriptErrorMsg))))
+      val scriptError    = Future.successful(ScriptResponse(Left(ScriptError.LoadingScriptFailed(scriptErrorMsg))))
       when(tcsSeqComp.loadScript(TCS, obsMode)).thenReturn(scriptError)
 
       sequencerUtil
@@ -137,7 +137,7 @@ class SequencerUtilTest extends BaseTestSuite {
 
       // unable to loadScript script error
       val scriptErrorMsg = s"script initialisation failed for TCS $obsMode"
-      val scriptError    = Future.successful(ScriptResponse(Left(ScriptError(scriptErrorMsg))))
+      val scriptError    = Future.successful(ScriptResponse(Left(ScriptError.LoadingScriptFailed(scriptErrorMsg))))
       when(tcsSeqComp.loadScript(TCS, obsMode)).thenReturn(scriptError)
 
       sequencerUtil.startSequencer(TCS, obsMode, 3).leftValue should ===(LoadScriptError(scriptErrorMsg))

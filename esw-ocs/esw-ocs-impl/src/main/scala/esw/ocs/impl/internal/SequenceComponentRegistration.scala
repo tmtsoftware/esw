@@ -2,21 +2,19 @@ package esw.ocs.impl.internal
 
 import akka.actor.typed.{ActorRef, ActorSystem, SpawnProtocol}
 import csw.location.api.AkkaRegistrationFactory
-import csw.location.api.exceptions.OtherLocationIsRegistered
 import csw.location.api.extensions.ActorExtension.RichActor
 import csw.location.api.extensions.URIExtension.RichURI
 import csw.location.api.models.Connection.AkkaConnection
 import csw.location.api.models.{AkkaLocation, AkkaRegistration, ComponentId, ComponentType}
 import csw.location.api.scaladsl.LocationService
 import csw.prefix.models.{Prefix, Subsystem}
+import esw.commons.utils.location.EswLocationError.{OtherLocationIsRegistered, RegistrationError}
 import esw.commons.utils.location.LocationServiceUtil
 import esw.ocs.api.actor.messages.SequenceComponentMsg
 import esw.ocs.api.actor.messages.SequenceComponentMsg.Stop
-import esw.ocs.api.protocol.ScriptError
 
 import scala.concurrent.Future
 import scala.util.Random
-import scala.util.control.NonFatal
 
 class SequenceComponentRegistration(
     subsystem: Subsystem,
@@ -27,7 +25,7 @@ class SequenceComponentRegistration(
     override val actorSystem: ActorSystem[SpawnProtocol.Command]
 ) extends LocationServiceUtil(_locationService) {
 
-  def registerSequenceComponent(retryCount: Int): Future[Either[ScriptError, AkkaLocation]] =
+  def registerSequenceComponent(retryCount: Int): Future[Either[RegistrationError, AkkaLocation]] =
     name match {
       case Some(_) =>
         // Don't retry if subsystem and name is provided
@@ -35,14 +33,16 @@ class SequenceComponentRegistration(
       case None => registerWithRetry(retryCount)
     }
 
-  private def registerWithRetry(retryCount: Int): Future[Either[ScriptError, AkkaLocation]] =
+  private def registerWithRetry(retryCount: Int): Future[Either[RegistrationError, AkkaLocation]] =
     registration().flatMap { akkaRegistration =>
-      register(akkaRegistration) {
-        case OtherLocationIsRegistered(_) if retryCount > 0 =>
+      register(akkaRegistration).flatMap {
+        case Left(_: OtherLocationIsRegistered) if retryCount > 0 =>
           //kill actor ref if registration fails. Retry attempt will create new actor ref
           akkaRegistration.actorRefURI.toActorRef.unsafeUpcast[SequenceComponentMsg] ! Stop
           registerWithRetry(retryCount - 1)
-        case NonFatal(e) => Future.successful(Left(ScriptError(e.getMessage)))
+        case response =>
+          // Do not retry in case of other errors or 0 retry count or success response
+          Future.successful(response)
       }
     }
 

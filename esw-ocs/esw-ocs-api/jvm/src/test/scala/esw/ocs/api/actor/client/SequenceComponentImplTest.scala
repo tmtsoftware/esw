@@ -27,7 +27,7 @@ class SequenceComponentImplTest extends BaseTestSuite {
   private val location =
     AkkaLocation(AkkaConnection(ComponentId(Prefix("esw.test"), ComponentType.Sequencer)), new URI("uri"))
   private val loadScriptResponse    = ScriptResponse(Right(location))
-  private val restartResponse       = ScriptResponse(Left(ScriptError("Restart error")))
+  private val restartResponse       = ScriptResponse(Left(ScriptError.RestartNotSupportedInIdle))
   private val getStatusResponse     = GetStatusResponse(Some(location))
   implicit val ec: ExecutionContext = system.executionContext
 
