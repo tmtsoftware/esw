@@ -1,7 +1,7 @@
-package esw.agent.cs
+package esw.agent.app.cs
 
 import com.typesafe.config.{Config, ConfigFactory, ConfigRenderOptions}
-import esw.agent.cs.CsSettings.OcsAppSettings
+import esw.agent.app.cs.CsSettings.OcsAppSettings
 import io.bullet.borer.derivation.MapBasedCodecs._
 import io.bullet.borer.{Codec, Json}
 

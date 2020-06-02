@@ -1,4 +1,4 @@
-package esw.agent.cs
+package esw.agent.app.cs
 
 import io.bullet.borer.Codec
 import io.bullet.borer.derivation.CompactMapBasedCodecs.deriveCodec

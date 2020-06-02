@@ -23,6 +23,8 @@ class AgentIntegrationTest extends EswTestKit(MachineAgent) with BeforeAndAfterA
   private val redisPrefix           = Prefix(s"esw.event_server")
   private val redisCompId           = ComponentId(redisPrefix, Service)
 
+  override implicit def patienceConfig: PatienceConfig = PatienceConfig(1.minute, 100.millis)
+
   "Agent" must {
     "start and register itself with location service | ESW-237" in {
       val agentLocation = locationService.resolve(AkkaConnection(ComponentId(agentPrefix, Machine)), 5.seconds).futureValue

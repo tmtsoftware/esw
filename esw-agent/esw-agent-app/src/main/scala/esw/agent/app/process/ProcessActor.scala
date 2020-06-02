@@ -1,5 +1,7 @@
 package esw.agent.app.process
 
+import java.nio.file.Paths
+
 import akka.Done
 import akka.actor.CoordinatedShutdown
 import akka.actor.CoordinatedShutdown.PhaseBeforeServiceUnbind
@@ -9,10 +11,13 @@ import csw.location.api.models._
 import csw.location.api.scaladsl.{LocationService, RegistrationResult}
 import csw.logging.api.scaladsl.Logger
 import esw.agent.api.AgentCommand.SpawnCommand
+import esw.agent.api.AgentCommand.SpawnCommand.SpawnManuallyRegistered.SpawnRedis
+import esw.agent.api.AgentCommand.SpawnCommand.SpawnSelfRegistered.SpawnSequenceComponent
 import esw.agent.api.AgentCommand.SpawnCommand.{SpawnManuallyRegistered, SpawnSelfRegistered}
 import esw.agent.api.ComponentStatus.{Initializing, Running, Stopping}
 import esw.agent.api.{Failed, KillResponse, Killed, Spawned}
 import esw.agent.app.AgentSettings
+import esw.agent.app.cs.cs
 import esw.agent.app.process.ProcessActorMessage._
 
 import scala.compat.java8.StreamConverters.StreamHasToScala
@@ -30,13 +35,12 @@ class ProcessActor(
 ) {
   import command._
   import logger._
-  private val (prefix, connection, autoRegistered) = command match {
-    case cmd: SpawnSelfRegistered     => (cmd.componentId.prefix, cmd.connection, true)
-    case cmd: SpawnManuallyRegistered => (cmd.registration.connection.prefix, cmd.registration.connection, false)
+
+  private val executableCommand: List[String] = command match {
+    case _: SpawnSequenceComponent => cs.ocsApp.launch(commandArgs: _*)
+    case _: SpawnRedis             => Paths.get(agentSettings.binariesPath.toString, "redis-server").toString :: commandArgs
   }
-
-  private val aborted = Failed("Aborted")
-
+  private val aborted         = Failed("Aborted")
   private val gracefulTimeout = agentSettings.durationToWaitForGracefulProcessTermination
 
   private def isComponentRegistered(timeout: FiniteDuration)(implicit executionContext: ExecutionContext): Future[Boolean] =
@@ -80,11 +84,11 @@ class ProcessActor(
 
         case RunCommand =>
           debug(s"spawning sequence component", map = Map("prefix" -> prefix))
-          processExecutor.runCommand(command.commandStrings(agentSettings.binariesPath), prefix) match {
+          processExecutor.runCommand(executableCommand, prefix) match {
             case Right(process) =>
               process.onExit().asScala.onComplete(_ => ctx.self ! ProcessExited(process.exitValue()))
               val isRegistered =
-                if (autoRegistered) isComponentRegistered(agentSettings.durationToWaitForComponentRegistration)
+                if (isAutoRegistered) isComponentRegistered(agentSettings.durationToWaitForComponentRegistration)
                 else
                   registerComponent().map { registrationResult =>
                     CoordinatedShutdown(ctx.system)

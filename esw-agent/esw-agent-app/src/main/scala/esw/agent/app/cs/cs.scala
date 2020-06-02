@@ -1,4 +1,4 @@
-package esw.agent.cs
+package esw.agent.app.cs
 
 object cs {
   private lazy val csGlobalSettings = CsGlobalSettings()
