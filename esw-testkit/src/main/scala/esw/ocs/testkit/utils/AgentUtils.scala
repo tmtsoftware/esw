@@ -15,15 +15,17 @@ trait AgentUtils {
 
   private var agentWiring: Option[AgentWiring] = None
 
-  lazy val agentConf: Config = ConfigFactory.parseString(
-    s"""
+  lazy val agentConf: Config = ConfigFactory
+    .parseString(
+      s"""
       |agent {
       |  binariesPath = "${Paths.get(getClass.getResource("/").getPath).toString}"
       |  durationToWaitForComponentRegistration = 60s
       |  durationToWaitForGracefulProcessTermination = 2s
       |}
       |""".stripMargin
-  )
+    )
+    .withFallback(ConfigFactory.load())
 
   lazy val agentSettings: AgentSettings = AgentSettings.from(agentConf)
 

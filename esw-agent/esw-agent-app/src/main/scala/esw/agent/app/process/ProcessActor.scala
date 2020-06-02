@@ -17,7 +17,7 @@ import esw.agent.api.AgentCommand.SpawnCommand.{SpawnManuallyRegistered, SpawnSe
 import esw.agent.api.ComponentStatus.{Initializing, Running, Stopping}
 import esw.agent.api.{Failed, KillResponse, Killed, Spawned}
 import esw.agent.app.AgentSettings
-import esw.agent.app.cs.cs
+import esw.agent.app.cs.Coursier
 import esw.agent.app.process.ProcessActorMessage._
 
 import scala.compat.java8.StreamConverters.StreamHasToScala
@@ -35,13 +35,14 @@ class ProcessActor(
 ) {
   import command._
   import logger._
+  import agentSettings._
 
   private val executableCommand: List[String] = command match {
-    case _: SpawnSequenceComponent => cs.ocsApp.launch(commandArgs: _*)
-    case _: SpawnRedis             => Paths.get(agentSettings.binariesPath.toString, "redis-server").toString :: commandArgs
+    case SpawnSequenceComponent(_, _, version, javaOpts) =>
+      Coursier.ocsApp(version).launch(coursierChannel, commandArgs, javaOpts)
+    case _: SpawnRedis => Paths.get(binariesPath.toString, "redis-server").toString :: commandArgs
   }
-  private val aborted         = Failed("Aborted")
-  private val gracefulTimeout = agentSettings.durationToWaitForGracefulProcessTermination
+  private val aborted = Failed("Aborted")
 
   private def isComponentRegistered(timeout: FiniteDuration)(implicit executionContext: ExecutionContext): Future[Boolean] =
     locationService.resolve(connection.of[Location], timeout).map(_.nonEmpty)
@@ -88,7 +89,7 @@ class ProcessActor(
             case Right(process) =>
               process.onExit().asScala.onComplete(_ => ctx.self ! ProcessExited(process.exitValue()))
               val isRegistered =
-                if (isAutoRegistered) isComponentRegistered(agentSettings.durationToWaitForComponentRegistration)
+                if (isAutoRegistered) isComponentRegistered(durationToWaitForComponentRegistration)
                 else
                   registerComponent().map { registrationResult =>
                     CoordinatedShutdown(ctx.system)
@@ -199,7 +200,7 @@ class ProcessActor(
         case StopGracefully =>
           stopAll(process, stopForcefully = false)
           unregisterComponent()
-          timeScheduler.startSingleTimer(StopForcefully, gracefulTimeout)
+          timeScheduler.startSingleTimer(StopForcefully, durationToWaitForGracefulProcessTermination)
           Behaviors.same
 
         case StopForcefully =>

@@ -9,7 +9,8 @@ import scala.concurrent.duration.{DurationLong, FiniteDuration}
 case class AgentSettings private[agent] (
     private val _binariesPath: String,
     durationToWaitForComponentRegistration: FiniteDuration,
-    durationToWaitForGracefulProcessTermination: FiniteDuration
+    durationToWaitForGracefulProcessTermination: FiniteDuration,
+    coursierChannel: String
 ) {
   private val path = Paths.get(_binariesPath)
 
@@ -27,7 +28,8 @@ object AgentSettings {
     AgentSettings(
       agentConfig.getString("binariesPath"),
       agentConfig.getDuration("durationToWaitForComponentRegistration").toSeconds.seconds,
-      agentConfig.getDuration("durationToWaitForGracefulProcessTermination").toSeconds.seconds
+      agentConfig.getDuration("durationToWaitForGracefulProcessTermination").toSeconds.seconds,
+      agentConfig.getString("coursier.channel")
     )
   }
 }

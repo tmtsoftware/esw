@@ -37,7 +37,7 @@ class SpawnSelfRegisteredComponentTest extends AnyWordSpecLike with MockitoSugar
   private val processHandle                                       = mock[ProcessHandle]
   private val logger                                              = mock[Logger]
 
-  private val agentSettings         = AgentSettings("/tmp", 15.seconds, 3.seconds)
+  private val agentSettings         = AgentSettings("/tmp", 15.seconds, 3.seconds, Cs.channel)
   implicit val scheduler: Scheduler = system.scheduler
 
   private val prefix                        = Prefix("csw.component")

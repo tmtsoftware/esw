@@ -4,7 +4,7 @@ import java.net.URI
 import java.util.concurrent.CompletableFuture
 
 import akka.actor.testkit.typed.scaladsl.TestProbe
-import akka.actor.typed.{ActorSystem, Scheduler, SpawnProtocol}
+import akka.actor.typed.{ActorRef, ActorSystem, Scheduler, SpawnProtocol}
 import csw.location.api.models.ComponentType.{SequenceComponent, Service}
 import csw.location.api.models.Connection.{AkkaConnection, TcpConnection}
 import csw.location.api.models._
@@ -38,7 +38,7 @@ class GetComponentStatusTest extends AnyWordSpecLike with MockitoSugar with Befo
   private val processHandle                                       = mock[ProcessHandle]
   private val logger                                              = mock[Logger]
 
-  private val agentSettings         = AgentSettings("/tmp", 15.seconds, 3.seconds)
+  private val agentSettings         = AgentSettings("/tmp", 15.seconds, 3.seconds, Cs.channel)
   implicit val scheduler: Scheduler = system.scheduler
 
   private val prefix = Prefix("csw.component")
@@ -126,7 +126,7 @@ class GetComponentStatusTest extends AnyWordSpecLike with MockitoSugar with Befo
     implicit val location: AkkaLocation = AkkaLocation(connection, new URI("uri"))
     implicit val registrationResult: RegistrationResult =
       RegistrationResult.from(location, con => locationService.unregister(con))
-    val spawnComponent = SpawnSequenceComponent(_, prefix)
+    val spawnComponent: ActorRef[SpawnResponse] => SpawnSequenceComponent = SpawnSequenceComponent(_, prefix)
 
     "reply 'NotAvailable' when given component is not present on machine | ESW-286" in {
       val agentActorRef = spawnAgentActor(name = "test-actor6")
