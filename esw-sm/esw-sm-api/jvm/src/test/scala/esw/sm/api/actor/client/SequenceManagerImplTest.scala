@@ -11,7 +11,7 @@ import csw.prefix.models.Prefix
 import csw.prefix.models.Subsystem.ESW
 import esw.sm.api.SequenceManagerState.Idle
 import esw.sm.api.actor.messages.SequenceManagerMsg
-import esw.sm.api.models.{CleanupResponse, ConfigureResponse, GetRunningObsModesResponse, StartSequencerResponse}
+import esw.sm.api.models._
 import org.scalactic.TypeCheckedTripleEquals
 import org.scalatest.concurrent.ScalaFutures
 import org.scalatest.matchers.should.Matchers
@@ -27,17 +27,20 @@ class SequenceManagerImplTest extends AnyWordSpecLike with TypeCheckedTripleEqua
   private val cleanupResponse                                           = CleanupResponse.Success
   private val getRunningObsModesResponse                                = GetRunningObsModesResponse.Success(Set("IRIS_Darknight", "WFOS_cal"))
   private val startSequencerResponse                                    = StartSequencerResponse.Started(sequencerComponentId)
+  private val shutdownSequencerResponse                                 = ShutdownSequencerResponse.Success
 
   private val mockedBehavior: Behaviors.Receive[SequenceManagerMsg] = Behaviors.receiveMessage[SequenceManagerMsg] { msg =>
     msg match {
-      case SequenceManagerMsg.Configure(_, replyTo)             => replyTo ! configureResponse
-      case SequenceManagerMsg.Cleanup(_, replyTo)               => replyTo ! cleanupResponse
-      case SequenceManagerMsg.GetRunningObsModes(replyTo)       => replyTo ! getRunningObsModesResponse
-      case SequenceManagerMsg.GetSequenceManagerState(replyTo)  => replyTo ! Idle
-      case SequenceManagerMsg.StartSequencer(_, _, replyTo)     => replyTo ! startSequencerResponse
-      case SequenceManagerMsg.StartSequencerResponseInternal(_) =>
-      case SequenceManagerMsg.CleanupResponseInternal(_)        =>
-      case SequenceManagerMsg.ConfigurationResponseInternal(_)  =>
+      case SequenceManagerMsg.Configure(_, replyTo)                => replyTo ! configureResponse
+      case SequenceManagerMsg.Cleanup(_, replyTo)                  => replyTo ! cleanupResponse
+      case SequenceManagerMsg.GetRunningObsModes(replyTo)          => replyTo ! getRunningObsModesResponse
+      case SequenceManagerMsg.GetSequenceManagerState(replyTo)     => replyTo ! Idle
+      case SequenceManagerMsg.StartSequencer(_, _, replyTo)        => replyTo ! startSequencerResponse
+      case SequenceManagerMsg.ShutdownSequencer(_, _, replyTo)     => replyTo ! shutdownSequencerResponse
+      case SequenceManagerMsg.StartSequencerResponseInternal(_)    =>
+      case SequenceManagerMsg.ShutdownSequencerResponseInternal(_) =>
+      case SequenceManagerMsg.CleanupResponseInternal(_)           =>
+      case SequenceManagerMsg.ConfigurationResponseInternal(_)     =>
     }
     Behaviors.same
   }
@@ -61,6 +64,10 @@ class SequenceManagerImplTest extends AnyWordSpecLike with TypeCheckedTripleEqua
 
     "startSequencer" in {
       sequenceManager.startSequencer(ESW, "IRIS_darknight").futureValue shouldBe startSequencerResponse
+    }
+
+    "shutdownSequencer" in {
+      sequenceManager.shutdownSequencer(ESW, "IRIS_darknight").futureValue shouldBe shutdownSequencerResponse
     }
   }
 }

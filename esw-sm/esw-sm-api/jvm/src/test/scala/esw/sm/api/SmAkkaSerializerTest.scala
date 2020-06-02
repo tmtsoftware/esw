@@ -7,9 +7,9 @@ import csw.location.api.models.ComponentId
 import csw.location.api.models.ComponentType.Sequencer
 import csw.prefix.models.Prefix
 import csw.prefix.models.Subsystem.ESW
-import esw.sm.api.actor.messages.SequenceManagerMsg.{Cleanup, Configure, GetRunningObsModes, GetSequenceManagerState}
+import esw.sm.api.actor.messages.SequenceManagerMsg._
 import esw.sm.api.models.CommonFailure.{ConfigurationMissing, LocationServiceError}
-import esw.sm.api.models.{CleanupResponse, ConfigureResponse, GetRunningObsModesResponse}
+import esw.sm.api.models.{CleanupResponse, ConfigureResponse, GetRunningObsModesResponse, ShutdownSequencerResponse}
 import org.scalactic.TypeCheckedTripleEquals
 import org.scalatest.BeforeAndAfterAll
 import org.scalatest.matchers.should.Matchers
@@ -30,10 +30,11 @@ class SmAkkaSerializerTest extends AnyWordSpecLike with Matchers with TypeChecke
   }
 
   "should use sm serializer for SequenceManagerRemoteMsg (de)serialization" in {
-    val configureResponseRef       = TestProbe[ConfigureResponse]().ref
-    val getRunningModesResponseRef = TestProbe[GetRunningObsModesResponse]().ref
-    val cleanupResponseRef         = TestProbe[CleanupResponse]().ref
-    val getSmStateRef              = TestProbe[SequenceManagerState]().ref
+    val configureResponseRef         = TestProbe[ConfigureResponse]().ref
+    val getRunningModesResponseRef   = TestProbe[GetRunningObsModesResponse]().ref
+    val cleanupResponseRef           = TestProbe[CleanupResponse]().ref
+    val getSmStateRef                = TestProbe[SequenceManagerState]().ref
+    val shutdownSequencerResponseRef = TestProbe[ShutdownSequencerResponse]().ref
 
     val obsMode = "IRIS_Darknight"
 
@@ -42,7 +43,8 @@ class SmAkkaSerializerTest extends AnyWordSpecLike with Matchers with TypeChecke
       Configure(obsMode, configureResponseRef),
       Cleanup(obsMode, cleanupResponseRef),
       GetRunningObsModes(getRunningModesResponseRef),
-      GetSequenceManagerState(getSmStateRef)
+      GetSequenceManagerState(getSmStateRef),
+      ShutdownSequencer(ESW, obsMode, shutdownSequencerResponseRef)
     )
 
     forAll(testData) { sequenceManagerRemoteMsg =>
@@ -111,6 +113,22 @@ class SmAkkaSerializerTest extends AnyWordSpecLike with Matchers with TypeChecke
 
       val bytes = serializer.toBinary(getRunningObsModesResponse)
       serializer.fromBinary(bytes, Some(getRunningObsModesResponse.getClass)) shouldEqual getRunningObsModesResponse
+    }
+  }
+
+  "should use sm serializer for ShutdownSequencerResponse (de)serialization" in {
+    val testData = Table(
+      "Sequence Manager ShutdownSequencerResponse models",
+      ShutdownSequencerResponse.Success,
+      LocationServiceError("error")
+    )
+
+    forAll(testData) { sequenceManagerState =>
+      val serializer = serialization.findSerializerFor(sequenceManagerState)
+      serializer.getClass shouldBe classOf[SmAkkaSerializer]
+
+      val bytes = serializer.toBinary(sequenceManagerState)
+      serializer.fromBinary(bytes, Some(sequenceManagerState.getClass)) shouldEqual sequenceManagerState
     }
   }
 

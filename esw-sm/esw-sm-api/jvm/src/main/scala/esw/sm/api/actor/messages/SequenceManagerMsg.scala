@@ -4,7 +4,7 @@ import akka.actor.typed.ActorRef
 import csw.prefix.models.Subsystem
 import esw.sm.api.SequenceManagerState
 import esw.sm.api.codecs.SmAkkaSerializable
-import esw.sm.api.models.{CleanupResponse, ConfigureResponse, GetRunningObsModesResponse, StartSequencerResponse}
+import esw.sm.api.models._
 
 sealed trait SequenceManagerMsg
 
@@ -18,8 +18,11 @@ object SequenceManagerMsg {
   case class GetSequenceManagerState(replyTo: ActorRef[SequenceManagerState])  extends CommonMessage
   case class StartSequencer(subsystem: Subsystem, observingMode: String, replyTo: ActorRef[StartSequencerResponse])
       extends SequenceManagerRemoteMsg
+  case class ShutdownSequencer(subsystem: Subsystem, observingMode: String, replyTo: ActorRef[ShutdownSequencerResponse])
+      extends SequenceManagerRemoteMsg
 
-  private[sm] case class StartSequencerResponseInternal(res: StartSequencerResponse) extends SequenceManagerMsg
-  private[sm] case class ConfigurationResponseInternal(res: ConfigureResponse)       extends SequenceManagerMsg
-  private[sm] case class CleanupResponseInternal(res: CleanupResponse)               extends SequenceManagerMsg
+  private[sm] case class StartSequencerResponseInternal(res: StartSequencerResponse)       extends SequenceManagerMsg
+  private[sm] case class ShutdownSequencerResponseInternal(res: ShutdownSequencerResponse) extends SequenceManagerMsg
+  private[sm] case class ConfigurationResponseInternal(res: ConfigureResponse)             extends SequenceManagerMsg
+  private[sm] case class CleanupResponseInternal(res: CleanupResponse)                     extends SequenceManagerMsg
 }

@@ -14,9 +14,9 @@ import esw.commons.BaseTestSuite
 import esw.commons.utils.location.EswLocationError.{LocationNotFound, RegistrationListingFailed}
 import esw.commons.utils.location.LocationServiceUtil
 import esw.sm.api.SequenceManagerState
-import esw.sm.api.SequenceManagerState.{CleaningUp, Configuring, Idle, StartingSequencer}
+import esw.sm.api.SequenceManagerState._
 import esw.sm.api.actor.messages.SequenceManagerMsg
-import esw.sm.api.actor.messages.SequenceManagerMsg.{Cleanup, Configure, GetSequenceManagerState, StartSequencer}
+import esw.sm.api.actor.messages.SequenceManagerMsg._
 import esw.sm.api.models.CommonFailure.{ConfigurationMissing, LocationServiceError}
 import esw.sm.api.models.ConfigureResponse.{ConflictingResourcesWithRunningObsMode, Success}
 import esw.sm.api.models.SequenceManagerError.LoadScriptError
@@ -205,6 +205,36 @@ class SequenceManagerBehaviorTest extends BaseTestSuite {
       startSequencerResponseProbe.expectMessage(expectedErrorResponse)
       verify(sequencerUtil).startSequencer(ESW, Darknight, 3)
       verify(locationServiceUtil).find(httpConnection)
+    }
+  }
+
+  "ShutdownSequencer" must {
+    "transition sm from Idle -> ShuttingDown -> Idle state and shut down the sequencer for given obs mode | ESW-326" in {
+      val sequencers = Sequencers(ESW)
+      when(sequencerUtil.stopSequencers(sequencers, Darknight)).thenReturn(future(1.seconds, Right(Done)))
+
+      val shutdownSequencerResponseProbe = TestProbe[ShutdownSequencerResponse]()
+
+      assertState(Idle)
+      smRef ! ShutdownSequencer(ESW, Darknight, shutdownSequencerResponseProbe.ref)
+      assertState(ShuttingDownSequencer)
+      shutdownSequencerResponseProbe.expectMessage(ShutdownSequencerResponse.Success)
+      assertState(Idle)
+
+      verify(sequencerUtil).stopSequencers(sequencers, Darknight)
+    }
+
+    "return Error if shutdown sequencer fails | ESW-326" in {
+      val sequencers = Sequencers(ESW)
+      when(sequencerUtil.stopSequencers(sequencers, Darknight))
+        .thenReturn(future(1.seconds, Left(RegistrationListingFailed("something went wrong"))))
+
+      val shutdownSequencerResponseProbe = TestProbe[ShutdownSequencerResponse]()
+
+      smRef ! ShutdownSequencer(ESW, Darknight, shutdownSequencerResponseProbe.ref)
+      shutdownSequencerResponseProbe.expectMessage(LocationServiceError("something went wrong"))
+
+      verify(sequencerUtil).stopSequencers(sequencers, Darknight)
     }
   }
 

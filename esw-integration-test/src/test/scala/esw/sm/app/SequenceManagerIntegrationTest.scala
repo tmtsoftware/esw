@@ -17,7 +17,7 @@ import esw.sm.api.SequenceManagerApi
 import esw.sm.api.actor.client.SequenceManagerImpl
 import esw.sm.api.models.ConfigureResponse.ConflictingResourcesWithRunningObsMode
 import esw.sm.api.models.SequenceManagerError.LoadScriptError
-import esw.sm.api.models.{CleanupResponse, ConfigureResponse, StartSequencerResponse}
+import esw.sm.api.models.{CleanupResponse, ConfigureResponse, ShutdownSequencerResponse, StartSequencerResponse}
 import esw.sm.app.SequenceManagerAppCommand.StartCommand
 
 import scala.collection.mutable.ArrayBuffer
@@ -132,7 +132,7 @@ class SequenceManagerIntegrationTest extends EswTestKit {
     exception.getMessage shouldBe "File does not exist on local disk at path sm-config.conf"
   }
 
-  "start sequencer for given subsystem and observation mode | ESW-176" in {
+  "start and shut down sequencer for given subsystem and observation mode | ESW-176, ESW-326" in {
     TestSetup.startSequenceComponents(Prefix(ESW, "primary"))
 
     val sequenceManager = TestSetup.startSequenceManager()
@@ -147,6 +147,13 @@ class SequenceManagerIntegrationTest extends EswTestKit {
 
     // verify that sequencer is started
     resolveHTTPLocation(Prefix(ESW, IRIS_DARKNIGHT), Sequencer)
+
+    // ESW-326 Verify that shutdown sequencer returns Success
+    val shutdownResponse = sequenceManager.shutdownSequencer(ESW, IRIS_DARKNIGHT).futureValue
+    shutdownResponse should ===(ShutdownSequencerResponse.Success)
+
+    // verify that sequencer are shut down
+    intercept[Exception](resolveHTTPLocation(Prefix(ESW, IRIS_DARKNIGHT), Sequencer))
   }
 
   "should return loadscript error if configuration is missing for subsystem observation mode | ESW-176" in {
