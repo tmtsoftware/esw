@@ -9,7 +9,6 @@ import esw.agent.api.{AgentAkkaSerializable, AgentCommand, Response}
 
 // $COVERAGE-OFF$
 class AgentAkkaSerializer(_actorSystem: ExtendedActorSystem) extends CborAkkaSerializer[AgentAkkaSerializable] with AgentCodecs {
-
   override def identifier: Int = 26726
 
   override implicit def actorSystem: ActorSystem[_] = _actorSystem.toTyped
