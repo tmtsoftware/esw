@@ -37,6 +37,11 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-sbt-
 
+      - name: Install Redis
+        run: |
+          sudo apt update
+          sudo apt install redis-server
+
       - name: Build
         run: |
           sbt scalafmtCheck
