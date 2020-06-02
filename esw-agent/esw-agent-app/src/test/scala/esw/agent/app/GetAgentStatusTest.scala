@@ -30,7 +30,7 @@ class GetAgentStatusTest extends AnyWordSpecLike with MockitoSugar with BeforeAn
   private val process                                             = mock[Process]
   private val logger                                              = mock[Logger]
 
-  private val agentSettings         = AgentSettings("/tmp", 15.seconds, 3.seconds, Cs.channel)
+  private val agentSettings         = AgentSettings(15.seconds, 3.seconds, Cs.channel)
   implicit val scheduler: Scheduler = system.scheduler
 
   "GetAgentStatus" must {

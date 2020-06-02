@@ -37,7 +37,7 @@ class KillManuallyRegisteredComponentTest extends AnyWordSpecLike with MockitoSu
   private val processHandle                                       = mock[ProcessHandle]
   private val logger                                              = mock[Logger]
 
-  private val agentSettings         = AgentSettings("/tmp", 15.seconds, 3.seconds, Cs.channel)
+  private val agentSettings         = AgentSettings(15.seconds, 3.seconds, Cs.channel)
   implicit val scheduler: Scheduler = system.scheduler
 
   private val prefix                   = Prefix("csw.component")

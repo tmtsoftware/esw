@@ -1,4 +1,4 @@
-package esw.agent.app.cs
+package esw.agent.app.process.cs
 
 case class CoursierLaunch(appName: String, appVersion: String) {
   private val app                               = s"$appName:$appVersion"

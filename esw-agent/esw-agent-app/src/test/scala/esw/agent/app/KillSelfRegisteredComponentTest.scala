@@ -36,7 +36,7 @@ class KillSelfRegisteredComponentTest extends AnyWordSpecLike with MockitoSugar 
   private val process                                             = mock[Process]
   private val processHandle                                       = mock[ProcessHandle]
   private val logger                                              = mock[Logger]
-  private val agentSettings                                       = AgentSettings("/tmp", 15.seconds, 3.seconds, Cs.channel)
+  private val agentSettings                                       = AgentSettings(15.seconds, 3.seconds, Cs.channel)
   implicit val scheduler: Scheduler                               = system.scheduler
   private val prefix                                              = Prefix("csw.component")
   private val componentId: ComponentId                            = ComponentId(prefix, SequenceComponent)

@@ -1,7 +1,5 @@
 package esw.agent.app.process
 
-import java.nio.file.Paths
-
 import akka.Done
 import akka.actor.CoordinatedShutdown
 import akka.actor.CoordinatedShutdown.PhaseBeforeServiceUnbind
@@ -17,8 +15,9 @@ import esw.agent.api.AgentCommand.SpawnCommand.{SpawnManuallyRegistered, SpawnSe
 import esw.agent.api.ComponentStatus.{Initializing, Running, Stopping}
 import esw.agent.api.{Failed, KillResponse, Killed, Spawned}
 import esw.agent.app.AgentSettings
-import esw.agent.app.cs.Coursier
 import esw.agent.app.process.ProcessActorMessage._
+import esw.agent.app.process.cs.Coursier
+import esw.agent.app.process.redis.Redis
 
 import scala.compat.java8.StreamConverters.StreamHasToScala
 import scala.concurrent.duration.{DurationLong, FiniteDuration}
@@ -33,14 +32,14 @@ class ProcessActor(
     logger: Logger,
     command: SpawnCommand
 ) {
+  import agentSettings._
   import command._
   import logger._
-  import agentSettings._
 
   private val executableCommand: List[String] = command match {
     case SpawnSequenceComponent(_, _, version, javaOpts) =>
       Coursier.ocsApp(version).launch(coursierChannel, commandArgs, javaOpts)
-    case _: SpawnRedis => Paths.get(binariesPath.toString, "redis-server").toString :: commandArgs
+    case _: SpawnRedis => Redis.server :: commandArgs
   }
   private val aborted = Failed("Aborted")
 

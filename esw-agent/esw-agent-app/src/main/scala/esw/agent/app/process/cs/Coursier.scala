@@ -1,9 +1,11 @@
-package esw.agent.app.cs
+package esw.agent.app.process.cs
+
+import esw.agent.app.process.ProcessUtils
 
 object Coursier {
   private def csNative             = "cs"
   private def csLauncher           = getClass.getResource("/coursier").getPath
-  private def csInstalled: Boolean = new ProcessBuilder("command", "-v", csNative).start().waitFor() == 0
+  private def csInstalled: Boolean = ProcessUtils.isInstalled(csNative)
 
   lazy val cs: String = if (csInstalled) csNative else csLauncher
 

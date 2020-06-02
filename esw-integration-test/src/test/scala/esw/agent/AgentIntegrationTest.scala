@@ -47,6 +47,8 @@ class AgentIntegrationTest extends EswTestKit(MachineAgent) with BeforeAndAfterA
       agentClient.spawnRedis(redisPrefix, 6379, List.empty).futureValue should ===(Spawned)
       // Verify registration in location service
       locationService.resolve(TcpConnection(ComponentId(redisPrefix, Service)), 5.seconds).futureValue should not be empty
+
+      agentClient.killComponent(ComponentId(redisPrefix, Service)).futureValue
     }
 
     // todo: see if we really need killedForcefully and is there a way to write test for that with coursier approach?
@@ -81,6 +83,7 @@ class AgentIntegrationTest extends EswTestKit(MachineAgent) with BeforeAndAfterA
 
       // cleanup
       agentClient.killComponent(irisCompId).futureValue
+      agentClient.killComponent(ComponentId(redisPrefix, Service)).futureValue
     }
   }
 
