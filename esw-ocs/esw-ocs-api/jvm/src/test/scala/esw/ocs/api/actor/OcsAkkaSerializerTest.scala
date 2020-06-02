@@ -24,6 +24,12 @@ import esw.ocs.api.actor.messages.SequencerState
 import esw.ocs.api.actor.messages.SequencerState._
 import esw.ocs.api.models.{Step, StepList}
 import esw.ocs.api.protocol.EditorError.IdDoesNotExist
+import esw.ocs.api.protocol.ScriptError.{
+  LoadingScriptFailed,
+  LocationServiceError,
+  RestartNotSupportedInIdle,
+  SequenceComponentNotIdle
+}
 import esw.ocs.api.protocol.{DiagnosticModeResponse, SequencerSubmitResponse, _}
 import org.scalatest.prop.TableDrivenPropertyChecks.forAll
 import org.scalatest.prop.Tables.Table
@@ -158,7 +164,10 @@ class OcsAkkaSerializerTest extends BaseTestSuite {
       "Sequencer Response models",
       GetStatusResponse(Some(akkaLocation)),
       GetStatusResponse(None),
-      ScriptResponse(Left(ScriptError("error"))),
+      ScriptResponse(Left(RestartNotSupportedInIdle)),
+      ScriptResponse(Left(SequenceComponentNotIdle(Prefix(ESW, "darknight")))),
+      ScriptResponse(Left(LocationServiceError("error"))),
+      ScriptResponse(Left(LoadingScriptFailed("error"))),
       ScriptResponse(Right(akkaLocation))
     )
 

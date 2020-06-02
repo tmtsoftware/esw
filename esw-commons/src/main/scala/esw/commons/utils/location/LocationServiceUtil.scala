@@ -2,13 +2,19 @@ package esw.commons.utils.location
 
 import akka.actor.CoordinatedShutdown
 import akka.actor.typed.ActorSystem
+import csw.location.api.exceptions.{OtherLocationIsRegistered, RegistrationFailed}
 import csw.location.api.models.ComponentType.Sequencer
 import csw.location.api.models.Connection.AkkaConnection
 import csw.location.api.models._
 import csw.location.api.scaladsl.{LocationService, RegistrationResult}
 import csw.prefix.models.{Prefix, Subsystem}
 import esw.commons.extensions.FutureEitherExt._
-import esw.commons.utils.location.EswLocationError.{LocationNotFound, RegistrationListingFailed}
+import esw.commons.utils.location.EswLocationError.{
+  FindLocationError,
+  LocationNotFound,
+  RegistrationError,
+  RegistrationListingFailed
+}
 
 import scala.concurrent.duration.FiniteDuration
 import scala.concurrent.{ExecutionContext, Future}
@@ -33,16 +39,17 @@ private[esw] class LocationServiceUtil(val locationService: LocationService)(imp
       s"unregistering-${registrationResult.location}"
     )(() => registrationResult.unregister())
 
-  private[esw] def register[E](
-      akkaRegistration: AkkaRegistration
-  )(onFailure: PartialFunction[Throwable, Future[Either[E, AkkaLocation]]]): Future[Either[E, AkkaLocation]] =
+  private[esw] def register(akkaRegistration: AkkaRegistration): Future[Either[RegistrationError, AkkaLocation]] =
     locationService
       .register(akkaRegistration)
       .map { result =>
         addCoordinatedShutdownTask(CoordinatedShutdown(actorSystem), result)
         Right(result.location.asInstanceOf[AkkaLocation])
       }
-      .recoverWith(onFailure)
+      .mapError {
+        case e: RegistrationFailed        => EswLocationError.RegistrationFailed(e.msg)
+        case e: OtherLocationIsRegistered => EswLocationError.OtherLocationIsRegistered(e.msg)
+      }
 
   def listAkkaLocationsBy(
       subsystem: Subsystem,
@@ -53,10 +60,10 @@ private[esw] class LocationServiceUtil(val locationService: LocationService)(imp
         case akkaLocation: AkkaLocation if akkaLocation.prefix.subsystem == subsystem => akkaLocation
       })
 
-  def resolveByComponentNameAndType(
+  def findByComponentNameAndType(
       componentName: String,
       componentType: ComponentType
-  ): Future[Either[EswLocationError, Location]] =
+  ): Future[Either[FindLocationError, Location]] =
     list(componentType)
       .mapRight(_.find(_.connection.componentId.prefix.componentName == componentName))
       .map {
@@ -72,7 +79,7 @@ private[esw] class LocationServiceUtil(val locationService: LocationService)(imp
   def resolve[L <: Location](
       connection: TypedConnection[L],
       within: FiniteDuration
-  ): Future[Either[EswLocationError, L]] =
+  ): Future[Either[FindLocationError, L]] =
     locationService
       .resolve(connection, within)
       .map {
@@ -81,7 +88,7 @@ private[esw] class LocationServiceUtil(val locationService: LocationService)(imp
       }
       .mapError(e => RegistrationListingFailed(s"Location Service Error: ${e.getMessage}"))
 
-  def find[L <: Location](connection: TypedConnection[L]): Future[Either[EswLocationError, L]] =
+  def find[L <: Location](connection: TypedConnection[L]): Future[Either[FindLocationError, L]] =
     locationService
       .find(connection)
       .map {
@@ -94,7 +101,7 @@ private[esw] class LocationServiceUtil(val locationService: LocationService)(imp
       subsystem: Subsystem,
       observingMode: String,
       within: FiniteDuration
-  ): Future[Either[EswLocationError, AkkaLocation]] =
+  ): Future[Either[FindLocationError, AkkaLocation]] =
     resolve(AkkaConnection(ComponentId(Prefix(subsystem, observingMode), Sequencer)), within)
 
 }

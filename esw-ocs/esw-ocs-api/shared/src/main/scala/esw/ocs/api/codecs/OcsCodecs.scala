@@ -26,5 +26,5 @@ trait OcsCodecsBase extends ParamCodecs with LocationCodecs with BasicCodecs {
   implicit lazy val loadScriptResponseCodec: Codec[ScriptResponse]   = deriveCodec
   implicit lazy val getStatusResponseCodec: Codec[GetStatusResponse] = deriveCodec
 
-  implicit lazy val scriptErrorCodec: Codec[ScriptError] = deriveCodec
+  implicit lazy val scriptErrorCodec: Codec[ScriptError] = deriveAllCodecs
 }

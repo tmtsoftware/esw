@@ -9,7 +9,11 @@ import akka.actor.testkit.typed.scaladsl.TestProbe
 import akka.actor.typed.scaladsl.Behaviors
 import akka.actor.typed.{ActorSystem, SpawnProtocol}
 import csw.location.api.AkkaRegistrationFactory
-import csw.location.api.exceptions.{OtherLocationIsRegistered, RegistrationListingFailed => CswRegistrationListingFailed}
+import csw.location.api.exceptions.{
+  OtherLocationIsRegistered,
+  RegistrationFailed,
+  RegistrationListingFailed => CswRegistrationListingFailed
+}
 import csw.location.api.extensions.ActorExtension.RichActor
 import csw.location.api.models.ComponentType._
 import csw.location.api.models.Connection.AkkaConnection
@@ -65,25 +69,31 @@ class LocationServiceUtilTest extends BaseTestSuite {
       when(locationService.register(registration)).thenReturn(Future(registrationResult))
 
       val locationServiceDsl = new LocationServiceUtil(locationService)
-      val onFailure          = mock[PartialFunction[Throwable, Future[Either[Int, AkkaLocation]]]]
 
-      locationServiceDsl.register(registration)(onFailure).rightValue should ===(akkaLocation)
+      locationServiceDsl.register(registration).rightValue should ===(akkaLocation)
       coordinatedShutdown.run(UnknownReason).futureValue
       verify(registrationResult).unregister()
     }
 
-    "map location service registration failure using the given failure mapper function | ESW-214" in {
+    "map location service [OtherLocationIsRegistered] registration failure to error | ESW-214" in {
       implicit val system: ActorSystem[_] = ActorSystem(Behaviors.empty, "test")
       val errorMsg                        = "error message"
       when(locationService.register(registration)).thenReturn(Future.failed(OtherLocationIsRegistered(errorMsg)))
 
       val locationServiceDsl = new LocationServiceUtil(locationService)
 
-      val onFailure: PartialFunction[Throwable, Future[Either[Int, AkkaLocation]]] = {
-        case e: Throwable => Future.successful(Left(5))
-      }
+      locationServiceDsl.register(registration).leftValue shouldBe EswLocationError.OtherLocationIsRegistered(errorMsg)
+      system.terminate()
+    }
 
-      locationServiceDsl.register(registration)(onFailure).leftValue shouldBe 5
+    "map location service [RegistrationFailed] registration failure to error | ESW-214" in {
+      implicit val system: ActorSystem[_] = ActorSystem(Behaviors.empty, "test")
+      val errorMsg                        = "error message"
+      when(locationService.register(registration)).thenReturn(Future.failed(RegistrationFailed(errorMsg)))
+
+      val locationServiceDsl = new LocationServiceUtil(locationService)
+
+      locationServiceDsl.register(registration).leftValue shouldBe EswLocationError.RegistrationFailed(errorMsg)
       system.terminate()
     }
   }
@@ -144,7 +154,7 @@ class LocationServiceUtilTest extends BaseTestSuite {
     }
   }
 
-  "resolveByComponentNameAndType" must {
+  "findByComponentNameAndType" must {
     "return a location which matches a given component name and type | ESW-215" in {
       val testUri = new URI("test-uri")
       val tcsLocation =
@@ -158,7 +168,7 @@ class LocationServiceUtilTest extends BaseTestSuite {
 
       val locationServiceDsl = new LocationServiceUtil(locationService)
       val actualLocations =
-        locationServiceDsl.resolveByComponentNameAndType("obsmode1", Sequencer).rightValue
+        locationServiceDsl.findByComponentNameAndType("obsmode1", Sequencer).rightValue
       actualLocations should ===(tcsLocation)
     }
 
@@ -184,7 +194,7 @@ class LocationServiceUtilTest extends BaseTestSuite {
 
       val locationServiceDsl = new LocationServiceUtil(locationService)
       val error =
-        locationServiceDsl.resolveByComponentNameAndType("obsMode", Sequencer).leftValue
+        locationServiceDsl.findByComponentNameAndType("obsMode", Sequencer).leftValue
 
       error should ===(
         LocationNotFound(
@@ -198,7 +208,7 @@ class LocationServiceUtilTest extends BaseTestSuite {
 
       val locationServiceDsl = new LocationServiceUtil(locationService)
       val error =
-        locationServiceDsl.resolveByComponentNameAndType(observingMode, Sequencer).leftValue
+        locationServiceDsl.findByComponentNameAndType(observingMode, Sequencer).leftValue
 
       error shouldBe RegistrationListingFailed(s"Location Service Error: $cswLocationServiceErrorMsg")
     }

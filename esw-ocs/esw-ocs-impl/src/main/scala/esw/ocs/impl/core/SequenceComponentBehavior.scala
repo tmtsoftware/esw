@@ -11,7 +11,8 @@ import csw.logging.api.scaladsl.Logger
 import csw.prefix.models.{Prefix, Subsystem}
 import esw.ocs.api.actor.messages.SequenceComponentMsg
 import esw.ocs.api.actor.messages.SequenceComponentMsg._
-import esw.ocs.api.protocol.{GetStatusResponse, ScriptError, ScriptResponse}
+import esw.ocs.api.protocol.ScriptError.{RestartNotSupportedInIdle, SequenceComponentNotIdle}
+import esw.ocs.api.protocol.{GetStatusResponse, ScriptResponse}
 import esw.ocs.impl.internal.{SequencerServer, SequencerServerFactory}
 
 object SequenceComponentBehavior {
@@ -54,7 +55,7 @@ object SequenceComponentBehavior {
           replyTo ! Done
           Behaviors.same
         case Restart(replyTo) =>
-          replyTo ! ScriptResponse(Left(ScriptError("Restart is not supported in idle state")))
+          replyTo ! ScriptResponse(Left(RestartNotSupportedInIdle))
           Behaviors.same
 
         case Stop => Behaviors.stopped
@@ -82,7 +83,7 @@ object SequenceComponentBehavior {
             replyTo ! GetStatusResponse(Some(location))
             Behaviors.same
           case LoadScript(_, _, replyTo) =>
-            replyTo ! ScriptResponse(Left(ScriptError("Loading script failed: Sequencer already running")))
+            replyTo ! ScriptResponse(Left(SequenceComponentNotIdle(Prefix(subsystem, observingMode))))
             Behaviors.same
           case Stop => Behaviors.same
         }
