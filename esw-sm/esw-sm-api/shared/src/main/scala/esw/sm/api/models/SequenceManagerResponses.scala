@@ -8,7 +8,7 @@ sealed trait ConfigureResponse extends SmAkkaSerializable
 object ConfigureResponse {
   case class Success(masterSequencerComponentId: ComponentId) extends ConfigureResponse
 
-  sealed trait Failure                                                           extends ConfigureResponse
+  sealed trait Failure                                                           extends Throwable with ConfigureResponse
   case class ConflictingResourcesWithRunningObsMode(runningObsMode: Set[String]) extends Failure
   case class FailedToStartSequencers(reasons: Set[String])                       extends Failure
 }
@@ -17,7 +17,7 @@ sealed trait GetRunningObsModesResponse extends SmAkkaSerializable
 
 object GetRunningObsModesResponse {
   case class Success(runningObsModes: Set[String]) extends GetRunningObsModesResponse
-  case class Failed(msg: String)                   extends GetRunningObsModesResponse
+  case class Failed(msg: String)                   extends Throwable with GetRunningObsModesResponse
 }
 
 sealed trait CleanupResponse extends SmAkkaSerializable
@@ -25,7 +25,8 @@ sealed trait CleanupResponse extends SmAkkaSerializable
 object CleanupResponse {
   case object Success extends CleanupResponse
 
-  sealed trait Failure extends CleanupResponse
+  sealed trait Failure                                     extends Throwable with CleanupResponse
+  case class FailedToStopSequencers(response: Set[String]) extends Failure
 }
 
 sealed trait StartSequencerResponse extends SmAkkaSerializable
@@ -35,7 +36,7 @@ object StartSequencerResponse {
   case class Started(componentId: ComponentId)        extends Success
   case class AlreadyRunning(componentId: ComponentId) extends Success
 
-  sealed trait Failure extends StartSequencerResponse
+  sealed trait Failure extends Throwable with StartSequencerResponse
 }
 
 sealed trait ShutdownSequencerResponse extends SmAkkaSerializable
@@ -43,10 +44,12 @@ sealed trait ShutdownSequencerResponse extends SmAkkaSerializable
 object ShutdownSequencerResponse {
   case object Success extends ShutdownSequencerResponse
 
-  sealed trait Failure extends ShutdownSequencerResponse
+  sealed trait Failure extends Throwable with ShutdownSequencerResponse {
+    def msg: String
+  }
 }
 
-sealed trait CommonFailure extends ConfigureResponse.Failure with CleanupResponse.Failure
+sealed trait CommonFailure extends Throwable with ConfigureResponse.Failure with CleanupResponse.Failure
 
 object CommonFailure {
   case class LocationServiceError(msg: String)     extends AgentError with CommonFailure with ShutdownSequencerResponse.Failure
@@ -62,5 +65,6 @@ sealed trait AgentError extends SequencerError
 object SequenceManagerError {
   case class SpawnSequenceComponentFailed(msg: String) extends AgentError
 
-  case class LoadScriptError(msg: String) extends SequencerError
+  case class LoadScriptError(msg: String)   extends SequencerError
+  case class UnloadScriptError(msg: String) extends SequencerError with ShutdownSequencerResponse.Failure
 }

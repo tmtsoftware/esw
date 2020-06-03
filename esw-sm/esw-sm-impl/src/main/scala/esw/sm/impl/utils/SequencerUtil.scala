@@ -1,6 +1,5 @@
 package esw.sm.impl.utils
 
-import akka.Done
 import akka.actor.typed.ActorSystem
 import csw.location.api.models.ComponentType.Sequencer
 import csw.location.api.models.Connection.HttpConnection
@@ -15,12 +14,16 @@ import esw.commons.utils.location.EswLocationError.{LocationNotFound, Registrati
 import esw.commons.utils.location.{EswLocationError, LocationServiceUtil}
 import esw.ocs.api.actor.client.SequencerApiFactory
 import esw.ocs.api.{SequenceComponentApi, SequencerApi}
+import esw.sm.api.models.CleanupResponse.FailedToStopSequencers
+import esw.sm.api.models.CommonFailure.LocationServiceError
 import esw.sm.api.models.ConfigureResponse.{FailedToStartSequencers, Success}
-import esw.sm.api.models.{ConfigureResponse, SequenceManagerError, SequencerError}
+import esw.sm.api.models.SequenceManagerError.UnloadScriptError
+import esw.sm.api.models._
 import esw.sm.impl.config.Sequencers
 
 import scala.async.Async.{async, await}
 import scala.concurrent.{ExecutionContext, Future}
+import scala.util.control.NonFatal
 
 class SequencerUtil(locationServiceUtil: LocationServiceUtil, sequenceComponentUtil: SequenceComponentUtil)(implicit
     actorSystem: ActorSystem[_]
@@ -45,18 +48,29 @@ class SequencerUtil(locationServiceUtil: LocationServiceUtil, sequenceComponentU
       }
     }
 
-  def stopSequencers(sequencers: Sequencers, obsMode: String): Future[Either[RegistrationListingFailed, Done]] =
-    Future
-      .traverse(sequencers.subsystems) { subsystem =>
-        resolveSequencer(obsMode, subsystem)
-          .flatMap {
-            case Left(listingFailed: RegistrationListingFailed) => throw listingFailed
-            case Left(LocationNotFound(_))                      => Future.successful(Done)
-            case Right(sequencerApi)                            => stopSequencer(sequencerApi)
-          }
+  def stopSequencers(sequencers: Sequencers, obsMode: String): Future[CleanupResponse] =
+    async {
+      val stopSequencerResponses = await(Future.traverse(sequencers.subsystems) { subsystem =>
+        stopSequencer(subsystem, obsMode)
+      }).sequence
+
+      stopSequencerResponses match {
+        case Left(failedToStopSequencerResponses) => FailedToStopSequencers(failedToStopSequencerResponses.map(_.msg).toSet)
+        case Right(_)                             => CleanupResponse.Success
       }
-      .map(_ => Right(Done))
-      .recover { case listingFailed: RegistrationListingFailed => Left(listingFailed) }
+    }
+
+  def stopSequencer(
+      subsystem: Subsystem,
+      obsMode: String
+  ): Future[Either[ShutdownSequencerResponse.Failure, ShutdownSequencerResponse.Success.type]] = {
+    resolveSequencer(obsMode, subsystem)
+      .flatMap {
+        case Left(listingFailed: RegistrationListingFailed) => Future.successful(Left(LocationServiceError(listingFailed.msg)))
+        case Left(LocationNotFound(_))                      => Future.successful(Right(ShutdownSequencerResponse.Success))
+        case Right(sequencerApi)                            => unloadScript(sequencerApi)
+      }
+  }
 
   // spawn the sequencer on available SequenceComponent
   def startSequencer(
@@ -73,7 +87,13 @@ class SequencerUtil(locationServiceUtil: LocationServiceUtil, sequenceComponentU
       }
 
   // get sequence component from Sequencer and unload sequencer script
-  private def stopSequencer(api: SequencerApi) = api.getSequenceComponent.flatMap(sequenceComponentUtil.unloadScript)
+  private def unloadScript(api: SequencerApi): Future[Either[UnloadScriptError, ShutdownSequencerResponse.Success.type]] =
+    api.getSequenceComponent
+      .flatMap(sequenceComponentUtil.unloadScript)
+      .map(_ => Right(ShutdownSequencerResponse.Success))
+      .recover {
+        case NonFatal(e) => Left(UnloadScriptError(e.getMessage))
+      }
 
   // Created in order to mock the behavior of sequencer API availability for unit test
   private[sm] def createSequencerClient(location: Location): SequencerApi = SequencerApiFactory.make(location)

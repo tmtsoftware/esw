@@ -15,6 +15,7 @@ import esw.commons.utils.location.LocationServiceUtil
 import esw.commons.{BaseTestSuite, Timeouts}
 import esw.ocs.api.protocol.{ScriptError, ScriptResponse}
 import esw.ocs.api.{SequenceComponentApi, SequencerApi}
+import esw.sm.api.models.CleanupResponse
 import esw.sm.api.models.ConfigureResponse.{FailedToStartSequencers, Success}
 import esw.sm.api.models.SequenceManagerError.{LoadScriptError, SpawnSequenceComponentFailed}
 import esw.sm.impl.config.Sequencers
@@ -162,7 +163,7 @@ class SequencerUtilTest extends BaseTestSuite {
       when(sequenceComponentUtil.unloadScript(eswSeqCompLoc)).thenReturn(Future.successful(Done))
       when(sequenceComponentUtil.unloadScript(tcsSeqCompLoc)).thenReturn(Future.successful(Done))
 
-      sequencerUtil.stopSequencers(Sequencers(ESW, TCS), obsMode).rightValue should ===(Done)
+      sequencerUtil.stopSequencers(Sequencers(ESW, TCS), obsMode).futureValue should ===(CleanupResponse.Success)
 
       verify(eswSequencerApi).getSequenceComponent
       verify(tcsSequencerApi).getSequenceComponent
@@ -179,7 +180,7 @@ class SequencerUtilTest extends BaseTestSuite {
       val resolveFailed = futureLeft(LocationNotFound("location service error"))
       when(locationServiceUtil.resolveSequencer(ESW, obsMode, Timeouts.DefaultTimeout)).thenReturn(resolveFailed)
 
-      sequencerUtil.stopSequencers(Sequencers(ESW), obsMode).rightValue should ===(Done)
+      sequencerUtil.stopSequencers(Sequencers(ESW), obsMode).futureValue should ===(CleanupResponse.Success)
 
       verify(locationServiceUtil).resolveSequencer(ESW, obsMode, Timeouts.DefaultTimeout)
       verify(eswSequencerApi, never).getSequenceComponent
@@ -197,7 +198,9 @@ class SequencerUtilTest extends BaseTestSuite {
       when(tcsSequencerApi.getSequenceComponent).thenReturn(Future.successful(tcsSeqCompLoc))
       when(sequenceComponentUtil.unloadScript(tcsSeqCompLoc)).thenReturn(Future.successful(Done))
 
-      sequencerUtil.stopSequencers(Sequencers(ESW, TCS), obsMode).leftValue should ===(RegistrationListingFailed("Error"))
+      sequencerUtil.stopSequencers(Sequencers(ESW, TCS), obsMode).futureValue should ===(
+        CleanupResponse.FailedToStopSequencers(Set("Error"))
+      )
 
       verify(locationServiceUtil).resolveSequencer(ESW, obsMode, Timeouts.DefaultTimeout)
       verify(locationServiceUtil).resolveSequencer(TCS, obsMode, Timeouts.DefaultTimeout)

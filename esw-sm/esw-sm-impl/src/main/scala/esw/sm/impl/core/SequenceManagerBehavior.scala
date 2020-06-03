@@ -14,11 +14,11 @@ import esw.sm.api.SequenceManagerState
 import esw.sm.api.SequenceManagerState._
 import esw.sm.api.actor.messages.SequenceManagerMsg
 import esw.sm.api.actor.messages.SequenceManagerMsg._
-import esw.sm.api.models.CommonFailure.{ConfigurationMissing, LocationServiceError}
+import esw.sm.api.models.CommonFailure.ConfigurationMissing
 import esw.sm.api.models.ConfigureResponse.ConflictingResourcesWithRunningObsMode
 import esw.sm.api.models.StartSequencerResponse.{AlreadyRunning, Started}
 import esw.sm.api.models._
-import esw.sm.impl.config.{ObsModeConfig, Resources, SequenceManagerConfig, Sequencers}
+import esw.sm.impl.config.{ObsModeConfig, Resources, SequenceManagerConfig}
 import esw.sm.impl.utils.SequencerUtil
 
 import scala.async.Async.{async, await}
@@ -89,16 +89,11 @@ class SequenceManagerBehavior(
       val cleanupResponse =
         config
           .sequencers(obsMode)
-          .map(stopSequencers(_, obsMode))
+          .map(sequencerUtil.stopSequencers(_, obsMode))
           .getOrElse(Future.successful(ConfigurationMissing(obsMode)))
 
       self ! CleanupResponseInternal(await(cleanupResponse))
     }
-
-  private def stopSequencers(sequencers: Sequencers, obsMode: String) =
-    sequencerUtil
-      .stopSequencers(sequencers, obsMode)
-      .mapToAdt(_ => CleanupResponse.Success, error => CommonFailure.LocationServiceError(error.msg))
 
   // Clean up is in progress, waiting for CleanupResponseInternal message
   // Within this period, reject all the other messages except common messages
@@ -129,11 +124,8 @@ class SequenceManagerBehavior(
   private def shutDownSequencer(subsystem: Subsystem, obsMode: String, self: ActorRef[SequenceManagerMsg]): Future[Unit] = {
     async {
       val eventualResponse: Future[ShutdownSequencerResponse] = sequencerUtil
-        .stopSequencers(Sequencers(subsystem), obsMode)
-        .flatMap {
-          case Left(error) => Future.successful(LocationServiceError(error.msg))
-          case Right(_)    => Future.successful(ShutdownSequencerResponse.Success)
-        }
+        .stopSequencer(subsystem, obsMode)
+        .mapToAdt(identity, identity)
 
       self ! ShutdownSequencerResponseInternal(await(eventualResponse))
     }

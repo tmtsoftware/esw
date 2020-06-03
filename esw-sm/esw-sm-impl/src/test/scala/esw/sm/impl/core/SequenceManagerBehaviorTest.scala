@@ -2,7 +2,6 @@ package esw.sm.impl.core
 
 import java.net.URI
 
-import akka.Done
 import akka.actor.testkit.typed.scaladsl.TestProbe
 import akka.actor.typed.{ActorRef, ActorSystem, SpawnProtocol}
 import csw.location.api.models.ComponentType._
@@ -19,7 +18,7 @@ import esw.sm.api.actor.messages.SequenceManagerMsg
 import esw.sm.api.actor.messages.SequenceManagerMsg._
 import esw.sm.api.models.CommonFailure.{ConfigurationMissing, LocationServiceError}
 import esw.sm.api.models.ConfigureResponse.{ConflictingResourcesWithRunningObsMode, Success}
-import esw.sm.api.models.SequenceManagerError.LoadScriptError
+import esw.sm.api.models.SequenceManagerError.{LoadScriptError, UnloadScriptError}
 import esw.sm.api.models._
 import esw.sm.impl.config.{ObsModeConfig, Resources, SequenceManagerConfig, Sequencers}
 import esw.sm.impl.utils.SequencerUtil
@@ -118,7 +117,7 @@ class SequenceManagerBehaviorTest extends BaseTestSuite {
   "Cleanup" must {
 
     "transition sm from Idle -> CleaningInProcess -> Idle state and stop all the sequencer for given obs mode | ESW-166" in {
-      when(sequencerUtil.stopSequencers(darknightSequencers, Darknight)).thenReturn(future(1.seconds, Right(Done)))
+      when(sequencerUtil.stopSequencers(darknightSequencers, Darknight)).thenReturn(future(1.seconds, CleanupResponse.Success))
 
       val cleanupProbe = TestProbe[CleanupResponse]()
 
@@ -134,12 +133,12 @@ class SequenceManagerBehaviorTest extends BaseTestSuite {
     "return fail if there is failure while stopping sequencers | ESW-166" in {
       val failureMsg = "location service error"
       when(sequencerUtil.stopSequencers(darknightSequencers, Darknight))
-        .thenReturn(Future.successful(Left(RegistrationListingFailed(failureMsg))))
+        .thenReturn(Future.successful(CleanupResponse.FailedToStopSequencers(Set(failureMsg))))
 
       val probe = TestProbe[CleanupResponse]()
       smRef ! Cleanup(Darknight, probe.ref)
 
-      probe.expectMessage(LocationServiceError(failureMsg))
+      probe.expectMessage(CleanupResponse.FailedToStopSequencers(Set(failureMsg)))
       verify(sequencerUtil).stopSequencers(darknightSequencers, Darknight)
     }
 
@@ -210,8 +209,7 @@ class SequenceManagerBehaviorTest extends BaseTestSuite {
 
   "ShutdownSequencer" must {
     "transition sm from Idle -> ShuttingDown -> Idle state and shut down the sequencer for given obs mode | ESW-326" in {
-      val sequencers = Sequencers(ESW)
-      when(sequencerUtil.stopSequencers(sequencers, Darknight)).thenReturn(future(1.seconds, Right(Done)))
+      when(sequencerUtil.stopSequencer(ESW, Darknight)).thenReturn(future(1.seconds, Right(ShutdownSequencerResponse.Success)))
 
       val shutdownSequencerResponseProbe = TestProbe[ShutdownSequencerResponse]()
 
@@ -221,20 +219,19 @@ class SequenceManagerBehaviorTest extends BaseTestSuite {
       shutdownSequencerResponseProbe.expectMessage(ShutdownSequencerResponse.Success)
       assertState(Idle)
 
-      verify(sequencerUtil).stopSequencers(sequencers, Darknight)
+      verify(sequencerUtil).stopSequencer(ESW, Darknight)
     }
 
     "return Error if shutdown sequencer fails | ESW-326" in {
-      val sequencers = Sequencers(ESW)
-      when(sequencerUtil.stopSequencers(sequencers, Darknight))
-        .thenReturn(future(1.seconds, Left(RegistrationListingFailed("something went wrong"))))
+      when(sequencerUtil.stopSequencer(ESW, Darknight))
+        .thenReturn(future(1.seconds, Left(UnloadScriptError("something went wrong"))))
 
       val shutdownSequencerResponseProbe = TestProbe[ShutdownSequencerResponse]()
 
       smRef ! ShutdownSequencer(ESW, Darknight, shutdownSequencerResponseProbe.ref)
-      shutdownSequencerResponseProbe.expectMessage(LocationServiceError("something went wrong"))
+      shutdownSequencerResponseProbe.expectMessage(UnloadScriptError("something went wrong"))
 
-      verify(sequencerUtil).stopSequencers(sequencers, Darknight)
+      verify(sequencerUtil).stopSequencer(ESW, Darknight)
     }
   }
 
