@@ -89,7 +89,7 @@ class SequenceManagerBehavior(
       val cleanupResponse =
         config
           .sequencers(obsMode)
-          .map(sequencerUtil.stopSequencers(_, obsMode))
+          .map(sequencerUtil.shutdownSequencers(_, obsMode))
           .getOrElse(Future.successful(ConfigurationMissing(obsMode)))
 
       self ! CleanupResponseInternal(await(cleanupResponse))
@@ -124,7 +124,7 @@ class SequenceManagerBehavior(
   private def shutDownSequencer(subsystem: Subsystem, obsMode: String, self: ActorRef[SequenceManagerMsg]): Future[Unit] = {
     async {
       val eventualResponse: Future[ShutdownSequencerResponse] = sequencerUtil
-        .stopSequencer(subsystem, obsMode)
+        .shutdownSequencer(subsystem, obsMode)
         .mapToAdt(identity, identity)
 
       self ! ShutdownSequencerResponseInternal(await(eventualResponse))

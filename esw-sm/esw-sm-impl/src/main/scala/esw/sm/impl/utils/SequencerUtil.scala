@@ -14,7 +14,7 @@ import esw.commons.utils.location.EswLocationError.{LocationNotFound, Registrati
 import esw.commons.utils.location.{EswLocationError, LocationServiceUtil}
 import esw.ocs.api.actor.client.SequencerApiFactory
 import esw.ocs.api.{SequenceComponentApi, SequencerApi}
-import esw.sm.api.models.CleanupResponse.FailedToStopSequencers
+import esw.sm.api.models.CleanupResponse.FailedToShutdownSequencers
 import esw.sm.api.models.CommonFailure.LocationServiceError
 import esw.sm.api.models.ConfigureResponse.{FailedToStartSequencers, Success}
 import esw.sm.api.models.SequenceManagerError.UnloadScriptError
@@ -48,19 +48,20 @@ class SequencerUtil(locationServiceUtil: LocationServiceUtil, sequenceComponentU
       }
     }
 
-  def stopSequencers(sequencers: Sequencers, obsMode: String): Future[CleanupResponse] =
+  def shutdownSequencers(sequencers: Sequencers, obsMode: String): Future[CleanupResponse] =
     async {
-      val stopSequencerResponses = await(Future.traverse(sequencers.subsystems) { subsystem =>
-        stopSequencer(subsystem, obsMode)
+      val shutdownSequencerResponses = await(Future.traverse(sequencers.subsystems) { subsystem =>
+        shutdownSequencer(subsystem, obsMode)
       }).sequence
 
-      stopSequencerResponses match {
-        case Left(failedToStopSequencerResponses) => FailedToStopSequencers(failedToStopSequencerResponses.map(_.msg).toSet)
-        case Right(_)                             => CleanupResponse.Success
+      shutdownSequencerResponses match {
+        case Left(failedToShutdownSequencerResponses) =>
+          FailedToShutdownSequencers(failedToShutdownSequencerResponses.map(_.msg).toSet)
+        case Right(_) => CleanupResponse.Success
       }
     }
 
-  def stopSequencer(
+  def shutdownSequencer(
       subsystem: Subsystem,
       obsMode: String
   ): Future[Either[ShutdownSequencerResponse.Failure, ShutdownSequencerResponse.Success.type]] = {

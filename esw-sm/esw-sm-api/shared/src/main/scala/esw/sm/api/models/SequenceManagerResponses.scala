@@ -25,8 +25,8 @@ sealed trait CleanupResponse extends SmAkkaSerializable
 object CleanupResponse {
   case object Success extends CleanupResponse
 
-  sealed trait Failure                                     extends Throwable with CleanupResponse
-  case class FailedToStopSequencers(response: Set[String]) extends Failure
+  sealed trait Failure                                         extends Throwable with CleanupResponse
+  case class FailedToShutdownSequencers(response: Set[String]) extends Failure
 }
 
 sealed trait StartSequencerResponse extends SmAkkaSerializable

@@ -117,7 +117,8 @@ class SequenceManagerBehaviorTest extends BaseTestSuite {
   "Cleanup" must {
 
     "transition sm from Idle -> CleaningInProcess -> Idle state and stop all the sequencer for given obs mode | ESW-166" in {
-      when(sequencerUtil.stopSequencers(darknightSequencers, Darknight)).thenReturn(future(1.seconds, CleanupResponse.Success))
+      when(sequencerUtil.shutdownSequencers(darknightSequencers, Darknight))
+        .thenReturn(future(1.seconds, CleanupResponse.Success))
 
       val cleanupProbe = TestProbe[CleanupResponse]()
 
@@ -127,19 +128,19 @@ class SequenceManagerBehaviorTest extends BaseTestSuite {
       assertState(Idle)
 
       cleanupProbe.expectMessage(CleanupResponse.Success)
-      verify(sequencerUtil).stopSequencers(darknightSequencers, Darknight)
+      verify(sequencerUtil).shutdownSequencers(darknightSequencers, Darknight)
     }
 
     "return fail if there is failure while stopping sequencers | ESW-166" in {
       val failureMsg = "location service error"
-      when(sequencerUtil.stopSequencers(darknightSequencers, Darknight))
-        .thenReturn(Future.successful(CleanupResponse.FailedToStopSequencers(Set(failureMsg))))
+      when(sequencerUtil.shutdownSequencers(darknightSequencers, Darknight))
+        .thenReturn(Future.successful(CleanupResponse.FailedToShutdownSequencers(Set(failureMsg))))
 
       val probe = TestProbe[CleanupResponse]()
       smRef ! Cleanup(Darknight, probe.ref)
 
-      probe.expectMessage(CleanupResponse.FailedToStopSequencers(Set(failureMsg)))
-      verify(sequencerUtil).stopSequencers(darknightSequencers, Darknight)
+      probe.expectMessage(CleanupResponse.FailedToShutdownSequencers(Set(failureMsg)))
+      verify(sequencerUtil).shutdownSequencers(darknightSequencers, Darknight)
     }
 
     "return ConfigurationMissing error when config for given obsMode is missing | ESW-166" in {
@@ -209,7 +210,8 @@ class SequenceManagerBehaviorTest extends BaseTestSuite {
 
   "ShutdownSequencer" must {
     "transition sm from Idle -> ShuttingDown -> Idle state and shut down the sequencer for given obs mode | ESW-326" in {
-      when(sequencerUtil.stopSequencer(ESW, Darknight)).thenReturn(future(1.seconds, Right(ShutdownSequencerResponse.Success)))
+      when(sequencerUtil.shutdownSequencer(ESW, Darknight))
+        .thenReturn(future(1.seconds, Right(ShutdownSequencerResponse.Success)))
 
       val shutdownSequencerResponseProbe = TestProbe[ShutdownSequencerResponse]()
 
@@ -219,11 +221,11 @@ class SequenceManagerBehaviorTest extends BaseTestSuite {
       shutdownSequencerResponseProbe.expectMessage(ShutdownSequencerResponse.Success)
       assertState(Idle)
 
-      verify(sequencerUtil).stopSequencer(ESW, Darknight)
+      verify(sequencerUtil).shutdownSequencer(ESW, Darknight)
     }
 
     "return Error if shutdown sequencer fails | ESW-326" in {
-      when(sequencerUtil.stopSequencer(ESW, Darknight))
+      when(sequencerUtil.shutdownSequencer(ESW, Darknight))
         .thenReturn(future(1.seconds, Left(UnloadScriptError("something went wrong"))))
 
       val shutdownSequencerResponseProbe = TestProbe[ShutdownSequencerResponse]()
@@ -231,7 +233,7 @@ class SequenceManagerBehaviorTest extends BaseTestSuite {
       smRef ! ShutdownSequencer(ESW, Darknight, shutdownSequencerResponseProbe.ref)
       shutdownSequencerResponseProbe.expectMessage(UnloadScriptError("something went wrong"))
 
-      verify(sequencerUtil).stopSequencer(ESW, Darknight)
+      verify(sequencerUtil).shutdownSequencer(ESW, Darknight)
     }
   }
 
