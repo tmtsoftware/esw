@@ -50,7 +50,7 @@ class KillManuallyRegisteredComponentTest extends AnyWordSpecLike with MockitoSu
 
   "Kill (manually registered) Component" must {
 
-    "reply 'killedGracefully' after stopping a registered component gracefully | ESW-276" in {
+    "reply Killed after stopping a registered component gracefully | ESW-276" in {
       val agentActorRef = spawnAgentActor(name = "test-actor1")
       val probe1        = TestProbe[SpawnResponse]()
       val probe2        = TestProbe[KillResponse]()
@@ -67,36 +67,13 @@ class KillManuallyRegisteredComponentTest extends AnyWordSpecLike with MockitoSu
       //stop the component
       agentActorRef ! KillComponent(probe2.ref, componentId)
       //ensure it is stopped
-      probe2.expectMessage(10.seconds, Killed.gracefully)
+      probe2.expectMessage(10.seconds, Killed)
 
       //ensure component was unregistered
       verify(locationService).unregister(redisConn)
     }
 
-    "reply 'killedForcefully' after stopping a registered component forcefully when it does not gracefully in given time | ESW-276" in {
-      val agentActorRef =
-        spawnAgentActor(agentSettings.copy(durationToWaitForGracefulProcessTermination = 2.second), "test-actor2")
-      val probe1 = TestProbe[SpawnResponse]()
-      val probe2 = TestProbe[KillResponse]()
-
-      mockLocationServiceForRedis()
-      mockSuccessfulProcess(5.seconds)
-
-      //start a component
-      agentActorRef ! spawnRedis(probe1.ref)
-      //wait it it is registered
-      probe1.expectMessage(Spawned)
-
-      //stop the component
-      agentActorRef ! KillComponent(probe2.ref, componentId)
-      //ensure it is stopped
-      probe2.expectMessage(Killed.forcefully)
-
-      //ensure component was unregistered
-      verify(locationService).unregister(redisConn)
-    }
-
-    "reply 'killedGracefully' after killing a running component when component is waiting registration completion | ESW-276" in {
+    "reply Killed after killing a running component when component is waiting registration completion | ESW-276" in {
       val agentActorRef = spawnAgentActor(name = "test-actor3")
       val probe1        = TestProbe[SpawnResponse]()
       val probe2        = TestProbe[KillResponse]()
@@ -113,37 +90,13 @@ class KillManuallyRegisteredComponentTest extends AnyWordSpecLike with MockitoSu
       //stop the component
       agentActorRef ! KillComponent(probe2.ref, componentId)
       //ensure it is stopped gracefully
-      probe2.expectMessage(10.seconds, Killed.gracefully)
+      probe2.expectMessage(10.seconds, Killed)
 
       //ensure component was unregistered
       verify(locationService).unregister(redisConn)
     }
 
-    "reply 'killedForcefully' after killing a running component when component is waiting registration confirmation | ESW-276" in {
-      val agentActorRef = spawnAgentActor(name = "test-actor4")
-      val probe1        = TestProbe[SpawnResponse]()
-      val probe2        = TestProbe[KillResponse]()
-
-      mockLocationServiceForRedis(1.hour)
-
-      mockSuccessfulProcess(dieAfter = 20.seconds)
-
-      //start a component
-      agentActorRef ! spawnRedis(probe1.ref)
-      //it should not be registered
-      probe1.expectNoMessage(1.seconds)
-
-      //stop the component
-      agentActorRef ! KillComponent(probe2.ref, componentId)
-
-      //ensure it is stopped forcefully
-      probe2.expectMessage(10.seconds, Killed.forcefully)
-
-      //ensure component was unregistered
-      verify(locationService).unregister(redisConn)
-    }
-
-    "reply 'killedGracefully', unregister the component and kill the component when registration is being performed | ESW-276" in {
+    "reply Killed, unregister the component and kill the component when registration is being performed | ESW-276" in {
       val agentActorRef = spawnAgentActor(name = "test-actor5")
       val probe1        = TestProbe[SpawnResponse]()
       val probe2        = TestProbe[KillResponse]()
@@ -158,7 +111,7 @@ class KillManuallyRegisteredComponentTest extends AnyWordSpecLike with MockitoSu
       //stop the component
       agentActorRef ! KillComponent(probe2.ref, componentId)
       //ensure it is stopped gracefully
-      probe2.expectMessage(10.seconds, Killed.gracefully)
+      probe2.expectMessage(10.seconds, Killed)
 
       //ensure component was unregistered
       verify(locationService).unregister(redisConn)
@@ -184,7 +137,7 @@ class KillManuallyRegisteredComponentTest extends AnyWordSpecLike with MockitoSu
       agentActorRef ! KillComponent(secondKiller.ref, componentId)
 
       //ensure it is stopped gracefully
-      firstKiller.expectMessage(3.seconds, Killed.gracefully)
+      firstKiller.expectMessage(3.seconds, Killed)
       secondKiller.expectMessage(Failed("process is already stopping"))
 
       //ensure component was unregistered

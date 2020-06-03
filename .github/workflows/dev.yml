@@ -38,7 +38,7 @@ jobs:
             ${{ runner.os }}-sbt-
 
       - name: Install Redis
-        run: sudo apt-get install redis-server -y
+        run: sudo apt-get install redis-server
 
       - name: Build
         run: |

@@ -63,12 +63,12 @@ class SpawnSelfRegisteredComponentTest extends AnyWordSpecLike with MockitoSugar
     "reply 'Failed' and not spawn new process when call to location service fails" in {
       val agentActorRef = spawnAgentActor(name = "test-actor2")
       val probe         = TestProbe[SpawnResponse]()
-
+      val err           = "Failed to resolve componet"
       when(locationService.resolve(argEq(seqCompConn), any[FiniteDuration]))
-        .thenReturn(Future.failed(new RuntimeException("call failed")))
+        .thenReturn(Future.failed(new RuntimeException(err)))
 
       agentActorRef ! SpawnSequenceComponent(probe.ref, prefix)
-      probe.expectMessage(Failed("error occurred while resolving a component with location service"))
+      probe.expectMessage(Failed(err))
     }
 
     "reply 'Failed' and not spawn new process when it is already registered with location service | ESW-237" in {
@@ -154,7 +154,7 @@ class SpawnSelfRegisteredComponentTest extends AnyWordSpecLike with MockitoSugar
       Thread.sleep(800)
       agentActorRef ! KillComponent(killer.ref, componentId)
       spawner.expectMessage(Failed("Aborted"))
-      killer.expectMessage(Killed.gracefully)
+      killer.expectMessage(Killed)
     }
   }
 

@@ -39,14 +39,13 @@ class SpawnManuallyRegisteredComponentTest extends AnyWordSpecLike with MockitoS
   private val agentSettings         = AgentSettings(15.seconds, 3.seconds, Cs.channel)
   implicit val scheduler: Scheduler = system.scheduler
 
-  private val prefix = Prefix("csw.component")
-
-  private val componentId: ComponentId = ComponentId(prefix, Service)
-  private val redisConn                = TcpConnection(componentId)
-  private val redisLocation            = TcpLocation(redisConn, new URI("some"))
-  private val redisLocationF           = Future.successful(Some(redisLocation))
-  private val redisRegistration        = TcpRegistration(redisConn, 100)
-  private val spawnRedis               = SpawnRedis(_, prefix, 100, List.empty)
+  private val prefix            = Prefix("csw.component")
+  private val componentId       = ComponentId(prefix, Service)
+  private val redisConn         = TcpConnection(componentId)
+  private val redisLocation     = TcpLocation(redisConn, new URI("some"))
+  private val redisLocationF    = Future.successful(Some(redisLocation))
+  private val redisRegistration = TcpRegistration(redisConn, 100)
+  private val spawnRedis        = SpawnRedis(_, prefix, 100, List.empty)
 
   "SpawnManuallyRegistered (component)" must {
 
@@ -67,12 +66,11 @@ class SpawnManuallyRegisteredComponentTest extends AnyWordSpecLike with MockitoS
     "reply 'Failed' and not spawn new process when `resolve` call to location service fails" in {
       val agentActorRef = spawnAgentActor(name = "test-actor2")
       val probe         = TestProbe[SpawnResponse]()
-
-      when(locationService.resolve(argEq(redisConn), any[FiniteDuration]))
-        .thenReturn(Future.failed(new RuntimeException("call failed")))
+      val err           = "Failed to resolve component"
+      when(locationService.resolve(argEq(redisConn), any[FiniteDuration])).thenReturn(Future.failed(new RuntimeException(err)))
 
       agentActorRef ! spawnRedis(probe.ref)
-      probe.expectMessage(Failed("error occurred while resolving a component with location service"))
+      probe.expectMessage(Failed(err))
 
       //ensure component is NOT registered
       verify(locationService, never).register(redisRegistration)
@@ -146,9 +144,19 @@ class SpawnManuallyRegisteredComponentTest extends AnyWordSpecLike with MockitoS
 
     "Unregister when process is spawned but exits before registration and registration is later succeeded | ESW-237" in {
       val agentActorRef = spawnAgentActor(agentSettings.copy(durationToWaitForComponentRegistration = 4.seconds), "test-actor7")
-      val probe         = TestProbe[SpawnResponse]()
+      // fixme: remove duplication
+      val probe             = TestProbe[SpawnResponse]()
+      val prefix            = Prefix("csw.redis")
+      val redisConn         = TcpConnection(ComponentId(prefix, Service))
+      val redisRegistration = TcpRegistration(redisConn, 100)
+      val redisLocation     = TcpLocation(redisConn, new URI("some"))
+      val spawnRedis        = SpawnRedis(_, prefix, 100, List.empty)
 
-      mockLocationServiceForRedis(registrationDuration = 2.seconds)
+      when(locationService.resolve(argEq(redisConn), any[FiniteDuration])).thenReturn(Future.successful(None))
+      when(locationService.register(redisRegistration)).thenReturn(
+        delayedFuture(RegistrationResult.from(redisLocation, con => locationService.unregister(con)), 2.seconds)
+      )
+
       mockSuccessfulProcess(dieAfter = 500.millis)
 
       agentActorRef ! spawnRedis(probe.ref)
@@ -180,7 +188,7 @@ class SpawnManuallyRegisteredComponentTest extends AnyWordSpecLike with MockitoS
       agentActorRef ! KillComponent(killer.ref, componentId)
 
       spawner.expectMessage(Failed("Aborted"))
-      killer.expectMessage(Killed.gracefully)
+      killer.expectMessage(Killed)
     }
   }
 

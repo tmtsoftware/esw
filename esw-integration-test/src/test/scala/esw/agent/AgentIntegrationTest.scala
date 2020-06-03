@@ -38,7 +38,7 @@ class AgentIntegrationTest extends EswTestKit(MachineAgent) with BeforeAndAfterA
       // Verify registration in location service
       locationService.resolve(irisSeqCompConnection, 5.seconds).futureValue should not be empty
 
-      agentClient.killComponent(ComponentId(irisPrefix, SequenceComponent)).futureValue should ===(Killed.gracefully)
+      agentClient.killComponent(ComponentId(irisPrefix, SequenceComponent)).futureValue should ===(Killed)
       // Verify not registered in location service
       locationService.resolve(irisSeqCompConnection, 5.seconds).futureValue shouldEqual None
     }
@@ -58,14 +58,14 @@ class AgentIntegrationTest extends EswTestKit(MachineAgent) with BeforeAndAfterA
 //      val seqCompConnection = AkkaConnection(seqCompId)
 //
 //      agentClient.spawnSequenceComponent(seqCompPrefix).futureValue should ===(Spawned)
-//      agentClient.killComponent(seqCompId).futureValue should ===(Killed.forcefully)
+//      agentClient.killComponent(seqCompId).futureValue should ===(Killed)
 //      // Verify not registered in location service
 //      locationService.resolve(seqCompConnection, 5.seconds).futureValue shouldEqual None
 //    }
 
     "return Failed('Aborted') to original sender when someone kills a process while it is spawning | ESW-237, ESW-237" in {
       val spawnResponseF = agentClient.spawnSequenceComponent(irisPrefix, javaOpts)
-      agentClient.killComponent(irisCompId).futureValue should ===(Killed.gracefully)
+      agentClient.killComponent(irisCompId).futureValue should ===(Killed)
       spawnResponseF.futureValue should ===(Failed("Aborted"))
       // Verify not registered in location service
       locationService.resolve(irisSeqCompConnection, 5.seconds).futureValue should ===(None)

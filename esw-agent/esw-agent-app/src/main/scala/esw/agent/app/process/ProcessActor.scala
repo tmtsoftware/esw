@@ -19,7 +19,6 @@ import esw.agent.app.process.ProcessActorMessage._
 import esw.agent.app.process.cs.Coursier
 import esw.agent.app.process.redis.Redis
 
-import scala.compat.java8.StreamConverters.StreamHasToScala
 import scala.concurrent.duration.{DurationLong, FiniteDuration}
 import scala.concurrent.{ExecutionContext, Future}
 import scala.jdk.FutureConverters.CompletionStageOps
@@ -107,14 +106,14 @@ class ProcessActor(
               Behaviors.stopped
           }
 
-        case e @ LocationServiceError(exception) =>
-          replyTo ! Failed(e.message)
-          error(e.message, Map("prefix" -> prefix), exception)
+        case LocationServiceError(exception) =>
+          replyTo ! Failed(exception.getMessage)
+          error(exception.getMessage, Map("prefix" -> prefix), exception)
           Behaviors.stopped
 
         case Die(dieRef) =>
           warn("Killing process actor via Die message. Process was not started yet", Map("prefix" -> prefix))
-          dieRef ! Killed.gracefully
+          dieRef ! Killed
           replyTo ! aborted
           Behaviors.stopped
 
@@ -139,7 +138,7 @@ class ProcessActor(
           val errorMessage = "registration encountered an issue or timed out"
           error(errorMessage, Map("pid" -> process.pid, "prefix" -> prefix))
           replyTo ! Failed(errorMessage)
-          ctx.self ! StopGracefully
+          ctx.self ! Stop
           stopping(process, None)
 
         case ProcessExited(exitCode) =>
@@ -152,7 +151,7 @@ class ProcessActor(
         case Die(deathSubscriber) =>
           warn("Killing process via Die message", Map("pid" -> process.pid, "prefix" -> prefix))
           replyTo ! aborted
-          ctx.self ! StopGracefully
+          ctx.self ! Stop
           stopping(process, Some(deathSubscriber))
 
         case GetStatus(replyTo) =>
@@ -174,7 +173,7 @@ class ProcessActor(
 
         case Die(deathSubscriber) =>
           warn("attempting to kill process gracefully", Map("pid" -> process.pid, "prefix" -> prefix))
-          ctx.self ! StopGracefully
+          ctx.self ! Stop
           stopping(process, Some(deathSubscriber))
 
         case GetStatus(replyTo) =>
@@ -184,45 +183,27 @@ class ProcessActor(
     }
 
   def stopping(process: Process, deathSubscriber: Option[ActorRef[KillResponse]]): Behavior[ProcessActorMessage] =
-    Behaviors.withTimers { timeScheduler =>
-      Behaviors.receiveMessagePartial[ProcessActorMessage] {
-        case Die(dieRef) =>
-          debug("stop message arrived when component was already stopping", Map("pid" -> process.pid, "prefix" -> prefix))
-          dieRef ! Failed("process is already stopping")
-          Behaviors.same
+    Behaviors.receivePartial[ProcessActorMessage] {
+      case (ctx, msg) =>
+        msg match {
+          case Die(dieRef) =>
+            debug("stop message arrived when component was already stopping", Map("pid" -> process.pid, "prefix" -> prefix))
+            dieRef ! Failed("process is already stopping")
+            Behaviors.same
 
-        case ProcessExited(exitCode) =>
-          timeScheduler.cancel(StopForcefully)
-          deathSubscriber.foreach(_ ! (if (exitCode == 0 || exitCode == 143) Killed.gracefully else Killed.forcefully))
-          Behaviors.stopped
+          case ProcessExited(_) =>
+            deathSubscriber.foreach(_ ! Killed)
+            Behaviors.stopped
 
-        case StopGracefully =>
-          stopAll(process, stopForcefully = false)
-          unregisterComponent()
-          timeScheduler.startSingleTimer(StopForcefully, durationToWaitForGracefulProcessTermination)
-          Behaviors.same
+          case Stop =>
+            ProcessUtils.kill(process, durationToWaitForGracefulProcessTermination)(ctx.system)
+            unregisterComponent()
+            Behaviors.same
 
-        case StopForcefully =>
-          stopAll(process, stopForcefully = true)
-          deathSubscriber.foreach(_ ! Killed.forcefully)
-          Behaviors.stopped
-
-        case GetStatus(replyTo) =>
-          replyTo ! Stopping
-          Behaviors.same
-      }
+          case GetStatus(replyTo) =>
+            replyTo ! Stopping
+            Behaviors.same
+        }
     }
 
-  private def stopAll(process: Process, stopForcefully: Boolean): Unit = {
-    val forcefully: ProcessHandle => Unit = _.destroyForcibly()
-    val gracefully: ProcessHandle => Unit = _.destroy()
-
-    def killAll(f: ProcessHandle => Unit): Unit = {
-      process.descendants().toScala[List].foreach(f)
-      f(process.toHandle)
-    }
-
-    val killFunction = if (stopForcefully) forcefully else gracefully
-    killAll(killFunction)
-  }
 }

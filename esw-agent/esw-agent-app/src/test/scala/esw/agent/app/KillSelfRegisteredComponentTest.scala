@@ -46,7 +46,7 @@ class KillSelfRegisteredComponentTest extends AnyWordSpecLike with MockitoSugar 
 
   "Kill (self registered) Component" must {
 
-    "reply 'killedGracefully' after stopping a registered component gracefully | ESW-276" in {
+    "reply Killed after stopping a registered component gracefully | ESW-276" in {
       val agentActorRef = spawnAgentActor(name = "test-actor1")
       val spawner       = TestProbe[SpawnResponse]()
       val killer        = TestProbe[KillResponse]()
@@ -63,31 +63,10 @@ class KillSelfRegisteredComponentTest extends AnyWordSpecLike with MockitoSugar 
       //stop the component
       agentActorRef ! KillComponent(killer.ref, componentId)
       //ensure it is stopped
-      killer.expectMessage(10.seconds, Killed.gracefully)
+      killer.expectMessage(10.seconds, Killed)
     }
 
-    "reply 'killedForcefully' after stopping a registered component forcefully when it does not gracefully in given time | ESW-276" in {
-      val agentActorRef =
-        spawnAgentActor(agentSettings.copy(durationToWaitForGracefulProcessTermination = 2.second), "test-actor2")
-      val probe1 = TestProbe[SpawnResponse]()
-      val probe2 = TestProbe[KillResponse]()
-      when(locationService.resolve(argEq(seqCompConn), any[FiniteDuration]))
-        .thenReturn(Future.successful(None), seqCompLocationF)
-
-      mockSuccessfulProcess(5.seconds)
-
-      //start a component
-      agentActorRef ! SpawnSequenceComponent(probe1.ref, prefix)
-      //wait it it is registered
-      probe1.expectMessage(Spawned)
-
-      //stop the component
-      agentActorRef ! KillComponent(probe2.ref, componentId)
-      //ensure it is stopped
-      probe2.expectMessage(Killed.forcefully)
-    }
-
-    "reply 'killedGracefully' after killing a running component when component is waiting registration confirmation | ESW-276" in {
+    "reply Killed after killing a running component when component is waiting registration confirmation | ESW-276" in {
       val agentActorRef = spawnAgentActor(name = "test-actor3")
       val probe1        = TestProbe[SpawnResponse]()
       val probe2        = TestProbe[KillResponse]()
@@ -105,35 +84,10 @@ class KillSelfRegisteredComponentTest extends AnyWordSpecLike with MockitoSugar 
       //stop the component
       agentActorRef ! KillComponent(probe2.ref, componentId)
       //ensure it is stopped gracefully
-      probe2.expectMessage(10.seconds, Killed.gracefully)
+      probe2.expectMessage(10.seconds, Killed)
     }
 
-    "reply 'killedForcefully' after killing a running component when component is waiting registration confirmation | ESW-276" in {
-      val agentActorRef =
-        spawnAgentActor(agentSettings.copy(durationToWaitForGracefulProcessTermination = 2.seconds), "test-actor4")
-      val probe1 = TestProbe[SpawnResponse]()
-      val probe2 = TestProbe[KillResponse]()
-      //this will actor remains in waiting state
-      when(locationService.resolve(argEq(seqCompConn), any[FiniteDuration]))
-        .thenReturn(
-          Future.successful(None),
-          delayedFuture(Some(seqCompLocation), 1.hour)
-        ) //this will actor remains in waiting state
-
-      mockSuccessfulProcess(dieAfter = 20.seconds)
-
-      //start a component
-      agentActorRef ! SpawnSequenceComponent(probe1.ref, prefix)
-      //it should not be registered
-      probe1.expectNoMessage(1.seconds)
-
-      //stop the component
-      agentActorRef ! KillComponent(probe2.ref, componentId)
-      //ensure it is stopped gracefully
-      probe2.expectMessage(10.seconds, Killed.forcefully)
-    }
-
-    "reply 'killedGracefully' and cancel spawning of an already scheduled component when registration is being checked | ESW-276" in {
+    "reply Killed and cancel spawning of an already scheduled component when registration is being checked | ESW-276" in {
       val agentActorRef = spawnAgentActor(name = "test-actor5")
       val probe1        = TestProbe[SpawnResponse]()
       val probe2        = TestProbe[KillResponse]()
@@ -148,10 +102,10 @@ class KillSelfRegisteredComponentTest extends AnyWordSpecLike with MockitoSugar 
       //stop the component
       agentActorRef ! KillComponent(probe2.ref, componentId)
       //ensure it is stopped gracefully
-      probe2.expectMessage(10.seconds, Killed.gracefully)
+      probe2.expectMessage(10.seconds, Killed)
     }
 
-    "reply 'killedGracefully' after process termination, when process is already stopping by another message | ESW-276" in {
+    "reply Killed after process termination, when process is already stopping by another message | ESW-276" in {
       val agentActorRef =
         spawnAgentActor(agentSettings.copy(durationToWaitForGracefulProcessTermination = 7.seconds), "test-actor6")
       val spawnProbe   = TestProbe[SpawnResponse]()
@@ -172,7 +126,7 @@ class KillSelfRegisteredComponentTest extends AnyWordSpecLike with MockitoSugar 
       agentActorRef ! KillComponent(secondKiller.ref, componentId)
 
       //ensure it is stopped gracefully
-      firstKiller.expectMessage(6.seconds, Killed.gracefully)
+      firstKiller.expectMessage(6.seconds, Killed)
       secondKiller.expectMessage(Failed("process is already stopping"))
     }
 
