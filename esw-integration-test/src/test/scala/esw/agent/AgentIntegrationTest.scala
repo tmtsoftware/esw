@@ -51,18 +51,6 @@ class AgentIntegrationTest extends EswTestKit(MachineAgent) with BeforeAndAfterA
       agentClient.killComponent(ComponentId(redisPrefix, Service)).futureValue
     }
 
-    // todo: see if we really need killedForcefully and is there a way to write test for that with coursier approach?
-//    "return killedForcefully after killing a registered component for a killComponent message | ESW-276" in {
-//      val seqCompPrefix     = Prefix(s"esw.test_${Random.nextInt().abs}_delay_exit")
-//      val seqCompId         = ComponentId(seqCompPrefix, SequenceComponent)
-//      val seqCompConnection = AkkaConnection(seqCompId)
-//
-//      agentClient.spawnSequenceComponent(seqCompPrefix).futureValue should ===(Spawned)
-//      agentClient.killComponent(seqCompId).futureValue should ===(Killed)
-//      // Verify not registered in location service
-//      locationService.resolve(seqCompConnection, 5.seconds).futureValue shouldEqual None
-//    }
-
     "return Failed('Aborted') to original sender when someone kills a process while it is spawning | ESW-237, ESW-237" in {
       val spawnResponseF = agentClient.spawnSequenceComponent(irisPrefix, javaOpts)
       agentClient.killComponent(irisCompId).futureValue should ===(Killed)

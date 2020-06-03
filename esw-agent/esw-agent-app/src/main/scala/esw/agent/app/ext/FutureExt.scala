@@ -1,4 +1,4 @@
-package esw.agent.app
+package esw.agent.app.ext
 
 import akka.actor.typed.ActorSystem
 import akka.actor.typed.scaladsl.adapter.TypedActorSystemOps
@@ -17,4 +17,5 @@ object FutureExt {
       Future.firstCompletedOf(List(future, delayedTimeout))
     }
   }
+
 }

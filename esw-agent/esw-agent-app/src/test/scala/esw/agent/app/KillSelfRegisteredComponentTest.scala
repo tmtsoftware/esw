@@ -36,7 +36,7 @@ class KillSelfRegisteredComponentTest extends AnyWordSpecLike with MockitoSugar 
   private val process                                             = mock[Process]
   private val processHandle                                       = mock[ProcessHandle]
   private val logger                                              = mock[Logger]
-  private val agentSettings                                       = AgentSettings(15.seconds, 3.seconds, Cs.channel)
+  private val agentSettings                                       = AgentSettings(15.seconds, Cs.channel)
   implicit val scheduler: Scheduler                               = system.scheduler
   private val prefix                                              = Prefix("csw.component")
   private val componentId: ComponentId                            = ComponentId(prefix, SequenceComponent)
@@ -106,11 +106,10 @@ class KillSelfRegisteredComponentTest extends AnyWordSpecLike with MockitoSugar 
     }
 
     "reply Killed after process termination, when process is already stopping by another message | ESW-276" in {
-      val agentActorRef =
-        spawnAgentActor(agentSettings.copy(durationToWaitForGracefulProcessTermination = 7.seconds), "test-actor6")
-      val spawnProbe   = TestProbe[SpawnResponse]()
-      val firstKiller  = TestProbe[KillResponse]()
-      val secondKiller = TestProbe[KillResponse]()
+      val agentActorRef = spawnAgentActor(agentSettings, "test-actor6")
+      val spawnProbe    = TestProbe[SpawnResponse]()
+      val firstKiller   = TestProbe[KillResponse]()
+      val secondKiller  = TestProbe[KillResponse]()
       when(locationService.resolve(argEq(seqCompConn), any[FiniteDuration]))
         .thenReturn(Future.successful(None), seqCompLocationF)
 

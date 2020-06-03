@@ -37,7 +37,7 @@ class SpawnSelfRegisteredComponentTest extends AnyWordSpecLike with MockitoSugar
   private val processHandle                                       = mock[ProcessHandle]
   private val logger                                              = mock[Logger]
 
-  private val agentSettings         = AgentSettings(15.seconds, 3.seconds, Cs.channel)
+  private val agentSettings         = AgentSettings(15.seconds, Cs.channel)
   implicit val scheduler: Scheduler = system.scheduler
 
   private val prefix                        = Prefix("csw.component")
@@ -139,9 +139,7 @@ class SpawnSelfRegisteredComponentTest extends AnyWordSpecLike with MockitoSugar
 
     "reply 'Failed' when spawning is aborted by another message | ESW-237, ESW-276" in {
       val agentActorRef = spawnAgentActor(
-        agentSettings
-          .copy(durationToWaitForGracefulProcessTermination = 4.seconds)
-          .copy(durationToWaitForComponentRegistration = 7.seconds),
+        agentSettings.copy(durationToWaitForComponentRegistration = 7.seconds),
         "test-actor8"
       )
       val spawner = TestProbe[SpawnResponse]()

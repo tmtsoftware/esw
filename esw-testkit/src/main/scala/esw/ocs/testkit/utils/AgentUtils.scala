@@ -21,7 +21,6 @@ trait AgentUtils {
       |agent {
       |  binariesPath = "${Paths.get(getClass.getResource("/").getPath).toString}"
       |  durationToWaitForComponentRegistration = 60s
-      |  durationToWaitForGracefulProcessTermination = 2s
       |}
       |""".stripMargin
     )

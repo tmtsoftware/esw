@@ -37,7 +37,7 @@ class KillManuallyRegisteredComponentTest extends AnyWordSpecLike with MockitoSu
   private val processHandle                                       = mock[ProcessHandle]
   private val logger                                              = mock[Logger]
 
-  private val agentSettings         = AgentSettings(15.seconds, 3.seconds, Cs.channel)
+  private val agentSettings         = AgentSettings(15.seconds, Cs.channel)
   implicit val scheduler: Scheduler = system.scheduler
 
   private val prefix                   = Prefix("csw.component")
@@ -118,11 +118,10 @@ class KillManuallyRegisteredComponentTest extends AnyWordSpecLike with MockitoSu
     }
 
     "reply 'Failed' when process is already stopping by another message | ESW-276" in {
-      val agentActorRef =
-        spawnAgentActor(agentSettings.copy(durationToWaitForGracefulProcessTermination = 4.seconds), "test-actor6")
-      val spawnProbe   = TestProbe[SpawnResponse]()
-      val firstKiller  = TestProbe[KillResponse]()
-      val secondKiller = TestProbe[KillResponse]()
+      val agentActorRef = spawnAgentActor(agentSettings, "test-actor6")
+      val spawnProbe    = TestProbe[SpawnResponse]()
+      val firstKiller   = TestProbe[KillResponse]()
+      val secondKiller  = TestProbe[KillResponse]()
 
       mockLocationServiceForRedis()
       mockSuccessfulProcess(dieAfter = 2.seconds)
@@ -175,10 +174,8 @@ class KillManuallyRegisteredComponentTest extends AnyWordSpecLike with MockitoSu
   }
 
   private def mockLocationServiceForRedis(registrationDuration: FiniteDuration = 0.seconds) = {
-    when(locationService.resolve(argEq(redisConn), any[FiniteDuration]))
-      .thenReturn(Future.successful(None))
-    when(locationService.register(redisRegistration))
-      .thenReturn(delayedFuture(redisRegistrationResult, registrationDuration))
+    when(locationService.resolve(argEq(redisConn), any[FiniteDuration])).thenReturn(Future.successful(None))
+    when(locationService.register(redisRegistration)).thenReturn(delayedFuture(redisRegistrationResult, registrationDuration))
   }
 
   private def spawnAgentActor(agentSettings: AgentSettings = agentSettings, name: String) = {

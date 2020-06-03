@@ -36,7 +36,7 @@ class SpawnManuallyRegisteredComponentTest extends AnyWordSpecLike with MockitoS
   private val processHandle                                       = mock[ProcessHandle]
   private val logger                                              = mock[Logger]
 
-  private val agentSettings         = AgentSettings(15.seconds, 3.seconds, Cs.channel)
+  private val agentSettings         = AgentSettings(15.seconds, Cs.channel)
   implicit val scheduler: Scheduler = system.scheduler
 
   private val prefix            = Prefix("csw.component")
@@ -170,15 +170,9 @@ class SpawnManuallyRegisteredComponentTest extends AnyWordSpecLike with MockitoS
     }
 
     "reply 'Failed' when spawning is aborted by another message | ESW-237, ESW-276" in {
-      val agentActorRef = spawnAgentActor(
-        agentSettings.copy(
-          durationToWaitForComponentRegistration = 7.seconds,
-          durationToWaitForGracefulProcessTermination = 7.seconds
-        ),
-        "test-actor8"
-      )
-      val spawner = TestProbe[SpawnResponse]()
-      val killer  = TestProbe[KillResponse]()
+      val agentActorRef = spawnAgentActor(agentSettings.copy(durationToWaitForComponentRegistration = 7.seconds), "test-actor8")
+      val spawner       = TestProbe[SpawnResponse]()
+      val killer        = TestProbe[KillResponse]()
 
       mockLocationServiceForRedis(registrationDuration = 5.seconds)
       mockSuccessfulProcess(dieAfter = 2.seconds)

@@ -14,12 +14,11 @@ class AgentSettingsTest extends AnyWordSpecLike with Matchers {
         ConfigFactory.parseString(s"""
           |agent {
           |  durationToWaitForComponentRegistration = 15s
-          |  durationToWaitForGracefulProcessTermination = 10s
           |  coursier.channel = "${Cs.channel}"
           |}
           |""".stripMargin)
       val agentSettings = AgentSettings.from(config)
-      agentSettings should ===(new AgentSettings(15.seconds, 10.seconds, Cs.channel))
+      agentSettings should ===(new AgentSettings(15.seconds, Cs.channel))
     }
   }
 }
