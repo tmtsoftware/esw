@@ -9,7 +9,8 @@ import csw.prefix.models.Prefix
 import csw.prefix.models.Subsystem.ESW
 import esw.sm.api.actor.messages.SequenceManagerMsg._
 import esw.sm.api.models.CommonFailure.{ConfigurationMissing, LocationServiceError}
-import esw.sm.api.models.{CleanupResponse, ConfigureResponse, GetRunningObsModesResponse, ShutdownSequencerResponse}
+import esw.sm.api.models.SequenceManagerError.{LoadScriptError, SpawnSequenceComponentFailed}
+import esw.sm.api.models._
 import org.scalactic.TypeCheckedTripleEquals
 import org.scalatest.BeforeAndAfterAll
 import org.scalatest.matchers.should.Matchers
@@ -35,6 +36,7 @@ class SmAkkaSerializerTest extends AnyWordSpecLike with Matchers with TypeChecke
     val cleanupResponseRef           = TestProbe[CleanupResponse]().ref
     val getSmStateRef                = TestProbe[SequenceManagerState]().ref
     val shutdownSequencerResponseRef = TestProbe[ShutdownSequencerResponse]().ref
+    val StartSequencerResponseRef    = TestProbe[StartSequencerResponse]().ref
 
     val obsMode = "IRIS_Darknight"
 
@@ -44,6 +46,7 @@ class SmAkkaSerializerTest extends AnyWordSpecLike with Matchers with TypeChecke
       Cleanup(obsMode, cleanupResponseRef),
       GetRunningObsModes(getRunningModesResponseRef),
       GetSequenceManagerState(getSmStateRef),
+      StartSequencer(ESW, obsMode, StartSequencerResponseRef),
       ShutdownSequencer(ESW, obsMode, shutdownSequencerResponseRef)
     )
 
@@ -116,6 +119,26 @@ class SmAkkaSerializerTest extends AnyWordSpecLike with Matchers with TypeChecke
     }
   }
 
+  "should use sm serializer for StartSequencerResponse (de)serialization" in {
+    val componentId = ComponentId(Prefix("IRIS.darknight"), Sequencer)
+    val testData = Table(
+      "Sequence Manager StartSequencerResponse models",
+      StartSequencerResponse.Started(componentId),
+      StartSequencerResponse.AlreadyRunning(componentId),
+      LoadScriptError("error"),
+      LocationServiceError("error"),
+      SpawnSequenceComponentFailed("error")
+    )
+
+    forAll(testData) { startSequencerResponse =>
+      val serializer = serialization.findSerializerFor(startSequencerResponse)
+      serializer.getClass shouldBe classOf[SmAkkaSerializer]
+
+      val bytes = serializer.toBinary(startSequencerResponse)
+      serializer.fromBinary(bytes, Some(startSequencerResponse.getClass)) shouldEqual startSequencerResponse
+    }
+  }
+
   "should use sm serializer for ShutdownSequencerResponse (de)serialization" in {
     val testData = Table(
       "Sequence Manager ShutdownSequencerResponse models",
@@ -123,12 +146,12 @@ class SmAkkaSerializerTest extends AnyWordSpecLike with Matchers with TypeChecke
       LocationServiceError("error")
     )
 
-    forAll(testData) { sequenceManagerState =>
-      val serializer = serialization.findSerializerFor(sequenceManagerState)
+    forAll(testData) { shutdownSequencerResponse =>
+      val serializer = serialization.findSerializerFor(shutdownSequencerResponse)
       serializer.getClass shouldBe classOf[SmAkkaSerializer]
 
-      val bytes = serializer.toBinary(sequenceManagerState)
-      serializer.fromBinary(bytes, Some(sequenceManagerState.getClass)) shouldEqual sequenceManagerState
+      val bytes = serializer.toBinary(shutdownSequencerResponse)
+      serializer.fromBinary(bytes, Some(shutdownSequencerResponse.getClass)) shouldEqual shutdownSequencerResponse
     }
   }
 
