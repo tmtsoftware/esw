@@ -48,8 +48,8 @@ class SequencerBehavior(
       case Loaded           => loaded
       case InProgress       => inProgress
       case Offline          => offline
-      case GoingOnline      => goingOnline
-      case GoingOffline     => goingOffline
+      case GoingOnline      => goingOnline(_, Offline)
+      case GoingOffline     => goingOffline(_, Idle)
       case ShuttingDown     => shuttingDown
       case AbortingSequence => abortingSequence
       case Stopping         => stopping
@@ -64,17 +64,18 @@ class SequencerBehavior(
 
   private def idle(data: SequencerData): Behavior[SequencerMsg] =
     receive(Idle, data) {
+      case GoOffline(replyTo)                        => goOffline(replyTo, data, Idle)
+      case GoOnline(replyTo)                         => goOnline(replyTo, data, Idle)
       case LoadSequence(sequence, replyTo)           => load(sequence, replyTo, data)
       case SubmitSequenceInternal(sequence, replyTo) => submitSequence(sequence, data, replyTo)
-      case GoOnline(replyTo)                         => replyTo ! Ok; Behaviors.same
-      case GoOffline(replyTo)                        => goOffline(replyTo, data)
       case PullNext(replyTo)                         => idle(data.pullNextStep(replyTo)) // registers a subscriber for Step
     }
 
   private def loaded(data: SequencerData): Behavior[SequencerMsg] =
     receive(Loaded, data) {
+      case GoOffline(replyTo)              => goOffline(replyTo, data, Loaded)
+      case GoOnline(replyTo)               => goOnline(replyTo, data, Loaded)
       case msg: EditorAction               => handleEditorAction(msg, data, currentState = Loaded)
-      case GoOffline(replyTo)              => goOffline(replyTo, data)
       case StartSequence(replyTo)          => startSequence(data, replyTo)
       case LoadSequence(sequence, replyTo) => load(sequence, replyTo, data)
     }
@@ -94,13 +95,17 @@ class SequencerBehavior(
 
   private def offline(data: SequencerData): Behavior[SequencerMsg] =
     receive(Offline, data) {
-      case GoOnline(replyTo)  => goOnline(replyTo, data)
-      case GoOffline(replyTo) => replyTo ! Ok; Behaviors.same
+      case GoOnline(replyTo)  => goOnline(replyTo, data, Offline)
+      case GoOffline(replyTo) => goOffline(replyTo, data, Offline)
     }
 
   // Starts executing GoOnline handlers of script and changes state to intermediate state GoingOnline
   // On successful execution of handlers, state will change to Idle.
-  private def goOnline(replyTo: ActorRef[GoOnlineResponse], data: SequencerData): Behavior[SequencerMsg] = {
+  private def goOnline(
+      replyTo: ActorRef[GoOnlineResponse],
+      data: SequencerData,
+      currentState: SequencerState[SequencerMsg]
+  ): Behavior[SequencerMsg] = {
     script.executeGoOnline().onComplete {
       case Success(_) =>
         debug("Successfully executed GoOnline script handlers")
@@ -109,19 +114,27 @@ class SequencerBehavior(
         error(s"Failed while executing GoOnline script handlers with error : ${e.getMessage}")
         data.self ! GoOnlineFailed(replyTo)
     }
-    goingOnline(data)
+    goingOnline(data, currentState)
   }
 
-  private def goingOnline(data: SequencerData): Behavior[SequencerMsg] =
+  private def goingOnline(data: SequencerData, currentState: SequencerState[SequencerMsg]): Behavior[SequencerMsg] = {
+    val currentBehavior = stateMachine(currentState)
     receive(GoingOnline, data) {
-      case GoOnlineSuccess(replyTo) => replyTo ! Ok; idle(data)
-      case GoOnlineFailed(replyTo)  => replyTo ! GoOnlineHookFailed(); offline(data)
+      case GoOnlineSuccess(replyTo) =>
+        replyTo ! Ok
+        if (currentState == Offline) idle(data) else currentBehavior(data)
+      case GoOnlineFailed(replyTo) => replyTo ! GoOnlineHookFailed(); currentBehavior(data)
     }
+  }
 
   // This can only be received in Idle or InProgress state.
   // Starts executing the goOffline handlers and changes state to intermediate state GoingOffline
   // On successful execution of handlers, state will change to Offline, otherwise to the previous state
-  private def goOffline(replyTo: ActorRef[GoOfflineResponse], data: SequencerData): Behavior[SequencerMsg] = {
+  private def goOffline(
+      replyTo: ActorRef[GoOfflineResponse],
+      data: SequencerData,
+      currentState: SequencerState[SequencerMsg]
+  ): Behavior[SequencerMsg] = {
     script.executeGoOffline().onComplete {
       case Success(_) =>
         debug("Successfully executed GoOffline script handlers")
@@ -130,14 +143,14 @@ class SequencerBehavior(
         error(s"Failed while executing GoOffline script handlers with error : ${e.getMessage}")
         data.self ! GoOfflineFailed(replyTo)
     }
-    goingOffline(data)
+    goingOffline(data, currentState)
   }
 
-  private def goingOffline(data: SequencerData): Behavior[SequencerMsg] =
+  private def goingOffline(data: SequencerData, currentState: SequencerState[SequencerMsg]): Behavior[SequencerMsg] =
     receive(GoingOffline, data) {
       case GoOfflineSuccess(replyTo) => replyTo ! Ok; offline(data.copy(stepList = None))
       case GoOfflineFailed(replyTo) =>
-        val currentBehavior: SequencerData => Behavior[SequencerMsg] = if (data.isSequenceLoaded) loaded else idle
+        val currentBehavior = stateMachine(currentState)
         replyTo ! GoOfflineHookFailed(); currentBehavior(data)
     }
 
