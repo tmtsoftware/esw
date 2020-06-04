@@ -152,7 +152,7 @@ class SequenceManagerBehaviorTest extends BaseTestSuite {
   }
 
   "StartSequencer" must {
-    "transition sm from Idle -> Starting -> Idle state and start the sequencer for given obs mode | ESW-166" in {
+    "transition sm from Idle -> Starting -> Idle state and start the sequencer for given obs mode | ESW-176" in {
       val componentId    = ComponentId(Prefix(ESW, Darknight), Sequencer)
       val httpConnection = HttpConnection(componentId)
       val akkaLocation   = AkkaLocation(AkkaConnection(componentId), new URI("uri"))
@@ -172,7 +172,7 @@ class SequenceManagerBehaviorTest extends BaseTestSuite {
       verify(locationServiceUtil).find(httpConnection)
     }
 
-    "return AlreadyRunning if sequencer for given obs mode is already running | ESW-166" in {
+    "return AlreadyRunning if sequencer for given obs mode is already running | ESW-176" in {
       val componentId    = ComponentId(Prefix(ESW, Darknight), Sequencer)
       val httpConnection = HttpConnection(componentId)
       val httpLocation   = HttpLocation(httpConnection, new URI("uri"))
@@ -189,7 +189,7 @@ class SequenceManagerBehaviorTest extends BaseTestSuite {
       verify(locationServiceUtil).find(httpConnection)
     }
 
-    "return Error if start sequencer returns error | ESW-166" in {
+    "return Error if start sequencer returns error | ESW-176" in {
       val componentId           = ComponentId(Prefix(ESW, Darknight), Sequencer)
       val httpConnection        = HttpConnection(componentId)
       val expectedErrorResponse = LoadScriptError("error")

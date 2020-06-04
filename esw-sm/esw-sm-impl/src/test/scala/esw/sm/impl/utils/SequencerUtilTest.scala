@@ -227,7 +227,7 @@ class SequencerUtilTest extends BaseTestSuite {
       verify(sequenceComponentUtil).unloadScript(eswSeqCompLoc)
     }
 
-    "return Success even sequencer is not running | ESW-326" in {
+    "return Success even if sequencer is not running | ESW-326" in {
       val obsMode = "moonNight"
       val setup   = new TestSetup(obsMode)
       import setup._
@@ -242,7 +242,7 @@ class SequencerUtilTest extends BaseTestSuite {
       verify(eswSequencerApi, never).getSequenceComponent
     }
 
-    "return Failure response when location service returns RegistrationListingFailed error | ESW-166" in {
+    "return Failure response when location service returns RegistrationListingFailed error | ESW-326" in {
       val obsMode = "moonNight"
       val setup   = new TestSetup(obsMode)
       import setup._
