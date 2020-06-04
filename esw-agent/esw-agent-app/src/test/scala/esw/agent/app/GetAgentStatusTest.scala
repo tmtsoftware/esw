@@ -14,15 +14,12 @@ import esw.agent.api._
 import esw.agent.app.AgentActor.AgentState
 import esw.agent.app.process.ProcessExecutor
 import org.mockito.ArgumentMatchers.any
-import org.mockito.MockitoSugar
-import org.scalatest.BeforeAndAfterEach
 import org.scalatest.matchers.must.Matchers.convertToStringMustWrapper
-import org.scalatest.wordspec.AnyWordSpecLike
 
 import scala.concurrent.duration.{DurationLong, FiniteDuration}
 import scala.concurrent.{Future, Promise}
 
-class GetAgentStatusTest extends AnyWordSpecLike with MockitoSugar with BeforeAndAfterEach {
+class GetAgentStatusTest extends BaseTestSuite {
 
   private implicit val system: ActorSystem[SpawnProtocol.Command] = ActorSystem(SpawnProtocol(), "location-service-system")
   private val locationService                                     = mock[LocationService]
