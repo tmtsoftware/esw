@@ -1,45 +1,20 @@
 package esw.agent.app
 
-import java.net.URI
-import java.util.concurrent.CompletableFuture
-
 import akka.actor.testkit.typed.scaladsl.TestProbe
-import akka.actor.typed.{ActorSystem, Scheduler, SpawnProtocol}
+import csw.location.api.models.ComponentId
 import csw.location.api.models.ComponentType.SequenceComponent
-import csw.location.api.models.Connection.AkkaConnection
-import csw.location.api.models.{AkkaLocation, ComponentId}
-import csw.location.api.scaladsl.LocationService
-import csw.logging.api.scaladsl.Logger
 import csw.prefix.models.Prefix
 import esw.agent.api.AgentCommand.KillComponent
 import esw.agent.api.AgentCommand.SpawnCommand.SpawnSelfRegistered.SpawnSequenceComponent
 import esw.agent.api._
-import esw.agent.app.AgentActor.AgentState
-import esw.agent.app.process.ProcessExecutor
 import org.mockito.ArgumentMatchers.{any, eq => argEq}
 import org.scalatest.matchers.must.Matchers.convertToStringMustWrapper
 
-import scala.concurrent.ExecutionContext.Implicits.global
+import scala.concurrent.Future
 import scala.concurrent.duration.{DurationLong, FiniteDuration}
-import scala.concurrent.{Future, Promise}
-import scala.util.Random
 
 //todo: fix test names
-class KillSelfRegisteredComponentTest extends BaseTestSuite {
-
-  private implicit val system: ActorSystem[SpawnProtocol.Command] = ActorSystem(SpawnProtocol(), "component-system")
-  private val locationService                                     = mock[LocationService]
-  private val processExecutor                                     = mock[ProcessExecutor]
-  private val process                                             = mock[Process]
-  private val processHandle                                       = mock[ProcessHandle]
-  private val logger                                              = mock[Logger]
-  private val agentSettings                                       = AgentSettings(15.seconds, Cs.channel)
-  implicit val scheduler: Scheduler                               = system.scheduler
-  private val prefix                                              = Prefix("csw.component")
-  private val componentId: ComponentId                            = ComponentId(prefix, SequenceComponent)
-  private val seqCompConn                                         = AkkaConnection(componentId)
-  private val seqCompLocation: AkkaLocation                       = AkkaLocation(seqCompConn, new URI("some"))
-  private val seqCompLocationF                                    = Future.successful(Some(seqCompLocation))
+class KillSelfRegisteredComponentTest extends AgentSetup {
 
   "Kill (self registered) Component" must {
 
@@ -53,12 +28,12 @@ class KillSelfRegisteredComponentTest extends BaseTestSuite {
       mockSuccessfulProcess(dieAfter = 2.seconds)
 
       //start a component
-      agentActorRef ! SpawnSequenceComponent(spawner.ref, prefix)
+      agentActorRef ! SpawnSequenceComponent(spawner.ref, seqCompPrefix)
       //wait it it is registered
       spawner.expectMessage(Spawned)
 
       //stop the component
-      agentActorRef ! KillComponent(killer.ref, componentId)
+      agentActorRef ! KillComponent(killer.ref, seqCompComponentId)
       //ensure it is stopped
       killer.expectMessage(10.seconds, Killed)
     }
@@ -74,12 +49,12 @@ class KillSelfRegisteredComponentTest extends BaseTestSuite {
       mockSuccessfulProcess(dieAfter = 3.seconds)
 
       //start a component
-      agentActorRef ! SpawnSequenceComponent(probe1.ref, prefix)
+      agentActorRef ! SpawnSequenceComponent(probe1.ref, seqCompPrefix)
       //it should not be registered
       probe1.expectNoMessage(2.seconds)
 
       //stop the component
-      agentActorRef ! KillComponent(probe2.ref, componentId)
+      agentActorRef ! KillComponent(probe2.ref, seqCompComponentId)
       //ensure it is stopped gracefully
       probe2.expectMessage(10.seconds, Killed)
     }
@@ -92,12 +67,12 @@ class KillSelfRegisteredComponentTest extends BaseTestSuite {
         .thenReturn(delayedFuture(None, 1.hour)) //this will actor remains in checking state
 
       //start a component
-      agentActorRef ! SpawnSequenceComponent(probe1.ref, prefix)
+      agentActorRef ! SpawnSequenceComponent(probe1.ref, seqCompPrefix)
       //it should not be registered
       probe1.expectNoMessage(1.seconds)
 
       //stop the component
-      agentActorRef ! KillComponent(probe2.ref, componentId)
+      agentActorRef ! KillComponent(probe2.ref, seqCompComponentId)
       //ensure it is stopped gracefully
       probe2.expectMessage(10.seconds, Killed)
     }
@@ -113,13 +88,13 @@ class KillSelfRegisteredComponentTest extends BaseTestSuite {
       mockSuccessfulProcess(dieAfter = 2.seconds)
 
       //start a component
-      agentActorRef ! SpawnSequenceComponent(spawnProbe.ref, prefix)
+      agentActorRef ! SpawnSequenceComponent(spawnProbe.ref, seqCompPrefix)
       spawnProbe.expectMessage(Spawned)
 
       //stop the component
-      agentActorRef ! KillComponent(firstKiller.ref, componentId)
+      agentActorRef ! KillComponent(firstKiller.ref, seqCompComponentId)
       //stop the component again
-      agentActorRef ! KillComponent(secondKiller.ref, componentId)
+      agentActorRef ! KillComponent(secondKiller.ref, seqCompComponentId)
 
       //ensure it is stopped gracefully
       firstKiller.expectMessage(6.seconds, Killed)
@@ -136,30 +111,5 @@ class KillSelfRegisteredComponentTest extends BaseTestSuite {
       //verify that response is Failure
       probe.expectMessage(Failed("given component id is not running on this agent"))
     }
-  }
-
-  override def beforeEach(): Unit = {
-    super.beforeEach()
-    reset(locationService, processExecutor, process, logger)
-  }
-
-  private def mockSuccessfulProcess(dieAfter: FiniteDuration, exitCode: Int = 0) = {
-    when(process.pid()).thenReturn(Random.nextInt(1000).abs)
-    when(process.toHandle).thenReturn(processHandle)
-    when(process.exitValue()).thenReturn(exitCode)
-    val future = new CompletableFuture[Process]()
-    scheduler.scheduleOnce(dieAfter, () => future.complete(process))
-    when(process.onExit()).thenReturn(future)
-    when(processExecutor.runCommand(any[List[String]], any[Prefix])).thenReturn(Right(process))
-  }
-
-  private def spawnAgentActor(agentSettings: AgentSettings = agentSettings, name: String) = {
-    system.systemActorOf(new AgentActor(locationService, processExecutor, agentSettings, logger).behavior(AgentState.empty), name)
-  }
-
-  private def delayedFuture[T](value: T, delay: FiniteDuration): Future[T] = {
-    val promise = Promise[T]()
-    system.scheduler.scheduleOnce(delay, () => promise.success(value))(system.executionContext)
-    promise.future
   }
 }

@@ -1,49 +1,17 @@
 package esw.agent.app
 
-import java.net.URI
-import java.util.concurrent.CompletableFuture
-
 import akka.actor.testkit.typed.scaladsl.TestProbe
-import akka.actor.typed.{ActorSystem, Scheduler, SpawnProtocol}
+import csw.location.api.models.ComponentId
 import csw.location.api.models.ComponentType.Service
-import csw.location.api.models.Connection.TcpConnection
-import csw.location.api.models.{ComponentId, TcpLocation, TcpRegistration}
-import csw.location.api.scaladsl.{LocationService, RegistrationResult}
-import csw.logging.api.scaladsl.Logger
 import csw.prefix.models.Prefix
 import esw.agent.api.AgentCommand.KillComponent
-import esw.agent.api.AgentCommand.SpawnCommand.SpawnManuallyRegistered.SpawnRedis
 import esw.agent.api._
-import esw.agent.app.AgentActor.AgentState
-import esw.agent.app.process.ProcessExecutor
-import org.mockito.ArgumentMatchers.{any, eq => argEq}
 import org.scalatest.matchers.must.Matchers.convertToStringMustWrapper
 
-import scala.concurrent.ExecutionContext.Implicits.global
-import scala.concurrent.duration.{DurationLong, FiniteDuration}
-import scala.concurrent.{Future, Promise}
-import scala.util.Random
+import scala.concurrent.duration.DurationLong
 
 //todo: fix test names
-class KillManuallyRegisteredComponentTest extends BaseTestSuite {
-
-  private implicit val system: ActorSystem[SpawnProtocol.Command] = ActorSystem(SpawnProtocol(), "component-system")
-  private val locationService                                     = mock[LocationService]
-  private val processExecutor                                     = mock[ProcessExecutor]
-  private val process                                             = mock[Process]
-  private val processHandle                                       = mock[ProcessHandle]
-  private val logger                                              = mock[Logger]
-
-  private val agentSettings         = AgentSettings(15.seconds, Cs.channel)
-  implicit val scheduler: Scheduler = system.scheduler
-
-  private val prefix                   = Prefix("csw.component")
-  private val componentId: ComponentId = ComponentId(prefix, Service)
-  private val redisConn                = TcpConnection(componentId)
-  private val redisLocation            = TcpLocation(redisConn, new URI("some"))
-  private val redisRegistration        = TcpRegistration(redisConn, 100)
-  private val redisRegistrationResult  = RegistrationResult.from(redisLocation, con => locationService.unregister(con))
-  private val spawnRedis               = SpawnRedis(_, prefix, 100, List.empty)
+class KillManuallyRegisteredComponentTest extends AgentSetup {
 
   "Kill (manually registered) Component" must {
 
@@ -153,35 +121,5 @@ class KillManuallyRegisteredComponentTest extends BaseTestSuite {
       //ensure component was NOT unregistered
       verify(locationService, never).unregister(redisConn)
     }
-  }
-
-  override def beforeEach(): Unit = {
-    super.beforeEach()
-    reset(locationService, processExecutor, process, logger)
-  }
-
-  private def mockSuccessfulProcess(dieAfter: FiniteDuration, exitCode: Int = 0) = {
-    when(process.pid()).thenReturn(Random.nextInt(1000).abs)
-    when(process.toHandle).thenReturn(processHandle)
-    when(process.exitValue()).thenReturn(exitCode)
-    val future = new CompletableFuture[Process]()
-    scheduler.scheduleOnce(dieAfter, () => future.complete(process))
-    when(process.onExit()).thenReturn(future)
-    when(processExecutor.runCommand(any[List[String]], any[Prefix])).thenReturn(Right(process))
-  }
-
-  private def mockLocationServiceForRedis(registrationDuration: FiniteDuration = 0.seconds) = {
-    when(locationService.resolve(argEq(redisConn), any[FiniteDuration])).thenReturn(Future.successful(None))
-    when(locationService.register(redisRegistration)).thenReturn(delayedFuture(redisRegistrationResult, registrationDuration))
-  }
-
-  private def spawnAgentActor(agentSettings: AgentSettings = agentSettings, name: String) = {
-    system.systemActorOf(new AgentActor(locationService, processExecutor, agentSettings, logger).behavior(AgentState.empty), name)
-  }
-
-  private def delayedFuture[T](value: T, delay: FiniteDuration): Future[T] = {
-    val promise = Promise[T]()
-    system.scheduler.scheduleOnce(delay, () => promise.success(value))(system.executionContext)
-    promise.future
   }
 }

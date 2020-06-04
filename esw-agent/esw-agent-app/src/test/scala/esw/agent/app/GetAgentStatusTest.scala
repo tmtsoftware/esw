@@ -1,34 +1,19 @@
 package esw.agent.app
 
 import akka.actor.testkit.typed.scaladsl.TestProbe
-import akka.actor.typed.{ActorSystem, Scheduler, SpawnProtocol}
 import csw.location.api.models.ComponentType.SequenceComponent
 import csw.location.api.models._
-import csw.location.api.scaladsl.LocationService
-import csw.logging.api.scaladsl.Logger
 import csw.prefix.models.Prefix
 import esw.agent.api.AgentCommand.GetAgentStatus
 import esw.agent.api.AgentCommand.SpawnCommand.SpawnSelfRegistered.SpawnSequenceComponent
 import esw.agent.api.ComponentStatus.Initializing
 import esw.agent.api._
-import esw.agent.app.AgentActor.AgentState
-import esw.agent.app.process.ProcessExecutor
 import org.mockito.ArgumentMatchers.any
 import org.scalatest.matchers.must.Matchers.convertToStringMustWrapper
 
 import scala.concurrent.duration.{DurationLong, FiniteDuration}
-import scala.concurrent.{Future, Promise}
 
-class GetAgentStatusTest extends BaseTestSuite {
-
-  private implicit val system: ActorSystem[SpawnProtocol.Command] = ActorSystem(SpawnProtocol(), "location-service-system")
-  private val locationService                                     = mock[LocationService]
-  private val processExecutor                                     = mock[ProcessExecutor]
-  private val process                                             = mock[Process]
-  private val logger                                              = mock[Logger]
-
-  private val agentSettings         = AgentSettings(15.seconds, Cs.channel)
-  implicit val scheduler: Scheduler = system.scheduler
+class GetAgentStatusTest extends AgentSetup {
 
   "GetAgentStatus" must {
 
@@ -56,23 +41,5 @@ class GetAgentStatusTest extends BaseTestSuite {
       //ensure both components are initializing
       probe.expectMessage(AgentStatus(Map(componentId1 -> Initializing, componentId2 -> Initializing)))
     }
-  }
-
-  override def beforeEach(): Unit = {
-    super.beforeEach()
-    reset(locationService, processExecutor, process, logger)
-  }
-
-  private def spawnAgentActor(agentSettings: AgentSettings = agentSettings) = {
-    system.systemActorOf(
-      new AgentActor(locationService, processExecutor, agentSettings, logger).behavior(AgentState.empty),
-      "test-actor"
-    )
-  }
-
-  private def delayedFuture[T](value: T, delay: FiniteDuration): Future[T] = {
-    val promise = Promise[T]()
-    system.scheduler.scheduleOnce(delay, () => promise.success(value))(system.executionContext)
-    promise.future
   }
 }

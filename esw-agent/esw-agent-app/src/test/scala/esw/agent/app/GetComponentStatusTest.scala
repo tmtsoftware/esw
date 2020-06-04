@@ -1,47 +1,26 @@
 package esw.agent.app
 
 import java.net.URI
-import java.util.concurrent.CompletableFuture
 
 import akka.actor.testkit.typed.scaladsl.TestProbe
-import akka.actor.typed.{ActorRef, ActorSystem, Scheduler, SpawnProtocol}
+import akka.actor.typed.ActorRef
 import csw.location.api.models.ComponentType.{SequenceComponent, Service}
 import csw.location.api.models.Connection.{AkkaConnection, TcpConnection}
 import csw.location.api.models._
-import csw.location.api.scaladsl.{LocationService, RegistrationResult}
-import csw.logging.api.scaladsl.Logger
-import csw.prefix.models.Prefix
+import csw.location.api.scaladsl.RegistrationResult
 import esw.agent.api.AgentCommand.SpawnCommand.SpawnManuallyRegistered.SpawnRedis
 import esw.agent.api.AgentCommand.SpawnCommand.SpawnSelfRegistered.SpawnSequenceComponent
 import esw.agent.api.AgentCommand.{GetComponentStatus, KillComponent}
 import esw.agent.api.ComponentStatus.{Initializing, NotAvailable, Running, Stopping}
 import esw.agent.api._
-import esw.agent.app.AgentActor.AgentState
-import esw.agent.app.process.ProcessExecutor
 import org.mockito.ArgumentMatchers.any
 import org.scalatest.matchers.must.Matchers.convertToStringMustWrapper
 
-import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.duration.{DurationLong, FiniteDuration}
-import scala.concurrent.{Future, Promise}
-import scala.util.Random
 
-class GetComponentStatusTest extends BaseTestSuite {
-
-  private implicit val system: ActorSystem[SpawnProtocol.Command] = ActorSystem(SpawnProtocol(), "component-system")
-  private val locationService                                     = mock[LocationService]
-  private val processExecutor                                     = mock[ProcessExecutor]
-  private val process                                             = mock[Process]
-  private val processHandle                                       = mock[ProcessHandle]
-  private val logger                                              = mock[Logger]
-
-  private val agentSettings         = AgentSettings(15.seconds, Cs.channel)
-  implicit val scheduler: Scheduler = system.scheduler
-
-  private val prefix = Prefix("csw.component")
+class GetComponentStatusTest extends AgentSetup {
 
   "GetComponentStatus (manually registered)" must {
-
     val componentId                    = ComponentId(prefix, Service)
     val getStatus                      = GetComponentStatus(_, componentId)
     val connection                     = TcpConnection(componentId)
@@ -190,11 +169,6 @@ class GetComponentStatusTest extends BaseTestSuite {
     }
   }
 
-  override def beforeEach(): Unit = {
-    super.beforeEach()
-    reset(locationService, processExecutor, process, logger)
-  }
-
   private def mockLocationService(
       checkDuration: FiniteDuration = 0.seconds,
       registrationDuration: FiniteDuration = 0.seconds,
@@ -204,25 +178,5 @@ class GetComponentStatusTest extends BaseTestSuite {
       .thenReturn(delayedFuture(None, checkDuration), delayedFuture(Some(location), validationDuration))
     when(locationService.register(any[Registration]))
       .thenReturn(delayedFuture(registrationResult, registrationDuration))
-  }
-
-  private def mockSuccessfulProcess(dieAfter: FiniteDuration, exitCode: Int = 0) = {
-    when(process.pid()).thenReturn(Random.nextInt(1000).abs)
-    when(process.toHandle).thenReturn(processHandle)
-    when(process.exitValue()).thenReturn(exitCode)
-    val future = new CompletableFuture[Process]()
-    scheduler.scheduleOnce(dieAfter, () => future.complete(process))
-    when(process.onExit()).thenReturn(future)
-    when(processExecutor.runCommand(any[List[String]], any[Prefix])).thenReturn(Right(process))
-  }
-
-  private def spawnAgentActor(agentSettings: AgentSettings = agentSettings, name: String) = {
-    system.systemActorOf(new AgentActor(locationService, processExecutor, agentSettings, logger).behavior(AgentState.empty), name)
-  }
-
-  private def delayedFuture[T](value: T, delay: FiniteDuration): Future[T] = {
-    val promise = Promise[T]()
-    system.scheduler.scheduleOnce(delay, () => promise.success(value))(system.executionContext)
-    promise.future
   }
 }
