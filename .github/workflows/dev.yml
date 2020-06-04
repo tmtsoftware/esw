@@ -74,7 +74,6 @@ jobs:
           name: RTM
           path: target/RTM
 
-
       - name: Notify slack
         if: always()
         continue-on-error: true
