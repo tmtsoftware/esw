@@ -31,7 +31,7 @@ class SequenceComponentUtil(locationServiceUtil: LocationServiceUtil, agentUtil:
         case None                     => Future.successful(None)
       }
       .flatMap {
-        case Some(value) => Future.successful(Right(value))
+        case Some(sequenceComponentApi) => Future.successful(Right(sequenceComponentApi))
         // spawn ESW SeqComp on ESW Machine if not able to find available sequence component of subsystem or ESW
         case None => agentUtil.spawnSequenceComponentFor(ESW)
       }

@@ -4,10 +4,7 @@ import com.typesafe.config.Config
 
 import scala.concurrent.duration.{DurationLong, FiniteDuration}
 
-case class AgentSettings private[agent] (
-    durationToWaitForComponentRegistration: FiniteDuration,
-    coursierChannel: String
-)
+case class AgentSettings(durationToWaitForComponentRegistration: FiniteDuration, coursierChannel: String)
 
 object AgentSettings {
   def from(config: Config): AgentSettings = {
