@@ -13,6 +13,7 @@ import esw.commons.utils.FutureUtils
 import esw.commons.utils.location.EswLocationError.{LocationNotFound, RegistrationListingFailed}
 import esw.commons.utils.location.{EswLocationError, LocationServiceUtil}
 import esw.ocs.api.actor.client.SequencerApiFactory
+import esw.ocs.api.protocol.ScriptError.LoadingScriptFailed
 import esw.ocs.api.{SequenceComponentApi, SequencerApi}
 import esw.sm.api.models.CleanupResponse.FailedToShutdownSequencers
 import esw.sm.api.models.CommonFailure.LocationServiceError
@@ -82,10 +83,26 @@ class SequencerUtil(locationServiceUtil: LocationServiceUtil, sequenceComponentU
     sequenceComponentUtil
       .getAvailableSequenceComponent(subSystem)
       .flatMap {
-        case Right(seqCompApi)         => loadScript(subSystem, observingMode, seqCompApi)
+        case Right(seqCompApi)         => loadScript(subSystem, observingMode, seqCompApi, retryCount)
         case Left(_) if retryCount > 0 => startSequencer(subSystem, observingMode, retryCount - 1)
         case Left(e)                   => Future.successful(Left(e))
       }
+
+  private def loadScript(
+      subSystem: Subsystem,
+      observingMode: String,
+      seqCompApi: SequenceComponentApi,
+      retryCount: Int
+  ): Future[Either[SequencerError, AkkaLocation]] = {
+    seqCompApi
+      .loadScript(subSystem, observingMode)
+      .map(_.response)
+      .flatMap {
+        case Left(error: LoadingScriptFailed) => Future.successful(Left(SequenceManagerError.LoadScriptError(error.msg)))
+        case Left(_) if retryCount > 0        => startSequencer(subSystem, observingMode, retryCount - 1)
+        case Right(location)                  => Future.successful(Right(location))
+      }
+  }
 
   // get sequence component from Sequencer and unload sequencer script
   private def unloadScript(api: SequencerApi): Future[Either[UnloadScriptError, ShutdownSequencerResponse.Success.type]] =
@@ -102,10 +119,5 @@ class SequencerUtil(locationServiceUtil: LocationServiceUtil, sequenceComponentU
     locationServiceUtil
       .resolveSequencer(subsystem, obsMode, Timeouts.DefaultTimeout)
       .mapRight(createSequencerClient)
-
-  private def loadScript(subSystem: Subsystem, observingMode: String, seqCompApi: SequenceComponentApi) =
-    seqCompApi
-      .loadScript(subSystem, observingMode)
-      .map(_.response.left.map(e => SequenceManagerError.LoadScriptError(e.msg)))
 
 }
