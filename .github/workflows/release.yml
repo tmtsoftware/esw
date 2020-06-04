@@ -36,28 +36,32 @@ jobs:
           sbt -DenableCoverage=true coverageReport
           sbt coverageAggregate
 
-      - name: RTM
-        run: |
-          ./scripts/coursier launch --channel https://raw.githubusercontent.com/tmtsoftware/apps/master/apps.json rtm:d1c8c7e -- target/RTM/testStoryMapping.txt tools/RTM/storyRequirementMapping.csv target/RTM/testRequirementsMapping.txt
-
       - name: Upload Coverage Report
         uses: actions/upload-artifact@v1
         with:
           name: Coverage Report
           path: target/scala-2.13/scoverage-report
 
-      - name: Upload RTM
-        uses: actions/upload-artifact@v1
-        with:
-          name: RTM
-          path: target/RTM
-
       - name: Delete js targets
         continue-on-error: true
         run: find . -type d -regex ".*js/target.*" | xargs rm -rf
 
       - name: Multi-Jvm Tests
-        run: sbt esw-integration-test/multi-jvm:test
+        run: sbt -DgenerateStoryReport=true esw-integration-test/multi-jvm:test
+
+      - name: Generate RTM
+        if: always()
+        continue-on-error: true
+        run: |
+          ./scripts/coursier launch --channel https://raw.githubusercontent.com/tmtsoftware/apps/master/apps.json rtm:d1c8c7e -- target/RTM/testStoryMapping.txt tools/RTM/storyRequirementMapping.csv target/RTM/testRequirementsMapping.txt
+
+      - name: Upload RTM
+        if: always()
+        continue-on-error: true
+        uses: actions/upload-artifact@v1
+        with:
+          name: RTM
+          path: target/RTM
 
       - name: Github Release
         run: sbt -Dprod.publish=true githubRelease
