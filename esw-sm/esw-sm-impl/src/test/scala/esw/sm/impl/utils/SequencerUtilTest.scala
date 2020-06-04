@@ -13,6 +13,7 @@ import csw.prefix.models.Subsystem.{ESW, TCS}
 import esw.commons.utils.location.EswLocationError.{LocationNotFound, RegistrationListingFailed}
 import esw.commons.utils.location.LocationServiceUtil
 import esw.commons.{BaseTestSuite, Timeouts}
+import esw.ocs.api.protocol.ScriptError.SequenceComponentNotIdle
 import esw.ocs.api.protocol.{ScriptError, ScriptResponse}
 import esw.ocs.api.{SequenceComponentApi, SequencerApi}
 import esw.sm.api.models.CommonFailure.LocationServiceError
@@ -118,7 +119,7 @@ class SequencerUtilTest extends BaseTestSuite {
       verify(sequenceComponentUtil, times(4)).getAvailableSequenceComponent(ESW)
     }
 
-    "retry is spawn sequence component fails | ESW-176" in {
+    "retry if spawn sequence component fails | ESW-176" in {
       val obsMode = "moonNight"
       val setup   = new TestSetup(obsMode)
       import setup._
@@ -132,7 +133,28 @@ class SequencerUtilTest extends BaseTestSuite {
       verify(sequenceComponentUtil, times(2)).getAvailableSequenceComponent(ESW)
     }
 
-    "return error caused if loading script returns error | ESW-176" in {
+    "retry if any other error than load script error | ESW-176" in {
+      val obsMode = "moonNight"
+      val setup   = new TestSetup(obsMode)
+      import setup._
+
+      when(sequenceComponentUtil.getAvailableSequenceComponent(TCS))
+        .thenReturn(futureRight(tcsSeqComp), futureRight(eswSeqComp))
+
+      //mimic that meantime SM could start tcs sequencer on esw seqcomp, it is loaded another sequencer script
+      when(tcsSeqComp.loadScript(TCS, obsMode))
+        .thenReturn(Future.successful(ScriptResponse(Left(SequenceComponentNotIdle(Prefix(TCS, "darknight"))))))
+
+      when(eswSeqComp.loadScript(TCS, obsMode)).thenReturn(Future.successful(ScriptResponse(Right(tcsLocation))))
+
+      sequencerUtil.startSequencer(TCS, obsMode, 3).rightValue should ===(tcsLocation)
+
+      verify(sequenceComponentUtil, times(2)).getAvailableSequenceComponent(TCS)
+      verify(tcsSeqComp).loadScript(TCS, obsMode)
+      verify(eswSeqComp).loadScript(TCS, obsMode)
+    }
+
+    "return error caused if loading script returns error and do not retry | ESW-176" in {
       val obsMode = "moonNight"
       val setup   = new TestSetup(obsMode)
       import setup._
