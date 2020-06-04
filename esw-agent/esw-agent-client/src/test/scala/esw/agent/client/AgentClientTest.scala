@@ -54,7 +54,7 @@ class AgentClientTest extends AnyWordSpecLike with Matchers with BeforeAndAfterA
         Future.failed(new RuntimeException("boom"))
       )
       val exception = intercept[RuntimeException](AgentClient.make(prefix, locationService).futureValue)
-      exception.getCause.getMessage should ===(s"boom")
+      exception.getCause.getMessage should ===(s"boom 2")
     }
   }
 
