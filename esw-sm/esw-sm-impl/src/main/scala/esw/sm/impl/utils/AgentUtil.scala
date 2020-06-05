@@ -31,12 +31,16 @@ class AgentUtil(locationServiceUtil: LocationServiceUtil)(implicit actorSystem: 
       .flatMapE(spawnSeqComp(_, sequenceComponentPrefix))
   }
 
-  private[utils] def getAgent: Future[Either[EswLocationError, AgentClient]] =
+  private[utils] def getAgent: Future[Either[EswLocationError, AgentClient]] = {
     locationServiceUtil
       .listAkkaLocationsBy(ESW, Machine)
-      // if locations.head.prefix throws exception, it is handled in mapError block
-      .flatMapRight(locations => makeAgent(locations.head.prefix))
+      // find ESW agent randomly from list of ESW agents (machines).
+      // If this ESW machine fails to spawn sequence component, in retry attempt randomly picking ESW agent would help.
+      // if locations are empty then locations(Random.nextInt(locations.length)).prefix will throw exception,
+      // it is handled in mapError block
+      .flatMapRight(locations => makeAgent(locations(Random.nextInt(locations.length)).prefix))
       .mapError(_ => LocationNotFound(s"Could not find agent matching $ESW"))
+  }
 
   private[utils] def makeAgent(prefix: Prefix): Future[AgentClient] =
     AgentClient.make(prefix, locationServiceUtil.locationService)

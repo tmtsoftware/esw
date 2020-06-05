@@ -32,8 +32,8 @@ class SequenceComponentUtil(locationServiceUtil: LocationServiceUtil, agentUtil:
       }
       .flatMap {
         case Some(value) => Future.successful(Right(value))
-        // spawn SeqComp if not able to find available sequence component of subsystem or ESW
-        case None => agentUtil.spawnSequenceComponentFor(subsystem)
+        // spawn ESW SeqComp on ESW Machine if not able to find available sequence component of subsystem or ESW
+        case None => agentUtil.spawnSequenceComponentFor(ESW)
       }
 
   def unloadScript(loc: AkkaLocation): Future[Done] = new SequenceComponentImpl(loc).unloadScript()
