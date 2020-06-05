@@ -32,7 +32,7 @@ object AgentCommand {
       case class SpawnSequenceComponent(
           replyTo: ActorRef[SpawnResponse],
           prefix: Prefix,
-          version: String = "0593a96",
+          version: Option[String] = None,
           javaOpts: List[String] = Nil
       ) extends SpawnSelfRegistered {
         override val connection: AkkaConnection = AkkaConnection(ComponentId(prefix, SequenceComponent))

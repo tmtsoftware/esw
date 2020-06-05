@@ -1,7 +1,7 @@
 package esw.agent.app.process.cs
 
-case class CoursierLaunch(appName: String, appVersion: String) {
-  private val app                               = s"$appName:$appVersion"
+case class CoursierLaunch(appName: String, appVersion: Option[String]) {
+  private val app                               = appVersion.fold(appName)(version => s"$appName:$version")
   private def javaOpts(_javaOpts: List[String]) = _javaOpts.flatMap(List("-J", _))
 
   // cs launch -J -Dxmx=5M --channel url://apps.json ocs-app:2.0.0 -- start seqcomp

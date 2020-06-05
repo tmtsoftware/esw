@@ -25,6 +25,8 @@ class AgentIntegrationTest extends EswTestKit(MachineAgent) with BeforeAndAfterA
 
   private val javaOpts = List("-Dcsw-networks.hostname.automatic=on", "-Dcsw-logging.appender-config.file.baseLogPath=/tmp")
 
+  private def spawnSequenceComponent(prefix: Prefix) = agentClient.spawnSequenceComponent(prefix, Some("0593a96"), javaOpts)
+
   override implicit def patienceConfig: PatienceConfig = PatienceConfig(1.minute, 100.millis)
 
   "Agent" must {
@@ -34,7 +36,7 @@ class AgentIntegrationTest extends EswTestKit(MachineAgent) with BeforeAndAfterA
     }
 
     "return Spawned on SpawnSequenceComponent and Killed on KillComponent message | ESW-237, ESW-276" in {
-      agentClient.spawnSequenceComponent(irisPrefix, javaOpts).futureValue should ===(Spawned)
+      spawnSequenceComponent(irisPrefix).futureValue should ===(Spawned)
       // Verify registration in location service
       locationService.resolve(irisSeqCompConnection, 5.seconds).futureValue should not be empty
 
@@ -52,7 +54,7 @@ class AgentIntegrationTest extends EswTestKit(MachineAgent) with BeforeAndAfterA
     }
 
     "return Failed('Aborted') to original sender when someone kills a process while it is spawning | ESW-237, ESW-237" in {
-      val spawnResponseF = agentClient.spawnSequenceComponent(irisPrefix, javaOpts)
+      val spawnResponseF = spawnSequenceComponent(irisPrefix)
       agentClient.killComponent(irisCompId).futureValue should ===(Killed)
       spawnResponseF.futureValue should ===(Failed("Aborted"))
       // Verify not registered in location service
@@ -60,7 +62,7 @@ class AgentIntegrationTest extends EswTestKit(MachineAgent) with BeforeAndAfterA
     }
 
     "return status of components available on agent for a GetAgentStatus message | ESW-286" in {
-      agentClient.spawnSequenceComponent(irisPrefix, javaOpts).futureValue should ===(Spawned)
+      spawnSequenceComponent(irisPrefix).futureValue should ===(Spawned)
       agentClient.getComponentStatus(irisCompId).futureValue should ===(Running)
 
       agentClient.spawnRedis(redisPrefix, 100, List.empty).futureValue should ===(Spawned)

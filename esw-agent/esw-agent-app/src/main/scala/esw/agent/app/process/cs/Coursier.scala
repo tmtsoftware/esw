@@ -9,5 +9,5 @@ object Coursier {
 
   lazy val cs: String = if (csInstalled) csNative else csLauncher
 
-  def ocsApp(version: String): CoursierLaunch = CoursierLaunch("ocs-app", version)
+  def ocsApp(version: Option[String]): CoursierLaunch = CoursierLaunch("ocs-app", version)
 }
