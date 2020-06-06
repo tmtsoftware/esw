@@ -10,7 +10,6 @@ import esw.agent.api.{AgentStatus, Failed, Killed, Spawned}
 import esw.agent.app.AgentSettings
 import esw.agent.client.AgentClient
 import esw.ocs.testkit.EswTestKit
-import esw.ocs.testkit.Service.MachineAgent
 import org.scalatest.BeforeAndAfterAll
 
 import scala.concurrent.duration.DurationLong
