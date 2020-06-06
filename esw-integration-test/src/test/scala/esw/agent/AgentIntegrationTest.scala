@@ -49,7 +49,7 @@ class AgentIntegrationTest extends EswTestKit with BeforeAndAfterAll with Locati
     }
 
     "return Spawned after spawning a new redis component for a SpawnRedis message | ESW-237" in {
-      agentClient.spawnRedis(redisPrefix, 6379, List.empty).futureValue should ===(Spawned)
+      agentClient.spawnRedis(redisPrefix, 6380, List.empty).futureValue should ===(Spawned)
       // Verify registration in location service
       locationService.resolve(TcpConnection(ComponentId(redisPrefix, Service)), 5.seconds).futureValue should not be empty
 
@@ -68,7 +68,7 @@ class AgentIntegrationTest extends EswTestKit with BeforeAndAfterAll with Locati
       spawnSequenceComponent(irisPrefix).futureValue should ===(Spawned)
       agentClient.getComponentStatus(irisCompId).futureValue should ===(Running)
 
-      agentClient.spawnRedis(redisPrefix, 100, List.empty).futureValue should ===(Spawned)
+      agentClient.spawnRedis(redisPrefix, 6381, List.empty).futureValue should ===(Spawned)
       agentClient.getComponentStatus(redisCompId).futureValue should ===(Running)
 
       val agentStatus = agentClient.getAgentStatus.futureValue
