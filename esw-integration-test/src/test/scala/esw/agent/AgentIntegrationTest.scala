@@ -7,6 +7,7 @@ import csw.location.api.models.Connection.{AkkaConnection, TcpConnection}
 import csw.prefix.models.Prefix
 import esw.agent.api.ComponentStatus.Running
 import esw.agent.api.{AgentStatus, Failed, Killed, Spawned}
+import esw.agent.app.AgentSettings
 import esw.agent.client.AgentClient
 import esw.ocs.testkit.EswTestKit
 import esw.ocs.testkit.Service.MachineAgent
@@ -14,7 +15,7 @@ import org.scalatest.BeforeAndAfterAll
 
 import scala.concurrent.duration.DurationLong
 
-class AgentIntegrationTest extends EswTestKit(MachineAgent) with BeforeAndAfterAll with LocationServiceCodecs {
+class AgentIntegrationTest extends EswTestKit with BeforeAndAfterAll with LocationServiceCodecs {
 
   private lazy val agentClient      = AgentClient.make(agentPrefix, locationService).futureValue
   private val irisPrefix            = Prefix("esw.iris")
@@ -23,11 +24,14 @@ class AgentIntegrationTest extends EswTestKit(MachineAgent) with BeforeAndAfterA
   private val redisPrefix           = Prefix(s"esw.event_server")
   private val redisCompId           = ComponentId(redisPrefix, Service)
 
-  private val javaOpts = List("-Dcsw-networks.hostname.automatic=on", "-Dcsw-logging.appender-config.file.baseLogPath=/tmp")
-
-  private def spawnSequenceComponent(prefix: Prefix) = agentClient.spawnSequenceComponent(prefix, Some("0593a96"), javaOpts)
-
   override implicit def patienceConfig: PatienceConfig = PatienceConfig(1.minute, 100.millis)
+
+  override def beforeAll(): Unit = {
+    super.beforeAll()
+    spawnAgent(AgentSettings(1.minute, "file://" + getClass.getResource("/apps.json").getPath))
+  }
+
+  private def spawnSequenceComponent(prefix: Prefix) = agentClient.spawnSequenceComponent(prefix, Some("0593a96"))
 
   "Agent" must {
     "start and register itself with location service | ESW-237" in {

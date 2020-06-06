@@ -7,7 +7,7 @@ object Redis {
 
   // todo: add version check
   def server: String = {
-    if (ProcessUtils.isInstalled(redisServer, "-v")) redisServer
+    if (ProcessUtils.isInstalled(redisServer)) redisServer
     else throw new RuntimeException(s"$redisServer is not installed")
   }
 }
