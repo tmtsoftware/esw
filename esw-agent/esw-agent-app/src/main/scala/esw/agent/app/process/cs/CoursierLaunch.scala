@@ -1,11 +1,9 @@
 package esw.agent.app.process.cs
 
 case class CoursierLaunch(appName: String, appVersion: Option[String]) {
-  private val app                               = appVersion.fold(appName)(version => s"$appName:$version")
-  private def javaOpts(_javaOpts: List[String]) = _javaOpts.flatMap(List("-J", _))
+  private val app = appVersion.fold(appName)(version => s"$appName:$version")
 
-  // cs launch -J -Dxmx=5M --channel url://apps.json ocs-app:2.0.0 -- start seqcomp
-  def launch(channel: String, args: List[String], _javaOpts: List[String] = List.empty): List[String] = {
-    List(Coursier.cs, "launch") ++ javaOpts(_javaOpts) ::: "--channel" :: channel :: app :: "--" :: args
-  }
+  // cs launch --channel url://apps.json ocs-app:2.0.0 -- start seqcomp
+  def launch(channel: String, args: List[String]): List[String] =
+    List(Coursier.cs, "launch") ::: "--channel" :: channel :: app :: "--" :: args
 }

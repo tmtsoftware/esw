@@ -152,10 +152,10 @@ class AgentUtilTest extends BaseTestSuite {
       AkkaLocation(AkkaConnection(ComponentId(Prefix(ESW, "primary"), SequenceComponent)), new URI("some-uri"))
 
     def mockSpawnComponent(response: SpawnResponse): Unit =
-      when(agentClient.spawnSequenceComponent(any[Prefix], any[Option[String]], any[List[String]]))
+      when(agentClient.spawnSequenceComponent(any[Prefix], any[Option[String]]))
         .thenReturn(Future.successful(response))
 
     def verifySpawnSequenceComponentCalled(): Unit =
-      verify(agentClient).spawnSequenceComponent(any[Prefix], any[Option[String]], any[List[String]])
+      verify(agentClient).spawnSequenceComponent(any[Prefix], any[Option[String]])
   }
 }

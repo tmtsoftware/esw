@@ -20,12 +20,8 @@ import scala.concurrent.duration.DurationLong
 class AgentClient private[agent] (agentRef: ActorRef[AgentCommand])(implicit scheduler: Scheduler) {
   implicit private val timeout: Timeout = Timeout(1.minute)
 
-  def spawnSequenceComponent(
-      prefix: Prefix,
-      version: Option[String] = None,
-      javaOpts: List[String] = Nil
-  ): Future[SpawnResponse] =
-    agentRef ? (SpawnSequenceComponent(_, prefix, version, javaOpts))
+  def spawnSequenceComponent(prefix: Prefix, version: Option[String] = None): Future[SpawnResponse] =
+    agentRef ? (SpawnSequenceComponent(_, prefix, version))
 
   def spawnRedis(prefix: Prefix, port: Int, redisArguments: List[String]): Future[SpawnResponse] =
     agentRef ? (SpawnRedis(_, prefix, port, redisArguments))

@@ -36,9 +36,8 @@ class ProcessActor(
   import logger._
 
   private val executableCommand: List[String] = command match {
-    case SpawnSequenceComponent(_, _, version, javaOpts) =>
-      Coursier.ocsApp(version).launch(coursierChannel, commandArgs, javaOpts)
-    case _: SpawnRedis => Redis.server :: commandArgs
+    case SpawnSequenceComponent(_, _, version) => Coursier.ocsApp(version).launch(coursierChannel, commandArgs)
+    case _: SpawnRedis                         => Redis.server :: commandArgs
   }
   private val aborted = Failed("Aborted")
 
