@@ -224,7 +224,7 @@ class SequenceManagerBehaviorTest extends BaseTestSuite {
       verify(sequencerUtil).shutdownSequencer(ESW, Darknight)
     }
 
-    "return Error if shutdown sequencer fails | ESW-326" in {
+    "return UnloadScriptError if unload script fails | ESW-326" in {
       when(sequencerUtil.shutdownSequencer(ESW, Darknight))
         .thenReturn(future(1.seconds, Left(UnloadScriptError("something went wrong"))))
 
@@ -232,6 +232,18 @@ class SequenceManagerBehaviorTest extends BaseTestSuite {
 
       smRef ! ShutdownSequencer(ESW, Darknight, shutdownSequencerResponseProbe.ref)
       shutdownSequencerResponseProbe.expectMessage(UnloadScriptError("something went wrong"))
+
+      verify(sequencerUtil).shutdownSequencer(ESW, Darknight)
+    }
+
+    "return LocationServiceError if location service fails | ESW-326" in {
+      when(sequencerUtil.shutdownSequencer(ESW, Darknight))
+        .thenReturn(future(1.seconds, Left(LocationServiceError("something went wrong"))))
+
+      val shutdownSequencerResponseProbe = TestProbe[ShutdownSequencerResponse]()
+
+      smRef ! ShutdownSequencer(ESW, Darknight, shutdownSequencerResponseProbe.ref)
+      shutdownSequencerResponseProbe.expectMessage(LocationServiceError("something went wrong"))
 
       verify(sequencerUtil).shutdownSequencer(ESW, Darknight)
     }
