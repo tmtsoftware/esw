@@ -7,6 +7,7 @@ import csw.command.client.messages.sequencer.SequencerMsg.QueryFinal
 import csw.command.client.messages.{GetComponentLogMetadata, SetComponentLogLevel}
 import csw.location.api.models.AkkaLocation
 import csw.logging.client.commons.LogAdminUtil
+import csw.logging.client.scaladsl.LoggingSystemFactory
 import csw.logging.models.Level.{DEBUG, INFO}
 import csw.logging.models.LogMetadata
 import csw.params.commands.CommandIssue.IdNotAvailableIssue
@@ -935,6 +936,11 @@ class SequencerBehaviorTest extends BaseTestSuite {
 
   "LogControlMessages" must {
     "set and get log level for component name | ESW-183, ESW-127" in {
+      // This will initialize LoggingState and set akkaLogLevel, slf4jLogLevel and defaultLevel
+      // If LoggingState is not initialized then akkaLogLevel, slf4jLogLevel and defaultLevel are null and
+      // serialization of LogMetadata will fail
+      LoggingSystemFactory.forTestingOnly()
+
       val sequencerSetup = SequencerTestSetup.inProgress(sequence)
       import sequencerSetup._
       val logMetadataProbe = TestProbe[LogMetadata]()
