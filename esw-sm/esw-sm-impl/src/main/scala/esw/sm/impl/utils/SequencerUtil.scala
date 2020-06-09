@@ -23,6 +23,7 @@ import esw.sm.api.models._
 import esw.sm.impl.config.Sequencers
 
 import scala.async.Async.{async, await}
+import scala.concurrent.duration.DurationLong
 import scala.concurrent.{ExecutionContext, Future}
 import scala.util.control.NonFatal
 
@@ -77,16 +78,27 @@ class SequencerUtil(locationServiceUtil: LocationServiceUtil, sequenceComponentU
   // spawn the sequencer on available SequenceComponent
   def startSequencer(
       subSystem: Subsystem,
-      observingMode: String,
+      obsMode: String,
       retryCount: Int
   ): Future[Either[SequencerError, AkkaLocation]] =
     sequenceComponentUtil
       .getAvailableSequenceComponent(subSystem)
       .flatMap {
-        case Right(seqCompApi)         => loadScript(subSystem, observingMode, seqCompApi, retryCount)
-        case Left(_) if retryCount > 0 => startSequencer(subSystem, observingMode, retryCount - 1)
+        case Right(seqCompApi)         => loadScript(subSystem, obsMode, seqCompApi, retryCount)
+        case Left(_) if retryCount > 0 => startSequencer(subSystem, obsMode, retryCount - 1)
         case Left(e)                   => Future.successful(Left(e))
       }
+
+  def restartSequencer(
+      subSystem: Subsystem,
+      obsMode: String,
+      retryCount: Int
+  ): Future[Either[RestartSequencerResponse.Failure, AkkaLocation]] = {
+    shutdownSequencer(subSystem, obsMode).flatMap {
+      case Left(error) => Future.successful(Left(error))
+      case Right(_)    => startSequencer(subSystem, obsMode, retryCount).mapRight(identity)
+    }
+  }
 
   private def loadScript(
       subSystem: Subsystem,
@@ -117,7 +129,7 @@ class SequencerUtil(locationServiceUtil: LocationServiceUtil, sequenceComponentU
   private[sm] def createSequencerClient(location: Location): SequencerApi = SequencerApiFactory.make(location)
   private def resolveSequencer(obsMode: String, subsystem: Subsystem) =
     locationServiceUtil
-      .resolveSequencer(subsystem, obsMode, Timeouts.DefaultTimeout)
+      .resolveSequencer(subsystem, obsMode, 3.seconds)
       .mapRight(createSequencerClient)
 
 }

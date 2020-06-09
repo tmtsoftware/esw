@@ -11,6 +11,7 @@ import esw.sm.api.models.{
   CleanupResponse,
   ConfigureResponse,
   GetRunningObsModesResponse,
+  RestartSequencerResponse,
   ShutdownSequencerResponse,
   StartSequencerResponse
 }
@@ -26,6 +27,7 @@ class SmAkkaSerializer(_actorSystem: ExtendedActorSystem)
   register[CleanupResponse]
   register[StartSequencerResponse]
   register[ShutdownSequencerResponse]
+  register[RestartSequencerResponse]
   register[GetRunningObsModesResponse]
   register[ConfigureResponse]
   register[SequenceManagerState]

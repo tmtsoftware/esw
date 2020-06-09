@@ -43,9 +43,11 @@ class SequenceManagerBehavior(
           startSequencer(subsystem, observingMode, ctx.self); startingSequencer(replyTo)
         case ShutdownSequencer(subsystem, observingMode, replyTo) =>
           shutDownSequencer(subsystem, observingMode, ctx.self); shuttingDownSequencer(replyTo)
+        case RestartSequencer(subsystem, observingMode, replyTo) =>
+          restartSequencer(subsystem, observingMode, ctx.self); restartingSequencer(replyTo)
         case msg: CommonMessage => handleCommon(msg, Idle); Behaviors.same
         case _: CleanupResponseInternal | _: ConfigurationResponseInternal | _: StartSequencerResponseInternal |
-            _: ShutdownSequencerResponseInternal =>
+            _: ShutdownSequencerResponseInternal | _: RestartSequencerResponseInternal =>
           Behaviors.unhandled
       }
     }
@@ -135,6 +137,23 @@ class SequenceManagerBehavior(
   // Within this period, reject all the other messages except common messages
   private def shuttingDownSequencer(replyTo: ActorRef[ShutdownSequencerResponse]): Behavior[SequenceManagerMsg] =
     receive[ShutdownSequencerResponseInternal](ShuttingDownSequencer)(msg => replyAndGoToIdle(replyTo, msg.res))
+
+  private def restartSequencer(
+      subsystem: Subsystem,
+      obsMode: String,
+      self: ActorRef[SequenceManagerMsg]
+  ): Future[Unit] = {
+    async {
+      val eventualResponse: Future[RestartSequencerResponse] = sequencerUtil
+        .restartSequencer(subsystem, obsMode, sequencerStartRetries)
+        .mapToAdt(akkaLocation => RestartSequencerResponse.Success(akkaLocation.connection.componentId), identity)
+      self ! RestartSequencerResponseInternal(await(eventualResponse))
+    }
+  }
+
+  private def restartingSequencer(replyTo: ActorRef[RestartSequencerResponse]): Behavior[SequenceManagerMsg] = {
+    receive[RestartSequencerResponseInternal](RestartingSequencer)(msg => replyAndGoToIdle(replyTo, msg.res))
+  }
 
   private def replyAndGoToIdle[T](replyTo: ActorRef[T], msg: T) = {
     replyTo ! msg

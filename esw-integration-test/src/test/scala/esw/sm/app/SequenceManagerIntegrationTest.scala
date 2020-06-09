@@ -17,7 +17,7 @@ import esw.sm.api.SequenceManagerApi
 import esw.sm.api.actor.client.SequenceManagerImpl
 import esw.sm.api.models.ConfigureResponse.ConflictingResourcesWithRunningObsMode
 import esw.sm.api.models.SequenceManagerError.LoadScriptError
-import esw.sm.api.models.{CleanupResponse, ConfigureResponse, ShutdownSequencerResponse, StartSequencerResponse}
+import esw.sm.api.models._
 import esw.sm.app.SequenceManagerAppCommand.StartCommand
 
 import scala.collection.mutable.ArrayBuffer
@@ -154,6 +154,28 @@ class SequenceManagerIntegrationTest extends EswTestKit {
 
     // verify that sequencer are shut down
     intercept[Exception](resolveHTTPLocation(Prefix(ESW, IRIS_DARKNIGHT), Sequencer))
+  }
+
+  "restart a running sequencer for given subsystem and obsMode | ESW-327" in {
+    TestSetup.startSequenceComponents(Prefix(ESW, "primary"))
+    val componentId = ComponentId(Prefix(ESW, IRIS_DARKNIGHT), Sequencer)
+
+    val sequenceManager = TestSetup.startSequenceManager()
+    // verify that sequencer is not present
+    intercept[Exception](resolveHTTPLocation(Prefix(ESW, IRIS_DARKNIGHT), Sequencer))
+
+    // restart sequencer that is not currently running
+    val firstRestartResponse = sequenceManager.restartSequencer(ESW, IRIS_DARKNIGHT).futureValue
+    // verify that restart sequencer return Success response with component id
+    firstRestartResponse should ===(RestartSequencerResponse.Success(componentId))
+
+    // verify that sequencer is started
+    resolveHTTPLocation(Prefix(ESW, IRIS_DARKNIGHT), Sequencer)
+
+    // restart sequencer that is already running
+    val secondRestartResponse = sequenceManager.restartSequencer(ESW, IRIS_DARKNIGHT).futureValue
+    // verify that restart sequencer return Success response with component id
+    secondRestartResponse should ===(RestartSequencerResponse.Success(componentId))
   }
 
   "should return loadscript error if configuration is missing for subsystem observation mode | ESW-176" in {

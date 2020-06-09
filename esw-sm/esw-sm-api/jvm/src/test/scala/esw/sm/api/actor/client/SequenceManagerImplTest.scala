@@ -28,6 +28,7 @@ class SequenceManagerImplTest extends AnyWordSpecLike with TypeCheckedTripleEqua
   private val getRunningObsModesResponse                                = GetRunningObsModesResponse.Success(Set("IRIS_Darknight", "WFOS_cal"))
   private val startSequencerResponse                                    = StartSequencerResponse.Started(sequencerComponentId)
   private val shutdownSequencerResponse                                 = ShutdownSequencerResponse.Success
+  private val restartSequencerResponse                                  = RestartSequencerResponse.Success(sequencerComponentId)
 
   private val mockedBehavior: Behaviors.Receive[SequenceManagerMsg] = Behaviors.receiveMessage[SequenceManagerMsg] { msg =>
     msg match {
@@ -37,8 +38,10 @@ class SequenceManagerImplTest extends AnyWordSpecLike with TypeCheckedTripleEqua
       case SequenceManagerMsg.GetSequenceManagerState(replyTo)     => replyTo ! Idle
       case SequenceManagerMsg.StartSequencer(_, _, replyTo)        => replyTo ! startSequencerResponse
       case SequenceManagerMsg.ShutdownSequencer(_, _, replyTo)     => replyTo ! shutdownSequencerResponse
+      case SequenceManagerMsg.RestartSequencer(_, _, replyTo)      => replyTo ! restartSequencerResponse
       case SequenceManagerMsg.StartSequencerResponseInternal(_)    =>
       case SequenceManagerMsg.ShutdownSequencerResponseInternal(_) =>
+      case SequenceManagerMsg.RestartSequencerResponseInternal(_)  =>
       case SequenceManagerMsg.CleanupResponseInternal(_)           =>
       case SequenceManagerMsg.ConfigurationResponseInternal(_)     =>
     }
@@ -68,6 +71,10 @@ class SequenceManagerImplTest extends AnyWordSpecLike with TypeCheckedTripleEqua
 
     "shutdownSequencer" in {
       sequenceManager.shutdownSequencer(ESW, "IRIS_darknight").futureValue shouldBe shutdownSequencerResponse
+    }
+
+    "restartSequencer" in {
+      sequenceManager.restartSequencer(ESW, "IRIS_darknight").futureValue shouldBe restartSequencerResponse
     }
   }
 }

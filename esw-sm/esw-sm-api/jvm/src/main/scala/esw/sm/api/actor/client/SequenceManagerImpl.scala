@@ -8,11 +8,19 @@ import csw.location.api.models.AkkaLocation
 import csw.prefix.models.Subsystem
 import esw.sm.api.SequenceManagerApi
 import esw.sm.api.actor.messages.SequenceManagerMsg
-import esw.sm.api.actor.messages.SequenceManagerMsg.{Cleanup, Configure, GetRunningObsModes, ShutdownSequencer, StartSequencer}
+import esw.sm.api.actor.messages.SequenceManagerMsg.{
+  Cleanup,
+  Configure,
+  GetRunningObsModes,
+  RestartSequencer,
+  ShutdownSequencer,
+  StartSequencer
+}
 import esw.sm.api.models.{
   CleanupResponse,
   ConfigureResponse,
   GetRunningObsModesResponse,
+  RestartSequencerResponse,
   ShutdownSequencerResponse,
   StartSequencerResponse
 }
@@ -37,4 +45,7 @@ class SequenceManagerImpl(location: AkkaLocation)(implicit
 
   override def shutdownSequencer(subsystem: Subsystem, observingMode: String): Future[ShutdownSequencerResponse] =
     smRef ? (ShutdownSequencer(subsystem, observingMode, _))
+
+  override def restartSequencer(subsystem: Subsystem, observingMode: String): Future[RestartSequencerResponse] =
+    smRef ? (RestartSequencer(subsystem, observingMode, _))
 }

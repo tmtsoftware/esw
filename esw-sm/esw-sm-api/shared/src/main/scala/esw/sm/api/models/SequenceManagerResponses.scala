@@ -36,7 +36,7 @@ object StartSequencerResponse {
   case class Started(componentId: ComponentId)        extends Success
   case class AlreadyRunning(componentId: ComponentId) extends Success
 
-  sealed trait Failure extends Throwable with StartSequencerResponse
+  sealed trait Failure extends Throwable with StartSequencerResponse with RestartSequencerResponse.Failure
 }
 
 sealed trait ShutdownSequencerResponse extends SmAkkaSerializable
@@ -44,7 +44,17 @@ sealed trait ShutdownSequencerResponse extends SmAkkaSerializable
 object ShutdownSequencerResponse {
   case object Success extends ShutdownSequencerResponse
 
-  sealed trait Failure extends Throwable with ShutdownSequencerResponse {
+  sealed trait Failure extends Throwable with ShutdownSequencerResponse with RestartSequencerResponse.Failure {
+    def msg: String
+  }
+}
+
+sealed trait RestartSequencerResponse extends SmAkkaSerializable
+
+object RestartSequencerResponse {
+  case class Success(componentId: ComponentId) extends RestartSequencerResponse
+
+  sealed trait Failure extends Throwable with RestartSequencerResponse {
     def msg: String
   }
 }

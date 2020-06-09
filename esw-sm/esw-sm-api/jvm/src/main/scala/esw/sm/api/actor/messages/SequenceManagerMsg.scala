@@ -20,9 +20,12 @@ object SequenceManagerMsg {
       extends SequenceManagerRemoteMsg
   case class ShutdownSequencer(subsystem: Subsystem, observingMode: String, replyTo: ActorRef[ShutdownSequencerResponse])
       extends SequenceManagerRemoteMsg
+  case class RestartSequencer(subsystem: Subsystem, observingMode: String, replyTo: ActorRef[RestartSequencerResponse])
+      extends SequenceManagerRemoteMsg
 
   private[sm] case class StartSequencerResponseInternal(res: StartSequencerResponse)       extends SequenceManagerMsg
   private[sm] case class ShutdownSequencerResponseInternal(res: ShutdownSequencerResponse) extends SequenceManagerMsg
+  private[sm] case class RestartSequencerResponseInternal(res: RestartSequencerResponse)   extends SequenceManagerMsg
   private[sm] case class ConfigurationResponseInternal(res: ConfigureResponse)             extends SequenceManagerMsg
   private[sm] case class CleanupResponseInternal(res: CleanupResponse)                     extends SequenceManagerMsg
 }

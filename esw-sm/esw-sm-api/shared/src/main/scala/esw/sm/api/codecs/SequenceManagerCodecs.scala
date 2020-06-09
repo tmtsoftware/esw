@@ -13,4 +13,5 @@ trait SequenceManagerCodecs extends LocationCodecs {
   implicit lazy val cleanupResponseCodec: Codec[CleanupResponse]                       = deriveAllCodecs
   implicit lazy val startSequencerResponseCodec: Codec[StartSequencerResponse]         = deriveAllCodecs
   implicit lazy val shutdownSequencerResponseCodec: Codec[ShutdownSequencerResponse]   = deriveAllCodecs
+  implicit lazy val restartSequencerResponseCodec: Codec[RestartSequencerResponse]     = deriveAllCodecs
 }
