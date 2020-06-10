@@ -86,7 +86,7 @@ class SequencerUtil(locationServiceUtil: LocationServiceUtil, sequenceComponentU
           }
           .map(_.sequence)
           .map {
-            case Left(value) => ShutdownAllSequencersResponse.ShutDownFailure(value)
+            case Left(value) => ShutdownAllSequencersResponse.ShutdownFailure(value)
             case Right(_)    => ShutdownAllSequencersResponse.Success
           }
     }

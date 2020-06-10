@@ -66,7 +66,7 @@ object ShutdownAllSequencersResponse {
   case object Success extends ShutdownAllSequencersResponse
 
   sealed trait Failure                                                  extends Throwable with ShutdownAllSequencersResponse
-  case class ShutDownFailure(failureResponses: List[UnloadScriptError]) extends ShutdownAllSequencersResponse.Failure
+  case class ShutdownFailure(failureResponses: List[UnloadScriptError]) extends ShutdownAllSequencersResponse.Failure
 }
 
 sealed trait CommonFailure extends Throwable with ConfigureResponse.Failure with CleanupResponse.Failure

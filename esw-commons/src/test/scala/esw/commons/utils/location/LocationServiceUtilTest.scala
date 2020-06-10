@@ -16,8 +16,8 @@ import csw.location.api.exceptions.{
 }
 import csw.location.api.extensions.ActorExtension.RichActor
 import csw.location.api.models.ComponentType._
-import csw.location.api.models.Connection.AkkaConnection
-import csw.location.api.models.{AkkaLocation, ComponentId}
+import csw.location.api.models.Connection.{AkkaConnection, HttpConnection}
+import csw.location.api.models.{AkkaLocation, ComponentId, HttpLocation}
 import csw.location.api.scaladsl.{LocationService, RegistrationResult}
 import csw.prefix.models.Subsystem.{ESW, IRIS, TCS}
 import csw.prefix.models.{Prefix, Subsystem}
@@ -99,6 +99,33 @@ class LocationServiceUtilTest extends BaseTestSuite {
   }
 
   "listAkkaLocationsBy" must {
+
+    "list all akka locations which match given componentType | ESW-324" in {
+      val testUri = new URI("test-uri")
+      val tcsLocations = List(
+        AkkaLocation(AkkaConnection(ComponentId(Prefix(TCS, "TCS_1"), SequenceComponent)), testUri),
+        AkkaLocation(AkkaConnection(ComponentId(Prefix(TCS, "TCS_2"), SequenceComponent)), testUri),
+        AkkaLocation(AkkaConnection(ComponentId(Prefix(TCS, "TCS_3"), SequenceComponent)), testUri)
+      )
+
+      val httpUri = new URI("http://localhost:5676")
+
+      val tcsHttpLocations = List(HttpLocation(HttpConnection(ComponentId(Prefix(TCS, "TCS_1"), SequenceComponent)), httpUri))
+
+      val otherSeqComponentAkkaLocations = List(
+        AkkaLocation(AkkaConnection(ComponentId(Prefix(Subsystem.OSS, "OSS_1"), SequenceComponent)), testUri),
+        AkkaLocation(AkkaConnection(ComponentId(Prefix(IRIS, "IRIS_1"), SequenceComponent)), testUri)
+      )
+      val sequenceComponentLocations = tcsLocations ++ otherSeqComponentAkkaLocations ++ tcsHttpLocations
+
+      when(locationService.list(SequenceComponent)).thenReturn(Future.successful(sequenceComponentLocations))
+      val locationServiceDsl = new LocationServiceUtil(locationService)
+
+      val actualLocations = locationServiceDsl.listAkkaLocationsBy(SequenceComponent).rightValue
+
+      actualLocations should ===(tcsLocations ++ otherSeqComponentAkkaLocations)
+    }
+
     "list all locations which match given componentType and subsystem | ESW-144, ESW-215" in {
       val testUri = new URI("test-uri")
       val tcsLocations = List(

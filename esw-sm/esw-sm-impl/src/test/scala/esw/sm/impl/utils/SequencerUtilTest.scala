@@ -19,7 +19,7 @@ import esw.ocs.api.{SequenceComponentApi, SequencerApi}
 import esw.sm.api.models.CommonFailure.LocationServiceError
 import esw.sm.api.models.ConfigureResponse.{FailedToStartSequencers, Success}
 import esw.sm.api.models.SequenceManagerError.{LoadScriptError, SpawnSequenceComponentFailed, UnloadScriptError}
-import esw.sm.api.models.{CleanupResponse, ShutdownSequencerResponse}
+import esw.sm.api.models.{CleanupResponse, ShutdownAllSequencersResponse, ShutdownSequencerResponse}
 import esw.sm.impl.config.Sequencers
 
 import scala.concurrent.duration.DurationInt
@@ -295,6 +295,60 @@ class SequencerUtilTest extends BaseTestSuite {
       verify(eswSequencerApi).getSequenceComponent
       verify(sequenceComponentUtil).unloadScript(eswSeqCompLoc)
       verify(locationServiceUtil).resolveSequencer(ESW, obsMode, 3.seconds)
+    }
+  }
+
+  "ShutdownAllSequencers" must {
+    "stop all the sequencers running | ESW-324" in {
+      val obsMode = "darknight"
+      val setup   = new TestSetup(obsMode)
+      import setup._
+
+      val eswSeqCompLoc = AkkaLocation(AkkaConnection(ComponentId(Prefix(ESW, obsMode), SequenceComponent)), URI.create(""))
+      val tcsSeqCompLoc = AkkaLocation(AkkaConnection(ComponentId(Prefix(TCS, obsMode), SequenceComponent)), URI.create(""))
+
+      when(locationServiceUtil.listAkkaLocationsBy(Sequencer)).thenReturn(futureRight(List(eswLocation, tcsLocation)))
+      when(eswSequencerApi.getSequenceComponent).thenReturn(Future.successful(eswSeqCompLoc))
+      when(sequenceComponentUtil.unloadScript(eswSeqCompLoc)).thenReturn(Future.successful(Done))
+      when(tcsSequencerApi.getSequenceComponent).thenReturn(Future.successful(tcsSeqCompLoc))
+      when(sequenceComponentUtil.unloadScript(tcsSeqCompLoc)).thenReturn(Future.successful(Done))
+
+      sequencerUtil.shutdownAllSequencers().futureValue should ===(ShutdownAllSequencersResponse.Success)
+
+      verify(sequenceComponentUtil).unloadScript(eswSeqCompLoc)
+      verify(sequenceComponentUtil).unloadScript(tcsSeqCompLoc)
+    }
+
+    "return LocationServiceError response when location service returns RegistrationListingFailed error | ESW-324" in {
+      val obsMode = "darknight"
+      val setup   = new TestSetup(obsMode)
+      import setup._
+
+      when(locationServiceUtil.listAkkaLocationsBy(Sequencer)).thenReturn(futureLeft(RegistrationListingFailed("Error")))
+
+      sequencerUtil.shutdownAllSequencers().futureValue should ===(LocationServiceError("Error"))
+    }
+
+    "return ShutdownFailure if any of the sequencer failed to shut down | ESW-324" in {
+      val obsMode = "darknight"
+      val setup   = new TestSetup(obsMode)
+      import setup._
+
+      val eswSeqCompLoc = AkkaLocation(AkkaConnection(ComponentId(Prefix(ESW, obsMode), SequenceComponent)), URI.create(""))
+      val tcsSeqCompLoc = AkkaLocation(AkkaConnection(ComponentId(Prefix(TCS, obsMode), SequenceComponent)), URI.create(""))
+
+      when(locationServiceUtil.listAkkaLocationsBy(Sequencer)).thenReturn(futureRight(List(eswLocation, tcsLocation)))
+      when(eswSequencerApi.getSequenceComponent).thenReturn(Future.successful(eswSeqCompLoc))
+      when(sequenceComponentUtil.unloadScript(eswSeqCompLoc)).thenReturn(Future.successful(Done))
+      when(tcsSequencerApi.getSequenceComponent).thenReturn(Future.successful(tcsSeqCompLoc))
+      when(sequenceComponentUtil.unloadScript(tcsSeqCompLoc)).thenReturn(Future.failed(new RuntimeException("Error")))
+
+      sequencerUtil.shutdownAllSequencers().futureValue should ===(
+        ShutdownAllSequencersResponse.ShutdownFailure(List(UnloadScriptError(Prefix(TCS, obsMode), "Error")))
+      )
+
+      verify(sequenceComponentUtil).unloadScript(eswSeqCompLoc)
+      verify(sequenceComponentUtil).unloadScript(tcsSeqCompLoc)
     }
   }
 

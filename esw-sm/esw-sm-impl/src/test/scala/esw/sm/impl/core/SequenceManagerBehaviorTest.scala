@@ -19,7 +19,7 @@ import esw.sm.api.actor.messages.SequenceManagerMsg._
 import esw.sm.api.models.CommonFailure.{ConfigurationMissing, LocationServiceError}
 import esw.sm.api.models.ConfigureResponse.{ConflictingResourcesWithRunningObsMode, Success}
 import esw.sm.api.models.SequenceManagerError.{LoadScriptError, SpawnSequenceComponentFailed, UnloadScriptError}
-import esw.sm.api.models.ShutdownAllSequencersResponse.ShutDownFailure
+import esw.sm.api.models.ShutdownAllSequencersResponse.ShutdownFailure
 import esw.sm.api.models._
 import esw.sm.impl.config.{ObsModeConfig, Resources, SequenceManagerConfig, Sequencers}
 import esw.sm.impl.utils.SequencerUtil
@@ -315,7 +315,7 @@ class SequenceManagerBehaviorTest extends BaseTestSuite with TableDrivenProperty
       ("errorName", "error", "process"),
       (
         "ShutDownFailure",
-        ShutDownFailure(List(UnloadScriptError(Prefix(ESW, Darknight), "unload the script of any sequencer"))),
+        ShutdownFailure(List(UnloadScriptError(Prefix(ESW, Darknight), "unload the script of any sequencer"))),
         "stop"
       ),
       ("LocationServiceError", LocationServiceError("location service error"), "listing all the running sequencers")
