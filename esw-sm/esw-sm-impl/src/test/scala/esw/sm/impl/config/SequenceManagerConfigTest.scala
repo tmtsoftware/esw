@@ -21,7 +21,7 @@ class SequenceManagerConfigTest extends AnyWordSpecLike with Matchers with TypeC
       resources.resources should ===(Set("IRIS", "WFOS"))
     }
 
-    "check conflictsWithAny resources | ESW-168" in {
+    "check conflictsWithAny resources | ESW-168, ESW-170" in {
       val resources               = Resources("IRIS", "WFOS")
       val conflictingResources    = Resources("IRIS", "AOS")
       val nonConflictingResources = Resources("TCS", "NFIRAOS")
