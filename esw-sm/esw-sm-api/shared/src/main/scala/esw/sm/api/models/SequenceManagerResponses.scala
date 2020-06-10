@@ -57,6 +57,14 @@ object ShutdownSequencerResponse {
   case class UnloadScriptError(prefix: Prefix, msg: String) extends Failure
 }
 
+sealed trait ShutdownAllSequencersResponse extends SmAkkaSerializable
+object ShutdownAllSequencersResponse {
+  case object Success extends ShutdownAllSequencersResponse
+
+  sealed trait Failure                                                  extends SmFailure with ShutdownAllSequencersResponse
+  case class ShutdownFailure(failureResponses: List[UnloadScriptError]) extends ShutdownAllSequencersResponse.Failure
+}
+
 sealed trait RestartSequencerResponse extends SmAkkaSerializable
 
 object RestartSequencerResponse {
@@ -65,14 +73,6 @@ object RestartSequencerResponse {
   sealed trait Failure extends SmFailure with RestartSequencerResponse {
     def msg: String
   }
-}
-
-sealed trait ShutdownAllSequencersResponse extends SmAkkaSerializable
-object ShutdownAllSequencersResponse {
-  case object Success extends ShutdownAllSequencersResponse
-
-  sealed trait Failure                                                  extends SmFailure with ShutdownAllSequencersResponse
-  case class ShutdownFailure(failureResponses: List[UnloadScriptError]) extends ShutdownAllSequencersResponse.Failure
 }
 
 sealed trait CommonFailure extends SmFailure with ConfigureResponse.Failure with CleanupResponse.Failure

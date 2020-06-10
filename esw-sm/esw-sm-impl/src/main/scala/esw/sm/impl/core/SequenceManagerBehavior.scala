@@ -105,12 +105,12 @@ class SequenceManagerBehavior(
     locationServiceUtil
       .find(HttpConnection(ComponentId(Prefix(subsystem, obsMode), Sequencer)))
       .flatMap {
-        case Left(_)         => startSequencerAndResolve(subsystem, obsMode)
+        case Left(_)         => startSequencer(subsystem, obsMode)
         case Right(location) => Future.successful(AlreadyRunning(location.connection.componentId))
       }
       .map(self ! StartSequencerResponseInternal(_))
 
-  private def startSequencerAndResolve(subsystem: Subsystem, obsMode: String): Future[StartSequencerResponse] =
+  private def startSequencer(subsystem: Subsystem, obsMode: String): Future[StartSequencerResponse] =
     sequencerUtil
       .startSequencer(subsystem, obsMode, sequencerStartRetries)
       .mapToAdt(akkaLocation => Started(akkaLocation.connection.componentId), identity)

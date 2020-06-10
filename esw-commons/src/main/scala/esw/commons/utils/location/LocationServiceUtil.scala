@@ -30,10 +30,7 @@ private[esw] class LocationServiceUtil(val locationService: LocationService)(imp
       .map(Right(_))
       .mapError(e => RegistrationListingFailed(s"Location Service Error: ${e.getMessage}"))
 
-  private def addCoordinatedShutdownTask(
-      coordinatedShutdown: CoordinatedShutdown,
-      registrationResult: RegistrationResult
-  ): Unit =
+  private def addCoordinatedShutdownTask(coordinatedShutdown: CoordinatedShutdown, registrationResult: RegistrationResult): Unit =
     coordinatedShutdown.addTask(
       CoordinatedShutdown.PhaseBeforeServiceUnbind,
       s"unregistering-${registrationResult.location}"
@@ -84,10 +81,7 @@ private[esw] class LocationServiceUtil(val locationService: LocationService)(imp
           )
       }
 
-  def resolve[L <: Location](
-      connection: TypedConnection[L],
-      within: FiniteDuration
-  ): Future[Either[FindLocationError, L]] =
+  def resolve[L <: Location](connection: TypedConnection[L], within: FiniteDuration): Future[Either[FindLocationError, L]] =
     locationService
       .resolve(connection, within)
       .map {
