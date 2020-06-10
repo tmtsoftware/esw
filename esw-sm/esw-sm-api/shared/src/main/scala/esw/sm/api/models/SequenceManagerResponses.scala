@@ -86,10 +86,6 @@ object CommonFailure {
       with ShutdownAllSequencersResponse.Failure
 }
 
-sealed trait SequencerError extends SmFailure with Product with StartSequencerResponse.Failure {
-  def msg: String
-}
-
 sealed trait AgentError extends StartSequencerResponse.Failure
 
 object AgentError {
