@@ -8,7 +8,8 @@ import esw.sm.api.models._
 
 sealed trait SequenceManagerMsg
 
-sealed trait SequenceManagerRemoteMsg extends SequenceManagerMsg with SmAkkaSerializable
+sealed trait SequenceManagerRemoteMsg    extends SequenceManagerMsg with SmAkkaSerializable
+sealed trait SequencerManagerInternalMsg extends SequenceManagerMsg
 
 object SequenceManagerMsg {
   case class Configure(obsMode: String, replyTo: ActorRef[ConfigureResponse])  extends SequenceManagerRemoteMsg
@@ -22,10 +23,13 @@ object SequenceManagerMsg {
       extends SequenceManagerRemoteMsg
   case class RestartSequencer(subsystem: Subsystem, observingMode: String, replyTo: ActorRef[RestartSequencerResponse])
       extends SequenceManagerRemoteMsg
+  case class ShutdownAllSequencers(replyTo: ActorRef[ShutdownAllSequencersResponse]) extends SequenceManagerRemoteMsg
 
-  private[sm] case class StartSequencerResponseInternal(res: StartSequencerResponse)       extends SequenceManagerMsg
-  private[sm] case class ShutdownSequencerResponseInternal(res: ShutdownSequencerResponse) extends SequenceManagerMsg
-  private[sm] case class RestartSequencerResponseInternal(res: RestartSequencerResponse)   extends SequenceManagerMsg
-  private[sm] case class ConfigurationResponseInternal(res: ConfigureResponse)             extends SequenceManagerMsg
-  private[sm] case class CleanupResponseInternal(res: CleanupResponse)                     extends SequenceManagerMsg
+  private[sm] case class StartSequencerResponseInternal(res: StartSequencerResponse)       extends SequencerManagerInternalMsg
+  private[sm] case class ShutdownSequencerResponseInternal(res: ShutdownSequencerResponse) extends SequencerManagerInternalMsg
+  private[sm] case class RestartSequencerResponseInternal(res: RestartSequencerResponse)   extends SequencerManagerInternalMsg
+  private[sm] case class ConfigurationResponseInternal(res: ConfigureResponse)             extends SequencerManagerInternalMsg
+  private[sm] case class CleanupResponseInternal(res: CleanupResponse)                     extends SequencerManagerInternalMsg
+  private[sm] case class ShutdownAllSequencersResponseInternal(res: ShutdownAllSequencersResponse)
+      extends SequencerManagerInternalMsg
 }

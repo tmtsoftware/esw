@@ -283,13 +283,14 @@ class SequencerUtilTest extends BaseTestSuite {
       val obsMode = "moonNight"
       val setup   = new TestSetup(obsMode)
       import setup._
-      val eswSeqCompLoc = AkkaLocation(AkkaConnection(ComponentId(Prefix(ESW, obsMode), SequenceComponent)), URI.create(""))
+      val prefix        = Prefix(ESW, obsMode)
+      val eswSeqCompLoc = AkkaLocation(AkkaConnection(ComponentId(prefix, SequenceComponent)), URI.create(""))
 
       when(locationServiceUtil.resolveSequencer(ESW, obsMode, 3.seconds)).thenReturn(futureRight(eswLocation))
       when(eswSequencerApi.getSequenceComponent).thenReturn(Future.successful(eswSeqCompLoc))
       when(sequenceComponentUtil.unloadScript(eswSeqCompLoc)).thenReturn(Future.failed(new TimeoutException("error")))
 
-      sequencerUtil.shutdownSequencer(ESW, obsMode).leftValue should ===(UnloadScriptError("error"))
+      sequencerUtil.shutdownSequencer(ESW, obsMode).leftValue should ===(UnloadScriptError(prefix, "error"))
 
       verify(eswSequencerApi).getSequenceComponent
       verify(sequenceComponentUtil).unloadScript(eswSeqCompLoc)

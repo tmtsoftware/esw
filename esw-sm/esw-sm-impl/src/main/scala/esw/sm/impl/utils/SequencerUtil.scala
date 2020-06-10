@@ -71,8 +71,25 @@ class SequencerUtil(locationServiceUtil: LocationServiceUtil, sequenceComponentU
       .flatMap {
         case Left(listingFailed: RegistrationListingFailed) => Future.successful(Left(LocationServiceError(listingFailed.msg)))
         case Left(LocationNotFound(_))                      => Future.successful(Right(ShutdownSequencerResponse.Success))
-        case Right(sequencerApi)                            => unloadScript(sequencerApi)
+        case Right(sequencerApi)                            => unloadScript(Prefix(subsystem, obsMode), sequencerApi)
       }
+  }
+
+  def shutdownAllSequencers(): Future[ShutdownAllSequencersResponse] = {
+
+    locationServiceUtil.listAkkaLocationsBy(Sequencer).flatMap {
+      case Left(listingFailed: RegistrationListingFailed) => Future.successful(LocationServiceError(listingFailed.msg))
+      case Right(sequencerLocations) =>
+        Future
+          .traverse(sequencerLocations) { location =>
+            unloadScript(location.prefix, createSequencerClient(location))
+          }
+          .map(_.sequence)
+          .map {
+            case Left(value) => ShutdownAllSequencersResponse.ShutDownFailure(value)
+            case Right(_)    => ShutdownAllSequencersResponse.Success
+          }
+    }
   }
 
   // spawn the sequencer on available SequenceComponent
@@ -117,12 +134,15 @@ class SequencerUtil(locationServiceUtil: LocationServiceUtil, sequenceComponentU
   }
 
   // get sequence component from Sequencer and unload sequencer script
-  private def unloadScript(api: SequencerApi): Future[Either[UnloadScriptError, ShutdownSequencerResponse.Success.type]] =
+  private def unloadScript(
+      prefix: Prefix,
+      api: SequencerApi
+  ): Future[Either[UnloadScriptError, ShutdownSequencerResponse.Success.type]] =
     api.getSequenceComponent
       .flatMap(sequenceComponentUtil.unloadScript)
       .map(_ => Right(ShutdownSequencerResponse.Success))
       .recover {
-        case NonFatal(e) => Left(UnloadScriptError(e.getMessage))
+        case NonFatal(e) => Left(UnloadScriptError(prefix, e.getMessage))
       }
 
   // Created in order to mock the behavior of sequencer API availability for unit test

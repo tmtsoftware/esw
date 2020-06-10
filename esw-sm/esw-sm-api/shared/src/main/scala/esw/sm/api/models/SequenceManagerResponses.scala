@@ -1,7 +1,9 @@
 package esw.sm.api.models
 
 import csw.location.api.models.ComponentId
+import csw.prefix.models.Prefix
 import esw.sm.api.codecs.SmAkkaSerializable
+import esw.sm.api.models.SequenceManagerError.UnloadScriptError
 
 sealed trait ConfigureResponse extends SmAkkaSerializable
 
@@ -59,11 +61,23 @@ object RestartSequencerResponse {
   }
 }
 
+sealed trait ShutdownAllSequencersResponse extends SmAkkaSerializable
+object ShutdownAllSequencersResponse {
+  case object Success extends ShutdownAllSequencersResponse
+
+  sealed trait Failure                                                  extends Throwable with ShutdownAllSequencersResponse
+  case class ShutDownFailure(failureResponses: List[UnloadScriptError]) extends ShutdownAllSequencersResponse.Failure
+}
+
 sealed trait CommonFailure extends Throwable with ConfigureResponse.Failure with CleanupResponse.Failure
 
 object CommonFailure {
-  case class LocationServiceError(msg: String)     extends AgentError with CommonFailure with ShutdownSequencerResponse.Failure
   case class ConfigurationMissing(obsMode: String) extends CommonFailure
+  case class LocationServiceError(msg: String)
+      extends AgentError
+      with CommonFailure
+      with ShutdownSequencerResponse.Failure
+      with ShutdownAllSequencersResponse.Failure
 }
 
 sealed trait SequencerError extends Throwable with Product with StartSequencerResponse.Failure {
@@ -75,6 +89,6 @@ sealed trait AgentError extends SequencerError
 object SequenceManagerError {
   case class SpawnSequenceComponentFailed(msg: String) extends AgentError
 
-  case class LoadScriptError(msg: String)   extends SequencerError
-  case class UnloadScriptError(msg: String) extends SequencerError with ShutdownSequencerResponse.Failure
+  case class LoadScriptError(msg: String)                   extends SequencerError
+  case class UnloadScriptError(prefix: Prefix, msg: String) extends SequencerError with ShutdownSequencerResponse.Failure
 }
