@@ -8,22 +8,8 @@ import csw.location.api.models.AkkaLocation
 import csw.prefix.models.Subsystem
 import esw.sm.api.SequenceManagerApi
 import esw.sm.api.actor.messages.SequenceManagerMsg
-import esw.sm.api.actor.messages.SequenceManagerMsg.{
-  Cleanup,
-  Configure,
-  GetRunningObsModes,
-  RestartSequencer,
-  ShutdownSequencer,
-  StartSequencer
-}
-import esw.sm.api.models.{
-  CleanupResponse,
-  ConfigureResponse,
-  GetRunningObsModesResponse,
-  RestartSequencerResponse,
-  ShutdownSequencerResponse,
-  StartSequencerResponse
-}
+import esw.sm.api.actor.messages.SequenceManagerMsg._
+import esw.sm.api.models._
 
 import scala.concurrent.Future
 
@@ -48,4 +34,6 @@ class SequenceManagerImpl(location: AkkaLocation)(implicit
 
   override def restartSequencer(subsystem: Subsystem, observingMode: String): Future[RestartSequencerResponse] =
     smRef ? (RestartSequencer(subsystem, observingMode, _))
+
+  override def shutdownAllSequencers(): Future[ShutdownAllSequencersResponse] = smRef ? ShutdownAllSequencers
 }

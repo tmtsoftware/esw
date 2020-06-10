@@ -12,4 +12,5 @@ trait SequenceManagerApi {
   def startSequencer(subsystem: Subsystem, observingMode: String): Future[StartSequencerResponse]
   def shutdownSequencer(subsystem: Subsystem, observingMode: String): Future[ShutdownSequencerResponse]
   def restartSequencer(subsystem: Subsystem, observingMode: String): Future[RestartSequencerResponse]
+  def shutdownAllSequencers(): Future[ShutdownAllSequencersResponse]
 }
