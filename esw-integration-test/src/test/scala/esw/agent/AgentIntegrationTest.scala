@@ -30,7 +30,7 @@ class AgentIntegrationTest extends EswTestKit with BeforeAndAfterAll with Locati
     spawnAgent(AgentSettings(1.minute, "file://" + getClass.getResource("/apps.json").getPath))
   }
 
-  private def spawnSequenceComponent(prefix: Prefix) = agentClient.spawnSequenceComponent(prefix, Some("0593a96"))
+  private def spawnSequenceComponent(prefix: Prefix) = agentClient.spawnSequenceComponent(prefix, Some("0f56561"))
 
   "Agent" must {
     "start and register itself with location service | ESW-237" in {
