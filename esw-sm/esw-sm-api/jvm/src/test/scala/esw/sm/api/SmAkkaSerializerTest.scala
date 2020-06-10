@@ -8,8 +8,9 @@ import csw.location.api.models.ComponentType.Sequencer
 import csw.prefix.models.Prefix
 import csw.prefix.models.Subsystem.ESW
 import esw.sm.api.actor.messages.SequenceManagerMsg._
+import esw.sm.api.models.AgentError.SpawnSequenceComponentFailed
 import esw.sm.api.models.CommonFailure.{ConfigurationMissing, LocationServiceError}
-import esw.sm.api.models.SequenceManagerError.{LoadScriptError, SpawnSequenceComponentFailed}
+import esw.sm.api.models.StartSequencerResponse.LoadScriptError
 import esw.sm.api.models._
 import org.scalactic.TypeCheckedTripleEquals
 import org.scalatest.BeforeAndAfterAll

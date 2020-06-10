@@ -18,7 +18,8 @@ import esw.ocs.api.{SequenceComponentApi, SequencerApi}
 import esw.sm.api.models.CleanupResponse.FailedToShutdownSequencers
 import esw.sm.api.models.CommonFailure.LocationServiceError
 import esw.sm.api.models.ConfigureResponse.{FailedToStartSequencers, Success}
-import esw.sm.api.models.SequenceManagerError.UnloadScriptError
+import esw.sm.api.models.ShutdownSequencerResponse.UnloadScriptError
+import esw.sm.api.models.StartSequencerResponse.LoadScriptError
 import esw.sm.api.models._
 import esw.sm.impl.config.Sequencers
 
@@ -75,8 +76,7 @@ class SequencerUtil(locationServiceUtil: LocationServiceUtil, sequenceComponentU
       }
   }
 
-  def shutdownAllSequencers(): Future[ShutdownAllSequencersResponse] = {
-
+  def shutdownAllSequencers(): Future[ShutdownAllSequencersResponse] =
     locationServiceUtil.listAkkaLocationsBy(Sequencer).flatMap {
       case Left(listingFailed: RegistrationListingFailed) => Future.successful(LocationServiceError(listingFailed.msg))
       case Right(sequencerLocations) =>
@@ -90,14 +90,13 @@ class SequencerUtil(locationServiceUtil: LocationServiceUtil, sequenceComponentU
             case Right(_)    => ShutdownAllSequencersResponse.Success
           }
     }
-  }
 
   // spawn the sequencer on available SequenceComponent
   def startSequencer(
       subSystem: Subsystem,
       obsMode: String,
       retryCount: Int
-  ): Future[Either[SequencerError, AkkaLocation]] =
+  ): Future[Either[StartSequencerResponse.Failure, AkkaLocation]] =
     sequenceComponentUtil
       .getAvailableSequenceComponent(subSystem)
       .flatMap {
@@ -122,12 +121,12 @@ class SequencerUtil(locationServiceUtil: LocationServiceUtil, sequenceComponentU
       observingMode: String,
       seqCompApi: SequenceComponentApi,
       retryCount: Int
-  ): Future[Either[SequencerError, AkkaLocation]] = {
+  ): Future[Either[StartSequencerResponse.Failure, AkkaLocation]] = {
     seqCompApi
       .loadScript(subSystem, observingMode)
       .map(_.response)
       .flatMap {
-        case Left(error: LoadingScriptFailed) => Future.successful(Left(SequenceManagerError.LoadScriptError(error.msg)))
+        case Left(error: LoadingScriptFailed) => Future.successful(Left(LoadScriptError(error.msg)))
         case Left(_) if retryCount > 0        => startSequencer(subSystem, observingMode, retryCount - 1)
         case Right(location)                  => Future.successful(Right(location))
       }

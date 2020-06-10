@@ -15,8 +15,8 @@ import esw.commons.utils.location.EswLocationError.LocationNotFound
 import esw.commons.utils.location.{EswLocationError, LocationServiceUtil}
 import esw.ocs.api.SequenceComponentApi
 import esw.ocs.api.actor.client.SequenceComponentImpl
+import esw.sm.api.models.AgentError
 import esw.sm.api.models.CommonFailure.LocationServiceError
-import esw.sm.api.models.{AgentError, SequenceManagerError}
 
 import scala.concurrent.Future
 import scala.util.Random
@@ -50,7 +50,7 @@ class AgentUtil(locationServiceUtil: LocationServiceUtil)(implicit actorSystem: 
       .spawnSequenceComponent(seqCompPrefix)
       .flatMap {
         case Spawned     => resolveSeqComp(seqCompPrefix)
-        case Failed(msg) => Future.successful(Left(SequenceManagerError.SpawnSequenceComponentFailed(msg)))
+        case Failed(msg) => Future.successful(Left(AgentError.SpawnSequenceComponentFailed(msg)))
       }
 
   private def resolveSeqComp(seqCompPrefix: Prefix) =
