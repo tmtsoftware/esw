@@ -25,12 +25,14 @@ import csw.network.utils.SocketUtils
 import csw.prefix.models.Subsystem
 import esw.commons.Timeouts
 import esw.commons.extensions.FutureEitherExt.FutureEitherOps
+import esw.commons.extensions.FutureEitherExt.FutureEitherJavaOps
 import esw.commons.utils.location.LocationServiceUtil
 import esw.http.core.wiring.{ActorRuntime, CswWiring, HttpService, Settings}
 import esw.ocs.api.actor.client.{SequencerApiFactory, SequencerImpl}
 import esw.ocs.api.actor.messages.SequencerMessages.Shutdown
 import esw.ocs.api.codecs.SequencerHttpCodecs
 import esw.ocs.api.protocol.ScriptError
+import esw.ocs.api.protocol.ScriptError.{LoadingScriptFailed, LocationServiceError}
 import esw.ocs.handler.{SequencerPostHandler, SequencerWebsocketHandler}
 import esw.ocs.impl.blockhound.BlockHoundWiring
 import esw.ocs.impl.core._
@@ -139,13 +141,7 @@ private[ocs] class SequencerWiring(
 
         val registration = AkkaRegistrationFactory.make(AkkaConnection(componentId), sequencerRef.toURI)
         val loc = Await.result(
-          locationServiceUtil
-            .register(
-              registration,
-              {
-                case NonFatal(e) => Future.successful(Left(ScriptError(e.getMessage)))
-              }
-            ),
+          locationServiceUtil.register(registration).mapLeft(e => LocationServiceError(e.msg)),
           Timeouts.DefaultTimeout
         )
 
@@ -159,7 +155,7 @@ private[ocs] class SequencerWiring(
       catch {
         // This error will be logged in SequenceComponent.Do not log it here,
         // because exception caused while initialising will fail the instance creation of logger.
-        case NonFatal(e) => Left(ScriptError(e.getMessage))
+        case NonFatal(e) => Left(LoadingScriptFailed(e.getMessage))
       }
     }
 

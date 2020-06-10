@@ -24,16 +24,15 @@ import csw.logging.client.scaladsl.LoggerFactory
 import csw.prefix.models.Prefix
 import csw.prefix.models.Subsystem.ESW
 import esw.commons.Timeouts
+import esw.commons.utils.location.EswLocationError.RegistrationError
 import esw.commons.utils.location.LocationServiceUtil
 import esw.http.core.wiring.ActorRuntime
 import esw.sm.api.actor.messages.SequenceManagerMsg
-import esw.sm.api.models.CommonFailure.LocationServiceError
 import esw.sm.impl.config.SequenceManagerConfigParser
 import esw.sm.impl.core.SequenceManagerBehavior
 import esw.sm.impl.utils.{AgentUtil, SequenceComponentUtil, SequencerUtil}
 
 import scala.concurrent.{Await, Future}
-import scala.util.control.NonFatal
 
 class SequenceManagerWiring(configPath: Path) {
   private lazy val actorSystem: ActorSystem[SpawnProtocol.Command] =
@@ -65,19 +64,9 @@ class SequenceManagerWiring(configPath: Path) {
     Timeouts.DefaultTimeout
   )
 
-  def start(): Either[LocationServiceError, AkkaLocation] = {
+  def start(): Either[RegistrationError, AkkaLocation] = {
     val registration = AkkaRegistrationFactory.make(AkkaConnection(ComponentId(prefix, Service)), sequenceManagerRef.toURI)
-    val loc = Await.result(
-      locationServiceUtil
-        .register(
-          registration,
-          {
-            case NonFatal(e) => Future.successful(Left(LocationServiceError(e.getMessage)))
-          }
-        ),
-      Timeouts.DefaultTimeout
-    )
-
+    val loc          = Await.result(locationServiceUtil.register(registration), Timeouts.DefaultTimeout)
     logger.info(s"Successfully started Sequence Manager for subsystem: $prefix")
     loc
   }

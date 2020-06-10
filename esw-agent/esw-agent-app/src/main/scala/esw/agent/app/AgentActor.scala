@@ -30,19 +30,19 @@ class AgentActor(
     Behaviors.receive[AgentCommand] { (ctx, command) =>
       command match {
         //already spawning or registered
-        case SpawnCommand(replyTo, componentId) if state.exist(componentId) =>
+        case cmd: SpawnCommand if state.exist(cmd.componentId) =>
           val message = "given component is already in process"
-          warn(message, Map("prefix" -> componentId.prefix))
-          replyTo ! Failed(message)
+          warn(message, Map("prefix" -> cmd.componentId.prefix))
+          cmd.replyTo ! Failed(message)
           Behaviors.same
 
         //happy path
-        case command @ SpawnCommand(_, componentId) =>
-          val initBehaviour   = new ProcessActor(locationService, processExecutor, agentSettings, logger, command).init
-          val processActorRef = ctx.spawn(initBehaviour, componentId.prefix.toString.toLowerCase)
-          ctx.watchWith(processActorRef, ProcessExited(componentId))
+        case cmd: SpawnCommand =>
+          val initBehaviour   = new ProcessActor(locationService, processExecutor, agentSettings, logger, cmd).init
+          val processActorRef = ctx.spawn(initBehaviour, cmd.componentId.prefix.toString.toLowerCase)
+          ctx.watchWith(processActorRef, ProcessExited(cmd.componentId))
           processActorRef ! SpawnComponent
-          behavior(state.add(componentId, processActorRef))
+          behavior(state.add(cmd.componentId, processActorRef))
 
         case KillComponent(replyTo, componentId) =>
           state.components.get(componentId) match {

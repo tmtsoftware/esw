@@ -228,7 +228,7 @@ lazy val examples = project
     kotlinVersion := "1.3.61",
     kotlincOptions ++= Seq("-Xuse-experimental=kotlin.time.ExperimentalTime", "-jvm-target", "1.8")
   )
-  .dependsOn(`esw-ocs-dsl-kt`)
+  .dependsOn(`esw-ocs-dsl-kt`, `esw-ocs-app`)
 
 lazy val `esw-sm` = project
   .aggregate(

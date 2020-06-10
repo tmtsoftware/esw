@@ -16,8 +16,8 @@ import esw.ocs.testkit.EswTestKit
 import esw.sm.api.SequenceManagerApi
 import esw.sm.api.actor.client.SequenceManagerImpl
 import esw.sm.api.models.ConfigureResponse.ConflictingResourcesWithRunningObsMode
-import esw.sm.api.models.SequenceManagerError.LoadScriptError
-import esw.sm.api.models.{CleanupResponse, ConfigureResponse, StartSequencerResponse}
+import esw.sm.api.models.StartSequencerResponse.LoadScriptError
+import esw.sm.api.models._
 import esw.sm.app.SequenceManagerAppCommand.StartCommand
 
 import scala.collection.mutable.ArrayBuffer
@@ -82,7 +82,7 @@ class SequenceManagerIntegrationTest extends EswTestKit {
     assertThatSeqCompIsAvailable(aoeswSeqCompPrefix)
   }
 
-  "configure should run multiple obs modes in parallel if resources are not conflicting | ESW-168, ESW-169" in {
+  "configure should run multiple obs modes in parallel if resources are not conflicting | ESW-168, ESW-169, ESW-170" in {
     TestSetup.startSequenceComponents(
       Prefix(ESW, "primary"),
       Prefix(ESW, "secondary"),
@@ -100,7 +100,7 @@ class SequenceManagerIntegrationTest extends EswTestKit {
     // Configure for "IRIS_Darknight" observing mode should return error because resource IRIS and NFIRAOS are busy
     sequenceManager.configure(IRIS_DARKNIGHT).futureValue should ===(ConflictingResourcesWithRunningObsMode(Set(IRIS_CAL)))
 
-    // *************** Should run observation concurrently if no conflict in resources | ESW-168 ********************
+    // *************** Should run observation concurrently if no conflict in resources | ESW-168, ESW-170 ********************
     // Configure for "WFOS_Cal" observing mode should be successful as the resources are available
     sequenceManager.configure(WFOS_CAL).futureValue shouldBe a[ConfigureResponse.Success]
 
@@ -132,7 +132,7 @@ class SequenceManagerIntegrationTest extends EswTestKit {
     exception.getMessage shouldBe "File does not exist on local disk at path sm-config.conf"
   }
 
-  "start sequencer for given subsystem and observation mode | ESW-176" in {
+  "start and shut down sequencer for given subsystem and observation mode | ESW-176, ESW-326" in {
     TestSetup.startSequenceComponents(Prefix(ESW, "primary"))
 
     val sequenceManager = TestSetup.startSequenceManager()
@@ -147,6 +147,35 @@ class SequenceManagerIntegrationTest extends EswTestKit {
 
     // verify that sequencer is started
     resolveHTTPLocation(Prefix(ESW, IRIS_DARKNIGHT), Sequencer)
+
+    // ESW-326 Verify that shutdown sequencer returns Success
+    val shutdownResponse = sequenceManager.shutdownSequencer(ESW, IRIS_DARKNIGHT).futureValue
+    shutdownResponse should ===(ShutdownSequencerResponse.Success)
+
+    // verify that sequencer are shut down
+    intercept[Exception](resolveHTTPLocation(Prefix(ESW, IRIS_DARKNIGHT), Sequencer))
+  }
+
+  "restart a running sequencer for given subsystem and obsMode | ESW-327" in {
+    TestSetup.startSequenceComponents(Prefix(ESW, "primary"))
+    val componentId = ComponentId(Prefix(ESW, IRIS_DARKNIGHT), Sequencer)
+
+    val sequenceManager = TestSetup.startSequenceManager()
+    // verify that sequencer is not present
+    intercept[Exception](resolveHTTPLocation(Prefix(ESW, IRIS_DARKNIGHT), Sequencer))
+
+    // restart sequencer that is not currently running
+    val firstRestartResponse = sequenceManager.restartSequencer(ESW, IRIS_DARKNIGHT).futureValue
+    // verify that restart sequencer return Success response with component id
+    firstRestartResponse should ===(RestartSequencerResponse.Success(componentId))
+
+    // verify that sequencer is started
+    resolveHTTPLocation(Prefix(ESW, IRIS_DARKNIGHT), Sequencer)
+
+    // restart sequencer that is already running
+    val secondRestartResponse = sequenceManager.restartSequencer(ESW, IRIS_DARKNIGHT).futureValue
+    // verify that restart sequencer return Success response with component id
+    secondRestartResponse should ===(RestartSequencerResponse.Success(componentId))
   }
 
   "should return loadscript error if configuration is missing for subsystem observation mode | ESW-176" in {

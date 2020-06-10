@@ -14,8 +14,8 @@ import csw.params.commands.{CommandName, Sequence, Setup}
 import csw.prefix.models.Subsystem.{CSW, ESW}
 import csw.prefix.models.{Prefix, Subsystem}
 import esw.ocs.api.actor.messages.SequenceComponentMsg
-import esw.ocs.api.protocol.{ScriptError, ScriptResponse}
 import esw.ocs.api.actor.messages.SequenceComponentMsg.{LoadScript, UnloadScript}
+import esw.ocs.api.protocol.{ScriptError, ScriptResponse}
 import esw.ocs.testkit.EswTestKit
 
 import scala.concurrent.Future
@@ -129,7 +129,9 @@ class SequencerAppIntegrationTest extends EswTestKit {
 
       response match {
         case Left(v) =>
-          v shouldEqual ScriptError(s"Script configuration missing for [${unexpectedSubsystem.name}] with [$observingMode]")
+          v shouldEqual ScriptError.LoadingScriptFailed(
+            s"Script configuration missing for [${unexpectedSubsystem.name}] with [$observingMode]"
+          )
         case Right(_) => throw new RuntimeException("test failed as this test expects ScriptError")
       }
     }
@@ -185,7 +187,7 @@ class SequencerAppIntegrationTest extends EswTestKit {
         SequencerApp.main(Array("sequencer", "-s", subsystem, "-n", name, "-i", unexpectedSubsystem, "-m", observingMode))
       }
 
-      exception.getMessage shouldEqual s"Failed to start with error: ScriptError(Script configuration missing for [$unexpectedSubsystem] with [$observingMode])"
+      exception.getMessage shouldEqual s"Failed to start with error: Script configuration missing for [$unexpectedSubsystem] with [$observingMode]"
     }
   }
 }

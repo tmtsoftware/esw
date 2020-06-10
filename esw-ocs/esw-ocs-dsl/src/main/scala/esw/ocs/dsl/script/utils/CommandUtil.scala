@@ -9,7 +9,7 @@ import csw.location.api.models.Connection.AkkaConnection
 import csw.location.api.models.{AkkaLocation, ComponentId, ComponentType}
 import csw.prefix.models.Prefix
 import esw.commons.Timeouts
-import esw.commons.extensions.FutureEitherExt.FutureEitherOps
+import esw.commons.extensions.FutureEitherExt.FutureEitherJavaOps
 import esw.commons.utils.location.LocationServiceUtil
 
 class CommandUtil(locationServiceUtil: LocationServiceUtil)(implicit actorSystem: ActorSystem[_]) {

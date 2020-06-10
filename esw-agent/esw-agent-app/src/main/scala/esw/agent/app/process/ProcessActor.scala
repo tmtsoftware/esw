@@ -4,20 +4,24 @@ import akka.Done
 import akka.actor.CoordinatedShutdown
 import akka.actor.CoordinatedShutdown.PhaseBeforeServiceUnbind
 import akka.actor.typed.scaladsl.Behaviors
-import akka.actor.typed.{ActorRef, Behavior}
+import akka.actor.typed.{ActorRef, ActorSystem, Behavior}
 import csw.location.api.models._
 import csw.location.api.scaladsl.{LocationService, RegistrationResult}
 import csw.logging.api.scaladsl.Logger
 import esw.agent.api.AgentCommand.SpawnCommand
+import esw.agent.api.AgentCommand.SpawnCommand.SpawnManuallyRegistered.SpawnRedis
+import esw.agent.api.AgentCommand.SpawnCommand.SpawnSelfRegistered.SpawnSequenceComponent
 import esw.agent.api.AgentCommand.SpawnCommand.{SpawnManuallyRegistered, SpawnSelfRegistered}
 import esw.agent.api.ComponentStatus.{Initializing, Running, Stopping}
 import esw.agent.api.{Failed, KillResponse, Killed, Spawned}
 import esw.agent.app.AgentSettings
+import esw.agent.app.ext.ProcessExt.ProcessOps
 import esw.agent.app.process.ProcessActorMessage._
+import esw.agent.app.process.cs.Coursier
+import esw.agent.app.process.redis.Redis
 
 import scala.concurrent.duration.{DurationLong, FiniteDuration}
 import scala.concurrent.{ExecutionContext, Future}
-import scala.jdk.FutureConverters.CompletionStageOps
 import scala.util.{Failure, Success}
 
 class ProcessActor(
@@ -27,25 +31,29 @@ class ProcessActor(
     logger: Logger,
     command: SpawnCommand
 ) {
+  import agentSettings._
   import command._
   import logger._
-  private val (prefix, connection, autoRegistered) = command match {
-    case cmd: SpawnSelfRegistered     => (cmd.componentId.prefix, cmd.connection, true)
-    case cmd: SpawnManuallyRegistered => (cmd.registration.connection.prefix, cmd.registration.connection, false)
+
+  private val executableCommand: List[String] = command match {
+    case SpawnSequenceComponent(_, _, version) => Coursier.ocsApp(version).launch(coursierChannel, commandArgs)
+    case _: SpawnRedis                         => Redis.server :: commandArgs
   }
-
   private val aborted = Failed("Aborted")
-
-  private val gracefulTimeout = agentSettings.durationToWaitForGracefulProcessTermination
 
   private def isComponentRegistered(timeout: FiniteDuration)(implicit executionContext: ExecutionContext): Future[Boolean] =
     locationService.resolve(connection.of[Location], timeout).map(_.nonEmpty)
 
-  private def registerComponent(): Future[RegistrationResult] =
-    command match {
-      case cmd: SpawnManuallyRegistered => locationService.register(cmd.registration)
-      case _: SpawnSelfRegistered       => throw new RuntimeException("Registering SelfRegistered component is not allowed")
-    }
+  private def addUnRegistrationHook(result: RegistrationResult)(implicit system: ActorSystem[_]): Unit =
+    CoordinatedShutdown(system)
+      .addTask(PhaseBeforeServiceUnbind, s"unregister-${prefix.componentName}") { () =>
+        result.unregister()
+      }
+
+  private def registerComponent(registration: Registration)(implicit system: ActorSystem[_]): Future[Boolean] = {
+    import system.executionContext
+    locationService.register(registration).map { r => addUnRegistrationHook(r); true }
+  }
 
   private def unregisterComponent(): Future[Done] = locationService.unregister(connection)
 
@@ -79,19 +87,15 @@ class ProcessActor(
 
         case RunCommand =>
           debug(s"spawning sequence component", map = Map("prefix" -> prefix))
-          processExecutor.runCommand(command.commandStrings(agentSettings.binariesPath), prefix) match {
+          processExecutor.runCommand(executableCommand, prefix) match {
             case Right(process) =>
-              process.onExit().asScala.onComplete(_ => ctx.self ! ProcessExited(process.exitValue()))
-              val isRegistered =
-                if (autoRegistered) isComponentRegistered(agentSettings.durationToWaitForComponentRegistration)
-                else
-                  registerComponent().map { registrationResult =>
-                    CoordinatedShutdown(ctx.system)
-                      .addTask(PhaseBeforeServiceUnbind, s"unregister-${prefix.componentName}") { () =>
-                        registrationResult.unregister()
-                      }
-                    true
-                  }
+              process.onComplete(_ => ctx.self ! ProcessExited(process.exitValue()))
+              val isRegistered: Future[Boolean] =
+                command match {
+                  case _: SpawnSelfRegistered       => isComponentRegistered(durationToWaitForComponentRegistration)
+                  case cmd: SpawnManuallyRegistered => registerComponent(cmd.registration)(ctx.system)
+                }
+
               ctx.pipeToSelf(isRegistered) {
                 case Success(true) => RegistrationSuccess
                 case _             => RegistrationFailed
@@ -102,14 +106,14 @@ class ProcessActor(
               Behaviors.stopped
           }
 
-        case e @ LocationServiceError(exception) =>
-          replyTo ! Failed(e.message)
-          error(e.message, Map("prefix" -> prefix), exception)
+        case LocationServiceError(exception) =>
+          replyTo ! Failed(exception.getMessage)
+          error(exception.getMessage, Map("prefix" -> prefix), exception)
           Behaviors.stopped
 
         case Die(dieRef) =>
           warn("Killing process actor via Die message. Process was not started yet", Map("prefix" -> prefix))
-          dieRef ! Killed.gracefully
+          dieRef ! Killed
           replyTo ! aborted
           Behaviors.stopped
 
@@ -134,7 +138,7 @@ class ProcessActor(
           val errorMessage = "registration encountered an issue or timed out"
           error(errorMessage, Map("pid" -> process.pid, "prefix" -> prefix))
           replyTo ! Failed(errorMessage)
-          ctx.self ! StopGracefully
+          ctx.self ! Stop
           stopping(process, None)
 
         case ProcessExited(exitCode) =>
@@ -147,7 +151,7 @@ class ProcessActor(
         case Die(deathSubscriber) =>
           warn("Killing process via Die message", Map("pid" -> process.pid, "prefix" -> prefix))
           replyTo ! aborted
-          ctx.self ! StopGracefully
+          ctx.self ! Stop
           stopping(process, Some(deathSubscriber))
 
         case GetStatus(replyTo) =>
@@ -169,7 +173,7 @@ class ProcessActor(
 
         case Die(deathSubscriber) =>
           warn("attempting to kill process gracefully", Map("pid" -> process.pid, "prefix" -> prefix))
-          ctx.self ! StopGracefully
+          ctx.self ! Stop
           stopping(process, Some(deathSubscriber))
 
         case GetStatus(replyTo) =>
@@ -179,32 +183,24 @@ class ProcessActor(
     }
 
   def stopping(process: Process, deathSubscriber: Option[ActorRef[KillResponse]]): Behavior[ProcessActorMessage] =
-    Behaviors.withTimers { timeScheduler =>
-      Behaviors.receiveMessagePartial[ProcessActorMessage] {
-        case Die(dieRef) =>
-          debug("stop message arrived when component was already stopping", Map("pid" -> process.pid, "prefix" -> prefix))
-          dieRef ! Failed("process is already stopping")
-          Behaviors.same
+    Behaviors.receivePartial[ProcessActorMessage] {
+      case (_, Die(dieRef)) =>
+        debug("stop message arrived when component was already stopping", Map("pid" -> process.pid, "prefix" -> prefix))
+        dieRef ! Failed("process is already stopping")
+        Behaviors.same
 
-        case ProcessExited(exitCode) =>
-          timeScheduler.cancel(StopForcefully)
-          deathSubscriber.foreach(_ ! (if (exitCode == 0 || exitCode == 143) Killed.gracefully else Killed.forcefully))
-          Behaviors.stopped
+      case (_, ProcessExited(_)) =>
+        deathSubscriber.foreach(_ ! Killed)
+        Behaviors.stopped
 
-        case StopGracefully =>
-          process.destroy()
-          unregisterComponent()
-          timeScheduler.startSingleTimer(StopForcefully, gracefulTimeout)
-          Behaviors.same
+      case (ctx, Stop) =>
+        process.kill(10.seconds)(ctx.system)
+        unregisterComponent()
+        Behaviors.same
 
-        case StopForcefully =>
-          process.destroyForcibly()
-          deathSubscriber.foreach(_ ! Killed.forcefully)
-          Behaviors.stopped
-
-        case GetStatus(replyTo) =>
-          replyTo ! Stopping
-          Behaviors.same
-      }
+      case (_, GetStatus(replyTo)) =>
+        replyTo ! Stopping
+        Behaviors.same
     }
+
 }

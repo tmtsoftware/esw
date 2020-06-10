@@ -7,6 +7,7 @@ import csw.command.client.messages.sequencer.SequencerMsg.QueryFinal
 import csw.command.client.messages.{GetComponentLogMetadata, SetComponentLogLevel}
 import csw.location.api.models.AkkaLocation
 import csw.logging.client.commons.LogAdminUtil
+import csw.logging.client.scaladsl.LoggingSystemFactory
 import csw.logging.models.Level.{DEBUG, INFO}
 import csw.logging.models.LogMetadata
 import csw.params.commands.CommandIssue.IdNotAvailableIssue
@@ -31,7 +32,7 @@ import scala.concurrent.duration.DurationLong
 
 class SequencerBehaviorTest extends BaseTestSuite {
 
-  private implicit val actorSystem = ActorSystem(SpawnProtocol(), "sequencer-test-system")
+  private implicit val system: ActorSystem[SpawnProtocol.Command] = ActorSystem(SpawnProtocol(), "sequencer-test-system")
 
   private val command1 = Setup(Prefix("esw.test"), CommandName("command-1"), None)
   private val command2 = Setup(Prefix("esw.test"), CommandName("command-2"), None)
@@ -701,7 +702,7 @@ class SequencerBehaviorTest extends BaseTestSuite {
       loadSequenceAndAssertResponse(Ok)
     }
 
-    "remain in Idle state when sequencer is already Idle without calling handlers | ESW-287" in {
+    "remain in Idle state when sequencer is already Idle and call the goOnline handler | ESW-287" in {
       val sequencerSetup = SequencerTestSetup.idle(sequence)
       import sequencerSetup._
 
@@ -709,7 +710,7 @@ class SequencerBehaviorTest extends BaseTestSuite {
       assertSequencerState(Idle)
 
       // verify handlers are not called
-      verify(script, never).executeGoOnline()
+      verify(script).executeGoOnline()
 
       // try loading a sequence to ensure sequencer is online
       loadSequenceAndAssertResponse(Ok)
@@ -736,7 +737,7 @@ class SequencerBehaviorTest extends BaseTestSuite {
       assertSequencerState(Offline)
     }
 
-    "remain in Offline state when sequencer is already Offline without calling handlers | ESW-287" in {
+    "remain in Offline state when sequencer is already Offline and call the goOffline handler | ESW-287" in {
       val sequencerSetup = SequencerTestSetup.offline(sequence)
       import sequencerSetup._
 
@@ -744,7 +745,7 @@ class SequencerBehaviorTest extends BaseTestSuite {
       assertSequencerState(Offline)
 
       // verify handlers are not only called again
-      verify(script, times(1)).executeGoOffline()
+      verify(script, times(2)).executeGoOffline()
     }
 
     "clear history of the last executed sequence | ESW-194" in {
@@ -935,6 +936,11 @@ class SequencerBehaviorTest extends BaseTestSuite {
 
   "LogControlMessages" must {
     "set and get log level for component name | ESW-183, ESW-127" in {
+      // This will initialize LoggingState and set akkaLogLevel, slf4jLogLevel and defaultLevel
+      // If LoggingState is not initialized then akkaLogLevel, slf4jLogLevel and defaultLevel are null and
+      // serialization of LogMetadata will fail
+      LoggingSystemFactory.forTestingOnly()
+
       val sequencerSetup = SequencerTestSetup.inProgress(sequence)
       import sequencerSetup._
       val logMetadataProbe = TestProbe[LogMetadata]()
@@ -1024,7 +1030,6 @@ class SequencerBehaviorTest extends BaseTestSuite {
       StopComplete,
       SubmitSequenceInternal(sequence, _),
       StepSuccess,
-      GoOnline,
       GoOnlineSuccess,
       GoOnlineFailed,
       PullNext,

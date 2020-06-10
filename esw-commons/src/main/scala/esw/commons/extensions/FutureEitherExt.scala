@@ -7,7 +7,7 @@ import scala.concurrent.{ExecutionContext, Future}
 import scala.util.control.NonFatal
 
 object FutureEitherExt {
-  implicit class FutureEitherOps[+L <: Throwable, R](private val futureEither: Future[Either[L, R]]) extends AnyVal {
+  implicit class FutureEitherOps[+L, R](private val futureEither: Future[Either[L, R]]) extends AnyVal {
     def mapRight[R1](f: R => R1)(implicit executor: ExecutionContext): Future[Either[L, R1]] = futureEither.map(_.map(f))
 
     def mapLeft[L1](f: L => L1)(implicit executor: ExecutionContext): Future[Either[L1, R]] = futureEither.map(_.left.map(f))
@@ -34,9 +34,12 @@ object FutureEitherExt {
         case Right(r) => rmap(r)
         case Left(l)  => Future.successful(lmap(l))
       }
+  }
 
+  implicit class FutureEitherJavaOps[+L <: Throwable, R](private val futureEither: Future[Either[L, R]]) extends AnyVal {
     def toJava(implicit executor: ExecutionContext): CompletionStage[R] = toJava(onSuccess = identity)
     def toJava[S](onSuccess: R => S)(implicit executor: ExecutionContext): CompletionStage[S] =
-      mapToAdt(onSuccess, throw _).toJava
+      futureEither.mapToAdt(onSuccess, throw _).toJava
   }
+
 }

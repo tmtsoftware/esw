@@ -91,8 +91,8 @@ class SequenceComponentBehaviorTest extends EswTestKit {
       )
 
       sequenceComponentRef ! LoadScript(TCS, "darknight", loadScriptResponseProbe.ref)
-      loadScriptResponseProbe.receiveMessage().response.leftValue shouldBe ScriptError(
-        "Loading script failed: Sequencer already running"
+      loadScriptResponseProbe.receiveMessage().response.leftValue shouldBe ScriptError.SequenceComponentNotIdle(
+        Prefix(subsystem, observingMode)
       )
     }
 
@@ -106,7 +106,7 @@ class SequenceComponentBehaviorTest extends EswTestKit {
       //LoadScript
       sequenceComponentRef ! LoadScript(subsystem, observingMode, loadScriptResponseProbe.ref)
 
-      loadScriptResponseProbe.receiveMessage().response.leftValue shouldBe ScriptError(
+      loadScriptResponseProbe.receiveMessage().response.leftValue shouldBe ScriptError.LoadingScriptFailed(
         "Script initialization failed with : initialisation failed"
       )
     }
@@ -159,7 +159,7 @@ class SequenceComponentBehaviorTest extends EswTestKit {
 
       val restartResponseProbe = TestProbe[ScriptResponse]()
       sequenceComponentRef ! Restart(restartResponseProbe.ref)
-      restartResponseProbe.expectMessage(ScriptResponse(Left(ScriptError("Restart is not supported in idle state"))))
+      restartResponseProbe.expectMessage(ScriptResponse(Left(ScriptError.RestartNotSupportedInIdle)))
     }
   }
 }

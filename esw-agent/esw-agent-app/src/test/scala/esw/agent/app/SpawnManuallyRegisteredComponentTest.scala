@@ -1,51 +1,23 @@
 package esw.agent.app
 
 import java.net.URI
-import java.util.concurrent.CompletableFuture
 
 import akka.actor.testkit.typed.scaladsl.TestProbe
-import akka.actor.typed.{ActorSystem, Scheduler, SpawnProtocol}
 import csw.location.api.models.ComponentType.Service
 import csw.location.api.models.Connection.TcpConnection
 import csw.location.api.models.{ComponentId, TcpLocation, TcpRegistration}
-import csw.location.api.scaladsl.{LocationService, RegistrationResult}
-import csw.logging.api.scaladsl.Logger
+import csw.location.api.scaladsl.RegistrationResult
 import csw.prefix.models.Prefix
 import esw.agent.api.AgentCommand.KillComponent
 import esw.agent.api.AgentCommand.SpawnCommand.SpawnManuallyRegistered.SpawnRedis
 import esw.agent.api._
-import esw.agent.app.AgentActor.AgentState
-import esw.agent.app.process.ProcessExecutor
 import org.mockito.ArgumentMatchers.{any, eq => argEq}
-import org.mockito.MockitoSugar
-import org.scalatest.BeforeAndAfterEach
 import org.scalatest.matchers.must.Matchers.convertToStringMustWrapper
-import org.scalatest.wordspec.AnyWordSpecLike
 
-import scala.concurrent.ExecutionContext.Implicits.global
+import scala.concurrent.Future
 import scala.concurrent.duration.{DurationLong, FiniteDuration}
-import scala.concurrent.{Future, Promise}
-import scala.util.Random
 
-class SpawnManuallyRegisteredComponentTest extends AnyWordSpecLike with MockitoSugar with BeforeAndAfterEach {
-
-  private implicit val system: ActorSystem[SpawnProtocol.Command] = ActorSystem(SpawnProtocol(), "component-system")
-  private val locationService                                     = mock[LocationService]
-  private val processExecutor                                     = mock[ProcessExecutor]
-  private val process                                             = mock[Process]
-  private val logger                                              = mock[Logger]
-
-  private val agentSettings         = AgentSettings("/tmp", 15.seconds, 3.seconds)
-  implicit val scheduler: Scheduler = system.scheduler
-
-  private val prefix = Prefix("csw.component")
-
-  private val componentId: ComponentId = ComponentId(prefix, Service)
-  private val redisConn                = TcpConnection(componentId)
-  private val redisLocation            = TcpLocation(redisConn, new URI("some"))
-  private val redisLocationF           = Future.successful(Some(redisLocation))
-  private val redisRegistration        = TcpRegistration(redisConn, 100)
-  private val spawnRedis               = SpawnRedis(_, prefix, 100, List.empty)
+class SpawnManuallyRegisteredComponentTest extends AgentSetup {
 
   "SpawnManuallyRegistered (component)" must {
 
@@ -66,12 +38,11 @@ class SpawnManuallyRegisteredComponentTest extends AnyWordSpecLike with MockitoS
     "reply 'Failed' and not spawn new process when `resolve` call to location service fails" in {
       val agentActorRef = spawnAgentActor(name = "test-actor2")
       val probe         = TestProbe[SpawnResponse]()
-
-      when(locationService.resolve(argEq(redisConn), any[FiniteDuration]))
-        .thenReturn(Future.failed(new RuntimeException("call failed")))
+      val err           = "Failed to resolve component"
+      when(locationService.resolve(argEq(redisConn), any[FiniteDuration])).thenReturn(Future.failed(new RuntimeException(err)))
 
       agentActorRef ! spawnRedis(probe.ref)
-      probe.expectMessage(Failed("error occurred while resolving a component with location service"))
+      probe.expectMessage(Failed(err))
 
       //ensure component is NOT registered
       verify(locationService, never).register(redisRegistration)
@@ -145,9 +116,19 @@ class SpawnManuallyRegisteredComponentTest extends AnyWordSpecLike with MockitoS
 
     "Unregister when process is spawned but exits before registration and registration is later succeeded | ESW-237" in {
       val agentActorRef = spawnAgentActor(agentSettings.copy(durationToWaitForComponentRegistration = 4.seconds), "test-actor7")
-      val probe         = TestProbe[SpawnResponse]()
+      // fixme: remove duplication
+      val probe             = TestProbe[SpawnResponse]()
+      val prefix            = Prefix("csw.redis")
+      val redisConn         = TcpConnection(ComponentId(prefix, Service))
+      val redisRegistration = TcpRegistration(redisConn, 100)
+      val redisLocation     = TcpLocation(redisConn, new URI("some"))
+      val spawnRedis        = SpawnRedis(_, prefix, 100, List.empty)
 
-      mockLocationServiceForRedis(registrationDuration = 2.seconds)
+      when(locationService.resolve(argEq(redisConn), any[FiniteDuration])).thenReturn(Future.successful(None))
+      when(locationService.register(redisRegistration)).thenReturn(
+        delayedFuture(RegistrationResult.from(redisLocation, con => locationService.unregister(con)), 2.seconds)
+      )
+
       mockSuccessfulProcess(dieAfter = 500.millis)
 
       agentActorRef ! spawnRedis(probe.ref)
@@ -161,15 +142,9 @@ class SpawnManuallyRegisteredComponentTest extends AnyWordSpecLike with MockitoS
     }
 
     "reply 'Failed' when spawning is aborted by another message | ESW-237, ESW-276" in {
-      val agentActorRef = spawnAgentActor(
-        agentSettings.copy(
-          durationToWaitForComponentRegistration = 7.seconds,
-          durationToWaitForGracefulProcessTermination = 7.seconds
-        ),
-        "test-actor8"
-      )
-      val spawner = TestProbe[SpawnResponse]()
-      val killer  = TestProbe[KillResponse]()
+      val agentActorRef = spawnAgentActor(agentSettings.copy(durationToWaitForComponentRegistration = 7.seconds), "test-actor8")
+      val spawner       = TestProbe[SpawnResponse]()
+      val killer        = TestProbe[KillResponse]()
 
       mockLocationServiceForRedis(registrationDuration = 5.seconds)
       mockSuccessfulProcess(dieAfter = 2.seconds)
@@ -179,38 +154,7 @@ class SpawnManuallyRegisteredComponentTest extends AnyWordSpecLike with MockitoS
       agentActorRef ! KillComponent(killer.ref, componentId)
 
       spawner.expectMessage(Failed("Aborted"))
-      killer.expectMessage(Killed.gracefully)
+      killer.expectMessage(Killed)
     }
-  }
-
-  override def beforeEach(): Unit = {
-    super.beforeEach()
-    reset(locationService, processExecutor, process, logger)
-  }
-
-  private def mockSuccessfulProcess(dieAfter: FiniteDuration = 2.seconds, exitCode: Int = 0) = {
-    when(process.pid()).thenReturn(Random.nextInt(1000).abs)
-    when(process.exitValue()).thenReturn(exitCode)
-    val future = new CompletableFuture[Process]()
-    scheduler.scheduleOnce(dieAfter, () => future.complete(process))
-    when(process.onExit()).thenReturn(future)
-    when(processExecutor.runCommand(any[List[String]], any[Prefix])).thenReturn(Right(process))
-  }
-
-  private def spawnAgentActor(agentSettings: AgentSettings = agentSettings, name: String) = {
-    system.systemActorOf(new AgentActor(locationService, processExecutor, agentSettings, logger).behavior(AgentState.empty), name)
-  }
-
-  private def delayedFuture[T](value: T, delay: FiniteDuration): Future[T] = {
-    val promise = Promise[T]()
-    system.scheduler.scheduleOnce(delay, () => promise.success(value))(system.executionContext)
-    promise.future
-  }
-
-  private def mockLocationServiceForRedis(registrationDuration: FiniteDuration = 0.seconds) = {
-    when(locationService.resolve(argEq(redisConn), any[FiniteDuration])).thenReturn(Future.successful(None))
-    when(locationService.register(redisRegistration)).thenReturn(
-      delayedFuture(RegistrationResult.from(redisLocation, con => locationService.unregister(con)), registrationDuration)
-    )
   }
 }

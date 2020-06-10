@@ -4,14 +4,11 @@ import java.util.concurrent.atomic.AtomicReference
 
 import akka.actor.typed.ActorSystem
 import akka.actor.typed.scaladsl.Behaviors
+import esw.agent.app.BaseTestSuite
 import esw.agent.app.process.ProcessOutput.ConsoleWriter
-import org.scalatest.concurrent.Eventually
 import org.scalatest.time.{Millis, Seconds, Span}
-import org.scalatest.BeforeAndAfterAll
-import org.scalatest.matchers.should.Matchers
-import org.scalatest.wordspec.AnyWordSpecLike
 
-class ProcessOutputTest extends AnyWordSpecLike with Matchers with Eventually with BeforeAndAfterAll {
+class ProcessOutputTest extends BaseTestSuite {
 
   private class FakeConsoleWriter extends ConsoleWriter {
     val data: AtomicReference[List[(String, Boolean)]] = new AtomicReference[List[(String, Boolean)]](List.empty)

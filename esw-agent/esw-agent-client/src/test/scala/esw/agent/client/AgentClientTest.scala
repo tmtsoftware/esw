@@ -84,7 +84,7 @@ class AgentClientTest extends AnyWordSpecLike with Matchers with BeforeAndAfterA
       implicit val sch: Scheduler = system.scheduler
       val agentClient             = new AgentClient(agentRef)
       val componentId             = ComponentId(Prefix("esw.test3"), SequenceComponent)
-      agentClient.killComponent(componentId).futureValue should ===(Killed.gracefully)
+      agentClient.killComponent(componentId).futureValue should ===(Killed)
     }
   }
 
@@ -111,8 +111,8 @@ class AgentClientTest extends AnyWordSpecLike with Matchers with BeforeAndAfterA
   private def stubAgent: Behaviors.Receive[AgentCommand] =
     Behaviors.receiveMessagePartial[AgentCommand] { msg =>
       msg match {
-        case SpawnCommand(replyTo, _)       => replyTo ! Spawned
-        case KillComponent(replyTo, _)      => replyTo ! Killed.gracefully
+        case cmd: SpawnCommand              => cmd.replyTo ! Spawned
+        case KillComponent(replyTo, _)      => replyTo ! Killed
         case GetComponentStatus(replyTo, _) => replyTo ! Running
         case GetAgentStatus(replyTo)        => replyTo ! AgentStatus(Map(ComponentId(Prefix("esw.comp"), Service) -> Stopping))
       }

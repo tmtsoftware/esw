@@ -7,16 +7,30 @@ import csw.location.api.models.Connection.{AkkaConnection, TcpConnection}
 import csw.prefix.models.Prefix
 import esw.agent.api.ComponentStatus.Running
 import esw.agent.api.{AgentStatus, Failed, Killed, Spawned}
+import esw.agent.app.AgentSettings
 import esw.agent.client.AgentClient
 import esw.ocs.testkit.EswTestKit
-import esw.ocs.testkit.Service.MachineAgent
 import org.scalatest.BeforeAndAfterAll
 
-import scala.concurrent.Await
 import scala.concurrent.duration.DurationLong
-import scala.util.Random
 
-class AgentIntegrationTest extends EswTestKit(MachineAgent) with BeforeAndAfterAll with LocationServiceCodecs {
+class AgentIntegrationTest extends EswTestKit with BeforeAndAfterAll with LocationServiceCodecs {
+
+  private lazy val agentClient      = AgentClient.make(agentPrefix, locationService).futureValue
+  private val irisPrefix            = Prefix("esw.iris")
+  private val irisCompId            = ComponentId(irisPrefix, SequenceComponent)
+  private val irisSeqCompConnection = AkkaConnection(ComponentId(irisPrefix, SequenceComponent))
+  private val redisPrefix           = Prefix(s"esw.event_server")
+  private val redisCompId           = ComponentId(redisPrefix, Service)
+
+  override implicit def patienceConfig: PatienceConfig = PatienceConfig(1.minute, 100.millis)
+
+  override def beforeAll(): Unit = {
+    super.beforeAll()
+    spawnAgent(AgentSettings(1.minute, "file://" + getClass.getResource("/apps.json").getPath))
+  }
+
+  private def spawnSequenceComponent(prefix: Prefix) = agentClient.spawnSequenceComponent(prefix, Some("0f56561"))
 
   "Agent" must {
     "start and register itself with location service | ESW-237" in {
@@ -24,87 +38,45 @@ class AgentIntegrationTest extends EswTestKit(MachineAgent) with BeforeAndAfterA
       agentLocation should not be empty
     }
 
-    "return Spawned after spawning a new sequence component for a SpawnSequenceComponent message | ESW-237" in {
-      val agentClient   = Await.result(AgentClient.make(agentPrefix, locationService), 7.seconds)
-      val seqCompPrefix = Prefix(s"esw.test_${Random.nextInt().abs}")
-      val response      = Await.result(agentClient.spawnSequenceComponent(seqCompPrefix), askTimeout.duration)
-      response should ===(Spawned)
+    "return Spawned on SpawnSequenceComponent and Killed on KillComponent message | ESW-237, ESW-276" in {
+      spawnSequenceComponent(irisPrefix).futureValue should ===(Spawned)
       // Verify registration in location service
-      locationService
-        .resolve(AkkaConnection(ComponentId(seqCompPrefix, SequenceComponent)), 5.seconds)
-        .futureValue should not be empty
+      locationService.resolve(irisSeqCompConnection, 5.seconds).futureValue should not be empty
+
+      agentClient.killComponent(ComponentId(irisPrefix, SequenceComponent)).futureValue should ===(Killed)
+      // Verify not registered in location service
+      locationService.resolve(irisSeqCompConnection, 5.seconds).futureValue shouldEqual None
     }
 
     "return Spawned after spawning a new redis component for a SpawnRedis message | ESW-237" in {
-      val agentClient = Await.result(AgentClient.make(agentPrefix, locationService), 7.seconds)
-      val prefix      = Prefix(s"esw.event_server")
-      val response    = Await.result(agentClient.spawnRedis(prefix, 6379, List.empty), askTimeout.duration)
-      response should ===(Spawned)
+      agentClient.spawnRedis(redisPrefix, 6380, List.empty).futureValue should ===(Spawned)
       // Verify registration in location service
-      locationService.resolve(TcpConnection(ComponentId(prefix, Service)), 5.seconds).futureValue should not be empty
-    }
+      locationService.resolve(TcpConnection(ComponentId(redisPrefix, Service)), 5.seconds).futureValue should not be empty
 
-    "return killedGracefully after killing a registered component for a KillComponent message | ESW-276" in {
-      val agentClient   = Await.result(AgentClient.make(agentPrefix, locationService), 7.seconds)
-      val seqCompPrefix = Prefix(s"esw.test_${Random.nextInt().abs}")
-      val spawnResponse = Await.result(agentClient.spawnSequenceComponent(seqCompPrefix), askTimeout.duration)
-      spawnResponse should ===(Spawned)
-      val killResponse =
-        Await.result(agentClient.killComponent(ComponentId(seqCompPrefix, SequenceComponent)), askTimeout.duration)
-      killResponse should ===(Killed.gracefully)
-      // Verify not registered in location service
-      locationService
-        .resolve(AkkaConnection(ComponentId(seqCompPrefix, SequenceComponent)), 5.seconds)
-        .futureValue shouldEqual None
-    }
-
-    "return killedForcefully after killing a registered component for a killComponent message | ESW-276" in {
-      val agentClient   = Await.result(AgentClient.make(agentPrefix, locationService), 7.seconds)
-      val seqCompPrefix = Prefix(s"esw.test_${Random.nextInt().abs}_delay_exit")
-      val spawnResponse = Await.result(agentClient.spawnSequenceComponent(seqCompPrefix), askTimeout.duration)
-      spawnResponse should ===(Spawned)
-      val killResponse =
-        Await.result(agentClient.killComponent(ComponentId(seqCompPrefix, SequenceComponent)), askTimeout.duration)
-      killResponse should ===(Killed.forcefully)
-      // Verify not registered in location service
-      locationService
-        .resolve(AkkaConnection(ComponentId(seqCompPrefix, SequenceComponent)), 5.seconds)
-        .futureValue shouldEqual None
+      agentClient.killComponent(ComponentId(redisPrefix, Service)).futureValue
     }
 
     "return Failed('Aborted') to original sender when someone kills a process while it is spawning | ESW-237, ESW-237" in {
-      val agentClient    = Await.result(AgentClient.make(agentPrefix, locationService), 7.seconds)
-      val seqCompPrefix  = Prefix(s"esw.test_${Random.nextInt().abs}")
-      val spawnResponseF = agentClient.spawnSequenceComponent(seqCompPrefix)
-      val killResponse =
-        Await.result(agentClient.killComponent(ComponentId(seqCompPrefix, SequenceComponent)), askTimeout.duration)
-      killResponse should ===(Killed.gracefully)
-      Await.result(spawnResponseF, askTimeout.duration) should ===(Failed("Aborted"))
+      val spawnResponseF = spawnSequenceComponent(irisPrefix)
+      agentClient.killComponent(irisCompId).futureValue should ===(Killed)
+      spawnResponseF.futureValue should ===(Failed("Aborted"))
       // Verify not registered in location service
-      locationService
-        .resolve(AkkaConnection(ComponentId(seqCompPrefix, SequenceComponent)), 5.seconds)
-        .futureValue shouldEqual None
+      locationService.resolve(irisSeqCompConnection, 5.seconds).futureValue should ===(None)
     }
 
     "return status of components available on agent for a GetAgentStatus message | ESW-286" in {
-      val agentClient = Await.result(AgentClient.make(agentPrefix, locationService), 7.seconds)
+      spawnSequenceComponent(irisPrefix).futureValue should ===(Spawned)
+      agentClient.getComponentStatus(irisCompId).futureValue should ===(Running)
 
-      val seqCompPrefix        = Prefix(s"esw.test_${Random.nextInt().abs}_delay_exit")
-      val seqCompSpawnResponse = Await.result(agentClient.spawnSequenceComponent(seqCompPrefix), askTimeout.duration)
-      seqCompSpawnResponse should ===(Spawned)
-      val seqComponentId = ComponentId(seqCompPrefix, SequenceComponent)
-      val seqCompStatus  = Await.result(agentClient.getComponentStatus(seqComponentId), 500.millis)
-      seqCompStatus should ===(Running)
+      agentClient.spawnRedis(redisPrefix, 6381, List.empty).futureValue should ===(Spawned)
+      agentClient.getComponentStatus(redisCompId).futureValue should ===(Running)
 
-      val redisPrefix        = Prefix(s"esw.test_${Random.nextInt().abs}_delay_exit")
-      val redisSpawnResponse = Await.result(agentClient.spawnRedis(redisPrefix, 100, List.empty), askTimeout.duration)
-      redisSpawnResponse should ===(Spawned)
-      val redisCompId     = ComponentId(redisPrefix, Service)
-      val redisCompStatus = Await.result(agentClient.getComponentStatus(redisCompId), 500.millis)
-      redisCompStatus should ===(Running)
+      val agentStatus = agentClient.getAgentStatus.futureValue
+      agentStatus should ===(AgentStatus(Map(irisCompId -> Running, redisCompId -> Running)))
 
-      val agentStatus = Await.result(agentClient.getAgentStatus, 500.millis)
-      agentStatus should ===(AgentStatus(Map(seqComponentId -> Running, redisCompId -> Running)))
+      // cleanup
+      agentClient.killComponent(irisCompId).futureValue
+      agentClient.killComponent(ComponentId(redisPrefix, Service)).futureValue
     }
   }
 

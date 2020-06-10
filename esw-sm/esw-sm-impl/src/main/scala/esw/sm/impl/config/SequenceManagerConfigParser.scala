@@ -16,7 +16,7 @@ class SequenceManagerConfigParser(configUtils: ConfigUtils)(implicit ec: Executi
   private val ESW_SM                  = "esw-sm"
   private val SEQUENCER_START_RETRIES = "sequencerStartRetries"
 
-  // Reads config file using csw config server
+  // Reads config file from config service or local filesystem
   def read(configFilePath: Path, isLocal: Boolean): Future[SequenceManagerConfig] =
     configUtils.getConfig(configFilePath, isLocal).map(parseConfig)
 
