@@ -4,7 +4,7 @@ import akka.actor.typed.ActorRef
 import csw.prefix.models.Subsystem
 import esw.sm.api.SequenceManagerState
 import esw.sm.api.codecs.SmAkkaSerializable
-import esw.sm.api.models._
+import esw.sm.api.protocol._
 
 sealed trait SequenceManagerMsg
 

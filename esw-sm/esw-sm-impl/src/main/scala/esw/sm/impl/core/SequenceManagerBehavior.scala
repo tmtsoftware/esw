@@ -12,12 +12,12 @@ import esw.commons.utils.location.EswLocationError.RegistrationListingFailed
 import esw.commons.utils.location.LocationServiceUtil
 import esw.sm.api.SequenceManagerState
 import esw.sm.api.SequenceManagerState._
-import esw.sm.api.actor.messages.SequenceManagerMsg._
 import esw.sm.api.actor.messages.{SequenceManagerIdleMsg, SequenceManagerMsg}
-import esw.sm.api.models.CommonFailure.ConfigurationMissing
-import esw.sm.api.models.ConfigureResponse.ConflictingResourcesWithRunningObsMode
-import esw.sm.api.models.StartSequencerResponse.{AlreadyRunning, Started}
-import esw.sm.api.models._
+import esw.sm.api.actor.messages.SequenceManagerMsg._
+import esw.sm.api.protocol.CommonFailure.ConfigurationMissing
+import esw.sm.api.protocol.ConfigureResponse.ConflictingResourcesWithRunningObsMode
+import esw.sm.api.protocol.StartSequencerResponse.{AlreadyRunning, Started}
+import esw.sm.api.protocol._
 import esw.sm.impl.config.{ObsModeConfig, Resources, SequenceManagerConfig}
 import esw.sm.impl.utils.SequencerUtil
 

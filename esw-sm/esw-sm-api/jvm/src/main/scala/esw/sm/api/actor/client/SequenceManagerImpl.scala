@@ -8,8 +8,8 @@ import csw.location.api.models.AkkaLocation
 import csw.prefix.models.Subsystem
 import esw.sm.api.SequenceManagerApi
 import esw.sm.api.actor.messages.SequenceManagerMsg
+import esw.sm.api.protocol._
 import esw.sm.api.actor.messages.SequenceManagerMsg._
-import esw.sm.api.models._
 
 import scala.concurrent.Future
 

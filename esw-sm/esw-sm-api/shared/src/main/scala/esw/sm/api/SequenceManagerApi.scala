@@ -1,7 +1,7 @@
 package esw.sm.api
 
 import csw.prefix.models.Subsystem
-import esw.sm.api.models._
+import esw.sm.api.protocol._
 
 import scala.concurrent.Future
 

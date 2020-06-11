@@ -15,8 +15,8 @@ import esw.commons.utils.location.EswLocationError.LocationNotFound
 import esw.commons.utils.location.{EswLocationError, LocationServiceUtil}
 import esw.ocs.api.SequenceComponentApi
 import esw.ocs.api.actor.client.SequenceComponentImpl
-import esw.sm.api.models.AgentError
-import esw.sm.api.models.CommonFailure.LocationServiceError
+import esw.sm.api.protocol.AgentError
+import esw.sm.api.protocol.CommonFailure.LocationServiceError
 
 import scala.concurrent.Future
 import scala.util.Random

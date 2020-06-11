@@ -16,8 +16,8 @@ import esw.commons.utils.location.EswLocationError.{LocationNotFound, Registrati
 import esw.commons.utils.location.{EswLocationError, LocationServiceUtil}
 import esw.commons.{BaseTestSuite, Timeouts}
 import esw.ocs.api.SequenceComponentApi
-import esw.sm.api.models.CommonFailure.LocationServiceError
-import esw.sm.api.models.AgentError.SpawnSequenceComponentFailed
+import esw.sm.api.protocol.AgentError.SpawnSequenceComponentFailed
+import esw.sm.api.protocol.CommonFailure.LocationServiceError
 import org.mockito.ArgumentMatchers.{any, eq => argEq}
 
 import scala.concurrent.Future

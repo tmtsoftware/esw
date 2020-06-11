@@ -12,7 +12,7 @@ import esw.commons.utils.FutureUtils
 import esw.commons.utils.location.LocationServiceUtil
 import esw.ocs.api.SequenceComponentApi
 import esw.ocs.api.actor.client.SequenceComponentImpl
-import esw.sm.api.models.AgentError
+import esw.sm.api.protocol.AgentError
 
 import scala.async.Async._
 import scala.concurrent.Future

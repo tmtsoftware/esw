@@ -11,7 +11,7 @@ import csw.prefix.models.Prefix
 import csw.prefix.models.Subsystem.ESW
 import esw.sm.api.SequenceManagerState.Idle
 import esw.sm.api.actor.messages.SequenceManagerMsg
-import esw.sm.api.models._
+import esw.sm.api.protocol._
 import org.scalactic.TypeCheckedTripleEquals
 import org.scalatest.concurrent.ScalaFutures
 import org.scalatest.matchers.should.Matchers

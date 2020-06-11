@@ -16,12 +16,12 @@ import esw.commons.{BaseTestSuite, Timeouts}
 import esw.ocs.api.protocol.ScriptError.SequenceComponentNotIdle
 import esw.ocs.api.protocol.{ScriptError, ScriptResponse}
 import esw.ocs.api.{SequenceComponentApi, SequencerApi}
-import esw.sm.api.models.AgentError.SpawnSequenceComponentFailed
-import esw.sm.api.models.CommonFailure.LocationServiceError
-import esw.sm.api.models.ConfigureResponse.{FailedToStartSequencers, Success}
-import esw.sm.api.models.ShutdownSequencerResponse.UnloadScriptError
-import esw.sm.api.models.StartSequencerResponse.LoadScriptError
-import esw.sm.api.models.{CleanupResponse, RestartSequencerResponse, ShutdownAllSequencersResponse, ShutdownSequencerResponse}
+import esw.sm.api.protocol.AgentError.SpawnSequenceComponentFailed
+import esw.sm.api.protocol.CommonFailure.LocationServiceError
+import esw.sm.api.protocol.ConfigureResponse.{FailedToStartSequencers, Success}
+import esw.sm.api.protocol.ShutdownSequencerResponse.UnloadScriptError
+import esw.sm.api.protocol.StartSequencerResponse.LoadScriptError
+import esw.sm.api.protocol.{CleanupResponse, RestartSequencerResponse, ShutdownAllSequencersResponse, ShutdownSequencerResponse}
 import esw.sm.impl.config.Sequencers
 
 import scala.concurrent.duration.DurationInt
