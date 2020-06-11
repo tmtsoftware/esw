@@ -55,7 +55,7 @@ class SequenceManagerBehaviorTest extends BaseTestSuite with TableDrivenProperty
     sequencerUtil
   )
 
-  private lazy val smRef: ActorRef[SequenceManagerMsg] = actorSystem.systemActorOf(sequenceManagerBehavior.idle(), "test_actor")
+  private lazy val smRef: ActorRef[SequenceManagerMsg] = actorSystem.systemActorOf(sequenceManagerBehavior.setup, "test_actor")
 
   override implicit def patienceConfig: PatienceConfig = PatienceConfig(10.seconds)
 

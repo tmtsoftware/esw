@@ -60,7 +60,7 @@ class SequenceManagerWiring(configPath: Path) {
   private lazy val sequenceManagerBehavior = new SequenceManagerBehavior(config, locationServiceUtil, sequencerUtil)(actorSystem)
 
   private lazy val sequenceManagerRef: ActorRef[SequenceManagerMsg] = Await.result(
-    actorSystem ? (Spawn(sequenceManagerBehavior.idle(), "sequence-manager", Props.empty, _)),
+    actorSystem ? (Spawn(sequenceManagerBehavior.setup, "sequence-manager", Props.empty, _)),
     Timeouts.DefaultTimeout
   )
 
