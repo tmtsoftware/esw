@@ -256,12 +256,11 @@ class SequenceManagerBehaviorTest extends BaseTestSuite with TableDrivenProperty
 
   "RestartSequencer" must {
     "transition sm from Idle -> Restarting -> Idle state and restart the sequencer for given obs mode | ESW-327" in {
-      val prefix       = Prefix(ESW, Darknight)
-      val componentId  = ComponentId(prefix, Sequencer)
-      val akkaLocation = AkkaLocation(AkkaConnection(componentId), new URI("uri"))
+      val prefix      = Prefix(ESW, Darknight)
+      val componentId = ComponentId(prefix, Sequencer)
 
       when(sequencerUtil.restartSequencer(ESW, Darknight, 3))
-        .thenReturn(future(1.seconds, Right(akkaLocation)))
+        .thenReturn(future(1.seconds, RestartSequencerResponse.Success(componentId)))
 
       val restartSequencerResponseProbe = TestProbe[RestartSequencerResponse]()
 
@@ -285,7 +284,7 @@ class SequenceManagerBehaviorTest extends BaseTestSuite with TableDrivenProperty
     forAll(errors) { (errorName, error, process) =>
       s"return $errorName if $errorName encountered while sequencer $process | ESW-327" in {
         when(sequencerUtil.restartSequencer(ESW, Darknight, 3))
-          .thenReturn(future(1.seconds, Left(error)))
+          .thenReturn(future(1.seconds, error))
 
         val restartSequencerResponseProbe = TestProbe[RestartSequencerResponse]()
 

@@ -170,7 +170,6 @@ class SequenceManagerBehavior(
   ): Behavior[SequenceManagerMsg] = {
     val eventualResponseF: Future[RestartSequencerResponse] = sequencerUtil
       .restartSequencer(subsystem, obsMode, sequencerStartRetries)
-      .mapToAdt(akkaLocation => RestartSequencerResponse.Success(akkaLocation.connection.componentId), identity)
 
     eventualResponseF.map(self ! RestartSequencerResponseInternal(_))
     restartingSequencer(self, replyTo)
