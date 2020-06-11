@@ -231,6 +231,14 @@ object Dependencies {
     )
   )
 
+  val EswSmHandlers: Def.Initialize[Seq[ModuleID]] = Def.setting(
+    Seq(
+      Libs.`msocket-impl-jvm`,
+      AkkaHttp.`akka-http`,
+      AkkaHttp.`akka-http-testkit` % Test
+    )
+  )
+
   val EswCommons: Def.Initialize[Seq[ModuleID]] = Def.setting(
     Seq(
       Csw.`csw-location-api`.value,

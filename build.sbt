@@ -260,6 +260,13 @@ lazy val `esw-sm-impl` = project
   .settings(libraryDependencies ++= Dependencies.EswSmImpl.value)
   .dependsOn(`esw-sm-api`.jvm, `esw-ocs-api`.jvm, `esw-agent-client`, `esw-commons` % "compile->compile;test->test")
 
+lazy val `esw-sm-handler` = project
+  .in(file("esw-sm/esw-sm-handler"))
+  .settings(
+    libraryDependencies ++= Dependencies.EswSmHandlers.value
+  )
+  .dependsOn(`esw-sm-api`.jvm)
+
 lazy val `esw-sm-app` = project
   .in(file("esw-sm/esw-sm-app"))
   .enablePlugins(EswBuildInfo)

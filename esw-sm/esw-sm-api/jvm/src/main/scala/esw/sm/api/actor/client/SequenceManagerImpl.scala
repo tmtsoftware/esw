@@ -1,6 +1,6 @@
 package esw.sm.api.actor.client
 
-import akka.actor.typed.ActorSystem
+import akka.actor.typed.{ActorRef, ActorSystem}
 import akka.actor.typed.scaladsl.AskPattern._
 import akka.util.Timeout
 import csw.location.api.extensions.URIExtension.RichURI
@@ -18,7 +18,7 @@ class SequenceManagerImpl(location: AkkaLocation)(implicit
     timeout: Timeout
 ) extends SequenceManagerApi {
 
-  private val smRef = location.uri.toActorRef.unsafeUpcast[SequenceManagerMsg]
+  private val smRef: ActorRef[SequenceManagerMsg] = location.uri.toActorRef.unsafeUpcast[SequenceManagerMsg]
 
   override def configure(observingMode: String): Future[ConfigureResponse] = smRef ? (Configure(observingMode, _))
 
