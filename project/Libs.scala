@@ -5,9 +5,9 @@ import sbt._
 object Libs {
   private val MSocketVersion = "aad3e260a4"
 
-  val `case-app`           = "com.github.alexarchambault" %% "case-app" % "2.0.0-M16"
+  val `case-app`           = "com.github.alexarchambault" %% "case-app" % "2.0.0"
   val enumeratum           = dep("com.beachape" %%% "enumeratum" % "1.6.1") //MIT License
-  val `mockito-scala`      = "org.mockito"                    %% "mockito-scala"      % "1.14.3" // MIT License
+  val `mockito-scala`      = "org.mockito"                    %% "mockito-scala"      % "1.14.4" // MIT License
   val `scala-async`        = "org.scala-lang.modules" %% "scala-async" % "0.10.0" //BSD 3-clause "New" or "Revised" License
   val scalatest            = dep("org.scalatest" %%% "scalatest" % "3.1.2") //Apache License 2.0
   val `scala-java8-compat` = "org.scala-lang.modules"         %% "scala-java8-compat" % "0.9.1"  //BSD 3-clause "New" or "Revised" License
@@ -25,7 +25,7 @@ object Libs {
 
 object Csw {
   private val Org     = "com.github.tmtsoftware.csw"
-  private val Version = "7f1ac4f" // Change this to 0.1.0-SNAPSHOT to test with local csw changes (after publishLocal)
+  private val Version = "fa4b478" // Change this to 0.1.0-SNAPSHOT to test with local csw changes (after publishLocal)
 
   val `csw-aas-http`              = Org %% "csw-aas-http"        % Version
   val `csw-admin-api`             = dep(Org %%% "csw-admin-api" % Version)
@@ -72,7 +72,7 @@ object AkkaHttp {
   val `akka-http`         = "com.typesafe.akka" %% "akka-http"         % Version
   val `akka-http-testkit` = "com.typesafe.akka" %% "akka-http-testkit" % Version
 
-  val `akka-http-cors` = "ch.megard" %% "akka-http-cors" % "0.4.3"
+  val `akka-http-cors` = "ch.megard" %% "akka-http-cors" % "1.0.0"
 }
 
 object Borer {
