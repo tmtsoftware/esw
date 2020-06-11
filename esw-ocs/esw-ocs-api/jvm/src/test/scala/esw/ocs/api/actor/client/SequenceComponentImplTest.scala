@@ -12,7 +12,7 @@ import csw.location.api.models.Connection.AkkaConnection
 import csw.location.api.models.{AkkaLocation, ComponentId, ComponentType}
 import csw.prefix.models.Subsystem.ESW
 import csw.prefix.models.{Prefix, Subsystem}
-import esw.ocs.api.BaseTestSuite
+import esw.commons.BaseTestSuite
 import esw.ocs.api.actor.messages.SequenceComponentMsg
 import esw.ocs.api.actor.messages.SequenceComponentMsg._
 import esw.ocs.api.protocol.{GetStatusResponse, ScriptError, ScriptResponse}

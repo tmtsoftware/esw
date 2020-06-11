@@ -12,7 +12,7 @@ import csw.params.core.models.Id
 import csw.prefix.models.Prefix
 import csw.prefix.models.Subsystem.ESW
 import csw.time.core.models.UTCTime
-import esw.ocs.api.BaseTestSuite
+import esw.commons.BaseTestSuite
 import esw.ocs.api.codecs.SequencerHttpCodecs
 import esw.ocs.api.models.StepList
 import esw.ocs.api.protocol.SequencerPostRequest._
