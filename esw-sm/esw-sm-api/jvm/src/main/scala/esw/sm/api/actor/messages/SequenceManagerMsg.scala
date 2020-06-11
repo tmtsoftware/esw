@@ -8,28 +8,31 @@ import esw.sm.api.models._
 
 sealed trait SequenceManagerMsg
 
-sealed trait SequenceManagerRemoteMsg    extends SequenceManagerMsg with SmAkkaSerializable
-sealed trait SequencerManagerInternalMsg extends SequenceManagerMsg
+sealed trait SequenceManagerRemoteMsg   extends SequenceManagerMsg with SmAkkaSerializable
+sealed trait SequenceManagerInternalMsg extends SequenceManagerMsg
+
+sealed trait SequenceManagerIdleMsg extends SequenceManagerRemoteMsg
 
 object SequenceManagerMsg {
-  case class Configure(obsMode: String, replyTo: ActorRef[ConfigureResponse])  extends SequenceManagerRemoteMsg
-  case class Cleanup(obsMode: String, replyTo: ActorRef[CleanupResponse])      extends SequenceManagerRemoteMsg
+  case class Configure(obsMode: String, replyTo: ActorRef[ConfigureResponse]) extends SequenceManagerIdleMsg
+  case class Cleanup(obsMode: String, replyTo: ActorRef[CleanupResponse])     extends SequenceManagerIdleMsg
+  case class StartSequencer(subsystem: Subsystem, observingMode: String, replyTo: ActorRef[StartSequencerResponse])
+      extends SequenceManagerIdleMsg
+  case class ShutdownSequencer(subsystem: Subsystem, observingMode: String, replyTo: ActorRef[ShutdownSequencerResponse])
+      extends SequenceManagerIdleMsg
+  case class RestartSequencer(subsystem: Subsystem, observingMode: String, replyTo: ActorRef[RestartSequencerResponse])
+      extends SequenceManagerIdleMsg
+  case class ShutdownAllSequencers(replyTo: ActorRef[ShutdownAllSequencersResponse]) extends SequenceManagerIdleMsg
+
   sealed trait CommonMessage                                                   extends SequenceManagerRemoteMsg
   case class GetRunningObsModes(replyTo: ActorRef[GetRunningObsModesResponse]) extends CommonMessage
   case class GetSequenceManagerState(replyTo: ActorRef[SequenceManagerState])  extends CommonMessage
-  case class StartSequencer(subsystem: Subsystem, observingMode: String, replyTo: ActorRef[StartSequencerResponse])
-      extends SequenceManagerRemoteMsg
-  case class ShutdownSequencer(subsystem: Subsystem, observingMode: String, replyTo: ActorRef[ShutdownSequencerResponse])
-      extends SequenceManagerRemoteMsg
-  case class RestartSequencer(subsystem: Subsystem, observingMode: String, replyTo: ActorRef[RestartSequencerResponse])
-      extends SequenceManagerRemoteMsg
-  case class ShutdownAllSequencers(replyTo: ActorRef[ShutdownAllSequencersResponse]) extends SequenceManagerRemoteMsg
 
-  private[sm] case class StartSequencerResponseInternal(res: StartSequencerResponse)       extends SequencerManagerInternalMsg
-  private[sm] case class ShutdownSequencerResponseInternal(res: ShutdownSequencerResponse) extends SequencerManagerInternalMsg
-  private[sm] case class RestartSequencerResponseInternal(res: RestartSequencerResponse)   extends SequencerManagerInternalMsg
-  private[sm] case class ConfigurationResponseInternal(res: ConfigureResponse)             extends SequencerManagerInternalMsg
-  private[sm] case class CleanupResponseInternal(res: CleanupResponse)                     extends SequencerManagerInternalMsg
+  private[sm] case class StartSequencerResponseInternal(res: StartSequencerResponse)       extends SequenceManagerInternalMsg
+  private[sm] case class ShutdownSequencerResponseInternal(res: ShutdownSequencerResponse) extends SequenceManagerInternalMsg
+  private[sm] case class RestartSequencerResponseInternal(res: RestartSequencerResponse)   extends SequenceManagerInternalMsg
+  private[sm] case class ConfigurationResponseInternal(res: ConfigureResponse)             extends SequenceManagerInternalMsg
+  private[sm] case class CleanupResponseInternal(res: CleanupResponse)                     extends SequenceManagerInternalMsg
   private[sm] case class ShutdownAllSequencersResponseInternal(res: ShutdownAllSequencersResponse)
-      extends SequencerManagerInternalMsg
+      extends SequenceManagerInternalMsg
 }

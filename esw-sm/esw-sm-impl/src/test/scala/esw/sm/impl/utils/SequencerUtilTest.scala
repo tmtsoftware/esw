@@ -21,7 +21,7 @@ import esw.sm.api.models.CommonFailure.LocationServiceError
 import esw.sm.api.models.ConfigureResponse.{FailedToStartSequencers, Success}
 import esw.sm.api.models.ShutdownSequencerResponse.UnloadScriptError
 import esw.sm.api.models.StartSequencerResponse.LoadScriptError
-import esw.sm.api.models.{CleanupResponse, ShutdownAllSequencersResponse, ShutdownSequencerResponse}
+import esw.sm.api.models.{CleanupResponse, RestartSequencerResponse, ShutdownAllSequencersResponse, ShutdownSequencerResponse}
 import esw.sm.impl.config.Sequencers
 
 import scala.concurrent.duration.DurationInt
@@ -366,7 +366,7 @@ class SequencerUtilTest extends BaseTestSuite {
       when(eswSequencerApi.getSequenceComponent).thenReturn(Future.successful(eswSeqCompLoc))
       when(sequenceComponentUtil.unloadScript(eswSeqCompLoc)).thenReturn(Future.successful(Done))
 
-      sequencerUtil.restartSequencer(ESW, obsMode, 3).rightValue should ===(eswLocation)
+      sequencerUtil.restartSequencer(ESW, obsMode, 3).futureValue should ===(RestartSequencerResponse.Success(eswComponentId))
 
       verify(locationServiceUtil).resolveSequencer(ESW, obsMode, 3.seconds)
       verify(sequenceComponentUtil).unloadScript(eswSeqCompLoc)
@@ -387,7 +387,7 @@ class SequencerUtilTest extends BaseTestSuite {
       when(sequenceComponentUtil.unloadScript(eswSeqCompLoc)).thenReturn(Future.successful(Done))
       when(sequenceComponentUtil.getAvailableSequenceComponent(ESW)).thenReturn(futureLeft(sequenceComponentFailedError))
 
-      sequencerUtil.restartSequencer(ESW, obsMode, 3).leftValue should ===(sequenceComponentFailedError)
+      sequencerUtil.restartSequencer(ESW, obsMode, 3).futureValue should ===(sequenceComponentFailedError)
 
       verify(locationServiceUtil).resolveSequencer(ESW, obsMode, 3.seconds)
       verify(sequenceComponentUtil).unloadScript(eswSeqCompLoc)

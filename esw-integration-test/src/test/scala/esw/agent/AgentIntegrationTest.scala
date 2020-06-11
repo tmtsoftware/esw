@@ -30,6 +30,7 @@ class AgentIntegrationTest extends EswTestKit with BeforeAndAfterAll with Locati
     spawnAgent(AgentSettings(1.minute, "file://" + getClass.getResource("/apps.json").getPath))
   }
 
+  //ESW-325: spawns sequence component via agent using coursier with provided sha
   private def spawnSequenceComponent(prefix: Prefix) = agentClient.spawnSequenceComponent(prefix, Some("0f56561"))
 
   "Agent" must {
@@ -38,7 +39,7 @@ class AgentIntegrationTest extends EswTestKit with BeforeAndAfterAll with Locati
       agentLocation should not be empty
     }
 
-    "return Spawned on SpawnSequenceComponent and Killed on KillComponent message | ESW-237, ESW-276" in {
+    "return Spawned on SpawnSequenceComponent and Killed on KillComponent message | ESW-237, ESW-276, ESW-325" in {
       spawnSequenceComponent(irisPrefix).futureValue should ===(Spawned)
       // Verify registration in location service
       locationService.resolve(irisSeqCompConnection, 5.seconds).futureValue should not be empty
@@ -48,7 +49,7 @@ class AgentIntegrationTest extends EswTestKit with BeforeAndAfterAll with Locati
       locationService.resolve(irisSeqCompConnection, 5.seconds).futureValue shouldEqual None
     }
 
-    "return Spawned after spawning a new redis component for a SpawnRedis message | ESW-237" in {
+    "return Spawned after spawning a new redis component for a SpawnRedis message | ESW-237, ESW-325" in {
       agentClient.spawnRedis(redisPrefix, 6380, List.empty).futureValue should ===(Spawned)
       // Verify registration in location service
       locationService.resolve(TcpConnection(ComponentId(redisPrefix, Service)), 5.seconds).futureValue should not be empty

@@ -178,6 +178,31 @@ class SequenceManagerIntegrationTest extends EswTestKit {
     secondRestartResponse should ===(RestartSequencerResponse.Success(componentId))
   }
 
+  "shutdown all the running sequencers | ESW-324" in {
+    val irisDarknightPrefix = Prefix(ESW, IRIS_DARKNIGHT)
+    val irisCalPrefix       = Prefix(ESW, IRIS_CAL)
+
+    val sequenceManager = TestSetup.startSequenceManager()
+
+    val darknightSequencerL = spawnSequencer(ESW, IRIS_DARKNIGHT)
+    val calSequencerL       = spawnSequencer(ESW, IRIS_CAL)
+
+    // verify that darknight sequencer has started
+    resolveAkkaLocation(irisDarknightPrefix, Sequencer) should ===(darknightSequencerL)
+
+    // verify that cal sequencer has started
+    resolveAkkaLocation(irisCalPrefix, Sequencer) should ===(calSequencerL)
+
+    // shut down all the sequencers that are running
+    sequenceManager.shutdownAllSequencers().futureValue should ===(ShutdownAllSequencersResponse.Success)
+
+    // verify that darknight sequencer is not present
+    intercept[Exception](resolveAkkaLocation(irisDarknightPrefix, Sequencer))
+
+    // verify that cal sequencer is not present
+    intercept[Exception](resolveAkkaLocation(irisCalPrefix, Sequencer))
+  }
+
   "should return loadscript error if configuration is missing for subsystem observation mode | ESW-176" in {
     TestSetup.startSequenceComponents(Prefix(ESW, "primary"))
 
