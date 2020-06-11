@@ -31,27 +31,23 @@ class SequenceManagerBehavior(
     sequencerUtil: SequencerUtil
 )(implicit val actorSystem: ActorSystem[_]) {
   import actorSystem.executionContext
+  import SequenceManagerBehavior._
 
   private val sequencerStartRetries = config.sequencerStartRetries
 
-  def setup: Behavior[SequenceManagerMsg] = Behaviors.setup { ctx => idle(ctx.self) }
+  def setup: SMBehavior = Behaviors.setup(ctx => idle(ctx.self))
 
-  private def idle(self: ActorRef[SequenceManagerMsg]): Behavior[SequenceManagerMsg] = {
+  private def idle(self: SelfRef): SMBehavior =
     receive[SequenceManagerIdleMsg](Idle) {
       case Configure(observingMode, replyTo)                    => configure(observingMode, self, replyTo)
       case Cleanup(observingMode, replyTo)                      => cleanup(observingMode, self, replyTo)
       case StartSequencer(subsystem, observingMode, replyTo)    => startSequencer(subsystem, observingMode, self, replyTo)
-      case ShutdownSequencer(subsystem, observingMode, replyTo) => shutDownSequencer(subsystem, observingMode, self, replyTo)
-      case ShutdownAllSequencers(replyTo)                       => shutDownAllSequencers(self, replyTo)
+      case ShutdownSequencer(subsystem, observingMode, replyTo) => shutdownSequencer(subsystem, observingMode, self, replyTo)
+      case ShutdownAllSequencers(replyTo)                       => shutdownAllSequencers(self, replyTo)
       case RestartSequencer(subsystem, observingMode, replyTo)  => restartSequencer(subsystem, observingMode, self, replyTo)
     }
-  }
 
-  private def configure(
-      obsMode: String,
-      self: ActorRef[SequenceManagerMsg],
-      replyTo: ActorRef[ConfigureResponse]
-  ): Behavior[SequenceManagerMsg] = {
+  private def configure(obsMode: String, self: SelfRef, replyTo: ActorRef[ConfigureResponse]): SMBehavior = {
     val runningObsModesF = getRunningObsModes.flatMapToAdt(
       configuredObsModes => configureResources(obsMode, configuredObsModes),
       error => CommonFailure.LocationServiceError(error.msg)
@@ -82,17 +78,10 @@ class SequenceManagerBehavior(
 
   // Configuration is in progress, waiting for ConfigurationResponseInternal message
   // Within this period, reject all the other messages except common messages
-  private def configuring(
-      self: ActorRef[SequenceManagerMsg],
-      replyTo: ActorRef[ConfigureResponse]
-  ): Behavior[SequenceManagerMsg] =
+  private def configuring(self: SelfRef, replyTo: ActorRef[ConfigureResponse]): SMBehavior =
     receive[ConfigurationResponseInternal](Configuring)(msg => replyAndGoToIdle(self, replyTo, msg.res))
 
-  private def cleanup(
-      obsMode: String,
-      self: ActorRef[SequenceManagerMsg],
-      replyTo: ActorRef[CleanupResponse]
-  ): Behavior[SequenceManagerMsg] = {
+  private def cleanup(obsMode: String, self: SelfRef, replyTo: ActorRef[CleanupResponse]): SMBehavior = {
     val cleanupResponseF =
       config
         .sequencers(obsMode)
@@ -105,15 +94,15 @@ class SequenceManagerBehavior(
 
   // Clean up is in progress, waiting for CleanupResponseInternal message
   // Within this period, reject all the other messages except common messages
-  private def cleaningUp(self: ActorRef[SequenceManagerMsg], replyTo: ActorRef[CleanupResponse]): Behavior[SequenceManagerMsg] =
+  private def cleaningUp(self: SelfRef, replyTo: ActorRef[CleanupResponse]): SMBehavior =
     receive[CleanupResponseInternal](CleaningUp)(msg => replyAndGoToIdle(self, replyTo, msg.res))
 
   private def startSequencer(
       subsystem: Subsystem,
       obsMode: String,
-      self: ActorRef[SequenceManagerMsg],
+      self: SelfRef,
       replyTo: ActorRef[StartSequencerResponse]
-  ): Behavior[SequenceManagerMsg] = {
+  ): SMBehavior = {
     // resolve is not needed here. Find should suffice
     // no concurrent start sequencer or configure is allowed
     locationServiceUtil
@@ -134,78 +123,62 @@ class SequenceManagerBehavior(
 
   // Starting sequencer is in progress, waiting for StartSequencerResponseInternal message
   // Within this period, reject all the other messages except common messages
-  private def startingSequencer(
-      self: ActorRef[SequenceManagerMsg],
-      replyTo: ActorRef[StartSequencerResponse]
-  ): Behavior[SequenceManagerMsg] =
+  private def startingSequencer(self: SelfRef, replyTo: ActorRef[StartSequencerResponse]): SMBehavior =
     receive[StartSequencerResponseInternal](StartingSequencer)(msg => replyAndGoToIdle(self, replyTo, msg.res))
 
-  private def shutDownSequencer(
+  private def shutdownSequencer(
       subsystem: Subsystem,
       obsMode: String,
-      self: ActorRef[SequenceManagerMsg],
+      self: SelfRef,
       replyTo: ActorRef[ShutdownSequencerResponse]
-  ): Behavior[SequenceManagerMsg] = {
-    val eventualResponseF: Future[ShutdownSequencerResponse] = sequencerUtil
-      .shutdownSequencer(subsystem, obsMode)
-      .mapToAdt(identity, identity)
-
-    eventualResponseF.map(self ! ShutdownSequencerResponseInternal(_))
+  ): SMBehavior = {
+    val shutdownResponseF = sequencerUtil.shutdownSequencer(subsystem, obsMode).mapToAdt(identity, identity)
+    shutdownResponseF.map(self ! ShutdownSequencerResponseInternal(_))
     shuttingDownSequencer(self, replyTo)
   }
 
   // Shutdown sequencer is in progress, waiting for ShutdownSequencerResponseInternal message
   // Within this period, reject all the other messages except common messages
   private def shuttingDownSequencer(
-      self: ActorRef[SequenceManagerMsg],
+      self: SelfRef,
       replyTo: ActorRef[ShutdownSequencerResponse]
-  ): Behavior[SequenceManagerMsg] =
+  ): SMBehavior =
     receive[ShutdownSequencerResponseInternal](ShuttingDownSequencer)(msg => replyAndGoToIdle(self, replyTo, msg.res))
 
   private def restartSequencer(
       subsystem: Subsystem,
       obsMode: String,
-      self: ActorRef[SequenceManagerMsg],
+      self: SelfRef,
       replyTo: ActorRef[RestartSequencerResponse]
-  ): Behavior[SequenceManagerMsg] = {
-    val eventualResponseF: Future[RestartSequencerResponse] = sequencerUtil
-      .restartSequencer(subsystem, obsMode, sequencerStartRetries)
-
-    eventualResponseF.map(self ! RestartSequencerResponseInternal(_))
+  ): SMBehavior = {
+    val restartResponseF = sequencerUtil.restartSequencer(subsystem, obsMode, sequencerStartRetries)
+    restartResponseF.map(self ! RestartSequencerResponseInternal(_))
     restartingSequencer(self, replyTo)
   }
-
-  private def restartingSequencer(
-      self: ActorRef[SequenceManagerMsg],
-      replyTo: ActorRef[RestartSequencerResponse]
-  ): Behavior[SequenceManagerMsg] = {
+  private def restartingSequencer(self: SelfRef, replyTo: ActorRef[RestartSequencerResponse]): SMBehavior =
     receive[RestartSequencerResponseInternal](RestartingSequencer)(msg => replyAndGoToIdle(self, replyTo, msg.res))
-  }
 
-  private def shutDownAllSequencers(
-      self: ActorRef[SequenceManagerMsg],
+  private def shutdownAllSequencers(
+      self: SelfRef,
       replyTo: ActorRef[ShutdownAllSequencersResponse]
-  ): Behavior[SequenceManagerMsg] = {
-    val eventualResponseF: Future[ShutdownAllSequencersResponse] = sequencerUtil.shutdownAllSequencers()
-
-    eventualResponseF.map(self ! ShutdownAllSequencersResponseInternal(_))
+  ): SMBehavior = {
+    val shutdownAllResponseF = sequencerUtil.shutdownAllSequencers()
+    shutdownAllResponseF.map(self ! ShutdownAllSequencersResponseInternal(_))
     shuttingDownAllSequencers(self, replyTo)
   }
 
   private def shuttingDownAllSequencers(
-      self: ActorRef[SequenceManagerMsg],
+      self: SelfRef,
       replyTo: ActorRef[ShutdownAllSequencersResponse]
-  ): Behavior[SequenceManagerMsg] =
+  ): SMBehavior =
     receive[ShutdownAllSequencersResponseInternal](ShuttingDownAllSequencers)(msg => replyAndGoToIdle(self, replyTo, msg.res))
 
-  private def replyAndGoToIdle[T](self: ActorRef[SequenceManagerMsg], replyTo: ActorRef[T], msg: T) = {
+  private def replyAndGoToIdle[T](self: SelfRef, replyTo: ActorRef[T], msg: T) = {
     replyTo ! msg
     idle(self)
   }
 
-  private def receive[T <: SequenceManagerMsg: ClassTag](
-      state: SequenceManagerState
-  )(handler: T => Behavior[SequenceManagerMsg]): Behavior[SequenceManagerMsg] =
+  private def receive[T <: SequenceManagerMsg: ClassTag](state: SequenceManagerState)(handler: T => SMBehavior): SMBehavior =
     Behaviors.receiveMessage {
       case msg: CommonMessage => handleCommon(msg, state); Behaviors.same
       case msg: T             => handler(msg)
@@ -230,4 +203,9 @@ class SequenceManagerBehavior(
 
   // componentName = obsMode, as per convention, sequencer uses obs mode to form component name
   private def getObsMode(akkaLocation: AkkaLocation): String = akkaLocation.prefix.componentName
+}
+
+object SequenceManagerBehavior {
+  type SMBehavior = Behavior[SequenceManagerMsg]
+  type SelfRef    = ActorRef[SequenceManagerMsg]
 }

@@ -33,8 +33,8 @@ class SequencerUtil(locationServiceUtil: LocationServiceUtil, sequenceComponentU
 
   private def masterSequencerConnection(obsMode: String) = HttpConnection(ComponentId(Prefix(ESW, obsMode), Sequencer))
 
-  def resolveMasterSequencerOf(observingMode: String): Future[Either[EswLocationError, HttpLocation]] =
-    locationServiceUtil.resolve(masterSequencerConnection(observingMode), Timeouts.DefaultTimeout)
+  def resolveMasterSequencerOf(obsMode: String): Future[Either[EswLocationError, HttpLocation]] =
+    locationServiceUtil.resolve(masterSequencerConnection(obsMode), Timeouts.DefaultTimeout)
 
   // spawn the sequencer on available SequenceComponent
   def startSequencer(
@@ -50,10 +50,10 @@ class SequencerUtil(locationServiceUtil: LocationServiceUtil, sequenceComponentU
         case Left(e)                   => Future.successful(Left(e))
       }
 
-  def startSequencers(observingMode: String, requiredSequencers: Sequencers, retryCount: Int): Future[ConfigureResponse] = {
-    def masterSequencerId = ComponentId(Prefix(ESW, observingMode), Sequencer)
+  def startSequencers(obsMode: String, requiredSequencers: Sequencers, retryCount: Int): Future[ConfigureResponse] = {
+    def masterSequencerId = ComponentId(Prefix(ESW, obsMode), Sequencer)
 
-    val startSequencerResponses = sequential(requiredSequencers.subsystems)(startSequencer(_, observingMode, retryCount))
+    val startSequencerResponses = sequential(requiredSequencers.subsystems)(startSequencer(_, obsMode, retryCount))
     startSequencerResponses.mapToAdt(_ => Success(masterSequencerId), e => FailedToStartSequencers(e.map(_.msg).toSet))
   }
 
@@ -81,20 +81,12 @@ class SequencerUtil(locationServiceUtil: LocationServiceUtil, sequenceComponentU
   def shutdownAllSequencers(): Future[ShutdownAllSequencersResponse] =
     locationServiceUtil.listAkkaLocationsBy(Sequencer).flatMapToAdt(shutdownSequencers, e => LocationServiceError(e.msg))
 
-  def restartSequencer(
-      subSystem: Subsystem,
-      obsMode: String,
-      retryCount: Int
-  ): Future[RestartSequencerResponse] =
-    shutdownSequencer(subSystem, obsMode).flatMapToAdt(
-      _ => start(subSystem, obsMode, retryCount),
-      identity
-    )
+  def restartSequencer(subSystem: Subsystem, obsMode: String, retryCount: Int): Future[RestartSequencerResponse] =
+    shutdownSequencer(subSystem, obsMode).flatMapToAdt(_ => start(subSystem, obsMode, retryCount), identity)
 
-  private def start(subSystem: Subsystem, obsMode: String, retryCount: Int): Future[RestartSequencerResponse] = {
+  private def start(subSystem: Subsystem, obsMode: String, retryCount: Int): Future[RestartSequencerResponse] =
     startSequencer(subSystem, obsMode, retryCount)
       .mapToAdt(akkaLocation => RestartSequencerResponse.Success(akkaLocation.connection.componentId), identity)
-  }
 
   private def loadScript(
       subSystem: Subsystem,
@@ -102,14 +94,15 @@ class SequencerUtil(locationServiceUtil: LocationServiceUtil, sequenceComponentU
       seqCompApi: SequenceComponentApi,
       retryCount: Int
   ): Future[Either[StartSequencerResponse.Failure, AkkaLocation]] =
-    seqCompApi
-      .loadScript(subSystem, observingMode)
-      .map(_.response)
+    loadScript(subSystem, observingMode, seqCompApi)
       .flatMap {
         case Left(error: LoadingScriptFailed) => Future.successful(Left(LoadScriptError(error.msg)))
         case Left(_) if retryCount > 0        => startSequencer(subSystem, observingMode, retryCount - 1)
         case Right(location)                  => Future.successful(Right(location))
       }
+
+  private def loadScript(subSystem: Subsystem, observingMode: String, seqCompApi: SequenceComponentApi) =
+    seqCompApi.loadScript(subSystem, observingMode).map(_.response)
 
   // get sequence component from Sequencer and unload sequencer script
   private def unloadScript(
