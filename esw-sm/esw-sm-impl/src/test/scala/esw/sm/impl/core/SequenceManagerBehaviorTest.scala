@@ -16,10 +16,10 @@ import esw.sm.api.SequenceManagerState
 import esw.sm.api.SequenceManagerState._
 import esw.sm.api.actor.messages.SequenceManagerMsg
 import esw.sm.api.actor.messages.SequenceManagerMsg._
-import esw.sm.api.models.CommonFailure.{ConfigurationMissing, LocationServiceError}
-import esw.sm.api.models.ConfigureResponse.{ConflictingResourcesWithRunningObsMode, Success}
-import esw.sm.api.models.SequenceManagerError.{LoadScriptError, SpawnSequenceComponentFailed, UnloadScriptError}
-import esw.sm.api.models._
+import esw.sm.api.protocol.CommonFailure.{ConfigurationMissing, LocationServiceError}
+import esw.sm.api.protocol.ConfigureResponse.{ConflictingResourcesWithRunningObsMode, Success}
+import esw.sm.api.protocol.SequenceManagerError.{LoadScriptError, SpawnSequenceComponentFailed, UnloadScriptError}
+import esw.sm.api.protocol._
 import esw.sm.impl.config.{ObsModeConfig, Resources, SequenceManagerConfig, Sequencers}
 import esw.sm.impl.utils.SequencerUtil
 import org.scalatest.prop.TableDrivenPropertyChecks

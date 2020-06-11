@@ -15,11 +15,11 @@ import esw.commons.utils.location.{EswLocationError, LocationServiceUtil}
 import esw.ocs.api.actor.client.SequencerApiFactory
 import esw.ocs.api.protocol.ScriptError.LoadingScriptFailed
 import esw.ocs.api.{SequenceComponentApi, SequencerApi}
-import esw.sm.api.models.CleanupResponse.FailedToShutdownSequencers
-import esw.sm.api.models.CommonFailure.LocationServiceError
-import esw.sm.api.models.ConfigureResponse.{FailedToStartSequencers, Success}
-import esw.sm.api.models.SequenceManagerError.UnloadScriptError
-import esw.sm.api.models._
+import esw.sm.api.protocol.CleanupResponse.FailedToShutdownSequencers
+import esw.sm.api.protocol.CommonFailure.LocationServiceError
+import esw.sm.api.protocol.ConfigureResponse.{FailedToStartSequencers, Success}
+import esw.sm.api.protocol.SequenceManagerError.UnloadScriptError
+import esw.sm.api.protocol._
 import esw.sm.impl.config.Sequencers
 
 import scala.async.Async.{async, await}

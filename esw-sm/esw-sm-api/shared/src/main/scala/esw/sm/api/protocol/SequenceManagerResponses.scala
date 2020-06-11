@@ -1,4 +1,4 @@
-package esw.sm.api.models
+package esw.sm.api.protocol
 
 import csw.location.api.models.ComponentId
 import esw.sm.api.codecs.SmAkkaSerializable

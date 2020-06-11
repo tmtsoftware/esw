@@ -12,7 +12,7 @@ import csw.prefix.models.Subsystem.{ESW, IRIS, TCS}
 import esw.commons.BaseTestSuite
 import esw.commons.utils.location.LocationServiceUtil
 import esw.ocs.api.SequenceComponentApi
-import esw.sm.api.models.SequenceManagerError.SpawnSequenceComponentFailed
+import esw.sm.api.protocol.SequenceManagerError.SpawnSequenceComponentFailed
 
 import scala.concurrent.Future
 import scala.concurrent.duration.DurationInt
