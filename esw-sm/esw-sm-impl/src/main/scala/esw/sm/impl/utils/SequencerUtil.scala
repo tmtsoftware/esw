@@ -15,6 +15,7 @@ import esw.commons.utils.location.{EswLocationError, LocationServiceUtil}
 import esw.ocs.api.actor.client.SequencerApiFactory
 import esw.ocs.api.protocol.ScriptError.LoadingScriptFailed
 import esw.ocs.api.{SequenceComponentApi, SequencerApi}
+import esw.sm.api.protocol.CleanupResponse.FailedToShutdownSequencers
 import esw.sm.api.protocol.CommonFailure.LocationServiceError
 import esw.sm.api.protocol.ConfigureResponse.{FailedToStartSequencers, Success}
 import esw.sm.api.protocol.ShutdownSequencerResponse.UnloadScriptError

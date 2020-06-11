@@ -1,6 +1,7 @@
 package esw.sm.api.codecs
 
 import csw.location.api.codec.LocationCodecs
+import esw.sm.api.protocol.ShutdownSequencerResponse.UnloadScriptError
 import esw.sm.api.protocol._
 import io.bullet.borer.Codec
 import io.bullet.borer.derivation.MapBasedCodecs.{deriveAllCodecs, deriveCodec}

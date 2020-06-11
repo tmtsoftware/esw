@@ -5,7 +5,7 @@ import csw.prefix.models.Prefix
 import esw.sm.api.codecs.SmAkkaSerializable
 import esw.sm.api.protocol.ShutdownSequencerResponse.UnloadScriptError
 
-private[models] sealed trait SmFailure extends Throwable
+private[protocol] sealed trait SmFailure extends Throwable
 
 sealed trait ConfigureResponse extends SmAkkaSerializable
 
