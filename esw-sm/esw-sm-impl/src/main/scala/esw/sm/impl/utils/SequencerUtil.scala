@@ -21,7 +21,6 @@ import esw.sm.api.protocol.StartSequencerResponse.LoadScriptError
 import esw.sm.api.protocol._
 import esw.sm.impl.config.Sequencers
 
-import scala.concurrent.duration.DurationLong
 import scala.concurrent.{ExecutionContext, Future}
 
 class SequencerUtil(locationServiceUtil: LocationServiceUtil, sequenceComponentUtil: SequenceComponentUtil)(implicit
@@ -54,7 +53,7 @@ class SequencerUtil(locationServiceUtil: LocationServiceUtil, sequenceComponentU
       subsystem: Subsystem,
       obsMode: String
   ): Future[Either[ShutdownSequencerResponse.Failure, ShutdownSequencerResponse.Success.type]] = {
-    resolveSequencer(obsMode, subsystem)
+    findSequencer(obsMode, subsystem)
       .flatMap {
         case Left(listingFailed: RegistrationListingFailed) => Future.successful(Left(LocationServiceError(listingFailed.msg)))
         case Left(LocationNotFound(_))                      => Future.successful(Right(ShutdownSequencerResponse.Success))
@@ -109,8 +108,8 @@ class SequencerUtil(locationServiceUtil: LocationServiceUtil, sequenceComponentU
 
   // Created in order to mock the behavior of sequencer API availability for unit test
   private[sm] def createSequencerClient(location: Location): SequencerApi = SequencerApiFactory.make(location)
-  private def resolveSequencer(obsMode: String, subsystem: Subsystem) =
-    locationServiceUtil.resolveSequencer(subsystem, obsMode, 3.seconds)
+  private def findSequencer(obsMode: String, subsystem: Subsystem) =
+    locationServiceUtil.findSequencer(subsystem, obsMode)
 
   private def traverse[T, L, R](i: List[T])(f: T => Future[Either[L, R]])   = Future.traverse(i)(f).map(_.sequence)
   private def sequential[T, L, R](i: List[T])(f: T => Future[Either[L, R]]) = FutureUtils.sequential(i)(f).map(_.sequence)
