@@ -235,7 +235,8 @@ object Dependencies {
     Seq(
       Libs.`msocket-impl-jvm`,
       AkkaHttp.`akka-http`,
-      AkkaHttp.`akka-http-testkit` % Test
+      AkkaHttp.`akka-http-testkit` % Test,
+      Akka.`akka-stream-testkit`   % Test
     )
   )
 
