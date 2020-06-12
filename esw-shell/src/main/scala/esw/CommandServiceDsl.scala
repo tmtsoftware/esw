@@ -26,19 +26,19 @@ class CommandServiceDsl(val shellWiring: ShellWiring) {
 
   def sequencerCommandService(subsystem: Subsystem, observingMode: String): SequencerApi =
     locationUtil
-      .resolveSequencer(subsystem, observingMode, Timeouts.defaultDuration)
+      .findSequencer(subsystem, observingMode)
       .map(e => new SequencerImpl(throwLeft(e).sequencerRef))
       .await()
 
   def assemblyCommandService(prefix: String): CommandService =
-    CommandServiceFactory.make(resolveAkkaLocation(prefix, Assembly).await())
+    CommandServiceFactory.make(findAkkaLocation(prefix, Assembly).await())
 
   def hcdCommandService(prefix: String): CommandService =
-    CommandServiceFactory.make(resolveAkkaLocation(prefix, HCD).await())
+    CommandServiceFactory.make(findAkkaLocation(prefix, HCD).await())
 
-  def resolveAkkaLocation(prefix: String, componentType: ComponentType): Future[AkkaLocation] =
+  def findAkkaLocation(prefix: String, componentType: ComponentType): Future[AkkaLocation] =
     locationUtil
-      .resolve(AkkaConnection(ComponentId(Prefix(prefix), componentType)), Timeouts.resolveLocationDuration)
+      .find(AkkaConnection(ComponentId(Prefix(prefix), componentType)))
       .map(throwLeft)
 
   def throwLeft[T](e: Either[EswLocationError, T]): T =
