@@ -34,7 +34,7 @@ class SequencerUtil(locationServiceUtil: LocationServiceUtil, sequenceComponentU
   private def masterSequencerConnection(obsMode: String) = HttpConnection(ComponentId(Prefix(ESW, obsMode), Sequencer))
 
   def resolveMasterSequencerOf(obsMode: String): Future[Either[EswLocationError, HttpLocation]] =
-    locationServiceUtil.resolve(masterSequencerConnection(obsMode), Timeouts.DefaultTimeout)
+    locationServiceUtil.resolve(masterSequencerConnection(obsMode), Timeouts.DefaultResolveLocationDuration)
 
   // spawn the sequencer on available SequenceComponent
   def startSequencer(

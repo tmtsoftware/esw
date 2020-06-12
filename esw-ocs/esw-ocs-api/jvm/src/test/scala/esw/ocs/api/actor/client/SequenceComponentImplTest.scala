@@ -5,7 +5,6 @@ import java.net.URI
 import akka.Done
 import akka.actor.typed.scaladsl.Behaviors
 import akka.actor.typed.{ActorSystem, SpawnProtocol}
-import akka.util.Timeout
 import csw.location.api.extensions.ActorExtension.RichActor
 import csw.location.api.models.ComponentType.SequenceComponent
 import csw.location.api.models.Connection.AkkaConnection
@@ -18,11 +17,9 @@ import esw.ocs.api.actor.messages.SequenceComponentMsg._
 import esw.ocs.api.protocol.{GetStatusResponse, ScriptError, ScriptResponse}
 
 import scala.concurrent.ExecutionContext
-import scala.concurrent.duration.DurationInt
 
 class SequenceComponentImplTest extends BaseTestSuite {
   private implicit val system: ActorSystem[SpawnProtocol.Command] = ActorSystem(SpawnProtocol(), "SequenceComponentImplTest")
-  private implicit val timeout: Timeout                           = 10.seconds
 
   private val location =
     AkkaLocation(AkkaConnection(ComponentId(Prefix("esw.test"), ComponentType.Sequencer)), new URI("uri"))

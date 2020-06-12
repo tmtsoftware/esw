@@ -16,7 +16,9 @@ class CommandUtil(locationServiceUtil: LocationServiceUtil)(implicit actorSystem
   import actorSystem.executionContext
 
   def jResolveAkkaLocation(prefix: Prefix, componentType: ComponentType): CompletionStage[AkkaLocation] =
-    locationServiceUtil.resolve(AkkaConnection(ComponentId(prefix, componentType)), Timeouts.DefaultTimeout).toJava
+    locationServiceUtil
+      .resolve(AkkaConnection(ComponentId(prefix, componentType)), Timeouts.DefaultResolveLocationDuration)
+      .toJava
 
   def jResolveComponentRef(prefix: Prefix, componentType: ComponentType): CompletionStage[ActorRef[ComponentMessage]] =
     jResolveAkkaLocation(prefix, componentType).thenApply { l => l.componentRef }

@@ -38,7 +38,7 @@ class CommandServiceDsl(val shellWiring: ShellWiring) {
 
   def resolveAkkaLocation(prefix: String, componentType: ComponentType): Future[AkkaLocation] =
     locationUtil
-      .resolve(AkkaConnection(ComponentId(Prefix(prefix), componentType)), Timeouts.defaultDuration)
+      .resolve(AkkaConnection(ComponentId(Prefix(prefix), componentType)), Timeouts.resolveLocationDuration)
       .map(throwLeft)
 
   def throwLeft[T](e: Either[EswLocationError, T]): T =

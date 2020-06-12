@@ -13,11 +13,13 @@ import esw.ocs.api.actor.messages.SequenceComponentMsg.{GetStatus, LoadScript, R
 import esw.ocs.api.protocol.{GetStatusResponse, ScriptResponse}
 
 import scala.concurrent.Future
+import scala.concurrent.duration.DurationInt
 
 class SequenceComponentImpl(sequenceComponentLocation: AkkaLocation)(implicit
-    actorSystem: ActorSystem[_],
-    timeout: Timeout
+    actorSystem: ActorSystem[_]
 ) extends SequenceComponentApi {
+
+  implicit val timeout: Timeout = 5.seconds
 
   private val sequenceComponentRef = sequenceComponentLocation.uri.toActorRef.unsafeUpcast[SequenceComponentMsg]
 

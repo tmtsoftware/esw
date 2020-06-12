@@ -7,7 +7,7 @@ import akka.Done
 import akka.actor.CoordinatedShutdown
 import csw.location.api.models.ComponentId
 import csw.location.api.models.ComponentType.{Sequencer, Service}
-import csw.location.api.models.Connection.AkkaConnection
+import csw.location.api.models.Connection.{AkkaConnection, HttpConnection}
 import csw.prefix.models.Prefix
 import csw.prefix.models.Subsystem._
 import esw.ocs.api.actor.client.{SequenceComponentImpl, SequencerImpl}
@@ -282,6 +282,7 @@ class SequenceManagerIntegrationTest extends EswTestKit {
     def unregisterSequenceManager(): Done = {
       seqManagerWirings.clear()
       locationService.unregister(AkkaConnection(ComponentId(sequenceManagerPrefix, Service))).futureValue
+      locationService.unregister(HttpConnection(ComponentId(sequenceManagerPrefix, Service))).futureValue
     }
 
     def cleanup(): Unit = {

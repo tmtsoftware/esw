@@ -1,7 +1,6 @@
 package esw.sm.impl.utils
 
 import akka.actor.typed.ActorSystem
-import akka.util.Timeout
 import csw.location.api.models.ComponentId
 import csw.location.api.models.ComponentType.{Machine, SequenceComponent}
 import csw.location.api.models.Connection.AkkaConnection
@@ -21,7 +20,7 @@ import esw.sm.api.protocol.CommonFailure.LocationServiceError
 import scala.concurrent.Future
 import scala.util.Random
 
-class AgentUtil(locationServiceUtil: LocationServiceUtil)(implicit actorSystem: ActorSystem[_], timeout: Timeout) {
+class AgentUtil(locationServiceUtil: LocationServiceUtil)(implicit actorSystem: ActorSystem[_]) {
   import actorSystem.executionContext
 
   def spawnSequenceComponentFor(subsystem: Subsystem): Future[Either[AgentError, SequenceComponentApi]] = {
@@ -55,7 +54,7 @@ class AgentUtil(locationServiceUtil: LocationServiceUtil)(implicit actorSystem: 
 
   private def resolveSeqComp(seqCompPrefix: Prefix) =
     locationServiceUtil
-      .resolve(AkkaConnection(ComponentId(seqCompPrefix, SequenceComponent)), Timeouts.DefaultTimeout)
+      .resolve(AkkaConnection(ComponentId(seqCompPrefix, SequenceComponent)), within = Timeouts.DefaultResolveLocationDuration)
       .mapRight(loc => new SequenceComponentImpl(loc))
       .mapLeft(e => LocationServiceError(e.msg))
 }

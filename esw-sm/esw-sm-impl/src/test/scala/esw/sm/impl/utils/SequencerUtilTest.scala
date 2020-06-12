@@ -45,7 +45,7 @@ class SequencerUtilTest extends BaseTestSuite {
 
       sequencerUtil.resolveMasterSequencerOf(obsMode).rightValue should ===(masterSeqLocation)
 
-      verify(locationServiceUtil).resolve(masterSeqConnection, Timeouts.DefaultTimeout)
+      verify(locationServiceUtil).resolve(masterSeqConnection, Timeouts.DefaultResolveLocationDuration)
     }
   }
 
@@ -426,6 +426,7 @@ class SequencerUtilTest extends BaseTestSuite {
     val masterSeqConnection: HttpConnection = HttpConnection(ComponentId(Prefix(ESW, obsMode), Sequencer))
     val masterSeqLocation: HttpLocation     = HttpLocation(masterSeqConnection, URI.create(""))
 
-    when(locationServiceUtil.resolve(masterSeqConnection, Timeouts.DefaultTimeout)).thenReturn(futureRight(masterSeqLocation))
+    when(locationServiceUtil.resolve(masterSeqConnection, Timeouts.DefaultResolveLocationDuration))
+      .thenReturn(futureRight(masterSeqLocation))
   }
 }

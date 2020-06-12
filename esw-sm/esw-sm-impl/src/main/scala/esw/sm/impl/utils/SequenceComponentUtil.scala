@@ -2,7 +2,6 @@ package esw.sm.impl.utils
 
 import akka.Done
 import akka.actor.typed.ActorSystem
-import akka.util.Timeout
 import csw.location.api.models.AkkaLocation
 import csw.location.api.models.ComponentType.SequenceComponent
 import csw.prefix.models.Subsystem
@@ -18,8 +17,7 @@ import scala.async.Async._
 import scala.concurrent.Future
 
 class SequenceComponentUtil(locationServiceUtil: LocationServiceUtil, agentUtil: AgentUtil)(implicit
-    actorSystem: ActorSystem[_],
-    timeout: Timeout
+    actorSystem: ActorSystem[_]
 ) {
   import actorSystem.executionContext
 
