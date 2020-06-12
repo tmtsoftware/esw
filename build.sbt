@@ -236,7 +236,8 @@ lazy val `esw-sm` = project
     `esw-sm-api`.js,
     `esw-sm-api`.jvm,
     `esw-sm-impl`,
-    `esw-sm-app`
+    `esw-sm-app`,
+    `esw-sm-handler`
   )
 
 lazy val `esw-sm-api` = crossProject(JSPlatform, JVMPlatform)
@@ -265,7 +266,7 @@ lazy val `esw-sm-handler` = project
   .settings(
     libraryDependencies ++= Dependencies.EswSmHandlers.value
   )
-  .dependsOn(`esw-sm-api`.jvm)
+  .dependsOn(`esw-sm-api`.jvm, `esw-commons` % "test->test")
 
 lazy val `esw-sm-app` = project
   .in(file("esw-sm/esw-sm-app"))

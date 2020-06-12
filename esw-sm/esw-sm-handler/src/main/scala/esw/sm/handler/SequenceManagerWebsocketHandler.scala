@@ -18,10 +18,6 @@ class SequenceManagerWebsocketHandler(sequenceManager: SequenceManagerApi, conte
 
   override def handle(request: SequenceManagerWebsocketRequest): Source[Message, NotUsed] =
     request match {
-      case Configure(obsMode)                   => stream(configure(obsMode))
-      case Cleanup(obsMode)                     => stream(cleanup(obsMode))
-      case StartSequencer(subsytem, obsMode)    => stream(startSequencer(subsytem, obsMode))
-      case ShutdownSequencer(subsytem, obsMode) => stream(shutdownSequencer(subsytem, obsMode))
-      case RestartSequencer(subsytem, obsMode)  => stream(restartSequencer(subsytem, obsMode))
+      case Configure(obsMode) => stream(configure(obsMode))
     }
 }
