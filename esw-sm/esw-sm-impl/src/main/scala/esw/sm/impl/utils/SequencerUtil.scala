@@ -2,16 +2,14 @@ package esw.sm.impl.utils
 
 import akka.actor.typed.ActorSystem
 import csw.location.api.models.ComponentType.Sequencer
-import csw.location.api.models.Connection.HttpConnection
-import csw.location.api.models.{AkkaLocation, ComponentId, HttpLocation, Location}
+import csw.location.api.models.{AkkaLocation, ComponentId, Location}
 import csw.prefix.models.Subsystem.ESW
 import csw.prefix.models.{Prefix, Subsystem}
-import esw.commons.Timeouts
 import esw.commons.extensions.FutureEitherExt.FutureEitherOps
 import esw.commons.extensions.ListEitherExt.ListEitherOps
 import esw.commons.utils.FutureUtils
 import esw.commons.utils.location.EswLocationError.{LocationNotFound, RegistrationListingFailed}
-import esw.commons.utils.location.{EswLocationError, LocationServiceUtil}
+import esw.commons.utils.location.LocationServiceUtil
 import esw.ocs.api.actor.client.SequencerApiFactory
 import esw.ocs.api.protocol.ScriptError.LoadingScriptFailed
 import esw.ocs.api.{SequenceComponentApi, SequencerApi}
@@ -30,11 +28,6 @@ class SequencerUtil(locationServiceUtil: LocationServiceUtil, sequenceComponentU
     actorSystem: ActorSystem[_]
 ) {
   implicit private val ec: ExecutionContext = actorSystem.executionContext
-
-  private def masterSequencerConnection(obsMode: String) = HttpConnection(ComponentId(Prefix(ESW, obsMode), Sequencer))
-
-  def resolveMasterSequencerOf(obsMode: String): Future[Either[EswLocationError, HttpLocation]] =
-    locationServiceUtil.resolve(masterSequencerConnection(obsMode), Timeouts.DefaultResolveLocationDuration)
 
   // spawn the sequencer on available SequenceComponent
   def startSequencer(

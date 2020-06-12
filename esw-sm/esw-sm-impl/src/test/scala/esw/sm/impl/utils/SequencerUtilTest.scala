@@ -37,18 +37,6 @@ class SequencerUtilTest extends BaseTestSuite {
     system.whenTerminated.futureValue
   }
 
-  "resolveMasterSequencerFor" must {
-    "return the master sequencer for the given obsMode  | ESW-178" in {
-      val obsMode = "clearSky"
-      val setup   = new TestSetup(obsMode)
-      import setup._
-
-      sequencerUtil.resolveMasterSequencerOf(obsMode).rightValue should ===(masterSeqLocation)
-
-      verify(locationServiceUtil).resolve(masterSeqConnection, Timeouts.DefaultResolveLocationDuration)
-    }
-  }
-
   "startSequencers" must {
     "start all the given sequencers | ESW-178" in {
       val obsMode = "darkNight"
