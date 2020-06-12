@@ -5,7 +5,7 @@ import csw.aas.core.commons.AASConnection
 import csw.location.api.models.HttpRegistration
 import csw.location.api.scaladsl.LocationService
 import csw.network.utils.{Networks, SocketUtils}
-import org.tmt.embedded_keycloak.KeycloakData.{AdminUser, ApplicationUser, Client, Realm}
+import org.tmt.embedded_keycloak.KeycloakData.{AdminUser, ApplicationUser, Client, ClientRole, Realm}
 import org.tmt.embedded_keycloak.impl.StopHandle
 import org.tmt.embedded_keycloak.utils.BearerToken
 import org.tmt.embedded_keycloak.{EmbeddedKeycloak, KeycloakData, Settings => KeycloakSettings}
@@ -43,7 +43,7 @@ trait KeycloakUtils extends BaseTestSuite {
   )
 
   private lazy val `esw-gateway-client`: Client =
-    Client("esw-gateway-client", "public", passwordGrantEnabled = true, authorizationEnabled = false)
+    Client("esw-gateway-client", "public", implicitFlowEnabled = true, passwordGrantEnabled = true, authorizationEnabled = false)
 
   private lazy val userWithIrisEngAndIrisUserRole = ApplicationUser(
     gatewayRoleIrisUserIrisEng,
