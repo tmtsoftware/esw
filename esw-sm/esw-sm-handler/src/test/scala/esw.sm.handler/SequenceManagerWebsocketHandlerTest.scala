@@ -6,7 +6,7 @@ import akka.http.scaladsl.server.Route
 import akka.http.scaladsl.testkit.{ScalatestRouteTest, WSProbe}
 import csw.location.api.models.{ComponentId, ComponentType}
 import csw.prefix.models.Prefix
-import csw.prefix.models.Subsystem.{ESW, TCS}
+import csw.prefix.models.Subsystem.{ESW}
 import esw.commons.BaseTestSuite
 import esw.sm.api.SequenceManagerApi
 import esw.sm.api.codecs.SequenceManagerHttpCodec
