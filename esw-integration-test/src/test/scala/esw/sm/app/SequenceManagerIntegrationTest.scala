@@ -1,7 +1,9 @@
 package esw.sm.app
 
-import java.nio.file.Paths
+import java.io.File
+import java.nio.file.{Files, Path, Paths}
 
+import akka.Done
 import akka.actor.CoordinatedShutdown
 import csw.location.api.models.ComponentId
 import csw.location.api.models.ComponentType.{Sequencer, Service}
@@ -15,6 +17,7 @@ import esw.ocs.app.wiring.SequenceComponentWiring
 import esw.ocs.testkit.EswTestKit
 import esw.sm.api.SequenceManagerApi
 import esw.sm.api.actor.client.SequenceManagerImpl
+import esw.sm.api.models.CommonFailure.ConfigurationMissing
 import esw.sm.api.models.ConfigureResponse.ConflictingResourcesWithRunningObsMode
 import esw.sm.api.models.StartSequencerResponse.LoadScriptError
 import esw.sm.api.models._
@@ -127,7 +130,7 @@ class SequenceManagerIntegrationTest extends EswTestKit {
     sequenceManager.cleanup(IRIS_CAL)
   }
 
-  "throw exception if config file is missing | ESW-162" in {
+  "throw exception if config file is missing | ESW-162, ESW-160" in {
     val exception = intercept[RuntimeException](SequenceManagerApp.main(Array("start", "-p", "sm-config.conf")))
     exception.getMessage shouldBe "File does not exist on local disk at path sm-config.conf"
   }
@@ -218,6 +221,33 @@ class SequenceManagerIntegrationTest extends EswTestKit {
     loadScriptError.msg should ===("Script configuration missing for [ESW] with [invalid_obs_mode]")
   }
 
+  "should support all observation modes in configuration file | ESW-160" in {
+    val tmpPath = File.createTempFile("temp-config", ".conf").toPath
+    File.createTempFile("temp-config", ".conf").deleteOnExit()
+    Files.write(tmpPath, "esw-sm {\n  obsModes: {}}".getBytes)
+
+    TestSetup.startSequenceComponents(Prefix(ESW, "primary"))
+    val obsMode = "APS_Cal"
+
+    // try to configure obsMode which is not present in script
+    val sequenceManager = TestSetup.startSequenceManager(tmpPath)
+    sequenceManager.configure(obsMode).futureValue shouldBe ConfigurationMissing(obsMode)
+
+    // Add obs mode in config file
+    Files.write(
+      tmpPath,
+      "esw-sm {\n  obsModes: {\n    APS_Cal: {\n      resources: [ESW, APS]\n      sequencers: [ESW]\n    } } }".getBytes
+    )
+
+    // unregister SM and start SM so configuration for obsMode can be picked up
+    TestSetup.unregisterSequenceManager()
+    val restartedSequenceManager    = TestSetup.startSequenceManager(tmpPath)
+    val response: ConfigureResponse = restartedSequenceManager.configure(obsMode).futureValue
+
+    // verify that configuration is successful
+    response should ===(ConfigureResponse.Success(ComponentId(Prefix(ESW, obsMode), Sequencer)))
+  }
+
   private def sequencerConnection(prefix: Prefix) = AkkaConnection(ComponentId(prefix, Sequencer))
 
   private def assertThatSeqCompIsAvailable(prefix: Prefix): Unit = assertSeqCompAvailability(isSeqCompAvailable = true, prefix)
@@ -240,12 +270,18 @@ class SequenceManagerIntegrationTest extends EswTestKit {
         seqCompWirings += SequencerApp.run(SequenceComponent(prefix.subsystem, Some(prefix.componentName)))
       }
 
-    def startSequenceManager(): SequenceManagerApi = {
-      val configFilePath = Paths.get(ClassLoader.getSystemResource("smResources.conf").toURI)
-      val wiring         = SequenceManagerApp.run(StartCommand(configFilePath))
+    val path: Path = Paths.get(ClassLoader.getSystemResource("smResources.conf").toURI)
+
+    def startSequenceManager(configFilePath: Path = path): SequenceManagerApi = {
+      val wiring = SequenceManagerApp.run(StartCommand(configFilePath))
       seqManagerWirings += wiring
       val smLocation = resolveAkkaLocation(sequenceManagerPrefix, Service)
       new SequenceManagerImpl(smLocation)
+    }
+
+    def unregisterSequenceManager(): Done = {
+      seqManagerWirings.clear()
+      locationService.unregister(AkkaConnection(ComponentId(sequenceManagerPrefix, Service))).futureValue
     }
 
     def cleanup(): Unit = {

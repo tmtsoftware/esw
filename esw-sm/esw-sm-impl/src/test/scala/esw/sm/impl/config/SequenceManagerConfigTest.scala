@@ -46,7 +46,7 @@ class SequenceManagerConfigTest extends AnyWordSpecLike with Matchers with TypeC
       sequenceManagerConfig.resources(DarkNight) should ===(Some(Resources("r1", "r2")))
     }
 
-    "return ConfigurationMissing if obsMode not present in map | ESW-162" in {
+    "return ConfigurationMissing if obsMode not present in map while fetching Resources | ESW-162" in {
       val sequenceManagerConfig = SequenceManagerConfig(ConfigMap, sequencerStartRetries)
       sequenceManagerConfig.resources("RandomObsMode") should ===(None)
     }
@@ -59,7 +59,7 @@ class SequenceManagerConfigTest extends AnyWordSpecLike with Matchers with TypeC
       sequenceManagerConfig.sequencers(DarkNight) should ===(Some(Sequencers(ESW, TCS)))
     }
 
-    "return ConfigurationMissing if obsMode not present in map | ESW-162" in {
+    "return ConfigurationMissing if obsMode not present in map while fetching Sequencers | ESW-162" in {
       val sequenceManagerConfig = SequenceManagerConfig(ConfigMap, sequencerStartRetries)
       sequenceManagerConfig.sequencers("RandomObsMode") should ===(None)
     }
