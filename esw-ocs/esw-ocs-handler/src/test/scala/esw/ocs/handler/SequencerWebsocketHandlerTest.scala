@@ -23,7 +23,7 @@ import scala.concurrent.Future
 import scala.concurrent.duration.DurationLong
 import esw.commons.BaseTestSuite
 
-class SequencerCommandWebsocketRouteTest
+class SequencerWebsocketHandlerTest
     extends BaseTestSuite
     with ScalatestRouteTest
     with SequencerHttpCodecs
@@ -42,7 +42,7 @@ class SequencerCommandWebsocketRouteTest
 
   private val wsClient = WSProbe()
 
-  "SequencerRoutes" must {
+  "SequencerWebsocketHandler" must {
     "return final submit response of sequence for QueryFinal request | ESW-101" in {
       val id                        = Id("some")
       implicit val timeout: Timeout = Timeout(10.seconds)

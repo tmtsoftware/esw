@@ -21,7 +21,7 @@ import msocket.impl.post.{ClientHttpCodecs, PostRouteFactory}
 import esw.commons.BaseTestSuite
 import scala.concurrent.Future
 
-class SequencerPostRouteTest extends BaseTestSuite with ScalatestRouteTest with SequencerHttpCodecs with ClientHttpCodecs {
+class SequencerPostHandlerTest extends BaseTestSuite with ScalatestRouteTest with SequencerHttpCodecs with ClientHttpCodecs {
 
   private val sequencer: SequencerApi                = mock[SequencerApi]
   private val securityDirectives: SecurityDirectives = SecurityDirectives.authDisabled(system.settings.config)
@@ -38,7 +38,7 @@ class SequencerPostRouteTest extends BaseTestSuite with ScalatestRouteTest with 
     def narrow: SequencerPostRequest = x
   }
 
-  "SequencerRoutes" must {
+  "SequencerPostHandler" must {
     "return sequence for getSequence request | ESW-222" in {
       val stepList = StepList(List.empty)
       when(sequencer.getSequence).thenReturn(Future.successful(Some(stepList)))
