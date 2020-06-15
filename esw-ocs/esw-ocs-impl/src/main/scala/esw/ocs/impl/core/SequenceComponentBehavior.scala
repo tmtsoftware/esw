@@ -42,8 +42,9 @@ class SequenceComponentBehavior(
           replyTo ! ScriptResponse(Left(RestartNotSupportedInIdle))
           Behaviors.same
 
-        case Stop              => Behaviors.stopped
-        case Shutdown(replyTo) => shutdown(replyTo, None)
+        case Stop                => Behaviors.stopped
+        case Shutdown(replyTo)   => shutdown(ctx.self, replyTo, None)
+        case ShutdownInternal(_) => Behaviors.unhandled
       }
     }
 
@@ -90,17 +91,29 @@ class SequenceComponentBehavior(
         case LoadScript(_, _, replyTo) =>
           replyTo ! ScriptResponse(Left(SequenceComponentNotIdle(Prefix(subsystem, observingMode))))
           Behaviors.same
-        case Stop              => Behaviors.same
-        case Shutdown(replyTo) => shutdown(replyTo, Some(sequencerServer))
+        case Stop                => Behaviors.same
+        case Shutdown(replyTo)   => shutdown(ctx.self, replyTo, Some(sequencerServer))
+        case ShutdownInternal(_) => Behaviors.unhandled
       }
     }
 
-  private def shutdown(replyTo: ActorRef[Done], sequencerServer: Option[SequencerServer]): Behavior[SequenceComponentMsg] = {
-    locationService.unregister(AkkaConnection(ComponentId(prefix, SequenceComponent))).foreach { _ =>
-      sequencerServer.foreach(_.shutDown())
-      replyTo ! Done
-      actorSystem.terminate()
+  private def shutdown(
+      self: ActorRef[SequenceComponentMsg],
+      replyTo: ActorRef[Done],
+      sequencerServer: Option[SequencerServer]
+  ): Behavior[SequenceComponentMsg] = {
+    sequencerServer.foreach(_.shutDown())
+    locationService.unregister(AkkaConnection(ComponentId(prefix, SequenceComponent))).map { _ =>
+      self ! ShutdownInternal(replyTo)
     }
-    Behaviors.stopped
+    shuttingDown()
   }
+
+  private def shuttingDown(): Behavior[SequenceComponentMsg] =
+    Behaviors.receiveMessagePartial {
+      case ShutdownInternal(replyTo) =>
+        replyTo ! Done
+        actorSystem.terminate()
+        Behaviors.stopped
+    }
 }

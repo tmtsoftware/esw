@@ -35,6 +35,7 @@ class SequenceComponentImplTest extends BaseTestSuite {
     case Restart(replyTo)          => replyTo ! restartResponse; Behaviors.same
     case Stop                      => Behaviors.stopped
     case Shutdown(replyTo)         => replyTo ! Done; Behaviors.stopped
+    case ShutdownInternal(_)       => Behaviors.unhandled
   }
 
   private val sequenceComponent = system.systemActorOf(mockedBehavior, "sequence_component")
