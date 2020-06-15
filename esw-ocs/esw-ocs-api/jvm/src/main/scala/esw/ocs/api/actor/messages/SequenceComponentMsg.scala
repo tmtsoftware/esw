@@ -15,6 +15,6 @@ object SequenceComponentMsg {
   final case class Restart(replyTo: ActorRef[ScriptResponse]) extends SequenceComponentMsg
 
   final case class GetStatus(replyTo: ActorRef[GetStatusResponse]) extends SequenceComponentMsg
-  private[ocs] final case class Shutdown(replyTo: ActorRef[Done])  extends SequenceComponentMsg
+  final case class Shutdown(replyTo: ActorRef[Done])               extends SequenceComponentMsg
   private[ocs] final case object Stop                              extends SequenceComponentMsg
 }

@@ -60,4 +60,8 @@ class SequenceComponentImplTest extends BaseTestSuite {
   "UnloadScript | ESW-103" in {
     sequenceComponentClient.unloadScript().futureValue should ===(Done)
   }
+
+  "Shutdown | ESW-329" in {
+    sequenceComponentClient.shutdown().futureValue should ===(Done)
+  }
 }

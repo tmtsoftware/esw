@@ -11,4 +11,5 @@ trait SequenceComponentApi {
   def restart(): Future[ScriptResponse]
   def unloadScript(): Future[Done]
   def status: Future[GetStatusResponse]
+  def shutdown(): Future[Done]
 }

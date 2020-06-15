@@ -9,7 +9,7 @@ import csw.location.api.models.AkkaLocation
 import csw.prefix.models.Subsystem
 import esw.ocs.api.SequenceComponentApi
 import esw.ocs.api.actor.messages.SequenceComponentMsg
-import esw.ocs.api.actor.messages.SequenceComponentMsg.{GetStatus, LoadScript, Restart, UnloadScript}
+import esw.ocs.api.actor.messages.SequenceComponentMsg.{GetStatus, LoadScript, Restart, Shutdown, UnloadScript}
 import esw.ocs.api.protocol.{GetStatusResponse, ScriptResponse}
 
 import scala.concurrent.Future
@@ -31,4 +31,6 @@ class SequenceComponentImpl(sequenceComponentLocation: AkkaLocation)(implicit
   override def status: Future[GetStatusResponse] = sequenceComponentRef ? GetStatus
 
   override def unloadScript(): Future[Done] = sequenceComponentRef ? UnloadScript
+
+  override def shutdown(): Future[Done] = sequenceComponentRef ? Shutdown
 }
