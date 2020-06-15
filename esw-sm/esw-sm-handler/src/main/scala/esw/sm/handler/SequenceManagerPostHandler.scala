@@ -20,6 +20,7 @@ class SequenceManagerPostHandler(sequenceManager: SequenceManagerApi)
       case StartSequencer(subsystem, obsMode)    => complete(startSequencer(subsystem, obsMode))
       case ShutdownSequencer(subsystem, obsMode) => complete(shutdownSequencer(subsystem, obsMode))
       case RestartSequencer(subsystem, obsMode)  => complete(restartSequencer(subsystem, obsMode))
+      case ShutdownAllSequencers                 => complete(shutdownAllSequencers())
     }
   }
 
