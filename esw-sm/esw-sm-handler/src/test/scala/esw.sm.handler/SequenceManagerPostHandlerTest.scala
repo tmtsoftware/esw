@@ -81,5 +81,15 @@ class SequenceManagerPostHandlerTest
         responseAs[RestartSequencerResponse] should ===(RestartSequencerResponse.Success(componentId))
       }
     }
+
+    "return shutdown all sequencer success for shutdownAllSequencer request | ESW-171" in {
+      when(sequenceManagerApi.shutdownAllSequencers())
+        .thenReturn(Future.successful(ShutdownAllSequencersResponse.Success))
+
+      Post("/post-endpoint", ShutdownAllSequencers.narrow) ~> route ~> check {
+        verify(sequenceManagerApi).shutdownAllSequencers()
+        responseAs[ShutdownAllSequencersResponse] should ===(ShutdownAllSequencersResponse.Success)
+      }
+    }
   }
 }
