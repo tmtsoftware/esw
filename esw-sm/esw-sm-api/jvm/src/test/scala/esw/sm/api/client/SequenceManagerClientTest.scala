@@ -26,7 +26,7 @@ class SequenceManagerClientTest extends BaseTestSuite with SequenceManagerHttpCo
   val client                                                      = new SequenceManagerClient(postClient, websocketClient)
 
   "SequenceManagerClient" must {
-    "return running observation modes for getRunningObsModes request | ESW-171" in {
+    "return running observation modes for getRunningObsModes request" in {
       when(
         postClient.requestResponse[GetRunningObsModesResponse](argsEq(GetRunningObsModes))(
           any[Decoder[GetRunningObsModesResponse]](),
@@ -37,7 +37,7 @@ class SequenceManagerClientTest extends BaseTestSuite with SequenceManagerHttpCo
       client.getRunningObsModes.futureValue shouldBe GetRunningObsModesResponse.Success(Set(obsMode))
     }
 
-    "return cleanup success for cleanup request | ESW-171" in {
+    "return cleanup success for cleanup request" in {
       val cleanupMsg = Cleanup(obsMode)
       when(
         postClient.requestResponse[CleanupResponse](argsEq(cleanupMsg))(
@@ -49,7 +49,7 @@ class SequenceManagerClientTest extends BaseTestSuite with SequenceManagerHttpCo
       client.cleanup(obsMode).futureValue shouldBe CleanupResponse.Success
     }
 
-    "return start sequencer success for startSequencer request | ESW-171" in {
+    "return start sequencer success for startSequencer request" in {
       val startSequencerMsg = StartSequencer(ESW, obsMode)
       when(
         postClient.requestResponse[StartSequencerResponse](argsEq(startSequencerMsg))(
@@ -61,7 +61,7 @@ class SequenceManagerClientTest extends BaseTestSuite with SequenceManagerHttpCo
       client.startSequencer(ESW, obsMode).futureValue shouldBe StartSequencerResponse.Started(componentId)
     }
 
-    "return shutdown sequencer success for shutdownSequencer request | ESW-171" in {
+    "return shutdown sequencer success for shutdownSequencer request" in {
       val shutdownSequencerMsg = ShutdownSequencer(ESW, obsMode, shutdownSequenceComp = false)
       when(
         postClient.requestResponse[ShutdownSequencerResponse](argsEq(shutdownSequencerMsg))(
@@ -73,7 +73,7 @@ class SequenceManagerClientTest extends BaseTestSuite with SequenceManagerHttpCo
       client.shutdownSequencer(ESW, obsMode).futureValue shouldBe ShutdownSequencerResponse.Success
     }
 
-    "return restart sequencer success for restartSequencer request | ESW-171" in {
+    "return restart sequencer success for restartSequencer request" in {
       val restartSequencerMsg = RestartSequencer(ESW, obsMode)
       when(
         postClient.requestResponse[RestartSequencerResponse](argsEq(restartSequencerMsg))(
@@ -85,7 +85,7 @@ class SequenceManagerClientTest extends BaseTestSuite with SequenceManagerHttpCo
       client.restartSequencer(ESW, obsMode).futureValue shouldBe RestartSequencerResponse.Success(componentId)
     }
 
-    "return shutdown all sequencers success for  ShutdownAllSequencers request | ESW-171" in {
+    "return shutdown all sequencers success for  ShutdownAllSequencers request" in {
       when(
         postClient.requestResponse[ShutdownAllSequencersResponse](argsEq(ShutdownAllSequencers))(
           any[Decoder[ShutdownAllSequencersResponse]](),
@@ -96,7 +96,7 @@ class SequenceManagerClientTest extends BaseTestSuite with SequenceManagerHttpCo
       client.shutdownAllSequencers().futureValue shouldBe ShutdownAllSequencersResponse.Success
     }
 
-    "return configure success response for configure request | ESW-171" in {
+    "return configure success response for configure request" in {
       implicit val timeout: Timeout = 10.seconds
       when(
         websocketClient.requestResponse[ConfigureResponse](

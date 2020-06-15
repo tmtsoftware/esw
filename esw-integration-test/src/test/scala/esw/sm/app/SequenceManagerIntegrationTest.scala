@@ -34,20 +34,27 @@ class SequenceManagerIntegrationTest extends EswTestKit {
   override protected def beforeEach(): Unit = locationService.unregisterAll()
   override protected def afterEach(): Unit  = TestSetup.cleanup()
 
-  "configure and cleanup for provided observation mode | ESW-162, ESW-166, ESW-164, ESW-172" in {
+  "start sequence manager and register akka + http locations| ESW-171, ESW-172" in {
+    // resolving sequence manager fails for Akka and Http
+    intercept[Exception](resolveAkkaLocation(sequenceManagerPrefix, Service))
+    intercept[Exception](resolveHTTPLocation(sequenceManagerPrefix, Service))
+
+    TestSetup.startSequenceManager()
+
+    // verify sequence manager is started and AkkaLocation & HttpLocation are registered with location service
+    resolveAkkaLocation(sequenceManagerPrefix, Service).prefix shouldBe sequenceManagerPrefix
+    resolveHTTPLocation(sequenceManagerPrefix, Service).prefix shouldBe sequenceManagerPrefix
+  }
+
+  "configure and cleanup for provided observation mode | ESW-162, ESW-166, ESW-164, ESW-171" in {
     val eswSeqCompPrefix   = Prefix(ESW, "primary")
     val irisSeqCompPrefix  = Prefix(IRIS, "primary")
     val aoeswSeqCompPrefix = Prefix(AOESW, "primary")
 
     TestSetup.startSequenceComponents(eswSeqCompPrefix, irisSeqCompPrefix, aoeswSeqCompPrefix)
 
-    //ESW-172 resolving sequence manager fails
-    intercept[Exception](resolveAkkaLocation(sequenceManagerPrefix, Service))
-
+    // ESW-171: Starts SM and returns SM Http client.
     val sequenceManagerClient = TestSetup.startSequenceManager()
-
-    //ESW-172 verify sequence manager is registered with location service
-    resolveAkkaLocation(sequenceManagerPrefix, Service).prefix shouldBe sequenceManagerPrefix
 
     val eswIrisCalPrefix   = Prefix(ESW, IRIS_CAL)
     val irisCalPrefix      = Prefix(IRIS, IRIS_CAL)
@@ -85,7 +92,7 @@ class SequenceManagerIntegrationTest extends EswTestKit {
     assertThatSeqCompIsAvailable(aoeswSeqCompPrefix)
   }
 
-  "configure should run multiple obs modes in parallel if resources are not conflicting | ESW-168, ESW-169, ESW-170" in {
+  "configure should run multiple obs modes in parallel if resources are not conflicting | ESW-168, ESW-169, ESW-170, ESW-171" in {
     TestSetup.startSequenceComponents(
       Prefix(ESW, "primary"),
       Prefix(ESW, "secondary"),
@@ -112,7 +119,7 @@ class SequenceManagerIntegrationTest extends EswTestKit {
     sequenceManagerClient.cleanup(WFOS_CAL).futureValue
   }
 
-  "start sequencer on esw sequence component as fallback if subsystem sequence component is not available | ESW-164" in {
+  "start sequencer on esw sequence component as fallback if subsystem sequence component is not available | ESW-164, ESW-171" in {
     TestSetup.startSequenceComponents(Prefix(ESW, "primary"), Prefix(ESW, "secondary"), Prefix(IRIS, "primary"))
     val sequenceManagerClient = TestSetup.startSequenceManager()
 
@@ -130,12 +137,12 @@ class SequenceManagerIntegrationTest extends EswTestKit {
     sequenceManagerClient.cleanup(IRIS_CAL)
   }
 
-  "throw exception if config file is missing | ESW-162, ESW-160" in {
+  "throw exception if config file is missing | ESW-162, ESW-160, ESW-171" in {
     val exception = intercept[RuntimeException](SequenceManagerApp.main(Array("start", "-p", "sm-config.conf")))
     exception.getMessage shouldBe "File does not exist on local disk at path sm-config.conf"
   }
 
-  "start and shut down sequencer for given subsystem and observation mode | ESW-176, ESW-326" in {
+  "start and shut down sequencer for given subsystem and observation mode | ESW-176, ESW-326, ESW-171" in {
     TestSetup.startSequenceComponents(Prefix(ESW, "primary"))
 
     val sequenceManagerClient = TestSetup.startSequenceManager()
@@ -159,7 +166,7 @@ class SequenceManagerIntegrationTest extends EswTestKit {
     intercept[Exception](resolveHTTPLocation(Prefix(ESW, IRIS_DARKNIGHT), Sequencer))
   }
 
-  "restart a running sequencer for given subsystem and obsMode | ESW-327" in {
+  "restart a running sequencer for given subsystem and obsMode | ESW-327, ESW-171" in {
     TestSetup.startSequenceComponents(Prefix(ESW, "primary"))
     val componentId = ComponentId(Prefix(ESW, IRIS_DARKNIGHT), Sequencer)
 
@@ -181,7 +188,7 @@ class SequenceManagerIntegrationTest extends EswTestKit {
     secondRestartResponse should ===(RestartSequencerResponse.Success(componentId))
   }
 
-  "shutdown all the running sequencers | ESW-324" in {
+  "shutdown all the running sequencers | ESW-324, ESW-171" in {
     val irisDarknightPrefix = Prefix(ESW, IRIS_DARKNIGHT)
     val irisCalPrefix       = Prefix(ESW, IRIS_CAL)
 
@@ -206,7 +213,7 @@ class SequenceManagerIntegrationTest extends EswTestKit {
     intercept[Exception](resolveAkkaLocation(irisCalPrefix, Sequencer))
   }
 
-  "should return loadscript error if configuration is missing for subsystem observation mode | ESW-176" in {
+  "should return loadScript error if configuration is missing for subsystem observation mode | ESW-176, ESW-171" in {
     TestSetup.startSequenceComponents(Prefix(ESW, "primary"))
 
     val sequenceManagerClient = TestSetup.startSequenceManager()
