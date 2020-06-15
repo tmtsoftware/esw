@@ -7,19 +7,19 @@ import akka.util.Timeout
 import csw.location.api.extensions.URIExtension.RichURI
 import csw.location.api.models.AkkaLocation
 import csw.prefix.models.Subsystem
+import esw.commons.Timeouts
 import esw.ocs.api.SequenceComponentApi
 import esw.ocs.api.actor.messages.SequenceComponentMsg
 import esw.ocs.api.actor.messages.SequenceComponentMsg.{GetStatus, LoadScript, Restart, Shutdown, UnloadScript}
 import esw.ocs.api.protocol.{GetStatusResponse, ScriptResponse}
 
 import scala.concurrent.Future
-import scala.concurrent.duration.DurationInt
 
 class SequenceComponentImpl(sequenceComponentLocation: AkkaLocation)(implicit
     actorSystem: ActorSystem[_]
 ) extends SequenceComponentApi {
 
-  implicit val timeout: Timeout = 5.seconds
+  implicit val timeout: Timeout = Timeouts.AskTimeout
 
   private val sequenceComponentRef = sequenceComponentLocation.uri.toActorRef.unsafeUpcast[SequenceComponentMsg]
 

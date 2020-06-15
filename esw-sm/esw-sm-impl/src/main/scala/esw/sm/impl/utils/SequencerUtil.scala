@@ -54,7 +54,8 @@ class SequencerUtil(locationServiceUtil: LocationServiceUtil, sequenceComponentU
       obsMode: String,
       shutdownSequenceComp: Boolean = false
   ): Future[Either[ShutdownSequencerResponse.Failure, ShutdownSequencerResponse.Success.type]] = {
-    findSequencer(obsMode, subsystem)
+    locationServiceUtil
+      .findSequencer(subsystem, obsMode)
       .flatMap {
         case Left(listingFailed: RegistrationListingFailed) => Future.successful(Left(LocationServiceError(listingFailed.msg)))
         case Left(LocationNotFound(_))                      => Future.successful(Right(ShutdownSequencerResponse.Success))
@@ -114,8 +115,6 @@ class SequencerUtil(locationServiceUtil: LocationServiceUtil, sequenceComponentU
 
   // Created in order to mock the behavior of sequencer API availability for unit test
   private[sm] def createSequencerClient(location: Location): SequencerApi = SequencerApiFactory.make(location)
-  private def findSequencer(obsMode: String, subsystem: Subsystem) =
-    locationServiceUtil.findSequencer(subsystem, obsMode)
 
   private def traverse[T, L, R](i: List[T])(f: T => Future[Either[L, R]])   = Future.traverse(i)(f).map(_.sequence)
   private def sequential[T, L, R](i: List[T])(f: T => Future[Either[L, R]]) = FutureUtils.sequential(i)(f).map(_.sequence)

@@ -133,7 +133,7 @@ class AgentUtilTest extends BaseTestSuite {
       val mockedAgentLoc      = Future.successful(Some(location))
 
       when(locationServiceUtil.locationService).thenReturn(locationService)
-      when(locationService.resolve(agentConnection, 5.seconds)).thenReturn(mockedAgentLoc)
+      when(locationService.find(agentConnection)).thenReturn(mockedAgentLoc)
 
       val agentUtil = new AgentUtil(locationServiceUtil)
       agentUtil.makeAgent(agentPrefix).futureValue shouldBe a[AgentClient]

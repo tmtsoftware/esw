@@ -11,6 +11,7 @@ import csw.params.commands.CommandResponse.SubmitResponse
 import csw.params.commands.{Sequence, SequenceCommand}
 import csw.params.core.models.Id
 import csw.time.core.models.UTCTime
+import esw.commons.Timeouts
 import esw.ocs.api.SequencerApi
 import esw.ocs.api.actor.messages.SequencerMessages._
 import esw.ocs.api.actor.messages.SequencerState
@@ -20,7 +21,8 @@ import esw.ocs.api.protocol._
 
 import scala.concurrent.{ExecutionContext, Future}
 
-class SequencerImpl(sequencer: ActorRef[SequencerMsg])(implicit system: ActorSystem[_], timeout: Timeout) extends SequencerApi {
+class SequencerImpl(sequencer: ActorRef[SequencerMsg])(implicit system: ActorSystem[_]) extends SequencerApi {
+  private implicit val timeout: Timeout     = Timeouts.AskTimeout
   private implicit val ec: ExecutionContext = system.executionContext
 
   private val extensions = new SequencerCommandServiceExtension(this)

@@ -1,7 +1,6 @@
 package esw
 
 import _root_.shell.utils.Extensions.FutureExt
-import _root_.shell.utils.Timeouts
 import akka.actor.typed.{ActorSystem, SpawnProtocol}
 import csw.command.api.scaladsl.CommandService
 import csw.command.client.CommandServiceFactory
@@ -20,7 +19,6 @@ import scala.concurrent.Future
 class CommandServiceDsl(val shellWiring: ShellWiring) {
   implicit lazy val typedSystem: ActorSystem[SpawnProtocol.Command] = shellWiring.wiring.actorSystem
 
-  import Timeouts.defaultTimeout
   import typedSystem.executionContext
   private val locationUtil: LocationServiceUtil = new LocationServiceUtil(shellWiring.cswContext.locationService)
 
