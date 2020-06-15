@@ -28,15 +28,13 @@ class SequenceComponentImplTest extends BaseTestSuite {
   private val getStatusResponse     = GetStatusResponse(Some(location))
   implicit val ec: ExecutionContext = system.executionContext
 
-  private val mockedBehavior: Behaviors.Receive[SequenceComponentMsg] = Behaviors.receiveMessage[SequenceComponentMsg] { msg =>
-    msg match {
-      case LoadScript(_, _, replyTo) => replyTo ! loadScriptResponse
-      case GetStatus(replyTo)        => replyTo ! getStatusResponse
-      case UnloadScript(replyTo)     => replyTo ! Done
-      case Restart(replyTo)          => replyTo ! restartResponse
-      case Stop                      => Behaviors.stopped
-    }
-    Behaviors.same
+  private val mockedBehavior: Behaviors.Receive[SequenceComponentMsg] = Behaviors.receiveMessage[SequenceComponentMsg] {
+    case LoadScript(_, _, replyTo) => replyTo ! loadScriptResponse; Behaviors.same
+    case GetStatus(replyTo)        => replyTo ! getStatusResponse; Behaviors.same
+    case UnloadScript(replyTo)     => replyTo ! Done; Behaviors.same
+    case Restart(replyTo)          => replyTo ! restartResponse; Behaviors.same
+    case Stop                      => Behaviors.stopped
+    case Shutdown(replyTo)         => replyTo ! Done; Behaviors.stopped
   }
 
   private val sequenceComponent = system.systemActorOf(mockedBehavior, "sequence_component")

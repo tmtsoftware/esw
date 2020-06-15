@@ -25,8 +25,12 @@ class SequenceComponentBehaviorTest extends EswTestKit {
   private def spawnSequenceComponent() = {
     (actorSystem ? { replyTo: ActorRef[ActorRef[SequenceComponentMsg]] =>
       Spawn(
-        SequenceComponentBehavior
-          .behavior(Prefix(ocsSequenceComponentName), factory.getLogger, new SequencerWiring(_, _, _).sequencerServer),
+        new SequenceComponentBehavior(
+          Prefix(ocsSequenceComponentName),
+          factory.getLogger,
+          locationService,
+          new SequencerWiring(_, _, _).sequencerServer
+        ).idle,
         ocsSequenceComponentName,
         Props.empty,
         replyTo
