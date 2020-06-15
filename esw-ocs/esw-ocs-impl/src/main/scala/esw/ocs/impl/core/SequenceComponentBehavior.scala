@@ -43,7 +43,7 @@ class SequenceComponentBehavior(
           Behaviors.same
 
         case Stop              => Behaviors.stopped
-        case Shutdown(replyTo) => shutdown(replyTo)
+        case Shutdown(replyTo) => shutdown(replyTo, None)
       }
     }
 
@@ -91,12 +91,13 @@ class SequenceComponentBehavior(
           replyTo ! ScriptResponse(Left(SequenceComponentNotIdle(Prefix(subsystem, observingMode))))
           Behaviors.same
         case Stop              => Behaviors.same
-        case Shutdown(replyTo) => shutdown(replyTo)
+        case Shutdown(replyTo) => shutdown(replyTo, Some(sequencerServer))
       }
     }
 
-  private def shutdown(replyTo: ActorRef[Done]): Behavior[SequenceComponentMsg] = {
+  private def shutdown(replyTo: ActorRef[Done], sequencerServer: Option[SequencerServer]): Behavior[SequenceComponentMsg] = {
     locationService.unregister(AkkaConnection(ComponentId(prefix, SequenceComponent))).foreach { _ =>
+      sequencerServer.foreach(_.shutDown())
       replyTo ! Done
       actorSystem.terminate()
     }
