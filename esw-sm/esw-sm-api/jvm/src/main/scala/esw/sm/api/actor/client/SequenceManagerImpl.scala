@@ -29,8 +29,12 @@ class SequenceManagerImpl(location: AkkaLocation)(implicit
   override def startSequencer(subsystem: Subsystem, observingMode: String): Future[StartSequencerResponse] =
     smRef ? (StartSequencer(subsystem, observingMode, _))
 
-  override def shutdownSequencer(subsystem: Subsystem, observingMode: String): Future[ShutdownSequencerResponse] =
-    smRef ? (ShutdownSequencer(subsystem, observingMode, _))
+  override def shutdownSequencer(
+      subsystem: Subsystem,
+      observingMode: String,
+      shutdownSequenceComp: Boolean = false
+  ): Future[ShutdownSequencerResponse] =
+    smRef ? (ShutdownSequencer(subsystem, observingMode, shutdownSequenceComp, _))
 
   override def restartSequencer(subsystem: Subsystem, observingMode: String): Future[RestartSequencerResponse] =
     smRef ? (RestartSequencer(subsystem, observingMode, _))

@@ -15,12 +15,13 @@ class SequenceManagerPostHandler(sequenceManager: SequenceManagerApi)
   import sequenceManager._
   override def handle(request: SequenceManagerPostRequest): Route = {
     request match {
-      case GetRunningObsModes                    => complete(getRunningObsModes)
-      case Cleanup(obsMode)                      => complete(cleanup(obsMode))
-      case StartSequencer(subsystem, obsMode)    => complete(startSequencer(subsystem, obsMode))
-      case ShutdownSequencer(subsystem, obsMode) => complete(shutdownSequencer(subsystem, obsMode))
-      case RestartSequencer(subsystem, obsMode)  => complete(restartSequencer(subsystem, obsMode))
-      case ShutdownAllSequencers                 => complete(shutdownAllSequencers())
+      case GetRunningObsModes                   => complete(getRunningObsModes)
+      case Cleanup(obsMode)                     => complete(cleanup(obsMode))
+      case StartSequencer(subsystem, obsMode)   => complete(startSequencer(subsystem, obsMode))
+      case RestartSequencer(subsystem, obsMode) => complete(restartSequencer(subsystem, obsMode))
+      case ShutdownAllSequencers                => complete(shutdownAllSequencers())
+      case ShutdownSequencer(subsystem, obsMode, shutdownSequenceComp) =>
+        complete(shutdownSequencer(subsystem, obsMode, shutdownSequenceComp))
     }
   }
 

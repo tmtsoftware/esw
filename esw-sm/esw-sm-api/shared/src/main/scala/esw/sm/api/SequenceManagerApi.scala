@@ -10,7 +10,11 @@ trait SequenceManagerApi {
   def cleanup(observingMode: String): Future[CleanupResponse]
   def getRunningObsModes: Future[GetRunningObsModesResponse]
   def startSequencer(subsystem: Subsystem, observingMode: String): Future[StartSequencerResponse]
-  def shutdownSequencer(subsystem: Subsystem, observingMode: String): Future[ShutdownSequencerResponse]
+  def shutdownSequencer(
+      subsystem: Subsystem,
+      observingMode: String,
+      shutdownSequenceComp: Boolean = false
+  ): Future[ShutdownSequencerResponse]
   def restartSequencer(subsystem: Subsystem, observingMode: String): Future[RestartSequencerResponse]
   def shutdownAllSequencers(): Future[ShutdownAllSequencersResponse]
 }

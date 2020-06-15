@@ -18,8 +18,12 @@ object SequenceManagerMsg {
   case class Cleanup(obsMode: String, replyTo: ActorRef[CleanupResponse])     extends SequenceManagerIdleMsg
   case class StartSequencer(subsystem: Subsystem, observingMode: String, replyTo: ActorRef[StartSequencerResponse])
       extends SequenceManagerIdleMsg
-  case class ShutdownSequencer(subsystem: Subsystem, observingMode: String, replyTo: ActorRef[ShutdownSequencerResponse])
-      extends SequenceManagerIdleMsg
+  case class ShutdownSequencer(
+      subsystem: Subsystem,
+      observingMode: String,
+      shutdownSequenceComp: Boolean,
+      replyTo: ActorRef[ShutdownSequencerResponse]
+  ) extends SequenceManagerIdleMsg
   case class RestartSequencer(subsystem: Subsystem, observingMode: String, replyTo: ActorRef[RestartSequencerResponse])
       extends SequenceManagerIdleMsg
   case class ShutdownAllSequencers(replyTo: ActorRef[ShutdownAllSequencersResponse]) extends SequenceManagerIdleMsg

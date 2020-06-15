@@ -220,7 +220,7 @@ class SequenceManagerBehaviorTest extends BaseTestSuite with TableDrivenProperty
       val shutdownSequencerResponseProbe = TestProbe[ShutdownSequencerResponse]()
 
       assertState(Idle)
-      smRef ! ShutdownSequencer(ESW, Darknight, shutdownSequencerResponseProbe.ref)
+      smRef ! ShutdownSequencer(ESW, Darknight, shutdownSequenceComp = false, shutdownSequencerResponseProbe.ref)
       assertState(ShuttingDownSequencer)
       shutdownSequencerResponseProbe.expectMessage(ShutdownSequencerResponse.Success)
       assertState(Idle)
@@ -235,7 +235,7 @@ class SequenceManagerBehaviorTest extends BaseTestSuite with TableDrivenProperty
 
       val shutdownSequencerResponseProbe = TestProbe[ShutdownSequencerResponse]()
 
-      smRef ! ShutdownSequencer(ESW, Darknight, shutdownSequencerResponseProbe.ref)
+      smRef ! ShutdownSequencer(ESW, Darknight, shutdownSequenceComp = false, shutdownSequencerResponseProbe.ref)
       shutdownSequencerResponseProbe.expectMessage(UnloadScriptError(prefix, "something went wrong"))
 
       verify(sequencerUtil).shutdownSequencer(ESW, Darknight)
@@ -247,7 +247,7 @@ class SequenceManagerBehaviorTest extends BaseTestSuite with TableDrivenProperty
 
       val shutdownSequencerResponseProbe = TestProbe[ShutdownSequencerResponse]()
 
-      smRef ! ShutdownSequencer(ESW, Darknight, shutdownSequencerResponseProbe.ref)
+      smRef ! ShutdownSequencer(ESW, Darknight, shutdownSequenceComp = false, shutdownSequencerResponseProbe.ref)
       shutdownSequencerResponseProbe.expectMessage(LocationServiceError("something went wrong"))
 
       verify(sequencerUtil).shutdownSequencer(ESW, Darknight)

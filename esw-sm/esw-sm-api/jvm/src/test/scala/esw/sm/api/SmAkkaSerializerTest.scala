@@ -48,7 +48,7 @@ class SmAkkaSerializerTest extends AnyWordSpecLike with Matchers with TypeChecke
       GetRunningObsModes(getRunningModesResponseRef),
       GetSequenceManagerState(getSmStateRef),
       StartSequencer(ESW, obsMode, StartSequencerResponseRef),
-      ShutdownSequencer(ESW, obsMode, shutdownSequencerResponseRef)
+      ShutdownSequencer(ESW, obsMode, shutdownSequenceComp = false, shutdownSequencerResponseRef)
     )
 
     forAll(testData) { sequenceManagerRemoteMsg =>

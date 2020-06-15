@@ -51,13 +51,14 @@ class SequencerUtil(locationServiceUtil: LocationServiceUtil, sequenceComponentU
 
   def shutdownSequencer(
       subsystem: Subsystem,
-      obsMode: String
+      obsMode: String,
+      shutdownSequenceComp: Boolean = false
   ): Future[Either[ShutdownSequencerResponse.Failure, ShutdownSequencerResponse.Success.type]] = {
     findSequencer(obsMode, subsystem)
       .flatMap {
         case Left(listingFailed: RegistrationListingFailed) => Future.successful(Left(LocationServiceError(listingFailed.msg)))
         case Left(LocationNotFound(_))                      => Future.successful(Right(ShutdownSequencerResponse.Success))
-        case Right(sequencerLoc)                            => unloadScript(Prefix(subsystem, obsMode), sequencerLoc)
+        case Right(sequencerLoc)                            => unloadScript(Prefix(subsystem, obsMode), sequencerLoc, shutdownSequenceComp)
       }
   }
 
@@ -67,7 +68,7 @@ class SequencerUtil(locationServiceUtil: LocationServiceUtil, sequenceComponentU
   }
 
   private def shutdownSequencers(sequencerLocations: List[AkkaLocation]): Future[ShutdownAllSequencersResponse] =
-    traverse(sequencerLocations)(location => unloadScript(location.prefix, location))
+    traverse(sequencerLocations)(location => unloadScript(location.prefix, location, shutdownSequenceComp = false))
       .mapToAdt(_ => ShutdownAllSequencersResponse.Success, ShutdownAllSequencersResponse.ShutdownFailure)
 
   def shutdownAllSequencers(): Future[ShutdownAllSequencersResponse] =
@@ -99,10 +100,15 @@ class SequencerUtil(locationServiceUtil: LocationServiceUtil, sequenceComponentU
   // get sequence component from Sequencer and unload sequencer script
   private def unloadScript(
       prefix: Prefix,
-      sequenceLocation: AkkaLocation
+      sequenceLocation: AkkaLocation,
+      shutdownSequenceComp: Boolean
   ): Future[Either[UnloadScriptError, ShutdownSequencerResponse.Success.type]] =
     createSequencerClient(sequenceLocation).getSequenceComponent
-      .flatMap(sequenceComponentUtil.unloadScript)
+      .flatMap(loc =>
+        sequenceComponentUtil
+          .unloadScript(loc)
+          .flatMap(x => if (shutdownSequenceComp) sequenceComponentUtil.shutdown(loc) else Future.successful(x))
+      )
       .map(_ => Right(ShutdownSequencerResponse.Success))
       .mapError(e => UnloadScriptError(prefix, e.getMessage))
 

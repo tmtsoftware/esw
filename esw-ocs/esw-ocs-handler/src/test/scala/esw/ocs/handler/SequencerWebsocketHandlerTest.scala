@@ -23,11 +23,7 @@ import scala.concurrent.Future
 import scala.concurrent.duration.DurationLong
 import esw.commons.BaseTestSuite
 
-class SequencerWebsocketHandlerTest
-    extends BaseTestSuite
-    with ScalatestRouteTest
-    with SequencerHttpCodecs
-    with ClientHttpCodecs {
+class SequencerWebsocketHandlerTest extends BaseTestSuite with ScalatestRouteTest with SequencerHttpCodecs with ClientHttpCodecs {
 
   override def clientContentType: ContentType = ContentType.Json
 
