@@ -2,6 +2,7 @@ package esw.sm.api.actor.client
 
 import akka.actor.typed.scaladsl.Behaviors
 import akka.actor.typed.{ActorSystem, SpawnProtocol}
+import akka.util.Timeout
 import csw.location.api.extensions.ActorExtension._
 import csw.location.api.models.ComponentType.Service
 import csw.location.api.models.Connection.AkkaConnection
@@ -12,6 +13,8 @@ import esw.commons.BaseTestSuite
 import esw.sm.api.SequenceManagerState.Idle
 import esw.sm.api.actor.messages.SequenceManagerMsg
 import esw.sm.api.protocol._
+
+import scala.concurrent.duration.DurationInt
 
 class SequenceManagerImplTest extends BaseTestSuite {
   private final implicit val system: ActorSystem[SpawnProtocol.Command] = ActorSystem(SpawnProtocol(), "SmAkkaSerializerTest")
@@ -50,6 +53,7 @@ class SequenceManagerImplTest extends BaseTestSuite {
 
   "SequenceManagerImpl" must {
     "configure" in {
+      implicit val timeout: Timeout = 5.seconds
       sequenceManager.configure("IRIS_darknight").futureValue shouldBe configureResponse
     }
 
