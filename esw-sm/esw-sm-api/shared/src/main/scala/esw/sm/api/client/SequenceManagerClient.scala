@@ -1,5 +1,6 @@
 package esw.sm.api.client
 
+import akka.util.Timeout
 import csw.prefix.models.Subsystem
 import esw.sm.api.SequenceManagerApi
 import esw.sm.api.codecs.SequenceManagerHttpCodec
@@ -16,8 +17,8 @@ class SequenceManagerClient(
 ) extends SequenceManagerApi
     with SequenceManagerHttpCodec {
 
-  override def configure(obsMode: String): Future[ConfigureResponse] =
-    websocketClient.requestResponse[ConfigureResponse](Configure(obsMode))
+  override def configure(obsMode: String)(implicit timeout: Timeout): Future[ConfigureResponse] =
+    websocketClient.requestResponse[ConfigureResponse](Configure(obsMode, timeout), timeout.duration)
 
   override def cleanup(obsMode: String): Future[CleanupResponse] =
     postClient.requestResponse[CleanupResponse](Cleanup(obsMode))

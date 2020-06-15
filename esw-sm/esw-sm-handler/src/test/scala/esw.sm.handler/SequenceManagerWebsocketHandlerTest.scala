@@ -4,9 +4,10 @@ import akka.actor.typed.{ActorSystem, SpawnProtocol}
 import akka.http.scaladsl.model.ws.{BinaryMessage, TextMessage}
 import akka.http.scaladsl.server.Route
 import akka.http.scaladsl.testkit.{ScalatestRouteTest, WSProbe}
+import akka.util.Timeout
 import csw.location.api.models.{ComponentId, ComponentType}
 import csw.prefix.models.Prefix
-import csw.prefix.models.Subsystem.{ESW}
+import csw.prefix.models.Subsystem.ESW
 import esw.commons.BaseTestSuite
 import esw.sm.api.SequenceManagerApi
 import esw.sm.api.codecs.SequenceManagerHttpCodec
@@ -19,7 +20,7 @@ import msocket.impl.CborByteString
 import msocket.impl.post.ClientHttpCodecs
 import msocket.impl.ws.WebsocketExtensions.WebsocketEncoding
 import msocket.impl.ws.WebsocketRouteFactory
-
+import scala.concurrent.duration.DurationInt
 import scala.concurrent.Future
 
 class SequenceManagerWebsocketHandlerTest
@@ -42,10 +43,11 @@ class SequenceManagerWebsocketHandlerTest
 
   "SequenceManagerWebsocketHandler" must {
     "return configure success response for configure request | ESW-171" in {
+      implicit val timeout: Timeout = Timeout(10.seconds)
       when(sequenceManagerApi.configure(obsMode)).thenReturn(Future.successful(ConfigureResponse.Success(componentId)))
 
       WS("/websocket-endpoint", wsClient.flow) ~> route ~> check {
-        wsClient.sendMessage(ContentType.Json.strictMessage(Configure(obsMode): SequenceManagerWebsocketRequest))
+        wsClient.sendMessage(ContentType.Json.strictMessage(Configure(obsMode, timeout): SequenceManagerWebsocketRequest))
         isWebSocketUpgrade shouldBe true
 
         val response = decodeMessage[ConfigureResponse](wsClient)
