@@ -228,6 +228,21 @@ class SequenceManagerBehaviorTest extends BaseTestSuite with TableDrivenProperty
       verify(sequencerUtil).shutdownSequencer(ESW, Darknight)
     }
 
+    "shutdown the sequence component along with sequencer | ESW-326, ESW-167" in {
+      when(sequencerUtil.shutdownSequencer(ESW, Darknight, shutdownSequenceComp = true))
+        .thenReturn(future(1.seconds, Right(ShutdownSequencerResponse.Success)))
+
+      val shutdownSequencerResponseProbe = TestProbe[ShutdownSequencerResponse]()
+
+      assertState(Idle)
+      smRef ! ShutdownSequencer(ESW, Darknight, shutdownSequenceComp = true, shutdownSequencerResponseProbe.ref)
+      assertState(ShuttingDownSequencer)
+      shutdownSequencerResponseProbe.expectMessage(ShutdownSequencerResponse.Success)
+      assertState(Idle)
+
+      verify(sequencerUtil).shutdownSequencer(ESW, Darknight, shutdownSequenceComp = true)
+    }
+
     "return UnloadScriptError if unload script fails | ESW-326" in {
       val prefix = Prefix(ESW, Darknight)
       when(sequencerUtil.shutdownSequencer(ESW, Darknight))

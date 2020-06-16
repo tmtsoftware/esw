@@ -222,7 +222,7 @@ class SequencerUtilTest extends BaseTestSuite {
   }
 
   "shutdownSequencer" must {
-    "shutdown the given sequencers and return Done | ESW-326" in {
+    "shutdown the given sequencer and return Done | ESW-326" in {
       val obsMode = "moonNight"
       val setup   = new TestSetup(obsMode)
       import setup._
@@ -237,6 +237,27 @@ class SequencerUtilTest extends BaseTestSuite {
 
       verify(eswSequencerApi).getSequenceComponent
       verify(sequenceComponentUtil).unloadScript(eswSeqCompLoc)
+    }
+
+    "shutdown the given sequence component along with sequencer and return Done | ESW-326, ESW-167" in {
+      val obsMode = "moonNight"
+      val setup   = new TestSetup(obsMode)
+      import setup._
+
+      val eswSeqCompLoc = AkkaLocation(AkkaConnection(ComponentId(Prefix(ESW, obsMode), SequenceComponent)), URI.create(""))
+
+      when(locationServiceUtil.findSequencer(ESW, obsMode)).thenReturn(futureRight(eswLocation))
+      when(eswSequencerApi.getSequenceComponent).thenReturn(Future.successful(eswSeqCompLoc))
+      when(sequenceComponentUtil.unloadScript(eswSeqCompLoc)).thenReturn(Future.successful(Done))
+      when(sequenceComponentUtil.shutdown(eswSeqCompLoc)).thenReturn(Future.successful(Done))
+
+      sequencerUtil.shutdownSequencer(ESW, obsMode, shutdownSequenceComp = true).rightValue should ===(
+        ShutdownSequencerResponse.Success
+      )
+
+      verify(eswSequencerApi).getSequenceComponent
+      verify(sequenceComponentUtil).unloadScript(eswSeqCompLoc)
+      verify(sequenceComponentUtil).shutdown(eswSeqCompLoc)
     }
 
     "return Success even if sequencer is not running | ESW-326" in {
