@@ -42,7 +42,12 @@ private[esw] class SequenceComponentWiring(
     sequenceComponentLogger.info(s"Starting sequence component with name: $sequenceComponentPrefix")
     typedSystem ? { replyTo =>
       Spawn(
-        SequenceComponentBehavior.behavior(sequenceComponentPrefix, sequenceComponentLogger, sequencerServerFactory),
+        new SequenceComponentBehavior(
+          sequenceComponentPrefix,
+          sequenceComponentLogger,
+          locationService,
+          sequencerServerFactory
+        ).idle,
         sequenceComponentPrefix.toString,
         Props.empty,
         replyTo

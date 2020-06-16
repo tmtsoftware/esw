@@ -3,7 +3,6 @@ package esw.sm.impl.utils
 import java.net.URI
 
 import akka.actor.typed.{ActorSystem, SpawnProtocol}
-import akka.util.Timeout
 import csw.location.api.models.ComponentType.SequenceComponent
 import csw.location.api.models.Connection.AkkaConnection
 import csw.location.api.models.{AkkaLocation, ComponentId}
@@ -12,14 +11,13 @@ import csw.prefix.models.Subsystem.{ESW, IRIS, TCS}
 import esw.commons.BaseTestSuite
 import esw.commons.utils.location.LocationServiceUtil
 import esw.ocs.api.SequenceComponentApi
-import esw.sm.api.models.AgentError.SpawnSequenceComponentFailed
+import esw.sm.api.protocol.AgentError.SpawnSequenceComponentFailed
 
 import scala.concurrent.Future
 import scala.concurrent.duration.DurationInt
 
 class SequenceComponentUtilTest extends BaseTestSuite {
   private implicit val actorSystem: ActorSystem[SpawnProtocol.Command] = ActorSystem(SpawnProtocol(), "test-system")
-  private implicit val timeout: Timeout                                = 1.hour
 
   override implicit val patienceConfig: PatienceConfig = PatienceConfig(5.seconds, 10.millis)
 

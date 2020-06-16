@@ -1,11 +1,11 @@
-package esw.sm.api.models
+package esw.sm.api.protocol
 
 import csw.location.api.models.ComponentId
 import csw.prefix.models.Prefix
 import esw.sm.api.codecs.SmAkkaSerializable
-import esw.sm.api.models.ShutdownSequencerResponse.UnloadScriptError
+import esw.sm.api.protocol.ShutdownSequencerResponse.UnloadScriptError
 
-private[models] sealed trait SmFailure extends Throwable
+private[protocol] sealed trait SmFailure extends Throwable
 
 sealed trait ConfigureResponse extends SmAkkaSerializable
 

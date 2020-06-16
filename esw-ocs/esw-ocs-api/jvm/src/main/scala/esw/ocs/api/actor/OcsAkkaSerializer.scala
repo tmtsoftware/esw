@@ -6,10 +6,11 @@ import akka.actor.typed.scaladsl.adapter._
 import csw.command.client.messages.sequencer.SequencerMsg
 import csw.commons.CborAkkaSerializer
 import esw.ocs.api.actor.messages.SequencerMessages._
-import esw.ocs.api.actor.messages.{SequenceComponentMsg, SequencerState}
+import esw.ocs.api.actor.messages.{SequenceComponentRemoteMsg, SequencerState}
 import esw.ocs.api.codecs.{OcsAkkaSerializable, OcsCodecs}
 import esw.ocs.api.models.StepList
-import esw.ocs.api.protocol.{EswSequencerResponse, GetStatusResponse, ScriptResponse}
+import esw.ocs.api.protocol.EswSequencerResponse
+import esw.ocs.api.protocol.SequenceComponentResponse.{GetStatusResponseOrUnhandled, OkOrUnhandled, ScriptResponseOrUnhandled}
 
 class OcsAkkaSerializer(_actorSystem: ExtendedActorSystem)
     extends CborAkkaSerializer[OcsAkkaSerializable]
@@ -23,7 +24,8 @@ class OcsAkkaSerializer(_actorSystem: ExtendedActorSystem)
   register[EswSequencerResponse]
   register[StepList]
   register[SequencerState[SequencerMsg]]
-  register[SequenceComponentMsg]
-  register[ScriptResponse]
-  register[GetStatusResponse]
+  register[SequenceComponentRemoteMsg]
+  register[ScriptResponseOrUnhandled]
+  register[GetStatusResponseOrUnhandled]
+  register[OkOrUnhandled]
 }

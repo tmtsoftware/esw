@@ -21,6 +21,7 @@ class SequenceManagerConfigParser(configUtils: ConfigUtils)(implicit ec: Executi
     configUtils.getConfig(configFilePath, isLocal).map(parseConfig)
 
   private def parseConfig(config: Config): SequenceManagerConfig = {
+    // pick retries from provided config. If not present then pick from application.conf of esw-sm-app as fallback
     val configWithRetries = config.withFallback(ConfigFactory.load().withOnlyPath(s"$ESW_SM.$SEQUENCER_START_RETRIES"))
     val configStr         = configWithRetries.getConfig(ESW_SM).root().render(ConfigRenderOptions.concise())
 

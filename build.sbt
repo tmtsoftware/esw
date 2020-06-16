@@ -60,7 +60,7 @@ lazy val `esw-ocs-api` = crossProject(JSPlatform, JVMPlatform)
   .jvmConfigure(
     _.enablePlugins(MaybeCoverage, PublishBintray)
       .settings(libraryDependencies ++= Dependencies.OcsApiJvm.value)
-      .dependsOn(`esw-commons` % "test->test")
+      .dependsOn(`esw-commons` % "compile->compile;test->test")
   )
   //  the following setting is required by IntelliJ which could not handle cross-compiled Akka types
   .jsSettings(SettingKey[Boolean]("ide-skip-project") := true)
@@ -236,7 +236,8 @@ lazy val `esw-sm` = project
     `esw-sm-api`.js,
     `esw-sm-api`.jvm,
     `esw-sm-impl`,
-    `esw-sm-app`
+    `esw-sm-app`,
+    `esw-sm-handler`
   )
 
 lazy val `esw-sm-api` = crossProject(JSPlatform, JVMPlatform)
@@ -244,7 +245,8 @@ lazy val `esw-sm-api` = crossProject(JSPlatform, JVMPlatform)
   .in(file("esw-sm/esw-sm-api"))
   .jvmConfigure(
     _.enablePlugins(MaybeCoverage, PublishBintray)
-      settings (libraryDependencies ++= Dependencies.SmApiJvm.value)
+      .settings(libraryDependencies ++= Dependencies.SmApiJvm.value)
+      .dependsOn(`esw-commons` % "compile->compile;test->test")
   )
   //  the following setting is required by IntelliJ which could not handle cross-compiled Akka types
   .jsSettings(SettingKey[Boolean]("ide-skip-project") := true)
@@ -260,6 +262,13 @@ lazy val `esw-sm-impl` = project
   .settings(libraryDependencies ++= Dependencies.EswSmImpl.value)
   .dependsOn(`esw-sm-api`.jvm, `esw-ocs-api`.jvm, `esw-agent-client`, `esw-commons` % "compile->compile;test->test")
 
+lazy val `esw-sm-handler` = project
+  .in(file("esw-sm/esw-sm-handler"))
+  .settings(
+    libraryDependencies ++= Dependencies.EswSmHandlers.value
+  )
+  .dependsOn(`esw-sm-api`.jvm, `esw-commons` % "test->test")
+
 lazy val `esw-sm-app` = project
   .in(file("esw-sm/esw-sm-app"))
   .enablePlugins(EswBuildInfo)
@@ -268,7 +277,8 @@ lazy val `esw-sm-app` = project
   )
   .dependsOn(
     `esw-sm-impl`,
-    `esw-http-core`
+    `esw-http-core`,
+    `esw-sm-handler`
   )
 
 lazy val `esw-commons` = project

@@ -43,7 +43,7 @@ trait KeycloakUtils extends BaseTestSuite {
   )
 
   private lazy val `esw-gateway-client`: Client =
-    Client("esw-gateway-client", "public", passwordGrantEnabled = true, authorizationEnabled = false)
+    Client("esw-gateway-client", "public", implicitFlowEnabled = true, passwordGrantEnabled = true, authorizationEnabled = false)
 
   private lazy val userWithIrisEngAndIrisUserRole = ApplicationUser(
     gatewayRoleIrisUserIrisEng,

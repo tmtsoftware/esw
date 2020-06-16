@@ -38,7 +38,7 @@ class SequenceManagerConfigParserTest extends BaseTestSuite {
       config.futureValue should ===(expectedConfig)
     }
 
-    "throw exception if config file has invalid config structure | ESW-162" in {
+    "throw exception if config file has invalid config structure | ESW-162, ESW-160" in {
       val configUtils                 = mock[ConfigUtils]
       val path                        = Paths.get("invalidTestConfig.conf")
       val sequenceManagerConfigParser = new SequenceManagerConfigParser(configUtils)
@@ -50,7 +50,7 @@ class SequenceManagerConfigParserTest extends BaseTestSuite {
       )
     }
 
-    "throw exception if it fails to read config | ESW-162" in {
+    "throw exception if it fails to read config | ESW-162, ESW-160" in {
       val configUtils                 = mock[ConfigUtils]
       val path                        = Paths.get("testConfig.conf")
       val sequenceManagerConfigParser = new SequenceManagerConfigParser(configUtils)

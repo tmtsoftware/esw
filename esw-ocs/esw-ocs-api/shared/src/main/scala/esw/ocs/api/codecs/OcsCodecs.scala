@@ -3,6 +3,7 @@ package esw.ocs.api.codecs
 import csw.location.api.codec.LocationCodecs
 import csw.params.core.formats.ParamCodecs
 import esw.ocs.api.models.{Step, StepList, StepStatus}
+import esw.ocs.api.protocol.SequenceComponentResponse.{GetStatusResponseOrUnhandled, OkOrUnhandled, ScriptResponseOrUnhandled}
 import esw.ocs.api.protocol._
 import io.bullet.borer.Codec
 import io.bullet.borer.derivation.CompactMapBasedCodecs.deriveCodec
@@ -23,8 +24,9 @@ trait OcsCodecsBase extends ParamCodecs with LocationCodecs with BasicCodecs {
   lazy val responseCodecValue: Codec[EswSequencerResponse] = deriveAllCodecs
 
   //SequenceComponentResponse Codecs
-  implicit lazy val loadScriptResponseCodec: Codec[ScriptResponse]   = deriveCodec
-  implicit lazy val getStatusResponseCodec: Codec[GetStatusResponse] = deriveCodec
+  implicit lazy val loadScriptResponseCodec: Codec[ScriptResponseOrUnhandled]   = deriveAllCodecs
+  implicit lazy val getStatusResponseCodec: Codec[GetStatusResponseOrUnhandled] = deriveAllCodecs
+  implicit lazy val okOrUnhandledCodec: Codec[OkOrUnhandled]                    = deriveAllCodecs
 
   implicit lazy val scriptErrorCodec: Codec[ScriptError] = deriveAllCodecs
 }

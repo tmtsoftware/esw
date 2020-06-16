@@ -12,12 +12,12 @@ import esw.commons.utils.location.EswLocationError.RegistrationListingFailed
 import esw.commons.utils.location.LocationServiceUtil
 import esw.sm.api.SequenceManagerState
 import esw.sm.api.SequenceManagerState._
-import esw.sm.api.actor.messages.SequenceManagerMsg._
 import esw.sm.api.actor.messages.{SequenceManagerIdleMsg, SequenceManagerMsg}
-import esw.sm.api.models.CommonFailure.ConfigurationMissing
-import esw.sm.api.models.ConfigureResponse.ConflictingResourcesWithRunningObsMode
-import esw.sm.api.models.StartSequencerResponse.{AlreadyRunning, Started}
-import esw.sm.api.models._
+import esw.sm.api.actor.messages.SequenceManagerMsg._
+import esw.sm.api.protocol.CommonFailure.ConfigurationMissing
+import esw.sm.api.protocol.ConfigureResponse.ConflictingResourcesWithRunningObsMode
+import esw.sm.api.protocol.StartSequencerResponse.{AlreadyRunning, Started}
+import esw.sm.api.protocol._
 import esw.sm.impl.config.{ObsModeConfig, Resources, SequenceManagerConfig}
 import esw.sm.impl.utils.SequencerUtil
 
@@ -39,12 +39,13 @@ class SequenceManagerBehavior(
 
   private def idle(self: SelfRef): SMBehavior =
     receive[SequenceManagerIdleMsg](Idle) {
-      case Configure(observingMode, replyTo)                    => configure(observingMode, self, replyTo)
-      case Cleanup(observingMode, replyTo)                      => cleanup(observingMode, self, replyTo)
-      case StartSequencer(subsystem, observingMode, replyTo)    => startSequencer(subsystem, observingMode, self, replyTo)
-      case ShutdownSequencer(subsystem, observingMode, replyTo) => shutdownSequencer(subsystem, observingMode, self, replyTo)
-      case ShutdownAllSequencers(replyTo)                       => shutdownAllSequencers(self, replyTo)
-      case RestartSequencer(subsystem, observingMode, replyTo)  => restartSequencer(subsystem, observingMode, self, replyTo)
+      case Configure(observingMode, replyTo)                 => configure(observingMode, self, replyTo)
+      case Cleanup(observingMode, replyTo)                   => cleanup(observingMode, self, replyTo)
+      case StartSequencer(subsystem, observingMode, replyTo) => startSequencer(subsystem, observingMode, self, replyTo)
+      case ShutdownSequencer(subsystem, observingMode, shutdownSequenceComp, replyTo) =>
+        shutdownSequencer(subsystem, observingMode, shutdownSequenceComp, self, replyTo)
+      case ShutdownAllSequencers(replyTo)                      => shutdownAllSequencers(self, replyTo)
+      case RestartSequencer(subsystem, observingMode, replyTo) => restartSequencer(subsystem, observingMode, self, replyTo)
     }
 
   private def configure(obsMode: String, self: SelfRef, replyTo: ActorRef[ConfigureResponse]): SMBehavior = {
@@ -129,10 +130,11 @@ class SequenceManagerBehavior(
   private def shutdownSequencer(
       subsystem: Subsystem,
       obsMode: String,
+      shutdownSequenceComp: Boolean,
       self: SelfRef,
       replyTo: ActorRef[ShutdownSequencerResponse]
   ): SMBehavior = {
-    val shutdownResponseF = sequencerUtil.shutdownSequencer(subsystem, obsMode).mapToAdt(identity, identity)
+    val shutdownResponseF = sequencerUtil.shutdownSequencer(subsystem, obsMode, shutdownSequenceComp).mapToAdt(identity, identity)
     shutdownResponseF.map(self ! ShutdownSequencerResponseInternal(_))
     shuttingDownSequencer(self, replyTo)
   }
@@ -151,7 +153,7 @@ class SequenceManagerBehavior(
       self: SelfRef,
       replyTo: ActorRef[RestartSequencerResponse]
   ): SMBehavior = {
-    val restartResponseF = sequencerUtil.restartSequencer(subsystem, obsMode, sequencerStartRetries)
+    val restartResponseF = sequencerUtil.restartSequencer(subsystem, obsMode)
     restartResponseF.map(self ! RestartSequencerResponseInternal(_))
     restartingSequencer(self, replyTo)
   }

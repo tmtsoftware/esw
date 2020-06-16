@@ -11,7 +11,6 @@ import csw.location.client.scaladsl.HttpLocationServiceFactory
 import csw.params.commands.{CommandName, Sequence, Setup}
 import csw.prefix.models.Prefix
 import csw.prefix.models.Subsystem.IRIS
-import esw.commons.Timeouts
 import esw.commons.utils.location.LocationServiceUtil
 import esw.ocs.api.actor.client.SequencerApiFactory
 import esw.ocs.api.actor.messages.SequenceComponentMsg
@@ -32,7 +31,7 @@ object TestClient extends App {
   implicit val sched: Scheduler = system.scheduler
 
   private val akkaLocation: AkkaLocation = new LocationServiceUtil(_locationService)
-    .resolveSequencer(IRIS, "darknight", Timeouts.DefaultTimeout)
+    .findSequencer(IRIS, "darknight")
     .futureValue
     .toOption
     .get

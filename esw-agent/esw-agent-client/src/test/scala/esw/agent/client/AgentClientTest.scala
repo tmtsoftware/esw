@@ -4,11 +4,13 @@ import java.net.URI
 
 import akka.actor.typed.scaladsl.Behaviors
 import akka.actor.typed.{ActorSystem, Scheduler, SpawnProtocol}
+import csw.location.api.extensions.ActorExtension.RichActor
 import csw.location.api.models.ComponentType.{Machine, SequenceComponent, Service}
 import csw.location.api.models.Connection.AkkaConnection
 import csw.location.api.models.{AkkaLocation, ComponentId}
 import csw.location.api.scaladsl.LocationService
 import csw.prefix.models.Prefix
+import csw.prefix.models.Subsystem.ESW
 import esw.agent.api.AgentCommand.{GetAgentStatus, GetComponentStatus, KillComponent, SpawnCommand}
 import esw.agent.api.ComponentStatus.{Running, Stopping}
 import esw.agent.api.{AgentCommand, AgentStatus, Killed, Spawned}
@@ -19,7 +21,6 @@ import org.scalatest.matchers.should.Matchers
 import org.scalatest.wordspec.AnyWordSpecLike
 
 import scala.concurrent.Future
-import scala.concurrent.duration.DurationLong
 
 class AgentClientTest extends AnyWordSpecLike with Matchers with BeforeAndAfterAll with MockitoSugar {
 
@@ -31,7 +32,7 @@ class AgentClientTest extends AnyWordSpecLike with Matchers with BeforeAndAfterA
       val prefix                           = Prefix("esw.test1")
       val akkaConnection                   = AkkaConnection(ComponentId(prefix, Machine))
       val agentLocation                    = AkkaLocation(akkaConnection, URI.create("akka://abc"))
-      when(locationService.resolve(akkaConnection, 5.seconds)).thenReturn(Future.successful(Some(agentLocation)))
+      when(locationService.find(akkaConnection)).thenReturn(Future.successful(Some(agentLocation)))
       AgentClient.make(prefix, locationService).futureValue
     }
 
@@ -39,7 +40,7 @@ class AgentClientTest extends AnyWordSpecLike with Matchers with BeforeAndAfterA
       val locationService: LocationService = mock[LocationService]
       val prefix                           = Prefix("esw.test1")
       val akkaConnection                   = AkkaConnection(ComponentId(prefix, Machine))
-      when(locationService.resolve(akkaConnection, 5.seconds)).thenReturn(
+      when(locationService.find(akkaConnection)).thenReturn(
         Future.successful(None)
       )
       val exception = intercept[RuntimeException](AgentClient.make(prefix, locationService).futureValue)
@@ -50,7 +51,7 @@ class AgentClientTest extends AnyWordSpecLike with Matchers with BeforeAndAfterA
       val locationService: LocationService = mock[LocationService]
       val prefix                           = Prefix("esw.test1")
       val akkaConnection                   = AkkaConnection(ComponentId(prefix, Machine))
-      when(locationService.resolve(akkaConnection, 5.seconds)).thenReturn(
+      when(locationService.find(akkaConnection)).thenReturn(
         Future.failed(new RuntimeException("boom"))
       )
       val exception = intercept[RuntimeException](AgentClient.make(prefix, locationService).futureValue)
@@ -61,8 +62,9 @@ class AgentClientTest extends AnyWordSpecLike with Matchers with BeforeAndAfterA
   "spawnSequenceComponent" should {
     "send SpawnSequenceComponent message to agent and return a future with agent response" in {
       val agentRef                = system.systemActorOf(stubAgent, "test-agent1")
+      val agentLocation           = AkkaLocation(AkkaConnection(ComponentId(Prefix(ESW, "test_agent_1"), Machine)), agentRef.toURI)
       implicit val sch: Scheduler = system.scheduler
-      val agentClient             = new AgentClient(agentRef)
+      val agentClient             = new AgentClient(agentLocation)
       val prefix                  = Prefix("esw.test2")
       agentClient.spawnSequenceComponent(prefix).futureValue should ===(Spawned)
     }
@@ -71,8 +73,9 @@ class AgentClientTest extends AnyWordSpecLike with Matchers with BeforeAndAfterA
   "spawnRedis" should {
     "send SpawnRedis message to agent and return a future with agent response" in {
       val agentRef                = system.systemActorOf(stubAgent, "test-agent2")
+      val agentLocation           = AkkaLocation(AkkaConnection(ComponentId(Prefix(ESW, "test_agent_2"), Machine)), agentRef.toURI)
       implicit val sch: Scheduler = system.scheduler
-      val agentClient             = new AgentClient(agentRef)
+      val agentClient             = new AgentClient(agentLocation)
       val prefix                  = Prefix("esw.test3")
       agentClient.spawnRedis(prefix, 6379, List("--port", "6379")).futureValue should ===(Spawned)
     }
@@ -81,8 +84,9 @@ class AgentClientTest extends AnyWordSpecLike with Matchers with BeforeAndAfterA
   "killComponent" should {
     "send KillComponent message to agent and return a future with agent response" in {
       val agentRef                = system.systemActorOf(stubAgent, "test-agent3")
+      val agentLocation           = AkkaLocation(AkkaConnection(ComponentId(Prefix(ESW, "test_agent_3"), Machine)), agentRef.toURI)
       implicit val sch: Scheduler = system.scheduler
-      val agentClient             = new AgentClient(agentRef)
+      val agentClient             = new AgentClient(agentLocation)
       val componentId             = ComponentId(Prefix("esw.test3"), SequenceComponent)
       agentClient.killComponent(componentId).futureValue should ===(Killed)
     }
@@ -91,8 +95,9 @@ class AgentClientTest extends AnyWordSpecLike with Matchers with BeforeAndAfterA
   "getComponentStatus" should {
     "send GetComponentStatus message to agent and return a future with agent response" in {
       val agentRef                = system.systemActorOf(stubAgent, "test-agent4")
+      val agentLocation           = AkkaLocation(AkkaConnection(ComponentId(Prefix(ESW, "test_agent_4"), Machine)), agentRef.toURI)
       implicit val sch: Scheduler = system.scheduler
-      val agentClient             = new AgentClient(agentRef)
+      val agentClient             = new AgentClient(agentLocation)
       val componentId             = ComponentId(Prefix("esw.test3"), SequenceComponent)
       agentClient.getComponentStatus(componentId).futureValue should ===(Running)
     }
@@ -101,8 +106,9 @@ class AgentClientTest extends AnyWordSpecLike with Matchers with BeforeAndAfterA
   "getAgentStatus" should {
     "send GetAgentStatus message to agent and return a future with agent response" in {
       val agentRef                = system.systemActorOf(stubAgent, "test-agent5")
+      val agentLocation           = AkkaLocation(AkkaConnection(ComponentId(Prefix(ESW, "test_agent_5"), Machine)), agentRef.toURI)
       implicit val sch: Scheduler = system.scheduler
-      val agentClient             = new AgentClient(agentRef)
+      val agentClient             = new AgentClient(agentLocation)
       val componentId             = ComponentId(Prefix("esw.comp"), Service)
       agentClient.getAgentStatus.futureValue should ===(AgentStatus(Map(componentId -> Stopping)))
     }

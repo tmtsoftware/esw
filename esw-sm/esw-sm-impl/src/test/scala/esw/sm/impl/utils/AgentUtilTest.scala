@@ -16,8 +16,8 @@ import esw.commons.utils.location.EswLocationError.{LocationNotFound, Registrati
 import esw.commons.utils.location.{EswLocationError, LocationServiceUtil}
 import esw.commons.{BaseTestSuite, Timeouts}
 import esw.ocs.api.SequenceComponentApi
-import esw.sm.api.models.CommonFailure.LocationServiceError
-import esw.sm.api.models.AgentError.SpawnSequenceComponentFailed
+import esw.sm.api.protocol.AgentError.SpawnSequenceComponentFailed
+import esw.sm.api.protocol.CommonFailure.LocationServiceError
 import org.mockito.ArgumentMatchers.{any, eq => argEq}
 
 import scala.concurrent.Future
@@ -38,13 +38,13 @@ class AgentUtilTest extends BaseTestSuite {
       import setup._
 
       mockSpawnComponent(Spawned)
-      when(locationServiceUtil.resolve(any[AkkaConnection], argEq(Timeouts.DefaultTimeout)))
+      when(locationServiceUtil.resolve(any[AkkaConnection], argEq(Timeouts.DefaultResolveLocationDuration)))
         .thenReturn(futureRight(sequenceComponentLocation))
 
       agentUtil.spawnSequenceComponentFor(ESW).rightValue shouldBe a[SequenceComponentApi]
 
       verifySpawnSequenceComponentCalled()
-      verify(locationServiceUtil).resolve(any[AkkaConnection], argEq(Timeouts.DefaultTimeout))
+      verify(locationServiceUtil).resolve(any[AkkaConnection], argEq(Timeouts.DefaultResolveLocationDuration))
     }
 
     "return SpawnSequenceComponentFailed if agent fails to spawn sequence component | ESW-164" in {
@@ -64,13 +64,13 @@ class AgentUtilTest extends BaseTestSuite {
       import setup._
 
       mockSpawnComponent(Spawned)
-      when(locationServiceUtil.resolve(any[AkkaConnection], argEq(Timeouts.DefaultTimeout)))
+      when(locationServiceUtil.resolve(any[AkkaConnection], argEq(Timeouts.DefaultResolveLocationDuration)))
         .thenReturn(futureLeft(LocationNotFound("Could not resolve sequence component")))
 
       agentUtil.spawnSequenceComponentFor(ESW).leftValue should ===(LocationServiceError("Could not resolve sequence component"))
 
       verifySpawnSequenceComponentCalled()
-      verify(locationServiceUtil).resolve(any[AkkaConnection], argEq(Timeouts.DefaultTimeout))
+      verify(locationServiceUtil).resolve(any[AkkaConnection], argEq(Timeouts.DefaultResolveLocationDuration))
     }
 
     "return LocationServiceError if getAgent fails | ESW-164" in {
@@ -133,7 +133,7 @@ class AgentUtilTest extends BaseTestSuite {
       val mockedAgentLoc      = Future.successful(Some(location))
 
       when(locationServiceUtil.locationService).thenReturn(locationService)
-      when(locationService.resolve(agentConnection, 5.seconds)).thenReturn(mockedAgentLoc)
+      when(locationService.find(agentConnection)).thenReturn(mockedAgentLoc)
 
       val agentUtil = new AgentUtil(locationServiceUtil)
       agentUtil.makeAgent(agentPrefix).futureValue shouldBe a[AgentClient]

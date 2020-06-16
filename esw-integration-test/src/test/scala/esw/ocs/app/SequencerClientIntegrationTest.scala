@@ -19,6 +19,7 @@ import esw.ocs.api.actor.messages.SequencerState.{Loaded, Offline}
 import esw.ocs.api.models.StepStatus.Finished.{Failure, Success}
 import esw.ocs.api.models.StepStatus.Pending
 import esw.ocs.api.models.{Step, StepList}
+import esw.ocs.api.protocol.SequenceComponentResponse.ScriptResponse
 import esw.ocs.api.protocol._
 import esw.ocs.testkit.EswTestKit
 
@@ -300,7 +301,9 @@ class SequencerClientIntegrationTest extends EswTestKit(EventServer) {
 
     //start sequencer
     val observingMode = "darknight"
-    sequenceComponentImpl.loadScript(ESW, observingMode).futureValue.response.toOption.get
+    val response      = sequenceComponentImpl.loadScript(ESW, observingMode).futureValue
+    response shouldBe a[ScriptResponse]
+    response.asInstanceOf[ScriptResponse].response.toOption.get
 
     val sequencer: SequencerApi = sequencerClient(ESW, observingMode)
 

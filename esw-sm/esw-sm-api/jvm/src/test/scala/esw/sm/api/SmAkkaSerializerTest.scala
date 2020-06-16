@@ -7,22 +7,19 @@ import csw.location.api.models.ComponentId
 import csw.location.api.models.ComponentType.Sequencer
 import csw.prefix.models.Prefix
 import csw.prefix.models.Subsystem.ESW
+import esw.commons.BaseTestSuite
 import esw.sm.api.actor.messages.SequenceManagerMsg._
-import esw.sm.api.models.AgentError.SpawnSequenceComponentFailed
-import esw.sm.api.models.CommonFailure.{ConfigurationMissing, LocationServiceError}
-import esw.sm.api.models.StartSequencerResponse.LoadScriptError
-import esw.sm.api.models._
-import org.scalactic.TypeCheckedTripleEquals
-import org.scalatest.BeforeAndAfterAll
-import org.scalatest.matchers.should.Matchers
+import esw.sm.api.protocol.AgentError.SpawnSequenceComponentFailed
+import esw.sm.api.protocol.CommonFailure.{ConfigurationMissing, LocationServiceError}
+import esw.sm.api.protocol.StartSequencerResponse.LoadScriptError
+import esw.sm.api.protocol._
 import org.scalatest.prop.TableDrivenPropertyChecks.forAll
 import org.scalatest.prop.Tables.Table
-import org.scalatest.wordspec.AnyWordSpecLike
 
 import scala.concurrent.Await
 import scala.concurrent.duration.DurationLong
 
-class SmAkkaSerializerTest extends AnyWordSpecLike with Matchers with TypeCheckedTripleEquals with BeforeAndAfterAll {
+class SmAkkaSerializerTest extends BaseTestSuite {
   private final implicit val system: ActorSystem[SpawnProtocol.Command] = ActorSystem(SpawnProtocol(), "SmAkkaSerializerTest")
   private final val serialization                                       = SerializationExtension(system)
 
@@ -48,7 +45,7 @@ class SmAkkaSerializerTest extends AnyWordSpecLike with Matchers with TypeChecke
       GetRunningObsModes(getRunningModesResponseRef),
       GetSequenceManagerState(getSmStateRef),
       StartSequencer(ESW, obsMode, StartSequencerResponseRef),
-      ShutdownSequencer(ESW, obsMode, shutdownSequencerResponseRef)
+      ShutdownSequencer(ESW, obsMode, shutdownSequenceComp = false, shutdownSequencerResponseRef)
     )
 
     forAll(testData) { sequenceManagerRemoteMsg =>

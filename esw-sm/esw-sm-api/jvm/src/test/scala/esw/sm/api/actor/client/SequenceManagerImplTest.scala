@@ -9,19 +9,15 @@ import csw.location.api.models.Connection.AkkaConnection
 import csw.location.api.models.{AkkaLocation, ComponentId, ComponentType}
 import csw.prefix.models.Prefix
 import csw.prefix.models.Subsystem.ESW
+import esw.commons.BaseTestSuite
 import esw.sm.api.SequenceManagerState.Idle
 import esw.sm.api.actor.messages.SequenceManagerMsg
-import esw.sm.api.models._
-import org.scalactic.TypeCheckedTripleEquals
-import org.scalatest.concurrent.ScalaFutures
-import org.scalatest.matchers.should.Matchers
-import org.scalatest.wordspec.AnyWordSpecLike
+import esw.sm.api.protocol._
 
 import scala.concurrent.duration.DurationInt
 
-class SequenceManagerImplTest extends AnyWordSpecLike with TypeCheckedTripleEquals with ScalaFutures with Matchers {
+class SequenceManagerImplTest extends BaseTestSuite {
   private final implicit val system: ActorSystem[SpawnProtocol.Command] = ActorSystem(SpawnProtocol(), "SmAkkaSerializerTest")
-  private implicit val timeout: Timeout                                 = 10.seconds
   private val sequencerComponentId: ComponentId                         = ComponentId(Prefix("esw.primary"), ComponentType.Sequencer)
   private val configureResponse                                         = ConfigureResponse.Success(sequencerComponentId)
   private val cleanupResponse                                           = CleanupResponse.Success
@@ -38,7 +34,7 @@ class SequenceManagerImplTest extends AnyWordSpecLike with TypeCheckedTripleEqua
       case SequenceManagerMsg.GetRunningObsModes(replyTo)              => replyTo ! getRunningObsModesResponse
       case SequenceManagerMsg.GetSequenceManagerState(replyTo)         => replyTo ! Idle
       case SequenceManagerMsg.StartSequencer(_, _, replyTo)            => replyTo ! startSequencerResponse
-      case SequenceManagerMsg.ShutdownSequencer(_, _, replyTo)         => replyTo ! shutdownSequencerResponse
+      case SequenceManagerMsg.ShutdownSequencer(_, _, _, replyTo)      => replyTo ! shutdownSequencerResponse
       case SequenceManagerMsg.ShutdownAllSequencers(replyTo)           => replyTo ! shutdownAllSequencersResponse
       case SequenceManagerMsg.RestartSequencer(_, _, replyTo)          => replyTo ! restartSequencerResponse
       case SequenceManagerMsg.StartSequencerResponseInternal(_)        =>
@@ -57,6 +53,7 @@ class SequenceManagerImplTest extends AnyWordSpecLike with TypeCheckedTripleEqua
 
   "SequenceManagerImpl" must {
     "configure" in {
+      implicit val timeout: Timeout = 5.seconds
       sequenceManager.configure("IRIS_darknight").futureValue shouldBe configureResponse
     }
 

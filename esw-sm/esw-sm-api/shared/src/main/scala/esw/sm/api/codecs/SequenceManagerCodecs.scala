@@ -1,14 +1,15 @@
 package esw.sm.api.codecs
 
 import csw.location.api.codec.LocationCodecs
-import esw.sm.api.models.ShutdownSequencerResponse.UnloadScriptError
-import esw.sm.api.models._
+import esw.sm.api.protocol.ShutdownSequencerResponse.UnloadScriptError
+import esw.sm.api.protocol._
 import io.bullet.borer.Codec
 import io.bullet.borer.derivation.MapBasedCodecs.{deriveAllCodecs, deriveCodec}
+import msocket.api.codecs.BasicCodecs
 
 object SequenceManagerCodecs extends SequenceManagerCodecs
 
-trait SequenceManagerCodecs extends LocationCodecs {
+trait SequenceManagerCodecs extends LocationCodecs with BasicCodecs {
   implicit lazy val configureResponseCodec: Codec[ConfigureResponse]                   = deriveAllCodecs
   implicit lazy val getRunningObsModesResponseCodec: Codec[GetRunningObsModesResponse] = deriveAllCodecs
   implicit lazy val cleanupResponseCodec: Codec[CleanupResponse]                       = deriveAllCodecs

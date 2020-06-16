@@ -3,7 +3,6 @@ package esw.ocs.api.actor.client
 import akka.actor.typed.ActorSystem
 import akka.http.scaladsl.model.Uri
 import akka.http.scaladsl.model.Uri.Path
-import akka.util.Timeout
 import csw.command.client.extensions.AkkaLocationExt.RichAkkaLocation
 import csw.location.api.models.{AkkaLocation, HttpLocation, Location, TcpLocation}
 import esw.ocs.api.SequencerApi
@@ -14,12 +13,9 @@ import msocket.api.ContentType
 import msocket.impl.post.HttpPostTransport
 import msocket.impl.ws.WebsocketTransport
 
-import scala.concurrent.duration.DurationLong
-
 object SequencerApiFactory extends SequencerHttpCodecs {
 
   def make(componentLocation: Location)(implicit actorSystem: ActorSystem[_]): SequencerApi = {
-    implicit val timeout: Timeout = Timeout(5.seconds)
     componentLocation match {
       case _: TcpLocation             => throw new RuntimeException("Only AkkaLocation and HttpLocation can be used to access sequencer")
       case akkaLocation: AkkaLocation => new SequencerImpl(akkaLocation.sequencerRef)

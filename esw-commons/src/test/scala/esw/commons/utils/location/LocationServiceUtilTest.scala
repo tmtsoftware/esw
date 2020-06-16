@@ -335,4 +335,40 @@ class LocationServiceUtilTest extends BaseTestSuite {
       RegistrationListingFailed(s"Location Service Error: $cswLocationServiceErrorMsg")
     }
   }
+
+  "findSequencer" must {
+    "return a location which matches a given subsystem and observing mode | ESW-119" in {
+      when(locationService.find(akkaConnection))
+        .thenReturn(Future.successful(Some(akkaLocation)))
+
+      val locationServiceDsl = new LocationServiceUtil(locationService)
+      locationServiceDsl.findSequencer(subsystem, observingMode).rightValue shouldBe akkaLocation
+
+      verify(locationService).find(akkaConnection)
+    }
+
+    "return a LocationNotFound when no matching subsystem and observing mode is found | ESW-119" in {
+      when(locationService.find(akkaConnection))
+        .thenReturn(Future.successful(None))
+
+      val locationServiceUtil = new LocationServiceUtil(locationService)
+      locationServiceUtil.findSequencer(subsystem, observingMode).leftValue should ===(
+        LocationNotFound(s"Could not find location matching connection: $akkaConnection")
+      )
+
+      verify(locationService).find(akkaConnection)
+    }
+
+    "return a RegistrationListingFailed when location service call throws exception | ESW-119" in {
+      when(locationService.find(akkaConnection))
+        .thenReturn(Future.failed(cswRegistrationListingFailed))
+
+      val locationServiceUtil = new LocationServiceUtil(locationService)
+      locationServiceUtil.findSequencer(subsystem, observingMode).leftValue should ===(
+        RegistrationListingFailed(s"Location Service Error: $cswLocationServiceErrorMsg")
+      )
+
+      verify(locationService).find(akkaConnection)
+    }
+  }
 }
