@@ -1,6 +1,5 @@
 package esw.ocs.app
 
-import akka.Done
 import akka.actor.testkit.typed.scaladsl.TestProbe
 import akka.actor.typed.ActorRef
 import akka.actor.typed.scaladsl.AskPattern._
@@ -15,7 +14,8 @@ import csw.prefix.models.Subsystem.{CSW, ESW}
 import csw.prefix.models.{Prefix, Subsystem}
 import esw.ocs.api.actor.messages.SequenceComponentMsg
 import esw.ocs.api.actor.messages.SequenceComponentMsg.{LoadScript, UnloadScript}
-import esw.ocs.api.protocol.{ScriptError, ScriptResponse}
+import esw.ocs.api.protocol.ScriptError
+import esw.ocs.api.protocol.SequenceComponentResponse.{Ok, OkOrUnhandled, ScriptResponse, ScriptResponseOrUnhandled}
 import esw.ocs.testkit.EswTestKit
 
 import scala.concurrent.Future
@@ -44,7 +44,7 @@ class SequencerAppIntegrationTest extends EswTestKit {
 
       // LoadScript
       val seqCompRef = sequenceCompLocation.uri.toActorRef.unsafeUpcast[SequenceComponentMsg]
-      val probe      = TestProbe[ScriptResponse]()
+      val probe      = TestProbe[ScriptResponseOrUnhandled]()
       seqCompRef ! LoadScript(ESW, "darknight", probe.ref)
 
       // verify that loaded sequencer is started and able to process sequence command
@@ -65,9 +65,9 @@ class SequencerAppIntegrationTest extends EswTestKit {
       commandService.submitAndWait(sequence).futureValue shouldBe a[Completed]
 
       // UnloadScript
-      val probe2 = TestProbe[Done]()
+      val probe2 = TestProbe[OkOrUnhandled]()
       seqCompRef ! UnloadScript(probe2.ref)
-      probe2.expectMessage(Done)
+      probe2.expectMessage(Ok)
     }
 
     "start sequence component and register with automatically generated random uniqueIDs if prefix is not provided| ESW-144, ESW-279" in {
@@ -119,13 +119,16 @@ class SequencerAppIntegrationTest extends EswTestKit {
       val timeout = Timeout(10.seconds)
       // LoadScript
       val seqCompRef: ActorRef[SequenceComponentMsg] = sequenceCompLocation.uri.toActorRef.unsafeUpcast[SequenceComponentMsg]
-      val loadScriptResponse: Future[ScriptResponse] =
-        seqCompRef.ask((ref: ActorRef[ScriptResponse]) => LoadScript(unexpectedSubsystem, observingMode, ref))(
-          timeout,
-          schedulerFromActorSystem
-        )
+      val loadScriptResponse: ScriptResponseOrUnhandled =
+        seqCompRef
+          .ask((ref: ActorRef[ScriptResponseOrUnhandled]) => LoadScript(unexpectedSubsystem, observingMode, ref))(
+            timeout,
+            schedulerFromActorSystem
+          )
+          .futureValue
 
-      val response: Either[ScriptError, AkkaLocation] = loadScriptResponse.futureValue.response
+      loadScriptResponse shouldBe a[ScriptResponse]
+      val response: Either[ScriptError, AkkaLocation] = loadScriptResponse.asInstanceOf[ScriptResponse].response
 
       response match {
         case Left(v) =>

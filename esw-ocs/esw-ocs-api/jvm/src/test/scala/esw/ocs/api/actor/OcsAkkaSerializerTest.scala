@@ -3,7 +3,6 @@ package esw.ocs.api.actor
 import java.net.URI
 import java.time.Instant
 
-import akka.Done
 import akka.actor.testkit.typed.scaladsl.TestProbe
 import akka.actor.typed.{ActorSystem, SpawnProtocol}
 import akka.serialization.SerializationExtension
@@ -22,13 +21,14 @@ import esw.ocs.api.actor.messages.SequenceComponentMsg.{GetStatus, LoadScript, R
 import esw.ocs.api.actor.messages.SequencerMessages._
 import esw.ocs.api.actor.messages.SequencerState
 import esw.ocs.api.actor.messages.SequencerState._
-import esw.ocs.api.models.{Step, StepList}
+import esw.ocs.api.models.{SequenceComponentState, Step, StepList}
 import esw.ocs.api.protocol.EditorError.IdDoesNotExist
-import esw.ocs.api.protocol.ScriptError.{
-  LoadingScriptFailed,
-  LocationServiceError,
-  RestartNotSupportedInIdle,
-  SequenceComponentNotIdle
+import esw.ocs.api.protocol.ScriptError.{LoadingScriptFailed, LocationServiceError}
+import esw.ocs.api.protocol.SequenceComponentResponse.{
+  GetStatusResponse,
+  GetStatusResponseOrUnhandled,
+  ScriptResponse,
+  ScriptResponseOrUnhandled
 }
 import esw.ocs.api.protocol.{DiagnosticModeResponse, SequencerSubmitResponse, _}
 import org.scalatest.prop.TableDrivenPropertyChecks.forAll
@@ -158,14 +158,16 @@ class OcsAkkaSerializerTest extends BaseTestSuite {
     serializer.fromBinary(bytes, Some(stepList.getClass)) shouldEqual stepList
   }
 
-  "should use ocs serializer for Response (de)serialization" in {
+  "should use ocs serializer for Sequence Component Response (de)serialization" in {
     val akkaLocation = AkkaLocation(AkkaConnection(ComponentId(Prefix(ESW, "primary"), Sequencer)), URI.create("uri"))
     val testData = Table(
-      "Sequencer Response models",
+      "Sequence Component Response models",
+      SequenceComponentResponse.Ok,
+      SequenceComponentResponse.Unhandled(SequenceComponentState.Idle, "some msg"),
+      SequenceComponentResponse.Unhandled(SequenceComponentState.Running, "some msg"),
+      SequenceComponentResponse.Unhandled(SequenceComponentState.ShuttingDown, "some msg"),
       GetStatusResponse(Some(akkaLocation)),
       GetStatusResponse(None),
-      ScriptResponse(Left(RestartNotSupportedInIdle)),
-      ScriptResponse(Left(SequenceComponentNotIdle(Prefix(ESW, "darknight")))),
       ScriptResponse(Left(LocationServiceError("error"))),
       ScriptResponse(Left(LoadingScriptFailed("error"))),
       ScriptResponse(Right(akkaLocation))
@@ -180,13 +182,14 @@ class OcsAkkaSerializerTest extends BaseTestSuite {
     }
   }
 
-  "should use ocs serializer for SequenceComponentMsg (de)serialization" in {
+  "should use ocs serializer for SequenceComponentRemoteMsg (de)serialization" in {
     val testData = Table(
-      "SequenceComponentMsg models",
-      LoadScript(ESW, "IRIS_Darknight", TestProbe[ScriptResponse]().ref),
-      Restart(TestProbe[ScriptResponse]().ref),
-      UnloadScript(TestProbe[Done]().ref),
-      GetStatus(TestProbe[GetStatusResponse]().ref)
+      "SequenceComponentRemoteMsg models",
+      LoadScript(ESW, "IRIS_Darknight", TestProbe[ScriptResponseOrUnhandled]().ref),
+      Restart(TestProbe[ScriptResponseOrUnhandled]().ref),
+      UnloadScript(TestProbe[SequenceComponentResponse.OkOrUnhandled]().ref),
+      GetStatus(TestProbe[GetStatusResponseOrUnhandled]().ref),
+      Shutdown(TestProbe[Ok]().ref)
     )
 
     forAll(testData) { sequenceComponentMsg =>

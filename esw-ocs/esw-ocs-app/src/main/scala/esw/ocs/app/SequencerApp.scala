@@ -13,7 +13,7 @@ import esw.http.core.commons.CoordinatedShutdownReasons.FailureReason
 import esw.http.core.commons.EswCommandApp
 import esw.ocs.api.actor.messages.SequenceComponentMsg
 import esw.ocs.api.actor.messages.SequenceComponentMsg.LoadScript
-import esw.ocs.api.protocol.{ScriptError, ScriptResponse}
+import esw.ocs.api.protocol.SequenceComponentResponse.{ScriptResponse, ScriptResponseOrUnhandled, Unhandled}
 import esw.ocs.app.SequencerAppCommand._
 import esw.ocs.app.wiring.{SequenceComponentWiring, SequencerWiring}
 
@@ -56,26 +56,31 @@ object SequencerApp extends EswCommandApp[SequencerAppCommand] {
       mode: String,
       sequenceComponentLocation: AkkaLocation,
       sequenceComponentWiring: SequenceComponentWiring
-  ): Either[ScriptError, AkkaLocation] = {
+  ): ScriptResponseOrUnhandled = {
     import sequenceComponentWiring._
     import actorRuntime._
-    val actorRef: ActorRef[SequenceComponentMsg] = sequenceComponentLocation.uri.toActorRef.unsafeUpcast[SequenceComponentMsg]
-    val response: Future[ScriptResponse]         = actorRef ? (LoadScript(subsystem, mode, _))
+    val actorRef: ActorRef[SequenceComponentMsg]    = sequenceComponentLocation.uri.toActorRef.unsafeUpcast[SequenceComponentMsg]
+    val response: Future[ScriptResponseOrUnhandled] = actorRef ? (LoadScript(subsystem, mode, _))
 
-    Await.result(response.map(_.response), Timeouts.DefaultTimeout)
+    Await.result(response, Timeouts.DefaultTimeout)
   }
 
-  private def reportSequencer(seqCompAppResult: Either[ScriptError, AkkaLocation]) =
+  private def reportSequencer(seqCompAppResult: ScriptResponseOrUnhandled) =
     seqCompAppResult match {
-      case Left(err) =>
-        val msg = s"Failed to start with error: ${err.msg}"
-        logAndThrowError(log, msg, new RuntimeException(msg))
-      case Right(location) =>
-        logInfo(
-          log,
-          s"Successfully started and registered ${location.connection.componentId.componentType} with Location: [$location]"
-        )
-        location
+      case Unhandled(_, _, msg) =>
+        logAndThrowError(log, msg, new RuntimeException(s"Failed to start with error: ${msg}"))
+      case ScriptResponse(response) =>
+        response match {
+          case Left(err) =>
+            val msg = s"Failed to start with error: ${err.msg}"
+            logAndThrowError(log, msg, new RuntimeException(msg))
+          case Right(location) =>
+            logInfo(
+              log,
+              s"Successfully started and registered ${location.connection.componentId.componentType} with Location: [$location]"
+            )
+            location
+        }
     }
 
   private def reportSequenceComponent(sequencerAppResult: Either[RegistrationError, AkkaLocation]) =

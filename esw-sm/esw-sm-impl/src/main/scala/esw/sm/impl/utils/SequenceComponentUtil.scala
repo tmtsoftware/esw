@@ -1,6 +1,5 @@
 package esw.sm.impl.utils
 
-import akka.Done
 import akka.actor.typed.ActorSystem
 import csw.location.api.models.AkkaLocation
 import csw.location.api.models.ComponentType.SequenceComponent
@@ -11,7 +10,7 @@ import esw.commons.utils.FutureUtils
 import esw.commons.utils.location.LocationServiceUtil
 import esw.ocs.api.SequenceComponentApi
 import esw.ocs.api.actor.client.SequenceComponentImpl
-import esw.ocs.api.protocol.ScriptResponse
+import esw.ocs.api.protocol.SequenceComponentResponse.{GetStatusResponse, OkOrUnhandled, ScriptResponseOrUnhandled, Unhandled}
 import esw.sm.api.protocol.AgentError
 
 import scala.async.Async._
@@ -35,11 +34,11 @@ class SequenceComponentUtil(locationServiceUtil: LocationServiceUtil, agentUtil:
         case None => agentUtil.spawnSequenceComponentFor(ESW)
       }
 
-  def unloadScript(loc: AkkaLocation): Future[Done] = new SequenceComponentImpl(loc).unloadScript()
+  def unloadScript(loc: AkkaLocation): Future[OkOrUnhandled] = new SequenceComponentImpl(loc).unloadScript()
 
-  def shutdown(loc: AkkaLocation): Future[Done] = new SequenceComponentImpl(loc).shutdown()
+  def shutdown(loc: AkkaLocation): Future[OkOrUnhandled] = new SequenceComponentImpl(loc).shutdown()
 
-  def restart(loc: AkkaLocation): Future[ScriptResponse] = new SequenceComponentImpl(loc).restart()
+  def restart(loc: AkkaLocation): Future[ScriptResponseOrUnhandled] = new SequenceComponentImpl(loc).restart()
 
   private def getIdleSequenceComponentFor(subsystem: Subsystem): Future[Option[SequenceComponentApi]] =
     locationServiceUtil
@@ -54,9 +53,13 @@ class SequenceComponentUtil(locationServiceUtil: LocationServiceUtil, agentUtil:
 
   private[sm] def idleSequenceComponent(sequenceComponentLocation: AkkaLocation): Future[Option[SequenceComponentApi]] =
     async {
-      val sequenceComponentApi   = new SequenceComponentImpl(sequenceComponentLocation)
-      val status                 = await(sequenceComponentApi.status)
-      val isBusyRunningSequencer = status.response.isDefined
-      if (isBusyRunningSequencer) None else Some(sequenceComponentApi)
+      val sequenceComponentApi = new SequenceComponentImpl(sequenceComponentLocation)
+      val status               = await(sequenceComponentApi.status)
+      status match {
+        case Unhandled(_, _, _) => None
+        case GetStatusResponse(response) =>
+          val isBusyRunningSequencer = response.isDefined
+          if (isBusyRunningSequencer) None else Some(sequenceComponentApi)
+      }
     }
 }

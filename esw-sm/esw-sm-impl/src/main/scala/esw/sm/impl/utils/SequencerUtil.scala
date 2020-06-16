@@ -12,6 +12,7 @@ import esw.commons.utils.location.EswLocationError.{LocationNotFound, Registrati
 import esw.commons.utils.location.LocationServiceUtil
 import esw.ocs.api.actor.client.SequencerApiFactory
 import esw.ocs.api.protocol.ScriptError.LoadingScriptFailed
+import esw.ocs.api.protocol.SequenceComponentResponse.{Ok, ScriptResponse, Unhandled}
 import esw.ocs.api.{SequenceComponentApi, SequencerApi}
 import esw.sm.api.protocol.CleanupResponse.FailedToShutdownSequencers
 import esw.sm.api.protocol.CommonFailure.LocationServiceError
@@ -82,8 +83,13 @@ class SequencerUtil(locationServiceUtil: LocationServiceUtil, sequenceComponentU
 
   private def restartSequencer(akkaLocation: AkkaLocation): Future[RestartSequencerResponse] =
     createSequencerClient(akkaLocation).getSequenceComponent
-      .flatMap(sequenceComponentUtil.restart(_).map(_.response))
-      .mapToAdt(loc => RestartSequencerResponse.Success(loc.connection.componentId), e => LoadScriptError(e.msg))
+      .flatMap(sequenceComponentUtil.restart(_).flatMap {
+        case Unhandled(_, _, msg) => Future.successful(LoadScriptError(msg))
+        case ScriptResponse(response) =>
+          Future
+            .successful(response)
+            .mapToAdt(loc => RestartSequencerResponse.Success(loc.connection.componentId), e => LoadScriptError(e.msg))
+      })
 
   private def loadScript(
       subSystem: Subsystem,
@@ -93,13 +99,20 @@ class SequencerUtil(locationServiceUtil: LocationServiceUtil, sequenceComponentU
   ): Future[Either[StartSequencerResponse.Failure, AkkaLocation]] =
     loadScript(subSystem, observingMode, seqCompApi)
       .flatMap {
-        case Left(error: LoadingScriptFailed) => Future.successful(Left(LoadScriptError(error.msg)))
-        case Left(_) if retryCount > 0        => startSequencer(subSystem, observingMode, retryCount - 1)
-        case Right(location)                  => Future.successful(Right(location))
+        case Left(_: LoadScriptError) if retryCount > 0 => startSequencer(subSystem, observingMode, retryCount - 1)
+        case Right(value) =>
+          value match {
+            case Left(error: LoadingScriptFailed)                => Future.successful(Left(LoadScriptError(error.msg)))
+            case Left(_: LocationServiceError) if retryCount > 0 => startSequencer(subSystem, observingMode, retryCount - 1)
+            case Right(location)                                 => Future.successful(Right(location))
+          }
       }
 
   private def loadScript(subSystem: Subsystem, observingMode: String, seqCompApi: SequenceComponentApi) =
-    seqCompApi.loadScript(subSystem, observingMode).map(_.response)
+    seqCompApi.loadScript(subSystem, observingMode).map {
+      case Unhandled(_, _, msg)     => Left(LoadScriptError(msg))
+      case ScriptResponse(response) => Right(response)
+    }
 
   // get sequence component from Sequencer and unload sequencer script
   private def unloadScript(
@@ -113,7 +126,10 @@ class SequencerUtil(locationServiceUtil: LocationServiceUtil, sequenceComponentU
           .unloadScript(loc)
           .flatMap(x => if (shutdownSequenceComp) sequenceComponentUtil.shutdown(loc) else Future.successful(x))
       )
-      .map(_ => Right(ShutdownSequencerResponse.Success))
+      .map {
+        case Ok                   => Right(ShutdownSequencerResponse.Success)
+        case Unhandled(_, _, msg) => Left(UnloadScriptError(prefix, msg))
+      }
       .mapError(e => UnloadScriptError(prefix, e.getMessage))
 
   // Created in order to mock the behavior of sequencer API availability for unit test

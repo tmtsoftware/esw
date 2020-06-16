@@ -1,6 +1,5 @@
 package esw.ocs.impl.core
 
-import akka.Done
 import akka.actor.typed.scaladsl.{ActorContext, Behaviors}
 import akka.actor.typed.{ActorRef, ActorSystem, Behavior, SpawnProtocol}
 import csw.location.api.extensions.ActorExtension._
@@ -10,13 +9,20 @@ import csw.location.api.models.{AkkaLocation, ComponentId}
 import csw.location.api.scaladsl.LocationService
 import csw.logging.api.scaladsl.Logger
 import csw.prefix.models.{Prefix, Subsystem}
-import esw.ocs.api.actor.messages.SequenceComponentMsg
 import esw.ocs.api.actor.messages.SequenceComponentMsg._
-import esw.ocs.api.protocol.ScriptError.{RestartNotSupportedInIdle, SequenceComponentNotIdle}
-import esw.ocs.api.protocol.{GetStatusResponse, ScriptResponse}
+import esw.ocs.api.actor.messages.{
+  IdleStateSequenceComponentMsg,
+  RunningStateSequenceComponentMsg,
+  SequenceComponentMsg,
+  ShuttingDownStateSequenceComponentMsg,
+  UnhandleableSequenceComponentMsg
+}
+import esw.ocs.api.models.SequenceComponentState
+import esw.ocs.api.protocol.SequenceComponentResponse._
 import esw.ocs.impl.internal.{SequencerServer, SequencerServerFactory}
 
 import scala.concurrent.ExecutionContext
+import scala.reflect.ClassTag
 
 class SequenceComponentBehavior(
     prefix: Prefix,
@@ -27,7 +33,7 @@ class SequenceComponentBehavior(
   implicit val ec: ExecutionContext = actorSystem.executionContext
 
   def idle: Behavior[SequenceComponentMsg] =
-    Behaviors.receive[SequenceComponentMsg] { (ctx, msg) =>
+    receive[IdleStateSequenceComponentMsg](SequenceComponentState.Idle) { (ctx, msg) =>
       log.debug(s"Sequence Component in lifecycle state :Idle, received message :[$msg]")
       msg match {
         case LoadScript(subsystem, observingMode, replyTo) =>
@@ -36,15 +42,10 @@ class SequenceComponentBehavior(
           replyTo ! GetStatusResponse(None)
           Behaviors.same
         case UnloadScript(replyTo) =>
-          replyTo ! Done
+          replyTo ! Ok
           Behaviors.same
-        case Restart(replyTo) =>
-          replyTo ! ScriptResponse(Left(RestartNotSupportedInIdle))
-          Behaviors.same
-
-        case Stop                => Behaviors.stopped
-        case Shutdown(replyTo)   => shutdown(ctx.self, replyTo, None)
-        case ShutdownInternal(_) => Behaviors.unhandled
+        case Stop              => Behaviors.stopped
+        case Shutdown(replyTo) => shutdown(ctx.self, replyTo, None)
       }
     }
 
@@ -52,7 +53,7 @@ class SequenceComponentBehavior(
       ctx: ActorContext[SequenceComponentMsg],
       subsystem: Subsystem,
       observingMode: String,
-      replyTo: ActorRef[ScriptResponse]
+      replyTo: ActorRef[ScriptResponseOrUnhandled]
   ): Behavior[SequenceComponentMsg] = {
     val sequenceComponentLocation = AkkaLocation(AkkaConnection(ComponentId(prefix, SequenceComponent)), ctx.self.toURI)
     val sequencerServer           = sequencerServerFactory.make(subsystem, observingMode, sequenceComponentLocation)
@@ -69,7 +70,7 @@ class SequenceComponentBehavior(
   }
 
   private def running(subsystem: Subsystem, observingMode: String, sequencerServer: SequencerServer, location: AkkaLocation) =
-    Behaviors.receive[SequenceComponentMsg] { (ctx, msg) =>
+    receive[RunningStateSequenceComponentMsg](SequenceComponentState.Running) { (ctx, msg) =>
       log.debug(s"Sequence Component in lifecycle state :Running, received message :[$msg]")
 
       def unload(): Unit = {
@@ -80,7 +81,7 @@ class SequenceComponentBehavior(
       msg match {
         case UnloadScript(replyTo) =>
           unload()
-          replyTo ! Done
+          replyTo ! Ok
           idle
         case Restart(replyTo) =>
           unload()
@@ -88,18 +89,14 @@ class SequenceComponentBehavior(
         case GetStatus(replyTo) =>
           replyTo ! GetStatusResponse(Some(location))
           Behaviors.same
-        case LoadScript(_, _, replyTo) =>
-          replyTo ! ScriptResponse(Left(SequenceComponentNotIdle(Prefix(subsystem, observingMode))))
-          Behaviors.same
-        case Stop                => Behaviors.same
-        case Shutdown(replyTo)   => shutdown(ctx.self, replyTo, Some(sequencerServer))
-        case ShutdownInternal(_) => Behaviors.unhandled
+        case Stop              => Behaviors.same
+        case Shutdown(replyTo) => shutdown(ctx.self, replyTo, Some(sequencerServer))
       }
     }
 
   private def shutdown(
       self: ActorRef[SequenceComponentMsg],
-      replyTo: ActorRef[Done],
+      replyTo: ActorRef[OkOrUnhandled],
       sequencerServer: Option[SequencerServer]
   ): Behavior[SequenceComponentMsg] = {
     sequencerServer.foreach(_.shutDown())
@@ -110,10 +107,26 @@ class SequenceComponentBehavior(
   }
 
   private def shuttingDown(): Behavior[SequenceComponentMsg] =
-    Behaviors.receiveMessagePartial {
-      case ShutdownInternal(replyTo) =>
-        replyTo ! Done
-        actorSystem.terminate()
-        Behaviors.stopped
+    receive[ShuttingDownStateSequenceComponentMsg](SequenceComponentState.ShuttingDown) { (_, msg) =>
+      msg match {
+        case ShutdownInternal(replyTo) =>
+          replyTo ! Ok
+          actorSystem.terminate()
+          Behaviors.stopped
+      }
+    }
+
+  private def receive[HandleableMsg <: SequenceComponentMsg: ClassTag](
+      state: SequenceComponentState
+  )(
+      handler: (ActorContext[SequenceComponentMsg], HandleableMsg) => Behavior[SequenceComponentMsg]
+  ): Behavior[SequenceComponentMsg] =
+    Behaviors.receive[SequenceComponentMsg] { (ctx, msg) =>
+      msg match {
+        case msg: HandleableMsg => handler(ctx, msg)
+        case msg: UnhandleableSequenceComponentMsg =>
+          msg.replyTo ! Unhandled(state, msg.getClass.getSimpleName)
+          Behaviors.same
+      }
     }
 }

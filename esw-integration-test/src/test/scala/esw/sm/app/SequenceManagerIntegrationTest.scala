@@ -11,6 +11,7 @@ import csw.location.api.models.Connection.{AkkaConnection, HttpConnection}
 import csw.prefix.models.Prefix
 import csw.prefix.models.Subsystem._
 import esw.ocs.api.actor.client.{SequenceComponentImpl, SequencerImpl}
+import esw.ocs.api.protocol.SequenceComponentResponse.GetStatusResponse
 import esw.ocs.app.SequencerApp
 import esw.ocs.app.SequencerAppCommand.SequenceComponent
 import esw.ocs.app.wiring.SequenceComponentWiring
@@ -258,8 +259,10 @@ class SequenceManagerIntegrationTest extends EswTestKit {
 
   private def assertSeqCompAvailability(isSeqCompAvailable: Boolean, prefix: Prefix): Unit = {
     val seqCompStatus = new SequenceComponentImpl(resolveSequenceComponentLocation(prefix)).status.futureValue
-    if (isSeqCompAvailable) seqCompStatus.response shouldBe None // assert sequence component is available
-    else seqCompStatus.response.isDefined shouldBe true          // assert sequence components is busy
+    seqCompStatus shouldBe a[GetStatusResponse]
+    val getStatusResponse = seqCompStatus.asInstanceOf[GetStatusResponse]
+    if (isSeqCompAvailable) getStatusResponse.response shouldBe None // assert sequence component is available
+    else getStatusResponse.response.isDefined shouldBe true          // assert sequence components is busy
   }
 
   object TestSetup {
