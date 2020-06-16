@@ -29,7 +29,7 @@ import scala.collection.mutable.ArrayBuffer
 class SequenceManagerIntegrationTest extends EswTestKit {
   private val WFOS_CAL              = "WFOS_Cal"
   private val IRIS_CAL              = "IRIS_Cal"
-  private val IRIS_DARKNIGHT        = "IRIS_DarkNight"
+  private val IRIS_DARKNIGHT        = "IRIS_Darknight"
   private val sequenceManagerPrefix = Prefix(ESW, "sequence_manager")
 
   override protected def beforeEach(): Unit = locationService.unregisterAll()
