@@ -46,6 +46,7 @@ import scala.async.Async.{async, await}
 import scala.concurrent.{Await, Future}
 import scala.util.control.NonFatal
 
+// $COVERAGE-OFF$
 private[ocs] class SequencerWiring(
     val subsystem: Subsystem,
     val observingMode: String,
@@ -161,3 +162,4 @@ private[ocs] class SequencerWiring(
     override def shutDown(): Done = Await.result((sequencerRef ? Shutdown).map(_ => Done), Timeouts.DefaultTimeout)
   }
 }
+// $COVERAGE-ON$
