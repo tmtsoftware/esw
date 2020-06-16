@@ -11,6 +11,7 @@ import esw.commons.utils.FutureUtils
 import esw.commons.utils.location.LocationServiceUtil
 import esw.ocs.api.SequenceComponentApi
 import esw.ocs.api.actor.client.SequenceComponentImpl
+import esw.ocs.api.protocol.ScriptResponse
 import esw.sm.api.protocol.AgentError
 
 import scala.async.Async._
@@ -37,6 +38,8 @@ class SequenceComponentUtil(locationServiceUtil: LocationServiceUtil, agentUtil:
   def unloadScript(loc: AkkaLocation): Future[Done] = new SequenceComponentImpl(loc).unloadScript()
 
   def shutdown(loc: AkkaLocation): Future[Done] = new SequenceComponentImpl(loc).shutdown()
+
+  def restart(loc: AkkaLocation): Future[ScriptResponse] = new SequenceComponentImpl(loc).restart()
 
   private def getIdleSequenceComponentFor(subsystem: Subsystem): Future[Option[SequenceComponentApi]] =
     locationServiceUtil

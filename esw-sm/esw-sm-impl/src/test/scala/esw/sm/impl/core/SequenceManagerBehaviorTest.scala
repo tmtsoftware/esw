@@ -274,7 +274,7 @@ class SequenceManagerBehaviorTest extends BaseTestSuite with TableDrivenProperty
       val prefix      = Prefix(ESW, Darknight)
       val componentId = ComponentId(prefix, Sequencer)
 
-      when(sequencerUtil.restartSequencer(ESW, Darknight, 3))
+      when(sequencerUtil.restartSequencer(ESW, Darknight))
         .thenReturn(future(1.seconds, RestartSequencerResponse.Success(componentId)))
 
       val restartSequencerResponseProbe = TestProbe[RestartSequencerResponse]()
@@ -285,7 +285,7 @@ class SequenceManagerBehaviorTest extends BaseTestSuite with TableDrivenProperty
       restartSequencerResponseProbe.expectMessage(RestartSequencerResponse.Success(componentId))
       assertState(Idle)
 
-      verify(sequencerUtil).restartSequencer(ESW, Darknight, 3)
+      verify(sequencerUtil).restartSequencer(ESW, Darknight)
     }
 
     val errors = Table(
@@ -298,7 +298,7 @@ class SequenceManagerBehaviorTest extends BaseTestSuite with TableDrivenProperty
 
     forAll(errors) { (errorName, error, process) =>
       s"return $errorName if $errorName encountered while sequencer $process | ESW-327" in {
-        when(sequencerUtil.restartSequencer(ESW, Darknight, 3))
+        when(sequencerUtil.restartSequencer(ESW, Darknight))
           .thenReturn(future(1.seconds, error))
 
         val restartSequencerResponseProbe = TestProbe[RestartSequencerResponse]()
@@ -306,7 +306,7 @@ class SequenceManagerBehaviorTest extends BaseTestSuite with TableDrivenProperty
         smRef ! RestartSequencer(ESW, Darknight, restartSequencerResponseProbe.ref)
         restartSequencerResponseProbe.expectMessage(error)
 
-        verify(sequencerUtil).restartSequencer(ESW, Darknight, 3)
+        verify(sequencerUtil).restartSequencer(ESW, Darknight)
       }
     }
   }

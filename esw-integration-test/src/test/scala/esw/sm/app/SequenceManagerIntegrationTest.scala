@@ -28,7 +28,7 @@ import scala.collection.mutable.ArrayBuffer
 class SequenceManagerIntegrationTest extends EswTestKit {
   private val WFOS_CAL              = "WFOS_Cal"
   private val IRIS_CAL              = "IRIS_Cal"
-  private val IRIS_DARKNIGHT        = "IRIS_Darknight"
+  private val IRIS_DARKNIGHT        = "IRIS_DarkNight"
   private val sequenceManagerPrefix = Prefix(ESW, "sequence_manager")
 
   override protected def beforeEach(): Unit = locationService.unregisterAll()
@@ -171,13 +171,8 @@ class SequenceManagerIntegrationTest extends EswTestKit {
     val componentId = ComponentId(Prefix(ESW, IRIS_DARKNIGHT), Sequencer)
 
     val sequenceManagerClient = TestSetup.startSequenceManager()
-    // verify that sequencer is not present
-    intercept[Exception](resolveHTTPLocation(Prefix(ESW, IRIS_DARKNIGHT), Sequencer))
 
-    // restart sequencer that is not currently running
-    val firstRestartResponse = sequenceManagerClient.restartSequencer(ESW, IRIS_DARKNIGHT).futureValue
-    // verify that restart sequencer return Success response with component id
-    firstRestartResponse should ===(RestartSequencerResponse.Success(componentId))
+    sequenceManagerClient.startSequencer(ESW, IRIS_DARKNIGHT)
 
     // verify that sequencer is started
     resolveHTTPLocation(Prefix(ESW, IRIS_DARKNIGHT), Sequencer)
@@ -189,16 +184,16 @@ class SequenceManagerIntegrationTest extends EswTestKit {
   }
 
   "shutdown all the running sequencers | ESW-324, ESW-171" in {
-    val irisDarknightPrefix = Prefix(ESW, IRIS_DARKNIGHT)
+    val irisDarkNightPrefix = Prefix(ESW, IRIS_DARKNIGHT)
     val irisCalPrefix       = Prefix(ESW, IRIS_CAL)
 
     val sequenceManagerClient = TestSetup.startSequenceManager()
 
-    val darknightSequencerL = spawnSequencer(ESW, IRIS_DARKNIGHT)
+    val darkNightSequencerL = spawnSequencer(ESW, IRIS_DARKNIGHT)
     val calSequencerL       = spawnSequencer(ESW, IRIS_CAL)
 
-    // verify that darknight sequencer has started
-    resolveAkkaLocation(irisDarknightPrefix, Sequencer) should ===(darknightSequencerL)
+    // verify that darkNight sequencer has started
+    resolveAkkaLocation(irisDarkNightPrefix, Sequencer) should ===(darkNightSequencerL)
 
     // verify that cal sequencer has started
     resolveAkkaLocation(irisCalPrefix, Sequencer) should ===(calSequencerL)
@@ -206,8 +201,8 @@ class SequenceManagerIntegrationTest extends EswTestKit {
     // shut down all the sequencers that are running
     sequenceManagerClient.shutdownAllSequencers().futureValue should ===(ShutdownAllSequencersResponse.Success)
 
-    // verify that darknight sequencer is not present
-    intercept[Exception](resolveAkkaLocation(irisDarknightPrefix, Sequencer))
+    // verify that darkNight sequencer is not present
+    intercept[Exception](resolveAkkaLocation(irisDarkNightPrefix, Sequencer))
 
     // verify that cal sequencer is not present
     intercept[Exception](resolveAkkaLocation(irisCalPrefix, Sequencer))

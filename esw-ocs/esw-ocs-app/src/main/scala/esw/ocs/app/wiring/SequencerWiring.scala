@@ -24,8 +24,7 @@ import csw.logging.client.scaladsl.LoggerFactory
 import csw.network.utils.SocketUtils
 import csw.prefix.models.Subsystem
 import esw.commons.Timeouts
-import esw.commons.extensions.FutureEitherExt.FutureEitherOps
-import esw.commons.extensions.FutureEitherExt.FutureEitherJavaOps
+import esw.commons.extensions.FutureEitherExt.{FutureEitherJavaOps, FutureEitherOps}
 import esw.commons.utils.location.LocationServiceUtil
 import esw.http.core.wiring.{ActorRuntime, CswWiring, HttpService, Settings}
 import esw.ocs.api.actor.client.{SequencerApiFactory, SequencerImpl}
@@ -89,7 +88,7 @@ private[ocs] class SequencerWiring(
   private lazy val jLoggerFactory   = loggerFactory.asJava
   private lazy val jLogger: ILogger = ScriptLoader.withScript(scriptClass)(jLoggerFactory.getLogger)
 
-  private lazy val sequencerImplFactory = (_subsystem: Subsystem, _obsMode: String) =>
+  private lazy val sequencerImplFactory = (_subsystem: Subsystem, _obsMode: String) => //todo: revisit timeout value
     locationServiceUtil.resolveSequencer(_subsystem, _obsMode, Timeouts.DefaultTimeout).mapRight(SequencerApiFactory.make).toJava
 
   lazy val scriptContext = new ScriptContext(

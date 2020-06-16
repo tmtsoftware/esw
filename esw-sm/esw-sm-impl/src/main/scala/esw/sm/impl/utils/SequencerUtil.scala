@@ -75,12 +75,15 @@ class SequencerUtil(locationServiceUtil: LocationServiceUtil, sequenceComponentU
   def shutdownAllSequencers(): Future[ShutdownAllSequencersResponse] =
     locationServiceUtil.listAkkaLocationsBy(Sequencer).flatMapToAdt(shutdownSequencers, e => LocationServiceError(e.msg))
 
-  def restartSequencer(subSystem: Subsystem, obsMode: String, retryCount: Int): Future[RestartSequencerResponse] =
-    shutdownSequencer(subSystem, obsMode).flatMapToAdt(_ => start(subSystem, obsMode, retryCount), identity)
+  def restartSequencer(subSystem: Subsystem, obsMode: String): Future[RestartSequencerResponse] =
+    locationServiceUtil
+      .findSequencer(subSystem, obsMode)
+      .flatMapToAdt(restartSequencer, e => LocationServiceError(e.msg))
 
-  private def start(subSystem: Subsystem, obsMode: String, retryCount: Int): Future[RestartSequencerResponse] =
-    startSequencer(subSystem, obsMode, retryCount)
-      .mapToAdt(akkaLocation => RestartSequencerResponse.Success(akkaLocation.connection.componentId), identity)
+  private def restartSequencer(akkaLocation: AkkaLocation): Future[RestartSequencerResponse] =
+    createSequencerClient(akkaLocation).getSequenceComponent
+      .flatMap(sequenceComponentUtil.restart(_).map(_.response))
+      .mapToAdt(loc => RestartSequencerResponse.Success(loc.connection.componentId), e => LoadScriptError(e.msg))
 
   private def loadScript(
       subSystem: Subsystem,

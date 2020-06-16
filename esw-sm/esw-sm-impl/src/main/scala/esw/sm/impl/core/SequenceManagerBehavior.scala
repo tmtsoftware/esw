@@ -153,7 +153,7 @@ class SequenceManagerBehavior(
       self: SelfRef,
       replyTo: ActorRef[RestartSequencerResponse]
   ): SMBehavior = {
-    val restartResponseF = sequencerUtil.restartSequencer(subsystem, obsMode, sequencerStartRetries)
+    val restartResponseF = sequencerUtil.restartSequencer(subsystem, obsMode)
     restartResponseF.map(self ! RestartSequencerResponseInternal(_))
     restartingSequencer(self, replyTo)
   }
