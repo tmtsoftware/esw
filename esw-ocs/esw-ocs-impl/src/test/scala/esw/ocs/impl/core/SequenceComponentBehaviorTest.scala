@@ -23,12 +23,14 @@ import esw.ocs.api.protocol.ScriptError.LoadingScriptFailed
 import esw.ocs.api.protocol.{GetStatusResponse, ScriptError, ScriptResponse}
 import esw.ocs.impl.internal.{SequencerServer, SequencerServerFactory}
 
+import scala.concurrent.Future
 import scala.concurrent.duration.DurationLong
 
 class SequenceComponentBehaviorTest extends BaseTestSuite {
   private implicit val system: ActorSystem[SpawnProtocol.Command] = ActorSystem(SpawnProtocol(), "sequencer-test-system")
   private implicit val timeout: Timeout                           = 10.seconds
   private val ocsSequenceComponentName                            = "ESW.ESW_1"
+  private val sequenceComponentPrefix                             = Prefix(ocsSequenceComponentName)
   private val factory                                             = new LoggerFactory(Prefix("csw.SequenceComponentTest"))
   private val locationService                                     = mock[LocationService]
   private val sequencerServerFactory: SequencerServerFactory      = mock[SequencerServerFactory]
@@ -37,27 +39,6 @@ class SequenceComponentBehaviorTest extends BaseTestSuite {
   override def beforeEach(): Unit = {
     super.beforeEach()
     reset(locationService, sequencerServer, sequencerServerFactory)
-  }
-
-  private def spawnSequenceComponent(): (ActorRef[SequenceComponentMsg], AkkaLocation) = {
-    val sequenceComponentRef = (system ? { replyTo: ActorRef[ActorRef[SequenceComponentMsg]] =>
-      Spawn(
-        new SequenceComponentBehavior(
-          Prefix(ocsSequenceComponentName),
-          factory.getLogger,
-          locationService,
-          sequencerServerFactory
-        ).idle,
-        ocsSequenceComponentName,
-        Props.empty,
-        replyTo
-      )
-    }).futureValue
-
-    val seqCompLocation =
-      AkkaLocation(AkkaConnection(ComponentId(Prefix(ocsSequenceComponentName), SequenceComponent)), sequenceComponentRef.toURI)
-
-    (sequenceComponentRef, seqCompLocation)
   }
 
   "SequenceComponentBehavior" must {
@@ -210,5 +191,41 @@ class SequenceComponentBehaviorTest extends BaseTestSuite {
       sequenceComponentRef ! Restart(restartResponseProbe.ref)
       restartResponseProbe.expectMessage(ScriptResponse(Left(ScriptError.RestartNotSupportedInIdle)))
     }
+
+    "shutdown itself on Shutdown message | ESW-329" in {
+      val system: ActorSystem[SpawnProtocol.Command] = ActorSystem(SpawnProtocol(), "sequencer-shut-down-system")
+      val (sequenceComponentRef, _)                  = spawnSequenceComponent()(system)
+
+      when(locationService.unregister(AkkaConnection(ComponentId(sequenceComponentPrefix, SequenceComponent))))
+        .thenReturn(Future.successful(Done))
+
+      val shutdownResponseProbe = TestProbe[Done]()(system)
+      sequenceComponentRef ! Shutdown(shutdownResponseProbe.ref)
+      shutdownResponseProbe.expectMessage(Done)
+      shutdownResponseProbe.expectTerminated(sequenceComponentRef)
+    }
+  }
+
+  private def spawnSequenceComponent()(implicit
+      actorSystem: ActorSystem[SpawnProtocol.Command]
+  ): (ActorRef[SequenceComponentMsg], AkkaLocation) = {
+    val sequenceComponentRef = (actorSystem ? { replyTo: ActorRef[ActorRef[SequenceComponentMsg]] =>
+      Spawn(
+        (new SequenceComponentBehavior(
+          sequenceComponentPrefix,
+          factory.getLogger,
+          locationService,
+          sequencerServerFactory
+        )(actorSystem)).idle,
+        ocsSequenceComponentName,
+        Props.empty,
+        replyTo
+      )
+    })(timeout, actorSystem.scheduler).futureValue
+
+    val seqCompLocation =
+      AkkaLocation(AkkaConnection(ComponentId(Prefix(ocsSequenceComponentName), SequenceComponent)), sequenceComponentRef.toURI)
+
+    (sequenceComponentRef, seqCompLocation)
   }
 }
