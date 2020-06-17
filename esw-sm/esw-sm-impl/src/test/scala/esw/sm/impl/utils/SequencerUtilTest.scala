@@ -14,7 +14,7 @@ import esw.commons.utils.location.EswLocationError.{LocationNotFound, Registrati
 import esw.commons.utils.location.LocationServiceUtil
 import esw.ocs.api.models.SequenceComponentState.{Running, ShuttingDown}
 import esw.ocs.api.protocol.ScriptError
-import esw.ocs.api.protocol.SequenceComponentResponse.{Ok, ScriptResponse, Unhandled}
+import esw.ocs.api.protocol.SequenceComponentResponse.{Ok, SequencerLocation, Unhandled}
 import esw.ocs.api.{SequenceComponentApi, SequencerApi}
 import esw.sm.api.protocol.AgentError.SpawnSequenceComponentFailed
 import esw.sm.api.protocol.CommonFailure.LocationServiceError
@@ -64,7 +64,7 @@ class SequencerUtilTest extends BaseTestSuite {
 
       // unable to loadScript script error
       val scriptErrorMsg = s"script initialisation failed for TCS $obsMode"
-      val scriptError    = Future.successful(ScriptResponse(Left(ScriptError.LoadingScriptFailed(scriptErrorMsg))))
+      val scriptError    = Future.successful(ScriptError.LoadingScriptFailed(scriptErrorMsg))
       when(tcsSeqComp.loadScript(TCS, obsMode)).thenReturn(scriptError)
 
       sequencerUtil
@@ -135,7 +135,7 @@ class SequencerUtilTest extends BaseTestSuite {
       when(tcsSeqComp.loadScript(TCS, obsMode))
         .thenReturn(Future.successful(Unhandled(Running, "already running")))
 
-      when(eswSeqComp.loadScript(TCS, obsMode)).thenReturn(Future.successful(ScriptResponse(Right(tcsLocation))))
+      when(eswSeqComp.loadScript(TCS, obsMode)).thenReturn(Future.successful(SequencerLocation(tcsLocation)))
 
       sequencerUtil.startSequencer(TCS, obsMode, 3).rightValue should ===(tcsLocation)
 
@@ -151,7 +151,7 @@ class SequencerUtilTest extends BaseTestSuite {
 
       // unable to loadScript script error
       val scriptErrorMsg = s"script initialisation failed for TCS $obsMode"
-      val scriptError    = Future.successful(ScriptResponse(Left(ScriptError.LoadingScriptFailed(scriptErrorMsg))))
+      val scriptError    = Future.successful(ScriptError.LoadingScriptFailed(scriptErrorMsg))
       when(tcsSeqComp.loadScript(TCS, obsMode)).thenReturn(scriptError)
 
       sequencerUtil.startSequencer(TCS, obsMode, 3).leftValue should ===(LoadScriptError(scriptErrorMsg))
@@ -374,7 +374,7 @@ class SequencerUtilTest extends BaseTestSuite {
 
       when(locationServiceUtil.findSequencer(ESW, obsMode)).thenReturn(futureRight(eswLocation))
       when(eswSequencerApi.getSequenceComponent).thenReturn(Future.successful(eswSeqCompLoc))
-      when(sequenceComponentUtil.restart(eswSeqCompLoc)).thenReturn(Future.successful(ScriptResponse(Right(eswSeqLoc))))
+      when(sequenceComponentUtil.restart(eswSeqCompLoc)).thenReturn(Future.successful(SequencerLocation(eswSeqLoc)))
 
       sequencerUtil.restartSequencer(ESW, obsMode).futureValue should ===(RestartSequencerResponse.Success(eswComponentId))
 
@@ -394,7 +394,7 @@ class SequencerUtilTest extends BaseTestSuite {
       when(locationServiceUtil.findSequencer(ESW, obsMode)).thenReturn(futureRight(eswLocation))
       when(eswSequencerApi.getSequenceComponent).thenReturn(Future.successful(eswSeqCompLoc))
       when(sequenceComponentUtil.restart(eswSeqCompLoc))
-        .thenReturn(Future.successful(ScriptResponse(Left(ScriptError.LoadingScriptFailed(errorMsg)))))
+        .thenReturn(Future.successful(ScriptError.LoadingScriptFailed(errorMsg)))
 
       sequencerUtil.restartSequencer(ESW, obsMode).futureValue should ===(loadScriptError)
 
@@ -462,8 +462,8 @@ class SequencerUtilTest extends BaseTestSuite {
 
     when(sequenceComponentUtil.getAvailableSequenceComponent(ESW)).thenReturn(Future.successful(Right(eswSeqComp)))
     when(sequenceComponentUtil.getAvailableSequenceComponent(TCS)).thenReturn(Future.successful(Right(tcsSeqComp)))
-    when(eswSeqComp.loadScript(ESW, obsMode)).thenReturn(Future.successful(ScriptResponse(Right(eswLocation))))
-    when(tcsSeqComp.loadScript(TCS, obsMode)).thenReturn(Future.successful(ScriptResponse(Right(tcsLocation))))
+    when(eswSeqComp.loadScript(ESW, obsMode)).thenReturn(Future.successful(SequencerLocation(eswLocation)))
+    when(tcsSeqComp.loadScript(TCS, obsMode)).thenReturn(Future.successful(SequencerLocation(tcsLocation)))
 
     val masterSeqConnection: HttpConnection = HttpConnection(ComponentId(Prefix(ESW, obsMode), Sequencer))
     val masterSeqLocation: HttpLocation     = HttpLocation(masterSeqConnection, URI.create(""))

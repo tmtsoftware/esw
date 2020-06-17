@@ -27,8 +27,8 @@ import esw.ocs.api.protocol.ScriptError.{LoadingScriptFailed, LocationServiceErr
 import esw.ocs.api.protocol.SequenceComponentResponse.{
   GetStatusResponse,
   GetStatusResponseOrUnhandled,
-  ScriptResponse,
-  ScriptResponseOrUnhandled
+  ScriptResponseOrUnhandled,
+  SequencerLocation
 }
 import esw.ocs.api.protocol.{DiagnosticModeResponse, SequencerSubmitResponse, _}
 import org.scalatest.prop.TableDrivenPropertyChecks.forAll
@@ -168,9 +168,9 @@ class OcsAkkaSerializerTest extends BaseTestSuite {
       SequenceComponentResponse.Unhandled(SequenceComponentState.ShuttingDown, "some msg"),
       GetStatusResponse(Some(akkaLocation)),
       GetStatusResponse(None),
-      ScriptResponse(Left(LocationServiceError("error"))),
-      ScriptResponse(Left(LoadingScriptFailed("error"))),
-      ScriptResponse(Right(akkaLocation))
+      LocationServiceError("error"),
+      LoadingScriptFailed("error"),
+      SequencerLocation(akkaLocation)
     )
 
     forAll(testData) { response =>

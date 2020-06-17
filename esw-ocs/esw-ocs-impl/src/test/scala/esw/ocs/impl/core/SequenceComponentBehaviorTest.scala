@@ -20,7 +20,6 @@ import esw.commons.BaseTestSuite
 import esw.ocs.api.actor.messages.SequenceComponentMsg
 import esw.ocs.api.actor.messages.SequenceComponentMsg._
 import esw.ocs.api.models.SequenceComponentState.{Idle, Running}
-import esw.ocs.api.protocol.ScriptError
 import esw.ocs.api.protocol.ScriptError.LoadingScriptFailed
 import esw.ocs.api.protocol.SequenceComponentResponse._
 import esw.ocs.impl.internal.{SequencerServer, SequencerServerFactory}
@@ -63,8 +62,8 @@ class SequenceComponentBehaviorTest extends BaseTestSuite {
 
       //Assert if script loaded and returns AkkaLocation of sequencer
       val scriptResponseOrUnhandled = loadScriptResponseProbe.receiveMessage()
-      scriptResponseOrUnhandled shouldBe a[ScriptResponse]
-      val loadScriptLocationResponse: AkkaLocation = scriptResponseOrUnhandled.asInstanceOf[ScriptResponse].response.rightValue
+      scriptResponseOrUnhandled shouldBe a[SequencerLocation]
+      val loadScriptLocationResponse: AkkaLocation = scriptResponseOrUnhandled.asInstanceOf[SequencerLocation].location
 
       loadScriptLocationResponse.connection shouldEqual akkaConnection
 
@@ -110,8 +109,8 @@ class SequenceComponentBehaviorTest extends BaseTestSuite {
 
       //Assert if script loaded and returns AkkaLocation of sequencer
       val response = loadScriptResponseProbe.receiveMessage()
-      response shouldBe a[ScriptResponse]
-      val loadScriptLocationResponse: AkkaLocation = response.asInstanceOf[ScriptResponse].response.rightValue
+      response shouldBe a[SequencerLocation]
+      val loadScriptLocationResponse: AkkaLocation = response.asInstanceOf[SequencerLocation].location
       loadScriptLocationResponse.connection shouldEqual akkaConnection
 
       sequenceComponentRef ! LoadScript(TCS, "darknight", loadScriptResponseProbe.ref)
@@ -138,9 +137,8 @@ class SequenceComponentBehaviorTest extends BaseTestSuite {
       sequenceComponentRef ! LoadScript(subsystem, observingMode, loadScriptResponseProbe.ref)
 
       val response = loadScriptResponseProbe.receiveMessage()
-      response shouldBe a[ScriptResponse]
-      val loadScriptLocationResponse: ScriptError = response.asInstanceOf[ScriptResponse].response.leftValue
-      loadScriptLocationResponse shouldBe loadingScriptFailed
+      response shouldBe a[LoadingScriptFailed]
+      response.asInstanceOf[LoadingScriptFailed] shouldBe loadingScriptFailed
 
     }
 
@@ -180,9 +178,8 @@ class SequenceComponentBehaviorTest extends BaseTestSuite {
       //Assert if script loaded and returns AkkaLocation of sequencer
       sequenceComponentRef ! LoadScript(subsystem, observingMode, loadScriptResponseProbe.ref)
       val message = loadScriptResponseProbe.receiveMessage()
-      message shouldBe a[ScriptResponse]
-      message.asInstanceOf[ScriptResponse].response.isRight shouldBe true
-      val initialLocation = message.asInstanceOf[ScriptResponse].response.rightValue
+      message shouldBe a[SequencerLocation]
+      val initialLocation = message.asInstanceOf[SequencerLocation].location
 
       when(sequencerServer.shutDown()).thenReturn(Done)
 
@@ -190,8 +187,8 @@ class SequenceComponentBehaviorTest extends BaseTestSuite {
       sequenceComponentRef ! Restart(restartResponseProbe.ref)
 
       val message1 = restartResponseProbe.receiveMessage()
-      message1 shouldBe a[ScriptResponse]
-      val restartLocationResponse: AkkaLocation = message1.asInstanceOf[ScriptResponse].response.rightValue
+      message1 shouldBe a[SequencerLocation]
+      val restartLocationResponse: AkkaLocation = message1.asInstanceOf[SequencerLocation].location
       restartLocationResponse.connection shouldEqual AkkaConnection(
         ComponentId(prefix, ComponentType.Sequencer)
       )
@@ -266,7 +263,7 @@ class SequenceComponentBehaviorTest extends BaseTestSuite {
 
           //Assert if sequence component is in running state
           val scriptResponseOrUnhandled = loadScriptResponseProbe.receiveMessage()
-          scriptResponseOrUnhandled shouldBe a[ScriptResponse]
+          scriptResponseOrUnhandled shouldBe a[SequencerLocation]
 
           sequenceComponentRef ! msg
 

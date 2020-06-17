@@ -5,15 +5,14 @@ import csw.location.api.models.ComponentType.Sequencer
 import csw.location.api.models.{AkkaLocation, ComponentId, Location}
 import csw.prefix.models.Subsystem.ESW
 import csw.prefix.models.{Prefix, Subsystem}
-import esw.commons.extensions.EitherExt.EitherOps
 import esw.commons.extensions.FutureEitherExt.FutureEitherOps
 import esw.commons.extensions.ListEitherExt.ListEitherOps
 import esw.commons.utils.FutureUtils
 import esw.commons.utils.location.EswLocationError.{LocationNotFound, RegistrationListingFailed}
 import esw.commons.utils.location.LocationServiceUtil
 import esw.ocs.api.actor.client.SequencerApiFactory
-import esw.ocs.api.protocol.ScriptError.LoadingScriptFailed
-import esw.ocs.api.protocol.SequenceComponentResponse.{Ok, ScriptResponse, Unhandled}
+import esw.ocs.api.protocol.ScriptError
+import esw.ocs.api.protocol.SequenceComponentResponse.{Ok, SequencerLocation, Unhandled}
 import esw.ocs.api.{SequenceComponentApi, SequencerApi}
 import esw.sm.api.protocol.CleanupResponse.FailedToShutdownSequencers
 import esw.sm.api.protocol.CommonFailure.LocationServiceError
@@ -85,10 +84,9 @@ class SequencerUtil(locationServiceUtil: LocationServiceUtil, sequenceComponentU
   private def restartSequencer(akkaLocation: AkkaLocation): Future[RestartSequencerResponse] =
     createSequencerClient(akkaLocation).getSequenceComponent
       .flatMap(sequenceComponentUtil.restart(_).map {
-        case Unhandled(_, _, msg) => LoadScriptError(msg) // restart is unhandled in idle or shutting down state
-        case ScriptResponse(response) =>
-          response
-            .mapToAdt(loc => RestartSequencerResponse.Success(loc.connection.componentId), e => LoadScriptError(e.msg))
+        case SequencerLocation(location) => RestartSequencerResponse.Success(location.connection.componentId)
+        case error: ScriptError          => LoadScriptError(error.msg)
+        case Unhandled(_, _, msg)        => LoadScriptError(msg) // restart is unhandled in idle or shutting down state
       })
 
   private def loadScript(
@@ -99,21 +97,14 @@ class SequencerUtil(locationServiceUtil: LocationServiceUtil, sequenceComponentU
   ): Future[Either[StartSequencerResponse.Failure, AkkaLocation]] =
     loadScript(subSystem, observingMode, seqCompApi)
       .flatMap {
-        case Left(_: LoadScriptError) if retryCount > 0 => startSequencer(subSystem, observingMode, retryCount - 1)
-        case Right(value) =>
-          value match {
-            case Left(error: LoadingScriptFailed)                => Future.successful(Left(LoadScriptError(error.msg)))
-            case Left(_: LocationServiceError) if retryCount > 0 => startSequencer(subSystem, observingMode, retryCount - 1)
-            case Right(location)                                 => Future.successful(Right(location))
-          }
+        case SequencerLocation(location)                           => Future.successful(Right(location))
+        case _: ScriptError.LocationServiceError if retryCount > 0 => startSequencer(subSystem, observingMode, retryCount - 1)
+        case error: ScriptError.LoadingScriptFailed                => Future.successful(Left(LoadScriptError(error.msg)))
+        case Unhandled(_, _, _) if retryCount > 0                  => startSequencer(subSystem, observingMode, retryCount - 1)
       }
 
   private def loadScript(subSystem: Subsystem, observingMode: String, seqCompApi: SequenceComponentApi) =
-    seqCompApi.loadScript(subSystem, observingMode).map {
-      case Unhandled(_, _, msg) =>
-        Left(LoadScriptError(msg)) // sequence component is already running sequencer or is shutting down
-      case ScriptResponse(response) => Right(response)
-    }
+    seqCompApi.loadScript(subSystem, observingMode)
 
   // get sequence component from Sequencer and unload sequencer script
   private def unloadScript(

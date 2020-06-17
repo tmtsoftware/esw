@@ -7,7 +7,8 @@ import csw.location.api.models.{AkkaLocation, ComponentType}
 import csw.prefix.models.{Prefix, Subsystem}
 import esw.ocs.api.SequencerApi
 import esw.ocs.api.actor.client.{SequenceComponentImpl, SequencerApiFactory, SequencerImpl}
-import esw.ocs.api.protocol.SequenceComponentResponse.{ScriptResponse, Unhandled}
+import esw.ocs.api.protocol.ScriptError
+import esw.ocs.api.protocol.SequenceComponentResponse.{SequencerLocation, Unhandled}
 import esw.ocs.app.wiring.{SequenceComponentWiring, SequencerWiring}
 import esw.ocs.impl.internal.SequencerServerFactory
 import esw.ocs.testkit.simulation.SimulationSequencerWiring
@@ -55,8 +56,9 @@ trait SequencerUtils extends LocationUtils {
 
   private def loadScript(seqCompLocation: AkkaLocation, subsystem: Subsystem, observingMode: String) =
     new SequenceComponentImpl(seqCompLocation).loadScript(subsystem, observingMode).futureValue match {
-      case Unhandled(_, _, msg)     => throw new RuntimeException(s"failed to load script: $msg")
-      case ScriptResponse(response) => response.rightValue
+      case SequencerLocation(location) => location
+      case error: ScriptError          => throw new RuntimeException(s"failed to load script: ${error.msg}")
+      case Unhandled(_, _, msg)        => throw new RuntimeException(s"failed to load script: $msg")
     }
 
 }

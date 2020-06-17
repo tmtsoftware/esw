@@ -13,8 +13,8 @@ import csw.prefix.models.{Prefix, Subsystem}
 import esw.commons.BaseTestSuite
 import esw.ocs.api.actor.messages.SequenceComponentMsg
 import esw.ocs.api.actor.messages.SequenceComponentMsg._
-import esw.ocs.api.protocol.ScriptError
-import esw.ocs.api.protocol.SequenceComponentResponse.{GetStatusResponse, Ok, ScriptResponse}
+import esw.ocs.api.protocol.ScriptError.LocationServiceError
+import esw.ocs.api.protocol.SequenceComponentResponse.{GetStatusResponse, Ok, SequencerLocation}
 
 import scala.concurrent.ExecutionContext
 
@@ -23,8 +23,8 @@ class SequenceComponentImplTest extends BaseTestSuite {
 
   private val location =
     AkkaLocation(AkkaConnection(ComponentId(Prefix("esw.test"), ComponentType.Sequencer)), new URI("uri"))
-  private val loadScriptResponse    = ScriptResponse(Right(location))
-  private val restartResponse       = ScriptResponse(Left(ScriptError.LocationServiceError("error")))
+  private val loadScriptResponse    = SequencerLocation(location)
+  private val restartResponse       = LocationServiceError("error")
   private val getStatusResponse     = GetStatusResponse(Some(location))
   implicit val ec: ExecutionContext = system.executionContext
 
