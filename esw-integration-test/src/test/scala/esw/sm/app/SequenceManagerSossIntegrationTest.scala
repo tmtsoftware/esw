@@ -12,7 +12,7 @@ import esw.ocs.api.actor.client.SequencerApiFactory
 import esw.ocs.testkit.EswTestKit
 import esw.sm.api.protocol.{CleanupResponse, ConfigureResponse}
 
-class SequenceManagerSOSSIntegrationTest extends EswTestKit(EventServer) {
+class SequenceManagerSossIntegrationTest extends EswTestKit(EventServer) {
 
   override def afterEach(): Unit = {
     super.afterEach()
