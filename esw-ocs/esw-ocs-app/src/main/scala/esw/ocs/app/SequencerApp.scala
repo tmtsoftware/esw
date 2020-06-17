@@ -21,9 +21,11 @@ import scala.concurrent.{Await, Future}
 import scala.util.control.NonFatal
 
 object SequencerApp extends EswCommandApp[SequencerAppCommand] {
+  // $COVERAGE-OFF$
   override def appName: String    = getClass.getSimpleName.dropRight(1) // remove $ from class name
   override def appVersion: String = BuildInfo.version
   override def progName: String   = BuildInfo.name
+  // $COVERAGE-ON$
 
   def run(command: SequencerAppCommand, args: RemainingArgs): Unit = {
     LocationServerStatus.requireUpLocally()

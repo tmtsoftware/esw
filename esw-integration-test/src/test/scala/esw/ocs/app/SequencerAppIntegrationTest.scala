@@ -138,6 +138,21 @@ class SequencerAppIntegrationTest extends EswTestKit {
         case Right(_) => throw new RuntimeException("test failed as this test expects ScriptError")
       }
     }
+
+    "throw exception if location service gives error while registering sequence component" in {
+      val name: String            = "primary"
+      val sequenceComponentPrefix = Prefix(Subsystem.ESW, name)
+
+      // start Sequence Component
+      SequencerApp.main(Array("seqcomp", "-s", "esw", "-n", name))
+
+      // verify Sequence component is started and registered with location service
+      val sequenceCompLocation: AkkaLocation = resolveSequenceComponentLocation(sequenceComponentPrefix)
+      sequenceCompLocation.prefix shouldEqual Prefix("ESW.primary")
+
+      // assert that exception is thrown when start Sequence Component with same name
+      intercept[RuntimeException](SequencerApp.main(Array("seqcomp", "-s", "esw", "-n", name)))
+    }
   }
 
   "Sequencer command" must {
