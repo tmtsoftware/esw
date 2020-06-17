@@ -5,6 +5,7 @@ import csw.location.api.models.ComponentType.Sequencer
 import csw.location.api.models.{AkkaLocation, ComponentId, Location}
 import csw.prefix.models.Subsystem.ESW
 import csw.prefix.models.{Prefix, Subsystem}
+import esw.commons.extensions.EitherExt.EitherOps
 import esw.commons.extensions.FutureEitherExt.FutureEitherOps
 import esw.commons.extensions.ListEitherExt.ListEitherOps
 import esw.commons.utils.FutureUtils
@@ -83,11 +84,10 @@ class SequencerUtil(locationServiceUtil: LocationServiceUtil, sequenceComponentU
 
   private def restartSequencer(akkaLocation: AkkaLocation): Future[RestartSequencerResponse] =
     createSequencerClient(akkaLocation).getSequenceComponent
-      .flatMap(sequenceComponentUtil.restart(_).flatMap {
-        case Unhandled(_, _, msg) => Future.successful(LoadScriptError(msg))
+      .flatMap(sequenceComponentUtil.restart(_).map {
+        case Unhandled(_, _, msg) => LoadScriptError(msg) // restart is unhandled in idle or shutting down state
         case ScriptResponse(response) =>
-          Future
-            .successful(response)
+          response
             .mapToAdt(loc => RestartSequencerResponse.Success(loc.connection.componentId), e => LoadScriptError(e.msg))
       })
 
@@ -110,7 +110,8 @@ class SequencerUtil(locationServiceUtil: LocationServiceUtil, sequenceComponentU
 
   private def loadScript(subSystem: Subsystem, observingMode: String, seqCompApi: SequenceComponentApi) =
     seqCompApi.loadScript(subSystem, observingMode).map {
-      case Unhandled(_, _, msg)     => Left(LoadScriptError(msg))
+      case Unhandled(_, _, msg) =>
+        Left(LoadScriptError(msg)) // sequence component is already running sequencer or is shutting down
       case ScriptResponse(response) => Right(response)
     }
 

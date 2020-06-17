@@ -34,11 +34,11 @@ class SequenceComponentUtil(locationServiceUtil: LocationServiceUtil, agentUtil:
         case None => agentUtil.spawnSequenceComponentFor(ESW)
       }
 
-  def unloadScript(loc: AkkaLocation): Future[OkOrUnhandled] = new SequenceComponentImpl(loc).unloadScript()
+  def unloadScript(loc: AkkaLocation): Future[OkOrUnhandled] = createSequenceComponentImpl(loc).unloadScript()
 
-  def shutdown(loc: AkkaLocation): Future[OkOrUnhandled] = new SequenceComponentImpl(loc).shutdown()
+  def shutdown(loc: AkkaLocation): Future[OkOrUnhandled] = createSequenceComponentImpl(loc).shutdown()
 
-  def restart(loc: AkkaLocation): Future[ScriptResponseOrUnhandled] = new SequenceComponentImpl(loc).restart()
+  def restart(loc: AkkaLocation): Future[ScriptResponseOrUnhandled] = createSequenceComponentImpl(loc).restart()
 
   private def getIdleSequenceComponentFor(subsystem: Subsystem): Future[Option[SequenceComponentApi]] =
     locationServiceUtil
@@ -53,13 +53,17 @@ class SequenceComponentUtil(locationServiceUtil: LocationServiceUtil, agentUtil:
 
   private[sm] def idleSequenceComponent(sequenceComponentLocation: AkkaLocation): Future[Option[SequenceComponentApi]] =
     async {
-      val sequenceComponentApi = new SequenceComponentImpl(sequenceComponentLocation)
+      val sequenceComponentApi = createSequenceComponentImpl(sequenceComponentLocation)
       val status               = await(sequenceComponentApi.status)
       status match {
-        case Unhandled(_, _, _) => None
+        case Unhandled(_, _, _) => None // Sequence component is unable to handle status msg in Shutting Down state
         case GetStatusResponse(response) =>
           val isBusyRunningSequencer = response.isDefined
           if (isBusyRunningSequencer) None else Some(sequenceComponentApi)
       }
     }
+
+  private[sm] def createSequenceComponentImpl(sequenceComponentLocation: AkkaLocation) = {
+    new SequenceComponentImpl(sequenceComponentLocation)
+  }
 }

@@ -26,11 +26,13 @@ object SequenceComponentMsg {
       extends SequenceComponentRemoteMsg
       with UnhandleableSequenceComponentMsg
       with IdleStateSequenceComponentMsg
+
   final case class UnloadScript(replyTo: ActorRef[OkOrUnhandled])
       extends SequenceComponentRemoteMsg
       with UnhandleableSequenceComponentMsg
       with IdleStateSequenceComponentMsg
       with RunningStateSequenceComponentMsg
+
   final case class Restart(replyTo: ActorRef[ScriptResponseOrUnhandled])
       extends SequenceComponentRemoteMsg
       with UnhandleableSequenceComponentMsg
@@ -41,6 +43,7 @@ object SequenceComponentMsg {
       with UnhandleableSequenceComponentMsg
       with IdleStateSequenceComponentMsg
       with RunningStateSequenceComponentMsg
+
   final case class Shutdown(replyTo: ActorRef[OkOrUnhandled])
       extends SequenceComponentRemoteMsg
       with UnhandleableSequenceComponentMsg
@@ -50,6 +53,7 @@ object SequenceComponentMsg {
   private[ocs] final case class ShutdownInternal(replyTo: ActorRef[OkOrUnhandled])
       extends UnhandleableSequenceComponentMsg
       with ShuttingDownStateSequenceComponentMsg
+
   private[ocs] final case object Stop
       extends SequenceComponentMsg
       with IdleStateSequenceComponentMsg

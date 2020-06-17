@@ -12,7 +12,7 @@ import csw.prefix.models.Subsystem.{ESW, TCS}
 import esw.commons.BaseTestSuite
 import esw.commons.utils.location.EswLocationError.{LocationNotFound, RegistrationListingFailed}
 import esw.commons.utils.location.LocationServiceUtil
-import esw.ocs.api.models.SequenceComponentState.Running
+import esw.ocs.api.models.SequenceComponentState.{Running, ShuttingDown}
 import esw.ocs.api.protocol.ScriptError
 import esw.ocs.api.protocol.SequenceComponentResponse.{Ok, ScriptResponse, Unhandled}
 import esw.ocs.api.{SequenceComponentApi, SequencerApi}
@@ -382,7 +382,7 @@ class SequencerUtilTest extends BaseTestSuite {
       verify(sequenceComponentUtil).restart(eswSeqCompLoc)
     }
 
-    "return LoadScriptError error if restart fails | ESW-327" in {
+    "return LoadScriptError error if restart fails with LoadingScriptFailed | ESW-327" in {
       val obsMode = "moonNight"
       val setup   = new TestSetup(obsMode)
       import setup._
@@ -416,6 +416,24 @@ class SequencerUtilTest extends BaseTestSuite {
 
       verify(locationServiceUtil).findSequencer(ESW, obsMode)
       verify(sequenceComponentUtil, times(0)).restart(eswSeqCompLoc)
+    }
+
+    "return LoadScriptError error if restart fails with Unhandled| ESW-327" in {
+      val obsMode = "moonNight"
+      val setup   = new TestSetup(obsMode)
+      import setup._
+
+      val eswSeqCompLoc = AkkaLocation(AkkaConnection(ComponentId(Prefix(ESW, obsMode), SequenceComponent)), URI.create(""))
+
+      when(locationServiceUtil.findSequencer(ESW, obsMode)).thenReturn(futureRight(eswLocation))
+      when(eswSequencerApi.getSequenceComponent).thenReturn(Future.successful(eswSeqCompLoc))
+      when(sequenceComponentUtil.restart(eswSeqCompLoc))
+        .thenReturn(Future.successful(Unhandled(ShuttingDown, "Restart", "error")))
+
+      sequencerUtil.restartSequencer(ESW, obsMode).futureValue should ===(LoadScriptError("error"))
+
+      verify(locationServiceUtil).findSequencer(ESW, obsMode)
+      verify(sequenceComponentUtil).restart(eswSeqCompLoc)
     }
   }
 
