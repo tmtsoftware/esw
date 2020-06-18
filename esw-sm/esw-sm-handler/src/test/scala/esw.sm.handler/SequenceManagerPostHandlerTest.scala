@@ -33,6 +33,15 @@ class SequenceManagerPostHandlerTest
   }
 
   "SequenceManagerPostHandler" must {
+    "return configure success for configure request" in {
+      when(sequenceManagerApi.configure(obsMode)).thenReturn(Future.successful(ConfigureResponse.Success(componentId)))
+
+      Post("/post-endpoint", Configure(obsMode).narrow) ~> route ~> check {
+        verify(sequenceManagerApi).configure(obsMode)
+        responseAs[ConfigureResponse] should ===(ConfigureResponse.Success(componentId))
+      }
+    }
+
     "return running observation modes for getRunningObsModes request" in {
       val obsModes = Set(obsMode)
       when(sequenceManagerApi.getRunningObsModes).thenReturn(Future.successful(GetRunningObsModesResponse.Success(obsModes)))

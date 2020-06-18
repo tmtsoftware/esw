@@ -1,6 +1,5 @@
 package esw.sm.api.client
 
-import akka.util.Timeout
 import csw.location.api.models.ComponentId
 import csw.location.api.models.ComponentType.Sequencer
 import csw.prefix.models.Prefix
@@ -8,22 +7,19 @@ import csw.prefix.models.Subsystem.ESW
 import esw.commons.BaseTestSuite
 import esw.sm.api.codecs.SequenceManagerHttpCodec
 import esw.sm.api.protocol.SequenceManagerPostRequest.{GetRunningObsModes, _}
-import esw.sm.api.protocol.SequenceManagerWebsocketRequest.Configure
 import esw.sm.api.protocol._
 import io.bullet.borer.{Decoder, Encoder}
 import msocket.api.Transport
 import org.mockito.ArgumentMatchers.{any, eq => argsEq}
 
 import scala.concurrent.Future
-import scala.concurrent.duration.DurationInt
 
 class SequenceManagerClientTest extends BaseTestSuite with SequenceManagerHttpCodec {
   private val obsMode                  = "IRIS_darknight"
   private val componentId: ComponentId = ComponentId(Prefix(ESW, obsMode), Sequencer)
 
-  val postClient: Transport[SequenceManagerPostRequest]           = mock[Transport[SequenceManagerPostRequest]]
-  val websocketClient: Transport[SequenceManagerWebsocketRequest] = mock[Transport[SequenceManagerWebsocketRequest]]
-  val client                                                      = new SequenceManagerClient(postClient, websocketClient)
+  val postClient: Transport[SequenceManagerPostRequest] = mock[Transport[SequenceManagerPostRequest]]
+  val client                                            = new SequenceManagerClient(postClient)
 
   "SequenceManagerClient" must {
     "return running observation modes for getRunningObsModes request" in {
@@ -97,12 +93,8 @@ class SequenceManagerClientTest extends BaseTestSuite with SequenceManagerHttpCo
     }
 
     "return configure success response for configure request" in {
-      implicit val timeout: Timeout = 10.seconds
       when(
-        websocketClient.requestResponse[ConfigureResponse](
-          argsEq(Configure(obsMode, timeout)),
-          argsEq(timeout.duration)
-        )(
+        postClient.requestResponse[ConfigureResponse](argsEq(Configure(obsMode)))(
           any[Decoder[ConfigureResponse]](),
           any[Encoder[ConfigureResponse]]()
         )

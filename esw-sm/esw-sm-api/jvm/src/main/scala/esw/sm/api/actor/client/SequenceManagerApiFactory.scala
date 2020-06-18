@@ -7,10 +7,9 @@ import csw.location.api.models.{AkkaLocation, HttpLocation, Location, TcpLocatio
 import esw.sm.api.SequenceManagerApi
 import esw.sm.api.client.SequenceManagerClient
 import esw.sm.api.codecs.SequenceManagerHttpCodec
-import esw.sm.api.protocol.{SequenceManagerPostRequest, SequenceManagerWebsocketRequest}
+import esw.sm.api.protocol.SequenceManagerPostRequest
 import msocket.api.ContentType
 import msocket.impl.post.HttpPostTransport
-import msocket.impl.ws.WebsocketTransport
 
 object SequenceManagerApiFactory {
 
@@ -26,11 +25,9 @@ object SequenceManagerApiFactory {
   private def httpClient(httpLocation: HttpLocation)(implicit actorSystem: ActorSystem[_]): SequenceManagerClient = {
     import SequenceManagerHttpCodec._
 
-    val baseUri         = httpLocation.uri.toString
-    val postUri         = Uri(baseUri).withPath(Path("/post-endpoint")).toString()
-    val webSocketUri    = Uri(baseUri).withScheme("ws").withPath(Path("/websocket-endpoint")).toString()
-    val postClient      = new HttpPostTransport[SequenceManagerPostRequest](postUri, ContentType.Json, () => None)
-    val websocketClient = new WebsocketTransport[SequenceManagerWebsocketRequest](webSocketUri, ContentType.Json)
-    new SequenceManagerClient(postClient, websocketClient)
+    val baseUri    = httpLocation.uri.toString
+    val postUri    = Uri(baseUri).withPath(Path("/post-endpoint")).toString()
+    val postClient = new HttpPostTransport[SequenceManagerPostRequest](postUri, ContentType.Json, () => None)
+    new SequenceManagerClient(postClient)
   }
 }
