@@ -20,7 +20,7 @@ import scala.concurrent.duration.DurationLong
 class AgentClient(akkaLocation: AkkaLocation)(implicit actorSystem: ActorSystem[_], scheduler: Scheduler) {
   val agentRef: ActorRef[AgentCommand] = akkaLocation.uri.toActorRef.unsafeUpcast[AgentCommand]
 
-  implicit private val timeout: Timeout = Timeout(1.minute)
+  implicit private val timeout: Timeout = Timeout(10.seconds)
 
   def spawnSequenceComponent(prefix: Prefix, version: Option[String] = None): Future[SpawnResponse] =
     agentRef ? (SpawnSequenceComponent(_, prefix, version))

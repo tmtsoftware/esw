@@ -8,6 +8,7 @@ import csw.prefix.models.Prefix
 import esw.agent.api.ComponentStatus.Running
 import esw.agent.api.{AgentStatus, Failed, Killed, Spawned}
 import esw.agent.app.AgentSettings
+import esw.agent.app.process.cs.Coursier
 import esw.agent.client.AgentClient
 import esw.ocs.testkit.EswTestKit
 import org.scalatest.BeforeAndAfterAll
@@ -22,16 +23,24 @@ class AgentIntegrationTest extends EswTestKit with BeforeAndAfterAll with Locati
   private val irisSeqCompConnection = AkkaConnection(ComponentId(irisPrefix, SequenceComponent))
   private val redisPrefix           = Prefix(s"esw.event_server")
   private val redisCompId           = ComponentId(redisPrefix, Service)
+  private val appVersion            = Some("0f56561")
 
   override implicit def patienceConfig: PatienceConfig = PatienceConfig(1.minute, 100.millis)
 
   override def beforeAll(): Unit = {
     super.beforeAll()
-    spawnAgent(AgentSettings(1.minute, "file://" + getClass.getResource("/apps.json").getPath))
+    val channel = "file://" + getClass.getResource("/apps.json").getPath
+    spawnAgent(AgentSettings(1.minute, channel))
+
+    // provision app binary for specified version
+    new ProcessBuilder(Coursier.ocsApp(appVersion).fetch(channel): _*)
+      .inheritIO()
+      .start()
+      .waitFor()
   }
 
   //ESW-325: spawns sequence component via agent using coursier with provided sha
-  private def spawnSequenceComponent(prefix: Prefix) = agentClient.spawnSequenceComponent(prefix, Some("0f56561"))
+  private def spawnSequenceComponent(prefix: Prefix) = agentClient.spawnSequenceComponent(prefix, appVersion)
 
   "Agent" must {
     "start and register itself with location service | ESW-237" in {
