@@ -709,7 +709,7 @@ class SequencerBehaviorTest extends BaseTestSuite {
       goOnlineAndAssertResponse(Ok, Future.successful(Done))
       assertSequencerState(Idle)
 
-      // verify handlers are not called
+      // verify handlers are called
       verify(script).executeGoOnline()
 
       // try loading a sequence to ensure sequencer is online
@@ -744,7 +744,7 @@ class SequencerBehaviorTest extends BaseTestSuite {
       goOfflineAndAssertResponse(Ok)
       assertSequencerState(Offline)
 
-      // verify handlers are not only called again
+      // verify handlers are called twice
       verify(script, times(2)).executeGoOffline()
     }
 

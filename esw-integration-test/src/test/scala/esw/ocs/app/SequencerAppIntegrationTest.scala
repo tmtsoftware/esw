@@ -15,7 +15,7 @@ import csw.prefix.models.{Prefix, Subsystem}
 import esw.ocs.api.actor.messages.SequenceComponentMsg
 import esw.ocs.api.actor.messages.SequenceComponentMsg.{LoadScript, UnloadScript}
 import esw.ocs.api.protocol.ScriptError
-import esw.ocs.api.protocol.SequenceComponentResponse.{Ok, OkOrUnhandled, ScriptResponse, ScriptResponseOrUnhandled}
+import esw.ocs.api.protocol.SequenceComponentResponse.{Ok, OkOrUnhandled, ScriptResponseOrUnhandled, SequencerLocation}
 import esw.ocs.testkit.EswTestKit
 
 import scala.concurrent.Future
@@ -48,8 +48,8 @@ class SequencerAppIntegrationTest extends EswTestKit {
       seqCompRef ! LoadScript(ESW, "darknight", probe.ref)
 
       // verify that loaded sequencer is started and able to process sequence command
-      val response          = probe.expectMessageType[ScriptResponse]
-      val sequencerLocation = response.response.rightValue
+      val response          = probe.expectMessageType[SequencerLocation]
+      val sequencerLocation = response.location
 
       //verify sequencerName has SequenceComponentName
       val actualSequencerPrefix: Prefix = sequencerLocation.prefix
@@ -127,16 +127,28 @@ class SequencerAppIntegrationTest extends EswTestKit {
           )
           .futureValue
 
-      loadScriptResponse shouldBe a[ScriptResponse]
-      val response: Either[ScriptError, AkkaLocation] = loadScriptResponse.asInstanceOf[ScriptResponse].response
-
-      response match {
-        case Left(v) =>
-          v shouldEqual ScriptError.LoadingScriptFailed(
+      loadScriptResponse match {
+        case error: ScriptError.LoadingScriptFailed =>
+          error shouldEqual ScriptError.LoadingScriptFailed(
             s"Script configuration missing for [${unexpectedSubsystem.name}] with [$observingMode]"
           )
-        case Right(_) => throw new RuntimeException("test failed as this test expects ScriptError")
+        case _ => throw new RuntimeException("test failed as this test expects ScriptError")
       }
+    }
+
+    "throw exception if location service gives error while registering sequence component" in {
+      val name: String            = "primary"
+      val sequenceComponentPrefix = Prefix(Subsystem.ESW, name)
+
+      // start Sequence Component
+      SequencerApp.main(Array("seqcomp", "-s", "esw", "-n", name))
+
+      // verify Sequence component is started and registered with location service
+      val sequenceCompLocation: AkkaLocation = resolveSequenceComponentLocation(sequenceComponentPrefix)
+      sequenceCompLocation.prefix shouldEqual Prefix("ESW.primary")
+
+      // assert that exception is thrown when start Sequence Component with same name
+      intercept[RuntimeException](SequencerApp.main(Array("seqcomp", "-s", "esw", "-n", name)))
     }
   }
 

@@ -5,6 +5,8 @@ import csw.prefix.models.Subsystem
 sealed trait SequenceManagerPostRequest
 object SequenceManagerPostRequest {
 
+  case class Configure(obsMode: String) extends SequenceManagerPostRequest
+
   case object GetRunningObsModes extends SequenceManagerPostRequest
 
   case class Cleanup(observingMode: String) extends SequenceManagerPostRequest

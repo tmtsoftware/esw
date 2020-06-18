@@ -9,15 +9,11 @@ import csw.location.api.models.{AkkaLocation, ComponentId}
 import csw.location.api.scaladsl.LocationService
 import csw.logging.api.scaladsl.Logger
 import csw.prefix.models.{Prefix, Subsystem}
+import esw.commons.extensions.EitherExt._
 import esw.ocs.api.actor.messages.SequenceComponentMsg._
-import esw.ocs.api.actor.messages.{
-  IdleStateSequenceComponentMsg,
-  RunningStateSequenceComponentMsg,
-  SequenceComponentMsg,
-  ShuttingDownStateSequenceComponentMsg,
-  UnhandleableSequenceComponentMsg
-}
+import esw.ocs.api.actor.messages._
 import esw.ocs.api.models.SequenceComponentState
+import esw.ocs.api.protocol.ScriptError
 import esw.ocs.api.protocol.SequenceComponentResponse._
 import esw.ocs.impl.internal.{SequencerServer, SequencerServerFactory}
 
@@ -57,14 +53,15 @@ class SequenceComponentBehavior(
   ): Behavior[SequenceComponentMsg] = {
     val sequenceComponentLocation = AkkaLocation(AkkaConnection(ComponentId(prefix, SequenceComponent)), ctx.self.toURI)
     val sequencerServer           = sequencerServerFactory.make(subsystem, observingMode, sequenceComponentLocation)
-    val registrationResult        = sequencerServer.start()
-    replyTo ! ScriptResponse(registrationResult)
+    val registrationResult        = sequencerServer.start().mapToAdt(location => SequencerLocation(location), identity)
+    replyTo ! registrationResult
+
     registrationResult match {
-      case Right(location) =>
+      case SequencerLocation(location) =>
         log.info(s"Successfully started sequencer for subsystem :$subsystem in observation mode: $observingMode")
         running(subsystem, observingMode, sequencerServer, location)
-      case Left(scriptError) =>
-        log.error(s"Failed to start sequencer: ${scriptError.msg}")
+      case error: ScriptError =>
+        log.error(s"Failed to start sequencer: ${error.msg}")
         Behaviors.same
     }
   }

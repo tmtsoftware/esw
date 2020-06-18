@@ -20,7 +20,7 @@ class SequenceManagerImpl(location: AkkaLocation)(implicit actorSystem: ActorSys
 
   private val smRef: ActorRef[SequenceManagerMsg] = location.uri.toActorRef.unsafeUpcast[SequenceManagerMsg]
 
-  override def configure(observingMode: String)(implicit timeout: Timeout): Future[ConfigureResponse] =
+  override def configure(observingMode: String): Future[ConfigureResponse] =
     smRef ? (Configure(observingMode, _))
 
   override def cleanup(observingMode: String): Future[CleanupResponse] = smRef ? (Cleanup(observingMode, _))

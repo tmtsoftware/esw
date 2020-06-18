@@ -34,14 +34,12 @@ import esw.sm.api.SequenceManagerApi
 import esw.sm.api.actor.client.SequenceManagerImpl
 import esw.sm.api.actor.messages.SequenceManagerMsg
 import esw.sm.api.codecs.SequenceManagerHttpCodec
-import esw.sm.handler.{SequenceManagerPostHandler, SequenceManagerWebsocketHandler}
+import esw.sm.handler.SequenceManagerPostHandler
 import esw.sm.impl.config.SequenceManagerConfigParser
 import esw.sm.impl.core.SequenceManagerBehavior
 import esw.sm.impl.utils.{AgentUtil, SequenceComponentUtil, SequencerUtil}
-import msocket.api.ContentType
 import msocket.impl.RouteFactory
 import msocket.impl.post.PostRouteFactory
-import msocket.impl.ws.WebsocketRouteFactory
 
 import scala.async.Async.{async, await}
 import scala.concurrent.{Await, Future}
@@ -83,14 +81,10 @@ class SequenceManagerWiring(configPath: Path) {
   private lazy val refURI: URI                         = sequenceManagerRef.toURI
   private lazy val sequenceManager: SequenceManagerApi = new SequenceManagerImpl(AkkaLocation(connection, refURI))
 
-  private lazy val postHandler                                 = new SequenceManagerPostHandler(sequenceManager)
-  private def websocketHandlerFactory(contentTye: ContentType) = new SequenceManagerWebsocketHandler(sequenceManager, contentTye)
+  private lazy val postHandler = new SequenceManagerPostHandler(sequenceManager)
 
   import SequenceManagerHttpCodec._
-  lazy val routes: Route = RouteFactory.combine(metricsEnabled = false)(
-    new PostRouteFactory("post-endpoint", postHandler),
-    new WebsocketRouteFactory("websocket-endpoint", websocketHandlerFactory)
-  )
+  lazy val routes: Route = RouteFactory.combine(metricsEnabled = false)(new PostRouteFactory("post-endpoint", postHandler))
 
   private lazy val settings    = new Settings(Some(SocketUtils.getFreePort), Some(prefix), config, ComponentType.Service)
   private lazy val httpService = new HttpService(logger, locationService, routes, settings, actorRuntime)

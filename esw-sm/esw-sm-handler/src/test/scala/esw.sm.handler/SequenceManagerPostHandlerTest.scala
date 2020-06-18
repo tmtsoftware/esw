@@ -33,7 +33,16 @@ class SequenceManagerPostHandlerTest
   }
 
   "SequenceManagerPostHandler" must {
-    "return running observation modes for getRunningObsModes request" in {
+    "return configure success for configure request | ESW-171" in {
+      when(sequenceManagerApi.configure(obsMode)).thenReturn(Future.successful(ConfigureResponse.Success(componentId)))
+
+      Post("/post-endpoint", Configure(obsMode).narrow) ~> route ~> check {
+        verify(sequenceManagerApi).configure(obsMode)
+        responseAs[ConfigureResponse] should ===(ConfigureResponse.Success(componentId))
+      }
+    }
+
+    "return running observation modes for getRunningObsModes request | ESW-171" in {
       val obsModes = Set(obsMode)
       when(sequenceManagerApi.getRunningObsModes).thenReturn(Future.successful(GetRunningObsModesResponse.Success(obsModes)))
 
@@ -43,7 +52,7 @@ class SequenceManagerPostHandlerTest
       }
     }
 
-    "return cleanup success for cleanup request" in {
+    "return cleanup success for cleanup request | ESW-171" in {
       when(sequenceManagerApi.cleanup(obsMode)).thenReturn(Future.successful(CleanupResponse.Success))
 
       Post("/post-endpoint", Cleanup(obsMode).narrow) ~> route ~> check {
@@ -52,7 +61,7 @@ class SequenceManagerPostHandlerTest
       }
     }
 
-    "return start sequencer success for startSequencer request" in {
+    "return start sequencer success for startSequencer request | ESW-171" in {
       when(sequenceManagerApi.startSequencer(ESW, obsMode))
         .thenReturn(Future.successful(StartSequencerResponse.Started(componentId)))
 
@@ -62,7 +71,7 @@ class SequenceManagerPostHandlerTest
       }
     }
 
-    "return shutdown sequencer success for shutdownSequencer request" in {
+    "return shutdown sequencer success for shutdownSequencer request | ESW-171" in {
       when(sequenceManagerApi.shutdownSequencer(ESW, obsMode))
         .thenReturn(Future.successful(ShutdownSequencerResponse.Success))
 
@@ -72,7 +81,7 @@ class SequenceManagerPostHandlerTest
       }
     }
 
-    "return restart sequencer success for restartSequencer request" in {
+    "return restart sequencer success for restartSequencer request | ESW-171" in {
       when(sequenceManagerApi.restartSequencer(ESW, obsMode))
         .thenReturn(Future.successful(RestartSequencerResponse.Success(componentId)))
 
@@ -82,7 +91,7 @@ class SequenceManagerPostHandlerTest
       }
     }
 
-    "return shutdown all sequencer success for shutdownAllSequencer request" in {
+    "return shutdown all sequencer success for shutdownAllSequencer request | ESW-171" in {
       when(sequenceManagerApi.shutdownAllSequencers())
         .thenReturn(Future.successful(ShutdownAllSequencersResponse.Success))
 
