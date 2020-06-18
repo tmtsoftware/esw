@@ -10,7 +10,7 @@ import esw.commons.Timeouts
 import esw.ocs.api.SequenceComponentApi
 import esw.ocs.api.actor.messages.SequenceComponentMsg
 import esw.ocs.api.actor.messages.SequenceComponentMsg.{GetStatus, LoadScript, Restart, Shutdown, UnloadScript}
-import esw.ocs.api.protocol.SequenceComponentResponse.{GetStatusResponseOrUnhandled, OkOrUnhandled, ScriptResponseOrUnhandled}
+import esw.ocs.api.protocol.SequenceComponentResponse.{GetStatusResponse, OkOrUnhandled, ScriptResponseOrUnhandled}
 
 import scala.concurrent.Future
 
@@ -27,7 +27,7 @@ class SequenceComponentImpl(sequenceComponentLocation: AkkaLocation)(implicit
 
   override def restart(): Future[ScriptResponseOrUnhandled] = sequenceComponentRef ? Restart
 
-  override def status: Future[GetStatusResponseOrUnhandled] = sequenceComponentRef ? GetStatus
+  override def status: Future[GetStatusResponse] = sequenceComponentRef ? GetStatus
 
   override def unloadScript(): Future[OkOrUnhandled] = sequenceComponentRef ? UnloadScript
 

@@ -10,7 +10,7 @@ import esw.commons.utils.FutureUtils
 import esw.commons.utils.location.LocationServiceUtil
 import esw.ocs.api.SequenceComponentApi
 import esw.ocs.api.actor.client.SequenceComponentImpl
-import esw.ocs.api.protocol.SequenceComponentResponse.{GetStatusResponse, OkOrUnhandled, ScriptResponseOrUnhandled, Unhandled}
+import esw.ocs.api.protocol.SequenceComponentResponse.{OkOrUnhandled, ScriptResponseOrUnhandled}
 import esw.sm.api.protocol.AgentError
 
 import scala.async.Async._
@@ -54,13 +54,8 @@ class SequenceComponentUtil(locationServiceUtil: LocationServiceUtil, agentUtil:
   private[sm] def idleSequenceComponent(sequenceComponentLocation: AkkaLocation): Future[Option[SequenceComponentApi]] =
     async {
       val sequenceComponentApi = createSequenceComponentImpl(sequenceComponentLocation)
-      val status               = await(sequenceComponentApi.status)
-      status match {
-        case Unhandled(_, _, _) => None // Sequence component is unable to handle status msg in Shutting Down state
-        case GetStatusResponse(response) =>
-          val isBusyRunningSequencer = response.isDefined
-          if (isBusyRunningSequencer) None else Some(sequenceComponentApi)
-      }
+      val isAvailable          = await(sequenceComponentApi.status).response.isEmpty
+      if (isAvailable) Some(sequenceComponentApi) else None
     }
 
   private[sm] def createSequenceComponentImpl(sequenceComponentLocation: AkkaLocation) = {

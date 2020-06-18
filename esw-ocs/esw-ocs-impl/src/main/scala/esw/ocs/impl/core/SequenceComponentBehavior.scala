@@ -93,7 +93,7 @@ class SequenceComponentBehavior(
 
   private def shutdown(
       self: ActorRef[SequenceComponentMsg],
-      replyTo: ActorRef[OkOrUnhandled],
+      replyTo: ActorRef[Ok.type],
       sequencerServer: Option[SequencerServer]
   ): Behavior[SequenceComponentMsg] = {
     sequencerServer.foreach(_.shutDown())

@@ -48,7 +48,7 @@ class SequenceComponentBehaviorTest extends BaseTestSuite {
       val (sequenceComponentRef, seqCompLocation) = spawnSequenceComponent()
 
       val loadScriptResponseProbe = TestProbe[ScriptResponseOrUnhandled]()
-      val getStatusProbe          = TestProbe[GetStatusResponseOrUnhandled]()
+      val getStatusProbe          = TestProbe[GetStatusResponse]()
       val subsystem               = ESW
       val observingMode           = "darknight"
       val prefix                  = Prefix(s"$subsystem.$observingMode")
@@ -146,7 +146,7 @@ class SequenceComponentBehaviorTest extends BaseTestSuite {
       val (sequenceComponentRef, _) = spawnSequenceComponent()
 
       val unloadScriptResponseProbe = TestProbe[OkOrUnhandled]()
-      val getStatusProbe            = TestProbe[GetStatusResponseOrUnhandled]()
+      val getStatusProbe            = TestProbe[GetStatusResponse]()
 
       //assert if GetStatus returns None after unloading sequencer script
       sequenceComponentRef ! GetStatus(getStatusProbe.ref)

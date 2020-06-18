@@ -24,12 +24,7 @@ import esw.ocs.api.actor.messages.SequencerState._
 import esw.ocs.api.models.{SequenceComponentState, Step, StepList}
 import esw.ocs.api.protocol.EditorError.IdDoesNotExist
 import esw.ocs.api.protocol.ScriptError.{LoadingScriptFailed, LocationServiceError}
-import esw.ocs.api.protocol.SequenceComponentResponse.{
-  GetStatusResponse,
-  GetStatusResponseOrUnhandled,
-  ScriptResponseOrUnhandled,
-  SequencerLocation
-}
+import esw.ocs.api.protocol.SequenceComponentResponse.{GetStatusResponse, ScriptResponseOrUnhandled, SequencerLocation}
 import esw.ocs.api.protocol.{DiagnosticModeResponse, SequencerSubmitResponse, _}
 import org.scalatest.prop.TableDrivenPropertyChecks.forAll
 import org.scalatest.prop.Tables.Table
@@ -188,7 +183,7 @@ class OcsAkkaSerializerTest extends BaseTestSuite {
       LoadScript(ESW, "IRIS_Darknight", TestProbe[ScriptResponseOrUnhandled]().ref),
       Restart(TestProbe[ScriptResponseOrUnhandled]().ref),
       UnloadScript(TestProbe[SequenceComponentResponse.OkOrUnhandled]().ref),
-      GetStatus(TestProbe[GetStatusResponseOrUnhandled]().ref),
+      GetStatus(TestProbe[GetStatusResponse]().ref),
       Shutdown(TestProbe[Ok]().ref)
     )
 

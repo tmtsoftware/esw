@@ -7,9 +7,10 @@ import esw.ocs.api.protocol.SequenceComponentResponse.ScriptErrorOrSequencerLoca
 
 object SequenceComponentResponse {
 
-  sealed trait ScriptResponseOrUnhandled    extends OcsAkkaSerializable
-  sealed trait GetStatusResponseOrUnhandled extends OcsAkkaSerializable
-  sealed trait OkOrUnhandled                extends OcsAkkaSerializable
+  sealed trait ScriptResponseOrUnhandled extends OcsAkkaSerializable
+  sealed trait OkOrUnhandled             extends OcsAkkaSerializable
+
+  final case class GetStatusResponse(response: Option[AkkaLocation]) extends OcsAkkaSerializable
 
   sealed trait ScriptErrorOrSequencerLocation extends ScriptResponseOrUnhandled
 
@@ -17,7 +18,6 @@ object SequenceComponentResponse {
 
   final case class Unhandled(state: SequenceComponentState, messageType: String, msg: String)
       extends ScriptResponseOrUnhandled
-      with GetStatusResponseOrUnhandled
       with OkOrUnhandled
 
   object Unhandled {
@@ -25,8 +25,7 @@ object SequenceComponentResponse {
       new Unhandled(state, messageType, s"Sequence Component can not accept '$messageType' message in '${state.entryName}'")
   }
 
-  final case class SequencerLocation(location: AkkaLocation)         extends ScriptErrorOrSequencerLocation
-  final case class GetStatusResponse(response: Option[AkkaLocation]) extends GetStatusResponseOrUnhandled
+  final case class SequencerLocation(location: AkkaLocation) extends ScriptErrorOrSequencerLocation
 }
 
 sealed trait ScriptError extends Throwable with ScriptErrorOrSequencerLocation {
