@@ -12,9 +12,8 @@ sealed trait UnhandleableSequenceComponentMsg extends SequenceComponentMsg {
   def replyTo: ActorRef[Unhandled]
 }
 
-sealed trait IdleStateSequenceComponentMsg         extends SequenceComponentMsg
-sealed trait RunningStateSequenceComponentMsg      extends SequenceComponentMsg
-sealed trait ShuttingDownStateSequenceComponentMsg extends SequenceComponentMsg
+sealed trait IdleStateSequenceComponentMsg    extends SequenceComponentMsg
+sealed trait RunningStateSequenceComponentMsg extends SequenceComponentMsg
 
 object SequenceComponentMsg {
   final case class LoadScript(subsystem: Subsystem, observingMode: String, replyTo: ActorRef[ScriptResponseOrUnhandled])
@@ -41,8 +40,6 @@ object SequenceComponentMsg {
       extends SequenceComponentRemoteMsg
       with IdleStateSequenceComponentMsg
       with RunningStateSequenceComponentMsg
-
-  private[ocs] final case class ShutdownInternal(replyTo: ActorRef[Ok.type]) extends ShuttingDownStateSequenceComponentMsg
 
   private[ocs] final case object Stop
       extends SequenceComponentMsg

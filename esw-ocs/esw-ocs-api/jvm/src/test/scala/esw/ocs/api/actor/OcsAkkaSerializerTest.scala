@@ -160,7 +160,6 @@ class OcsAkkaSerializerTest extends BaseTestSuite {
       SequenceComponentResponse.Ok,
       SequenceComponentResponse.Unhandled(SequenceComponentState.Idle, "some msg"),
       SequenceComponentResponse.Unhandled(SequenceComponentState.Running, "some msg"),
-      SequenceComponentResponse.Unhandled(SequenceComponentState.ShuttingDown, "some msg"),
       GetStatusResponse(Some(akkaLocation)),
       GetStatusResponse(None),
       LocationServiceError("error"),

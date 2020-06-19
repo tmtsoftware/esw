@@ -86,8 +86,8 @@ class SequenceComponentBehavior(
         case GetStatus(replyTo) =>
           replyTo ! GetStatusResponse(Some(location))
           Behaviors.same
-        case Stop              => Behaviors.same
         case Shutdown(replyTo) => shutdown(ctx.self, replyTo, Some(sequencerServer))
+        case Stop              => Behaviors.same
       }
     }
 
@@ -97,21 +97,15 @@ class SequenceComponentBehavior(
       sequencerServer: Option[SequencerServer]
   ): Behavior[SequenceComponentMsg] = {
     sequencerServer.foreach(_.shutDown())
-    locationService.unregister(AkkaConnection(ComponentId(prefix, SequenceComponent))).map { _ =>
-      self ! ShutdownInternal(replyTo)
-    }
-    shuttingDown()
-  }
 
-  private def shuttingDown(): Behavior[SequenceComponentMsg] =
-    receive[ShuttingDownStateSequenceComponentMsg](SequenceComponentState.ShuttingDown) { (_, msg) =>
-      msg match {
-        case ShutdownInternal(replyTo) =>
-          replyTo ! Ok
-          actorSystem.terminate()
-          Behaviors.stopped
-      }
-    }
+    locationService
+      .unregister(AkkaConnection(ComponentId(prefix, SequenceComponent)))
+      .onComplete(_ => {
+        replyTo ! Ok
+        actorSystem.terminate()
+      })
+    Behaviors.stopped
+  }
 
   private def receive[HandleableMsg <: SequenceComponentMsg: ClassTag](
       state: SequenceComponentState

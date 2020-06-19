@@ -12,7 +12,7 @@ import csw.prefix.models.Subsystem.{ESW, TCS}
 import esw.commons.BaseTestSuite
 import esw.commons.utils.location.EswLocationError.{LocationNotFound, RegistrationListingFailed}
 import esw.commons.utils.location.LocationServiceUtil
-import esw.ocs.api.models.SequenceComponentState.{Running, ShuttingDown}
+import esw.ocs.api.models.SequenceComponentState.{Idle, Running}
 import esw.ocs.api.protocol.ScriptError
 import esw.ocs.api.protocol.SequenceComponentResponse.{Ok, SequencerLocation, Unhandled}
 import esw.ocs.api.{SequenceComponentApi, SequencerApi}
@@ -428,7 +428,7 @@ class SequencerUtilTest extends BaseTestSuite {
       when(locationServiceUtil.findSequencer(ESW, obsMode)).thenReturn(futureRight(eswLocation))
       when(eswSequencerApi.getSequenceComponent).thenReturn(Future.successful(eswSeqCompLoc))
       when(sequenceComponentUtil.restart(eswSeqCompLoc))
-        .thenReturn(Future.successful(Unhandled(ShuttingDown, "Restart", "error")))
+        .thenReturn(Future.successful(Unhandled(Idle, "Restart", "error")))
 
       sequencerUtil.restartSequencer(ESW, obsMode).futureValue should ===(LoadScriptError("error"))
 

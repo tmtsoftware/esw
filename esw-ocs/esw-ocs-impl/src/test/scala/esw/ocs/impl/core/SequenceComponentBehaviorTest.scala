@@ -210,21 +210,18 @@ class SequenceComponentBehaviorTest extends BaseTestSuite {
       when(locationService.unregister(AkkaConnection(ComponentId(sequenceComponentPrefix, SequenceComponent))))
         .thenReturn(Future.successful(Done))
 
-      val shutdownResponseProbe = TestProbe[OkOrUnhandled]()(system)
+      val shutdownResponseProbe = TestProbe[Ok.type]()(system)
       sequenceComponentRef ! Shutdown(shutdownResponseProbe.ref)
       shutdownResponseProbe.expectMessage(Ok)
       shutdownResponseProbe.expectTerminated(sequenceComponentRef)
     }
 
-    val restartProbe1          = TestProbe[ScriptResponseOrUnhandled]()
-    val shutdownInternalProbe1 = TestProbe[OkOrUnhandled]()
-    val loadScriptProbe1       = TestProbe[ScriptResponseOrUnhandled]()
-    val shutdownInternalProbe2 = TestProbe[OkOrUnhandled]()
+    val restartProbe1    = TestProbe[ScriptResponseOrUnhandled]()
+    val loadScriptProbe1 = TestProbe[ScriptResponseOrUnhandled]()
 
     val unhandledMsgForIdleState = Table(
       ("SequenceComponent Unhandled Msgs", "Probe"),
-      (Restart(restartProbe1.ref), restartProbe1),
-      (ShutdownInternal(shutdownInternalProbe1.ref), shutdownInternalProbe1)
+      (Restart(restartProbe1.ref), restartProbe1)
     )
 
     unhandledMsgForIdleState.foreach {
@@ -240,8 +237,7 @@ class SequenceComponentBehaviorTest extends BaseTestSuite {
 
     val unhandledMsgForRunningState = Table(
       ("SequenceComponent Unhandled Msgs", "Probe"),
-      (LoadScript(ESW, "darknight", loadScriptProbe1.ref), loadScriptProbe1),
-      (ShutdownInternal(shutdownInternalProbe2.ref), shutdownInternalProbe2)
+      (LoadScript(ESW, "darknight", loadScriptProbe1.ref), loadScriptProbe1)
     )
 
     unhandledMsgForRunningState.foreach {
