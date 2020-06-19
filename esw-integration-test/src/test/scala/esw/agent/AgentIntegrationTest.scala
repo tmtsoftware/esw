@@ -23,7 +23,7 @@ class AgentIntegrationTest extends EswTestKit with BeforeAndAfterAll with Locati
   private val irisSeqCompConnection = AkkaConnection(ComponentId(irisPrefix, SequenceComponent))
   private val redisPrefix           = Prefix(s"esw.event_server")
   private val redisCompId           = ComponentId(redisPrefix, Service)
-  private val appVersion            = Some("0f56561")
+  private val appVersion            = Some("d94b7c56e3")
 
   override implicit def patienceConfig: PatienceConfig = PatienceConfig(1.minute, 100.millis)
 
