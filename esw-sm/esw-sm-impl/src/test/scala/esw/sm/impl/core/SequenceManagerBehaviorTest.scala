@@ -7,7 +7,6 @@ import akka.actor.typed.{ActorRef, ActorSystem, SpawnProtocol}
 import csw.location.api.models.ComponentType._
 import csw.location.api.models.Connection.{AkkaConnection, HttpConnection}
 import csw.location.api.models.{AkkaLocation, ComponentId, HttpLocation}
-import csw.logging.client.scaladsl.LoggingSystemFactory
 import csw.prefix.models.Prefix
 import csw.prefix.models.Subsystem._
 import esw.commons.BaseTestSuite
