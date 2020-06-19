@@ -50,7 +50,6 @@ class SequencerBehavior(
       case Offline          => offline
       case GoingOnline      => goingOnline(_, Offline)
       case GoingOffline     => goingOffline(_, Idle)
-      case ShuttingDown     => shuttingDown
       case AbortingSequence => abortingSequence
       case Stopping         => stopping
       case Submitting       => submitting
@@ -202,20 +201,12 @@ class SequencerBehavior(
     f1.onComplete(_ =>
       f2.onComplete { _ =>
         script.shutdownScript() // to clean up the script. For eg. to stop StrandEc.
-        f3.onComplete(_ => data.self ! ShutdownComplete(replyTo))
+        f3.onComplete(_ => replyTo ! Ok)
       }
     )
 
-    shuttingDown(data)
+    Behaviors.stopped
   }
-
-  private def shuttingDown(data: SequencerData): Behavior[SequencerMsg] =
-    receive(ShuttingDown, data) {
-      case ShutdownComplete(replyTo) =>
-        replyTo ! Ok
-        actorSystem.terminate()
-        Behaviors.stopped
-    }
 
   // This is a common message and can be received in any state.
   // This will execute the Diagnostic mode handlers of the script.

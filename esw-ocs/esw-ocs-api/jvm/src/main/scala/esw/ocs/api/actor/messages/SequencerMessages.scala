@@ -17,7 +17,6 @@ object SequencerMessages {
   // Messages which are handled in all states
   sealed trait CommonMessage       extends EswSequencerMessage
   sealed trait CommonRemoteMessage extends CommonMessage with EswSequencerRemoteMessage
-  sealed trait ShuttingDownMessage extends EswSequencerRemoteMessage
   sealed trait UnhandleableSequencerMessage extends EswSequencerRemoteMessage {
     def replyTo: ActorRef[Unhandled]
   }
@@ -91,7 +90,6 @@ object SequencerMessages {
   final private[esw] case class GoOfflineFailed(replyTo: ActorRef[GoOfflineResponse])           extends GoingOfflineMessage
   final private[esw] case class GoOnlineSuccess(replyTo: ActorRef[GoOnlineResponse])            extends GoingOnlineMessage
   final private[esw] case class GoOnlineFailed(replyTo: ActorRef[GoOnlineResponse])             extends GoingOnlineMessage
-  final private[esw] case class ShutdownComplete(replyTo: ActorRef[Ok.type])                    extends ShuttingDownMessage
   final private[esw] case class AbortSequenceComplete(replyTo: ActorRef[OkOrUnhandledResponse]) extends AbortSequenceMessage
   final private[esw] case class StopComplete(replyTo: ActorRef[OkOrUnhandledResponse])          extends StopMessage
   final private[esw] case class SubmitSuccessful(sequence: Sequence, replyTo: ActorRef[SequencerSubmitResponse])

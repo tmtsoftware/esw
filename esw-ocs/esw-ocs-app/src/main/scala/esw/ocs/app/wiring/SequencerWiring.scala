@@ -159,7 +159,11 @@ private[ocs] class SequencerWiring(
       }
     }
 
-    override def shutDown(): Done = Await.result((sequencerRef ? Shutdown).map(_ => Done), Timeouts.DefaultTimeout)
+    override def shutDown(): Done = {
+      val done = Await.result((sequencerRef ? Shutdown).map(_ => Done), Timeouts.DefaultTimeout)
+      actorSystem.terminate()
+      done
+    }
   }
 }
 // $COVERAGE-ON$
