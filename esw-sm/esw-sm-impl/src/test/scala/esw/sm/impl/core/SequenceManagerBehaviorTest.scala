@@ -7,8 +7,9 @@ import akka.actor.typed.{ActorRef, ActorSystem, SpawnProtocol}
 import csw.location.api.models.ComponentType._
 import csw.location.api.models.Connection.{AkkaConnection, HttpConnection}
 import csw.location.api.models.{AkkaLocation, ComponentId, HttpLocation}
+import csw.logging.client.scaladsl.LoggingSystemFactory
 import csw.prefix.models.Prefix
-import csw.prefix.models.Subsystem.{ESW, TCS}
+import csw.prefix.models.Subsystem._
 import esw.commons.BaseTestSuite
 import esw.commons.utils.location.EswLocationError.{LocationNotFound, RegistrationListingFailed}
 import esw.commons.utils.location.LocationServiceUtil
@@ -23,7 +24,7 @@ import esw.sm.api.protocol.ShutdownAllSequencersResponse.ShutdownFailure
 import esw.sm.api.protocol.ShutdownSequencerResponse.UnloadScriptError
 import esw.sm.api.protocol.StartSequencerResponse.LoadScriptError
 import esw.sm.api.protocol._
-import esw.sm.impl.config.{ObsModeConfig, Resources, SequenceManagerConfig, Sequencers}
+import esw.sm.impl.config._
 import esw.sm.impl.utils.SequencerUtil
 import org.scalatest.prop.TableDrivenPropertyChecks
 
@@ -42,8 +43,8 @@ class SequenceManagerBehaviorTest extends BaseTestSuite with TableDrivenProperty
   private val clearskiesSequencers: Sequencers = Sequencers(ESW)
   private val config = SequenceManagerConfig(
     Map(
-      Darknight  -> ObsModeConfig(Resources("r1", "r2"), darknightSequencers),
-      Clearskies -> ObsModeConfig(Resources("r2", "r3"), clearskiesSequencers)
+      Darknight  -> ObsModeConfig(Resources(Resource(NSCU), Resource(TCS)), darknightSequencers),
+      Clearskies -> ObsModeConfig(Resources(Resource(TCS), Resource(IRIS)), clearskiesSequencers)
     ),
     sequencerStartRetries = 3
   )
