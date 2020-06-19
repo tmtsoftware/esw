@@ -7,7 +7,7 @@ import scala.concurrent.Future
 
 trait SequenceComponentApi {
   def loadScript(subsystem: Subsystem, observingMode: String): Future[ScriptResponseOrUnhandled]
-  def restart(): Future[ScriptResponseOrUnhandled]
+  def restartScript(): Future[ScriptResponseOrUnhandled]
   def unloadScript(): Future[OkOrUnhandled]
   def status: Future[GetStatusResponse]
   def shutdown(): Future[OkOrUnhandled]

@@ -17,7 +17,7 @@ import csw.prefix.models.Prefix
 import csw.prefix.models.Subsystem.ESW
 import csw.time.core.models.UTCTime
 import esw.commons.BaseTestSuite
-import esw.ocs.api.actor.messages.SequenceComponentMsg.{GetStatus, LoadScript, Restart, UnloadScript}
+import esw.ocs.api.actor.messages.SequenceComponentMsg.{GetStatus, LoadScript, RestartScript, UnloadScript}
 import esw.ocs.api.actor.messages.SequencerMessages._
 import esw.ocs.api.actor.messages.SequencerState
 import esw.ocs.api.actor.messages.SequencerState._
@@ -180,7 +180,7 @@ class OcsAkkaSerializerTest extends BaseTestSuite {
     val testData = Table(
       "SequenceComponentRemoteMsg models",
       LoadScript(ESW, "IRIS_Darknight", TestProbe[ScriptResponseOrUnhandled]().ref),
-      Restart(TestProbe[ScriptResponseOrUnhandled]().ref),
+      RestartScript(TestProbe[ScriptResponseOrUnhandled]().ref),
       UnloadScript(TestProbe[SequenceComponentResponse.OkOrUnhandled]().ref),
       GetStatus(TestProbe[GetStatusResponse]().ref),
       Shutdown(TestProbe[Ok]().ref)

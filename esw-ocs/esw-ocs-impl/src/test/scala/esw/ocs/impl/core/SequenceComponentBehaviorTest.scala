@@ -183,7 +183,7 @@ class SequenceComponentBehaviorTest extends BaseTestSuite {
       when(sequencerServer.shutDown()).thenReturn(Done)
 
       //Restart sequencer and assert if it returns new AkkaLocation of sequencer
-      sequenceComponentRef ! Restart(restartResponseProbe.ref)
+      sequenceComponentRef ! RestartScript(restartResponseProbe.ref)
 
       val message1 = restartResponseProbe.receiveMessage()
       message1 shouldBe a[SequencerLocation]
@@ -198,8 +198,8 @@ class SequenceComponentBehaviorTest extends BaseTestSuite {
       val (sequenceComponentRef, _) = spawnSequenceComponent()
 
       val restartResponseProbe = TestProbe[ScriptResponseOrUnhandled]()
-      sequenceComponentRef ! Restart(restartResponseProbe.ref)
-      restartResponseProbe.expectMessage(Unhandled(Idle, "Restart"))
+      sequenceComponentRef ! RestartScript(restartResponseProbe.ref)
+      restartResponseProbe.expectMessage(Unhandled(Idle, "RestartScript"))
     }
 
     "shutdown itself on Shutdown message | ESW-329" in {

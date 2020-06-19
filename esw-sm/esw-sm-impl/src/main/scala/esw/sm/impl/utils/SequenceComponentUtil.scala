@@ -38,7 +38,7 @@ class SequenceComponentUtil(locationServiceUtil: LocationServiceUtil, agentUtil:
 
   def shutdown(loc: AkkaLocation): Future[OkOrUnhandled] = createSequenceComponentImpl(loc).shutdown()
 
-  def restart(loc: AkkaLocation): Future[ScriptResponseOrUnhandled] = createSequenceComponentImpl(loc).restart()
+  def restart(loc: AkkaLocation): Future[ScriptResponseOrUnhandled] = createSequenceComponentImpl(loc).restartScript()
 
   private def getIdleSequenceComponentFor(subsystem: Subsystem): Future[Option[SequenceComponentApi]] =
     locationServiceUtil

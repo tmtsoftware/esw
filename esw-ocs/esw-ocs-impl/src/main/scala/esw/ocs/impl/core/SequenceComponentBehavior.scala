@@ -80,7 +80,7 @@ class SequenceComponentBehavior(
           unload()
           replyTo ! Ok
           idle
-        case Restart(replyTo) =>
+        case RestartScript(replyTo) =>
           unload()
           load(ctx, subsystem, observingMode, replyTo)
         case GetStatus(replyTo) =>

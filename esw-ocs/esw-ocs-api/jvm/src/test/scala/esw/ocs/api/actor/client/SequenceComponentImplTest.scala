@@ -32,7 +32,7 @@ class SequenceComponentImplTest extends BaseTestSuite {
     case LoadScript(_, _, replyTo) => replyTo ! loadScriptResponse; Behaviors.same
     case GetStatus(replyTo)        => replyTo ! getStatusResponse; Behaviors.same
     case UnloadScript(replyTo)     => replyTo ! Ok; Behaviors.same
-    case Restart(replyTo)          => replyTo ! restartResponse; Behaviors.same
+    case RestartScript(replyTo)    => replyTo ! restartResponse; Behaviors.same
     case Stop                      => Behaviors.stopped
     case Shutdown(replyTo)         => replyTo ! Ok; Behaviors.stopped
   }
@@ -50,7 +50,7 @@ class SequenceComponentImplTest extends BaseTestSuite {
   }
 
   "Restart | ESW-141" in {
-    sequenceComponentClient.restart().futureValue should ===(restartResponse)
+    sequenceComponentClient.restartScript().futureValue should ===(restartResponse)
   }
 
   "GetStatus | ESW-103" in {

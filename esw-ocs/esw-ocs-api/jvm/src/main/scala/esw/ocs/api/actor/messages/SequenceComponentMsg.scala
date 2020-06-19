@@ -26,7 +26,7 @@ object SequenceComponentMsg {
       with IdleStateSequenceComponentMsg
       with RunningStateSequenceComponentMsg
 
-  final case class Restart(replyTo: ActorRef[ScriptResponseOrUnhandled])
+  final case class RestartScript(replyTo: ActorRef[ScriptResponseOrUnhandled])
       extends SequenceComponentRemoteMsg
       with UnhandleableSequenceComponentMsg
       with RunningStateSequenceComponentMsg
