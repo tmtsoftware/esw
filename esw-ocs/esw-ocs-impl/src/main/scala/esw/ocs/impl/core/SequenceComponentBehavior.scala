@@ -26,7 +26,8 @@ class SequenceComponentBehavior(
     locationService: LocationService,
     sequencerServerFactory: SequencerServerFactory
 )(implicit actorSystem: ActorSystem[SpawnProtocol.Command]) {
-  implicit val ec: ExecutionContext = actorSystem.executionContext
+  private val akkaConnection: AkkaConnection = AkkaConnection(ComponentId(prefix, SequenceComponent))
+  implicit val ec: ExecutionContext          = actorSystem.executionContext
 
   def idle: Behavior[SequenceComponentMsg] =
     receive[IdleStateSequenceComponentMsg](SequenceComponentState.Idle) { (ctx, msg) =>
@@ -51,7 +52,7 @@ class SequenceComponentBehavior(
       observingMode: String,
       replyTo: ActorRef[ScriptResponseOrUnhandled]
   ): Behavior[SequenceComponentMsg] = {
-    val sequenceComponentLocation = AkkaLocation(AkkaConnection(ComponentId(prefix, SequenceComponent)), ctx.self.toURI)
+    val sequenceComponentLocation = AkkaLocation(akkaConnection, ctx.self.toURI)
     val sequencerServer           = sequencerServerFactory.make(subsystem, observingMode, sequenceComponentLocation)
     val registrationResult        = sequencerServer.start().mapToAdt(location => SequencerLocation(location), identity)
     replyTo ! registrationResult
@@ -99,7 +100,7 @@ class SequenceComponentBehavior(
     sequencerServer.foreach(_.shutDown())
 
     locationService
-      .unregister(AkkaConnection(ComponentId(prefix, SequenceComponent)))
+      .unregister(akkaConnection)
       .onComplete(_ => {
         replyTo ! Ok
         actorSystem.terminate()

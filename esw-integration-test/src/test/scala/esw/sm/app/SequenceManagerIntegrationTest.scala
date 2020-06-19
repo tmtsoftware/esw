@@ -134,7 +134,7 @@ class SequenceManagerIntegrationTest extends EswTestKit {
     exception.getMessage shouldBe "File does not exist on local disk at path sm-config.conf"
   }
 
-  "start and shut down sequencer for given subsystem and observation mode | ESW-176, ESW-326, ESW-171" in {
+  "start and shut down sequencer (and shutdown sequence component) for given subsystem and observation mode | ESW-176, ESW-326, ESW-171, ESW-167" in {
     TestSetup.startSequenceComponents(Prefix(ESW, "primary"))
 
     val sequenceManagerClient = TestSetup.startSequenceManager(sequenceManagerPrefix)
@@ -150,11 +150,14 @@ class SequenceManagerIntegrationTest extends EswTestKit {
     // verify that sequencer is started
     resolveHTTPLocation(Prefix(ESW, IRIS_DARKNIGHT), Sequencer)
 
-    // ESW-326 Verify that shutdown sequencer returns Success
-    val shutdownResponse = sequenceManagerClient.shutdownSequencer(ESW, IRIS_DARKNIGHT).futureValue
+    // ESW-326, ESW-167 Verify that shutdown sequencer returns Success
+    val shutdownResponse = sequenceManagerClient.shutdownSequencer(ESW, IRIS_DARKNIGHT, shutdownSequenceComp = true).futureValue
     shutdownResponse should ===(ShutdownSequencerResponse.Success)
 
-    // verify that sequencer are shut down
+    // verify that sequencer is shut down
+    intercept[Exception](resolveHTTPLocation(Prefix(ESW, IRIS_DARKNIGHT), Sequencer))
+
+    // ESW-167: verify that sequence component is shutdown
     intercept[Exception](resolveHTTPLocation(Prefix(ESW, IRIS_DARKNIGHT), Sequencer))
   }
 
