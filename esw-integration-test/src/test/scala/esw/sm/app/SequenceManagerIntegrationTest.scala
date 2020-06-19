@@ -8,6 +8,7 @@ import csw.location.api.models.ComponentType.{Sequencer, Service}
 import csw.location.api.models.Connection.AkkaConnection
 import csw.prefix.models.Prefix
 import csw.prefix.models.Subsystem._
+import esw.BinaryFetcherUtil
 import esw.ocs.api.actor.client.{SequenceComponentImpl, SequencerImpl}
 import esw.ocs.api.protocol.SequenceComponentResponse.GetStatusResponse
 import esw.ocs.testkit.EswTestKit
@@ -16,14 +17,22 @@ import esw.sm.api.protocol.ConfigureResponse.ConflictingResourcesWithRunningObsM
 import esw.sm.api.protocol.StartSequencerResponse.LoadScriptError
 import esw.sm.api.protocol._
 
-class SequenceManagerIntegrationTest extends EswTestKit {
+class SequenceManagerIntegrationTest extends EswTestKit with BinaryFetcherUtil {
   private val WFOS_CAL              = "WFOS_Cal"
   private val IRIS_CAL              = "IRIS_Cal"
   private val IRIS_DARKNIGHT        = "IRIS_Darknight"
   private val sequenceManagerPrefix = Prefix(ESW, "sequence_manager")
 
-  override protected def beforeEach(): Unit = locationService.unregisterAll()
-  override protected def afterEach(): Unit  = TestSetup.cleanup()
+  override protected def afterEach(): Unit = {
+    TestSetup.cleanup()
+    locationService.unregisterAll()
+  }
+
+  override protected def beforeAll(): Unit = {
+    super.beforeAll()
+    locationService.unregisterAll()
+    super.fetchBinaryFor("/sequence_manager_apps.json")
+  }
 
   "start sequence manager and register akka + http locations| ESW-171, ESW-172" in {
     // resolving sequence manager fails for Akka and Http
@@ -243,6 +252,23 @@ class SequenceManagerIntegrationTest extends EswTestKit {
 
     // verify that configuration is successful
     response should ===(ConfigureResponse.Success(ComponentId(Prefix(ESW, obsMode), Sequencer)))
+  }
+
+  "start sequencer for given subsystem and observation mode with agent spawning sequence component | ESW-178" in {
+    val sequenceManagerClient = TestSetup.startSequenceManager(sequenceManagerPrefix)
+
+    // verify that sequencer is not present
+    intercept[Exception](resolveHTTPLocation(Prefix(ESW, IRIS_DARKNIGHT), Sequencer))
+
+    val response = sequenceManagerClient.startSequencer(ESW, IRIS_DARKNIGHT).futureValue
+
+    response should ===(StartSequencerResponse.Started(ComponentId(Prefix(ESW, IRIS_DARKNIGHT), Sequencer)))
+
+    // verify that sequencer is started
+    resolveHTTPLocation(Prefix(ESW, IRIS_DARKNIGHT), Sequencer)
+
+    // cleanup
+    val shutdownResponse = sequenceManagerClient.shutdownSequencer(ESW, IRIS_DARKNIGHT).futureValue
   }
 
   private def sequencerConnection(prefix: Prefix) = AkkaConnection(ComponentId(prefix, Sequencer))

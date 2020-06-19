@@ -5,17 +5,17 @@ import csw.location.api.models.ComponentId
 import csw.location.api.models.ComponentType.{Machine, SequenceComponent, Service}
 import csw.location.api.models.Connection.{AkkaConnection, TcpConnection}
 import csw.prefix.models.Prefix
+import esw.BinaryFetcherUtil
 import esw.agent.api.ComponentStatus.Running
 import esw.agent.api.{AgentStatus, Failed, Killed, Spawned}
 import esw.agent.app.AgentSettings
 import esw.agent.app.process.cs.Coursier
 import esw.agent.client.AgentClient
 import esw.ocs.testkit.EswTestKit
-import org.scalatest.BeforeAndAfterAll
 
 import scala.concurrent.duration.DurationLong
 
-class AgentIntegrationTest extends EswTestKit with BeforeAndAfterAll with LocationServiceCodecs {
+class AgentIntegrationTest extends EswTestKit with BinaryFetcherUtil with LocationServiceCodecs {
 
   private lazy val agentClient      = AgentClient.make(agentPrefix, locationService).futureValue
   private val irisPrefix            = Prefix("esw.iris")
@@ -29,14 +29,7 @@ class AgentIntegrationTest extends EswTestKit with BeforeAndAfterAll with Locati
 
   override def beforeAll(): Unit = {
     super.beforeAll()
-    val channel = "file://" + getClass.getResource("/apps.json").getPath
-    spawnAgent(AgentSettings(1.minute, channel))
-
-    // provision app binary for specified version
-    new ProcessBuilder(Coursier.ocsApp(appVersion).fetch(channel): _*)
-      .inheritIO()
-      .start()
-      .waitFor()
+    super.fetchBinaryFor("/apps.json", appVersion)
   }
 
   //ESW-325: spawns sequence component via agent using coursier with provided sha
