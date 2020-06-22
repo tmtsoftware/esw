@@ -8,6 +8,7 @@ import csw.prefix.models.Prefix
 import esw.BinaryFetcherUtil
 import esw.agent.api.ComponentStatus.Running
 import esw.agent.api.{AgentStatus, Failed, Killed, Spawned}
+import esw.agent.app.AgentSettings
 import esw.agent.client.AgentClient
 import esw.ocs.testkit.EswTestKit
 
@@ -15,20 +16,24 @@ import scala.concurrent.duration.DurationLong
 
 class AgentIntegrationTest extends EswTestKit with BinaryFetcherUtil with LocationServiceCodecs {
 
-  private lazy val agentClient      = AgentClient.make(agentPrefix, locationService).futureValue
-  private val irisPrefix            = Prefix("esw.iris")
-  private val irisCompId            = ComponentId(irisPrefix, SequenceComponent)
-  private val irisSeqCompConnection = AkkaConnection(ComponentId(irisPrefix, SequenceComponent))
-  private val redisPrefix           = Prefix(s"esw.event_server")
-  private val redisCompId           = ComponentId(redisPrefix, Service)
-  private val appVersion            = Some("d94b7c56e3")
-
-  override implicit def patienceConfig: PatienceConfig = PatienceConfig(1.minute, 100.millis)
+  private val irisPrefix               = Prefix("esw.iris")
+  private val irisCompId               = ComponentId(irisPrefix, SequenceComponent)
+  private val irisSeqCompConnection    = AkkaConnection(ComponentId(irisPrefix, SequenceComponent))
+  private val redisPrefix              = Prefix(s"esw.event_server")
+  private val redisCompId              = ComponentId(redisPrefix, Service)
+  private val appVersion               = Some("d94b7c56e3")
+  private var agentPrefix: Prefix      = _
+  private var agentClient: AgentClient = _
 
   override def beforeAll(): Unit = {
     super.beforeAll()
-    super.spawnAgentAndFetchBinaryFor("/apps.json", appVersion)
+    val channel: String = "file://" + getClass.getResource("/apps.json").getPath
+    agentPrefix = spawnAgent(AgentSettings(1.minute, channel))
+    super.fetchBinaryFor(channel, appVersion)
+    agentClient = AgentClient.make(agentPrefix, locationService).futureValue
   }
+
+  override implicit def patienceConfig: PatienceConfig = PatienceConfig(1.minute, 100.millis)
 
   //ESW-325: spawns sequence component via agent using coursier with provided sha
   private def spawnSequenceComponent(prefix: Prefix) = agentClient.spawnSequenceComponent(prefix, appVersion)

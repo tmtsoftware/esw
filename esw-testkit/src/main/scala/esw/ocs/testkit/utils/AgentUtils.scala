@@ -13,12 +13,13 @@ trait AgentUtils {
 
   private var agentWiring: Option[AgentWiring] = None
   lazy val agentSettings: AgentSettings        = AgentSettings.from(ConfigFactory.load())
-  lazy val agentPrefix: Prefix                 = Prefix(s"esw.machine_${Random.nextInt().abs}")
 
-  def spawnAgent(agentSettings: AgentSettings): Unit = {
-    val wiring = AgentWiring.make(agentPrefix, agentSettings, actorSystem)
+  def spawnAgent(agentSettings: AgentSettings): Prefix = {
+    val agentPrefix = Prefix(s"esw.machine_${Random.nextInt().abs}")
+    val wiring      = AgentWiring.make(agentPrefix, agentSettings, actorSystem)
     agentWiring = Some(wiring)
     AgentApp.start(agentPrefix, wiring)
+    agentPrefix
   }
 
   def shutdownAgent(): Unit = agentWiring.foreach(_.actorRuntime.shutdown(UnknownReason))
