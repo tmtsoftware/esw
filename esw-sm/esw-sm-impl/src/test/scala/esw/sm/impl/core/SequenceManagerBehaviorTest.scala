@@ -339,10 +339,8 @@ class SequenceManagerBehaviorTest extends BaseTestSuite with TableDrivenProperty
 
     forAll(errors) { (errorName, error, process) =>
       s"return $errorName if $errorName encountered while $process | ESW-324" in {
-        when(sequencerUtil.shutdownAllSequencers())
-          .thenReturn(future(1.seconds, error))
+        when(sequencerUtil.shutdownAllSequencers()).thenReturn(future(1.seconds, error))
 
-        println(error)
         val shutdownSequencerResponseProbe = TestProbe[ShutdownAllSequencersResponse]()
 
         smRef ! ShutdownAllSequencers(shutdownSequencerResponseProbe.ref)

@@ -162,8 +162,7 @@ class SequenceManagerBehavior(
       self: SelfRef,
       replyTo: ActorRef[ShutdownAllSequencersResponse]
   ): SMBehavior = {
-    val shutdownAllResponseF = sequencerUtil.shutdownAllSequencers()
-    shutdownAllResponseF.map(self ! ShutdownAllSequencersResponseInternal(_))
+    sequencerUtil.shutdownAllSequencers().map(self ! ShutdownAllSequencersResponseInternal(_))
     shuttingDownAllSequencers(self, replyTo)
   }
 

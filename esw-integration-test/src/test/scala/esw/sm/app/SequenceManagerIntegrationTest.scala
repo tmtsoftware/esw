@@ -185,24 +185,19 @@ class SequenceManagerIntegrationTest extends EswTestKit with BinaryFetcherUtil {
     val irisDarkNightPrefix = Prefix(ESW, IRIS_DARKNIGHT)
     val irisCalPrefix       = Prefix(ESW, IRIS_CAL)
 
-    val sequenceManagerClient = TestSetup.startSequenceManager(sequenceManagerPrefix)
-
     val darkNightSequencerL = spawnSequencer(ESW, IRIS_DARKNIGHT)
     val calSequencerL       = spawnSequencer(ESW, IRIS_CAL)
 
-    // verify that darkNight sequencer has started
+    // verify Sequencers are started
     resolveAkkaLocation(irisDarkNightPrefix, Sequencer) should ===(darkNightSequencerL)
-
-    // verify that cal sequencer has started
     resolveAkkaLocation(irisCalPrefix, Sequencer) should ===(calSequencerL)
 
-    // shut down all the sequencers that are running
+    // shutdown all the sequencers that are running
+    val sequenceManagerClient = TestSetup.startSequenceManager(sequenceManagerPrefix)
     sequenceManagerClient.shutdownAllSequencers().futureValue should ===(ShutdownAllSequencersResponse.Success)
 
-    // verify that darkNight sequencer is not present
+    // verify all sequencers has stopped
     intercept[Exception](resolveAkkaLocation(irisDarkNightPrefix, Sequencer))
-
-    // verify that cal sequencer is not present
     intercept[Exception](resolveAkkaLocation(irisCalPrefix, Sequencer))
   }
 

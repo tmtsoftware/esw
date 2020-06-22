@@ -61,7 +61,7 @@ class SequencerUtil(locationServiceUtil: LocationServiceUtil, sequenceComponentU
       .flatMap {
         case Left(listingFailed: RegistrationListingFailed) => Future.successful(Left(LocationServiceError(listingFailed.msg)))
         case Left(LocationNotFound(_))                      => Future.successful(Right(ShutdownSequencerResponse.Success))
-        case Right(sequencerLoc)                            => unloadScript(Prefix(subsystem, obsMode), sequencerLoc, shutdownSequenceComp)
+        case Right(sequencerLoc)                            => unloadScript(sequencerLoc, shutdownSequenceComp)
       }
 
   def shutdownSequencers(sequencers: Sequencers, obsMode: String): Future[CleanupResponse] = {
@@ -73,7 +73,7 @@ class SequencerUtil(locationServiceUtil: LocationServiceUtil, sequenceComponentU
     locationServiceUtil.listAkkaLocationsBy(Sequencer).flatMapToAdt(shutdownSequencers, e => LocationServiceError(e.msg))
 
   private def shutdownSequencers(sequencerLocations: List[AkkaLocation]): Future[ShutdownAllSequencersResponse] =
-    traverse(sequencerLocations)(location => unloadScript(location.prefix, location, shutdownSequenceComp = false))
+    traverse(sequencerLocations)(location => unloadScript(location, shutdownSequenceComp = false))
       .mapToAdt(_ => ShutdownAllSequencersResponse.Success, ShutdownAllSequencersResponse.ShutdownFailure)
 
   def restartSequencer(subSystem: Subsystem, obsMode: String): Future[RestartSequencerResponse] =
@@ -108,7 +108,6 @@ class SequencerUtil(locationServiceUtil: LocationServiceUtil, sequenceComponentU
 
   // get sequence component from Sequencer and unload sequencer script
   private def unloadScript(
-      prefix: Prefix,
       sequenceLocation: AkkaLocation,
       shutdownSequenceComp: Boolean
   ): Future[Either[UnloadScriptError, ShutdownSequencerResponse.Success.type]] =
@@ -119,9 +118,9 @@ class SequencerUtil(locationServiceUtil: LocationServiceUtil, sequenceComponentU
 
       shutdownRes match {
         case Ok                   => Right(ShutdownSequencerResponse.Success)
-        case Unhandled(_, _, msg) => Left(UnloadScriptError(prefix, msg))
+        case Unhandled(_, _, msg) => Left(UnloadScriptError(sequenceLocation.prefix, msg))
       }
-    }.mapError(e => UnloadScriptError(prefix, e.getMessage))
+    }.mapError(e => UnloadScriptError(sequenceLocation.prefix, e.getMessage))
 
   // Created in order to mock the behavior of sequencer API availability for unit test
   private[sm] def createSequencerClient(location: Location): SequencerApi = SequencerApiFactory.make(location)
