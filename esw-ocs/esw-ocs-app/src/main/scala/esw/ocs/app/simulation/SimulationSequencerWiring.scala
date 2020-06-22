@@ -1,4 +1,4 @@
-package esw.ocs.testkit.simulation
+package esw.ocs.app.simulation
 
 import csw.location.api.models.AkkaLocation
 import csw.prefix.models.{Prefix, Subsystem}

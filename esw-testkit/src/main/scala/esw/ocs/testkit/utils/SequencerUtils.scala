@@ -11,7 +11,7 @@ import esw.ocs.api.protocol.ScriptError
 import esw.ocs.api.protocol.SequenceComponentResponse.{SequencerLocation, Unhandled}
 import esw.ocs.app.wiring.{SequenceComponentWiring, SequencerWiring}
 import esw.ocs.impl.internal.SequencerServerFactory
-import esw.ocs.testkit.simulation.SimulationSequencerWiring
+import esw.ocs.app.simulation.SimulationSequencerWiring
 
 import scala.collection.mutable
 

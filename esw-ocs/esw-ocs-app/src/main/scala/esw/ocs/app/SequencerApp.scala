@@ -16,7 +16,9 @@ import esw.ocs.api.actor.messages.SequenceComponentMsg.LoadScript
 import esw.ocs.api.protocol.ScriptError
 import esw.ocs.api.protocol.SequenceComponentResponse.{ScriptResponseOrUnhandled, SequencerLocation, Unhandled}
 import esw.ocs.app.SequencerAppCommand._
+import esw.ocs.app.simulation.SimulationSequencerWiring
 import esw.ocs.app.wiring.{SequenceComponentWiring, SequencerWiring}
+import esw.ocs.impl.internal.SequencerServerFactory
 
 import scala.concurrent.{Await, Future}
 import scala.util.control.NonFatal
@@ -34,7 +36,7 @@ object SequencerApp extends EswCommandApp[SequencerAppCommand] {
   }
 
   def run(command: SequencerAppCommand, enableLogging: Boolean = true): SequenceComponentWiring = {
-    val wiring = new SequenceComponentWiring(command.seqCompSubsystem, command.name, new SequencerWiring(_, _, _).sequencerServer)
+    val wiring = sequenceComponentWiring(command)
     import wiring.actorRuntime._
     try {
       // irrespective of which command received, Sequence Component needs to be started
@@ -42,7 +44,7 @@ object SequencerApp extends EswCommandApp[SequencerAppCommand] {
       if (enableLogging) startLogging(sequenceCompLocation.prefix.toString())
       command match {
         case _: SequenceComponent => // sequence component is already started
-        case Sequencer(seqCompSubsystem, _, seqSubsystem, mode) =>
+        case Sequencer(seqCompSubsystem, _, seqSubsystem, mode, _) =>
           reportSequencer(loadAndStartSequencer(seqSubsystem.getOrElse(seqCompSubsystem), mode, sequenceCompLocation, wiring))
       }
     }
@@ -52,6 +54,14 @@ object SequencerApp extends EswCommandApp[SequencerAppCommand] {
         throw e
     }
     wiring
+  }
+
+  def sequenceComponentWiring(command: SequencerAppCommand): SequenceComponentWiring = {
+    val sequencerServer: SequencerServerFactory = command match {
+      case Sequencer(_, _, _, _, true) => new SimulationSequencerWiring(_, _, _).sequencerServer
+      case _                           => new SequencerWiring(_, _, _).sequencerServer
+    }
+    new SequenceComponentWiring(command.seqCompSubsystem, command.name, sequencerServer)
   }
 
   private def loadAndStartSequencer(
