@@ -11,7 +11,7 @@ import scala.concurrent.duration.DurationLong
 trait BinaryFetcherUtil extends EswTestKit {
   val logger: Logger = GenericLoggerFactory.getLogger
 
-  def fetchBinaryFor(channelFileName: String, appVersion: Option[String] = None): Unit = {
+  def spawnAgentAndFetchBinaryFor(channelFileName: String, appVersion: Option[String] = None): Unit = {
     appVersion match {
       case Some(version) => logger.info(s"Fetching binary using coursier for $version")
       case None          => logger.info(s"Fetching binary using coursier for default version specified in provided $channelFileName")

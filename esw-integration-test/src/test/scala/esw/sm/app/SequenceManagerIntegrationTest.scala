@@ -9,7 +9,7 @@ import csw.location.api.models.Connection.AkkaConnection
 import csw.prefix.models.Prefix
 import csw.prefix.models.Subsystem._
 import esw.BinaryFetcherUtil
-import esw.ocs.api.actor.client.{SequenceComponentImpl, SequencerImpl}
+import esw.ocs.api.actor.client.{SequenceComponentImpl, SequencerApiFactory, SequencerImpl}
 import esw.ocs.api.protocol.SequenceComponentResponse.GetStatusResponse
 import esw.ocs.testkit.EswTestKit
 import esw.sm.api.protocol.CommonFailure.ConfigurationMissing
@@ -23,15 +23,9 @@ class SequenceManagerIntegrationTest extends EswTestKit with BinaryFetcherUtil {
   private val IRIS_DARKNIGHT        = "IRIS_Darknight"
   private val sequenceManagerPrefix = Prefix(ESW, "sequence_manager")
 
+  override protected def beforeEach(): Unit = locationService.unregisterAll()
   override protected def afterEach(): Unit = {
     TestSetup.cleanup()
-    locationService.unregisterAll()
-  }
-
-  override protected def beforeAll(): Unit = {
-    super.beforeAll()
-    locationService.unregisterAll()
-    super.fetchBinaryFor("/sequence_manager_apps.json")
   }
 
   "start sequence manager and register akka + http locations| ESW-171, ESW-172" in {
@@ -255,20 +249,24 @@ class SequenceManagerIntegrationTest extends EswTestKit with BinaryFetcherUtil {
   }
 
   "start sequencer for given subsystem and observation mode with agent spawning sequence component | ESW-178" in {
+    super.spawnAgentAndFetchBinaryFor("/sequence_manager_apps.json")
+
     val sequenceManagerClient = TestSetup.startSequenceManager(sequenceManagerPrefix)
 
     // verify that sequencer is not present
-    intercept[Exception](resolveHTTPLocation(Prefix(ESW, IRIS_DARKNIGHT), Sequencer))
+    intercept[Exception](resolveAkkaLocation(Prefix(ESW, IRIS_DARKNIGHT), Sequencer))
 
     val response = sequenceManagerClient.startSequencer(ESW, IRIS_DARKNIGHT).futureValue
 
     response should ===(StartSequencerResponse.Started(ComponentId(Prefix(ESW, IRIS_DARKNIGHT), Sequencer)))
 
     // verify that sequencer is started
-    resolveHTTPLocation(Prefix(ESW, IRIS_DARKNIGHT), Sequencer)
+    val sequencerLocation = resolveAkkaLocation(Prefix(ESW, IRIS_DARKNIGHT), Sequencer)
+
+    SequencerApiFactory.make(sequencerLocation).getSequenceComponent.futureValue
 
     // cleanup
-    val shutdownResponse = sequenceManagerClient.shutdownSequencer(ESW, IRIS_DARKNIGHT).futureValue
+    sequenceManagerClient.shutdownSequencer(ESW, IRIS_DARKNIGHT, shutdownSequenceComp = true).futureValue
   }
 
   private def sequencerConnection(prefix: Prefix) = AkkaConnection(ComponentId(prefix, Sequencer))

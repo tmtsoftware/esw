@@ -8,8 +8,6 @@ import csw.prefix.models.Prefix
 import esw.BinaryFetcherUtil
 import esw.agent.api.ComponentStatus.Running
 import esw.agent.api.{AgentStatus, Failed, Killed, Spawned}
-import esw.agent.app.AgentSettings
-import esw.agent.app.process.cs.Coursier
 import esw.agent.client.AgentClient
 import esw.ocs.testkit.EswTestKit
 
@@ -29,7 +27,7 @@ class AgentIntegrationTest extends EswTestKit with BinaryFetcherUtil with Locati
 
   override def beforeAll(): Unit = {
     super.beforeAll()
-    super.fetchBinaryFor("/apps.json", appVersion)
+    super.spawnAgentAndFetchBinaryFor("/apps.json", appVersion)
   }
 
   //ESW-325: spawns sequence component via agent using coursier with provided sha
