@@ -10,6 +10,7 @@ import csw.prefix.models.Prefix
 import csw.prefix.models.Subsystem._
 import esw.BinaryFetcherUtil
 import esw.agent.app.AgentSettings
+import esw.agent.client.AgentClient
 import esw.ocs.api.actor.client.{SequenceComponentImpl, SequencerApiFactory, SequencerImpl}
 import esw.ocs.api.protocol.SequenceComponentResponse.GetStatusResponse
 import esw.ocs.testkit.EswTestKit
@@ -253,7 +254,8 @@ class SequenceManagerIntegrationTest extends EswTestKit with BinaryFetcherUtil {
 
   "start sequencer for given subsystem and observation mode with agent spawning sequence component | ESW-178" in {
     val channel: String = "file://" + getClass.getResource("/sequence_manager_apps.json").getPath
-    spawnAgent(AgentSettings(1.minute, channel))
+    val agentPrefix     = spawnAgent(AgentSettings(1.minute, channel))
+    val agentClient     = AgentClient.make(agentPrefix, locationService).futureValue
     fetchBinaryFor(channel)
 
     val sequenceManagerClient = TestSetup.startSequenceManager(sequenceManagerPrefix)
@@ -268,10 +270,11 @@ class SequenceManagerIntegrationTest extends EswTestKit with BinaryFetcherUtil {
     // verify that sequencer is started
     val sequencerLocation = resolveAkkaLocation(Prefix(ESW, IRIS_DARKNIGHT), Sequencer)
 
-    SequencerApiFactory.make(sequencerLocation).getSequenceComponent.futureValue
+    val seqCompLocation = SequencerApiFactory.make(sequencerLocation).getSequenceComponent.futureValue
 
     // cleanup
-    sequenceManagerClient.shutdownSequencer(ESW, IRIS_DARKNIGHT, shutdownSequenceComp = true).futureValue
+    sequenceManagerClient.shutdownSequencer(ESW, IRIS_DARKNIGHT).futureValue
+    agentClient.killComponent(seqCompLocation.connection.componentId).futureValue
   }
 
   private def sequencerConnection(prefix: Prefix) = AkkaConnection(ComponentId(prefix, Sequencer))
