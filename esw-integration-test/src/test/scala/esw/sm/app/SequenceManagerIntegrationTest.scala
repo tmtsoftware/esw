@@ -252,7 +252,7 @@ class SequenceManagerIntegrationTest extends EswTestKit with BinaryFetcherUtil {
     response should ===(ConfigureResponse.Success(ComponentId(Prefix(ESW, obsMode), Sequencer)))
   }
 
-  "start sequencer for given subsystem and observation mode with agent spawning sequence component | ESW-178" in {
+  "start sequencer for given subsystem and observation mode with agent spawning sequence component | ESW-178" ignore {
     val channel: String = "file://" + getClass.getResource("/sequence_manager_apps.json").getPath
     val agentPrefix     = spawnAgent(AgentSettings(1.minute, channel))
     val agentClient     = AgentClient.make(agentPrefix, locationService).futureValue
