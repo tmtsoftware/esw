@@ -17,7 +17,7 @@ object Libs {
   val `jupiter-interface`  = "net.aichler"                     % "jupiter-interface"  % "0.8.3"
   val `tmt-test-reporter`  = "com.github.tmtsoftware"         %% "rtm"                % "d1c8c7e"
 
-  val blockhound          = "io.projectreactor.tools"                   % "blockhound"        % "1.0.3.RELEASE"
+  val blockhound          = "io.projectreactor.tools"                   % "blockhound"        % "1.0.4.RELEASE"
   val `embedded-keycloak` = "com.github.tmtsoftware.embedded-keycloak" %% "embedded-keycloak" % "9374d69"
 
   val `ammonite` = "com.lihaoyi" % "ammonite" % "2.1.4" cross CrossVersion.full
