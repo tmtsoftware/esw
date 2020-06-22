@@ -9,6 +9,7 @@ import scala.concurrent.Future
 
 object SimulationScript extends SimulationScript
 
+// $COVERAGE-OFF$
 trait SimulationScript extends ScriptApi {
   private val done: Future[Done] = Future.successful(Done)
 
@@ -34,3 +35,4 @@ trait SimulationScript extends ScriptApi {
 
   override def shutdownScript(): Unit = {}
 }
+// $COVERAGE-ON$
