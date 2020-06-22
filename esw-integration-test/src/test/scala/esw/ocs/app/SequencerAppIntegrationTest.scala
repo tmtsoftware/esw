@@ -204,5 +204,18 @@ class SequencerAppIntegrationTest extends EswTestKit {
 
       exception.getMessage shouldEqual s"Failed to start with error: Script configuration missing for [$unexpectedSubsystem] with [$observingMode]"
     }
+
+    "start sequencer in simulation mode | ESW-149" in {
+      val subsystem     = "esw"
+      val name          = "primary"
+      val observingMode = "random"
+
+      //there is no script for esw.random mode but sequencer should start with esw.random as a simulation script
+      //starting sequencer in simulation mode
+      SequencerApp.main(Array("sequencer", "-s", subsystem, "-n", name, "-m", observingMode, "--simulation"))
+
+      // assert sequencer has started
+      resolveSequencerLocation(Prefix(ESW, observingMode))
+    }
   }
 }
