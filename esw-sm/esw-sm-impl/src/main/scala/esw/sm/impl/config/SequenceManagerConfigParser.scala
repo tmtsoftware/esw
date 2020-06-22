@@ -13,8 +13,8 @@ import scala.concurrent.{ExecutionContext, Future}
 class SequenceManagerConfigParser(configUtils: ConfigUtils)(implicit ec: ExecutionContext) {
   import ConfigCodecs._
 
-  private val ESW_SM                  = "esw-sm"
-  private val SEQUENCER_START_RETRIES = "sequencerStartRetries"
+  private val EswSmKey                 = "esw-sm"
+  private val SequencerStartRetriesKey = "sequencerStartRetries"
 
   // Reads config file from config service or local filesystem
   def read(configFilePath: Path, isLocal: Boolean): Future[SequenceManagerConfig] =
@@ -22,8 +22,8 @@ class SequenceManagerConfigParser(configUtils: ConfigUtils)(implicit ec: Executi
 
   private def parseConfig(config: Config): SequenceManagerConfig = {
     // pick retries from provided config. If not present then pick from application.conf of esw-sm-app as fallback
-    val configWithRetries = config.withFallback(ConfigFactory.load().withOnlyPath(s"$ESW_SM.$SEQUENCER_START_RETRIES"))
-    val configStr         = configWithRetries.getConfig(ESW_SM).root().render(ConfigRenderOptions.concise())
+    val configWithRetries = config.withFallback(ConfigFactory.load().withOnlyPath(s"$EswSmKey.$SequencerStartRetriesKey"))
+    val configStr         = configWithRetries.getConfig(EswSmKey).root().render(ConfigRenderOptions.concise())
 
     Json.decode(configStr.getBytes).to[SequenceManagerConfig].value
   }

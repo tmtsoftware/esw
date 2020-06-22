@@ -55,7 +55,7 @@ class SequencerUtil(locationServiceUtil: LocationServiceUtil, sequenceComponentU
       subsystem: Subsystem,
       obsMode: String,
       shutdownSequenceComp: Boolean = false
-  ): Future[Either[ShutdownSequencerResponse.Failure, ShutdownSequencerResponse.Success.type]] = {
+  ): Future[Either[ShutdownSequencerResponse.Failure, ShutdownSequencerResponse.Success.type]] =
     locationServiceUtil
       .findSequencer(subsystem, obsMode)
       .flatMap {
@@ -63,7 +63,6 @@ class SequencerUtil(locationServiceUtil: LocationServiceUtil, sequenceComponentU
         case Left(LocationNotFound(_))                      => Future.successful(Right(ShutdownSequencerResponse.Success))
         case Right(sequencerLoc)                            => unloadScript(Prefix(subsystem, obsMode), sequencerLoc, shutdownSequenceComp)
       }
-  }
 
   def shutdownSequencers(sequencers: Sequencers, obsMode: String): Future[CleanupResponse] = {
     val shutdownResponses = traverse(sequencers.subsystems)(shutdownSequencer(_, obsMode))

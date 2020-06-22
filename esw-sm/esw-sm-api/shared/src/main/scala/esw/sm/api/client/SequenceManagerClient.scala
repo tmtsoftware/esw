@@ -9,9 +9,8 @@ import msocket.api.Transport
 
 import scala.concurrent.Future
 
-class SequenceManagerClient(
-    postClient: Transport[SequenceManagerPostRequest]
-) extends SequenceManagerApi
+class SequenceManagerClient(postClient: Transport[SequenceManagerPostRequest])
+    extends SequenceManagerApi
     with SequenceManagerHttpCodec {
 
   override def configure(obsMode: String): Future[ConfigureResponse] =

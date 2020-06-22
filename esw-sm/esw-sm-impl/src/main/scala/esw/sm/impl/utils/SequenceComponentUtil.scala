@@ -58,7 +58,6 @@ class SequenceComponentUtil(locationServiceUtil: LocationServiceUtil, agentUtil:
       if (isAvailable) Some(sequenceComponentApi) else None
     }
 
-  private[sm] def createSequenceComponentImpl(sequenceComponentLocation: AkkaLocation) = {
+  private[sm] def createSequenceComponentImpl(sequenceComponentLocation: AkkaLocation) =
     new SequenceComponentImpl(sequenceComponentLocation)
-  }
 }

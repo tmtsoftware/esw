@@ -1,9 +1,6 @@
 package esw.sm.impl.config
 
-import csw.prefix.codecs.CommonCodecs
 import csw.prefix.models.Subsystem
-import io.bullet.borer.Codec
-import io.bullet.borer.derivation.CompactMapBasedCodecs.deriveCodec
 
 case class Resource(subsystem: Subsystem)
 
@@ -26,13 +23,4 @@ case class SequenceManagerConfig(obsModes: Map[String, ObsModeConfig], sequencer
   def resources(obsMode: String): Option[Resources]         = obsModeConfig(obsMode).map(_.resources)
   def sequencers(obsMode: String): Option[Sequencers]       = obsModeConfig(obsMode).map(_.sequencers)
   def obsModeConfig(obsMode: String): Option[ObsModeConfig] = obsModes.get(obsMode)
-}
-
-object ConfigCodecs extends CommonCodecs {
-  // Codecs for SequenceManagerConfig to parse config json string to domain model using borer
-  implicit lazy val obsModeConfigCodec: Codec[ObsModeConfig]                 = deriveCodec
-  implicit lazy val resourceCodec: Codec[Resource]                           = deriveCodec
-  implicit lazy val resourcesCodec: Codec[Resources]                         = deriveCodec
-  implicit lazy val sequencersCodec: Codec[Sequencers]                       = deriveCodec
-  implicit lazy val sequenceManagerConfigCodec: Codec[SequenceManagerConfig] = deriveCodec
 }
