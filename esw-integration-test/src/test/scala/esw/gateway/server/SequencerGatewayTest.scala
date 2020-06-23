@@ -9,12 +9,13 @@ import csw.prefix.models.Subsystem.ESW
 import csw.testkit.scaladsl.CSWService.EventServer
 import esw.gateway.api.clients.ClientFactory
 import esw.gateway.api.codecs.GatewayCodecs
+import esw.ocs.api.models.ObsMode
 import esw.ocs.testkit.EswTestKit
 import esw.ocs.testkit.Service.Gateway
 
 class SequencerGatewayTest extends EswTestKit(Gateway, EventServer) with GatewayCodecs {
   private val subsystem     = ESW
-  private val observingMode = "MoonNight" // TestScript2.kts
+  private val observingMode = ObsMode("MoonNight") // TestScript2.kts
 
   override def beforeAll(): Unit = {
     super.beforeAll()
@@ -28,7 +29,7 @@ class SequencerGatewayTest extends EswTestKit(Gateway, EventServer) with Gateway
       val clientFactory = new ClientFactory(gatewayPostClient, gatewayWsClient)
 
       val sequence    = Sequence(Setup(Prefix("esw.test"), CommandName("command-2"), Some(ObsId("obsId"))))
-      val componentId = ComponentId(Prefix(s"$subsystem.$observingMode"), ComponentType.Sequencer)
+      val componentId = ComponentId(Prefix(s"$subsystem.${observingMode.name}"), ComponentType.Sequencer)
 
       val sequencer = clientFactory.sequencer(componentId)
 
@@ -44,7 +45,7 @@ class SequencerGatewayTest extends EswTestKit(Gateway, EventServer) with Gateway
       val clientFactory = new ClientFactory(gatewayPostClient, gatewayWsClient)
 
       val sequence    = Sequence(Setup(Prefix("esw.test"), CommandName("fail-command"), Some(ObsId("obsId"))))
-      val componentId = ComponentId(Prefix(s"$subsystem.$observingMode"), ComponentType.Sequencer)
+      val componentId = ComponentId(Prefix(s"$subsystem.${observingMode.name}"), ComponentType.Sequencer)
 
       val sequencer = clientFactory.sequencer(componentId)
 

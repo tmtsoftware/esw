@@ -4,6 +4,7 @@ import csw.location.api.models.ComponentId
 import csw.location.api.models.ComponentType.Sequencer
 import csw.prefix.models.Prefix
 import csw.prefix.models.Subsystem.ESW
+import esw.ocs.api.models.ObsMode
 import esw.sm.api.codecs.SequenceManagerHttpCodec
 import esw.sm.api.protocol.SequenceManagerPostRequest.{GetRunningObsModes, _}
 import esw.sm.api.protocol._
@@ -15,8 +16,8 @@ import org.mockito.ArgumentMatchers.{any, eq => argsEq}
 import scala.concurrent.Future
 
 class SequenceManagerClientTest extends BaseTestSuite with SequenceManagerHttpCodec {
-  private val obsMode                  = "IRIS_darknight"
-  private val componentId: ComponentId = ComponentId(Prefix(ESW, obsMode), Sequencer)
+  private val obsMode                  = ObsMode("IRIS_darknight")
+  private val componentId: ComponentId = ComponentId(Prefix(ESW, obsMode.name), Sequencer)
 
   val postClient: Transport[SequenceManagerPostRequest] = mock[Transport[SequenceManagerPostRequest]]
   val client                                            = new SequenceManagerClient(postClient)

@@ -10,6 +10,7 @@ import csw.prefix.models.Prefix
 import csw.prefix.models.Subsystem.ESW
 import csw.testkit.scaladsl.CSWService.EventServer
 import esw.ocs.api.SequencerApi
+import esw.ocs.api.models.ObsMode
 import esw.ocs.testkit.EswTestKit
 
 import scala.concurrent.Await
@@ -45,7 +46,7 @@ class FsmIntegrationTest extends EswTestKit(EventServer) {
           }
         )
 
-      val fsmSequencer: SequencerApi = spawnSequencerProxy(ESW, "fsm")
+      val fsmSequencer: SequencerApi = spawnSequencerProxy(ESW, ObsMode("fsm"))
 
       mainFsmStateProbe.expectMessage("INIT")
       tempFsmStateProbe.expectMessage("OK")
@@ -95,7 +96,7 @@ class FsmIntegrationTest extends EswTestKit(EventServer) {
           }
         )
 
-      val fsmSequencer: SequencerApi = spawnSequencerProxy(ESW, "becomeFsm")
+      val fsmSequencer: SequencerApi = spawnSequencerProxy(ESW, ObsMode("becomeFsm"))
       val command1                   = Setup(Prefix("esw.test"), CommandName("command-1"), None).madd(commandKey.set(10))
       val command2                   = Setup(Prefix("esw.test"), CommandName("command-2"), None)
 
@@ -122,7 +123,7 @@ class FsmIntegrationTest extends EswTestKit(EventServer) {
           }
         )
 
-      val fsmSequencer: SequencerApi = spawnSequencerProxy(ESW, "commandFlagFsm")
+      val fsmSequencer: SequencerApi = spawnSequencerProxy(ESW, ObsMode("commandFlagFsm"))
       val command1                   = Observe(Prefix("esw.test"), CommandName("observe-command-1"), None)
       val command2                   = Observe(Prefix("esw.test"), CommandName("observe-command-2"), None).madd(observeFsmKey.set(100))
 
@@ -137,7 +138,7 @@ class FsmIntegrationTest extends EswTestKit(EventServer) {
 
     "be able to bind to param variables with polling time | ESW-142, ESW-256, ESW-291" in {
       val subsystem                  = ESW
-      val observingMode              = "MoonNight"
+      val observingMode              = ObsMode("MoonNight")
       val fsmSequencer: SequencerApi = spawnSequencerProxy(subsystem, observingMode)
       val command1                   = Setup(Prefix("esw.test"), CommandName("start-param-fsm"), None)
       val probe                      = TestProbe[Event]()
@@ -154,7 +155,7 @@ class FsmIntegrationTest extends EswTestKit(EventServer) {
 
     "be able to bind to event variables with polling time | ESW-142, ESW-256, ESW-291" in {
       val subsystem     = ESW
-      val observingMode = "EventVar"
+      val observingMode = ObsMode("EventVar")
 
       val fsmSequencer: SequencerApi = spawnSequencerProxy(subsystem, observingMode)
       val command1                   = Setup(Prefix("esw.test"), CommandName("start-event-fsm"), None)

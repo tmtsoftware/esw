@@ -10,6 +10,7 @@ import csw.params.commands.{CommandName, Sequence, Setup}
 import csw.prefix.models.Prefix
 import csw.prefix.models.Subsystem.ESW
 import esw.ocs.api.SequencerApi
+import esw.ocs.api.models.ObsMode
 import esw.ocs.testkit.EswTestKit
 import play.api.libs.json.{JsObject, Json}
 
@@ -34,7 +35,7 @@ class HealthCheckIntegrationTest extends EswTestKit {
 
   // HealthCheck.kts
   private val ocsSubsystem               = ESW
-  private val ocsObservingMode           = "healthCheck"
+  private val ocsObservingMode           = ObsMode("healthCheck")
   private var ocsSequencer: SequencerApi = _
 
   private val logBuffer: mutable.Buffer[JsObject] = mutable.Buffer.empty[JsObject]

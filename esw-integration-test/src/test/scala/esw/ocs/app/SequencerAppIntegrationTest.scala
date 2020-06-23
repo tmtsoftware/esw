@@ -14,6 +14,7 @@ import csw.prefix.models.Subsystem.{CSW, ESW}
 import csw.prefix.models.{Prefix, Subsystem}
 import esw.ocs.api.actor.messages.SequenceComponentMsg
 import esw.ocs.api.actor.messages.SequenceComponentMsg.{LoadScript, UnloadScript}
+import esw.ocs.api.models.ObsMode
 import esw.ocs.api.protocol.ScriptError
 import esw.ocs.api.protocol.SequenceComponentResponse.{Ok, OkOrUnhandled, ScriptResponseOrUnhandled, SequencerLocation}
 import esw.ocs.testkit.EswTestKit
@@ -45,7 +46,7 @@ class SequencerAppIntegrationTest extends EswTestKit {
       // LoadScript
       val seqCompRef = sequenceCompLocation.uri.toActorRef.unsafeUpcast[SequenceComponentMsg]
       val probe      = TestProbe[ScriptResponseOrUnhandled]()
-      seqCompRef ! LoadScript(ESW, "darknight", probe.ref)
+      seqCompRef ! LoadScript(ESW, ObsMode("darknight"), probe.ref)
 
       // verify that loaded sequencer is started and able to process sequence command
       val response          = probe.expectMessageType[SequencerLocation]
@@ -105,7 +106,7 @@ class SequencerAppIntegrationTest extends EswTestKit {
       val subsystem               = "ESW"
       val name                    = "primary"
       val unexpectedSubsystem     = CSW
-      val observingMode           = "darknight"
+      val observingMode           = ObsMode("darknight")
       val sequenceComponentPrefix = Prefix(ESW, name)
 
       // start Sequence Component
@@ -130,7 +131,7 @@ class SequencerAppIntegrationTest extends EswTestKit {
       loadScriptResponse match {
         case error: ScriptError.LoadingScriptFailed =>
           error shouldEqual ScriptError.LoadingScriptFailed(
-            s"Script configuration missing for [${unexpectedSubsystem.name}] with [$observingMode]"
+            s"Script configuration missing for [${unexpectedSubsystem.name}] with [${observingMode.name}]"
           )
         case _ => throw new RuntimeException("test failed as this test expects ScriptError")
       }

@@ -7,6 +7,7 @@ import csw.location.api.models.ComponentId
 import csw.location.api.models.ComponentType.Sequencer
 import csw.prefix.models.Prefix
 import csw.prefix.models.Subsystem.ESW
+import esw.ocs.api.models.ObsMode
 import esw.sm.api.actor.messages.SequenceManagerMsg._
 import esw.sm.api.protocol.AgentError.SpawnSequenceComponentFailed
 import esw.sm.api.protocol.CommonFailure.{ConfigurationMissing, LocationServiceError}
@@ -36,7 +37,7 @@ class SmAkkaSerializerTest extends BaseTestSuite {
     val shutdownSequencerResponseRef = TestProbe[ShutdownSequencerResponse]().ref
     val StartSequencerResponseRef    = TestProbe[StartSequencerResponse]().ref
 
-    val obsMode = "IRIS_Darknight"
+    val obsMode = ObsMode("IRIS_Darknight")
 
     val testData = Table(
       "SequenceManagerRemoteMsg models",
@@ -58,8 +59,8 @@ class SmAkkaSerializerTest extends BaseTestSuite {
   }
 
   "should use sm serializer for ConfigureResponse (de)serialization" in {
-    val obsMode1 = "IRIS_Darknight"
-    val obsMode2 = "IRIS_ClearSkies"
+    val obsMode1 = ObsMode("IRIS_Darknight")
+    val obsMode2 = ObsMode("IRIS_ClearSkies")
 
     val testData = Table(
       "Sequence Manager ConfigureResponse models",
@@ -80,7 +81,7 @@ class SmAkkaSerializerTest extends BaseTestSuite {
   }
 
   "should use sm serializer for CleanupResponse (de)serialization" in {
-    val obsMode1 = "IRIS_Darknight"
+    val obsMode1 = ObsMode("IRIS_Darknight")
 
     val testData = Table(
       "Sequence Manager CleanupResponse models",
@@ -99,8 +100,8 @@ class SmAkkaSerializerTest extends BaseTestSuite {
   }
 
   "should use sm serializer for GetRunningObsModesResponse (de)serialization" in {
-    val obsMode1 = "IRIS_Darknight"
-    val obsMode2 = "IRIS_ClearSkies"
+    val obsMode1 = ObsMode("IRIS_Darknight")
+    val obsMode2 = ObsMode("IRIS_ClearSkies")
 
     val testData = Table(
       "Sequence Manager GetRunningObsModesResponse models",

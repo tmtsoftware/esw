@@ -8,6 +8,7 @@ import csw.location.api.models.Connection.AkkaConnection
 import csw.location.api.models.{AkkaLocation, ComponentId, ComponentType}
 import csw.prefix.models.Prefix
 import csw.prefix.models.Subsystem.ESW
+import esw.ocs.api.models.ObsMode
 import esw.sm.api.SequenceManagerState.Idle
 import esw.sm.api.actor.messages.SequenceManagerMsg
 import esw.sm.api.protocol._
@@ -18,7 +19,7 @@ class SequenceManagerImplTest extends BaseTestSuite {
   private val sequencerComponentId: ComponentId                         = ComponentId(Prefix("esw.primary"), ComponentType.Sequencer)
   private val configureResponse                                         = ConfigureResponse.Success(sequencerComponentId)
   private val cleanupResponse                                           = CleanupResponse.Success
-  private val getRunningObsModesResponse                                = GetRunningObsModesResponse.Success(Set("IRIS_Darknight", "WFOS_cal"))
+  private val getRunningObsModesResponse                                = GetRunningObsModesResponse.Success(Set(ObsMode("IRIS_Darknight"), ObsMode("WFOS_cal")))
   private val startSequencerResponse                                    = StartSequencerResponse.Started(sequencerComponentId)
   private val shutdownSequencerResponse                                 = ShutdownSequencerResponse.Success
   private val shutdownAllSequencersResponse                             = ShutdownAllSequencersResponse.Success
@@ -47,14 +48,15 @@ class SequenceManagerImplTest extends BaseTestSuite {
   private val smRef           = system.systemActorOf(mockedBehavior, "sm")
   private val location        = AkkaLocation(AkkaConnection(ComponentId(Prefix(ESW, "sequence_manager"), Service)), smRef.toURI)
   private val sequenceManager = new SequenceManagerImpl(location)
+  private val obsMode         = ObsMode("IRIS_darknight")
 
   "SequenceManagerImpl" must {
     "configure" in {
-      sequenceManager.configure("IRIS_darknight").futureValue shouldBe configureResponse
+      sequenceManager.configure(obsMode).futureValue shouldBe configureResponse
     }
 
     "cleanup" in {
-      sequenceManager.cleanup("IRIS_darknight").futureValue shouldBe cleanupResponse
+      sequenceManager.cleanup(obsMode).futureValue shouldBe cleanupResponse
     }
 
     "getRunningObsModes" in {
@@ -62,15 +64,15 @@ class SequenceManagerImplTest extends BaseTestSuite {
     }
 
     "startSequencer" in {
-      sequenceManager.startSequencer(ESW, "IRIS_darknight").futureValue shouldBe startSequencerResponse
+      sequenceManager.startSequencer(ESW, obsMode).futureValue shouldBe startSequencerResponse
     }
 
     "shutdownSequencer" in {
-      sequenceManager.shutdownSequencer(ESW, "IRIS_darknight").futureValue shouldBe shutdownSequencerResponse
+      sequenceManager.shutdownSequencer(ESW, obsMode).futureValue shouldBe shutdownSequencerResponse
     }
 
     "restartSequencer" in {
-      sequenceManager.restartSequencer(ESW, "IRIS_darknight").futureValue shouldBe restartSequencerResponse
+      sequenceManager.restartSequencer(ESW, obsMode).futureValue shouldBe restartSequencerResponse
     }
 
     "shutdownAllSequencers" in {

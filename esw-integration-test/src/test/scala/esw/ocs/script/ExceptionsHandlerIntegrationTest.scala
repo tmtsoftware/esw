@@ -13,6 +13,7 @@ import csw.testkit.scaladsl.CSWService.EventServer
 import csw.time.core.models.UTCTime
 import esw.ocs.api.actor.client.SequencerImpl
 import esw.ocs.api.actor.messages.SequencerMessages._
+import esw.ocs.api.models.ObsMode
 import esw.ocs.api.protocol._
 import esw.ocs.testkit.EswTestKit
 import org.scalatest.prop.TableDrivenPropertyChecks._
@@ -20,10 +21,10 @@ import org.scalatest.prop.TableFor2
 
 class ExceptionsHandlerIntegrationTest extends EswTestKit(EventServer) {
   private val ocsSubsystem     = ESW
-  private val ocsObservingMode = "exceptionscript" // ExceptionTestScript.kt
+  private val ocsObservingMode = ObsMode("exceptionscript") // ExceptionTestScript.kt
 
   private val tcsSubsystem     = TCS
-  private val tcsObservingMode = "exceptionscript2" // ExceptionTestScript2.kt
+  private val tcsObservingMode = ObsMode("exceptionscript2") // ExceptionTestScript2.kt
 
   private val prefix = Prefix("tcs.filter.wheel")
 

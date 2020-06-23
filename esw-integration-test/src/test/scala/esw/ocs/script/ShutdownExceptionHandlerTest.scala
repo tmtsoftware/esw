@@ -6,13 +6,14 @@ import csw.prefix.models.Prefix
 import csw.prefix.models.Subsystem.TCS
 import csw.testkit.scaladsl.CSWService.EventServer
 import esw.ocs.api.actor.messages.SequencerMessages.Shutdown
+import esw.ocs.api.models.ObsMode
 import esw.ocs.api.protocol.Ok
 import esw.ocs.testkit.EswTestKit
 
 class ShutdownExceptionHandlerTest extends EswTestKit(EventServer) {
 
   private val tcsSubsystem     = TCS
-  private val tcsObservingMode = "exceptionscript3" // ExceptionTestScript3.kt
+  private val tcsObservingMode = ObsMode("exceptionscript3") // ExceptionTestScript3.kt
 
   "should not invoke exception handler when handle-shutdown-failed" in {
     val reason            = "handle-shutdown-failed"

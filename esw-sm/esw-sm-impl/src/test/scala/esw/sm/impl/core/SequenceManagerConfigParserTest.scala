@@ -7,6 +7,7 @@ import com.typesafe.config.ConfigFactory
 import csw.config.client.commons.ConfigUtils
 import csw.prefix.models.Subsystem
 import csw.prefix.models.Subsystem._
+import esw.ocs.api.models.ObsMode
 import esw.sm.impl.config._
 import esw.testcommons.BaseTestSuite
 import io.bullet.borer.Borer.Error.InvalidInputData
@@ -36,8 +37,8 @@ class SequenceManagerConfigParserTest extends BaseTestSuite {
 
       val expectedConfig = SequenceManagerConfig(
         Map(
-          "IRIS_Darknight" -> ObsModeConfig(Resources(iris, tcs, nfiraos), darknightSequencers),
-          "IRIS_Cal"       -> ObsModeConfig(Resources(iris, nscu, nfiraos), calSequencers)
+          ObsMode("IRIS_Darknight") -> ObsModeConfig(Resources(iris, tcs, nfiraos), darknightSequencers),
+          ObsMode("IRIS_Cal")       -> ObsModeConfig(Resources(iris, nscu, nfiraos), calSequencers)
         ),
         sequencerStartRetries = 2
       )
@@ -85,8 +86,8 @@ class SequenceManagerConfigParserTest extends BaseTestSuite {
 
       val expectedConfig = SequenceManagerConfig(
         Map(
-          "IRIS_Darknight" -> ObsModeConfig(Resources(iris, tcs, nfiraos), darknightSequencers),
-          "IRIS_Cal"       -> ObsModeConfig(Resources(iris, nscu, nfiraos), calSequencers)
+          ObsMode("IRIS_Darknight") -> ObsModeConfig(Resources(iris, tcs, nfiraos), darknightSequencers),
+          ObsMode("IRIS_Cal")       -> ObsModeConfig(Resources(iris, nscu, nfiraos), calSequencers)
         ),
         sequencerStartRetries = 3
       )

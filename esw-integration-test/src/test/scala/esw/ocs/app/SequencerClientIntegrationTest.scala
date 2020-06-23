@@ -18,7 +18,7 @@ import esw.ocs.api.actor.client.SequenceComponentImpl
 import esw.ocs.api.actor.messages.SequencerState.{Loaded, Offline}
 import esw.ocs.api.models.StepStatus.Finished.{Failure, Success}
 import esw.ocs.api.models.StepStatus.Pending
-import esw.ocs.api.models.{Step, StepList}
+import esw.ocs.api.models.{ObsMode, Step, StepList}
 import esw.ocs.api.protocol.SequenceComponentResponse.SequencerLocation
 import esw.ocs.api.protocol._
 import esw.ocs.testkit.EswTestKit
@@ -27,7 +27,7 @@ import scala.concurrent.Future
 
 class SequencerClientIntegrationTest extends EswTestKit(EventServer) {
   private val subsystem     = ESW
-  private val observingMode = "MoonNight"
+  private val observingMode = ObsMode("MoonNight")
 
   private val command1 = Setup(Prefix("esw.test"), CommandName("command-1"), None)
   private val command2 = Setup(Prefix("esw.test"), CommandName("command-2"), None)
@@ -47,7 +47,7 @@ class SequencerClientIntegrationTest extends EswTestKit(EventServer) {
 
     // tcs sequencer, starts with TestScript3
     val tcsSequencerId            = TCS
-    val tcsSequencerObservingMode = "moonnight"
+    val tcsSequencerObservingMode = ObsMode("moonnight")
     spawnSequencer(tcsSequencerId, tcsSequencerObservingMode)
     tcsSequencer = sequencerClient(tcsSequencerId, tcsSequencerObservingMode)
   }
@@ -300,7 +300,7 @@ class SequencerClientIntegrationTest extends EswTestKit(EventServer) {
     val sequenceComponentImpl     = new SequenceComponentImpl(sequenceComponentLocation)
 
     //start sequencer
-    val observingMode = "darknight"
+    val observingMode = ObsMode("darknight")
     val response      = sequenceComponentImpl.loadScript(ESW, observingMode).futureValue
     response shouldBe a[SequencerLocation]
 

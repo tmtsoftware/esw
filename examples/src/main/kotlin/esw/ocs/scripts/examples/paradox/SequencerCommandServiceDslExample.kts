@@ -5,6 +5,7 @@ package esw.ocs.scripts.examples.paradox
 import csw.params.commands.CommandResponse.SubmitResponse
 import csw.params.commands.Sequence
 import csw.params.commands.SequenceCommand
+import esw.ocs.api.models.ObsMode
 import esw.ocs.api.protocol.*
 import esw.ocs.dsl.core.script
 import esw.ocs.dsl.highlevel.models.WFOS
@@ -17,12 +18,12 @@ script {
 
         // #creating-sequencer
         // create a sequencer entity
-        val wfos = Sequencer(WFOS, "wfos_darknight")
+        val wfos = Sequencer(WFOS, ObsMode("wfos_darknight"))
         // #creating-sequencer
 
         // #creating-sequencer-timeout
         // create a sequencer entity with a timeout
-        val wfos2 = Sequencer(WFOS, "wfos_darknight", 5.minutes)
+        val wfos2 = Sequencer(WFOS, ObsMode("wfos_darknight"), 5.minutes)
         // #creating-sequencer-timeout
 
 

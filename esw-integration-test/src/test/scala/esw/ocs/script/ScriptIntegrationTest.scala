@@ -24,7 +24,7 @@ import csw.testkit.scaladsl.CSWService.{AlarmServer, ConfigServer, EventServer}
 import csw.time.core.models.UTCTime
 import esw.ocs.api.SequencerApi
 import esw.ocs.api.models.StepStatus.Finished.Success
-import esw.ocs.api.models.{Step, StepList}
+import esw.ocs.api.models.{ObsMode, Step, StepList}
 import esw.ocs.api.protocol._
 import esw.ocs.testkit.EswTestKit
 import esw.ocs.testkit.Service._
@@ -35,13 +35,13 @@ class ScriptIntegrationTest extends EswTestKit(EventServer, AlarmServer, ConfigS
 
   // TestScript.kt
   private val ocsSubsystem     = ESW
-  private val ocsObservingMode = "darknight"
+  private val ocsObservingMode = ObsMode("darknight")
   private val tcsSubsystem     = TCS
-  private val tcsObservingMode = "darknight"
+  private val tcsObservingMode = ObsMode("darknight")
 
   // TestScript4.kts
   private val lgsfSubsystem                = LGSF
-  private val lgsfObservingMode            = "darknight"
+  private val lgsfObservingMode            = ObsMode("darknight")
   private val configTestKit: ConfigTestKit = frameworkTestKit.configTestKit
   private var ocsSequencer: SequencerApi   = _
   private var tcsSequencer: SequencerApi   = _

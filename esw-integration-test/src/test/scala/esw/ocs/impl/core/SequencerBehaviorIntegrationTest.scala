@@ -6,11 +6,12 @@ import csw.prefix.models.Prefix
 import csw.prefix.models.Subsystem.ESW
 import esw.ocs.api.protocol.{OkOrUnhandledResponse, SequencerSubmitResponse, SubmitResult, Unhandled}
 import esw.ocs.api.actor.messages.SequencerMessages.{LoadSequence, SubmitSequenceInternal}
+import esw.ocs.api.models.ObsMode
 import esw.ocs.testkit.EswTestKit
 
 class SequencerBehaviorIntegrationTest extends EswTestKit {
   private val ocsSubsystem     = ESW
-  private val ocsObservingMode = "darknight"
+  private val ocsObservingMode = ObsMode("darknight")
 
   "Sequencer" must {
     "not receive sequence when already processing a sequence | ESW-145" in {

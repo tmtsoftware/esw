@@ -6,13 +6,14 @@ import csw.prefix.models.Prefix
 import csw.prefix.models.Subsystem.ESW
 import csw.testkit.scaladsl.CSWService.EventServer
 import esw.ocs.api.SequencerApi
+import esw.ocs.api.models.ObsMode
 import esw.ocs.api.protocol.Ok
 import esw.ocs.testkit.EswTestKit
 
 class OnlineOfflineHandlerTest extends EswTestKit(EventServer) {
 
   private val ocsSubsystem               = ESW
-  private val ocsObservingMode           = "onlineFlag"
+  private val ocsObservingMode           = ObsMode("onlineFlag")
   private var ocsSequencer: SequencerApi = _
 
   override def beforeEach(): Unit = {

@@ -30,6 +30,7 @@ import esw.http.core.wiring.{ActorRuntime, CswWiring, HttpService, Settings}
 import esw.ocs.api.actor.client.{SequencerApiFactory, SequencerImpl}
 import esw.ocs.api.actor.messages.SequencerMessages.Shutdown
 import esw.ocs.api.codecs.SequencerHttpCodecs
+import esw.ocs.api.models.ObsMode
 import esw.ocs.api.protocol.ScriptError
 import esw.ocs.api.protocol.ScriptError.{LoadingScriptFailed, LocationServiceError}
 import esw.ocs.handler.{SequencerPostHandler, SequencerWebsocketHandler}
@@ -49,7 +50,7 @@ import scala.util.control.NonFatal
 // $COVERAGE-OFF$
 private[ocs] class SequencerWiring(
     val subsystem: Subsystem,
-    val observingMode: String,
+    val observingMode: ObsMode,
     sequenceComponentLocation: AkkaLocation
 ) extends SequencerHttpCodecs {
   lazy val actorSystem: ActorSystem[SpawnProtocol.Command] = ActorSystemFactory.remote(SpawnProtocol(), "sequencer-system")
@@ -89,7 +90,7 @@ private[ocs] class SequencerWiring(
   private lazy val jLoggerFactory   = loggerFactory.asJava
   private lazy val jLogger: ILogger = ScriptLoader.withScript(scriptClass)(jLoggerFactory.getLogger)
 
-  private lazy val sequencerImplFactory = (_subsystem: Subsystem, _obsMode: String) => //todo: revisit timeout value
+  private lazy val sequencerImplFactory = (_subsystem: Subsystem, _obsMode: ObsMode) => //todo: revisit timeout value
     locationServiceUtil.resolveSequencer(_subsystem, _obsMode, Timeouts.DefaultTimeout).mapRight(SequencerApiFactory.make).toJava
 
   lazy val scriptContext = new ScriptContext(
@@ -134,7 +135,7 @@ private[ocs] class SequencerWiring(
   lazy val sequencerServer: SequencerServer = new SequencerServer {
     override def start(): Either[ScriptError, AkkaLocation] = {
       try {
-        logger.info(s"Starting sequencer for subsystem: $subsystem with observing mode: $observingMode")
+        logger.info(s"Starting sequencer for subsystem: $subsystem with observing mode: ${observingMode.name}")
         new Engine(script).start(sequenceOperatorFactory())
 
         Await.result(httpService.registeredLazyBinding, Timeouts.DefaultTimeout)
@@ -145,7 +146,7 @@ private[ocs] class SequencerWiring(
           Timeouts.DefaultTimeout
         )
 
-        logger.info(s"Successfully started Sequencer for subsystem: $subsystem with observing mode: $observingMode")
+        logger.info(s"Successfully started Sequencer for subsystem: $subsystem with observing mode: ${observingMode.name}")
         if (enableThreadMonitoring) {
           logger.info(s"Thread Monitoring enabled for ${BlockHoundWiring.integrations}")
           BlockHoundWiring.install()
