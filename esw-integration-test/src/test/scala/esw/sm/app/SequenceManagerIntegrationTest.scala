@@ -173,12 +173,17 @@ class SequenceManagerIntegrationTest extends EswTestKit with BinaryFetcherUtil {
     sequenceManagerClient.startSequencer(ESW, IRIS_DARKNIGHT)
 
     // verify that sequencer is started
-    resolveHTTPLocation(Prefix(ESW, IRIS_DARKNIGHT), Sequencer)
+    val initialLocation = resolveHTTPLocation(Prefix(ESW, IRIS_DARKNIGHT), Sequencer)
 
     // restart sequencer that is already running
     val secondRestartResponse = sequenceManagerClient.restartSequencer(ESW, IRIS_DARKNIGHT).futureValue
     // verify that restart sequencer return Success response with component id
     secondRestartResponse should ===(RestartSequencerResponse.Success(componentId))
+
+    val restartedLocation = resolveHTTPLocation(Prefix(ESW, IRIS_DARKNIGHT), Sequencer)
+
+    // restarted sequencer runs on a different port
+    initialLocation should not equal restartedLocation
   }
 
   "shutdown all the running sequencers | ESW-324, ESW-171" in {
