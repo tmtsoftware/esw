@@ -12,7 +12,7 @@ import esw.BinaryFetcherUtil
 import esw.ocs.api.actor.client.{SequenceComponentImpl, SequencerImpl}
 import esw.ocs.api.protocol.SequenceComponentResponse.GetStatusResponse
 import esw.ocs.testkit.EswTestKit
-import esw.sm.api.protocol.CommonFailure.ConfigurationMissing
+import esw.sm.api.protocol.CommonFailure.{ConfigurationMissing, LocationServiceError}
 import esw.sm.api.protocol.ConfigureResponse.ConflictingResourcesWithRunningObsMode
 import esw.sm.api.protocol.StartSequencerResponse.LoadScriptError
 import esw.sm.api.protocol._
@@ -184,6 +184,18 @@ class SequenceManagerIntegrationTest extends EswTestKit with BinaryFetcherUtil {
 
     // restarted sequencer runs on a different port
     initialLocation should not equal restartedLocation
+  }
+
+  "restart a non-running sequencer for given subsystem and obsMode should return error | ESW-327" in {
+    val componentId = ComponentId(Prefix(ESW, IRIS_DARKNIGHT), Sequencer)
+    val connection  = AkkaConnection(componentId)
+
+    val sequenceManagerClient = TestSetup.startSequenceManager(sequenceManagerPrefix)
+
+    // restart sequencer that is not already running
+    val secondRestartResponse = sequenceManagerClient.restartSequencer(ESW, IRIS_DARKNIGHT).futureValue
+    // verify that restart sequencer return Error response with connection
+    secondRestartResponse should ===(LocationServiceError(s"Could not find location matching connection: $connection"))
   }
 
   "shutdown all the running sequencers | ESW-324, ESW-171" in {
