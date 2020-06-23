@@ -40,6 +40,12 @@ jobs:
       - name: Install Redis
         run: sudo apt-get install redis-server
 
+      - name: Install CS
+        run: |
+          curl -fLo cs https://git.io/coursier-cli-linux &&
+            chmod +x cs &&
+            sudo mv cs /usr/local/bin
+
       - name: Build
         run: |
           sbt scalafmtCheck
