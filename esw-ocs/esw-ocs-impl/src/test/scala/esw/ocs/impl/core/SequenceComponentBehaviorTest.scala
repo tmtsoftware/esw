@@ -18,6 +18,7 @@ import csw.prefix.models.Prefix
 import csw.prefix.models.Subsystem.{ESW, IRIS, TCS}
 import esw.ocs.api.actor.messages.SequenceComponentMsg
 import esw.ocs.api.actor.messages.SequenceComponentMsg._
+import esw.ocs.api.models.ObsMode
 import esw.ocs.api.models.SequenceComponentState.{Idle, Running}
 import esw.ocs.api.protocol.ScriptError.LoadingScriptFailed
 import esw.ocs.api.protocol.SequenceComponentResponse._
@@ -49,8 +50,8 @@ class SequenceComponentBehaviorTest extends BaseTestSuite {
       val loadScriptResponseProbe = TestProbe[ScriptResponseOrUnhandled]()
       val getStatusProbe          = TestProbe[GetStatusResponse]()
       val subsystem               = ESW
-      val observingMode           = "darknight"
-      val prefix                  = Prefix(s"$subsystem.$observingMode")
+      val observingMode           = ObsMode("darknight")
+      val prefix                  = Prefix(s"$subsystem.${observingMode.name}")
       val akkaConnection          = AkkaConnection(ComponentId(prefix, ComponentType.Sequencer))
 
       when(sequencerServerFactory.make(subsystem, observingMode, seqCompLocation)).thenReturn(sequencerServer)
@@ -96,8 +97,8 @@ class SequenceComponentBehaviorTest extends BaseTestSuite {
 
       val loadScriptResponseProbe = TestProbe[ScriptResponseOrUnhandled]()
       val subsystem               = IRIS
-      val observingMode           = "darknight"
-      val prefix                  = Prefix(s"$subsystem.$observingMode")
+      val observingMode           = ObsMode("darknight")
+      val prefix                  = Prefix(s"$subsystem.${observingMode.name}")
       val akkaConnection          = AkkaConnection(ComponentId(prefix, ComponentType.Sequencer))
 
       when(sequencerServerFactory.make(subsystem, observingMode, seqCompLocation)).thenReturn(sequencerServer)
@@ -112,7 +113,7 @@ class SequenceComponentBehaviorTest extends BaseTestSuite {
       val loadScriptLocationResponse: AkkaLocation = response.asInstanceOf[SequencerLocation].location
       loadScriptLocationResponse.connection shouldEqual akkaConnection
 
-      sequenceComponentRef ! LoadScript(TCS, "darknight", loadScriptResponseProbe.ref)
+      sequenceComponentRef ! LoadScript(TCS, ObsMode("darknight"), loadScriptResponseProbe.ref)
       val response1 = loadScriptResponseProbe.receiveMessage()
       response1 should ===(Unhandled(Running, "LoadScript"))
 
@@ -126,7 +127,7 @@ class SequenceComponentBehaviorTest extends BaseTestSuite {
 
       val loadScriptResponseProbe = TestProbe[ScriptResponseOrUnhandled]()
       val subsystem               = ESW
-      val observingMode           = "initException"
+      val observingMode           = ObsMode("initException")
       val loadingScriptFailed     = LoadingScriptFailed("Script initialization failed with : initialisation failed")
 
       when(sequencerServerFactory.make(subsystem, observingMode, seqCompLocation)).thenReturn(sequencerServer)
@@ -162,8 +163,8 @@ class SequenceComponentBehaviorTest extends BaseTestSuite {
       val (sequenceComponentRef, seqCompLocation) = spawnSequenceComponent()
 
       val subsystem               = ESW
-      val observingMode           = "darknight"
-      val prefix                  = Prefix(s"$subsystem.$observingMode")
+      val observingMode           = ObsMode("darknight")
+      val prefix                  = Prefix(s"$subsystem.${observingMode.name}")
       val loadScriptResponseProbe = TestProbe[ScriptResponseOrUnhandled]()
       val restartResponseProbe    = TestProbe[ScriptResponseOrUnhandled]()
       val akkaConnection          = AkkaConnection(ComponentId(prefix, ComponentType.Sequencer))

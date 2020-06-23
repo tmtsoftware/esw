@@ -12,7 +12,7 @@ import csw.prefix.models.{Prefix, Subsystem}
 import esw.commons.extensions.EitherExt._
 import esw.ocs.api.actor.messages.SequenceComponentMsg._
 import esw.ocs.api.actor.messages._
-import esw.ocs.api.models.SequenceComponentState
+import esw.ocs.api.models.{ObsMode, SequenceComponentState}
 import esw.ocs.api.protocol.ScriptError
 import esw.ocs.api.protocol.SequenceComponentResponse._
 import esw.ocs.impl.internal.{SequencerServer, SequencerServerFactory}
@@ -49,7 +49,7 @@ class SequenceComponentBehavior(
   private def load(
       ctx: ActorContext[SequenceComponentMsg],
       subsystem: Subsystem,
-      observingMode: String,
+      observingMode: ObsMode,
       replyTo: ActorRef[ScriptResponseOrUnhandled]
   ): Behavior[SequenceComponentMsg] = {
     val sequenceComponentLocation = AkkaLocation(akkaConnection, ctx.self.toURI)
@@ -59,7 +59,7 @@ class SequenceComponentBehavior(
 
     registrationResult match {
       case SequencerLocation(location) =>
-        log.info(s"Successfully started sequencer for subsystem :$subsystem in observation mode: $observingMode")
+        log.info(s"Successfully started sequencer for subsystem :$subsystem in observation mode: ${observingMode.name}")
         running(subsystem, observingMode, sequencerServer, location)
       case error: ScriptError =>
         log.error(s"Failed to start sequencer: ${error.msg}")
@@ -67,7 +67,7 @@ class SequenceComponentBehavior(
     }
   }
 
-  private def running(subsystem: Subsystem, observingMode: String, sequencerServer: SequencerServer, location: AkkaLocation) =
+  private def running(subsystem: Subsystem, observingMode: ObsMode, sequencerServer: SequencerServer, location: AkkaLocation) =
     receive[RunningStateSequenceComponentMsg](SequenceComponentState.Running) { (ctx, msg) =>
       log.debug(s"Sequence Component in lifecycle state :Running, received message :[$msg]")
 

@@ -12,6 +12,7 @@ import csw.prefix.models.Subsystem.ESW
 import csw.prefix.models.{Prefix, Subsystem}
 import esw.ocs.api.actor.messages.SequenceComponentMsg
 import esw.ocs.api.actor.messages.SequenceComponentMsg._
+import esw.ocs.api.models.ObsMode
 import esw.ocs.api.protocol.ScriptError.LocationServiceError
 import esw.ocs.api.protocol.SequenceComponentResponse.{GetStatusResponse, Ok, SequencerLocation}
 import esw.testcommons.BaseTestSuite
@@ -46,7 +47,7 @@ class SequenceComponentImplTest extends BaseTestSuite {
   private val sequenceComponentClient = new SequenceComponentImpl(sequenceComponentLocation)
 
   "LoadScript | ESW-103" in {
-    sequenceComponentClient.loadScript(Subsystem.ESW, "darknight").futureValue should ===(loadScriptResponse)
+    sequenceComponentClient.loadScript(Subsystem.ESW, ObsMode("darknight")).futureValue should ===(loadScriptResponse)
   }
 
   "Restart | ESW-141" in {

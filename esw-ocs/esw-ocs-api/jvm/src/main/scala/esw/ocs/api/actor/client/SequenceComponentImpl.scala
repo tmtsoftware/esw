@@ -8,6 +8,7 @@ import csw.prefix.models.Subsystem
 import esw.ocs.api.SequenceComponentApi
 import esw.ocs.api.actor.messages.SequenceComponentMsg
 import esw.ocs.api.actor.messages.SequenceComponentMsg.{GetStatus, LoadScript, RestartScript, Shutdown, UnloadScript}
+import esw.ocs.api.models.ObsMode
 import esw.ocs.api.protocol.SequenceComponentResponse.{GetStatusResponse, OkOrUnhandled, ScriptResponseOrUnhandled}
 
 import scala.concurrent.Future
@@ -19,7 +20,7 @@ class SequenceComponentImpl(sequenceComponentLocation: AkkaLocation)(implicit
 
   private val sequenceComponentRef = sequenceComponentLocation.uri.toActorRef.unsafeUpcast[SequenceComponentMsg]
 
-  override def loadScript(subsystem: Subsystem, observingMode: String): Future[ScriptResponseOrUnhandled] =
+  override def loadScript(subsystem: Subsystem, observingMode: ObsMode): Future[ScriptResponseOrUnhandled] =
     (sequenceComponentRef ? { x: ActorRef[ScriptResponseOrUnhandled] => LoadScript(subsystem, observingMode, x) })(
       SequenceComponentApiTimeout.LoadScriptTimeout,
       actorSystem.scheduler

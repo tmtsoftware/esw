@@ -1,14 +1,15 @@
 package esw.sm.impl.config
 
 import csw.prefix.models.Subsystem._
+import esw.ocs.api.models.ObsMode
 import org.scalactic.TypeCheckedTripleEquals
 import org.scalatest.matchers.should.Matchers
 import org.scalatest.wordspec.AnyWordSpecLike
 
 class SequenceManagerConfigTest extends AnyWordSpecLike with Matchers with TypeCheckedTripleEquals {
 
-  private val DarkNight             = "darknight"
-  private val ClearSkies            = "clearskies"
+  private val DarkNight             = ObsMode("darknight")
+  private val ClearSkies            = ObsMode("clearskies")
   private val SequencerStartRetries = 1
 
   private val esw: Resource     = Resource(ESW)
@@ -55,7 +56,7 @@ class SequenceManagerConfigTest extends AnyWordSpecLike with Matchers with TypeC
 
     "return ConfigurationMissing if obsMode not present in map while fetching Resources | ESW-162" in {
       val sequenceManagerConfig = SequenceManagerConfig(ConfigMap, SequencerStartRetries)
-      sequenceManagerConfig.resources("RandomObsMode") should ===(None)
+      sequenceManagerConfig.resources(ObsMode("RandomObsMode")) should ===(None)
     }
   }
 
@@ -68,7 +69,7 @@ class SequenceManagerConfigTest extends AnyWordSpecLike with Matchers with TypeC
 
     "return ConfigurationMissing if obsMode not present in map while fetching Sequencers | ESW-162" in {
       val sequenceManagerConfig = SequenceManagerConfig(ConfigMap, SequencerStartRetries)
-      sequenceManagerConfig.sequencers("RandomObsMode") should ===(None)
+      sequenceManagerConfig.sequencers(ObsMode("RandomObsMode")) should ===(None)
     }
   }
 }

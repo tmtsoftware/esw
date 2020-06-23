@@ -11,6 +11,7 @@ import csw.prefix.models.Prefix
 import csw.prefix.models.Subsystem._
 import esw.commons.utils.location.EswLocationError.{LocationNotFound, RegistrationListingFailed}
 import esw.commons.utils.location.LocationServiceUtil
+import esw.ocs.api.models.ObsMode
 import esw.sm.api.SequenceManagerState
 import esw.sm.api.SequenceManagerState._
 import esw.sm.api.actor.messages.SequenceManagerMsg
@@ -35,9 +36,9 @@ class SequenceManagerBehaviorTest extends BaseTestSuite with TableDrivenProperty
   private implicit lazy val actorSystem: ActorSystem[SpawnProtocol.Command] =
     ActorSystem(SpawnProtocol(), "sequence-manager-system")
 
-  private val Darknight                        = "darknight"
-  private val Clearskies                       = "clearskies"
-  private val RandomObsMode                    = "RandomObsMode"
+  private val Darknight                        = ObsMode("darknight")
+  private val Clearskies                       = ObsMode("clearskies")
+  private val RandomObsMode                    = ObsMode("RandomObsMode")
   private val darknightSequencers: Sequencers  = Sequencers(ESW, TCS)
   private val clearskiesSequencers: Sequencers = Sequencers(ESW)
   private val config = SequenceManagerConfig(
@@ -64,7 +65,7 @@ class SequenceManagerBehaviorTest extends BaseTestSuite with TableDrivenProperty
   "Configure" must {
 
     "transition sm from Idle -> ConfigurationInProcess -> Idle state and return location of master sequencer | ESW-178, ESW-164" in {
-      val componentId    = ComponentId(Prefix(ESW, Darknight), Sequencer)
+      val componentId    = ComponentId(Prefix(ESW, Darknight.name), Sequencer)
       val configResponse = Success(componentId)
       when(locationServiceUtil.listAkkaLocationsBy(ESW, Sequencer)).thenReturn(future(1.seconds, Right(List.empty)))
       when(sequencerUtil.startSequencers(Darknight, darknightSequencers, 3)).thenReturn(Future.successful(configResponse))
@@ -94,7 +95,7 @@ class SequenceManagerBehaviorTest extends BaseTestSuite with TableDrivenProperty
 
     "return ConflictingResourcesWithRunningObsMode when required resources are already in use | ESW-169, ESW-168, ESW-170" in {
       // this simulates that Clearskies observation is running
-      val akkaLocation = AkkaLocation(AkkaConnection(ComponentId(Prefix(ESW, Clearskies), Sequencer)), new URI("uri"))
+      val akkaLocation = AkkaLocation(AkkaConnection(ComponentId(Prefix(ESW, Clearskies.name), Sequencer)), new URI("uri"))
       when(locationServiceUtil.listAkkaLocationsBy(ESW, Sequencer)).thenReturn(Future.successful(Right(List(akkaLocation))))
       val probe = TestProbe[ConfigureResponse]()
 
@@ -107,7 +108,7 @@ class SequenceManagerBehaviorTest extends BaseTestSuite with TableDrivenProperty
     }
 
     "return ConfigurationMissing error when config for given obsMode is missing | ESW-164" in {
-      val akkaLocation = AkkaLocation(AkkaConnection(ComponentId(Prefix(ESW, RandomObsMode), Sequencer)), new URI("uri"))
+      val akkaLocation = AkkaLocation(AkkaConnection(ComponentId(Prefix(ESW, RandomObsMode.name), Sequencer)), new URI("uri"))
       when(locationServiceUtil.listAkkaLocationsBy(ESW, Sequencer)).thenReturn(Future.successful(Right(List(akkaLocation))))
       val probe = TestProbe[ConfigureResponse]()
 
@@ -157,7 +158,7 @@ class SequenceManagerBehaviorTest extends BaseTestSuite with TableDrivenProperty
 
   "StartSequencer" must {
     "transition sm from Idle -> Starting -> Idle state and start the sequencer for given obs mode | ESW-176" in {
-      val componentId    = ComponentId(Prefix(ESW, Darknight), Sequencer)
+      val componentId    = ComponentId(Prefix(ESW, Darknight.name), Sequencer)
       val httpConnection = HttpConnection(componentId)
       val akkaLocation   = AkkaLocation(AkkaConnection(componentId), new URI("uri"))
 
@@ -177,7 +178,7 @@ class SequenceManagerBehaviorTest extends BaseTestSuite with TableDrivenProperty
     }
 
     "return AlreadyRunning if sequencer for given obs mode is already running | ESW-176" in {
-      val componentId    = ComponentId(Prefix(ESW, Darknight), Sequencer)
+      val componentId    = ComponentId(Prefix(ESW, Darknight.name), Sequencer)
       val httpConnection = HttpConnection(componentId)
       val httpLocation   = HttpLocation(httpConnection, new URI("uri"))
 
@@ -194,7 +195,7 @@ class SequenceManagerBehaviorTest extends BaseTestSuite with TableDrivenProperty
     }
 
     "return Error if start sequencer returns error | ESW-176" in {
-      val componentId           = ComponentId(Prefix(ESW, Darknight), Sequencer)
+      val componentId           = ComponentId(Prefix(ESW, Darknight.name), Sequencer)
       val httpConnection        = HttpConnection(componentId)
       val expectedErrorResponse = LoadScriptError("error")
 
@@ -244,7 +245,7 @@ class SequenceManagerBehaviorTest extends BaseTestSuite with TableDrivenProperty
     }
 
     "return UnloadScriptError if unload script fails | ESW-326" in {
-      val prefix = Prefix(ESW, Darknight)
+      val prefix = Prefix(ESW, Darknight.name)
       when(sequencerUtil.shutdownSequencer(ESW, Darknight))
         .thenReturn(future(1.seconds, Left(UnloadScriptError(prefix, "something went wrong"))))
 
@@ -271,7 +272,7 @@ class SequenceManagerBehaviorTest extends BaseTestSuite with TableDrivenProperty
 
   "RestartSequencer" must {
     "transition sm from Idle -> Restarting -> Idle state and restart the sequencer for given obs mode | ESW-327" in {
-      val prefix      = Prefix(ESW, Darknight)
+      val prefix      = Prefix(ESW, Darknight.name)
       val componentId = ComponentId(prefix, Sequencer)
 
       when(sequencerUtil.restartSequencer(ESW, Darknight))
@@ -290,7 +291,7 @@ class SequenceManagerBehaviorTest extends BaseTestSuite with TableDrivenProperty
 
     val errors = Table(
       ("errorName", "error", "process"),
-      ("UnloadScriptError", UnloadScriptError(Prefix(ESW, Darknight), "unload script error"), "stop"),
+      ("UnloadScriptError", UnloadScriptError(Prefix(ESW, Darknight.name), "unload script error"), "stop"),
       ("LocationServiceError", LocationServiceError("location service error"), "stop"),
       ("SpawnSequenceComponentFailed", SpawnSequenceComponentFailed("spawn sequence component failed"), "start"),
       ("LoadScriptError", LoadScriptError("load script failed"), "start")
@@ -331,7 +332,7 @@ class SequenceManagerBehaviorTest extends BaseTestSuite with TableDrivenProperty
       ("errorName", "error", "process"),
       (
         "ShutDownFailure",
-        ShutdownFailure(List(UnloadScriptError(Prefix(ESW, Darknight), "unload the script of any sequencer"))),
+        ShutdownFailure(List(UnloadScriptError(Prefix(ESW, Darknight.name), "unload the script of any sequencer"))),
         "stop"
       ),
       ("LocationServiceError", LocationServiceError("location service error"), "listing all the running sequencers")

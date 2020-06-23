@@ -2,6 +2,7 @@ package esw.sm.api.protocol
 
 import csw.location.api.models.ComponentId
 import csw.prefix.models.Prefix
+import esw.ocs.api.models.ObsMode
 import esw.sm.api.codecs.SmAkkaSerializable
 import esw.sm.api.protocol.ShutdownSequencerResponse.UnloadScriptError
 
@@ -12,16 +13,16 @@ sealed trait ConfigureResponse extends SmAkkaSerializable
 object ConfigureResponse {
   case class Success(masterSequencerComponentId: ComponentId) extends ConfigureResponse
 
-  sealed trait Failure                                                           extends SmFailure with ConfigureResponse
-  case class ConflictingResourcesWithRunningObsMode(runningObsMode: Set[String]) extends Failure
-  case class FailedToStartSequencers(reasons: Set[String])                       extends Failure
+  sealed trait Failure                                                            extends SmFailure with ConfigureResponse
+  case class ConflictingResourcesWithRunningObsMode(runningObsMode: Set[ObsMode]) extends Failure
+  case class FailedToStartSequencers(reasons: Set[String])                        extends Failure
 }
 
 sealed trait GetRunningObsModesResponse extends SmAkkaSerializable
 
 object GetRunningObsModesResponse {
-  case class Success(runningObsModes: Set[String]) extends GetRunningObsModesResponse
-  case class Failed(msg: String)                   extends SmFailure with GetRunningObsModesResponse
+  case class Success(runningObsModes: Set[ObsMode]) extends GetRunningObsModesResponse
+  case class Failed(msg: String)                    extends SmFailure with GetRunningObsModesResponse
 }
 
 sealed trait CleanupResponse extends SmAkkaSerializable
@@ -78,7 +79,7 @@ object RestartSequencerResponse {
 sealed trait CommonFailure extends SmFailure with ConfigureResponse.Failure with CleanupResponse.Failure
 
 object CommonFailure {
-  case class ConfigurationMissing(obsMode: String) extends CommonFailure
+  case class ConfigurationMissing(obsMode: ObsMode) extends CommonFailure
   case class LocationServiceError(msg: String)
       extends AgentError
       with CommonFailure

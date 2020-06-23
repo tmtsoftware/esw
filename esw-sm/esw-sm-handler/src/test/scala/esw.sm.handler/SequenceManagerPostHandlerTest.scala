@@ -5,6 +5,7 @@ import akka.http.scaladsl.testkit.ScalatestRouteTest
 import csw.location.api.models.{ComponentId, ComponentType}
 import csw.prefix.models.Prefix
 import csw.prefix.models.Subsystem.ESW
+import esw.ocs.api.models.ObsMode
 import esw.sm.api.SequenceManagerApi
 import esw.sm.api.codecs.SequenceManagerHttpCodec
 import esw.sm.api.protocol.SequenceManagerPostRequest._
@@ -23,8 +24,8 @@ class SequenceManagerPostHandlerTest
   private val sequenceManagerApi: SequenceManagerApi = mock[SequenceManagerApi]
   private val postHandler                            = new SequenceManagerPostHandler(sequenceManagerApi)
   lazy val route: Route                              = new PostRouteFactory[SequenceManagerPostRequest]("post-endpoint", postHandler).make()
-  private val obsMode                                = "IRIS_darknight"
-  private val componentId                            = ComponentId(Prefix(ESW, obsMode), ComponentType.Sequencer)
+  private val obsMode                                = ObsMode("IRIS_darknight")
+  private val componentId                            = ComponentId(Prefix(ESW, obsMode.name), ComponentType.Sequencer)
 
   override def clientContentType: ContentType = ContentType.Json
 

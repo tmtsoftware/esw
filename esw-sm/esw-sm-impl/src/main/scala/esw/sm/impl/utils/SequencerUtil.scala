@@ -11,6 +11,7 @@ import esw.commons.utils.FutureUtils
 import esw.commons.utils.location.EswLocationError.{LocationNotFound, RegistrationListingFailed}
 import esw.commons.utils.location.LocationServiceUtil
 import esw.ocs.api.actor.client.SequencerApiFactory
+import esw.ocs.api.models.ObsMode
 import esw.ocs.api.protocol.ScriptError
 import esw.ocs.api.protocol.SequenceComponentResponse.{Ok, SequencerLocation, Unhandled}
 import esw.ocs.api.{SequenceComponentApi, SequencerApi}
@@ -33,7 +34,7 @@ class SequencerUtil(locationServiceUtil: LocationServiceUtil, sequenceComponentU
   // spawn the sequencer on available SequenceComponent
   def startSequencer(
       subSystem: Subsystem,
-      obsMode: String,
+      obsMode: ObsMode,
       retryCount: Int
   ): Future[Either[StartSequencerResponse.Failure, AkkaLocation]] =
     sequenceComponentUtil
@@ -44,8 +45,8 @@ class SequencerUtil(locationServiceUtil: LocationServiceUtil, sequenceComponentU
         case Left(e)                   => Future.successful(Left(e))
       }
 
-  def startSequencers(obsMode: String, requiredSequencers: Sequencers, retryCount: Int): Future[ConfigureResponse] = {
-    def masterSequencerId = ComponentId(Prefix(ESW, obsMode), Sequencer)
+  def startSequencers(obsMode: ObsMode, requiredSequencers: Sequencers, retryCount: Int): Future[ConfigureResponse] = {
+    def masterSequencerId = ComponentId(Prefix(ESW, obsMode.name), Sequencer)
 
     val startSequencerResponses = sequential(requiredSequencers.subsystems)(startSequencer(_, obsMode, retryCount))
     startSequencerResponses.mapToAdt(_ => Success(masterSequencerId), e => FailedToStartSequencers(e.map(_.msg).toSet))
@@ -53,7 +54,7 @@ class SequencerUtil(locationServiceUtil: LocationServiceUtil, sequenceComponentU
 
   def shutdownSequencer(
       subsystem: Subsystem,
-      obsMode: String,
+      obsMode: ObsMode,
       shutdownSequenceComp: Boolean = false
   ): Future[Either[ShutdownSequencerResponse.Failure, ShutdownSequencerResponse.Success.type]] =
     locationServiceUtil
@@ -64,7 +65,7 @@ class SequencerUtil(locationServiceUtil: LocationServiceUtil, sequenceComponentU
         case Right(sequencerLoc)                            => unloadScript(sequencerLoc, shutdownSequenceComp)
       }
 
-  def shutdownSequencers(sequencers: Sequencers, obsMode: String): Future[CleanupResponse] = {
+  def shutdownSequencers(sequencers: Sequencers, obsMode: ObsMode): Future[CleanupResponse] = {
     val shutdownResponses = traverse(sequencers.subsystems)(shutdownSequencer(_, obsMode))
     shutdownResponses.mapToAdt(_ => CleanupResponse.Success, e => FailedToShutdownSequencers(e.map(_.msg).toSet))
   }
@@ -76,7 +77,7 @@ class SequencerUtil(locationServiceUtil: LocationServiceUtil, sequenceComponentU
     traverse(sequencerLocations)(location => unloadScript(location, shutdownSequenceComp = false))
       .mapToAdt(_ => ShutdownAllSequencersResponse.Success, ShutdownAllSequencersResponse.ShutdownFailure)
 
-  def restartSequencer(subSystem: Subsystem, obsMode: String): Future[RestartSequencerResponse] =
+  def restartSequencer(subSystem: Subsystem, obsMode: ObsMode): Future[RestartSequencerResponse] =
     locationServiceUtil
       .findSequencer(subSystem, obsMode)
       .flatMapToAdt(restartSequencer, e => LocationServiceError(e.msg))
@@ -91,7 +92,7 @@ class SequencerUtil(locationServiceUtil: LocationServiceUtil, sequenceComponentU
 
   private def loadScript(
       subSystem: Subsystem,
-      observingMode: String,
+      observingMode: ObsMode,
       seqCompApi: SequenceComponentApi,
       retryCount: Int
   ): Future[Either[StartSequencerResponse.Failure, AkkaLocation]] =
@@ -103,7 +104,7 @@ class SequencerUtil(locationServiceUtil: LocationServiceUtil, sequenceComponentU
         case Unhandled(_, _, _) if retryCount > 0                  => startSequencer(subSystem, observingMode, retryCount - 1)
       }
 
-  private def loadScript(subSystem: Subsystem, observingMode: String, seqCompApi: SequenceComponentApi) =
+  private def loadScript(subSystem: Subsystem, observingMode: ObsMode, seqCompApi: SequenceComponentApi) =
     seqCompApi.loadScript(subSystem, observingMode)
 
   // get sequence component from Sequencer and unload sequencer script

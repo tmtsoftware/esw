@@ -15,6 +15,7 @@ import csw.prefix.models.{Prefix, Subsystem}
 import csw.testkit.FrameworkTestKit
 import esw.ocs.api.actor.client.SequencerApiFactory
 import esw.ocs.api.actor.messages.SequenceComponentMsg
+import esw.ocs.api.models.ObsMode
 import esw.ocs.app.wiring.SequencerWiring
 import org.scalatest.concurrent.ScalaFutures.convertScalaFuture
 
@@ -32,9 +33,9 @@ class SequencerTest(mode: String) extends LSNodeSpec(config = new TwoMembersAndS
   import frameworkTestKit._
 
   private val ocsSubsystem        = ESW
-  private val ocsSequencerObsMode = "MoonNight"
+  private val ocsSequencerObsMode = ObsMode("MoonNight")
   private val tcsSubsystem        = TCS
-  private val tcsSequencerObsMode = "moonnight"
+  private val tcsSequencerObsMode = ObsMode("moonnight")
   private val command1            = Setup(Prefix("esw.test"), CommandName("multi-node"), None)
   private val command2            = Setup(Prefix("esw.test"), CommandName("command-2"), None)
   private val sequence            = Sequence(command1, command2)
@@ -103,8 +104,8 @@ class SequencerTest(mode: String) extends LSNodeSpec(config = new TwoMembersAndS
     enterBarrier("end")
   }
 
-  private def sequencerClient(subsystem: Subsystem, observingMode: String) = {
-    val componentId = ComponentId(Prefix(subsystem, observingMode), ComponentType.Sequencer)
+  private def sequencerClient(subsystem: Subsystem, observingMode: ObsMode) = {
+    val componentId = ComponentId(Prefix(subsystem, observingMode.name), ComponentType.Sequencer)
     val location    = locationService.resolve(HttpConnection(componentId), 5.seconds).futureValue.get
     SequencerApiFactory.make(location)
   }

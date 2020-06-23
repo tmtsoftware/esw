@@ -257,6 +257,7 @@ lazy val `esw-sm-api` = crossProject(JSPlatform, JVMPlatform)
     libraryDependencies ++= Dependencies.EswSmApi.value
   )
   .jsSettings(jsTestArg)
+  .dependsOn(`esw-ocs-api`)
 
 lazy val `esw-sm-impl` = project
   .in(file("esw-sm/esw-sm-impl"))
@@ -286,7 +287,7 @@ lazy val `esw-sm-app` = project
 lazy val `esw-commons` = project
   .in(file("esw-commons"))
   .settings(libraryDependencies ++= Dependencies.EswCommons.value)
-  .dependsOn(`esw-test-commons` % Test)
+  .dependsOn(`esw-ocs-api`.jvm, `esw-test-commons` % Test)
 
 lazy val `esw-test-commons` = project
   .in(file("esw-test-commons"))

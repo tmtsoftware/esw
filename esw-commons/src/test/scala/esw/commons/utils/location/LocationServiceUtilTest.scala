@@ -22,6 +22,7 @@ import csw.location.api.scaladsl.{LocationService, RegistrationResult}
 import csw.prefix.models.Subsystem.{ESW, IRIS, TCS}
 import csw.prefix.models.{Prefix, Subsystem}
 import esw.commons.utils.location.EswLocationError.{LocationNotFound, RegistrationListingFailed}
+import esw.ocs.api.models.ObsMode
 import esw.testcommons.BaseTestSuite
 
 import scala.concurrent.duration.DurationDouble
@@ -37,8 +38,8 @@ class LocationServiceUtilTest extends BaseTestSuite {
   private val actorSystem: ActorSystem[SpawnProtocol.Command] = ActorSystem(SpawnProtocol(), "testSystem")
 
   private val subsystem      = TCS
-  private val observingMode  = "darknight"
-  private val prefix         = Prefix(subsystem, observingMode)
+  private val observingMode  = ObsMode("darknight")
+  private val prefix         = Prefix(subsystem, observingMode.name)
   private val uri            = TestProbe[Any]()(actorSystem).ref.toURI
   private val akkaConnection = AkkaConnection(ComponentId(prefix, Sequencer))
   private val akkaLocation   = AkkaLocation(akkaConnection, uri)
@@ -226,7 +227,7 @@ class LocationServiceUtilTest extends BaseTestSuite {
 
       val locationServiceUtil = new LocationServiceUtil(locationService)
       val error =
-        locationServiceUtil.findByComponentNameAndType(observingMode, Sequencer).leftValue
+        locationServiceUtil.findByComponentNameAndType(observingMode.name, Sequencer).leftValue
 
       error shouldBe RegistrationListingFailed(s"Location Service Error: $cswLocationServiceErrorMsg")
     }

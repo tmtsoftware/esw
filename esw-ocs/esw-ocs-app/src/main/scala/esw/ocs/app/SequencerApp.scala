@@ -13,6 +13,7 @@ import esw.http.core.commons.CoordinatedShutdownReasons.FailureReason
 import esw.http.core.commons.EswCommandApp
 import esw.ocs.api.actor.messages.SequenceComponentMsg
 import esw.ocs.api.actor.messages.SequenceComponentMsg.LoadScript
+import esw.ocs.api.models.ObsMode
 import esw.ocs.api.protocol.ScriptError
 import esw.ocs.api.protocol.SequenceComponentResponse.{ScriptResponseOrUnhandled, SequencerLocation, Unhandled}
 import esw.ocs.app.SequencerAppCommand._
@@ -66,7 +67,7 @@ object SequencerApp extends EswCommandApp[SequencerAppCommand] {
 
   private def loadAndStartSequencer(
       subsystem: Subsystem,
-      mode: String,
+      mode: ObsMode,
       sequenceComponentLocation: AkkaLocation,
       sequenceComponentWiring: SequenceComponentWiring
   ): ScriptResponseOrUnhandled = {

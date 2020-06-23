@@ -20,7 +20,7 @@ import esw.ocs.api.actor.messages.SequenceComponentMsg.{GetStatus, LoadScript, R
 import esw.ocs.api.actor.messages.SequencerMessages._
 import esw.ocs.api.actor.messages.SequencerState
 import esw.ocs.api.actor.messages.SequencerState._
-import esw.ocs.api.models.{SequenceComponentState, Step, StepList}
+import esw.ocs.api.models.{ObsMode, SequenceComponentState, Step, StepList}
 import esw.ocs.api.protocol.EditorError.IdDoesNotExist
 import esw.ocs.api.protocol.ScriptError.{LoadingScriptFailed, LocationServiceError}
 import esw.ocs.api.protocol.SequenceComponentResponse.{GetStatusResponse, ScriptResponseOrUnhandled, SequencerLocation}
@@ -178,7 +178,7 @@ class OcsAkkaSerializerTest extends BaseTestSuite {
   "should use ocs serializer for SequenceComponentRemoteMsg (de)serialization" in {
     val testData = Table(
       "SequenceComponentRemoteMsg models",
-      LoadScript(ESW, "IRIS_Darknight", TestProbe[ScriptResponseOrUnhandled]().ref),
+      LoadScript(ESW, ObsMode("IRIS_Darknight"), TestProbe[ScriptResponseOrUnhandled]().ref),
       RestartScript(TestProbe[ScriptResponseOrUnhandled]().ref),
       UnloadScript(TestProbe[SequenceComponentResponse.OkOrUnhandled]().ref),
       GetStatus(TestProbe[GetStatusResponse]().ref),

@@ -10,6 +10,7 @@ import csw.prefix.models.{Prefix, Subsystem}
 import esw.commons.extensions.FutureEitherExt.FutureEitherOps
 import esw.commons.utils.location.EswLocationError.RegistrationListingFailed
 import esw.commons.utils.location.LocationServiceUtil
+import esw.ocs.api.models.ObsMode
 import esw.sm.api.SequenceManagerState
 import esw.sm.api.SequenceManagerState._
 import esw.sm.api.actor.messages.{SequenceManagerIdleMsg, SequenceManagerMsg}
@@ -48,7 +49,7 @@ class SequenceManagerBehavior(
       case RestartSequencer(subsystem, observingMode, replyTo) => restartSequencer(subsystem, observingMode, self, replyTo)
     }
 
-  private def configure(obsMode: String, self: SelfRef, replyTo: ActorRef[ConfigureResponse]): SMBehavior = {
+  private def configure(obsMode: ObsMode, self: SelfRef, replyTo: ActorRef[ConfigureResponse]): SMBehavior = {
     val runningObsModesF = getRunningObsModes.flatMapToAdt(
       configuredObsModes => configureResources(obsMode, configuredObsModes),
       error => CommonFailure.LocationServiceError(error.msg)
@@ -60,7 +61,7 @@ class SequenceManagerBehavior(
 
   // start all the required sequencers associated with obs mode,
   // if requested resources does not conflict with existing running observations
-  private def configureResources(requestedObsMode: String, runningObsModes: Set[String]): Future[ConfigureResponse] =
+  private def configureResources(requestedObsMode: ObsMode, runningObsModes: Set[ObsMode]): Future[ConfigureResponse] =
     async {
       config.obsModeConfig(requestedObsMode) match {
         case Some(ObsModeConfig(resources, _)) if checkConflicts(resources, runningObsModes) =>
@@ -72,17 +73,17 @@ class SequenceManagerBehavior(
     }
 
   // ignoring failure of getResources as config should never be absent for running obsModes
-  private def checkConflicts(requiredResources: Resources, runningObsModes: Set[String]) =
+  private def checkConflicts(requiredResources: Resources, runningObsModes: Set[ObsMode]) =
     requiredResources.conflictsWithAny(runningObsModes.map(getResources))
 
-  private def getResources(obsMode: String): Resources = config.resources(obsMode).get
+  private def getResources(obsMode: ObsMode): Resources = config.resources(obsMode).get
 
   // Configuration is in progress, waiting for ConfigurationResponseInternal message
   // Within this period, reject all the other messages except common messages
   private def configuring(self: SelfRef, replyTo: ActorRef[ConfigureResponse]): SMBehavior =
     receive[ConfigurationResponseInternal](Configuring)(msg => replyAndGoToIdle(self, replyTo, msg.res))
 
-  private def cleanup(obsMode: String, self: SelfRef, replyTo: ActorRef[CleanupResponse]): SMBehavior = {
+  private def cleanup(obsMode: ObsMode, self: SelfRef, replyTo: ActorRef[CleanupResponse]): SMBehavior = {
     val cleanupResponseF =
       config
         .sequencers(obsMode)
@@ -100,14 +101,14 @@ class SequenceManagerBehavior(
 
   private def startSequencer(
       subsystem: Subsystem,
-      obsMode: String,
+      obsMode: ObsMode,
       self: SelfRef,
       replyTo: ActorRef[StartSequencerResponse]
   ): SMBehavior = {
     // resolve is not needed here. Find should suffice
     // no concurrent start sequencer or configure is allowed
     locationServiceUtil
-      .find(HttpConnection(ComponentId(Prefix(subsystem, obsMode), Sequencer)))
+      .find(HttpConnection(ComponentId(Prefix(subsystem, obsMode.name), Sequencer)))
       .flatMap {
         case Left(_)         => startSequencer(subsystem, obsMode)
         case Right(location) => Future.successful(AlreadyRunning(location.connection.componentId))
@@ -117,7 +118,7 @@ class SequenceManagerBehavior(
     startingSequencer(self, replyTo)
   }
 
-  private def startSequencer(subsystem: Subsystem, obsMode: String): Future[StartSequencerResponse] =
+  private def startSequencer(subsystem: Subsystem, obsMode: ObsMode): Future[StartSequencerResponse] =
     sequencerUtil
       .startSequencer(subsystem, obsMode, sequencerStartRetries)
       .mapToAdt(akkaLocation => Started(akkaLocation.connection.componentId), identity)
@@ -129,7 +130,7 @@ class SequenceManagerBehavior(
 
   private def shutdownSequencer(
       subsystem: Subsystem,
-      obsMode: String,
+      obsMode: ObsMode,
       shutdownSequenceComp: Boolean,
       self: SelfRef,
       replyTo: ActorRef[ShutdownSequencerResponse]
@@ -146,7 +147,7 @@ class SequenceManagerBehavior(
 
   private def restartSequencer(
       subsystem: Subsystem,
-      obsMode: String,
+      obsMode: ObsMode,
       self: SelfRef,
       replyTo: ActorRef[RestartSequencerResponse]
   ): SMBehavior = {
@@ -194,11 +195,11 @@ class SequenceManagerBehavior(
     )
 
   // get the component name of all the top level sequencers i.e. ESW sequencers
-  private def getRunningObsModes: Future[Either[RegistrationListingFailed, Set[String]]] =
+  private def getRunningObsModes: Future[Either[RegistrationListingFailed, Set[ObsMode]]] =
     locationServiceUtil.listAkkaLocationsBy(ESW, Sequencer).mapRight(_.map(getObsMode).toSet)
 
   // componentName = obsMode, as per convention, sequencer uses obs mode to form component name
-  private def getObsMode(akkaLocation: AkkaLocation): String = akkaLocation.prefix.componentName
+  private def getObsMode(akkaLocation: AkkaLocation): ObsMode = ObsMode(akkaLocation.prefix.componentName)
 }
 
 object SequenceManagerBehavior {
