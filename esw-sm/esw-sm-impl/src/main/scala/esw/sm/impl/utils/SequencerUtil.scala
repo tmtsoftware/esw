@@ -22,6 +22,7 @@ import esw.sm.api.protocol.StartSequencerResponse.LoadScriptError
 import esw.sm.api.protocol._
 import esw.sm.impl.config.Sequencers
 
+import scala.async.Async.{async, await}
 import scala.concurrent.{ExecutionContext, Future}
 
 class SequencerUtil(locationServiceUtil: LocationServiceUtil, sequenceComponentUtil: SequenceComponentUtil)(implicit
@@ -54,27 +55,26 @@ class SequencerUtil(locationServiceUtil: LocationServiceUtil, sequenceComponentU
       subsystem: Subsystem,
       obsMode: String,
       shutdownSequenceComp: Boolean = false
-  ): Future[Either[ShutdownSequencerResponse.Failure, ShutdownSequencerResponse.Success.type]] = {
+  ): Future[Either[ShutdownSequencerResponse.Failure, ShutdownSequencerResponse.Success.type]] =
     locationServiceUtil
       .findSequencer(subsystem, obsMode)
       .flatMap {
         case Left(listingFailed: RegistrationListingFailed) => Future.successful(Left(LocationServiceError(listingFailed.msg)))
         case Left(LocationNotFound(_))                      => Future.successful(Right(ShutdownSequencerResponse.Success))
-        case Right(sequencerLoc)                            => unloadScript(Prefix(subsystem, obsMode), sequencerLoc, shutdownSequenceComp)
+        case Right(sequencerLoc)                            => unloadScript(sequencerLoc, shutdownSequenceComp)
       }
-  }
 
   def shutdownSequencers(sequencers: Sequencers, obsMode: String): Future[CleanupResponse] = {
     val shutdownResponses = traverse(sequencers.subsystems)(shutdownSequencer(_, obsMode))
     shutdownResponses.mapToAdt(_ => CleanupResponse.Success, e => FailedToShutdownSequencers(e.map(_.msg).toSet))
   }
 
-  private def shutdownSequencers(sequencerLocations: List[AkkaLocation]): Future[ShutdownAllSequencersResponse] =
-    traverse(sequencerLocations)(location => unloadScript(location.prefix, location, shutdownSequenceComp = false))
-      .mapToAdt(_ => ShutdownAllSequencersResponse.Success, ShutdownAllSequencersResponse.ShutdownFailure)
-
   def shutdownAllSequencers(): Future[ShutdownAllSequencersResponse] =
     locationServiceUtil.listAkkaLocationsBy(Sequencer).flatMapToAdt(shutdownSequencers, e => LocationServiceError(e.msg))
+
+  private def shutdownSequencers(sequencerLocations: List[AkkaLocation]): Future[ShutdownAllSequencersResponse] =
+    traverse(sequencerLocations)(location => unloadScript(location, shutdownSequenceComp = false))
+      .mapToAdt(_ => ShutdownAllSequencersResponse.Success, ShutdownAllSequencersResponse.ShutdownFailure)
 
   def restartSequencer(subSystem: Subsystem, obsMode: String): Future[RestartSequencerResponse] =
     locationServiceUtil
@@ -108,21 +108,19 @@ class SequencerUtil(locationServiceUtil: LocationServiceUtil, sequenceComponentU
 
   // get sequence component from Sequencer and unload sequencer script
   private def unloadScript(
-      prefix: Prefix,
       sequenceLocation: AkkaLocation,
       shutdownSequenceComp: Boolean
   ): Future[Either[UnloadScriptError, ShutdownSequencerResponse.Success.type]] =
-    createSequencerClient(sequenceLocation).getSequenceComponent
-      .flatMap(loc =>
-        sequenceComponentUtil
-          .unloadScript(loc)
-          .flatMap(x => if (shutdownSequenceComp) sequenceComponentUtil.shutdown(loc) else Future.successful(x))
-      )
-      .map {
+    async {
+      val seqCompLoc      = await(createSequencerClient(sequenceLocation).getSequenceComponent)
+      val unloadScriptRes = await(sequenceComponentUtil.unloadScript(seqCompLoc))
+      val shutdownRes     = if (shutdownSequenceComp) await(sequenceComponentUtil.shutdown(seqCompLoc)) else unloadScriptRes
+
+      shutdownRes match {
         case Ok                   => Right(ShutdownSequencerResponse.Success)
-        case Unhandled(_, _, msg) => Left(UnloadScriptError(prefix, msg))
+        case Unhandled(_, _, msg) => Left(UnloadScriptError(sequenceLocation.prefix, msg))
       }
-      .mapError(e => UnloadScriptError(prefix, e.getMessage))
+    }.mapError(e => UnloadScriptError(sequenceLocation.prefix, e.getMessage))
 
   // Created in order to mock the behavior of sequencer API availability for unit test
   private[sm] def createSequencerClient(location: Location): SequencerApi = SequencerApiFactory.make(location)

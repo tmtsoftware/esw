@@ -8,9 +8,9 @@ import csw.params.commands.SequenceCommand
 import csw.prefix.models.Subsystem.{NSCU, TCS}
 import csw.prefix.models.{Prefix, Subsystem}
 import csw.time.core.models.UTCTime
-import esw.commons.BaseTestSuite
 import esw.ocs.impl.script.ScriptLoadingException.ScriptConfigurationMissingException
 import esw.ocs.impl.script.{ScriptApi, ScriptContext}
+import esw.testcommons.BaseTestSuite
 
 import scala.concurrent.Future
 

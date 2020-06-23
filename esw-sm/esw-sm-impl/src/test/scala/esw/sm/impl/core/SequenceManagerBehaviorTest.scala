@@ -8,8 +8,7 @@ import csw.location.api.models.ComponentType._
 import csw.location.api.models.Connection.{AkkaConnection, HttpConnection}
 import csw.location.api.models.{AkkaLocation, ComponentId, HttpLocation}
 import csw.prefix.models.Prefix
-import csw.prefix.models.Subsystem.{ESW, TCS}
-import esw.commons.BaseTestSuite
+import csw.prefix.models.Subsystem._
 import esw.commons.utils.location.EswLocationError.{LocationNotFound, RegistrationListingFailed}
 import esw.commons.utils.location.LocationServiceUtil
 import esw.sm.api.SequenceManagerState
@@ -23,8 +22,9 @@ import esw.sm.api.protocol.ShutdownAllSequencersResponse.ShutdownFailure
 import esw.sm.api.protocol.ShutdownSequencerResponse.UnloadScriptError
 import esw.sm.api.protocol.StartSequencerResponse.LoadScriptError
 import esw.sm.api.protocol._
-import esw.sm.impl.config.{ObsModeConfig, Resources, SequenceManagerConfig, Sequencers}
+import esw.sm.impl.config._
 import esw.sm.impl.utils.SequencerUtil
+import esw.testcommons.BaseTestSuite
 import org.scalatest.prop.TableDrivenPropertyChecks
 
 import scala.concurrent.Future
@@ -42,8 +42,8 @@ class SequenceManagerBehaviorTest extends BaseTestSuite with TableDrivenProperty
   private val clearskiesSequencers: Sequencers = Sequencers(ESW)
   private val config = SequenceManagerConfig(
     Map(
-      Darknight  -> ObsModeConfig(Resources("r1", "r2"), darknightSequencers),
-      Clearskies -> ObsModeConfig(Resources("r2", "r3"), clearskiesSequencers)
+      Darknight  -> ObsModeConfig(Resources(Resource(NSCU), Resource(TCS)), darknightSequencers),
+      Clearskies -> ObsModeConfig(Resources(Resource(TCS), Resource(IRIS)), clearskiesSequencers)
     ),
     sequencerStartRetries = 3
   )
@@ -339,10 +339,8 @@ class SequenceManagerBehaviorTest extends BaseTestSuite with TableDrivenProperty
 
     forAll(errors) { (errorName, error, process) =>
       s"return $errorName if $errorName encountered while $process | ESW-324" in {
-        when(sequencerUtil.shutdownAllSequencers())
-          .thenReturn(future(1.seconds, error))
+        when(sequencerUtil.shutdownAllSequencers()).thenReturn(future(1.seconds, error))
 
-        println(error)
         val shutdownSequencerResponseProbe = TestProbe[ShutdownAllSequencersResponse]()
 
         smRef ! ShutdownAllSequencers(shutdownSequencerResponseProbe.ref)

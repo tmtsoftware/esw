@@ -42,7 +42,10 @@ object SequencerAppCommand {
       seqSubsystem: Option[Subsystem],
       @HelpMessage("observing mode, ex: darknight")
       @Short("m")
-      mode: String
+      obsMode: String,
+      @HelpMessage("simulation mode")
+      @Short("simulation")
+      simulation: Boolean = false
   ) extends SequencerAppCommand
 
 }

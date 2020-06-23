@@ -14,10 +14,11 @@ import esw.agent.api.{Failed, SpawnResponse, Spawned}
 import esw.agent.client.AgentClient
 import esw.commons.utils.location.EswLocationError.{LocationNotFound, RegistrationListingFailed}
 import esw.commons.utils.location.{EswLocationError, LocationServiceUtil}
-import esw.commons.{BaseTestSuite, Timeouts}
+import esw.commons.Timeouts
 import esw.ocs.api.SequenceComponentApi
 import esw.sm.api.protocol.AgentError.SpawnSequenceComponentFailed
 import esw.sm.api.protocol.CommonFailure.LocationServiceError
+import esw.testcommons.BaseTestSuite
 import org.mockito.ArgumentMatchers.{any, eq => argEq}
 
 import scala.concurrent.Future

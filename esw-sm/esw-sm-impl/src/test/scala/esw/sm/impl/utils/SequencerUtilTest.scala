@@ -9,10 +9,9 @@ import csw.location.api.models.Connection.{AkkaConnection, HttpConnection}
 import csw.location.api.models.{AkkaLocation, ComponentId, HttpLocation, Location}
 import csw.prefix.models.Prefix
 import csw.prefix.models.Subsystem.{ESW, TCS}
-import esw.commons.BaseTestSuite
 import esw.commons.utils.location.EswLocationError.{LocationNotFound, RegistrationListingFailed}
 import esw.commons.utils.location.LocationServiceUtil
-import esw.ocs.api.models.SequenceComponentState.{Running, ShuttingDown}
+import esw.ocs.api.models.SequenceComponentState.{Idle, Running}
 import esw.ocs.api.protocol.ScriptError
 import esw.ocs.api.protocol.SequenceComponentResponse.{Ok, SequencerLocation, Unhandled}
 import esw.ocs.api.{SequenceComponentApi, SequencerApi}
@@ -23,6 +22,7 @@ import esw.sm.api.protocol.ShutdownSequencerResponse.UnloadScriptError
 import esw.sm.api.protocol.StartSequencerResponse.LoadScriptError
 import esw.sm.api.protocol.{CleanupResponse, RestartSequencerResponse, ShutdownAllSequencersResponse, ShutdownSequencerResponse}
 import esw.sm.impl.config.Sequencers
+import esw.testcommons.BaseTestSuite
 
 import scala.concurrent.duration.DurationInt
 import scala.concurrent.{ExecutionContext, Future, TimeoutException}
@@ -428,7 +428,7 @@ class SequencerUtilTest extends BaseTestSuite {
       when(locationServiceUtil.findSequencer(ESW, obsMode)).thenReturn(futureRight(eswLocation))
       when(eswSequencerApi.getSequenceComponent).thenReturn(Future.successful(eswSeqCompLoc))
       when(sequenceComponentUtil.restart(eswSeqCompLoc))
-        .thenReturn(Future.successful(Unhandled(ShuttingDown, "Restart", "error")))
+        .thenReturn(Future.successful(Unhandled(Idle, "Restart", "error")))
 
       sequencerUtil.restartSequencer(ESW, obsMode).futureValue should ===(LoadScriptError("error"))
 

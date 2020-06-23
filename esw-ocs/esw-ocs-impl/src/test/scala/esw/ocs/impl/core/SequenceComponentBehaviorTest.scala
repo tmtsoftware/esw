@@ -16,14 +16,13 @@ import csw.location.api.scaladsl.LocationService
 import csw.logging.client.scaladsl.LoggerFactory
 import csw.prefix.models.Prefix
 import csw.prefix.models.Subsystem.{ESW, IRIS, TCS}
-import esw.commons.BaseTestSuite
 import esw.ocs.api.actor.messages.SequenceComponentMsg
 import esw.ocs.api.actor.messages.SequenceComponentMsg._
 import esw.ocs.api.models.SequenceComponentState.{Idle, Running}
 import esw.ocs.api.protocol.ScriptError.LoadingScriptFailed
 import esw.ocs.api.protocol.SequenceComponentResponse._
 import esw.ocs.impl.internal.{SequencerServer, SequencerServerFactory}
-import org.scalatest.prop.Tables.Table
+import esw.testcommons.BaseTestSuite
 
 import scala.concurrent.Future
 import scala.concurrent.duration.DurationLong
@@ -48,7 +47,7 @@ class SequenceComponentBehaviorTest extends BaseTestSuite {
       val (sequenceComponentRef, seqCompLocation) = spawnSequenceComponent()
 
       val loadScriptResponseProbe = TestProbe[ScriptResponseOrUnhandled]()
-      val getStatusProbe          = TestProbe[GetStatusResponseOrUnhandled]()
+      val getStatusProbe          = TestProbe[GetStatusResponse]()
       val subsystem               = ESW
       val observingMode           = "darknight"
       val prefix                  = Prefix(s"$subsystem.$observingMode")
@@ -146,7 +145,7 @@ class SequenceComponentBehaviorTest extends BaseTestSuite {
       val (sequenceComponentRef, _) = spawnSequenceComponent()
 
       val unloadScriptResponseProbe = TestProbe[OkOrUnhandled]()
-      val getStatusProbe            = TestProbe[GetStatusResponseOrUnhandled]()
+      val getStatusProbe            = TestProbe[GetStatusResponse]()
 
       //assert if GetStatus returns None after unloading sequencer script
       sequenceComponentRef ! GetStatus(getStatusProbe.ref)
@@ -184,7 +183,7 @@ class SequenceComponentBehaviorTest extends BaseTestSuite {
       when(sequencerServer.shutDown()).thenReturn(Done)
 
       //Restart sequencer and assert if it returns new AkkaLocation of sequencer
-      sequenceComponentRef ! Restart(restartResponseProbe.ref)
+      sequenceComponentRef ! RestartScript(restartResponseProbe.ref)
 
       val message1 = restartResponseProbe.receiveMessage()
       message1 shouldBe a[SequencerLocation]
@@ -199,8 +198,8 @@ class SequenceComponentBehaviorTest extends BaseTestSuite {
       val (sequenceComponentRef, _) = spawnSequenceComponent()
 
       val restartResponseProbe = TestProbe[ScriptResponseOrUnhandled]()
-      sequenceComponentRef ! Restart(restartResponseProbe.ref)
-      restartResponseProbe.expectMessage(Unhandled(Idle, "Restart"))
+      sequenceComponentRef ! RestartScript(restartResponseProbe.ref)
+      restartResponseProbe.expectMessage(Unhandled(Idle, "RestartScript"))
     }
 
     "shutdown itself on Shutdown message | ESW-329" in {
@@ -210,65 +209,10 @@ class SequenceComponentBehaviorTest extends BaseTestSuite {
       when(locationService.unregister(AkkaConnection(ComponentId(sequenceComponentPrefix, SequenceComponent))))
         .thenReturn(Future.successful(Done))
 
-      val shutdownResponseProbe = TestProbe[OkOrUnhandled]()(system)
+      val shutdownResponseProbe = TestProbe[Ok.type]()(system)
       sequenceComponentRef ! Shutdown(shutdownResponseProbe.ref)
       shutdownResponseProbe.expectMessage(Ok)
       shutdownResponseProbe.expectTerminated(sequenceComponentRef)
-    }
-
-    val restartProbe1          = TestProbe[ScriptResponseOrUnhandled]()
-    val shutdownInternalProbe1 = TestProbe[OkOrUnhandled]()
-    val loadScriptProbe1       = TestProbe[ScriptResponseOrUnhandled]()
-    val shutdownInternalProbe2 = TestProbe[OkOrUnhandled]()
-
-    val unhandledMsgForIdleState = Table(
-      ("SequenceComponent Unhandled Msgs", "Probe"),
-      (Restart(restartProbe1.ref), restartProbe1),
-      (ShutdownInternal(shutdownInternalProbe1.ref), shutdownInternalProbe1)
-    )
-
-    unhandledMsgForIdleState.foreach {
-      case (msg, probe) =>
-        s"return Unhandled for $msg in Idle state" in {
-          val (sequenceComponentRef, _) = spawnSequenceComponent()
-
-          sequenceComponentRef ! msg
-
-          probe.expectMessage(Unhandled(Idle, msg.getClass.getSimpleName))
-        }
-    }
-
-    val unhandledMsgForRunningState = Table(
-      ("SequenceComponent Unhandled Msgs", "Probe"),
-      (LoadScript(ESW, "darknight", loadScriptProbe1.ref), loadScriptProbe1),
-      (ShutdownInternal(shutdownInternalProbe2.ref), shutdownInternalProbe2)
-    )
-
-    unhandledMsgForRunningState.foreach {
-      case (msg, probe) =>
-        s"return Unhandled for $msg in Running" in {
-          val (sequenceComponentRef, seqCompLocation) = spawnSequenceComponent()
-
-          val loadScriptResponseProbe = TestProbe[ScriptResponseOrUnhandled]()
-          val subsystem               = ESW
-          val observingMode           = "darknight"
-          val prefix                  = Prefix(s"$subsystem.$observingMode")
-          val akkaConnection          = AkkaConnection(ComponentId(prefix, ComponentType.Sequencer))
-
-          when(sequencerServerFactory.make(subsystem, observingMode, seqCompLocation)).thenReturn(sequencerServer)
-          when(sequencerServer.start()).thenReturn(Right(AkkaLocation(akkaConnection, URI.create("new_uri"))))
-
-          //LoadScript
-          sequenceComponentRef ! LoadScript(subsystem, observingMode, loadScriptResponseProbe.ref)
-
-          //Assert if sequence component is in running state
-          val scriptResponseOrUnhandled = loadScriptResponseProbe.receiveMessage()
-          scriptResponseOrUnhandled shouldBe a[SequencerLocation]
-
-          sequenceComponentRef ! msg
-
-          probe.expectMessage(Unhandled(Running, msg.getClass.getSimpleName))
-        }
     }
   }
 

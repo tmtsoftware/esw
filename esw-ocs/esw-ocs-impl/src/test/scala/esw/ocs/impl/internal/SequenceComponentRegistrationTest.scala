@@ -13,11 +13,11 @@ import csw.location.api.models.Connection.AkkaConnection
 import csw.location.api.models.{AkkaLocation, AkkaRegistration, ComponentId, ComponentType}
 import csw.location.api.scaladsl.{LocationService, RegistrationResult}
 import csw.prefix.models.{Prefix, Subsystem}
-import esw.commons.BaseTestSuite
 import esw.commons.utils.location.EswLocationError
 import esw.commons.utils.location.EswLocationError.RegistrationError
 import esw.ocs.api.actor.messages.SequenceComponentMsg
 import esw.ocs.api.actor.messages.SequenceComponentMsg.Stop
+import esw.testcommons.BaseTestSuite
 import org.mockito.ArgumentMatchers.any
 import org.scalatest.time.SpanSugar.convertFloatToGrainOfTime
 

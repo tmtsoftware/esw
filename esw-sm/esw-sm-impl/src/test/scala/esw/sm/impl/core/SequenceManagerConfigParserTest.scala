@@ -5,9 +5,10 @@ import java.nio.file.Paths
 import akka.actor.typed.{ActorSystem, SpawnProtocol}
 import com.typesafe.config.ConfigFactory
 import csw.config.client.commons.ConfigUtils
+import csw.prefix.models.Subsystem
 import csw.prefix.models.Subsystem._
-import esw.commons.BaseTestSuite
 import esw.sm.impl.config._
+import esw.testcommons.BaseTestSuite
 import io.bullet.borer.Borer.Error.InvalidInputData
 
 import scala.concurrent.{Await, ExecutionContext, Future}
@@ -15,6 +16,11 @@ import scala.concurrent.{Await, ExecutionContext, Future}
 class SequenceManagerConfigParserTest extends BaseTestSuite {
   private val actorSystem                   = ActorSystem(SpawnProtocol(), "test-system")
   implicit private val ec: ExecutionContext = actorSystem.executionContext
+
+  private val iris: Resource    = Resource(IRIS)
+  private val tcs: Resource     = Resource(TCS)
+  private val nfiraos: Resource = Resource(NFIRAOS)
+  private val nscu: Resource    = Resource(Subsystem.NSCU)
 
   "read" must {
     "read config from local file | ESW-162" in {
@@ -30,8 +36,8 @@ class SequenceManagerConfigParserTest extends BaseTestSuite {
 
       val expectedConfig = SequenceManagerConfig(
         Map(
-          "IRIS_Darknight" -> ObsModeConfig(Resources("IRIS", "TCS", "NFIRAOS"), darknightSequencers),
-          "IRIS_Cal"       -> ObsModeConfig(Resources("IRIS", "NCSU", "NFIRAOS"), calSequencers)
+          "IRIS_Darknight" -> ObsModeConfig(Resources(iris, tcs, nfiraos), darknightSequencers),
+          "IRIS_Cal"       -> ObsModeConfig(Resources(iris, nscu, nfiraos), calSequencers)
         ),
         sequencerStartRetries = 2
       )
@@ -79,8 +85,8 @@ class SequenceManagerConfigParserTest extends BaseTestSuite {
 
       val expectedConfig = SequenceManagerConfig(
         Map(
-          "IRIS_Darknight" -> ObsModeConfig(Resources("IRIS", "TCS", "NFIRAOS"), darknightSequencers),
-          "IRIS_Cal"       -> ObsModeConfig(Resources("IRIS", "NCSU", "NFIRAOS"), calSequencers)
+          "IRIS_Darknight" -> ObsModeConfig(Resources(iris, tcs, nfiraos), darknightSequencers),
+          "IRIS_Cal"       -> ObsModeConfig(Resources(iris, nscu, nfiraos), calSequencers)
         ),
         sequencerStartRetries = 3
       )

@@ -16,21 +16,16 @@ import csw.params.core.models.Id
 import csw.prefix.models.Prefix
 import csw.prefix.models.Subsystem.ESW
 import csw.time.core.models.UTCTime
-import esw.commons.BaseTestSuite
-import esw.ocs.api.actor.messages.SequenceComponentMsg.{GetStatus, LoadScript, Restart, UnloadScript}
+import esw.ocs.api.actor.messages.SequenceComponentMsg.{GetStatus, LoadScript, RestartScript, UnloadScript}
 import esw.ocs.api.actor.messages.SequencerMessages._
 import esw.ocs.api.actor.messages.SequencerState
 import esw.ocs.api.actor.messages.SequencerState._
 import esw.ocs.api.models.{SequenceComponentState, Step, StepList}
 import esw.ocs.api.protocol.EditorError.IdDoesNotExist
 import esw.ocs.api.protocol.ScriptError.{LoadingScriptFailed, LocationServiceError}
-import esw.ocs.api.protocol.SequenceComponentResponse.{
-  GetStatusResponse,
-  GetStatusResponseOrUnhandled,
-  ScriptResponseOrUnhandled,
-  SequencerLocation
-}
+import esw.ocs.api.protocol.SequenceComponentResponse.{GetStatusResponse, ScriptResponseOrUnhandled, SequencerLocation}
 import esw.ocs.api.protocol.{DiagnosticModeResponse, SequencerSubmitResponse, _}
+import esw.testcommons.BaseTestSuite
 import org.scalatest.prop.TableDrivenPropertyChecks.forAll
 import org.scalatest.prop.Tables.Table
 
@@ -97,7 +92,6 @@ class OcsAkkaSerializerTest extends BaseTestSuite {
       Replace(id, commands, genericResponseRef),
       Reset(okOrUnhandledResponseRef),
       Shutdown(okTypeRef),
-      ShutdownComplete(okTypeRef),
       StartSequence(sequencerSubmitResponseRef),
       StartingFailed(sequencerSubmitResponseRef),
       StartingSuccessful(sequencerSubmitResponseRef),
@@ -165,7 +159,6 @@ class OcsAkkaSerializerTest extends BaseTestSuite {
       SequenceComponentResponse.Ok,
       SequenceComponentResponse.Unhandled(SequenceComponentState.Idle, "some msg"),
       SequenceComponentResponse.Unhandled(SequenceComponentState.Running, "some msg"),
-      SequenceComponentResponse.Unhandled(SequenceComponentState.ShuttingDown, "some msg"),
       GetStatusResponse(Some(akkaLocation)),
       GetStatusResponse(None),
       LocationServiceError("error"),
@@ -186,9 +179,9 @@ class OcsAkkaSerializerTest extends BaseTestSuite {
     val testData = Table(
       "SequenceComponentRemoteMsg models",
       LoadScript(ESW, "IRIS_Darknight", TestProbe[ScriptResponseOrUnhandled]().ref),
-      Restart(TestProbe[ScriptResponseOrUnhandled]().ref),
+      RestartScript(TestProbe[ScriptResponseOrUnhandled]().ref),
       UnloadScript(TestProbe[SequenceComponentResponse.OkOrUnhandled]().ref),
-      GetStatus(TestProbe[GetStatusResponseOrUnhandled]().ref),
+      GetStatus(TestProbe[GetStatusResponse]().ref),
       Shutdown(TestProbe[Ok]().ref)
     )
 
@@ -210,7 +203,6 @@ class OcsAkkaSerializerTest extends BaseTestSuite {
       Offline,
       GoingOnline,
       GoingOffline,
-      ShuttingDown,
       AbortingSequence,
       Stopping,
       Submitting,

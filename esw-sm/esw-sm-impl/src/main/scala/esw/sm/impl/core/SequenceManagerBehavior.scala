@@ -141,10 +141,7 @@ class SequenceManagerBehavior(
 
   // Shutdown sequencer is in progress, waiting for ShutdownSequencerResponseInternal message
   // Within this period, reject all the other messages except common messages
-  private def shuttingDownSequencer(
-      self: SelfRef,
-      replyTo: ActorRef[ShutdownSequencerResponse]
-  ): SMBehavior =
+  private def shuttingDownSequencer(self: SelfRef, replyTo: ActorRef[ShutdownSequencerResponse]): SMBehavior =
     receive[ShutdownSequencerResponseInternal](ShuttingDownSequencer)(msg => replyAndGoToIdle(self, replyTo, msg.res))
 
   private def restartSequencer(
@@ -157,6 +154,7 @@ class SequenceManagerBehavior(
     restartResponseF.map(self ! RestartSequencerResponseInternal(_))
     restartingSequencer(self, replyTo)
   }
+
   private def restartingSequencer(self: SelfRef, replyTo: ActorRef[RestartSequencerResponse]): SMBehavior =
     receive[RestartSequencerResponseInternal](RestartingSequencer)(msg => replyAndGoToIdle(self, replyTo, msg.res))
 
@@ -164,15 +162,11 @@ class SequenceManagerBehavior(
       self: SelfRef,
       replyTo: ActorRef[ShutdownAllSequencersResponse]
   ): SMBehavior = {
-    val shutdownAllResponseF = sequencerUtil.shutdownAllSequencers()
-    shutdownAllResponseF.map(self ! ShutdownAllSequencersResponseInternal(_))
+    sequencerUtil.shutdownAllSequencers().map(self ! ShutdownAllSequencersResponseInternal(_))
     shuttingDownAllSequencers(self, replyTo)
   }
 
-  private def shuttingDownAllSequencers(
-      self: SelfRef,
-      replyTo: ActorRef[ShutdownAllSequencersResponse]
-  ): SMBehavior =
+  private def shuttingDownAllSequencers(self: SelfRef, replyTo: ActorRef[ShutdownAllSequencersResponse]): SMBehavior =
     receive[ShutdownAllSequencersResponseInternal](ShuttingDownAllSequencers)(msg => replyAndGoToIdle(self, replyTo, msg.res))
 
   private def replyAndGoToIdle[T](self: SelfRef, replyTo: ActorRef[T], msg: T) = {

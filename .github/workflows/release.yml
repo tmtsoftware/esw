@@ -23,6 +23,12 @@ jobs:
       - name: Install Redis
         run: sudo apt-get install redis-server
 
+      - name: Install CS native
+        run: |
+          curl -fLo cs https://git.io/coursier-cli-linux &&
+            chmod +x cs &&
+            sudo mv cs /usr/local/bin
+
       - run: npm install -g junit-merge
       - run: npm install -g junit-viewer
 

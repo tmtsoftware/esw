@@ -9,7 +9,6 @@ object SequenceComponentState extends Enum[SequenceComponentState] {
 
   override def values: IndexedSeq[SequenceComponentState] = findValues
 
-  case object Idle         extends SequenceComponentState
-  case object Running      extends SequenceComponentState
-  case object ShuttingDown extends SequenceComponentState
+  case object Idle    extends SequenceComponentState
+  case object Running extends SequenceComponentState
 }

@@ -7,12 +7,12 @@ import csw.location.api.models.ComponentId
 import csw.location.api.models.ComponentType.Sequencer
 import csw.prefix.models.Prefix
 import csw.prefix.models.Subsystem.ESW
-import esw.commons.BaseTestSuite
 import esw.sm.api.actor.messages.SequenceManagerMsg._
 import esw.sm.api.protocol.AgentError.SpawnSequenceComponentFailed
 import esw.sm.api.protocol.CommonFailure.{ConfigurationMissing, LocationServiceError}
 import esw.sm.api.protocol.StartSequencerResponse.LoadScriptError
 import esw.sm.api.protocol._
+import esw.testcommons.BaseTestSuite
 import org.scalatest.prop.TableDrivenPropertyChecks.forAll
 import org.scalatest.prop.Tables.Table
 

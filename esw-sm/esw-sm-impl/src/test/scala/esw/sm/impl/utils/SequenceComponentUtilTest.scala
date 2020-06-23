@@ -8,13 +8,12 @@ import csw.location.api.models.Connection.AkkaConnection
 import csw.location.api.models.{AkkaLocation, ComponentId}
 import csw.prefix.models.Prefix
 import csw.prefix.models.Subsystem.{ESW, IRIS, TCS}
-import esw.commons.BaseTestSuite
 import esw.commons.utils.location.LocationServiceUtil
 import esw.ocs.api.SequenceComponentApi
 import esw.ocs.api.actor.client.SequenceComponentImpl
-import esw.ocs.api.models.SequenceComponentState.ShuttingDown
-import esw.ocs.api.protocol.SequenceComponentResponse.Unhandled
+import esw.ocs.api.protocol.SequenceComponentResponse.GetStatusResponse
 import esw.sm.api.protocol.AgentError.SpawnSequenceComponentFailed
+import esw.testcommons.BaseTestSuite
 
 import scala.concurrent.Future
 import scala.concurrent.duration.DurationInt
@@ -133,7 +132,7 @@ class SequenceComponentUtilTest extends BaseTestSuite {
   }
 
   "idleSequenceComponent" must {
-    "return none if status msg to sequence component return unhandled response | ESW-164" in {
+    "return none if sequence component is running a sequencer | ESW-164" in {
       val mockSeqCompImpl = mock[SequenceComponentImpl]
       val seqCompUtil = new SequenceComponentUtil(locationServiceUtil, agentUtil) {
         override private[sm] def createSequenceComponentImpl(sequenceComponentLocation: AkkaLocation): SequenceComponentImpl =
@@ -141,7 +140,7 @@ class SequenceComponentUtilTest extends BaseTestSuite {
       }
 
       when(mockSeqCompImpl.status)
-        .thenReturn(Future.successful(Unhandled(ShuttingDown, "can not handle status msg while shutting down")))
+        .thenReturn(Future.successful(GetStatusResponse(Some(mockAkkaLocation("IRIS.darknight")))))
 
       seqCompUtil.idleSequenceComponent(mockAkkaLocation("ESW.backup")).futureValue should ===(None)
     }

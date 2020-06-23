@@ -8,6 +8,7 @@ import csw.location.api.models.ComponentType.{Sequencer, Service}
 import csw.location.api.models.Connection.AkkaConnection
 import csw.prefix.models.Prefix
 import csw.prefix.models.Subsystem._
+import esw.BinaryFetcherUtil
 import esw.ocs.api.actor.client.{SequenceComponentImpl, SequencerImpl}
 import esw.ocs.api.protocol.SequenceComponentResponse.GetStatusResponse
 import esw.ocs.testkit.EswTestKit
@@ -16,14 +17,16 @@ import esw.sm.api.protocol.ConfigureResponse.ConflictingResourcesWithRunningObsM
 import esw.sm.api.protocol.StartSequencerResponse.LoadScriptError
 import esw.sm.api.protocol._
 
-class SequenceManagerIntegrationTest extends EswTestKit {
+class SequenceManagerIntegrationTest extends EswTestKit with BinaryFetcherUtil {
   private val WFOS_CAL              = "WFOS_Cal"
   private val IRIS_CAL              = "IRIS_Cal"
   private val IRIS_DARKNIGHT        = "IRIS_Darknight"
   private val sequenceManagerPrefix = Prefix(ESW, "sequence_manager")
 
   override protected def beforeEach(): Unit = locationService.unregisterAll()
-  override protected def afterEach(): Unit  = TestSetup.cleanup()
+  override protected def afterEach(): Unit = {
+    TestSetup.cleanup()
+  }
 
   "start sequence manager and register akka + http locations| ESW-171, ESW-172" in {
     // resolving sequence manager fails for Akka and Http
@@ -134,7 +137,7 @@ class SequenceManagerIntegrationTest extends EswTestKit {
     exception.getMessage shouldBe "File does not exist on local disk at path sm-config.conf"
   }
 
-  "start and shut down sequencer for given subsystem and observation mode | ESW-176, ESW-326, ESW-171" in {
+  "start and shut down sequencer (and shutdown sequence component) for given subsystem and observation mode | ESW-176, ESW-326, ESW-171, ESW-167" in {
     TestSetup.startSequenceComponents(Prefix(ESW, "primary"))
 
     val sequenceManagerClient = TestSetup.startSequenceManager(sequenceManagerPrefix)
@@ -150,11 +153,14 @@ class SequenceManagerIntegrationTest extends EswTestKit {
     // verify that sequencer is started
     resolveHTTPLocation(Prefix(ESW, IRIS_DARKNIGHT), Sequencer)
 
-    // ESW-326 Verify that shutdown sequencer returns Success
-    val shutdownResponse = sequenceManagerClient.shutdownSequencer(ESW, IRIS_DARKNIGHT).futureValue
+    // ESW-326, ESW-167 Verify that shutdown sequencer returns Success
+    val shutdownResponse = sequenceManagerClient.shutdownSequencer(ESW, IRIS_DARKNIGHT, shutdownSequenceComp = true).futureValue
     shutdownResponse should ===(ShutdownSequencerResponse.Success)
 
-    // verify that sequencer are shut down
+    // verify that sequencer is shut down
+    intercept[Exception](resolveHTTPLocation(Prefix(ESW, IRIS_DARKNIGHT), Sequencer))
+
+    // ESW-167: verify that sequence component is shutdown
     intercept[Exception](resolveHTTPLocation(Prefix(ESW, IRIS_DARKNIGHT), Sequencer))
   }
 
@@ -179,24 +185,19 @@ class SequenceManagerIntegrationTest extends EswTestKit {
     val irisDarkNightPrefix = Prefix(ESW, IRIS_DARKNIGHT)
     val irisCalPrefix       = Prefix(ESW, IRIS_CAL)
 
-    val sequenceManagerClient = TestSetup.startSequenceManager(sequenceManagerPrefix)
-
     val darkNightSequencerL = spawnSequencer(ESW, IRIS_DARKNIGHT)
     val calSequencerL       = spawnSequencer(ESW, IRIS_CAL)
 
-    // verify that darkNight sequencer has started
+    // verify Sequencers are started
     resolveAkkaLocation(irisDarkNightPrefix, Sequencer) should ===(darkNightSequencerL)
-
-    // verify that cal sequencer has started
     resolveAkkaLocation(irisCalPrefix, Sequencer) should ===(calSequencerL)
 
-    // shut down all the sequencers that are running
+    // shutdown all the sequencers that are running
+    val sequenceManagerClient = TestSetup.startSequenceManager(sequenceManagerPrefix)
     sequenceManagerClient.shutdownAllSequencers().futureValue should ===(ShutdownAllSequencersResponse.Success)
 
-    // verify that darkNight sequencer is not present
+    // verify all sequencers has stopped
     intercept[Exception](resolveAkkaLocation(irisDarkNightPrefix, Sequencer))
-
-    // verify that cal sequencer is not present
     intercept[Exception](resolveAkkaLocation(irisCalPrefix, Sequencer))
   }
 

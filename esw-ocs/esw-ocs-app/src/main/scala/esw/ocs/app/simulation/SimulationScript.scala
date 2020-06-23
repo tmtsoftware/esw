@@ -1,4 +1,4 @@
-package esw.ocs.testkit.simulation
+package esw.ocs.app.simulation
 
 import akka.Done
 import csw.params.commands.SequenceCommand
@@ -9,6 +9,7 @@ import scala.concurrent.Future
 
 object SimulationScript extends SimulationScript
 
+// $COVERAGE-OFF$
 trait SimulationScript extends ScriptApi {
   private val done: Future[Done] = Future.successful(Done)
 
@@ -34,3 +35,4 @@ trait SimulationScript extends ScriptApi {
 
   override def shutdownScript(): Unit = {}
 }
+// $COVERAGE-ON$

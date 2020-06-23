@@ -1,8 +1,8 @@
 package esw.ocs.dsl.script
 
 import csw.params.core.generics.{KeyType, Parameter}
-import esw.commons.BaseTestSuite
 import esw.ocs.dsl.params.Params
+import esw.testcommons.BaseTestSuite
 
 class FsmScriptStateTest extends BaseTestSuite {
   private val script1 = (_: Params) => mock[ScriptDsl]

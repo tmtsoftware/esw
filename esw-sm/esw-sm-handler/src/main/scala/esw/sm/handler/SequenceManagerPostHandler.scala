@@ -13,7 +13,7 @@ class SequenceManagerPostHandler(sequenceManager: SequenceManagerApi)
     with ServerHttpCodecs {
 
   import sequenceManager._
-  override def handle(request: SequenceManagerPostRequest): Route = {
+  override def handle(request: SequenceManagerPostRequest): Route =
     request match {
       case Configure(obsMode)                   => complete(configure(obsMode))
       case GetRunningObsModes                   => complete(getRunningObsModes)
@@ -24,6 +24,5 @@ class SequenceManagerPostHandler(sequenceManager: SequenceManagerApi)
       case ShutdownSequencer(subsystem, obsMode, shutdownSequenceComp) =>
         complete(shutdownSequencer(subsystem, obsMode, shutdownSequenceComp))
     }
-  }
 
 }

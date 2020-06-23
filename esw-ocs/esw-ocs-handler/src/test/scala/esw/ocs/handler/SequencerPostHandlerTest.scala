@@ -16,9 +16,10 @@ import esw.ocs.api.protocol.EditorError.{CannotOperateOnAnInFlightOrFinishedStep
 import esw.ocs.api.protocol.SequencerPostRequest._
 import esw.ocs.api.protocol._
 import esw.ocs.api.SequencerApi
+import esw.testcommons.BaseTestSuite
 import msocket.api.ContentType
 import msocket.impl.post.{ClientHttpCodecs, PostRouteFactory}
-import esw.commons.BaseTestSuite
+
 import scala.concurrent.Future
 
 class SequencerPostHandlerTest extends BaseTestSuite with ScalatestRouteTest with SequencerHttpCodecs with ClientHttpCodecs {

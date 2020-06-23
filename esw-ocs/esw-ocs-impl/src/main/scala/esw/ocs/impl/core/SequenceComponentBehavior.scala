@@ -26,7 +26,8 @@ class SequenceComponentBehavior(
     locationService: LocationService,
     sequencerServerFactory: SequencerServerFactory
 )(implicit actorSystem: ActorSystem[SpawnProtocol.Command]) {
-  implicit val ec: ExecutionContext = actorSystem.executionContext
+  private val akkaConnection: AkkaConnection = AkkaConnection(ComponentId(prefix, SequenceComponent))
+  implicit val ec: ExecutionContext          = actorSystem.executionContext
 
   def idle: Behavior[SequenceComponentMsg] =
     receive[IdleStateSequenceComponentMsg](SequenceComponentState.Idle) { (ctx, msg) =>
@@ -51,7 +52,7 @@ class SequenceComponentBehavior(
       observingMode: String,
       replyTo: ActorRef[ScriptResponseOrUnhandled]
   ): Behavior[SequenceComponentMsg] = {
-    val sequenceComponentLocation = AkkaLocation(AkkaConnection(ComponentId(prefix, SequenceComponent)), ctx.self.toURI)
+    val sequenceComponentLocation = AkkaLocation(akkaConnection, ctx.self.toURI)
     val sequencerServer           = sequencerServerFactory.make(subsystem, observingMode, sequenceComponentLocation)
     val registrationResult        = sequencerServer.start().mapToAdt(location => SequencerLocation(location), identity)
     replyTo ! registrationResult
@@ -80,38 +81,32 @@ class SequenceComponentBehavior(
           unload()
           replyTo ! Ok
           idle
-        case Restart(replyTo) =>
+        case RestartScript(replyTo) =>
           unload()
           load(ctx, subsystem, observingMode, replyTo)
         case GetStatus(replyTo) =>
           replyTo ! GetStatusResponse(Some(location))
           Behaviors.same
-        case Stop              => Behaviors.same
         case Shutdown(replyTo) => shutdown(ctx.self, replyTo, Some(sequencerServer))
+        case Stop              => Behaviors.same
       }
     }
 
   private def shutdown(
       self: ActorRef[SequenceComponentMsg],
-      replyTo: ActorRef[OkOrUnhandled],
+      replyTo: ActorRef[Ok.type],
       sequencerServer: Option[SequencerServer]
   ): Behavior[SequenceComponentMsg] = {
     sequencerServer.foreach(_.shutDown())
-    locationService.unregister(AkkaConnection(ComponentId(prefix, SequenceComponent))).map { _ =>
-      self ! ShutdownInternal(replyTo)
-    }
-    shuttingDown()
-  }
 
-  private def shuttingDown(): Behavior[SequenceComponentMsg] =
-    receive[ShuttingDownStateSequenceComponentMsg](SequenceComponentState.ShuttingDown) { (_, msg) =>
-      msg match {
-        case ShutdownInternal(replyTo) =>
-          replyTo ! Ok
-          actorSystem.terminate()
-          Behaviors.stopped
-      }
-    }
+    locationService
+      .unregister(akkaConnection)
+      .onComplete(_ => {
+        replyTo ! Ok
+        actorSystem.terminate()
+      })
+    Behaviors.stopped
+  }
 
   private def receive[HandleableMsg <: SequenceComponentMsg: ClassTag](
       state: SequenceComponentState

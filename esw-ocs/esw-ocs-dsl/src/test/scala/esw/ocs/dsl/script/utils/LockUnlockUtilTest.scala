@@ -10,7 +10,7 @@ import csw.command.client.messages.SupervisorLockMessage.{Lock, Unlock}
 import csw.command.client.models.framework.LockingResponse
 import csw.prefix.models.Prefix
 import csw.prefix.models.Subsystem.ESW
-import esw.commons.BaseTestSuite
+import esw.testcommons.BaseTestSuite
 
 import scala.concurrent.duration.FiniteDuration
 
