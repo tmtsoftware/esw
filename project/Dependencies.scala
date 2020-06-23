@@ -252,6 +252,15 @@ object Dependencies {
     )
   )
 
+  val EswTestCommons: Def.Initialize[Seq[ModuleID]] = Def.setting(
+    Seq(
+      Akka.`akka-actor-testkit-typed`,
+      Akka.`akka-remote`,
+      Libs.scalatest.value,
+      Libs.`mockito-scala`
+    )
+  )
+
   val EswTestkit = Def.setting(
     Seq(
       Akka.`akka-actor-testkit-typed`,

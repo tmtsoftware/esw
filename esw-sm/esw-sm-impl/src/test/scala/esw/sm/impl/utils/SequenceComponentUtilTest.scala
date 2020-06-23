@@ -8,12 +8,12 @@ import csw.location.api.models.Connection.AkkaConnection
 import csw.location.api.models.{AkkaLocation, ComponentId}
 import csw.prefix.models.Prefix
 import csw.prefix.models.Subsystem.{ESW, IRIS, TCS}
-import esw.commons.BaseTestSuite
 import esw.commons.utils.location.LocationServiceUtil
 import esw.ocs.api.SequenceComponentApi
 import esw.ocs.api.actor.client.SequenceComponentImpl
 import esw.ocs.api.protocol.SequenceComponentResponse.GetStatusResponse
 import esw.sm.api.protocol.AgentError.SpawnSequenceComponentFailed
+import esw.testcommons.BaseTestSuite
 
 import scala.concurrent.Future
 import scala.concurrent.duration.DurationInt

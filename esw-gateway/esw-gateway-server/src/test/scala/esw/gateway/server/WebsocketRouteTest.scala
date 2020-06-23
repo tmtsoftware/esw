@@ -18,7 +18,6 @@ import csw.params.core.states.{CurrentState, StateName}
 import csw.params.events.{Event, EventKey, EventName, ObserveEvent}
 import csw.prefix.models.Prefix
 import csw.prefix.models.Subsystem.TCS
-import esw.commons.BaseTestSuite
 import esw.gateway.api.EventApi
 import esw.gateway.api.codecs.GatewayCodecs
 import esw.gateway.api.protocol.WebsocketRequest.{ComponentCommand, SequencerCommand, Subscribe, SubscribeWithPattern}
@@ -26,6 +25,7 @@ import esw.gateway.api.protocol._
 import esw.gateway.impl.EventImpl
 import esw.gateway.server.handlers.WebsocketHandlerImpl
 import esw.ocs.api.protocol.SequencerWebsocketRequest
+import esw.testcommons.BaseTestSuite
 import io.bullet.borer.Decoder
 import msocket.api.ContentEncoding.JsonText
 import msocket.api.{ContentType, Subscription}

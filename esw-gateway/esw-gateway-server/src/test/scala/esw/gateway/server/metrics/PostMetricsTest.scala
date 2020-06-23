@@ -12,13 +12,13 @@ import csw.params.commands.{CommandName, Setup}
 import csw.params.core.models.ObsId
 import csw.params.events.{EventKey, EventName}
 import csw.prefix.models.Prefix
-import esw.commons.BaseTestSuite
 import esw.gateway.api.codecs.GatewayCodecs
 import esw.gateway.api.protocol.PostRequest
 import esw.gateway.api.protocol.PostRequest.{ComponentCommand, GetEvent, SequencerCommand, createLabel}
 import esw.gateway.server.CswWiringMocks
 import esw.gateway.server.handlers.PostHandlerImpl
 import esw.ocs.api.protocol.SequencerPostRequest.Pause
+import esw.testcommons.BaseTestSuite
 import io.prometheus.client.CollectorRegistry
 import msocket.api.ContentType
 import msocket.impl.post.{ClientHttpCodecs, PostRouteFactory}

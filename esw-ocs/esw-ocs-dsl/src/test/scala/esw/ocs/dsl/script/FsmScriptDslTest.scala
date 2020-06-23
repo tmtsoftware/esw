@@ -4,9 +4,9 @@ import akka.Done
 import csw.logging.api.javadsl.ILogger
 import csw.params.commands.SequenceCommand
 import csw.time.core.models.UTCTime
-import esw.commons.BaseTestSuite
 import esw.ocs.dsl.params.Params
 import esw.ocs.impl.core.SequenceOperator
+import esw.testcommons.BaseTestSuite
 
 import scala.concurrent.Future
 

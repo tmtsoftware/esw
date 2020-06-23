@@ -9,7 +9,6 @@ import csw.location.api.models.Connection.{AkkaConnection, HttpConnection}
 import csw.location.api.models.{AkkaLocation, ComponentId, HttpLocation}
 import csw.prefix.models.Prefix
 import csw.prefix.models.Subsystem._
-import esw.commons.BaseTestSuite
 import esw.commons.utils.location.EswLocationError.{LocationNotFound, RegistrationListingFailed}
 import esw.commons.utils.location.LocationServiceUtil
 import esw.sm.api.SequenceManagerState
@@ -25,6 +24,7 @@ import esw.sm.api.protocol.StartSequencerResponse.LoadScriptError
 import esw.sm.api.protocol._
 import esw.sm.impl.config._
 import esw.sm.impl.utils.SequencerUtil
+import esw.testcommons.BaseTestSuite
 import org.scalatest.prop.TableDrivenPropertyChecks
 
 import scala.concurrent.Future

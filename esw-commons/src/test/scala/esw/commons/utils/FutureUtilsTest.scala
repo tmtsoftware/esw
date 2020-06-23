@@ -2,7 +2,7 @@ package esw.commons.utils
 
 import akka.actor.typed.ActorSystem
 import akka.actor.typed.scaladsl.Behaviors
-import esw.commons.BaseTestSuite
+import esw.testcommons.BaseTestSuite
 
 import scala.concurrent.{ExecutionContext, Future}
 import scala.concurrent.duration.DurationLong

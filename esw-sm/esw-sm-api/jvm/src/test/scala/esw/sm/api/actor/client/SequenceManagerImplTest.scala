@@ -8,10 +8,10 @@ import csw.location.api.models.Connection.AkkaConnection
 import csw.location.api.models.{AkkaLocation, ComponentId, ComponentType}
 import csw.prefix.models.Prefix
 import csw.prefix.models.Subsystem.ESW
-import esw.commons.BaseTestSuite
 import esw.sm.api.SequenceManagerState.Idle
 import esw.sm.api.actor.messages.SequenceManagerMsg
 import esw.sm.api.protocol._
+import esw.testcommons.BaseTestSuite
 
 class SequenceManagerImplTest extends BaseTestSuite {
   private final implicit val system: ActorSystem[SpawnProtocol.Command] = ActorSystem(SpawnProtocol(), "SmAkkaSerializerTest")

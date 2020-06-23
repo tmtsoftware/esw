@@ -7,8 +7,8 @@ import com.typesafe.config.ConfigFactory
 import csw.config.client.commons.ConfigUtils
 import csw.prefix.models.Subsystem
 import csw.prefix.models.Subsystem._
-import esw.commons.BaseTestSuite
 import esw.sm.impl.config._
+import esw.testcommons.BaseTestSuite
 import io.bullet.borer.Borer.Error.InvalidInputData
 
 import scala.concurrent.{Await, ExecutionContext, Future}

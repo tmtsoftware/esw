@@ -16,13 +16,13 @@ import csw.location.api.scaladsl.LocationService
 import csw.logging.client.scaladsl.LoggerFactory
 import csw.prefix.models.Prefix
 import csw.prefix.models.Subsystem.{ESW, IRIS, TCS}
-import esw.commons.BaseTestSuite
 import esw.ocs.api.actor.messages.SequenceComponentMsg
 import esw.ocs.api.actor.messages.SequenceComponentMsg._
 import esw.ocs.api.models.SequenceComponentState.{Idle, Running}
 import esw.ocs.api.protocol.ScriptError.LoadingScriptFailed
 import esw.ocs.api.protocol.SequenceComponentResponse._
 import esw.ocs.impl.internal.{SequencerServer, SequencerServerFactory}
+import esw.testcommons.BaseTestSuite
 
 import scala.concurrent.Future
 import scala.concurrent.duration.DurationLong

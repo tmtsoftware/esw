@@ -5,11 +5,11 @@ import akka.http.scaladsl.testkit.ScalatestRouteTest
 import csw.location.api.models.{ComponentId, ComponentType}
 import csw.prefix.models.Prefix
 import csw.prefix.models.Subsystem.ESW
-import esw.commons.BaseTestSuite
 import esw.sm.api.SequenceManagerApi
 import esw.sm.api.codecs.SequenceManagerHttpCodec
 import esw.sm.api.protocol.SequenceManagerPostRequest._
 import esw.sm.api.protocol._
+import esw.testcommons.BaseTestSuite
 import msocket.api.ContentType
 import msocket.impl.post.{ClientHttpCodecs, PostRouteFactory}
 

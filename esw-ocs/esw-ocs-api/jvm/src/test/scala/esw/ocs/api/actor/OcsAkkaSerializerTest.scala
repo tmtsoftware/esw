@@ -16,7 +16,6 @@ import csw.params.core.models.Id
 import csw.prefix.models.Prefix
 import csw.prefix.models.Subsystem.ESW
 import csw.time.core.models.UTCTime
-import esw.commons.BaseTestSuite
 import esw.ocs.api.actor.messages.SequenceComponentMsg.{GetStatus, LoadScript, RestartScript, UnloadScript}
 import esw.ocs.api.actor.messages.SequencerMessages._
 import esw.ocs.api.actor.messages.SequencerState
@@ -26,6 +25,7 @@ import esw.ocs.api.protocol.EditorError.IdDoesNotExist
 import esw.ocs.api.protocol.ScriptError.{LoadingScriptFailed, LocationServiceError}
 import esw.ocs.api.protocol.SequenceComponentResponse.{GetStatusResponse, ScriptResponseOrUnhandled, SequencerLocation}
 import esw.ocs.api.protocol.{DiagnosticModeResponse, SequencerSubmitResponse, _}
+import esw.testcommons.BaseTestSuite
 import org.scalatest.prop.TableDrivenPropertyChecks.forAll
 import org.scalatest.prop.Tables.Table
 
