@@ -43,6 +43,6 @@ object SequenceComponentApiTimeout {
   val LookupTimeout: Timeout        = 1.seconds
   val LoadScriptTimeout: Timeout    = 5.seconds
   val UnloadScriptTimeout: Timeout  = 3.seconds
-  val RestartScriptTimeout: Timeout = 3.seconds
+  val RestartScriptTimeout: Timeout = 8.seconds
   val ShutdownTimeout: Timeout      = 4.seconds
 }

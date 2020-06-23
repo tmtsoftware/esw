@@ -13,6 +13,7 @@ import esw.sm.api.actor.messages.SequenceManagerMsg._
 import esw.sm.api.protocol._
 
 import scala.concurrent.Future
+import scala.concurrent.duration.DurationInt
 
 class SequenceManagerImpl(location: AkkaLocation)(implicit actorSystem: ActorSystem[_]) extends SequenceManagerApi {
 
@@ -28,7 +29,10 @@ class SequenceManagerImpl(location: AkkaLocation)(implicit actorSystem: ActorSys
   override def getRunningObsModes: Future[GetRunningObsModesResponse] = smRef ? GetRunningObsModes
 
   override def startSequencer(subsystem: Subsystem, observingMode: String): Future[StartSequencerResponse] =
-    smRef ? (StartSequencer(subsystem, observingMode, _))
+    (smRef ? { x: ActorRef[StartSequencerResponse] => StartSequencer(subsystem, observingMode, x) })(
+      SequenceManagerTimeout.StartSequencerTimeout,
+      actorSystem.scheduler
+    )
 
   override def shutdownSequencer(
       subsystem: Subsystem,
@@ -38,7 +42,15 @@ class SequenceManagerImpl(location: AkkaLocation)(implicit actorSystem: ActorSys
     smRef ? (ShutdownSequencer(subsystem, observingMode, shutdownSequenceComp, _))
 
   override def restartSequencer(subsystem: Subsystem, observingMode: String): Future[RestartSequencerResponse] =
-    smRef ? (RestartSequencer(subsystem, observingMode, _))
+    (smRef ? { x: ActorRef[RestartSequencerResponse] => RestartSequencer(subsystem, observingMode, x) })(
+      SequenceManagerTimeout.RestartSequencerTimeout,
+      actorSystem.scheduler
+    )
 
   override def shutdownAllSequencers(): Future[ShutdownAllSequencersResponse] = smRef ? ShutdownAllSequencers
+}
+
+object SequenceManagerTimeout {
+  val StartSequencerTimeout: Timeout   = 20.seconds
+  val RestartSequencerTimeout: Timeout = 6.seconds
 }
