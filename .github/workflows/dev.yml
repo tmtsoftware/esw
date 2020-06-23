@@ -40,7 +40,7 @@ jobs:
       - name: Install Redis
         run: sudo apt-get install redis-server
 
-      - name: Install CS
+      - name: Install CS native
         run: |
           curl -fLo cs https://git.io/coursier-cli-linux &&
             chmod +x cs &&
