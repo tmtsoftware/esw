@@ -247,8 +247,7 @@ object Dependencies {
       Akka.`akka-remote`              % Test,
       Akka.`akka-actor-testkit-typed` % Test,
       Libs.`mockito-scala`            % Test,
-      Libs.scalatest.value            % Test,
-      Libs.`tmt-test-reporter`        % Test
+      Libs.scalatest.value            % Test
     )
   )
 
@@ -257,7 +256,8 @@ object Dependencies {
       Akka.`akka-actor-testkit-typed`,
       Akka.`akka-remote`,
       Libs.scalatest.value,
-      Libs.`mockito-scala`
+      Libs.`mockito-scala`,
+      Libs.`tmt-test-reporter`
     )
   )
 
