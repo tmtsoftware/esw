@@ -2,27 +2,30 @@ package esw.sm.handler
 
 import akka.http.scaladsl.server.Directives.complete
 import akka.http.scaladsl.server.Route
+import csw.aas.http.SecurityDirectives
 import esw.sm.api.SequenceManagerApi
 import esw.sm.api.codecs.SequenceManagerHttpCodec._
 import esw.sm.api.protocol.SequenceManagerPostRequest
 import esw.sm.api.protocol.SequenceManagerPostRequest._
+import esw.sm.auth.EswUserRolePolicy
 import msocket.impl.post.{HttpPostHandler, ServerHttpCodecs}
 
-class SequenceManagerPostHandler(sequenceManager: SequenceManagerApi)
+class SequenceManagerPostHandler(sequenceManager: SequenceManagerApi, securityDirectives: SecurityDirectives)
     extends HttpPostHandler[SequenceManagerPostRequest]
     with ServerHttpCodecs {
 
   import sequenceManager._
   override def handle(request: SequenceManagerPostRequest): Route =
     request match {
-      case Configure(obsMode)                   => complete(configure(obsMode))
       case GetRunningObsModes                   => complete(getRunningObsModes)
-      case Cleanup(obsMode)                     => complete(cleanup(obsMode))
-      case StartSequencer(subsystem, obsMode)   => complete(startSequencer(subsystem, obsMode))
-      case RestartSequencer(subsystem, obsMode) => complete(restartSequencer(subsystem, obsMode))
-      case ShutdownAllSequencers                => complete(shutdownAllSequencers())
+      case Configure(obsMode)                   => sPost(complete(configure(obsMode)))
+      case Cleanup(obsMode)                     => sPost(complete(cleanup(obsMode)))
+      case StartSequencer(subsystem, obsMode)   => sPost(complete(startSequencer(subsystem, obsMode)))
+      case RestartSequencer(subsystem, obsMode) => sPost(complete(restartSequencer(subsystem, obsMode)))
+      case ShutdownAllSequencers                => sPost(complete(shutdownAllSequencers()))
       case ShutdownSequencer(subsystem, obsMode, shutdownSequenceComp) =>
-        complete(shutdownSequencer(subsystem, obsMode, shutdownSequenceComp))
+        sPost(complete(shutdownSequencer(subsystem, obsMode, shutdownSequenceComp)))
     }
 
+  def sPost(route: => Route): Route = securityDirectives.sPost(EswUserRolePolicy())(_ => route)
 }

@@ -2,6 +2,7 @@ package esw.sm.handler
 
 import akka.http.scaladsl.server.Route
 import akka.http.scaladsl.testkit.ScalatestRouteTest
+import csw.aas.http.SecurityDirectives
 import csw.location.api.models.{ComponentId, ComponentType}
 import csw.prefix.models.Prefix
 import csw.prefix.models.Subsystem.ESW
@@ -22,7 +23,8 @@ class SequenceManagerPostHandlerTest
     with SequenceManagerHttpCodec
     with ClientHttpCodecs {
   private val sequenceManagerApi: SequenceManagerApi = mock[SequenceManagerApi]
-  private val postHandler                            = new SequenceManagerPostHandler(sequenceManagerApi)
+  private val securityDirectives: SecurityDirectives = SecurityDirectives.authDisabled(system.settings.config)
+  private val postHandler                            = new SequenceManagerPostHandler(sequenceManagerApi, securityDirectives)
   lazy val route: Route                              = new PostRouteFactory[SequenceManagerPostRequest]("post-endpoint", postHandler).make()
   private val obsMode                                = ObsMode("IRIS_darknight")
   private val componentId                            = ComponentId(Prefix(ESW, obsMode.name), ComponentType.Sequencer)
