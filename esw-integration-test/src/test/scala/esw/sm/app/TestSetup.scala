@@ -33,24 +33,42 @@ object TestSetup extends EswTestKit {
 
   val path: Path = Paths.get(ClassLoader.getSystemResource("smResources.conf").toURI)
 
-  def startSequenceManager(prefix: Prefix, configFilePath: Path = path): SequenceManagerApi = {
+  def startSequenceManagerAuthEnabled(
+      prefix: Prefix,
+      tokenFactory: () => Option[String],
+      configFilePath: Path = path
+  ): SequenceManagerApi =
+    startSequenceManager(prefix, configFilePath, authDisabled = false, tokenFactory)
+
+  def startSequenceManager(prefix: Prefix, configFilePath: Path = path): SequenceManagerApi =
+    startSequenceManager(prefix, configFilePath, authDisabled = true, () => None)
+
+  private def startSequenceManager(
+      prefix: Prefix,
+      configFilePath: Path,
+      authDisabled: Boolean,
+      tokenFactory: () => Option[String]
+  ): SequenceManagerApi = {
     val authConfigS = """
       |auth-config { 
-      |  disabled = true
       |  realm = TMT-test
       |  client-id = esw-sequence-manager
       |}""".stripMargin
-    val authConfig  = ConfigFactory.parseString(authConfigS)
 
     val _system: ActorSystem[SpawnProtocol.Command] =
-      ActorSystemFactory.remote(SpawnProtocol(), "sequencer-manager")
-    val securityDirectives = SecurityDirectives.authDisabled(authConfig)
+      ActorSystemFactory.remote(SpawnProtocol(), "sequence-manager")
+    val config = ConfigFactory.parseString(authConfigS).withFallback(_system.settings.config)
 
-    val wiring = SequenceManagerWiring(configFilePath, _system, securityDirectives)
+    val authConfig =
+      if (authDisabled) ConfigFactory.parseString("auth-config.disabled=true").withFallback(config)
+      else config
+
+    val securityDirectives = SecurityDirectives(authConfig, locationService)
+    val wiring             = SequenceManagerWiring(configFilePath, _system, securityDirectives)
     wiring.start()
     seqManagerWirings += wiring
     val smLocation = resolveHTTPLocation(prefix, Service)
-    SequenceManagerApiFactory.make(smLocation)
+    SequenceManagerApiFactory.makeHttpClient(smLocation, tokenFactory)
   }
 
   def unregisterSequenceManager(prefix: Prefix): Done = {
