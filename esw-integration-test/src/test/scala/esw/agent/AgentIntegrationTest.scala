@@ -5,11 +5,14 @@ import csw.location.api.models.ComponentId
 import csw.location.api.models.ComponentType.{Machine, SequenceComponent, Service}
 import csw.location.api.models.Connection.{AkkaConnection, TcpConnection}
 import csw.prefix.models.Prefix
+import csw.prefix.models.Subsystem.IRIS
 import esw.BinaryFetcherUtil
 import esw.agent.api.ComponentStatus.Running
 import esw.agent.api.{AgentStatus, Failed, Killed, Spawned}
 import esw.agent.app.AgentSettings
 import esw.agent.client.AgentClient
+import esw.ocs.api.actor.client.SequenceComponentImpl
+import esw.ocs.api.protocol.SequenceComponentResponse.SequencerLocation
 import esw.ocs.testkit.EswTestKit
 
 import scala.concurrent.duration.DurationLong
@@ -44,10 +47,18 @@ class AgentIntegrationTest extends EswTestKit with BinaryFetcherUtil with Locati
       agentLocation should not be empty
     }
 
-    "return Spawned on SpawnSequenceComponent and Killed on KillComponent message | ESW-237, ESW-276, ESW-325" in {
+    "return Spawned on SpawnSequenceComponent and Killed on KillComponent message |  ESW-153, ESW-237, ESW-276, ESW-325" in {
       spawnSequenceComponent(irisPrefix).futureValue should ===(Spawned)
       // Verify registration in location service
-      locationService.resolve(irisSeqCompConnection, 5.seconds).futureValue should not be empty
+      val seqCompLoc = locationService.resolve(irisSeqCompConnection, 5.seconds).futureValue.value
+      seqCompLoc.connection shouldBe irisSeqCompConnection
+
+      // start sequencer i.e. load IRIS darknight script
+      val seqCompApi         = new SequenceComponentImpl(seqCompLoc)
+      val loadScriptResponse = seqCompApi.loadScript(IRIS, "darknight").futureValue
+
+      // verify sequencer location from load script and looked up from location service is the same
+      loadScriptResponse shouldBe SequencerLocation(resolveSequencerLocation(IRIS, "darknight"))
 
       agentClient.killComponent(ComponentId(irisPrefix, SequenceComponent)).futureValue should ===(Killed)
       // Verify not registered in location service

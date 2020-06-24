@@ -25,9 +25,7 @@ class SequenceManagerIntegrationTest extends EswTestKit with BinaryFetcherUtil {
   private val sequenceManagerPrefix = Prefix(ESW, "sequence_manager")
 
   override protected def beforeEach(): Unit = locationService.unregisterAll()
-  override protected def afterEach(): Unit = {
-    TestSetup.cleanup()
-  }
+  override protected def afterEach(): Unit  = TestSetup.cleanup()
 
   "start sequence manager and register akka + http locations| ESW-171, ESW-172" in {
     // resolving sequence manager fails for Akka and Http
