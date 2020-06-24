@@ -248,7 +248,7 @@ lazy val `esw-sm-api` = crossProject(JSPlatform, JVMPlatform)
   .jvmConfigure(
     _.enablePlugins(MaybeCoverage, PublishBintray)
       .settings(libraryDependencies ++= Dependencies.SmApiJvm.value)
-      .dependsOn(`esw-commons`, `esw-test-commons` % Test)
+      .dependsOn(`esw-commons`, `esw-test-commons` % Test, `esw-ocs-api`.jvm)
   )
   //  the following setting is required by IntelliJ which could not handle cross-compiled Akka types
   .jsSettings(SettingKey[Boolean]("ide-skip-project") := true)

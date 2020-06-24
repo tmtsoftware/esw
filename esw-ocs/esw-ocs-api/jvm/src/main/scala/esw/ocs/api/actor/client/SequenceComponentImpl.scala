@@ -2,7 +2,6 @@ package esw.ocs.api.actor.client
 
 import akka.actor.typed.scaladsl.AskPattern._
 import akka.actor.typed.{ActorRef, ActorSystem}
-import akka.util.Timeout
 import csw.location.api.extensions.URIExtension.RichURI
 import csw.location.api.models.AkkaLocation
 import csw.prefix.models.Subsystem
@@ -12,7 +11,7 @@ import esw.ocs.api.actor.messages.SequenceComponentMsg.{GetStatus, LoadScript, R
 import esw.ocs.api.protocol.SequenceComponentResponse.{GetStatusResponse, OkOrUnhandled, ScriptResponseOrUnhandled}
 
 import scala.concurrent.Future
-import scala.concurrent.duration.DurationInt
+import scala.concurrent.duration.{DurationInt, FiniteDuration}
 
 class SequenceComponentImpl(sequenceComponentLocation: AkkaLocation)(implicit
     actorSystem: ActorSystem[_]
@@ -30,7 +29,7 @@ class SequenceComponentImpl(sequenceComponentLocation: AkkaLocation)(implicit
     (sequenceComponentRef ? RestartScript)(SequenceComponentApiTimeout.RestartScriptTimeout, actorSystem.scheduler)
 
   override def status: Future[GetStatusResponse] =
-    (sequenceComponentRef ? GetStatus)(SequenceComponentApiTimeout.LookupTimeout, actorSystem.scheduler)
+    (sequenceComponentRef ? GetStatus)(SequenceComponentApiTimeout.StatusTimeout, actorSystem.scheduler)
 
   override def unloadScript(): Future[OkOrUnhandled] =
     (sequenceComponentRef ? UnloadScript)(SequenceComponentApiTimeout.UnloadScriptTimeout, actorSystem.scheduler)
@@ -40,9 +39,9 @@ class SequenceComponentImpl(sequenceComponentLocation: AkkaLocation)(implicit
 }
 
 object SequenceComponentApiTimeout {
-  val LookupTimeout: Timeout        = 1.seconds
-  val LoadScriptTimeout: Timeout    = 5.seconds
-  val UnloadScriptTimeout: Timeout  = 3.seconds
-  val RestartScriptTimeout: Timeout = 8.seconds
-  val ShutdownTimeout: Timeout      = 4.seconds
+  val StatusTimeout: FiniteDuration        = 1.seconds
+  val LoadScriptTimeout: FiniteDuration    = 5.seconds
+  val UnloadScriptTimeout: FiniteDuration  = 3.seconds
+  val RestartScriptTimeout: FiniteDuration = UnloadScriptTimeout + LoadScriptTimeout
+  val ShutdownTimeout: FiniteDuration      = 4.seconds
 }

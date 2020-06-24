@@ -7,13 +7,14 @@ import csw.location.api.extensions.URIExtension.RichURI
 import csw.location.api.models.AkkaLocation
 import csw.prefix.models.Subsystem
 import esw.commons.Timeouts
+import esw.ocs.api.actor.client.SequenceComponentApiTimeout
 import esw.sm.api.SequenceManagerApi
 import esw.sm.api.actor.messages.SequenceManagerMsg
 import esw.sm.api.actor.messages.SequenceManagerMsg._
 import esw.sm.api.protocol._
 
 import scala.concurrent.Future
-import scala.concurrent.duration.DurationInt
+import scala.concurrent.duration.{DurationInt, FiniteDuration}
 
 class SequenceManagerImpl(location: AkkaLocation)(implicit actorSystem: ActorSystem[_]) extends SequenceManagerApi {
 
@@ -51,6 +52,12 @@ class SequenceManagerImpl(location: AkkaLocation)(implicit actorSystem: ActorSys
 }
 
 object SequenceManagerTimeout {
-  val StartSequencerTimeout: Timeout   = 20.seconds
-  val RestartSequencerTimeout: Timeout = 6.seconds
+  val StartSequencerTimeout: FiniteDuration =
+    SequenceComponentApiTimeout.StatusTimeout +     // Lookup for subsystem idle sequence component
+      SequenceComponentApiTimeout.StatusTimeout +   // lookup for ESW idle sequence component as fallback
+      10.seconds +                                  // spawn sequence component using agent timeout as fallback
+      SequenceComponentApiTimeout.LoadScriptTimeout // load script in seq comp to start sequencer
+
+  val RestartSequencerTimeout: FiniteDuration = 5.seconds + // get seq comp location by asking sequencer
+    SequenceComponentApiTimeout.RestartScriptTimeout
 }
