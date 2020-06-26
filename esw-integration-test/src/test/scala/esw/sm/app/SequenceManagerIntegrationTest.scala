@@ -86,7 +86,7 @@ class SequenceManagerIntegrationTest extends EswTestKit with BinaryFetcherUtil {
     assertThatSeqCompIsAvailable(aoeswSeqCompPrefix)
   }
 
-  "configure should run multiple obs modes in parallel if resources are not conflicting | ESW-168, ESW-169, ESW-170, ESW-171" in {
+  "configure should run multiple obs modes in parallel if resources are not conflicting | ESW-168, ESW-169, ESW-170, ESW-171, ESW-179" in {
     TestSetup.startSequenceComponents(
       Prefix(ESW, "primary"),
       Prefix(ESW, "secondary"),
@@ -100,7 +100,7 @@ class SequenceManagerIntegrationTest extends EswTestKit with BinaryFetcherUtil {
     // Configure for "IRIS_Cal" observing mode should be successful as the resources are available
     sequenceManagerClient.configure(IRIS_CAL).futureValue shouldBe a[ConfigureResponse.Success]
 
-    // *************** Avoid conflicting sequence execution | ESW-169 ********************
+    // *************** Avoid conflicting sequence execution | ESW-169, ESW-179 ********************
     // Configure for "IRIS_Darknight" observing mode should return error because resource IRIS and NFIRAOS are busy
     sequenceManagerClient.configure(IRIS_DARKNIGHT).futureValue should ===(ConflictingResourcesWithRunningObsMode(Set(IRIS_CAL)))
 
