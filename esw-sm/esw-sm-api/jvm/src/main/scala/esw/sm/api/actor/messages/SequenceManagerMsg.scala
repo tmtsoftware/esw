@@ -17,18 +17,16 @@ sealed trait SequenceManagerIdleMsg extends SequenceManagerRemoteMsg
 
 object SequenceManagerMsg {
   case class Configure(obsMode: ObsMode, replyTo: ActorRef[ConfigureResponse]) extends SequenceManagerIdleMsg
-  case class Cleanup(obsMode: ObsMode, replyTo: ActorRef[CleanupResponse])     extends SequenceManagerIdleMsg
   case class StartSequencer(subsystem: Subsystem, observingMode: ObsMode, replyTo: ActorRef[StartSequencerResponse])
       extends SequenceManagerIdleMsg
-  case class ShutdownSequencer(
-      subsystem: Subsystem,
-      observingMode: ObsMode,
+  case class ShutdownSequencers(
+      subsystem: Option[Subsystem],
+      observingMode: Option[ObsMode],
       shutdownSequenceComp: Boolean,
-      replyTo: ActorRef[ShutdownSequencerResponse]
+      replyTo: ActorRef[ShutdownSequencersResponse]
   ) extends SequenceManagerIdleMsg
   case class RestartSequencer(subsystem: Subsystem, observingMode: ObsMode, replyTo: ActorRef[RestartSequencerResponse])
       extends SequenceManagerIdleMsg
-  case class ShutdownAllSequencers(replyTo: ActorRef[ShutdownAllSequencersResponse]) extends SequenceManagerIdleMsg
   case class SpawnSequenceComponent(machine: ComponentId, name: String, replyTo: ActorRef[SpawnSequenceComponentResponse])
       extends SequenceManagerIdleMsg
   case class ShutdownSequenceComponent(prefix: Prefix, replyTo: ActorRef[ShutdownSequenceComponentResponse])
@@ -38,13 +36,10 @@ object SequenceManagerMsg {
   case class GetRunningObsModes(replyTo: ActorRef[GetRunningObsModesResponse]) extends CommonMessage
   case class GetSequenceManagerState(replyTo: ActorRef[SequenceManagerState])  extends CommonMessage
 
-  private[sm] case class StartSequencerResponseInternal(res: StartSequencerResponse)       extends SequenceManagerInternalMsg
-  private[sm] case class ShutdownSequencerResponseInternal(res: ShutdownSequencerResponse) extends SequenceManagerInternalMsg
-  private[sm] case class RestartSequencerResponseInternal(res: RestartSequencerResponse)   extends SequenceManagerInternalMsg
-  private[sm] case class ConfigurationResponseInternal(res: ConfigureResponse)             extends SequenceManagerInternalMsg
-  private[sm] case class CleanupResponseInternal(res: CleanupResponse)                     extends SequenceManagerInternalMsg
-  private[sm] case class ShutdownAllSequencersResponseInternal(res: ShutdownAllSequencersResponse)
-      extends SequenceManagerInternalMsg
+  private[sm] case class StartSequencerResponseInternal(res: StartSequencerResponse)         extends SequenceManagerInternalMsg
+  private[sm] case class ShutdownSequencersResponseInternal(res: ShutdownSequencersResponse) extends SequenceManagerInternalMsg
+  private[sm] case class RestartSequencerResponseInternal(res: RestartSequencerResponse)     extends SequenceManagerInternalMsg
+  private[sm] case class ConfigurationResponseInternal(res: ConfigureResponse)               extends SequenceManagerInternalMsg
   private[sm] case class SpawnSequenceComponentInternal(res: SpawnSequenceComponentResponse) extends SequenceManagerInternalMsg
   private[sm] case class ShutdownSequenceComponentInternal(res: ShutdownSequenceComponentResponse)
       extends SequenceManagerInternalMsg

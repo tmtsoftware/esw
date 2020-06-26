@@ -19,9 +19,8 @@ import esw.sm.api.actor.messages.SequenceManagerMsg._
 import esw.sm.api.protocol.AgentError.SpawnSequenceComponentFailed
 import esw.sm.api.protocol.CommonFailure.{ConfigurationMissing, LocationServiceError}
 import esw.sm.api.protocol.ConfigureResponse.{ConflictingResourcesWithRunningObsMode, Success}
-import esw.sm.api.protocol.ShutdownAllSequencersResponse.ShutdownFailure
 import esw.sm.api.protocol.ShutdownSequenceComponentResponse.ShutdownSequenceComponentFailure
-import esw.sm.api.protocol.ShutdownSequencerResponse.UnloadScriptError
+import esw.sm.api.protocol.ShutdownSequencersResponse.ShutdownError
 import esw.sm.api.protocol.StartSequencerResponse.LoadScriptError
 import esw.sm.api.protocol.{ShutdownSequenceComponentResponse, _}
 import esw.sm.impl.config._
@@ -122,43 +121,6 @@ class SequenceManagerBehaviorTest extends BaseTestSuite with TableDrivenProperty
     }
   }
 
-  "Cleanup" must {
-
-    "transition sm from Idle -> CleaningInProcess -> Idle state and stop all the sequencer for given obs mode | ESW-166" in {
-      when(sequencerUtil.shutdownSequencers(darknightSequencers, Darknight))
-        .thenReturn(future(1.seconds, CleanupResponse.Success))
-
-      val cleanupProbe = TestProbe[CleanupResponse]()
-
-      assertState(Idle)
-      smRef ! Cleanup(Darknight, cleanupProbe.ref)
-      assertState(CleaningUp)
-      assertState(Idle)
-
-      cleanupProbe.expectMessage(CleanupResponse.Success)
-      verify(sequencerUtil).shutdownSequencers(darknightSequencers, Darknight)
-    }
-
-    "return fail if there is failure while stopping sequencers | ESW-166" in {
-      val failureMsg = "location service error"
-      when(sequencerUtil.shutdownSequencers(darknightSequencers, Darknight))
-        .thenReturn(Future.successful(CleanupResponse.FailedToShutdownSequencers(Set(failureMsg))))
-
-      val probe = TestProbe[CleanupResponse]()
-      smRef ! Cleanup(Darknight, probe.ref)
-
-      probe.expectMessage(CleanupResponse.FailedToShutdownSequencers(Set(failureMsg)))
-      verify(sequencerUtil).shutdownSequencers(darknightSequencers, Darknight)
-    }
-
-    "return ConfigurationMissing error when config for given obsMode is missing | ESW-166" in {
-      val probe = TestProbe[CleanupResponse]()
-      smRef ! Cleanup(RandomObsMode, probe.ref)
-
-      probe.expectMessage(ConfigurationMissing(RandomObsMode))
-    }
-  }
-
   "StartSequencer" must {
     "transition sm from Idle -> Starting -> Idle state and start the sequencer for given obs mode | ESW-176" in {
       val componentId    = ComponentId(Prefix(ESW, Darknight.name), Sequencer)
@@ -219,14 +181,14 @@ class SequenceManagerBehaviorTest extends BaseTestSuite with TableDrivenProperty
   "ShutdownSequencer" must {
     "transition sm from Idle -> ShuttingDown -> Idle state and shut down the sequencer for given obs mode | ESW-326" in {
       when(sequencerUtil.shutdownSequencer(ESW, Darknight))
-        .thenReturn(future(1.seconds, Right(ShutdownSequencerResponse.Success)))
+        .thenReturn(future(1.seconds, Right(ShutdownSequencersResponse.Success)))
 
-      val shutdownSequencerResponseProbe = TestProbe[ShutdownSequencerResponse]()
+      val shutdownSequencerResponseProbe = TestProbe[ShutdownSequencersResponse]()
 
       assertState(Idle)
-      smRef ! ShutdownSequencer(ESW, Darknight, shutdownSequenceComp = false, shutdownSequencerResponseProbe.ref)
-      assertState(ShuttingDownSequencer)
-      shutdownSequencerResponseProbe.expectMessage(ShutdownSequencerResponse.Success)
+      smRef ! ShutdownSequencers(Some(ESW), Some(Darknight), shutdownSequenceComp = false, shutdownSequencerResponseProbe.ref)
+      assertState(ShuttingDownSequencers)
+      shutdownSequencerResponseProbe.expectMessage(ShutdownSequencersResponse.Success)
       assertState(Idle)
 
       verify(sequencerUtil).shutdownSequencer(ESW, Darknight)
@@ -234,14 +196,14 @@ class SequenceManagerBehaviorTest extends BaseTestSuite with TableDrivenProperty
 
     "shutdown the sequence component along with sequencer | ESW-326, ESW-167" in {
       when(sequencerUtil.shutdownSequencer(ESW, Darknight, shutdownSequenceComp = true))
-        .thenReturn(future(1.seconds, Right(ShutdownSequencerResponse.Success)))
+        .thenReturn(future(1.seconds, Right(ShutdownSequencersResponse.Success)))
 
-      val shutdownSequencerResponseProbe = TestProbe[ShutdownSequencerResponse]()
+      val shutdownSequencerResponseProbe = TestProbe[ShutdownSequencersResponse]()
 
       assertState(Idle)
-      smRef ! ShutdownSequencer(ESW, Darknight, shutdownSequenceComp = true, shutdownSequencerResponseProbe.ref)
-      assertState(ShuttingDownSequencer)
-      shutdownSequencerResponseProbe.expectMessage(ShutdownSequencerResponse.Success)
+      smRef ! ShutdownSequencers(Some(ESW), Some(Darknight), shutdownSequenceComp = true, shutdownSequencerResponseProbe.ref)
+      assertState(ShuttingDownSequencers)
+      shutdownSequencerResponseProbe.expectMessage(ShutdownSequencersResponse.Success)
       assertState(Idle)
 
       verify(sequencerUtil).shutdownSequencer(ESW, Darknight, shutdownSequenceComp = true)
@@ -250,12 +212,12 @@ class SequenceManagerBehaviorTest extends BaseTestSuite with TableDrivenProperty
     "return UnloadScriptError if unload script fails | ESW-326" in {
       val prefix = Prefix(ESW, Darknight.name)
       when(sequencerUtil.shutdownSequencer(ESW, Darknight))
-        .thenReturn(future(1.seconds, Left(UnloadScriptError(prefix, "something went wrong"))))
+        .thenReturn(future(1.seconds, Left(ShutdownError(prefix, "something went wrong"))))
 
-      val shutdownSequencerResponseProbe = TestProbe[ShutdownSequencerResponse]()
+      val shutdownSequencerResponseProbe = TestProbe[ShutdownSequencersResponse]()
 
-      smRef ! ShutdownSequencer(ESW, Darknight, shutdownSequenceComp = false, shutdownSequencerResponseProbe.ref)
-      shutdownSequencerResponseProbe.expectMessage(UnloadScriptError(prefix, "something went wrong"))
+      smRef ! ShutdownSequencers(Some(ESW), Some(Darknight), shutdownSequenceComp = false, shutdownSequencerResponseProbe.ref)
+      shutdownSequencerResponseProbe.expectMessage(ShutdownError(prefix, "something went wrong"))
 
       verify(sequencerUtil).shutdownSequencer(ESW, Darknight)
     }
@@ -264,9 +226,9 @@ class SequenceManagerBehaviorTest extends BaseTestSuite with TableDrivenProperty
       when(sequencerUtil.shutdownSequencer(ESW, Darknight))
         .thenReturn(future(1.seconds, Left(LocationServiceError("something went wrong"))))
 
-      val shutdownSequencerResponseProbe = TestProbe[ShutdownSequencerResponse]()
+      val shutdownSequencerResponseProbe = TestProbe[ShutdownSequencersResponse]()
 
-      smRef ! ShutdownSequencer(ESW, Darknight, shutdownSequenceComp = false, shutdownSequencerResponseProbe.ref)
+      smRef ! ShutdownSequencers(Some(ESW), Some(Darknight), shutdownSequenceComp = false, shutdownSequencerResponseProbe.ref)
       shutdownSequencerResponseProbe.expectMessage(LocationServiceError("something went wrong"))
 
       verify(sequencerUtil).shutdownSequencer(ESW, Darknight)
@@ -294,7 +256,6 @@ class SequenceManagerBehaviorTest extends BaseTestSuite with TableDrivenProperty
 
     val errors = Table(
       ("errorName", "error", "process"),
-      ("UnloadScriptError", UnloadScriptError(Prefix(ESW, Darknight.name), "unload script error"), "stop"),
       ("LocationServiceError", LocationServiceError("location service error"), "stop"),
       ("SpawnSequenceComponentFailed", SpawnSequenceComponentFailed("spawn sequence component failed"), "start"),
       ("LoadScriptError", LoadScriptError("load script failed"), "start")
@@ -311,46 +272,6 @@ class SequenceManagerBehaviorTest extends BaseTestSuite with TableDrivenProperty
         restartSequencerResponseProbe.expectMessage(error)
 
         verify(sequencerUtil).restartSequencer(ESW, Darknight)
-      }
-    }
-  }
-
-  "ShutdownAllSequencers" must {
-    "transition sm from Idle -> ShuttingDownAllSequencers -> Idle state and shut down all the currently running sequencers | ESW-324" in {
-      when(sequencerUtil.shutdownAllSequencers())
-        .thenReturn(future(1.seconds, ShutdownAllSequencersResponse.Success))
-
-      val shutdownSequencerResponseProbe = TestProbe[ShutdownAllSequencersResponse]()
-
-      assertState(Idle)
-      smRef ! ShutdownAllSequencers(shutdownSequencerResponseProbe.ref)
-      assertState(ShuttingDownAllSequencers)
-      shutdownSequencerResponseProbe.expectMessage(ShutdownAllSequencersResponse.Success)
-      assertState(Idle)
-
-      verify(sequencerUtil).shutdownAllSequencers()
-    }
-
-    val errors = Table(
-      ("errorName", "error", "process"),
-      (
-        "ShutDownFailure",
-        ShutdownFailure(List(UnloadScriptError(Prefix(ESW, Darknight.name), "unload the script of any sequencer"))),
-        "stop"
-      ),
-      ("LocationServiceError", LocationServiceError("location service error"), "listing all the running sequencers")
-    )
-
-    forAll(errors) { (errorName, error, process) =>
-      s"return $errorName if $errorName encountered while $process | ESW-324" in {
-        when(sequencerUtil.shutdownAllSequencers()).thenReturn(future(1.seconds, error))
-
-        val shutdownSequencerResponseProbe = TestProbe[ShutdownAllSequencersResponse]()
-
-        smRef ! ShutdownAllSequencers(shutdownSequencerResponseProbe.ref)
-        shutdownSequencerResponseProbe.expectMessage(error)
-
-        verify(sequencerUtil).shutdownAllSequencers()
       }
     }
   }

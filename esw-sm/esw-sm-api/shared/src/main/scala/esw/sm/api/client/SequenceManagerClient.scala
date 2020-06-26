@@ -18,27 +18,21 @@ class SequenceManagerClient(postClient: Transport[SequenceManagerPostRequest])
   override def configure(obsMode: ObsMode): Future[ConfigureResponse] =
     postClient.requestResponse[ConfigureResponse](Configure(obsMode))
 
-  override def cleanup(obsMode: ObsMode): Future[CleanupResponse] =
-    postClient.requestResponse[CleanupResponse](Cleanup(obsMode))
-
   override def getRunningObsModes: Future[GetRunningObsModesResponse] =
     postClient.requestResponse[GetRunningObsModesResponse](GetRunningObsModes)
 
   override def startSequencer(subsystem: Subsystem, obsMode: ObsMode): Future[StartSequencerResponse] =
     postClient.requestResponse[StartSequencerResponse](StartSequencer(subsystem, obsMode))
 
-  override def shutdownSequencer(
-      subsystem: Subsystem,
-      obsMode: ObsMode,
+  override def shutdownSequencers(
+      subsystem: Option[Subsystem],
+      obsMode: Option[ObsMode],
       shutdownSequenceComp: Boolean = false
-  ): Future[ShutdownSequencerResponse] =
-    postClient.requestResponse[ShutdownSequencerResponse](ShutdownSequencer(subsystem, obsMode, shutdownSequenceComp))
+  ): Future[ShutdownSequencersResponse] =
+    postClient.requestResponse[ShutdownSequencersResponse](ShutdownSequencers(subsystem, obsMode, shutdownSequenceComp))
 
   override def restartSequencer(subsystem: Subsystem, obsMode: ObsMode): Future[RestartSequencerResponse] =
     postClient.requestResponse[RestartSequencerResponse](RestartSequencer(subsystem, obsMode))
-
-  override def shutdownAllSequencers(): Future[ShutdownAllSequencersResponse] =
-    postClient.requestResponse[ShutdownAllSequencersResponse](ShutdownAllSequencers)
 
   override def spawnSequenceComponent(machine: ComponentId, name: String): Future[SpawnSequenceComponentResponse] =
     postClient.requestResponse[SpawnSequenceComponentResponse](SpawnSequenceComponent(machine, name))

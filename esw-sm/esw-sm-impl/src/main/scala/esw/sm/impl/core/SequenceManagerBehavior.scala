@@ -42,11 +42,9 @@ class SequenceManagerBehavior(
   private def idle(self: SelfRef): SMBehavior =
     receive[SequenceManagerIdleMsg](Idle) {
       case Configure(observingMode, replyTo)                 => configure(observingMode, self, replyTo)
-      case Cleanup(observingMode, replyTo)                   => cleanup(observingMode, self, replyTo)
       case StartSequencer(subsystem, observingMode, replyTo) => startSequencer(subsystem, observingMode, self, replyTo)
-      case ShutdownSequencer(subsystem, observingMode, shutdownSequenceComp, replyTo) =>
-        shutdownSequencer(subsystem, observingMode, shutdownSequenceComp, self, replyTo)
-      case ShutdownAllSequencers(replyTo)                      => shutdownAllSequencers(self, replyTo)
+      case ShutdownSequencers(subsystem, observingMode, shutdownSequenceComp, replyTo) =>
+        shutdownSequencers(subsystem, observingMode, shutdownSequenceComp, self, replyTo)
       case RestartSequencer(subsystem, observingMode, replyTo) => restartSequencer(subsystem, observingMode, self, replyTo)
       case SpawnSequenceComponent(machine, name, replyTo)      => spawnSequenceComponent(machine, name, self, replyTo)
       case ShutdownSequenceComponent(prefix, replyTo)          => shutdownSequenceComponent(prefix, self, replyTo)
@@ -86,22 +84,6 @@ class SequenceManagerBehavior(
   private def configuring(self: SelfRef, replyTo: ActorRef[ConfigureResponse]): SMBehavior =
     receive[ConfigurationResponseInternal](Configuring)(msg => replyAndGoToIdle(self, replyTo, msg.res))
 
-  private def cleanup(obsMode: ObsMode, self: SelfRef, replyTo: ActorRef[CleanupResponse]): SMBehavior = {
-    val cleanupResponseF =
-      config
-        .sequencers(obsMode)
-        .map(sequencerUtil.shutdownSequencers(_, obsMode))
-        .getOrElse(Future.successful(ConfigurationMissing(obsMode)))
-
-    cleanupResponseF.map(self ! CleanupResponseInternal(_))
-    cleaningUp(self, replyTo)
-  }
-
-  // Clean up is in progress, waiting for CleanupResponseInternal message
-  // Within this period, reject all the other messages except common messages
-  private def cleaningUp(self: SelfRef, replyTo: ActorRef[CleanupResponse]): SMBehavior =
-    receive[CleanupResponseInternal](CleaningUp)(msg => replyAndGoToIdle(self, replyTo, msg.res))
-
   private def startSequencer(
       subsystem: Subsystem,
       obsMode: ObsMode,
@@ -131,22 +113,32 @@ class SequenceManagerBehavior(
   private def startingSequencer(self: SelfRef, replyTo: ActorRef[StartSequencerResponse]): SMBehavior =
     receive[StartSequencerResponseInternal](StartingSequencer)(msg => replyAndGoToIdle(self, replyTo, msg.res))
 
-  private def shutdownSequencer(
-      subsystem: Subsystem,
-      obsMode: ObsMode,
+  private def shutdownSequencers(
+      subsystem: Option[Subsystem],
+      obsMode: Option[ObsMode],
       shutdownSequenceComp: Boolean,
       self: SelfRef,
-      replyTo: ActorRef[ShutdownSequencerResponse]
+      replyTo: ActorRef[ShutdownSequencersResponse]
   ): SMBehavior = {
-    val shutdownResponseF = sequencerUtil.shutdownSequencer(subsystem, obsMode, shutdownSequenceComp).mapToAdt(identity, identity)
-    shutdownResponseF.map(self ! ShutdownSequencerResponseInternal(_))
-    shuttingDownSequencer(self, replyTo)
+    val shutdownResponseF = (subsystem, obsMode) match {
+      case (Some(subsystem), Some(obsMode)) =>
+        sequencerUtil.shutdownSequencer(subsystem, obsMode, shutdownSequenceComp).mapToAdt(identity, identity)
+      case (Some(subsystem), None) => sequencerUtil.shutdownSequencers(subsystem)
+      case (None, Some(obsMode)) =>
+        config
+          .sequencers(obsMode)
+          .map(sequencerUtil.shutdownSequencers(_, obsMode))
+          .getOrElse(Future.successful(ConfigurationMissing(obsMode)))
+      case _ => sequencerUtil.shutdownSequencers()
+    }
+    shutdownResponseF.map(self ! ShutdownSequencersResponseInternal(_))
+    shuttingDownSequencers(self, replyTo)
   }
 
   // Shutdown sequencer is in progress, waiting for ShutdownSequencerResponseInternal message
   // Within this period, reject all the other messages except common messages
-  private def shuttingDownSequencer(self: SelfRef, replyTo: ActorRef[ShutdownSequencerResponse]): SMBehavior =
-    receive[ShutdownSequencerResponseInternal](ShuttingDownSequencer)(msg => replyAndGoToIdle(self, replyTo, msg.res))
+  private def shuttingDownSequencers(self: SelfRef, replyTo: ActorRef[ShutdownSequencersResponse]): SMBehavior =
+    receive[ShutdownSequencersResponseInternal](ShuttingDownSequencers)(msg => replyAndGoToIdle(self, replyTo, msg.res))
 
   private def restartSequencer(
       subsystem: Subsystem,
@@ -161,17 +153,6 @@ class SequenceManagerBehavior(
 
   private def restartingSequencer(self: SelfRef, replyTo: ActorRef[RestartSequencerResponse]): SMBehavior =
     receive[RestartSequencerResponseInternal](RestartingSequencer)(msg => replyAndGoToIdle(self, replyTo, msg.res))
-
-  private def shutdownAllSequencers(
-      self: SelfRef,
-      replyTo: ActorRef[ShutdownAllSequencersResponse]
-  ): SMBehavior = {
-    sequencerUtil.shutdownAllSequencers().map(self ! ShutdownAllSequencersResponseInternal(_))
-    shuttingDownAllSequencers(self, replyTo)
-  }
-
-  private def shuttingDownAllSequencers(self: SelfRef, replyTo: ActorRef[ShutdownAllSequencersResponse]): SMBehavior =
-    receive[ShutdownAllSequencersResponseInternal](ShuttingDownAllSequencers)(msg => replyAndGoToIdle(self, replyTo, msg.res))
 
   private def spawnSequenceComponent(
       machine: ComponentId,

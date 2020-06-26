@@ -35,18 +35,6 @@ class SequenceManagerClientTest extends BaseTestSuite with SequenceManagerHttpCo
       client.getRunningObsModes.futureValue shouldBe GetRunningObsModesResponse.Success(Set(obsMode))
     }
 
-    "return cleanup success for cleanup request" in {
-      val cleanupMsg = Cleanup(obsMode)
-      when(
-        postClient.requestResponse[CleanupResponse](argsEq(cleanupMsg))(
-          any[Decoder[CleanupResponse]](),
-          any[Encoder[CleanupResponse]]()
-        )
-      ).thenReturn(Future.successful(CleanupResponse.Success))
-
-      client.cleanup(obsMode).futureValue shouldBe CleanupResponse.Success
-    }
-
     "return start sequencer success for startSequencer request" in {
       val startSequencerMsg = StartSequencer(ESW, obsMode)
       when(
@@ -60,15 +48,15 @@ class SequenceManagerClientTest extends BaseTestSuite with SequenceManagerHttpCo
     }
 
     "return shutdown sequencer success for shutdownSequencer request" in {
-      val shutdownSequencerMsg = ShutdownSequencer(ESW, obsMode, shutdownSequenceComp = false)
+      val shutdownSequencerMsg = ShutdownSequencers(Some(ESW), Some(obsMode), shutdownSequenceComp = false)
       when(
-        postClient.requestResponse[ShutdownSequencerResponse](argsEq(shutdownSequencerMsg))(
-          any[Decoder[ShutdownSequencerResponse]](),
-          any[Encoder[ShutdownSequencerResponse]]()
+        postClient.requestResponse[ShutdownSequencersResponse](argsEq(shutdownSequencerMsg))(
+          any[Decoder[ShutdownSequencersResponse]](),
+          any[Encoder[ShutdownSequencersResponse]]()
         )
-      ).thenReturn(Future.successful(ShutdownSequencerResponse.Success))
+      ).thenReturn(Future.successful(ShutdownSequencersResponse.Success))
 
-      client.shutdownSequencer(ESW, obsMode).futureValue shouldBe ShutdownSequencerResponse.Success
+      client.shutdownSequencers(Some(ESW), Some(obsMode)).futureValue shouldBe ShutdownSequencersResponse.Success
     }
 
     "return restart sequencer success for restartSequencer request" in {
@@ -81,17 +69,6 @@ class SequenceManagerClientTest extends BaseTestSuite with SequenceManagerHttpCo
       ).thenReturn(Future.successful(RestartSequencerResponse.Success(componentId)))
 
       client.restartSequencer(ESW, obsMode).futureValue shouldBe RestartSequencerResponse.Success(componentId)
-    }
-
-    "return shutdown all sequencers success for  ShutdownAllSequencers request" in {
-      when(
-        postClient.requestResponse[ShutdownAllSequencersResponse](argsEq(ShutdownAllSequencers))(
-          any[Decoder[ShutdownAllSequencersResponse]](),
-          any[Encoder[ShutdownAllSequencersResponse]]()
-        )
-      ).thenReturn(Future.successful(ShutdownAllSequencersResponse.Success))
-
-      client.shutdownAllSequencers().futureValue shouldBe ShutdownAllSequencersResponse.Success
     }
 
     "return configure success response for configure request" in {

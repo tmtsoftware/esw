@@ -26,8 +26,6 @@ class SequenceManagerImpl(location: AkkaLocation)(implicit actorSystem: ActorSys
   override def configure(observingMode: ObsMode): Future[ConfigureResponse] =
     smRef ? (Configure(observingMode, _))
 
-  override def cleanup(observingMode: ObsMode): Future[CleanupResponse] = smRef ? (Cleanup(observingMode, _))
-
   override def getRunningObsModes: Future[GetRunningObsModesResponse] = smRef ? GetRunningObsModes
 
   override def startSequencer(subsystem: Subsystem, observingMode: ObsMode): Future[StartSequencerResponse] =
@@ -36,20 +34,18 @@ class SequenceManagerImpl(location: AkkaLocation)(implicit actorSystem: ActorSys
       actorSystem.scheduler
     )
 
-  override def shutdownSequencer(
-      subsystem: Subsystem,
-      observingMode: ObsMode,
+  override def shutdownSequencers(
+      subsystem: Option[Subsystem],
+      observingMode: Option[ObsMode],
       shutdownSequenceComp: Boolean = false
-  ): Future[ShutdownSequencerResponse] =
-    smRef ? (ShutdownSequencer(subsystem, observingMode, shutdownSequenceComp, _))
+  ): Future[ShutdownSequencersResponse] =
+    smRef ? (ShutdownSequencers(subsystem, observingMode, shutdownSequenceComp, _))
 
   override def restartSequencer(subsystem: Subsystem, observingMode: ObsMode): Future[RestartSequencerResponse] =
     (smRef ? { x: ActorRef[RestartSequencerResponse] => RestartSequencer(subsystem, observingMode, x) })(
       SequenceManagerTimeout.RestartSequencerTimeout,
       actorSystem.scheduler
     )
-
-  override def shutdownAllSequencers(): Future[ShutdownAllSequencersResponse] = smRef ? ShutdownAllSequencers
 
   override def spawnSequenceComponent(machine: ComponentId, name: String): Future[SpawnSequenceComponentResponse] =
     smRef ? (SpawnSequenceComponent(machine, name, _))

@@ -19,35 +19,29 @@ class SequenceManagerImplTest extends BaseTestSuite {
   private val sequencerComponentId: ComponentId                         = ComponentId(Prefix("esw.primary"), ComponentType.Sequencer)
   private val sequenceComponentId: ComponentId                          = ComponentId(Prefix("tcs.seq_comp"), ComponentType.SequenceComponent)
   private val configureResponse                                         = ConfigureResponse.Success(sequencerComponentId)
-  private val cleanupResponse                                           = CleanupResponse.Success
   private val getRunningObsModesResponse                                = GetRunningObsModesResponse.Success(Set(ObsMode("IRIS_Darknight"), ObsMode("WFOS_cal")))
   private val startSequencerResponse                                    = StartSequencerResponse.Started(sequencerComponentId)
-  private val shutdownSequencerResponse                                 = ShutdownSequencerResponse.Success
-  private val shutdownAllSequencersResponse                             = ShutdownAllSequencersResponse.Success
+  private val shutdownSequencersResponse                                = ShutdownSequencersResponse.Success
   private val restartSequencerResponse                                  = RestartSequencerResponse.Success(sequencerComponentId)
   private val spawnSequenceComponentResponse                            = SpawnSequenceComponentResponse.Success(sequenceComponentId)
   private val shutdownSequenceComponentResponse                         = ShutdownSequenceComponentResponse.Success
 
   private val mockedBehavior: Behaviors.Receive[SequenceManagerMsg] = Behaviors.receiveMessage[SequenceManagerMsg] { msg =>
     msg match {
-      case SequenceManagerMsg.Configure(_, replyTo)                    => replyTo ! configureResponse
-      case SequenceManagerMsg.Cleanup(_, replyTo)                      => replyTo ! cleanupResponse
-      case SequenceManagerMsg.GetRunningObsModes(replyTo)              => replyTo ! getRunningObsModesResponse
-      case SequenceManagerMsg.GetSequenceManagerState(replyTo)         => replyTo ! Idle
-      case SequenceManagerMsg.StartSequencer(_, _, replyTo)            => replyTo ! startSequencerResponse
-      case SequenceManagerMsg.ShutdownSequencer(_, _, _, replyTo)      => replyTo ! shutdownSequencerResponse
-      case SequenceManagerMsg.ShutdownAllSequencers(replyTo)           => replyTo ! shutdownAllSequencersResponse
-      case SequenceManagerMsg.RestartSequencer(_, _, replyTo)          => replyTo ! restartSequencerResponse
-      case SequenceManagerMsg.SpawnSequenceComponent(_, _, replyTo)    => replyTo ! spawnSequenceComponentResponse
-      case SequenceManagerMsg.ShutdownSequenceComponent(_, replyTo)    => replyTo ! shutdownSequenceComponentResponse
-      case SequenceManagerMsg.StartSequencerResponseInternal(_)        =>
-      case SequenceManagerMsg.ShutdownAllSequencersResponseInternal(_) =>
-      case SequenceManagerMsg.ShutdownSequencerResponseInternal(_)     =>
-      case SequenceManagerMsg.RestartSequencerResponseInternal(_)      =>
-      case SequenceManagerMsg.CleanupResponseInternal(_)               =>
-      case SequenceManagerMsg.ConfigurationResponseInternal(_)         =>
-      case SequenceManagerMsg.SpawnSequenceComponentInternal(_)        =>
-      case SequenceManagerMsg.ShutdownSequenceComponentInternal(_)     =>
+      case SequenceManagerMsg.Configure(_, replyTo)                 => replyTo ! configureResponse
+      case SequenceManagerMsg.GetRunningObsModes(replyTo)           => replyTo ! getRunningObsModesResponse
+      case SequenceManagerMsg.GetSequenceManagerState(replyTo)      => replyTo ! Idle
+      case SequenceManagerMsg.StartSequencer(_, _, replyTo)         => replyTo ! startSequencerResponse
+      case SequenceManagerMsg.ShutdownSequencers(_, _, _, replyTo)  => replyTo ! shutdownSequencersResponse
+      case SequenceManagerMsg.RestartSequencer(_, _, replyTo)       => replyTo ! restartSequencerResponse
+      case SequenceManagerMsg.SpawnSequenceComponent(_, _, replyTo) => replyTo ! spawnSequenceComponentResponse
+      case SequenceManagerMsg.ShutdownSequenceComponent(_, replyTo) => replyTo ! shutdownSequenceComponentResponse
+      case SequenceManagerMsg.StartSequencerResponseInternal(_)     =>
+      case SequenceManagerMsg.ShutdownSequencersResponseInternal(_) =>
+      case SequenceManagerMsg.RestartSequencerResponseInternal(_)   =>
+      case SequenceManagerMsg.ConfigurationResponseInternal(_)      =>
+      case SequenceManagerMsg.SpawnSequenceComponentInternal(_)     =>
+      case SequenceManagerMsg.ShutdownSequenceComponentInternal(_)  =>
     }
     Behaviors.same
   }
@@ -63,10 +57,6 @@ class SequenceManagerImplTest extends BaseTestSuite {
       sequenceManager.configure(obsMode).futureValue shouldBe configureResponse
     }
 
-    "cleanup" in {
-      sequenceManager.cleanup(obsMode).futureValue shouldBe cleanupResponse
-    }
-
     "getRunningObsModes" in {
       sequenceManager.getRunningObsModes.futureValue shouldBe getRunningObsModesResponse
     }
@@ -76,15 +66,11 @@ class SequenceManagerImplTest extends BaseTestSuite {
     }
 
     "shutdownSequencer" in {
-      sequenceManager.shutdownSequencer(ESW, obsMode).futureValue shouldBe shutdownSequencerResponse
+      sequenceManager.shutdownSequencers(Some(ESW), Some(obsMode)).futureValue shouldBe shutdownSequencersResponse
     }
 
     "restartSequencer" in {
       sequenceManager.restartSequencer(ESW, obsMode).futureValue shouldBe restartSequencerResponse
-    }
-
-    "shutdownAllSequencers" in {
-      sequenceManager.shutdownAllSequencers().futureValue shouldBe shutdownAllSequencersResponse
     }
 
     "shutdownSequenceComponent | ESW-338" in {

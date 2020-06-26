@@ -15,10 +15,9 @@ import esw.ocs.api.models.ObsMode
 import esw.ocs.api.protocol.ScriptError
 import esw.ocs.api.protocol.SequenceComponentResponse.{Ok, SequencerLocation, Unhandled}
 import esw.ocs.api.{SequenceComponentApi, SequencerApi}
-import esw.sm.api.protocol.CleanupResponse.FailedToShutdownSequencers
 import esw.sm.api.protocol.CommonFailure.LocationServiceError
 import esw.sm.api.protocol.ConfigureResponse.{FailedToStartSequencers, Success}
-import esw.sm.api.protocol.ShutdownSequencerResponse.UnloadScriptError
+import esw.sm.api.protocol.ShutdownSequencersResponse.ShutdownError
 import esw.sm.api.protocol.StartSequencerResponse.LoadScriptError
 import esw.sm.api.protocol._
 import esw.sm.impl.config.Sequencers
@@ -56,26 +55,31 @@ class SequencerUtil(locationServiceUtil: LocationServiceUtil, sequenceComponentU
       subsystem: Subsystem,
       obsMode: ObsMode,
       shutdownSequenceComp: Boolean = false
-  ): Future[Either[ShutdownSequencerResponse.Failure, ShutdownSequencerResponse.Success.type]] =
+  ): Future[Either[ShutdownSequencersResponse.Failure, ShutdownSequencersResponse.Success.type]] =
     locationServiceUtil
       .findSequencer(subsystem, obsMode)
       .flatMap {
         case Left(listingFailed: RegistrationListingFailed) => Future.successful(Left(LocationServiceError(listingFailed.msg)))
-        case Left(LocationNotFound(_))                      => Future.successful(Right(ShutdownSequencerResponse.Success))
+        case Left(LocationNotFound(_))                      => Future.successful(Right(ShutdownSequencersResponse.Success))
         case Right(sequencerLoc)                            => unloadScript(sequencerLoc, shutdownSequenceComp)
       }
 
-  def shutdownSequencers(sequencers: Sequencers, obsMode: ObsMode): Future[CleanupResponse] = {
+  def shutdownSequencers(sequencers: Sequencers, obsMode: ObsMode): Future[ShutdownSequencersResponse] = {
     val shutdownResponses = traverse(sequencers.subsystems)(shutdownSequencer(_, obsMode))
-    shutdownResponses.mapToAdt(_ => CleanupResponse.Success, e => FailedToShutdownSequencers(e.map(_.msg).toSet))
+    shutdownResponses.mapToAdt(_ => ShutdownSequencersResponse.Success, ShutdownSequencersResponse.ShutdownFailure)
   }
 
-  def shutdownAllSequencers(): Future[ShutdownAllSequencersResponse] =
+  def shutdownSequencers(): Future[ShutdownSequencersResponse] =
     locationServiceUtil.listAkkaLocationsBy(Sequencer).flatMapToAdt(shutdownSequencers, e => LocationServiceError(e.msg))
 
-  private def shutdownSequencers(sequencerLocations: List[AkkaLocation]): Future[ShutdownAllSequencersResponse] =
+  def shutdownSequencers(subsystem: Subsystem): Future[ShutdownSequencersResponse] =
+    locationServiceUtil
+      .listAkkaLocationsBy(subsystem, Sequencer)
+      .flatMapToAdt(shutdownSequencers, e => LocationServiceError(e.msg))
+
+  private def shutdownSequencers(sequencerLocations: List[AkkaLocation]): Future[ShutdownSequencersResponse] =
     traverse(sequencerLocations)(location => unloadScript(location, shutdownSequenceComp = false))
-      .mapToAdt(_ => ShutdownAllSequencersResponse.Success, ShutdownAllSequencersResponse.ShutdownFailure)
+      .mapToAdt(_ => ShutdownSequencersResponse.Success, ShutdownSequencersResponse.ShutdownFailure)
 
   def restartSequencer(subSystem: Subsystem, obsMode: ObsMode): Future[RestartSequencerResponse] =
     locationServiceUtil
@@ -111,17 +115,17 @@ class SequencerUtil(locationServiceUtil: LocationServiceUtil, sequenceComponentU
   private def unloadScript(
       sequenceLocation: AkkaLocation,
       shutdownSequenceComp: Boolean
-  ): Future[Either[UnloadScriptError, ShutdownSequencerResponse.Success.type]] =
+  ): Future[Either[ShutdownError, ShutdownSequencersResponse.Success.type]] =
     async {
       val seqCompLoc      = await(createSequencerClient(sequenceLocation).getSequenceComponent)
       val unloadScriptRes = await(sequenceComponentUtil.unloadScript(seqCompLoc))
       val shutdownRes     = if (shutdownSequenceComp) await(sequenceComponentUtil.shutdown(seqCompLoc)) else unloadScriptRes
 
       shutdownRes match {
-        case Ok                   => Right(ShutdownSequencerResponse.Success)
-        case Unhandled(_, _, msg) => Left(UnloadScriptError(sequenceLocation.prefix, msg))
+        case Ok                   => Right(ShutdownSequencersResponse.Success)
+        case Unhandled(_, _, msg) => Left(ShutdownError(sequenceLocation.prefix, msg))
       }
-    }.mapError(e => UnloadScriptError(sequenceLocation.prefix, e.getMessage))
+    }.mapError(e => ShutdownError(sequenceLocation.prefix, e.getMessage))
 
   // Created in order to mock the behavior of sequencer API availability for unit test
   private[sm] def createSequencerClient(location: Location): SequencerApi = SequencerApiFactory.make(location)

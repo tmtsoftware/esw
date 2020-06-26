@@ -19,9 +19,9 @@ import esw.ocs.api.{SequenceComponentApi, SequencerApi}
 import esw.sm.api.protocol.AgentError.SpawnSequenceComponentFailed
 import esw.sm.api.protocol.CommonFailure.LocationServiceError
 import esw.sm.api.protocol.ConfigureResponse.{FailedToStartSequencers, Success}
-import esw.sm.api.protocol.ShutdownSequencerResponse.UnloadScriptError
+import esw.sm.api.protocol.ShutdownSequencersResponse.ShutdownError
 import esw.sm.api.protocol.StartSequencerResponse.LoadScriptError
-import esw.sm.api.protocol.{CleanupResponse, RestartSequencerResponse, ShutdownAllSequencersResponse, ShutdownSequencerResponse}
+import esw.sm.api.protocol.{RestartSequencerResponse, ShutdownSequencersResponse}
 import esw.sm.impl.config.Sequencers
 import esw.testcommons.BaseTestSuite
 
@@ -169,7 +169,7 @@ class SequencerUtilTest extends BaseTestSuite {
       when(sequenceComponentUtil.unloadScript(eswSeqCompLoc)).thenReturn(Future.successful(Ok))
       when(sequenceComponentUtil.unloadScript(tcsSeqCompLoc)).thenReturn(Future.successful(Ok))
 
-      sequencerUtil.shutdownSequencers(Sequencers(ESW, TCS), obsMode).futureValue should ===(CleanupResponse.Success)
+      sequencerUtil.shutdownSequencers(Sequencers(ESW, TCS), obsMode).futureValue should ===(ShutdownSequencersResponse.Success)
 
       verify(eswSequencerApi).getSequenceComponent
       verify(tcsSequencerApi).getSequenceComponent
@@ -185,7 +185,7 @@ class SequencerUtilTest extends BaseTestSuite {
       val findFailed = futureLeft(LocationNotFound("location service error"))
       when(locationServiceUtil.findSequencer(ESW, obsMode)).thenReturn(findFailed)
 
-      sequencerUtil.shutdownSequencers(Sequencers(ESW), obsMode).futureValue should ===(CleanupResponse.Success)
+      sequencerUtil.shutdownSequencers(Sequencers(ESW), obsMode).futureValue should ===(ShutdownSequencersResponse.Success)
 
       verify(locationServiceUtil).findSequencer(ESW, obsMode)
       verify(eswSequencerApi, never).getSequenceComponent
@@ -203,7 +203,7 @@ class SequencerUtilTest extends BaseTestSuite {
       when(sequenceComponentUtil.unloadScript(tcsSeqCompLoc)).thenReturn(Future.successful(Ok))
 
       sequencerUtil.shutdownSequencers(Sequencers(ESW, TCS), obsMode).futureValue should ===(
-        CleanupResponse.FailedToShutdownSequencers(Set("Error"))
+        ShutdownSequencersResponse.ShutdownFailure(List(ShutdownError(Prefix(TCS, obsMode.name), "Error")))
       )
 
       verify(locationServiceUtil).findSequencer(ESW, obsMode)
@@ -223,7 +223,7 @@ class SequencerUtilTest extends BaseTestSuite {
       when(eswSequencerApi.getSequenceComponent).thenReturn(Future.successful(eswSeqCompLoc))
       when(sequenceComponentUtil.unloadScript(eswSeqCompLoc)).thenReturn(Future.successful(Ok))
 
-      sequencerUtil.shutdownSequencer(ESW, obsMode).rightValue should ===(ShutdownSequencerResponse.Success)
+      sequencerUtil.shutdownSequencer(ESW, obsMode).rightValue should ===(ShutdownSequencersResponse.Success)
 
       verify(eswSequencerApi).getSequenceComponent
       verify(sequenceComponentUtil).unloadScript(eswSeqCompLoc)
@@ -241,7 +241,7 @@ class SequencerUtilTest extends BaseTestSuite {
       when(sequenceComponentUtil.shutdown(eswSeqCompLoc)).thenReturn(Future.successful(Ok))
 
       sequencerUtil.shutdownSequencer(ESW, obsMode, shutdownSequenceComp = true).rightValue should ===(
-        ShutdownSequencerResponse.Success
+        ShutdownSequencersResponse.Success
       )
 
       verify(eswSequencerApi).getSequenceComponent
@@ -257,7 +257,7 @@ class SequencerUtilTest extends BaseTestSuite {
       val findLocationFailed = futureLeft(LocationNotFound("location service error"))
       when(locationServiceUtil.findSequencer(ESW, obsMode)).thenReturn(findLocationFailed)
 
-      sequencerUtil.shutdownSequencer(ESW, obsMode).rightValue should ===(ShutdownSequencerResponse.Success)
+      sequencerUtil.shutdownSequencer(ESW, obsMode).rightValue should ===(ShutdownSequencersResponse.Success)
 
       verify(locationServiceUtil).findSequencer(ESW, obsMode)
       verify(eswSequencerApi, never).getSequenceComponent
@@ -287,7 +287,7 @@ class SequencerUtilTest extends BaseTestSuite {
       when(eswSequencerApi.getSequenceComponent).thenReturn(Future.successful(eswSeqCompLoc))
       when(sequenceComponentUtil.unloadScript(eswSeqCompLoc)).thenReturn(Future.failed(new TimeoutException("error")))
 
-      sequencerUtil.shutdownSequencer(ESW, obsMode).leftValue should ===(UnloadScriptError(prefix, "error"))
+      sequencerUtil.shutdownSequencer(ESW, obsMode).leftValue should ===(ShutdownError(prefix, "error"))
 
       verify(eswSequencerApi).getSequenceComponent
       verify(sequenceComponentUtil).unloadScript(eswSeqCompLoc)
@@ -309,7 +309,7 @@ class SequencerUtilTest extends BaseTestSuite {
       when(tcsSequencerApi.getSequenceComponent).thenReturn(Future.successful(tcsSeqCompLoc))
       when(sequenceComponentUtil.unloadScript(tcsSeqCompLoc)).thenReturn(Future.successful(Ok))
 
-      sequencerUtil.shutdownAllSequencers().futureValue should ===(ShutdownAllSequencersResponse.Success)
+      sequencerUtil.shutdownSequencers().futureValue should ===(ShutdownSequencersResponse.Success)
 
       verify(sequenceComponentUtil).unloadScript(eswSeqCompLoc)
       verify(sequenceComponentUtil).unloadScript(tcsSeqCompLoc)
@@ -321,7 +321,7 @@ class SequencerUtilTest extends BaseTestSuite {
 
       when(locationServiceUtil.listAkkaLocationsBy(Sequencer)).thenReturn(futureLeft(RegistrationListingFailed("Error")))
 
-      sequencerUtil.shutdownAllSequencers().futureValue should ===(LocationServiceError("Error"))
+      sequencerUtil.shutdownSequencers().futureValue should ===(LocationServiceError("Error"))
     }
 
     "return ShutdownFailure if any of the sequencer failed to shut down | ESW-324" in {
@@ -337,8 +337,8 @@ class SequencerUtilTest extends BaseTestSuite {
       when(tcsSequencerApi.getSequenceComponent).thenReturn(Future.successful(tcsSeqCompLoc))
       when(sequenceComponentUtil.unloadScript(tcsSeqCompLoc)).thenReturn(Future.failed(new RuntimeException("Error")))
 
-      sequencerUtil.shutdownAllSequencers().futureValue should ===(
-        ShutdownAllSequencersResponse.ShutdownFailure(List(UnloadScriptError(Prefix(TCS, obsMode.name), "Error")))
+      sequencerUtil.shutdownSequencers().futureValue should ===(
+        ShutdownSequencersResponse.ShutdownFailure(List(ShutdownError(Prefix(TCS, obsMode.name), "Error")))
       )
 
       verify(sequenceComponentUtil).unloadScript(eswSeqCompLoc)

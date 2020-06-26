@@ -9,16 +9,14 @@ import scala.concurrent.Future
 
 trait SequenceManagerApi {
   def configure(observingMode: ObsMode): Future[ConfigureResponse]
-  def cleanup(observingMode: ObsMode): Future[CleanupResponse]
   def getRunningObsModes: Future[GetRunningObsModesResponse]
   def startSequencer(subsystem: Subsystem, observingMode: ObsMode): Future[StartSequencerResponse]
-  def shutdownSequencer(
-      subsystem: Subsystem,
-      observingMode: ObsMode,
+  def shutdownSequencers(
+      subsystem: Option[Subsystem],
+      observingMode: Option[ObsMode],
       shutdownSequenceComp: Boolean = false
-  ): Future[ShutdownSequencerResponse]
+  ): Future[ShutdownSequencersResponse]
   def restartSequencer(subsystem: Subsystem, observingMode: ObsMode): Future[RestartSequencerResponse]
-  def shutdownAllSequencers(): Future[ShutdownAllSequencersResponse]
   def spawnSequenceComponent(machine: ComponentId, name: String): Future[SpawnSequenceComponentResponse]
   def shutdownSequenceComponent(prefix: Prefix): Future[ShutdownSequenceComponentResponse]
 }
