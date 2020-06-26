@@ -13,14 +13,14 @@ import esw.commons.utils.location.LocationServiceUtil
 import esw.ocs.api.models.ObsMode
 import esw.sm.api.SequenceManagerState
 import esw.sm.api.SequenceManagerState._
-import esw.sm.api.actor.messages.{SequenceManagerIdleMsg, SequenceManagerMsg}
 import esw.sm.api.actor.messages.SequenceManagerMsg._
+import esw.sm.api.actor.messages.{SequenceManagerIdleMsg, SequenceManagerMsg}
 import esw.sm.api.protocol.CommonFailure.ConfigurationMissing
 import esw.sm.api.protocol.ConfigureResponse.ConflictingResourcesWithRunningObsMode
 import esw.sm.api.protocol.StartSequencerResponse.{AlreadyRunning, Started}
 import esw.sm.api.protocol._
 import esw.sm.impl.config.{ObsModeConfig, Resources, SequenceManagerConfig}
-import esw.sm.impl.utils.SequencerUtil
+import esw.sm.impl.utils.{SequenceComponentUtil, SequencerUtil}
 
 import scala.async.Async.{async, await}
 import scala.concurrent.Future
@@ -29,10 +29,11 @@ import scala.reflect.ClassTag
 class SequenceManagerBehavior(
     config: SequenceManagerConfig,
     locationServiceUtil: LocationServiceUtil,
-    sequencerUtil: SequencerUtil
+    sequencerUtil: SequencerUtil,
+    sequenceComponentUtil: SequenceComponentUtil
 )(implicit val actorSystem: ActorSystem[_]) {
-  import actorSystem.executionContext
   import SequenceManagerBehavior._
+  import actorSystem.executionContext
 
   private val sequencerStartRetries = config.sequencerStartRetries
 
@@ -47,6 +48,7 @@ class SequenceManagerBehavior(
         shutdownSequencer(subsystem, observingMode, shutdownSequenceComp, self, replyTo)
       case ShutdownAllSequencers(replyTo)                      => shutdownAllSequencers(self, replyTo)
       case RestartSequencer(subsystem, observingMode, replyTo) => restartSequencer(subsystem, observingMode, self, replyTo)
+      case ShutdownSequenceComponent(prefix, replyTo)          => shutdownSequenceComponent(prefix, self, replyTo)
     }
 
   private def configure(obsMode: ObsMode, self: SelfRef, replyTo: ActorRef[ConfigureResponse]): SMBehavior = {
@@ -169,6 +171,18 @@ class SequenceManagerBehavior(
 
   private def shuttingDownAllSequencers(self: SelfRef, replyTo: ActorRef[ShutdownAllSequencersResponse]): SMBehavior =
     receive[ShutdownAllSequencersResponseInternal](ShuttingDownAllSequencers)(msg => replyAndGoToIdle(self, replyTo, msg.res))
+
+  private def shutdownSequenceComponent(
+      prefix: Prefix,
+      self: SelfRef,
+      replyTo: ActorRef[ShutdownSequenceComponentResponse]
+  ): SMBehavior = {
+    sequenceComponentUtil.shutdown(prefix).map(self ! ShutdownSequenceComponentInternal(_))
+    shuttingDownSequenceComponent(self, replyTo)
+  }
+
+  private def shuttingDownSequenceComponent(self: SelfRef, replyTo: ActorRef[ShutdownSequenceComponentResponse]): SMBehavior =
+    receive[ShutdownSequenceComponentInternal](ShuttingDownSequenceComponent)(msg => replyAndGoToIdle(self, replyTo, msg.res))
 
   private def replyAndGoToIdle[T](self: SelfRef, replyTo: ActorRef[T], msg: T) = {
     replyTo ! msg

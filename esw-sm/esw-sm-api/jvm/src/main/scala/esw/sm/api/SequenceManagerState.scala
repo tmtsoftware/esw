@@ -10,11 +10,12 @@ object SequenceManagerState extends Enum[SequenceManagerState] {
 
   override def values: IndexedSeq[SequenceManagerState] = findValues
 
-  case object Idle                      extends SequenceManagerState
-  case object Configuring               extends SequenceManagerState
-  case object CleaningUp                extends SequenceManagerState
-  case object StartingSequencer         extends SequenceManagerState
-  case object ShuttingDownSequencer     extends SequenceManagerState
-  case object ShuttingDownAllSequencers extends SequenceManagerState
-  case object RestartingSequencer       extends SequenceManagerState
+  case object Idle                          extends SequenceManagerState
+  case object Configuring                   extends SequenceManagerState
+  case object CleaningUp                    extends SequenceManagerState
+  case object StartingSequencer             extends SequenceManagerState
+  case object ShuttingDownSequencer         extends SequenceManagerState
+  case object ShuttingDownAllSequencers     extends SequenceManagerState
+  case object RestartingSequencer           extends SequenceManagerState
+  case object ShuttingDownSequenceComponent extends SequenceManagerState
 }

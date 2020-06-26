@@ -1,17 +1,21 @@
 package esw.sm.impl.utils
 
 import akka.actor.typed.ActorSystem
-import csw.location.api.models.AkkaLocation
+import csw.location.api.models.{AkkaLocation, ComponentId}
 import csw.location.api.models.ComponentType.SequenceComponent
-import csw.prefix.models.Subsystem
+import csw.location.api.models.Connection.AkkaConnection
+import csw.prefix.models.{Prefix, Subsystem}
 import csw.prefix.models.Subsystem.ESW
 import esw.commons.extensions.FutureEitherExt.FutureEitherOps
 import esw.commons.utils.FutureUtils
 import esw.commons.utils.location.LocationServiceUtil
 import esw.ocs.api.SequenceComponentApi
 import esw.ocs.api.actor.client.SequenceComponentImpl
+import esw.ocs.api.protocol.SequenceComponentResponse
 import esw.ocs.api.protocol.SequenceComponentResponse.{OkOrUnhandled, ScriptResponseOrUnhandled}
-import esw.sm.api.protocol.AgentError
+import esw.sm.api.protocol.CommonFailure.LocationServiceError
+import esw.sm.api.protocol.{AgentError, ShutdownSequenceComponentResponse}
+import esw.sm.api.protocol.ShutdownSequenceComponentResponse.ShutdownSequenceComponentFailure
 
 import scala.async.Async._
 import scala.concurrent.Future
@@ -37,6 +41,18 @@ class SequenceComponentUtil(locationServiceUtil: LocationServiceUtil, agentUtil:
   def unloadScript(loc: AkkaLocation): Future[OkOrUnhandled] = createSequenceComponentImpl(loc).unloadScript()
 
   def shutdown(loc: AkkaLocation): Future[OkOrUnhandled] = createSequenceComponentImpl(loc).shutdown()
+
+  def shutdown(prefix: Prefix): Future[ShutdownSequenceComponentResponse] =
+    locationServiceUtil
+      .find(AkkaConnection(ComponentId(prefix, SequenceComponent)))
+      .flatMapToAdt(
+        loc =>
+          shutdown(loc).map {
+            case SequenceComponentResponse.Ok                   => ShutdownSequenceComponentResponse.Success
+            case SequenceComponentResponse.Unhandled(_, _, msg) => ShutdownSequenceComponentFailure(msg)
+          },
+        error => LocationServiceError(error.msg)
+      )
 
   def restart(loc: AkkaLocation): Future[ScriptResponseOrUnhandled] = createSequenceComponentImpl(loc).restartScript()
 

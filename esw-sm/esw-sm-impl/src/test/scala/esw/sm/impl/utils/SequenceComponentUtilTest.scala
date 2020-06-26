@@ -8,11 +8,16 @@ import csw.location.api.models.Connection.AkkaConnection
 import csw.location.api.models.{AkkaLocation, ComponentId}
 import csw.prefix.models.Prefix
 import csw.prefix.models.Subsystem.{ESW, IRIS, TCS}
+import esw.commons.utils.location.EswLocationError.LocationNotFound
 import esw.commons.utils.location.LocationServiceUtil
 import esw.ocs.api.SequenceComponentApi
 import esw.ocs.api.actor.client.SequenceComponentImpl
-import esw.ocs.api.protocol.SequenceComponentResponse.GetStatusResponse
+import esw.ocs.api.models.SequenceComponentState
+import esw.ocs.api.protocol.SequenceComponentResponse
+import esw.ocs.api.protocol.SequenceComponentResponse.{GetStatusResponse, Ok}
 import esw.sm.api.protocol.AgentError.SpawnSequenceComponentFailed
+import esw.sm.api.protocol.CommonFailure.LocationServiceError
+import esw.sm.api.protocol.ShutdownSequenceComponentResponse
 import esw.testcommons.BaseTestSuite
 
 import scala.concurrent.Future
@@ -143,6 +148,66 @@ class SequenceComponentUtilTest extends BaseTestSuite {
         .thenReturn(Future.successful(GetStatusResponse(Some(mockAkkaLocation("IRIS.darknight")))))
 
       seqCompUtil.idleSequenceComponent(mockAkkaLocation("ESW.backup")).futureValue should ===(None)
+    }
+  }
+
+  "shutdown by prefix" must {
+
+    "return success when shutdown sequence component is successful | ESW-338" in {
+      val mockSeqCompImpl = mock[SequenceComponentImpl]
+      val seqCompUtil = new SequenceComponentUtil(locationServiceUtil, agentUtil) {
+        override private[sm] def createSequenceComponentImpl(sequenceComponentLocation: AkkaLocation): SequenceComponentImpl =
+          mockSeqCompImpl
+      }
+      val prefixStr      = "ESW.primary"
+      val akkaConnection = AkkaConnection(ComponentId(Prefix(prefixStr), SequenceComponent))
+      when(locationServiceUtil.find(akkaConnection))
+        .thenReturn(Future.successful(Right(mockAkkaLocation(prefixStr))))
+      when(mockSeqCompImpl.shutdown()).thenReturn(Future.successful(Ok))
+
+      seqCompUtil.shutdown(Prefix(prefixStr)).futureValue should ===(ShutdownSequenceComponentResponse.Success)
+
+      verify(locationServiceUtil).find(akkaConnection)
+      verify(mockSeqCompImpl).shutdown()
+    }
+
+    "return error when unload script returns error | ESW-338" in {
+      val mockSeqCompImpl = mock[SequenceComponentImpl]
+      val seqCompUtil = new SequenceComponentUtil(locationServiceUtil, agentUtil) {
+        override private[sm] def createSequenceComponentImpl(sequenceComponentLocation: AkkaLocation): SequenceComponentImpl =
+          mockSeqCompImpl
+      }
+      val prefixStr  = "ESW.primary"
+      val connection = AkkaConnection(ComponentId(Prefix(prefixStr), SequenceComponent))
+      when(locationServiceUtil.find(connection))
+        .thenReturn(Future.successful(Right(mockAkkaLocation(prefixStr))))
+      when(mockSeqCompImpl.shutdown())
+        .thenReturn(Future.successful(SequenceComponentResponse.Unhandled(SequenceComponentState.Idle, "UnloadScript")))
+
+      seqCompUtil.shutdown(Prefix(prefixStr)).futureValue should ===(
+        ShutdownSequenceComponentResponse.ShutdownSequenceComponentFailure(
+          s"Sequence Component can not accept 'UnloadScript' message in '${SequenceComponentState.Idle.entryName}'"
+        )
+      )
+
+      verify(locationServiceUtil).find(connection)
+      verify(mockSeqCompImpl).shutdown()
+    }
+
+    "return error when location service returns error | ESW-338" in {
+      val mockSeqCompImpl = mock[SequenceComponentImpl]
+      val seqCompUtil = new SequenceComponentUtil(locationServiceUtil, agentUtil) {
+        override private[sm] def createSequenceComponentImpl(sequenceComponentLocation: AkkaLocation): SequenceComponentImpl =
+          mockSeqCompImpl
+      }
+      val prefixStr  = "ESW.primary"
+      val connection = AkkaConnection(ComponentId(Prefix(prefixStr), SequenceComponent))
+      when(locationServiceUtil.find(connection))
+        .thenReturn(Future.successful(Left(LocationNotFound("error"))))
+
+      seqCompUtil.shutdown(Prefix(prefixStr)).futureValue should ===(LocationServiceError("error"))
+      verify(locationServiceUtil).find(connection)
+      verify(mockSeqCompImpl, never).shutdown()
     }
   }
 }

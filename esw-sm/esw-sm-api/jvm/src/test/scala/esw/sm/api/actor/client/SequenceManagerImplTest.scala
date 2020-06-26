@@ -24,6 +24,7 @@ class SequenceManagerImplTest extends BaseTestSuite {
   private val shutdownSequencerResponse                                 = ShutdownSequencerResponse.Success
   private val shutdownAllSequencersResponse                             = ShutdownAllSequencersResponse.Success
   private val restartSequencerResponse                                  = RestartSequencerResponse.Success(sequencerComponentId)
+  private val shutdownSequenceComponentResponse                         = ShutdownSequenceComponentResponse.Success
 
   private val mockedBehavior: Behaviors.Receive[SequenceManagerMsg] = Behaviors.receiveMessage[SequenceManagerMsg] { msg =>
     msg match {
@@ -35,12 +36,14 @@ class SequenceManagerImplTest extends BaseTestSuite {
       case SequenceManagerMsg.ShutdownSequencer(_, _, _, replyTo)      => replyTo ! shutdownSequencerResponse
       case SequenceManagerMsg.ShutdownAllSequencers(replyTo)           => replyTo ! shutdownAllSequencersResponse
       case SequenceManagerMsg.RestartSequencer(_, _, replyTo)          => replyTo ! restartSequencerResponse
+      case SequenceManagerMsg.ShutdownSequenceComponent(_, replyTo)    => replyTo ! shutdownSequenceComponentResponse
       case SequenceManagerMsg.StartSequencerResponseInternal(_)        =>
       case SequenceManagerMsg.ShutdownAllSequencersResponseInternal(_) =>
       case SequenceManagerMsg.ShutdownSequencerResponseInternal(_)     =>
       case SequenceManagerMsg.RestartSequencerResponseInternal(_)      =>
       case SequenceManagerMsg.CleanupResponseInternal(_)               =>
       case SequenceManagerMsg.ConfigurationResponseInternal(_)         =>
+      case SequenceManagerMsg.ShutdownSequenceComponentInternal(_)     =>
     }
     Behaviors.same
   }

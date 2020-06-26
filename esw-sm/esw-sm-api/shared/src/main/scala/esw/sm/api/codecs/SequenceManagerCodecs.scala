@@ -11,11 +11,12 @@ import msocket.api.codecs.BasicCodecs
 object SequenceManagerCodecs extends SequenceManagerCodecs
 
 trait SequenceManagerCodecs extends LocationCodecs with BasicCodecs with OcsCodecs {
-  implicit lazy val configureResponseCodec: Codec[ConfigureResponse]                   = deriveAllCodecs
-  implicit lazy val getRunningObsModesResponseCodec: Codec[GetRunningObsModesResponse] = deriveAllCodecs
-  implicit lazy val cleanupResponseCodec: Codec[CleanupResponse]                       = deriveAllCodecs
-  implicit lazy val startSequencerResponseCodec: Codec[StartSequencerResponse]         = deriveAllCodecs
-  implicit lazy val shutdownSequencerResponseCodec: Codec[ShutdownSequencerResponse]   = deriveAllCodecs
+  implicit lazy val configureResponseCodec: Codec[ConfigureResponse]                                 = deriveAllCodecs
+  implicit lazy val getRunningObsModesResponseCodec: Codec[GetRunningObsModesResponse]               = deriveAllCodecs
+  implicit lazy val cleanupResponseCodec: Codec[CleanupResponse]                                     = deriveAllCodecs
+  implicit lazy val startSequencerResponseCodec: Codec[StartSequencerResponse]                       = deriveAllCodecs
+  implicit lazy val shutdownSequencerResponseCodec: Codec[ShutdownSequencerResponse]                 = deriveAllCodecs
+  implicit lazy val shutdownSequenceComponentResponseCodec: Codec[ShutdownSequenceComponentResponse] = deriveAllCodecs
   // todo: see if unloadScriptErrorCodec is required
   implicit lazy val unloadScriptErrorCodec: Codec[UnloadScriptError]                         = deriveCodec
   implicit lazy val shutdownAllSequencersResponseCodec: Codec[ShutdownAllSequencersResponse] = deriveAllCodecs

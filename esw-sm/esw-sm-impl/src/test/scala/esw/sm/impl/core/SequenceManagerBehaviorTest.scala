@@ -24,7 +24,7 @@ import esw.sm.api.protocol.ShutdownSequencerResponse.UnloadScriptError
 import esw.sm.api.protocol.StartSequencerResponse.LoadScriptError
 import esw.sm.api.protocol._
 import esw.sm.impl.config._
-import esw.sm.impl.utils.SequencerUtil
+import esw.sm.impl.utils.{SequenceComponentUtil, SequencerUtil}
 import esw.testcommons.BaseTestSuite
 import org.scalatest.prop.TableDrivenPropertyChecks
 
@@ -48,12 +48,14 @@ class SequenceManagerBehaviorTest extends BaseTestSuite with TableDrivenProperty
     ),
     sequencerStartRetries = 3
   )
-  private val locationServiceUtil: LocationServiceUtil = mock[LocationServiceUtil]
-  private val sequencerUtil: SequencerUtil             = mock[SequencerUtil]
+  private val locationServiceUtil: LocationServiceUtil     = mock[LocationServiceUtil]
+  private val sequencerUtil: SequencerUtil                 = mock[SequencerUtil]
+  private val sequenceComponentUtil: SequenceComponentUtil = mock[SequenceComponentUtil]
   private val sequenceManagerBehavior = new SequenceManagerBehavior(
     config,
     locationServiceUtil,
-    sequencerUtil
+    sequencerUtil,
+    sequenceComponentUtil
   )
 
   private lazy val smRef: ActorRef[SequenceManagerMsg] = actorSystem.systemActorOf(sequenceManagerBehavior.setup, "test_actor")
