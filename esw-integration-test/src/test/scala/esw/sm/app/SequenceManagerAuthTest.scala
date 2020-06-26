@@ -111,5 +111,10 @@ class SequenceManagerAuthTest extends EswTestKit(AAS) {
       // shutdown all sequencers
       sequenceManagerApi.shutdownAllSequencers().futureValue shouldBe ShutdownAllSequencersResponse.Success
     }
+
+    "return 200 even when get running obs modes request does not have token" in {
+      val sequenceManagerApi = TestSetup.startSequenceManagerAuthEnabled(smPrefix, () => None)
+      sequenceManagerApi.getRunningObsModes.futureValue shouldBe GetRunningObsModesResponse.Success(Set.empty)
+    }
   }
 }
