@@ -24,10 +24,10 @@ class SequenceManagerPostHandlerTest
     with ClientHttpCodecs {
   private val sequenceManagerApi: SequenceManagerApi = mock[SequenceManagerApi]
   private val securityDirectives: SecurityDirectives = SecurityDirectives.authDisabled(system.settings.config)
-  private val postHandler                            = new SequenceManagerPostHandler(sequenceManagerApi, securityDirectives)
-  lazy val route: Route                              = new PostRouteFactory[SequenceManagerPostRequest]("post-endpoint", postHandler).make()
-  private val obsMode                                = ObsMode("IRIS_darknight")
-  private val componentId                            = ComponentId(Prefix(ESW, obsMode.name), ComponentType.Sequencer)
+  private val postHandler = new SequenceManagerPostHandler(sequenceManagerApi, securityDirectives)
+  lazy val route: Route = new PostRouteFactory[SequenceManagerPostRequest]("post-endpoint", postHandler).make()
+  private val obsMode = ObsMode("IRIS_darknight")
+  private val componentId = ComponentId(Prefix(ESW, obsMode.name), ComponentType.Sequencer)
 
   override def clientContentType: ContentType = ContentType.Json
 
@@ -65,7 +65,7 @@ class SequenceManagerPostHandlerTest
       }
     }
 
-    "return shutdown sequencer success for shutdownSequencer request | ESW-171" in {
+    "return shutdown sequencer success for shutdownSequencers request | ESW-171" in {
       when(sequenceManagerApi.shutdownSequencers(Some(ESW), Some(obsMode)))
         .thenReturn(Future.successful(ShutdownSequencersResponse.Success))
 
@@ -90,8 +90,8 @@ class SequenceManagerPostHandlerTest
 
     "return spawn sequence component success for spawnSequenceComponent request | ESW-337" in {
       val seqCompName = "seq_comp"
-      val machine     = ComponentId(Prefix(ESW, "primary"), ComponentType.Machine)
-      val seqComp     = ComponentId(Prefix(ESW, seqCompName), ComponentType.SequenceComponent)
+      val machine = ComponentId(Prefix(ESW, "primary"), ComponentType.Machine)
+      val seqComp = ComponentId(Prefix(ESW, seqCompName), ComponentType.SequenceComponent)
 
       when(sequenceManagerApi.spawnSequenceComponent(machine, seqCompName))
         .thenReturn(Future.successful(SpawnSequenceComponentResponse.Success(seqComp)))
@@ -99,6 +99,16 @@ class SequenceManagerPostHandlerTest
       Post("/post-endpoint", SpawnSequenceComponent(machine, seqCompName).narrow) ~> route ~> check {
         verify(sequenceManagerApi).spawnSequenceComponent(machine, seqCompName)
         responseAs[SpawnSequenceComponentResponse] should ===(SpawnSequenceComponentResponse.Success(seqComp))
+
+        "return shutdown all sequencer success for shutdownSequencers request for all sequencers | ESW-171" in {
+          when(sequenceManagerApi.shutdownSequencers(None, None))
+            .thenReturn(Future.successful(ShutdownSequencersResponse.Success))
+
+          Post("/post-endpoint", ShutdownSequencers(None, None, shutdownSequenceComp = false).narrow) ~> route ~> check {
+            verify(sequenceManagerApi).shutdownSequencers(None, None)
+            responseAs[ShutdownSequencersResponse] should ===(ShutdownSequencersResponse.Success)
+          }
+        }
       }
     }
   }

@@ -65,12 +65,12 @@ class SequenceManagerImplTest extends BaseTestSuite {
       sequenceManager.startSequencer(ESW, obsMode).futureValue shouldBe startSequencerResponse
     }
 
-    "shutdownSequencer" in {
+    "shutdownSequencers" in {
       sequenceManager.shutdownSequencers(Some(ESW), Some(obsMode)).futureValue shouldBe shutdownSequencersResponse
     }
 
-    "restartSequencer" in {
-      sequenceManager.restartSequencer(ESW, obsMode).futureValue shouldBe restartSequencerResponse
+    "shutdownSequencers" in {
+      sequenceManager.shutdownSequencers(None, None).futureValue shouldBe shutdownSequencersResponse
     }
 
     "shutdownSequenceComponent | ESW-338" in {
@@ -80,6 +80,8 @@ class SequenceManagerImplTest extends BaseTestSuite {
     "spawnSequenceComponent | ESW-337" in {
       val machine = ComponentId(Prefix("tcs.primary"), ComponentType.Machine)
       sequenceManager.spawnSequenceComponent(machine, "seq_comp").futureValue shouldBe spawnSequenceComponentResponse
+    "restartSequencer" in {
+      sequenceManager.restartSequencer(ESW, obsMode).futureValue shouldBe restartSequencerResponse
     }
   }
 }

@@ -41,9 +41,8 @@ sealed trait ShutdownSequencersResponse extends SmAkkaSerializable
 object ShutdownSequencersResponse {
   case object Success extends ShutdownSequencersResponse
 
+  sealed trait Failure                                  extends SmFailure with ShutdownSequencersResponse
   case class ShutdownError(prefix: Prefix, msg: String) extends ShutdownSequencersResponse.Failure
-
-  sealed trait Failure extends SmFailure with ShutdownSequencersResponse
   case class ShutdownFailure(failureResponses: List[ShutdownSequencersResponse.Failure])
       extends ShutdownSequencersResponse.Failure
 }
@@ -78,7 +77,10 @@ sealed trait CommonFailure extends SmFailure with ConfigureResponse.Failure with
 
 object CommonFailure {
   case class ConfigurationMissing(obsMode: ObsMode) extends CommonFailure
-  case class LocationServiceError(msg: String)      extends AgentError with CommonFailure with ShutdownSequenceComponentResponse
+  case class LocationServiceError(msg: String)
+      extends AgentError
+      with CommonFailure
+      with ShutdownSequenceComponentResponse.Failure
 }
 
 sealed trait AgentError extends StartSequencerResponse.Failure with SpawnSequenceComponentResponse.Failure

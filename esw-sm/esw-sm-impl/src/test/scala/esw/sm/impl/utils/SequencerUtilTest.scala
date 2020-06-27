@@ -203,7 +203,7 @@ class SequencerUtilTest extends BaseTestSuite {
       when(sequenceComponentUtil.unloadScript(tcsSeqCompLoc)).thenReturn(Future.successful(Ok))
 
       sequencerUtil.shutdownSequencers(Sequencers(ESW, TCS), obsMode).futureValue should ===(
-        ShutdownSequencersResponse.ShutdownFailure(List(ShutdownError(Prefix(TCS, obsMode.name), "Error")))
+        ShutdownSequencersResponse.ShutdownFailure(List(LocationServiceError("Error")))
       )
 
       verify(locationServiceUtil).findSequencer(ESW, obsMode)

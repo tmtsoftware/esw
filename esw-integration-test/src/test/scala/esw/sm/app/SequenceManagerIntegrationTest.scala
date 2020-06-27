@@ -75,10 +75,10 @@ class SequenceManagerIntegrationTest extends EswTestKit with BinaryFetcherUtil {
     assertThatSeqCompIsLoadedWithScript(aoeswSeqCompPrefix)
 
     // *************** Cleanup for observing mode ********************
-    val cleanupResponse = sequenceManagerClient.shutdownSequencers(None, Some(IRIS_CAL)).futureValue
+    val shutdownSequencersResponse = sequenceManagerClient.shutdownSequencers(None, Some(IRIS_CAL)).futureValue
 
     // assert for Successful Cleanup
-    cleanupResponse should ===(ShutdownSequencersResponse.Success)
+    shutdownSequencersResponse should ===(ShutdownSequencersResponse.Success)
 
     // ESW-166 verify all sequencers are stopped for the observing mode and seq comps are available
     assertThatSeqCompIsAvailable(eswSeqCompPrefix)

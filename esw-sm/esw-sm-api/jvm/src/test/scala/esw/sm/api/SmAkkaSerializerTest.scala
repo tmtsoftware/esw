@@ -124,17 +124,17 @@ class SmAkkaSerializerTest extends BaseTestSuite {
 
   "should use sm serializer for ShutdownSequencersResponse (de)serialization" in {
     val testData = Table(
-      "Sequence Manager ShutdownSequencerResponse models",
+      "Sequence Manager ShutdownSequencersResponse models",
       ShutdownSequencersResponse.Success,
       LocationServiceError("error")
     )
 
-    forAll(testData) { shutdownSequencerResponse =>
-      val serializer = serialization.findSerializerFor(shutdownSequencerResponse)
+    forAll(testData) { shutdownSequencersResponse =>
+      val serializer = serialization.findSerializerFor(shutdownSequencersResponse)
       serializer.getClass shouldBe classOf[SmAkkaSerializer]
 
-      val bytes = serializer.toBinary(shutdownSequencerResponse)
-      serializer.fromBinary(bytes, Some(shutdownSequencerResponse.getClass)) shouldEqual shutdownSequencerResponse
+      val bytes = serializer.toBinary(shutdownSequencersResponse)
+      serializer.fromBinary(bytes, Some(shutdownSequencersResponse.getClass)) shouldEqual shutdownSequencersResponse
     }
   }
 
@@ -177,7 +177,11 @@ class SmAkkaSerializerTest extends BaseTestSuite {
     val testData = Table(
       "Sequence Manager SequenceManagerState models",
       SequenceManagerState.Idle,
-      SequenceManagerState.Configuring
+      SequenceManagerState.StartingSequencer,
+      SequenceManagerState.Configuring,
+      SequenceManagerState.RestartingSequencer,
+      SequenceManagerState.ShuttingDownSequencers,
+      SequenceManagerState.ShuttingDownSequenceComponent
     )
 
     forAll(testData) { sequenceManagerState =>

@@ -178,7 +178,8 @@ class SequenceManagerBehaviorTest extends BaseTestSuite with TableDrivenProperty
     }
   }
 
-  "ShutdownSequencer" must {
+  // TODO other cases
+  "ShutdownSequencers" must {
     "transition sm from Idle -> ShuttingDown -> Idle state and shut down the sequencer for given obs mode | ESW-326" in {
       when(sequencerUtil.shutdownSequencer(ESW, Darknight))
         .thenReturn(future(1.seconds, Right(ShutdownSequencersResponse.Success)))
@@ -233,6 +234,14 @@ class SequenceManagerBehaviorTest extends BaseTestSuite with TableDrivenProperty
 
       verify(sequencerUtil).shutdownSequencer(ESW, Darknight)
     }
+
+    "return ConfigurationMissing error when config for given obsMode is missing | ESW-166" in {
+      val probe = TestProbe[ShutdownSequencersResponse]()
+      smRef ! ShutdownSequencers(None, Some(RandomObsMode), shutdownSequenceComp = false, probe.ref)
+
+      probe.expectMessage(ConfigurationMissing(RandomObsMode))
+    }
+
   }
 
   "RestartSequencer" must {
