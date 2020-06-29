@@ -281,6 +281,22 @@ class SequenceManagerIntegrationTest extends EswTestKit with BinaryFetcherUtil {
     response should ===(ConfigureResponse.Success(ComponentId(Prefix(ESW, obsMode.name), Sequencer)))
   }
 
+  "shutdown sequence component for given prefix | ESW-338" in {
+    val seqCompPrefix = Prefix(ESW, "primary")
+
+    TestSetup.startSequenceComponents(seqCompPrefix)
+    resolveSequenceComponentLocation(Prefix(ESW, "primary"))
+
+    val sequenceManagerClient = TestSetup.startSequenceManager(sequenceManagerPrefix)
+
+    sequenceManagerClient.shutdownSequenceComponent(seqCompPrefix).futureValue should ===(
+      ShutdownSequenceComponentResponse.Success
+    )
+
+    //ESW-338 verify that sequence component is shutdown
+    intercept[Exception](resolveSequenceComponentLocation(seqCompPrefix))
+  }
+
   private def sequencerConnection(prefix: Prefix) = AkkaConnection(ComponentId(prefix, Sequencer))
 
   private def assertThatSeqCompIsAvailable(prefix: Prefix): Unit = assertSeqCompAvailability(isSeqCompAvailable = true, prefix)
