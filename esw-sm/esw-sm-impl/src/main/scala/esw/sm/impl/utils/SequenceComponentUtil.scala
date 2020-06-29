@@ -58,7 +58,7 @@ class SequenceComponentUtil(locationServiceUtil: LocationServiceUtil, agentUtil:
         loc =>
           shutdown(loc).map {
             case SequenceComponentResponse.Ok                   => ShutdownSequenceComponentResponse.Success
-            case SequenceComponentResponse.Unhandled(_, _, msg) => ShutdownSequenceComponentFailure(msg)
+            case SequenceComponentResponse.Unhandled(_, _, msg) => ShutdownSequenceComponentFailure(prefix, msg)
           },
         error => LocationServiceError(error.msg)
       )

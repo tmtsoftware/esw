@@ -182,7 +182,7 @@ class SmAkkaSerializerTest extends BaseTestSuite {
       "Sequence Manager ShutdownSequenceComponentResponse models",
       ShutdownSequenceComponentResponse.Success,
       LocationServiceError("error"),
-      ShutdownSequenceComponentResponse.ShutdownSequenceComponentFailure("error")
+      ShutdownSequenceComponentResponse.ShutdownSequenceComponentFailure(Prefix(ESW, "primary"), "error")
     )
 
     forAll(testData) { shutdownSequencerResponse =>

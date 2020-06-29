@@ -42,7 +42,7 @@ class SequenceComponentBehavior(
           replyTo ! Ok
           Behaviors.same
         case Stop              => Behaviors.stopped
-        case Shutdown(replyTo) => shutdown(ctx.self, replyTo, None)
+        case Shutdown(replyTo) => shutdown(replyTo, None)
       }
     }
 
@@ -87,13 +87,12 @@ class SequenceComponentBehavior(
         case GetStatus(replyTo) =>
           replyTo ! GetStatusResponse(Some(location))
           Behaviors.same
-        case Shutdown(replyTo) => shutdown(ctx.self, replyTo, Some(sequencerServer))
+        case Shutdown(replyTo) => shutdown(replyTo, Some(sequencerServer))
         case Stop              => Behaviors.same
       }
     }
 
   private def shutdown(
-      self: ActorRef[SequenceComponentMsg],
       replyTo: ActorRef[Ok.type],
       sequencerServer: Option[SequencerServer]
   ): Behavior[SequenceComponentMsg] = {

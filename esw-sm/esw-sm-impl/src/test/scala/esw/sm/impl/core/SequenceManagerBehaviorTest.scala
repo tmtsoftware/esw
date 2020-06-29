@@ -375,7 +375,10 @@ class SequenceManagerBehaviorTest extends BaseTestSuite with TableDrivenProperty
     val errors = Table(
       ("errorName", "error"),
       ("LocationServiceError", LocationServiceError("location service error")),
-      ("SpawnSequenceComponentFailed", ShutdownSequenceComponentFailure("shutdown sequence component failed"))
+      (
+        "SpawnSequenceComponentFailed",
+        ShutdownSequenceComponentFailure(Prefix(ESW, "primary"), "shutdown sequence component failed")
+      )
     )
 
     forAll(errors) { (errorName, error) =>

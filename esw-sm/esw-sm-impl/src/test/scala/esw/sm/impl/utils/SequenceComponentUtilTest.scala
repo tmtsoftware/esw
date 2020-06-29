@@ -221,6 +221,7 @@ class SequenceComponentUtilTest extends BaseTestSuite {
 
       seqCompUtil.shutdown(Prefix(prefixStr)).futureValue should ===(
         ShutdownSequenceComponentResponse.ShutdownSequenceComponentFailure(
+          Prefix(prefixStr),
           s"Sequence Component can not accept 'UnloadScript' message in '${SequenceComponentState.Idle.entryName}'"
         )
       )

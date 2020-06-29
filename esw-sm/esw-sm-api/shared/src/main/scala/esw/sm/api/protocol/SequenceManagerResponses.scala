@@ -88,8 +88,8 @@ sealed trait ShutdownSequenceComponentResponse extends SmAkkaSerializable
 object ShutdownSequenceComponentResponse {
   case object Success extends ShutdownSequenceComponentResponse
 
-  sealed trait Failure                                     extends SmFailure with ShutdownSequenceComponentResponse
-  case class ShutdownSequenceComponentFailure(msg: String) extends Failure
+  sealed trait Failure                                                     extends SmFailure with ShutdownSequenceComponentResponse
+  case class ShutdownSequenceComponentFailure(prefix: Prefix, msg: String) extends Failure
 }
 
 sealed trait CommonFailure extends SmFailure with ConfigureResponse.Failure with CleanupResponse.Failure
