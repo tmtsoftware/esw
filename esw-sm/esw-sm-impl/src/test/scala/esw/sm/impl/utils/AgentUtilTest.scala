@@ -12,9 +12,9 @@ import csw.prefix.models.Prefix
 import csw.prefix.models.Subsystem.ESW
 import esw.agent.api.{Failed, SpawnResponse, Spawned}
 import esw.agent.client.AgentClient
+import esw.commons.Timeouts
 import esw.commons.utils.location.EswLocationError.{LocationNotFound, RegistrationListingFailed}
 import esw.commons.utils.location.{EswLocationError, LocationServiceUtil}
-import esw.commons.Timeouts
 import esw.ocs.api.SequenceComponentApi
 import esw.sm.api.protocol.AgentError.SpawnSequenceComponentFailed
 import esw.sm.api.protocol.CommonFailure.LocationServiceError
@@ -43,6 +43,20 @@ class AgentUtilTest extends BaseTestSuite {
         .thenReturn(futureRight(sequenceComponentLocation))
 
       agentUtil.spawnSequenceComponentFor(ESW).rightValue shouldBe a[SequenceComponentApi]
+
+      verifySpawnSequenceComponentCalled()
+      verify(locationServiceUtil).resolve(any[AkkaConnection], argEq(Timeouts.DefaultResolveLocationDuration))
+    }
+
+    "return SequenceComponentApi after spawning sequence component for given prefix | ESW-337" in {
+      val setup = new TestSetup()
+      import setup._
+
+      mockSpawnComponent(Spawned)
+      when(locationServiceUtil.resolve(any[AkkaConnection], argEq(Timeouts.DefaultResolveLocationDuration)))
+        .thenReturn(futureRight(sequenceComponentLocation))
+
+      agentUtil.spawnSequenceComponentFor(Prefix(ESW, "seq_comp")).rightValue shouldBe a[SequenceComponentApi]
 
       verifySpawnSequenceComponentCalled()
       verify(locationServiceUtil).resolve(any[AkkaConnection], argEq(Timeouts.DefaultResolveLocationDuration))

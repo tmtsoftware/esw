@@ -1,5 +1,7 @@
 package esw.sm.api.protocol
 
+import csw.location.api.models.ComponentId
+import csw.prefix.models.Subsystem
 import csw.prefix.models.{Prefix, Subsystem}
 import esw.ocs.api.models.ObsMode
 
@@ -14,5 +16,6 @@ object SequenceManagerPostRequest {
       extends SequenceManagerPostRequest
   case class RestartSequencer(subsystem: Subsystem, observingMode: ObsMode) extends SequenceManagerPostRequest
   case object ShutdownAllSequencers                                         extends SequenceManagerPostRequest
+  case class SpawnSequenceComponent(machine: ComponentId, name: String)     extends SequenceManagerPostRequest
   case class ShutdownSequenceComponent(prefix: Prefix)                      extends SequenceManagerPostRequest
 }

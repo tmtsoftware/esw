@@ -393,6 +393,54 @@ class SequenceManagerBehaviorTest extends BaseTestSuite with TableDrivenProperty
     }
   }
 
+  "SpawnSequenceComponent" must {
+    "transition sm from Idle -> SpawningSequenceComponent -> Idle state and spawn new sequence component | ESW-337" in {
+      val seqCompName = "seq_comp"
+      val machine     = ComponentId(Prefix(ESW, "primary"), Machine)
+      val seqComp     = ComponentId(Prefix(ESW, seqCompName), SequenceComponent)
+      when(sequenceComponentUtil.spawnSequenceComponent(machine, seqCompName))
+        .thenReturn(future(1.seconds, SpawnSequenceComponentResponse.Success(seqComp)))
+
+      val spawnSequenceComponentProbe = TestProbe[SpawnSequenceComponentResponse]()
+
+      assertState(Idle)
+      smRef ! SpawnSequenceComponent(machine, seqCompName, spawnSequenceComponentProbe.ref)
+      assertState(SpawningSequenceComponent)
+      spawnSequenceComponentProbe.expectMessage(SpawnSequenceComponentResponse.Success(seqComp))
+      assertState(Idle)
+
+      verify(sequenceComponentUtil).spawnSequenceComponent(machine, seqCompName)
+    }
+
+    "return LocationServiceError if location service gives error | ESW-337" in {
+      val seqCompName = "seq_comp"
+      val machine     = ComponentId(Prefix(ESW, "primary"), Machine)
+      when(sequenceComponentUtil.spawnSequenceComponent(machine, seqCompName))
+        .thenReturn(future(1.seconds, LocationServiceError("location service error")))
+
+      val spawnSequenceComponentProbe = TestProbe[SpawnSequenceComponentResponse]()
+
+      smRef ! SpawnSequenceComponent(machine, seqCompName, spawnSequenceComponentProbe.ref)
+      spawnSequenceComponentProbe.expectMessage(LocationServiceError("location service error"))
+
+      verify(sequenceComponentUtil).spawnSequenceComponent(machine, seqCompName)
+    }
+
+    "return SpawnSequenceComponentFailed if agent fails to spawn sequence component | ESW-337" in {
+      val seqCompName = "seq_comp"
+      val machine     = ComponentId(Prefix(ESW, "primary"), Machine)
+      when(sequenceComponentUtil.spawnSequenceComponent(machine, seqCompName))
+        .thenReturn(future(1.seconds, SpawnSequenceComponentFailed("spawning failed")))
+
+      val spawnSequenceComponentProbe = TestProbe[SpawnSequenceComponentResponse]()
+
+      smRef ! SpawnSequenceComponent(machine, seqCompName, spawnSequenceComponentProbe.ref)
+      spawnSequenceComponentProbe.expectMessage(SpawnSequenceComponentFailed("spawning failed"))
+
+      verify(sequenceComponentUtil).spawnSequenceComponent(machine, seqCompName)
+    }
+  }
+
   private def assertState(state: SequenceManagerState) = {
     val stateProbe = TestProbe[SequenceManagerState]()
     eventually {

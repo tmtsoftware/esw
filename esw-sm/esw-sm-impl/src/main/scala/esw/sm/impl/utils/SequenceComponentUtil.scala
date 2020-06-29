@@ -1,11 +1,11 @@
 package esw.sm.impl.utils
 
 import akka.actor.typed.ActorSystem
-import csw.location.api.models.{AkkaLocation, ComponentId}
 import csw.location.api.models.ComponentType.SequenceComponent
 import csw.location.api.models.Connection.AkkaConnection
-import csw.prefix.models.{Prefix, Subsystem}
+import csw.location.api.models.{AkkaLocation, ComponentId}
 import csw.prefix.models.Subsystem.ESW
+import csw.prefix.models.{Prefix, Subsystem}
 import esw.commons.extensions.FutureEitherExt.FutureEitherOps
 import esw.commons.utils.FutureUtils
 import esw.commons.utils.location.LocationServiceUtil
@@ -13,9 +13,10 @@ import esw.ocs.api.SequenceComponentApi
 import esw.ocs.api.actor.client.SequenceComponentImpl
 import esw.ocs.api.protocol.SequenceComponentResponse
 import esw.ocs.api.protocol.SequenceComponentResponse.{OkOrUnhandled, ScriptResponseOrUnhandled}
+import esw.sm.api.protocol.AgentError.SpawnSequenceComponentFailed
 import esw.sm.api.protocol.CommonFailure.LocationServiceError
-import esw.sm.api.protocol.{AgentError, ShutdownSequenceComponentResponse}
 import esw.sm.api.protocol.ShutdownSequenceComponentResponse.ShutdownSequenceComponentFailure
+import esw.sm.api.protocol.{AgentError, ShutdownSequenceComponentResponse, SpawnSequenceComponentResponse}
 
 import scala.async.Async._
 import scala.concurrent.Future
@@ -24,6 +25,14 @@ class SequenceComponentUtil(locationServiceUtil: LocationServiceUtil, agentUtil:
     actorSystem: ActorSystem[_]
 ) {
   import actorSystem.executionContext
+
+  def spawnSequenceComponent(componentId: ComponentId, name: String): Future[SpawnSequenceComponentResponse] = {
+    val seqCompPrefix = Prefix(componentId.prefix.subsystem, name)
+    agentUtil.spawnSequenceComponentFor(seqCompPrefix).map {
+      case Left(error) => SpawnSequenceComponentFailed(error.msg)
+      case Right(_)    => SpawnSequenceComponentResponse.Success(ComponentId(seqCompPrefix, SequenceComponent))
+    }
+  }
 
   def getAvailableSequenceComponent(subsystem: Subsystem): Future[Either[AgentError, SequenceComponentApi]] =
     getIdleSequenceComponentFor(subsystem)

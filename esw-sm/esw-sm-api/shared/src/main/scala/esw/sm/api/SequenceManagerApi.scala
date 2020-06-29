@@ -1,5 +1,7 @@
 package esw.sm.api
 
+import csw.location.api.models.ComponentId
+import csw.prefix.models.Subsystem
 import csw.prefix.models.{Prefix, Subsystem}
 import esw.ocs.api.models.ObsMode
 import esw.sm.api.protocol._
@@ -18,5 +20,6 @@ trait SequenceManagerApi {
   ): Future[ShutdownSequencerResponse]
   def restartSequencer(subsystem: Subsystem, observingMode: ObsMode): Future[RestartSequencerResponse]
   def shutdownAllSequencers(): Future[ShutdownAllSequencersResponse]
+  def spawnSequenceComponent(machine: ComponentId, name: String): Future[SpawnSequenceComponentResponse]
   def shutdownSequenceComponent(prefix: Prefix): Future[ShutdownSequenceComponentResponse]
 }

@@ -17,6 +17,7 @@ import esw.testcommons.BaseTestSuite
 class SequenceManagerImplTest extends BaseTestSuite {
   private final implicit val system: ActorSystem[SpawnProtocol.Command] = ActorSystem(SpawnProtocol(), "SmAkkaSerializerTest")
   private val sequencerComponentId: ComponentId                         = ComponentId(Prefix("esw.primary"), ComponentType.Sequencer)
+  private val sequenceComponentId: ComponentId                          = ComponentId(Prefix("tcs.seq_comp"), ComponentType.SequenceComponent)
   private val configureResponse                                         = ConfigureResponse.Success(sequencerComponentId)
   private val cleanupResponse                                           = CleanupResponse.Success
   private val getRunningObsModesResponse                                = GetRunningObsModesResponse.Success(Set(ObsMode("IRIS_Darknight"), ObsMode("WFOS_cal")))
@@ -24,6 +25,7 @@ class SequenceManagerImplTest extends BaseTestSuite {
   private val shutdownSequencerResponse                                 = ShutdownSequencerResponse.Success
   private val shutdownAllSequencersResponse                             = ShutdownAllSequencersResponse.Success
   private val restartSequencerResponse                                  = RestartSequencerResponse.Success(sequencerComponentId)
+  private val spawnSequenceComponentResponse                            = SpawnSequenceComponentResponse.Success(sequenceComponentId)
   private val shutdownSequenceComponentResponse                         = ShutdownSequenceComponentResponse.Success
 
   private val mockedBehavior: Behaviors.Receive[SequenceManagerMsg] = Behaviors.receiveMessage[SequenceManagerMsg] { msg =>
@@ -36,6 +38,7 @@ class SequenceManagerImplTest extends BaseTestSuite {
       case SequenceManagerMsg.ShutdownSequencer(_, _, _, replyTo)      => replyTo ! shutdownSequencerResponse
       case SequenceManagerMsg.ShutdownAllSequencers(replyTo)           => replyTo ! shutdownAllSequencersResponse
       case SequenceManagerMsg.RestartSequencer(_, _, replyTo)          => replyTo ! restartSequencerResponse
+      case SequenceManagerMsg.SpawnSequenceComponent(_, _, replyTo)    => replyTo ! spawnSequenceComponentResponse
       case SequenceManagerMsg.ShutdownSequenceComponent(_, replyTo)    => replyTo ! shutdownSequenceComponentResponse
       case SequenceManagerMsg.StartSequencerResponseInternal(_)        =>
       case SequenceManagerMsg.ShutdownAllSequencersResponseInternal(_) =>
@@ -43,6 +46,7 @@ class SequenceManagerImplTest extends BaseTestSuite {
       case SequenceManagerMsg.RestartSequencerResponseInternal(_)      =>
       case SequenceManagerMsg.CleanupResponseInternal(_)               =>
       case SequenceManagerMsg.ConfigurationResponseInternal(_)         =>
+      case SequenceManagerMsg.SpawnSequenceComponentInternal(_)        =>
       case SequenceManagerMsg.ShutdownSequenceComponentInternal(_)     =>
     }
     Behaviors.same
@@ -85,6 +89,11 @@ class SequenceManagerImplTest extends BaseTestSuite {
 
     "shutdownSequenceComponent | ESW-338" in {
       sequenceManager.shutdownSequenceComponent(seqCompPrefix).futureValue shouldBe shutdownSequenceComponentResponse
+    }
+
+    "spawnSequenceComponent | ESW-337" in {
+      val machine = ComponentId(Prefix("tcs.primary"), ComponentType.Machine)
+      sequenceManager.spawnSequenceComponent(machine, "seq_comp").futureValue shouldBe spawnSequenceComponentResponse
     }
   }
 }

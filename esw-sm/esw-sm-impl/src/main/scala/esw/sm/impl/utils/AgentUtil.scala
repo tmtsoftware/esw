@@ -25,10 +25,22 @@ class AgentUtil(locationServiceUtil: LocationServiceUtil)(implicit actorSystem: 
 
   def spawnSequenceComponentFor(subsystem: Subsystem): Future[Either[AgentError, SequenceComponentApi]] = {
     val sequenceComponentPrefix = Prefix(subsystem, s"${subsystem}_${Random.between(1, 100)}")
+    spawnSequenceComponentFor(sequenceComponentPrefix)
+  }
+
+  def spawnSequenceComponentFor(sequenceComponentPrefix: Prefix): Future[Either[AgentError, SequenceComponentApi]] = {
     getAgent
       .mapLeft(error => LocationServiceError(error.msg))
       .flatMapE(spawnSeqComp(_, sequenceComponentPrefix))
   }
+
+  private def spawnSeqComp(agentClient: AgentClient, seqCompPrefix: Prefix) =
+    agentClient
+      .spawnSequenceComponent(seqCompPrefix)
+      .flatMap {
+        case Spawned     => resolveSeqComp(seqCompPrefix)
+        case Failed(msg) => Future.successful(Left(AgentError.SpawnSequenceComponentFailed(msg)))
+      }
 
   private[utils] def getAgent: Future[Either[EswLocationError, AgentClient]] =
     locationServiceUtil
@@ -42,14 +54,6 @@ class AgentUtil(locationServiceUtil: LocationServiceUtil)(implicit actorSystem: 
 
   private[utils] def makeAgent(prefix: Prefix): Future[AgentClient] =
     AgentClient.make(prefix, locationServiceUtil.locationService)
-
-  private def spawnSeqComp(agentClient: AgentClient, seqCompPrefix: Prefix) =
-    agentClient
-      .spawnSequenceComponent(seqCompPrefix)
-      .flatMap {
-        case Spawned     => resolveSeqComp(seqCompPrefix)
-        case Failed(msg) => Future.successful(Left(AgentError.SpawnSequenceComponentFailed(msg)))
-      }
 
   private def resolveSeqComp(seqCompPrefix: Prefix) =
     locationServiceUtil

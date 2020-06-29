@@ -3,7 +3,7 @@ package esw.sm.impl.utils
 import java.net.URI
 
 import akka.actor.typed.{ActorSystem, SpawnProtocol}
-import csw.location.api.models.ComponentType.SequenceComponent
+import csw.location.api.models.ComponentType._
 import csw.location.api.models.Connection.AkkaConnection
 import csw.location.api.models.{AkkaLocation, ComponentId}
 import csw.prefix.models.Prefix
@@ -17,7 +17,7 @@ import esw.ocs.api.protocol.SequenceComponentResponse
 import esw.ocs.api.protocol.SequenceComponentResponse.{GetStatusResponse, Ok}
 import esw.sm.api.protocol.AgentError.SpawnSequenceComponentFailed
 import esw.sm.api.protocol.CommonFailure.LocationServiceError
-import esw.sm.api.protocol.ShutdownSequenceComponentResponse
+import esw.sm.api.protocol.{ShutdownSequenceComponentResponse, SpawnSequenceComponentResponse}
 import esw.testcommons.BaseTestSuite
 
 import scala.concurrent.Future
@@ -51,6 +51,41 @@ class SequenceComponentUtilTest extends BaseTestSuite {
   override def afterAll(): Unit = {
     actorSystem.terminate()
     actorSystem.whenTerminated.futureValue
+  }
+
+  "spawnSequenceComponent" must {
+    "spawn new sequence component for given componentId and with given name | ESW-337" in {
+      val seqCompName                                  = "seq_comp"
+      val componentId                                  = ComponentId(Prefix(TCS, "tcs.primary"), Machine)
+      val seqCompPrefix                                = Prefix(componentId.prefix.subsystem, seqCompName)
+      val seqComp                                      = ComponentId(seqCompPrefix, SequenceComponent)
+      val sequenceComponentUtil: SequenceComponentUtil = new SequenceComponentUtil(locationServiceUtil, agentUtil)
+
+      val sequenceComponentApi = mock[SequenceComponentImpl]
+      when(agentUtil.spawnSequenceComponentFor(seqCompPrefix)).thenReturn(futureRight(sequenceComponentApi))
+
+      sequenceComponentUtil.spawnSequenceComponent(componentId, seqCompName).futureValue should ===(
+        SpawnSequenceComponentResponse.Success(seqComp)
+      )
+
+      verify(agentUtil).spawnSequenceComponentFor(seqCompPrefix)
+    }
+
+    "return failure if agent fails to spawn sequence component | ESW-337" in {
+      val componentId                                  = ComponentId(Prefix(TCS, "tcs.primary"), Machine)
+      val seqCompName                                  = "seq_comp"
+      val seqCompPrefix                                = Prefix(componentId.prefix.subsystem, seqCompName)
+      val sequenceComponentUtil: SequenceComponentUtil = new SequenceComponentUtil(locationServiceUtil, agentUtil)
+
+      when(agentUtil.spawnSequenceComponentFor(seqCompPrefix))
+        .thenReturn(futureLeft(SpawnSequenceComponentFailed("spawn failed")))
+
+      sequenceComponentUtil.spawnSequenceComponent(componentId, seqCompName).futureValue should ===(
+        SpawnSequenceComponentFailed("spawn failed")
+      )
+
+      verify(agentUtil).spawnSequenceComponentFor(seqCompPrefix)
+    }
   }
 
   "getAvailableSequenceComponent" must {

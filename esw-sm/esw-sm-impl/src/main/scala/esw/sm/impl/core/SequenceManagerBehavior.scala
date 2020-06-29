@@ -48,6 +48,7 @@ class SequenceManagerBehavior(
         shutdownSequencer(subsystem, observingMode, shutdownSequenceComp, self, replyTo)
       case ShutdownAllSequencers(replyTo)                      => shutdownAllSequencers(self, replyTo)
       case RestartSequencer(subsystem, observingMode, replyTo) => restartSequencer(subsystem, observingMode, self, replyTo)
+      case SpawnSequenceComponent(machine, name, replyTo)      => spawnSequenceComponent(machine, name, self, replyTo)
       case ShutdownSequenceComponent(prefix, replyTo)          => shutdownSequenceComponent(prefix, self, replyTo)
     }
 
@@ -171,6 +172,19 @@ class SequenceManagerBehavior(
 
   private def shuttingDownAllSequencers(self: SelfRef, replyTo: ActorRef[ShutdownAllSequencersResponse]): SMBehavior =
     receive[ShutdownAllSequencersResponseInternal](ShuttingDownAllSequencers)(msg => replyAndGoToIdle(self, replyTo, msg.res))
+
+  private def spawnSequenceComponent(
+      machine: ComponentId,
+      name: String,
+      self: SelfRef,
+      replyTo: ActorRef[SpawnSequenceComponentResponse]
+  ): SMBehavior = {
+    sequenceComponentUtil.spawnSequenceComponent(machine, name).map(self ! SpawnSequenceComponentInternal(_))
+    spawningSequenceComponent(self, replyTo)
+  }
+
+  private def spawningSequenceComponent(self: SelfRef, replyTo: ActorRef[SpawnSequenceComponentResponse]): SMBehavior =
+    receive[SpawnSequenceComponentInternal](SpawningSequenceComponent)(msg => replyAndGoToIdle(self, replyTo, msg.res))
 
   private def shutdownSequenceComponent(
       prefix: Prefix,

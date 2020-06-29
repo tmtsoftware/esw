@@ -76,6 +76,14 @@ object RestartSequencerResponse {
   }
 }
 
+sealed trait SpawnSequenceComponentResponse extends SmAkkaSerializable
+
+object SpawnSequenceComponentResponse {
+  case class Success(componentId: ComponentId) extends SpawnSequenceComponentResponse
+
+  sealed trait Failure extends SmFailure with SpawnSequenceComponentResponse
+}
+
 sealed trait ShutdownSequenceComponentResponse extends SmAkkaSerializable
 object ShutdownSequenceComponentResponse {
   case object Success extends ShutdownSequenceComponentResponse
@@ -96,7 +104,7 @@ object CommonFailure {
       with ShutdownSequenceComponentResponse.Failure
 }
 
-sealed trait AgentError extends StartSequencerResponse.Failure
+sealed trait AgentError extends StartSequencerResponse.Failure with SpawnSequenceComponentResponse.Failure
 
 object AgentError {
   case class SpawnSequenceComponentFailed(msg: String) extends AgentError
