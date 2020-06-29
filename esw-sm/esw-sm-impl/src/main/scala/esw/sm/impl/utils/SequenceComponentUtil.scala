@@ -28,10 +28,12 @@ class SequenceComponentUtil(locationServiceUtil: LocationServiceUtil, agentUtil:
 
   def spawnSequenceComponent(componentId: ComponentId, name: String): Future[SpawnSequenceComponentResponse] = {
     val seqCompPrefix = Prefix(componentId.prefix.subsystem, name)
-    agentUtil.spawnSequenceComponentFor(seqCompPrefix).map {
-      case Left(error) => SpawnSequenceComponentFailed(error.msg)
-      case Right(_)    => SpawnSequenceComponentResponse.Success(ComponentId(seqCompPrefix, SequenceComponent))
-    }
+    agentUtil
+      .spawnSequenceComponentFor(seqCompPrefix)
+      .mapToAdt(
+        _ => SpawnSequenceComponentResponse.Success(ComponentId(seqCompPrefix, SequenceComponent)),
+        error => SpawnSequenceComponentFailed(error.msg)
+      )
   }
 
   def getAvailableSequenceComponent(subsystem: Subsystem): Future[Either[AgentError, SequenceComponentApi]] =
@@ -54,14 +56,16 @@ class SequenceComponentUtil(locationServiceUtil: LocationServiceUtil, agentUtil:
   def shutdown(prefix: Prefix): Future[ShutdownSequenceComponentResponse] =
     locationServiceUtil
       .find(AkkaConnection(ComponentId(prefix, SequenceComponent)))
-      .flatMapToAdt(
-        loc =>
-          shutdown(loc).map {
-            case SequenceComponentResponse.Ok                   => ShutdownSequenceComponentResponse.Success
-            case SequenceComponentResponse.Unhandled(_, _, msg) => ShutdownSequenceComponentFailure(prefix, msg)
-          },
+      .flatMapRight(shutdown)
+      .mapToAdt(
+        okOrUnhandledToShutdownSeqCompResponse(prefix),
         error => LocationServiceError(error.msg)
       )
+
+  private def okOrUnhandledToShutdownSeqCompResponse(prefix: Prefix): OkOrUnhandled => ShutdownSequenceComponentResponse = {
+    case SequenceComponentResponse.Ok                   => ShutdownSequenceComponentResponse.Success
+    case SequenceComponentResponse.Unhandled(_, _, msg) => ShutdownSequenceComponentFailure(prefix, msg)
+  }
 
   def restart(loc: AkkaLocation): Future[ScriptResponseOrUnhandled] = createSequenceComponentImpl(loc).restartScript()
 
