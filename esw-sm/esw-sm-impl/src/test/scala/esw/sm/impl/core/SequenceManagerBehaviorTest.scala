@@ -180,7 +180,7 @@ class SequenceManagerBehaviorTest extends BaseTestSuite with TableDrivenProperty
 
   // TODO other cases
   "ShutdownSequencers" must {
-    "transition sm from Idle -> ShuttingDown -> Idle state and shut down the sequencer for given obs mode | ESW-326" in {
+    "transition sm from Idle -> ShuttingDownSequencers -> Idle state and shut down the sequencer for given obs mode | ESW-326" in {
       when(sequencerUtil.shutdownSequencer(ESW, Darknight))
         .thenReturn(future(1.seconds, Right(ShutdownSequencersResponse.Success)))
 
@@ -210,7 +210,22 @@ class SequenceManagerBehaviorTest extends BaseTestSuite with TableDrivenProperty
       verify(sequencerUtil).shutdownSequencer(ESW, Darknight, shutdownSequenceComp = true)
     }
 
-    "return UnloadScriptError if unload script fails | ESW-326" in {
+    "transition sm from Idle -> ShuttingDownSequencers -> Idle state and shut down all sequencers | ESW-326" in {
+      when(sequencerUtil.shutdownSequencers())
+        .thenReturn(future(1.seconds, ShutdownSequencersResponse.Success))
+
+      val shutdownSequencerResponseProbe = TestProbe[ShutdownSequencersResponse]()
+
+      assertState(Idle)
+      smRef ! ShutdownSequencers(None, None, shutdownSequenceComp = false, shutdownSequencerResponseProbe.ref)
+      assertState(ShuttingDownSequencers)
+      shutdownSequencerResponseProbe.expectMessage(ShutdownSequencersResponse.Success)
+      assertState(Idle)
+
+      verify(sequencerUtil).shutdownSequencers()
+    }
+
+    "return ShutdownError if unload script fails | ESW-326" in {
       val prefix = Prefix(ESW, Darknight.name)
       when(sequencerUtil.shutdownSequencer(ESW, Darknight))
         .thenReturn(future(1.seconds, Left(ShutdownError(prefix, "something went wrong"))))
