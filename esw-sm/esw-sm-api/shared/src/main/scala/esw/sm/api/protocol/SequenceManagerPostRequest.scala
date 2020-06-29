@@ -1,7 +1,6 @@
 package esw.sm.api.protocol
 
 import csw.location.api.models.ComponentId
-import csw.prefix.models.Subsystem
 import csw.prefix.models.{Prefix, Subsystem}
 import esw.ocs.api.models.ObsMode
 

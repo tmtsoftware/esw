@@ -5,8 +5,6 @@ import akka.actor.typed.{ActorRef, ActorSystem}
 import akka.util.Timeout
 import csw.location.api.extensions.URIExtension.RichURI
 import csw.location.api.models.{AkkaLocation, ComponentId}
-import csw.prefix.models.Subsystem
-import csw.location.api.models.AkkaLocation
 import csw.prefix.models.{Prefix, Subsystem}
 import esw.commons.Timeouts
 import esw.ocs.api.actor.client.SequenceComponentApiTimeout
