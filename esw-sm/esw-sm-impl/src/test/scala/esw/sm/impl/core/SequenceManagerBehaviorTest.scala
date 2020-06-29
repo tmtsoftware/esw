@@ -359,7 +359,7 @@ class SequenceManagerBehaviorTest extends BaseTestSuite with TableDrivenProperty
     "transition sm from Idle -> ShuttingDownSequenceComponent -> Idle state and shutdown the sequence component for given prefix | ESW-338" in {
       val prefix = Prefix(ESW, "primary")
 
-      when(sequenceComponentUtil.shutdown(prefix)).thenReturn(Future.successful(ShutdownSequenceComponentResponse.Success))
+      when(sequenceComponentUtil.shutdown(prefix)).thenReturn(future(1.seconds, ShutdownSequenceComponentResponse.Success))
 
       val shutdownSequenceComponentResponseProbe = TestProbe[ShutdownSequenceComponentResponse]()
 
