@@ -18,6 +18,7 @@ import scala.concurrent.Future
 class SequenceManagerClientTest extends BaseTestSuite with SequenceManagerHttpCodec {
   private val obsMode                  = ObsMode("IRIS_darknight")
   private val componentId: ComponentId = ComponentId(Prefix(ESW, obsMode.name), Sequencer)
+  private val seqCompPrefix: Prefix    = Prefix(ESW, "primary")
 
   val postClient: Transport[SequenceManagerPostRequest] = mock[Transport[SequenceManagerPostRequest]]
   val client                                            = new SequenceManagerClient(postClient)
@@ -102,6 +103,17 @@ class SequenceManagerClientTest extends BaseTestSuite with SequenceManagerHttpCo
       ).thenReturn(Future.successful(ConfigureResponse.Success(componentId)))
 
       client.configure(obsMode).futureValue shouldBe ConfigureResponse.Success(componentId)
+    }
+
+    "return success response for Shutdown Sequence Component request" in {
+      when(
+        postClient.requestResponse[ShutdownSequenceComponentResponse](argsEq(ShutdownSequenceComponent(seqCompPrefix)))(
+          any[Decoder[ShutdownSequenceComponentResponse]](),
+          any[Encoder[ShutdownSequenceComponentResponse]]()
+        )
+      ).thenReturn(Future.successful(ShutdownSequenceComponentResponse.Success))
+
+      client.shutdownSequenceComponent(seqCompPrefix).futureValue shouldBe ShutdownSequenceComponentResponse.Success
     }
   }
 }

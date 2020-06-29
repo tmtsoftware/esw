@@ -1,6 +1,6 @@
 package esw.sm.api.client
 
-import csw.prefix.models.Subsystem
+import csw.prefix.models.{Prefix, Subsystem}
 import esw.ocs.api.models.ObsMode
 import esw.sm.api.SequenceManagerApi
 import esw.sm.api.codecs.SequenceManagerHttpCodec
@@ -38,4 +38,7 @@ class SequenceManagerClient(postClient: Transport[SequenceManagerPostRequest])
 
   override def shutdownAllSequencers(): Future[ShutdownAllSequencersResponse] =
     postClient.requestResponse[ShutdownAllSequencersResponse](ShutdownAllSequencers)
+
+  override def shutdownSequenceComponent(prefix: Prefix): Future[ShutdownSequenceComponentResponse] =
+    postClient.requestResponse[ShutdownSequenceComponentResponse](ShutdownSequenceComponent(prefix))
 }

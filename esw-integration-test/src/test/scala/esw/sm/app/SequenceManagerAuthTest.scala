@@ -23,6 +23,7 @@ class SequenceManagerAuthTest extends EswTestKit(AAS) {
   private val IRIS_CAL       = ObsMode("IRIS_Cal")
   private val IRIS_Darknight = ObsMode("IRIS_Darknight")
   private val WFOS_Cal       = ObsMode("WFOS_Cal")
+  private val seqCompPrefix  = Prefix(ESW, "primary")
 
   private val table = Table[String, SequenceManagerApi => Future[Any]](
     ("Name", "Command"),
@@ -31,7 +32,8 @@ class SequenceManagerAuthTest extends EswTestKit(AAS) {
     ("startSequencer", _.startSequencer(ESW, IRIS_CAL)),
     ("stopSequencer", _.shutdownSequencer(ESW, IRIS_CAL)),
     ("restartSequencer", _.restartSequencer(ESW, IRIS_CAL)),
-    ("shutdownAllSequencers", _.shutdownAllSequencers())
+    ("shutdownAllSequencers", _.shutdownAllSequencers()),
+    ("shutdownSequenceComponent", _.shutdownSequenceComponent(seqCompPrefix))
   )
 
   override def afterEach(): Unit = {
@@ -115,6 +117,19 @@ class SequenceManagerAuthTest extends EswTestKit(AAS) {
     "return 200 even when get running obs modes request does not have token" in {
       val sequenceManagerApi = TestSetup.startSequenceManagerAuthEnabled(smPrefix, () => None)
       sequenceManagerApi.getRunningObsModes.futureValue shouldBe GetRunningObsModesResponse.Success(Set.empty)
+    }
+
+    "return 200 when shutdown sequence component request has ESW_user role" in {
+      val eswSeqCompPrefix = Prefix(ESW, "primary")
+
+      TestSetup.startSequenceComponents(eswSeqCompPrefix)
+
+      val sequenceManagerApi = TestSetup.startSequenceManagerAuthEnabled(smPrefix, tokenWithEswUserRole)
+
+      // shutdown sequence component
+      sequenceManagerApi
+        .shutdownSequenceComponent(eswSeqCompPrefix)
+        .futureValue shouldBe ShutdownSequenceComponentResponse.Success
     }
   }
 }

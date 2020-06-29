@@ -20,9 +20,10 @@ import esw.sm.api.protocol.AgentError.SpawnSequenceComponentFailed
 import esw.sm.api.protocol.CommonFailure.{ConfigurationMissing, LocationServiceError}
 import esw.sm.api.protocol.ConfigureResponse.{ConflictingResourcesWithRunningObsMode, Success}
 import esw.sm.api.protocol.ShutdownAllSequencersResponse.ShutdownFailure
+import esw.sm.api.protocol.ShutdownSequenceComponentResponse.ShutdownSequenceComponentFailure
 import esw.sm.api.protocol.ShutdownSequencerResponse.UnloadScriptError
 import esw.sm.api.protocol.StartSequencerResponse.LoadScriptError
-import esw.sm.api.protocol._
+import esw.sm.api.protocol.{ShutdownSequenceComponentResponse, _}
 import esw.sm.impl.config._
 import esw.sm.impl.utils.{SequenceComponentUtil, SequencerUtil}
 import esw.testcommons.BaseTestSuite
@@ -62,7 +63,7 @@ class SequenceManagerBehaviorTest extends BaseTestSuite with TableDrivenProperty
 
   override implicit def patienceConfig: PatienceConfig = PatienceConfig(10.seconds)
 
-  override protected def beforeEach(): Unit = reset(locationServiceUtil, sequencerUtil)
+  override protected def beforeEach(): Unit = reset(locationServiceUtil, sequencerUtil, sequenceComponentUtil)
 
   "Configure" must {
 
@@ -350,6 +351,44 @@ class SequenceManagerBehaviorTest extends BaseTestSuite with TableDrivenProperty
         shutdownSequencerResponseProbe.expectMessage(error)
 
         verify(sequencerUtil).shutdownAllSequencers()
+      }
+    }
+  }
+
+  "ShutdownSequenceComponent" must {
+    "transition sm from Idle -> ShuttingDownSequenceComponent -> Idle state and shutdown the sequence component for given prefix | ESW-338" in {
+      val prefix = Prefix(ESW, "primary")
+
+      when(sequenceComponentUtil.shutdown(prefix)).thenReturn(Future.successful(ShutdownSequenceComponentResponse.Success))
+
+      val shutdownSequenceComponentResponseProbe = TestProbe[ShutdownSequenceComponentResponse]()
+
+      assertState(Idle)
+      smRef ! ShutdownSequenceComponent(prefix, shutdownSequenceComponentResponseProbe.ref)
+      assertState(ShuttingDownSequenceComponent)
+      shutdownSequenceComponentResponseProbe.expectMessage(ShutdownSequenceComponentResponse.Success)
+      assertState(Idle)
+
+      verify(sequenceComponentUtil).shutdown(prefix)
+    }
+
+    val errors = Table(
+      ("errorName", "error"),
+      ("LocationServiceError", LocationServiceError("location service error")),
+      ("SpawnSequenceComponentFailed", ShutdownSequenceComponentFailure("shutdown sequence component failed"))
+    )
+
+    forAll(errors) { (errorName, error) =>
+      s"return $errorName if $errorName encountered while shutting down sequence component | ESW-338" in {
+        val prefix = Prefix(ESW, "primary")
+
+        when(sequenceComponentUtil.shutdown(prefix)).thenReturn(Future.successful(error))
+        val shutdownSequenceComponentResponseProbe = TestProbe[ShutdownSequenceComponentResponse]()
+
+        smRef ! ShutdownSequenceComponent(prefix, shutdownSequenceComponentResponseProbe.ref)
+        shutdownSequenceComponentResponseProbe.expectMessage(error)
+
+        verify(sequenceComponentUtil).shutdown(prefix)
       }
     }
   }

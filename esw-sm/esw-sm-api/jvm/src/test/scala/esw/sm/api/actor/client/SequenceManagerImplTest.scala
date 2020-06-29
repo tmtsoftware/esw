@@ -52,6 +52,7 @@ class SequenceManagerImplTest extends BaseTestSuite {
   private val location        = AkkaLocation(AkkaConnection(ComponentId(Prefix(ESW, "sequence_manager"), Service)), smRef.toURI)
   private val sequenceManager = new SequenceManagerImpl(location)
   private val obsMode         = ObsMode("IRIS_darknight")
+  private val seqCompPrefix   = Prefix(ESW, "primary")
 
   "SequenceManagerImpl" must {
     "configure" in {
@@ -80,6 +81,10 @@ class SequenceManagerImplTest extends BaseTestSuite {
 
     "shutdownAllSequencers" in {
       sequenceManager.shutdownAllSequencers().futureValue shouldBe shutdownAllSequencersResponse
+    }
+
+    "shutdownSequenceComponent | ESW-338" in {
+      sequenceManager.shutdownSequenceComponent(seqCompPrefix).futureValue shouldBe shutdownSequenceComponentResponse
     }
   }
 }

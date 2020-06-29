@@ -5,10 +5,10 @@ import akka.actor.typed.{ActorRef, ActorSystem}
 import akka.util.Timeout
 import csw.location.api.extensions.URIExtension.RichURI
 import csw.location.api.models.AkkaLocation
-import csw.prefix.models.Subsystem
+import csw.prefix.models.{Prefix, Subsystem}
 import esw.commons.Timeouts
-import esw.ocs.api.models.ObsMode
 import esw.ocs.api.actor.client.SequenceComponentApiTimeout
+import esw.ocs.api.models.ObsMode
 import esw.sm.api.SequenceManagerApi
 import esw.sm.api.actor.messages.SequenceManagerMsg
 import esw.sm.api.actor.messages.SequenceManagerMsg._
@@ -50,6 +50,9 @@ class SequenceManagerImpl(location: AkkaLocation)(implicit actorSystem: ActorSys
     )
 
   override def shutdownAllSequencers(): Future[ShutdownAllSequencersResponse] = smRef ? ShutdownAllSequencers
+
+  override def shutdownSequenceComponent(prefix: Prefix): Future[ShutdownSequenceComponentResponse] =
+    smRef ? (ShutdownSequenceComponent(prefix, _))
 }
 
 object SequenceManagerTimeout {
