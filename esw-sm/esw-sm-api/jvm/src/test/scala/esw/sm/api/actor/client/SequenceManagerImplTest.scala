@@ -69,7 +69,7 @@ class SequenceManagerImplTest extends BaseTestSuite {
       sequenceManager.shutdownSequencers(Some(ESW), Some(obsMode)).futureValue shouldBe shutdownSequencersResponse
     }
 
-    "shutdownSequencers" in {
+    "shutdownSequencers (all)" in {
       sequenceManager.shutdownSequencers(None, None).futureValue shouldBe shutdownSequencersResponse
     }
 
