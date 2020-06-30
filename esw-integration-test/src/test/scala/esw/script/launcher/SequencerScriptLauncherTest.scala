@@ -15,6 +15,7 @@ import scala.concurrent.duration.DurationInt
 class SequencerScriptLauncherTest extends EswTestKit {
 
   private val className        = "SampleScript"
+  private val ocsAppVersion    = "e7ddebd"
   private val sampleScriptPath = getClass.getResource(s"/$className.kts").getPath
   private val projectRootPath  = Path(sampleScriptPath) / up / up / up / up / up
   private val scriptLauncher   = (projectRootPath / "scripts" / "script-launcher" / "launchSequencer.sh").toString()
@@ -22,13 +23,18 @@ class SequencerScriptLauncherTest extends EswTestKit {
   var process: Process = _
 
   "launch sequencer script should start sequencer with given script | ESW-150" in {
-    val builder = new ProcessBuilder(scriptLauncher, "-f", sampleScriptPath, "-v", "e7ddebd")
+    // fetch upfront to prevent timing out
+    new ProcessBuilder("cs", "fetch", s"ocs-app:$ocsAppVersion").start().waitFor()
+
+    //  todo : add a step of fetch to fix the time out error
+    val builder = new ProcessBuilder(scriptLauncher, "-f", sampleScriptPath, "-v", ocsAppVersion)
 
     // setup needed environment variables
     val processEnvironment: util.Map[String, String] = builder.environment()
     processEnvironment.put("INTERFACE_NAME", "")        // keeping it blank will auto pick the interface name
     processEnvironment.put("PUBLIC_INTERFACE_NAME", "") // keeping it blank will auto pick the interface name
     processEnvironment.put("TMT_LOG_HOME", "/tmp/csw/")
+    builder.inheritIO()
 
     // start the launcher process
     process = builder.start()
