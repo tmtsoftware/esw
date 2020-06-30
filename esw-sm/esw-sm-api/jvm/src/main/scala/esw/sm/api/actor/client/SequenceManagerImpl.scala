@@ -38,10 +38,9 @@ class SequenceManagerImpl(location: AkkaLocation)(implicit actorSystem: ActorSys
 
   override def shutdownSequencer(
       subsystem: Subsystem,
-      observingMode: ObsMode,
-      shutdownSequenceComp: Boolean = false
+      observingMode: ObsMode
   ): Future[ShutdownSequencerResponse] =
-    smRef ? (ShutdownSequencer(subsystem, observingMode, shutdownSequenceComp, _))
+    smRef ? (ShutdownSequencer(subsystem, observingMode, _))
 
   override def restartSequencer(subsystem: Subsystem, observingMode: ObsMode): Future[RestartSequencerResponse] =
     (smRef ? { x: ActorRef[RestartSequencerResponse] => RestartSequencer(subsystem, observingMode, x) })(

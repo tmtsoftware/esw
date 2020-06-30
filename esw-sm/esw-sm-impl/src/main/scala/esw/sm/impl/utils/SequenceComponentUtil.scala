@@ -52,12 +52,10 @@ class SequenceComponentUtil(locationServiceUtil: LocationServiceUtil, agentUtil:
 
   def unloadScript(loc: AkkaLocation): Future[OkOrUnhandled] = createSequenceComponentImpl(loc).unloadScript()
 
-  def shutdown(loc: AkkaLocation): Future[OkOrUnhandled] = createSequenceComponentImpl(loc).shutdown()
-
   def shutdown(prefix: Prefix): Future[ShutdownSequenceComponentResponse] =
     locationServiceUtil
       .find(AkkaConnection(ComponentId(prefix, SequenceComponent)))
-      .flatMapRight(shutdown)
+      .flatMapRight(createSequenceComponentImpl(_).shutdown())
       .mapToAdt(
         okOrUnhandledToShutdownSeqCompResponse(prefix),
         error => LocationServiceError(error.msg)
