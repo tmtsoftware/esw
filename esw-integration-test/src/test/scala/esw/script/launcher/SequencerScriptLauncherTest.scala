@@ -7,8 +7,9 @@ import csw.location.api.models.ComponentType.Sequencer
 import csw.location.api.models.Connection.AkkaConnection
 import csw.prefix.models.Prefix
 import csw.prefix.models.Subsystem.ESW
+import esw.agent.app.ext.ProcessExt.ProcessOps
 import esw.ocs.testkit.EswTestKit
-import os.{Path, proc, up}
+import os.{Path, up}
 
 import scala.concurrent.duration.DurationInt
 
@@ -27,43 +28,27 @@ class SequencerScriptLauncherTest extends EswTestKit {
     new ProcessBuilder("cs", "fetch", s"ocs-app:$ocsAppVersion").start().waitFor()
 
     //  todo : add a step of fetch to fix the time out error
-    val builder = new ProcessBuilder(scriptLauncher, "-f", sampleScriptPath, "-v", ocsAppVersion)
+    val builder = new ProcessBuilder(scriptLauncher, "-f", sampleScriptPath, "-v", ocsAppVersion).inheritIO()
 
     // setup needed environment variables
     val processEnvironment: util.Map[String, String] = builder.environment()
     processEnvironment.put("INTERFACE_NAME", "")        // keeping it blank will auto pick the interface name
     processEnvironment.put("PUBLIC_INTERFACE_NAME", "") // keeping it blank will auto pick the interface name
     processEnvironment.put("TMT_LOG_HOME", "/tmp/csw/")
-    builder.inheritIO()
 
     // start the launcher process
     process = builder.start()
-
     // check sequencer is registered in location service
     val prefix    = Prefix(ESW, className)
     val locationF = locationService.resolve(AkkaConnection(ComponentId(prefix, Sequencer)), 10.seconds)
-    locationF.futureValue.get.prefix shouldBe prefix
+    locationF.futureValue.value.prefix shouldBe prefix
   }
 
   override def afterAll(): Unit = {
-    killSequencerProcess()
-    process.destroyForcibly().waitFor() // shutdown the process
+    process.kill(10.seconds)
     removeJar()
     super.afterAll()
   }
-
-  private def killSequencerProcess(): Unit =
-    proc("jps", "-m")
-      .call()
-      .chunks
-      .collect {
-        case Left(s)  => s
-        case Right(s) => s
-      }
-      .map(b => new String(b.array).trim)
-      .filter(_.contains(s"-m $className"))   // get the process running the SampleScript
-      .map({ x => x.split(" ").head.toLong }) // extract out the PId
-      .foreach(proc("kill", "-9", _).call())  // kill the porcess
 
   private def removeJar(): Unit = {
     val jarName = className + ".jar"
