@@ -44,7 +44,8 @@ jobs:
         run: |
           curl -fLo cs https://git.io/coursier-cli-linux &&
             chmod +x cs &&
-            sudo mv cs /usr/local/bin
+            sudo mv cs /usr/local/bin &&
+            cs install --add-channel https://raw.githubusercontent.com/tmtsoftware/apps/master/apps.json
 
       - name: Build
         run: |
