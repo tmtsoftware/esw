@@ -54,15 +54,14 @@ class SequencerUtil(locationServiceUtil: LocationServiceUtil, sequenceComponentU
 
   def shutdownSequencer(
       subsystem: Subsystem,
-      obsMode: ObsMode,
-      shutdownSequenceComp: Boolean = false
+      obsMode: ObsMode
   ): Future[Either[ShutdownSequencerResponse.Failure, ShutdownSequencerResponse.Success.type]] =
     locationServiceUtil
       .findSequencer(subsystem, obsMode)
       .flatMap {
         case Left(listingFailed: RegistrationListingFailed) => Future.successful(Left(LocationServiceError(listingFailed.msg)))
         case Left(LocationNotFound(_))                      => Future.successful(Right(ShutdownSequencerResponse.Success))
-        case Right(sequencerLoc)                            => unloadScript(sequencerLoc, shutdownSequenceComp)
+        case Right(sequencerLoc)                            => unloadScript(sequencerLoc)
       }
 
   def shutdownSequencers(sequencers: Sequencers, obsMode: ObsMode): Future[CleanupResponse] = {
@@ -74,7 +73,7 @@ class SequencerUtil(locationServiceUtil: LocationServiceUtil, sequenceComponentU
     locationServiceUtil.listAkkaLocationsBy(Sequencer).flatMapToAdt(shutdownSequencers, e => LocationServiceError(e.msg))
 
   private def shutdownSequencers(sequencerLocations: List[AkkaLocation]): Future[ShutdownAllSequencersResponse] =
-    traverse(sequencerLocations)(location => unloadScript(location, shutdownSequenceComp = false))
+    traverse(sequencerLocations)(location => unloadScript(location))
       .mapToAdt(_ => ShutdownAllSequencersResponse.Success, ShutdownAllSequencersResponse.ShutdownFailure)
 
   def restartSequencer(subSystem: Subsystem, obsMode: ObsMode): Future[RestartSequencerResponse] =
@@ -109,15 +108,13 @@ class SequencerUtil(locationServiceUtil: LocationServiceUtil, sequenceComponentU
 
   // get sequence component from Sequencer and unload sequencer script
   private def unloadScript(
-      sequenceLocation: AkkaLocation,
-      shutdownSequenceComp: Boolean
+      sequenceLocation: AkkaLocation
   ): Future[Either[UnloadScriptError, ShutdownSequencerResponse.Success.type]] =
     async {
       val seqCompLoc      = await(createSequencerClient(sequenceLocation).getSequenceComponent)
       val unloadScriptRes = await(sequenceComponentUtil.unloadScript(seqCompLoc))
-      val shutdownRes     = if (shutdownSequenceComp) await(sequenceComponentUtil.shutdown(seqCompLoc)) else unloadScriptRes
 
-      shutdownRes match {
+      unloadScriptRes match {
         case Ok                   => Right(ShutdownSequencerResponse.Success)
         case Unhandled(_, _, msg) => Left(UnloadScriptError(sequenceLocation.prefix, msg))
       }

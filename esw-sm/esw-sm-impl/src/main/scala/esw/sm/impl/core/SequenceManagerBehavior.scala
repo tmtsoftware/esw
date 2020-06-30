@@ -44,8 +44,8 @@ class SequenceManagerBehavior(
       case Configure(observingMode, replyTo)                 => configure(observingMode, self, replyTo)
       case Cleanup(observingMode, replyTo)                   => cleanup(observingMode, self, replyTo)
       case StartSequencer(subsystem, observingMode, replyTo) => startSequencer(subsystem, observingMode, self, replyTo)
-      case ShutdownSequencer(subsystem, observingMode, shutdownSequenceComp, replyTo) =>
-        shutdownSequencer(subsystem, observingMode, shutdownSequenceComp, self, replyTo)
+      case ShutdownSequencer(subsystem, observingMode, replyTo) =>
+        shutdownSequencer(subsystem, observingMode, self, replyTo)
       case ShutdownAllSequencers(replyTo)                      => shutdownAllSequencers(self, replyTo)
       case RestartSequencer(subsystem, observingMode, replyTo) => restartSequencer(subsystem, observingMode, self, replyTo)
       case SpawnSequenceComponent(machine, name, replyTo)      => spawnSequenceComponent(machine, name, self, replyTo)
@@ -134,11 +134,10 @@ class SequenceManagerBehavior(
   private def shutdownSequencer(
       subsystem: Subsystem,
       obsMode: ObsMode,
-      shutdownSequenceComp: Boolean,
       self: SelfRef,
       replyTo: ActorRef[ShutdownSequencerResponse]
   ): SMBehavior = {
-    val shutdownResponseF = sequencerUtil.shutdownSequencer(subsystem, obsMode, shutdownSequenceComp).mapToAdt(identity, identity)
+    val shutdownResponseF = sequencerUtil.shutdownSequencer(subsystem, obsMode).mapToAdt(identity, identity)
     shutdownResponseF.map(self ! ShutdownSequencerResponseInternal(_))
     shuttingDownSequencer(self, replyTo)
   }

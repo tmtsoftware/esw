@@ -176,17 +176,17 @@ class SequenceManagerIntegrationTest extends EswTestKit with BinaryFetcherUtil {
     resolveSequenceComponentLocation(Prefix(ESW, "secondary"))
     resolveSequenceComponentLocation(Prefix(AOESW, "primary"))
 
-    val shutdownResponse2 = sequenceManagerClient.shutdownSequencer(AOESW, IRIS_CAL, shutdownSequenceComp = true).futureValue
+    val shutdownResponse2 = sequenceManagerClient.shutdownSequencer(AOESW, IRIS_CAL).futureValue
     shutdownResponse2 should ===(ShutdownSequencerResponse.Success)
 
     // verify that sequencer is shut down
     resolveHTTPLocation(Prefix(ESW, IRIS_CAL.name), Sequencer)
     intercept[Exception](resolveHTTPLocation(Prefix(AOESW, IRIS_CAL.name), Sequencer))
 
-    // ESW-167: verify that sequence component is shutdown
+    // ESW-167: verify that sequence component is up
     resolveSequenceComponentLocation(Prefix(ESW, "primary"))
     resolveSequenceComponentLocation(Prefix(ESW, "secondary"))
-    intercept[Exception](resolveSequenceComponentLocation(Prefix(AOESW, "primary")))
+    resolveSequenceComponentLocation(Prefix(AOESW, "primary"))
   }
 
   "restart a running sequencer for given subsystem and obsMode | ESW-327, ESW-171" in {

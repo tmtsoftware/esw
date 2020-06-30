@@ -60,7 +60,7 @@ class SequenceManagerClientTest extends BaseTestSuite with SequenceManagerHttpCo
     }
 
     "return shutdown sequencer success for shutdownSequencer request" in {
-      val shutdownSequencerMsg = ShutdownSequencer(ESW, obsMode, shutdownSequenceComp = false)
+      val shutdownSequencerMsg = ShutdownSequencer(ESW, obsMode)
       when(
         postClient.requestResponse[ShutdownSequencerResponse](argsEq(shutdownSequencerMsg))(
           any[Decoder[ShutdownSequencerResponse]](),

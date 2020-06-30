@@ -229,26 +229,6 @@ class SequencerUtilTest extends BaseTestSuite {
       verify(sequenceComponentUtil).unloadScript(eswSeqCompLoc)
     }
 
-    "shutdown the given sequence component along with sequencer and return Done | ESW-326, ESW-167" in {
-      val setup = new TestSetup()
-      import setup._
-
-      val eswSeqCompLoc = AkkaLocation(AkkaConnection(ComponentId(Prefix(ESW, obsMode.name), SequenceComponent)), URI.create(""))
-
-      when(locationServiceUtil.findSequencer(ESW, obsMode)).thenReturn(futureRight(eswLocation))
-      when(eswSequencerApi.getSequenceComponent).thenReturn(Future.successful(eswSeqCompLoc))
-      when(sequenceComponentUtil.unloadScript(eswSeqCompLoc)).thenReturn(Future.successful(Ok))
-      when(sequenceComponentUtil.shutdown(eswSeqCompLoc)).thenReturn(Future.successful(Ok))
-
-      sequencerUtil.shutdownSequencer(ESW, obsMode, shutdownSequenceComp = true).rightValue should ===(
-        ShutdownSequencerResponse.Success
-      )
-
-      verify(eswSequencerApi).getSequenceComponent
-      verify(sequenceComponentUtil).unloadScript(eswSeqCompLoc)
-      verify(sequenceComponentUtil).shutdown(eswSeqCompLoc)
-    }
-
     "return Success even if sequencer is not running | ESW-326" in {
       val setup = new TestSetup()
       import setup._

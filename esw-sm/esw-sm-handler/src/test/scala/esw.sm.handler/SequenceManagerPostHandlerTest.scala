@@ -78,7 +78,7 @@ class SequenceManagerPostHandlerTest
       when(sequenceManagerApi.shutdownSequencer(ESW, obsMode))
         .thenReturn(Future.successful(ShutdownSequencerResponse.Success))
 
-      Post("/post-endpoint", ShutdownSequencer(ESW, obsMode, shutdownSequenceComp = false).narrow) ~> route ~> check {
+      Post("/post-endpoint", ShutdownSequencer(ESW, obsMode).narrow) ~> route ~> check {
         verify(sequenceManagerApi).shutdownSequencer(ESW, obsMode)
         responseAs[ShutdownSequencerResponse] should ===(ShutdownSequencerResponse.Success)
       }

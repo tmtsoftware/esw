@@ -17,17 +17,15 @@ class SequenceManagerPostHandler(sequenceManager: SequenceManagerApi, securityDi
   import sequenceManager._
   override def handle(request: SequenceManagerPostRequest): Route =
     request match {
-      case GetRunningObsModes                   => complete(getRunningObsModes)
-      case Configure(obsMode)                   => sPost(complete(configure(obsMode)))
-      case Cleanup(obsMode)                     => sPost(complete(cleanup(obsMode)))
-      case StartSequencer(subsystem, obsMode)   => sPost(complete(startSequencer(subsystem, obsMode)))
-      case RestartSequencer(subsystem, obsMode) => sPost(complete(restartSequencer(subsystem, obsMode)))
-      case ShutdownAllSequencers                => sPost(complete(shutdownAllSequencers()))
-      case ShutdownSequencer(subsystem, obsMode, shutdownSequenceComp) =>
-        sPost(complete(shutdownSequencer(subsystem, obsMode, shutdownSequenceComp)))
+      case GetRunningObsModes                    => complete(getRunningObsModes)
+      case Configure(obsMode)                    => sPost(complete(configure(obsMode)))
+      case Cleanup(obsMode)                      => sPost(complete(cleanup(obsMode)))
+      case StartSequencer(subsystem, obsMode)    => sPost(complete(startSequencer(subsystem, obsMode)))
+      case RestartSequencer(subsystem, obsMode)  => sPost(complete(restartSequencer(subsystem, obsMode)))
+      case ShutdownAllSequencers                 => sPost(complete(shutdownAllSequencers()))
+      case ShutdownSequencer(subsystem, obsMode) => sPost(complete(shutdownSequencer(subsystem, obsMode)))
       case SpawnSequenceComponent(machine, name) => sPost(complete(spawnSequenceComponent(machine, name)))
-      case ShutdownSequenceComponent(prefix) =>
-        sPost(complete(shutdownSequenceComponent(prefix)))
+      case ShutdownSequenceComponent(prefix)     => sPost(complete(shutdownSequenceComponent(prefix)))
     }
 
   def sPost(route: => Route): Route = securityDirectives.sPost(EswUserRolePolicy())(_ => route)

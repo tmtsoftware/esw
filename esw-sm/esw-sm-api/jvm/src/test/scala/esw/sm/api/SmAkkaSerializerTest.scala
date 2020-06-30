@@ -49,7 +49,7 @@ class SmAkkaSerializerTest extends BaseTestSuite {
       GetRunningObsModes(getRunningModesResponseRef),
       GetSequenceManagerState(getSmStateRef),
       StartSequencer(ESW, obsMode, StartSequencerResponseRef),
-      ShutdownSequencer(ESW, obsMode, shutdownSequenceComp = false, shutdownSequencerResponseRef),
+      ShutdownSequencer(ESW, obsMode, shutdownSequencerResponseRef),
       SpawnSequenceComponent(machine, "seq_comp", spawnSequenceComponentResponseRef),
       ShutdownSequenceComponent(Prefix(ESW, "primary"), shutdownSequenceComponentResponseRef)
     )
