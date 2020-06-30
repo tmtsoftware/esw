@@ -37,14 +37,13 @@ object StartSequencerResponse {
   case class LoadScriptError(msg: String) extends Failure
 }
 
-sealed trait ShutdownSequencersResponse extends SmAkkaSerializable
-object ShutdownSequencersResponse {
-  case object Success extends ShutdownSequencersResponse
+sealed trait ShutdownSequencerResponse extends SmAkkaSerializable
+object ShutdownSequencerResponse {
+  case object Success extends ShutdownSequencerResponse
 
-  sealed trait Failure                                  extends SmFailure with ShutdownSequencersResponse
-  case class ShutdownError(prefix: Prefix, msg: String) extends ShutdownSequencersResponse.Failure
-  case class ShutdownFailure(failureResponses: List[ShutdownSequencersResponse.Failure])
-      extends ShutdownSequencersResponse.Failure
+  sealed trait Failure                                                                  extends SmFailure with ShutdownSequencerResponse
+  case class ShutdownError(prefix: Prefix, msg: String)                                 extends ShutdownSequencerResponse.Failure
+  case class ShutdownFailure(failureResponses: List[ShutdownSequencerResponse.Failure]) extends ShutdownSequencerResponse.Failure
 }
 
 sealed trait RestartSequencerResponse extends SmAkkaSerializable
@@ -73,7 +72,7 @@ object ShutdownSequenceComponentResponse {
   case class ShutdownSequenceComponentFailure(prefix: Prefix, msg: String) extends Failure
 }
 
-sealed trait CommonFailure extends SmFailure with ConfigureResponse.Failure with ShutdownSequencersResponse.Failure
+sealed trait CommonFailure extends SmFailure with ConfigureResponse.Failure with ShutdownSequencerResponse.Failure
 
 object CommonFailure {
   case class ConfigurationMissing(obsMode: ObsMode) extends CommonFailure

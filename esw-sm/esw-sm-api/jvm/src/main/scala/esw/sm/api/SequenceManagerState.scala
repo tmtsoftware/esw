@@ -13,7 +13,7 @@ object SequenceManagerState extends Enum[SequenceManagerState] {
   case object Idle                          extends SequenceManagerState
   case object Configuring                   extends SequenceManagerState
   case object StartingSequencer             extends SequenceManagerState
-  case object ShuttingDownSequencers        extends SequenceManagerState
+  case object ShuttingDownSequencer         extends SequenceManagerState
   case object RestartingSequencer           extends SequenceManagerState
   case object SpawningSequenceComponent     extends SequenceManagerState
   case object ShuttingDownSequenceComponent extends SequenceManagerState

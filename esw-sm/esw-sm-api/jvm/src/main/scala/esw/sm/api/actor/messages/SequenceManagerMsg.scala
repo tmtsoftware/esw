@@ -23,7 +23,7 @@ object SequenceManagerMsg {
       subsystem: Option[Subsystem],
       observingMode: Option[ObsMode],
       shutdownSequenceComp: Boolean,
-      replyTo: ActorRef[ShutdownSequencersResponse]
+      replyTo: ActorRef[ShutdownSequencerResponse]
   ) extends SequenceManagerIdleMsg
   case class RestartSequencer(subsystem: Subsystem, observingMode: ObsMode, replyTo: ActorRef[RestartSequencerResponse])
       extends SequenceManagerIdleMsg
@@ -37,7 +37,7 @@ object SequenceManagerMsg {
   case class GetSequenceManagerState(replyTo: ActorRef[SequenceManagerState])  extends CommonMessage
 
   private[sm] case class StartSequencerResponseInternal(res: StartSequencerResponse)         extends SequenceManagerInternalMsg
-  private[sm] case class ShutdownSequencersResponseInternal(res: ShutdownSequencersResponse) extends SequenceManagerInternalMsg
+  private[sm] case class ShutdownSequencerResponseInternal(res: ShutdownSequencerResponse)   extends SequenceManagerInternalMsg
   private[sm] case class RestartSequencerResponseInternal(res: RestartSequencerResponse)     extends SequenceManagerInternalMsg
   private[sm] case class ConfigurationResponseInternal(res: ConfigureResponse)               extends SequenceManagerInternalMsg
   private[sm] case class SpawnSequenceComponentInternal(res: SpawnSequenceComponentResponse) extends SequenceManagerInternalMsg

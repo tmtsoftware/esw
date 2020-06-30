@@ -120,7 +120,7 @@ class SequenceManagerBehavior(
       obsMode: Option[ObsMode],
       shutdownSequenceComp: Boolean,
       self: SelfRef,
-      replyTo: ActorRef[ShutdownSequencersResponse]
+      replyTo: ActorRef[ShutdownSequencerResponse]
   ): SMBehavior = {
     val shutdownResponseF = (subsystem, obsMode) match {
       case (Some(subsystem), Some(obsMode)) =>
@@ -133,14 +133,14 @@ class SequenceManagerBehavior(
           .getOrElse(Future.successful(ConfigurationMissing(obsMode)))
       case _ => sequencerUtil.shutdownSequencers()
     }
-    shutdownResponseF.map(self ! ShutdownSequencersResponseInternal(_))
+    shutdownResponseF.map(self ! ShutdownSequencerResponseInternal(_))
     shuttingDownSequencers(self, replyTo)
   }
 
   // Shutdown sequencer is in progress, waiting for ShutdownSequencerResponseInternal message
   // Within this period, reject all the other messages except common messages
-  private def shuttingDownSequencers(self: SelfRef, replyTo: ActorRef[ShutdownSequencersResponse]): SMBehavior = {
-    receive[ShutdownSequencersResponseInternal](ShuttingDownSequencers)(msg => replyAndGoToIdle(self, replyTo, msg.res))
+  private def shuttingDownSequencers(self: SelfRef, replyTo: ActorRef[ShutdownSequencerResponse]): SMBehavior = {
+    receive[ShutdownSequencerResponseInternal](ShuttingDownSequencer)(msg => replyAndGoToIdle(self, replyTo, msg.res))
   }
 
   private def restartSequencer(

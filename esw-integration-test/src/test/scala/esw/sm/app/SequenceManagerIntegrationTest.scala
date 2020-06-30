@@ -78,7 +78,7 @@ class SequenceManagerIntegrationTest extends EswTestKit with BinaryFetcherUtil {
     val shutdownSequencersResponse = sequenceManagerClient.shutdownSequencers(None, Some(IRIS_CAL)).futureValue
 
     // assert for Successful Cleanup
-    shutdownSequencersResponse should ===(ShutdownSequencersResponse.Success)
+    shutdownSequencersResponse should ===(ShutdownSequencerResponse.Success)
 
     // ESW-166 verify all sequencers are stopped for the observing mode and seq comps are available
     assertThatSeqCompIsAvailable(eswSeqCompPrefix)
@@ -160,7 +160,7 @@ class SequenceManagerIntegrationTest extends EswTestKit with BinaryFetcherUtil {
 
     // ESW-326, ESW-167 Verify that shutdown sequencer returns Success
     val shutdownResponse = sequenceManagerClient.shutdownSequencers(Some(ESW), Some(IRIS_DARKNIGHT)).futureValue
-    shutdownResponse should ===(ShutdownSequencersResponse.Success)
+    shutdownResponse should ===(ShutdownSequencerResponse.Success)
 
     // verify that sequencer is shut down
     intercept[Exception](resolveHTTPLocation(Prefix(ESW, IRIS_DARKNIGHT.name), Sequencer))
@@ -174,7 +174,7 @@ class SequenceManagerIntegrationTest extends EswTestKit with BinaryFetcherUtil {
 
     val shutdownResponse2 =
       sequenceManagerClient.shutdownSequencers(Some(AOESW), Some(IRIS_CAL), shutdownSequenceComp = true).futureValue
-    shutdownResponse2 should ===(ShutdownSequencersResponse.Success)
+    shutdownResponse2 should ===(ShutdownSequencerResponse.Success)
 
     // verify that sequencer is shut down
     resolveHTTPLocation(Prefix(ESW, IRIS_CAL.name), Sequencer)
@@ -233,7 +233,7 @@ class SequenceManagerIntegrationTest extends EswTestKit with BinaryFetcherUtil {
 
     // shutdown all the sequencers that are running
     val sequenceManagerClient = TestSetup.startSequenceManager(sequenceManagerPrefix)
-    sequenceManagerClient.shutdownSequencers(None, None).futureValue should ===(ShutdownSequencersResponse.Success)
+    sequenceManagerClient.shutdownSequencers(None, None).futureValue should ===(ShutdownSequencerResponse.Success)
 
     // verify all sequencers has stopped
     intercept[Exception](resolveAkkaLocation(irisDarkNightPrefix, Sequencer))

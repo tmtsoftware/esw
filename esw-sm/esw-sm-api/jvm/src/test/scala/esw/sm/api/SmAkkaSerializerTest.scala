@@ -33,7 +33,7 @@ class SmAkkaSerializerTest extends BaseTestSuite {
     val configureResponseRef                 = TestProbe[ConfigureResponse]().ref
     val getRunningModesResponseRef           = TestProbe[GetRunningObsModesResponse]().ref
     val getSmStateRef                        = TestProbe[SequenceManagerState]().ref
-    val shutdownSequencerResponseRef         = TestProbe[ShutdownSequencersResponse]().ref
+    val shutdownSequencerResponseRef         = TestProbe[ShutdownSequencerResponse]().ref
     val StartSequencerResponseRef            = TestProbe[StartSequencerResponse]().ref
     val spawnSequenceComponentResponseRef    = TestProbe[SpawnSequenceComponentResponse]().ref
     val shutdownSequenceComponentResponseRef = TestProbe[ShutdownSequenceComponentResponse]().ref
@@ -125,7 +125,7 @@ class SmAkkaSerializerTest extends BaseTestSuite {
   "should use sm serializer for ShutdownSequencersResponse (de)serialization" in {
     val testData = Table(
       "Sequence Manager ShutdownSequencersResponse models",
-      ShutdownSequencersResponse.Success,
+      ShutdownSequencerResponse.Success,
       LocationServiceError("error")
     )
 
@@ -180,7 +180,7 @@ class SmAkkaSerializerTest extends BaseTestSuite {
       SequenceManagerState.StartingSequencer,
       SequenceManagerState.Configuring,
       SequenceManagerState.RestartingSequencer,
-      SequenceManagerState.ShuttingDownSequencers,
+      SequenceManagerState.ShuttingDownSequencer,
       SequenceManagerState.ShuttingDownSequenceComponent
     )
 

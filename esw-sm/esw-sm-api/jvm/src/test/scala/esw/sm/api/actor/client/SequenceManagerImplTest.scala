@@ -21,7 +21,7 @@ class SequenceManagerImplTest extends BaseTestSuite {
   private val configureResponse                                         = ConfigureResponse.Success(sequencerComponentId)
   private val getRunningObsModesResponse                                = GetRunningObsModesResponse.Success(Set(ObsMode("IRIS_Darknight"), ObsMode("WFOS_cal")))
   private val startSequencerResponse                                    = StartSequencerResponse.Started(sequencerComponentId)
-  private val shutdownSequencersResponse                                = ShutdownSequencersResponse.Success
+  private val shutdownSequencersResponse                                = ShutdownSequencerResponse.Success
   private val restartSequencerResponse                                  = RestartSequencerResponse.Success(sequencerComponentId)
   private val spawnSequenceComponentResponse                            = SpawnSequenceComponentResponse.Success(sequenceComponentId)
   private val shutdownSequenceComponentResponse                         = ShutdownSequenceComponentResponse.Success
@@ -37,7 +37,7 @@ class SequenceManagerImplTest extends BaseTestSuite {
       case SequenceManagerMsg.SpawnSequenceComponent(_, _, replyTo) => replyTo ! spawnSequenceComponentResponse
       case SequenceManagerMsg.ShutdownSequenceComponent(_, replyTo) => replyTo ! shutdownSequenceComponentResponse
       case SequenceManagerMsg.StartSequencerResponseInternal(_)     =>
-      case SequenceManagerMsg.ShutdownSequencersResponseInternal(_) =>
+      case SequenceManagerMsg.ShutdownSequencerResponseInternal(_)  =>
       case SequenceManagerMsg.RestartSequencerResponseInternal(_)   =>
       case SequenceManagerMsg.ConfigurationResponseInternal(_)      =>
       case SequenceManagerMsg.SpawnSequenceComponentInternal(_)     =>

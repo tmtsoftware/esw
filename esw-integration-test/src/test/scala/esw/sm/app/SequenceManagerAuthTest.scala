@@ -78,7 +78,7 @@ class SequenceManagerAuthTest extends EswTestKit(AAS) {
       sequenceManagerApi.configure(IRIS_CAL).futureValue shouldBe ConfigureResponse.Success(componentId)
 
       // configure obs mode
-      sequenceManagerApi.shutdownSequencers(None, Some(IRIS_CAL)).futureValue shouldBe ShutdownSequencersResponse.Success
+      sequenceManagerApi.shutdownSequencers(None, Some(IRIS_CAL)).futureValue shouldBe ShutdownSequencerResponse.Success
     }
 
     "return 200 when start sequencer, restart sequencer and shutdown sequencer request has ESW_user role" in {
@@ -93,7 +93,7 @@ class SequenceManagerAuthTest extends EswTestKit(AAS) {
       // restart sequencer
       sequenceManagerApi.restartSequencer(ESW, WFOS_Cal).futureValue shouldBe RestartSequencerResponse.Success(componentId)
       // shutdown sequencer
-      sequenceManagerApi.shutdownSequencers(Some(ESW), Some(WFOS_Cal)).futureValue shouldBe ShutdownSequencersResponse.Success
+      sequenceManagerApi.shutdownSequencers(Some(ESW), Some(WFOS_Cal)).futureValue shouldBe ShutdownSequencerResponse.Success
     }
 
     "return 200 when shutdown all sequencer request has ESW_user role" in {
@@ -110,7 +110,7 @@ class SequenceManagerAuthTest extends EswTestKit(AAS) {
       sequenceManagerApi.configure(IRIS_Darknight).futureValue shouldBe ConfigureResponse.Success(componentId)
 
       // shutdown all sequencers
-      sequenceManagerApi.shutdownSequencers(None, None).futureValue shouldBe ShutdownSequencersResponse.Success
+      sequenceManagerApi.shutdownSequencers(None, None).futureValue shouldBe ShutdownSequencerResponse.Success
     }
 
     "return 200 even when get running obs modes request does not have token" in {

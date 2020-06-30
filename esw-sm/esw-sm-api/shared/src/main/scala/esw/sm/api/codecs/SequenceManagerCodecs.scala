@@ -10,12 +10,12 @@ import msocket.api.codecs.BasicCodecs
 object SequenceManagerCodecs extends SequenceManagerCodecs
 
 trait SequenceManagerCodecs extends LocationCodecs with BasicCodecs with OcsCodecs {
-  implicit lazy val configureResponseCodec: Codec[ConfigureResponse]                                  = deriveAllCodecs
-  implicit lazy val getRunningObsModesResponseCodec: Codec[GetRunningObsModesResponse]                = deriveAllCodecs
-  implicit lazy val startSequencerResponseCodec: Codec[StartSequencerResponse]                        = deriveAllCodecs
-  implicit lazy val shutdownSequencersResponseCodec: Codec[ShutdownSequencersResponse]                = deriveAllCodecs
-  implicit lazy val shutdownSequencersResponseFailureCodec: Codec[ShutdownSequencersResponse.Failure] = deriveAllCodecs
-  implicit lazy val spawnSequenceComponentResponseCodec: Codec[SpawnSequenceComponentResponse]        = deriveAllCodecs
-  implicit lazy val shutdownSequenceComponentResponseCodec: Codec[ShutdownSequenceComponentResponse]  = deriveAllCodecs
-  implicit lazy val restartSequencerResponseCodec: Codec[RestartSequencerResponse]                    = deriveAllCodecs
+  implicit lazy val configureResponseCodec: Codec[ConfigureResponse]                                 = deriveAllCodecs
+  implicit lazy val getRunningObsModesResponseCodec: Codec[GetRunningObsModesResponse]               = deriveAllCodecs
+  implicit lazy val startSequencerResponseCodec: Codec[StartSequencerResponse]                       = deriveAllCodecs
+  implicit lazy val shutdownSequencersResponseCodec: Codec[ShutdownSequencerResponse]                = deriveAllCodecs
+  implicit lazy val shutdownSequencersResponseFailureCodec: Codec[ShutdownSequencerResponse.Failure] = deriveAllCodecs
+  implicit lazy val spawnSequenceComponentResponseCodec: Codec[SpawnSequenceComponentResponse]       = deriveAllCodecs
+  implicit lazy val shutdownSequenceComponentResponseCodec: Codec[ShutdownSequenceComponentResponse] = deriveAllCodecs
+  implicit lazy val restartSequencerResponseCodec: Codec[RestartSequencerResponse]                   = deriveAllCodecs
 }
