@@ -24,10 +24,10 @@ class SequenceManagerPostHandlerTest
     with ClientHttpCodecs {
   private val sequenceManagerApi: SequenceManagerApi = mock[SequenceManagerApi]
   private val securityDirectives: SecurityDirectives = SecurityDirectives.authDisabled(system.settings.config)
-  private val postHandler = new SequenceManagerPostHandler(sequenceManagerApi, securityDirectives)
-  lazy val route: Route = new PostRouteFactory[SequenceManagerPostRequest]("post-endpoint", postHandler).make()
-  private val obsMode = ObsMode("IRIS_darknight")
-  private val componentId = ComponentId(Prefix(ESW, obsMode.name), ComponentType.Sequencer)
+  private val postHandler                            = new SequenceManagerPostHandler(sequenceManagerApi, securityDirectives)
+  lazy val route: Route                              = new PostRouteFactory[SequenceManagerPostRequest]("post-endpoint", postHandler).make()
+  private val obsMode                                = ObsMode("IRIS_darknight")
+  private val componentId                            = ComponentId(Prefix(ESW, obsMode.name), ComponentType.Sequencer)
 
   override def clientContentType: ContentType = ContentType.Json
 
@@ -90,8 +90,8 @@ class SequenceManagerPostHandlerTest
 
     "return spawn sequence component success for spawnSequenceComponent request | ESW-337" in {
       val seqCompName = "seq_comp"
-      val machine = ComponentId(Prefix(ESW, "primary"), ComponentType.Machine)
-      val seqComp = ComponentId(Prefix(ESW, seqCompName), ComponentType.SequenceComponent)
+      val machine     = ComponentId(Prefix(ESW, "primary"), ComponentType.Machine)
+      val seqComp     = ComponentId(Prefix(ESW, seqCompName), ComponentType.SequenceComponent)
 
       when(sequenceManagerApi.spawnSequenceComponent(machine, seqCompName))
         .thenReturn(Future.successful(SpawnSequenceComponentResponse.Success(seqComp)))
