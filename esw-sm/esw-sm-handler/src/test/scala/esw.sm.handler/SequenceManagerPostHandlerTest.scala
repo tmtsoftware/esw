@@ -99,16 +99,16 @@ class SequenceManagerPostHandlerTest
       Post("/post-endpoint", SpawnSequenceComponent(machine, seqCompName).narrow) ~> route ~> check {
         verify(sequenceManagerApi).spawnSequenceComponent(machine, seqCompName)
         responseAs[SpawnSequenceComponentResponse] should ===(SpawnSequenceComponentResponse.Success(seqComp))
+      }
+    }
 
-        "return shutdown all sequencer success for shutdownSequencers request for all sequencers | ESW-171" in {
-          when(sequenceManagerApi.shutdownSequencers(None, None))
-            .thenReturn(Future.successful(ShutdownSequencersResponse.Success))
+    "return shutdown all sequencer success for shutdownSequencers request for all sequencers | ESW-171" in {
+      when(sequenceManagerApi.shutdownSequencers(None, None))
+        .thenReturn(Future.successful(ShutdownSequencersResponse.Success))
 
-          Post("/post-endpoint", ShutdownSequencers(None, None, shutdownSequenceComp = false).narrow) ~> route ~> check {
-            verify(sequenceManagerApi).shutdownSequencers(None, None)
-            responseAs[ShutdownSequencersResponse] should ===(ShutdownSequencersResponse.Success)
-          }
-        }
+      Post("/post-endpoint", ShutdownSequencers(None, None, shutdownSequenceComp = false).narrow) ~> route ~> check {
+        verify(sequenceManagerApi).shutdownSequencers(None, None)
+        responseAs[ShutdownSequencersResponse] should ===(ShutdownSequencersResponse.Success)
       }
     }
   }
