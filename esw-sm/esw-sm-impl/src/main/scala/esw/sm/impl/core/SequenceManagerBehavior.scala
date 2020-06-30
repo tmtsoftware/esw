@@ -41,7 +41,6 @@ class SequenceManagerBehavior(
   def setup: SMBehavior = Behaviors.setup(ctx => idle(ctx.self))
 
   private def idle(self: SelfRef): SMBehavior = {
-    println(s"idle: $self")
     receive[SequenceManagerIdleMsg](Idle) {
       case Configure(observingMode, replyTo)                 => configure(observingMode, self, replyTo)
       case StartSequencer(subsystem, observingMode, replyTo) => startSequencer(subsystem, observingMode, self, replyTo)
@@ -134,21 +133,14 @@ class SequenceManagerBehavior(
           .getOrElse(Future.successful(ConfigurationMissing(obsMode)))
       case _ => sequencerUtil.shutdownSequencers()
     }
-    shutdownResponseF.map { r =>
-      println(s"future received: $r ${r.getClass.toString} $self")
-      self ! ShutdownSequencersResponseInternal(r)
-    }
+    shutdownResponseF.map(self ! ShutdownSequencersResponseInternal(_))
     shuttingDownSequencers(self, replyTo)
   }
 
   // Shutdown sequencer is in progress, waiting for ShutdownSequencerResponseInternal message
   // Within this period, reject all the other messages except common messages
   private def shuttingDownSequencers(self: SelfRef, replyTo: ActorRef[ShutdownSequencersResponse]): SMBehavior = {
-    println("in shuttingDownSequencers")
-    receive[ShutdownSequencersResponseInternal](ShuttingDownSequencers)(msg => {
-      println(s"lambda: $msg");
-      replyAndGoToIdle(self, replyTo, msg.res)
-    })
+    receive[ShutdownSequencersResponseInternal](ShuttingDownSequencers)(msg => replyAndGoToIdle(self, replyTo, msg.res))
   }
 
   private def restartSequencer(
@@ -196,11 +188,10 @@ class SequenceManagerBehavior(
   }
 
   private def receive[T <: SequenceManagerMsg: ClassTag](state: SequenceManagerState)(handler: T => SMBehavior): SMBehavior = {
-    println(state)
     Behaviors.receiveMessage {
-      case msg: CommonMessage => println(s"c $msg"); handleCommon(msg, state); Behaviors.same
-      case msg: T             => println(s"t $msg"); handler(msg)
-      case msg                => println(s"u $msg"); Behaviors.unhandled
+      case msg: CommonMessage => handleCommon(msg, state); Behaviors.same
+      case msg: T             => handler(msg)
+      case _                  => Behaviors.unhandled
     }
   }
   private def handleCommon(msg: CommonMessage, currentState: SequenceManagerState): Unit =
