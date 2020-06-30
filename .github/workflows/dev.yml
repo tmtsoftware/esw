@@ -42,10 +42,17 @@ jobs:
 
       - name: Install CS native
         run: |
-          curl -fLo cs https://git.io/coursier-cli-linux &&
-            chmod +x cs &&
-            sudo mv cs /usr/local/bin &&
-            cs install --add-channel https://raw.githubusercontent.com/tmtsoftware/apps/master/apps.json
+          curl -fLo cs https://git.io/coursier-cli-linux
+          chmod +x cs
+          sudo mv cs /usr/local/bin
+          cs install --add-channel https://raw.githubusercontent.com/tmtsoftware/apps/master/apps.json
+
+      - name: Install Kotlin
+        run: |
+          curl -s https://get.sdkman.io | bash
+          source "/home/runner/.sdkman/bin/sdkman-init.sh"
+          sdk install kotlin
+          sudo ln -s $(which kotlinc) /usr/local/bin/kotlinc
 
       - name: Build
         run: |
