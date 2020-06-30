@@ -27,9 +27,10 @@ class SequenceComponentUtil(locationServiceUtil: LocationServiceUtil, agentUtil:
   import actorSystem.executionContext
 
   def spawnSequenceComponent(componentId: ComponentId, name: String): Future[SpawnSequenceComponentResponse] = {
-    val seqCompPrefix = Prefix(componentId.prefix.subsystem, name)
+    val seqCompSubsystem = componentId.prefix.subsystem
+    val seqCompPrefix    = Prefix(seqCompSubsystem, name)
     agentUtil
-      .spawnSequenceComponentFor(seqCompPrefix)
+      .spawnSequenceComponentFor(seqCompSubsystem, seqCompPrefix)
       .mapToAdt(
         _ => SpawnSequenceComponentResponse.Success(ComponentId(seqCompPrefix, SequenceComponent)),
         error => SpawnSequenceComponentFailed(error.msg)

@@ -4,11 +4,12 @@ import java.io.File
 import java.nio.file.Files
 
 import csw.location.api.models.ComponentId
-import csw.location.api.models.ComponentType.{Sequencer, Service}
+import csw.location.api.models.ComponentType.{Machine, SequenceComponent, Sequencer, Service}
 import csw.location.api.models.Connection.AkkaConnection
 import csw.prefix.models.Prefix
 import csw.prefix.models.Subsystem._
 import esw.BinaryFetcherUtil
+import esw.agent.app.AgentSettings
 import esw.ocs.api.actor.client.{SequenceComponentImpl, SequencerImpl}
 import esw.ocs.api.models.ObsMode
 import esw.ocs.api.protocol.SequenceComponentResponse.GetStatusResponse
@@ -17,6 +18,9 @@ import esw.sm.api.protocol.CommonFailure.{ConfigurationMissing, LocationServiceE
 import esw.sm.api.protocol.ConfigureResponse.ConflictingResourcesWithRunningObsMode
 import esw.sm.api.protocol.StartSequencerResponse.LoadScriptError
 import esw.sm.api.protocol._
+
+import scala.concurrent.Await
+import scala.concurrent.duration.DurationInt
 
 class SequenceManagerIntegrationTest extends EswTestKit with BinaryFetcherUtil {
   private val WFOS_CAL              = ObsMode("WFOS_Cal")
@@ -281,14 +285,33 @@ class SequenceManagerIntegrationTest extends EswTestKit with BinaryFetcherUtil {
     response should ===(ConfigureResponse.Success(ComponentId(Prefix(ESW, obsMode.name), Sequencer)))
   }
 
-  "shutdown sequence component for given prefix | ESW-338" in {
-    val seqCompPrefix = Prefix(ESW, "primary")
+  "spawn sequence component for given machine and name and shutdown for given prefix | ESW-337, ESW-338" in {
+    val seqCompName         = "seq_comp"
+    val machine             = ComponentId(Prefix(ESW, "primary"), Machine)
+    val seqCompPrefix       = Prefix(ESW, seqCompName)
+    val expectedComponentId = ComponentId(seqCompPrefix, SequenceComponent)
 
-    TestSetup.startSequenceComponents(seqCompPrefix)
-    resolveSequenceComponentLocation(Prefix(ESW, "primary"))
+    //spawn ESW agent
+    val channel: String = "file://" + getClass.getResource("/sequence_manager_apps.json").getPath
+    val agentPrefix     = spawnAgent(AgentSettings(1.minute, channel))
+    fetchBinaryFor(channel)
+
+    //verify that agent is available
+    resolveAkkaLocation(agentPrefix, Machine)
+
+    //ESW-337 verify that sequence component is not running
+    intercept[Exception](resolveSequenceComponentLocation(seqCompPrefix))
 
     val sequenceManagerClient = TestSetup.startSequenceManager(sequenceManagerPrefix)
 
+    Await.result(sequenceManagerClient.spawnSequenceComponent(machine, seqCompName), 1.minute) should ===(
+      SpawnSequenceComponentResponse.Success(expectedComponentId)
+    )
+
+    //ESW-337 verify that sequence component is now spawned
+    resolveSequenceComponentLocation(seqCompPrefix)
+
+    //ESW-338 shutdown sequence component
     sequenceManagerClient.shutdownSequenceComponent(seqCompPrefix).futureValue should ===(
       ShutdownSequenceComponentResponse.Success
     )
