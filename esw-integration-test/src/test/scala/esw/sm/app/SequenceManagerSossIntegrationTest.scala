@@ -50,7 +50,7 @@ class SequenceManagerSossIntegrationTest extends EswTestKit(EventServer) {
           event.isInvalid shouldBe false
       }
 
-      sequenceManager.shutdownSequencers(None, Some(obsMode)).futureValue shouldBe a[ShutdownSequencerResponse.Success.type]
+      sequenceManager.shutdownObsModeSequencers(obsMode).futureValue shouldBe a[ShutdownSequencerResponse.Success.type]
     }
   }
 }

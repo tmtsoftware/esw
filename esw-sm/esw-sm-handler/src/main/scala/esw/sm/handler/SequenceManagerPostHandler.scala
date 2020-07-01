@@ -21,9 +21,12 @@ class SequenceManagerPostHandler(sequenceManager: SequenceManagerApi, securityDi
       case Configure(obsMode)                   => sPost(complete(configure(obsMode)))
       case StartSequencer(subsystem, obsMode)   => sPost(complete(startSequencer(subsystem, obsMode)))
       case RestartSequencer(subsystem, obsMode) => sPost(complete(restartSequencer(subsystem, obsMode)))
-      case ShutdownSequencers(subsystem, obsMode, shutdownSequenceComp) =>
-        sPost(complete(shutdownSequencers(subsystem, obsMode, shutdownSequenceComp)))
-      case SpawnSequenceComponent(machine, name) => sPost(complete(spawnSequenceComponent(machine, name)))
+      case ShutdownSequencer(subsystem, obsMode, shutdownSequenceComp) =>
+        sPost(complete(shutdownSequencer(subsystem, obsMode, shutdownSequenceComp)))
+      case ShutdownSubsystemSequencers(subsystem) => sPost(complete(shutdownSubsystemSequencers(subsystem)))
+      case ShutdownObsModeSequencers(obsMode)     => sPost(complete(shutdownObsModeSequencers(obsMode)))
+      case ShutdownAllSequencers()                => sPost(complete(shutdownAllSequencers()))
+      case SpawnSequenceComponent(machine, name)  => sPost(complete(spawnSequenceComponent(machine, name)))
       case ShutdownSequenceComponent(prefix) =>
         sPost(complete(shutdownSequenceComponent(prefix)))
     }

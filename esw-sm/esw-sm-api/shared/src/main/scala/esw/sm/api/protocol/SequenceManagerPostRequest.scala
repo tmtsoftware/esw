@@ -10,8 +10,11 @@ object SequenceManagerPostRequest {
   case class Configure(obsMode: ObsMode)                                  extends SequenceManagerPostRequest
   case object GetRunningObsModes                                          extends SequenceManagerPostRequest
   case class StartSequencer(subsystem: Subsystem, observingMode: ObsMode) extends SequenceManagerPostRequest
-  case class ShutdownSequencers(subsystem: Option[Subsystem], observingMode: Option[ObsMode], shutdownSequenceComp: Boolean)
+  case class ShutdownSequencer(subsystem: Subsystem, observingMode: ObsMode, shutdownSequenceComp: Boolean)
       extends SequenceManagerPostRequest
+  case class ShutdownSubsystemSequencers(subsystem: Subsystem)              extends SequenceManagerPostRequest
+  case class ShutdownObsModeSequencers(observingMode: ObsMode)              extends SequenceManagerPostRequest
+  case class ShutdownAllSequencers()                                        extends SequenceManagerPostRequest
   case class RestartSequencer(subsystem: Subsystem, observingMode: ObsMode) extends SequenceManagerPostRequest
   case class SpawnSequenceComponent(machine: ComponentId, name: String)     extends SequenceManagerPostRequest
   case class ShutdownSequenceComponent(prefix: Prefix)                      extends SequenceManagerPostRequest

@@ -31,10 +31,9 @@ class SequenceManagerAuthTest extends EswTestKit(AAS) {
     ("startSequencer", _.startSequencer(ESW, IRIS_CAL)),
     ("stopSequencer", _.shutdownSequencer(ESW, IRIS_CAL)),
     ("shutdownSubsystemSequencers", _.shutdownSubsystemSequencers(ESW)),
-    ("shutdownObsModeSequencers", _.shutdownAllSequencers(IRIS_CAL)),
+    ("shutdownObsModeSequencers", _.shutdownObsModeSequencers(IRIS_CAL)),
     ("shutdownAllSequencers", _.shutdownAllSequencers()),
     ("restartSequencer", _.restartSequencer(ESW, IRIS_CAL)),
-    ("shutdownAllSequencers", _.shutdownAllSequencers()),
     ("shutdownSequenceComponent", _.shutdownSequenceComponent(seqCompPrefix))
   )
 
@@ -99,7 +98,7 @@ class SequenceManagerAuthTest extends EswTestKit(AAS) {
       sequenceManagerApi.shutdownSequencer(ESW, WFOS_Cal).futureValue shouldBe ShutdownSequencerResponse.Success
     }
 
-    "return 200 when shutdown subsystem sequencer request has ESW_user role" in {
+    "return 200 when shutdown subsystem sequencers request has ESW_user role" in {
       val eswSeqCompPrefix  = Prefix(ESW, "primary")
       val irisSeqCompPrefix = Prefix(IRIS, "primary")
       val tcsSeqCompPrefix  = Prefix(TCS, "primary")
@@ -112,11 +111,14 @@ class SequenceManagerAuthTest extends EswTestKit(AAS) {
       // configure obs mode
       sequenceManagerApi.configure(IRIS_Darknight).futureValue shouldBe ConfigureResponse.Success(componentId)
 
-      // shutdown all sequencers
+      // shutdown subsystem sequencers
       sequenceManagerApi.shutdownSubsystemSequencers(IRIS).futureValue shouldBe ShutdownSequencerResponse.Success
+      sequenceManagerApi.shutdownSubsystemSequencers(ESW).futureValue shouldBe ShutdownSequencerResponse.Success
+      sequenceManagerApi.shutdownSubsystemSequencers(TCS).futureValue shouldBe ShutdownSequencerResponse.Success
+
     }
 
-    "return 200 when shutdown all sequencer request has ESW_user role" in {
+    "return 200 when shutdown all sequencers request has ESW_user role" in {
       val eswSeqCompPrefix  = Prefix(ESW, "primary")
       val irisSeqCompPrefix = Prefix(IRIS, "primary")
       val tcsSeqCompPrefix  = Prefix(TCS, "primary")

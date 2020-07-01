@@ -212,7 +212,7 @@ class SequenceManagerIntegrationTest extends EswTestKit with BinaryFetcherUtil {
 
     intercept[Exception](resolveHTTPLocation(Prefix(IRIS, IRIS_CAL.name), Sequencer))
     intercept[Exception](resolveHTTPLocation(Prefix(IRIS, IRIS_DARKNIGHT.name), Sequencer))
-    resolveHTTPLocation(Prefix(IRIS, IRIS_CAL.name), Sequencer)
+    resolveHTTPLocation(Prefix(ESW, IRIS_CAL.name), Sequencer)
   }
 
   "restart a running sequencer for given subsystem and obsMode | ESW-327, ESW-171" in {

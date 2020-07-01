@@ -48,7 +48,7 @@ class SequenceManagerClientTest extends BaseTestSuite with SequenceManagerHttpCo
     }
 
     "return shutdown sequencer success for shutdownSequencer request" in {
-      val shutdownSequencerMsg = ShutdownSequencers(Some(ESW), Some(obsMode), shutdownSequenceComp = false)
+      val shutdownSequencerMsg = ShutdownSequencer(ESW, obsMode, shutdownSequenceComp = false)
       when(
         postClient.requestResponse[ShutdownSequencerResponse](argsEq(shutdownSequencerMsg))(
           any[Decoder[ShutdownSequencerResponse]](),
@@ -60,7 +60,7 @@ class SequenceManagerClientTest extends BaseTestSuite with SequenceManagerHttpCo
     }
 
     "return shutdown sequencer success for shutdownSubsystemSequencers request" in {
-      val shutdownSequencerMsg = ShutdownSequencers(Some(ESW), None, shutdownSequenceComp = false)
+      val shutdownSequencerMsg = ShutdownSubsystemSequencers(ESW)
       when(
         postClient.requestResponse[ShutdownSequencerResponse](argsEq(shutdownSequencerMsg))(
           any[Decoder[ShutdownSequencerResponse]](),
@@ -72,7 +72,7 @@ class SequenceManagerClientTest extends BaseTestSuite with SequenceManagerHttpCo
     }
 
     "return shutdown sequencer success for shutdownObsModeSequencers request" in {
-      val shutdownSequencerMsg = ShutdownSequencers(None, Some(obsMode), shutdownSequenceComp = false)
+      val shutdownSequencerMsg = ShutdownObsModeSequencers(obsMode)
       when(
         postClient.requestResponse[ShutdownSequencerResponse](argsEq(shutdownSequencerMsg))(
           any[Decoder[ShutdownSequencerResponse]](),
@@ -84,7 +84,7 @@ class SequenceManagerClientTest extends BaseTestSuite with SequenceManagerHttpCo
     }
 
     "return shutdown sequencer success for shutdownSequencers request" in {
-      val shutdownSequencerMsg = ShutdownSequencers(None, None, shutdownSequenceComp = false)
+      val shutdownSequencerMsg = ShutdownAllSequencers()
       when(
         postClient.requestResponse[ShutdownSequencerResponse](argsEq(shutdownSequencerMsg))(
           any[Decoder[ShutdownSequencerResponse]](),

@@ -25,22 +25,17 @@ class SequenceManagerClient(postClient: Transport[SequenceManagerPostRequest])
     postClient.requestResponse[StartSequencerResponse](StartSequencer(subsystem, obsMode))
 
   override def shutdownObsModeSequencers(observingMode: ObsMode): Future[ShutdownSequencerResponse] =
-    shutdownSequencers(None, Some(observingMode), false)
+    postClient.requestResponse[ShutdownSequencerResponse](ShutdownObsModeSequencers(observingMode))
   override def shutdownSubsystemSequencers(subsystem: Subsystem): Future[ShutdownSequencerResponse] =
-    shutdownSequencers(Some(subsystem), None, false)
-  override def shutdownAllSequencers(): Future[ShutdownSequencerResponse] = shutdownSequencers(None, None, false)
+    postClient.requestResponse[ShutdownSequencerResponse](ShutdownSubsystemSequencers(subsystem))
+  override def shutdownAllSequencers(): Future[ShutdownSequencerResponse] =
+    postClient.requestResponse[ShutdownSequencerResponse](ShutdownAllSequencers())
   override def shutdownSequencer(
       subsystem: Subsystem,
       observingMode: ObsMode,
       shutdownSequenceComp: Boolean = false
-  ): Future[ShutdownSequencerResponse] = shutdownSequencers(Some(subsystem), Some(observingMode), shutdownSequenceComp)
-
-  private def shutdownSequencers(
-      subsystem: Option[Subsystem],
-      obsMode: Option[ObsMode],
-      shutdownSequenceComp: Boolean
   ): Future[ShutdownSequencerResponse] =
-    postClient.requestResponse[ShutdownSequencerResponse](ShutdownSequencers(subsystem, obsMode, shutdownSequenceComp))
+    postClient.requestResponse[ShutdownSequencerResponse](ShutdownSequencer(subsystem, observingMode, shutdownSequenceComp))
 
   override def restartSequencer(subsystem: Subsystem, obsMode: ObsMode): Future[RestartSequencerResponse] =
     postClient.requestResponse[RestartSequencerResponse](RestartSequencer(subsystem, obsMode))

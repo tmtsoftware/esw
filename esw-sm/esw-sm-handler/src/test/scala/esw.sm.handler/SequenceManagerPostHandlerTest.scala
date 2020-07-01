@@ -71,7 +71,7 @@ class SequenceManagerPostHandlerTest
 
       Post(
         "/post-endpoint",
-        ShutdownSequencers(Some(ESW), Some(obsMode), shutdownSequenceComp = false).narrow
+        ShutdownSequencer(ESW, obsMode, shutdownSequenceComp = false).narrow
       ) ~> route ~> check {
         verify(sequenceManagerApi).shutdownSequencer(ESW, obsMode)
         responseAs[ShutdownSequencerResponse] should ===(ShutdownSequencerResponse.Success)
@@ -84,7 +84,7 @@ class SequenceManagerPostHandlerTest
 
       Post(
         "/post-endpoint",
-        ShutdownSequencers(Some(ESW), None, shutdownSequenceComp = false).narrow
+        ShutdownSubsystemSequencers(ESW).narrow
       ) ~> route ~> check {
         verify(sequenceManagerApi).shutdownSubsystemSequencers(ESW)
         responseAs[ShutdownSequencerResponse] should ===(ShutdownSequencerResponse.Success)
@@ -97,7 +97,7 @@ class SequenceManagerPostHandlerTest
 
       Post(
         "/post-endpoint",
-        ShutdownSequencers(None, Some(obsMode), shutdownSequenceComp = false).narrow
+        ShutdownObsModeSequencers(obsMode).narrow
       ) ~> route ~> check {
         verify(sequenceManagerApi).shutdownObsModeSequencers(obsMode)
         responseAs[ShutdownSequencerResponse] should ===(ShutdownSequencerResponse.Success)
@@ -110,7 +110,7 @@ class SequenceManagerPostHandlerTest
 
       Post(
         "/post-endpoint",
-        ShutdownSequencers(None, None, shutdownSequenceComp = false).narrow
+        ShutdownAllSequencers().narrow
       ) ~> route ~> check {
         verify(sequenceManagerApi).shutdownAllSequencers()
         responseAs[ShutdownSequencerResponse] should ===(ShutdownSequencerResponse.Success)
@@ -141,14 +141,5 @@ class SequenceManagerPostHandlerTest
       }
     }
 
-    "return shutdown all sequencer success for shutdownSequencers request for all sequencers | ESW-171" in {
-      when(sequenceManagerApi.shutdownSequencers(None, None))
-        .thenReturn(Future.successful(ShutdownSequencerResponse.Success))
-
-      Post("/post-endpoint", ShutdownSequencers(None, None, shutdownSequenceComp = false).narrow) ~> route ~> check {
-        verify(sequenceManagerApi).shutdownSequencers(None, None)
-        responseAs[ShutdownSequencerResponse] should ===(ShutdownSequencerResponse.Success)
-      }
-    }
   }
 }

@@ -35,10 +35,11 @@ class SequenceManagerImpl(location: AkkaLocation)(implicit actorSystem: ActorSys
     )
 
   override def shutdownObsModeSequencers(observingMode: ObsMode): Future[ShutdownSequencerResponse] =
-    shutdownSequencers(None, Some(observingMode), false)
+    shutdownSequencers(None, Some(observingMode), shutdownSequenceComp = false)
   override def shutdownSubsystemSequencers(subsystem: Subsystem): Future[ShutdownSequencerResponse] =
-    shutdownSequencers(Some(subsystem), None, false)
-  override def shutdownAllSequencers(): Future[ShutdownSequencerResponse] = shutdownSequencers(None, None, false)
+    shutdownSequencers(Some(subsystem), None, shutdownSequenceComp = false)
+  override def shutdownAllSequencers(): Future[ShutdownSequencerResponse] =
+    shutdownSequencers(None, None, shutdownSequenceComp = false)
   override def shutdownSequencer(
       subsystem: Subsystem,
       observingMode: ObsMode,
