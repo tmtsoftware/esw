@@ -65,15 +65,54 @@ class SequenceManagerPostHandlerTest
       }
     }
 
-    "return shutdown sequencer success for shutdownSequencers request | ESW-171" in {
-      when(sequenceManagerApi.shutdownSequencers(Some(ESW), Some(obsMode)))
+    "return shutdown sequencer success for shutdownSequencer request | ESW-171" in {
+      when(sequenceManagerApi.shutdownSequencer(ESW, obsMode))
         .thenReturn(Future.successful(ShutdownSequencerResponse.Success))
 
       Post(
         "/post-endpoint",
         ShutdownSequencers(Some(ESW), Some(obsMode), shutdownSequenceComp = false).narrow
       ) ~> route ~> check {
-        verify(sequenceManagerApi).shutdownSequencers(Some(ESW), Some(obsMode))
+        verify(sequenceManagerApi).shutdownSequencer(ESW, obsMode)
+        responseAs[ShutdownSequencerResponse] should ===(ShutdownSequencerResponse.Success)
+      }
+    }
+
+    "return shutdown sequencer success for shutdownSubsystemSequencers request | ESW-171" in {
+      when(sequenceManagerApi.shutdownSubsystemSequencers(ESW))
+        .thenReturn(Future.successful(ShutdownSequencerResponse.Success))
+
+      Post(
+        "/post-endpoint",
+        ShutdownSequencers(Some(ESW), None, shutdownSequenceComp = false).narrow
+      ) ~> route ~> check {
+        verify(sequenceManagerApi).shutdownSubsystemSequencers(ESW)
+        responseAs[ShutdownSequencerResponse] should ===(ShutdownSequencerResponse.Success)
+      }
+    }
+
+    "return shutdown sequencer success for shutdownObsModeSequencers request | ESW-171" in {
+      when(sequenceManagerApi.shutdownObsModeSequencers(obsMode))
+        .thenReturn(Future.successful(ShutdownSequencerResponse.Success))
+
+      Post(
+        "/post-endpoint",
+        ShutdownSequencers(None, Some(obsMode), shutdownSequenceComp = false).narrow
+      ) ~> route ~> check {
+        verify(sequenceManagerApi).shutdownObsModeSequencers(obsMode)
+        responseAs[ShutdownSequencerResponse] should ===(ShutdownSequencerResponse.Success)
+      }
+    }
+
+    "return shutdown sequencer success for shutdownAllSequencers request | ESW-171" in {
+      when(sequenceManagerApi.shutdownAllSequencers())
+        .thenReturn(Future.successful(ShutdownSequencerResponse.Success))
+
+      Post(
+        "/post-endpoint",
+        ShutdownSequencers(None, None, shutdownSequenceComp = false).narrow
+      ) ~> route ~> check {
+        verify(sequenceManagerApi).shutdownAllSequencers()
         responseAs[ShutdownSequencerResponse] should ===(ShutdownSequencerResponse.Success)
       }
     }

@@ -47,7 +47,7 @@ class SequenceManagerClientTest extends BaseTestSuite with SequenceManagerHttpCo
       client.startSequencer(ESW, obsMode).futureValue shouldBe StartSequencerResponse.Started(componentId)
     }
 
-    "return shutdown sequencer success for shutdownSequencers request" in {
+    "return shutdown sequencer success for shutdownSequencer request" in {
       val shutdownSequencerMsg = ShutdownSequencers(Some(ESW), Some(obsMode), shutdownSequenceComp = false)
       when(
         postClient.requestResponse[ShutdownSequencerResponse](argsEq(shutdownSequencerMsg))(
@@ -56,9 +56,44 @@ class SequenceManagerClientTest extends BaseTestSuite with SequenceManagerHttpCo
         )
       ).thenReturn(Future.successful(ShutdownSequencerResponse.Success))
 
-      client.shutdownSequencers(Some(ESW), Some(obsMode)).futureValue shouldBe ShutdownSequencerResponse.Success
+      client.shutdownSequencer(ESW, obsMode).futureValue shouldBe ShutdownSequencerResponse.Success
     }
-    // TODO other forms of ShutdownSequencers
+
+    "return shutdown sequencer success for shutdownSubsystemSequencers request" in {
+      val shutdownSequencerMsg = ShutdownSequencers(Some(ESW), None, shutdownSequenceComp = false)
+      when(
+        postClient.requestResponse[ShutdownSequencerResponse](argsEq(shutdownSequencerMsg))(
+          any[Decoder[ShutdownSequencerResponse]](),
+          any[Encoder[ShutdownSequencerResponse]]()
+        )
+      ).thenReturn(Future.successful(ShutdownSequencerResponse.Success))
+
+      client.shutdownSubsystemSequencers(ESW).futureValue shouldBe ShutdownSequencerResponse.Success
+    }
+
+    "return shutdown sequencer success for shutdownObsModeSequencers request" in {
+      val shutdownSequencerMsg = ShutdownSequencers(None, Some(obsMode), shutdownSequenceComp = false)
+      when(
+        postClient.requestResponse[ShutdownSequencerResponse](argsEq(shutdownSequencerMsg))(
+          any[Decoder[ShutdownSequencerResponse]](),
+          any[Encoder[ShutdownSequencerResponse]]()
+        )
+      ).thenReturn(Future.successful(ShutdownSequencerResponse.Success))
+
+      client.shutdownObsModeSequencers(obsMode).futureValue shouldBe ShutdownSequencerResponse.Success
+    }
+
+    "return shutdown sequencer success for shutdownSequencers request" in {
+      val shutdownSequencerMsg = ShutdownSequencers(None, None, shutdownSequenceComp = false)
+      when(
+        postClient.requestResponse[ShutdownSequencerResponse](argsEq(shutdownSequencerMsg))(
+          any[Decoder[ShutdownSequencerResponse]](),
+          any[Encoder[ShutdownSequencerResponse]]()
+        )
+      ).thenReturn(Future.successful(ShutdownSequencerResponse.Success))
+
+      client.shutdownAllSequencers().futureValue shouldBe ShutdownSequencerResponse.Success
+    }
 
     "return restart sequencer success for restartSequencer request" in {
       val restartSequencerMsg = RestartSequencer(ESW, obsMode)

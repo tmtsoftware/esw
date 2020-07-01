@@ -11,12 +11,16 @@ trait SequenceManagerApi {
   def configure(observingMode: ObsMode): Future[ConfigureResponse]
   def getRunningObsModes: Future[GetRunningObsModesResponse]
   def startSequencer(subsystem: Subsystem, observingMode: ObsMode): Future[StartSequencerResponse]
-  def shutdownSequencers(
-      subsystem: Option[Subsystem],
-      observingMode: Option[ObsMode],
+  def shutdownObsModeSequencers(observingMode: ObsMode): Future[ShutdownSequencerResponse]
+  def shutdownSubsystemSequencers(subsystem: Subsystem): Future[ShutdownSequencerResponse]
+  def shutdownAllSequencers(): Future[ShutdownSequencerResponse]
+  def shutdownSequencer(
+      subsystem: Subsystem,
+      observingMode: ObsMode,
       shutdownSequenceComp: Boolean = false
   ): Future[ShutdownSequencerResponse]
   def restartSequencer(subsystem: Subsystem, observingMode: ObsMode): Future[RestartSequencerResponse]
   def spawnSequenceComponent(machine: ComponentId, name: String): Future[SpawnSequenceComponentResponse]
   def shutdownSequenceComponent(prefix: Prefix): Future[ShutdownSequenceComponentResponse]
+
 }
