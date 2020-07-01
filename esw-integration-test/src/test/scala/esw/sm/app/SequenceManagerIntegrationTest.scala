@@ -22,7 +22,7 @@ import esw.sm.api.protocol._
 import scala.concurrent.Await
 import scala.concurrent.duration.DurationInt
 
-class SequenceManagerIntegrationTest extends EswTestKit with BinaryFetcherUtil {
+class SequenceManagerIntegrationTest extends EswTestKit {
   private val WFOS_CAL              = ObsMode("WFOS_Cal")
   private val IRIS_CAL              = ObsMode("IRIS_Cal")
   private val IRIS_DARKNIGHT        = ObsMode("IRIS_Darknight")
@@ -294,7 +294,7 @@ class SequenceManagerIntegrationTest extends EswTestKit with BinaryFetcherUtil {
     //spawn ESW agent
     val channel: String = "file://" + getClass.getResource("/sequence_manager_apps.json").getPath
     val agentPrefix     = spawnAgent(AgentSettings(1.minute, channel))
-    fetchBinaryFor(channel)
+    BinaryFetcherUtil.fetchBinaryFor(channel)
 
     //verify that agent is available
     resolveAkkaLocation(agentPrefix, Machine)

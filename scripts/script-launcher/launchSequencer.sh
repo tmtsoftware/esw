@@ -71,7 +71,9 @@ fi
 # ---------------- Compiling ------------------
 echo "[INFO] Compiling the script:" $FILEPATH
 JARNAME=$CLASSNAME.jar
-kotlinc -jvm-target 1.8 -Xuse-experimental=kotlin.time.ExperimentalTime -classpath "$(cs fetch ocs-app$VERSION --classpath)" $FILEPATH -d $JARNAME
+CSCHANNEL="https://raw.githubusercontent.com/tmtsoftware/apps/master/apps.json"
+
+kotlinc -jvm-target 1.8 -Xuse-experimental=kotlin.time.ExperimentalTime -classpath "$(cs fetch --channel $CSCHANNEL ocs-app$VERSION --classpath)" $FILEPATH -d $JARNAME
 
 if [[ $? -eq 1 ]]; then
   echo "[ERROR] Compilation failed. Fix the compiler errors and also Make sure script is .kts file"
@@ -81,4 +83,4 @@ echo "[INFO] Compilation completed. Compiled jar name:" $JARNAME
 
 # ---------------- Launching sequencer ------------------
 echo "[INFO] Launching sequencer with Subsystem:" $SUBSYSTEM "and Observation Mode:" $OBSMODE
-cs launch --extra-jars $JARNAME -J -Dscripts.$SUBSYSTEM.$OBSMODE.scriptClass="$CLASSNAME" ocs-app$VERSION -- sequencer -s $SUBSYSTEM -m $OBSMODE
+cs launch --channel $CSCHANNEL --extra-jars $JARNAME -J -Dscripts.$SUBSYSTEM.$OBSMODE.scriptClass="$CLASSNAME" ocs-app$VERSION -- sequencer -s $SUBSYSTEM -m $OBSMODE

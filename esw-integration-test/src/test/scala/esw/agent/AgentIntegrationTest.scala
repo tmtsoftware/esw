@@ -18,7 +18,7 @@ import esw.ocs.testkit.EswTestKit
 
 import scala.concurrent.duration.DurationLong
 
-class AgentIntegrationTest extends EswTestKit with BinaryFetcherUtil with LocationServiceCodecs {
+class AgentIntegrationTest extends EswTestKit with LocationServiceCodecs {
 
   private val irisPrefix               = Prefix("esw.iris")
   private val irisCompId               = ComponentId(irisPrefix, SequenceComponent)
@@ -33,7 +33,7 @@ class AgentIntegrationTest extends EswTestKit with BinaryFetcherUtil with Locati
     super.beforeAll()
     val channel: String = "file://" + getClass.getResource("/apps.json").getPath
     agentPrefix = spawnAgent(AgentSettings(1.minute, channel))
-    super.fetchBinaryFor(channel, appVersion)
+    BinaryFetcherUtil.fetchBinaryFor(channel, appVersion)
     agentClient = AgentClient.make(agentPrefix, locationService).futureValue
   }
 
