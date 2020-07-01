@@ -4,7 +4,7 @@ import akka.actor.testkit.typed.scaladsl.TestProbe
 import akka.actor.typed.{ActorSystem, SpawnProtocol}
 import akka.serialization.SerializationExtension
 import csw.location.api.models.ComponentId
-import csw.location.api.models.ComponentType.{Machine, SequenceComponent, Sequencer}
+import csw.location.api.models.ComponentType.{SequenceComponent, Sequencer}
 import csw.prefix.models.Prefix
 import csw.prefix.models.Subsystem.ESW
 import esw.ocs.api.models.ObsMode
@@ -40,7 +40,6 @@ class SmAkkaSerializerTest extends BaseTestSuite {
     val shutdownSequenceComponentResponseRef = TestProbe[ShutdownSequenceComponentResponse]().ref
 
     val obsMode = ObsMode("IRIS_Darknight")
-    val machine = ComponentId(Prefix(ESW, "primary"), Machine)
 
     val testData = Table(
       "SequenceManagerRemoteMsg models",
@@ -50,8 +49,8 @@ class SmAkkaSerializerTest extends BaseTestSuite {
       GetSequenceManagerState(getSmStateRef),
       StartSequencer(ESW, obsMode, StartSequencerResponseRef),
       ShutdownSequencer(ESW, obsMode, shutdownSequencerResponseRef),
-      SpawnSequenceComponent(machine, "seq_comp", spawnSequenceComponentResponseRef),
-      ShutdownSequenceComponent(ESW, "primary", shutdownSequenceComponentResponseRef)
+      ShutdownSequenceComponent(ESW, "primary", shutdownSequenceComponentResponseRef),
+      SpawnSequenceComponent(ESW, "primary", "seq_comp", spawnSequenceComponentResponseRef)
     )
 
     forAll(testData) { sequenceManagerRemoteMsg =>

@@ -7,7 +7,7 @@ import csw.location.api.models.ComponentType.Service
 import csw.location.api.models.Connection.AkkaConnection
 import csw.location.api.models.{AkkaLocation, ComponentId, ComponentType}
 import csw.prefix.models.Prefix
-import csw.prefix.models.Subsystem.ESW
+import csw.prefix.models.Subsystem.{ESW, TCS}
 import esw.ocs.api.models.ObsMode
 import esw.sm.api.SequenceManagerState.Idle
 import esw.sm.api.actor.messages.SequenceManagerMsg
@@ -38,7 +38,7 @@ class SequenceManagerImplTest extends BaseTestSuite {
       case SequenceManagerMsg.ShutdownSequencer(_, _, replyTo)         => replyTo ! shutdownSequencerResponse
       case SequenceManagerMsg.ShutdownAllSequencers(replyTo)           => replyTo ! shutdownAllSequencersResponse
       case SequenceManagerMsg.RestartSequencer(_, _, replyTo)          => replyTo ! restartSequencerResponse
-      case SequenceManagerMsg.SpawnSequenceComponent(_, _, replyTo)    => replyTo ! spawnSequenceComponentResponse
+      case SequenceManagerMsg.SpawnSequenceComponent(_, _, _, replyTo) => replyTo ! spawnSequenceComponentResponse
       case SequenceManagerMsg.ShutdownSequenceComponent(_, _, replyTo) => replyTo ! shutdownSequenceComponentResponse
       case SequenceManagerMsg.CleanupResponseInternal(_)               =>
       case SequenceManagerMsg.ConfigurationResponseInternal(_)         =>
@@ -87,8 +87,7 @@ class SequenceManagerImplTest extends BaseTestSuite {
     }
 
     "spawnSequenceComponent | ESW-337" in {
-      val machine = ComponentId(Prefix("tcs.primary"), ComponentType.Machine)
-      sequenceManager.spawnSequenceComponent(machine, "seq_comp").futureValue shouldBe spawnSequenceComponentResponse
+      sequenceManager.spawnSequenceComponent(TCS, "primary", "seq_comp").futureValue shouldBe spawnSequenceComponentResponse
     }
   }
 }

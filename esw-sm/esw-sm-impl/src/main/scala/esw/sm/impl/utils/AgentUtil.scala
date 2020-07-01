@@ -4,6 +4,7 @@ import akka.actor.typed.ActorSystem
 import csw.location.api.models.ComponentId
 import csw.location.api.models.ComponentType.{Machine, SequenceComponent}
 import csw.location.api.models.Connection.AkkaConnection
+import csw.prefix.models.Subsystem.ESW
 import csw.prefix.models.{Prefix, Subsystem}
 import esw.agent.api.{Failed, Spawned}
 import esw.agent.client.AgentClient
@@ -24,16 +25,13 @@ class AgentUtil(locationServiceUtil: LocationServiceUtil)(implicit actorSystem: 
 
   def spawnSequenceComponentFor(subsystem: Subsystem): Future[Either[AgentError, SequenceComponentApi]] = {
     val sequenceComponentPrefix = Prefix(subsystem, s"${subsystem}_${Random.between(1, 100)}")
-    spawnSequenceComponentFor(subsystem, sequenceComponentPrefix)
+    spawnSequenceComponentFor(sequenceComponentPrefix)
   }
 
-  def spawnSequenceComponentFor(
-      subsystem: Subsystem,
-      sequenceComponentPrefix: Prefix
-  ): Future[Either[AgentError, SequenceComponentApi]] =
-    getAgent(subsystem)
+  def spawnSequenceComponentFor(prefix: Prefix): Future[Either[AgentError, SequenceComponentApi]] =
+    getAgent(prefix.subsystem)
       .mapLeft(error => LocationServiceError(error.msg))
-      .flatMapE(spawnSeqComp(_, sequenceComponentPrefix))
+      .flatMapE(spawnSeqComp(_, prefix))
 
   private def spawnSeqComp(agentClient: AgentClient, seqCompPrefix: Prefix) =
     agentClient
@@ -51,7 +49,7 @@ class AgentUtil(locationServiceUtil: LocationServiceUtil)(implicit actorSystem: 
       // if locations are empty then locations(Random.nextInt(locations.length)).prefix will throw exception,
       // it is handled in mapError block
       .flatMapRight(locations => makeAgent(locations(Random.nextInt(locations.length)).prefix))
-      .mapError(_ => LocationNotFound(s"Could not find agent matching $subsystem"))
+      .mapError(_ => LocationNotFound(s"Could not find agent matching $ESW"))
 
   private[utils] def makeAgent(prefix: Prefix): Future[AgentClient] =
     AgentClient.make(prefix, locationServiceUtil.locationService)

@@ -56,7 +56,7 @@ class AgentUtilTest extends BaseTestSuite {
       when(locationServiceUtil.resolve(any[AkkaConnection], argEq(Timeouts.DefaultResolveLocationDuration)))
         .thenReturn(futureRight(sequenceComponentLocation))
 
-      agentUtil.spawnSequenceComponentFor(ESW, Prefix(ESW, "seq_comp")).rightValue shouldBe a[SequenceComponentApi]
+      agentUtil.spawnSequenceComponentFor(Prefix(ESW, "seq_comp")).rightValue shouldBe a[SequenceComponentApi]
 
       verifySpawnSequenceComponentCalled()
       verify(locationServiceUtil).resolve(any[AkkaConnection], argEq(Timeouts.DefaultResolveLocationDuration))

@@ -62,14 +62,14 @@ class SequenceComponentUtilTest extends BaseTestSuite {
       val sequenceComponentUtil: SequenceComponentUtil = new SequenceComponentUtil(locationServiceUtil, agentUtil)
 
       val sequenceComponentApi = mock[SequenceComponentImpl]
-      when(agentUtil.spawnSequenceComponentFor(componentId.prefix.subsystem, seqCompPrefix))
+      when(agentUtil.spawnSequenceComponentFor(seqCompPrefix))
         .thenReturn(futureRight(sequenceComponentApi))
 
-      sequenceComponentUtil.spawnSequenceComponent(componentId, seqCompName).futureValue should ===(
+      sequenceComponentUtil.spawnSequenceComponent(seqCompPrefix).futureValue should ===(
         SpawnSequenceComponentResponse.Success(seqComp)
       )
 
-      verify(agentUtil).spawnSequenceComponentFor(componentId.prefix.subsystem, seqCompPrefix)
+      verify(agentUtil).spawnSequenceComponentFor(seqCompPrefix)
     }
 
     "return failure if agent fails to spawn sequence component | ESW-337" in {
@@ -78,14 +78,14 @@ class SequenceComponentUtilTest extends BaseTestSuite {
       val seqCompPrefix                                = Prefix(componentId.prefix.subsystem, seqCompName)
       val sequenceComponentUtil: SequenceComponentUtil = new SequenceComponentUtil(locationServiceUtil, agentUtil)
 
-      when(agentUtil.spawnSequenceComponentFor(componentId.prefix.subsystem, seqCompPrefix))
+      when(agentUtil.spawnSequenceComponentFor(seqCompPrefix))
         .thenReturn(futureLeft(SpawnSequenceComponentFailed("spawn failed")))
 
-      sequenceComponentUtil.spawnSequenceComponent(componentId, seqCompName).futureValue should ===(
+      sequenceComponentUtil.spawnSequenceComponent(seqCompPrefix).futureValue should ===(
         SpawnSequenceComponentFailed("spawn failed")
       )
 
-      verify(agentUtil).spawnSequenceComponentFor(componentId.prefix.subsystem, seqCompPrefix)
+      verify(agentUtil).spawnSequenceComponentFor(seqCompPrefix)
     }
   }
 
