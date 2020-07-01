@@ -43,13 +43,14 @@ class SequenceManagerBehavior(
     receive[SequenceManagerIdleMsg](Idle) {
       case Configure(observingMode, replyTo)                 => configure(observingMode, self, replyTo)
       case Cleanup(observingMode, replyTo)                   => cleanup(observingMode, self, replyTo)
-      case StartSequencer(subsystem, observingMode, replyTo) => startSequencer(subsystem, observingMode, self, replyTo)
+      case StartSequencer(subsystem, observingMode, replyTo) => startSequencer(subsystem, observingMode, replyTo); Behaviors.same
       case ShutdownSequencer(subsystem, observingMode, replyTo) =>
-        shutdownSequencer(subsystem, observingMode, self, replyTo)
-      case ShutdownAllSequencers(replyTo)                      => shutdownAllSequencers(self, replyTo)
-      case RestartSequencer(subsystem, observingMode, replyTo) => restartSequencer(subsystem, observingMode, self, replyTo)
-      case SpawnSequenceComponent(machine, name, replyTo)      => spawnSequenceComponent(machine, name, self, replyTo)
-      case ShutdownSequenceComponent(prefix, replyTo)          => shutdownSequenceComponent(prefix, self, replyTo)
+        shutdownSequencer(subsystem, observingMode, replyTo); Behaviors.same
+      case ShutdownAllSequencers(replyTo) => shutdownAllSequencers(replyTo); Behaviors.same
+      case RestartSequencer(subsystem, observingMode, replyTo) =>
+        restartSequencer(subsystem, observingMode, replyTo); Behaviors.same
+      case SpawnSequenceComponent(machine, name, replyTo) => spawnSequenceComponent(machine, name, replyTo); Behaviors.same
+      case ShutdownSequenceComponent(prefix, replyTo)     => shutdownSequenceComponent(prefix, replyTo); Behaviors.same
     }
 
   private def configure(obsMode: ObsMode, self: SelfRef, replyTo: ActorRef[ConfigureResponse]): SMBehavior = {
@@ -105,9 +106,8 @@ class SequenceManagerBehavior(
   private def startSequencer(
       subsystem: Subsystem,
       obsMode: ObsMode,
-      self: SelfRef,
       replyTo: ActorRef[StartSequencerResponse]
-  ): SMBehavior = {
+  ): Future[Unit] = {
     // resolve is not needed here. Find should suffice
     // no concurrent start sequencer or configure is allowed
     locationServiceUtil
@@ -116,9 +116,7 @@ class SequenceManagerBehavior(
         case Left(_)         => startSequencer(subsystem, obsMode)
         case Right(location) => Future.successful(AlreadyRunning(location.connection.componentId))
       }
-      .map(self ! StartSequencerResponseInternal(_))
-
-    startingSequencer(self, replyTo)
+      .map(replyTo ! _)
   }
 
   private def startSequencer(subsystem: Subsystem, obsMode: ObsMode): Future[StartSequencerResponse] =
@@ -126,76 +124,41 @@ class SequenceManagerBehavior(
       .startSequencer(subsystem, obsMode, sequencerStartRetries)
       .mapToAdt(akkaLocation => Started(akkaLocation.connection.componentId), identity)
 
-  // Starting sequencer is in progress, waiting for StartSequencerResponseInternal message
-  // Within this period, reject all the other messages except common messages
-  private def startingSequencer(self: SelfRef, replyTo: ActorRef[StartSequencerResponse]): SMBehavior =
-    receive[StartSequencerResponseInternal](StartingSequencer)(msg => replyAndGoToIdle(self, replyTo, msg.res))
-
   private def shutdownSequencer(
       subsystem: Subsystem,
       obsMode: ObsMode,
-      self: SelfRef,
       replyTo: ActorRef[ShutdownSequencerResponse]
-  ): SMBehavior = {
+  ): Future[Unit] = {
     val shutdownResponseF = sequencerUtil.shutdownSequencer(subsystem, obsMode).mapToAdt(identity, identity)
-    shutdownResponseF.map(self ! ShutdownSequencerResponseInternal(_))
-    shuttingDownSequencer(self, replyTo)
+    shutdownResponseF.map(replyTo ! _)
   }
-
-  // Shutdown sequencer is in progress, waiting for ShutdownSequencerResponseInternal message
-  // Within this period, reject all the other messages except common messages
-  private def shuttingDownSequencer(self: SelfRef, replyTo: ActorRef[ShutdownSequencerResponse]): SMBehavior =
-    receive[ShutdownSequencerResponseInternal](ShuttingDownSequencer)(msg => replyAndGoToIdle(self, replyTo, msg.res))
 
   private def restartSequencer(
       subsystem: Subsystem,
       obsMode: ObsMode,
-      self: SelfRef,
       replyTo: ActorRef[RestartSequencerResponse]
-  ): SMBehavior = {
+  ): Future[Unit] = {
     val restartResponseF = sequencerUtil.restartSequencer(subsystem, obsMode)
-    restartResponseF.map(self ! RestartSequencerResponseInternal(_))
-    restartingSequencer(self, replyTo)
+    restartResponseF.map(replyTo ! _)
   }
 
-  private def restartingSequencer(self: SelfRef, replyTo: ActorRef[RestartSequencerResponse]): SMBehavior =
-    receive[RestartSequencerResponseInternal](RestartingSequencer)(msg => replyAndGoToIdle(self, replyTo, msg.res))
-
-  private def shutdownAllSequencers(
-      self: SelfRef,
-      replyTo: ActorRef[ShutdownAllSequencersResponse]
-  ): SMBehavior = {
-    sequencerUtil.shutdownAllSequencers().map(self ! ShutdownAllSequencersResponseInternal(_))
-    shuttingDownAllSequencers(self, replyTo)
-  }
-
-  private def shuttingDownAllSequencers(self: SelfRef, replyTo: ActorRef[ShutdownAllSequencersResponse]): SMBehavior =
-    receive[ShutdownAllSequencersResponseInternal](ShuttingDownAllSequencers)(msg => replyAndGoToIdle(self, replyTo, msg.res))
+  private def shutdownAllSequencers(replyTo: ActorRef[ShutdownAllSequencersResponse]): Future[Unit] =
+    sequencerUtil.shutdownAllSequencers().map(replyTo ! _)
 
   private def spawnSequenceComponent(
       machine: ComponentId,
       name: String,
-      self: SelfRef,
       replyTo: ActorRef[SpawnSequenceComponentResponse]
-  ): SMBehavior = {
-    sequenceComponentUtil.spawnSequenceComponent(machine, name).map(self ! SpawnSequenceComponentInternal(_))
-    spawningSequenceComponent(self, replyTo)
+  ): Future[Unit] = {
+    sequenceComponentUtil.spawnSequenceComponent(machine, name).map(replyTo ! _)
   }
-
-  private def spawningSequenceComponent(self: SelfRef, replyTo: ActorRef[SpawnSequenceComponentResponse]): SMBehavior =
-    receive[SpawnSequenceComponentInternal](SpawningSequenceComponent)(msg => replyAndGoToIdle(self, replyTo, msg.res))
 
   private def shutdownSequenceComponent(
       prefix: Prefix,
-      self: SelfRef,
       replyTo: ActorRef[ShutdownSequenceComponentResponse]
-  ): SMBehavior = {
-    sequenceComponentUtil.shutdown(prefix).map(self ! ShutdownSequenceComponentInternal(_))
-    shuttingDownSequenceComponent(self, replyTo)
+  ): Future[Unit] = {
+    sequenceComponentUtil.shutdown(prefix).map(replyTo ! _)
   }
-
-  private def shuttingDownSequenceComponent(self: SelfRef, replyTo: ActorRef[ShutdownSequenceComponentResponse]): SMBehavior =
-    receive[ShutdownSequenceComponentInternal](ShuttingDownSequenceComponent)(msg => replyAndGoToIdle(self, replyTo, msg.res))
 
   private def replyAndGoToIdle[T](self: SelfRef, replyTo: ActorRef[T], msg: T) = {
     replyTo ! msg

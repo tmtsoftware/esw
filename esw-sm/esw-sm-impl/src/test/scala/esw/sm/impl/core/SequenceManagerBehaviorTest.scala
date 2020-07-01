@@ -160,7 +160,7 @@ class SequenceManagerBehaviorTest extends BaseTestSuite with TableDrivenProperty
   }
 
   "StartSequencer" must {
-    "transition sm from Idle -> Starting -> Idle state and start the sequencer for given obs mode | ESW-176" in {
+    "return Started when sequencer is started | ESW-176" in {
       val componentId    = ComponentId(Prefix(ESW, Darknight.name), Sequencer)
       val httpConnection = HttpConnection(componentId)
       val akkaLocation   = AkkaLocation(AkkaConnection(componentId), new URI("uri"))
@@ -170,11 +170,8 @@ class SequenceManagerBehaviorTest extends BaseTestSuite with TableDrivenProperty
 
       val startSequencerResponseProbe = TestProbe[StartSequencerResponse]()
 
-      assertState(Idle)
       smRef ! StartSequencer(ESW, Darknight, startSequencerResponseProbe.ref)
-      assertState(StartingSequencer)
       startSequencerResponseProbe.expectMessage(StartSequencerResponse.Started(componentId))
-      assertState(Idle)
 
       verify(sequencerUtil).startSequencer(ESW, Darknight, 3)
       verify(locationServiceUtil).find(httpConnection)
@@ -217,17 +214,14 @@ class SequenceManagerBehaviorTest extends BaseTestSuite with TableDrivenProperty
   }
 
   "ShutdownSequencer" must {
-    "transition sm from Idle -> ShuttingDown -> Idle state and shut down the sequencer for given obs mode | ESW-326" in {
+    "return Success if sequencer is shutdown | ESW-326" in {
       when(sequencerUtil.shutdownSequencer(ESW, Darknight))
         .thenReturn(future(1.seconds, Right(ShutdownSequencerResponse.Success)))
 
       val shutdownSequencerResponseProbe = TestProbe[ShutdownSequencerResponse]()
 
-      assertState(Idle)
       smRef ! ShutdownSequencer(ESW, Darknight, shutdownSequencerResponseProbe.ref)
-      assertState(ShuttingDownSequencer)
       shutdownSequencerResponseProbe.expectMessage(ShutdownSequencerResponse.Success)
-      assertState(Idle)
 
       verify(sequencerUtil).shutdownSequencer(ESW, Darknight)
     }
@@ -259,7 +253,7 @@ class SequenceManagerBehaviorTest extends BaseTestSuite with TableDrivenProperty
   }
 
   "RestartSequencer" must {
-    "transition sm from Idle -> Restarting -> Idle state and restart the sequencer for given obs mode | ESW-327" in {
+    "return Success when sequencer is restarted | ESW-327" in {
       val prefix      = Prefix(ESW, Darknight.name)
       val componentId = ComponentId(prefix, Sequencer)
 
@@ -268,11 +262,8 @@ class SequenceManagerBehaviorTest extends BaseTestSuite with TableDrivenProperty
 
       val restartSequencerResponseProbe = TestProbe[RestartSequencerResponse]()
 
-      assertState(Idle)
       smRef ! RestartSequencer(ESW, Darknight, restartSequencerResponseProbe.ref)
-      assertState(RestartingSequencer)
       restartSequencerResponseProbe.expectMessage(RestartSequencerResponse.Success(componentId))
-      assertState(Idle)
 
       verify(sequencerUtil).restartSequencer(ESW, Darknight)
     }
@@ -301,17 +292,14 @@ class SequenceManagerBehaviorTest extends BaseTestSuite with TableDrivenProperty
   }
 
   "ShutdownAllSequencers" must {
-    "transition sm from Idle -> ShuttingDownAllSequencers -> Idle state and shut down all the currently running sequencers | ESW-324" in {
+    "return Success when all the sequencers are shut down | ESW-324" in {
       when(sequencerUtil.shutdownAllSequencers())
         .thenReturn(future(1.seconds, ShutdownAllSequencersResponse.Success))
 
       val shutdownSequencerResponseProbe = TestProbe[ShutdownAllSequencersResponse]()
 
-      assertState(Idle)
       smRef ! ShutdownAllSequencers(shutdownSequencerResponseProbe.ref)
-      assertState(ShuttingDownAllSequencers)
       shutdownSequencerResponseProbe.expectMessage(ShutdownAllSequencersResponse.Success)
-      assertState(Idle)
 
       verify(sequencerUtil).shutdownAllSequencers()
     }
@@ -341,18 +329,15 @@ class SequenceManagerBehaviorTest extends BaseTestSuite with TableDrivenProperty
   }
 
   "ShutdownSequenceComponent" must {
-    "transition sm from Idle -> ShuttingDownSequenceComponent -> Idle state and shutdown the sequence component for given prefix | ESW-338" in {
+    "return Success when sequence component is shut down | ESW-338" in {
       val prefix = Prefix(ESW, "primary")
 
       when(sequenceComponentUtil.shutdown(prefix)).thenReturn(future(1.seconds, ShutdownSequenceComponentResponse.Success))
 
       val shutdownSequenceComponentResponseProbe = TestProbe[ShutdownSequenceComponentResponse]()
 
-      assertState(Idle)
       smRef ! ShutdownSequenceComponent(prefix, shutdownSequenceComponentResponseProbe.ref)
-      assertState(ShuttingDownSequenceComponent)
       shutdownSequenceComponentResponseProbe.expectMessage(ShutdownSequenceComponentResponse.Success)
-      assertState(Idle)
 
       verify(sequenceComponentUtil).shutdown(prefix)
     }
@@ -382,7 +367,7 @@ class SequenceManagerBehaviorTest extends BaseTestSuite with TableDrivenProperty
   }
 
   "SpawnSequenceComponent" must {
-    "transition sm from Idle -> SpawningSequenceComponent -> Idle state and spawn new sequence component | ESW-337" in {
+    "return Success with sequence component id when it is spawned | ESW-337" in {
       val seqCompName = "seq_comp"
       val machine     = ComponentId(Prefix(ESW, "primary"), Machine)
       val seqComp     = ComponentId(Prefix(ESW, seqCompName), SequenceComponent)
@@ -391,11 +376,8 @@ class SequenceManagerBehaviorTest extends BaseTestSuite with TableDrivenProperty
 
       val spawnSequenceComponentProbe = TestProbe[SpawnSequenceComponentResponse]()
 
-      assertState(Idle)
       smRef ! SpawnSequenceComponent(machine, seqCompName, spawnSequenceComponentProbe.ref)
-      assertState(SpawningSequenceComponent)
       spawnSequenceComponentProbe.expectMessage(SpawnSequenceComponentResponse.Success(seqComp))
-      assertState(Idle)
 
       verify(sequenceComponentUtil).spawnSequenceComponent(machine, seqCompName)
     }

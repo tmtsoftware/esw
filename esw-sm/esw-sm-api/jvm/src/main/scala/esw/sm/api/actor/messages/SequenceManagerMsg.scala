@@ -37,14 +37,6 @@ object SequenceManagerMsg {
   case class GetRunningObsModes(replyTo: ActorRef[GetRunningObsModesResponse]) extends CommonMessage
   case class GetSequenceManagerState(replyTo: ActorRef[SequenceManagerState])  extends CommonMessage
 
-  private[sm] case class StartSequencerResponseInternal(res: StartSequencerResponse)       extends SequenceManagerInternalMsg
-  private[sm] case class ShutdownSequencerResponseInternal(res: ShutdownSequencerResponse) extends SequenceManagerInternalMsg
-  private[sm] case class RestartSequencerResponseInternal(res: RestartSequencerResponse)   extends SequenceManagerInternalMsg
-  private[sm] case class ConfigurationResponseInternal(res: ConfigureResponse)             extends SequenceManagerInternalMsg
-  private[sm] case class CleanupResponseInternal(res: CleanupResponse)                     extends SequenceManagerInternalMsg
-  private[sm] case class ShutdownAllSequencersResponseInternal(res: ShutdownAllSequencersResponse)
-      extends SequenceManagerInternalMsg
-  private[sm] case class SpawnSequenceComponentInternal(res: SpawnSequenceComponentResponse) extends SequenceManagerInternalMsg
-  private[sm] case class ShutdownSequenceComponentInternal(res: ShutdownSequenceComponentResponse)
-      extends SequenceManagerInternalMsg
+  private[sm] case class ConfigurationResponseInternal(res: ConfigureResponse) extends SequenceManagerInternalMsg
+  private[sm] case class CleanupResponseInternal(res: CleanupResponse)         extends SequenceManagerInternalMsg
 }
