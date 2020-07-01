@@ -27,8 +27,7 @@ class SequencerScriptLauncherTest extends EswTestKit {
 
   var process: Process = _
 
-  "launch sequencer script should start sequencer with given script | ESW-150" in {
-    //  todo : add a step of fetch to fix the time out error
+  "launch sequencer script should compile given sequencer script and start sequencer with it| ESW-150" in {
     val builder = new ProcessBuilder(scriptLauncher, "-f", sampleScriptPath, "-v", ocsAppVersion).inheritIO()
 
     // setup needed environment variables

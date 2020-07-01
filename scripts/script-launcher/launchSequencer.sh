@@ -1,9 +1,9 @@
 #!/usr/bin/env bash
 
-FILEPATH=""
+FILE_PATH=""
 CLASSNAME=""
 SUBSYSTEM=""
-OBSMODE=""
+OBS_MODE=""
 VERSION=""
 
 function usage() {
@@ -22,8 +22,8 @@ function parseArgs() {
 
     case ${key} in
     --filePath | -f)
-      FILEPATH=$2
-      filename=${FILEPATH##*/}
+      FILE_PATH=$2
+      filename=${FILE_PATH##*/}
       CLASSNAME=${filename%.*}
       CLASSNAME="$(tr '[:lower:]' '[:upper:]' <<<${CLASSNAME:0:1})${CLASSNAME:1}"
       ;;
@@ -33,7 +33,7 @@ function parseArgs() {
       ;;
 
     --obsMode | -o)
-      OBSMODE=$2
+      OBS_MODE=$2
       ;;
 
     --script-version | -v)
@@ -49,7 +49,7 @@ function parseArgs() {
     shift
   done
 
-  if [[ ${FILEPATH} == "" ]]; then
+  if [[ ${FILE_PATH} == "" ]]; then
     echo "[ERROR] Script path cannot be empty"
     usage
     exit 1
@@ -64,16 +64,16 @@ if [[ ${SUBSYSTEM} == "" ]]; then
 fi
 
 # Add default obsMode if not provided
-if [[ ${OBSMODE} == "" ]]; then
-  OBSMODE="${CLASSNAME}"
+if [[ ${OBS_MODE} == "" ]]; then
+  OBS_MODE="${CLASSNAME}"
 fi
 
 # ---------------- Compiling ------------------
-echo "[INFO] Compiling the script:" $FILEPATH
+echo "[INFO] Compiling the script:" $FILE_PATH
 JARNAME=$CLASSNAME.jar
-CSCHANNEL="https://raw.githubusercontent.com/tmtsoftware/apps/master/apps.json"
+CS_CHANNEL="https://raw.githubusercontent.com/tmtsoftware/apps/master/apps.json"
 
-kotlinc -jvm-target 1.8 -Xuse-experimental=kotlin.time.ExperimentalTime -classpath "$(cs fetch --channel $CSCHANNEL ocs-app$VERSION --classpath)" $FILEPATH -d $JARNAME
+kotlinc -jvm-target 1.8 -Xuse-experimental=kotlin.time.ExperimentalTime -classpath "$(cs fetch --channel $CS_CHANNEL ocs-app$VERSION --classpath)" $FILE_PATH -d $JARNAME
 
 if [[ $? -eq 1 ]]; then
   echo "[ERROR] Compilation failed. Fix the compiler errors and also Make sure script is .kts file"
@@ -82,5 +82,5 @@ fi
 echo "[INFO] Compilation completed. Compiled jar name:" $JARNAME
 
 # ---------------- Launching sequencer ------------------
-echo "[INFO] Launching sequencer with Subsystem:" $SUBSYSTEM "and Observation Mode:" $OBSMODE
-cs launch --channel $CSCHANNEL --extra-jars $JARNAME -J -Dscripts.$SUBSYSTEM.$OBSMODE.scriptClass="$CLASSNAME" ocs-app$VERSION -- sequencer -s $SUBSYSTEM -m $OBSMODE
+echo "[INFO] Launching sequencer with Subsystem:" $SUBSYSTEM "and Observation Mode:" $OBS_MODE
+cs launch --channel $CS_CHANNEL --extra-jars $JARNAME -J -Dscripts.$SUBSYSTEM.$OBS_MODE.scriptClass="$CLASSNAME" ocs-app$VERSION -- sequencer -s $SUBSYSTEM -m $OBS_MODE
