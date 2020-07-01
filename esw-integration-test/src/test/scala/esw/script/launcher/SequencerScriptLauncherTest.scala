@@ -8,6 +8,7 @@ import csw.location.api.models.Connection.AkkaConnection
 import csw.prefix.models.Prefix
 import csw.prefix.models.Subsystem.ESW
 import esw.agent.app.ext.ProcessExt.ProcessOps
+import esw.commons.Timeouts
 import esw.ocs.testkit.EswTestKit
 import os.{Path, up}
 
@@ -25,7 +26,7 @@ class SequencerScriptLauncherTest extends EswTestKit {
 
   "launch sequencer script should start sequencer with given script | ESW-150" in {
     // fetch upfront to prevent timing out
-    new ProcessBuilder("cs", "fetch", s"ocs-app:$ocsAppVersion").start().waitFor()
+    new ProcessBuilder("cs", "fetch", s"ocs-app:$ocsAppVersion").inheritIO().start().waitFor()
 
     //  todo : add a step of fetch to fix the time out error
     val builder = new ProcessBuilder(scriptLauncher, "-f", sampleScriptPath, "-v", ocsAppVersion).inheritIO()
@@ -36,11 +37,13 @@ class SequencerScriptLauncherTest extends EswTestKit {
     processEnvironment.put("PUBLIC_INTERFACE_NAME", "") // keeping it blank will auto pick the interface name
     processEnvironment.put("TMT_LOG_HOME", "/tmp/csw/")
 
-    // start the launcher process
-    process = builder.start()
+    process = builder.start() // start the launcher process
+    Thread.sleep(1000)        // wait till process boots up
+
     // check sequencer is registered in location service
-    val prefix    = Prefix(ESW, className)
-    val locationF = locationService.resolve(AkkaConnection(ComponentId(prefix, Sequencer)), 10.seconds)
+    val prefix = Prefix(ESW, className)
+    val locationF =
+      locationService.resolve(AkkaConnection(ComponentId(prefix, Sequencer)), Timeouts.DefaultTimeout)
     locationF.futureValue.value.prefix shouldBe prefix
   }
 
