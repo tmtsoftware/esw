@@ -38,7 +38,7 @@ class SequencerScriptLauncherTest extends EswTestKit {
     processEnvironment.put("TMT_LOG_HOME", "/tmp/csw/")
 
     process = builder.start() // start the launcher process
-    Thread.sleep(1000)        // wait till process boots up
+    Thread.sleep(3000)        // wait till process boots up
 
     // check sequencer is registered in location service
     val prefix = Prefix(ESW, className)
