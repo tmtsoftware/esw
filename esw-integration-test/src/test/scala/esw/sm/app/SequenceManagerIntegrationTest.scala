@@ -312,7 +312,7 @@ class SequenceManagerIntegrationTest extends EswTestKit {
     resolveSequenceComponentLocation(seqCompPrefix)
 
     //ESW-338 shutdown sequence component
-    sequenceManagerClient.shutdownSequenceComponent(seqCompPrefix).futureValue should ===(
+    sequenceManagerClient.shutdownSequenceComponent(ESW, seqCompName).futureValue should ===(
       ShutdownSequenceComponentResponse.Success
     )
 

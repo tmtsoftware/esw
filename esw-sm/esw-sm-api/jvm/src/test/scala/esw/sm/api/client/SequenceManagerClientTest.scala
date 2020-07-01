@@ -18,7 +18,6 @@ import scala.concurrent.Future
 class SequenceManagerClientTest extends BaseTestSuite with SequenceManagerHttpCodec {
   private val obsMode                  = ObsMode("IRIS_darknight")
   private val componentId: ComponentId = ComponentId(Prefix(ESW, obsMode.name), Sequencer)
-  private val seqCompPrefix: Prefix    = Prefix(ESW, "primary")
 
   val postClient: Transport[SequenceManagerPostRequest] = mock[Transport[SequenceManagerPostRequest]]
   val client                                            = new SequenceManagerClient(postClient)
@@ -107,13 +106,17 @@ class SequenceManagerClientTest extends BaseTestSuite with SequenceManagerHttpCo
 
     "return success response for Shutdown Sequence Component request" in {
       when(
-        postClient.requestResponse[ShutdownSequenceComponentResponse](argsEq(ShutdownSequenceComponent(seqCompPrefix)))(
+        postClient.requestResponse[ShutdownSequenceComponentResponse](
+          argsEq(ShutdownSequenceComponent(ESW, componentName = "primary"))
+        )(
           any[Decoder[ShutdownSequenceComponentResponse]](),
           any[Encoder[ShutdownSequenceComponentResponse]]()
         )
       ).thenReturn(Future.successful(ShutdownSequenceComponentResponse.Success))
 
-      client.shutdownSequenceComponent(seqCompPrefix).futureValue shouldBe ShutdownSequenceComponentResponse.Success
+      client
+        .shutdownSequenceComponent(ESW, componentName = "primary")
+        .futureValue shouldBe ShutdownSequenceComponentResponse.Success
     }
 
     "return spawn sequence component success response for spawnSequenceComponent request | ESW-337" in {

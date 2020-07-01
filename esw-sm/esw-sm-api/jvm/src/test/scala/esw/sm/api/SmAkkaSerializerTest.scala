@@ -51,7 +51,7 @@ class SmAkkaSerializerTest extends BaseTestSuite {
       StartSequencer(ESW, obsMode, StartSequencerResponseRef),
       ShutdownSequencer(ESW, obsMode, shutdownSequencerResponseRef),
       SpawnSequenceComponent(machine, "seq_comp", spawnSequenceComponentResponseRef),
-      ShutdownSequenceComponent(Prefix(ESW, "primary"), shutdownSequenceComponentResponseRef)
+      ShutdownSequenceComponent(ESW, "primary", shutdownSequenceComponentResponseRef)
     )
 
     forAll(testData) { sequenceManagerRemoteMsg =>
