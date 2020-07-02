@@ -38,7 +38,7 @@ jobs:
           sbt makeSite
 
       - name: Tests
-        run: sbt -DenableCoverage=true -DgenerateStoryReport=true test:test
+        run: sbt -Dakka.actor.serialize-messages=on -DenableCoverage=true -DgenerateStoryReport=true test:test
 
       - name: Coverage Report
         run: |
