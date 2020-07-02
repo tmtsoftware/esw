@@ -11,7 +11,7 @@ import esw.commons.utils.FutureUtils
 import esw.commons.utils.location.LocationServiceUtil
 import esw.ocs.api.SequenceComponentApi
 import esw.ocs.api.actor.client.SequenceComponentImpl
-import esw.ocs.api.protocol.SequenceComponentResponse.{Ok, OkOrUnhandled, ScriptResponseOrUnhandled}
+import esw.ocs.api.protocol.SequenceComponentResponse.{Ok, ScriptResponseOrUnhandled}
 import esw.sm.api.protocol.AgentError.SpawnSequenceComponentFailed
 import esw.sm.api.protocol.CommonFailure.LocationServiceError
 import esw.sm.api.protocol.{AgentError, ShutdownSequenceComponentResponse, SpawnSequenceComponentResponse}

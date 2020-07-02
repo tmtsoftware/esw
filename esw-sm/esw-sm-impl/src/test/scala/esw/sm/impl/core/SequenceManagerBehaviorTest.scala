@@ -21,8 +21,6 @@ import esw.sm.api.protocol.CommonFailure.{ConfigurationMissing, LocationServiceE
 import esw.sm.api.protocol.ConfigureResponse.{ConflictingResourcesWithRunningObsMode, Success}
 import esw.sm.api.protocol.RestartSequencerResponse.UnloadScriptError
 import esw.sm.api.protocol.ShutdownSequencersResponse.ShutdownFailure
-import esw.sm.api.protocol.ShutdownSequenceComponentResponse.ShutdownSequenceComponentFailure
-import esw.sm.api.protocol.ShutdownSequencerResponse.UnloadScriptError
 import esw.sm.api.protocol.StartSequencerResponse.LoadScriptError
 import esw.sm.api.protocol.{ShutdownSequenceComponentResponse, _}
 import esw.sm.impl.config._
