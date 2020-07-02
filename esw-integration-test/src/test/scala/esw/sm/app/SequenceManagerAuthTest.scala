@@ -23,7 +23,7 @@ class SequenceManagerAuthTest extends EswTestKit(AAS) {
   private val IRIS_CAL       = ObsMode("IRIS_Cal")
   private val IRIS_Darknight = ObsMode("IRIS_Darknight")
   private val WFOS_Cal       = ObsMode("WFOS_Cal")
-  private val seqCompName    = "primary"
+  private val seqCompPrefix  = Prefix(ESW, "primary")
 
   private val table = Table[String, SequenceManagerApi => Future[Any]](
     ("Name", "Command"),
@@ -33,7 +33,7 @@ class SequenceManagerAuthTest extends EswTestKit(AAS) {
     ("stopSequencer", _.shutdownSequencer(ESW, IRIS_CAL)),
     ("restartSequencer", _.restartSequencer(ESW, IRIS_CAL)),
     ("shutdownAllSequencers", _.shutdownAllSequencers()),
-    ("shutdownSequenceComponent", _.shutdownSequenceComponent(ESW, seqCompName))
+    ("shutdownSequenceComponent", _.shutdownSequenceComponent(seqCompPrefix))
   )
 
   override def afterEach(): Unit = {
@@ -120,7 +120,7 @@ class SequenceManagerAuthTest extends EswTestKit(AAS) {
     }
 
     "return 200 when shutdown sequence component request has ESW_user role" in {
-      val eswSeqCompPrefix = Prefix(ESW, seqCompName)
+      val eswSeqCompPrefix = Prefix(ESW, "primary")
 
       TestSetup.startSequenceComponents(eswSeqCompPrefix)
 
@@ -128,7 +128,7 @@ class SequenceManagerAuthTest extends EswTestKit(AAS) {
 
       // shutdown sequence component
       sequenceManagerApi
-        .shutdownSequenceComponent(ESW, seqCompName)
+        .shutdownSequenceComponent(eswSeqCompPrefix)
         .futureValue shouldBe ShutdownSequenceComponentResponse.Success
     }
   }

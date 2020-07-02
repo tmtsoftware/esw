@@ -330,14 +330,13 @@ class SequenceManagerBehaviorTest extends BaseTestSuite with TableDrivenProperty
 
   "ShutdownSequenceComponent" must {
     "return Success when sequence component is shut down | ESW-338" in {
-      val seqComponentName = "primary"
-      val prefix           = Prefix(ESW, seqComponentName)
+      val prefix = Prefix(ESW, "primary")
 
       when(sequenceComponentUtil.shutdown(prefix)).thenReturn(future(1.seconds, ShutdownSequenceComponentResponse.Success))
 
       val shutdownSequenceComponentResponseProbe = TestProbe[ShutdownSequenceComponentResponse]()
 
-      smRef ! ShutdownSequenceComponent(ESW, seqComponentName, shutdownSequenceComponentResponseProbe.ref)
+      smRef ! ShutdownSequenceComponent(prefix, shutdownSequenceComponentResponseProbe.ref)
       shutdownSequenceComponentResponseProbe.expectMessage(ShutdownSequenceComponentResponse.Success)
 
       verify(sequenceComponentUtil).shutdown(prefix)
@@ -354,13 +353,12 @@ class SequenceManagerBehaviorTest extends BaseTestSuite with TableDrivenProperty
 
     forAll(errors) { (errorName, error) =>
       s"return $errorName if $errorName encountered while shutting down sequence component | ESW-338" in {
-        val seqComponentName = "primary"
-        val prefix           = Prefix(ESW, seqComponentName)
+        val prefix = Prefix(ESW, "primary")
 
         when(sequenceComponentUtil.shutdown(prefix)).thenReturn(Future.successful(error))
         val shutdownSequenceComponentResponseProbe = TestProbe[ShutdownSequenceComponentResponse]()
 
-        smRef ! ShutdownSequenceComponent(ESW, seqComponentName, shutdownSequenceComponentResponseProbe.ref)
+        smRef ! ShutdownSequenceComponent(prefix, shutdownSequenceComponentResponseProbe.ref)
         shutdownSequenceComponentResponseProbe.expectMessage(error)
 
         verify(sequenceComponentUtil).shutdown(prefix)

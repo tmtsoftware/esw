@@ -30,18 +30,18 @@ class SequenceManagerImplTest extends BaseTestSuite {
 
   private val mockedBehavior: Behaviors.Receive[SequenceManagerMsg] = Behaviors.receiveMessage[SequenceManagerMsg] { msg =>
     msg match {
-      case SequenceManagerMsg.Configure(_, replyTo)                    => replyTo ! configureResponse
-      case SequenceManagerMsg.Cleanup(_, replyTo)                      => replyTo ! cleanupResponse
-      case SequenceManagerMsg.GetRunningObsModes(replyTo)              => replyTo ! getRunningObsModesResponse
-      case SequenceManagerMsg.GetSequenceManagerState(replyTo)         => replyTo ! Idle
-      case SequenceManagerMsg.StartSequencer(_, _, replyTo)            => replyTo ! startSequencerResponse
-      case SequenceManagerMsg.ShutdownSequencer(_, _, replyTo)         => replyTo ! shutdownSequencerResponse
-      case SequenceManagerMsg.ShutdownAllSequencers(replyTo)           => replyTo ! shutdownAllSequencersResponse
-      case SequenceManagerMsg.RestartSequencer(_, _, replyTo)          => replyTo ! restartSequencerResponse
-      case SequenceManagerMsg.SpawnSequenceComponent(_, _, replyTo)    => replyTo ! spawnSequenceComponentResponse
-      case SequenceManagerMsg.ShutdownSequenceComponent(_, _, replyTo) => replyTo ! shutdownSequenceComponentResponse
-      case SequenceManagerMsg.CleanupResponseInternal(_)               =>
-      case SequenceManagerMsg.ConfigurationResponseInternal(_)         =>
+      case SequenceManagerMsg.Configure(_, replyTo)                 => replyTo ! configureResponse
+      case SequenceManagerMsg.Cleanup(_, replyTo)                   => replyTo ! cleanupResponse
+      case SequenceManagerMsg.GetRunningObsModes(replyTo)           => replyTo ! getRunningObsModesResponse
+      case SequenceManagerMsg.GetSequenceManagerState(replyTo)      => replyTo ! Idle
+      case SequenceManagerMsg.StartSequencer(_, _, replyTo)         => replyTo ! startSequencerResponse
+      case SequenceManagerMsg.ShutdownSequencer(_, _, replyTo)      => replyTo ! shutdownSequencerResponse
+      case SequenceManagerMsg.ShutdownAllSequencers(replyTo)        => replyTo ! shutdownAllSequencersResponse
+      case SequenceManagerMsg.RestartSequencer(_, _, replyTo)       => replyTo ! restartSequencerResponse
+      case SequenceManagerMsg.SpawnSequenceComponent(_, _, replyTo) => replyTo ! spawnSequenceComponentResponse
+      case SequenceManagerMsg.ShutdownSequenceComponent(_, replyTo) => replyTo ! shutdownSequenceComponentResponse
+      case SequenceManagerMsg.CleanupResponseInternal(_)            =>
+      case SequenceManagerMsg.ConfigurationResponseInternal(_)      =>
     }
     Behaviors.same
   }
@@ -50,6 +50,7 @@ class SequenceManagerImplTest extends BaseTestSuite {
   private val location        = AkkaLocation(AkkaConnection(ComponentId(Prefix(ESW, "sequence_manager"), Service)), smRef.toURI)
   private val sequenceManager = new SequenceManagerImpl(location)
   private val obsMode         = ObsMode("IRIS_darknight")
+  private val seqCompPrefix   = Prefix(ESW, "primary")
 
   "SequenceManagerImpl" must {
     "configure" in {
@@ -81,9 +82,7 @@ class SequenceManagerImplTest extends BaseTestSuite {
     }
 
     "shutdownSequenceComponent | ESW-338" in {
-      sequenceManager
-        .shutdownSequenceComponent(ESW, componentName = "primary")
-        .futureValue shouldBe shutdownSequenceComponentResponse
+      sequenceManager.shutdownSequenceComponent(seqCompPrefix).futureValue shouldBe shutdownSequenceComponentResponse
     }
 
     "spawnSequenceComponent | ESW-337" in {
