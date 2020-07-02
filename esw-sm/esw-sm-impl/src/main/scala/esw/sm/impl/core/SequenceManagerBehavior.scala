@@ -132,7 +132,7 @@ class SequenceManagerBehavior(
   private def shutdownSequencer(
       subsystem: Subsystem,
       obsMode: ObsMode,
-      replyTo: ActorRef[ShutdownSequencerResponse]
+      replyTo: ActorRef[ShutdownAllSequencersResponse]
   ): Future[Unit] = {
     val shutdownResponseF = sequencerUtil.shutdownSequencer(subsystem, obsMode).mapToAdt(identity, identity)
     shutdownResponseF.map(replyTo ! _)

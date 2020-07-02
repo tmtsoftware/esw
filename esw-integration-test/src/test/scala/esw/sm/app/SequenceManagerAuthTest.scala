@@ -94,7 +94,7 @@ class SequenceManagerAuthTest extends EswTestKit(AAS) {
       // restart sequencer
       sequenceManagerApi.restartSequencer(ESW, WFOS_Cal).futureValue shouldBe RestartSequencerResponse.Success(componentId)
       // shutdown sequencer
-      sequenceManagerApi.shutdownSequencer(ESW, WFOS_Cal).futureValue shouldBe ShutdownSequencerResponse.Success
+      sequenceManagerApi.shutdownSequencer(ESW, WFOS_Cal).futureValue shouldBe ShutdownAllSequencersResponse.Success
     }
 
     "return 200 when shutdown all sequencer request has ESW_user role" in {

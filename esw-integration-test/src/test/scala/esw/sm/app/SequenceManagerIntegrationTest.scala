@@ -164,7 +164,7 @@ class SequenceManagerIntegrationTest extends EswTestKit {
 
     // ESW-326, ESW-167 Verify that shutdown sequencer returns Success
     val shutdownResponse = sequenceManagerClient.shutdownSequencer(ESW, IRIS_DARKNIGHT).futureValue
-    shutdownResponse should ===(ShutdownSequencerResponse.Success)
+    shutdownResponse should ===(ShutdownAllSequencersResponse.Success)
 
     // verify that sequencer is shut down
     intercept[Exception](resolveHTTPLocation(Prefix(ESW, IRIS_DARKNIGHT.name), Sequencer))
@@ -177,7 +177,7 @@ class SequenceManagerIntegrationTest extends EswTestKit {
     resolveSequenceComponentLocation(Prefix(AOESW, "primary"))
 
     val shutdownResponse2 = sequenceManagerClient.shutdownSequencer(AOESW, IRIS_CAL).futureValue
-    shutdownResponse2 should ===(ShutdownSequencerResponse.Success)
+    shutdownResponse2 should ===(ShutdownAllSequencersResponse.Success)
 
     // verify that sequencer is shut down
     resolveHTTPLocation(Prefix(ESW, IRIS_CAL.name), Sequencer)

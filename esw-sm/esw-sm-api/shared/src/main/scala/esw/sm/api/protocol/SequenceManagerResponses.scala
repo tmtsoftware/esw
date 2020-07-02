@@ -4,7 +4,7 @@ import csw.location.api.models.ComponentId
 import csw.prefix.models.Prefix
 import esw.ocs.api.models.ObsMode
 import esw.sm.api.codecs.SmAkkaSerializable
-import esw.sm.api.protocol.ShutdownSequencerResponse.UnloadScriptError
+import esw.sm.api.protocol.RestartSequencerResponse.UnloadScriptError
 
 private[protocol] sealed trait SmFailure extends Throwable
 
@@ -38,23 +38,12 @@ object StartSequencerResponse {
   case class LoadScriptError(msg: String) extends Failure
 }
 
-sealed trait ShutdownSequencerResponse extends SmAkkaSerializable
-
-object ShutdownSequencerResponse {
-  case object Success extends ShutdownSequencerResponse
-
-  sealed trait Failure extends SmFailure with ShutdownSequencerResponse with RestartSequencerResponse.Failure {
-    def msg: String
-  }
-  case class UnloadScriptError(prefix: Prefix, msg: String) extends Failure
-}
-
 sealed trait ShutdownAllSequencersResponse extends SmAkkaSerializable
 object ShutdownAllSequencersResponse {
   case object Success extends ShutdownAllSequencersResponse
 
   sealed trait Failure                                                  extends SmFailure with ShutdownAllSequencersResponse
-  case class ShutdownFailure(failureResponses: List[UnloadScriptError]) extends ShutdownAllSequencersResponse.Failure
+  case class ShutdownFailure(failureResponses: List[UnloadScriptError]) extends Failure
 }
 
 sealed trait RestartSequencerResponse extends SmAkkaSerializable
@@ -65,6 +54,7 @@ object RestartSequencerResponse {
   sealed trait Failure extends SmFailure with RestartSequencerResponse {
     def msg: String
   }
+  case class UnloadScriptError(prefix: Prefix, msg: String) extends Failure
 }
 
 sealed trait SpawnSequenceComponentResponse extends SmAkkaSerializable
@@ -89,7 +79,6 @@ object CommonFailure {
   case class LocationServiceError(msg: String)
       extends AgentError
       with CommonFailure
-      with ShutdownSequencerResponse.Failure
       with ShutdownAllSequencersResponse.Failure
       with ShutdownSequenceComponentResponse.Failure
 }

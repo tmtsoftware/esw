@@ -18,7 +18,6 @@ class SmAkkaSerializer(_actorSystem: ExtendedActorSystem)
 
   register[SequenceManagerRemoteMsg]
   register[StartSequencerResponse]
-  register[ShutdownSequencerResponse]
   register[ShutdownSequenceComponentResponse]
   register[RestartSequencerResponse]
   register[ShutdownAllSequencersResponse]

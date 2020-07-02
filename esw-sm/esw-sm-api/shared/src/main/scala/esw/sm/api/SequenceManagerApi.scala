@@ -14,7 +14,7 @@ trait SequenceManagerApi {
   def shutdownSequencer(
       subsystem: Subsystem,
       observingMode: ObsMode
-  ): Future[ShutdownSequencerResponse]
+  ): Future[ShutdownAllSequencersResponse]
   def restartSequencer(subsystem: Subsystem, observingMode: ObsMode): Future[RestartSequencerResponse]
   def shutdownAllSequencers(): Future[ShutdownAllSequencersResponse]
   def spawnSequenceComponent(agent: Prefix, name: String): Future[SpawnSequenceComponentResponse]

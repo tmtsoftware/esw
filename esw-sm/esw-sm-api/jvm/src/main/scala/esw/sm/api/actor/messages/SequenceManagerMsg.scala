@@ -23,7 +23,7 @@ object SequenceManagerMsg {
   case class ShutdownSequencer(
       subsystem: Subsystem,
       observingMode: ObsMode,
-      replyTo: ActorRef[ShutdownSequencerResponse]
+      replyTo: ActorRef[ShutdownAllSequencersResponse]
   ) extends SequenceManagerIdleMsg
   case class RestartSequencer(subsystem: Subsystem, observingMode: ObsMode, replyTo: ActorRef[RestartSequencerResponse])
       extends SequenceManagerIdleMsg
