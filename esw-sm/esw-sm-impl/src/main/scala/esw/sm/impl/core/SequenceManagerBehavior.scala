@@ -90,7 +90,7 @@ class SequenceManagerBehavior(
   private def shutdownObsModeSequencers(
       obsMode: ObsMode,
       self: SelfRef,
-      replyTo: ActorRef[ShutdownAllSequencersResponse]
+      replyTo: ActorRef[ShutdownSequencersResponse]
   ): SMBehavior = {
     val shutdownSequencersResponseF =
       locationServiceUtil
@@ -103,7 +103,7 @@ class SequenceManagerBehavior(
 
   // shutting down ObsMode Sequencers is in progress, waiting for CleanupResponseInternal message
   // Within this period, reject all the other messages except common messages
-  private def shuttingDownObsModeSequencers(self: SelfRef, replyTo: ActorRef[ShutdownAllSequencersResponse]): SMBehavior =
+  private def shuttingDownObsModeSequencers(self: SelfRef, replyTo: ActorRef[ShutdownSequencersResponse]): SMBehavior =
     receive[ShutdownObsModeSequencersResponseInternal](ShuttingDownObsModeSequencers)(msg =>
       replyAndGoToIdle(self, replyTo, msg.res)
     )
@@ -132,7 +132,7 @@ class SequenceManagerBehavior(
   private def shutdownSequencer(
       subsystem: Subsystem,
       obsMode: ObsMode,
-      replyTo: ActorRef[ShutdownAllSequencersResponse]
+      replyTo: ActorRef[ShutdownSequencersResponse]
   ): Future[Unit] = {
     val shutdownResponseF = sequencerUtil.shutdownSequencer(subsystem, obsMode).mapToAdt(identity, identity)
     shutdownResponseF.map(replyTo ! _)
@@ -147,7 +147,7 @@ class SequenceManagerBehavior(
     restartResponseF.map(replyTo ! _)
   }
 
-  private def shutdownAllSequencers(replyTo: ActorRef[ShutdownAllSequencersResponse]): Future[Unit] =
+  private def shutdownAllSequencers(replyTo: ActorRef[ShutdownSequencersResponse]): Future[Unit] =
     sequencerUtil.shutdownAllSequencers().map(replyTo ! _)
 
   private def spawnSequenceComponent(

@@ -17,8 +17,8 @@ class SequenceManagerClient(postClient: Transport[SequenceManagerPostRequest])
   override def configure(obsMode: ObsMode): Future[ConfigureResponse] =
     postClient.requestResponse[ConfigureResponse](Configure(obsMode))
 
-  override def shutdownObsModeSequencers(obsMode: ObsMode): Future[ShutdownAllSequencersResponse] =
-    postClient.requestResponse[ShutdownAllSequencersResponse](ShutdownObsModeSequencers(obsMode))
+  override def shutdownObsModeSequencers(obsMode: ObsMode): Future[ShutdownSequencersResponse] =
+    postClient.requestResponse[ShutdownSequencersResponse](ShutdownObsModeSequencers(obsMode))
 
   override def getRunningObsModes: Future[GetRunningObsModesResponse] =
     postClient.requestResponse[GetRunningObsModesResponse](GetRunningObsModes)
@@ -29,14 +29,14 @@ class SequenceManagerClient(postClient: Transport[SequenceManagerPostRequest])
   override def shutdownSequencer(
       subsystem: Subsystem,
       obsMode: ObsMode
-  ): Future[ShutdownAllSequencersResponse] =
-    postClient.requestResponse[ShutdownAllSequencersResponse](ShutdownSequencer(subsystem, obsMode))
+  ): Future[ShutdownSequencersResponse] =
+    postClient.requestResponse[ShutdownSequencersResponse](ShutdownSequencer(subsystem, obsMode))
 
   override def restartSequencer(subsystem: Subsystem, obsMode: ObsMode): Future[RestartSequencerResponse] =
     postClient.requestResponse[RestartSequencerResponse](RestartSequencer(subsystem, obsMode))
 
-  override def shutdownAllSequencers(): Future[ShutdownAllSequencersResponse] =
-    postClient.requestResponse[ShutdownAllSequencersResponse](ShutdownAllSequencers)
+  override def shutdownAllSequencers(): Future[ShutdownSequencersResponse] =
+    postClient.requestResponse[ShutdownSequencersResponse](ShutdownAllSequencers)
 
   override def spawnSequenceComponent(agent: Prefix, sequenceComponentName: String): Future[SpawnSequenceComponentResponse] =
     postClient.requestResponse[SpawnSequenceComponentResponse](SpawnSequenceComponent(agent, sequenceComponentName))

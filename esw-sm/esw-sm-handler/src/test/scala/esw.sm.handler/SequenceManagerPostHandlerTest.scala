@@ -57,11 +57,11 @@ class SequenceManagerPostHandlerTest
 
     "return success for shutdownObsModeSequencers request | ESW-171" in {
       when(sequenceManagerApi.shutdownObsModeSequencers(obsMode))
-        .thenReturn(Future.successful(ShutdownAllSequencersResponse.Success))
+        .thenReturn(Future.successful(ShutdownSequencersResponse.Success))
 
       Post("/post-endpoint", ShutdownObsModeSequencers(obsMode).narrow) ~> route ~> check {
         verify(sequenceManagerApi).shutdownObsModeSequencers(obsMode)
-        responseAs[ShutdownAllSequencersResponse] should ===(ShutdownAllSequencersResponse.Success)
+        responseAs[ShutdownSequencersResponse] should ===(ShutdownSequencersResponse.Success)
       }
     }
 
@@ -77,11 +77,11 @@ class SequenceManagerPostHandlerTest
 
     "return shutdown sequencer success for shutdownSequencer request | ESW-171" in {
       when(sequenceManagerApi.shutdownSequencer(ESW, obsMode))
-        .thenReturn(Future.successful(ShutdownAllSequencersResponse.Success))
+        .thenReturn(Future.successful(ShutdownSequencersResponse.Success))
 
       Post("/post-endpoint", ShutdownSequencer(ESW, obsMode).narrow) ~> route ~> check {
         verify(sequenceManagerApi).shutdownSequencer(ESW, obsMode)
-        responseAs[ShutdownAllSequencersResponse] should ===(ShutdownAllSequencersResponse.Success)
+        responseAs[ShutdownSequencersResponse] should ===(ShutdownSequencersResponse.Success)
       }
     }
 
@@ -97,11 +97,11 @@ class SequenceManagerPostHandlerTest
 
     "return shutdown all sequencer success for shutdownAllSequencer request | ESW-171" in {
       when(sequenceManagerApi.shutdownAllSequencers())
-        .thenReturn(Future.successful(ShutdownAllSequencersResponse.Success))
+        .thenReturn(Future.successful(ShutdownSequencersResponse.Success))
 
       Post("/post-endpoint", ShutdownAllSequencers.narrow) ~> route ~> check {
         verify(sequenceManagerApi).shutdownAllSequencers()
-        responseAs[ShutdownAllSequencersResponse] should ===(ShutdownAllSequencersResponse.Success)
+        responseAs[ShutdownSequencersResponse] should ===(ShutdownSequencersResponse.Success)
       }
     }
 

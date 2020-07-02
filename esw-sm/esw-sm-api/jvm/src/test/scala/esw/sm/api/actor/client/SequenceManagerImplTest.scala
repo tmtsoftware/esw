@@ -21,7 +21,7 @@ class SequenceManagerImplTest extends BaseTestSuite {
   private val configureResponse                                         = ConfigureResponse.Success(sequencerComponentId)
   private val getRunningObsModesResponse                                = GetRunningObsModesResponse.Success(Set(ObsMode("IRIS_Darknight"), ObsMode("WFOS_cal")))
   private val startSequencerResponse                                    = StartSequencerResponse.Started(sequencerComponentId)
-  private val shutdownSequencersResponse                                = ShutdownAllSequencersResponse.Success
+  private val shutdownSequencersResponse                                = ShutdownSequencersResponse.Success
   private val restartSequencerResponse                                  = RestartSequencerResponse.Success(sequencerComponentId)
   private val spawnSequenceComponentResponse                            = SpawnSequenceComponentResponse.Success(sequenceComponentId)
   private val shutdownSequenceComponentResponse                         = ShutdownSequenceComponentResponse.Success

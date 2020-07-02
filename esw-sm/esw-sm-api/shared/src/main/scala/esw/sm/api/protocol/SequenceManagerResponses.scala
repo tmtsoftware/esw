@@ -38,11 +38,11 @@ object StartSequencerResponse {
   case class LoadScriptError(msg: String) extends Failure
 }
 
-sealed trait ShutdownAllSequencersResponse extends SmAkkaSerializable
-object ShutdownAllSequencersResponse {
-  case object Success extends ShutdownAllSequencersResponse
+sealed trait ShutdownSequencersResponse extends SmAkkaSerializable
+object ShutdownSequencersResponse {
+  case object Success extends ShutdownSequencersResponse
 
-  sealed trait Failure                                                  extends SmFailure with ShutdownAllSequencersResponse
+  sealed trait Failure                                                  extends SmFailure with ShutdownSequencersResponse
   case class ShutdownFailure(failureResponses: List[UnloadScriptError]) extends Failure
 }
 
@@ -79,7 +79,7 @@ object CommonFailure {
   case class LocationServiceError(msg: String)
       extends AgentError
       with CommonFailure
-      with ShutdownAllSequencersResponse.Failure
+      with ShutdownSequencersResponse.Failure
       with ShutdownSequenceComponentResponse.Failure
 }
 

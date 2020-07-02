@@ -32,7 +32,7 @@ class SmAkkaSerializerTest extends BaseTestSuite {
   "should use sm serializer for SequenceManagerRemoteMsg (de)serialization" in {
     val configureResponseRef                 = TestProbe[ConfigureResponse]().ref
     val getRunningModesResponseRef           = TestProbe[GetRunningObsModesResponse]().ref
-    val shutdownSequencersResponseRef        = TestProbe[ShutdownAllSequencersResponse]().ref
+    val shutdownSequencersResponseRef        = TestProbe[ShutdownSequencersResponse]().ref
     val getSmStateRef                        = TestProbe[SequenceManagerState]().ref
     val StartSequencerResponseRef            = TestProbe[StartSequencerResponse]().ref
     val spawnSequenceComponentResponseRef    = TestProbe[SpawnSequenceComponentResponse]().ref
