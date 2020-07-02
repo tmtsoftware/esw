@@ -4,7 +4,7 @@ import akka.actor.typed.scaladsl.AskPattern._
 import akka.actor.typed.{ActorRef, ActorSystem}
 import akka.util.Timeout
 import csw.location.api.extensions.URIExtension.RichURI
-import csw.location.api.models.AkkaLocation
+import csw.location.api.models.{AkkaLocation, ComponentId}
 import csw.prefix.models.Subsystem
 import esw.commons.Timeouts
 import esw.ocs.api.actor.client.SequenceComponentApiTimeout
@@ -50,12 +50,8 @@ class SequenceManagerImpl(location: AkkaLocation)(implicit actorSystem: ActorSys
 
   override def shutdownAllSequencers(): Future[ShutdownAllSequencersResponse] = smRef ? ShutdownAllSequencers
 
-  override def spawnSequenceComponent(
-      machineSubsystem: Subsystem,
-      machineName: String,
-      seqCompName: String
-  ): Future[SpawnSequenceComponentResponse] =
-    smRef ? (SpawnSequenceComponent(machineSubsystem, machineName, seqCompName, _))
+  override def spawnSequenceComponent(machine: ComponentId, name: String): Future[SpawnSequenceComponentResponse] =
+    smRef ? (SpawnSequenceComponent(machine, name, _))
 
   override def shutdownSequenceComponent(subsystem: Subsystem, componentName: String): Future[ShutdownSequenceComponentResponse] =
     smRef ? (ShutdownSequenceComponent(subsystem, componentName, _))

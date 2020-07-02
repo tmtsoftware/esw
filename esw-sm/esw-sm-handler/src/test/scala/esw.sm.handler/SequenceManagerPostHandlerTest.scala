@@ -106,14 +106,14 @@ class SequenceManagerPostHandlerTest
 
     "return spawn sequence component success for spawnSequenceComponent request | ESW-337" in {
       val seqCompName = "seq_comp"
-      val machineName = "primary"
+      val machine     = ComponentId(Prefix(ESW, "primary"), ComponentType.Machine)
       val seqComp     = ComponentId(Prefix(ESW, seqCompName), ComponentType.SequenceComponent)
 
-      when(sequenceManagerApi.spawnSequenceComponent(ESW, machineName, seqCompName))
+      when(sequenceManagerApi.spawnSequenceComponent(machine, seqCompName))
         .thenReturn(Future.successful(SpawnSequenceComponentResponse.Success(seqComp)))
 
-      Post("/post-endpoint", SpawnSequenceComponent(ESW, machineName, seqCompName).narrow) ~> route ~> check {
-        verify(sequenceManagerApi).spawnSequenceComponent(ESW, machineName, seqCompName)
+      Post("/post-endpoint", SpawnSequenceComponent(machine, seqCompName).narrow) ~> route ~> check {
+        verify(sequenceManagerApi).spawnSequenceComponent(machine, seqCompName)
         responseAs[SpawnSequenceComponentResponse] should ===(SpawnSequenceComponentResponse.Success(seqComp))
       }
     }

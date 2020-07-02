@@ -49,8 +49,7 @@ class SequenceManagerBehavior(
       case ShutdownAllSequencers(replyTo) => shutdownAllSequencers(replyTo); Behaviors.same
       case RestartSequencer(subsystem, observingMode, replyTo) =>
         restartSequencer(subsystem, observingMode, replyTo); Behaviors.same
-      case SpawnSequenceComponent(machineSubsystem, machineName, seqCompName, replyTo) =>
-        spawnSequenceComponent(machineSubsystem, machineName, seqCompName, replyTo); Behaviors.same
+      case SpawnSequenceComponent(machine, name, replyTo) => spawnSequenceComponent(machine, name, replyTo); Behaviors.same
       case ShutdownSequenceComponent(subsystem, componentName, replyTo) =>
         shutdownSequenceComponent(subsystem, componentName, replyTo); Behaviors.same
     }
@@ -148,13 +147,11 @@ class SequenceManagerBehavior(
     sequencerUtil.shutdownAllSequencers().map(replyTo ! _)
 
   private def spawnSequenceComponent(
-      machineSubsystem: Subsystem,
-      machineName: String,
-      seqCompName: String,
+      machine: ComponentId,
+      name: String,
       replyTo: ActorRef[SpawnSequenceComponentResponse]
-  ) = {
-    val prefix = Prefix(machineSubsystem, seqCompName)
-    sequenceComponentUtil.spawnSequenceComponent(prefix).map(replyTo ! _)
+  ): Future[Unit] = {
+    sequenceComponentUtil.spawnSequenceComponent(machine, name).map(replyTo ! _)
   }
 
   private def shutdownSequenceComponent(
