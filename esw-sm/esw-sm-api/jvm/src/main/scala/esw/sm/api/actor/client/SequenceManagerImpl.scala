@@ -5,7 +5,7 @@ import akka.actor.typed.{ActorRef, ActorSystem}
 import akka.util.Timeout
 import csw.location.api.extensions.URIExtension.RichURI
 import csw.location.api.models.{AkkaLocation, ComponentId}
-import csw.prefix.models.Subsystem
+import csw.prefix.models.{Prefix, Subsystem}
 import esw.commons.Timeouts
 import esw.ocs.api.actor.client.SequenceComponentApiTimeout
 import esw.ocs.api.models.ObsMode
@@ -53,8 +53,8 @@ class SequenceManagerImpl(location: AkkaLocation)(implicit actorSystem: ActorSys
   override def spawnSequenceComponent(machine: ComponentId, name: String): Future[SpawnSequenceComponentResponse] =
     smRef ? (SpawnSequenceComponent(machine, name, _))
 
-  override def shutdownSequenceComponent(subsystem: Subsystem, componentName: String): Future[ShutdownSequenceComponentResponse] =
-    smRef ? (ShutdownSequenceComponent(subsystem, componentName, _))
+  override def shutdownSequenceComponent(prefix: Prefix): Future[ShutdownSequenceComponentResponse] =
+    smRef ? (ShutdownSequenceComponent(prefix, _))
 }
 
 object SequenceManagerTimeout {

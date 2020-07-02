@@ -50,8 +50,7 @@ class SequenceManagerBehavior(
       case RestartSequencer(subsystem, observingMode, replyTo) =>
         restartSequencer(subsystem, observingMode, replyTo); Behaviors.same
       case SpawnSequenceComponent(machine, name, replyTo) => spawnSequenceComponent(machine, name, replyTo); Behaviors.same
-      case ShutdownSequenceComponent(subsystem, componentName, replyTo) =>
-        shutdownSequenceComponent(subsystem, componentName, replyTo); Behaviors.same
+      case ShutdownSequenceComponent(prefix, replyTo)     => shutdownSequenceComponent(prefix, replyTo); Behaviors.same
     }
 
   private def configure(obsMode: ObsMode, self: SelfRef, replyTo: ActorRef[ConfigureResponse]): SMBehavior = {
@@ -155,11 +154,10 @@ class SequenceManagerBehavior(
   }
 
   private def shutdownSequenceComponent(
-      subsystem: Subsystem,
-      componentName: String,
+      prefix: Prefix,
       replyTo: ActorRef[ShutdownSequenceComponentResponse]
   ): Future[Unit] = {
-    sequenceComponentUtil.shutdown(Prefix(subsystem, componentName)).map(replyTo ! _)
+    sequenceComponentUtil.shutdown(prefix).map(replyTo ! _)
   }
 
   private def replyAndGoToIdle[T](self: SelfRef, replyTo: ActorRef[T], msg: T) = {

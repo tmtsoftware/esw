@@ -2,7 +2,7 @@ package esw.sm.api.actor.messages
 
 import akka.actor.typed.ActorRef
 import csw.location.api.models.ComponentId
-import csw.prefix.models.Subsystem
+import csw.prefix.models.{Prefix, Subsystem}
 import esw.ocs.api.models.ObsMode
 import esw.sm.api.SequenceManagerState
 import esw.sm.api.codecs.SmAkkaSerializable
@@ -30,11 +30,8 @@ object SequenceManagerMsg {
   case class ShutdownAllSequencers(replyTo: ActorRef[ShutdownAllSequencersResponse]) extends SequenceManagerIdleMsg
   case class SpawnSequenceComponent(machine: ComponentId, name: String, replyTo: ActorRef[SpawnSequenceComponentResponse])
       extends SequenceManagerIdleMsg
-  case class ShutdownSequenceComponent(
-      subsystem: Subsystem,
-      componentName: String,
-      replyTo: ActorRef[ShutdownSequenceComponentResponse]
-  ) extends SequenceManagerIdleMsg
+  case class ShutdownSequenceComponent(prefix: Prefix, replyTo: ActorRef[ShutdownSequenceComponentResponse])
+      extends SequenceManagerIdleMsg
 
   sealed trait CommonMessage                                                   extends SequenceManagerRemoteMsg
   case class GetRunningObsModes(replyTo: ActorRef[GetRunningObsModesResponse]) extends CommonMessage
